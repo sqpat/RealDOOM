@@ -51,18 +51,7 @@ byte *I_ZoneBaseEMS(int *size);
 // returns current time in tics.
 int I_GetTime (void);
 
-
-//
-// Called by D_DoomLoop,
-// called before processing any tics in a frame
-// (just after displaying a frame).
-// Time consuming syncronous operations
-// are performed here (joystick reading).
-// Can call D_PostEvent.
-//
-void I_StartFrame (void);
-
-
+ 
 //
 // Called by D_DoomLoop,
 // called before processing each tic in a frame.

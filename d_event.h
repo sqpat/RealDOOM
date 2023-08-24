@@ -30,7 +30,6 @@
 #define ev_keydown 0
 #define ev_keyup 1
 #define ev_mouse 2
-#define ev_joystick 3
 
 typedef unsigned char evtype_t;
 
@@ -38,9 +37,9 @@ typedef unsigned char evtype_t;
 typedef struct
 {
     evtype_t	type;
-    int		data1;		// keys / mouse/joystick buttons
-    int		data2;		// mouse/joystick x move
-    int		data3;		// mouse/joystick y move
+    int		data1;		// keys / mouse buttons
+    int		data2;		// mouse x move
+    int		data3;		// mouse y move
 } event_t;
 
  

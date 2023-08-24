@@ -152,11 +152,6 @@ int             mousebfire;
 int             mousebstrafe; 
 int             mousebforward; 
  
-int             joybfire; 
-int             joybstrafe; 
-int             joybuse; 
-int             joybspeed; 
- 
  
  
 #define MAXPLMOVE               (forwardmove[1]) 
@@ -188,11 +183,6 @@ int             dclicktime2;
 int             dclickstate2;
 int             dclicks2;
 
-// joystick values are repeated 
-int             joyxmove;
-int             joyymove;
-boolean         joyarray[5]; 
-boolean*        joybuttons = &joyarray[1];              // allow [-1] 
  
 int             savegameslot; 
 char            savedescription[32]; 
@@ -236,17 +226,15 @@ void G_BuildTiccmd (ticcmd_t* cmd)
     }
  */
 
-    strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe] 
-        || joybuttons[joybstrafe]; 
-    speed = gamekeydown[key_speed] || joybuttons[joybspeed];
+    strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe]  ; 
+    speed = gamekeydown[key_speed] ;
  
     forward = side = 0;
     
     // use two stage accelerative turning
-    // on the keyboard and joystick
-    if (joyxmove < 0
-        || joyxmove > 0  
-        || gamekeydown[key_right]
+    // on the keyboard 
+    if (
+         gamekeydown[key_right]
         || gamekeydown[key_left]) 
         turnheld += ticdup; 
     else 
@@ -270,10 +258,6 @@ void G_BuildTiccmd (ticcmd_t* cmd)
             //  fprintf(stderr, "strafe left\n");
             side -= sidemove[speed]; 
         }
-        if (joyxmove > 0) 
-            side += sidemove[speed]; 
-        if (joyxmove < 0) 
-            side -= sidemove[speed]; 
  
     } 
     else 
@@ -281,10 +265,6 @@ void G_BuildTiccmd (ticcmd_t* cmd)
         if (gamekeydown[key_right]) 
             cmd->angleturn -= angleturn[tspeed]; 
         if (gamekeydown[key_left]) 
-            cmd->angleturn += angleturn[tspeed]; 
-        if (joyxmove > 0) 
-            cmd->angleturn -= angleturn[tspeed]; 
-        if (joyxmove < 0) 
             cmd->angleturn += angleturn[tspeed]; 
     } 
  
@@ -298,10 +278,6 @@ void G_BuildTiccmd (ticcmd_t* cmd)
         // fprintf(stderr, "down\n");
         forward -= forwardmove[speed]; 
     }
-    if (joyymove < 0) 
-        forward += forwardmove[speed]; 
-    if (joyymove > 0) 
-        forward -= forwardmove[speed]; 
     if (gamekeydown[key_straferight]) 
         side += sidemove[speed]; 
     if (gamekeydown[key_strafeleft]) 
@@ -311,10 +287,10 @@ void G_BuildTiccmd (ticcmd_t* cmd)
     cmd->chatchar = HU_dequeueChatChar(); 
  
     if (gamekeydown[key_fire] || mousebuttons[mousebfire] 
-        || joybuttons[joybfire]) 
+        ) 
         cmd->buttons |= BT_ATTACK; 
  
-    if (gamekeydown[key_use] || joybuttons[joybuse] ) 
+    if (gamekeydown[key_use] ) 
     { 
         cmd->buttons |= BT_USE;
         // clear double clicks if hit use button 
@@ -360,8 +336,7 @@ void G_BuildTiccmd (ticcmd_t* cmd)
     
     // strafe double click
     bstrafe =
-        mousebuttons[mousebstrafe] 
-        || joybuttons[joybstrafe]; 
+        mousebuttons[mousebstrafe]  ; 
     if (bstrafe != dclickstate2 && dclicktime2 > 1 ) 
     { 
         dclickstate2 = bstrafe; 
@@ -465,11 +440,9 @@ void G_DoLoadLevel (void)
 
     // clear cmd building stuff
     memset (gamekeydown, 0, sizeof(gamekeydown)); 
-    joyxmove = joyymove = 0; 
     mousex = mousey = 0; 
     sendpause = sendsave = paused = false; 
     memset (mousebuttons, 0, sizeof(mousebuttons)); 
-    memset (joybuttons, 0, sizeof(joybuttons)); 
 
 
 
@@ -502,8 +475,7 @@ boolean G_Responder (event_t* ev)
         ) 
     { 
         if (ev->type == ev_keydown ||  
-            (ev->type == ev_mouse && ev->data1) || 
-            (ev->type == ev_joystick && ev->data1) ) 
+            (ev->type == ev_mouse && ev->data1) ) 
         { 
             M_StartControlPanel (); 
             return true; 
@@ -553,14 +525,6 @@ boolean G_Responder (event_t* ev)
         mousey = ev->data3*(mouseSensitivity+5)/10; 
         return true;    // eat events 
  
-      case ev_joystick: 
-        joybuttons[0] = ev->data1 & 1; 
-        joybuttons[1] = ev->data1 & 2; 
-        joybuttons[2] = ev->data1 & 4; 
-        joybuttons[3] = ev->data1 & 8; 
-        joyxmove = ev->data2; 
-        joyymove = ev->data3; 
-        return true;    // eat events 
  
       default: 
         break; 
