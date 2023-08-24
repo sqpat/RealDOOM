@@ -294,7 +294,7 @@ boolean P_Move (MEMREF actorRef)
     tryy = actor->y + actor->info->speed*yspeed[actor->movedir];
 
     try_ok = P_TryMove (actorRef, tryx, tryy);
-
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
     if (!try_ok) {
 		// open any specials
 		if (actor->flags & MF_FLOAT && floatok) {
@@ -372,17 +372,20 @@ void P_NewChaseDir (MEMREF actorRef)
     
     dirtype_t	turnaround;
 	mobj_t*	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef); 
+	fixed_t actorx = actor->x;
+	fixed_t actory = actor->y;
+
 	mobj_t* actorTarget;
 	
     if (!actor->targetRef)
 		I_Error ("P_NewChaseDir: called with no target");
+	olddir = actor->movedir;
 	actorTarget = (mobj_t*)Z_LoadBytesFromEMS(actor->targetRef);
 		
-    olddir = actor->movedir;
     turnaround=opposite[olddir];
 
-    deltax = actorTarget->x - actor->x;
-    deltay = actorTarget->y - actor->y;
+    deltax = actorTarget->x - actorx;
+    deltay = actorTarget->y - actory;
 
     if (deltax>10*FRACUNIT)
 		d[1]= DI_EAST;
@@ -397,7 +400,7 @@ void P_NewChaseDir (MEMREF actorRef)
 		d[2]= DI_NORTH;
     else
 		d[2]=DI_NODIR;
-
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
     // try direct route
     if (d[1] != DI_NODIR && d[2] != DI_NODIR) {
 		actor->movedir = diags[((deltay<0)<<1)+(deltax>0)];
@@ -416,7 +419,7 @@ void P_NewChaseDir (MEMREF actorRef)
 		d[1]=DI_NODIR;
     if (d[2]==turnaround)
 		d[2]=DI_NODIR;
-	
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
     if (d[1]!=DI_NODIR) {
 			actor->movedir = d[1];
 		if (P_TryWalk(actorRef)) {
@@ -685,6 +688,7 @@ void A_Chase (MEMREF actorRef)
 
 	mobj_t*	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	mobj_t*	actorTarget;
+
     if (actor->reactiontime)
 		actor->reactiontime--;
 				
@@ -718,9 +722,10 @@ void A_Chase (MEMREF actorRef)
 
     if (!actor->targetRef || !(actorTarget->flags&MF_SHOOTABLE)) {
 		// look for a new target
-		if (P_LookForPlayers(actorRef,true))
+		if (P_LookForPlayers(actorRef, true)) {
+	 
 			return; 	// got a new target
-	
+		}
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		P_SetMobjState (actorRef, actor->info->spawnstate);
 		return;
@@ -729,18 +734,25 @@ void A_Chase (MEMREF actorRef)
     // do not attack twice in a row
     if (actor->flags & MF_JUSTATTACKED) {
 		actor->flags &= ~MF_JUSTATTACKED;
-		if (gameskill != sk_nightmare && !fastparm)
-			P_NewChaseDir (actorRef);
+		if (gameskill != sk_nightmare && !fastparm) {
+			P_NewChaseDir(actorRef);
+		}
+ 
+
 		return;
     }
     
     // check for melee attack
     if (actor->info->meleestate && P_CheckMeleeRange (actorRef)) {
+		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		if (actor->info->attacksound) {
 			S_StartSoundFromRef(actorRef, actor->info->attacksound);
 		}
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		P_SetMobjState (actorRef, actor->info->meleestate);	
+
+	 
+
 		return;
     }
     
@@ -756,7 +768,10 @@ void A_Chase (MEMREF actorRef)
 		}
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		P_SetMobjState (actorRef, actor->info->missilestate);
+		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		actor->flags |= MF_JUSTATTACKED;
+
+		
 		return;
     }
 
@@ -768,23 +783,29 @@ void A_Chase (MEMREF actorRef)
 	&& !actor->threshold
 	&& !P_CheckSight(actorRef, actor->targetRef))
     {
-	if (P_LookForPlayers(actorRef,true))
-	    return;	// got a new target
-    }
-    
-    // chase towards player
-    if (--actor->movecount<0
-	|| !P_Move (actorRef))
-    {
-	P_NewChaseDir (actorRef);
+		if (P_LookForPlayers(actorRef, true)) {
+			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+			return;	// got a new target
+		}
     }
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+
+    // chase towards player
+    if (--actor->movecount<0 || !P_Move (actorRef)) {
+		P_NewChaseDir (actorRef);
+
+	}
+
+	if (setval == 1 && R_PointInSubsector(-622555, -133426378) - subsectors != 342) {  // thing->subsecnum == 341
+		I_Error("error inner inside b %i %i ", gametic, 0);
+	}
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
     // make active sound
-    if (actor->info->activesound
-	&& P_Random () < 3)
-    {
+    if (actor->info->activesound && P_Random () < 3) {
 		S_StartSoundFromRef(actorRef, actor->info->activesound);
     }
+	
+
 }
 
 

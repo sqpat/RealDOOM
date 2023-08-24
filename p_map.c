@@ -275,36 +275,49 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	mobj_t* tmthingTarget;
 	mobj_t* thing; 
 	mobj_t* tmthing; 
+	mobjtype_t tmthingTargettype;
+	mobjtype_t thingtype;
+	MEMREF tmthingtargetRef;
+	int thingflags;
+	fixed_t thingx;
+	fixed_t thingy;
+	fixed_t thingz;
+	fixed_t tmthingz;
+	fixed_t tmthingheight;
+	fixed_t thingheight;
+	fixed_t thingradius;
 	// don't clip against self
 
 
-	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
 
 	if (thingRef == tmthingRef) {
 		return true;
 	}
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	thingtype = thing->type;
+	thingflags = thing->flags;
+	thingx = thing->x;
+	thingy = thing->y;
+	thingz = thing->z;
+	thingheight = thing->height;
+	thingradius = thing->radius;
 
-
-
-	if (!(thing->flags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
+	if (!(thingflags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
 		return true;
 	}
 
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
+	tmthingtargetRef = tmthing->targetRef;
+	tmthingz = tmthing->z;
+	tmthingheight = tmthing->height;
 
-	blockdist = thing->radius + tmthing->radius;
+	blockdist = thingradius + tmthing->radius;
 
-    if ( abs(thing->x - tmx) >= blockdist || abs(thing->y - tmy) >= blockdist ) {
+    if ( abs(thingx - tmx) >= blockdist || abs(thingy - tmy) >= blockdist ) {
 		// didn't hit it
 		return true;	
     }
-    
-
-	if (thingRef == 0) {
-		I_Error("bad thing caught a");
-	}
+     
 
     // check for skulls slamming into things
     if (tmthing->flags & MF_SKULLFLY) {
@@ -318,51 +331,51 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	
 		return false;		// stop moving
     }
-
-    
+	
+	//tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
     // missiles can hit other things
     if (tmthing->flags & MF_MISSILE) {
 		// see if it went over / under
-		if (tmthing->z > thing->z + thing->height)
+		if (tmthingz > thingz + thingheight)
 			return true;		// overhead
-		if (tmthing->z+tmthing->height < thing->z)
+		if (tmthingz+tmthingheight < thingz)
 			return true;		// underneath
 		
-		if (tmthing->targetRef) {
-			tmthingTarget = (mobj_t*)Z_LoadBytesFromEMS(tmthing->targetRef);
-			if (tmthingTarget->type == thing->type || (tmthingTarget->type == MT_KNIGHT && thing->type == MT_BRUISER)|| (tmthingTarget->type == MT_BRUISER && thing->type == MT_KNIGHT) ) {
+		if (tmthingtargetRef) {
+			tmthingTarget = (mobj_t*)Z_LoadBytesFromEMS(tmthingtargetRef);
+			tmthingTargettype = tmthingTarget->type;
+			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
 				// Don't hit same species as originator.
-				if (thingRef == tmthing->targetRef)
+				if (thingRef == tmthingtargetRef)
 					return true;
 
-				if (thing->type != MT_PLAYER) {
+				if (thingtype != MT_PLAYER) {
 				// Explode, but do no damage.
 				// Let players missile other players.
 				return false;
 				}
 			}
 		}
-		if (! (thing->flags & MF_SHOOTABLE) ) {
+		if (! (thingflags & MF_SHOOTABLE) ) {
 			// didn't do any damage
-			return !(thing->flags & MF_SOLID);	
+			return !(thingflags & MF_SOLID);
 		}
 	
 		// damage / explode
+		tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
 		damage = ((P_Random()%8)+1)*tmthing->info->damage;
-		if (thingRef == 0) {
-			I_Error("bad thing caught b");
-		}
+		
 
-		P_DamageMobj (thingRef, tmthingRef, tmthing->targetRef, damage);
+		P_DamageMobj (thingRef, tmthingRef, tmthingtargetRef, damage);
 
 		// don't traverse any more
 		return false;				
     }
     
     // check for special pickup
-    if (thing->flags & MF_SPECIAL)
+    if (thingflags & MF_SPECIAL)
     {
-	solid = thing->flags&MF_SOLID;
+	solid = thingflags &MF_SOLID;
 	if (tmflags&MF_PICKUP)
 	{
 	    // can remove thing
@@ -371,7 +384,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	return !solid;
     }
 	
-    return !(thing->flags & MF_SOLID);
+    return !(thingflags & MF_SOLID);
 }
 
 
@@ -417,7 +430,7 @@ P_CheckPosition
     int			by;
     subsector_t*	newsubsec;
 	mobj_t*			tmthing;
-
+	short newsubsecsecnum;
 
     tmthingRef = thingRef;
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
@@ -434,7 +447,7 @@ P_CheckPosition
 
 
     newsubsec = R_PointInSubsector (x,y);
-
+	newsubsecsecnum = newsubsec->secnum;
 
 
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
@@ -444,8 +457,8 @@ P_CheckPosition
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-    tmfloorz = tmdropoffz = sectors[newsubsec->secnum].floorheight;
-    tmceilingz = sectors[newsubsec->secnum].ceilingheight;
+    tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
+    tmceilingz = sectors[newsubsecsecnum].ceilingheight;
 			
     validcount++;
     numspechit = 0;
@@ -463,6 +476,7 @@ P_CheckPosition
     xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
     yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
     yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
+
 
 
 
@@ -514,10 +528,11 @@ P_TryMove
 
 
 	floatok = false;
+	
+
 	if (!P_CheckPosition(thingRef, x, y)) {
 		return false;		// solid wall or thing
 	}
-	
 
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     if ( !(thing->flags & MF_NOCLIP) )
@@ -540,7 +555,8 @@ P_TryMove
 	    return false;	// don't stand over a dropoff
     }
 
-	
+
+
     // the move is ok,
     // so link the thing into its new position
     P_UnsetThingPosition (thingRef);
@@ -553,7 +569,6 @@ P_TryMove
     thing->y = y;
 	P_SetThingPosition (thingRef);
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-
 
 
     // if any special lines were hit, do the effect
@@ -666,7 +681,6 @@ void P_HitSlideLine (line_t* ld)
     }
 	
     side = P_PointOnLineSide (slidemo->x, slidemo->y, ld->dx, ld->dy, ld->v1Offset);
-	
     lineangle = R_PointToAngle2 (0,0, ld->dx, ld->dy);
 
     if (side == 1)
@@ -762,7 +776,7 @@ void P_SlideMove (MEMREF moRef)
     fixed_t		newx;
     fixed_t		newy;
     int			hitcount;
-	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	mobj_t* mo;
 
 		
     slidemo = mo;
@@ -770,9 +784,10 @@ void P_SlideMove (MEMREF moRef)
     
   retry:
     if (++hitcount == 3)
-	goto stairstep;		// don't loop forever
+		goto stairstep;		// don't loop forever
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	slidemo = mo;
 
-    
     // trace along the three leading corners
     if (mo->momx > 0)
     {
@@ -798,32 +813,42 @@ void P_SlideMove (MEMREF moRef)
 		
     bestslidefrac = FRACUNIT+1;
 	
-    P_PathTraverse ( leadx, leady, leadx+mo->momx, leady+mo->momy,
-		     PT_ADDLINES, PTR_SlideTraverse );
-    P_PathTraverse ( trailx, leady, trailx+mo->momx, leady+mo->momy,
-		     PT_ADDLINES, PTR_SlideTraverse );
-    P_PathTraverse ( leadx, traily, leadx+mo->momx, traily+mo->momy,
-		     PT_ADDLINES, PTR_SlideTraverse );
-    
+    P_PathTraverse ( leadx, leady, leadx+mo->momx, leady+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	slidemo = mo;
+	P_PathTraverse ( trailx, leady, trailx+mo->momx, leady+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	slidemo = mo;
+	P_PathTraverse ( leadx, traily, leadx+mo->momx, traily+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	slidemo = mo;
+
     // move up to the wall
     if (bestslidefrac == FRACUNIT+1)
     {
 	// the move most have hit the middle, so stairstep
       stairstep:
-	if (!P_TryMove (moRef, mo->x, mo->y + mo->momy))
-	    P_TryMove (moRef, mo->x + mo->momx, mo->y);
+		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+		slidemo = mo;
+
+		if (!P_TryMove(moRef, mo->x, mo->y + mo->momy)) {
+			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+			slidemo = mo;
+
+			P_TryMove(moRef, mo->x + mo->momx, mo->y);
+		}
 	return;
     }
 
     // fudge a bit to make sure it doesn't hit
     bestslidefrac -= 0x800;	
-    if (bestslidefrac > 0)
-    {
-	newx = FixedMul (mo->momx, bestslidefrac);
-	newy = FixedMul (mo->momy, bestslidefrac);
+    if (bestslidefrac > 0) {
+		newx = FixedMul (mo->momx, bestslidefrac);
+		newy = FixedMul (mo->momy, bestslidefrac);
 	
-	if (!P_TryMove (moRef, mo->x+newx, mo->y+newy))
-	    goto stairstep;
+		if (!P_TryMove(moRef, mo->x + newx, mo->y + newy)) {
+			goto stairstep;
+		}
     }
     
     // Now continue along the wall.
@@ -831,15 +856,19 @@ void P_SlideMove (MEMREF moRef)
     bestslidefrac = FRACUNIT-(bestslidefrac+0x800);
     
     if (bestslidefrac > FRACUNIT)
-	bestslidefrac = FRACUNIT;
+		bestslidefrac = FRACUNIT;
     
     if (bestslidefrac <= 0)
-	return;
+		return;
     
     tmxmove = FixedMul (mo->momx, bestslidefrac);
     tmymove = FixedMul (mo->momy, bestslidefrac);
 
     P_HitSlideLine (bestslideline);	// clip the moves
+
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	slidemo = mo;
+
 
     mo->momx = tmxmove;
     mo->momy = tmymove;

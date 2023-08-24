@@ -254,7 +254,6 @@ boolean P_CrossBSPNode (int bspnum)
     node_t*	bsp;
     int		side;
 	node_t* nodes;
-	node_t* nodes2;
 	bspcounter++;
 	
 
@@ -279,7 +278,6 @@ boolean P_CrossBSPNode (int bspnum)
 	if (side == 2) {
 		side = 0;	// an "on" should cross both sides
 	}
-	//nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	bsp = &nodes[bspnum];
 

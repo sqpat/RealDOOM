@@ -322,7 +322,7 @@ void R_GenerateComposite(int texnum)
     //  it is purgable from zone memory.
 
 	// TODO: if we free this and the texture handle is still active that's bad?
-	Z_ChangeTagEMSNew(texturecomposite[texnum], PU_CACHE);
+	Z_ChangeTagEMSNew(texturecompositetexnum, PU_CACHE);
 }
 
 

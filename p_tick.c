@@ -88,6 +88,7 @@ THINKERREF P_GetNextThinkerRef(void) {
 
 }
 
+int addCount = 0;
 //
 // P_AddThinker
 // Adds a new thinker at the end of the list.
@@ -98,6 +99,8 @@ THINKERREF P_AddThinker (MEMREF argref, THINKFUNCTION thinkfunc)
 	// sets nexts, prevs
 	short index = P_GetNextThinkerRef();
 	
+	
+
 	thinkerlist[index].next = 0;
 	thinkerlist[index].prev = thinkerlist[0].prev;
 
@@ -106,7 +109,7 @@ THINKERREF P_AddThinker (MEMREF argref, THINKFUNCTION thinkfunc)
 
     thinkerlist[index].memref = argref;
 	thinkerlist[index].functionType = thinkfunc;
-	
+	addCount++;
 	return index;
 
 }
@@ -124,6 +127,7 @@ void P_UpdateThinkerFunc(THINKERREF thinker, THINKFUNCTION argfunc) {
 void P_RemoveThinker (THINKERREF thinkerRef)
 {
   // FIXME: NOP.
+
 	thinkerlist[thinkerRef].functionType = TF_DELETEME;
 }
 
@@ -141,12 +145,15 @@ void P_RunThinkers (void)
 	currentthinker = thinkerlist[0].next;
     while (currentthinker != 0) {
 		
+		
+
 		if ( thinkerlist[currentthinker].functionType == TF_DELETEME ) {
 			// time to remove it
 			thinkerlist[thinkerlist[currentthinker].next].prev = thinkerlist[currentthinker].prev;
 			thinkerlist[thinkerlist[currentthinker].prev].next = thinkerlist[currentthinker].next;
 			Z_FreeEMSNew (thinkerlist[currentthinker].memref, 5);
 			thinkerlist[currentthinker].prev = MAX_THINKERS;
+
 		} else {
 			// 99 on i = 38
 
@@ -159,9 +166,25 @@ void P_RunThinkers (void)
 				//setval = 1;
 				//I_Error("Caught %i %i %i %i %i %i %i", gametic, i, ((mobj_t*)Z_LoadBytesFromEMS(players[0].moRef))->snextRef, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type , 0  );
 			}
+			if (gametic == 205 && i == 280) {
+				//I_Error("%i %i %i %i %i", gametic, i, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type);
+				//setval = 1;
+			}
+	
+			if (gametic == 1412 && i == 0) {
+				//setval = 1;
+				//I_Error("value %i %i %i", gametic, i, prndindex);
+			}
+			if (gametic == 1412 && i == 0) {
+				// 1412 74 -131984 1 541 1    ... -178529
+				//I_Error("Z value %i %i %i %i %i %i", gametic, i, ((mobj_t*)Z_LoadBytesFromEMS(players[0].moRef))->momx, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type);
 
+			}
 
-
+			if (gametic == 602 && i == 46 ) {  // thing->subsecnum == 341
+				//I_Error("error a %i %i %i %i %i", gametic, i, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type);
+				//setval = 1;
+			}
 			if (thinkerlist[currentthinker].functionType) {
 
 				switch (thinkerlist[currentthinker].functionType) {
@@ -199,8 +222,9 @@ void P_RunThinkers (void)
 
 
 				}
+			
 
-				 
+
 				i++;
 			}
 
@@ -208,7 +232,7 @@ void P_RunThinkers (void)
 		currentthinker = thinkerlist[currentthinker].next;
     }
 	 
-	if (gametic == 1594) {
+	if (gametic >= 204) {
 		//I_Error("outside: %i %i %i %i %i", gametic, i, prndindex, 0, 0);
 		//setval = 1;
 	}

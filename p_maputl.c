@@ -562,21 +562,11 @@ P_BlockThingsIterator
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
 	}
-
-	/*
-	if(setval == 1) {
-		for (i = 0; i < 2000; i++) {
-			if (blocklinks[i]) {
-				mobj = (mobj_t*)Z_LoadBytesFromEMS(blocklinks[i]); // necessary for bnextref...
-				if (mobj->type == 0) {
-
-
-				}
-
-			}
-		}
+	if (setval == 1 && x == 15 && y == 23) {
+		// 15 23
+		//I_Error("found it d: %i %i %i %i %i", gametic, prndindex, x, y);
 	}
-	*/
+
 	for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
 		// will this cause stuff to lose scope...?
 		i++;
@@ -587,7 +577,6 @@ P_BlockThingsIterator
 		}
 
 
-		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef); // necessary for bnextref...
 		if (!func(mobjRef)) {
 			 
 			return false;

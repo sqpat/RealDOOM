@@ -108,9 +108,11 @@ void T_VerticalDoor (MEMREF memref)
 			  door->speed,
 		sectors[door->secnum].floorheight,
 			  false,1,door->direction);
+	door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
+
 	if (res == pastdest)
 	{
-	    switch(door->type)
+		switch(door->type)
 	    {
 	      case blazeRaise:
 	      case blazeClose:
@@ -156,7 +158,8 @@ void T_VerticalDoor (MEMREF memref)
 			  door->speed,
 			  door->topheight,
 			  false,1,door->direction);
-	
+	door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
+
 	if (res == pastdest)
 	{
 	    switch(door->type)

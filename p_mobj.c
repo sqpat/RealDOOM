@@ -49,6 +49,7 @@ P_SetMobjState2
 {
     state_t*	st;
 	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	int i = 0;
 
     do
     {
@@ -77,8 +78,11 @@ P_SetMobjState2
 	}
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
-	
+	if (setval == 1 && R_PointInSubsector(-622555, -133426378) - subsectors != 342) {  // thing->subsecnum == 341
+		I_Error("error inner %i %i %i %i %i", gametic, i, state, mobjRef, mobj->type);
+	}
 	state = st->nextstate;
+	i++;
     } while (!mobj->tics);
 	
 	
@@ -125,9 +129,12 @@ void P_XYMovement (MEMREF moRef)
     fixed_t	ymove;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mobj_t* playermo;
+	fixed_t momomx;
+	fixed_t momomy;
+
 	int i = 0;
 	player = mo->player;
-
+	
 	
 
 	if (!mo->momx && !mo->momy) {
@@ -141,6 +148,8 @@ void P_XYMovement (MEMREF moRef)
 		}
 		return;
     }
+
+
     player = mo->player;
 
 
@@ -157,7 +166,6 @@ void P_XYMovement (MEMREF moRef)
     xmove = mo->momx;
     ymove = mo->momy;
 
-	
 
 	do {
 		i++;
@@ -173,11 +181,12 @@ void P_XYMovement (MEMREF moRef)
 			xmove = ymove = 0;
 		}
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+		
 
 		if (!P_TryMove (moRef, ptryx, ptryy)) {
-
+		
 			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-			
+		
 
 
 			// blocked move
@@ -185,22 +194,25 @@ void P_XYMovement (MEMREF moRef)
 				P_SlideMove (moRef);
 			} else if (mo->flags & MF_MISSILE) {
 				// explode a missile
+				
+
 				if (ceilingline && ceilingline->backsecnum != SECNUM_NULL && sectors[ceilingline->backsecnum].ceilingpic == skyflatnum) {
 					// Hack to prevent missiles exploding
 					// against the sky.
 					// Does not handle sky floors.
-
+ 
 					P_RemoveMobj (moRef);
 					return;
 				}
 			
+
 				P_ExplodeMissile (moRef);
 			} else {
 				mo->momx = mo->momy = 0;
 			}
 		}
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	
+		
     } while (xmove || ymove);
 
 
@@ -211,14 +223,22 @@ void P_XYMovement (MEMREF moRef)
     if (player && player->cheats & CF_NOMOMENTUM) {
 		// debug option for no sliding at all
 		mo->momx = mo->momy = 0;
+ 
 		return;
     }
 
 	if (mo->flags & (MF_MISSILE | MF_SKULLFLY)) {
+
+	 
 		return; 	// no friction for missiles ever
 	}
 
 	if (mo->z > mo->floorz) {
+
+		if (setval == 1) {
+			//I_Error("Z value g %i %i %i %i %i %i %i %i ", gametic, prndindex, mo->momx, mo->z, mo->floorz, mo->subsecnum, mo->x, mo->y);
+		}
+
 		return;		// no friction when airborne
 	}
     
@@ -228,19 +248,26 @@ void P_XYMovement (MEMREF moRef)
 
 		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
 			if (mo->floorz != sectors[subsectors[mo->subsecnum].secnum].floorheight) {
+				
 				return;
 			}
 		}
     }
-
+	momomx = mo->momx;
+	momomy = mo->momy;
+	// mo and player can dereference each other here... let's not create a situation where both pointers are needed in the same if block
 	if (player) {
 		playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+
 	}
 
 
-    if ((mo->momx > -STOPSPEED && mo->momx < STOPSPEED && mo->momy > -STOPSPEED && mo->momy < STOPSPEED) && 
+    if ((momomx > -STOPSPEED && momomx < STOPSPEED && momomy > -STOPSPEED && momomy < STOPSPEED) && 
 			(!player || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) 
 		) {
+		if (setval == 1) {
+			//I_Error("Z value a %i %i %i %i %i %i ", gametic, prndindex, mo->momx, momomx, FRICTION, mo->type);
+		}
 	// if in a walking frame, stop moving
 		if (player) {
 			playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
@@ -248,11 +275,19 @@ void P_XYMovement (MEMREF moRef)
 		if (player && (unsigned)((playermo->state - states) - S_PLAY_RUN1) < 4) {
 			P_SetMobjState(player->moRef, S_PLAY);
 		}
+		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+
 		mo->momx = 0;
 		mo->momy = 0;
     } else {
-		mo->momx = FixedMul (mo->momx, FRICTION);
-		mo->momy = FixedMul (mo->momy, FRICTION);
+		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+
+
+		mo->momx = FixedMul (momomx, FRICTION);
+		mo->momy = FixedMul (momomy, FRICTION);
+		if (setval == 1) {
+			//I_Error("Z value b %i %i %i %i %i %i ", gametic, prndindex, mo->momx, momomx, FRICTION, mo->type);
+		}
 
 	}
 
@@ -441,16 +476,16 @@ void P_MobjThinker (MEMREF mobjRef) {
 
 		P_XYMovement (mobjRef);
 
+	
+
 
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+		
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
 			return;		// mobj was removed
 		}
-    }
-
-
-
+    } 
 
     if ( (mobj->z != mobj->floorz) || mobj->momz ) {
 		P_ZMovement (mobjRef);
@@ -460,7 +495,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 			return;		// mobj was removed
 		}
     }
-	
+
 	
     // cycle through states,
     // calling action functions at transitions
@@ -470,11 +505,16 @@ void P_MobjThinker (MEMREF mobjRef) {
 		// you can cycle through multiple states in a tic
 		if (!mobj->tics) {
 			if (!P_SetMobjState(mobjRef, mobj->state->nextstate)) {
+				 
 				return;		// freed itself
 			}
 			
 		}
+	
+
     } else {
+		 
+
 		// check for nightmare respawn
 		if (!(mobj->flags & MF_COUNTKILL)) {
 			return;
@@ -527,7 +567,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobj->health = info->spawnhealth;
 
     if (gameskill != sk_nightmare)
-	mobj->reactiontime = info->reactiontime;
+		mobj->reactiontime = info->reactiontime;
     
     mobj->lastlook = P_Random () % MAXPLAYERS;
     // do not set the state with P_SetMobjState,
@@ -541,7 +581,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
     // set subsector and/or block links
     P_SetThingPosition (mobjRef);
-	
+	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+
     mobj->floorz = sectors[subsectors[mobj->subsecnum].secnum].floorheight;
     mobj->ceilingz = sectors[subsectors[mobj->subsecnum].secnum].ceilingheight;
 
@@ -596,7 +637,7 @@ void P_RemoveMobj (MEMREF mobjRef)
     
     // stop any playing sound
     S_StopSound (mobjRef);
-    
+	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
     // free block
     P_RemoveThinker (mobj->thinkerRef);
 }

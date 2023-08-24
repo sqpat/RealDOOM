@@ -54,7 +54,7 @@ void T_PlatRaise(MEMREF platRef)
 			  plat->speed,
 			  plat->high,
 			  plat->crush,0,1);
-					
+	plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 	if (plat->type == raiseAndChange
 	    || plat->type == raiseToNearestAndChange)
 	{
@@ -98,7 +98,7 @@ void T_PlatRaise(MEMREF platRef)
 	
       case	down:
 	res = T_MovePlane(plat->secnum,plat->speed,plat->low,false,0,-1);
-
+	plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 	if (res == pastdest)
 	{
 	    plat->count = plat->wait;

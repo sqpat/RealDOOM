@@ -30,6 +30,7 @@
 #include "r_local.h"
 
 #include "doomstat.h"
+#include "m_misc.h"
 
 
 
@@ -661,9 +662,9 @@ void R_AddSprites (short secnum)
 		 
 		lastThingRef = thingRef;
 		i++;
-		if (setval == 1 && i == 2) {
+		if (i > 1000) {
 			// 625, 463, 463...   type 2, 0
-			I_Error("caught inf %i %i %i", thingRef, thing->snextRef, thing->type);
+			I_Error("caught inf %i %i %i %i %i", gametic, prndindex, thingRef, thing->snextRef, thing->type);
 		}
 		//Z_RefIsActive(sectors[secnum].thinglistRef);
 	}
