@@ -477,6 +477,9 @@ EV_BuildStairs
     fixed_t		stairsize;
     fixed_t		speed;
 	MEMREF floorRef;
+	short *linebuffer;
+	short linebufferOffset;
+	short linenum;
 
     secnum = -1;
     rtn = 0;
@@ -518,48 +521,49 @@ EV_BuildStairs
 	// Find next sector to raise
 	// 1.	Find 2-sided line with same sector side[0]
 	// 2.	Other side is the next sector to raise
-	do
-	{
+	do {
 	    ok = 0;
-	    for (i = 0;i < sectors[secnum].linecount;i++)
-	    {
-		if ( !((linebuffer[sectors[secnum].linesoffset+i])->flags & ML_TWOSIDED) )
-		    continue;
-					
-		tsecOffset = (linebuffer[sectors[secnum].linesoffset+i])->frontsecnum;
-		newsecnum = tsecOffset ;
+	    for (i = 0;i < sectors[secnum].linecount;i++) {
+			linebufferOffset = sectors[secnum].linesoffset + i;
+			linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+			linenum = linebuffer[linebufferOffset];
+			if (!((&lines[linenum])->flags & ML_TWOSIDED)) {
+				continue;
+			}
+			tsecOffset = (&lines[linenum])->frontsecnum;
+			newsecnum = tsecOffset ;
 		
-		if (secnum != newsecnum)
-		    continue;
+			if (secnum != newsecnum)
+				continue;
 
-		tsecOffset = (linebuffer[sectors[secnum].linesoffset+i])->backsecnum;
-		newsecnum = tsecOffset;
+			tsecOffset = (&lines[linenum])->backsecnum;
+			newsecnum = tsecOffset;
 
-		if (sectors[tsecOffset].floorpic != texture)
-		    continue;
+			if (sectors[tsecOffset].floorpic != texture)
+				continue;
 					
-		height += stairsize;
+			height += stairsize;
 
-		if (sectors[tsecOffset].specialdataRef)
-		    continue;
+			if (sectors[tsecOffset].specialdataRef)
+				continue;
 					
-		//sec = tsecOffset;
-		secnum = newsecnum;
+			//sec = tsecOffset;
+			secnum = newsecnum;
 
-		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
-		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
 
-		floor->floordestheight = height;
+			floor->floordestheight = height;
 
-		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+			floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
 
-		sectors[tsecOffset].specialdataRef = floorRef;
-		floor->direction = 1;
-		floor->secnum = tsecOffset;
-		floor->speed = speed;
-		floor->floordestheight = height;
-		ok = 1;
-		break;
+			sectors[tsecOffset].specialdataRef = floorRef;
+			floor->direction = 1;
+			floor->secnum = tsecOffset;
+			floor->speed = speed;
+			floor->floordestheight = height;
+			ok = 1;
+			break;
 	    }
 	} while(ok);
     }

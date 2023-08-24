@@ -67,7 +67,8 @@ line_t*         lines;
 int             numsides;
 side_t*         sides;
 
-line_t**            linebuffer;
+//short*          linebuffer;
+MEMREF          linebufferRef;
 
 // BLOCKMAP
 // Created from axis aligned bounding box
@@ -526,10 +527,10 @@ void P_GroupLines(void)
 	fixed_t             bbox[4];
 	int                 block;
 	seg_t*              segs;
-	MEMREF				linebufferRef;
 	vertex_t*			vertexes;
-	line_t**				baselinebuffer;
-	line_t**  previouslinebuffer;
+	short*				baselinebuffer;
+	short*  previouslinebuffer;
+	short* linebuffer;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	short	firstlinenum;
 	short	sidedefOffset;
@@ -561,9 +562,9 @@ void P_GroupLines(void)
 	}
 
 	// build line tables for each sector        
-//	linebufferRef = Z_MallocEMSNew (total * 4, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
 //	linebuffer = (line_t**)Z_LoadBytesFromEMS(linebufferRef);
-	linebuffer = (line_t**)Z_Malloc (total * 4, PU_LEVEL, 0);
+	linebufferRef = Z_MallocEMSNew (total * 2, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
+	linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 	baselinebuffer = linebuffer;
 	//I_Error("%s", outputter);
 	//sector = sectors;
@@ -581,7 +582,7 @@ void P_GroupLines(void)
 
 		for (j = 0; j < numlines; j++, li++) {
 			if (li->frontsecnum == i || li->backsecnum == i) {
-				*linebuffer++ = li;
+				*linebuffer++ = li - lines;
 				M_AddToBox(bbox, vertexes[li->v1Offset].x, vertexes[li->v1Offset].y);
 				M_AddToBox(bbox, vertexes[li->v2Offset].x, vertexes[li->v2Offset].y);
 			}
@@ -613,7 +614,7 @@ void P_GroupLines(void)
 		sectors[i].blockbox[BOXLEFT] = block;
 	}
 
-	linebuffer = baselinebuffer;
+	 
 
 }
 

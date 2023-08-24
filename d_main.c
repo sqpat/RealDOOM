@@ -1208,7 +1208,6 @@ void D_DoomMain (void)
     D_RedrawTitle();
     P_Init ();
 
-
     printf ("I_Init: Setting up machine state.\n");
     D_RedrawTitle();
     I_Init ();

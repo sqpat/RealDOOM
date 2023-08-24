@@ -242,26 +242,28 @@ void EV_TurnTagLightsOff(short linetag)
     int			i;
     int			secnum;
     int			min;
-    short		tsecnum;
+    short		offset;
     line_t*		templine;
-	
+	short *		linebuffer;
     
-    for (secnum = 0; secnum < numsectors; secnum++)
-    {
-	if (sectors[secnum].tag == linetag)
-	{
-	    min = sectors[secnum].lightlevel;
-	    for (i = 0;i < sectors[secnum].linecount; i++)
-	    {
-		templine = linebuffer[sectors[secnum].linesoffset+i];
-		tsecnum = getNextSector(templine,secnum);
-		if (tsecnum == SECNUM_NULL)
-		    continue;
-		if (sectors[tsecnum].lightlevel < min)
-		    min = sectors[tsecnum].lightlevel;
-	    }
-		sectors[secnum].lightlevel = min;
-	}
+    for (secnum = 0; secnum < numsectors; secnum++) {
+		if (sectors[secnum].tag == linetag) {
+			min = sectors[secnum].lightlevel;
+			for (i = 0; i < sectors[secnum].linecount; i++) {
+				offset = sectors[secnum].linesoffset + i;
+				linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+				templine = &lines[linebuffer[offset]];
+
+				offset = getNextSector(templine, secnum);
+				if (offset == SECNUM_NULL){
+					continue;
+				}
+				if (sectors[offset].lightlevel < min) {
+					min = sectors[offset].lightlevel;
+				}
+			}
+			sectors[secnum].lightlevel = min;
+		}
     }
 }
 
@@ -279,7 +281,7 @@ EV_LightTurnOn
     short	tempsecnum;
     line_t*	templine;
 	int linecount;
-	
+	short* linebuffer;
 	
     for (secnum=0;secnum<numsectors;secnum++)
     {
@@ -293,7 +295,10 @@ EV_LightTurnOn
 			linecount = sectors[secnum].linecount;
 		for (j = 0;j < linecount; j++)
 		{
-		    templine = linebuffer[sectors[secnum].linesoffset+j];
+			linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+			tempsecnum = sectors[secnum].linesoffset + j;
+
+			templine = &lines[linebuffer[tempsecnum]];
 			tempsecnum = getNextSector(templine,secnum);
 
 		    if (tempsecnum == SECNUM_NULL)

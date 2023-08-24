@@ -197,7 +197,9 @@ getSide
   int		line,
   int		side )
 {
-    return &sides[ (linebuffer[sectors[currentSector].linesoffset+line])->sidenum[side] ];
+	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+
+    return &sides[ (&lines[linebuffer[sectors[currentSector].linesoffset+line]])->sidenum[side] ];
 }
 
 
@@ -213,7 +215,9 @@ getSector
   int		line,
   int		side )
 {
-    return sides[ (linebuffer[sectors[currentSector].linesoffset+line])->sidenum[side] ].secnum;
+	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+
+    return sides[ (&lines[linebuffer[sectors[currentSector].linesoffset+line]])->sidenum[side] ].secnum;
 }
 
 
@@ -227,7 +231,9 @@ twoSided
 ( int	sector,
   int	line )
 {
-    return (linebuffer[sectors[sector].linesoffset+line])->flags & ML_TWOSIDED;
+	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+
+    return (&lines[linebuffer[sectors[sector].linesoffset+line]])->flags & ML_TWOSIDED;
 }
 
 
@@ -267,17 +273,21 @@ fixed_t	P_FindLowestFloorSurrounding(short secnum)
 	short		otherSecOffset;
 	fixed_t		floor = sectors[secnum].floorheight;
 	int linecount = sectors[secnum].linecount;
+	short* linebuffer;
 
-    for (i=0 ;i < linecount ; i++)
-    {
-	check = linebuffer[sectors[secnum].linesoffset+i];
-	otherSecOffset = getNextSector(check, secnum);
+    for (i=0 ;i < linecount ; i++) {
+		otherSecOffset = sectors[secnum].linesoffset + i;
+		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
-	if (otherSecOffset == SECNUM_NULL)
-	    continue;
-	
-	if (sectors[otherSecOffset].floorheight < floor)
-	    floor = sectors[otherSecOffset].floorheight;
+		check = &lines[linebuffer[otherSecOffset]];
+		otherSecOffset = getNextSector(check, secnum);
+
+		if (otherSecOffset == SECNUM_NULL) {
+			continue;
+		}
+		if (sectors[otherSecOffset].floorheight < floor) {
+			floor = sectors[otherSecOffset].floorheight;
+		}
     }
     return floor;
 }
@@ -292,20 +302,24 @@ fixed_t	P_FindHighestFloorSurrounding(short secnum)
 {
     int			i;
     line_t*		check;
-    short		otherSecOffset;
+    short		offset;
     fixed_t		floor = -500*FRACUNIT;
 	int linecount = sectors[secnum].linecount;
+	short* linebuffer;
 	
-    for (i=0 ;i < linecount ; i++)
-    {
-	check = linebuffer[sectors[secnum].linesoffset+i];
-	otherSecOffset = getNextSector(check, secnum);
+    for (i=0 ;i < linecount ; i++) {
+		offset = sectors[secnum].linesoffset + i;
+		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+
+		check = &lines[linebuffer[offset]];
+		offset = getNextSector(check, secnum);
 	
-	if (otherSecOffset == SECNUM_NULL)
-	    continue;
-	
-	if (sectors[otherSecOffset].floorheight > floor)
-	    floor = sectors[otherSecOffset].floorheight;
+		if (offset == SECNUM_NULL) {
+			continue;
+		}
+		if (sectors[offset].floorheight > floor) {
+			floor = sectors[offset].floorheight;
+		}
     }
     return floor;
 }
@@ -329,23 +343,28 @@ P_FindNextHighestFloor
     int			h;
     int			min;
     line_t*		check;
-	short		otherSecOffset;
+	short		offset;
 	fixed_t		height = currentheight;
 	int linecount = sectors[secnum].linecount;
+	short* linebuffer;
 
     
     fixed_t		heightlist[MAX_ADJOINING_SECTORS];		
 
-    for (i=0, h=0 ;i < linecount ; i++)
-    {
-		check = linebuffer[sectors[secnum].linesoffset+i];
-		otherSecOffset = getNextSector(check, secnum);
+    for (i=0, h=0 ;i < linecount ; i++) {
+		offset = sectors[secnum].linesoffset + i;
+		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+		check = &lines[linebuffer[offset]];
+		offset = getNextSector(check, secnum);
 
-	if (otherSecOffset == SECNUM_NULL)
-	    continue;
+		if (offset == SECNUM_NULL) {
+			continue;
+		}
 	
-	if (sectors[otherSecOffset].floorheight > height)
-	    heightlist[h++] = sectors[otherSecOffset].floorheight;
+		if (sectors[offset].floorheight > height) {
+			heightlist[h++] = sectors[offset].floorheight;
+		}
+
     }
     
     // Find lowest height in list
@@ -371,21 +390,25 @@ P_FindLowestCeilingSurrounding(short	secnum)
 {
     int			i;
     line_t*		check;
-	short		otherSecOffset;
+	short		offset;
 	fixed_t		height = MAXINT;
 	int linecount = sectors[secnum].linecount;
+	short* linebuffer;
 
-    for (i=0 ;i < linecount ; i++)
-    {
-		check = linebuffer[sectors[secnum].linesoffset+i];
-		otherSecOffset = getNextSector(check, secnum);
+    for (i=0 ;i < linecount ; i++) {
+		offset = sectors[secnum].linesoffset + i;
+		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
-	if (otherSecOffset == SECNUM_NULL)
-	    continue;
+		check = &lines[linebuffer[offset]];
+		offset = getNextSector(check, secnum);
 
-	if (sectors[otherSecOffset].ceilingheight < height)
-	    height = sectors[otherSecOffset].ceilingheight;
-    }
+		if (offset == SECNUM_NULL) {
+			continue;
+		}
+		if (sectors[offset].ceilingheight < height) {
+			height = sectors[offset].ceilingheight;
+		}
+	}
     return height;
 }
 
@@ -397,21 +420,25 @@ fixed_t	P_FindHighestCeilingSurrounding(short	secnum)
 {
     int		i;
     line_t*	check;
-	short		otherSecOffset;
+	short		offset;
 	fixed_t	height = 0;
 	int linecount = sectors[secnum].linecount;
+	short* linebuffer;
 
-    for (i=0 ;i < linecount ; i++)
-    {
-		check = linebuffer[sectors[secnum].linesoffset + i];
-		otherSecOffset = getNextSector(check, secnum);
+    for (i=0 ;i < linecount ; i++) {
+		offset = sectors[secnum].linesoffset + i;
+		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
-	if (otherSecOffset == SECNUM_NULL)
-	    continue;
+		check = &lines[linebuffer[offset]];
+		offset = getNextSector(check, secnum);
 
-	if (sectors[otherSecOffset].ceilingheight > height)
-	    height = sectors[otherSecOffset].ceilingheight;
-    }
+		if (offset == SECNUM_NULL) {
+			continue;
+		}
+		if (sectors[offset].ceilingheight > height) {
+			height = sectors[offset].ceilingheight;
+		}
+	}
     return height;
 }
 
@@ -448,23 +475,27 @@ P_FindMinSurroundingLight
     int		i;
     int		min;
     line_t*	line;
-    short	checksecnum;
+    short	offset;
 	int linecount = sectors[secnum].linecount;
+	short* linebuffer;
 
     min = max;
     for (i=0 ; i < linecount ; i++) {
-		line = linebuffer[sectors[secnum].linesoffset + i];
+		offset = sectors[secnum].linesoffset + i;
+		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
-		checksecnum = getNextSector(line, secnum);
+		line = &lines[linebuffer[offset]];
+
+		offset = getNextSector(line, secnum);
 
 		// 4 255 255 15 127 1 0 0
 
-		if (checksecnum == SECNUM_NULL) {
+		if (offset == SECNUM_NULL) {
 			continue;
 		}
 
-		if (sectors[checksecnum].lightlevel < min) {
-			min = sectors[checksecnum].lightlevel;
+		if (sectors[offset].lightlevel < min) {
+			min = sectors[offset].lightlevel;
 		}
     }
 
@@ -965,7 +996,8 @@ P_ShootSpecialLine
   short linenum )
 {
     int		ok;
-	line_t* line = linebuffer[linenum];
+	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+	line_t* line = &lines[linebuffer[linenum]];
 	short linespecial = line->special;
 	short linetag = line->tag;
 	short linefrontsecnum = line->frontsecnum;
@@ -1188,7 +1220,10 @@ int EV_DoDonut(short linetag)
     int			i;
     floormove_t*	floor;
 	MEMREF floorRef;
-
+	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+	short offset;
+	int lineflags;
+	short linebacksecnum;
 
     secnum = -1;
     rtn = 0;
@@ -1201,13 +1236,15 @@ int EV_DoDonut(short linetag)
 	    continue;
 			
 	rtn = 1;
-	s2Offset = getNextSector(linebuffer[sectors[s1Offset].linesoffset],s1Offset);
-	for (i = 0;i < sectors[s2Offset].linecount;i++)
-	{
-	    if ((!(linebuffer[sectors[s2Offset].linesoffset+i])->flags & ML_TWOSIDED) ||
-		((linebuffer[sectors[s2Offset].linesoffset+i])->backsecnum == s1Offset))
-		continue;
-	    s3Offset = (linebuffer[sectors[s2Offset].linesoffset+i])->backsecnum;
+	s2Offset = getNextSector(&lines[linebuffer[sectors[s1Offset].linesoffset]],s1Offset);
+	for (i = 0;i < sectors[s2Offset].linecount;i++) {
+		offset = sectors[s2Offset].linesoffset + i;
+		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+		lineflags = (lines[linebuffer[offset]]).flags;
+		linebacksecnum = (&lines[linebuffer[offset]])->backsecnum;
+		if ((!lineflags & ML_TWOSIDED) || (linebacksecnum == s1Offset));
+			continue;
+	    s3Offset = linebacksecnum;
 	    
 	    //	Spawn rising slime
 
