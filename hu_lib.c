@@ -106,14 +106,16 @@ HUlib_drawTextLine
 		if (c != ' ' && c >= l->sc && c <= '_') {
 			currentpatch = (patch_t*)Z_LoadBytesFromEMS(l->fRef[c - l->sc]);
 			w = SHORT(currentpatch->width);
-			if (x+w > SCREENWIDTH)
-			break;
+			if (x + w > SCREENWIDTH) {
+				break;
+			}
 			V_DrawPatchDirect(x, l->y, FG, currentpatch);
 			x += w;
 		} else {
 			x += 4;
-			if (x >= SCREENWIDTH)
-			break;
+			if (x >= SCREENWIDTH) {
+				break;
+			}
 		}
     }
 
@@ -169,16 +171,16 @@ HUlib_initSText
 {
 
     int i;
-	patch_t* font;
+	patch_t* font0;
 
     s->h = h;
     s->on = on;
     s->laston = true;
     s->cl = 0;
-	font = (patch_t*)Z_LoadBytesFromEMS(fontRef[0]);
+	font0 = (patch_t*)Z_LoadBytesFromEMS(fontRef[0]);
 	for (i = 0; i < h; i++) {
 		HUlib_initTextLine(&s->l[i],
-			x, y - i * (SHORT(font->height) + 1),
+			x, y - i * (SHORT(font0->height) + 1),
 			fontRef, startchar);
 	}
 

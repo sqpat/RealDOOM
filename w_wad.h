@@ -55,7 +55,6 @@ typedef struct
 } lumpinfo_t;
 
 
-//extern	void**		lumpcache;
 extern	lumpinfo_t*	lumpinfo;
 extern	int		numlumps;
 

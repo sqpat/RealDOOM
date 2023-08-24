@@ -151,17 +151,7 @@ P_RecursiveSound
 		checkfrontsecnum = check->frontsecnum;
 		checkbacksecnum = check->backsecnum;
 
-		if (checksidenum1 == 21587) {
-			//sectors[secnum].
-			
-
-			// sector 13
-			// linebuffer 155
-			// line 0
-			// line[0]->sidenum[1] = 21587
-
-			I_Error("uhh big checkside %i %i %i %i %i", checksidenum1, linenumber, secnum, sectors[secnum].linesoffset, i);
-		}
+	 
 
 		if (!(checkflags & ML_TWOSIDED)) {
 			continue;
@@ -178,9 +168,7 @@ P_RecursiveSound
 		} else {
 			othersecnum = sides[checksidenum0].secnum;
 		}
-		if (othersecnum == -26729) {
-			I_Error("uhh %i %i %i", checksidenum1, checksidenum0, secnum, sides[checksidenum0].secnum);
-		}
+ 
 		if (checkflags & ML_SOUNDBLOCK) {
 			if (!soundblocks) {
 				P_RecursiveSound(othersecnum, 1, __LINE__);

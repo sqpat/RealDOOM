@@ -47,7 +47,6 @@
 lumpinfo_t*             lumpinfo;               
 int                     numlumps;
 
-void**                  lumpcache;
 MEMREF*					lumpcacheEMS;
 
 
@@ -233,8 +232,6 @@ void W_Reload (void)
          i<reloadlump+lumpcount ;
          i++,lump_p++, fileinfo++)
     {
-        if (lumpcache[i])
-            Z_Free (lumpcache[i]);
 
         lump_p->position = LONG(fileinfo->filepos);
         lump_p->size = LONG(fileinfo->size);
@@ -280,15 +277,6 @@ void W_InitMultipleFiles (char** filenames)
     if (!numlumps)
         I_Error ("W_InitFiles: no files found");
     
-    // set up caching
-    size = numlumps * sizeof(*lumpcache);
-	// note: size is 5056; 1264 lumps. half that for EMS MEMREFS
-	lumpcache = malloc (size);
-    
-    if (!lumpcache)
-        I_Error ("Couldn't allocate lumpcache");
-
-    memset (lumpcache,0, size);
 
 	size = numlumps * sizeof(*lumpcacheEMS);
 	lumpcacheEMS = malloc(size);
@@ -515,40 +503,7 @@ int W_CacheLumpNumCheck(int lump, int error) {
 	return false;
 }
 
-
-//
-// W_CacheLumpNum
-//
-void*
-W_CacheLumpNum
-( int           lump,
-  int           tag )
-{
-    byte*       ptr;
-
-    if ((unsigned)lump >= numlumps)
-        I_Error ("W_CacheLumpNum: %i >= numlumps",lump);
-                
-	
-
-
-    if (!lumpcache[lump])
-    {
-        // read the lump in
-        
-        //printf ("cache miss on lump %i\n",lump);
-        ptr = Z_Malloc (W_LumpLength (lump), tag, &lumpcache[lump]);
-        W_ReadLump (lump, lumpcache[lump]);
-    }
-    else
-    {
-        //printf ("cache hit on lump %i\n",lump);
-        Z_ChangeTag (lumpcache[lump],tag);
-    }
-        
-    return lumpcache[lump];
-}
-
+ 
 //
 // W_CacheLumpNum
 //
@@ -616,68 +571,7 @@ W_CacheLumpNameEMSAsPatch
 {
 	return (patch_t*) Z_LoadBytesFromEMS(W_CacheLumpNumEMS(W_GetNumForName(name), tag));
 }
-
-//
-// W_Profile
-//
-int             info[2500][10];
-int             profilecount;
-
-void W_Profile (void)
-{
-    int         i;
-    memblock_t* block;
-    void*       ptr;
-    char        ch;
-    FILE*       f;
-    int         j;
-    char        name[9];
-        
-        
-    for (i=0 ; i<numlumps ; i++)
-    {   
-        ptr = lumpcache[i];
-        if (!ptr)
-        {
-            ch = ' ';
-            continue;
-        }
-        else
-        {
-            block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
-            if (block->tag < PU_PURGELEVEL)
-                ch = 'S';
-            else
-                ch = 'P';
-        }
-        info[i][profilecount] = ch;
-    }
-    profilecount++;
-        
-    f = fopen ("waddump.txt","w");
-    name[8] = 0;
-
-    for (i=0 ; i<numlumps ; i++)
-    {
-        memcpy (name,lumpinfo[i].name,8);
-
-        for (j=0 ; j<8 ; j++)
-            if (!name[j])
-                break;
-
-        for ( ; j<8 ; j++)
-            name[j] = ' ';
-
-        fprintf (f,"%s ",name);
-
-        for (j=0 ; j<profilecount ; j++)
-            fprintf (f,"    %c",info[i][j]);
-
-        fprintf (f,"\n");
-    }
-    fclose (f);
-}
-
+ 
 
 void W_EraseLumpCache(short index) {
 	//I_Error("eraselumpcache %i", index);

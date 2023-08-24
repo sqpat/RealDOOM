@@ -33,7 +33,7 @@
 #include "p_setup.h"
 
 void G_PlayerReborn (int player);
-void P_SpawnMapThing (mapthing_t*	mthing);
+void P_SpawnMapThing (mapthing_t*	mthing, int key);
 
 mobj_t* SAVEDUNIT;
 //
@@ -589,10 +589,12 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobj->tics = st->tics;
     mobj->sprite = st->sprite;
     mobj->frame = st->frame;
-	
+
 
     // set subsector and/or block links
     P_SetThingPosition (mobjRef);
+ 
+
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
     mobj->floorz = sectors[mobj->secnum].floorheight;
     mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
@@ -604,14 +606,10 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     else 
 		mobj->z = z;
 
-	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
-		I_Error("found on start a");
-	}
+	 
 
 	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
-	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
-		I_Error("found on start b");
-	}
+ 
 
     return mobjRef;
 }
@@ -746,13 +744,15 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	short mthingangle = mthing->angle;
 
     // not playing?
-    if (!playeringame[mthingtype-1])
-	return;					
+	if (!playeringame[mthingtype - 1]) {
+		return;
+	}
 		
     p = &players[mthingtype-1];
 
-    if (p->playerstate == PST_REBORN)
-	G_PlayerReborn (mthingtype-1);
+	if (p->playerstate == PST_REBORN) {
+		G_PlayerReborn(mthingtype - 1);
+	}
 
     x 		= mthingx << FRACBITS;
     y 		= mthingy << FRACBITS;
@@ -777,6 +777,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
     p->extralight = 0;
     p->fixedcolormap = 0;
     p->viewheight = VIEWHEIGHT;
+	 
 
     // setup gun psprite
     P_SetupPsprites (p);
@@ -787,13 +788,18 @@ void P_SpawnPlayer (mapthing_t* mthing)
 			p->cards[i] = true;
 		}
 	}
+ 
 
     if (mthingtype-1 == consoleplayer) {
 		// wake up the status bar
+	 
 		ST_Start ();
+		 
+
 		// wake up the heads up text
 		HU_Start ();		
     }
+ 
 }
 
 
@@ -802,7 +808,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
 // The fields of the mapthing should
 // already be in host byte order.
 //
-void P_SpawnMapThing (mapthing_t* mthing)
+void P_SpawnMapThing (mapthing_t* mthing, int key)
 {
     int			i;
     int			bit;
@@ -825,16 +831,20 @@ void P_SpawnMapThing (mapthing_t* mthing)
 			memcpy (deathmatch_p, &mthing, sizeof(mthing));
 			deathmatch_p++;
 		}
+	 
 		return;
     }
-	
+
     // check for players specially
     if (mthingtype <= 4) {
 		// save spots for respawning in network games
+ 
 		playerstarts[mthingtype-1] = *mthing;
 		if (!deathmatch) {
 			P_SpawnPlayer(mthing);
 		}
+ 
+
 		return;
     }
 
@@ -850,6 +860,7 @@ void P_SpawnMapThing (mapthing_t* mthing)
 		bit = 1 << (gameskill - 1);
 	}
 	if (!(mthingoptions & bit)) {
+	 
 		return;
 	}
     // find which type to spawn
@@ -858,7 +869,8 @@ void P_SpawnMapThing (mapthing_t* mthing)
 			break;
 		}
 	}
-    
+
+
 	if (i == NUMMOBJTYPES) {
 		I_Error("P_SpawnMapThing: Unknown type %i at (%i, %i)",
 			mthingtype,
@@ -884,8 +896,10 @@ void P_SpawnMapThing (mapthing_t* mthing)
 	} else {
 		z = ONFLOORZ;
 	}
+ 
+	// 55
+	mobjRef = P_SpawnMobj (x,y,z, i);
 
-    mobjRef = P_SpawnMobj (x,y,z, i);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
     mobj->spawnpoint = copyofthing;
 
@@ -900,6 +914,8 @@ void P_SpawnMapThing (mapthing_t* mthing)
     
 	if (mthingoptions & MTF_AMBUSH)
 		mobj->flags |= MF_AMBUSH;
+
+ 
 }
 
 

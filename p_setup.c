@@ -38,7 +38,7 @@
 #include "doomstat.h"
 
 
-void    P_SpawnMapThing(mapthing_t *    mthing);
+void    P_SpawnMapThing(mapthing_t *    mthing, int key);
 
 //
 // MAP related Lookup tables.
@@ -344,18 +344,24 @@ void P_LoadNodes(int lump)
 	node_t*		nodes;
 	MEMREF		dataRef;
 	mapnode_t	currentdata;
+ 
 
+
+		fixed_t	bbox[2][4];
+
+	// If NF_SUBSECTOR its a subsector.
+	unsigned short children[2];
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 	nodesRef = Z_MallocEMSNew (numnodes * sizeof(node_t), PU_LEVEL, 0, ALLOC_TYPE_NODES);
 	W_CacheLumpNumCheck(lump, 7);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	data = (mapnode_t *)Z_LoadBytesFromEMS(dataRef);
 
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 
 	for (i = 0; i < numnodes; i++) {
+		data = (mapnode_t *)Z_LoadBytesFromEMS(dataRef);
 		currentdata = data[i];
+		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 		no = &nodes[i];
 
 		no->x = SHORT(currentdata.x) << FRACBITS;
@@ -367,9 +373,8 @@ void P_LoadNodes(int lump)
 			for (k = 0; k < 4; k++)
 				no->bbox[j][k] = SHORT(currentdata.bbox[j][k]) << FRACBITS;
 		}
-		Z_RefIsActive(nodesRef);
-		data = (mapnode_t *)Z_LoadBytesFromEMS(dataRef);
-		Z_RefIsActive(dataRef);
+		//Z_RefIsActive(nodesRef);
+		//Z_RefIsActive(dataRef);
 	}
 
 	Z_FreeEMSNew(dataRef);
@@ -387,13 +392,14 @@ void P_LoadThings(int lump)
 	int                 numthings;
 	boolean             spawn;
 	MEMREF				dataRef;
-
+	node_t*				nodes;
 	W_CacheLumpNumCheck(lump, 8);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
 
 	for (i = 0; i < numthings; i++) {
+		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 		data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);
 		mt = &data[i];
 		spawn = true;
@@ -425,11 +431,8 @@ void P_LoadThings(int lump)
 		mt->type = SHORT(mt->type);
 		mt->options = SHORT(mt->options);
 
-		P_SpawnMapThing(mt);
-		if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
-			I_Error("found on start %i %i", i, numthings);
-		}
-
+		P_SpawnMapThing(mt, i);
+	 
 
 	}
 
@@ -796,6 +799,7 @@ void P_GroupLines(void)
 }
 
 
+
 //
 // P_SetupLevel
 //
@@ -809,10 +813,8 @@ P_SetupLevel
 	int         i;
 	char        lumpname[9];
 	int         lumpnum;
-	subsector_t* subsectors;
 
-	side_t* sides;
-
+	byte* nodes;
 
 	totalkills = totalitems = totalsecret = wminfo.maxfrags = 0;
 	wminfo.partime = 180;
@@ -878,27 +880,16 @@ P_SetupLevel
 
 	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
 	P_LoadSubsectors(lumpnum + ML_SSECTORS);
-	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
-		I_Error("found on start even more first");
-	}
-
 	P_LoadNodes(lumpnum + ML_NODES);
-	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
-		I_Error("found on start even more first b");
-	}
+	nodes = Z_LoadBytesFromEMS(nodesRef);
+
+
 
 	P_LoadSegs(lumpnum + ML_SEGS);
-	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
-		I_Error("found on start even more first c");
-	}
 
 
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 12);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
-
-	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
-		I_Error("found on start more first");
-	}
 
 	P_GroupLines();
 
@@ -907,11 +898,6 @@ P_SetupLevel
 	bodyqueslot = 0;
 	deathmatch_p = deathmatchstarts;
 
-
-	
-	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
-		I_Error("found on start first");
-	}
 
 	P_LoadThings(lumpnum + ML_THINGS);
 

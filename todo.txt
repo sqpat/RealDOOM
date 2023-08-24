@@ -1,7 +1,4 @@
-SIZES
-        entries   bytes used
-vertexes: 896  7168
-segs:    1371  27420
+ 
 
 CURRENT TODO
   FRAME 1595 z a bit different
@@ -15,12 +12,10 @@ IMPROVEMENTS
 
 MEMORY IMPROVEMENTS
  - segs to conventional after all?
- - sector->special from short to char ( 8 bit)
- - thinker-> function to a char  (8 bit)
+ - more shorts to ints in lines etc
 
-- blocklinks is 2000 size. Figure out a more proper number?
-- how big should thinkerlist be? move to heap?
- 
+
+
 
 
 ... BUGS TO FIX
@@ -29,14 +24,23 @@ MEMORY IMPROVEMENTS
 
 
 
-x remaining cachelumpName stuff
 TODO 
-- remove sound
-- fix face compositing
-- sectors
+- fix timedemo 1 
 
-- remove code
+~ remove sound
+? fix face compositing
+ ? not happening anymore
+- save branch
+3 sectors
+- save branch
+
+- make titlepic work with > 4 pages?
+
+4 remove code
+ - remove non ems Z_MALLOC
+ - remove mroe sound stuff
  - netplay?
+ - 
 
 
 - types.h
@@ -45,60 +49,8 @@ TODO
 MEMORY IDEAS
 
 
- 
-  
-DEBUG
- - timedemo demo 3 with 12 pages:
-  - 12 is a little off. 12% instead of 14% health at the end
-    - figure that out. when is damage dealt, work back, figure out player position and random seed
-    - segs out of EMS potentially...?
+TESTING:
+ - finale  
+ - viles and other enemy (heads, head spawns)
 
-
- - braintargets[braintargeton]
- - find all uses of P_SpawnMobj
- - P_BlockThingsIterator
-    - consider this in a static spot...
-
-2 sectors to sector refs, etc?
-
-
-sound originRef thing...
- - needs ref, x, y
-  ? maybe inner takes x/y and you can pass in null for the degen case
- 
- 
-NOW (fix memory issues)
-
-  ? change mobj-> player to a memref?
-   ? is player z_malloced?
-   - make it static, etc... then a pointer is ok
-    - change linebuffer into indices instead of real pointers.
-     - and all uses
-^^^^ HERE
-  - then 3
- 
- - THEN all wad lumps to ems
-
- 
-- segs, etc to ems
- (line first?)
-
-
-
-TODO vileobj pointer (and test)
-TODO test braintargets
 ? change crossbspnode etc to use indices not addressesma
-
-
-IDEA: 
-  x move other memrefs out to static byte arrays. like maybe segs. see if it crashes then
-    x didnt work
-  - try to store copy of nodes, etc before page out then again in page in? or after game start and during render?
-    - does it change? 
-      - nodes: no
-      ? vertexes?
-  - (remember to move demo back)
-
- 
-
-

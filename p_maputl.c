@@ -428,6 +428,7 @@ P_SetThingPosition (MEMREF thingRef)
 
     // link into subsector
     subsecnum = R_PointInSubsector (thing->x,thing->y);
+
 	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
 
@@ -451,6 +452,7 @@ P_SetThingPosition (MEMREF thingRef)
 
 		sectors[subsectorsecnum].thinglistRef = thingRef;
     }
+
 
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     

@@ -153,6 +153,7 @@ void S_SetMusicVolume(int volume)
 
 void S_StopMusic(void)
 {
+	return;
     if (mus_playing)
     {
         if (mus_paused)
@@ -160,10 +161,9 @@ void S_StopMusic(void)
 
         I_StopSong(mus_playing->handle);
         I_UnRegisterSong(mus_playing->handle);
-        Z_ChangeTag(mus_playing->data, PU_CACHE);
+        //Z_ChangeTag(mus_playing->data, PU_CACHE);
 
-        _dpmi_unlockregion(mus_playing->data,
-                           lumpinfo[mus_playing->lumpnum].size);
+        //_dpmi_unlockregion(mus_playing->data, lumpinfo[mus_playing->lumpnum].size);
 
         mus_playing->data = 0;
         mus_playing = 0;
@@ -177,6 +177,7 @@ S_ChangeMusic
 {
     musicinfo_t*	music;
     char		namebuf[9];
+	return;
 
     if (snd_MusicDevice == snd_Adlib && musicnum == mus_intro)
     {
@@ -205,9 +206,9 @@ S_ChangeMusic
     }
 
     // load & register it
-    music->data = (void *) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
+    //music->data = (void *) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
     music->handle = I_RegisterSong(music->data);
-    _dpmi_lockregion(music->data, lumpinfo[music->lumpnum].size);
+    //_dpmi_lockregion(music->data, lumpinfo[music->lumpnum].size);
 
     // play it
     I_PlaySong(music->handle, looping);
@@ -220,16 +221,17 @@ S_ChangeMusic
 //
 void S_StartMusic(int m_id)
 {
+	return;
     S_ChangeMusic(m_id, false);
 }
 
 void S_StopChannel(int cnum)
 {
-
     int		i;
 	channel_t* channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
 
     channel_t*	c = &channels[cnum];
+	return;
 
     if (c->sfxinfo)
     {
@@ -281,7 +283,7 @@ S_AdjustSoundParams
     angle_t	angle;
 	mobj_t* listener = (mobj_t*)Z_LoadBytesFromEMS(listenerRef);
 	mobj_t* source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
-
+	return 0;
     // calculate the distance to sound origin
     //  and clip it if necessary
     adx = abs(listener->x - source->x);
@@ -352,6 +354,7 @@ void S_SetSfxVolume(int volume)
 //
 void S_PauseSound(void)
 {
+	return;
     if (mus_playing && !mus_paused)
     {
 	I_PauseSong(mus_playing->handle);
@@ -361,6 +364,7 @@ void S_PauseSound(void)
 
 void S_ResumeSound(void)
 {
+	return;
     if (mus_playing && mus_paused)
     {
 	I_ResumeSong(mus_playing->handle);
@@ -370,9 +374,9 @@ void S_ResumeSound(void)
 
 void S_StopSound(MEMREF originRef)
 {
-
     int cnum;
 	channel_t* channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
+	return;
 
     for (cnum=0 ; cnum<numChannels ; cnum++)
     {
@@ -447,6 +451,9 @@ void S_StartSoundAtVolume
   channel_t* channels;
   mobj_t*	playerMo;
   
+
+  return;
+
 	
 	// Debug.
 	/*fprintf( stderr,
@@ -532,9 +539,9 @@ void S_StartSoundAtVolume
 
 	// cache data if necessary
 	if (!sfx->data) {
-		sfx->data = (void *) W_CacheLumpNum(sfx->lumpnum, PU_MUSIC);
+		//sfx->data = (void *) W_CacheLumpNum(sfx->lumpnum, PU_MUSIC);
 
-		_dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
+		//_dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
 		// fprintf( stderr,
 		//	     "S_StartSoundAtVolume: loading %d (lump %d) : 0x%x\n",
 		//       sfx_id, sfx->lumpnum, (int)sfx->data );
@@ -667,7 +674,8 @@ void S_UpdateSounds(MEMREF listenerRef)
     //mobj_t*	listener = (mobj_t*)listener_p;
 	channel_t* channels;
 
-    
+	return;
+
     // Clean up unused data.
     if (gametic > nextcleanup)
     {
@@ -678,9 +686,8 @@ void S_UpdateSounds(MEMREF listenerRef)
 	    {
 		if (--S_sfx[i].usefulness == -1)
 		{
-		    Z_ChangeTag(S_sfx[i].data, PU_CACHE);
-                    _dpmi_unlockregion(S_sfx[i].data,
-                                       lumpinfo[S_sfx[i].lumpnum].size);
+		    //Z_ChangeTag(S_sfx[i].data, PU_CACHE);
+                    //_dpmi_unlockregion(S_sfx[i].data, lumpinfo[S_sfx[i].lumpnum].size);
 		    S_sfx[i].data = 0;
 		}
 	    }

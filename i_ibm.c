@@ -1207,9 +1207,9 @@ byte *I_ZoneBase(int *size)
     do
     {
         heap -= 0x20000; // leave 128k alone
-        if (heap > 0x800000) // cap at 4M
+        if (heap > 0xc00000) // cap at 4M
         {
-            heap = 0x800000;
+            heap = 0xc00000;
         }
         ptr = malloc(heap);
     } while (!ptr);

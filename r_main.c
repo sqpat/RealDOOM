@@ -814,7 +814,7 @@ unsigned R_PointInSubsector
     int		side;
     int		nodenum;
 	node_t* nodes;
-
+	int i = 0;
     // single subsector is a special case
 	if (!numnodes) {
 		return 0;
@@ -822,11 +822,17 @@ unsigned R_PointInSubsector
 		
     nodenum = numnodes-1;
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
-    while (! (nodenum & NF_SUBSECTOR) ) {
+	while (! (nodenum & NF_SUBSECTOR) ) {
 		node = &nodes[nodenum];
 		side = R_PointOnSide (x, y, node);
 		nodenum = node->children[side];
+		i++;
+		if (i > 1000) {
+			I_Error("inf in here? %i %i", x >> FRACBITS, y >> FRACBITS);
+		}
+
     }
+
 	return nodenum & ~NF_SUBSECTOR;
 }
 

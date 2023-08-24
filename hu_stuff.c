@@ -28,6 +28,9 @@
 #include "s_sound.h"
 
 #include "doomstat.h"
+#include "r_state.h"
+#include "i_system.h"
+#include "r_bsp.h"
 
 // Data.
 #include "dstrings.h"
@@ -385,10 +388,11 @@ void HU_Init(void)
     int		j;
     char	buffer[9];
 
-    if (french)
-	shiftxform = french_shiftxform;
-    else
-	shiftxform = english_shiftxform;
+	if (french) {
+		shiftxform = french_shiftxform;
+	} else {
+		shiftxform = english_shiftxform;
+	}
 
     // load the heads-up font
     j = HU_FONTSTART;
@@ -396,6 +400,10 @@ void HU_Init(void)
 		sprintf(buffer, "STCFN%.3d", j++);
 		hu_fontRef[i] = W_CacheLumpNameEMS(buffer, PU_STATIC);
     }
+
+
+	//I_Error("value %i", hu_fontRef[0]);
+
 
 }
 
@@ -409,9 +417,13 @@ void HU_Start(void)
 
     int		i;
     char*	s;
-	patch_t* hu_font0 = Z_LoadBytesFromEMS(hu_fontRef[0]);
-	int HU_TITLEY = (167 - SHORT(hu_font0->height));
-	int HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * (SHORT(hu_font0->height) + 1));
+	patch_t* hu_font0; 
+	int HU_TITLEY;
+	int HU_INPUTY;
+
+	hu_font0 = (patch_t*) Z_LoadBytesFromEMS(hu_fontRef[0]);
+	HU_TITLEY = (167 - SHORT(hu_font0->height));
+	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * (SHORT(hu_font0->height) + 1));
 
     if (headsupactive)
 		HU_Stop();
@@ -422,7 +434,9 @@ void HU_Start(void)
     message_nottobefuckedwith = false;
     chat_on = false;
     // create the message widget
-    HUlib_initSText(&w_message,
+
+	
+	HUlib_initSText(&w_message,
 		    HU_MSGX, HU_MSGY, HU_MSGHEIGHT,
 		    hu_fontRef,
 		    HU_FONTSTART, &message_on);
@@ -433,6 +447,8 @@ void HU_Start(void)
 		       hu_fontRef,
 		       HU_FONTSTART);
     
+
+
     if (commercial)
     {
 #if (EXE_VERSION < EXE_VERSION_FINAL)
@@ -468,8 +484,9 @@ void HU_Start(void)
 		    HU_FONTSTART, &chat_on);
 
     // create the inputbuffer widgets
-    for (i=0 ; i<MAXPLAYERS ; i++)
-	HUlib_initIText(&w_inputbuffer[i], 0, 0, 0, 0, &always_off);
+	for (i = 0; i < MAXPLAYERS; i++) {
+		HUlib_initIText(&w_inputbuffer[i], 0, 0, 0, 0, &always_off);
+	}
 
     headsupactive = true;
 

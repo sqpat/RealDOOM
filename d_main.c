@@ -443,15 +443,6 @@ void D_DoomLoop (void)
 			
 			G_Ticker ();
 
-
-			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
-			check = &lines[0];
-			if (check->sidenum[1] == 21587) {
-				I_Error("found on tick %i", gametic);
-			}
-
-
-
 			gametic++;
             maketic++;
 
