@@ -38,8 +38,8 @@ byte*           save_p;
 //
 void P_ArchivePlayers (void)
 {
-    int		i;
-    int		j;
+    int32_t		i;
+    int32_t		j;
     player_t*	dest;
 		
     for (i=0 ; i<MAXPLAYERS ; i++)
@@ -70,8 +70,8 @@ void P_ArchivePlayers (void)
 //
 void P_UnArchivePlayers (void)
 {
-    int		i;
-    int		j;
+    int32_t		i;
+    int32_t		j;
 	
     for (i=0 ; i<MAXPLAYERS ; i++)
     {
@@ -105,16 +105,16 @@ void P_UnArchivePlayers (void)
 //
 void P_ArchiveWorld (void)
 {
-    int			i;
-    int			j;
+    int32_t			i;
+    int32_t			j;
     sector_t*		sec;
     line_t*		li;
     side_t*		si;
-    short*		put;
+    int16_t*		put;
 	side_t* sides;
 	line_t* lines;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	put = (short *)save_p;
+	put = (int16_t *)save_p;
     
     // do sectors
     for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
@@ -161,16 +161,16 @@ void P_ArchiveWorld (void)
 //
 void P_UnArchiveWorld (void)
 {
-    int			i;
-    int			j;
+    int32_t			i;
+    int32_t			j;
     sector_t*		sec;
     line_t*		li;
     side_t*		si;
-    short*		get;
+    int16_t*		get;
 	side_t* sides;
 	line_t* lines;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	get = (short *)save_p;
+	get = (int16_t *)save_p;
 
     // do sectors
     for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
@@ -368,7 +368,7 @@ void P_ArchiveSpecials (void)
     lightflash_t*	flash;
     strobe_t*		strobe;
     glow_t*		glow;
-    int			i;
+    int32_t			i;
 	void*		thinkerobj;
 	
     // save off the current thinkers

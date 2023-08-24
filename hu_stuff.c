@@ -63,9 +63,9 @@ boolean			message_dontfuckwithme;
 static boolean		message_nottobefuckedwith;
 
 static hu_stext_t	w_message;
-static int		message_counter;
+static int32_t		message_counter;
 
-extern int		showMessages;
+extern int32_t		showMessages;
 extern boolean		automapactive;
 
 
@@ -74,7 +74,7 @@ extern boolean		automapactive;
 // The actual names can be found in DStrings.h.
 //
 
-char*	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
+int8_t*	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
 {
 
     HUSTR_E1M1,
@@ -128,7 +128,7 @@ char*	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
     "NEWLEVEL"
 };
 
-char*	mapnames2[] =	// DOOM 2 map names.
+int8_t*	mapnames2[] =	// DOOM 2 map names.
 {
     HUSTR_1,
     HUSTR_2,
@@ -167,7 +167,7 @@ char*	mapnames2[] =	// DOOM 2 map names.
 };
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-char*	mapnamesp[] =	// Plutonia WAD map names.
+int8_t*	mapnamesp[] =	// Plutonia WAD map names.
 {
     PHUSTR_1,
     PHUSTR_2,
@@ -206,7 +206,7 @@ char*	mapnamesp[] =	// Plutonia WAD map names.
 };
 
 
-char *mapnamest[] =	// TNT WAD map names.
+int8_t *mapnamest[] =	// TNT WAD map names.
 {
     THUSTR_1,
     THUSTR_2,
@@ -246,9 +246,9 @@ char *mapnamest[] =	// TNT WAD map names.
 #endif
 
 
-const char*	shiftxform;
+const int8_t*	shiftxform;
 
-const char french_shiftxform[] =
+const int8_t french_shiftxform[] =
 {
     0,
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -290,7 +290,7 @@ const char french_shiftxform[] =
 
 };
 
-const char english_shiftxform[] =
+const int8_t english_shiftxform[] =
 {
 
     0,
@@ -332,7 +332,7 @@ const char english_shiftxform[] =
     '{', '|', '}', '~', 127
 };
 
-char frenchKeyMap[128]=
+int8_t frenchKeyMap[128]=
 {
     0,
     1,2,3,4,5,6,7,8,9,10,
@@ -347,7 +347,7 @@ char frenchKeyMap[128]=
     'P','A','R','S','T','U','V','Z','X','Y','W','^','\\','$','^',127
 };
 
-char ForeignTranslation(unsigned char ch)
+int8_t ForeignTranslation(uint8_t ch)
 {
     return ch < 128 ? frenchKeyMap[ch] : ch;
 }
@@ -355,9 +355,9 @@ char ForeignTranslation(unsigned char ch)
 void HU_Init(void)
 {
 
-    int		i;
-    int		j;
-    char	buffer[9];
+    int32_t		i;
+    int32_t		j;
+	int8_t	buffer[9];
 
 	if (french) {
 		shiftxform = french_shiftxform;
@@ -382,15 +382,15 @@ void HU_Init(void)
 void HU_Start(void)
 {
 
-    int		i;
-    char*	s;
+    int32_t		i;
+    int8_t*	s;
 	patch_t* hu_font0; 
-	int HU_TITLEY;
-	int HU_INPUTY;
+	int32_t HU_TITLEY;
+	int32_t HU_INPUTY;
 
 	hu_font0 = (patch_t*) Z_LoadBytesFromEMS(hu_fontRef[0]);
-	HU_TITLEY = (167 - SHORT(hu_font0->height));
-	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * (SHORT(hu_font0->height) + 1));
+	HU_TITLEY = (167 - (hu_font0->height));
+	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * ((hu_font0->height) + 1));
 
     plr = &players[consoleplayer];
     message_on = false;
@@ -464,8 +464,8 @@ void HU_Erase(void)
 void HU_Ticker(void)
 {
 
-	int i, rc;
-	char c;
+	int32_t i, rc;
+	int8_t c;
 
 	// tick down message counter if message is up
 	if (message_counter && !--message_counter)
@@ -498,17 +498,17 @@ void HU_Ticker(void)
 boolean HU_Responder(event_t *ev)
 {
 
-	static char lastmessage[HU_MAXLINELENGTH + 1];
-	char *macromessage;
+	static int8_t lastmessage[HU_MAXLINELENGTH + 1];
+	int8_t *macromessage;
 	boolean eatkey = false;
 	static boolean shiftdown = false;
 	static boolean altdown = false;
-	unsigned char c;
-	int i;
+	uint8_t c;
+	int32_t i;
 
  
 
-	static int num_nobrainers = 0;
+	static int32_t num_nobrainers = 0;
 
 	if (ev->data1 == KEY_RSHIFT)
 	{

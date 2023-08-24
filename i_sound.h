@@ -37,6 +37,6 @@
 #define snd_ENSONIQ 10
 #define snd_CODEC 11
 #define NUM_SCARDS 12
-typedef unsigned char cardenum_t;
+typedef uint8_t cardenum_t;
 
 #endif

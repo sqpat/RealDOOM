@@ -220,7 +220,7 @@ typedef struct mobj_s
     MEMREF	bprevRef;
     
 	// added secnum, because subsecnum is mostly used to look this up, so it seems like a worthwhile cache.
-	short secnum;
+	int16_t secnum;
 
     // The closest interval over all contacted Sectors.
     fixed_t		floorz;
@@ -236,19 +236,19 @@ typedef struct mobj_s
     fixed_t		momz;
 
     // If == validcount, already checked.
-    int			validcount;
+    int32_t			validcount;
 
     mobjtype_t		type;
     mobjinfo_t*		info;	// &mobjinfo[mobj->type]
     
-    int			tics;	// state tic counter
+    int32_t			tics;	// state tic counter
     state_t*		state;
-    int			flags;
-    int			health;
+    int32_t			flags;
+    int32_t			health;
 
     // Movement direction, movement generation (zig-zagging).
-    int			movedir;	// 0-7
-    int			movecount;	// when 0, select a new dir
+    int32_t			movedir;	// 0-7
+    int32_t			movecount;	// when 0, select a new dir
 
     // Thing being chased/attacked (or NULL),
     // also the originator for missiles.
@@ -256,18 +256,18 @@ typedef struct mobj_s
 
     // Reaction time: if non 0, don't attack yet.
     // Used by player to freeze a bit after teleporting.
-    char			reactiontime;   
+	int8_t			reactiontime;
 
     // If >0, the target will be chased
     // no matter what (even if shot)
-    int			threshold;
+    int32_t			threshold;
 
     // Additional info record for player avatars only.
     // Only valid if type == MT_PLAYER
     struct player_s*	player;
 
     // Player number last looked for.
-    int			lastlook;	
+    int32_t			lastlook;	
 
     // For nightmare respawn.
     mapthing_t		spawnpoint;	

@@ -45,11 +45,11 @@ extern MEMREF		spritetopoffsetRef;
 //extern MEMREF		colormapsRef;
 extern lighttable_t* colormaps;
 
-extern int		viewwidth;
-extern int		scaledviewwidth;
-extern int		viewheight;
+extern int32_t		viewwidth;
+extern int32_t		scaledviewwidth;
+extern int32_t		viewheight;
 
-extern int		firstflat;
+extern int32_t		firstflat;
 
 // for global animation
 extern MEMREF	flattranslationRef;	
@@ -57,42 +57,42 @@ extern MEMREF	texturetranslationRef;
 
 
 // Sprite....
-extern int		firstspritelump;
-extern int		lastspritelump;
-extern int		numspritelumps;
+extern int32_t		firstspritelump;
+extern int32_t		lastspritelump;
+extern int32_t		numspritelumps;
 
 
 
 //
 // Lookup tables for map data.
 //
-extern int		numsprites;
+extern int32_t		numsprites;
 extern MEMREF	spritesRef;
 
-extern int		numvertexes;
+extern int32_t		numvertexes;
 //extern vertex_t vertexes[946];
 extern MEMREF	vertexesRef;
 
-extern int		numsegs;
+extern int32_t		numsegs;
 extern MEMREF		segsRef;
 
-extern int		numsectors;
+extern int32_t		numsectors;
 extern MEMREF	sectorsRef;
 
-extern int		numsubsectors;
+extern int32_t		numsubsectors;
 extern MEMREF	subsectorsRef;
 
-extern int		numnodes;
+extern int32_t		numnodes;
 extern MEMREF    nodesRef;
 
 
-extern int		numlines;
+extern int32_t		numlines;
 extern MEMREF   linesRef;
 
-extern int		numsides;
+extern int32_t		numsides;
 extern MEMREF       sidesRef;
 
-//extern short*	linebuffer;
+//extern int16_t*	linebuffer;
 extern MEMREF          linebufferRef;
 
 
@@ -111,7 +111,7 @@ extern player_t*	viewplayer;
 extern angle_t		clipangle;
 extern angle_t fieldofview;
 
-extern int		viewangletox[FINEANGLES/2];
+extern int32_t		viewangletox[FINEANGLES/2];
 extern angle_t		xtoviewangle[SCREENWIDTH+1];
 //extern fixed_t		finetangent[FINEANGLES/2];
 
@@ -121,7 +121,7 @@ extern angle_t		rw_normalangle;
 
 
 // angle to line origin
-extern int		rw_angle1;
+extern int32_t		rw_angle1;
 
 
 extern visplane_t*	floorplane;

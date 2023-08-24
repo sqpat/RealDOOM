@@ -48,8 +48,8 @@ visplane_t*		ceilingplane;
 
 // ?
 #define MAXOPENINGS	SCREENWIDTH*64
-short			openings[MAXOPENINGS];
-short*			lastopening;
+int16_t			openings[MAXOPENINGS];
+int16_t*			lastopening;
 
 
 //
@@ -57,15 +57,15 @@ short*			lastopening;
 //  floorclip starts out SCREENHEIGHT
 //  ceilingclip starts out -1
 //
-short			floorclip[SCREENWIDTH];
-short			ceilingclip[SCREENWIDTH];
+int16_t			floorclip[SCREENWIDTH];
+int16_t			ceilingclip[SCREENWIDTH];
 
 //
 // spanstart holds the start of a plane span
 // initialized to 0 at start
 //
-int			spanstart[SCREENHEIGHT];
-int			spanstop[SCREENHEIGHT];
+int32_t			spanstart[SCREENHEIGHT];
+int32_t			spanstop[SCREENHEIGHT];
 
 //
 // texture mapping
@@ -110,20 +110,20 @@ void R_InitPlanes (void)
 //
 void
 R_MapPlane
-( int		y,
-  int		x1,
-  int		x2 )
+( int32_t		y,
+  int32_t		x1,
+  int32_t		x2 )
 {
     angle_t	angle;
     fixed_t	distance;
     fixed_t	length;
-    unsigned	index;
+	uint32_t	index;
 	
 #ifdef RANGECHECK
     if (x2 < x1
 	|| x1<0
 	|| x2>=viewwidth
-	|| (unsigned)y>viewheight)
+	|| (uint32_t)y>viewheight)
     {
 	I_Error ("R_MapPlane: %i, %i at %i",x1,x2,y);
     }
@@ -175,7 +175,7 @@ R_MapPlane
 //
 void R_ClearPlanes (void)
 {
-    int		i;
+    int32_t		i;
     angle_t	angle;
     
     // opening / clipping determination
@@ -208,8 +208,8 @@ void R_ClearPlanes (void)
 visplane_t*
 R_FindPlane
 ( fixed_t	height,
-  int		picnum,
-  int		lightlevel )
+  int32_t		picnum,
+  int32_t		lightlevel )
 {
     visplane_t*	check;
 	
@@ -256,14 +256,14 @@ R_FindPlane
 visplane_t*
 R_CheckPlane
 ( visplane_t*	pl,
-  int		start,
-  int		stop )
+  int32_t		start,
+  int32_t		stop )
 {
-    int		intrl;
-    int		intrh;
-    int		unionl;
-    int		unionh;
-    int		x;
+    int32_t		intrl;
+    int32_t		intrh;
+    int32_t		unionl;
+    int32_t		unionh;
+    int32_t		x;
 	
     if (start < pl->minx)
     {
@@ -324,11 +324,11 @@ R_CheckPlane
 void R_DrawPlanes (void)
 {
     visplane_t*		pl;
-    int			light;
-    int			x;
-    int			stop;
-    int			angle;
-	int * flattranslation;
+    int32_t			light;
+    int32_t			x;
+    int32_t			stop;
+    int32_t			angle;
+	int32_t * flattranslation;
 	byte t1, b1, t2, b2;
 
 #ifdef RANGECHECK

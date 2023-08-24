@@ -43,8 +43,8 @@
 
 // a weapon is found with two clip loads,
 // a big item has five clip loads
-int	maxammo[NUMAMMO] = {200, 50, 300, 50};
-int	clipammo[NUMAMMO] = {10, 4, 20, 1};
+int32_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
+int32_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
 
 
 //
@@ -62,9 +62,9 @@ boolean
 P_GiveAmmo
 ( player_t*	player,
   ammotype_t	ammo,
-  int		num )
+  int32_t		num )
 {
-    int		oldammo;
+    int32_t		oldammo;
 	
     if (ammo == am_noammo)
 	return false;
@@ -193,7 +193,7 @@ P_GiveWeapon
 boolean
 P_GiveBody
 ( player_t*	player,
-  int		num )
+  int32_t		num )
 {
 	mobj_t* playerMo;
     if (player->health >= MAXHEALTH)
@@ -219,9 +219,9 @@ P_GiveBody
 boolean
 P_GiveArmor
 ( player_t*	player,
-  int		armortype )
+  int32_t		armortype )
 {
-    int		hits;
+    int32_t		hits;
 	
     hits = armortype*100;
     if (player->armorpoints >= hits)
@@ -257,7 +257,7 @@ P_GiveCard
 boolean
 P_GivePower
 ( player_t*	player,
-  int /*powertype_t*/	power )
+	int32_t /*powertype_t*/	power )
 {
 	mobj_t* playerMo;
     if (power == pw_invulnerability)
@@ -312,14 +312,14 @@ P_TouchSpecialThing
   MEMREF	toucherRef )
 {
     player_t*	player;
-    int		i;
+    int32_t		i;
     fixed_t	delta;
-    int		sound;
+    int32_t		sound;
 	mobj_t* playerMo;
 	mobj_t* special = (mobj_t*)Z_LoadBytesFromEMS(specialRef);
 	fixed_t specialz = special->z;
 	spritenum_t specialsprite = special->sprite;
-	int specialflags = special->flags;
+	int32_t specialflags = special->flags;
 	mobj_t* toucher = (mobj_t*)Z_LoadBytesFromEMS(toucherRef);
 		
     delta = specialz - toucher->z;
@@ -751,13 +751,13 @@ P_DamageMobj
 ( MEMREF	targetRef,
 	MEMREF	inflictorRef,
 	MEMREF	sourceRef,
-  int 		damage )
+	int32_t 		damage )
 {
-    unsigned	ang;
-    int		saved;
+	uint32_t	ang;
+    int32_t		saved;
     player_t*	player;
     fixed_t	thrust;
-    int		temp;
+    int32_t		temp;
 	mobj_t* source;
 	mobj_t* inflictor;
 	mobj_t* target;
@@ -765,8 +765,8 @@ P_DamageMobj
 	fixed_t inflictory;
 	fixed_t inflictorz;
 	sector_t* sectors;
-	short targetsecnum;
-	short targethealth;
+	int16_t targetsecnum;
+	int16_t targethealth;
 
 	if (targetRef == 0) {
 		I_Error("bad damage %i %i %i %i ", targetRef, inflictorRef, sourceRef, damage);

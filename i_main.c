@@ -24,8 +24,8 @@
 
 int
 main
-( int		argc,
-  char**	argv ) 
+( int32_t		argc,
+  int8_t**	argv ) 
 { 
     myargc = argc; 
     myargv = argv; 

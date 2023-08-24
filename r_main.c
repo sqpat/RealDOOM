@@ -42,27 +42,27 @@
 
 
 
-int			viewangleoffset;
+int32_t			viewangleoffset;
 
 // increment every time a check is made
-int			validcount = 1;		
+int32_t			validcount = 1;		
 
 
 lighttable_t*		fixedcolormap;
 extern lighttable_t**	walllights;
 
-int			centerx;
-int			centery;
+int32_t			centerx;
+int32_t			centery;
 
 fixed_t			centerxfrac;
 fixed_t			centeryfrac;
 fixed_t			projection;
 
 // just for profiling purposes
-int			framecount;	
+int32_t			framecount;	
 
-int			linecount;
-int			loopcount;
+int32_t			linecount;
+int32_t			loopcount;
 
 fixed_t			viewx;
 fixed_t			viewy;
@@ -76,7 +76,7 @@ fixed_t			viewsin;
 player_t*		viewplayer;
 
 // 0 = high, 1 = low
-int			detailshift;	
+int32_t			detailshift;	
 
 //
 // precalculated math tables
@@ -88,7 +88,7 @@ angle_t			fieldofview;
 // maps the visible view angles to screen X coordinates,
 // flattening the arc to a flat projection plane.
 // There will be many angles mapped to the same X. 
-int			viewangletox[FINEANGLES/2];
+int32_t			viewangletox[FINEANGLES/2];
 
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
@@ -111,7 +111,7 @@ lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
 lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
 
 // bumped light from gun blasts
-int			extralight;			
+int32_t			extralight;			
 
 
 
@@ -186,8 +186,8 @@ int
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,
-  short linev1Offset,
-	short linev2Offset)
+  int16_t linev1Offset,
+	int16_t linev2Offset)
 {
     fixed_t	lx;
     fixed_t	ly;
@@ -244,24 +244,7 @@ R_PointOnSegSide
     }
     // back side
     return 1;			
-}
-/*
-int
-SlopeDiv
-( unsigned	num,
-  unsigned	den)
-{
-    unsigned 	ans;
-    
-    if (den < 512)
-	return SLOPERANGE;
-
-    ans = (num<<3)/(den>>8);
-
-    return ans <= SLOPERANGE ? ans : SLOPERANGE;
-}
-*/
-
+} 
 // todo is this faster for 16 bit?
 #define SlopeDiv(num, den) ((den < 512) ? SLOPERANGE : min((num << 3) / (den >> 8), SLOPERANGE))
 
@@ -385,7 +368,7 @@ R_PointToDist
 ( fixed_t	x,
   fixed_t	y )
 {
-    int		angle;
+    int32_t		angle;
     fixed_t	dx;
     fixed_t	dy;
     fixed_t	temp;
@@ -422,12 +405,12 @@ R_PointToDist
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 {
     fixed_t		scale;
-    int			anglea;
-    int			angleb;
-    int			sinea;
-    int			sineb;
+    int32_t			anglea;
+    int32_t			angleb;
+    int32_t			sinea;
+    int32_t			sineb;
     fixed_t		num;
-    int			den;
+    int32_t			den;
 	 
 
     anglea = ANG90 + (visangle-viewangle);
@@ -463,9 +446,9 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 //
 void R_InitTextureMapping (void)
 {
-    int			i;
-    int			x;
-    int			t;
+    int32_t			i;
+    int32_t			x;
+    int32_t			t;
     fixed_t		focallength;
     
     // Use tangent table to generate viewangletox:
@@ -534,11 +517,11 @@ void R_InitTextureMapping (void)
 
 void R_InitLightTables (void)
 {
-    int		i;
-    int		j;
-    int		level;
-    int		startmap; 	
-    int		scale;
+    int32_t		i;
+    int32_t		j;
+    int32_t		level;
+    int32_t		startmap; 	
+    int32_t		scale;
     
     // Calculate the light levels to use
     //  for each level / distance combination.
@@ -571,14 +554,14 @@ void R_InitLightTables (void)
 // The change will take effect next refresh.
 //
 boolean		setsizeneeded;
-int		setblocks;
-int		setdetail;
+int32_t		setblocks;
+int32_t		setdetail;
 
 
 void
 R_SetViewSize
-( int		blocks,
-  int		detail )
+( int32_t		blocks,
+  int32_t		detail )
 {
     setsizeneeded = true;
     setblocks = blocks;
@@ -593,10 +576,10 @@ void R_ExecuteSetViewSize (void)
 {
     fixed_t	cosadj;
     fixed_t	dy;
-    int		i;
-    int		j;
-    int		level;
-    int		startmap; 	
+    int32_t		i;
+    int32_t		j;
+    int32_t		level;
+    int32_t		startmap; 	
 
     setsizeneeded = false;
 
@@ -686,8 +669,8 @@ void R_ExecuteSetViewSize (void)
 //
 // R_Init
 //
-extern int	detailLevel;
-extern int	screenblocks;
+extern int32_t	detailLevel;
+extern int32_t	screenblocks;
 
 
 
@@ -714,16 +697,16 @@ void R_Init (void)
 //
 // R_PointInSubsector
 //
-short
-unsigned R_PointInSubsector
+uint16_t
+ R_PointInSubsector
 ( fixed_t	x,
   fixed_t	y )
 {
     node_t*	node;
-    int		side;
-    int		nodenum;
+    int32_t		side;
+    int32_t		nodenum;
 	node_t* nodes;
-	int i = 0;
+	int32_t i = 0;
     // single subsector is a special case
 	if (!numnodes) {
 		return 0;
@@ -752,7 +735,7 @@ unsigned R_PointInSubsector
 //
 void R_SetupFrame (player_t* player)
 {		
-    int		i;
+    int32_t		i;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 
     viewplayer = player;

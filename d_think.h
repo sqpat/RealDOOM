@@ -53,7 +53,7 @@ typedef union
 //  an actor.
 //typedef actionf_t  think_t;
 
-typedef unsigned char  ENEMYTHINKFUNCTION;
+typedef uint8_t  ENEMYTHINKFUNCTION;
 
 
 #define ETF_NULL 0
@@ -132,8 +132,8 @@ typedef unsigned char  ENEMYTHINKFUNCTION;
 #define ETF_A_SpawnFly 73
 #define ETF_A_BrainExplode 74
 
-typedef unsigned short THINKERREF;
-typedef unsigned char  THINKFUNCTION;
+typedef uint16_t THINKERREF;
+typedef uint8_t  THINKFUNCTION;
 
 #define TF_NULL				0
 #define TF_MOBJTHINKER		1

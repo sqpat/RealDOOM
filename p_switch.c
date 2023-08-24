@@ -87,8 +87,8 @@ switchlist_t alphSwitchList[] =
     {"\0",		"\0",		0}
 };
 
-int		switchlist[MAXSWITCHES * 2];
-int		numswitches;
+int32_t		switchlist[MAXSWITCHES * 2];
+int32_t		numswitches;
 button_t        buttonlist[MAXBUTTONS];
 
 //
@@ -97,9 +97,9 @@ button_t        buttonlist[MAXBUTTONS];
 //
 void P_InitSwitchList(void)
 {
-    int		i;
-    int		index;
-    int		episode;
+    int32_t		i;
+    int32_t		index;
+    int32_t		episode;
 	
     episode = 1;
 
@@ -133,13 +133,13 @@ void P_InitSwitchList(void)
 //
 void
 P_StartButton
-( short linenum,
-	short linefrontsecnum,
+( int16_t linenum,
+	int16_t linefrontsecnum,
   bwhere_e	w,
-  int		texture,
-  int		time )
+  int32_t		texture,
+  int32_t		time )
 {
-    int		i;
+    int32_t		i;
 	sector_t* sectors;
     // See if button is already pressed
     for (i = 0;i < MAXBUTTONS;i++)
@@ -182,14 +182,14 @@ P_StartButton
 //
 void
 P_ChangeSwitchTexture
-( short linenum, short lineside0, short linespecial, short linefrontsecnum,
-  int 		useAgain )
+( int16_t linenum, int16_t lineside0, int16_t linespecial, int16_t linefrontsecnum,
+	int32_t 		useAgain )
 {
-    int     texTop;
-    int     texMid;
-    int     texBot;
-    int     i;
-    int     sound;
+	int32_t     texTop;
+	int32_t     texMid;
+	int32_t     texBot;
+	int32_t     i;
+	int32_t     sound;
 
  	line_t* line; 
 	side_t* sides;
@@ -263,19 +263,19 @@ P_ChangeSwitchTexture
 boolean
 P_UseSpecialLine
 ( MEMREF	thingRef,
-  short linenum,
-  int		side )
+  int16_t linenum,
+  int32_t		side )
 {               
 	mobj_t*	thing;
 
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* line = &lines[linenum];
 	
-	short linetag = line->tag;
-	short linespecial = line->special;
-	short lineflags = line->flags;
-	short linefrontsecnum = line->frontsecnum;
-	short lineside0 = line->sidenum[0];
+	int16_t linetag = line->tag;
+	int16_t linespecial = line->special;
+	int16_t lineflags = line->flags;
+	int16_t linefrontsecnum = line->frontsecnum;
+	int16_t lineside0 = line->sidenum[0];
  
     // Err...
     // Use the back sides of VERY SPECIAL lines...

@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
 
 //
 // Global parameters/defines.
@@ -66,7 +67,7 @@ enum { VERSION =  109 };
 
 #define	FRACBITS		16
 #define	FRACUNIT		(1<<FRACBITS)
-typedef int fixed_t;
+typedef int32_t fixed_t;
 
 
 // The maximum number of players, multiplayer/networking.
@@ -103,7 +104,7 @@ typedef enum
 #define sk_medium 2
 #define sk_hard 3
 #define sk_nightmare 4
-typedef unsigned char skill_t;
+typedef uint8_t skill_t;
 
 
 
@@ -120,7 +121,7 @@ typedef unsigned char skill_t;
     
 #define  NUMCARDS 6
     
-typedef unsigned char card_t;
+typedef uint8_t card_t;
 
 
 
@@ -142,7 +143,7 @@ typedef unsigned char card_t;
 
 #define wp_nochange 10
 
-typedef unsigned char weapontype_t;
+typedef uint8_t weapontype_t;
 
 // Ammunition types defined.
 #define am_clip 0	// Pistol / chaingun ammo.
@@ -152,7 +153,7 @@ typedef unsigned char weapontype_t;
 #define NUMAMMO 4
 #define am_noammo 5	// Unlimited for chainsaw / fist.	
 
-typedef unsigned char ammotype_t;
+typedef uint8_t ammotype_t;
 
 // Power up artifacts.
 #define pw_invulnerability 0
@@ -163,7 +164,7 @@ typedef unsigned char ammotype_t;
 #define pw_infrared 5
 #define NUMPOWERS 6
     
-typedef unsigned char powertype_t;
+typedef uint8_t powertype_t;
 
 
 
@@ -238,8 +239,6 @@ fixed_t	FixedDiv2 (fixed_t a, fixed_t b);
 	value	[eax]		\
 	modify exact [eax edx]
 
-#define SHORT(x)	(x)
-#define LONG(x)		(x)
 
 // DOOM basic types (boolean),
 //  and max/min values.

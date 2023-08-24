@@ -39,12 +39,12 @@
 //
 result_e
 T_MovePlane
-( short	secnum,
+( int16_t	secnum,
   fixed_t	speed,
   fixed_t	dest,
   boolean	crush,
-  int		floorOrCeiling,
-  int		direction )
+  int32_t		floorOrCeiling,
+  int32_t		direction )
 {
     boolean	flag;
     fixed_t	lastpos;
@@ -194,11 +194,11 @@ void T_MoveFloor(MEMREF memref)
 {
     result_e	res;
 	floormove_t* floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
-	short floorsecnum;
-	int floornewspecial;
+	int16_t floorsecnum;
+	int32_t floornewspecial;
 	floor_e floortype;
-	int floordirection;
-	short floortexture;
+	int32_t floordirection;
+	int16_t floortexture;
 	THINKERREF floorthinkerRef;
 	sector_t* sectors;
     res = T_MovePlane(floor->secnum,
@@ -253,13 +253,13 @@ void T_MoveFloor(MEMREF memref)
 int
 EV_DoFloor
 ( 
-	short linetag,
-	short linefrontsecnum,
+	int16_t linetag,
+	int16_t linefrontsecnum,
   floor_e	floortype )
 {
-    int			secnum;
-    int			rtn;
-    int			i;
+    int32_t			secnum;
+    int32_t			rtn;
+    int32_t			i;
     //sector_t*		sec;
     floormove_t*	floor;
 	MEMREF floorRef;
@@ -386,10 +386,10 @@ EV_DoFloor
 			break;
 
 		  case raiseToTexture: {
-			  int	minsize = MAXINT;
+			  int32_t	minsize = MAXINT;
 			  side_t* sides;
-			  short sidenum;
-			  short sidebottomtexture;
+			  int16_t sidenum;
+			  int16_t sidebottomtexture;
 				
 			  floor->direction = 1;
 			  floor->secnum = secnum;
@@ -424,7 +424,7 @@ EV_DoFloor
 	  
 		  case lowerAndChange:{
 
-			short sidenum;
+			int16_t sidenum;
 			side_t* sides;
 
 			floor->direction = -1;
@@ -475,35 +475,35 @@ EV_DoFloor
 //
 int
 EV_BuildStairs
-( short	linetag,
+( int16_t	linetag,
   stair_e	type )
 {
-    int			secnum;
-    int			height;
-    int			i;
-    int			newsecnum;
-    int			texture;
-    int			ok;
-    int			rtn;
+    int32_t			secnum;
+    int32_t			height;
+    int32_t			i;
+    int32_t			newsecnum;
+    int32_t			texture;
+    int32_t			ok;
+    int32_t			rtn;
     
     //sector_t*		sec;
-    short		tsecOffset;
+    int16_t		tsecOffset;
 
     floormove_t*	floor;
     
     fixed_t		stairsize;
     fixed_t		speed;
 	MEMREF floorRef;
-	short *linebuffer;
-	short linebufferOffset;
-	short linenum;
+	int16_t *linebuffer;
+	int16_t linebufferOffset;
+	int16_t linenum;
 	line_t* lines;
 	sector_t*  sectors;
 	fixed_t sectorceilingheight;
 	fixed_t sectorfloorheight;
-	short sectorfloorpic;
-	short sectorlinesoffset;
-	int sectorlinecount;
+	int16_t sectorfloorpic;
+	int16_t sectorlinesoffset;
+	int32_t sectorlinecount;
     secnum = -1;
     rtn = 0;
     while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
@@ -553,7 +553,7 @@ EV_BuildStairs
 			ok = 0;
 			for (i = 0;i < sectorlinecount;i++) {
 				linebufferOffset = sectorlinesoffset + i;
-				linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+				linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 				linenum = linebuffer[linebufferOffset];
 				lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 				if (!((&lines[linenum])->flags & ML_TWOSIDED)) {

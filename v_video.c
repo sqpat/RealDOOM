@@ -34,7 +34,7 @@
 // Each screen is [SCREENWIDTH*SCREENHEIGHT]; 
 byte*				screens[5];	
 MEMREF				screen4Ref;
-int				dirtybox[4]; 
+int32_t				dirtybox[4]; 
 
 
 
@@ -142,17 +142,17 @@ byte gammatable[5][256] =
 #define GC_COLORDONTCARE 7
 #define GC_BITMASK              8
 
-int	usegamma;
+int32_t	usegamma;
 			 
 //
 // V_MarkRect 
 // 
 void
 V_MarkRect
-( int		x,
-  int		y,
-  int		width,
-  int		height ) 
+( int32_t		x,
+  int32_t		y,
+  int32_t		width,
+  int32_t		height ) 
 { 
     M_AddToBox (dirtybox, x, y); 
     M_AddToBox (dirtybox, x+width-1, y+height-1); 
@@ -164,14 +164,14 @@ V_MarkRect
 // 
 void
 V_CopyRect
-( int		srcx,
-  int		srcy,
-  int		srcscrn,
-  int		width,
-  int		height,
-  int		destx,
-  int		desty,
-  int		destscrn ) 
+( int32_t		srcx,
+  int32_t		srcy,
+  int32_t		srcscrn,
+  int32_t		width,
+  int32_t		height,
+  int32_t		destx,
+  int32_t		desty,
+  int32_t		destscrn ) 
 { 
     byte*	src;
     byte*	dest; 
@@ -184,8 +184,8 @@ V_CopyRect
 	||destx<0||destx+width >SCREENWIDTH
 	|| desty<0
 	|| desty+height>SCREENHEIGHT 
-	|| (unsigned)srcscrn>4
-	|| (unsigned)destscrn>4)
+	|| (uint32_t)srcscrn>4
+	|| (uint32_t)destscrn>4)
     {
 	I_Error ("Bad V_CopyRect");
     }
@@ -210,28 +210,28 @@ V_CopyRect
 //
 void
 V_DrawPatch
-( int		x,
-  int		y,
-  int		scrn,
+( int32_t		x,
+  int32_t		y,
+  int32_t		scrn,
   patch_t*	patch ) 
 { 
 
-    int		count;
-    int		col; 
+    int32_t		count;
+    int32_t		col; 
     column_t*	column; 
     byte*	desttop;
     byte*	dest;
     byte*	source; 
-    int		w; 
+    int32_t		w; 
 	 
-    y -= SHORT(patch->topoffset); 
-    x -= SHORT(patch->leftoffset); 
+    y -= (patch->topoffset); 
+    x -= (patch->leftoffset); 
 #ifdef RANGECHECK 
     if (x<0
-	||x+SHORT(patch->width) >SCREENWIDTH
+	||x+(patch->width) >SCREENWIDTH
 	|| y<0
-	|| y+SHORT(patch->height)>SCREENHEIGHT 
-	|| (unsigned)scrn>4)
+	|| y+(patch->height)>SCREENHEIGHT 
+	|| (uint32_t)scrn>4)
     {
       fprintf( stderr, "Patch at %d,%d exceeds LFB\n", x,y );
       // No I_Error abort - what is up with TNT.WAD?
@@ -241,16 +241,16 @@ V_DrawPatch
 #endif 
  
     if (!scrn)
-	V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height)); 
+	V_MarkRect (x, y, (patch->width), (patch->height)); 
 
     col = 0; 
     desttop = screens[scrn]+y*SCREENWIDTH+x; 
 	 
-    w = SHORT(patch->width); 
+    w = (patch->width); 
 
     for ( ; col<w ; x++, col++, desttop++)
     { 
-	column = (column_t *)((byte *)patch + LONG(patch->columnofs[col])); 
+	column = (column_t *)((byte *)patch + (patch->columnofs[col])); 
  
 	// step through the posts in a column 
 	while (column->topdelta != 0xff ) 
@@ -258,7 +258,7 @@ V_DrawPatch
 
 		register const byte *source = (byte *)column + 3;
 		register byte *dest = desttop + column->topdelta * SCREENWIDTH;
-		register int count = column->length;
+		register int32_t count = column->length;
 
 		if ((count -= 4) >= 0)
 			do
@@ -294,28 +294,28 @@ V_DrawPatch
 //
 void
 V_DrawPatchFlipped
-( int		x,
-  int		y,
-  int		scrn,
+( int32_t		x,
+  int32_t		y,
+  int32_t		scrn,
   patch_t*	patch ) 
 { 
 
-    int		count;
-    int		col; 
+    int32_t		count;
+    int32_t		col; 
     column_t*	column; 
     byte*	desttop;
     byte*	dest;
     byte*	source; 
-    int		w; 
+    int32_t		w; 
 	 
-    y -= SHORT(patch->topoffset); 
-    x -= SHORT(patch->leftoffset); 
+    y -= (patch->topoffset); 
+    x -= (patch->leftoffset); 
 #ifdef RANGECHECK 
     if (x<0
-	||x+SHORT(patch->width) >SCREENWIDTH
+	||x+(patch->width) >SCREENWIDTH
 	|| y<0
-	|| y+SHORT(patch->height)>SCREENHEIGHT 
-	|| (unsigned)scrn>4)
+	|| y+(patch->height)>SCREENHEIGHT 
+	|| (uint32_t)scrn>4)
     {
       fprintf( stderr, "Patch origin %d,%d exceeds LFB\n", x,y );
       I_Error ("Bad V_DrawPatch in V_DrawPatchFlipped");
@@ -323,16 +323,16 @@ V_DrawPatchFlipped
 #endif 
  
     if (!scrn)
-	V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height)); 
+	V_MarkRect (x, y, (patch->width), (patch->height)); 
 
     col = 0; 
     desttop = screens[scrn]+y*SCREENWIDTH+x; 
 	 
-    w = SHORT(patch->width); 
+    w = (patch->width); 
 
     for ( ; col<w ; x++, col++, desttop++) 
     { 
-	column = (column_t *)((byte *)patch + LONG(patch->columnofs[w-1-col])); 
+	column = (column_t *)((byte *)patch + (patch->columnofs[w-1-col])); 
  
 	// step through the posts in a column 
 	while (column->topdelta != 0xff ) 
@@ -360,41 +360,41 @@ V_DrawPatchFlipped
 //
 void
 V_DrawPatchDirect
-( int		x,
-  int		y,
-  int		scrn,
+( int32_t		x,
+  int32_t		y,
+  int32_t		scrn,
   patch_t*	patch ) 
 {
-    int		count;
-    int		col; 
+    int32_t		count;
+    int32_t		col; 
     column_t*	column; 
     byte*	desttop;
     byte*	dest;
     byte*	source; 
-    int		w; 
+    int32_t		w; 
 	 
-    y -= SHORT(patch->topoffset); 
-    x -= SHORT(patch->leftoffset); 
+    y -= (patch->topoffset); 
+    x -= (patch->leftoffset); 
 
 #ifdef RANGECHECK 
     if (x<0
-	||x+SHORT(patch->width) >SCREENWIDTH
+	||x+(patch->width) >SCREENWIDTH
 	|| y<0
-	|| y+SHORT(patch->height)>SCREENHEIGHT 
-	|| (unsigned)scrn>4)
+	|| y+(patch->height)>SCREENHEIGHT 
+	|| (uint32_t)scrn>4)
     {
 	I_Error ("Bad V_DrawPatchDirect");
     }
 #endif 
  
-    //	V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height)); 
+    //	V_MarkRect (x, y, (patch->width), (patch->height)); 
     desttop = destscreen + y*SCREENWIDTH/4 + (x>>2); 
 	 
-    w = SHORT(patch->width); 
+    w = (patch->width); 
     for ( col = 0 ; col<w ; col++) 
     { 
 	outp (SC_INDEX+1,1<<(x&3)); 
-	column = (column_t *)((byte *)patch + LONG(patch->columnofs[col])); 
+	column = (column_t *)((byte *)patch + (patch->columnofs[col])); 
  
 	// step through the posts in a column 
 	 
@@ -425,11 +425,11 @@ V_DrawPatchDirect
 //
 void
 V_DrawBlock
-( int		x,
-  int		y,
-  int		scrn,
-  int		width,
-  int		height,
+( int32_t		x,
+  int32_t		y,
+  int32_t		scrn,
+  int32_t		width,
+  int32_t		height,
   byte*		src ) 
 { 
     byte*	dest; 
@@ -439,7 +439,7 @@ V_DrawBlock
 	||x+width >SCREENWIDTH
 	|| y<0
 	|| y+height>SCREENHEIGHT 
-	|| (unsigned)scrn>4 )
+	|| (uint32_t)scrn>4 )
     {
 	I_Error ("Bad V_DrawBlock");
     }
@@ -465,7 +465,7 @@ V_DrawBlock
 // 
 void V_Init (void) 
 { 
-    int		i;
+    int32_t		i;
     byte*	base;
 		
     // stick these in low dos memory on PCs

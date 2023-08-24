@@ -23,6 +23,7 @@
 
 // Needed for action function pointer handling.
 #include "d_think.h"
+#include <sys/types.h>
 
 #define SPR_TROO 0
 #define SPR_SHTG 1
@@ -164,8 +165,8 @@
 #define SPR_TLP2 137
 #define NUMSPRITES 138
 
-typedef unsigned char spritenum_t;
-typedef unsigned char spriteframenum_t;
+typedef uint8_t spritenum_t;
+typedef uint8_t spriteframenum_t;
 
 #define S_NULL 			0
 #define S_LIGHTDONE       1
@@ -1136,23 +1137,23 @@ typedef unsigned char spriteframenum_t;
 #define S_TECH2LAMP4      966
 #define NUMSTATES       967
 
-typedef unsigned short statenum_t;
+typedef uint16_t statenum_t;
 
 
 typedef struct
 {
   spritenum_t	sprite;
   spriteframenum_t	frame;
-  char			tics;
+  int8_t			tics;
   // void		(*action) ();
   //actionf_t			action;
   ENEMYTHINKFUNCTION   action;
   statenum_t			nextstate;
-  //long			misc1, misc2;
+  //int32_t			misc1, misc2;
 } state_t;
 
 extern state_t	states[NUMSTATES];
-extern char *sprnames[NUMSPRITES];
+extern int8_t *sprnames[NUMSPRITES];
 
 
 #define MT_PLAYER 0
@@ -1294,33 +1295,33 @@ extern char *sprnames[NUMSPRITES];
 #define MT_MISC86 136
 #define NUMMOBJTYPES 137
 
-typedef unsigned char mobjtype_t;
-typedef unsigned char sfxenum_t;
+typedef uint8_t mobjtype_t;
+typedef uint8_t sfxenum_t;
 
 typedef struct
 {
-    short	doomednum;
+    int16_t	doomednum;
 	statenum_t	spawnstate;
-	short	spawnhealth;
+	int16_t	spawnhealth;
 	statenum_t	seestate;
 	sfxenum_t	seesound;
-    //int	reactiontime;     always 8 except 0 for player. this can be abstracted in code
+    //int32_t	reactiontime;     always 8 except 0 for player. this can be abstracted in code
 	sfxenum_t	attacksound;
 	statenum_t	painstate;
-    unsigned short	painchance; // want to do char... but two elements have 256. not sure if it's kludge-able in a way that saves space
+    uint16_t	painchance; // want to do char... but two elements have 256. not sure if it's kludge-able in a way that saves space
 	sfxenum_t	painsound;
 	statenum_t	meleestate;
 	statenum_t	missilestate;
 	statenum_t	deathstate;
 	statenum_t	xdeathstate;
 	sfxenum_t	deathsound;
-    int	speed;
-    int	radius;
-    int	height;
-    int	mass;
-    unsigned char	damage;
+    int32_t	speed;
+    int32_t	radius;
+    int32_t	height;
+    int32_t	mass;
+    uint8_t	damage;
 	sfxenum_t	activesound;
-    int	flags;
+    int32_t	flags;
 	statenum_t	raisestate;
 
 } mobjinfo_t;

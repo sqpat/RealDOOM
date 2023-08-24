@@ -22,9 +22,9 @@
 #include "d_event.h"
 
 #define MAXWADFILES             20
-extern char*		wadfiles[MAXWADFILES];
+extern int8_t*		wadfiles[MAXWADFILES];
 
-void D_AddFile (char *file);
+void D_AddFile (int8_t *file);
 
 
 

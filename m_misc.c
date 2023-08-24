@@ -46,8 +46,8 @@
 #include "m_misc.h"
 
 
-int		myargc;
-char**		myargv;
+int32_t		myargc;
+int8_t**		myargv;
 
 //
 // M_DrawText
@@ -64,9 +64,9 @@ extern MEMREF		hu_fontRef[HU_FONTSIZE];
 // in the program's command line arguments.
 // Returns the argument number (1 to argc-1)
 // or 0 if not present
-int M_CheckParm (char *check)
+int32_t M_CheckParm (int8_t *check)
 {
-    int		i;
+    int32_t		i;
 
     for (i = 1;i<myargc;i++)
     {
@@ -82,7 +82,7 @@ int M_CheckParm (char *check)
 // M_Random
 // Returns a 0-255 number
 //
-unsigned char rndtable[256] = {
+uint8_t rndtable[256] = {
     0,   8, 109, 220, 222, 241, 149, 107,  75, 248, 254, 140,  16,  66 ,
     74,  21, 211,  47,  80, 242, 154,  27, 205, 128, 161,  89,  77,  36 ,
     95, 110,  85,  48, 212, 140, 211, 249,  22,  79, 200,  50,  28, 188 ,
@@ -104,18 +104,18 @@ unsigned char rndtable[256] = {
     120, 163, 236, 249
 };
 
-int	rndindex = 0;
-int	prndindex = 0;
-int counter = 0;
+int32_t	rndindex = 0;
+int32_t	prndindex = 0;
+int32_t counter = 0;
 // Which one is deterministic?
-int P_Random(void)
+int32_t P_Random(void)
 {
 	 
     prndindex = (prndindex+1)&0xff;
     return rndtable[prndindex];
 }
 
-int M_Random (void)
+int32_t M_Random (void)
 {
     rndindex = (rndindex+1)&0xff;
     return rndtable[rndindex];
@@ -157,12 +157,12 @@ M_AddToBox
 
 boolean
 M_WriteFile
-( char const*	name,
+(int8_t const*	name,
   void*		source,
-  int		length )
+  int32_t		length )
 {
-    int		handle;
-    int		count;
+    int32_t		handle;
+    int32_t		count;
 	
     handle = open ( name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
 
@@ -184,10 +184,10 @@ M_WriteFile
 //
 int
 M_ReadFile
-( char const*	name,
+(int8_t const*	name,
   MEMREF*	bufferRef )
 {
-    int	handle, count, length;
+    int32_t	handle, count, length;
     struct stat	fileinfo;
     byte		*buf;
 	
@@ -213,55 +213,55 @@ M_ReadFile
 //
 // DEFAULTS
 //
-int		usemouse;
+int32_t		usemouse;
 
-extern int	key_right;
-extern int	key_left;
-extern int	key_up;
-extern int	key_down;
+extern int32_t	key_right;
+extern int32_t	key_left;
+extern int32_t	key_up;
+extern int32_t	key_down;
 
-extern int	key_strafeleft;
-extern int	key_straferight;
+extern int32_t	key_strafeleft;
+extern int32_t	key_straferight;
 
-extern int	key_fire;
-extern int	key_use;
-extern int	key_strafe;
-extern int	key_speed;
+extern int32_t	key_fire;
+extern int32_t	key_use;
+extern int32_t	key_strafe;
+extern int32_t	key_speed;
 
-extern int	mousebfire;
-extern int	mousebstrafe;
-extern int	mousebforward;
+extern int32_t	mousebfire;
+extern int32_t	mousebstrafe;
+extern int32_t	mousebforward;
 
-extern int	viewwidth;
-extern int	viewheight;
+extern int32_t	viewwidth;
+extern int32_t	viewheight;
 
-extern int	mouseSensitivity;
-extern int	showMessages;
+extern int32_t	mouseSensitivity;
+extern int32_t	showMessages;
 
-extern int	detailLevel;
+extern int32_t	detailLevel;
 
-extern int	screenblocks;
+extern int32_t	screenblocks;
 
-extern int	showMessages;
+extern int32_t	showMessages;
 
 // machine-independent sound params
-extern	int	numChannels;
+extern	int32_t	numChannels;
 
-extern int sfxVolume;
-extern int musicVolume;
-extern int snd_SBport, snd_SBirq, snd_SBdma;
-extern int snd_Mport;
+extern int32_t sfxVolume;
+extern int32_t musicVolume;
+extern int32_t snd_SBport, snd_SBirq, snd_SBdma;
+extern int32_t snd_Mport;
 
 
 
 
 typedef struct
 {
-    char*	name;
-    int*	location;
-    int		defaultvalue;
-    int		scantranslate;		// PC scan code hack
-    int		untranslated;		// lousy hack
+    int8_t*	name;
+    int32_t*	location;
+    int32_t		defaultvalue;
+    int32_t		scantranslate;		// PC scan code hack
+    int32_t		untranslated;		// lousy hack
 } default_t;
 
 #define SC_UPARROW              0x48
@@ -350,8 +350,8 @@ default_t	defaults[] =
 
 };
 
-int	numdefaults;
-char*	defaultfile;
+int32_t	numdefaults;
+int8_t*	defaultfile;
 
 
 //
@@ -359,8 +359,8 @@ char*	defaultfile;
 //
 void M_SaveDefaults (void)
 {
-    int		i;
-    int		v;
+    int32_t		i;
+    int32_t		v;
     FILE*	f;
 	
     f = fopen (defaultfile, "w");
@@ -379,7 +379,7 @@ void M_SaveDefaults (void)
 	    fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
 	} else {
 	    fprintf (f,"%s\t\t\"%s\"\n",defaults[i].name,
-		     * (char **) (defaults[i].location));
+		     * (int8_t **) (defaults[i].location));
 	}
     }
 	
@@ -394,13 +394,13 @@ extern byte	scantokey[128];
 
 void M_LoadDefaults (void)
 {
-    int		i;
-    int		len;
+    int32_t		i;
+    int32_t		len;
     FILE*	f;
-    char	def[80];
-    char	strparm[100];
-    char*	newstring;
-    int		parm;
+	int8_t	def[80];
+	int8_t	strparm[100];
+    int8_t*	newstring;
+    int32_t		parm;
     boolean	isstring;
     
     // set everything to base values
@@ -432,7 +432,7 @@ void M_LoadDefaults (void)
 		    // get a string default
 		    isstring = true;
 		    len = strlen(strparm);
-		    newstring = (char *) malloc(len);
+		    newstring = (int8_t *) malloc(len);
 		    strparm[len-1] = 0;
 		    strcpy(newstring, strparm+1);
 		}

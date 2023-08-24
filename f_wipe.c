@@ -41,17 +41,17 @@ static byte*	wipe_scr;
 
 void
 wipe_shittyColMajorXform
-( short*	array,
-  int		width,
-  int		height )
+( int16_t*	array,
+  int32_t		width,
+  int32_t		height )
 {
-    int		x;
-    int		y;
+    int32_t		x;
+    int32_t		y;
 	MEMREF destRef;
-    short*	dest;
+    int16_t*	dest;
 
 	destRef = Z_MallocEMSNew(width*height * 2, PU_STATIC, 0, ALLOC_TYPE_FWIPE);
-	dest = (short*)Z_LoadBytesFromEMS(destRef);
+	dest = (int16_t*)Z_LoadBytesFromEMS(destRef);
 
     for(y=0;y<height;y++)
 	for(x=0;x<width;x++)
@@ -65,9 +65,9 @@ wipe_shittyColMajorXform
 
 int
 wipe_initColorXForm
-( int	width,
-  int	height,
-  int	ticks )
+( int32_t	width,
+  int32_t	height,
+  int32_t	ticks )
 {
     memcpy(wipe_scr, wipe_scr_start, width*height);
     return 0;
@@ -75,14 +75,14 @@ wipe_initColorXForm
 
 int
 wipe_doColorXForm
-( int	width,
-  int	height,
-  int	ticks )
+( int32_t	width,
+  int32_t	height,
+  int32_t	ticks )
 {
     boolean	changed;
     byte*	w;
     byte*	e;
-    int		newval;
+    int32_t		newval;
 
     changed = false;
     w = wipe_scr;
@@ -121,9 +121,9 @@ wipe_doColorXForm
 
 int
 wipe_exitColorXForm
-( int	width,
-  int	height,
-  int	ticks )
+( int32_t	width,
+  int32_t	height,
+  int32_t	ticks )
 {
     return 0;
 }
@@ -133,20 +133,20 @@ static MEMREF yRef;
 
 int
 wipe_initMelt
-( int	width,
-  int	height,
-  int	ticks )
+( int32_t	width,
+  int32_t	height,
+  int32_t	ticks )
 {
-    int i, r;
-	int* y;
+	int32_t i, r;
+	int32_t* y;
 
     // copy start screen to main screen
     memcpy(wipe_scr, wipe_scr_start, width*height);
     
     // makes this wipe faster (in theory)
     // to have stuff in column-major format
-    wipe_shittyColMajorXform((short*)wipe_scr_start, width/2, height);
-    wipe_shittyColMajorXform((short*)wipe_scr_end, width/2, height);
+    wipe_shittyColMajorXform((int16_t*)wipe_scr_start, width/2, height);
+    wipe_shittyColMajorXform((int16_t*)wipe_scr_end, width/2, height);
     
     // setup initial column positions
     // (y<0 => not ready to scroll yet)
@@ -154,7 +154,7 @@ wipe_initMelt
 	
 
 	yRef = Z_MallocEMSNew(width*sizeof(int), PU_STATIC, 0, ALLOC_TYPE_FWIPE);
-	y = (int*)Z_LoadBytesFromEMS(yRef);
+	y = (int32_t*)Z_LoadBytesFromEMS(yRef);
 
 
 
@@ -172,23 +172,23 @@ wipe_initMelt
 
 int
 wipe_doMelt
-( int	width,
-  int	height,
-  int	ticks )
+( int32_t	width,
+  int32_t	height,
+  int32_t	ticks )
 {
-    int		i;
-    int		j;
-    int		dy;
-    int		idx;
+    int32_t		i;
+    int32_t		j;
+    int32_t		dy;
+    int32_t		idx;
     
-	int* y;
-    short*	s;
-    short*	d;
+	int32_t* y;
+    int16_t*	s;
+    int16_t*	d;
     boolean	done = true;
 
     width/=2;
 
-	y = (int*)Z_LoadBytesFromEMS(yRef);
+	y = (int32_t*)Z_LoadBytesFromEMS(yRef);
 	while (ticks--)
     {
 	for (i=0;i<width;i++)
@@ -201,8 +201,8 @@ wipe_doMelt
 	    {
 		dy = (y[i] < 16) ? y[i]+1 : 8;
 		if (y[i]+dy >= height) dy = height - y[i];
-		s = &((short *)wipe_scr_end)[i*height+y[i]];
-		d = &((short *)wipe_scr)[y[i]*width+i];
+		s = &((int16_t *)wipe_scr_end)[i*height+y[i]];
+		d = &((int16_t *)wipe_scr)[y[i]*width+i];
 		idx = 0;
 		for (j=dy;j;j--)
 		{
@@ -210,8 +210,8 @@ wipe_doMelt
 		    idx += width;
 		}
 		y[i] += dy;
-		s = &((short *)wipe_scr_start)[i*height];
-		d = &((short *)wipe_scr)[y[i]*width+i];
+		s = &((int16_t *)wipe_scr_start)[i*height];
+		d = &((int16_t *)wipe_scr)[y[i]*width+i];
 		idx = 0;
 		for (j=height-y[i];j;j--)
 		{
@@ -229,9 +229,9 @@ wipe_doMelt
 
 int
 wipe_exitMelt
-( int	width,
-  int	height,
-  int	ticks )
+( int32_t	width,
+  int32_t	height,
+  int32_t	ticks )
 {
 	Z_FreeEMSNew(yRef);
 
@@ -240,10 +240,10 @@ wipe_exitMelt
 
 int
 wipe_StartScreen
-( int	x,
-  int	y,
-  int	width,
-  int	height )
+( int32_t	x,
+  int32_t	y,
+  int32_t	width,
+  int32_t	height )
 {
     wipe_scr_start = screens[2];
     I_ReadScreen(wipe_scr_start);
@@ -252,10 +252,10 @@ wipe_StartScreen
 
 int
 wipe_EndScreen
-( int	x,
-  int	y,
-  int	width,
-  int	height )
+( int32_t	x,
+  int32_t	y,
+  int32_t	width,
+  int32_t	height )
 {
     wipe_scr_end = screens[3];
     I_ReadScreen(wipe_scr_end);
@@ -265,15 +265,15 @@ wipe_EndScreen
 
 int
 wipe_ScreenWipe
-( int	wipeno,
-  int	x,
-  int	y,
-  int	width,
-  int	height,
-  int	ticks )
+( int32_t	wipeno,
+  int32_t	x,
+  int32_t	y,
+  int32_t	width,
+  int32_t	height,
+  int32_t	ticks )
 {
-    int rc;
-    static int (*wipes[])(int, int, int) =
+	int32_t rc;
+    static int32_t(*wipes[])(int, int, int) =
     {
 	wipe_initColorXForm, wipe_doColorXForm, wipe_exitColorXForm,
 	wipe_initMelt, wipe_doMelt, wipe_exitMelt

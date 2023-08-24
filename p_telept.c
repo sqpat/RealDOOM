@@ -38,16 +38,16 @@
 //
 int
 EV_Teleport
-( short linetag,
-  int		side,
+( int16_t linetag,
+  int32_t		side,
  MEMREF thingRef )
 {
-    int		i;
+    int32_t		i;
     mobj_t*	m;
     mobj_t*	fog;
-    unsigned	an;
+	uint32_t	an;
     THINKERREF	thinkerRef;
-	short secnum;
+	int16_t secnum;
     fixed_t	oldx;
     fixed_t	oldy;
     fixed_t	oldz;

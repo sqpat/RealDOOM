@@ -62,7 +62,7 @@ P_PointOnLineSide
   fixed_t	y,
 	fixed_t linedx,
 	fixed_t linedy,
-	short linev1Offset)
+	int16_t linev1Offset)
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -110,11 +110,11 @@ P_BoxOnLineSide
 	slopetype_t	lineslopetype,
 	fixed_t linedx,
 	fixed_t linedy,
-	short linev1Offset
+	int16_t linev1Offset
 	)
 {
-    int		p1;
-    int		p2;
+    int32_t		p1;
+    int32_t		p2;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
     switch (lineslopetype)
@@ -213,7 +213,7 @@ void
 P_MakeDivline
 (fixed_t linedx,
 	fixed_t linedy,
-	short linev1Offset,
+	int16_t linev1Offset,
   divline_t*	dl )
 {
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
@@ -268,7 +268,7 @@ fixed_t openrange;
 fixed_t	lowfloor;
 
 
-void P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum) {
+void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {
     sector_t*	front;
     sector_t*	back;
 	sector_t*   sectors;
@@ -298,11 +298,6 @@ void P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum
 	
     openrange = opentop - openbottom;
 
-	if (setval == 3) {
-		// 22, 23
-		I_Error("blah %i %i %i %i", front->ceilingheight, front->floorheight, back->ceilingheight, back->floorheight >> FRACBITS);
-	}
-
 
 }
 
@@ -321,8 +316,8 @@ void P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum
 //
 void P_UnsetThingPosition (MEMREF thingRef)
 {
-    int		blockx;
-    int		blocky;
+    int32_t		blockx;
+    int32_t		blocky;
 	//MEMREF* blocklinksList;
 	mobj_t* changeThing;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
@@ -332,9 +327,9 @@ void P_UnsetThingPosition (MEMREF thingRef)
 	MEMREF thingbnextRef = thing->bnextRef;
 	fixed_t thingx = thing->x;
 	fixed_t thingy = thing->y;
-	int thingflags = thing->flags;
-	//short thingsubsecnum = thing->subsecnum;
-	short thingsecnum = thing->secnum;
+	int32_t thingflags = thing->flags;
+	//int16_t thingsubsecnum = thing->subsecnum;
+	int16_t thingsecnum = thing->secnum;
 	sector_t* sectors;
 
     if ( ! (thingflags & MF_NOSECTOR) ) {
@@ -393,15 +388,15 @@ void P_UnsetThingPosition (MEMREF thingRef)
 void
 P_SetThingPosition (MEMREF thingRef)
 {
-	short	subsecnum;
+	int16_t	subsecnum;
     //sector_t*		sec;
-    int			blockx;
-    int			blocky;
+    int32_t			blockx;
+    int32_t			blocky;
     MEMREF		linkRef;
 	mobj_t*		link;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	mobj_t* thingList;
-	short subsectorsecnum;
+	int16_t subsectorsecnum;
 	subsector_t* subsectors;
 	sector_t* sectors;
 	MEMREF oldsectorthinglist;
@@ -490,16 +485,16 @@ P_SetThingPosition (MEMREF thingRef)
 //
 boolean
 P_BlockLinesIterator
-( int			x,
-  int			y,
-  boolean(*func)(short) )
+( int32_t			x,
+  int32_t			y,
+  boolean(*func)(int16_t) )
 {
-    int			offset;
-	int			index;
-    short		list;
+    int32_t			offset;
+	int32_t			index;
+    int16_t		list;
     line_t*		ld;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
-	short *blockmaplump;
+	int16_t *blockmaplump;
     if (x<0
 	|| y<0
 	|| x>=bmapwidth
@@ -509,7 +504,7 @@ P_BlockLinesIterator
     }
     
     offset = y*bmapwidth+x;
-	blockmaplump = (short*)Z_LoadBytesFromEMS(blockmaplumpRef);
+	blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
 	offset = *(blockmaplump+blockmapOffset + offset);
 	
     for ( index = offset ; blockmaplump[index] != -1 ; index++) {
@@ -520,7 +515,7 @@ P_BlockLinesIterator
 		ld = &lines[list];
 
 		if (ld->validcount == validcount) {
-			blockmaplump = (short*)Z_LoadBytesFromEMS(blockmaplumpRef);
+			blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
 			continue; 	// line has already been checked
 		}
 		ld->validcount = validcount;
@@ -528,7 +523,7 @@ P_BlockLinesIterator
 		if (!func(list)) {
 			return false;
 		}
-		blockmaplump = (short*)Z_LoadBytesFromEMS(blockmaplumpRef);
+		blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
     }
 
 
@@ -541,13 +536,13 @@ P_BlockLinesIterator
 //
 boolean
 P_BlockThingsIterator
-( int			x,
-  int			y,
+( int32_t			x,
+  int32_t			y,
   boolean(*func)(MEMREF) )
 {
 	MEMREF mobjRef;
     mobj_t*		mobj;
-	int i = 0;
+	int32_t i = 0;
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
 	}
@@ -585,7 +580,7 @@ intercept_t*	intercept_p;
 
 divline_t 	trace;
 boolean 	earlyout;
-int		ptflags;
+int32_t		ptflags;
 
 //
 // PIT_AddLineIntercepts.
@@ -598,19 +593,19 @@ int		ptflags;
 // Returns true if earlyout and a solid line hit.
 //
 boolean
-PIT_AddLineIntercepts (short linenum)
+PIT_AddLineIntercepts (int16_t linenum)
 {
-    int			s1;
-    int			s2;
+    int32_t			s1;
+    int32_t			s2;
     fixed_t		frac;
     divline_t		dl;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* ld = &lines[linenum];
-	short linev1Offset = ld->v1Offset;
-	short linev2Offset = ld->v2Offset;
+	int16_t linev1Offset = ld->v1Offset;
+	int16_t linev2Offset = ld->v2Offset;
 	fixed_t linedx = ld->dx;
 	fixed_t linedy = ld->dy;
-	short linebacksecnum = ld->backsecnum;
+	int16_t linebacksecnum = ld->backsecnum;
 
 
 
@@ -662,8 +657,8 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     fixed_t		x2;
     fixed_t		y2;
     
-    int			s1;
-    int			s2;
+    int32_t			s1;
+    int32_t			s2;
     
     boolean		tracepositive;
 
@@ -730,7 +725,7 @@ P_TraverseIntercepts
 ( traverser_t	func,
   fixed_t	maxfrac )
 {
-    int			count;
+    int32_t			count;
     fixed_t		dist;
     intercept_t*	scan;
     intercept_t*	in;
@@ -780,7 +775,7 @@ P_PathTraverse
   fixed_t		y1,
   fixed_t		x2,
   fixed_t		y2,
-  int			flags,
+  int32_t			flags,
   boolean (*trav) (intercept_t *))
 {
     fixed_t	xt1;
@@ -796,13 +791,13 @@ P_PathTraverse
     fixed_t	xintercept;
     fixed_t	yintercept;
     
-    int		mapx;
-    int		mapy;
+    int32_t		mapx;
+    int32_t		mapy;
     
-    int		mapxstep;
-    int		mapystep;
+    int32_t		mapxstep;
+    int32_t		mapystep;
 
-    int		count;
+    int32_t		count;
 		
     earlyout = flags & PT_EARLYOUT;
 	

@@ -41,10 +41,10 @@ void HUlib_clearTextLine(hu_textline_t* t)
 void
 HUlib_initTextLine
 ( hu_textline_t*	t,
-  int			x,
-  int			y,
+  int32_t			x,
+  int32_t			y,
   MEMREF*		fRef,
-  int			sc )
+  int32_t			sc )
 {
     t->x = x;
     t->y = y;
@@ -56,7 +56,7 @@ HUlib_initTextLine
 boolean
 HUlib_addCharToTextLine
 ( hu_textline_t*	t,
-  char			ch )
+	int8_t			ch )
 {
 
     if (t->len == HU_MAXLINELENGTH)
@@ -77,10 +77,10 @@ HUlib_drawTextLine
   boolean		drawcursor )
 {
 
-    int			i;
-    int			w;
-    int			x;
-    unsigned char	c;
+    int32_t			i;
+    int32_t			w;
+    int32_t			x;
+    uint8_t	c;
 	patch_t* currentpatch;
 
     // draw the new stuff
@@ -89,7 +89,7 @@ HUlib_drawTextLine
 		c = toupper(l->l[i]);
 		if (c != ' ' && c >= l->sc && c <= '_') {
 			currentpatch = (patch_t*)Z_LoadBytesFromEMS(l->fRef[c - l->sc]);
-			w = SHORT(currentpatch->width);
+			w = (currentpatch->width);
 			if (x + w > SCREENWIDTH) {
 				break;
 			}
@@ -105,7 +105,7 @@ HUlib_drawTextLine
 
 	currentpatch = (patch_t*)Z_LoadBytesFromEMS(l->fRef['_' - l->sc]);
     // draw the cursor if requested
-    if (drawcursor && x + SHORT(currentpatch->width) <= SCREENWIDTH) {
+    if (drawcursor && x + (currentpatch->width) <= SCREENWIDTH) {
 		V_DrawPatchDirect(x, l->y, FG, currentpatch);
     }
 }
@@ -114,9 +114,9 @@ HUlib_drawTextLine
 // sorta called by HU_Erase and just better darn get things straight
 void HUlib_eraseTextLine(hu_textline_t* l)
 {
-    int			lh;
-    int			y;
-    int			yoffset;
+    int32_t			lh;
+    int32_t			y;
+    int32_t			yoffset;
     static boolean	lastautomapactive = true;
 	patch_t* currentpatch = Z_LoadBytesFromEMS(l->fRef[0]);   // todo can probably cache this
 
@@ -126,7 +126,7 @@ void HUlib_eraseTextLine(hu_textline_t* l)
     // (because of a recent change back from the automap)
 
     if (!automapactive && viewwindowx && l->needsupdate) {
-		lh = SHORT(currentpatch->height) + 1;
+		lh = (currentpatch->height) + 1;
 		for (y=l->y,yoffset=y*SCREENWIDTH ; y<l->y+lh ; y++,yoffset+=SCREENWIDTH) {
 			if (y < viewwindowy || y >= viewwindowy + viewheight) {
 				R_VideoErase(yoffset, SCREENWIDTH); // erase entire line
@@ -146,15 +146,15 @@ void HUlib_eraseTextLine(hu_textline_t* l)
 void
 HUlib_initSText
 ( hu_stext_t*	s,
-  int		x,
-  int		y,
-  int		h,
+  int32_t		x,
+  int32_t		y,
+  int32_t		h,
   MEMREF*   fontRef,
-  int		startchar,
+  int32_t		startchar,
   boolean*	on )
 {
 
-    int i;
+	int32_t i;
 	patch_t* font0;
 
     s->h = h;
@@ -164,7 +164,7 @@ HUlib_initSText
 	font0 = (patch_t*)Z_LoadBytesFromEMS(fontRef[0]);
 	for (i = 0; i < h; i++) {
 		HUlib_initTextLine(&s->l[i],
-			x, y - i * (SHORT(font0->height) + 1),
+			x, y - i * ((font0->height) + 1),
 			fontRef, startchar);
 	}
 
@@ -173,7 +173,7 @@ HUlib_initSText
 void HUlib_addLineToSText(hu_stext_t* s)
 {
 
-    int i;
+	int32_t i;
 
     // add a clear line
     if (++s->cl == s->h)
@@ -189,8 +189,8 @@ void HUlib_addLineToSText(hu_stext_t* s)
 void
 HUlib_addMessageToSText
 ( hu_stext_t*	s,
-  char*		prefix,
-  char*		msg )
+  int8_t*		prefix,
+  int8_t*		msg )
 {
     HUlib_addLineToSText(s);
     if (prefix)
@@ -203,7 +203,7 @@ HUlib_addMessageToSText
 
 void HUlib_drawSText(hu_stext_t* s)
 {
-    int i, idx;
+	int32_t i, idx;
     hu_textline_t *l;
 
     if (!*s->on)
@@ -227,7 +227,7 @@ void HUlib_drawSText(hu_stext_t* s)
 void HUlib_eraseSText(hu_stext_t* s)
 {
 
-    int i;
+	int32_t i;
 
     for (i=0 ; i<s->h ; i++)
     {

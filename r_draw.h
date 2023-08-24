@@ -22,9 +22,9 @@
 
 
 extern lighttable_t*	dc_colormap;
-extern int		dc_x;
-extern int		dc_yl;
-extern int		dc_yh;
+extern int32_t		dc_x;
+extern int32_t		dc_yl;
+extern int32_t		dc_yh;
 extern fixed_t		dc_iscale;
 extern fixed_t		dc_texturemid;
 
@@ -50,12 +50,12 @@ void	R_DrawTranslatedColumnLow (void);
 
 void
 R_VideoErase
-( unsigned	ofs,
-  int		count );
+(uint32_t	ofs,
+  int32_t		count );
 
-extern int		ds_y;
-extern int		ds_x1;
-extern int		ds_x2;
+extern int32_t		ds_y;
+extern int32_t		ds_x1;
+extern int32_t		ds_x2;
 
 extern lighttable_t*	ds_colormap;
 
@@ -82,8 +82,8 @@ void 	R_DrawSpanLow (void);
 
 void
 R_InitBuffer
-( int		width,
-  int		height );
+( int32_t		width,
+  int32_t		height );
 
 
 // Initialize color translation tables,

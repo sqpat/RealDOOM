@@ -26,8 +26,8 @@
 // The sky map is 256*128*4 maps.
 #define ANGLETOSKYSHIFT		22
 
-extern  int		skytexture;
-extern int		skytexturemid;
+extern  int32_t		skytexture;
+extern int32_t		skytexturemid;
 
 // Called whenever the view size changes.
 void R_InitSkyMap (void);

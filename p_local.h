@@ -99,9 +99,9 @@ void	P_PlayerThink (player_t* player);
 
 
 extern mapthing_t	itemrespawnque[ITEMQUESIZE];
-extern int		itemrespawntime[ITEMQUESIZE];
-extern int		iquehead;
-extern int		iquetail;
+extern int32_t		itemrespawntime[ITEMQUESIZE];
+extern int32_t		iquehead;
+extern int32_t		iquetail;
 
 
 
@@ -117,7 +117,7 @@ boolean	P_SetMobjState (MEMREF mobj, statenum_t state);
 void 	P_MobjThinker (MEMREF memref);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
-void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int damage);
+void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int32_t damage);
 MEMREF P_SpawnMissile (MEMREF source, MEMREF dest, mobjtype_t type);
 void	P_SpawnPlayerMissile (MEMREF source, mobjtype_t type);
 
@@ -148,7 +148,7 @@ typedef struct
     boolean	isaline;
     union {
 	MEMREF	thingRef;
-	short linenum;
+	int16_t linenum;
     }			d;
 } intercept_t;
 
@@ -160,11 +160,11 @@ extern intercept_t*	intercept_p;
 typedef boolean (*traverser_t) (intercept_t *in);
 
 fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
-int 	P_PointOnLineSide (fixed_t	x, fixed_t	y, fixed_t linedx, fixed_t linedy, short linev1Offset);
-int 	P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t* line);
-void 	P_MakeDivline (fixed_t linedx, fixed_t linedy, short linenum, divline_t* dl);
+int32_t 	P_PointOnLineSide (fixed_t	x, fixed_t	y, fixed_t linedx, fixed_t linedy, int16_t linev1Offset);
+int32_t 	P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t* line);
+void 	P_MakeDivline (fixed_t linedx, fixed_t linedy, int16_t linenum, divline_t* dl);
 fixed_t P_InterceptVector (divline_t* v2, divline_t* v1);
-int 	P_BoxOnLineSide (fixed_t* tmbox, slopetype_t	lineslopetype, fixed_t linedx, fixed_t linedy, short linev1Offset);
+int32_t 	P_BoxOnLineSide (fixed_t* tmbox, slopetype_t	lineslopetype, fixed_t linedx, fixed_t linedy, int16_t linev1Offset);
 
 
 extern fixed_t		opentop;
@@ -172,10 +172,10 @@ extern fixed_t 		openbottom;
 extern fixed_t		openrange;
 extern fixed_t		lowfloor;
 
-void 	P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum);
+void 	P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
-boolean P_BlockLinesIterator (int x, int y, boolean(*func)(short ) );
-boolean P_BlockThingsIterator (int x, int y, boolean(*func)(MEMREF));
+boolean P_BlockLinesIterator (int32_t x, int32_t y, boolean(*func)(int16_t ) );
+boolean P_BlockThingsIterator (int32_t x, int32_t y, boolean(*func)(MEMREF));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -189,7 +189,7 @@ P_PathTraverse
   fixed_t	y1,
   fixed_t	x2,
   fixed_t	y2,
-  int		flags,
+  int32_t		flags,
   boolean	(*trav) (intercept_t *));
 
 void P_UnsetThingPosition (MEMREF thing);
@@ -207,7 +207,7 @@ extern fixed_t		tmfloorz;
 extern fixed_t		tmceilingz;
 
 
-extern	short		ceilinglinenum;
+extern	int16_t		ceilinglinenum;
 
 boolean P_CheckPosition (MEMREF thing, fixed_t x, fixed_t y);
 boolean P_TryMove (MEMREF thing, fixed_t x, fixed_t y);
@@ -218,7 +218,7 @@ boolean P_CheckSight (MEMREF t1, MEMREF t2);
 
 void 	P_UseLines (player_t* player);
 
-boolean P_ChangeSector (short secnum, boolean crunch);
+boolean P_ChangeSector (int16_t secnum, boolean crunch);
 
 extern MEMREF	linetargetRef;	// who got hit (or NULL)
 
@@ -234,13 +234,13 @@ P_LineAttack
   angle_t	angle,
   fixed_t	distance,
   fixed_t	slope,
-  int		damage );
+  int32_t		damage );
 
 void
 P_RadiusAttack
 (MEMREF	spot,
 	MEMREF	source,
-  int		damage );
+  int32_t		damage );
 
 
 
@@ -249,10 +249,10 @@ P_RadiusAttack
 //
 extern MEMREF		rejectmatrixRef;	// for fast sight rejection
 extern MEMREF          blockmaplumpRef;
-//extern short*		blockmaplump;	// offsets in blockmap are from here
-extern int blockmapOffset;
-extern int		bmapwidth;
-extern int		bmapheight;	// in mapblocks
+//extern int16_t*		blockmaplump;	// offsets in blockmap are from here
+extern int32_t blockmapOffset;
+extern int32_t		bmapwidth;
+extern int32_t		bmapheight;	// in mapblocks
 extern fixed_t		bmaporgx;
 extern fixed_t		bmaporgy;	// origin of block map
 
@@ -261,8 +261,8 @@ extern fixed_t		bmaporgy;	// origin of block map
 //
 // P_INTER
 //
-extern int		maxammo[NUMAMMO];
-extern int		clipammo[NUMAMMO];
+extern int32_t		maxammo[NUMAMMO];
+extern int32_t		clipammo[NUMAMMO];
 
 void
 P_TouchSpecialThing
@@ -274,7 +274,7 @@ P_DamageMobj
 (MEMREF	target,
 	MEMREF	inflictor,
 	MEMREF	source,
-  int		damage );
+  int32_t		damage );
 
 
 //

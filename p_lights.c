@@ -40,11 +40,11 @@
 void T_FireFlicker (MEMREF memref)
 
 {
-    int	amount;
+    int32_t	amount;
 	fireflicker_t* flick = (fireflicker_t*)Z_LoadBytesFromEMS(memref);
-	short flicksecnum = flick->secnum;
-	int flickmaxlight = flick->maxlight;
-	int flickminlight= flick->minlight;
+	int16_t flicksecnum = flick->secnum;
+	int32_t flickmaxlight = flick->maxlight;
+	int32_t flickminlight= flick->minlight;
 	sector_t* sectors;
 
     if (--flick->count)
@@ -65,15 +65,15 @@ void T_FireFlicker (MEMREF memref)
 //
 // P_SpawnFireFlicker
 //
-void P_SpawnFireFlicker (short secnum)
+void P_SpawnFireFlicker (int16_t secnum)
 {
     fireflicker_t*	flick;
 	MEMREF flickRef;
-	int lightamount;
+	int32_t lightamount;
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	short seclightlevel = sectors[secnum].lightlevel;
+	int16_t seclightlevel = sectors[secnum].lightlevel;
 	sectors[secnum].special = 0;
 
 	
@@ -104,9 +104,9 @@ void P_SpawnFireFlicker (short secnum)
 void T_LightFlash (MEMREF memref)
 {
 	lightflash_t* flash = (lightflash_t*)Z_LoadBytesFromEMS(memref);
-	short flashsecnum = flash->secnum;
-	int flashminlight = flash->minlight;
-	int flashmaxlight = flash->maxlight;
+	int16_t flashsecnum = flash->secnum;
+	int32_t flashminlight = flash->minlight;
+	int32_t flashmaxlight = flash->maxlight;
 	sector_t* sectors;
  
 
@@ -136,14 +136,14 @@ void T_LightFlash (MEMREF memref)
 // After the map has been loaded, scan each sector
 // for specials that spawn thinkers
 //
-void P_SpawnLightFlash (short secnum)
+void P_SpawnLightFlash (int16_t secnum)
 {
     lightflash_t*	flash;
 	MEMREF flashRef;
-	int lightamount;
+	int32_t lightamount;
 	// nothing special about it during gameplay
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	short seclightlevel = sectors[secnum].lightlevel;
+	int16_t seclightlevel = sectors[secnum].lightlevel;
 	sectors[secnum].special = 0;
 
 	
@@ -175,11 +175,11 @@ void P_SpawnLightFlash (short secnum)
 void T_StrobeFlash (MEMREF memref)
 {
 	strobe_t* flash = (strobe_t*)Z_LoadBytesFromEMS(memref);
-	short flashsecnum = flash->secnum;
-	short flashminlight = flash->minlight;
-	short flashmaxlight = flash->maxlight;
+	int16_t flashsecnum = flash->secnum;
+	int16_t flashminlight = flash->minlight;
+	int16_t flashmaxlight = flash->maxlight;
 	sector_t* sectors;
-	short seclightlevel;
+	int16_t seclightlevel;
 
 	if (--flash->count)
 		return;
@@ -208,15 +208,15 @@ void T_StrobeFlash (MEMREF memref)
 //
 void
 P_SpawnStrobeFlash
-( short secnum,
-  int		fastOrSlow,
-  int		inSync )
+( int16_t secnum,
+  int32_t		fastOrSlow,
+  int32_t		inSync )
 {
     strobe_t*	flash;
 	MEMREF flashRef;
-	int lightamount;
+	int32_t lightamount;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	short seclightlevel = sectors[secnum].lightlevel;
+	int16_t seclightlevel = sectors[secnum].lightlevel;
 
 	// nothing special about it during gameplay
 	sectors[secnum].special = 0;
@@ -253,9 +253,9 @@ P_SpawnStrobeFlash
 //
 // Start strobing lights (usually from a trigger)
 //
-void EV_StartLightStrobing(short linetag)
+void EV_StartLightStrobing(int16_t linetag)
 {
-    int		secnum;
+    int32_t		secnum;
 	sector_t* sectors;
 
     secnum = -1;
@@ -273,15 +273,15 @@ void EV_StartLightStrobing(short linetag)
 //
 // TURN LINE'S TAG LIGHTS OFF
 //
-void EV_TurnTagLightsOff(short linetag)
+void EV_TurnTagLightsOff(int16_t linetag)
 {
-    int			i;
-    int			secnum;
-    int			min;
-    short		offset;
+    int32_t			i;
+    int32_t			secnum;
+    int32_t			min;
+    int16_t		offset;
     line_t*		templine;
-	short *		linebuffer;
-	short		linenumber;
+	int16_t *		linebuffer;
+	int16_t		linenumber;
 	sector_t*   sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
     for (secnum = 0; secnum < numsectors; secnum++) {
@@ -289,7 +289,7 @@ void EV_TurnTagLightsOff(short linetag)
 			min = sectors[secnum].lightlevel;
 			for (i = 0; i < sectors[secnum].linecount; i++) {
 				offset = sectors[secnum].linesoffset + i;
-				linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+				linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 				linenumber = linebuffer[offset];
 
 				offset = getNextSector(linenumber, secnum);
@@ -313,15 +313,15 @@ void EV_TurnTagLightsOff(short linetag)
 //
 void
 EV_LightTurnOn
-( short linetag,
-  int		bright )
+( int16_t linetag,
+  int32_t		bright )
 {
-    short secnum;
-    int		j;
-    short	tempsecnum;
+    int16_t secnum;
+    int32_t		j;
+    int16_t	tempsecnum;
     line_t*	templine;
-	int linecount;
-	short* linebuffer;
+	int32_t linecount;
+	int16_t* linebuffer;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
     for (secnum=0;secnum<numsectors;secnum++) {
@@ -333,7 +333,7 @@ EV_LightTurnOn
 				linecount = sectors[secnum].linecount;
 				for (j = 0;j < linecount; j++) {
 					tempsecnum = sectors[secnum].linesoffset + j;
-					linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+					linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 
 					tempsecnum = getNextSector(linebuffer[tempsecnum],secnum);
 					sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
@@ -358,9 +358,9 @@ EV_LightTurnOn
 void T_Glow(MEMREF memref)
 {
 	glow_t* g = (glow_t*)Z_LoadBytesFromEMS(memref);
-	short gsecnum = g->secnum;
-	int gminlight = g->minlight;
-	int gmaxlight = g->maxlight;
+	int16_t gsecnum = g->secnum;
+	int32_t gminlight = g->minlight;
+	int32_t gmaxlight = g->maxlight;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
     switch(g->direction) {
@@ -387,16 +387,16 @@ void T_Glow(MEMREF memref)
 }
 
 
-void P_SpawnGlowingLight(short secnum)
+void P_SpawnGlowingLight(int16_t secnum)
 {
     glow_t*	g;
-	int lightamount;
+	int32_t lightamount;
 	MEMREF glowRef;
 	// Note that we are resetting sector attributes.
 	// Nothing special about it during gameplay.
 	
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	short seclightlevel = sectors[secnum].lightlevel;
+	int16_t seclightlevel = sectors[secnum].lightlevel;
 	sectors[secnum].special = 0;
 
 

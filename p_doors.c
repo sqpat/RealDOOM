@@ -56,7 +56,7 @@ void T_VerticalDoor (MEMREF memref)
 {
     result_e	res;
 	vldoor_t* door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
-	short doorsecnum = door->secnum;
+	int16_t doorsecnum = door->secnum;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	sector_t doorsector = sectors[doorsecnum];
 	THINKERREF doorthinkerRef;
@@ -190,8 +190,8 @@ void T_VerticalDoor (MEMREF memref)
 
 int
 EV_DoLockedDoor
-( short linetag,
-	short linespecial,
+( int16_t linetag,
+	int16_t linespecial,
   vldoor_e	type,
   MEMREF thingRef )
 {
@@ -249,10 +249,10 @@ EV_DoLockedDoor
 
 int
 EV_DoDoor
-( short linetag,
+( int16_t linetag,
   vldoor_e	type )
 {
-    int		secnum,rtn;
+    int32_t		secnum,rtn;
     vldoor_t*	door;
 	MEMREF doorRef;
 	fixed_t doortopheight;
@@ -346,18 +346,18 @@ EV_DoDoor
 //
 void
 EV_VerticalDoor
-( short linenum,
+( int16_t linenum,
   MEMREF thingRef )
 {
     player_t*	player;
-    int		secnum;
+    int32_t		secnum;
     //sector_t*	sec;
     vldoor_t*	door;
-    int		side = 0;
+    int32_t		side = 0;
 	MEMREF doorRef;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
-	short linespecial = lines[linenum].special;
-	short sidenum;
+	int16_t linespecial = lines[linenum].special;
+	int16_t sidenum;
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	side_t* sides;
 	fixed_t doortopheight;
@@ -529,7 +529,7 @@ EV_VerticalDoor
 //
 // Spawn a door that closes after 30 seconds
 //
-void P_SpawnDoorCloseIn30 (short secnum)
+void P_SpawnDoorCloseIn30 (int16_t secnum)
 {
     vldoor_t*	door;
 	MEMREF doorRef;
@@ -557,7 +557,7 @@ void P_SpawnDoorCloseIn30 (short secnum)
 //
 void
 P_SpawnDoorRaiseIn5Mins
-( short secnum)
+( int16_t secnum)
 {
 	vldoor_t*	door;
 	MEMREF doorRef;

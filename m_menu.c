@@ -62,40 +62,40 @@ extern boolean          message_dontfuckwithme;
 //
 // defaulted values
 //
-int                     mouseSensitivity;       // has default
+int32_t                     mouseSensitivity;       // has default
 
 // Show messages has default, 0 = off, 1 = on
-int                     showMessages;
+int32_t                     showMessages;
         
-int         sfxVolume;
-int         musicVolume;
+int32_t         sfxVolume;
+int32_t         musicVolume;
 
 // Blocky mode, has default, 0 = high, 1 = normal
-int                     detailLevel;            
-int                     screenblocks;           // has default
+int32_t                     detailLevel;
+int32_t                     screenblocks;           // has default
 
 // temp for screenblocks (0-9)
-int                     screenSize;             
+int32_t                     screenSize;
 
 // -1 = no quicksave slot picked!
-int                     quickSaveSlot;          
+int32_t                     quickSaveSlot;
 
  // 1 = message to be printed
-int                     messageToPrint;
+int32_t                     messageToPrint;
 // ...and here is the message string!
-char*                   messageString;          
+int8_t*                   messageString;          
 
 // message x & y
-int                     messageLastMenuActive;
+int32_t                     messageLastMenuActive;
 
 // timed message = no input from user
 boolean                 messageNeedsInput;     
 
-void    (*messageRoutine)(int response);
+void    (*messageRoutine)(int32_t response);
 
 #define SAVESTRINGSIZE  24
 
-char gammamsg[5][26] =
+int8_t gammamsg[5][26] =
 {
     GAMMALVL0,
     GAMMALVL1,
@@ -104,7 +104,7 @@ char gammamsg[5][26] =
     GAMMALVL4
 };
 
-char endmsg[NUM_QUITMESSAGES][80] =
+int8_t endmsg[NUM_QUITMESSAGES][80] =
 {
     // DOOM1
     QUITMSG,
@@ -117,7 +117,7 @@ char endmsg[NUM_QUITMESSAGES][80] =
     "go ahead and leave. see if i care."
 };
 
-char endmsg2[NUM_QUITMESSAGES][80] =
+int8_t endmsg2[NUM_QUITMESSAGES][80] =
 {
     // QuitDOOM II messages
     QUITMSG,
@@ -131,11 +131,11 @@ char endmsg2[NUM_QUITMESSAGES][80] =
 };
 
 // we are going to be entering a savegame string
-int                     saveStringEnter;              
-int                     saveSlot;       // which slot to save in
-int                     saveCharIndex;  // which char we're editing
+int32_t                     saveStringEnter;
+int32_t                     saveSlot;       // which slot to save in
+int32_t                     saveCharIndex;  // which char we're editing
 // old save description before edit
-char                    saveOldString[SAVESTRINGSIZE];  
+int8_t                    saveOldString[SAVESTRINGSIZE];
 
 boolean                 inhelpscreens;
 boolean                 menuactive;
@@ -144,9 +144,9 @@ boolean                 menuactive;
 #define LINEHEIGHT              16
 
 extern boolean          sendpause;
-char                    savegamestrings[10][SAVESTRINGSIZE];
+int8_t                    savegamestrings[10][SAVESTRINGSIZE];
 
-char    endstring[160];
+int8_t    endstring[160];
 
 
 //
@@ -155,39 +155,39 @@ char    endstring[160];
 typedef struct
 {
     // 0 = no cursor here, 1 = ok, 2 = arrows ok
-    short       status;
+    int16_t       status;
     
-    char        name[10];
+	int8_t        name[10];
     
     // choice = menu item #.
     // if status = 2,
     //   choice=0:leftarrow,1:rightarrow
-    void        (*routine)(int choice);
+    void        (*routine)(int32_t choice);
     
     // hotkey in menu
-    char        alphaKey;                       
+	int8_t        alphaKey;
 } menuitem_t;
 
 
 
 typedef struct menu_s
 {
-    short               numitems;       // # of menu items
+    int16_t               numitems;       // # of menu items
     struct menu_s*      prevMenu;       // previous menu
     menuitem_t*         menuitems;      // menu items
     void                (*routine)();   // draw routine
-    short               x;
-    short               y;              // x,y of menu
-    short               lastOn;         // last item user was on in menu
+    int16_t               x;
+    int16_t               y;              // x,y of menu
+    int16_t               lastOn;         // last item user was on in menu
 } menu_t;
 
-short           itemOn;                 // menu item skull is on
-short           skullAnimCounter;       // skull animation counter
-short           whichSkull;             // which skull to draw
+int16_t           itemOn;                 // menu item skull is on
+int16_t           skullAnimCounter;       // skull animation counter
+int16_t           whichSkull;             // which skull to draw
 
 // graphic name of skulls
 // warning: initializer-string for array of chars is too long
-char    skullName[2][/*8*/9] = {"M_SKULL1","M_SKULL2"};
+int8_t    skullName[2][/*8*/9] = {"M_SKULL1","M_SKULL2"};
 
 // current menudef
 menu_t* currentMenu;                          
@@ -195,29 +195,29 @@ menu_t* currentMenu;
 //
 // PROTOTYPES
 //
-void M_NewGame(int choice);
-void M_Episode(int choice);
-void M_ChooseSkill(int choice);
-void M_LoadGame(int choice);
-void M_SaveGame(int choice);
-void M_Options(int choice);
-void M_EndGame(int choice);
-void M_ReadThis(int choice);
-void M_ReadThis2(int choice);
-void M_QuitDOOM(int choice);
+void M_NewGame(int32_t choice);
+void M_Episode(int32_t choice);
+void M_ChooseSkill(int32_t choice);
+void M_LoadGame(int32_t choice);
+void M_SaveGame(int32_t choice);
+void M_Options(int32_t choice);
+void M_EndGame(int32_t choice);
+void M_ReadThis(int32_t choice);
+void M_ReadThis2(int32_t choice);
+void M_QuitDOOM(int32_t choice);
 
-void M_ChangeMessages(int choice);
-void M_ChangeSensitivity(int choice);
-void M_SfxVol(int choice);
-void M_MusicVol(int choice);
-void M_ChangeDetail(int choice);
-void M_SizeDisplay(int choice);
-void M_StartGame(int choice);
-void M_Sound(int choice);
+void M_ChangeMessages(int32_t choice);
+void M_ChangeSensitivity(int32_t choice);
+void M_SfxVol(int32_t choice);
+void M_MusicVol(int32_t choice);
+void M_ChangeDetail(int32_t choice);
+void M_SizeDisplay(int32_t choice);
+void M_StartGame(int32_t choice);
+void M_Sound(int32_t choice);
 
-void M_FinishReadThis(int choice);
-void M_LoadSelect(int choice);
-void M_SaveSelect(int choice);
+void M_FinishReadThis(int32_t choice);
+void M_LoadSelect(int32_t choice);
+void M_SaveSelect(int32_t choice);
 void M_ReadSaveStrings(void);
 void M_QuickSave(void);
 void M_QuickLoad(void);
@@ -233,14 +233,14 @@ void M_DrawSound(void);
 void M_DrawLoad(void);
 void M_DrawSave(void);
 
-void M_DrawSaveLoadBorder(int x,int y);
+void M_DrawSaveLoadBorder(int32_t x, int32_t y);
 void M_SetupNextMenu(menu_t *menudef);
-void M_DrawThermo(int x,int y,int thermWidth,int thermDot);
-void M_WriteText(int x, int y, char *string);
-int  M_StringWidth(char *string);
-int  M_StringHeight(char *string);
+void M_DrawThermo(int32_t x, int32_t y, int32_t thermWidth, int32_t thermDot);
+void M_WriteText(int32_t x, int32_t y, int8_t *string);
+int32_t  M_StringWidth(int8_t *string);
+int32_t  M_StringHeight(int8_t *string);
 void M_StartControlPanel(void);
-void M_StartMessage(char *string,void *routine,boolean input);
+void M_StartMessage(int8_t *string,void *routine,boolean input);
 void M_StopMessage(void);
 void M_ClearMenus (void);
 
@@ -540,10 +540,10 @@ menu_t  SaveDef =
 //
 void M_ReadSaveStrings(void)
 {
-    int             handle;
-    int             count;
-    int             i;
-    char    name[256];
+	int32_t             handle;
+	int32_t             count;
+	int32_t             i;
+	int8_t    name[256];
         
     for (i = 0;i < load_end;i++)
     {
@@ -571,7 +571,7 @@ void M_ReadSaveStrings(void)
 //
 void M_DrawLoad(void)
 {
-    int             i;
+	int32_t             i;
         
     V_DrawPatchDirect (72,28,0, W_CacheLumpNameEMSAsPatch("M_LOADG",PU_CACHE));
     for (i = 0;i < load_end; i++)
@@ -586,9 +586,9 @@ void M_DrawLoad(void)
 //
 // Draw border for the savegame description
 //
-void M_DrawSaveLoadBorder(int x,int y)
+void M_DrawSaveLoadBorder(int32_t x, int32_t y)
 {
-    int             i;
+	int32_t             i;
         
     V_DrawPatchDirect (x-8,y+7,0, W_CacheLumpNameEMSAsPatch("M_LSLEFT", PU_CACHE));
         
@@ -606,9 +606,9 @@ void M_DrawSaveLoadBorder(int x,int y)
 //
 // User wants to load this game
 //
-void M_LoadSelect(int choice)
+void M_LoadSelect(int32_t choice)
 {
-    char    name[256];
+	int8_t    name[256];
         
     if (M_CheckParm("-cdrom"))
         sprintf(name,"c:\\doomdata\\"SAVEGAMENAME"%d.dsg",choice);
@@ -621,7 +621,7 @@ void M_LoadSelect(int choice)
 //
 // Selected from DOOM menu
 //
-void M_LoadGame (int choice)
+void M_LoadGame (int32_t choice)
 {
  
     M_SetupNextMenu(&LoadDef);
@@ -634,7 +634,7 @@ void M_LoadGame (int choice)
 //
 void M_DrawSave(void)
 {
-    int             i;
+	int32_t             i;
         
     V_DrawPatchDirect (72,28,0, W_CacheLumpNameEMSAsPatch("M_SAVEG", PU_CACHE));
     for (i = 0;i < load_end; i++)
@@ -653,7 +653,7 @@ void M_DrawSave(void)
 //
 // M_Responder calls this when user is finished
 //
-void M_DoSave(int slot)
+void M_DoSave(int32_t slot)
 {
     G_SaveGame (slot,savegamestrings[slot]);
     M_ClearMenus ();
@@ -666,7 +666,7 @@ void M_DoSave(int slot)
 //
 // User wants to save. Start string input for M_Responder
 //
-void M_SaveSelect(int choice)
+void M_SaveSelect(int32_t choice)
 {
     // we are going to be intercepting all chars
     saveStringEnter = 1;
@@ -681,7 +681,7 @@ void M_SaveSelect(int choice)
 //
 // Selected from DOOM menu
 //
-void M_SaveGame (int choice)
+void M_SaveGame (int32_t choice)
 {
     if (!usergame)
     {
@@ -701,9 +701,9 @@ void M_SaveGame (int choice)
 //
 //      M_QuickSave
 //
-char    tempstring[80];
+int8_t    tempstring[80];
 
-void M_QuickSaveResponse(int ch)
+void M_QuickSaveResponse(int32_t ch)
 {
     if (ch == 'y')
     {
@@ -740,7 +740,7 @@ void M_QuickSave(void)
 //
 // M_QuickLoad
 //
-void M_QuickLoadResponse(int ch)
+void M_QuickLoadResponse(int32_t ch)
 {
     if (ch == 'y')
     {
@@ -809,12 +809,12 @@ void M_DrawSound(void)
                  16,musicVolume);
 }
 
-void M_Sound(int choice)
+void M_Sound(int32_t choice)
 {
     M_SetupNextMenu(&SoundDef);
 }
 
-void M_SfxVol(int choice)
+void M_SfxVol(int32_t choice)
 {
     switch(choice)
     {
@@ -831,7 +831,7 @@ void M_SfxVol(int choice)
     S_SetSfxVolume(sfxVolume * 8);
 }
 
-void M_MusicVol(int choice)
+void M_MusicVol(int32_t choice)
 {
     switch(choice)
     {
@@ -871,7 +871,7 @@ void M_DrawNewGame(void)
     V_DrawPatchDirect (54,38,0, W_CacheLumpNameEMSAsPatch("M_SKILL", PU_CACHE));
 }
 
-void M_NewGame(int choice)
+void M_NewGame(int32_t choice)
 {
 	if (commercial)
 		M_SetupNextMenu(&NewDef);
@@ -883,14 +883,14 @@ void M_NewGame(int choice)
 //
 //      M_Episode
 //
-int     epi;
+int32_t     epi;
 
 void M_DrawEpisode(void)
 {
     V_DrawPatchDirect (54,38,0, W_CacheLumpNameEMSAsPatch("M_EPISOD", PU_CACHE));
 }
 
-void M_VerifyNightmare(int ch)
+void M_VerifyNightmare(int32_t ch)
 {
     if (ch != 'y')
         return;
@@ -899,7 +899,7 @@ void M_VerifyNightmare(int ch)
     M_ClearMenus ();
 }
 
-void M_ChooseSkill(int choice)
+void M_ChooseSkill(int32_t choice)
 {
     if (choice == nightmare)
     {
@@ -911,7 +911,7 @@ void M_ChooseSkill(int choice)
     M_ClearMenus ();
 }
 
-void M_Episode(int choice)
+void M_Episode(int32_t choice)
 {
     if ( shareware
          && choice)
@@ -930,8 +930,8 @@ void M_Episode(int choice)
 //
 // M_Options
 //
-char    detailNames[2][9]       = {"M_GDHIGH","M_GDLOW"};
-char    msgNames[2][9]          = {"M_MSGOFF","M_MSGON"};
+int8_t    detailNames[2][9]       = {"M_GDHIGH","M_GDLOW"};
+int8_t    msgNames[2][9]          = {"M_MSGOFF","M_MSGON"};
 
 
 void M_DrawOptions(void)
@@ -951,7 +951,7 @@ void M_DrawOptions(void)
                  9,screenSize);
 }
 
-void M_Options(int choice)
+void M_Options(int32_t choice)
 {
     M_SetupNextMenu(&OptionsDef);
 }
@@ -961,9 +961,9 @@ void M_Options(int choice)
 //
 //      Toggle messages on/off
 //
-void M_ChangeMessages(int choice)
+void M_ChangeMessages(int32_t choice)
 {
-    // warning: unused parameter `int choice'
+    // warning: unused parameter `int32_t choice'
     choice = 0;
     showMessages = 1 - showMessages;
         
@@ -979,7 +979,7 @@ void M_ChangeMessages(int choice)
 //
 // M_EndGame
 //
-void M_EndGameResponse(int ch)
+void M_EndGameResponse(int32_t ch)
 {
     if (ch != 'y')
         return;
@@ -989,7 +989,7 @@ void M_EndGameResponse(int ch)
     D_StartTitle ();
 }
 
-void M_EndGame(int choice)
+void M_EndGame(int32_t choice)
 {
 	choice = 0;
 	if (!usergame)
@@ -1007,19 +1007,19 @@ void M_EndGame(int choice)
 //
 // M_ReadThis
 //
-void M_ReadThis(int choice)
+void M_ReadThis(int32_t choice)
 {
     choice = 0;
     M_SetupNextMenu(&ReadDef1);
 }
 
-void M_ReadThis2(int choice)
+void M_ReadThis2(int32_t choice)
 {
     choice = 0;
     M_SetupNextMenu(&ReadDef2);
 }
 
-void M_FinishReadThis(int choice)
+void M_FinishReadThis(int32_t choice)
 {
     choice = 0;
     M_SetupNextMenu(&MainDef);
@@ -1031,7 +1031,7 @@ void M_FinishReadThis(int choice)
 //
 // M_QuitDOOM
 //
-int     quitsounds[8] =
+int32_t     quitsounds[8] =
 {
     sfx_pldeth,
     sfx_dmpain,
@@ -1043,7 +1043,7 @@ int     quitsounds[8] =
     sfx_sgtatk
 };
 
-int     quitsounds2[8] =
+int32_t     quitsounds2[8] =
 {
     sfx_vilact,
     sfx_getpow,
@@ -1057,7 +1057,7 @@ int     quitsounds2[8] =
 
 
 
-void M_QuitResponse(int ch)
+void M_QuitResponse(int32_t ch)
 {
 	if (ch != 'y')
 		return;
@@ -1074,7 +1074,7 @@ void M_QuitResponse(int ch)
 
 
 
-void M_QuitDOOM(int choice)
+void M_QuitDOOM(int32_t choice)
 {
   // We pick index 0 which is language sensitive,
   //  or one at random, between 1 and maximum number.
@@ -1102,7 +1102,7 @@ void M_QuitDOOM(int choice)
 
 
 
-void M_ChangeSensitivity(int choice)
+void M_ChangeSensitivity(int32_t choice)
 {
     switch(choice)
     {
@@ -1120,7 +1120,7 @@ void M_ChangeSensitivity(int choice)
 
 
 
-void M_ChangeDetail(int choice)
+void M_ChangeDetail(int32_t choice)
 {
     choice = 0;
     detailLevel = 1 - detailLevel;
@@ -1136,7 +1136,7 @@ void M_ChangeDetail(int choice)
 
 
 
-void M_SizeDisplay(int choice)
+void M_SizeDisplay(int32_t choice)
 {
     switch(choice)
     {
@@ -1168,13 +1168,13 @@ void M_SizeDisplay(int choice)
 //
 void
 M_DrawThermo
-( int   x,
-  int   y,
-  int   thermWidth,
-  int   thermDot )
+(int32_t   x,
+	int32_t   y,
+	int32_t   thermWidth,
+	int32_t   thermDot )
 {
-    int         xx;
-    int         i;
+	int32_t         xx;
+	int32_t         i;
 
     xx = x;
     V_DrawPatchDirect (xx,y,0, W_CacheLumpNameEMSAsPatch("M_THERML", PU_CACHE));
@@ -1195,7 +1195,7 @@ M_DrawThermo
 
 void
 M_StartMessage
-( char*         string,
+( int8_t*         string,
   void*         routine,
   boolean       input )
 {
@@ -1216,11 +1216,11 @@ M_StartMessage
 //
 // Find string width from hu_font chars
 //
-int M_StringWidth(char* string)
+int32_t M_StringWidth(int8_t* string)
 {
-    int             i;
-    int             w = 0;
-    int             c;
+	int32_t             i;
+	int32_t             w = 0;
+	int32_t             c;
 	patch_t* hu_fontC;
 
     for (i = 0;i < strlen(string);i++)
@@ -1230,7 +1230,7 @@ int M_StringWidth(char* string)
             w += 4;
 		else {
 			hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
-			w += SHORT(hu_fontC->width);
+			w += (hu_fontC->width);
 		}
     }
                 
@@ -1242,12 +1242,12 @@ int M_StringWidth(char* string)
 //
 //      Find string height from hu_font chars
 //
-int M_StringHeight(char* string)
+int32_t M_StringHeight(int8_t* string)
 {
-    int             i;
-    int             h;
+	int32_t             i;
+	int32_t             h;
 	patch_t* hu_font0 = Z_LoadBytesFromEMS(hu_fontRef[0]);
-	int             height = SHORT(hu_font0->height);
+	int32_t             height = (hu_font0->height);
         
     h = height;
     for (i = 0;i < strlen(string);i++)
@@ -1263,15 +1263,15 @@ int M_StringHeight(char* string)
 //
 void
 M_WriteText
-( int           x,
-  int           y,
-  char*         string)
+(int32_t           x,
+	int32_t           y,
+  int8_t*         string)
 {
-    int         w;
-    char*       ch;
-    int         c;
-    int         cx;
-    int         cy;
+	int32_t         w;
+    int8_t*       ch;
+	int32_t         c;
+	int32_t         cx;
+	int32_t         cy;
 	patch_t* hu_fontC;
 
     ch = string;
@@ -1298,7 +1298,7 @@ M_WriteText
         }
 		hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
 
-        w = SHORT (hu_fontC->width);
+        w =  (hu_fontC->width);
         if (cx+w > SCREENWIDTH)
             break;
         V_DrawPatchDirect(cx, cy, 0, hu_fontC);
@@ -1317,30 +1317,30 @@ M_WriteText
 //
 boolean M_Responder (event_t* ev)
 {
-    int             ch;
-    int             i;
-    static  int     mousewait = 0;
-    static  int     mousey = 0;
-    static  int     lasty = 0;
-    static  int     mousex = 0;
-    static  int     lastx = 0;
+	int32_t             ch;
+	int32_t             i;
+    static  int32_t     mousewait = 0;
+    static  int32_t     mousey = 0;
+    static  int32_t     lasty = 0;
+    static  int32_t     mousex = 0;
+    static  int32_t     lastx = 0;
         
     ch = -1;
         
     
-    if (ev->type == ev_mouse && mousewait < I_GetTime())
+    if (ev->type == ev_mouse && mousewait < ticcount)
     {
         mousey += ev->data3;
         if (mousey < lasty-30)
         {
             ch = KEY_DOWNARROW;
-            mousewait = I_GetTime() + 5;
+            mousewait = ticcount + 5;
             mousey = lasty -= 30;
         }
         else if (mousey > lasty+30)
         {
             ch = KEY_UPARROW;
-            mousewait = I_GetTime() + 5;
+            mousewait = ticcount + 5;
             mousey = lasty += 30;
         }
                 
@@ -1348,26 +1348,26 @@ boolean M_Responder (event_t* ev)
         if (mousex < lastx-30)
         {
             ch = KEY_LEFTARROW;
-            mousewait = I_GetTime() + 5;
+            mousewait = ticcount + 5;
             mousex = lastx -= 30;
         }
         else if (mousex > lastx+30)
         {
             ch = KEY_RIGHTARROW;
-            mousewait = I_GetTime() + 5;
+            mousewait = ticcount + 5;
             mousex = lastx += 30;
         }
                 
         if (ev->data1&1)
         {
             ch = KEY_ENTER;
-            mousewait = I_GetTime() + 15;
+            mousewait = ticcount + 15;
         }
                         
         if (ev->data1&2)
         {
             ch = KEY_BACKSPACE;
-            mousewait = I_GetTime() + 15;
+            mousewait = ticcount + 15;
         }
     }
     else
@@ -1666,12 +1666,12 @@ void M_StartControlPanel (void)
 //
 void M_Drawer (void)
 {
-    static short        x;
-    static short        y;
-    short               i;
-    short               max;
-    char                string[40];
-    int                 start;
+    static int16_t        x;
+    static int16_t        y;
+    int16_t               i;
+    int16_t               max;
+	int8_t                string[40];
+	int32_t                 start;
 	patch_t*			hu_font0;
 
     inhelpscreens = false;
@@ -1703,7 +1703,7 @@ void M_Drawer (void)
             M_WriteText(x,y,string);
 			hu_font0 = Z_LoadBytesFromEMS(hu_fontRef[0]);
 
-            y += SHORT(hu_font0->height);
+            y += (hu_font0->height);
         }
         return;
     }

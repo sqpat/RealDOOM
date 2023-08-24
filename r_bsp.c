@@ -33,13 +33,12 @@
 
 //#include "r_local.h"
 
-int setval = 0;
 
-short		curlinenum;
+int16_t		curlinenum;
 //line_t*		linedef;
-short linedefOffset;
-short	frontsecnum;
-short	backsecnum;
+int16_t linedefOffset;
+int16_t	frontsecnum;
+int16_t	backsecnum;
 
 drawseg_t	drawsegs[MAXDRAWSEGS];
 drawseg_t*	ds_p;
@@ -47,8 +46,8 @@ drawseg_t*	ds_p;
 
 void
 R_StoreWallRange
-( int	start,
-  int	stop );
+( int32_t	start,
+  int32_t	stop );
 
 
 
@@ -70,8 +69,8 @@ void R_ClearDrawSegs (void)
 //
 typedef	struct
 {
-    int	first;
-    int last;
+    int32_t	first;
+	int32_t last;
     
 } cliprange_t;
 
@@ -93,8 +92,8 @@ cliprange_t	solidsegs[MAXSEGS];
 // 
 void
 R_ClipSolidWallSegment
-( int			first,
-  int			last )
+( int32_t			first,
+  int32_t			last )
 {
     cliprange_t*	next;
     cliprange_t*	start;
@@ -183,12 +182,12 @@ R_ClipSolidWallSegment
 //
 void
 R_ClipPassWallSegment
-( int	first,
-  int	last )
+( int32_t	first,
+  int32_t	last )
 {
     cliprange_t*	start;
 	#ifdef LOOPCHECK 
-		int i = 0;
+	int32_t i = 0;
 	#endif
     // Find the first range that touches the range
     //  (adjacent pixels are touching).
@@ -261,21 +260,21 @@ void R_ClearClipSegs (void)
 // Clips the given segment
 // and adds any visible pieces to the line list.
 //
-void R_AddLine (short linenum)
+void R_AddLine (int16_t linenum)
 {
-    int			x1;
-    int			x2;
+    int32_t			x1;
+    int32_t			x2;
     angle_t		angle1;
     angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-	short linebacksecnum = segs[linenum].backsecnum;
-	short curlinesidedefOffset = segs[linenum].sidedefOffset;
-	short linenumv1Offset = segs[linenum].v1Offset;
-	short linenumv2Offset = segs[linenum].v2Offset;
+	int16_t linebacksecnum = segs[linenum].backsecnum;
+	int16_t curlinesidedefOffset = segs[linenum].sidedefOffset;
+	int16_t linenumv1Offset = segs[linenum].v1Offset;
+	int16_t linenumv2Offset = segs[linenum].v2Offset;
 	side_t* sides;
-	short sidemidtex;
+	int16_t sidemidtex;
 	sector_t* sectors;
 	sector_t frontsector;
 	sector_t backsector;
@@ -413,8 +412,8 @@ boolean R_CheckBBox(fixed_t *bspcoord)
 
 	cliprange_t *start;
 
-	int sx1;
-	int sx2;
+	int32_t sx1;
+	int32_t sx2;
 
 	// Find the corners of the box
 	// that define the edges from current viewpoint.
@@ -537,7 +536,7 @@ boolean R_CheckBBox(fixed_t *bspcoord)
 	return true;
 }
 
-int upcount = 0;
+int32_t upcount = 0;
 
 
 //
@@ -546,15 +545,15 @@ int upcount = 0;
 // Add sprites of things in sector.
 // Draw one or more line segments.
 //
-void R_Subsector(int subsecnum)
+void R_Subsector(int32_t subsecnum)
 {
-	int count;
+	int32_t count;
 	seg_t *line;
 	subsector_t *sub;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	//seg_t* segs;
-	int lineoffset = 0;
-	short firstline;
+	int32_t lineoffset = 0;
+	int16_t firstline;
 	sector_t* sectors;
 	sector_t* frontsector;
 
@@ -612,14 +611,14 @@ void R_Subsector(int subsecnum)
 
 #define MAX_BSP_DEPTH 64
 
-void R_RenderBSPNode(int bspnum)
+void R_RenderBSPNode(int32_t bspnum)
 {
 	node_t *bsp;
 	fixed_t dx, dy;
 	fixed_t left, right;
-	int stack_bsp[MAX_BSP_DEPTH];
+	int32_t stack_bsp[MAX_BSP_DEPTH];
 	byte stack_side[MAX_BSP_DEPTH];
-	int sp = 0;
+	int32_t sp = 0;
 	byte side = 0;
 	node_t* nodes;
 

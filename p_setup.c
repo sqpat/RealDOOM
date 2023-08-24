@@ -38,37 +38,37 @@
 #include "doomstat.h"
 
 
-void    P_SpawnMapThing(mapthing_t *    mthing, int key);
+void    P_SpawnMapThing(mapthing_t *    mthing, int32_t key);
 
 //
 // MAP related Lookup tables.
 // Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
 //
-int             numvertexes;
+int32_t             numvertexes;
 MEMREF       vertexesRef;
 
-int             numsegs;
+int32_t             numsegs;
 //seg_t*          segs;
 MEMREF          segsRef;
 
-int             numsectors;
+int32_t             numsectors;
 MEMREF          sectorsRef;
 //sector_t*       sectors;
 
-int             numsubsectors;
+int32_t             numsubsectors;
 //subsector_t*    subsectors;
 MEMREF    subsectorsRef;
 
-int             numnodes;
+int32_t             numnodes;
 MEMREF          nodesRef;
 
-int             numlines;
+int32_t             numlines;
 MEMREF			linesRef;
 
-int             numsides;
+int32_t             numsides;
 MEMREF          sidesRef;
 
-//short*          linebuffer;
+//int16_t*          linebuffer;
 MEMREF          linebufferRef;
 
 // BLOCKMAP
@@ -79,9 +79,9 @@ MEMREF          linebufferRef;
 // by spatial subdivision in 2D.
 //
 // Blockmap size.
-int             bmapwidth;
-int             bmapheight;     // size in mapblocks
-int				blockmapOffset;       // int for larger maps
+int32_t             bmapwidth;
+int32_t             bmapheight;     // size in mapblocks
+int32_t				blockmapOffset;       // int32_t for larger maps
 
 								// offsets in blockmap are from here
 MEMREF          blockmaplumpRef;
@@ -107,11 +107,11 @@ MEMREF           rejectmatrixRef;
 //
 // P_LoadVertexes
 //
-void P_LoadVertexes(int lump)
+void P_LoadVertexes(int32_t lump)
 {
 	MEMREF				dataRef;
 	mapvertex_t*			data;
-	int                 i;
+	int32_t                 i;
 	mapvertex_t*        ml;
 	vertex_t*           li;
 
@@ -134,8 +134,8 @@ void P_LoadVertexes(int lump)
 	for (i = 0; i < numvertexes; i++, li++) {
 		ml = &data[i];
 
-		li->x = SHORT(ml->x) << FRACBITS;
-		li->y = SHORT(ml->y) << FRACBITS;
+		li->x = (ml->x) << FRACBITS;
+		li->y = (ml->y) << FRACBITS;
 		Z_RefIsActive(dataRef);
 		Z_RefIsActive(vertexesRef);
 	}
@@ -149,30 +149,30 @@ void P_LoadVertexes(int lump)
 //
 // P_LoadSegs
 //
-void P_LoadSegs(int lump)
+void P_LoadSegs(int32_t lump)
 {
 	MEMREF				dataRef;
 	mapseg_t *          data;
-	int                 i;
+	int32_t                 i;
 	mapseg_t*           ml;
 	seg_t*              li;
 	line_t*             ldef;
-	int                 side;
+	int32_t                 side;
 	vertex_t*                       vertexes;
 	seg_t*                          segs;
-	short linedef;
+	int16_t linedef;
 	side_t*         sides;
-	short ldefsidenum;
-	short ldefothersidenum;
-	short sidesecnum;
-	short othersidesecnum;
-	int ldefflags;
+	int16_t ldefsidenum;
+	int16_t ldefothersidenum;
+	int16_t sidesecnum;
+	int16_t othersidesecnum;
+	int32_t ldefflags;
 	line_t* lines;
-	short mlv1;
-	short mlv2;
+	int16_t mlv1;
+	int16_t mlv2;
 	angle_t mlangle;
 	fixed_t mloffset;
-	short mllinedef;
+	int16_t mllinedef;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segsRef = Z_MallocEMSNew(numsegs * sizeof(seg_t), PU_LEVEL, 0, ALLOC_TYPE_SEGMENTS);
 	
@@ -188,13 +188,13 @@ void P_LoadSegs(int lump)
 	for (i = 0; i < numsegs; i++) {
 		data = (mapseg_t *)Z_LoadBytesFromEMS(dataRef);
 		ml = &data[i];
-		mlv1 = SHORT(ml->v1);
-		mlv2 = SHORT(ml->v2);
-		mlangle = (SHORT(ml->angle)) << 16;
-		mloffset = (SHORT(ml->offset)) << 16;
-		mllinedef = SHORT(ml->linedef);
-		side = SHORT(ml->side);
-		linedef = SHORT(ml->linedef);
+		mlv1 = (ml->v1);
+		mlv2 = (ml->v2);
+		mlangle = ((ml->angle)) << 16;
+		mloffset = ((ml->offset)) << 16;
+		mllinedef = (ml->linedef);
+		side = (ml->side);
+		linedef = (ml->linedef);
 
 
 		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -243,10 +243,10 @@ void P_LoadSegs(int lump)
 //
 // P_LoadSubsectors
 //
-void P_LoadSubsectors(int lump)
+void P_LoadSubsectors(int32_t lump)
 {
 	mapsubsector_t *               data;
-	int                 i;
+	int32_t                 i;
 	mapsubsector_t*     ms;
 	subsector_t*        ss;
 	subsector_t*    subsectors;
@@ -266,8 +266,8 @@ void P_LoadSubsectors(int lump)
 	{
 		ms = &data[i];
 		ss = &subsectors[i];
-		ss->numlines = SHORT(ms->numsegs);
-		ss->firstline = SHORT(ms->firstseg);
+		ss->numlines = (ms->numsegs);
+		ss->firstline = (ms->firstseg);
 		Z_RefIsActive(dataRef);
 		Z_RefIsActive(subsectorsRef);
 
@@ -281,10 +281,10 @@ void P_LoadSubsectors(int lump)
 //
 // P_LoadSectors
 //
-void P_LoadSectors(int lump)
+void P_LoadSectors(int32_t lump)
 {
 	mapsector_t*        data;
-	int                 i;
+	int32_t                 i;
 	mapsector_t        ms;
 	sector_t*           ss;
 	MEMREF				dataRef;
@@ -306,13 +306,13 @@ void P_LoadSectors(int lump)
 		data = (mapsector_t *)Z_LoadBytesFromEMS(dataRef);
 		ms = data[i];
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-		ss->floorheight = SHORT(ms.floorheight) << FRACBITS;
-		ss->ceilingheight = SHORT(ms.ceilingheight) << FRACBITS;
+		ss->floorheight = (ms.floorheight) << FRACBITS;
+		ss->ceilingheight = (ms.ceilingheight) << FRACBITS;
 		ss->floorpic = R_FlatNumForName(ms.floorpic);
 		ss->ceilingpic = R_FlatNumForName(ms.ceilingpic);
-		ss->lightlevel = SHORT(ms.lightlevel);
-		ss->special = SHORT(ms.special);
-		ss->tag = SHORT(ms.tag);
+		ss->lightlevel = (ms.lightlevel);
+		ss->special = (ms.special);
+		ss->tag = (ms.tag);
 		ss->thinglistRef = NULL_MEMREF;
 		Z_RefIsActive(dataRef);
 
@@ -327,12 +327,12 @@ void P_LoadSectors(int lump)
 //
 // P_LoadNodes
 //
-void P_LoadNodes(int lump)
+void P_LoadNodes(int32_t lump)
 {
 	mapnode_t *       data;
-	int         i;
-	int         j;
-	int         k;
+	int32_t         i;
+	int32_t         j;
+	int32_t         k;
 	node_t*     no;
 	node_t*		nodes;
 	MEMREF		dataRef;
@@ -343,7 +343,7 @@ void P_LoadNodes(int lump)
 		fixed_t	bbox[2][4];
 
 	// If NF_SUBSECTOR its a subsector.
-	unsigned short children[2];
+	uint16_t children[2];
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 	nodesRef = Z_MallocEMSNew (numnodes * sizeof(node_t), PU_LEVEL, 0, ALLOC_TYPE_NODES);
@@ -357,14 +357,14 @@ void P_LoadNodes(int lump)
 		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 		no = &nodes[i];
 
-		no->x = SHORT(currentdata.x) << FRACBITS;
-		no->y = SHORT(currentdata.y) << FRACBITS;
-		no->dx = SHORT(currentdata.dx) << FRACBITS;
-		no->dy = SHORT(currentdata.dy) << FRACBITS;
+		no->x = (currentdata.x) << FRACBITS;
+		no->y = (currentdata.y) << FRACBITS;
+		no->dx = (currentdata.dx) << FRACBITS;
+		no->dy = (currentdata.dy) << FRACBITS;
 		for (j = 0; j < 2; j++) {
-			no->children[j] = SHORT(currentdata.children[j]);
+			no->children[j] = (currentdata.children[j]);
 			for (k = 0; k < 4; k++)
-				no->bbox[j][k] = SHORT(currentdata.bbox[j][k]) << FRACBITS;
+				no->bbox[j][k] = (currentdata.bbox[j][k]) << FRACBITS;
 		}
 		//Z_RefIsActive(nodesRef);
 		//Z_RefIsActive(dataRef);
@@ -377,12 +377,12 @@ void P_LoadNodes(int lump)
 //
 // P_LoadThings
 //
-void P_LoadThings(int lump)
+void P_LoadThings(int32_t lump)
 {
 	mapthing_t *		data;
-	int                 i;
+	int32_t                 i;
 	mapthing_t*         mt;
-	int                 numthings;
+	int32_t                 numthings;
 	boolean             spawn;
 	MEMREF				dataRef;
 	node_t*				nodes;
@@ -418,11 +418,11 @@ void P_LoadThings(int lump)
 			break;
 		}
 		// Do spawn all other stuff. 
-		mt->x = SHORT(mt->x);
-		mt->y = SHORT(mt->y);
-		mt->angle = SHORT(mt->angle);
-		mt->type = SHORT(mt->type);
-		mt->options = SHORT(mt->options);
+		mt->x = (mt->x);
+		mt->y = (mt->y);
+		mt->angle = (mt->angle);
+		mt->type = (mt->type);
+		mt->options = (mt->options);
 
 		P_SpawnMapThing(mt, i);
 	 
@@ -437,10 +437,10 @@ void P_LoadThings(int lump)
 // P_LoadLineDefs
 // Also counts secret lines for intermissions.
 //
-void P_LoadLineDefs(int lump)
+void P_LoadLineDefs(int32_t lump)
 {
 	maplinedef_t *		data;
-	int                 i;
+	int32_t                 i;
 	maplinedef_t*       mld;
 	line_t*             ld;
 	vertex_t*           v1;
@@ -448,20 +448,20 @@ void P_LoadLineDefs(int lump)
 	vertex_t*           vertexes;
 	side_t* sides;
 	line_t*         lines;
-	short side0secnum;
-	short side1secnum;
+	int16_t side0secnum;
+	int16_t side1secnum;
 	fixed_t v1x;
 	fixed_t v1y;
 	fixed_t v2x;
 	fixed_t v2y;
 	MEMREF dataRef;
-	short mldflags;
-	short mldspecial;
-	short mldtag;
-	short mldv1;
-	short mldv2 = SHORT(mld->v2);
-	short mldsidenum0;
-	short mldsidenum1;
+	int16_t mldflags;
+	int16_t mldspecial;
+	int16_t mldtag;
+	int16_t mldv1;
+	int16_t mldv2 = (mld->v2);
+	int16_t mldsidenum0;
+	int16_t mldsidenum1;
 
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
@@ -477,13 +477,13 @@ void P_LoadLineDefs(int lump)
 		data = (maplinedef_t *)  Z_LoadBytesFromEMS(dataRef);
 		mld = &data[i];
 
-		mldflags = SHORT(mld->flags);
-		mldspecial = SHORT(mld->special);
-		mldtag = SHORT(mld->tag);
-		mldv1 = SHORT(mld->v1);
-		mldv2 = SHORT(mld->v2);
-		mldsidenum0 = SHORT(mld->sidenum[0]);
-		mldsidenum1 = SHORT(mld->sidenum[1]);
+		mldflags = (mld->flags);
+		mldspecial = (mld->special);
+		mldtag = (mld->tag);
+		mldv1 = (mld->v1);
+		mldv2 = (mld->v2);
+		mldsidenum0 = (mld->sidenum[0]);
+		mldsidenum1 = (mld->sidenum[1]);
 		 
 
 		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
@@ -560,21 +560,21 @@ void P_LoadLineDefs(int lump)
 //
 // P_LoadSideDefs
 //
-void P_LoadSideDefs(int lump)
+void P_LoadSideDefs(int32_t lump)
 {
 	mapsidedef_t*               data;
-	int                 i;
+	int32_t                 i;
 	mapsidedef_t*       msd;
 	side_t*             sd;
 	side_t* sides;
-	short toptex;
-	short bottex;
-	short midtex;
+	int16_t toptex;
+	int16_t bottex;
+	int16_t midtex;
 	MEMREF dataRef;
-	char texname[8];
-	short msdtextureoffset;
-	short msdrowoffset;
-	short msdsecnum;
+	int8_t texname[8];
+	int16_t msdtextureoffset;
+	int16_t msdrowoffset;
+	int16_t msdsecnum;
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sidesRef = Z_MallocEMSNew (numsides * sizeof(side_t), PU_LEVEL, 0, ALLOC_TYPE_SIDES);
@@ -592,9 +592,9 @@ void P_LoadSideDefs(int lump)
 		data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
 		msd = &data[i];
 
-		msdtextureoffset = SHORT(msd->textureoffset);
-		msdrowoffset = SHORT(msd->rowoffset);
-		msdsecnum = SHORT(msd->sector);
+		msdtextureoffset = (msd->textureoffset);
+		msdrowoffset = (msd->rowoffset);
+		msdsecnum = (msd->sector);
 	
 		memcpy(texname, msd->toptexture, 8);
 		toptex = R_TextureNumForName(texname);
@@ -632,21 +632,21 @@ void P_LoadSideDefs(int lump)
 //
 // P_LoadBlockMap
 //
-void P_LoadBlockMap(int lump)
+void P_LoadBlockMap(int32_t lump)
 {
-	int         i;
-	int         count;
-	short*		blockmaplump;
+	int32_t         i;
+	int32_t         count;
+	int16_t*		blockmaplump;
 	
 	W_CacheLumpNumCheck(lump, 11);
 	
 	blockmaplumpRef = W_CacheLumpNumEMS(lump, PU_LEVEL);
-	blockmaplump = (short*)Z_LoadBytesFromEMS(blockmaplumpRef);
+	blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
 	blockmapOffset = 4;
 	count = W_LumpLength(lump) / 2;
 
 	for (i = 0; i < count; i++)
-		blockmaplump[i] = SHORT(blockmaplump[i]);
+		blockmaplump[i] = (blockmaplump[i]);
 
 	bmaporgx = blockmaplump[0] << FRACBITS;
 	bmaporgy = blockmaplump[1] << FRACBITS;
@@ -670,29 +670,29 @@ void P_LoadBlockMap(int lump)
 //
 void P_GroupLines(void)
 {
-	int                 i;
-	int                 j;
-	int                 total;
+	int32_t                 i;
+	int32_t                 j;
+	int32_t                 total;
 	line_t*             li;
 	seg_t*              seg;
 	fixed_t             bbox[4];
-	int                 block;
+	int32_t                 block;
 	seg_t*              segs;
 	vertex_t*			vertexes;
-	short				previouslinebufferindex;
-	short*				linebuffer;
+	int16_t				previouslinebufferindex;
+	int16_t*				linebuffer;
 	subsector_t*		subsectors;
-	short				firstlinenum;
-	short				sidedefOffset;
+	int16_t				firstlinenum;
+	int16_t				sidedefOffset;
 	line_t*				lines;
-	short				linev1Offset;
-	short				linev2Offset;
-	short				linebacksecnum;
-	short				linefrontsecnum;
-	short				linebufferindex;
-	short				sidesecnum;
+	int16_t				linev1Offset;
+	int16_t				linev2Offset;
+	int16_t				linebacksecnum;
+	int16_t				linefrontsecnum;
+	int16_t				linebufferindex;
+	int16_t				sidesecnum;
 	sector_t*			sectors;
-	int					sectorlinecount;
+	int32_t					sectorlinecount;
 
 	side_t* sides;
 
@@ -752,7 +752,7 @@ void P_GroupLines(void)
 
 			if (li->frontsecnum == i || li->backsecnum == i) {
 
-				linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+				linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
 				vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
@@ -761,7 +761,7 @@ void P_GroupLines(void)
 			}
 		}
 		if (linebufferindex - previouslinebufferindex != sectorlinecount) {
-			linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+			linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 			I_Error("P_GroupLines: miscounted %i %i   iteration %i      %i != (%i - %i)", linebuffer, sectors[i].linesoffset,  i, sectors[i].linecount, linebufferindex , previouslinebufferindex);
 		}
 
@@ -802,14 +802,14 @@ void P_GroupLines(void)
 //
 void
 P_SetupLevel
-(int           episode,
-	int           map,
-	int           playermask,
+(int32_t           episode,
+	int32_t           map,
+	int32_t           playermask,
 	skill_t       skill)
 {
-	int         i;
-	char        lumpname[9];
-	int         lumpnum;
+	int32_t         i;
+	int8_t        lumpname[9];
+	int32_t         lumpnum;
 
 	byte* nodes;
 

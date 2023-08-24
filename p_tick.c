@@ -25,8 +25,8 @@
 #include "m_misc.h"
 #include "p_setup.h"
 
-int	leveltime;
-short currentThinkerListHead;
+int32_t	leveltime;
+int16_t currentThinkerListHead;
 //
 // THINKERS
 // All thinkers should be allocated by Z_Malloc
@@ -47,7 +47,7 @@ thinker_t	thinkerlist[MAX_THINKERS];
 //
 void P_InitThinkers (void)
 {
-	int i = 2;
+	int32_t i = 2;
 	thinkerlist[0].next = 1;
 	thinkerlist[0].prev = 1;
 
@@ -63,8 +63,8 @@ void P_InitThinkers (void)
 
 THINKERREF P_GetNextThinkerRef(void) {
 
-    short start = currentThinkerListHead;
-    int i;
+    int16_t start = currentThinkerListHead;
+	int32_t i;
     
     for (i = currentThinkerListHead + 1; i != currentThinkerListHead; i++){
         if (i == MAX_THINKERS){
@@ -88,7 +88,7 @@ THINKERREF P_GetNextThinkerRef(void) {
 
 }
 
-int addCount = 0;
+int32_t addCount = 0;
 //
 // P_AddThinker
 // Adds a new thinker at the end of the list.
@@ -97,7 +97,7 @@ THINKERREF P_AddThinker (MEMREF argref, THINKFUNCTION thinkfunc)
 {
 	// get next index
 	// sets nexts, prevs
-	short index = P_GetNextThinkerRef();
+	int16_t index = P_GetNextThinkerRef();
 
 	thinkerlist[index].next = 0;
 	thinkerlist[index].prev = thinkerlist[0].prev;
@@ -139,10 +139,10 @@ void P_RunThinkers (void)
 {
     THINKERREF	currentthinker;
 	void* arg;
-	int i = 0;
+	int32_t i = 0;
 	vldoor_t* door;
 	THINKERREF	currentthinker2;
-	int j = 0;
+	int32_t j = 0;
 	currentthinker = thinkerlist[0].next;
 
 
@@ -288,7 +288,7 @@ void P_RunThinkers (void)
 
 void P_Ticker (void)
 {
-    int		i;
+    int32_t		i;
     
     // run the tic
 	// pause if in menu and at least one tic has been run

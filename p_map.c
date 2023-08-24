@@ -37,7 +37,7 @@
 
 fixed_t		tmbbox[4];
 MEMREF		tmthingRef;
-int		tmflags;
+int32_t		tmflags;
 fixed_t		tmx;
 fixed_t		tmy;
 
@@ -52,14 +52,14 @@ fixed_t		tmdropoffz;
 
 // keep track of the line that lowers the ceiling,
 // so missiles don't explode against sky hack walls
-short		ceilinglinenum;
+int16_t		ceilinglinenum;
 
 // keep track of special lines as they are hit,
 // but don't process them until the move is proven valid
 #define MAXSPECIALCROSS		8
 
-short		spechit[MAXSPECIALCROSS];
-int		numspechit;
+int16_t		spechit[MAXSPECIALCROSS];
+int32_t		numspechit;
 
 
 
@@ -112,16 +112,16 @@ P_TeleportMove
   fixed_t	x,
   fixed_t	y )
 {
-    int			xl;
-    int			xh;
-    int			yl;
-    int			yh;
-    int			bx;
-    int			by;
+    int32_t			xl;
+    int32_t			xh;
+    int32_t			yl;
+    int32_t			yh;
+    int32_t			bx;
+    int32_t			by;
     
-	short	newsubsecsecnum;
+	int16_t	newsubsecsecnum;
 	subsector_t*	subsectors;
-	short	newsubsecnum;
+	int16_t	newsubsecnum;
 	sector_t* sectors;
 	
 	mobj_t* tmthing;
@@ -194,22 +194,22 @@ P_TeleportMove
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-boolean PIT_CheckLine (short linenum)
+boolean PIT_CheckLine (int16_t linenum)
 {
 	mobj_t* tmthing;
-	//short linespecial;
-	//fixed_t linedx; , fixed_t linedy, short linev1Offset, short linev2Offset, short linefrontsecnum, short linebacksecnum, short lineside1, slopetype_t lineslopetype
+	//int16_t linespecial;
+	//fixed_t linedx; , fixed_t linedy, int16_t linev1Offset, int16_t linev2Offset, int16_t linefrontsecnum, int16_t linebacksecnum, int16_t lineside1, slopetype_t lineslopetype
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld->slopetype;
 	fixed_t linedx = ld->dx;
 	fixed_t linedy = ld->dy;
-	short linev1Offset = ld->v1Offset;
-	short linefrontsecnum = ld->frontsecnum;
-	short linebacksecnum = ld->backsecnum;
-	short lineflags = ld->flags;
-	short linespecial = ld->special;
-	short lineside1 = ld->sidenum[1];
+	int16_t linev1Offset = ld->v1Offset;
+	int16_t linefrontsecnum = ld->frontsecnum;
+	int16_t linebacksecnum = ld->backsecnum;
+	int16_t lineflags = ld->flags;
+	int16_t linespecial = ld->special;
+	int16_t lineside1 = ld->sidenum[1];
 
 	
 
@@ -280,14 +280,14 @@ boolean PIT_CheckThing (MEMREF thingRef)
 {
     fixed_t		blockdist;
     boolean		solid;
-    int			damage;
+    int32_t			damage;
 	mobj_t* tmthingTarget;
 	mobj_t* thing; 
 	mobj_t* tmthing; 
 	mobjtype_t tmthingTargettype;
 	mobjtype_t thingtype;
 	MEMREF tmthingtargetRef;
-	int thingflags;
+	int32_t thingflags;
 	fixed_t thingx;
 	fixed_t thingy;
 	fixed_t thingz;
@@ -436,16 +436,16 @@ P_CheckPosition
   fixed_t	x,
   fixed_t	y )
 {
-    int			xl;
-    int			xh;
-    int			yl;
-    int			yh;
-    int			bx;
-    int			by;
+    int32_t			xl;
+    int32_t			xh;
+    int32_t			yl;
+    int32_t			yh;
+    int32_t			bx;
+    int32_t			by;
 	subsector_t*	subsectors;
-	short newsubsecnum;
+	int16_t newsubsecnum;
 	mobj_t*			tmthing;
-	short newsubsecsecnum;
+	int16_t newsubsecsecnum;
 	sector_t* sectors;
     tmthingRef = thingRef;
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
@@ -546,16 +546,16 @@ P_TryMove
     fixed_t	oldy;
 	fixed_t	newx;
 	fixed_t	newy;
-    int		side;
-    int		oldside;
+    int32_t		side;
+    int32_t		oldside;
     line_t*	ld;
 	mobj_t* thing;
 	line_t* lines;
  	fixed_t lddx;
  	fixed_t lddy;
-	short ldspecial;
-	short ldv1Offset;
-	//int i;
+	int16_t ldspecial;
+	int16_t ldv1Offset;
+	//int32_t i;
 
 	floatok = false;
 
@@ -687,8 +687,8 @@ boolean P_ThingHeightClip (MEMREF thingRef)
 fixed_t		bestslidefrac;
 fixed_t		secondslidefrac;
 
-short		bestslidelinenum;
-short		secondslidelinenum;
+int16_t		bestslidelinenum;
+int16_t		secondslidelinenum;
 
 MEMREF		slidemoRef;
 
@@ -702,9 +702,9 @@ fixed_t		tmymove;
 // Adjusts the xmove / ymove
 // so that the next move will slide along the wall.
 //
-void P_HitSlideLine (short linenum)
+void P_HitSlideLine (int16_t linenum)
 {
-    int			side;
+    int32_t			side;
 
     angle_t		lineangle;
     angle_t		moveangle;
@@ -823,7 +823,7 @@ void P_SlideMove (MEMREF moRef)
     fixed_t		traily;
     fixed_t		newx;
     fixed_t		newy;
-    int			hitcount;
+    int32_t			hitcount;
 	mobj_t* mo;
 
 		
@@ -931,7 +931,7 @@ MEMREF		shootthingRef;
 // ???: use slope for monsters?
 fixed_t		shootz;	
 
-int		la_damage;
+int32_t		la_damage;
 fixed_t		attackrange;
 
 fixed_t		aimslope;
@@ -1212,7 +1212,7 @@ P_LineAttack
   angle_t	angle,
   fixed_t	distance,
   fixed_t	slope,
-  int		damage )
+  int32_t		damage )
 {
     fixed_t	x2;
     fixed_t	y2;
@@ -1243,7 +1243,7 @@ MEMREF		usethingRef;
 
 boolean	PTR_UseTraverse (intercept_t* in)
 {
-    int		side;
+    int32_t		side;
 	mobj_t* usething;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
@@ -1282,7 +1282,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 //
 void P_UseLines (player_t*	player) 
 {
-    int		angle;
+    int32_t		angle;
     fixed_t	x1;
     fixed_t	y1;
     fixed_t	x2;
@@ -1308,7 +1308,7 @@ void P_UseLines (player_t*	player)
 //
 MEMREF		bombsourceRef;
 MEMREF		bombspotRef;
-int		bombdamage;
+int32_t		bombdamage;
 
 
 //
@@ -1371,15 +1371,15 @@ void
 P_RadiusAttack
 (MEMREF	spotRef,
 	MEMREF	sourceRef,
-	int		damage)
+	int32_t		damage)
 {
-	int		x;
-	int		y;
+	int32_t		x;
+	int32_t		y;
 
-	int		xl;
-	int		xh;
-	int		yl;
-	int		yh;
+	int32_t		xl;
+	int32_t		xh;
+	int32_t		yl;
+	int32_t		yh;
 
 	fixed_t	dist;
 	mobj_t* spot = (mobj_t *)Z_LoadBytesFromEMS(spotRef);
@@ -1495,16 +1495,16 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 //
 boolean
 P_ChangeSector
-( short	secnum,
+( int16_t	secnum,
   boolean	crunch )
 {
-    int		x;
-    int		y;
+    int32_t		x;
+    int32_t		y;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int blockleft = sectors[secnum].blockbox[BOXLEFT];
-	int blockright = sectors[secnum].blockbox[BOXRIGHT];
-	int blocktop = sectors[secnum].blockbox[BOXTOP];
-	int blockbottom = sectors[secnum].blockbox[BOXBOTTOM];
+	int32_t blockleft = sectors[secnum].blockbox[BOXLEFT];
+	int32_t blockright = sectors[secnum].blockbox[BOXRIGHT];
+	int32_t blocktop = sectors[secnum].blockbox[BOXTOP];
+	int32_t blockbottom = sectors[secnum].blockbox[BOXBOTTOM];
 
 
     nofit = false;

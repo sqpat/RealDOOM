@@ -67,7 +67,7 @@ P_Thrust
 //
 void P_CalcHeight (player_t* player) 
 {
-    int		angle;
+    int32_t		angle;
     fixed_t	bob;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 
@@ -199,7 +199,7 @@ void P_DeathThink (player_t* player)
 
 		delta = angle - playermo->angle;
 	
-		if (delta < ANG5 || delta > (unsigned)-ANG5) {
+		if (delta < ANG5 || delta > (uint32_t)-ANG5) {
 			// Looking at killer,
 			//  so fade damage flash down.
 			playermo->angle = angle;
@@ -230,7 +230,7 @@ void P_PlayerThink (player_t* player)
     ticcmd_t*		cmd;
     weapontype_t	newweapon;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
-	short playermosecnum;
+	int16_t playermosecnum;
 	sector_t* sectors;
 
     // fixme: do this in the cheat code

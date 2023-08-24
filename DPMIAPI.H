@@ -43,34 +43,34 @@ enum DPMI_Errors
 
 typedef struct
    {
-   unsigned long  EDI;
-   unsigned long  ESI;
-   unsigned long  EBP;
-   unsigned long  Reserved;
-   unsigned long  EBX;
-   unsigned long  EDX;
-   unsigned long  ECX;
-   unsigned long  EAX;
-   unsigned short Flags;
-   unsigned short ES;
-   unsigned short DS;
-   unsigned short FS;
-   unsigned short GS;
-   unsigned short IP;
-   unsigned short CS;
-   unsigned short SP;
-   unsigned short SS;
+   uint32_t  EDI;
+   uint32_t  ESI;
+   uint32_t  EBP;
+   uint32_t  Reserved;
+   uint32_t  EBX;
+   uint32_t  EDX;
+   uint32_t  ECX;
+   uint32_t  EAX;
+   uint16_t Flags;
+   uint16_t ES;
+   uint16_t DS;
+   uint16_t FS;
+   uint16_t GS;
+   uint16_t IP;
+   uint16_t CS;
+   uint16_t SP;
+   uint16_t SS;
    } dpmi_regs;
 
-unsigned long DPMI_GetRealModeVector( int num );
-void DPMI_SetRealModeVector( int num, unsigned long vector );
-int  DPMI_CallRealModeFunction( dpmi_regs *callregs );
-int  DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length );
-int  DPMI_FreeDOSMemory( int descriptor );
-int  DPMI_LockMemory( void *address, unsigned length );
-int  DPMI_LockMemoryRegion( void *start, void *end );
-int  DPMI_UnlockMemory( void *address, unsigned length );
-int  DPMI_UnlockMemoryRegion( void *start, void *end );
+uint32_t DPMI_GetRealModeVector( int32_t num );
+void DPMI_SetRealModeVector(int32_t num, uint32_t vector );
+int32_t  DPMI_CallRealModeFunction( dpmi_regs *callregs );
+int32_t  DPMI_GetDOSMemory( void **ptr, int32_t *descriptor, uint32_t length );
+int32_t  DPMI_FreeDOSMemory(int32_t descriptor );
+int32_t  DPMI_LockMemory( void *address, uint32_t length );
+int32_t  DPMI_LockMemoryRegion( void *start, void *end );
+int32_t  DPMI_UnlockMemory( void *address, uint32_t length );
+int32_t  DPMI_UnlockMemoryRegion( void *start, void *end );
 
 #define DPMI_Lock( variable ) \
    ( DPMI_LockMemory( &( variable ), sizeof( variable ) ) )

@@ -28,18 +28,18 @@
 typedef struct
 {
     // Should be "IWAD" or "PWAD".
-    char		identification[4];		
-    int			numlumps;
-    int			infotableofs;
+	int8_t		identification[4];
+    int32_t			numlumps;
+    int32_t			infotableofs;
     
 } wadinfo_t;
 
 
 typedef struct
 {
-    int			filepos;
-    int			size;
-    char		name[8];
+    int32_t			filepos;
+    int32_t			size;
+	int8_t		name[8];
     
 } filelump_t;
 
@@ -48,32 +48,32 @@ typedef struct
 //
 typedef struct
 {
-    char	name[8];
-    int		handle;
-    int		position;
-    int		size;
+	int8_t	name[8];
+    int32_t		handle;
+    int32_t		position;
+    int32_t		size;
 } lumpinfo_t;
 
 
 extern	lumpinfo_t*	lumpinfo;
-extern	int		numlumps;
+extern	int32_t		numlumps;
 
-void    W_InitMultipleFiles (char** filenames);
+void    W_InitMultipleFiles (int8_t** filenames);
 void    W_Reload (void);
 
-int	W_CheckNumForName (char* name);
-int	W_GetNumForName (char* name);
+int32_t	W_CheckNumForName (int8_t* name);
+int32_t	W_GetNumForName (int8_t* name);
 
-int	W_LumpLength (int lump);
-void    W_ReadLump (int lump, void *dest);
+int32_t	W_LumpLength (int32_t lump);
+void    W_ReadLump (int32_t lump, void *dest);
 
-int W_CacheLumpNumCheck(int lump, int error);
-MEMREF  W_CacheLumpNumEMS(short lump, char tag);
+int32_t W_CacheLumpNumCheck(int32_t lump, int32_t error);
+MEMREF  W_CacheLumpNumEMS(int16_t lump, int8_t tag);
 
-//void*	W_CacheLumpName (char* name, int tag);
-MEMREF  W_CacheLumpNameEMS(char* name, int tag);
-void	W_EraseLumpCache(short index);
-patch_t* W_CacheLumpNameEMSAsPatch (char*         name, int           tag);
+//void*	W_CacheLumpName (int8_t* name, int32_t tag);
+MEMREF  W_CacheLumpNameEMS(int8_t* name, int32_t tag);
+void	W_EraseLumpCache(int16_t index);
+patch_t* W_CacheLumpNameEMSAsPatch (int8_t*         name, int32_t           tag);
 
 
 

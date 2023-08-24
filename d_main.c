@@ -77,25 +77,25 @@
 #define blazeOpen 6
 #define blazeClose 7
 
-typedef unsigned char vldoor_e;
+typedef uint8_t vldoor_e;
 
 
 typedef struct
 {
 	THINKERREF	thinkerRef;
 	vldoor_e	type;
-	short	secnum;
+	int16_t	secnum;
 	fixed_t	topheight;
 	fixed_t	speed;
 
 	// 1 = up, 0 = waiting at top, -1 = down
-	int             direction;
+	int32_t             direction;
 
 	// tics to wait at the top
-	int             topwait;
+	int32_t             topwait;
 	// (keep in case a door going down is reset)
 	// when it reaches 0, start going down
-	int             topcountdown;
+	int32_t             topcountdown;
 
 } vldoor_t;
 
@@ -111,7 +111,7 @@ typedef struct
 void D_DoomLoop (void);
 
 
-char*           wadfiles[MAXWADFILES];
+int8_t*           wadfiles[MAXWADFILES];
 
 
 boolean         nomonsters;     // checkparm of -nomonsters
@@ -124,14 +124,14 @@ boolean         singletics = false; // debug flag to cancel adaptiveness
 
 
 
-extern  int     sfxVolume;
-extern  int     musicVolume;
+extern  int32_t     sfxVolume;
+extern  int32_t     musicVolume;
 
 extern  boolean inhelpscreens;
 
 skill_t         startskill;
-int             startepisode;
-int             startmap;
+int32_t             startepisode;
+int32_t             startmap;
 boolean         autostart;
 
 FILE*           debugfile;
@@ -150,9 +150,9 @@ boolean         tnt;
 boolean         french;
 
 
-char            wadfile[1024];          // primary wad file
-char            mapdir[1024];           // directory of development maps
-char            basedefault[1024];      // default file
+int8_t            wadfile[1024];          // primary wad file
+int8_t            mapdir[1024];           // directory of development maps
+int8_t            basedefault[1024];      // default file
 
 
 void D_CheckNetGame (void);
@@ -168,8 +168,8 @@ void D_DoAdvanceDemo (void);
 // Events can be discarded if no responder claims them
 //
 event_t         events[MAXEVENTS];
-int             eventhead;
-int             eventtail;
+int32_t             eventhead;
+int32_t             eventtail;
 
 
 //
@@ -221,7 +221,7 @@ FixedDiv
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t     wipegamestate = GS_DEMOSCREEN;
 extern  boolean setsizeneeded;
-extern  int             showMessages;
+extern  int32_t             showMessages;
 void R_ExecuteSetViewSize (void);
 
 void D_Display (void)
@@ -231,11 +231,11 @@ void D_Display (void)
     static  boolean             inhelpscreensstate = false;
     static  boolean             fullscreen = false;
     static  gamestate_t         oldgamestate = -1;
-    static  int                 borderdrawcount;
-    int                         nowtime;
-    int                         tics;
-    int                         wipestart;
-    int                         y;
+    static  int32_t                 borderdrawcount;
+	int32_t                         nowtime;
+	int32_t                         tics;
+	int32_t                         wipestart;
+	int32_t                         y;
     boolean                     done;
     boolean                     wipe;
     boolean                     redrawsbar;
@@ -363,13 +363,13 @@ void D_Display (void)
     // wipe update
     wipe_EndScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
 
-    wipestart = I_GetTime () - 1;
+    wipestart = ticcount - 1;
 
     do
     {
         do
         {
-            nowtime = I_GetTime ();
+            nowtime = ticcount;
             tics = nowtime - wipestart;
         } while (!tics);
         wipestart = nowtime;
@@ -392,26 +392,26 @@ byte copynode[10540];
 
 void D_DoomLoop (void)
 {
-	//char result[3000];
-	//char result2[2000];
-	//int lasttick = 0;
-	//int lastindex = 0;
-	//int stoptic;
+	//int8_t result[3000];
+	//int8_t result2[2000];
+	//int32_t lasttick = 0;
+	//int32_t lastindex = 0;
+	//int32_t stoptic;
 	vldoor_t* doorunit;
 	line_t* lines;
 	line_t* check;
 
-	int linenumber;
+	int32_t linenumber;
 	//plat_t* plat;
 	sector_t* sector;
 	byte* nodes;
-	int i = 0;
+	int32_t i = 0;
     if (demorecording)
         G_BeginRecording ();
                 
     if (M_CheckParm ("-debugfile"))
     {
-        char    filename[20];
+		int8_t    filename[20];
         sprintf (filename,"debug%i.txt",consoleplayer);
         printf ("debug output to: %s\n",filename);
         debugfile = fopen (filename,"w");
@@ -522,9 +522,9 @@ void D_DoomLoop (void)
 //
 //  DEMO LOOP
 //
-int             demosequence;
-int             pagetic;
-char                    *pagename;
+int32_t             demosequence;
+int32_t             pagetic;
+int8_t                    *pagename;
 
 
 //
@@ -647,7 +647,7 @@ void D_StartTitle (void)
 //
 // D_GetCursorColumn
 //
-int D_GetCursorColumn(void)
+int32_t D_GetCursorColumn(void)
 {
     union REGS regs;
 
@@ -661,7 +661,7 @@ int D_GetCursorColumn(void)
 //
 // D_GetCursorRow
 //
-int D_GetCursorRow(void)
+int32_t D_GetCursorRow(void)
 {
     union REGS regs;
 
@@ -675,7 +675,7 @@ int D_GetCursorRow(void)
 //
 // D_SetCursorPosition
 //
-void D_SetCursorPosition(int column, int row)
+void D_SetCursorPosition(int32_t column, int32_t row)
 {
     union REGS regs;
 
@@ -689,13 +689,13 @@ void D_SetCursorPosition(int column, int row)
 //
 // D_DrawTitle
 //
-void D_DrawTitle(char *string, int fc, int bc)
+void D_DrawTitle(int8_t *string, int32_t fc, int32_t bc)
 {
     union REGS regs;
     byte color;
-    int column;
-    int row;
-    int i;
+	int32_t column;
+	int32_t row;
+	int32_t i;
 
     //Calculate text color
     color = (bc << 4) | fc;
@@ -727,15 +727,15 @@ void D_DrawTitle(char *string, int fc, int bc)
 
 
 //      print title for every printed line
-char            title[128];
+int8_t            title[128];
 
 //
 // D_RedrawTitle
 //
 void D_RedrawTitle(void)
 {
-    int column;
-    int row;
+	int32_t column;
+	int32_t row;
 
     //Get current cursor pos
     column = D_GetCursorColumn();
@@ -754,10 +754,10 @@ void D_RedrawTitle(void)
 //
 // D_AddFile
 //
-void D_AddFile (char *file)
+void D_AddFile (int8_t *file)
 {
-    int     numwadfiles;
-    char    *newfile;
+	int32_t     numwadfiles;
+	int8_t    *newfile;
         
     for (numwadfiles = 0 ; wadfiles[numwadfiles] ; numwadfiles++)
         ;
@@ -830,21 +830,21 @@ void IdentifyVersion (void)
 //
 void FindResponseFile (void)
 {
-    int             i;
+	int32_t             i;
 #define MAXARGVS        100
         
     for (i = 1;i < myargc;i++)
         if (myargv[i][0] == '@')
         {
             FILE *          handle;
-            int             size;
-            int             k;
-            int             index;
-            int             indexinfile;
-            char    *infile;
-            char    *file;
-            char    *moreargs[20];
-            char    *firstargv;
+			int32_t             size;
+			int32_t             k;
+			int32_t             index;
+			int32_t             indexinfile;
+			int8_t    *infile;
+			int8_t    *file;
+			int8_t    *moreargs[20];
+			int8_t    *firstargv;
                         
             // READ THE RESPONSE FILE INTO MEMORY
             handle = fopen (&myargv[i][1],"rb");
@@ -866,8 +866,8 @@ void FindResponseFile (void)
                 moreargs[index++] = myargv[k];
                         
             firstargv = myargv[0];
-            myargv = malloc(sizeof(char *)*MAXARGVS);
-            memset(myargv,0,sizeof(char *)*MAXARGVS);
+            myargv = malloc(sizeof(int8_t *)*MAXARGVS);
+            memset(myargv,0,sizeof(int8_t *)*MAXARGVS);
             myargv[0] = firstargv;
                         
             infile = file;
@@ -904,8 +904,8 @@ void FindResponseFile (void)
 //
 void D_DoomMain (void)
 {
-    int             p;
-    char                    file[256];
+	int32_t             p;
+	int8_t                    file[256];
     union REGS regs;
 
     FindResponseFile ();
@@ -989,9 +989,9 @@ void D_DoomMain (void)
     // turbo option
     if ( (p=M_CheckParm ("-turbo")) )
     {
-        int     scale = 200;
-        extern int forwardmove[2];
-        extern int sidemove[2];
+		int32_t     scale = 200;
+        extern int32_t forwardmove[2];
+        extern int32_t sidemove[2];
         
         if (p<myargc-1)
             scale = atoi (myargv[p+1]);
@@ -1084,13 +1084,13 @@ void D_DoomMain (void)
     {
         // These are the lumps that will be checked in IWAD,
         // if any one is not present, execution will be aborted.
-        char name[23][8]=
+		int8_t name[23][8]=
         {
             "e2m1","e2m2","e2m3","e2m4","e2m5","e2m6","e2m7","e2m8","e2m9",
             "e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
             "dphoof","bfgga0","heada1","cybra1","spida1d1"
         };
-        int i;
+		int32_t i;
         
         if (shareware)
             I_Error("\nYou cannot -file with the shareware "

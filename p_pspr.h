@@ -60,7 +60,7 @@ typedef enum
 typedef struct
 {
     state_t*	state;	// a NULL state means not active
-    int		tics;
+    int32_t		tics;
     fixed_t	sx;
     fixed_t	sy;
 
@@ -70,11 +70,11 @@ typedef struct
 typedef struct
 {
     ammotype_t	ammo;
-    int		upstate;
-    int		downstate;
-    int		readystate;
-    int		atkstate;
-    int		flashstate;
+    int32_t		upstate;
+    int32_t		downstate;
+    int32_t		readystate;
+    int32_t		atkstate;
+    int32_t		flashstate;
 
 } weaponinfo_t;
 

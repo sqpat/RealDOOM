@@ -21,9 +21,16 @@
 #      zq  use quiet mode
 #  /i=dir  add include directories
 #
+#      mh huge memory model
+#      ml large memory model
+#     fpi inline 80x87 instructions with emulation
+#      -o optimization: a : relax aliasing constraints
+#	   zq operate quietly
+#	  zp1 pack structure members with alignment 1
+#     zt# set far data threshold (i.e., larger objects go in far memory)
 # --------------------------------------------------------------------------
 
-CCOPTS = /d2 /omaxet /zp1 /4r /ei /j /zq /i=dmx
+CCOPTS = /d2 /omaxet /zp1 /ei /j /zq /mh /zt100
 
 GLOBOBJS = &
  i_main.obj &
@@ -81,7 +88,7 @@ GLOBOBJS = &
  usrhooks.obj 
 
 newdoom.exe : $(GLOBOBJS) i_ibm.obj
- wlink @newdoom.lnk
+ wlink @newd16.lnk
  copy newdoom.exe doom.exe
  wstrip doom.exe
 # 4gwbind 4gwpro.exe striptic.exe heretic.exe -V

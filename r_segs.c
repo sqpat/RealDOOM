@@ -41,20 +41,20 @@ boolean		markfloor;
 boolean		markceiling;
 
 boolean		maskedtexture;
-int		toptexture;
-int		bottomtexture;
-int		midtexture;
+int32_t		toptexture;
+int32_t		bottomtexture;
+int32_t		midtexture;
 
 
 angle_t		rw_normalangle;
 // angle to line origin
-int		rw_angle1;	
+int32_t		rw_angle1;	
 
 //
 // regular wall
 //
-int		rw_x;
-int		rw_stopx;
+int32_t		rw_x;
+int32_t		rw_stopx;
 angle_t		rw_centerangle;
 fixed_t		rw_offset;
 fixed_t		rw_distance;
@@ -64,10 +64,10 @@ fixed_t		rw_midtexturemid;
 fixed_t		rw_toptexturemid;
 fixed_t		rw_bottomtexturemid;
 
-int		worldtop;
-int		worldbottom;
-int		worldhigh;
-int		worldlow;
+int32_t		worldtop;
+int32_t		worldbottom;
+int32_t		worldhigh;
+int32_t		worldlow;
 
 fixed_t		pixhigh;
 fixed_t		pixlow;
@@ -83,7 +83,7 @@ fixed_t		bottomstep;
 
 lighttable_t**	walllights;
 
-short*		maskedtexturecol;
+int16_t*		maskedtexturecol;
 
 
 
@@ -93,21 +93,21 @@ short*		maskedtexturecol;
 void
 R_RenderMaskedSegRange
 (drawseg_t*	ds,
-	int		x1,
-	int		x2)
+	int32_t		x1,
+	int32_t		x2)
 {
-	unsigned	index;
+	uint32_t	index;
 	column_t*	col;
-	int		lightnum;
-	int		texnum;
+	int32_t		lightnum;
+	int32_t		texnum;
 	fixed_t* textureheight;
-	int* texturetranslation;
+	int32_t* texturetranslation;
 	fixed_t siderowoffset;
 	line_t* lines;
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-	short curlinev1Offset; short curlinev2Offset; short curlinefrontsecnum; short curlinebacksecnum; short curlinesidedefOffset; short curlinelinedefOffset;
+	int16_t curlinev1Offset; int16_t curlinev2Offset; int16_t curlinefrontsecnum; int16_t curlinebacksecnum; int16_t curlinesidedefOffset; int16_t curlinelinedefOffset;
 	side_t* sides;
-	short sidemidtexture;
+	int16_t sidemidtexture;
 	vertex_t* vertexes; 
 	sector_t* sectors;
 	sector_t frontsector;
@@ -195,7 +195,7 @@ R_RenderMaskedSegRange
 	    }
 			
 	    sprtopscreen = centeryfrac - FixedMul(dc_texturemid, spryscale);
-	    dc_iscale = 0xffffffffu / (unsigned)spryscale;
+	    dc_iscale = 0xffffffffu / (uint32_t)spryscale;
 	    
 	    // draw the texture
 	    col = (column_t *)((byte *)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
@@ -225,13 +225,13 @@ R_RenderMaskedSegRange
 void R_RenderSegLoop (void)
 {
     angle_t		angle;
-    unsigned		index;
-    int			yl;
-    int			yh;
-    int			mid;
+	uint32_t		index;
+    int32_t			yl;
+    int32_t			yh;
+    int32_t			mid;
     fixed_t		texturecolumn;
-    int			top;
-    int			bottom;
+    int32_t			top;
+    int32_t			bottom;
     //texturecolumn = 0;				// shut up compiler warning
 
 
@@ -292,7 +292,7 @@ void R_RenderSegLoop (void)
 
 	    dc_colormap = walllights[index];
 	    dc_x = rw_x;
-	    dc_iscale = 0xffffffffu / (unsigned)rw_scale;
+	    dc_iscale = 0xffffffffu / (uint32_t)rw_scale;
 	}
 
 	// draw the wall tiers
@@ -404,34 +404,34 @@ void R_RenderSegLoop (void)
 //
 void
 R_StoreWallRange
-( int	start,
-  int	stop )
+( int32_t	start,
+  int32_t	stop )
 {
     fixed_t		hyp;
     fixed_t		sineval;
     angle_t		distangle, offsetangle;
     fixed_t		vtop;
-    int			lightnum;
+    int32_t			lightnum;
 	fixed_t *	textureheight;
-	int* 	texturetranslation;
+	int32_t* 	texturetranslation;
 	vertex_t* vertexes;
 
 	// needs to be refreshed...
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-	short curlinelinedefOffset = segs[curlinenum].linedefOffset;
+	int16_t curlinelinedefOffset = segs[curlinenum].linedefOffset;
 	angle_t curlineangle = segs[curlinenum].angle;
-	short curlinev1Offset = segs[curlinenum].v1Offset;
-	short curlinev2Offset = segs[curlinenum].v2Offset;
-	short curlinesidedefOffset = segs[curlinenum].sidedefOffset;
+	int16_t curlinev1Offset = segs[curlinenum].v1Offset;
+	int16_t curlinev2Offset = segs[curlinenum].v2Offset;
+	int16_t curlinesidedefOffset = segs[curlinenum].sidedefOffset;
 	fixed_t curlineOffset = segs[curlinenum].offset;
 	side_t* sides;
 	fixed_t siderowoffset;
-	short sidemidtexture;
-	short sidetoptexture;
-	short sidebottomtexture;
+	int16_t sidemidtexture;
+	int16_t sidetoptexture;
+	int16_t sidebottomtexture;
 	fixed_t sidetextureoffset;
 	line_t* lines;
-	int lineflags;
+	int32_t lineflags;
 	sector_t* sectors;
 	sector_t frontsector;
 	sector_t backsector;

@@ -39,10 +39,10 @@ doomdata_t *netbuffer; // points inside doomcom
 
 ticcmd_t localcmds[BACKUPTICS];
 
-int nettics;
+int32_t nettics;
 
-int maketic;
-int skiptics;
+int32_t maketic;
+int32_t skiptics;
 
 void D_ProcessEvents(void);
 void G_BuildTiccmd(ticcmd_t *cmd);
@@ -53,16 +53,16 @@ void D_DoAdvanceDemo(void);
 // Builds ticcmds for console player,
 // sends out a packet
 //
-int gametime;
+int32_t gametime;
 
 void NetUpdate(void)
 {
-	int nowtime;
-	int newtics;
-	int i, j;
+	int32_t nowtime;
+	int32_t newtics;
+	int32_t i, j;
 
 	// check time
-	nowtime = I_GetTime();
+	nowtime = ticcount;
 	newtics = nowtime - gametime;
 	gametime = nowtime;
 
@@ -124,21 +124,21 @@ void D_CheckNetGame(void)
 //
 // TryRunTics
 //
-int oldnettics;
+int32_t oldnettics;
 
 extern boolean advancedemo;
 
 void TryRunTics(void)
 {
-	int i;
-	int entertic;
-	static int oldentertics;
-	int realtics;
-	int availabletics;
-	int counts;
+	int32_t i;
+	int32_t entertic;
+	static int32_t oldentertics;
+	int32_t realtics;
+	int32_t availabletics;
+	int32_t counts;
 
 	// get real tics
-	entertic = I_GetTime();
+	entertic = ticcount;
 	realtics = entertic - oldentertics;
 	oldentertics = entertic;
 
@@ -164,7 +164,7 @@ void TryRunTics(void)
 		NetUpdate();
 
 		// don't stay in here forever -- give the menu a chance to work
-		if (I_GetTime() - entertic >= 20)
+		if (ticcount - entertic >= 20)
 		{
 			M_Ticker();
 			return;

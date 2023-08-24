@@ -20,18 +20,17 @@
 #ifndef __R_BSP__
 #define __R_BSP__
 
-extern int setval;
-
-extern short		curlinenum;
+ 
+extern int16_t		curlinenum;
 extern side_t*		sidedef;
 //extern line_t*		linedef;
-extern short linedefOffset;
+extern int16_t linedefOffset;
 
-extern short	frontsecnum;
-extern short	backsecnum;
+extern int16_t	frontsecnum;
+extern int16_t	backsecnum;
 
-extern int		rw_x;
-extern int		rw_stopx;
+extern int32_t		rw_x;
+extern int32_t		rw_stopx;
 
 extern boolean		segtextured;
 
@@ -45,7 +44,7 @@ extern drawseg_t	drawsegs[MAXDRAWSEGS];
 extern drawseg_t*	ds_p;
 
 
-typedef void (*drawfunc_t) (int start, int stop);
+typedef void (*drawfunc_t) (int32_t start, int32_t stop);
 
 
 // BSP?
@@ -53,7 +52,7 @@ void R_ClearClipSegs (void);
 void R_ClearDrawSegs (void);
 
 
-void R_RenderBSPNode (int bspnum);
+void R_RenderBSPNode (int32_t bspnum);
 
 
 #endif

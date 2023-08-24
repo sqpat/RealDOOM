@@ -103,8 +103,8 @@ typedef enum
 
 typedef struct
 {
-    int		x;
-    int		y;
+    int32_t		x;
+    int32_t		y;
     
 } point_t;
 
@@ -118,10 +118,10 @@ typedef struct
     animenum_t	type;
 
     // period in tics between animations
-    int		period;
+    int32_t		period;
 
     // number of animation frames
-    int		nanims;
+    int32_t		nanims;
 
     // location of animation
     point_t	loc;
@@ -129,12 +129,12 @@ typedef struct
     // ALWAYS: n/a,
     // RANDOM: period deviation (<256),
     // LEVEL: level
-    int		data1;
+    int32_t		data1;
 
     // ALWAYS: n/a,
     // RANDOM: random base period,
     // LEVEL: n/a
-    int		data2; 
+    int32_t		data2; 
 
     // actual graphics for frames of animations
     MEMREF	pRef[3]; 
@@ -142,16 +142,16 @@ typedef struct
     // following must be initialized to zero before use!
 
     // next value of bcnt (used in conjunction with period)
-    int		nexttic;
+    int32_t		nexttic;
 
     // last drawn animation frame
-    int		lastdrawn;
+    int32_t		lastdrawn;
 
     // next frame number to animate
-    int		ctr;
+    int32_t		ctr;
     
     // used by RANDOM and LEVEL when animating
-    int		state;  
+    int32_t		state;  
 
 } anim_t;
 
@@ -242,7 +242,7 @@ static anim_t epsd2animinfo[] =
     { ANIM_ALWAYS, TICRATE/4, 3, { 40, 0 } }
 };
 
-static int NUMANIMS[NUMEPISODES] =
+static int16_t NUMANIMS[NUMEPISODES] =
 {
     sizeof(epsd0animinfo)/sizeof(anim_t),
     sizeof(epsd1animinfo)/sizeof(anim_t),
@@ -282,10 +282,10 @@ static anim_t *anims[NUMEPISODES] =
 
 
 // used to accelerate or skip a stage
-static int		acceleratestage;
+static int32_t		acceleratestage;
 
 // wbs->pnum
-static int		me;
+static int32_t		me;
 
  // specifies current state
 static stateenum_t	state;
@@ -296,23 +296,23 @@ static wbstartstruct_t*	wbs;
 static wbplayerstruct_t plrs;  // wbs->plyr[]
 
 // used for general timing
-static int 		cnt;  
+static int32_t 		cnt;
 
 // used for timing of background animation
-static int 		bcnt;
+static int32_t 		bcnt;
 
 // signals to refresh everything for one frame
-static int 		firstrefresh; 
+static int32_t 		firstrefresh;
 
-static int		cnt_kills;
-static int		cnt_items;
-static int		cnt_secret;
-static int		cnt_time;
-static int		cnt_par;
-static int		cnt_pause;
+static int32_t		cnt_kills;
+static int32_t		cnt_items;
+static int32_t		cnt_secret;
+static int32_t		cnt_time;
+static int32_t		cnt_par;
+static int32_t		cnt_pause;
 
 // # of commercial levels
-static int		NUMCMAPS; 
+static int32_t		NUMCMAPS; 
 
 
 //
@@ -386,17 +386,17 @@ void WI_slamBackground(void)
 void WI_drawLF(void)
 {
 	patch_t* lname;
-    int y = WI_TITLEY;
+	int32_t y = WI_TITLEY;
 	MEMREF* lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
 	lname = (patch_t*)Z_LoadBytesFromEMS(lnames[wbs->last]);
 	// draw <LevelName> 
 
-//    V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->last]->width))/2, y, FB, lnames[wbs->last]);
+//    V_DrawPatch((SCREENWIDTH - (lnames[wbs->last]->width))/2, y, FB, lnames[wbs->last]);
 
     // draw "Finished!"
-	y += (5 * SHORT(lname ->height)) / 4;
+	y += (5 * (lname ->height)) / 4;
     
-//    V_DrawPatch((SCREENWIDTH - SHORT(finished->width))/2, y, FB, finished);
+//    V_DrawPatch((SCREENWIDTH - (finished->width))/2, y, FB, finished);
 }
 
 
@@ -405,46 +405,46 @@ void WI_drawLF(void)
 void WI_drawEL(void)
 {
 	patch_t* lname;
-	int y = WI_TITLEY;
+	int32_t y = WI_TITLEY;
 	MEMREF* lnames;
 	patch_t* entering = (patch_t*)Z_LoadBytesFromEMS(enteringRef);
     // draw "Entering"
-    V_DrawPatch(SCREENWIDTH - SHORT(entering->width)/2, y, FB, entering);
+    V_DrawPatch(SCREENWIDTH - (entering->width)/2, y, FB, entering);
 
 
 	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
 	lname = (patch_t*)Z_LoadBytesFromEMS(lnames[wbs->next]);
 
     // draw level
-    y += (5*SHORT(lname->height))/4;
+    y += (5*(lname->height))/4;
 
 
-    V_DrawPatch((SCREENWIDTH - SHORT(lname->width))/2,
+    V_DrawPatch((SCREENWIDTH - (lname->width))/2,
 		y, FB, lname);
 
 }
 
 void
 WI_drawOnLnode
-( int		n,
+( int32_t		n,
   MEMREF*	cRef )
 {
 
-    int		i;
-    int		left;
-    int		top;
-    int		right;
-    int		bottom;
+    int32_t		i;
+    int32_t		left;
+    int32_t		top;
+    int32_t		right;
+    int32_t		bottom;
     boolean	fits = false;
 	patch_t* ci;
 
     i = 0;
     do {
 		ci = (patch_t*)Z_LoadBytesFromEMS(cRef[i]);
-		left = lnodes[wbs->epsd][n].x - SHORT(ci->leftoffset);
-		top = lnodes[wbs->epsd][n].y - SHORT(ci->topoffset);
-		right = left + SHORT(ci->width);
-		bottom = top + SHORT(ci->height);
+		left = lnodes[wbs->epsd][n].x - (ci->leftoffset);
+		top = lnodes[wbs->epsd][n].y - (ci->topoffset);
+		right = left + (ci->width);
+		bottom = top + (ci->height);
 
 		if (left >= 0
 			&& right < SCREENWIDTH
@@ -468,7 +468,7 @@ WI_drawOnLnode
 
 void WI_initAnimatedBack(void)
 {
-    int		i;
+    int32_t		i;
     anim_t*	a;
 
     if (commercial)
@@ -499,7 +499,7 @@ void WI_initAnimatedBack(void)
 
 void WI_updateAnimatedBack(void)
 {
-    int		i;
+    int32_t		i;
     anim_t*	a;
 
     if (commercial)
@@ -553,7 +553,7 @@ void WI_updateAnimatedBack(void)
 void WI_drawAnimatedBack(void)
 {
    
-	int i;
+	int32_t i;
 	anim_t *a;
 
 	if (commercial)
@@ -583,15 +583,15 @@ void WI_drawAnimatedBack(void)
 
 int
 WI_drawNum
-( int		x,
-  int		y,
-  int		n,
-  int		digits )
+( int32_t		x,
+  int32_t		y,
+  int32_t		n,
+  int32_t		digits )
 {
 
-    int		fontwidth = SHORT(((patch_t*)Z_LoadBytesFromEMS(numRef[0])) ->width);
-    int		neg;
-    int		temp;
+    int32_t		fontwidth = (((patch_t*)Z_LoadBytesFromEMS(numRef[0])) ->width);
+    int32_t		neg;
+    int32_t		temp;
 
     if (digits < 0)
     {
@@ -640,9 +640,9 @@ WI_drawNum
 
 void
 WI_drawPercent
-( int		x,
-  int		y,
-  int		p )
+( int32_t		x,
+  int32_t		y,
+  int32_t		p )
 {
     if (p < 0)
 	return;
@@ -659,13 +659,13 @@ WI_drawPercent
 //
 void
 WI_drawTime
-( int		x,
-  int		y,
-  int		t )
+( int32_t		x,
+  int32_t		y,
+  int32_t		t )
 {
 
-    int		div;
-    int		n;
+    int32_t		div;
+    int32_t		n;
 	patch_t* colon;
 	patch_t* sucks;
 
@@ -677,7 +677,7 @@ WI_drawTime
 		div = 1;
 		do {
 			n = (t / div) % 60;
-			x = WI_drawNum(x, y, n, 2) - SHORT(colon->width);
+			x = WI_drawNum(x, y, n, 2) - (colon->width);
 			div *= 60;
 
 			// draw
@@ -743,8 +743,8 @@ void WI_updateShowNextLoc(void)
 void WI_drawShowNextLoc(void)
 {
 
-    int		i;
-    int		last;
+    int32_t		i;
+    int32_t		last;
 
     WI_slamBackground();
 
@@ -790,10 +790,10 @@ void WI_drawNoState(void)
     WI_drawShowNextLoc();
 }
  
-static int ng_state;
+static int32_t ng_state;
 
 
-static int	sp_state;
+static int32_t	sp_state;
 
 void WI_initStats(void)
 {
@@ -916,11 +916,11 @@ void WI_updateStats(void)
 void WI_drawStats(void)
 {
     // line height
-    int lh;	
+	int32_t lh;
 
 	patch_t* num0 = (patch_t*) Z_LoadBytesFromEMS(numRef[0]);
 
-    lh = (3*SHORT(num0->height))/2;
+    lh = (3*(num0->height))/2;
 
     WI_slamBackground();
 
@@ -953,7 +953,7 @@ void WI_drawStats(void)
 
 void WI_checkForAccelerate(void)
 {
-	int i;
+	int32_t i;
 	player_t *player;
 
 	player = players;
@@ -1014,9 +1014,9 @@ void WI_Ticker(void)
 
 void WI_loadData(void)
 {
-    int		i;
-    int		j;
-    char	name[9];
+    int32_t		i;
+    int32_t		j;
+	int8_t	name[9];
     anim_t*	a;
 	MEMREF* lnames;
 
@@ -1155,8 +1155,8 @@ void WI_loadData(void)
 
 void WI_unloadData(void)
 {
-    int		i;
-    int		j;
+    int32_t		i;
+    int32_t		j;
 	MEMREF*	lnames;
 	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
 

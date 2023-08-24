@@ -117,23 +117,23 @@ P_InterceptVector2
     return frac;
 }
 
-static int bspcounter = 0;
+//static int32_t  bspcounter = 0;
 
 //
 // P_CrossSubsector
 // Returns true
 //  if strace crosses the given subsector successfully.
 //
-boolean P_CrossSubsector (short subsecnum)
+boolean P_CrossSubsector (int16_t subsecnum)
 {
-    short		segnum;
-	short linedefOffset;
+    int16_t		segnum;
+	int16_t linedefOffset;
     line_t*		line;
-    int			s1;
-    int			s2;
-    int			count;
-    short frontsecnum;
-	short backsecnum;
+    int32_t			s1;
+    int32_t			s2;
+    int32_t			count;
+    int16_t frontsecnum;
+	int16_t backsecnum;
     fixed_t		opentop;
     fixed_t		openbottom;
     divline_t		divl;
@@ -144,9 +144,9 @@ boolean P_CrossSubsector (short subsecnum)
 	seg_t* segs;
 	vertex_t* vertexes;
 	line_t* lines;
-	short linev1Offset;
-	short linev2Offset;
-	short lineflags;
+	int16_t linev1Offset;
+	int16_t linev2Offset;
+	int16_t lineflags;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	sector_t* sectors;
 
@@ -272,12 +272,12 @@ boolean P_CrossSubsector (short subsecnum)
 // Returns true
 //  if strace crosses the given node successfully.
 //
-boolean P_CrossBSPNode (int bspnum)
+boolean P_CrossBSPNode (int32_t bspnum)
 {
     node_t*	bsp;
-    int		side;
+    int32_t		side;
 	node_t* nodes;
-	bspcounter++;
+	//bspcounter++;
 	
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == -1) {
@@ -331,22 +331,22 @@ P_CheckSight
   MEMREF t2Ref)
 {
 
-    int		pnum;
-    int		bytenum;
-    int		bitnum;
+    int32_t		pnum;
+    int32_t		bytenum;
+    int32_t		bitnum;
 	mobj_t*	t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
 	fixed_t t1z = t1->z;
 	fixed_t t1x = t1->x;
 	fixed_t t1y = t1->y;
 	fixed_t t1height = t1->height;
-	short s1 = t1->secnum;
+	int16_t s1 = t1->secnum;
 
 	mobj_t*	t2;
 		fixed_t t2z;
 		fixed_t t2x;
 		fixed_t t2y;
 		fixed_t t2height;
-		short s2;
+		int16_t s2;
 
 	 
 

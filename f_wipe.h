@@ -37,27 +37,27 @@ enum
 
 int
 wipe_StartScreen
-( int		x,
-  int		y,
-  int		width,
-  int		height );
+( int32_t		x,
+  int32_t		y,
+  int32_t		width,
+  int32_t		height );
 
 
 int
 wipe_EndScreen
-( int		x,
-  int		y,
-  int		width,
-  int		height );
+( int32_t		x,
+  int32_t		y,
+  int32_t		width,
+  int32_t		height );
 
 
 int
 wipe_ScreenWipe
-( int		wipeno,
-  int		x,
-  int		y,
-  int		width,
-  int		height,
-  int		ticks );
+( int32_t		wipeno,
+  int32_t		x,
+  int32_t		y,
+  int32_t		width,
+  int32_t		height,
+  int32_t		ticks );
 
 #endif

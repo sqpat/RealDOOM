@@ -39,45 +39,45 @@
 
 // Stage of animation:
 //  0 = text, 1 = art screen, 2 = character cast
-int		finalestage;
+int32_t		finalestage;
 
-int		finalecount;
+int32_t		finalecount;
 
 #define	TEXTSPEED	3
 #define	TEXTWAIT	250
 
-char*	e1text = E1TEXT;
-char*	e2text = E2TEXT;
-char*	e3text = E3TEXT;
+int8_t*	e1text = E1TEXT;
+int8_t*	e2text = E2TEXT;
+int8_t*	e3text = E3TEXT;
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-char*	e4text = E4TEXT;
+int8_t*	e4text = E4TEXT;
 #endif
 
-char*	c1text = C1TEXT;
-char*	c2text = C2TEXT;
-char*	c3text = C3TEXT;
-char*	c4text = C4TEXT;
-char*	c5text = C5TEXT;
-char*	c6text = C6TEXT;
+int8_t*	c1text = C1TEXT;
+int8_t*	c2text = C2TEXT;
+int8_t*	c3text = C3TEXT;
+int8_t*	c4text = C4TEXT;
+int8_t*	c5text = C5TEXT;
+int8_t*	c6text = C6TEXT;
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-char*	p1text = P1TEXT;
-char*	p2text = P2TEXT;
-char*	p3text = P3TEXT;
-char*	p4text = P4TEXT;
-char*	p5text = P5TEXT;
-char*	p6text = P6TEXT;
+int8_t*	p1text = P1TEXT;
+int8_t*	p2text = P2TEXT;
+int8_t*	p3text = P3TEXT;
+int8_t*	p4text = P4TEXT;
+int8_t*	p5text = P5TEXT;
+int8_t*	p6text = P6TEXT;
 
-char*	t1text = T1TEXT;
-char*	t2text = T2TEXT;
-char*	t3text = T3TEXT;
-char*	t4text = T4TEXT;
-char*	t5text = T5TEXT;
-char*	t6text = T6TEXT;
+int8_t*	t1text = T1TEXT;
+int8_t*	t2text = T2TEXT;
+int8_t*	t3text = T3TEXT;
+int8_t*	t4text = T4TEXT;
+int8_t*	t5text = T5TEXT;
+int8_t*	t6text = T6TEXT;
 #endif
 
-char*	finaletext;
-char*	finaleflat;
+int8_t*	finaletext;
+int8_t*	finaleflat;
 
 void	F_StartCast (void);
 void	F_CastTicker (void);
@@ -89,7 +89,7 @@ void	F_CastDrawer (void);
 //
 void F_StartFinale (void)
 {
-    int finalemusic;
+	int32_t finalemusic;
 
     gameaction = ga_nothing;
     gamestate = GS_FINALE;
@@ -285,7 +285,7 @@ boolean F_Responder (event_t *event)
 //
 void F_Ticker (void)
 {
-    int		i;
+    int32_t		i;
     
     // check for skipping
     if ( (commercial)
@@ -339,12 +339,12 @@ void F_TextWrite (void)
     byte*	src;
     byte*	dest;
     
-    int		x,y,w;
-    int		count;
-    char*	ch;
-    int		c;
-    int		cx;
-    int		cy;
+    int32_t		x,y,w;
+    int32_t		count;
+    int8_t*	ch;
+    int32_t		c;
+    int32_t		cx;
+    int32_t		cy;
 	MEMREF	srcRef;
 	patch_t* hu_fontC;
     // erase the entire screen to a tiled background
@@ -392,7 +392,7 @@ void F_TextWrite (void)
 	}
 		
 	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
-	w = SHORT (hu_fontC->width);
+	w =  (hu_fontC->width);
 	if (cx+w > SCREENWIDTH)
 	    break;
 	V_DrawPatch(cx, cy, 0, hu_fontC);
@@ -408,7 +408,7 @@ void F_TextWrite (void)
 //
 typedef struct
 {
-    char		*name;
+	int8_t		*name;
     mobjtype_t	type;
 } castinfo_t;
 
@@ -434,12 +434,12 @@ castinfo_t	castorder[] = {
     {NULL,0}
 };
 
-int		castnum;
-int		casttics;
+int32_t		castnum;
+int32_t		casttics;
 state_t*	caststate;
 boolean		castdeath;
-int		castframes;
-int		castonmelee;
+int32_t		castframes;
+int32_t		castonmelee;
 boolean		castattacking;
 
 
@@ -469,8 +469,8 @@ void F_StartCast (void)
 //
 void F_CastTicker (void)
 {
-    int		st;
-    int		sfx;
+    int32_t		st;
+    int32_t		sfx;
 	
     if (--casttics > 0)
 	return;			// not time to change state yet
@@ -595,13 +595,13 @@ boolean F_CastResponder (event_t* ev)
 }
 
 
-void F_CastPrint (char* text)
+void F_CastPrint (int8_t* text)
 {
-    char*	ch;
-    int		c;
-    int		cx;
-    int		w;
-    int		width;
+    int8_t*	ch;
+    int32_t		c;
+    int32_t		cx;
+    int32_t		w;
+    int32_t		width;
 	patch_t* hu_fontC;
     
     // find width
@@ -622,7 +622,7 @@ void F_CastPrint (char* text)
 		
 	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
 
-	w = SHORT (hu_fontC->width);
+	w = (hu_fontC->width);
 	width += w;
     }
     
@@ -642,7 +642,7 @@ void F_CastPrint (char* text)
 	}
 		
 	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
-	w = SHORT (hu_fontC->width);
+	w =  (hu_fontC->width);
 	V_DrawPatch(cx, 180, 0, hu_fontC);
 	cx+=w;
     }
@@ -653,13 +653,13 @@ void F_CastPrint (char* text)
 //
 // F_CastDrawer
 //
-void V_DrawPatchFlipped (int x, int y, int scrn, patch_t *patch);
+void V_DrawPatchFlipped (int32_t x, int32_t y, int32_t scrn, patch_t *patch);
 
 void F_CastDrawer (void)
 {
     spritedef_t*	sprite;
     spriteframe_t*	sprframe;
-    int			lump;
+    int32_t			lump;
     boolean		flip;
 	MEMREF			patchRef;
 	patch_t*		patch;
@@ -699,17 +699,17 @@ void F_CastDrawer (void)
 //
 void
 F_DrawPatchCol
-( int		x,
+( int32_t		x,
   patch_t*	patch,
-  int		col )
+  int32_t		col )
 {
     column_t*	column;
     byte*	source;
     byte*	dest;
     byte*	desttop;
-    int		count;
+    int32_t		count;
 	
-    column = (column_t *)((byte *)patch + LONG(patch->columnofs[col]));
+    column = (column_t *)((byte *)patch + (patch->columnofs[col]));
     desttop = screens[0]+x;
 
     // step through the posts in a column
@@ -734,11 +734,11 @@ F_DrawPatchCol
 //
 void F_BunnyScroll (void)
 {
-    int		scrolled;
-    int		x;
-     char	name[10];
-    int		stage;
-    static int	laststage;
+    int32_t		scrolled;
+    int32_t		x;
+	int8_t	name[10];
+    int32_t		stage;
+    static int32_t	laststage;
 		
 
 

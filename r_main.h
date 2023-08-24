@@ -30,24 +30,24 @@
 extern fixed_t		viewcos;
 extern fixed_t		viewsin;
 
-extern int		viewwidth;
-extern int		viewheight;
-extern int		viewwindowx;
-extern int		viewwindowy;
+extern int32_t		viewwidth;
+extern int32_t		viewheight;
+extern int32_t		viewwindowx;
+extern int32_t		viewwindowy;
 
 
 
-extern int		centerx;
-extern int		centery;
+extern int32_t		centerx;
+extern int32_t		centery;
 
 extern fixed_t		centerxfrac;
 extern fixed_t		centeryfrac;
 extern fixed_t		projection;
 
-extern int		validcount;
+extern int32_t		validcount;
 
-extern int		linecount;
-extern int		loopcount;
+extern int32_t		linecount;
+extern int32_t		loopcount;
 
 
 //
@@ -70,7 +70,7 @@ extern lighttable_t*	scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 extern lighttable_t*	scalelightfixed[MAXLIGHTSCALE];
 extern lighttable_t*	zlight[LIGHTLEVELS][MAXLIGHTZ];
 
-extern int		extralight;
+extern int32_t		extralight;
 extern lighttable_t*	fixedcolormap;
 
 
@@ -82,7 +82,7 @@ extern lighttable_t*	fixedcolormap;
 // Blocky/low detail mode.
 //B remove this?
 //  0 = high, 1 = low
-extern	int		detailshift;	
+extern	int32_t		detailshift;	
 
 
 //
@@ -108,8 +108,8 @@ int
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,
-	short linev1Offset,
-	short linev2Offset);
+	int16_t linev1Offset,
+	int16_t linev2Offset);
 
 angle_t
 R_PointToAngle
@@ -131,7 +131,7 @@ R_PointToDist
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle);
 
-unsigned short
+uint16_t
 R_PointInSubsector
 ( fixed_t	x,
   fixed_t	y );
@@ -151,6 +151,6 @@ void R_RenderPlayerView (player_t *player);
 void R_Init (void);
 
 // Called by M_Responder.
-void R_SetViewSize (int blocks, int detail);
+void R_SetViewSize (int32_t blocks, int32_t detail);
 
 #endif

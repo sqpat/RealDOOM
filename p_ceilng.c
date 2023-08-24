@@ -47,7 +47,7 @@ void T_MoveCeiling (MEMREF memref)
 	ceiling_t* ceiling = (ceiling_t*)Z_LoadBytesFromEMS(memref);
 	sector_t* sectors;
 	sector_t ceilingsector;
-	short ceilingsecnum;
+	int16_t ceilingsecnum;
 
     switch(ceiling->direction)
     {
@@ -167,11 +167,11 @@ void T_MoveCeiling (MEMREF memref)
 //
 int
 EV_DoCeiling
-( short linetag,
+( int16_t linetag,
   ceiling_e	type )
 {
-    int		secnum;
-    int		rtn;
+    int32_t		secnum;
+    int32_t		rtn;
     //sector_t*	sec;
     ceiling_t*	ceiling;
 	MEMREF ceilingRef;
@@ -257,7 +257,7 @@ EV_DoCeiling
 // Add an active ceiling
 //
 void P_AddActiveCeiling(MEMREF memref) {
-    int		i;
+    int32_t		i;
     
     for (i = 0; i < MAXCEILINGS;i++) {
 		if (activeceilings[i] == NULL_MEMREF) {
@@ -274,9 +274,9 @@ void P_AddActiveCeiling(MEMREF memref) {
 //
 void P_RemoveActiveCeiling(MEMREF memref)
 {
-    int		i;
+    int32_t		i;
 	ceiling_t* c;
-	short csecnum;
+	int16_t csecnum;
 	THINKERREF cthinkerRef;
 	sector_t* sectors;
 
@@ -302,9 +302,9 @@ void P_RemoveActiveCeiling(MEMREF memref)
 //
 // Restart a ceiling that's in-stasis
 //
-void P_ActivateInStasisCeiling(short linetag)
+void P_ActivateInStasisCeiling(int16_t linetag)
 {
-    int		i;
+    int32_t		i;
 	ceiling_t* c;
 
 	for (i = 0; i < MAXCEILINGS; i++) {
@@ -325,10 +325,10 @@ void P_ActivateInStasisCeiling(short linetag)
 // EV_CeilingCrushStop
 // Stop a ceiling from crushing!
 //
-int	EV_CeilingCrushStop(short linetag)
+int32_t	EV_CeilingCrushStop(int16_t linetag)
 {
-    int		i;
-    int		rtn;
+    int32_t		i;
+    int32_t		rtn;
 	ceiling_t* c;
 	rtn = 0;
 	for (i = 0; i < MAXCEILINGS; i++) {

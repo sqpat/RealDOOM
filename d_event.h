@@ -31,15 +31,15 @@
 #define ev_keyup 1
 #define ev_mouse 2
 
-typedef unsigned char evtype_t;
+typedef uint8_t evtype_t;
 
 // Event structure.
 typedef struct
 {
     evtype_t	type;
-    int		data1;		// keys / mouse buttons
-    int		data2;		// mouse x move
-    int		data3;		// mouse y move
+    int32_t		data1;		// keys / mouse buttons
+    int32_t		data2;		// mouse x move
+    int32_t		data3;		// mouse y move
 } event_t;
 
  
@@ -53,7 +53,7 @@ typedef struct
 #define ga_victory    7
 #define ga_worlddone  8
 
-typedef unsigned char gameaction_t;
+typedef uint8_t gameaction_t;
 
 
 
@@ -86,7 +86,7 @@ typedef unsigned char gameaction_t;
 #define BTS_SAVEMASK	 (4+8+16)
 #define BTS_SAVESHIFT 	 2
   
-typedef unsigned char buttoncode_t;
+typedef uint8_t buttoncode_t;
 
 
 
@@ -97,8 +97,8 @@ typedef unsigned char buttoncode_t;
 #define MAXEVENTS		64
 
 extern  event_t		events[MAXEVENTS];
-extern  int             eventhead;
-extern	int		eventtail;
+extern  int32_t             eventhead;
+extern	int32_t		eventtail;
 
 extern  gameaction_t    gameaction;
 

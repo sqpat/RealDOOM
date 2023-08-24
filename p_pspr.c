@@ -44,7 +44,7 @@
 // plasma cells for a bfg attack
 #define BFGCELLS		40		
 
-void P_SetPsprite(player_t*	player, int		position, statenum_t	stnum);
+void P_SetPsprite(player_t*	player, int32_t		position, statenum_t	stnum);
 
 
 //
@@ -180,7 +180,7 @@ void P_BringUpWeapon (player_t* player)
 boolean P_CheckAmmo (player_t* player)
 {
     ammotype_t		ammo;
-    int			count;
+    int32_t			count;
 
     ammo = weaponinfo[player->readyweapon].ammo;
 
@@ -305,7 +305,7 @@ A_WeaponReady
   pspdef_t*	psp )
 {	
     statenum_t	newstate;
-    int		angle;
+    int32_t		angle;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
     
     // get out of attack state
@@ -493,8 +493,8 @@ A_Punch
   pspdef_t*	psp ) 
 {
     angle_t	angle;
-    int		damage;
-    int		slope;
+    int32_t		damage;
+    int32_t		slope;
 	mobj_t* playermo = (mobj_t*) Z_LoadBytesFromEMS(player->moRef);
 	mobj_t* linetarget;
 
@@ -530,8 +530,8 @@ A_Saw
   pspdef_t*	psp ) 
 {
     angle_t	angle;
-    int		damage;
-    int		slope;
+    int32_t		damage;
+    int32_t		slope;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 	mobj_t* linetarget; 
 
@@ -654,7 +654,7 @@ P_GunShot
   boolean	accurate )
 {
     angle_t	angle;
-    int		damage;
+    int32_t		damage;
 
 	mobj_t*	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
  
@@ -700,7 +700,7 @@ A_FireShotgun
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    int		i;
+    int32_t		i;
 	
 	S_StartSoundFromRef(player->moRef, sfx_shotgn);
     P_SetMobjState (player->moRef, S_PLAY_ATK2);
@@ -728,9 +728,9 @@ A_FireShotgun2
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    int		i;
+    int32_t		i;
     angle_t	angle;
-    int		damage;
+    int32_t		damage;
 	mobj_t* playermo;
 		
 	
@@ -813,9 +813,9 @@ void A_Light2 (player_t *player, pspdef_t *psp)
 //
 void A_BFGSpray (mobj_t* mo) 
 {
-    int			i;
-    int			j;
-    int			damage;
+    int32_t			i;
+    int32_t			j;
+    int32_t			damage;
     angle_t		an;
 	mobj_t* linetarget;
 	
@@ -869,7 +869,7 @@ A_BFGsound
 //
 void P_SetupPsprites (player_t* player) 
 {
-    int	i;
+    int32_t	i;
 	
     // remove all psprites
     for (i=0 ; i<NUMPSPRITES ; i++)
@@ -889,7 +889,7 @@ void P_SetupPsprites (player_t* player)
 //
 void P_MovePsprites (player_t* player) 
 {
-    int		i;
+    int32_t		i;
     pspdef_t*	psp;
     state_t*	state;
 	
@@ -924,7 +924,7 @@ void P_MovePsprites (player_t* player)
 void
 P_SetPsprite
 (player_t*	player,
-	int		position,
+	int32_t		position,
 	statenum_t	stnum)
 {
 	pspdef_t*	psp;

@@ -25,8 +25,8 @@
 // CHEAT SEQUENCE PACKAGE
 //
 
-static int		firsttime = 1;
-static unsigned char	cheat_xlate_table[256];
+static int32_t		firsttime = 1;
+static uint8_t	cheat_xlate_table[256];
 
 
 //
@@ -36,10 +36,10 @@ static unsigned char	cheat_xlate_table[256];
 int
 cht_CheckCheat
 ( cheatseq_t*	cht,
-  char		key )
+	int8_t		key )
 {
-    int i;
-    int rc = 0;
+	int32_t i;
+	int32_t rc = 0;
 
     if (firsttime)
     {
@@ -53,7 +53,7 @@ cht_CheckCheat
     if (*cht->p == 0)
 	*(cht->p++) = key;
     else if
-	(cheat_xlate_table[(unsigned char)key] == *cht->p) cht->p++;
+	(cheat_xlate_table[(uint8_t)key] == *cht->p) cht->p++;
     else
 	cht->p = cht->sequence;
 
@@ -71,10 +71,10 @@ cht_CheckCheat
 void
 cht_GetParam
 ( cheatseq_t*	cht,
-  char*		buffer )
+  int8_t*		buffer )
 {
 
-    unsigned char *p, c;
+    uint8_t *p, c;
 
     p = cht->sequence;
     while (*(p++) != 1);

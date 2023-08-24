@@ -20,6 +20,7 @@
 #ifndef __SOUNDS__
 #define __SOUNDS__
 
+#include <sys/types.h>
 
 //
 // SoundFX struct.
@@ -29,22 +30,22 @@ typedef struct sfxinfo_struct	sfxinfo_t;
 struct sfxinfo_struct
 {
     // up to 6-character name
-    char*	name;
+    int8_t*	name;
 
     // Sfx singularity (only one at a time)
-    int		singularity;
+    int32_t		singularity;
 
     // Sfx priority
-    int		priority;
+    int32_t		priority;
 
     // referenced sound if a link
     sfxinfo_t*	link;
 
     // pitch if a link
-    int		pitch;
+    int32_t		pitch;
 
     // volume if a link
-    int		volume;
+    int32_t		volume;
 
     // sound data
     void*	data;
@@ -52,10 +53,10 @@ struct sfxinfo_struct
     // this is checked every second to see if sound
     // can be thrown out (if 0, then decrement, if -1,
     // then throw out, if > 0, then it is in use)
-    int		usefulness;
+    int32_t		usefulness;
 
     // lump number of sfx
-    int		lumpnum;		
+    int32_t		lumpnum;		
 };
 
 
@@ -67,16 +68,16 @@ struct sfxinfo_struct
 typedef struct
 {
     // up to 6-character name
-    char*	name;
+    int8_t*	name;
 
     // lump number of music
-    int		lumpnum;
+    int32_t		lumpnum;
     
     // music data
     void*	data;
 
     // music handle once registered
-    int handle;
+	int32_t handle;
     
 } musicinfo_t;
 
@@ -163,7 +164,7 @@ extern musicinfo_t	S_music[];
 #define mus_dm2int  67
 #define NUMMUSIC    68
 	
-typedef unsigned char  musicenum_t;
+typedef uint8_t  musicenum_t;
 
 
 //
@@ -281,6 +282,6 @@ typedef unsigned char  musicenum_t;
 #define sfx_radio   108
 #define NUMSFX      109
 
-typedef unsigned char sfxenum_t;
+typedef uint8_t sfxenum_t;
 
 #endif

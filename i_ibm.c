@@ -57,8 +57,8 @@ void I_ReadExternDriver(void);
 
 typedef struct
 {
-    unsigned        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
-    unsigned short  flags, es, ds, fs, gs, ip, cs, sp, ss;
+	uint32_t        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
+    uint16_t  flags, es, ds, fs, gs, ip, cs, sp, ss;
 } dpmiregs_t;
 
 extern dpmiregs_t dpmiregs;
@@ -66,7 +66,7 @@ extern dpmiregs_t dpmiregs;
 void I_ReadMouse(void);
 void I_InitDiskFlash(void);
 
-extern int usemouse;
+extern int32_t usemouse;
 
 //
 // Constants
@@ -157,7 +157,7 @@ boolean grmode;
 
 boolean mousepresent;
 
-int ticcount;
+uint32_t ticcount;
 
 // REGS stuff used for int calls
 union REGS regs;
@@ -167,7 +167,7 @@ boolean novideo; // if true, stay in text mode for debugging
 
 #define KBDQUESIZE 32
 byte keyboardque[KBDQUESIZE];
-int kbdtail, kbdhead;
+int32_t kbdtail, kbdhead;
 
 #define KEY_LSHIFT      0xfe
 
@@ -180,8 +180,8 @@ int kbdtail, kbdhead;
 
 #define SC_RSHIFT       0x36
 #define SC_LSHIFT       0x2a
-void DPMIInt(int i);
-void I_WaitVBL(int vbls);
+void DPMIInt(int32_t i);
+void I_WaitVBL(int32_t vbls);
 //void I_StartupCyberMan(void);
 void I_StartupSound(void);
 void I_ShutdownSound(void);
@@ -208,22 +208,14 @@ byte scantokey[128] =
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0         // 7
 };
- 
-//
-// I_GetTime
-// Returns time in 1/35th second tics.
-//
-int I_GetTime(void)
-{
-        return ticcount;
-}
+  
 
 //
 // I_ColorBorder
 //
 void I_ColorBorder(void)
 {
-    int i;
+	int32_t i;
 
     I_WaitVBL(1);
     _outbyte(PEL_WRITE_ADR, 0);
@@ -238,7 +230,7 @@ void I_ColorBorder(void)
 //
 void I_UnColorBorder(void)
 {
-    int i;
+	int32_t i;
 
     I_WaitVBL(1);
     _outbyte(PEL_WRITE_ADR, 0);
@@ -255,9 +247,9 @@ void I_UnColorBorder(void)
 //
 // I_WaitVBL
 //
-void I_WaitVBL(int vbls)
+void I_WaitVBL(int32_t vbls)
 {
-    int stat;
+	int32_t stat;
 
     if (novideo)
     {
@@ -290,7 +282,7 @@ void I_WaitVBL(int vbls)
 //
 void I_SetPalette(byte *palette)
 {
-        int i;
+	int32_t i;
 
         if(novideo)
         {
@@ -314,14 +306,14 @@ byte *pcscreen, *currentscreen, *destscreen, *destview;
 //
 // I_UpdateBox
 //
-void I_UpdateBox(int x, int y, int w, int h)
+void I_UpdateBox(int32_t x, int32_t y, int32_t w, int32_t h)
 {
-    int i, j, k, count;
-    int sp_x1, sp_x2;
-    int poffset;
-    int offset;
-    int pstep;
-    int step;
+	int32_t i, j, k, count;
+	int32_t sp_x1, sp_x2;
+	int32_t poffset;
+	int32_t offset;
+	int32_t pstep;
+	int32_t step;
     byte *dest, *source;
  
     sp_x1 = x / 8;
@@ -345,7 +337,7 @@ void I_UpdateBox(int x, int y, int w, int h)
             k = count;
             while (k--)
             {
-                *(unsigned short *)dest = (unsigned short)(((*(source + 4)) << 8) + (*source));
+                *(uint16_t *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
                 dest += 2;
                 source += 8;
             }
@@ -359,11 +351,11 @@ void I_UpdateBox(int x, int y, int w, int h)
 //
 // I_UpdateNoBlit
 //
-int olddb[2][4];
+int32_t olddb[2][4];
 void I_UpdateNoBlit(void)
 {
-    int realdr[4];
-    int x, y, w, h;
+	int32_t realdr[4];
+	int32_t x, y, w, h;
     // Set current screen
     currentscreen = destscreen;
 
@@ -492,8 +484,8 @@ void I_ShutdownGraphics(void)
 //
 void I_ReadScreen(byte *scr)
 {
-        int i;
-        int j;
+	int32_t i;
+	int32_t j;
 
         outp(GC_INDEX, GC_READMAP);
 
@@ -526,7 +518,7 @@ void I_ReadScreen(byte *scr)
 
 void I_StartTic(void)
 {
-    int k;
+	int32_t k;
     event_t ev;
 
     I_ReadMouse();
@@ -602,10 +594,10 @@ void I_StartTic(void)
 //
 // I_TimerISR
 //
-int I_TimerISR(void)
+void I_TimerISR(void)
 {
     ticcount++;
-    return 0;
+    return ;
 }
 
 //
@@ -614,7 +606,7 @@ int I_TimerISR(void)
 
 void (__interrupt __far *oldkeyboardisr) () = NULL;
 
-int lastpress;
+int32_t lastpress;
 
 //
 // I_KeyboardISR
@@ -648,7 +640,7 @@ void I_ShutdownKeyboard(void)
 {
         if (oldkeyboardisr)
                 _dos_setvect (KEYBOARDINT, oldkeyboardisr);
-        *(short *)0x41c = *(short *)0x41a;      // clear bios key buffer
+        *(int16_t *)0x41c = *(int16_t *)0x41a;      // clear bios key buffer
 }
 
 
@@ -656,7 +648,7 @@ void I_ShutdownKeyboard(void)
 // Mouse
 //
 
-int I_ResetMouse(void)
+int32_t I_ResetMouse(void)
 {
         regs.w.ax = 0; // reset
         int386 (0x33, &regs, &regs);
@@ -729,8 +721,8 @@ void I_ReadMouse(void)
 
     dpmiregs.eax = 11;  // read counters
     DPMIInt(0x33);
-    ev.data2 = (short)dpmiregs.ecx;
-    ev.data3 = -(short)dpmiregs.edx;
+    ev.data2 = (int16_t)dpmiregs.ecx;
+    ev.data3 = -(int16_t)dpmiregs.edx;
 
     D_PostEvent(&ev);
 }
@@ -745,21 +737,21 @@ void I_ReadMouse(void)
 
 dpmiregs_t dpmiregs;
 
-unsigned realstackseg;
+uint32_t realstackseg;
 
 void I_DivException(void);
-int I_SetDivException(void);
+int32_t I_SetDivException(void);
  
 
 //
 // I_StartupDPMI
 //
-byte *I_AllocLow(int length);
+byte *I_AllocLow(int32_t length);
 
 void I_StartupDPMI(void)
 {
-    extern char __begtext;
-    extern char ___Argc;
+    extern int8_t __begtext;
+    extern int8_t ___Argc;
 
 //
 // allocate a decent stack for real mode ISRs
@@ -770,7 +762,7 @@ void I_StartupDPMI(void)
 // lock the entire program down
 //
 
-    _dpmi_lockregion (&__begtext, &___Argc - &__begtext);
+    //_dpmi_lockregion (&__begtext, &___Argc - &__begtext);
 
 
 //
@@ -805,7 +797,7 @@ void I_StartupDPMI(void)
 //
 void I_Init(void)
 {
-    int p;
+	int32_t p;
     novideo = M_CheckParm("novideo");
 
 	printf("I_StartupDPMI\n");
@@ -834,7 +826,7 @@ void I_Shutdown(void)
 //
 // I_Error
 //
-void I_Error (char *error, ...)
+void I_Error (int8_t *error, ...)
 {
     va_list argptr;
 	printf(error, argptr);
@@ -883,10 +875,10 @@ void I_Quit(void)
 //
 // I_ZoneBase
 //
-byte *I_ZoneBase(int *size)
+byte *I_ZoneBase(int32_t *size)
 {
-    int meminfo[32];
-    int heap;
+	int32_t meminfo[32];
+	int32_t heap;
     byte *ptr;
 
     memset(meminfo, 0, sizeof(meminfo));
@@ -938,9 +930,9 @@ byte *I_ZoneBase(int *size)
     return ptr;
 }
 
-int checkIfEMSExists(){
+int32_t checkIfEMSExists(){
 
-   int AH = 0x40;
+	int32_t AH = 0x40;
    regs.w.ax = AH << 8;
    int386(EMS_INT, &regs, &regs);
    AH = regs.w.ax >> 8;
@@ -952,10 +944,10 @@ int checkIfEMSExists(){
 //
 // I_ZoneBaseEMS
 //
-byte *I_ZoneBaseEMS(int *size)
+byte *I_ZoneBaseEMS(int32_t *size)
 {
-    int meminfo[32];
-    int heap;
+	int32_t meminfo[32];
+	int32_t heap;
     byte *ptr;
 
     memset(meminfo, 0, sizeof(meminfo));
@@ -1008,12 +1000,12 @@ byte *I_ZoneBaseEMS(int *size)
     return ptr;
 }
 
-// int I_InitEMS(void)
-byte* I_InitEMS(int *size)
+// int32_t I_InitEMS(void)
+byte* I_InitEMS(int32_t *size)
 {
 
-    int meminfo[32];
-    int heap;
+	int32_t meminfo[32];
+	int32_t heap;
     byte *ptr;
 
     memset(meminfo, 0, sizeof(meminfo));
@@ -1068,10 +1060,10 @@ byte* I_InitEMS(int *size)
    //todo
 
     /*
-   unsigned long bytesToAllocate = 4 * 1024 * 1024; // 4 MB
-   int numPagesToAllocate = bytesToAllocate / PAGE_FRAME_SIZE;
-   int AH = 0x43;
-    int EMSExistsError;
+   uint32_t bytesToAllocate = 4 * 1024 * 1024; // 4 MB
+   int32_t numPagesToAllocate = bytesToAllocate / PAGE_FRAME_SIZE;
+   int32_t AH = 0x43;
+    int32_t EMSExistsError;
 
    numPagesToAllocate = 1;
     
@@ -1136,7 +1128,7 @@ void I_InitDiskFlash(void)
 void I_BeginRead(void)
 {
     byte *src, *dest;
-    int y;
+	int32_t y;
 
     if (!grmode)
     {
@@ -1186,7 +1178,7 @@ void I_BeginRead(void)
 void I_EndRead(void)
 {
     byte *src, *dest;
-    int y;
+	int32_t y;
 
     if (!grmode)
     {
@@ -1224,7 +1216,7 @@ void I_EndRead(void)
 //
 // I_AllocLow
 //
-byte *I_AllocLow (int length)
+byte *I_AllocLow (int32_t length)
 {
     byte *mem;
 
@@ -1281,7 +1273,7 @@ void I_InitNetwork(void)
 //
 // DPMIInt
 //
-void DPMIInt(int i)
+void DPMIInt(int32_t i)
 {
     dpmiregs.ss = realstackseg;
     dpmiregs.sp = REALSTACKSIZE - 4;
@@ -1290,7 +1282,7 @@ void DPMIInt(int i)
     regs.w.ax = 0x300;
     regs.w.bx = i;
     regs.w.cx = 0;
-    regs.x.edi = (unsigned)&dpmiregs;
+    regs.x.edi = (uint32_t)&dpmiregs;
     segregs.es = segregs.ds;
     int386x(DPMI_INT, &regs, &regs, &segregs);
 }

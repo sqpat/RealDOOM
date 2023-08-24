@@ -40,10 +40,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
    to be dword aligned.
 ---------------------------------------------------------------------*/
 
-int USRHOOKS_GetMem
+int32_t USRHOOKS_GetMem
    (
    void **ptr,
-   unsigned long size
+   uint32_t size
    )
 
    {
@@ -67,7 +67,7 @@ int USRHOOKS_GetMem
    Deallocates the memory associated with the specified pointer.
 ---------------------------------------------------------------------*/
 
-int USRHOOKS_FreeMem
+int32_t USRHOOKS_FreeMem
    (
    void *ptr
    )

@@ -94,27 +94,27 @@ typedef	struct
 {
     fixed_t	floorheight;
     fixed_t	ceilingheight;
-    short	floorpic;
-    short	ceilingpic;
-    short	lightlevel; // seems to max at 255
-    short	special;	// goes beyond 20k
-    short	tag;		// cant set to char because of 666 special case.... 
+    int16_t	floorpic;
+    int16_t	ceilingpic;
+    int16_t	lightlevel; // seems to max at 255
+    int16_t	special;	// goes beyond 20k
+    int16_t	tag;		// cant set to int8_t because of 666 special case.... 
 
     // 0 = untraversed, 1,2 = sndlines -1
-    int		soundtraversed;
+    int32_t		soundtraversed;
 
     // thing that made a sound (or null)
     MEMREF	soundtargetRef;
 
     // mapblock bounding box for height changes
-    int		blockbox[4];
+    int32_t		blockbox[4];
 
     // origin for any sounds played by the sector
-    int soundorgX;
-	int soundorgY;
+	int32_t soundorgX;
+	int32_t soundorgY;
 
     // if == validcount, already checked
-    int		validcount;
+    int32_t		validcount;
 
     // list of mobjs in sector
     MEMREF	thinglistRef;
@@ -122,9 +122,9 @@ typedef	struct
     // thinker_t for reversable actions
     ///void*	specialdata;
 	MEMREF	specialdataRef;
-    int			linecount;
+    int32_t			linecount;
 //	struct line_s**	lines;	// [linecount] size
-	short linesoffset;	// [linecount] size
+	int16_t linesoffset;	// [linecount] size
 
 } sector_t;
 
@@ -145,12 +145,12 @@ typedef struct
 
     // Texture indices.
     // We do not maintain names here. 
-    short	toptexture;
-    short	bottomtexture;
-    short	midtexture;
+    int16_t	toptexture;
+    int16_t	bottomtexture;
+    int16_t	midtexture;
 
     // Sector the SideDef is facing.
-    short	secnum;
+    int16_t	secnum;
     
 } side_t;
 
@@ -173,21 +173,21 @@ typedef enum
 typedef struct line_s
 {
     // Vertices, from v1 to v2.
-	short	v1Offset;
-	short	v2Offset;
+	int16_t	v1Offset;
+	int16_t	v2Offset;
 
     // Precalculated v2 - v1 for side checking.
     fixed_t	dx;
     fixed_t	dy;
 
     // Animation related.
-    short	flags;
-    short	special;
-    short	tag;
+    int16_t	flags;
+    int16_t	special;
+    int16_t	tag;
 
     // Visual appearance: SideDefs.
     //  sidenum[1] will be -1 if one sided
-    short	sidenum[2];			
+    int16_t	sidenum[2];			
 
     // Neat. Another bounding box, for the extent
     //  of the LineDef.
@@ -198,11 +198,11 @@ typedef struct line_s
 
     // Front and back sector.
     // Note: redundant? Can be retrieved from SideDefs.
-	short	frontsecnum;
-	short	backsecnum;
+	int16_t	frontsecnum;
+	int16_t	backsecnum;
 
     // if == validcount, already checked
-    int		validcount;
+    int32_t		validcount;
 
     // thinker_t for reversable actions
     //void*	specialdata;		
@@ -221,9 +221,9 @@ typedef struct line_s
 //
 typedef struct subsector_s
 {
-    short	secnum;
-    short	numlines;
-    short	firstline;
+    int16_t	secnum;
+    int16_t	numlines;
+    int16_t	firstline;
     
 } subsector_t;
 
@@ -235,21 +235,21 @@ typedef struct subsector_s
 typedef struct
 {
 
-	short	v1Offset;
-	short	v2Offset;
+	int16_t	v1Offset;
+	int16_t	v2Offset;
 
     fixed_t	offset;
 
     angle_t	angle;
 
-    short	sidedefOffset;
-    short	linedefOffset;
+    int16_t	sidedefOffset;
+    int16_t	linedefOffset;
 
     // Sector references.
     // Could be retrieved from linedef, too.
     // backsector is NULL for one sided lines
-    short	frontsecnum;
-    short	backsecnum;
+    int16_t	frontsecnum;
+    int16_t	backsecnum;
     
 } seg_t;
 
@@ -270,7 +270,7 @@ typedef struct
     fixed_t	bbox[2][4];
 
     // If NF_SUBSECTOR its a subsector.
-    unsigned short children[2];
+    uint16_t children[2];
     
 } node_t;
 
@@ -316,17 +316,17 @@ typedef byte	lighttable_t;
 //
 typedef struct drawseg_s
 {
-    short		curlinenum;
+    int16_t		curlinenum;
 
-    int			x1;
-    int			x2;
+    int32_t			x1;
+    int32_t			x2;
 
     fixed_t		scale1;
     fixed_t		scale2;
     fixed_t		scalestep;
 
     // 0=none, 1=bottom, 2=top, 3=both
-    int			silhouette;
+    int32_t			silhouette;
 
     // do not clip sprites above this
     fixed_t		bsilheight;
@@ -336,9 +336,9 @@ typedef struct drawseg_s
     
     // Pointers to lists for sprite clipping,
     //  all three adjusted so [x1] is first value.
-    short*		sprtopclip;		
-    short*		sprbottomclip;	
-    short*		maskedtexturecol;
+    int16_t*		sprtopclip;		
+    int16_t*		sprbottomclip;	
+    int16_t*		maskedtexturecol;
     
 } drawseg_t;
 
@@ -351,11 +351,11 @@ typedef struct drawseg_s
 // of patches.
 typedef struct 
 { 
-    short		width;		// bounding box size 
-    short		height; 
-    short		leftoffset;	// pixels to the left of origin 
-    short		topoffset;	// pixels below the origin 
-    int			columnofs[8];	// only [width] used
+    int16_t		width;		// bounding box size 
+    int16_t		height; 
+    int16_t		leftoffset;	// pixels to the left of origin 
+    int16_t		topoffset;	// pixels below the origin 
+    int32_t			columnofs[8];	// only [width] used
     // the [0] is &columnofs[width] 
 } patch_t;
 
@@ -375,8 +375,8 @@ typedef struct vissprite_s
     struct vissprite_s*	next;
     
 
-	short x1;
-	short x2;
+	int16_t x1;
+	int16_t x2;
 
     // for line side calculation
     fixed_t		gx;
@@ -395,13 +395,13 @@ typedef struct vissprite_s
     fixed_t		xiscale;	
 
     fixed_t		texturemid;
-	short patch;
+	int16_t patch;
 
     // for color translation and shadow draw,
     //  maxbright frames as well
     lighttable_t*	colormap;
    
-    int			mobjflags;
+    int32_t			mobjflags;
     
 } vissprite_t;
 
@@ -429,7 +429,7 @@ typedef struct
     boolean	rotate;
 
     // Lump to use for view angles 0-7.
-    short	lump[8];
+    int16_t	lump[8];
 
     // Flip bit (1 = flip) to use for view angles 0-7.
     byte	flip[8];
@@ -444,7 +444,7 @@ typedef struct
 //
 typedef struct
 {
-    int			numframes;
+    int32_t			numframes;
     MEMREF		spriteframesRef;
 
 } spritedef_t;
@@ -457,10 +457,10 @@ typedef struct
 typedef struct
 {
   fixed_t		height;
-  int			picnum;
-  short lightlevel;
-  short minx;
-  short maxx;
+  int32_t			picnum;
+  int16_t lightlevel;
+  int16_t minx;
+  int16_t maxx;
   
   // leave pads for [minx-1]/[maxx+1]
   

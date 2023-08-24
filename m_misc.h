@@ -25,32 +25,32 @@
 //
 // MISC
 //
-extern  int	myargc;
-extern  char**	myargv;
-extern int	prndindex;
+extern  int32_t	myargc;
+extern  int8_t**	myargv;
+extern int32_t	prndindex;
 
 
 // Returns the position of the given parameter
 // in the arg list (0 if not found).
-int M_CheckParm (char* check);
+int32_t M_CheckParm (int8_t* check);
 
 boolean
 M_WriteFile
-( char const*	name,
+(int8_t const*	name,
   void*		source,
-  int		length );
+  int32_t		length );
 
 int
 M_ReadFile
-( char const*	name,
+(int8_t const*	name,
   MEMREF*	bufferRef );
 
 // Returns a number from 0 to 255,
 // from a lookup table.
-int M_Random(void);
+int32_t M_Random(void);
 
 // As M_Random, but used only by the play simulation.
-int P_Random(void);
+int32_t P_Random(void);
 
 
 // Fix randoms for demos.

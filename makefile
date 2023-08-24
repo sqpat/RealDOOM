@@ -77,8 +77,7 @@ GLOBOBJS = &
  dutils.obj &
  f_wipe.obj &
  info.obj &
- dmx.obj &
- usrhooks.obj 
+ dmx.obj  
 
 newdoom.exe : $(GLOBOBJS) i_ibm.obj
  wlink @newdoom.lnk

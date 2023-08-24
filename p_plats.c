@@ -46,11 +46,11 @@ void T_PlatRaise(MEMREF platRef)
 
     result_e	res;
 	plat_t* plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
-	short platsecnum = plat->secnum;
+	int16_t platsecnum = plat->secnum;
 
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int sectorsoundorgX = sectors[platsecnum].soundorgX;
-	int sectorsoundorgY = sectors[platsecnum].soundorgY;
+	int32_t sectorsoundorgX = sectors[platsecnum].soundorgX;
+	int32_t sectorsoundorgY = sectors[platsecnum].soundorgY;
 	fixed_t sectorfloorheight = sectors[platsecnum].floorheight;
 
 	plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
@@ -129,20 +129,20 @@ void T_PlatRaise(MEMREF platRef)
 //
 int
 EV_DoPlat
-(  short linetag,
-	short lineside0,
+(  int16_t linetag,
+	int16_t lineside0,
   plattype_e	type,
-  int		amount )
+  int32_t		amount )
 {
     plat_t*	plat;
-    int		secnum;
-    int		rtn;
+    int32_t		secnum;
+    int32_t		rtn;
 	MEMREF platRef;
 	side_t* sides;
-	short side0secnum;
+	int16_t side0secnum;
 	fixed_t specialheight;
-	int sectorsoundorgX;
-	int sectorsoundorgY;
+	int32_t sectorsoundorgX;
+	int32_t sectorsoundorgY;
 	fixed_t sectorfloorheight;
 	sector_t* sectors;
 
@@ -282,8 +282,8 @@ EV_DoPlat
 
 
 
-void P_ActivateInStasis(int tag) {
-    int		j;
+void P_ActivateInStasis(int32_t tag) {
+    int32_t		j;
 	plat_t* plat;
 	for (j = 0; j < MAXPLATS; j++)
 		if (activeplats[j] != NULL_MEMREF) {
@@ -297,8 +297,8 @@ void P_ActivateInStasis(int tag) {
 
 }
 
-void EV_StopPlat(short linetag) {
-	int		j;
+void EV_StopPlat(int16_t linetag) {
+	int32_t		j;
 	plat_t* plat;
 
 	for (j = 0; j < MAXPLATS; j++) {
@@ -314,12 +314,12 @@ void EV_StopPlat(short linetag) {
 	}
 }
 
-static int platraisecount = 0;
-static int addedplatraisecount = 0;
-static int platindex = 0;
+static int32_t platraisecount = 0;
+static int32_t addedplatraisecount = 0;
+static int32_t platindex = 0;
 
 void P_AddActivePlat(MEMREF memref) {
-    int		i;
+    int32_t		i;
 	addedplatraisecount++;
     for (i = 0;i < MAXPLATS;i++)
 	if (activeplats[i] == NULL_MEMREF) {
@@ -333,10 +333,10 @@ void P_AddActivePlat(MEMREF memref) {
 
 void P_RemoveActivePlat(MEMREF platRef)
 {
-    int		i;
+    int32_t		i;
 	plat_t* plat;
 	sector_t* sectors;
-	short platsecnum;
+	int16_t platsecnum;
 	THINKERREF platthinkerRef;
 	platraisecount++;
 	for (i = 0; i < MAXPLATS; i++) {

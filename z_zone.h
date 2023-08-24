@@ -24,7 +24,7 @@
 #define __Z_ZONE__
 
 #include <stdio.h>
-
+#include <sys/types.h>
 //
 // ZONE MEMORY
 // PU - purge tags.
@@ -67,8 +67,8 @@
 #define ALLOC_TYPE_LINES 26
 #define ALLOC_TYPE_SECTORS 27
 
-typedef unsigned short MEMREF;  //used externally for allocations list index
-typedef unsigned short PAGEREF; //used internally for allocations list index
+typedef uint16_t MEMREF;  //used externally for allocations list index
+typedef uint16_t PAGEREF; //used internally for allocations list index
 
 // Note: a memref of 0 refers to the empty (size = 0) 'head' of doubly linked list
 // managing the pages, and this index can never be handed out, so it's safe to use
@@ -77,17 +77,17 @@ typedef unsigned short PAGEREF; //used internally for allocations list index
 
 
 
-extern int numreads;
-extern int pageins;
-extern int pageouts;
-extern int thebspnum;
+extern int32_t numreads;
+extern int32_t pageins;
+extern int32_t pageouts;
+extern int32_t thebspnum;
 
 typedef struct memblock_s
 {
-    int                 size;   // including the header and possibly tiny fragments
+	int32_t                 size;   // including the header and possibly tiny fragments
     void**              user;   // NULL if a free block
-    int                 tag;    // purgelevel
-    int                 id;     // should be ZONEID
+	int32_t                 tag;    // purgelevel
+	int32_t                 id;     // should be ZONEID
     struct memblock_s*  next;
     struct memblock_s*  prev;
 } memblock_t;
@@ -95,25 +95,25 @@ typedef struct memblock_s
 
 
 void Z_InitEMS(void);
-void Z_FreeTagsEMS (int lowtag, int hightag);
-MEMREF Z_MallocEMSNew(int size, unsigned char tag, unsigned char user, unsigned char sourceHint);
-MEMREF Z_MallocEMSNewWithBackRef(int size, unsigned char tag, unsigned char user, unsigned char sourceHint, short backRef);
+void Z_FreeTagsEMS (int32_t lowtag, int32_t hightag);
+MEMREF Z_MallocEMSNew(int32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
+MEMREF Z_MallocEMSNewWithBackRef(int32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
 #ifdef MEMORYCHECK
-void Z_CheckEMSAllocations(PAGEREF block, int i, int var2, int var3);
+void Z_CheckEMSAllocations(PAGEREF block, int32_t i, int32_t var2, int32_t var3);
 #endif
-void Z_ChangeTagEMSNew (MEMREF index, short tag);
+void Z_ChangeTagEMSNew (MEMREF index, int16_t tag);
 void Z_FreeEMSNew(PAGEREF block);
 
 
 void* Z_LoadBytesFromEMS2(MEMREF index);
-int Z_RefIsActive2(MEMREF memref);
+int32_t Z_RefIsActive2(MEMREF memref);
 
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a)
 #define Z_RefIsActive(a) Z_RefIsActive2(a)
 
 /*
-int Z_RefIsActive2(MEMREF memref, char* file, int line);
-void* Z_LoadBytesFromEMS2 (MEMREF index, char* file, int line);
+int32_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);
+void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
 
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a, __FILE__, __LINE__)
 #define Z_RefIsActive(a) Z_RefIsActive2(a, __FILE__, __LINE__)

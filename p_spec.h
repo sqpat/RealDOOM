@@ -28,7 +28,7 @@
 // End-level timer (-TIMER option)
 //
 extern	boolean levelTimer;
-extern	int	levelTimeCount;
+extern	int32_t	levelTimeCount;
 
 
 //      Define values for map objects
@@ -48,70 +48,70 @@ void    P_UpdateSpecials (void);
 boolean
 P_UseSpecialLine
 ( MEMREF thingRef,
-	short linenum,
-  int		side );
+	int16_t linenum,
+  int32_t		side );
 
 void
 P_ShootSpecialLine
 (MEMREF thingRef,
-  short linenum);
+  int16_t linenum);
 
 void
 P_CrossSpecialLine
-( int		linenum,
-  int		side,
+( int32_t		linenum,
+  int32_t		side,
 	MEMREF thingRef);
 
 void    P_PlayerInSpecialSector (player_t* player);
 
-short
+int16_t
 twoSided
-(short		sector,
-	short		line );
+(int16_t		sector,
+	int16_t		line );
 
-short
+int16_t
 getSector
-(short		currentSector,
-	short		line,
-	short		side );
+(int16_t		currentSector,
+	int16_t		line,
+	int16_t		side );
 
-short
+int16_t
 getSideNum
-(short		currentSector,
-	short		line,
-	short		side );
+(int16_t		currentSector,
+	int16_t		line,
+	int16_t		side );
 
-fixed_t P_FindLowestFloorSurrounding(short secnum);
-fixed_t P_FindHighestFloorSurrounding(short secnum);
+fixed_t P_FindLowestFloorSurrounding(int16_t secnum);
+fixed_t P_FindHighestFloorSurrounding(int16_t secnum);
 
 fixed_t
 P_FindNextHighestFloor
-(short secnum,
-  int		currentheight );
+(int16_t secnum,
+  int32_t		currentheight );
 
-fixed_t P_FindLowestCeilingSurrounding(short secnum);
-fixed_t P_FindHighestCeilingSurrounding(short secnum);
+fixed_t P_FindLowestCeilingSurrounding(int16_t secnum);
+fixed_t P_FindHighestCeilingSurrounding(int16_t secnum);
 
 int
 P_FindSectorFromLineTag
-( short		linetag,
-  int		start );
+( int16_t		linetag,
+  int32_t		start );
 
 int
 P_FindMinSurroundingLight
-( short secnum,
-  int		max );
+( int16_t secnum,
+  int32_t		max );
 
-short
+int16_t
 getNextSector
-( short linenum,
-  short	sec );
+( int16_t linenum,
+  int16_t	sec );
 
 
 //
 // SPECIAL
 //
-int EV_DoDonut(short linetag);
+int32_t EV_DoDonut(int16_t linetag);
 
 
 
@@ -121,10 +121,10 @@ int EV_DoDonut(short linetag);
 typedef struct
 {
     THINKERREF	thinkerRef;
-	short secnum;
-    int		count;
-    int		maxlight;
-    int		minlight;
+	int16_t secnum;
+    int32_t		count;
+    int32_t		maxlight;
+    int32_t		minlight;
     
 } fireflicker_t;
 
@@ -133,12 +133,12 @@ typedef struct
 typedef struct
 {
 	THINKERREF	thinkerRef;
-	short secnum;
-    int		count;
-    int		maxlight;
-    int		minlight;
-    int		maxtime;
-    int		mintime;
+	int16_t secnum;
+    int32_t		count;
+    int32_t		maxlight;
+    int32_t		minlight;
+    int32_t		maxtime;
+    int32_t		mintime;
     
 } lightflash_t;
 
@@ -147,12 +147,12 @@ typedef struct
 typedef struct
 {
 	THINKERREF	thinkerRef;
-	short secnum;
-    int		count;
-    int		minlight;
-    int		maxlight;
-    int		darktime;
-    int		brighttime;
+	int16_t secnum;
+    int32_t		count;
+    int32_t		minlight;
+    int32_t		maxlight;
+    int32_t		darktime;
+    int32_t		brighttime;
     
 } strobe_t;
 
@@ -162,10 +162,10 @@ typedef struct
 typedef struct
 {
 	THINKERREF	thinkerRef;
-	short secnum;
-    int		minlight;
-    int		maxlight;
-    int		direction;
+	int16_t secnum;
+    int32_t		minlight;
+    int32_t		maxlight;
+    int32_t		direction;
 
 } glow_t;
 
@@ -175,27 +175,27 @@ typedef struct
 #define FASTDARK			15
 #define SLOWDARK			35
 
-void    P_SpawnFireFlicker (short secnum);
+void    P_SpawnFireFlicker (int16_t secnum);
 void    T_LightFlash (MEMREF memref);
-void    P_SpawnLightFlash (short secnum);
+void    P_SpawnLightFlash (int16_t secnum);
 void    T_StrobeFlash (MEMREF memref);
 
 void
 P_SpawnStrobeFlash
-(short secnum,
-  int		fastOrSlow,
-  int		inSync );
+(int16_t secnum,
+  int32_t		fastOrSlow,
+  int32_t		inSync );
 
-void    EV_StartLightStrobing(short linetag);
-void    EV_TurnTagLightsOff(short linetag);
+void    EV_StartLightStrobing(int16_t linetag);
+void    EV_TurnTagLightsOff(int16_t linetag);
 
 void
 EV_LightTurnOn
-( short linetag,
-  int		bright );
+( int16_t linetag,
+  int32_t		bright );
 
 void    T_Glow(MEMREF memref);
-void    P_SpawnGlowingLight(short secnum);
+void    P_SpawnGlowingLight(int16_t secnum);
 
 
 void T_FireFlicker(MEMREF memref);
@@ -206,9 +206,9 @@ void T_FireFlicker(MEMREF memref);
 //
 typedef struct
 {
-    char	name1[9];
-    char	name2[9];
-    short	episode;
+    int8_t	name1[9];
+	int8_t	name2[9];
+    int16_t	episode;
     
 } switchlist_t;
 
@@ -224,12 +224,12 @@ typedef enum
 
 typedef struct
 {
-	short linenum;
+	int16_t linenum;
     bwhere_e	where;
-    int		btexture;
-    int		btimer;
-	int soundorgX;
-	int soundorgY;
+    int32_t		btexture;
+    int32_t		btimer;
+	int32_t soundorgX;
+	int32_t soundorgY;
 
 } button_t;
 
@@ -249,7 +249,7 @@ extern button_t	buttonlist[MAXBUTTONS];
 
 void
 P_ChangeSwitchTexture
-(short linenum, short lineside0, short linespecial, short linefrontsecnum, int useAgain);
+(int16_t linenum, int16_t lineside0, int16_t linespecial, int16_t linefrontsecnum, int32_t useAgain);
 
 void P_InitSwitchList(void);
 
@@ -262,7 +262,7 @@ void P_InitSwitchList(void);
 #define plat_waiting 2
 #define plat_in_stasis 3
 
-typedef unsigned char plat_e;
+typedef uint8_t plat_e;
 
 
 
@@ -272,23 +272,23 @@ typedef unsigned char plat_e;
 #define raiseToNearestAndChange 3
 #define blazeDWUS 4
 
-typedef unsigned char plattype_e;
+typedef uint8_t plattype_e;
 
 
 
 typedef struct
 {
 	THINKERREF	thinkerRef;
-	short secnum;
+	int16_t secnum;
     fixed_t	speed;
     fixed_t	low;
     fixed_t	high;
-    int		wait;
-    int		count;
+    int32_t		wait;
+    int32_t		count;
     plat_e	status;
     plat_e	oldstatus;
     boolean	crush;
-    int		tag;
+    int32_t		tag;
     plattype_e	type;
     
 } plat_t;
@@ -306,15 +306,15 @@ void    T_PlatRaise(MEMREF platRef);
 
 int
 EV_DoPlat
-( short linenum,
-	short linetag,
+( int16_t linenum,
+	int16_t linetag,
   plattype_e	type,
-  int		amount );
+  int32_t		amount );
 
 void    P_AddActivePlat(MEMREF memref);
 void    P_RemoveActivePlat(MEMREF memref);
-void    EV_StopPlat(short linetag);
-void    P_ActivateInStasis(int tag);
+void    EV_StopPlat(int16_t linetag);
+void    P_ActivateInStasis(int32_t tag);
 
 
 //
@@ -339,18 +339,18 @@ typedef struct
 {
     THINKERREF	thinkerRef;
     vldoor_e	type;
-    short	secnum;
+    int16_t	secnum;
     fixed_t	topheight;
     fixed_t	speed;
 
     // 1 = up, 0 = waiting at top, -1 = down
-    int             direction;
+	int32_t             direction;
     
     // tics to wait at the top
-    int             topwait;
+	int32_t             topwait;
     // (keep in case a door going down is reset)
     // when it reaches 0, start going down
-    int             topcountdown;
+	int32_t             topcountdown;
     
 } vldoor_t;
 
@@ -361,26 +361,26 @@ typedef struct
 
 void
 EV_VerticalDoor
-( short linenum,
+( int16_t linenum,
   MEMREF	thingRef );
 
 int
 EV_DoDoor
-( short linetag,
+( int16_t linetag,
   vldoor_e	type );
 
 int
 EV_DoLockedDoor
-(short linetag, short linepsecial,
+(int16_t linetag, int16_t linepsecial,
   vldoor_e	type,
 	MEMREF thingRef);
 
 void    T_VerticalDoor (MEMREF memref);
-void    P_SpawnDoorCloseIn30 (short secnum);
+void    P_SpawnDoorCloseIn30 (int16_t secnum);
 
 void
 P_SpawnDoorRaiseIn5Mins
-( short		secnum );
+( int16_t		secnum );
 
  
 
@@ -404,18 +404,18 @@ typedef struct
 {
     THINKERREF	thinkerRef;
     ceiling_e	type;
-	short secnum;
+	int16_t secnum;
     fixed_t	bottomheight;
     fixed_t	topheight;
     fixed_t	speed;
     boolean	crush;
 
     // 1 = up, 0 = waiting, -1 = down
-    int		direction;
+    int32_t		direction;
 
     // ID
-    int		tag;                   
-    int		olddirection;
+    int32_t		tag;                   
+    int32_t		olddirection;
     
 } ceiling_t;
 
@@ -431,14 +431,14 @@ extern MEMREF	activeceilings[MAXCEILINGS];
 
 int
 EV_DoCeiling
-( short linetag,
+( int16_t linetag,
   ceiling_e	type );
 
 void    T_MoveCeiling (MEMREF memref);
 void    P_AddActiveCeiling(MEMREF memref);
 void    P_RemoveActiveCeiling(MEMREF memref);
-int	EV_CeilingCrushStop(short linetag);
-void    P_ActivateInStasisCeiling(short linetag);
+int32_t	EV_CeilingCrushStop(int16_t linetag);
+void    P_ActivateInStasisCeiling(int16_t linetag);
 
 
 //
@@ -475,7 +475,7 @@ void    P_ActivateInStasisCeiling(short linetag);
 #define donutRaise 11
 #define raiseFloor512 12
     
-typedef unsigned char  floor_e;
+typedef uint8_t  floor_e;
 
 
 
@@ -483,7 +483,7 @@ typedef unsigned char  floor_e;
 #define build8 0	// slowly build by 8
 #define turbo16	1 // quickly build by 16
 
-typedef unsigned char  stair_e;
+typedef uint8_t  stair_e;
 
 
 
@@ -492,10 +492,10 @@ typedef struct
     THINKERREF	thinkerRef;
     floor_e	type;
     boolean	crush;
-    short   secnum;
-    int		direction;
-    int		newspecial;
-    short	texture;
+    int16_t   secnum;
+    int32_t		direction;
+    int32_t		newspecial;
+    int16_t	texture;
     fixed_t	floordestheight;
     fixed_t	speed;
 
@@ -509,27 +509,27 @@ typedef struct
 #define floor_crushed 1
 #define floor_pastdest 2
     
-typedef unsigned char result_e;
+typedef uint8_t result_e;
 
 
 
 result_e
 T_MovePlane
-( short secnum,
+( int16_t secnum,
   fixed_t	speed,
   fixed_t	dest,
   boolean	crush,
-  int		floorOrCeiling,
-  int		direction );
+  int32_t		floorOrCeiling,
+  int32_t		direction );
 
 int
 EV_BuildStairs
-( short linetag,
+( int16_t linetag,
   stair_e	type );
 
 int
 EV_DoFloor
-( short linetag,   short linefrontsecnum, floor_e	floortype );
+( int16_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
 
 void T_MoveFloor(MEMREF memref);
 
@@ -538,8 +538,8 @@ void T_MoveFloor(MEMREF memref);
 //
 int
 EV_Teleport
-( short linetag,
-  int		side,
+( int16_t linetag,
+  int32_t		side,
 	MEMREF thingRef);
 
 #endif

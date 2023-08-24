@@ -33,7 +33,7 @@
 #include "p_setup.h"
 
 void G_PlayerReborn ();
-void P_SpawnMapThing (mapthing_t*	mthing, int key);
+void P_SpawnMapThing (mapthing_t*	mthing, int32_t key);
 
 
 void A_Explode(MEMREF moRef);
@@ -93,7 +93,7 @@ mobj_t* SAVEDUNIT;
 // P_SetMobjState
 // Returns true if the mobj is still present.
 //
-static int test = 0;
+static int32_t test = 0;
 
 
 
@@ -140,12 +140,12 @@ void P_XYMovement (MEMREF moRef)
 	fixed_t momomx;
 	fixed_t momomy;
 	line_t* lines;
-	short ceilinglinebacksecnum;
+	int16_t ceilinglinebacksecnum;
 	sector_t* sectors;
-	short mosecnum;
+	int16_t mosecnum;
 	fixed_t sectorfloorheight;
 
-	int i = 0;
+	int32_t i = 0;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	player = mo->player;
 	
@@ -281,7 +281,7 @@ void P_XYMovement (MEMREF moRef)
 		if (player) {
 			playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 		}
-		if (player && (unsigned)((playermo->state - states) - S_PLAY_RUN1) < 4) {
+		if (player && (uint32_t)((playermo->state - states) - S_PLAY_RUN1) < 4) {
 			P_SetMobjState(player->moRef, S_PLAY);
 		}
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
@@ -427,15 +427,15 @@ P_NightmareRespawn(MEMREF mobjRef)
 	mapthing_t*		mthing;
 	MEMREF moRef;
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-	short subsecnum;
+	int16_t subsecnum;
 	subsector_t* subsectors;
-	short subsectorsecnum;
+	int16_t subsectorsecnum;
 	mobjtype_t mobjtype;
 	angle_t mobjspawnangle;
 	mapthing_t mobjspawnpoint;
-	short mobjspawnoptions;
+	int16_t mobjspawnoptions;
 	fixed_t sectorfloorheight;
-	short mobjsecnum;
+	int16_t mobjsecnum;
 	fixed_t mobjx;
 	fixed_t mobjy;
 	sector_t* sectors;
@@ -507,7 +507,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 void P_MobjThinker (MEMREF mobjRef) {
 
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-	int i;
+	int32_t i;
 	// momentum movement
     if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
@@ -586,7 +586,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     state_t*	st;
     mobjinfo_t*	info;
 	MEMREF mobjRef;
-	short mobjsecnum;
+	int16_t mobjsecnum;
 	sector_t* sectors;
 	fixed_t sectorfloorheight;
 	fixed_t sectorceilingheight;
@@ -656,9 +656,9 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 // P_RemoveMobj
 //
 mapthing_t	itemrespawnque[ITEMQUESIZE];
-int		itemrespawntime[ITEMQUESIZE];
-int		iquehead;
-int		iquetail;
+int32_t		itemrespawntime[ITEMQUESIZE];
+int32_t		iquehead;
+int32_t		iquetail;
 
 
 void P_RemoveMobj (MEMREF mobjRef)
@@ -705,10 +705,10 @@ void P_SpawnPlayer (mapthing_t* mthing)
 
 	MEMREF mobjRef;
 	mobj_t*		mobj;
-	short mthingtype = mthing->type;
-	short mthingx = mthing->x;
-	short mthingy = mthing->y;
-	short mthingangle = mthing->angle;
+	int16_t mthingtype = mthing->type;
+	int16_t mthingx = mthing->x;
+	int16_t mthingy = mthing->y;
+	int16_t mthingangle = mthing->angle;
 	 
 		
     p = &players[0];
@@ -766,20 +766,20 @@ void P_SpawnPlayer (mapthing_t* mthing)
 // The fields of the mapthing should
 // already be in host byte order.
 //
-void P_SpawnMapThing (mapthing_t* mthing, int key)
+void P_SpawnMapThing (mapthing_t* mthing, int32_t key)
 {
-    int			i;
-    int			bit;
+    int32_t			i;
+    int32_t			bit;
     mobj_t*		mobj;
     fixed_t		x;
     fixed_t		y;
     fixed_t		z;
 	MEMREF mobjRef;
-	short mthingtype = mthing->type;
-	short mthingoptions = mthing->options;
-	short mthingx = mthing->x;
-	short mthingy = mthing->y;
-	short mthingangle = mthing->angle;
+	int16_t mthingtype = mthing->type;
+	int16_t mthingoptions = mthing->options;
+	int16_t mthingx = mthing->x;
+	int16_t mthingy = mthing->y;
+	int16_t mthingangle = mthing->angle;
 	mapthing_t copyofthing = *mthing;
 
 		
@@ -914,7 +914,7 @@ P_SpawnBlood
 ( fixed_t	x,
   fixed_t	y,
   fixed_t	z,
-  int		damage )
+  int32_t		damage )
 {
     mobj_t*	th;
 	MEMREF thRef;
@@ -973,7 +973,7 @@ P_SpawnMissile
 {
     mobj_t*	th;
     angle_t	an;
-    int		dist;
+    int32_t		dist;
 	mobj_t*	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 	mobj_t*	dest;
 	fixed_t destz;
@@ -981,7 +981,7 @@ P_SpawnMissile
 	fixed_t sourcey = source->y;
 	fixed_t sourcez = source->z;
 	fixed_t momz;
-	int thspeed;
+	int32_t thspeed;
 	MEMREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type);
 
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
@@ -1095,7 +1095,7 @@ P_SetMobjState
 {
 	state_t*	st;
 	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-	int i = 0;
+	int32_t i = 0;
 
 	do {
 		if (state == S_NULL) {
@@ -1165,7 +1165,7 @@ P_SetMobjState
 			case ETF_A_BrainPain: A_BrainPain(mobjRef); break;
 			case ETF_A_BrainScream: A_BrainScream(mobjRef); break;
 			case ETF_A_BrainDie: A_BrainDie(mobjRef); break;
-				// ugly hacks because these values didnt fit in the char datatype, so we do this to avoid making that field a short in a 1000 element struct array. 
+				// ugly hacks because these values didnt fit in the char datatype, so we do this to avoid making that field a int16_t in a 1000 element struct array. 
 				// easily saving extra 1-2kb of binary size is worth this hack imo
 			case ETF_A_BrainAwake:
 				mobj->tics = 181;

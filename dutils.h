@@ -19,6 +19,8 @@
 #ifndef __DUTILS__
 #define __DUTILS__
 
+#include <sys/types.h>
+
 typedef struct lnode_s {
     void* value;
     struct lnode_s* prev;
@@ -47,21 +49,21 @@ void* dll_DelStartNode(list_t* list);
 
 typedef struct
 {
-    unsigned char*	sequence;
-    unsigned char*	p;
+    uint8_t*	sequence;
+    uint8_t*	p;
     
 } cheatseq_t;
 
 int
 cht_CheckCheat
 ( cheatseq_t*		cht,
-  char			key );
+	int8_t			key );
 
 
 void
 cht_GetParam
 ( cheatseq_t*		cht,
-  char*			buffer );
+  int8_t*			buffer );
 
 
 #endif
