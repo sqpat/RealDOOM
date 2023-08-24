@@ -114,7 +114,6 @@ void D_DoomLoop (void);
 char*           wadfiles[MAXWADFILES];
 
 
-boolean         devparm;        // started game with -devparm
 boolean         nomonsters;     // checkparm of -nomonsters
 boolean         respawnparm;    // checkparm of -respawn
 boolean         fastparm;       // checkparm of -fast
@@ -125,7 +124,6 @@ boolean         singletics = false; // debug flag to cancel adaptiveness
 
 
 
-//extern int soundVolume;
 extern  int     sfxVolume;
 extern  int     musicVolume;
 
@@ -793,63 +791,9 @@ void D_AddFile (char *file)
 void IdentifyVersion (void)
 {
     strcpy(basedefault,"default.cfg");
+	 
 
-    if (M_CheckParm ("-shdev"))
-    {
-        registered = false;
-        shareware = true;
-        devparm = true;
-        D_AddFile (DEVDATA"doom1.wad");
-        D_AddFile (DEVMAPS"data_se/texture1.lmp");
-        D_AddFile (DEVMAPS"data_se/pnames.lmp");
-        strcpy (basedefault,DEVDATA"default.cfg");
-        return;
-    }
-
-    if (M_CheckParm ("-regdev"))
-    {
-        registered = true;
-        shareware = false;
-        devparm = true;
-        D_AddFile (DEVDATA"doom.wad");
-        D_AddFile (DEVMAPS"data_se/texture1.lmp");
-        D_AddFile (DEVMAPS"data_se/texture2.lmp");
-        D_AddFile (DEVMAPS"data_se/pnames.lmp");
-        strcpy (basedefault,DEVDATA"default.cfg");
-        return;
-    }
-
-    if (M_CheckParm ("-comdev"))
-    {
-        commercial = true;
-        devparm = true;
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-        if(plutonia)
-            D_AddFile (DEVDATA"plutonia.wad");
-        else if(tnt)
-            D_AddFile (DEVDATA"tnt.wad");
-        else
-            D_AddFile (DEVDATA"doom2.wad");
-#else
-        D_AddFile (DEVDATA"doom2.wad");
-#endif
-            
-        D_AddFile (DEVMAPS"cdata/texture1.lmp");
-        D_AddFile (DEVMAPS"cdata/pnames.lmp");
-        strcpy (basedefault,DEVDATA"default.cfg");
-        return;
-    }
-
-    if ( !access ("doom2f.wad",R_OK) )
-    {
-        commercial = true;
-        // C'est ridicule!
-        // Let's handle languages in config files, okay?
-        french = true;
-        printf("French version\n");
-        D_AddFile ("doom2f.wad");
-        return;
-    }
+ 
 
     if ( !access ("doom2.wad",R_OK) )
     {
@@ -988,7 +932,6 @@ void D_DoomMain (void)
     nomonsters = M_CheckParm ("-nomonsters");
     respawnparm = M_CheckParm ("-respawn");
     fastparm = M_CheckParm ("-fast");
-    devparm = M_CheckParm ("-devparm");
     if (M_CheckParm ("-altdeath"))
         deathmatch = 2;
     else if (M_CheckParm ("-deathmatch"))
@@ -1052,11 +995,6 @@ void D_DoomMain (void)
 
     printf("\nP_Init: Checking cmd-line parameters...\n");
 
-    if (devparm)
-    {
-        printf(D_DEVSTR);
-        D_RedrawTitle();
-    }
 
     if (M_CheckParm("-cdrom"))
     {
@@ -1084,36 +1022,7 @@ void D_DoomMain (void)
         sidemove[0] = sidemove[0]*scale/100;
         sidemove[1] = sidemove[1]*scale/100;
     }
-    
-    // add any files specified on the command line with -file wadfile
-    // to the wad list
-    //
-    // convenience hack to allow -wart e m to add a wad file
-    // prepend a tilde to the filename so wadfile will be reloadable
-    p = M_CheckParm ("-wart");
-    if (p)
-    {
-        myargv[p][4] = 'p';     // big hack, change to -warp
-
-        // Map name handling.
-
-        if (commercial)
-        {
-            p = atoi (myargv[p+1]);
-            if (p<10)
-              sprintf (file,"~"DEVMAPS"cdata/map0%i.wad", p);
-            else
-              sprintf (file,"~"DEVMAPS"cdata/map%i.wad", p);
-        }
-        else
-        {
-            sprintf (file,"~"DEVMAPS"E%cM%c.wad",
-                     myargv[p+1][0], myargv[p+2][0]);
-            printf("Warping to Episode %s, Map %s.\n",
-                   myargv[p+1],myargv[p+2]);
-        }
-        D_AddFile (file);
-    }
+  
         
     p = M_CheckParm ("-file");
     if (p)

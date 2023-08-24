@@ -546,7 +546,6 @@ void R_Subsector (int num) {
 		}
 	#endif
 	
-    sscount++;
     frontsecnum = subsectors[num].secnum;
     count = subsectors[num].numlines;
 	firstline = subsectors[num].firstline;

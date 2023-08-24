@@ -204,18 +204,7 @@ MEMREF          bodyque[BODYQUESIZE];
 int             bodyqueslot; 
  
 void*           statcopy;                               // for statistics driver
- 
-int G_CmdChecksum (ticcmd_t* cmd) 
-{ 
-    int         i;
-    int         sum = 0; 
-         
-    for (i=0 ; i< sizeof(*cmd)/4 - 1 ; i++) 
-        sum += ((int *)cmd)[i]; 
-                 
-    return sum; 
-} 
- 
+  
 
 //
 // G_BuildTiccmd
@@ -524,13 +513,7 @@ boolean G_Responder (event_t* ev)
  
     if (gamestate == GS_LEVEL) 
     { 
-#if 0 
-        if (devparm && ev->type == ev_keydown && ev->data1 == ';') 
-        { 
-            G_DeathMatchSpawnPlayer (0); 
-            return true; 
-        } 
-#endif 
+ 
         if (HU_Responder (ev)) 
             return true;        // chat ate the event 
         if (ST_Responder (ev)) 
@@ -632,10 +615,8 @@ void G_Ticker (void)
           case ga_worlddone: 
             G_DoWorldDone (); 
             break; 
-          case ga_screenshot: 
-            M_ScreenShot (); 
-            gameaction = ga_nothing; 
-            break; 
+          
+
           case ga_nothing: 
             break; 
         } 
@@ -670,12 +651,7 @@ void G_Ticker (void)
                         
             if (netgame && !netdemo && !(gametic%ticdup) ) 
             { 
-                if (gametic > BACKUPTICS 
-                    && consistancy[i][buf] != cmd->consistancy) 
-                { 
-                    I_Error ("consistency failure (%i should be %i)",
-                             cmd->consistancy, consistancy[i][buf]); 
-                } 
+              
 				if (players[i].moRef) {
 					playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[i].moRef);
 					consistancy[i][buf] = playerMo->x;
@@ -975,11 +951,6 @@ void G_DoReborn (int playernum)
     } 
 } 
  
- 
-void G_ScreenShot (void) 
-{ 
-    gameaction = ga_screenshot; 
-} 
  
 
 

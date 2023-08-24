@@ -554,12 +554,7 @@ P_CrossSpecialLine
 	short setlinespecial = -1;
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
-
-	if (setval == 10) {
-		I_Error("herehere B %i %i %i", gametic, linespecial, linenum);
-	}
-
-
+	 
     //	Triggers that other things can activate
     if (!thing->player)
     {
@@ -1474,7 +1469,5 @@ void P_SpawnSpecials (void)
     for (i = 0;i < MAXBUTTONS;i++)
 	memset(&buttonlist[i],0,sizeof(button_t));
 
-    // UNUSED: no horizonal sliders.
-    //	P_InitSlidingDoorFrames();
 	
 }

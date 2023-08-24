@@ -37,8 +37,6 @@ divline_t	strace;			// from t1 to t2
 fixed_t		cachedt2x;
 fixed_t		cachedt2y;
 
-int		sightcounts[2];
-
 
 //
 // P_DivlineSide
@@ -373,7 +371,6 @@ P_CheckSight
 
     // Check in REJECT table.
     if (((byte*) Z_LoadBytesFromEMS(rejectmatrixRef)) [bytenum]&bitnum) {
-		sightcounts[0]++;
 
 		// can't possibly be connected
 		return false;	
@@ -381,7 +378,6 @@ P_CheckSight
 
     // An unobstructed LOS is possible.
     // Now look from eyes of t1 to any part of t2.
-    sightcounts[1]++;
     validcount++;
 	
     sightzstart = t1z + t1height - (t1height>>2);

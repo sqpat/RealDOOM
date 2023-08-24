@@ -350,13 +350,7 @@ void I_UpdateBox(int x, int y, int w, int h)
     int pstep;
     int step;
     byte *dest, *source;
-
-    if (x < 0 || y < 0 || w <= 0 || h <= 0
-     || x + w > SCREENWIDTH || y + h > SCREENHEIGHT)
-    {
-        I_Error("Bad I_UpdateBox (%i, %i, %i, %i)", x, y, w, h);
-    }
-
+ 
     sp_x1 = x / 8;
     sp_x2 = (x + w) / 8;
     count = sp_x2 - sp_x1 + 1;
@@ -466,23 +460,8 @@ void I_FinishUpdate(void)
     static int lasttic;
     int tics;
     int i;
-    if (devparm)
-    {
-        i = ticcount;
-        tics = i - lasttic;
-        lasttic = i;
-        if (tics > 20) tics = 20;
-        outpw(SC_INDEX, 0x102);
-        for (i = 0; i < tics; i++)
-        {
-            destscreen[(SCREENHEIGHT - 1)*SCREENWIDTH / 4 + i] = 0xff;
-        }
-        for (; i < 20; i++)
-        {
-            destscreen[(SCREENHEIGHT - 1)*SCREENWIDTH / 4 + i] = 0x0;
-        }
-    }
-    outpw(CRTC_INDEX, ((int)destscreen & 0xff00) + 0xc);
+
+	outpw(CRTC_INDEX, ((int)destscreen & 0xff00) + 0xc);
 
     //Next plane
     destscreen += 0x4000;
@@ -643,31 +622,7 @@ void I_StartTic(void)
         D_PostEvent(&ev);
     }
 }
-
-void I_ReadKeys(void)
-{
-    int k;
-
-    while (1)
-    {
-        while (kbdtail < kbdhead)
-        {
-            k = keyboardque[kbdtail&(KBDQUESIZE - 1)];
-            kbdtail++;
-            printf("0x%x\n", k);
-            if (k == 1)
-                I_Quit();
-        }
-    }
-}
-
-void I_ColorBlack(int r, int g, int b)
-{
-    _outbyte(PEL_WRITE_ADR, 0);
-    _outbyte(PEL_DATA, r);
-    _outbyte(PEL_DATA, g);
-    _outbyte(PEL_DATA, b);
-}
+ 
 
 //
 // Timer interrupt
@@ -716,7 +671,6 @@ void I_StartupKeyboard(void)
         oldkeyboardisr = _dos_getvect(KEYBOARDINT);
         _dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
 
-    //I_ReadKeys ();
 }
 
 
@@ -974,21 +928,7 @@ unsigned realstackseg;
 
 void I_DivException(void);
 int I_SetDivException(void);
-
-//
-// DPMIFarCall
-//
-void DPMIFarCall(void)
-{
-    segread(&segregs);
-    regs.w.ax = 0x301;
-    regs.w.bx = 0;
-    regs.w.cx = 0;
-    regs.x.edi = (unsigned)&dpmiregs;
-    segregs.es = segregs.ds;
-    int386x(DPMI_INT, &regs, &regs, &segregs);
-}
-
+ 
 
 //
 // I_StartupDPMI
@@ -1036,62 +976,8 @@ void I_StartupDPMI(void)
 #endif
 }
 
-//
-// Timer interrupt
-//
 
-void (__interrupt __far *oldtimerisr) ();
-
-//
-// IO_TimerISR
-//
-
-//void __interrupt IO_TimerISR(void)
-
-void __interrupt __far IO_TimerISR(void)
-{
-    ticcount++;
-    _outbyte(0x20, 0x20);                            // Ack the interrupt
-}
-
-//
-// IO_SetTimer0
-// Sets system timer 0 to the specified speed
-//
-void IO_SetTimer0(int speed)
-{
-    if (speed > 0 && speed < 150)
-    {
-        I_Error("INT_SetTimer0: %i is a bad value", speed);
-    }
-
-    _outbyte(0x43, 0x36);                            // Change timer 0
-    _outbyte(0x40, speed);
-    _outbyte(0x40, speed >> 8);
-}
-
-
-
-//
-// IO_StartupTimer
-//
-void IO_StartupTimer(void)
-{
-    oldtimerisr = _dos_getvect(TIMERINT);
-
-    _dos_setvect(0x8000 | TIMERINT, IO_TimerISR);
-    IO_SetTimer0(VBLCOUNTER);
-}
-
-void IO_ShutdownTimer(void)
-{
-    if (oldtimerisr)
-    {
-        IO_SetTimer0(0);              // back to 18.4 ips
-        _dos_setvect(TIMERINT, oldtimerisr);
-    }
-}
-
+ 
 //
 // I_Init
 // hook interrupts and set graphics mode
@@ -1555,46 +1441,10 @@ byte *I_AllocLow (int length)
 // Networking
 //
 
-/* // FUCKED LINES
-typedef struct
-{
-        char    priv[508];
-} doomdata_t;
-*/ // FUCKED LINES
 
 #define DOOMCOM_ID 0x12345678l
 
-/* // FUCKED LINES
-typedef struct
-{
-        long    id;
-        short   intnum;                 // DOOM executes an int to execute commands
-
-// communication between DOOM and the driver
-        short   command;                // CMD_SEND or CMD_GET
-        short   remotenode;             // dest for send, set by get (-1 = no packet)
-        short   datalength;             // bytes in doomdata to be sent
-
-// info common to all nodes
-        short   numnodes;               // console is allways node 0
-        short   ticdup;                 // 1 = no duplication, 2-5 = dup for slow nets
-        short   extratics;              // 1 = send a backup tic in every packet
-        short   deathmatch;             // 1 = deathmatch
-        short   savegame;               // -1 = new game, 0-5 = load savegame
-        short   episode;                // 1-3
-        short   map;                    // 1-9
-        short   skill;                  // 1-5
-
-// info specific to this node
-        short   consoleplayer;
-        short   numplayers;
-        short   angleoffset;    // 1 = left, 0 = center, -1 = right
-        short   drone;                  // 1 = drone
-
-// packet data to be sent
-        doomdata_t      data;
-} doomcom_t;
-*/ // FUCKED LINES
+ 
 
 extern doomcom_t *doomcom;
 

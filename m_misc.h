@@ -74,19 +74,12 @@ M_AddToBox
   fixed_t	x,
   fixed_t	y );
 
-void M_ScreenShot (void);
 
 void M_LoadDefaults (void);
 
 void M_SaveDefaults (void);
 
-
-int
-M_DrawText
-( int		x,
-  int		y,
-  boolean	direct,
-  char*		string );
+ 
 
 
 #endif

@@ -53,7 +53,6 @@ typedef struct
 #define ga_completed  6
 #define ga_victory    7
 #define ga_worlddone  8
-#define ga_screenshot 9
 
 typedef unsigned char gameaction_t;
 

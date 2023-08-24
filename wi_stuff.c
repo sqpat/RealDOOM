@@ -394,7 +394,6 @@ MEMREF				lnamesRef;
 //
 
 // slam background
-// UNUSED static unsigned char *background=0;
 
 
 void WI_slamBackground(void)
@@ -403,13 +402,7 @@ void WI_slamBackground(void)
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 }
 
-// The ticker is used to detect keys
-//  because of timing issues in netgames.
-boolean WI_Responder(event_t* ev)
-{
-    return false;
-}
-
+ 
 
 // Draws "<Levelname> Finished!"
 void WI_drawLF(void)
@@ -835,8 +828,6 @@ int WI_fragSum(int playernum)
 	
     // JDC hack - negative frags.
     frags -= plrs[playernum].frags[playernum];
-    // UNUSED if (frags < 0)
-    // 	frags = 0;
 
     return frags;
 }
@@ -1570,22 +1561,13 @@ void WI_loadData(void)
 	strcpy(name,"INTERPIC");
 #endif
 
+
     // background
-// todo fix bigger than 64k
-//    bg = W_CacheLumpName(name, PU_CACHE);    
-//    V_DrawPatch(0, 0, 1, bg);   
+	// todo fix bigger than 64k
+	//    bg = W_CacheLumpName(name, PU_CACHE);    
+	//    V_DrawPatch(0, 0, 1, bg);   
 
 
-    // UNUSED unsigned char *pic = screens[1];
-    // if (commercial)
-    // {
-    // darken the background image
-    // while (pic != screens[1] + SCREENHEIGHT*SCREENWIDTH)
-    // {
-    //   *pic = colormaps[256*25 + *pic];
-    //   pic++;
-    // }
-    //}
 
     if (commercial)
     {

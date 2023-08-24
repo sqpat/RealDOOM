@@ -175,7 +175,6 @@ void P_RunThinkers (void)
 				///I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, 0, SAVEDUNIT->type, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref);
 				//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
 
-				//setval = 1;
 
 			}
 

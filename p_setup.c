@@ -840,7 +840,6 @@ P_SetupLevel
 	Z_FreeTagsEMS(PU_LEVEL, PU_PURGELEVEL - 1);
 
 
-	// UNUSED W_Profile ();
 	P_InitThinkers();
 
 	// if working with a devlopment map, reload it
@@ -918,8 +917,6 @@ P_SetupLevel
 	// set up world state
 	P_SpawnSpecials();
 
-	// build subsector connect matrix
-	//  UNUSED P_ConnectSubsectors ();
 
 	// preload graphics
 	if (precache)

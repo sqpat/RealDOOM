@@ -96,7 +96,6 @@ static int		message_counter;
 extern int		showMessages;
 extern boolean		automapactive;
 
-static boolean		headsupactive = false;
 
 //
 // Builtin map names.
@@ -406,11 +405,7 @@ void HU_Init(void)
 
 
 }
-
-void HU_Stop(void)
-{
-    headsupactive = false;
-}
+ 
 
 void HU_Start(void)
 {
@@ -424,9 +419,6 @@ void HU_Start(void)
 	hu_font0 = (patch_t*) Z_LoadBytesFromEMS(hu_fontRef[0]);
 	HU_TITLEY = (167 - SHORT(hu_font0->height));
 	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * (SHORT(hu_font0->height) + 1));
-
-    if (headsupactive)
-		HU_Stop();
 
     plr = &players[consoleplayer];
     message_on = false;
@@ -488,7 +480,6 @@ void HU_Start(void)
 		HUlib_initIText(&w_inputbuffer[i], 0, 0, 0, 0, &always_off);
 	}
 
-    headsupactive = true;
 
 }
 

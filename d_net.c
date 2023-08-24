@@ -388,7 +388,6 @@ void NetUpdate (void)
 	if (maketic - gameticdiv >= BACKUPTICS/2-1)
 	    break;          // can't hold any more
 	
-	//printf ("mk:%i ",maketic);
 	G_BuildTiccmd (&localcmds[maketic%BACKUPTICS]);
 	maketic++;
     }
@@ -705,9 +704,6 @@ void TryRunTics (void)
 	    if (nodeingame[i] && nettics[i] < lowtic)
 		lowtic = nettics[i];
 	
-	if (lowtic < gametic/ticdup)
-	    I_Error ("TryRunTics: lowtic < gametic");
-				
 	// don't stay in here forever -- give the menu a chance to work
 	if (I_GetTime ()/ticdup - entertic >= 20)
 	{

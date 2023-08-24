@@ -357,14 +357,8 @@ boolean P_Move (MEMREF actorRef)
     tryy = actor->y + actor->info->speed*yspeed[actor->movedir];
 
 	
-	if (setval == 1) {
-		//I_Error("prnd bbb %i %i %i %i %i %i %i %i %i", prndindex, actor->momx, actor->momy, actor->x, actor->y, tryx, tryy, actor->info->speed, actor->movedir);
-	}
 
 	try_ok = P_TryMove (actorRef, tryx, tryy);
-	if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-		I_Error("bad doors NEWEST A  %i", gametic);
-	}
 
 
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
@@ -398,14 +392,8 @@ boolean P_Move (MEMREF actorRef)
 			// that can be opened,
 			// return false
 			if (P_UseSpecialLine(actorRef, linenum, 0)) {
-				if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-					I_Error("bad doors NEWEST B  %i %i", gametic, setval);
-				}
 				good = true;
 			}
-		}
-		if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-			I_Error("bad doors NEWEST C  %i", gametic);
 		}
 
 		return good;
@@ -419,9 +407,6 @@ boolean P_Move (MEMREF actorRef)
 		actor->z = actor->floorz;
 	}
 
-	if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-		I_Error("bad doors NEWEST D  %i", gametic);
-	}
 
 	return true; 
 }
@@ -498,10 +483,6 @@ void P_NewChaseDir (MEMREF actorRef)
     if (d[1] != DI_NODIR && d[2] != DI_NODIR) {
 		actor->movedir = diags[((deltay<0)<<1)+(deltax>0)];
 		if (actor->movedir != turnaround && P_TryWalk(actorRef)) {
-			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-				I_Error("bad doors NEWER A  %i", gametic);
-			}
-
 			return;
 		}
     }
@@ -522,9 +503,6 @@ void P_NewChaseDir (MEMREF actorRef)
 			actor->movedir = d[1];
 		if (P_TryWalk(actorRef)) {
 			// either moved forward or attacked
-			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-				I_Error("bad doors NEWER B  %i", gametic);
-			}
 			return;
 		}
     }
@@ -535,9 +513,6 @@ void P_NewChaseDir (MEMREF actorRef)
 		actor->movedir =d[2];
 
 		if (P_TryWalk(actorRef)) {
-			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-				I_Error("bad doors NEWER C  %i", gametic);
-			}
 			return;
 		}
 	}
@@ -548,9 +523,6 @@ void P_NewChaseDir (MEMREF actorRef)
 		actor->movedir =olddir;
 
 		if (P_TryWalk(actorRef)) {
-			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-				I_Error("bad doors NEWER D  %i", gametic);
-			}
 			return;
 		}
 	}
@@ -563,9 +535,6 @@ void P_NewChaseDir (MEMREF actorRef)
 			
 				if (P_TryWalk(actorRef)) {
 					actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-					if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-						I_Error("bad doors NEWER E  %i", gametic);
-					}
 					return;
 				}
 			}
@@ -578,9 +547,6 @@ void P_NewChaseDir (MEMREF actorRef)
 				actor->movedir =tdir;
 		
 				if (P_TryWalk(actorRef)) {
-					if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-						I_Error("bad doors NEWER F  %i", gametic);
-					}
 					return;
 				}
 			}
@@ -590,9 +556,6 @@ void P_NewChaseDir (MEMREF actorRef)
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		actor->movedir =turnaround;
 		if (P_TryWalk(actorRef)) {
-			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-				I_Error("bad doors NEWER G  %i", gametic);
-			}
 
 			return;
 		}
@@ -600,9 +563,6 @@ void P_NewChaseDir (MEMREF actorRef)
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
     actor->movedir = DI_NODIR;	// can not move
-	if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-		I_Error("bad doors NEWER H  %i", gametic);
-	}
 
 }
 
@@ -802,17 +762,11 @@ void A_Look (MEMREF actorRef)
 			// full volume
 			S_StartSoundFromRef(NULL_MEMREF, sound);
 		} else {
-			if (setval >= 1) {
-				I_Error("bad player early cc %i %i %i %i", prndindex, actorRef, 0, 0); // 1426 ? 1428?
-			}
 
 			S_StartSoundFromRef(actorRef, sound);
 		}
     }
-	if (setval >= 1) {
-		// A_Look
-		I_Error("bad player early bb %i %i %i %i", prndindex, actorRef, 0, 0); // 1426 ? 1428?
-	}
+
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
     P_SetMobjState (actorRef, actor->info->seestate);
 }
@@ -872,9 +826,6 @@ void A_Chase (MEMREF actorRef)
 		if (P_LookForPlayers(actorRef, true)) {
 			 
 	
-			if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-				I_Error("bad doors NEW A  %i %i %i %i", gametic, actorRef, 0, 0);
-			}
 
 			return; 	// got a new target
 		}
@@ -882,9 +833,6 @@ void A_Chase (MEMREF actorRef)
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		P_SetMobjState (actorRef, actor->info->spawnstate);
 	 
-		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-			I_Error("bad doors NEW B  %i %i %i %i", gametic, actorRef, 0, 0);
-		}
 
 		return;
     }
@@ -899,9 +847,6 @@ void A_Chase (MEMREF actorRef)
 			P_NewChaseDir(actorRef);
 		}
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-			I_Error("bad doors NEW C  %i %i %i %i", gametic, actorRef, 0, 0);
-		}
 
 		return;
     }
@@ -914,12 +859,6 @@ void A_Chase (MEMREF actorRef)
 		}
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
  		P_SetMobjState (actorRef, actor->info->meleestate);
-
-	 
-	 
-		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-			I_Error("bad doors NEW D  %i %i %i %i", gametic, actorRef, 0, 0);
-		}
 
 		return;
     }
@@ -941,17 +880,8 @@ void A_Chase (MEMREF actorRef)
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		actor->flags |= MF_JUSTATTACKED;
 
-		 
-		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-			I_Error("bad doors NEW E  %i %i %i %i", gametic, actorRef, 0, 0);
-		}
 		return;
     }
-	if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-		I_Error("bad doors NEW F  %i %i %i %i", gametic, actorRef, 0, 0);
-	}
-
-	 
 
 
     // ?
@@ -963,10 +893,6 @@ void A_Chase (MEMREF actorRef)
 	if (netgame && !actor->threshold && !P_CheckSight(actorRef, actor->targetRef)) {
 		if (P_LookForPlayers(actorRef, true)) {
 			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-			if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-				I_Error("bad doors NEW G  %i %i %i %i", gametic, actorRef, 0, 0);
-			}
-
 
 			return;	// got a new target
 		}
@@ -977,14 +903,9 @@ void A_Chase (MEMREF actorRef)
 
  
 	if (--actor->movecount < 0 || !P_Move(actorRef)) {
-		if (setval == 1)
-			setval = 2;
 		P_NewChaseDir(actorRef);
 
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-			I_Error("bad doors NEW H  %i %i %i %i", gametic, actorRef, 0, 0);
-		}
 
 
 	}
@@ -993,15 +914,6 @@ void A_Chase (MEMREF actorRef)
     if (actor->info->activesound && P_Random () < 3) {
 		S_StartSoundFromRef(actorRef, actor->info->activesound);
     }
-
-	if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
-		I_Error("bad doors NEW I  %i %i %i %i", gametic, actorRef, 0, 0);
-	}
-
-	if (setval >= 1  ) {
-		//I_Error("STOP I  %i %i %i %i", gametic, actorRef, 0, 0);
-	}
-
 
 }
 

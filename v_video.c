@@ -440,45 +440,7 @@ V_DrawBlock
     } 
 } 
  
-
-
-//
-// V_GetBlock
-// Gets a linear block of pixels from the view buffer.
-//
-void
-V_GetBlock
-( int		x,
-  int		y,
-  int		scrn,
-  int		width,
-  int		height,
-  byte*		dest ) 
-{ 
-    byte*	src; 
-	 
-#ifdef RANGECHECK 
-    if (x<0
-	||x+width >SCREENWIDTH
-	|| y<0
-	|| y+height>SCREENHEIGHT 
-	|| (unsigned)scrn>4 )
-    {
-	I_Error ("Bad V_DrawBlock");
-    }
-#endif 
  
-    src = screens[scrn] + y*SCREENWIDTH+x; 
-
-    while (height--) 
-    { 
-	memcpy (dest, src, width); 
-	src += SCREENWIDTH; 
-	dest += width; 
-    } 
-} 
-
-
 
 
 //

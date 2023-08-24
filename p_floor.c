@@ -86,9 +86,6 @@ T_MovePlane
 								P_ChangeSector(secnum,crush);
 								return floor_crushed;
 							}
-							if (setval == 1) {
-								I_Error("inner plat 23? %i %i %i %i %i %i", gametic, (&sectors[secnum])->floorheight, speed, dest, lastpos, flag);
-							}
 						}
 						break;
 						

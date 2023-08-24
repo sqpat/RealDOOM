@@ -280,10 +280,6 @@ void I_sndArbitrateCards(void)
     //
     if (ensoniq)
     {
-        if (devparm)
-        {
-            printf("ENSONIQ\n");
-        }
         if (ENS_Detect())
         {
             printf("Dude.  The ENSONIQ ain't responding.\n");
@@ -291,10 +287,6 @@ void I_sndArbitrateCards(void)
     }
     if (codec)
     {
-        if (devparm)
-        {
-            printf("CODEC p=0x%x, d=%d\n", snd_SBport, snd_SBdma);
-        }
         if (CODEC_Detect(&snd_SBport, &snd_SBdma))
         {
             printf("CODEC.  The CODEC ain't responding.\n");
@@ -302,10 +294,6 @@ void I_sndArbitrateCards(void)
     }
     if (gus)
     {
-        if (devparm)
-        {
-            printf("GUS\n");
-        }
         fprintf(stderr, "GUS1\n");
         if (GF1_Detect())
         {
@@ -330,12 +318,8 @@ void I_sndArbitrateCards(void)
     }
     if (sb)
     {
-        if (devparm)
-        {
-            printf("SB p=0x%x, i=%d, d=%d\n",
-                   snd_SBport, snd_SBirq, snd_SBdma);
-        }
-        if (SB_Detect(&snd_SBport, &snd_SBirq, &snd_SBdma, 0))
+
+	if (SB_Detect(&snd_SBport, &snd_SBirq, &snd_SBdma, 0))
         {
             printf("SB isn't responding at p=0x%x, i=%d, d=%d\n",
                    snd_SBport, snd_SBirq, snd_SBdma);
@@ -344,20 +328,13 @@ void I_sndArbitrateCards(void)
         {
             SB_SetCard(snd_SBport, snd_SBirq, snd_SBdma);
         }
-        if (devparm)
-        {
-            printf("SB_Detect returned p=0x%x,i=%d,d=%d\n",
-                   snd_SBport, snd_SBirq, snd_SBdma);
-        }
-    }
+
+		}
 
     if (adlib)
     {
-        if (devparm)
-        {
-            printf("Adlib\n");
-        }
-        if (AL_Detect(&wait, 0))
+
+	if (AL_Detect(&wait, 0))
         {
             printf("Dude.  The Adlib isn't responding.\n");
         }
@@ -369,14 +346,8 @@ void I_sndArbitrateCards(void)
 
     if (midi)
     {
-        if (devparm)
-        {
-            printf("Midi\n");
-        }
-        if (devparm)
-        {
-            printf("cfg p=0x%x\n", snd_Mport);
-        }
+
+
         if (MPU_Detect(&snd_Mport, &i))
         {
             printf("The MPU-401 isn't reponding @ p=0x%x.\n", snd_Mport);

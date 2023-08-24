@@ -327,7 +327,6 @@ void P_AddActivePlat(MEMREF memref) {
 		platindex = memref;
 	    return;
 	}
-    I_Error ("P_AddActivePlat: no more plats!");
 }
 
 
@@ -355,5 +354,5 @@ void P_RemoveActivePlat(MEMREF platRef)
 			return;
 		}
 	}
-    I_Error ("P_RemoveActivePlat: can't find plat! %i %i %i %i", platRef, platraisecount, addedplatraisecount, platindex);
+    
 }

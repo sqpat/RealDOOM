@@ -254,13 +254,7 @@ boolean PIT_CheckLine (short linenum)
     if (opentop < tmceilingz) {
 		tmceilingz = opentop;
 		ceilinglinenum = linenum;
-    }
-
-
-
-	if (setval == 3) {
-		I_Error("blah %i %i %i %i %i %i %i %i %i", openbottom, tmfloorz, ceilinglinenum, linenum, lineside1, linefrontsecnum, linebacksecnum, opentop, tmceilingz);
-	}
+    } 
 
 	if (openbottom > tmfloorz) {
 		tmfloorz = openbottom;
@@ -305,7 +299,6 @@ boolean PIT_CheckThing (MEMREF thingRef)
 
 
 	if (thingRef == tmthingRef) {
-		//if (setval == 2) I_Error("return value c");
 			return true;
 	}
 
@@ -313,7 +306,6 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	thingflags = thing->flags;
 
 	if (!(thingflags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
-		//if (setval == 2) I_Error("return value a");
 			return true;
 	}
 	thingtype = thing->type;
@@ -330,7 +322,6 @@ boolean PIT_CheckThing (MEMREF thingRef)
 
     if ( abs(thingx - tmx) >= blockdist || abs(thingy - tmy) >= blockdist ) {
 		// didn't hit it
-		//if (setval == 2) I_Error("return value b");
 			return true;
     }
 	tmthingheight = tmthing->height;
@@ -347,7 +338,6 @@ boolean PIT_CheckThing (MEMREF thingRef)
 		tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
 		P_SetMobjState (tmthingRef, tmthing->info->spawnstate);
-		//if (setval == 2) I_Error("return value d");
 
 		return false;		// stop moving
     }
@@ -357,11 +347,9 @@ boolean PIT_CheckThing (MEMREF thingRef)
     if (tmthing->flags & MF_MISSILE) {
 		// see if it went over / under
 		if (tmthingz > thingz + thingheight) {
-			//if (setval == 2) I_Error("return value e %i %i %i", tmthingz, tmthingRef, ((mobj_t*)Z_LoadBytesFromEMS(tmthingRef))->type );
 			return true;		// overhead
 		}
 		if (tmthingz + tmthingheight < thingz) {
-			//if (setval == 2) I_Error("return value f");
 			return true;		// underneath
 		}
 		if (tmthingtargetRef) {
@@ -370,14 +358,12 @@ boolean PIT_CheckThing (MEMREF thingRef)
 			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
 				// Don't hit same species as originator.
  			if (thingRef == tmthingtargetRef) {
-					//if (setval == 2) I_Error("return value g");
 					return true;
 				}
 
 				if (thingtype != MT_PLAYER) {
 				// Explode, but do no damage.
 				// Let players missile other players.
-					//if (setval == 2) I_Error("return value h");
 
 					return false;
 				}
@@ -385,7 +371,6 @@ boolean PIT_CheckThing (MEMREF thingRef)
 		}
 		if (! (thingflags & MF_SHOOTABLE) ) {
 			// didn't do any damage
-			//if (setval == 2) I_Error("return value i");
 			return !(thingflags & MF_SOLID);
 		}
 	
@@ -396,7 +381,6 @@ boolean PIT_CheckThing (MEMREF thingRef)
 
 		P_DamageMobj (thingRef, tmthingRef, tmthingtargetRef, damage);
 
-		//if (setval == 2) I_Error("return value j");
 		// don't traverse any more
 		return false;				
     }
@@ -411,10 +395,8 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	    // can remove thing
 	    P_TouchSpecialThing (thingRef, tmthingRef);
 	}
-	//if (setval == 2) I_Error("return value k");
 	return !solid;
     }
-	//if (setval == 2) I_Error("return value l");
 
     return !(thingflags & MF_SOLID);
 }
@@ -521,9 +503,6 @@ P_CheckPosition
 
 	
 			if (!P_BlockThingsIterator(bx, by, PIT_CheckThing)) {
-				if (setval >= 1) {
-					//I_Error("prnd xx %i %i %i %i", prndindex, setval, bx, by);
-				}
 
 				return false;
 			}
@@ -539,31 +518,13 @@ P_CheckPosition
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
 
-			if (bx == 25 && by == 16 && setval == 2) {
-				setval = 3;
-			}
 
 			if (!P_BlockLinesIterator(bx, by, PIT_CheckLine)) {
-				if (setval >= 1) {
-					//I_Error("prnd xy %i %i %i %i", prndindex, setval, bx, by);
-				}
 
 				return false;
 			}
 
-			if (setval == 2 && tmfloorz != 2097152) {
-				// 2883854  25, 16
-				//I_Error("tmfloorz? %i %i %i", tmfloorz, bx, by);
-			}
-
-
 		}
-	}
-	if (setval == 2) {
-		I_Error("tmfloorz? %i %i %i %i ", newsubsecnum, tmfloorz, sectors[newsubsecsecnum].floorheight, sectors[newsubsecsecnum].ceilingheight);
-	}
-	if (setval >= 1) {
-		//I_Error("prnd xz %i %i %i %i", prndindex, setval, bx, by);
 	}
 
 	return true;
@@ -599,10 +560,6 @@ P_TryMove
 	floatok = false;
 
 	if (!P_CheckPosition(thingRef, x, y)) {
-		if (setval == 2) {
-			I_Error("prnd a %i", prndindex);
-		}
-
 		return false;		// solid wall or thing
 	}
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
@@ -622,10 +579,6 @@ P_TryMove
 			return false;	// mobj must lower itself to fit
 		}
 
-		if (setval == 2) {
-			I_Error("done done d %i %i %i %i", thing->flags, tmfloorz, thing->z, thing->z > 24 * FRACUNIT);
-		}
-
 		if (!(thing->flags&MF_TELEPORT) && tmfloorz - thing->z > 24 * FRACUNIT) {
 			return false;	// too big a step up
 		}
@@ -639,10 +592,6 @@ P_TryMove
 
     // the move is ok,
     // so link the thing into its new position
-	if (setval == 2) {
-		I_Error("prnd bb %i %i %i %i %i %i %i", prndindex, thing->momx, thing->momy, thing->x, thing->y, x, y);
-	}
-
 	P_UnsetThingPosition (thingRef);
 
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
@@ -813,9 +762,6 @@ boolean PTR_SlideTraverse (intercept_t* in)
 	line_t li;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
-	if (!in->isaline) {
-		I_Error("PTR_SlideTraverse: not a line?");
-	}
 
 	li = lines[in->d.linenum];
 

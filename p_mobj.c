@@ -196,17 +196,8 @@ void P_XYMovement (MEMREF moRef)
 		}
 		
 
-		if (setval == 1) {
-			//I_Error("prnd bbb %i %i %i %i %i %i %i %i %i", prndindex, mo->momx, mo->momy, mo->x, mo->y, ptryx, ptryy, xmove, ymove);
-			setval = 2;
-		}
-
 
 		if (!P_TryMove (moRef, ptryx, ptryy)) {
-			if (setval == 2) {
-				I_Error("done done a");
-				//I_Error("prnd b %i", prndindex);
-			}
 
 			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			// blocked move
@@ -234,18 +225,11 @@ void P_XYMovement (MEMREF moRef)
 			}
 		}
 
-		if (setval == 2) {
-			I_Error("done done b");
-			//I_Error("prnd b %i", prndindex);
-		}
 
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	 
     } while (xmove || ymove);
 
-	if (setval == 1) {
-		I_Error("prnd c %i", prndindex);
-	}
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
 
@@ -626,7 +610,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 
 	if (gameskill != sk_nightmare) {
-			mobj->reactiontime = 8;
+		mobj->reactiontime = 8;
 	}
     
     mobj->lastlook = P_Random () % MAXPLAYERS;

@@ -21,7 +21,7 @@ MEMORY IMPROVEMENTS
 
 ... BUGS TO FIX
  - save file stuff (archive, unarchive thinkers)
- - titlepic stuff
+ - test doom 2 stuff
 
 
 
@@ -29,28 +29,15 @@ TODO
  
 
 - get rid of:
+  - rest of enums?
   - net?
-  X mus2mid
-  X dmx
-  X pcfx
-  X i_cyber
-  - __FILE__ __LINE__ stuff
-  - redo how the functions are done (states and thing->action.acp1)   
-    - actionf_t to enum?
+  - see if we can lessen size of some of those sectors etc fields
+  ? cut trig tables in half or 1/4th, add small extra code when using it?
 
 - make titlepic work with > 4 pages?
+- types.h stuff
 
-- see if we can lessen size of some of those sectors etc fields
-
-4 remove code
- - remove non ems Z_MALLOC
- - remove mroe sound stuff
- - netplay?
- - 
-
-
-- types.h
-
+- remove rangecheck (after doom2 testing?)
 
 MEMORY IDEAS
 
