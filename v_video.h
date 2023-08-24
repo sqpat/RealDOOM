@@ -42,6 +42,7 @@
 
 
 extern	byte*		screens[5];
+extern   MEMREF     screen4Ref;
 
 extern  int	dirtybox[4];
 

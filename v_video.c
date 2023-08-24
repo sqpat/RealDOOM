@@ -33,7 +33,7 @@
 
 // Each screen is [SCREENWIDTH*SCREENHEIGHT]; 
 byte*				screens[5];	
- 
+MEMREF				screen4Ref;
 int				dirtybox[4]; 
 
 

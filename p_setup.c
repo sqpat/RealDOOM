@@ -239,6 +239,7 @@ void P_LoadSectors(int lump)
 
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 	sectors = Z_Malloc (numsectors * sizeof(sector_t), PU_LEVEL, 0);
+
 	memset(sectors, 0, numsectors * sizeof(sector_t));
 	W_CacheLumpNumCheck(lump, 6);
 	data = W_CacheLumpNum(lump, PU_STATIC);
@@ -247,6 +248,8 @@ void P_LoadSectors(int lump)
 	ss = sectors;
 	for (i = 0; i < numsectors; i++, ss++, ms++)
 	{
+	
+
 		ss->floorheight = SHORT(ms->floorheight) << FRACBITS;
 		ss->ceilingheight = SHORT(ms->ceilingheight) << FRACBITS;
 		ss->floorpic = R_FlatNumForName(ms->floorpic);
@@ -453,8 +456,6 @@ void P_LoadSideDefs(int lump)
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sides = Z_Malloc (numsides * sizeof(side_t), PU_LEVEL, 0);
-	printf("size of sides %i", numsides * sizeof(side_t));
-	I_Error("size of sides %i", numsides * sizeof(side_t));
 	memset(sides, 0, numsides * sizeof(side_t));
 	W_CacheLumpNumCheck(lump, 10);
 	data = W_CacheLumpNum(lump, PU_STATIC);
@@ -550,8 +551,9 @@ void P_GroupLines(void)
 	}
 
 	// build line tables for each sector        
-	linebufferRef = Z_MallocEMSNew (total * 4, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
-	linebuffer = (line_t**)Z_LoadBytesFromEMS(linebufferRef);
+//	linebufferRef = Z_MallocEMSNew (total * 4, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
+//	linebuffer = (line_t**)Z_LoadBytesFromEMS(linebufferRef);
+	linebuffer = (line_t**)Z_Malloc (total * 4, PU_LEVEL, 0);
 
 	sector = sectors;
 	for (i = 0; i < numsectors; i++, sector++)
@@ -610,6 +612,7 @@ P_SetupLevel
 	char        lumpname[9];
 	int         lumpnum;
 
+
 	totalkills = totalitems = totalsecret = wminfo.maxfrags = 0;
 	wminfo.partime = 180;
 	for (i = 0; i < MAXPLAYERS; i++)
@@ -665,6 +668,7 @@ P_SetupLevel
 
 	leveltime = 0;
 
+
 	// note: most of this ordering is important 
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 	P_LoadVertexes(lumpnum + ML_VERTEXES);
@@ -679,7 +683,7 @@ P_SetupLevel
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 12);
 	rejectmatrix = W_CacheLumpNum(lumpnum + ML_REJECT, PU_LEVEL);
 	P_GroupLines();
-
+	
 	bodyqueslot = 0;
 	deathmatch_p = deathmatchstarts;
 	P_LoadThings(lumpnum + ML_THINGS);
@@ -708,7 +712,6 @@ P_SetupLevel
 	// preload graphics
 	if (precache)
 		R_PrecacheLevel();
-
 	//printf ("free memory: 0x%x\n", Z_FreeMemory());
 
 }

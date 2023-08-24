@@ -500,10 +500,8 @@ void R_InitTextures (void)
 	int*                    texturewidthmask;
 	// needed for texture pegging
 	fixed_t*                textureheight;
-	int*                    texturecompositesize;
 	MEMREF *                 texturecolumnlump;
 	MEMREF *        texturecolumnofs;
-	MEMREF *        texturecomposite;
 	MEMREF*				textures;
 	int * texturetranslation;
 
@@ -546,7 +544,8 @@ void R_InitTextures (void)
         maxoff2 = 0;
     }
     numtextures = numtextures1 + numtextures2;
-        
+    // 125
+
     texturesRef				= Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 	texturecolumnlumpRef	= Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
     texturecolumnofsRef		= Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
@@ -555,11 +554,8 @@ void R_InitTextures (void)
     texturewidthmaskRef		= Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
     textureheightRef		= Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 
-	textures			 = (MEMREF*)  Z_LoadBytesFromEMS(texturesRef);
-	texturecolumnlump	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecolumnlumpRef);
-	texturecolumnofs	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecolumnofsRef);
-	texturecomposite	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecompositeRef);
-	texturecompositesize = (int*)			  Z_LoadBytesFromEMS(texturecompositesizeRef);
+	//texturecomposite	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecompositeRef);
+	//texturecompositesize = (int*)			  Z_LoadBytesFromEMS(texturecompositesizeRef);
 	texturewidthmask	 = (int*)			  Z_LoadBytesFromEMS(texturewidthmaskRef);
 	textureheight		 = (fixed_t*)		  Z_LoadBytesFromEMS(textureheightRef);
  
@@ -578,9 +574,9 @@ void R_InitTextures (void)
         printf("\x8");
     printf("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");   
         
-    for (i=0 ; i<numtextures ; i++, directory++)
+	for (i=0 ; i<numtextures ; i++, directory++)
     {
-        if (!(i&63))
+		if (!(i&63))
             printf (".");
 
         if (i == numtextures1)
@@ -603,7 +599,13 @@ void R_InitTextures (void)
 				+ sizeof(texpatch_t)*(SHORT(mtexture->patchcount) - 1),
 				PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
             
+		textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 		textures[i] = textureRef;
+		//printf("textures %i %i %i %i \n", i, textureRef, textures[i], texturesRef);
+		if (i == 65){
+			// i == 29 is page, 60 is sky1
+			//I_Error("");
+		}
 		texture = (texture_t*) Z_LoadBytesFromEMS(textureRef);
         
         texture->width = SHORT(mtexture->width);
@@ -625,9 +627,11 @@ void R_InitTextures (void)
                          texture->name);
             }
         }    
-
-        texturecolumnlump[i] = Z_MallocEMSNew (texture->width*2, PU_STATIC,0, ALLOC_TYPE_TEXTURE);
-        texturecolumnofs[i]  = Z_MallocEMSNew (texture->width*2, PU_STATIC,0, ALLOC_TYPE_TEXTURE);
+		//printf("name %s", texture->name);
+		texturecolumnlump = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
+		texturecolumnlump[i] = Z_MallocEMSNew (texture->width*2, PU_STATIC,0, ALLOC_TYPE_TEXTURE);
+		texturecolumnofs = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
+		texturecolumnofs[i]  = Z_MallocEMSNew (texture->width*2, PU_STATIC,0, ALLOC_TYPE_TEXTURE);
 
         j = 1;
         while (j*2 <= texture->width)
@@ -649,10 +653,13 @@ void R_InitTextures (void)
     
     // Create translation table for global animation.
     texturetranslationRef = Z_MallocEMSNew ((numtextures+1)*4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE_TRANSLATION);
+
 	texturetranslation = (int*) Z_LoadBytesFromEMS(texturetranslationRef);
 
     for (i=0 ; i<numtextures ; i++)
         texturetranslation[i] = i;
+	//I_Error("");
+
 }
 
 
@@ -789,7 +796,6 @@ int R_FlatNumForName (char* name)
 
 
 
-
 //
 // R_CheckTextureNumForName
 // Check whether texture is available.
@@ -798,16 +804,22 @@ int R_FlatNumForName (char* name)
 int     R_CheckTextureNumForName (char *name)
 {
     int         i;
-	short* textures = (short*)Z_LoadBytesFromEMS(texturesRef);
+	MEMREF* textures;
 	texture_t* texture;
     // "NoTexture" marker.
     if (name[0] == '-')         
         return 0;
                 
-
+ 
 
 	for (i = 0; i < numtextures; i++) {
+		textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 		texture = (texture_t*)Z_LoadBytesFromEMS(textures[i]);
+		//printf("texname %s", texture->name);
+				//I_Error("found it? %i %i %s", i, textures[i], texture->name);
+
+		
+
 		if (!strncasecmp(texture->name, name, 8))
 			return i;
 	}
@@ -824,13 +836,11 @@ int     R_CheckTextureNumForName (char *name)
 int     R_TextureNumForName (char* name)
 {
     int         i;
-        
     i = R_CheckTextureNumForName (name);
 
-    if (i==-1)
-    {
-        I_Error ("R_TextureNumForName: %s not found",
-                 name);
+    if (i==-1) {
+        I_Error ("R_TextureNumForName: %s not found %i %i %i",
+                 name, numreads, pageins, pageouts);
     }
     return i;
 }
@@ -865,7 +875,7 @@ void R_PrecacheLevel (void)
 
 	MEMREF* textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 
-
+	
 
 
     if (demoplayback)
@@ -912,7 +922,7 @@ void R_PrecacheLevel (void)
     //  a wall texture, with an episode dependend
     //  name.
     texturepresent[skytexture] = 1;
-        
+
     texturememory = 0;
     for (i=0 ; i<numtextures ; i++)
     {
@@ -932,16 +942,18 @@ void R_PrecacheLevel (void)
 			W_CacheLumpNum(lump , PU_CACHE);
         }
     }
-    
+
     // Precache sprites.
     spritepresent = alloca(numsprites);
     memset (spritepresent,0, numsprites);
-        
+
     for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
     {
-        if (th->function.acp1 == (actionf_p1)P_MobjThinker)
-            spritepresent[((mobj_t *)th)->sprite] = 1;
+		//if (th->function.acp1 == (actionf_p1)P_MobjThinker) {
+			//spritepresent[((mobj_t *)th)->sprite] = 1;
+		//}
     }
+	I_Error("blah 1 %i %i %i", numreads, pageins, pageouts);
 
     spritememory = 0;
 	//todo does this have to be pulled into the for loop
@@ -964,6 +976,7 @@ void R_PrecacheLevel (void)
             }
         }
     }
+
 }
 
 

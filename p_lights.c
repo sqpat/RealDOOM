@@ -189,14 +189,15 @@ P_SpawnStrobeFlash
 	flashRef = Z_MallocEMSNew(sizeof(*flash), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	flash = (strobe_t*) Z_LoadBytesFromEMS(flashRef);
 
-    P_AddThinker (&flash->thinker);
+	P_AddThinker (&flash->thinker);
 
     flash->sector = sector;
     flash->darktime = fastOrSlow;
     flash->brighttime = STROBEBRIGHT;
-    flash->thinker.function.acp1 = (actionf_p1) T_StrobeFlash;
+	flash->thinker.function.acp1 = (actionf_p1) T_StrobeFlash;
     flash->maxlight = sector->lightlevel;
-    flash->minlight = P_FindMinSurroundingLight(sector, sector->lightlevel);
+	flash->minlight = P_FindMinSurroundingLight(sector, sector->lightlevel);
+	
 	flash->thinker.memref = flashRef;
 
     if (flash->minlight == flash->maxlight)

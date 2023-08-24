@@ -998,6 +998,7 @@ void ST_doPaletteStuff(void)
     byte*       pal;
     int         cnt;
     int         bzc;
+	MEMREF		palRef;
 
     cnt = plyr->damagecount;
 
@@ -1039,7 +1040,10 @@ void ST_doPaletteStuff(void)
     if (palette != st_palette)
     {
         st_palette = palette;
-        pal = (byte *) W_CacheLumpNum (lu_palette, PU_CACHE)+palette*768;
+        //palRef =  W_CacheLumpNumEMS (lu_palette, PU_CACHE)+palette*768;
+		//pal = (byte*)Z_LoadBytesFromEMS(palRef);
+
+		pal = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + palette * 768;
         I_SetPalette (pal);
     }
 
@@ -1101,7 +1105,8 @@ void ST_diffDraw(void)
 
 void ST_Drawer (boolean fullscreen, boolean refresh)
 {
-  
+	screens[4] = (byte *)Z_LoadBytesFromEMS(screen4Ref);
+
     st_statusbaron = (!fullscreen) || automapactive;
     st_firsttime = st_firsttime || refresh;
 
@@ -1112,7 +1117,7 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
     if (st_firsttime) ST_doRefresh();
     // Otherwise, update as little as possible
     else ST_diffDraw();
-
+	screens[4] = NULL;
 }
 
 void ST_loadGraphics(void)
@@ -1437,7 +1442,6 @@ static boolean  st_stopped = true;
 
 void ST_Start (void)
 {
-
     if (!st_stopped)
         ST_Stop();
 
@@ -1449,10 +1453,16 @@ void ST_Start (void)
 
 void ST_Stop (void)
 {
-    if (st_stopped)
+	MEMREF palRef;
+	byte*       pal;
+	if (st_stopped)
         return;
 
-    I_SetPalette (W_CacheLumpNum (lu_palette, PU_CACHE));
+//	palRef = W_CacheLumpNumEMS(lu_palette, PU_CACHE);
+//	pal = (byte*)Z_LoadBytesFromEMS(palRef);
+//	I_SetPalette (pal);
+
+	I_SetPalette(W_CacheLumpNum(lu_palette, PU_CACHE));
 
     st_stopped = true;
 }
@@ -1461,5 +1471,6 @@ void ST_Init (void)
 {
     veryfirsttime = 0;
     ST_loadData();
-    screens[4] = (byte *) Z_Malloc (ST_WIDTH*ST_HEIGHT, PU_STATIC, 0);
+	screen4Ref = Z_MallocEMSNew (ST_WIDTH*ST_HEIGHT, PU_STATIC, 0, ALLOC_TYPE_SCREEN);
+    
 }

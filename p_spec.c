@@ -243,9 +243,11 @@ getNextSector
 ( line_t*	line,
   sector_t*	sec )
 {
-    if (!(line->flags & ML_TWOSIDED))
+	
+	if (!(line->flags & ML_TWOSIDED))
 	return NULL;
 		
+
     if (line->frontsector == sec)
 	return line->backsector;
 	
@@ -442,12 +444,17 @@ P_FindMinSurroundingLight
     int		min;
     line_t*	line;
     sector_t*	check;
-	
+
     min = max;
     for (i=0 ; i < sector->linecount ; i++)
     {
 	line = sector->lines[i];
-	check = getNextSector(line,sector);
+	// 	// bad sector is 45affc... i == 1
+
+		if ((byte*)line > 0x60000000) {
+			I_Error("found it! %p %i %i %p", line, i, max, sector);
+		}
+	getNextSector(line, sector);
 
 	if (!check)
 	    continue;
@@ -456,6 +463,7 @@ P_FindMinSurroundingLight
 	    min = check->lightlevel;
     }
     return min;
+
 }
 
 
@@ -1262,11 +1270,16 @@ void P_SpawnSpecials (void)
 	levelTimer = true;
 	levelTimeCount = time;
     }
-    
+
     //	Init special SECTORs.
     sector = sectors;
-    for (i=0 ; i<numsectors ; i++, sector++)
+
+	//I_Error("sector: %p %i", sectors, numsectors);
+
+	for (i=0 ; i<numsectors ; i++, sector++)
     {
+
+
 	if (!sector->special)
 	    continue;
 	
@@ -1327,7 +1340,7 @@ void P_SpawnSpecials (void)
 	    break;
 	}
     }
-
+	
     
     //	Init line EFFECTs
     numlinespecials = 0;
@@ -1356,4 +1369,5 @@ void P_SpawnSpecials (void)
 
     // UNUSED: no horizonal sliders.
     //	P_InitSlidingDoorFrames();
+	
 }

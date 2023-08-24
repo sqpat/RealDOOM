@@ -56,6 +56,8 @@ typedef struct thinker_s
 {
     struct thinker_s*	prev;
     struct thinker_s*	next;
+	//MEMREF		prev;
+	//MEMREF		next;
     think_t		function;
 	MEMREF		memref;
     

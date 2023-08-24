@@ -237,6 +237,12 @@ void W_Reload (void)
 
         lump_p->position = LONG(fileinfo->filepos);
         lump_p->size = LONG(fileinfo->size);
+
+		if (lumpcacheEMS[i]) {
+			Z_FreeEMSNew(lumpcacheEMS[i]);
+		}
+
+
     }
         
     close (handle);
@@ -289,7 +295,7 @@ void W_InitMultipleFiles (char** filenames)
 	if (!lumpcacheEMS)
 		I_Error("Couldn't allocate lumpcacheEMS");
 
-	memset(lumpcache, 0, size);
+	memset(lumpcacheEMS, 0, size);
 
 }
 
@@ -541,7 +547,6 @@ W_CacheLumpNumEMS
 (	short           lump,
 	char			tag)
 {
-	MEMREF       ref;
 	byte	*lumpmem;
 	if ((unsigned)lump >= numlumps)
 		I_Error("W_CacheLumpNum: %i >= numlumps", lump);
@@ -554,14 +559,18 @@ W_CacheLumpNumEMS
 	{
 		// read the lump in
 		//printf ("cache miss on lump %i\n",lump);
-		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0x00, ALLOC_TYPE_CACHE_LUMP, lump);
+		// needs an 'owner' apparently...
+		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump);
 		W_ReadLumpEMS(lump, lumpcacheEMS[lump]);
+
+
 	} else {
 		//printf ("cache hit on lump %i\n",lump);
-		Z_ChangeTagEMSNew(ref, tag);
+		//I_Error("cache hit on lump %i and tag %i", lump, tag);
+		Z_ChangeTagEMSNew(lumpcacheEMS[lump], tag);
 	}
 
-	return ref;
+	return lumpcacheEMS[lump];
 }
 
 
@@ -652,5 +661,6 @@ void W_Profile (void)
 
 
 void W_EraseLumpCache(short index) {
+	I_Error("eraselumpcache %i", index);
 	lumpcacheEMS[index] = 0;
 }

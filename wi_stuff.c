@@ -388,7 +388,7 @@ static patch_t*		p[MAXPLAYERS];
 static patch_t*		bp[MAXPLAYERS];
 
  // Name graphics of each level (centered)
-static patch_t**	lnames;
+MEMREF				lnamesRef;
 
 //
 // CODE
@@ -415,14 +415,16 @@ boolean WI_Responder(event_t* ev)
 // Draws "<Levelname> Finished!"
 void WI_drawLF(void)
 {
+	patch_t* lname;
     int y = WI_TITLEY;
-
-    // draw <LevelName> 
+	MEMREF* lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
+	lname = (patch_t*)Z_LoadBytesFromEMS(lnames[wbs->last]);
+	// draw <LevelName> 
 
 //    V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->last]->width))/2, y, FB, lnames[wbs->last]);
 
     // draw "Finished!"
-    y += (5*SHORT(lnames[wbs->last]->height))/4;
+	y += (5 * SHORT(lname ->height)) / 4;
     
 //    V_DrawPatch((SCREENWIDTH - SHORT(finished->width))/2, y, FB, finished);
 }
@@ -432,17 +434,20 @@ void WI_drawLF(void)
 // Draws "Entering <LevelName>"
 void WI_drawEL(void)
 {
-    int y = WI_TITLEY;
+	patch_t* lname;
+	int y = WI_TITLEY;
+	MEMREF* lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
+	lname = (patch_t*)Z_LoadBytesFromEMS(lnames[wbs->next]);
 
     // draw "Entering"
     V_DrawPatch((SCREENWIDTH - SHORT(entering->width))/2,
 		y, FB, entering);
 
     // draw level
-    y += (5*SHORT(lnames[wbs->next]->height))/4;
+    y += (5*SHORT(lname->height))/4;
 
-    V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->next]->width))/2,
-		y, FB, lnames[wbs->next]);
+    V_DrawPatch((SCREENWIDTH - SHORT(lname->width))/2,
+		y, FB, lname);
 
 }
 
@@ -1545,6 +1550,7 @@ void WI_loadData(void)
     int		j;
     char	name[9];
     anim_t*	a;
+	MEMREF* lnames;
 
     if (commercial)
 	strcpy(name, "INTERPIC");
@@ -1576,22 +1582,26 @@ void WI_loadData(void)
     if (commercial)
     {
 	NUMCMAPS = 32;								
-	lnames = (patch_t **) Z_Malloc (sizeof(patch_t*) * NUMCMAPS,
-				       PU_STATIC, 0);
+	lnamesRef = Z_MallocEMSNew (sizeof(patch_t*) * NUMCMAPS,
+				       PU_STATIC, 0, ALLOC_TYPE_LNAMES);
+	lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
+
 	for (i=0 ; i<NUMCMAPS ; i++)
 	{								
 	    sprintf(name, "CWILV%2.2d", i);
-	    lnames[i] = W_CacheLumpName(name, PU_STATIC);
+	    lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
 	}					
     }
     else
     {
-	lnames = (patch_t **) Z_Malloc (sizeof(patch_t*) * NUMMAPS,
-				       PU_STATIC, 0);
+	lnamesRef =  Z_MallocEMSNew (sizeof(patch_t*) * NUMMAPS,
+				       PU_STATIC, 0, ALLOC_TYPE_LNAMES);
+	lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
+
 	for (i=0 ; i<NUMMAPS ; i++)
 	{
 	    sprintf(name, "WILV%d%d", wbs->epsd, i);
-	    lnames[i] = W_CacheLumpName(name, PU_STATIC);
+	    lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
 	}
 
 	// you are here
@@ -1715,6 +1725,8 @@ void WI_unloadData(void)
 {
     int		i;
     int		j;
+	MEMREF*	lnames;
+	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
 
     Z_ChangeTag(wiminus, PU_CACHE);
 
@@ -1723,8 +1735,9 @@ void WI_unloadData(void)
     
     if (commercial)
     {
-  	for (i=0 ; i<NUMCMAPS ; i++)
-	    Z_ChangeTag(lnames[i], PU_CACHE);
+		for (i = 0; i < NUMCMAPS; i++) {
+			//Z_ChangeTagEMSNew(lnames[i], PU_CACHE);
+		}
     }
     else
     {
@@ -1733,8 +1746,9 @@ void WI_unloadData(void)
 
 	Z_ChangeTag(splat, PU_CACHE);
 
-	for (i=0 ; i<NUMMAPS ; i++)
-	    Z_ChangeTag(lnames[i], PU_CACHE);
+	for (i = 0; i < NUMMAPS; i++) {
+		//Z_ChangeTagEMSNew(lnames[i], PU_CACHE);
+	}
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 	if (wbs->epsd < 3)
 #endif
@@ -1748,7 +1762,7 @@ void WI_unloadData(void)
 	}
     }
     
-    Z_Free(lnames);
+    Z_FreeEMSNew(lnamesRef);
 
     Z_ChangeTag(percent, PU_CACHE);
     Z_ChangeTag(colon, PU_CACHE);

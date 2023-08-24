@@ -440,7 +440,6 @@ extern  gamestate_t     wipegamestate;
 void G_DoLoadLevel (void) 
 { 
     int             i; 
-
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
     // DOOM determines the sky texture to be used
     // depending on the current episode, and the game version.
@@ -462,19 +461,20 @@ void G_DoLoadLevel (void)
 
     gamestate = GS_LEVEL; 
 
+
     for (i=0 ; i<MAXPLAYERS ; i++) 
     { 
         if (playeringame[i] && players[i].playerstate == PST_DEAD) 
             players[i].playerstate = PST_REBORN; 
         memset (players[i].frags,0,sizeof(players[i].frags)); 
     } 
-                 
-    P_SetupLevel (gameepisode, gamemap, 0, gameskill);    
-    displayplayer = consoleplayer;              // view the guy you are playing    
-    starttime = I_GetTime (); 
+
+	P_SetupLevel (gameepisode, gamemap, 0, gameskill);
+	displayplayer = consoleplayer;              // view the guy you are playing    
+	starttime = I_GetTime ();
     gameaction = ga_nothing; 
     //Z_CheckHeap ();
-    
+
     // clear cmd building stuff
     memset (gamekeydown, 0, sizeof(gamekeydown)); 
     joyxmove = joyymove = 0; 
@@ -482,6 +482,9 @@ void G_DoLoadLevel (void)
     sendpause = sendsave = paused = false; 
     memset (mousebuttons, 0, sizeof(mousebuttons)); 
     memset (joybuttons, 0, sizeof(joybuttons)); 
+
+
+
 } 
  
  
@@ -1442,7 +1445,8 @@ G_InitNew
     gameskill = skill; 
  
     viewactive = true;
-    
+
+	
     // set the sky map for the episode
     if (commercial)
     {
@@ -1469,6 +1473,7 @@ G_InitNew
             skytexture = R_TextureNumForName ("SKY4");
             break;
         } 
+
  
     G_DoLoadLevel (); 
 } 
@@ -1625,6 +1630,7 @@ void G_DoPlayDemo (void)
     demoplayback = true; 
 
 	demo_p = (demo_p - demobuffer);
+
 } 
 
 //
