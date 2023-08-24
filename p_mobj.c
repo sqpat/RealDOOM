@@ -51,35 +51,33 @@ P_SetMobjState2
 	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	int i = 0;
 
-    do
-    {
-	if (state == S_NULL)
-	{
-
-	    mobj->state = (state_t *) S_NULL;
-	    P_RemoveMobj (mobjRef);
+    do {
+		if (state == S_NULL) {
+			mobj->state = (state_t *) S_NULL;
+			P_RemoveMobj (mobjRef);
+			return false;
+		}
 	
 
-		return false;
-	}
+		st = &states[state];
+		mobj->state = st;
+		mobj->tics = st->tics;
+		mobj->sprite = st->sprite;
+		mobj->frame = st->frame;
 
-	st = &states[state];
-	mobj->state = st;
-	mobj->tics = st->tics;
-	mobj->sprite = st->sprite;
-	mobj->frame = st->frame;
 
-	// Modified handling.
-	// Call action functions when the state is set
+		// Modified handling.
+		// Call action functions when the state is set
 	
-	if (st->action.acp1) {
-		st->action.acp1(mobjRef);
-	}
+	
+		if (st->action.acp1) {
+			st->action.acp1(mobjRef);
+		}
 
-	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-
-	state = st->nextstate;
-	i++;
+		 
+		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+		state = st->nextstate;
+		i++;
     } while (!mobj->tics);
 	
 	
@@ -101,13 +99,15 @@ void P_ExplodeMissile(MEMREF moRef){
 
     mo->tics -= P_Random()&3;
 
-    if (mo->tics < 1)
-	mo->tics = 1;
+	if (mo->tics < 1) {
+		mo->tics = 1;
+	}
 
     mo->flags &= ~MF_MISSILE;
 	
-    if (mo->info->deathsound)
-		S_StartSound (mo, mo->info->deathsound);
+	if (mo->info->deathsound) {
+		S_StartSound(mo, mo->info->deathsound);
+	}
 }
 
 
@@ -124,12 +124,14 @@ void P_XYMovement (MEMREF moRef)
     player_t*	player;
     fixed_t	xmove;
     fixed_t	ymove;
-	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mobj_t* playermo;
 	fixed_t momomx;
 	fixed_t momomy;
+	line_t* lines;
+	short ceilinglinebacksecnum;
 
 	int i = 0;
+	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	player = mo->player;
 	
 	
@@ -176,23 +178,21 @@ void P_XYMovement (MEMREF moRef)
 			ptryy = mo->y + ymove;
 			xmove = ymove = 0;
 		}
-		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 		
-
 		if (!P_TryMove (moRef, ptryx, ptryy)) {
-			
+			if (setval == 1) {
+				I_Error("prnd b %i", prndindex);
+			}
 			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-		
-
-
 			// blocked move
 			if (player) {	// try to slide along it
 				P_SlideMove (moRef);
-				mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			} else if (mo->flags & MF_MISSILE) {
 				// explode a missile
-				 
-				if (ceilinglinenum != SECNUM_NULL && lines[ceilinglinenum].backsecnum != SECNUM_NULL && sectors[lines[ceilinglinenum].backsecnum].ceilingpic == skyflatnum) {
+				lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+				ceilinglinebacksecnum=lines[ceilinglinenum].backsecnum;
+
+				if (ceilinglinenum != SECNUM_NULL && ceilinglinebacksecnum != SECNUM_NULL && sectors[ceilinglinebacksecnum].ceilingpic == skyflatnum) {
 					// Hack to prevent missiles exploding
 					// against the sky.
 					// Does not handle sky floors.
@@ -211,7 +211,9 @@ void P_XYMovement (MEMREF moRef)
 	 
     } while (xmove || ymove);
 
-
+	if (setval == 1) {
+		I_Error("prnd c %i", prndindex);
+	}
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
 
@@ -285,7 +287,10 @@ void P_XYMovement (MEMREF moRef)
 void P_ZMovement (MEMREF moRef)
 {
     fixed_t	dist;
-    fixed_t	delta;
+	fixed_t	delta;
+	fixed_t	moTargetx;
+	fixed_t	moTargety;
+	fixed_t	moTargetz;
 	mobj_t* moTarget;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
  
@@ -303,10 +308,14 @@ void P_ZMovement (MEMREF moRef)
 		// float down towards target if too close
 		if ( !(mo->flags & MF_SKULLFLY) && !(mo->flags & MF_INFLOAT) ) {
 			moTarget = (mobj_t*)Z_LoadBytesFromEMS(mo->targetRef);
-			dist = P_AproxDistance (mo->x - moTarget->x,
-						mo->y - moTarget->y);
+			moTargetx = moTarget->x;
+			moTargety = moTarget->y;
+			moTargetz = moTarget->z;
+			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+			dist = P_AproxDistance (mo->x - moTargetx,
+						mo->y - moTargety);
 	    
-			delta =(moTarget->z + (mo->height>>1)) - mo->z;
+			delta =(moTargetz + (mo->height>>1)) - mo->z;
 
 			if (delta<0 && dist < -(delta*3) )
 			mo->z -= FLOATSPEED;
@@ -359,21 +368,21 @@ void P_ZMovement (MEMREF moRef)
 	} else if (! (mo->flags & MF_NOGRAVITY) ) {
 		if (mo->momz == 0) {
 			mo->momz = -GRAVITY * 2;
-		}
-		else {
+		} else {
 			mo->momz -= GRAVITY;
 		}
 	}
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
     if (mo->z + mo->height > mo->ceilingz) {
 		// hit the ceiling
-		if (mo->momz > 0)
+		if (mo->momz > 0) {
 			mo->momz = 0;
-			mo->z = mo->ceilingz - mo->height;
+		}
+		mo->z = mo->ceilingz - mo->height;
 
-			if (mo->flags & MF_SKULLFLY) {	// the skull slammed into something
-				mo->momz = -mo->momz;
-			}
+		if (mo->flags & MF_SKULLFLY) {	// the skull slammed into something
+			mo->momz = -mo->momz;
+		}
 	
 		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
 			P_ExplodeMissile (moRef);
@@ -403,6 +412,10 @@ P_NightmareRespawn(MEMREF mobjRef)
 	short subsecnum;
 	subsector_t* subsectors;
 	short subsectorsecnum;
+	mobjtype_t mobjtype;
+	angle_t mobjspawnangle;
+	mapthing_t mobjspawnpoint;
+	short mobjspawnoptions;
 
 	x = mobj->spawnpoint.x << FRACBITS;
 	y = mobj->spawnpoint.y << FRACBITS;
@@ -425,9 +438,9 @@ P_NightmareRespawn(MEMREF mobjRef)
 	moRef = P_SpawnMobj(x, y, sectors[subsectorsecnum].floorheight, MT_TFOG);
 
 	S_StartSoundFromRef(moRef, sfx_telept);
+	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
 	// spawn the new monster
-	mthing = &mobj->spawnpoint;
 
 	// spawn it
 	if (mobj->info->flags & MF_SPAWNCEILING){
@@ -435,13 +448,20 @@ P_NightmareRespawn(MEMREF mobjRef)
 	} else {
 		z = ONFLOORZ;
 	}
-    // inherit attributes from deceased one
-    moRef = P_SpawnMobj (x,y,z, mobj->type);
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-    mo->spawnpoint = mobj->spawnpoint;	
-    mo->angle = ANG45 * (mthing->angle/45);
 
-	if (mthing->options & MTF_AMBUSH) {
+	mobjtype = mobj->type;
+	mobjspawnpoint = mobj->spawnpoint;
+	mobjspawnangle = mobj->spawnpoint.angle;
+	mobjspawnoptions = mobj->spawnpoint.options;
+
+
+    // inherit attributes from deceased one
+    moRef = P_SpawnMobj (x,y,z, mobjtype);
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	mo->spawnpoint = mobjspawnpoint;
+    mo->angle = ANG45 * (mobjspawnangle/45);
+
+	if (mobjspawnoptions & MTF_AMBUSH) {
 		mo->flags |= MF_AMBUSH;
 	}
 
@@ -459,19 +479,22 @@ void P_MobjThinker (MEMREF mobjRef) {
 
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	int i;
-
+	if (setval >= 1 && mobjRef == 531 && mobj->player) {
+		I_Error("bad player early AA %i %i", mobj->player, mobjRef);
+	}
 	// momentum movement
     if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
 		P_XYMovement (mobjRef);
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-		
+
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
 			return;		// mobj was removed
 		}
     } 
 	 
+
     if ( (mobj->z != mobj->floorz) || mobj->momz ) {
 		P_ZMovement (mobjRef);
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -480,7 +503,6 @@ void P_MobjThinker (MEMREF mobjRef) {
 			return;		// mobj was removed
 		}
     }
-
     // cycle through states,
     // calling action functions at transitions
     if (mobj->tics != -1) {
@@ -488,14 +510,20 @@ void P_MobjThinker (MEMREF mobjRef) {
 		
 		// you can cycle through multiple states in a tic
 		if (!mobj->tics) {
+			mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+
 			if (!P_SetMobjState(mobjRef, mobj->state->nextstate)) {
+				 
+
 				return;		// freed itself
 			}
-		 
+			mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+			
+
 		}
-	 
-    } else {
-		 
+	} else {
+		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+
 		// check for nightmare respawn
 		if (!(mobj->flags & MF_COUNTKILL)) {
 			return;
@@ -575,14 +603,6 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
 
-	//	if (type == 1 && (mobj->x >> FRACBITS) == 160) {
-	//if (type == MT_SHOTGUY && (mobj->x >> FRACBITS) == -992) {
-	if (type == MT_TROOP && (mobj->x >> FRACBITS) == -992) {
-
-		//if (type == 13 && (mobj->x >> FRACBITS) == 864) {
-		SAVEDUNIT = mobj;
-	}
-
     return mobjRef;
 }
 
@@ -642,16 +662,19 @@ void P_RespawnSpecials (void)
     int			i;
 
     // only respawn items in deathmatch
-    if (deathmatch != 2)
-	return;	// 
-
-    // nothing left to respawn?
-    if (iquehead == iquetail)
-	return;		
+	if (deathmatch != 2) {
+		return;	// 
+	}
+    
+	// nothing left to respawn?
+	if (iquehead == iquetail) {
+		return;
+	}
 
     // wait at least 30 seconds
-    if (leveltime - itemrespawntime[iquetail] < 30*35)
-	return;			
+	if (leveltime - itemrespawntime[iquetail] < 30 * 35) {
+		return;
+	}
 
     mthing = &itemrespawnque[iquetail];
 	
@@ -935,14 +958,15 @@ void P_CheckMissileSpawn (MEMREF thRef)
 	mobj_t* th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
 
     th->tics -= P_Random()&3;
-    if (th->tics < 1)
-	th->tics = 1;
-    
+	if (th->tics < 1) {
+		th->tics = 1;
+	}
     // move a little forward so an angle can
     // be computed if it immediately explodes
     th->x += (th->momx>>1);
     th->y += (th->momy>>1);
     th->z += (th->momz>>1);
+	Z_RefIsActive(thRef);
 
 	if (!P_TryMove(thRef, th->x, th->y)) {
 		P_ExplodeMissile(thRef);
@@ -964,40 +988,50 @@ P_SpawnMissile
     int		dist;
 	mobj_t*	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 	mobj_t*	dest;
-	MEMREF thRef = P_SpawnMobj (source->x, source->y, source->z + 4*8*FRACUNIT, type);
+	fixed_t destz;
+	fixed_t sourcex = source->x;
+	fixed_t sourcey = source->y;
+	fixed_t sourcez = source->z;
+	fixed_t momz;
+	int thspeed;
+	MEMREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type);
 
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
-    
 	if (th->info->seesound) {
 		S_StartSound(th, th->info->seesound);
 		th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
 
 	}
-	
+	Z_RefIsActive(thRef);
     th->targetRef = sourceRef;	// where it came from
-	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+	thspeed = th->info->speed;
+
 	dest = (mobj_t*)Z_LoadBytesFromEMS(destRef);
-    an = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);	
+	destz = dest->z;
+	an = R_PointToAngle2 (sourcex, sourcey, dest->x, dest->y);	
 
     // fuzzy player
 	if (dest->flags & MF_SHADOW) {
 		an += (P_Random() - P_Random()) << 20;
 	}
 
+	dist = P_AproxDistance(dest->x - sourcex, dest->y - sourcey);
+	dist = dist / thspeed;
+	momz = (destz - sourcez) / dist;
+
+	if (dist < 1)
+		dist = 1;
+
+
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
     th->angle = an;
     an >>= ANGLETOFINESHIFT;
     th->momx = FixedMul (th->info->speed, finecosine[an]);
     th->momy = FixedMul (th->info->speed, finesine[an]);
-	
-    dist = P_AproxDistance (dest->x - source->x, dest->y - source->y);
-    dist = dist / th->info->speed;
+	th->momz = momz;
+	Z_RefIsActive(thRef);
 
-    if (dist < 1)
-		dist = 1;
 
-    th->momz = (dest->z - source->z) / dist;
-		
 	P_CheckMissileSpawn (thRef);
 	
     return thRef;
@@ -1028,24 +1062,21 @@ P_SpawnPlayerMissile
     an = source->angle;
     slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
     
-    if (!linetargetRef)
-    {
-	an += 1<<26;
-	slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
+    if (!linetargetRef) {
+		an += 1<<26;
+		slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
 
-	if (!linetargetRef)
-	{
-	    an -= 2<<26;
-	    slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
-	}
-
-	if (!linetargetRef)
-	{
-	    an = source->angle;
-	    slope = 0;
-	}
+		if (!linetargetRef) {
+			an -= 2<<26;
+			slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
+		}
+		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+		if (!linetargetRef) {
+			an = source->angle;
+			slope = 0;
+		}
     }
-		
+	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
     x = source->x;
     y = source->y;
     z = source->z + 4*8*FRACUNIT;

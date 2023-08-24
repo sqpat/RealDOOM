@@ -57,7 +57,7 @@
 #include "r_local.h"
 
 #include "d_main.h"
-
+ 
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 #define BGCOLOR         7
 #define FGCOLOR         8
@@ -65,6 +65,39 @@
 #define BGCOLOR         7
 #define FGCOLOR         4
 #endif
+
+
+
+typedef enum
+{
+	normal,
+	close30ThenOpen,
+	blah1,
+	blah2,
+	raiseIn5Mins,
+	blazeRaise,
+	blazeOpen,
+	blazeClose
+
+} vldoor_e;
+typedef struct
+{
+	THINKERREF	thinkerRef;
+	vldoor_e	type;
+	short	secnum;
+	fixed_t	topheight;
+	fixed_t	speed;
+
+	// 1 = up, 0 = waiting at top, -1 = down
+	int             direction;
+
+	// tics to wait at the top
+	int             topwait;
+	// (keep in case a door going down is reset)
+	// when it reaches 0, start going down
+	int             topcountdown;
+
+} vldoor_t;
 
 //
 // D-DoomLoop()
@@ -361,7 +394,7 @@ void D_Display (void)
 //
 extern  boolean         demorecording;
 
-byte copynode[46240];
+byte copynode[10540];
 
 void D_DoomLoop (void)
 {
@@ -370,6 +403,7 @@ void D_DoomLoop (void)
 	int lasttick = 0;
 	int lastindex = 0;
 	int stoptic;
+	vldoor_t* doorunit;
 
 	byte* nodes;
 	int i = 0;
@@ -384,6 +418,7 @@ void D_DoomLoop (void)
         debugfile = fopen (filename,"w");
     }
         
+
     I_InitGraphics ();
 
     while (1)
@@ -419,18 +454,45 @@ void D_DoomLoop (void)
 		 
 		//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
 	
+		/*
+		if (gametic == 5) {
+			memcpy(&copynode, &sectors, numsectors * sizeof(sector_t));
+		} else {
 
-		stoptic = 99335;
+
+		}
+
+		if (gametic > 5) {
+			if (memcmp(&copynode, &sectors, numsectors * sizeof(sector_t))) {  //46240
+				I_Error("badcopy %i %i", gametic, numsectors * sizeof(sector_t));
+			}
+
+		}*/
+
+		stoptic = 6205;
 		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {
 				lasttick = gametic;
-				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
-				//SAVEDUNIT = Z_LoadBytesFromEMS(575);
-				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i\n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z  , SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->secnum, 0, SAVEDUNIT->snextRef);
-
-//				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->subsecnum, i, 0);
+				//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+				
+				//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
+			 
+/*
+				SAVEDUNIT = Z_LoadBytesFromEMS(780);
+				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z  , SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->secnum, 0, SAVEDUNIT->player);
 				strcat(result, result2);
+				*/
+
+				//doorunit = (vldoor_t*)Z_LoadBytesFromEMS(784);
+
+				//sprintf(result2, "%i %i %i %i %i %i %i %i %i \n", gametic, prndindex, doorunit->direction, doorunit->speed, doorunit->topcountdown, doorunit->topheight, doorunit->topwait, doorunit->secnum, sectors[114].ceilingheight);
+
+				//Z_LoadBytesFromEMS(linesRef);
+				//Z_LoadBytesFromEMS(segsRef);
+				//Z_LoadBytesFromEMS(subsectorsRef);
+
+				//Z_LoadBytesFromEMS(textureheightRef);
 				//lastindex = prndindex;
 
 

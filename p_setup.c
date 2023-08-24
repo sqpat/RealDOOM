@@ -62,7 +62,7 @@ int             numnodes;
 MEMREF          nodesRef;
 
 int             numlines;
-line_t*         lines;
+MEMREF			linesRef;
 
 int             numsides;
 MEMREF          sidesRef;
@@ -162,16 +162,17 @@ void P_LoadSegs(int lump)
 	mapseg_t*           ml;
 	seg_t*              li;
 	line_t*             ldef;
-	short                 linedef;
 	int                 side;
 	vertex_t*                       vertexes;
 	seg_t*                          segs;
+	short linedef;
 	side_t*         sides;
 	short ldefsidenum;
 	short ldefothersidenum;
 	short sidesecnum;
 	short othersidesecnum;
 	int ldefflags;
+	line_t* lines;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segsRef = Z_MallocEMSNew(numsegs * sizeof(seg_t), PU_LEVEL, 0, ALLOC_TYPE_SEGMENTS);
 	
@@ -182,32 +183,32 @@ void P_LoadSegs(int lump)
 
 	ml = (mapseg_t *)data;
 	
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-	for (i = 0; i < numsegs; i++, li++, ml++) {
+	for (i = 0; i < numsegs; i++, ml++) {
 		side = SHORT(ml->side);
+		linedef = SHORT(ml->linedef);
+
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		ldef = &lines[linedef];
+		ldefsidenum = ldef->sidenum[side];
+		ldefothersidenum = ldef->sidenum[side ^ 1];
+		ldefflags = ldef->flags;
+
+
+		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sidesecnum = sides[ldefsidenum].secnum;
+		othersidesecnum = sides[ldefothersidenum].secnum;
+
 
 		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 
 		li = &segs[i];
 		li->v1Offset = SHORT(ml->v1);
 		li->v2Offset = SHORT(ml->v2);
-
+	
 		li->angle = (SHORT(ml->angle)) << 16;
 		li->offset = (SHORT(ml->offset)) << 16;
-		linedef = SHORT(ml->linedef);
-		li->linedefOffset = linedef;
-		ldef = &lines[linedef];
-		ldefsidenum = ldef->sidenum[side];
-		ldefothersidenum = ldef->sidenum[side ^ 1];
-		ldefflags = ldef->flags;
+		li->linedefOffset = SHORT(ml->linedef);
 		li->sidedefOffset = ldefsidenum;
-		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-		sidesecnum = sides[ldefsidenum].secnum;
-		othersidesecnum = sides[ldefothersidenum].secnum;
-
-		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-		li = &segs[i];
 
 		li->frontsecnum = sidesecnum;
 		if (ldefflags & ML_TWOSIDED)
@@ -237,12 +238,12 @@ void P_LoadSubsectors(int lump)
 	subsector_t*    subsectors;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
 	subsectorsRef = Z_MallocEMSNew (numsubsectors * sizeof(subsector_t), PU_LEVEL, 0, ALLOC_TYPE_SUBSECS);
-	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
 
 	W_CacheLumpNumCheck(lump, 5);
 	data = W_CacheLumpNum(lump, PU_STATIC);
 
 	ms = (mapsubsector_t *)data;
+	subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 	ss = subsectors;
 
@@ -403,28 +404,56 @@ void P_LoadLineDefs(int lump)
 	vertex_t*           v2;
 	vertex_t*           vertexes;
 	side_t* sides;
+	line_t*         lines;
+	short sidenum0;
+	short sidenum1;
+	short side0secnum;
+	short side1secnum;
+	fixed_t v1x;
+	fixed_t v1y;
+	fixed_t v2x;
+	fixed_t v2y;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
-	lines = Z_Malloc (numlines * sizeof(line_t), PU_LEVEL, 0);
+	linesRef = Z_MallocEMSNew (numlines * sizeof(line_t), PU_LEVEL, 0, ALLOC_TYPE_LINES);
+	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+
 	memset(lines, 0, numlines * sizeof(line_t));
 	W_CacheLumpNumCheck(lump, 9);
 	data = W_CacheLumpNum(lump, PU_STATIC);
 
 	mld = (maplinedef_t *)data;
-	ld = lines;
-	
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+
 	for (i = 0; i < numlines; i++, mld++, ld++) {
+
+
+		sidenum0 = SHORT(mld->sidenum[0]);
+		sidenum1 = SHORT(mld->sidenum[1]);
+		
+		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		side0secnum = sides[sidenum0].secnum;
+		side1secnum = sides[sidenum1].secnum;
+		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+		v1 = &vertexes[SHORT(mld->v1)];
+		v2 = &vertexes[SHORT(mld->v2)];
+		v1x = v1->x;
+		v1y = v1->y;
+		v2x = v2->x;
+		v2y = v2->y;
+
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		ld = &lines[i];
+
+		ld->sidenum[0] = sidenum0;
+		ld->sidenum[1] = sidenum1;
+
 		ld->flags = SHORT(mld->flags);
 		ld->special = SHORT(mld->special);
 		ld->tag = SHORT(mld->tag);
-		v1 = &vertexes[SHORT(mld->v1)];
-		v2 = &vertexes[SHORT(mld->v2)];
 		ld->v1Offset = SHORT(mld->v1);
 		ld->v2Offset = SHORT(mld->v2);
-		ld->dx = v2->x - v1->x;
-		ld->dy = v2->y - v1->y;
+		ld->dx = v2x - v1x;
+		ld->dy = v2y - v1y;
 
 		if (!ld->dx) {
 			ld->slopetype = ST_VERTICAL;
@@ -438,35 +467,31 @@ void P_LoadLineDefs(int lump)
 			}
 		}
 
-		if (v1->x < v2->x) {
-			ld->bbox[BOXLEFT] = v1->x;
-			ld->bbox[BOXRIGHT] = v2->x;
+		if (v1x < v2x) {
+			ld->bbox[BOXLEFT] = v1x;
+			ld->bbox[BOXRIGHT] = v2x;
 		} else {
-			ld->bbox[BOXLEFT] = v2->x;
-			ld->bbox[BOXRIGHT] = v1->x;
+			ld->bbox[BOXLEFT] = v2x;
+			ld->bbox[BOXRIGHT] = v1x;
 		}
-		if (v1->y < v2->y) {
-			ld->bbox[BOXBOTTOM] = v1->y;
-			ld->bbox[BOXTOP] = v2->y;
+		if (v1y < v2y) {
+			ld->bbox[BOXBOTTOM] = v1y;
+			ld->bbox[BOXTOP] = v2y;
 		} else {
-			ld->bbox[BOXBOTTOM] = v2->y;
-			ld->bbox[BOXTOP] = v1->y;
+			ld->bbox[BOXBOTTOM] = v2y;
+			ld->bbox[BOXTOP] = v1y;
 		}
 
-		ld->sidenum[0] = SHORT(mld->sidenum[0]);
-		ld->sidenum[1] = SHORT(mld->sidenum[1]);
-		if (ld->sidenum[0] != -1) {
-			ld->frontsecnum = sides[ld->sidenum[0]].secnum;
+		if (sidenum0 != -1) {
+			ld->frontsecnum = side0secnum;
 		} else {
 			ld->frontsecnum = SECNUM_NULL;
 		}
-		if (ld->sidenum[1] != -1){
-			ld->backsecnum = sides[ld->sidenum[1]].secnum;
+		if (sidenum1 != -1){
+			ld->backsecnum = side1secnum;
 		} else {
 			ld->backsecnum = SECNUM_NULL;
 		}
-		Z_RefIsActive(sidesRef);
-		Z_RefIsActive(vertexesRef);
 	}
 
 	Z_Free(data);
@@ -495,8 +520,9 @@ void P_LoadSideDefs(int lump)
 	data = W_CacheLumpNum(lump, PU_STATIC);
 	msd = (mapsidedef_t *)data;
 	
-	for (i = 0; i < numsides; i++, msd++)
-	{
+	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+
+	for (i = 0; i < numsides; i++, msd++) {
 		sd = &sides[i];
 
 		sd->textureoffset = SHORT(msd->textureoffset) << FRACBITS;
@@ -563,75 +589,92 @@ void P_GroupLines(void)
 	int                 total;
 	line_t*             li;
 	sector_t*           sector;
-	short        subsecnum = 0;
 	seg_t*              seg;
 	fixed_t             bbox[4];
 	int                 block;
 	seg_t*              segs;
 	vertex_t*			vertexes;
-	short*				baselinebuffer;
-	short*  previouslinebuffer;
+	short  previouslinebufferindex;
 	short* linebuffer;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	short	firstlinenum;
 	short	sidedefOffset;
-	
-	side_t* sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	line_t*         lines;
+	short linev1Offset;
+	short linev2Offset;
+	short linebacksecnum;
+	short linefrontsecnum;
+	short linebufferindex;
+	short sidesecnum;
+
+	side_t* sides;
 
 	// look up sector number for each subsector
-	for (i = 0; i < numsubsectors; i++, subsecnum++) {
-		firstlinenum = subsectors[subsecnum].firstline;
+	for (i = 0; i < numsubsectors; i++) {
+		firstlinenum = subsectors[i].firstline;
 		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 
 		sidedefOffset = segs[firstlinenum].sidedefOffset;
+		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sidesecnum = sides[sidedefOffset].secnum;
 		subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
-
-		subsectors[subsecnum].secnum = sides[sidedefOffset].secnum;
-		Z_RefIsActive(sidesRef);
+		if (sidesecnum == -64) {
+			I_Error("caught it %i %i %i %i %i", i, numsubsectors, firstlinenum, sidedefOffset, sidesecnum);
+		}
+		subsectors[i].secnum = sidesecnum;
+		Z_RefIsActive(subsectorsRef);
 	}
 
 	// count number of lines in each sector
-	li = lines;
 	total = 0;
-	for (i = 0; i < numlines; i++, li++) {
+	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	for (i = 0; i < numlines; i++) {
+		li = &lines[i];
+		linebacksecnum = li->backsecnum;
+		linefrontsecnum = li->frontsecnum;
 		total++;
-		sectors[li->frontsecnum].linecount++;
+		sectors[linefrontsecnum].linecount++;
 
-		if (li->backsecnum != -1 && li->backsecnum != li->frontsecnum)
-		{
-			sectors[li->backsecnum].linecount++;
+		if (linebacksecnum != -1 && linebacksecnum != linefrontsecnum) {
+			sectors[linebacksecnum].linecount++;
 			total++;
 		}
 	}
 
 	// build line tables for each sector        
-//	linebuffer = (line_t**)Z_LoadBytesFromEMS(linebufferRef);
-	linebufferRef = Z_MallocEMSNew (total * 2, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
-	linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-	baselinebuffer = linebuffer;
-	//I_Error("%s", outputter);
-	//sector = sectors;
-	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-	sector = sectors;
-	for (i = 0; i < numsectors; i++, sector++) {
-		M_ClearBox(bbox);
-		//sectors[i].lines = linebuffer;
-		sector->linesoffset = linebuffer - baselinebuffer;
-		previouslinebuffer = linebuffer;
-		li = lines;
-		if (i == 0) {
-			//I_Error("%p %p %p %i %i %p %p", baselinebuffer[sector->linesoffset], linebuffer[0], baselinebuffer, sector->linesoffset, linebuffer - baselinebuffer, &lines[sector->linesoffset + 1], linebuffer[1]);
-		}
 
-		for (j = 0; j < numlines; j++, li++) {
+	linebufferRef = Z_MallocEMSNew (total * 2, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
+	linebufferindex = 0;
+
+	for (i = 0; i < numsectors; i++) {
+		M_ClearBox(bbox);
+		
+		sector = &sectors[i];
+
+
+		sector->linesoffset = linebufferindex;
+		previouslinebufferindex = linebufferindex;
+	 
+		for (j = 0; j < numlines; j++) {
+			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+			li = &lines[j];
+			linev1Offset = li->v1Offset;
+			linev2Offset = li->v2Offset;
+
 			if (li->frontsecnum == i || li->backsecnum == i) {
-				*linebuffer++ = li - lines;
-				M_AddToBox(bbox, vertexes[li->v1Offset].x, vertexes[li->v1Offset].y);
-				M_AddToBox(bbox, vertexes[li->v2Offset].x, vertexes[li->v2Offset].y);
+
+				linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+				linebuffer[linebufferindex] = j;
+				linebufferindex++;
+				vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+				M_AddToBox(bbox, vertexes[linev1Offset].x, vertexes[linev1Offset].y);
+				M_AddToBox(bbox, vertexes[linev2Offset].x, vertexes[linev2Offset].y);
 			}
 		}
-		if (linebuffer - previouslinebuffer != sectors[i].linecount)
-			I_Error("P_GroupLines: miscounted %i %i %i %i %i, %i",linebuffer, sectors[i].linesoffset, sectors[i].linecount, i, linebuffer , sizeof(line_t));
+		if (linebufferindex - previouslinebufferindex != sectors[i].linecount) {
+			linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+			I_Error("P_GroupLines: miscounted %i %i   iteration %i      %i != (%i - %i)", linebuffer, sectors[i].linesoffset,  i, sectors[i].linecount, linebufferindex , previouslinebufferindex);
+		}
 
 		// set the degenmobj_t to the middle of the bounding box
 		
@@ -675,6 +718,7 @@ P_SetupLevel
 	int         i;
 	char        lumpname[9];
 	int         lumpnum;
+	subsector_t* subsectors;
 
 
 	totalkills = totalitems = totalsecret = wminfo.maxfrags = 0;
@@ -741,16 +785,21 @@ P_SetupLevel
 
 	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
 	P_LoadSubsectors(lumpnum + ML_SSECTORS);
+
 	P_LoadNodes(lumpnum + ML_NODES);
+
 	P_LoadSegs(lumpnum + ML_SEGS);
+
 
 
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 12);
 	rejectmatrix = W_CacheLumpNum(lumpnum + ML_REJECT, PU_LEVEL);
+
 	P_GroupLines();
 
 	bodyqueslot = 0;
 	deathmatch_p = deathmatchstarts;
+
 	P_LoadThings(lumpnum + ML_THINGS);
 
 	// if deathmatch, randomly spawn the active players

@@ -63,6 +63,7 @@ void P_SpawnFireFlicker (short secnum)
 {
     fireflicker_t*	flick;
 	MEMREF flickRef;
+	int lightamount;
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
     sectors[secnum].special = 0;
@@ -74,7 +75,9 @@ void P_SpawnFireFlicker (short secnum)
 
     flick->secnum = secnum;
     flick->maxlight = sectors[secnum].lightlevel;
-    flick->minlight = P_FindMinSurroundingLight(secnum,sectors[secnum].lightlevel)+16;
+	lightamount = P_FindMinSurroundingLight(secnum,sectors[secnum].lightlevel)+16;
+	flick = (fireflicker_t*)Z_LoadBytesFromEMS(flickRef);
+	flick->minlight = lightamount;
     flick->count = 4;
 }
 
@@ -120,7 +123,7 @@ void P_SpawnLightFlash (short secnum)
 {
     lightflash_t*	flash;
 	MEMREF flashRef;
-
+	int lightamount;
 	// nothing special about it during gameplay
 	sectors[secnum].special = 0;
 	
@@ -131,8 +134,9 @@ void P_SpawnLightFlash (short secnum)
 	flash->secnum = secnum;
     flash->maxlight = sectors[secnum].lightlevel;
 
-    flash->minlight = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
-
+	lightamount = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
+	flash = (lightflash_t*)Z_LoadBytesFromEMS(flashRef);
+	flash->minlight = lightamount;
 	flash->maxtime = 64;
     flash->mintime = 7;
     flash->count = (P_Random()&flash->maxtime)+1;
@@ -185,6 +189,7 @@ P_SpawnStrobeFlash
 {
     strobe_t*	flash;
 	MEMREF flashRef;
+	int lightamount;
 
 	// nothing special about it during gameplay
 	sectors[secnum].special = 0;
@@ -199,7 +204,11 @@ P_SpawnStrobeFlash
     flash->darktime = fastOrSlow;
     flash->brighttime = STROBEBRIGHT;
     flash->maxlight = sectors[secnum].lightlevel;
-	flash->minlight = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
+
+	lightamount = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
+	flash = (strobe_t*)Z_LoadBytesFromEMS(flashRef);
+	flash->minlight = lightamount;
+
 	
 
     if (flash->minlight == flash->maxlight)
@@ -245,16 +254,16 @@ void EV_TurnTagLightsOff(short linetag)
     short		offset;
     line_t*		templine;
 	short *		linebuffer;
-    
+	short		linenumber;
     for (secnum = 0; secnum < numsectors; secnum++) {
 		if (sectors[secnum].tag == linetag) {
 			min = sectors[secnum].lightlevel;
 			for (i = 0; i < sectors[secnum].linecount; i++) {
 				offset = sectors[secnum].linesoffset + i;
 				linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-				templine = &lines[linebuffer[offset]];
+				linenumber = linebuffer[offset];
 
-				offset = getNextSector(templine, secnum);
+				offset = getNextSector(linenumber, secnum);
 				if (offset == SECNUM_NULL){
 					continue;
 				}
@@ -298,8 +307,7 @@ EV_LightTurnOn
 			linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 			tempsecnum = sectors[secnum].linesoffset + j;
 
-			templine = &lines[linebuffer[tempsecnum]];
-			tempsecnum = getNextSector(templine,secnum);
+			tempsecnum = getNextSector(linebuffer[tempsecnum],secnum);
 
 		    if (tempsecnum == SECNUM_NULL)
 				continue;
@@ -350,7 +358,7 @@ void T_Glow(MEMREF memref)
 void P_SpawnGlowingLight(short secnum)
 {
     glow_t*	g;
-
+	int lightamount;
 	MEMREF glowRef;
 	// Note that we are resetting sector attributes.
 	// Nothing special about it during gameplay.
@@ -363,7 +371,12 @@ void P_SpawnGlowingLight(short secnum)
 
 
     g->secnum = secnum;
-    g->minlight = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
+
+	
+	lightamount = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
+	g = (glow_t*)Z_LoadBytesFromEMS(glowRef);
+	g->minlight = lightamount;
+	g->minlight = 
     g->maxlight = sectors[secnum].lightlevel;
     g->direction = -1;
 

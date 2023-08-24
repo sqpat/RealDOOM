@@ -142,6 +142,7 @@ void P_RunThinkers (void)
     THINKERREF	currentthinker;
 	void* arg;
 	int i = 0;
+	vldoor_t* door;
 	currentthinker = thinkerlist[0].next;
     while (currentthinker != 0) {
 		
@@ -162,33 +163,17 @@ void P_RunThinkers (void)
 				I_Error("caught infinite? %i ", gametic);
 				//setval = 1;
 			}
-			if (gametic == 2096 && i == 156) {
-				//setval = 1;
-				//I_Error("Caught %i %i %i %i %i %i %i", gametic, i, ((mobj_t*)Z_LoadBytesFromEMS(players[0].moRef))->snextRef, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type , 0  );
-			}
-			if (gametic == 205 && i == 280) {
-				//I_Error("%i %i %i %i %i", gametic, i, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type);
-				//setval = 1;
-			}
-	
-			if (gametic == 1412 && i == 0) {
-				//setval = 1;
-				//I_Error("value %i %i %i", gametic, i, prndindex);
-			}
+		  
 			 
-			if (gametic == 1182 && i == 106) {
-				//I_Error("error a %i %i %i %i %i %i", gametic, i, prndindex, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type);
-//				setval = 1;
-			}
+			if (gametic == 2223 && i == 215) {
+				//SAVEDUNIT = Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
+				//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+				//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, 0, SAVEDUNIT->type, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref);
 
-			if (gametic == 1146 && i == 106) {
-				//SAVEDUNIT = Z_LoadBytesFromEMS(575);
-
-				//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, thinkerlist[currentthinker].functionType, SAVEDUNIT->type);
 				//setval = 1;
-					
-			}
 
+			}
+			
 			if (thinkerlist[currentthinker].functionType) {
 
 				switch (thinkerlist[currentthinker].functionType) {
@@ -223,25 +208,36 @@ void P_RunThinkers (void)
 						I_Error("Bad thinker func! %i %i", currentthinker, thinkerlist[currentthinker].functionType);
 						break;
 				
-
-
-				}
 			
 
+				}
+				if (sectors[114].ceilingheight == 6815744) {
+					//I_Error("400 iiner caught bad ceil height %i %i %i %i", gametic, i, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref);
+				}
+			 
+
+				//if (gametic > 706 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+					//door = ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)));
+					//I_Error("ab made the door  %i %i %i %i %i %i %i %i %i", gametic, i, door->topheight, door->type, door->speed, door->secnum, door->direction, door->topwait, door->topcountdown);
+					//I_Error("caught %i %i %i %i %i %i %i %i %i", gametic, i, thinkerlist[currentthinker].memref, thinkerlist[currentthinker].functionType);
+
+					
+					//I_Error("door was create...  %i %i %i %i %i %i %i %i", gametic, i, 0, sectors[114].ceilingheight, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref,
+						//((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->topheight, ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->topcountdown);
+						
+				//}
+				
+				
+
+
+				 
 				i++;
 			}
 
 		}
 		currentthinker = thinkerlist[currentthinker].next;
     }
-	 
-	if (gametic >= 204) {
-		//I_Error("outside: %i %i %i %i %i", gametic, i, prndindex, 0, 0);
-		//setval = 1;
-	}
-
-	
-
+	   
 
 }
 

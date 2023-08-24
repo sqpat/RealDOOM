@@ -1116,39 +1116,55 @@ void AM_drawWalls(void)
 {
     int i;
     static mline_t l;
+	line_t* lines;
+	short linev1Offset;
+	short linev2Offset;
+	int lineflags;
+	short linefrontsecnum;
+	short linebacksecnum;
+	short linespecial;
 
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertex_t* vertexes;
 
     for (i=0;i<numlines;i++) {
-		l.a.x = vertexes[lines[i].v1Offset].x;
-		l.a.y = vertexes[lines[i].v1Offset].y;
-		l.b.x = vertexes[lines[i].v2Offset].x;
-		l.b.y = vertexes[lines[i].v2Offset].y;
-		if (cheating || (lines[i].flags & ML_MAPPED)) {
-			if ((lines[i].flags & LINE_NEVERSEE) && !cheating) {
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		linev1Offset = lines[i].v1Offset;
+		linev2Offset = lines[i].v2Offset;
+		lineflags = lines[i].flags;
+		linebacksecnum = lines[i].backsecnum;
+		linefrontsecnum = lines[i].frontsecnum;
+		linespecial = lines[i].special;
+
+		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+		l.a.x = vertexes[linev1Offset].x;
+		l.a.y = vertexes[linev1Offset].y;
+		l.b.x = vertexes[linev2Offset].x;
+		l.b.y = vertexes[linev2Offset].y;
+		if (cheating || (lineflags & ML_MAPPED)) {
+			if ((lineflags & LINE_NEVERSEE) && !cheating) {
 				continue;
-			} if (lines[i].backsecnum == SECNUM_NULL) {
+			} if (linebacksecnum == SECNUM_NULL) {
 				AM_drawMline(&l, WALLCOLORS+lightlev);
 			} else {
-				if (lines[i].special == 39) { // teleporters
+				if (linespecial == 39) { // teleporters
 					AM_drawMline(&l, WALLCOLORS+WALLRANGE/2);
-				} else if (lines[i].flags & ML_SECRET){ // secret door
+				} else if (lineflags & ML_SECRET){ // secret door
 					if (cheating) { 
 						AM_drawMline(&l, SECRETWALLCOLORS + lightlev); 
 					} else {
 						AM_drawMline(&l, WALLCOLORS + lightlev);
 					}
-				} else if (sectors[lines[i].backsecnum].floorheight != sectors[lines[i].frontsecnum].floorheight) {
+				} else if (sectors[linebacksecnum].floorheight != sectors[linefrontsecnum].floorheight) {
 					AM_drawMline(&l, FDWALLCOLORS + lightlev); // floor level change
 				}
-				else if (sectors[lines[i].backsecnum].ceilingheight != sectors[lines[i].frontsecnum].ceilingheight) {
+				else if (sectors[linebacksecnum].ceilingheight != sectors[linefrontsecnum].ceilingheight) {
 					AM_drawMline(&l, CDWALLCOLORS+lightlev); // ceiling level change
 				} else if (cheating) {
 					AM_drawMline(&l, TSWALLCOLORS+lightlev);
 				}
 			}
 		} else if (plr->powers[pw_allmap]) {
-			if (!(lines[i].flags & LINE_NEVERSEE)) {
+			if (!(lineflags & LINE_NEVERSEE)) {
 				AM_drawMline(&l, GRAYS + 3);
 			}
 		}

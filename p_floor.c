@@ -58,14 +58,14 @@ T_MovePlane
 	  case -1:
 	    // DOWN
 		 
-		  if (sectors[secnum].floorheight - speed < dest)
+		  if ((&sectors[secnum])->floorheight - speed < dest)
 	    {
-		lastpos = sectors[secnum].floorheight;
-		sectors[secnum].floorheight = dest;
+		lastpos = (&sectors[secnum])->floorheight;
+		(&sectors[secnum])->floorheight = dest;
 		flag = P_ChangeSector(secnum,crush);
 		if (flag == true)
 		{
-			sectors[secnum].floorheight =lastpos;
+			(&sectors[secnum])->floorheight =lastpos;
 
 			P_ChangeSector(secnum,crush);
 		    //return crushed;
@@ -74,12 +74,12 @@ T_MovePlane
 	    }
 	    else
 	    {
-		lastpos = sectors[secnum].floorheight;
-		sectors[secnum].floorheight -= speed;
+		lastpos = (&sectors[secnum])->floorheight;
+		(&sectors[secnum])->floorheight -= speed;
 		flag = P_ChangeSector(secnum,crush);
 		if (flag == true)
 		{
-			sectors[secnum].floorheight = lastpos;
+			(&sectors[secnum])->floorheight = lastpos;
 			P_ChangeSector(secnum,crush);
 		    return crushed;
 		}
@@ -90,14 +90,14 @@ T_MovePlane
 	    // UP
 		
 
-		  if (sectors[secnum].floorheight + speed > dest)
+		  if ((&sectors[secnum])->floorheight + speed > dest)
 	    {
-		lastpos = sectors[secnum].floorheight;
-		sectors[secnum].floorheight = dest;
+		lastpos = (&sectors[secnum])->floorheight;
+		(&sectors[secnum])->floorheight = dest;
 		flag = P_ChangeSector(secnum,crush);
 		if (flag == true)
 		{
-			sectors[secnum].floorheight = lastpos;
+			(&sectors[secnum])->floorheight = lastpos;
 			
 			P_ChangeSector(secnum,crush);
 		    //return crushed;
@@ -107,14 +107,14 @@ T_MovePlane
 	    else
 	    {
 		// COULD GET CRUSHED
-		lastpos = sectors[secnum].floorheight;
-		sectors[secnum].floorheight += speed;
+		lastpos = (&sectors[secnum])->floorheight;
+		(&sectors[secnum])->floorheight += speed;
 		flag = P_ChangeSector(secnum,crush);
 		if (flag == true)
 		{
 		    if (crush == true)
 			return crushed;
-			sectors[secnum].floorheight = lastpos;
+			(&sectors[secnum])->floorheight = lastpos;
 			P_ChangeSector(secnum,crush);
 		    return crushed;
 		}
@@ -130,15 +130,15 @@ T_MovePlane
 	{
 	  case -1:
 	    // DOWN
-	    if (sectors[secnum].ceilingheight - speed < dest)
+	    if ((&sectors[secnum])->ceilingheight - speed < dest)
 	    {
-		lastpos = sectors[secnum].ceilingheight;
-		sectors[secnum].ceilingheight = dest;
+		lastpos = (&sectors[secnum])->ceilingheight;
+		(&sectors[secnum])->ceilingheight = dest;
 		flag = P_ChangeSector(secnum,crush);
 
 		if (flag == true)
 		{
-			sectors[secnum].ceilingheight = lastpos;
+			(&sectors[secnum])->ceilingheight = lastpos;
 			P_ChangeSector(secnum,crush);
 		    //return crushed;
 		}
@@ -147,15 +147,15 @@ T_MovePlane
 	    else
 	    {
 		// COULD GET CRUSHED
-		lastpos = sectors[secnum].ceilingheight;
-		sectors[secnum].ceilingheight -= speed;
+		lastpos = (&sectors[secnum])->ceilingheight;
+		(&sectors[secnum])->ceilingheight -= speed;
 		flag = P_ChangeSector(secnum,crush);
 
 		if (flag == true)
 		{
 		    if (crush == true)
 			return crushed;
-			sectors[secnum].ceilingheight = lastpos;
+			(&sectors[secnum])->ceilingheight = lastpos;
 			P_ChangeSector(secnum,crush);
 		    return crushed;
 		}
@@ -164,14 +164,14 @@ T_MovePlane
 						
 	  case 1:
 	    // UP
-	    if (sectors[secnum].ceilingheight + speed > dest)
+	    if ((&sectors[secnum])->ceilingheight + speed > dest)
 	    {
-		lastpos = sectors[secnum].ceilingheight;
-		sectors[secnum].ceilingheight = dest;
+		lastpos = (&sectors[secnum])->ceilingheight;
+		(&sectors[secnum])->ceilingheight = dest;
 		flag = P_ChangeSector(secnum,crush);
 		if (flag == true)
 		{
-			sectors[secnum].ceilingheight = lastpos;
+			(&sectors[secnum])->ceilingheight = lastpos;
 			P_ChangeSector(secnum,crush);
 		    //return crushed;
 		}
@@ -179,14 +179,14 @@ T_MovePlane
 	    }
 	    else
 	    {
-		lastpos = sectors[secnum].ceilingheight;
-		sectors[secnum].ceilingheight += speed;
+		lastpos = (&sectors[secnum])->ceilingheight;
+		(&sectors[secnum])->ceilingheight += speed;
 		flag = P_ChangeSector(secnum,crush);
 // UNUSED
 #if 0
 		if (flag == true)
 		{
-			sectors[secnum].ceilingheight = lastpos;
+			(&sectors[secnum])->ceilingheight = lastpos;
 			P_ChangeSector(secnum,crush);
 		    return crushed;
 		}
@@ -230,8 +230,8 @@ void T_MoveFloor(MEMREF memref)
 	    switch(floor->type)
 	    {
 	      case donutRaise:
-			  sectors[floorsecnum].special = floor->newspecial;
-			  sectors[floorsecnum].floorpic = floor->texture;
+			  (&sectors[floorsecnum])->special = floor->newspecial;
+			  (&sectors[floorsecnum])->floorpic = floor->texture;
 	      default:
 		break;
 	    }
@@ -241,9 +241,9 @@ void T_MoveFloor(MEMREF memref)
 	    switch(floor->type)
 	    {
 	      case lowerAndChange:
-			  sectors[floorsecnum].special = floor->newspecial;
-			  sectors[floorsecnum].floorpic = floor->texture;
-	      default:
+			  (&sectors[floorsecnum])->special = floor->newspecial;
+			  (&sectors[floorsecnum])->floorpic = floor->texture;
+		  default:
 		break;
 	    }
 	}
@@ -271,181 +271,199 @@ EV_DoFloor
     floormove_t*	floor;
 	MEMREF floorRef;
 	fixed_t* textureheight;
+	fixed_t specialheight;
 
     secnum = -1;
     rtn = 0;
-    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
-    {
-	//sec = &sectors[secnum];
+    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
+		//sec = &sectors[secnum];
 		
-	// ALREADY MOVING?  IF SO, KEEP GOING...
-	if (sectors[secnum].specialdataRef)
-	    continue;
+		// ALREADY MOVING?  IF SO, KEEP GOING...
+		if ((&sectors[secnum])->specialdataRef)
+			continue;
 	
-	// new floor thinker
-	rtn = 1;
-	floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
-	floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+		// new floor thinker
+		rtn = 1;
+		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
 
-	floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
-	sectors[secnum].specialdataRef = floorRef;
+		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+		(&sectors[secnum])->specialdataRef = floorRef;
 
-	floor->type = floortype;
-	floor->crush = false;
+		floor->type = floortype;
+		floor->crush = false;
 
-	switch(floortype)
-	{
-	  case lowerFloor:
-	    floor->direction = -1;
-	    floor->secnum = secnum;
-	    floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindHighestFloorSurrounding(secnum);
-	    break;
+		switch(floortype) {
+		  case lowerFloor:
+			floor->direction = -1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED;
+			specialheight =  P_FindHighestFloorSurrounding(secnum); 
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor->floordestheight = specialheight;
+			break;
 
-	  case lowerFloorToLowest:
-	    floor->direction = -1;
-		floor->secnum = secnum;
-		floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindLowestFloorSurrounding(secnum);
-	    break;
+		  case lowerFloorToLowest:
+			floor->direction = -1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED;
+			specialheight = P_FindLowestFloorSurrounding(secnum);
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor->floordestheight = specialheight;
 
-	  case turboLower:
-	    floor->direction = -1;
-		floor->secnum = secnum;
-		floor->speed = FLOORSPEED * 4;
-	    floor->floordestheight =  P_FindHighestFloorSurrounding(secnum);
-	    if (floor->floordestheight != sectors[secnum].floorheight)
-		floor->floordestheight += 8*FRACUNIT;
-	    break;
+			break;
 
-	  case raiseFloorCrush:
-	    floor->crush = true;
-	  case raiseFloor:
-	    floor->direction = 1;
-		floor->secnum = secnum;
-		floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindLowestCeilingSurrounding(secnum);
-	    if (floor->floordestheight > sectors[secnum].ceilingheight)
-		floor->floordestheight = sectors[secnum].ceilingheight;
-	    floor->floordestheight -= (8*FRACUNIT)*
-		(floortype == raiseFloorCrush);
-	    break;
+		  case turboLower:
+			floor->direction = -1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED * 4;
+			specialheight = P_FindHighestFloorSurrounding(secnum);
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor->floordestheight = specialheight;
 
-	  case raiseFloorTurbo:
-	    floor->direction = 1;
-		floor->secnum = secnum;
-		floor->speed = FLOORSPEED*4;
-	    floor->floordestheight = 
-		P_FindNextHighestFloor(secnum, sectors[secnum].floorheight);
-	    break;
+			if (floor->floordestheight != (&sectors[secnum])->floorheight) {
+				floor->floordestheight += 8 * FRACUNIT;
+			}
+			break;
 
-	  case raiseFloorToNearest:
-	    floor->direction = 1;
-		floor->secnum = secnum;
-		floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindNextHighestFloor(secnum, sectors[secnum].floorheight);
-	    break;
+		  case raiseFloorCrush:
+			floor->crush = true;
+		  case raiseFloor:
+			floor->direction = 1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED;
+			specialheight = P_FindLowestCeilingSurrounding(secnum);
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor->floordestheight = specialheight;
+			if (floor->floordestheight > (&sectors[secnum])->ceilingheight) {
+				floor->floordestheight = (&sectors[secnum])->ceilingheight;
+			}
+			floor->floordestheight -= (8*FRACUNIT)*
+			(floortype == raiseFloorCrush);
+			break;
 
-	  case raiseFloor24:
-	    floor->direction = 1;
-		floor->secnum = secnum;
-		floor->speed = FLOORSPEED;
-	    floor->floordestheight = sectors[floor->secnum].floorheight +
-		24 * FRACUNIT;
-	    break;
-	  case raiseFloor512:
-	    floor->direction = 1;
-		floor->secnum = secnum;
-		floor->speed = FLOORSPEED;
-	    floor->floordestheight = sectors[floor->secnum].floorheight +
-		512 * FRACUNIT;
-	    break;
+		  case raiseFloorTurbo:
+			floor->direction = 1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED*4;
+			specialheight =  P_FindNextHighestFloor(secnum, (&sectors[secnum])->floorheight);
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor->floordestheight = specialheight;
 
-	  case raiseFloor24AndChange:
-	    floor->direction = 1;
-		floor->secnum = secnum;
-		floor->speed = FLOORSPEED;
-	    floor->floordestheight = sectors[floor->secnum].floorheight +
-		24 * FRACUNIT;
-		sectors[secnum].floorpic = sectors[linefrontsecnum].floorpic;
-		sectors[secnum].special = sectors[linefrontsecnum].special;
-	    break;
+			break;
 
-	  case raiseToTexture:
-	  {
-	      int	minsize = MAXINT;
-	      side_t*	side;
+		  case raiseFloorToNearest:
+			floor->direction = 1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED;
+			specialheight = P_FindNextHighestFloor(secnum, (&sectors[secnum])->floorheight);
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor->floordestheight = specialheight;
+			break;
+
+		  case raiseFloor24:
+			floor->direction = 1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED;
+			floor->floordestheight = sectors[floor->secnum].floorheight +
+			24 * FRACUNIT;
+			break;
+		  case raiseFloor512:
+			floor->direction = 1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED;
+			floor->floordestheight = sectors[floor->secnum].floorheight +
+			512 * FRACUNIT;
+			break;
+
+		  case raiseFloor24AndChange:
+			floor->direction = 1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED;
+			floor->floordestheight = sectors[floor->secnum].floorheight +
+			24 * FRACUNIT;
+			(&sectors[secnum])->floorpic = sectors[linefrontsecnum].floorpic;
+			(&sectors[secnum])->special = sectors[linefrontsecnum].special;
+			break;
+
+		  case raiseToTexture: {
+			  int	minsize = MAXINT;
+			  side_t* sides;
+			  short sidenum;
+			  short sidebottomtexture;
 				
-	      floor->direction = 1;
-		  floor->secnum = secnum;
-		  floor->speed = FLOORSPEED;
-	      for (i = 0; i < sectors[secnum].linecount; i++)
-	      {
-		  if (twoSided (secnum, i) )
-		  {
-			  textureheight = Z_LoadBytesFromEMS(textureheightRef);
-			  side = getSide(secnum,i,0);
-		      if (side->bottomtexture >= 0)
-			  if (textureheight[side->bottomtexture] < 
-			      minsize)
-			      minsize = 
-				  textureheight[side->bottomtexture];
-		      side = getSide(secnum,i,1);
-		      if (side->bottomtexture >= 0)
-			  if (textureheight[side->bottomtexture] < 
-			      minsize)
-			      minsize = 
-				  textureheight[side->bottomtexture];
+			  floor->direction = 1;
+			  floor->secnum = secnum;
+			  floor->speed = FLOORSPEED;
+			  for (i = 0; i < (&sectors[secnum])->linecount; i++) {
+				  if (twoSided (secnum, i) ) {
+					  sidenum = getSideNum(secnum,i,0);
+					  sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+					  sidebottomtexture = sides[sidenum].bottomtexture;
+					  if (sidebottomtexture >= 0) {
+						  textureheight = Z_LoadBytesFromEMS(textureheightRef);
+						  if (textureheight[sidebottomtexture] < minsize) {
+							  minsize = textureheight[sidebottomtexture];
+						  }
+					  }
+					  sidenum = getSideNum(secnum,i,1);
+					  sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+					  sidebottomtexture = sides[sidenum].bottomtexture;
+
+					  if (sidebottomtexture >= 0) {
+						  textureheight = Z_LoadBytesFromEMS(textureheightRef);
+						  if (textureheight[sidebottomtexture] < minsize) {
+							  minsize = textureheight[sidebottomtexture];
+						  }
+					  }
+				  }
+			  }
+			  floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			  floor->floordestheight = sectors[floor->secnum].floorheight + minsize;
 		  }
-	      }
-	      floor->floordestheight =
-			  sectors[floor->secnum].floorheight + minsize;
-	  }
-	  break;
+		  break;
 	  
-	  case lowerAndChange:
-	    floor->direction = -1;
-		floor->secnum = secnum;
-		floor->speed = FLOORSPEED;
-	    floor->floordestheight = 
-		P_FindLowestFloorSurrounding(secnum);
-	    floor->texture = sectors[secnum].floorpic;
+		  case lowerAndChange:{
 
-	    for (i = 0; i < sectors[secnum].linecount; i++)
-	    {
-		if ( twoSided(secnum, i) )
-		{
-		    if (getSide(secnum,i,0)->secnum == secnum)
-		    {
-			secnum = getSector(secnum,i,1);
+			short sidenum;
+			side_t* sides;
 
-			if (sectors[secnum].floorheight == floor->floordestheight)
-			{
-			    floor->texture = sectors[secnum].floorpic;
-			    floor->newspecial = sectors[secnum].special;
-			    break;
+			floor->direction = -1;
+			floor->secnum = secnum;
+			floor->speed = FLOORSPEED;
+			specialheight = P_FindLowestFloorSurrounding(secnum);
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor->floordestheight = specialheight;
+			floor->texture = (&sectors[secnum])->floorpic;
+
+			for (i = 0; i < (&sectors[secnum])->linecount; i++) {
+				if (twoSided(secnum, i)) {
+					sidenum = getSideNum(secnum, i, 0);
+					sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+					if (sides[sidenum].secnum == secnum) {
+						secnum = getSector(secnum, i, 1);
+
+						if ((&sectors[secnum])->floorheight == floor->floordestheight) {
+							floor->texture = (&sectors[secnum])->floorpic;
+							floor->newspecial = (&sectors[secnum])->special;
+							break;
+						}
+					}
+					else {
+						secnum = getSector(secnum, i, 0);
+
+						if ((&sectors[secnum])->floorheight == floor->floordestheight) {
+							floor->texture = (&sectors[secnum])->floorpic;
+							floor->newspecial = (&sectors[secnum])->special;
+							break;
+						}
+					}
+				}
 			}
-		    }
-		    else
-		    {
-				secnum = getSector(secnum,i,0);
-
-			if (sectors[secnum].floorheight == floor->floordestheight)
-			{
-			    floor->texture = sectors[secnum].floorpic;
-			    floor->newspecial = sectors[secnum].special;
-			    break;
-			}
-		    }
+		  }
+		  default:
+			break;
 		}
-	    }
-	  default:
-	    break;
-	}
     }
     return rtn;
 }
@@ -480,6 +498,7 @@ EV_BuildStairs
 	short *linebuffer;
 	short linebufferOffset;
 	short linenum;
+	line_t* lines;
 
     secnum = -1;
     rtn = 0;
@@ -488,7 +507,7 @@ EV_BuildStairs
 	//sec = &sectors[secnum];
 		
 	// ALREADY MOVING?  IF SO, KEEP GOING...
-	if (sectors[secnum].specialdataRef)
+	if ((&sectors[secnum])->specialdataRef)
 	    continue;
 	
 	// new floor thinker
@@ -497,7 +516,7 @@ EV_BuildStairs
 	floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
 
 	floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
-	sectors[secnum].specialdataRef = floorRef;
+	(&sectors[secnum])->specialdataRef = floorRef;
 	floor->direction = 1;
 	floor->secnum = secnum;
 
@@ -513,20 +532,21 @@ EV_BuildStairs
 	    break;
 	}
 	floor->speed = speed;
-	height = sectors[secnum].floorheight + stairsize;
+	height = (&sectors[secnum])->floorheight + stairsize;
 	floor->floordestheight = height;
 		
-	texture = sectors[secnum].floorpic;
+	texture = (&sectors[secnum])->floorpic;
 	
 	// Find next sector to raise
 	// 1.	Find 2-sided line with same sector side[0]
 	// 2.	Other side is the next sector to raise
 	do {
 	    ok = 0;
-	    for (i = 0;i < sectors[secnum].linecount;i++) {
-			linebufferOffset = sectors[secnum].linesoffset + i;
+	    for (i = 0;i < (&sectors[secnum])->linecount;i++) {
+			linebufferOffset = (&sectors[secnum])->linesoffset + i;
 			linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 			linenum = linebuffer[linebufferOffset];
+			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 			if (!((&lines[linenum])->flags & ML_TWOSIDED)) {
 				continue;
 			}

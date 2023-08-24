@@ -167,7 +167,7 @@ EV_DoCeiling
     //sector_t*	sec;
     ceiling_t*	ceiling;
 	MEMREF ceilingRef;
-	
+
     secnum = -1;
     rtn = 0;
     
@@ -222,11 +222,14 @@ EV_DoCeiling
 	    ceiling->speed = CEILSPEED;
 	    break;
 
-	  case raiseToHighest:
-	    ceiling->topheight = P_FindHighestCeilingSurrounding(secnum);
-	    ceiling->direction = 1;
-	    ceiling->speed = CEILSPEED;
-	    break;
+	  case raiseToHighest: {
+		  fixed_t ceilingtopheight = P_FindHighestCeilingSurrounding(secnum);
+		  ceiling = (ceiling_t*)Z_LoadBytesFromEMS(ceilingRef);
+		  ceiling->topheight = ceilingtopheight;
+		  ceiling->direction = 1;
+		  ceiling->speed = CEILSPEED;
+		  break;
+		   }
 	}
 		
 	ceiling->tag = sectors[secnum].tag;

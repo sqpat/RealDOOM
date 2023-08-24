@@ -197,6 +197,7 @@ boolean PIT_CheckLine (short linenum)
 	mobj_t* tmthing;
 	//short linespecial;
 	//fixed_t linedx; , fixed_t linedy, short linev1Offset, short linev2Offset, short linefrontsecnum, short linebacksecnum, short lineside1, slopetype_t lineslopetype
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld->slopetype;
 	fixed_t linedx = ld->dx;
@@ -253,6 +254,9 @@ boolean PIT_CheckLine (short linenum)
 		ceilinglinenum = linenum;
     }
 
+
+
+
 	if (openbottom > tmfloorz) {
 		tmfloorz = openbottom;
 	}
@@ -263,9 +267,6 @@ boolean PIT_CheckLine (short linenum)
 
     // if contacted a special line, add it to the list
     if (linespecial) {
-		if (setval >= 1) {
-			I_Error("hit spechit %i %i %i", gametic, prndindex, linenum);
-		}
 		spechit[numspechit] = linenum;
 		numspechit++;
     }
@@ -300,6 +301,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 
 
 	if (thingRef == tmthingRef) {
+		if (setval == 2) I_Error("return value a");
 		return true;
 	}
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
@@ -312,6 +314,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	thingradius = thing->radius;
 
 	if (!(thingflags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
+		if (setval == 2) I_Error("return value b");
 		return true;
 	}
 
@@ -324,7 +327,8 @@ boolean PIT_CheckThing (MEMREF thingRef)
 
     if ( abs(thingx - tmx) >= blockdist || abs(thingy - tmy) >= blockdist ) {
 		// didn't hit it
-		return true;	
+		if (setval == 2) I_Error("return value c");
+		return true;
     }
      
 
@@ -337,7 +341,8 @@ boolean PIT_CheckThing (MEMREF thingRef)
 		tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
 		P_SetMobjState (tmthingRef, tmthing->info->spawnstate);
-	
+		if (setval == 2) I_Error("return value d");
+
 		return false;		// stop moving
     }
 	
@@ -345,28 +350,36 @@ boolean PIT_CheckThing (MEMREF thingRef)
     // missiles can hit other things
     if (tmthing->flags & MF_MISSILE) {
 		// see if it went over / under
-		if (tmthingz > thingz + thingheight)
+		if (tmthingz > thingz + thingheight) {
+			if (setval == 2) I_Error("return value e %i %i %i", tmthingz, tmthingRef, ((mobj_t*)Z_LoadBytesFromEMS(tmthingRef))->type );
 			return true;		// overhead
-		if (tmthingz+tmthingheight < thingz)
+		}
+		if (tmthingz + tmthingheight < thingz) {
+			if (setval == 2) I_Error("return value f");
 			return true;		// underneath
-		
+		}
 		if (tmthingtargetRef) {
 			tmthingTarget = (mobj_t*)Z_LoadBytesFromEMS(tmthingtargetRef);
 			tmthingTargettype = tmthingTarget->type;
 			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
 				// Don't hit same species as originator.
-				if (thingRef == tmthingtargetRef)
+ 			if (thingRef == tmthingtargetRef) {
+					if (setval == 2) I_Error("return value g");
 					return true;
+				}
 
 				if (thingtype != MT_PLAYER) {
 				// Explode, but do no damage.
 				// Let players missile other players.
-				return false;
+					if (setval == 2) I_Error("return value h");
+
+					return false;
 				}
 			}
 		}
 		if (! (thingflags & MF_SHOOTABLE) ) {
 			// didn't do any damage
+			if (setval == 2) I_Error("return value i");
 			return !(thingflags & MF_SOLID);
 		}
 	
@@ -377,6 +390,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 
 		P_DamageMobj (thingRef, tmthingRef, tmthingtargetRef, damage);
 
+		if (setval == 2) I_Error("return value j");
 		// don't traverse any more
 		return false;				
     }
@@ -391,9 +405,11 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	    // can remove thing
 	    P_TouchSpecialThing (thingRef, tmthingRef);
 	}
+	if (setval == 2) I_Error("return value k");
 	return !solid;
     }
-	
+	if (setval == 2) I_Error("return value l");
+
     return !(thingflags & MF_SOLID);
 }
 
@@ -473,7 +489,7 @@ P_CheckPosition
     // will adjust them.
     tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
     tmceilingz = sectors[newsubsecsecnum].ceilingheight;
-			
+
     validcount++;
     numspechit = 0;
 
@@ -493,10 +509,16 @@ P_CheckPosition
 
 
 
-
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
+
+			if (bx == 9 && by == 11 && setval == 1) {
+				setval = 2;
+			}
 			if (!P_BlockThingsIterator(bx, by, PIT_CheckThing)) {
+				if (setval == 1) {
+					I_Error("prnd aa %i", prndindex);
+				}			
 				return false;
 			}
 		}
@@ -511,11 +533,18 @@ P_CheckPosition
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
 			if (!P_BlockLinesIterator(bx, by, PIT_CheckLine)) {
+				if (setval == 1) {
+					I_Error("prnd aaa %i", prndindex);
+				}				
 				return false;
 			}
 		}
 	}
-    return true;
+
+	if (setval == 1) {
+		I_Error("prnd ccc %i", prndindex);
+	}
+	return true;
 }
 
 
@@ -538,18 +567,30 @@ P_TryMove
     int		oldside;
     line_t*	ld;
 	mobj_t* thing;
+	line_t* lines;
+ 	fixed_t lddx;
+ 	fixed_t lddy;
+	short ldspecial;
+	short ldv1Offset;
 	//int i;
 
 	floatok = false;
 
 	if (!P_CheckPosition(thingRef, x, y)) {
+		if (setval == 1) {
+			I_Error("prnd a %i", prndindex);
+		}
+
 		return false;		// solid wall or thing
+	}
+	if (setval == 1) {
+		I_Error("prnd b %i", prndindex);
 	}
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
     if ( !(thing->flags & MF_NOCLIP) ) {
 		if (tmceilingz - tmfloorz < thing->height) {
-				return false;	// doesn't fit
+			return false;	// doesn't fit
 			}
 
 		floatok = true;
@@ -586,11 +627,17 @@ P_TryMove
     if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
 		while (numspechit--) {
 			// see if the line was crossed
+			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 			ld = &lines[spechit[numspechit]];
-			side = P_PointOnLineSide (newx, newy, ld->dx, ld->dy, ld->v1Offset);
-			oldside = P_PointOnLineSide (oldx, oldy, ld->dx, ld->dy, ld->v1Offset);
+			lddx = ld->dx;
+			lddy = ld->dy;
+			ldv1Offset = ld->v1Offset;
+			ldspecial = ld->special;
+
+			side = P_PointOnLineSide (newx, newy, lddx, lddy, ldv1Offset);
+			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, ldv1Offset);
 			if (side != oldside) {
-				if (ld->special) {
+				if (ldspecial) {
 					P_CrossSpecialLine(spechit[numspechit], oldside, thingRef);
 				}
 			}
@@ -652,8 +699,8 @@ boolean P_ThingHeightClip (MEMREF thingRef)
 fixed_t		bestslidefrac;
 fixed_t		secondslidefrac;
 
-line_t*		bestslideline;
-line_t*		secondslideline;
+short		bestslidelinenum;
+short		secondslidelinenum;
 
 MEMREF		slidemoRef;
 
@@ -667,7 +714,7 @@ fixed_t		tmymove;
 // Adjusts the xmove / ymove
 // so that the next move will slide along the wall.
 //
-void P_HitSlideLine (line_t* ld)
+void P_HitSlideLine (short linenum)
 {
     int			side;
 
@@ -678,21 +725,24 @@ void P_HitSlideLine (line_t* ld)
     fixed_t		movelen;
     fixed_t		newlen;
 	mobj_t* slidemo;
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+
+	line_t ld = lines[linenum];
 	
-    if (ld->slopetype == ST_HORIZONTAL)
+    if (ld.slopetype == ST_HORIZONTAL)
     {
 	tmymove = 0;
 	return;
     }
     
-    if (ld->slopetype == ST_VERTICAL)
+    if (ld.slopetype == ST_VERTICAL)
     {
 	tmxmove = 0;
 	return;
     }
 	slidemo = (mobj_t*) Z_LoadBytesFromEMS(slidemoRef);
-    side = P_PointOnLineSide (slidemo->x, slidemo->y, ld->dx, ld->dy, ld->v1Offset);
-    lineangle = R_PointToAngle2 (0,0, ld->dx, ld->dy);
+    side = P_PointOnLineSide (slidemo->x, slidemo->y, ld.dx, ld.dy, ld.v1Offset);
+    lineangle = R_PointToAngle2 (0,0, ld.dx, ld.dy);
 
     if (side == 1)
 	lineangle += ANG180;
@@ -720,17 +770,20 @@ void P_HitSlideLine (line_t* ld)
 //
 boolean PTR_SlideTraverse (intercept_t* in)
 {
-    line_t*	li;
 	mobj_t* slidemo;
+	line_t li;
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
-    if (!in->isaline)
-	I_Error ("PTR_SlideTraverse: not a line?");
-		
-	li = &lines[in->d.linenum];
+	if (!in->isaline) {
+		I_Error("PTR_SlideTraverse: not a line?");
+	}
+
+	li = lines[in->d.linenum];
+
     
-    if ( ! (li->flags & ML_TWOSIDED) ) {
+    if ( ! (li.flags & ML_TWOSIDED) ) {
 		slidemo = (mobj_t*)Z_LoadBytesFromEMS(slidemoRef);
-		if (P_PointOnLineSide (slidemo->x, slidemo->y, li->dx, li->dy, li->v1Offset)) {
+		if (P_PointOnLineSide (slidemo->x, slidemo->y, li.dx, li.dy, li.v1Offset)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -738,7 +791,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
     }
 
     // set openrange, opentop, openbottom
-    P_LineOpening (li->sidenum[1], li->frontsecnum, li->backsecnum);
+    P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
 	slidemo = (mobj_t*)Z_LoadBytesFromEMS(slidemoRef);
 
     if (openrange < slidemo->height)
@@ -756,12 +809,11 @@ boolean PTR_SlideTraverse (intercept_t* in)
     // the line does block movement,
     // see if it is closer than best so far
   isblocking:		
-    if (in->frac < bestslidefrac)
-    {
-	secondslidefrac = bestslidefrac;
-	secondslideline = bestslideline;
-	bestslidefrac = in->frac;
-	bestslideline = li;
+    if (in->frac < bestslidefrac) {
+		secondslidefrac = bestslidefrac;
+		secondslidelinenum = bestslidelinenum;
+		bestslidefrac = in->frac;
+		bestslidelinenum = in->d.linenum;
     }
 	
     return false;	// stop
@@ -870,7 +922,7 @@ void P_SlideMove (MEMREF moRef)
     tmxmove = FixedMul (mo->momx, bestslidefrac);
     tmymove = FixedMul (mo->momy, bestslidefrac);
 
-    P_HitSlideLine (bestslideline);	// clip the moves
+    P_HitSlideLine (bestslidelinenum);	// clip the moves
 
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
  
@@ -911,72 +963,73 @@ extern fixed_t	bottomslope;
 boolean
 PTR_AimTraverse (intercept_t* in)
 {
-    line_t*		li;
+    line_t		li;
     mobj_t*		th;
     fixed_t		slope;
     fixed_t		thingtopslope;
     fixed_t		thingbottomslope;
     fixed_t		dist;
 	MEMREF		thRef;
+	line_t* lines;
 
-    if (in->isaline)
-    {
-		li = &lines[in->d.linenum];
+    if (in->isaline) {
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		li = lines[in->d.linenum];
 	
-	if ( !(li->flags & ML_TWOSIDED) )
-	    return false;		// stop
+		if (!(li.flags & ML_TWOSIDED)) {
+			return false;		// stop
+		}
+		// Crosses a two sided line.
+		// A two sided line will restrict
+		// the possible target ranges.
+		P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
 	
-	// Crosses a two sided line.
-	// A two sided line will restrict
-	// the possible target ranges.
-	P_LineOpening (li->sidenum[1], li->frontsecnum, li->backsecnum);
+		if (openbottom >= opentop)
+			return false;		// stop
 	
-	if (openbottom >= opentop)
-	    return false;		// stop
-	
-	dist = FixedMul (attackrange, in->frac);
+		dist = FixedMul (attackrange, in->frac);
 
-	if (sectors[li->frontsecnum].floorheight != sectors[li->backsecnum].floorheight)
-	{
-	    slope = FixedDiv (openbottom - shootz , dist);
-	    if (slope > bottomslope)
-		bottomslope = slope;
-	}
+		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight)
+		{
+			slope = FixedDiv (openbottom - shootz , dist);
+			if (slope > bottomslope)
+			bottomslope = slope;
+		}
 		
-	if (sectors[li->frontsecnum].ceilingheight != sectors[li->backsecnum].ceilingheight)
-	{
-	    slope = FixedDiv (opentop - shootz , dist);
-	    if (slope < topslope)
-		topslope = slope;
-	}
+		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight)
+		{
+			slope = FixedDiv (opentop - shootz , dist);
+			if (slope < topslope)
+			topslope = slope;
+		}
 		
-	if (topslope <= bottomslope)
-	    return false;		// stop
+		if (topslope <= bottomslope)
+			return false;		// stop
 			
-	return true;			// shot continues
+		return true;			// shot continues
     }
     
     // shoot a thing
     thRef = in->d.thingRef;
     if (thRef == shootthingRef)
-	return true;			// can't shoot self
+		return true;			// can't shoot self
     
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
 
     if (!(th->flags&MF_SHOOTABLE))
-	return true;			// corpse or something
+		return true;			// corpse or something
 
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange, in->frac);
     thingtopslope = FixedDiv (th->z+th->height - shootz , dist);
 
     if (thingtopslope < bottomslope)
-	return true;			// shot over the thing
+		return true;			// shot over the thing
 
     thingbottomslope = FixedDiv (th->z - shootz, dist);
 
     if (thingbottomslope > topslope)
-	return true;			// shot under the thing
+		return true;			// shot under the thing
     
     // this thing can be hit!
     if (thingtopslope > topslope)
@@ -1002,7 +1055,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
     fixed_t		z;
     fixed_t		frac;
     
-    line_t*		li;
+    line_t		li;
     
     mobj_t*		th;
 
@@ -1011,73 +1064,70 @@ boolean PTR_ShootTraverse (intercept_t* in)
     fixed_t		thingtopslope;
     fixed_t		thingbottomslope;
 	MEMREF		thRef;
+	line_t*		lines;
 		
 
-    if (in->isaline)
-    {
-	li = &lines[in->d.linenum];
-	
-	if (li->special)
-	    P_ShootSpecialLine (shootthingRef, in->d.linenum);
-
-	if ( !(li->flags & ML_TWOSIDED) )
-	    goto hitline;
-	
-	// crosses a two sided line
-	P_LineOpening(li->sidenum[1], li->frontsecnum, li->backsecnum);
+    if (in->isaline) {
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		li = lines[in->d.linenum];
 		
-	dist = FixedMul (attackrange, in->frac);
+		if (li.special)
+			P_ShootSpecialLine (shootthingRef, in->d.linenum);
 
-	if (sectors[li->frontsecnum].floorheight != sectors[li->backsecnum].floorheight)
-	{
-	    slope = FixedDiv (openbottom - shootz , dist);
-	    if (slope > aimslope)
-		goto hitline;
-	}
+		if ( !(li.flags & ML_TWOSIDED) )
+			goto hitline;
+	
+		// crosses a two sided line
+		P_LineOpening(li.sidenum[1], li.frontsecnum, li.backsecnum);
 		
-	if (sectors[li->frontsecnum].ceilingheight != sectors[li->backsecnum].ceilingheight)
-	{
-	    slope = FixedDiv (opentop - shootz , dist);
-	    if (slope < aimslope)
-		goto hitline;
-	}
+		dist = FixedMul (attackrange, in->frac);
 
-	// shot continues
-	return true;
+		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight)
+		{
+			slope = FixedDiv (openbottom - shootz , dist);
+			if (slope > aimslope)
+			goto hitline;
+		}
+		
+		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight)
+		{
+			slope = FixedDiv (opentop - shootz , dist);
+			if (slope < aimslope)
+			goto hitline;
+		}
+
+		// shot continues
+		return true;
 	
 	
-	// hit line
-      hitline:
-	// position a bit closer
-	frac = in->frac - FixedDiv (4*FRACUNIT,attackrange);
-	x = trace.x + FixedMul (trace.dx, frac);
-	y = trace.y + FixedMul (trace.dy, frac);
-	z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
+		// hit line
+		  hitline:
+		// position a bit closer
+		frac = in->frac - FixedDiv (4*FRACUNIT,attackrange);
+		x = trace.x + FixedMul (trace.dx, frac);
+		y = trace.y + FixedMul (trace.dy, frac);
+		z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
 
 
 
-	if (sectors[li->frontsecnum].ceilingpic == skyflatnum)
-	{
-	    // don't shoot the sky!
-	    if (z > sectors[li->frontsecnum].ceilingheight)
-		return false;
+		if (sectors[li.frontsecnum].ceilingpic == skyflatnum)
+		{
+			// don't shoot the sky!
+			if (z > sectors[li.frontsecnum].ceilingheight)
+			return false;
 	    
-	    // it's a sky hack wall
-	    if	(li->backsecnum != SECNUM_NULL && sectors[li->backsecnum].ceilingpic == skyflatnum)
-		return false;		
-	}
+			// it's a sky hack wall
+			if	(li.backsecnum != SECNUM_NULL && sectors[li.backsecnum].ceilingpic == skyflatnum)
+			return false;		
+		}
 
-	// Spawn bullet puffs.
-	P_SpawnPuff (x,y,z);
+		// Spawn bullet puffs.
+		P_SpawnPuff (x,y,z);
 	
-	// don't go any farther
-	return false;	
+		// don't go any farther
+		return false;	
     }
-
-	if (gametic == 2165) {
-		// todo we are hitting the below if case so we are triggering shoot self...
-		//I_Error("shoottraverse %i %i %i %i %i ", gametic, 0, thRef, shootthingRef, shootthingRef);
-	}
+	 
     // shoot a thing
     thRef = in->d.thingRef;
     if (thRef == shootthingRef)
@@ -1119,13 +1169,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
     else
 	P_SpawnBlood (x,y,z, la_damage);
 
-	
-	if (thRef == 0) {
-		I_Error("bad thing caught c");
-	}
-
     if (la_damage)
-	P_DamageMobj (thRef, shootthingRef, shootthingRef, la_damage);
+		P_DamageMobj (thRef, shootthingRef, shootthingRef, la_damage);
 
     // don't go any farther
     return false;
@@ -1215,29 +1260,30 @@ boolean	PTR_UseTraverse (intercept_t* in)
 {
     int		side;
 	mobj_t* usething;
-	line_t* line = &lines[in->d.linenum];
-	if (!line->special)
-    {
-	P_LineOpening (line->sidenum[1], line->frontsecnum, line->backsecnum);
-	if (openrange <= 0)
-	{
-	    S_StartSoundFromRef (usethingRef, sfx_noway);
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+
+	line_t line = lines[in->d.linenum];
+	if (!line.special) {
+		P_LineOpening (line.sidenum[1], line.frontsecnum, line.backsecnum);
+		if (openrange <= 0)
+		{
+			S_StartSoundFromRef (usethingRef, sfx_noway);
 	    
-	    // can't use through a wall
-	    return false;	
-	}
-	// not a special line, but keep checking
-	return true ;		
+			// can't use through a wall
+			return false;	
+		}
+		// not a special line, but keep checking
+		return true ;		
     }
 	
     side = 0;
 	usething = (mobj_t*)Z_LoadBytesFromEMS(usethingRef);
-	line = &lines[in->d.linenum];
-	if (P_PointOnLineSide (usething->x, usething->y, line->dx, line->dy, line->v1Offset) == 1)
-	side = 1;
+
+	if (P_PointOnLineSide(usething->x, usething->y, line.dx, line.dy, line.v1Offset) == 1) {
+		side = 1;
+	}
     
     //	return false;		// don't use back side
-	
     P_UseSpecialLine (usethingRef, in->d.linenum, side);
 
     // can't use for than one special line in a row

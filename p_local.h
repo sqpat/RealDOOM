@@ -214,7 +214,10 @@ boolean P_CheckPosition (MEMREF thing, fixed_t x, fixed_t y);
 boolean P_TryMove (MEMREF thing, fixed_t x, fixed_t y);
 boolean P_TeleportMove (MEMREF thing, fixed_t x, fixed_t y);
 void	P_SlideMove (MEMREF mo);
-boolean P_CheckSight (MEMREF t1, MEMREF t2);
+boolean P_CheckSight2 (MEMREF t1, MEMREF t2, char* file, int line);
+
+#define P_CheckSight(a,b) P_CheckSight2(a, b, __FILE__, __LINE__)
+
 void 	P_UseLines (player_t* player);
 
 boolean P_ChangeSector (short secnum, boolean crunch);

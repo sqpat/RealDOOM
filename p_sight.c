@@ -24,6 +24,7 @@
 
 // State.
 #include "r_state.h"
+#include "m_misc.h"
 
 //
 // P_CheckSight
@@ -145,6 +146,10 @@ boolean P_CrossSubsector (short subsecnum)
     fixed_t		slope;
 	seg_t* segs;
 	vertex_t* vertexes;
+	line_t* lines;
+	short linev1Offset;
+	short linev2Offset;
+	short lineflags;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 
 
@@ -158,23 +163,40 @@ boolean P_CrossSubsector (short subsecnum)
     count = subsectors[subsecnum].numlines;
     segnum = subsectors[subsecnum].firstline;
 	
+
+	if (setval == 1) {
+		//I_Error("check %i %i %i ", count, segnum, subsecnum);
+	}
+
     for ( ; count ; segnum++, count--) {
 		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 		linedefOffset = segs[segnum].linedefOffset;
 		frontsecnum = segs[segnum].frontsecnum;
 		backsecnum = segs[segnum].backsecnum;
-
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 		line = &lines[linedefOffset];
+
+
 
 		// allready checked other side?
 		if (line->validcount == validcount) {
 			continue;
 		}
 		line->validcount = validcount;
+		linev1Offset = line->v1Offset;
+		linev2Offset = line->v2Offset;
+		lineflags = line->flags;
+		if (setval == 1 && count == 5) {
+			//			I_Error("check %i %i  %i %i %i %i %i %i %i %i", v1.x, v1.y, v2.x, v2.y, strace.x, strace.y, strace.dx, strace.dy, s1, s2);
+			//I_Error("check %i %i  %i %i %i %i %i ", v1.x, v1.y, line->v1Offset, line->v2Offset, linedefOffset, s1, s2);
+			// lines[355]->v1Offset is bad
+
+		}
+
 		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
-		v1 = vertexes[line->v1Offset];
-		v2 = vertexes[line->v2Offset];
+		v1 = vertexes[linev1Offset];
+		v2 = vertexes[linev2Offset];
 		s1 = P_DivlineSide (v1.x,v1.y, &strace);
 		s2 = P_DivlineSide (v2.x, v2.y, &strace);
 
@@ -192,11 +214,17 @@ boolean P_CrossSubsector (short subsecnum)
 		// line isn't crossed?
 		if (s1 == s2)
 			continue;	
+		
 
 		// stop because it is not two sided anyway
 		// might do this after updating validcount?
-		if ( !(line->flags & ML_TWOSIDED) )
+		if (!(lineflags & ML_TWOSIDED)) {
+			if (setval == 1) {
+				I_Error("false return C %i", count);
+			}
+
 			return false;
+		}
 	
 		// crosses a two sided line
 
@@ -219,8 +247,13 @@ boolean P_CrossSubsector (short subsecnum)
 			openbottom = sectors[backsecnum].floorheight;
 		
 		// quick test for totally closed doors
-		if (openbottom >= opentop)	
+		if (openbottom >= opentop) {
+			if (setval == 1) {
+				I_Error("false return A%i", count);
+			}
+
 			return false;		// stop
+		}
 	
 		frac = P_InterceptVector2 (&strace, &divl);
 		
@@ -237,10 +270,17 @@ boolean P_CrossSubsector (short subsecnum)
 		}
 		
 		if (topslope <= bottomslope) {
+			if (setval == 1) {
+				I_Error("false return B%i", count);
+			}
+
 			return false;		// stop				
 		}
     }
     // passed the subsector ok
+
+	
+
     return true;		
 }
 
@@ -257,18 +297,20 @@ boolean P_CrossBSPNode (unsigned short bspnum)
 	node_t* nodes;
 	bspcounter++;
 	
-	if (bspnum < 0 || bspnum > 65535) {
-		I_Error("bspnum too many bits? %i", bspnum);
-	}
-
-	//if (bspnum > numsubsectors) {
+ 	//if (bspnum > numsubsectors) {
 		//I_Error("too big %i %i", bspnum&(~NF_SUBSECTOR), numsubsectors, bspnum);
 	//}
 
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == -1) {
+			if (setval == 1) {
+				I_Error("here A %i %i", P_CrossSubsector(0), bspnum);
+			}
 			return P_CrossSubsector(0);
 		} else {
+			if (setval == 1) {
+				I_Error("here B %i %i", P_CrossSubsector(bspnum&(~NF_SUBSECTOR)), bspnum);
+			}
 			return P_CrossSubsector(bspnum&(~NF_SUBSECTOR));
 		}
     }
@@ -312,10 +354,13 @@ boolean P_CrossBSPNode (unsigned short bspnum)
 // Uses REJECT.
 //
 boolean
-P_CheckSight
+P_CheckSight2
 ( MEMREF t1Ref,
-  MEMREF t2Ref)
+  MEMREF t2Ref, char* file, int line)
 {
+
+
+
     int		pnum;
     int		bytenum;
     int		bitnum;
@@ -326,13 +371,24 @@ P_CheckSight
 	fixed_t t1height = t1->height;
 	short s1 = t1->secnum;
 
-	mobj_t*	t2 = (mobj_t*)Z_LoadBytesFromEMS(t2Ref);
-	fixed_t t2z = t2->z;
-	fixed_t t2x = t2->x;
-	fixed_t t2y = t2->y;
-	fixed_t t2height = t2->height;
-	short s2 = t2->secnum;
+	mobj_t*	t2;
+		fixed_t t2z;
+		fixed_t t2x;
+		fixed_t t2y;
+		fixed_t t2height;
+		short s2;
 
+	 
+
+	t2 = (mobj_t*)Z_LoadBytesFromEMS(t2Ref);
+	t2z = t2->z;
+	t2x = t2->x;
+	t2y = t2->y;
+	t2height = t2->height;
+	s2 = t2->secnum;
+
+
+	
 	//I_Error("set call %i  %i %p %p", t1Ref, t2Ref, t1, t2);
 
     // First check for trivial rejection.
@@ -341,6 +397,8 @@ P_CheckSight
     pnum = s1*numsectors + s2;
     bytenum = pnum>>3;
     bitnum = 1 << (pnum&7);
+	
+
 
     // Check in REJECT table.
     if (rejectmatrix[bytenum]&bitnum) {
@@ -365,6 +423,10 @@ P_CheckSight
 	cachedt2y = t2y;
     strace.dx = t2x - t1x;
     strace.dy = t2y - t1y;
+
+	if (setval == 1) {
+		I_Error("blah %i %i %i %i %i %i %i  ", prndindex, P_CrossBSPNode(numnodes - 1));
+	}
 
     // the head node is the last node output
     return P_CrossBSPNode (numnodes-1);	

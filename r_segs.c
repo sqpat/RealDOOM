@@ -103,11 +103,11 @@ R_RenderMaskedSegRange
 	fixed_t* textureheight;
 	int* texturetranslation;
 	fixed_t siderowoffset;
+	line_t* lines;
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	short curlinev1Offset; short curlinev2Offset; short curlinefrontsecnum; short curlinebacksecnum; short curlinesidedefOffset; short curlinelinedefOffset;
 	side_t* sides;
 	short sidemidtexture;
-
 	vertex_t* vertexes; 
 
 	// Calculate light table.
@@ -157,6 +157,7 @@ R_RenderMaskedSegRange
     mceilingclip = ds->sprtopclip;
     
     // find positioning
+	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
     if (lines[curlinelinedefOffset].flags & ML_DONTPEGBOTTOM) {
 		dc_texturemid = sectors[frontsecnum].floorheight > sectors[backsecnum].floorheight ? sectors[frontsecnum].floorheight : sectors[backsecnum].floorheight;
 		textureheight = Z_LoadBytesFromEMS(textureheightRef);
@@ -422,6 +423,8 @@ R_StoreWallRange
 	short sidetoptexture;
 	short sidebottomtexture;
 	fixed_t sidetextureoffset;
+	line_t* lines;
+	int lineflags;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
@@ -430,15 +433,20 @@ R_StoreWallRange
     if (start >=viewwidth || start > stop)
 	I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
 #endif
-    
-    linedef = &lines[curlinelinedefOffset];
 
-	if (curlinelinedefOffset > numlines) {
-		I_Error("R_StoreWallRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, curlinelinedefOffset, curlinenum);
+	linedefOffset = curlinelinedefOffset;
+
+	if (linedefOffset > numlines) {
+		I_Error("R_StoreWallRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, linedefOffset, curlinenum);
 	}
 
     // mark the segment as visible for auto map
-    linedef->flags |= ML_MAPPED;
+	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+
+	(&lines[linedefOffset])->flags |= ML_MAPPED;
+//	linedef->flags |= ML_MAPPED;
+
+	lineflags = (&lines[linedefOffset])->flags;
     
     // calculate rw_distance for scale calculation
     rw_normalangle = curlineangle + ANG90;
@@ -512,7 +520,7 @@ R_StoreWallRange
 		midtexture = texturetranslation[sidemidtexture];
 		// a single sided line is terminal, so it must mark ends
 		markfloor = markceiling = true;
-		if (linedef->flags & ML_DONTPEGBOTTOM) {
+		if (lineflags & ML_DONTPEGBOTTOM) {
 			textureheight = Z_LoadBytesFromEMS(textureheightRef);
 			vtop = sectors[frontsecnum].floorheight +
 			textureheight[sidemidtexture];
@@ -605,7 +613,7 @@ R_StoreWallRange
 				I_Error("toptex %i %i %i ", sidetoptexture, curlinesidedefOffset, curlinenum);
 			}
 
-			if (linedef->flags & ML_DONTPEGTOP) {
+			if (lineflags & ML_DONTPEGTOP) {
 				// top of texture at top
 				rw_toptexturemid = worldtop;
 			} else {
@@ -621,7 +629,7 @@ R_StoreWallRange
 			texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 			bottomtexture = texturetranslation[sidebottomtexture];
 
-			if (linedef->flags & ML_DONTPEGBOTTOM ) {
+			if (lineflags & ML_DONTPEGBOTTOM ) {
 				// bottom of texture at bottom
 				// top of texture at top
 				rw_bottomtexturemid = worldtop;

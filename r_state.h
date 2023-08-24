@@ -87,7 +87,7 @@ extern MEMREF    nodesRef;
 
 
 extern int		numlines;
-extern line_t*		lines;
+extern MEMREF   linesRef;
 
 extern int		numsides;
 extern MEMREF       sidesRef;

@@ -36,7 +36,8 @@
 int setval = 0;
 
 short		curlinenum;
-line_t*		linedef;
+//line_t*		linedef;
+short linedefOffset;
 short	frontsecnum;
 short	backsecnum;
 
@@ -526,7 +527,6 @@ void R_Subsector (int num) {
 	int lineoffset = 0;
 	short firstline;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
-
 	#ifdef RANGECHECK
 		if (num >= numsubsectors) {
 			I_Error("R_Subsector: ss %i with numss = %i", num, numsubsectors);
@@ -540,6 +540,9 @@ void R_Subsector (int num) {
     frontsecnum = subsectors[num].secnum;
     count = subsectors[num].numlines;
 	firstline = subsectors[num].firstline;
+
+
+
 
     if (sectors[frontsecnum].floorheight < viewz) {
 		floorplane = R_FindPlane (sectors[frontsecnum].floorheight,
@@ -560,7 +563,6 @@ void R_Subsector (int num) {
 
 	
     R_AddSprites (frontsecnum);
-	 
     while (count--) {
 		#ifdef RANGECHECK
 			if ((firstline + lineoffset) > numsegs) {
@@ -587,32 +589,39 @@ void R_RenderBSPNode (int bspnum) {
 	node_t* nodes;
     // Found a subsector?
 
-
+	Z_RefIsActive(nodesRef);
+ 
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == -1) {
 			R_Subsector(0);
+
 		}
 		else {
 			R_Subsector(bspnum&(~NF_SUBSECTOR));
+
 		}
 		return;
     }
-
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	bsp = &nodes[bspnum];
-    
+	
+
     // Decide which side the view point is on.
     side = R_PointOnSide (viewx, viewy, bsp);
-
     // Recursively divide front space.
-    R_RenderBSPNode (bsp->children[side]); 
+
+	R_RenderBSPNode (bsp->children[side]); 
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	bsp = &nodes[bspnum];
+	
 
     // Possibly divide back space.
 	if (R_CheckBBox(bsp->bbox[side ^ 1])) {
+		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+
 		R_RenderBSPNode(bsp->children[side ^ 1]);
 	}
+
 
 
 }

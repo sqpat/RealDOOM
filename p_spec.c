@@ -132,7 +132,7 @@ anim_t*		lastanim;
 #define MAXLINEANIMS            64
 
 extern  short	numlinespecials;
-extern  line_t*	linespeciallist[MAXLINEANIMS];
+extern  short	linespeciallist[MAXLINEANIMS];
 
 
 
@@ -191,16 +191,15 @@ void P_InitPicAnims (void)
 //  given the number of the current sector,
 //  the line number, and the side (0/1) that you want.
 //
-side_t*
-getSide
-( int		currentSector,
-  int		line,
-  int		side )
-{
+short
+getSideNum
+( short		currentSector,
+  short		offset,
+  short		side ) {
 	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-	short linenum = linebuffer[sectors[currentSector].linesoffset + line];
-	side_t* sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-	return &sides[ lines[linenum].sidenum[side] ];
+	offset = linebuffer[sectors[currentSector].linesoffset + offset];
+	return ((line_t*)Z_LoadBytesFromEMS(linesRef))[offset].sidenum[side];
+	
 }
 
 
@@ -212,15 +211,17 @@ getSide
 //
 short
 getSector
-( int		currentSector,
-  int		line,
-  int		side )
+( short		currentSector,
+  short		offset,
+  short		side )
 {
+	line_t* lines;
 	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-	short linenum = linebuffer[sectors[currentSector].linesoffset + line];
-	side_t* sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	offset = linebuffer[sectors[currentSector].linesoffset + offset];
+	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	offset = lines[offset].sidenum[side];
 
-    return sides[lines[linenum].sidenum[side]].secnum;
+    return ((side_t*)Z_LoadBytesFromEMS(sidesRef))[offset].secnum;
 }
 
 
@@ -229,14 +230,14 @@ getSector
 // Given the sector number and the line number,
 //  it will tell you whether the line is two-sided or not.
 //
-int
+short
 twoSided
-( int	sector,
-  int	line )
+( short	sector,
+  short	line )
 {
 	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-
-    return (&lines[linebuffer[sectors[sector].linesoffset+line]])->flags & ML_TWOSIDED;
+	line = linebuffer[sectors[sector].linesoffset + line];
+    return (((line_t*)Z_LoadBytesFromEMS(linesRef))[line]).flags & ML_TWOSIDED;
 }
 
 
@@ -249,10 +250,12 @@ twoSided
 //
 short
 getNextSector
-( line_t*	line,
+( short linenum,
   short	sec )
 {
-	
+	line_t* lines = (line_t*) Z_LoadBytesFromEMS(linesRef);
+	line_t* line = &lines[linenum];
+
 	if (!(line->flags & ML_TWOSIDED))
 		return SECNUM_NULL; 
 		
@@ -277,13 +280,14 @@ fixed_t	P_FindLowestFloorSurrounding(short secnum)
 	fixed_t		floor = sectors[secnum].floorheight;
 	int linecount = sectors[secnum].linecount;
 	short* linebuffer;
+	short linenumber;
 
     for (i=0 ;i < linecount ; i++) {
 		otherSecOffset = sectors[secnum].linesoffset + i;
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+		linenumber = linebuffer[otherSecOffset];
 
-		check = &lines[linebuffer[otherSecOffset]];
-		otherSecOffset = getNextSector(check, secnum);
+		otherSecOffset = getNextSector(linenumber, secnum);
 
 		if (otherSecOffset == SECNUM_NULL) {
 			continue;
@@ -304,7 +308,6 @@ fixed_t	P_FindLowestFloorSurrounding(short secnum)
 fixed_t	P_FindHighestFloorSurrounding(short secnum)
 {
     int			i;
-    line_t*		check;
     short		offset;
     fixed_t		floor = -500*FRACUNIT;
 	int linecount = sectors[secnum].linecount;
@@ -314,8 +317,7 @@ fixed_t	P_FindHighestFloorSurrounding(short secnum)
 		offset = sectors[secnum].linesoffset + i;
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
-		check = &lines[linebuffer[offset]];
-		offset = getNextSector(check, secnum);
+		offset = getNextSector(linebuffer[offset], secnum);
 	
 		if (offset == SECNUM_NULL) {
 			continue;
@@ -345,7 +347,6 @@ P_FindNextHighestFloor
     int			i;
     int			h;
     int			min;
-    line_t*		check;
 	short		offset;
 	fixed_t		height = currentheight;
 	int linecount = sectors[secnum].linecount;
@@ -357,8 +358,7 @@ P_FindNextHighestFloor
     for (i=0, h=0 ;i < linecount ; i++) {
 		offset = sectors[secnum].linesoffset + i;
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-		check = &lines[linebuffer[offset]];
-		offset = getNextSector(check, secnum);
+		offset = getNextSector(linebuffer[offset], secnum);
 
 		if (offset == SECNUM_NULL) {
 			continue;
@@ -392,7 +392,6 @@ fixed_t
 P_FindLowestCeilingSurrounding(short	secnum)
 {
     int			i;
-    line_t*		check;
 	short		offset;
 	fixed_t		height = MAXINT;
 	int linecount = sectors[secnum].linecount;
@@ -402,8 +401,7 @@ P_FindLowestCeilingSurrounding(short	secnum)
 		offset = sectors[secnum].linesoffset + i;
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
-		check = &lines[linebuffer[offset]];
-		offset = getNextSector(check, secnum);
+		offset = getNextSector(linebuffer[offset], secnum);
 
 		if (offset == SECNUM_NULL) {
 			continue;
@@ -422,7 +420,6 @@ P_FindLowestCeilingSurrounding(short	secnum)
 fixed_t	P_FindHighestCeilingSurrounding(short	secnum)
 {
     int		i;
-    line_t*	check;
 	short		offset;
 	fixed_t	height = 0;
 	int linecount = sectors[secnum].linecount;
@@ -432,8 +429,7 @@ fixed_t	P_FindHighestCeilingSurrounding(short	secnum)
 		offset = sectors[secnum].linesoffset + i;
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
-		check = &lines[linebuffer[offset]];
-		offset = getNextSector(check, secnum);
+		offset = getNextSector(linebuffer[offset], secnum);
 
 		if (offset == SECNUM_NULL) {
 			continue;
@@ -477,8 +473,7 @@ P_FindMinSurroundingLight
 {
     int		i;
     int		min;
-    line_t*	line;
-    short	offset;
+     short	offset;
 	int linecount = sectors[secnum].linecount;
 	short* linebuffer;
 
@@ -486,10 +481,8 @@ P_FindMinSurroundingLight
     for (i=0 ; i < linecount ; i++) {
 		offset = sectors[secnum].linesoffset + i;
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-
-		line = &lines[linebuffer[offset]];
-
-		offset = getNextSector(line, secnum);
+		 
+		offset = getNextSector(linebuffer[offset], secnum);
 
 		// 4 255 255 15 127 1 0 0
 
@@ -526,16 +519,15 @@ P_CrossSpecialLine
   int		side,
   MEMREF thingRef )
 {
-    line_t*	line;
     int		ok;
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t*	line = &lines[linenum];
+	short linetag = line->tag;
+	short linefrontsecnum = line->frontsecnum;
+	short lineside0 = line->sidenum[0];
+	short linespecial = line->special;
+	short setlinespecial = -1;
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	short linetag;
-	short linefrontsecnum; 
-	short lineside0;
-    line = &lines[linenum];
-	linetag = line->tag;
-	linefrontsecnum = line->frontsecnum;
-	lineside0 = line->sidenum[0];
 
     //	Triggers that other things can activate
     if (!thing->player)
@@ -556,7 +548,7 @@ P_CrossSpecialLine
 	}
 		
 	ok = 0;
-	switch(line->special)
+	switch(linespecial)
 	{
 	  case 39:	// TELEPORT TRIGGER
 	  case 97:	// TELEPORT RETRIGGER
@@ -574,417 +566,422 @@ P_CrossSpecialLine
 
     
     // Note: could use some const's here.
-    switch (line->special)
+    switch (linespecial)
     {
 	// TRIGGERS.
 	// All from here to RETRIGGERS.
       case 2:
-	// Open Door
-	EV_DoDoor(linetag,open);
-	line->special = 0;
-	break;
+		// Open Door
+		EV_DoDoor(linetag,open);
+		setlinespecial = 0;
+		break;
 
       case 3:
-	// Close Door
-	EV_DoDoor(linetag,close);
-	line->special = 0;
-	break;
+		// Close Door
+		EV_DoDoor(linetag,close);
+		setlinespecial = 0;
+		break;
 
       case 4:
-	// Raise Door
-	EV_DoDoor(linetag,normal);
-	line->special = 0;
-	break;
+		// Raise Door
+		EV_DoDoor(linetag,normal);
+		setlinespecial = 0;
+		break;
 	
       case 5:
-	// Raise Floor
-	EV_DoFloor(linetag, linefrontsecnum,raiseFloor);
-	line->special = 0;
-	break;
+		// Raise Floor
+		EV_DoFloor(linetag, linefrontsecnum,raiseFloor);
+		setlinespecial = 0;
+		break;
 	
       case 6:
-	// Fast Ceiling Crush & Raise
-	EV_DoCeiling(linetag,fastCrushAndRaise);
-	line->special = 0;
-	break;
+		// Fast Ceiling Crush & Raise
+		EV_DoCeiling(linetag,fastCrushAndRaise);
+		setlinespecial = 0;
+		break;
 	
       case 8:
-	// Build Stairs
-	EV_BuildStairs(linetag,build8);
-	line->special = 0;
-	break;
+		// Build Stairs
+		EV_BuildStairs(linetag,build8);
+		setlinespecial = 0;
+		break;
 	
       case 10:
-	// PlatDownWaitUp
-	EV_DoPlat(linetag, lineside0,downWaitUpStay,0);
-	line->special = 0;
-	break;
+		// PlatDownWaitUp
+		EV_DoPlat(linetag, lineside0,downWaitUpStay,0);
+		setlinespecial = 0;
+		break;
 	
       case 12:
-	// Light Turn On - brightest near
-	EV_LightTurnOn(linetag,0);
-	line->special = 0;
-	break;
+		// Light Turn On - brightest near
+		EV_LightTurnOn(linetag,0);
+		setlinespecial = 0;
+		break;
 	
       case 13:
-	// Light Turn On 255
-	EV_LightTurnOn(linetag,255);
-	line->special = 0;
-	break;
+		// Light Turn On 255
+		EV_LightTurnOn(linetag,255);
+		setlinespecial = 0;
+		break;
 	
       case 16:
-	// Close Door 30
-	EV_DoDoor(linetag,close30ThenOpen);
-	line->special = 0;
-	break;
+		// Close Door 30
+		EV_DoDoor(linetag,close30ThenOpen);
+		setlinespecial = 0;
+		break;
 	
       case 17:
-	// Start Light Strobing
-	EV_StartLightStrobing(linetag);
-	line->special = 0;
-	break;
+		// Start Light Strobing
+		EV_StartLightStrobing(linetag);
+		setlinespecial = 0;
+		break;
 	
       case 19:
-	// Lower Floor
-	EV_DoFloor(linetag, linefrontsecnum,lowerFloor);
-	line->special = 0;
-	break;
+		// Lower Floor
+		EV_DoFloor(linetag, linefrontsecnum,lowerFloor);
+		setlinespecial = 0;
+		break;
 	
       case 22:
-	// Raise floor to nearest height and change texture
-		  EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0);
-	line->special = 0;
-	break;
+		// Raise floor to nearest height and change texture
+		EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0);
+		setlinespecial = 0;
+		break;
 	
       case 25:
-	// Ceiling Crush and Raise
-	EV_DoCeiling(linetag,crushAndRaise);
-	line->special = 0;
-	break;
+		// Ceiling Crush and Raise
+		EV_DoCeiling(linetag,crushAndRaise);
+		setlinespecial = 0;
+		break;
 	
       case 30:
-	// Raise floor to shortest texture height
-	//  on either side of lines.
-		  EV_DoFloor(linetag, linefrontsecnum, raiseToTexture);
-	line->special = 0;
-	break;
+		// Raise floor to shortest texture height
+		//  on either side of lines.
+		EV_DoFloor(linetag, linefrontsecnum, raiseToTexture);
+		setlinespecial = 0;
+		break;
 	
       case 35:
-	// Lights Very Dark
-		  EV_LightTurnOn(linetag,35);
-	line->special = 0;
-	break;
+		// Lights Very Dark
+		EV_LightTurnOn(linetag,35);
+		setlinespecial = 0;
+		break;
 	
       case 36:
-	// Lower Floor (TURBO)
-		  EV_DoFloor(linetag, linefrontsecnum, turboLower);
-	line->special = 0;
-	break;
+		// Lower Floor (TURBO)
+		EV_DoFloor(linetag, linefrontsecnum, turboLower);
+		setlinespecial = 0;
+		break;
 	
       case 37:
-	// LowerAndChange
-		  EV_DoFloor(linetag, linefrontsecnum, lowerAndChange);
-	line->special = 0;
-	break;
+		// LowerAndChange
+		EV_DoFloor(linetag, linefrontsecnum, lowerAndChange);
+		setlinespecial = 0;
+		break;
 	
       case 38:
-	// Lower Floor To Lowest
+		// Lower Floor To Lowest
 		EV_DoFloor( linetag, linefrontsecnum, lowerFloorToLowest );
-	line->special = 0;
-	break;
+		setlinespecial = 0;
+		break;
 	
       case 39:
-	// TELEPORT!
+		// TELEPORT!
 		EV_Teleport( linetag, side, thingRef );
-	line->special = 0;
-	break;
+		setlinespecial = 0;
+		break;
 
       case 40:
-	// RaiseCeilingLowerFloor
-	EV_DoCeiling(linetag, raiseToHighest );
-	EV_DoFloor( linenum, linetag, lowerFloorToLowest );
-	line->special = 0;
-	break;
+		// RaiseCeilingLowerFloor
+		EV_DoCeiling(linetag, raiseToHighest );
+		EV_DoFloor( linenum, linetag, lowerFloorToLowest );
+		setlinespecial = 0;
+		break;
 	
       case 44:
-	// Ceiling Crush
-	EV_DoCeiling(linetag, lowerAndCrush );
-	line->special = 0;
-	break;
+		// Ceiling Crush
+		EV_DoCeiling(linetag, lowerAndCrush );
+		setlinespecial = 0;
+		break;
 	
       case 52:
-	// EXIT!
-	G_ExitLevel ();
-	break;
+		// EXIT!
+		G_ExitLevel ();
+		break;
 	
       case 53:
-	// Perpetual Platform Raise
-		  EV_DoPlat(linetag, lineside0, perpetualRaise,0);
-	line->special = 0;
-	break;
+		// Perpetual Platform Raise
+		EV_DoPlat(linetag, lineside0, perpetualRaise,0);
+		setlinespecial = 0;
+		break;
 	
       case 54:
-	// Platform Stop
-	EV_StopPlat(linetag);
-	line->special = 0;
-	break;
+		// Platform Stop
+		EV_StopPlat(linetag);
+		setlinespecial = 0;
+		break;
 
       case 56:
-	// Raise Floor Crush
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloorCrush);
-	line->special = 0;
-	break;
+		// Raise Floor Crush
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloorCrush);
+		setlinespecial = 0;
+		break;
 
       case 57:
-	// Ceiling Crush Stop
-	EV_CeilingCrushStop(line->tag);
-	line->special = 0;
-	break;
+		// Ceiling Crush Stop
+		EV_CeilingCrushStop(line->tag);
+		setlinespecial = 0;
+		break;
 	
       case 58:
-	// Raise Floor 24
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloor24);
-	line->special = 0;
-	break;
+		// Raise Floor 24
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloor24);
+		setlinespecial = 0;
+		break;
 
       case 59:
-	// Raise Floor 24 And Change
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloor24AndChange);
-	line->special = 0;
-	break;
+		// Raise Floor 24 And Change
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloor24AndChange);
+		setlinespecial = 0;
+		break;
 	
       case 104:
-	// Turn lights off in sector(tag)
-	EV_TurnTagLightsOff(linetag);
-	line->special = 0;
-	break;
+		// Turn lights off in sector(tag)
+		EV_TurnTagLightsOff(linetag);
+		setlinespecial = 0;
+		break;
 	
       case 108:
-	// Blazing Door Raise (faster than TURBO!)
-		  EV_DoDoor(linetag, blazeRaise);
-	line->special = 0;
-	break;
+		// Blazing Door Raise (faster than TURBO!)
+		EV_DoDoor(linetag, blazeRaise);
+		setlinespecial = 0;
+		break;
 	
       case 109:
-	// Blazing Door Open (faster than TURBO!)
-		  EV_DoDoor(linetag, blazeOpen);
-	line->special = 0;
-	break;
+		// Blazing Door Open (faster than TURBO!)
+		EV_DoDoor(linetag, blazeOpen);
+		setlinespecial = 0;
+		break;
 	
       case 100:
-	// Build Stairs Turbo 16
+		// Build Stairs Turbo 16
 		EV_BuildStairs(linetag,turbo16);
-	line->special = 0;
-	break;
+		setlinespecial = 0;
+		break;
 	
       case 110:
-	// Blazing Door Close (faster than TURBO!)
-		  EV_DoDoor(linetag, blazeClose);
-	line->special = 0;
-	break;
+		// Blazing Door Close (faster than TURBO!)
+		EV_DoDoor(linetag, blazeClose);
+		setlinespecial = 0;
+		break;
 
       case 119:
-	// Raise floor to nearest surr. floor
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloorToNearest);
-	line->special = 0;
-	break;
+		// Raise floor to nearest surr. floor
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloorToNearest);
+		setlinespecial = 0;
+		break;
 	
       case 121:
-	// Blazing PlatDownWaitUpStay
-		  EV_DoPlat(linetag, lineside0, blazeDWUS,0);
-	line->special = 0;
-	break;
+		// Blazing PlatDownWaitUpStay
+		EV_DoPlat(linetag, lineside0, blazeDWUS,0);
+		setlinespecial = 0;
+		break;
 	
       case 124:
-	// Secret EXIT
-	G_SecretExitLevel ();
-	break;
+		// Secret EXIT
+		G_SecretExitLevel ();
+		break;
 		
       case 125:
-	// TELEPORT MonsterONLY
-	if (!thing->player)
-	{
-	    EV_Teleport( linetag, side, thingRef );
-	    line->special = 0;
-	}
-	break;
+		// TELEPORT MonsterONLY
+		if (!thing->player) {
+			EV_Teleport( linetag, side, thingRef );
+			setlinespecial = 0;
+		}
+		break;
 	
       case 130:
-	// Raise Floor Turbo
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloorTurbo);
-	line->special = 0;
-	break;
+		// Raise Floor Turbo
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloorTurbo);
+		setlinespecial = 0;
+		break;
 	
       case 141:
-	// Silent Ceiling Crush & Raise
+		// Silent Ceiling Crush & Raise
 		EV_DoCeiling(linetag,silentCrushAndRaise);
-	line->special = 0;
-	break;
+		setlinespecial = 0;
+		break;
 	
 	// RETRIGGERS.  All from here till end.
       case 72:
-	// Ceiling Crush
-	EV_DoCeiling(linetag, lowerAndCrush );
-	break;
+		// Ceiling Crush
+		EV_DoCeiling(linetag, lowerAndCrush );
+		break;
 
       case 73:
-	// Ceiling Crush and Raise
-	EV_DoCeiling(linetag,crushAndRaise);
-	break;
+		// Ceiling Crush and Raise
+		EV_DoCeiling(linetag,crushAndRaise);
+		break;
 
       case 74:
-	// Ceiling Crush Stop
-	EV_CeilingCrushStop(linetag);
-	break;
+		// Ceiling Crush Stop
+		EV_CeilingCrushStop(linetag);
+		break;
 	
       case 75:
-	// Close Door
-	EV_DoDoor(linetag,close);
-	break;
+		// Close Door
+		EV_DoDoor(linetag,close);
+		break;
 	
       case 76:
-	// Close Door 30
-	EV_DoDoor(linetag,close30ThenOpen);
-	break;
+		// Close Door 30
+		EV_DoDoor(linetag,close30ThenOpen);
+		break;
 	
       case 77:
-	// Fast Ceiling Crush & Raise
-	EV_DoCeiling(linetag,fastCrushAndRaise);
-	break;
+		// Fast Ceiling Crush & Raise
+		EV_DoCeiling(linetag,fastCrushAndRaise);
+		break;
 	
       case 79:
-	// Lights Very Dark
-		  EV_LightTurnOn(linetag, 35);
-	break;
+		// Lights Very Dark
+		EV_LightTurnOn(linetag, 35);
+		break;
 	
       case 80:
-	// Light Turn On - brightest near
-		  EV_LightTurnOn(linetag, 0);
-	break;
+		// Light Turn On - brightest near
+		EV_LightTurnOn(linetag, 0);
+		break;
 	
       case 81:
-	// Light Turn On 255
-		  EV_LightTurnOn(linetag, 255);
-	break;
+		// Light Turn On 255
+		EV_LightTurnOn(linetag, 255);
+		break;
 	
       case 82:
-	// Lower Floor To Lowest
-		  EV_DoFloor(linetag, linefrontsecnum, lowerFloorToLowest );
-	break;
+		// Lower Floor To Lowest
+		EV_DoFloor(linetag, linefrontsecnum, lowerFloorToLowest );
+		break;
 	
       case 83:
-	// Lower Floor
-		  EV_DoFloor(linetag, linefrontsecnum, lowerFloor);
-	break;
+		// Lower Floor
+		EV_DoFloor(linetag, linefrontsecnum, lowerFloor);
+		break;
 
       case 84:
-	// LowerAndChange
-		  EV_DoFloor(linetag, linefrontsecnum, lowerAndChange);
-	break;
+		// LowerAndChange
+		EV_DoFloor(linetag, linefrontsecnum, lowerAndChange);
+		break;
 
       case 86:
-	// Open Door
-	EV_DoDoor(linetag,open);
-	break;
+		// Open Door
+		EV_DoDoor(linetag,open);
+		break;
 	
       case 87:
-	// Perpetual Platform Raise
-		  EV_DoPlat(linetag, lineside0, perpetualRaise,0);
-	break;
+		// Perpetual Platform Raise
+		EV_DoPlat(linetag, lineside0, perpetualRaise,0);
+		break;
 	
       case 88:
-	// PlatDownWaitUp
-		  EV_DoPlat(linetag, lineside0, downWaitUpStay,0);
-	break;
+		// PlatDownWaitUp
+		EV_DoPlat(linetag, lineside0, downWaitUpStay,0);
+		break;
 	
       case 89:
-	// Platform Stop
-	EV_StopPlat(linetag);
-	break;
+		// Platform Stop
+		EV_StopPlat(linetag);
+		break;
 	
       case 90:
-	// Raise Door
-	EV_DoDoor(linetag,normal);
-	break;
+		// Raise Door
+		EV_DoDoor(linetag,normal);
+		break;
 	
       case 91:
-	// Raise Floor
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloor);
-	break;
+		// Raise Floor
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloor);
+		break;
 	
       case 92:
-	// Raise Floor 24
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloor24);
-	break;
+		// Raise Floor 24
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloor24);
+		break;
 	
       case 93:
-	// Raise Floor 24 And Change
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloor24AndChange);
-	break;
+		// Raise Floor 24 And Change
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloor24AndChange);
+		break;
 	
       case 94:
-	// Raise Floor Crush
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloorCrush);
-	break;
+		// Raise Floor Crush
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloorCrush);
+		break;
 	
       case 95:
-	// Raise floor to nearest height
-	// and change texture.
-		  EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0);
-	break;
+		// Raise floor to nearest height
+		// and change texture.
+		EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0);
+		break;
 	
       case 96:
-	// Raise floor to shortest texture height
-	// on either side of lines.
-		  EV_DoFloor(linetag, linefrontsecnum, raiseToTexture);
-	break;
+		// Raise floor to shortest texture height
+		// on either side of lines.
+		EV_DoFloor(linetag, linefrontsecnum, raiseToTexture);
+		break;
 	
-      case 97:
-	// TELEPORT!
-	EV_Teleport( linetag, side, thingRef );
-	break;
+	  case 97:
+		// TELEPORT!
+		EV_Teleport( linetag, side, thingRef );
+		break;
 	
       case 98:
-	// Lower Floor (TURBO)
-		  EV_DoFloor(linetag, linefrontsecnum, turboLower);
-	break;
+		// Lower Floor (TURBO)
+		EV_DoFloor(linetag, linefrontsecnum, turboLower);
+		break;
 
       case 105:
-	// Blazing Door Raise (faster than TURBO!)
+		// Blazing Door Raise (faster than TURBO!)
 		EV_DoDoor (linetag,blazeRaise);
-	break;
+		break;
 	
       case 106:
-	// Blazing Door Open (faster than TURBO!)
-		  EV_DoDoor(linetag, blazeOpen);
-	break;
+		// Blazing Door Open (faster than TURBO!)
+		EV_DoDoor(linetag, blazeOpen);
+		break;
 
       case 107:
-	// Blazing Door Close (faster than TURBO!)
-		  EV_DoDoor(linetag, blazeClose);
-	break;
+		// Blazing Door Close (faster than TURBO!)
+		EV_DoDoor(linetag, blazeClose);
+		break;
 
       case 120:
-	// Blazing PlatDownWaitUpStay.
-		  EV_DoPlat(linetag, lineside0, blazeDWUS,0);
-	break;
+		// Blazing PlatDownWaitUpStay.
+		EV_DoPlat(linetag, lineside0, blazeDWUS,0);
+		break;
 	
       case 126:
 	// TELEPORT MonsterONLY.
-	if (!thing->player)
+		if (!thing->player)
 	    EV_Teleport( linetag, side, thingRef );
-	break;
+		break;
 	
       case 128:
-	// Raise To Nearest Floor
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloorToNearest);
-	break;
+		// Raise To Nearest Floor
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloorToNearest);
+		break;
 	
       case 129:
-	// Raise Floor Turbo
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloorTurbo);
-	break;
+		// Raise Floor Turbo
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloorTurbo);
+		break;
     }
+
+	if (setlinespecial != -1) {
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		lines[linenum].special = setlinespecial;
+	}
+
 }
 
 
@@ -1000,7 +997,9 @@ P_ShootSpecialLine
 {
     int		ok;
 	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-	line_t* line = &lines[linebuffer[linenum]];
+	short innerlinenum = linebuffer[linenum];
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* line = &lines[innerlinenum];
 	short linespecial = line->special;
 	short linetag = line->tag;
 	short linefrontsecnum = line->frontsecnum;
@@ -1010,41 +1009,39 @@ P_ShootSpecialLine
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     
     //	Impacts that other things can activate.
-    if (!thing->player)
-    {
-	ok = 0;
-	switch(linespecial)
-	{
-	  case 46:
-	    // OPEN DOOR IMPACT
-	    ok = 1;
-	    break;
-	}
-	if (!ok)
-	    return;
+    if (!thing->player) {
+		ok = 0;
+		switch(linespecial) {
+		  case 46:
+			// OPEN DOOR IMPACT
+			ok = 1;
+			break;
+		}
+		if (!ok) {
+			return;
+		}
     }
 
-    switch(linespecial)
-    {
+    switch(linespecial) {
       case 24:
-	// RAISE FLOOR
-		  EV_DoFloor(linetag, linefrontsecnum, raiseFloor);
-	P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum,0);
-	
-	break;
+		// RAISE FLOOR
+		EV_DoFloor(linetag, linefrontsecnum, raiseFloor);
+		P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum,0);
+		break;
 	
       case 46:
-	// OPEN DOOR
-	EV_DoDoor(linetag,open);
-	P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
-	break;
+		// OPEN DOOR
+		EV_DoDoor(linetag,open);
+		P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
+		break;
 	
       case 47:
-	// RAISE FLOOR NEAR AND CHANGE
-		  EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0);
-		  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
-	break;
+		// RAISE FLOOR NEAR AND CHANGE
+		EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0);
+		P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
+		break;
     }
+
 }
 
 
@@ -1054,8 +1051,7 @@ P_ShootSpecialLine
 // Called every tic frame
 //  that the player origin is in a special sector
 //
-void P_PlayerInSpecialSector (player_t* player)
-{
+void P_PlayerInSpecialSector (player_t* player) {
 	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 	short secnum = playerMo->secnum;
 
@@ -1116,6 +1112,7 @@ void P_PlayerInSpecialSector (player_t* player)
 		sectors[secnum].special);
 	break;
     };
+
 }
 
 
@@ -1128,84 +1125,88 @@ void P_PlayerInSpecialSector (player_t* player)
 boolean		levelTimer;
 int		levelTimeCount;
 
-void P_UpdateSpecials (void)
+void P_UpdateSpecials(void)
 {
-    anim_t*	anim;
-    int		pic;
-    int		i;
-    line_t*	line;
+	anim_t*	anim;
+	int		pic;
+	int		i;
+	line_t*	line;
 	int * texturetranslation;
 	int * flattranslation;
 	side_t* sides;
+	line_t* lines;
+	short sidenum;
 
-    //	LEVEL TIMER
-    if (levelTimer == true)
-    {
-	levelTimeCount--;
-	if (!levelTimeCount)
-	    G_ExitLevel();
-    }
-    
-    //	ANIMATE FLATS AND TEXTURES GLOBALLY
-    for (anim = anims ; anim < lastanim ; anim++)
-    {
-	for (i=anim->basepic ; i<anim->basepic+anim->numpics ; i++)
-	{
-	    pic = anim->basepic + ( (leveltime/anim->speed + i)%anim->numpics );
-		if (anim->istexture) {
-			texturetranslation = (int*)Z_LoadBytesFromEMS(texturetranslationRef);
-			texturetranslation[i] = pic;
-		}
-		else {
-			flattranslation = (int*)Z_LoadBytesFromEMS(flattranslationRef);
-			flattranslation[i] = pic;
+	//	LEVEL TIMER
+	if (levelTimer == true) {
+		levelTimeCount--;
+		if (!levelTimeCount) {
+			G_ExitLevel();
 		}
 	}
-    }
 
-    
-    //	ANIMATE LINE SPECIALS
-    for (i = 0; i < numlinespecials; i++)
-    {
-	line = linespeciallist[i];
-	switch(line->special)
-	{
-	  case 48:
-	    // EFFECT FIRSTCOL SCROLL +
-		  sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-		  sides[line->sidenum[0]].textureoffset += FRACUNIT;
-	    break;
-	}
-    }
-
-    
-    //	DO BUTTONS
-    for (i = 0; i < MAXBUTTONS; i++)
-	if (buttonlist[i].btimer)
-	{
-	    buttonlist[i].btimer--;
-	    if (!buttonlist[i].btimer)
-	    {
-		switch(buttonlist[i].where)
-		{
-		  case top:
-		    sides[lines[buttonlist[i].linenum].sidenum[0]].toptexture =
-			buttonlist[i].btexture;
-		    break;
-		    
-		  case middle:
-		    sides[lines[buttonlist[i].linenum].sidenum[0]].midtexture =
-			buttonlist[i].btexture;
-		    break;
-		    
-		  case bottom:
-		    sides[lines[buttonlist[i].linenum].sidenum[0]].bottomtexture =
-			buttonlist[i].btexture;
-		    break;
+	//	ANIMATE FLATS AND TEXTURES GLOBALLY
+	for (anim = anims; anim < lastanim; anim++) {
+		for (i = anim->basepic; i < anim->basepic + anim->numpics; i++) {
+			pic = anim->basepic + ((leveltime / anim->speed + i) % anim->numpics);
+			if (anim->istexture) {
+				texturetranslation = (int*)Z_LoadBytesFromEMS(texturetranslationRef);
+				texturetranslation[i] = pic;
+			}
+			else {
+				flattranslation = (int*)Z_LoadBytesFromEMS(flattranslationRef);
+				flattranslation[i] = pic;
+			}
 		}
-		S_StartSoundWithParams(buttonlist[i].soundorgX, buttonlist[i].soundorgY,sfx_swtchn);
-		memset(&buttonlist[i],0,sizeof(button_t));
-	    }
+	}
+
+
+	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+
+	//	ANIMATE LINE SPECIALS
+	for (i = 0; i < numlinespecials; i++) {
+		line = &lines[linespeciallist[i]];
+		switch (line->special) {
+		  case 48:
+			// EFFECT FIRSTCOL SCROLL +
+			sidenum = line->sidenum[0];
+			sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+			sides[sidenum].textureoffset += FRACUNIT;
+			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+			break;
+		}
+	}
+
+
+	//	DO BUTTONS
+	for (i = 0; i < MAXBUTTONS; i++){
+		if (buttonlist[i].btimer) {
+			buttonlist[i].btimer--;
+			if (!buttonlist[i].btimer) {
+				lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+				sidenum = lines[buttonlist[i].linenum].sidenum[0];
+				sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+
+				switch (buttonlist[i].where) {
+				case top:
+					sides[sidenum].toptexture =
+						buttonlist[i].btexture;
+					break;
+
+				case middle:
+					sides[sidenum].midtexture =
+						buttonlist[i].btexture;
+					break;
+
+				case bottom:
+					sides[sidenum].bottomtexture =
+						buttonlist[i].btexture;
+					break;
+				}
+				S_StartSoundWithParams(buttonlist[i].soundorgX, buttonlist[i].soundorgY, sfx_swtchn);
+				memset(&buttonlist[i], 0, sizeof(button_t));
+			}
+		}
 	}
 	
 }
@@ -1225,11 +1226,12 @@ int EV_DoDonut(short linetag)
     int			i;
     floormove_t*	floor;
 	MEMREF floorRef;
-	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+	short* linebuffer;
 	short offset;
 	int lineflags;
 	short linebacksecnum;
-
+	short lineoffset;
+	line_t* lines;
     secnum = -1;
     rtn = 0;
     while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
@@ -1241,12 +1243,17 @@ int EV_DoDonut(short linetag)
 	    continue;
 			
 	rtn = 1;
-	s2Offset = getNextSector(&lines[linebuffer[sectors[s1Offset].linesoffset]],s1Offset);
+	linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+	lineoffset = linebuffer[sectors[s1Offset].linesoffset];
+	s2Offset = getNextSector(lineoffset,s1Offset);
 	for (i = 0;i < sectors[s2Offset].linecount;i++) {
 		offset = sectors[s2Offset].linesoffset + i;
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-		lineflags = (lines[linebuffer[offset]]).flags;
-		linebacksecnum = (&lines[linebuffer[offset]])->backsecnum;
+		lineoffset = linebuffer[offset];
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+
+		lineflags = (lines[lineoffset]).flags;
+		linebacksecnum = (lines[lineoffset]).backsecnum;
 		if ((!lineflags & ML_TWOSIDED) || (linebacksecnum == s1Offset));
 			continue;
 	    s3Offset = linebacksecnum;
@@ -1297,7 +1304,7 @@ int EV_DoDonut(short linetag)
 //  that spawn thinkers
 //
 short		numlinespecials;
-line_t*		linespeciallist[MAXLINEANIMS];
+short		linespeciallist[MAXLINEANIMS];
 
 
 // Parses command line parameters.
@@ -1305,6 +1312,7 @@ void P_SpawnSpecials (void)
 {
     int		i;
     int		episode;
+	line_t* lines;
 
     episode = 1;
     if (W_CheckNumForName("texture2") >= 0)
@@ -1400,11 +1408,13 @@ void P_SpawnSpecials (void)
     
     //	Init line EFFECTs
     numlinespecials = 0;
-    for (i = 0;i < numlines; i++) {
+	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+
+	for (i = 0;i < numlines; i++) {
 		switch(lines[i].special) {
 		  case 48:
 			// EFFECT FIRSTCOL SCROLL+
-			linespeciallist[numlinespecials] = &lines[i];
+			linespeciallist[numlinespecials] = i;
 			numlinespecials++;
 			break;
 		}

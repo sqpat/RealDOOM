@@ -64,6 +64,11 @@
 // 5 11430693 347033 451908 207
 // 4 11446037 645867 922684 207
 
+// after sidedefs, lines
+
+// 5 12873066 1300704 2714124 207  (2134 in 5639)
+// 4 12987667 1617971 3137312 207  (2134 in 6062)
+
 // demo 1
 // 4 26890040 1545385 2221063 181
 // 4 26693807 1545283 2220732 181
@@ -73,6 +78,14 @@
 // after sidedefs:
 
 // 4 27594330 2009571 2836062 181
+
+// after lines
+// 32 29792581      23 1       181
+// 16 29792218  154693 207202  181
+// 8 29789279  1169872 1868816 181
+// 4 29785273  3061492 5564953 181
+
+
 
 #define ZONEID  0x1d4a11
 #define PAGE_FRAME_SIZE 0x4000
@@ -1172,7 +1185,7 @@ void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
 
  
  	if (ref > EMS_ALLOCATION_LIST_SIZE) {
-		I_Error("out of bounds memref.. %i %s %i", ref, file, line);
+		I_Error("out of bounds memref.. tick %i    %i %s %i", gametic, ref, file, line);
 	}
 	if (ref == 0) {
 		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref, file, line);

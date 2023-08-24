@@ -24,7 +24,9 @@ extern int setval;
 
 extern short		curlinenum;
 extern side_t*		sidedef;
-extern line_t*		linedef;
+//extern line_t*		linedef;
+extern short linedefOffset;
+
 extern short	frontsecnum;
 extern short	backsecnum;
 

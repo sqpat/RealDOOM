@@ -112,6 +112,7 @@ void P_ArchiveWorld (void)
     side_t*		si;
     short*		put;
 	side_t* sides;
+	line_t* lines;
     put = (short *)save_p;
     
     // do sectors
@@ -126,7 +127,7 @@ void P_ArchiveWorld (void)
 	*put++ = sec->tag;		// needed?
     }
 
-    
+	lines = (line_t*) Z_LoadBytesFromEMS(linesRef);
     // do lines
     for (i=0, li = lines ; i<numlines ; i++,li++)
     {
@@ -166,8 +167,9 @@ void P_UnArchiveWorld (void)
     side_t*		si;
     short*		get;
 	side_t* sides;
-    get = (short *)save_p;
-    
+	line_t* lines;
+	get = (short *)save_p;
+
     // do sectors
     for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
     {
@@ -183,23 +185,23 @@ void P_UnArchiveWorld (void)
     }
     
     // do lines
-    for (i=0, li = lines ; i<numlines ; i++,li++)
-    {
-	li->flags = *get++;
-	li->special = *get++;
-	li->tag = *get++;
-	for (j=0 ; j<2 ; j++)
-	{
-	    if (li->sidenum[j] == -1)
-		continue;
-		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-		si = &sides[li->sidenum[j]];
-	    si->textureoffset = *get++ << FRACBITS;
-	    si->rowoffset = *get++ << FRACBITS;
-	    si->toptexture = *get++;
-	    si->bottomtexture = *get++;
-	    si->midtexture = *get++;
-	}
+	for (i=0 ; i<numlines ; i++,li++) {
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		li = &lines[i];
+		li->flags = *get++;
+		li->special = *get++;
+		li->tag = *get++;
+		for (j=0 ; j<2 ; j++) {
+			if (li->sidenum[j] == -1)
+				continue;
+			sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+			si = &sides[li->sidenum[j]];
+			si->textureoffset = *get++ << FRACBITS;
+			si->rowoffset = *get++ << FRACBITS;
+			si->toptexture = *get++;
+			si->bottomtexture = *get++;
+			si->midtexture = *get++;
+		}
     }
     save_p = (byte *)get;	
 }

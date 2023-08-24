@@ -203,6 +203,7 @@ P_ChangeSwitchTexture
 
  	line_t* line; 
 	side_t* sides;
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
 	if (!useAgain) {
 		line = &lines[linenum];
@@ -275,8 +276,9 @@ P_UseSpecialLine
   short linenum,
   int		side )
 {               
+	mobj_t*	thing;
 
-	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* line = &lines[linenum];
 	
 	short linetag = line->tag;
@@ -303,6 +305,7 @@ P_UseSpecialLine
     }
 
 
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
     
     // Switches that other things can activate.
@@ -328,8 +331,7 @@ P_UseSpecialLine
 
     
     // do something  
-    switch (linespecial)
-    {
+    switch (linespecial) {
 	// MANUALS
       case 1:		// Vertical Door
       case 26:		// Blue Door/Locked
@@ -355,29 +357,32 @@ P_UseSpecialLine
 	// break;
 
 	// SWITCHES
-      case 7:
+		case 7:
 	// Build Stairs
-	if (EV_BuildStairs(linetag,build8))
-		P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
-	break;
+			if (EV_BuildStairs(linetag, build8)) {
+				P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
+			}
+			break;
 
-      case 9:
-	// Change Donut
-	if (EV_DoDonut(linetag))
-		P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
-	break;
+		case 9:
+		// Change Donut
+			if (EV_DoDonut(linetag)) {
+				P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
+			}
+			break;
 	
-      case 11:
-	// Exit level
-		  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
-	G_ExitLevel ();
-	break;
+		case 11:
+			// Exit level
+			P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
+			G_ExitLevel ();
+			break;
 	
-      case 14:
-	// Raise Floor 32 and change texture
-		  if (EV_DoPlat(linetag, lineside0, raiseAndChange,32))
-			  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
-	break;
+		case 14:
+			// Raise Floor 32 and change texture
+			if (EV_DoPlat(linetag, lineside0, raiseAndChange, 32)) {
+				P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
+			}
+			break;
 	
       case 15:
 	// Raise Floor 24 and change texture

@@ -488,7 +488,8 @@ void R_ProjectSprite (MEMREF thingRef)
 	fixed_t thingz = thing->z;
 	int thingflags = thing->flags;
 	angle_t thingangle = thing->angle;
-
+	MEMREF spritespriteframeRef;
+	int spritenumframes;
 		
 	// transform the origin point
     tr_x = thingx - viewx;
@@ -520,15 +521,16 @@ void R_ProjectSprite (MEMREF thingRef)
 		}
 	#endif
 	sprites = Z_LoadBytesFromEMS(spritesRef);
-	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(sprites[thingsprite].spriteframesRef);
+	spritespriteframeRef = sprites[thingsprite].spriteframesRef;
+	spritenumframes = sprites[thingsprite].numframes;
+	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(spritespriteframeRef);
 	#ifdef RANGECHECK
-		if ((thingframe&FF_FRAMEMASK) >= sprites[thingsprite].numframes) {
+		if ((thingframe&FF_FRAMEMASK) >= spritenumframes) {
 			I_Error("R_ProjectSprite: invalid sprite frame %i : %i ", thingsprite, thingframe);
 		}
 	#endif
     if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
-		thing = Z_LoadBytesFromEMS(thingRef);
 		ang = R_PointToAngle (thingx, thingy);
         rot = (ang-thingangle+(unsigned)(ANG45/2)*9)>>29;
         lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
@@ -646,9 +648,8 @@ void R_AddSprites (short secnum)
     // Thus we check whether its already added.
     if (sectors[secnum].validcount == validcount)
         return;         
-
     // Well, now it will be done.
-	sectors[secnum].validcount = validcount;
+	(&sectors[secnum])->validcount = validcount;
         
     lightnum = (sectors[secnum].lightlevel >> LIGHTSEGSHIFT)+extralight;
 

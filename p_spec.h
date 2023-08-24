@@ -64,22 +64,22 @@ P_CrossSpecialLine
 
 void    P_PlayerInSpecialSector (player_t* player);
 
-int
+short
 twoSided
-( int		sector,
-  int		line );
+(short		sector,
+	short		line );
 
 short
 getSector
-( int		currentSector,
-  int		line,
-  int		side );
+(short		currentSector,
+	short		line,
+	short		side );
 
-side_t*
-getSide
-( int		currentSector,
-  int		line,
-  int		side );
+short
+getSideNum
+(short		currentSector,
+	short		line,
+	short		side );
 
 fixed_t P_FindLowestFloorSurrounding(short secnum);
 fixed_t P_FindHighestFloorSurrounding(short secnum);
@@ -104,7 +104,7 @@ P_FindMinSurroundingLight
 
 short
 getNextSector
-( line_t*	line,
+( short linenum,
   short	sec );
 
 

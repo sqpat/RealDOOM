@@ -100,12 +100,19 @@ P_RecursiveSound
   int		soundblocks )
 {
     int		i;
-    line_t*	check;
+	line_t* lines;
+	line_t*	check;
     short	othersecnum;
 	int linecount;
 	sector_t* soundsector = &sectors[secnum];
 	short *linebuffer;
 	side_t* sides;
+	short linenumber;
+	int checkflags;
+	short checksidenum0;
+	short checksidenum1;
+	short checkfrontsecnum;
+	short checkbacksecnum;
 
 	if (secnum < 0 || secnum >= numsectors) {
 		// TODO remove
@@ -124,24 +131,30 @@ P_RecursiveSound
 	for (i=0 ;i<linecount ; i++) {
 		soundsector = &sectors[secnum];
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-
-		check = &lines[linebuffer[soundsector->linesoffset + i]];
-		if (!(check->flags & ML_TWOSIDED)) {
+		linenumber = linebuffer[soundsector->linesoffset + i];
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		check = &lines[linenumber];
+		checkflags = check->flags;
+		checksidenum0 = check->sidenum[0];
+		checksidenum1 = check->sidenum[1];
+		checkfrontsecnum = check->frontsecnum;
+		checkbacksecnum = check->backsecnum;
+		if (!(checkflags & ML_TWOSIDED)) {
 			continue;
 		}
-		P_LineOpening (check->sidenum[1], check->frontsecnum, check->backsecnum );
+		P_LineOpening (checksidenum1, checkfrontsecnum, checkbacksecnum );
 
 		if (openrange <= 0) {
 			continue;	// closed door
 		}
 	
 		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-		if (sides[check->sidenum[0]].secnum == secnum) {
-			othersecnum = sides[check->sidenum[1]].secnum;
+		if (sides[checksidenum0].secnum == secnum) {
+			othersecnum = sides[checksidenum1].secnum;
 		} else {
-			othersecnum = sides[check->sidenum[0]].secnum;
+			othersecnum = sides[checksidenum0].secnum;
 		}
-		if (check->flags & ML_SOUNDBLOCK) {
+		if (checkflags & ML_SOUNDBLOCK) {
 			if (!soundblocks) {
 				P_RecursiveSound(othersecnum, 1);
 			}
@@ -180,6 +193,9 @@ boolean P_CheckMeleeRange (MEMREF actorRef)
     mobj_t*	pl;
 	MEMREF plRef;
     fixed_t	dist;
+	fixed_t plx;
+	fixed_t ply;
+	int plradius;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
     if (!actor->targetRef)
@@ -187,11 +203,14 @@ boolean P_CheckMeleeRange (MEMREF actorRef)
 		
 	plRef = actor->targetRef;
 	pl = (mobj_t*)Z_LoadBytesFromEMS(plRef);
-    dist = P_AproxDistance (pl->x-actor->x, pl->y-actor->y);
-
-    if (dist >= MELEERANGE-20*FRACUNIT+pl->info->radius)
-		return false;
+	plx = pl->x;
+	ply = pl->y;
+	plradius = pl->info->radius;
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+	dist = P_AproxDistance (plx-actor->x, ply-actor->y);
+
+    if (dist >= MELEERANGE-20*FRACUNIT+plradius)
+		return false;
     if (! P_CheckSight (actorRef, actor->targetRef) )
 		return false;
 							
@@ -206,9 +225,13 @@ boolean P_CheckMissileRange (MEMREF actorRef)
     fixed_t	dist;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	mobj_t* actorTarget;
+	fixed_t actorTargetx;
+	fixed_t actorTargety;
 
-    if (! P_CheckSight(actorRef, actor->targetRef))
+	if (!P_CheckSight(actorRef, actor->targetRef)) {
+
 		return false;
+	}
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
     if ( actor->flags & MF_JUSTHIT ) {
@@ -218,28 +241,38 @@ boolean P_CheckMissileRange (MEMREF actorRef)
 		return true;
     }
 	
-    if (actor->reactiontime)
+	if (actor->reactiontime) {
+
 		return false;	// do not attack yet
-		
+	}
+
+
+
 	actorTarget = (mobj_t*)Z_LoadBytesFromEMS(actor->targetRef);
-    // OPTIMIZE: get this from a global checksight
-    dist = P_AproxDistance ( actor->x- actorTarget->x,
-			     actor->y- actorTarget->y) - 64*FRACUNIT;
-    
+	actorTargetx = actorTarget->x;
+	actorTargety = actorTarget->y;    // OPTIMIZE: get this from a global checksight
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+	dist = P_AproxDistance ( actor->x- actorTargetx,
+			     actor->y- actorTargety) - 64*FRACUNIT;
+
     if (!actor->info->meleestate)
 		dist -= 128*FRACUNIT;	// no melee attack, so fire more
 
     dist >>= 16;
 
     if (actor->type == MT_VILE) {
-		if (dist > 14*64)	
+		if (dist > 14 * 64) {
+
 			return false;	// too far away
+		}
     }
 	
 
     if (actor->type == MT_UNDEAD) {
-		if (dist < 196)	
+		if (dist < 196) {
+
 			return false;	// close for fist attack
+		}
 		dist >>= 1;
     }
 	
@@ -254,9 +287,11 @@ boolean P_CheckMissileRange (MEMREF actorRef)
     if (actor->type == MT_CYBORG && dist > 160)
 		dist = 160;
 		
-    if (P_Random () < dist)
+	if (P_Random() < dist) {
+
 		return false;
-		
+	}
+
     return true;
 }
 
@@ -300,14 +335,16 @@ boolean P_Move (MEMREF actorRef)
     tryx = actor->x + actor->info->speed*xspeed[actor->movedir];
     tryy = actor->y + actor->info->speed*yspeed[actor->movedir];
 
+	if (setval == 2) setval = 3;
+	try_ok = P_TryMove (actorRef, tryx, tryy);
+	if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+		I_Error("bad doors NEWEST A  %i", gametic);
+	}
 
-    try_ok = P_TryMove (actorRef, tryx, tryy);
-
-	
 
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
-	
+
 
 
     if (!try_ok) {
@@ -329,14 +366,21 @@ boolean P_Move (MEMREF actorRef)
 			
 		actor->movedir = DI_NODIR;
 		good = false;
+
 		while (numspechit--) {
 			linenum = spechit[numspechit];
 			// if the special is not a door
 			// that can be opened,
 			// return false
 			if (P_UseSpecialLine(actorRef, linenum, 0)) {
+				if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+					I_Error("bad doors NEWEST B  %i %i", gametic, setval);
+				}
 				good = true;
 			}
+		}
+		if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+			I_Error("bad doors NEWEST C  %i", gametic);
 		}
 
 		return good;
@@ -350,6 +394,9 @@ boolean P_Move (MEMREF actorRef)
 		actor->z = actor->floorz;
 	}
 
+	if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+		I_Error("bad doors NEWEST D  %i", gametic);
+	}
 
 	return true; 
 }
@@ -425,8 +472,13 @@ void P_NewChaseDir (MEMREF actorRef)
     // try direct route
     if (d[1] != DI_NODIR && d[2] != DI_NODIR) {
 		actor->movedir = diags[((deltay<0)<<1)+(deltax>0)];
-		if (actor->movedir != turnaround && P_TryWalk(actorRef))
-		    return;
+		if (actor->movedir != turnaround && P_TryWalk(actorRef)) {
+			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+				I_Error("bad doors NEWER A  %i", gametic);
+			}
+
+			return;
+		}
     }
 
     // try other directions
@@ -445,6 +497,9 @@ void P_NewChaseDir (MEMREF actorRef)
 			actor->movedir = d[1];
 		if (P_TryWalk(actorRef)) {
 			// either moved forward or attacked
+			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+				I_Error("bad doors NEWER B  %i", gametic);
+			}
 			return;
 		}
     }
@@ -452,19 +507,27 @@ void P_NewChaseDir (MEMREF actorRef)
 	
 
 	if (d[2]!=DI_NODIR) {
-	actor->movedir =d[2];
+		actor->movedir =d[2];
 
-	if (P_TryWalk(actorRef))
-		return;
+		if (P_TryWalk(actorRef)) {
+			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+				I_Error("bad doors NEWER C  %i", gametic);
+			}
+			return;
+		}
 	}
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	// there is no direct path to the player,
 	// so pick another direction.
 	if (olddir!=DI_NODIR) {
-	actor->movedir =olddir;
+		actor->movedir =olddir;
 
-	if (P_TryWalk(actorRef))
-		return;
+		if (P_TryWalk(actorRef)) {
+			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+				I_Error("bad doors NEWER D  %i", gametic);
+			}
+			return;
+		}
 	}
 	// randomly determine direction of search
 	if (P_Random()&1) {
@@ -472,11 +535,16 @@ void P_NewChaseDir (MEMREF actorRef)
 			if (tdir != turnaround) {
 				actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 				actor->movedir = tdir;
+			
 				if (P_TryWalk(actorRef)) {
+					actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+					if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+						I_Error("bad doors NEWER E  %i", gametic);
+					}
 					return;
 				}
 			}
-	}
+		}
 
 	} else {
 		for ( tdir=DI_SOUTHEAST; tdir != (DI_EAST-1); tdir-- ) {
@@ -485,6 +553,9 @@ void P_NewChaseDir (MEMREF actorRef)
 				actor->movedir =tdir;
 		
 				if (P_TryWalk(actorRef)) {
+					if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+						I_Error("bad doors NEWER F  %i", gametic);
+					}
 					return;
 				}
 			}
@@ -494,14 +565,20 @@ void P_NewChaseDir (MEMREF actorRef)
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		actor->movedir =turnaround;
 		if (P_TryWalk(actorRef)) {
-			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-		
+			if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+				I_Error("bad doors NEWER G  %i", gametic);
+			}
+
 			return;
 		}
     }
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
     actor->movedir = DI_NODIR;	// can not move
+	if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+		I_Error("bad doors NEWER H  %i", gametic);
+	}
+
 }
 
 
@@ -549,7 +626,6 @@ P_LookForPlayers
 		if (player->health <= 0)
 			continue;		// dead
 	
-
 		if (!P_CheckSight(actorRef, player->moRef)) {
 			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 			continue;		// out of sight
@@ -739,6 +815,7 @@ void A_Chase (MEMREF actorRef)
 		}
     }
     
+	
     // turn towards movement direction if not there yet
     if (actor->movedir < 8) {
 		actor->angle &= (7<<29);
@@ -753,18 +830,26 @@ void A_Chase (MEMREF actorRef)
 		actorTarget = (mobj_t*)Z_LoadBytesFromEMS(actortargetRef);
 	}
 
-	
 
+	
     if (!actortargetRef || !(actorTarget->flags&MF_SHOOTABLE)) {
 		// look for a new target
 		if (P_LookForPlayers(actorRef, true)) {
-		  
+			 
+	
+			if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+				I_Error("bad doors NEW A  %i %i %i %i", gametic, actorRef, 0, 0);
+			}
 
 			return; 	// got a new target
 		}
+	 
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		P_SetMobjState (actorRef, actor->info->spawnstate);
 	 
+		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+			I_Error("bad doors NEW B  %i %i %i %i", gametic, actorRef, 0, 0);
+		}
 
 		return;
     }
@@ -778,7 +863,10 @@ void A_Chase (MEMREF actorRef)
 		if (gameskill != sk_nightmare && !fastparm) {
 			P_NewChaseDir(actorRef);
 		}
-  
+		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+			I_Error("bad doors NEW C  %i %i %i %i", gametic, actorRef, 0, 0);
+		}
 
 		return;
     }
@@ -790,33 +878,46 @@ void A_Chase (MEMREF actorRef)
 			S_StartSoundFromRef(actorRef, actor->info->attacksound);
 		}
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-		P_SetMobjState (actorRef, actor->info->meleestate);	
+ 		P_SetMobjState (actorRef, actor->info->meleestate);
 
 	 
 	 
+		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+			I_Error("bad doors NEW D  %i %i %i %i", gametic, actorRef, 0, 0);
+		}
 
 		return;
     }
 
     // check for missile attack
     if (actor->info->missilestate) {
+		
 		if (gameskill < sk_nightmare
 			&& !fastparm && actor->movecount) {
-			goto nomissile;
+		 		goto nomissile;
 		}
 	
 		if (!P_CheckMissileRange(actorRef)) {
-			goto nomissile;
+ 			goto nomissile;
 		}
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+ 
 		P_SetMobjState (actorRef, actor->info->missilestate);
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		actor->flags |= MF_JUSTATTACKED;
 
 		 
-
+		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+			I_Error("bad doors NEW E  %i %i %i %i", gametic, actorRef, 0, 0);
+		}
 		return;
     }
+	if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+		I_Error("bad doors NEW F  %i %i %i %i", gametic, actorRef, 0, 0);
+	}
+
+	 
+
 
     // ?
   nomissile:
@@ -826,26 +927,47 @@ void A_Chase (MEMREF actorRef)
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	if (netgame && !actor->threshold && !P_CheckSight(actorRef, actor->targetRef)) {
 		if (P_LookForPlayers(actorRef, true)) {
-		
+			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+			if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+				I_Error("bad doors NEW G  %i %i %i %i", gametic, actorRef, 0, 0);
+			}
+
+
 			return;	// got a new target
 		}
     }
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-	 
-    // chase towards player
-    if (--actor->movecount<0 || !P_Move (actorRef)) {
 	
+    // chase towards player
 
-		P_NewChaseDir (actorRef);
-		
+ 
+	if (--actor->movecount < 0 || !P_Move(actorRef)) {
+		if (setval == 1)
+			setval = 2;
+		P_NewChaseDir(actorRef);
+
+		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+		if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+			I_Error("bad doors NEW H  %i %i %i %i", gametic, actorRef, 0, 0);
+		}
+
+
 	}
-	 
+
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-    // make active sound
     if (actor->info->activesound && P_Random () < 3) {
 		S_StartSoundFromRef(actorRef, actor->info->activesound);
     }
-	 
+
+	if (setval >= 1 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
+		I_Error("bad doors NEW I  %i %i %i %i", gametic, actorRef, 0, 0);
+	}
+
+	if (setval >= 1  ) {
+		//I_Error("STOP I  %i %i %i %i", gametic, actorRef, 0, 0);
+	}
+
+
 }
 
 
@@ -856,18 +978,27 @@ void A_FaceTarget (MEMREF actorRef)
 {	
 	mobj_t*	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	mobj_t* actorTarget;
+	fixed_t actorTargetx;
+	fixed_t actorTargety;
+	int actorTargetflags;
+
     if (!actor->targetRef)
 		return;
     
     actor->flags &= ~MF_AMBUSH;
 	actorTarget = (mobj_t*)Z_LoadBytesFromEMS(actor->targetRef);
+	actorTargetx = actorTarget->x;
+	actorTargety = actorTarget->y;
+	actorTargetflags = actorTarget->flags;
 
+
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
     actor->angle = R_PointToAngle2 (actor->x,
 				    actor->y,
-		actorTarget->x,
-		actorTarget->y);
+		actorTargetx,
+		actorTargety);
     
-    if (actorTarget->flags & MF_SHADOW)
+    if (actorTargetflags & MF_SHADOW)
 		actor->angle += (P_Random()-P_Random())<<21;
 }
 
@@ -978,18 +1109,17 @@ void A_SpidRefire (MEMREF actorRef)
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	actortargetRef = actor->targetRef;
 
-    if (P_Random () < 10)
-	return;
-
-	if (!actortargetRef)
+	if (P_Random() < 10) {
 		return;
+	}
+
+	if (!actortargetRef) {
+		return;
+	}
 
 	actorTarget = (mobj_t*)Z_LoadBytesFromEMS(actortargetRef);
 
-    if (!actortargetRef
-	|| actorTarget->health <= 0
-	|| !P_CheckSight(actorRef, actortargetRef))
-    {
+    if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actorRef, actortargetRef)) {
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		P_SetMobjState (actorRef, actor->info->seestate);
     }
@@ -998,8 +1128,9 @@ void A_SpidRefire (MEMREF actorRef)
 void A_BspiAttack (MEMREF actorRef)
 {	
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-	if (!actor->targetRef)
-	return;
+	if (!actor->targetRef) {
+		return;
+	}
 		
     A_FaceTarget (actorRef);
 
@@ -1040,15 +1171,15 @@ void A_SargAttack (MEMREF actorRef)
     int		damage;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
-    if (!actor->targetRef)
-	return;
+	if (!actor->targetRef) {
+		return;
+	}
 		
     A_FaceTarget (actorRef);
-    if (P_CheckMeleeRange (actorRef))
-    {
-	damage = ((P_Random()%10)+1)*4;
-	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-	P_DamageMobj (actor->targetRef, actorRef, actorRef, damage);
+    if (P_CheckMeleeRange (actorRef)) {
+		damage = ((P_Random()%10)+1)*4;
+		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+		P_DamageMobj (actor->targetRef, actorRef, actorRef, damage);
     }
 }
 
@@ -1057,9 +1188,10 @@ void A_HeadAttack (MEMREF actorRef)
     int		damage;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
-    if (!actor->targetRef)
+	if (!actor->targetRef) {
 		return;
-		
+	}
+
     A_FaceTarget (actorRef);
     if (P_CheckMeleeRange (actorRef)) {
 		damage = (P_Random()%6+1)*10;
@@ -1116,8 +1248,9 @@ void A_SkelMissile (MEMREF actorRef)
 	MEMREF moRef;
 	MEMREF actortargetRef;
 
-    if (!actor->targetRef)
-	return;
+	if (!actor->targetRef) {
+		return;
+	}
 		
     A_FaceTarget (actorRef);
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
@@ -1130,7 +1263,7 @@ void A_SkelMissile (MEMREF actorRef)
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mo->x += mo->momx;
     mo->y += mo->momy;
-    mo->tracerRef = actor->targetRef;
+    mo->tracerRef = actortargetRef;
 }
 
 int	TRACEANGLE = 0xc000000;
@@ -1190,20 +1323,16 @@ void A_Tracer (MEMREF actorRef)
 	
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
-    if (exact != actor->angle)
-    {
-	if (exact - actor->angle > 0x80000000)
-	{
-	    actor->angle -= TRACEANGLE;
-	    if (exact - actor->angle < 0x80000000)
-		actor->angle = exact;
-	}
-	else
-	{
-	    actor->angle += TRACEANGLE;
-	    if (exact - actor->angle > 0x80000000)
-		actor->angle = exact;
-	}
+    if (exact != actor->angle) {
+		if (exact - actor->angle > 0x80000000) {
+			actor->angle -= TRACEANGLE;
+			if (exact - actor->angle < 0x80000000)
+			actor->angle = exact;
+		} else {
+			actor->angle += TRACEANGLE;
+			if (exact - actor->angle > 0x80000000)
+			actor->angle = exact;
+		}
     }
 	
     exact = actor->angle>>ANGLETOFINESHIFT;
@@ -1278,31 +1407,31 @@ boolean PIT_VileCheck (MEMREF thingRef)
     int		maxdist;
     boolean	check;
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	mobj_t* corpsehit;
 	
-    if (!(thing->flags & MF_CORPSE) )
-	return true;	// not a monster
+	if (!(thing->flags & MF_CORPSE)) {
+		return true;	// not a monster
+	}
     
-    if (thing->tics != -1)
-	return true;	// not lying still yet
-    
-    if (thing->info->raisestate == S_NULL)
-	return true;	// monster doesn't have a raise state
-    
+	if (thing->tics != -1) {
+		return true;	// not lying still yet
+	}
+
+	if (thing->info->raisestate == S_NULL) {
+		return true;	// monster doesn't have a raise state
+	}
+
     maxdist = thing->info->radius + mobjinfo[MT_VILE].radius;
 	
-    if ( abs(thing->x - viletryx) > maxdist
-	 || abs(thing->y - viletryy) > maxdist )
-	return true;		// not actually touching
+	if (abs(thing->x - viletryx) > maxdist || abs(thing->y - viletryy) > maxdist) {
+		return true;		// not actually touching
+	}
 		
 	corpsehitRef = thingRef;
-	corpsehit = thing;
-    corpsehit->momx = corpsehit->momy = 0;
-    corpsehit->height <<= 2;
-    check = P_CheckPosition (corpsehitRef, corpsehit->x, corpsehit->y);
+    thing->momx = thing->momy = 0;
+	thing->height <<= 2;
+    check = P_CheckPosition (corpsehitRef, thing->x, thing->y);
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	corpsehit = thing; 
-    corpsehit->height >>= 2;
+	thing->height >>= 2;
 
 	if (!check) {
 		return true;		// doesn't fit here
@@ -1331,53 +1460,52 @@ void A_VileChase (MEMREF actorRef)
 	mobj_t*	corpsehit;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
-    if (actor->movedir != DI_NODIR)
-    {
-	// check for corpses to raise
-	viletryx =
-	    actor->x + actor->info->speed*xspeed[actor->movedir];
-	viletryy =
-	    actor->y + actor->info->speed*yspeed[actor->movedir];
+    if (actor->movedir != DI_NODIR) {
+		// check for corpses to raise
+		viletryx =
+			actor->x + actor->info->speed*xspeed[actor->movedir];
+		viletryy =
+			actor->y + actor->info->speed*yspeed[actor->movedir];
 
-	xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	yl = (viletryy - bmaporgy - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	yh = (viletryy - bmaporgy + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		yl = (viletryy - bmaporgy - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		yh = (viletryy - bmaporgy + MAXRADIUS*2)>>MAPBLOCKSHIFT;
 	
-	vileobj = actor;
-	for (bx=xl ; bx<=xh ; bx++)
-	{
-	    for (by=yl ; by<=yh ; by++)
-	    {
-		// Call PIT_VileCheck to check
-		// whether object is a corpse
-		// that canbe raised.
-		if (!P_BlockThingsIterator(bx,by,PIT_VileCheck))
+		vileobj = actor;
+		for (bx=xl ; bx<=xh ; bx++)
 		{
-		    // got one!
-			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-		    temp = actor->targetRef;
-		    actor->targetRef = corpsehitRef;
-		    A_FaceTarget (actorRef);
-			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-			actor->targetRef = temp;
+			for (by=yl ; by<=yh ; by++)
+			{
+			// Call PIT_VileCheck to check
+			// whether object is a corpse
+			// that canbe raised.
+			if (!P_BlockThingsIterator(bx,by,PIT_VileCheck))
+			{
+				// got one!
+				actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+				temp = actor->targetRef;
+				actor->targetRef = corpsehitRef;
+				A_FaceTarget (actorRef);
+				actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+				actor->targetRef = temp;
 					
-		    P_SetMobjState (actorRef, S_VILE_HEAL1);
-			S_StartSoundFromRef(corpsehitRef, sfx_slop);
-			corpsehit = (mobj_t*)Z_LoadBytesFromEMS(corpsehitRef);
-			info = corpsehit->info;
+				P_SetMobjState (actorRef, S_VILE_HEAL1);
+				S_StartSoundFromRef(corpsehitRef, sfx_slop);
+				corpsehit = (mobj_t*)Z_LoadBytesFromEMS(corpsehitRef);
+				info = corpsehit->info;
 		    
-		    P_SetMobjState (corpsehitRef,info->raisestate);
-			corpsehit = (mobj_t*)Z_LoadBytesFromEMS(corpsehitRef);
-			corpsehit->height <<= 2;
-		    corpsehit->flags = info->flags;
-		    corpsehit->health = info->spawnhealth;
-		    corpsehit->targetRef = NULL_MEMREF;
+				P_SetMobjState (corpsehitRef,info->raisestate);
+				corpsehit = (mobj_t*)Z_LoadBytesFromEMS(corpsehitRef);
+				corpsehit->height <<= 2;
+				corpsehit->flags = info->flags;
+				corpsehit->health = info->spawnhealth;
+				corpsehit->targetRef = NULL_MEMREF;
 
-		    return;
+				return;
+			}
+			}
 		}
-	    }
-	}
     }
 
     // Return to normal attack.

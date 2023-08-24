@@ -428,14 +428,14 @@ P_SetThingPosition (MEMREF thingRef)
 
     // link into subsector
     subsecnum = R_PointInSubsector (thing->x,thing->y);
-	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
+	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
 
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	thing->secnum = subsectorsecnum;
 
 	if (thing->secnum < 0 || thing->secnum > numsectors) {
-		I_Error("blah %i %i", thing->secnum, thing->secnum);
+		I_Error("P_SetThingPosition: thing being set with bad secnum %i: numsectors:%i subsecnum %i num subsectors %i", subsectorsecnum, numsectors, subsecnum, numsubsectors);
 	}
 
     if ( ! (thing->flags & MF_NOSECTOR) ) {
@@ -509,7 +509,8 @@ P_BlockLinesIterator
     int			offset;
     short*		list;
     line_t*		ld;
-	 
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+
     if (x<0
 	|| y<0
 	|| x>=bmapwidth
@@ -519,7 +520,6 @@ P_BlockLinesIterator
     }
     
     offset = y*bmapwidth+x;
-	
     offset = *(blockmap+offset);
 
     for ( list = blockmaplump+offset ; *list != -1 ; list++) {
@@ -533,6 +533,7 @@ P_BlockLinesIterator
 		if (!func(*list)) {
 			return false;
 		}
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
     }
     return true;	// everything was checked
 }
@@ -606,6 +607,7 @@ PIT_AddLineIntercepts (short linenum)
     int			s2;
     fixed_t		frac;
     divline_t		dl;
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* ld = &lines[linenum];
 	short linev1Offset = ld->v1Offset;
 	short linev2Offset = ld->v2Offset;
