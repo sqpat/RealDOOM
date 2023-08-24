@@ -44,6 +44,9 @@
 // plasma cells for a bfg attack
 #define BFGCELLS		40		
 
+void P_SetPsprite(player_t*	player, int		position, statenum_t	stnum);
+
+
 //
 // PSPRITE ACTIONS for waepons.
 // This struct controls the weapon animations.
@@ -968,12 +971,18 @@ P_SetPsprite
 		psp->state = state;
 		psp->tics = state->tics;	// could be 0
 
+		/*
+		apparently nused feature in release DOOM, these misc longs are always 0 and add like 8kb to the final executable
+		
 		if (state->misc1)
 		{
 			// coordinate set
 			psp->sx = state->misc1 << FRACBITS;
 			psp->sy = state->misc2 << FRACBITS;
 		}
+
+		*/
+
 
 		// Call action routine.
 		// Modified handling.
@@ -993,9 +1002,9 @@ P_SetPsprite
 			case ETF_A_Light2: A_Light2(player, psp); break;
 			case ETF_A_FireShotgun2: A_FireShotgun2(player, psp); break;
 			case ETF_A_CheckReload: A_CheckReload(player, psp); break;
-			case ETF_A_OpenShotgun2: A_OpenShotgun2(player, psp); break;
-			case ETF_A_LoadShotgun2: A_LoadShotgun2(player, psp); break;
-			case ETF_A_CloseShotgun2: A_CloseShotgun2(player, psp); break;
+			//case ETF_A_OpenShotgun2: A_OpenShotgun2(player, psp); break;
+			//case ETF_A_LoadShotgun2: A_LoadShotgun2(player, psp); break;
+			//case ETF_A_CloseShotgun2: A_CloseShotgun2(player, psp); break;
 			case ETF_A_FireCGun: A_FireCGun(player, psp); break;
 			case ETF_A_GunFlash: A_GunFlash(player, psp); break;
 			case ETF_A_FireMissile: A_FireMissile(player, psp); break;
