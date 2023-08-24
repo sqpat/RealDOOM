@@ -21,7 +21,7 @@
 #include "p_local.h"
 
 #include "doomstat.h"
-
+#include "i_system.h"
 
 int	leveltime;
 short currentThinkerListHead;

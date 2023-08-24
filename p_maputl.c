@@ -344,9 +344,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 	mobj_t* changeThing;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
-
-    if ( ! (thing->flags & MF_NOSECTOR) )
-    {
+    if ( ! (thing->flags & MF_NOSECTOR) ) {
 	// inert things don't need to be in blockmap?
 	// unlink from subsector
 		if (thing->snextRef) {
@@ -359,13 +357,13 @@ void P_UnsetThingPosition (MEMREF thingRef)
 			changeThing->snextRef = thing->snextRef;
 		}
 		else {
+			thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 			thing->subsector->sector->thinglistRef = thing->snextRef;
 		}
     }
 	// just in case, refreshing this in memory...
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-    if ( ! (thing->flags & MF_NOBLOCKMAP) )
-    {
+    if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
 	// inert things don't need to be in blockmap
 	// unlink from block map
 		if (thing->bnextRef) {
@@ -376,17 +374,15 @@ void P_UnsetThingPosition (MEMREF thingRef)
 		if (thing->bprevRef) {
 			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thing->bprevRef);
 			changeThing->bnextRef = thing->bnextRef;
-		}
-	else
-	{
-	    blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
-	    blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
+		} else {
+			blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
+			blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
 
-	    if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky <bmapheight) {
-			blocklinksList = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
-			blocklinksList[blocky*bmapwidth+blockx] = thing->bnextRef;
-	    }
-	}
+			if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky <bmapheight) {
+				blocklinksList = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
+				blocklinksList[blocky*bmapwidth+blockx] = thing->bnextRef;
+			}
+		}
     }
 }
 

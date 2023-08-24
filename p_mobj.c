@@ -40,19 +40,41 @@ void P_SpawnMapThing (mapthing_t*	mthing);
 // P_SetMobjState
 // Returns true if the mobj is still present.
 //
-int test;
+static int test = 0;
 
 boolean
-P_SetMobjState
+P_SetMobjState2
 ( MEMREF mobjRef,
-  statenum_t	state )
+  statenum_t	state , char*file, int line)
 {
     state_t*	st;
 	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+
+	if (mobj->targetRef > 4096) {
+		I_Error("bad mobjRef early %i %i %s %i %i", mobjRef, mobj->targetRef, file, line, state);  // should be 28270
+	}
+	if (mobjRef == 469) {
+		test++;
+		if (state == 2) {
+			I_Error("catch 469 %i %i %s %i %i", mobjRef, mobj->targetRef, file, line, state);  // should be 28270
+
+			//       1: 469 0 mobj.c 478 175 (S_POSS_STND2)     (correspondws with testa = 7)
+			// on error 469 28013 p_enemy.c 650 176 (S_POSS_RUN1)
+
+			/*
+			 S_POSS_STND2,
+		    S_POSS_RUN1,
+	*/
+
+		}
+	}
+
     do
     {
 	if (state == S_NULL)
 	{
+		//I_Error("precrash %i %i %s %i %i", mobjRef, mobj->targetRef, file, line, state);  // should be 28270
+
 	    mobj->state = (state_t *) S_NULL;
 	    P_RemoveMobj (mobjRef);
 	    return false;
@@ -67,9 +89,6 @@ P_SetMobjState
 	// Modified handling.
 	// Call action functions when the state is set
 	if (st->action.acp1) {
-		if (mobjRef > 4096) {
-			I_Error("bad mobjRef early %i", mobjRef);
-		}
 		st->action.acp1(mobjRef);
 	}
 	
@@ -257,113 +276,97 @@ void P_ZMovement (MEMREF moRef)
 
     
     // check for smooth step up
-    if (mo->player && mo->z < mo->floorz)
-    {
-	mo->player->viewheight -= mo->floorz-mo->z;
+    if (mo->player && mo->z < mo->floorz) {
+		mo->player->viewheight -= mo->floorz-mo->z;
 
-	mo->player->deltaviewheight
-	    = (VIEWHEIGHT - mo->player->viewheight)>>3;
+		mo->player->deltaviewheight = (VIEWHEIGHT - mo->player->viewheight)>>3;
     }
     
     // adjust height
     mo->z += mo->momz;
 	
-    if ( mo->flags & MF_FLOAT
-	 && mo->targetRef)
-    {
-	// float down towards target if too close
-	if ( !(mo->flags & MF_SKULLFLY)
-	     && !(mo->flags & MF_INFLOAT) )
-	{
-		moTarget = (mobj_t*)Z_LoadBytesFromEMS(mo->targetRef);
-	    dist = P_AproxDistance (mo->x - moTarget->x,
-				    mo->y - moTarget->y);
+    if ( mo->flags & MF_FLOAT && mo->targetRef) {
+		// float down towards target if too close
+		if ( !(mo->flags & MF_SKULLFLY) && !(mo->flags & MF_INFLOAT) ) {
+			moTarget = (mobj_t*)Z_LoadBytesFromEMS(mo->targetRef);
+			dist = P_AproxDistance (mo->x - moTarget->x,
+						mo->y - moTarget->y);
 	    
-	    delta =(moTarget->z + (mo->height>>1)) - mo->z;
+			delta =(moTarget->z + (mo->height>>1)) - mo->z;
 
-	    if (delta<0 && dist < -(delta*3) )
-		mo->z -= FLOATSPEED;
-	    else if (delta>0 && dist < (delta*3) )
-		mo->z += FLOATSPEED;			
-	}
+			if (delta<0 && dist < -(delta*3) )
+			mo->z -= FLOATSPEED;
+			else if (delta>0 && dist < (delta*3) )
+			mo->z += FLOATSPEED;			
+		}
 	
     }
     
     // clip movement
-    if (mo->z <= mo->floorz)
-    {
-	// hit the floor
+    if (mo->z <= mo->floorz) {
+		// hit the floor
 
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-	// Note (id):
-	//  somebody left this after the setting momz to 0,
-	//  kinda useless there.
-	if (mo->flags & MF_SKULLFLY)
-	{
-	    // the skull slammed into something
-	    mo->momz = -mo->momz;
-	}
-#endif
+	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+		// Note (id):
+		//  somebody left this after the setting momz to 0,
+		//  kinda useless there.
+		if (mo->flags & MF_SKULLFLY)
+		{
+			// the skull slammed into something
+			mo->momz = -mo->momz;
+		}
+	#endif
 	
-	if (mo->momz < 0)
-	{
-	    if (mo->player
-		&& mo->momz < -GRAVITY*8)	
-	    {
-		// Squat down.
-		// Decrease viewheight for a moment
-		// after hitting the ground (hard),
-		// and utter appropriate sound.
-		mo->player->deltaviewheight = mo->momz>>3;
-		S_StartSound (mo, sfx_oof);
-	    }
-	    mo->momz = 0;
-	}
-	mo->z = mo->floorz;
+		if (mo->momz < 0) {
+			if (mo->player && mo->momz < -GRAVITY*8)	 {
+				// Squat down.
+				// Decrease viewheight for a moment
+				// after hitting the ground (hard),
+				// and utter appropriate sound.
+				mo->player->deltaviewheight = mo->momz>>3;
+				S_StartSound (mo, sfx_oof);
+			}
+			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+			mo->momz = 0;
+		}
+		mo->z = mo->floorz;
 
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-	if (mo->flags & MF_SKULLFLY)
-	{
-	    // the skull slammed into something
-	    mo->momz = -mo->momz;
-	}
-#endif
+	#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
+		if (mo->flags & MF_SKULLFLY) {
+			// the skull slammed into something
+			mo->momz = -mo->momz;
+		}
+	#endif
 
-	if ( (mo->flags & MF_MISSILE)
-	     && !(mo->flags & MF_NOCLIP) )
-	{
-	    P_ExplodeMissile (moRef);
-	    return;
+		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
+			P_ExplodeMissile (moRef);
+			return;
+		}
+	} else if (! (mo->flags & MF_NOGRAVITY) ) {
+		if (mo->momz == 0) {
+			mo->momz = -GRAVITY * 2;
+		}
+		else {
+			mo->momz -= GRAVITY;
+		}
 	}
-    }
-    else if (! (mo->flags & MF_NOGRAVITY) )
-    {
-	if (mo->momz == 0)
-	    mo->momz = -GRAVITY*2;
-	else
-	    mo->momz -= GRAVITY;
-    }
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+    if (mo->z + mo->height > mo->ceilingz) {
+		// hit the ceiling
+		if (mo->momz > 0)
+			mo->momz = 0;
+			mo->z = mo->ceilingz - mo->height;
+
+			if (mo->flags & MF_SKULLFLY) {	// the skull slammed into something
+				mo->momz = -mo->momz;
+			}
 	
-    if (mo->z + mo->height > mo->ceilingz)
-    {
-	// hit the ceiling
-	if (mo->momz > 0)
-	    mo->momz = 0;
-	{
-	    mo->z = mo->ceilingz - mo->height;
-	}
+		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
 
-	if (mo->flags & MF_SKULLFLY)
-	{	// the skull slammed into something
-	    mo->momz = -mo->momz;
-	}
-	
-	if ( (mo->flags & MF_MISSILE)
-	     && !(mo->flags & MF_NOCLIP) )
-	{
-	    P_ExplodeMissile (moRef);
-	    return;
-	}
+			//I_Error("blah");
+			P_ExplodeMissile (moRef);
+			return;
+		}
     }
 } 
 
@@ -373,56 +376,55 @@ void P_ZMovement (MEMREF moRef)
 // P_NightmareRespawn
 //
 void
-P_NightmareRespawn (MEMREF mobjRef)
+P_NightmareRespawn(MEMREF mobjRef)
 {
-    fixed_t		x;
-    fixed_t		y;
-    fixed_t		z; 
-    subsector_t*	ss; 
-    mobj_t*		mo;
-    mapthing_t*		mthing;
+	fixed_t		x;
+	fixed_t		y;
+	fixed_t		z;
+	subsector_t*	ss;
+	mobj_t*		mo;
+	mapthing_t*		mthing;
 	MEMREF moRef;
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
-    x = mobj->spawnpoint.x << FRACBITS; 
-    y = mobj->spawnpoint.y << FRACBITS; 
+	x = mobj->spawnpoint.x << FRACBITS;
+	y = mobj->spawnpoint.y << FRACBITS;
 
-    // somthing is occupying it's position?
-    if (!P_CheckPosition (mobjRef, x, y) ) 
-	return;	// no respwan
+	// somthing is occupying it's position?
+	if (!P_CheckPosition(mobjRef, x, y)) {
+		return;	// no respwan
+	}
+		// spawn a teleport fog at old spot
+		// because of removal of the body?
+	moRef = P_SpawnMobj(mobj->x, mobj->y, mobj->subsector->sector->floorheight, MT_TFOG);
+	// initiate teleport sound
+	S_StartSoundFromRef(moRef, sfx_telept);
 
-    // spawn a teleport fog at old spot
-    // because of removal of the body?
-    moRef = P_SpawnMobj (mobj->x,
-		      mobj->y,
-		      mobj->subsector->sector->floorheight , MT_TFOG); 
-    // initiate teleport sound
-    S_StartSoundFromRef (moRef, sfx_telept);
+	// spawn a teleport fog at the new spot
+	ss = R_PointInSubsector(x, y);
 
-    // spawn a teleport fog at the new spot
-    ss = R_PointInSubsector (x,y); 
+	moRef = P_SpawnMobj(x, y, ss->sector->floorheight, MT_TFOG);
 
-    moRef = P_SpawnMobj (x, y, ss->sector->floorheight , MT_TFOG); 
+	S_StartSoundFromRef(moRef, sfx_telept);
 
-    S_StartSoundFromRef (moRef, sfx_telept);
+	// spawn the new monster
+	mthing = &mobj->spawnpoint;
 
-    // spawn the new monster
-    mthing = &mobj->spawnpoint;
-	
-    // spawn it
-    if (mobj->info->flags & MF_SPAWNCEILING)
-	z = ONCEILINGZ;
-    else
-	z = ONFLOORZ;
-
+	// spawn it
+	if (mobj->info->flags & MF_SPAWNCEILING){
+		z = ONCEILINGZ;
+	} else {
+		z = ONFLOORZ;
+	}
     // inherit attributes from deceased one
     moRef = P_SpawnMobj (x,y,z, mobj->type);
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
     mo->spawnpoint = mobj->spawnpoint;	
     mo->angle = ANG45 * (mthing->angle/45);
 
-    if (mthing->options & MTF_AMBUSH)
-	mo->flags |= MF_AMBUSH;
+	if (mthing->options & MTF_AMBUSH) {
+		mo->flags |= MF_AMBUSH;
+	}
 
     mo->reactiontime = 18;
 	
@@ -434,63 +436,59 @@ P_NightmareRespawn (MEMREF mobjRef)
 //
 // P_MobjThinker
 //
-void P_MobjThinker (MEMREF mobjRef)
-{
+void P_MobjThinker (MEMREF mobjRef) {
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-    // momentum movement
-    if (mobj->momx
-	|| mobj->momy
-	|| (mobj->flags&MF_SKULLFLY) )
-    {
-	P_XYMovement (mobjRef);
 
-	// FIXME: decent NOP/NULL/Nil function pointer please.
-	if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME)
-	    return;		// mobj was removed
+    // momentum movement
+    if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
+		P_XYMovement (mobjRef);
+		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+		// FIXME: decent NOP/NULL/Nil function pointer please.
+		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
+			return;		// mobj was removed
+		}
     }
-    if ( (mobj->z != mobj->floorz)
-	 || mobj->momz )
-    {
-	P_ZMovement (mobjRef);
-	
-	// FIXME: decent NOP/NULL/Nil function pointer please.
-	if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME)
-	    return;		// mobj was removed
+    if ( (mobj->z != mobj->floorz) || mobj->momz ) {
+		P_ZMovement (mobjRef);
+		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+		// FIXME: decent NOP/NULL/Nil function pointer please.
+		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
+			return;		// mobj was removed
+		}
     }
 
     
     // cycle through states,
     // calling action functions at transitions
-    if (mobj->tics != -1)
-    {
-	mobj->tics--;
+    if (mobj->tics != -1) {
+		mobj->tics--;
 		
-	// you can cycle through multiple states in a tic
-	if (!mobj->tics)
-	    if (!P_SetMobjState (mobjRef, mobj->state->nextstate) )
-		return;		// freed itself
-    }
-    else
-    {
-	// check for nightmare respawn
-	if (! (mobj->flags & MF_COUNTKILL) )
-	    return;
+		// you can cycle through multiple states in a tic
+		if (!mobj->tics) {
+			if (!P_SetMobjState(mobjRef, mobj->state->nextstate)) {
+				return;		// freed itself
+			}
+		}
+    } else {
+		// check for nightmare respawn
+		if (!(mobj->flags & MF_COUNTKILL)) {
+			return;
+		}
+		if (!respawnmonsters) {
+			return;
+		}
+		mobj->movecount++;
 
-	if (!respawnmonsters)
-	    return;
-
-	mobj->movecount++;
-
-	if (mobj->movecount < 12*35)
-	    return;
-
-	if ( leveltime&31 )
-	    return;
-
-	if (P_Random () > 4)
-	    return;
-
-	P_NightmareRespawn (mobjRef);
+		if (mobj->movecount < 12 * 35) {
+			return;
+		}
+		if (leveltime & 31) {
+			return;
+		}
+		if (P_Random() > 4) {
+			return;
+		}
+		P_NightmareRespawn (mobjRef);
     }
 
 }
@@ -571,18 +569,15 @@ int		iquetail;
 void P_RemoveMobj (MEMREF mobjRef)
 {
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-    if ((mobj->flags & MF_SPECIAL)
-	&& !(mobj->flags & MF_DROPPED)
-	&& (mobj->type != MT_INV)
-	&& (mobj->type != MT_INS))
-    {
-	itemrespawnque[iquehead] = mobj->spawnpoint;
-	itemrespawntime[iquehead] = leveltime;
-	iquehead = (iquehead+1)&(ITEMQUESIZE-1);
+    if ((mobj->flags & MF_SPECIAL) && !(mobj->flags & MF_DROPPED) && (mobj->type != MT_INV) && (mobj->type != MT_INS)) {
+		itemrespawnque[iquehead] = mobj->spawnpoint;
+		itemrespawntime[iquehead] = leveltime;
+		iquehead = (iquehead+1)&(ITEMQUESIZE-1);
 
-	// lose one off the end?
-	if (iquehead == iquetail)
-	    iquetail = (iquetail+1)&(ITEMQUESIZE-1);
+		// lose one off the end?
+		if (iquehead == iquetail) {
+			iquetail = (iquetail + 1)&(ITEMQUESIZE - 1);
+		}
     }
 	
     // unlink from sector and block lists
@@ -914,8 +909,9 @@ void P_CheckMissileSpawn (MEMREF thRef)
     th->y += (th->momy>>1);
     th->z += (th->momz>>1);
 
-    if (!P_TryMove (thRef, th->x, th->y))
-		P_ExplodeMissile (thRef);
+	if (!P_TryMove(thRef, th->x, th->y)) {
+		P_ExplodeMissile(thRef);
+	}
 }
 
 

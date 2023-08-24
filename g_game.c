@@ -846,6 +846,7 @@ G_CheckSpot
     mobj_t*             mo; 
     int                 i;
 	mobj_t*				playerMo;
+	MEMREF				moRef;
         
     if (!players[playernum].moRef)
     {
@@ -875,13 +876,13 @@ G_CheckSpot
     ss = R_PointInSubsector (x,y); 
     an = ( ANG45 * (mthing->angle/45) ) >> ANGLETOFINESHIFT; 
  
-    mo = P_SpawnMobj (x+20*finecosine[an], y+20*finesine[an] 
+    moRef = P_SpawnMobj (x+20*finecosine[an], y+20*finesine[an] 
                       , ss->sector->floorheight 
                       , MT_TFOG); 
          
-    if (players[consoleplayer].viewz != 1) 
-        S_StartSound (mo, sfx_telept);  // don't start sound on first frame 
- 
+	if (players[consoleplayer].viewz != 1) {
+		S_StartSoundFromRef(moRef, sfx_telept);  // don't start sound on first frame 
+	}
     return true; 
 } 
 
@@ -1507,14 +1508,14 @@ void G_ReadDemoTiccmd (ticcmd_t* cmd)
     cmd->sidemove = ((signed char)*demo_p++); 
     cmd->angleturn = ((unsigned char)*demo_p++)<<8; 
     cmd->buttons = (unsigned char)*demo_p++; 
-	demo_p = (demo_p - demobuffer);
+	demo_p = (byte*)(demo_p - demobuffer);
 }
 
 
 void G_WriteDemoTiccmd (ticcmd_t* cmd) 
 { 
 	byte* demobuffer = (byte*)Z_LoadBytesFromEMS(demobufferRef);
-	demo_p = ((int)demo_p + (int)demobuffer);
+	demo_p = (byte*)((int)demo_p + (int)demobuffer);
 	if (gamekeydown['q'])           // press q to end demo recording 
         G_CheckDemoStatus (); 
 
@@ -1526,7 +1527,7 @@ void G_WriteDemoTiccmd (ticcmd_t* cmd)
     *demo_p++ = cmd->buttons; 
     demo_p -= 4; 
 	
-    if (demo_p > (DEMO_MAX_SIZE - 16))
+    if ((int)demo_p > (DEMO_MAX_SIZE - 16))
     {
         // no more space 
         G_CheckDemoStatus (); 
@@ -1676,8 +1677,8 @@ boolean G_CheckDemoStatus (void)
     if (timingdemo) 
     { 
         endtime = I_GetTime (); 
-        I_Error ("timed %i gametics in %i realtics",gametic 
-                 , endtime-starttime); 
+        I_Error ("timed %i gametics in %i realtics %i %i %i",gametic 
+                 , endtime-starttime, numreads, pageins, pageouts); 
     } 
          
     if (demoplayback) 

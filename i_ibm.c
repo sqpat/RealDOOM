@@ -1138,7 +1138,7 @@ void I_Shutdown(void)
 void I_Error (char *error, ...)
 {
     va_list argptr;
-
+	printf(error, argptr);
     D_QuitNetGame();
     I_Shutdown();
     va_start(argptr, error);

@@ -119,6 +119,8 @@ P_InterceptVector2
     return frac;
 }
 
+static int bspcounter = 0;
+
 //
 // P_CrossSubsector
 // Returns true
@@ -144,11 +146,11 @@ boolean P_CrossSubsector (int num)
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 
 #ifdef RANGECHECK
-    if (num>=numsubsectors)
-	I_Error ("P_CrossSubsector: ss %i with numss = %i %i %i %i",
-		 num,
-		 numsubsectors, numreads, pageins, pageouts);
+	if (num >= numsubsectors) {
+		I_Error("P_CrossSubsector: ss %i with numss = %i %i %i %i %i", num, numsubsectors, numreads, pageins, pageouts, bspcounter);
+	}
 #endif
+
 
     sub = &subsectors[num];
     
@@ -156,90 +158,87 @@ boolean P_CrossSubsector (int num)
     count = sub->numlines;
     seg = &segs[sub->firstline];
 
-    for ( ; count ; seg++, count--)
-    {
-	line = seg->linedef;
+    for ( ; count ; seg++, count--) {
+		line = seg->linedef;
 
-	// allready checked other side?
-	if (line->validcount == validcount)
-	    continue;
+		// allready checked other side?
+		if (line->validcount == validcount)
+			continue;
 	
-	line->validcount = validcount;
+		line->validcount = validcount;
 		
-	v1 = line->v1;
-	v2 = line->v2;
-	s1 = P_DivlineSide (v1->x,v1->y, &strace);
-	s2 = P_DivlineSide (v2->x, v2->y, &strace);
+		v1 = line->v1;
+		v2 = line->v2;
+		s1 = P_DivlineSide (v1->x,v1->y, &strace);
+		s2 = P_DivlineSide (v2->x, v2->y, &strace);
 
-	// line isn't crossed?
-	if (s1 == s2)
-	    continue;
+		// line isn't crossed?
+		if (s1 == s2)
+			continue;
 	
-	divl.x = v1->x;
-	divl.y = v1->y;
-	divl.dx = v2->x - v1->x;
-	divl.dy = v2->y - v1->y;
-	s1 = P_DivlineSide (strace.x, strace.y, &divl);
-	s2 = P_DivlineSide (t2x, t2y, &divl);
+		divl.x = v1->x;
+		divl.y = v1->y;
+		divl.dx = v2->x - v1->x;
+		divl.dy = v2->y - v1->y;
+		s1 = P_DivlineSide (strace.x, strace.y, &divl);
+		s2 = P_DivlineSide (t2x, t2y, &divl);
 
-	// line isn't crossed?
-	if (s1 == s2)
-	    continue;	
+		// line isn't crossed?
+		if (s1 == s2)
+			continue;	
 
-	// stop because it is not two sided anyway
-	// might do this after updating validcount?
-	if ( !(line->flags & ML_TWOSIDED) )
-	    return false;
+		// stop because it is not two sided anyway
+		// might do this after updating validcount?
+		if ( !(line->flags & ML_TWOSIDED) )
+			return false;
 	
-	// crosses a two sided line
-	front = seg->frontsector;
-	back = seg->backsector;
+		// crosses a two sided line
+		front = seg->frontsector;
+		back = seg->backsector;
 
-	// no wall to block sight with?
-	if (front->floorheight == back->floorheight
-	    && front->ceilingheight == back->ceilingheight)
-	    continue;	
+		// no wall to block sight with?
+		if (front->floorheight == back->floorheight && front->ceilingheight == back->ceilingheight) {
+			continue;
+		}
 
-	// possible occluder
-	// because of ceiling height differences
-	if (front->ceilingheight < back->ceilingheight)
-	    opentop = front->ceilingheight;
-	else
-	    opentop = back->ceilingheight;
+		// possible occluder
+		// because of ceiling height differences
+		if (front->ceilingheight < back->ceilingheight)
+			opentop = front->ceilingheight;
+		else
+			opentop = back->ceilingheight;
 
-	// because of ceiling height differences
-	if (front->floorheight > back->floorheight)
-	    openbottom = front->floorheight;
-	else
-	    openbottom = back->floorheight;
+		// because of ceiling height differences
+		if (front->floorheight > back->floorheight)
+			openbottom = front->floorheight;
+		else
+			openbottom = back->floorheight;
 		
-	// quick test for totally closed doors
-	if (openbottom >= opentop)	
-	    return false;		// stop
+		// quick test for totally closed doors
+		if (openbottom >= opentop)	
+			return false;		// stop
 	
-	frac = P_InterceptVector2 (&strace, &divl);
+		frac = P_InterceptVector2 (&strace, &divl);
 		
-	if (front->floorheight != back->floorheight)
-	{
-	    slope = FixedDiv (openbottom - sightzstart , frac);
-	    if (slope > bottomslope)
-		bottomslope = slope;
-	}
+		if (front->floorheight != back->floorheight) {
+			slope = FixedDiv (openbottom - sightzstart , frac);
+			if (slope > bottomslope)
+			bottomslope = slope;
+		}
 		
-	if (front->ceilingheight != back->ceilingheight)
-	{
-	    slope = FixedDiv (opentop - sightzstart , frac);
-	    if (slope < topslope)
-		topslope = slope;
-	}
+		if (front->ceilingheight != back->ceilingheight) {
+			slope = FixedDiv (opentop - sightzstart , frac);
+			if (slope < topslope)
+			topslope = slope;
+		}
 		
-	if (topslope <= bottomslope)
-	    return false;		// stop				
+		if (topslope <= bottomslope) {
+			return false;		// stop				
+		}
     }
     // passed the subsector ok
     return true;		
 }
-
 
 
 //
@@ -252,34 +251,67 @@ boolean P_CrossBSPNode (int bspnum)
     node_t*	bsp;
     int		side;
 	node_t* nodes;
+	node_t* nodes2;
+	bspcounter++;
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 
-    if (bspnum & NF_SUBSECTOR)
-    {
-	if (bspnum == -1)
-	    return P_CrossSubsector (0);
-	else
-	    return P_CrossSubsector (bspnum&(~NF_SUBSECTOR));
+	//if (bspnum > numsubsectors) {
+		//I_Error("too big %i %i", bspnum&(~NF_SUBSECTOR), numsubsectors, bspnum);
+	//}
+
+	if (bspnum & NF_SUBSECTOR) {
+		if (bspnum == -1) {
+
+			return P_CrossSubsector(0);
+		} else {
+//			if (bspnum&(~NF_SUBSECTOR) == 2955) {
+//130943
+			if (bspcounter == 130942){
+				I_Error("B early : ss %i with numss = %i %i %i %i", bspnum&(~NF_SUBSECTOR), numsubsectors, numreads, pageins, pageouts);
+			}
+			//I_Error("early ");
+
+			return P_CrossSubsector(bspnum&(~NF_SUBSECTOR));
+		}
     }
 		
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+
+
 	bsp = &nodes[bspnum];
     
     // decide which side the start point is on
     side = P_DivlineSide (strace.x, strace.y, (divline_t *)bsp);
-    if (side == 2)
-	side = 0;	// an "on" should cross both sides
+	if (side == 2) {
+		side = 0;	// an "on" should cross both sides
+	}
+	//nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	bsp = &nodes[bspnum];
 
     // cross the starting side
-    if (!P_CrossBSPNode (bsp->children[side]) )
-	return false;
-	
+	nodes2 = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	if (nodes != nodes2) {
+		I_Error("inequality %i %p %p", bspnum&(~NF_SUBSECTOR), numsubsectors, nodes, nodes2);
+	}
+
+	if (!P_CrossBSPNode(bsp->children[side])) {
+		return false;
+	}
+
+	if (bspcounter == 130942) {
+		I_Error("A early : ss %i with numss = %i %i %i %i", bspnum&(~NF_SUBSECTOR), numsubsectors, numreads, pageins, pageouts);
+	}
+
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	bsp = &nodes[bspnum];
+
     // the partition plane is crossed here
-    if (side == P_DivlineSide (t2x, t2y,(divline_t *)bsp))
-    {
-	// the line doesn't touch the other side
-	return true;
+    if (side == P_DivlineSide (t2x, t2y,(divline_t *)bsp)) {
+		// the line doesn't touch the other side
+		return true;
     }
-    
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	bsp = &nodes[bspnum];
+
     // cross the ending side		
     return P_CrossBSPNode (bsp->children[side^1]);
 }
@@ -304,7 +336,8 @@ P_CheckSight
 	mobj_t*	t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
 	mobj_t*	t2 = (mobj_t*)Z_LoadBytesFromEMS(t2Ref);
 
-    
+	//I_Error("set call %i  %i %p %p", t1Ref, t2Ref, t1, t2);
+
     // First check for trivial rejection.
 
     // Determine subsector entries in REJECT table.

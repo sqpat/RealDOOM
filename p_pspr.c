@@ -32,6 +32,7 @@
 #include "sounds.h"
 
 #include "p_pspr.h"
+#include "i_system.h"
 
 #define LOWERSPEED		FRACUNIT*6
 #define RAISESPEED		FRACUNIT*6

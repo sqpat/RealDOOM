@@ -492,7 +492,9 @@ P_LookForPlayers
     c = 0;
     stop = (actor->lastlook-1)&3;
 	
+
     for ( ; ; actor->lastlook = (actor->lastlook+1)&3 ) {
+		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		if (!playeringame[actor->lastlook])
 			continue;
 			
@@ -511,6 +513,7 @@ P_LookForPlayers
 		if (!P_CheckSight (actorRef, player->moRef))
 			continue;		// out of sight
 		playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
 		if (!allaround) {
 			an = R_PointToAngle2 (actor->x,
@@ -530,6 +533,9 @@ P_LookForPlayers
 		}
 		
 		actor->targetRef = player->moRef;
+
+		//I_Error("set call %i %i %i", actorRef, actor->targetRef, player->moRef);
+
 		return true;
     }
 
@@ -588,9 +594,11 @@ void A_Look (MEMREF actorRef)
 	MEMREF targRef;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	actor->threshold = 0;	// any shot will wake up
-    targRef = actor->subsector->sector->soundtargetRef;
 
+    targRef = actor->subsector->sector->soundtargetRef;
 	if (targRef) {
+
+
 		targ = (mobj_t*)Z_LoadBytesFromEMS(targRef);
 		if (targ->flags & MF_SHOOTABLE) {
 			actor->targetRef = targRef;
@@ -603,45 +611,50 @@ void A_Look (MEMREF actorRef)
 			else
 				goto seeyou;
 		}
+
 	}
 	
-	
+
     if (!P_LookForPlayers (actorRef, false) )
 		return;
-		
+	
+	// reload actor here, tends to get paged out
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+
+
     // go into chase state
   seeyou:
-    if (actor->info->seesound)
-    {
-	int		sound;
-		
-	switch (actor->info->seesound)
-	{
-	  case sfx_posit1:
-	  case sfx_posit2:
-	  case sfx_posit3:
-	    sound = sfx_posit1+P_Random()%3;
-	    break;
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
-	  case sfx_bgsit1:
-	  case sfx_bgsit2:
-	    sound = sfx_bgsit1+P_Random()%2;
-	    break;
+	if (actor->info->seesound) {
+		int		sound;
+		switch (actor->info->seesound)
+		{
+		  case sfx_posit1:
+		  case sfx_posit2:
+		  case sfx_posit3:
+			sound = sfx_posit1+P_Random()%3;
+			break;
 
-	  default:
-	    sound = actor->info->seesound;
-	    break;
-	}
+		  case sfx_bgsit1:
+		  case sfx_bgsit2:
+			sound = sfx_bgsit1+P_Random()%2;
+			break;
 
-	if (actor->type==MT_SPIDER
-	    || actor->type == MT_CYBORG)
-	{
-	    // full volume
-		S_StartSoundFromRef(NULL_MEMREF, sound);
-	}
-	else
-		S_StartSoundFromRef(actorRef, sound);
+		  default:
+			  sound = actor->info->seesound;
+			  break;
+		}
+		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+		if (actor->type==MT_SPIDER || actor->type == MT_CYBORG) {
+			// full volume
+			S_StartSoundFromRef(NULL_MEMREF, sound);
+		}
+		else {
+			S_StartSoundFromRef(actorRef, sound);
+		}
     }
+	//actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
     P_SetMobjState (actorRef, actor->info->seestate);
 }

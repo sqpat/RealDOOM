@@ -504,20 +504,18 @@ P_TryMove
     P_SetThingPosition (thingRef);
     
     // if any special lines were hit, do the effect
-    if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) )
-    {
-	while (numspechit--)
-	{
-	    // see if the line was crossed
-	    ld = spechit[numspechit];
-	    side = P_PointOnLineSide (thing->x, thing->y, ld);
-	    oldside = P_PointOnLineSide (oldx, oldy, ld);
-	    if (side != oldside)
-	    {
-		if (ld->special)
-		    P_CrossSpecialLine (ld-lines, oldside, thingRef);
-	    }
-	}
+    if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
+		while (numspechit--) {
+			// see if the line was crossed
+			ld = spechit[numspechit];
+			side = P_PointOnLineSide (thing->x, thing->y, ld);
+			oldside = P_PointOnLineSide (oldx, oldy, ld);
+			if (side != oldside)
+			{
+			if (ld->special)
+				P_CrossSpecialLine (ld-lines, oldside, thingRef);
+			}
+		}
     }
 
     return true;
@@ -1310,7 +1308,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
     // crunch dropped items
     if (thing->flags & MF_DROPPED)
     {
-	P_RemoveMobj (thingRef);
+		P_RemoveMobj (thingRef);
 	
 	// keep checking
 	return true;		

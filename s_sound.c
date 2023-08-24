@@ -561,6 +561,9 @@ void S_StartSoundFromRef(MEMREF memref,	int		sfx_id)  {
 	mobj_t* mobj;
 	if (memref) {
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(memref);
+		if (memref == 469) {
+			//I_Error("should be here.. %i", sfx_id);
+		}
 		S_StartSoundAtVolume(memref, mobj->x, mobj->y, sfx_id, snd_SfxVolume);
 	} else {
 		S_StartSoundAtVolume(memref, 0, 0, sfx_id, snd_SfxVolume);

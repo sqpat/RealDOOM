@@ -97,6 +97,7 @@ void	P_PlayerThink (player_t* player);
 // Time interval for item respawning.
 #define ITEMQUESIZE		128
 
+
 extern mapthing_t	itemrespawnque[ITEMQUESIZE];
 extern int		itemrespawntime[ITEMQUESIZE];
 extern int		iquehead;
@@ -113,13 +114,15 @@ P_SpawnMobj
   mobjtype_t	type );
 
 void 	P_RemoveMobj (MEMREF th);
-boolean	P_SetMobjState (MEMREF mobj, statenum_t state);
+boolean	P_SetMobjState2 (MEMREF mobj, statenum_t state, char*file, int line);
 void 	P_MobjThinker (MEMREF memref);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int damage);
 MEMREF P_SpawnMissile (MEMREF source, MEMREF dest, mobjtype_t type);
 void	P_SpawnPlayerMissile (MEMREF source, mobjtype_t type);
+
+
 
 
 //
@@ -276,6 +279,8 @@ P_DamageMobj
 // P_SPEC
 //
 #include "p_spec.h"
+
+#define P_SetMobjState(a,b) P_SetMobjState2(a,b, __FILE__, __LINE__)
 
 
 #endif	// __P_LOCAL__

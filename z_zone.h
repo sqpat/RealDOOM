@@ -76,6 +76,7 @@ typedef unsigned short PAGEREF; //used internally for allocations list index
 extern int numreads;
 extern int pageins;
 extern int pageouts;
+extern int thebspnum;
 
 void    Z_Init (void);
 void*   Z_Malloc (int size, int tag, void *ptr);
@@ -108,7 +109,7 @@ MEMREF Z_MallocEMSNew(int size, unsigned char tag, unsigned char user, unsigned 
 MEMREF Z_MallocEMSNewWithBackRef(int size, unsigned char tag, unsigned char user, unsigned char sourceHint, short backRef);
 void Z_CheckEMSAllocations(PAGEREF block, int i, int var2, int var3);
 void Z_ChangeTagEMSNew (MEMREF index, short tag);
-void Z_FreeEMSNew(short block, int error);
+void Z_FreeEMSNew(PAGEREF block, int error);
 void Z_PrintAllocationInfo(MEMREF index);
 
 //

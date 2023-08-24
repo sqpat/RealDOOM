@@ -485,8 +485,7 @@ boolean R_CheckBBox (fixed_t*	bspcoord)
 // Add sprites of things in sector.
 // Draw one or more line segments.
 //
-void R_Subsector (int num)
-{
+void R_Subsector (int num) {
     int			count;
     seg_t*		line;
     subsector_t*	sub;
@@ -506,31 +505,27 @@ void R_Subsector (int num)
     count = sub->numlines;
     line = &segs[sub->firstline];
 
-    if (frontsector->floorheight < viewz)
-    {
-	floorplane = R_FindPlane (frontsector->floorheight,
+    if (frontsector->floorheight < viewz) {
+		floorplane = R_FindPlane (frontsector->floorheight,
 				  frontsector->floorpic,
 				  frontsector->lightlevel);
-    }
-    else
-	floorplane = NULL;
-    
-    if (frontsector->ceilingheight > viewz 
-	|| frontsector->ceilingpic == skyflatnum)
-    {
-	ceilingplane = R_FindPlane (frontsector->ceilingheight,
+	}
+	else {
+		floorplane = NULL;
+	}
+
+    if (frontsector->ceilingheight > viewz  || frontsector->ceilingpic == skyflatnum) {
+		ceilingplane = R_FindPlane (frontsector->ceilingheight,
 				    frontsector->ceilingpic,
 				    frontsector->lightlevel);
-    }
-    else
-	ceilingplane = NULL;
-		
+	} else {
+		ceilingplane = NULL;
+	}
     R_AddSprites (frontsector);	
 
-    while (count--)
-    {
-	R_AddLine (line);
-	line++;
+    while (count--) {
+		R_AddLine (line);
+		line++;
     }
 }
 
@@ -542,21 +537,20 @@ void R_Subsector (int num)
 // Renders all subsectors below a given node,
 //  traversing subtree recursively.
 // Just call with BSP root.
-void R_RenderBSPNode (int bspnum)
-{
+void R_RenderBSPNode (int bspnum) {
     node_t*	bsp;
     int		side;
 	node_t* nodes;
     // Found a subsector?
-    if (bspnum & NF_SUBSECTOR)
-    {
-	if (bspnum == -1)			
-	    R_Subsector (0);
-	else
-	    R_Subsector (bspnum&(~NF_SUBSECTOR));
-	return;
+    if (bspnum & NF_SUBSECTOR) {
+		if (bspnum == -1) {
+			R_Subsector(0);
+		}
+		else {
+			R_Subsector(bspnum&(~NF_SUBSECTOR));
+		}
+		return;
     }
-		
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	bsp = &nodes[bspnum];
     
@@ -565,10 +559,13 @@ void R_RenderBSPNode (int bspnum)
 
     // Recursively divide front space.
     R_RenderBSPNode (bsp->children[side]); 
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	bsp = &nodes[bspnum];
 
     // Possibly divide back space.
-    if (R_CheckBBox (bsp->bbox[side^1]))	
-	R_RenderBSPNode (bsp->children[side^1]);
+	if (R_CheckBBox(bsp->bbox[side ^ 1])) {
+		R_RenderBSPNode(bsp->children[side ^ 1]);
+	}
 }
 
 
