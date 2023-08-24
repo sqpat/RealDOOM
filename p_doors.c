@@ -349,12 +349,13 @@ EV_VerticalDoor
     int		secnum;
     //sector_t*	sec;
     vldoor_t*	door;
-    int		side;
+//    int		side = 0;
 	MEMREF doorRef;
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	line_t* line = &lines[linenum];
+	short sidenum = line->sidenum[1];
+	side_t* sides;
 
-    side = 0;	// only front sides can be used
 
     //	Check for locks
     player = thing->player;
@@ -404,7 +405,9 @@ EV_VerticalDoor
     }
 	
     // if the sector has an active thinker, use it
-    secnum = sides[line->sidenum[side ^ 1]].secnum;
+	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	
+	secnum = sides[sidenum].secnum;
     if (sectors[secnum].specialdataRef)
     {
 	doorRef = sectors[secnum].specialdataRef;

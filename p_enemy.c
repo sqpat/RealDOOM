@@ -105,7 +105,8 @@ P_RecursiveSound
 	int linecount;
 	sector_t* soundsector = &sectors[secnum];
 	short *linebuffer;
-	
+	side_t* sides;
+
 	if (secnum < 0 || secnum >= numsectors) {
 		// TODO remove
 		I_Error("bad sectors in P_RecursiveSound %i", secnum);
@@ -134,6 +135,7 @@ P_RecursiveSound
 			continue;	// closed door
 		}
 	
+		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 		if (sides[check->sidenum[0]].secnum == secnum) {
 			othersecnum = sides[check->sidenum[1]].secnum;
 		} else {

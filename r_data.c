@@ -273,7 +273,6 @@ void R_GenerateComposite(int texnum)
 	texture = (texture_t*)Z_LoadBytesFromEMS(texturememref);
 	// Composite the columns together.
 	patch = texture->patches;
-
                 
     for (i=0 , patch = texture->patches;
          i<texture->patchcount;
@@ -335,7 +334,6 @@ void R_GenerateComposite(int texnum)
 void R_GenerateLookup (int texnum)
 {
     texture_t*          texture;
-	short				textureRef;
     byte*               patchcount;     // patchcount[texture->width]
     texpatch_t*         patch;  
     patch_t*            realpatch;
@@ -349,27 +347,25 @@ void R_GenerateLookup (int texnum)
 
 
 	MEMREF* textures =					(MEMREF*) Z_LoadBytesFromEMS(texturesRef);
-	MEMREF* texturecolumnlump =			(MEMREF*) Z_LoadBytesFromEMS(texturecolumnlumpRef);
+	MEMREF textureRef = textures[texnum];
 
-	MEMREF* texturecolumnofs =			(MEMREF*) Z_LoadBytesFromEMS(texturecolumnofsRef);
-	MEMREF* texturecomposite =			(MEMREF*) Z_LoadBytesFromEMS(texturecompositeRef);
+	MEMREF texturecolumnlump =			((MEMREF*) Z_LoadBytesFromEMS(texturecolumnlumpRef))[texnum];
+	MEMREF texturecolumnofs =			((MEMREF*) Z_LoadBytesFromEMS(texturecolumnofsRef))[texnum];
 
 	int* texturecompositesize =			(int*)    Z_LoadBytesFromEMS(texturecompositesizeRef);
+	MEMREF* texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
+	texturecomposite[texnum] = NULL_MEMREF;
+	texturecompositesize[texnum] = 0;
 
 
-	fixed_t* textureheight = (fixed_t*)Z_LoadBytesFromEMS(textureheightRef);
-
-	textureRef = textures[texnum];
-	texture = (texture_t*)Z_LoadBytesFromEMS(textureRef);
 	 
 
     // Composited texture not created yet.
-    texturecomposite[texnum] = NULL_MEMREF;
-    texturecompositesize[texnum] = 0;
 
-    collump = (short*) Z_LoadBytesFromEMS(texturecolumnlump[texnum]);
-    colofs =  (unsigned short*)Z_LoadBytesFromEMS(texturecolumnofs[texnum]);
-    
+    collump = (short*) Z_LoadBytesFromEMS(texturecolumnlump);
+    colofs =  (unsigned short*)Z_LoadBytesFromEMS(texturecolumnofs);
+	texture = (texture_t*)Z_LoadBytesFromEMS(textureRef);
+
     // Now count the number of columns
     //  that are covered by more than one patch.
     // Fill in the lump / offset, so columns
@@ -406,8 +402,9 @@ void R_GenerateLookup (int texnum)
     {
 		Z_RefIsActive(texturecompositesizeRef);
 		Z_RefIsActive(texturecolumnofsRef);
-		Z_RefIsActive(texturecolumnofs[texnum]);
-        if (!patchcount[x])
+		Z_RefIsActive(texturecolumnofs);
+		Z_RefIsActive(textureRef);
+		if (!patchcount[x])
         {
             printf ("R_GenerateLookup: column without a patch (%s)\n",
                     texture->name);
@@ -662,6 +659,8 @@ void R_InitTextures (void)
         while (j*2 <= texture->width)
             j<<=1;
 
+		Z_RefIsActive(texturewidthmaskRef);
+		Z_RefIsActive(textureheightRef);
         texturewidthmask[i] = j-1;
         textureheight[i] = texture->height<<FRACBITS;
                 
@@ -859,9 +858,9 @@ int     R_CheckTextureNumForName (char *name)
 // Calls R_CheckTextureNumForName,
 //  aborts with error message.
 //
-int     R_TextureNumForName (char* name)
+short     R_TextureNumForName (char* name)
 {
-    int         i;
+	short         i;
     i = R_CheckTextureNumForName (name);
 
     if (i==-1) {
@@ -898,7 +897,7 @@ void R_PrecacheLevel (void)
     spriteframe_t*      sf;
 	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
-
+	side_t* sides;
 	MEMREF* textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 
 	
@@ -933,9 +932,10 @@ void R_PrecacheLevel (void)
     // Precache textures.
     texturepresent = alloca(numtextures);
     memset (texturepresent,0, numtextures);
-        
+	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
     for (i=0 ; i<numsides ; i++)
     {
+
         texturepresent[sides[i].toptexture] = 1;
         texturepresent[sides[i].midtexture] = 1;
         texturepresent[sides[i].bottomtexture] = 1;

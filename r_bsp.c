@@ -273,10 +273,11 @@ void R_AddLine (short linenum)
     angle_t		tspan;
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	short linebacksecnum = segs[linenum].backsecnum;
-	short curlinesidedefOffset = segs[curlinenum].sidedefOffset;
+	short curlinesidedefOffset = segs[linenum].sidedefOffset;
 	short linenumv1Offset = segs[linenum].v1Offset;
 	short linenumv2Offset = segs[linenum].v2Offset;
-
+	side_t* sides;
+	short sidemidtex;
 	vertex_t*   vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
     curlinenum = linenum;
@@ -356,10 +357,14 @@ void R_AddLine (short linenum)
     // Identical floor and ceiling on both sides,
     // identical light levels on both sides,
     // and no middle texture.
-    if (sectors[backsecnum].ceilingpic == sectors[frontsecnum].ceilingpic
+    
+	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	sidemidtex = sides[curlinesidedefOffset].midtexture;
+
+	if (sectors[backsecnum].ceilingpic == sectors[frontsecnum].ceilingpic
 	&& sectors[backsecnum].floorpic == sectors[frontsecnum].floorpic
 	&& sectors[backsecnum].lightlevel == sectors[frontsecnum].lightlevel
-	&& sides[curlinesidedefOffset].midtexture == 0)
+	&& sidemidtex == 0)
     {
 	return;
     }

@@ -202,12 +202,14 @@ P_ChangeSwitchTexture
     int     sound;
 
  	line_t* line; 
-    
+	side_t* sides;
+
 	if (!useAgain) {
 		line = &lines[linenum];
 		line->special = 0;
 	}
-
+	
+	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
     texTop = sides[lineside0].toptexture;
     texMid = sides[lineside0].midtexture;
     texBot = sides[lineside0].bottomtexture;
@@ -218,44 +220,42 @@ P_ChangeSwitchTexture
     if (linespecial == 11)                
 	sound = sfx_swtchx;
 	
-    for (i = 0;i < numswitches*2;i++)
-    {
-	if (switchlist[i] == texTop)
-	{
-		S_StartSoundWithParams(buttonlist->soundorgX, buttonlist->soundorgY, sound);
-	    sides[lineside0].toptexture = switchlist[i^1];
-
-	    if (useAgain)
-		P_StartButton(linenum, linefrontsecnum,top,switchlist[i],BUTTONTIME);
-
-	    return;
-	}
-	else
-	{
-	    if (switchlist[i] == texMid)
-	    {
+    for (i = 0;i < numswitches*2;i++) {
+		if (switchlist[i] == texTop) {
 			S_StartSoundWithParams(buttonlist->soundorgX, buttonlist->soundorgY, sound);
-		sides[lineside0].midtexture = switchlist[i^1];
+			sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+			sides[lineside0].toptexture = switchlist[i^1];
 
-		if (useAgain)
-		    P_StartButton(linenum, linefrontsecnum, middle,switchlist[i],BUTTONTIME);
-
-		return;
-	    }
-	    else
-	    {
-		if (switchlist[i] == texBot)
-		{
-			S_StartSoundWithParams(buttonlist->soundorgX, buttonlist->soundorgY, sound);
-		    sides[lineside0].bottomtexture = switchlist[i^1];
-
-		    if (useAgain)
-			P_StartButton(linenum, linefrontsecnum, bottom,switchlist[i],BUTTONTIME);
-
-		    return;
+			if (useAgain) {
+				P_StartButton(linenum, linefrontsecnum, top, switchlist[i], BUTTONTIME);
+			}
+			return;
 		}
-	    }
-	}
+		else {
+			if (switchlist[i] == texMid) {
+				S_StartSoundWithParams(buttonlist->soundorgX, buttonlist->soundorgY, sound);
+				sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+				sides[lineside0].midtexture = switchlist[i^1];
+
+				if (useAgain) {
+					P_StartButton(linenum, linefrontsecnum, middle, switchlist[i], BUTTONTIME);
+				}
+
+			return;
+			
+			} else {
+				if (switchlist[i] == texBot) {
+					S_StartSoundWithParams(buttonlist->soundorgX, buttonlist->soundorgY, sound);
+					sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+					sides[lineside0].bottomtexture = switchlist[i^1];
+
+					if (useAgain) {
+						P_StartButton(linenum, linefrontsecnum, bottom, switchlist[i], BUTTONTIME);
+					}
+					return;
+				}
+			}
+		}
     }
 }
 

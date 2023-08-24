@@ -198,8 +198,9 @@ getSide
   int		side )
 {
 	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-
-    return &sides[ (&lines[linebuffer[sectors[currentSector].linesoffset+line]])->sidenum[side] ];
+	short linenum = linebuffer[sectors[currentSector].linesoffset + line];
+	side_t* sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	return &sides[ lines[linenum].sidenum[side] ];
 }
 
 
@@ -216,8 +217,10 @@ getSector
   int		side )
 {
 	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+	short linenum = linebuffer[sectors[currentSector].linesoffset + line];
+	side_t* sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 
-    return sides[ (&lines[linebuffer[sectors[currentSector].linesoffset+line]])->sidenum[side] ].secnum;
+    return sides[lines[linenum].sidenum[side]].secnum;
 }
 
 
@@ -1133,7 +1136,8 @@ void P_UpdateSpecials (void)
     line_t*	line;
 	int * texturetranslation;
 	int * flattranslation;
-    
+	side_t* sides;
+
     //	LEVEL TIMER
     if (levelTimer == true)
     {
@@ -1168,7 +1172,8 @@ void P_UpdateSpecials (void)
 	{
 	  case 48:
 	    // EFFECT FIRSTCOL SCROLL +
-	    sides[line->sidenum[0]].textureoffset += FRACUNIT;
+		  sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		  sides[line->sidenum[0]].textureoffset += FRACUNIT;
 	    break;
 	}
     }

@@ -65,7 +65,7 @@ int             numlines;
 line_t*         lines;
 
 int             numsides;
-side_t*         sides;
+MEMREF          sidesRef;
 
 //short*          linebuffer;
 MEMREF          linebufferRef;
@@ -166,7 +166,12 @@ void P_LoadSegs(int lump)
 	int                 side;
 	vertex_t*                       vertexes;
 	seg_t*                          segs;
-
+	side_t*         sides;
+	short ldefsidenum;
+	short ldefothersidenum;
+	short sidesecnum;
+	short othersidesecnum;
+	int ldefflags;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segsRef = Z_MallocEMSNew(numsegs * sizeof(seg_t), PU_LEVEL, 0, ALLOC_TYPE_SEGMENTS);
 	
@@ -176,27 +181,43 @@ void P_LoadSegs(int lump)
 	data = W_CacheLumpNum(lump, PU_STATIC);
 
 	ml = (mapseg_t *)data;
-	li = segs;
 	
-
+	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-
 	for (i = 0; i < numsegs; i++, li++, ml++) {
+		side = SHORT(ml->side);
+
+		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+
+		li = &segs[i];
 		li->v1Offset = SHORT(ml->v1);
 		li->v2Offset = SHORT(ml->v2);
 
 		li->angle = (SHORT(ml->angle)) << 16;
 		li->offset = (SHORT(ml->offset)) << 16;
 		linedef = SHORT(ml->linedef);
-		ldef = &lines[linedef];
 		li->linedefOffset = linedef;
-		side = SHORT(ml->side);
-		li->sidedefOffset = ldef->sidenum[side];
-		li->frontsecnum = sides[ldef->sidenum[side]].secnum;
-		if (ldef->flags & ML_TWOSIDED)
-			li->backsecnum = sides[ldef->sidenum[side ^ 1]].secnum;
+		ldef = &lines[linedef];
+		ldefsidenum = ldef->sidenum[side];
+		ldefothersidenum = ldef->sidenum[side ^ 1];
+		ldefflags = ldef->flags;
+		li->sidedefOffset = ldefsidenum;
+		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sidesecnum = sides[ldefsidenum].secnum;
+		othersidesecnum = sides[ldefothersidenum].secnum;
+
+		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+		li = &segs[i];
+
+		li->frontsecnum = sidesecnum;
+		if (ldefflags & ML_TWOSIDED)
+			li->backsecnum = othersidesecnum;
 		else
 			li->backsecnum = SECNUM_NULL;
+
+		//Z_RefIsActive(sidesRef);
+		//Z_RefIsActive(vertexesRef);
+		//Z_RefIsActive(segsRef);
 	}
 
 	Z_Free(data);
@@ -381,6 +402,7 @@ void P_LoadLineDefs(int lump)
 	vertex_t*           v1;
 	vertex_t*           v2;
 	vertex_t*           vertexes;
+	side_t* sides;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
 	lines = Z_Malloc (numlines * sizeof(line_t), PU_LEVEL, 0);
@@ -391,6 +413,7 @@ void P_LoadLineDefs(int lump)
 	mld = (maplinedef_t *)data;
 	ld = lines;
 	
+	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 	for (i = 0; i < numlines; i++, mld++, ld++) {
 		ld->flags = SHORT(mld->flags);
@@ -432,7 +455,6 @@ void P_LoadLineDefs(int lump)
 
 		ld->sidenum[0] = SHORT(mld->sidenum[0]);
 		ld->sidenum[1] = SHORT(mld->sidenum[1]);
-
 		if (ld->sidenum[0] != -1) {
 			ld->frontsecnum = sides[ld->sidenum[0]].secnum;
 		} else {
@@ -443,6 +465,8 @@ void P_LoadLineDefs(int lump)
 		} else {
 			ld->backsecnum = SECNUM_NULL;
 		}
+		Z_RefIsActive(sidesRef);
+		Z_RefIsActive(vertexesRef);
 	}
 
 	Z_Free(data);
@@ -458,22 +482,39 @@ void P_LoadSideDefs(int lump)
 	int                 i;
 	mapsidedef_t*       msd;
 	side_t*             sd;
-
+	side_t* sides;
+	short toptex;
+	short bottex;
+	short midtex;
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	sides = Z_Malloc (numsides * sizeof(side_t), PU_LEVEL, 0);
+	sidesRef = Z_MallocEMSNew (numsides * sizeof(side_t), PU_LEVEL, 0, ALLOC_TYPE_SIDES);
+	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 	memset(sides, 0, numsides * sizeof(side_t));
+
 	W_CacheLumpNumCheck(lump, 10);
 	data = W_CacheLumpNum(lump, PU_STATIC);
 	msd = (mapsidedef_t *)data;
-	sd = sides;
-	for (i = 0; i < numsides; i++, msd++, sd++)
+	
+	for (i = 0; i < numsides; i++, msd++)
 	{
+		sd = &sides[i];
+
 		sd->textureoffset = SHORT(msd->textureoffset) << FRACBITS;
 		sd->rowoffset = SHORT(msd->rowoffset) << FRACBITS;
-		sd->toptexture = R_TextureNumForName(msd->toptexture);
-		sd->bottomtexture = R_TextureNumForName(msd->bottomtexture);
-		sd->midtexture = R_TextureNumForName(msd->midtexture);
 		sd->secnum = SHORT(msd->sector);
+
+		toptex = R_TextureNumForName(msd->toptexture);
+		bottex = R_TextureNumForName(msd->bottomtexture);
+		midtex = R_TextureNumForName(msd->midtexture);
+		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sd = &sides[i];
+		sd->toptexture = toptex;
+		sd->bottomtexture = bottex;
+		sd->midtexture = midtex;
+
+		Z_RefIsActive(sidesRef);
+
+
 	}
 	Z_Free(data);
 }
@@ -535,6 +576,7 @@ void P_GroupLines(void)
 	short	firstlinenum;
 	short	sidedefOffset;
 	
+	side_t* sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 
 	// look up sector number for each subsector
 	for (i = 0; i < numsubsectors; i++, subsecnum++) {
@@ -545,6 +587,7 @@ void P_GroupLines(void)
 		subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 
 		subsectors[subsecnum].secnum = sides[sidedefOffset].secnum;
+		Z_RefIsActive(sidesRef);
 	}
 
 	// count number of lines in each sector

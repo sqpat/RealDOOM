@@ -63,6 +63,9 @@
 #define ALLOC_TYPE_SCREEN 22
 #define ALLOC_TYPE_THINKER 23
 #define ALLOC_TYPE_SUBSECS 24
+#define ALLOC_TYPE_SIDES 25
+#define ALLOC_TYPE_LINES 26
+#define ALLOC_TYPE_SECTORS 27
 
 typedef unsigned short MEMREF;  //used externally for allocations list index
 typedef unsigned short PAGEREF; //used internally for allocations list index

@@ -137,113 +137,116 @@ EV_DoPlat
     int		secnum;
     int		rtn;
 	MEMREF platRef;
-	
+	side_t* sides;
+	short side0secnum;
+
     secnum = -1;
     rtn = 0;
-
+	
     
     //	Activate all <type> plats that are in_stasis
-    switch(type)
-    {
-      case perpetualRaise:
-	P_ActivateInStasis(linetag);
-	break;
+    switch(type) {
+		  case perpetualRaise:
+			P_ActivateInStasis(linetag);
+			break;
 	
-      default:
-	break;
-    }
+		  default:
+			break;
+	}
 	
-    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
-    {
+	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	side0secnum = sides[lineside0].secnum;
+	while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
 
-	if (sectors[secnum].specialdataRef)
-	    continue;
-	
-	// Find lowest & highest floors around sector
-	rtn = 1;
+		if (sectors[secnum].specialdataRef) {
+			continue;
+		}
+		// Find lowest & highest floors around sector
+		rtn = 1;
 
-	platRef = Z_MallocEMSNew(sizeof(*plat), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
-	plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+
+
+		platRef = Z_MallocEMSNew(sizeof(*plat), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+		plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 
 	
-	plat->thinkerRef = P_AddThinker(platRef, TF_PLATRAISE);
+		plat->thinkerRef = P_AddThinker(platRef, TF_PLATRAISE);
 	 
 		
-	plat->type = type;
-	plat->secnum = secnum;
-	sectors[plat->secnum].specialdataRef = platRef;
-	plat->crush = false;
-	plat->tag = linetag;
-	
-	switch(type)
-	{
-	  case raiseToNearestAndChange:
-	    plat->speed = PLATSPEED/2;
-		sectors[secnum].floorpic = sectors[sides[lineside0].secnum].floorpic;
-	    plat->high = P_FindNextHighestFloor(secnum,sectors[secnum].floorheight);
-	    plat->wait = 0;
-	    plat->status = up;
-	    // NO MORE DAMAGE, IF APPLICABLE
-		sectors[secnum].special = 0;
+		plat->type = type;
+		plat->secnum = secnum;
+		sectors[plat->secnum].specialdataRef = platRef;
+		plat->crush = false;
+		plat->tag = linetag;
+		switch(type)
+		{
+		  case raiseToNearestAndChange:
+			plat->speed = PLATSPEED/2;
+			sectors[secnum].floorpic = sectors[side0secnum].floorpic;
+			plat->high = P_FindNextHighestFloor(secnum,sectors[secnum].floorheight);
+			plat->wait = 0;
+			plat->status = up;
+			// NO MORE DAMAGE, IF APPLICABLE
+			sectors[secnum].special = 0;
 
-		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_stnmov);
-	    break;
+			S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_stnmov);
+			break;
 	    
-	  case raiseAndChange:
-	    plat->speed = PLATSPEED/2;
-		sectors[secnum].floorpic = sectors[sides[lineside0].secnum].floorpic;
-	    plat->high = sectors[secnum].floorheight + amount*FRACUNIT;
-	    plat->wait = 0;
-	    plat->status = up;
+		  case raiseAndChange:
+			plat->speed = PLATSPEED/2;
+			sectors[secnum].floorpic = sectors[side0secnum].floorpic;
+			plat->high = sectors[secnum].floorheight + amount*FRACUNIT;
+			plat->wait = 0;
+			plat->status = up;
 
-		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_stnmov);
-	    break;
+			S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_stnmov);
+			break;
 	    
-	  case downWaitUpStay:
-	    plat->speed = PLATSPEED * 4;
-	    plat->low = P_FindLowestFloorSurrounding(secnum);
+		  case downWaitUpStay:
+			plat->speed = PLATSPEED * 4;
+			plat->low = P_FindLowestFloorSurrounding(secnum);
 
-	    if (plat->low > sectors[secnum].floorheight)
-		plat->low = sectors[secnum].floorheight;
+			if (plat->low > sectors[secnum].floorheight)
+			plat->low = sectors[secnum].floorheight;
 
-	    plat->high = sectors[secnum].floorheight;
-	    plat->wait = 35*PLATWAIT;
-	    plat->status = down;
-		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_pstart);
-	    break;
+			plat->high = sectors[secnum].floorheight;
+			plat->wait = 35*PLATWAIT;
+			plat->status = down;
+			S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_pstart);
+			break;
 	    
-	  case blazeDWUS:
-	    plat->speed = PLATSPEED * 8;
-	    plat->low = P_FindLowestFloorSurrounding(secnum);
+		  case blazeDWUS:
+			plat->speed = PLATSPEED * 8;
+			plat->low = P_FindLowestFloorSurrounding(secnum);
 
-	    if (plat->low > sectors[secnum].floorheight)
-		plat->low = sectors[secnum].floorheight;
+			if (plat->low > sectors[secnum].floorheight)
+			plat->low = sectors[secnum].floorheight;
 
-	    plat->high = sectors[secnum].floorheight;
-	    plat->wait = 35*PLATWAIT;
-	    plat->status = down;
-		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_pstart);
-	    break;
+			plat->high = sectors[secnum].floorheight;
+			plat->wait = 35*PLATWAIT;
+			plat->status = down;
+			S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_pstart);
+			break;
 	    
-	  case perpetualRaise:
-	    plat->speed = PLATSPEED;
-	    plat->low = P_FindLowestFloorSurrounding(secnum);
+		  case perpetualRaise:
+			plat->speed = PLATSPEED;
+			plat->low = P_FindLowestFloorSurrounding(secnum);
 
-	    if (plat->low > sectors[secnum].floorheight)
-		plat->low = sectors[secnum].floorheight;
+			if (plat->low > sectors[secnum].floorheight)
+			plat->low = sectors[secnum].floorheight;
 
-	    plat->high = P_FindHighestFloorSurrounding(secnum);
+			plat->high = P_FindHighestFloorSurrounding(secnum);
 
-	    if (plat->high < sectors[secnum].floorheight)
-		plat->high = sectors[secnum].floorheight;
+			if (plat->high < sectors[secnum].floorheight)
+			plat->high = sectors[secnum].floorheight;
 
-	    plat->wait = 35*PLATWAIT;
-	    plat->status = P_Random()&1;
+			plat->wait = 35*PLATWAIT;
+			plat->status = P_Random()&1;
 
-		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_pstart);
-	    break;
-	}
-	P_AddActivePlat(platRef);
+			S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_pstart);
+			break;
+		}
+		P_AddActivePlat(platRef);
     }
     return rtn;
 }

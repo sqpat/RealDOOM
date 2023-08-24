@@ -70,6 +70,10 @@
 
 // 4 27529006 1413669 2119421 181
 
+// after sidedefs:
+
+// 4 27594330 2009571 2836062 181
+
 #define ZONEID  0x1d4a11
 #define PAGE_FRAME_SIZE 0x4000
 #define MINFRAGMENT             64

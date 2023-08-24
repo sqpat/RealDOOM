@@ -111,7 +111,7 @@ void P_ArchiveWorld (void)
     line_t*		li;
     side_t*		si;
     short*		put;
-	
+	side_t* sides;
     put = (short *)save_p;
     
     // do sectors
@@ -138,7 +138,8 @@ void P_ArchiveWorld (void)
 	    if (li->sidenum[j] == -1)
 		continue;
 	    
-	    si = &sides[li->sidenum[j]];
+		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		si = &sides[li->sidenum[j]];
 
 	    *put++ = si->textureoffset >> FRACBITS;
 	    *put++ = si->rowoffset >> FRACBITS;
@@ -164,7 +165,7 @@ void P_UnArchiveWorld (void)
     line_t*		li;
     side_t*		si;
     short*		get;
-	
+	side_t* sides;
     get = (short *)save_p;
     
     // do sectors
@@ -191,7 +192,8 @@ void P_UnArchiveWorld (void)
 	{
 	    if (li->sidenum[j] == -1)
 		continue;
-	    si = &sides[li->sidenum[j]];
+		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		si = &sides[li->sidenum[j]];
 	    si->textureoffset = *get++ << FRACBITS;
 	    si->rowoffset = *get++ << FRACBITS;
 	    si->toptexture = *get++;
