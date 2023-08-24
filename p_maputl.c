@@ -28,7 +28,8 @@
 #include "doomdef.h"
 #include "p_local.h"
 
-
+#include "i_system.h"
+#include "doomstat.h"
 // State.
 #include "r_state.h"
 
@@ -340,7 +341,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 {
     int		blockx;
     int		blocky;
-	MEMREF* blocklinksList;
+	//MEMREF* blocklinksList;
 	mobj_t* changeThing;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
@@ -379,8 +380,8 @@ void P_UnsetThingPosition (MEMREF thingRef)
 			blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
 
 			if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky <bmapheight) {
-				blocklinksList = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
-				blocklinksList[blocky*bmapwidth+blockx] = thing->bnextRef;
+				//blocklinksList = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
+				blocklinks[blocky*bmapwidth+blockx] = thing->bnextRef;
 			}
 		}
     }
@@ -404,7 +405,7 @@ P_SetThingPosition (MEMREF thingRef)
 	mobj_t*		link;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	mobj_t* thingList;
-	MEMREF* blocklinksList;
+//	MEMREF* blocklinksList;
 
     
     // link into subsector
@@ -433,13 +434,9 @@ P_SetThingPosition (MEMREF thingRef)
 		blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
 		blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
 
-		if (blockx>=0
-			&& blockx < bmapwidth
-			&& blocky>=0
-			&& blocky < bmapheight)
-		{
-			blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
-			linkRef = blocklinksList[blocky*bmapwidth+blockx];
+		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
+			//blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
+			linkRef = blocklinks[blocky*bmapwidth+blockx];
 			thing->bprevRef = NULL_MEMREF;
 			thing->bnextRef = linkRef;
 			if (linkRef) {
@@ -450,7 +447,7 @@ P_SetThingPosition (MEMREF thingRef)
 
 			//*link = thing;
 			// todo is this right?
-			blocklinksList[blocky*bmapwidth + blockx] = thingRef;
+			blocklinks[blocky*bmapwidth + blockx] = thingRef;
 		} else {
 			// thing is off the map
 			thing->bnextRef = thing->bprevRef = NULL_MEMREF;
@@ -519,34 +516,35 @@ P_BlockLinesIterator
 // P_BlockThingsIterator
 //
 boolean
-P_BlockThingsIterator
+P_BlockThingsIterator2
 ( int			x,
   int			y,
-  boolean(*func)(MEMREF) )
+  boolean(*func)(MEMREF), char* file, int line )
 {
 	MEMREF mobjRef;
     mobj_t*		mobj;
-	MEMREF* blocklinksList;
+	//MEMREF* blocklinksList; 
 
-    if ( x<0
-	 || y<0
-	 || x>=bmapwidth
-	 || y>=bmapheight)
-    {
-	return true;
-    }
-    
-	blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
-
-    for (mobjRef = blocklinksList[y*bmapwidth+x] ; mobjRef; mobjRef = mobj->bnextRef) {
-		// will this cause stuff to lose scope...?
-		if (!func( mobjRef ) )
-			return false;
-
-		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+    if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
+		return true;
 	}
     
-	
+	//if (Z_RefIsActive(blocklinksRef)) {
+		//blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
+
+		for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
+			// will this cause stuff to lose scope...?
+			if (!func(mobjRef)) {
+				return false;
+			}
+
+			//blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
+			mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef); // necessary for bnextref...
+		}
+	//} else {
+
+		//I_Error("%s %i %i", file, line, gametic);  // p_map.c 430 322
+	//}
 	return true;
 }
 
@@ -786,7 +784,7 @@ P_PathTraverse
     int		count;
 		
     earlyout = flags & PT_EARLYOUT;
-		
+	
     validcount++;
     intercept_p = intercepts;
 	
@@ -858,7 +856,6 @@ P_PathTraverse
     // from skipping the break.
     mapx = xt1;
     mapy = yt1;
-	
     for (count = 0 ; count < 64 ; count++)
     {
 	if (flags & PT_ADDLINES)
@@ -869,7 +866,8 @@ P_PathTraverse
 	
 	if (flags & PT_ADDTHINGS)
 	{
-	    if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
+
+		if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
 		return false;	// early out
 	}
 		

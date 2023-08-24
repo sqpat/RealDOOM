@@ -491,19 +491,17 @@ void R_Subsector (int num) {
     subsector_t*	sub;
 	seg_t* segs;
 
-#ifdef RANGECHECK
-    if (num>=numsubsectors)
-	I_Error ("R_Subsector: ss %i with numss = %i",
-		 num,
-		 numsubsectors);
-#endif
-	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+	#ifdef RANGECHECK
+		if (num >= numsubsectors) {
+			I_Error("R_Subsector: ss %i with numss = %i", num, numsubsectors);
+		}
+	#endif
+	Z_RefIsActive(nodesRef);
 
     sscount++;
     sub = &subsectors[num];
     frontsector = sub->sector;
     count = sub->numlines;
-    line = &segs[sub->firstline];
 
     if (frontsector->floorheight < viewz) {
 		floorplane = R_FindPlane (frontsector->floorheight,
@@ -522,11 +520,14 @@ void R_Subsector (int num) {
 		ceilingplane = NULL;
 	}
     R_AddSprites (frontsector);	
+	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+	line = &segs[sub->firstline];
 
     while (count--) {
 		R_AddLine (line);
 		line++;
-    }
+		//Z_RefIsActive(segsRef);
+	}
 }
 
 
@@ -542,7 +543,8 @@ void R_RenderBSPNode (int bspnum) {
     int		side;
 	node_t* nodes;
     // Found a subsector?
-    if (bspnum & NF_SUBSECTOR) {
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == -1) {
 			R_Subsector(0);
 		}
@@ -551,6 +553,7 @@ void R_RenderBSPNode (int bspnum) {
 		}
 		return;
     }
+	Z_RefIsActive(nodesRef);
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	bsp = &nodes[bspnum];
     
@@ -566,6 +569,8 @@ void R_RenderBSPNode (int bspnum) {
 	if (R_CheckBBox(bsp->bbox[side ^ 1])) {
 		R_RenderBSPNode(bsp->children[side ^ 1]);
 	}
+
+
 }
 
 

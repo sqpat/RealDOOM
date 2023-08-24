@@ -85,7 +85,8 @@ short*          blockmaplump;
 fixed_t         bmaporgx;
 fixed_t         bmaporgy;
 // for thing chains
-MEMREF        blocklinksRef;
+//MEMREF        blocklinksRef;
+MEMREF        blocklinks[2000];
 
 
 // REJECT
@@ -246,10 +247,7 @@ void P_LoadSectors(int lump)
 
 	ms = (mapsector_t *)data;
 	ss = sectors;
-	for (i = 0; i < numsectors; i++, ss++, ms++)
-	{
-	
-
+	for (i = 0; i < numsectors; i++, ss++, ms++) {
 		ss->floorheight = SHORT(ms->floorheight) << FRACBITS;
 		ss->ceilingheight = SHORT(ms->ceilingheight) << FRACBITS;
 		ss->floorpic = R_FlatNumForName(ms->floorpic);
@@ -482,7 +480,7 @@ void P_LoadBlockMap(int lump)
 {
 	int         i;
 	int         count;
-	MEMREF* blocklinks;
+	//MEMREF* blocklinks;
 
 	W_CacheLumpNumCheck(lump, 11);
 	blockmaplump = W_CacheLumpNum(lump, PU_LEVEL);
@@ -499,8 +497,9 @@ void P_LoadBlockMap(int lump)
 
 	// clear out mobj chains
 	count = sizeof(*blocklinks)* bmapwidth*bmapheight;
-	blocklinksRef = Z_MallocEMSNew (count, PU_LEVEL, 0, ALLOC_TYPE_BLOCKLINKS);
-	blocklinks = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
+//	I_Error("count %i", count);
+//	blocklinksRef = Z_MallocEMSNew (count, PU_LEVEL, 0, ALLOC_TYPE_BLOCKLINKS);
+//	blocklinks = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
 	memset(blocklinks, 0, count);
 }
 

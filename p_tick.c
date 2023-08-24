@@ -145,6 +145,10 @@ void P_RunThinkers (void)
 			thinkerlist[currentthinker].prev = MAX_THINKERS;
 		} else {
 			if (thinkerlist[currentthinker].functionType) {
+				//if (!Z_RefIsActive(blocklinksRef)) {
+
+				//}
+
 				switch (thinkerlist[currentthinker].functionType) {
 					case TF_MOBJTHINKER:
 						P_MobjThinker(thinkerlist[currentthinker].memref);
@@ -196,22 +200,20 @@ void P_Ticker (void)
     int		i;
     
     // run the tic
-    if (paused)
-	return;
-		
+	if (paused) {
+		return;
+	}
     // pause if in menu and at least one tic has been run
-    if ( !netgame
-	 && menuactive
-	 && !demoplayback
-	 && players[consoleplayer].viewz != 1)
-    {
-	return;
+    if ( !netgame 	 && menuactive && !demoplayback && players[consoleplayer].viewz != 1) {
+		return;
     }
     
 		
-    for (i=0 ; i<MAXPLAYERS ; i++)
-	if (playeringame[i])
-	    P_PlayerThink (&players[i]);
+	for (i = 0; i < MAXPLAYERS; i++) {
+		if (playeringame[i]) {
+			P_PlayerThink(&players[i]);
+		}
+	}
 			
     P_RunThinkers ();
     P_UpdateSpecials ();

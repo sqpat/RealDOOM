@@ -161,16 +161,16 @@ void D_ProcessEvents (void)
     event_t*    ev;
         
     // IF STORE DEMO, DO NOT ACCEPT INPUT
-    if ( ( commercial )
-         && (W_CheckNumForName("map01")<0) )
-      return;
-        
-    for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) )
-    {
+	if ((commercial) && (W_CheckNumForName("map01") < 0)) {
+		return;
+	}
+
+    for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
         ev = &events[eventtail];
-        if (M_Responder (ev))
-            continue;               // menu ate the event
-        G_Responder (ev);
+		if (M_Responder(ev)) {
+			continue;               // menu ate the event
+		}
+		G_Responder (ev);
     }
 }
 
@@ -220,6 +220,8 @@ void D_Display (void)
                 
     redrawsbar = false;
     
+
+
     // change the view size if needed
     if (setsizeneeded)
     {
@@ -239,7 +241,7 @@ void D_Display (void)
 
     if (gamestate == GS_LEVEL && gametic)
         HU_Erase();
-    
+
     // do buffered drawing
     switch (gamestate)
     {
@@ -268,13 +270,19 @@ void D_Display (void)
         D_PageDrawer ();
         break;
     }
-    
+
+	// 47
+
     // draw buffered stuff to screen
     I_UpdateNoBlit ();
-    
+
+
     // draw the view directly
     if (gamestate == GS_LEVEL && !automapactive && gametic)
         R_RenderPlayerView (&players[displayplayer]);
+
+
+	// 52
 
     if (gamestate == GS_LEVEL && gametic)
         HU_Drawer ();
@@ -360,8 +368,12 @@ void D_Display (void)
 //
 extern  boolean         demorecording;
 
+byte copynode[46240];
+
 void D_DoomLoop (void)
 {
+	byte* nodes;
+	int i = 0;
     if (demorecording)
         G_BeginRecording ();
                 
@@ -378,31 +390,53 @@ void D_DoomLoop (void)
     while (1)
     {
         // frame syncronous IO operations
-        I_StartFrame ();                
-        
+		//45
+		I_StartFrame ();                
+		// 45
         // process one or more tics
-        if (singletics)
-        {
-            I_StartTic ();
-            D_ProcessEvents ();
+        if (singletics) {
+			I_StartTic ();
+			D_ProcessEvents ();
             G_BuildTiccmd (&netcmds[consoleplayer][maketic%BACKUPTICS]);
-            if (advancedemo)
-                D_DoAdvanceDemo ();
-            M_Ticker ();
-            G_Ticker ();
-            gametic++;
+			if (advancedemo) {
+				D_DoAdvanceDemo();
+			}
+			// 45, 52, 59, 62
+			M_Ticker ();
+			G_Ticker ();
+			// 46, 53, 61
+
+			gametic++;
             maketic++;
-        }
+
+		}
         else
         {
             TryRunTics (); // will run at least one tic
         }
-                
-        S_UpdateSounds (players[consoleplayer].moRef);// move positional sounds
-
+		//46
+		S_UpdateSounds (players[consoleplayer].moRef);// move positional sounds
+		//46
         // Update display, next frame, with current state.
         D_Display ();
-    }
+		// 52
+
+		if (gametic == 2) {
+			//nodes = (byte*)Z_LoadBytesFromEMS(nodesRef);
+			//memcpy(copynode, nodes, 46240);
+			//if (memcmp(copynode, nodes, 46240)) {  //46240
+			//	I_Error("badcopy");
+			//}
+		}
+		
+		else if (gametic > 2) {
+			//nodes = (byte*)Z_LoadBytesFromEMS(nodesRef);
+			//if (memcmp(copynode, nodes, 46240)) {
+			//	I_Error("unequal! %i %i ", i, gametic);
+			//}
+		}
+
+	}
 }
 
 

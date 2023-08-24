@@ -138,76 +138,63 @@ void P_XYMovement (MEMREF moRef)
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mobj_t* playermo;
 			
-    if (!mo->momx && !mo->momy)
-    {
-	if (mo->flags & MF_SKULLFLY)
-	{
-	    // the skull slammed into something
-	    mo->flags &= ~MF_SKULLFLY;
-	    mo->momx = mo->momy = mo->momz = 0;
+    if (!mo->momx && !mo->momy) {
+		if (mo->flags & MF_SKULLFLY) {
+			// the skull slammed into something
+			mo->flags &= ~MF_SKULLFLY;
+			mo->momx = mo->momy = mo->momz = 0;
 
-	    P_SetMobjState (moRef, mo->info->spawnstate);
-	}
-	return;
+			P_SetMobjState (moRef, mo->info->spawnstate);
+		}
+		return;
     }
 	
     player = mo->player;
 		
     if (mo->momx > MAXMOVE)
-	mo->momx = MAXMOVE;
+		mo->momx = MAXMOVE;
     else if (mo->momx < -MAXMOVE)
-	mo->momx = -MAXMOVE;
+		mo->momx = -MAXMOVE;
 
     if (mo->momy > MAXMOVE)
-	mo->momy = MAXMOVE;
+		mo->momy = MAXMOVE;
     else if (mo->momy < -MAXMOVE)
-	mo->momy = -MAXMOVE;
+		mo->momy = -MAXMOVE;
 		
     xmove = mo->momx;
     ymove = mo->momy;
 	
-    do
-    {
-	if (xmove > MAXMOVE/2 || ymove > MAXMOVE/2)
-	{
-	    ptryx = mo->x + xmove/2;
-	    ptryy = mo->y + ymove/2;
-	    xmove >>= 1;
-	    ymove >>= 1;
-	}
-	else
-	{
-	    ptryx = mo->x + xmove;
-	    ptryy = mo->y + ymove;
-	    xmove = ymove = 0;
-	}
+    do {
+		if (xmove > MAXMOVE/2 || ymove > MAXMOVE/2) {
+			ptryx = mo->x + xmove/2;
+			ptryy = mo->y + ymove/2;
+			xmove >>= 1;
+			ymove >>= 1;
+		} else {
+			ptryx = mo->x + xmove;
+			ptryy = mo->y + ymove;
+			xmove = ymove = 0;
+		}
 
 		
-	if (!P_TryMove (moRef, ptryx, ptryy))
-	{
-	    // blocked move
-	    if (mo->player)
-	    {	// try to slide along it
-		P_SlideMove (moRef);
-	    }
-	    else if (mo->flags & MF_MISSILE)
-	    {
-		// explode a missile
-		if (ceilingline &&
-		    ceilingline->backsector &&
-		    ceilingline->backsector->ceilingpic == skyflatnum)
-		{
-		    // Hack to prevent missiles exploding
-		    // against the sky.
-		    // Does not handle sky floors.
-		    P_RemoveMobj (moRef);
-		    return;
+		if (!P_TryMove (moRef, ptryx, ptryy)) {
+			// blocked move
+			if (mo->player) {	// try to slide along it
+				P_SlideMove (moRef);
+			} else if (mo->flags & MF_MISSILE) {
+				// explode a missile
+				if (ceilingline && ceilingline->backsector && ceilingline->backsector->ceilingpic == skyflatnum) {
+					// Hack to prevent missiles exploding
+					// against the sky.
+					// Does not handle sky floors.
+					P_RemoveMobj (moRef);
+					return;
+				}
+				P_ExplodeMissile (moRef);
+			} else {
+				mo->momx = mo->momy = 0;
+			}
 		}
-		P_ExplodeMissile (moRef);
-	    }
-	    else
-		mo->momx = mo->momy = 0;
-	}
     } while (xmove || ymove);
     
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
@@ -219,23 +206,22 @@ void P_XYMovement (MEMREF moRef)
 		return;
     }
 
-    if (mo->flags & (MF_MISSILE | MF_SKULLFLY) )
+	if (mo->flags & (MF_MISSILE | MF_SKULLFLY)) {
 		return; 	// no friction for missiles ever
-		
-    if (mo->z > mo->floorz)
-		return;		// no friction when airborne
+	}
 
-    if (mo->flags & MF_CORPSE) {
+	if (mo->z > mo->floorz) {
+		return;		// no friction when airborne
+	}
+    
+	if (mo->flags & MF_CORPSE) {
 		// do not stop sliding
 		//  if halfway off a step with some momentum
 
-		if (mo->momx > FRACUNIT/4
-			|| mo->momx < -FRACUNIT/4
-			|| mo->momy > FRACUNIT/4
-			|| mo->momy < -FRACUNIT/4)
-		{
-			if (mo->floorz != mo->subsector->sector->floorheight)
-			return;
+		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
+			if (mo->floorz != mo->subsector->sector->floorheight) {
+				return;
+			}
 		}
     }
 
@@ -244,8 +230,7 @@ void P_XYMovement (MEMREF moRef)
 	}
 
 
-    if (mo->momx > -STOPSPEED && mo->momx < STOPSPEED && mo->momy > -STOPSPEED && mo->momy < STOPSPEED
-		&& (!player->moRef || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) ) {
+    if (mo->momx > -STOPSPEED && mo->momx < STOPSPEED && mo->momy > -STOPSPEED && mo->momy < STOPSPEED && (!player->moRef || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) ) {
 	// if in a walking frame, stop moving
 
 		if (player && player->moRef > 4096) {
@@ -498,17 +483,11 @@ void P_MobjThinker (MEMREF mobjRef) {
 // P_SpawnMobj
 //
 MEMREF
-P_SpawnMobj
-( fixed_t	x,
-  fixed_t	y,
-  fixed_t	z,
-  mobjtype_t	type )
-{
+P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobj_t*	mobj;
     state_t*	st;
     mobjinfo_t*	info;
 	MEMREF mobjRef;
-	
 
 	mobjRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, 0, ALLOC_TYPE_LEVSPEC);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);

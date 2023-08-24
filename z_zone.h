@@ -112,6 +112,9 @@ void Z_ChangeTagEMSNew (MEMREF index, short tag);
 void Z_FreeEMSNew(PAGEREF block, int error);
 void Z_PrintAllocationInfo(MEMREF index);
 
+int Z_RefIsActive2(MEMREF memref, char* file, int line);
+
+
 //
 // This is used to get the local FILE:LINE info from CPP
 // prior to really call the function in question.
@@ -124,6 +127,7 @@ void Z_PrintAllocationInfo(MEMREF index);
 };
 
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a, __FILE__, __LINE__)
+#define Z_RefIsActive(a) Z_RefIsActive2(a, __FILE__, __LINE__)
 
 
 

@@ -154,10 +154,13 @@ P_TeleportMove
     yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
     yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
 
-    for (bx=xl ; bx<=xh ; bx++)
-	for (by=yl ; by<=yh ; by++)
-	    if (!P_BlockThingsIterator(bx,by,PIT_StompThing))
-		return false;
+	for (bx = xl; bx <= xh; bx++) {
+		for (by = yl; by <= yh; by++) {
+			if (!P_BlockThingsIterator(bx, by, PIT_StompThing)) {
+				return false;
+			}
+		}
+	}
     
     // the move is ok,
     // so link the thing into its new position
@@ -254,79 +257,76 @@ boolean PIT_CheckThing (MEMREF thingRef)
     boolean		solid;
     int			damage;
 	mobj_t* tmthingTarget;
-	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	mobj_t* tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
+	mobj_t* thing; 
+	mobj_t* tmthing; 
+	// don't clip against self
+	if (thingRef == tmthingRef) {
+		return true;
+	}
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
-    if (!(thing->flags & (MF_SOLID|MF_SPECIAL|MF_SHOOTABLE) ))
-	return true;
-    
+
+	if (!(thing->flags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
+		return true;
+	}
+
+
+	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
     blockdist = thing->radius + tmthing->radius;
 
-    if ( abs(thing->x - tmx) >= blockdist
-	 || abs(thing->y - tmy) >= blockdist )
-    {
-	// didn't hit it
-	return true;	
+    if ( abs(thing->x - tmx) >= blockdist || abs(thing->y - tmy) >= blockdist ) {
+		// didn't hit it
+		return true;	
     }
     
-    // don't clip against self
-    if (thingRef == tmthingRef)
-	return true;
-    
+
+
     // check for skulls slamming into things
-    if (tmthing->flags & MF_SKULLFLY)
-    {
-	damage = ((P_Random()%8)+1)*tmthing->info->damage;
+    if (tmthing->flags & MF_SKULLFLY) {
+		damage = ((P_Random()%8)+1)*tmthing->info->damage;
+		P_DamageMobj (thingRef, tmthingRef, tmthingRef, damage);
+		tmthing->flags &= ~MF_SKULLFLY;
+		tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
-	P_DamageMobj (thingRef, tmthingRef, tmthingRef, damage);
+		P_SetMobjState (tmthingRef, tmthing->info->spawnstate);
 	
-	tmthing->flags &= ~MF_SKULLFLY;
-	tmthing->momx = tmthing->momy = tmthing->momz = 0;
-	
-	P_SetMobjState (tmthingRef, tmthing->info->spawnstate);
-	
-	return false;		// stop moving
+		return false;		// stop moving
     }
 
     
     // missiles can hit other things
-    if (tmthing->flags & MF_MISSILE)
-    {
-	// see if it went over / under
-	if (tmthing->z > thing->z + thing->height)
-	    return true;		// overhead
-	if (tmthing->z+tmthing->height < thing->z)
-	    return true;		// underneath
+    if (tmthing->flags & MF_MISSILE) {
+		// see if it went over / under
+		if (tmthing->z > thing->z + thing->height)
+			return true;		// overhead
+		if (tmthing->z+tmthing->height < thing->z)
+			return true;		// underneath
 		
-	if (tmthing->targetRef) {
-		tmthingTarget = (mobj_t*)Z_LoadBytesFromEMS(tmthing->targetRef);
-		if (tmthingTarget->type == thing->type ||
-	    (tmthingTarget->type == MT_KNIGHT && thing->type == MT_BRUISER)||
-	    (tmthingTarget->type == MT_BRUISER && thing->type == MT_KNIGHT) ) {
-			// Don't hit same species as originator.
-			if (thingRef == tmthing->targetRef)
-				return true;
+		if (tmthing->targetRef) {
+			tmthingTarget = (mobj_t*)Z_LoadBytesFromEMS(tmthing->targetRef);
+			if (tmthingTarget->type == thing->type || (tmthingTarget->type == MT_KNIGHT && thing->type == MT_BRUISER)|| (tmthingTarget->type == MT_BRUISER && thing->type == MT_KNIGHT) ) {
+				// Don't hit same species as originator.
+				if (thingRef == tmthing->targetRef)
+					return true;
 
-			if (thing->type != MT_PLAYER)
-			{
-			// Explode, but do no damage.
-			// Let players missile other players.
-			return false;
+				if (thing->type != MT_PLAYER) {
+				// Explode, but do no damage.
+				// Let players missile other players.
+				return false;
+				}
 			}
 		}
-	}
-	if (! (thing->flags & MF_SHOOTABLE) )
-	{
-	    // didn't do any damage
-	    return !(thing->flags & MF_SOLID);	
-	}
+		if (! (thing->flags & MF_SHOOTABLE) ) {
+			// didn't do any damage
+			return !(thing->flags & MF_SOLID);	
+		}
 	
-	// damage / explode
-	damage = ((P_Random()%8)+1)*tmthing->info->damage;
-	P_DamageMobj (thingRef, tmthingRef, tmthing->targetRef, damage);
+		// damage / explode
+		damage = ((P_Random()%8)+1)*tmthing->info->damage;
+		P_DamageMobj (thingRef, tmthingRef, tmthing->targetRef, damage);
 
-	// don't traverse any more
-	return false;				
+		// don't traverse any more
+		return false;				
     }
     
     // check for special pickup
@@ -414,9 +414,10 @@ P_CheckPosition
     validcount++;
     numspechit = 0;
 
-    if ( tmflags & MF_NOCLIP )
-	return true;
-    
+	if (tmflags & MF_NOCLIP) {
+		return true;
+	}
+
     // Check things first, possibly picking things up.
     // The bounding box is extended by MAXRADIUS
     // because mobj_ts are grouped into mapblocks
@@ -427,22 +428,27 @@ P_CheckPosition
     yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
     yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
 
-    for (bx=xl ; bx<=xh ; bx++)
-	for (by=yl ; by<=yh ; by++)
-	    if (!P_BlockThingsIterator(bx,by,PIT_CheckThing))
-		return false;
-    
+	for (bx = xl; bx <= xh; bx++) {
+		for (by = yl; by <= yh; by++) {
+			if (!P_BlockThingsIterator(bx, by, PIT_CheckThing)) {
+				return false;
+			}
+		}
+	}
+
     // check lines
     xl = (tmbbox[BOXLEFT] - bmaporgx)>>MAPBLOCKSHIFT;
     xh = (tmbbox[BOXRIGHT] - bmaporgx)>>MAPBLOCKSHIFT;
     yl = (tmbbox[BOXBOTTOM] - bmaporgy)>>MAPBLOCKSHIFT;
     yh = (tmbbox[BOXTOP] - bmaporgy)>>MAPBLOCKSHIFT;
 
-    for (bx=xl ; bx<=xh ; bx++)
-	for (by=yl ; by<=yh ; by++)
-	    if (!P_BlockLinesIterator (bx,by,PIT_CheckLine))
-		return false;
-
+	for (bx = xl; bx <= xh; bx++) {
+		for (by = yl; by <= yh; by++) {
+			if (!P_BlockLinesIterator(bx, by, PIT_CheckLine)) {
+				return false;
+			}
+		}
+	}
     return true;
 }
 
@@ -1188,15 +1194,15 @@ boolean PIT_RadiusAttack (MEMREF thingRef)
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	mobj_t* bombspot;
 
-    if (!(thing->flags & MF_SHOOTABLE) )
-	return true;
-
+	if (!(thing->flags & MF_SHOOTABLE)) {
+		return true;
+	}
     // Boss spider and cyborg
     // take no damage from concussion.
-    if (thing->type == MT_CYBORG
-	|| thing->type == MT_SPIDER)
-	return true;	
-		
+	if (thing->type == MT_CYBORG || thing->type == MT_SPIDER) {
+		return true;
+	}
+
 	bombspot = (mobj_t*)Z_LoadBytesFromEMS(bombspotRef);
 
     dx = abs(thing->x - bombspot->x);
@@ -1205,16 +1211,17 @@ boolean PIT_RadiusAttack (MEMREF thingRef)
     dist = dx>dy ? dx : dy;
     dist = (dist - thing->radius) >> FRACBITS;
 
-    if (dist < 0)
-	dist = 0;
+	if (dist < 0) {
+		dist = 0;
+	}
 
-    if (dist >= bombdamage)
-	return true;	// out of range
+	if (dist >= bombdamage) {
+		return true;	// out of range
+	}
 
-    if ( P_CheckSight (thingRef, bombspotRef) )
-    {
-	// must be in direct path
-	P_DamageMobj (thingRef, bombspotRef, bombsourceRef, bombdamage - dist);
+    if ( P_CheckSight (thingRef, bombspotRef) ) {
+		// must be in direct path
+		P_DamageMobj (thingRef, bombspotRef, bombsourceRef, bombdamage - dist);
     }
     
     return true;
@@ -1227,33 +1234,38 @@ boolean PIT_RadiusAttack (MEMREF thingRef)
 //
 void
 P_RadiusAttack
-( MEMREF	spotRef,
-  MEMREF	sourceRef,
-  int		damage )
+(MEMREF	spotRef,
+	MEMREF	sourceRef,
+	int		damage)
 {
-    int		x;
-    int		y;
-    
-    int		xl;
-    int		xh;
-    int		yl;
-    int		yh;
-    
-    fixed_t	dist;
-	mobj_t* spot = (mobj_t *) Z_LoadBytesFromEMS(spotRef);
-	
-    dist = (damage+MAXRADIUS)<<FRACBITS;
-    yh = (spot->y + dist - bmaporgy)>>MAPBLOCKSHIFT;
-    yl = (spot->y - dist - bmaporgy)>>MAPBLOCKSHIFT;
-    xh = (spot->x + dist - bmaporgx)>>MAPBLOCKSHIFT;
-    xl = (spot->x - dist - bmaporgx)>>MAPBLOCKSHIFT;
-    bombspotRef = spotRef;
-    bombsourceRef = sourceRef;
-    bombdamage = damage;
-	
-    for (y=yl ; y<=yh ; y++)
-	for (x=xl ; x<=xh ; x++)
-	    P_BlockThingsIterator (x, y, PIT_RadiusAttack );
+	int		x;
+	int		y;
+
+	int		xl;
+	int		xh;
+	int		yl;
+	int		yh;
+
+	fixed_t	dist;
+	mobj_t* spot = (mobj_t *)Z_LoadBytesFromEMS(spotRef);
+
+	dist = (damage + MAXRADIUS) << FRACBITS;
+	yh = (spot->y + dist - bmaporgy) >> MAPBLOCKSHIFT;
+	yl = (spot->y - dist - bmaporgy) >> MAPBLOCKSHIFT;
+	xh = (spot->x + dist - bmaporgx) >> MAPBLOCKSHIFT;
+	xl = (spot->x - dist - bmaporgx) >> MAPBLOCKSHIFT;
+	bombspotRef = spotRef;
+	bombsourceRef = sourceRef;
+	bombdamage = damage;
+
+	for (y = yl; y <= yh; y++) {
+		for (x = xl; x <= xh; x++) {
+			P_BlockThingsIterator(x, y, PIT_RadiusAttack);
+		}
+	}
+
+
+
 }
 
 
@@ -1355,11 +1367,14 @@ P_ChangeSector
 	
     nofit = false;
     crushchange = crunch;
-	
+
     // re-check heights for all things near the moving sector
-    for (x=sector->blockbox[BOXLEFT] ; x<= sector->blockbox[BOXRIGHT] ; x++)
-	for (y=sector->blockbox[BOXBOTTOM];y<= sector->blockbox[BOXTOP] ; y++)
-	    P_BlockThingsIterator (x, y, PIT_ChangeSector);
+	for (x = sector->blockbox[BOXLEFT]; x <= sector->blockbox[BOXRIGHT]; x++) {
+		for (y = sector->blockbox[BOXBOTTOM]; y <= sector->blockbox[BOXTOP]; y++) {
+				P_BlockThingsIterator(x, y, PIT_ChangeSector); {
+			}
+		}
+	}
 	
 	
     return nofit;

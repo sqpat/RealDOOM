@@ -33,7 +33,7 @@
 #include "r_sky.h"
 
 
-
+#include "i_system.h"
 
 
 // Fineangles in the SCREENWIDTH wide window.
@@ -819,11 +819,10 @@ R_PointInSubsector
     nodenum = numnodes-1;
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 
-    while (! (nodenum & NF_SUBSECTOR) )
-    {
-	node = &nodes[nodenum];
-	side = R_PointOnSide (x, y, node);
-	nodenum = node->children[side];
+    while (! (nodenum & NF_SUBSECTOR) ) {
+		node = &nodes[nodenum];
+		side = R_PointOnSide (x, y, node);
+		nodenum = node->children[side];
     }
 	
     return &subsectors[nodenum & ~NF_SUBSECTOR];
@@ -889,8 +888,13 @@ void R_RenderPlayerView (player_t* player)
     // check for new console commands.
     NetUpdate ();
 
+	// 47
+
     // The head node is the last node output.
     R_RenderBSPNode (numnodes-1);
+
+
+	//52
     
     // Check for new console commands.
     NetUpdate ();

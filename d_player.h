@@ -72,7 +72,6 @@ typedef enum
 //
 typedef struct player_s
 {
-    //mobj_t*		mo;
 	MEMREF			moRef;
     playerstate_t	playerstate;
     ticcmd_t		cmd;

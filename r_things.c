@@ -516,7 +516,7 @@ void R_ProjectSprite (MEMREF thingRef)
         I_Error ("R_ProjectSprite: invalid sprite frame %i : %i ",
                  thing->sprite, thing->frame);
 #endif
-
+	thing = Z_LoadBytesFromEMS(thingRef);
     if (spriteframes[thing->frame & FF_FRAMEMASK].rotate)
     {
         // choose a different rotation based on player view
@@ -548,7 +548,7 @@ void R_ProjectSprite (MEMREF thingRef)
     // off the left side
     if (x2 < 0)
         return;
-    
+	thing = Z_LoadBytesFromEMS(thingRef);
     // store information in a vissprite
     vis = R_NewVisSprite ();
     vis->mobjflags = thing->flags;
@@ -634,13 +634,13 @@ void R_AddSprites (sector_t* sec)
         
     lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
-    if (lightnum < 0)           
-        spritelights = scalelight[0];
-    else if (lightnum >= LIGHTLEVELS)
-        spritelights = scalelight[LIGHTLEVELS-1];
-    else
-        spritelights = scalelight[lightnum];
-
+	if (lightnum < 0) {
+		spritelights = scalelight[0];
+	} else if (lightnum >= LIGHTLEVELS) {
+		spritelights = scalelight[LIGHTLEVELS - 1];
+	} else {
+		spritelights = scalelight[lightnum];
+	}
 
 	// todo:  gross... can be a bunch of things in diff pages..
 

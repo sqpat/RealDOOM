@@ -541,8 +541,9 @@ void AM_LevelInit(void)
 
     AM_findMinMaxBoundaries();
     scale_mtof = FixedDiv(min_scale_mtof, (int) (0.7*FRACUNIT));
-    if (scale_mtof > max_scale_mtof)
-	scale_mtof = min_scale_mtof;
+	if (scale_mtof > max_scale_mtof) {
+		scale_mtof = min_scale_mtof;
+	}
     scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
 }
 

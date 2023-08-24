@@ -65,33 +65,45 @@ P_UnArchiveThinkers too
 x 1. Change all thinker function calls to pass in memref instead of pointer?
 x 2. Change the functions in thinkers to be the enum? 
 x 3. activeceilings
-
-~: stuff like EV_VerticalDoor
- - pass in memref not mobj*
- ? all the p_enemy A_functions
+ 
  - braintargets[braintargeton]
  - find all uses of P_SpawnMobj
  - intercept_t struct has a pointer
  - P_BlockThingsIterator
+    - consider this in a static spot...
+
 1: sector_t mobj_t* thinglist
   - simple change to memref*
 2 sectors to sector refs, etc?
 
 
+sound originRef thing...
+ - needs ref, x, y
+  ? maybe inner takes x/y and you can pass in null for the degen case
+
+
+
+ 
+
+
+ 
+NOW (fix memory issues)
+ - THEN degenmobj_t etc to memref
+ - THEN segs, etc to ems
+ - THEN all wad lumps to ems
+
+TODO why was there a 0 allocation
+TODO vileobj pointer (and test)
+TODO test braintargets
+? change crossbspnode etc to use indices not addressesma
+! next/prev memrefs in those thinglists are bad..
+- eventually fix savedata
 
 
 
 
-TODO: this thing
 
-//
-// PIT_VileCheck
-// Detect a corpse that could be raised.
-//
-mobj_t*		corpsehit;
-mobj_t*		vileobj;
-fixed_t		viletryx;
-fixed_t		viletryy;
-
-
-Fix the multipage allocation/dealloc bugs!
+R_RenderMaskedSegRange
+ (from drawsprte)
+ (from drawmasked)
+  (from)

@@ -1548,7 +1548,8 @@ A_PainShootSkull
     newmobjRef = P_SpawnMobj (x , y, z, MT_SKULL);
 	newmobj = (mobj_t*)Z_LoadBytesFromEMS(newmobjRef);
     // Check for movements.
-    if (!P_TryMove (newmobjRef, newmobj->x, newmobj->y))
+
+	if (!P_TryMove (newmobjRef, newmobj->x, newmobj->y))
     {
 	// kill it immediately
 	P_DamageMobj (newmobjRef,actorRef,actorRef,10000);	
@@ -1660,6 +1661,7 @@ void A_Explode (MEMREF thingyRef)
 {
 	mobj_t* thingy = (mobj_t*)Z_LoadBytesFromEMS(thingyRef);
     P_RadiusAttack ( thingyRef, thingy->targetRef, 128 );
+
 }
 
 

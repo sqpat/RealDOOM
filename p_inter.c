@@ -795,21 +795,22 @@ P_DamageMobj
 	mobj_t* inflictor;
 	mobj_t* target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
 	
-    if ( !(target->flags & MF_SHOOTABLE) )
-	return;	// shouldn't happen...
+	if (!(target->flags & MF_SHOOTABLE)) {
+		return;	// shouldn't happen...
+	}
 		
-    if (target->health <= 0)
-	return;
-
-    if ( target->flags & MF_SKULLFLY )
-    {
-	target->momx = target->momy = target->momz = 0;
+	if (target->health <= 0) {
+		return;
+	}
+    if ( target->flags & MF_SKULLFLY ) {
+		target->momx = target->momy = target->momz = 0;
     }
 	
     player = target->player;
-    if (player && gameskill == sk_baby)
-	damage >>= 1; 	// take half damage in trainer mode
-		
+    
+	if (player && gameskill == sk_baby) {
+		damage >>= 1; 	// take half damage in trainer mode
+	}
 
     // Some close combat weapons should not
     // inflict thrust and push the victim out of reach,

@@ -253,7 +253,7 @@ boolean P_CrossBSPNode (int bspnum)
 	node_t* nodes;
 	node_t* nodes2;
 	bspcounter++;
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	
 
 	//if (bspnum > numsubsectors) {
 		//I_Error("too big %i %i", bspnum&(~NF_SUBSECTOR), numsubsectors, bspnum);
@@ -261,22 +261,14 @@ boolean P_CrossBSPNode (int bspnum)
 
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == -1) {
-
 			return P_CrossSubsector(0);
 		} else {
-//			if (bspnum&(~NF_SUBSECTOR) == 2955) {
-//130943
-			if (bspcounter == 130942){
-				I_Error("B early : ss %i with numss = %i %i %i %i", bspnum&(~NF_SUBSECTOR), numsubsectors, numreads, pageins, pageouts);
-			}
-			//I_Error("early ");
-
 			return P_CrossSubsector(bspnum&(~NF_SUBSECTOR));
 		}
     }
 		
 
-
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	bsp = &nodes[bspnum];
     
     // decide which side the start point is on
@@ -285,20 +277,11 @@ boolean P_CrossBSPNode (int bspnum)
 		side = 0;	// an "on" should cross both sides
 	}
 	//nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	bsp = &nodes[bspnum];
-
-    // cross the starting side
-	nodes2 = (node_t*)Z_LoadBytesFromEMS(nodesRef);
-	if (nodes != nodes2) {
-		I_Error("inequality %i %p %p", bspnum&(~NF_SUBSECTOR), numsubsectors, nodes, nodes2);
-	}
 
 	if (!P_CrossBSPNode(bsp->children[side])) {
 		return false;
-	}
-
-	if (bspcounter == 130942) {
-		I_Error("A early : ss %i with numss = %i %i %i %i", bspnum&(~NF_SUBSECTOR), numsubsectors, numreads, pageins, pageouts);
 	}
 
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
