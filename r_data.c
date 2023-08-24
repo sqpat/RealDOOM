@@ -719,7 +719,8 @@ void R_InitFlats (void)
 void R_InitSpriteLumps (void)
 {
     int         i;
-    patch_t     *patch;
+    
+	patch_t     *patch;
 	fixed_t     *spritewidth;
 	fixed_t     *spriteoffset;
 	fixed_t     *spritetopoffset;
@@ -750,7 +751,56 @@ void R_InitSpriteLumps (void)
     }
 }
 
+/*
 
+
+void R_InitSpriteLumps (void)
+{
+	int         i;
+	MEMREF		patchRef;
+	patch_t     *patch;
+	fixed_t     *spritewidth;
+	fixed_t     *spriteoffset;
+	fixed_t     *spritetopoffset;
+	fixed_t		patchwidth;
+	fixed_t		patchleftoffset;
+	fixed_t		patchtopoffset;
+
+
+
+	firstspritelump = W_GetNumForName ("S_START") + 1;
+	lastspritelump = W_GetNumForName ("S_END") - 1;
+
+	numspritelumps = lastspritelump - firstspritelump + 1;
+	spritewidthRef = Z_MallocEMSNew (numspritelumps*4, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
+	spriteoffsetRef = Z_MallocEMSNew (numspritelumps*4, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
+	spritetopoffsetRef = Z_MallocEMSNew (numspritelumps*4, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
+
+	spritewidth = (fixed_t*)Z_LoadBytesFromEMS(spritewidthRef);
+	spriteoffset = (fixed_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
+	spritetopoffset = (fixed_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
+
+	for (i=0 ; i< numspritelumps ; i++)
+	{
+		if (!(i&63))
+			printf (".");
+
+		W_CacheLumpNumCheck(firstspritelump + i, 16);
+		patchRef = W_CacheLumpNumEMS (firstspritelump+i, PU_CACHE);
+		patch = (patch_t*) Z_LoadBytesFromEMS(patchRef);
+		patchwidth = SHORT(patch->width) << FRACBITS;
+		patchleftoffset = SHORT(patch->leftoffset) << FRACBITS;
+		patchtopoffset = SHORT(patch->topoffset) << FRACBITS;
+		spritewidth = (fixed_t*)Z_LoadBytesFromEMS(spritewidthRef);
+		spriteoffset = (fixed_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
+		spritetopoffset = (fixed_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
+		spritewidth[i] = patchwidth;
+		spriteoffset[i] = patchleftoffset;
+		spritetopoffset[i] = patchtopoffset;
+	}
+}
+
+*/
 
 //
 // R_InitColormaps
@@ -858,14 +908,14 @@ int     R_CheckTextureNumForName (char *name)
 // Calls R_CheckTextureNumForName,
 //  aborts with error message.
 //
-short     R_TextureNumForName (char* name)
+short     R_TextureNumForName2 (char* name, char* file, int line)
 {
 	short         i;
     i = R_CheckTextureNumForName (name);
 
     if (i==-1) {
-        I_Error ("R_TextureNumForName: %s not found %i %i %i",
-                 name, numreads, pageins, pageouts);
+        I_Error ("R_TextureNumForName: %s not found %i %i %i %s %i",
+                 name, numreads, pageins, pageouts, file, line);
     }
     return i;
 }

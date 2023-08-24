@@ -730,27 +730,31 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	MEMREF mobjRef;
 	mobj_t*		mobj;
     int			i;
+	short mthingtype = mthing->type;
+	short mthingx = mthing->x;
+	short mthingy = mthing->y;
+	short mthingangle = mthing->angle;
 
     // not playing?
-    if (!playeringame[mthing->type-1])
+    if (!playeringame[mthingtype-1])
 	return;					
 		
-    p = &players[mthing->type-1];
+    p = &players[mthingtype-1];
 
     if (p->playerstate == PST_REBORN)
-	G_PlayerReborn (mthing->type-1);
+	G_PlayerReborn (mthingtype-1);
 
-    x 		= mthing->x << FRACBITS;
-    y 		= mthing->y << FRACBITS;
+    x 		= mthingx << FRACBITS;
+    y 		= mthingy << FRACBITS;
     z		= ONFLOORZ;
     mobjRef	= P_SpawnMobj (x,y,z, MT_PLAYER);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
     // set color translations for player sprites
-    if (mthing->type > 1)		
-	mobj->flags |= (mthing->type-1)<<MF_TRANSSHIFT;
+    if (mthingtype > 1)		
+		mobj->flags |= (mthingtype-1)<<MF_TRANSSHIFT;
 		
-    mobj->angle	= ANG45 * (mthing->angle/45);
+    mobj->angle	= ANG45 * (mthingangle/45);
     mobj->player = p;
     mobj->health = p->health;
 
@@ -768,16 +772,17 @@ void P_SpawnPlayer (mapthing_t* mthing)
     P_SetupPsprites (p);
     
     // give all cards in death match mode
-    if (deathmatch)
-	for (i=0 ; i<NUMCARDS ; i++)
-	    p->cards[i] = true;
-			
-    if (mthing->type-1 == consoleplayer)
-    {
-	// wake up the status bar
-	ST_Start ();
-	// wake up the heads up text
-	HU_Start ();		
+	if (deathmatch) {
+		for (i = 0; i < NUMCARDS; i++) {
+			p->cards[i] = true;
+		}
+	}
+
+    if (mthingtype-1 == consoleplayer) {
+		// wake up the status bar
+		ST_Start ();
+		// wake up the heads up text
+		HU_Start ();		
     }
 }
 
@@ -796,23 +801,30 @@ void P_SpawnMapThing (mapthing_t* mthing)
     fixed_t		y;
     fixed_t		z;
 	MEMREF mobjRef;
+	short mthingtype = mthing->type;
+	short mthingoptions = mthing->options;
+	short mthingx = mthing->x;
+	short mthingy = mthing->y;
+	short mthingangle = mthing->angle;
+	mapthing_t copyofthing = *mthing;
+
 		
     // count deathmatch start positions
-    if (mthing->type == 11)
+    if (mthingtype == 11)
     {
 	if (deathmatch_p < &deathmatchstarts[10])
 	{
-	    memcpy (deathmatch_p, mthing, sizeof(*mthing));
+	    memcpy (deathmatch_p, &mthing, sizeof(mthing));
 	    deathmatch_p++;
 	}
 	return;
     }
 	
     // check for players specially
-    if (mthing->type <= 4)
+    if (mthingtype <= 4)
     {
 	// save spots for respawning in network games
-	playerstarts[mthing->type-1] = *mthing;
+	playerstarts[mthingtype-1] = *mthing;
 	if (!deathmatch)
 	    P_SpawnPlayer (mthing);
 
@@ -820,7 +832,7 @@ void P_SpawnMapThing (mapthing_t* mthing)
     }
 
     // check for apropriate skill level
-    if (!netgame && (mthing->options & 16) )
+    if (!netgame && (mthingoptions & 16) )
 	return;
 		
     if (gameskill == sk_baby)
@@ -830,18 +842,18 @@ void P_SpawnMapThing (mapthing_t* mthing)
     else
 	bit = 1<<(gameskill-1);
 
-    if (!(mthing->options & bit) )
+    if (!(mthingoptions & bit) )
 	return;
 	
     // find which type to spawn
     for (i=0 ; i< NUMMOBJTYPES ; i++)
-	if (mthing->type == mobjinfo[i].doomednum)
+	if (mthingtype == mobjinfo[i].doomednum)
 	    break;
 	
     if (i==NUMMOBJTYPES)
 	I_Error ("P_SpawnMapThing: Unknown type %i at (%i, %i)",
-		 mthing->type,
-		 mthing->x, mthing->y);
+		 mthingtype,
+		 mthingx, mthingy);
 		
     // don't spawn keycards and players in deathmatch
     if (deathmatch && mobjinfo[i].flags & MF_NOTDMATCH)
@@ -856,28 +868,29 @@ void P_SpawnMapThing (mapthing_t* mthing)
     }
     
     // spawn it
-    x = mthing->x << FRACBITS;
-    y = mthing->y << FRACBITS;
+    x = mthingx << FRACBITS;
+    y = mthingy << FRACBITS;
 
     if (mobjinfo[i].flags & MF_SPAWNCEILING)
-	z = ONCEILINGZ;
+		z = ONCEILINGZ;
     else
-	z = ONFLOORZ;
+		z = ONFLOORZ;
     
     mobjRef = P_SpawnMobj (x,y,z, i);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-    mobj->spawnpoint = *mthing;
+    mobj->spawnpoint = copyofthing;
 
     if (mobj->tics > 0)
-	mobj->tics = 1 + (P_Random () % mobj->tics);
+		mobj->tics = 1 + (P_Random () % mobj->tics);
     if (mobj->flags & MF_COUNTKILL)
-	totalkills++;
+		totalkills++;
     if (mobj->flags & MF_COUNTITEM)
-	totalitems++;
+		totalitems++;
 		
-    mobj->angle = ANG45 * (mthing->angle/45);
-    if (mthing->options & MTF_AMBUSH)
-	mobj->flags |= MF_AMBUSH;
+    mobj->angle = ANG45 * (mthingangle/45);
+    
+	if (mthingoptions & MTF_AMBUSH)
+		mobj->flags |= MF_AMBUSH;
 }
 
 

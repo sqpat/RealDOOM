@@ -239,7 +239,7 @@ void W_Reload (void)
         lump_p->size = LONG(fileinfo->size);
 
 		if (lumpcacheEMS[i]) {
-			Z_FreeEMSNew(lumpcacheEMS[i], 6);
+			Z_FreeEMSNew(lumpcacheEMS[i]);
 		}
 
 
@@ -421,7 +421,8 @@ W_ReadLumpEMS
     lumpinfo_t* l;
     int         handle;
 	byte		*dest;
-        
+	mapsidedef_t* data;
+
     if (lump >= numlumps)
         I_Error ("W_ReadLump: %i >= numlumps",lump);
 
@@ -438,7 +439,6 @@ W_ReadLumpEMS
     else
         handle = l->handle;
 	dest = Z_LoadBytesFromEMS(lumpRef);
-
     lseek (handle, l->position, SEEK_SET);
     c = read (handle, dest, l->size);
 
@@ -448,7 +448,16 @@ W_ReadLumpEMS
 
     if (l->handle == -1)
         close (handle);
-                
+
+	if (lump == 75) {
+		data = (mapsidedef_t *)dest;
+		//I_Error("data is %i %i %i %s", lump, lumpRef, l->size, data->toptexture);
+
+
+
+	}
+
+
     I_EndRead ();
 }
 
@@ -558,6 +567,9 @@ W_CacheLumpNumEMS
 		//printf ("cache miss on lump %i\n",lump);
 		// needs an 'owner' apparently...
 		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump);
+		if (lump == 75) {
+			//I_Error("did it %i %i %i", W_LumpLength(lump), lump, lumpcacheEMS[lump]);
+		}
 		W_ReadLumpEMS(lump, lumpcacheEMS[lump]);
 	} else {
 		//printf ("cache hit on lump %i\n",lump);
@@ -656,6 +668,6 @@ void W_Profile (void)
 
 
 void W_EraseLumpCache(short index) {
-	I_Error("eraselumpcache %i", index);
+	//I_Error("eraselumpcache %i", index);
 	lumpcacheEMS[index] = 0;
 }

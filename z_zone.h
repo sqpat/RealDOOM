@@ -115,7 +115,7 @@ MEMREF Z_MallocEMSNewWithBackRef(int size, unsigned char tag, unsigned char user
 void Z_CheckEMSAllocations(PAGEREF block, int i, int var2, int var3);
 #endif
 void Z_ChangeTagEMSNew (MEMREF index, short tag);
-void Z_FreeEMSNew(PAGEREF block, int error);
+void Z_FreeEMSNew(PAGEREF block);
 
 int Z_RefIsActive2(MEMREF memref, char* file, int line);
 

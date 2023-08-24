@@ -766,7 +766,7 @@ void Z_InitEMS (void)
 
 
 
-void Z_FreeEMSNew (PAGEREF block, int error)
+void Z_FreeEMSNew (PAGEREF block)
 {
 
 
@@ -904,7 +904,7 @@ Z_FreeTagsEMS
             continue;
         
         if (allocations[block].tag >= lowtag && allocations[block].tag <= hightag)
-            Z_FreeEMSNew ( block, 8);
+            Z_FreeEMSNew ( block);
     }
 
    
@@ -1430,7 +1430,7 @@ Z_MallocEMSNewWithBackRef
                    // printf ("stats %i %i %i %i %i %i\n", base, allocations[base].prev, allocations[base].next, rover, allocations[rover].prev, allocations[rover].next);
 
                 base = allocations[base].prev;
-                Z_FreeEMSNew (rover, 9);
+                Z_FreeEMSNew (rover);
                 base = allocations[base].next;
                 rover = allocations[base].next;
             }

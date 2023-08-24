@@ -152,7 +152,7 @@ void P_RunThinkers (void)
 			// time to remove it
 			thinkerlist[thinkerlist[currentthinker].next].prev = thinkerlist[currentthinker].prev;
 			thinkerlist[thinkerlist[currentthinker].prev].next = thinkerlist[currentthinker].next;
-			Z_FreeEMSNew (thinkerlist[currentthinker].memref, 5);
+			Z_FreeEMSNew (thinkerlist[currentthinker].memref);
 			thinkerlist[currentthinker].prev = MAX_THINKERS;
 
 		} else {

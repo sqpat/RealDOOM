@@ -399,9 +399,10 @@ P_CheckSight2
     bitnum = 1 << (pnum&7);
 	
 
+	
 
     // Check in REJECT table.
-    if (rejectmatrix[bytenum]&bitnum) {
+    if (((byte*) Z_LoadBytesFromEMS(rejectmatrixRef)) [bytenum]&bitnum) {
 		sightcounts[0]++;
 
 		// can't possibly be connected

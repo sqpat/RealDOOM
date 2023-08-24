@@ -1047,10 +1047,10 @@ void ST_doPaletteStuff(void)
     if (palette != st_palette)
     {
         st_palette = palette;
-        //palRef =  W_CacheLumpNumEMS (lu_palette, PU_CACHE)+palette*768;
-		//pal = (byte*)Z_LoadBytesFromEMS(palRef);
+        palRef =  W_CacheLumpNumEMS (lu_palette, PU_CACHE);
+		pal = (byte*)Z_LoadBytesFromEMS(palRef) + palette * 768;
 
-		pal = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + palette * 768;
+		//pal = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + palette * 768;
         I_SetPalette (pal);
     }
 
@@ -1465,11 +1465,11 @@ void ST_Stop (void)
 	if (st_stopped)
         return;
 
-//	palRef = W_CacheLumpNumEMS(lu_palette, PU_CACHE);
-//	pal = (byte*)Z_LoadBytesFromEMS(palRef);
-//	I_SetPalette (pal);
+	palRef = W_CacheLumpNumEMS(lu_palette, PU_CACHE);
+	pal = (byte*)Z_LoadBytesFromEMS(palRef);
+	I_SetPalette (pal);
 
-	I_SetPalette(W_CacheLumpNum(lu_palette, PU_CACHE));
+//	I_SetPalette(W_CacheLumpNum(lu_palette, PU_CACHE));
 
     st_stopped = true;
 }

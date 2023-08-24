@@ -435,7 +435,7 @@ P_SetThingPosition (MEMREF thingRef)
 	thing->secnum = subsectorsecnum;
 
 	if (thing->secnum < 0 || thing->secnum > numsectors) {
-		I_Error("P_SetThingPosition: thing being set with bad secnum %i: numsectors:%i subsecnum %i num subsectors %i", subsectorsecnum, numsectors, subsecnum, numsubsectors);
+		I_Error("P_SetThingPosition: thing being set with bad secnum %i: numsectors:%i subsecnum %i num subsectors %i thingRef %i", subsectorsecnum, numsectors, subsecnum, numsubsectors, thingRef);
 	}
 
     if ( ! (thing->flags & MF_NOSECTOR) ) {

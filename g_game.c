@@ -1256,7 +1256,7 @@ void G_DoLoadGame (void)
 
 	}
 
-    Z_FreeEMSNew (savebufferRef, 2); 
+    Z_FreeEMSNew (savebufferRef); 
  
     if (setsizeneeded)
         R_ExecuteSetViewSize ();
@@ -1713,7 +1713,7 @@ boolean G_CheckDemoStatus (void)
 		demobuffer = Z_LoadBytesFromEMS(demobufferRef);
         *demo_p++ = DEMOMARKER; 
         M_WriteFile (demoname, demobuffer, demo_p - demobuffer);
-        Z_FreeEMSNew (demobufferRef, 22); 
+        Z_FreeEMSNew (demobufferRef); 
         demorecording = false; 
         I_Error ("Demo %s recorded",demoname); 
     } 

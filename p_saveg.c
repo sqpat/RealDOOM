@@ -280,7 +280,7 @@ void P_UnArchiveThinkers (void)
 			P_RemoveMobj(thinkerlist[currentthinker].memref);
 		} 
 		else {
-			Z_FreeEMSNew(thinkerlist[currentthinker].memref, 4);
+			Z_FreeEMSNew(thinkerlist[currentthinker].memref);
 		}
 
 	currentthinker = next;
