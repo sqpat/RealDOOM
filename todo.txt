@@ -66,12 +66,32 @@ x 1. Change all thinker function calls to pass in memref instead of pointer?
 x 2. Change the functions in thinkers to be the enum? 
 x 3. activeceilings
 
-0: stuff like EV_VerticalDoor
+~: stuff like EV_VerticalDoor
  - pass in memref not mobj*
  ? all the p_enemy A_functions
+ - braintargets[braintargeton]
+ - find all uses of P_SpawnMobj
+ - intercept_t struct has a pointer
+ - P_BlockThingsIterator
 1: sector_t mobj_t* thinglist
   - simple change to memref*
 2 sectors to sector refs, etc?
 
 
 
+
+
+
+TODO: this thing
+
+//
+// PIT_VileCheck
+// Detect a corpse that could be raised.
+//
+mobj_t*		corpsehit;
+mobj_t*		vileobj;
+fixed_t		viletryx;
+fixed_t		viletryy;
+
+
+Fix the multipage allocation/dealloc bugs!

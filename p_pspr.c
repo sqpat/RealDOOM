@@ -178,8 +178,11 @@ P_SetPsprite
 	// Modified handling.
 	if (state->action.acp2)
 	{
+
 	    state->action.acp2(player, psp);
-	    if (!psp->state)
+
+
+		if (!psp->state)
 		break;
 	}
 	
@@ -231,7 +234,7 @@ void P_BringUpWeapon (player_t* player)
 	player->pendingweapon = player->readyweapon;
 		
     if (player->pendingweapon == wp_chainsaw)
-	S_StartSound (player->mo, sfx_sawup);
+	S_StartSoundFromRef (player->moRef, sfx_sawup);
 		
     newstate = weaponinfo[player->pendingweapon].upstate;
 
@@ -334,14 +337,15 @@ boolean P_CheckAmmo (player_t* player)
 void P_FireWeapon (player_t* player)
 {
     statenum_t	newstate;
+	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 	
     if (!P_CheckAmmo (player))
 	return;
 	
-    P_SetMobjState (player->mo, S_PLAY_ATK1);
+    P_SetMobjState (player->moRef, S_PLAY_ATK1);
     newstate = weaponinfo[player->readyweapon].atkstate;
     P_SetPsprite (player, ps_weapon, newstate);
-    P_NoiseAlert (player->mo, player->mo);
+    P_NoiseAlert (player->moRef, player->moRef);
 }
 
 
@@ -373,18 +377,19 @@ A_WeaponReady
 {	
     statenum_t	newstate;
     int		angle;
+	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
     
     // get out of attack state
-    if (player->mo->state == &states[S_PLAY_ATK1]
-	|| player->mo->state == &states[S_PLAY_ATK2] )
+    if (playermo->state == &states[S_PLAY_ATK1]
+	|| playermo->state == &states[S_PLAY_ATK2] )
     {
-	P_SetMobjState (player->mo, S_PLAY);
+	P_SetMobjState (player->moRef, S_PLAY);
     }
     
     if (player->readyweapon == wp_chainsaw
 	&& psp->state == &states[S_SAW])
     {
-	S_StartSound (player->mo, sfx_sawidl);
+	S_StartSoundFromRef (player->moRef, sfx_sawidl);
     }
     
     // check for change
@@ -419,6 +424,7 @@ A_WeaponReady
     psp->sx = FRACUNIT + FixedMul (player->bob, finecosine[angle]);
     angle &= FINEANGLES/2-1;
     psp->sy = WEAPONTOP + FixedMul (player->bob, finesine[angle]);
+
 }
 
 
@@ -538,7 +544,7 @@ A_GunFlash
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    P_SetMobjState (player->mo, S_PLAY_ATK2);
+    P_SetMobjState (player->moRef, S_PLAY_ATK2);
     P_SetPsprite (player,ps_flash,weaponinfo[player->readyweapon].flashstate);
 }
 
@@ -560,26 +566,31 @@ A_Punch
     angle_t	angle;
     int		damage;
     int		slope;
+	mobj_t* playermo = (mobj_t*) Z_LoadBytesFromEMS(player->moRef);
+	mobj_t* linetarget;
 	
     damage = (P_Random ()%10+1)<<1;
 
     if (player->powers[pw_strength])	
 	damage *= 10;
 
-    angle = player->mo->angle;
+    angle = playermo->angle;
     angle += (P_Random()-P_Random())<<18;
-    slope = P_AimLineAttack (player->mo, angle, MELEERANGE);
-    P_LineAttack (player->mo, angle, MELEERANGE, slope, damage);
+    slope = P_AimLineAttack (player->moRef, angle, MELEERANGE);
+    P_LineAttack (player->moRef, angle, MELEERANGE, slope, damage);
 
     // turn to face target
-    if (linetarget)
+    if (linetargetRef)
     {
-	S_StartSound (player->mo, sfx_punch);
-	player->mo->angle = R_PointToAngle2 (player->mo->x,
-					     player->mo->y,
-					     linetarget->x,
-					     linetarget->y);
+		S_StartSoundFromRef(player->moRef, sfx_punch);
+	linetarget = (mobj_t*) Z_LoadBytesFromEMS(linetargetRef);
+	playermo->angle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
     }
+
+	if (player->moRef > 4096) {
+		I_Error("found it 1");
+	}
+
 }
 
 
@@ -594,40 +605,42 @@ A_Saw
     angle_t	angle;
     int		damage;
     int		slope;
+	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+	mobj_t* linetarget; 
 
     damage = 2*(P_Random ()%10+1);
-    angle = player->mo->angle;
+    angle = playermo->angle;
     angle += (P_Random()-P_Random())<<18;
     
     // use meleerange + 1 se the puff doesn't skip the flash
-    slope = P_AimLineAttack (player->mo, angle, MELEERANGE+1);
-    P_LineAttack (player->mo, angle, MELEERANGE+1, slope, damage);
+    slope = P_AimLineAttack (player->moRef, angle, MELEERANGE+1);
+    P_LineAttack (player->moRef, angle, MELEERANGE+1, slope, damage);
 
-    if (!linetarget)
+    if (!linetargetRef)
     {
-	S_StartSound (player->mo, sfx_sawful);
+		S_StartSoundFromRef(player->moRef, sfx_sawful);
 	return;
     }
-    S_StartSound (player->mo, sfx_sawhit);
+	S_StartSoundFromRef(player->moRef, sfx_sawhit);
 	
+	linetarget = (mobj_t*)Z_LoadBytesFromEMS(linetargetRef);
     // turn to face target
-    angle = R_PointToAngle2 (player->mo->x, player->mo->y,
-			     linetarget->x, linetarget->y);
-    if (angle - player->mo->angle > ANG180)
+    angle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
+    if (angle - playermo->angle > ANG180)
     {
-	if (angle - player->mo->angle < -ANG90/20)
-	    player->mo->angle = angle + ANG90/21;
+	if (angle - playermo->angle < -ANG90/20)
+		playermo->angle = angle + ANG90/21;
 	else
-	    player->mo->angle -= ANG90/20;
+		playermo->angle -= ANG90/20;
     }
     else
     {
-	if (angle - player->mo->angle > ANG90/20)
-	    player->mo->angle = angle - ANG90/21;
+	if (angle - playermo->angle > ANG90/20)
+		playermo->angle = angle - ANG90/21;
 	else
-	    player->mo->angle += ANG90/20;
+		playermo->angle += ANG90/20;
     }
-    player->mo->flags |= MF_JUSTATTACKED;
+	playermo->flags |= MF_JUSTATTACKED;
 }
 
 
@@ -641,7 +654,7 @@ A_FireMissile
   pspdef_t*	psp ) 
 {
     player->ammo[weaponinfo[player->readyweapon].ammo]--;
-    P_SpawnPlayerMissile (player->mo, MT_ROCKET);
+    P_SpawnPlayerMissile (player->moRef, MT_ROCKET);
 }
 
 
@@ -654,7 +667,7 @@ A_FireBFG
   pspdef_t*	psp ) 
 {
     player->ammo[weaponinfo[player->readyweapon].ammo] -= BFGCELLS;
-    P_SpawnPlayerMissile (player->mo, MT_BFG);
+    P_SpawnPlayerMissile (player->moRef, MT_BFG);
 }
 
 
@@ -673,7 +686,7 @@ A_FirePlasma
 		  ps_flash,
 		  weaponinfo[player->readyweapon].flashstate+(P_Random ()&1) );
 
-    P_SpawnPlayerMissile (player->mo, MT_PLASMA);
+    P_SpawnPlayerMissile (player->moRef, MT_PLASMA);
 }
 
 
@@ -686,23 +699,23 @@ A_FirePlasma
 fixed_t		bulletslope;
 
 
-void P_BulletSlope (mobj_t*	mo)
+void P_BulletSlope (MEMREF moRef)
 {
     angle_t	an;
-    
+	mobj_t* linetarget;
+	mobj_t*	mo = (mobj_t*) Z_LoadBytesFromEMS(moRef);
     // see which target is to be aimed at
     an = mo->angle;
-    bulletslope = P_AimLineAttack (mo, an, 16*64*FRACUNIT);
+    bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
 
-    if (!linetarget)
-    {
-	an += 1<<26;
-	bulletslope = P_AimLineAttack (mo, an, 16*64*FRACUNIT);
-	if (!linetarget)
-	{
-	    an -= 2<<26;
-	    bulletslope = P_AimLineAttack (mo, an, 16*64*FRACUNIT);
-	}
+    if (!linetargetRef) {
+		an += 1<<26;
+		bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
+		linetarget = (mobj_t*)Z_LoadBytesFromEMS(linetargetRef);
+		if (!linetarget) {
+			an -= 2<<26;
+			bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
+		}
     }
 }
 
@@ -712,19 +725,22 @@ void P_BulletSlope (mobj_t*	mo)
 //
 void
 P_GunShot
-( mobj_t*	mo,
+( MEMREF moRef,
   boolean	accurate )
 {
     angle_t	angle;
     int		damage;
-	
+	mobj_t*	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+
     damage = 5*(P_Random ()%3+1);
     angle = mo->angle;
 
     if (!accurate)
 	angle += (P_Random()-P_Random())<<18;
 
-    P_LineAttack (mo, angle, MISSILERANGE, bulletslope, damage);
+    P_LineAttack (moRef, angle, MISSILERANGE, bulletslope, damage);
+
+
 }
 
 
@@ -736,17 +752,19 @@ A_FirePistol
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    S_StartSound (player->mo, sfx_pistol);
+	
+	S_StartSoundFromRef(player->moRef, sfx_pistol);
 
-    P_SetMobjState (player->mo, S_PLAY_ATK2);
+    P_SetMobjState (player->moRef, S_PLAY_ATK2);
     player->ammo[weaponinfo[player->readyweapon].ammo]--;
 
     P_SetPsprite (player,
 		  ps_flash,
 		  weaponinfo[player->readyweapon].flashstate);
 
-    P_BulletSlope (player->mo);
-    P_GunShot (player->mo, !player->refire);
+    P_BulletSlope (player->moRef);
+    P_GunShot (player->moRef, !player->refire);
+
 }
 
 
@@ -760,8 +778,8 @@ A_FireShotgun
 {
     int		i;
 	
-    S_StartSound (player->mo, sfx_shotgn);
-    P_SetMobjState (player->mo, S_PLAY_ATK2);
+	S_StartSoundFromRef(player->moRef, sfx_shotgn);
+    P_SetMobjState (player->moRef, S_PLAY_ATK2);
 
     player->ammo[weaponinfo[player->readyweapon].ammo]--;
 
@@ -769,10 +787,10 @@ A_FireShotgun
 		  ps_flash,
 		  weaponinfo[player->readyweapon].flashstate);
 
-    P_BulletSlope (player->mo);
+    P_BulletSlope (player->moRef);
 	
     for (i=0 ; i<7 ; i++)
-	P_GunShot (player->mo, false);
+		P_GunShot (player->moRef, false);
 }
 
 
@@ -788,10 +806,11 @@ A_FireShotgun2
     int		i;
     angle_t	angle;
     int		damage;
+	mobj_t* playermo;
 		
 	
-    S_StartSound (player->mo, sfx_dshtgn);
-    P_SetMobjState (player->mo, S_PLAY_ATK2);
+	S_StartSoundFromRef(player->moRef, sfx_dshtgn);
+    P_SetMobjState (player->moRef, S_PLAY_ATK2);
 
     player->ammo[weaponinfo[player->readyweapon].ammo]-=2;
 
@@ -799,14 +818,15 @@ A_FireShotgun2
 		  ps_flash,
 		  weaponinfo[player->readyweapon].flashstate);
 
-    P_BulletSlope (player->mo);
+    P_BulletSlope (player->moRef);
 	
+	playermo = (mobj_t*) Z_LoadBytesFromEMS(player->moRef);
     for (i=0 ; i<20 ; i++)
     {
 	damage = 5*(P_Random ()%3+1);
-	angle = player->mo->angle;
+	angle = playermo->angle;
 	angle += (P_Random()-P_Random())<<19;
-	P_LineAttack (player->mo,
+	P_LineAttack (player->moRef,
 		      angle,
 		      MISSILERANGE,
 		      bulletslope + ((P_Random()-P_Random())<<5), damage);
@@ -822,12 +842,12 @@ A_FireCGun
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    S_StartSound (player->mo, sfx_pistol);
+    S_StartSoundFromRef (player->moRef, sfx_pistol);
 
     if (!player->ammo[weaponinfo[player->readyweapon].ammo])
 	return;
 		
-    P_SetMobjState (player->mo, S_PLAY_ATK2);
+    P_SetMobjState (player->moRef, S_PLAY_ATK2);
     player->ammo[weaponinfo[player->readyweapon].ammo]--;
 
     P_SetPsprite (player,
@@ -836,9 +856,9 @@ A_FireCGun
 		  + psp->state
 		  - &states[S_CHAIN1] );
 
-    P_BulletSlope (player->mo);
+    P_BulletSlope (player->moRef);
 	
-    P_GunShot (player->mo, !player->refire);
+    P_GunShot (player->moRef, !player->refire);
 }
 
 
@@ -872,6 +892,7 @@ void A_BFGSpray (mobj_t* mo)
     int			j;
     int			damage;
     angle_t		an;
+	mobj_t* linetarget;
 	
     // offset angles from its attack angle
     for (i=0 ; i<40 ; i++)
@@ -880,10 +901,11 @@ void A_BFGSpray (mobj_t* mo)
 
 	// mo->target is the originator (player)
 	//  of the missile
-	P_AimLineAttack (mo->target, an, 16*64*FRACUNIT);
+	P_AimLineAttack (mo->targetRef, an, 16*64*FRACUNIT);
 
-	if (!linetarget)
+	if (!linetargetRef)
 	    continue;
+	linetarget = (mobj_t*)Z_LoadBytesFromEMS(linetargetRef);
 
 	P_SpawnMobj (linetarget->x,
 		     linetarget->y,
@@ -894,7 +916,7 @@ void A_BFGSpray (mobj_t* mo)
 	for (j=0;j<15;j++)
 	    damage += (P_Random()&7) + 1;
 
-	P_DamageMobj (linetarget, mo->target,mo->target, damage);
+	P_DamageMobj (linetargetRef, mo->targetRef,mo->targetRef, damage);
     }
 }
 
@@ -907,7 +929,7 @@ A_BFGsound
 ( player_t*	player,
   pspdef_t*	psp )
 {
-    S_StartSound (player->mo, sfx_bfg);
+	S_StartSoundFromRef(player->moRef, sfx_bfg);
 }
 
 

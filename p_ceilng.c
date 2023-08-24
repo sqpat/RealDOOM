@@ -67,7 +67,7 @@ void T_MoveCeiling (MEMREF memref)
 	      default:
 		S_StartSound((mobj_t *)&ceiling->sector->soundorg,
 			     sfx_stnmov);
-		// ?
+		// ? 
 		break;
 	    }
 	}

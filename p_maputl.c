@@ -336,44 +336,55 @@ void P_LineOpening (line_t* linedef)
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void P_UnsetThingPosition (mobj_t* thing)
+void P_UnsetThingPosition (MEMREF thingRef)
 {
     int		blockx;
     int		blocky;
-	mobj_t** blocklinks;
+	MEMREF* blocklinksList;
+	mobj_t* changeThing;
+	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+
 
     if ( ! (thing->flags & MF_NOSECTOR) )
     {
 	// inert things don't need to be in blockmap?
 	// unlink from subsector
-	if (thing->snext)
-	    thing->snext->sprev = thing->sprev;
+		if (thing->snextRef) {
+			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thing->snextRef);
+			changeThing->sprevRef = thing->sprevRef;
+		}
 
-	if (thing->sprev)
-	    thing->sprev->snext = thing->snext;
-	else
-	    thing->subsector->sector->thinglist = thing->snext;
+		if (thing->sprevRef) {
+			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thing->sprevRef);
+			changeThing->snextRef = thing->snextRef;
+		}
+		else {
+			thing->subsector->sector->thinglistRef = thing->snextRef;
+		}
     }
-	
+	// just in case, refreshing this in memory...
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     if ( ! (thing->flags & MF_NOBLOCKMAP) )
     {
 	// inert things don't need to be in blockmap
 	// unlink from block map
-	if (thing->bnext)
-	    thing->bnext->bprev = thing->bprev;
+		if (thing->bnextRef) {
+			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thing->bnextRef);
+			changeThing->bprevRef = thing->bprevRef;
+		}
 	
-	if (thing->bprev)
-	    thing->bprev->bnext = thing->bnext;
+		if (thing->bprevRef) {
+			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thing->bprevRef);
+			changeThing->bnextRef = thing->bnextRef;
+		}
 	else
 	{
 	    blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
 	    blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
 
-	    if (blockx>=0 && blockx < bmapwidth
-		&& blocky>=0 && blocky <bmapheight)
-	    {
-			blocklinks = (mobj_t**) Z_LoadBytesFromEMS(blocklinksRef);
-			blocklinks[blocky*bmapwidth+blockx] = thing->bnext;
+	    if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky <bmapheight) {
+			blocklinksList = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
+			blocklinksList[blocky*bmapwidth+blockx] = thing->bnextRef;
 	    }
 	}
     }
@@ -387,61 +398,67 @@ void P_UnsetThingPosition (mobj_t* thing)
 // Sets thing->subsector properly
 //
 void
-P_SetThingPosition (mobj_t* thing)
+P_SetThingPosition (MEMREF thingRef)
 {
     subsector_t*	ss;
     sector_t*		sec;
     int			blockx;
     int			blocky;
-    mobj_t**		link;
-	mobj_t** blocklinks;
+    MEMREF		linkRef;
+	mobj_t*		link;
+	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	mobj_t* thingList;
+	MEMREF* blocklinksList;
 
     
     // link into subsector
     ss = R_PointInSubsector (thing->x,thing->y);
     thing->subsector = ss;
     
-    if ( ! (thing->flags & MF_NOSECTOR) )
-    {
-	// invisible things don't go into the sector links
-	sec = ss->sector;
+    if ( ! (thing->flags & MF_NOSECTOR) ) {
+		// invisible things don't go into the sector links
+		sec = ss->sector;
 	
-	thing->sprev = NULL;
-	thing->snext = sec->thinglist;
+		thing->sprevRef = NULL_MEMREF;
+		thing->snextRef = sec->thinglistRef;
 
-	if (sec->thinglist)
-	    sec->thinglist->sprev = thing;
+		if (sec->thinglistRef) {
+			thingList = (mobj_t*)Z_LoadBytesFromEMS(sec->thinglistRef);
+			thingList->sprevRef = thingRef;
+		}
 
-	sec->thinglist = thing;
+		sec->thinglistRef = thingRef;
     }
 
     
     // link into blockmap
-    if ( ! (thing->flags & MF_NOBLOCKMAP) )
-    {
-	// inert things don't need to be in blockmap		
-	blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
-	blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
+    if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
+		// inert things don't need to be in blockmap		
+		blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
+		blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
 
-	if (blockx>=0
-	    && blockx < bmapwidth
-	    && blocky>=0
-	    && blocky < bmapheight)
-	{
-		blocklinks = (mobj_t**)Z_LoadBytesFromEMS(blocklinksRef);
-	    link = &blocklinks[blocky*bmapwidth+blockx];
-	    thing->bprev = NULL;
-	    thing->bnext = *link;
-	    if (*link)
-		(*link)->bprev = thing;
+		if (blockx>=0
+			&& blockx < bmapwidth
+			&& blocky>=0
+			&& blocky < bmapheight)
+		{
+			blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
+			linkRef = blocklinksList[blocky*bmapwidth+blockx];
+			thing->bprevRef = NULL_MEMREF;
+			thing->bnextRef = linkRef;
+			if (linkRef) {
+				link = (mobj_t*)Z_LoadBytesFromEMS(linkRef);
+				link->bprevRef = thingRef;
+			}
+			
 
-	    *link = thing;
-	}
-	else
-	{
-	    // thing is off the map
-	    thing->bnext = thing->bprev = NULL;
-	}
+			//*link = thing;
+			// todo is this right?
+			blocklinksList[blocky*bmapwidth + blockx] = thingRef;
+		} else {
+			// thing is off the map
+			thing->bnextRef = thing->bprevRef = NULL_MEMREF;
+		}
     }
 }
 
@@ -509,10 +526,11 @@ boolean
 P_BlockThingsIterator
 ( int			x,
   int			y,
-  boolean(*func)(mobj_t*) )
+  boolean(*func)(MEMREF) )
 {
+	MEMREF mobjRef;
     mobj_t*		mobj;
-	mobj_t** blocklinks;
+	MEMREF* blocklinksList;
 
     if ( x<0
 	 || y<0
@@ -522,16 +540,18 @@ P_BlockThingsIterator
 	return true;
     }
     
-	blocklinks = (mobj_t**)Z_LoadBytesFromEMS(blocklinksRef);
-		
-    for (mobj = blocklinks[y*bmapwidth+x] ;
-	 mobj ;
-	 mobj = mobj->bnext)
-    {
-	if (!func( mobj ) )
-	    return false;
-    }
-    return true;
+	blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
+
+    for (mobjRef = blocklinksList[y*bmapwidth+x] ; mobjRef; mobjRef = mobj->bnextRef) {
+		// will this cause stuff to lose scope...?
+		if (!func( mobjRef ) )
+			return false;
+
+		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	}
+    
+	
+	return true;
 }
 
 
@@ -611,7 +631,7 @@ PIT_AddLineIntercepts (line_t* ld)
 //
 // PIT_AddThingIntercepts
 //
-boolean PIT_AddThingIntercepts (mobj_t* thing)
+boolean PIT_AddThingIntercepts (MEMREF thingRef)
 {
     fixed_t		x1;
     fixed_t		y1;
@@ -626,6 +646,8 @@ boolean PIT_AddThingIntercepts (mobj_t* thing)
     divline_t		dl;
     
     fixed_t		frac;
+	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+
 	
     tracepositive = (trace.dx ^ trace.dy)>0;
 		
@@ -665,7 +687,7 @@ boolean PIT_AddThingIntercepts (mobj_t* thing)
 
     intercept_p->frac = frac;
     intercept_p->isaline = false;
-    intercept_p->d.thing = thing;
+    intercept_p->d.thingRef = thingRef;
     intercept_p++;
 
     return true;		// keep going

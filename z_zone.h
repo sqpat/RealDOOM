@@ -103,7 +103,7 @@ typedef struct memblock_s
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS (int lowtag, int hightag);
-void* Z_LoadBytesFromEMS (MEMREF index);
+void* Z_LoadBytesFromEMS2 (MEMREF index, char* file, int line);
 MEMREF Z_MallocEMSNew(int size, unsigned char tag, unsigned char user, unsigned char sourceHint);
 MEMREF Z_MallocEMSNewWithBackRef(int size, unsigned char tag, unsigned char user, unsigned char sourceHint, short backRef);
 void Z_CheckEMSAllocations(PAGEREF block, int i, int var2, int var3);
@@ -121,6 +121,8 @@ void Z_PrintAllocationInfo(MEMREF index);
           I_Error("Z_CT at "__FILE__":%i",__LINE__); \
           Z_ChangeTag2(p,t); \
 };
+
+#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a, __FILE__, __LINE__)
 
 
 

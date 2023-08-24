@@ -105,27 +105,27 @@ extern int		iquetail;
 
 void P_RespawnSpecials (void);
 
-mobj_t*
+MEMREF
 P_SpawnMobj
 ( fixed_t	x,
   fixed_t	y,
   fixed_t	z,
   mobjtype_t	type );
 
-void 	P_RemoveMobj (mobj_t* th);
-boolean	P_SetMobjState (mobj_t* mobj, statenum_t state);
+void 	P_RemoveMobj (MEMREF th);
+boolean	P_SetMobjState (MEMREF mobj, statenum_t state);
 void 	P_MobjThinker (MEMREF memref);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int damage);
-mobj_t* P_SpawnMissile (mobj_t* source, mobj_t* dest, mobjtype_t type);
-void	P_SpawnPlayerMissile (mobj_t* source, mobjtype_t type);
+MEMREF P_SpawnMissile (MEMREF source, MEMREF dest, mobjtype_t type);
+void	P_SpawnPlayerMissile (MEMREF source, mobjtype_t type);
 
 
 //
 // P_ENEMY
 //
-void P_NoiseAlert (mobj_t* target, mobj_t* emmiter);
+void P_NoiseAlert (MEMREF target, MEMREF emmiter);
 
 
 //
@@ -145,7 +145,7 @@ typedef struct
     fixed_t	frac;		// along trace line
     boolean	isaline;
     union {
-	mobj_t*	thing;
+	MEMREF	thingRef;
 	line_t*	line;
     }			d;
 } intercept_t;
@@ -172,7 +172,7 @@ extern fixed_t		lowfloor;
 void 	P_LineOpening (line_t* linedef);
 
 boolean P_BlockLinesIterator (int x, int y, boolean(*func)(line_t*) );
-boolean P_BlockThingsIterator (int x, int y, boolean(*func)(mobj_t*) );
+boolean P_BlockThingsIterator (int x, int y, boolean(*func)(MEMREF) );
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -189,8 +189,8 @@ P_PathTraverse
   int		flags,
   boolean	(*trav) (intercept_t *));
 
-void P_UnsetThingPosition (mobj_t* thing);
-void P_SetThingPosition (mobj_t* thing);
+void P_UnsetThingPosition (MEMREF thing);
+void P_SetThingPosition (MEMREF thing);
 
 
 //
@@ -206,26 +206,26 @@ extern fixed_t		tmceilingz;
 
 extern	line_t*		ceilingline;
 
-boolean P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y);
-boolean P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
-boolean P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y);
-void	P_SlideMove (mobj_t* mo);
-boolean P_CheckSight (mobj_t* t1, mobj_t* t2);
+boolean P_CheckPosition (MEMREF thing, fixed_t x, fixed_t y);
+boolean P_TryMove (MEMREF thing, fixed_t x, fixed_t y);
+boolean P_TeleportMove (MEMREF thing, fixed_t x, fixed_t y);
+void	P_SlideMove (MEMREF mo);
+boolean P_CheckSight (MEMREF t1, MEMREF t2);
 void 	P_UseLines (player_t* player);
 
 boolean P_ChangeSector (sector_t* sector, boolean crunch);
 
-extern mobj_t*	linetarget;	// who got hit (or NULL)
+extern MEMREF	linetargetRef;	// who got hit (or NULL)
 
 fixed_t
 P_AimLineAttack
-( mobj_t*	t1,
+(MEMREF	t1,
   angle_t	angle,
   fixed_t	distance );
 
 void
 P_LineAttack
-( mobj_t*	t1,
+(MEMREF	t1,
   angle_t	angle,
   fixed_t	distance,
   fixed_t	slope,
@@ -233,8 +233,8 @@ P_LineAttack
 
 void
 P_RadiusAttack
-( mobj_t*	spot,
-  mobj_t*	source,
+(MEMREF	spot,
+	MEMREF	source,
   int		damage );
 
 
@@ -261,14 +261,14 @@ extern int		clipammo[NUMAMMO];
 
 void
 P_TouchSpecialThing
-( mobj_t*	special,
-  mobj_t*	toucher );
+(MEMREF	special,
+	MEMREF	toucher );
 
 void
 P_DamageMobj
-( mobj_t*	target,
-  mobj_t*	inflictor,
-  mobj_t*	source,
+(MEMREF	target,
+	MEMREF	inflictor,
+	MEMREF	source,
   int		damage );
 
 

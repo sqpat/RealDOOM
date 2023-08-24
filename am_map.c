@@ -344,16 +344,17 @@ void AM_saveScaleAndLoc(void)
 //
 void AM_restoreScaleAndLoc(void)
 {
+	mobj_t* playerMo;
 
     m_w = old_m_w;
     m_h = old_m_h;
-    if (!followplayer)
-    {
-	m_x = old_m_x;
-	m_y = old_m_y;
+    if (!followplayer) {
+		m_x = old_m_x;
+		m_y = old_m_y;
     } else {
-	m_x = plr->mo->x - m_w/2;
-	m_y = plr->mo->y - m_h/2;
+		playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+		m_x = playerMo->x - m_w/2;
+		m_y = playerMo->y - m_h/2;
     }
     m_x2 = m_x + m_w;
     m_y2 = m_y + m_h;
@@ -451,6 +452,7 @@ void AM_initVariables(void)
 {
     int pnum;
     static event_t st_notify = { ev_keyup, AM_MSGENTERED };
+	mobj_t* playerMo; 
 
     automapactive = true;
     fb = screens[0];
@@ -473,8 +475,9 @@ void AM_initVariables(void)
 		break;
   
     plr = &players[pnum];
-    m_x = plr->mo->x - m_w/2;
-    m_y = plr->mo->y - m_h/2;
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+	m_x = playerMo->x - m_w/2;
+    m_y = playerMo->y - m_h/2;
     AM_changeWindowLoc();
 
     // for saving & restoring
@@ -749,17 +752,20 @@ void AM_changeWindowScale(void)
 //
 //
 //
-void AM_doFollowPlayer(void)
-{
+void AM_doFollowPlayer(void) {
 
-    if (f_oldloc.x != plr->mo->x || f_oldloc.y != plr->mo->y)
+	mobj_t* playerMo;
+
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+
+    if (f_oldloc.x != playerMo->x || f_oldloc.y != playerMo->y)
     {
-	m_x = FTOM(MTOF(plr->mo->x)) - m_w/2;
-	m_y = FTOM(MTOF(plr->mo->y)) - m_h/2;
+	m_x = FTOM(MTOF(playerMo->x)) - m_w/2;
+	m_y = FTOM(MTOF(playerMo->y)) - m_h/2;
 	m_x2 = m_x + m_w;
 	m_y2 = m_y + m_h;
-	f_oldloc.x = plr->mo->x;
-	f_oldloc.y = plr->mo->y;
+	f_oldloc.x = playerMo->x;
+	f_oldloc.y = playerMo->y;
 
 	//  m_x = FTOM(MTOF(plr->mo->x - m_w/2));
 	//  m_y = FTOM(MTOF(plr->mo->y - m_h/2));
@@ -1236,18 +1242,21 @@ void AM_drawPlayers(void)
     static int 	their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
     int		their_color = -1;
     int		color;
+	mobj_t* playerMo;
 
-    if (!netgame)
-    {
-	if (cheating)
-	    AM_drawLineCharacter
-		(cheat_player_arrow, NUMCHEATPLYRLINES, 0,
-		 plr->mo->angle, WHITE, plr->mo->x, plr->mo->y);
-	else
-	    AM_drawLineCharacter
-		(player_arrow, NUMPLYRLINES, 0, plr->mo->angle,
-		 WHITE, plr->mo->x, plr->mo->y);
-	return;
+	
+
+    if (!netgame) {
+		playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+		if (cheating)
+			AM_drawLineCharacter
+			(cheat_player_arrow, NUMCHEATPLYRLINES, 0,
+				playerMo->angle, WHITE, playerMo->x, playerMo->y);
+		else
+			AM_drawLineCharacter
+			(player_arrow, NUMPLYRLINES, 0, playerMo->angle,
+			 WHITE, playerMo->x, playerMo->y);
+		return;
     }
 
     for (i=0;i<MAXPLAYERS;i++)
@@ -1266,9 +1275,10 @@ void AM_drawPlayers(void)
 	else
 	    color = their_colors[their_color];
 	
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(p->moRef);
 	AM_drawLineCharacter
-	    (player_arrow, NUMPLYRLINES, 0, p->mo->angle,
-	     color, p->mo->x, p->mo->y);
+	    (player_arrow, NUMPLYRLINES, 0, playerMo->angle,
+	     color, playerMo->x, playerMo->y);
     }
 
 }
@@ -1280,17 +1290,16 @@ AM_drawThings
 {
     int		i;
     mobj_t*	t;
+	MEMREF tRef;
 
-    for (i=0;i<numsectors;i++)
-    {
-	t = sectors[i].thinglist;
-	while (t)
-	{
-	    AM_drawLineCharacter
-		(thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
-		 16<<FRACBITS, t->angle, colors+lightlev, t->x, t->y);
-	    t = t->snext;
-	}
+    for (i=0;i<numsectors;i++) {
+		tRef = sectors[i].thinglistRef;
+		while (tRef) {
+			t = (mobj_t*) Z_LoadBytesFromEMS(tRef);
+			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
+			 16<<FRACBITS, t->angle, colors+lightlev, t->x, t->y);
+			tRef = t->snextRef;
+		}
     }
 }
 

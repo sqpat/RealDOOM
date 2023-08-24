@@ -244,6 +244,8 @@ void I_ReadCyberCmd(ticcmd_t *cmd)
 }
 
 
+/*
+
 void I_Tactile(int on, int off, int total)
 {
     if (!isCyberPresent)
@@ -279,3 +281,5 @@ void I_Tactile(int on, int off, int total)
     sregs.es = FP_SEG(&RMI);
     int386x(DPMI_INT, &regs, &regs, &sregs);
 }
+
+*/

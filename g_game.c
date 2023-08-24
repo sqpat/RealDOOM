@@ -199,7 +199,7 @@ char            savedescription[32];
  
 #define BODYQUESIZE     32
 
-mobj_t*         bodyque[BODYQUESIZE]; 
+MEMREF          bodyque[BODYQUESIZE]; 
 int             bodyqueslot; 
  
 void*           statcopy;                               // for statistics driver
@@ -598,7 +598,7 @@ void G_Ticker (void)
     int         i;
     int         buf; 
     ticcmd_t*   cmd;
-    
+	mobj_t* playerMo;
     // do player reborns if needed
     for (i=0 ; i<MAXPLAYERS ; i++) 
         if (playeringame[i] && players[i].playerstate == PST_REBORN) 
@@ -677,8 +677,10 @@ void G_Ticker (void)
                     I_Error ("consistency failure (%i should be %i)",
                              cmd->consistancy, consistancy[i][buf]); 
                 } 
-                if (players[i].mo) 
-                    consistancy[i][buf] = players[i].mo->x; 
+				if (players[i].moRef) {
+					playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[i].moRef);
+					consistancy[i][buf] = playerMo->x;
+				}
                 else 
                     consistancy[i][buf] = rndindex; 
             } 
@@ -770,12 +772,13 @@ void G_InitPlayer (int player)
 void G_PlayerFinishLevel (int player) 
 { 
     player_t*   p; 
-         
+	mobj_t* playerMo = Z_LoadBytesFromEMS(p->moRef);
+
     p = &players[player]; 
          
     memset (p->powers, 0, sizeof (p->powers)); 
     memset (p->cards, 0, sizeof (p->cards)); 
-    p->mo->flags &= ~MF_SHADOW;         // cancel invisibility 
+    playerMo->flags &= ~MF_SHADOW;         // cancel invisibility 
     p->extralight = 0;                  // cancel gun flashes 
     p->fixedcolormap = 0;               // cancel ir gogles 
     p->damagecount = 0;                 // no palette changes 
@@ -842,27 +845,30 @@ G_CheckSpot
     unsigned            an; 
     mobj_t*             mo; 
     int                 i;
+	mobj_t*				playerMo;
         
-    if (!players[playernum].mo)
+    if (!players[playernum].moRef)
     {
         // first spawn of level, before corpses
-        for (i=0 ; i<playernum ; i++)
-            if (players[i].mo->x == mthing->x << FRACBITS
-                && players[i].mo->y == mthing->y << FRACBITS)
-                return false;   
+		for (i = 0; i < playernum; i++) {
+			playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[i].moRef);
+			if (playerMo->x == mthing->x << FRACBITS
+				&& playerMo->y == mthing->y << FRACBITS)
+				return false;
+		}
         return true;
     }
                 
     x = mthing->x << FRACBITS; 
     y = mthing->y << FRACBITS; 
          
-    if (!P_CheckPosition (players[playernum].mo, x, y) ) 
+    if (!P_CheckPosition (players[playernum].moRef, x, y) ) 
         return false; 
  
     // flush an old corpse if needed 
     if (bodyqueslot >= BODYQUESIZE) 
         P_RemoveMobj (bodyque[bodyqueslot%BODYQUESIZE]); 
-    bodyque[bodyqueslot%BODYQUESIZE] = players[playernum].mo; 
+    bodyque[bodyqueslot%BODYQUESIZE] = players[playernum].moRef; 
     bodyqueslot++; 
         
     // spawn a teleport fog 
@@ -915,6 +921,7 @@ void G_DeathMatchSpawnPlayer (int playernum)
 void G_DoReborn (int playernum) 
 { 
     int                             i; 
+	mobj_t* playerMo;
          
     if (!netgame)
     {
@@ -925,8 +932,9 @@ void G_DoReborn (int playernum)
     {
         // respawn at the start
 
+		playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[playernum].moRef);
         // first dissasociate the corpse 
-        players[playernum].mo->player = NULL;   
+        playerMo->player = NULL;   
                  
         // spawn at random spot if in death match 
         if (deathmatch) 
@@ -1488,7 +1496,7 @@ G_InitNew
 void G_ReadDemoTiccmd (ticcmd_t* cmd) 
 { 
 	byte* demobuffer = (byte*) Z_LoadBytesFromEMS(demobufferRef);
-	demo_p = ((int)demo_p + (int)demobuffer);
+	demo_p = (byte*)((int)demo_p + (int)demobuffer);
 	if (*demo_p == DEMOMARKER) 
     {
         // end of demo data stream 
@@ -1526,7 +1534,7 @@ void G_WriteDemoTiccmd (ticcmd_t* cmd)
     } 
         
     G_ReadDemoTiccmd (cmd);         // make SURE it is exactly the same 
-	demo_p = (demo_p - demobuffer);
+	demo_p = (byte*)(demo_p - demobuffer);
 
 } 
  
@@ -1547,7 +1555,7 @@ void G_RecordDemo (char* name)
     i = M_CheckParm ("-maxdemo");
     if (i && i<myargc-1)
         maxsize = atoi(myargv[i+1])*1024;
-    demobufferRef = Z_MallocEMSNew (maxsize,PU_STATIC,NULL, ALLOC_TYPE_DEMO_BUFFER); 
+    demobufferRef = Z_MallocEMSNew (maxsize,PU_STATIC,0, ALLOC_TYPE_DEMO_BUFFER); 
     //demoend = demobuffer + maxsize;
         
     demorecording = true; 
@@ -1573,7 +1581,7 @@ void G_BeginRecording (void)
          
     for (i=0 ; i<MAXPLAYERS ; i++) 
         *demo_p++ = playeringame[i];             
-	demo_p = (demo_p - demobuffer);
+	demo_p = (byte*)(demo_p - demobuffer);
 
 } 
  
@@ -1629,7 +1637,7 @@ void G_DoPlayDemo (void)
     usergame = false; 
     demoplayback = true; 
 
-	demo_p = (demo_p - demobuffer);
+	demo_p = (byte*)(demo_p - demobuffer);
 
 } 
 

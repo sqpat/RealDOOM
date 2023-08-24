@@ -218,13 +218,16 @@ P_GiveBody
 ( player_t*	player,
   int		num )
 {
+	mobj_t* playerMo;
     if (player->health >= MAXHEALTH)
 	return false;
 		
     player->health += num;
     if (player->health > MAXHEALTH)
 	player->health = MAXHEALTH;
-    player->mo->health = player->health;
+
+	playerMo = (mobj_t*) Z_LoadBytesFromEMS(player->moRef);
+	playerMo->health = player->health;
 	
     return true;
 }
@@ -279,6 +282,7 @@ P_GivePower
 ( player_t*	player,
   int /*powertype_t*/	power )
 {
+	mobj_t* playerMo;
     if (power == pw_invulnerability)
     {
 	player->powers[power] = INVULNTICS;
@@ -287,8 +291,10 @@ P_GivePower
     
     if (power == pw_invisibility)
     {
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+
 	player->powers[power] = INVISTICS;
-	player->mo->flags |= MF_SHADOW;
+	playerMo->flags |= MF_SHADOW;
 	return true;
     }
     
@@ -325,13 +331,16 @@ P_GivePower
 //
 void
 P_TouchSpecialThing
-( mobj_t*	special,
-  mobj_t*	toucher )
+( MEMREF	specialRef,
+  MEMREF	toucherRef )
 {
     player_t*	player;
     int		i;
     fixed_t	delta;
     int		sound;
+	mobj_t* playerMo;
+	mobj_t* special = (mobj_t*)Z_LoadBytesFromEMS(specialRef);
+	mobj_t* toucher = (mobj_t*)Z_LoadBytesFromEMS(toucherRef);
 		
     delta = special->z - toucher->z;
 
@@ -372,7 +381,8 @@ P_TouchSpecialThing
 	player->health++;		// can go over 100%
 	if (player->health > 200)
 	    player->health = 200;
-	player->mo->health = player->health;
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+	playerMo->health = player->health;
 	player->message = GOTHTHBONUS;
 	break;
 	
@@ -389,7 +399,8 @@ P_TouchSpecialThing
 	player->health += 100;
 	if (player->health > 200)
 	    player->health = 200;
-	player->mo->health = player->health;
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+	playerMo->health = player->health;
 	player->message = GOTSUPER;
 	sound = sfx_getpow;
 	break;
@@ -398,7 +409,8 @@ P_TouchSpecialThing
 	if (!commercial)
 	    return;
 	player->health = 200;
-	player->mo->health = player->health;
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+	playerMo->health = player->health;
 	P_GiveArmor (player,2);
 	player->message = GOTMSPHERE;
 	sound = sfx_getpow;
@@ -642,7 +654,7 @@ P_TouchSpecialThing
 	
     if (special->flags & MF_COUNTITEM)
 	player->itemcount++;
-    P_RemoveMobj (special);
+    P_RemoveMobj (specialRef);
     player->bonuscount += BONUSADD;
     if (player == &players[consoleplayer])
 	S_StartSound (NULL, sound);
@@ -654,11 +666,15 @@ P_TouchSpecialThing
 //
 void
 P_KillMobj
-( mobj_t*	source,
-  mobj_t*	target )
+( MEMREF	sourceRef,
+	MEMREF	targetRef )
 {
     mobjtype_t	item;
     mobj_t*	mo;
+	mobj_t* source;
+	mobj_t*	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
+	MEMREF moRef;
+
 	
     target->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
 
@@ -668,14 +684,17 @@ P_KillMobj
     target->flags |= MF_CORPSE|MF_DROPOFF;
     target->height >>= 2;
 
-    if (source && source->player)
-    {
-	// count for intermission
-	if (target->flags & MF_COUNTKILL)
-	    source->player->killcount++;	
+    if (sourceRef) {
+		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+		if (source->player) {
+			// count for intermission
+			if (target->flags & MF_COUNTKILL)
+				source->player->killcount++;
 
-	if (target->player)
-	    source->player->frags[target->player-players]++;
+			if (target->player)
+				source->player->frags[target->player - players]++;
+		}
+			
     }
     else if (!netgame && (target->flags & MF_COUNTKILL) )
     {
@@ -687,7 +706,7 @@ P_KillMobj
     if (target->player)
     {
 	// count environment kills against you
-	if (!source)	
+	if (!sourceRef)	
 	    target->player->frags[target->player-players]++;
 			
 	target->flags &= ~MF_SOLID;
@@ -707,10 +726,10 @@ P_KillMobj
     if (target->health < -target->info->spawnhealth 
 	&& target->info->xdeathstate)
     {
-	P_SetMobjState (target, target->info->xdeathstate);
+	P_SetMobjState (targetRef, target->info->xdeathstate);
     }
     else
-	P_SetMobjState (target, target->info->deathstate);
+	P_SetMobjState (targetRef, target->info->deathstate);
     target->tics -= P_Random()&3;
 
     if (target->tics < 1)
@@ -741,7 +760,8 @@ P_KillMobj
 	return;
     }
 
-    mo = P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
+    moRef = P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
     mo->flags |= MF_DROPPED;	// special versions of items
 }
 
@@ -761,9 +781,9 @@ P_KillMobj
 //
 void
 P_DamageMobj
-( mobj_t*	target,
-  mobj_t*	inflictor,
-  mobj_t*	source,
+( MEMREF	targetRef,
+	MEMREF	inflictorRef,
+	MEMREF	sourceRef,
   int 		damage )
 {
     unsigned	ang;
@@ -771,6 +791,9 @@ P_DamageMobj
     player_t*	player;
     fixed_t	thrust;
     int		temp;
+	mobj_t* source;
+	mobj_t* inflictor;
+	mobj_t* target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
 	
     if ( !(target->flags & MF_SHOOTABLE) )
 	return;	// shouldn't happen...
@@ -791,37 +814,43 @@ P_DamageMobj
     // Some close combat weapons should not
     // inflict thrust and push the victim out of reach,
     // thus kick away unless using the chainsaw.
-    if (inflictor
-	&& !(target->flags & MF_NOCLIP)
-	&& (!source
-	    || !source->player
-	    || source->player->readyweapon != wp_chainsaw))
-    {
-	ang = R_PointToAngle2 ( inflictor->x,
+
+	if (sourceRef) {
+		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+	}
+
+    if (inflictorRef && !(target->flags & MF_NOCLIP) && (!sourceRef || !source->player || source->player->readyweapon != wp_chainsaw)) {
+
+		inflictor = (mobj_t*)Z_LoadBytesFromEMS(inflictorRef);
+		ang = R_PointToAngle2 ( inflictor->x,
 				inflictor->y,
 				target->x,
 				target->y);
 		
-	thrust = damage*(FRACUNIT>>3)*100/target->info->mass;
+		thrust = damage*(FRACUNIT>>3)*100/target->info->mass;
 
-	// make fall forwards sometimes
-	if ( damage < 40
-	     && damage > target->health
-	     && target->z - inflictor->z > 64*FRACUNIT
-	     && (P_Random ()&1) )
-	{
-	    ang += ANG180;
-	    thrust *= 4;
-	}
+		// make fall forwards sometimes
+		if ( damage < 40
+			 && damage > target->health
+			 && target->z - inflictor->z > 64*FRACUNIT
+			 && (P_Random ()&1) )
+		{
+			ang += ANG180;
+			thrust *= 4;
+		}
 		
-	ang >>= ANGLETOFINESHIFT;
-	target->momx += FixedMul (thrust, finecosine[ang]);
-	target->momy += FixedMul (thrust, finesine[ang]);
+		ang >>= ANGLETOFINESHIFT;
+		target->momx += FixedMul (thrust, finecosine[ang]);
+		target->momy += FixedMul (thrust, finesine[ang]);
     }
     
     // player specific
     if (player)
     {
+
+ 
+	
+
 	// end of game hell hack
 	if (target->subsector->sector->special == 11
 	    && damage >= target->health)
@@ -855,11 +884,15 @@ P_DamageMobj
 	    player->armorpoints -= saved;
 	    damage -= saved;
 	}
+
+ 
+
+
 	player->health -= damage; 	// mirror mobj health here for Dave
 	if (player->health < 0)
 	    player->health = 0;
 	
-	player->attacker = source;
+	player->attackerRef = sourceRef;
 	player->damagecount += damage;	// add damage after armor / invuln
 
 	if (player->damagecount > 100)
@@ -867,40 +900,51 @@ P_DamageMobj
 	
 	temp = damage < 100 ? damage : 100;
 
+
+
+
+	/*
 	if (player == &players[consoleplayer])
 	    I_Tactile (40,10,40+temp*2);
-    }
+	*/
+ 
+
+	}
     
+
+
+	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
     // do the damage	
     target->health -= damage;	
-    if (target->health <= 0)
-    {
-	P_KillMobj (source, target);
-	return;
+    if (target->health <= 0) {
+		P_KillMobj (sourceRef, targetRef);
+		return;
     }
 
-    if ( (P_Random () < target->info->painchance)
-	 && !(target->flags&MF_SKULLFLY) )
-    {
-	target->flags |= MF_JUSTHIT;	// fight back!
-	
-	P_SetMobjState (target, target->info->painstate);
+    if ( (P_Random () < target->info->painchance) && !(target->flags&MF_SKULLFLY) ) {
+		target->flags |= MF_JUSTHIT;	// fight back!
+		P_SetMobjState (targetRef, target->info->painstate);
     }
 			
-    target->reactiontime = 0;		// we're awake now...	
 
+    target->reactiontime = 0;		// we're awake now...	
+	if (sourceRef) {
+		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+	}
     if ( (!target->threshold || target->type == MT_VILE)
-	 && source && source != target
+	 && sourceRef && sourceRef != targetRef
 	 && source->type != MT_VILE)
     {
 	// if not intent on another player,
 	// chase after this one
-	target->target = source;
+	target->targetRef = sourceRef;
 	target->threshold = BASETHRESHOLD;
 	if (target->state == &states[target->info->spawnstate]
 	    && target->info->seestate != S_NULL)
-	    P_SetMobjState (target, target->info->seestate);
+	    P_SetMobjState (targetRef, target->info->seestate);
     }
-			
+	 
+
+
 }
 

@@ -84,9 +84,9 @@ void P_UnArchivePlayers (void)
 	save_p += sizeof(player_t);
 	
 	// will be set when unarc thinker
-	players[i].mo = NULL;	
+	players[i].moRef = NULL_MEMREF;	
 	players[i].message = NULL;
-	players[i].attacker = NULL;
+	players[i].attackerRef = NULL_MEMREF;
 
 	for (j=0 ; j<NUMPSPRITES ; j++)
 	{
@@ -178,7 +178,7 @@ void P_UnArchiveWorld (void)
 	sec->special = *get++;		// needed?
 	sec->tag = *get++;		// needed?
 	sec->specialdataRef = NULL_MEMREF;
-	sec->soundtarget = 0;
+	sec->soundtargetRef = NULL_MEMREF;
     }
     
     // do lines
@@ -225,16 +225,19 @@ void P_ArchiveThinkers (void)
 {
     THINKERREF		th;
     mobj_t*		mobj;
+	void*	thinkerobj;
 	
     // save off the current thinkers
     for (th = thinkerlist[0].next ; th != 0; th=thinkerlist[th].next)
     {
 	if (thinkerlist[th].functionType == TF_MOBJTHINKER)
 	{
-	    *save_p++ = tc_mobj;
+		thinkerobj = Z_LoadBytesFromEMS(thinkerlist[th].memref);
+
+		*save_p++ = tc_mobj;
 	    PADSAVEP();
 	    mobj = (mobj_t *)save_p;
-	    memcpy (mobj, th, sizeof(*mobj));
+	    memcpy (mobj, thinkerobj, sizeof(*mobj));
 	    save_p += sizeof(*mobj);
 	    mobj->state = (state_t *)(mobj->state - states);
 	    
@@ -270,7 +273,7 @@ void P_UnArchiveThinkers (void)
 		next = thinkerlist[currentthinker].next;
 
 		if (thinkerlist[currentthinker].functionType == TF_MOBJTHINKER) {
-			P_RemoveMobj((mobj_t *)currentthinker);
+			P_RemoveMobj(thinkerlist[currentthinker].memref);
 		} 
 		else {
 			Z_FreeEMSNew(thinkerlist[currentthinker].memref, 4);
@@ -296,13 +299,12 @@ void P_UnArchiveThinkers (void)
 	    memcpy (mobj, save_p, sizeof(*mobj));
 	    save_p += sizeof(*mobj);
 	    mobj->state = &states[(int)mobj->state];
-	    mobj->target = NULL;
-	    if (mobj->player)
-	    {
-		mobj->player = &players[(int)mobj->player-1];
-		mobj->player->mo = mobj;
+	    mobj->targetRef = NULL_MEMREF;
+	    if (mobj->player) {
+			mobj->player = &players[(int)mobj->player-1];
+			mobj->player->moRef = thinkerRef;
 	    }
-	    P_SetThingPosition (mobj);
+	    P_SetThingPosition (thinkerRef);
 	    mobj->info = &mobjinfo[mobj->type];
 	    mobj->floorz = mobj->subsector->sector->floorheight;
 	    mobj->ceilingz = mobj->subsector->sector->ceilingheight;
@@ -359,19 +361,21 @@ void P_ArchiveSpecials (void)
     strobe_t*		strobe;
     glow_t*		glow;
     int			i;
+	void*		thinkerobj;
 	
     // save off the current thinkers
     for (th = thinkerlist[0].next ; th != 0 ; th=thinkerlist[th].next) {
+		thinkerobj = Z_LoadBytesFromEMS(thinkerlist[th].memref);
 		if (thinkerlist[th].functionType == TF_NULL) {
 			for (i = 0; i < MAXCEILINGS;i++)
-				if (activeceilings[i] == (ceiling_t *)th)
+				if (activeceilings[i] == thinkerlist[th].memref)
 					break;
 	    
 			if (i<MAXCEILINGS) {
 				*save_p++ = tc_ceiling;
 				PADSAVEP();
 				ceiling = (ceiling_t *)save_p;
-				memcpy (ceiling, th, sizeof(*ceiling));
+				memcpy (ceiling, thinkerobj, sizeof(*ceiling));
 				save_p += sizeof(*ceiling);
 				ceiling->sector = (sector_t *)(ceiling->sector - sectors);
 			}
@@ -382,7 +386,7 @@ void P_ArchiveSpecials (void)
 			*save_p++ = tc_ceiling;
 			PADSAVEP();
 			ceiling = (ceiling_t *)save_p;
-			memcpy (ceiling, th, sizeof(*ceiling));
+			memcpy (ceiling, thinkerobj, sizeof(*ceiling));
 			save_p += sizeof(*ceiling);
 			ceiling->sector = (sector_t *)(ceiling->sector - sectors);
 			continue;
@@ -392,7 +396,7 @@ void P_ArchiveSpecials (void)
 			*save_p++ = tc_door;
 			PADSAVEP();
 			door = (vldoor_t *)save_p;
-			memcpy (door, th, sizeof(*door));
+			memcpy (door, thinkerobj, sizeof(*door));
 			save_p += sizeof(*door);
 			door->sector = (sector_t *)(door->sector - sectors);
 			continue;
@@ -402,7 +406,7 @@ void P_ArchiveSpecials (void)
 			*save_p++ = tc_floor;
 			PADSAVEP();
 			floor = (floormove_t *)save_p;
-			memcpy (floor, th, sizeof(*floor));
+			memcpy (floor, thinkerobj, sizeof(*floor));
 			save_p += sizeof(*floor);
 			floor->sector = (sector_t *)(floor->sector - sectors);
 			continue;
@@ -412,7 +416,7 @@ void P_ArchiveSpecials (void)
 			*save_p++ = tc_plat;
 			PADSAVEP();
 			plat = (plat_t *)save_p;
-			memcpy (plat, th, sizeof(*plat));
+			memcpy (plat, thinkerobj, sizeof(*plat));
 			save_p += sizeof(*plat);
 			plat->sector = (sector_t *)(plat->sector - sectors);
 			continue;
@@ -422,7 +426,7 @@ void P_ArchiveSpecials (void)
 			*save_p++ = tc_flash;
 			PADSAVEP();
 			flash = (lightflash_t *)save_p;
-			memcpy (flash, th, sizeof(*flash));
+			memcpy (flash, thinkerobj, sizeof(*flash));
 			save_p += sizeof(*flash);
 			flash->sector = (sector_t *)(flash->sector - sectors);
 			continue;
@@ -432,7 +436,7 @@ void P_ArchiveSpecials (void)
 			*save_p++ = tc_strobe;
 			PADSAVEP();
 			strobe = (strobe_t *)save_p;
-			memcpy (strobe, th, sizeof(*strobe));
+			memcpy (strobe, thinkerobj, sizeof(*strobe));
 			save_p += sizeof(*strobe);
 			strobe->sector = (sector_t *)(strobe->sector - sectors);
 			continue;
@@ -442,13 +446,15 @@ void P_ArchiveSpecials (void)
 			*save_p++ = tc_glow;
 			PADSAVEP();
 			glow = (glow_t *)save_p;
-			memcpy (glow, th, sizeof(*glow));
+			memcpy (glow, thinkerobj, sizeof(*glow));
 			save_p += sizeof(*glow);
 			glow->sector = (sector_t *)(glow->sector - sectors);
 			continue;
 		}
     }
 	
+
+
     // add a terminating marker
     *save_p++ = tc_endspecials;	
 

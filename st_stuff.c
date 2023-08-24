@@ -509,6 +509,7 @@ boolean
 ST_Responder (event_t* ev)
 {
   int           i;
+  mobj_t* plyrmo;
     
   // Filter automap on/off.
   if (ev->type == ev_keyup
@@ -539,8 +540,9 @@ ST_Responder (event_t* ev)
         plyr->cheats ^= CF_GODMODE;
         if (plyr->cheats & CF_GODMODE)
         {
-          if (plyr->mo)
-            plyr->mo->health = 100;
+			plyrmo = (mobj_t*) Z_LoadBytesFromEMS(plyr->moRef);
+          if (plyrmo)
+            plyrmo->health = 100;
           
           plyr->health = 100;
           plyr->message = STSTR_DQDON;
@@ -667,10 +669,11 @@ ST_Responder (event_t* ev)
       else if (cht_CheckCheat(&cheat_mypos, ev->data1))
       {
         static char     buf[ST_MSGWIDTH];
-        sprintf(buf, "ang=0x%x;x,y=(0x%x,0x%x)",
-                players[consoleplayer].mo->angle,
-                players[consoleplayer].mo->x,
-                players[consoleplayer].mo->y);
+		plyrmo = Z_LoadBytesFromEMS(players[consoleplayer].moRef);
+		sprintf(buf, "ang=0x%x;x,y=(0x%x,0x%x)",
+                plyrmo->angle,
+			plyrmo->x,
+			plyrmo->y);
         plyr->message = buf;
       }
     }
@@ -751,6 +754,8 @@ void ST_updateFaceWidget(void)
     static int  lastattackdown = -1;
     static int  priority = 0;
     boolean     doevilgrin;
+	mobj_t* plyrmo;
+	mobj_t* plyrattacker;
 
     if (priority < 10)
     {
@@ -792,8 +797,8 @@ void ST_updateFaceWidget(void)
     if (priority < 8)
     {
         if (plyr->damagecount
-            && plyr->attacker
-            && plyr->attacker != plyr->mo)
+            && plyr->attackerRef
+            && plyr->attackerRef != plyr->moRef)
         {
             // being attacked
             priority = 7;
@@ -805,21 +810,23 @@ void ST_updateFaceWidget(void)
             }
             else
             {
-                badguyangle = R_PointToAngle2(plyr->mo->x,
-                                              plyr->mo->y,
-                                              plyr->attacker->x,
-                                              plyr->attacker->y);
+				plyrmo = (mobj_t*) Z_LoadBytesFromEMS(plyr->moRef);
+				plyrattacker = (mobj_t*)Z_LoadBytesFromEMS(plyr->attackerRef);
+				badguyangle = R_PointToAngle2(plyrmo->x,
+                                              plyrmo->y,
+                                              plyrattacker->x,
+                                              plyrattacker->y);
                 
-                if (badguyangle > plyr->mo->angle)
+                if (badguyangle > plyrmo->angle)
                 {
                     // whether right or left
-                    diffang = badguyangle - plyr->mo->angle;
+                    diffang = badguyangle - plyrmo->angle;
                     i = diffang > ANG180; 
                 }
                 else
                 {
                     // whether left or right
-                    diffang = plyr->mo->angle - badguyangle;
+                    diffang = plyrmo->angle - badguyangle;
                     i = diffang <= ANG180; 
                 } // confusing, aint it?
 

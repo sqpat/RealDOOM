@@ -837,11 +837,12 @@ R_PointInSubsector
 void R_SetupFrame (player_t* player)
 {		
     int		i;
-    
+	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+
     viewplayer = player;
-    viewx = player->mo->x;
-    viewy = player->mo->y;
-    viewangle = player->mo->angle + viewangleoffset;
+    viewx = playermo->x;
+    viewy = playermo->y;
+    viewangle = playermo->angle + viewangleoffset;
     extralight = player->extralight;
 
     viewz = player->viewz;

@@ -446,7 +446,7 @@ R_DrawVisSprite
 // Generates a vissprite for a thing
 //  if it might be visible.
 //
-void R_ProjectSprite (mobj_t* thing)
+void R_ProjectSprite (MEMREF thingRef)
 {
     fixed_t             tr_x;
     fixed_t             tr_y;
@@ -479,6 +479,7 @@ void R_ProjectSprite (mobj_t* thing)
 	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
 	
+	mobj_t* thing = Z_LoadBytesFromEMS(thingRef);
     // transform the origin point
     tr_x = thing->x - viewx;
     tr_y = thing->y - viewy;
@@ -617,7 +618,9 @@ void R_ProjectSprite (mobj_t* thing)
 void R_AddSprites (sector_t* sec)
 {
     mobj_t*             thing;
+	MEMREF				thingRef;
     int                 lightnum;
+	mobj_t*				thingList;
 
     // BSP is traversed by subsector.
     // A sector might have been split into several
@@ -638,9 +641,14 @@ void R_AddSprites (sector_t* sec)
     else
         spritelights = scalelight[lightnum];
 
+
+	// todo:  gross... can be a bunch of things in diff pages..
+
     // Handle all things in sector.
-    for (thing = sec->thinglist ; thing ; thing = thing->snext)
-        R_ProjectSprite (thing);
+	for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
+		R_ProjectSprite(thingRef);
+		thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	}
 }
 
 
@@ -760,10 +768,13 @@ void R_DrawPlayerSprites (void)
     int         i;
     int         lightnum;
     pspdef_t*   psp;
+	mobj_t*     playermo;
+
+	playermo = (mobj_t*)Z_LoadBytesFromEMS(viewplayer->moRef);
     
     // get light level
     lightnum =
-        (viewplayer->mo->subsector->sector->lightlevel >> LIGHTSEGSHIFT) 
+        (playermo->subsector->sector->lightlevel >> LIGHTSEGSHIFT) 
         +extralight;
 
     if (lightnum < 0)           

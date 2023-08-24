@@ -1013,7 +1013,7 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size){  //todo allocatio
 }
 
 
-void* Z_LoadBytesFromEMS (MEMREF ref) {
+void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
     byte* memorybase;
 	short pageframeindex;
     byte* address;
@@ -1024,7 +1024,7 @@ void* Z_LoadBytesFromEMS (MEMREF ref) {
 //	if (ref > MAX_PAGE_FRAMES) {
 	if (ref > EMS_ALLOCATION_LIST_SIZE) {
 
-		I_Error("out of bounds memref.. %i", ref);
+		I_Error("out of bounds memref.. %i %s %i", ref, file, line);
 	}
 
 

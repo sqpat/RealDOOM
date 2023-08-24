@@ -102,7 +102,7 @@ typedef	struct
     int		soundtraversed;
 
     // thing that made a sound (or null)
-    mobj_t*	soundtarget;
+    MEMREF	soundtargetRef;
 
     // mapblock bounding box for height changes
     int		blockbox[4];
@@ -114,7 +114,7 @@ typedef	struct
     int		validcount;
 
     // list of mobjs in sector
-    mobj_t*	thinglist;
+    MEMREF	thinglistRef;
 
     // thinker_t for reversable actions
     ///void*	specialdata;

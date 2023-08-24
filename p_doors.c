@@ -198,9 +198,10 @@ int
 EV_DoLockedDoor
 ( line_t*	line,
   vldoor_e	type,
-  mobj_t*	thing )
+  MEMREF thingRef )
 {
     player_t*	p;
+	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	
     p = thing->player;
 	

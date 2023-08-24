@@ -293,14 +293,17 @@ boolean P_CrossBSPNode (int bspnum)
 //
 boolean
 P_CheckSight
-( mobj_t*	t1,
-  mobj_t*	t2 )
+( MEMREF t1Ref,
+  MEMREF t2Ref)
 {
     int		s1;
     int		s2;
     int		pnum;
     int		bytenum;
     int		bitnum;
+	mobj_t*	t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
+	mobj_t*	t2 = (mobj_t*)Z_LoadBytesFromEMS(t2Ref);
+
     
     // First check for trivial rejection.
 
@@ -312,12 +315,11 @@ P_CheckSight
     bitnum = 1 << (pnum&7);
 
     // Check in REJECT table.
-    if (rejectmatrix[bytenum]&bitnum)
-    {
-	sightcounts[0]++;
+    if (rejectmatrix[bytenum]&bitnum) {
+		sightcounts[0]++;
 
-	// can't possibly be connected
-	return false;	
+		// can't possibly be connected
+		return false;	
     }
 
     // An unobstructed LOS is possible.

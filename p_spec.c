@@ -483,10 +483,11 @@ void
 P_CrossSpecialLine
 ( int		linenum,
   int		side,
-  mobj_t*	thing )
+  MEMREF thingRef )
 {
     line_t*	line;
     int		ok;
+	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
     line = &lines[linenum];
     
@@ -648,7 +649,7 @@ P_CrossSpecialLine
 	
       case 39:
 	// TELEPORT!
-	EV_Teleport( line, side, thing );
+	EV_Teleport( line, side, thingRef );
 	line->special = 0;
 	break;
 
@@ -757,7 +758,7 @@ P_CrossSpecialLine
 	// TELEPORT MonsterONLY
 	if (!thing->player)
 	{
-	    EV_Teleport( line, side, thing );
+	    EV_Teleport( line, side, thingRef );
 	    line->special = 0;
 	}
 	break;
@@ -894,7 +895,7 @@ P_CrossSpecialLine
 	
       case 97:
 	// TELEPORT!
-	EV_Teleport( line, side, thing );
+	EV_Teleport( line, side, thingRef );
 	break;
 	
       case 98:
@@ -925,7 +926,7 @@ P_CrossSpecialLine
       case 126:
 	// TELEPORT MonsterONLY.
 	if (!thing->player)
-	    EV_Teleport( line, side, thing );
+	    EV_Teleport( line, side, thingRef );
 	break;
 	
       case 128:
@@ -948,10 +949,11 @@ P_CrossSpecialLine
 //
 void
 P_ShootSpecialLine
-( mobj_t*	thing,
+( MEMREF thingRef,
   line_t*	line )
 {
     int		ok;
+	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     
     //	Impacts that other things can activate.
     if (!thing->player)
@@ -1000,11 +1002,12 @@ P_ShootSpecialLine
 void P_PlayerInSpecialSector (player_t* player)
 {
     sector_t*	sector;
+	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 	
-    sector = player->mo->subsector->sector;
+    sector = playerMo->subsector->sector;
 
     // Falling, not all the way down yet?
-    if (player->mo->z != sector->floorheight)
+    if (playerMo->z != sector->floorheight)
 	return;	
 
     // Has hitten ground.
@@ -1014,14 +1017,14 @@ void P_PlayerInSpecialSector (player_t* player)
 	// HELLSLIME DAMAGE
 	if (!player->powers[pw_ironfeet])
 	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->mo, NULL, NULL, 10);
+		P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 10);
 	break;
 	
       case 7:
 	// NUKAGE DAMAGE
 	if (!player->powers[pw_ironfeet])
 	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->mo, NULL, NULL, 5);
+		P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 5);
 	break;
 	
       case 16:
@@ -1032,7 +1035,7 @@ void P_PlayerInSpecialSector (player_t* player)
 	    || (P_Random()<5) )
 	{
 	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->mo, NULL, NULL, 20);
+		P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 20);
 	}
 	break;
 			
@@ -1047,7 +1050,7 @@ void P_PlayerInSpecialSector (player_t* player)
 	player->cheats &= ~CF_GODMODE;
 
 	if (!(leveltime&0x1f))
-	    P_DamageMobj (player->mo, NULL, NULL, 20);
+	    P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 20);
 
 	if (player->health <= 10)
 	    G_ExitLevel();
@@ -1356,7 +1359,7 @@ void P_SpawnSpecials (void)
     
     //	Init other misc stuff
     for (i = 0;i < MAXCEILINGS;i++)
-	activeceilings[i] = NULL;
+	activeceilings[i] = NULL_MEMREF;
 
     for (i = 0;i < MAXPLATS;i++)
 	activeplats[i] = NULL_MEMREF;

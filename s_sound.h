@@ -20,7 +20,8 @@
 #ifndef __S_SOUND__
 #define __S_SOUND__
 
-
+#include "z_zone.h"
+#include "doomdef.h"
 
 //
 // Initializes sound stuff, including volume
@@ -42,6 +43,8 @@ S_Init
 //
 void S_Start(void);
 
+void S_StartSoundFromRef(MEMREF memref, int	sfx_id);
+
 
 //
 // Start sound for thing at <origin>
@@ -49,7 +52,7 @@ void S_Start(void);
 //
 void
 S_StartSound
-( void*		origin,
+(void*		origin,
   int		sound_id );
 
 
@@ -57,13 +60,15 @@ S_StartSound
 // Will start a sound at a given volume.
 void
 S_StartSoundAtVolume
-( void*		origin,
+( MEMREF		originRef,
+	fixed_t x,
+	fixed_t y,
   int		sound_id,
   int		volume );
 
 
 // Stop sound for thing at <origin>
-void S_StopSound(void* origin);
+void S_StopSound(MEMREF originRef);
 
 
 // Start music using <music_id> from sounds.h
@@ -87,7 +92,7 @@ void S_ResumeSound(void);
 //
 // Updates music & sounds
 //
-void S_UpdateSounds(void* listener);
+void S_UpdateSounds(MEMREF listenerRef);
 
 void S_SetMusicVolume(int volume);
 void S_SetSfxVolume(int volume);

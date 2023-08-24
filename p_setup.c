@@ -257,7 +257,7 @@ void P_LoadSectors(int lump)
 		ss->lightlevel = SHORT(ms->lightlevel);
 		ss->special = SHORT(ms->special);
 		ss->tag = SHORT(ms->tag);
-		ss->thinglist = NULL;
+		ss->thinglistRef = NULL_MEMREF;
 	}
 
 	Z_Free(data);
@@ -482,7 +482,7 @@ void P_LoadBlockMap(int lump)
 {
 	int         i;
 	int         count;
-	mobj_t ** blocklinks;
+	MEMREF* blocklinks;
 
 	W_CacheLumpNumCheck(lump, 11);
 	blockmaplump = W_CacheLumpNum(lump, PU_LEVEL);
@@ -500,7 +500,7 @@ void P_LoadBlockMap(int lump)
 	// clear out mobj chains
 	count = sizeof(*blocklinks)* bmapwidth*bmapheight;
 	blocklinksRef = Z_MallocEMSNew (count, PU_LEVEL, 0, ALLOC_TYPE_BLOCKLINKS);
-	blocklinks = Z_LoadBytesFromEMS(blocklinksRef);
+	blocklinks = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
 	memset(blocklinks, 0, count);
 }
 
@@ -694,7 +694,7 @@ P_SetupLevel
 		for (i = 0; i < MAXPLAYERS; i++)
 			if (playeringame[i])
 			{
-				players[i].mo = NULL;
+				players[i].moRef = NULL_MEMREF;
 				G_DeathMatchSpawnPlayer(i);
 			}
 

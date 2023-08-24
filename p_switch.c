@@ -492,7 +492,7 @@ P_UseSpecialLine
 	// BlzOpenDoor RED
       case 137:
 	// BlzOpenDoor YELLOW
-	if (EV_DoLockedDoor (line,blazeOpen,thing))
+	if (EV_DoLockedDoor (line,blazeOpen,thingRef))
 	    P_ChangeSwitchTexture(line,0);
 	break;
 	
@@ -623,7 +623,7 @@ P_UseSpecialLine
 	// BlzOpenDoor RED
       case 136:
 	// BlzOpenDoor YELLOW
-	if (EV_DoLockedDoor (line,blazeOpen,thing))
+	if (EV_DoLockedDoor (line,blazeOpen,thingRef))
 	    P_ChangeSwitchTexture(line,1);
 	break;
 	
