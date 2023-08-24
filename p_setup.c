@@ -189,11 +189,11 @@ void P_LoadSegs(int lump)
 		li->linedefOffset = linedef;
 		side = SHORT(ml->side);
 		li->sidedefOffset = ldef->sidenum[side];
-		li->frontsector = sides[ldef->sidenum[side]].sector;
+		li->frontsecnum = sides[ldef->sidenum[side]].secnum;
 		if (ldef->flags & ML_TWOSIDED)
-			li->backsector = sides[ldef->sidenum[side ^ 1]].sector;
+			li->backsecnum = sides[ldef->sidenum[side ^ 1]].secnum;
 		else
-			li->backsector = 0;
+			li->backsecnum = SECNUM_NULL;
 	}
 
 	Z_Free(data);
@@ -429,14 +429,14 @@ void P_LoadLineDefs(int lump)
 		ld->sidenum[1] = SHORT(mld->sidenum[1]);
 
 		if (ld->sidenum[0] != -1) {
-			ld->frontsector = sides[ld->sidenum[0]].sector;
+			ld->frontsecnum = sides[ld->sidenum[0]].secnum;
 		} else {
-			ld->frontsector = 0;
+			ld->frontsecnum = SECNUM_NULL;
 		}
 		if (ld->sidenum[1] != -1){
-			ld->backsector = sides[ld->sidenum[1]].sector;
+			ld->backsecnum = sides[ld->sidenum[1]].secnum;
 		} else {
-			ld->backsector = 0;
+			ld->backsecnum = SECNUM_NULL;
 		}
 	}
 
@@ -468,7 +468,7 @@ void P_LoadSideDefs(int lump)
 		sd->toptexture = R_TextureNumForName(msd->toptexture);
 		sd->bottomtexture = R_TextureNumForName(msd->bottomtexture);
 		sd->midtexture = R_TextureNumForName(msd->midtexture);
-		sd->sector = &sectors[SHORT(msd->sector)];
+		sd->secnum = SHORT(msd->sector);
 	}
 
 	Z_Free(data);
@@ -527,76 +527,85 @@ void P_GroupLines(void)
 	seg_t*              segs;
 	MEMREF				linebufferRef;
 	vertex_t*			vertexes;
+	int inner = 0;
+	char outputter[6000];
+	char outputter2[30];
+
 	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	// look up sector number for each subsector
 	ss = subsectors;
-	for (i = 0; i < numsubsectors; i++, ss++)
-	{
+	for (i = 0; i < numsubsectors; i++, ss++) {
 		seg = &segs[ss->firstline];
-		ss->sector = sides[seg->sidedefOffset].sector;
+		ss->secnum = sides[seg->sidedefOffset].secnum;
 	}
 
 	// count number of lines in each sector
 	li = lines;
 	total = 0;
-	for (i = 0; i < numlines; i++, li++)
-	{
+	for (i = 0; i < numlines; i++, li++) {
 		total++;
-		li->frontsector->linecount++;
+		sectors[li->frontsecnum].linecount++;
 
-		if (li->backsector && li->backsector != li->frontsector)
+		if (li->backsecnum != -1 && li->backsecnum != li->frontsecnum)
 		{
-			li->backsector->linecount++;
+			sectors[li->backsecnum].linecount++;
 			total++;
+			inner++;
 		}
+		if (i == 622) {
+			//sprintf(outputter2, "%i ", i);
+			//I_Error("%i %i %i %i %i %i", li->backsecnum, li->frontsecnum, sectors[li->frontsecnum].linecount, sectors[li->backsecnum].linecount, total, inner);
+			//strcat(outputter, outputter2);
+		}
+		//inner = 0;
 	}
 
 	// build line tables for each sector        
 //	linebufferRef = Z_MallocEMSNew (total * 4, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
 //	linebuffer = (line_t**)Z_LoadBytesFromEMS(linebufferRef);
 	linebuffer = (line_t**)Z_Malloc (total * 4, PU_LEVEL, 0);
-
-	sector = sectors;
+	//I_Error("%s", outputter);
+	//sector = sectors;
 	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-	for (i = 0; i < numsectors; i++, sector++)
-	{
+	sector = sectors;
+	for (i = 0; i < numsectors; i++, sector++) {
 		M_ClearBox(bbox);
+		//sectors[i].lines = linebuffer;
 		sector->lines = linebuffer;
 		li = lines;
-		for (j = 0; j < numlines; j++, li++)
-		{
-			if (li->frontsector == sector || li->backsector == sector)
-			{
+
+		for (j = 0; j < numlines; j++, li++) {
+			if (li->frontsecnum == i || li->backsecnum == i) {
 				*linebuffer++ = li;
 				M_AddToBox(bbox, vertexes[li->v1Offset].x, vertexes[li->v1Offset].y);
 				M_AddToBox(bbox, vertexes[li->v2Offset].x, vertexes[li->v2Offset].y);
 			}
 		}
-		if (linebuffer - sector->lines != sector->linecount)
-			I_Error("P_GroupLines: miscounted");
+		if (linebuffer - sectors[i].lines != sectors[i].linecount)
+			I_Error("P_GroupLines: miscounted %i %i %i %i %i, %i",linebuffer, sectors[i].lines, sectors[i].linecount, i, linebuffer - sectors[i].lines, sizeof(line_t));
 
 		// set the degenmobj_t to the middle of the bounding box
 		
 
-		sector->soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
-		sector->soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
+		sectors[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
+		sectors[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
 
 		// adjust bounding box to map blocks
 		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUS) >> MAPBLOCKSHIFT;
 		block = block >= bmapheight ? bmapheight - 1 : block;
-		sector->blockbox[BOXTOP] = block;
+		sectors[i].blockbox[BOXTOP] = block;
 
 		block = (bbox[BOXBOTTOM] - bmaporgy - MAXRADIUS) >> MAPBLOCKSHIFT;
 		block = block < 0 ? 0 : block;
-		sector->blockbox[BOXBOTTOM] = block;
+		sectors[i].blockbox[BOXBOTTOM] = block;
 
 		block = (bbox[BOXRIGHT] - bmaporgx + MAXRADIUS) >> MAPBLOCKSHIFT;
 		block = block >= bmapwidth ? bmapwidth - 1 : block;
-		sector->blockbox[BOXRIGHT] = block;
+		sectors[i].blockbox[BOXRIGHT] = block;
 
 		block = (bbox[BOXLEFT] - bmaporgx - MAXRADIUS) >> MAPBLOCKSHIFT;
 		block = block < 0 ? 0 : block;
-		sector->blockbox[BOXLEFT] = block;
+		sectors[i].blockbox[BOXLEFT] = block;
 	}
 
 }

@@ -96,24 +96,26 @@ MEMREF		soundtargetRef;
 
 void
 P_RecursiveSound
-( sector_t*	sec,
+( short		secnum,
   int		soundblocks )
 {
     int		i;
     line_t*	check;
-    sector_t*	other;
-	
+    short	othersecnum;
+	int linecount;
+
     // wake up all monsters in this sector
-    if (sec->validcount == validcount && sec->soundtraversed <= soundblocks+1) {
+    if (sectors[secnum].validcount == validcount && sectors[secnum].soundtraversed <= soundblocks+1) {
 		return;		// already flooded
     }
     
-    sec->validcount = validcount;
-    sec->soundtraversed = soundblocks+1;
-    sec->soundtargetRef = soundtargetRef;
+    sectors[secnum].validcount = validcount;
+	sectors[secnum].soundtraversed = soundblocks+1;
+	sectors[secnum].soundtargetRef = soundtargetRef;
 	
-    for (i=0 ;i<sec->linecount ; i++) {
-		check = sec->lines[i];
+	linecount = sectors[secnum].linecount;
+    for (i=0 ;i<linecount ; i++) {
+		check = sectors[secnum].lines[i];
 		if (!(check->flags & ML_TWOSIDED)) {
 			continue;
 		}
@@ -123,18 +125,18 @@ P_RecursiveSound
 			continue;	// closed door
 		}
 	
-		if (sides[check->sidenum[0]].sector == sec) {
-			other = sides[check->sidenum[1]].sector;
+		if (sides[check->sidenum[0]].secnum == secnum) {
+			othersecnum = sides[check->sidenum[1]].secnum;
 		}
 		else {
-			other = sides[check->sidenum[0]].sector;
+			othersecnum = sides[check->sidenum[0]].secnum;
 		}
 		if (check->flags & ML_SOUNDBLOCK) {
 			if (!soundblocks) {
-				P_RecursiveSound(other, 1);
+				P_RecursiveSound(othersecnum, 1);
 			}
 		} else {
-			P_RecursiveSound(other, soundblocks);
+			P_RecursiveSound(othersecnum, soundblocks);
 		}
     }
 }
@@ -154,7 +156,7 @@ P_NoiseAlert
 	mobj_t* emmiter = (mobj_t*)Z_LoadBytesFromEMS(emmiterRef);
     soundtargetRef = targetRef;
     validcount++;
-    P_RecursiveSound (emmiter->subsector->sector, 0);
+    P_RecursiveSound (emmiter->subsector->secnum, 0);
 }
 
 
@@ -481,13 +483,13 @@ P_LookForPlayers
     int		c;
     int		stop;
     player_t*	player;
-    sector_t*	sector;
+	//short secnum;
     angle_t	an;
     fixed_t	dist;
 	mobj_t*	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	mobj_t* playerMo;
 		
-    sector = actor->subsector->sector;
+	//secnum = actor->subsector->secnum;
 	
     c = 0;
     stop = (actor->lastlook-1)&3;
@@ -595,7 +597,7 @@ void A_Look (MEMREF actorRef)
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	actor->threshold = 0;	// any shot will wake up
 
-    targRef = actor->subsector->sector->soundtargetRef;
+    targRef = sectors[actor->subsector->secnum].soundtargetRef;
 	if (targRef) {
 
 

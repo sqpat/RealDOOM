@@ -46,10 +46,10 @@ void T_FireFlicker (MEMREF memref)
 	
     amount = (P_Random()&3)*16;
     
-    if (flick->sector->lightlevel - amount < flick->minlight)
-	flick->sector->lightlevel = flick->minlight;
+    if (sectors[flick->secnum].lightlevel - amount < flick->minlight)
+		sectors[flick->secnum].lightlevel = flick->minlight;
     else
-	flick->sector->lightlevel = flick->maxlight - amount;
+		sectors[flick->secnum].lightlevel = flick->maxlight - amount;
 
     flick->count = 4;
 }
@@ -59,22 +59,22 @@ void T_FireFlicker (MEMREF memref)
 //
 // P_SpawnFireFlicker
 //
-void P_SpawnFireFlicker (sector_t*	sector)
+void P_SpawnFireFlicker (short secnum)
 {
     fireflicker_t*	flick;
 	MEMREF flickRef;
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
-    sector->special = 0; 
+    sectors[secnum].special = 0;
 	
 	flickRef = Z_MallocEMSNew(sizeof(*flick), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	flick = (fireflicker_t*) Z_LoadBytesFromEMS(flickRef);
 
 	flick->thinkerRef = P_AddThinker(flickRef, TF_FIREFLICKER);
 
-    flick->sector = sector;
-    flick->maxlight = sector->lightlevel;
-    flick->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel)+16;
+    flick->secnum = secnum;
+    flick->maxlight = sectors[secnum].lightlevel;
+    flick->minlight = P_FindMinSurroundingLight(secnum,sectors[secnum].lightlevel)+16;
     flick->count = 4;
 }
 
@@ -96,12 +96,12 @@ void T_LightFlash (MEMREF memref)
     if (--flash->count)
 		return;
 	
-    if (flash->sector->lightlevel == flash->maxlight) {
-		flash-> sector->lightlevel = flash->minlight;
+    if (sectors[flash->secnum].lightlevel == flash->maxlight) {
+		sectors[flash->secnum].lightlevel = flash->minlight;
 		flash->count = (P_Random()&flash->mintime)+1;
     }
     else {
-		flash-> sector->lightlevel = flash->maxlight;
+		sectors[flash->secnum].lightlevel = flash->maxlight;
 		flash->count = (P_Random()&flash->maxtime)+1;
     }
 	
@@ -116,23 +116,23 @@ void T_LightFlash (MEMREF memref)
 // After the map has been loaded, scan each sector
 // for specials that spawn thinkers
 //
-void P_SpawnLightFlash (sector_t*	sector)
+void P_SpawnLightFlash (short secnum)
 {
     lightflash_t*	flash;
 	MEMREF flashRef;
 
 	// nothing special about it during gameplay
-    sector->special = 0;	
+	sectors[secnum].special = 0;
 	
 	flashRef = Z_MallocEMSNew(sizeof(*flash), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	flash = (lightflash_t*) Z_LoadBytesFromEMS(flashRef);
 
 	flash->thinkerRef = P_AddThinker(flashRef, TF_LIGHTFLASH);
 
-    flash->sector = sector;
-    flash->maxlight = sector->lightlevel;
+	flash->secnum = secnum;
+    flash->maxlight = sectors[secnum].lightlevel;
 
-    flash->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel);
+    flash->minlight = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
     flash->maxtime = 64;
     flash->mintime = 7;
     flash->count = (P_Random()&flash->maxtime)+1;
@@ -156,14 +156,14 @@ void T_StrobeFlash (MEMREF memref)
 	if (--flash->count)
 	return;
 	
-    if (flash->sector->lightlevel == flash->minlight)
+    if (sectors[flash->secnum].lightlevel == flash->minlight)
     {
-	flash-> sector->lightlevel = flash->maxlight;
+		sectors[flash->secnum].lightlevel = flash->maxlight;
 	flash->count = flash->brighttime;
     }
     else
     {
-	flash-> sector->lightlevel = flash->minlight;
+		sectors[flash->secnum].lightlevel = flash->minlight;
 	flash->count =flash->darktime;
     }
 
@@ -178,7 +178,7 @@ void T_StrobeFlash (MEMREF memref)
 //
 void
 P_SpawnStrobeFlash
-( sector_t*	sector,
+( short secnum,
   int		fastOrSlow,
   int		inSync )
 {
@@ -186,7 +186,7 @@ P_SpawnStrobeFlash
 	MEMREF flashRef;
 
 	// nothing special about it during gameplay
-	sector->special = 0;
+	sectors[secnum].special = 0;
 
 	flashRef = Z_MallocEMSNew(sizeof(*flash), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	flash = (strobe_t*) Z_LoadBytesFromEMS(flashRef);
@@ -194,18 +194,18 @@ P_SpawnStrobeFlash
 
 	flash->thinkerRef = P_AddThinker(flashRef, TF_STROBEFLASH);
 
-    flash->sector = sector;
+    flash->secnum = secnum;
     flash->darktime = fastOrSlow;
     flash->brighttime = STROBEBRIGHT;
-    flash->maxlight = sector->lightlevel;
-	flash->minlight = P_FindMinSurroundingLight(sector, sector->lightlevel);
+    flash->maxlight = sectors[secnum].lightlevel;
+	flash->minlight = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
 	
 
     if (flash->minlight == flash->maxlight)
 	flash->minlight = 0;
 
     // nothing special about it during gameplay
-    sector->special = 0;	
+	sectors[secnum].special = 0;
 
     if (!inSync)
 	flash->count = (P_Random()&7)+1;
@@ -220,16 +220,14 @@ P_SpawnStrobeFlash
 void EV_StartLightStrobing(line_t*	line)
 {
     int		secnum;
-    sector_t*	sec;
 	
     secnum = -1;
     while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
     {
-	sec = &sectors[secnum];
-	if (sec->specialdataRef)
+	if (sectors[secnum].specialdataRef)
 	    continue;
 	
-	P_SpawnStrobeFlash (sec,SLOWDARK, 0);
+	P_SpawnStrobeFlash (secnum,SLOWDARK, 0);
     }
 }
 
@@ -241,29 +239,27 @@ void EV_StartLightStrobing(line_t*	line)
 void EV_TurnTagLightsOff(line_t* line)
 {
     int			i;
-    int			j;
+    int			secnum;
     int			min;
-    sector_t*		sector;
-    sector_t*		tsec;
+    short		tsecnum;
     line_t*		templine;
 	
-    sector = sectors;
     
-    for (j = 0;j < numsectors; j++, sector++)
+    for (secnum = 0; secnum < numsectors; secnum++)
     {
-	if (sector->tag == line->tag)
+	if (sectors[secnum].tag == line->tag)
 	{
-	    min = sector->lightlevel;
-	    for (i = 0;i < sector->linecount; i++)
+	    min = sectors[secnum].lightlevel;
+	    for (i = 0;i < sectors[secnum].linecount; i++)
 	    {
-		templine = sector->lines[i];
-		tsec = getNextSector(templine,sector);
-		if (!tsec)
+		templine = sectors[secnum].lines[i];
+		tsecnum = getNextSector(templine,secnum);
+		if (tsecnum == SECNUM_NULL)
 		    continue;
-		if (tsec->lightlevel < min)
-		    min = tsec->lightlevel;
+		if (sectors[tsecnum].lightlevel < min)
+		    min = sectors[tsecnum].lightlevel;
 	    }
-	    sector->lightlevel = min;
+		sectors[secnum].lightlevel = min;
 	}
     }
 }
@@ -277,36 +273,36 @@ EV_LightTurnOn
 ( line_t*	line,
   int		bright )
 {
-    int		i;
+    short secnum;
     int		j;
-    sector_t*	sector;
-    sector_t*	temp;
+    short	tempsecnum;
     line_t*	templine;
+	int linecount;
 	
-    sector = sectors;
 	
-    for (i=0;i<numsectors;i++, sector++)
+    for (secnum=0;secnum<numsectors;secnum++)
     {
-	if (sector->tag == line->tag)
+	if (sectors[secnum].tag == line->tag)
 	{
 	    // bright = 0 means to search
 	    // for highest light level
 	    // surrounding sector
 	    if (!bright)
 	    {
-		for (j = 0;j < sector->linecount; j++)
+			linecount = sectors[secnum].linecount;
+		for (j = 0;j < linecount; j++)
 		{
-		    templine = sector->lines[j];
-		    temp = getNextSector(templine,sector);
+		    templine = sectors[secnum].lines[j];
+			tempsecnum = getNextSector(templine,secnum);
 
-		    if (!temp)
-			continue;
+		    if (tempsecnum == SECNUM_NULL)
+				continue;
 
-		    if (temp->lightlevel > bright)
-			bright = temp->lightlevel;
+		    if (sectors[tempsecnum].lightlevel > bright)
+				bright = sectors[tempsecnum].lightlevel;
 		}
 	    }
-	    sector-> lightlevel = bright;
+		sectors[secnum].lightlevel = bright;
 	}
     }
 }
@@ -324,20 +320,20 @@ void T_Glow(MEMREF memref)
     {
       case -1:
 	// DOWN
-	g->sector->lightlevel -= GLOWSPEED;
-	if (g->sector->lightlevel <= g->minlight)
+	sectors[g->secnum].lightlevel -= GLOWSPEED;
+	if (sectors[g->secnum].lightlevel <= g->minlight)
 	{
-	    g->sector->lightlevel += GLOWSPEED;
+		sectors[g->secnum].lightlevel += GLOWSPEED;
 	    g->direction = 1;
 	}
 	break;
 	
       case 1:
 	// UP
-	g->sector->lightlevel += GLOWSPEED;
-	if (g->sector->lightlevel >= g->maxlight)
+		  sectors[g->secnum].lightlevel += GLOWSPEED;
+	if (sectors[g->secnum].lightlevel >= g->maxlight)
 	{
-	    g->sector->lightlevel -= GLOWSPEED;
+		sectors[g->secnum].lightlevel -= GLOWSPEED;
 	    g->direction = -1;
 	}
 	break;
@@ -345,14 +341,14 @@ void T_Glow(MEMREF memref)
 }
 
 
-void P_SpawnGlowingLight(sector_t*	sector)
+void P_SpawnGlowingLight(short secnum)
 {
     glow_t*	g;
 
 	MEMREF glowRef;
 	// Note that we are resetting sector attributes.
 	// Nothing special about it during gameplay.
-	sector->special = 0;
+	sectors[secnum].special = 0;
 
 	glowRef = Z_MallocEMSNew(sizeof(*g), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	g = (glow_t*)Z_LoadBytesFromEMS(glowRef);
@@ -360,11 +356,11 @@ void P_SpawnGlowingLight(sector_t*	sector)
 	g->thinkerRef = P_AddThinker(glowRef, TF_GLOW);
 
 
-    g->sector = sector;
-    g->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel);
-    g->maxlight = sector->lightlevel;
+    g->secnum = secnum;
+    g->minlight = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
+    g->maxlight = sectors[secnum].lightlevel;
     g->direction = -1;
 
-    sector->special = 0;
+	sectors[secnum].special = 0;
 }
 

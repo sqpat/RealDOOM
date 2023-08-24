@@ -37,8 +37,8 @@
 
 seg_t*		curline;
 line_t*		linedef;
-sector_t*	frontsector;
-sector_t*	backsector;
+short	frontsecnum;
+short	backsecnum;
 
 drawseg_t	drawsegs[MAXDRAWSEGS];
 drawseg_t*	ds_p;
@@ -308,20 +308,20 @@ void R_AddLine (seg_t*	line)
     if (x1 == x2)
 	return;				
 	
-    backsector = line->backsector;
+    backsecnum = line->backsecnum;
 
     // Single sided line?
-    if (!backsector)
-	goto clipsolid;		
+    if (backsecnum == SECNUM_NULL)
+		goto clipsolid;		
 
     // Closed door.
-    if (backsector->ceilingheight <= frontsector->floorheight
-	|| backsector->floorheight >= frontsector->ceilingheight)
+    if (sectors[backsecnum].ceilingheight <= sectors[frontsecnum].floorheight
+	|| sectors[backsecnum].floorheight >= sectors[frontsecnum].ceilingheight)
 	goto clipsolid;		
 
     // Window.
-    if (backsector->ceilingheight != frontsector->ceilingheight
-	|| backsector->floorheight != frontsector->floorheight)
+    if (sectors[backsecnum].ceilingheight != sectors[frontsecnum].ceilingheight
+	|| sectors[backsecnum].floorheight != sectors[frontsecnum].floorheight)
 	goto clippass;	
 		
     // Reject empty lines used for triggers
@@ -329,9 +329,9 @@ void R_AddLine (seg_t*	line)
     // Identical floor and ceiling on both sides,
     // identical light levels on both sides,
     // and no middle texture.
-    if (backsector->ceilingpic == frontsector->ceilingpic
-	&& backsector->floorpic == frontsector->floorpic
-	&& backsector->lightlevel == frontsector->lightlevel
+    if (sectors[backsecnum].ceilingpic == sectors[frontsecnum].ceilingpic
+	&& sectors[backsecnum].floorpic == sectors[frontsecnum].floorpic
+	&& sectors[backsecnum].lightlevel == sectors[frontsecnum].lightlevel
 	&& sides[curline->sidedefOffset].midtexture == 0)
     {
 	return;
@@ -500,26 +500,26 @@ void R_Subsector (int num) {
 
     sscount++;
     sub = &subsectors[num];
-    frontsector = sub->sector;
+    frontsecnum = sub->secnum;
     count = sub->numlines;
 
-    if (frontsector->floorheight < viewz) {
-		floorplane = R_FindPlane (frontsector->floorheight,
-				  frontsector->floorpic,
-				  frontsector->lightlevel);
+    if (sectors[frontsecnum].floorheight < viewz) {
+		floorplane = R_FindPlane (sectors[frontsecnum].floorheight,
+			sectors[frontsecnum].floorpic,
+			sectors[frontsecnum].lightlevel);
 	}
 	else {
 		floorplane = NULL;
 	}
 
-    if (frontsector->ceilingheight > viewz  || frontsector->ceilingpic == skyflatnum) {
-		ceilingplane = R_FindPlane (frontsector->ceilingheight,
-				    frontsector->ceilingpic,
-				    frontsector->lightlevel);
+    if (sectors[frontsecnum].ceilingheight > viewz  || sectors[frontsecnum].ceilingpic == skyflatnum) {
+		ceilingplane = R_FindPlane (sectors[frontsecnum].ceilingheight,
+			sectors[frontsecnum].ceilingpic,
+			sectors[frontsecnum].lightlevel);
 	} else {
 		ceilingplane = NULL;
 	}
-    R_AddSprites (frontsector);	
+    R_AddSprites (frontsecnum);
 	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	line = &segs[sub->firstline];
 

@@ -142,8 +142,8 @@ P_TeleportMove
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-    tmfloorz = tmdropoffz = newsubsec->sector->floorheight;
-    tmceilingz = newsubsec->sector->ceilingheight;
+    tmfloorz = tmdropoffz = sectors[newsubsec->secnum].floorheight;
+    tmceilingz = sectors[newsubsec->secnum].ceilingheight;
 			
     validcount++;
     numspechit = 0;
@@ -208,7 +208,7 @@ boolean PIT_CheckLine (line_t* ld)
     // so two special lines that are only 8 pixels apart
     // could be crossed in either order.
     
-	if (!ld->backsector) {
+	if (ld->backsecnum == SECNUM_NULL) {
 		return false;		// one sided line
 	}
 
@@ -409,8 +409,8 @@ P_CheckPosition
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-    tmfloorz = tmdropoffz = newsubsec->sector->floorheight;
-    tmceilingz = newsubsec->sector->ceilingheight;
+    tmfloorz = tmdropoffz = sectors[newsubsec->secnum].floorheight;
+    tmceilingz = sectors[newsubsec->secnum].ceilingheight;
 			
     validcount++;
     numspechit = 0;
@@ -855,14 +855,14 @@ PTR_AimTraverse (intercept_t* in)
 	
 	dist = FixedMul (attackrange, in->frac);
 
-	if (li->frontsector->floorheight != li->backsector->floorheight)
+	if (sectors[li->frontsecnum].floorheight != sectors[li->backsecnum].floorheight)
 	{
 	    slope = FixedDiv (openbottom - shootz , dist);
 	    if (slope > bottomslope)
 		bottomslope = slope;
 	}
 		
-	if (li->frontsector->ceilingheight != li->backsector->ceilingheight)
+	if (sectors[li->frontsecnum].ceilingheight != sectors[li->backsecnum].ceilingheight)
 	{
 	    slope = FixedDiv (opentop - shootz , dist);
 	    if (slope < topslope)
@@ -946,14 +946,14 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		
 	dist = FixedMul (attackrange, in->frac);
 
-	if (li->frontsector->floorheight != li->backsector->floorheight)
+	if (sectors[li->frontsecnum].floorheight != sectors[li->backsecnum].floorheight)
 	{
 	    slope = FixedDiv (openbottom - shootz , dist);
 	    if (slope > aimslope)
 		goto hitline;
 	}
 		
-	if (li->frontsector->ceilingheight != li->backsector->ceilingheight)
+	if (sectors[li->frontsecnum].ceilingheight != sectors[li->backsecnum].ceilingheight)
 	{
 	    slope = FixedDiv (opentop - shootz , dist);
 	    if (slope < aimslope)
@@ -972,14 +972,14 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	y = trace.y + FixedMul (trace.dy, frac);
 	z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
 
-	if (li->frontsector->ceilingpic == skyflatnum)
+	if (sectors[li->frontsecnum].ceilingpic == skyflatnum)
 	{
 	    // don't shoot the sky!
-	    if (z > li->frontsector->ceilingheight)
+	    if (z > sectors[li->frontsecnum].ceilingheight)
 		return false;
 	    
 	    // it's a sky hack wall
-	    if	(li->backsector && li->backsector->ceilingpic == skyflatnum)
+	    if	(li->backsecnum != SECNUM_NULL && sectors[li->backsecnum].ceilingpic == skyflatnum)
 		return false;		
 	}
 
@@ -1360,7 +1360,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 //
 boolean
 P_ChangeSector
-( sector_t*	sector,
+( short	secnum,
   boolean	crunch )
 {
     int		x;
@@ -1370,8 +1370,8 @@ P_ChangeSector
     crushchange = crunch;
 
     // re-check heights for all things near the moving sector
-	for (x = sector->blockbox[BOXLEFT]; x <= sector->blockbox[BOXRIGHT]; x++) {
-		for (y = sector->blockbox[BOXBOTTOM]; y <= sector->blockbox[BOXTOP]; y++) {
+	for (x = sectors[secnum].blockbox[BOXLEFT]; x <= sectors[secnum].blockbox[BOXRIGHT]; x++) {
+		for (y = sectors[secnum].blockbox[BOXBOTTOM]; y <= sectors[secnum].blockbox[BOXTOP]; y++) {
 				P_BlockThingsIterator(x, y, PIT_ChangeSector); {
 			}
 		}

@@ -264,9 +264,9 @@ void P_PlayerThink (player_t* player)
     
     P_CalcHeight (player);
 
-    if (playermo->subsector->sector->special)
-	P_PlayerInSpecialSector (player);
-    
+	if (sectors[playermo->subsector->secnum].special) {
+		P_PlayerInSpecialSector(player);
+	}
     // Check for weapon change.
 
     // A special event has no other buttons.

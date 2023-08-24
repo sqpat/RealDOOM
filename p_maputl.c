@@ -291,36 +291,31 @@ fixed_t openrange;
 fixed_t	lowfloor;
 
 
-void P_LineOpening (line_t* linedef)
-{
+void P_LineOpening (line_t* linedef) {
     sector_t*	front;
     sector_t*	back;
 	
-    if (linedef->sidenum[1] == -1)
-    {
-	// single sided line
-	openrange = 0;
-	return;
-    }
+    if (linedef->sidenum[1] == -1) {
+		// single sided line
+		openrange = 0;
+		return;
+	}
 	 
-    front = linedef->frontsector;
-    back = linedef->backsector;
+	front = &sectors[linedef->frontsecnum];
+	back = &sectors[linedef->backsecnum];
 	
-    if (front->ceilingheight < back->ceilingheight)
-	opentop = front->ceilingheight;
-    else
-	opentop = back->ceilingheight;
+	if (front->ceilingheight < back->ceilingheight)
+		opentop = front->ceilingheight;
+	else
+		opentop = back->ceilingheight;
 
-    if (front->floorheight > back->floorheight)
-    {
-	openbottom = front->floorheight;
-	lowfloor = back->floorheight;
-    }
-    else
-    {
-	openbottom = back->floorheight;
-	lowfloor = front->floorheight;
-    }
+	if (front->floorheight > back->floorheight) {
+		openbottom = front->floorheight;
+		lowfloor = back->floorheight;
+	} else {
+		openbottom = back->floorheight;
+		lowfloor = front->floorheight;
+	}
 	
     openrange = opentop - openbottom;
 }
@@ -360,7 +355,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 		}
 		else {
 			thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-			thing->subsector->sector->thinglistRef = thing->snextRef;
+			sectors[thing->subsector->secnum].thinglistRef = thing->snextRef;
 		}
     }
 	// just in case, refreshing this in memory...
@@ -399,7 +394,7 @@ void
 P_SetThingPosition (MEMREF thingRef)
 {
     subsector_t*	ss;
-    sector_t*		sec;
+    //sector_t*		sec;
     int			blockx;
     int			blocky;
     MEMREF		linkRef;
@@ -415,17 +410,16 @@ P_SetThingPosition (MEMREF thingRef)
     
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
-		sec = ss->sector;
 	
 		thing->sprevRef = NULL_MEMREF;
-		thing->snextRef = sec->thinglistRef;
+		thing->snextRef = sectors[ss->secnum].thinglistRef;
 
-		if (sec->thinglistRef) {
-			thingList = (mobj_t*)Z_LoadBytesFromEMS(sec->thinglistRef);
+		if (thing->snextRef) {
+			thingList = (mobj_t*)Z_LoadBytesFromEMS(thing->snextRef);
 			thingList->sprevRef = thingRef;
 		}
 
-		sec->thinglistRef = thingRef;
+		sectors[ss->secnum].thinglistRef = thingRef;
     }
 
     
@@ -601,7 +595,7 @@ PIT_AddLineIntercepts (line_t* ld)
 	}
 
     // try to early out the check
-    if (earlyout && frac < FRACUNIT && !ld->backsector) {
+    if (earlyout && frac < FRACUNIT && !ld->backsecnum) {
 		return false;	// stop checking
     }
     

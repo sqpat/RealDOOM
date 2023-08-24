@@ -183,7 +183,7 @@ void P_XYMovement (MEMREF moRef)
 				P_SlideMove (moRef);
 			} else if (mo->flags & MF_MISSILE) {
 				// explode a missile
-				if (ceilingline && ceilingline->backsector && ceilingline->backsector->ceilingpic == skyflatnum) {
+				if (ceilingline && ceilingline->backsecnum != SECNUM_NULL && sectors[ceilingline->backsecnum].ceilingpic == skyflatnum) {
 					// Hack to prevent missiles exploding
 					// against the sky.
 					// Does not handle sky floors.
@@ -219,7 +219,7 @@ void P_XYMovement (MEMREF moRef)
 		//  if halfway off a step with some momentum
 
 		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
-			if (mo->floorz != mo->subsector->sector->floorheight) {
+			if (mo->floorz != sectors[mo->subsector->secnum].floorheight) {
 				return;
 			}
 		}
@@ -381,14 +381,14 @@ P_NightmareRespawn(MEMREF mobjRef)
 	}
 		// spawn a teleport fog at old spot
 		// because of removal of the body?
-	moRef = P_SpawnMobj(mobj->x, mobj->y, mobj->subsector->sector->floorheight, MT_TFOG);
+	moRef = P_SpawnMobj(mobj->x, mobj->y, sectors[mobj->subsector->secnum].floorheight, MT_TFOG);
 	// initiate teleport sound
 	S_StartSoundFromRef(moRef, sfx_telept);
 
 	// spawn a teleport fog at the new spot
 	ss = R_PointInSubsector(x, y);
 
-	moRef = P_SpawnMobj(x, y, ss->sector->floorheight, MT_TFOG);
+	moRef = P_SpawnMobj(x, y, sectors[ss->secnum].floorheight, MT_TFOG);
 
 	S_StartSoundFromRef(moRef, sfx_telept);
 
@@ -520,8 +520,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     // set subsector and/or block links
     P_SetThingPosition (mobjRef);
 	
-    mobj->floorz = mobj->subsector->sector->floorheight;
-    mobj->ceilingz = mobj->subsector->sector->ceilingheight;
+    mobj->floorz = sectors[mobj->subsector->secnum].floorheight;
+    mobj->ceilingz = sectors[mobj->subsector->secnum].ceilingheight;
 
     if (z == ONFLOORZ)
 	mobj->z = mobj->floorz;
@@ -607,7 +607,7 @@ void P_RespawnSpecials (void)
 	  
     // spawn a teleport fog at the new spot
     ss = R_PointInSubsector (x,y); 
-    moRef = P_SpawnMobj (x, y, ss->sector->floorheight , MT_IFOG); 
+    moRef = P_SpawnMobj (x, y, sectors[ss->secnum].floorheight , MT_IFOG);
     S_StartSoundFromRef (moRef, sfx_itmbk);
 
     // find which type to spawn

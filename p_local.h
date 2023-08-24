@@ -218,7 +218,7 @@ void	P_SlideMove (MEMREF mo);
 boolean P_CheckSight (MEMREF t1, MEMREF t2);
 void 	P_UseLines (player_t* player);
 
-boolean P_ChangeSector (sector_t* sector, boolean crunch);
+boolean P_ChangeSector (short secnum, boolean crunch);
 
 extern MEMREF	linetargetRef;	// who got hit (or NULL)
 

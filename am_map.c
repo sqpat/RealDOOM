@@ -1127,7 +1127,7 @@ void AM_drawWalls(void)
 		if (cheating || (lines[i].flags & ML_MAPPED)) {
 			if ((lines[i].flags & LINE_NEVERSEE) && !cheating) {
 				continue;
-			} if (!lines[i].backsector) {
+			} if (lines[i].backsecnum == SECNUM_NULL) {
 				AM_drawMline(&l, WALLCOLORS+lightlev);
 			} else {
 				if (lines[i].special == 39) { // teleporters
@@ -1138,10 +1138,10 @@ void AM_drawWalls(void)
 					} else {
 						AM_drawMline(&l, WALLCOLORS + lightlev);
 					}
-				} else if (lines[i].backsector->floorheight != lines[i].frontsector->floorheight) {
+				} else if (sectors[lines[i].backsecnum].floorheight != sectors[lines[i].frontsecnum].floorheight) {
 					AM_drawMline(&l, FDWALLCOLORS + lightlev); // floor level change
 				}
-				else if (lines[i].backsector->ceilingheight != lines[i].frontsector->ceilingheight) {
+				else if (sectors[lines[i].backsecnum].ceilingheight != sectors[lines[i].frontsecnum].ceilingheight) {
 					AM_drawMline(&l, CDWALLCOLORS+lightlev); // ceiling level change
 				} else if (cheating) {
 					AM_drawMline(&l, TSWALLCOLORS+lightlev);

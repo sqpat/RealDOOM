@@ -172,8 +172,8 @@ P_StartButton
 	    buttonlist[i].where = w;
 	    buttonlist[i].btexture = texture;
 	    buttonlist[i].btimer = time;
-		buttonlist[i].soundorgX = line->frontsector->soundorgX;
-		buttonlist[i].soundorgY = line->frontsector->soundorgY;
+		buttonlist[i].soundorgX = sectors[line->frontsecnum].soundorgX;
+		buttonlist[i].soundorgY = sectors[line->frontsecnum].soundorgY;
 		return;
 	}
     }

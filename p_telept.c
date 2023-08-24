@@ -48,7 +48,7 @@ EV_Teleport
     mobj_t*	fog;
     unsigned	an;
     THINKERREF	thinkerRef;
-    sector_t*	sector;
+	short secnum;
     fixed_t	oldx;
     fixed_t	oldy;
     fixed_t	oldz;
@@ -85,9 +85,9 @@ EV_Teleport
 		if (m->type != MT_TELEPORTMAN )
 		    continue;		
 
-		sector = m->subsector->sector;
+		secnum = m->subsector->secnum;
 		// wrong sector
-		if (sector-sectors != i )
+		if (secnum != i )
 		    continue;	
 
 		oldx = thing->x;

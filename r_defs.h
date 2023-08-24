@@ -149,7 +149,7 @@ typedef struct
     short	midtexture;
 
     // Sector the SideDef is facing.
-    sector_t*	sector;
+    short	secnum;
     
 } side_t;
 
@@ -197,8 +197,10 @@ typedef struct line_s
 
     // Front and back sector.
     // Note: redundant? Can be retrieved from SideDefs.
-    sector_t*	frontsector;
-    sector_t*	backsector;
+	//sector_t*	frontsector;
+	//sector_t*	backsector;
+	short	frontsecnum;
+	short	backsecnum;
 
     // if == validcount, already checked
     int		validcount;
@@ -220,7 +222,7 @@ typedef struct line_s
 //
 typedef struct subsector_s
 {
-    sector_t*	sector;
+    short	secnum;
     short	numlines;
     short	firstline;
     
@@ -247,8 +249,8 @@ typedef struct
     // Sector references.
     // Could be retrieved from linedef, too.
     // backsector is NULL for one sided lines
-    sector_t*	frontsector;
-    sector_t*	backsector;
+    short	frontsecnum;
+    short	backsecnum;
     
 } seg_t;
 

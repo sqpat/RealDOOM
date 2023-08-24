@@ -615,7 +615,7 @@ void R_ProjectSprite (MEMREF thingRef)
 // R_AddSprites
 // During BSP traversal, this adds sprites by sector.
 //
-void R_AddSprites (sector_t* sec)
+void R_AddSprites (short secnum)
 {
     mobj_t*             thing;
 	MEMREF				thingRef;
@@ -626,13 +626,13 @@ void R_AddSprites (sector_t* sec)
     // A sector might have been split into several
     //  subsectors during BSP building.
     // Thus we check whether its already added.
-    if (sec->validcount == validcount)
+    if (sectors[secnum].validcount == validcount)
         return;         
 
     // Well, now it will be done.
-    sec->validcount = validcount;
+	sectors[secnum].validcount = validcount;
         
-    lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
+    lightnum = (sectors[secnum].lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 	if (lightnum < 0) {
 		spritelights = scalelight[0];
@@ -645,7 +645,7 @@ void R_AddSprites (sector_t* sec)
 	// todo:  gross... can be a bunch of things in diff pages..
 
     // Handle all things in sector.
-	for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
+	for (thingRef = sectors[secnum].thinglistRef; thingRef; thingRef = thing->snextRef) {
 		R_ProjectSprite(thingRef);
 		thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	}
@@ -774,7 +774,7 @@ void R_DrawPlayerSprites (void)
     
     // get light level
     lightnum =
-        (playermo->subsector->sector->lightlevel >> LIGHTSEGSHIFT) 
+        (sectors[playermo->subsector->secnum].lightlevel >> LIGHTSEGSHIFT) 
         +extralight;
 
     if (lightnum < 0)           
@@ -998,7 +998,8 @@ void R_DrawMasked (void)
     }
     
     // render any remaining masked mid textures
-    for (ds=ds_p-1 ; ds >= drawsegs ; ds--)
+
+	for (ds=ds_p-1 ; ds >= drawsegs ; ds--)
         if (ds->maskedtexturecol)
             R_RenderMaskedSegRange (ds, ds->x1, ds->x2);
     

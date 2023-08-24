@@ -50,7 +50,7 @@ void T_PlatRaise(MEMREF platRef)
     switch(plat->status)
     {
       case up:
-	res = T_MovePlane(plat->sector,
+	res = T_MovePlane(plat->secnum,
 			  plat->speed,
 			  plat->high,
 			  plat->crush,0,1);
@@ -59,7 +59,7 @@ void T_PlatRaise(MEMREF platRef)
 	    || plat->type == raiseToNearestAndChange)
 	{
 	    if (!(leveltime&7))
-			S_StartSoundWithParams(plat->sector->soundorgX, plat->sector->soundorgY, sfx_stnmov);
+			S_StartSoundWithParams(sectors[plat->secnum].soundorgX, sectors[plat->secnum].soundorgY, sfx_stnmov);
 	}
 	
 				
@@ -67,7 +67,7 @@ void T_PlatRaise(MEMREF platRef)
 	{
 	    plat->count = plat->wait;
 	    plat->status = down;
-		S_StartSoundWithParams(plat->sector->soundorgX, plat->sector->soundorgY, sfx_pstart);
+		S_StartSoundWithParams(sectors[plat->secnum].soundorgX, sectors[plat->secnum].soundorgY, sfx_pstart);
 	}
 	else
 	{
@@ -75,7 +75,7 @@ void T_PlatRaise(MEMREF platRef)
 	    {
 		plat->count = plat->wait;
 		plat->status = waiting;
-		S_StartSoundWithParams(plat->sector->soundorgX, plat->sector->soundorgY, sfx_pstop);
+		S_StartSoundWithParams(sectors[plat->secnum].soundorgX, sectors[plat->secnum].soundorgY, sfx_pstop);
 
 		switch(plat->type)
 		{
@@ -97,24 +97,24 @@ void T_PlatRaise(MEMREF platRef)
 	break;
 	
       case	down:
-	res = T_MovePlane(plat->sector,plat->speed,plat->low,false,0,-1);
+	res = T_MovePlane(plat->secnum,plat->speed,plat->low,false,0,-1);
 
 	if (res == pastdest)
 	{
 	    plat->count = plat->wait;
 	    plat->status = waiting;
-		S_StartSoundWithParams(plat->sector->soundorgX, plat->sector->soundorgY, sfx_pstop);
+		S_StartSoundWithParams(sectors[plat->secnum].soundorgX, sectors[plat->secnum].soundorgY, sfx_pstop);
 	}
 	break;
 	
       case	waiting:
 	if (!--plat->count)
 	{
-	    if (plat->sector->floorheight == plat->low)
+	    if (sectors[plat->secnum].floorheight == plat->low)
 		plat->status = up;
 	    else
 		plat->status = down;
-		S_StartSoundWithParams(plat->sector->soundorgX, plat->sector->soundorgY, sfx_pstart);
+		S_StartSoundWithParams(sectors[plat->secnum].soundorgX, sectors[plat->secnum].soundorgY, sfx_pstart);
 	}
       case	in_stasis:
 	break;
@@ -135,7 +135,6 @@ EV_DoPlat
     plat_t*	plat;
     int		secnum;
     int		rtn;
-    sector_t*	sec;
 	MEMREF platRef;
 	
     secnum = -1;
@@ -155,9 +154,8 @@ EV_DoPlat
 	
     while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
     {
-	sec = &sectors[secnum];
 
-	if (sec->specialdataRef)
+	if (sectors[secnum].specialdataRef)
 	    continue;
 	
 	// Find lowest & highest floors around sector
@@ -171,8 +169,8 @@ EV_DoPlat
 	 
 		
 	plat->type = type;
-	plat->sector = sec;
-	plat->sector->specialdataRef = platRef;
+	plat->secnum = secnum;
+	sectors[plat->secnum].specialdataRef = platRef;
 	plat->crush = false;
 	plat->tag = line->tag;
 	
@@ -180,68 +178,68 @@ EV_DoPlat
 	{
 	  case raiseToNearestAndChange:
 	    plat->speed = PLATSPEED/2;
-	    sec->floorpic = sides[line->sidenum[0]].sector->floorpic;
-	    plat->high = P_FindNextHighestFloor(sec,sec->floorheight);
+		sectors[secnum].floorpic = sectors[sides[line->sidenum[0]].secnum].floorpic;
+	    plat->high = P_FindNextHighestFloor(secnum,sectors[secnum].floorheight);
 	    plat->wait = 0;
 	    plat->status = up;
 	    // NO MORE DAMAGE, IF APPLICABLE
-	    sec->special = 0;		
+		sectors[secnum].special = 0;
 
-		S_StartSoundWithParams(sec->soundorgX, sec->soundorgY, sfx_stnmov);
+		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_stnmov);
 	    break;
 	    
 	  case raiseAndChange:
 	    plat->speed = PLATSPEED/2;
-	    sec->floorpic = sides[line->sidenum[0]].sector->floorpic;
-	    plat->high = sec->floorheight + amount*FRACUNIT;
+		sectors[secnum].floorpic = sectors[sides[line->sidenum[0]].secnum].floorpic;
+	    plat->high = sectors[secnum].floorheight + amount*FRACUNIT;
 	    plat->wait = 0;
 	    plat->status = up;
 
-		S_StartSoundWithParams(sec->soundorgX, sec->soundorgY, sfx_stnmov);
+		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_stnmov);
 	    break;
 	    
 	  case downWaitUpStay:
 	    plat->speed = PLATSPEED * 4;
-	    plat->low = P_FindLowestFloorSurrounding(sec);
+	    plat->low = P_FindLowestFloorSurrounding(secnum);
 
-	    if (plat->low > sec->floorheight)
-		plat->low = sec->floorheight;
+	    if (plat->low > sectors[secnum].floorheight)
+		plat->low = sectors[secnum].floorheight;
 
-	    plat->high = sec->floorheight;
+	    plat->high = sectors[secnum].floorheight;
 	    plat->wait = 35*PLATWAIT;
 	    plat->status = down;
-		S_StartSoundWithParams(sec->soundorgX, sec->soundorgY, sfx_pstart);
+		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_pstart);
 	    break;
 	    
 	  case blazeDWUS:
 	    plat->speed = PLATSPEED * 8;
-	    plat->low = P_FindLowestFloorSurrounding(sec);
+	    plat->low = P_FindLowestFloorSurrounding(secnum);
 
-	    if (plat->low > sec->floorheight)
-		plat->low = sec->floorheight;
+	    if (plat->low > sectors[secnum].floorheight)
+		plat->low = sectors[secnum].floorheight;
 
-	    plat->high = sec->floorheight;
+	    plat->high = sectors[secnum].floorheight;
 	    plat->wait = 35*PLATWAIT;
 	    plat->status = down;
-		S_StartSoundWithParams(sec->soundorgX, sec->soundorgY, sfx_pstart);
+		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_pstart);
 	    break;
 	    
 	  case perpetualRaise:
 	    plat->speed = PLATSPEED;
-	    plat->low = P_FindLowestFloorSurrounding(sec);
+	    plat->low = P_FindLowestFloorSurrounding(secnum);
 
-	    if (plat->low > sec->floorheight)
-		plat->low = sec->floorheight;
+	    if (plat->low > sectors[secnum].floorheight)
+		plat->low = sectors[secnum].floorheight;
 
-	    plat->high = P_FindHighestFloorSurrounding(sec);
+	    plat->high = P_FindHighestFloorSurrounding(secnum);
 
-	    if (plat->high < sec->floorheight)
-		plat->high = sec->floorheight;
+	    if (plat->high < sectors[secnum].floorheight)
+		plat->high = sectors[secnum].floorheight;
 
 	    plat->wait = 35*PLATWAIT;
 	    plat->status = P_Random()&1;
 
-		S_StartSoundWithParams(sec->soundorgX, sec->soundorgY, sfx_pstart);
+		S_StartSoundWithParams(sectors[secnum].soundorgX, sectors[secnum].soundorgY, sfx_pstart);
 	    break;
 	}
 	P_AddActivePlat(platRef);
@@ -310,7 +308,7 @@ void P_RemoveActivePlat(MEMREF platRef)
 		if (platRef == activeplats[i]) {
 			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[i]);
 
-			plat->sector->specialdataRef = NULL_MEMREF;
+			sectors[plat->secnum].specialdataRef = NULL_MEMREF;
 			P_RemoveThinker(plat->thinkerRef);
 			activeplats[i] = NULL_MEMREF;
 

@@ -853,7 +853,7 @@ P_DamageMobj
 	
 
 	// end of game hell hack
-	if (target->subsector->sector->special == 11
+	if (sectors[target->subsector->secnum].special == 11
 	    && damage >= target->health)
 	{
 	    damage = target->health - 1;

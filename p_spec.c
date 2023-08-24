@@ -207,13 +207,13 @@ getSide
 //  given the number of the current sector,
 //  the line number and the side (0/1) that you want.
 //
-sector_t*
+short
 getSector
 ( int		currentSector,
   int		line,
   int		side )
 {
-    return sides[ (sectors[currentSector].lines[line])->sidenum[side] ].sector;
+    return sides[ (sectors[currentSector].lines[line])->sidenum[side] ].secnum;
 }
 
 
@@ -236,22 +236,22 @@ twoSided
 //
 // getNextSector()
 // Return sector_t * of sector next to current.
-// NULL if not two-sided line
+// SECNUM_NULL if not two-sided line
 //
-sector_t*
+short
 getNextSector
 ( line_t*	line,
-  sector_t*	sec )
+  short	sec )
 {
 	
 	if (!(line->flags & ML_TWOSIDED))
-	return NULL;
+		return SECNUM_NULL; 
 		
 
-    if (line->frontsector == sec)
-	return line->backsector;
+    if (line->frontsecnum == sec)
+	return line->backsecnum;
 	
-    return line->frontsector;
+    return line->frontsecnum;
 }
 
 
@@ -260,23 +260,24 @@ getNextSector
 // P_FindLowestFloorSurrounding()
 // FIND LOWEST FLOOR HEIGHT IN SURROUNDING SECTORS
 //
-fixed_t	P_FindLowestFloorSurrounding(sector_t* sec)
+fixed_t	P_FindLowestFloorSurrounding(short secnum)
 {
     int			i;
     line_t*		check;
-    sector_t*		other;
-    fixed_t		floor = sec->floorheight;
-	
-    for (i=0 ;i < sec->linecount ; i++)
-    {
-	check = sec->lines[i];
-	other = getNextSector(check,sec);
+	short		otherSecOffset;
+	fixed_t		floor = sectors[secnum].floorheight;
+	int linecount = sectors[secnum].linecount;
 
-	if (!other)
+    for (i=0 ;i < linecount ; i++)
+    {
+	check = sectors[secnum].lines[i];
+	otherSecOffset = getNextSector(check, secnum);
+
+	if (otherSecOffset == SECNUM_NULL)
 	    continue;
 	
-	if (other->floorheight < floor)
-	    floor = other->floorheight;
+	if (sectors[otherSecOffset].floorheight < floor)
+	    floor = sectors[otherSecOffset].floorheight;
     }
     return floor;
 }
@@ -287,23 +288,24 @@ fixed_t	P_FindLowestFloorSurrounding(sector_t* sec)
 // P_FindHighestFloorSurrounding()
 // FIND HIGHEST FLOOR HEIGHT IN SURROUNDING SECTORS
 //
-fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
+fixed_t	P_FindHighestFloorSurrounding(short secnum)
 {
     int			i;
     line_t*		check;
-    sector_t*		other;
+    short		otherSecOffset;
     fixed_t		floor = -500*FRACUNIT;
+	int linecount = sectors[secnum].linecount;
 	
-    for (i=0 ;i < sec->linecount ; i++)
+    for (i=0 ;i < linecount ; i++)
     {
-	check = sec->lines[i];
-	other = getNextSector(check,sec);
+	check = sectors[secnum].lines[i];
+	otherSecOffset = getNextSector(check, secnum);
 	
-	if (!other)
+	if (otherSecOffset == SECNUM_NULL)
 	    continue;
 	
-	if (other->floorheight > floor)
-	    floor = other->floorheight;
+	if (sectors[otherSecOffset].floorheight > floor)
+	    floor = sectors[otherSecOffset].floorheight;
     }
     return floor;
 }
@@ -320,29 +322,30 @@ fixed_t	P_FindHighestFloorSurrounding(sector_t *sec)
 
 fixed_t
 P_FindNextHighestFloor
-( sector_t*	sec,
+( short	secnum,
   int		currentheight )
 {
     int			i;
     int			h;
     int			min;
     line_t*		check;
-    sector_t*		other;
-    fixed_t		height = currentheight;
+	short		otherSecOffset;
+	fixed_t		height = currentheight;
+	int linecount = sectors[secnum].linecount;
 
     
     fixed_t		heightlist[MAX_ADJOINING_SECTORS];		
 
-    for (i=0, h=0 ;i < sec->linecount ; i++)
+    for (i=0, h=0 ;i < linecount ; i++)
     {
-	check = sec->lines[i];
-	other = getNextSector(check,sec);
+		check = sectors[secnum].lines[i];
+		otherSecOffset = getNextSector(check, secnum);
 
-	if (!other)
+	if (otherSecOffset == SECNUM_NULL)
 	    continue;
 	
-	if (other->floorheight > height)
-	    heightlist[h++] = other->floorheight;
+	if (sectors[otherSecOffset].floorheight > height)
+	    heightlist[h++] = sectors[otherSecOffset].floorheight;
     }
     
     // Find lowest height in list
@@ -364,23 +367,24 @@ P_FindNextHighestFloor
 // FIND LOWEST CEILING IN THE SURROUNDING SECTORS
 //
 fixed_t
-P_FindLowestCeilingSurrounding(sector_t* sec)
+P_FindLowestCeilingSurrounding(short	secnum)
 {
     int			i;
     line_t*		check;
-    sector_t*		other;
-    fixed_t		height = MAXINT;
-	
-    for (i=0 ;i < sec->linecount ; i++)
-    {
-	check = sec->lines[i];
-	other = getNextSector(check,sec);
+	short		otherSecOffset;
+	fixed_t		height = MAXINT;
+	int linecount = sectors[secnum].linecount;
 
-	if (!other)
+    for (i=0 ;i < linecount ; i++)
+    {
+		check = sectors[secnum].lines[i];
+		otherSecOffset = getNextSector(check, secnum);
+
+	if (otherSecOffset == SECNUM_NULL)
 	    continue;
 
-	if (other->ceilingheight < height)
-	    height = other->ceilingheight;
+	if (sectors[otherSecOffset].ceilingheight < height)
+	    height = sectors[otherSecOffset].ceilingheight;
     }
     return height;
 }
@@ -389,23 +393,24 @@ P_FindLowestCeilingSurrounding(sector_t* sec)
 //
 // FIND HIGHEST CEILING IN THE SURROUNDING SECTORS
 //
-fixed_t	P_FindHighestCeilingSurrounding(sector_t* sec)
+fixed_t	P_FindHighestCeilingSurrounding(short	secnum)
 {
     int		i;
     line_t*	check;
-    sector_t*	other;
-    fixed_t	height = 0;
-	
-    for (i=0 ;i < sec->linecount ; i++)
-    {
-	check = sec->lines[i];
-	other = getNextSector(check,sec);
+	short		otherSecOffset;
+	fixed_t	height = 0;
+	int linecount = sectors[secnum].linecount;
 
-	if (!other)
+    for (i=0 ;i < linecount ; i++)
+    {
+		check = sectors[secnum].lines[i];
+		otherSecOffset = getNextSector(check, secnum);
+
+	if (otherSecOffset == SECNUM_NULL)
 	    continue;
 
-	if (other->ceilingheight > height)
-	    height = other->ceilingheight;
+	if (sectors[otherSecOffset].ceilingheight > height)
+	    height = sectors[otherSecOffset].ceilingheight;
     }
     return height;
 }
@@ -437,26 +442,27 @@ P_FindSectorFromLineTag
 //
 int
 P_FindMinSurroundingLight
-( sector_t*	sector,
+( short secnum,
   int		max )
 {
     int		i;
     int		min;
     line_t*	line;
-    sector_t*	check;
+    short	checksecnum;
+	int linecount = sectors[secnum].linecount;
 
     min = max;
-    for (i=0 ; i < sector->linecount ; i++)
+    for (i=0 ; i < linecount ; i++)
     {
-	line = sector->lines[i];
+	line = sectors[secnum].lines[i];
 	// 	// bad sector is 45affc... i == 1
-	getNextSector(line, sector);
+	checksecnum = getNextSector(line, secnum);
 
-	if (!check)
+	if (checksecnum == SECNUM_NULL)
 	    continue;
 
-	if (check->lightlevel < min)
-	    min = check->lightlevel;
+	if (sectors[checksecnum].lightlevel < min)
+	    min = sectors[checksecnum].lightlevel;
     }
     return min;
 
@@ -997,17 +1003,17 @@ P_ShootSpecialLine
 //
 void P_PlayerInSpecialSector (player_t* player)
 {
-    sector_t*	sector;
+    short	secnum;
 	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 	
-    sector = playerMo->subsector->sector;
+	secnum = playerMo->subsector->secnum;
 
     // Falling, not all the way down yet?
-    if (playerMo->z != sector->floorheight)
+    if (playerMo->z != sectors[secnum].floorheight)
 	return;	
 
     // Has hitten ground.
-    switch (sector->special)
+    switch (sectors[secnum].special)
     {
       case 5:
 	// HELLSLIME DAMAGE
@@ -1038,7 +1044,7 @@ void P_PlayerInSpecialSector (player_t* player)
       case 9:
 	// SECRET SECTOR
 	player->secretcount++;
-	sector->special = 0;
+	sectors[secnum].special = 0;
 	break;
 			
       case 11:
@@ -1055,7 +1061,7 @@ void P_PlayerInSpecialSector (player_t* player)
       default:
 	I_Error ("P_PlayerInSpecialSector: "
 		 "unknown special %i",
-		 sector->special);
+		sectors[secnum].special);
 	break;
     };
 }
@@ -1157,9 +1163,9 @@ void P_UpdateSpecials (void)
 //
 int EV_DoDonut(line_t*	line)
 {
-    sector_t*		s1;
-    sector_t*		s2;
-    sector_t*		s3;
+    short		s1Offset;
+    short		s2Offset;
+    short		s3Offset;
     int			secnum;
     int			rtn;
     int			i;
@@ -1171,20 +1177,20 @@ int EV_DoDonut(line_t*	line)
     rtn = 0;
     while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
     {
-	s1 = &sectors[secnum];
+	s1Offset = secnum;
 		
 	// ALREADY MOVING?  IF SO, KEEP GOING...
-	if (s1->specialdataRef)
+	if (sectors[s1Offset].specialdataRef)
 	    continue;
 			
 	rtn = 1;
-	s2 = getNextSector(s1->lines[0],s1);
-	for (i = 0;i < s2->linecount;i++)
+	s2Offset = getNextSector(sectors[s1Offset].lines[0],s1Offset);
+	for (i = 0;i < sectors[s2Offset].linecount;i++)
 	{
-	    if ((!s2->lines[i]->flags & ML_TWOSIDED) ||
-		(s2->lines[i]->backsector == s1))
+	    if ((!sectors[s2Offset].lines[i]->flags & ML_TWOSIDED) ||
+		(sectors[s2Offset].lines[i]->backsecnum == s1Offset))
 		continue;
-	    s3 = s2->lines[i]->backsector;
+	    s3Offset = sectors[s2Offset].lines[i]->backsecnum;
 	    
 	    //	Spawn rising slime
 
@@ -1193,27 +1199,27 @@ int EV_DoDonut(line_t*	line)
 
 
 		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
-		s2->specialdataRef = floorRef;
+		sectors[s2Offset].specialdataRef = floorRef;
 	    floor->type = donutRaise;
 	    floor->crush = false;
 	    floor->direction = 1;
-	    floor->sector = s2;
+	    floor->secnum = s2Offset;
 	    floor->speed = FLOORSPEED / 2;
-	    floor->texture = s3->floorpic;
+	    floor->texture = sectors[s3Offset].floorpic;
 	    floor->newspecial = 0;
-	    floor->floordestheight = s3->floorheight;
+	    floor->floordestheight = sectors[s3Offset].floorheight;
 	    
 	    //	Spawn lowering donut-hole
 		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
 		floor->thinkerRef = P_AddThinker (floorRef, TF_MOVEFLOOR);
-	    s1->specialdataRef = floorRef;
+		sectors[s1Offset].specialdataRef = floorRef;
 	    floor->type = lowerFloor;
 	    floor->crush = false;
 	    floor->direction = -1;
-	    floor->sector = s1;
+	    floor->secnum = s1Offset;
 	    floor->speed = FLOORSPEED / 2;
-	    floor->floordestheight = s3->floorheight;
+	    floor->floordestheight = sectors[s3Offset].floorheight;
 		break;
 	}
     }
@@ -1238,7 +1244,6 @@ line_t*		linespeciallist[MAXLINEANIMS];
 // Parses command line parameters.
 void P_SpawnSpecials (void)
 {
-    sector_t*	sector;
     int		i;
     int		episode;
 
@@ -1267,44 +1272,44 @@ void P_SpawnSpecials (void)
     }
 
     //	Init special SECTORs.
-    sector = sectors;
+    //sector = sectors;
 
 	//I_Error("sector: %p %i", sectors, numsectors);
 
-	for (i=0 ; i<numsectors ; i++, sector++)
+	for (i=0 ; i<numsectors ; i++)
     {
 
 
-	if (!sector->special)
+	if (!sectors[i].special)
 	    continue;
 	//I_Error("stopping");
 
-	switch (sector->special)
+	switch (sectors[i].special)
 	{
 	  case 1:
 	    // FLICKERING LIGHTS
-	    P_SpawnLightFlash (sector);
+	    P_SpawnLightFlash (i);
 	    break;
 
 	  case 2:
 	    // STROBE FAST
-	    P_SpawnStrobeFlash(sector,FASTDARK,0);
+	    P_SpawnStrobeFlash(i,FASTDARK,0);
 	    break;
 	    
 	  case 3:
 	    // STROBE SLOW
-	    P_SpawnStrobeFlash(sector,SLOWDARK,0);
+	    P_SpawnStrobeFlash(i,SLOWDARK,0);
 	    break;
 	    
 	  case 4:
 	    // STROBE FAST/DEATH SLIME
-	    P_SpawnStrobeFlash(sector,FASTDARK,0);
-	    sector->special = 4;
+	    P_SpawnStrobeFlash(i,FASTDARK,0);
+	    sectors[i].special = 4;
 	    break;
 	    
 	  case 8:
 	    // GLOWING LIGHT
-	    P_SpawnGlowingLight(sector);
+	    P_SpawnGlowingLight(i);
 	    break;
 	  case 9:
 	    // SECRET SECTOR
@@ -1313,26 +1318,26 @@ void P_SpawnSpecials (void)
 	    
 	  case 10:
 	    // DOOR CLOSE IN 30 SECONDS
-	    P_SpawnDoorCloseIn30 (sector);
+	    P_SpawnDoorCloseIn30 (i);
 	    break;
 	    
 	  case 12:
 	    // SYNC STROBE SLOW
-	    P_SpawnStrobeFlash (sector, SLOWDARK, 1);
+	    P_SpawnStrobeFlash (i, SLOWDARK, 1);
 	    break;
 
 	  case 13:
 	    // SYNC STROBE FAST
-	    P_SpawnStrobeFlash (sector, FASTDARK, 1);
+	    P_SpawnStrobeFlash (i, FASTDARK, 1);
 	    break;
 
 	  case 14:
 	    // DOOR RAISE IN 5 MINUTES
-	    P_SpawnDoorRaiseIn5Mins (sector, i);
+	    P_SpawnDoorRaiseIn5Mins (i);
 	    break;
 	    
 	  case 17:
-	    P_SpawnFireFlicker(sector);
+	    P_SpawnFireFlicker(i);
 	    break;
 	}
     }

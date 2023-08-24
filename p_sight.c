@@ -134,8 +134,8 @@ boolean P_CrossSubsector (int num)
     int			s2;
     int			count;
     subsector_t*	sub;
-    sector_t*		front;
-    sector_t*		back;
+    short frontsecnum;
+	short backsecnum;
     fixed_t		opentop;
     fixed_t		openbottom;
     divline_t		divl;
@@ -196,26 +196,26 @@ boolean P_CrossSubsector (int num)
 			return false;
 	
 		// crosses a two sided line
-		front = seg->frontsector;
-		back = seg->backsector;
+		frontsecnum = seg->frontsecnum;
+		backsecnum = seg->backsecnum;
 
 		// no wall to block sight with?
-		if (front->floorheight == back->floorheight && front->ceilingheight == back->ceilingheight) {
+		if (sectors[frontsecnum].floorheight == sectors[backsecnum].floorheight && sectors[frontsecnum].ceilingheight == sectors[backsecnum].ceilingheight) {
 			continue;
 		}
 
 		// possible occluder
 		// because of ceiling height differences
-		if (front->ceilingheight < back->ceilingheight)
-			opentop = front->ceilingheight;
+		if (sectors[frontsecnum].ceilingheight < sectors[backsecnum].ceilingheight)
+			opentop = sectors[frontsecnum].ceilingheight;
 		else
-			opentop = back->ceilingheight;
+			opentop = sectors[backsecnum].ceilingheight;
 
 		// because of ceiling height differences
-		if (front->floorheight > back->floorheight)
-			openbottom = front->floorheight;
+		if (sectors[frontsecnum].floorheight > sectors[backsecnum].floorheight)
+			openbottom = sectors[frontsecnum].floorheight;
 		else
-			openbottom = back->floorheight;
+			openbottom = sectors[backsecnum].floorheight;
 		
 		// quick test for totally closed doors
 		if (openbottom >= opentop)	
@@ -223,13 +223,13 @@ boolean P_CrossSubsector (int num)
 	
 		frac = P_InterceptVector2 (&strace, &divl);
 		
-		if (front->floorheight != back->floorheight) {
+		if (sectors[frontsecnum].floorheight != sectors[backsecnum].floorheight) {
 			slope = FixedDiv (openbottom - sightzstart , frac);
 			if (slope > bottomslope)
 			bottomslope = slope;
 		}
 		
-		if (front->ceilingheight != back->ceilingheight) {
+		if (sectors[frontsecnum].ceilingheight != sectors[backsecnum].ceilingheight) {
 			slope = FixedDiv (opentop - sightzstart , frac);
 			if (slope < topslope)
 			topslope = slope;
@@ -327,8 +327,8 @@ P_CheckSight
     // First check for trivial rejection.
 
     // Determine subsector entries in REJECT table.
-    s1 = (t1->subsector->sector - sectors);
-    s2 = (t2->subsector->sector - sectors);
+	s1 = t1->subsector->secnum;
+	s2 = t2->subsector->secnum;
     pnum = s1*numsectors + s2;
     bytenum = pnum>>3;
     bitnum = 1 << (pnum&7);
