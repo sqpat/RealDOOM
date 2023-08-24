@@ -1147,7 +1147,8 @@ typedef struct
   long			frame;
   long			tics;
   // void		(*action) ();
-  actionf_t			action;
+  //actionf_t			action;
+  ENEMYTHINKFUNCTION   action;
   statenum_t			nextstate;
   long			misc1, misc2;
 } state_t;

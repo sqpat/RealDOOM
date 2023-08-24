@@ -141,58 +141,7 @@ weaponinfo_t	weaponinfo[NUMWEAPONS] =
     },	
 };
 
-//
-// P_SetPsprite
-//
-void
-P_SetPsprite
-( player_t*	player,
-  int		position,
-  statenum_t	stnum ) 
-{
-    pspdef_t*	psp;
-    state_t*	state;
 
-
-    psp = &player->psprites[position];
-	
-    do
-    {
-	if (!stnum)
-	{
-	    // object removed itself
-	    psp->state = NULL;
-	    break;	
-	}
-	
-	state = &states[stnum];
-	psp->state = state;
-	psp->tics = state->tics;	// could be 0
-
-	if (state->misc1)
-	{
-	    // coordinate set
-	    psp->sx = state->misc1 << FRACBITS;
-	    psp->sy = state->misc2 << FRACBITS;
-	}
-	
-	// Call action routine.
-	// Modified handling.
-	if (state->action.acp2)
-	{
-
-	    state->action.acp2(player, psp);
-
-
-		if (!psp->state)
-		break;
-	}
-	
-	stnum = psp->state->nextstate;
-	
-    } while (!psp->tics);
-    // an initial state of 0 could cycle through
-}
 
 
 
@@ -990,3 +939,81 @@ void P_MovePsprites (player_t* player)
 }
 
 
+
+
+//
+// P_SetPsprite
+//
+void
+P_SetPsprite
+(player_t*	player,
+	int		position,
+	statenum_t	stnum)
+{
+	pspdef_t*	psp;
+	state_t*	state;
+	boolean found;
+
+	psp = &player->psprites[position];
+
+	do {
+		if (!stnum)
+		{
+			// object removed itself
+			psp->state = NULL;
+			break;
+		}
+
+		state = &states[stnum];
+		psp->state = state;
+		psp->tics = state->tics;	// could be 0
+
+		if (state->misc1)
+		{
+			// coordinate set
+			psp->sx = state->misc1 << FRACBITS;
+			psp->sy = state->misc2 << FRACBITS;
+		}
+
+		// Call action routine.
+		// Modified handling.
+
+		// instead of checking action.acp2, 2 variable ones explicitly handled by their switch block, the rest fall thru to default
+		found = true;
+		switch (state->action) {
+			case ETF_A_Light0: A_Light0(player, psp); break;
+			case ETF_A_WeaponReady: A_WeaponReady(player, psp); break;
+			case ETF_A_Lower: A_Lower(player, psp); break;
+			case ETF_A_Raise: A_Raise(player, psp); break;
+			case ETF_A_Punch: A_Punch(player, psp); break;
+			case ETF_A_ReFire: A_ReFire(player, psp); break;
+			case ETF_A_FirePistol: A_FirePistol(player, psp); break;
+			case ETF_A_Light1: A_Light1(player, psp); break;
+			case ETF_A_FireShotgun: A_FireShotgun(player, psp); break;
+			case ETF_A_Light2: A_Light2(player, psp); break;
+			case ETF_A_FireShotgun2: A_FireShotgun2(player, psp); break;
+			case ETF_A_CheckReload: A_CheckReload(player, psp); break;
+			case ETF_A_OpenShotgun2: A_OpenShotgun2(player, psp); break;
+			case ETF_A_LoadShotgun2: A_LoadShotgun2(player, psp); break;
+			case ETF_A_CloseShotgun2: A_CloseShotgun2(player, psp); break;
+			case ETF_A_FireCGun: A_FireCGun(player, psp); break;
+			case ETF_A_GunFlash: A_GunFlash(player, psp); break;
+			case ETF_A_FireMissile: A_FireMissile(player, psp); break;
+			case ETF_A_Saw: A_Saw(player, psp); break;
+			case ETF_A_FirePlasma: A_FirePlasma(player, psp); break;
+			case ETF_A_BFGsound: A_BFGsound(player, psp); break;
+			case ETF_A_FireBFG: A_FireBFG(player, psp); break;
+  
+		default:
+			found = false;
+		}
+		if (found)
+			if (!psp->state)
+				break;
+
+
+		stnum = psp->state->nextstate;
+
+	} while (!psp->tics);
+	// an initial state of 0 could cycle through
+}

@@ -35,6 +35,59 @@
 void G_PlayerReborn (int player);
 void P_SpawnMapThing (mapthing_t*	mthing, int key);
 
+
+void A_Explode(MEMREF moRef);
+void A_Pain(MEMREF moRef);
+void A_PlayerScream(MEMREF moRef);
+void A_Fall(MEMREF moRef);
+void A_XScream(MEMREF moRef);
+void A_Look(MEMREF moRef);
+void A_Chase(MEMREF moRef);
+void A_FaceTarget(MEMREF moRef);
+void A_PosAttack(MEMREF moRef);
+void A_Scream(MEMREF moRef);
+void A_SPosAttack(MEMREF moRef);
+void A_VileChase(MEMREF moRef);
+void A_VileStart(MEMREF moRef);
+void A_VileTarget(MEMREF moRef);
+void A_VileAttack(MEMREF moRef);
+void A_StartFire(MEMREF moRef);
+void A_Fire(MEMREF moRef);
+void A_FireCrackle(MEMREF moRef);
+void A_Tracer(MEMREF moRef);
+void A_SkelWhoosh(MEMREF moRef);
+void A_SkelFist(MEMREF moRef);
+void A_SkelMissile(MEMREF moRef);
+void A_FatRaise(MEMREF moRef);
+void A_FatAttack1(MEMREF moRef);
+void A_FatAttack2(MEMREF moRef);
+void A_FatAttack3(MEMREF moRef);
+void A_BossDeath(MEMREF moRef);
+void A_CPosAttack(MEMREF moRef);
+void A_CPosRefire(MEMREF moRef);
+void A_TroopAttack(MEMREF moRef);
+void A_SargAttack(MEMREF moRef);
+void A_HeadAttack(MEMREF moRef);
+void A_BruisAttack(MEMREF moRef);
+void A_SkullAttack(MEMREF moRef);
+void A_Metal(MEMREF moRef);
+void A_SpidRefire(MEMREF moRef);
+void A_BabyMetal(MEMREF moRef);
+void A_BspiAttack(MEMREF moRef);
+void A_Hoof(MEMREF moRef);
+void A_CyberAttack(MEMREF moRef);
+void A_PainAttack(MEMREF moRef);
+void A_PainDie(MEMREF moRef);
+void A_KeenDie(MEMREF moRef);
+void A_BrainPain(MEMREF moRef);
+void A_BrainScream(MEMREF moRef);
+void A_BrainDie(MEMREF moRef);
+void A_BrainAwake(MEMREF moRef);
+void A_BrainSpit(MEMREF moRef);
+void A_SpawnSound(MEMREF moRef);
+void A_SpawnFly(MEMREF moRef);
+void A_BrainExplode(MEMREF moRef);
+
 mobj_t* SAVEDUNIT;
 //
 // P_SetMobjState
@@ -42,51 +95,6 @@ mobj_t* SAVEDUNIT;
 //
 static int test = 0;
 
-boolean
-P_SetMobjState
-( MEMREF mobjRef,
-  statenum_t	state )
-{
-    state_t*	st;
-	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-	int i = 0;
-
-    do {
-		if (state == S_NULL) {
-			mobj->state = (state_t *) S_NULL;
-			P_RemoveMobj (mobjRef);
-			return false;
-		}
-	
-
-		st = &states[state];
-		mobj->state = st;
-		mobj->tics = st->tics;
-		mobj->sprite = st->sprite;
-		mobj->frame = st->frame;
-
-
-		// Modified handling.
-		// Call action functions when the state is set
-	
-
-
-		if (st->action.acp1) {
-			st->action.acp1(mobjRef);
-		}
-		 
-	
-
-		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-
-
-		state = st->nextstate;
-		i++;
-    } while (!mobj->tics);
-	
-	
-    return true;
-}
 
 
 //
@@ -1183,3 +1191,102 @@ P_SpawnPlayerMissile
     P_CheckMissileSpawn (thRef);
 }
 
+
+
+boolean
+P_SetMobjState
+(MEMREF mobjRef,
+	statenum_t	state)
+{
+	state_t*	st;
+	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	int i = 0;
+
+	do {
+		if (state == S_NULL) {
+			mobj->state = (state_t *)S_NULL;
+			P_RemoveMobj(mobjRef);
+			return false;
+		}
+
+
+		st = &states[state];
+		mobj->state = st;
+		mobj->tics = st->tics;
+		mobj->sprite = st->sprite;
+		mobj->frame = st->frame;
+
+
+		// Modified handling.
+		// Call action functions when the state is set
+
+
+
+		switch (st->action) {
+
+			case ETF_A_Explode: A_Explode(mobjRef); break;
+			case ETF_A_Pain: A_Pain(mobjRef); break;
+			case ETF_A_PlayerScream: A_PlayerScream(mobjRef); break;
+			case ETF_A_Fall: A_Fall(mobjRef); break;
+			case ETF_A_XScream: A_XScream(mobjRef); break;
+			case ETF_A_Look: A_Look(mobjRef); break;
+			case ETF_A_Chase: A_Chase(mobjRef); break;
+			case ETF_A_FaceTarget: A_FaceTarget(mobjRef); break;
+			case ETF_A_PosAttack: A_PosAttack(mobjRef); break;
+			case ETF_A_Scream: A_Scream(mobjRef); break;
+			case ETF_A_SPosAttack: A_SPosAttack(mobjRef); break;
+			case ETF_A_VileChase: A_VileChase(mobjRef); break;
+			case ETF_A_VileStart: A_VileStart(mobjRef); break;
+			case ETF_A_VileTarget: A_VileTarget(mobjRef); break;
+			case ETF_A_VileAttack: A_VileAttack(mobjRef); break;
+			case ETF_A_StartFire: A_StartFire(mobjRef); break;
+			case ETF_A_Fire: A_Fire(mobjRef); break;
+			case ETF_A_FireCrackle: A_FireCrackle(mobjRef); break;
+			case ETF_A_Tracer: A_Tracer(mobjRef); break;
+			case ETF_A_SkelWhoosh: A_SkelWhoosh(mobjRef); break;
+			case ETF_A_SkelFist: A_SkelFist(mobjRef); break;
+			case ETF_A_SkelMissile: A_SkelMissile(mobjRef); break;
+			case ETF_A_FatRaise: A_FatRaise(mobjRef); break;
+			case ETF_A_FatAttack1: A_FatAttack1(mobjRef); break;
+			case ETF_A_FatAttack2: A_FatAttack2(mobjRef); break;
+			case ETF_A_FatAttack3: A_FatAttack3(mobjRef); break;
+			case ETF_A_BossDeath: A_BossDeath(mobjRef); break;
+			case ETF_A_CPosAttack: A_CPosAttack(mobjRef); break;
+			case ETF_A_CPosRefire: A_CPosRefire(mobjRef); break;
+			case ETF_A_TroopAttack: A_TroopAttack(mobjRef); break;
+			case ETF_A_SargAttack: A_SargAttack(mobjRef); break;
+			case ETF_A_HeadAttack: A_HeadAttack(mobjRef); break;
+			case ETF_A_BruisAttack: A_BruisAttack(mobjRef); break;
+			case ETF_A_SkullAttack: A_SkullAttack(mobjRef); break;
+			case ETF_A_Metal: A_Metal(mobjRef); break;
+			case ETF_A_SpidRefire: A_SpidRefire(mobjRef); break;
+			case ETF_A_BabyMetal: A_BabyMetal(mobjRef); break;
+			case ETF_A_BspiAttack: A_BspiAttack(mobjRef); break;
+			case ETF_A_Hoof: A_Hoof(mobjRef); break;
+			case ETF_A_CyberAttack: A_CyberAttack(mobjRef); break;
+			case ETF_A_PainAttack: A_PainAttack(mobjRef); break;
+			case ETF_A_PainDie: A_PainDie(mobjRef); break;
+			case ETF_A_KeenDie: A_KeenDie(mobjRef); break;
+			case ETF_A_BrainPain: A_BrainPain(mobjRef); break;
+			case ETF_A_BrainScream: A_BrainScream(mobjRef); break;
+			case ETF_A_BrainDie: A_BrainDie(mobjRef); break;
+			case ETF_A_BrainAwake: A_BrainAwake(mobjRef); break;
+			case ETF_A_BrainSpit: A_BrainSpit(mobjRef); break;
+			case ETF_A_SpawnSound: A_SpawnSound(mobjRef); break;
+			case ETF_A_SpawnFly: A_SpawnFly(mobjRef); break;
+			case ETF_A_BrainExplode: A_BrainExplode(mobjRef); break;
+			//default:
+		}
+
+
+
+		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+
+
+		state = st->nextstate;
+		i++;
+	} while (!mobj->tics);
+
+
+	return true;
+}
