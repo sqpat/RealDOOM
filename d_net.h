@@ -32,8 +32,6 @@
 
 #define DOOMCOM_ID		0x12345678l
 
-// Max computers/players in a game.
-#define MAXNETNODES		8
 
 
 // Networking and tick handling related.

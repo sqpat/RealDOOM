@@ -32,7 +32,7 @@
 #include "doomstat.h"
 #include "p_setup.h"
 
-void G_PlayerReborn (int player);
+void G_PlayerReborn ();
 void P_SpawnMapThing (mapthing_t*	mthing, int key);
 
 
@@ -777,21 +777,16 @@ void P_SpawnPlayer (mapthing_t* mthing)
 
 	MEMREF mobjRef;
 	mobj_t*		mobj;
-    int			i;
 	short mthingtype = mthing->type;
 	short mthingx = mthing->x;
 	short mthingy = mthing->y;
 	short mthingangle = mthing->angle;
-
-    // not playing?
-	if (!playeringame[mthingtype - 1]) {
-		return;
-	}
+	 
 		
-    p = &players[mthingtype-1];
+    p = &players[0];
 
 	if (p->playerstate == PST_REBORN) {
-		G_PlayerReborn(mthingtype - 1);
+		G_PlayerReborn();
 	}
 
     x 		= mthingx << FRACBITS;
@@ -823,12 +818,6 @@ void P_SpawnPlayer (mapthing_t* mthing)
     // setup gun psprite
     P_SetupPsprites (p);
     
-    // give all cards in death match mode
-	if (deathmatch) {
-		for (i = 0; i < NUMCARDS; i++) {
-			p->cards[i] = true;
-		}
-	}
  
 
     if (mthingtype-1 == consoleplayer) {
@@ -867,17 +856,12 @@ void P_SpawnMapThing (mapthing_t* mthing, int key)
 
 		
     // count deathmatch start positions
-    if (mthingtype == 11) {
-		if (deathmatch_p < &deathmatchstarts[10]) {
-			memcpy (deathmatch_p, &mthing, sizeof(mthing));
-			deathmatch_p++;
-		}
-	 
+	if (mthing->type == 11 || mthing->type == 2 || mthing->type == 3 || mthing->type == 4) {
 		return;
-    }
+	}
 
     // check for players specially
-    if (mthingtype <= 4) {
+    if (mthingtype == 1) {
 		// save spots for respawning in network games
  
 		playerstarts[mthingtype-1] = *mthing;

@@ -142,7 +142,6 @@ extern  int	viewangleoffset;
 
 // Player taking events, and displaying.
 extern  int	consoleplayer;	
-extern  int	displayplayer;
 
 
 // -------------------------------------
@@ -154,7 +153,6 @@ extern	int	totalitems;
 extern	int	totalsecret;
 
 // Timer, for scores.
-extern  int	levelstarttic;	// gametic at level start
 extern  int	leveltime;	// tics in game play for par
 
 
@@ -267,9 +265,9 @@ extern  ticcmd_t	localcmds[BACKUPTICS];
 extern	int		rndindex;
 
 extern	int		maketic;
-extern  int             nettics[MAXNETNODES];
+extern  int             nettics;
 
-extern  ticcmd_t        netcmds[MAXPLAYERS][BACKUPTICS];
+extern  ticcmd_t        netcmds[BACKUPTICS];
 extern	int		ticdup;
 
 

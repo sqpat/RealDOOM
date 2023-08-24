@@ -108,9 +108,6 @@ void	HUlib_initTextLine(hu_textline_t *t, int x, int y, MEMREF*fRef, int sc);
 // returns success
 boolean HUlib_addCharToTextLine(hu_textline_t *t, char ch);
 
-// returns success
-boolean HUlib_delCharFromTextLine(hu_textline_t *t);
-
 // draws tline
 void	HUlib_drawTextLine(hu_textline_t *l, boolean drawcursor);
 
@@ -150,39 +147,6 @@ void HUlib_drawSText(hu_stext_t* s);
 void HUlib_eraseSText(hu_stext_t* s); 
 
 // Input Text Line widget routines
-void
-HUlib_initIText
-( hu_itext_t*	it,
-  int		x,
-  int		y,
-  MEMREF*	fontRef,
-  int		startchar,
-  boolean*	on );
-
-// enforces left margin
-void HUlib_delCharFromIText(hu_itext_t* it);
-
-// enforces left margin
-void HUlib_eraseLineFromIText(hu_itext_t* it);
-
-// resets line and left margin
-void HUlib_resetIText(hu_itext_t* it);
-
-// left of left-margin
-void
-HUlib_addPrefixToIText
-( hu_itext_t*	it,
-  char*		str );
-
-// whether eaten
-boolean
-HUlib_keyInIText
-( hu_itext_t*	it,
-  unsigned char ch );
-
-void HUlib_drawIText(hu_itext_t* it);
-
-// erases all itext lines
-void HUlib_eraseIText(hu_itext_t* it); 
+ 
 
 #endif

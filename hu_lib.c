@@ -70,20 +70,7 @@ HUlib_addCharToTextLine
     }
 
 }
-
-boolean HUlib_delCharFromTextLine(hu_textline_t* t)
-{
-
-    if (!t->len) return false;
-    else
-    {
-	t->l[--t->len] = 0;
-	t->needsupdate = 4;
-	return true;
-    }
-
-}
-
+  
 void
 HUlib_drawTextLine
 ( hu_textline_t*	l,
@@ -251,90 +238,4 @@ void HUlib_eraseSText(hu_stext_t* s)
     s->laston = *s->on;
 
 }
-
-void
-HUlib_initIText
-( hu_itext_t*	it,
-  int		x,
-  int		y,
-  MEMREF*	fontRef,
-  int		startchar,
-  boolean*	on )
-{
-    it->lm = 0; // default left margin is start of text
-    it->on = on;
-    it->laston = true;
-    HUlib_initTextLine(&it->l, x, y, fontRef, startchar);
-}
-
-
-// The following deletion routines adhere to the left margin restriction
-void HUlib_delCharFromIText(hu_itext_t* it)
-{
-    if (it->l.len != it->lm)
-	HUlib_delCharFromTextLine(&it->l);
-}
-
-void HUlib_eraseLineFromIText(hu_itext_t* it)
-{
-    while (it->lm != it->l.len)
-	HUlib_delCharFromTextLine(&it->l);
-}
-
-// Resets left margin as well
-void HUlib_resetIText(hu_itext_t* it)
-{
-    it->lm = 0;
-    HUlib_clearTextLine(&it->l);
-}
-
-void
-HUlib_addPrefixToIText
-( hu_itext_t*	it,
-  char*		str )
-{
-    while (*str)
-	HUlib_addCharToTextLine(&it->l, *(str++));
-    it->lm = it->l.len;
-}
-
-// wrapper function for handling general keyed input.
-// returns true if it ate the key
-boolean
-HUlib_keyInIText
-( hu_itext_t*	it,
-  unsigned char ch )
-{
-
-    if (ch >= ' ' && ch <= '_') 
-  	HUlib_addCharToTextLine(&it->l, (char) ch);
-    else 
-	if (ch == KEY_BACKSPACE) 
-	    HUlib_delCharFromIText(it);
-	else 
-	    if (ch != KEY_ENTER) 
-		return false; // did not eat key
-
-    return true; // ate the key
-
-}
-
-void HUlib_drawIText(hu_itext_t* it)
-{
-
-    hu_textline_t *l = &it->l;
-
-    if (!*it->on)
-	return;
-    HUlib_drawTextLine(l, true); // draw the line w/ cursor
-
-}
-
-void HUlib_eraseIText(hu_itext_t* it)
-{
-    if (it->laston && !*it->on)
-	it->l.needsupdate = 4;
-    HUlib_eraseTextLine(&it->l);
-    it->laston = *it->on;
-}
-
+ 

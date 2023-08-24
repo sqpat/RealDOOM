@@ -61,16 +61,7 @@ typedef enum
 } st_stateenum_t;
 
 
-// States for the chat code.
-typedef enum
-{
-    StartChatState,
-    WaitDestState,
-    GetChatState
-    
-} st_chatstateenum_t;
-
-
+ 
 boolean ST_Responder(event_t* ev);
 
 

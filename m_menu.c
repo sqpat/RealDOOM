@@ -58,7 +58,6 @@
 extern MEMREF         hu_fontRef[HU_FONTSIZE];
 extern boolean          message_dontfuckwithme;
 
-extern boolean          chat_on;                // in heads-up code
 
 //
 // defaulted values
@@ -624,12 +623,7 @@ void M_LoadSelect(int choice)
 //
 void M_LoadGame (int choice)
 {
-    if (netgame)
-    {
-        M_StartMessage(LOADNET,NULL,false);
-        return;
-    }
-        
+ 
     M_SetupNextMenu(&LoadDef);
     M_ReadSaveStrings();
 }
@@ -758,12 +752,7 @@ void M_QuickLoadResponse(int ch)
 
 void M_QuickLoad(void)
 {
-    if (netgame)
-    {
-        M_StartMessage(QLOADNET,NULL,false);
-        return;
-    }
-        
+    
     if (quickSaveSlot < 0)
     {
         M_StartMessage(QSAVESPOT,NULL,false);
@@ -884,16 +873,10 @@ void M_DrawNewGame(void)
 
 void M_NewGame(int choice)
 {
-    if (netgame && !demoplayback)
-    {
-        M_StartMessage(NEWGAME,NULL,false);
-        return;
-    }
-        
-    if ( commercial )
-        M_SetupNextMenu(&NewDef);
-    else
-        M_SetupNextMenu(&EpiDef);
+	if (commercial)
+		M_SetupNextMenu(&NewDef);
+	else
+		M_SetupNextMenu(&EpiDef);
 }
 
 
@@ -1008,20 +991,14 @@ void M_EndGameResponse(int ch)
 
 void M_EndGame(int choice)
 {
-    choice = 0;
-    if (!usergame)
-    {
-        S_StartSound(NULL,sfx_oof);
-        return;
-    }
-        
-    if (netgame)
-    {
-        M_StartMessage(NETEND,NULL,false);
-        return;
-    }
-        
-    M_StartMessage(ENDGAME,M_EndGameResponse,true);
+	choice = 0;
+	if (!usergame)
+	{
+		S_StartSound(NULL, sfx_oof);
+		return;
+	}
+
+	M_StartMessage(ENDGAME, M_EndGameResponse, true);
 }
 
 
@@ -1082,17 +1059,16 @@ int     quitsounds2[8] =
 
 void M_QuitResponse(int ch)
 {
-    if (ch != 'y')
-        return;
-    if (!netgame)
-    {
-        if (commercial)
-            S_StartSound(NULL,quitsounds2[(gametic>>2)&7]);
-        else
-            S_StartSound(NULL,quitsounds[(gametic>>2)&7]);
-        I_WaitVBL(105);
-    }
-    I_Quit ();
+	if (ch != 'y')
+		return;
+
+	if (commercial)
+		S_StartSound(NULL, quitsounds2[(gametic >> 2) & 7]);
+	else
+		S_StartSound(NULL, quitsounds[(gametic >> 2) & 7]);
+	I_WaitVBL(105);
+
+	I_Quit();
 }
 
 
@@ -1470,14 +1446,14 @@ boolean M_Responder (event_t* ev)
         switch(ch)
         {
           case KEY_MINUS:         // Screen size down
-            if (automapactive || chat_on)
+            if (automapactive )
                 return false;
             M_SizeDisplay(0);
             S_StartSound(NULL,sfx_stnmov);
             return true;
                                 
           case KEY_EQUALS:        // Screen size up
-            if (automapactive || chat_on)
+            if (automapactive )
                 return false;
             M_SizeDisplay(1);
             S_StartSound(NULL,sfx_stnmov);
@@ -1766,8 +1742,6 @@ void M_Drawer (void)
 void M_ClearMenus (void)
 {
     menuactive = 0;
-    // if (!netgame && usergame && paused)
-    //       sendpause = true;
 }
 
 

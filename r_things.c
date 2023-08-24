@@ -857,11 +857,12 @@ void R_SortVisSprites (void)
 
     count = vissprite_p - vissprites;
         
-    unsorted.next = unsorted.prev = &unsorted;
 
     if (!count)
         return;
-                
+          
+	unsorted.next = unsorted.prev = &unsorted;
+
     for (ds=vissprites ; ds<vissprite_p ; ds++)
     {
         ds->next = ds+1;

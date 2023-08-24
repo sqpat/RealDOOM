@@ -69,7 +69,7 @@
 boolean G_CheckDemoStatus (void); 
 void    G_ReadDemoTiccmd (ticcmd_t* cmd); 
 void    G_WriteDemoTiccmd (ticcmd_t* cmd); 
-void    G_PlayerReborn (int player); 
+void    G_PlayerReborn (); 
 void    G_InitNew (skill_t skill, int episode, int map); 
  
 void    G_DoReborn (int playernum); 
@@ -109,9 +109,7 @@ boolean         playeringame[MAXPLAYERS];
 player_t        players[MAXPLAYERS]; 
  
 int             consoleplayer;          // player taking events and displaying 
-int             displayplayer;          // view being displayed 
 int             gametic; 
-int             levelstarttic;          // gametic at level start 
 int             totalkills, totalitems, totalsecret;    // for intermission 
  
 char            demoname[32]; 
@@ -127,8 +125,6 @@ boolean         singledemo;             // quit after playing a demo from cmdlin
 boolean         precache = true;        // if true, load all graphics at start 
  
 wbstartstruct_t wminfo;                 // parms for world map / intermission 
- 
-short           consistancy[MAXPLAYERS][BACKUPTICS]; 
  
 MEMREF           savebufferRef;
  
@@ -202,7 +198,8 @@ void*           statcopy;                               // for statistics driver
 // or reads it from the demo buffer. 
 // If recording a demo, write it out 
 // 
-void G_BuildTiccmd (ticcmd_t* cmd) 
+ticcmd_t emptycmd;
+void G_BuildTiccmd (ticcmd_t* cmd)
 { 
     int         i; 
     boolean     strafe;
@@ -214,11 +211,9 @@ void G_BuildTiccmd (ticcmd_t* cmd)
     
     ticcmd_t*   base;
 
-    base = I_BaseTiccmd ();             // empty, or external driver
-    memcpy (cmd,base,sizeof(*cmd)); 
+	base = &emptycmd;
+	memcpy(cmd, base, sizeof(*cmd));
         
-    cmd->consistancy = 
-        consistancy[consoleplayer][maketic%BACKUPTICS]; 
 	/*
     if (isCyberPresent)
     {
@@ -284,8 +279,7 @@ void G_BuildTiccmd (ticcmd_t* cmd)
         side -= sidemove[speed];
     
     // buttons
-    cmd->chatchar = HU_dequeueChatChar(); 
- 
+    
     if (gamekeydown[key_fire] || mousebuttons[mousebfire] 
         ) 
         cmd->buttons |= BT_ATTACK; 
@@ -417,7 +411,6 @@ void G_DoLoadLevel (void)
     }
 #endif
 
-    levelstarttic = gametic;        // for time calculation
     
     if (wipegamestate == GS_LEVEL) 
         wipegamestate = -1;             // force a wipe 
@@ -433,7 +426,6 @@ void G_DoLoadLevel (void)
     } 
 
 	P_SetupLevel (gameepisode, gamemap, 0, gameskill);
-	displayplayer = consoleplayer;              // view the guy you are playing    
 	starttime = I_GetTime ();
     gameaction = ga_nothing; 
     //Z_CheckHeap ();
@@ -454,83 +446,68 @@ void G_DoLoadLevel (void)
 // Get info needed to make ticcmd_ts for the players.
 // 
 boolean G_Responder (event_t* ev) 
-{ 
-    // allow spy mode changes even during the demo
-    if (gamestate == GS_LEVEL && ev->type == ev_keydown 
-        && ev->data1 == KEY_F12 && (singledemo || !deathmatch) )
-    {
-        // spy mode 
-        do 
-        { 
-            displayplayer++; 
-            if (displayplayer == MAXPLAYERS) 
-                displayplayer = 0; 
-        } while (!playeringame[displayplayer] && displayplayer != consoleplayer); 
-        return true; 
-    }
-    
-    // any other key pops up menu if in demos
-    if (gameaction == ga_nothing && !singledemo && 
-        (demoplayback || gamestate == GS_DEMOSCREEN) 
-        ) 
-    { 
-        if (ev->type == ev_keydown ||  
-            (ev->type == ev_mouse && ev->data1) ) 
-        { 
-            M_StartControlPanel (); 
-            return true; 
-        } 
-        return false; 
-    } 
+{   // any other key pops up menu if in demos
+	if (gameaction == ga_nothing && !singledemo &&
+		(demoplayback || gamestate == GS_DEMOSCREEN))
+	{
+		if (ev->type == ev_keydown ||
+			(ev->type == ev_mouse && ev->data1)
+			)
+		{
+			M_StartControlPanel();
+			return true;
+		}
+		return false;
+	}
+
+	if (gamestate == GS_LEVEL)
+	{
+		if (HU_Responder(ev))
+			return true; // chat ate the event
+		if (ST_Responder(ev))
+			return true; // status window ate it
+		if (AM_Responder(ev))
+			return true; // automap ate it
+	}
+
+	if (gamestate == GS_FINALE)
+	{
+		if (F_Responder(ev))
+			return true; // finale ate the event
+	}
+
+	switch (ev->type)
+	{
+	case ev_keydown:
+		if (ev->data1 == KEY_PAUSE)
+		{
+			sendpause = true;
+			return true;
+		}
+		if (ev->data1 < NUMKEYS)
+			gamekeydown[ev->data1] = true;
+		return true; // eat key down events
+
+	case ev_keyup:
+		if (ev->data1 < NUMKEYS)
+			gamekeydown[ev->data1] = false;
+		return false; // always let key up events filter down
+
+	case ev_mouse:
+		mousebuttons[0] = ev->data1 & 1;
+		mousebuttons[1] = ev->data1 & 2;
+		mousebuttons[2] = ev->data1 & 4;
+		mousex = ev->data2 * (mouseSensitivity + 5) / 10;
+		mousey = ev->data3 * (mouseSensitivity + 5) / 10;
+		return true; // eat events
+
  
-    if (gamestate == GS_LEVEL) 
-    { 
- 
-        if (HU_Responder (ev)) 
-            return true;        // chat ate the event 
-        if (ST_Responder (ev)) 
-            return true;        // status window ate it 
-        if (AM_Responder (ev)) 
-            return true;        // automap ate it 
-    } 
-         
-    if (gamestate == GS_FINALE) 
-    { 
-        if (F_Responder (ev)) 
-            return true;        // finale ate the event 
-    } 
-         
-    switch (ev->type) 
-    { 
-      case ev_keydown: 
-        if (ev->data1 == KEY_PAUSE) 
-        { 
-            sendpause = true; 
-            return true; 
-        } 
-        if (ev->data1 <NUMKEYS) 
-            gamekeydown[ev->data1] = true; 
-        return true;    // eat key down events 
- 
-      case ev_keyup: 
-        if (ev->data1 <NUMKEYS) 
-            gamekeydown[ev->data1] = false; 
-        return false;   // always let key up events filter down 
-                 
-      case ev_mouse: 
-        mousebuttons[0] = ev->data1 & 1; 
-        mousebuttons[1] = ev->data1 & 2; 
-        mousebuttons[2] = ev->data1 & 4; 
-        mousex = ev->data2*(mouseSensitivity+5)/10; 
-        mousey = ev->data3*(mouseSensitivity+5)/10; 
-        return true;    // eat events 
- 
- 
-      default: 
-        break; 
-    } 
- 
-    return false; 
+
+	default:
+		break;
+	}
+
+	return false;
 } 
  
  
@@ -586,45 +563,28 @@ void G_Ticker (void)
         } 
     }
     
-    // get commands, check consistancy,
-    // and build new consistancy check
-    buf = (gametic/ticdup)%BACKUPTICS; 
- 
-    for (i=0 ; i<MAXPLAYERS ; i++)
-    {
-        if (playeringame[i]) 
-        { 
-            cmd = &players[i].cmd; 
- 
-            memcpy (cmd, &netcmds[i][buf], sizeof(ticcmd_t)); 
- 
-            if (demoplayback) 
-                G_ReadDemoTiccmd (cmd); 
-            if (demorecording) 
-                G_WriteDemoTiccmd (cmd);
-            
-            // check for turbo cheats
-            if (cmd->forwardmove > TURBOTHRESHOLD 
-                && !(gametic&31) && ((gametic>>5)&3) == i )
-            {
-                static char turbomessage[80];
-                extern char *player_names[4];
-                sprintf (turbomessage, "%s is turbo!",player_names[i]);
-                players[consoleplayer].message = turbomessage;
-            }
-                        
-            if (netgame && !netdemo && !(gametic%ticdup) ) 
-            { 
-              
-				if (players[i].moRef) {
-					playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[i].moRef);
-					consistancy[i][buf] = playerMo->x;
-				}
-                else 
-                    consistancy[i][buf] = rndindex; 
-            } 
-        }
-    }
+	// get commands, check consistancy,
+	 // and build new consistancy check
+	buf = (gametic / ticdup) % BACKUPTICS;
+
+	cmd = &players[0].cmd;
+
+	memcpy(cmd, &netcmds[buf], sizeof(ticcmd_t));
+
+	if (demoplayback)
+		G_ReadDemoTiccmd(cmd);
+	if (demorecording)
+		G_WriteDemoTiccmd(cmd);
+
+	// check for turbo cheats
+	if (cmd->forwardmove > TURBOTHRESHOLD && !(gametic & 31) && ((gametic >> 5) & 3) == i)
+	{
+		static char turbomessage[80];
+		extern char *player_names[1];
+		sprintf(turbomessage, "%s is turbo!", player_names[0]);
+		players[0].message = turbomessage;
+	}
+
     
     // check for special buttons
     for (i=0 ; i<MAXPLAYERS ; i++)
@@ -699,7 +659,7 @@ void G_InitPlayer (int player)
     p = &players[player]; 
          
     // clear everything else to defaults 
-    G_PlayerReborn (player); 
+    G_PlayerReborn (); 
          
 } 
  */
@@ -709,12 +669,12 @@ void G_InitPlayer (int player)
 // G_PlayerFinishLevel
 // Can when a player completes a level.
 //
-void G_PlayerFinishLevel (int player) 
+void G_PlayerFinishLevel () 
 { 
-    player_t*   p = &players[player];
+    player_t*   p = &players[0];
 	mobj_t* playerMo = Z_LoadBytesFromEMS(p->moRef);
 
-    p = &players[player]; 
+    p = &players[0]; 
          
     memset (p->powers, 0, sizeof (p->powers)); 
     memset (p->cards, 0, sizeof (p->cards)); 
@@ -731,7 +691,7 @@ void G_PlayerFinishLevel (int player)
 // Called after a player dies 
 // almost everything is cleared and initialized 
 //
-void G_PlayerReborn (int player) 
+void G_PlayerReborn () 
 { 
     player_t*   p; 
     int         i; 
@@ -740,18 +700,18 @@ void G_PlayerReborn (int player)
     int         itemcount;
     int         secretcount; 
          
-    memcpy (frags,players[player].frags,sizeof(frags)); 
-    killcount = players[player].killcount; 
-    itemcount = players[player].itemcount; 
-    secretcount = players[player].secretcount; 
+    memcpy (frags,players[0].frags,sizeof(frags)); 
+    killcount = players[0].killcount; 
+    itemcount = players[0].itemcount; 
+    secretcount = players[0].secretcount; 
          
-    p = &players[player]; 
+    p = &players[0]; 
     memset (p, 0, sizeof(*p)); 
  
-    memcpy (players[player].frags, frags, sizeof(players[player].frags)); 
-    players[player].killcount = killcount; 
-    players[player].itemcount = itemcount; 
-    players[player].secretcount = secretcount; 
+    memcpy (players[0].frags, frags, sizeof(players[0].frags)); 
+    players[0].killcount = killcount; 
+    players[0].itemcount = itemcount; 
+    players[0].secretcount = secretcount; 
  
     p->usedown = p->attackdown = true;  // don't do anything immediately 
     p->playerstate = PST_LIVE;       
@@ -981,8 +941,7 @@ void G_DoCompleted (void)
             gameaction = ga_victory;
             return;
           case 9: 
-            for (i=0 ; i<MAXPLAYERS ; i++) 
-                players[i].didsecret = true; 
+            players[0].didsecret = true; 
             break;
         }
                 
@@ -1385,8 +1344,7 @@ G_InitNew
          
                          
     // force players to be initialized upon first level load         
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-        players[i].playerstate = PST_REBORN; 
+    players[0].playerstate = PST_REBORN; 
  
     usergame = true;                // will be set false if a demo 
     paused = false; 

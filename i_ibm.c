@@ -208,27 +208,7 @@ byte scantokey[128] =
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0         // 7
 };
-
-typedef struct
-{
-    int irq;
-    ticcmd_t cmd;
-} extapi_t;
-
-extapi_t *extcontrol;
-
-ticcmd_t emptycmd;
-
-ticcmd_t* I_BaseTiccmd(void)
-{
-    if (!extcontrol)
-    {
-        return &emptycmd;
-    }
-    DPMIInt(extcontrol->irq);
-    return &extcontrol->cmd;
-}
-
+ 
 //
 // I_GetTime
 // Returns time in 1/35th second tics.
@@ -450,9 +430,6 @@ void I_UpdateNoBlit(void)
 //
 void I_FinishUpdate(void)
 {
-    static int lasttic;
-    int tics;
-    int i;
 
 	outpw(CRTC_INDEX, ((int)destscreen & 0xff00) + 0xc);
 
@@ -830,13 +807,8 @@ void I_Init(void)
 {
     int p;
     novideo = M_CheckParm("novideo");
-    p = M_CheckParm("-control");
-    if (p)
-    {
-        extcontrol = (extapi_t*)atoi(myargv[p + 1]);
-        printf("Using external control API\n");
-    }
-    printf("I_StartupDPMI\n");
+
+	printf("I_StartupDPMI\n");
     I_StartupDPMI();
     printf("I_StartupMouse\n");
     I_StartupMouse();
@@ -866,7 +838,6 @@ void I_Error (char *error, ...)
 {
     va_list argptr;
 	printf(error, argptr);
-    D_QuitNetGame();
     I_Shutdown();
     va_start(argptr, error);
     vprintf(error, argptr);
@@ -889,11 +860,8 @@ void I_Quit(void)
     {
         G_CheckDemoStatus();
     }
-    else
-    {
-        D_QuitNetGame();
-    }
-    M_SaveDefaults();
+
+	M_SaveDefaults();
     scrRef = W_CacheLumpNameEMS("ENDOOM", PU_CACHE);
     I_ShutdownGraphics();
     I_ShutdownSound();

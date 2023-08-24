@@ -78,6 +78,8 @@
 
 // 4 14918435 2361076 4498999 207 (2134 in 9225) after reducing code, incl function pointer changes
 // 4 14918435 2363430 4501352 207 (2134 in 9223) major info.c changes
+// 4 14870125 2361729 4499651 207 (2134 in 9263) enum removals and fastdoom netplay/code removal imports
+// 4 14872259 2361729 4499651 207 (2134 in 9287) removed joystick code
 
 
 // demo 1

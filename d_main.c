@@ -306,7 +306,7 @@ void D_Display (void)
     I_UpdateNoBlit ();
 	// draw the view directly
     if (gamestate == GS_LEVEL && !automapactive && gametic)
-        R_RenderPlayerView (&players[displayplayer]);
+        R_RenderPlayerView (&players[0]);
 
 
     if (gamestate == GS_LEVEL && gametic)
@@ -431,7 +431,7 @@ void D_DoomLoop (void)
         if (singletics) {
 			I_StartTic ();
 			D_ProcessEvents ();
-            G_BuildTiccmd (&netcmds[consoleplayer][maketic%BACKUPTICS]);
+            G_BuildTiccmd (&netcmds[maketic%BACKUPTICS]);
 			if (advancedemo) {
 				D_DoAdvanceDemo();
 			}
