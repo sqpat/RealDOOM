@@ -151,7 +151,7 @@ P_StartButton
   int		time )
 {
     int		i;
-    
+	sector_t* sectors;
     // See if button is already pressed
     for (i = 0;i < MAXBUTTONS;i++)
     {
@@ -164,7 +164,8 @@ P_StartButton
     }
     
 
-    
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
     for (i = 0;i < MAXBUTTONS;i++)
     {
 	if (!buttonlist[i].btimer)
@@ -286,7 +287,7 @@ P_UseSpecialLine
 	short lineflags = line->flags;
 	short linefrontsecnum = line->frontsecnum;
 	short lineside0 = line->sidenum[0];
-
+ 
     // Err...
     // Use the back sides of VERY SPECIAL lines...
     if (side)

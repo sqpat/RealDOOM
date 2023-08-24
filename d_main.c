@@ -409,7 +409,8 @@ void D_DoomLoop (void)
 	line_t* check;
 
 	int linenumber;
-
+	//plat_t* plat;
+	sector_t* sector;
 	byte* nodes;
 	int i = 0;
     if (demorecording)
@@ -474,20 +475,35 @@ void D_DoomLoop (void)
 
 		}*/
 
-		stoptic = 6205;
+		stoptic = 7000;
 		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {
 				lasttick = gametic;
-				//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
 				
 				//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
-			 
-/*
-				SAVEDUNIT = Z_LoadBytesFromEMS(780);
-				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z  , SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->secnum, 0, SAVEDUNIT->player);
-				strcat(result, result2);
+
+				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+				//SAVEDUNIT = Z_LoadBytesFromEMS(1640);  // spectre
+
+				/*
+				for (i = 0; i < 30; i++) {
+					plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[i]);
+					if (plat->secnum==23){
+						break;
+					}
+				}
 				*/
+				//sector = &((sector_t*)Z_LoadBytesFromEMS(sectorsRef))[23];
+				//sprintf(result2, "%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, sector->ceilingheight, sector->floorheight, sector->soundorgX, sector->soundorgY, sector->floorpic, sector->specialdataRef, 0, 0);
+
+				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z  , SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->secnum, 0, SAVEDUNIT->type);
+				strcat(result, result2);
+				
+
+				// frame 140: prnd index different
+				// thing 319?
+
 
 				//doorunit = (vldoor_t*)Z_LoadBytesFromEMS(784);
 
@@ -504,7 +520,7 @@ void D_DoomLoop (void)
 			}
 		}
 
-		if (gametic == stoptic + 30) {
+		if (gametic == stoptic + 25) {
 			I_Error(result);
 			//nodes = (byte*)Z_LoadBytesFromEMS(nodesRef);
 			//memcpy(copynode, nodes, 46240);
@@ -1178,14 +1194,8 @@ void D_DoomMain (void)
     printf ("M_LoadDefaults: Load system defaults.\n");
     M_LoadDefaults ();              // load before initing other systems
 
-
-
-    printf ("Z_Init: Init zone memory allocation daemon. \n");
-    Z_Init ();
-
     printf ("Z_InitEMS: Init EMS memory allocation daemon. \n");
     Z_InitEMS ();
-
 
     printf ("W_Init: Init WADfiles.\n");
     W_InitMultipleFiles (wadfiles);

@@ -963,7 +963,7 @@ void R_PrecacheLevel(void)
 	MEMREF* textures;
 
 
-
+	sector_t* sectors = (sector_t*) Z_LoadBytesFromEMS(sectorsRef);
 
 	if (demoplayback)
 		return;
@@ -971,7 +971,7 @@ void R_PrecacheLevel(void)
 	// Precache flats.
 	flatpresent = alloca(numflats);
 	memset(flatpresent, 0, numflats);
-
+	
 	for (i = 0; i < numsectors; i++)
 	{
 		flatpresent[sectors[i].floorpic] = 1;

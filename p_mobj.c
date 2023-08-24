@@ -69,13 +69,17 @@ P_SetMobjState2
 		// Modified handling.
 		// Call action functions when the state is set
 	
-	
+
+
 		if (st->action.acp1) {
 			st->action.acp1(mobjRef);
 		}
-
 		 
+	
+
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+
+
 		state = st->nextstate;
 		i++;
     } while (!mobj->tics);
@@ -129,6 +133,9 @@ void P_XYMovement (MEMREF moRef)
 	fixed_t momomy;
 	line_t* lines;
 	short ceilinglinebacksecnum;
+	sector_t* sectors;
+	short mosecnum;
+	fixed_t sectorfloorheight;
 
 	int i = 0;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
@@ -149,6 +156,7 @@ void P_XYMovement (MEMREF moRef)
     }
 
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	mosecnum = mo->secnum;
 
 
     if (mo->momx > MAXMOVE)
@@ -179,10 +187,19 @@ void P_XYMovement (MEMREF moRef)
 			xmove = ymove = 0;
 		}
 		
+
+		if (setval == 1) {
+			//I_Error("prnd bbb %i %i %i %i %i %i %i %i %i", prndindex, mo->momx, mo->momy, mo->x, mo->y, ptryx, ptryy, xmove, ymove);
+			setval = 2;
+		}
+
+
 		if (!P_TryMove (moRef, ptryx, ptryy)) {
-			if (setval == 1) {
-				I_Error("prnd b %i", prndindex);
+			if (setval == 2) {
+				I_Error("done done a");
+				//I_Error("prnd b %i", prndindex);
 			}
+
 			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			// blocked move
 			if (player) {	// try to slide along it
@@ -191,6 +208,7 @@ void P_XYMovement (MEMREF moRef)
 				// explode a missile
 				lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 				ceilinglinebacksecnum=lines[ceilinglinenum].backsecnum;
+				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 				if (ceilinglinenum != SECNUM_NULL && ceilinglinebacksecnum != SECNUM_NULL && sectors[ceilinglinebacksecnum].ceilingpic == skyflatnum) {
 					// Hack to prevent missiles exploding
@@ -207,6 +225,12 @@ void P_XYMovement (MEMREF moRef)
 				mo->momx = mo->momy = 0;
 			}
 		}
+
+		if (setval == 2) {
+			I_Error("done done b");
+			//I_Error("prnd b %i", prndindex);
+		}
+
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	 
     } while (xmove || ymove);
@@ -239,9 +263,11 @@ void P_XYMovement (MEMREF moRef)
 	if (mo->flags & MF_CORPSE) {
 		// do not stop sliding
 		//  if halfway off a step with some momentum
-
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectorfloorheight = sectors[mosecnum].floorheight;
+		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
-			if (mo->floorz != sectors[mo->secnum].floorheight) {
+			if (mo->floorz != sectorfloorheight) {
 				
 				return;
 			}
@@ -416,6 +442,11 @@ P_NightmareRespawn(MEMREF mobjRef)
 	angle_t mobjspawnangle;
 	mapthing_t mobjspawnpoint;
 	short mobjspawnoptions;
+	fixed_t sectorfloorheight;
+	short mobjsecnum;
+	fixed_t mobjx;
+	fixed_t mobjy;
+	sector_t* sectors;
 
 	x = mobj->spawnpoint.x << FRACBITS;
 	y = mobj->spawnpoint.y << FRACBITS;
@@ -425,9 +456,14 @@ P_NightmareRespawn(MEMREF mobjRef)
 		return;	// no respwan
 	}
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-		// spawn a teleport fog at old spot
-		// because of removal of the body?
-	moRef = P_SpawnMobj(mobj->x, mobj->y, sectors[mobj->secnum].floorheight, MT_TFOG);
+	mobjsecnum = mobj->secnum;
+	mobjx = mobj->x;
+	mobjy = mobj->y;
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
+	// spawn a teleport fog at old spot
+	// because of removal of the body?
+	moRef = P_SpawnMobj(mobjx, mobjy, sectors[mobjsecnum].floorheight, MT_TFOG);
 	// initiate teleport sound
 	S_StartSoundFromRef(moRef, sfx_telept);
 
@@ -435,6 +471,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 	subsecnum = R_PointInSubsector(x, y);
 	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	moRef = P_SpawnMobj(x, y, sectors[subsectorsecnum].floorheight, MT_TFOG);
 
 	S_StartSoundFromRef(moRef, sfx_telept);
@@ -479,30 +516,29 @@ void P_MobjThinker (MEMREF mobjRef) {
 
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	int i;
-	if (setval >= 1 && mobjRef == 531 && mobj->player) {
-		I_Error("bad player early AA %i %i", mobj->player, mobjRef);
-	}
 	// momentum movement
     if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
 		P_XYMovement (mobjRef);
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-
+	 
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
 			return;		// mobj was removed
 		}
     } 
-	 
 
     if ( (mobj->z != mobj->floorz) || mobj->momz ) {
 		P_ZMovement (mobjRef);
+	 
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
 			return;		// mobj was removed
 		}
     }
+
+
     // cycle through states,
     // calling action functions at transitions
     if (mobj->tics != -1) {
@@ -513,7 +549,6 @@ void P_MobjThinker (MEMREF mobjRef) {
 			mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
 			if (!P_SetMobjState(mobjRef, mobj->state->nextstate)) {
-				 
 
 				return;		// freed itself
 			}
@@ -559,6 +594,10 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     state_t*	st;
     mobjinfo_t*	info;
 	MEMREF mobjRef;
+	short mobjsecnum;
+	sector_t* sectors;
+	fixed_t sectorfloorheight;
+	fixed_t sectorceilingheight;
 
 	mobjRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, 0, ALLOC_TYPE_LEVSPEC);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -596,8 +635,13 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
  
 
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-    mobj->floorz = sectors[mobj->secnum].floorheight;
-    mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
+	mobjsecnum = mobj->secnum;
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectorfloorheight = sectors[mobjsecnum].floorheight;
+	sectorceilingheight = sectors[mobjsecnum].ceilingheight;
+	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	mobj->floorz = sectorfloorheight;
+	mobj->ceilingz = sectorceilingheight;
 
     if (z == ONFLOORZ)
 		mobj->z = mobj->floorz;
@@ -666,6 +710,7 @@ void P_RespawnSpecials (void)
 	short subsecnum;
 	subsector_t* subsectors;
 	short subsectorsecnum;
+	sector_t* sectors;
 
     int			i;
 
@@ -693,6 +738,8 @@ void P_RespawnSpecials (void)
 	subsecnum = R_PointInSubsector(x, y);
 	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
+
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 	moRef = P_SpawnMobj (x, y, sectors[subsectorsecnum].floorheight , MT_IFOG);
     S_StartSoundFromRef (moRef, sfx_itmbk);

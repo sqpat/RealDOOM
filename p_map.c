@@ -122,6 +122,7 @@ P_TeleportMove
 	short	newsubsecsecnum;
 	subsector_t*	subsectors;
 	short	newsubsecnum;
+	sector_t* sectors;
 	
 	mobj_t* tmthing;
 	mobj_t* thing;
@@ -148,7 +149,8 @@ P_TeleportMove
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-    tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
     tmceilingz = sectors[newsubsecsecnum].ceilingheight;
 			
     validcount++;
@@ -256,6 +258,9 @@ boolean PIT_CheckLine (short linenum)
 
 
 
+	if (setval == 3) {
+		I_Error("blah %i %i %i %i %i %i %i %i %i", openbottom, tmfloorz, ceilinglinenum, linenum, lineside1, linefrontsecnum, linebacksecnum, opentop, tmceilingz);
+	}
 
 	if (openbottom > tmfloorz) {
 		tmfloorz = openbottom;
@@ -299,38 +304,39 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	// don't clip against self
 
 
-
 	if (thingRef == tmthingRef) {
-		if (setval == 2) I_Error("return value a");
-		return true;
+		//if (setval == 2) I_Error("return value c");
+			return true;
 	}
+
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	thingtype = thing->type;
 	thingflags = thing->flags;
+
+	if (!(thingflags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
+		//if (setval == 2) I_Error("return value a");
+			return true;
+	}
+	thingtype = thing->type;
 	thingx = thing->x;
 	thingy = thing->y;
 	thingz = thing->z;
 	thingheight = thing->height;
 	thingradius = thing->radius;
 
-	if (!(thingflags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
-		if (setval == 2) I_Error("return value b");
-		return true;
-	}
 
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
-	tmthingtargetRef = tmthing->targetRef;
-	tmthingz = tmthing->z;
-	tmthingheight = tmthing->height;
 
 	blockdist = thingradius + tmthing->radius;
 
     if ( abs(thingx - tmx) >= blockdist || abs(thingy - tmy) >= blockdist ) {
 		// didn't hit it
-		if (setval == 2) I_Error("return value c");
-		return true;
+		//if (setval == 2) I_Error("return value b");
+			return true;
     }
-     
+	tmthingheight = tmthing->height;
+	tmthingz = tmthing->z;
+	tmthingtargetRef = tmthing->targetRef;
+
 
     // check for skulls slamming into things
     if (tmthing->flags & MF_SKULLFLY) {
@@ -341,7 +347,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 		tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
 		P_SetMobjState (tmthingRef, tmthing->info->spawnstate);
-		if (setval == 2) I_Error("return value d");
+		//if (setval == 2) I_Error("return value d");
 
 		return false;		// stop moving
     }
@@ -351,11 +357,11 @@ boolean PIT_CheckThing (MEMREF thingRef)
     if (tmthing->flags & MF_MISSILE) {
 		// see if it went over / under
 		if (tmthingz > thingz + thingheight) {
-			if (setval == 2) I_Error("return value e %i %i %i", tmthingz, tmthingRef, ((mobj_t*)Z_LoadBytesFromEMS(tmthingRef))->type );
+			//if (setval == 2) I_Error("return value e %i %i %i", tmthingz, tmthingRef, ((mobj_t*)Z_LoadBytesFromEMS(tmthingRef))->type );
 			return true;		// overhead
 		}
 		if (tmthingz + tmthingheight < thingz) {
-			if (setval == 2) I_Error("return value f");
+			//if (setval == 2) I_Error("return value f");
 			return true;		// underneath
 		}
 		if (tmthingtargetRef) {
@@ -364,14 +370,14 @@ boolean PIT_CheckThing (MEMREF thingRef)
 			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
 				// Don't hit same species as originator.
  			if (thingRef == tmthingtargetRef) {
-					if (setval == 2) I_Error("return value g");
+					//if (setval == 2) I_Error("return value g");
 					return true;
 				}
 
 				if (thingtype != MT_PLAYER) {
 				// Explode, but do no damage.
 				// Let players missile other players.
-					if (setval == 2) I_Error("return value h");
+					//if (setval == 2) I_Error("return value h");
 
 					return false;
 				}
@@ -379,7 +385,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 		}
 		if (! (thingflags & MF_SHOOTABLE) ) {
 			// didn't do any damage
-			if (setval == 2) I_Error("return value i");
+			//if (setval == 2) I_Error("return value i");
 			return !(thingflags & MF_SOLID);
 		}
 	
@@ -390,7 +396,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 
 		P_DamageMobj (thingRef, tmthingRef, tmthingtargetRef, damage);
 
-		if (setval == 2) I_Error("return value j");
+		//if (setval == 2) I_Error("return value j");
 		// don't traverse any more
 		return false;				
     }
@@ -405,10 +411,10 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	    // can remove thing
 	    P_TouchSpecialThing (thingRef, tmthingRef);
 	}
-	if (setval == 2) I_Error("return value k");
+	//if (setval == 2) I_Error("return value k");
 	return !solid;
     }
-	if (setval == 2) I_Error("return value l");
+	//if (setval == 2) I_Error("return value l");
 
     return !(thingflags & MF_SOLID);
 }
@@ -458,7 +464,7 @@ P_CheckPosition
 	short newsubsecnum;
 	mobj_t*			tmthing;
 	short newsubsecsecnum;
-
+	sector_t* sectors;
     tmthingRef = thingRef;
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
     tmflags = tmthing->flags;
@@ -480,15 +486,16 @@ P_CheckPosition
 
 
 
-	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
 	ceilinglinenum = -1;
     
     // The base floor / ceiling is from the subsector
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-    tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
     tmceilingz = sectors[newsubsecsecnum].ceilingheight;
+	
 
     validcount++;
     numspechit = 0;
@@ -512,18 +519,17 @@ P_CheckPosition
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
 
-			if (bx == 9 && by == 11 && setval == 1) {
-				setval = 2;
-			}
+	
 			if (!P_BlockThingsIterator(bx, by, PIT_CheckThing)) {
-				if (setval == 1) {
-					I_Error("prnd aa %i", prndindex);
-				}			
+				if (setval >= 1) {
+					//I_Error("prnd xx %i %i %i %i", prndindex, setval, bx, by);
+				}
+
 				return false;
 			}
 		}
 	}
-
+	
 	// check lines
     xl = (tmbbox[BOXLEFT] - bmaporgx)>>MAPBLOCKSHIFT;
     xh = (tmbbox[BOXRIGHT] - bmaporgx)>>MAPBLOCKSHIFT;
@@ -532,18 +538,34 @@ P_CheckPosition
 
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
+
+			if (bx == 25 && by == 16 && setval == 2) {
+				setval = 3;
+			}
+
 			if (!P_BlockLinesIterator(bx, by, PIT_CheckLine)) {
-				if (setval == 1) {
-					I_Error("prnd aaa %i", prndindex);
-				}				
+				if (setval >= 1) {
+					//I_Error("prnd xy %i %i %i %i", prndindex, setval, bx, by);
+				}
+
 				return false;
 			}
+
+			if (setval == 2 && tmfloorz != 2097152) {
+				// 2883854  25, 16
+				//I_Error("tmfloorz? %i %i %i", tmfloorz, bx, by);
+			}
+
+
 		}
 	}
-
-	if (setval == 1) {
-		I_Error("prnd ccc %i", prndindex);
+	if (setval == 2) {
+		I_Error("tmfloorz? %i %i %i %i ", newsubsecnum, tmfloorz, sectors[newsubsecsecnum].floorheight, sectors[newsubsecsecnum].ceilingheight);
 	}
+	if (setval >= 1) {
+		//I_Error("prnd xz %i %i %i %i", prndindex, setval, bx, by);
+	}
+
 	return true;
 }
 
@@ -577,26 +599,31 @@ P_TryMove
 	floatok = false;
 
 	if (!P_CheckPosition(thingRef, x, y)) {
-		if (setval == 1) {
+		if (setval == 2) {
 			I_Error("prnd a %i", prndindex);
 		}
 
 		return false;		// solid wall or thing
 	}
-	if (setval == 1) {
-		I_Error("prnd b %i", prndindex);
-	}
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
+
     if ( !(thing->flags & MF_NOCLIP) ) {
+
 		if (tmceilingz - tmfloorz < thing->height) {
 			return false;	// doesn't fit
 			}
+
+
 
 		floatok = true;
 	
 		if (!(thing->flags&MF_TELEPORT) && tmceilingz - thing->z < thing->height) {
 			return false;	// mobj must lower itself to fit
+		}
+
+		if (setval == 2) {
+			I_Error("done done d %i %i %i %i", thing->flags, tmfloorz, thing->z, thing->z > 24 * FRACUNIT);
 		}
 
 		if (!(thing->flags&MF_TELEPORT) && tmfloorz - thing->z > 24 * FRACUNIT) {
@@ -606,11 +633,18 @@ P_TryMove
 		if (!(thing->flags&(MF_DROPOFF | MF_FLOAT)) && tmfloorz - tmdropoffz > 24 * FRACUNIT) {
 			return false;	// don't stand over a dropoff
 		}
+		
+
     }
 
     // the move is ok,
     // so link the thing into its new position
-    P_UnsetThingPosition (thingRef);
+	if (setval == 2) {
+		I_Error("prnd bb %i %i %i %i %i %i %i", prndindex, thing->momx, thing->momy, thing->x, thing->y, x, y);
+	}
+
+	P_UnsetThingPosition (thingRef);
+
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     oldx = thing->x;
     oldy = thing->y;
@@ -618,8 +652,13 @@ P_TryMove
     thing->ceilingz = tmceilingz;	
     thing->x = x;
     thing->y = y;
+
+
+
 	P_SetThingPosition (thingRef);
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+
+
 	newx = thing->x;
 	newy = thing->y;
     
@@ -971,7 +1010,7 @@ PTR_AimTraverse (intercept_t* in)
     fixed_t		dist;
 	MEMREF		thRef;
 	line_t* lines;
-
+	sector_t* sectors;
     if (in->isaline) {
 		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 		li = lines[in->d.linenum];
@@ -988,19 +1027,18 @@ PTR_AimTraverse (intercept_t* in)
 			return false;		// stop
 	
 		dist = FixedMul (attackrange, in->frac);
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
-		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight)
-		{
+		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
 			slope = FixedDiv (openbottom - shootz , dist);
 			if (slope > bottomslope)
-			bottomslope = slope;
+				bottomslope = slope;
 		}
 		
-		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight)
-		{
+		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
 			slope = FixedDiv (opentop - shootz , dist);
 			if (slope < topslope)
-			topslope = slope;
+				topslope = slope;
 		}
 		
 		if (topslope <= bottomslope)
@@ -1065,7 +1103,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
     fixed_t		thingbottomslope;
 	MEMREF		thRef;
 	line_t*		lines;
-		
+	sector_t*	sectors;
 
     if (in->isaline) {
 		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -1081,19 +1119,18 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		P_LineOpening(li.sidenum[1], li.frontsecnum, li.backsecnum);
 		
 		dist = FixedMul (attackrange, in->frac);
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
-		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight)
-		{
+		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
 			slope = FixedDiv (openbottom - shootz , dist);
 			if (slope > aimslope)
-			goto hitline;
+				goto hitline;
 		}
 		
-		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight)
-		{
+		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
 			slope = FixedDiv (opentop - shootz , dist);
 			if (slope < aimslope)
-			goto hitline;
+				goto hitline;
 		}
 
 		// shot continues
@@ -1110,15 +1147,15 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
 
 
-		if (sectors[li.frontsecnum].ceilingpic == skyflatnum)
-		{
+		if (sectors[li.frontsecnum].ceilingpic == skyflatnum) {
 			// don't shoot the sky!
-			if (z > sectors[li.frontsecnum].ceilingheight)
-			return false;
-	    
+			if (z > sectors[li.frontsecnum].ceilingheight) {
+				return false;
+			}
 			// it's a sky hack wall
-			if	(li.backsecnum != SECNUM_NULL && sectors[li.backsecnum].ceilingpic == skyflatnum)
-			return false;		
+			if (li.backsecnum != SECNUM_NULL && sectors[li.backsecnum].ceilingpic == skyflatnum) {
+				return false;
+			}
 		}
 
 		// Spawn bullet puffs.
@@ -1130,15 +1167,17 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	 
     // shoot a thing
     thRef = in->d.thingRef;
-    if (thRef == shootthingRef)
-	return true;		// can't shoot self
+	if (thRef == shootthingRef) {
+		return true;		// can't shoot self
+	}
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
 
 
 
-    if (!(th->flags&MF_SHOOTABLE))
-	return true;		// corpse or something
-		
+	if (!(th->flags&MF_SHOOTABLE)) {
+		return true;		// corpse or something
+	}
+
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange, in->frac);
     thingtopslope = FixedDiv (th->z+th->height - shootz , dist);
@@ -1146,12 +1185,12 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	
 
     if (thingtopslope < aimslope)
-	return true;		// shot over the thing
+		return true;		// shot over the thing
 
     thingbottomslope = FixedDiv (th->z - shootz, dist);
 
     if (thingbottomslope > aimslope)
-	return true;		// shot under the thing
+		return true;		// shot under the thing
 
     
     // hit thing
@@ -1165,9 +1204,9 @@ boolean PTR_ShootTraverse (intercept_t* in)
     // Spawn bullet puffs or blod spots,
     // depending on target type.
 	if (th->flags & MF_NOBLOOD)
-	P_SpawnPuff (x,y,z);
+		P_SpawnPuff (x,y,z);
     else
-	P_SpawnBlood (x,y,z, la_damage);
+		P_SpawnBlood (x,y,z, la_damage);
 
     if (la_damage)
 		P_DamageMobj (thRef, shootthingRef, shootthingRef, la_damage);
@@ -1515,13 +1554,19 @@ P_ChangeSector
 {
     int		x;
     int		y;
-	
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	int blockleft = sectors[secnum].blockbox[BOXLEFT];
+	int blockright = sectors[secnum].blockbox[BOXRIGHT];
+	int blocktop = sectors[secnum].blockbox[BOXTOP];
+	int blockbottom = sectors[secnum].blockbox[BOXBOTTOM];
+
+
     nofit = false;
     crushchange = crunch;
 
     // re-check heights for all things near the moving sector
-	for (x = sectors[secnum].blockbox[BOXLEFT]; x <= sectors[secnum].blockbox[BOXRIGHT]; x++) {
-		for (y = sectors[secnum].blockbox[BOXBOTTOM]; y <= sectors[secnum].blockbox[BOXTOP]; y++) {
+	for (x = blockleft; x <= blockright; x++) {
+		for (y = blockbottom; y <= blocktop; y++) {
 				P_BlockThingsIterator(x, y, PIT_ChangeSector); {
 			}
 		}

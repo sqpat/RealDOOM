@@ -800,7 +800,9 @@ P_DamageMobj
 	fixed_t inflictorx;
 	fixed_t inflictory;
 	fixed_t inflictorz;
-	
+	sector_t* sectors;
+	short targetsecnum;
+	short targethealth;
 
 	if (targetRef == 0) {
 		I_Error("bad damage %i %i %i %i ", targetRef, inflictorRef, sourceRef, damage);
@@ -861,12 +863,14 @@ P_DamageMobj
 		target->momx += FixedMul (thrust, finecosine[ang]);
 		target->momy += FixedMul (thrust, finesine[ang]);
     }
-
+	targetsecnum = target->secnum;
+	targethealth = target->health;
     // player specific
     if (player) {
 
 		// end of game hell hack
-		if (sectors[target->secnum].special == 11 && damage >= target->health) {
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		if (sectors[targetsecnum].special == 11 && damage >= targethealth) {
 			damage = target->health - 1;
 		}
 

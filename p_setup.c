@@ -49,10 +49,11 @@ MEMREF       vertexesRef;
 
 int             numsegs;
 //seg_t*          segs;
-MEMREF                  segsRef;
+MEMREF          segsRef;
 
 int             numsectors;
-sector_t*       sectors;
+MEMREF          sectorsRef;
+//sector_t*       sectors;
 
 int             numsubsectors;
 //subsector_t*    subsectors;
@@ -293,33 +294,36 @@ void P_LoadSubsectors(int lump)
 //
 void P_LoadSectors(int lump)
 {
-	mapsector_t *       data;
+	mapsector_t*        data;
 	int                 i;
-	mapsector_t*        ms;
+	mapsector_t        ms;
 	sector_t*           ss;
 	MEMREF				dataRef;
+	sector_t* sectors;
 
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
-	sectors = Z_Malloc (numsectors * sizeof(sector_t), PU_LEVEL, 0);
-	
+	//sectors = Z_Malloc (numsectors * sizeof(sector_t), PU_LEVEL, 0);
+	sectorsRef = Z_MallocEMSNew (numsectors * sizeof(sector_t), PU_LEVEL, 0, ALLOC_TYPE_SECTORS);
+	sectors = (sector_t*) Z_LoadBytesFromEMS(sectorsRef);
 
 
 	memset(sectors, 0, numsectors * sizeof(sector_t));
 	W_CacheLumpNumCheck(lump, 6);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	data = (mapsector_t *) Z_LoadBytesFromEMS(dataRef);
 
 
 	ss = sectors;
 	for (i = 0; i < numsectors; i++, ss++) {
-		ms = &data[i];
-		ss->floorheight = SHORT(ms->floorheight) << FRACBITS;
-		ss->ceilingheight = SHORT(ms->ceilingheight) << FRACBITS;
-		ss->floorpic = R_FlatNumForName(ms->floorpic);
-		ss->ceilingpic = R_FlatNumForName(ms->ceilingpic);
-		ss->lightlevel = SHORT(ms->lightlevel);
-		ss->special = SHORT(ms->special);
-		ss->tag = SHORT(ms->tag);
+		data = (mapsector_t *)Z_LoadBytesFromEMS(dataRef);
+		ms = data[i];
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		ss->floorheight = SHORT(ms.floorheight) << FRACBITS;
+		ss->ceilingheight = SHORT(ms.ceilingheight) << FRACBITS;
+		ss->floorpic = R_FlatNumForName(ms.floorpic);
+		ss->ceilingpic = R_FlatNumForName(ms.ceilingpic);
+		ss->lightlevel = SHORT(ms.lightlevel);
+		ss->special = SHORT(ms.special);
+		ss->tag = SHORT(ms.tag);
 		ss->thinglistRef = NULL_MEMREF;
 		Z_RefIsActive(dataRef);
 
@@ -681,7 +685,6 @@ void P_GroupLines(void)
 	int                 j;
 	int                 total;
 	line_t*             li;
-	sector_t*           sector;
 	seg_t*              seg;
 	fixed_t             bbox[4];
 	int                 block;
@@ -699,6 +702,8 @@ void P_GroupLines(void)
 	short				linefrontsecnum;
 	short				linebufferindex;
 	short				sidesecnum;
+	sector_t*			sectors;
+	int					sectorlinecount;
 
 	side_t* sides;
 
@@ -720,12 +725,13 @@ void P_GroupLines(void)
 
 	// count number of lines in each sector
 	total = 0;
-	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	for (i = 0; i < numlines; i++) {
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 		li = &lines[i];
 		linebacksecnum = li->backsecnum;
 		linefrontsecnum = li->frontsecnum;
 		total++;
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		sectors[linefrontsecnum].linecount++;
 
 		if (linebacksecnum != -1 && linebacksecnum != linefrontsecnum) {
@@ -743,10 +749,10 @@ void P_GroupLines(void)
 	for (i = 0; i < numsectors; i++) {
 		M_ClearBox(bbox);
 		
-		sector = &sectors[i];
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectorlinecount = sectors[i].linecount;
 
-
-		sector->linesoffset = linebufferindex;
+		sectors[i].linesoffset = linebufferindex;
 		previouslinebufferindex = linebufferindex;
 	 
 		for (j = 0; j < numlines; j++) {
@@ -765,7 +771,7 @@ void P_GroupLines(void)
 				M_AddToBox(bbox, vertexes[linev2Offset].x, vertexes[linev2Offset].y);
 			}
 		}
-		if (linebufferindex - previouslinebufferindex != sectors[i].linecount) {
+		if (linebufferindex - previouslinebufferindex != sectorlinecount) {
 			linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 			I_Error("P_GroupLines: miscounted %i %i   iteration %i      %i != (%i - %i)", linebuffer, sectors[i].linesoffset,  i, sectors[i].linecount, linebufferindex , previouslinebufferindex);
 		}
@@ -773,6 +779,8 @@ void P_GroupLines(void)
 		// set the degenmobj_t to the middle of the bounding box
 		
 
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		
 		sectors[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
 		sectors[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
 
@@ -828,20 +836,8 @@ P_SetupLevel
 	// will be set by player think.
 	players[consoleplayer].viewz = 1;
 
-	// Make sure all sounds are stopped before Z_FreeTags.
 	S_Start();
-
-
-#if 0 // UNUSED
-	if (debugfile)
-	{
-		Z_FreeTags(PU_LEVEL, MAXINT);
-		Z_FileDumpHeap(debugfile);
-	}
-	else
-#endif
-		Z_FreeTags(PU_LEVEL, PU_PURGELEVEL - 1);
-		Z_FreeTagsEMS(PU_LEVEL, PU_PURGELEVEL - 1);
+	Z_FreeTagsEMS(PU_LEVEL, PU_PURGELEVEL - 1);
 
 
 	// UNUSED W_Profile ();

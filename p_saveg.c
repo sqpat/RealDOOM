@@ -113,7 +113,8 @@ void P_ArchiveWorld (void)
     short*		put;
 	side_t* sides;
 	line_t* lines;
-    put = (short *)save_p;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	put = (short *)save_p;
     
     // do sectors
     for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
@@ -168,6 +169,7 @@ void P_UnArchiveWorld (void)
     short*		get;
 	side_t* sides;
 	line_t* lines;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	get = (short *)save_p;
 
     // do sectors
@@ -269,6 +271,8 @@ void P_UnArchiveThinkers (void)
 	THINKERREF		next;
 	MEMREF thinkerRef;
 	mobj_t* mobj;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	
     
     // remove all the current thinkers
     currentthinker = thinkerlist[0].next;
@@ -310,7 +314,7 @@ void P_UnArchiveThinkers (void)
 	    }
 	    P_SetThingPosition (thinkerRef);
 	    mobj->info = &mobjinfo[mobj->type];
-	    mobj->floorz = sectors[mobj->secnum].floorheight;
+		mobj->floorz = sectors[mobj->secnum].floorheight;
 	    mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
 
 		mobj->thinkerRef = P_AddThinker (thinkerRef, TF_MOBJTHINKER);

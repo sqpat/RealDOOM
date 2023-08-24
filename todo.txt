@@ -13,7 +13,8 @@ IMPROVEMENTS
 MEMORY IMPROVEMENTS
  - segs to conventional after all?
  - more shorts to ints in lines etc
-
+ - reuse local variables to create fewer
+ - create a 'getter' function that just grabs a value from memory without paging somehow?
 
 
 
@@ -25,16 +26,31 @@ MEMORY IMPROVEMENTS
 
 
 TODO 
-- fix timedemo 1 
-
-~ remove sound
-? fix face compositing
- ? not happening anymore
-- save branch
 3 sectors
+  ! really test platforms?
+  - debug
+    x demo3 ok
+    - demo 1
+      - first npc is missed early
+
+  - texture bug?
+
+
 - save branch
+
+- get rid of:
+  - net?
+  - mus2mid
+  - dmx
+  - pcfx
+  - i_cyber
+  - __FILE__ __LINE__ stuff
+  - redo how the functions are done (states and thing->action.acp1)   
+    - actionf_t to enum?
 
 - make titlepic work with > 4 pages?
+
+- see if we can lessen size of some of those sectors etc fields
 
 4 remove code
  - remove non ems Z_MALLOC

@@ -279,6 +279,9 @@ void R_AddLine (short linenum)
 	short linenumv2Offset = segs[linenum].v2Offset;
 	side_t* sides;
 	short sidemidtex;
+	sector_t* sectors;
+	sector_t frontsector;
+	sector_t backsector;
 	vertex_t*   vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
     curlinenum = linenum;
@@ -343,14 +346,21 @@ void R_AddLine (short linenum)
     if (backsecnum == SECNUM_NULL)
 		goto clipsolid;		
 
+
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	frontsector = sectors[frontsecnum];
+	backsector = sectors[backsecnum];
+
+ 
+
     // Closed door.
-    if (sectors[backsecnum].ceilingheight <= sectors[frontsecnum].floorheight
-	|| sectors[backsecnum].floorheight >= sectors[frontsecnum].ceilingheight)
+    if (backsector.ceilingheight <= frontsector.floorheight
+	|| backsector.floorheight >= frontsector.ceilingheight)
 	goto clipsolid;		
 
     // Window.
-    if (sectors[backsecnum].ceilingheight != sectors[frontsecnum].ceilingheight
-	|| sectors[backsecnum].floorheight != sectors[frontsecnum].floorheight)
+    if (backsector.ceilingheight != frontsector.ceilingheight
+	|| backsector.floorheight != frontsector.floorheight)
 	goto clippass;	
 		
     // Reject empty lines used for triggers
@@ -362,9 +372,9 @@ void R_AddLine (short linenum)
 	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 	sidemidtex = sides[curlinesidedefOffset].midtexture;
 
-	if (sectors[backsecnum].ceilingpic == sectors[frontsecnum].ceilingpic
-	&& sectors[backsecnum].floorpic == sectors[frontsecnum].floorpic
-	&& sectors[backsecnum].lightlevel == sectors[frontsecnum].lightlevel
+	if (backsector.ceilingpic == sectors[frontsecnum].ceilingpic
+	&& backsector.floorpic == sectors[frontsecnum].floorpic
+	&& backsector.lightlevel == sectors[frontsecnum].lightlevel
 	&& sidemidtex == 0)
     {
 	return;
@@ -526,37 +536,39 @@ void R_Subsector (int num) {
 	seg_t* segs;
 	int lineoffset = 0;
 	short firstline;
+	sector_t* sectors;
+	sector_t frontsector;
+
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	#ifdef RANGECHECK
 		if (num >= numsubsectors) {
 			I_Error("R_Subsector: ss %i with numss = %i", num, numsubsectors);
 		}
 	#endif
-	Z_RefIsActive(nodesRef);
-
-
-
+	
     sscount++;
     frontsecnum = subsectors[num].secnum;
     count = subsectors[num].numlines;
 	firstline = subsectors[num].firstline;
 
 
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	frontsector = sectors[frontsecnum];
 
 
-    if (sectors[frontsecnum].floorheight < viewz) {
-		floorplane = R_FindPlane (sectors[frontsecnum].floorheight,
-			sectors[frontsecnum].floorpic,
-			sectors[frontsecnum].lightlevel);
+    if (frontsector.floorheight < viewz) {
+		floorplane = R_FindPlane (frontsector.floorheight,
+			frontsector.floorpic,
+			frontsector.lightlevel);
 	}
 	else {
 		floorplane = NULL;
 	}
 
-    if (sectors[frontsecnum].ceilingheight > viewz  || sectors[frontsecnum].ceilingpic == skyflatnum) {
-		ceilingplane = R_FindPlane (sectors[frontsecnum].ceilingheight,
-			sectors[frontsecnum].ceilingpic,
-			sectors[frontsecnum].lightlevel);
+    if (frontsector.ceilingheight > viewz  || frontsector.ceilingpic == skyflatnum) {
+		ceilingplane = R_FindPlane (frontsector.ceilingheight,
+			frontsector.ceilingpic,
+			frontsector.lightlevel);
 	} else {
 		ceilingplane = NULL;
 	}

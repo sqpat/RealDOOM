@@ -196,8 +196,12 @@ getSideNum
 ( short		currentSector,
   short		offset,
   short		side ) {
-	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-	offset = linebuffer[sectors[currentSector].linesoffset + offset];
+	short* linebuffer;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	offset = sectors[currentSector].linesoffset + offset;
+
+	linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+	offset = linebuffer[offset];
 	return ((line_t*)Z_LoadBytesFromEMS(linesRef))[offset].sidenum[side];
 	
 }
@@ -216,8 +220,12 @@ getSector
   short		side )
 {
 	line_t* lines;
-	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-	offset = linebuffer[sectors[currentSector].linesoffset + offset];
+	short* linebuffer;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	offset = sectors[currentSector].linesoffset + offset;
+
+	linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+	offset = linebuffer[offset];
 	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	offset = lines[offset].sidenum[side];
 
@@ -235,8 +243,11 @@ twoSided
 ( short	sector,
   short	line )
 {
-	short* linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-	line = linebuffer[sectors[sector].linesoffset + line];
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	short* linebuffer;
+	line = sectors[sector].linesoffset + line;
+	linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+	line = linebuffer[line];
     return (((line_t*)Z_LoadBytesFromEMS(linesRef))[line]).flags & ML_TWOSIDED;
 }
 
@@ -261,9 +272,9 @@ getNextSector
 		
 
     if (line->frontsecnum == sec)
-	return line->backsecnum;
-	
-    return line->frontsecnum;
+		return line->backsecnum;
+	else 
+		return line->frontsecnum;
 }
 
 
@@ -277,6 +288,7 @@ fixed_t	P_FindLowestFloorSurrounding(short secnum)
     int			i;
     line_t*		check;
 	short		otherSecOffset;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	fixed_t		floor = sectors[secnum].floorheight;
 	int linecount = sectors[secnum].linecount;
 	short* linebuffer;
@@ -289,6 +301,7 @@ fixed_t	P_FindLowestFloorSurrounding(short secnum)
 
 		otherSecOffset = getNextSector(linenumber, secnum);
 
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		if (otherSecOffset == SECNUM_NULL) {
 			continue;
 		}
@@ -310,6 +323,7 @@ fixed_t	P_FindHighestFloorSurrounding(short secnum)
     int			i;
     short		offset;
     fixed_t		floor = -500*FRACUNIT;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	int linecount = sectors[secnum].linecount;
 	short* linebuffer;
 	
@@ -318,7 +332,8 @@ fixed_t	P_FindHighestFloorSurrounding(short secnum)
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
 		offset = getNextSector(linebuffer[offset], secnum);
-	
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
 		if (offset == SECNUM_NULL) {
 			continue;
 		}
@@ -349,6 +364,7 @@ P_FindNextHighestFloor
     int			min;
 	short		offset;
 	fixed_t		height = currentheight;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	int linecount = sectors[secnum].linecount;
 	short* linebuffer;
 
@@ -359,6 +375,7 @@ P_FindNextHighestFloor
 		offset = sectors[secnum].linesoffset + i;
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 		offset = getNextSector(linebuffer[offset], secnum);
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (offset == SECNUM_NULL) {
 			continue;
@@ -372,14 +389,14 @@ P_FindNextHighestFloor
     
     // Find lowest height in list
     if (!h)
-	return currentheight;
+		return currentheight;
 		
     min = heightlist[0];
     
     // Range checking? 
     for (i = 1;i < h;i++)
-	if (heightlist[i] < min)
-	    min = heightlist[i];
+		if (heightlist[i] < min)
+			min = heightlist[i];
 			
     return min;
 }
@@ -394,6 +411,7 @@ P_FindLowestCeilingSurrounding(short	secnum)
     int			i;
 	short		offset;
 	fixed_t		height = MAXINT;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	int linecount = sectors[secnum].linecount;
 	short* linebuffer;
 
@@ -402,6 +420,7 @@ P_FindLowestCeilingSurrounding(short	secnum)
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
 		offset = getNextSector(linebuffer[offset], secnum);
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (offset == SECNUM_NULL) {
 			continue;
@@ -422,6 +441,7 @@ fixed_t	P_FindHighestCeilingSurrounding(short	secnum)
     int		i;
 	short		offset;
 	fixed_t	height = 0;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	int linecount = sectors[secnum].linecount;
 	short* linebuffer;
 
@@ -430,6 +450,7 @@ fixed_t	P_FindHighestCeilingSurrounding(short	secnum)
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 
 		offset = getNextSector(linebuffer[offset], secnum);
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (offset == SECNUM_NULL) {
 			continue;
@@ -452,11 +473,13 @@ P_FindSectorFromLineTag
   int		start )
 {
     int	i;
-	
-    for (i=start+1;i<numsectors;i++)
-	if (sectors[i].tag == linetag)
-	    return i;
-    
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
+	for (i = start + 1; i < numsectors; i++) {
+		if (sectors[i].tag == linetag) {
+			return i;
+		}
+	}
     return -1;
 }
 
@@ -473,7 +496,8 @@ P_FindMinSurroundingLight
 {
     int		i;
     int		min;
-     short	offset;
+    short	offset;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	int linecount = sectors[secnum].linecount;
 	short* linebuffer;
 
@@ -484,7 +508,8 @@ P_FindMinSurroundingLight
 		 
 		offset = getNextSector(linebuffer[offset], secnum);
 
-		// 4 255 255 15 127 1 0 0
+		
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (offset == SECNUM_NULL) {
 			continue;
@@ -528,6 +553,12 @@ P_CrossSpecialLine
 	short linespecial = line->special;
 	short setlinespecial = -1;
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+
+
+	if (setval == 10) {
+		I_Error("herehere B %i %i %i", gametic, linespecial, linenum);
+	}
+
 
     //	Triggers that other things can activate
     if (!thing->player)
@@ -1053,64 +1084,62 @@ P_ShootSpecialLine
 //
 void P_PlayerInSpecialSector (player_t* player) {
 	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+	fixed_t playerMoz = playerMo->z;
 	short secnum = playerMo->secnum;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
     // Falling, not all the way down yet?
-	if (playerMo->z != sectors[secnum].floorheight) {
+	if (playerMoz != sectors[secnum].floorheight) {
 		return;
 	}
 
     // Has hitten ground.
-    switch (sectors[secnum].special)
-    {
-      case 5:
-	// HELLSLIME DAMAGE
-	if (!player->powers[pw_ironfeet])
-	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 10);
-	break;
+    switch (sectors[secnum].special) {
+		case 5:
+			// HELLSLIME DAMAGE
+			if (!player->powers[pw_ironfeet])
+				if (!(leveltime&0x1f))
+					P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 10);
+			break;
 	
-      case 7:
-	// NUKAGE DAMAGE
-	if (!player->powers[pw_ironfeet])
-	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 5);
-	break;
+		case 7:
+			// NUKAGE DAMAGE
+			if (!player->powers[pw_ironfeet])
+				if (!(leveltime&0x1f))
+					P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 5);
+			break;
 	
-      case 16:
-	// SUPER HELLSLIME DAMAGE
-      case 4:
-	// STROBE HURT
-	if (!player->powers[pw_ironfeet]
-	    || (P_Random()<5) )
-	{
-	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 20);
-	}
-	break;
+		case 16:
+			// SUPER HELLSLIME DAMAGE
+			case 4:
+				// STROBE HURT
+				if (!player->powers[pw_ironfeet] || (P_Random()<5) ) {
+					if (!(leveltime&0x1f))
+						P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 20);
+				}
+				break;
 			
-      case 9:
-	// SECRET SECTOR
-	player->secretcount++;
-	sectors[secnum].special = 0;
-	break;
+		case 9:
+			// SECRET SECTOR
+			player->secretcount++;
+			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+			sectors[secnum].special = 0;
+			break;
 			
-      case 11:
-	// EXIT SUPER DAMAGE! (for E1M8 finale)
-	player->cheats &= ~CF_GODMODE;
+		case 11:
+			// EXIT SUPER DAMAGE! (for E1M8 finale)
+			player->cheats &= ~CF_GODMODE;
 
-	if (!(leveltime&0x1f))
-	    P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 20);
+			if (!(leveltime&0x1f))
+				P_DamageMobj (player->moRef, NULL_MEMREF, NULL_MEMREF, 20);
 
-	if (player->health <= 10)
-	    G_ExitLevel();
-	break;
+			if (player->health <= 10)
+				G_ExitLevel();
+			break;
 			
-      default:
-	I_Error ("P_PlayerInSpecialSector: "
-		 "unknown special %i",
-		sectors[secnum].special);
-	break;
+		default:
+			I_Error ("P_PlayerInSpecialSector: unknown special %i", sectors[secnum].special);
+			break;
     };
 
 }
@@ -1231,63 +1260,75 @@ int EV_DoDonut(short linetag)
 	int lineflags;
 	short linebacksecnum;
 	short lineoffset;
+	short sectors1lineoffset;
 	line_t* lines;
+	sector_t* sectors;
+	short sectors3floorpic;
+	fixed_t sectors3floorheight;
+
     secnum = -1;
     rtn = 0;
-    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
-    {
-	s1Offset = secnum;
+    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
+		s1Offset = secnum;
 		
-	// ALREADY MOVING?  IF SO, KEEP GOING...
-	if (sectors[s1Offset].specialdataRef)
-	    continue;
-			
-	rtn = 1;
-	linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-	lineoffset = linebuffer[sectors[s1Offset].linesoffset];
-	s2Offset = getNextSector(lineoffset,s1Offset);
-	for (i = 0;i < sectors[s2Offset].linecount;i++) {
-		offset = sectors[s2Offset].linesoffset + i;
-		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-		lineoffset = linebuffer[offset];
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
-
-		lineflags = (lines[lineoffset]).flags;
-		linebacksecnum = (lines[lineoffset]).backsecnum;
-		if ((!lineflags & ML_TWOSIDED) || (linebacksecnum == s1Offset));
+		// ALREADY MOVING?  IF SO, KEEP GOING...
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		if (sectors[s1Offset].specialdataRef)
 			continue;
-	    s3Offset = linebacksecnum;
+		sectors1lineoffset = sectors[s1Offset].linesoffset;
+
+		rtn = 1;
+		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+		lineoffset = linebuffer[sectors1lineoffset];
+		s2Offset = getNextSector(lineoffset,s1Offset);
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		for (i = 0;i < sectors[s2Offset].linecount;i++) {
+			offset = sectors[s2Offset].linesoffset + i;
+			linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
+			lineoffset = linebuffer[offset];
+			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+
+			lineflags = (lines[lineoffset]).flags;
+			linebacksecnum = (lines[lineoffset]).backsecnum;
+			if ((!lineflags & ML_TWOSIDED) || (linebacksecnum == s1Offset));
+				continue;
+			s3Offset = linebacksecnum;
 	    
-	    //	Spawn rising slime
+			//	Spawn rising slime
 
-		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
-		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+			sectors[s2Offset].specialdataRef = floorRef;
+			sectors3floorpic = sectors[s3Offset].floorpic;
+			sectors3floorheight = sectors[s3Offset].floorheight;
+
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
 
 
-		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
-		sectors[s2Offset].specialdataRef = floorRef;
-	    floor->type = donutRaise;
-	    floor->crush = false;
-	    floor->direction = 1;
-	    floor->secnum = s2Offset;
-	    floor->speed = FLOORSPEED / 2;
-	    floor->texture = sectors[s3Offset].floorpic;
-	    floor->newspecial = 0;
-	    floor->floordestheight = sectors[s3Offset].floorheight;
+			floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+			floor->type = donutRaise;
+			floor->crush = false;
+			floor->direction = 1;
+			floor->secnum = s2Offset;
+			floor->speed = FLOORSPEED / 2;
+			floor->texture = sectors3floorpic;
+			floor->newspecial = 0;
+			floor->floordestheight = sectors3floorheight;
 	    
-	    //	Spawn lowering donut-hole
-		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
-		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
-		floor->thinkerRef = P_AddThinker (floorRef, TF_MOVEFLOOR);
-		sectors[s1Offset].specialdataRef = floorRef;
-	    floor->type = lowerFloor;
-	    floor->crush = false;
-	    floor->direction = -1;
-	    floor->secnum = s1Offset;
-	    floor->speed = FLOORSPEED / 2;
-	    floor->floordestheight = sectors[s3Offset].floorheight;
-		break;
-	}
+			//	Spawn lowering donut-hole
+			floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+			sectors[s1Offset].specialdataRef = floorRef;
+			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor->thinkerRef = P_AddThinker (floorRef, TF_MOVEFLOOR);
+			floor->type = lowerFloor;
+			floor->crush = false;
+			floor->direction = -1;
+			floor->secnum = s1Offset;
+			floor->speed = FLOORSPEED / 2;
+			floor->floordestheight = sectors3floorheight;
+			break;
+		}
     }
     return rtn;
 }
@@ -1313,6 +1354,7 @@ void P_SpawnSpecials (void)
     int		i;
     int		episode;
 	line_t* lines;
+	sector_t* sectors;
 
     episode = 1;
     if (W_CheckNumForName("texture2") >= 0)
@@ -1342,6 +1384,7 @@ void P_SpawnSpecials (void)
 	//I_Error("sector: %p %i", sectors, numsectors);
 
 	for (i=0 ; i<numsectors ; i++) {
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (!sectors[i].special)
 			continue;

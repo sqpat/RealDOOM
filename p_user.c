@@ -230,6 +230,8 @@ void P_PlayerThink (player_t* player)
     ticcmd_t*		cmd;
     weapontype_t	newweapon;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+	short playermosecnum;
+	sector_t* sectors;
 
     // fixme: do this in the cheat code
     if (player->cheats & CF_NOCLIP)
@@ -263,8 +265,11 @@ void P_PlayerThink (player_t* player)
 	P_MovePlayer (player);
     
     P_CalcHeight (player);
+	playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+	playermosecnum = playermo->secnum;
 
-	if (sectors[playermo->secnum].special) {
+	sectors = (sector_t*) Z_LoadBytesFromEMS(sectorsRef);
+	if (sectors[playermosecnum].special) {
 		P_PlayerInSpecialSector(player);
 	}
     // Check for weapon change.
@@ -330,50 +335,46 @@ void P_PlayerThink (player_t* player)
 
     // Strength counts up to diminish fade.
     if (player->powers[pw_strength])
-	player->powers[pw_strength]++;	
+		player->powers[pw_strength]++;	
 		
     if (player->powers[pw_invulnerability])
-	player->powers[pw_invulnerability]--;
+		player->powers[pw_invulnerability]--;
+
+	playermo = (mobj_t*) Z_LoadBytesFromEMS(player->moRef);
 
     if (player->powers[pw_invisibility])
-	if (! --player->powers[pw_invisibility] )
-		playermo->flags &= ~MF_SHADOW;
+		if (! --player->powers[pw_invisibility] )
+			playermo->flags &= ~MF_SHADOW;
 			
     if (player->powers[pw_infrared])
-	player->powers[pw_infrared]--;
+		player->powers[pw_infrared]--;
 		
     if (player->powers[pw_ironfeet])
-	player->powers[pw_ironfeet]--;
+		player->powers[pw_ironfeet]--;
 		
     if (player->damagecount)
-	player->damagecount--;
+		player->damagecount--;
 		
     if (player->bonuscount)
-	player->bonuscount--;
+		player->bonuscount--;
 
     
     // Handling colormaps.
-    if (player->powers[pw_invulnerability])
-    {
-	if (player->powers[pw_invulnerability] > 4*32
-	    || (player->powers[pw_invulnerability]&8) )
-	    player->fixedcolormap = INVERSECOLORMAP;
-	else
-	    player->fixedcolormap = 0;
-    }
-    else if (player->powers[pw_infrared])	
-    {
-	if (player->powers[pw_infrared] > 4*32
-	    || (player->powers[pw_infrared]&8) )
-	{
-	    // almost full bright
-	    player->fixedcolormap = 1;
+    if (player->powers[pw_invulnerability]) {
+		if (player->powers[pw_invulnerability] > 4*32 || (player->powers[pw_invulnerability]&8) )
+			player->fixedcolormap = INVERSECOLORMAP;
+		else
+			player->fixedcolormap = 0;
+    } else if (player->powers[pw_infrared])	 {
+		if (player->powers[pw_infrared] > 4*32 || (player->powers[pw_infrared]&8) ) {
+			// almost full bright
+			player->fixedcolormap = 1;
+		} else {
+			player->fixedcolormap = 0;
+		}
+	} else {
+		player->fixedcolormap = 0;
 	}
-	else
-	    player->fixedcolormap = 0;
-    }
-    else
-	player->fixedcolormap = 0;
 }
 
 

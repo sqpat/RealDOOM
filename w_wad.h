@@ -68,7 +68,6 @@ int	W_LumpLength (int lump);
 void    W_ReadLump (int lump, void *dest);
 
 int W_CacheLumpNumCheck(int lump, int error);
-void*	W_CacheLumpNum(int lump, int tag);
 MEMREF  W_CacheLumpNumEMS(short lump, char tag);
 
 //void*	W_CacheLumpName (char* name, int tag);

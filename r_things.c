@@ -644,7 +644,10 @@ void R_AddSprites (short secnum)
     // A sector might have been split into several
     //  subsectors during BSP building.
     // Thus we check whether its already added.
-    if (sectors[secnum].validcount == validcount)
+    
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
+	if (sectors[secnum].validcount == validcount)
         return;         
     // Well, now it will be done.
 	(&sectors[secnum])->validcount = validcount;
@@ -803,13 +806,15 @@ void R_DrawPlayerSprites (void)
     int         lightnum;
     pspdef_t*   psp;
 	mobj_t*     playermo;
-
+	sector_t* sectors;
+	short		playermosecnum;
 	playermo = (mobj_t*)Z_LoadBytesFromEMS(viewplayer->moRef);
+	playermosecnum = playermo->secnum;
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
     
     // get light level
-    lightnum =
-        (sectors[playermo->secnum].lightlevel >> LIGHTSEGSHIFT)
-        +extralight;
+    lightnum = (sectors[playermosecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
 
     if (lightnum < 0)           
         spritelights = scalelight[0];

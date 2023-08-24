@@ -303,21 +303,23 @@ fixed_t	lowfloor;
 void P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum) {
     sector_t*	front;
     sector_t*	back;
-	
+	sector_t*   sectors;
     if (lineside1 == -1) {
 		// single sided line
 		openrange = 0;
 		return;
 	}
-	 
+
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	
 	front = &sectors[linefrontsecnum];
 	back = &sectors[linebacksecnum];
 	
-	if (front->ceilingheight < back->ceilingheight)
+	if (front->ceilingheight < back->ceilingheight) {
 		opentop = front->ceilingheight;
-	else
+	} else {
 		opentop = back->ceilingheight;
-
+	}
 	if (front->floorheight > back->floorheight) {
 		openbottom = front->floorheight;
 		lowfloor = back->floorheight;
@@ -327,6 +329,13 @@ void P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum
 	}
 	
     openrange = opentop - openbottom;
+
+	if (setval == 3) {
+		// 22, 23
+		I_Error("blah %i %i %i %i", front->ceilingheight, front->floorheight, back->ceilingheight, back->floorheight >> FRACBITS);
+	}
+
+
 }
 
 
@@ -358,6 +367,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 	int thingflags = thing->flags;
 	//short thingsubsecnum = thing->subsecnum;
 	short thingsecnum = thing->secnum;
+	sector_t* sectors;
 
     if ( ! (thingflags & MF_NOSECTOR) ) {
 	// inert things don't need to be in blockmap?
@@ -372,6 +382,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 			changeThing->snextRef = thingsnextRef;
 		}
 		else {
+			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 			sectors[thingsecnum].thinglistRef = thingsnextRef;
 			 
 
@@ -424,6 +435,8 @@ P_SetThingPosition (MEMREF thingRef)
 	mobj_t* thingList;
 	short subsectorsecnum;
 	subsector_t* subsectors;
+	sector_t* sectors;
+	MEMREF oldsectorthinglist;
 //	MEMREF* blocklinksList;
 
     // link into subsector
@@ -431,7 +444,6 @@ P_SetThingPosition (MEMREF thingRef)
 
 	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
-
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	thing->secnum = subsectorsecnum;
 
@@ -442,15 +454,21 @@ P_SetThingPosition (MEMREF thingRef)
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
 
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		oldsectorthinglist = sectors[subsectorsecnum].thinglistRef;
+		sectors[subsectorsecnum].thinglistRef = thingRef;
+
+		thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+
+
 		thing->sprevRef = NULL_MEMREF;
-		thing->snextRef = sectors[subsectorsecnum].thinglistRef;
+		thing->snextRef = oldsectorthinglist;
 
 		if (thing->snextRef) {
 			thingList = (mobj_t*)Z_LoadBytesFromEMS(thing->snextRef);
 			thingList->sprevRef = thingRef;
 		}
 
-		sectors[subsectorsecnum].thinglistRef = thingRef;
     }
 
 
@@ -544,6 +562,8 @@ P_BlockLinesIterator
 		}
 		blockmaplump = (short*)Z_LoadBytesFromEMS(blockmaplumpRef);
     }
+
+
     return true;	// everything was checked
 }
 

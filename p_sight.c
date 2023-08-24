@@ -110,8 +110,7 @@ P_InterceptVector2
     den = FixedMul (v1->dy>>8,v2->dx) - FixedMul(v1->dx>>8,v2->dy);
 
     if (den == 0)
-	return 0;
-    //	I_Error ("P_InterceptVector: parallel");
+		return 0;
     
     num = FixedMul ( (v1->x - v2->x)>>8 ,v1->dy) + 
 	FixedMul ( (v2->y - v1->y)>>8 , v1->dx);
@@ -151,7 +150,7 @@ boolean P_CrossSubsector (short subsecnum)
 	short linev2Offset;
 	short lineflags;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
-
+	sector_t* sectors;
 
 #ifdef RANGECHECK
 	if (subsecnum >= numsubsectors) {
@@ -163,10 +162,6 @@ boolean P_CrossSubsector (short subsecnum)
     count = subsectors[subsecnum].numlines;
     segnum = subsectors[subsecnum].firstline;
 	
-
-	if (setval == 1) {
-		//I_Error("check %i %i %i ", count, segnum, subsecnum);
-	}
 
     for ( ; count ; segnum++, count--) {
 		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
@@ -186,12 +181,6 @@ boolean P_CrossSubsector (short subsecnum)
 		linev1Offset = line->v1Offset;
 		linev2Offset = line->v2Offset;
 		lineflags = line->flags;
-		if (setval == 1 && count == 5) {
-			//			I_Error("check %i %i  %i %i %i %i %i %i %i %i", v1.x, v1.y, v2.x, v2.y, strace.x, strace.y, strace.dx, strace.dy, s1, s2);
-			//I_Error("check %i %i  %i %i %i %i %i ", v1.x, v1.y, line->v1Offset, line->v2Offset, linedefOffset, s1, s2);
-			// lines[355]->v1Offset is bad
-
-		}
 
 		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
@@ -219,9 +208,6 @@ boolean P_CrossSubsector (short subsecnum)
 		// stop because it is not two sided anyway
 		// might do this after updating validcount?
 		if (!(lineflags & ML_TWOSIDED)) {
-			if (setval == 1) {
-				I_Error("false return C %i", count);
-			}
 
 			return false;
 		}
@@ -229,6 +215,9 @@ boolean P_CrossSubsector (short subsecnum)
 		// crosses a two sided line
 
 		// no wall to block sight with?
+
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
 		if (sectors[frontsecnum].floorheight == sectors[backsecnum].floorheight && sectors[frontsecnum].ceilingheight == sectors[backsecnum].ceilingheight) {
 			continue;
 		}
@@ -248,9 +237,7 @@ boolean P_CrossSubsector (short subsecnum)
 		
 		// quick test for totally closed doors
 		if (openbottom >= opentop) {
-			if (setval == 1) {
-				I_Error("false return A%i", count);
-			}
+
 
 			return false;		// stop
 		}
@@ -270,9 +257,6 @@ boolean P_CrossSubsector (short subsecnum)
 		}
 		
 		if (topslope <= bottomslope) {
-			if (setval == 1) {
-				I_Error("false return B%i", count);
-			}
 
 			return false;		// stop				
 		}
@@ -290,27 +274,17 @@ boolean P_CrossSubsector (short subsecnum)
 // Returns true
 //  if strace crosses the given node successfully.
 //
-boolean P_CrossBSPNode (unsigned short bspnum)
+boolean P_CrossBSPNode (int bspnum)
 {
     node_t*	bsp;
     int		side;
 	node_t* nodes;
 	bspcounter++;
 	
- 	//if (bspnum > numsubsectors) {
-		//I_Error("too big %i %i", bspnum&(~NF_SUBSECTOR), numsubsectors, bspnum);
-	//}
-
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == -1) {
-			if (setval == 1) {
-				I_Error("here A %i %i", P_CrossSubsector(0), bspnum);
-			}
 			return P_CrossSubsector(0);
 		} else {
-			if (setval == 1) {
-				I_Error("here B %i %i", P_CrossSubsector(bspnum&(~NF_SUBSECTOR)), bspnum);
-			}
 			return P_CrossSubsector(bspnum&(~NF_SUBSECTOR));
 		}
     }
@@ -389,8 +363,6 @@ P_CheckSight2
 
 
 	
-	//I_Error("set call %i  %i %p %p", t1Ref, t2Ref, t1, t2);
-
     // First check for trivial rejection.
 
     // Determine subsector entries in REJECT table.
@@ -424,10 +396,6 @@ P_CheckSight2
 	cachedt2y = t2y;
     strace.dx = t2x - t1x;
     strace.dy = t2y - t1y;
-
-	if (setval == 1) {
-		I_Error("blah %i %i %i %i %i %i %i  ", prndindex, P_CrossBSPNode(numnodes - 1));
-	}
 
     // the head node is the last node output
     return P_CrossBSPNode (numnodes-1);	

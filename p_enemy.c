@@ -104,6 +104,7 @@ P_RecursiveSound
 	line_t*	check;
     short	othersecnum;
 	int linecount;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	sector_t* soundsector = &sectors[secnum];
 	short *linebuffer;
 	side_t* sides;
@@ -113,6 +114,7 @@ P_RecursiveSound
 	short checksidenum1;
 	short checkfrontsecnum;
 	short checkbacksecnum;
+	unsigned short lineoffset;
 
 	if (soundblocks < 0) {
 		I_Error("bad soundblock P_RecursiveSound %i %i", soundblocks, line);
@@ -136,10 +138,14 @@ P_RecursiveSound
 
 
 	linecount = soundsector->linecount;
+	
+	// todo load the whole sector's lines into te mp buffer to prevent trashing? Recursive function tho. would be lots of stack memory
 	for (i=0 ;i<linecount ; i++) {
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		soundsector = &sectors[secnum];
+		lineoffset = soundsector->linesoffset + i;
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
-		linenumber = linebuffer[soundsector->linesoffset + i];
+		linenumber = linebuffer[lineoffset];
 
 		
 
@@ -350,7 +356,11 @@ boolean P_Move (MEMREF actorRef)
     tryx = actor->x + actor->info->speed*xspeed[actor->movedir];
     tryy = actor->y + actor->info->speed*yspeed[actor->movedir];
 
-	if (setval == 2) setval = 3;
+	
+	if (setval == 1) {
+		//I_Error("prnd bbb %i %i %i %i %i %i %i %i %i", prndindex, actor->momx, actor->momy, actor->x, actor->y, tryx, tryy, actor->info->speed, actor->movedir);
+	}
+
 	try_ok = P_TryMove (actorRef, tryx, tryy);
 	if (setval >= 2 && gametic > 706 && actorRef == 531 && ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)))->direction == -1) {
 		I_Error("bad doors NEWEST A  %i", gametic);
@@ -718,16 +728,19 @@ void A_Look (MEMREF actorRef)
     mobj_t*	targ;
 	MEMREF targRef;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+	short actorsecnum = actor->secnum;
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 
 	actor->threshold = 0;	// any shot will wake up
 
 	#ifdef RANGECHECK
-		if (actor->secnum > numsectors) {
-			I_Error("bad sector %i %i %i %i %i %i %i", gametic, actor->secnum, numsectors, actorRef, actor->type, actor->x, actor->y);
+		if (actorsecnum > numsectors) {
+			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		}
 	#endif
-    targRef = sectors[actor->secnum].soundtargetRef;
+    targRef = sectors[actorsecnum].soundtargetRef;
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
 
 	if (targRef) {
@@ -738,22 +751,21 @@ void A_Look (MEMREF actorRef)
 			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 			actor->targetRef = targRef;
 
-
 			if (actor->flags & MF_AMBUSH)
 			{
+
 				if (P_CheckSight(actorRef, actor->targetRef)) {
 
 					goto seeyou;
 				}
 			}
 			else {
-
 				goto seeyou;
 			}
 		}
 
 	}
-	
+ 
 
 	if (!P_LookForPlayers(actorRef, false)) {
 		return;
@@ -765,6 +777,7 @@ void A_Look (MEMREF actorRef)
     // go into chase state
   seeyou:
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+
 
 	if (actor->info->seesound) {
 		int		sound;
@@ -788,11 +801,18 @@ void A_Look (MEMREF actorRef)
 		if (actor->type==MT_SPIDER || actor->type == MT_CYBORG) {
 			// full volume
 			S_StartSoundFromRef(NULL_MEMREF, sound);
-		}
-		else {
+		} else {
+			if (setval >= 1) {
+				I_Error("bad player early cc %i %i %i %i", prndindex, actorRef, 0, 0); // 1426 ? 1428?
+			}
+
 			S_StartSoundFromRef(actorRef, sound);
 		}
     }
+	if (setval >= 1) {
+		// A_Look
+		I_Error("bad player early bb %i %i %i %i", prndindex, actorRef, 0, 0); // 1426 ? 1428?
+	}
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
     P_SetMobjState (actorRef, actor->info->seestate);
 }

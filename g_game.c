@@ -852,6 +852,7 @@ G_CheckSpot
 	subsector_t* subsectors;
 	short subsecnum;
 	short secnum;
+	sector_t* sectors;
         
     if (!players[playernum].moRef)
     {
@@ -882,6 +883,8 @@ G_CheckSpot
 	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
 
 	secnum = subsectors[subsecnum].secnum;
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
     an = ( ANG45 * (mthing->angle/45) ) >> ANGLETOFINESHIFT; 
  
     moRef = P_SpawnMobj (x+20*finecosine[an], y+20*finesine[an] 

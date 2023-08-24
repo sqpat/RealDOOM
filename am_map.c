@@ -1122,6 +1122,9 @@ void AM_drawWalls(void)
 	short linefrontsecnum;
 	short linebacksecnum;
 	short linespecial;
+	sector_t* sectors;
+	boolean floorheightnonequal;
+	boolean ceilingheightnonequal;
 
 	vertex_t* vertexes;
 
@@ -1145,6 +1148,9 @@ void AM_drawWalls(void)
 			} if (linebacksecnum == SECNUM_NULL) {
 				AM_drawMline(&l, WALLCOLORS+lightlev);
 			} else {
+				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+				floorheightnonequal = sectors[linebacksecnum].floorheight != sectors[linefrontsecnum].floorheight;
+				ceilingheightnonequal = sectors[linebacksecnum].ceilingheight != sectors[linefrontsecnum].ceilingheight;
 				if (linespecial == 39) { // teleporters
 					AM_drawMline(&l, WALLCOLORS+WALLRANGE/2);
 				} else if (lineflags & ML_SECRET){ // secret door
@@ -1153,10 +1159,10 @@ void AM_drawWalls(void)
 					} else {
 						AM_drawMline(&l, WALLCOLORS + lightlev);
 					}
-				} else if (sectors[linebacksecnum].floorheight != sectors[linefrontsecnum].floorheight) {
+				} else if (floorheightnonequal) {
 					AM_drawMline(&l, FDWALLCOLORS + lightlev); // floor level change
 				}
-				else if (sectors[linebacksecnum].ceilingheight != sectors[linefrontsecnum].ceilingheight) {
+				else if (ceilingheightnonequal) {
 					AM_drawMline(&l, CDWALLCOLORS+lightlev); // ceiling level change
 				} else if (cheating) {
 					AM_drawMline(&l, TSWALLCOLORS+lightlev);
@@ -1299,8 +1305,9 @@ AM_drawThings
     int		i;
     mobj_t*	t;
 	MEMREF tRef;
-
-    for (i=0;i<numsectors;i++) {
+	sector_t* sectors;
+	for (i=0;i<numsectors;i++) {
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		tRef = sectors[i].thinglistRef;
 		while (tRef) {
 			t = (mobj_t*) Z_LoadBytesFromEMS(tRef);

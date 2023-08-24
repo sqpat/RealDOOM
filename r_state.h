@@ -77,7 +77,7 @@ extern int		numsegs;
 extern MEMREF		segsRef;
 
 extern int		numsectors;
-extern sector_t*	sectors;
+extern MEMREF	sectorsRef;
 
 extern int		numsubsectors;
 extern MEMREF	subsectorsRef;
