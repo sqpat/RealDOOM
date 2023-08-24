@@ -148,7 +148,22 @@ void P_RunThinkers (void)
 			Z_FreeEMSNew (thinkerlist[currentthinker].memref, 5);
 			thinkerlist[currentthinker].prev = MAX_THINKERS;
 		} else {
+			// 99 on i = 38
+
+
+			if (i > 2000) {
+				I_Error("caught infinite? %i ", gametic);
+				//setval = 1;
+			}
+			if (gametic == 2096 && i == 156) {
+				//setval = 1;
+				//I_Error("Caught %i %i %i %i %i %i %i", gametic, i, ((mobj_t*)Z_LoadBytesFromEMS(players[0].moRef))->snextRef, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type , 0  );
+			}
+
+
+
 			if (thinkerlist[currentthinker].functionType) {
+
 				switch (thinkerlist[currentthinker].functionType) {
 					case TF_MOBJTHINKER:
 						P_MobjThinker(thinkerlist[currentthinker].memref);
@@ -184,11 +199,8 @@ void P_RunThinkers (void)
 
 
 				}
-				if (gametic == 255 && i == 280 /*prndindex > 208*/) {
-					SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
-					//I_Error("%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->health, SAVEDUNIT->state->frame);
-					//I_Error("%i %i %i %i", gametic, i, ((mobj_t*) Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type, thinkerlist[currentthinker].functionType);
-				}
+
+				 
 				i++;
 			}
 
@@ -196,6 +208,13 @@ void P_RunThinkers (void)
 		currentthinker = thinkerlist[currentthinker].next;
     }
 	 
+	if (gametic == 1594) {
+		//I_Error("outside: %i %i %i %i %i", gametic, i, prndindex, 0, 0);
+		//setval = 1;
+	}
+
+	
+
 
 }
 

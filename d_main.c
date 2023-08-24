@@ -273,10 +273,10 @@ void D_Display (void)
 
     // draw buffered stuff to screen
     I_UpdateNoBlit ();
-
 	// draw the view directly
     if (gamestate == GS_LEVEL && !automapactive && gametic)
         R_RenderPlayerView (&players[displayplayer]);
+
 
     if (gamestate == GS_LEVEL && gametic)
         HU_Drawer ();
@@ -399,6 +399,7 @@ void D_DoomLoop (void)
 				D_DoAdvanceDemo();
 			}
 			M_Ticker ();
+			
 			G_Ticker ();
 
 			gametic++;
@@ -412,20 +413,22 @@ void D_DoomLoop (void)
 		S_UpdateSounds (players[consoleplayer].moRef);// move positional sounds
         // Update display, next frame, with current state.
 
+		
 
 		D_Display ();
 
 		//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
 	
 
-		stoptic = 2960;
+		stoptic = 3070;
 		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {
 				lasttick = gametic;
-				SAVEDUNIT = Z_LoadBytesFromEMS(486);
+				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z  , SAVEDUNIT->x, SAVEDUNIT->y, subsectors[SAVEDUNIT->subsecnum].secnum, SAVEDUNIT->subsecnum, SAVEDUNIT->snextRef);
 
-				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->subsecnum, i, 0);
+//				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->subsecnum, i, 0);
 				strcat(result, result2);
 				//lastindex = prndindex;
 

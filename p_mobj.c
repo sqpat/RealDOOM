@@ -54,11 +54,12 @@ P_SetMobjState2
     {
 	if (state == S_NULL)
 	{
-		//I_Error("precrash %i %i %s %i %i", mobjRef, mobj->targetRef, file, line, state);  // should be 28270
 
 	    mobj->state = (state_t *) S_NULL;
 	    P_RemoveMobj (mobjRef);
-	    return false;
+	
+
+		return false;
 	}
 
 	st = &states[state];
@@ -69,13 +70,18 @@ P_SetMobjState2
 
 	// Modified handling.
 	// Call action functions when the state is set
+	
+
 	if (st->action.acp1) {
 		st->action.acp1(mobjRef);
 	}
+	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+
 	
 	state = st->nextstate;
     } while (!mobj->tics);
-				
+	
+	
     return true;
 }
 
@@ -88,8 +94,9 @@ void P_ExplodeMissile(MEMREF moRef){
 
 	mobj_t* mo = (mobj_t*) Z_LoadBytesFromEMS(moRef);
     mo->momx = mo->momy = mo->momz = 0;
-
+	
     P_SetMobjState (moRef, mobjinfo[mo->type].deathstate);
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
     mo->tics -= P_Random()&3;
 
@@ -97,7 +104,7 @@ void P_ExplodeMissile(MEMREF moRef){
 	mo->tics = 1;
 
     mo->flags &= ~MF_MISSILE;
-
+	
     if (mo->info->deathsound)
 		S_StartSound (mo, mo->info->deathsound);
 }
@@ -167,9 +174,12 @@ void P_XYMovement (MEMREF moRef)
 		}
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
-
 		if (!P_TryMove (moRef, ptryx, ptryy)) {
+
 			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+			
+
+
 			// blocked move
 			if (mo->player) {	// try to slide along it
 				P_SlideMove (moRef);
@@ -179,19 +189,20 @@ void P_XYMovement (MEMREF moRef)
 					// Hack to prevent missiles exploding
 					// against the sky.
 					// Does not handle sky floors.
+
 					P_RemoveMobj (moRef);
 					return;
 				}
+			
 				P_ExplodeMissile (moRef);
 			} else {
 				mo->momx = mo->momy = 0;
 			}
 		}
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-
 	
     } while (xmove || ymove);
-	
+
 
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
@@ -256,8 +267,7 @@ void P_ZMovement (MEMREF moRef)
     fixed_t	delta;
 	mobj_t* moTarget;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-
-    
+ 
     // check for smooth step up
     if (mo->player && mo->z < mo->floorz) {
 		mo->player->viewheight -= mo->floorz-mo->z;
@@ -349,6 +359,9 @@ void P_ZMovement (MEMREF moRef)
 			return;
 		}
     }
+
+
+
 } 
 
 
@@ -375,6 +388,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 	if (!P_CheckPosition(mobjRef, x, y)) {
 		return;	// no respwan
 	}
+	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 		// spawn a teleport fog at old spot
 		// because of removal of the body?
 	moRef = P_SpawnMobj(mobj->x, mobj->y, sectors[subsectors[mobj->subsecnum].secnum].floorheight, MT_TFOG);
@@ -421,9 +435,13 @@ void P_MobjThinker (MEMREF mobjRef) {
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	int i;
 
+
     // momentum movement
     if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
+
 		P_XYMovement (mobjRef);
+
+
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
@@ -442,7 +460,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 			return;		// mobj was removed
 		}
     }
-
+	
 	
     // cycle through states,
     // calling action functions at transitions
@@ -454,6 +472,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 			if (!P_SetMobjState(mobjRef, mobj->state->nextstate)) {
 				return;		// freed itself
 			}
+			
 		}
     } else {
 		// check for nightmare respawn
@@ -471,11 +490,13 @@ void P_MobjThinker (MEMREF mobjRef) {
 		if (leveltime & 31) {
 			return;
 		}
+
 		if (P_Random() > 4) {
 			return;
 		}
 		P_NightmareRespawn (mobjRef);
     }
+
 
 }
 
@@ -914,31 +935,32 @@ P_SpawnMissile
   MEMREF	destRef,
   mobjtype_t	type )
 {
-	MEMREF thRef;
     mobj_t*	th;
     angle_t	an;
     int		dist;
 	mobj_t*	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
-	mobj_t*	dest = (mobj_t*)Z_LoadBytesFromEMS(destRef);
-
-
-
-    thRef = P_SpawnMobj (source->x,
-		      source->y,
-		      source->z + 4*8*FRACUNIT, type);
+	mobj_t*	dest;
+	MEMREF thRef = P_SpawnMobj (source->x, source->y, source->z + 4*8*FRACUNIT, type);
 
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
     
-    if (th->info->seesound)
-	S_StartSound (th, th->info->seesound);
+	if (th->info->seesound) {
+		S_StartSound(th, th->info->seesound);
+		th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
 
+	}
+	
     th->targetRef = sourceRef;	// where it came from
+	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+	dest = (mobj_t*)Z_LoadBytesFromEMS(destRef);
     an = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);	
 
     // fuzzy player
-    if (dest->flags & MF_SHADOW)
-	an += (P_Random()-P_Random())<<20;	
+	if (dest->flags & MF_SHADOW) {
+		an += (P_Random() - P_Random()) << 20;
+	}
 
+	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
     th->angle = an;
     an >>= ANGLETOFINESHIFT;
     th->momx = FixedMul (th->info->speed, finecosine[an]);
@@ -948,10 +970,11 @@ P_SpawnMissile
     dist = dist / th->info->speed;
 
     if (dist < 1)
-	dist = 1;
+		dist = 1;
 
     th->momz = (dest->z - source->z) / dist;
-		P_CheckMissileSpawn (thRef);
+		
+	P_CheckMissileSpawn (thRef);
 	
     return thRef;
 }

@@ -189,13 +189,17 @@ R_ClipPassWallSegment
   int	last )
 {
     cliprange_t*	start;
-
+	int i = 0;
     // Find the first range that touches the range
     //  (adjacent pixels are touching).
     start = solidsegs;
-    while (start->last < first-1)
-	start++;
+	while (start->last < first - 1) {
+		start++;
+		if (i > 1000) {
+			I_Error("too big? q");
+		}
 
+	}
     if (first < start->first)
     {
 	if (last < start->first-1)
@@ -212,9 +216,14 @@ R_ClipPassWallSegment
     // Bottom contained in start?
     if (last <= start->last)
 	return;			
-		
+	i = 0;
+
     while (last >= (start+1)->first-1)
     {
+		i++;
+		if (i > 1000) {
+				I_Error("too big?");
+		}
 	// There is a fragment between two posts.
 	R_StoreWallRange (start->last + 1, (start+1)->first - 1);
 	start++;
@@ -489,6 +498,7 @@ boolean R_CheckBBox (fixed_t*	bspcoord)
 }
 
 
+int upcount = 0;
 
 //
 // R_Subsector
@@ -509,6 +519,8 @@ void R_Subsector (int num) {
 		}
 	#endif
 	Z_RefIsActive(nodesRef);
+
+
 
     sscount++;
     sub = &subsectors[num];
@@ -531,14 +543,19 @@ void R_Subsector (int num) {
 	} else {
 		ceilingplane = NULL;
 	}
+
+	
     R_AddSprites (frontsecnum);
+	 
 	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	line = &segs[sub->firstline];
 
     while (count--) {
 		R_AddLine (sub->firstline + lineoffset);
 		lineoffset++;
-
+		if (count > 2000) {
+			I_Error("too many lines???");
+		}
 		// note: segs definitely gets paged out inside of addline, so we need to re-set the line pointer based off its start point, not just
 		// mindlessly add to the old paged-out address.
 		//segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
@@ -552,7 +569,6 @@ void R_Subsector (int num) {
 
 
 
-
 //
 // RenderBSPNode
 // Renders all subsectors below a given node,
@@ -563,7 +579,8 @@ void R_RenderBSPNode (int bspnum) {
     int		side;
 	node_t* nodes;
     // Found a subsector?
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+
+
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == -1) {
 			R_Subsector(0);
@@ -573,7 +590,7 @@ void R_RenderBSPNode (int bspnum) {
 		}
 		return;
     }
-	Z_RefIsActive(nodesRef);
+
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	bsp = &nodes[bspnum];
     

@@ -3,25 +3,25 @@ SIZES
 vertexes: 896  7168
 segs:    1371  27420
 
+CURRENT TODO
+  FRAME 1595 z a bit different
 
 PROBLEMS/IMPROVEMENTS
 ? why was there a 0 allocation (might be e1m1 marker etc?)
-- mobj has a subsector num, but its mostly used to retrieve secnum, save that instead?
-- sector mobjlists kinda suck (potentially spread across many pages)
+- mobj has a subsector num, but its mostly used to retrieve secnum, save that instead or as well?
+- sector mobjlists kinda suck (potentially spread across many pages).. not a big deal?
 - thinkercap/thinker list kinda sucks (potentially spread across many pages)
 - linebuffer is pointers, not offsets.
 - secs has frontsecnum and backsecnum as well as pointer to line which has this. Reduce memory footprint by removing these?
 - maybe invalidate memory when paged out (all ff or something)
 
 - blocklinks is 2000 size. Figure out a more proper number?
-
-TODO
- - sometimes health 12 sometimes 14 in that spot. random. why!?
+- how big should thinkerlist be? move to heap?
 
 
  - Z_LoadValue(pass ref and offset and pointer, get the value? interally does a temp page in, puts val in pointer, temp page out? READ ONLY)
 
- - use wolf 3d conventional memory code for 16 bit mode
+ - use wolf 3d conventional memory code for 16 bit mode?
  ? replace subsectors with just the values? currently 32 vs 48 bit... problematic...
 
 

@@ -27,6 +27,7 @@
 #include "r_state.h"
 // Data.
 #include "sounds.h"
+#include "i_system.h"
 
 
 //
@@ -56,7 +57,8 @@ T_MovePlane
 	{
 	  case -1:
 	    // DOWN
-	    if (sectors[secnum].floorheight - speed < dest)
+		 
+		  if (sectors[secnum].floorheight - speed < dest)
 	    {
 		lastpos = sectors[secnum].floorheight;
 		sectors[secnum].floorheight = dest;
@@ -64,6 +66,7 @@ T_MovePlane
 		if (flag == true)
 		{
 			sectors[secnum].floorheight =lastpos;
+
 			P_ChangeSector(secnum,crush);
 		    //return crushed;
 		}
@@ -85,7 +88,9 @@ T_MovePlane
 						
 	  case 1:
 	    // UP
-	    if (sectors[secnum].floorheight + speed > dest)
+		
+
+		  if (sectors[secnum].floorheight + speed > dest)
 	    {
 		lastpos = sectors[secnum].floorheight;
 		sectors[secnum].floorheight = dest;
@@ -93,6 +98,7 @@ T_MovePlane
 		if (flag == true)
 		{
 			sectors[secnum].floorheight = lastpos;
+			
 			P_ChangeSector(secnum,crush);
 		    //return crushed;
 		}
@@ -112,6 +118,7 @@ T_MovePlane
 			P_ChangeSector(secnum,crush);
 		    return crushed;
 		}
+		
 	    }
 	    break;
 	}
@@ -201,26 +208,30 @@ void T_MoveFloor(MEMREF memref)
 {
     result_e	res;
 	floormove_t* floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
-	
+	short floorsecnum;
+
     res = T_MovePlane(floor->secnum,
 		      floor->speed,
 		      floor->floordestheight,
 		      floor->crush,0,floor->direction);
-    
+	floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
     if (!(leveltime&7))
-	S_StartSoundWithParams(sectors[floor->secnum].soundorgX, sectors[floor->secnum].soundorgY, sfx_stnmov);
-    
+		S_StartSoundWithParams(sectors[floor->secnum].soundorgX, sectors[floor->secnum].soundorgY, sfx_stnmov);
+	
+	floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
+	floorsecnum = floor->secnum;
+
     if (res == pastdest)
     {
-		sectors[floor->secnum].specialdataRef = NULL_MEMREF;
+		sectors[floorsecnum].specialdataRef = NULL_MEMREF;
 
 	if (floor->direction == 1)
 	{
 	    switch(floor->type)
 	    {
 	      case donutRaise:
-			  sectors[floor->secnum].special = floor->newspecial;
-			  sectors[floor->secnum].floorpic = floor->texture;
+			  sectors[floorsecnum].special = floor->newspecial;
+			  sectors[floorsecnum].floorpic = floor->texture;
 	      default:
 		break;
 	    }
@@ -230,15 +241,15 @@ void T_MoveFloor(MEMREF memref)
 	    switch(floor->type)
 	    {
 	      case lowerAndChange:
-			  sectors[floor->secnum].special = floor->newspecial;
-			  sectors[floor->secnum].floorpic = floor->texture;
+			  sectors[floorsecnum].special = floor->newspecial;
+			  sectors[floorsecnum].floorpic = floor->texture;
 	      default:
 		break;
 	    }
 	}
 	P_RemoveThinker(floor->thinkerRef);
 
-	S_StartSoundWithParams(sectors[floor->secnum].soundorgX, sectors[floor->secnum].soundorgY, sfx_pstop);
+	S_StartSoundWithParams(sectors[floorsecnum].soundorgX, sectors[floorsecnum].soundorgY, sfx_pstop);
     }
 
 }
@@ -304,8 +315,7 @@ EV_DoFloor
 	    floor->direction = -1;
 		floor->secnum = secnum;
 		floor->speed = FLOORSPEED * 4;
-	    floor->floordestheight = 
-		P_FindHighestFloorSurrounding(secnum);
+	    floor->floordestheight =  P_FindHighestFloorSurrounding(secnum);
 	    if (floor->floordestheight != sectors[secnum].floorheight)
 		floor->floordestheight += 8*FRACUNIT;
 	    break;

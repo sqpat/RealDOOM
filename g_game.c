@@ -773,7 +773,7 @@ void G_InitPlayer (int player)
 //
 void G_PlayerFinishLevel (int player) 
 { 
-    player_t*   p; 
+    player_t*   p = &players[player];
 	mobj_t* playerMo = Z_LoadBytesFromEMS(p->moRef);
 
     p = &players[player]; 

@@ -499,7 +499,7 @@ P_LookForPlayers
 	
     c = 0;
     stop = (actor->lastlook-1)&3;
-	
+
 
     for ( ; ; actor->lastlook = (actor->lastlook+1)&3 ) {
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
@@ -518,28 +518,25 @@ P_LookForPlayers
 			continue;		// dead
 	
 
-		if (!P_CheckSight (actorRef, player->moRef))
+		if (!P_CheckSight(actorRef, player->moRef)) {
+			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 			continue;		// out of sight
+		}
 		playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
 		if (!allaround) {
-			an = R_PointToAngle2 (actor->x,
-					  actor->y, 
-						playerMo->x,
-				playerMo->y)
-			- actor->angle;
-	    
+			an = R_PointToAngle2 (actor->x, actor->y,  playerMo->x, playerMo->y) - actor->angle;
 			if (an > ANG90 && an < ANG270) {
-				dist = P_AproxDistance (playerMo->x - actor->x,
-					playerMo->y - actor->y);
+				dist = P_AproxDistance (playerMo->x - actor->x, playerMo->y - actor->y);
 				// if real close, react anyway
 				if (dist > MELEERANGE) {
 					continue;	// behind back
 				}
 			}
 		}
-		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+		//actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+		Z_RefIsActive(actorRef);
 		actor->targetRef = player->moRef;
 
 		//I_Error("set call %i %i %i", actorRef, actor->targetRef, player->moRef);
@@ -599,12 +596,15 @@ void A_Look (MEMREF actorRef)
     mobj_t*	targ;
 	MEMREF targRef;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-	
+
+
 	actor->threshold = 0;	// any shot will wake up
 	if (subsectors[actor->subsecnum].secnum > numsectors) {
 		I_Error("bad sector %i %i %i %i %i %i %i", gametic, subsectors[actor->subsecnum].secnum, numsectors, actorRef, actor->type, actor->x, actor->y);
 	}
     targRef = sectors[subsectors[actor->subsecnum].secnum].soundtargetRef;
+
+
 	if (targRef) {
 
 
@@ -612,21 +612,27 @@ void A_Look (MEMREF actorRef)
 		if (targ->flags & MF_SHOOTABLE) {
 			actor->targetRef = targRef;
 
+
 			if (actor->flags & MF_AMBUSH)
 			{
-				if (P_CheckSight(actorRef, actor->targetRef))
+				if (P_CheckSight(actorRef, actor->targetRef)) {
+
 					goto seeyou;
+				}
 			}
-			else
+			else {
+
 				goto seeyou;
+			}
 		}
 
 	}
 	
 
-    if (!P_LookForPlayers (actorRef, false) )
+	if (!P_LookForPlayers(actorRef, false)) {
 		return;
-	
+	}
+
 	// reload actor here, tends to get paged out
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
@@ -944,16 +950,15 @@ void A_TroopAttack (MEMREF actorRef)
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
     if (!actor->targetRef)
-	return;
+		return;
 		
     A_FaceTarget (actorRef);
-    if (P_CheckMeleeRange (actorRef))
-    {
+    if (P_CheckMeleeRange (actorRef)) {
 		S_StartSoundFromRef(actorRef, sfx_claw);
-	damage = (P_Random()%8+1)*3;
-	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-	P_DamageMobj (actor->targetRef, actorRef, actorRef, damage);
-	return;
+		damage = (P_Random()%8+1)*3;
+		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+		P_DamageMobj (actor->targetRef, actorRef, actorRef, damage);
+		return;
     }
 
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
@@ -1203,6 +1208,8 @@ boolean PIT_VileCheck (MEMREF thingRef)
     corpsehit->momx = corpsehit->momy = 0;
     corpsehit->height <<= 2;
     check = P_CheckPosition (corpsehitRef, corpsehit->x, corpsehit->y);
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	corpsehit = thing; 
     corpsehit->height >>= 2;
 
 	if (!check) {

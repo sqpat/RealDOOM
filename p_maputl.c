@@ -349,44 +349,55 @@ void P_UnsetThingPosition (MEMREF thingRef)
 	//MEMREF* blocklinksList;
 	mobj_t* changeThing;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	MEMREF thingsprevRef = thing->sprevRef;
+	MEMREF thingsnextRef = thing->snextRef;
+	MEMREF thingbprevRef = thing->bprevRef;
+	MEMREF thingbnextRef = thing->bnextRef;
+	fixed_t thingx = thing->x;
+	fixed_t thingy = thing->y;
+	int thingflags = thing->flags;
+	short thingsubsecnum = thing->subsecnum;
 
-    if ( ! (thing->flags & MF_NOSECTOR) ) {
+    if ( ! (thingflags & MF_NOSECTOR) ) {
 	// inert things don't need to be in blockmap?
 	// unlink from subsector
-		if (thing->snextRef) {
-			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thing->snextRef);
-			changeThing->sprevRef = thing->sprevRef;
+		if (thingsnextRef) {
+			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thingsnextRef);
+			changeThing->sprevRef = thingsprevRef;
 		}
-
-		if (thing->sprevRef) {
-			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thing->sprevRef);
-			changeThing->snextRef = thing->snextRef;
+		
+		if (thingsprevRef) {
+			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thingsprevRef);
+			changeThing->snextRef = thingsnextRef;
 		}
 		else {
-			thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-			sectors[subsectors[thing->subsecnum].secnum].thinglistRef = thing->snextRef;
+			sectors[subsectors[thingsubsecnum].secnum].thinglistRef = thingsnextRef;
+			 
+
 		}
     }
-	// just in case, refreshing this in memory...
-	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-    if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
+
+	
+
+
+    if ( ! (thingflags & MF_NOBLOCKMAP) ) {
 	// inert things don't need to be in blockmap
 	// unlink from block map
-		if (thing->bnextRef) {
-			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thing->bnextRef);
-			changeThing->bprevRef = thing->bprevRef;
+		if (thingbnextRef) {
+			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thingbnextRef);
+			changeThing->bprevRef = thingbprevRef;
 		}
 	
-		if (thing->bprevRef) {
-			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thing->bprevRef);
-			changeThing->bnextRef = thing->bnextRef;
+		if (thingbprevRef) {
+			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thingbprevRef);
+			changeThing->bnextRef = thingbnextRef;
 		} else {
-			blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
-			blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
+			blockx = (thingx - bmaporgx)>>MAPBLOCKSHIFT;
+			blocky = (thingy - bmaporgy)>>MAPBLOCKSHIFT;
 
 			if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky <bmapheight) {
 				//blocklinksList = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
-				blocklinks[blocky*bmapwidth+blockx] = thing->bnextRef;
+				blocklinks[blocky*bmapwidth+blockx] = thingbnextRef;
 			}
 		}
     }
@@ -417,6 +428,8 @@ P_SetThingPosition (MEMREF thingRef)
     ss = R_PointInSubsector (thing->x,thing->y);
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	thing->subsecnum = ss - subsectors;
+
+
 
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
@@ -567,24 +580,22 @@ P_BlockThingsIterator
 	for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
 		// will this cause stuff to lose scope...?
 		i++;
+
+
+		if (i > 2000) {
+			I_Error("block things caught infinite? %i ", gametic);
+		}
+
+
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef); // necessary for bnextref...
 		if (!func(mobjRef)) {
-			if (setval == 1) {
-				//I_Error("insidemost1 !!%i %i %i %i %i \n", prndindex, gametic, i, x, y);
-			}
+			 
 			return false;
 		}
 
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef); // necessary for bnextref...
-		if (setval == 1) {
-																							//15 23 13       32     23 * 13 + 15
-			//I_Error("insidemost-2 !!%i %i %i %i %i %i %i %i \n", prndindex, gametic, mobjRef, x, y, mobj->type, bmapwidth, mobj->bnextRef);
-		}
-
-	}
-	if (setval == 1) {
-		//I_Error("insidemost2 !!%i %i %i %i %i \n", prndindex, gametic, i, x, y);
-	}
+		 
+	} 
 
 	return true;
 }

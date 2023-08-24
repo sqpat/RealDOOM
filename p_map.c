@@ -540,7 +540,6 @@ P_TryMove
 	    return false;	// don't stand over a dropoff
     }
 
-
 	
     // the move is ok,
     // so link the thing into its new position
@@ -595,7 +594,8 @@ boolean P_ThingHeightClip (MEMREF thingRef)
 	
     P_CheckPosition (thingRef, thing->x, thing->y);	
     // what about stranding a monster partially off an edge?
-	
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+
     thing->floorz = tmfloorz;
     thing->ceilingz = tmceilingz;
 	
@@ -1404,7 +1404,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
     }
     
     nofit = true;
-
+	
     if (crushchange && !(leveltime&3) )
     {
 

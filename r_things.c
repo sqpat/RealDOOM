@@ -545,13 +545,15 @@ void R_ProjectSprite (MEMREF thingRef)
     tx +=  spritewidth[lump];
     x2 = ((centerxfrac + FixedMul (tx,xscale) ) >>FRACBITS) - 1;
 
+	
+
     // off the left side
     if (x2 < 0)
         return;
-	thing = Z_LoadBytesFromEMS(thingRef);
     // store information in a vissprite
     vis = R_NewVisSprite ();
-    vis->mobjflags = thing->flags;
+	thing = Z_LoadBytesFromEMS(thingRef);
+	vis->mobjflags = thing->flags;
     vis->scale = xscale<<detailshift;
     vis->gx = thing->x;
     vis->gy = thing->y;
@@ -605,7 +607,9 @@ void R_ProjectSprite (MEMREF thingRef)
             index = MAXLIGHTSCALE-1;
 
         vis->colormap = spritelights[index];
-    }   
+    }
+
+	
 }
 
 
@@ -623,6 +627,7 @@ void R_AddSprites (short secnum)
     int                 lightnum;
 	mobj_t*				thingList;
 	MEMREF				lastThingRef = -1;
+	int i = 0;
 
     // BSP is traversed by subsector.
     // A sector might have been split into several
@@ -655,6 +660,11 @@ void R_AddSprites (short secnum)
 		thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 		 
 		lastThingRef = thingRef;
+		i++;
+		if (setval == 1 && i == 2) {
+			// 625, 463, 463...   type 2, 0
+			I_Error("caught inf %i %i %i", thingRef, thing->snextRef, thing->type);
+		}
 		//Z_RefIsActive(sectors[secnum].thinglistRef);
 	}
 

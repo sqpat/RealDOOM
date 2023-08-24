@@ -196,11 +196,16 @@ R_DrawColumnInCache
     int         position;
     byte*       source;
     byte*       dest;
-        
+	int i = 0;
     dest = (byte *)cache + 3;
         
     while (patch->topdelta != 0xff)
     {
+		i++;
+		if (i > 1000) {
+			I_Error("too big?");
+		}
+
         source = (byte *)patch + 3;
         count = patch->length;
         position = originy + patch->topdelta;
@@ -244,25 +249,28 @@ void R_GenerateComposite(int texnum)
 	
 
 
-	MEMREF* texturecolumnlump =		(MEMREF*)	Z_LoadBytesFromEMS(texturecolumnlumpRef);
-	MEMREF*	texturecolumnofs =		(MEMREF*)	Z_LoadBytesFromEMS(texturecolumnofsRef);
-	MEMREF* texturecomposite =		(MEMREF*)	Z_LoadBytesFromEMS(texturecompositeRef);
+	MEMREF texturecolumnlumptexnum =		((MEMREF*)	Z_LoadBytesFromEMS(texturecolumnlumpRef))[texnum];
+	MEMREF texturecolumnofstexnum = ((MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef))[texnum];
+	MEMREF texturecompositetexnum;
+	int texturecompositesize = ((int*)Z_LoadBytesFromEMS(texturecompositesizeRef))[texnum];
 
-	int* texturecompositesize =		(int*)		Z_LoadBytesFromEMS(texturecompositesizeRef);
 	
-	MEMREF* textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
-	texture_t* texture =			(texture_t*)Z_LoadBytesFromEMS(textures[texnum]);
+	MEMREF texturememref = ((MEMREF*)Z_LoadBytesFromEMS(texturesRef))[texnum];
+	
+	texture_t* texture;
+	MEMREF* texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 
-	texturecomposite[texnum] = Z_MallocEMSNewWithBackRef(texturecompositesize[texnum],
+
+	texturecomposite[texnum] = Z_MallocEMSNewWithBackRef(texturecompositesize,
 		PU_STATIC,
 		0xff, ALLOC_TYPE_TEXTURE, -1*(texnum+1));
-
+	texturecompositetexnum = texturecomposite[texnum];
 	
 
-	block =		(byte*)			 Z_LoadBytesFromEMS(texturecomposite[texnum]);
-	collump =   (short*)		 Z_LoadBytesFromEMS(texturecolumnlump[texnum]);
-	colofs =	(unsigned short*)Z_LoadBytesFromEMS(texturecolumnofs[texnum]);
-
+	block =		(byte*)			 Z_LoadBytesFromEMS(texturecompositetexnum);
+	collump =   (short*)		 Z_LoadBytesFromEMS(texturecolumnlumptexnum);
+	colofs =	(unsigned short*)Z_LoadBytesFromEMS(texturecolumnofstexnum);
+	texture = (texture_t*)Z_LoadBytesFromEMS(texturememref);
 	// Composite the columns together.
 	patch = texture->patches;
 
@@ -271,6 +279,11 @@ void R_GenerateComposite(int texnum)
          i<texture->patchcount;
          i++, patch++)
     {
+		if (i > 1000) {
+			I_Error("too big? texpatch");
+		}
+
+
 		W_CacheLumpNumCheck(patch->patch, 13);
 		realpatch = W_CacheLumpNum (patch->patch, PU_CACHE);
         x1 = patch->originx;
@@ -287,9 +300,9 @@ void R_GenerateComposite(int texnum)
         for ( ; x<x2 ; x++)
         {
 			// seems ok
-			Z_RefIsActive(texturecolumnlump[texnum]);
-			Z_RefIsActive(texturecomposite[texnum]);
-			Z_RefIsActive(texturecolumnofs[texnum]);
+			Z_RefIsActive(texturecolumnlumptexnum);
+			Z_RefIsActive(texturecompositetexnum);
+			Z_RefIsActive(texturecolumnofstexnum);
 			
             // Column does not have multiple patches?
             if (collump[x] >= 0)
