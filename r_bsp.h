@@ -22,7 +22,7 @@
 
 extern int setval;
 
-extern seg_t*		curline;
+extern short		curlinenum;
 extern side_t*		sidedef;
 extern line_t*		linedef;
 extern short	frontsecnum;

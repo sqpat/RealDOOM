@@ -102,27 +102,38 @@ R_RenderMaskedSegRange
 	int		texnum;
 	fixed_t* textureheight;
 	int* texturetranslation;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+	short curlinev1Offset; short curlinev2Offset; short curlinefrontsecnum; short curlinebacksecnum; short curlinesidedefOffset; short curlinelinedefOffset;
+	
+	vertex_t* vertexes; 
 
 	// Calculate light table.
 	// Use different light tables
 	//   for horizontal / vertical / diagonal. Diagonal?
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
-	curline = ds->curline;
-	if (curline->linedefOffset > numlines) {
-		I_Error("R_RenderMaskedSegRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
-	}
-	frontsecnum = curline->frontsecnum;
-	backsecnum = curline->backsecnum;
+	curlinenum = ds->curlinenum;
+	curlinev1Offset = segs[curlinenum].v1Offset;
+	curlinev2Offset = segs[curlinenum].v1Offset;
+	curlinefrontsecnum = segs[curlinenum].frontsecnum;
+	curlinebacksecnum = segs[curlinenum].backsecnum;
+	curlinesidedefOffset = segs[curlinenum].sidedefOffset;
+	curlinelinedefOffset = segs[curlinenum].linedefOffset;
+
+//	if (curline->linedefOffset > numlines) {
+//		I_Error("R_RenderMaskedSegRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
+//	}
+	frontsecnum = curlinefrontsecnum;
+	backsecnum = curlinebacksecnum;
 	texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
-	texnum = texturetranslation[sides[curline->sidedefOffset].midtexture];
+	texnum = texturetranslation[sides[curlinesidedefOffset].midtexture];
 
 	lightnum = (sectors[frontsecnum].lightlevel >> LIGHTSEGSHIFT) + extralight;
-
-	if (vertexes[curline->v1Offset].y == vertexes[curline->v2Offset].y) {
+	
+	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	if (vertexes[curlinev1Offset].y == vertexes[curlinev2Offset].y) {
 		lightnum--;
 	}
-	else if (vertexes[curline->v1Offset].x == vertexes[curline->v2Offset].x) {
+	else if (vertexes[curlinev1Offset].x == vertexes[curlinev2Offset].x) {
 		lightnum++;
 	}
 	if (lightnum < 0){
@@ -140,7 +151,7 @@ R_RenderMaskedSegRange
     mceilingclip = ds->sprtopclip;
     
     // find positioning
-    if (lines[curline->linedefOffset].flags & ML_DONTPEGBOTTOM)
+    if (lines[curlinelinedefOffset].flags & ML_DONTPEGBOTTOM)
     {
 		textureheight = Z_LoadBytesFromEMS(textureheightRef);
 
@@ -154,7 +165,7 @@ R_RenderMaskedSegRange
 	    ? sectors[frontsecnum].ceilingheight : sectors[backsecnum].ceilingheight;
 	dc_texturemid = dc_texturemid - viewz;
     }
-    dc_texturemid += sides[curline->sidedefOffset].rowoffset;
+    dc_texturemid += sides[curlinesidedefOffset].rowoffset;
 			
     if (fixedcolormap)
 	dc_colormap = fixedcolormap;
@@ -398,8 +409,15 @@ R_StoreWallRange
 	vertex_t* vertexes;
 	side_t*	sidedef;
 
+	// needs to be refreshed...
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-	
+	short curlinelinedefOffset = segs[curlinenum].linedefOffset;
+	angle_t curlineangle = segs[curlinenum].angle;
+	short curlinev1Offset = segs[curlinenum].v1Offset;
+	short curlinev2Offset = segs[curlinenum].v2Offset;
+	short curlinesidedefOffset = segs[curlinenum].sidedefOffset;
+	fixed_t curlineOffset = segs[curlinenum].offset;
+
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
 		
@@ -408,17 +426,17 @@ R_StoreWallRange
 	I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
 #endif
     
-    linedef = &lines[curline->linedefOffset];
+    linedef = &lines[curlinelinedefOffset];
 
-	if (curline->linedefOffset > numlines) {
-		I_Error("R_StoreWallRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
+	if (curlinelinedefOffset > numlines) {
+		I_Error("R_StoreWallRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, curlinelinedefOffset, curlinenum);
 	}
 
     // mark the segment as visible for auto map
     linedef->flags |= ML_MAPPED;
     
     // calculate rw_distance for scale calculation
-    rw_normalangle = curline->angle + ANG90;
+    rw_normalangle = curlineangle + ANG90;
     offsetangle = abs(rw_normalangle-rw_angle1);
     
     if (offsetangle > ANG90)
@@ -426,14 +444,14 @@ R_StoreWallRange
 
     distangle = ANG90 - offsetangle;
 	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-	hyp = R_PointToDist (vertexes[curline->v1Offset].x, vertexes[curline->v1Offset].y);
+	hyp = R_PointToDist (vertexes[curlinev1Offset].x, vertexes[curlinev1Offset].y);
     sineval = finesine[distangle>>ANGLETOFINESHIFT];
     rw_distance = FixedMul (hyp, sineval);
 		
 	
     ds_p->x1 = rw_x = start;
     ds_p->x2 = stop;
-    ds_p->curline = curline;
+    ds_p->curlinenum = curlinenum;
     rw_stopx = stop+1;
 
 
@@ -472,10 +490,10 @@ R_StoreWallRange
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
 	
-	if (curline->sidedefOffset > numsides) {
-		I_Error("Error! sides out of bounds! %i %i %i %i", gametic, numsides, curline->sidedefOffset, curline);
+	if (curlinesidedefOffset > numsides) {
+		I_Error("Error! sides out of bounds! %i %i %i %i", gametic, numsides, curlinesidedefOffset, curlinenum);
 	}
-	sidedef = &sides[curline->sidedefOffset];
+	sidedef = &sides[curlinesidedefOffset];
 	if (backsecnum == SECNUM_NULL) {
 	// single sided line
 		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
@@ -581,7 +599,7 @@ R_StoreWallRange
 		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 		toptexture = texturetranslation[sidedef->toptexture];
 		if (toptexture < 0 || toptexture > 1000) {
-			I_Error("toptex %i %i %i ", sidedef->toptexture, curline->sidedefOffset, curline);
+			I_Error("toptex %i %i %i ", sidedef->toptexture, curlinesidedefOffset, curlinenum);
 		}
 
 		if (linedef->flags & ML_DONTPEGTOP)
@@ -647,7 +665,7 @@ R_StoreWallRange
 	if (rw_normalangle-rw_angle1 < ANG180)
 	    rw_offset = -rw_offset;
 
-	rw_offset += sidedef->textureoffset + curline->offset;
+	rw_offset += sidedef->textureoffset + curlineOffset;
 	rw_centerangle = ANG90 + viewangle - rw_normalangle;
 	
 	// calculate light table
@@ -655,12 +673,17 @@ R_StoreWallRange
 	//  for horizontal / vertical / diagonal
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 	if (!fixedcolormap){
+		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+		if (segs[curlinenum].v1Offset != curlinev1Offset) {
+			I_Error("v1s changed! %i %i %i", curlinev1Offset, segs[curlinenum].v1Offset, curlinenum);
+		}
+
 		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 		lightnum = (sectors[frontsecnum].lightlevel >> LIGHTSEGSHIFT)+extralight;
 
-		if (vertexes[curline->v1Offset].y == vertexes[curline->v2Offset].y) {
+		if (vertexes[curlinev1Offset].y == vertexes[curlinev2Offset].y) {
 			lightnum--;
-		} else if (vertexes[curline->v1Offset].x == vertexes[curline->v2Offset].x) {
+		} else if (vertexes[curlinev1Offset].x == vertexes[curlinev2Offset].x) {
 			lightnum++;
 		}
 

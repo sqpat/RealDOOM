@@ -886,7 +886,8 @@ void R_DrawSprite (vissprite_t* spr)
     fixed_t             scale;
     fixed_t             lowscale;
     int                 silhouette;
-                
+	seg_t* segs;
+
     for (x = spr->x1 ; x<=spr->x2 ; x++)
         clipbot[x] = cliptop[x] = -2;
     
@@ -919,9 +920,10 @@ void R_DrawSprite (vissprite_t* spr)
             scale = ds->scale2;
         }
                 
-        if (scale < spr->scale
+		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+		if (scale < spr->scale
             || ( lowscale < spr->scale
-                 && !R_PointOnSegSide (spr->gx, spr->gy, ds->curline->v1Offset, ds->curline->v2Offset) ) )
+                 && !R_PointOnSegSide (spr->gx, spr->gy, segs[ds->curlinenum].v1Offset, segs[ds->curlinenum].v2Offset) ) )
         {
             // masked mid texture?
             if (ds->maskedtexturecol)   

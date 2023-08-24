@@ -35,7 +35,7 @@
 
 int setval = 0;
 
-seg_t*		curline;
+short		curlinenum;
 line_t*		linedef;
 short	frontsecnum;
 short	backsecnum;
@@ -246,7 +246,7 @@ void R_ClearClipSegs (void)
 // Clips the given segment
 // and adds any visible pieces to the line list.
 //
-void R_AddLine (seg_t*	line)
+void R_AddLine (short linenum)
 {
     int			x1;
     int			x2;
@@ -254,16 +254,23 @@ void R_AddLine (seg_t*	line)
     angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
+	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+	short linebacksecnum = segs[linenum].backsecnum;
+	short curlinesidedefOffset = segs[curlinenum].sidedefOffset;
+	short linenumv1Offset = segs[linenum].v1Offset;
+	short linenumv2Offset = segs[linenum].v2Offset;
+
 	vertex_t*   vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
-    curline = line;
-	if (curline->linedefOffset > numlines) {
-		I_Error("R_Addline Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
+    curlinenum = linenum;
+	
+	if (segs[curlinenum].linedefOffset > numlines) {
+		I_Error("R_Addline Error! lines out of bounds! %i %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
 	}
 
     // OPTIMIZE: quickly reject orthogonal back sides.
-    angle1 = R_PointToAngle (vertexes[line->v1Offset].x, vertexes[line->v1Offset].y);
-    angle2 = R_PointToAngle (vertexes[line->v2Offset].x, vertexes[line->v2Offset].y);
+    angle1 = R_PointToAngle (vertexes[linenumv1Offset].x, vertexes[linenumv1Offset].y);
+    angle2 = R_PointToAngle (vertexes[linenumv2Offset].x, vertexes[linenumv2Offset].y);
     
     // Clip to view edges.
     // OPTIMIZE: make constant out of 2*clipangle (FIELDOFVIEW).
@@ -310,8 +317,8 @@ void R_AddLine (seg_t*	line)
     // Does not cross a pixel?
     if (x1 == x2)
 	return;				
-	
-    backsecnum = line->backsecnum;
+
+	backsecnum = linebacksecnum;
 
     // Single sided line?
     if (backsecnum == SECNUM_NULL)
@@ -335,7 +342,7 @@ void R_AddLine (seg_t*	line)
     if (sectors[backsecnum].ceilingpic == sectors[frontsecnum].ceilingpic
 	&& sectors[backsecnum].floorpic == sectors[frontsecnum].floorpic
 	&& sectors[backsecnum].lightlevel == sectors[frontsecnum].lightlevel
-	&& sides[curline->sidedefOffset].midtexture == 0)
+	&& sides[curlinesidedefOffset].midtexture == 0)
     {
 	return;
     }
@@ -529,17 +536,17 @@ void R_Subsector (int num) {
 	line = &segs[sub->firstline];
 
     while (count--) {
-		R_AddLine (line);
+		R_AddLine (sub->firstline + lineoffset);
 		lineoffset++;
 
 		// note: segs definitely gets paged out inside of addline, so we need to re-set the line pointer based off its start point, not just
 		// mindlessly add to the old paged-out address.
-		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-		line = &segs[sub->firstline + lineoffset];
+		//segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+		//line = &segs[sub->firstline + lineoffset];
 
-		if (line->linedefOffset > numlines) {
-			I_Error("R_Addline Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
-		}
+		//if (line->linedefOffset > numlines) {
+			//I_Error("R_subsector Error! lines out of bounds! %i %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
+		//}
 	}
 }
 

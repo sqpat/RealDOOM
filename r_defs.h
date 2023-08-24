@@ -316,7 +316,7 @@ typedef byte	lighttable_t;
 //
 typedef struct drawseg_s
 {
-    seg_t*		curline;
+    short		curlinenum;
 
     int			x1;
     int			x2;
