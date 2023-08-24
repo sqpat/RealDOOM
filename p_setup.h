@@ -30,5 +30,6 @@ P_SetupLevel
 
 // Called by startup code.
 void P_Init (void);
+extern MEMREF		blocklinks[2000];	// for thing chains
 
 #endif

@@ -32,6 +32,7 @@
 #include "doomstat.h"
 // State.
 #include "r_state.h"
+#include "p_setup.h"
 
 //
 // P_AproxDistance
@@ -363,7 +364,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 		}
 		else {
 			thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-			sectors[thing->subsector->secnum].thinglistRef = thing->snextRef;
+			sectors[subsectors[thing->subsecnum].secnum].thinglistRef = thing->snextRef;
 		}
     }
 	// just in case, refreshing this in memory...
@@ -409,11 +410,13 @@ P_SetThingPosition (MEMREF thingRef)
 	mobj_t*		link;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	mobj_t* thingList;
+	int i;
 //	MEMREF* blocklinksList;
 
     // link into subsector
     ss = R_PointInSubsector (thing->x,thing->y);
-    thing->subsector = ss;
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	thing->subsecnum = ss - subsectors;
 
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
@@ -434,6 +437,7 @@ P_SetThingPosition (MEMREF thingRef)
 		sectors[ss->secnum].thinglistRef = thingRef;
     }
 
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     
     // link into blockmap
     if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
@@ -451,10 +455,21 @@ P_SetThingPosition (MEMREF thingRef)
 				link->bprevRef = thingRef;
 			}
 			
+		
 
 			//*link = thing;
 			// todo is this right?
 			blocklinks[blocky*bmapwidth + blockx] = thingRef;
+
+			if (setval == 1) {
+				for (i = 0; i < 4000; i++) {
+					if (blocklinks[i] == players[0].moRef) {
+						//I_Error("b %i %i %i %i %i %i", gametic, thing->type, thing->bprevRef, thing->bnextRef, linkRef, link->type);
+					}
+				}
+			}
+		
+
 		} else {
 			// thing is off the map
 			thing->bnextRef = thing->bprevRef = NULL_MEMREF;
@@ -523,26 +538,52 @@ P_BlockLinesIterator
 // P_BlockThingsIterator
 //
 boolean
-P_BlockThingsIterator2
+P_BlockThingsIterator
 ( int			x,
   int			y,
-  boolean(*func)(MEMREF), char* file, int line )
+  boolean(*func)(MEMREF) )
 {
 	MEMREF mobjRef;
     mobj_t*		mobj;
-
+	int i = 0;
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
 	}
-    
 
+	/*
+	if(setval == 1) {
+		for (i = 0; i < 2000; i++) {
+			if (blocklinks[i]) {
+				mobj = (mobj_t*)Z_LoadBytesFromEMS(blocklinks[i]); // necessary for bnextref...
+				if (mobj->type == 0) {
+
+
+				}
+
+			}
+		}
+	}
+	*/
 	for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
 		// will this cause stuff to lose scope...?
+		i++;
+		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef); // necessary for bnextref...
 		if (!func(mobjRef)) {
+			if (setval == 1) {
+				//I_Error("insidemost1 !!%i %i %i %i %i \n", prndindex, gametic, i, x, y);
+			}
 			return false;
 		}
 
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef); // necessary for bnextref...
+		if (setval == 1) {
+																							//15 23 13       32     23 * 13 + 15
+			//I_Error("insidemost-2 !!%i %i %i %i %i %i %i %i \n", prndindex, gametic, mobjRef, x, y, mobj->type, bmapwidth, mobj->bnextRef);
+		}
+
+	}
+	if (setval == 1) {
+		//I_Error("insidemost2 !!%i %i %i %i %i \n", prndindex, gametic, i, x, y);
 	}
 
 	return true;

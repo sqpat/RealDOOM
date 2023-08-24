@@ -1024,7 +1024,7 @@ void P_PlayerInSpecialSector (player_t* player)
     short	secnum;
 	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 	
-	secnum = playerMo->subsector->secnum;
+	secnum = subsectors[playerMo->subsecnum].secnum;
 
     // Falling, not all the way down yet?
     if (playerMo->z != sectors[secnum].floorheight)

@@ -6,6 +6,7 @@ segs:    1371  27420
 
 PROBLEMS/IMPROVEMENTS
 ? why was there a 0 allocation (might be e1m1 marker etc?)
+- mobj has a subsector num, but its mostly used to retrieve secnum, save that instead?
 - sector mobjlists kinda suck (potentially spread across many pages)
 - thinkercap/thinker list kinda sucks (potentially spread across many pages)
 - linebuffer is pointers, not offsets.
@@ -15,6 +16,9 @@ PROBLEMS/IMPROVEMENTS
 - blocklinks is 2000 size. Figure out a more proper number?
 
 TODO
+ - sometimes health 12 sometimes 14 in that spot. random. why!?
+
+
  - Z_LoadValue(pass ref and offset and pointer, get the value? interally does a temp page in, puts val in pointer, temp page out? READ ONLY)
 
  - use wolf 3d conventional memory code for 16 bit mode

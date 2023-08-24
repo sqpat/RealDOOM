@@ -472,7 +472,6 @@ void P_LoadSideDefs(int lump)
 		sd->midtexture = R_TextureNumForName(msd->midtexture);
 		sd->secnum = SHORT(msd->sector);
 	}
-
 	Z_Free(data);
 }
 

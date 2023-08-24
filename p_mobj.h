@@ -219,7 +219,7 @@ typedef struct mobj_s
     MEMREF	bnextRef;
     MEMREF	bprevRef;
     
-    struct subsector_s*	subsector;
+	short subsecnum;
 
     // The closest interval over all contacted Sectors.
     fixed_t		floorz;

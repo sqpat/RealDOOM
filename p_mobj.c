@@ -30,7 +30,7 @@
 #include "s_sound.h"
 
 #include "doomstat.h"
-
+#include "p_setup.h"
 
 void G_PlayerReborn (int player);
 void P_SpawnMapThing (mapthing_t*	mthing);
@@ -49,25 +49,6 @@ P_SetMobjState2
 {
     state_t*	st;
 	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-
-	if (mobj->targetRef > 4096) {
-		I_Error("bad mobjRef early %i %i %s %i %i", mobjRef, mobj->targetRef, file, line, state);  // should be 28270
-	}
-	if (mobjRef == 469) {
-		test++;
-		if (state == 2) {
-			I_Error("catch 469 %i %i %s %i %i", mobjRef, mobj->targetRef, file, line, state);  // should be 28270
-
-			//       1: 469 0 mobj.c 478 175 (S_POSS_STND2)     (correspondws with testa = 7)
-			// on error 469 28013 p_enemy.c 650 176 (S_POSS_RUN1)
-
-			/*
-			 S_POSS_STND2,
-		    S_POSS_RUN1,
-	*/
-
-		}
-	}
 
     do
     {
@@ -137,11 +118,10 @@ void P_XYMovement (MEMREF moRef)
     fixed_t	ymove;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mobj_t* playermo;
+	int i = 0;
 	player = mo->player;
 
-	if (player) {
-		playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
-	}
+	
 
 	if (!mo->momx && !mo->momy) {
 
@@ -170,7 +150,11 @@ void P_XYMovement (MEMREF moRef)
     xmove = mo->momx;
     ymove = mo->momy;
 
-    do {
+	
+
+	do {
+		i++;
+
 		if (xmove > MAXMOVE/2 || ymove > MAXMOVE/2) {
 			ptryx = mo->x + xmove/2;
 			ptryy = mo->y + ymove/2;
@@ -181,9 +165,11 @@ void P_XYMovement (MEMREF moRef)
 			ptryy = mo->y + ymove;
 			xmove = ymove = 0;
 		}
+		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
-		
+
 		if (!P_TryMove (moRef, ptryx, ptryy)) {
+			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			// blocked move
 			if (mo->player) {	// try to slide along it
 				P_SlideMove (moRef);
@@ -201,9 +187,14 @@ void P_XYMovement (MEMREF moRef)
 				mo->momx = mo->momy = 0;
 			}
 		}
+		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+
+	
     } while (xmove || ymove);
-    
+	
+
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+
 
     // slow down
     if (player && player->cheats & CF_NOMOMENTUM) {
@@ -225,7 +216,7 @@ void P_XYMovement (MEMREF moRef)
 		//  if halfway off a step with some momentum
 
 		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
-			if (mo->floorz != sectors[mo->subsector->secnum].floorheight) {
+			if (mo->floorz != sectors[subsectors[mo->subsecnum].secnum].floorheight) {
 				return;
 			}
 		}
@@ -236,12 +227,13 @@ void P_XYMovement (MEMREF moRef)
 	}
 
 
-
     if ((mo->momx > -STOPSPEED && mo->momx < STOPSPEED && mo->momy > -STOPSPEED && mo->momy < STOPSPEED) && 
 			(!player || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) 
 		) {
 	// if in a walking frame, stop moving
-
+		if (player) {
+			playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+		}
 		if (player && (unsigned)((playermo->state - states) - S_PLAY_RUN1) < 4) {
 			P_SetMobjState(player->moRef, S_PLAY);
 		}
@@ -252,7 +244,7 @@ void P_XYMovement (MEMREF moRef)
 		mo->momy = FixedMul (mo->momy, FRICTION);
 
 	}
-	 
+
 }
 
 //
@@ -353,8 +345,6 @@ void P_ZMovement (MEMREF moRef)
 			}
 	
 		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
-
-			//I_Error("blah");
 			P_ExplodeMissile (moRef);
 			return;
 		}
@@ -387,7 +377,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 	}
 		// spawn a teleport fog at old spot
 		// because of removal of the body?
-	moRef = P_SpawnMobj(mobj->x, mobj->y, sectors[mobj->subsector->secnum].floorheight, MT_TFOG);
+	moRef = P_SpawnMobj(mobj->x, mobj->y, sectors[subsectors[mobj->subsecnum].secnum].floorheight, MT_TFOG);
 	// initiate teleport sound
 	S_StartSoundFromRef(moRef, sfx_telept);
 
@@ -429,6 +419,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 //
 void P_MobjThinker (MEMREF mobjRef) {
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	int i;
 
     // momentum movement
     if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
@@ -439,6 +430,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 			return;		// mobj was removed
 		}
     }
+
 
 
 
@@ -529,8 +521,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     // set subsector and/or block links
     P_SetThingPosition (mobjRef);
 	
-    mobj->floorz = sectors[mobj->subsector->secnum].floorheight;
-    mobj->ceilingz = sectors[mobj->subsector->secnum].ceilingheight;
+    mobj->floorz = sectors[subsectors[mobj->subsecnum].secnum].floorheight;
+    mobj->ceilingz = sectors[subsectors[mobj->subsecnum].secnum].ceilingheight;
 
     if (z == ONFLOORZ)
 	mobj->z = mobj->floorz;
@@ -542,12 +534,12 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
 
 
+	
 	//	if (type == 1 && (mobj->x >> FRACBITS) == 160) {
 	//if (type == MT_SHOTGUY && (mobj->x >> FRACBITS) == -992) {
 	if (type == MT_TROOP && (mobj->x >> FRACBITS) == -992) {
 
 		//if (type == 13 && (mobj->x >> FRACBITS) == 864) {
-		//I_Error("%i %i %i %i ", mobj->x>>FRACBITS, mobj->y >> FRACBITS, mobj->angle, mobj->type);
 		SAVEDUNIT = mobj;
 	}
 

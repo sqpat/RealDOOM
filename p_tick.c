@@ -22,6 +22,8 @@
 
 #include "doomstat.h"
 #include "i_system.h"
+#include "m_misc.h"
+#include "p_setup.h"
 
 int	leveltime;
 short currentThinkerListHead;
@@ -138,7 +140,7 @@ void P_RunThinkers (void)
 	int i = 0;
 	currentthinker = thinkerlist[0].next;
     while (currentthinker != 0) {
-		i++;
+		
 		if ( thinkerlist[currentthinker].functionType == TF_DELETEME ) {
 			// time to remove it
 			thinkerlist[thinkerlist[currentthinker].next].prev = thinkerlist[currentthinker].prev;
@@ -147,10 +149,6 @@ void P_RunThinkers (void)
 			thinkerlist[currentthinker].prev = MAX_THINKERS;
 		} else {
 			if (thinkerlist[currentthinker].functionType) {
-				//if (!Z_RefIsActive(blocklinksRef)) {
-
-				//}
-
 				switch (thinkerlist[currentthinker].functionType) {
 					case TF_MOBJTHINKER:
 						P_MobjThinker(thinkerlist[currentthinker].memref);
@@ -182,14 +180,22 @@ void P_RunThinkers (void)
 					default:
 						I_Error("Bad thinker func! %i %i", currentthinker, thinkerlist[currentthinker].functionType);
 						break;
+				
+
+
 				}
+				if (gametic == 255 && i == 280 /*prndindex > 208*/) {
+					SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+					//I_Error("%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->health, SAVEDUNIT->state->frame);
+					//I_Error("%i %i %i %i", gametic, i, ((mobj_t*) Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type, thinkerlist[currentthinker].functionType);
+				}
+				i++;
 			}
 
 		}
 		currentthinker = thinkerlist[currentthinker].next;
     }
-
-
+	 
 
 }
 
@@ -221,6 +227,7 @@ void P_Ticker (void)
 	
 
 	P_RunThinkers ();
+
 	P_UpdateSpecials ();
     P_RespawnSpecials ();
 

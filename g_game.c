@@ -721,8 +721,9 @@ void G_Ticker (void)
     switch (gamestate) 
     { 
       case GS_LEVEL: 
-   	    P_Ticker ();
-		ST_Ticker ();
+
+	    P_Ticker();
+		ST_Ticker();
         AM_Ticker (); 
 		HU_Ticker ();            
 		break;
@@ -1675,11 +1676,11 @@ boolean G_CheckDemoStatus (void)
 
 	// NOTE: WHENEVER WE ENTER THIS FUNCTION demo_p IS ALREADY INCREMENTED BY demobuffer OFFSET;
 
-    if (timingdemo) 
+    if (timingdemo || !timingdemo) 
     { 
         endtime = I_GetTime (); 
-        I_Error ("timed %i gametics in %i realtics %i %i %i",gametic 
-                 , endtime-starttime, numreads, pageins, pageouts); 
+        I_Error ("timed %i gametics in %i realtics %i %i %i prnd %i",gametic 
+                 , endtime-starttime, numreads, pageins, pageouts, prndindex); 
     } 
          
     if (demoplayback) 

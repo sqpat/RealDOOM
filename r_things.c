@@ -787,7 +787,7 @@ void R_DrawPlayerSprites (void)
     
     // get light level
     lightnum =
-        (sectors[playermo->subsector->secnum].lightlevel >> LIGHTSEGSHIFT) 
+        (sectors[subsectors[playermo->subsecnum].secnum].lightlevel >> LIGHTSEGSHIFT)
         +extralight;
 
     if (lightnum < 0)           

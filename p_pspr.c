@@ -347,9 +347,6 @@ void P_FireWeapon (player_t* player)
 	P_SetMobjState (player->moRef, S_PLAY_ATK1);
     newstate = weaponinfo[player->readyweapon].atkstate;
 
-	if (playermo->subsector->secnum == 4192) {
-		I_Error("bad secnum 0 %i %i", playermo->type, gametic);
-	}
 	P_SetPsprite (player, ps_weapon, newstate);
 	P_NoiseAlert (player->moRef, player->moRef);
 }
@@ -917,6 +914,10 @@ void A_BFGSpray (mobj_t* mo)
 	damage = 0;
 	for (j=0;j<15;j++)
 	    damage += (P_Random()&7) + 1;
+
+	if (linetargetRef == 0) {
+		I_Error("bad thing caught e");
+	}
 
 	P_DamageMobj (linetargetRef, mo->targetRef,mo->targetRef, damage);
     }

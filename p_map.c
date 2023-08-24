@@ -26,6 +26,7 @@
 #include "p_local.h"
 
 #include "s_sound.h"
+#include "p_setup.h"
 
 // State.
 #include "doomstat.h"
@@ -275,19 +276,25 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	mobj_t* thing; 
 	mobj_t* tmthing; 
 	// don't clip against self
+
+
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
+
 	if (thingRef == tmthingRef) {
 		return true;
 	}
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
 
+
 	if (!(thing->flags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
 		return true;
 	}
 
-
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
-    blockdist = thing->radius + tmthing->radius;
+
+	blockdist = thing->radius + tmthing->radius;
 
     if ( abs(thing->x - tmx) >= blockdist || abs(thing->y - tmy) >= blockdist ) {
 		// didn't hit it
@@ -295,11 +302,15 @@ boolean PIT_CheckThing (MEMREF thingRef)
     }
     
 
+	if (thingRef == 0) {
+		I_Error("bad thing caught a");
+	}
 
     // check for skulls slamming into things
     if (tmthing->flags & MF_SKULLFLY) {
 		damage = ((P_Random()%8)+1)*tmthing->info->damage;
 		P_DamageMobj (thingRef, tmthingRef, tmthingRef, damage);
+		tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
 		tmthing->flags &= ~MF_SKULLFLY;
 		tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
@@ -338,6 +349,10 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	
 		// damage / explode
 		damage = ((P_Random()%8)+1)*tmthing->info->damage;
+		if (thingRef == 0) {
+			I_Error("bad thing caught b");
+		}
+
 		P_DamageMobj (thingRef, tmthingRef, tmthing->targetRef, damage);
 
 		// don't traverse any more
@@ -416,8 +431,14 @@ P_CheckPosition
     tmbbox[BOXRIGHT] = x + tmthing->radius;
     tmbbox[BOXLEFT] = x - tmthing->radius;
 
+
+
     newsubsec = R_PointInSubsector (x,y);
-    ceilingline = NULL;
+
+
+
+	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
+	ceilingline = NULL;
     
     // The base floor / ceiling is from the subsector
     // that contains the point.
@@ -443,6 +464,8 @@ P_CheckPosition
     yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
     yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
 
+
+
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
 			if (!P_BlockThingsIterator(bx, by, PIT_CheckThing)) {
@@ -451,7 +474,7 @@ P_CheckPosition
 		}
 	}
 
-    // check lines
+	// check lines
     xl = (tmbbox[BOXLEFT] - bmaporgx)>>MAPBLOCKSHIFT;
     xh = (tmbbox[BOXRIGHT] - bmaporgx)>>MAPBLOCKSHIFT;
     yl = (tmbbox[BOXBOTTOM] - bmaporgy)>>MAPBLOCKSHIFT;
@@ -484,13 +507,19 @@ P_TryMove
     int		side;
     int		oldside;
     line_t*	ld;
-	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	mobj_t* thing;
+	int i;
 
 
-    floatok = false;
-    if (!P_CheckPosition (thingRef, x, y))
+
+
+	floatok = false;
+	if (!P_CheckPosition(thingRef, x, y)) {
 		return false;		// solid wall or thing
-    
+	}
+	
+
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     if ( !(thing->flags & MF_NOCLIP) )
     {
 	if (tmceilingz - tmfloorz < thing->height)
@@ -510,20 +539,24 @@ P_TryMove
 	     && tmfloorz - tmdropoffz > 24*FRACUNIT )
 	    return false;	// don't stand over a dropoff
     }
-    
+
+
+	
     // the move is ok,
     // so link the thing into its new position
     P_UnsetThingPosition (thingRef);
-
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     oldx = thing->x;
     oldy = thing->y;
     thing->floorz = tmfloorz;
     thing->ceilingz = tmceilingz;	
     thing->x = x;
     thing->y = y;
+	P_SetThingPosition (thingRef);
+	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
-    P_SetThingPosition (thingRef);
-    
+
+
     // if any special lines were hit, do the effect
     if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
 		while (numspechit--) {
@@ -538,7 +571,7 @@ P_TryMove
 			}
 		}
     }
-
+	
     return true;
 }
 
@@ -1054,6 +1087,9 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	P_SpawnBlood (x,y,z, la_damage);
 
 	
+	if (thRef == 0) {
+		I_Error("bad thing caught c");
+	}
 
     if (la_damage)
 	P_DamageMobj (thRef, shootthingRef, shootthingRef, la_damage);
@@ -1251,6 +1287,11 @@ boolean PIT_RadiusAttack (MEMREF thingRef)
 
     if ( P_CheckSight (thingRef, bombspotRef) ) {
 		// must be in direct path
+
+		if (thingRef == 0) {
+			I_Error("bad thing caught d");
+		}
+
 		P_DamageMobj (thingRef, bombspotRef, bombsourceRef, bombdamage - dist);
     }
     
@@ -1366,6 +1407,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 
     if (crushchange && !(leveltime&3) )
     {
+
 	P_DamageMobj(thingRef,NULL_MEMREF,NULL_MEMREF,10);
 
 	// spray blood in a random direction

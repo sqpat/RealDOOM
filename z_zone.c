@@ -38,10 +38,29 @@
 //  because it will get overwritten automatically if needed.
 // 
 
+// 20 11180047 16 1   14 health
+// 20 11179909 16 1   14 health
+
+
 // 13 11165535 17252 19333
 // 12 11195222 26340 28968
 // 12 11195029 26301 28909  < discrepency?
+// 12 11195017 26301 28908  12% health
+// 12 11194907 26331 28957  12% health
+// 12 11187592 26278 28854  
+// 12 11194989 26348 28980  12% health
 
+
+// 13 11549641 17362 19398 14%  207 timedemo
+// 13 11549433 17362 19398 14%  207 timedemo
+
+// 12 11561033 26328 28949 12%  118
+
+
+// 11 11548506 38827 43594
+// 11 11548508 38829 43575 14% 207 timedemo
+
+// 9  10584214 72757 83903 207
 
 #define ZONEID  0x1d4a11
 #define MAX_ZMALLOC_SIZE 64 * 1024
@@ -54,8 +73,6 @@
 // demo commented out...
 
 
-// 18013950 4572/5631 19  (had illegal reads)
-// 18014067 35/47 22  (had illegal reads?)
 
 // 16 MB worth
 #define MAX_PAGE_FRAMES 1024
@@ -1183,7 +1200,7 @@ void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
 		I_Error("out of bounds memref.. %i %s %i", ref, file, line);
 	}
 	if (ref == 0) {
-		I_Error("tried to load memref 0... %i %s %i", ref, file, line);
+		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref, file, line);
 	}
 
 

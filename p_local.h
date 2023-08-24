@@ -176,9 +176,7 @@ extern fixed_t		lowfloor;
 void 	P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum);
 
 boolean P_BlockLinesIterator (int x, int y, boolean(*func)(line_t*, short ) );
-boolean P_BlockThingsIterator2 (int x, int y, boolean(*func)(MEMREF), char* file, int line);
-
-#define P_BlockThingsIterator(a,b,c) P_BlockThingsIterator2(a, b, c, __FILE__, __LINE__)
+boolean P_BlockThingsIterator (int x, int y, boolean(*func)(MEMREF));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -255,7 +253,6 @@ extern int		bmapwidth;
 extern int		bmapheight;	// in mapblocks
 extern fixed_t		bmaporgx;
 extern fixed_t		bmaporgy;	// origin of block map
-extern MEMREF		blocklinks[2000];	// for thing chains
 
 
 

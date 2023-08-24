@@ -793,8 +793,12 @@ P_DamageMobj
     int		temp;
 	mobj_t* source;
 	mobj_t* inflictor;
-	mobj_t* target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
-	
+	mobj_t* target;
+	if (targetRef == 0) {
+		I_Error("bad damage %i %i %i %i ", targetRef, inflictorRef, sourceRef, damage);
+	}
+	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
+ 
 	if (!(target->flags & MF_SHOOTABLE)) {
 		return;	// shouldn't happen...
 	}
@@ -853,7 +857,7 @@ P_DamageMobj
 	
 
 	// end of game hell hack
-	if (sectors[target->subsector->secnum].special == 11
+	if (sectors[subsectors[target->subsecnum].secnum].special == 11
 	    && damage >= target->health)
 	{
 	    damage = target->health - 1;

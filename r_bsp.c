@@ -33,7 +33,7 @@
 
 //#include "r_local.h"
 
-
+int setval = 0;
 
 seg_t*		curline;
 line_t*		linedef;
@@ -257,7 +257,9 @@ void R_AddLine (seg_t*	line)
 	vertex_t*   vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
     curline = line;
-
+	if (curline->linedefOffset > numlines) {
+		I_Error("R_Addline Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
+	}
 
     // OPTIMIZE: quickly reject orthogonal back sides.
     angle1 = R_PointToAngle (vertexes[line->v1Offset].x, vertexes[line->v1Offset].y);
@@ -492,6 +494,7 @@ void R_Subsector (int num) {
     seg_t*		line;
     subsector_t*	sub;
 	seg_t* segs;
+	int lineoffset = 0;
 
 	#ifdef RANGECHECK
 		if (num >= numsubsectors) {
@@ -527,9 +530,16 @@ void R_Subsector (int num) {
 
     while (count--) {
 		R_AddLine (line);
-		line++;
+		lineoffset++;
+
+		// note: segs definitely gets paged out inside of addline, so we need to re-set the line pointer based off its start point, not just
+		// mindlessly add to the old paged-out address.
 		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-		Z_RefIsActive(segsRef);
+		line = &segs[sub->firstline + lineoffset];
+
+		if (line->linedefOffset > numlines) {
+			I_Error("R_Addline Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
+		}
 	}
 }
 

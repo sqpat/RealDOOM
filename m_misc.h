@@ -27,6 +27,8 @@
 //
 extern  int	myargc;
 extern  char**	myargv;
+extern int	prndindex;
+
 
 // Returns the position of the given parameter
 // in the arg list (0 if not found).

@@ -389,6 +389,9 @@ void R_GenerateLookup (int texnum)
         
     for (x=0 ; x<texture->width ; x++)
     {
+		Z_RefIsActive(texturecompositesizeRef);
+		Z_RefIsActive(texturecolumnofsRef);
+		Z_RefIsActive(texturecolumnofs[texnum]);
         if (!patchcount[x])
         {
             printf ("R_GenerateLookup: column without a patch (%s)\n",
@@ -433,7 +436,13 @@ R_GetColumn
     int* texturewidthmask =				(int*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 	col &= texturewidthmask[tex];
 
+
 	texturecolumnofsTex = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
+
+	if (texturecolumnofsTex[tex] == 0) {
+		I_Error("caught? %i %i %i %i %i %i", gametic, tex, col, texturecolumnofsRef, texturecolumnofsTex[tex], texturecolumnofsTex[tex-1]);
+	}
+
 	texturecolumnofs = (unsigned short*)Z_LoadBytesFromEMS(texturecolumnofsTex[tex]);
 	ofs = texturecolumnofs[col];
 

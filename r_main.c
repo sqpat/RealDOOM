@@ -821,14 +821,12 @@ R_PointInSubsector
 		
     nodenum = numnodes-1;
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
-
     while (! (nodenum & NF_SUBSECTOR) ) {
 		node = &nodes[nodenum];
 		side = R_PointOnSide (x, y, node);
 		nodenum = node->children[side];
     }
-	
-    return &subsectors[nodenum & ~NF_SUBSECTOR];
+	return &subsectors[nodenum & ~NF_SUBSECTOR];
 }
 
 

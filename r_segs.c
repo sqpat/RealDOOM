@@ -109,6 +109,9 @@ R_RenderMaskedSegRange
 	//   for horizontal / vertical / diagonal. Diagonal?
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 	curline = ds->curline;
+	if (curline->linedefOffset > numlines) {
+		I_Error("R_RenderMaskedSegRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
+	}
 	frontsecnum = curline->frontsecnum;
 	backsecnum = curline->backsecnum;
 	texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
@@ -281,6 +284,9 @@ void R_RenderSegLoop (void)
 	    dc_yh = yh;
 	    dc_texturemid = rw_midtexturemid;
 
+		if (midtexture < 0 || midtexture > 1000) {
+			I_Error("midtexture");
+		}
 		dc_source = R_GetColumn(midtexture,texturecolumn);
 		colfunc ();
 		ceilingclip[rw_x] = viewheight;
@@ -305,6 +311,9 @@ void R_RenderSegLoop (void)
 		    dc_yl = yl;
 		    dc_yh = mid;
 		    dc_texturemid = rw_toptexturemid;
+			if (toptexture < 0 || toptexture > 1000) {
+				I_Error("toptex");
+			}
 		    dc_source = R_GetColumn(toptexture,texturecolumn);
 		    colfunc ();
 		    ceilingclip[rw_x] = mid;
@@ -334,7 +343,10 @@ void R_RenderSegLoop (void)
 		    dc_yl = mid;
 		    dc_yh = yh;
 		    dc_texturemid = rw_bottomtexturemid;
-		    dc_source = R_GetColumn(bottomtexture,
+			if (bottomtexture < 0 || bottomtexture > 1000) {
+				I_Error("bottex");
+			}
+			dc_source = R_GetColumn(bottomtexture,
 					    texturecolumn);
 		    colfunc ();
 		    floorclip[rw_x] = mid;
@@ -385,8 +397,10 @@ R_StoreWallRange
 	int* 	texturetranslation;
 	vertex_t* vertexes;
 	side_t*	sidedef;
-    // don't overflow and crash
-    if (ds_p == &drawsegs[MAXDRAWSEGS])
+
+	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+	
+	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
 		
 #ifdef RANGECHECK
@@ -395,6 +409,10 @@ R_StoreWallRange
 #endif
     
     linedef = &lines[curline->linedefOffset];
+
+	if (curline->linedefOffset > numlines) {
+		I_Error("R_StoreWallRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
+	}
 
     // mark the segment as visible for auto map
     linedef->flags |= ML_MAPPED;
@@ -417,6 +435,8 @@ R_StoreWallRange
     ds_p->x2 = stop;
     ds_p->curline = curline;
     rw_stopx = stop+1;
+
+
     
     // calculate scale at both ends and step
     ds_p->scale1 = rw_scale = 
@@ -452,6 +472,9 @@ R_StoreWallRange
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
 	
+	if (curline->sidedefOffset > numsides) {
+		I_Error("Error! sides out of bounds! %i %i %i %i", gametic, numsides, curline->sidedefOffset, curline);
+	}
 	sidedef = &sides[curline->sidedefOffset];
 	if (backsecnum == SECNUM_NULL) {
 	// single sided line
@@ -557,6 +580,9 @@ R_StoreWallRange
 
 		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 		toptexture = texturetranslation[sidedef->toptexture];
+		if (toptexture < 0 || toptexture > 1000) {
+			I_Error("toptex %i %i %i ", sidedef->toptexture, curline->sidedefOffset, curline);
+		}
 
 		if (linedef->flags & ML_DONTPEGTOP)
 	    {

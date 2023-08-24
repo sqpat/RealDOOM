@@ -56,7 +56,6 @@
 #include "p_setup.h"
 #include "r_local.h"
 
-
 #include "d_main.h"
 
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
@@ -370,6 +369,7 @@ void D_DoomLoop (void)
 	char result2[2000];
 	int lasttick = 0;
 	int lastindex = 0;
+	int stoptic;
 
 	byte* nodes;
 	int i = 0;
@@ -411,27 +411,30 @@ void D_DoomLoop (void)
         }
 		S_UpdateSounds (players[consoleplayer].moRef);// move positional sounds
         // Update display, next frame, with current state.
+
+
 		D_Display ();
 
 		//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
 	
 
-
-
-		if (gametic == 1404) {
+		stoptic = 2960;
+		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {
 				lasttick = gametic;
+				SAVEDUNIT = Z_LoadBytesFromEMS(486);
 
-				//sprintf(result2, "%i %i %i %i %i %i %i %i %i \n", gametic, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->health, SAVEDUNIT->state->frame);
-				//strcat(result, result2);
+				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->subsecnum, i, 0);
+				strcat(result, result2);
 				//lastindex = prndindex;
 
 
 			}
 		}
 
-		if (gametic == 2) {
+		if (gametic == stoptic + 30) {
+			I_Error(result);
 			//nodes = (byte*)Z_LoadBytesFromEMS(nodesRef);
 			//memcpy(copynode, nodes, 46240);
 			//if (memcmp(copynode, nodes, 46240)) {  //46240
