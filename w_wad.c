@@ -168,7 +168,8 @@ void W_AddFile (int8_t *filename)
         read (handle, fileinfo, length);
         numlumps += header.numlumps;
     }
-
+// numlumps 1264
+    
     
     // Fill in lumpinfo
     lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));

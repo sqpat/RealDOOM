@@ -964,9 +964,11 @@ byte *I_ZoneBase(int32_t *size)
     do
     {
         heap -= 0x20000; // leave 128k alone
-        if (heap > 0xc00000) // cap at 4M
+        // cap at 8M - 16384. 8 MB-1, or 0x7FFFFF at 23 bits is max addressable single region size in allocation_t. 
+            // But subtract by a whole page frame worth of size to not have any weird situations.
+        if (heap > 0x7FC000) 
         {
-            heap = 0xc00000;
+            heap = 0x7FC000;
         }
         ptr = malloc(heap);
     } while (!ptr);

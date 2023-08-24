@@ -28,16 +28,22 @@
 //
 // ZONE MEMORY
 // PU - purge tags.
-// Tags < 100 are not overwritten until freed.
+// Tags < PU_PURGELEVEL are not overwritten until freed.
+
+// NOTE: redid a lot of these. I think the values implied that there would be more
+// aggressive freeing, etc of memory based on some of the allocation types. But
+// in practice, PU_SOUND/PU_MUSIC are never handled differently in the code, LEVSPEC
+// is never handled differently than LEVEL, PURGELEVEL is never used... etc
+#define PU_UNUSED               0       // static entire execution time
 #define PU_STATIC               1       // static entire execution time
-#define PU_SOUND                2       // static while playing
-#define PU_MUSIC                3       // static while playing
-#define PU_DAVE                 4       // anything else Dave wants static
-#define PU_LEVEL                50      // static until level exited
-#define PU_LEVSPEC              51      // a special thinker in a level
-// Tags >= 100 are purgable whenever needed.
-#define PU_PURGELEVEL   100
-#define PU_CACHE                101
+#define PU_SOUND                1       // static while playing
+#define PU_MUSIC                1
+#define PU_LEVEL                2      // static until level exited
+#define PU_LEVSPEC              2      // a special thinker in a level
+// Tags >= PU_PURGELEVEL are purgable whenever needed.
+// Note: codebase never actually allocates anything as PU_PURGE_LEVEL
+#define PU_PURGELEVEL           3 
+#define PU_CACHE                3
 
 #define ALLOC_TYPE_TEXTURE 1
 #define ALLOC_TYPE_CACHE_LUMP 2

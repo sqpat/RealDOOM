@@ -491,7 +491,7 @@ void D_DoomLoop (void)
 		}*/
 
 		
-		stoptic = 3550;
+		stoptic = 35500;
 		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {

@@ -611,8 +611,8 @@ void R_InitTextures(void)
 	numtextures = numtextures1 + numtextures2;
 	// 125
 
-	// these are all the very first allocations that occure on level setup and they end up in the same page, 
-	// so when these are loaded later, its not a problem because theyre all in one page
+	// these are all the very first allocations that occur on level setup and they end up in the same page, 
+	// so there is data locality with EMS paging which is nice.
 	texturesRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 	texturecolumnlumpRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 	texturecolumnofsRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
@@ -688,8 +688,8 @@ void R_InitTextures(void)
 			patch->patch = patchlookup[(mpatch->patch)];
 			if (patch->patch == -1)
 			{
-				I_Error("R_InitTextures: Missing patch in texture %s",
-					texture->name);
+				I_Error("R_InitTextures: Missing patch in texture %s %i",
+					texture->name, textureRef);
 			}
 		}
 		//printf("name %s", texture->name);
