@@ -247,20 +247,20 @@ void R_GenerateComposite(int texnum)
 
 	MEMREF* texturecolumnlump =		(MEMREF*)	Z_LoadBytesFromEMS(texturecolumnlumpRef);
 	MEMREF*	texturecolumnofs =		(MEMREF*)	Z_LoadBytesFromEMS(texturecolumnofsRef);
-	MEMREF* texturecomposite =		(MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
+	MEMREF* texturecomposite =		(MEMREF*)	Z_LoadBytesFromEMS(texturecompositeRef);
 
 	int* texturecompositesize =		(int*)		Z_LoadBytesFromEMS(texturecompositesizeRef);
 
 	texture_t* texture =			(texture_t*)Z_LoadBytesFromEMS(textures[texnum]);
 
 	
-	texturecomposite[texnum] = Z_MallocEMSNew(texturecompositesize[texnum],
+	texturecomposite[texnum] = Z_MallocEMSNewWithBackRef(texturecompositesize[texnum],
 		PU_STATIC,
-		0xff, ALLOC_TYPE_TEXTURE);
+		0xff, ALLOC_TYPE_TEXTURE, -1*(texnum+1));
 
 	
 
-	block =		(byte*) Z_LoadBytesFromEMS(texturecomposite[texnum]);
+	block =		(byte*)			 Z_LoadBytesFromEMS(texturecomposite[texnum]);
 
 	collump =   (short*)		 Z_LoadBytesFromEMS(texturecolumnlump[texnum]);
 	colofs =	(unsigned short*)Z_LoadBytesFromEMS(texturecolumnofs[texnum]);
@@ -346,7 +346,7 @@ void R_GenerateLookup (int texnum)
 	 
 
     // Composited texture not created yet.
-    texturecomposite[texnum] = 65535; // ugly hack, but what else can i do here ...?
+    texturecomposite[texnum] = NULL_MEMREF;
     texturecompositesize[texnum] = 0;
 
     collump = (short*) Z_LoadBytesFromEMS(texturecolumnlump[texnum]);
@@ -446,7 +446,7 @@ R_GetColumn
 		return (byte *)W_CacheLumpNum(lump, PU_CACHE) + ofs;
 	}
 
-	if (texturecomposite[tex] == 65535) {
+	if (texturecomposite[tex] == NULL_MEMREF) {
 		R_GenerateComposite(tex);
 	}
 	texturecompositebytes = (byte*)Z_LoadBytesFromEMS(texturecomposite[tex]);
@@ -967,5 +967,9 @@ void R_PrecacheLevel (void)
 }
 
 
-
+void R_EraseCompositeCache(short texnum) {
+	//todo move texturecomposite to static?
+	MEMREF* texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
+	texturecomposite[texnum] = NULL_MEMREF;
+}
 

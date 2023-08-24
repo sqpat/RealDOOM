@@ -57,9 +57,18 @@
 #define ALLOC_TYPE_LINEBUFFER 16
 #define ALLOC_TYPE_BLOCKLINKS 17
 #define ALLOC_TYPE_NODES 18
+#define ALLOC_TYPE_SOUND_CHANNELS 19
+#define ALLOC_TYPE_DEMO_BUFFER 20
+
+
 
 typedef unsigned short MEMREF;  //used externally for allocations list index
 typedef unsigned short PAGEREF; //used internally for allocations list index
+
+// Note: a memref of 0 refers to the empty (size = 0) 'head' of doubly linked list
+// managing the pages, and this index can never be handed out, so it's safe to use
+// as a 'null' or unused memref.
+#define NULL_MEMREF 0
 
 
 void    Z_Init (void);
@@ -89,7 +98,8 @@ typedef struct memblock_s
 void Z_InitEMS(void);
 void Z_FreeTagsEMS (int lowtag, int hightag);
 void* Z_LoadBytesFromEMS (MEMREF index);
-MEMREF Z_MallocEMSNew ( int size, int tag, unsigned char user, int sourceHint );
+MEMREF Z_MallocEMSNew(int size, int tag, unsigned char user, unsigned char sourceHint);
+MEMREF Z_MallocEMSNewWithBackRef(int size, int tag, unsigned char user, unsigned char sourceHint, short backRef);
 void Z_CheckEMSAllocations(PAGEREF block, int i, int var2, int var3);
 void Z_ChangeTagEMSNew (MEMREF index, short tag);
 void Z_FreeEMSNew(short block);

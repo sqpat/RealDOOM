@@ -92,7 +92,7 @@ typedef struct
 
 
 // the set of channels available
-static channel_t*	channels;
+static MEMREF	channelsRef;
 
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.
@@ -227,6 +227,8 @@ void S_StopChannel(int cnum)
 {
 
     int		i;
+	channel_t* channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
+
     channel_t*	c = &channels[cnum];
 
     if (c->sfxinfo)
@@ -368,6 +370,7 @@ void S_StopSound(void *origin)
 {
 
     int cnum;
+	channel_t* channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
 
     for (cnum=0 ; cnum<numChannels ; cnum++)
     {
@@ -392,6 +395,7 @@ S_getChannel
     int		cnum;
     
     channel_t*	c;
+	channel_t* channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
 
     // Find an open channel
     for (cnum=0 ; cnum<numChannels ; cnum++)
@@ -446,7 +450,7 @@ S_StartSoundAtVolume
   int		priority;
   sfxinfo_t*	sfx;
   int		cnum;
-  
+  channel_t* channels;
   mobj_t*	origin = (mobj_t *) origin_p;
   
   
@@ -564,6 +568,7 @@ S_StartSoundAtVolume
   
   // Assigns the handle to one of the channels in the
   //  mix/output buffer.
+  channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
   channels[cnum].handle = I_StartSound(sfx_id,
 				       sfx->data,
 				       volume,
@@ -656,7 +661,7 @@ void S_UpdateSounds(void* listener_p)
     channel_t*	c;
     int         i;
     mobj_t*	listener = (mobj_t*)listener_p;
-
+	channel_t* channels;
 
     
     // Clean up unused data.
@@ -679,7 +684,8 @@ void S_UpdateSounds(void* listener_p)
 	nextcleanup = gametic + 15;
     }
     
-    for (cnum=0 ; cnum<numChannels ; cnum++)
+	channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
+	for (cnum=0 ; cnum<numChannels ; cnum++)
     {
 	c = &channels[cnum];
 	sfx = c->sfxinfo;
@@ -751,6 +757,7 @@ void S_Init
   int		musicVolume )
 {  
   int		i;
+  channel_t* channels;
 
   //fprintf( stderr, "S_Init: default sfx volume %d\n", sfxVolume);
 
@@ -764,9 +771,9 @@ void S_Init
   // Allocating the internal channels for mixing
   // (the maximum numer of sounds rendered
   // simultaneously) within zone memory.
-  channels =
-    (channel_t *) Z_Malloc (numChannels*sizeof(channel_t), PU_STATIC, 0);
-  
+  channelsRef =  Z_MallocEMSNew (numChannels*sizeof(channel_t), PU_STATIC, 0, ALLOC_TYPE_SOUND_CHANNELS);
+  channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
+
   // Free all channels for use
   for (i=0 ; i<numChannels ; i++)
     channels[i].sfxinfo = 0;
@@ -788,6 +795,7 @@ void S_Start(void)
 {
   int cnum;
   int mnum;
+  channel_t* channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
 
   // kill all playing sounds at start of level
   //  (trust me - a good idea)

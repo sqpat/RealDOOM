@@ -21,6 +21,8 @@
 #include "doomdef.h"
 
 #include "m_menu.h"
+#include "w_wad.h"
+#include "r_data.h"
 
 //
 // ZONE MEMORY ALLOCATION
@@ -69,14 +71,20 @@ typedef struct
 {
     PAGEREF prev;    //2    using 16 bits but need 11...
 	PAGEREF next;    //4    using 16 bits but need 11...         these 3 could fit in 32 bits?
-    unsigned short page;    //6    using 16 bits but need 9 or 10...
-    
+	
+					 // page and offset refer to internal EMS page and offset - in other words the keys
+	// to find the real location in memory for this allocation
+	unsigned short page;    //6    using 16 bits but need 9 or 10...
     unsigned short offset;  //8    using 16 bits but needs 14...
     int size;               //12   using, could probably drop to short with the external int for remaining main heap..
-    unsigned char tag;      //13   could probably get away with fewer if we redid defines. maybe 4.
+
+	unsigned char tag;      //13   could probably get away with fewer if we redid defines. maybe 4.
     unsigned char user;     //14
 
+	short backRef;		    //16   // an external index used to mark external caches as invalid so they know to re-generate a MEMREF. Used in compositeTextures and wad lumps
+							// we're going to cheat. a 0 value is unused, positive is lump index plus 1, negative is (negative of composite texture index plus 1). 
 } allocation_t;
+
 
 short currentListHead = 0; // main rover
 
@@ -720,6 +728,7 @@ void Z_FreeEMSNew (short block)
 
 
     short         other;
+	short usedBackref;
 	int val = 0;
 	int val2 = 0;
 	int val3 = 0;
@@ -732,16 +741,29 @@ void Z_FreeEMSNew (short block)
 	}
 
 
+	if (allocations[block].backRef > 0) {
+		// in lumpcache
+		W_EraseLumpCache(allocations[block].backRef -1);
+
+	} else if (allocations[block].backRef < 0) {
+		// in compositeTextures
+		R_EraseCompositeCache(-1*(allocations[block].backRef + 1));
+
+	}
+
+
 
     // mark as free
     allocations[block].user = 0; 
     allocations[block].tag = 0;
+	allocations[block].backRef = 0;
 
     // at this point the block represents a free block of memory but you cant
     // make the allocation array index free, unless you join it with an adjacent
     // memory block.
     other = allocations[block].prev;
 
+	
 
     // if two sequential blocks free, we can join them and free one spot in
     // the allocations array
@@ -760,6 +782,7 @@ void Z_FreeEMSNew (short block)
         // finally mark the array index unused.
         // this is where you have actually removed an array index
         allocations[block].prev = EMS_ALLOCATION_LIST_SIZE;
+		allocations[block].backRef = 0;
         block = other;
 		val += 1;
 		val2 = block;
@@ -815,15 +838,25 @@ Z_FreeTagsEMS
 ( int           lowtag,
   int           hightag )
 {
-
-    memblock_t* block;
-    memblock_t* next;
+	short block;
     int iter = 0;
-        
-    for (block = mainzoneEMS->blocklist.next ;
-         block != &mainzoneEMS->blocklist ;
-         block = next)
-    {
+	short start = 0;
+
+         
+	// Now check if consecutive empties
+	for (block = allocations[start].next; ; block = allocations[block].next) {
+
+		/*
+				if (block->tag >= lowtag && block->tag <= hightag)
+					printf ("block:%p    size:%7i    user:%p    tag:%3i\n",
+							block, block->size, block->user, block->tag);*/
+
+
+		if (block == start)
+		{
+			// all blocks have been hit
+			break;
+		}
 
         iter++;
 
@@ -833,14 +866,12 @@ Z_FreeTagsEMS
 
         // get link before freeing
 
-        next = block->next;
-
         // free block?
-        if (!block->user)
+        if (!allocations[block].user)
             continue;
         
-        if (block->tag >= lowtag && block->tag <= hightag)
-            Z_Free ( (byte *)block+sizeof(memblock_t));
+        if (allocations[block].tag >= lowtag && allocations[block].tag <= hightag)
+            Z_FreeEMSNew ( block);
     }
 
    
@@ -1003,13 +1034,21 @@ PAGEREF Z_GetNextFreeArrayIndex(){
     
 }
 
-
+MEMREF Z_MallocEMSNew
+(int           size,
+	int           tag,
+	unsigned char user,
+	unsigned char sourceHint)
+{
+	return Z_MallocEMSNewWithBackRef(size, tag, user, sourceHint, -1);
+}
 MEMREF
-Z_MallocEMSNew
+Z_MallocEMSNewWithBackRef
 ( int           size,
   int           tag,
   unsigned char user,
-  int           sourceHint )
+  unsigned char sourceHint,
+  short backRef)
 {
     short internalpagenumber;
     short base;
@@ -1165,9 +1204,6 @@ Z_MallocEMSNew
 
                    // printf ("stats %i %i %i %i %i %i\n", base, allocations[base].prev, allocations[base].next, rover, allocations[rover].prev, allocations[rover].next);
 
-                
-
-
                 base = allocations[base].prev;
                 Z_FreeEMSNew (rover);
                 base = allocations[base].next;
@@ -1221,12 +1257,14 @@ Z_MallocEMSNew
         allocations[allocations[base].prev].next = newfreeblockindex;
         allocations[newfreeblockindex].next = base;
         allocations[base].prev = newfreeblockindex;
+		allocations[base].backRef = backRef;
 
         allocations[newfreeblockindex].size = offsetToNextPage;
         allocations[newfreeblockindex].user = 0;
         allocations[newfreeblockindex].tag = 0;
         allocations[newfreeblockindex].page = allocations[base].page;
         allocations[newfreeblockindex].offset = allocations[base].offset;
+		allocations[base].backRef = -1;
 
         allocations[base].size = allocations[base].size - offsetToNextPage;
 
@@ -1295,7 +1333,8 @@ Z_MallocEMSNew
         allocations[newfreeblockindex].user = 0;
         allocations[newfreeblockindex].prev = base;
         allocations[newfreeblockindex].next = allocations[base].next;
-        allocations[allocations[newfreeblockindex].next].prev = newfreeblockindex;
+		allocations[base].backRef = -1;
+		allocations[allocations[newfreeblockindex].next].prev = newfreeblockindex;
 
         //TODO CHECK
         allocations[newfreeblockindex].offset = (allocations[base].offset + (size + extrasize)) &0x3FFF ;

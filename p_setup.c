@@ -453,6 +453,8 @@ void P_LoadSideDefs(int lump)
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sides = Z_Malloc (numsides * sizeof(side_t), PU_LEVEL, 0);
+	printf("size of sides %i", numsides * sizeof(side_t));
+	I_Error("size of sides %i", numsides * sizeof(side_t));
 	memset(sides, 0, numsides * sizeof(side_t));
 	W_CacheLumpNumCheck(lump, 10);
 	data = W_CacheLumpNum(lump, PU_STATIC);
@@ -633,6 +635,7 @@ P_SetupLevel
 	else
 #endif
 		Z_FreeTags(PU_LEVEL, PU_PURGELEVEL - 1);
+		Z_FreeTagsEMS(PU_LEVEL, PU_PURGELEVEL - 1);
 
 
 	// UNUSED W_Profile ();

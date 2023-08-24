@@ -47,6 +47,7 @@ lumpinfo_t*             lumpinfo;
 int                     numlumps;
 
 void**                  lumpcache;
+MEMREF*					lumpcacheEMS;
 
 
 void
@@ -274,12 +275,22 @@ void W_InitMultipleFiles (char** filenames)
     
     // set up caching
     size = numlumps * sizeof(*lumpcache);
-    lumpcache = malloc (size);
+	// note: size is 5056; 1264 lumps. half that for EMS MEMREFS
+	lumpcache = malloc (size);
     
     if (!lumpcache)
         I_Error ("Couldn't allocate lumpcache");
 
     memset (lumpcache,0, size);
+
+	size = numlumps * sizeof(*lumpcacheEMS);
+	lumpcacheEMS = malloc(size);
+
+	if (!lumpcacheEMS)
+		I_Error("Couldn't allocate lumpcacheEMS");
+
+	memset(lumpcache, 0, size);
+
 }
 
 
@@ -396,13 +407,14 @@ int W_LumpLength (int lump)
 //  which must be >= W_LumpLength().
 //
 void
-W_ReadLump
+W_ReadLumpEMS
 ( int           lump,
-  void*         dest )
+  MEMREF         lumpRef )
 {
     int         c;
     lumpinfo_t* l;
     int         handle;
+	byte		*dest;
         
     if (lump >= numlumps)
         I_Error ("W_ReadLump: %i >= numlumps",lump);
@@ -419,7 +431,8 @@ W_ReadLump
     }
     else
         handle = l->handle;
-                
+	dest = Z_LoadBytesFromEMS(lumpRef);
+
     lseek (handle, l->position, SEEK_SET);
     c = read (handle, dest, l->size);
 
@@ -434,6 +447,47 @@ W_ReadLump
 }
 
 
+
+
+void
+W_ReadLump
+(int           lump,
+	void*         dest)
+{
+	int         c;
+	lumpinfo_t* l;
+	int         handle;
+
+	if (lump >= numlumps)
+		I_Error("W_ReadLump: %i >= numlumps", lump);
+
+	l = lumpinfo + lump;
+
+	I_BeginRead();
+
+	if (l->handle == -1)
+	{
+		// reloadable file, so use open / read / close
+		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1)
+			I_Error("W_ReadLump: couldn't open %s", reloadname);
+	}
+	else
+		handle = l->handle;
+
+	lseek(handle, l->position, SEEK_SET);
+	c = read(handle, dest, l->size);
+
+	if (c < l->size)
+		I_Error("W_ReadLump: only read %i of %i on lump %i",
+			c, l->size, lump);
+
+	if (l->handle == -1)
+		close(handle);
+
+	I_EndRead();
+}
+
+
 int W_CacheLumpNumCheck(int lump, int error) {
 
 
@@ -444,6 +498,7 @@ int W_CacheLumpNumCheck(int lump, int error) {
 	}
 	return false;
 }
+
 
 //
 // W_CacheLumpNum
@@ -478,6 +533,37 @@ W_CacheLumpNum
     return lumpcache[lump];
 }
 
+//
+// W_CacheLumpNum
+//
+MEMREF
+W_CacheLumpNumEMS
+(	short           lump,
+	char			tag)
+{
+	MEMREF       ref;
+	byte	*lumpmem;
+	if ((unsigned)lump >= numlumps)
+		I_Error("W_CacheLumpNum: %i >= numlumps", lump);
+
+
+
+
+//	if (!lumpcache[lump])
+	if (!lumpcacheEMS[lump])
+	{
+		// read the lump in
+		//printf ("cache miss on lump %i\n",lump);
+		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0x00, ALLOC_TYPE_CACHE_LUMP, lump);
+		W_ReadLumpEMS(lump, lumpcacheEMS[lump]);
+	} else {
+		//printf ("cache hit on lump %i\n",lump);
+		Z_ChangeTagEMSNew(ref, tag);
+	}
+
+	return ref;
+}
+
 
 
 //
@@ -489,6 +575,17 @@ W_CacheLumpName
   int           tag )
 {
     return W_CacheLumpNum (W_GetNumForName(name), tag);
+}
+
+//
+// W_CacheLumpName
+//
+MEMREF
+W_CacheLumpNameEMS
+(char*         name,
+	int           tag)
+{
+	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
 }
 
 
@@ -554,3 +651,6 @@ void W_Profile (void)
 }
 
 
+void W_EraseLumpCache(short index) {
+	lumpcacheEMS[index] = 0;
+}
