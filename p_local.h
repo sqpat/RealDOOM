@@ -104,7 +104,6 @@ extern int		iquehead;
 extern int		iquetail;
 
 
-void P_RespawnSpecials (void);
 
 MEMREF
 P_SpawnMobj

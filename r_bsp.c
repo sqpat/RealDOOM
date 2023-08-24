@@ -394,132 +394,151 @@ void R_AddLine (short linenum)
 // Returns true
 //  if some part of the bbox might be visible.
 //
-int	checkcoord[12][4] =
+
+boolean R_CheckBBox(fixed_t *bspcoord)
 {
-    {3,0,2,1},
-    {3,0,2,0},
-    {3,1,2,0},
-    {0},
-    {2,0,2,1},
-    {0,0,0,0},
-    {3,1,3,0},
-    {0},
-    {2,0,3,1},
-    {2,1,3,1},
-    {2,1,3,0}
-};
+	byte boxx;
+	byte boxy;
+	byte boxpos;
 
+	fixed_t x1;
+	fixed_t y1;
+	fixed_t x2;
+	fixed_t y2;
 
-boolean R_CheckBBox (fixed_t*	bspcoord)
-{
-    int			boxx;
-    int			boxy;
-    int			boxpos;
+	angle_t angle1;
+	angle_t angle2;
+	angle_t span;
+	angle_t tspan;
 
-    fixed_t		x1;
-    fixed_t		y1;
-    fixed_t		x2;
-    fixed_t		y2;
-    
-    angle_t		angle1;
-    angle_t		angle2;
-    angle_t		span;
-    angle_t		tspan;
-    
-    cliprange_t*	start;
+	cliprange_t *start;
 
-    int			sx1;
-    int			sx2;
-    
-    // Find the corners of the box
-    // that define the edges from current viewpoint.
-    if (viewx <= bspcoord[BOXLEFT])
-	boxx = 0;
-    else if (viewx < bspcoord[BOXRIGHT])
-	boxx = 1;
-    else
-	boxx = 2;
-		
-    if (viewy >= bspcoord[BOXTOP])
-	boxy = 0;
-    else if (viewy > bspcoord[BOXBOTTOM])
-	boxy = 1;
-    else
-	boxy = 2;
-		
-    boxpos = (boxy<<2)+boxx;
-    if (boxpos == 5)
-	return true;
-	
-    x1 = bspcoord[checkcoord[boxpos][0]];
-    y1 = bspcoord[checkcoord[boxpos][1]];
-    x2 = bspcoord[checkcoord[boxpos][2]];
-    y2 = bspcoord[checkcoord[boxpos][3]];
-    
-    // check clip list for an open space
-    angle1 = R_PointToAngle (x1, y1) - viewangle;
-    angle2 = R_PointToAngle (x2, y2) - viewangle;
-	
-    span = angle1 - angle2;
+	int sx1;
+	int sx2;
 
-    // Sitting on a line?
-    if (span >= ANG180)
-	return true;
-    
-    tspan = angle1 + clipangle;
+	// Find the corners of the box
+	// that define the edges from current viewpoint.
+	boxx = viewx <= bspcoord[BOXLEFT] ? 0 : viewx < bspcoord[BOXRIGHT] ? 1 : 2;
+	boxy = viewy >= bspcoord[BOXTOP] ? 0 : viewy > bspcoord[BOXBOTTOM] ? 1 : 2;
+
+	boxpos = (boxy << 2) + boxx;
+	if (boxpos == 5)
+		return true;
+
+	switch (boxpos)
+	{
+	case 0:
+		x1 = bspcoord[BOXRIGHT];
+		y1 = bspcoord[BOXTOP];
+		x2 = bspcoord[BOXLEFT];
+		y2 = bspcoord[BOXBOTTOM];
+		break;
+	case 1:
+		x1 = bspcoord[BOXRIGHT];
+		y1 = y2 = bspcoord[BOXTOP];
+		x2 = bspcoord[BOXLEFT];
+		break;
+	case 2:
+		x1 = bspcoord[BOXRIGHT];
+		y1 = bspcoord[BOXBOTTOM];
+		x2 = bspcoord[BOXLEFT];
+		y2 = bspcoord[BOXTOP];
+		break;
+	case 3:
+	case 7:
+		x1 = x2 = y1 = y2 = bspcoord[BOXTOP];
+		break;
+	case 4:
+		x1 = x2 = bspcoord[BOXLEFT];
+		y1 = bspcoord[BOXTOP];
+		y2 = bspcoord[BOXBOTTOM];
+		break;
+	case 6:
+		x1 = x2 = bspcoord[BOXRIGHT];
+		y1 = bspcoord[BOXBOTTOM];
+		y2 = bspcoord[BOXTOP];
+		break;
+	case 8:
+		x1 = bspcoord[BOXLEFT];
+		y1 = bspcoord[BOXTOP];
+		x2 = bspcoord[BOXRIGHT];
+		y2 = bspcoord[BOXBOTTOM];
+		break;
+	case 9:
+		x1 = bspcoord[BOXLEFT];
+		y1 = y2 = bspcoord[BOXBOTTOM];
+		x2 = bspcoord[BOXRIGHT];
+		break;
+	case 10:
+		x1 = bspcoord[BOXLEFT];
+		y1 = bspcoord[BOXBOTTOM];
+		x2 = bspcoord[BOXRIGHT];
+		y2 = bspcoord[BOXTOP];
+		break;
+	}
+
+	// check clip list for an open space
+	angle1 = R_PointToAngle(x1, y1) - viewangle;
+	angle2 = R_PointToAngle(x2, y2) - viewangle;
+
+	span = angle1 - angle2;
+
+	// Sitting on a line?
+	if (span >= ANG180)
+		return true;
+
+	tspan = angle1 + clipangle;
 
 	if (tspan > fieldofview)
 	{
 		tspan -= fieldofview;
 
-	// Totally off the left edge?
-	if (tspan >= span)
-	    return false;	
+		// Totally off the left edge?
+		if (tspan >= span)
+			return false;
 
-	angle1 = clipangle;
-    }
-    tspan = clipangle - angle2;
+		angle1 = clipangle;
+	}
+	tspan = clipangle - angle2;
 	if (tspan > fieldofview)
 	{
 		tspan -= fieldofview;
 
-	// Totally off the left edge?
-	if (tspan >= span)
-	    return false;
-	
-	angle2 = -clipangle;
-    }
+		// Totally off the left edge?
+		if (tspan >= span)
+			return false;
 
+		angle2 = -clipangle;
+	}
 
-    // Find the first clippost
-    //  that touches the source post
-    //  (adjacent pixels are touching).
-    angle1 = (angle1+ANG90)>>ANGLETOFINESHIFT;
-    angle2 = (angle2+ANG90)>>ANGLETOFINESHIFT;
-    sx1 = viewangletox[angle1];
-    sx2 = viewangletox[angle2];
+	// Find the first clippost
+	//  that touches the source post
+	//  (adjacent pixels are touching).
+	angle1 = (angle1 + ANG90) >> ANGLETOFINESHIFT;
+	angle2 = (angle2 + ANG90) >> ANGLETOFINESHIFT;
+	sx1 = viewangletox[angle1];
+	sx2 = viewangletox[angle2];
 
-    // Does not cross a pixel.
-    if (sx1 == sx2)
-	return false;			
-    sx2--;
-	
-    start = solidsegs;
-    while (start->last < sx2)
-	start++;
-    
-    if (sx1 >= start->first
-	&& sx2 <= start->last)
-    {
-	// The clippost contains the new span.
-	return false;
-    }
+	// Does not cross a pixel.
+	if (sx1 == sx2)
+		return false;
+	sx2--;
 
-    return true;
+	start = solidsegs;
+	while (start->last < sx2)
+		start++;
+
+	if (sx1 >= start->first && sx2 <= start->last)
+	{
+		// The clippost contains the new span.
+		return false;
+	}
+
+	return true;
 }
 
-
 int upcount = 0;
+
 
 //
 // R_Subsector
@@ -527,143 +546,153 @@ int upcount = 0;
 // Add sprites of things in sector.
 // Draw one or more line segments.
 //
-void R_Subsector (int num) {
-    int			count;
-    //subsector_t*	sub;
-	seg_t* segs;
+void R_Subsector(int subsecnum)
+{
+	int count;
+	seg_t *line;
+	subsector_t *sub;
+	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
+	//seg_t* segs;
 	int lineoffset = 0;
 	short firstline;
 	sector_t* sectors;
-	sector_t frontsector;
+	sector_t* frontsector;
 
-	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	#ifdef RANGECHECK
 		if (num >= numsubsectors) {
 			I_Error("R_Subsector: ss %i with numss = %i", num, numsubsectors);
 		}
 	#endif
 	
-    frontsecnum = subsectors[num].secnum;
-    count = subsectors[num].numlines;
-	firstline = subsectors[num].firstline;
+    frontsecnum = subsectors[subsecnum].secnum;
+    count = subsectors[subsecnum].numlines;
+	firstline = subsectors[subsecnum].firstline;
 
 
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	frontsector = sectors[frontsecnum];
+	frontsector = &sectors[frontsecnum];
 
-
-    if (frontsector.floorheight < viewz) {
-		floorplane = R_FindPlane (frontsector.floorheight,
-			frontsector.floorpic,
-			frontsector.lightlevel);
+	if (frontsector->floorheight < viewz)
+	{
+		floorplane = R_FindPlane(frontsector->floorheight,
+			frontsector->floorpic,
+			frontsector->lightlevel);
 	}
-	else {
+	else
 		floorplane = NULL;
-	}
 
-    if (frontsector.ceilingheight > viewz  || frontsector.ceilingpic == skyflatnum) {
-		ceilingplane = R_FindPlane (frontsector.ceilingheight,
-			frontsector.ceilingpic,
-			frontsector.lightlevel);
-	} else {
+	if (frontsector->ceilingheight > viewz || frontsector->ceilingpic == skyflatnum)
+	{
+		ceilingplane = R_FindPlane(frontsector->ceilingheight,
+			frontsector->ceilingpic,
+			frontsector->lightlevel);
+	}
+	else
 		ceilingplane = NULL;
-	}
 
-	
-    R_AddSprites (frontsecnum);
-    while (count--) {
-		#ifdef RANGECHECK
-			if ((firstline + lineoffset) > numsegs) {
-				I_Error("R_subsector Error! lines out of bounds! %i %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
-			}
-		#endif	
-		R_AddLine (firstline + lineoffset);
+	R_AddSprites(frontsecnum);
+
+	while (count--)
+	{
+#ifdef RANGECHECK
+		if ((firstline + lineoffset) > numsegs) {
+			I_Error("R_subsector Error! lines out of bounds! %i %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
+		}
+#endif	
+		R_AddLine(firstline + lineoffset);
 		lineoffset++;
-
-
 	}
 }
-/*
-
 
 //
 // RenderBSPNode
 // Renders all subsectors below a given node,
 //  traversing subtree recursively.
 // Just call with BSP root.
-void R_RenderBSPNode (int bspnum) {
-    node_t*	bsp;
-    int		side;
-	node_t* nodes;
-    // Found a subsector?
 
-	Z_RefIsActive(nodesRef);
- 
-	if (bspnum & NF_SUBSECTOR) {
-		if (bspnum == -1) {
-			R_Subsector(0);
+#define MAX_BSP_DEPTH 64
 
-		}
-		else {
-			R_Subsector(bspnum&(~NF_SUBSECTOR));
-
-		}
-		return;
-    }
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
-	bsp = &nodes[bspnum];
-	
-
-    // Decide which side the view point is on.
-    side = R_PointOnSide (viewx, viewy, bsp);
-    // Recursively divide front space.
-
-	R_RenderBSPNode (bsp->children[side]); 
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
-	bsp = &nodes[bspnum];
-	
-
-    // Possibly divide back space.
-	if (R_CheckBBox(bsp->bbox[side ^ 1])) {
-		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
-
-		R_RenderBSPNode(bsp->children[side ^ 1]);
-	}
-
-
-
-}
-*/
-
-
-// RenderBSPNode
-// Renders all subsectors below a given node,
-//  traversing subtree recursively.
-// Just call with BSP root.
 void R_RenderBSPNode(int bspnum)
 {
-	node_t* nodes;
 	node_t *bsp;
-	int side;
+	fixed_t dx, dy;
+	fixed_t left, right;
+	int stack_bsp[MAX_BSP_DEPTH];
+	byte stack_side[MAX_BSP_DEPTH];
+	int sp = 0;
+	byte side = 0;
+	node_t* nodes;
 
-	while (!(bspnum & NF_SUBSECTOR))  // Found a subsector?
+	while (true)
 	{
-		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
-		bsp = &nodes[bspnum];
+		//Front sides.
+		while ((bspnum & NF_SUBSECTOR) == 0)
+		{
+			if (sp == MAX_BSP_DEPTH)
+				break;
 
-		// Decide which side the view point is on.
-		side = R_PointOnSide(viewx, viewy, bsp);
+			nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+			bsp = &nodes[bspnum];
 
-		// Recursively divide front space.
-		R_RenderBSPNode(bsp->children[side]);
-		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
-		bsp = &nodes[bspnum];
-		// Possibly divide back space.
-		if (!R_CheckBBox(bsp->bbox[side ^ 1]))
+			//decide which side the view point is on
+			dx = (viewx - bsp->x);
+			dy = (viewy - bsp->y);
+
+			left = (bsp->dy >> FRACBITS) * (dx >> FRACBITS);
+			right = (dy >> FRACBITS) * (bsp->dx >> FRACBITS);
+
+			side = right >= left;
+
+			stack_bsp[sp] = bspnum;
+			stack_side[sp] = side;
+
+			sp++;
+
+			bspnum = bsp->children[side];
+		}
+
+		if (bspnum == -1)
+			R_Subsector(0);
+		else
+			R_Subsector(bspnum & (~NF_SUBSECTOR));
+
+		if (sp == 0)
+		{
+			//back at root node and not visible. All done!
 			return;
+		}
+
+		//Back sides.
+
+		sp--;
+
+		bspnum = stack_bsp[sp];
+		side = stack_side[sp];
+		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+		bsp = &nodes[bspnum];
+
+		// Possibly divide back space.
+		//Walk back up the tree until we find
+		//a node that has a visible backspace.
+		while (!R_CheckBBox(bsp->bbox[side ^ 1]))
+		{
+			if (sp == 0)
+			{
+				//back at root node and not visible. All done!
+				return;
+			}
+
+			//Back side next.
+
+			sp--;
+
+			bspnum = stack_bsp[sp];
+			side = stack_side[sp];
+
+			nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+			bsp = &nodes[bspnum];
+		}
 
 		bspnum = bsp->children[side ^ 1];
 	}
-	R_Subsector(bspnum == -1 ? 0 : bspnum & ~NF_SUBSECTOR);
 }
-

@@ -316,21 +316,10 @@ void R_ClearSprites (void)
 {
     vissprite_p = vissprites;
 }
-
-
-//
-// R_NewVisSprite
-//
+ 
 vissprite_t     overflowsprite;
 
-vissprite_t* R_NewVisSprite (void)
-{
-    if (vissprite_p == &vissprites[MAXVISSPRITES])
-        return &overflowsprite;
-    
-    vissprite_p++;
-    return vissprite_p-1;
-}
+ 
 
 
 
@@ -560,7 +549,13 @@ void R_ProjectSprite (MEMREF thingRef)
     if (x2 < 0)
         return;
     // store information in a vissprite
-    vis = R_NewVisSprite ();
+
+	if (vissprite_p == &vissprites[MAXVISSPRITES]) {
+		vis = &overflowsprite;
+	}
+	vissprite_p++;
+	vis = vissprite_p - 1;
+
 	vis->mobjflags = thingflags;
     vis->scale = xscale<<detailshift;
     vis->gx = thingx;

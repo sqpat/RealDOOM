@@ -267,21 +267,17 @@ void P_RunThinkers (void)
 		currentthinker = thinkerlist[currentthinker].next;
     }
  
-	/*
-	if (gametic == 1) {
+
+	if (gametic == 1050) {
 		//SAVEDUNIT = Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
 		//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
-		j = 0;
-		currentthinker2 = thinkerlist[0].next;
-		while (currentthinker2 != 0) {
-			currentthinker2 = thinkerlist[currentthinker2].next;
-			j++;
-		}
-		if (j == 122) {
-			I_Error("inner error %i %i %i", gametic, i, prndindex);
-		}
+
+		// 1 230 122
+
+		//I_Error("error %i %i %i", gametic, i, prndindex);
+
+		//setval = 0;
 	}
-	*/
 }
 
 
@@ -295,11 +291,8 @@ void P_Ticker (void)
     int		i;
     
     // run the tic
-	if (paused) {
-		return;
-	}
-    // pause if in menu and at least one tic has been run
-    if ( menuactive && !demoplayback && players[consoleplayer].viewz != 1) {
+	// pause if in menu and at least one tic has been run
+	if (paused || (menuactive && !demoplayback && players[consoleplayer].viewz != 1)) {
 		return;
     }
     
@@ -312,9 +305,7 @@ void P_Ticker (void)
 	
 
 	P_RunThinkers ();
-
 	P_UpdateSpecials ();
-    P_RespawnSpecials ();
 
 	// for par times
     leveltime++;	

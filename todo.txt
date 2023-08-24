@@ -28,11 +28,17 @@ MEMORY IMPROVEMENTS
 TODO 
  
 
+! illegal reads?
+
 - get rid of:
-  - rest of enums?
-  - net?
+  ~ rest of enums?
+  ~ net?
+  - dump bad savegame code
   - see if we can lessen size of some of those sectors etc fields
+  - audio_wf removal? dpmi code?
   ? cut trig tables in half or 1/4th, add small extra code when using it?
+ 
+
 
 - make titlepic work with > 4 pages?
 - types.h stuff

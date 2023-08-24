@@ -39,84 +39,14 @@ doomdata_t *netbuffer; // points inside doomcom
 
 ticcmd_t localcmds[BACKUPTICS];
 
-ticcmd_t netcmds[BACKUPTICS];
 int nettics;
-int resendto;
 
 int maketic;
 int skiptics;
-int ticdup;
 
 void D_ProcessEvents(void);
 void G_BuildTiccmd(ticcmd_t *cmd);
 void D_DoAdvanceDemo(void);
-
-//
-//
-//
-int ExpandTics(int low)
-{
-	int delta;
-
-	delta = low - (maketic & 0xff);
-
-	if (delta >= -64 && delta <= 64)
-		return (maketic & ~0xff) + low;
-	if (delta > 64)
-		return (maketic & ~0xff) - 256 + low;
-	if (delta < -64)
-		return (maketic & ~0xff) + 256 + low;
-
-	return 0;
-}
-
-//
-// GetPackets
-//
-
-void GetPackets(void)
-{
-	ticcmd_t *src, *dest;
-	int realend;
-	int realstart;
-
-	// to save bytes, only the low byte of tic numbers are sent
-	// Figure out what the rest of the bytes are
-	realstart = ExpandTics(netbuffer->starttic);
-	realend = (realstart + netbuffer->numtics);
-
-	// check for out of order / duplicated packet
-	if (realend == nettics)
-		return;
-
-	if (realend < nettics)
-	{
-		return;
-	}
-
-	// check for a missed packet
-	if (realstart > nettics)
-	{
-		// stop processing until the other system resends the missed tics
-		return;
-	}
-
-	// update command store from the packet
-	{
-		int start;
-
-		start = nettics - realstart;
-		src = &netbuffer->cmds[start];
-
-		while (nettics < realend)
-		{
-			dest = &netcmds[nettics % BACKUPTICS];
-			nettics++;
-			*dest = *src;
-			src++;
-		}
-	}
-}
 
 //
 // NetUpdate
@@ -130,16 +60,14 @@ void NetUpdate(void)
 	int nowtime;
 	int newtics;
 	int i, j;
-	int realstart;
-	int gameticdiv;
 
 	// check time
-	nowtime = I_GetTime() / ticdup;
+	nowtime = I_GetTime();
 	newtics = nowtime - gametime;
 	gametime = nowtime;
 
 	if (newtics <= 0) // nothing new to update
-		goto listen;
+		return;
 
 	if (skiptics <= newtics)
 	{
@@ -152,15 +80,12 @@ void NetUpdate(void)
 		newtics = 0;
 	}
 
-	netbuffer->player = 0;
-
 	// build new ticcmds for console player
-	gameticdiv = gametic / ticdup;
 	for (i = 0; i < newtics; i++)
 	{
 		I_StartTic();
 		D_ProcessEvents();
-		if (maketic - gameticdiv >= BACKUPTICS / 2 - 1)
+		if (maketic - gametic >= BACKUPTICS / 2 - 1)
 			break; // can't hold any more
 
 		G_BuildTiccmd(&localcmds[maketic % BACKUPTICS]);
@@ -170,18 +95,7 @@ void NetUpdate(void)
 	if (singletics)
 		return; // singletic update is syncronous
 
-	netbuffer->starttic = realstart = resendto;
-	netbuffer->numtics = maketic - realstart;
-
-	resendto = maketic;
-
-	for (j = 0; j < netbuffer->numtics; j++)
-		netbuffer->cmds[j] =
-		localcmds[(realstart + j) % BACKUPTICS];
-
-	// listen for other packets
-listen:
-	GetPackets();
+	nettics = maketic;
 }
 
 //
@@ -191,19 +105,15 @@ listen:
 void D_CheckNetGame(void)
 {
 	// which tic to start sending
-	resendto = 0;
 	nettics = 0;
 
 	// I_InitNetwork sets doomcom and netgame
 	I_InitNetwork();
 
-	netbuffer = &doomcom->data;
-
 	printf("startskill %i  deathmatch: %i  startmap: %i  startepisode: %i\n",
 		startskill, 0, startmap, startepisode);
 
 	// read values out of doomcom
-	ticdup = doomcom->ticdup;
 
 	playeringame[0] = true;
 
@@ -221,7 +131,6 @@ extern boolean advancedemo;
 void TryRunTics(void)
 {
 	int i;
-	int lowtic;
 	int entertic;
 	static int oldentertics;
 	int realtics;
@@ -229,17 +138,14 @@ void TryRunTics(void)
 	int counts;
 
 	// get real tics
-	entertic = I_GetTime() / ticdup;
+	entertic = I_GetTime();
 	realtics = entertic - oldentertics;
 	oldentertics = entertic;
 
 	// get available tics
 	NetUpdate();
 
-	lowtic = MAXINT;
-	if (nettics < lowtic)
-		lowtic = nettics;
-	availabletics = lowtic - gametic / ticdup;
+	availabletics = nettics - gametic;
 
 	// decide how many tics to run
 	if (realtics < availabletics - 1)
@@ -253,48 +159,26 @@ void TryRunTics(void)
 		counts = 1;
 
 	// wait for new tics if needed
-	while (lowtic < gametic / ticdup + counts)
+	while (nettics < gametic + counts)
 	{
 		NetUpdate();
-		lowtic = MAXINT;
-
-		if (nettics < lowtic)
-			lowtic = nettics;
 
 		// don't stay in here forever -- give the menu a chance to work
-		if (I_GetTime() / ticdup - entertic >= 20)
+		if (I_GetTime() - entertic >= 20)
 		{
 			M_Ticker();
 			return;
 		}
 	}
 
-	// run the count * ticdup dics
+	// run the count dics
 	while (counts--)
 	{
-		for (i = 0; i < ticdup; i++)
-		{
-			if (advancedemo)
-				D_DoAdvanceDemo();
-			M_Ticker();
-			G_Ticker();
-			gametic++;
-
-			// modify command for duplicated tics
-			if (i != ticdup - 1)
-			{
-				ticcmd_t *cmd;
-				int buf;
-				int j;
-
-				buf = (gametic / ticdup) % BACKUPTICS;
-
-				cmd = &netcmds[buf];
-				if (cmd->buttons & BT_SPECIAL)
-					cmd->buttons = 0;
-
-			}
-		}
+		if (advancedemo)
+			D_DoAdvanceDemo();
+		M_Ticker();
+		G_Ticker();
+		gametic++;
 		NetUpdate(); // check for new console commands
 	}
 }

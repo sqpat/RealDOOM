@@ -229,7 +229,7 @@ void G_BuildTiccmd (ticcmd_t* cmd)
     if (
          gamekeydown[key_right]
         || gamekeydown[key_left]) 
-        turnheld += ticdup; 
+        turnheld += 1; 
     else 
         turnheld = 0; 
 
@@ -318,7 +318,7 @@ void G_BuildTiccmd (ticcmd_t* cmd)
     } 
     else 
     { 
-        dclicktime += ticdup; 
+        dclicktime += 1; 
         if (dclicktime > 20) 
         { 
             dclicks = 0; 
@@ -344,7 +344,7 @@ void G_BuildTiccmd (ticcmd_t* cmd)
     } 
     else 
     { 
-        dclicktime2 += ticdup; 
+        dclicktime2 += 1; 
         if (dclicktime2 > 20) 
         { 
             dclicks2 = 0; 
@@ -563,11 +563,11 @@ void G_Ticker (void)
     
 	// get commands, check consistancy,
 	 // and build new consistancy check
-	buf = (gametic / ticdup) % BACKUPTICS;
+	buf = (gametic) % BACKUPTICS;
 
 	cmd = &players[0].cmd;
 
-	memcpy(cmd, &netcmds[buf], sizeof(ticcmd_t));
+	memcpy(cmd, &localcmds[buf], sizeof(ticcmd_t));
 
 	if (demoplayback)
 		G_ReadDemoTiccmd(cmd);

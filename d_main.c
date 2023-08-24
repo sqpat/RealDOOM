@@ -190,11 +190,6 @@ void D_ProcessEvents (void)
 {
     event_t*    ev;
         
-    // IF STORE DEMO, DO NOT ACCEPT INPUT
-	if ((commercial) && (W_CheckNumForName("map01") < 0)) {
-		return;
-	}
-
     for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
         ev = &events[eventtail];
 		if (M_Responder(ev)) {
@@ -397,11 +392,11 @@ byte copynode[10540];
 
 void D_DoomLoop (void)
 {
-	char result[3000];
-	char result2[2000];
-	int lasttick = 0;
-	int lastindex = 0;
-	int stoptic;
+	//char result[3000];
+	//char result2[2000];
+	//int lasttick = 0;
+	//int lastindex = 0;
+	//int stoptic;
 	vldoor_t* doorunit;
 	line_t* lines;
 	line_t* check;
@@ -431,7 +426,7 @@ void D_DoomLoop (void)
         if (singletics) {
 			I_StartTic ();
 			D_ProcessEvents ();
-            G_BuildTiccmd (&netcmds[maketic%BACKUPTICS]);
+			G_BuildTiccmd(&localcmds[maketic % BACKUPTICS]);
 			if (advancedemo) {
 				D_DoAdvanceDemo();
 			}
@@ -471,7 +466,8 @@ void D_DoomLoop (void)
 
 		}*/
 
-		stoptic = 7000;
+		/*
+		stoptic = 1030;
 		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {
@@ -479,17 +475,9 @@ void D_DoomLoop (void)
 				
 				//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
 
+				//SAVEDUNIT = Z_LoadBytesFromEMS(1523);
 				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
-				//SAVEDUNIT = Z_LoadBytesFromEMS(1640);  // spectre
-
-				/*
-				for (i = 0; i < 30; i++) {
-					plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[i]);
-					if (plat->secnum==23){
-						break;
-					}
-				}
-				*/
+				 
 				//sector = &((sector_t*)Z_LoadBytesFromEMS(sectorsRef))[23];
 				//sprintf(result2, "%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, sector->ceilingheight, sector->floorheight, sector->soundorgX, sector->soundorgY, sector->floorpic, sector->specialdataRef, 0, 0);
 
@@ -524,7 +512,7 @@ void D_DoomLoop (void)
 			//	I_Error("badcopy");
 			//}
 		}
-		 
+		 */
 
 	}
 }

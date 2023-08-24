@@ -245,7 +245,7 @@ R_PointOnSegSide
     // back side
     return 1;			
 }
-
+/*
 int
 SlopeDiv
 ( unsigned	num,
@@ -260,6 +260,11 @@ SlopeDiv
 
     return ans <= SLOPERANGE ? ans : SLOPERANGE;
 }
+*/
+
+// todo is this faster for 16 bit?
+#define SlopeDiv(num, den) ((den < 512) ? SLOPERANGE : min((num << 3) / (den >> 8), SLOPERANGE))
+
 
 //
 // R_PointToAngle

@@ -687,75 +687,7 @@ void P_RemoveMobj (MEMREF mobjRef)
 
 
 
-
-//
-// P_RespawnSpecials
-//
-void P_RespawnSpecials (void)
-{
-    fixed_t		x;
-    fixed_t		y;
-    fixed_t		z;
-    
-    mobj_t*		mo;
-    mapthing_t*		mthing;
-	MEMREF moRef;
-	short subsecnum;
-	subsector_t* subsectors;
-	short subsectorsecnum;
-	sector_t* sectors;
-
-    int			i;
-
-    
-	// nothing left to respawn?
-	if (iquehead == iquetail) {
-		return;
-	}
-
-    // wait at least 30 seconds
-	if (leveltime - itemrespawntime[iquetail] < 30 * 35) {
-		return;
-	}
-
-    mthing = &itemrespawnque[iquetail];
-	
-    x = mthing->x << FRACBITS; 
-    y = mthing->y << FRACBITS; 
-	  
-    // spawn a teleport fog at the new spot
-	subsecnum = R_PointInSubsector(x, y);
-	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
-	subsectorsecnum = subsectors[subsecnum].secnum;
-
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-
-	moRef = P_SpawnMobj (x, y, sectors[subsectorsecnum].floorheight , MT_IFOG);
-    S_StartSoundFromRef (moRef, sfx_itmbk);
-
-    // find which type to spawn
-    for (i=0 ; i< NUMMOBJTYPES ; i++) {
-		if (mthing->type == mobjinfo[i].doomednum) {
-			break;
-		}
-    }
-    
-    // spawn it
-    if (mobjinfo[i].flags & MF_SPAWNCEILING)
-		z = ONCEILINGZ;
-    else
-		z = ONFLOORZ;
-
-    moRef = P_SpawnMobj (x,y,z, i);
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-    mo->spawnpoint = *mthing;	
-    mo->angle = ANG45 * (mthing->angle/45);
-
-    // pull it from the que
-    iquetail = (iquetail+1)&(ITEMQUESIZE-1);
-}
-
-
+ 
 
 
 //
@@ -851,6 +783,8 @@ void P_SpawnMapThing (mapthing_t* mthing, int key)
 	mapthing_t copyofthing = *mthing;
 
 		
+	
+
 	if (mthing->type == 11 || mthing->type == 2 || mthing->type == 3 || mthing->type == 4) {
 		return;
 	}
@@ -865,6 +799,7 @@ void P_SpawnMapThing (mapthing_t* mthing, int key)
 
 		return;
     }
+
 
     // check for apropriate skill level
 	if ((mthingoptions & 16)) {
@@ -881,6 +816,8 @@ void P_SpawnMapThing (mapthing_t* mthing, int key)
 	 
 		return;
 	}
+
+
     // find which type to spawn
 	for (i = 0; i < NUMMOBJTYPES; i++) {
 		if (mthingtype == mobjinfo[i].doomednum) {
@@ -916,7 +853,7 @@ void P_SpawnMapThing (mapthing_t* mthing, int key)
 
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
     mobj->spawnpoint = copyofthing;
-
+	
     if (mobj->tics > 0)
 		mobj->tics = 1 + (P_Random () % mobj->tics);
     if (mobj->flags & MF_COUNTKILL)

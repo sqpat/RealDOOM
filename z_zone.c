@@ -82,6 +82,12 @@
 // 4 14872259 2361729 4499651 207 (2134 in 9287) removed joystick code
 // 4 14834692 2361729 4499651 207 (2134 in 9211) removed more code
 
+// 64 14821801 279 262 207 (2134 in 2186)
+// 64 14821801 279 262 207 (2134 in 2163)  // redo draws
+// 32 14821801 47815 55080 207 (2134 in 2001)  // redo some net code and such
+// 32 14821801 47815 55080 207 (2134 in 1869)  // some various optimizations copied over from fastdoom
+   // 1828 after some r_bsp redos
+
 
 // demo 1
 // 4 26890040 1545385 2221063 181
@@ -121,7 +127,7 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 4096
-#define NUM_EMS_PAGES 4
+#define NUM_EMS_PAGES 32
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 64 * 1024
 
