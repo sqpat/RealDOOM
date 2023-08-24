@@ -62,6 +62,7 @@
 #define ALLOC_TYPE_LNAMES 21
 #define ALLOC_TYPE_SCREEN 22
 #define ALLOC_TYPE_THINKER 23
+#define ALLOC_TYPE_SUBSECS 24
 
 typedef unsigned short MEMREF;  //used externally for allocations list index
 typedef unsigned short PAGEREF; //used internally for allocations list index
@@ -107,10 +108,11 @@ void Z_FreeTagsEMS (int lowtag, int hightag);
 void* Z_LoadBytesFromEMS2 (MEMREF index, char* file, int line);
 MEMREF Z_MallocEMSNew(int size, unsigned char tag, unsigned char user, unsigned char sourceHint);
 MEMREF Z_MallocEMSNewWithBackRef(int size, unsigned char tag, unsigned char user, unsigned char sourceHint, short backRef);
+#ifdef MEMORYCHECK
 void Z_CheckEMSAllocations(PAGEREF block, int i, int var2, int var3);
+#endif
 void Z_ChangeTagEMSNew (MEMREF index, short tag);
 void Z_FreeEMSNew(PAGEREF block, int error);
-void Z_PrintAllocationInfo(MEMREF index);
 
 int Z_RefIsActive2(MEMREF memref, char* file, int line);
 

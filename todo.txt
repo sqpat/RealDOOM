@@ -8,11 +8,18 @@ CURRENT TODO
 
 PROBLEMS/IMPROVEMENTS
 ? why was there a 0 allocation (might be e1m1 marker etc?)
-- mobj has a subsector num, but its mostly used to retrieve secnum, save that instead or as well?
-- sector mobjlists kinda suck (potentially spread across many pages).. not a big deal?
-- thinkercap/thinker list kinda sucks (potentially spread across many pages)
-- linebuffer is pointers, not offsets.
+x P_BlockLinesIterator iterator passes a lines array. should be offset.
+x put all the range checks, etc in define blocks.
+
+
+x next: do subsectors in ems
+  x mobj has a subsector num, but its mostly used to retrieve secnum, save that as well?
+- linebuffer is pointers, not offsets. Change this...
+- lines to zmallocems
 - secs has frontsecnum and backsecnum as well as pointer to line which has this. Reduce memory footprint by removing these?
+
+- thinkercap/thinker list kinda sucks (potentially spread across many pages)
+- sector mobjlists kinda suck (potentially spread across many pages).. not a big deal?
 - maybe invalidate memory when paged out (all ff or something)
 
 - blocklinks is 2000 size. Figure out a more proper number?

@@ -636,7 +636,9 @@ void R_AddSprites (short secnum)
     int                 lightnum;
 	mobj_t*				thingList;
 	MEMREF				lastThingRef = -1;
-	int i = 0;
+	#ifdef LOOPCHECK 
+		int i = 0;
+	#endif
 
     // BSP is traversed by subsector.
     // A sector might have been split into several
@@ -669,12 +671,13 @@ void R_AddSprites (short secnum)
 		thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 		 
 		lastThingRef = thingRef;
-		i++;
-		if (i > 1000) {
-			// 625, 463, 463...   type 2, 0
-			I_Error("caught inf %i %i %i %i %i", gametic, prndindex, thingRef, thing->snextRef, thing->type);
-		}
-		//Z_RefIsActive(sectors[secnum].thinglistRef);
+		#ifdef LOOPCHECK 
+			i++;
+			if (i > 1000) {
+				// 625, 463, 463...   type 2, 0
+				I_Error("caught inf %i %i %i %i %i", gametic, prndindex, thingRef, thing->snextRef, thing->type);
+			}
+		#endif
 	}
 
 
@@ -806,7 +809,7 @@ void R_DrawPlayerSprites (void)
     
     // get light level
     lightnum =
-        (sectors[subsectors[playermo->subsecnum].secnum].lightlevel >> LIGHTSEGSHIFT)
+        (sectors[playermo->secnum].lightlevel >> LIGHTSEGSHIFT)
         +extralight;
 
     if (lightnum < 0)           

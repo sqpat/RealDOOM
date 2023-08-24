@@ -126,14 +126,14 @@ static int bspcounter = 0;
 // Returns true
 //  if strace crosses the given subsector successfully.
 //
-boolean P_CrossSubsector (int num)
+boolean P_CrossSubsector (short subsecnum)
 {
-    seg_t*		seg;
+    short		segnum;
+	short linedefOffset;
     line_t*		line;
     int			s1;
     int			s2;
     int			count;
-    subsector_t*	sub;
     short frontsecnum;
 	short backsecnum;
     fixed_t		opentop;
@@ -143,33 +143,36 @@ boolean P_CrossSubsector (int num)
     vertex_t		v2;
     fixed_t		frac;
     fixed_t		slope;
-	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-	
+	seg_t* segs;
+	vertex_t* vertexes;
+	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
+
 
 #ifdef RANGECHECK
-	if (num >= numsubsectors) {
-		I_Error("P_CrossSubsector: ss %i with numss = %i %i %i %i %i", num, numsubsectors, numreads, pageins, pageouts, bspcounter);
+	if (subsecnum >= numsubsectors) {
+		I_Error("P_CrossSubsector: ss %i with numss = %i %i %i %i %i", subsecnum, numsubsectors, numreads, pageins, pageouts, bspcounter);
 	}
 #endif
-
-
-    sub = &subsectors[num];
     
     // check lines
-    count = sub->numlines;
-    seg = &segs[sub->firstline];
+    count = subsectors[subsecnum].numlines;
+    segnum = subsectors[subsecnum].firstline;
 	
-    for ( ; count ; seg++, count--) {
-		line = &lines[seg->linedefOffset];
+    for ( ; count ; segnum++, count--) {
+		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+		linedefOffset = segs[segnum].linedefOffset;
+		frontsecnum = segs[segnum].frontsecnum;
+		backsecnum = segs[segnum].backsecnum;
+
+		line = &lines[linedefOffset];
 
 		// allready checked other side?
 		if (line->validcount == validcount) {
 			continue;
 		}
-
 		line->validcount = validcount;
-		
+		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+
 		v1 = vertexes[line->v1Offset];
 		v2 = vertexes[line->v2Offset];
 		s1 = P_DivlineSide (v1.x,v1.y, &strace);
@@ -196,8 +199,6 @@ boolean P_CrossSubsector (int num)
 			return false;
 	
 		// crosses a two sided line
-		frontsecnum = seg->frontsecnum;
-		backsecnum = seg->backsecnum;
 
 		// no wall to block sight with?
 		if (sectors[frontsecnum].floorheight == sectors[backsecnum].floorheight && sectors[frontsecnum].ceilingheight == sectors[backsecnum].ceilingheight) {
@@ -249,13 +250,16 @@ boolean P_CrossSubsector (int num)
 // Returns true
 //  if strace crosses the given node successfully.
 //
-boolean P_CrossBSPNode (int bspnum)
+boolean P_CrossBSPNode (unsigned short bspnum)
 {
     node_t*	bsp;
     int		side;
 	node_t* nodes;
 	bspcounter++;
 	
+	if (bspnum < 0 || bspnum > 65535) {
+		I_Error("bspnum too many bits? %i", bspnum);
+	}
 
 	//if (bspnum > numsubsectors) {
 		//I_Error("too big %i %i", bspnum&(~NF_SUBSECTOR), numsubsectors, bspnum);
@@ -312,8 +316,6 @@ P_CheckSight
 ( MEMREF t1Ref,
   MEMREF t2Ref)
 {
-    int		s1;
-    int		s2;
     int		pnum;
     int		bytenum;
     int		bitnum;
@@ -322,22 +324,20 @@ P_CheckSight
 	fixed_t t1x = t1->x;
 	fixed_t t1y = t1->y;
 	fixed_t t1height = t1->height;
-	short t1subsecnum = t1->subsecnum;
+	short s1 = t1->secnum;
 
 	mobj_t*	t2 = (mobj_t*)Z_LoadBytesFromEMS(t2Ref);
 	fixed_t t2z = t2->z;
 	fixed_t t2x = t2->x;
 	fixed_t t2y = t2->y;
 	fixed_t t2height = t2->height;
-	short t2subsecnum = t2->subsecnum;
+	short s2 = t2->secnum;
 
 	//I_Error("set call %i  %i %p %p", t1Ref, t2Ref, t1, t2);
 
     // First check for trivial rejection.
 
     // Determine subsector entries in REJECT table.
-	s1 = subsectors[t1subsecnum].secnum;
-	s2 = subsectors[t2subsecnum].secnum;
     pnum = s1*numsectors + s2;
     bytenum = pnum>>3;
     bitnum = 1 << (pnum&7);
@@ -353,14 +353,12 @@ P_CheckSight
     // An unobstructed LOS is possible.
     // Now look from eyes of t1 to any part of t2.
     sightcounts[1]++;
-
     validcount++;
 	
     sightzstart = t1z + t1height - (t1height>>2);
     topslope = (t2z+t2height) - sightzstart;
     bottomslope = (t2z) - sightzstart;
 	
-	t2 = (mobj_t*)Z_LoadBytesFromEMS(t2Ref);
     strace.x = t1x;
     strace.y = t1y;
     cachedt2x = t2x;

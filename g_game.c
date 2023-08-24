@@ -849,6 +849,9 @@ G_CheckSpot
     int                 i;
 	mobj_t*				playerMo;
 	MEMREF				moRef;
+	subsector_t* subsectors;
+	short subsecnum;
+	short secnum;
         
     if (!players[playernum].moRef)
     {
@@ -875,11 +878,14 @@ G_CheckSpot
     bodyqueslot++; 
         
     // spawn a teleport fog 
-    ss = R_PointInSubsector (x,y); 
+    subsecnum = R_PointInSubsector (x,y); 
+	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
+
+	secnum = subsectors[subsecnum].secnum;
     an = ( ANG45 * (mthing->angle/45) ) >> ANGLETOFINESHIFT; 
  
     moRef = P_SpawnMobj (x+20*finecosine[an], y+20*finesine[an] 
-                      , sectors[ss->secnum].floorheight
+                      , sectors[secnum].floorheight
                       , MT_TFOG); 
          
 	if (players[consoleplayer].viewz != 1) {

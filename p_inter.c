@@ -340,9 +340,12 @@ P_TouchSpecialThing
     int		sound;
 	mobj_t* playerMo;
 	mobj_t* special = (mobj_t*)Z_LoadBytesFromEMS(specialRef);
+	fixed_t specialz = special->z;
+	spritenum_t specialsprite = special->sprite;
+	int specialflags = special->flags;
 	mobj_t* toucher = (mobj_t*)Z_LoadBytesFromEMS(toucherRef);
 		
-    delta = special->z - toucher->z;
+    delta = specialz - toucher->z;
 
     if (delta > toucher->height
 	|| delta < -8*FRACUNIT)
@@ -361,7 +364,7 @@ P_TouchSpecialThing
 	return;
 
     // Identify by sprite.
-    switch (special->sprite)
+    switch (specialsprite)
     {
 	// armor
       case SPR_ARM1:
@@ -531,7 +534,7 @@ P_TouchSpecialThing
 	
 	// ammo
       case SPR_CLIP:
-	if (special->flags & MF_DROPPED)
+	if (specialflags & MF_DROPPED)
 	{
 	    if (!P_GiveAmmo (player,am_clip,0))
 		return;
@@ -607,7 +610,7 @@ P_TouchSpecialThing
 	break;
 	
       case SPR_MGUN:
-	if (!P_GiveWeapon (player, wp_chaingun, special->flags&MF_DROPPED) )
+	if (!P_GiveWeapon (player, wp_chaingun, specialflags&MF_DROPPED) )
 	    return;
 	player->message = GOTCHAINGUN;
 	sound = sfx_wpnup;	
@@ -635,14 +638,14 @@ P_TouchSpecialThing
 	break;
 	
       case SPR_SHOT:
-	if (!P_GiveWeapon (player, wp_shotgun, special->flags&MF_DROPPED ) )
+	if (!P_GiveWeapon (player, wp_shotgun, specialflags&MF_DROPPED ) )
 	    return;
 	player->message = GOTSHOTGUN;
 	sound = sfx_wpnup;	
 	break;
 		
       case SPR_SGN2:
-	if (!P_GiveWeapon (player, wp_supershotgun, special->flags&MF_DROPPED ) )
+	if (!P_GiveWeapon (player, wp_supershotgun, specialflags&MF_DROPPED ) )
 	    return;
 	player->message = GOTSHOTGUN2;
 	sound = sfx_wpnup;	
@@ -652,7 +655,7 @@ P_TouchSpecialThing
 	I_Error ("P_SpecialThing: Unknown gettable thing");
     }
 	
-    if (special->flags & MF_COUNTITEM)
+    if (specialflags & MF_COUNTITEM)
 	player->itemcount++;
     P_RemoveMobj (specialRef);
     player->bonuscount += BONUSADD;
@@ -794,6 +797,11 @@ P_DamageMobj
 	mobj_t* source;
 	mobj_t* inflictor;
 	mobj_t* target;
+	fixed_t inflictorx;
+	fixed_t inflictory;
+	fixed_t inflictorz;
+	
+
 	if (targetRef == 0) {
 		I_Error("bad damage %i %i %i %i ", targetRef, inflictorRef, sourceRef, damage);
 	}
@@ -827,8 +835,13 @@ P_DamageMobj
     if (inflictorRef && !(target->flags & MF_NOCLIP) && (!sourceRef || !source->player || source->player->readyweapon != wp_chainsaw)) {
 
 		inflictor = (mobj_t*)Z_LoadBytesFromEMS(inflictorRef);
-		ang = R_PointToAngle2 ( inflictor->x,
-				inflictor->y,
+		inflictorx = inflictor->x;
+		inflictory = inflictor->y;
+		inflictorz = inflictor->z;
+		target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
+
+		ang = R_PointToAngle2 ( inflictorx,
+				inflictory,
 				target->x,
 				target->y);
 		
@@ -837,86 +850,79 @@ P_DamageMobj
 		// make fall forwards sometimes
 		if ( damage < 40
 			 && damage > target->health
-			 && target->z - inflictor->z > 64*FRACUNIT
+			 && target->z - inflictorz > 64*FRACUNIT
 			 && (P_Random ()&1) )
 		{
 			ang += ANG180;
 			thrust *= 4;
 		}
-		
+
 		ang >>= ANGLETOFINESHIFT;
 		target->momx += FixedMul (thrust, finecosine[ang]);
 		target->momy += FixedMul (thrust, finesine[ang]);
     }
-    
+
     // player specific
-    if (player)
-    {
+    if (player) {
 
- 
-	
+		// end of game hell hack
+		if (sectors[target->secnum].special == 11 && damage >= target->health) {
+			damage = target->health - 1;
+		}
 
-	// end of game hell hack
-	if (sectors[subsectors[target->subsecnum].secnum].special == 11
-	    && damage >= target->health)
-	{
-	    damage = target->health - 1;
-	}
+		// Below certain threshold,
+		// ignore damage in GOD mode, or with INVUL power.
+		if ( damage < 1000
+			 && ( (player->cheats&CF_GODMODE)
+			  || player->powers[pw_invulnerability] ) )
+		{
+			return;
+		}
 	
-
-	// Below certain threshold,
-	// ignore damage in GOD mode, or with INVUL power.
-	if ( damage < 1000
-	     && ( (player->cheats&CF_GODMODE)
-		  || player->powers[pw_invulnerability] ) )
-	{
-	    return;
-	}
-	
-	if (player->armortype)
-	{
-	    if (player->armortype == 1)
-		saved = damage/3;
-	    else
-		saved = damage/2;
+		if (player->armortype)
+		{
+			if (player->armortype == 1)
+			saved = damage/3;
+			else
+			saved = damage/2;
 	    
-	    if (player->armorpoints <= saved)
-	    {
-		// armor is used up
-		saved = player->armorpoints;
-		player->armortype = 0;
-	    }
-	    player->armorpoints -= saved;
-	    damage -= saved;
-	}
+			if (player->armorpoints <= saved)
+			{
+			// armor is used up
+			saved = player->armorpoints;
+			player->armortype = 0;
+			}
+			player->armorpoints -= saved;
+			damage -= saved;
+		}
 
  
 
 
-	player->health -= damage; 	// mirror mobj health here for Dave
-	if (player->health < 0)
-	    player->health = 0;
+		player->health -= damage; 	// mirror mobj health here for Dave
+		if (player->health < 0)
+			player->health = 0;
 	
-	player->attackerRef = sourceRef;
-	player->damagecount += damage;	// add damage after armor / invuln
+		player->attackerRef = sourceRef;
+		player->damagecount += damage;	// add damage after armor / invuln
 
-	if (player->damagecount > 100)
-	    player->damagecount = 100;	// teleport stomp does 10k points...
+		if (player->damagecount > 100)
+			player->damagecount = 100;	// teleport stomp does 10k points...
 	
-	temp = damage < 100 ? damage : 100;
+		temp = damage < 100 ? damage : 100;
 
 
-	if (player->health == 12) {
-		// 28 14 0
-		// 32 28 16 12 0
-		//I_Error("%i %i %i", gametic, damage, inflictor->type); // 1918 4 31
-	}
+		if (player->health == 12) {
+			// 28 14 0
+			// 32 28 16 12 0
+			//I_Error("%i %i %i", gametic, damage, inflictor->type); // 1918 4 31
+		}
 
 
-	/*
-	if (player == &players[consoleplayer])
-	    I_Tactile (40,10,40+temp*2);
-	*/
+		/*
+		if (player == &players[consoleplayer])
+			I_Tactile (40,10,40+temp*2);
+		*/
  
 
 	}

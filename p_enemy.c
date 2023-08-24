@@ -161,7 +161,7 @@ P_NoiseAlert
 	mobj_t* emmiter = (mobj_t*)Z_LoadBytesFromEMS(emmiterRef);
 	soundtargetRef = targetRef;
     validcount++;
-    P_RecursiveSound (subsectors[emmiter->subsecnum].secnum, 0);
+    P_RecursiveSound (emmiter->secnum, 0);
 }
 
 
@@ -625,10 +625,13 @@ void A_Look (MEMREF actorRef)
 
 
 	actor->threshold = 0;	// any shot will wake up
-	if (subsectors[actor->subsecnum].secnum > numsectors) {
-		I_Error("bad sector %i %i %i %i %i %i %i", gametic, subsectors[actor->subsecnum].secnum, numsectors, actorRef, actor->type, actor->x, actor->y);
-	}
-    targRef = sectors[subsectors[actor->subsecnum].secnum].soundtargetRef;
+
+	#ifdef RANGECHECK
+		if (actor->secnum > numsectors) {
+			I_Error("bad sector %i %i %i %i %i %i %i", gametic, actor->secnum, numsectors, actorRef, actor->type, actor->x, actor->y);
+		}
+	#endif
+    targRef = sectors[actor->secnum].soundtargetRef;
 
 
 	if (targRef) {

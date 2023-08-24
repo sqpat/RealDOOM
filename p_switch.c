@@ -302,6 +302,8 @@ P_UseSpecialLine
 	}
     }
 
+
+
     
     // Switches that other things can activate.
     if (!thing->player)
@@ -341,7 +343,10 @@ P_UseSpecialLine
 
       case 117:		// Blazing door raise
       case 118:		// Blazing door open
-	EV_VerticalDoor (linenum, thingRef);
+
+		 
+
+		  EV_VerticalDoor (linenum, thingRef);
 	break;
 	
 	//UNUSED - Door Slide Open&Close

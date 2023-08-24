@@ -189,15 +189,19 @@ R_ClipPassWallSegment
   int	last )
 {
     cliprange_t*	start;
-	int i = 0;
+	#ifdef LOOPCHECK 
+		int i = 0;
+	#endif
     // Find the first range that touches the range
     //  (adjacent pixels are touching).
     start = solidsegs;
 	while (start->last < first - 1) {
 		start++;
-		if (i > 1000) {
-			I_Error("too big? q");
-		}
+		#ifdef LOOPCHECK 
+			if (i > 1000) {
+				I_Error("too big? q");
+			}
+		#endif	
 
 	}
     if (first < start->first)
@@ -215,15 +219,19 @@ R_ClipPassWallSegment
 
     // Bottom contained in start?
     if (last <= start->last)
-	return;			
-	i = 0;
+		return;			
+	#ifdef LOOPCHECK 
+		i = 0;
+	#endif
 
     while (last >= (start+1)->first-1)
     {
-		i++;
-		if (i > 1000) {
-				I_Error("too big?");
-		}
+		#ifdef LOOPCHECK 
+			i++;
+			if (i > 1000) {
+					I_Error("too big?");
+			}
+		#endif	
 	// There is a fragment between two posts.
 	R_StoreWallRange (start->last + 1, (start+1)->first - 1);
 	start++;
@@ -508,9 +516,11 @@ int upcount = 0;
 //
 void R_Subsector (int num) {
     int			count;
-    subsector_t*	sub;
+    //subsector_t*	sub;
 	seg_t* segs;
 	int lineoffset = 0;
+	short firstline;
+	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 
 	#ifdef RANGECHECK
 		if (num >= numsubsectors) {
@@ -522,9 +532,9 @@ void R_Subsector (int num) {
 
 
     sscount++;
-    sub = &subsectors[num];
-    frontsecnum = sub->secnum;
-    count = sub->numlines;
+    frontsecnum = subsectors[num].secnum;
+    count = subsectors[num].numlines;
+	firstline = subsectors[num].firstline;
 
     if (sectors[frontsecnum].floorheight < viewz) {
 		floorplane = R_FindPlane (sectors[frontsecnum].floorheight,
@@ -547,19 +557,15 @@ void R_Subsector (int num) {
     R_AddSprites (frontsecnum);
 	 
     while (count--) {
-		R_AddLine (sub->firstline + lineoffset);
+		#ifdef RANGECHECK
+			if ((firstline + lineoffset) > numsegs) {
+				I_Error("R_subsector Error! lines out of bounds! %i %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
+			}
+		#endif	
+		R_AddLine (firstline + lineoffset);
 		lineoffset++;
-		if (count > 2000) {
-			I_Error("too many lines???");
-		}
-		// note: segs definitely gets paged out inside of addline, so we need to re-set the line pointer based off its start point, not just
-		// mindlessly add to the old paged-out address.
-		//segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-		//line = &segs[sub->firstline + lineoffset];
 
-		//if (line->linedefOffset > numlines) {
-			//I_Error("R_subsector Error! lines out of bounds! %i %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
-		//}
+
 	}
 }
 

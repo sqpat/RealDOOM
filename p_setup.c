@@ -31,6 +31,7 @@
 
 #include "doomdef.h"
 #include "p_local.h"
+#include "p_setup.h"
 
 #include "s_sound.h"
 
@@ -39,13 +40,11 @@
 
 void    P_SpawnMapThing(mapthing_t*    mthing);
 
-
 //
 // MAP related Lookup tables.
 // Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
 //
 int             numvertexes;
-//vertex_t       vertexes[946];
 MEMREF       vertexesRef;
 
 int             numsegs;
@@ -56,7 +55,8 @@ int             numsectors;
 sector_t*       sectors;
 
 int             numsubsectors;
-subsector_t*    subsectors;
+//subsector_t*    subsectors;
+MEMREF    subsectorsRef;
 
 int             numnodes;
 MEMREF          nodesRef;
@@ -89,7 +89,7 @@ fixed_t         bmaporgx;
 fixed_t         bmaporgy;
 
 // for thing chains
-MEMREF        blocklinks[2000];
+MEMREF        blocklinks[NUM_BLOCKLINKS];
 
 
 // REJECT
@@ -212,9 +212,11 @@ void P_LoadSubsectors(int lump)
 	int                 i;
 	mapsubsector_t*     ms;
 	subsector_t*        ss;
-
+	subsector_t*    subsectors;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectors = Z_Malloc (numsubsectors * sizeof(subsector_t), PU_LEVEL, 0);
+	subsectorsRef = Z_MallocEMSNew (numsubsectors * sizeof(subsector_t), PU_LEVEL, 0, ALLOC_TYPE_SUBSECS);
+	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
+
 	W_CacheLumpNumCheck(lump, 5);
 	data = W_CacheLumpNum(lump, PU_STATIC);
 
@@ -483,7 +485,6 @@ void P_LoadBlockMap(int lump)
 {
 	int         i;
 	int         count;
-	//MEMREF* blocklinks;
 
 	W_CacheLumpNumCheck(lump, 11);
 	blockmaplump = W_CacheLumpNum(lump, PU_LEVEL);
@@ -520,7 +521,7 @@ void P_GroupLines(void)
 	int                 total;
 	line_t*             li;
 	sector_t*           sector;
-	subsector_t*        ss;
+	short        subsecnum = 0;
 	seg_t*              seg;
 	fixed_t             bbox[4];
 	int                 block;
@@ -529,13 +530,20 @@ void P_GroupLines(void)
 	vertex_t*			vertexes;
 	line_t**				baselinebuffer;
 	line_t**  previouslinebuffer;
+	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
+	short	firstlinenum;
+	short	sidedefOffset;
+	
 
-	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	// look up sector number for each subsector
-	ss = subsectors;
-	for (i = 0; i < numsubsectors; i++, ss++) {
-		seg = &segs[ss->firstline];
-		ss->secnum = sides[seg->sidedefOffset].secnum;
+	for (i = 0; i < numsubsectors; i++, subsecnum++) {
+		firstlinenum = subsectors[subsecnum].firstline;
+		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+
+		sidedefOffset = segs[firstlinenum].sidedefOffset;
+		subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
+
+		subsectors[subsecnum].secnum = sides[sidedefOffset].secnum;
 	}
 
 	// count number of lines in each sector

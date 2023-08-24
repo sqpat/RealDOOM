@@ -805,8 +805,8 @@ void R_Init (void)
 //
 // R_PointInSubsector
 //
-subsector_t*
-R_PointInSubsector
+short
+unsigned R_PointInSubsector
 ( fixed_t	x,
   fixed_t	y )
 {
@@ -816,8 +816,9 @@ R_PointInSubsector
 	node_t* nodes;
 
     // single subsector is a special case
-    if (!numnodes)				
-	return subsectors;
+	if (!numnodes) {
+		return 0;
+	}
 		
     nodenum = numnodes-1;
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
@@ -826,7 +827,7 @@ R_PointInSubsector
 		side = R_PointOnSide (x, y, node);
 		nodenum = node->children[side];
     }
-	return &subsectors[nodenum & ~NF_SUBSECTOR];
+	return nodenum & ~NF_SUBSECTOR;
 }
 
 

@@ -68,13 +68,16 @@
 // 4 26890040 1545385 2221063 181
 // 4 26693807 1545283 2220732 181
 
+// 4 27529006 1413669 2119421 181
+
 #define ZONEID  0x1d4a11
-#define MAX_ZMALLOC_SIZE 64 * 1024
 #define PAGE_FRAME_SIZE 0x4000
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 4096
 #define NUM_EMS_PAGES 4
+// todo make this PAGE * PAGE SIZE 
+#define MAX_ZMALLOC_SIZE 64 * 1024
 
 // demo commented out...
 
@@ -614,9 +617,6 @@ void Z_ChangeTagEMSNew (MEMREF index, short tag){
     
 }
 
-void Z_PrintAllocationInfo(MEMREF index) {
-	I_Error("Info: %i %i %i %i %i %i", index, allocations[index].tag, allocations[index].prev, allocations[index].size, allocations[index].page, allocations[index].offset, allocations[index].user);
-}
 
 
 
@@ -736,9 +736,7 @@ void Z_InitEMS (void)
     allocations[1].size = size;
     allocations[1].user = 0;
     allocations[1].tag = PU_STATIC;
-
-//    printf ("\ntopcheck %p %p\n", allocations[1].user, allocations[1].size);
-
+	 
     // use this index to mark an unused block..
     for (i = 2; i < EMS_ALLOCATION_LIST_SIZE; i++){
         allocations[i].prev = EMS_ALLOCATION_LIST_SIZE;
@@ -757,9 +755,6 @@ void Z_FreeEMSNew (PAGEREF block, int error)
 
     short         other;
 	short usedBackref;
-	int val = 0;
-	int val2 = 0;
-	int val3 = 0;
 	freeCount++;
 
 	if (block == 0) {
@@ -819,9 +814,6 @@ void Z_FreeEMSNew (PAGEREF block, int error)
         allocations[block].prev = EMS_ALLOCATION_LIST_SIZE;
 		allocations[block].backRef = 0;
         block = other;
-		val += 1;
-		val2 = block;
-		val3 = other;
     }
     
     other = allocations[block].next;
@@ -845,11 +837,13 @@ void Z_FreeEMSNew (PAGEREF block, int error)
         allocations[other].prev = EMS_ALLOCATION_LIST_SIZE;
         allocations[other].user = 0;
         allocations[other].tag = 0;
-		val += 2;
     }
 
-	val3 = error;
-	Z_CheckEMSAllocations(block, val, val2, val3);
+
+
+	#ifdef MEMORYCHECK
+		Z_CheckEMSAllocations(block);
+	#endif
 
     
 }
@@ -1000,11 +994,10 @@ void Z_DoPageOut(short pageframeindex) {
 	if (activepages[pageframeindex] == -1) {
 		return;
 	}
-	//printf("\nPAGING OUT! page %i, from %p to %p", pageframeindex + i, copysrc, copydst);
+	
 	if (numPagesToSwap <= 0) {
 		numPagesToSwap = 1;
 	}
-
 
 	memcpy(copydst, copysrc, PAGE_FRAME_SIZE * numPagesToSwap);
 	memset(copysrc, 0x00, PAGE_FRAME_SIZE * numPagesToSwap);
@@ -1026,7 +1019,7 @@ void Z_DoPageIn(short logicalpage, short pageframeindex, unsigned char numalloca
 	int i = 0;
 	byte* copydst = copyPageArea + pageframeindex * PAGE_FRAME_SIZE;
 	byte* copysrc = (byte*)mainzoneEMS + logicalpage * PAGE_FRAME_SIZE;
-	//printf("\nPAGING in! page %i, from %p to %p", pageframeindex, copysrc, copydst);
+	
 	memcpy(copydst, copysrc, PAGE_FRAME_SIZE * numallocatepages);
 	
 	// mark the page size. needed for dealocating all pages later
@@ -1139,34 +1132,13 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 	 
 	// update active EMS pages
 	for (i = 0; i < numallocatepages; i++) {
-		
 		if (activepages[pageframeindex + i] >= 0){
 			Z_DoPageOut(pageframeindex+i);
-
-			if (pagesize[pageframeindex + i] > (numallocatepages-i)) {
-				if (pagesize[pageframeindex + i] > extradeallocatepages) {
-					//extradeallocatepages = (pagesize[pageframeindex + i] - (numallocatepages - i));
-
-				}
-			}
-
-
-			 
-
 		}  
-		 
-	
 	}
 
 
-	// deallocated a multi-block allocation above... do the rest here?
-	//for (i = 0; i < extradeallocatepages; i++) {
-
-		// swap OUT memory
-		//Z_DoPageOut(pageframeindex + i + numallocatepages);
-	//}
-
-
+ 
 
 
 	// todo skip the copy if it was -1 ?
@@ -1181,11 +1153,7 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 	//printf("\n new: %i %i %i %i", pageevictorder[0], pageevictorder[1], pageevictorder[2], pageevictorder[3]);
 	//printf("\n new: %i %i %i %i", activepages[0], activepages[1], activepages[2], activepages[3]);
 
-	// 0 6 3 12 1 2  13 4  14 15 7  8 11 9 10
-	// 1 1 1 1  1 1  1  1  2  -1 2 -1 1  2 -1
-	// 6 5 4 3  7 12 10 11 13 14 1  2 0  8 9
-	
-	// 8 6 5 4  3 7 12 10 11 13 14 9  2  1 0
+ 
 
 	
     return pageframeindex;
@@ -1198,11 +1166,8 @@ void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
 	mobj_t* thing;
 
 
-	//todo which was correct again?
-
-//	if (ref > MAX_PAGE_FRAMES) {
-	if (ref > EMS_ALLOCATION_LIST_SIZE) {
-
+ 
+ 	if (ref > EMS_ALLOCATION_LIST_SIZE) {
 		I_Error("out of bounds memref.. %i %s %i", ref, file, line);
 	}
 	if (ref == 0) {
@@ -1230,11 +1195,6 @@ void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
 		+ PAGE_FRAME_SIZE * pageframeindex
 		+ allocations[ref].offset;
 
-
-
-	 
-    
-	//printf("returned address %p page number %i", address, pageframeindex);
 
     return (byte *)address;
     
@@ -1335,11 +1295,8 @@ PAGEREF Z_GetNextFreeArrayIndex(){
     }
 
     // error case
-    printf("Z_GetNextFreeArrayIndex: Couldn't find a free index!");
+    printf("Z_GetNextFreeArrayIndex: failed on allocation of %i pages %i bytes %i biggest %i ", getNumFreePages(), getFreeMemoryByteTotal(), getBiggestFreeBlock);
     I_Error ("Z_GetNextFreeArrayIndex: failed on allocation of %i pages %i bytes %i biggest %i ",  getNumFreePages(), getFreeMemoryByteTotal(), getBiggestFreeBlock);
-
-    I_Error ("Z_GetNextFreeArrayIndex: Couldn't find a free index!");
-    
 
     return -1;
     
@@ -1398,12 +1355,7 @@ Z_MallocEMSNewWithBackRef
 
 
 // algorithm:
-
-// eventually look thru most recently used pages in order?
-//    for (internalpagenumber = 3; internalpagenumber--; internalpagenumber >= 0){
-//    }
-
-// 
+	 
 	 
     // scan through the block list,
     // looking for the first free block
@@ -1415,8 +1367,7 @@ Z_MallocEMSNewWithBackRef
 	
 
     if (!allocations[allocations[base].prev].user){
-        //printf("\nchecked %p %i %i %p\n", allocations[0].user, allocations[base].prev, base, (void *)mainzoneEMS);
-        base = allocations[base].prev;
+         base = allocations[base].prev;
     }
 
     rover = base;
@@ -1426,20 +1377,19 @@ Z_MallocEMSNewWithBackRef
     if (offsetToNextPage == PAGE_FRAME_SIZE){
         offsetToNextPage = 0;
     }
-
-    //printf ("entering loop with base %i rover %i base.size %i", base, rover, allocations[base].size);
-    //printf ("b:%is:%i", base, allocations[base].size);
-    
+	 
 
   do 
     {
-        //printf ("loop  % i   % i  %i\n", size, offsetToNextPage, allocations[base].size);
-        iter++;
+         iter++;
 
-        if (iter > 2 * EMS_ALLOCATION_LIST_SIZE){
-            printf("looping forever?");
-           I_Error ("looping forever?");
-        }
+		#ifdef LOOPCHECK
+
+			if (iter > 2 * EMS_ALLOCATION_LIST_SIZE){
+				printf("looping forever?");
+			   I_Error ("looping forever?");
+			}
+        #endif	
         
         if (rover == start) {
             // scanned all the way around the list
@@ -1499,14 +1449,8 @@ Z_MallocEMSNewWithBackRef
    // handle the case where we push to the next frame. create a free block before it.
     if (offsetToNextPage != 0 && size > offsetToNextPage)
     {
-        //printf ("pfi: %i \n",base  );
-        //printf ("pushing to next page: size %i offset %i\n", size, offsetToNextPage);
-        //printf ("BEFORE\n");
-        //printf ("base    pos %i size %i next %i prev %i\n", GetBlockAddress(base), allocations[base].size, GetBlockAddress(allocations[base].next), GetBlockAddress(allocations[base].prev));
-
-        //printf ("AFTER\n");
-
-
+  
+ 
         // insert a new free block here..
 
         
@@ -1532,13 +1476,7 @@ Z_MallocEMSNewWithBackRef
         
         extra = extra - offsetToNextPage;
 
- 
-
-        //printf ("newbloc pos %i size %i next %i prev %i\n", GetBlockAddress(newfreeblockindex), allocations[newfreeblockindex].size, GetBlockAddress(allocations[newfreeblockindex].next), GetBlockAddress(allocations[newfreeblockindex].prev));
-        //printf ("base    pos %i size %i next %i prev %i\n", GetBlockAddress(base), allocations[base].size, GetBlockAddress(allocations[base].next), GetBlockAddress(allocations[base].prev));
-		 
-
-
+  
            
     }            
 
@@ -1557,27 +1495,11 @@ Z_MallocEMSNewWithBackRef
     
     offsetToNextPage = (PAGE_FRAME_SIZE - ((unsigned int)(allocations[base].offset) & 0x3FFF));
 // In this case, PAGE FRAME SIZE is ok/expected.
-//    if (offsetToNextPage == PAGE_FRAME_SIZE){
-//        offsetToNextPage = 0;
-//    }
 
 
     if (extra >  EMS_MINFRAGMENT)
     {
 
-        // check if remaining size in page frame is < minfragment. If so, push size to end of fragment.
-//            4000              3950             64
-    if ((offsetToNextPage - size) > 0 && (offsetToNextPage - size) < MINFRAGMENT){
-            extrasize = (offsetToNextPage - size);
-            //printf ("creating extrasize %p %p %p\n", size, offsetToNextPage, extrasize );
-        }
-
-        //printf ("creating new fragment after allocation %i %i %i %i\n", size, offsetToNextPage, extra, extrasize);
-        
-        //printf ("\nBEFORE:");
-        //printf ("base    pos %i size %i next %i prev %i\n", GetBlockAddress(base), allocations[base].size, GetBlockAddress(allocations[base].next), GetBlockAddress(allocations[base].prev));
-
-        //printf ("AFTER:");
 
         // there will be a free fragment after the allocated block
         newfreeblockindex = Z_GetNextFreeArrayIndex();
@@ -1588,7 +1510,6 @@ Z_MallocEMSNewWithBackRef
 		allocations[newfreeblockindex].backRef = -1;
 		allocations[allocations[newfreeblockindex].next].prev = newfreeblockindex;
 
-        //TODO CHECK
         allocations[newfreeblockindex].offset = (allocations[base].offset + (size + extrasize)) &0x3FFF ;
         //printf ("page before  %i %i %i\n", allocations[newfreeblockindex].page, size + extrasize, (size + extrasize) >> 14);
 
@@ -1598,16 +1519,14 @@ Z_MallocEMSNewWithBackRef
 
         allocations[base].next = newfreeblockindex;
         allocations[base].size = size + extrasize;
-
-        //printf ("newbloc pos %i size %i next %i prev %i\n", GetBlockAddress(newfreeblockindex), allocations[newfreeblockindex].size, GetBlockAddress(allocations[newfreeblockindex].next), GetBlockAddress(allocations[newfreeblockindex].prev));
-        //printf ("base    pos %i size %i next %i prev %i\n", GetBlockAddress(base), allocations[base].size, GetBlockAddress(allocations[base].next), GetBlockAddress(allocations[base].prev));
-   
+		 
     }
 
     if (user) {
         // mark as an in use block
         allocations[base].user = 0xFF;
     } else {
+
         if (tag >= PU_PURGELEVEL)
             I_Error ("Z_Malloc: an owner is required 4 purgable blocks");
 
@@ -1629,8 +1548,9 @@ Z_MallocEMSNewWithBackRef
     
 
     // todo activate page
-
-    Z_CheckEMSAllocations(base, 0, 0, 0);
+	#ifdef MEMORYCHECK
+		Z_CheckEMSAllocations(base, 0, 0, 0);
+	#endif
 
 //    if (allocations[currentListHead].page > 250){
 //        I_Error("C: Last pages? %i %i %i %i %i %i", varA, varB, getNumFreePages(), getFreeMemoryByteTotal(), currentListHead, allocations[currentListHead].page);
@@ -1645,8 +1565,9 @@ Z_MallocEMSNewWithBackRef
 int GetBlockAddress(PAGEREF block){
     return allocations[block].page * PAGE_FRAME_SIZE + allocations[block].offset;
 }
+#ifdef MEMORYCHECK
 
-void Z_CheckEMSAllocations(PAGEREF block, int var, int var2, int var3){
+void Z_CheckEMSAllocations(PAGEREF block){
 
     // all allocation entries should either be in the chain (linked list)
     // OR marked as a free index (prev = EMS_ALLOCATION_LIST_SIZE)
@@ -1658,8 +1579,8 @@ void Z_CheckEMSAllocations(PAGEREF block, int var, int var2, int var3){
 
         iterCount++;
         if (iterCount > EMS_ALLOCATION_LIST_SIZE){
-            printf("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex(), var, var2, var3);
-            I_Error("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex(), var, var2, var3);
+            printf("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex());
+            I_Error("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex());
         }
 
         block = allocations[block].next;
@@ -1708,4 +1629,5 @@ void Z_CheckEMSAllocations(PAGEREF block, int var, int var2, int var3){
         }
     }
 }
+#endif
     

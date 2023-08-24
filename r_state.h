@@ -80,7 +80,7 @@ extern int		numsectors;
 extern sector_t*	sectors;
 
 extern int		numsubsectors;
-extern subsector_t*	subsectors;
+extern MEMREF	subsectorsRef;
 
 extern int		numnodes;
 extern MEMREF    nodesRef;

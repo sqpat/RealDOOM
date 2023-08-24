@@ -279,9 +279,11 @@ void R_GenerateComposite(int texnum)
          i<texture->patchcount;
          i++, patch++)
     {
-		if (i > 1000) {
-			I_Error("too big? texpatch");
-		}
+		#ifdef LOOPCHECK
+			if (i > 1000) {
+				I_Error("too big? texpatch");
+			}
+		#endif	
 
 
 		W_CacheLumpNumCheck(patch->patch, 13);
@@ -299,7 +301,7 @@ void R_GenerateComposite(int texnum)
 
         for ( ; x<x2 ; x++)
         {
-			// seems ok
+			// seems ok. if this ever barks up, we can bring the above Z_LoadBytesFromEMS calls down into one of these loops
 			Z_RefIsActive(texturecolumnlumptexnum);
 			Z_RefIsActive(texturecompositetexnum);
 			Z_RefIsActive(texturecolumnofstexnum);
@@ -451,11 +453,6 @@ R_GetColumn
 
 
 	texturecolumnofsTex = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
-
-	if (texturecolumnofsTex[tex] == 0) {
-		I_Error("caught? %i %i %i %i %i %i", gametic, tex, col, texturecolumnofsRef, texturecolumnofsTex[tex], texturecolumnofsTex[tex-1]);
-	}
-
 	texturecolumnofs = (unsigned short*)Z_LoadBytesFromEMS(texturecolumnofsTex[tex]);
 	ofs = texturecolumnofs[col];
 

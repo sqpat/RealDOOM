@@ -306,8 +306,8 @@ void P_UnArchiveThinkers (void)
 	    }
 	    P_SetThingPosition (thinkerRef);
 	    mobj->info = &mobjinfo[mobj->type];
-	    mobj->floorz = sectors[subsectors[mobj->subsecnum].secnum].floorheight;
-	    mobj->ceilingz = sectors[subsectors[mobj->subsecnum].secnum].ceilingheight;
+	    mobj->floorz = sectors[mobj->secnum].floorheight;
+	    mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
 
 		mobj->thinkerRef = P_AddThinker (thinkerRef, TF_MOBJTHINKER);
 	    break;

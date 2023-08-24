@@ -239,7 +239,7 @@ void P_XYMovement (MEMREF moRef)
 		//  if halfway off a step with some momentum
 
 		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
-			if (mo->floorz != sectors[subsectors[mo->subsecnum].secnum].floorheight) {
+			if (mo->floorz != sectors[mo->secnum].floorheight) {
 				
 				return;
 			}
@@ -396,11 +396,13 @@ P_NightmareRespawn(MEMREF mobjRef)
 	fixed_t		x;
 	fixed_t		y;
 	fixed_t		z;
-	subsector_t*	ss;
 	mobj_t*		mo;
 	mapthing_t*		mthing;
 	MEMREF moRef;
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	short subsecnum;
+	subsector_t* subsectors;
+	short subsectorsecnum;
 
 	x = mobj->spawnpoint.x << FRACBITS;
 	y = mobj->spawnpoint.y << FRACBITS;
@@ -412,14 +414,15 @@ P_NightmareRespawn(MEMREF mobjRef)
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 		// spawn a teleport fog at old spot
 		// because of removal of the body?
-	moRef = P_SpawnMobj(mobj->x, mobj->y, sectors[subsectors[mobj->subsecnum].secnum].floorheight, MT_TFOG);
+	moRef = P_SpawnMobj(mobj->x, mobj->y, sectors[mobj->secnum].floorheight, MT_TFOG);
 	// initiate teleport sound
 	S_StartSoundFromRef(moRef, sfx_telept);
 
 	// spawn a teleport fog at the new spot
-	ss = R_PointInSubsector(x, y);
-
-	moRef = P_SpawnMobj(x, y, sectors[ss->secnum].floorheight, MT_TFOG);
+	subsecnum = R_PointInSubsector(x, y);
+	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
+	subsectorsecnum = subsectors[subsecnum].secnum;
+	moRef = P_SpawnMobj(x, y, sectors[subsectorsecnum].floorheight, MT_TFOG);
 
 	S_StartSoundFromRef(moRef, sfx_telept);
 
@@ -453,19 +456,15 @@ P_NightmareRespawn(MEMREF mobjRef)
 // P_MobjThinker
 //
 void P_MobjThinker (MEMREF mobjRef) {
+
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	int i;
 
-
-    // momentum movement
+	// momentum movement
     if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
 		P_XYMovement (mobjRef);
-
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-	 
-
-
 		
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
@@ -473,9 +472,6 @@ void P_MobjThinker (MEMREF mobjRef) {
 		}
     } 
 	 
-	
-
-
     if ( (mobj->z != mobj->floorz) || mobj->momz ) {
 		P_ZMovement (mobjRef);
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -485,7 +481,6 @@ void P_MobjThinker (MEMREF mobjRef) {
 		}
     }
 
-	
     // cycle through states,
     // calling action functions at transitions
     if (mobj->tics != -1) {
@@ -494,8 +489,6 @@ void P_MobjThinker (MEMREF mobjRef) {
 		// you can cycle through multiple states in a tic
 		if (!mobj->tics) {
 			if (!P_SetMobjState(mobjRef, mobj->state->nextstate)) {
-				 
-				 
 				return;		// freed itself
 			}
 		 
@@ -503,9 +496,6 @@ void P_MobjThinker (MEMREF mobjRef) {
 	 
     } else {
 		 
-		 
-
-
 		// check for nightmare respawn
 		if (!(mobj->flags & MF_COUNTKILL)) {
 			return;
@@ -573,21 +563,18 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     // set subsector and/or block links
     P_SetThingPosition (mobjRef);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-
-    mobj->floorz = sectors[subsectors[mobj->subsecnum].secnum].floorheight;
-    mobj->ceilingz = sectors[subsectors[mobj->subsecnum].secnum].ceilingheight;
+    mobj->floorz = sectors[mobj->secnum].floorheight;
+    mobj->ceilingz = sectors[mobj->secnum].ceilingheight;
 
     if (z == ONFLOORZ)
-	mobj->z = mobj->floorz;
+		mobj->z = mobj->floorz;
     else if (z == ONCEILINGZ)
-	mobj->z = mobj->ceilingz - mobj->info->height;
+		mobj->z = mobj->ceilingz - mobj->info->height;
     else 
-	mobj->z = z;
+		mobj->z = z;
 
 	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
 
-
-	
 	//	if (type == 1 && (mobj->x >> FRACBITS) == 160) {
 	//if (type == MT_SHOTGUY && (mobj->x >> FRACBITS) == -992) {
 	if (type == MT_TROOP && (mobj->x >> FRACBITS) == -992) {
@@ -645,11 +632,13 @@ void P_RespawnSpecials (void)
     fixed_t		y;
     fixed_t		z;
     
-    subsector_t*	ss; 
     mobj_t*		mo;
     mapthing_t*		mthing;
 	MEMREF moRef;
-    
+	short subsecnum;
+	subsector_t* subsectors;
+	short subsectorsecnum;
+
     int			i;
 
     // only respawn items in deathmatch
@@ -670,8 +659,11 @@ void P_RespawnSpecials (void)
     y = mthing->y << FRACBITS; 
 	  
     // spawn a teleport fog at the new spot
-    ss = R_PointInSubsector (x,y); 
-    moRef = P_SpawnMobj (x, y, sectors[ss->secnum].floorheight , MT_IFOG);
+	subsecnum = R_PointInSubsector(x, y);
+	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
+	subsectorsecnum = subsectors[subsecnum].secnum;
+
+	moRef = P_SpawnMobj (x, y, sectors[subsectorsecnum].floorheight , MT_IFOG);
     S_StartSoundFromRef (moRef, sfx_itmbk);
 
     // find which type to spawn

@@ -219,7 +219,8 @@ typedef struct mobj_s
     MEMREF	bnextRef;
     MEMREF	bprevRef;
     
-	short subsecnum;
+	// added secnum, because subsecnum is mostly used to look this up, so it seems like a worthwhile cache.
+	short secnum;
 
     // The closest interval over all contacted Sectors.
     fixed_t		floorz;

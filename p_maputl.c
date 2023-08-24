@@ -356,7 +356,8 @@ void P_UnsetThingPosition (MEMREF thingRef)
 	fixed_t thingx = thing->x;
 	fixed_t thingy = thing->y;
 	int thingflags = thing->flags;
-	short thingsubsecnum = thing->subsecnum;
+	//short thingsubsecnum = thing->subsecnum;
+	short thingsecnum = thing->secnum;
 
     if ( ! (thingflags & MF_NOSECTOR) ) {
 	// inert things don't need to be in blockmap?
@@ -371,7 +372,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 			changeThing->snextRef = thingsnextRef;
 		}
 		else {
-			sectors[subsectors[thingsubsecnum].secnum].thinglistRef = thingsnextRef;
+			sectors[thingsecnum].thinglistRef = thingsnextRef;
 			 
 
 		}
@@ -413,7 +414,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 void
 P_SetThingPosition (MEMREF thingRef)
 {
-    subsector_t*	ss;
+	short	subsecnum;
     //sector_t*		sec;
     int			blockx;
     int			blocky;
@@ -421,33 +422,34 @@ P_SetThingPosition (MEMREF thingRef)
 	mobj_t*		link;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	mobj_t* thingList;
-	int i;
+	short subsectorsecnum;
+	subsector_t* subsectors;
 //	MEMREF* blocklinksList;
 
     // link into subsector
-    ss = R_PointInSubsector (thing->x,thing->y);
+    subsecnum = R_PointInSubsector (thing->x,thing->y);
+	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
+	subsectorsecnum = subsectors[subsecnum].secnum;
+
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	thing->subsecnum = ss - subsectors;
+	thing->secnum = subsectorsecnum;
 
-
+	if (thing->secnum < 0 || thing->secnum > numsectors) {
+		I_Error("blah %i %i", thing->secnum, thing->secnum);
+	}
 
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
 
-		if (gametic == 1403 && thingRef == 463 ){//sectors[ss->secnum].thinglistRef == thingRef) {
-			//I_Error("caught loop early 2 %i %i %i %i %i ", thingRef, gametic, 0, thing->sprevRef, thing->snextRef);   // tick 1403 prev 801 0
-																													  //1402 0 0 0 
-		}
-
 		thing->sprevRef = NULL_MEMREF;
-		thing->snextRef = sectors[ss->secnum].thinglistRef;
+		thing->snextRef = sectors[subsectorsecnum].thinglistRef;
 
 		if (thing->snextRef) {
 			thingList = (mobj_t*)Z_LoadBytesFromEMS(thing->snextRef);
 			thingList->sprevRef = thingRef;
 		}
 
-		sectors[ss->secnum].thinglistRef = thingRef;
+		sectors[subsectorsecnum].thinglistRef = thingRef;
     }
 
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
@@ -468,20 +470,9 @@ P_SetThingPosition (MEMREF thingRef)
 				link->bprevRef = thingRef;
 			}
 			
-		
-
 			//*link = thing;
 			// todo is this right?
 			blocklinks[blocky*bmapwidth + blockx] = thingRef;
-
-			if (setval == 1) {
-				for (i = 0; i < 4000; i++) {
-					if (blocklinks[i] == players[0].moRef) {
-						//I_Error("b %i %i %i %i %i %i", gametic, thing->type, thing->bprevRef, thing->bnextRef, linkRef, link->type);
-					}
-				}
-			}
-		
 
 		} else {
 			// thing is off the map
@@ -562,17 +553,14 @@ P_BlockThingsIterator
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
 	}
-	if (setval == 1 && x == 15 && y == 23) {
-		// 15 23
-		//I_Error("found it d: %i %i %i %i %i", gametic, prndindex, x, y);
-	}
+	 
 
 	for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
 		// will this cause stuff to lose scope...?
 		i++;
 
 
-		if (i > 2000) {
+		if (i > NUM_BLOCKLINKS) {
 			I_Error("block things caught infinite? %i ", gametic);
 		}
 

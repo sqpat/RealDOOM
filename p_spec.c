@@ -1021,14 +1021,13 @@ P_ShootSpecialLine
 //
 void P_PlayerInSpecialSector (player_t* player)
 {
-    short	secnum;
 	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
-	
-	secnum = subsectors[playerMo->subsecnum].secnum;
+	short secnum = playerMo->secnum;
 
     // Falling, not all the way down yet?
-    if (playerMo->z != sectors[secnum].floorheight)
-	return;	
+	if (playerMo->z != sectors[secnum].floorheight) {
+		return;
+	}
 
     // Has hitten ground.
     switch (sectors[secnum].special)

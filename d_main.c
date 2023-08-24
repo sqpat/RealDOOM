@@ -420,14 +420,14 @@ void D_DoomLoop (void)
 		//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
 	
 
-		stoptic = 9335;
+		stoptic = 99335;
 		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {
 				lasttick = gametic;
 				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
 				//SAVEDUNIT = Z_LoadBytesFromEMS(575);
-				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i\n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z  , SAVEDUNIT->x, SAVEDUNIT->y, subsectors[SAVEDUNIT->subsecnum].secnum, SAVEDUNIT->subsecnum, SAVEDUNIT->snextRef);
+				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i\n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z  , SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->secnum, 0, SAVEDUNIT->snextRef);
 
 //				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->subsecnum, i, 0);
 				strcat(result, result2);
@@ -1207,6 +1207,7 @@ void D_DoomMain (void)
     printf ("\nP_Init: Init Playloop state.\n");
     D_RedrawTitle();
     P_Init ();
+
 
     printf ("I_Init: Setting up machine state.\n");
     D_RedrawTitle();

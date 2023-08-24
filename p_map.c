@@ -119,7 +119,10 @@ P_TeleportMove
     int			bx;
     int			by;
     
-    subsector_t*	newsubsec;
+	short	newsubsecsecnum;
+	subsector_t*	subsectors;
+	short	newsubsecnum;
+	
 	mobj_t* tmthing;
 	mobj_t* thing;
 	thing = Z_LoadBytesFromEMS(thingRef);
@@ -136,15 +139,17 @@ P_TeleportMove
     tmbbox[BOXRIGHT] = x + tmthing->radius;
     tmbbox[BOXLEFT] = x - tmthing->radius;
 
-    newsubsec = R_PointInSubsector (x,y);
+    newsubsecnum = R_PointInSubsector (x,y);
+	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
+	newsubsecsecnum = subsectors[newsubsecnum].secnum;
     ceilinglinenum = -1;
     
     // The base floor/ceiling is from the subsector
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-    tmfloorz = tmdropoffz = sectors[newsubsec->secnum].floorheight;
-    tmceilingz = sectors[newsubsec->secnum].ceilingheight;
+    tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
+    tmceilingz = sectors[newsubsecsecnum].ceilingheight;
 			
     validcount++;
     numspechit = 0;
@@ -382,6 +387,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	solid = thingflags &MF_SOLID;
 	if (tmflags&MF_PICKUP)
 	{
+		//I_Error("%i %i %i", players[0].moRef, tmthingRef, thingRef);
 	    // can remove thing
 	    P_TouchSpecialThing (thingRef, tmthingRef);
 	}
@@ -432,7 +438,8 @@ P_CheckPosition
     int			yh;
     int			bx;
     int			by;
-    subsector_t*	newsubsec;
+	subsector_t*	subsectors;
+	short newsubsecnum;
 	mobj_t*			tmthing;
 	short newsubsecsecnum;
 
@@ -450,8 +457,11 @@ P_CheckPosition
 
 
 
-    newsubsec = R_PointInSubsector (x,y);
-	newsubsecsecnum = newsubsec->secnum;
+    
+	newsubsecnum = R_PointInSubsector(x, y);
+	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
+	newsubsecsecnum = subsectors[newsubsecnum].secnum;
+
 
 
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
@@ -528,13 +538,9 @@ P_TryMove
     int		oldside;
     line_t*	ld;
 	mobj_t* thing;
-	int i;
-
-
-
+	//int i;
 
 	floatok = false;
-	
 
 	if (!P_CheckPosition(thingRef, x, y)) {
 		return false;		// solid wall or thing
@@ -557,7 +563,6 @@ P_TryMove
 		}
 
 		if (!(thing->flags&(MF_DROPOFF | MF_FLOAT)) && tmfloorz - tmdropoffz > 24 * FRACUNIT) {
-
 			return false;	// don't stand over a dropoff
 		}
     }
@@ -576,17 +581,18 @@ P_TryMove
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	newx = thing->x;
 	newy = thing->y;
-    // if any special lines were hit, do the effect
+    
+	// if any special lines were hit, do the effect
     if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
 		while (numspechit--) {
 			// see if the line was crossed
 			ld = &lines[spechit[numspechit]];
 			side = P_PointOnLineSide (newx, newy, ld->dx, ld->dy, ld->v1Offset);
 			oldside = P_PointOnLineSide (oldx, oldy, ld->dx, ld->dy, ld->v1Offset);
-			if (side != oldside)
-			{
-			if (ld->special)
-				P_CrossSpecialLine (spechit[numspechit], oldside, thingRef);
+			if (side != oldside) {
+				if (ld->special) {
+					P_CrossSpecialLine(spechit[numspechit], oldside, thingRef);
+				}
 			}
 		}
     }

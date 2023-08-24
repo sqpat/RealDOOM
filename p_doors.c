@@ -29,6 +29,7 @@
 // Data.
 #include "dstrings.h"
 #include "sounds.h"
+#include "i_system.h"
 
 #if 0
 //
@@ -389,9 +390,10 @@ EV_VerticalDoor
 	
       case 28: // Red Lock
       case 33:
-	if ( !player )
-	    return;
-	
+		  if (!player) {
+			  return;
+		  }
+
 	if (!player->cards[it_redcard] && !player->cards[it_redskull])
 	{
 	    player->message = PD_REDK;
@@ -403,7 +405,6 @@ EV_VerticalDoor
 	
     // if the sector has an active thinker, use it
     secnum = sides[line->sidenum[side ^ 1]].secnum;
-
     if (sectors[secnum].specialdataRef)
     {
 	doorRef = sectors[secnum].specialdataRef;

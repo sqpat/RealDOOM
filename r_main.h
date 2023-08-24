@@ -131,7 +131,7 @@ R_PointToDist
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle);
 
-subsector_t*
+unsigned short
 R_PointInSubsector
 ( fixed_t	x,
   fixed_t	y );

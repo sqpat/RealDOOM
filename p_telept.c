@@ -84,7 +84,7 @@ EV_Teleport
 		if (m->type != MT_TELEPORTMAN )
 		    continue;		
 
-		secnum = subsectors[m->subsecnum].secnum;
+		secnum = m->secnum;
 		// wrong sector
 		if (secnum != i )
 		    continue;	

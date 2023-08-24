@@ -19,6 +19,7 @@
 #ifndef __P_SETUP__
 #define __P_SETUP__
 
+#define NUM_BLOCKLINKS 2000
 
 // NOT called by W_Ticker. Fixme.
 void
@@ -30,6 +31,6 @@ P_SetupLevel
 
 // Called by startup code.
 void P_Init (void);
-extern MEMREF		blocklinks[2000];	// for thing chains
+extern MEMREF		blocklinks[NUM_BLOCKLINKS];	// for thing chains
 
 #endif
