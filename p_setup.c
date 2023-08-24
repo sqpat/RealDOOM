@@ -160,7 +160,7 @@ void P_LoadSegs(int lump)
 	mapseg_t*           ml;
 	seg_t*              li;
 	line_t*             ldef;
-	int                 linedef;
+	short                 linedef;
 	int                 side;
 	vertex_t*                       vertexes;
 	seg_t*                          segs;
@@ -186,9 +186,9 @@ void P_LoadSegs(int lump)
 		li->offset = (SHORT(ml->offset)) << 16;
 		linedef = SHORT(ml->linedef);
 		ldef = &lines[linedef];
-		li->linedef = ldef;
+		li->linedefOffset = linedef;
 		side = SHORT(ml->side);
-		li->sidedef = &sides[ldef->sidenum[side]];
+		li->sidedefOffset = ldef->sidenum[side];
 		li->frontsector = sides[ldef->sidenum[side]].sector;
 		if (ldef->flags & ML_TWOSIDED)
 			li->backsector = sides[ldef->sidenum[side ^ 1]].sector;
@@ -533,7 +533,7 @@ void P_GroupLines(void)
 	for (i = 0; i < numsubsectors; i++, ss++)
 	{
 		seg = &segs[ss->firstline];
-		ss->sector = seg->sidedef->sector;
+		ss->sector = sides[seg->sidedefOffset].sector;
 	}
 
 	// count number of lines in each sector

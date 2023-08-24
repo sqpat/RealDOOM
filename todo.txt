@@ -101,7 +101,9 @@ x fix sound playback
 - segs, etc to ems
  (line first?)
 
-2. why was there a 0 allocation
+- get wad editor. make sure about maximums for linedefs, segs, etc. is short enough?
+  - never bigger than 2800 in doom others all smaller
+2. why was there a 0 allocation (might be e1m1 marker etc?)
 
 
 

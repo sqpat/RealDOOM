@@ -36,7 +36,6 @@
 
 
 seg_t*		curline;
-side_t*		sidedef;
 line_t*		linedef;
 sector_t*	frontsector;
 sector_t*	backsector;
@@ -333,7 +332,7 @@ void R_AddLine (seg_t*	line)
     if (backsector->ceilingpic == frontsector->ceilingpic
 	&& backsector->floorpic == frontsector->floorpic
 	&& backsector->lightlevel == frontsector->lightlevel
-	&& curline->sidedef->midtexture == 0)
+	&& sides[curline->sidedefOffset].midtexture == 0)
     {
 	return;
     }

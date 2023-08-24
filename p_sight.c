@@ -145,6 +145,7 @@ boolean P_CrossSubsector (int num)
     fixed_t		slope;
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	
 
 #ifdef RANGECHECK
 	if (num >= numsubsectors) {
@@ -160,7 +161,7 @@ boolean P_CrossSubsector (int num)
     seg = &segs[sub->firstline];
 	
     for ( ; count ; seg++, count--) {
-		line = seg->linedef;
+		line = &lines[seg->linedefOffset];
 
 		// allready checked other side?
 		if (line->validcount == validcount) {

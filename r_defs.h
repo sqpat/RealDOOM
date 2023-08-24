@@ -241,8 +241,8 @@ typedef struct
 
     angle_t	angle;
 
-    side_t*	sidedef;
-    line_t*	linedef;
+    short	sidedefOffset;
+    short	linedefOffset;
 
     // Sector references.
     // Could be retrieved from linedef, too.

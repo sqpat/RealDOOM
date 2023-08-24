@@ -112,7 +112,7 @@ R_RenderMaskedSegRange
 	frontsector = curline->frontsector;
 	backsector = curline->backsector;
 	texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
-	texnum = texturetranslation[curline->sidedef->midtexture];
+	texnum = texturetranslation[sides[curline->sidedefOffset].midtexture];
 
 	lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT) + extralight;
 
@@ -137,7 +137,7 @@ R_RenderMaskedSegRange
     mceilingclip = ds->sprtopclip;
     
     // find positioning
-    if (curline->linedef->flags & ML_DONTPEGBOTTOM)
+    if (lines[curline->linedefOffset].flags & ML_DONTPEGBOTTOM)
     {
 		textureheight = Z_LoadBytesFromEMS(textureheightRef);
 
@@ -151,7 +151,7 @@ R_RenderMaskedSegRange
 	    ? frontsector->ceilingheight : backsector->ceilingheight;
 	dc_texturemid = dc_texturemid - viewz;
     }
-    dc_texturemid += curline->sidedef->rowoffset;
+    dc_texturemid += sides[curline->sidedefOffset].rowoffset;
 			
     if (fixedcolormap)
 	dc_colormap = fixedcolormap;
@@ -381,7 +381,7 @@ R_StoreWallRange
 	fixed_t *	textureheight;
 	int* 	texturetranslation;
 	vertex_t* vertexes;
-
+	side_t*	sidedef;
 
     // don't overflow and crash
     if (ds_p == &drawsegs[MAXDRAWSEGS])
@@ -392,8 +392,7 @@ R_StoreWallRange
 	I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
 #endif
     
-    sidedef = curline->sidedef;
-    linedef = curline->linedef;
+    linedef = &lines[curline->linedefOffset];
 
     // mark the segment as visible for auto map
     linedef->flags |= ML_MAPPED;
@@ -451,7 +450,8 @@ R_StoreWallRange
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
 	
-    if (!backsector) {
+	sidedef = &sides[curline->sidedefOffset];
+	if (!backsector) {
 	// single sided line
 		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 		midtexture = texturetranslation[sidedef->midtexture];
