@@ -34,7 +34,7 @@
 #include "v_video.h"
 #include "w_wad.h"
 #include "z_zone.h"
-//#include "dpmiapi.h"
+
 //
 // Macros
 //
@@ -53,15 +53,8 @@
 
 void I_StartupNet(void);
 void I_ShutdownNet(void);
-void I_ReadExternDriver(void);
 
-typedef struct
-{
-	uint32_t        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
-    uint16_t  flags, es, ds, fs, gs, ip, cs, sp, ss;
-} dpmiregs_t;
 
-extern dpmiregs_t dpmiregs;
 
 void I_ReadMouse(void);
 void I_InitDiskFlash(void);
@@ -180,7 +173,6 @@ int32_t kbdtail, kbdhead;
 
 #define SC_RSHIFT       0x36
 #define SC_LSHIFT       0x2a
-void DPMIInt(int32_t i);
 void I_WaitVBL(int32_t vbls);
 //void I_StartupCyberMan(void);
 void I_StartupSound(void);
@@ -444,7 +436,7 @@ void I_InitGraphics(void)
     }
     grmode = true;
     regs.w.ax = 0x13;
-    int386(0x10, (union REGS *)&regs, &regs);
+	intx86(0x10, (union REGS *)&regs, &regs);
     pcscreen = currentscreen = (byte *)0xa0000;
     destscreen = (byte *)0xa4000;
 
@@ -474,7 +466,7 @@ void I_ShutdownGraphics(void)
     if (*(byte *)0x449 == 0x13) // don't reset mode if it didn't get set
     {
         regs.w.ax = 3;
-        int386(0x10, &regs, &regs); // back to text mode
+        intx86(0x10, &regs, &regs); // back to text mode
     }
 }
 
@@ -631,8 +623,11 @@ void __interrupt I_KeyboardISR(void)
 void I_StartupKeyboard(void)
 {
         oldkeyboardisr = _dos_getvect(KEYBOARDINT);
-        _dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
-
+#ifdef _M_I86
+		_dos_setvect ( KEYBOARDINT, I_KeyboardISR);
+#else
+		_dos_setvect(0x8000 | KEYBOARDINT, I_KeyboardISR);
+#endif
 }
 
 
@@ -651,7 +646,7 @@ void I_ShutdownKeyboard(void)
 int32_t I_ResetMouse(void)
 {
         regs.w.ax = 0; // reset
-        int386 (0x33, &regs, &regs);
+        intx86 (0x33, &regs, &regs);
         return regs.w.ax;
 }
 
@@ -697,6 +692,110 @@ void I_ShutdownMouse(void)
 }
 
 
+#ifdef _M_I86
+
+union REGS in, out;
+
+
+
+
+//
+// I_AllocLow
+//
+byte *I_AllocLow(int32_t length)
+{
+	byte *mem;
+	mem = malloc(length);
+	memset(mem, 0, length);
+	return mem;
+}
+
+#else
+//
+// DPMIInt
+//
+
+
+
+uint32_t realstackseg;
+
+
+
+
+
+//
+// I_AllocLow
+//
+byte *I_AllocLow(int32_t length)
+{
+	byte *mem;
+
+	// DPMI call 100h allocates DOS memory
+	segread(&segregs);
+	regs.w.ax = 0x0100; // DPMI allocate DOS memory
+	regs.w.bx = (length + 15) / 16;
+	intx86(DPMI_INT, &regs, &regs);
+	//segment = regs.w.ax;
+	//selector = regs.w.dx;
+	if (regs.w.cflag != 0)
+	{
+		I_Error("I_AllocLow: DOS alloc of %i failed, %i free",
+			length, regs.w.bx * 16);
+	}
+
+	mem = (void *)((regs.x.eax & 0xFFFF) << 4);
+
+	memset(mem, 0, length);
+	return mem;
+}
+
+//
+// I_StartupDPMI
+//
+
+void I_StartupDPMI(void)
+{
+	extern int8_t __begtext;
+	extern int8_t ___Argc;
+
+	//
+	// allocate a decent stack for real mode ISRs
+	//
+	realstackseg = (int32_t)I_AllocLow(1024) >> 4;
+
+}
+
+
+
+typedef struct
+{
+	uint32_t        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
+	uint16_t  flags, es, ds, fs, gs, ip, cs, sp, ss;
+} dpmiregs_t;
+
+extern dpmiregs_t dpmiregs;
+dpmiregs_t dpmiregs;
+#define REALSTACKSIZE 1024
+
+void DPMIInt(int32_t i)
+{
+	dpmiregs.ss = realstackseg;
+	dpmiregs.sp = REALSTACKSIZE - 4;
+
+	segread(&segregs);
+	regs.w.ax = 0x300;
+	regs.w.bx = i;
+	regs.w.cx = 0;
+	regs.x.edi = (uint32_t)&dpmiregs;
+	segregs.es = segregs.ds;
+	intx86x(DPMI_INT, &regs, &regs, &segregs);
+}
+
+
+
+#endif
+
+
 //
 // I_ReadMouse
 //
@@ -714,80 +813,43 @@ void I_ReadMouse(void)
 
     ev.type = ev_mouse;
 
-    memset(&dpmiregs, 0, sizeof(dpmiregs));
-    dpmiregs.eax = 3;   // read buttons / position
-    DPMIInt(0x33);
-    ev.data1 = dpmiregs.ebx;
 
-    dpmiregs.eax = 11;  // read counters
-    DPMIInt(0x33);
-    ev.data2 = (int16_t)dpmiregs.ecx;
-    ev.data3 = -(int16_t)dpmiregs.edx;
+#ifdef _M_I86
 
-    D_PostEvent(&ev);
+	// 16 bit version
+	in.x.ax = 3;  // read buttons / position
+	int86(0X33, &in, &out);
+
+	ev.data1 = out.x.bx;
+
+	in.x.ax = 11;  // read counters
+	ev.data2 = out.x.cx;
+	ev.data3 = -out.x.dx;
+#else
+	//32 bit version
+	memset(&dpmiregs, 0, sizeof(dpmiregs));
+	dpmiregs.eax = 3;   // read buttons / position
+	DPMIInt(0x33);
+	ev.data1 = dpmiregs.ebx;
+
+	dpmiregs.eax = 11;  // read counters
+	DPMIInt(0x33);
+	ev.data2 = (int16_t)dpmiregs.ecx;
+	ev.data3 = -(int16_t)dpmiregs.edx;
+
+
+#endif
+	
+
+
+	D_PostEvent(&ev);
+
+
 }
 
  
 
-//
-// DPMI stuff
-//
 
-#define REALSTACKSIZE 1024
-
-dpmiregs_t dpmiregs;
-
-uint32_t realstackseg;
-
-void I_DivException(void);
-int32_t I_SetDivException(void);
- 
-
-//
-// I_StartupDPMI
-//
-byte *I_AllocLow(int32_t length);
-
-void I_StartupDPMI(void)
-{
-    extern int8_t __begtext;
-    extern int8_t ___Argc;
-
-//
-// allocate a decent stack for real mode ISRs
-//
-    realstackseg = (int32_t)I_AllocLow (1024) >> 4;
-
-//
-// lock the entire program down
-//
-
-    //_dpmi_lockregion (&__begtext, &___Argc - &__begtext);
-
-
-//
-// catch divide by 0 exception
-//
-#if 0
-    segread(&segregs);
-    regs.w.ax = 0x0203; // DPMI set processor exception handler vector
-    regs.w.bx = 0;  // int 0
-    regs.w.cx = segregs.cs;
-    regs.x.edx = (int32_t)&I_DivException;
-    printf("%x : %x\n", regs.w.cx, regs.x.edx);
-    int386(DPMI_INT, &regs, &regs);
-#endif
-
-#if 0
-    n = I_SetDivException();
-    printf("return: %i\n", n);
-    n = 100;
-    d = 0;
-    printf("100 / 0 = %i\n", n / d);
-
-    exit(1);
-#endif
-}
 
 
  
@@ -800,8 +862,16 @@ void I_Init(void)
 	int32_t p;
     novideo = M_CheckParm("novideo");
 
+
+#ifdef _M_I86
+
+#else
+
 	printf("I_StartupDPMI\n");
     I_StartupDPMI();
+
+#endif
+
     printf("I_StartupMouse\n");
     I_StartupMouse();
     printf("I_StartupKeyboard\n");
@@ -866,7 +936,7 @@ void I_Quit(void)
     regs.h.bh = 0;
     regs.h.dl = 0;
     regs.h.dh = 23;
-    int386(0x10, (union REGS *)&regs, &regs); // Set text pos
+	intx86(0x10, (union REGS *)&regs, &regs); // Set text pos
     printf("\n");
 
     exit(0);
@@ -886,7 +956,7 @@ byte *I_ZoneBase(int32_t *size)
     segregs.es = segregs.ds;
     regs.w.ax = 0x500; // get memory info
     regs.x.edi = (int32_t)&meminfo;
-    int386x(0x31, &regs, &regs, &segregs);
+	intx86x(0x31, &regs, &regs, &segregs);
 
     heap = meminfo[0];
     printf("DPMI memory: 0x%x", heap);
@@ -914,17 +984,7 @@ byte *I_ZoneBase(int32_t *size)
         printf("DOOM aborted.\n");
         exit(1);
     }
-#if 0
-    regs.w.ax = 0x501; // allocate linear block
-    regs.w.bx = heap >> 16;
-    regs.w.cx = heap & 0xffff;
-    int386(0x31, &regs, &regs);
-    if (regs.w.cflag)
-    {
-        I_Error("Couldn't allocate DPMI memory!");
-    }
-    block = (regs.w.si << 16) + regs.w.di;
-#endif
+ 
 
     *size = heap;
     return ptr;
@@ -934,7 +994,7 @@ int32_t checkIfEMSExists(){
 
 	int32_t AH = 0x40;
    regs.w.ax = AH << 8;
-   int386(EMS_INT, &regs, &regs);
+   intx86(EMS_INT, &regs, &regs);
    AH = regs.w.ax >> 8;
    return AH;
 
@@ -955,7 +1015,7 @@ byte *I_ZoneBaseEMS(int32_t *size)
     segregs.es = segregs.ds;
     regs.w.ax = 0x500; // get memory info
     regs.x.edi = (int32_t)&meminfo;
-    int386x(0x31, &regs, &regs, &segregs);
+	intx86x(0x31, &regs, &regs, &segregs);
 
     heap = meminfo[0];
     printf("DPMI memory: 0x%x", heap);
@@ -984,17 +1044,7 @@ byte *I_ZoneBaseEMS(int32_t *size)
         printf("DOOM aborted.\n");
         exit(1);
     }
-#if 0
-    regs.w.ax = 0x501; // allocate linear block
-    regs.w.bx = heap >> 16;
-    regs.w.cx = heap & 0xffff;
-    int386(0x31, &regs, &regs);
-    if (regs.w.cflag)
-    {
-        I_Error("Couldn't allocate DPMI memory!");
-    }
-    block = (regs.w.si << 16) + regs.w.di;
-#endif
+ 
 
     *size = heap;
     return ptr;
@@ -1013,7 +1063,7 @@ byte* I_InitEMS(int32_t *size)
     segregs.es = segregs.ds;
     regs.w.ax = 0x500; // get memory info
     regs.x.edi = (int32_t)&meminfo;
-    int386x(0x31, &regs, &regs, &segregs);
+	intx86x(0x31, &regs, &regs, &segregs);
 
     heap = meminfo[0];
     printf("DPMI memory: 0x%x\n", heap);
@@ -1041,17 +1091,7 @@ byte* I_InitEMS(int32_t *size)
         printf("DOOM aborted.\n");
         exit(1);
     }
-#if 0
-    regs.w.ax = 0x501; // allocate linear block
-    regs.w.bx = heap >> 16;
-    regs.w.cx = heap & 0xffff;
-    int386(0x31, &regs, &regs);
-    if (regs.w.cflag)
-    {
-        I_Error("Couldn't allocate DPMI memory!");
-    }
-    block = (regs.w.si << 16) + regs.w.di;
-#endif
+ 
 
     *size = heap;
     return ptr;
@@ -1076,7 +1116,7 @@ byte* I_InitEMS(int32_t *size)
 
         regs.w.bx = numPagesToAllocate;
         regs.w.ax = AH << 8;
-        int386(EMS_INT, &regs, &regs);
+        intx86(EMS_INT, &regs, &regs);
 
         AH = regs.w.ax >> 8;
         if (AH != 0){
@@ -1213,31 +1253,6 @@ void I_EndRead(void)
 
 
 
-//
-// I_AllocLow
-//
-byte *I_AllocLow (int32_t length)
-{
-    byte *mem;
-
-    // DPMI call 100h allocates DOS memory
-    segread(&segregs);
-    regs.w.ax = 0x0100; // DPMI allocate DOS memory
-    regs.w.bx = (length + 15) / 16;
-    int386(DPMI_INT, &regs, &regs);
-    //segment = regs.w.ax;
-    //selector = regs.w.dx;
-    if (regs.w.cflag != 0)
-    {
-        I_Error("I_AllocLow: DOS alloc of %i failed, %i free",
-                length, regs.w.bx * 16);
-    }
-
-    mem = (void *)((regs.x.eax & 0xFFFF) << 4);
-
-    memset(mem, 0, length);
-    return mem;
-}
 
 //
 // Networking
@@ -1269,20 +1284,3 @@ void I_InitNetwork(void)
 	doomcom->ticdup = 1;
 
 } 
-
-//
-// DPMIInt
-//
-void DPMIInt(int32_t i)
-{
-    dpmiregs.ss = realstackseg;
-    dpmiregs.sp = REALSTACKSIZE - 4;
-
-    segread(&segregs);
-    regs.w.ax = 0x300;
-    regs.w.bx = i;
-    regs.w.cx = 0;
-    regs.x.edi = (uint32_t)&dpmiregs;
-    segregs.es = segregs.ds;
-    int386x(DPMI_INT, &regs, &regs, &segregs);
-}

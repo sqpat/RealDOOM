@@ -199,20 +199,51 @@ void D_ProcessEvents (void)
     }
 }
 
+
+
+// Fixme. __USE_C_FIXED__ or something.
+
+fixed_t
+FixedMul
+(fixed_t	a,
+	fixed_t	b)
+{
+	return ((long long)a * (long long)b) >> FRACBITS;
+}
+
+
+
 //
 // FixedDiv, C version.
 //
 
 fixed_t
 FixedDiv
-( fixed_t       a,
-  fixed_t       b )
+(fixed_t	a,
+	fixed_t	b)
 {
-    if ( (abs(a)>>14) >= abs(b))
-        return (a^b)<0 ? MININT : MAXINT;
-    return FixedDiv2 (a,b);
+	if ((abs(a) >> 14) >= abs(b))
+		return (a^b) < 0 ? MININT : MAXINT;
+	return FixedDiv2(a, b);
 }
 
+
+
+fixed_t
+FixedDiv2
+(fixed_t	a,
+	fixed_t	b)
+{
+ 
+
+	double c;
+
+	c = ((double)a) / ((double)b) * FRACUNIT;
+
+	if (c >= 2147483648.0 || c < -2147483648.0)
+		I_Error("FixedDiv: divide by zero");
+	return (fixed_t)c;
+}
 //
 // D_Display
 //  draw current display, possibly wiping it from the previous
@@ -645,7 +676,7 @@ int32_t D_GetCursorColumn(void)
 
     regs.h.ah = 3;
     regs.h.bh = 0;
-    int386(0x10, &regs, &regs);
+    intx86(0x10, &regs, &regs);
 
     return regs.h.dl;
 }
@@ -659,7 +690,7 @@ int32_t D_GetCursorRow(void)
 
     regs.h.ah = 3;
     regs.h.bh = 0;
-    int386(0x10, &regs, &regs);
+    intx86(0x10, &regs, &regs);
 
     return regs.h.dh;
 }
@@ -675,7 +706,7 @@ void D_SetCursorPosition(int32_t column, int32_t row)
     regs.h.dl = column;
     regs.h.ah = 2;
     regs.h.bh = 0;
-    int386(0x10, &regs, &regs);
+    intx86(0x10, &regs, &regs);
 }
 
 //
@@ -706,7 +737,7 @@ void D_DrawTitle(int8_t *string, int32_t fc, int32_t bc)
         regs.w.cx = 1;
         regs.h.bl = color;
         regs.h.bh = 0;
-        int386(0x10, &regs, &regs);
+        intx86(0x10, &regs, &regs);
 
         //Check cursor position
         if (++column > 79)
@@ -965,7 +996,7 @@ void D_DoomMain (void)
     }
     
     regs.w.ax = 3;
-    int386(0x10, &regs, &regs);
+    intx86(0x10, &regs, &regs);
     D_DrawTitle(title, FGCOLOR, BGCOLOR);
 
     printf("\nP_Init: Checking cmd-line parameters...\n");
