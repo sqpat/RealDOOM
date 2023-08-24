@@ -76,7 +76,7 @@ ExtractFileBase
         if (++length == 9)
             I_Error ("Filename base of %s >8 chars",path);
 
-        *dest++ = toupper((int)*src++);
+        *dest++ = toupper((int32_t)*src++);
     }
 }
 

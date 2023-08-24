@@ -1265,7 +1265,7 @@ G_InitNew
 void G_ReadDemoTiccmd (ticcmd_t* cmd) 
 { 
 	byte* demobuffer = (byte*) Z_LoadBytesFromEMS(demobufferRef);
-	demo_p = (byte*)((int)demo_p + (int)demobuffer);
+	demo_p = (byte*)((int32_t)demo_p + (int32_t)demobuffer);
 	if (*demo_p == DEMOMARKER)  {
         // end of demo data stream 
         G_CheckDemoStatus (); 
@@ -1282,7 +1282,7 @@ void G_ReadDemoTiccmd (ticcmd_t* cmd)
 void G_WriteDemoTiccmd (ticcmd_t* cmd) 
 { 
 	byte* demobuffer = (byte*)Z_LoadBytesFromEMS(demobufferRef);
-	demo_p = (byte*)((int)demo_p + (int)demobuffer);
+	demo_p = (byte*)((int32_t)demo_p + (int32_t)demobuffer);
 	if (gamekeydown['q'])           // press q to end demo recording 
         G_CheckDemoStatus (); 
 
@@ -1294,7 +1294,7 @@ void G_WriteDemoTiccmd (ticcmd_t* cmd)
     *demo_p++ = cmd->buttons; 
     demo_p -= 4; 
 	
-    if ((int)demo_p > (DEMO_MAX_SIZE - 16))
+    if ((int32_t)demo_p > (DEMO_MAX_SIZE - 16))
     {
         // no more space 
         G_CheckDemoStatus (); 

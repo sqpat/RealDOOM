@@ -42,7 +42,7 @@ fixed_t		cachedt2y;
 // P_DivlineSide
 // Returns side 0 (front), 1 (back), or 2 (on).
 //
-int
+int32_t
 P_DivlineSide
 ( fixed_t	x,
   fixed_t	y,

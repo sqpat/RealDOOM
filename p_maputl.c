@@ -56,7 +56,7 @@ P_AproxDistance
 // P_PointOnLineSide
 // Returns 0 or 1
 //
-int
+int32_t
 P_PointOnLineSide
 ( fixed_t	x,
   fixed_t	y,
@@ -104,7 +104,7 @@ P_PointOnLineSide
 // Considers the line to be infinite
 // Returns side 0 or 1, -1 if box crosses the line.
 //
-int
+int32_t
 P_BoxOnLineSide
 ( fixed_t*	tmbox,
 	slopetype_t	lineslopetype,
@@ -159,7 +159,7 @@ P_BoxOnLineSide
 // P_PointOnDivlineSide
 // Returns 0 or 1.
 //
-int
+int32_t
 P_PointOnDivlineSide
 ( fixed_t	x,
   fixed_t	y,

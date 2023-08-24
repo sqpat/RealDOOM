@@ -578,8 +578,8 @@ void Z_DoPageOut(uint16_t pageframeindex) {
 		numPagesToSwap = 1;
 	}
 
-	memcpy(copydst, copysrc, (int)PAGE_FRAME_SIZE * numPagesToSwap);
-	memset(copysrc, 0x00, (int)PAGE_FRAME_SIZE * numPagesToSwap);
+	memcpy(copydst, copysrc, (int32_t)PAGE_FRAME_SIZE * numPagesToSwap);
+	memset(copysrc, 0x00, (int32_t)PAGE_FRAME_SIZE * numPagesToSwap);
 
 	actualpageouts++;
 	pageouts += numPagesToSwap;

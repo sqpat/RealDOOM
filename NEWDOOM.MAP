@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/08/21 10:25:28
+Created on:       23/08/21 11:21:02
 Executable Image: newdoom.exe
 creating an OS/2 linear executable
 
@@ -67,9 +67,9 @@ Module: i_ibm.obj(C:\PCDOOM2\i_ibm.c)
 0002:0001075c+ _kbdhead
 0002:00010760+ _kbdtail
 0002:00010764+ _segregs
-0002:00010770+ _mousepresent
-0002:00010774+ _novideo
-0002:00010778+ _grmode
+0002:00010770+ _grmode
+0002:00010774+ _mousepresent
+0002:00010778+ _novideo
 0001:00000030* I_ColorBorder_
 0001:00000070* I_UnColorBorder_
 0001:000000b0  I_WaitVBL_
@@ -1314,7 +1314,7 @@ Module: wi_stuff.obj(C:\PCDOOM2\wi_stuff.c)
 0001:00022b20+ WI_initVariables_
 0001:00022b90  WI_Start_
 Module: s_sound.obj(C:\PCDOOM2\s_sound.c)
-0002:0005f7a8  _numChannels
+0002:0005f7ac  _numChannels
 0001:00022bc0  S_SetMusicVolume_
 0001:00022c00+ S_StopMusic_
 0001:00022c50  S_ChangeMusic_

@@ -188,7 +188,7 @@ void T_VerticalDoor (MEMREF memref)
 // Move a locked door up/down
 //
 
-int
+int32_t
 EV_DoLockedDoor
 ( int16_t linetag,
 	int16_t linespecial,
@@ -247,7 +247,7 @@ EV_DoLockedDoor
 }
 
 
-int
+int32_t
 EV_DoDoor
 ( int16_t linetag,
   vldoor_e	type )

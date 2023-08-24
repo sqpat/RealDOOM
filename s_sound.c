@@ -34,7 +34,7 @@
 
 #include "doomstat.h"
 #include "dmx.h"
-#include "dpmiapi.h"
+//#include "dpmiapi.h"
 
 #define S_MAX_VOLUME		127
 
@@ -120,13 +120,13 @@ static int32_t		nextcleanup;
 //
 // Internals.
 //
-int
+int32_t
 S_getChannel
 ( MEMREF originRef,
   sfxinfo_t*	sfxinfo );
 
 
-int
+int32_t
 S_AdjustSoundParams
 ( MEMREF	listenerRef,
   MEMREF	sourceRef,
@@ -264,7 +264,7 @@ void S_StopChannel(int32_t cnum)
 // If the sound is not audible, returns a 0.
 // Otherwise, modifies parameters and returns 1.
 //
-int
+int32_t
 S_AdjustSoundParams
 ( MEMREF	listenerRef,
   MEMREF	sourceRef,
@@ -387,7 +387,7 @@ void S_StopSound(MEMREF originRef)
 // S_getChannel :
 //   If none available, return -1.  Otherwise channel #.
 //
-int
+int32_t
 S_getChannel ( MEMREF originRef, sfxinfo_t*	sfxinfo ) {
     // channel number to use
     int32_t		cnum;
@@ -524,7 +524,7 @@ void S_StartSoundAtVolume
 		//_dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
 		// fprintf( stderr,
 		//	     "S_StartSoundAtVolume: loading %d (lump %d) : 0x%x\n",
-		//       sfx_id, sfx->lumpnum, (int)sfx->data );
+		//       sfx_id, sfx->lumpnum, (int32_t)sfx->data );
     
 	}
   

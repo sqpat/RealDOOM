@@ -35,7 +35,7 @@ enum
     wipe_NUMWIPES
 };
 
-int
+int32_t
 wipe_StartScreen
 ( int32_t		x,
   int32_t		y,
@@ -43,7 +43,7 @@ wipe_StartScreen
   int32_t		height );
 
 
-int
+int32_t
 wipe_EndScreen
 ( int32_t		x,
   int32_t		y,
@@ -51,7 +51,7 @@ wipe_EndScreen
   int32_t		height );
 
 
-int
+int32_t
 wipe_ScreenWipe
 ( int32_t		wipeno,
   int32_t		x,

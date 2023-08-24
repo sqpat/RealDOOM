@@ -7,7 +7,7 @@
 #       c  compile only
 #      d1  include line number debugging information
 #      d2  include full sybolic debugging information
-#      ei  force enums to be of type int
+#      ei  force enums to be of type int32_t
 #       j  change char default from unsigned to signed
 #      oa  relax aliasing checking
 #      od  do not optimize

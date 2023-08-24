@@ -40,7 +40,7 @@ M_WriteFile
   void*		source,
   int32_t		length );
 
-int
+int32_t
 M_ReadFile
 (int8_t const*	name,
   MEMREF*	bufferRef );

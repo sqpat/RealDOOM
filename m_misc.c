@@ -181,7 +181,7 @@ M_WriteFile
 //
 // M_ReadFile
 //
-int
+int32_t
 M_ReadFile
 (int8_t const*	name,
   MEMREF*	bufferRef )
@@ -446,7 +446,7 @@ void M_LoadDefaults (void)
 			    *defaults[i].location = parm;
 			else
 			    *defaults[i].location =
-				(int) newstring;
+				(int32_t) newstring;
 			break;
 		    }
 	    }

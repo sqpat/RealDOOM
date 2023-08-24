@@ -36,7 +36,7 @@
 //
 // TELEPORTATION
 //
-int
+int32_t
 EV_Teleport
 ( int16_t linetag,
   int32_t		side,

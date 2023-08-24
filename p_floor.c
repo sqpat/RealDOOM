@@ -250,7 +250,7 @@ void T_MoveFloor(MEMREF memref)
 //
 // HANDLE FLOOR TYPES
 //
-int
+int32_t
 EV_DoFloor
 ( 
 	int16_t linetag,
@@ -473,7 +473,7 @@ EV_DoFloor
 //
 // BUILD A STAIRCASE!
 //
-int
+int32_t
 EV_BuildStairs
 ( int16_t	linetag,
   stair_e	type )

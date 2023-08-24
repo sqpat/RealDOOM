@@ -63,7 +63,7 @@ wipe_shittyColMajorXform
 
 }
 
-int
+int32_t
 wipe_initColorXForm
 ( int32_t	width,
   int32_t	height,
@@ -73,7 +73,7 @@ wipe_initColorXForm
     return 0;
 }
 
-int
+int32_t
 wipe_doColorXForm
 ( int32_t	width,
   int32_t	height,
@@ -119,7 +119,7 @@ wipe_doColorXForm
 
 }
 
-int
+int32_t
 wipe_exitColorXForm
 ( int32_t	width,
   int32_t	height,
@@ -131,7 +131,7 @@ wipe_exitColorXForm
 
 static MEMREF yRef;
 
-int
+int32_t
 wipe_initMelt
 ( int32_t	width,
   int32_t	height,
@@ -153,7 +153,7 @@ wipe_initMelt
 
 	
 
-	yRef = Z_MallocEMSNew(width*sizeof(int), PU_STATIC, 0, ALLOC_TYPE_FWIPE);
+	yRef = Z_MallocEMSNew(width*sizeof(int32_t), PU_STATIC, 0, ALLOC_TYPE_FWIPE);
 	y = (int32_t*)Z_LoadBytesFromEMS(yRef);
 
 
@@ -170,7 +170,7 @@ wipe_initMelt
     return 0;
 }
 
-int
+int32_t
 wipe_doMelt
 ( int32_t	width,
   int32_t	height,
@@ -227,7 +227,7 @@ wipe_doMelt
 
 }
 
-int
+int32_t
 wipe_exitMelt
 ( int32_t	width,
   int32_t	height,
@@ -238,7 +238,7 @@ wipe_exitMelt
     return 0;
 }
 
-int
+int32_t
 wipe_StartScreen
 ( int32_t	x,
   int32_t	y,
@@ -250,7 +250,7 @@ wipe_StartScreen
     return 0;
 }
 
-int
+int32_t
 wipe_EndScreen
 ( int32_t	x,
   int32_t	y,
@@ -263,7 +263,7 @@ wipe_EndScreen
     return 0;
 }
 
-int
+int32_t
 wipe_ScreenWipe
 ( int32_t	wipeno,
   int32_t	x,
@@ -273,13 +273,13 @@ wipe_ScreenWipe
   int32_t	ticks )
 {
 	int32_t rc;
-    static int32_t(*wipes[])(int, int, int) =
+    static int32_t(*wipes[])(int32_t, int32_t, int32_t) =
     {
 	wipe_initColorXForm, wipe_doColorXForm, wipe_exitColorXForm,
 	wipe_initMelt, wipe_doMelt, wipe_exitMelt
     };
 
-    void V_MarkRect(int, int, int, int);
+    void V_MarkRect(int32_t, int32_t, int32_t, int32_t);
 
     // initial stuff
     if (!go)

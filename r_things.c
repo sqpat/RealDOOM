@@ -106,7 +106,7 @@ R_InstallSpriteLump
         I_Error("R_InstallSpriteLump: "
                 "Bad frame characters in lump %i", lump);
         
-    if ((int)frame > maxframe)
+    if ((int32_t)frame > maxframe)
         maxframe = frame;
                 
     if (rotation == 0)
@@ -241,7 +241,7 @@ void R_InitSpriteDefs (int8_t** namelist)
         
         for (frame = 0 ; frame < maxframe ; frame++)
         {
-            switch ((int)sprtemp[frame].rotate)
+            switch ((int32_t)sprtemp[frame].rotate)
             {
               case -1:
                 // no rotations were found for that frame at all

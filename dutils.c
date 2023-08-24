@@ -33,7 +33,7 @@ static uint8_t	cheat_xlate_table[256];
 // Called in st_stuff module, which handles the input.
 // Returns a 1 if the cheat was successful, 0 if failed.
 //
-int
+int32_t
 cht_CheckCheat
 ( cheatseq_t*	cht,
 	int8_t		key )

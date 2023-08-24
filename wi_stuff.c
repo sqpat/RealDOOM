@@ -581,7 +581,7 @@ void WI_drawAnimatedBack(void)
 // Returns new x position.
 //
 
-int
+int32_t
 WI_drawNum
 ( int32_t		x,
   int32_t		y,

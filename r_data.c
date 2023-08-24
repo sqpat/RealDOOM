@@ -832,7 +832,7 @@ void R_InitColormaps(void)
 	// _ds_colormap) so until that asm is redone im not sure how to make colormaps work off the heap. For performance
 	// reasons it may even be best to keep it in a static allocation...
 	colormaps = (byte*)colormapbytes;
-	colormaps = (byte *)(((int)colormaps + 255)&~0xff);
+	colormaps = (byte *)(((int32_t)colormaps + 255)&~0xff);
 
 	//printf("Size %i", length);
 	//I_Error("size %i", length);

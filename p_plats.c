@@ -127,7 +127,7 @@ void T_PlatRaise(MEMREF platRef)
 // Do Platforms
 //  "amount" is only used for SOME platforms.
 //
-int
+int32_t
 EV_DoPlat
 (  int16_t linetag,
 	int16_t lineside0,

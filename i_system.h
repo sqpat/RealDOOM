@@ -47,7 +47,7 @@ byte* I_InitEMS(int32_t *size);
 byte *I_ZoneBaseEMS(int32_t *size);
 
 
-extern unsigned int ticcount;
+extern uint32_t ticcount;
 
 
  

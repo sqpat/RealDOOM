@@ -29,7 +29,7 @@ byte*           save_p;
 
 // Pads save_p to a 4-byte boundary
 //  so that the load/save works on SGI&Gecko.
-#define PADSAVEP()	save_p += (4 - ((int) save_p & 3)) & 3
+#define PADSAVEP()	save_p += (4 - ((int32_t) save_p & 3)) & 3
 
 
 
@@ -93,7 +93,7 @@ void P_UnArchivePlayers (void)
 	    if (players[i]. psprites[j].state)
 	    {
 		players[i]. psprites[j].state 
-		    = &states[ (int)players[i].psprites[j].state ];
+		    = &states[ (int32_t)players[i].psprites[j].state ];
 	    }
 	}
     }
@@ -306,10 +306,10 @@ void P_UnArchiveThinkers (void)
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(thinkerRef);
 	    memcpy (mobj, save_p, sizeof(*mobj));
 	    save_p += sizeof(*mobj);
-	    mobj->state = &states[(int)mobj->state];
+	    mobj->state = &states[(int32_t)mobj->state];
 	    mobj->targetRef = NULL_MEMREF;
 	    if (mobj->player) {
-			mobj->player = &players[(int)mobj->player-1];
+			mobj->player = &players[(int32_t)mobj->player-1];
 			mobj->player->moRef = thinkerRef;
 	    }
 	    P_SetThingPosition (thinkerRef);
@@ -502,7 +502,7 @@ void P_UnArchiveSpecials (void) {
 
 	    memcpy (ceiling, save_p, sizeof(*ceiling));
 	    save_p += sizeof(*ceiling);
-	    ceiling->sector = &sectors[(int)ceiling->sector];
+	    ceiling->sector = &sectors[(int32_t)ceiling->sector];
 	    ceiling->sector->specialdataRef = thinkerRef;
 
 		if (ceiling->thinkerRef.function.acp1) {
@@ -524,7 +524,7 @@ void P_UnArchiveSpecials (void) {
 
 	    memcpy (door, save_p, sizeof(*door));
 	    save_p += sizeof(*door);
-	    door->sector = &sectors[(int)door->sector];
+	    door->sector = &sectors[(int32_t)door->sector];
 	    door->sector->specialdataRef = thinkerRef;
 	    door->thinker.function.acp1 = (actionf_p1)T_VerticalDoor;
 		door->thinker.memref = thinkerRef;
@@ -538,7 +538,7 @@ void P_UnArchiveSpecials (void) {
 
 	    memcpy (floor, save_p, sizeof(*floor));
 	    save_p += sizeof(*floor);
-	    floor->sector = &sectors[(int)floor->sector];
+	    floor->sector = &sectors[(int32_t)floor->sector];
 	    floor->sector->specialdataRef = thinkerRef;
 	    floor->thinker.function.acp1 = (actionf_p1)T_MoveFloor;
 		floor->thinker.memref = thinkerRef;
@@ -552,7 +552,7 @@ void P_UnArchiveSpecials (void) {
 
 	    memcpy (plat, save_p, sizeof(*plat));
 	    save_p += sizeof(*plat);
-	    plat->sector = &sectors[(int)plat->sector];
+	    plat->sector = &sectors[(int32_t)plat->sector];
 	    plat->sector->specialdataRef = thinkerRef;
 
 	    if (plat->thinker.function.acp1)
@@ -570,7 +570,7 @@ void P_UnArchiveSpecials (void) {
 
 	    memcpy (flash, save_p, sizeof(*flash));
 	    save_p += sizeof(*flash);
-	    flash->sector = &sectors[(int)flash->sector];
+	    flash->sector = &sectors[(int32_t)flash->sector];
 	    flash->thinker.function.acp1 = (actionf_p1)T_LightFlash;
 		flash->thinker.memref = thinkerRef;
 		P_AddThinker (&flash->thinker);
@@ -583,7 +583,7 @@ void P_UnArchiveSpecials (void) {
 		
 	    memcpy (strobe, save_p, sizeof(*strobe));
 	    save_p += sizeof(*strobe);
-	    strobe->sector = &sectors[(int)strobe->sector];
+	    strobe->sector = &sectors[(int32_t)strobe->sector];
 	    strobe->thinker.function.acp1 = (actionf_p1)T_StrobeFlash;
 		strobe->thinker.memref = thinkerRef;
 		break;
@@ -595,7 +595,7 @@ void P_UnArchiveSpecials (void) {
 
 	    memcpy (glow, save_p, sizeof(*glow));
 	    save_p += sizeof(*glow);
-	    glow->sector = &sectors[(int)glow->sector];
+	    glow->sector = &sectors[(int32_t)glow->sector];
 	    glow->thinker.function.acp1 = (actionf_p1)T_Glow;
 		glow->thinker.memref = thinkerRef;
 		P_AddThinker (&glow->thinker);

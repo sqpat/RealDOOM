@@ -34,7 +34,7 @@
 #include "v_video.h"
 #include "w_wad.h"
 #include "z_zone.h"
-#include "dpmiapi.h"
+//#include "dpmiapi.h"
 //
 // Macros
 //
@@ -423,7 +423,7 @@ void I_UpdateNoBlit(void)
 void I_FinishUpdate(void)
 {
 
-	outpw(CRTC_INDEX, ((int)destscreen & 0xff00) + 0xc);
+	outpw(CRTC_INDEX, ((int32_t)destscreen & 0xff00) + 0xc);
 
     //Next plane
     destscreen += 0x4000;
@@ -756,7 +756,7 @@ void I_StartupDPMI(void)
 //
 // allocate a decent stack for real mode ISRs
 //
-    realstackseg = (int)I_AllocLow (1024) >> 4;
+    realstackseg = (int32_t)I_AllocLow (1024) >> 4;
 
 //
 // lock the entire program down
@@ -773,7 +773,7 @@ void I_StartupDPMI(void)
     regs.w.ax = 0x0203; // DPMI set processor exception handler vector
     regs.w.bx = 0;  // int 0
     regs.w.cx = segregs.cs;
-    regs.x.edx = (int)&I_DivException;
+    regs.x.edx = (int32_t)&I_DivException;
     printf("%x : %x\n", regs.w.cx, regs.x.edx);
     int386(DPMI_INT, &regs, &regs);
 #endif
@@ -885,7 +885,7 @@ byte *I_ZoneBase(int32_t *size)
     segread(&segregs);
     segregs.es = segregs.ds;
     regs.w.ax = 0x500; // get memory info
-    regs.x.edi = (int)&meminfo;
+    regs.x.edi = (int32_t)&meminfo;
     int386x(0x31, &regs, &regs, &segregs);
 
     heap = meminfo[0];
@@ -954,7 +954,7 @@ byte *I_ZoneBaseEMS(int32_t *size)
     segread(&segregs);
     segregs.es = segregs.ds;
     regs.w.ax = 0x500; // get memory info
-    regs.x.edi = (int)&meminfo;
+    regs.x.edi = (int32_t)&meminfo;
     int386x(0x31, &regs, &regs, &segregs);
 
     heap = meminfo[0];
@@ -1012,7 +1012,7 @@ byte* I_InitEMS(int32_t *size)
     segread(&segregs);
     segregs.es = segregs.ds;
     regs.w.ax = 0x500; // get memory info
-    regs.x.edi = (int)&meminfo;
+    regs.x.edi = (int32_t)&meminfo;
     int386x(0x31, &regs, &regs, &segregs);
 
     heap = meminfo[0];

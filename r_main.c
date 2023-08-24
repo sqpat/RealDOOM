@@ -128,7 +128,7 @@ void (*spanfunc) (void);
 //  check point against partition plane.
 // Returns side 0 (front) or 1 (back).
 //
-int
+int32_t
 R_PointOnSide
 ( fixed_t	x,
   fixed_t	y,
@@ -181,7 +181,7 @@ R_PointOnSide
 }
 
 
-int
+int32_t
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,

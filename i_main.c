@@ -22,7 +22,7 @@
 #include "m_misc.h"
 #include "d_main.h"
 
-int
+int32_t
 main
 ( int32_t		argc,
   int8_t**	argv ) 

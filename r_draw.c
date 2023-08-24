@@ -398,7 +398,7 @@ void R_InitTranslationTables (void)
 	
     translationtablesRef = Z_MallocEMSNew (256*3+255, PU_STATIC, 0, ALLOC_TYPE_TRANSLATION_TABLES);
 	translationtables = Z_LoadBytesFromEMS(translationtablesRef);
-    translationtables = (byte *)(( (int)translationtables + 255 )& ~255);
+    translationtables = (byte *)(( (int32_t)translationtables + 255 )& ~255);
     
     // translate just the 16 green colors
     for (i=0 ; i<256 ; i++)

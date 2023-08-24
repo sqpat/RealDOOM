@@ -165,7 +165,7 @@ void T_MoveCeiling (MEMREF memref)
 // EV_DoCeiling
 // Move a ceiling up/down and all around!
 //
-int
+int32_t
 EV_DoCeiling
 ( int16_t linetag,
   ceiling_e	type )

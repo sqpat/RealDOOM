@@ -464,7 +464,7 @@ fixed_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 //
 // RETURN NEXT SECTOR # THAT LINE TAG REFERS TO
 //
-int
+int32_t
 P_FindSectorFromLineTag
 ( int16_t		linetag,
   int32_t		start )
@@ -486,7 +486,7 @@ P_FindSectorFromLineTag
 //
 // Find minimum light from an adjacent sector
 //
-int
+int32_t
 P_FindMinSurroundingLight
 ( int16_t secnum,
   int32_t		max )

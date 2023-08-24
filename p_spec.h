@@ -92,12 +92,12 @@ P_FindNextHighestFloor
 fixed_t P_FindLowestCeilingSurrounding(int16_t secnum);
 fixed_t P_FindHighestCeilingSurrounding(int16_t secnum);
 
-int
+int32_t
 P_FindSectorFromLineTag
 ( int16_t		linetag,
   int32_t		start );
 
-int
+int32_t
 P_FindMinSurroundingLight
 ( int16_t secnum,
   int32_t		max );
@@ -304,7 +304,7 @@ extern MEMREF	activeplats[MAXPLATS];
 
 void    T_PlatRaise(MEMREF platRef);
 
-int
+int32_t
 EV_DoPlat
 ( int16_t linenum,
 	int16_t linetag,
@@ -364,12 +364,12 @@ EV_VerticalDoor
 ( int16_t linenum,
   MEMREF	thingRef );
 
-int
+int32_t
 EV_DoDoor
 ( int16_t linetag,
   vldoor_e	type );
 
-int
+int32_t
 EV_DoLockedDoor
 (int16_t linetag, int16_t linepsecial,
   vldoor_e	type,
@@ -429,7 +429,7 @@ typedef struct
 
 extern MEMREF	activeceilings[MAXCEILINGS];
 
-int
+int32_t
 EV_DoCeiling
 ( int16_t linetag,
   ceiling_e	type );
@@ -522,12 +522,12 @@ T_MovePlane
   int32_t		floorOrCeiling,
   int32_t		direction );
 
-int
+int32_t
 EV_BuildStairs
 ( int16_t linetag,
   stair_e	type );
 
-int
+int32_t
 EV_DoFloor
 ( int16_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
 
@@ -536,7 +536,7 @@ void T_MoveFloor(MEMREF memref);
 //
 // P_TELEPT
 //
-int
+int32_t
 EV_Teleport
 ( int16_t linetag,
   int32_t		side,
