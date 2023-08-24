@@ -702,7 +702,6 @@ fixed_t		bulletslope;
 void P_BulletSlope (MEMREF moRef)
 {
     angle_t	an;
-	mobj_t* linetarget;
 	mobj_t*	mo = (mobj_t*) Z_LoadBytesFromEMS(moRef);
     // see which target is to be aimed at
     an = mo->angle;
@@ -711,8 +710,7 @@ void P_BulletSlope (MEMREF moRef)
     if (!linetargetRef) {
 		an += 1<<26;
 		bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
-		linetarget = (mobj_t*)Z_LoadBytesFromEMS(linetargetRef);
-		if (!linetarget) {
+		if (!linetargetRef) {
 			an -= 2<<26;
 			bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
 		}
@@ -730,16 +728,15 @@ P_GunShot
 {
     angle_t	angle;
     int		damage;
-	mobj_t*	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
+	mobj_t*	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+ 
     damage = 5*(P_Random ()%3+1);
     angle = mo->angle;
 
     if (!accurate)
 	angle += (P_Random()-P_Random())<<18;
-
     P_LineAttack (moRef, angle, MISSILERANGE, bulletslope, damage);
-
 
 }
 
@@ -788,9 +785,13 @@ A_FireShotgun
 		  weaponinfo[player->readyweapon].flashstate);
 
     P_BulletSlope (player->moRef);
-	
-    for (i=0 ; i<7 ; i++)
-		P_GunShot (player->moRef, false);
+	if (gametic == 2165) {
+		//I_Error("bulletslope %i", bulletslope);
+	}
+
+	for (i = 0; i < 7; i++) {
+		P_GunShot(player->moRef, false);
+	}
 }
 
 

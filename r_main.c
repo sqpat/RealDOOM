@@ -889,13 +889,8 @@ void R_RenderPlayerView (player_t* player)
     // check for new console commands.
     NetUpdate ();
 
-	// 47
-
     // The head node is the last node output.
     R_RenderBSPNode (numnodes-1);
-
-
-	//52
     
     // Check for new console commands.
     NetUpdate ();

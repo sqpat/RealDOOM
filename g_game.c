@@ -721,11 +721,11 @@ void G_Ticker (void)
     switch (gamestate) 
     { 
       case GS_LEVEL: 
-        P_Ticker (); 
-        ST_Ticker (); 
+   	    P_Ticker ();
+		ST_Ticker ();
         AM_Ticker (); 
-        HU_Ticker ();            
-        break; 
+		HU_Ticker ();            
+		break;
          
       case GS_INTERMISSION: 
         WI_Ticker (); 

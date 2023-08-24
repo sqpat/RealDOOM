@@ -452,19 +452,24 @@ P_FindMinSurroundingLight
 	int linecount = sectors[secnum].linecount;
 
     min = max;
-    for (i=0 ; i < linecount ; i++)
-    {
-	line = linebuffer[sectors[secnum].linesoffset + i];
-	// 	// bad sector is 45affc... i == 1
-	checksecnum = getNextSector(line, secnum);
+    for (i=0 ; i < linecount ; i++) {
+		line = linebuffer[sectors[secnum].linesoffset + i];
 
-	if (checksecnum == SECNUM_NULL)
-	    continue;
+		checksecnum = getNextSector(line, secnum);
 
-	if (sectors[checksecnum].lightlevel < min)
-	    min = sectors[checksecnum].lightlevel;
+		// 4 255 255 15 127 1 0 0
+
+		if (checksecnum == SECNUM_NULL) {
+			continue;
+		}
+
+		if (sectors[checksecnum].lightlevel < min) {
+			min = sectors[checksecnum].lightlevel;
+		}
     }
-    return min;
+
+
+	return min;
 
 }
 
@@ -493,7 +498,7 @@ P_CrossSpecialLine
 	short linetag;
 	short linefrontsecnum; 
 	short lineside0;
-    line = linebuffer[linenum];
+    line = &lines[linenum];
 	linetag = line->tag;
 	linefrontsecnum = line->frontsecnum;
 	lineside0 = line->sidenum[0];
@@ -1262,26 +1267,24 @@ void P_SpawnSpecials (void)
 
     episode = 1;
     if (W_CheckNumForName("texture2") >= 0)
-	episode = 2;
+		episode = 2;
 
     
     // See if -TIMER needs to be used.
     levelTimer = false;
 	
     i = M_CheckParm("-avg");
-    if (i && deathmatch)
-    {
-	levelTimer = true;
-	levelTimeCount = 20 * 60 * 35;
+    if (i && deathmatch) {
+		levelTimer = true;
+		levelTimeCount = 20 * 60 * 35;
     }
 	
     i = M_CheckParm("-timer");
-    if (i && deathmatch)
-    {
-	int	time;
-	time = atoi(myargv[i+1]) * 60 * 35;
-	levelTimer = true;
-	levelTimeCount = time;
+    if (i && deathmatch) {
+		int	time;
+		time = atoi(myargv[i+1]) * 60 * 35;
+		levelTimer = true;
+		levelTimeCount = time;
     }
 
     //	Init special SECTORs.
@@ -1289,85 +1292,81 @@ void P_SpawnSpecials (void)
 
 	//I_Error("sector: %p %i", sectors, numsectors);
 
-	for (i=0 ; i<numsectors ; i++)
-    {
+	for (i=0 ; i<numsectors ; i++) {
 
+		if (!sectors[i].special)
+			continue;
+		//I_Error("stopping");
 
-	if (!sectors[i].special)
-	    continue;
-	//I_Error("stopping");
+		switch (sectors[i].special)
+		{
+		  case 1:
+			// FLICKERING LIGHTS
+			P_SpawnLightFlash (i);
+			break;
 
-	switch (sectors[i].special)
-	{
-	  case 1:
-	    // FLICKERING LIGHTS
-	    P_SpawnLightFlash (i);
-	    break;
+		  case 2:
+			// STROBE FAST
+			P_SpawnStrobeFlash(i,FASTDARK,0);
+			break;
+	    
+		  case 3:
+			// STROBE SLOW
+			P_SpawnStrobeFlash(i,SLOWDARK,0);
+			break;
+	    
+		  case 4:
+			// STROBE FAST/DEATH SLIME
+			P_SpawnStrobeFlash(i,FASTDARK,0);
+			sectors[i].special = 4;
+			break;
+	    
+		  case 8:
+			// GLOWING LIGHT
+			P_SpawnGlowingLight(i);
+			break;
+		  case 9:
+			// SECRET SECTOR
+			totalsecret++;
+			break;
+	    
+		  case 10:
+			// DOOR CLOSE IN 30 SECONDS
+			P_SpawnDoorCloseIn30 (i);
+			break;
+	    
+		  case 12:
+			// SYNC STROBE SLOW
+			P_SpawnStrobeFlash (i, SLOWDARK, 1);
+			break;
 
-	  case 2:
-	    // STROBE FAST
-	    P_SpawnStrobeFlash(i,FASTDARK,0);
-	    break;
-	    
-	  case 3:
-	    // STROBE SLOW
-	    P_SpawnStrobeFlash(i,SLOWDARK,0);
-	    break;
-	    
-	  case 4:
-	    // STROBE FAST/DEATH SLIME
-	    P_SpawnStrobeFlash(i,FASTDARK,0);
-	    sectors[i].special = 4;
-	    break;
-	    
-	  case 8:
-	    // GLOWING LIGHT
-	    P_SpawnGlowingLight(i);
-	    break;
-	  case 9:
-	    // SECRET SECTOR
-	    totalsecret++;
-	    break;
-	    
-	  case 10:
-	    // DOOR CLOSE IN 30 SECONDS
-	    P_SpawnDoorCloseIn30 (i);
-	    break;
-	    
-	  case 12:
-	    // SYNC STROBE SLOW
-	    P_SpawnStrobeFlash (i, SLOWDARK, 1);
-	    break;
+		  case 13:
+			// SYNC STROBE FAST
+			P_SpawnStrobeFlash (i, FASTDARK, 1);
+			break;
 
-	  case 13:
-	    // SYNC STROBE FAST
-	    P_SpawnStrobeFlash (i, FASTDARK, 1);
-	    break;
-
-	  case 14:
-	    // DOOR RAISE IN 5 MINUTES
-	    P_SpawnDoorRaiseIn5Mins (i);
-	    break;
+		  case 14:
+			// DOOR RAISE IN 5 MINUTES
+			P_SpawnDoorRaiseIn5Mins (i);
+			break;
 	    
-	  case 17:
-	    P_SpawnFireFlicker(i);
-	    break;
-	}
+		  case 17:
+			P_SpawnFireFlicker(i);
+			break;
+		}
     }
 	
     
     //	Init line EFFECTs
     numlinespecials = 0;
-    for (i = 0;i < numlines; i++)
-    {
-	switch(lines[i].special)
-	{
-	  case 48:
-	    // EFFECT FIRSTCOL SCROLL+
-	    linespeciallist[numlinespecials] = &lines[i];
-	    numlinespecials++;
-	    break;
-	}
+    for (i = 0;i < numlines; i++) {
+		switch(lines[i].special) {
+		  case 48:
+			// EFFECT FIRSTCOL SCROLL+
+			linespeciallist[numlinespecials] = &lines[i];
+			numlinespecials++;
+			break;
+		}
     }
 
     

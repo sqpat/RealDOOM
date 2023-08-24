@@ -126,16 +126,17 @@ void P_SpawnLightFlash (short secnum)
 	
 	flashRef = Z_MallocEMSNew(sizeof(*flash), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	flash = (lightflash_t*) Z_LoadBytesFromEMS(flashRef);
-
 	flash->thinkerRef = P_AddThinker(flashRef, TF_LIGHTFLASH);
 
 	flash->secnum = secnum;
     flash->maxlight = sectors[secnum].lightlevel;
 
     flash->minlight = P_FindMinSurroundingLight(secnum, sectors[secnum].lightlevel);
-    flash->maxtime = 64;
+
+	flash->maxtime = 64;
     flash->mintime = 7;
     flash->count = (P_Random()&flash->maxtime)+1;
+
 
 }
 

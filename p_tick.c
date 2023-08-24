@@ -135,8 +135,10 @@ void P_RunThinkers (void)
 {
     THINKERREF	currentthinker;
 	void* arg;
-    currentthinker = thinkerlist[0].next;
+	int i = 0;
+	currentthinker = thinkerlist[0].next;
     while (currentthinker != 0) {
+		i++;
 		if ( thinkerlist[currentthinker].functionType == TF_DELETEME ) {
 			// time to remove it
 			thinkerlist[thinkerlist[currentthinker].next].prev = thinkerlist[currentthinker].prev;
@@ -187,6 +189,8 @@ void P_RunThinkers (void)
 		currentthinker = thinkerlist[currentthinker].next;
     }
 
+
+
 }
 
 
@@ -208,17 +212,18 @@ void P_Ticker (void)
 		return;
     }
     
-		
+
 	for (i = 0; i < MAXPLAYERS; i++) {
 		if (playeringame[i]) {
 			P_PlayerThink(&players[i]);
 		}
 	}
-			
-    P_RunThinkers ();
-    P_UpdateSpecials ();
+	
+
+	P_RunThinkers ();
+	P_UpdateSpecials ();
     P_RespawnSpecials ();
 
-    // for par times
+	// for par times
     leveltime++;	
 }

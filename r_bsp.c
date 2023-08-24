@@ -258,6 +258,7 @@ void R_AddLine (seg_t*	line)
 
     curline = line;
 
+
     // OPTIMIZE: quickly reject orthogonal back sides.
     angle1 = R_PointToAngle (vertexes[line->v1Offset].x, vertexes[line->v1Offset].y);
     angle2 = R_PointToAngle (vertexes[line->v2Offset].x, vertexes[line->v2Offset].y);
@@ -340,10 +341,11 @@ void R_AddLine (seg_t*	line)
 				
   clippass:
     R_ClipPassWallSegment (x1, x2-1);	
-    return;
+	return;
 		
   clipsolid:
     R_ClipSolidWallSegment (x1, x2-1);
+
 }
 
 
@@ -526,7 +528,9 @@ void R_Subsector (int num) {
     while (count--) {
 		R_AddLine (line);
 		line++;
-		//Z_RefIsActive(segsRef);
+		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+
+		Z_RefIsActive(segsRef);
 	}
 }
 

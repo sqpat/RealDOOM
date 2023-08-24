@@ -277,5 +277,6 @@ typedef struct mobj_s
 } mobj_t;
 
 
+extern mobj_t* SAVEDUNIT;
 
 #endif

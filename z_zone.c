@@ -44,7 +44,7 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 4096
-#define NUM_EMS_PAGES 32
+#define NUM_EMS_PAGES 12
 
 // demo commented out...
 
@@ -746,7 +746,7 @@ void Z_InitEMS (void)
 
 
 
-//todo make a 2nd one which is external facing for memref?
+
 void Z_FreeEMSNew (PAGEREF block, int error)
 {
 
@@ -984,6 +984,29 @@ void Z_MarkPageMRU(char pagenumber, char* file, int line) {
 
 }
 
+void Z_DoPageOut(short pageframeindex) {
+	// swap OUT memory
+	byte* copysrc = copyPageArea + (pageframeindex * PAGE_FRAME_SIZE);
+	byte* copydst = (byte*)mainzoneEMS + (activepages[pageframeindex] * PAGE_FRAME_SIZE);
+	//printf("\nPAGING OUT! page %i, from %p to %p", pageframeindex + i, copysrc, copydst);
+	memcpy(copydst, copysrc, PAGE_FRAME_SIZE);
+	activepages[pageframeindex] = -1;
+	pagesize[pageframeindex] = -1;
+	Z_MarkPageLRU(pageframeindex);
+
+}
+
+void Z_DoPageIn(short logicalpage, short pageframeindex, unsigned char numallocatepages) {
+
+	
+	byte* copydst = copyPageArea + pageframeindex * PAGE_FRAME_SIZE;
+	byte* copysrc = (byte*)mainzoneEMS + logicalpage * PAGE_FRAME_SIZE;
+	//printf("\nPAGING in! page %i, from %p to %p", pageframeindex, copysrc, copydst);
+	memcpy(copydst, copysrc, PAGE_FRAME_SIZE * numallocatepages);
+	
+
+}
+
 
 // gets a page index for this EMS page.
 // forces a page swap if necessary.
@@ -991,17 +1014,15 @@ void Z_MarkPageMRU(char pagenumber, char* file, int line) {
 // "page frame" is the upper memory EMS page frame
 // logical page is where it corresponds to in the big block of otherwise inaccessible memory..
 
-int thebspnum = 0;
-
 short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int line){  //todo allocations < 65k? if so size can be an unsigned short?
     char pageframeindex;
-	byte* copysrc;
-	byte* copydst;
+	short playertemp;
+	short newplayertemp;
 
 	unsigned char extradeallocatepages = 0;
 	unsigned char numallocatepages;
 	unsigned char i;
-
+	boolean allpagesgood;
 	numreads++;
 
 	if (size == 0) {
@@ -1016,25 +1037,60 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 		numallocatepages = 1;
 	}
 
-	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++){
-        if (activepages[pageframeindex] == logicalpage) {
+
+	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
+		if (activepages[pageframeindex] == logicalpage) {
 			//printf("\nEMS CACHE HIT on page %i size %i", page, size);
-			
+			allpagesgood = true;
+
+			// there are cases where a small item is evicted, which doesnt clear this 
+			// page cache, then the handle is reallocated to a larger (multiple page)
+			// allocation. So then the memory for the first is rightly in cache but
+			// the following pages are not - so you must use a different page.
 			for (i = 0; i < numallocatepages; i++) {
-				Z_MarkPageMRU(pageframeindex+i, file, line);
-
+				if (activepages[pageframeindex + i] != logicalpage + i) {
+					allpagesgood = false;
+					break;
+				}
 			}
 
-			if (logicalpage == 10) {
-				thebspnum++;
+			if (allpagesgood) {
+				for (i = 0; i < numallocatepages; i++) {
+					Z_MarkPageMRU(pageframeindex + i, file, line);
+				}
+
+				return pageframeindex;
+			}
+			else {
+				//I_Error("this happened?");
+				for (i = 0; i < numallocatepages; i++) {
+					if (activepages[pageframeindex + i] == logicalpage + i) {
+						// trash those pages as we dont want conflicts later
+						Z_DoPageOut(pageframeindex + i);
+					}
+				}
 
 			}
-			return pageframeindex;
-        }
-    }
+		}
+	}
 
 
     // page not active
+	
+	// if its multi pages, lets see if the 2nd and further pages exist in cache
+	// if so, evict those as they are about to be re-allocated.
+	if (numallocatepages > 1) {
+		for (i = 1; i < numallocatepages; i++) {
+			for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
+				if (activepages[pageframeindex] == logicalpage + i) {
+					Z_DoPageOut(pageframeindex);
+
+				}
+			}
+		}
+
+	}
+
     // decide on page to evict
 
 
@@ -1058,11 +1114,21 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 		}
 
 	}
-	
 	//printf("\nEMS CACHE MISS on page %i size %i numallocatepages %i", logicalpage, size, numallocatepages);
 	//printf("\n old: %i %i %i %i", pageevictorder[0], pageevictorder[1], pageevictorder[2], pageevictorder[3]);
 	//printf("\n old: %i %i %i %i", activepages[0], activepages[1], activepages[2], activepages[3]);
 	// update active EMS pages
+
+	// 0 6 3 12 1 2  13 4  5  10  7 8  11 9 10
+	// 1 1 1 1  1 1 1  1  1  -1  2 -1 1  2 -1
+	// 8 6 5 4  3 7 12 10 11 13 14 9  2  1 0
+
+	if (gametic == 1401 && logicalpage == 14 && size == 32768) {
+		playertemp = Z_GetEMSPageFrame(allocations[players[0].moRef].page, allocations[players[0].moRef].offset ,file, size);
+		
+		 
+	}
+
 	for (i = 0; i < numallocatepages; i++) {
 		
 		pageouts++;
@@ -1071,47 +1137,12 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 			//I_Error("now too big %i %i %s %i", numallocatepages, size, file, line);
 		//}
 
-		// 21
-		if (pageouts == 21) {
-			// copy out 46240 bytes..
-			//I_Error("paging it out.. %i %i %i", pageouts, i, pageframeindex+i, activepages[pageframeindex + i]);
-			// 
-
-
-
-
-			//I_Error("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", activepages[0], activepages[1], activepages[2], activepages[3], activepages[4], activepages[5], activepages[6], activepages[7], activepages[8], activepages[9]
-				//, activepages[10], activepages[11], activepages[12], activepages[13], activepages[14], activepages[15], activepages[16], activepages[17], activepages[18], activepages[19]
-				//, activepages[20], activepages[21]);
-
-//			I_Error("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", activepages[0], activepages[1], activepages[2], activepages[3], activepages[4], activepages[5], activepages[6], activepages[7], activepages[8], activepages[9]
-//				, activepages[10], activepages[11], activepages[12], activepages[13], activepages[14], activepages[15], activepages[16], activepages[17], activepages[18], activepages[19]
-//				, activepages[20], activepages[21], activepages[22], activepages[23], activepages[24], activepages[25], activepages[26], activepages[27], activepages[28], activepages[29]);
-
-			//copysrc = copyPageArea + (9 * PAGE_FRAME_SIZE);
-			//printf("\nPAGING OUT! page %i, from %p to %p", pageframeindex + i, copysrc, copydst);
-		}
+ 
 
 		if (activepages[pageframeindex + i] >= 0){
 			actualpageouts++;
 
-			if (activepages[pageframeindex + i] == 9) {
-
-				//I_Error("paging it out.. %i %i %i %i", pageouts, i, pageframeindex+i, activepages[pageframeindex + i]);
-				//I_Error("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", activepages[0], activepages[1], activepages[2], activepages[3], activepages[4], activepages[5], activepages[6], activepages[7], activepages[8], activepages[9]
-					//, activepages[10], activepages[11], activepages[12], activepages[13], activepages[14], activepages[15], activepages[16], activepages[17], activepages[18], activepages[19]
-					//, activepages[20], activepages[21], activepages[22], activepages[23], activepages[24], activepages[25], activepages[26], activepages[27], activepages[28], activepages[29]);
-
-			}
-
-
-			// swap OUT memory
-			copysrc = copyPageArea + ((pageframeindex + i) * PAGE_FRAME_SIZE);
-			copydst = (byte*)mainzoneEMS + (activepages[pageframeindex + i] * PAGE_FRAME_SIZE);
-			//printf("\nPAGING OUT! page %i, from %p to %p", pageframeindex + i, copysrc, copydst);
-			memcpy(copydst, copysrc, PAGE_FRAME_SIZE);
-
-
+			Z_DoPageOut(pageframeindex+i);
 
 			if (pagesize[pageframeindex + i] > (numallocatepages-i)) {
 				if (pagesize[pageframeindex + i] > extradeallocatepages) {
@@ -1127,6 +1158,7 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 
 				}
 			}
+
 
 
 			//I_Error("\nREALLY PAGING OUT! page %i, from %p to %p   %s line %i   size %i logical page %i %i %i %i", pageframeindex + i, copysrc, copydst, file, line, size, logicalpage, actualpageouts, pageouts, pageins);
@@ -1147,9 +1179,7 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 
 		}  
 
-
-
-		if (pageouts >= 0) {
+		 
 
 			//I_Error("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", pagesize[0], pagesize[1], pagesize[2], pagesize[3], pagesize[4], pagesize[5], pagesize[6], pagesize[7], pagesize[8], pagesize[9]
 				//, pagesize[10], pagesize[11], pagesize[12], pagesize[13], pagesize[14], pagesize[15], pagesize[16], pagesize[17], pagesize[18], pagesize[19]
@@ -1179,50 +1209,19 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 	
 			//sprintf(result2, "\nOUT! (%i) page %i %s line %i size %i lp %i %i %i %i %i %i", pageouts, pageframeindex + i, file, line, size, logicalpage, actualpageouts, pageouts, pageins, activepages[pageframeindex + i], gametic);
 			//strcat(result, result2);
-			
-		}
-
-
-		if (pageouts > 24) {
-
-			/*							  logical  internal
-				TICK      caller     size	in out	in out
-			(21)	322 r_data.c 263 16384		-1	20 20
-			(22)	322 r_data.c 263 32768		-1	21 21
-			(23)	322 r_data.c 263  ----		-1	22 22
-			(24)	354 r_data.c 263  8192		6	5	5 wad stuff paged out?)
-			(25)	357 p_mobj.c 493   132		7	6	6 
-			(26)	
-
-			*/
-
-
-			// 23 is the door
-			// 24 is pre shot
-			// 25 is pre shot
-			// 26 way tooo late
-
-			// 31,32 maybe ok? tick 357
-			// 33,34 bad already tick 363
-			// 35 bad already tick 370
-			//I_Error(result);
-		}
-
+			 
 		pagesize[pageframeindex + i] = -1;
 		activepages[pageframeindex + i] = logicalpage + i;
-		Z_MarkPageMRU(pageframeindex + i, file, line);
 
+		Z_MarkPageMRU(pageframeindex + i, file, line);
 	}
+
 
 	// deallocated a multi-block allocation above... do the rest here?
 	for (i = 0; i < extradeallocatepages; i++) {
 
 		// swap OUT memory
-		copysrc = copyPageArea + ((pageframeindex + i + numallocatepages) * PAGE_FRAME_SIZE);
-		copydst = (byte*)mainzoneEMS + (activepages[pageframeindex + i + numallocatepages] * PAGE_FRAME_SIZE);
-		//printf("\nPAGING OUT! page %i, from %p to %p", pageframeindex + i, copysrc, copydst);
-		memcpy(copydst, copysrc, PAGE_FRAME_SIZE);
-		Z_MarkPageLRU(pageframeindex + i + numallocatepages);
+		Z_DoPageOut(pageframeindex + i + numallocatepages);
 
 		//I_Error("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", pagesize[0], pagesize[1], pagesize[2], pagesize[3], pagesize[4], pagesize[5], pagesize[6], pagesize[7], pagesize[8], pagesize[9]
 			//, pagesize[10], pagesize[11], pagesize[12], pagesize[13], pagesize[14], pagesize[15], pagesize[16], pagesize[17], pagesize[18], pagesize[19]
@@ -1245,19 +1244,26 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 	// can do multiple pages in one go...
 	// swap IN memory
 
-	copydst = copyPageArea + pageframeindex * PAGE_FRAME_SIZE;
-	copysrc = (byte*)mainzoneEMS + logicalpage * PAGE_FRAME_SIZE;
-	//printf("\nPAGING in! page %i, from %p to %p", pageframeindex, copysrc, copydst);
-	memcpy(copydst, copysrc, PAGE_FRAME_SIZE * numallocatepages);
+
+	Z_DoPageIn(logicalpage, pageframeindex, numallocatepages);
 	pageins++;
 	
 	//printf("\n new: %i %i %i %i", pageevictorder[0], pageevictorder[1], pageevictorder[2], pageevictorder[3]);
 	//printf("\n new: %i %i %i %i", activepages[0], activepages[1], activepages[2], activepages[3]);
 
+	// 0 6 3 12 1 2  13 4  14 15 7  8 11 9 10
+	// 1 1 1 1  1 1  1  1  2  -1 2 -1 1  2 -1
+	// 6 5 4 3  7 12 10 11 13 14 1  2 0  8 9
+	
+	// 8 6 5 4  3 7 12 10 11 13 14 9  2  1 0
+
+	if (gametic == 1401 && logicalpage == 14 && size == 32768) {
+		newplayertemp = Z_GetEMSPageFrame(allocations[players[0].moRef].page, allocations[players[0].moRef].offset, file, size);
+		 
+	}
+
     return pageframeindex;
 }
-
-static int testa = 0;
 
 void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
     byte* memorybase;
@@ -1265,12 +1271,16 @@ void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
     byte* address;
 	mobj_t* thing;
 
+
 	//todo which was correct again?
 
 //	if (ref > MAX_PAGE_FRAMES) {
 	if (ref > EMS_ALLOCATION_LIST_SIZE) {
 
 		I_Error("out of bounds memref.. %i %s %i", ref, file, line);
+	}
+	if (ref == 0) {
+		I_Error("tried to load memref 0... %i %s %i", ref, file, line);
 	}
 
 
@@ -1295,22 +1305,7 @@ void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
 
 
 
-	if (ref == 469) {
-		testa++;
-		if (testa == 10) {
-			// 13: 1 469 006c6f54 28013
-			// 12: 1 469 006c6f54 28013
-			// 11: 1 469 006c6f54 28013
-			// 10: 5 469 006d6f54 0
-			//  5: 5 469 006d6f54 0
-			//  2: 5 469 006d6f54 0
-			//  1: 5 469 006d6f54 28013
-			//thing = (mobj_t*)address;
-			
-			//I_Error("first 469 %i %i %p %i", pageframeindex, ref, address,thing->targetRef);
-		}
-	}
-
+	 
     
 	//printf("returned address %p page number %i", address, pageframeindex);
 
@@ -1490,6 +1485,8 @@ Z_MallocEMSNewWithBackRef
 	 
     base = currentListHead;
 
+	
+
     if (!allocations[allocations[base].prev].user){
         //printf("\nchecked %p %i %i %p\n", allocations[0].user, allocations[base].prev, base, (void *)mainzoneEMS);
         base = allocations[base].prev;
@@ -1512,7 +1509,7 @@ Z_MallocEMSNewWithBackRef
         //printf ("loop  % i   % i  %i\n", size, offsetToNextPage, allocations[base].size);
         iter++;
 
-        if (iter == 4000){
+        if (iter > 2 * EMS_ALLOCATION_LIST_SIZE){
             printf("looping forever?");
            I_Error ("looping forever?");
         }
@@ -1712,7 +1709,7 @@ Z_MallocEMSNewWithBackRef
 //        I_Error("C: Last pages? %i %i %i %i %i %i", varA, varB, getNumFreePages(), getFreeMemoryByteTotal(), currentListHead, allocations[currentListHead].page);
 //    }
 
-	
+
 	return base;
     //return (void *) ((byte *)mainzoneEMS + ( allocations[base].page * PAGE_FRAME_SIZE + allocations[base].offset ) );
 
@@ -1726,7 +1723,8 @@ void Z_CheckEMSAllocations(PAGEREF block, int var, int var2, int var3){
 
     // all allocation entries should either be in the chain (linked list)
     // OR marked as a free index (prev = EMS_ALLOCATION_LIST_SIZE)
-    int unalloactedIndexCount = getNumFreePages();
+    
+	int unalloactedIndexCount = getNumFreePages();
     short start = allocations[block].prev;
     int iterCount = 1; 
     while (start != block){

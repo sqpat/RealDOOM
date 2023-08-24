@@ -418,7 +418,12 @@ P_SetThingPosition (MEMREF thingRef)
     
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
-	
+
+		if (gametic == 1403 && thingRef == 463 ){//sectors[ss->secnum].thinglistRef == thingRef) {
+			//I_Error("caught loop early 2 %i %i %i %i %i ", thingRef, gametic, 0, thing->sprevRef, thing->snextRef);   // tick 1403 prev 801 0
+																													  //1402 0 0 0 
+		}
+
 		thing->sprevRef = NULL_MEMREF;
 		thing->snextRef = sectors[ss->secnum].thinglistRef;
 

@@ -946,6 +946,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
     fixed_t		thingbottomslope;
 	MEMREF		thRef;
 		
+
     if (in->isaline)
     {
 	li = &lines[in->d.linenum];
@@ -987,6 +988,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	y = trace.y + FixedMul (trace.dy, frac);
 	z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
 
+
+
 	if (sectors[li->frontsecnum].ceilingpic == skyflatnum)
 	{
 	    // don't shoot the sky!
@@ -1004,12 +1007,18 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	// don't go any farther
 	return false;	
     }
-    
+
+	if (gametic == 2165) {
+		// todo we are hitting the below if case so we are triggering shoot self...
+		//I_Error("shoottraverse %i %i %i %i %i ", gametic, 0, thRef, shootthingRef, shootthingRef);
+	}
     // shoot a thing
     thRef = in->d.thingRef;
     if (thRef == shootthingRef)
 	return true;		// can't shoot self
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
+
+
 
     if (!(th->flags&MF_SHOOTABLE))
 	return true;		// corpse or something
@@ -1017,6 +1026,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange, in->frac);
     thingtopslope = FixedDiv (th->z+th->height - shootz , dist);
+
+	
 
     if (thingtopslope < aimslope)
 	return true;		// shot over the thing
@@ -1041,6 +1052,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	P_SpawnPuff (x,y,z);
     else
 	P_SpawnBlood (x,y,z, la_damage);
+
+	
 
     if (la_damage)
 	P_DamageMobj (thRef, shootthingRef, shootthingRef, la_damage);

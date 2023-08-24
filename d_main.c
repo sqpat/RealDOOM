@@ -271,22 +271,17 @@ void D_Display (void)
         break;
     }
 
-	// 47
 
     // draw buffered stuff to screen
     I_UpdateNoBlit ();
 
-
-    // draw the view directly
+	// draw the view directly
     if (gamestate == GS_LEVEL && !automapactive && gametic)
         R_RenderPlayerView (&players[displayplayer]);
 
-
-	// 52
-
     if (gamestate == GS_LEVEL && gametic)
         HU_Drawer ();
-    
+
     // clean up border stuff
     if (gamestate != oldgamestate && gamestate != GS_LEVEL)
         I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
@@ -326,7 +321,6 @@ void D_Display (void)
         V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2,
                           y,0,W_CacheLumpName ("M_PAUSE", PU_CACHE));
     }
-
 
     // menus go directly to the screen
     M_Drawer ();          // menu is drawn even on top of everything
@@ -372,6 +366,11 @@ byte copynode[46240];
 
 void D_DoomLoop (void)
 {
+	char result[3000];
+	char result2[2000];
+	int lasttick = 0;
+	int lastindex = 0;
+
 	byte* nodes;
 	int i = 0;
     if (demorecording)
@@ -390,9 +389,7 @@ void D_DoomLoop (void)
     while (1)
     {
         // frame syncronous IO operations
-		//45
 		I_StartFrame ();                
-		// 45
         // process one or more tics
         if (singletics) {
 			I_StartTic ();
@@ -401,10 +398,8 @@ void D_DoomLoop (void)
 			if (advancedemo) {
 				D_DoAdvanceDemo();
 			}
-			// 45, 52, 59, 62
 			M_Ticker ();
 			G_Ticker ();
-			// 46, 53, 61
 
 			gametic++;
             maketic++;
@@ -414,12 +409,25 @@ void D_DoomLoop (void)
         {
             TryRunTics (); // will run at least one tic
         }
-		//46
 		S_UpdateSounds (players[consoleplayer].moRef);// move positional sounds
-		//46
         // Update display, next frame, with current state.
-        D_Display ();
-		// 52
+		D_Display ();
+
+		//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+	
+
+		if (gametic == 1404) {
+			
+			if (gametic != lasttick) {
+				lasttick = gametic;
+
+				//sprintf(result2, "%i %i %i %i %i %i %i %i %i \n", gametic, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->health, SAVEDUNIT->state->frame);
+				//strcat(result, result2);
+				//lastindex = prndindex;
+
+
+			}
+		}
 
 		if (gametic == 2) {
 			//nodes = (byte*)Z_LoadBytesFromEMS(nodesRef);
@@ -428,13 +436,7 @@ void D_DoomLoop (void)
 			//	I_Error("badcopy");
 			//}
 		}
-		
-		else if (gametic > 2) {
-			//nodes = (byte*)Z_LoadBytesFromEMS(nodesRef);
-			//if (memcmp(copynode, nodes, 46240)) {
-			//	I_Error("unequal! %i %i ", i, gametic);
-			//}
-		}
+		 
 
 	}
 }

@@ -605,6 +605,8 @@ void P_GroupLines(void)
 		sectors[i].blockbox[BOXLEFT] = block;
 	}
 
+	linebuffer = baselinebuffer;
+
 }
 
 
@@ -690,10 +692,11 @@ P_SetupLevel
 	P_LoadNodes(lumpnum + ML_NODES);
 	P_LoadSegs(lumpnum + ML_SEGS);
 
+
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 12);
 	rejectmatrix = W_CacheLumpNum(lumpnum + ML_REJECT, PU_LEVEL);
 	P_GroupLines();
-	
+
 	bodyqueslot = 0;
 	deathmatch_p = deathmatchstarts;
 	P_LoadThings(lumpnum + ML_THINGS);

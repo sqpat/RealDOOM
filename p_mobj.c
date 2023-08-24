@@ -35,7 +35,7 @@
 void G_PlayerReborn (int player);
 void P_SpawnMapThing (mapthing_t*	mthing);
 
-
+mobj_t* SAVEDUNIT;
 //
 // P_SetMobjState
 // Returns true if the mobj is still present.
@@ -137,8 +137,18 @@ void P_XYMovement (MEMREF moRef)
     fixed_t	ymove;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mobj_t* playermo;
-			
-    if (!mo->momx && !mo->momy) {
+	player = mo->player;
+	if (gametic == 426 && moRef == 764) {
+		//I_Error("we good? %i %i %p %i", gametic, moRef, player, mo->type);
+		//moref 764  gets wrecked on frame 426 somewhere?
+	}
+
+	if (player) {
+		playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+	}
+
+	if (!mo->momx && !mo->momy) {
+
 		if (mo->flags & MF_SKULLFLY) {
 			// the skull slammed into something
 			mo->flags &= ~MF_SKULLFLY;
@@ -148,9 +158,9 @@ void P_XYMovement (MEMREF moRef)
 		}
 		return;
     }
-	
     player = mo->player;
-		
+
+
     if (mo->momx > MAXMOVE)
 		mo->momx = MAXMOVE;
     else if (mo->momx < -MAXMOVE)
@@ -163,7 +173,7 @@ void P_XYMovement (MEMREF moRef)
 		
     xmove = mo->momx;
     ymove = mo->momy;
-	
+
     do {
 		if (xmove > MAXMOVE/2 || ymove > MAXMOVE/2) {
 			ptryx = mo->x + xmove/2;
@@ -230,23 +240,27 @@ void P_XYMovement (MEMREF moRef)
 	}
 
 
-    if (mo->momx > -STOPSPEED && mo->momx < STOPSPEED && mo->momy > -STOPSPEED && mo->momy < STOPSPEED && (!player->moRef || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) ) {
+
+    if ((mo->momx > -STOPSPEED && mo->momx < STOPSPEED && mo->momy > -STOPSPEED && mo->momy < STOPSPEED) && 
+			(!player || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) 
+		) {
 	// if in a walking frame, stop moving
 
-		if (player && player->moRef > 4096) {
-			I_Error("2bad moref %i", player->moRef);
+		if (player && (unsigned)((playermo->state - states) - S_PLAY_RUN1) < 4) {
+			P_SetMobjState(player->moRef, S_PLAY);
 		}
-		//I_Error("normal moref %i", player->moRef);
-
-		if (player&&(unsigned)((playermo->state - states)- S_PLAY_RUN1) < 4)
-			P_SetMobjState (player->moRef, S_PLAY);
-	
 		mo->momx = 0;
 		mo->momy = 0;
     } else {
 		mo->momx = FixedMul (mo->momx, FRICTION);
 		mo->momy = FixedMul (mo->momy, FRICTION);
-    }
+
+	}
+
+	if (gametic == 2224 && mo == playermo) {
+		//I_Error("%i %i %i %i %i %i %i ", gametic, mo->x, mo->y, mo->angle, mo->type, mo->momx, mo->momy);
+	}
+
 }
 
 //
@@ -433,6 +447,9 @@ void P_MobjThinker (MEMREF mobjRef) {
 			return;		// mobj was removed
 		}
     }
+
+
+
     if ( (mobj->z != mobj->floorz) || mobj->momz ) {
 		P_ZMovement (mobjRef);
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -442,7 +459,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		}
     }
 
-    
+	
     // cycle through states,
     // calling action functions at transitions
     if (mobj->tics != -1) {
@@ -531,6 +548,16 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	mobj->z = z;
 
 	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
+
+
+	//	if (type == 1 && (mobj->x >> FRACBITS) == 160) {
+	//if (type == MT_SHOTGUY && (mobj->x >> FRACBITS) == -992) {
+	if (type == MT_TROOP && (mobj->x >> FRACBITS) == -992) {
+
+		//if (type == 13 && (mobj->x >> FRACBITS) == 864) {
+		//I_Error("%i %i %i %i ", mobj->x>>FRACBITS, mobj->y >> FRACBITS, mobj->angle, mobj->type);
+		SAVEDUNIT = mobj;
+	}
 
     return mobjRef;
 }

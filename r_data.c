@@ -253,7 +253,9 @@ void R_GenerateComposite(int texnum)
 
 	texture_t* texture =			(texture_t*)Z_LoadBytesFromEMS(textures[texnum]);
 
-	
+	if (gametic == 1401 && texnum == 24) {
+		
+	}
 	texturecomposite[texnum] = Z_MallocEMSNewWithBackRef(texturecompositesize[texnum],
 		PU_STATIC,
 		0xff, ALLOC_TYPE_TEXTURE, -1*(texnum+1));
@@ -422,25 +424,29 @@ R_GetColumn
 ( int           tex,
   int           col )
 {
-    int         lump;
-    int         ofs;
-        
-	int* texturewidthmask =				(int*)Z_LoadBytesFromEMS(texturewidthmaskRef);
-
-	MEMREF* texturecolumnlumpTex =		(MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
-	MEMREF* texturecolumnofsTex =		(MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
-
-	short* texturecolumnlump =			(short*)Z_LoadBytesFromEMS(texturecolumnlumpTex[tex]);
-	unsigned short* texturecolumnofs =	(unsigned short*)Z_LoadBytesFromEMS(texturecolumnofsTex[tex]);
-	MEMREF* texturecomposite =			(MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
+    int         lump; int         ofs; MEMREF* texturecolumnlumpTex; MEMREF* texturecolumnofsTex; short* texturecolumnlump; unsigned short* texturecolumnofs; MEMREF* texturecomposite;
 
 	byte* texturecompositebytes;
+
+	// reordered to require fewer things in memory at same time
+    int* texturewidthmask =				(int*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 	col &= texturewidthmask[tex];
-    lump = texturecolumnlump[col];
-    ofs = texturecolumnofs[col];
+
+	texturecolumnlumpTex =		(MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
+	
+	texturecolumnlump = (short*)Z_LoadBytesFromEMS(texturecolumnlumpTex[tex]);
+	lump = texturecolumnlump[col];
+
+	texturecolumnofsTex =		(MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
+	texturecolumnofs =	(unsigned short*)Z_LoadBytesFromEMS(texturecolumnofsTex[tex]);
+	ofs = texturecolumnofs[col];
+
+	texturecomposite =			(MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 
 	// note: this currently mixes W_CacheLumpNum method and EMS memory method...  might be bad
-    
+
+
+
 	if (lump > 0) {
 		W_CacheLumpNumCheck(lump, 15);
 		return (byte *)W_CacheLumpNum(lump, PU_CACHE) + ofs;
@@ -449,7 +455,15 @@ R_GetColumn
 	if (texturecomposite[tex] == NULL_MEMREF) {
 		R_GenerateComposite(tex);
 	}
+
+	texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
+
 	texturecompositebytes = (byte*)Z_LoadBytesFromEMS(texturecomposite[tex]);
+
+	if (setval > 1) {
+	 
+	}
+
 
     return texturecompositebytes + ofs;
 }

@@ -53,6 +53,9 @@ MEMORY IDEAS
 // but the first element must be thinker_t.
 //
 
+?
+  1 see wolf 3d conventional memory code? can i do that?
+  2 debug something 
 
 
 P_UnArchiveSpecials?  seems fucked. Especially the thinkers, functions....
@@ -60,6 +63,17 @@ P_ArchiveSpecials     similarly fucked, how are these even writing...
 
 P_ArchiveThinkers too
 P_UnArchiveThinkers too
+
+
+
+- fix the 15 ems page case of demo 3.. frame 1403
+  - happens because on p_setthingposition, player->next is set as player causing infinite loop.
+   ? why? does origpcdoom do this?
+   - see call stack by using __FILE__ and __LINE__?
+   - its on frame 1401, a z_getemspageframe
+ 
+   ? make sure to deallocate
+
 
 
 x 1. Change all thinker function calls to pass in memref instead of pointer?
@@ -72,20 +86,13 @@ x 3. activeceilings
  - P_BlockThingsIterator
     - consider this in a static spot...
 
-1: sector_t mobj_t* thinglist
-  - simple change to memref*
 2 sectors to sector refs, etc?
 
 
 sound originRef thing...
  - needs ref, x, y
   ? maybe inner takes x/y and you can pass in null for the degen case
-
-
-secnum problem has to do with 0 not being invalid!
-
-  
-
+ 
  
 NOW (fix memory issues)
  x THEN degenmobj_t etc to memref
@@ -93,27 +100,24 @@ NOW (fix memory issues)
   x sector indices
   ~ line indices
     x line->sidenum[0]].secnum thing
-    xP_StartButton
-    ! doors broken?
-    - line_t thing in sector should just be a single linenum.
-
-? why lines and linebuffer?
- - cant they be the same? duped data?
+    x_StartButton
+    x doors broken?
+    x line_t thing in sector should just be a single linenum.
+  ? change mobj-> player to a memref?
+   ? is player z_malloced?
+   - make it static, etc... then a pointer is ok
+    - change linebuffer into indices instead of real pointers.
+     - and all uses
+^^^^ HERE
+  - then 3
  
  - THEN all wad lumps to ems
 
-x Fix the problem with vertexes
- x line has vertexes. Instead use a vertex offset 
- x put demo mem back
-x degenmobj_t etc to memref
-  x OK?
+
 x fix sound playback
 - segs, etc to ems
  (line first?)
-
-- get wad editor. make sure about maximums for linedefs, segs, etc. is short enough?
-  - never bigger than 2800 in doom others all smaller
-2. why was there a 0 allocation (might be e1m1 marker etc?)
+ ? why was there a 0 allocation (might be e1m1 marker etc?)
 
 
 
