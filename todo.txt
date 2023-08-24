@@ -1,7 +1,6 @@
  
  
  
-? why was there a 0 allocation (might be e1m1 marker etc?)
  
 IMPROVEMENTS
   - mobj in conventional?
@@ -16,45 +15,72 @@ MEMORY IMPROVEMENTS
 
 
 
-... BUGS TO FIX
- - save file stuff (archive, unarchive thinkers)
- - test doom 2 stuff
-
-
+KNOWN ISSUES
+ - no sound, need new 16 bit lib
+ - no titlepic, etc. requires 65k allocation, 64k currently _maxammo
+ - time counter on level finish is wrong
+ - doom2 enemies probably nonfunctional, needs testing
+ - savegames broken. not sure if it will be compatible with original doom
 
 TODO 
  
  ? is 2048 mem entries enough? plays demo 1 ok.
- - make ems actually work
+ x shrink the allocation_t a bit more
+ 2 setup git
+ 3 see if we can lessen size of some of those sectors etc fields
+ 4 make ems actually work
+ 5 build 16 bit for good
+ - set visiplanes under 64k and see if large compile works
+ - test level transitions some more.
+
+ IMPROVEMENTS
+ ? clean up 0 allocation checking code
+ - TEST DOOM2 STUFF
+   ? remove rangecheck (after doom2 testing?)
+ ? remove disk reading icon (?)
+ - save file fixes
+ - make titlepic work with > 4 pages?
+ - investigate runtime improvements in z_zone.
+
 
 - get rid of:
   ? more enums
   ? any more net code to dump?
   ? dump bad savegame code
-  - see if we can lessen size of some of those sectors etc fields
   
 
 
-- make titlepic work with > 4 pages?
-? remove rangecheck (after doom2 testing?)
-- remove disk reading icon (?)
 
 MEMORY IDEAS
  
- - support allocating some things in conventional
+ ~ compress memory allocation entries by using bit masks and combining values
+ - support allocating some things in conventional memory. 
+   - probably need to use it to support titlepic and other large memory things?
+   - test to figure out which variables improve fps most in conventional
+      - probably sectors, lines, etc...
+
  - use overlays, especially on startup code to eliminate space
    - if we ever do multiple renderers or sound code etc, 
         can fit more in the binary by using overlays?
  - go thru all int32_ts and make as many int16_t as possible
- - compress memory allocation entries by using bit masks and combining values
+ - explicitly declare things near, far when possible?
  - reduce visiplanes size below 65k somehow to allow large instead of huge memory model.
    - maybe just reduce the number of visplanes for now...
+ - pull strings into ems at runtime by loading from a file rather than compiling
+   as data alongside code.  strings are generally used once every blue moon, and 
+   d_english.h has got about 15k worth of data sitting there..
+  several dozen frames at the most so doesnt make sense for them to be in conventional
+  and sectors being paged in and out... 
+ - look into using the sourceHint to allocate items with some sort of locality to 
+    decrease pagination. rather than marking blocks themselves as reserved,
+    probably maintain a fixed list of preferred pages by type, and use that as 
+    a temporary rover head for the allocation. mobj for sure would benefit from
+    this. can probably benchmark by pagination count and try and lower that number.
  - investigate benefits of fewer bigger source files (less far calls?)
- - explicitly declare things near when possible?
- - remove more strings
+
+ 
 
 TESTING:
  - finale  
- - viles and other enemy (heads, head spawns)
+ - doom2... viles and other enemy (heads, head spawns)
 
-? change crossbspnode etc to use indices not addressesma

@@ -821,7 +821,7 @@ P_SetupLevel
 	players[consoleplayer].viewz = 1;
 
 	S_Start();
-	Z_FreeTagsEMS(PU_LEVEL, PU_PURGELEVEL - 1);
+	Z_FreeTagsEMS(PU_LEVEL);
 
 
 	P_InitThinkers();

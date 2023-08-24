@@ -498,10 +498,8 @@ W_CacheLumpNumEMS
 		// read the lump in
 		//printf ("cache miss on lump %i\n",lump);
 		// needs an 'owner' apparently...
-		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump);
-		if (lump == 75) {
-			//I_Error("did it %i %i %i", W_LumpLength(lump), lump, lumpcacheEMS[lump]);
-		}
+		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump + BACKREF_LUMP_OFFSET);
+
 		W_ReadLumpEMS(lump, lumpcacheEMS[lump]);
 	} else {
 		//printf ("cache hit on lump %i\n",lump);

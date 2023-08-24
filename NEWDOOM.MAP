@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/08/23 11:59:22
+Created on:       23/08/24 13:22:43
 Executable Image: newdoom.exe
 creating an OS/2 linear executable
 
@@ -12,7 +12,7 @@ creating an OS/2 linear executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0002:00000000        0005cd60
+DGROUP                          0002:00000000        0005bd70
 
 
 
@@ -27,8 +27,8 @@ BEGTEXT                CODE           AUTO           0001:00000000   00000010
 _TEXT                  CODE           AUTO           0001:00000010   0002bed0
 _NULL                  BEGDATA        DGROUP         0002:00000000   00000004
 _AFTERNULL             BEGDATA        DGROUP         0002:00000004   00000000
-CONST                  DATA           DGROUP         0002:00000004   000043cc
-CONST2                 DATA           DGROUP         0002:000043d0   00000218
+CONST                  DATA           DGROUP         0002:00000004   000043d0
+CONST2                 DATA           DGROUP         0002:000043d4   00000218
 _DATA                  DATA           DGROUP         0002:000045f0   0000c37c
 XIB                    DATA           DGROUP         0002:0001096c   00000000
 XI                     DATA           DGROUP         0002:0001096c   0000003c
@@ -40,8 +40,8 @@ TIB                    DATA           DGROUP         0002:000109cc   00000000
 TI                     DATA           DGROUP         0002:000109cc   00000000
 TIE                    DATA           DGROUP         0002:000109cc   00000000
 DATA                   DATA           DGROUP         0002:000109cc   00000000
-_BSS                   BSS            DGROUP         0002:000109d0   00046388
-STACK                  STACK          DGROUP         0002:00056d60   00006000
+_BSS                   BSS            DGROUP         0002:000109d0   00045398
+STACK                  STACK          DGROUP         0002:00055d70   00006000
 
 
                         +----------------+
@@ -141,7 +141,7 @@ Module: i_sound.obj(C:\PCDOOM2\i_sound.c)
 0001:000012b0  I_StartupSound_
 0001:00001330  I_ShutdownSound_
 0001:00001340  I_SetChannels_
-0002:000043d0+ _snd_prefixen
+0002:000043d4+ _snd_prefixen
 0002:00010af0  _snd_DesiredMusicDevice
 Module: tables.obj(C:\PCDOOM2\tables.c)
 0001:00001350  fixedsine_
@@ -716,10 +716,10 @@ Module: p_maputl.obj(C:\PCDOOM2\p_maputl.c)
 0002:000159ac+ _ptflags
 0002:000159b0+ _earlyout
 0002:000159b4  _lowfloor
-0002:000159b8  _openrange
-0002:000159bc+ _intercept_p
-0002:000159c0  _opentop
-0002:000159c4  _openbottom
+0002:000159b8+ _intercept_p
+0002:000159bc  _opentop
+0002:000159c0  _openbottom
+0002:000159c4  _openrange
 Module: p_plats.obj(C:\PCDOOM2\p_plats.c)
 0001:00010a50  T_PlatRaise_
 0001:00010c00  EV_DoPlat_
@@ -915,11 +915,11 @@ Module: r_bsp.obj(C:\PCDOOM2\r_bsp.c)
 0002:0001c118  _linedefOffset
 0002:0001c11a  _frontsecnum
 Module: r_data.obj(C:\PCDOOM2\r_data.c)
-0002:0001c11c+ _lastpatch
-0002:0001c120+ _numpatches
-0002:0001c124+ _numtextures
-0002:0001c128+ _colormapbytes
-0002:00024d24+ _lastflat
+0002:0001c11c+ _numpatches
+0002:0001c120+ _numtextures
+0002:0001c124+ _colormapbytes
+0002:00024d20+ _lastflat
+0002:00024d24+ _lastpatch
 0002:00024d28+ _firstpatch
 0002:00024d2c+ _numflats
 0002:00024d30  _firstflat
@@ -1007,16 +1007,16 @@ Module: r_main.obj(C:\PCDOOM2\r_main.c)
 0002:0002bf94  _basecolfunc
 0002:0002bf98  _spanfunc
 0002:0002bf9c  _fuzzcolfunc
-0002:0002bfa0  _colfunc
-0002:0002bfa4  _detailshift
-0002:0002bfa8+ _linecount
-0002:0002bfac  _extralight
-0002:0002bfb0  _fixedcolormap
-0002:0002bfb4  _projection
-0002:0002bfb8  _centeryfrac
-0002:0002bfbc  _centerxfrac
-0002:0002bfc0+ _centerx
-0002:0002bfc4  _centery
+0002:0002bfa0  _detailshift
+0002:0002bfa4+ _linecount
+0002:0002bfa8  _extralight
+0002:0002bfac  _fixedcolormap
+0002:0002bfb0  _projection
+0002:0002bfb4  _centeryfrac
+0002:0002bfb8  _centerxfrac
+0002:0002bfbc+ _centerx
+0002:0002bfc0  _centery
+0002:0002bfc4+ _loopcount
 0001:0001ada0+ R_PointOnSide_
 0001:0001ae60  R_PointOnSegSide_
 0001:0001af40  R_PointToAngle_
@@ -1032,9 +1032,9 @@ Module: r_main.obj(C:\PCDOOM2\r_main.c)
 0001:0001b850+ R_SetupFrame_
 0001:0001b950  R_RenderPlayerView_
 0002:0000ae28  _validcount
-0002:0002bfc8+ _loopcount
-0002:0002bfcc  _viewsin
-0002:0002bfd0  _viewcos
+0002:0002bfc8  _viewsin
+0002:0002bfcc  _viewcos
+0002:0002bfd0  _colfunc
 0002:0002bfd4  _fieldofview
 0002:0002bfd8  _xtoviewangle
 0002:0002c4dc  _viewplayer
@@ -1049,18 +1049,18 @@ Module: r_sky.obj(C:\PCDOOM2\r_sky.c)
 0002:0002c4f8  _skytexturemid
 0002:0002c4fc  _skyflatnum
 Module: r_plane.obj(C:\PCDOOM2\r_plane.c)
-0002:0002c500+ _cachedxstep
-0002:0002c820+ _cachedystep
+0002:0002c500+ _cachedystep
+0002:0002c820+ _cachedxstep
 0002:0002cb40+ _spanstart
 0002:0002ce60+ _cachedheight
 0002:0002d180+ _spanstop
 0002:0002d4a0+ _openings
 0002:000374a0+ _cacheddistance
 0002:000377c0+ _visplanes
-0002:0004c0c0  _ceilingclip
-0002:0004c340  _yslope
-0002:0004c660  _distscale
-0002:0004cb60  _floorclip
+0002:0004c0c0  _yslope
+0002:0004c3e0  _distscale
+0002:0004c8e0  _floorclip
+0002:0004cb60  _ceilingclip
 0001:0001b9d0  R_InitPlanes_
 0001:0001b9e0+ R_MapPlane_
 0001:0001bb30  R_ClearPlanes_
@@ -1079,24 +1079,24 @@ Module: r_plane.obj(C:\PCDOOM2\r_plane.c)
 0002:0004ce04  _ceilingplane
 Module: r_segs.obj(C:\PCDOOM2\r_segs.c)
 0002:0004ce08+ _topfrac
-0002:0004ce0c+ _rw_toptexturemid
-0002:0004ce10+ _worldtop
-0002:0004ce14+ _bottomstep
-0002:0004ce18+ _rw_bottomtexturemid
-0002:0004ce1c+ _pixhigh
-0002:0004ce20+ _bottomfrac
-0002:0004ce24+ _pixlow
-0002:0004ce28+ _worldbottom
-0002:0004ce2c+ _pixhighstep
-0002:0004ce30  _walllights
-0002:0004ce34+ _topstep
-0002:0004ce38+ _pixlowstep
-0002:0004ce3c+ _worldlow
-0002:0004ce40+ _worldhigh
-0002:0004ce44+ _maskedtexturecol
-0002:0004ce48+ _rw_centerangle
-0002:0004ce4c+ _rw_scalestep
-0002:0004ce50+ _maskedtexture
+0002:0004ce0c+ _worldtop
+0002:0004ce10+ _bottomstep
+0002:0004ce14+ _rw_bottomtexturemid
+0002:0004ce18+ _pixhigh
+0002:0004ce1c+ _bottomfrac
+0002:0004ce20+ _pixlow
+0002:0004ce24+ _worldbottom
+0002:0004ce28+ _pixhighstep
+0002:0004ce2c  _walllights
+0002:0004ce30+ _topstep
+0002:0004ce34+ _pixlowstep
+0002:0004ce38+ _worldlow
+0002:0004ce3c+ _worldhigh
+0002:0004ce40+ _maskedtexturecol
+0002:0004ce44+ _rw_centerangle
+0002:0004ce48+ _rw_scalestep
+0002:0004ce4c+ _maskedtexture
+0002:0004ce50+ _rw_toptexturemid
 0002:0004ce54+ _rw_midtexturemid
 0002:0004ce58+ _toptexture
 0002:0004ce5c+ _midtexture
@@ -1121,8 +1121,8 @@ Module: r_things.obj(C:\PCDOOM2\r_things.c)
 0002:0004ee8c+ _newvissprite
 0002:0004ee90+ _maxframe
 0002:0004ee94+ _spritename
-0002:0004ee98+ _sprtemp
-0002:0004f1c4+ _spritelights
+0002:0004ee98+ _spritelights
+0002:0004ee9c+ _sprtemp
 0002:0004f1c8  _mfloorclip
 0002:0004f1cc  _mceilingclip
 0002:0004f1d0  _pspritescale
@@ -1159,22 +1159,22 @@ Module: w_wad.obj(C:\PCDOOM2\w_wad.c)
 0001:0001e4d0  W_ReadLump_
 0001:0001e590  W_CacheLumpNumCheck_
 0001:0001e5d0  W_CacheLumpNumEMS_
-0001:0001e670  W_CacheLumpNameEMS_
-0001:0001e690  W_CacheLumpNameEMSAsPatch_
-0001:0001e6b0  W_EraseLumpCache_
+0001:0001e680  W_CacheLumpNameEMS_
+0001:0001e6a0  W_CacheLumpNameEMSAsPatch_
+0001:0001e6c0  W_EraseLumpCache_
 0002:0004f258+ _reloadname
 0002:0004f25c+ _reloadlump
 0002:0004f260  _lumpinfo
 0002:0004f264+ _numlumps
 0002:0004f268+ _lumpcacheEMS
 Module: v_video.obj(C:\PCDOOM2\v_video.c)
-0001:0001e6d0  V_MarkRect_
-0001:0001e710  V_CopyRect_
-0001:0001e7a0  V_DrawPatch_
-0001:0001e8a0  V_DrawPatchFlipped_
-0001:0001e980  V_DrawPatchDirect_
-0001:0001ea60  V_DrawBlock_
-0001:0001ead0  V_Init_
+0001:0001e6e0  V_MarkRect_
+0001:0001e720  V_CopyRect_
+0001:0001e7b0  V_DrawPatch_
+0001:0001e8b0  V_DrawPatchFlipped_
+0001:0001e990  V_DrawPatchDirect_
+0001:0001ea70  V_DrawBlock_
+0001:0001eae0  V_Init_
 0002:0000ae2c  _gammatable
 0002:0004f26c  _dirtybox
 0002:0004f27c  _usegamma
@@ -1182,32 +1182,33 @@ Module: v_video.obj(C:\PCDOOM2\v_video.c)
 0002:0004f294  _screen4Ref
 Module: z_zone.obj(C:\PCDOOM2\z_zone.c)
 0002:0004f298+ _allocations
-0002:00056298+ _pageevictorder
-0002:000562b8+ _activepages
-0002:000562f8+ _pagesize
+0002:00055298+ _pageevictorder
+0002:000552b8+ _activepages
+0002:000552f8+ _pagesize
 0002:0000b32c+ _currentListHead
-0001:0001eb00  Z_ChangeTagEMSNew_
-0001:0001eb60  Z_InitEMS_
-0001:0001ec70  Z_FreeEMSNew_
-0001:0001ee30  Z_FreeTagsEMS_
-0001:0001eeb0+ Z_MarkPageLRU_
-0001:0001ef40  Z_RefIsActive2_
-0001:0001f030+ Z_MarkPageMRU_
-0001:0001f0c0+ Z_DoPageOut_
-0001:0001f190+ Z_DoPageIn_
-0001:0001f230+ Z_PageOutIfInMemory_
-0001:0001f2b0+ Z_GetEMSPageFrame_
-0001:0001f430  Z_LoadBytesFromEMS2_
-0001:0001f4b0+ Z_GetNextFreeArrayIndex_
-0001:0001f510  Z_MallocEMSNew_
-0001:0001f530  Z_MallocEMSNewWithBackRef_
+0001:0001eb10  Z_ChangeTagEMSNew_
+0001:0001eba0  Z_InitEMS_
+0001:0001eca0  Z_FreeEMSNew_
+0001:0001ee50  Z_FreeTagsEMS_
+0001:0001eec0+ Z_MarkPageLRU_
+0001:0001ef60  Z_RefIsActive2_
+0001:0001f060+ Z_MarkPageMRU_
+0001:0001f100+ Z_DoPageOut_
+0001:0001f1e0+ Z_DoPageIn_
+0001:0001f280+ Z_PageOutIfInMemory_
+0001:0001f300+ Z_GetEMSPageFrame_
+0001:0001f480  Z_LoadBytesFromEMS2_
+0001:0001f500+ Z_GetNextFreeArrayIndex_
+0001:0001f550  Z_MallocEMSNew_
+0001:0001f570  Z_MallocEMSNewWithBackRef_
 0002:0000b33c  _numreads
 0002:0000b340  _pageins
 0002:0000b344  _pageouts
 0002:0000b348+ _actualpageins
 0002:0000b34c+ _actualpageouts
-0002:0005631c+ _mainzoneEMS
-0002:00056320+ _copyPageArea
+0002:0005531c+ _EMSArea
+0002:00055320+ _pageFrameArea
+0002:00055324+ _memsize
 Module: st_stuff.obj(C:\PCDOOM2\st_stuff.c)
 0002:0000b360+ _cheat_mus_seq
 0002:0000b369+ _cheat_choppers_seq
@@ -1259,9 +1260,9 @@ Module: st_lib.obj(C:\PCDOOM2\st_lib.c)
 0001:00021020  STlib_initBinIcon_
 0001:00021050  STlib_updateBinIcon_
 Module: hu_stuff.obj(C:\PCDOOM2\hu_stuff.c)
-0002:000566f0+ _shiftxform
-0002:000566f8  _message_dontfuckwithme
-0002:000568bc  _hu_fontRef
+0002:000556f4+ _shiftxform
+0002:000556fc  _message_dontfuckwithme
+0002:000558c0  _hu_fontRef
 0001:00021110* ForeignTranslation_
 0001:00021130  HU_Init_
 0001:000211a0  HU_Start_
@@ -1269,8 +1270,8 @@ Module: hu_stuff.obj(C:\PCDOOM2\hu_stuff.c)
 0001:000212b0  HU_Erase_
 0001:000212d0  HU_Ticker_
 0001:000213a0  HU_Responder_
-0002:000043dc+ _french_shiftxform
-0002:0000445c+ _english_shiftxform
+0002:000043e0+ _french_shiftxform
+0002:00004460+ _english_shiftxform
 0002:0000b48c+ _mapnames
 0002:0000b540+ _mapnames2
 0002:0000b5c0+ _frenchKeyMap
@@ -1286,7 +1287,7 @@ Module: hu_lib.obj(C:\PCDOOM2\hu_lib.c)
 0001:00021750  HUlib_drawSText_
 0001:000217a0  HUlib_eraseSText_
 Module: wi_stuff.obj(C:\PCDOOM2\wi_stuff.c)
-0002:00056a82+ _lnamesRef
+0002:00055a84+ _lnamesRef
 0001:000217f0+ WI_slamBackground_
 0001:00021840+ WI_drawLF_
 0001:00021870+ WI_drawEL_
@@ -1315,7 +1316,7 @@ Module: wi_stuff.obj(C:\PCDOOM2\wi_stuff.c)
 0001:00022ae0+ WI_initVariables_
 0001:00022b50  WI_Start_
 Module: s_sound.obj(C:\PCDOOM2\s_sound.c)
-0002:00056a8c  _numChannels
+0002:00055a90  _numChannels
 0001:00022b80  S_SetMusicVolume_
 0001:00022bc0+ S_StopMusic_
 0001:00022c10  S_ChangeMusic_
@@ -1373,10 +1374,10 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(cstart)
 0001:00023f8c  ___GETDSStart_
 0001:00023f97  ___GETDSEnd_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(argcv.c)
-0002:00056bd8  __argc
-0002:00056bdc  __argv
-0002:00056be0  ___argc
-0002:00056be4  ___argv
+0002:00055be8  __argc
+0002:00055bec  __argv
+0002:00055bf0  ___argc
+0002:00055bf4  ___argv
 Module: C:\WATCOM\lib386\dos\clib3r.lib(int386.c)
 0001:00023fa0  int386_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(memset.c)
@@ -1436,12 +1437,12 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(fclose.c)
 0001:000249e0  __doclose_
 0001:00024a60  __shutdown_stream_
 0001:00024a80  fclose_
-0002:00056be8+ ___RmTmpFileFn
+0002:00055bf8+ ___RmTmpFileFn
 Module: C:\WATCOM\lib386\dos\clib3r.lib(iob.c)
 0002:00010284  ___iob
 0002:0001048c  __fmode
-0002:00056bec  ___OpenStreams
-0002:00056bf0  ___ClosedStreams
+0002:00055bfc  ___OpenStreams
+0002:00055c00  ___ClosedStreams
 Module: C:\WATCOM\lib386\dos\clib3r.lib(setbuf.c)
 0001:00024ab0  setbuf_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(mkdir.c)
@@ -1511,7 +1512,7 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(chainint)
 Module: C:\WATCOM\lib386\dos\clib3r.lib(nfree.c)
 0001:00025ad0  _nfree_
 0001:00025ad0  free_
-0002:00056bf4  ___MiniHeapFreeRover
+0002:00055c04  ___MiniHeapFreeRover
 Module: C:\WATCOM\lib386\dos\clib3r.lib(cmain386.c)
 0001:00025bd0  __CMain
 Module: C:\WATCOM\lib386\dos\clib3r.lib(initrtns.c)
@@ -1617,7 +1618,7 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(setvbuf.c)
 Module: C:\WATCOM\lib386\dos\clib3r.lib(doserror)
 0001:00027358  __doserror_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(istable.c)
-0002:000044dc  __IsTable
+0002:000044e0  __IsTable
 Module: C:\WATCOM\lib386\dos\clib3r.lib(flushall.c)
 0001:00027370  __flushall_
 0001:000273b0  flushall_
@@ -1641,8 +1642,8 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(isatt.c)
 Module: C:\WATCOM\lib386\dos\clib3r.lib(errno.c)
 0001:00027570  __get_errno_ptr_
 0001:00027580  __get_doserrno_ptr_
-0002:00056bfc+ _errno
-0002:00056c00+ __doserrno
+0002:00055c0c+ _errno
+0002:00055c10+ __doserrno
 Module: C:\WATCOM\lib386\dos\clib3r.lib(umaskval.c)
 0002:00010560  ___umaskval
 Module: C:\WATCOM\lib386\dos\clib3r.lib(creatdos.c)
@@ -1678,15 +1679,15 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(nexpand.c)
 Module: C:\WATCOM\lib386\dos\clib3r.lib(cinit.c)
 0001:00028b70  __CommonInit_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(___argc.c)
-0002:00056c08  ____Argc
-0002:00056c0c  ____Argv
+0002:00055c18  ____Argc
+0002:00055c1c  ____Argv
 Module: C:\WATCOM\lib386\dos\clib3r.lib(sgdef086)
 0002:0001096c  __Start_XI
 0002:000109a8  __End_XI
 0002:000109a8  __Start_YI
 0002:000109cc  __End_YI
 Module: C:\WATCOM\lib386\dos\clib3r.lib(histsplt.c)
-0002:00056c10  ___historical_splitparms
+0002:00055c20  ___historical_splitparms
 Module: C:\WATCOM\lib386\dos\clib3r.lib(fputc.c)
 0001:00028bd0  fputc_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(prtf.c)
@@ -1695,7 +1696,7 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(heapen.c)
 0001:00029b00* _heapenable_
 0002:00010564  ___heap_enabled
 Module: C:\WATCOM\lib386\dos\clib3r.lib(minreal.c)
-0002:00056c14  ___minreal
+0002:00055c24  ___minreal
 Module: C:\WATCOM\lib386\dos\clib3r.lib(amblksiz.c)
 0002:00010568  __amblksiz
 Module: C:\WATCOM\lib386\dos\clib3r.lib(sbrk386.c)
@@ -1717,14 +1718,14 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(grabfp87.c)
 Module: C:\WATCOM\lib386\dos\clib3r.lib(mktime.c)
 0001:00029e50  mktime_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(mbisdbcs.c)
-0002:00056c18  ___IsDBCS
+0002:00055c28  ___IsDBCS
 Module: C:\WATCOM\lib386\dos\clib3r.lib(mbislead.c)
 0001:00029ee0* _ismbblead_
-0002:00056c1c  ___MBCSIsTable
+0002:00055c2c  ___MBCSIsTable
 Module: C:\WATCOM\lib386\dos\clib3r.lib(mbtowc.c)
 0001:00029f00  mbtowc_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(bits.c)
-0002:000045e0  __Bits
+0002:000045e4  __Bits
 Module: C:\WATCOM\lib386\dos\clib3r.lib(noefgfmt.c)
 0002:00010578  ___EFG_printf
 0002:0001057c  ___EFG_scanf
@@ -1785,7 +1786,7 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(mbinit.c)
 0001:0002b63f+ dos_get_code_page_
 0002:0001095c  ___MBCodePage
 Module: C:\WATCOM\lib386\dos\clib3r.lib(alphabet.c)
-0002:00004324  ___Alphabet
+0002:00004328  ___Alphabet
 Module: C:\WATCOM\lib386\dos\clib3r.lib(fpephar)
 0001:0002b7e0  __Phar_hook_init_
 0001:0002b8a6  __Phar_hook_fini_
@@ -1796,14 +1797,14 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(fpexcept.c)
 0001:0002b920  __FPE_exception_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(leapyear.c)
 0001:0002b930  __leapyear_
-0002:0000434c  ___diyr
-0002:00004366  ___dilyr
+0002:00004350  ___diyr
+0002:0000436a  ___dilyr
 Module: C:\WATCOM\lib386\dos\clib3r.lib(getenv.c)
 0001:0002b970  getenv_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(intdx386.c)
 0001:0002ba00  intdosx_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(inirmsel.c)
-0002:00056d44  __ExtenderRealModeSelector
+0002:00055d54  __ExtenderRealModeSelector
 Module: C:\WATCOM\lib386\dos\clib3r.lib(fpeint.c)
 0002:00010960  ___FPE_int
 0002:00010961  ___IRQ_num
@@ -1811,9 +1812,9 @@ Module: C:\WATCOM\lib386\dos\clib3r.lib(fpeint.c)
 0002:00010963  ___MST_pic
 0002:00010964+ ___SLV_pic
 Module: C:\WATCOM\lib386\dos\clib3r.lib(environ.c)
-0002:00056d48  ___env_mask
-0002:00056d4c  _environ
-0002:00056d50* __wenviron
+0002:00055d58  ___env_mask
+0002:00055d5c  _environ
+0002:00055d60* __wenviron
 Module: C:\WATCOM\lib386\dos\clib3r.lib(mbterm.c)
 0001:0002bbd0  _mbterm_
 Module: C:\WATCOM\lib386\dos\clib3r.lib(mbsnextc.c)
@@ -1857,6 +1858,6 @@ C:\WATCOM\lib386\math387r.lib
                         +-----------------------+
 
 Stack size:  6000 (24576.)
-Memory size:  00088c40 (560192.)
+Memory size:  00087c50 (556112.)
 Entry point address: 0001:00023cf4
-Link time: 00:01.63
+Link time: 00:01.73

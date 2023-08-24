@@ -268,7 +268,7 @@ void R_GenerateComposite(int32_t texnum)
 
 	texturecomposite[texnum] = Z_MallocEMSNewWithBackRef(texturecompositesize,
 		PU_STATIC,
-		0xff, ALLOC_TYPE_TEXTURE, -1 * (texnum + 1));
+		0xff, ALLOC_TYPE_TEXTURE, texnum+1);
 	texturecompositetexnum = texturecomposite[texnum];
 
 
@@ -1070,7 +1070,9 @@ void R_PrecacheLevel(void)
 
 
 void R_EraseCompositeCache(int16_t texnum) {
-	//todo move texturecomposite to static?
+
+	// todo are we calling this with 0 all the time?
+
 	MEMREF* texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 	texturecomposite[texnum] = NULL_MEMREF;
 }

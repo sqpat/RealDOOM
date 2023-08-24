@@ -34,13 +34,17 @@
 // aggressive freeing, etc of memory based on some of the allocation types. But
 // in practice, PU_SOUND/PU_MUSIC are never handled differently in the code, LEVSPEC
 // is never handled differently than LEVEL, PURGELEVEL is never used... etc
-#define PU_UNUSED               0       // static entire execution time
+
+// the block is unused
+#define PU_NOT_IN_USE           0       // static entire execution time
+// these are never freed in practice
 #define PU_STATIC               1       // static entire execution time
 #define PU_SOUND                1       // static while playing
 #define PU_MUSIC                1
+// these are sometimes free in practice
 #define PU_LEVEL                2      // static until level exited
 #define PU_LEVSPEC              2      // a special thinker in a level
-// Tags >= PU_PURGELEVEL are purgable whenever needed.
+// These essentially are freed when more memory starts to run out
 // Note: codebase never actually allocates anything as PU_PURGE_LEVEL
 #define PU_PURGELEVEL           3 
 #define PU_CACHE                3
@@ -81,12 +85,9 @@ typedef uint16_t PAGEREF; //used internally for allocations list index
 // as a 'null' or unused memref.
 #define NULL_MEMREF 0
 
-
-
 extern int32_t numreads;
 extern int32_t pageins;
 extern int32_t pageouts;
-extern int32_t thebspnum;
 
 typedef struct memblock_s
 {
@@ -101,7 +102,9 @@ typedef struct memblock_s
 
 
 void Z_InitEMS(void);
-void Z_FreeTagsEMS (int32_t lowtag, int32_t hightag);
+void Z_FreeTagsEMS (int16_t tag);
+
+#define BACKREF_LUMP_OFFSET 2048
 MEMREF Z_MallocEMSNew(int32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
 MEMREF Z_MallocEMSNewWithBackRef(int32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
 #ifdef MEMORYCHECK
@@ -112,13 +115,13 @@ void Z_FreeEMSNew(PAGEREF block);
 
 
 void* Z_LoadBytesFromEMS2(MEMREF index);
-int32_t Z_RefIsActive2(MEMREF memref);
+int16_t Z_RefIsActive2(MEMREF memref);
 
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a)
 #define Z_RefIsActive(a) Z_RefIsActive2(a)
 
 /*
-int32_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);
+int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);
 void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
 
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a, __FILE__, __LINE__)

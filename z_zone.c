@@ -141,7 +141,7 @@
 
 #define PAGE_FRAME_BITS 14
 
-
+//todo get rid of this when initialization code in i_zonebase rewritten
 typedef struct
 {
     // total bytes malloced, including header
@@ -163,6 +163,37 @@ typedef struct
 #define MAKE_SIZE(x) (x & SIZE_MASK)
 #define MAKE_PAGE(x) (x >> PAGE_AND_SIZE_SHIFT)
 
+// bit 15, so we can still treat it as unsigned
+#define USER_MASK 0x8000
+#define INVERSE_USER_MASK 0x7FFF
+#define IS_PURGEABLE(x) (x.tag >= PU_PURGELEVEL)
+#define IS_FREE(x) (x.tag >= PU_PURGELEVEL)
+#define HAS_USER(x) (x.backref_and_user & USER_MASK)
+
+#define TAG_MASK 0xC000
+#define OFFSET_MASK 0x3FFF
+#define OFFSET_BITS 14
+
+#define MAKE_OFFSET(x) (x.offset_and_tag & OFFSET_MASK)
+#define MAKE_TAG(x) (x.offset_and_tag >> OFFSET_BITS)
+#define SET_TAG(x, y) (x.offset_and_tag =  (y << OFFSET_BITS) + MAKE_OFFSET(x) )
+
+// voodoo magic kinda messy...
+// basically we are storing a 15 bit signed integer alongside a 1 bit flag...
+// we use bit 15 to store the flag so bit 16 can still handle the negative,
+// because we also special case that value based on if it's negative or not.
+// Anyway when we want to convert the 15 bit signed integer to a 16 bit one
+// for various operations, we must handle it differently depending on the sign
+// flag.  This is only used in one or two spots so its not a big deal, and this
+// charade helps us save 1000 more bytes of conventional mem..
+
+
+//#define MAKE_BACKREF(x) ((x.backref_and_user & 0x4000) ? (x.backref_and_user | USER_MASK) : (x.backref_and_user & INVERSE_USER_MASK))
+
+#define MAKE_BACKREF(x) (x.backref_and_user & INVERSE_USER_MASK)
+#define SET_BACKREF(x, y) (x.backref_and_user = y + (x.backref_and_user & USER_MASK))
+#define SET_BACKREF_ZERO(x) (x.backref_and_user &= USER_MASK)
+
 typedef struct
 {
     PAGEREF prev;    //2    using 16 bits but need 11 or 12...
@@ -171,28 +202,26 @@ typedef struct
 	// page and offset refer to internal EMS page and offset - in other words the keys
 	// to find the real location in memory for this allocation
 
-   // lets combine page and size with 8 MB max. (2 bytes dropped)
-   // lets combine user into offset (1 byte dropped)
-   // lets combine tag into prev? (bleh)
-
-	//uint16_t page;    //6    using 9 bits... implies page max count of 512 (8 MB worth)
-	//int32_t size;     //12   use 23 bits implying max of 8MB-1 or 0x007FFFFF max free size,
+	//uint16_t page;       using 9 bits... implies page max count of 512 (8 MB worth)
+	//int32_t size;        use 23 bits implying max of 8MB-1 or 0x007FFFFF max free size,
 	uint32_t page_and_size; // page is 9 high bits, size is 23 low bits
 	// todo: optimize uses of the page 9 bits to use int_16t arithmetic instead of int_32t. Maybe using unions?
 
-
-    uint16_t offset;  //8    using 16 bits but needs 14... implies offset max of 16KB
-
-	uint8_t tag;      //13   using 2 bits
-    uint8_t user;     //14   using 1 bits 
-
-	int16_t backRef;  //16   // an external index used to mark external caches as invalid so they know to re-generate a MEMREF. Used in compositeTextures and wad lumps
-							// we're going to cheat. a 0 value is unused, positive is lump index plus 1, negative is (negative of composite texture index plus 1). 
+	// offset is the location within the page frame. 16kb page frame size means
+	// 14 bits needed. Tag is a 2 bit field stored in the two high bits. Used to
+	// managecaching behavior
+    uint16_t offset_and_tag;  //10
+	// user is sort of a standby of the old code but implies the block has an
+	// "owner". it combines with the tag field to determine a couple behaviors. 
+	// backref is an index passed to external caches when the allocation is
+	// deleted so the caches can also be cleared. Used in compositeTextures
+	// and wad lumps
+	uint16_t backref_and_user;  //12 bytes per struct, dont think we can do better.
+							
 } allocation_t;
 
-#define OWNED_USER 2
-#define UNOWNED_USER 1
-#define UNALLOCATED_USER 0
+//#define OWNED_USER 2
+//#define UNOWNED_USER 1
 
 
 
@@ -213,10 +242,11 @@ int8_t pagesize[NUM_EMS_PAGES];
 
 
 
-memzone_t*      mainzoneEMS;
+uint32_t memsize;
+byte*			pageFrameArea;
+byte*			EMSArea;
 
-byte*			copyPageArea;
-
+// count allocations etc, can be used for benchmarking purposes.
 static int32_t freeCount;
 static int32_t plusAllocations = 0;
 static int32_t minusAllocations = 0;
@@ -231,13 +261,21 @@ int32_t actualpageouts = 0;
 void Z_PageOutIfInMemory(uint32_t page_and_size);
  
 void Z_ChangeTagEMSNew (MEMREF index, int16_t tag){
-     
-	if (allocations[index].tag >= PU_PURGELEVEL && allocations[index].user < OWNED_USER) {
-		I_Error("Z_ChangeTagEMSNew: an owner is required for purgable blocks %i %i %i %i", allocations[index].tag, tag, index, allocations[index].user);
+
+
+	// if tag is equal to PU_PURGELEVEL
+	if ((allocations[index].offset_and_tag & 0xC000) == 0xC000  && !HAS_USER(allocations[index])) {
+		I_Error("Z_ChangeTagEMSNew: an owner is required for purgable blocks %i %i %i %i %i", 
+		allocations[index].offset_and_tag, 
+		tag, 
+		index, 
+		allocations[index].backref_and_user,
+		HAS_USER(allocations[index]));
 	}
 
-    allocations[index].tag = tag;
+    SET_TAG(allocations[index], tag);
     
+
 }
 
  
@@ -264,41 +302,37 @@ void Z_InitEMS (void)
     //memblock_t* currentPointer;
 	int32_t size;
 	int16_t i = 0;
-	int32_t copypageareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
+	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
     printf ("\nattempting z_initEMS\n");
 	
-	mainzoneEMS = (memzone_t *)I_ZoneBase(&size);
-	copyPageArea = (byte*)mainzoneEMS;
+	pageFrameArea = I_ZoneBase(&size);
+	memsize = size;
 
-    mainzoneEMS = (memzone_t *)((byte*)copyPageArea + copypageareasize);
-    mainzoneEMS->size = size - copypageareasize;
+    EMSArea = ((byte*)pageFrameArea + pageframeareasize);
 
-    printf ("EMS zone location  %p  \n", mainzoneEMS );
-    printf ("allocated size in z_initEMS was %i or %p\n", mainzoneEMS->size, size);
-	//I_Error("");
+
+    printf ("EMS zone location  %p  \n", pageFrameArea );
+    printf ("allocated size in z_initEMS was %i or %p\n", memsize, memsize);
 	// mark ems pages unused
 	for (i = 0; i < NUM_EMS_PAGES; i++) {
 		activepages[i] = -1;
 		pageevictorder[i] = i;
 		pagesize[i] = -1;
-		
 	}
-
 
     // prepare the link indices? as allocations and deallocations happen
     // the links wont be in order, but these presets 
     allocations[0].next = 1;
     allocations[0].prev = 1;
     allocations[0].page_and_size = 0;
-    allocations[0].user = UNOWNED_USER;
-
-    allocations[0].tag = PU_STATIC;
+	allocations[0].backref_and_user = USER_MASK;
+    allocations[0].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 
     allocations[1].next = 0;
     allocations[1].prev = 0;
+	allocations[1].backref_and_user = 0;
     allocations[1].page_and_size = size;
-    allocations[1].user = UNALLOCATED_USER;
-    allocations[1].tag = PU_STATIC;
+    allocations[1].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 	 
     // use this index to mark an unused block..
     for (i = 2; i < EMS_ALLOCATION_LIST_SIZE; i++){
@@ -311,31 +345,31 @@ void Z_InitEMS (void)
 void Z_FreeEMSNew (PAGEREF block) {
 
 
-    int16_t         other;
-	int16_t usedBackref;
+    uint16_t         other;
+
 	freeCount++;
 
 	if (block == 0) {
 		// 0 is the head of the list, its a special-case size 0 block that shouldnt ever get allocated or deallocated.
-		printf("ERROR: Called Z_FreeEMSNew with 0! \n");
 		I_Error("ERROR: Called Z_FreeEMSNew with 0! \n");
 	}
 
 	if (block >= EMS_ALLOCATION_LIST_SIZE) {
 		// 0 is the head of the list, its a special-case size 0 block that shouldnt ever get allocated or deallocated.
-		printf("ERROR: Called Z_FreeEMSNew with too big of size: max %i vs %i! \n", EMS_ALLOCATION_LIST_SIZE -1, block);
 		I_Error("ERROR: Called Z_FreeEMSNew with too big of size: max %i vs %i! \n", EMS_ALLOCATION_LIST_SIZE - 1, block);
 	}
 	
-
-
-	if (allocations[block].backRef > 0) {
+	// temp var use
+	other = MAKE_BACKREF(allocations[block]); 
+	if (other > 0)
+	
+	
+	if (other > BACKREF_LUMP_OFFSET) {
 		// in lumpcache
-		W_EraseLumpCache(allocations[block].backRef -1);
-
-	} else if (allocations[block].backRef < 0) {
+		W_EraseLumpCache(other - BACKREF_LUMP_OFFSET);
+	} else { 
 		// in compositeTextures
-		R_EraseCompositeCache(-1*(allocations[block].backRef + 1));
+		R_EraseCompositeCache(other -1); // 0 means no backref..
 
 	}
 
@@ -344,9 +378,8 @@ void Z_FreeEMSNew (PAGEREF block) {
 
 
     // mark as free
-    allocations[block].user = UNALLOCATED_USER; 
-    allocations[block].tag = 0;
-	allocations[block].backRef = 0;
+    allocations[block].offset_and_tag &= OFFSET_MASK; // PU_NOT_IN_USE;
+	allocations[block].backref_and_user = 0;
 
     // at this point the block represents a free block of memory but you cant
     // make the allocation array index free, unless you join it with an adjacent
@@ -357,7 +390,7 @@ void Z_FreeEMSNew (PAGEREF block) {
 
     // if two sequential blocks free, we can join them and free one spot in
     // the allocations array
-    if (!allocations[other].user)
+    if (!HAS_USER(allocations[other]))
     {
         // extend other forward OVER block
         // merge with previous free block
@@ -372,14 +405,14 @@ void Z_FreeEMSNew (PAGEREF block) {
         // finally mark the array index unused.
         // this is where you have actually removed an array index
         allocations[block].prev = EMS_ALLOCATION_LIST_SIZE;
-		allocations[block].backRef = 0;
+		SET_BACKREF_ZERO(allocations[block]);
         block = other;
     }
     
     other = allocations[block].next;
     // again, if two sequential blocks free, we can join them and free one spot in
     // the allocations array
-    if (!allocations[other].user)
+    if (!HAS_USER(allocations[other]))
     {
         // extend block forward OVER other
         // merge the next free block onto the end
@@ -395,8 +428,7 @@ void Z_FreeEMSNew (PAGEREF block) {
         // finally mark the array index unused.
         // this is where you have actually removed an array index
         allocations[other].prev = EMS_ALLOCATION_LIST_SIZE;
-        allocations[other].user = UNALLOCATED_USER;
-        allocations[other].tag = 0;
+        allocations[other].offset_and_tag &= OFFSET_MASK; // set tag to NOT_IN_USE
     }
 
 	
@@ -411,11 +443,10 @@ void Z_FreeEMSNew (PAGEREF block) {
 
 void
 Z_FreeTagsEMS
-(int32_t           lowtag,
-	int32_t           hightag )
+(int16_t           tag )
 {
 	int16_t block;
-	int32_t iter = 0;
+	int16_t iter = 0;
 	int16_t start = 0;
 
          
@@ -434,19 +465,12 @@ Z_FreeTagsEMS
 			break;
 		}
 
-        iter++;
-
-        if (iter == 100000){
-           I_Error ("looping forever?");
-        }
-
-        // get link before freeing
 
         // free block?
-        if (!allocations[block].user)
+        if (!HAS_USER(allocations[block]))
             continue;
         
-        if (allocations[block].tag >= lowtag && allocations[block].tag <= hightag)
+        if (MAKE_TAG(allocations[block]) == tag )
             Z_FreeEMSNew ( block);
     }
 
@@ -456,8 +480,8 @@ Z_FreeTagsEMS
 void Z_MarkPageLRU(uint16_t pagenumber) {
 
 
-	int32_t i;
-	int32_t j;
+	int16_t i;
+	int16_t j;
 
 	
 
@@ -486,11 +510,11 @@ void Z_MarkPageLRU(uint16_t pagenumber) {
 }
 
 
-//int32_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
-int32_t Z_RefIsActive2(MEMREF memref){
-	int32_t pageframeindex;
+//int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
+int16_t Z_RefIsActive2(MEMREF memref){
+	int16_t pageframeindex;
 	boolean allpagesgood;
-	int32_t i;
+	int16_t i;
 	uint16_t numallocatepages = 1 + ((MAKE_SIZE(allocations[memref].page_and_size) - 1) >> PAGE_FRAME_BITS);
 	if (numallocatepages > 100) {
 		numallocatepages = 1;
@@ -539,8 +563,8 @@ int32_t Z_RefIsActive2(MEMREF memref){
 //void Z_MarkPageMRU(uint16_t pagenumber, int8_t* file, int32_t line) {
 void Z_MarkPageMRU(uint16_t pagenumber) {
 
-	int32_t i;
-	int32_t j;
+	int16_t i;
+	int16_t j;
 
 	if (pagenumber >= NUM_EMS_PAGES) {
 		I_Error("page number too big %i %i %i", pageevictorder, pagenumber);
@@ -572,10 +596,10 @@ void Z_MarkPageMRU(uint16_t pagenumber) {
 
 void Z_DoPageOut(uint16_t pageframeindex) {
 	// swap OUT memory
-	int32_t i = 0;
-	int32_t numPagesToSwap = pagesize[pageframeindex];
-	byte* copysrc = copyPageArea + (pageframeindex * PAGE_FRAME_SIZE);
-	byte* copydst = (byte*)mainzoneEMS + (activepages[pageframeindex] * PAGE_FRAME_SIZE);
+	int16_t i = 0;
+	int16_t numPagesToSwap = pagesize[pageframeindex];
+	byte* copysrc = pageFrameArea + (pageframeindex * PAGE_FRAME_SIZE);
+	byte* copydst = EMSArea + (activepages[pageframeindex] * PAGE_FRAME_SIZE);
 
 
 
@@ -607,15 +631,8 @@ void Z_DoPageOut(uint16_t pageframeindex) {
 void Z_DoPageIn(uint16_t logicalpage, uint16_t pageframeindex, uint16_t numallocatepages) {
 
 	int32_t i = 0;
-	byte* copydst = copyPageArea + pageframeindex * PAGE_FRAME_SIZE;
-	byte* copysrc = (byte*)mainzoneEMS + logicalpage * PAGE_FRAME_SIZE;
-
-/*
-	if (logicalpage == 128) {
-		I_Error("checking values: %i %x %x %i %i", pageframeindex, copysrc, copydst, logicalpage, numallocatepages);
-	}
-	*/
-
+	byte* copydst = pageFrameArea + pageframeindex * PAGE_FRAME_SIZE;
+	byte* copysrc = EMSArea + logicalpage * PAGE_FRAME_SIZE;
 
 	memcpy(copydst, copysrc, PAGE_FRAME_SIZE * numallocatepages);
 	
@@ -770,23 +787,6 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size){  //todo allocations < 65k? if
 	// update active EMS pages
 	for (i = 0; i < numallocatepages; i++) {
 		if (activepages[pageframeindex + i] >= 0){
-
-
-/*
-			if (setval == 1) {
-				// 4 5 132 when paging back
-				// 1 0 128 when paging out lines
-				I_Error("paging out %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", 
-					activepages[0], activepages[1], activepages[2], activepages[3], activepages[4],
-					activepages[5], activepages[6], activepages[7], activepages[8], activepages[9],
-					activepages[10], activepages[11], activepages[12], activepages[13], activepages[14],
-					activepages[5]
-					);
-
-				// !!! 128 125 128 <--- 125 eats up mid page...
-				I_Error("paging out %i %i %i %i %i %i %s %i %i", numallocatepages, pageframeindex, activepages[pageframeindex + i], allocations[1363].page, allocations[1363].size, pagesize[0], file, line, ref);
-			}*/
-
 			Z_DoPageOut(pageframeindex+i);
 		}  
 	}
@@ -804,28 +804,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size){  //todo allocations < 65k? if
 	Z_DoPageIn(logicalpage, pageframeindex, numallocatepages);
 	pageins++;
 	
-	//printf("\n new: %i %i %i %i", pageevictorder[0], pageevictorder[1], pageevictorder[2], pageevictorder[3]);
-	//printf("\n new: %i %i %i %i", activepages[0], activepages[1], activepages[2], activepages[3]);
-
  
-
-	/*
-	if (pageframeindex == 1 && logicalpage == 125) {
-		
-		I_Error("check: %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i \n \n %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
-			pagesize[0], pagesize[1], pagesize[2], pagesize[3], pagesize[4],
-			pagesize[5], pagesize[6], pagesize[7], pagesize[8], pagesize[9],
-			pagesize[10], pagesize[11], pagesize[12], pagesize[13], pagesize[14],
-			pagesize[15],
-		 
-			activepages[0], activepages[1], activepages[2], activepages[3], activepages[4],
-			activepages[5], activepages[6], activepages[7], activepages[8], activepages[9],
-			activepages[10], activepages[11], activepages[12], activepages[13], activepages[14],
-			activepages[15]
-		);
-
-	}
-	*/
     return pageframeindex;
 }
 
@@ -851,11 +830,11 @@ void* Z_LoadBytesFromEMS2(MEMREF ref) {
  
 
 	pageframeindex = Z_GetEMSPageFrame(allocations[ref].page_and_size);
-	memorybase = (byte*)copyPageArea;
+	memorybase = (byte*)pageFrameArea;
  
 	address = memorybase
 		+ PAGE_FRAME_SIZE * pageframeindex
-		+ allocations[ref].offset;
+		+ MAKE_OFFSET(allocations[ref]);
 
     return (byte *)address;
 }
@@ -879,7 +858,7 @@ int32_t getFreeMemoryByteTotal(){
 	int32_t i = 0;
 	int32_t total = 0;
     for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++){
-        if (!allocations[i].user){
+        if (!HAS_USER(allocations[i])){
 
             total += allocations[i].size;
         }
@@ -892,7 +871,7 @@ int32_t getBiggestFreeBlock(){
 	int32_t i = 0;
 	int32_t total = 0;
     for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++){
-        if (!allocations[i].user){
+        if (!HAS_USER(allocations[i])){
 
             if (allocations[i].size > total)
                 total = allocations[i].size ;
@@ -907,7 +886,7 @@ int32_t getBiggestFreeBlockIndex(){
 	int32_t total = 0;
 	int32_t totali = 0;
     for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++){
-        if (!allocations[i].user){
+        if (!HAS_USER(allocations[i])){
 
             if (allocations[i].size > total){
                 total = allocations[i].size ;
@@ -923,7 +902,7 @@ int32_t getNumPurgeableBlocks(){
 	int32_t i = 0;
 	int32_t total = 0;
     for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++){
-        if (!allocations[i].tag >= PU_PURGELEVEL && allocations[i].user){
+        if (!allocations[i].tag >= PU_PURGELEVEL && HAS_USER(allocations[i].user)){
             total ++;
         }
 
@@ -954,14 +933,12 @@ PAGEREF Z_GetNextFreeArrayIndex(){
     }
 
 
-	printf("Z_GetNextFreeArrayIndex: failed on allocation of %i pages %i bytes %i biggest %i ", -1, -1, -1);
 	I_Error("Z_GetNextFreeArrayIndex: failed on allocation of %i pages %i bytes %i biggest %i ", -1, -1, -1);
 
     // error case
 
 	#ifdef MEMORYCHECK
 
-		printf("Z_GetNextFreeArrayIndex: failed on allocation of %i pages %i bytes %i biggest %i ", getNumFreePages(), getFreeMemoryByteTotal(), getBiggestFreeBlock());
 		I_Error ("Z_GetNextFreeArrayIndex: failed on allocation of %i pages %i bytes %i biggest %i ",  getNumFreePages(), getFreeMemoryByteTotal(), getBiggestFreeBlock());
 	#endif
 
@@ -992,15 +969,9 @@ Z_MallocEMSNewWithBackRef
     
 	int32_t         extra;
     int16_t rover;
-	int32_t currentEMSHandle = 0;
-	int32_t offsetToNextPage = 0;
-	int32_t extrasize = 0;
-	int32_t iter = 0;
-
-	int32_t varA = 0;
-	int32_t varB = 0;
-
-	
+	int16_t currentEMSHandle = 0;
+	uint16_t offsetToNextPage = 0;
+	int16_t iter = 0;
     
     int16_t iterator = 0;
     
@@ -1017,7 +988,6 @@ Z_MallocEMSNewWithBackRef
  
 
     if (size > MAX_ZMALLOC_SIZE){
-		printf  ("Z_MallocEMS: allocation too big! size was %i bytes %i %i %i", size, tag, user, sourceHint);
 		I_Error ("Z_MallocEMS: allocation too big! size was %i bytes %i %i %i", size, tag, user, sourceHint);
     }
 
@@ -1037,19 +1007,32 @@ Z_MallocEMSNewWithBackRef
 
 	
 
-    if (!allocations[allocations[base].prev].user){
+    if (!HAS_USER(allocations[allocations[base].prev])){
          base = allocations[base].prev;
+
     }
+
 
     rover = base;
     start = allocations[base].prev;
 
-    offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)allocations[base].offset & 0x3FFF));
+    offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)allocations[base].offset_and_tag & 0x3FFF));
     if (offsetToNextPage == PAGE_FRAME_SIZE){
         offsetToNextPage = 0;
     }
-	 
+	// 1 1 16384 0 1
+	 // 1 1 102 0
+/*	   I_Error("\nZ_MallocEMSNew: creating %i %i %i %i %i", 
+		  allocations[newfreeblockindex].backref_and_user, 
+		   allocations[base].backref_and_user,
+		newfreeblockindex, base, backRef);
+*/
 
+	 			       if (size == 9236){
+	   //I_Error("\nZ_MallocEMSNew: check %i %i %i %i %i", allocations[allocations[base].prev].user, allocations[base].prev,  0, allocations[1].user, allocations[1].size);
+}
+ 
+	   
   do 
     {
          iter++;
@@ -1057,24 +1040,29 @@ Z_MallocEMSNewWithBackRef
 		#ifdef LOOPCHECK
 
 			if (iter > 2 * EMS_ALLOCATION_LIST_SIZE){
-				printf("looping forever?");
 			   I_Error ("looping forever?");
 			}
         #endif	
         
         if (rover == start) {
             // scanned all the way around the list
-           printf("Z_MallocEMSNew: failed on allocation of %i bytes tag %i iter %i and %i\n\n", size, tag, iter, allocations[allocations[rover].next].page_and_size);
 		   I_Error("Z_MallocEMSNew: failed on allocation of %i bytes tag %i iter %i and %i\n\n", size ,tag, iter, allocations[start].page_and_size);
         }
 
         // not empty but might be purgeable
-        if(allocations[rover].user){
+        if(HAS_USER(allocations[rover])){
             // not purgeable, reset
-            if (allocations[rover].tag < PU_PURGELEVEL){
+
+
+
+// problem is base (1) has a user. user should be 0
+
+
+			if (allocations[rover].offset_and_tag < 0xC000){  //  tag < PU_PURGELEVEL
                 // hit a block that can't be purged,
                 //  so move base past it
                 base = rover = allocations[rover].next;
+
 
             // purgeable, so purge
             } else {  // tag is > PU_PURGELEVEL
@@ -1088,7 +1076,7 @@ Z_MallocEMSNewWithBackRef
                 base = allocations[base].next;
                 rover = allocations[base].next;
             }
-            offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t) allocations[base].offset & 0x3FFF))% PAGE_FRAME_SIZE;
+            offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t) allocations[base].offset_and_tag & 0x3FFF))% PAGE_FRAME_SIZE;
             
         }
           else{
@@ -1097,7 +1085,7 @@ Z_MallocEMSNewWithBackRef
           }
       
             
-    } while (allocations[base].user || MAKE_SIZE(allocations[base].page_and_size) < size 
+    } while (HAS_USER(allocations[base]) || MAKE_SIZE(allocations[base].page_and_size) < size 
        // problem: free block, and size is big enough but not aligned to page frame and we dont want to split page frame
        // so we must check that the block has enough free space when aligned to next page frame
         || (size + (   offsetToNextPage   ) > MAKE_SIZE(allocations[base].page_and_size))
@@ -1105,12 +1093,11 @@ Z_MallocEMSNewWithBackRef
 
 
 
-
     // found a block big enough
     extra = MAKE_SIZE(allocations[base].page_and_size) - size;
 	
     
-    offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)allocations[base].offset & 0x3FFF));
+    offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)allocations[base].offset_and_tag & 0x3FFF));
     if (offsetToNextPage == PAGE_FRAME_SIZE){
         offsetToNextPage = 0;
     }
@@ -1129,34 +1116,25 @@ Z_MallocEMSNewWithBackRef
         allocations[newfreeblockindex].next = base;
         allocations[base].prev = newfreeblockindex;
 
-        allocations[newfreeblockindex].user = UNALLOCATED_USER;
-        allocations[newfreeblockindex].tag = 0;
-        allocations[newfreeblockindex].page_and_size = (allocations[base].page_and_size & PAGE_MASK) + offsetToNextPage;
-        allocations[newfreeblockindex].offset = allocations[base].offset;
-		allocations[newfreeblockindex].backRef = -1;
 
+        allocations[newfreeblockindex].page_and_size = (allocations[base].page_and_size & PAGE_MASK) + offsetToNextPage;
+		// using tag NOT_IN_USE
+        allocations[newfreeblockindex].offset_and_tag = MAKE_OFFSET(allocations[base]);
+		
+		// implies -1 backref and 0 user
+		allocations[newfreeblockindex].backref_and_user = (int16_t)INVERSE_USER_MASK;
 
         allocations[base].page_and_size -= offsetToNextPage;
 		// todo are we okay with respect to not wrapping around? should never happen because initial size should be set in a way this doesnt happen?
         allocations[base].page_and_size += (int32_t)0x800000; // 1 << PAGE_AND_SIZE_SHIFT
-        allocations[base].offset = 0;
+        allocations[base].offset_and_tag = 0;
         
         extra = extra - offsetToNextPage;
 
-		/*
-		  
-		  I_Error("\nZ_MallocEMSNew: creating %i %i %i %i %i", 
-		  allocations[newfreeblockindex].page_and_size, 
-		   allocations[base].page_and_size,
-		newfreeblockindex, extra, Z_GetNextFreeArrayIndex());
-           */
+
     }            
 
 
-
-// todo: around here we would do  page allocation esp around multi page allocations..
-
-    
 
 // after this call, newfragment -> next is mainblock
 // base-> next is newfragment
@@ -1165,7 +1143,7 @@ Z_MallocEMSNewWithBackRef
 
 
     
-    offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)(allocations[base].offset) & 0x3FFF));
+    offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)(allocations[base].offset_and_tag) & 0x3FFF));
 // In this case, PAGE FRAME SIZE is ok/expected.
 
 
@@ -1175,23 +1153,24 @@ Z_MallocEMSNewWithBackRef
 
         // there will be a free fragment after the allocated block
         newfreeblockindex = Z_GetNextFreeArrayIndex();
-        //allocations[newfreeblockindex].page_and_size = 
-		//	allocations[newfreeblockindex].page_and_size & PAGE_MASK + extra-extrasize;
-        allocations[newfreeblockindex].user = UNALLOCATED_USER;
-        allocations[newfreeblockindex].prev = base;
-        allocations[newfreeblockindex].next = allocations[base].next;
-		allocations[newfreeblockindex].backRef = -1;
-		allocations[allocations[newfreeblockindex].next].prev = newfreeblockindex;
 
-        allocations[newfreeblockindex].offset = (allocations[base].offset + (size + extrasize)) &0x3FFF ;
+        
+		allocations[newfreeblockindex].prev = base;
+        allocations[newfreeblockindex].next = allocations[base].next;
+		allocations[allocations[newfreeblockindex].next].prev = newfreeblockindex;
+        // implied tag NOT_IN_USE
+		allocations[newfreeblockindex].offset_and_tag = (allocations[base].offset_and_tag + (size)) &0x3FFF ;
+		// implies -1 backref and 0 user
+		allocations[newfreeblockindex].backref_and_user = 0;
         
 
-	
+		
+           
 
         allocations[newfreeblockindex].page_and_size = 
 			(allocations[base].page_and_size & PAGE_MASK) +
-			  (((allocations[base].offset + size + extrasize) >> PAGE_FRAME_BITS) << PAGE_AND_SIZE_SHIFT)
-			+ (extra-extrasize);
+			  (((MAKE_OFFSET(allocations[base]) + size ) >> PAGE_FRAME_BITS) << PAGE_AND_SIZE_SHIFT)
+			+ (extra);
 			  // divide by 16k
 
 
@@ -1199,7 +1178,7 @@ Z_MallocEMSNewWithBackRef
         allocations[base].next = newfreeblockindex;
         allocations[base].page_and_size = 
 				(allocations[base].page_and_size & PAGE_MASK) +
-				(size + extrasize);
+				(size );
 
 
 
@@ -1207,17 +1186,25 @@ Z_MallocEMSNewWithBackRef
 
     if (user) {
         // mark as an in use block
-        allocations[base].user = OWNED_USER;
+        allocations[base].backref_and_user |= USER_MASK;
+
+
     } else {
 
         if (tag >= PU_PURGELEVEL)
             I_Error ("Z_Malloc: an owner is required 4 purgable blocks");
 
         // mark as in use, but unowned  
-        allocations[base].user = UNOWNED_USER;         
+        allocations[base].backref_and_user &= INVERSE_USER_MASK;
+
     }
-    allocations[base].tag = tag;
-	allocations[base].backRef = backRef;
+	
+
+		
+
+    SET_TAG(allocations[base], tag);
+	SET_BACKREF(allocations[base],  backRef);
+ 
 
     // next allocation will start looking here
     //mainzoneEMS->rover = base->next;
@@ -1234,10 +1221,7 @@ Z_MallocEMSNewWithBackRef
 	#ifdef MEMORYCHECK
 		Z_CheckEMSAllocations(base, 0, 0, 0);
 	#endif
-
-//    if (allocations[currentListHead].page > 250){
-//        I_Error("C: Last pages? %i %i %i %i %i %i", varA, varB, getNumFreePages(), getFreeMemoryByteTotal(), currentListHead, allocations[currentListHead].page);
-//    }
+ 
 
 
 	return base;
@@ -1262,7 +1246,6 @@ void Z_CheckEMSAllocations(PAGEREF block){
 
         iterCount++;
         if (iterCount > EMS_ALLOCATION_LIST_SIZE){
-            printf("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex());
             I_Error("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex());
         }
 
@@ -1275,7 +1258,6 @@ void Z_CheckEMSAllocations(PAGEREF block){
   */  
 
     if (unalloactedIndexCount + iterCount != EMS_ALLOCATION_LIST_SIZE){
-        printf("\nZ_CheckEMSAllocations: %i unallocated indices, %i rover size, %i expected list size", unalloactedIndexCount, iterCount, EMS_ALLOCATION_LIST_SIZE);
         I_Error("\nZ_CheckEMSAllocations: %i unallocated indices, %i rover size, %i expected list size", unalloactedIndexCount, iterCount, EMS_ALLOCATION_LIST_SIZE);
     }
 
@@ -1297,17 +1279,14 @@ void Z_CheckEMSAllocations(PAGEREF block){
         }
         
         if (GetBlockAddress(block) + allocations[block].size != GetBlockAddress(allocations[block].next) && GetBlockAddress(allocations[block].next) != 0){
-            printf ("ERROR: block size does not touch the next block %i %i %i %i %i %i %i %i\n", GetBlockAddress(block), allocations[block].size, GetBlockAddress(allocations[block].next), block, start, allocations[block].next);
             I_Error ("ERROR: block size does not touch the next block %i %i %i %i %i %i %i %i\n", GetBlockAddress(block), allocations[block].size, GetBlockAddress(allocations[block].next), block, start, allocations[block].next);
         }
 
         if (allocations[allocations[block].next].prev != block){
-            printf ("ERROR: next block doesn't have proper back link\n");
             I_Error("ERROR: next block doesn't have proper back link\n");
         }
 
         if (!allocations[block].user && !allocations[allocations[block].next].user){
-            printf ("ERROR: two consecutive free blocks\n");
             I_Error("ERROR: two consecutive free blocks\n");
         }
     }
