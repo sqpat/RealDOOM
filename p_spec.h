@@ -48,13 +48,13 @@ void    P_UpdateSpecials (void);
 boolean
 P_UseSpecialLine
 ( MEMREF thingRef,
-  line_t*	line,
+	short linenum,
   int		side );
 
 void
 P_ShootSpecialLine
 (MEMREF thingRef,
-  line_t*	line );
+  short linenum);
 
 void
 P_CrossSpecialLine
@@ -94,7 +94,7 @@ fixed_t P_FindHighestCeilingSurrounding(short secnum);
 
 int
 P_FindSectorFromLineTag
-( line_t*	line,
+( short		linetag,
   int		start );
 
 int
@@ -111,7 +111,7 @@ getNextSector
 //
 // SPECIAL
 //
-int EV_DoDonut(line_t* line);
+int EV_DoDonut(short linetag);
 
 
 
@@ -186,12 +186,12 @@ P_SpawnStrobeFlash
   int		fastOrSlow,
   int		inSync );
 
-void    EV_StartLightStrobing(line_t* line);
-void    EV_TurnTagLightsOff(line_t* line);
+void    EV_StartLightStrobing(short linetag);
+void    EV_TurnTagLightsOff(short linetag);
 
 void
 EV_LightTurnOn
-( line_t*	line,
+( short linetag,
   int		bright );
 
 void    T_Glow(MEMREF memref);
@@ -224,7 +224,7 @@ typedef enum
 
 typedef struct
 {
-    line_t*	line;
+	short linenum;
     bwhere_e	where;
     int		btexture;
     int		btimer;
@@ -249,8 +249,7 @@ extern button_t	buttonlist[MAXBUTTONS];
 
 void
 P_ChangeSwitchTexture
-( line_t*	line,
-  int		useAgain );
+(short linenum, short lineside0, short linespecial, short linefrontsecnum, int useAgain);
 
 void P_InitSwitchList(void);
 
@@ -311,13 +310,14 @@ void    T_PlatRaise(MEMREF platRef);
 
 int
 EV_DoPlat
-( line_t*	line,
+( short linenum,
+	short linetag,
   plattype_e	type,
   int		amount );
 
 void    P_AddActivePlat(MEMREF memref);
 void    P_RemoveActivePlat(MEMREF memref);
-void    EV_StopPlat(line_t* line);
+void    EV_StopPlat(short linetag);
 void    P_ActivateInStasis(int tag);
 
 
@@ -365,17 +365,17 @@ typedef struct
 
 void
 EV_VerticalDoor
-( line_t*	line,
+( short linenum,
   MEMREF	thingRef );
 
 int
 EV_DoDoor
-( line_t*	line,
+( short linetag,
   vldoor_e	type );
 
 int
 EV_DoLockedDoor
-( line_t*	line,
+(short linetag, short linepsecial,
   vldoor_e	type,
 	MEMREF thingRef);
 
@@ -435,14 +435,14 @@ extern MEMREF	activeceilings[MAXCEILINGS];
 
 int
 EV_DoCeiling
-( line_t*	line,
+( short linetag,
   ceiling_e	type );
 
 void    T_MoveCeiling (MEMREF memref);
 void    P_AddActiveCeiling(MEMREF memref);
 void    P_RemoveActiveCeiling(MEMREF memref);
-int	EV_CeilingCrushStop(line_t* line);
-void    P_ActivateInStasisCeiling(line_t* line);
+int	EV_CeilingCrushStop(short linetag);
+void    P_ActivateInStasisCeiling(short linetag);
 
 
 //
@@ -532,13 +532,12 @@ T_MovePlane
 
 int
 EV_BuildStairs
-( line_t*	line,
+( short linetag,
   stair_e	type );
 
 int
 EV_DoFloor
-( line_t*	line,
-  floor_e	floortype );
+( short linetag,   short linefrontsecnum, floor_e	floortype );
 
 void T_MoveFloor(MEMREF memref);
 
@@ -547,7 +546,7 @@ void T_MoveFloor(MEMREF memref);
 //
 int
 EV_Teleport
-( line_t*	line,
+( short linetag,
   int		side,
 	MEMREF thingRef);
 

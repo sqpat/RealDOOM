@@ -123,8 +123,9 @@ typedef	struct
     ///void*	specialdata;
 	MEMREF	specialdataRef;
     int			linecount;
-    struct line_s**	lines;	// [linecount] size
-    
+//	struct line_s**	lines;	// [linecount] size
+	short linesoffset;	// [linecount] size
+
 } sector_t;
 
 
@@ -197,8 +198,6 @@ typedef struct line_s
 
     // Front and back sector.
     // Note: redundant? Can be retrieved from SideDefs.
-	//sector_t*	frontsector;
-	//sector_t*	backsector;
 	short	frontsecnum;
 	short	backsecnum;
 

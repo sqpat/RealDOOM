@@ -57,7 +57,7 @@ line_t*		ceilingline;
 // but don't process them until the move is proven valid
 #define MAXSPECIALCROSS		8
 
-line_t*		spechit[MAXSPECIALCROSS];
+short		spechit[MAXSPECIALCROSS];
 int		numspechit;
 
 
@@ -186,14 +186,28 @@ P_TeleportMove
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-boolean PIT_CheckLine (line_t* ld)
+boolean PIT_CheckLine (line_t* ld, short linenum)
 {
 	mobj_t* tmthing;
+	//short linespecial;
+	//fixed_t linedx; , fixed_t linedy, short linev1Offset, short linev2Offset, short linefrontsecnum, short linebacksecnum, short lineside1, slopetype_t lineslopetype
+	slopetype_t lineslopetype = ld->slopetype;
+	fixed_t linedx = ld->dx;
+	fixed_t linedy = ld->dy;
+	short linev1Offset = ld->v1Offset;
+	short linefrontsecnum = ld->frontsecnum;
+	short linebacksecnum = ld->backsecnum;
+	short lineflags = ld->flags;
+	short linespecial = ld->special;
+	short lineside1 = ld->sidenum[1];
+
+	
+
 	if (tmbbox[BOXRIGHT] <= ld->bbox[BOXLEFT] || tmbbox[BOXLEFT] >= ld->bbox[BOXRIGHT] || tmbbox[BOXTOP] <= ld->bbox[BOXBOTTOM] || tmbbox[BOXBOTTOM] >= ld->bbox[BOXTOP]) {
 		return true;
 	}
 
-	if (P_BoxOnLineSide(tmbbox, ld) != -1) {
+	if (P_BoxOnLineSide(tmbbox, lineslopetype, linedx, linedy, linev1Offset) != -1) {
 		return true;
 	}
 
@@ -208,23 +222,23 @@ boolean PIT_CheckLine (line_t* ld)
     // so two special lines that are only 8 pixels apart
     // could be crossed in either order.
     
-	if (ld->backsecnum == SECNUM_NULL) {
+	if (linebacksecnum == SECNUM_NULL) {
 		return false;		// one sided line
 	}
 
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
 
     if (!(tmthing->flags & MF_MISSILE) ) {
-		if (ld->flags & ML_BLOCKING) {
+		if (lineflags & ML_BLOCKING) {
 			return false;	// explicitly blocking everything
 		}
-		if (!tmthing->player && ld->flags & ML_BLOCKMONSTERS) {
+		if (!tmthing->player && lineflags & ML_BLOCKMONSTERS) {
 			return false;	// block monsters only
 		}
     }
 
     // set openrange, opentop, openbottom
-    P_LineOpening (ld);	
+    P_LineOpening (lineside1, linefrontsecnum, linebacksecnum);	
 	
     // adjust floor / ceiling heights
     if (opentop < tmceilingz) {
@@ -241,8 +255,8 @@ boolean PIT_CheckLine (line_t* ld)
 	}
 
     // if contacted a special line, add it to the list
-    if (ld->special) {
-		spechit[numspechit] = ld;
+    if (linespecial) {
+		spechit[numspechit] = linenum;
 		numspechit++;
     }
 
@@ -514,9 +528,9 @@ P_TryMove
     if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
 		while (numspechit--) {
 			// see if the line was crossed
-			ld = spechit[numspechit];
-			side = P_PointOnLineSide (thing->x, thing->y, ld);
-			oldside = P_PointOnLineSide (oldx, oldy, ld);
+			ld = &lines[spechit[numspechit]];
+			side = P_PointOnLineSide (thing->x, thing->y, ld->dx, ld->dy, ld->v1Offset);
+			oldside = P_PointOnLineSide (oldx, oldy, ld->dx, ld->dy, ld->v1Offset);
 			if (side != oldside)
 			{
 			if (ld->special)
@@ -618,7 +632,7 @@ void P_HitSlideLine (line_t* ld)
 	return;
     }
 	
-    side = P_PointOnLineSide (slidemo->x, slidemo->y, ld);
+    side = P_PointOnLineSide (slidemo->x, slidemo->y, ld->dx, ld->dy, ld->v1Offset);
 	
     lineangle = R_PointToAngle2 (0,0, ld->dx, ld->dy);
 
@@ -649,15 +663,16 @@ void P_HitSlideLine (line_t* ld)
 boolean PTR_SlideTraverse (intercept_t* in)
 {
     line_t*	li;
-	
+ 
+
     if (!in->isaline)
 	I_Error ("PTR_SlideTraverse: not a line?");
 		
-    li = in->d.line;
+	li = &lines[in->d.linenum];
     
     if ( ! (li->flags & ML_TWOSIDED) )
     {
-	if (P_PointOnLineSide (slidemo->x, slidemo->y, li))
+	if (P_PointOnLineSide (slidemo->x, slidemo->y, li->dx, li->dy, li->v1Offset))
 	{
 	    // don't hit the back side
 	    return true;		
@@ -666,7 +681,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
     }
 
     // set openrange, opentop, openbottom
-    P_LineOpening (li);
+    P_LineOpening (li->sidenum[1], li->frontsecnum, li->backsecnum);
     
     if (openrange < slidemo->height)
 	goto isblocking;		// doesn't fit
@@ -840,7 +855,7 @@ PTR_AimTraverse (intercept_t* in)
 
     if (in->isaline)
     {
-	li = in->d.line;
+		li = &lines[in->d.linenum];
 	
 	if ( !(li->flags & ML_TWOSIDED) )
 	    return false;		// stop
@@ -848,7 +863,7 @@ PTR_AimTraverse (intercept_t* in)
 	// Crosses a two sided line.
 	// A two sided line will restrict
 	// the possible target ranges.
-	P_LineOpening (li);
+	P_LineOpening (li->sidenum[1], li->frontsecnum, li->backsecnum);
 	
 	if (openbottom >= opentop)
 	    return false;		// stop
@@ -933,16 +948,16 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		
     if (in->isaline)
     {
-	li = in->d.line;
+	li = &lines[in->d.linenum];
 	
 	if (li->special)
-	    P_ShootSpecialLine (shootthingRef, li);
+	    P_ShootSpecialLine (shootthingRef, in->d.linenum);
 
 	if ( !(li->flags & ML_TWOSIDED) )
 	    goto hitline;
 	
 	// crosses a two sided line
-	P_LineOpening (li);
+	P_LineOpening(li->sidenum[1], li->frontsecnum, li->backsecnum);
 		
 	dist = FixedMul (attackrange, in->frac);
 
@@ -1118,10 +1133,10 @@ boolean	PTR_UseTraverse (intercept_t* in)
 {
     int		side;
 	mobj_t* usething;
-	
-    if (!in->d.line->special)
+	line_t* line = &lines[in->d.linenum];
+	if (!line->special)
     {
-	P_LineOpening (in->d.line);
+	P_LineOpening (line->sidenum[1], line->frontsecnum, line->backsecnum);
 	if (openrange <= 0)
 	{
 	    S_StartSoundFromRef (usethingRef, sfx_noway);
@@ -1135,12 +1150,13 @@ boolean	PTR_UseTraverse (intercept_t* in)
 	
     side = 0;
 	usething = (mobj_t*)Z_LoadBytesFromEMS(usethingRef);
-	if (P_PointOnLineSide (usething->x, usething->y, in->d.line) == 1)
+	line = &lines[in->d.linenum];
+	if (P_PointOnLineSide (usething->x, usething->y, line->dx, line->dy, line->v1Offset) == 1)
 	side = 1;
     
     //	return false;		// don't use back side
 	
-    P_UseSpecialLine (usethingRef, in->d.line, side);
+    P_UseSpecialLine (usethingRef, in->d.linenum, side);
 
     // can't use for than one special line in a row
     return false;

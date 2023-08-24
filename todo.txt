@@ -82,14 +82,24 @@ sound originRef thing...
   ? maybe inner takes x/y and you can pass in null for the degen case
 
 
+secnum problem has to do with 0 not being invalid!
 
- 
-
+  
 
  
 NOW (fix memory issues)
  x THEN degenmobj_t etc to memref
- - THEN segs, etc to ems
+ ~ THEN segs, etc to ems
+  x sector indices
+  ~ line indices
+    x line->sidenum[0]].secnum thing
+    xP_StartButton
+    ! doors broken?
+    - line_t thing in sector should just be a single linenum.
+
+? why lines and linebuffer?
+ - cant they be the same? duped data?
+ 
  - THEN all wad lumps to ems
 
 x Fix the problem with vertexes
@@ -217,3 +227,6 @@ R_RenderMaskedSegRange
     
 
 			// (63) 19, 25 41 63 50 20 r_data.c 263     432  32768   <- seems junk in many ways
+
+
+

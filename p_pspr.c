@@ -340,14 +340,14 @@ void P_FireWeapon (player_t* player)
 {
     statenum_t	newstate;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
-	
+
     if (!P_CheckAmmo (player))
 	return;
 	
-    P_SetMobjState (player->moRef, S_PLAY_ATK1);
+	P_SetMobjState (player->moRef, S_PLAY_ATK1);
     newstate = weaponinfo[player->readyweapon].atkstate;
-    P_SetPsprite (player, ps_weapon, newstate);
-    P_NoiseAlert (player->moRef, player->moRef);
+	P_SetPsprite (player, ps_weapon, newstate);
+	P_NoiseAlert (player->moRef, player->moRef);
 }
 
 
@@ -570,11 +570,12 @@ A_Punch
     int		slope;
 	mobj_t* playermo = (mobj_t*) Z_LoadBytesFromEMS(player->moRef);
 	mobj_t* linetarget;
-	
+
     damage = (P_Random ()%10+1)<<1;
 
-    if (player->powers[pw_strength])	
-	damage *= 10;
+	if (player->powers[pw_strength]) {
+		damage *= 10;
+	}
 
     angle = playermo->angle;
     angle += (P_Random()-P_Random())<<18;
@@ -589,9 +590,6 @@ A_Punch
 	playermo->angle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
     }
 
-	if (player->moRef > 4096) {
-		I_Error("found it 1");
-	}
 
 }
 

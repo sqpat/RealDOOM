@@ -190,7 +190,8 @@ void T_VerticalDoor (MEMREF memref)
 
 int
 EV_DoLockedDoor
-( line_t*	line,
+( short linetag,
+	short linespecial,
   vldoor_e	type,
   MEMREF thingRef )
 {
@@ -202,7 +203,7 @@ EV_DoLockedDoor
     if (!p)
 	return 0;
 		
-    switch(line->special)
+    switch(linespecial)
     {
       case 99:	// Blue Lock
       case 133:
@@ -242,13 +243,13 @@ EV_DoLockedDoor
 	break;	
     }
 
-    return EV_DoDoor(line,type);
+    return EV_DoDoor(linetag,type);
 }
 
 
 int
 EV_DoDoor
-( line_t*	line,
+( short linetag,
   vldoor_e	type )
 {
     int		secnum,rtn;
@@ -258,7 +259,7 @@ EV_DoDoor
     secnum = -1;
     rtn = 0;
     
-    while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
+    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
     {
 	
 	if (sectors[secnum].specialdataRef)
@@ -337,7 +338,7 @@ EV_DoDoor
 //
 void
 EV_VerticalDoor
-( line_t*	line,
+( short linenum,
   MEMREF thingRef )
 {
     player_t*	player;
@@ -347,6 +348,7 @@ EV_VerticalDoor
     int		side;
 	MEMREF doorRef;
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	line_t* line = &lines[linenum];
 
     side = 0;	// only front sides can be used
 

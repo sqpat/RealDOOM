@@ -103,23 +103,29 @@ P_RecursiveSound
     line_t*	check;
     short	othersecnum;
 	int linecount;
+	sector_t* soundsector = &sectors[secnum];
 
+	if (secnum < 0 || secnum >= numsectors) {
+		// TODO remove
+		I_Error("bad sectors in P_RecursiveSound %i", secnum);
+	}
     // wake up all monsters in this sector
-    if (sectors[secnum].validcount == validcount && sectors[secnum].soundtraversed <= soundblocks+1) {
+    if (soundsector->validcount == validcount && soundsector->soundtraversed <= soundblocks+1) {
 		return;		// already flooded
     }
     
-    sectors[secnum].validcount = validcount;
-	sectors[secnum].soundtraversed = soundblocks+1;
-	sectors[secnum].soundtargetRef = soundtargetRef;
+	soundsector->validcount = validcount;
+	soundsector->soundtraversed = soundblocks+1;
+	soundsector->soundtargetRef = soundtargetRef;
 	
-	linecount = sectors[secnum].linecount;
-    for (i=0 ;i<linecount ; i++) {
-		check = sectors[secnum].lines[i];
+	linecount = soundsector->linecount;
+	for (i=0 ;i<linecount ; i++) {
+		soundsector = &sectors[secnum];
+		check = linebuffer[soundsector->linesoffset + i];
 		if (!(check->flags & ML_TWOSIDED)) {
 			continue;
 		}
-		P_LineOpening (check);
+		P_LineOpening (check->sidenum[1], check->frontsecnum, check->backsecnum );
 
 		if (openrange <= 0) {
 			continue;	// closed door
@@ -127,8 +133,7 @@ P_RecursiveSound
 	
 		if (sides[check->sidenum[0]].secnum == secnum) {
 			othersecnum = sides[check->sidenum[1]].secnum;
-		}
-		else {
+		} else {
 			othersecnum = sides[check->sidenum[0]].secnum;
 		}
 		if (check->flags & ML_SOUNDBLOCK) {
@@ -260,7 +265,7 @@ fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
 
 #define MAXSPECIALCROSS	8
 
-extern	line_t*	spechit[MAXSPECIALCROSS];
+extern	short	spechit[MAXSPECIALCROSS];
 extern	int	numspechit;
 
 boolean P_Move (MEMREF actorRef)
@@ -268,7 +273,7 @@ boolean P_Move (MEMREF actorRef)
     fixed_t	tryx;
     fixed_t	tryy;
     
-    line_t*	ld;
+	short linenum;
     
     // warning: 'catch', 'throw', and 'try'
     // are all C++ reserved words
@@ -308,12 +313,12 @@ boolean P_Move (MEMREF actorRef)
 		actor->movedir = DI_NODIR;
 		good = false;
 		while (numspechit--) {
-			ld = spechit[numspechit];
+			linenum = spechit[numspechit];
 			// if the special is not a door
 			// that can be opened,
 			// return false
-			if (P_UseSpecialLine (actorRef, ld,0))
-			good = true;
+			if (P_UseSpecialLine (actorRef, linenum,0))
+				good = true;
 		}
 		return good;
     } else {
@@ -554,7 +559,6 @@ void A_KeenDie (MEMREF moRef)
 {
     THINKERREF	th;
     mobj_t*	mo2;
-    line_t	junk;
 	mobj_t* mo;
 
     A_Fall (moRef);
@@ -577,8 +581,7 @@ void A_KeenDie (MEMREF moRef)
 	}
     }
 
-    junk.tag = 666;
-    EV_DoDoor(&junk,open);
+    EV_DoDoor(666,open);
 }
 
 
@@ -1786,15 +1789,13 @@ void A_BossDeath (MEMREF moRef)
 	{
 	    if (mo->type == MT_FATSO)
 	    {
-		junk.tag = 666;
-		EV_DoFloor(&junk,lowerFloorToLowest);
+		EV_DoFloor(666, -1,lowerFloorToLowest);
 		return;
 	    }
 	    
 	    if (mo->type == MT_BABY)
 	    {
-		junk.tag = 667;
-		EV_DoFloor(&junk,raiseToTexture);
+		EV_DoFloor(667, -1,raiseToTexture);
 		return;
 	    }
 	}
@@ -1804,8 +1805,7 @@ void A_BossDeath (MEMREF moRef)
 	switch(gameepisode)
 	{
 	  case 1:
-	    junk.tag = 666;
-	    EV_DoFloor (&junk, lowerFloorToLowest);
+	    EV_DoFloor (666, -1, lowerFloorToLowest);
 	    return;
 	    break;
 	    
@@ -1813,14 +1813,12 @@ void A_BossDeath (MEMREF moRef)
 	    switch(gamemap)
 	    {
 	      case 6:
-		junk.tag = 666;
-		EV_DoDoor (&junk, blazeOpen);
+		EV_DoDoor (666, blazeOpen);
 		return;
 		break;
 		
 	      case 8:
-		junk.tag = 666;
-		EV_DoFloor (&junk, lowerFloorToLowest);
+		EV_DoFloor (666, -1, lowerFloorToLowest);
 		return;
 		break;
 	    }

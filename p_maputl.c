@@ -59,7 +59,9 @@ int
 P_PointOnLineSide
 ( fixed_t	x,
   fixed_t	y,
-  line_t*	line )
+	fixed_t linedx,
+	fixed_t linedy,
+	short linev1Offset)
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -67,25 +69,25 @@ P_PointOnLineSide
     fixed_t	right;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
-    if (!line->dx) {
-		if (x <= vertexes[line->v1Offset].x) {
-			return line->dy > 0;
+    if (!linedx) {
+		if (x <= vertexes[linev1Offset].x) {
+			return linedy > 0;
 		}
-		return line->dy < 0;
+		return linedy < 0;
     }
-    if (!line->dy) {
-		if (y <= vertexes[line->v1Offset].y) {
-			return line->dx < 0;
+    if (!linedy) {
+		if (y <= vertexes[linev1Offset].y) {
+			return linedx < 0;
 		}
 	
-		return line->dx > 0;
+		return linedx > 0;
     }
 	
-    dx = (x - vertexes[line->v1Offset].x);
-    dy = (y - vertexes[line->v1Offset].y);
+    dx = (x - vertexes[linev1Offset].x);
+    dy = (y - vertexes[linev1Offset].y);
 	
-    left = FixedMul ( line->dy>>FRACBITS , dx );
-    right = FixedMul ( dy , line->dx>>FRACBITS );
+    left = FixedMul ( linedy>>FRACBITS , dx );
+    right = FixedMul ( dy , linedx>>FRACBITS );
 	
 	if (right < left) {
 		return 0;		// front side
@@ -104,27 +106,31 @@ P_PointOnLineSide
 int
 P_BoxOnLineSide
 ( fixed_t*	tmbox,
-  line_t*	ld )
+	slopetype_t	lineslopetype,
+	fixed_t linedx,
+	fixed_t linedy,
+	short linev1Offset
+	)
 {
     int		p1;
     int		p2;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
-    switch (ld->slopetype)
+    switch (lineslopetype)
     {
       case ST_HORIZONTAL:
-	p1 = tmbox[BOXTOP] > vertexes[ld->v1Offset].y;
-	p2 = tmbox[BOXBOTTOM] > vertexes[ld->v1Offset].y;
-	if (ld->dx < 0) {
+	p1 = tmbox[BOXTOP] > vertexes[linev1Offset].y;
+	p2 = tmbox[BOXBOTTOM] > vertexes[linev1Offset].y;
+	if (linedx < 0) {
 	    p1 ^= 1;
 	    p2 ^= 1;
 	}
 	break;
 	
       case ST_VERTICAL:
-	p1 = tmbox[BOXRIGHT] < vertexes[ld->v1Offset].x;
-	p2 = tmbox[BOXLEFT] < vertexes[ld->v1Offset].x;
-	if (ld->dy < 0)
+	p1 = tmbox[BOXRIGHT] < vertexes[linev1Offset].x;
+	p2 = tmbox[BOXLEFT] < vertexes[linev1Offset].x;
+	if (linedy < 0)
 	{
 	    p1 ^= 1;
 	    p2 ^= 1;
@@ -132,13 +138,13 @@ P_BoxOnLineSide
 	break;
 	
       case ST_POSITIVE:
-	p1 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXTOP], ld);
-	p2 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXBOTTOM], ld);
+	p1 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXTOP], linedx, linedy, linev1Offset);
+	p2 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXBOTTOM], linedx, linedy, linev1Offset);
 	break;
 	
       case ST_NEGATIVE:
-	p1 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXTOP], ld);
-	p2 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXBOTTOM], ld);
+	p1 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXTOP], linedx, linedy, linev1Offset);
+	p2 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXBOTTOM], linedx, linedy, linev1Offset);
 	break;
     }
 
@@ -204,14 +210,16 @@ P_PointOnDivlineSide
 //
 void
 P_MakeDivline
-( line_t*	li,
+(fixed_t linedx,
+	fixed_t linedy,
+	short linev1Offset,
   divline_t*	dl )
 {
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-	dl->x = vertexes[li->v1Offset].x;
-    dl->y = vertexes[li->v1Offset].y;
-    dl->dx = li->dx;
-    dl->dy = li->dy;
+	dl->x = vertexes[linev1Offset].x;
+    dl->y = vertexes[linev1Offset].y;
+    dl->dx = linedx;
+    dl->dy = linedy;
 }
 
 
@@ -291,18 +299,18 @@ fixed_t openrange;
 fixed_t	lowfloor;
 
 
-void P_LineOpening (line_t* linedef) {
+void P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum) {
     sector_t*	front;
     sector_t*	back;
 	
-    if (linedef->sidenum[1] == -1) {
+    if (lineside1 == -1) {
 		// single sided line
 		openrange = 0;
 		return;
 	}
 	 
-	front = &sectors[linedef->frontsecnum];
-	back = &sectors[linedef->backsecnum];
+	front = &sectors[linefrontsecnum];
+	back = &sectors[linebacksecnum];
 	
 	if (front->ceilingheight < back->ceilingheight)
 		opentop = front->ceilingheight;
@@ -473,7 +481,7 @@ boolean
 P_BlockLinesIterator
 ( int			x,
   int			y,
-  boolean(*func)(line_t*) )
+  boolean(*func)(line_t*, short) )
 {
     int			offset;
     short*		list;
@@ -500,7 +508,7 @@ P_BlockLinesIterator
 
 	ld->validcount = validcount;
 		
-	if ( !func(ld) )
+	if ( !func(ld, *list) )
 	    return false;
     }
     return true;	// everything was checked
@@ -566,28 +574,36 @@ int		ptflags;
 // Returns true if earlyout and a solid line hit.
 //
 boolean
-PIT_AddLineIntercepts (line_t* ld)
+PIT_AddLineIntercepts (line_t* ld, short linenum)
 {
     int			s1;
     int			s2;
     fixed_t		frac;
     divline_t		dl;
+	short linev1Offset = ld->v1Offset;
+	short linev2Offset = ld->v2Offset;
+	fixed_t linedx = ld->dx;
+	fixed_t linedy = ld->dy;
+	short linebacksecnum = ld->backsecnum;
+
+
+
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
     // avoid precision problems with two routines
     if ( trace.dx > FRACUNIT*16 || trace.dy > FRACUNIT*16 || trace.dx < -FRACUNIT*16 || trace.dy < -FRACUNIT*16) {
-		s1 = P_PointOnDivlineSide (vertexes[ld->v1Offset].x, vertexes[ld->v1Offset].y, &trace);
-		s2 = P_PointOnDivlineSide (vertexes[ld->v2Offset].x, vertexes[ld->v2Offset].y, &trace);
+		s1 = P_PointOnDivlineSide (vertexes[linev1Offset].x, vertexes[linev1Offset].y, &trace);
+		s2 = P_PointOnDivlineSide (vertexes[linev2Offset].x, vertexes[linev2Offset].y, &trace);
     } else {
-		s1 = P_PointOnLineSide (trace.x, trace.y, ld);
-		s2 = P_PointOnLineSide (trace.x+trace.dx, trace.y+trace.dy, ld);
+		s1 = P_PointOnLineSide (trace.x, trace.y, linedx, linedy, linev1Offset);
+		s2 = P_PointOnLineSide (trace.x+trace.dx, trace.y+trace.dy, linedx, linedy, linev1Offset);
     }
     
     if (s1 == s2)
 		return true;	// line isn't crossed
     
     // hit the line
-    P_MakeDivline (ld, &dl);
+    P_MakeDivline(linedx, linedy, linev1Offset, &dl);
     frac = P_InterceptVector (&trace, &dl);
 
 	if (frac < 0) {
@@ -595,14 +611,14 @@ PIT_AddLineIntercepts (line_t* ld)
 	}
 
     // try to early out the check
-    if (earlyout && frac < FRACUNIT && !ld->backsecnum) {
+    if (earlyout && frac < FRACUNIT && linebacksecnum == SECNUM_NULL) {
 		return false;	// stop checking
     }
     
 	
     intercept_p->frac = frac;
     intercept_p->isaline = true;
-    intercept_p->d.line = ld;
+    intercept_p->d.linenum = linenum;
     intercept_p++;
 
     return true;	// continue

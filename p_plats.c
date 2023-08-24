@@ -128,7 +128,8 @@ void T_PlatRaise(MEMREF platRef)
 //
 int
 EV_DoPlat
-( line_t*	line,
+(  short linetag,
+	short lineside0,
   plattype_e	type,
   int		amount )
 {
@@ -145,14 +146,14 @@ EV_DoPlat
     switch(type)
     {
       case perpetualRaise:
-	P_ActivateInStasis(line->tag);
+	P_ActivateInStasis(linetag);
 	break;
 	
       default:
 	break;
     }
 	
-    while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
+    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
     {
 
 	if (sectors[secnum].specialdataRef)
@@ -172,13 +173,13 @@ EV_DoPlat
 	plat->secnum = secnum;
 	sectors[plat->secnum].specialdataRef = platRef;
 	plat->crush = false;
-	plat->tag = line->tag;
+	plat->tag = linetag;
 	
 	switch(type)
 	{
 	  case raiseToNearestAndChange:
 	    plat->speed = PLATSPEED/2;
-		sectors[secnum].floorpic = sectors[sides[line->sidenum[0]].secnum].floorpic;
+		sectors[secnum].floorpic = sectors[sides[lineside0].secnum].floorpic;
 	    plat->high = P_FindNextHighestFloor(secnum,sectors[secnum].floorheight);
 	    plat->wait = 0;
 	    plat->status = up;
@@ -190,7 +191,7 @@ EV_DoPlat
 	    
 	  case raiseAndChange:
 	    plat->speed = PLATSPEED/2;
-		sectors[secnum].floorpic = sectors[sides[line->sidenum[0]].secnum].floorpic;
+		sectors[secnum].floorpic = sectors[sides[lineside0].secnum].floorpic;
 	    plat->high = sectors[secnum].floorheight + amount*FRACUNIT;
 	    plat->wait = 0;
 	    plat->status = up;
@@ -264,14 +265,14 @@ void P_ActivateInStasis(int tag) {
 
 }
 
-void EV_StopPlat(line_t* line) {
+void EV_StopPlat(short linetag) {
 	int		j;
 	plat_t* plat;
 
 	for (j = 0; j < MAXPLATS; j++) {
 		if (activeplats[j] != NULL_MEMREF) {
 			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[j]);
-			if ((plat->status != in_stasis) && (plat->tag == line->tag)) {
+			if ((plat->status != in_stasis) && (plat->tag == linetag)) {
 				plat->oldstatus = plat->status;
 				plat->status = in_stasis;
 

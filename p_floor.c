@@ -248,7 +248,9 @@ void T_MoveFloor(MEMREF memref)
 //
 int
 EV_DoFloor
-( line_t*	line,
+( 
+	short linetag,
+	short linefrontsecnum,
   floor_e	floortype )
 {
     int			secnum;
@@ -261,7 +263,7 @@ EV_DoFloor
 
     secnum = -1;
     rtn = 0;
-    while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
+    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
     {
 	//sec = &sectors[secnum];
 		
@@ -359,8 +361,8 @@ EV_DoFloor
 		floor->speed = FLOORSPEED;
 	    floor->floordestheight = sectors[floor->secnum].floorheight +
 		24 * FRACUNIT;
-		sectors[secnum].floorpic = sectors[line->frontsecnum].floorpic;
-		sectors[secnum].special = sectors[line->frontsecnum].special;
+		sectors[secnum].floorpic = sectors[linefrontsecnum].floorpic;
+		sectors[secnum].special = sectors[linefrontsecnum].special;
 	    break;
 
 	  case raiseToTexture:
@@ -446,7 +448,7 @@ EV_DoFloor
 //
 int
 EV_BuildStairs
-( line_t*	line,
+( short	linetag,
   stair_e	type )
 {
     int			secnum;
@@ -468,7 +470,7 @@ EV_BuildStairs
 
     secnum = -1;
     rtn = 0;
-    while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
+    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
     {
 	//sec = &sectors[secnum];
 		
@@ -511,16 +513,16 @@ EV_BuildStairs
 	    ok = 0;
 	    for (i = 0;i < sectors[secnum].linecount;i++)
 	    {
-		if ( !((sectors[secnum].lines[i])->flags & ML_TWOSIDED) )
+		if ( !((linebuffer[sectors[secnum].linesoffset+i])->flags & ML_TWOSIDED) )
 		    continue;
 					
-		tsecOffset = (sectors[secnum].lines[i])->frontsecnum;
+		tsecOffset = (linebuffer[sectors[secnum].linesoffset+i])->frontsecnum;
 		newsecnum = tsecOffset ;
 		
 		if (secnum != newsecnum)
 		    continue;
 
-		tsecOffset = (sectors[secnum].lines[i])->backsecnum;
+		tsecOffset = (linebuffer[sectors[secnum].linesoffset+i])->backsecnum;
 		newsecnum = tsecOffset;
 
 		if (sectors[tsecOffset].floorpic != texture)

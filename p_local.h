@@ -149,7 +149,7 @@ typedef struct
     boolean	isaline;
     union {
 	MEMREF	thingRef;
-	line_t*	line;
+	short linenum;
     }			d;
 } intercept_t;
 
@@ -161,20 +161,21 @@ extern intercept_t*	intercept_p;
 typedef boolean (*traverser_t) (intercept_t *in);
 
 fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
-int 	P_PointOnLineSide (fixed_t x, fixed_t y, line_t* line);
+int 	P_PointOnLineSide (fixed_t	x, fixed_t	y, fixed_t linedx, fixed_t linedy, short linev1Offset);
 int 	P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t* line);
-void 	P_MakeDivline (line_t* li, divline_t* dl);
+void 	P_MakeDivline (fixed_t linedx, fixed_t linedy, short linenum, divline_t* dl);
 fixed_t P_InterceptVector (divline_t* v2, divline_t* v1);
-int 	P_BoxOnLineSide (fixed_t* tmbox, line_t* ld);
+int 	P_BoxOnLineSide (fixed_t* tmbox, slopetype_t	lineslopetype, fixed_t linedx, fixed_t linedy, short linev1Offset);
+
 
 extern fixed_t		opentop;
 extern fixed_t 		openbottom;
 extern fixed_t		openrange;
 extern fixed_t		lowfloor;
 
-void 	P_LineOpening (line_t* linedef);
+void 	P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum);
 
-boolean P_BlockLinesIterator (int x, int y, boolean(*func)(line_t*) );
+boolean P_BlockLinesIterator (int x, int y, boolean(*func)(line_t*, short ) );
 boolean P_BlockThingsIterator2 (int x, int y, boolean(*func)(MEMREF), char* file, int line);
 
 #define P_BlockThingsIterator(a,b,c) P_BlockThingsIterator2(a, b, c, __FILE__, __LINE__)

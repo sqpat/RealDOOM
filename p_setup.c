@@ -67,6 +67,7 @@ line_t*         lines;
 int             numsides;
 side_t*         sides;
 
+line_t**            linebuffer;
 
 // BLOCKMAP
 // Created from axis aligned bounding box
@@ -514,7 +515,6 @@ void P_LoadBlockMap(int lump)
 //
 void P_GroupLines(void)
 {
-	line_t**            linebuffer;
 	int                 i;
 	int                 j;
 	int                 total;
@@ -527,9 +527,8 @@ void P_GroupLines(void)
 	seg_t*              segs;
 	MEMREF				linebufferRef;
 	vertex_t*			vertexes;
-	int inner = 0;
-	char outputter[6000];
-	char outputter2[30];
+	line_t**				baselinebuffer;
+	line_t**  previouslinebuffer;
 
 	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	// look up sector number for each subsector
@@ -550,20 +549,14 @@ void P_GroupLines(void)
 		{
 			sectors[li->backsecnum].linecount++;
 			total++;
-			inner++;
 		}
-		if (i == 622) {
-			//sprintf(outputter2, "%i ", i);
-			//I_Error("%i %i %i %i %i %i", li->backsecnum, li->frontsecnum, sectors[li->frontsecnum].linecount, sectors[li->backsecnum].linecount, total, inner);
-			//strcat(outputter, outputter2);
-		}
-		//inner = 0;
 	}
 
 	// build line tables for each sector        
 //	linebufferRef = Z_MallocEMSNew (total * 4, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
 //	linebuffer = (line_t**)Z_LoadBytesFromEMS(linebufferRef);
 	linebuffer = (line_t**)Z_Malloc (total * 4, PU_LEVEL, 0);
+	baselinebuffer = linebuffer;
 	//I_Error("%s", outputter);
 	//sector = sectors;
 	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
@@ -571,8 +564,12 @@ void P_GroupLines(void)
 	for (i = 0; i < numsectors; i++, sector++) {
 		M_ClearBox(bbox);
 		//sectors[i].lines = linebuffer;
-		sector->lines = linebuffer;
+		sector->linesoffset = linebuffer - baselinebuffer;
+		previouslinebuffer = linebuffer;
 		li = lines;
+		if (i == 0) {
+			//I_Error("%p %p %p %i %i %p %p", baselinebuffer[sector->linesoffset], linebuffer[0], baselinebuffer, sector->linesoffset, linebuffer - baselinebuffer, &lines[sector->linesoffset + 1], linebuffer[1]);
+		}
 
 		for (j = 0; j < numlines; j++, li++) {
 			if (li->frontsecnum == i || li->backsecnum == i) {
@@ -581,8 +578,8 @@ void P_GroupLines(void)
 				M_AddToBox(bbox, vertexes[li->v2Offset].x, vertexes[li->v2Offset].y);
 			}
 		}
-		if (linebuffer - sectors[i].lines != sectors[i].linecount)
-			I_Error("P_GroupLines: miscounted %i %i %i %i %i, %i",linebuffer, sectors[i].lines, sectors[i].linecount, i, linebuffer - sectors[i].lines, sizeof(line_t));
+		if (linebuffer - previouslinebuffer != sectors[i].linecount)
+			I_Error("P_GroupLines: miscounted %i %i %i %i %i, %i",linebuffer, sectors[i].linesoffset, sectors[i].linecount, i, linebuffer , sizeof(line_t));
 
 		// set the degenmobj_t to the middle of the bounding box
 		

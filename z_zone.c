@@ -44,7 +44,7 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 4096
-#define NUM_EMS_PAGES 18
+#define NUM_EMS_PAGES 32
 
 // demo commented out...
 

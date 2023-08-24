@@ -159,7 +159,7 @@ void T_MoveCeiling (MEMREF memref)
 //
 int
 EV_DoCeiling
-( line_t*	line,
+( short linetag,
   ceiling_e	type )
 {
     int		secnum;
@@ -177,12 +177,12 @@ EV_DoCeiling
       case fastCrushAndRaise:
       case silentCrushAndRaise:
       case crushAndRaise:
-	P_ActivateInStasisCeiling(line);
+	P_ActivateInStasisCeiling(linetag);
       default:
 	break;
     }
 	
-    while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
+    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
     {
 	
 	if (sectors[secnum].specialdataRef != NULL_MEMREF)
@@ -279,7 +279,7 @@ void P_RemoveActiveCeiling(MEMREF memref)
 //
 // Restart a ceiling that's in-stasis
 //
-void P_ActivateInStasisCeiling(line_t* line)
+void P_ActivateInStasisCeiling(short linetag)
 {
     int		i;
 	ceiling_t* c;
@@ -287,7 +287,7 @@ void P_ActivateInStasisCeiling(line_t* line)
 	for (i = 0; i < MAXCEILINGS; i++) {
 		if (activeceilings[i] != NULL_MEMREF) {
 			c = (ceiling_t*)Z_LoadBytesFromEMS(activeceilings[i]);
-			if ((c->tag == line->tag) && (c->direction == 0)) {
+			if ((c->tag == linetag) && (c->direction == 0)) {
 				c->direction = c->olddirection;
 
 				P_UpdateThinkerFunc(c->thinkerRef, TF_MOVECEILING);
@@ -302,7 +302,7 @@ void P_ActivateInStasisCeiling(line_t* line)
 // EV_CeilingCrushStop
 // Stop a ceiling from crushing!
 //
-int	EV_CeilingCrushStop(line_t	*line)
+int	EV_CeilingCrushStop(short linetag)
 {
     int		i;
     int		rtn;
@@ -311,7 +311,7 @@ int	EV_CeilingCrushStop(line_t	*line)
 	for (i = 0; i < MAXCEILINGS; i++) {
 		if (activeceilings[i] != NULL_MEMREF) {
 			c = (ceiling_t*)Z_LoadBytesFromEMS(activeceilings[i]);
-			if ((c->tag == line->tag) && (c->direction != 0)) {
+			if ((c->tag == linetag) && (c->direction != 0)) {
 				c->olddirection = c->direction;
 				P_UpdateThinkerFunc(c->thinkerRef, TF_NULL);
 				c->direction = 0;		// in-stasis

@@ -38,12 +38,11 @@
 //
 int
 EV_Teleport
-( line_t*	line,
+( short linetag,
   int		side,
  MEMREF thingRef )
 {
     int		i;
-    int		tag;
     mobj_t*	m;
     mobj_t*	fog;
     unsigned	an;
@@ -65,10 +64,10 @@ EV_Teleport
 	return 0;	
 
     
-    tag = line->tag;
+    
     for (i = 0; i < numsectors; i++)
     {
-	if (sectors[ i ].tag == tag )
+	if (sectors[ i ].tag == linetag )
 	{
 		thinkerRef = thinkerlist[0].next;
 	    for (thinkerRef = thinkerlist[0].next;

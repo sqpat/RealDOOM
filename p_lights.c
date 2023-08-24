@@ -217,12 +217,12 @@ P_SpawnStrobeFlash
 //
 // Start strobing lights (usually from a trigger)
 //
-void EV_StartLightStrobing(line_t*	line)
+void EV_StartLightStrobing(short linetag)
 {
     int		secnum;
 	
     secnum = -1;
-    while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
+    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
     {
 	if (sectors[secnum].specialdataRef)
 	    continue;
@@ -236,7 +236,7 @@ void EV_StartLightStrobing(line_t*	line)
 //
 // TURN LINE'S TAG LIGHTS OFF
 //
-void EV_TurnTagLightsOff(line_t* line)
+void EV_TurnTagLightsOff(short linetag)
 {
     int			i;
     int			secnum;
@@ -247,12 +247,12 @@ void EV_TurnTagLightsOff(line_t* line)
     
     for (secnum = 0; secnum < numsectors; secnum++)
     {
-	if (sectors[secnum].tag == line->tag)
+	if (sectors[secnum].tag == linetag)
 	{
 	    min = sectors[secnum].lightlevel;
 	    for (i = 0;i < sectors[secnum].linecount; i++)
 	    {
-		templine = sectors[secnum].lines[i];
+		templine = linebuffer[sectors[secnum].linesoffset+i];
 		tsecnum = getNextSector(templine,secnum);
 		if (tsecnum == SECNUM_NULL)
 		    continue;
@@ -270,7 +270,7 @@ void EV_TurnTagLightsOff(line_t* line)
 //
 void
 EV_LightTurnOn
-( line_t*	line,
+( short linetag,
   int		bright )
 {
     short secnum;
@@ -282,7 +282,7 @@ EV_LightTurnOn
 	
     for (secnum=0;secnum<numsectors;secnum++)
     {
-	if (sectors[secnum].tag == line->tag)
+	if (sectors[secnum].tag == linetag)
 	{
 	    // bright = 0 means to search
 	    // for highest light level
@@ -292,7 +292,7 @@ EV_LightTurnOn
 			linecount = sectors[secnum].linecount;
 		for (j = 0;j < linecount; j++)
 		{
-		    templine = sectors[secnum].lines[j];
+		    templine = linebuffer[sectors[secnum].linesoffset+j];
 			tempsecnum = getNextSector(templine,secnum);
 
 		    if (tempsecnum == SECNUM_NULL)
