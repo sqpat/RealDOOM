@@ -47,7 +47,7 @@ EV_Teleport
     mobj_t*	m;
     mobj_t*	fog;
     unsigned	an;
-    thinker_t*	thinker;
+    THINKERREF	thinkerRef;
     sector_t*	sector;
     fixed_t	oldx;
     fixed_t	oldy;
@@ -68,16 +68,16 @@ EV_Teleport
     {
 	if (sectors[ i ].tag == tag )
 	{
-	    thinker = thinkercap.next;
-	    for (thinker = thinkercap.next;
-		 thinker != &thinkercap;
-		 thinker = thinker->next)
+		thinkerRef = thinkerlist[0].next;
+	    for (thinkerRef = thinkerlist[0].next;
+			thinkerRef != 0;
+			thinkerRef = thinkerlist[thinkerRef].next)
 	    {
 		// not a mobj
-		if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+		if (thinkerlist[thinkerRef].functionType != TF_MOBJTHINKER)
 		    continue;	
 
-		m = (mobj_t *)thinker;
+		m = (mobj_t *)Z_LoadBytesFromEMS(thinkerlist[thinkerRef].memref);
 		
 		// not a teleportman
 		if (m->type != MT_TELEPORTMAN )

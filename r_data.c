@@ -868,7 +868,7 @@ void R_PrecacheLevel (void)
     int                 lump;
     
     texture_t*          texture;
-    thinker_t*          th;
+    THINKERREF          th;
     spriteframe_t*      sf;
 	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
@@ -880,7 +880,7 @@ void R_PrecacheLevel (void)
 
     if (demoplayback)
         return;
-    
+
     // Precache flats.
     flatpresent = alloca(numflats);
     memset (flatpresent,0,numflats);    
@@ -947,13 +947,13 @@ void R_PrecacheLevel (void)
     spritepresent = alloca(numsprites);
     memset (spritepresent,0, numsprites);
 
-    for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
+    for (th = thinkerlist[0].next ; th != 0; th=thinkerlist[th].next)
     {
-		//if (th->function.acp1 == (actionf_p1)P_MobjThinker) {
-			//spritepresent[((mobj_t *)th)->sprite] = 1;
-		//}
+		if (thinkerlist[th].functionType == TF_MOBJTHINKER) {
+			spritepresent[((mobj_t *)Z_LoadBytesFromEMS(thinkerlist[th].memref))->sprite] = 1;
+		}
     }
-	I_Error("blah 1 %i %i %i", numreads, pageins, pageouts);
+	//I_Error("blah 1 %i %i %i", numreads, pageins, pageouts);
 
     spritememory = 0;
 	//todo does this have to be pulled into the for loop

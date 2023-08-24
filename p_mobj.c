@@ -414,8 +414,9 @@ P_NightmareRespawn (mobj_t* mobj)
 //
 // P_MobjThinker
 //
-void P_MobjThinker (mobj_t* mobj)
+void P_MobjThinker (MEMREF memref)
 {
+	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(memref);
     // momentum movement
     if (mobj->momx
 	|| mobj->momy
@@ -424,7 +425,7 @@ void P_MobjThinker (mobj_t* mobj)
 	P_XYMovement (mobj);
 
 	// FIXME: decent NOP/NULL/Nil function pointer please.
-	if (mobj->thinker.function.acv == (actionf_v) (-1))
+	if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME)
 	    return;		// mobj was removed
     }
     if ( (mobj->z != mobj->floorz)
@@ -433,7 +434,7 @@ void P_MobjThinker (mobj_t* mobj)
 	P_ZMovement (mobj);
 	
 	// FIXME: decent NOP/NULL/Nil function pointer please.
-	if (mobj->thinker.function.acv == (actionf_v) (-1))
+	if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME)
 	    return;		// mobj was removed
     }
 
@@ -532,10 +533,7 @@ P_SpawnMobj
     else 
 	mobj->z = z;
 
-    mobj->thinker.function.acp1 = (actionf_p1)P_MobjThinker;
-	mobj->thinker.memref = mobjRef;
-	
-    P_AddThinker (&mobj->thinker);
+	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
 
     return mobj;
 }
@@ -573,7 +571,7 @@ void P_RemoveMobj (mobj_t* mobj)
     S_StopSound (mobj);
     
     // free block
-    P_RemoveThinker ((thinker_t*)mobj);
+    P_RemoveThinker (mobj->thinkerRef);
 }
 
 

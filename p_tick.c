@@ -24,7 +24,7 @@
 
 
 int	leveltime;
-
+short currentThinkerListHead;
 //
 // THINKERS
 // All thinkers should be allocated by Z_Malloc
@@ -36,7 +36,8 @@ int	leveltime;
 
 
 // Both the head and tail of the thinker list.
-thinker_t	thinkercap;
+thinker_t	thinkerlist[MAX_THINKERS];
+
 
 
 //
@@ -44,24 +45,73 @@ thinker_t	thinkercap;
 //
 void P_InitThinkers (void)
 {
-    thinkercap.prev = thinkercap.next  = &thinkercap;
+	int i = 2;
+	thinkerlist[0].next = 1;
+	thinkerlist[0].prev = 1;
+
+	
+	for (i = 0; i < MAX_THINKERS; i++) {
+		thinkerlist[i].prev = MAX_THINKERS;
+	}
+
+	currentThinkerListHead = 0;
+
 }
 
 
+THINKERREF P_GetNextThinkerRef(void) {
 
+    short start = currentThinkerListHead;
+    int i;
+    
+    for (i = currentThinkerListHead + 1; i != currentThinkerListHead; i++){
+        if (i == MAX_THINKERS){
+            i = 0;
+        }
+        
+        if (thinkerlist[i].prev == MAX_THINKERS){
+			currentThinkerListHead = i;
+            return i;
+        }
+
+    }
+
+    // error case
+    printf("P_GetNextThinkerRef: Couldn't find a free index!");
+    I_Error ("P_GetNextThinkerRef: Couldn't find a free index!");
+    
+
+    return -1;
+    
+
+}
 
 //
 // P_AddThinker
 // Adds a new thinker at the end of the list.
 //
-void P_AddThinker (thinker_t* thinker)
+THINKERREF P_AddThinker (MEMREF argref, THINKFUNCTION thinkfunc)
 {
-    thinkercap.prev->next = thinker;
-    thinker->next = &thinkercap;
-    thinker->prev = thinkercap.prev;
-    thinkercap.prev = thinker;
+	// get next index
+	// sets nexts, prevs
+	short index = P_GetNextThinkerRef();
+	
+	thinkerlist[index].next = 0;
+	thinkerlist[index].prev = thinkerlist[0].prev;
+
+	thinkerlist[thinkerlist[0].prev].next = index;
+	thinkerlist[0].prev = index;
+
+    thinkerlist[index].memref = argref;
+	thinkerlist[index].functionType = thinkfunc;
+	
+	return index;
+
 }
 
+void P_UpdateThinkerFunc(THINKERREF thinker, THINKFUNCTION argfunc) {
+	thinkerlist[thinker].functionType = argfunc;
+}
 
 
 //
@@ -69,22 +119,13 @@ void P_AddThinker (thinker_t* thinker)
 // Deallocation is lazy -- it will not actually be freed
 // until its thinking turn comes up.
 //
-void P_RemoveThinker (thinker_t* thinker)
+void P_RemoveThinker (THINKERREF thinkerRef)
 {
   // FIXME: NOP.
-  thinker->function.acv = (actionf_v)(-1);
+	thinkerlist[thinkerRef].functionType = TF_DELETEME;
 }
 
-
-
-//
-// P_AllocateThinker
-// Allocates memory and adds a new thinker at the end of the list.
-//
-void P_AllocateThinker (thinker_t*	thinker)
-{
-}
-
+ 
 
 
 //
@@ -92,25 +133,56 @@ void P_AllocateThinker (thinker_t*	thinker)
 //
 void P_RunThinkers (void)
 {
-    thinker_t*	currentthinker;
+    THINKERREF	currentthinker;
+	void* arg;
+    currentthinker = thinkerlist[0].next;
+    while (currentthinker != 0) {
+		if ( thinkerlist[currentthinker].functionType == TF_DELETEME ) {
+			// time to remove it
+			thinkerlist[thinkerlist[currentthinker].next].prev = thinkerlist[currentthinker].prev;
+			thinkerlist[thinkerlist[currentthinker].prev].next = thinkerlist[currentthinker].next;
+			Z_FreeEMSNew (thinkerlist[currentthinker].memref, 5);
+			thinkerlist[currentthinker].prev = MAX_THINKERS;
+		} else {
+			if (thinkerlist[currentthinker].functionType) {
+				switch (thinkerlist[currentthinker].functionType) {
+					case TF_MOBJTHINKER:
+						P_MobjThinker(thinkerlist[currentthinker].memref);
+						break;
+					case TF_PLATRAISE:
+						T_PlatRaise(thinkerlist[currentthinker].memref);
+						break;
+					case TF_MOVECEILING:
+						T_MoveCeiling(thinkerlist[currentthinker].memref);
+						break;
+					case TF_VERTICALDOOR:
+						T_VerticalDoor(thinkerlist[currentthinker].memref);
+						break;
+					case TF_MOVEFLOOR:
+						T_MoveFloor(thinkerlist[currentthinker].memref);
+						break;
+					case TF_FIREFLICKER:
+						T_FireFlicker(thinkerlist[currentthinker].memref);
+						break;
+					case TF_LIGHTFLASH:
+						T_LightFlash(thinkerlist[currentthinker].memref);
+						break;
+					case TF_STROBEFLASH:
+						T_StrobeFlash(thinkerlist[currentthinker].memref);
+						break;
+					case TF_GLOW:
+						T_Glow(thinkerlist[currentthinker].memref);
+						break;
+					default:
+						I_Error("Bad thinker func! %i %i", currentthinker, thinkerlist[currentthinker].functionType);
+						break;
+				}
+			}
 
-    currentthinker = thinkercap.next;
-    while (currentthinker != &thinkercap)
-    {
-	if ( currentthinker->function.acv == (actionf_v)(-1) )
-	{
-	    // time to remove it
-	    currentthinker->next->prev = currentthinker->prev;
-	    currentthinker->prev->next = currentthinker->next;
-	    Z_FreeEMSNew (currentthinker->memref);
-	}
-	else
-	{
-	    if (currentthinker->function.acp1)
-		currentthinker->function.acp1 (currentthinker);
-	}
-	currentthinker = currentthinker->next;
+		}
+		currentthinker = thinkerlist[currentthinker].next;
     }
+
 }
 
 

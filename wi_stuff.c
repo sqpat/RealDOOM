@@ -1762,7 +1762,7 @@ void WI_unloadData(void)
 	}
     }
     
-    Z_FreeEMSNew(lnamesRef);
+    Z_FreeEMSNew(lnamesRef, 7);
 
     Z_ChangeTag(percent, PU_CACHE);
     Z_ChangeTag(colon, PU_CACHE);

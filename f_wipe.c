@@ -59,7 +59,7 @@ wipe_shittyColMajorXform
 
     memcpy(array, dest, width*height*2);
 
-    Z_FreeEMSNew(destRef);
+    Z_FreeEMSNew(destRef, 0);
 
 }
 
@@ -233,7 +233,7 @@ wipe_exitMelt
   int	height,
   int	ticks )
 {
-	Z_FreeEMSNew(yRef);
+	Z_FreeEMSNew(yRef, 1);
 
     return 0;
 }

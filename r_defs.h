@@ -117,8 +117,8 @@ typedef	struct
     mobj_t*	thinglist;
 
     // thinker_t for reversable actions
-    void*	specialdata;
-
+    ///void*	specialdata;
+	MEMREF	specialdataRef;
     int			linecount;
     struct line_s**	lines;	// [linecount] size
     
@@ -201,7 +201,8 @@ typedef struct line_s
     int		validcount;
 
     // thinker_t for reversable actions
-    void*	specialdata;		
+    //void*	specialdata;		
+	MEMREF specialdataRef;
 } line_t;
 
 

@@ -47,20 +47,20 @@ void    P_UpdateSpecials (void);
 // when needed
 boolean
 P_UseSpecialLine
-( mobj_t*	thing,
+( MEMREF thingRef,
   line_t*	line,
   int		side );
 
 void
 P_ShootSpecialLine
-( mobj_t*	thing,
+(MEMREF thingRef,
   line_t*	line );
 
 void
 P_CrossSpecialLine
 ( int		linenum,
   int		side,
-  mobj_t*	thing );
+	MEMREF thingRef);
 
 void    P_PlayerInSpecialSector (player_t* player);
 
@@ -120,7 +120,7 @@ int EV_DoDonut(line_t* line);
 //
 typedef struct
 {
-    thinker_t	thinker;
+    THINKERREF	thinkerRef;
     sector_t*	sector;
     int		count;
     int		maxlight;
@@ -132,7 +132,7 @@ typedef struct
 
 typedef struct
 {
-    thinker_t	thinker;
+	THINKERREF	thinkerRef;
     sector_t*	sector;
     int		count;
     int		maxlight;
@@ -146,7 +146,7 @@ typedef struct
 
 typedef struct
 {
-    thinker_t	thinker;
+	THINKERREF	thinkerRef;
     sector_t*	sector;
     int		count;
     int		minlight;
@@ -161,8 +161,8 @@ typedef struct
 
 typedef struct
 {
-    thinker_t	thinker;
-    sector_t*	sector;
+	THINKERREF	thinkerRef;
+	sector_t*	sector;
     int		minlight;
     int		maxlight;
     int		direction;
@@ -176,9 +176,9 @@ typedef struct
 #define SLOWDARK			35
 
 void    P_SpawnFireFlicker (sector_t* sector);
-void    T_LightFlash (lightflash_t* flash);
+void    T_LightFlash (MEMREF memref);
 void    P_SpawnLightFlash (sector_t* sector);
-void    T_StrobeFlash (strobe_t* flash);
+void    T_StrobeFlash (MEMREF memref);
 
 void
 P_SpawnStrobeFlash
@@ -194,10 +194,11 @@ EV_LightTurnOn
 ( line_t*	line,
   int		bright );
 
-void    T_Glow(glow_t* g);
+void    T_Glow(MEMREF memref);
 void    P_SpawnGlowingLight(sector_t* sector);
 
 
+void T_FireFlicker(MEMREF memref);
 
 
 //
@@ -281,7 +282,7 @@ typedef enum
 
 typedef struct
 {
-    thinker_t	thinker;
+	THINKERREF	thinkerRef;
     sector_t*	sector;
     fixed_t	speed;
     fixed_t	low;
@@ -303,9 +304,9 @@ typedef struct
 #define MAXPLATS		30
 
 
-extern plat_t*	activeplats[MAXPLATS];
+extern MEMREF	activeplats[MAXPLATS];
 
-void    T_PlatRaise(plat_t*	plat);
+void    T_PlatRaise(MEMREF platRef);
 
 int
 EV_DoPlat
@@ -313,8 +314,8 @@ EV_DoPlat
   plattype_e	type,
   int		amount );
 
-void    P_AddActivePlat(plat_t* plat);
-void    P_RemoveActivePlat(plat_t* plat);
+void    P_AddActivePlat(MEMREF memref);
+void    P_RemoveActivePlat(MEMREF memref);
 void    EV_StopPlat(line_t* line);
 void    P_ActivateInStasis(int tag);
 
@@ -339,7 +340,7 @@ typedef enum
 
 typedef struct
 {
-    thinker_t	thinker;
+    THINKERREF	thinkerRef;
     vldoor_e	type;
     sector_t*	sector;
     fixed_t	topheight;
@@ -364,7 +365,7 @@ typedef struct
 void
 EV_VerticalDoor
 ( line_t*	line,
-  mobj_t*	thing );
+  MEMREF	thingRef );
 
 int
 EV_DoDoor
@@ -375,9 +376,9 @@ int
 EV_DoLockedDoor
 ( line_t*	line,
   vldoor_e	type,
-  mobj_t*	thing );
+	MEMREF thingRef);
 
-void    T_VerticalDoor (vldoor_t* door);
+void    T_VerticalDoor (MEMREF memref);
 void    P_SpawnDoorCloseIn30 (sector_t* sec);
 
 void
@@ -489,7 +490,7 @@ typedef enum
 
 typedef struct
 {
-    thinker_t	thinker;
+    THINKERREF	thinkerRef;
     ceiling_e	type;
     sector_t*	sector;
     fixed_t	bottomheight;
@@ -514,16 +515,16 @@ typedef struct
 #define CEILWAIT		150
 #define MAXCEILINGS		30
 
-extern ceiling_t*	activeceilings[MAXCEILINGS];
+extern MEMREF	activeceilings[MAXCEILINGS];
 
 int
 EV_DoCeiling
 ( line_t*	line,
   ceiling_e	type );
 
-void    T_MoveCeiling (ceiling_t* ceiling);
-void    P_AddActiveCeiling(ceiling_t* c);
-void    P_RemoveActiveCeiling(ceiling_t* c);
+void    T_MoveCeiling (MEMREF memref);
+void    P_AddActiveCeiling(MEMREF memref);
+void    P_RemoveActiveCeiling(MEMREF memref);
 int	EV_CeilingCrushStop(line_t* line);
 void    P_ActivateInStasisCeiling(line_t* line);
 
@@ -580,7 +581,7 @@ typedef enum
 
 typedef struct
 {
-    thinker_t	thinker;
+    THINKERREF	thinkerRef;
     floor_e	type;
     boolean	crush;
     sector_t*	sector;
@@ -623,7 +624,7 @@ EV_DoFloor
 ( line_t*	line,
   floor_e	floortype );
 
-void T_MoveFloor( floormove_t* floor);
+void T_MoveFloor(MEMREF memref);
 
 //
 // P_TELEPT
@@ -632,6 +633,6 @@ int
 EV_Teleport
 ( line_t*	line,
   int		side,
-  mobj_t*	thing );
+	MEMREF thingRef);
 
 #endif

@@ -61,7 +61,7 @@
 #define ALLOC_TYPE_DEMO_BUFFER 20
 #define ALLOC_TYPE_LNAMES 21
 #define ALLOC_TYPE_SCREEN 22
-
+#define ALLOC_TYPE_THINKER 23
 
 typedef unsigned short MEMREF;  //used externally for allocations list index
 typedef unsigned short PAGEREF; //used internally for allocations list index
@@ -108,7 +108,7 @@ MEMREF Z_MallocEMSNew(int size, unsigned char tag, unsigned char user, unsigned 
 MEMREF Z_MallocEMSNewWithBackRef(int size, unsigned char tag, unsigned char user, unsigned char sourceHint, short backRef);
 void Z_CheckEMSAllocations(PAGEREF block, int i, int var2, int var3);
 void Z_ChangeTagEMSNew (MEMREF index, short tag);
-void Z_FreeEMSNew(short block);
+void Z_FreeEMSNew(short block, int error);
 void Z_PrintAllocationInfo(MEMREF index);
 
 //

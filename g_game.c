@@ -1239,7 +1239,7 @@ void G_DoLoadGame (void)
 
 	}
 
-    Z_FreeEMSNew (savebufferRef); 
+    Z_FreeEMSNew (savebufferRef, 2); 
  
     if (setsizeneeded)
         R_ExecuteSetViewSize ();

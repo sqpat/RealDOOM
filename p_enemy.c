@@ -557,7 +557,7 @@ P_LookForPlayers
 //
 void A_KeenDie (mobj_t* mo)
 {
-    thinker_t*	th;
+    THINKERREF	th;
     mobj_t*	mo2;
     line_t	junk;
 
@@ -565,12 +565,12 @@ void A_KeenDie (mobj_t* mo)
     
     // scan the remaining thinkers
     // to see if all Keens are dead
-    for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
+    for (th = thinkerlist[0].next ; th != 0 ; th= thinkerlist[th].next)
     {
-	if (th->function.acp1 != (actionf_p1)P_MobjThinker)
+	if (thinkerlist[th].functionType != TF_MOBJTHINKER)
 	    continue;
 
-	mo2 = (mobj_t *)th;
+	mo2 = (mobj_t *)Z_LoadBytesFromEMS(thinkerlist[th].memref);
 	if (mo2 != mo
 	    && mo2->type == mo->type
 	    && mo2->health > 0)
@@ -1451,18 +1451,18 @@ A_PainShootSkull
     angle_t	an;
     int		prestep;
     int		count;
-    thinker_t*	currentthinker;
+    THINKERREF	currentthinker;
 
     // count total number of skull currently on the level
     count = 0;
 
-    currentthinker = thinkercap.next;
-    while (currentthinker != &thinkercap)
+    currentthinker = thinkerlist[0].next;
+    while (currentthinker != 0)
     {
-	if (   (currentthinker->function.acp1 == (actionf_p1)P_MobjThinker)
-	    && ((mobj_t *)currentthinker)->type == MT_SKULL)
+	if (   (thinkerlist[currentthinker].functionType == TF_MOBJTHINKER)
+				&& ((mobj_t *) Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type == MT_SKULL)
 	    count++;
-	currentthinker = currentthinker->next;
+	currentthinker = thinkerlist[currentthinker].next;
     }
 
     // if there are allready 20 skulls on the level,
@@ -1600,7 +1600,7 @@ void A_Explode (mobj_t* thingy)
 //
 void A_BossDeath (mobj_t* mo)
 {
-    thinker_t*	th;
+    THINKERREF	th;
     mobj_t*	mo2;
     line_t	junk;
     int		i;
@@ -1689,12 +1689,12 @@ void A_BossDeath (mobj_t* mo)
     
     // scan the remaining thinkers to see
     // if all bosses are dead
-    for (th = thinkercap.next ; th != &thinkercap ; th=th->next)
-    {
-	if (th->function.acp1 != (actionf_p1)P_MobjThinker)
+	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)
+	{
+	if (thinkerlist[th].functionType != TF_MOBJTHINKER)
 	    continue;
 	
-	mo2 = (mobj_t *)th;
+	mo2 = (mobj_t *)Z_LoadBytesFromEMS(thinkerlist[th].memref);
 	if (mo2 != mo
 	    && mo2->type == mo->type
 	    && mo2->health > 0)
@@ -1812,22 +1812,22 @@ int		braintargeton;
 
 void A_BrainAwake (mobj_t* mo)
 {
-    thinker_t*	thinker;
+    THINKERREF	thinkerRef;
     mobj_t*	m;
 	
     // find all the target spots
     numbraintargets = 0;
     braintargeton = 0;
 	
-    thinker = thinkercap.next;
-    for (thinker = thinkercap.next ;
-	 thinker != &thinkercap ;
-	 thinker = thinker->next)
+    for (thinkerRef = thinkerlist[0].next ;
+	 thinkerRef != 0 ;
+	 thinkerRef = thinkerlist[thinkerRef].next)
     {
-	if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+	if (thinkerlist[thinkerRef].functionType != TF_MOBJTHINKER)
 	    continue;	// not a mobj
 
-	m = (mobj_t *)thinker;
+	m = (mobj_t *)Z_LoadBytesFromEMS(thinkerlist[thinkerRef].memref);
+
 
 	if (m->type == MT_BOSSTARGET )
 	{

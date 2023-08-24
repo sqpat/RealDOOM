@@ -1081,11 +1081,12 @@ P_LineAttack
 //
 // USE LINES
 //
-mobj_t*		usething;
+MEMREF		usethingRef;
 
 boolean	PTR_UseTraverse (intercept_t* in)
 {
     int		side;
+	mobj_t* usething = (mobj_t*)Z_LoadBytesFromEMS(usethingRef);
 	
     if (!in->d.line->special)
     {
@@ -1125,8 +1126,9 @@ void P_UseLines (player_t*	player)
     fixed_t	y1;
     fixed_t	x2;
     fixed_t	y2;
-	
-    usething = player->mo;
+	mobj_t* usething;
+    usethingRef = player->moRef;
+	usething = (mobj_t*)Z_LoadBytesFromEMS(usethingRef);
 		
     angle = player->mo->angle >> ANGLETOFINESHIFT;
 

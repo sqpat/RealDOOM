@@ -614,7 +614,7 @@ WritePCXfile
     length = pack - (byte *)pcx;
     M_WriteFile (filename, pcx, length);
 
-    Z_FreeEMSNew (pcxRef);
+    Z_FreeEMSNew (pcxRef, 3);
 }
 
 

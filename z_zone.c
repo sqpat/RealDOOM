@@ -42,7 +42,7 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 4096
-#define NUM_EMS_PAGES 4
+#define NUM_EMS_PAGES 32
 // 16 is 384 139914 14 21
 // 16 MB worth
 #define MAX_PAGE_FRAMES 1024
@@ -735,7 +735,7 @@ void Z_InitEMS (void)
 
 
 
-void Z_FreeEMSNew (short block)
+void Z_FreeEMSNew (short block, int error)
 {
 
 
@@ -750,6 +750,12 @@ void Z_FreeEMSNew (short block)
 		// 0 is the head of the list, its a special-case size 0 block that shouldnt ever get allocated or deallocated.
 		printf("ERROR: Called Z_FreeEMSNew with 0! \n");
 		I_Error("ERROR: Called Z_FreeEMSNew with 0! \n");
+	}
+
+	if (block >= EMS_ALLOCATION_LIST_SIZE) {
+		// 0 is the head of the list, its a special-case size 0 block that shouldnt ever get allocated or deallocated.
+		printf("ERROR: Called Z_FreeEMSNew with too big of size: max %i vs %i! \n", EMS_ALLOCATION_LIST_SIZE -1, block);
+		I_Error("ERROR: Called Z_FreeEMSNew with too big of size: max %i vs %i! \n", EMS_ALLOCATION_LIST_SIZE - 1, block);
 	}
 
 
@@ -825,7 +831,7 @@ void Z_FreeEMSNew (short block)
 		val += 2;
     }
 
-	 
+	val3 = error;
 	Z_CheckEMSAllocations(block, val, val2, val3);
 
     
@@ -870,7 +876,7 @@ Z_FreeTagsEMS
             continue;
         
         if (allocations[block].tag >= lowtag && allocations[block].tag <= hightag)
-            Z_FreeEMSNew ( block);
+            Z_FreeEMSNew ( block, 8);
     }
 
    
@@ -1012,7 +1018,12 @@ void* Z_LoadBytesFromEMS (MEMREF ref) {
 	short pageframeindex;
     byte* address;
 
-	if (ref > MAX_PAGE_FRAMES) {
+
+	//todo which was correct again?
+
+//	if (ref > MAX_PAGE_FRAMES) {
+	if (ref > EMS_ALLOCATION_LIST_SIZE) {
+
 		I_Error("out of bounds memref.. %i", ref);
 	}
 
@@ -1269,7 +1280,7 @@ Z_MallocEMSNewWithBackRef
                    // printf ("stats %i %i %i %i %i %i\n", base, allocations[base].prev, allocations[base].next, rover, allocations[rover].prev, allocations[rover].next);
 
                 base = allocations[base].prev;
-                Z_FreeEMSNew (rover);
+                Z_FreeEMSNew (rover, 9);
                 base = allocations[base].next;
                 rover = allocations[base].next;
             }
@@ -1463,8 +1474,8 @@ void Z_CheckEMSAllocations(PAGEREF block, int var, int var2, int var3){
 
         iterCount++;
         if (iterCount > EMS_ALLOCATION_LIST_SIZE){
-            printf("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex(), var, var2, var3);
-            I_Error("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex(), var, var2, var3);
+            printf("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex(), var, var2, var3);
+            I_Error("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex(), var, var2, var3);
         }
 
         block = allocations[block].next;

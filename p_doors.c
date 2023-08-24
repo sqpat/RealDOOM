@@ -51,10 +51,10 @@ slidename_t	slideFrameNames[MAXSLIDEDOORS] =
 //
 // T_VerticalDoor
 //
-void T_VerticalDoor (vldoor_t* door)
+void T_VerticalDoor (MEMREF memref)
 {
     result_e	res;
-	
+	vldoor_t* door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
     switch(door->direction)
     {
       case 0:
@@ -118,16 +118,16 @@ void T_VerticalDoor (vldoor_t* door)
 	    {
 	      case blazeRaise:
 	      case blazeClose:
-		door->sector->specialdata = NULL;
-		P_RemoveThinker (&door->thinker);  // unlink and free
+		door->sector->specialdataRef = NULL_MEMREF;
+		P_RemoveThinker (door->thinkerRef);  // unlink and free
 		S_StartSound((mobj_t *)&door->sector->soundorg,
 			     sfx_bdcls);
 		break;
 		
 	      case normal:
 	      case close:
-		door->sector->specialdata = NULL;
-		P_RemoveThinker (&door->thinker);  // unlink and free
+		door->sector->specialdataRef = NULL_MEMREF;
+		P_RemoveThinker (door->thinkerRef);  // unlink and free
 		break;
 		
 	      case close30ThenOpen:
@@ -176,8 +176,8 @@ void T_VerticalDoor (vldoor_t* door)
 	      case close30ThenOpen:
 	      case blazeOpen:
 	      case open:
-		door->sector->specialdata = NULL;
-		P_RemoveThinker (&door->thinker);  // unlink and free
+		door->sector->specialdataRef = NULL_MEMREF;
+		P_RemoveThinker (door->thinkerRef);  // unlink and free
 		break;
 		
 	      default:
@@ -267,7 +267,7 @@ EV_DoDoor
     while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
     {
 	sec = &sectors[secnum];
-	if (sec->specialdata)
+	if (sec->specialdataRef)
 	    continue;
 		
 	
@@ -279,15 +279,13 @@ EV_DoDoor
 	doorRef = Z_MallocEMSNew(sizeof(*door), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
 
-	P_AddThinker (&door->thinker);
-	sec->specialdata = door;
+	door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR);
+	sec->specialdataRef = doorRef;
 
-	door->thinker.function.acp1 = (actionf_p1) T_VerticalDoor;
 	door->sector = sec;
 	door->type = type;
 	door->topwait = VDOORWAIT;
 	door->speed = VDOORSPEED;
-	door->thinker.memref = doorRef;
 		
 	switch(type)
 	{
@@ -351,7 +349,7 @@ EV_DoDoor
 void
 EV_VerticalDoor
 ( line_t*	line,
-  mobj_t*	thing )
+  MEMREF thingRef )
 {
     player_t*	player;
     int		secnum;
@@ -359,6 +357,7 @@ EV_VerticalDoor
     vldoor_t*	door;
     int		side;
 	MEMREF doorRef;
+	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
     side = 0;	// only front sides can be used
 
@@ -412,9 +411,10 @@ EV_VerticalDoor
     sec = sides[ line->sidenum[side^1]] .sector;
     secnum = sec-sectors;
 
-    if (sec->specialdata)
+    if (sec->specialdataRef)
     {
-	door = sec->specialdata;
+	doorRef = sec->specialdataRef;
+	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
 	switch(line->special)
 	{
 	  case	1: // ONLY FOR "RAISE" DOORS, NOT "OPEN"s
@@ -457,15 +457,14 @@ EV_VerticalDoor
     // new door thinker
 	doorRef = Z_MallocEMSNew(sizeof(*door), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+    door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR);
 
-    P_AddThinker (&door->thinker);
-    sec->specialdata = door;
-    door->thinker.function.acp1 = (actionf_p1) T_VerticalDoor;
+    sec->specialdataRef = doorRef;
+    
     door->sector = sec;
     door->direction = 1;
     door->speed = VDOORSPEED;
     door->topwait = VDOORWAIT;
-	door->thinker.memref = doorRef;
 
     switch(line->special)
     {
@@ -512,18 +511,16 @@ void P_SpawnDoorCloseIn30 (sector_t* sec)
 	doorRef = Z_MallocEMSNew(sizeof(*door), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
 
-    P_AddThinker (&door->thinker);
+	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR);
 
-    sec->specialdata = door;
+    sec->specialdataRef = doorRef;
     sec->special = 0;
 
-    door->thinker.function.acp1 = (actionf_p1)T_VerticalDoor;
     door->sector = sec;
     door->direction = 0;
     door->type = normal;
     door->speed = VDOORSPEED;
     door->topcountdown = 30 * 35;
-	door->thinker.memref = doorRef;
 }
 
 //
@@ -540,12 +537,11 @@ P_SpawnDoorRaiseIn5Mins
 	doorRef = Z_MallocEMSNew(sizeof(*door), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
     
-    P_AddThinker (&door->thinker);
+	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR);
 
-    sec->specialdata = door;
+    sec->specialdataRef = doorRef;
     sec->special = 0;
 
-    door->thinker.function.acp1 = (actionf_p1)T_VerticalDoor;
     door->sector = sec;
     door->direction = 2;
     door->type = raiseIn5Mins;
@@ -554,7 +550,6 @@ P_SpawnDoorRaiseIn5Mins
     door->topheight -= 4*FRACUNIT;
     door->topwait = VDOORWAIT;
     door->topcountdown = 5 * 60 * 35;
-	door->thinker.memref = doorRef;
 
 }
 

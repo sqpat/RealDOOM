@@ -198,7 +198,7 @@ typedef enum
 typedef struct mobj_s
 {
     // List: thinker links.
-    thinker_t		thinker;
+    THINKERREF thinkerRef;
 
     // Info for drawing: position.
     fixed_t		x;

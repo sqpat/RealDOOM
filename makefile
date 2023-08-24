@@ -31,7 +31,6 @@ GLOBOBJS = &
  i_sound.obj &
  i_cyber.obj &
  i_ibm_a.obj &
- planar.obj &
  tables.obj &
  f_finale.obj &
  d_main.obj &

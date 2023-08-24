@@ -58,18 +58,20 @@
 #define	BASETHRESHOLD	 	100
 
 
+#define MAX_THINKERS 1000
 
 //
 // P_TICK
 //
 
 // both the head and tail of the thinker list
-extern	thinker_t	thinkercap;	
+extern	thinker_t	thinkerlist[MAX_THINKERS];	
 
 
 void P_InitThinkers (void);
-void P_AddThinker (thinker_t* thinker);
-void P_RemoveThinker (thinker_t* thinker);
+THINKERREF P_AddThinker (MEMREF argref, THINKFUNCTION thinkfunc);
+void P_UpdateThinkerFunc(THINKERREF thinker, THINKFUNCTION argfunc);
+void P_RemoveThinker (THINKERREF thinkerRef);
 
 
 //
@@ -112,7 +114,7 @@ P_SpawnMobj
 
 void 	P_RemoveMobj (mobj_t* th);
 boolean	P_SetMobjState (mobj_t* mobj, statenum_t state);
-void 	P_MobjThinker (mobj_t* mobj);
+void 	P_MobjThinker (MEMREF memref);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int damage);

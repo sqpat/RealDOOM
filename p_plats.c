@@ -34,17 +34,19 @@
 #include "sounds.h"
 
 
-plat_t*		activeplats[MAXPLATS];
+MEMREF		activeplats[MAXPLATS];
 
 
 
 //
 // Move a plat up and down
 //
-void T_PlatRaise(plat_t* plat)
+void T_PlatRaise(MEMREF platRef)
 {
+
     result_e	res;
-	
+	plat_t* plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+
     switch(plat->status)
     {
       case up:
@@ -82,12 +84,12 @@ void T_PlatRaise(plat_t* plat)
 		{
 		  case blazeDWUS:
 		  case downWaitUpStay:
-		    P_RemoveActivePlat(plat);
+		    P_RemoveActivePlat(platRef);
 		    break;
 		    
 		  case raiseAndChange:
 		  case raiseToNearestAndChange:
-		    P_RemoveActivePlat(plat);
+		    P_RemoveActivePlat(platRef);
 		    break;
 		    
 		  default:
@@ -158,7 +160,7 @@ EV_DoPlat
     {
 	sec = &sectors[secnum];
 
-	if (sec->specialdata)
+	if (sec->specialdataRef)
 	    continue;
 	
 	// Find lowest & highest floors around sector
@@ -167,15 +169,15 @@ EV_DoPlat
 	platRef = Z_MallocEMSNew(sizeof(*plat), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 
-	P_AddThinker(&plat->thinker);
+	
+	plat->thinkerRef = P_AddThinker(platRef, TF_PLATRAISE);
+	 
 		
 	plat->type = type;
 	plat->sector = sec;
-	plat->sector->specialdata = plat;
-	plat->thinker.function.acp1 = (actionf_p1) T_PlatRaise;
+	plat->sector->specialdataRef = platRef;
 	plat->crush = false;
 	plat->tag = line->tag;
-	plat->thinker.memref = platRef;
 	
 	switch(type)
 	{
@@ -245,67 +247,78 @@ EV_DoPlat
 	    S_StartSound((mobj_t *)&sec->soundorg,sfx_pstart);
 	    break;
 	}
-	P_AddActivePlat(plat);
+	P_AddActivePlat(platRef);
     }
     return rtn;
 }
 
 
 
-void P_ActivateInStasis(int tag)
-{
-    int		i;
-	
-    for (i = 0;i < MAXPLATS;i++)
-	if (activeplats[i]
-	    && (activeplats[i])->tag == tag
-	    && (activeplats[i])->status == in_stasis)
-	{
-	    (activeplats[i])->status = (activeplats[i])->oldstatus;
-	    (activeplats[i])->thinker.function.acp1
-	      = (actionf_p1) T_PlatRaise;
-	}
-}
-
-void EV_StopPlat(line_t* line)
-{
+void P_ActivateInStasis(int tag) {
     int		j;
-	
-    for (j = 0;j < MAXPLATS;j++)
-	if (activeplats[j]
-	    && ((activeplats[j])->status != in_stasis)
-	    && ((activeplats[j])->tag == line->tag))
-	{
-	    (activeplats[j])->oldstatus = (activeplats[j])->status;
-	    (activeplats[j])->status = in_stasis;
-	    (activeplats[j])->thinker.function.acv = (actionf_v)NULL;
+	plat_t* plat;
+	for (j = 0; j < MAXPLATS; j++)
+		if (activeplats[j] != NULL_MEMREF) {
+			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[j]);
+			if ((plat->status == in_stasis) && (plat->tag == tag)) {
+				plat->oldstatus = plat->status;
+
+				P_UpdateThinkerFunc(plat->thinkerRef, TF_PLATRAISE);
+			}
+		}
+
+}
+
+void EV_StopPlat(line_t* line) {
+	int		j;
+	plat_t* plat;
+
+	for (j = 0; j < MAXPLATS; j++) {
+		if (activeplats[j] != NULL_MEMREF) {
+			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[j]);
+			if ((plat->status != in_stasis) && (plat->tag == line->tag)) {
+				plat->oldstatus = plat->status;
+				plat->status = in_stasis;
+
+				P_UpdateThinkerFunc(plat->thinkerRef, TF_NULL);
+			}
+		}
 	}
 }
 
-void P_AddActivePlat(plat_t* plat)
-{
+static int platraisecount = 0;
+static int addedplatraisecount = 0;
+static int platindex = 0;
+
+void P_AddActivePlat(MEMREF memref) {
     int		i;
-    
+	addedplatraisecount++;
     for (i = 0;i < MAXPLATS;i++)
-	if (activeplats[i] == NULL)
-	{
-	    activeplats[i] = plat;
+	if (activeplats[i] == NULL_MEMREF) {
+	    activeplats[i] = memref;
+		platindex = memref;
 	    return;
 	}
     I_Error ("P_AddActivePlat: no more plats!");
 }
 
-void P_RemoveActivePlat(plat_t* plat)
+
+
+void P_RemoveActivePlat(MEMREF platRef)
 {
     int		i;
-    for (i = 0;i < MAXPLATS;i++)
-	if (plat == activeplats[i])
-	{
-	    (activeplats[i])->sector->specialdata = NULL;
-	    P_RemoveThinker(&(activeplats[i])->thinker);
-	    activeplats[i] = NULL;
-	    
-	    return;
+	plat_t* plat;
+	platraisecount++;
+	for (i = 0; i < MAXPLATS; i++) {
+		if (platRef == activeplats[i]) {
+			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[i]);
+
+			plat->sector->specialdataRef = NULL_MEMREF;
+			P_RemoveThinker(plat->thinkerRef);
+			activeplats[i] = NULL_MEMREF;
+
+			return;
+		}
 	}
-    I_Error ("P_RemoveActivePlat: can't find plat!");
+    I_Error ("P_RemoveActivePlat: can't find plat! %i %i %i %i", platRef, platraisecount, addedplatraisecount, platindex);
 }

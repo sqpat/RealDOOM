@@ -1,0 +1,19 @@
+# Object files
+*.obj
+
+# vs proj files
+*.vcxproj
+*.vcxproj.*
+
+
+*.wad
+
+# compiler err
+*.err
+
+# savegame
+*.DSG
+
+# going to leave the map in, i think its interesting to see changes over time..
+# *.map
+

@@ -265,11 +265,12 @@ P_ChangeSwitchTexture
 //
 boolean
 P_UseSpecialLine
-( mobj_t*	thing,
+( MEMREF	thingRef,
   line_t*	line,
   int		side )
 {               
 
+	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     // Err...
     // Use the back sides of VERY SPECIAL lines...
     if (side)
@@ -326,7 +327,7 @@ P_UseSpecialLine
 
       case 117:		// Blazing door raise
       case 118:		// Blazing door open
-	EV_VerticalDoor (line, thing);
+	EV_VerticalDoor (line, thingRef);
 	break;
 	
 	//UNUSED - Door Slide Open&Close

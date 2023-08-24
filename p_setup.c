@@ -702,7 +702,7 @@ P_SetupLevel
 
 	// clear special respawning que
 	iquehead = iquetail = 0;
-
+	
 	// set up world state
 	P_SpawnSpecials();
 

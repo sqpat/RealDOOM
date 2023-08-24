@@ -239,7 +239,7 @@ void W_Reload (void)
         lump_p->size = LONG(fileinfo->size);
 
 		if (lumpcacheEMS[i]) {
-			Z_FreeEMSNew(lumpcacheEMS[i]);
+			Z_FreeEMSNew(lumpcacheEMS[i], 6);
 		}
 
 

@@ -1175,7 +1175,7 @@ int EV_DoDonut(line_t*	line)
 	s1 = &sectors[secnum];
 		
 	// ALREADY MOVING?  IF SO, KEEP GOING...
-	if (s1->specialdata)
+	if (s1->specialdataRef)
 	    continue;
 			
 	rtn = 1;
@@ -1193,9 +1193,8 @@ int EV_DoDonut(line_t*	line)
 		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
 
 
-	    P_AddThinker (&floor->thinker);
-	    s2->specialdata = floor;
-	    floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
+		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+		s2->specialdataRef = floorRef;
 	    floor->type = donutRaise;
 	    floor->crush = false;
 	    floor->direction = 1;
@@ -1204,21 +1203,18 @@ int EV_DoDonut(line_t*	line)
 	    floor->texture = s3->floorpic;
 	    floor->newspecial = 0;
 	    floor->floordestheight = s3->floorheight;
-		floor->thinker.memref = floorRef;
 	    
 	    //	Spawn lowering donut-hole
 		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
-		P_AddThinker (&floor->thinker);
-	    s1->specialdata = floor;
-	    floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
+		floor->thinkerRef = P_AddThinker (floorRef, TF_MOVEFLOOR);
+	    s1->specialdataRef = floorRef;
 	    floor->type = lowerFloor;
 	    floor->crush = false;
 	    floor->direction = -1;
 	    floor->sector = s1;
 	    floor->speed = FLOORSPEED / 2;
 	    floor->floordestheight = s3->floorheight;
-		floor->thinker.memref = floorRef;
 		break;
 	}
     }
@@ -1282,7 +1278,8 @@ void P_SpawnSpecials (void)
 
 	if (!sector->special)
 	    continue;
-	
+	//I_Error("stopping");
+
 	switch (sector->special)
 	{
 	  case 1:
@@ -1362,7 +1359,7 @@ void P_SpawnSpecials (void)
 	activeceilings[i] = NULL;
 
     for (i = 0;i < MAXPLATS;i++)
-	activeplats[i] = NULL;
+	activeplats[i] = NULL_MEMREF;
     
     for (i = 0;i < MAXBUTTONS;i++)
 	memset(&buttonlist[i],0,sizeof(button_t));

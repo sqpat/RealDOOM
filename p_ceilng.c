@@ -34,16 +34,17 @@
 //
 
 
-ceiling_t*	activeceilings[MAXCEILINGS];
+MEMREF	activeceilings[MAXCEILINGS];
 
 
 //
 // T_MoveCeiling
 //
 
-void T_MoveCeiling (ceiling_t* ceiling)
+void T_MoveCeiling (MEMREF memref)
 {
     result_e	res;
+	ceiling_t* ceiling = (ceiling_t*)Z_LoadBytesFromEMS(memref);
 	
     switch(ceiling->direction)
     {
@@ -76,7 +77,7 @@ void T_MoveCeiling (ceiling_t* ceiling)
 	    switch(ceiling->type)
 	    {
 	      case raiseToHighest:
-		P_RemoveActiveCeiling(ceiling);
+		P_RemoveActiveCeiling(memref);
 		break;
 		
 	      case silentCrushAndRaise:
@@ -127,7 +128,7 @@ void T_MoveCeiling (ceiling_t* ceiling)
 
 	      case lowerAndCrush:
 	      case lowerToFloor:
-		P_RemoveActiveCeiling(ceiling);
+		P_RemoveActiveCeiling(memref);
 		break;
 
 	      default:
@@ -188,7 +189,7 @@ EV_DoCeiling
     while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
     {
 	sec = &sectors[secnum];
-	if (sec->specialdata)
+	if (sec->specialdataRef != NULL_MEMREF)
 	    continue;
 	
 	// new door thinker
@@ -196,12 +197,11 @@ EV_DoCeiling
 	ceilingRef = Z_MallocEMSNew(sizeof(*ceiling), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	ceiling = (ceiling_t*)Z_LoadBytesFromEMS(ceilingRef);
 
-	P_AddThinker (&ceiling->thinker);
-	sec->specialdata = ceiling;
-	ceiling->thinker.function.acp1 = (actionf_p1)T_MoveCeiling;
+	ceiling->thinkerRef = P_AddThinker (ceilingRef, TF_MOVECEILING);
+	sec->specialdataRef = ceilingRef;
+	
 	ceiling->sector = sec;
 	ceiling->crush = false;
-	ceiling->thinker.memref = ceilingRef;
 	
 	switch(type)
 	{
@@ -235,7 +235,7 @@ EV_DoCeiling
 		
 	ceiling->tag = sec->tag;
 	ceiling->type = type;
-	P_AddActiveCeiling(ceiling);
+	P_AddActiveCeiling(ceilingRef);
     }
     return rtn;
 }
@@ -244,17 +244,14 @@ EV_DoCeiling
 //
 // Add an active ceiling
 //
-void P_AddActiveCeiling(ceiling_t* c)
-{
+void P_AddActiveCeiling(MEMREF memref) {
     int		i;
     
-    for (i = 0; i < MAXCEILINGS;i++)
-    {
-	if (activeceilings[i] == NULL)
-	{
-	    activeceilings[i] = c;
-	    return;
-	}
+    for (i = 0; i < MAXCEILINGS;i++) {
+		if (activeceilings[i] == NULL_MEMREF) {
+			activeceilings[i] = memref;
+			return;
+		}
     }
 }
 
@@ -263,17 +260,19 @@ void P_AddActiveCeiling(ceiling_t* c)
 //
 // Remove a ceiling's thinker
 //
-void P_RemoveActiveCeiling(ceiling_t* c)
+void P_RemoveActiveCeiling(MEMREF memref)
 {
     int		i;
-	
+	ceiling_t* c;
+
     for (i = 0;i < MAXCEILINGS;i++)
     {
-	if (activeceilings[i] == c)
+	if (activeceilings[i] == memref)
 	{
-	    activeceilings[i]->sector->specialdata = NULL;
-	    P_RemoveThinker (&activeceilings[i]->thinker);
-	    activeceilings[i] = NULL;
+		c = (ceiling_t*)Z_LoadBytesFromEMS(memref);
+		c->sector->specialdataRef = NULL_MEMREF;
+	    P_RemoveThinker (c->thinkerRef);
+	    activeceilings[i] = NULL_MEMREF;
 	    break;
 	}
     }
@@ -287,18 +286,18 @@ void P_RemoveActiveCeiling(ceiling_t* c)
 void P_ActivateInStasisCeiling(line_t* line)
 {
     int		i;
-	
-    for (i = 0;i < MAXCEILINGS;i++)
-    {
-	if (activeceilings[i]
-	    && (activeceilings[i]->tag == line->tag)
-	    && (activeceilings[i]->direction == 0))
-	{
-	    activeceilings[i]->direction = activeceilings[i]->olddirection;
-	    activeceilings[i]->thinker.function.acp1
-	      = (actionf_p1)T_MoveCeiling;
+	ceiling_t* c;
+
+	for (i = 0; i < MAXCEILINGS; i++) {
+		if (activeceilings[i] != NULL_MEMREF) {
+			c = (ceiling_t*)Z_LoadBytesFromEMS(activeceilings[i]);
+			if ((c->tag == line->tag) && (c->direction == 0)) {
+				c->direction = c->olddirection;
+
+				P_UpdateThinkerFunc(c->thinkerRef, TF_MOVECEILING);
+			}
+		}
 	}
-    }
 }
 
 
@@ -311,21 +310,19 @@ int	EV_CeilingCrushStop(line_t	*line)
 {
     int		i;
     int		rtn;
-	
-    rtn = 0;
-    for (i = 0;i < MAXCEILINGS;i++)
-    {
-	if (activeceilings[i]
-	    && (activeceilings[i]->tag == line->tag)
-	    && (activeceilings[i]->direction != 0))
-	{
-	    activeceilings[i]->olddirection = activeceilings[i]->direction;
-	    activeceilings[i]->thinker.function.acv = (actionf_v)NULL;
-	    activeceilings[i]->direction = 0;		// in-stasis
-	    rtn = 1;
+	ceiling_t* c;
+	rtn = 0;
+	for (i = 0; i < MAXCEILINGS; i++) {
+		if (activeceilings[i] != NULL_MEMREF) {
+			c = (ceiling_t*)Z_LoadBytesFromEMS(activeceilings[i]);
+			if ((c->tag == line->tag) && (c->direction != 0)) {
+				c->olddirection = c->direction;
+				P_UpdateThinkerFunc(c->thinkerRef, TF_NULL);
+				c->direction = 0;		// in-stasis
+				rtn = 1;
+			}
+		}
 	}
-    }
-    
 
     return rtn;
 }

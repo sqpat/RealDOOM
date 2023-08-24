@@ -48,20 +48,38 @@ typedef union
 // Historically, "think_t" is yet another
 //  function pointer to a routine to handle
 //  an actor.
-typedef actionf_t  think_t;
+//typedef actionf_t  think_t;
 
+typedef unsigned short THINKERREF;
+typedef unsigned char  THINKFUNCTION;
+
+#define TF_NULL				0
+#define TF_MOBJTHINKER		1
+#define TF_PLATRAISE        2
+#define TF_MOVECEILING		3
+#define TF_VERTICALDOOR		4
+#define TF_MOVEFLOOR        5
+#define TF_FIREFLICKER      6
+#define TF_LIGHTFLASH       7
+#define TF_STROBEFLASH      8
+#define TF_GLOW             9
+
+
+#define TF_DELETEME         255
 
 // Doubly linked list of actors.
 typedef struct thinker_s
 {
-    struct thinker_s*	prev;
-    struct thinker_s*	next;
+	THINKERREF	prev;
+	THINKERREF	next;
 	//MEMREF		prev;
 	//MEMREF		next;
-    think_t		function;
-	MEMREF		memref;
+	THINKFUNCTION functionType;
+
+	MEMREF		memref;		// needed to delete the 'owner' of the thinker. All thinkers are owned by a memref controlled allocations..
     
 } thinker_t;
+
 
 
 

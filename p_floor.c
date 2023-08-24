@@ -197,9 +197,10 @@ T_MovePlane
 //
 // MOVE A FLOOR TO IT'S DESTINATION (UP OR DOWN)
 //
-void T_MoveFloor(floormove_t* floor)
+void T_MoveFloor(MEMREF memref)
 {
     result_e	res;
+	floormove_t* floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
 	
     res = T_MovePlane(floor->sector,
 		      floor->speed,
@@ -212,7 +213,7 @@ void T_MoveFloor(floormove_t* floor)
     
     if (res == pastdest)
     {
-	floor->sector->specialdata = NULL;
+	floor->sector->specialdataRef = NULL_MEMREF;
 
 	if (floor->direction == 1)
 	{
@@ -236,7 +237,7 @@ void T_MoveFloor(floormove_t* floor)
 		break;
 	    }
 	}
-	P_RemoveThinker(&floor->thinker);
+	P_RemoveThinker(floor->thinkerRef);
 
 	S_StartSound((mobj_t *)&floor->sector->soundorg,
 		     sfx_pstop);
@@ -267,7 +268,7 @@ EV_DoFloor
 	sec = &sectors[secnum];
 		
 	// ALREADY MOVING?  IF SO, KEEP GOING...
-	if (sec->specialdata)
+	if (sec->specialdataRef)
 	    continue;
 	
 	// new floor thinker
@@ -275,12 +276,11 @@ EV_DoFloor
 	floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
 
-	P_AddThinker (&floor->thinker);
-	sec->specialdata = floor;
-	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
+	floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+	sec->specialdataRef = floorRef;
+
 	floor->type = floortype;
 	floor->crush = false;
-	floor->thinker.memref = floorRef;
 
 	switch(floortype)
 	{
@@ -475,7 +475,7 @@ EV_BuildStairs
 	sec = &sectors[secnum];
 		
 	// ALREADY MOVING?  IF SO, KEEP GOING...
-	if (sec->specialdata)
+	if (sec->specialdataRef)
 	    continue;
 	
 	// new floor thinker
@@ -483,12 +483,10 @@ EV_BuildStairs
 	floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
 
-	P_AddThinker (&floor->thinker);
-	sec->specialdata = floor;
-	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
+	floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+	sec->specialdataRef = floorRef;
 	floor->direction = 1;
 	floor->sector = sec;
-	floor->thinker.memref = floorRef;
 
 	switch(type)
 	{
@@ -532,7 +530,7 @@ EV_BuildStairs
 					
 		height += stairsize;
 
-		if (tsec->specialdata)
+		if (tsec->specialdataRef)
 		    continue;
 					
 		sec = tsec;
@@ -543,15 +541,13 @@ EV_BuildStairs
 
 		floor->floordestheight = height;
 
-		P_AddThinker (&floor->thinker);
+		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
 
-		sec->specialdata = floor;
-		floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
+		sec->specialdataRef = floorRef;
 		floor->direction = 1;
 		floor->sector = sec;
 		floor->speed = speed;
 		floor->floordestheight = height;
-		floor->thinker.memref = floorRef;
 		ok = 1;
 		break;
 	    }

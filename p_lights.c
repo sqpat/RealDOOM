@@ -35,9 +35,11 @@
 //
 // T_FireFlicker
 //
-void T_FireFlicker (fireflicker_t* flick)
+void T_FireFlicker (MEMREF memref)
+
 {
     int	amount;
+	fireflicker_t* flick = (fireflicker_t*)Z_LoadBytesFromEMS(memref);
 	
     if (--flick->count)
 	return;
@@ -68,15 +70,12 @@ void P_SpawnFireFlicker (sector_t*	sector)
 	flickRef = Z_MallocEMSNew(sizeof(*flick), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	flick = (fireflicker_t*) Z_LoadBytesFromEMS(flickRef);
 
-    P_AddThinker (&flick->thinker);
+	flick->thinkerRef = P_AddThinker(flickRef, TF_FIREFLICKER);
 
-    flick->thinker.function.acp1 = (actionf_p1) T_FireFlicker;
     flick->sector = sector;
     flick->maxlight = sector->lightlevel;
     flick->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel)+16;
     flick->count = 4;
-	flick->thinker.memref = flickRef;
-
 }
 
 
@@ -90,21 +89,22 @@ void P_SpawnFireFlicker (sector_t*	sector)
 // T_LightFlash
 // Do flashing lights.
 //
-void T_LightFlash (lightflash_t* flash)
+void T_LightFlash (MEMREF memref)
 {
+	lightflash_t* flash = (lightflash_t*)Z_LoadBytesFromEMS(memref);
+
     if (--flash->count)
-	return;
+		return;
 	
-    if (flash->sector->lightlevel == flash->maxlight)
-    {
-	flash-> sector->lightlevel = flash->minlight;
-	flash->count = (P_Random()&flash->mintime)+1;
+    if (flash->sector->lightlevel == flash->maxlight) {
+		flash-> sector->lightlevel = flash->minlight;
+		flash->count = (P_Random()&flash->mintime)+1;
     }
-    else
-    {
-	flash-> sector->lightlevel = flash->maxlight;
-	flash->count = (P_Random()&flash->maxtime)+1;
+    else {
+		flash-> sector->lightlevel = flash->maxlight;
+		flash->count = (P_Random()&flash->maxtime)+1;
     }
+	
 
 }
 
@@ -120,15 +120,15 @@ void P_SpawnLightFlash (sector_t*	sector)
 {
     lightflash_t*	flash;
 	MEMREF flashRef;
-    // nothing special about it during gameplay
+
+	// nothing special about it during gameplay
     sector->special = 0;	
 	
 	flashRef = Z_MallocEMSNew(sizeof(*flash), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	flash = (lightflash_t*) Z_LoadBytesFromEMS(flashRef);
 
-    P_AddThinker (&flash->thinker);
+	flash->thinkerRef = P_AddThinker(flashRef, TF_LIGHTFLASH);
 
-    flash->thinker.function.acp1 = (actionf_p1) T_LightFlash;
     flash->sector = sector;
     flash->maxlight = sector->lightlevel;
 
@@ -136,7 +136,6 @@ void P_SpawnLightFlash (sector_t*	sector)
     flash->maxtime = 64;
     flash->mintime = 7;
     flash->count = (P_Random()&flash->maxtime)+1;
-	flash->thinker.memref = flashRef;
 
 }
 
@@ -150,9 +149,11 @@ void P_SpawnLightFlash (sector_t*	sector)
 //
 // T_StrobeFlash
 //
-void T_StrobeFlash (strobe_t*		flash)
+void T_StrobeFlash (MEMREF memref)
 {
-    if (--flash->count)
+	strobe_t* flash = (strobe_t*)Z_LoadBytesFromEMS(memref);
+	
+	if (--flash->count)
 	return;
 	
     if (flash->sector->lightlevel == flash->minlight)
@@ -183,22 +184,22 @@ P_SpawnStrobeFlash
 {
     strobe_t*	flash;
 	MEMREF flashRef;
+
 	// nothing special about it during gameplay
 	sector->special = 0;
 
 	flashRef = Z_MallocEMSNew(sizeof(*flash), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	flash = (strobe_t*) Z_LoadBytesFromEMS(flashRef);
 
-	P_AddThinker (&flash->thinker);
+
+	flash->thinkerRef = P_AddThinker(flashRef, TF_STROBEFLASH);
 
     flash->sector = sector;
     flash->darktime = fastOrSlow;
     flash->brighttime = STROBEBRIGHT;
-	flash->thinker.function.acp1 = (actionf_p1) T_StrobeFlash;
     flash->maxlight = sector->lightlevel;
 	flash->minlight = P_FindMinSurroundingLight(sector, sector->lightlevel);
 	
-	flash->thinker.memref = flashRef;
 
     if (flash->minlight == flash->maxlight)
 	flash->minlight = 0;
@@ -225,7 +226,7 @@ void EV_StartLightStrobing(line_t*	line)
     while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
     {
 	sec = &sectors[secnum];
-	if (sec->specialdata)
+	if (sec->specialdataRef)
 	    continue;
 	
 	P_SpawnStrobeFlash (sec,SLOWDARK, 0);
@@ -315,8 +316,10 @@ EV_LightTurnOn
 // Spawn glowing light
 //
 
-void T_Glow(glow_t*	g)
+void T_Glow(MEMREF memref)
 {
+	glow_t* g = (glow_t*)Z_LoadBytesFromEMS(memref);
+
     switch(g->direction)
     {
       case -1:
@@ -354,17 +357,13 @@ void P_SpawnGlowingLight(sector_t*	sector)
 	glowRef = Z_MallocEMSNew(sizeof(*g), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
 	g = (glow_t*)Z_LoadBytesFromEMS(glowRef);
 
+	g->thinkerRef = P_AddThinker(glowRef, TF_GLOW);
 
-	
-    
-    P_AddThinker(&g->thinker);
 
     g->sector = sector;
     g->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel);
     g->maxlight = sector->lightlevel;
-    g->thinker.function.acp1 = (actionf_p1) T_Glow;
     g->direction = -1;
-	g->thinker.memref = glowRef;
 
     sector->special = 0;
 }
