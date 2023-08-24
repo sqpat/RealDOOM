@@ -661,7 +661,8 @@ void F_CastDrawer (void)
     spriteframe_t*	sprframe;
     int			lump;
     boolean		flip;
-    patch_t*		patch;
+	MEMREF			patchRef;
+	patch_t*		patch;
 	spritedef_t*	sprites;
 	spriteframe_t*  spriteframes;
     // erase the entire screen to a background
@@ -674,16 +675,22 @@ void F_CastDrawer (void)
 	sprite = &sprites[caststate->sprite];
 	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(sprite->spriteframesRef);
 
-    spriteframes[ caststate->frame & FF_FRAMEMASK];
-    lump = sprframe->lump[0];
+	sprframe = &spriteframes[caststate->frame & FF_FRAMEMASK];
+
+	
+	lump = sprframe->lump[0];
     flip = (boolean)sprframe->flip[0];
 			
 	W_CacheLumpNumCheck(lump + firstspritelump, 1);
-	patch = W_CacheLumpNum (lump+firstspritelump, PU_CACHE);
-    if (flip)
-	V_DrawPatchFlipped (160,170,0,patch);
-    else
-	V_DrawPatch (160,170,0,patch);
+	patchRef = W_CacheLumpNumEMS (lump+firstspritelump, PU_CACHE);
+	patch = Z_LoadBytesFromEMS(patchRef);
+	
+	if (flip) {
+		V_DrawPatchFlipped(160, 170, 0, patch);
+	}
+	else {
+		V_DrawPatch(160, 170, 0, patch);
+	}
 }
 
 

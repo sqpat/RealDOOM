@@ -65,6 +65,7 @@ extern fixed_t		ds_xstep;
 extern fixed_t		ds_ystep;
 
 // start of a 64*64 tile image
+extern MEMREF       ds_sourceRef;
 extern byte*		ds_source;		
 
 extern MEMREF		translationtablesRef;

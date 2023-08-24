@@ -267,6 +267,8 @@ void R_InitSpriteDefs (char** namelist)
         // allocate space for the frames present and copy sprtemp to it
         sprites[i].numframes = maxframe;
         sprites[i].spriteframesRef = Z_MallocEMSNew (maxframe * sizeof(spriteframe_t), PU_STATIC, 0x00, ALLOC_TYPE_SPRITEFRAMES);
+		Z_RefIsActive(spritesRef);
+		
 		spriteframes = Z_LoadBytesFromEMS(sprites[i].spriteframesRef);
 
 
@@ -399,20 +401,17 @@ R_DrawVisSprite
     int                 texturecolumn;
     fixed_t             frac;
     patch_t*            patch;
-        
+	MEMREF				patchRef;
 	byte* translationtables;
         
-    patch = W_CacheLumpNum (vis->patch+firstspritelump, PU_CACHE);
+    patchRef = W_CacheLumpNumEMS (vis->patch+firstspritelump, PU_CACHE);
 
     dc_colormap = vis->colormap;
     
-    if (!dc_colormap)
-    {
+    if (!dc_colormap) {
         // NULL colormap = shadow draw
         colfunc = fuzzcolfunc;
-    }
-    else if (vis->mobjflags & MF_TRANSLATION)
-    {
+    } else if (vis->mobjflags & MF_TRANSLATION) {
 		translationtables = Z_LoadBytesFromEMS(translationtablesRef);
         colfunc = R_DrawTranslatedColumn;
         dc_translation = translationtables - 256 +
@@ -425,15 +424,14 @@ R_DrawVisSprite
     spryscale = vis->scale;
     sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
         
-    for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale)
-    {
-        texturecolumn = frac>>FRACBITS;
-#ifdef RANGECHECK
-        if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
-            I_Error ("R_DrawSpriteRange: bad texturecolumn");
-#endif
-        column = (column_t *) ((byte *)patch +
-                               LONG(patch->columnofs[texturecolumn]));
+    for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale) {
+		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
+		texturecolumn = frac>>FRACBITS;
+		#ifdef RANGECHECK
+			if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
+				I_Error ("R_DrawSpriteRange: bad texturecolumn %i %i", texturecolumn, patch->width);
+		#endif
+		column = (column_t *) ((byte *)patch + LONG(patch->columnofs[texturecolumn]));
         R_DrawMaskedColumn (column);
     }
 

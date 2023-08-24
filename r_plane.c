@@ -417,9 +417,10 @@ void R_DrawPlanes (void)
 	
 	flattranslation = Z_LoadBytesFromEMS(flattranslationRef);
 	// regular flat
-	ds_source = W_CacheLumpNum(firstflat +
-				   flattranslation[pl->picnum],
-				   PU_STATIC);
+	ds_sourceRef = W_CacheLumpNumEMS(firstflat +
+		flattranslation[pl->picnum],
+		PU_STATIC);
+	ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
 	
 	planeheight = abs(pl->height-viewz);
 	light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
@@ -445,6 +446,6 @@ void R_DrawPlanes (void)
 			pl->bottom[x]);
 	}
 	
-	Z_ChangeTag (ds_source, PU_CACHE);
+	Z_ChangeTagEMSNew (ds_sourceRef, PU_CACHE);
     }
 }

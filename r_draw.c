@@ -508,6 +508,7 @@ fixed_t                 ds_xstep;
 fixed_t                 ds_ystep;
 
 // start of a 64*64 tile image 
+MEMREF                   ds_sourceRef;
 byte*                   ds_source;
 
 // just for profiling
@@ -559,6 +560,7 @@ void R_DrawSpan(void)
 		if (countp < 0) {
 			continue;
 		}
+
 		do
 		{
 			// Current texture index in u,v.
@@ -566,6 +568,8 @@ void R_DrawSpan(void)
 
 			// Lookup pixel from flat texture tile,
 			//  re-index using light/colormap.
+
+			Z_RefIsActive(ds_sourceRef);
 			*dest++ = ds_colormap[ds_source[spot]];
 			// Next step in u,v.
 			xfrac += ds_xstep * 4;
@@ -628,6 +632,7 @@ void R_DrawSpanLow(void)
 			spot = ((yfrac >> (16 - 6))&(63 * 64)) + ((xfrac >> 16) & 63);
 
 			// Lookup pixel from flat texture tile,
+			Z_RefIsActive(ds_sourceRef);
 			//  re-index using light/colormap.
 			*dest++ = ds_colormap[ds_source[spot]];
 			// Next step in u,v.

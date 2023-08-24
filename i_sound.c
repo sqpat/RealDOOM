@@ -215,6 +215,7 @@ void I_sndArbitrateCards(void)
 {
     boolean gus, adlib, sb, midi, codec, ensoniq;
     int i, wait, dmxlump;
+	MEMREF gf1memref;
 
     snd_SfxVolume = 127;
     snd_SfxDevice = snd_DesiredSfxDevice;
@@ -306,7 +307,9 @@ void I_sndArbitrateCards(void)
             {
                 dmxlump = W_GetNumForName("dmxgus");
             }
-            GF1_SetMap(W_CacheLumpNum(dmxlump, PU_CACHE), lumpinfo[dmxlump].size);
+			gf1memref = W_CacheLumpNumEMS(dmxlump, PU_CACHE);
+			
+            GF1_SetMap(Z_LoadBytesFromEMS(gf1memref), lumpinfo[dmxlump].size);
         }
 
     }

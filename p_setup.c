@@ -80,10 +80,10 @@ MEMREF          linebufferRef;
 // Blockmap size.
 int             bmapwidth;
 int             bmapheight;     // size in mapblocks
-short*          blockmap;       // int for larger maps
+int				blockmapOffset;       // int for larger maps
 
 								// offsets in blockmap are from here
-short*          blockmaplump;
+MEMREF          blockmaplumpRef;
 
 // origin of block map
 fixed_t         bmaporgx;
@@ -629,10 +629,13 @@ void P_LoadBlockMap(int lump)
 {
 	int         i;
 	int         count;
-
+	short*		blockmaplump;
+	
 	W_CacheLumpNumCheck(lump, 11);
-	blockmaplump = W_CacheLumpNum(lump, PU_LEVEL);
-	blockmap = blockmaplump + 4;
+	
+	blockmaplumpRef = W_CacheLumpNumEMS(lump, PU_LEVEL);
+	blockmaplump = (short*)Z_LoadBytesFromEMS(blockmaplumpRef);
+	blockmapOffset = 4;
 	count = W_LumpLength(lump) / 2;
 
 	for (i = 0; i < count; i++)

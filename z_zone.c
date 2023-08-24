@@ -958,6 +958,7 @@ int Z_RefIsActive2(MEMREF memref, char* file, int line){
 		}
 	}
 
+	printf("Z_RefIsActive: Found inactive ref! %i %s %i tick %i ", memref, file, line, gametic);
 	I_Error("Z_RefIsActive: Found inactive ref! %i %s %i tick %i ", memref, file, line, gametic);
 
 	return 0;

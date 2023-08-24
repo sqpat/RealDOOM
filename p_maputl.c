@@ -507,10 +507,11 @@ P_BlockLinesIterator
   boolean(*func)(short) )
 {
     int			offset;
-    short*		list;
+	int			index;
+    short		list;
     line_t*		ld;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
-
+	short *blockmaplump;
     if (x<0
 	|| y<0
 	|| x>=bmapwidth
@@ -520,20 +521,26 @@ P_BlockLinesIterator
     }
     
     offset = y*bmapwidth+x;
-    offset = *(blockmap+offset);
+	blockmaplump = (short*)Z_LoadBytesFromEMS(blockmaplumpRef);
+	offset = *(blockmaplump+blockmapOffset + offset);
+	
+    for ( index = offset ; blockmaplump[index] != -1 ; index++) {
 
-    for ( list = blockmaplump+offset ; *list != -1 ; list++) {
-		ld = &lines[*list];
+		list = blockmaplump[index];
+		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
-		if (ld->validcount == validcount)
-		    continue; 	// line has already been checked
+		ld = &lines[list];
 
+		if (ld->validcount == validcount) {
+			blockmaplump = (short*)Z_LoadBytesFromEMS(blockmaplumpRef);
+			continue; 	// line has already been checked
+		}
 		ld->validcount = validcount;
 			
-		if (!func(*list)) {
+		if (!func(list)) {
 			return false;
 		}
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		blockmaplump = (short*)Z_LoadBytesFromEMS(blockmaplumpRef);
     }
     return true;	// everything was checked
 }
