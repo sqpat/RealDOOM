@@ -40,6 +40,11 @@
 //
 
 #define DPMI_INT 0x31
+
+#define PAGE_FRAME_SIZE (16*1024)
+#define EMS_INT 0x67
+
+
 //#define NOKBD
 //#define NOTIMER
 
@@ -194,22 +199,22 @@ byte scantokey[128] =
 {
 //  0           1       2       3       4       5       6       7
 //  8           9       A       B       C       D       E       F
-	0  ,    27,     '1',    '2',    '3',    '4',    '5',    '6',
-	'7',    '8',    '9',    '0',    '-',    '=',    KEY_BACKSPACE, 9, // 0
-	'q',    'w',    'e',    'r',    't',    'y',    'u',    'i',
-	'o',    'p',    '[',    ']',    13 ,    KEY_RCTRL,'a',  's',      // 1
-	'd',    'f',    'g',    'h',    'j',    'k',    'l',    ';',
-	39 ,    '`',    KEY_LSHIFT,92,  'z',    'x',    'c',    'v',      // 2
-	'b',    'n',    'm',    ',',    '.',    '/',    KEY_RSHIFT,'*',
-	KEY_RALT,' ',   0  ,    KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5,   // 3
-	KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10,0  ,    0  , KEY_HOME,
-	KEY_UPARROW,KEY_PGUP,'-',KEY_LEFTARROW,'5',KEY_RIGHTARROW,'+',KEY_END, //4
-	KEY_DOWNARROW,KEY_PGDN,KEY_INS,KEY_DEL,0,0,             0,              KEY_F11,
-	KEY_F12,0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,        // 5
-	0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,
-	0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,        // 6
-	0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,
-	0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0         // 7
+        0  ,    27,     '1',    '2',    '3',    '4',    '5',    '6',
+        '7',    '8',    '9',    '0',    '-',    '=',    KEY_BACKSPACE, 9, // 0
+        'q',    'w',    'e',    'r',    't',    'y',    'u',    'i',
+        'o',    'p',    '[',    ']',    13 ,    KEY_RCTRL,'a',  's',      // 1
+        'd',    'f',    'g',    'h',    'j',    'k',    'l',    ';',
+        39 ,    '`',    KEY_LSHIFT,92,  'z',    'x',    'c',    'v',      // 2
+        'b',    'n',    'm',    ',',    '.',    '/',    KEY_RSHIFT,'*',
+        KEY_RALT,' ',   0  ,    KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5,   // 3
+        KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10,0  ,    0  , KEY_HOME,
+        KEY_UPARROW,KEY_PGUP,'-',KEY_LEFTARROW,'5',KEY_RIGHTARROW,'+',KEY_END, //4
+        KEY_DOWNARROW,KEY_PGDN,KEY_INS,KEY_DEL,0,0,             0,              KEY_F11,
+        KEY_F12,0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,        // 5
+        0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,
+        0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,        // 6
+        0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,
+        0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0         // 7
 };
 
 typedef struct
@@ -238,7 +243,7 @@ ticcmd_t* I_BaseTiccmd(void)
 //
 int I_GetTime(void)
 {
-	return ticcount;
+        return ticcount;
 }
 
 //
@@ -313,18 +318,18 @@ void I_WaitVBL(int vbls)
 //
 void I_SetPalette(byte *palette)
 {
-	int i;
+        int i;
 
-	if(novideo)
-	{
-		return;
-	}
-	I_WaitVBL(1);
-	_outbyte(PEL_WRITE_ADR, 0);
-	for(i = 0; i < 768; i++)
-	{
-		_outbyte(PEL_DATA, (gammatable[usegamma][*palette++])>>2);
-	}
+        if(novideo)
+        {
+                return;
+        }
+        I_WaitVBL(1);
+        _outbyte(PEL_WRITE_ADR, 0);
+        for(i = 0; i < 768; i++)
+        {
+                _outbyte(PEL_DATA, (gammatable[usegamma][*palette++])>>2);
+        }
 }
 
 //
@@ -539,19 +544,19 @@ void I_ShutdownGraphics(void)
 //
 void I_ReadScreen(byte *scr)
 {
-	int i;
-	int j;
+        int i;
+        int j;
 
-	outp(GC_INDEX, GC_READMAP);
+        outp(GC_INDEX, GC_READMAP);
 
-	for (i = 0; i < 4; i++)
-	{
-		outp(GC_INDEX+1, i);
-		for (j = 0; j < SCREENWIDTH*SCREENHEIGHT/4; j++)
-		{
-			scr[i+j*4] = currentscreen[j];
-		}
-	}
+        for (i = 0; i < 4; i++)
+        {
+                outp(GC_INDEX+1, i);
+                for (j = 0; j < SCREENWIDTH*SCREENHEIGHT/4; j++)
+                {
+                        scr[i+j*4] = currentscreen[j];
+                }
+        }
 }
 
 
@@ -709,8 +714,8 @@ void __interrupt I_KeyboardISR(void)
 //
 void I_StartupKeyboard(void)
 {
-	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
-	_dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
+        oldkeyboardisr = _dos_getvect(KEYBOARDINT);
+        _dos_setvect (0x8000 | KEYBOARDINT, I_KeyboardISR);
 
     //I_ReadKeys ();
 }
@@ -718,9 +723,9 @@ void I_StartupKeyboard(void)
 
 void I_ShutdownKeyboard(void)
 {
-	if (oldkeyboardisr)
-		_dos_setvect (KEYBOARDINT, oldkeyboardisr);
-	*(short *)0x41c = *(short *)0x41a;      // clear bios key buffer
+        if (oldkeyboardisr)
+                _dos_setvect (KEYBOARDINT, oldkeyboardisr);
+        *(short *)0x41c = *(short *)0x41a;      // clear bios key buffer
 }
 
 
@@ -730,9 +735,9 @@ void I_ShutdownKeyboard(void)
 
 int I_ResetMouse(void)
 {
-	regs.w.ax = 0; // reset
-	int386 (0x33, &regs, &regs);
-	return regs.w.ax;
+        regs.w.ax = 0; // reset
+        int386 (0x33, &regs, &regs);
+        return regs.w.ax;
 }
 
 
@@ -1201,6 +1206,76 @@ byte *I_ZoneBase(int *size)
     do
     {
         heap -= 0x20000; // leave 128k alone
+        if (heap > 0x800000) // cap at 4M
+        {
+            heap = 0x800000;
+        }
+        ptr = malloc(heap);
+    } while (!ptr);
+
+    printf(", 0x%x allocated for zone\n", heap);
+    if (heap < 0x180000)
+    {
+        printf("\n");
+        printf("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
+        printf("free memory available for DOOM to execute.  Reconfigure your CONFIG.SYS\n");
+        printf("or AUTOEXEC.BAT to load fewer device drivers or TSR's.  We recommend\n");
+        printf("creating a custom boot menu item in your CONFIG.SYS for optimum DOOMing.\n");
+        printf("Please consult your DOS manual (\"Making more memory available\") for\n");
+        printf("information on how to free up more memory for DOOM.\n\n");
+        printf("DOOM aborted.\n");
+        exit(1);
+    }
+#if 0
+    regs.w.ax = 0x501; // allocate linear block
+    regs.w.bx = heap >> 16;
+    regs.w.cx = heap & 0xffff;
+    int386(0x31, &regs, &regs);
+    if (regs.w.cflag)
+    {
+        I_Error("Couldn't allocate DPMI memory!");
+    }
+    block = (regs.w.si << 16) + regs.w.di;
+#endif
+
+    *size = heap;
+    return ptr;
+}
+
+int checkIfEMSExists(){
+
+   int AH = 0x40;
+   regs.w.ax = AH << 8;
+   int386(EMS_INT, &regs, &regs);
+   AH = regs.w.ax >> 8;
+   return AH;
+
+}
+
+
+//
+// I_ZoneBaseEMS
+//
+byte *I_ZoneBaseEMS(int *size)
+{
+    int meminfo[32];
+    int heap;
+    byte *ptr;
+
+    memset(meminfo, 0, sizeof(meminfo));
+    segread(&segregs);
+    segregs.es = segregs.ds;
+    regs.w.ax = 0x500; // get memory info
+    regs.x.edi = (int)&meminfo;
+    int386x(0x31, &regs, &regs, &segregs);
+
+    heap = meminfo[0];
+    printf("DPMI memory: 0x%x", heap);
+
+    do
+    {
+        heap -= 0x20000; // leave 128k alone
+  //      heap -= 0x200000; // subtract the 4MB used by original memory manager
         if (heap > 0x800000)
         {
             heap = 0x800000;
@@ -1236,6 +1311,107 @@ byte *I_ZoneBase(int *size)
     *size = heap;
     return ptr;
 }
+
+// int I_InitEMS(void)
+byte* I_InitEMS(int *size)
+{
+
+    int meminfo[32];
+    int heap;
+    byte *ptr;
+
+    memset(meminfo, 0, sizeof(meminfo));
+    segread(&segregs);
+    segregs.es = segregs.ds;
+    regs.w.ax = 0x500; // get memory info
+    regs.x.edi = (int)&meminfo;
+    int386x(0x31, &regs, &regs, &segregs);
+
+    heap = meminfo[0];
+    printf("DPMI memory: 0x%x\n", heap);
+
+    do
+    {
+        heap -= 0x20000; // leave 128k alone
+        if (heap > 0x800000)
+        {
+            heap = 0x800000;
+        }
+        ptr = malloc(heap);
+    } while (!ptr);
+
+    printf(", 0x%x allocated for zone\n", heap);
+    if (heap < 0x180000)
+    {
+        printf("\n");
+        printf("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
+        printf("free memory available for DOOM to execute.  Reconfigure your CONFIG.SYS\n");
+        printf("or AUTOEXEC.BAT to load fewer device drivers or TSR's.  We recommend\n");
+        printf("creating a custom boot menu item in your CONFIG.SYS for optimum DOOMing.\n");
+        printf("Please consult your DOS manual (\"Making more memory available\") for\n");
+        printf("information on how to free up more memory for DOOM.\n\n");
+        printf("DOOM aborted.\n");
+        exit(1);
+    }
+#if 0
+    regs.w.ax = 0x501; // allocate linear block
+    regs.w.bx = heap >> 16;
+    regs.w.cx = heap & 0xffff;
+    int386(0x31, &regs, &regs);
+    if (regs.w.cflag)
+    {
+        I_Error("Couldn't allocate DPMI memory!");
+    }
+    block = (regs.w.si << 16) + regs.w.di;
+#endif
+
+    *size = heap;
+    return ptr;
+
+
+   //todo
+
+    /*
+   unsigned long bytesToAllocate = 4 * 1024 * 1024; // 4 MB
+   int numPagesToAllocate = bytesToAllocate / PAGE_FRAME_SIZE;
+   int AH = 0x43;
+    int EMSExistsError;
+
+   numPagesToAllocate = 1;
+    
+    printf("Checking for EMS existence...");
+
+    EMSExistsError = checkIfEMSExists();
+    
+    if (!EMSExistsError) {
+        printf("EMS exists...");
+
+        regs.w.bx = numPagesToAllocate;
+        regs.w.ax = AH << 8;
+        int386(EMS_INT, &regs, &regs);
+
+        AH = regs.w.ax >> 8;
+        if (AH != 0){
+        // I_Error("Couldn't allocate %d EMS Pages", numPagesToAllocate);
+        // Error 0 = 0x00 = no error
+        // Error 137 = 0x89 = zero pages
+        // Error 136 = 0x88 = OUT_OF_LOG
+
+            printf("Couldn't allocate %d EMS Pages, error %d", numPagesToAllocate, AH);
+        } 
+
+        // EMS Handle
+        return regs.w.dx;
+
+   } else {
+            printf("Couldn't init EMS, error %d", EMSExistsError);
+   }
+
+
+   return 0;
+       */
+}
+
 
 //
 // Disk icon flashing
@@ -1382,7 +1558,7 @@ byte *I_AllocLow (int length)
 /* // FUCKED LINES
 typedef struct
 {
-	char    priv[508];
+        char    priv[508];
 } doomdata_t;
 */ // FUCKED LINES
 
@@ -1391,32 +1567,32 @@ typedef struct
 /* // FUCKED LINES
 typedef struct
 {
-	long    id;
-	short   intnum;                 // DOOM executes an int to execute commands
+        long    id;
+        short   intnum;                 // DOOM executes an int to execute commands
 
 // communication between DOOM and the driver
-	short   command;                // CMD_SEND or CMD_GET
-	short   remotenode;             // dest for send, set by get (-1 = no packet)
-	short   datalength;             // bytes in doomdata to be sent
+        short   command;                // CMD_SEND or CMD_GET
+        short   remotenode;             // dest for send, set by get (-1 = no packet)
+        short   datalength;             // bytes in doomdata to be sent
 
 // info common to all nodes
-	short   numnodes;               // console is allways node 0
-	short   ticdup;                 // 1 = no duplication, 2-5 = dup for slow nets
-	short   extratics;              // 1 = send a backup tic in every packet
-	short   deathmatch;             // 1 = deathmatch
-	short   savegame;               // -1 = new game, 0-5 = load savegame
-	short   episode;                // 1-3
-	short   map;                    // 1-9
-	short   skill;                  // 1-5
+        short   numnodes;               // console is allways node 0
+        short   ticdup;                 // 1 = no duplication, 2-5 = dup for slow nets
+        short   extratics;              // 1 = send a backup tic in every packet
+        short   deathmatch;             // 1 = deathmatch
+        short   savegame;               // -1 = new game, 0-5 = load savegame
+        short   episode;                // 1-3
+        short   map;                    // 1-9
+        short   skill;                  // 1-5
 
 // info specific to this node
-	short   consoleplayer;
-	short   numplayers;
-	short   angleoffset;    // 1 = left, 0 = center, -1 = right
-	short   drone;                  // 1 = drone
+        short   consoleplayer;
+        short   numplayers;
+        short   angleoffset;    // 1 = left, 0 = center, -1 = right
+        short   drone;                  // 1 = drone
 
 // packet data to be sent
-	doomdata_t      data;
+        doomdata_t      data;
 } doomcom_t;
 */ // FUCKED LINES
 
@@ -1427,9 +1603,9 @@ extern doomcom_t *doomcom;
 //
 void I_InitNetwork(void)
 {
-	int i;
+        int i;
 
-	i = M_CheckParm ("-net");
+        i = M_CheckParm ("-net");
     if (!i)
     {
         //

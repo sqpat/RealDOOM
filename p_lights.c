@@ -60,12 +60,13 @@ void T_FireFlicker (fireflicker_t* flick)
 void P_SpawnFireFlicker (sector_t*	sector)
 {
     fireflicker_t*	flick;
-	
+	MEMREF flickRef;
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
     sector->special = 0; 
 	
-    flick = Z_Malloc ( sizeof(*flick), PU_LEVSPEC, 0);
+	flickRef = Z_MallocEMSNew(sizeof(*flick), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	flick = (fireflicker_t*) Z_LoadBytesFromEMS(flickRef);
 
     P_AddThinker (&flick->thinker);
 
@@ -74,6 +75,8 @@ void P_SpawnFireFlicker (sector_t*	sector)
     flick->maxlight = sector->lightlevel;
     flick->minlight = P_FindMinSurroundingLight(sector,sector->lightlevel)+16;
     flick->count = 4;
+	flick->thinker.memref = flickRef;
+
 }
 
 
@@ -116,11 +119,12 @@ void T_LightFlash (lightflash_t* flash)
 void P_SpawnLightFlash (sector_t*	sector)
 {
     lightflash_t*	flash;
-
+	MEMREF flashRef;
     // nothing special about it during gameplay
     sector->special = 0;	
 	
-    flash = Z_Malloc ( sizeof(*flash), PU_LEVSPEC, 0);
+	flashRef = Z_MallocEMSNew(sizeof(*flash), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	flash = (lightflash_t*) Z_LoadBytesFromEMS(flashRef);
 
     P_AddThinker (&flash->thinker);
 
@@ -132,6 +136,8 @@ void P_SpawnLightFlash (sector_t*	sector)
     flash->maxtime = 64;
     flash->mintime = 7;
     flash->count = (P_Random()&flash->maxtime)+1;
+	flash->thinker.memref = flashRef;
+
 }
 
 
@@ -176,8 +182,12 @@ P_SpawnStrobeFlash
   int		inSync )
 {
     strobe_t*	flash;
-	
-    flash = Z_Malloc ( sizeof(*flash), PU_LEVSPEC, 0);
+	MEMREF flashRef;
+	// nothing special about it during gameplay
+	sector->special = 0;
+
+	flashRef = Z_MallocEMSNew(sizeof(*flash), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	flash = (strobe_t*) Z_LoadBytesFromEMS(flashRef);
 
     P_AddThinker (&flash->thinker);
 
@@ -187,7 +197,8 @@ P_SpawnStrobeFlash
     flash->thinker.function.acp1 = (actionf_p1) T_StrobeFlash;
     flash->maxlight = sector->lightlevel;
     flash->minlight = P_FindMinSurroundingLight(sector, sector->lightlevel);
-		
+	flash->thinker.memref = flashRef;
+
     if (flash->minlight == flash->maxlight)
 	flash->minlight = 0;
 
@@ -333,9 +344,18 @@ void T_Glow(glow_t*	g)
 void P_SpawnGlowingLight(sector_t*	sector)
 {
     glow_t*	g;
-	
-    g = Z_Malloc( sizeof(*g), PU_LEVSPEC, 0);
 
+	MEMREF glowRef;
+	// Note that we are resetting sector attributes.
+	// Nothing special about it during gameplay.
+	sector->special = 0;
+
+	glowRef = Z_MallocEMSNew(sizeof(*g), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	g = (glow_t*)Z_LoadBytesFromEMS(glowRef);
+
+
+	
+    
     P_AddThinker(&g->thinker);
 
     g->sector = sector;
@@ -343,6 +363,7 @@ void P_SpawnGlowingLight(sector_t*	sector)
     g->maxlight = sector->lightlevel;
     g->thinker.function.acp1 = (actionf_p1) T_Glow;
     g->direction = -1;
+	g->thinker.memref = glowRef;
 
     sector->special = 0;
 }

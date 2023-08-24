@@ -257,6 +257,8 @@ EV_DoFloor
     int			i;
     sector_t*		sec;
     floormove_t*	floor;
+	MEMREF floorRef;
+	fixed_t* textureheight;
 
     secnum = -1;
     rtn = 0;
@@ -270,12 +272,15 @@ EV_DoFloor
 	
 	// new floor thinker
 	rtn = 1;
-	floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
+	floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+
 	P_AddThinker (&floor->thinker);
 	sec->specialdata = floor;
 	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
 	floor->type = floortype;
 	floor->crush = false;
+	floor->thinker.memref = floorRef;
 
 	switch(floortype)
 	{
@@ -372,7 +377,8 @@ EV_DoFloor
 	      {
 		  if (twoSided (secnum, i) )
 		  {
-		      side = getSide(secnum,i,0);
+			  textureheight = Z_LoadBytesFromEMS(textureheightRef);
+			  side = getSide(secnum,i,0);
 		      if (side->bottomtexture >= 0)
 			  if (textureheight[side->bottomtexture] < 
 			      minsize)
@@ -460,6 +466,7 @@ EV_BuildStairs
     
     fixed_t		stairsize;
     fixed_t		speed;
+	MEMREF floorRef;
 
     secnum = -1;
     rtn = 0;
@@ -473,12 +480,16 @@ EV_BuildStairs
 	
 	// new floor thinker
 	rtn = 1;
-	floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
+	floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+
 	P_AddThinker (&floor->thinker);
 	sec->specialdata = floor;
 	floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
 	floor->direction = 1;
 	floor->sector = sec;
+	floor->thinker.memref = floorRef;
+
 	switch(type)
 	{
 	  case build8:
@@ -526,7 +537,11 @@ EV_BuildStairs
 					
 		sec = tsec;
 		secnum = newsecnum;
-		floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
+
+		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+
+		floor->floordestheight = height;
 
 		P_AddThinker (&floor->thinker);
 
@@ -536,6 +551,7 @@ EV_BuildStairs
 		floor->sector = sec;
 		floor->speed = speed;
 		floor->floordestheight = height;
+		floor->thinker.memref = floorRef;
 		ok = 1;
 		break;
 	    }

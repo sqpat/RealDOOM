@@ -169,6 +169,7 @@ EV_DoCeiling
     int		rtn;
     sector_t*	sec;
     ceiling_t*	ceiling;
+	MEMREF ceilingRef;
 	
     secnum = -1;
     rtn = 0;
@@ -192,12 +193,15 @@ EV_DoCeiling
 	
 	// new door thinker
 	rtn = 1;
-	ceiling = Z_Malloc (sizeof(*ceiling), PU_LEVSPEC, 0);
+	ceilingRef = Z_MallocEMSNew(sizeof(*ceiling), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	ceiling = (ceiling_t*)Z_LoadBytesFromEMS(ceilingRef);
+
 	P_AddThinker (&ceiling->thinker);
 	sec->specialdata = ceiling;
 	ceiling->thinker.function.acp1 = (actionf_p1)T_MoveCeiling;
 	ceiling->sector = sec;
 	ceiling->crush = false;
+	ceiling->thinker.memref = ceilingRef;
 	
 	switch(type)
 	{

@@ -216,7 +216,7 @@ M_WriteFile
 int
 M_ReadFile
 ( char const*	name,
-  byte**	buffer )
+  MEMREF*	bufferRef )
 {
     int	handle, count, length;
     struct stat	fileinfo;
@@ -228,14 +228,15 @@ M_ReadFile
     if (fstat (handle,&fileinfo) == -1)
 	I_Error ("Couldn't read file %s", name);
     length = fileinfo.st_size;
-    buf = Z_Malloc (length, PU_STATIC, NULL);
+    *bufferRef = Z_MallocEMSNew (length, PU_STATIC, 0xff, ALLOC_TYPE_READFILE);
+	buf = Z_LoadBytesFromEMS(*bufferRef);
     count = read (handle, buf, length);
     close (handle);
 	
     if (count < length)
 	I_Error ("Couldn't read file %s", name);
 		
-    *buffer = buf;
+    //*buffer = buf;
     return length;
 }
 
@@ -568,8 +569,10 @@ WritePCXfile
     int		length;
     pcx_t*	pcx;
     byte*	pack;
+	MEMREF pcxRef;
 	
-    pcx = Z_Malloc (width*height*2+1000, PU_STATIC, NULL);
+    pcxRef = Z_MallocEMSNew (width*height*2+1000, PU_STATIC, 0xff, ALLOC_TYPE_PCX);
+	pcx = (pcx_t*)Z_LoadBytesFromEMS(pcxRef);
 
     pcx->manufacturer = 0x0a;		// PCX id
     pcx->version = 5;			// 256 color
@@ -611,7 +614,7 @@ WritePCXfile
     length = pack - (byte *)pcx;
     M_WriteFile (filename, pcx, length);
 
-    Z_Free (pcx);
+    Z_FreeEMSNew (pcxRef);
 }
 
 

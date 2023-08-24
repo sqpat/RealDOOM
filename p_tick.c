@@ -102,7 +102,7 @@ void P_RunThinkers (void)
 	    // time to remove it
 	    currentthinker->next->prev = currentthinker->prev;
 	    currentthinker->prev->next = currentthinker->next;
-	    Z_Free (currentthinker);
+	    Z_FreeEMSNew (currentthinker->memref);
 	}
 	else
 	{

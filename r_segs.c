@@ -29,7 +29,7 @@
 
 #include "r_local.h"
 #include "r_sky.h"
-
+#include "z_zone.h"
 
 // OPTIMIZE: closed two sided lines as single sided
 
@@ -100,6 +100,8 @@ R_RenderMaskedSegRange
     column_t*	col;
     int		lightnum;
     int		texnum;
+	fixed_t* textureheight;
+	int* texturetranslation;
     
     // Calculate light table.
     // Use different light tables
@@ -108,6 +110,7 @@ R_RenderMaskedSegRange
     curline = ds->curline;
     frontsector = curline->frontsector;
     backsector = curline->backsector;
+	texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
     texnum = texturetranslation[curline->sidedef->midtexture];
 	
     lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
@@ -134,7 +137,9 @@ R_RenderMaskedSegRange
     // find positioning
     if (curline->linedef->flags & ML_DONTPEGBOTTOM)
     {
-	dc_texturemid = frontsector->floorheight > backsector->floorheight
+		textureheight = Z_LoadBytesFromEMS(textureheightRef);
+
+		dc_texturemid = frontsector->floorheight > backsector->floorheight
 	    ? frontsector->floorheight : backsector->floorheight;
 	dc_texturemid = dc_texturemid + textureheight[texnum] - viewz;
     }
@@ -372,6 +377,9 @@ R_StoreWallRange
     angle_t		distangle, offsetangle;
     fixed_t		vtop;
     int			lightnum;
+	fixed_t *	textureheight;
+	int* 	texturetranslation;
+
 
     // don't overflow and crash
     if (ds_p == &drawsegs[MAXDRAWSEGS])
@@ -447,11 +455,13 @@ R_StoreWallRange
     if (!backsector)
     {
 	// single sided line
-	midtexture = texturetranslation[sidedef->midtexture];
+		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
+		midtexture = texturetranslation[sidedef->midtexture];
 	// a single sided line is terminal, so it must mark ends
 	markfloor = markceiling = true;
 	if (linedef->flags & ML_DONTPEGBOTTOM)
 	{
+		textureheight = Z_LoadBytesFromEMS(textureheightRef);
 	    vtop = frontsector->floorheight +
 		textureheight[sidedef->midtexture];
 	    // bottom of texture at bottom
@@ -561,7 +571,8 @@ R_StoreWallRange
 	if (worldhigh < worldtop)
 	{
 	    // top texture
-	    toptexture = texturetranslation[sidedef->toptexture];
+		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
+		toptexture = texturetranslation[sidedef->toptexture];
 	    if (linedef->flags & ML_DONTPEGTOP)
 	    {
 		// top of texture at top
@@ -569,7 +580,8 @@ R_StoreWallRange
 	    }
 	    else
 	    {
-		vtop =
+			textureheight = Z_LoadBytesFromEMS(textureheightRef);
+			vtop =
 		    backsector->ceilingheight
 		    + textureheight[sidedef->toptexture];
 		
@@ -580,7 +592,8 @@ R_StoreWallRange
 	if (worldlow > worldbottom)
 	{
 	    // bottom texture
-	    bottomtexture = texturetranslation[sidedef->bottomtexture];
+		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
+		bottomtexture = texturetranslation[sidedef->bottomtexture];
 
 	    if (linedef->flags & ML_DONTPEGBOTTOM )
 	    {

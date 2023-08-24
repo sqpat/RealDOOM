@@ -1069,7 +1069,8 @@ void P_UpdateSpecials (void)
     int		pic;
     int		i;
     line_t*	line;
-
+	int * texturetranslation;
+	int * flattranslation;
     
     //	LEVEL TIMER
     if (levelTimer == true)
@@ -1085,10 +1086,14 @@ void P_UpdateSpecials (void)
 	for (i=anim->basepic ; i<anim->basepic+anim->numpics ; i++)
 	{
 	    pic = anim->basepic + ( (leveltime/anim->speed + i)%anim->numpics );
-	    if (anim->istexture)
-		texturetranslation[i] = pic;
-	    else
-		flattranslation[i] = pic;
+		if (anim->istexture) {
+			texturetranslation = (int*)Z_LoadBytesFromEMS(texturetranslationRef);
+			texturetranslation[i] = pic;
+		}
+		else {
+			flattranslation = (int*)Z_LoadBytesFromEMS(flattranslationRef);
+			flattranslation[i] = pic;
+		}
 	}
     }
 
@@ -1152,7 +1157,9 @@ int EV_DoDonut(line_t*	line)
     int			rtn;
     int			i;
     floormove_t*	floor;
-	
+	MEMREF floorRef;
+
+
     secnum = -1;
     rtn = 0;
     while ((secnum = P_FindSectorFromLineTag(line,secnum)) >= 0)
@@ -1173,7 +1180,11 @@ int EV_DoDonut(line_t*	line)
 	    s3 = s2->lines[i]->backsector;
 	    
 	    //	Spawn rising slime
-	    floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
+
+		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+
+
 	    P_AddThinker (&floor->thinker);
 	    s2->specialdata = floor;
 	    floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
@@ -1185,10 +1196,12 @@ int EV_DoDonut(line_t*	line)
 	    floor->texture = s3->floorpic;
 	    floor->newspecial = 0;
 	    floor->floordestheight = s3->floorheight;
+		floor->thinker.memref = floorRef;
 	    
 	    //	Spawn lowering donut-hole
-	    floor = Z_Malloc (sizeof(*floor), PU_LEVSPEC, 0);
-	    P_AddThinker (&floor->thinker);
+		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+		floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+		P_AddThinker (&floor->thinker);
 	    s1->specialdata = floor;
 	    floor->thinker.function.acp1 = (actionf_p1) T_MoveFloor;
 	    floor->type = lowerFloor;
@@ -1197,7 +1210,8 @@ int EV_DoDonut(line_t*	line)
 	    floor->sector = s1;
 	    floor->speed = FLOORSPEED / 2;
 	    floor->floordestheight = s3->floorheight;
-	    break;
+		floor->thinker.memref = floorRef;
+		break;
 	}
     }
     return rtn;

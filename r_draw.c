@@ -380,7 +380,7 @@ void R_DrawFuzzColumn (void)
 //  identical sprites, kinda brightened up.
 //
 byte*	dc_translation;
-byte*	translationtables;
+MEMREF	translationtablesRef;
 
 void R_DrawTranslatedColumn (void) 
 { 
@@ -453,8 +453,10 @@ void R_DrawTranslatedColumn (void)
 void R_InitTranslationTables (void)
 {
     int		i;
+	byte* translationtables;
 	
-    translationtables = Z_Malloc (256*3+255, PU_STATIC, 0);
+    translationtablesRef = Z_MallocEMSNew (256*3+255, PU_STATIC, 0, ALLOC_TYPE_TRANSLATION_TABLES);
+	translationtables = Z_LoadBytesFromEMS(translationtablesRef);
     translationtables = (byte *)(( (int)translationtables + 255 )& ~255);
     
     // translate just the 16 green colors

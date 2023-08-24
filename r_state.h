@@ -23,6 +23,7 @@
 // Need data structure definitions.
 #include "d_player.h"
 #include "r_data.h"
+#include "z_zone.h"
 
 
 
@@ -32,15 +33,16 @@
 //
 
 // needed for texture pegging
-extern fixed_t*		textureheight;
+extern MEMREF		textureheightRef;
 
 // needed for pre rendering (fracs)
-extern fixed_t*		spritewidth;
+extern MEMREF		spritewidthRef;
 
-extern fixed_t*		spriteoffset;
-extern fixed_t*		spritetopoffset;
+extern MEMREF		spriteoffsetRef;
+extern MEMREF		spritetopoffsetRef;
 
-extern lighttable_t*	colormaps;
+//extern MEMREF		colormapsRef;
+extern lighttable_t* colormaps;
 
 extern int		viewwidth;
 extern int		scaledviewwidth;
@@ -49,8 +51,8 @@ extern int		viewheight;
 extern int		firstflat;
 
 // for global animation
-extern int*		flattranslation;	
-extern int*		texturetranslation;	
+extern MEMREF	flattranslationRef;	
+extern MEMREF	texturetranslationRef;	
 
 
 // Sprite....
@@ -64,7 +66,7 @@ extern int		numspritelumps;
 // Lookup tables for map data.
 //
 extern int		numsprites;
-extern spritedef_t*	sprites;
+extern MEMREF	spritesRef;
 
 extern int		numvertexes;
 extern vertex_t*	vertexes;

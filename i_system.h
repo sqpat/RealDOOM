@@ -14,7 +14,7 @@
 // GNU General Public License for more details.
 //
 // DESCRIPTION:
-//	System specific interface stuff.
+//      System specific interface stuff.
 //
 
 
@@ -32,7 +32,19 @@ void I_Init (void);
 // Called by startup code
 // to get the ammount of memory to malloc
 // for the zone management.
-byte*	I_ZoneBase (int *size);
+byte*   I_ZoneBase (int *size);
+
+
+// Called by startup code
+// to prep EMS memory system used
+// in the zone management.
+byte* I_InitEMS(int *size);
+// int I_InitEMS(void);
+
+// Called by startup code
+// to get the ammount of memory to malloc
+// for the zone management.
+byte *I_ZoneBaseEMS(int *size);
 
 
 // Called by D_DoomLoop,

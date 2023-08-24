@@ -137,6 +137,7 @@ EV_DoPlat
     int		secnum;
     int		rtn;
     sector_t*	sec;
+	MEMREF platRef;
 	
     secnum = -1;
     rtn = 0;
@@ -162,7 +163,10 @@ EV_DoPlat
 	
 	// Find lowest & highest floors around sector
 	rtn = 1;
-	plat = Z_Malloc( sizeof(*plat), PU_LEVSPEC, 0);
+
+	platRef = Z_MallocEMSNew(sizeof(*plat), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+
 	P_AddThinker(&plat->thinker);
 		
 	plat->type = type;
@@ -171,6 +175,7 @@ EV_DoPlat
 	plat->thinker.function.acp1 = (actionf_p1) T_PlatRaise;
 	plat->crush = false;
 	plat->tag = line->tag;
+	plat->thinker.memref = platRef;
 	
 	switch(type)
 	{

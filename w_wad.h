@@ -54,7 +54,7 @@ typedef struct
 } lumpinfo_t;
 
 
-extern	void**		lumpcache;
+//extern	void**		lumpcache;
 extern	lumpinfo_t*	lumpinfo;
 extern	int		numlumps;
 
@@ -67,10 +67,11 @@ int	W_GetNumForName (char* name);
 int	W_LumpLength (int lump);
 void    W_ReadLump (int lump, void *dest);
 
-void*	W_CacheLumpNum (int lump, int tag);
+boolean W_CacheLumpNumCheck(int lump, int error);
+void*	W_CacheLumpNum(int lump, int tag);
+
 void*	W_CacheLumpName (char* name, int tag);
-
-
+ 
 
 
 #endif

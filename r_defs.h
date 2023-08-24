@@ -437,7 +437,7 @@ typedef struct
 typedef struct
 {
     int			numframes;
-    spriteframe_t*	spriteframes;
+    MEMREF		spriteframesRef;
 
 } spritedef_t;
 

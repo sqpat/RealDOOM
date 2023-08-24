@@ -488,9 +488,13 @@ P_SpawnMobj
     mobj_t*	mobj;
     state_t*	st;
     mobjinfo_t*	info;
+	MEMREF mobjRef;
 	
-    mobj = Z_Malloc (sizeof(*mobj), PU_LEVEL, NULL);
-    memset (mobj, 0, sizeof (*mobj));
+
+	mobjRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, 0, ALLOC_TYPE_LEVSPEC);
+	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+
+	memset (mobj, 0, sizeof (*mobj));
     info = &mobjinfo[type];
 	
     mobj->type = type;
@@ -529,6 +533,7 @@ P_SpawnMobj
 	mobj->z = z;
 
     mobj->thinker.function.acp1 = (actionf_p1)P_MobjThinker;
+	mobj->thinker.memref = mobjRef;
 	
     P_AddThinker (&mobj->thinker);
 

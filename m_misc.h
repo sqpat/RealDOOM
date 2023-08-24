@@ -21,6 +21,7 @@
 
 #include "doomdef.h"
 #include "doomtype.h"
+#include "z_zone.h"
 //
 // MISC
 //
@@ -40,7 +41,7 @@ M_WriteFile
 int
 M_ReadFile
 ( char const*	name,
-  byte**	buffer );
+  MEMREF*	bufferRef );
 
 // Returns a number from 0 to 255,
 // from a lookup table.

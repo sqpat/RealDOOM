@@ -362,6 +362,7 @@ void R_DrawPlanes (void)
     int			x;
     int			stop;
     int			angle;
+	int * flattranslation;
 				
 #ifdef RANGECHECK
     if (ds_p - drawsegs > MAXDRAWSEGS)
@@ -410,6 +411,7 @@ void R_DrawPlanes (void)
 	    continue;
 	}
 	
+	flattranslation = Z_LoadBytesFromEMS(flattranslationRef);
 	// regular flat
 	ds_source = W_CacheLumpNum(firstflat +
 				   flattranslation[pl->picnum],

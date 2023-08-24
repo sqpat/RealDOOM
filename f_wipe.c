@@ -47,9 +47,11 @@ wipe_shittyColMajorXform
 {
     int		x;
     int		y;
+	MEMREF destRef;
     short*	dest;
 
-    dest = (short*) Z_Malloc(width*height*2, PU_STATIC, 0);
+	destRef = Z_MallocEMSNew(width*height * 2, PU_STATIC, 0, ALLOC_TYPE_FWIPE);
+	dest = (short*)Z_LoadBytesFromEMS(destRef);
 
     for(y=0;y<height;y++)
 	for(x=0;x<width;x++)
@@ -57,7 +59,7 @@ wipe_shittyColMajorXform
 
     memcpy(array, dest, width*height*2);
 
-    Z_Free(dest);
+    Z_FreeEMSNew(destRef);
 
 }
 
@@ -127,7 +129,7 @@ wipe_exitColorXForm
 }
 
 
-static int*	y;
+static MEMREF yRef;
 
 int
 wipe_initMelt
@@ -136,7 +138,8 @@ wipe_initMelt
   int	ticks )
 {
     int i, r;
-    
+	int* y;
+
     // copy start screen to main screen
     memcpy(wipe_scr, wipe_scr_start, width*height);
     
@@ -147,7 +150,14 @@ wipe_initMelt
     
     // setup initial column positions
     // (y<0 => not ready to scroll yet)
-    y = (int *) Z_Malloc(width*sizeof(int), PU_STATIC, 0);
+
+	
+
+	yRef = Z_MallocEMSNew(width*sizeof(int), PU_STATIC, 0, ALLOC_TYPE_FWIPE);
+	y = (int*)Z_LoadBytesFromEMS(yRef);
+
+
+
     y[0] = -(M_Random()%16);
     for (i=1;i<width;i++)
     {
@@ -171,13 +181,15 @@ wipe_doMelt
     int		dy;
     int		idx;
     
+	int* y;
     short*	s;
     short*	d;
     boolean	done = true;
 
     width/=2;
 
-    while (ticks--)
+	y = (int*)Z_LoadBytesFromEMS(yRef);
+	while (ticks--)
     {
 	for (i=0;i<width;i++)
 	{
@@ -221,7 +233,8 @@ wipe_exitMelt
   int	height,
   int	ticks )
 {
-    Z_Free(y);
+	Z_FreeEMSNew(yRef);
+
     return 0;
 }
 
@@ -272,7 +285,7 @@ wipe_ScreenWipe
     if (!go)
     {
 	go = 1;
-	// wipe_scr = (byte *) Z_Malloc(width*height, PU_STATIC, 0); // DEBUG
+	
 	wipe_scr = screens[0];
 	(*wipes[wipeno*3])(width, height, ticks);
     }

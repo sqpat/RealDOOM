@@ -418,14 +418,13 @@ void WI_drawLF(void)
     int y = WI_TITLEY;
 
     // draw <LevelName> 
-    V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->last]->width))/2,
-		y, FB, lnames[wbs->last]);
+
+//    V_DrawPatch((SCREENWIDTH - SHORT(lnames[wbs->last]->width))/2, y, FB, lnames[wbs->last]);
 
     // draw "Finished!"
     y += (5*SHORT(lnames[wbs->last]->height))/4;
     
-    V_DrawPatch((SCREENWIDTH - SHORT(finished->width))/2,
-		y, FB, finished);
+//    V_DrawPatch((SCREENWIDTH - SHORT(finished->width))/2, y, FB, finished);
 }
 
 
@@ -1558,8 +1557,9 @@ void WI_loadData(void)
 #endif
 
     // background
-    bg = W_CacheLumpName(name, PU_CACHE);    
-    V_DrawPatch(0, 0, 1, bg);
+// todo fix bigger than 64k
+//    bg = W_CacheLumpName(name, PU_CACHE);    
+//    V_DrawPatch(0, 0, 1, bg);   
 
 
     // UNUSED unsigned char *pic = screens[1];
@@ -1576,7 +1576,7 @@ void WI_loadData(void)
     if (commercial)
     {
 	NUMCMAPS = 32;								
-	lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * NUMCMAPS,
+	lnames = (patch_t **) Z_Malloc (sizeof(patch_t*) * NUMCMAPS,
 				       PU_STATIC, 0);
 	for (i=0 ; i<NUMCMAPS ; i++)
 	{								
@@ -1586,7 +1586,7 @@ void WI_loadData(void)
     }
     else
     {
-	lnames = (patch_t **) Z_Malloc(sizeof(patch_t*) * NUMMAPS,
+	lnames = (patch_t **) Z_Malloc (sizeof(patch_t*) * NUMMAPS,
 				       PU_STATIC, 0);
 	for (i=0 ; i<NUMMAPS ; i++)
 	{

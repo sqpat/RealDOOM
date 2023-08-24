@@ -657,24 +657,29 @@ void V_DrawPatchFlipped (int x, int y, int scrn, patch_t *patch);
 
 void F_CastDrawer (void)
 {
-    spritedef_t*	sprdef;
+    spritedef_t*	sprite;
     spriteframe_t*	sprframe;
     int			lump;
     boolean		flip;
     patch_t*		patch;
-    
+	spritedef_t*	sprites;
+	spriteframe_t*  spriteframes;
     // erase the entire screen to a background
     V_DrawPatch (0,0,0, W_CacheLumpName ("BOSSBACK", PU_CACHE));
 
     F_CastPrint (castorder[castnum].name);
     
     // draw the current frame in the middle of the screen
-    sprdef = &sprites[caststate->sprite];
-    sprframe = &sprdef->spriteframes[ caststate->frame & FF_FRAMEMASK];
+	sprites = (spritedef_t*) Z_LoadBytesFromEMS(spritesRef);
+	sprite = &sprites[caststate->sprite];
+	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(sprite->spriteframesRef);
+
+    spriteframes[ caststate->frame & FF_FRAMEMASK];
     lump = sprframe->lump[0];
     flip = (boolean)sprframe->flip[0];
 			
-    patch = W_CacheLumpNum (lump+firstspritelump, PU_CACHE);
+	W_CacheLumpNumCheck(lump + firstspritelump, 1);
+	patch = W_CacheLumpNum (lump+firstspritelump, PU_CACHE);
     if (flip)
 	V_DrawPatchFlipped (160,170,0,patch);
     else
