@@ -24,21 +24,19 @@
 #define SND_MAXSONGS    40      // max number of songs in game
 #define SND_SAMPLERATE  11025   // sample rate of sound effects
 
-typedef enum
-{
-    snd_none,
-    snd_PC,
-    snd_Adlib,
-    snd_SB,
-    snd_PAS,
-    snd_GUS,
-    snd_MPU,
-    snd_MPU2,
-    snd_MPU3,
-    snd_AWE,
-    snd_ENSONIQ,
-    snd_CODEC,
-    NUM_SCARDS
-} cardenum_t;
+#define snd_none 0
+#define snd_PC 1
+#define snd_Adlib 2
+#define snd_SB 3
+#define snd_PAS 4
+#define snd_GUS 5
+#define snd_MPU 6
+#define snd_MPU2 7
+#define snd_MPU3 8
+#define snd_AWE 9
+#define snd_ENSONIQ 10
+#define snd_CODEC 11
+#define NUM_SCARDS 12
+typedef unsigned char cardenum_t;
 
 #endif

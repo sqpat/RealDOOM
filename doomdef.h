@@ -98,14 +98,12 @@ typedef enum
 // Deaf monsters/do not react to sound.
 #define	MTF_AMBUSH		8
 
-typedef enum
-{
-    sk_baby,
-    sk_easy,
-    sk_medium,
-    sk_hard,
-    sk_nightmare
-} skill_t;
+#define sk_baby 0
+#define sk_easy 1
+#define sk_medium 2
+#define sk_hard 3
+#define sk_nightmare 4
+typedef unsigned char skill_t;
 
 
 
@@ -113,69 +111,59 @@ typedef enum
 //
 // Key cards.
 //
-typedef enum
-{
-    it_bluecard,
-    it_yellowcard,
-    it_redcard,
-    it_blueskull,
-    it_yellowskull,
-    it_redskull,
+#define it_bluecard 0
+#define it_yellowcard 1
+#define it_redcard 2
+#define it_blueskull 3
+#define it_yellowskull 4
+#define it_redskull 5
     
-    NUMCARDS
+#define  NUMCARDS 6
     
-} card_t;
+typedef unsigned char card_t;
 
 
 
 // The defined weapons,
 //  including a marker indicating
 //  user has not changed weapon.
-typedef enum
-{
-    wp_fist,
-    wp_pistol,
-    wp_shotgun,
-    wp_chaingun,
-    wp_missile,
-    wp_plasma,
-    wp_bfg,
-    wp_chainsaw,
-    wp_supershotgun,
+#define wp_fist 0
+#define wp_pistol 1
+#define wp_shotgun 2
+#define wp_chaingun 3
+#define wp_missile 4
+#define wp_plasma 5
+#define wp_bfg 6
+#define wp_chainsaw 7
+#define wp_supershotgun 8
 
-    NUMWEAPONS,
-    
-    // No pending weapon change.
-    wp_nochange
+#define NUMWEAPONS 9
+	// No pending weapon change.
 
-} weapontype_t;
+#define wp_nochange 10
 
+typedef unsigned char weapontype_t;
 
 // Ammunition types defined.
-typedef enum
-{
-    am_clip,	// Pistol / chaingun ammo.
-    am_shell,	// Shotgun / double barreled shotgun.
-    am_cell,	// Plasma rifle, BFG.
-    am_misl,	// Missile launcher.
-    NUMAMMO,
-    am_noammo	// Unlimited for chainsaw / fist.	
+#define am_clip 0	// Pistol / chaingun ammo.
+#define am_shell 1	// Shotgun / double barreled shotgun.
+#define am_cell 2	// Plasma rifle, BFG.
+#define am_misl 3	// Missile launcher.
+#define NUMAMMO 4
+#define am_noammo 5	// Unlimited for chainsaw / fist.	
 
-} ammotype_t;
-
+typedef unsigned char ammotype_t;
 
 // Power up artifacts.
-typedef enum
-{
-    pw_invulnerability,
-    pw_strength,
-    pw_invisibility,
-    pw_ironfeet,
-    pw_allmap,
-    pw_infrared,
-    NUMPOWERS
+#define pw_invulnerability 0
+#define pw_strength 1
+#define pw_invisibility 2
+#define pw_ironfeet 3
+#define pw_allmap 4
+#define pw_infrared 5
+#define NUMPOWERS 6
     
-} powertype_t;
+typedef unsigned char powertype_t;
 
 
 
@@ -184,14 +172,11 @@ typedef enum
 //  how many seconds till expiration,
 //  assuming TICRATE is 35 ticks/second.
 //
-typedef enum
-{
-    INVULNTICS	= (30*TICRATE),
-    INVISTICS	= (60*TICRATE),
-    INFRATICS	= (120*TICRATE),
-    IRONTICS	= (60*TICRATE)
+#define INVULNTICS	 (30*TICRATE)
+#define INVISTICS	 (60*TICRATE)
+#define INFRATICS	 (120*TICRATE)
+#define IRONTICS	 (60*TICRATE)
     
-} powerduration_t;
 
 
 

@@ -109,7 +109,7 @@ void T_VerticalDoor (MEMREF memref)
 			res = T_MovePlane(door->secnum, door->speed, doorsector.floorheight, false,1,door->direction);
 			door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
 			doorthinkerRef = door->thinkerRef;
-			if (res == pastdest) {
+			if (res == floor_pastdest) {
 				switch(door->type) {
 					case blazeRaise:
 					case blazeClose:
@@ -134,7 +134,7 @@ void T_VerticalDoor (MEMREF memref)
 					default:
 						break;
 				}
-			} else if (res == crushed) {
+			} else if (res == floor_crushed) {
 				switch(door->type) {
 					case blazeClose:
 					case close:		// DO NOT GO BACK UP!
@@ -157,7 +157,7 @@ void T_VerticalDoor (MEMREF memref)
 
 
 
-				if (res == pastdest) {
+				if (res == floor_pastdest) {
 					switch(door->type) {
 						case blazeRaise:
 						case normal:

@@ -625,8 +625,9 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobj->health = info->spawnhealth;
 
 
-    if (gameskill != sk_nightmare)
-		mobj->reactiontime = info->reactiontime;
+	if (gameskill != sk_nightmare) {
+			mobj->reactiontime = 8;
+	}
     
     mobj->lastlook = P_Random () % MAXPLAYERS;
     // do not set the state with P_SetMobjState,
@@ -814,6 +815,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
     z		= ONFLOORZ;
     mobjRef	= P_SpawnMobj (x,y,z, MT_PLAYER);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	mobj->reactiontime = 0;
 
     // set color translations for player sprites
     if (mthingtype > 1)		

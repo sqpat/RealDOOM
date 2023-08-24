@@ -40,32 +40,28 @@
 //
 // Player states.
 //
-typedef enum
-{
     // Playing or camping.
-    PST_LIVE,
+	#define PST_LIVE 0
     // Dead on the ground, view follows killer.
-    PST_DEAD,
+	#define PST_DEAD 1
     // Ready to restart/respawn???
-    PST_REBORN		
+	#define PST_REBORN	2
 
-} playerstate_t;
+typedef unsigned char playerstate_t;
 
 
 //
 // Player internal flags, for cheats and debug.
 //
-typedef enum
-{
-    // No clipping, walk through barriers.
-    CF_NOCLIP		= 1,
-    // No damage, no health loss.
-    CF_GODMODE		= 2,
-    // Not really a cheat, just a debug aid.
-    CF_NOMOMENTUM	= 4
 
-} cheat_t;
 
+// No clipping, walk through barriers.
+#define CF_NOCLIP		 1
+// No damage, no health loss.
+#define CF_GODMODE		 2
+// Not really a cheat, just a debug aid.
+#define CF_NOMOMENTUM	 4
+typedef char cheat_t;
 
 //
 // Extended player object info: player_t

@@ -68,18 +68,18 @@
 
 
 
-typedef enum
-{
-	normal,
-	close30ThenOpen,
-	blah1,
-	blah2,
-	raiseIn5Mins,
-	blazeRaise,
-	blazeOpen,
-	blazeClose
+#define	normal 0
+#define close30ThenOpen 1
+#define blah1 2
+#define blah2 3
+#define raiseIn5Mins 4
+#define blazeRaise 5
+#define blazeOpen 6
+#define blazeClose 7
 
-} vldoor_e;
+typedef unsigned char vldoor_e;
+
+
 typedef struct
 {
 	THINKERREF	thinkerRef;

@@ -67,11 +67,11 @@ T_MovePlane
 								(&sectors[secnum])->floorheight =lastpos;
 
 								P_ChangeSector(secnum,crush);
-								//return crushed;
+								//return floor_crushed;
 							}
 
 
-							return pastdest;
+							return floor_pastdest;
 						} else {
 							lastpos = (&sectors[secnum])->floorheight;
 							(&sectors[secnum])->floorheight -= speed;
@@ -84,7 +84,7 @@ T_MovePlane
 								sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 								(&sectors[secnum])->floorheight = lastpos;
 								P_ChangeSector(secnum,crush);
-								return crushed;
+								return floor_crushed;
 							}
 							if (setval == 1) {
 								I_Error("inner plat 23? %i %i %i %i %i %i", gametic, (&sectors[secnum])->floorheight, speed, dest, lastpos, flag);
@@ -105,9 +105,9 @@ T_MovePlane
 								(&sectors[secnum])->floorheight = lastpos;
 			
 								P_ChangeSector(secnum,crush);
-								//return crushed;
+								//return floor_crushed;
 							}
-							return pastdest;
+							return floor_pastdest;
 						} else {
 							// COULD GET CRUSHED
 							lastpos = (&sectors[secnum])->floorheight;
@@ -115,12 +115,12 @@ T_MovePlane
 							flag = P_ChangeSector(secnum,crush);
 							if (flag == true) {
 								if (crush == true) {
-									return crushed;
+									return floor_crushed;
 								}
 								sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 								(&sectors[secnum])->floorheight = lastpos;
 								P_ChangeSector(secnum,crush);
-								return crushed;
+								return floor_crushed;
 							}
 		
 						}
@@ -142,9 +142,9 @@ T_MovePlane
 								sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 								(&sectors[secnum])->ceilingheight = lastpos;
 								P_ChangeSector(secnum,crush);
-								//return crushed;
+								//return floor_crushed;
 							}
-							return pastdest;
+							return floor_pastdest;
 						} else {
 							// COULD GET CRUSHED
 							lastpos = (&sectors[secnum])->ceilingheight;
@@ -153,12 +153,12 @@ T_MovePlane
 
 							if (flag == true) {
 								if (crush == true) {
-									return crushed;
+									return floor_crushed;
 								}
 								sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 								(&sectors[secnum])->ceilingheight = lastpos;
 								P_ChangeSector(secnum,crush);
-								return crushed;
+								return floor_crushed;
 							}
 						}
 						break;
@@ -175,7 +175,7 @@ T_MovePlane
 								P_ChangeSector(secnum,crush);
 								//return crushed;
 							}
-							return pastdest;
+							return floor_pastdest;
 						} else {
 							lastpos = (&sectors[secnum])->ceilingheight;
 							(&sectors[secnum])->ceilingheight += speed;
@@ -186,7 +186,7 @@ T_MovePlane
 				break;
 		
     }
-    return ok;
+    return floor_ok;
 }
 
 
@@ -215,7 +215,7 @@ void T_MoveFloor(MEMREF memref)
 		S_StartSoundWithParams(sectors[floorsecnum].soundorgX, sectors[floorsecnum].soundorgY, sfx_stnmov);
 	}
 
-    if (res == pastdest) {
+    if (res == floor_pastdest) {
 		floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
 		floornewspecial = floor->newspecial;
 		floortype = floor->type;

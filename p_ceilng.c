@@ -79,7 +79,7 @@ void T_MoveCeiling (MEMREF memref)
 	    }
 	}
 	
-	if (res == pastdest)
+	if (res == floor_pastdest)
 	{
 	    switch(ceiling->type)
 	    {
@@ -118,7 +118,7 @@ void T_MoveCeiling (MEMREF memref)
 	    }
 	}
 	
-	if (res == pastdest)
+	if (res == floor_pastdest)
 	{
 	    switch(ceiling->type)
 	    {
@@ -139,9 +139,9 @@ void T_MoveCeiling (MEMREF memref)
 		break;
 	    }
 	}
-	else // ( res != pastdest )
+	else // ( res != floor_pastdest )
 	{
-	    if (res == crushed)
+	    if (res == floor_crushed)
 	    {
 		switch(ceiling->type)
 		{

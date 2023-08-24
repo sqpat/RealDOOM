@@ -257,26 +257,22 @@ void P_InitSwitchList(void);
 //
 // P_PLATS
 //
-typedef enum
-{
-    up,
-    down,
-    waiting,
-    in_stasis
+#define plat_up 0
+#define plat_down 1
+#define plat_waiting 2
+#define plat_in_stasis 3
 
-} plat_e;
+typedef unsigned char plat_e;
 
 
 
-typedef enum
-{
-    perpetualRaise,
-    downWaitUpStay,
-    raiseAndChange,
-    raiseToNearestAndChange,
-    blazeDWUS
+#define perpetualRaise 0
+#define downWaitUpStay 1
+#define raiseAndChange 2
+#define raiseToNearestAndChange 3
+#define blazeDWUS 4
 
-} plattype_e;
+typedef unsigned char plattype_e;
 
 
 
@@ -448,50 +444,46 @@ void    P_ActivateInStasisCeiling(short linetag);
 //
 // P_FLOOR
 //
-typedef enum
-{
     // lower floor to highest surrounding floor
-    lowerFloor,
+#define lowerFloor 0
     
     // lower floor to lowest surrounding floor
-    lowerFloorToLowest,
+#define lowerFloorToLowest 1
     
     // lower floor to highest surrounding floor VERY FAST
-    turboLower,
+#define turboLower 2
     
     // raise floor to lowest surrounding CEILING
-    raiseFloor,
+#define raiseFloor 3
     
     // raise floor to next highest surrounding floor
-    raiseFloorToNearest,
+#define raiseFloorToNearest 4
 
     // raise floor to shortest height texture around it
-    raiseToTexture,
+#define raiseToTexture 5
     
     // lower floor to lowest surrounding floor
     //  and change floorpic
-    lowerAndChange,
+#define lowerAndChange 6
   
-    raiseFloor24,
-    raiseFloor24AndChange,
-    raiseFloorCrush,
+#define raiseFloor24 7
+#define raiseFloor24AndChange 8
+#define raiseFloorCrush 9
 
      // raise to next highest floor, turbo-speed
-    raiseFloorTurbo,       
-    donutRaise,
-    raiseFloor512
+#define raiseFloorTurbo 10
+#define donutRaise 11
+#define raiseFloor512 12
     
-} floor_e;
+typedef unsigned char  floor_e;
 
 
 
 
-typedef enum
-{
-    build8,	// slowly build by 8
-    turbo16	// quickly build by 16
-    
-} stair_e;
+#define build8 0	// slowly build by 8
+#define turbo16	1 // quickly build by 16
+
+typedef unsigned char  stair_e;
 
 
 
@@ -513,13 +505,13 @@ typedef struct
 
 #define FLOORSPEED		FRACUNIT
 
-typedef enum
-{
-    ok,
-    crushed,
-    pastdest
+#define floor_ok 0
+#define floor_crushed 1
+#define floor_pastdest 2
     
-} result_e;
+typedef unsigned char result_e;
+
+
 
 result_e
 T_MovePlane

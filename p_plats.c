@@ -58,7 +58,7 @@ void T_PlatRaise(MEMREF platRef)
 
 
 	switch(plat->status) {
-		  case up:
+		  case plat_up:
 				res = T_MovePlane(plat->secnum,
 						  plat->speed,
 						  plat->high,
@@ -71,14 +71,14 @@ void T_PlatRaise(MEMREF platRef)
 				}
 	
 				
-				if (res == crushed && (!plat->crush)) {
+				if (res == floor_crushed && (!plat->crush)) {
 					plat->count = plat->wait;
-					plat->status = down;
+					plat->status = plat_down;
 					S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_pstart);
 				} else {
-					if (res == pastdest) {
+					if (res == floor_pastdest) {
 						plat->count = plat->wait;
-						plat->status = waiting;
+						plat->status = plat_waiting;
 						S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_pstop);
 
 						switch(plat->type) {
@@ -99,25 +99,25 @@ void T_PlatRaise(MEMREF platRef)
 				}
 				break;
 	
-		  case	down:
+		  case	plat_down:
 				res = T_MovePlane(platsecnum,plat->speed,plat->low,false,0,-1);
 				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
-				if (res == pastdest) {
+				if (res == floor_pastdest) {
 					plat->count = plat->wait;
-					plat->status = waiting;
+					plat->status = plat_waiting;
 					S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_pstop);
 				}
 				break;
 	
-		  case	waiting:
+		  case	plat_waiting:
 			  if (!--plat->count) {
 					if (sectorfloorheight == plat->low)
-						plat->status = up;
+						plat->status = plat_up;
 					else
-						plat->status = down;
+						plat->status = plat_down;
 					S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_pstart);
 			  }
-		  case	in_stasis:
+		  case	plat_in_stasis:
 			  break;
     }
 }
@@ -198,7 +198,7 @@ EV_DoPlat
 				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 				plat->high = specialheight;
 				plat->wait = 0;
-				plat->status = up;
+				plat->status = plat_up;
 				// NO MORE DAMAGE, IF APPLICABLE
 				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 				(&sectors[secnum])->special = 0;
@@ -214,7 +214,7 @@ EV_DoPlat
 				plat->speed = PLATSPEED / 2;
 				plat->high = sectorfloorheight + amount * FRACUNIT;
 				plat->wait = 0;
-				plat->status = up;
+				plat->status = plat_up;
 
 				S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_stnmov);
 				break;
@@ -230,7 +230,7 @@ EV_DoPlat
 				}
 				plat->high = sectorfloorheight;
 				plat->wait = 35 * PLATWAIT;
-				plat->status = down;
+				plat->status = plat_down;
 
 				S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_pstart);
 				break;
@@ -247,7 +247,7 @@ EV_DoPlat
 				}
 				plat->high = sectorfloorheight;
 				plat->wait = 35 * PLATWAIT;
-				plat->status = down;
+				plat->status = plat_down;
 				S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_pstart);
 				break;
 
@@ -288,7 +288,7 @@ void P_ActivateInStasis(int tag) {
 	for (j = 0; j < MAXPLATS; j++)
 		if (activeplats[j] != NULL_MEMREF) {
 			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[j]);
-			if ((plat->status == in_stasis) && (plat->tag == tag)) {
+			if ((plat->status == plat_in_stasis) && (plat->tag == tag)) {
 				plat->oldstatus = plat->status;
 
 				P_UpdateThinkerFunc(plat->thinkerRef, TF_PLATRAISE);
@@ -304,9 +304,9 @@ void EV_StopPlat(short linetag) {
 	for (j = 0; j < MAXPLATS; j++) {
 		if (activeplats[j] != NULL_MEMREF) {
 			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[j]);
-			if ((plat->status != in_stasis) && (plat->tag == linetag)) {
+			if ((plat->status != plat_in_stasis) && (plat->tag == linetag)) {
 				plat->oldstatus = plat->status;
-				plat->status = in_stasis;
+				plat->status = plat_in_stasis;
 
 				P_UpdateThinkerFunc(plat->thinkerRef, TF_NULL);
 			}

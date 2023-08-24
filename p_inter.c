@@ -877,7 +877,7 @@ P_DamageMobj
 		// Below certain threshold,
 		// ignore damage in GOD mode, or with INVUL power.
 		if ( damage < 1000
-			 && ( (player->cheats&CF_GODMODE)
+			 && ( (player->cheats & CF_GODMODE)
 			  || player->powers[pw_invulnerability] ) )
 		{
 			return;

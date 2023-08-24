@@ -144,19 +144,7 @@ int counter = 0;
 // Which one is deterministic?
 int P_Random(void)
 {
-	if (gametic == 2165) {
-		if (counter % 2 == 1) {
-			//sprintf(result2, "%i %s %i    ", counter, file, line);
-		}
-		else {
-			//sprintf(result2, "%i %s %i \n", counter, file, line);
-
-		}
-		counter++;
-		if (counter == 52) {
-			//I_Error(result);
-		}
-	}
+	 
     prndindex = (prndindex+1)&0xff;
     return rndtable[prndindex];
 }

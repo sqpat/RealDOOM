@@ -480,7 +480,7 @@ void R_ProjectSprite (MEMREF thingRef)
 	
 	mobj_t* thing = Z_LoadBytesFromEMS(thingRef);
 	spritenum_t thingsprite = thing->sprite;
-	int thingframe = thing->frame;
+	spriteframenum_t thingframe = thing->frame;
 	fixed_t thingx = thing->x;
 	fixed_t thingy = thing->y;
 	fixed_t thingz = thing->z;

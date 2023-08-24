@@ -212,7 +212,7 @@ typedef struct mobj_s
     //More drawing info: to determine current sprite.
     angle_t		angle;	// orientation
     spritenum_t		sprite;	// used to find patch_t and flip value
-    int			frame;	// might be ORed with FF_FULLBRIGHT
+	spriteframenum_t frame;	// might be ORed with FF_FULLBRIGHT
 
     // Interaction info, by BLOCKMAP.
     // Links in blocks (if needed).
@@ -256,7 +256,7 @@ typedef struct mobj_s
 
     // Reaction time: if non 0, don't attack yet.
     // Used by player to freeze a bit after teleporting.
-    int			reactiontime;   
+    char			reactiontime;   
 
     // If >0, the target will be chased
     // no matter what (even if shot)
