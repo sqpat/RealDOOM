@@ -902,6 +902,11 @@ P_DamageMobj
 	temp = damage < 100 ? damage : 100;
 
 
+	if (player->health == 12) {
+		// 28 14 0
+		// 32 28 16 12 0
+		//I_Error("%i %i %i", gametic, damage, inflictor->type); // 1918 4 31
+	}
 
 
 	/*

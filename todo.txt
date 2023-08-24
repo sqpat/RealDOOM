@@ -1,88 +1,48 @@
-
-Thinkercap next/prev needs to be changed.
- next/prev not used outside of thinker cap methods.
- maybe it can be made static (how big?) but it still needs memrefs...
- need to be able to redirect so a double linked list maybe...
-
-
-Maybe the whole thinker list is an allocation... even though it's a static size?
+SIZES
+        entries   bytes used
+vertexes: 896  7168
+segs:    1371  27420
 
 
-add thinker cant add a thinker ref. so what does it add?
-is each thinker a memref to a thinker?
-even tho thinker is a fixed size entry in structs... its pointer is passed in a messy way
- - memref would allow this...
+PROBLEMS/IMPROVEMENTS
+? why was there a 0 allocation (might be e1m1 marker etc?)
+- sector mobjlists kinda suck (potentially spread across many pages)
+- thinkercap/thinker list kinda sucks (potentially spread across many pages)
+- linebuffer is pointers, not offsets.
+- secs has frontsecnum and backsecnum as well as pointer to line which has this. Reduce memory footprint by removing these?
+- maybe invalidate memory when paged out (all ff or something)
+
+- blocklinks is 2000 size. Figure out a more proper number?
+
+TODO
+ - Z_LoadValue(pass ref and offset and pointer, get the value? interally does a temp page in, puts val in pointer, temp page out? READ ONLY)
+
+ - use wolf 3d conventional memory code for 16 bit mode
+ ? replace subsectors with just the values? currently 32 vs 48 bit... problematic...
 
 
-- todo
- - do the dereference pages thing for multi-pages? to not have dual pages
-
- - replace planar.asm with the other thing?
-
-
-
-
-THINKER PLAN?
- why are we doing z_freeEmsNew (currentthinker-memref) in p_tick.c run thinkers? doesn't make sense!
-
-~change specialdata in sector_t to a memref!
-
-things like sectors are linked to in platforms, etc too...
-
-things with thinkers instead have a thinkerRef?
-
-
-Thinkers...
- - it wouldnt be a huge array if we went 1k or so..
-   - next/prev would be shorts
-   - change the func to a char based enum thing? would be much smalle.r..
+... EVENTUALLY TODO
+ - save file stuff (archive, unarchive thinkers)
+ - titlepic stuff
 
 
 
 MEMORY IDEAS
+ - segs to conventional after all?
+ sector->special from short to char ( 8 bit)
+ thinker-> function to a char  (8 bit)
 
- sector->special from short to char
- thinker-> function to a char 
-
-
-//
-// THINKERS
-// All thinkers should be allocated by Z_Malloc
-// so they can be operated on uniformly.
-// The actual structures will vary in size,
-// but the first element must be thinker_t.
-//
-
-?
-  1 see wolf 3d conventional memory code? can i do that?
-  2 debug something 
-
-
-P_UnArchiveSpecials?  seems fucked. Especially the thinkers, functions....
-P_ArchiveSpecials     similarly fucked, how are these even writing...
-
-P_ArchiveThinkers too
-P_UnArchiveThinkers too
-
-
-
-- fix the 15 ems page case of demo 3.. frame 1403
-  - happens because on p_setthingposition, player->next is set as player causing infinite loop.
-   ? why? does origpcdoom do this?
-   - see call stack by using __FILE__ and __LINE__?
-   - its on frame 1401, a z_getemspageframe
  
-   ? make sure to deallocate
+  
+DEBUG
+ - timedemo demo 3 with 12 pages:
+  - 12 is a little off. 12% instead of 14% health at the end
+    - figure that out. when is damage dealt, work back, figure out player position and random seed
+    - segs out of EMS potentially...?
 
 
-
-x 1. Change all thinker function calls to pass in memref instead of pointer?
-x 2. Change the functions in thinkers to be the enum? 
-x 3. activeceilings
- 
  - braintargets[braintargeton]
  - find all uses of P_SpawnMobj
- - intercept_t struct has a pointer
  - P_BlockThingsIterator
     - consider this in a static spot...
 
@@ -95,14 +55,7 @@ sound originRef thing...
  
  
 NOW (fix memory issues)
- x THEN degenmobj_t etc to memref
- ~ THEN segs, etc to ems
-  x sector indices
-  ~ line indices
-    x line->sidenum[0]].secnum thing
-    x_StartButton
-    x doors broken?
-    x line_t thing in sector should just be a single linenum.
+
   ? change mobj-> player to a memref?
    ? is player z_malloced?
    - make it static, etc... then a pointer is ok
@@ -113,19 +66,16 @@ NOW (fix memory issues)
  
  - THEN all wad lumps to ems
 
-
-x fix sound playback
+ 
 - segs, etc to ems
  (line first?)
- ? why was there a 0 allocation (might be e1m1 marker etc?)
 
 
 
 TODO vileobj pointer (and test)
 TODO test braintargets
 ? change crossbspnode etc to use indices not addressesma
-! next/prev memrefs in those thinglists are bad..
-- eventually fix savedata
+
 
 IDEA: 
   x move other memrefs out to static byte arrays. like maybe segs. see if it crashes then
@@ -136,101 +86,6 @@ IDEA:
       ? vertexes?
   - (remember to move demo back)
 
-
-
-R_RenderMaskedSegRange
- (from drawsprte)
- (from drawmasked)
-  (from)
-
-
-
-
-
-
-// (1)  0,   0  0  1  0 -1 r_data.c  559      0  500 <-  texturewidthmaskRef   (inittextures)
-			// (2)  1,   1  0  2  1 -1 r_data.c  609      0  136 <-  textureRef				(inittextures)
-			// (3)  2,   2  0  3  2 -1 r_data.c  609      0   40
-			// (4)  3,   3  0  4  3 -1 r_data.c  609      0   76
-			// (5)  4,   4  0  5  4 -1 r_things.c  269    0   140  <- spriteframes			(R_InitSpriteDefs)
-			// (6)  5,   6  0  6  5 -1 w_wad.c  440       0   15360  <- lump loaded  (probably demo?)
-
-
-			// (7)  6,   7  0  7  6 -1 p_setup.c 503      0  1700  <- blocklinks
-			// (8)  7,   8  0  8  7 -1 p_setup.c 285      0  23920 <- nodes
-			// (9)  8,   8  0  9  7 -1 p_setup.c 285      0   ----
-			//(10)  9,  10  0 10  8 -1 p_setup.c 167      0  46240 <- segs
-			//(11) 10,  11  0 11  8 -1 p_setup.c 167      0   ----
-			//(12) 11,  12  0 12  8 -1 p_setup.c 167      0   ----
-
-
-			// (13) 12,  13 0 13 9  -1  p_mobj.c 514      0  132  <- (P_SpawnMobj)
-			// (14) 13,  14 0 14 10 -1  p_mobj.c 514      0  132
-			// (15) 14,  15 0 15 11 -1  p_mobj.c 514      0  132
-			// (16) 15,  5  0 16 12 -1  st_stuff.c 1115   1  10240 <- status bar drawer
-			// (17) 16, 16 0 17 13  -1  f_wipe.c 54     1  64000 <-- fwipe
-			// (18)              
-			// (19)
-			// (20) part of fwipe						1
-
-			// (21) 20, 20 0  21 14 -1 r_data.c 263		322 16384 <-- door open
-			// (22) 16, 21 1  22 15 16 r_data.c 263		322 32768
-			// (23) 17, 21 2  23 15 17 r_data.c 263		322  ----
-			// (24) 21, 23 2  24 16 -1 r_data.c 263		354 8192   <--- pre barrel shot
-			// (25) 15, 24 3  25 17  5  p_mobj.c 514	357 132    <---- still pre barrel shot
-
-			// (26) 19, 5  4  26 18 19st_stuff.c 1115	358 10240  // 7 page frame   still pre barrel shot
-			// (27) 20, 19 5  27 19 20 r_data.c 452		358 8192
-			// (28) 21, 20 6  28 20 23 r_data.c 452		358 16384
-			// (29) 16, 23 7  29 21 21 r_data.c 452		358 8192
-			// (30) 17, 21 8  30 22 22 r_data.c 452		358 32768
-			// (31) 18, 21 9  31 22 18 r_data.c 452		358  ----
-			// (32) 19, 18 10 32 23  5 p_doors.c 57     358    32
-
-			// (33) 20, 5  11 33 24 19st_stuff.c 1115   359 10240	// 7 page frame  about to fire at barrel
-			// (34) 12, 19 12 34 25 20 r_data.c 452		359	 8192	
-			// (35) 16, 20 13 35 26 23 r_data.c 452		359 16384
-			// (36) 17, 23 14 36 27 21 r_data.c 452		359  8192
-			// (37) 18, 21 15 37 28 22 r_data.c 452		359 32768
-			// (38) 19, 21 16 38 28 18 r_data.c 452		359  ----
-			// (39) 20, 18 17 39 29  5 r_data.c 452		359    32
-
-			// (40) 21, 5  18 40 30 19 st_stuff.c 1115	360	10240   // 7 page frame  <- firing on barrel
-			// (41) 16, 19 19 41 31 20 r_data.c 452		360   8192
-			// (42) 17, 20 20 42 32 23 r_data.c 452		360  16384
-			// (43) 18, 23 21 43 33 21 r_data.c 452		360   8192
-			// (44) 19, 21 22 44 34 22 r_data.c 452     360	 32768
-			// (45) 20, 21 23 45 34 18 r_data.c 452     360   ----
-			// (46) 21, 18 24 46 35  5 p_doors.c 57     360     32
-
-			// (47) 16,  5 25 47 36 19 st_stuff 1115    361  10240  // 7 page frame <- firing on barrel
-			// (48) 17, 19 26 48 37 20 r_data.c 452		361   8192
-			// (49) 18, 20 27 49 38 23 r_data.c 452		361	 16384
-			// (50) 19, 23 28 50 39 21 r_data.c 452		361   8192
-			// (51) 20, 21 29 51 40 22 r_data.c 452		361  32768
-			// (52) 21, 21 30 52 40 18 r_data.c 452		361   ----
-			// (53) 16, 18 31 53 41  5 p_doors.c 67		361     32
-
-			// we are constantly cycling 8 pages of memory thru 7 contiguous active pages here. 
-			// index sort of moves up one each frame, once the allocation that needs 2 consecutive
-			// pages hits the end of the contiguous block, another thing is deallocated that kind of leads to breaking everything
-
-			// (54) 17, 5  32 54 42 19 st_stuff.c 1115	362  10240   <- firing on barrell
-			// (55) 18, 19 33 55 43 20 r_data.c 452		362   8192
-			// (56) 19, 20 34 56 44 23 r_data.c 452		362  16384
-			// (57) 20, 23 35 57 45 21 r_data.c 452		362   8192
-			// (58)  5, 21 36 58 46  6 r_data.c 452		362  32768   <- demo paged out??
-			// (59)  6, 21 37 59 46  7 r_data.c 452		362   ----   <- blocklinks paged out... bingo?
-
-																	// 18 out... stuff goes weird (just a texture?)
-			// (60) 21,  6 38 60 47 22 g_game.c 14399	362  15360   <- demo loaded in   
-
-			// (61) 17,  7 39 61 48  5 p_maputl.c 539   362   1700   <- blocklinks paged back in  (status stuff paged out)
-	  		   // (62) 18   5 40 62 49 19 st_stuff.c 1115  363  10240   <- shot hit barel (pre explode)  <-- happens during blocklink paging. textures paged out should be ok
-
-    
-
-			// (63) 19, 25 41 63 50 20 r_data.c 263     432  32768   <- seems junk in many ways
-
+ 
 
 

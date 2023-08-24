@@ -27,6 +27,4 @@ R_RenderMaskedSegRange
   int		x1,
   int		x2 );
 
-extern int setval;
-
 #endif

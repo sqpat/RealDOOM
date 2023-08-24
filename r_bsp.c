@@ -529,7 +529,6 @@ void R_Subsector (int num) {
 		R_AddLine (line);
 		line++;
 		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-
 		Z_RefIsActive(segsRef);
 	}
 }

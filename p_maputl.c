@@ -411,11 +411,10 @@ P_SetThingPosition (MEMREF thingRef)
 	mobj_t* thingList;
 //	MEMREF* blocklinksList;
 
-    
     // link into subsector
     ss = R_PointInSubsector (thing->x,thing->y);
     thing->subsector = ss;
-    
+
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
 
@@ -531,28 +530,21 @@ P_BlockThingsIterator2
 {
 	MEMREF mobjRef;
     mobj_t*		mobj;
-	//MEMREF* blocklinksList; 
 
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
 	}
     
-	//if (Z_RefIsActive(blocklinksRef)) {
-		//blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
 
-		for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
-			// will this cause stuff to lose scope...?
-			if (!func(mobjRef)) {
-				return false;
-			}
-
-			//blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
-			mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef); // necessary for bnextref...
+	for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
+		// will this cause stuff to lose scope...?
+		if (!func(mobjRef)) {
+			return false;
 		}
-	//} else {
 
-		//I_Error("%s %i %i", file, line, gametic);  // p_map.c 430 322
-	//}
+		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef); // necessary for bnextref...
+	}
+
 	return true;
 }
 

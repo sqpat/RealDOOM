@@ -80,13 +80,15 @@ line_t**            linebuffer;
 int             bmapwidth;
 int             bmapheight;     // size in mapblocks
 short*          blockmap;       // int for larger maps
-// offsets in blockmap are from here
+
+								// offsets in blockmap are from here
 short*          blockmaplump;
+
 // origin of block map
 fixed_t         bmaporgx;
 fixed_t         bmaporgy;
+
 // for thing chains
-//MEMREF        blocklinksRef;
 MEMREF        blocklinks[2000];
 
 
@@ -127,8 +129,6 @@ void P_LoadVertexes(int lump)
 
 	// Allocate zone memory for buffer.
 	vertexesRef = Z_MallocEMSNew(numvertexes * sizeof(vertex_t), PU_LEVEL, 0, ALLOC_TYPE_VERTEXES);
-	//I_Error("%i", numvertexes );
-	
 
 	// Load data into cache.
 	W_CacheLumpNumCheck(lump, 3);
@@ -168,8 +168,9 @@ void P_LoadSegs(int lump)
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segsRef = Z_MallocEMSNew(numsegs * sizeof(seg_t), PU_LEVEL, 0, ALLOC_TYPE_SEGMENTS);
+	
 	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-	memset(segs, 0, numsegs * sizeof(seg_t));
+	memset(segs, 0xff, numsegs * sizeof(seg_t));
 	W_CacheLumpNumCheck(lump, 4);
 	data = W_CacheLumpNum(lump, PU_STATIC);
 

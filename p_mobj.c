@@ -138,10 +138,6 @@ void P_XYMovement (MEMREF moRef)
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mobj_t* playermo;
 	player = mo->player;
-	if (gametic == 426 && moRef == 764) {
-		//I_Error("we good? %i %i %p %i", gametic, moRef, player, mo->type);
-		//moref 764  gets wrecked on frame 426 somewhere?
-	}
 
 	if (player) {
 		playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
@@ -256,11 +252,7 @@ void P_XYMovement (MEMREF moRef)
 		mo->momy = FixedMul (mo->momy, FRICTION);
 
 	}
-
-	if (gametic == 2224 && mo == playermo) {
-		//I_Error("%i %i %i %i %i %i %i ", gametic, mo->x, mo->y, mo->angle, mo->type, mo->momx, mo->momy);
-	}
-
+	 
 }
 
 //

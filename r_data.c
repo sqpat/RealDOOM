@@ -243,19 +243,16 @@ void R_GenerateComposite(int texnum)
 	unsigned short*		colofs;
 	
 
-	MEMREF* textures =				(MEMREF*)	Z_LoadBytesFromEMS(texturesRef);
 
 	MEMREF* texturecolumnlump =		(MEMREF*)	Z_LoadBytesFromEMS(texturecolumnlumpRef);
 	MEMREF*	texturecolumnofs =		(MEMREF*)	Z_LoadBytesFromEMS(texturecolumnofsRef);
 	MEMREF* texturecomposite =		(MEMREF*)	Z_LoadBytesFromEMS(texturecompositeRef);
 
 	int* texturecompositesize =		(int*)		Z_LoadBytesFromEMS(texturecompositesizeRef);
-
+	
+	MEMREF* textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 	texture_t* texture =			(texture_t*)Z_LoadBytesFromEMS(textures[texnum]);
 
-	if (gametic == 1401 && texnum == 24) {
-		
-	}
 	texturecomposite[texnum] = Z_MallocEMSNewWithBackRef(texturecompositesize[texnum],
 		PU_STATIC,
 		0xff, ALLOC_TYPE_TEXTURE, -1*(texnum+1));
@@ -263,7 +260,6 @@ void R_GenerateComposite(int texnum)
 	
 
 	block =		(byte*)			 Z_LoadBytesFromEMS(texturecomposite[texnum]);
-
 	collump =   (short*)		 Z_LoadBytesFromEMS(texturecolumnlump[texnum]);
 	colofs =	(unsigned short*)Z_LoadBytesFromEMS(texturecolumnofs[texnum]);
 
@@ -290,6 +286,11 @@ void R_GenerateComposite(int texnum)
 
         for ( ; x<x2 ; x++)
         {
+			// seems ok
+			Z_RefIsActive(texturecolumnlump[texnum]);
+			Z_RefIsActive(texturecomposite[texnum]);
+			Z_RefIsActive(texturecolumnofs[texnum]);
+			
             // Column does not have multiple patches?
             if (collump[x] >= 0)
                 continue;
@@ -432,16 +433,14 @@ R_GetColumn
     int* texturewidthmask =				(int*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 	col &= texturewidthmask[tex];
 
-	texturecolumnlumpTex =		(MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
-	
-	texturecolumnlump = (short*)Z_LoadBytesFromEMS(texturecolumnlumpTex[tex]);
-	lump = texturecolumnlump[col];
-
-	texturecolumnofsTex =		(MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
-	texturecolumnofs =	(unsigned short*)Z_LoadBytesFromEMS(texturecolumnofsTex[tex]);
+	texturecolumnofsTex = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
+	texturecolumnofs = (unsigned short*)Z_LoadBytesFromEMS(texturecolumnofsTex[tex]);
 	ofs = texturecolumnofs[col];
 
-	texturecomposite =			(MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
+	texturecolumnlumpTex =		(MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
+
+	texturecolumnlump = (short*)Z_LoadBytesFromEMS(texturecolumnlumpTex[tex]);
+	lump = texturecolumnlump[col];
 
 	// note: this currently mixes W_CacheLumpNum method and EMS memory method...  might be bad
 
@@ -451,19 +450,14 @@ R_GetColumn
 		W_CacheLumpNumCheck(lump, 15);
 		return (byte *)W_CacheLumpNum(lump, PU_CACHE) + ofs;
 	}
+	texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 
 	if (texturecomposite[tex] == NULL_MEMREF) {
 		R_GenerateComposite(tex);
 	}
 
 	texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
-
 	texturecompositebytes = (byte*)Z_LoadBytesFromEMS(texturecomposite[tex]);
-
-	if (setval > 1) {
-	 
-	}
-
 
     return texturecompositebytes + ofs;
 }
@@ -560,6 +554,8 @@ void R_InitTextures (void)
     numtextures = numtextures1 + numtextures2;
     // 125
 
+	// these are all the very first allocations that occure on level setup and they end up in the same page, 
+	// so when these are loaded later, its not a problem because theyre all in one page
     texturesRef				= Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 	texturecolumnlumpRef	= Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
     texturecolumnofsRef		= Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
@@ -615,11 +611,7 @@ void R_InitTextures (void)
             
 		textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 		textures[i] = textureRef;
-		//printf("textures %i %i %i %i \n", i, textureRef, textures[i], texturesRef);
-		if (i == 65){
-			// i == 29 is page, 60 is sky1
-			//I_Error("");
-		}
+
 		texture = (texture_t*) Z_LoadBytesFromEMS(textureRef);
         
         texture->width = SHORT(mtexture->width);
@@ -666,13 +658,14 @@ void R_InitTextures (void)
         R_GenerateLookup (i);
     
     // Create translation table for global animation.
-    texturetranslationRef = Z_MallocEMSNew ((numtextures+1)*4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE_TRANSLATION);
+
+	// ref 385 ... page 3
+	texturetranslationRef = Z_MallocEMSNew ((numtextures+1)*4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE_TRANSLATION);
 
 	texturetranslation = (int*) Z_LoadBytesFromEMS(texturetranslationRef);
 
     for (i=0 ; i<numtextures ; i++)
         texturetranslation[i] = i;
-	//I_Error("");
 
 }
 

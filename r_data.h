@@ -47,6 +47,5 @@ int R_TextureNumForName (char *name);
 int R_CheckTextureNumForName (char *name);
 void R_EraseCompositeCache(short texnum);
 
-extern MEMREF  texturecolumnlumpRef;		// short**
 
 #endif

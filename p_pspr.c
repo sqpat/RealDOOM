@@ -346,6 +346,10 @@ void P_FireWeapon (player_t* player)
 	
 	P_SetMobjState (player->moRef, S_PLAY_ATK1);
     newstate = weaponinfo[player->readyweapon].atkstate;
+
+	if (playermo->subsector->secnum == 4192) {
+		I_Error("bad secnum 0 %i %i", playermo->type, gametic);
+	}
 	P_SetPsprite (player, ps_weapon, newstate);
 	P_NoiseAlert (player->moRef, player->moRef);
 }
@@ -785,9 +789,6 @@ A_FireShotgun
 		  weaponinfo[player->readyweapon].flashstate);
 
     P_BulletSlope (player->moRef);
-	if (gametic == 2165) {
-		//I_Error("bulletslope %i", bulletslope);
-	}
 
 	for (i = 0; i < 7; i++) {
 		P_GunShot(player->moRef, false);

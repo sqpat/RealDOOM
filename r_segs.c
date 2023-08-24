@@ -200,8 +200,6 @@ R_RenderMaskedSegRange
 #define HEIGHTBITS		12
 #define HEIGHTUNIT		(1<<HEIGHTBITS)
 
-int setval = 0;
-
 void R_RenderSegLoop (void)
 {
     angle_t		angle;
@@ -213,7 +211,8 @@ void R_RenderSegLoop (void)
     int			top;
     int			bottom;
     //texturecolumn = 0;				// shut up compiler warning
-	
+
+
     for ( ; rw_x < rw_stopx ; rw_x++)
     {
 	// mark floor / ceiling areas
@@ -281,9 +280,6 @@ void R_RenderSegLoop (void)
 	    dc_yl = yl;
 	    dc_yh = yh;
 	    dc_texturemid = rw_midtexturemid;
-		if (setval == 1) {
-			setval = 2;
-		}
 
 		dc_source = R_GetColumn(midtexture,texturecolumn);
 		colfunc ();
@@ -389,7 +385,6 @@ R_StoreWallRange
 	int* 	texturetranslation;
 	vertex_t* vertexes;
 	side_t*	sidedef;
-
     // don't overflow and crash
     if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
@@ -563,12 +558,6 @@ R_StoreWallRange
 		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 		toptexture = texturetranslation[sidedef->toptexture];
 
-		// tick 454 or 669 (now 669)
-		if (gametic == 454 && start == 0 && stop == 5 && toptexture != 70) {
-			//I_Error("b found %i %hi %i %i %p, %i %i", gametic, curline->sidedefOffset, toptexture, sidedef->toptexture, curline, start, stop);
-		}
-
-
 		if (linedef->flags & ML_DONTPEGTOP)
 	    {
 		// top of texture at top
@@ -708,16 +697,8 @@ R_StoreWallRange
     
     if (markfloor)
 	floorplane = R_CheckPlane (floorplane, rw_x, rw_stopx-1);
-	if (gametic == 1401 && start == 39 && stop == 42) {
-		setval = 1;
-	}
-
+	 
 	R_RenderSegLoop ();
-	if (gametic == 1401 && start == 39 && stop == 42) {
-		
-	}
-
-
     
     // save sprite clipping info
     if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture)

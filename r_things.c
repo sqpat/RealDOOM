@@ -623,7 +623,6 @@ void R_AddSprites (short secnum)
     int                 lightnum;
 	mobj_t*				thingList;
 	MEMREF				lastThingRef = -1;
-	int i = 0;
 
     // BSP is traversed by subsector.
     // A sector might have been split into several
@@ -652,19 +651,11 @@ void R_AddSprites (short secnum)
     // Handle all things in sector.
 	// todo, should we quit out early of drawing player sprite? matters for netplay maybe? if its self, shouldnt render and its a lot of extra traversal?
 	for (thingRef = sectors[secnum].thinglistRef; thingRef; thingRef = thing->snextRef) {
-		i++;
 		R_ProjectSprite(thingRef);
 		thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-		if (lastThingRef == thingRef) {
-			I_Error("detected loop!? %i %i %i %i %i %i %i %i %p", gametic, secnum, i, thingRef, lastThingRef, thing->type, thing->x, thing->y, thing->player);
-		}
-
+		 
 		lastThingRef = thingRef;
-		Z_RefIsActive(sectors[secnum].thinglistRef);
-		// bad secnum is 131
-		// thingref: 320 463 463
-	 
-
+		//Z_RefIsActive(sectors[secnum].thinglistRef);
 	}
 
 
@@ -930,7 +921,7 @@ void R_DrawSprite (vissprite_t* spr)
                 
         if (scale < spr->scale
             || ( lowscale < spr->scale
-                 && !R_PointOnSegSide (spr->gx, spr->gy, ds->curline) ) )
+                 && !R_PointOnSegSide (spr->gx, spr->gy, ds->curline->v1Offset, ds->curline->v2Offset) ) )
         {
             // masked mid texture?
             if (ds->maskedtexturecol)   

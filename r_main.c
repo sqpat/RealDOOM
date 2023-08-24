@@ -34,6 +34,7 @@
 
 
 #include "i_system.h"
+#include "doomstat.h"
 
 
 // Fineangles in the SCREENWIDTH wide window.
@@ -207,7 +208,8 @@ int
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,
-  seg_t*	line )
+  short linev1Offset,
+	short linev2Offset)
 {
     fixed_t	lx;
     fixed_t	ly;
@@ -219,11 +221,11 @@ R_PointOnSegSide
     fixed_t	right;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 	
-	lx = vertexes[line->v1Offset].x;
-    ly = vertexes[line->v1Offset].y;
+	lx = vertexes[linev1Offset].x;
+    ly = vertexes[linev1Offset].y;
 	
-    ldx = vertexes[line->v2Offset].x - lx;
-    ldy = vertexes[line->v2Offset].y - ly;
+    ldx = vertexes[linev2Offset].x - lx;
+    ldy = vertexes[linev2Offset].y - ly;
 	
     if (!ldx)
     {
@@ -891,7 +893,7 @@ void R_RenderPlayerView (player_t* player)
 
     // The head node is the last node output.
     R_RenderBSPNode (numnodes-1);
-    
+   
     // Check for new console commands.
     NetUpdate ();
     

@@ -138,9 +138,16 @@ P_RecursiveSound
 		}
 		if (check->flags & ML_SOUNDBLOCK) {
 			if (!soundblocks) {
+				if (othersecnum == 4192) {
+					I_Error("bad secnum 3");
+				}
+
 				P_RecursiveSound(othersecnum, 1);
 			}
 		} else {
+			if (othersecnum == 4192) {
+				I_Error("bad secnum 4");
+			}
 			P_RecursiveSound(othersecnum, soundblocks);
 		}
     }
@@ -159,8 +166,11 @@ P_NoiseAlert
   MEMREF	emmiterRef )
 {
 	mobj_t* emmiter = (mobj_t*)Z_LoadBytesFromEMS(emmiterRef);
-    soundtargetRef = targetRef;
+	soundtargetRef = targetRef;
     validcount++;
+	if (emmiter->subsector->secnum == 4192){
+		I_Error("bad secnum 1 %i %i", emmiter->type, gametic);
+	}
     P_RecursiveSound (emmiter->subsector->secnum, 0);
 }
 
@@ -1186,9 +1196,9 @@ boolean PIT_VileCheck (MEMREF thingRef)
     check = P_CheckPosition (corpsehitRef, corpsehit->x, corpsehit->y);
     corpsehit->height >>= 2;
 
-    if (!check)
-	return true;		// doesn't fit here
-		
+	if (!check) {
+		return true;		// doesn't fit here
+	}
     return false;		// got one, so stop checking
 }
 
