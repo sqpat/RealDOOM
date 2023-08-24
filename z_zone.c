@@ -123,11 +123,10 @@
 // 4 22844306  3540729 6493412 75
 
 
-#define ZONEID  0x1d4a11
 #define PAGE_FRAME_SIZE 0x4000
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
-#define EMS_ALLOCATION_LIST_SIZE 4096
+#define EMS_ALLOCATION_LIST_SIZE 2048
 #define NUM_EMS_PAGES 32
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 64 * 1024
@@ -173,7 +172,7 @@ typedef struct
 					 // page and offset refer to internal EMS page and offset - in other words the keys
 	// to find the real location in memory for this allocation
 	uint16_t page;    //6    using 16 bits but need 9 or 10...
-    uint16_t offset;  //8    using 16 bits but needs 14...
+    uint16_t offset;  //8    using 16 bits but needs 14... combine with size for the two bit overlap?
 	int32_t size;               //12   using, could probably drop to int16_t with the external int32_t for remaining main heap..
 
 	uint8_t tag;      //13   could probably get away with fewer if we redid defines. maybe 4.
@@ -1029,7 +1028,10 @@ Z_MallocEMSNewWithBackRef
     if (offsetToNextPage == PAGE_FRAME_SIZE){
         offsetToNextPage = 0;
     }
-	 
+	 			       if (size == 9236){
+	   I_Error("\nZ_MallocEMSNew: check %i %i %i %i %i", rover, base, allocations[rover].next, allocations[base].user, allocations[base].size);
+}
+
 
   do 
     {
@@ -1052,7 +1054,11 @@ Z_MallocEMSNewWithBackRef
         // not empty but might be purgeable
         if(allocations[rover].user){
             // not purgeable, reset
-            if (allocations[rover].tag < PU_PURGELEVEL){
+            
+			       if (size == 9236){
+	   I_Error("\nZ_MallocEMSNew: check %i %i %i %i %i", rover, base, allocations[rover].next, allocations[base].prev, allocations[base].tag);
+}
+			if (allocations[rover].tag < PU_PURGELEVEL){
                 // hit a block that can't be purged,
                 //  so move base past it
                 base = rover = allocations[rover].next;
@@ -1186,6 +1192,14 @@ Z_MallocEMSNewWithBackRef
     }
     allocations[base].tag = tag;
 	allocations[base].backRef = backRef;
+
+// 0 255 2 1 2
+/*
+	  I_Error("\nZ_MallocEMSNew: creating %i %i %i %i %i", 
+		  allocations[newfreeblockindex].user, 
+		   allocations[base].user,
+		newfreeblockindex, base, allocations[base].next);
+*/		
 
     // next allocation will start looking here
     //mainzoneEMS->rover = base->next;

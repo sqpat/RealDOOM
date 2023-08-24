@@ -851,6 +851,7 @@ P_SetupLevel
 	leveltime = 0;
 
 
+
 	// note: most of this ordering is important 
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 	P_LoadVertexes(lumpnum + ML_VERTEXES);
@@ -904,7 +905,7 @@ void P_Init(void)
 {
 	P_InitSwitchList();
 	P_InitPicAnims();
-	R_InitSprites(sprnames);
+    R_InitSprites(sprnames);
 }
 
 

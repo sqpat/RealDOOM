@@ -1,8 +1,5 @@
  
-
-CURRENT TODO
-  FRAME 1595 z a bit different
-
+ 
  
 ? why was there a 0 allocation (might be e1m1 marker etc?)
  
@@ -27,27 +24,34 @@ MEMORY IMPROVEMENTS
 
 TODO 
  
-
-! illegal reads?
+ ? is 2048 mem entries enough? plays demo 1 ok.
+ - make ems actually work
 
 - get rid of:
-  ~ rest of enums?
-  ~ net?
-  - dump bad savegame code
+  ? more enums
+  ? any more net code to dump?
+  ? dump bad savegame code
   - see if we can lessen size of some of those sectors etc fields
-  - audio_wf removal? dpmi code?
-  ? cut trig tables in half or 1/4th, add small extra code when using it?
- 
+  
 
 
 - make titlepic work with > 4 pages?
-- types.h stuff
-
-- remove rangecheck (after doom2 testing?)
+? remove rangecheck (after doom2 testing?)
 - remove disk reading icon (?)
 
 MEMORY IDEAS
-
+ 
+ - support allocating some things in conventional
+ - use overlays, especially on startup code to eliminate space
+   - if we ever do multiple renderers or sound code etc, 
+        can fit more in the binary by using overlays?
+ - go thru all int32_ts and make as many int16_t as possible
+ - compress memory allocation entries by using bit masks and combining values
+ - reduce visiplanes size below 65k somehow to allow large instead of huge memory model.
+   - maybe just reduce the number of visplanes for now...
+ - investigate benefits of fewer bigger source files (less far calls?)
+ - explicitly declare things near when possible?
+ - remove more strings
 
 TESTING:
  - finale  

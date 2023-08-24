@@ -180,17 +180,23 @@ void R_InitSpriteDefs (int8_t** namelist)
 	spriteframe_t* spriteframes;
     // count the number of sprite names
     check = namelist;
-    while (*check != NULL)
+
+
+    // I don't know why but the earlier null loop check stopped working.
+    // is there any reason we cant just set it to numsprites...?
+    /*while (*check != NULL)
         check++;
+        
 
     numsprites = check-namelist;
-        
+        */
+    numsprites = NUMSPRITES;
+
     if (!numsprites)
         return;
                 
     spritesRef = Z_MallocEMSNew (numsprites *sizeof(*sprites), PU_STATIC, 0x00, ALLOC_TYPE_SPRITEDEFS);
 	//todo does this have to move into the loop for safety?
-	sprites = (spritedef_t*)Z_LoadBytesFromEMS(spritesRef);
 	start = firstspritelump-1;
     end = lastspritelump+1;
         
@@ -229,6 +235,7 @@ void R_InitSpriteDefs (int8_t** namelist)
                 }
             }
         }
+	    sprites = (spritedef_t*)Z_LoadBytesFromEMS(spritesRef);
         
         // check the frames that were found for completeness
         if (maxframe == -1)
@@ -236,7 +243,9 @@ void R_InitSpriteDefs (int8_t** namelist)
             sprites[i].numframes = 0;
             continue;
         }
-                
+
+    
+
         maxframe++;
         
         for (frame = 0 ; frame < maxframe ; frame++)
@@ -267,13 +276,15 @@ void R_InitSpriteDefs (int8_t** namelist)
         // allocate space for the frames present and copy sprtemp to it
         sprites[i].numframes = maxframe;
         sprites[i].spriteframesRef = Z_MallocEMSNew (maxframe * sizeof(spriteframe_t), PU_STATIC, 0x00, ALLOC_TYPE_SPRITEFRAMES);
-		Z_RefIsActive(spritesRef);
+		//Z_RefIsActive(spritesRef);
 		
 		spriteframes = Z_LoadBytesFromEMS(sprites[i].spriteframesRef);
 
 
 
         memcpy (spriteframes, sprtemp, maxframe*sizeof(spriteframe_t));
+
+
     }
 
 }
