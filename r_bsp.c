@@ -115,14 +115,11 @@ R_ClipSolidWallSegment
 	    next = newend;
 	    newend++;
 	    
-	    while (next != start)
-	    {
-		*next = *(next-1);
-		next--;
-	    }
-	    next->first = first;
-	    next->last = last;
-	    return;
+		// 1/11/98 killough: performance tuning using fast memmove
+		memmove(start + 1, start, (++newend - start) * sizeof(*start));
+		start->first = first;
+		start->last = last;
+		return;
 	}
 		
 	// There is a fragment above *start.
@@ -308,9 +305,9 @@ void R_AddLine (short linenum)
     angle2 -= viewangle;
 	
     tspan = angle1 + clipangle;
-    if (tspan > 2*clipangle)
-    {
-	tspan -= 2*clipangle;
+	if (tspan > fieldofview)
+	{
+	tspan -= fieldofview;
 
 	// Totally off the left edge?
 	if (tspan >= span)
@@ -319,10 +316,10 @@ void R_AddLine (short linenum)
 	angle1 = clipangle;
     }
     tspan = clipangle - angle2;
-    if (tspan > 2*clipangle)
-    {
-	tspan -= 2*clipangle;
-
+	if (tspan > fieldofview)
+	{
+		tspan -= fieldofview;
+	
 	// Totally off the left edge?
 	if (tspan >= span)
 	    return;	
@@ -471,9 +468,9 @@ boolean R_CheckBBox (fixed_t*	bspcoord)
     
     tspan = angle1 + clipangle;
 
-    if (tspan > 2*clipangle)
-    {
-	tspan -= 2*clipangle;
+	if (tspan > fieldofview)
+	{
+		tspan -= fieldofview;
 
 	// Totally off the left edge?
 	if (tspan >= span)
@@ -482,9 +479,9 @@ boolean R_CheckBBox (fixed_t*	bspcoord)
 	angle1 = clipangle;
     }
     tspan = clipangle - angle2;
-    if (tspan > 2*clipangle)
-    {
-	tspan -= 2*clipangle;
+	if (tspan > fieldofview)
+	{
+		tspan -= fieldofview;
 
 	// Totally off the left edge?
 	if (tspan >= span)
@@ -586,7 +583,7 @@ void R_Subsector (int num) {
 
 	}
 }
-
+/*
 
 
 //
@@ -636,5 +633,37 @@ void R_RenderBSPNode (int bspnum) {
 
 
 }
+*/
 
+
+// RenderBSPNode
+// Renders all subsectors below a given node,
+//  traversing subtree recursively.
+// Just call with BSP root.
+void R_RenderBSPNode(int bspnum)
+{
+	node_t* nodes;
+	node_t *bsp;
+	int side;
+
+	while (!(bspnum & NF_SUBSECTOR))  // Found a subsector?
+	{
+		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+		bsp = &nodes[bspnum];
+
+		// Decide which side the view point is on.
+		side = R_PointOnSide(viewx, viewy, bsp);
+
+		// Recursively divide front space.
+		R_RenderBSPNode(bsp->children[side]);
+		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+		bsp = &nodes[bspnum];
+		// Possibly divide back space.
+		if (!R_CheckBBox(bsp->bbox[side ^ 1]))
+			return;
+
+		bspnum = bsp->children[side ^ 1];
+	}
+	R_Subsector(bspnum == -1 ? 0 : bspnum & ~NF_SUBSECTOR);
+}
 

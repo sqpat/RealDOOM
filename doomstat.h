@@ -74,13 +74,7 @@ extern  boolean         french;
 // Nightmare mode flag, single player.
 extern  boolean         respawnmonsters;
 
-// Netgame? Only true if >1 player.
-extern  boolean	netgame;
 
-// Flag: true only if started as net deathmatch.
-// An enum might handle altdeath/cooperative better.
-extern  boolean	deathmatch;	
-	
 // -------------------------
 // Internal parameters for sound rendering.
 // These have been taken from the DOS version,
@@ -199,10 +193,6 @@ extern	player_t	players[MAXPLAYERS];
 extern  boolean		playeringame[MAXPLAYERS];
 
 
-// Player spawn spots for deathmatch.
-#define MAX_DM_STARTS   10
-extern  mapthing_t      deathmatchstarts[MAX_DM_STARTS];
-extern  mapthing_t*	deathmatch_p;
 
 // Player spawn spots.
 extern  mapthing_t      playerstarts[MAXPLAYERS];
@@ -252,7 +242,6 @@ extern int		skyflatnum;
 
 
 
-// Netgame stuff (buffers and pointers, i.e. indices).
 
 // This is ???
 extern  doomcom_t*	doomcom;

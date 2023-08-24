@@ -103,8 +103,6 @@ int             starttime;              // for comparative timing purposes
  
 boolean         viewactive; 
  
-boolean         deathmatch;             // only if started as net death 
-boolean         netgame;                // only true if packets are broadcast 
 boolean         playeringame[MAXPLAYERS]; 
 player_t        players[MAXPLAYERS]; 
  
@@ -576,14 +574,6 @@ void G_Ticker (void)
 	if (demorecording)
 		G_WriteDemoTiccmd(cmd);
 
-	// check for turbo cheats
-	if (cmd->forwardmove > TURBOTHRESHOLD && !(gametic & 31) && ((gametic >> 5) & 3) == i)
-	{
-		static char turbomessage[80];
-		extern char *player_names[1];
-		sprintf(turbomessage, "%s is turbo!", player_names[0]);
-		players[0].message = turbomessage;
-	}
 
     
     // check for special buttons
@@ -604,10 +594,8 @@ void G_Ticker (void)
                     break; 
                                          
                   case BTS_SAVEGAME: 
-                    if (!savedescription[0]) 
-                        strcpy (savedescription, "NET GAME"); 
-                    savegameslot =  
-                        (players[i].cmd.buttons & BTS_SAVEMASK)>>BTS_SAVESHIFT; 
+					  savegameslot = (players[0].cmd.buttons & BTS_SAVEMASK) >> BTS_SAVESHIFT;
+
                     gameaction = ga_savegame; 
                     break; 
                 } 
@@ -795,36 +783,7 @@ G_CheckSpot
     return true; 
 } 
 
-
-//
-// G_DeathMatchSpawnPlayer 
-// Spawns a player at one of the random death match spots 
-// called at level load and each death 
-//
-void G_DeathMatchSpawnPlayer (int playernum) 
-{ 
-    int             i,j; 
-    int                         selections; 
-         
-    selections = deathmatch_p - deathmatchstarts; 
-    if (selections < 4) 
-        I_Error ("Only %i deathmatch spots, 4 required", selections); 
  
-    for (j=0 ; j<20 ; j++) 
-    { 
-        i = P_Random() % selections; 
-        if (G_CheckSpot (playernum, &deathmatchstarts[i]) ) 
-        { 
-            deathmatchstarts[i].type = playernum+1; 
-            P_SpawnPlayer (&deathmatchstarts[i]); 
-            return; 
-        } 
-    } 
- 
-    // no good spot, so the player will probably get stuck 
-    P_SpawnPlayer (&playerstarts[playernum]); 
-} 
-
 //
 // G_DoReborn 
 // 
@@ -833,46 +792,9 @@ void G_DoReborn (int playernum)
     int                             i; 
 	mobj_t* playerMo;
          
-    if (!netgame)
-    {
         // reload the level from scratch
         gameaction = ga_loadlevel;  
-    }
-    else 
-    {
-        // respawn at the start
-
-		playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[playernum].moRef);
-        // first dissasociate the corpse 
-        playerMo->player = NULL;   
-                 
-        // spawn at random spot if in death match 
-        if (deathmatch) 
-        { 
-            G_DeathMatchSpawnPlayer (playernum); 
-            return; 
-        } 
-                 
-        if (G_CheckSpot (playernum, &playerstarts[playernum]) ) 
-        { 
-            P_SpawnPlayer (&playerstarts[playernum]); 
-            return; 
-        }
-        
-        // try to spawn at one of the other players spots 
-        for (i=0 ; i<MAXPLAYERS ; i++)
-        {
-            if (G_CheckSpot (playernum, &playerstarts[i]) ) 
-            { 
-                playerstarts[i].type = playernum+1;     // fake as other player 
-                P_SpawnPlayer (&playerstarts[i]); 
-                playerstarts[i].type = i+1;             // restore 
-                return; 
-            }       
-            // he's going to be inside something.  Too bad.
-        }
-        P_SpawnPlayer (&playerstarts[playernum]); 
-    } 
+ 
 } 
  
  
@@ -1257,8 +1179,6 @@ void G_DoNewGame (void)
 {
     demoplayback = false; 
     netdemo = false;
-    netgame = false;
-    deathmatch = false;
     playeringame[1] = playeringame[2] = playeringame[3] = 0;
     respawnparm = false;
     fastparm = false;
@@ -1475,14 +1395,16 @@ void G_BeginRecording (void)
     *demo_p++ = gameskill; 
     *demo_p++ = gameepisode; 
     *demo_p++ = gamemap; 
-    *demo_p++ = deathmatch; 
+    *demo_p++ = false;
     *demo_p++ = respawnparm;
     *demo_p++ = fastparm;
     *demo_p++ = nomonsters;
     *demo_p++ = consoleplayer;
-         
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-        *demo_p++ = playeringame[i];             
+
+	*demo_p++ = true;
+	*demo_p++ = false;
+	*demo_p++ = false;
+	*demo_p++ = false;
 	demo_p = (byte*)(demo_p - demobuffer);
 
 } 
@@ -1518,19 +1440,16 @@ void G_DoPlayDemo (void)
     skill = *demo_p++; 
     episode = *demo_p++; 
     map = *demo_p++; 
-    deathmatch = *demo_p++;
+     *demo_p++; // deathmatch
     respawnparm = *demo_p++;
     fastparm = *demo_p++;
     nomonsters = *demo_p++;
     consoleplayer = *demo_p++;
         
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-        playeringame[i] = *demo_p++; 
-    if (playeringame[1]) 
-    { 
-        netgame = true; 
-        netdemo = true; 
-    }
+	playeringame[0] = *demo_p++;
+	*demo_p++;
+	*demo_p++;
+	*demo_p++;
 
     // don't spend a lot of time in loadlevel 
     precache = false;
@@ -1591,8 +1510,6 @@ boolean G_CheckDemoStatus (void)
         Z_ChangeTagEMSNew (demobufferRef, PU_CACHE); 
         demoplayback = false; 
         netdemo = false;
-        netgame = false;
-        deathmatch = false;
         playeringame[1] = playeringame[2] = playeringame[3] = 0;
         respawnparm = false;
         fastparm = false;

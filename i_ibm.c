@@ -1263,48 +1263,20 @@ extern doomcom_t *doomcom;
 //
 void I_InitNetwork(void)
 {
-        int i;
+	//
+// single player game
+//
+	doomcom = malloc(sizeof(*doomcom));
+	if (!doomcom)
+	{
+		I_Error("malloc() in I_InitNetwork() failed");
+	}
+	memset(doomcom, 0, sizeof(*doomcom));
+	doomcom->id = DOOMCOM_ID;
+	doomcom->deathmatch = false;
+	doomcom->ticdup = 1;
 
-        i = M_CheckParm ("-net");
-    if (!i)
-    {
-        //
-        // single player game
-        //
-        doomcom = malloc(sizeof(*doomcom));
-        if (!doomcom)
-        {
-            I_Error("malloc() in I_InitNetwork() failed");
-        }
-        memset(doomcom, 0, sizeof(*doomcom));
-        netgame = false;
-        doomcom->id = DOOMCOM_ID;
-        doomcom->numplayers = doomcom->numnodes = 1;
-        doomcom->deathmatch = false;
-        doomcom->consoleplayer = 0;
-        doomcom->ticdup = 1;
-        doomcom->extratics = 0;
-        return;
-    }
-
-    netgame = true;
-    doomcom = (doomcom_t *)atoi(myargv[i + 1]);
-    //DEBUG
-    doomcom->skill = startskill;
-    doomcom->episode = startepisode;
-    doomcom->map = startmap;
-    doomcom->deathmatch = deathmatch;
-
-}
-
-void I_NetCmd(void)
-{
-    if (!netgame)
-    {
-        I_Error("I_NetCmd when not in netgame");
-    }
-    DPMIInt(doomcom->intnum);
-}
+} 
 
 //
 // DPMIInt

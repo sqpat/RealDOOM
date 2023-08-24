@@ -104,11 +104,7 @@ MEMREF        blocklinks[NUM_BLOCKLINKS];
 MEMREF           rejectmatrixRef;
 
 
-// Maintain single and multi player starting spots.
-#define MAX_DEATHMATCH_STARTS   10
 
-mapthing_t      deathmatchstarts[MAX_DEATHMATCH_STARTS];
-mapthing_t*     deathmatch_p;
 mapthing_t      playerstarts[MAXPLAYERS];
 
 
@@ -891,25 +887,11 @@ P_SetupLevel
 
 
 	bodyqueslot = 0;
-	deathmatch_p = deathmatchstarts;
-
 
 	P_LoadThings(lumpnum + ML_THINGS);
 
 
-	//I_Error("stop now?");
-
-	// if deathmatch, randomly spawn the active players
-	if (deathmatch)
-	{
-		for (i = 0; i < MAXPLAYERS; i++)
-			if (playeringame[i])
-			{
-				players[i].moRef = NULL_MEMREF;
-				G_DeathMatchSpawnPlayer(i);
-			}
-
-	}
+ 
 
 	// clear special respawning que
 	iquehead = iquetail = 0;

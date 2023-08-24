@@ -889,14 +889,7 @@ void A_Chase (MEMREF actorRef)
     // possibly choose another target
 
 	
-	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-	if (netgame && !actor->threshold && !P_CheckSight(actorRef, actor->targetRef)) {
-		if (P_LookForPlayers(actorRef, true)) {
-			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-
-			return;	// got a new target
-		}
-    }
+	
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	
     // chase towards player

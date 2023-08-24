@@ -38,6 +38,7 @@ TODO
 - types.h stuff
 
 - remove rangecheck (after doom2 testing?)
+- remove disk reading icon (?)
 
 MEMORY IDEAS
 

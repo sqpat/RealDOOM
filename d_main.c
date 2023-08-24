@@ -930,10 +930,7 @@ void D_DoomMain (void)
     nomonsters = M_CheckParm ("-nomonsters");
     respawnparm = M_CheckParm ("-respawn");
     fastparm = M_CheckParm ("-fast");
-    if (M_CheckParm ("-altdeath"))
-        deathmatch = 2;
-    else if (M_CheckParm ("-deathmatch"))
-        deathmatch = 1;
+ 
 
     if (!commercial)
     {
@@ -1065,21 +1062,7 @@ void D_DoomMain (void)
         startmap = 1;
         autostart = true;
     }
-        
-    p = M_CheckParm ("-timer");
-    if (p && p < myargc-1 && deathmatch)
-    {
-        int     time;
-        time = atoi(myargv[p+1]);
-        printf("Levels will end after %d minute",time);
-        if (time>1)
-            printf("s");
-        printf(".\n");
-    }
-
-    p = M_CheckParm ("-avg");
-    if (p && p < myargc-1 && deathmatch)
-        printf("Austin Virtual Gaming: Levels will end after 20 minutes\n");
+  
 
     p = M_CheckParm ("-warp");
     if (p && p < myargc-1)
@@ -1261,7 +1244,7 @@ void D_DoomMain (void)
 
     if ( gameaction != ga_loadgame )
     {
-        if (autostart || netgame)
+        if (autostart)
             G_InitNew (startskill, startepisode, startmap);
         else
             D_StartTitle ();                // start up intro loop

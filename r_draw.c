@@ -66,7 +66,6 @@ int		columnofs[MAXWIDTH];
 //  translate a limited part to another
 //  (color ramps used for  suit colors).
 //
-byte		translations[3][256];	
  
  
 #define SC_INDEX                0x3C4
@@ -101,8 +100,6 @@ fixed_t			dc_texturemid;
 // first pixel in a column (possibly virtual) 
 byte*			dc_source;		
 
-// just for profiling 
-//int			dccount;
 
 #if IGNORE_PLANAR_ASM
 //
@@ -181,7 +178,6 @@ void R_DrawColumnLow (void)
 
 		I_Error("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
 	}
-	//  dccount++; 
 #endif 
 	if (dc_x & 1)
 		outp(SC_INDEX + 1, 12);
@@ -453,8 +449,6 @@ fixed_t                 ds_ystep;
 MEMREF                   ds_sourceRef;
 byte*                   ds_source;
 
-// just for profiling
-int                     dscount;
 
 
 //

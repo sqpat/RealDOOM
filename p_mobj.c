@@ -707,10 +707,6 @@ void P_RespawnSpecials (void)
 
     int			i;
 
-    // only respawn items in deathmatch
-	if (deathmatch != 2) {
-		return;	// 
-	}
     
 	// nothing left to respawn?
 	if (iquehead == iquetail) {
@@ -855,7 +851,6 @@ void P_SpawnMapThing (mapthing_t* mthing, int key)
 	mapthing_t copyofthing = *mthing;
 
 		
-    // count deathmatch start positions
 	if (mthing->type == 11 || mthing->type == 2 || mthing->type == 3 || mthing->type == 4) {
 		return;
 	}
@@ -865,16 +860,14 @@ void P_SpawnMapThing (mapthing_t* mthing, int key)
 		// save spots for respawning in network games
  
 		playerstarts[mthingtype-1] = *mthing;
-		if (!deathmatch) {
-			P_SpawnPlayer(mthing);
-		}
+		P_SpawnPlayer(mthing);
  
 
 		return;
     }
 
     // check for apropriate skill level
-	if (!netgame && (mthingoptions & 16)) {
+	if ((mthingoptions & 16)) {
 		return;
 	}
 	if (gameskill == sk_baby) {
@@ -902,10 +895,6 @@ void P_SpawnMapThing (mapthing_t* mthing, int key)
 			mthingx, mthingy);
 	}
 
-    // don't spawn keycards and players in deathmatch
-	if (deathmatch && mobjinfo[i].flags & MF_NOTDMATCH) {
-		return;
-	}
 
     // don't spawn any monsters if -nomonsters
     if (nomonsters && ( i == MT_SKULL || (mobjinfo[i].flags & MF_COUNTKILL)) ) {

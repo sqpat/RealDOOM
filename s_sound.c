@@ -57,7 +57,6 @@
 #define NORM_PRIORITY		64
 #define NORM_SEP		128
 
-#define S_PITCH_PERTURB		1
 #define S_STEREO_SWING		(96*0x10000)
 
 // percent attenuation from front to back
@@ -497,22 +496,7 @@ void S_StartSoundAtVolume
 		sep = NORM_SEP;
 	}
   
-	// hacks to vary the sfx pitches
-	if (sfx_id >= sfx_sawup && sfx_id <= sfx_sawhit) {	
-		pitch += 8 - (M_Random()&15);
-    
-		if (pitch<0)
-			pitch = 0;
-		else if (pitch>255)
-		pitch = 255;
-	} else if (sfx_id != sfx_itemup && sfx_id != sfx_tink) {
-		pitch += 16 - (M_Random()&31);
-    
-    if (pitch<0)
-		pitch = 0;
-    else if (pitch>255)
-		pitch = 255;
-	}
+ 
 
 	// kill old sound
 	S_StopSound(origin_pRef);

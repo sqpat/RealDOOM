@@ -88,7 +88,6 @@ typedef struct
     short		ticdup;
     // Flag: 1 = send a backup tic in every packet.
     short		extratics;
-    // Flag: 1 = deathmatch.
     short		deathmatch;
     // Flag: -1 = new game, 0-5 = load savegame
     short		savegame;

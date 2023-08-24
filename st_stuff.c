@@ -140,10 +140,6 @@
 #define ST_ARMSXSPACE           12
 #define ST_ARMSYSPACE           10
 
-// Frags pos.
-#define ST_FRAGSX                       138
-#define ST_FRAGSY                       171     
-#define ST_FRAGSWIDTH           2
 
 // ARMOR number pos.
 #define ST_ARMORWIDTH           3
@@ -266,8 +262,6 @@ static int              lu_palette;
 // used for timing
 static unsigned int     st_clock;
 
-// used for making messages go away
-static int              st_msgcounter=0;
 
 // whether in automap or first-person
 static st_stateenum_t   st_gamestate;
@@ -276,13 +270,11 @@ static st_stateenum_t   st_gamestate;
 static boolean          st_statusbaron;
 
 // !deathmatch
-static boolean          st_notdeathmatch; 
+static boolean st_notdeathmatch;
 
 // !deathmatch && st_statusbaron
 static boolean          st_armson;
 
-// !deathmatch
-static boolean          st_fragson; 
 
 // main bar left
 static MEMREF         sbarRef;
@@ -314,8 +306,6 @@ static MEMREF	armsRef[6][2];
 // ready-weapon widget
 static st_number_t      w_ready;
 
- // in deathmatch only, summary of frags stats
-static st_number_t      w_frags;
 
 // health widget
 static st_percent_t     w_health;
@@ -344,8 +334,6 @@ static st_number_t      w_maxammo[4];
 
 
 
- // number of frags so far in deathmatch
-static int      st_fragscount;
 
 // used to use appopriately pained face
 static int      st_oldhealth = -1;
@@ -476,8 +464,6 @@ void ST_refreshBackground(void)
     {
         V_DrawPatch(ST_X, 0, BG, (patch_t*)Z_LoadBytesFromEMS(sbarRef));
 
-        if (netgame)
-            V_DrawPatch(ST_FX, 0, BG, (patch_t*)Z_LoadBytesFromEMS(facebackRef));
 
         V_CopyRect(ST_X, 0, BG, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y, FG);
     }
@@ -514,7 +500,7 @@ ST_Responder (event_t* ev)
   // if a user keypress...
   else if (ev->type == ev_keydown)
   {
-    if (!netgame && gameskill != sk_nightmare)
+    if (gameskill != sk_nightmare)
     {
       // 'dqd' cheat for toggleable god mode
       if (cht_CheckCheat(&cheat_god, ev->data1))
@@ -906,63 +892,33 @@ void ST_updateFaceWidget(void)
 
 void ST_updateWidgets(void)
 {
-    static int  largeammo = 1994; // means "n/a"
-    int         i;
+	static int largeammo = 1994; // means "n/a"
+	int i;
 
-    // must redirect the pointer if the ready weapon has changed.
-    //  if (w_ready.data != plyr->readyweapon)
-    //  {
-    if (weaponinfo[plyr->readyweapon].ammo == am_noammo)
-        w_ready.num = &largeammo;
-    else
-        w_ready.num = &plyr->ammo[weaponinfo[plyr->readyweapon].ammo];
-    //{
-    // static int tic=0;
-    // static int dir=-1;
-    // if (!(tic&15))
-    //   plyr->ammo[weaponinfo[plyr->readyweapon].ammo]+=dir;
-    // if (plyr->ammo[weaponinfo[plyr->readyweapon].ammo] == -100)
-    //   dir = 1;
-    // tic++;
-    // }
-    w_ready.data = plyr->readyweapon;
+	if (weaponinfo[plyr->readyweapon].ammo == am_noammo)
+		w_ready.num = &largeammo;
+	else
+		w_ready.num = &plyr->ammo[weaponinfo[plyr->readyweapon].ammo];
+	w_ready.data = plyr->readyweapon;
 
-    // if (*w_ready.on)
-    //  STlib_updateNum(&w_ready, true);
-    // refresh weapon change
-    //  }
+	// update keycard multiple widgets
+	for (i = 0; i < 3; i++)
+	{
+		keyboxes[i] = plyr->cards[i] ? i : -1;
 
-    // update keycard multiple widgets
-    for (i=0;i<3;i++)
-    {
-        keyboxes[i] = plyr->cards[i] ? i : -1;
+		if (plyr->cards[i + 3])
+			keyboxes[i] = i + 3;
+	}
 
-        if (plyr->cards[i+3])
-            keyboxes[i] = i+3;
-    }
+	// refresh everything if this is him coming back to life
+	ST_updateFaceWidget();
 
-    // refresh everything if this is him coming back to life
-    ST_updateFaceWidget();
+	// used by the w_armsbg widget
+	st_notdeathmatch = true;
 
-    // used by the w_armsbg widget
-    st_notdeathmatch = !deathmatch;
-    
-    // used by w_arms[] widgets
-    st_armson = st_statusbaron && !deathmatch; 
+	// used by w_arms[] widgets
+	st_armson = st_statusbaron;
 
-    // used by w_frags widget
-    st_fragson = deathmatch && st_statusbaron; 
-    st_fragscount = 0;
-
-    for (i=0 ; i<MAXPLAYERS ; i++)
-    {
-        if (i != consoleplayer)
-            st_fragscount += plyr->frags[i];
-        else
-            st_fragscount -= plyr->frags[i];
-    }
-
-	--st_msgcounter;
 
 }
 
@@ -1038,36 +994,31 @@ void ST_doPaletteStuff(void)
 
 void ST_drawWidgets(boolean refresh)
 {
-    int         i;
+	int i;
 
-    // used by w_arms[] widgets
-    st_armson = st_statusbaron && !deathmatch;
+	// used by w_arms[] widgets
+	st_armson = st_statusbaron;
 
-    // used by w_frags widget
-    st_fragson = deathmatch && st_statusbaron; 
+	STlib_updateNum(&w_ready, refresh);
 
-    STlib_updateNum(&w_ready, refresh);
+	for (i = 0; i < 4; i++)
+	{
+		STlib_updateNum(&w_ammo[i], refresh);
+		STlib_updateNum(&w_maxammo[i], refresh);
+	}
 
-    for (i=0;i<4;i++)
-    {
-        STlib_updateNum(&w_ammo[i], refresh);
-        STlib_updateNum(&w_maxammo[i], refresh);
-    }
+	STlib_updatePercent(&w_health, refresh);
+	STlib_updatePercent(&w_armor, refresh);
 
-    STlib_updatePercent(&w_health, refresh);
-    STlib_updatePercent(&w_armor, refresh);
+	STlib_updateBinIcon(&w_armsbg, refresh);
 
-    STlib_updateBinIcon(&w_armsbg, refresh);
+	for (i = 0; i < 6; i++)
+		STlib_updateMultIcon(&w_arms[i], refresh);
 
-    for (i=0;i<6;i++)
-        STlib_updateMultIcon(&w_arms[i], refresh);
+	STlib_updateMultIcon(&w_faces, refresh);
 
-    STlib_updateMultIcon(&w_faces, refresh);
-
-    for (i=0;i<3;i++)
-        STlib_updateMultIcon(&w_keyboxes[i], refresh);
-
-    STlib_updateNum(&w_frags, refresh);
+	for (i = 0; i < 3; i++)
+		STlib_updateMultIcon(&w_keyboxes[i], refresh);
 
 }
 
@@ -1306,14 +1257,7 @@ void ST_createWidgets(void)
                            &st_armson);
     }
 
-    // frags sum
-    STlib_initNum(&w_frags,
-                  ST_FRAGSX,
-                  ST_FRAGSY,
-                  tallnumRef,
-                  &st_fragscount,
-                  &st_fragson,
-                  ST_FRAGSWIDTH);
+  
 
     // faces
     STlib_initMultIcon(&w_faces,

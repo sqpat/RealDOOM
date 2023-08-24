@@ -673,7 +673,7 @@ AM_Responder
 	    cheatstate=0;
 	    rc = false;
 	}
-	if (!deathmatch && cht_CheckCheat(&cheat_amap, ev->data1))
+	if ( cht_CheckCheat(&cheat_amap, ev->data1))
 	{
 	    rc = false;
 	    cheating = (cheating+1) % 3;
@@ -1208,26 +1208,22 @@ void AM_drawPlayers(void)
 
 	
 
-    if (!netgame) {
-		playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
-		if (cheating)
-			AM_drawLineCharacter
-			(cheat_player_arrow, NUMCHEATPLYRLINES, 0,
-				playerMo->angle, WHITE, playerMo->x, playerMo->y);
-		else
-			AM_drawLineCharacter
-			(player_arrow, NUMPLYRLINES, 0, playerMo->angle,
-			 WHITE, playerMo->x, playerMo->y);
-		return;
-    }
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+	if (cheating)
+		AM_drawLineCharacter
+		(cheat_player_arrow, NUMCHEATPLYRLINES, 0,
+			playerMo->angle, WHITE, playerMo->x, playerMo->y);
+	else
+		AM_drawLineCharacter
+		(player_arrow, NUMPLYRLINES, 0, playerMo->angle,
+			WHITE, playerMo->x, playerMo->y);
+	return;
 
     for (i=0;i<MAXPLAYERS;i++)
     {
 	their_color++;
 	p = &players[i];
-
-	if ( (deathmatch && !singledemo) && p != plr)
-	    continue;
+ 
 
 	if (!playeringame[i])
 	    continue;
