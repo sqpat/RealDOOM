@@ -72,15 +72,12 @@ P_SetMobjState2
 	// Modified handling.
 	// Call action functions when the state is set
 	
-
 	if (st->action.acp1) {
 		st->action.acp1(mobjRef);
 	}
+
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
-	if (setval == 1 && R_PointInSubsector(-622555, -133426378) - subsectors != 342) {  // thing->subsecnum == 341
-		I_Error("error inner %i %i %i %i %i", gametic, i, state, mobjRef, mobj->type);
-	}
 	state = st->nextstate;
 	i++;
     } while (!mobj->tics);
@@ -149,8 +146,7 @@ void P_XYMovement (MEMREF moRef)
 		return;
     }
 
-
-    player = mo->player;
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
 
     if (mo->momx > MAXMOVE)
@@ -166,7 +162,7 @@ void P_XYMovement (MEMREF moRef)
     xmove = mo->momx;
     ymove = mo->momy;
 
-
+	
 	do {
 		i++;
 
@@ -184,19 +180,19 @@ void P_XYMovement (MEMREF moRef)
 		
 
 		if (!P_TryMove (moRef, ptryx, ptryy)) {
-		
+			
 			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 		
 
 
 			// blocked move
-			if (mo->player) {	// try to slide along it
+			if (player) {	// try to slide along it
 				P_SlideMove (moRef);
+				mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			} else if (mo->flags & MF_MISSILE) {
 				// explode a missile
-				
-
-				if (ceilingline && ceilingline->backsecnum != SECNUM_NULL && sectors[ceilingline->backsecnum].ceilingpic == skyflatnum) {
+				 
+				if (ceilinglinenum != SECNUM_NULL && lines[ceilinglinenum].backsecnum != SECNUM_NULL && sectors[lines[ceilinglinenum].backsecnum].ceilingpic == skyflatnum) {
 					// Hack to prevent missiles exploding
 					// against the sky.
 					// Does not handle sky floors.
@@ -212,7 +208,7 @@ void P_XYMovement (MEMREF moRef)
 			}
 		}
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-		
+	 
     } while (xmove || ymove);
 
 
@@ -234,10 +230,6 @@ void P_XYMovement (MEMREF moRef)
 	}
 
 	if (mo->z > mo->floorz) {
-
-		if (setval == 1) {
-			//I_Error("Z value g %i %i %i %i %i %i %i %i ", gametic, prndindex, mo->momx, mo->z, mo->floorz, mo->subsecnum, mo->x, mo->y);
-		}
 
 		return;		// no friction when airborne
 	}
@@ -265,9 +257,6 @@ void P_XYMovement (MEMREF moRef)
     if ((momomx > -STOPSPEED && momomx < STOPSPEED && momomy > -STOPSPEED && momomy < STOPSPEED) && 
 			(!player || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) 
 		) {
-		if (setval == 1) {
-			//I_Error("Z value a %i %i %i %i %i %i ", gametic, prndindex, mo->momx, momomx, FRICTION, mo->type);
-		}
 	// if in a walking frame, stop moving
 		if (player) {
 			playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
@@ -285,9 +274,6 @@ void P_XYMovement (MEMREF moRef)
 
 		mo->momx = FixedMul (momomx, FRICTION);
 		mo->momy = FixedMul (momomy, FRICTION);
-		if (setval == 1) {
-			//I_Error("Z value b %i %i %i %i %i %i ", gametic, prndindex, mo->momx, momomx, FRICTION, mo->type);
-		}
 
 	}
 
@@ -476,16 +462,19 @@ void P_MobjThinker (MEMREF mobjRef) {
 
 		P_XYMovement (mobjRef);
 
-	
-
-
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	 
+
+
 		
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
 			return;		// mobj was removed
 		}
     } 
+	 
+	
+
 
     if ( (mobj->z != mobj->floorz) || mobj->momz ) {
 		P_ZMovement (mobjRef);
@@ -506,14 +495,16 @@ void P_MobjThinker (MEMREF mobjRef) {
 		if (!mobj->tics) {
 			if (!P_SetMobjState(mobjRef, mobj->state->nextstate)) {
 				 
+				 
 				return;		// freed itself
 			}
-			
+		 
 		}
-	
-
+	 
     } else {
 		 
+		 
+
 
 		// check for nightmare respawn
 		if (!(mobj->flags & MF_COUNTKILL)) {

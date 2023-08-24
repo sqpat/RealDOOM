@@ -481,9 +481,18 @@ void R_ProjectSprite (MEMREF thingRef)
 	spriteframe_t*		spriteframes;
 	
 	mobj_t* thing = Z_LoadBytesFromEMS(thingRef);
-    // transform the origin point
-    tr_x = thing->x - viewx;
-    tr_y = thing->y - viewy;
+	spritenum_t thingsprite = thing->sprite;
+	int thingframe = thing->frame;
+	fixed_t thingx = thing->x;
+	fixed_t thingy = thing->y;
+	fixed_t thingz = thing->z;
+	int thingflags = thing->flags;
+	angle_t thingangle = thing->angle;
+
+		
+	// transform the origin point
+    tr_x = thingx - viewx;
+    tr_y = thingy - viewy;
         
     gxt = FixedMul(tr_x,viewcos); 
     gyt = -FixedMul(tr_y,viewsin);
@@ -505,32 +514,31 @@ void R_ProjectSprite (MEMREF thingRef)
         return;
     
     // decide which patch to use for sprite relative to player
-#ifdef RANGECHECK
-    if ((unsigned)thing->sprite >= numsprites)
-        I_Error ("R_ProjectSprite: invalid sprite number %i ",
-                 thing->sprite);
-#endif
+	#ifdef RANGECHECK
+		if ((unsigned)thingsprite >= numsprites) {
+			I_Error("R_ProjectSprite: invalid sprite number %i ", thingsprite);
+		}
+	#endif
 	sprites = Z_LoadBytesFromEMS(spritesRef);
-	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(sprites[thing->sprite].spriteframesRef);
-#ifdef RANGECHECK
-    if ( (thing->frame&FF_FRAMEMASK) >= sprites[thing->sprite].numframes )
-        I_Error ("R_ProjectSprite: invalid sprite frame %i : %i ",
-                 thing->sprite, thing->frame);
-#endif
-	thing = Z_LoadBytesFromEMS(thingRef);
-    if (spriteframes[thing->frame & FF_FRAMEMASK].rotate)
-    {
+	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(sprites[thingsprite].spriteframesRef);
+	#ifdef RANGECHECK
+		if ((thingframe&FF_FRAMEMASK) >= sprites[thingsprite].numframes) {
+			I_Error("R_ProjectSprite: invalid sprite frame %i : %i ", thingsprite, thingframe);
+		}
+	#endif
+    if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
-        ang = R_PointToAngle (thing->x, thing->y);
-        rot = (ang-thing->angle+(unsigned)(ANG45/2)*9)>>29;
-        lump = spriteframes[thing->frame & FF_FRAMEMASK].lump[rot];
-        flip = (boolean)spriteframes[thing->frame & FF_FRAMEMASK].flip[rot];
+		thing = Z_LoadBytesFromEMS(thingRef);
+		ang = R_PointToAngle (thingx, thingy);
+        rot = (ang-thingangle+(unsigned)(ANG45/2)*9)>>29;
+        lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
+        flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[rot];
     }
     else
     {
         // use single rotation for all views
-        lump = spriteframes[thing->frame & FF_FRAMEMASK].lump[0];
-        flip = (boolean)spriteframes[thing->frame & FF_FRAMEMASK].flip[0];
+        lump = spriteframes[thingframe & FF_FRAMEMASK].lump[0];
+        flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[0];
     }
     
     // calculate edges of the shape
@@ -553,14 +561,14 @@ void R_ProjectSprite (MEMREF thingRef)
         return;
     // store information in a vissprite
     vis = R_NewVisSprite ();
-	thing = Z_LoadBytesFromEMS(thingRef);
-	vis->mobjflags = thing->flags;
+	vis->mobjflags = thingflags;
     vis->scale = xscale<<detailshift;
-    vis->gx = thing->x;
-    vis->gy = thing->y;
-    vis->gz = thing->z;
+    vis->gx = thingx;
+    vis->gy = thingy;
+    vis->gz = thingz;
 	spritetopoffset = (fixed_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
-	vis->gzt = thing->z + spritetopoffset[lump];
+	vis->gzt = vis->gz + spritetopoffset[lump];
+//	vis->gzt = thing->z + spritetopoffset[lump];
     vis->texturemid = vis->gzt - viewz;
     vis->x1 = x1 < 0 ? 0 : x1;
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
@@ -583,7 +591,7 @@ void R_ProjectSprite (MEMREF thingRef)
     vis->patch = lump;
     
     // get light level
-    if (thing->flags & MF_SHADOW)
+    if (thingflags & MF_SHADOW)
     {
         // shadow draw
         vis->colormap = NULL;
@@ -593,7 +601,7 @@ void R_ProjectSprite (MEMREF thingRef)
         // fixed map
         vis->colormap = fixedcolormap;
     }
-    else if (thing->frame & FF_FULLBRIGHT)
+    else if (thingframe & FF_FULLBRIGHT)
     {
         // full bright
         vis->colormap = colormaps;

@@ -513,12 +513,12 @@ boolean
 P_BlockLinesIterator
 ( int			x,
   int			y,
-  boolean(*func)(line_t*, short) )
+  boolean(*func)(short) )
 {
     int			offset;
     short*		list;
     line_t*		ld;
-	
+	 
     if (x<0
 	|| y<0
 	|| x>=bmapwidth
@@ -531,17 +531,17 @@ P_BlockLinesIterator
 	
     offset = *(blockmap+offset);
 
-    for ( list = blockmaplump+offset ; *list != -1 ; list++)
-    {
-	ld = &lines[*list];
+    for ( list = blockmaplump+offset ; *list != -1 ; list++) {
+		ld = &lines[*list];
 
-	if (ld->validcount == validcount)
-	    continue; 	// line has already been checked
+		if (ld->validcount == validcount)
+		    continue; 	// line has already been checked
 
-	ld->validcount = validcount;
-		
-	if ( !func(ld, *list) )
-	    return false;
+		ld->validcount = validcount;
+			
+		if (!func(*list)) {
+			return false;
+		}
     }
     return true;	// everything was checked
 }
@@ -612,12 +612,13 @@ int		ptflags;
 // Returns true if earlyout and a solid line hit.
 //
 boolean
-PIT_AddLineIntercepts (line_t* ld, short linenum)
+PIT_AddLineIntercepts (short linenum)
 {
     int			s1;
     int			s2;
     fixed_t		frac;
     divline_t		dl;
+	line_t* ld = &lines[linenum];
 	short linev1Offset = ld->v1Offset;
 	short linev2Offset = ld->v2Offset;
 	fixed_t linedx = ld->dx;
@@ -905,14 +906,14 @@ P_PathTraverse
 	if (flags & PT_ADDLINES)
 	{
 	    if (!P_BlockLinesIterator (mapx, mapy,PIT_AddLineIntercepts))
-		return false;	// early out
+			return false;	// early out
 	}
 	
 	if (flags & PT_ADDTHINGS)
 	{
 
 		if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
-		return false;	// early out
+			return false;	// early out
 	}
 		
 	if (mapx == xt2

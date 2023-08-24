@@ -508,7 +508,6 @@ int upcount = 0;
 //
 void R_Subsector (int num) {
     int			count;
-    seg_t*		line;
     subsector_t*	sub;
 	seg_t* segs;
 	int lineoffset = 0;
@@ -547,9 +546,6 @@ void R_Subsector (int num) {
 	
     R_AddSprites (frontsecnum);
 	 
-	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
-	line = &segs[sub->firstline];
-
     while (count--) {
 		R_AddLine (sub->firstline + lineoffset);
 		lineoffset++;

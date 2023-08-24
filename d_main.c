@@ -420,12 +420,13 @@ void D_DoomLoop (void)
 		//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
 	
 
-		stoptic = 2395;
+		stoptic = 9335;
 		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {
 				lasttick = gametic;
 				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+				//SAVEDUNIT = Z_LoadBytesFromEMS(575);
 				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i\n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z  , SAVEDUNIT->x, SAVEDUNIT->y, subsectors[SAVEDUNIT->subsecnum].secnum, SAVEDUNIT->subsecnum, SAVEDUNIT->snextRef);
 
 //				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z >> FRACBITS, SAVEDUNIT->movecount, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->subsecnum, i, 0);

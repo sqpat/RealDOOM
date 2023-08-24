@@ -52,7 +52,7 @@ fixed_t		tmdropoffz;
 
 // keep track of the line that lowers the ceiling,
 // so missiles don't explode against sky hack walls
-line_t*		ceilingline;
+short		ceilinglinenum;
 
 // keep track of special lines as they are hit,
 // but don't process them until the move is proven valid
@@ -137,7 +137,7 @@ P_TeleportMove
     tmbbox[BOXLEFT] = x - tmthing->radius;
 
     newsubsec = R_PointInSubsector (x,y);
-    ceilingline = NULL;
+    ceilinglinenum = -1;
     
     // The base floor/ceiling is from the subsector
     // that contains the point.
@@ -187,11 +187,12 @@ P_TeleportMove
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-boolean PIT_CheckLine (line_t* ld, short linenum)
+boolean PIT_CheckLine (short linenum)
 {
 	mobj_t* tmthing;
 	//short linespecial;
 	//fixed_t linedx; , fixed_t linedy, short linev1Offset, short linev2Offset, short linefrontsecnum, short linebacksecnum, short lineside1, slopetype_t lineslopetype
+	line_t* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld->slopetype;
 	fixed_t linedx = ld->dx;
 	fixed_t linedy = ld->dy;
@@ -244,7 +245,7 @@ boolean PIT_CheckLine (line_t* ld, short linenum)
     // adjust floor / ceiling heights
     if (opentop < tmceilingz) {
 		tmceilingz = opentop;
-		ceilingline = ld;
+		ceilinglinenum = linenum;
     }
 
 	if (openbottom > tmfloorz) {
@@ -257,6 +258,9 @@ boolean PIT_CheckLine (line_t* ld, short linenum)
 
     // if contacted a special line, add it to the list
     if (linespecial) {
+		if (setval >= 1) {
+			I_Error("hit spechit %i %i %i", gametic, prndindex, linenum);
+		}
 		spechit[numspechit] = linenum;
 		numspechit++;
     }
@@ -451,7 +455,7 @@ P_CheckPosition
 
 
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
-	ceilingline = NULL;
+	ceilinglinenum = -1;
     
     // The base floor / ceiling is from the subsector
     // that contains the point.
@@ -518,6 +522,8 @@ P_TryMove
 {
     fixed_t	oldx;
     fixed_t	oldy;
+	fixed_t	newx;
+	fixed_t	newy;
     int		side;
     int		oldside;
     line_t*	ld;
@@ -533,29 +539,28 @@ P_TryMove
 	if (!P_CheckPosition(thingRef, x, y)) {
 		return false;		// solid wall or thing
 	}
-
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-    if ( !(thing->flags & MF_NOCLIP) )
-    {
-	if (tmceilingz - tmfloorz < thing->height)
-	    return false;	// doesn't fit
 
-	floatok = true;
+    if ( !(thing->flags & MF_NOCLIP) ) {
+		if (tmceilingz - tmfloorz < thing->height) {
+				return false;	// doesn't fit
+			}
+
+		floatok = true;
 	
-	if ( !(thing->flags&MF_TELEPORT) 
-	     &&tmceilingz - thing->z < thing->height)
-	    return false;	// mobj must lower itself to fit
+		if (!(thing->flags&MF_TELEPORT) && tmceilingz - thing->z < thing->height) {
+			return false;	// mobj must lower itself to fit
+		}
 
-	if ( !(thing->flags&MF_TELEPORT)
-	     && tmfloorz - thing->z > 24*FRACUNIT )
-	    return false;	// too big a step up
+		if (!(thing->flags&MF_TELEPORT) && tmfloorz - thing->z > 24 * FRACUNIT) {
+			return false;	// too big a step up
+		}
 
-	if ( !(thing->flags&(MF_DROPOFF|MF_FLOAT))
-	     && tmfloorz - tmdropoffz > 24*FRACUNIT )
-	    return false;	// don't stand over a dropoff
+		if (!(thing->flags&(MF_DROPOFF | MF_FLOAT)) && tmfloorz - tmdropoffz > 24 * FRACUNIT) {
+
+			return false;	// don't stand over a dropoff
+		}
     }
-
-
 
     // the move is ok,
     // so link the thing into its new position
@@ -569,19 +574,19 @@ P_TryMove
     thing->y = y;
 	P_SetThingPosition (thingRef);
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-
-
+	newx = thing->x;
+	newy = thing->y;
     // if any special lines were hit, do the effect
     if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
 		while (numspechit--) {
 			// see if the line was crossed
 			ld = &lines[spechit[numspechit]];
-			side = P_PointOnLineSide (thing->x, thing->y, ld->dx, ld->dy, ld->v1Offset);
+			side = P_PointOnLineSide (newx, newy, ld->dx, ld->dy, ld->v1Offset);
 			oldside = P_PointOnLineSide (oldx, oldy, ld->dx, ld->dy, ld->v1Offset);
 			if (side != oldside)
 			{
 			if (ld->special)
-				P_CrossSpecialLine (ld-lines, oldside, thingRef);
+				P_CrossSpecialLine (spechit[numspechit], oldside, thingRef);
 			}
 		}
     }
@@ -644,7 +649,7 @@ fixed_t		secondslidefrac;
 line_t*		bestslideline;
 line_t*		secondslideline;
 
-mobj_t*		slidemo;
+MEMREF		slidemoRef;
 
 fixed_t		tmxmove;
 fixed_t		tmymove;
@@ -666,7 +671,7 @@ void P_HitSlideLine (line_t* ld)
     
     fixed_t		movelen;
     fixed_t		newlen;
-	
+	mobj_t* slidemo;
 	
     if (ld->slopetype == ST_HORIZONTAL)
     {
@@ -679,7 +684,7 @@ void P_HitSlideLine (line_t* ld)
 	tmxmove = 0;
 	return;
     }
-	
+	slidemo = (mobj_t*) Z_LoadBytesFromEMS(slidemoRef);
     side = P_PointOnLineSide (slidemo->x, slidemo->y, ld->dx, ld->dy, ld->v1Offset);
     lineangle = R_PointToAngle2 (0,0, ld->dx, ld->dy);
 
@@ -710,34 +715,34 @@ void P_HitSlideLine (line_t* ld)
 boolean PTR_SlideTraverse (intercept_t* in)
 {
     line_t*	li;
- 
+	mobj_t* slidemo;
 
     if (!in->isaline)
 	I_Error ("PTR_SlideTraverse: not a line?");
 		
 	li = &lines[in->d.linenum];
     
-    if ( ! (li->flags & ML_TWOSIDED) )
-    {
-	if (P_PointOnLineSide (slidemo->x, slidemo->y, li->dx, li->dy, li->v1Offset))
-	{
+    if ( ! (li->flags & ML_TWOSIDED) ) {
+		slidemo = (mobj_t*)Z_LoadBytesFromEMS(slidemoRef);
+		if (P_PointOnLineSide (slidemo->x, slidemo->y, li->dx, li->dy, li->v1Offset)) {
 	    // don't hit the back side
-	    return true;		
-	}
+			return true;		
+		}
 	goto isblocking;
     }
 
     // set openrange, opentop, openbottom
     P_LineOpening (li->sidenum[1], li->frontsecnum, li->backsecnum);
-    
+	slidemo = (mobj_t*)Z_LoadBytesFromEMS(slidemoRef);
+
     if (openrange < slidemo->height)
-	goto isblocking;		// doesn't fit
+		goto isblocking;		// doesn't fit
 		
     if (opentop - slidemo->z < slidemo->height)
-	goto isblocking;		// mobj is too high
+		goto isblocking;		// mobj is too high
 
     if (openbottom - slidemo->z > 24*FRACUNIT )
-	goto isblocking;		// too big a step up
+		goto isblocking;		// too big a step up
 
     // this line doesn't block movement
     return true;		
@@ -779,14 +784,14 @@ void P_SlideMove (MEMREF moRef)
 	mobj_t* mo;
 
 		
-    slidemo = mo;
+    slidemoRef = moRef;
     hitcount = 0;
     
   retry:
     if (++hitcount == 3)
 		goto stairstep;		// don't loop forever
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	slidemo = mo;
+	 
 
     // trace along the three leading corners
     if (mo->momx > 0)
@@ -815,29 +820,23 @@ void P_SlideMove (MEMREF moRef)
 	
     P_PathTraverse ( leadx, leady, leadx+mo->momx, leady+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	slidemo = mo;
-	P_PathTraverse ( trailx, leady, trailx+mo->momx, leady+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
+ 	P_PathTraverse ( trailx, leady, trailx+mo->momx, leady+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	slidemo = mo;
-	P_PathTraverse ( leadx, traily, leadx+mo->momx, traily+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
+ 	P_PathTraverse ( leadx, traily, leadx+mo->momx, traily+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	slidemo = mo;
-
+ 
     // move up to the wall
-    if (bestslidefrac == FRACUNIT+1)
-    {
+    if (bestslidefrac == FRACUNIT+1) {
 	// the move most have hit the middle, so stairstep
       stairstep:
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-		slidemo = mo;
-
+ 
 		if (!P_TryMove(moRef, mo->x, mo->y + mo->momy)) {
 			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-			slidemo = mo;
-
+ 
 			P_TryMove(moRef, mo->x + mo->momx, mo->y);
 		}
-	return;
+		return;
     }
 
     // fudge a bit to make sure it doesn't hit
@@ -850,7 +849,7 @@ void P_SlideMove (MEMREF moRef)
 			goto stairstep;
 		}
     }
-    
+
     // Now continue along the wall.
     // First calculate remainder.
     bestslidefrac = FRACUNIT-(bestslidefrac+0x800);
@@ -860,22 +859,21 @@ void P_SlideMove (MEMREF moRef)
     
     if (bestslidefrac <= 0)
 		return;
-    
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+
     tmxmove = FixedMul (mo->momx, bestslidefrac);
     tmymove = FixedMul (mo->momy, bestslidefrac);
 
     P_HitSlideLine (bestslideline);	// clip the moves
 
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	slidemo = mo;
-
+ 
 
     mo->momx = tmxmove;
     mo->momy = tmymove;
 		
-    if (!P_TryMove (moRef, mo->x+tmxmove, mo->y+tmymove))
-    {
-	goto retry;
+    if (!P_TryMove (moRef, mo->x+tmxmove, mo->y+tmymove)) {
+		goto retry;
     }
 }
 

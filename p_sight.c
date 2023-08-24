@@ -33,8 +33,8 @@ fixed_t		topslope;
 fixed_t		bottomslope;		// slopes to top and bottom of target
 
 divline_t	strace;			// from t1 to t2
-fixed_t		t2x;
-fixed_t		t2y;
+fixed_t		cachedt2x;
+fixed_t		cachedt2y;
 
 int		sightcounts[2];
 
@@ -184,7 +184,7 @@ boolean P_CrossSubsector (int num)
 		divl.dx = v2.x - v1.x;
 		divl.dy = v2.y - v1.y;
 		s1 = P_DivlineSide (strace.x, strace.y, &divl);
-		s2 = P_DivlineSide (t2x, t2y, &divl);
+		s2 = P_DivlineSide (cachedt2x, cachedt2y, &divl);
 
 		// line isn't crossed?
 		if (s1 == s2)
@@ -289,7 +289,7 @@ boolean P_CrossBSPNode (int bspnum)
 	bsp = &nodes[bspnum];
 
     // the partition plane is crossed here
-    if (side == P_DivlineSide (t2x, t2y,(divline_t *)bsp)) {
+    if (side == P_DivlineSide (cachedt2x, cachedt2y,(divline_t *)bsp)) {
 		// the line doesn't touch the other side
 		return true;
     }
@@ -318,15 +318,26 @@ P_CheckSight
     int		bytenum;
     int		bitnum;
 	mobj_t*	t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
+	fixed_t t1z = t1->z;
+	fixed_t t1x = t1->x;
+	fixed_t t1y = t1->y;
+	fixed_t t1height = t1->height;
+	short t1subsecnum = t1->subsecnum;
+
 	mobj_t*	t2 = (mobj_t*)Z_LoadBytesFromEMS(t2Ref);
+	fixed_t t2z = t2->z;
+	fixed_t t2x = t2->x;
+	fixed_t t2y = t2->y;
+	fixed_t t2height = t2->height;
+	short t2subsecnum = t2->subsecnum;
 
 	//I_Error("set call %i  %i %p %p", t1Ref, t2Ref, t1, t2);
 
     // First check for trivial rejection.
 
     // Determine subsector entries in REJECT table.
-	s1 = subsectors[t1->subsecnum].secnum;
-	s2 = subsectors[t2->subsecnum].secnum;
+	s1 = subsectors[t1subsecnum].secnum;
+	s2 = subsectors[t2subsecnum].secnum;
     pnum = s1*numsectors + s2;
     bytenum = pnum>>3;
     bitnum = 1 << (pnum&7);
@@ -345,16 +356,17 @@ P_CheckSight
 
     validcount++;
 	
-    sightzstart = t1->z + t1->height - (t1->height>>2);
-    topslope = (t2->z+t2->height) - sightzstart;
-    bottomslope = (t2->z) - sightzstart;
+    sightzstart = t1z + t1height - (t1height>>2);
+    topslope = (t2z+t2height) - sightzstart;
+    bottomslope = (t2z) - sightzstart;
 	
-    strace.x = t1->x;
-    strace.y = t1->y;
-    t2x = t2->x;
-    t2y = t2->y;
-    strace.dx = t2->x - t1->x;
-    strace.dy = t2->y - t1->y;
+	t2 = (mobj_t*)Z_LoadBytesFromEMS(t2Ref);
+    strace.x = t1x;
+    strace.y = t1y;
+    cachedt2x = t2x;
+	cachedt2y = t2y;
+    strace.dx = t2x - t1x;
+    strace.dy = t2y - t1y;
 
     // the head node is the last node output
     return P_CrossBSPNode (numnodes-1);	

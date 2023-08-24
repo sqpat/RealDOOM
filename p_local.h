@@ -175,7 +175,7 @@ extern fixed_t		lowfloor;
 
 void 	P_LineOpening (short lineside1, short linefrontsecnum, short linebacksecnum);
 
-boolean P_BlockLinesIterator (int x, int y, boolean(*func)(line_t*, short ) );
+boolean P_BlockLinesIterator (int x, int y, boolean(*func)(short ) );
 boolean P_BlockThingsIterator (int x, int y, boolean(*func)(MEMREF));
 
 #define PT_ADDLINES		1
@@ -208,7 +208,7 @@ extern fixed_t		tmfloorz;
 extern fixed_t		tmceilingz;
 
 
-extern	line_t*		ceilingline;
+extern	short		ceilinglinenum;
 
 boolean P_CheckPosition (MEMREF thing, fixed_t x, fixed_t y);
 boolean P_TryMove (MEMREF thing, fixed_t x, fixed_t y);

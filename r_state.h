@@ -27,6 +27,7 @@
 
 
 #define SECNUM_NULL -1
+#define LINENUM_NULL -1
 //
 // Refresh internal data structures,
 //  for rendering.

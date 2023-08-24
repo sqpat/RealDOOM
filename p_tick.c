@@ -175,16 +175,20 @@ void P_RunThinkers (void)
 				//setval = 1;
 				//I_Error("value %i %i %i", gametic, i, prndindex);
 			}
-			if (gametic == 1412 && i == 0) {
-				// 1412 74 -131984 1 541 1    ... -178529
-				//I_Error("Z value %i %i %i %i %i %i", gametic, i, ((mobj_t*)Z_LoadBytesFromEMS(players[0].moRef))->momx, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type);
-
+			 
+			if (gametic == 1182 && i == 106) {
+				//I_Error("error a %i %i %i %i %i %i", gametic, i, prndindex, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type);
+//				setval = 1;
 			}
 
-			if (gametic == 602 && i == 46 ) {  // thing->subsecnum == 341
-				//I_Error("error a %i %i %i %i %i", gametic, i, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref, ((mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type);
+			if (gametic == 1146 && i == 106) {
+				//SAVEDUNIT = Z_LoadBytesFromEMS(575);
+
+				//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, thinkerlist[currentthinker].functionType, SAVEDUNIT->type);
 				//setval = 1;
+					
 			}
+
 			if (thinkerlist[currentthinker].functionType) {
 
 				switch (thinkerlist[currentthinker].functionType) {
@@ -223,7 +227,6 @@ void P_RunThinkers (void)
 
 				}
 			
-
 
 				i++;
 			}
