@@ -3,7 +3,7 @@
 
 option quiet
 option map
-option stack=32768
+option stack=24576
 option stub=wstub
 debug all
 libpath %WATCOM%\lib386

@@ -103,14 +103,7 @@ MEMREF        blocklinks[NUM_BLOCKLINKS];
 //
 MEMREF           rejectmatrixRef;
 
-
-
-mapthing_t      playerstarts[MAXPLAYERS];
-
-
-
-
-
+ 
 //
 // P_LoadVertexes
 //
@@ -820,13 +813,8 @@ P_SetupLevel
 
 	byte* nodes;
 
-	totalkills = totalitems = totalsecret = wminfo.maxfrags = 0;
 	wminfo.partime = 180;
-	for (i = 0; i < MAXPLAYERS; i++)
-	{
-		players[i].killcount = players[i].secretcount
-			= players[i].itemcount = 0;
-	}
+	players[0].killcount = players[0].secretcount = players[0].itemcount = 0;
 
 	// Initial height of PointOfView
 	// will be set by player think.

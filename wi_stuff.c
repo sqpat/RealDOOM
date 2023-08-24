@@ -271,7 +271,6 @@ static anim_t *anims[NUMEPISODES] =
 #define SP_KILLS		0
 #define SP_ITEMS		2
 #define SP_SECRET		4
-#define SP_FRAGS		6 
 #define SP_TIME			8 
 #define SP_PAR			ST_TIME
 
@@ -294,7 +293,7 @@ static stateenum_t	state;
 // contains information passed into intermission
 static wbstartstruct_t*	wbs;
 
-static wbplayerstruct_t* plrs;  // wbs->plyr[]
+static wbplayerstruct_t plrs;  // wbs->plyr[]
 
 // used for general timing
 static int 		cnt;  
@@ -305,9 +304,9 @@ static int 		bcnt;
 // signals to refresh everything for one frame
 static int 		firstrefresh; 
 
-static int		cnt_kills[MAXPLAYERS];
-static int		cnt_items[MAXPLAYERS];
-static int		cnt_secret[MAXPLAYERS];
+static int		cnt_kills;
+static int		cnt_items;
+static int		cnt_secret;
 static int		cnt_time;
 static int		cnt_par;
 static int		cnt_pause;
@@ -348,7 +347,7 @@ static MEMREF		enteringRef;
 // "secret"
 static MEMREF		sp_secretRef;
 
- // "Kills", "Scrt", "Items", "Frags"
+ // "Kills", "Scrt", "Items"
 static MEMREF		killsRef;
 static MEMREF		secretRef;
 static MEMREF		itemsRef;
@@ -364,11 +363,6 @@ static MEMREF		totalRef;
 static MEMREF		starRef;
 static MEMREF		bstarRef;
 
-// "red P[1..MAXPLAYERS]"
-static MEMREF		pRef[MAXPLAYERS];
-
-// "gray P[1..MAXPLAYERS]"
-static MEMREF		bpRef[MAXPLAYERS];
 
  // Name graphics of each level (centered)
 MEMREF				lnamesRef;
@@ -558,24 +552,25 @@ void WI_updateAnimatedBack(void)
 
 void WI_drawAnimatedBack(void)
 {
-    int			i;
-    anim_t*		a;
+   
+	int i;
+	anim_t *a;
 
-    if (commercial)
-	return;
+	if (commercial)
+		return;
 
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-    if (wbs->epsd > 2)
-	return;
+	if (wbs->epsd > 2)
+		return;
 #endif
 
-    for (i=0 ; i<NUMANIMS[wbs->epsd] ; i++)
-    {
-	a = &anims[wbs->epsd][i];
+	for (i = 0; i < NUMANIMS[wbs->epsd]; i++)
+	{
+		a = &anims[wbs->epsd][i];
 
-	if (a->ctr >= 0)
-	    V_DrawPatch(a->loc.x, a->loc.y, FB, (patch_t*) Z_LoadBytesFromEMS( a->pRef[a->ctr]));
-    }
+		if (a->ctr >= 0)
+			V_DrawPatch(a->loc.x, a->loc.y, FB, (patch_t*)Z_LoadBytesFromEMS(a->pRef[a->ctr]));
+	}
 
 }
 
@@ -805,7 +800,7 @@ void WI_initStats(void)
     state = StatCount;
     acceleratestage = 0;
     sp_state = 1;
-    cnt_kills[0] = cnt_items[0] = cnt_secret[0] = -1;
+    cnt_kills = cnt_items = cnt_secret = -1;
     cnt_time = cnt_par = -1;
     cnt_pause = TICRATE;
 
@@ -820,10 +815,10 @@ void WI_updateStats(void)
     if (acceleratestage && sp_state != 10)
     {
 	acceleratestage = 0;
-	cnt_kills[0] = (plrs[me].skills * 100) / wbs->maxkills;
-	cnt_items[0] = (plrs[me].sitems * 100) / wbs->maxitems;
-	cnt_secret[0] = (plrs[me].ssecret * 100) / wbs->maxsecret;
-	cnt_time = plrs[me].stime / TICRATE;
+	cnt_kills = (plrs.skills * 100) / wbs->maxkills;
+	cnt_items = (plrs.sitems * 100) / wbs->maxitems;
+	cnt_secret = (plrs.ssecret * 100) / wbs->maxsecret;
+	cnt_time = plrs.stime / TICRATE;
 	cnt_par = wbs->partime / TICRATE;
 	S_StartSound(0, sfx_barexp);
 	sp_state = 10;
@@ -831,42 +826,42 @@ void WI_updateStats(void)
 
     if (sp_state == 2)
     {
-	cnt_kills[0] += 2;
+	cnt_kills += 2;
 
 	if (!(bcnt&3))
 	    S_StartSound(0, sfx_pistol);
 
-	if (cnt_kills[0] >= (plrs[me].skills * 100) / wbs->maxkills)
+	if (cnt_kills >= (plrs.skills * 100) / wbs->maxkills)
 	{
-	    cnt_kills[0] = (plrs[me].skills * 100) / wbs->maxkills;
+	    cnt_kills = (plrs.skills * 100) / wbs->maxkills;
 	    S_StartSound(0, sfx_barexp);
 	    sp_state++;
 	}
     }
     else if (sp_state == 4)
     {
-	cnt_items[0] += 2;
+	cnt_items += 2;
 
 	if (!(bcnt&3))
 	    S_StartSound(0, sfx_pistol);
 
-	if (cnt_items[0] >= (plrs[me].sitems * 100) / wbs->maxitems)
+	if (cnt_items >= (plrs.sitems * 100) / wbs->maxitems)
 	{
-	    cnt_items[0] = (plrs[me].sitems * 100) / wbs->maxitems;
+	    cnt_items = (plrs.sitems * 100) / wbs->maxitems;
 	    S_StartSound(0, sfx_barexp);
 	    sp_state++;
 	}
     }
     else if (sp_state == 6)
     {
-	cnt_secret[0] += 2;
+	cnt_secret += 2;
 
 	if (!(bcnt&3))
 	    S_StartSound(0, sfx_pistol);
 
-	if (cnt_secret[0] >= (plrs[me].ssecret * 100) / wbs->maxsecret)
+	if (cnt_secret >= (plrs.ssecret * 100) / wbs->maxsecret)
 	{
-	    cnt_secret[0] = (plrs[me].ssecret * 100) / wbs->maxsecret;
+	    cnt_secret = (plrs.ssecret * 100) / wbs->maxsecret;
 	    S_StartSound(0, sfx_barexp);
 	    sp_state++;
 	}
@@ -879,8 +874,8 @@ void WI_updateStats(void)
 
 	cnt_time += 3;
 
-	if (cnt_time >= plrs[me].stime / TICRATE)
-	    cnt_time = plrs[me].stime / TICRATE;
+	if (cnt_time >= plrs.stime / TICRATE)
+	    cnt_time = plrs.stime / TICRATE;
 
 	cnt_par += 3;
 
@@ -888,7 +883,7 @@ void WI_updateStats(void)
 	{
 	    cnt_par = wbs->partime / TICRATE;
 
-	    if (cnt_time >= plrs[me].stime / TICRATE)
+	    if (cnt_time >= plrs.stime / TICRATE)
 	    {
 		S_StartSound(0, sfx_barexp);
 		sp_state++;
@@ -935,13 +930,13 @@ void WI_drawStats(void)
     WI_drawLF();
 
     V_DrawPatch(SP_STATSX, SP_STATSY, FB, (patch_t*)Z_LoadBytesFromEMS(killsRef));
-    WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY, cnt_kills[0]);
+    WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY, cnt_kills);
 
     V_DrawPatch(SP_STATSX, SP_STATSY+lh, FB, (patch_t*)Z_LoadBytesFromEMS(itemsRef));
-    WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+lh, cnt_items[0]);
+    WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+lh, cnt_items);
 
     V_DrawPatch(SP_STATSX, SP_STATSY+2*lh, FB, (patch_t*)Z_LoadBytesFromEMS(sp_secretRef));
-    WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+2*lh, cnt_secret[0]);
+    WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+2*lh, cnt_secret);
 
     V_DrawPatch(SP_TIMEX, SP_TIMEY, FB, (patch_t*)Z_LoadBytesFromEMS(timeRef));
     WI_drawTime(SCREENWIDTH/2 - SP_TIMEX, SP_TIMEY, cnt_time);
@@ -958,32 +953,27 @@ void WI_drawStats(void)
 
 void WI_checkForAccelerate(void)
 {
-    int   i;
-    player_t  *player;
+	int i;
+	player_t *player;
 
-    // check for button presses to skip delays
-    for (i=0, player = players ; i<MAXPLAYERS ; i++, player++)
-    {
-	if (playeringame[i])
+	player = players;
+
+	if (player->cmd.buttons & BT_ATTACK)
 	{
-	    if (player->cmd.buttons & BT_ATTACK)
-	    {
 		if (!player->attackdown)
-		    acceleratestage = 1;
+			acceleratestage = 1;
 		player->attackdown = true;
-	    }
-	    else
-		player->attackdown = false;
-	    if (player->cmd.buttons & BT_USE)
-	    {
-		if (!player->usedown)
-		    acceleratestage = 1;
-		player->usedown = true;
-	    }
-	    else
-		player->usedown = false;
 	}
-    }
+	else
+		player->attackdown = false;
+	if (player->cmd.buttons & BT_USE)
+	{
+		if (!player->usedown)
+			acceleratestage = 1;
+		player->usedown = true;
+	}
+	else
+		player->usedown = false;
 }
 
 
@@ -1159,17 +1149,7 @@ void WI_loadData(void)
 
     // dead face
     bstarRef = W_CacheLumpNameEMS("STFDEAD0", PU_STATIC);
-
-    for (i=0 ; i<MAXPLAYERS ; i++)
-    {
-	// "1,2,3,4"
-	sprintf(name, "STPB%d", i);      
-	pRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
-
-	// "1,2,3,4"
-	sprintf(name, "WIBP%d", i+1);     
-	bpRef[i]  = W_CacheLumpNameEMS(name, PU_STATIC);
-    }
+ 
 
 }
 
@@ -1232,8 +1212,6 @@ void WI_unloadData(void)
     //  Z_ChangeTagEMSNew(star, PU_CACHE);
     //  Z_ChangeTagEMSNew(bstar, PU_CACHE);
     
-		Z_ChangeTagEMSNew(pRef[i], PU_CACHE);
-		Z_ChangeTagEMSNew(bpRef[i], PU_CACHE);
 }
 
 void WI_Drawer (void)
@@ -1253,49 +1231,24 @@ void WI_Drawer (void)
 		break;
     }
 }
-#define RANGECHECKING
-#define RNGCHECK(v,l,h) \
-{ \
-    if((v) < (l) || (v) > (h)) \
-    { \
-        I_Error("%s=%d in %s:%d", #v, (v), __FILE__, __LINE__); \
-    } \
-};
+ 
 
 void WI_initVariables(wbstartstruct_t* wbstartstruct)
 {
+	wbs = wbstartstruct;
+	acceleratestage = 0;
+	cnt = bcnt = 0;
+	firstrefresh = 1;
+	plrs = wbs->plyr;
 
-    wbs = wbstartstruct;
+	if (!wbs->maxkills)
+		wbs->maxkills = 1;
 
-#ifdef RANGECHECKING
-    if (!commercial)
-    {
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-        RNGCHECK(wbs->epsd, 0, 2);
-#else
-        RNGCHECK(wbs->epsd, 0, 3);
-#endif
-        RNGCHECK(wbs->last, 0, 8);
-        RNGCHECK(wbs->next, 0, 8);
-    }
-    RNGCHECK(wbs->pnum, 0, MAXPLAYERS);
-    RNGCHECK(wbs->pnum, 0, MAXPLAYERS);
-#endif
+	if (!wbs->maxitems)
+		wbs->maxitems = 1;
 
-    acceleratestage = 0;
-    cnt = bcnt = 0;
-    firstrefresh = 1;
-    me = wbs->pnum;
-    plrs = wbs->plyr;
-
-    if (!wbs->maxkills)
-	wbs->maxkills = 1;
-
-    if (!wbs->maxitems)
-	wbs->maxitems = 1;
-
-    if (!wbs->maxsecret)
-	wbs->maxsecret = 1;
+	if (!wbs->maxsecret)
+		wbs->maxsecret = 1;
 }
 
 void WI_Start(wbstartstruct_t* wbstartstruct)

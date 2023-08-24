@@ -1992,14 +1992,10 @@ void A_BossDeath (MEMREF moRef)
     }
 
     
-    // make sure there is a player alive for victory
-    for (i=0 ; i<MAXPLAYERS ; i++)
-	if (playeringame[i] && players[i].health > 0)
-	    break;
-    
-    if (i==MAXPLAYERS)
-	return;	// no one left alive, so do not end game
-    
+	// make sure there is a player alive for victory
+	if (players[0].health <= 0)
+		return; // no one left alive, so do not end game
+
     // scan the remaining thinkers to see
     // if all bosses are dead
 	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)

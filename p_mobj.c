@@ -793,7 +793,6 @@ void P_SpawnMapThing (mapthing_t* mthing, int key)
     if (mthingtype == 1) {
 		// save spots for respawning in network games
  
-		playerstarts[mthingtype-1] = *mthing;
 		P_SpawnPlayer(mthing);
  
 

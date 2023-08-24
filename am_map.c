@@ -448,13 +448,8 @@ void AM_initVariables(void)
     m_w = FTOM(f_w);
     m_h = FTOM(f_h);
 
-    // find player to center on initially
-    if (!playeringame[pnum = consoleplayer])
-	for (pnum=0;pnum<MAXPLAYERS;pnum++)
-	    if (playeringame[pnum])
-		break;
   
-    plr = &players[pnum];
+    plr = &players[0];
 	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
 	m_x = playerMo->x - m_w/2;
     m_y = playerMo->y - m_h/2;
@@ -1199,45 +1194,31 @@ AM_drawLineCharacter
 
 void AM_drawPlayers(void)
 {
-    int		i;
-    player_t*	p;
-    static int 	their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
-    int		their_color = -1;
-    int		color;
+	int i;
+	player_t *p;
+	static int their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
+	int color;
 	mobj_t* playerMo;
-
-	
-
 	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+
 	if (cheating)
-		AM_drawLineCharacter
-		(cheat_player_arrow, NUMCHEATPLYRLINES, 0,
+		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0,
 			playerMo->angle, WHITE, playerMo->x, playerMo->y);
 	else
-		AM_drawLineCharacter
-		(player_arrow, NUMPLYRLINES, 0, playerMo->angle,
+		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMo->angle,
 			WHITE, playerMo->x, playerMo->y);
 	return;
 
-    for (i=0;i<MAXPLAYERS;i++)
-    {
-	their_color++;
-	p = &players[i];
- 
-
-	if (!playeringame[i])
-	    continue;
+	p = &players[0];
 
 	if (p->powers[pw_invisibility])
-	    color = 246; // *close* to black
+		color = 246; // *close* to black
 	else
-	    color = their_colors[their_color];
-	
-	playerMo = (mobj_t*)Z_LoadBytesFromEMS(p->moRef);
-	AM_drawLineCharacter
-	    (player_arrow, NUMPLYRLINES, 0, playerMo->angle,
-	     color, playerMo->x, playerMo->y);
-    }
+		color = their_colors[0];
+
+	AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMo->angle,
+		color, playerMo->x, playerMo->y);
+
 
 }
 

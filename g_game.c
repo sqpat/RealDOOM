@@ -416,12 +416,8 @@ void G_DoLoadLevel (void)
     gamestate = GS_LEVEL; 
 
 
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-    { 
-        if (playeringame[i] && players[i].playerstate == PST_DEAD) 
-            players[i].playerstate = PST_REBORN; 
-        memset (players[i].frags,0,sizeof(players[i].frags)); 
-    } 
+	if (players[0].playerstate == PST_DEAD)
+		players[0].playerstate = PST_REBORN;
 
 	P_SetupLevel (gameepisode, gamemap, 0, gameskill);
 	starttime = I_GetTime ();
@@ -521,9 +517,8 @@ void G_Ticker (void)
     ticcmd_t*   cmd;
 	mobj_t* playerMo;
     // do player reborns if needed
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-        if (playeringame[i] && players[i].playerstate == PST_REBORN) 
-            G_DoReborn (i);
+	if (players[0].playerstate == PST_REBORN)
+		G_DoReborn(0);
     
     // do things to change the game state
     while (gameaction != ga_nothing) 
@@ -577,31 +572,28 @@ void G_Ticker (void)
 
     
     // check for special buttons
-    for (i=0 ; i<MAXPLAYERS ; i++)
-    {
-        if (playeringame[i]) 
-        { 
-            if (players[i].cmd.buttons & BT_SPECIAL) 
-            { 
-                switch (players[i].cmd.buttons & BT_SPECIALMASK) 
-                { 
-                  case BTS_PAUSE: 
-                    paused ^= 1; 
-                    if (paused) 
-                        S_PauseSound (); 
-                    else 
-                        S_ResumeSound (); 
-                    break; 
-                                         
-                  case BTS_SAVEGAME: 
-					  savegameslot = (players[0].cmd.buttons & BTS_SAVEMASK) >> BTS_SAVESHIFT;
+	if (players[0].cmd.buttons & BT_SPECIAL)
+	{
+		switch (players[0].cmd.buttons & BT_SPECIALMASK)
+		{
+		case BTS_PAUSE:
+			paused ^= 1;
+			if (paused)
+				S_PauseSound();
+			else
+				S_ResumeSound();
+			break;
 
-                    gameaction = ga_savegame; 
-                    break; 
-                } 
-            } 
-        }
-    }
+		case BTS_SAVEGAME:
+			if (!savedescription[0])
+				strcpy(savedescription, "NET GAME");
+			savegameslot =
+				(players[0].cmd.buttons & BTS_SAVEMASK) >> BTS_SAVESHIFT;
+			gameaction = ga_savegame;
+			break;
+		}
+	}
+
     
     // do main actions
     switch (gamestate) 
@@ -683,12 +675,10 @@ void G_PlayerReborn ()
 { 
     player_t*   p; 
     int         i; 
-    int         frags[MAXPLAYERS]; 
     int         killcount;
     int         itemcount;
     int         secretcount; 
          
-    memcpy (frags,players[0].frags,sizeof(frags)); 
     killcount = players[0].killcount; 
     itemcount = players[0].itemcount; 
     secretcount = players[0].secretcount; 
@@ -696,7 +686,6 @@ void G_PlayerReborn ()
     p = &players[0]; 
     memset (p, 0, sizeof(*p)); 
  
-    memcpy (players[0].frags, frags, sizeof(players[0].frags)); 
     players[0].killcount = killcount; 
     players[0].itemcount = itemcount; 
     players[0].secretcount = secretcount; 
@@ -849,10 +838,8 @@ void G_DoCompleted (void)
          
     gameaction = ga_nothing; 
  
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-        if (playeringame[i]) 
-            G_PlayerFinishLevel (i);        // take away cards and stuff 
-         
+	G_PlayerFinishLevel(0); // take away cards and stuff
+
     if (automapactive) 
         AM_Stop (); 
         
@@ -867,23 +854,7 @@ void G_DoCompleted (void)
             break;
         }
                 
-#if 0
-    if ( (gamemap == 8)
-         && (!commercial) ) 
-    {
-        // victory 
-        gameaction = ga_victory; 
-        return; 
-    } 
-         
-    if ( (gamemap == 9)
-         && (!commercial) ) 
-    {
-        // exit secret level 
-        for (i=0 ; i<MAXPLAYERS ; i++) 
-            players[i].didsecret = true; 
-    } 
-#endif
+ 
     
          
     wminfo.didsecret = players[consoleplayer].didsecret; 
@@ -937,23 +908,18 @@ void G_DoCompleted (void)
     wminfo.maxkills = totalkills; 
     wminfo.maxitems = totalitems; 
     wminfo.maxsecret = totalsecret; 
-    wminfo.maxfrags = 0; 
-    if ( commercial )
+
+	if ( commercial )
         wminfo.partime = 35*cpars[gamemap-1]; 
     else
         wminfo.partime = 35*pars[gameepisode][gamemap]; 
     wminfo.pnum = consoleplayer; 
  
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-    { 
-        wminfo.plyr[i].in = playeringame[i]; 
-        wminfo.plyr[i].skills = players[i].killcount; 
-        wminfo.plyr[i].sitems = players[i].itemcount; 
-        wminfo.plyr[i].ssecret = players[i].secretcount; 
-        wminfo.plyr[i].stime = leveltime; 
-        memcpy (wminfo.plyr[i].frags, players[i].frags 
-                , sizeof(wminfo.plyr[i].frags)); 
-    } 
+	wminfo.plyr.in = true;
+    wminfo.plyr.skills = players[0].killcount; 
+    wminfo.plyr.sitems = players[0].itemcount; 
+    wminfo.plyr.ssecret = players[0].secretcount; 
+    wminfo.plyr.stime = leveltime; 
  
     gamestate = GS_INTERMISSION; 
     viewactive = false; 
@@ -1046,8 +1012,8 @@ void G_DoLoadGame (void)
     gameskill = *save_p++; 
     gameepisode = *save_p++; 
     gamemap = *save_p++; 
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-        playeringame[i] = *save_p++; 
+    playeringame[0]= *save_p++; 
+	*save_p++; *save_p++; *save_p++;
 
     // load a base level 
     G_InitNew (gameskill, gameepisode, gamemap); 
@@ -1123,14 +1089,16 @@ void G_DoSaveGame (void)
     memcpy (save_p, name2, VERSIONSIZE); 
     save_p += VERSIONSIZE; 
          
-    *save_p++ = gameskill; 
-    *save_p++ = gameepisode; 
-    *save_p++ = gamemap; 
-    for (i=0 ; i<MAXPLAYERS ; i++) 
-        *save_p++ = playeringame[i]; 
-    *save_p++ = leveltime>>16; 
-    *save_p++ = leveltime>>8; 
-    *save_p++ = leveltime; 
+	*save_p++ = gameskill;
+	*save_p++ = gameepisode;
+	*save_p++ = gamemap;
+	*save_p++ = true;
+	*save_p++ = false;
+	*save_p++ = false;
+	*save_p++ = false;
+	*save_p++ = leveltime >> 16;
+	*save_p++ = leveltime >> 8;
+	*save_p++ = leveltime;
  
     P_ArchivePlayers (); 
     P_ArchiveWorld (); 

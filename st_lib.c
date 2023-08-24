@@ -37,15 +37,8 @@ extern boolean		automapactive;
 
 
 
-//
-// Hack display negative frags.
-//  Loads and store the stminus lump.
-//
-MEMREF		sttminusRef;
-
 void STlib_init(void)
 {
-    sttminusRef = W_CacheLumpNameEMS("STTMINUS", PU_STATIC);
 }
 
 
@@ -111,9 +104,6 @@ STlib_drawNum
     // clear the area
     x = n->x - numdigits*w;
 
-    if (n->y - ST_Y < 0)
-	I_Error("drawNum: n->y - ST_Y < 0");
-
     V_CopyRect(x, n->y - ST_Y, BG, w*numdigits, h, x, n->y, FG);
 
     // if non-number, do not draw it
@@ -133,10 +123,7 @@ STlib_drawNum
 	V_DrawPatch(x, n->y, FG, (patch_t*)Z_LoadBytesFromEMS( n->pRef[ num % 10 ]));
 	num /= 10;
     }
-
-    // draw a minus sign if necessary
-    if (neg)
-	V_DrawPatch(x - 8, n->y, FG, (patch_t*) Z_LoadBytesFromEMS(sttminusRef));
+ 
 }
 
 

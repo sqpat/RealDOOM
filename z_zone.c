@@ -87,7 +87,7 @@
 // 32 14821801 47815 55080 207 (2134 in 2001)  // redo some net code and such
 // 32 14821801 47815 55080 207 (2134 in 1869)  // some various optimizations copied over from fastdoom
    // 1828 after some r_bsp redos
-
+   // 1782 multiplayer mostly removed
 
 // demo 1
 // 4 26890040 1545385 2221063 181
