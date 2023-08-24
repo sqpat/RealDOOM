@@ -307,21 +307,19 @@ void R_GenerateComposite(int texnum)
 
 		if (x2 > texturewidth)
 			x2 = texturewidth;
-		block = (byte*)Z_LoadBytesFromEMS(texturecompositetexnum);
 		collump = (short*)Z_LoadBytesFromEMS(texturecolumnlumptexnum);
-		colofs = (unsigned short*)Z_LoadBytesFromEMS(texturecolumnofstexnum);
 
 		for (; x < x2; x++)
 		{
 			// seems ok. if this ever barks up, we can bring the above Z_LoadBytesFromEMS calls down into one of these loops
-			Z_RefIsActive(texturecolumnlumptexnum);
-			Z_RefIsActive(texturecompositetexnum);
-			Z_RefIsActive(texturecolumnofstexnum);
-			Z_RefIsActive(realpatchRef);
+
 
 			// Column does not have multiple patches?
 			if (collump[x] >= 0)
 				continue;
+			block = (byte*)Z_LoadBytesFromEMS(texturecompositetexnum);
+			colofs = (unsigned short*)Z_LoadBytesFromEMS(texturecolumnofstexnum);
+			realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
 
 			patchcol = (column_t *)((byte *)realpatch
 				+ LONG(realpatch->columnofs[x - x1]));
@@ -329,6 +327,11 @@ void R_GenerateComposite(int texnum)
 				block + colofs[x],
 				patchoriginy,
 				textureheight);
+			Z_RefIsActive(texturecompositetexnum);
+			Z_RefIsActive(texturecolumnofstexnum);
+			Z_RefIsActive(realpatchRef);
+			collump = (short*)Z_LoadBytesFromEMS(texturecolumnlumptexnum);
+
 		}
 
 	}
@@ -418,6 +421,7 @@ void R_GenerateLookup(int texnum)
 		}
 		collump = (short*)Z_LoadBytesFromEMS(texturecolumnlump);
 		colofs = (unsigned short*)Z_LoadBytesFromEMS(texturecolumnofs);
+		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
 		for (; x < x2; x++)
 		{
 			Z_RefIsActive(realpatchRef);
@@ -551,20 +555,25 @@ void R_InitTextures(void)
 	int                 temp2;
 	int                 temp3;
 
-	int*                    texturewidthmask;
+	int*                texturewidthmask;
 	// needed for texture pegging
-	fixed_t*                textureheight;
-	MEMREF *                 texturecolumnlump;
-	MEMREF *        texturecolumnofs;
+	fixed_t*            textureheight;
+	MEMREF *            texturecolumnlump;
+	MEMREF *			texturecolumnofs;
 	MEMREF*				textures;
-	int * texturetranslation;
-
+	int *				texturetranslation;
+	MEMREF				namesRef;
+	MEMREF				maptexRef;
+	MEMREF				maptex2Ref;
+	short				texturewidth;
+	short				textureheightval;
 
 
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
-	names = W_CacheLumpName("PNAMES", PU_STATIC);
+	namesRef = W_CacheLumpNameEMS("PNAMES", PU_STATIC);
+	names = Z_LoadBytesFromEMS(namesRef);
 	nummappatches = LONG(*((int *)names));
 	name_p = names + 4;
 	patchlookup = alloca(nummappatches * sizeof(*patchlookup));
@@ -574,12 +583,13 @@ void R_InitTextures(void)
 		strncpy(name, name_p + i * 8, 8);
 		patchlookup[i] = W_CheckNumForName(name);
 	}
-	Z_Free(names);
+	Z_FreeEMSNew(namesRef);
 
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
-	maptex = maptex1 = W_CacheLumpName("TEXTURE1", PU_STATIC);
+	maptexRef = W_CacheLumpNameEMS("TEXTURE1", PU_STATIC);
+	maptex = maptex1 = Z_LoadBytesFromEMS(maptexRef);
 	numtextures1 = LONG(*maptex);
 	maxoff = W_LumpLength(W_GetNumForName("TEXTURE1"));
 	directory = maptex + 1;
@@ -587,7 +597,8 @@ void R_InitTextures(void)
 
 	if (W_CheckNumForName("TEXTURE2") != -1)
 	{
-		maptex2 = W_CacheLumpName("TEXTURE2", PU_STATIC);
+		maptex2Ref = W_CacheLumpNameEMS("TEXTURE2", PU_STATIC);
+		maptex2 = Z_LoadBytesFromEMS(maptex2Ref);
 		numtextures2 = LONG(*maptex2);
 		maxoff2 = W_LumpLength(W_GetNumForName("TEXTURE2"));
 	}
@@ -663,6 +674,8 @@ void R_InitTextures(void)
 		texture->width = SHORT(mtexture->width);
 		texture->height = SHORT(mtexture->height);
 		texture->patchcount = SHORT(mtexture->patchcount);
+		texturewidth = texture->width;
+		textureheightval = texture->height;
 
 		memcpy(texture->name, mtexture->name, sizeof(texture->name));
 		mpatch = &mtexture->patches[0];
@@ -684,23 +697,27 @@ void R_InitTextures(void)
 		texturecolumnlump[i] = Z_MallocEMSNew(texture->width * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 		texturecolumnofs = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
 		texturecolumnofs[i] = Z_MallocEMSNew(texture->width * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+		
 
 		j = 1;
-		while (j * 2 <= texture->width)
+		while (j * 2 <= texturewidth)
 			j <<= 1;
+
+		texturewidthmask = (int*)Z_LoadBytesFromEMS(texturewidthmaskRef);
+		textureheight = (fixed_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 		Z_RefIsActive(texturewidthmaskRef);
 		Z_RefIsActive(textureheightRef);
 		texturewidthmask[i] = j - 1;
-		textureheight[i] = texture->height << FRACBITS;
+		textureheight[i] = textureheightval << FRACBITS;
 
-		totalwidth += texture->width;
+		totalwidth += texturewidth;
 	}
 
-	Z_Free(maptex1);
-	if (maptex2)
-		Z_Free(maptex2);
-
+	Z_FreeEMSNew(maptexRef);
+	if (maptex2) {
+		Z_FreeEMSNew(maptex2Ref);
+	}
 	// Precalculate whatever possible.  
 	for (i = 0; i < numtextures; i++)
 		R_GenerateLookup(i);
@@ -755,7 +772,9 @@ void R_InitSpriteLumps(void)
 	fixed_t     *spriteoffset;
 	fixed_t     *spritetopoffset;
 	MEMREF		patchRef;
-
+	short		patchwidth;
+	short		patchleftoffset;
+	short		patchtopoffset;
 
 	firstspritelump = W_GetNumForName("S_START") + 1;
 	lastspritelump = W_GetNumForName("S_END") - 1;
@@ -774,16 +793,23 @@ void R_InitSpriteLumps(void)
 		Z_RefIsActive(spriteoffsetRef);
 		Z_RefIsActive(spritetopoffsetRef);
 
-		spritewidth = (fixed_t*)Z_LoadBytesFromEMS(spritewidthRef);
-		spriteoffset = (fixed_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
-		spritetopoffset = (fixed_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
 
 		W_CacheLumpNumCheck(firstspritelump + i, 16);
 		patchRef = W_CacheLumpNumEMS(firstspritelump + i, PU_CACHE);
 		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
-		spritewidth[i] = SHORT(patch->width) << FRACBITS;
-		spriteoffset[i] = SHORT(patch->leftoffset) << FRACBITS;
-		spritetopoffset[i] = SHORT(patch->topoffset) << FRACBITS;
+		patchwidth = SHORT(patch->width) ;
+		patchleftoffset = SHORT(patch->leftoffset);
+		patchtopoffset = SHORT(patch->topoffset) ;
+
+		spritewidth = (fixed_t*)Z_LoadBytesFromEMS(spritewidthRef);
+		spriteoffset = (fixed_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
+		spritetopoffset = (fixed_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
+
+
+		spritewidth[i] = patchwidth << FRACBITS;
+		spriteoffset[i] = patchleftoffset << FRACBITS;
+		spritetopoffset[i] = patchtopoffset << FRACBITS;
+
 	}
 }
  

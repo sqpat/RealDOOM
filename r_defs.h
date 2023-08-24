@@ -96,9 +96,9 @@ typedef	struct
     fixed_t	ceilingheight;
     short	floorpic;
     short	ceilingpic;
-    short	lightlevel;
-    short	special;
-    short	tag;
+    short	lightlevel; // seems to max at 255
+    short	special;	// goes beyond 20k
+    short	tag;		// cant set to char because of 666 special case.... 
 
     // 0 = untraversed, 1,2 = sndlines -1
     int		soundtraversed;

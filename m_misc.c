@@ -55,7 +55,7 @@ char**		myargv;
 // Returns the final X coordinate
 // HU_Init must have been called to init the font
 //
-extern patch_t*		hu_font[HU_FONTSIZE];
+extern MEMREF		hu_fontRef[HU_FONTSIZE];
 
 int
 M_DrawText
@@ -66,7 +66,7 @@ M_DrawText
 {
     int 	c;
     int		w;
-
+	patch_t* hu_fontC;
     while (*string)
     {
 	c = toupper(*string) - HU_FONTSTART;
@@ -77,13 +77,15 @@ M_DrawText
 	    continue;
 	}
 		
-	w = SHORT (hu_font[c]->width);
+	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
+	w = SHORT (hu_fontC->width);
 	if (x+w > SCREENWIDTH)
 	    break;
-	if (direct)
-	    V_DrawPatchDirect(x, y, 0, hu_font[c]);
-	else
-	    V_DrawPatch(x, y, 0, hu_font[c]);
+	if (direct) {
+		V_DrawPatchDirect(x, y, 0, hu_fontC);
+	}  else {
+		V_DrawPatch(x, y, 0, hu_fontC);
+	}
 	x+=w;
     }
 
@@ -660,7 +662,8 @@ void M_ScreenShot (void)
     // save the pcx file
     WritePCXfile (lbmname, linear,
 		  SCREENWIDTH, SCREENHEIGHT,
-		  W_CacheLumpName ("PLAYPAL",PU_CACHE));
+		Z_LoadBytesFromEMS(W_CacheLumpNameEMS("PLAYPAL", PU_CACHE))
+	);
 	
     players[consoleplayer].message = "screen shot";
 }

@@ -32,6 +32,7 @@
 #include "z_zone.h"
 
 #include "w_wad.h"
+#include "r_defs.h"
 
 
 
@@ -585,6 +586,7 @@ W_CacheLumpNumEMS
 //
 // W_CacheLumpName
 //
+/*
 void*
 W_CacheLumpName
 ( char*         name,
@@ -592,6 +594,7 @@ W_CacheLumpName
 {
     return W_CacheLumpNum (W_GetNumForName(name), tag);
 }
+*/
 
 //
 // W_CacheLumpName
@@ -604,6 +607,15 @@ W_CacheLumpNameEMS
 	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
 }
 
+// W_CacheLumpName
+//
+patch_t*
+W_CacheLumpNameEMSAsPatch
+(char*         name,
+	int           tag)
+{
+	return (patch_t*) Z_LoadBytesFromEMS(W_CacheLumpNumEMS(W_GetNumForName(name), tag));
+}
 
 //
 // W_Profile

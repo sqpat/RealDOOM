@@ -82,7 +82,6 @@
 
 // Should be set to patch width
 //  for tall numbers later on
-#define ST_TALLNUMWIDTH         (tallnum[0]->width)
 
 // Number of status faces.
 #define ST_NUMPAINFACES         5
@@ -303,31 +302,31 @@ static boolean          st_armson;
 static boolean          st_fragson; 
 
 // main bar left
-static patch_t*         sbar;
+static MEMREF         sbarRef;
 
 // 0-9, tall numbers
-static patch_t*         tallnum[10];
+static MEMREF         tallnumRef[10];
 
 // tall % sign
-static patch_t*         tallpercent;
+static MEMREF         tallpercentRef;
 
 // 0-9, short, yellow (,different!) numbers
-static patch_t*         shortnum[10];
+static MEMREF         shortnumRef[10];
 
 // 3 key-cards, 3 skulls
-static patch_t*         keys[NUMCARDS]; 
+static MEMREF         keysRef[NUMCARDS];
 
 // face status patches
-static patch_t*         faces[ST_NUMFACES];
+static MEMREF         facesRef[ST_NUMFACES];
 
 // face background
-static patch_t*         faceback;
+static MEMREF         facebackRef;
 
  // main bar right
-static patch_t*         armsbg;
+static MEMREF         armsbgRef;
 
 // weapon ownership patches
-static patch_t*         arms[6][2]; 
+static MEMREF	armsRef[6][2]; 
 
 // ready-weapon widget
 static st_number_t      w_ready;
@@ -492,10 +491,10 @@ void ST_refreshBackground(void)
 
     if (st_statusbaron)
     {
-        V_DrawPatch(ST_X, 0, BG, sbar);
+        V_DrawPatch(ST_X, 0, BG, (patch_t*)Z_LoadBytesFromEMS(sbarRef));
 
         if (netgame)
-            V_DrawPatch(ST_FX, 0, BG, faceback);
+            V_DrawPatch(ST_FX, 0, BG, (patch_t*)Z_LoadBytesFromEMS(facebackRef));
 
         V_CopyRect(ST_X, 0, BG, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y, FG);
     }
@@ -1140,25 +1139,25 @@ void ST_loadGraphics(void)
     for (i=0;i<10;i++)
     {
         sprintf(namebuf, "STTNUM%d", i);
-        tallnum[i] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
+        tallnumRef[i] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
 
         sprintf(namebuf, "STYSNUM%d", i);
-        shortnum[i] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
+        shortnumRef[i] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
     }
 
     // Load percent key.
     //Note: why not load STMINUS here, too?
-    tallpercent = (patch_t *) W_CacheLumpName("STTPRCNT", PU_STATIC);
+    tallpercentRef = W_CacheLumpNameEMS("STTPRCNT", PU_STATIC);
 
     // key cards
     for (i=0;i<NUMCARDS;i++)
     {
         sprintf(namebuf, "STKEYS%d", i);
-        keys[i] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
+        keysRef[i] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
     }
 
     // arms background
-    armsbg = (patch_t *) W_CacheLumpName("STARMS", PU_STATIC);
+    armsbgRef = W_CacheLumpNameEMS("STARMS", PU_STATIC);
 
     // arms ownership widgets
     for (i=0;i<6;i++)
@@ -1166,18 +1165,18 @@ void ST_loadGraphics(void)
         sprintf(namebuf, "STGNUM%d", i+2);
 
         // gray #
-        arms[i][0] = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
+        armsRef[i][0] =  W_CacheLumpNameEMS(namebuf, PU_STATIC);
 
         // yellow #
-        arms[i][1] = shortnum[i+2]; 
+        armsRef[i][1] = shortnumRef[i+2]; 
     }
 
     // face backgrounds for different color players
     sprintf(namebuf, "STFB%d", consoleplayer);
-    faceback = (patch_t *) W_CacheLumpName(namebuf, PU_STATIC);
+    facebackRef =  W_CacheLumpNameEMS(namebuf, PU_STATIC);
 
     // status bar background bits
-    sbar = (patch_t *) W_CacheLumpName("STBAR", PU_STATIC);
+    sbarRef = W_CacheLumpNameEMS("STBAR", PU_STATIC);
 
     // face states
     facenum = 0;
@@ -1186,21 +1185,21 @@ void ST_loadGraphics(void)
         for (j=0;j<ST_NUMSTRAIGHTFACES;j++)
         {
             sprintf(namebuf, "STFST%d%d", i, j);
-            faces[facenum++] = W_CacheLumpName(namebuf, PU_STATIC);
+            facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
         }
         sprintf(namebuf, "STFTR%d0", i);        // turn right
-        faces[facenum++] = W_CacheLumpName(namebuf, PU_STATIC);
+        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
         sprintf(namebuf, "STFTL%d0", i);        // turn left
-        faces[facenum++] = W_CacheLumpName(namebuf, PU_STATIC);
+        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
         sprintf(namebuf, "STFOUCH%d", i);       // ouch!
-        faces[facenum++] = W_CacheLumpName(namebuf, PU_STATIC);
+        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
         sprintf(namebuf, "STFEVL%d", i);        // evil grin ;)
-        faces[facenum++] = W_CacheLumpName(namebuf, PU_STATIC);
+        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
         sprintf(namebuf, "STFKILL%d", i);       // pissed off
-        faces[facenum++] = W_CacheLumpName(namebuf, PU_STATIC);
+        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
     }
-    faces[facenum++] = W_CacheLumpName("STFGOD0", PU_STATIC);
-    faces[facenum++] = W_CacheLumpName("STFDEAD0", PU_STATIC);
+    facesRef[facenum++] = W_CacheLumpNameEMS("STFGOD0", PU_STATIC);
+    facesRef[facenum++] = W_CacheLumpNameEMS("STFDEAD0", PU_STATIC);
 
 }
 
@@ -1218,28 +1217,28 @@ void ST_unloadGraphics(void)
     // unload the numbers, tall and short
     for (i=0;i<10;i++)
     {
-        Z_ChangeTag(tallnum[i], PU_CACHE);
-        Z_ChangeTag(shortnum[i], PU_CACHE);
+        Z_ChangeTagEMSNew(tallnumRef[i], PU_CACHE);
+		Z_ChangeTagEMSNew(shortnumRef[i], PU_CACHE);
     }
     // unload tall percent
-    Z_ChangeTag(tallpercent, PU_CACHE); 
+	Z_ChangeTagEMSNew(tallpercentRef, PU_CACHE);
 
     // unload arms background
-    Z_ChangeTag(armsbg, PU_CACHE); 
+    Z_ChangeTagEMSNew(armsbgRef, PU_CACHE); 
 
     // unload gray #'s
     for (i=0;i<6;i++)
-        Z_ChangeTag(arms[i][0], PU_CACHE);
+		Z_ChangeTagEMSNew(armsRef[i][0], PU_CACHE);
     
     // unload the key cards
     for (i=0;i<NUMCARDS;i++)
-        Z_ChangeTag(keys[i], PU_CACHE);
+		Z_ChangeTagEMSNew(keysRef[i], PU_CACHE);
 
-    Z_ChangeTag(sbar, PU_CACHE);
-    Z_ChangeTag(faceback, PU_CACHE);
+	Z_ChangeTagEMSNew(sbarRef, PU_CACHE);
+	Z_ChangeTagEMSNew(facebackRef, PU_CACHE);
 
     for (i=0;i<ST_NUMFACES;i++)
-        Z_ChangeTag(faces[i], PU_CACHE);
+		Z_ChangeTagEMSNew(facesRef[i], PU_CACHE);
 
     // Note: nobody ain't seen no unloading
     //   of stminus yet. Dude.
@@ -1294,7 +1293,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_ready,
                   ST_AMMOX,
                   ST_AMMOY,
-                  tallnum,
+                  tallnumRef,
                   &plyr->ammo[weaponinfo[plyr->readyweapon].ammo],
                   &st_statusbaron,
                   ST_AMMOWIDTH );
@@ -1306,16 +1305,16 @@ void ST_createWidgets(void)
     STlib_initPercent(&w_health,
                       ST_HEALTHX,
                       ST_HEALTHY,
-                      tallnum,
+                      tallnumRef,
                       &plyr->health,
                       &st_statusbaron,
-                      tallpercent);
+                      tallpercentRef);
 
     // arms background
     STlib_initBinIcon(&w_armsbg,
                       ST_ARMSBGX,
                       ST_ARMSBGY,
-                      armsbg,
+                      armsbgRef,
                       &st_notdeathmatch,
                       &st_statusbaron);
 
@@ -1325,7 +1324,7 @@ void ST_createWidgets(void)
         STlib_initMultIcon(&w_arms[i],
                            ST_ARMSX+(i%3)*ST_ARMSXSPACE,
                            ST_ARMSY+(i/3)*ST_ARMSYSPACE,
-                           arms[i], (int *) &plyr->weaponowned[i+1],
+                           armsRef[i], (int *) &plyr->weaponowned[i+1],
                            &st_armson);
     }
 
@@ -1333,7 +1332,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_frags,
                   ST_FRAGSX,
                   ST_FRAGSY,
-                  tallnum,
+                  tallnumRef,
                   &st_fragscount,
                   &st_fragson,
                   ST_FRAGSWIDTH);
@@ -1342,7 +1341,7 @@ void ST_createWidgets(void)
     STlib_initMultIcon(&w_faces,
                        ST_FACESX,
                        ST_FACESY,
-                       faces,
+                       facesRef,
                        &st_faceindex,
                        &st_statusbaron);
 
@@ -1350,29 +1349,30 @@ void ST_createWidgets(void)
     STlib_initPercent(&w_armor,
                       ST_ARMORX,
                       ST_ARMORY,
-                      tallnum,
+                      tallnumRef,
                       &plyr->armorpoints,
-                      &st_statusbaron, tallpercent);
+                      &st_statusbaron, 
+					tallpercentRef);
 
     // keyboxes 0-2
     STlib_initMultIcon(&w_keyboxes[0],
                        ST_KEY0X,
                        ST_KEY0Y,
-                       keys,
+                       keysRef,
                        &keyboxes[0],
                        &st_statusbaron);
     
     STlib_initMultIcon(&w_keyboxes[1],
                        ST_KEY1X,
                        ST_KEY1Y,
-                       keys,
+                       keysRef,
                        &keyboxes[1],
                        &st_statusbaron);
 
     STlib_initMultIcon(&w_keyboxes[2],
                        ST_KEY2X,
                        ST_KEY2Y,
-                       keys,
+                       keysRef,
                        &keyboxes[2],
                        &st_statusbaron);
 
@@ -1380,7 +1380,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_ammo[0],
                   ST_AMMO0X,
                   ST_AMMO0Y,
-                  shortnum,
+                  shortnumRef,
                   &plyr->ammo[0],
                   &st_statusbaron,
                   ST_AMMO0WIDTH);
@@ -1388,7 +1388,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_ammo[1],
                   ST_AMMO1X,
                   ST_AMMO1Y,
-                  shortnum,
+                  shortnumRef,
                   &plyr->ammo[1],
                   &st_statusbaron,
                   ST_AMMO1WIDTH);
@@ -1396,7 +1396,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_ammo[2],
                   ST_AMMO2X,
                   ST_AMMO2Y,
-                  shortnum,
+                  shortnumRef,
                   &plyr->ammo[2],
                   &st_statusbaron,
                   ST_AMMO2WIDTH);
@@ -1404,7 +1404,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_ammo[3],
                   ST_AMMO3X,
                   ST_AMMO3Y,
-                  shortnum,
+                  shortnumRef,
                   &plyr->ammo[3],
                   &st_statusbaron,
                   ST_AMMO3WIDTH);
@@ -1413,7 +1413,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_maxammo[0],
                   ST_MAXAMMO0X,
                   ST_MAXAMMO0Y,
-                  shortnum,
+                  shortnumRef,
                   &plyr->maxammo[0],
                   &st_statusbaron,
                   ST_MAXAMMO0WIDTH);
@@ -1421,7 +1421,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_maxammo[1],
                   ST_MAXAMMO1X,
                   ST_MAXAMMO1Y,
-                  shortnum,
+                  shortnumRef,
                   &plyr->maxammo[1],
                   &st_statusbaron,
                   ST_MAXAMMO1WIDTH);
@@ -1429,7 +1429,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_maxammo[2],
                   ST_MAXAMMO2X,
                   ST_MAXAMMO2Y,
-                  shortnum,
+                  shortnumRef,
                   &plyr->maxammo[2],
                   &st_statusbaron,
                   ST_MAXAMMO2WIDTH);
@@ -1437,7 +1437,7 @@ void ST_createWidgets(void)
     STlib_initNum(&w_maxammo[3],
                   ST_MAXAMMO3X,
                   ST_MAXAMMO3Y,
-                  shortnum,
+                  shortnumRef,
                   &plyr->maxammo[3],
                   &st_statusbaron,
                   ST_MAXAMMO3WIDTH);

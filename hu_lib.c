@@ -46,12 +46,12 @@ HUlib_initTextLine
 ( hu_textline_t*	t,
   int			x,
   int			y,
-  patch_t**		f,
+  MEMREF*		fRef,
   int			sc )
 {
     t->x = x;
     t->y = y;
-    t->f = f;
+    t->fRef = fRef;
     t->sc = sc;
     HUlib_clearTextLine(t);
 }
@@ -97,35 +97,30 @@ HUlib_drawTextLine
     int			w;
     int			x;
     unsigned char	c;
+	patch_t* currentpatch;
 
     // draw the new stuff
     x = l->x;
-    for (i=0;i<l->len;i++)
-    {
-	c = toupper(l->l[i]);
-	if (c != ' '
-	    && c >= l->sc
-	    && c <= '_')
-	{
-	    w = SHORT(l->f[c - l->sc]->width);
-	    if (x+w > SCREENWIDTH)
-		break;
-	    V_DrawPatchDirect(x, l->y, FG, l->f[c - l->sc]);
-	    x += w;
-	}
-	else
-	{
-	    x += 4;
-	    if (x >= SCREENWIDTH)
-		break;
-	}
+    for (i=0;i<l->len;i++) {
+		c = toupper(l->l[i]);
+		if (c != ' ' && c >= l->sc && c <= '_') {
+			currentpatch = (patch_t*)Z_LoadBytesFromEMS(l->fRef[c - l->sc]);
+			w = SHORT(currentpatch->width);
+			if (x+w > SCREENWIDTH)
+			break;
+			V_DrawPatchDirect(x, l->y, FG, currentpatch);
+			x += w;
+		} else {
+			x += 4;
+			if (x >= SCREENWIDTH)
+			break;
+		}
     }
 
+	currentpatch = (patch_t*)Z_LoadBytesFromEMS(l->fRef['_' - l->sc]);
     // draw the cursor if requested
-    if (drawcursor
-	&& x + SHORT(l->f['_' - l->sc]->width) <= SCREENWIDTH)
-    {
-	V_DrawPatchDirect(x, l->y, FG, l->f['_' - l->sc]);
+    if (drawcursor && x + SHORT(currentpatch->width) <= SCREENWIDTH) {
+		V_DrawPatchDirect(x, l->y, FG, currentpatch);
     }
 }
 
@@ -137,26 +132,24 @@ void HUlib_eraseTextLine(hu_textline_t* l)
     int			y;
     int			yoffset;
     static boolean	lastautomapactive = true;
+	patch_t* currentpatch = Z_LoadBytesFromEMS(l->fRef[0]);   // todo can probably cache this
+
 
     // Only erases when NOT in automap and the screen is reduced,
     // and the text must either need updating or refreshing
     // (because of a recent change back from the automap)
 
-    if (!automapactive &&
-	viewwindowx && l->needsupdate)
-    {
-	lh = SHORT(l->f[0]->height) + 1;
-	for (y=l->y,yoffset=y*SCREENWIDTH ; y<l->y+lh ; y++,yoffset+=SCREENWIDTH)
-	{
-	    if (y < viewwindowy || y >= viewwindowy + viewheight)
-		R_VideoErase(yoffset, SCREENWIDTH); // erase entire line
-	    else
-	    {
-		R_VideoErase(yoffset, viewwindowx); // erase left border
-		R_VideoErase(yoffset + viewwindowx + viewwidth, viewwindowx);
-		// erase right border
-	    }
-	}
+    if (!automapactive && viewwindowx && l->needsupdate) {
+		lh = SHORT(currentpatch->height) + 1;
+		for (y=l->y,yoffset=y*SCREENWIDTH ; y<l->y+lh ; y++,yoffset+=SCREENWIDTH) {
+			if (y < viewwindowy || y >= viewwindowy + viewheight) {
+				R_VideoErase(yoffset, SCREENWIDTH); // erase entire line
+			}  else {
+				R_VideoErase(yoffset, viewwindowx); // erase left border
+				R_VideoErase(yoffset + viewwindowx + viewwidth, viewwindowx);
+				// erase right border
+			}
+		}
     }
 
     lastautomapactive = automapactive;
@@ -170,21 +163,24 @@ HUlib_initSText
   int		x,
   int		y,
   int		h,
-  patch_t**	font,
+  MEMREF*   fontRef,
   int		startchar,
   boolean*	on )
 {
 
     int i;
+	patch_t* font;
 
     s->h = h;
     s->on = on;
     s->laston = true;
     s->cl = 0;
-    for (i=0;i<h;i++)
-	HUlib_initTextLine(&s->l[i],
-			   x, y - i*(SHORT(font[0]->height)+1),
-			   font, startchar);
+	font = (patch_t*)Z_LoadBytesFromEMS(fontRef[0]);
+	for (i = 0; i < h; i++) {
+		HUlib_initTextLine(&s->l[i],
+			x, y - i * (SHORT(font->height) + 1),
+			fontRef, startchar);
+	}
 
 }
 
@@ -262,14 +258,14 @@ HUlib_initIText
 ( hu_itext_t*	it,
   int		x,
   int		y,
-  patch_t**	font,
+  MEMREF*	fontRef,
   int		startchar,
   boolean*	on )
 {
     it->lm = 0; // default left margin is start of text
     it->on = on;
     it->laston = true;
-    HUlib_initTextLine(&it->l, x, y, font, startchar);
+    HUlib_initTextLine(&it->l, x, y, fontRef, startchar);
 }
 
 

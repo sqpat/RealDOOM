@@ -97,7 +97,7 @@ MEMREF		soundtargetRef;
 void
 P_RecursiveSound
 ( short		secnum,
-  int		soundblocks )
+  int		soundblocks, int line )
 {
     int		i;
 	line_t* lines;
@@ -114,9 +114,13 @@ P_RecursiveSound
 	short checkfrontsecnum;
 	short checkbacksecnum;
 
+	if (soundblocks < 0) {
+		I_Error("bad soundblock P_RecursiveSound %i %i", soundblocks, line);
+	}
+
 	if (secnum < 0 || secnum >= numsectors) {
 		// TODO remove
-		I_Error("bad sectors in P_RecursiveSound %i", secnum);
+		I_Error("bad sectors in P_RecursiveSound %i %i", secnum, line);
 	}
     // wake up all monsters in this sector
     if (soundsector->validcount == validcount && soundsector->soundtraversed <= soundblocks+1) {
@@ -126,12 +130,19 @@ P_RecursiveSound
 	soundsector->validcount = validcount;
 	soundsector->soundtraversed = soundblocks+1;
 	soundsector->soundtargetRef = soundtargetRef;
-	
+
+
+
+
+
 	linecount = soundsector->linecount;
 	for (i=0 ;i<linecount ; i++) {
 		soundsector = &sectors[secnum];
 		linebuffer = (short*)Z_LoadBytesFromEMS(linebufferRef);
 		linenumber = linebuffer[soundsector->linesoffset + i];
+
+		
+
 		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 		check = &lines[linenumber];
 		checkflags = check->flags;
@@ -139,6 +150,19 @@ P_RecursiveSound
 		checksidenum1 = check->sidenum[1];
 		checkfrontsecnum = check->frontsecnum;
 		checkbacksecnum = check->backsecnum;
+
+		if (checksidenum1 == 21587) {
+			//sectors[secnum].
+			
+
+			// sector 13
+			// linebuffer 155
+			// line 0
+			// line[0]->sidenum[1] = 21587
+
+			I_Error("uhh big checkside %i %i %i %i %i", checksidenum1, linenumber, secnum, sectors[secnum].linesoffset, i);
+		}
+
 		if (!(checkflags & ML_TWOSIDED)) {
 			continue;
 		}
@@ -154,12 +178,15 @@ P_RecursiveSound
 		} else {
 			othersecnum = sides[checksidenum0].secnum;
 		}
+		if (othersecnum == -26729) {
+			I_Error("uhh %i %i %i", checksidenum1, checksidenum0, secnum, sides[checksidenum0].secnum);
+		}
 		if (checkflags & ML_SOUNDBLOCK) {
 			if (!soundblocks) {
-				P_RecursiveSound(othersecnum, 1);
+				P_RecursiveSound(othersecnum, 1, __LINE__);
 			}
 		} else {
-			P_RecursiveSound(othersecnum, soundblocks);
+			P_RecursiveSound(othersecnum, soundblocks, __LINE__);
 		}
     }
 }
@@ -179,7 +206,7 @@ P_NoiseAlert
 	mobj_t* emmiter = (mobj_t*)Z_LoadBytesFromEMS(emmiterRef);
 	soundtargetRef = targetRef;
     validcount++;
-    P_RecursiveSound (emmiter->secnum, 0);
+    P_RecursiveSound (emmiter->secnum, 0, __LINE__);
 }
 
 

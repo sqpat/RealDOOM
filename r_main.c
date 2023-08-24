@@ -895,10 +895,6 @@ void R_RenderPlayerView (player_t* player)
     // The head node is the last node output.
 	Z_LoadBytesFromEMS(nodesRef);
 
-	if (sectors[114].ceilingheight == 6815744) {
-		//I_Error("100 iiner caught bad ceil height %i %i %i", gametic, numnodes - 1, 0);
-	}
-
 	R_RenderBSPNode (numnodes-1);
 
     // Check for new console commands.

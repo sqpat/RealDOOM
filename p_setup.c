@@ -322,6 +322,9 @@ void P_LoadSectors(int lump)
 		ss->tag = SHORT(ms->tag);
 		ss->thinglistRef = NULL_MEMREF;
 		Z_RefIsActive(dataRef);
+
+
+
 	}
 
 	Z_FreeEMSNew(dataRef);
@@ -423,6 +426,11 @@ void P_LoadThings(int lump)
 		mt->options = SHORT(mt->options);
 
 		P_SpawnMapThing(mt);
+		if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
+			I_Error("found on start %i %i", i, numthings);
+		}
+
+
 	}
 
 	Z_FreeEMSNew(dataRef);
@@ -499,6 +507,8 @@ void P_LoadLineDefs(int lump)
 		ld->sidenum[0] = mldsidenum0;
 		ld->sidenum[1] = mldsidenum1;
 
+
+
 		ld->flags = mldflags;
 		ld->special = mldspecial;
 		ld->tag = mldtag;
@@ -545,6 +555,7 @@ void P_LoadLineDefs(int lump)
 			ld->backsecnum = SECNUM_NULL;
 		}
 	}
+	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
 	Z_FreeEMSNew(dataRef);
 }
@@ -725,6 +736,7 @@ void P_GroupLines(void)
 	linebufferRef = Z_MallocEMSNew (total * 2, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
 	linebufferindex = 0;
 
+
 	for (i = 0; i < numsectors; i++) {
 		M_ClearBox(bbox);
 		
@@ -779,7 +791,7 @@ void P_GroupLines(void)
 		sectors[i].blockbox[BOXLEFT] = block;
 	}
 
-	 
+
 
 }
 
@@ -866,21 +878,44 @@ P_SetupLevel
 
 	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
 	P_LoadSubsectors(lumpnum + ML_SSECTORS);
+	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
+		I_Error("found on start even more first");
+	}
 
 	P_LoadNodes(lumpnum + ML_NODES);
+	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
+		I_Error("found on start even more first b");
+	}
 
 	P_LoadSegs(lumpnum + ML_SEGS);
+	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
+		I_Error("found on start even more first c");
+	}
 
 
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 12);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
 
+	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
+		I_Error("found on start more first");
+	}
+
 	P_GroupLines();
+
+
 
 	bodyqueslot = 0;
 	deathmatch_p = deathmatchstarts;
 
+
+	
+	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
+		I_Error("found on start first");
+	}
+
 	P_LoadThings(lumpnum + ML_THINGS);
+
+
 	//I_Error("stop now?");
 
 	// if deathmatch, randomly spawn the active players

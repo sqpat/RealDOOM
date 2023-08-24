@@ -19,6 +19,7 @@
 
 #ifndef __W_WAD__
 #define __W_WAD__
+#include "r_defs.h"
 
 
 //
@@ -71,9 +72,10 @@ int W_CacheLumpNumCheck(int lump, int error);
 void*	W_CacheLumpNum(int lump, int tag);
 MEMREF  W_CacheLumpNumEMS(short lump, char tag);
 
-void*	W_CacheLumpName (char* name, int tag);
+//void*	W_CacheLumpName (char* name, int tag);
 MEMREF  W_CacheLumpNameEMS(char* name, int tag);
 void	W_EraseLumpCache(short index);
+patch_t* W_CacheLumpNameEMSAsPatch (char*         name, int           tag);
 
 
 

@@ -693,6 +693,7 @@ void R_FillBackScreen (void)
     int		y; 
     patch_t*	patch;
     int i, count;
+	MEMREF srcRef;
 
     // DOOM border patch.
     char	name1[] = "FLOOR7_2";
@@ -710,8 +711,9 @@ void R_FillBackScreen (void)
     else
 	name = name1;
     
-    src = W_CacheLumpName (name, PU_CACHE); 
-    dest = screens[1]; 
+    srcRef = W_CacheLumpNameEMS (name, PU_CACHE); 
+	src = Z_LoadBytesFromEMS(srcRef);
+	dest = screens[1]; 
 	 
     for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++) 
     { 
@@ -728,44 +730,47 @@ void R_FillBackScreen (void)
 	} 
     } 
 	
-    patch = W_CacheLumpName ("brdr_t",PU_CACHE);
+    patch = W_CacheLumpNameEMSAsPatch ("brdr_t",PU_CACHE);
 
-    for (x=0 ; x<scaledviewwidth ; x+=8)
-	V_DrawPatch (viewwindowx+x,viewwindowy-8,1,patch);
-    patch = W_CacheLumpName ("brdr_b",PU_CACHE);
+	for (x = 0; x < scaledviewwidth; x += 8) {
+		V_DrawPatch(viewwindowx + x, viewwindowy - 8, 1, patch);
+	}
+	patch = W_CacheLumpNameEMSAsPatch("brdr_b",PU_CACHE);
 
-    for (x=0 ; x<scaledviewwidth ; x+=8)
-	V_DrawPatch (viewwindowx+x,viewwindowy+viewheight,1,patch);
-    patch = W_CacheLumpName ("brdr_l",PU_CACHE);
+	for (x = 0; x < scaledviewwidth; x += 8) {
+		V_DrawPatch(viewwindowx + x, viewwindowy + viewheight, 1, patch);
+	}
+	patch = W_CacheLumpNameEMSAsPatch("brdr_l",PU_CACHE);
+	for (y = 0; y < viewheight; y += 8) {
+		V_DrawPatch(viewwindowx - 8, viewwindowy + y, 1, patch);
+	}
+    patch = W_CacheLumpNameEMSAsPatch("brdr_r",PU_CACHE);
 
-    for (y=0 ; y<viewheight ; y+=8)
-	V_DrawPatch (viewwindowx-8,viewwindowy+y,1,patch);
-    patch = W_CacheLumpName ("brdr_r",PU_CACHE);
-
-    for (y=0 ; y<viewheight ; y+=8)
-	V_DrawPatch (viewwindowx+scaledviewwidth,viewwindowy+y,1,patch);
+	for (y = 0; y < viewheight; y += 8) {
+		V_DrawPatch(viewwindowx + scaledviewwidth, viewwindowy + y, 1, patch);
+	}
 
 
     // Draw beveled edge. 
     V_DrawPatch (viewwindowx-8,
 		 viewwindowy-8,
 		 1,
-		 W_CacheLumpName ("brdr_tl",PU_CACHE));
+		W_CacheLumpNameEMSAsPatch("brdr_tl",PU_CACHE));
     
     V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy-8,
 		 1,
-		 W_CacheLumpName ("brdr_tr",PU_CACHE));
+		W_CacheLumpNameEMSAsPatch("brdr_tr",PU_CACHE));
     
     V_DrawPatch (viewwindowx-8,
 		 viewwindowy+viewheight,
 		 1,
-		 W_CacheLumpName ("brdr_bl",PU_CACHE));
+		W_CacheLumpNameEMSAsPatch("brdr_bl",PU_CACHE));
     
     V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy+viewheight,
 		 1,
-		 W_CacheLumpName ("brdr_br",PU_CACHE));
+		W_CacheLumpNameEMSAsPatch("brdr_br",PU_CACHE));
 
     for (i = 0; i < 4; i++)
     {

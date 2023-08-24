@@ -85,7 +85,6 @@
 
 // NET GAME STUFF
 #define NG_STATSY		50
-#define NG_STATSX		(32 + SHORT(star->width)/2 + 32*!dofrags)
 
 #define NG_SPACINGX    		64
 
@@ -150,7 +149,7 @@ typedef struct
     int		data2; 
 
     // actual graphics for frames of animations
-    patch_t*	p[3]; 
+    MEMREF	pRef[3]; 
 
     // following must be initialized to zero before use!
 
@@ -334,58 +333,58 @@ static int		NUMCMAPS;
 //
 
 // background (map of levels).
-static patch_t*		bg;
+static MEMREF		bgRef;
 
 // You Are Here graphic
-static patch_t*		yah[2]; 
+static MEMREF		yahRef[2];
 
 // splat
-static patch_t*		splat;
+static MEMREF		splatRef;
 
 // %, : graphics
-static patch_t*		percent;
-static patch_t*		colon;
+static MEMREF		percentRef;
+static MEMREF		colonRef;
 
 // 0-9 graphic
-static patch_t*		num[10];
+static MEMREF		numRef[10];
 
 // minus sign
-static patch_t*		wiminus;
+static MEMREF		wiminusRef;
 
 // "Finished!" graphics
-static patch_t*		finished;
+static MEMREF		finishedRef;
 
 // "Entering" graphic
-static patch_t*		entering; 
+static MEMREF		enteringRef;
 
 // "secret"
-static patch_t*		sp_secret;
+static MEMREF		sp_secretRef;
 
  // "Kills", "Scrt", "Items", "Frags"
-static patch_t*		kills;
-static patch_t*		secret;
-static patch_t*		items;
-static patch_t*		frags;
+static MEMREF		killsRef;
+static MEMREF		secretRef;
+static MEMREF		itemsRef;
+static MEMREF		fragsRef;
 
 // Time sucks.
-static patch_t*		time;
-static patch_t*		par;
-static patch_t*		sucks;
+static MEMREF		timeRef;
+static MEMREF		parRef;
+static MEMREF		sucksRef;
 
 // "killers", "victims"
-static patch_t*		killers;
-static patch_t*		victims; 
+static MEMREF		killersRef;
+static MEMREF		victimsRef;
 
 // "Total", your face, your dead face
-static patch_t*		total;
-static patch_t*		star;
-static patch_t*		bstar;
+static MEMREF		totalRef;
+static MEMREF		starRef;
+static MEMREF		bstarRef;
 
 // "red P[1..MAXPLAYERS]"
-static patch_t*		p[MAXPLAYERS];
+static MEMREF		pRef[MAXPLAYERS];
 
 // "gray P[1..MAXPLAYERS]"
-static patch_t*		bp[MAXPLAYERS];
+static MEMREF		bpRef[MAXPLAYERS];
 
  // Name graphics of each level (centered)
 MEMREF				lnamesRef;
@@ -436,15 +435,18 @@ void WI_drawEL(void)
 {
 	patch_t* lname;
 	int y = WI_TITLEY;
-	MEMREF* lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
-	lname = (patch_t*)Z_LoadBytesFromEMS(lnames[wbs->next]);
-
+	MEMREF* lnames;
+	patch_t* entering = (patch_t*)Z_LoadBytesFromEMS(enteringRef);
     // draw "Entering"
-    V_DrawPatch((SCREENWIDTH - SHORT(entering->width))/2,
-		y, FB, entering);
+    V_DrawPatch(SCREENWIDTH - SHORT(entering->width)/2, y, FB, entering);
+
+
+	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
+	lname = (patch_t*)Z_LoadBytesFromEMS(lnames[wbs->next]);
 
     // draw level
     y += (5*SHORT(lname->height))/4;
+
 
     V_DrawPatch((SCREENWIDTH - SHORT(lname->width))/2,
 		y, FB, lname);
@@ -454,7 +456,7 @@ void WI_drawEL(void)
 void
 WI_drawOnLnode
 ( int		n,
-  patch_t*	c[] )
+  MEMREF*	cRef )
 {
 
     int		i;
@@ -463,37 +465,31 @@ WI_drawOnLnode
     int		right;
     int		bottom;
     boolean	fits = false;
+	patch_t* ci;
 
     i = 0;
-    do
-    {
-	left = lnodes[wbs->epsd][n].x - SHORT(c[i]->leftoffset);
-	top = lnodes[wbs->epsd][n].y - SHORT(c[i]->topoffset);
-	right = left + SHORT(c[i]->width);
-	bottom = top + SHORT(c[i]->height);
+    do {
+		ci = (patch_t*)Z_LoadBytesFromEMS(cRef[i]);
+		left = lnodes[wbs->epsd][n].x - SHORT(ci->leftoffset);
+		top = lnodes[wbs->epsd][n].y - SHORT(ci->topoffset);
+		right = left + SHORT(ci->width);
+		bottom = top + SHORT(ci->height);
 
-	if (left >= 0
-	    && right < SCREENWIDTH
-	    && top >= 0
-	    && bottom < SCREENHEIGHT)
-	{
-	    fits = true;
-	}
-	else
-	{
-	    i++;
-	}
+		if (left >= 0
+			&& right < SCREENWIDTH
+			&& top >= 0
+			&& bottom < SCREENHEIGHT) {
+			fits = true;
+		} else {
+			i++;
+		}
     } while (!fits && i!=2);
 
-    if (fits && i<2)
-    {
-	V_DrawPatch(lnodes[wbs->epsd][n].x, lnodes[wbs->epsd][n].y,
-		    FB, c[i]);
-    }
-    else
-    {
-	// DEBUG
-	printf("Could not place patch on level %d", n+1); 
+    if (fits && i<2) {
+		V_DrawPatch(lnodes[wbs->epsd][n].x, lnodes[wbs->epsd][n].y, FB, ((patch_t*)Z_LoadBytesFromEMS(cRef[i])));
+    } else {
+		// DEBUG
+		printf("Could not place patch on level %d", n+1); 
     }
 }
 
@@ -601,7 +597,7 @@ void WI_drawAnimatedBack(void)
 	a = &anims[wbs->epsd][i];
 
 	if (a->ctr >= 0)
-	    V_DrawPatch(a->loc.x, a->loc.y, FB, a->p[a->ctr]);
+	    V_DrawPatch(a->loc.x, a->loc.y, FB, (patch_t*) Z_LoadBytesFromEMS( a->pRef[a->ctr]));
     }
 
 }
@@ -621,7 +617,7 @@ WI_drawNum
   int		digits )
 {
 
-    int		fontwidth = SHORT(num[0]->width);
+    int		fontwidth = SHORT(((patch_t*)Z_LoadBytesFromEMS(numRef[0])) ->width);
     int		neg;
     int		temp;
 
@@ -658,13 +654,13 @@ WI_drawNum
     while (digits--)
     {
 	x -= fontwidth;
-	V_DrawPatch(x, y, FB, num[ n % 10 ]);
+	V_DrawPatch(x, y, FB, (patch_t*) Z_LoadBytesFromEMS(numRef[ n % 10 ]));
 	n /= 10;
     }
 
     // draw a minus sign if necessary
     if (neg)
-	V_DrawPatch(x-=8, y, FB, wiminus);
+	V_DrawPatch(x-=8, y, FB, (patch_t*)Z_LoadBytesFromEMS(wiminusRef));
 
     return x;
 
@@ -679,7 +675,7 @@ WI_drawPercent
     if (p < 0)
 	return;
 
-    V_DrawPatch(x, y, FB, percent);
+    V_DrawPatch(x, y, FB, (patch_t*)Z_LoadBytesFromEMS(percentRef));
     WI_drawNum(x, y, p, -1);
 }
 
@@ -698,30 +694,29 @@ WI_drawTime
 
     int		div;
     int		n;
+	patch_t* colon;
+	patch_t* sucks;
 
     if (t<0)
 	return;
 
-    if (t <= 61*59)
-    {
-	div = 1;
+    if (t <= 61*59) {
+		colon = (patch_t*)Z_LoadBytesFromEMS(colonRef);
+		div = 1;
+		do {
+			n = (t / div) % 60;
+			x = WI_drawNum(x, y, n, 2) - SHORT(colon->width);
+			div *= 60;
 
-	do
-	{
-	    n = (t / div) % 60;
-	    x = WI_drawNum(x, y, n, 2) - SHORT(colon->width);
-	    div *= 60;
-
-	    // draw
-	    if (div==60 || t / div)
-		V_DrawPatch(x, y, FB, colon);
+			// draw
+			if (div==60 || t / div)
+			V_DrawPatch(x, y, FB, colon );
 	    
-	} while (t / div);
-    }
-    else
-    {
-	// "sucks"
-	V_DrawPatch(x - SHORT(sucks->width), y, FB, sucks); 
+		} while (t / div);
+    } else {
+		// "sucks"
+		sucks = (patch_t*)Z_LoadBytesFromEMS(sucksRef);
+		V_DrawPatch(x - sucks->width, y, FB, sucks);
     }
 }
 
@@ -797,16 +792,17 @@ void WI_drawShowNextLoc(void)
 	last = (wbs->last == 8) ? wbs->next - 1 : wbs->last;
 
 	// draw a splat on taken cities.
-	for (i=0 ; i<=last ; i++)
-	    WI_drawOnLnode(i, &splat);
+	for (i = 0; i <= last; i++) {
+		WI_drawOnLnode(i, &splatRef);
+	}
 
 	// splat the secret level?
 	if (wbs->didsecret)
-	    WI_drawOnLnode(8, &splat);
+	    WI_drawOnLnode(8, &splatRef);
 
 	// draw flashing ptr
 	if (snl_pointeron)
-	    WI_drawOnLnode(wbs->next, yah); 
+	    WI_drawOnLnode(wbs->next, yahRef); 
     }
 
     // draws which level you are entering..
@@ -995,6 +991,9 @@ void WI_drawDeathmatchStats(void)
     int		w;
     
     int		lh;	// line height
+	patch_t* pi;
+	patch_t* num0;
+	patch_t* total;;
 
     lh = WI_SPACINGY;
 
@@ -1004,14 +1003,16 @@ void WI_drawDeathmatchStats(void)
     WI_drawAnimatedBack(); 
     WI_drawLF();
 
+	total = (patch_t*)Z_LoadBytesFromEMS(totalRef);
+
     // draw stat titles (top line)
     V_DrawPatch(DM_TOTALSX-SHORT(total->width)/2,
 		DM_MATRIXY-WI_SPACINGY+10,
 		FB,
 		total);
     
-    V_DrawPatch(DM_KILLERSX, DM_KILLERSY, FB, killers);
-    V_DrawPatch(DM_VICTIMSX, DM_VICTIMSY, FB, victims);
+    V_DrawPatch(DM_KILLERSX, DM_KILLERSY, FB, (patch_t*)Z_LoadBytesFromEMS(killersRef));
+    V_DrawPatch(DM_VICTIMSX, DM_VICTIMSY, FB, (patch_t*)Z_LoadBytesFromEMS(victimsRef));
 
     // draw P?
     x = DM_MATRIXX + DM_SPACINGX;
@@ -1021,27 +1022,14 @@ void WI_drawDeathmatchStats(void)
     {
 	if (playeringame[i])
 	{
-	    V_DrawPatch(x-SHORT(p[i]->width)/2,
-			DM_MATRIXY - WI_SPACINGY,
-			FB,
-			p[i]);
+		pi = (patch_t*)Z_LoadBytesFromEMS(pRef[i]);
+	    V_DrawPatch(x-SHORT(pi->width)/2, DM_MATRIXY - WI_SPACINGY, FB, pi);
 	    
-	    V_DrawPatch(DM_MATRIXX-SHORT(p[i]->width)/2,
-			y,
-			FB,
-			p[i]);
+	    V_DrawPatch(DM_MATRIXX-SHORT(pi->width)/2, y, FB, pi);
 
-	    if (i == me)
-	    {
-		V_DrawPatch(x-SHORT(p[i]->width)/2,
-			    DM_MATRIXY - WI_SPACINGY,
-			    FB,
-			    bstar);
-
-		V_DrawPatch(DM_MATRIXX-SHORT(p[i]->width)/2,
-			    y,
-			    FB,
-			    star);
+	    if (i == me) {
+			V_DrawPatch(x-SHORT(pi->width)/2, DM_MATRIXY - WI_SPACINGY, FB, (patch_t*)Z_LoadBytesFromEMS(bstarRef));
+			V_DrawPatch(DM_MATRIXX-SHORT(pi->width)/2, y, FB, (patch_t*)Z_LoadBytesFromEMS(starRef));
 	    }
 	}
 	else
@@ -1057,7 +1045,8 @@ void WI_drawDeathmatchStats(void)
 
     // draw stats
     y = DM_MATRIXY+10;
-    w = SHORT(num[0]->width);
+	num0 = (patch_t*)Z_LoadBytesFromEMS(numRef[0]);
+    w = SHORT(num0->width);
 
     for (i=0 ; i<MAXPLAYERS ; i++)
     {
@@ -1270,8 +1259,10 @@ void WI_drawNetgameStats(void)
     int		i;
     int		x;
     int		y;
-    int		pwidth = SHORT(percent->width);
+	patch_t* patch = (patch_t*)Z_LoadBytesFromEMS(percentRef);
 
+    int		pwidth = SHORT(patch->width);
+	unsigned short	NG_STATSX;
     WI_slamBackground();
     
     // draw animated background
@@ -1280,42 +1271,57 @@ void WI_drawNetgameStats(void)
     WI_drawLF();
 
     // draw stat titles (top line)
-    V_DrawPatch(NG_STATSX+NG_SPACINGX-SHORT(kills->width),
-		NG_STATSY, FB, kills);
+	
+	patch = (patch_t*) Z_LoadBytesFromEMS(starRef);
 
-    V_DrawPatch(NG_STATSX+2*NG_SPACINGX-SHORT(items->width),
-		NG_STATSY, FB, items);
+	NG_STATSX = (32 + SHORT(patch->width) / 2 + 32 * !dofrags);
 
-    V_DrawPatch(NG_STATSX+3*NG_SPACINGX-SHORT(secret->width),
-		NG_STATSY, FB, secret);
+	patch = (patch_t*) Z_LoadBytesFromEMS(killsRef);
+	V_DrawPatch(NG_STATSX+NG_SPACINGX-SHORT(patch->width),
+		NG_STATSY, FB, patch);
+
+	y = NG_STATSY + SHORT(patch->height);
+
+	
+	patch = (patch_t*)Z_LoadBytesFromEMS(itemsRef);
+    V_DrawPatch(NG_STATSX+2*NG_SPACINGX-SHORT(patch->width),
+		NG_STATSY, FB, patch);
+	
+	patch = (patch_t*)Z_LoadBytesFromEMS(secretRef);
+    V_DrawPatch(NG_STATSX+3*NG_SPACINGX-SHORT(patch->width),
+		NG_STATSY, FB, patch);
     
-    if (dofrags)
-	V_DrawPatch(NG_STATSX+4*NG_SPACINGX-SHORT(frags->width),
-		    NG_STATSY, FB, frags);
+	if (dofrags) {
+		patch = (patch_t*)Z_LoadBytesFromEMS(fragsRef);
+
+		V_DrawPatch(NG_STATSX + 4 * NG_SPACINGX - SHORT(patch->width),
+			NG_STATSY, FB, patch);
+	}
 
     // draw stats
-    y = NG_STATSY + SHORT(kills->height);
 
-    for (i=0 ; i<MAXPLAYERS ; i++)
-    {
-	if (!playeringame[i])
-	    continue;
+    for (i=0 ; i<MAXPLAYERS ; i++) {
+		if (!playeringame[i])
+			continue;
 
-	x = NG_STATSX;
-	V_DrawPatch(x-SHORT(p[i]->width), y, FB, p[i]);
 
-	if (i == me)
-	    V_DrawPatch(x-SHORT(p[i]->width), y, FB, star);
 
-	x += NG_SPACINGX;
-	WI_drawPercent(x-pwidth, y+10, cnt_kills[i]);	x += NG_SPACINGX;
-	WI_drawPercent(x-pwidth, y+10, cnt_items[i]);	x += NG_SPACINGX;
-	WI_drawPercent(x-pwidth, y+10, cnt_secret[i]);	x += NG_SPACINGX;
+		x = NG_STATSX;
+		patch = (patch_t*)Z_LoadBytesFromEMS(pRef[i]);
+		V_DrawPatch(x-SHORT(patch->width), y, FB, patch);
 
-	if (dofrags)
-	    WI_drawNum(x, y+10, cnt_frags[i], -1);
+		if (i == me)
+			V_DrawPatch(x-SHORT(patch->width), y, FB, (patch_t*)Z_LoadBytesFromEMS(starRef));
 
-	y += WI_SPACINGY;
+		x += NG_SPACINGX;
+		WI_drawPercent(x-pwidth, y+10, cnt_kills[i]);	x += NG_SPACINGX;
+		WI_drawPercent(x-pwidth, y+10, cnt_items[i]);	x += NG_SPACINGX;
+		WI_drawPercent(x-pwidth, y+10, cnt_secret[i]);	x += NG_SPACINGX;
+
+		if (dofrags)
+			WI_drawNum(x, y+10, cnt_frags[i], -1);
+
+		y += WI_SPACINGY;
     }
 
 }
@@ -1445,7 +1451,9 @@ void WI_drawStats(void)
     // line height
     int lh;	
 
-    lh = (3*SHORT(num[0]->height))/2;
+	patch_t* num0 = (patch_t*) Z_LoadBytesFromEMS(numRef[0]);
+
+    lh = (3*SHORT(num0->height))/2;
 
     WI_slamBackground();
 
@@ -1454,24 +1462,24 @@ void WI_drawStats(void)
     
     WI_drawLF();
 
-    V_DrawPatch(SP_STATSX, SP_STATSY, FB, kills);
+    V_DrawPatch(SP_STATSX, SP_STATSY, FB, (patch_t*)Z_LoadBytesFromEMS(killsRef));
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY, cnt_kills[0]);
 
-    V_DrawPatch(SP_STATSX, SP_STATSY+lh, FB, items);
+    V_DrawPatch(SP_STATSX, SP_STATSY+lh, FB, (patch_t*)Z_LoadBytesFromEMS(itemsRef));
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+lh, cnt_items[0]);
 
-    V_DrawPatch(SP_STATSX, SP_STATSY+2*lh, FB, sp_secret);
+    V_DrawPatch(SP_STATSX, SP_STATSY+2*lh, FB, (patch_t*)Z_LoadBytesFromEMS(sp_secretRef));
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+2*lh, cnt_secret[0]);
 
-    V_DrawPatch(SP_TIMEX, SP_TIMEY, FB, time);
+    V_DrawPatch(SP_TIMEX, SP_TIMEY, FB, (patch_t*)Z_LoadBytesFromEMS(timeRef));
     WI_drawTime(SCREENWIDTH/2 - SP_TIMEX, SP_TIMEY, cnt_time);
 
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-    if (wbs->epsd < 3)
-#endif
+	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+		if (wbs->epsd < 3)
+	#endif
     {
-	V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, FB, par);
-	WI_drawTime(SCREENWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);
+		V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, FB, (patch_t*)Z_LoadBytesFromEMS(parRef));
+		WI_drawTime(SCREENWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);
     }
 
 }
@@ -1605,13 +1613,13 @@ void WI_loadData(void)
 	}
 
 	// you are here
-	yah[0] = W_CacheLumpName("WIURH0", PU_STATIC);
+	yahRef[0] = W_CacheLumpNameEMS("WIURH0", PU_STATIC);
 
 	// you are here (alt.)
-	yah[1] = W_CacheLumpName("WIURH1", PU_STATIC);
+	yahRef[1] = W_CacheLumpNameEMS("WIURH1", PU_STATIC);
 
 	// splat
-	splat = W_CacheLumpName("WISPLAT", PU_STATIC); 
+	splatRef = W_CacheLumpNameEMS("WISPLAT", PU_STATIC);
 	
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 	if (wbs->epsd < 3)
@@ -1627,12 +1635,12 @@ void WI_loadData(void)
 		    {
 			// animations
 			sprintf(name, "WIA%d%.2d%.2d", wbs->epsd, j, i);  
-			a->p[i] = W_CacheLumpName(name, PU_STATIC);
+			a->pRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
 		    }
 		    else
 		    {
 			// HACK ALERT!
-			a->p[i] = anims[1][4].p[i]; 
+			a->pRef[i] = anims[1][4].pRef[i]; 
 		    }
 		}
 	    }
@@ -1640,83 +1648,83 @@ void WI_loadData(void)
     }
 
     // More hacks on minus sign.
-    wiminus = W_CacheLumpName("WIMINUS", PU_STATIC); 
+    wiminusRef = W_CacheLumpNameEMS("WIMINUS", PU_STATIC);
 
     for (i=0;i<10;i++)
     {
 	 // numbers 0-9
 	sprintf(name, "WINUM%d", i);     
-	num[i] = W_CacheLumpName(name, PU_STATIC);
+	numRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
     }
 
     // percent sign
-    percent = W_CacheLumpName("WIPCNT", PU_STATIC);
+    percentRef = W_CacheLumpNameEMS("WIPCNT", PU_STATIC);
 
     // "finished"
-    finished = W_CacheLumpName("WIF", PU_STATIC);
+    finishedRef = W_CacheLumpNameEMS("WIF", PU_STATIC);
 
     // "entering"
-    entering = W_CacheLumpName("WIENTER", PU_STATIC);
+    enteringRef = W_CacheLumpNameEMS("WIENTER", PU_STATIC);
 
     // "kills"
-    kills = W_CacheLumpName("WIOSTK", PU_STATIC);   
+    killsRef = W_CacheLumpNameEMS("WIOSTK", PU_STATIC);
 
     // "scrt"
-    secret = W_CacheLumpName("WIOSTS", PU_STATIC);
+    secretRef = W_CacheLumpNameEMS("WIOSTS", PU_STATIC);
 
      // "secret"
-    sp_secret = W_CacheLumpName("WISCRT2", PU_STATIC);
+    sp_secretRef = W_CacheLumpNameEMS("WISCRT2", PU_STATIC);
 
     // Yuck. 
     if (french)
     {
 	// "items"
 	if (netgame && !deathmatch)
-	    items = W_CacheLumpName("WIOBJ", PU_STATIC);    
+	    itemsRef = W_CacheLumpNameEMS("WIOBJ", PU_STATIC);
   	else
-	    items = W_CacheLumpName("WIOSTI", PU_STATIC);
+	    itemsRef = W_CacheLumpNameEMS("WIOSTI", PU_STATIC);
     } else
-	items = W_CacheLumpName("WIOSTI", PU_STATIC);
+	itemsRef = W_CacheLumpNameEMS("WIOSTI", PU_STATIC);
 
     // "frgs"
-    frags = W_CacheLumpName("WIFRGS", PU_STATIC);    
+    fragsRef = W_CacheLumpNameEMS("WIFRGS", PU_STATIC);
 
     // ":"
-    colon = W_CacheLumpName("WICOLON", PU_STATIC); 
+    colonRef = W_CacheLumpNameEMS("WICOLON", PU_STATIC);
 
     // "time"
-    time = W_CacheLumpName("WITIME", PU_STATIC);   
+    timeRef = W_CacheLumpNameEMS("WITIME", PU_STATIC);
 
     // "sucks"
-    sucks = W_CacheLumpName("WISUCKS", PU_STATIC);  
+    sucksRef = W_CacheLumpNameEMS("WISUCKS", PU_STATIC);
 
     // "par"
-    par = W_CacheLumpName("WIPAR", PU_STATIC);   
+    parRef = W_CacheLumpNameEMS("WIPAR", PU_STATIC);
 
     // "killers" (vertical)
-    killers = W_CacheLumpName("WIKILRS", PU_STATIC);
+    killersRef = W_CacheLumpNameEMS("WIKILRS", PU_STATIC);
 
     // "victims" (horiz)
-    victims = W_CacheLumpName("WIVCTMS", PU_STATIC);
+    victimsRef = W_CacheLumpNameEMS("WIVCTMS", PU_STATIC);
 
     // "total"
-    total = W_CacheLumpName("WIMSTT", PU_STATIC);   
+    totalRef = W_CacheLumpNameEMS("WIMSTT", PU_STATIC);
 
     // your face
-    star = W_CacheLumpName("STFST01", PU_STATIC);
+    starRef = W_CacheLumpNameEMS("STFST01", PU_STATIC);
 
     // dead face
-    bstar = W_CacheLumpName("STFDEAD0", PU_STATIC);    
+    bstarRef = W_CacheLumpNameEMS("STFDEAD0", PU_STATIC);
 
     for (i=0 ; i<MAXPLAYERS ; i++)
     {
 	// "1,2,3,4"
 	sprintf(name, "STPB%d", i);      
-	p[i] = W_CacheLumpName(name, PU_STATIC);
+	pRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
 
 	// "1,2,3,4"
 	sprintf(name, "WIBP%d", i+1);     
-	bp[i] = W_CacheLumpName(name, PU_STATIC);
+	bpRef[i]  = W_CacheLumpNameEMS(name, PU_STATIC);
     }
 
 }
@@ -1728,10 +1736,10 @@ void WI_unloadData(void)
 	MEMREF*	lnames;
 	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
 
-    Z_ChangeTag(wiminus, PU_CACHE);
+    Z_ChangeTagEMSNew(wiminusRef, PU_CACHE);
 
     for (i=0 ; i<10 ; i++)
-	Z_ChangeTag(num[i], PU_CACHE);
+		Z_ChangeTagEMSNew(numRef[i], PU_CACHE);
     
     if (commercial)
     {
@@ -1741,10 +1749,10 @@ void WI_unloadData(void)
     }
     else
     {
-	Z_ChangeTag(yah[0], PU_CACHE);
-	Z_ChangeTag(yah[1], PU_CACHE);
+		Z_ChangeTagEMSNew(yahRef[0], PU_CACHE);
+		Z_ChangeTagEMSNew(yahRef[1], PU_CACHE);
 
-	Z_ChangeTag(splat, PU_CACHE);
+		Z_ChangeTagEMSNew(splatRef, PU_CACHE);
 
 	for (i = 0; i < NUMMAPS; i++) {
 		//Z_ChangeTagEMSNew(lnames[i], PU_CACHE);
@@ -1757,37 +1765,37 @@ void WI_unloadData(void)
 	    {
 		if (wbs->epsd != 1 || j != 8)
 		    for (i=0;i<anims[wbs->epsd][j].nanims;i++)
-			Z_ChangeTag(anims[wbs->epsd][j].p[i], PU_CACHE);
+				Z_ChangeTagEMSNew(anims[wbs->epsd][j].pRef[i], PU_CACHE);
 	    }
 	}
     }
     
     Z_FreeEMSNew(lnamesRef);
 
-    Z_ChangeTag(percent, PU_CACHE);
-    Z_ChangeTag(colon, PU_CACHE);
-    Z_ChangeTag(finished, PU_CACHE);
-    Z_ChangeTag(entering, PU_CACHE);
-    Z_ChangeTag(kills, PU_CACHE);
-    Z_ChangeTag(secret, PU_CACHE);
-    Z_ChangeTag(sp_secret, PU_CACHE);
-    Z_ChangeTag(items, PU_CACHE);
-    Z_ChangeTag(frags, PU_CACHE);
-    Z_ChangeTag(time, PU_CACHE);
-    Z_ChangeTag(sucks, PU_CACHE);
-    Z_ChangeTag(par, PU_CACHE);
+	Z_ChangeTagEMSNew(percentRef, PU_CACHE);
+	Z_ChangeTagEMSNew(colonRef, PU_CACHE);
+	Z_ChangeTagEMSNew(finishedRef, PU_CACHE);
+	Z_ChangeTagEMSNew(enteringRef, PU_CACHE);
+	Z_ChangeTagEMSNew(killsRef, PU_CACHE);
+	Z_ChangeTagEMSNew(secretRef, PU_CACHE);
+	Z_ChangeTagEMSNew(sp_secretRef, PU_CACHE);
+	Z_ChangeTagEMSNew(itemsRef, PU_CACHE);
+	Z_ChangeTagEMSNew(fragsRef, PU_CACHE);
+	Z_ChangeTagEMSNew(timeRef, PU_CACHE);
+	Z_ChangeTagEMSNew(sucksRef, PU_CACHE);
+	Z_ChangeTagEMSNew(parRef, PU_CACHE);
 
-    Z_ChangeTag(victims, PU_CACHE);
-    Z_ChangeTag(killers, PU_CACHE);
-    Z_ChangeTag(total, PU_CACHE);
-    //  Z_ChangeTag(star, PU_CACHE);
-    //  Z_ChangeTag(bstar, PU_CACHE);
+	Z_ChangeTagEMSNew(victimsRef, PU_CACHE);
+	Z_ChangeTagEMSNew(killersRef, PU_CACHE);
+	Z_ChangeTagEMSNew(totalRef, PU_CACHE);
+    //  Z_ChangeTagEMSNew(star, PU_CACHE);
+    //  Z_ChangeTagEMSNew(bstar, PU_CACHE);
     
     for (i=0 ; i<MAXPLAYERS ; i++)
-	Z_ChangeTag(p[i], PU_CACHE);
+		Z_ChangeTagEMSNew(pRef[i], PU_CACHE);
 
     for (i=0 ; i<MAXPLAYERS ; i++)
-	Z_ChangeTag(bp[i], PU_CACHE);
+		Z_ChangeTagEMSNew(bpRef[i], PU_CACHE);
 }
 
 void WI_Drawer (void)

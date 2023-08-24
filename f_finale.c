@@ -334,7 +334,7 @@ void F_Ticker (void)
 //
 
 #include "hu_stuff.h"
-extern	patch_t *hu_font[HU_FONTSIZE];
+extern	MEMREF hu_fontRef[HU_FONTSIZE];
 
 
 void F_TextWrite (void)
@@ -348,9 +348,11 @@ void F_TextWrite (void)
     int		c;
     int		cx;
     int		cy;
-    
+	MEMREF	srcRef;
+	patch_t* hu_fontC;
     // erase the entire screen to a tiled background
-    src = W_CacheLumpName ( finaleflat , PU_CACHE);
+    srcRef = W_CacheLumpNameEMS ( finaleflat , PU_CACHE);
+	src = Z_LoadBytesFromEMS(srcRef);
     dest = screens[0];
 	
     for (y=0 ; y<SCREENHEIGHT ; y++)
@@ -396,10 +398,11 @@ void F_TextWrite (void)
 	    continue;
 	}
 		
-	w = SHORT (hu_font[c]->width);
+	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
+	w = SHORT (hu_fontC->width);
 	if (cx+w > SCREENWIDTH)
 	    break;
-	V_DrawPatch(cx, cy, 0, hu_font[c]);
+	V_DrawPatch(cx, cy, 0, hu_fontC);
 	cx+=w;
     }
 	
@@ -606,6 +609,7 @@ void F_CastPrint (char* text)
     int		cx;
     int		w;
     int		width;
+	patch_t* hu_fontC;
     
     // find width
     ch = text;
@@ -623,7 +627,9 @@ void F_CastPrint (char* text)
 	    continue;
 	}
 		
-	w = SHORT (hu_font[c]->width);
+	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
+
+	w = SHORT (hu_fontC->width);
 	width += w;
     }
     
@@ -642,8 +648,9 @@ void F_CastPrint (char* text)
 	    continue;
 	}
 		
-	w = SHORT (hu_font[c]->width);
-	V_DrawPatch(cx, 180, 0, hu_font[c]);
+	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
+	w = SHORT (hu_fontC->width);
+	V_DrawPatch(cx, 180, 0, hu_fontC);
 	cx+=w;
     }
 	
@@ -666,7 +673,7 @@ void F_CastDrawer (void)
 	spritedef_t*	sprites;
 	spriteframe_t*  spriteframes;
     // erase the entire screen to a background
-    V_DrawPatch (0,0,0, W_CacheLumpName ("BOSSBACK", PU_CACHE));
+    V_DrawPatch (0,0,0, W_CacheLumpNameEMSAsPatch("BOSSBACK", PU_CACHE));
 
     F_CastPrint (castorder[castnum].name);
     
@@ -736,14 +743,11 @@ void F_BunnyScroll (void)
 {
     int		scrolled;
     int		x;
-    patch_t*	p1;
-    patch_t*	p2;
-    char	name[10];
+     char	name[10];
     int		stage;
     static int	laststage;
 		
-    p1 = W_CacheLumpName ("PFUB2", PU_LEVEL);
-    p2 = W_CacheLumpName ("PFUB1", PU_LEVEL);
+
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 	
@@ -756,9 +760,9 @@ void F_BunnyScroll (void)
     for ( x=0 ; x<SCREENWIDTH ; x++)
     {
 	if (x+scrolled < 320)
-	    F_DrawPatchCol (x, p1, x+scrolled);
+	    F_DrawPatchCol (x, W_CacheLumpNameEMSAsPatch("PFUB2", PU_LEVEL), x+scrolled);
 	else
-	    F_DrawPatchCol (x, p2, x+scrolled - 320);		
+	    F_DrawPatchCol (x, W_CacheLumpNameEMSAsPatch("PFUB1", PU_LEVEL), x+scrolled - 320);
     }
 	
     if (finalecount < 1130)
@@ -766,7 +770,7 @@ void F_BunnyScroll (void)
     if (finalecount < 1180)
     {
 	V_DrawPatch ((SCREENWIDTH-13*8)/2,
-		     (SCREENHEIGHT-8*8)/2,0, W_CacheLumpName ("END0",PU_CACHE));
+		     (SCREENHEIGHT-8*8)/2,0, W_CacheLumpNameEMSAsPatch ("END0",PU_CACHE));
 	laststage = 0;
 	return;
     }
@@ -781,7 +785,7 @@ void F_BunnyScroll (void)
     }
 	
     sprintf (name,"END%i",stage);
-    V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, W_CacheLumpName (name,PU_CACHE));
+    V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, W_CacheLumpNameEMSAsPatch(name, PU_CACHE));
 }
 
 
@@ -805,23 +809,23 @@ void F_Drawer (void)
 	  case 1:
 #if (EXE_VERSION < EXE_VERSION_ULTIMATE)
 	    V_DrawPatch(0,0,0,
-			W_CacheLumpName("HELP2",PU_CACHE));
+			W_CacheLumpNameEMSAsPatch("HELP2", PU_CACHE));
 	    break;
 #else
-	    V_DrawPatch(0,0,0,
-			W_CacheLumpName("CREDIT",PU_CACHE));
+		  V_DrawPatch(0, 0, 0,
+			  W_CacheLumpNameEMSAsPatch("CREDIT", PU_CACHE));
 	    break;
 #endif
 	  case 2:
 	    V_DrawPatch(0,0,0,
-			W_CacheLumpName("VICTORY2",PU_CACHE));
+			W_CacheLumpNameEMSAsPatch("VICTORY2", PU_CACHE));
 	    break;
 	  case 3:
 	    F_BunnyScroll ();
 	    break;
 	  case 4:
 	    V_DrawPatch (0,0,0,
-			 W_CacheLumpName("ENDPIC",PU_CACHE));
+			W_CacheLumpNameEMSAsPatch("ENDPIC", PU_CACHE));
 	    break;
 	}
     }

@@ -270,7 +270,7 @@ static fixed_t scale_ftom;
 
 static player_t *plr; // the player represented by an arrow
 
-static patch_t *marknums[10]; // numbers used for marking by the automap
+static MEMREF marknums[10]; // numbers used for marking by the automap
 static mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
 static int markpointnum = 0; // next point to be assigned
 
@@ -498,10 +498,9 @@ void AM_loadPics(void)
     int i;
     char namebuf[9];
   
-    for (i=0;i<10;i++)
-    {
-	sprintf(namebuf, "AMMNUM%d", i);
-	marknums[i] = W_CacheLumpName(namebuf, PU_STATIC);
+    for (i=0;i<10;i++) {
+		sprintf(namebuf, "AMMNUM%d", i);
+		marknums[i] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
     }
 
 }
@@ -511,7 +510,7 @@ void AM_unloadPics(void)
     int i;
   
     for (i=0;i<10;i++)
-	Z_ChangeTag(marknums[i], PU_CACHE);
+	Z_ChangeTagEMSNew(marknums[i], PU_CACHE);
 
 }
 
@@ -1326,8 +1325,9 @@ void AM_drawMarks(void)
 	    h = 6; // because something's wrong with the wad, i guess
 	    fx = CXMTOF(markpoints[i].x);
 	    fy = CYMTOF(markpoints[i].y);
-	    if (fx >= f_x && fx <= f_w - w && fy >= f_y && fy <= f_h - h)
-		V_DrawPatch(fx, fy, FB, marknums[i]);
+		if (fx >= f_x && fx <= f_w - w && fy >= f_y && fy <= f_h - h) {
+			V_DrawPatch(fx, fy, FB, (patch_t*)Z_LoadBytesFromEMS(marknums[i]));
+		}
 	}
     }
 

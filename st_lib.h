@@ -59,7 +59,8 @@ typedef struct
     boolean*	on;
 
     // list of patches for 0-9
-    patch_t**	p;
+    //patch_t**	p;
+	MEMREF* pRef;
 
     // user data
     int data;
@@ -76,7 +77,8 @@ typedef struct
     st_number_t		n;
 
     // percent sign graphic
-    patch_t*		p;
+    //patch_t*		p;
+	MEMREF pRef;
     
 } st_percent_t;
 
@@ -100,7 +102,8 @@ typedef struct
     boolean*		on;
 
     // list of icons
-    patch_t**		p;
+    //patch_t**		p;
+	MEMREF*		pRef;
     
     // user data
     int			data;
@@ -129,7 +132,8 @@ typedef struct
     boolean*		on;  
 
 
-    patch_t*		p;	// icon
+    //patch_t*		p;	// icon
+	MEMREF		pRef;
     int			data;   // user data
     
 } st_binicon_t;
@@ -154,7 +158,7 @@ STlib_initNum
 ( st_number_t*		n,
   int			x,
   int			y,
-  patch_t**		pl,
+  MEMREF*		plRef,
   int*			num,
   boolean*		on,
   int			width );
@@ -171,10 +175,11 @@ STlib_initPercent
 ( st_percent_t*		p,
   int			x,
   int			y,
-  patch_t**		pl,
+  MEMREF*		plRef,
   int*			num,
   boolean*		on,
-  patch_t*		percent );
+  MEMREF		percentRef 
+);
 
 
 void
@@ -189,7 +194,7 @@ STlib_initMultIcon
 ( st_multicon_t*	mi,
   int			x,
   int			y,
-  patch_t**		il,
+  MEMREF*		ilRef,
   int*			inum,
   boolean*		on );
 
@@ -206,7 +211,7 @@ STlib_initBinIcon
 ( st_binicon_t*		b,
   int			x,
   int			y,
-  patch_t*		i,
+  MEMREF		iRef,
   boolean*		val,
   boolean*		on );
 

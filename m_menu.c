@@ -55,7 +55,7 @@
 
 
 
-extern patch_t*         hu_font[HU_FONTSIZE];
+extern MEMREF         hu_fontRef[HU_FONTSIZE];
 extern boolean          message_dontfuckwithme;
 
 extern boolean          chat_on;                // in heads-up code
@@ -578,7 +578,7 @@ void M_DrawLoad(void)
 {
     int             i;
         
-    V_DrawPatchDirect (72,28,0,W_CacheLumpName("M_LOADG",PU_CACHE));
+    V_DrawPatchDirect (72,28,0, W_CacheLumpNameEMSAsPatch("M_LOADG",PU_CACHE));
     for (i = 0;i < load_end; i++)
     {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
@@ -595,15 +595,15 @@ void M_DrawSaveLoadBorder(int x,int y)
 {
     int             i;
         
-    V_DrawPatchDirect (x-8,y+7,0,W_CacheLumpName("M_LSLEFT",PU_CACHE));
+    V_DrawPatchDirect (x-8,y+7,0, W_CacheLumpNameEMSAsPatch("M_LSLEFT", PU_CACHE));
         
     for (i = 0;i < 24;i++)
     {
-        V_DrawPatchDirect (x,y+7,0,W_CacheLumpName("M_LSCNTR",PU_CACHE));
+        V_DrawPatchDirect (x,y+7,0, W_CacheLumpNameEMSAsPatch("M_LSCNTR", PU_CACHE)) ;
         x += 8;
     }
 
-    V_DrawPatchDirect (x,y+7,0,W_CacheLumpName("M_LSRGHT",PU_CACHE));
+    V_DrawPatchDirect (x,y+7,0, W_CacheLumpNameEMSAsPatch("M_LSRGHT", PU_CACHE)) ;
 }
 
 
@@ -646,7 +646,7 @@ void M_DrawSave(void)
 {
     int             i;
         
-    V_DrawPatchDirect (72,28,0,W_CacheLumpName("M_SAVEG",PU_CACHE));
+    V_DrawPatchDirect (72,28,0, W_CacheLumpNameEMSAsPatch("M_SAVEG", PU_CACHE));
     for (i = 0;i < load_end; i++)
     {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
@@ -787,7 +787,7 @@ void M_QuickLoad(void)
 void M_DrawReadThis1(void)
 {
     inhelpscreens = true;
-    V_DrawPatchDirect(0, 0, 0, W_CacheLumpName("HELP2", PU_CACHE));
+    V_DrawPatchDirect(0, 0, 0, W_CacheLumpNameEMSAsPatch("HELP2", PU_CACHE));
 }
 
 
@@ -799,14 +799,14 @@ void M_DrawReadThis1(void)
 void M_DrawReadThis2(void)
 {
     inhelpscreens = true;
-    V_DrawPatchDirect(0, 0, 0, W_CacheLumpName("HELP1", PU_CACHE));
+    V_DrawPatchDirect(0, 0, 0, W_CacheLumpNameEMSAsPatch("HELP1", PU_CACHE));
 }
 #endif
 
 void M_DrawReadThisRetail(void)
 {
     inhelpscreens = true;
-    V_DrawPatchDirect(0, 0, 0, W_CacheLumpName("HELP", PU_CACHE));
+    V_DrawPatchDirect(0, 0, 0, W_CacheLumpNameEMSAsPatch("HELP", PU_CACHE));
 }
 
 
@@ -815,7 +815,7 @@ void M_DrawReadThisRetail(void)
 //
 void M_DrawSound(void)
 {
-    V_DrawPatchDirect (60,38,0,W_CacheLumpName("M_SVOL",PU_CACHE));
+    V_DrawPatchDirect (60,38,0, W_CacheLumpNameEMSAsPatch("M_SVOL", PU_CACHE));
 
     M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(sfx_vol+1),
                  16,sfxVolume);
@@ -871,7 +871,7 @@ void M_MusicVol(int choice)
 //
 void M_DrawMainMenu(void)
 {
-    V_DrawPatchDirect (94,2,0,W_CacheLumpName("M_DOOM",PU_CACHE));
+    V_DrawPatchDirect (94,2,0, W_CacheLumpNameEMSAsPatch("M_DOOM", PU_CACHE));
 }
 
 
@@ -882,8 +882,8 @@ void M_DrawMainMenu(void)
 //
 void M_DrawNewGame(void)
 {
-    V_DrawPatchDirect (96,14,0,W_CacheLumpName("M_NEWG",PU_CACHE));
-    V_DrawPatchDirect (54,38,0,W_CacheLumpName("M_SKILL",PU_CACHE));
+    V_DrawPatchDirect (96,14,0, W_CacheLumpNameEMSAsPatch("M_NEWG", PU_CACHE));
+    V_DrawPatchDirect (54,38,0, W_CacheLumpNameEMSAsPatch("M_SKILL", PU_CACHE));
 }
 
 void M_NewGame(int choice)
@@ -908,7 +908,7 @@ int     epi;
 
 void M_DrawEpisode(void)
 {
-    V_DrawPatchDirect (54,38,0,W_CacheLumpName("M_EPISOD",PU_CACHE));
+    V_DrawPatchDirect (54,38,0, W_CacheLumpNameEMSAsPatch("M_EPISOD", PU_CACHE));
 }
 
 void M_VerifyNightmare(int ch)
@@ -957,13 +957,13 @@ char    msgNames[2][9]          = {"M_MSGOFF","M_MSGON"};
 
 void M_DrawOptions(void)
 {
-    V_DrawPatchDirect (108,15,0,W_CacheLumpName("M_OPTTTL",PU_CACHE));
+    V_DrawPatchDirect (108,15,0, W_CacheLumpNameEMSAsPatch("M_OPTTTL", PU_CACHE));
         
     V_DrawPatchDirect (OptionsDef.x + 175,OptionsDef.y+LINEHEIGHT*detail,0,
-                       W_CacheLumpName(detailNames[detailLevel],PU_CACHE));
+		W_CacheLumpNameEMSAsPatch(detailNames[detailLevel], PU_CACHE))   ;
 
     V_DrawPatchDirect (OptionsDef.x + 120,OptionsDef.y+LINEHEIGHT*messages,0,
-                       W_CacheLumpName(msgNames[showMessages],PU_CACHE));
+		W_CacheLumpNameEMSAsPatch(msgNames[showMessages], PU_CACHE)) ;
 
     M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(mousesens+1),
                  10,mouseSensitivity);
@@ -1205,17 +1205,17 @@ M_DrawThermo
     int         i;
 
     xx = x;
-    V_DrawPatchDirect (xx,y,0,W_CacheLumpName("M_THERML",PU_CACHE));
+    V_DrawPatchDirect (xx,y,0, W_CacheLumpNameEMSAsPatch("M_THERML", PU_CACHE));
     xx += 8;
     for (i=0;i<thermWidth;i++)
     {
-        V_DrawPatchDirect (xx,y,0,W_CacheLumpName("M_THERMM",PU_CACHE));
+        V_DrawPatchDirect (xx,y,0, W_CacheLumpNameEMSAsPatch("M_THERMM", PU_CACHE));
         xx += 8;
     }
-    V_DrawPatchDirect (xx,y,0,W_CacheLumpName("M_THERMR",PU_CACHE));
+    V_DrawPatchDirect (xx,y,0, W_CacheLumpNameEMSAsPatch("M_THERMR", PU_CACHE));
 
     V_DrawPatchDirect ((x+8) + thermDot*8,y,
-                       0,W_CacheLumpName("M_THERMO",PU_CACHE));
+                       0, W_CacheLumpNameEMSAsPatch("M_THERMO", PU_CACHE));
 }
 
 
@@ -1226,7 +1226,7 @@ M_DrawEmptyCell
   int           item )
 {
     V_DrawPatchDirect (menu->x - 10,        menu->y+item*LINEHEIGHT - 1, 0,
-                       W_CacheLumpName("M_CELL1",PU_CACHE));
+		W_CacheLumpNameEMSAsPatch("M_CELL1", PU_CACHE));
 }
 
 void
@@ -1235,7 +1235,7 @@ M_DrawSelCell
   int           item )
 {
     V_DrawPatchDirect (menu->x - 10,        menu->y+item*LINEHEIGHT - 1, 0,
-                       W_CacheLumpName("M_CELL2",PU_CACHE));
+		W_CacheLumpNameEMSAsPatch("M_CELL2", PU_CACHE));
 }
 
 
@@ -1272,14 +1272,17 @@ int M_StringWidth(char* string)
     int             i;
     int             w = 0;
     int             c;
-        
+	patch_t* hu_fontC;
+
     for (i = 0;i < strlen(string);i++)
     {
         c = toupper(string[i]) - HU_FONTSTART;
         if (c < 0 || c >= HU_FONTSIZE)
             w += 4;
-        else
-            w += SHORT (hu_font[c]->width);
+		else {
+			hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
+			w += SHORT(hu_fontC->width);
+		}
     }
                 
     return w;
@@ -1294,7 +1297,8 @@ int M_StringHeight(char* string)
 {
     int             i;
     int             h;
-    int             height = SHORT(hu_font[0]->height);
+	patch_t* hu_font0 = Z_LoadBytesFromEMS(hu_fontRef[0]);
+	int             height = SHORT(hu_font0->height);
         
     h = height;
     for (i = 0;i < strlen(string);i++)
@@ -1319,7 +1323,7 @@ M_WriteText
     int         c;
     int         cx;
     int         cy;
-                
+	patch_t* hu_fontC;
 
     ch = string;
     cx = x;
@@ -1343,11 +1347,12 @@ M_WriteText
             cx += 4;
             continue;
         }
-                
-        w = SHORT (hu_font[c]->width);
+		hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
+
+        w = SHORT (hu_fontC->width);
         if (cx+w > SCREENWIDTH)
             break;
-        V_DrawPatchDirect(cx, cy, 0, hu_font[c]);
+        V_DrawPatchDirect(cx, cy, 0, hu_fontC);
         cx+=w;
     }
 }
@@ -1615,7 +1620,7 @@ boolean M_Responder (event_t* ev)
             if (usegamma > 4)
                 usegamma = 0;
             players[consoleplayer].message = gammamsg[usegamma];
-            I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
+            I_SetPalette (Z_LoadBytesFromEMS(W_CacheLumpNameEMS("PLAYPAL", PU_CACHE)));
             return true;
                                 
         }
@@ -1761,6 +1766,7 @@ void M_Drawer (void)
     short               max;
     char                string[40];
     int                 start;
+	patch_t*			hu_font0;
 
     inhelpscreens = false;
 
@@ -1789,7 +1795,9 @@ void M_Drawer (void)
                                 
             x = 160 - M_StringWidth(string)/2;
             M_WriteText(x,y,string);
-            y += SHORT(hu_font[0]->height);
+			hu_font0 = Z_LoadBytesFromEMS(hu_fontRef[0]);
+
+            y += SHORT(hu_font0->height);
         }
         return;
     }
@@ -1809,14 +1817,15 @@ void M_Drawer (void)
     {
         if (currentMenu->menuitems[i].name[0])
             V_DrawPatchDirect (x,y,0,
-                               W_CacheLumpName(currentMenu->menuitems[i].name ,PU_CACHE));
+				W_CacheLumpNameEMSAsPatch(currentMenu->menuitems[i].name, PU_CACHE)) ;
         y += LINEHEIGHT;
     }
 
     
     // DRAW SKULL
-    V_DrawPatchDirect(x + SKULLXOFF,currentMenu->y - 5 + itemOn*LINEHEIGHT, 0,
-                      W_CacheLumpName(skullName[whichSkull],PU_CACHE));
+	V_DrawPatchDirect(x + SKULLXOFF, currentMenu->y - 5 + itemOn * LINEHEIGHT, 0,
+		W_CacheLumpNameEMSAsPatch(skullName[whichSkull], PU_CACHE));
+
 
 }
 

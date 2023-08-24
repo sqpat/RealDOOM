@@ -564,7 +564,9 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
 	memset (mobj, 0, sizeof (*mobj));
-    info = &mobjinfo[type];
+
+
+	info = &mobjinfo[type];
 	
     mobj->type = type;
     mobj->info = info;
@@ -575,6 +577,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobj->flags = info->flags;
     mobj->health = info->spawnhealth;
 
+
     if (gameskill != sk_nightmare)
 		mobj->reactiontime = info->reactiontime;
     
@@ -582,11 +585,11 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     // do not set the state with P_SetMobjState,
     // because action routines can not be called yet
     st = &states[info->spawnstate];
-
-    mobj->state = st;
+	mobj->state = st;
     mobj->tics = st->tics;
     mobj->sprite = st->sprite;
     mobj->frame = st->frame;
+	
 
     // set subsector and/or block links
     P_SetThingPosition (mobjRef);
@@ -601,7 +604,14 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     else 
 		mobj->z = z;
 
+	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
+		I_Error("found on start a");
+	}
+
 	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
+	if (((line_t*)Z_LoadBytesFromEMS(linesRef))[0].sidenum[1] == 21587) {
+		I_Error("found on start b");
+	}
 
     return mobjRef;
 }
@@ -810,72 +820,71 @@ void P_SpawnMapThing (mapthing_t* mthing)
 
 		
     // count deathmatch start positions
-    if (mthingtype == 11)
-    {
-	if (deathmatch_p < &deathmatchstarts[10])
-	{
-	    memcpy (deathmatch_p, &mthing, sizeof(mthing));
-	    deathmatch_p++;
-	}
-	return;
+    if (mthingtype == 11) {
+		if (deathmatch_p < &deathmatchstarts[10]) {
+			memcpy (deathmatch_p, &mthing, sizeof(mthing));
+			deathmatch_p++;
+		}
+		return;
     }
 	
     // check for players specially
-    if (mthingtype <= 4)
-    {
-	// save spots for respawning in network games
-	playerstarts[mthingtype-1] = *mthing;
-	if (!deathmatch)
-	    P_SpawnPlayer (mthing);
-
-	return;
+    if (mthingtype <= 4) {
+		// save spots for respawning in network games
+		playerstarts[mthingtype-1] = *mthing;
+		if (!deathmatch) {
+			P_SpawnPlayer(mthing);
+		}
+		return;
     }
 
     // check for apropriate skill level
-    if (!netgame && (mthingoptions & 16) )
-	return;
-		
-    if (gameskill == sk_baby)
-	bit = 1;
-    else if (gameskill == sk_nightmare)
-	bit = 4;
-    else
-	bit = 1<<(gameskill-1);
-
-    if (!(mthingoptions & bit) )
-	return;
-	
+	if (!netgame && (mthingoptions & 16)) {
+		return;
+	}
+	if (gameskill == sk_baby) {
+		bit = 1;
+	} else if (gameskill == sk_nightmare) {
+		bit = 4;
+	} else {
+		bit = 1 << (gameskill - 1);
+	}
+	if (!(mthingoptions & bit)) {
+		return;
+	}
     // find which type to spawn
-    for (i=0 ; i< NUMMOBJTYPES ; i++)
-	if (mthingtype == mobjinfo[i].doomednum)
-	    break;
-	
-    if (i==NUMMOBJTYPES)
-	I_Error ("P_SpawnMapThing: Unknown type %i at (%i, %i)",
-		 mthingtype,
-		 mthingx, mthingy);
-		
+	for (i = 0; i < NUMMOBJTYPES; i++) {
+		if (mthingtype == mobjinfo[i].doomednum) {
+			break;
+		}
+	}
+    
+	if (i == NUMMOBJTYPES) {
+		I_Error("P_SpawnMapThing: Unknown type %i at (%i, %i)",
+			mthingtype,
+			mthingx, mthingy);
+	}
+
     // don't spawn keycards and players in deathmatch
-    if (deathmatch && mobjinfo[i].flags & MF_NOTDMATCH)
-	return;
-		
+	if (deathmatch && mobjinfo[i].flags & MF_NOTDMATCH) {
+		return;
+	}
+
     // don't spawn any monsters if -nomonsters
-    if (nomonsters
-	&& ( i == MT_SKULL
-	     || (mobjinfo[i].flags & MF_COUNTKILL)) )
-    {
-	return;
+    if (nomonsters && ( i == MT_SKULL || (mobjinfo[i].flags & MF_COUNTKILL)) ) {
+		return;
     }
     
     // spawn it
     x = mthingx << FRACBITS;
     y = mthingy << FRACBITS;
 
-    if (mobjinfo[i].flags & MF_SPAWNCEILING)
+	if (mobjinfo[i].flags & MF_SPAWNCEILING) {
 		z = ONCEILINGZ;
-    else
+	} else {
 		z = ONFLOORZ;
-    
+	}
+
     mobjRef = P_SpawnMobj (x,y,z, i);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
     mobj->spawnpoint = copyofthing;

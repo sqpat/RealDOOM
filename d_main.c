@@ -315,8 +315,9 @@ void D_Display (void)
         HU_Drawer ();
 
     // clean up border stuff
-    if (gamestate != oldgamestate && gamestate != GS_LEVEL)
-        I_SetPalette (W_CacheLumpName ("PLAYPAL",PU_CACHE));
+	if (gamestate != oldgamestate && gamestate != GS_LEVEL) {
+		I_SetPalette(Z_LoadBytesFromEMS(W_CacheLumpNameEMS("PLAYPAL", PU_CACHE)));
+	}
 
     // see if the border needs to be initially drawn
     if (gamestate == GS_LEVEL && oldgamestate != GS_LEVEL)
@@ -351,7 +352,7 @@ void D_Display (void)
         else
             y = viewwindowy+4;
         V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2,
-                          y,0,W_CacheLumpName ("M_PAUSE", PU_CACHE));
+                          y,0, W_CacheLumpNameEMSAsPatch("M_PAUSE", PU_CACHE));
     }
 
     // menus go directly to the screen
@@ -404,6 +405,10 @@ void D_DoomLoop (void)
 	int lastindex = 0;
 	int stoptic;
 	vldoor_t* doorunit;
+	line_t* lines;
+	line_t* check;
+
+	int linenumber;
 
 	byte* nodes;
 	int i = 0;
@@ -437,6 +442,15 @@ void D_DoomLoop (void)
 			M_Ticker ();
 			
 			G_Ticker ();
+
+
+			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+			check = &lines[0];
+			if (check->sidenum[1] == 21587) {
+				I_Error("found on tick %i", gametic);
+			}
+
+
 
 			gametic++;
             maketic++;

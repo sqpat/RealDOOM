@@ -6,42 +6,44 @@ segs:    1371  27420
 CURRENT TODO
   FRAME 1595 z a bit different
 
-PROBLEMS/IMPROVEMENTS
+ 
 ? why was there a 0 allocation (might be e1m1 marker etc?)
-x P_BlockLinesIterator iterator passes a lines array. should be offset.
-x put all the range checks, etc in define blocks.
+ 
+IMPROVEMENTS
+  - mobj in conventional?
+  - sectors, lines in conventional?
 
-
-x next: do subsectors in ems
-  x mobj has a subsector num, but its mostly used to retrieve secnum, save that as well?
-- linebuffer is pointers, not offsets. Change this...
-- lines to zmallocems
-- secs has frontsecnum and backsecnum as well as pointer to line which has this. Reduce memory footprint by removing these?
-
-- thinkercap/thinker list kinda sucks (potentially spread across many pages)
-- sector mobjlists kinda suck (potentially spread across many pages).. not a big deal?
-- maybe invalidate memory when paged out (all ff or something)
+MEMORY IMPROVEMENTS
+ - segs to conventional after all?
+ - sector->special from short to char ( 8 bit)
+ - thinker-> function to a char  (8 bit)
 
 - blocklinks is 2000 size. Figure out a more proper number?
 - how big should thinkerlist be? move to heap?
+ 
 
 
- - Z_LoadValue(pass ref and offset and pointer, get the value? interally does a temp page in, puts val in pointer, temp page out? READ ONLY)
-
- - use wolf 3d conventional memory code for 16 bit mode?
- ? replace subsectors with just the values? currently 32 vs 48 bit... problematic...
-
-
-... EVENTUALLY TODO
+... BUGS TO FIX
  - save file stuff (archive, unarchive thinkers)
  - titlepic stuff
 
 
 
+x remaining cachelumpName stuff
+TODO 
+- remove sound
+- fix face compositing
+- sectors
+
+- remove code
+ - netplay?
+
+
+- types.h
+
+
 MEMORY IDEAS
- - segs to conventional after all?
- sector->special from short to char ( 8 bit)
- thinker-> function to a char  (8 bit)
+
 
  
   

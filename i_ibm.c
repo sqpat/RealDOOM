@@ -522,7 +522,7 @@ void I_InitGraphics(void)
     outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1) | 0x40);
     outp(GC_INDEX, GC_READMAP);
 
-    I_SetPalette(W_CacheLumpName("PLAYPAL", PU_CACHE));
+    I_SetPalette(Z_LoadBytesFromEMS(W_CacheLumpNameEMS("PLAYPAL", PU_CACHE)));
     I_InitDiskFlash();
 }
 
@@ -1157,7 +1157,7 @@ void I_Error (char *error, ...)
 void I_Quit(void)
 {
     byte *scr;
-
+	MEMREF scrRef;
     if (demorecording)
     {
         G_CheckDemoStatus();
@@ -1167,12 +1167,13 @@ void I_Quit(void)
         D_QuitNetGame();
     }
     M_SaveDefaults();
-    scr = (byte*)W_CacheLumpName("ENDOOM", PU_CACHE);
+    scrRef = W_CacheLumpNameEMS("ENDOOM", PU_CACHE);
     I_ShutdownGraphics();
     I_ShutdownSound();
     I_ShutdownTimer();
     I_ShutdownMouse();
     I_ShutdownKeyboard();
+	scr = Z_LoadBytesFromEMS(scrRef);
     memcpy((void *)0xb8000, scr, 80 * 25 * 2);
     regs.w.ax = 0x0200;
     regs.h.bh = 0;
@@ -1424,11 +1425,11 @@ void I_InitDiskFlash(void)
 
     if (M_CheckParm("-cdrom"))
     {
-        pic = W_CacheLumpName("STCDDISK", PU_CACHE);
+        pic = W_CacheLumpNameEMSAsPatch("STCDDISK", PU_CACHE);
     }
     else
     {
-        pic = W_CacheLumpName("STDISK", PU_CACHE);
+        pic = W_CacheLumpNameEMSAsPatch("STDISK", PU_CACHE);
     }
     temp = destscreen;
     destscreen = (byte *)0xac000;

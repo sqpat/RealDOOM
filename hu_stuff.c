@@ -42,11 +42,9 @@
 #define HU_TITLET	(mapnamest[gamemap-1])
 #define HU_TITLEHEIGHT	1
 #define HU_TITLEX	0
-#define HU_TITLEY	(167 - SHORT(hu_font[0]->height))
 
 #define HU_INPUTTOGGLE	't'
 #define HU_INPUTX	HU_MSGX
-#define HU_INPUTY	(HU_MSGY + HU_MSGHEIGHT*(SHORT(hu_font[0]->height) +1))
 #define HU_INPUTWIDTH	64
 #define HU_INPUTHEIGHT	1
 
@@ -77,7 +75,7 @@ char*	player_names[] =
 
 char			chat_char; // remove later.
 static player_t*	plr;
-patch_t*		hu_font[HU_FONTSIZE];
+MEMREF		hu_fontRef[HU_FONTSIZE];
 static hu_textline_t	w_title;
 boolean			chat_on;
 static hu_itext_t	w_chat;
@@ -394,10 +392,9 @@ void HU_Init(void)
 
     // load the heads-up font
     j = HU_FONTSTART;
-    for (i=0;i<HU_FONTSIZE;i++)
-    {
-	sprintf(buffer, "STCFN%.3d", j++);
-	hu_font[i] = (patch_t *) W_CacheLumpName(buffer, PU_STATIC);
+    for (i=0;i<HU_FONTSIZE;i++) {
+		sprintf(buffer, "STCFN%.3d", j++);
+		hu_fontRef[i] = W_CacheLumpNameEMS(buffer, PU_STATIC);
     }
 
 }
@@ -412,26 +409,28 @@ void HU_Start(void)
 
     int		i;
     char*	s;
+	patch_t* hu_font0 = Z_LoadBytesFromEMS(hu_fontRef[0]);
+	int HU_TITLEY = (167 - SHORT(hu_font0->height));
+	int HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * (SHORT(hu_font0->height) + 1));
 
     if (headsupactive)
-	HU_Stop();
+		HU_Stop();
 
     plr = &players[consoleplayer];
     message_on = false;
     message_dontfuckwithme = false;
     message_nottobefuckedwith = false;
     chat_on = false;
-
     // create the message widget
     HUlib_initSText(&w_message,
 		    HU_MSGX, HU_MSGY, HU_MSGHEIGHT,
-		    hu_font,
+		    hu_fontRef,
 		    HU_FONTSTART, &message_on);
 
     // create the map title widget
     HUlib_initTextLine(&w_title,
 		       HU_TITLEX, HU_TITLEY,
-		       hu_font,
+		       hu_fontRef,
 		       HU_FONTSTART);
     
     if (commercial)
@@ -461,10 +460,11 @@ void HU_Start(void)
     while (*s)
 	HUlib_addCharToTextLine(&w_title, *(s++));
 
+
     // create the chat widget
     HUlib_initIText(&w_chat,
 		    HU_INPUTX, HU_INPUTY,
-		    hu_font,
+		    hu_fontRef,
 		    HU_FONTSTART, &chat_on);
 
     // create the inputbuffer widgets

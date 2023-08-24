@@ -348,7 +348,7 @@ void I_sndArbitrateCards(void)
         }
         else
         {
-            AL_SetCard(wait, W_CacheLumpName("genmidi", PU_STATIC));
+            AL_SetCard(wait, Z_LoadBytesFromEMS( W_CacheLumpNameEMS("genmidi", PU_STATIC)));
         }
     }
 
