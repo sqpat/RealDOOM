@@ -1014,8 +1014,8 @@ P_SpawnMissile
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
     th->angle = an;
     an >>= ANGLETOFINESHIFT;
-    th->momx = FixedMul (th->info->speed, finecosine[an]);
-    th->momy = FixedMul (th->info->speed, finesine[an]);
+    th->momx = FixedMul (th->info->speed, finecosine(an));
+    th->momy = FixedMul (th->info->speed, finesine(an));
 	th->momz = momz;
 	Z_RefIsActive(thRef);
 
@@ -1039,7 +1039,7 @@ P_SpawnPlayerMissile
 	MEMREF thRef;
     angle_t	an;
     
-    fixed_t	x;
+	fixed_t	x;
     fixed_t	y;
     fixed_t	z;
     fixed_t	slope;
@@ -1077,10 +1077,11 @@ P_SpawnPlayerMissile
 
     th->targetRef = sourceRef;
     th->angle = an;
+	an = an >> ANGLETOFINESHIFT;
     th->momx = FixedMul( th->info->speed,
-			 finecosine[an>>ANGLETOFINESHIFT]);
+			 finecosine(an));
     th->momy = FixedMul( th->info->speed,
-			 finesine[an>>ANGLETOFINESHIFT]);
+			 finesine(an));
     th->momz = FixedMul( th->info->speed, slope);
 
     P_CheckMissileSpawn (thRef);

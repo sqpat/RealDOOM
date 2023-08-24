@@ -15,7 +15,7 @@
 #ifndef _DMX_H_
 #define _DMX_H_
 
-#include <sys/types.h>
+#include "doomtype.h"
 
 
 /*

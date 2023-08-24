@@ -12,31 +12,18 @@
 #include <stdlib.h>
 #include "doomdef.h"
 
-#define FreeMem(ptr) free((ptr))
-
-
-void OutByte20h(uint8_t al);
-#pragma aux OutByte20h = \
-    "out 0x20, al" \
-    parm[al] nomemory;
 
 /*---------------------------------------------------------------------
    Global variables
 ---------------------------------------------------------------------*/
 
-
-
 static task HeadTask;
-
 static void(__interrupt __far *OldInt8)(void);
-
 static volatile int32_t TaskServiceRate = 0x10000L;
 static volatile int32_t TaskServiceCount = 0;
 
 static volatile int32_t TS_TimesInInterrupt;
-
 static int8_t TS_Installed = FALSE;
-
 volatile int32_t TS_InInterrupt = FALSE;
 
 /*---------------------------------------------------------------------
@@ -57,7 +44,7 @@ static void RestoreRealTimeClock(void);
 static void TS_FreeTaskList(void)
 {
 	_disable();
-	FreeMem(&HeadTask);
+	free(&HeadTask);
 	_enable();
 }
 
@@ -109,7 +96,7 @@ static void __interrupt __far TS_ServiceScheduleIntEnabled(void)
 		_chain_intr(OldInt8);
 	}
 
-	OutByte20h(0x20);
+	outp(0x20, 0x20); // Acknowledge interrupt
 
 	if (TS_InInterrupt)
 	{
@@ -219,7 +206,7 @@ void TS_Terminate()
 
 {
 	_disable();
-	FreeMem(&HeadTask);
+	free(&HeadTask);
 	TS_SetTimerToMaxTaskRate();
 	_enable();
 

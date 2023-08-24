@@ -24,7 +24,7 @@
 #define __Z_ZONE__
 
 #include <stdio.h>
-#include <sys/types.h>
+#include "doomtype.h"
 //
 // ZONE MEMORY
 // PU - purge tags.

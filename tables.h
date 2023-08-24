@@ -21,7 +21,7 @@
 //	 Should work with BAM fairly well (12 of 16bit,
 //      effectively, by shifting).
 //
-//	int32_t finesine[10240]		- Sine lookup.
+//	int32_t finesine(10240)		- Sine lookup.
 //	 Guess what, serves as cosine, too.
 //	 Remarkable thing is, how to use BAMs with this? 
 //
@@ -34,6 +34,21 @@
 #ifndef __TABLES__
 #define __TABLES__
 
+// basically, to reduce memory footprint by 30-40 KB we want to cut finesine tables
+// down to 2048 entires and then generate the rest of the values for that and cosine based 
+// on that. It's slower than a bigger lookup table for sure, but the savings of conventional
+// memory will impact performance much more positively in the long run. The problem is,
+// for each 2048 values shifted every 90 degrees theres a handful of off=by-one values.
+// This does not really make DOOM play noticeably different, but a typical timedemo will
+// diverge after a few hundred frames when one of those few angles incorrect angles is
+// used. So we can special case those incorrect angles in a switch block for accuacy,
+// but its slower of course. But it's still much faster overall to use that 30-40kb of
+// memory on something else. This gives us full backwards compatibility with original
+// doom timedemos - sqpat
+
+// slower (involves function call) but backward comaptible with original doom.
+#define USE_FUNCTION_TRIG
+
 
 #define PI				3.141592657
 
@@ -43,19 +58,59 @@
 #define FINEANGLES		8192
 #define FINEMASK		(FINEANGLES-1)
 
+//#define finesine(x) (int32_t) (x < 2048 ? finesineinner[x] : x < 4096 ? finesineinner[2047-(x-2048)] : x < 6144 ? -(finesineinner[x-4096]) : x < 8192 ? -(finesineinner[2047-(x-6144)]) : finesineinner[x-8192] )
+//#define finecosine(x) (x < 2048 ? finesineinner[2047-x] : x < 4096 ? -(finesineinner[(x-2048)]) : x < 6144 ? -(finesineinner[2047-(x-4096)]) : x < 8192 ? (finesineinner[(x-6144)]) : finesineinner[2047-(x-8192)] )
+
+// for 2048
+#define finesineexpr(x) (int32_t) (x < 2048 ? finesineinner[x] : x < 4096 ? finesineinner[2047-(x-2048)] : x < 6144 ? -(finesineinner[x-4096]) :  -(finesineinner[2047-(x-6144)]) )
+#define finecosineexpr(x) (int32_t) (x < 2048 ? finesineinner[2047-x] : x < 4096 ? -(finesineinner[(x-2048)]) : x < 6144 ? -(finesineinner[2047-(x-4096)]) :  (finesineinner[(x-6144)])   )
+
+#ifdef USE_FUNCTION_TRIG
+
+int32_t fixedsine(int16_t x);
+
+#define finesine(x) fixedsine(x)
+#define finecosine(x) fixedsine((x+2048) & FINEMASK)
+
+#else
+
+#define finesine(x) finesineexpr(x)
+#define finecosine(x) finecosineexpr(x)
+
+#endif
+
+#define finetangent(x) (x < 2048 ? finetangentinner[x] : -(finetangentinner[(2047-(x-2048))]) )
+
+
+/*
+#define finesine(x)  (finesineinner[x] )
+#define finecosine(x)  (finesineinner[x+2048])
+*/
+
+
+// for 4096
+/*
+#define finesine(x) (int32_t) (x < 4096 ? finesineinner[x] : -finesineinner[4095-(x-4096)] )
+#define finecosine(x) x > 6144 ? finesine(x-6144) : finesine(x+2048)
+*/
+
+
 
 // 0x100000000 to 0x2000
 #define ANGLETOFINESHIFT	19		
 
 // Effective size is 10240.
-extern  fixed_t		finesine[5*FINEANGLES/4];
 
-// Re-use data, is just PI/2 pahse shift.
-extern  fixed_t*	finecosine;
+#ifdef USE_FUNCTION_TRIG
+#else
 
+extern  uint16_t		finesineinner[2048];
+//extern  int32_t		finesineinner[10240];
 
-// Effective size is 4096.
-extern fixed_t		finetangent[FINEANGLES/2];
+#endif
+
+// this one has no issues with mirroring 2nd half of values!
+extern fixed_t		finetangentinner[2048];
 
 // Binary Angle Measument, BAM.
 #define ANG45			0x20000000

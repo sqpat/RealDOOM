@@ -19,7 +19,7 @@
 #ifndef __DUTILS__
 #define __DUTILS__
 
-#include <sys/types.h>
+#include "doomtype.h"
 
 typedef struct lnode_s {
     void* value;

@@ -101,9 +101,8 @@ angle_t			xtoviewangle[SCREENWIDTH+1];
 // holds the fixed_t tangent values for view angles,
 // ranging from MININT to 0 to MAXINT.
 // fixed_t		finetangent[FINEANGLES/2];
-
-// fixed_t		finesine[5*FINEANGLES/4];
-fixed_t*		finecosine = &finesine[FINEANGLES/4];
+// fixed_t		finesine(5*FINEANGLES/4);
+//fixed_t*		finecosine = &finesine(FINEANGLES/4);
 
 
 lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
@@ -387,7 +386,7 @@ R_PointToDist
     angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ]+ANG90) >> ANGLETOFINESHIFT;
 
     // use as cosine
-    dist = FixedDiv (dx, finesine[angle] );	
+    dist = FixedDiv (dx, finesine(angle) );	
 	
     return dist;
 }
@@ -415,10 +414,11 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 
     anglea = ANG90 + (visangle-viewangle);
     angleb = ANG90 + (visangle-rw_normalangle);
-
+	anglea = anglea >> ANGLETOFINESHIFT;
+	angleb = angleb >> ANGLETOFINESHIFT;
     // both sines are allways positive
-    sinea = finesine[anglea>>ANGLETOFINESHIFT];	
-    sineb = finesine[angleb>>ANGLETOFINESHIFT];
+    sinea = finesine(anglea);	
+    sineb = finesine(angleb);
     num = FixedMul(projection,sineb)<<detailshift;
     den = FixedMul(rw_distance,sinea);
 
@@ -458,17 +458,17 @@ void R_InitTextureMapping (void)
     // Calc focallength
     //  so FIELDOFVIEW angles covers SCREENWIDTH.
     focallength = FixedDiv (centerxfrac,
-			    finetangent[FINEANGLES/4+FIELDOFVIEW/2] );
+			    finetangent(FINEANGLES/4+FIELDOFVIEW/2) );
 	
     for (i=0 ; i<FINEANGLES/2 ; i++)
     {
-	if (finetangent[i] > FRACUNIT*2)
+	if (finetangent(i) > FRACUNIT*2)
 	    t = -1;
-	else if (finetangent[i] < -FRACUNIT*2)
+	else if (finetangent(i) < -FRACUNIT*2)
 	    t = viewwidth+1;
 	else
 	{
-	    t = FixedMul (finetangent[i], focallength);
+	    t = FixedMul (finetangent(i), focallength);
 	    t = (centerxfrac - t+FRACUNIT-1)>>FRACBITS;
 
 	    if (t < -1)
@@ -493,7 +493,7 @@ void R_InitTextureMapping (void)
     // Take out the fencepost cases from viewangletox.
     for (i=0 ; i<FINEANGLES/2 ; i++)
     {
-	t = FixedMul (finetangent[i], focallength);
+	t = FixedMul (finetangent(i), focallength);
 	t = centerx - t;
 	
 	if (viewangletox[i] == -1)
@@ -574,7 +574,8 @@ R_SetViewSize
 //
 void R_ExecuteSetViewSize (void)
 {
-    fixed_t	cosadj;
+	fixed_t	cosadj;
+	fixed_t	an;
     fixed_t	dy;
     int32_t		i;
     int32_t		j;
@@ -640,8 +641,9 @@ void R_ExecuteSetViewSize (void)
 	
     for (i=0 ; i<viewwidth ; i++)
     {
-	cosadj = abs(finecosine[xtoviewangle[i]>>ANGLETOFINESHIFT]);
-	distscale[i] = FixedDiv (FRACUNIT,cosadj);
+		an = xtoviewangle[i] >> ANGLETOFINESHIFT;
+		cosadj = abs(finecosine(an));
+		distscale[i] = FixedDiv (FRACUNIT,cosadj);
     }
     
     // Calculate the light levels to use
@@ -736,6 +738,7 @@ uint16_t
 void R_SetupFrame (player_t* player)
 {		
     int32_t		i;
+	fixed_t tempan;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 
     viewplayer = player;
@@ -745,9 +748,9 @@ void R_SetupFrame (player_t* player)
     extralight = player->extralight;
 
     viewz = player->viewz;
-    
-    viewsin = finesine[viewangle>>ANGLETOFINESHIFT];
-    viewcos = finecosine[viewangle>>ANGLETOFINESHIFT];
+	tempan = viewangle >> ANGLETOFINESHIFT;
+    viewsin = finesine(tempan);
+    viewcos = finecosine(tempan);
 	
     if (player->fixedcolormap)
     {

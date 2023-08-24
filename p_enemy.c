@@ -1276,8 +1276,8 @@ void A_Tracer (MEMREF actorRef)
     }
 	
     exact = actor->angle>>ANGLETOFINESHIFT;
-    actor->momx = FixedMul (actor->info->speed, finecosine[exact]);
-    actor->momy = FixedMul (actor->info->speed, finesine[exact]);
+    actor->momx = FixedMul (actor->info->speed, finecosine(exact));
+    actor->momy = FixedMul (actor->info->speed, finesine(exact));
 	actorx = actor->x;
 	actory = actor->y;
 	
@@ -1506,8 +1506,8 @@ void A_Fire (MEMREF actorRef)
 
     P_UnsetThingPosition (actorRef);
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-	actor->x = destx + FixedMul (24*FRACUNIT, finecosine[an]);
-    actor->y = desty + FixedMul (24*FRACUNIT, finesine[an]);
+	actor->x = destx + FixedMul (24*FRACUNIT, finecosine(an));
+    actor->y = desty + FixedMul (24*FRACUNIT, finesine(an));
     actor->z = destz;
     P_SetThingPosition (actorRef);
 }
@@ -1586,8 +1586,8 @@ void A_VileAttack (MEMREF actorRef)
 		
 	fire = (mobj_t*)Z_LoadBytesFromEMS(fireRef);
 	// move the fire between the vile and the player
-    fire->x = actorTargetx - FixedMul (24*FRACUNIT, finecosine[an]);
-    fire->y = actorTargety - FixedMul (24*FRACUNIT, finesine[an]);
+    fire->x = actorTargetx - FixedMul (24*FRACUNIT, finecosine(an));
+    fire->y = actorTargety - FixedMul (24*FRACUNIT, finesine(an));
     P_RadiusAttack (fireRef, actorRef, 70 );
 }
 
@@ -1627,8 +1627,8 @@ void A_FatAttack1 (MEMREF actorRef)
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
     mo->angle += FATSPREAD;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine[an]);
-    mo->momy = FixedMul (mo->info->speed, finesine[an]);
+    mo->momx = FixedMul (mo->info->speed, finecosine(an));
+    mo->momy = FixedMul (mo->info->speed, finesine(an));
 }
 
 void A_FatAttack2 (MEMREF actorRef)
@@ -1650,8 +1650,8 @@ void A_FatAttack2 (MEMREF actorRef)
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
     mo->angle -= FATSPREAD*2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine[an]);
-    mo->momy = FixedMul (mo->info->speed, finesine[an]);
+    mo->momx = FixedMul (mo->info->speed, finecosine(an));
+    mo->momy = FixedMul (mo->info->speed, finesine(an));
 }
 
 void A_FatAttack3 (MEMREF actorRef)
@@ -1670,15 +1670,15 @@ void A_FatAttack3 (MEMREF actorRef)
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
     mo->angle -= FATSPREAD/2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine[an]);
-    mo->momy = FixedMul (mo->info->speed, finesine[an]);
+    mo->momx = FixedMul (mo->info->speed, finecosine(an));
+    mo->momy = FixedMul (mo->info->speed, finesine(an));
 
     moRef = P_SpawnMissile (actorRef, actortargetRef, MT_FATSHOT);
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mo->angle += FATSPREAD/2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine[an]);
-    mo->momy = FixedMul (mo->info->speed, finesine[an]);
+    mo->momx = FixedMul (mo->info->speed, finecosine(an));
+    mo->momy = FixedMul (mo->info->speed, finesine(an));
 }
 
 
@@ -1718,8 +1718,8 @@ void A_SkullAttack (MEMREF actorRef)
 
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
     an = actor->angle >> ANGLETOFINESHIFT;
-    actor->momx = FixedMul (SKULLSPEED, finecosine[an]);
-    actor->momy = FixedMul (SKULLSPEED, finesine[an]);
+    actor->momx = FixedMul (SKULLSPEED, finecosine(an));
+    actor->momy = FixedMul (SKULLSPEED, finesine(an));
     dist = P_AproxDistance (destx - actor->x, desty - actor->y);
     dist = dist / SKULLSPEED;
     
@@ -1780,8 +1780,8 @@ A_PainShootSkull
 	actortargetRef = actor->targetRef;
 	prestep = 4*FRACUNIT + 3*(actor->info->radius + mobjinfo[MT_SKULL].radius)/2;
     
-    x = actor->x + FixedMul (prestep, finecosine[an]);
-    y = actor->y + FixedMul (prestep, finesine[an]);
+    x = actor->x + FixedMul (prestep, finecosine(an));
+    y = actor->y + FixedMul (prestep, finesine(an));
     z = actor->z + 8*FRACUNIT;
 		
     newmobjRef = P_SpawnMobj (x , y, z, MT_SKULL);

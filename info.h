@@ -23,7 +23,6 @@
 
 // Needed for action function pointer handling.
 #include "d_think.h"
-#include <sys/types.h>
 
 #define SPR_TROO 0
 #define SPR_SHTG 1

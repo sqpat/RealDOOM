@@ -1131,14 +1131,14 @@ AM_rotate
   angle_t	a )
 {
     fixed_t tmpx;
-
+	a = a >> ANGLETOFINESHIFT;
     tmpx =
-	FixedMul(*x,finecosine[a>>ANGLETOFINESHIFT])
-	- FixedMul(*y,finesine[a>>ANGLETOFINESHIFT]);
+	FixedMul(*x,finecosine(a))
+	- FixedMul(*y,finesine(a));
     
     *y   =
-	FixedMul(*x,finesine[a>>ANGLETOFINESHIFT])
-	+ FixedMul(*y,finecosine[a>>ANGLETOFINESHIFT]);
+	FixedMul(*x,finesine(a))
+	+ FixedMul(*y,finecosine(a));
 
     *x = tmpx;
 }

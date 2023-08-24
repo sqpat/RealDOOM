@@ -54,8 +54,8 @@ P_Thrust
 	mobj_t* playermo = (mobj_t* ) Z_LoadBytesFromEMS(player->moRef);
     angle >>= ANGLETOFINESHIFT;
     
-	playermo->momx += FixedMul(move,finecosine[angle]);
-	playermo->momy += FixedMul(move,finesine[angle]);
+	playermo->momx += FixedMul(move,finecosine(angle));
+	playermo->momy += FixedMul(move,finesine(angle));
 }
 
 
@@ -98,7 +98,7 @@ void P_CalcHeight (player_t* player)
     }
 		
     angle = (FINEANGLES/20*leveltime)&FINEMASK;
-    bob = FixedMul ( player->bob/2, finesine[angle]);
+    bob = FixedMul ( player->bob/2, finesine(angle));
 
     
     // move viewheight

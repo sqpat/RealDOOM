@@ -392,11 +392,11 @@ byte copynode[10540];
 
 void D_DoomLoop (void)
 {
-	//int8_t result[3000];
-	//int8_t result2[2000];
-	//int32_t lasttick = 0;
-	//int32_t lastindex = 0;
-	//int32_t stoptic;
+	int8_t result[3000];
+	int8_t result2[2000];
+	int32_t lasttick = 0;
+	int32_t lastindex = 0;
+	int32_t stoptic;
 	vldoor_t* doorunit;
 	line_t* lines;
 	line_t* check;
@@ -409,14 +409,7 @@ void D_DoomLoop (void)
     if (demorecording)
         G_BeginRecording ();
                 
-    if (M_CheckParm ("-debugfile"))
-    {
-		int8_t    filename[20];
-        sprintf (filename,"debug%i.txt",consoleplayer);
-        printf ("debug output to: %s\n",filename);
-        debugfile = fopen (filename,"w");
-    }
-        
+ 
 
     I_InitGraphics ();
 
@@ -466,8 +459,8 @@ void D_DoomLoop (void)
 
 		}*/
 
-		/*
-		stoptic = 1030;
+		
+		stoptic = 3550;
 		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {
@@ -512,7 +505,6 @@ void D_DoomLoop (void)
 			//	I_Error("badcopy");
 			//}
 		}
-		 */
 
 	}
 }

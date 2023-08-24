@@ -740,7 +740,7 @@ G_CheckSpot
 
     an = ( ANG45 * (mthing->angle/45) ) >> ANGLETOFINESHIFT; 
  
-    moRef = P_SpawnMobj (x+20*finecosine[an], y+20*finesine[an] 
+    moRef = P_SpawnMobj (x+20*finecosine(an), y+20*finesine(an)
                       , sectors[secnum].floorheight
                       , MT_TFOG); 
          

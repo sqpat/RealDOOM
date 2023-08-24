@@ -17,10 +17,28 @@
 //	 separating modules.
 //
 
-#include <sys/types.h>
 
 #ifndef __DOOMTYPE__
 #define __DOOMTYPE__
+
+
+
+#ifndef __FIXEDTYPES__
+#define __FIXEDTYPES__
+typedef signed char				int8_t;
+typedef unsigned char			uint8_t;
+typedef short					int16_t;
+typedef unsigned short			uint16_t;
+#ifdef _M_I86
+typedef long					int32_t;
+typedef unsigned long			uint32_t;
+#else
+typedef int						int32_t;
+typedef unsigned int			uint32_t;
+#endif
+typedef long long				int64_t;
+typedef unsigned long long		uint64_t;
+#endif
 
 
 #ifndef __BYTEBOOL__
@@ -29,10 +47,11 @@
 #ifdef __cplusplus
 typedef bool boolean;
 #else
-typedef enum {false, true} boolean;
+typedef enum { false, true } boolean;
 #endif
 typedef uint8_t byte;
 #endif
+
 
 #define MAXCHAR		((int8_t)0x7f)
 #define MAXSHORT	((int16_t)0x7fff)

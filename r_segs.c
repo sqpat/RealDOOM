@@ -282,7 +282,7 @@ void R_RenderSegLoop (void)
 	{
 	    // calculate texture offset
 	    angle = (rw_centerangle + xtoviewangle[rw_x])>>ANGLETOFINESHIFT;
-	    texturecolumn = rw_offset-FixedMul(finetangent[angle],rw_distance);
+	    texturecolumn = rw_offset-FixedMul(finetangent(angle),rw_distance);
 	    texturecolumn >>= FRACBITS;
 	    // calculate lighting
 	    index = rw_scale>>LIGHTSCALESHIFT;
@@ -466,9 +466,11 @@ R_StoreWallRange
 	offsetangle = ANG90;
 
     distangle = ANG90 - offsetangle;
+	distangle = distangle >> ANGLETOFINESHIFT;
+
 	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 	hyp = R_PointToDist (vertexes[curlinev1Offset].x, vertexes[curlinev1Offset].y);
-    sineval = finesine[distangle>>ANGLETOFINESHIFT];
+    sineval = finesine(distangle);
     rw_distance = FixedMul (hyp, sineval);
 		
 	
@@ -678,7 +680,8 @@ R_StoreWallRange
 		if (offsetangle > ANG90) {
 			offsetangle = ANG90;
 		}
-		sineval = finesine[offsetangle >>ANGLETOFINESHIFT];
+		offsetangle = offsetangle >> ANGLETOFINESHIFT;
+		sineval = finesine(offsetangle);
 		rw_offset = FixedMul (hyp, sineval);
 
 		if (rw_normalangle - rw_angle1 < ANG180) {

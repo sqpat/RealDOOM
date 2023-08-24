@@ -20,7 +20,7 @@
 #ifndef __SOUNDS__
 #define __SOUNDS__
 
-#include <sys/types.h>
+#include "doomtype.h"
 
 //
 // SoundFX struct.

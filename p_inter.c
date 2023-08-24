@@ -824,8 +824,8 @@ P_DamageMobj
 		}
 
 		ang >>= ANGLETOFINESHIFT;
-		target->momx += FixedMul (thrust, finecosine[ang]);
-		target->momy += FixedMul (thrust, finesine[ang]);
+		target->momx += FixedMul (thrust, finecosine(ang));
+		target->momy += FixedMul (thrust, finesine(ang));
     }
 	targetsecnum = target->secnum;
 	targethealth = target->health;

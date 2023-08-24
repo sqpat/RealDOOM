@@ -193,7 +193,7 @@ void R_InitSpriteDefs (int8_t** namelist)
 	sprites = (spritedef_t*)Z_LoadBytesFromEMS(spritesRef);
 	start = firstspritelump-1;
     end = lastspritelump+1;
-	
+        
     // scan all the lump names for each of the names,
     //  noting the highest frame letter.
     // Just compare 4 characters as ints
