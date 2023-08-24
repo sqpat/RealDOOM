@@ -120,8 +120,6 @@ boolean         demoplayback;
 boolean         netdemo; 
 MEMREF           demobufferRef;
 
-byte	demobuffer[16000];
-
 byte*           demo_p;
 //byte*           demoend; 
 boolean         singledemo;             // quit after playing a demo from cmdline 
@@ -1499,7 +1497,7 @@ G_InitNew
 
 void G_ReadDemoTiccmd (ticcmd_t* cmd) 
 { 
-	//byte* demobuffer = (byte*) Z_LoadBytesFromEMS(demobufferRef);
+	byte* demobuffer = (byte*) Z_LoadBytesFromEMS(demobufferRef);
 	demo_p = (byte*)((int)demo_p + (int)demobuffer);
 	if (*demo_p == DEMOMARKER)  {
         // end of demo data stream 
@@ -1516,7 +1514,7 @@ void G_ReadDemoTiccmd (ticcmd_t* cmd)
 
 void G_WriteDemoTiccmd (ticcmd_t* cmd) 
 { 
-	//byte* demobuffer = (byte*)Z_LoadBytesFromEMS(demobufferRef);
+	byte* demobuffer = (byte*)Z_LoadBytesFromEMS(demobufferRef);
 	demo_p = (byte*)((int)demo_p + (int)demobuffer);
 	if (gamekeydown['q'])           // press q to end demo recording 
         G_CheckDemoStatus (); 
@@ -1558,7 +1556,7 @@ void G_RecordDemo (char* name)
     i = M_CheckParm ("-maxdemo");
     if (i && i<myargc-1)
         maxsize = atoi(myargv[i+1])*1024;
-    //demobufferRef = Z_MallocEMSNew (maxsize,PU_STATIC,0, ALLOC_TYPE_DEMO_BUFFER); 
+    demobufferRef = Z_MallocEMSNew (maxsize,PU_STATIC,0, ALLOC_TYPE_DEMO_BUFFER); 
     //demoend = demobuffer + maxsize;
         
     demorecording = true; 
@@ -1568,7 +1566,7 @@ void G_RecordDemo (char* name)
 void G_BeginRecording (void) 
 { 
     int             i; 
-	//byte* demobuffer = Z_LoadBytesFromEMS(demobufferRef);
+	byte* demobuffer = Z_LoadBytesFromEMS(demobufferRef);
 	
     demo_p = demobuffer;
         
@@ -1605,11 +1603,11 @@ void G_DoPlayDemo (void)
 { 
     skill_t skill; 
     int             i, episode, map; 
-	byte* tempdemobuffer;
-    gameaction = ga_nothing; 
+	byte* demobuffer;
+	
+	gameaction = ga_nothing;
     demobufferRef = W_CacheLumpNameEMS (defdemoname, PU_STATIC); 
-	tempdemobuffer = Z_LoadBytesFromEMS(demobufferRef);
-	memcpy(demobuffer, tempdemobuffer, 16000);
+	demobuffer = (byte*) Z_LoadBytesFromEMS(demobufferRef);
 	demo_p = demobuffer;
     if ( *demo_p++ != VERSION)
     {
@@ -1673,7 +1671,7 @@ void G_TimeDemo (char* name)
 boolean G_CheckDemoStatus (void) 
 { 
     int             endtime; 
-	//byte* demobuffer;
+	byte* demobuffer;
 
 	// NOTE: WHENEVER WE ENTER THIS FUNCTION demo_p IS ALREADY INCREMENTED BY demobuffer OFFSET;
 
@@ -1705,7 +1703,7 @@ boolean G_CheckDemoStatus (void)
  
     if (demorecording) 
     { 
-		//demobuffer = Z_LoadBytesFromEMS(demobufferRef);
+		demobuffer = Z_LoadBytesFromEMS(demobufferRef);
         *demo_p++ = DEMOMARKER; 
         M_WriteFile (demoname, demobuffer, demo_p - demobuffer);
         Z_FreeEMSNew (demobufferRef, 22); 

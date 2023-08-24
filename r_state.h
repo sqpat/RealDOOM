@@ -69,6 +69,7 @@ extern int		numsprites;
 extern MEMREF	spritesRef;
 
 extern int		numvertexes;
+//extern vertex_t vertexes[946];
 extern MEMREF	vertexesRef;
 
 extern int		numsegs;

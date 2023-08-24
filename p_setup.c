@@ -45,7 +45,7 @@ void    P_SpawnMapThing(mapthing_t*    mthing);
 // Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
 //
 int             numvertexes;
-//vertex_t*       vertexes;
+//vertex_t       vertexes[946];
 MEMREF       vertexesRef;
 
 int             numsegs;
@@ -126,6 +126,8 @@ void P_LoadVertexes(int lump)
 
 	// Allocate zone memory for buffer.
 	vertexesRef = Z_MallocEMSNew(numvertexes * sizeof(vertex_t), PU_LEVEL, 0, ALLOC_TYPE_VERTEXES);
+	//I_Error("%i", numvertexes );
+	
 
 	// Load data into cache.
 	W_CacheLumpNumCheck(lump, 3);
@@ -172,12 +174,13 @@ void P_LoadSegs(int lump)
 
 	ml = (mapseg_t *)data;
 	li = segs;
+	
+
 	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
-	for (i = 0; i < numsegs; i++, li++, ml++)
-	{
-		li->v1 = &vertexes[SHORT(ml->v1)];
-		li->v2 = &vertexes[SHORT(ml->v2)];
+	for (i = 0; i < numsegs; i++, li++, ml++) {
+		li->v1Offset = SHORT(ml->v1);
+		li->v2Offset = SHORT(ml->v2);
 
 		li->angle = (SHORT(ml->angle)) << 16;
 		li->offset = (SHORT(ml->offset)) << 16;
@@ -240,6 +243,9 @@ void P_LoadSectors(int lump)
 
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 	sectors = Z_Malloc (numsectors * sizeof(sector_t), PU_LEVEL, 0);
+	//I_Error("%i numsect", numsectors);
+	// 143-177
+
 
 	memset(sectors, 0, numsectors * sizeof(sector_t));
 	W_CacheLumpNumCheck(lump, 6);
@@ -379,47 +385,42 @@ void P_LoadLineDefs(int lump)
 
 	mld = (maplinedef_t *)data;
 	ld = lines;
+	
 	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-	for (i = 0; i < numlines; i++, mld++, ld++)
-	{
+	for (i = 0; i < numlines; i++, mld++, ld++) {
 		ld->flags = SHORT(mld->flags);
 		ld->special = SHORT(mld->special);
 		ld->tag = SHORT(mld->tag);
-		v1 = ld->v1 = &vertexes[SHORT(mld->v1)];
-		v2 = ld->v2 = &vertexes[SHORT(mld->v2)];
+		v1 = &vertexes[SHORT(mld->v1)];
+		v2 = &vertexes[SHORT(mld->v2)];
+		ld->v1Offset = SHORT(mld->v1);
+		ld->v2Offset = SHORT(mld->v2);
 		ld->dx = v2->x - v1->x;
 		ld->dy = v2->y - v1->y;
 
-		if (!ld->dx)
+		if (!ld->dx) {
 			ld->slopetype = ST_VERTICAL;
-		else if (!ld->dy)
+		} else if (!ld->dy) {
 			ld->slopetype = ST_HORIZONTAL;
-		else
-		{
-			if (FixedDiv(ld->dy, ld->dx) > 0)
+		} else {
+			if (FixedDiv(ld->dy, ld->dx) > 0) {
 				ld->slopetype = ST_POSITIVE;
-			else
+			} else {
 				ld->slopetype = ST_NEGATIVE;
+			}
 		}
 
-		if (v1->x < v2->x)
-		{
+		if (v1->x < v2->x) {
 			ld->bbox[BOXLEFT] = v1->x;
 			ld->bbox[BOXRIGHT] = v2->x;
-		}
-		else
-		{
+		} else {
 			ld->bbox[BOXLEFT] = v2->x;
 			ld->bbox[BOXRIGHT] = v1->x;
 		}
-
-		if (v1->y < v2->y)
-		{
+		if (v1->y < v2->y) {
 			ld->bbox[BOXBOTTOM] = v1->y;
 			ld->bbox[BOXTOP] = v2->y;
-		}
-		else
-		{
+		} else {
 			ld->bbox[BOXBOTTOM] = v2->y;
 			ld->bbox[BOXTOP] = v1->y;
 		}
@@ -427,15 +428,16 @@ void P_LoadLineDefs(int lump)
 		ld->sidenum[0] = SHORT(mld->sidenum[0]);
 		ld->sidenum[1] = SHORT(mld->sidenum[1]);
 
-		if (ld->sidenum[0] != -1)
+		if (ld->sidenum[0] != -1) {
 			ld->frontsector = sides[ld->sidenum[0]].sector;
-		else
+		} else {
 			ld->frontsector = 0;
-
-		if (ld->sidenum[1] != -1)
+		}
+		if (ld->sidenum[1] != -1){
 			ld->backsector = sides[ld->sidenum[1]].sector;
-		else
+		} else {
 			ld->backsector = 0;
+		}
 	}
 
 	Z_Free(data);
@@ -524,7 +526,7 @@ void P_GroupLines(void)
 	int                 block;
 	seg_t*              segs;
 	MEMREF				linebufferRef;
-
+	vertex_t*			vertexes;
 	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	// look up sector number for each subsector
 	ss = subsectors;
@@ -555,6 +557,7 @@ void P_GroupLines(void)
 	linebuffer = (line_t**)Z_Malloc (total * 4, PU_LEVEL, 0);
 
 	sector = sectors;
+	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 	for (i = 0; i < numsectors; i++, sector++)
 	{
 		M_ClearBox(bbox);
@@ -565,16 +568,18 @@ void P_GroupLines(void)
 			if (li->frontsector == sector || li->backsector == sector)
 			{
 				*linebuffer++ = li;
-				M_AddToBox(bbox, li->v1->x, li->v1->y);
-				M_AddToBox(bbox, li->v2->x, li->v2->y);
+				M_AddToBox(bbox, vertexes[li->v1Offset].x, vertexes[li->v1Offset].y);
+				M_AddToBox(bbox, vertexes[li->v2Offset].x, vertexes[li->v2Offset].y);
 			}
 		}
 		if (linebuffer - sector->lines != sector->linecount)
 			I_Error("P_GroupLines: miscounted");
 
 		// set the degenmobj_t to the middle of the bounding box
-		sector->soundorg.x = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
-		sector->soundorg.y = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
+		
+
+		sector->soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
+		sector->soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
 
 		// adjust bounding box to map blocks
 		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUS) >> MAPBLOCKSHIFT;

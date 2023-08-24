@@ -65,30 +65,32 @@ P_PointOnLineSide
     fixed_t	dy;
     fixed_t	left;
     fixed_t	right;
-	
-    if (!line->dx)
-    {
-	if (x <= line->v1->x)
-	    return line->dy > 0;
-	
-	return line->dy < 0;
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+
+    if (!line->dx) {
+		if (x <= vertexes[line->v1Offset].x) {
+			return line->dy > 0;
+		}
+		return line->dy < 0;
     }
-    if (!line->dy)
-    {
-	if (y <= line->v1->y)
-	    return line->dx < 0;
+    if (!line->dy) {
+		if (y <= vertexes[line->v1Offset].y) {
+			return line->dx < 0;
+		}
 	
-	return line->dx > 0;
+		return line->dx > 0;
     }
 	
-    dx = (x - line->v1->x);
-    dy = (y - line->v1->y);
+    dx = (x - vertexes[line->v1Offset].x);
+    dy = (y - vertexes[line->v1Offset].y);
 	
     left = FixedMul ( line->dy>>FRACBITS , dx );
     right = FixedMul ( dy , line->dx>>FRACBITS );
 	
-    if (right < left)
-	return 0;		// front side
+	if (right < left) {
+		return 0;		// front side
+	}
+
     return 1;			// back side
 }
 
@@ -106,22 +108,22 @@ P_BoxOnLineSide
 {
     int		p1;
     int		p2;
-	
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+
     switch (ld->slopetype)
     {
       case ST_HORIZONTAL:
-	p1 = tmbox[BOXTOP] > ld->v1->y;
-	p2 = tmbox[BOXBOTTOM] > ld->v1->y;
-	if (ld->dx < 0)
-	{
+	p1 = tmbox[BOXTOP] > vertexes[ld->v1Offset].y;
+	p2 = tmbox[BOXBOTTOM] > vertexes[ld->v1Offset].y;
+	if (ld->dx < 0) {
 	    p1 ^= 1;
 	    p2 ^= 1;
 	}
 	break;
 	
       case ST_VERTICAL:
-	p1 = tmbox[BOXRIGHT] < ld->v1->x;
-	p2 = tmbox[BOXLEFT] < ld->v1->x;
+	p1 = tmbox[BOXRIGHT] < vertexes[ld->v1Offset].x;
+	p2 = tmbox[BOXLEFT] < vertexes[ld->v1Offset].x;
 	if (ld->dy < 0)
 	{
 	    p1 ^= 1;
@@ -205,8 +207,9 @@ P_MakeDivline
 ( line_t*	li,
   divline_t*	dl )
 {
-    dl->x = li->v1->x;
-    dl->y = li->v1->y;
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	dl->x = vertexes[li->v1Offset].x;
+    dl->y = vertexes[li->v1Offset].y;
     dl->dx = li->dx;
     dl->dy = li->dy;
 }
@@ -236,9 +239,7 @@ P_InterceptVector
 	return 0;
     //	I_Error ("P_InterceptVector: parallel");
     
-    num =
-	FixedMul ( (v1->x - v2->x)>>8 ,v1->dy )
-	+FixedMul ( (v2->y - v1->y)>>8, v1->dx );
+    num = FixedMul ( (v1->x - v2->x)>>8 ,v1->dy ) + FixedMul ( (v2->y - v1->y)>>8, v1->dx );
 
     frac = FixedDiv (num , den);
 
@@ -577,38 +578,31 @@ PIT_AddLineIntercepts (line_t* ld)
     int			s2;
     fixed_t		frac;
     divline_t		dl;
-	
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+
     // avoid precision problems with two routines
-    if ( trace.dx > FRACUNIT*16
-	 || trace.dy > FRACUNIT*16
-	 || trace.dx < -FRACUNIT*16
-	 || trace.dy < -FRACUNIT*16)
-    {
-	s1 = P_PointOnDivlineSide (ld->v1->x, ld->v1->y, &trace);
-	s2 = P_PointOnDivlineSide (ld->v2->x, ld->v2->y, &trace);
-    }
-    else
-    {
-	s1 = P_PointOnLineSide (trace.x, trace.y, ld);
-	s2 = P_PointOnLineSide (trace.x+trace.dx, trace.y+trace.dy, ld);
+    if ( trace.dx > FRACUNIT*16 || trace.dy > FRACUNIT*16 || trace.dx < -FRACUNIT*16 || trace.dy < -FRACUNIT*16) {
+		s1 = P_PointOnDivlineSide (vertexes[ld->v1Offset].x, vertexes[ld->v1Offset].y, &trace);
+		s2 = P_PointOnDivlineSide (vertexes[ld->v2Offset].x, vertexes[ld->v2Offset].y, &trace);
+    } else {
+		s1 = P_PointOnLineSide (trace.x, trace.y, ld);
+		s2 = P_PointOnLineSide (trace.x+trace.dx, trace.y+trace.dy, ld);
     }
     
     if (s1 == s2)
-	return true;	// line isn't crossed
+		return true;	// line isn't crossed
     
     // hit the line
     P_MakeDivline (ld, &dl);
     frac = P_InterceptVector (&trace, &dl);
 
-    if (frac < 0)
-	return true;	// behind source
-	
+	if (frac < 0) {
+		return true;	// behind source
+	}
+
     // try to early out the check
-    if (earlyout
-	&& frac < FRACUNIT
-	&& !ld->backsector)
-    {
-	return false;	// stop checking
+    if (earlyout && frac < FRACUNIT && !ld->backsector) {
+		return false;	// stop checking
     }
     
 	
@@ -666,9 +660,10 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     s1 = P_PointOnDivlineSide (x1, y1, &trace);
     s2 = P_PointOnDivlineSide (x2, y2, &trace);
 
-    if (s1 == s2)
-	return true;		// line isn't crossed
-	
+	if (s1 == s2) {
+		return true;		// line isn't crossed
+	}
+
     dl.x = x1;
     dl.y = y1;
     dl.dx = x2-x1;
@@ -676,8 +671,9 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     
     frac = P_InterceptVector (&trace, &dl);
 
-    if (frac < 0)
-	return true;		// behind source
+	if (frac < 0) {
+		return true;		// behind source
+	}
 
     intercept_p->frac = frac;
     intercept_p->isaline = false;

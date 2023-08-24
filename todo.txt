@@ -88,18 +88,37 @@ sound originRef thing...
 
  
 NOW (fix memory issues)
- - THEN degenmobj_t etc to memref
+ x THEN degenmobj_t etc to memref
  - THEN segs, etc to ems
  - THEN all wad lumps to ems
 
-TODO why was there a 0 allocation
+x Fix the problem with vertexes
+ x line has vertexes. Instead use a vertex offset 
+ x put demo mem back
+x degenmobj_t etc to memref
+  x OK?
+x fix sound playback
+- segs, etc to ems
+ (line first?)
+
+2. why was there a 0 allocation
+
+
+
 TODO vileobj pointer (and test)
 TODO test braintargets
 ? change crossbspnode etc to use indices not addressesma
 ! next/prev memrefs in those thinglists are bad..
 - eventually fix savedata
 
-
+IDEA: 
+  x move other memrefs out to static byte arrays. like maybe segs. see if it crashes then
+    x didnt work
+  - try to store copy of nodes, etc before page out then again in page in? or after game start and during render?
+    - does it change? 
+      - nodes: no
+      ? vertexes?
+  - (remember to move demo back)
 
 
 
@@ -107,3 +126,92 @@ R_RenderMaskedSegRange
  (from drawsprte)
  (from drawmasked)
   (from)
+
+
+
+
+
+
+// (1)  0,   0  0  1  0 -1 r_data.c  559      0  500 <-  texturewidthmaskRef   (inittextures)
+			// (2)  1,   1  0  2  1 -1 r_data.c  609      0  136 <-  textureRef				(inittextures)
+			// (3)  2,   2  0  3  2 -1 r_data.c  609      0   40
+			// (4)  3,   3  0  4  3 -1 r_data.c  609      0   76
+			// (5)  4,   4  0  5  4 -1 r_things.c  269    0   140  <- spriteframes			(R_InitSpriteDefs)
+			// (6)  5,   6  0  6  5 -1 w_wad.c  440       0   15360  <- lump loaded  (probably demo?)
+
+
+			// (7)  6,   7  0  7  6 -1 p_setup.c 503      0  1700  <- blocklinks
+			// (8)  7,   8  0  8  7 -1 p_setup.c 285      0  23920 <- nodes
+			// (9)  8,   8  0  9  7 -1 p_setup.c 285      0   ----
+			//(10)  9,  10  0 10  8 -1 p_setup.c 167      0  46240 <- segs
+			//(11) 10,  11  0 11  8 -1 p_setup.c 167      0   ----
+			//(12) 11,  12  0 12  8 -1 p_setup.c 167      0   ----
+
+
+			// (13) 12,  13 0 13 9  -1  p_mobj.c 514      0  132  <- (P_SpawnMobj)
+			// (14) 13,  14 0 14 10 -1  p_mobj.c 514      0  132
+			// (15) 14,  15 0 15 11 -1  p_mobj.c 514      0  132
+			// (16) 15,  5  0 16 12 -1  st_stuff.c 1115   1  10240 <- status bar drawer
+			// (17) 16, 16 0 17 13  -1  f_wipe.c 54     1  64000 <-- fwipe
+			// (18)              
+			// (19)
+			// (20) part of fwipe						1
+
+			// (21) 20, 20 0  21 14 -1 r_data.c 263		322 16384 <-- door open
+			// (22) 16, 21 1  22 15 16 r_data.c 263		322 32768
+			// (23) 17, 21 2  23 15 17 r_data.c 263		322  ----
+			// (24) 21, 23 2  24 16 -1 r_data.c 263		354 8192   <--- pre barrel shot
+			// (25) 15, 24 3  25 17  5  p_mobj.c 514	357 132    <---- still pre barrel shot
+
+			// (26) 19, 5  4  26 18 19st_stuff.c 1115	358 10240  // 7 page frame   still pre barrel shot
+			// (27) 20, 19 5  27 19 20 r_data.c 452		358 8192
+			// (28) 21, 20 6  28 20 23 r_data.c 452		358 16384
+			// (29) 16, 23 7  29 21 21 r_data.c 452		358 8192
+			// (30) 17, 21 8  30 22 22 r_data.c 452		358 32768
+			// (31) 18, 21 9  31 22 18 r_data.c 452		358  ----
+			// (32) 19, 18 10 32 23  5 p_doors.c 57     358    32
+
+			// (33) 20, 5  11 33 24 19st_stuff.c 1115   359 10240	// 7 page frame  about to fire at barrel
+			// (34) 12, 19 12 34 25 20 r_data.c 452		359	 8192	
+			// (35) 16, 20 13 35 26 23 r_data.c 452		359 16384
+			// (36) 17, 23 14 36 27 21 r_data.c 452		359  8192
+			// (37) 18, 21 15 37 28 22 r_data.c 452		359 32768
+			// (38) 19, 21 16 38 28 18 r_data.c 452		359  ----
+			// (39) 20, 18 17 39 29  5 r_data.c 452		359    32
+
+			// (40) 21, 5  18 40 30 19 st_stuff.c 1115	360	10240   // 7 page frame  <- firing on barrel
+			// (41) 16, 19 19 41 31 20 r_data.c 452		360   8192
+			// (42) 17, 20 20 42 32 23 r_data.c 452		360  16384
+			// (43) 18, 23 21 43 33 21 r_data.c 452		360   8192
+			// (44) 19, 21 22 44 34 22 r_data.c 452     360	 32768
+			// (45) 20, 21 23 45 34 18 r_data.c 452     360   ----
+			// (46) 21, 18 24 46 35  5 p_doors.c 57     360     32
+
+			// (47) 16,  5 25 47 36 19 st_stuff 1115    361  10240  // 7 page frame <- firing on barrel
+			// (48) 17, 19 26 48 37 20 r_data.c 452		361   8192
+			// (49) 18, 20 27 49 38 23 r_data.c 452		361	 16384
+			// (50) 19, 23 28 50 39 21 r_data.c 452		361   8192
+			// (51) 20, 21 29 51 40 22 r_data.c 452		361  32768
+			// (52) 21, 21 30 52 40 18 r_data.c 452		361   ----
+			// (53) 16, 18 31 53 41  5 p_doors.c 67		361     32
+
+			// we are constantly cycling 8 pages of memory thru 7 contiguous active pages here. 
+			// index sort of moves up one each frame, once the allocation that needs 2 consecutive
+			// pages hits the end of the contiguous block, another thing is deallocated that kind of leads to breaking everything
+
+			// (54) 17, 5  32 54 42 19 st_stuff.c 1115	362  10240   <- firing on barrell
+			// (55) 18, 19 33 55 43 20 r_data.c 452		362   8192
+			// (56) 19, 20 34 56 44 23 r_data.c 452		362  16384
+			// (57) 20, 23 35 57 45 21 r_data.c 452		362   8192
+			// (58)  5, 21 36 58 46  6 r_data.c 452		362  32768   <- demo paged out??
+			// (59)  6, 21 37 59 46  7 r_data.c 452		362   ----   <- blocklinks paged out... bingo?
+
+																	// 18 out... stuff goes weird (just a texture?)
+			// (60) 21,  6 38 60 47 22 g_game.c 14399	362  15360   <- demo loaded in   
+
+			// (61) 17,  7 39 61 48  5 p_maputl.c 539   362   1700   <- blocklinks paged back in  (status stuff paged out)
+	  		   // (62) 18   5 40 62 49 19 st_stuff.c 1115  363  10240   <- shot hit barel (pre explode)  <-- happens during blocklink paging. textures paged out should be ok
+
+    
+
+			// (63) 19, 25 41 63 50 20 r_data.c 263     432  32768   <- seems junk in many ways

@@ -92,41 +92,43 @@ short*		maskedtexturecol;
 //
 void
 R_RenderMaskedSegRange
-( drawseg_t*	ds,
-  int		x1,
-  int		x2 )
+(drawseg_t*	ds,
+	int		x1,
+	int		x2)
 {
-    unsigned	index;
-    column_t*	col;
-    int		lightnum;
-    int		texnum;
+	unsigned	index;
+	column_t*	col;
+	int		lightnum;
+	int		texnum;
 	fixed_t* textureheight;
 	int* texturetranslation;
-    
-    // Calculate light table.
-    // Use different light tables
-    //   for horizontal / vertical / diagonal. Diagonal?
-    // OPTIMIZE: get rid of LIGHTSEGSHIFT globally
-    curline = ds->curline;
-    frontsector = curline->frontsector;
-    backsector = curline->backsector;
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+
+	// Calculate light table.
+	// Use different light tables
+	//   for horizontal / vertical / diagonal. Diagonal?
+	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
+	curline = ds->curline;
+	frontsector = curline->frontsector;
+	backsector = curline->backsector;
 	texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
-    texnum = texturetranslation[curline->sidedef->midtexture];
-	
-    lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
+	texnum = texturetranslation[curline->sidedef->midtexture];
 
-    if (curline->v1->y == curline->v2->y)
-	lightnum--;
-    else if (curline->v1->x == curline->v2->x)
-	lightnum++;
+	lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT) + extralight;
 
-    if (lightnum < 0)		
-	walllights = scalelight[0];
-    else if (lightnum >= LIGHTLEVELS)
-	walllights = scalelight[LIGHTLEVELS-1];
-    else
-	walllights = scalelight[lightnum];
-
+	if (vertexes[curline->v1Offset].y == vertexes[curline->v2Offset].y) {
+		lightnum--;
+	}
+	else if (vertexes[curline->v1Offset].x == vertexes[curline->v2Offset].x) {
+		lightnum++;
+	}
+	if (lightnum < 0){
+		walllights = scalelight[0];
+	} else if (lightnum >= LIGHTLEVELS) {
+		walllights = scalelight[LIGHTLEVELS - 1];
+	} else {
+		walllights = scalelight[lightnum];
+	}
     maskedtexturecol = ds->maskedtexturecol;
 
     rw_scalestep = ds->scalestep;		
@@ -378,11 +380,12 @@ R_StoreWallRange
     int			lightnum;
 	fixed_t *	textureheight;
 	int* 	texturetranslation;
+	vertex_t* vertexes;
 
 
     // don't overflow and crash
     if (ds_p == &drawsegs[MAXDRAWSEGS])
-	return;		
+		return;		
 		
 #ifdef RANGECHECK
     if (start >=viewwidth || start > stop)
@@ -403,7 +406,8 @@ R_StoreWallRange
 	offsetangle = ANG90;
 
     distangle = ANG90 - offsetangle;
-    hyp = R_PointToDist (curline->v1->x, curline->v1->y);
+	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	hyp = R_PointToDist (vertexes[curline->v1Offset].x, vertexes[curline->v1Offset].y);
     sineval = finesine[distangle>>ANGLETOFINESHIFT];
     rw_distance = FixedMul (hyp, sineval);
 		
@@ -417,14 +421,10 @@ R_StoreWallRange
     ds_p->scale1 = rw_scale = 
 	R_ScaleFromGlobalAngle (viewangle + xtoviewangle[start]);
     
-    if (stop > start )
-    {
-	ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop]);
-	ds_p->scalestep = rw_scalestep = 
-	    (ds_p->scale2 - rw_scale) / (stop-start);
-    }
-    else
-    {
+    if (stop > start ) {
+		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop]);
+		ds_p->scalestep = rw_scalestep =  (ds_p->scale2 - rw_scale) / (stop-start);
+    } else {
 	// UNUSED: try to fix the stretched line bug
 #if 0
 	if (rw_distance < FRACUNIT/2)
@@ -440,7 +440,7 @@ R_StoreWallRange
 	    ds_p->scale1 = FixedDiv(projection, gxt-gyt)<<detailshift;
 	}
 #endif
-	ds_p->scale2 = ds_p->scale1;
+		ds_p->scale2 = ds_p->scale1;
     }
     
     // calculate texture boundaries
@@ -451,23 +451,19 @@ R_StoreWallRange
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
 	
-    if (!backsector)
-    {
+    if (!backsector) {
 	// single sided line
 		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 		midtexture = texturetranslation[sidedef->midtexture];
 	// a single sided line is terminal, so it must mark ends
 	markfloor = markceiling = true;
-	if (linedef->flags & ML_DONTPEGBOTTOM)
-	{
+	if (linedef->flags & ML_DONTPEGBOTTOM) {
 		textureheight = Z_LoadBytesFromEMS(textureheightRef);
 	    vtop = frontsector->floorheight +
 		textureheight[sidedef->midtexture];
 	    // bottom of texture at bottom
 	    rw_midtexturemid = vtop - viewz;	
-	}
-	else
-	{
+	} else {
 	    // top of texture at top
 	    rw_midtexturemid = worldtop;
 	}
@@ -642,14 +638,15 @@ R_StoreWallRange
 	//  use different light tables
 	//  for horizontal / vertical / diagonal
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
-	if (!fixedcolormap)
-	{
-	    lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
+	if (!fixedcolormap){
+		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+		lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
-	    if (curline->v1->y == curline->v2->y)
-		lightnum--;
-	    else if (curline->v1->x == curline->v2->x)
-		lightnum++;
+		if (vertexes[curline->v1Offset].y == vertexes[curline->v2Offset].y) {
+			lightnum--;
+		} else if (vertexes[curline->v1Offset].x == vertexes[curline->v2Offset].x) {
+			lightnum++;
+		}
 
 	    if (lightnum < 0)		
 		walllights = scalelight[0];
@@ -665,17 +662,14 @@ R_StoreWallRange
     //  and doesn't need to be marked.
     
   
-    if (frontsector->floorheight >= viewz)
-    {
-	// above view plane
-	markfloor = false;
+    if (frontsector->floorheight >= viewz) {
+		// above view plane
+		markfloor = false;
     }
     
-    if (frontsector->ceilingheight <= viewz 
-	&& frontsector->ceilingpic != skyflatnum)
-    {
-	// below view plane
-	markceiling = false;
+    if (frontsector->ceilingheight <= viewz  && frontsector->ceilingpic != skyflatnum) {
+		// below view plane
+		markceiling = false;
     }
 
     

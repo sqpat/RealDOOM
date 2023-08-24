@@ -44,15 +44,13 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 4096
-#define NUM_EMS_PAGES 23
+#define NUM_EMS_PAGES 20
 
 // demo commented out...
-// 17899181 33/43    23
 
 
-// 17612077 23/32   32
-// 17612077 33/43   24
-// 17612077 36/48   23
+// 18013950 4572/5631 19  (had illegal reads)
+// 18014067 35/47 22  (had illegal reads?)
 
 // 16 MB worth
 #define MAX_PAGE_FRAMES 1024
@@ -1179,8 +1177,8 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 			//    page page         page out?
 
 	
-			sprintf(result2, "\nOUT! (%i) page %i %s line %i size %i lp %i %i %i %i %i %i", pageouts, pageframeindex + i, file, line, size, logicalpage, actualpageouts, pageouts, pageins, activepages[pageframeindex + i], gametic);
-			strcat(result, result2);
+			//sprintf(result2, "\nOUT! (%i) page %i %s line %i size %i lp %i %i %i %i %i %i", pageouts, pageframeindex + i, file, line, size, logicalpage, actualpageouts, pageouts, pageins, activepages[pageframeindex + i], gametic);
+			//strcat(result, result2);
 			
 		}
 
@@ -1207,7 +1205,7 @@ short Z_GetEMSPageFrame(short logicalpage, unsigned int size, char* file, int li
 			// 31,32 maybe ok? tick 357
 			// 33,34 bad already tick 363
 			// 35 bad already tick 370
-			I_Error(result);
+			//I_Error(result);
 		}
 
 		pagesize[pageframeindex + i] = -1;

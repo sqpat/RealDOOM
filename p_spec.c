@@ -450,10 +450,6 @@ P_FindMinSurroundingLight
     {
 	line = sector->lines[i];
 	// 	// bad sector is 45affc... i == 1
-
-		if ((byte*)line > 0x60000000) {
-			I_Error("found it! %p %i %i %p", line, i, max, sector);
-		}
 	getNextSector(line, sector);
 
 	if (!check)
@@ -1147,7 +1143,7 @@ void P_UpdateSpecials (void)
 			buttonlist[i].btexture;
 		    break;
 		}
-		S_StartSound((mobj_t *)&buttonlist[i].soundorg,sfx_swtchn);
+		S_StartSoundWithParams(buttonlist[i].soundorgX, buttonlist[i].soundorgY,sfx_swtchn);
 		memset(&buttonlist[i],0,sizeof(button_t));
 	    }
 	}

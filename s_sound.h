@@ -55,6 +55,9 @@ S_StartSound
 (void*		origin,
   int		sound_id );
 
+void
+S_StartSoundWithParams(int x, int y, int sound_id);
+
 
 
 // Will start a sound at a given volume.

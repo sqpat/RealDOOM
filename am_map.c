@@ -385,11 +385,10 @@ void AM_findMinMaxBoundaries(void)
     fixed_t a;
     fixed_t b;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-    min_x = min_y =  MAXINT;
+	min_x = min_y =  MAXINT;
     max_x = max_y = -MAXINT;
   
-    for (i=0;i<numvertexes;i++)
-    {
+    for (i=0;i<numvertexes;i++) {
 	if (vertexes[i].x < min_x)
 	    min_x = vertexes[i].x;
 	else if (vertexes[i].x > max_x)
@@ -1118,48 +1117,41 @@ void AM_drawWalls(void)
     int i;
     static mline_t l;
 
-    for (i=0;i<numlines;i++)
-    {
-	l.a.x = lines[i].v1->x;
-	l.a.y = lines[i].v1->y;
-	l.b.x = lines[i].v2->x;
-	l.b.y = lines[i].v2->y;
-	if (cheating || (lines[i].flags & ML_MAPPED))
-	{
-	    if ((lines[i].flags & LINE_NEVERSEE) && !cheating)
-		continue;
-	    if (!lines[i].backsector)
-	    {
-		AM_drawMline(&l, WALLCOLORS+lightlev);
-	    }
-	    else
-	    {
-		if (lines[i].special == 39)
-		{ // teleporters
-		    AM_drawMline(&l, WALLCOLORS+WALLRANGE/2);
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+
+    for (i=0;i<numlines;i++) {
+		l.a.x = vertexes[lines[i].v1Offset].x;
+		l.a.y = vertexes[lines[i].v1Offset].y;
+		l.b.x = vertexes[lines[i].v2Offset].x;
+		l.b.y = vertexes[lines[i].v2Offset].y;
+		if (cheating || (lines[i].flags & ML_MAPPED)) {
+			if ((lines[i].flags & LINE_NEVERSEE) && !cheating) {
+				continue;
+			} if (!lines[i].backsector) {
+				AM_drawMline(&l, WALLCOLORS+lightlev);
+			} else {
+				if (lines[i].special == 39) { // teleporters
+					AM_drawMline(&l, WALLCOLORS+WALLRANGE/2);
+				} else if (lines[i].flags & ML_SECRET){ // secret door
+					if (cheating) { 
+						AM_drawMline(&l, SECRETWALLCOLORS + lightlev); 
+					} else {
+						AM_drawMline(&l, WALLCOLORS + lightlev);
+					}
+				} else if (lines[i].backsector->floorheight != lines[i].frontsector->floorheight) {
+					AM_drawMline(&l, FDWALLCOLORS + lightlev); // floor level change
+				}
+				else if (lines[i].backsector->ceilingheight != lines[i].frontsector->ceilingheight) {
+					AM_drawMline(&l, CDWALLCOLORS+lightlev); // ceiling level change
+				} else if (cheating) {
+					AM_drawMline(&l, TSWALLCOLORS+lightlev);
+				}
+			}
+		} else if (plr->powers[pw_allmap]) {
+			if (!(lines[i].flags & LINE_NEVERSEE)) {
+				AM_drawMline(&l, GRAYS + 3);
+			}
 		}
-		else if (lines[i].flags & ML_SECRET) // secret door
-		{
-		    if (cheating) AM_drawMline(&l, SECRETWALLCOLORS + lightlev);
-		    else AM_drawMline(&l, WALLCOLORS+lightlev);
-		}
-		else if (lines[i].backsector->floorheight
-			   != lines[i].frontsector->floorheight) {
-		    AM_drawMline(&l, FDWALLCOLORS + lightlev); // floor level change
-		}
-		else if (lines[i].backsector->ceilingheight
-			   != lines[i].frontsector->ceilingheight) {
-		    AM_drawMline(&l, CDWALLCOLORS+lightlev); // ceiling level change
-		}
-		else if (cheating) {
-		    AM_drawMline(&l, TSWALLCOLORS+lightlev);
-		}
-	    }
-	}
-	else if (plr->powers[pw_allmap])
-	{
-	    if (!(lines[i].flags & LINE_NEVERSEE)) AM_drawMline(&l, GRAYS+3);
-	}
     }
 }
 

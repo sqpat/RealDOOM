@@ -217,12 +217,13 @@ R_PointOnSegSide
     fixed_t	dy;
     fixed_t	left;
     fixed_t	right;
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 	
-    lx = line->v1->x;
-    ly = line->v1->y;
+	lx = vertexes[line->v1Offset].x;
+    ly = vertexes[line->v1Offset].y;
 	
-    ldx = line->v2->x - lx;
-    ldy = line->v2->y - ly;
+    ldx = vertexes[line->v2Offset].x - lx;
+    ldy = vertexes[line->v2Offset].y - ly;
 	
     if (!ldx)
     {

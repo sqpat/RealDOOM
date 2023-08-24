@@ -208,8 +208,7 @@ void T_MoveFloor(MEMREF memref)
 		      floor->crush,0,floor->direction);
     
     if (!(leveltime&7))
-	S_StartSound((mobj_t *)&floor->sector->soundorg,
-		     sfx_stnmov);
+	S_StartSoundWithParams(floor->sector->soundorgX, floor->sector->soundorgY, sfx_stnmov);
     
     if (res == pastdest)
     {
@@ -239,8 +238,7 @@ void T_MoveFloor(MEMREF memref)
 	}
 	P_RemoveThinker(floor->thinkerRef);
 
-	S_StartSound((mobj_t *)&floor->sector->soundorg,
-		     sfx_pstop);
+	S_StartSoundWithParams(floor->sector->soundorgX, floor->sector->soundorgY, sfx_pstop);
     }
 
 }

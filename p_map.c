@@ -189,15 +189,14 @@ P_TeleportMove
 boolean PIT_CheckLine (line_t* ld)
 {
 	mobj_t* tmthing;
-    if (tmbbox[BOXRIGHT] <= ld->bbox[BOXLEFT]
-	|| tmbbox[BOXLEFT] >= ld->bbox[BOXRIGHT]
-	|| tmbbox[BOXTOP] <= ld->bbox[BOXBOTTOM]
-	|| tmbbox[BOXBOTTOM] >= ld->bbox[BOXTOP] )
-	return true;
+	if (tmbbox[BOXRIGHT] <= ld->bbox[BOXLEFT] || tmbbox[BOXLEFT] >= ld->bbox[BOXRIGHT] || tmbbox[BOXTOP] <= ld->bbox[BOXBOTTOM] || tmbbox[BOXBOTTOM] >= ld->bbox[BOXTOP]) {
+		return true;
+	}
 
-    if (P_BoxOnLineSide (tmbbox, ld) != -1)
-	return true;
-		
+	if (P_BoxOnLineSide(tmbbox, ld) != -1) {
+		return true;
+	}
+
     // A line has been hit
     
     // The moving thing's destination position will cross
@@ -209,40 +208,42 @@ boolean PIT_CheckLine (line_t* ld)
     // so two special lines that are only 8 pixels apart
     // could be crossed in either order.
     
-    if (!ld->backsector)
-	return false;		// one sided line
+	if (!ld->backsector) {
+		return false;		// one sided line
+	}
+
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
 
-    if (!(tmthing->flags & MF_MISSILE) )
-    {
-	if ( ld->flags & ML_BLOCKING )
-	    return false;	// explicitly blocking everything
-
-	if ( !tmthing->player && ld->flags & ML_BLOCKMONSTERS )
-	    return false;	// block monsters only
+    if (!(tmthing->flags & MF_MISSILE) ) {
+		if (ld->flags & ML_BLOCKING) {
+			return false;	// explicitly blocking everything
+		}
+		if (!tmthing->player && ld->flags & ML_BLOCKMONSTERS) {
+			return false;	// block monsters only
+		}
     }
 
     // set openrange, opentop, openbottom
     P_LineOpening (ld);	
 	
     // adjust floor / ceiling heights
-    if (opentop < tmceilingz)
-    {
-	tmceilingz = opentop;
-	ceilingline = ld;
+    if (opentop < tmceilingz) {
+		tmceilingz = opentop;
+		ceilingline = ld;
     }
 
-    if (openbottom > tmfloorz)
-	tmfloorz = openbottom;	
+	if (openbottom > tmfloorz) {
+		tmfloorz = openbottom;
+	}
 
-    if (lowfloor < tmdropoffz)
-	tmdropoffz = lowfloor;
-		
+	if (lowfloor < tmdropoffz) {
+		tmdropoffz = lowfloor;
+	}
+
     // if contacted a special line, add it to the list
-    if (ld->special)
-    {
-	spechit[numspechit] = ld;
-	numspechit++;
+    if (ld->special) {
+		spechit[numspechit] = ld;
+		numspechit++;
     }
 
     return true;
@@ -474,7 +475,7 @@ P_TryMove
 
     floatok = false;
     if (!P_CheckPosition (thingRef, x, y))
-	return false;		// solid wall or thing
+		return false;		// solid wall or thing
     
     if ( !(thing->flags & MF_NOCLIP) )
     {

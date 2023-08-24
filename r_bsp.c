@@ -255,12 +255,13 @@ void R_AddLine (seg_t*	line)
     angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
-    
+	vertex_t*   vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+
     curline = line;
 
     // OPTIMIZE: quickly reject orthogonal back sides.
-    angle1 = R_PointToAngle (line->v1->x, line->v1->y);
-    angle2 = R_PointToAngle (line->v2->x, line->v2->y);
+    angle1 = R_PointToAngle (vertexes[line->v1Offset].x, vertexes[line->v1Offset].y);
+    angle2 = R_PointToAngle (vertexes[line->v2Offset].x, vertexes[line->v2Offset].y);
     
     // Clip to view edges.
     // OPTIMIZE: make constant out of 2*clipangle (FIELDOFVIEW).

@@ -69,6 +69,7 @@ typedef struct
 // Forward of LineDefs, for Sectors.
 struct line_s;
 
+/*
 // Each sector has a degenmobj_t in its center
 //  for sound origin purposes.
 // I suppose this does not handle sound from
@@ -83,6 +84,7 @@ typedef struct
     fixed_t		z;
 
 } degenmobj_t;
+*/
 
 //
 // The SECTORS record, at runtime.
@@ -108,7 +110,8 @@ typedef	struct
     int		blockbox[4];
 
     // origin for any sounds played by the sector
-    degenmobj_t	soundorg;
+    int soundorgX;
+	int soundorgY;
 
     // if == validcount, already checked
     int		validcount;
@@ -169,8 +172,8 @@ typedef enum
 typedef struct line_s
 {
     // Vertices, from v1 to v2.
-    vertex_t*	v1;
-    vertex_t*	v2;
+	short	v1Offset;
+	short	v2Offset;
 
     // Precalculated v2 - v1 for side checking.
     fixed_t	dx;
@@ -230,9 +233,10 @@ typedef struct subsector_s
 //
 typedef struct
 {
-    vertex_t*	v1;
-    vertex_t*	v2;
-    
+
+	short	v1Offset;
+	short	v2Offset;
+
     fixed_t	offset;
 
     angle_t	angle;
