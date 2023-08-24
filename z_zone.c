@@ -463,7 +463,8 @@ void Z_MarkPageLRU(unsigned short pagenumber) {
 }
 
 
-int Z_RefIsActive2(MEMREF memref, char* file, int line){
+//int Z_RefIsActive2(MEMREF memref, char* file, int line) {
+int Z_RefIsActive2(MEMREF memref){
 	int pageframeindex; 
 	boolean allpagesgood;
 	int i;
@@ -505,15 +506,15 @@ int Z_RefIsActive2(MEMREF memref, char* file, int line){
 	}
 	*/
 
-	printf("Z_RefIsActive: Found inactive ref! %i %s %i tick %i ", memref, file, line, gametic);
-	I_Error("Z_RefIsActive: Found inactive ref! %i %s %i tick %i ", memref, file, line, gametic);
+	I_Error("Z_RefIsActive: Found inactive ref! %i %s %i tick %i ", memref, gametic);
 
 	return 0;
 }
 
 // marks page as most recently used
 // error behavior if pagenumber not in the list?
-void Z_MarkPageMRU(unsigned short pagenumber, char* file, int line) {
+//void Z_MarkPageMRU(unsigned short pagenumber, char* file, int line) {
+void Z_MarkPageMRU(unsigned short pagenumber) {
 
 	//int neworder = 0;
 	//int bitpattern = 3;
@@ -532,7 +533,7 @@ void Z_MarkPageMRU(unsigned short pagenumber, char* file, int line) {
 
 	if (i == -1) {
 		//I_Error("%i %i %i %i", pageevictorder[0], pageevictorder[1], pageevictorder[2], pageevictorder[3] );
-		I_Error("(MRU) Could not find page number in LRU cache: %i %i %i %i %s %i", pagenumber, numreads, pageins, pageouts, file, line);
+		I_Error("(MRU) Could not find page number in LRU cache: %i %i %i %i %s %i", pagenumber, numreads, pageins, pageouts);
 	}
 
 	
@@ -608,7 +609,7 @@ void Z_DoPageIn(unsigned short logicalpage, unsigned short pageframeindex, unsig
 		else {
 			pagesize[pageframeindex + i] = -1;
 		}
-		Z_MarkPageMRU(pageframeindex + i, "", 0);
+		Z_MarkPageMRU(pageframeindex + i);
 	}
 
 }
@@ -647,7 +648,7 @@ void Z_PageOutIfInMemory(unsigned short logicalpage, unsigned int size) {
 // "page frame" is the upper memory EMS page frame
 // logical page is where it corresponds to in the big block of otherwise inaccessible memory..
 
-short Z_GetEMSPageFrame(unsigned short logicalpage, unsigned int size, char* file, int line, MEMREF ref){  //todo allocations < 65k? if so size can be an unsigned short?
+short Z_GetEMSPageFrame(unsigned short logicalpage, unsigned int size){  //todo allocations < 65k? if so size can be an unsigned short?
     unsigned short pageframeindex;
 
 	unsigned short extradeallocatepages = 0;
@@ -691,7 +692,7 @@ short Z_GetEMSPageFrame(unsigned short logicalpage, unsigned int size, char* fil
 
 			if (allpagesgood) {
 				for (i = 0; i < numallocatepages; i++) {
-					Z_MarkPageMRU(pageframeindex + i, file, line);
+					Z_MarkPageMRU(pageframeindex + i);
 				}
 
 
@@ -803,8 +804,9 @@ short Z_GetEMSPageFrame(unsigned short logicalpage, unsigned int size, char* fil
     return pageframeindex;
 }
 
-void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
-    byte* memorybase;
+//void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
+void* Z_LoadBytesFromEMS2(MEMREF ref) {
+		byte* memorybase;
 	unsigned short pageframeindex;
     byte* address;
 	mobj_t* thing;
@@ -813,15 +815,17 @@ void* Z_LoadBytesFromEMS2(MEMREF ref, char* file, int line) {
 
  
  	if (ref > EMS_ALLOCATION_LIST_SIZE) {
-		I_Error("out of bounds memref.. tick %i    %i %s %i", gametic, ref, file, line);
+		//I_Error("out of bounds memref.. tick %i    %i %s %i", gametic, ref, file, line);
+		I_Error("out of bounds memref.. tick %i    %i %s %i", gametic, ref);
 	}
 	if (ref == 0) {
-		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref, file, line);
+		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref);
+//		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref, file, line);
 	}
 
  
 
-	pageframeindex = Z_GetEMSPageFrame(allocations[ref].page, allocations[ref].size, file, line, ref);
+	pageframeindex = Z_GetEMSPageFrame(allocations[ref].page, allocations[ref].size);
 	memorybase = (byte*)copyPageArea;
  
 	address = memorybase

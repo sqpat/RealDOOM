@@ -29,7 +29,6 @@ GLOBOBJS = &
  i_main.obj &
  i_ibm.obj &
  i_sound.obj &
- i_cyber.obj &
  i_ibm_a.obj &
  tables.obj &
  f_finale.obj &
@@ -78,11 +77,9 @@ GLOBOBJS = &
  sounds.obj &
  dutils.obj &
  f_wipe.obj &
-# info.obj
  info.obj &
  dmx.obj &
- usrhooks.obj &
- mus2mid.obj
+ usrhooks.obj 
 
 newdoom.exe : $(GLOBOBJS) i_ibm.obj
  wlink @newdoom.lnk

@@ -97,7 +97,7 @@ MEMREF		soundtargetRef;
 void
 P_RecursiveSound
 ( short		secnum,
-  int		soundblocks, int line )
+  int		soundblocks)
 {
     int		i;
 	line_t* lines;
@@ -117,12 +117,12 @@ P_RecursiveSound
 	unsigned short lineoffset;
 
 	if (soundblocks < 0) {
-		I_Error("bad soundblock P_RecursiveSound %i %i", soundblocks, line);
+		I_Error("bad soundblock P_RecursiveSound %i %i", soundblocks);
 	}
 
 	if (secnum < 0 || secnum >= numsectors) {
 		// TODO remove
-		I_Error("bad sectors in P_RecursiveSound %i %i", secnum, line);
+		I_Error("bad sectors in P_RecursiveSound %i %i", secnum);
 	}
     // wake up all monsters in this sector
     if (soundsector->validcount == validcount && soundsector->soundtraversed <= soundblocks+1) {
@@ -177,10 +177,10 @@ P_RecursiveSound
  
 		if (checkflags & ML_SOUNDBLOCK) {
 			if (!soundblocks) {
-				P_RecursiveSound(othersecnum, 1, __LINE__);
+				P_RecursiveSound(othersecnum, 1);
 			}
 		} else {
-			P_RecursiveSound(othersecnum, soundblocks, __LINE__);
+			P_RecursiveSound(othersecnum, soundblocks);
 		}
     }
 }
@@ -200,7 +200,7 @@ P_NoiseAlert
 	mobj_t* emmiter = (mobj_t*)Z_LoadBytesFromEMS(emmiterRef);
 	soundtargetRef = targetRef;
     validcount++;
-    P_RecursiveSound (emmiter->secnum, 0, __LINE__);
+    P_RecursiveSound (emmiter->secnum, 0);
 }
 
 

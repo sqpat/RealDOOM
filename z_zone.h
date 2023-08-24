@@ -96,7 +96,6 @@ typedef struct memblock_s
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS (int lowtag, int hightag);
-void* Z_LoadBytesFromEMS2 (MEMREF index, char* file, int line);
 MEMREF Z_MallocEMSNew(int size, unsigned char tag, unsigned char user, unsigned char sourceHint);
 MEMREF Z_MallocEMSNewWithBackRef(int size, unsigned char tag, unsigned char user, unsigned char sourceHint, short backRef);
 #ifdef MEMORYCHECK
@@ -105,11 +104,20 @@ void Z_CheckEMSAllocations(PAGEREF block, int i, int var2, int var3);
 void Z_ChangeTagEMSNew (MEMREF index, short tag);
 void Z_FreeEMSNew(PAGEREF block);
 
-int Z_RefIsActive2(MEMREF memref, char* file, int line);
 
- 
+void* Z_LoadBytesFromEMS2(MEMREF index);
+int Z_RefIsActive2(MEMREF memref);
+
+#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a)
+#define Z_RefIsActive(a) Z_RefIsActive2(a)
+
+/*
+int Z_RefIsActive2(MEMREF memref, char* file, int line);
+void* Z_LoadBytesFromEMS2 (MEMREF index, char* file, int line);
+
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a, __FILE__, __LINE__)
 #define Z_RefIsActive(a) Z_RefIsActive2(a, __FILE__, __LINE__)
+*/
 
 
 

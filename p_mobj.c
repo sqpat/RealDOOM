@@ -43,9 +43,9 @@ mobj_t* SAVEDUNIT;
 static int test = 0;
 
 boolean
-P_SetMobjState2
+P_SetMobjState
 ( MEMREF mobjRef,
-  statenum_t	state , char*file, int line)
+  statenum_t	state )
 {
     state_t*	st;
 	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);

@@ -40,18 +40,16 @@ int tsm_ID = -1;
 
 void I_StartupTimer(void)
 {
-#ifndef NOTIMER
-    extern int I_TimerISR(void);
+
+	extern int I_TimerISR(void);
 
     printf("I_StartupTimer()\n");
     // installs master timer.  Must be done before StartupTimer()!
-    TSM_Install(SND_TICRATE);
     tsm_ID = TSM_NewService(I_TimerISR, 35, 0, 0);
     if (tsm_ID == -1)
     {
         I_Error("Can't register 35 Hz timer w/ DMX library");
     }
-#endif
 }
 
 void I_ShutdownTimer(void)
@@ -81,17 +79,17 @@ int snd_DesiredMusicDevice;
 
 void I_PauseSong(int handle)
 {
-    MUS_PauseSong(handle);
+    //MUS_PauseSong(handle);
 }
 
 void I_ResumeSong(int handle)
 {
-    MUS_ResumeSong(handle);
+    //MUS_ResumeSong(handle);
 }
 
 void I_SetMusicVolume(int volume)
 {
-    MUS_SetMasterVolume(volume);
+    //MUS_SetMasterVolume(volume);
     snd_MusicVolume = volume;
 }
 
@@ -106,34 +104,43 @@ void I_SetSfxVolume(int volume)
 
 int I_RegisterSong(void *data)
 {
+	/*
     int rc = MUS_RegisterSong(data);
 #ifdef SNDDEBUG
     if (rc<0) printf("MUS_Reg() returned %d\n", rc);
 #endif
     return rc;
+	*/
+	return 1;
 }
 
 void I_UnRegisterSong(int handle)
 {
+	/*
     int rc = MUS_UnregisterSong(handle);
 #ifdef SNDDEBUG
     if (rc < 0) printf("MUS_Unreg() returned %d\n", rc);
 #endif
+*/
 }
 
 int I_QrySongPlaying(int handle)
 {
+	/*
     int rc = MUS_QrySongPlaying(handle);
 #ifdef SNDDEBUG
     if (rc < 0) printf("MUS_QrySP() returned %d\n", rc);
 #endif
     return rc;
+	*/
+	return 1;
 }
 //
 // Stops a song.  MUST be called before I_UnregisterSong().
 //
 void I_StopSong(int handle)
 {
+	/*
     int rc;
     rc = MUS_StopSong(handle);
 #ifdef SNDDEBUG
@@ -145,11 +152,13 @@ void I_StopSong(int handle)
         extern volatile int ticcount;
         for (s = ticcount; ticcount - s < 10; );
     }
+	*/
 }
 
 void I_PlaySong(int handle, boolean looping)
 {
-    int rc;
+	/*
+	int rc;
     rc = MUS_ChainSong(handle, looping ? handle : -1);
 #ifdef SNDDEBUG
     if (rc < 0) printf("MUS_ChainSong() returned %d\n", rc);
@@ -158,6 +167,7 @@ void I_PlaySong(int handle, boolean looping)
 #ifdef SNDDEBUG
     if (rc < 0) printf("MUS_PlaySong() returned %d\n", rc);
 #endif
+*/
 }
 
 //
@@ -178,6 +188,7 @@ int I_GetSfxLumpNum(sfxinfo_t* sfx)
 
 int I_StartSound(int id, void *data, int vol, int sep, int pitch, int priority)
 {
+	/*
     // hacks out certain PC sounds
     if (snd_SfxDevice == snd_PC
     && (data == S_sfx[sfx_posact].data
@@ -190,21 +201,24 @@ int I_StartSound(int id, void *data, int vol, int sep, int pitch, int priority)
         return -1;
     }
     return SFX_PlayPatch(data, sep, pitch, vol, 0, 100);
+	*/
+	return -1;
 }
 
 void I_StopSound(int handle)
 {
-    SFX_StopPatch(handle);
+    //SFX_StopPatch(handle);
 }
 
 int I_SoundIsPlaying(int handle)
 {
-    return SFX_Playing(handle);
+    //return SFX_Playing(handle);
+	return 0;
 }
 
 void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
 {
-    SFX_SetOrigin(handle, pitch, sep, vol);
+    //SFX_SetOrigin(handle, pitch, sep, vol);
 }
 
 //
@@ -213,6 +227,7 @@ void I_UpdateSoundParams(int handle, int vol, int sep, int pitch)
 
 void I_sndArbitrateCards(void)
 {
+	/*
     boolean gus, adlib, sb, midi, codec, ensoniq;
     int i, wait, dmxlump;
 	MEMREF gf1memref;
@@ -371,6 +386,7 @@ void I_sndArbitrateCards(void)
             MPU_SetCard(snd_Mport);
         }
     }
+	*/
 }
 
 //
@@ -405,26 +421,14 @@ void I_StartupSound(void)
     //
     I_sndArbitrateCards();
 
-    if (devparm)
-    {
-        printf("  Music device #%d & dmxCode=%d\n", snd_MusicDevice,
-               dmxCodes[snd_MusicDevice]);
-        printf("  Sfx device #%d & dmxCode=%d\n", snd_SfxDevice,
-               dmxCodes[snd_SfxDevice]);
-    }
 
     //
     // inits DMX sound library
     //
     printf("  calling DMX_Init\n");
 
-    rc = DMX_Init(SND_TICRATE, SND_MAXSONGS, dmxCodes[snd_MusicDevice],
-                  dmxCodes[snd_SfxDevice]);
+    //rc = DMX_Init(SND_TICRATE, SND_MAXSONGS, dmxCodes[snd_MusicDevice], dmxCodes[snd_SfxDevice]);
 
-    if (devparm)
-    {
-        printf("  DMX_Init() returned %d\n", rc);
-    }
 }
 //
 // I_ShutdownSound
@@ -432,15 +436,17 @@ void I_StartupSound(void)
 //
 void I_ShutdownSound(void)
 {
+	/*
     int s;
     extern volatile int ticcount;
     S_PauseSound();
     s = ticcount + 30;
     while (s != ticcount);
     DMX_DeInit();
+	*/
 }
 
 void I_SetChannels(int channels)
 {
-    WAV_PlayMode(channels, SND_SAMPLERATE);
+    //WAV_PlayMode(channels, SND_SAMPLERATE);
 }

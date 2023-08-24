@@ -26,24 +26,14 @@ MEMORY IMPROVEMENTS
 
 
 TODO 
-3 sectors
-  ! really test platforms?
-  - debug
-    x demo3 ok
-    - demo 1
-      - first npc is missed early
-
-  - texture bug?
-
-
-- save branch
+ 
 
 - get rid of:
   - net?
-  - mus2mid
-  - dmx
-  - pcfx
-  - i_cyber
+  X mus2mid
+  X dmx
+  X pcfx
+  X i_cyber
   - __FILE__ __LINE__ stuff
   - redo how the functions are done (states and thing->action.acp1)   
     - actionf_t to enum?

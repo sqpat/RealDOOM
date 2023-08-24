@@ -328,12 +328,10 @@ boolean P_CrossBSPNode (int bspnum)
 // Uses REJECT.
 //
 boolean
-P_CheckSight2
+P_CheckSight
 ( MEMREF t1Ref,
-  MEMREF t2Ref, char* file, int line)
+  MEMREF t2Ref)
 {
-
-
 
     int		pnum;
     int		bytenum;

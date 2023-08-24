@@ -920,14 +920,14 @@ int     R_CheckTextureNumForName(char *name)
 // Calls R_CheckTextureNumForName,
 //  aborts with error message.
 //
-short     R_TextureNumForName2(char* name, char* file, int line)
+short     R_TextureNumForName(char* name)
 {
 	short         i;
 	i = R_CheckTextureNumForName(name);
 
 	if (i == -1) {
-		I_Error("R_TextureNumForName: %s not found %i %i %i %s %i",
-			name, numreads, pageins, pageouts, file, line);
+		I_Error("R_TextureNumForName: %s not found %i %i %i",
+			name, numreads, pageins, pageouts);
 	}
 	return i;
 }

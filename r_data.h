@@ -43,9 +43,8 @@ int R_FlatNumForName (char* name);
 
 // Called by P_Ticker for switches and animations,
 // returns the texture number for the texture name.
-short R_TextureNumForName2(char *name, char* file, int line);
+short R_TextureNumForName(char *name);
 //short R_TextureNumForName (char *name);
-#define R_TextureNumForName(a) R_TextureNumForName2(a, __FILE__, __LINE__)
 
 int R_CheckTextureNumForName (char *name);
 void R_EraseCompositeCache(short texnum);

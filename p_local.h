@@ -114,7 +114,7 @@ P_SpawnMobj
   mobjtype_t	type );
 
 void 	P_RemoveMobj (MEMREF th);
-boolean	P_SetMobjState2 (MEMREF mobj, statenum_t state, char*file, int line);
+boolean	P_SetMobjState (MEMREF mobj, statenum_t state);
 void 	P_MobjThinker (MEMREF memref);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
@@ -214,9 +214,8 @@ boolean P_CheckPosition (MEMREF thing, fixed_t x, fixed_t y);
 boolean P_TryMove (MEMREF thing, fixed_t x, fixed_t y);
 boolean P_TeleportMove (MEMREF thing, fixed_t x, fixed_t y);
 void	P_SlideMove (MEMREF mo);
-boolean P_CheckSight2 (MEMREF t1, MEMREF t2, char* file, int line);
+boolean P_CheckSight (MEMREF t1, MEMREF t2);
 
-#define P_CheckSight(a,b) P_CheckSight2(a, b, __FILE__, __LINE__)
 
 void 	P_UseLines (player_t* player);
 
@@ -284,7 +283,6 @@ P_DamageMobj
 //
 #include "p_spec.h"
 
-#define P_SetMobjState(a,b) P_SetMobjState2(a,b, __FILE__, __LINE__)
 
 
 #endif	// __P_LOCAL__
