@@ -434,7 +434,7 @@ W_ReadLump
 }
 
 
-boolean W_CacheLumpNumCheck(int lump, int error) {
+int W_CacheLumpNumCheck(int lump, int error) {
 
 
 	if ((unsigned)lump >= numlumps) {

@@ -69,10 +69,10 @@ extern int		numsprites;
 extern MEMREF	spritesRef;
 
 extern int		numvertexes;
-extern vertex_t*	vertexes;
+extern MEMREF	vertexesRef;
 
 extern int		numsegs;
-extern seg_t*		segs;
+extern MEMREF		segsRef;
 
 extern int		numsectors;
 extern sector_t*	sectors;
@@ -81,7 +81,8 @@ extern int		numsubsectors;
 extern subsector_t*	subsectors;
 
 extern int		numnodes;
-extern node_t*		nodes;
+extern MEMREF    nodesRef;
+
 
 extern int		numlines;
 extern line_t*		lines;

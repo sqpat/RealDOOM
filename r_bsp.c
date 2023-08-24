@@ -490,13 +490,15 @@ void R_Subsector (int num)
     int			count;
     seg_t*		line;
     subsector_t*	sub;
-	
+	seg_t* segs;
+
 #ifdef RANGECHECK
     if (num>=numsubsectors)
 	I_Error ("R_Subsector: ss %i with numss = %i",
 		 num,
 		 numsubsectors);
 #endif
+	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 
     sscount++;
     sub = &subsectors[num];
@@ -544,7 +546,7 @@ void R_RenderBSPNode (int bspnum)
 {
     node_t*	bsp;
     int		side;
-
+	node_t* nodes;
     // Found a subsector?
     if (bspnum & NF_SUBSECTOR)
     {
@@ -555,7 +557,8 @@ void R_RenderBSPNode (int bspnum)
 	return;
     }
 		
-    bsp = &nodes[bspnum];
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	bsp = &nodes[bspnum];
     
     // Decide which side the view point is on.
     side = R_PointOnSide (viewx, viewy, bsp);

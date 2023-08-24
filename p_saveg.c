@@ -292,7 +292,7 @@ void P_UnArchiveThinkers (void)
 			
 	  case tc_mobj:
 	    PADSAVEP();
-		thinkerRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, NULL, ALLOC_TYPE_LEVSPEC);
+		thinkerRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, 0x00, ALLOC_TYPE_LEVSPEC);
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(thinkerRef);
 	    memcpy (mobj, save_p, sizeof(*mobj));
 	    save_p += sizeof(*mobj);

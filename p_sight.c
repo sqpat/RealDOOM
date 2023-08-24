@@ -141,7 +141,8 @@ boolean P_CrossSubsector (int num)
     vertex_t*		v2;
     fixed_t		frac;
     fixed_t		slope;
-	
+	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+
 #ifdef RANGECHECK
     if (num>=numsubsectors)
 	I_Error ("P_CrossSubsector: ss %i with numss = %i",
@@ -250,6 +251,7 @@ boolean P_CrossBSPNode (int bspnum)
 {
     node_t*	bsp;
     int		side;
+	node_t* nodes;
 
     if (bspnum & NF_SUBSECTOR)
     {
@@ -259,7 +261,8 @@ boolean P_CrossBSPNode (int bspnum)
 	    return P_CrossSubsector (bspnum&(~NF_SUBSECTOR));
     }
 		
-    bsp = &nodes[bspnum];
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	bsp = &nodes[bspnum];
     
     // decide which side the start point is on
     side = P_DivlineSide (strace.x, strace.y, (divline_t *)bsp);

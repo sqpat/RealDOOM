@@ -52,6 +52,11 @@
 #define ALLOC_TYPE_TRANSLATION_TABLES 11
 #define ALLOC_TYPE_SPRITEDEFS 12
 #define ALLOC_TYPE_SPRITEFRAMES 13
+#define ALLOC_TYPE_VERTEXES 14
+#define ALLOC_TYPE_SEGMENTS 15
+#define ALLOC_TYPE_LINEBUFFER 16
+#define ALLOC_TYPE_BLOCKLINKS 17
+#define ALLOC_TYPE_NODES 18
 
 typedef unsigned short MEMREF;  //used externally for allocations list index
 typedef unsigned short PAGEREF; //used internally for allocations list index

@@ -810,12 +810,14 @@ R_PointInSubsector
     node_t*	node;
     int		side;
     int		nodenum;
+	node_t* nodes;
 
     // single subsector is a special case
     if (!numnodes)				
 	return subsectors;
 		
     nodenum = numnodes-1;
+	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 
     while (! (nodenum & NF_SUBSECTOR) )
     {

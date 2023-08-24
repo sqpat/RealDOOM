@@ -340,6 +340,7 @@ void P_UnsetThingPosition (mobj_t* thing)
 {
     int		blockx;
     int		blocky;
+	mobj_t** blocklinks;
 
     if ( ! (thing->flags & MF_NOSECTOR) )
     {
@@ -371,7 +372,8 @@ void P_UnsetThingPosition (mobj_t* thing)
 	    if (blockx>=0 && blockx < bmapwidth
 		&& blocky>=0 && blocky <bmapheight)
 	    {
-		blocklinks[blocky*bmapwidth+blockx] = thing->bnext;
+			blocklinks = (mobj_t**) Z_LoadBytesFromEMS(blocklinksRef);
+			blocklinks[blocky*bmapwidth+blockx] = thing->bnext;
 	    }
 	}
     }
@@ -392,6 +394,7 @@ P_SetThingPosition (mobj_t* thing)
     int			blockx;
     int			blocky;
     mobj_t**		link;
+	mobj_t** blocklinks;
 
     
     // link into subsector
@@ -425,6 +428,7 @@ P_SetThingPosition (mobj_t* thing)
 	    && blocky>=0
 	    && blocky < bmapheight)
 	{
+		blocklinks = (mobj_t**)Z_LoadBytesFromEMS(blocklinksRef);
 	    link = &blocklinks[blocky*bmapwidth+blockx];
 	    thing->bprev = NULL;
 	    thing->bnext = *link;
@@ -508,7 +512,8 @@ P_BlockThingsIterator
   boolean(*func)(mobj_t*) )
 {
     mobj_t*		mobj;
-	
+	mobj_t** blocklinks;
+
     if ( x<0
 	 || y<0
 	 || x>=bmapwidth
@@ -517,7 +522,8 @@ P_BlockThingsIterator
 	return true;
     }
     
-
+	blocklinks = (mobj_t**)Z_LoadBytesFromEMS(blocklinksRef);
+		
     for (mobj = blocklinks[y*bmapwidth+x] ;
 	 mobj ;
 	 mobj = mobj->bnext)

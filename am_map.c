@@ -383,7 +383,7 @@ void AM_findMinMaxBoundaries(void)
     int i;
     fixed_t a;
     fixed_t b;
-
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
     min_x = min_y =  MAXINT;
     max_x = max_y = -MAXINT;
   
