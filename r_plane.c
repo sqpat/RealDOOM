@@ -175,7 +175,7 @@ R_MapPlane
 //
 void R_ClearPlanes (void)
 {
-    int32_t		i;
+    int16_t		i;
     angle_t	angle;
     
     // opening / clipping determination

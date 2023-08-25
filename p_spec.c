@@ -287,7 +287,7 @@ fixed_t	P_FindLowestFloorSurrounding(int16_t secnum)
 	int16_t		otherSecOffset;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	fixed_t		floor = sectors[secnum].floorheight;
-	int32_t linecount = sectors[secnum].linecount;
+	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
 	int16_t linenumber;
 
@@ -317,11 +317,11 @@ fixed_t	P_FindLowestFloorSurrounding(int16_t secnum)
 //
 fixed_t	P_FindHighestFloorSurrounding(int16_t secnum)
 {
-    int32_t			i;
+    uint8_t		i;
     int16_t		offset;
     fixed_t		floor = -500*FRACUNIT;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int32_t linecount = sectors[secnum].linecount;
+	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
 	
     for (i=0 ;i < linecount ; i++) {
@@ -356,13 +356,13 @@ P_FindNextHighestFloor
 ( int16_t	secnum,
   int32_t		currentheight )
 {
-    int32_t			i;
-    int32_t			h;
+    uint8_t		i;
+    int16_t			h;
     int32_t			min;
 	int16_t		offset;
 	fixed_t		height = currentheight;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int32_t linecount = sectors[secnum].linecount;
+	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
 
     
@@ -405,11 +405,11 @@ P_FindNextHighestFloor
 fixed_t
 P_FindLowestCeilingSurrounding(int16_t	secnum)
 {
-    int32_t			i;
+    uint8_t		i;
 	int16_t		offset;
 	fixed_t		height = MAXINT;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int32_t linecount = sectors[secnum].linecount;
+	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
 
     for (i=0 ;i < linecount ; i++) {
@@ -435,11 +435,11 @@ P_FindLowestCeilingSurrounding(int16_t	secnum)
 //
 fixed_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 {
-    int32_t		i;
+    uint8_t		i;
 	int16_t		offset;
 	fixed_t	height = 0;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int32_t linecount = sectors[secnum].linecount;
+	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
 
     for (i=0 ;i < linecount ; i++) {
@@ -491,11 +491,11 @@ P_FindMinSurroundingLight
 ( int16_t secnum,
   int32_t		max )
 {
-    int32_t		i;
+    uint8_t		i;
     int32_t		min;
     int16_t	offset;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int32_t linecount = sectors[secnum].linecount;
+	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
 
     min = max;

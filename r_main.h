@@ -44,11 +44,7 @@ extern fixed_t		centerxfrac;
 extern fixed_t		centeryfrac;
 extern fixed_t		projection;
 
-extern int32_t		validcount;
-
-extern int32_t		linecount;
-extern int32_t		loopcount;
-
+extern int16_t		validcount;
 
 //
 // Lighting LUT.

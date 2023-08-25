@@ -692,7 +692,7 @@ void P_GroupLines(void)
 	int16_t				linebufferindex;
 	int16_t				sidesecnum;
 	sector_t*			sectors;
-	int16_t					sectorlinecount;
+	uint8_t				sectorlinecount;
 
 	side_t* sides;
 
@@ -726,6 +726,9 @@ void P_GroupLines(void)
 		if (linebacksecnum != -1 && linebacksecnum != linefrontsecnum) {
 			sectors[linebacksecnum].linecount++;
 			total++;
+			if (sectors[linebacksecnum].linecount == 255){
+				I_Error ("warning - sector linecounts hit 255, change back to int16_t");
+			}
 		}
 	}
 

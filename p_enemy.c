@@ -99,17 +99,17 @@ P_RecursiveSound
 ( int16_t		secnum,
   int32_t		soundblocks)
 {
-    int32_t		i;
+    int16_t		i;
 	line_t* lines;
 	line_t*	check;
     int16_t	othersecnum;
-	int32_t linecount;
+	int16_t linecount;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	sector_t* soundsector = &sectors[secnum];
 	int16_t *linebuffer;
 	side_t* sides;
 	int16_t linenumber;
-	int32_t checkflags;
+	int16_t checkflags;
 	int16_t checksidenum0;
 	int16_t checksidenum1;
 	int16_t checkfrontsecnum;
@@ -132,9 +132,6 @@ P_RecursiveSound
 	soundsector->validcount = validcount;
 	soundsector->soundtraversed = soundblocks+1;
 	soundsector->soundtargetRef = soundtargetRef;
-
-
-
 
 
 	linecount = soundsector->linecount;

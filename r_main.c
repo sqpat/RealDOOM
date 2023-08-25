@@ -45,7 +45,7 @@
 int32_t			viewangleoffset;
 
 // increment every time a check is made
-int32_t			validcount = 1;		
+int16_t			validcount = 1;		
 
 
 lighttable_t*		fixedcolormap;
@@ -61,8 +61,6 @@ fixed_t			projection;
 // just for profiling purposes
 int32_t			framecount;	
 
-int32_t			linecount;
-int32_t			loopcount;
 
 fixed_t			viewx;
 fixed_t			viewy;

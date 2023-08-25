@@ -478,10 +478,10 @@ EV_BuildStairs
 ( int16_t	linetag,
   stair_e	type )
 {
-    int32_t			secnum;
+    int16_t			secnum;
     int32_t			height;
-    int32_t			i;
-    int32_t			newsecnum;
+    uint8_t			i;
+    int16_t			newsecnum;
     int32_t			texture;
     int32_t			ok;
     int32_t			rtn;
@@ -503,7 +503,7 @@ EV_BuildStairs
 	fixed_t sectorfloorheight;
 	int16_t sectorfloorpic;
 	int16_t sectorlinesoffset;
-	int32_t sectorlinecount;
+	uint8_t sectorlinecount;
     secnum = -1;
     rtn = 0;
     while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {

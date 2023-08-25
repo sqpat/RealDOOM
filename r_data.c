@@ -474,7 +474,13 @@ R_GetColumn
 (int32_t           tex,
 	int32_t           col)
 {
-	int32_t         lump; int32_t         ofs; MEMREF* texturecolumnlumpTex; MEMREF* texturecolumnofsTex; int16_t* texturecolumnlump; uint16_t* texturecolumnofs; MEMREF* texturecomposite;
+	int16_t         lump; 
+	uint16_t         ofs; 
+	MEMREF* texturecolumnlumpTex; 
+	MEMREF* texturecolumnofsTex; 
+	int16_t* texturecolumnlump; 
+	uint16_t* texturecolumnofs; 
+	MEMREF* texturecomposite;
 	MEMREF columnRef;
 
 	byte* texturecompositebytes;

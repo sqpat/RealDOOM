@@ -96,7 +96,7 @@ typedef	struct
     fixed_t	ceilingheight;
     int16_t	floorpic;
     int16_t	ceilingpic;
-    int16_t	lightlevel; // seems to max at 255
+    uint8_t	lightlevel; // seems to max at 255
     int16_t	special;	// goes beyond 20k
     int16_t	tag;		// cant set to int8_t because of 666 special case.... 
 
@@ -110,11 +110,12 @@ typedef	struct
     int32_t		blockbox[4];
 
     // origin for any sounds played by the sector
+    // corresponds to fixed_t, not easy to change
 	int32_t soundorgX;
 	int32_t soundorgY;
 
     // if == validcount, already checked
-    int32_t		validcount;
+    int16_t		validcount;
 
     // list of mobjs in sector
     MEMREF	thinglistRef;
@@ -122,7 +123,7 @@ typedef	struct
     // thinker_t for reversable actions
     ///void*	specialdata;
 	MEMREF	specialdataRef;
-    int32_t			linecount;  // todo can this be int8_t?
+    uint8_t			linecount;  // is int8 ok? seems more than 2-3 is rare..
 
 	int16_t linesoffset;	// [linecount] size
 
@@ -202,7 +203,7 @@ typedef struct line_s
 	int16_t	backsecnum;
 
     // if == validcount, already checked
-    int32_t		validcount;
+    int16_t		validcount;
 
     // thinker_t for reversable actions
     //void*	specialdata;		

@@ -317,10 +317,10 @@ EV_LightTurnOn
   int32_t		bright )
 {
     int16_t secnum;
-    int32_t		j;
+    uint8_t		j;
     int16_t	tempsecnum;
     line_t*	templine;
-	int32_t linecount;
+	uint8_t linecount;
 	int16_t* linebuffer;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
