@@ -44,7 +44,7 @@
 
 // Location of each lump on disk.
 lumpinfo_t*             lumpinfo;               
-int32_t                     numlumps;
+uint16_t                     numlumps;
 
 MEMREF*					lumpcacheEMS;
 
@@ -55,7 +55,7 @@ ExtractFileBase
   int8_t*         dest )
 {
     int8_t*       src;
-	int32_t         length;
+	int16_t         length;
 
     src = path + strlen(path) - 1;
     
@@ -109,7 +109,7 @@ void W_AddFile (int8_t *filename)
 {
     wadinfo_t           header;
     lumpinfo_t*         lump_p;
-	uint32_t            i;
+	uint16_t            i;
 	int32_t                 handle;
 	int32_t                 length;
 	int32_t                 startlump;
@@ -204,9 +204,9 @@ void W_AddFile (int8_t *filename)
 void W_Reload (void)
 {
     wadinfo_t           header;
-	int32_t                 lumpcount;
+	uint16_t                 lumpcount;
     lumpinfo_t*         lump_p;
-	uint32_t            i;
+	uint16_t            i;
 	int32_t                 handle;
 	int32_t                 length;
     filelump_t*         fileinfo;
@@ -297,16 +297,18 @@ void W_InitMultipleFiles (int8_t** filenames)
 // Returns -1 if name not found.
 //
 
-int32_t W_CheckNumForName (int8_t* name)
+int16_t W_CheckNumForName (int8_t* name)
 {
     union {
 		int8_t    s[9];
-		int32_t     x[2];
+		int16_t     x[4];
         
     } name8;
     
-	int32_t         v1;
-	int32_t         v2;
+	int16_t         v1;
+	int16_t         v2;
+	int16_t         v3;
+	int16_t         v4;
     lumpinfo_t* lump_p;
 
     // make the name into two integers for easy compares
@@ -320,6 +322,8 @@ int32_t W_CheckNumForName (int8_t* name)
 
     v1 = name8.x[0];
     v2 = name8.x[1];
+    v3 = name8.x[2];
+    v4 = name8.x[3];
 
 
     // scan backwards so patch lump files take precedence
@@ -327,8 +331,12 @@ int32_t W_CheckNumForName (int8_t* name)
 
     while (lump_p-- != lumpinfo)
     {
-        if ( *(int32_t *)lump_p->name == v1
-             && *(int32_t *)&lump_p->name[4] == v2)
+        if ( *(int16_t *)lump_p->name == v1
+             && *(int16_t *)&lump_p->name[2] == v2
+             && *(int16_t *)&lump_p->name[4] == v3
+             && *(int16_t *)&lump_p->name[6] == v4
+             
+             )
         {
             return lump_p - lumpinfo;
         }
@@ -345,9 +353,9 @@ int32_t W_CheckNumForName (int8_t* name)
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
 //
-int32_t W_GetNumForName (int8_t* name)
+int16_t W_GetNumForName (int8_t* name)
 {
-	int32_t i;
+	int16_t i;
 
     i = W_CheckNumForName (name);
     
@@ -362,7 +370,7 @@ int32_t W_GetNumForName (int8_t* name)
 // W_LumpLength
 // Returns the buffer size needed to load the given lump.
 //
-int32_t W_LumpLength (int32_t lump)
+int32_t W_LumpLength (int16_t lump)
 {
     if (lump >= numlumps)
         I_Error ("W_LumpLength: %i >= numlumps",lump);
@@ -379,10 +387,10 @@ int32_t W_LumpLength (int32_t lump)
 //
 void
 W_ReadLumpEMS
-(int32_t           lump,
+(int16_t           lump,
   MEMREF         lumpRef )
 {
-	int32_t         c;
+	int32_t         c;  // size, leave as 32 bit
     lumpinfo_t* l;
 	int32_t         handle;
 	byte		*dest;
@@ -431,7 +439,7 @@ W_ReadLumpEMS
 
 void
 W_ReadLump
-(int32_t           lump,
+(int16_t           lump,
 	void*         dest)
 {
 	int32_t         c;
@@ -468,12 +476,12 @@ W_ReadLump
 }
 
 
-int32_t W_CacheLumpNumCheck(int32_t lump, int32_t error) {
+int16_t W_CacheLumpNumCheck(int16_t lump) {
 
 
 	if ((uint32_t)lump >= numlumps) {
-		printf("W_CacheLumpNumCheck: %i %i", error, lump);
-		I_Error("W_CacheLumpNumCheck: %i %i", error, lump);
+		printf("W_CacheLumpNumCheck: %i ",  lump);
+		I_Error("W_CacheLumpNumCheck: %i",  lump);
 		return true;
 	}
 	return false;
@@ -489,7 +497,7 @@ W_CacheLumpNumEMS
 	int8_t			tag)
 {
 	byte	*lumpmem;
-	if ((uint32_t)lump >= numlumps)
+	if (lump >= numlumps)
 		I_Error("W_CacheLumpNum: %i >= numlumps", lump);
 
 
@@ -531,7 +539,7 @@ W_CacheLumpName
 MEMREF
 W_CacheLumpNameEMS
 (int8_t*         name,
-	int32_t           tag)
+	int8_t           tag)
 {
 	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
 }
@@ -541,7 +549,7 @@ W_CacheLumpNameEMS
 patch_t*
 W_CacheLumpNameEMSAsPatch
 (int8_t*         name,
-	int32_t           tag)
+	int8_t           tag)
 {
 	return (patch_t*) Z_LoadBytesFromEMS(W_CacheLumpNumEMS(W_GetNumForName(name), tag));
 }

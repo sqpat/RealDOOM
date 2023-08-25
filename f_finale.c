@@ -681,7 +681,7 @@ void F_CastDrawer (void)
 	lump = sprframe->lump[0];
     flip = (boolean)sprframe->flip[0];
 			
-	W_CacheLumpNumCheck(lump + firstspritelump, 1);
+	W_CacheLumpNumCheck(lump + firstspritelump);
 	patchRef = W_CacheLumpNumEMS (lump+firstspritelump, PU_CACHE);
 	patch = Z_LoadBytesFromEMS(patchRef);
 	

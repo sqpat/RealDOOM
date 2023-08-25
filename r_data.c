@@ -294,7 +294,7 @@ void R_GenerateComposite(int32_t texnum)
 		patchoriginx = patch->originx;
 		patchoriginy = patch->originy;
 
-		W_CacheLumpNumCheck(patchpatch, 13);
+		W_CacheLumpNumCheck(patchpatch);
 		realpatchRef = W_CacheLumpNumEMS(patchpatch, PU_CACHE);
 		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
 		x1 = patchoriginx;
@@ -403,7 +403,7 @@ void R_GenerateLookup(int32_t texnum)
 		patch = &texture->patches[i];
 		x1 = patch->originx;
 		patchpatch = patch->patch;
-		W_CacheLumpNumCheck(patch->patch, 14);
+		W_CacheLumpNumCheck(patch->patch);
 		realpatchRef = W_CacheLumpNumEMS(patch->patch, PU_CACHE);
 		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
 
@@ -494,7 +494,7 @@ R_GetColumn
 	lump = texturecolumnlump[col];
 
 	if (lump > 0) {
-		W_CacheLumpNumCheck(lump, 15);
+		W_CacheLumpNumCheck(lump);
 		//return (byte *)W_CacheLumpNum(lump, PU_CACHE) + ofs;
 		columnRef = W_CacheLumpNumEMS(lump, PU_CACHE);
 		return (byte*)Z_LoadBytesFromEMS(columnRef) + ofs;
@@ -794,7 +794,7 @@ void R_InitSpriteLumps(void)
 		Z_RefIsActive(spritetopoffsetRef);
 
 
-		W_CacheLumpNumCheck(firstspritelump + i, 16);
+		W_CacheLumpNumCheck(firstspritelump + i);
 		patchRef = W_CacheLumpNumEMS(firstspritelump + i, PU_CACHE);
 		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
 		patchwidth = (patch->width) ;
@@ -986,7 +986,7 @@ void R_PrecacheLevel(void)
 		{
 			lump = firstflat + i;
 			//flatmemory += lumpinfo[lump].size;
-			W_CacheLumpNumCheck(lump, 17);
+			W_CacheLumpNumCheck(lump);
 			W_CacheLumpNumEMS(lump, PU_CACHE);
 		}
 	}
@@ -1024,7 +1024,7 @@ void R_PrecacheLevel(void)
 		{
 			lump = texture->patches[j].patch;
 			//texturememory += lumpinfo[lump].size;
-			if (W_CacheLumpNumCheck(lump, 18)) {
+			if (W_CacheLumpNumCheck(lump)) {
 				printf("Crash %i %i %i", j, lump, texture->patchcount);
 				I_Error("Crash %i %i %i", j, lump, texture->patchcount);
 			}
@@ -1060,7 +1060,7 @@ void R_PrecacheLevel(void)
 			{
 				lump = firstspritelump + sf->lump[k];
 				//spritememory += lumpinfo[lump].size;
-				W_CacheLumpNumCheck(lump, 19);
+				W_CacheLumpNumCheck(lump);
 				W_CacheLumpNumEMS(lump, PU_CACHE);
 			}
 		}

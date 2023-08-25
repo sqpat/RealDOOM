@@ -56,24 +56,24 @@ typedef struct
 
 
 extern	lumpinfo_t*	lumpinfo;
-extern	int32_t		numlumps;
+extern	uint16_t		numlumps;
 
 void    W_InitMultipleFiles (int8_t** filenames);
 void    W_Reload (void);
 
-int32_t	W_CheckNumForName (int8_t* name);
-int32_t	W_GetNumForName (int8_t* name);
+int16_t	W_CheckNumForName (int8_t* name);
+int16_t	W_GetNumForName (int8_t* name);
 
-int32_t	W_LumpLength (int32_t lump);
-void    W_ReadLump (int32_t lump, void *dest);
+int32_t	W_LumpLength (int16_t lump);
+void    W_ReadLump (int16_t lump, void *dest);
 
-int32_t W_CacheLumpNumCheck(int32_t lump, int32_t error);
+int16_t W_CacheLumpNumCheck(int16_t lump);
 MEMREF  W_CacheLumpNumEMS(int16_t lump, int8_t tag);
 
 //void*	W_CacheLumpName (int8_t* name, int32_t tag);
-MEMREF  W_CacheLumpNameEMS(int8_t* name, int32_t tag);
+MEMREF  W_CacheLumpNameEMS(int8_t* name, int8_t tag);
 void	W_EraseLumpCache(int16_t index);
-patch_t* W_CacheLumpNameEMSAsPatch (int8_t*         name, int32_t           tag);
+patch_t* W_CacheLumpNameEMSAsPatch (int8_t*         name, int8_t           tag);
 
 
 

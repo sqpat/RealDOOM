@@ -27,11 +27,19 @@ TODO
  ? is 2048 mem entries enough? plays demo 1 ok.
  x shrink the allocation_t a bit more
  x setup git
- 3 see if we can lessen size of some of those sectors etc fields
- 1 make ems actually work
- 2 build 16 bit for good
- - set visiplanes under 64k and see if large compile works
+ ~ make ems actually work
+ x build 16 bit for good
+ ~ set visiplanes under 64k and see if large compile works
+ 1 change a bunch of int_32t to int_16t, see if it still works
+   ~ wad  
+   ~ zone
+   - video fields (bounding box etc)
+ 2 change fixed_t stuff
+ - temp disable screen2/3 wipe?
+ - get rid of backbuffer? or make it ems
+
  - test level transitions some more.
+ - see if we can lessen size of some of those sectors etc fields
  - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
 
  IMPROVEMENTS

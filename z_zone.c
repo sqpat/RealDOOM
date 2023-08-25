@@ -641,7 +641,7 @@ void Z_DoPageOut(uint16_t pageframeindex) {
 
 void Z_DoPageIn(uint16_t logicalpage, uint16_t pageframeindex, uint16_t numallocatepages) {
 
-	int32_t i = 0;
+	int16_t i = 0;
 	byte* copydst = pageFrameArea + pageframeindex * PAGE_FRAME_SIZE;
 	byte* copysrc = EMSArea + logicalpage * PAGE_FRAME_SIZE;
 
@@ -958,7 +958,7 @@ PAGEREF Z_GetNextFreeArrayIndex(){
 }
 
 MEMREF Z_MallocEMSNew
-(int32_t           size,
+(uint32_t           size,
 	uint8_t tag,
 	uint8_t user,
 	uint8_t sourceHint)
@@ -967,7 +967,7 @@ MEMREF Z_MallocEMSNew
 }
 MEMREF
 Z_MallocEMSNewWithBackRef
-(int32_t           size,
+( uint32_t           size,
   uint8_t           tag,
   uint8_t user,
   uint8_t sourceHint,
@@ -1039,9 +1039,6 @@ Z_MallocEMSNewWithBackRef
 		newfreeblockindex, base, backRef);
 */
 
-	 			       if (size == 9236){
-	   //I_Error("\nZ_MallocEMSNew: check %i %i %i %i %i", allocations[allocations[base].prev].user, allocations[base].prev,  0, allocations[1].user, allocations[1].size);
-}
  
 	   
   do 
@@ -1057,7 +1054,7 @@ Z_MallocEMSNewWithBackRef
         
         if (rover == start) {
             // scanned all the way around the list
-		   I_Error("Z_MallocEMSNew: failed on allocation of %i bytes tag %i iter %i and %i\n\n", size ,tag, iter, allocations[start].page_and_size);
+		   I_Error("Z_MallocEMSNew: failed on allocation of %u bytes tag %i iter %i and %i\n\n", size ,tag, iter, allocations[start].page_and_size);
         }
 
         // not empty but might be purgeable

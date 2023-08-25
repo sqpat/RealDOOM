@@ -105,8 +105,8 @@ void Z_InitEMS(void);
 void Z_FreeTagsEMS (int16_t tag);
 
 #define BACKREF_LUMP_OFFSET 2048
-MEMREF Z_MallocEMSNew(int32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
-MEMREF Z_MallocEMSNewWithBackRef(int32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
+MEMREF Z_MallocEMSNew(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
+MEMREF Z_MallocEMSNewWithBackRef(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
 #ifdef MEMORYCHECK
 void Z_CheckEMSAllocations(PAGEREF block, int32_t i, int32_t var2, int32_t var3);
 #endif
