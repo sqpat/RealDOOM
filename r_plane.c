@@ -64,8 +64,8 @@ int16_t			ceilingclip[SCREENWIDTH];
 // spanstart holds the start of a plane span
 // initialized to 0 at start
 //
-int32_t			spanstart[SCREENHEIGHT];
-int32_t			spanstop[SCREENHEIGHT];
+int16_t			spanstart[SCREENHEIGHT];
+//int32_t			spanstop[SCREENHEIGHT];
 
 //
 // texture mapping
@@ -208,8 +208,8 @@ void R_ClearPlanes (void)
 visplane_t*
 R_FindPlane
 ( fixed_t	height,
-  int32_t		picnum,
-  int32_t		lightlevel )
+  int16_t		picnum,
+  int16_t		lightlevel )
 {
     visplane_t*	check;
 	
@@ -256,14 +256,14 @@ R_FindPlane
 visplane_t*
 R_CheckPlane
 ( visplane_t*	pl,
-  int32_t		start,
-  int32_t		stop )
+  int16_t		start,
+  int16_t		stop )
 {
-    int32_t		intrl;
-    int32_t		intrh;
-    int32_t		unionl;
-    int32_t		unionh;
-    int32_t		x;
+    int16_t		intrl;
+    int16_t		intrh;
+    int16_t		unionl;
+    int16_t		unionh;
+    int16_t		x;
 	
     if (start < pl->minx)
     {
@@ -324,27 +324,14 @@ R_CheckPlane
 void R_DrawPlanes (void)
 {
     visplane_t*		pl;
-    int32_t			light;
-    int32_t			x;
-    int32_t			stop;
+    int16_t			light;
+    int16_t			x;
+    int16_t			stop;
     int32_t			angle;
-	int32_t * flattranslation;
+	int16_t * flattranslation;
 	byte t1, b1, t2, b2;
 
-#ifdef RANGECHECK
-    if (ds_p - drawsegs > MAXDRAWSEGS)
-	I_Error ("R_DrawPlanes: drawsegs overflow (%i)",
-		 ds_p - drawsegs);
-    
-    if (lastvisplane - visplanes > MAXVISPLANES)
-	I_Error ("R_DrawPlanes: visplane overflow (%i)",
-		 lastvisplane - visplanes);
-    
-    if (lastopening - openings > MAXOPENINGS)
-	I_Error ("R_DrawPlanes: opening overflow (%i)",
-		 lastopening - openings);
-#endif
-
+ 
     for (pl = visplanes ; pl < lastvisplane ; pl++)
     {
 	if (pl->minx > pl->maxx)

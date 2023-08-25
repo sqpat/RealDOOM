@@ -87,9 +87,9 @@ typedef struct
 	// Block origin (allways UL),
 	// which has allready accounted
 	// for the internal origin of the patch.
-	int32_t         originx;
-	int32_t         originy;
-	int32_t         patch;
+	int16_t         originx;
+	int16_t         originy;
+	int16_t         patch;
 } texpatch_t;
 
 
@@ -112,19 +112,19 @@ typedef struct
 
 
 
-int32_t             firstflat;
-int32_t             lastflat;
-int32_t             numflats;
+int16_t             firstflat;
+int16_t             lastflat;
+int16_t             numflats;
 
-int32_t             firstpatch;
-int32_t             lastpatch;
-int32_t             numpatches;
+int16_t             firstpatch;
+int16_t             lastpatch;
+int16_t             numpatches;
 
-int32_t             firstspritelump;
-int32_t             lastspritelump;
-int32_t             numspritelumps;
+int16_t             firstspritelump;
+int16_t             lastspritelump;
+int16_t             numspritelumps;
 
-int32_t             numtextures;
+int16_t             numtextures;
 //texture_t**   textures;
 
 MEMREF  texturesRef;				// texture_t**
@@ -189,14 +189,14 @@ void
 R_DrawColumnInCache
 (column_t*     patch,
 	byte*         cache,
-	int32_t           originy,
-	int32_t           cacheheight)
+	int16_t           originy,
+	int16_t           cacheheight)
 {
-	int32_t         count;
-	int32_t         position;
+	int16_t         count;
+	int16_t         position;
 	byte*       source;
 	byte*       dest;
-	int32_t i = 0;
+	int16_t i = 0;
 	dest = (byte *)cache + 3;
 
 	while (patch->topdelta != 0xff)
@@ -294,7 +294,7 @@ void R_GenerateComposite(int32_t texnum)
 		patchoriginx = patch->originx;
 		patchoriginy = patch->originy;
 
-		W_CacheLumpNumCheck(patchpatch);
+		W_CacheLumpNumCheck(patchpatch, 10);
 		realpatchRef = W_CacheLumpNumEMS(patchpatch, PU_CACHE);
 		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
 		x1 = patchoriginx;
@@ -403,7 +403,7 @@ void R_GenerateLookup(int32_t texnum)
 		patch = &texture->patches[i];
 		x1 = patch->originx;
 		patchpatch = patch->patch;
-		W_CacheLumpNumCheck(patch->patch);
+		W_CacheLumpNumCheck(patch->patch, 11);
 		realpatchRef = W_CacheLumpNumEMS(patch->patch, PU_CACHE);
 		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
 
@@ -471,7 +471,7 @@ void R_GenerateLookup(int32_t texnum)
 //
 byte*
 R_GetColumn
-(int32_t           tex,
+(int16_t           tex,
 	int32_t           col)
 {
 	int16_t         lump; 
@@ -486,7 +486,7 @@ R_GetColumn
 	byte* texturecompositebytes;
 
 	// reordered to require fewer things in memory at same time
-	int32_t* texturewidthmask = (int32_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
+	int16_t* texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 	col &= texturewidthmask[tex];
 
 
@@ -500,7 +500,7 @@ R_GetColumn
 	lump = texturecolumnlump[col];
 
 	if (lump > 0) {
-		W_CacheLumpNumCheck(lump);
+		W_CacheLumpNumCheck(lump, 12);
 		//return (byte *)W_CacheLumpNum(lump, PU_CACHE) + ofs;
 		columnRef = W_CacheLumpNumEMS(lump, PU_CACHE);
 		return (byte*)Z_LoadBytesFromEMS(columnRef) + ofs;
@@ -534,8 +534,8 @@ void R_InitTextures(void)
 	mappatch_t*         mpatch;
 	texpatch_t*         patch;
 
-	int32_t                 i;
-	int32_t                 j;
+	int16_t                 i;
+	int16_t                 j;
 
 	int32_t*                maptex;
 	int32_t*                maptex2;
@@ -545,29 +545,29 @@ void R_InitTextures(void)
 	int8_t*               names;
 	int8_t*               name_p;
 
-	int32_t*                patchlookup;
+	int16_t*                patchlookup;
 
-	int32_t                 totalwidth;
-	int32_t                 nummappatches;
-	int32_t                 offset;
-	int32_t                 maxoff;
-	int32_t                 maxoff2;
-	int32_t                 numtextures1;
-	int32_t                 numtextures2;
+	int16_t                 totalwidth;
+	int16_t                 nummappatches;
+	int16_t                 offset;
+	int16_t                 maxoff;
+	int16_t                 maxoff2;
+	int16_t                 numtextures1;
+	int16_t                 numtextures2;
 
 	int32_t*                directory;
 
-	int32_t                 temp1;
-	int32_t                 temp2;
-	int32_t                 temp3;
+	int16_t                 temp1;
+	int16_t                 temp2;
+	int16_t                 temp3;
 
-	int32_t*                texturewidthmask;
+	int16_t*                texturewidthmask;
 	// needed for texture pegging
 	fixed_t*            textureheight;
 	MEMREF *            texturecolumnlump;
 	MEMREF *			texturecolumnofs;
 	MEMREF*				textures;
-	int32_t *				texturetranslation;
+	int16_t *				texturetranslation;
 	MEMREF				namesRef;
 	MEMREF				maptexRef;
 	MEMREF				maptex2Ref;
@@ -629,7 +629,7 @@ void R_InitTextures(void)
 
 	//texturecomposite	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecompositeRef);
 	//texturecompositesize = (int32_t*)			  Z_LoadBytesFromEMS(texturecompositesizeRef);
-	texturewidthmask = (int32_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
+	texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 	textureheight = (fixed_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 
@@ -709,7 +709,7 @@ void R_InitTextures(void)
 		while (j * 2 <= texturewidth)
 			j <<= 1;
 
-		texturewidthmask = (int32_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
+		texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 		textureheight = (fixed_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 		Z_RefIsActive(texturewidthmaskRef);
@@ -733,7 +733,7 @@ void R_InitTextures(void)
 	// ref 385 ... page 3
 	texturetranslationRef = Z_MallocEMSNew((numtextures + 1) * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE_TRANSLATION);
 
-	texturetranslation = (int32_t*)Z_LoadBytesFromEMS(texturetranslationRef);
+	texturetranslation = (int16_t*)Z_LoadBytesFromEMS(texturetranslationRef);
 
 	for (i = 0; i < numtextures; i++)
 		texturetranslation[i] = i;
@@ -747,8 +747,8 @@ void R_InitTextures(void)
 //
 void R_InitFlats(void)
 {
-	int32_t         i;
-	int32_t * flattranslation;
+	int16_t         i;
+	int16_t * flattranslation;
 
 	firstflat = W_GetNumForName("F_START") + 1;
 	lastflat = W_GetNumForName("F_END") - 1;
@@ -756,7 +756,7 @@ void R_InitFlats(void)
 
 	// Create translation table for global animation.
 	flattranslationRef = Z_MallocEMSNew((numflats + 1) * 4, PU_STATIC, 0, ALLOC_TYPE_FLAT_TRANSLATION);
-	flattranslation = (int32_t*)Z_LoadBytesFromEMS(flattranslationRef);
+	flattranslation = (int16_t*)Z_LoadBytesFromEMS(flattranslationRef);
 
 	for (i = 0; i < numflats; i++)
 		flattranslation[i] = i;
@@ -771,7 +771,7 @@ void R_InitFlats(void)
 //
 void R_InitSpriteLumps(void)
 {
-	int32_t         i;
+	int16_t         i;
 
 	patch_t     *patch;
 	fixed_t     *spritewidth;
@@ -800,7 +800,7 @@ void R_InitSpriteLumps(void)
 		Z_RefIsActive(spritetopoffsetRef);
 
 
-		W_CacheLumpNumCheck(firstspritelump + i);
+		W_CacheLumpNumCheck(firstspritelump + i, 13);
 		patchRef = W_CacheLumpNumEMS(firstspritelump + i, PU_CACHE);
 		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
 		patchwidth = (patch->width) ;
@@ -825,7 +825,8 @@ void R_InitSpriteLumps(void)
 //
 void R_InitColormaps(void)
 {
-	int32_t lump, length;
+	int16_t lump;
+	int32_t length;
 
 	// Load in the light tables, 
 	//  256 byte align tables.
@@ -871,9 +872,9 @@ void R_InitData(void)
 // R_FlatNumForName
 // Retrieval, get a flat number for a flat name.
 //
-int32_t R_FlatNumForName(int8_t* name)
+int16_t R_FlatNumForName(int8_t* name)
 {
-	int32_t         i;
+	int16_t         i;
 	int8_t        namet[9];
 
 	i = W_CheckNumForName(name);
@@ -894,9 +895,9 @@ int32_t R_FlatNumForName(int8_t* name)
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
-int32_t     R_CheckTextureNumForName(int8_t *name)
+int16_t     R_CheckTextureNumForName(int8_t *name)
 {
-	int32_t         i;
+	int16_t         i;
 	MEMREF* textures;
 	texture_t* texture;
 	// "NoTexture" marker.
@@ -928,8 +929,7 @@ int32_t     R_CheckTextureNumForName(int8_t *name)
 //
 int16_t     R_TextureNumForName(int8_t* name)
 {
-	int16_t         i;
-	i = R_CheckTextureNumForName(name);
+	int16_t         i = R_CheckTextureNumForName(name);
 
 	if (i == -1) {
 		I_Error("R_TextureNumForName: %s not found %i %i %i",
@@ -955,10 +955,10 @@ void R_PrecacheLevel(void)
 	int8_t*               texturepresent;
 	int8_t*               spritepresent;
 
-	int32_t                 i;
-	int32_t                 j;
-	int32_t                 k;
-	int32_t                 lump;
+	int16_t                 i;
+	int16_t                 j;
+	int16_t                 k;
+	int16_t                 lump;
 
 	texture_t*          texture;
 	THINKERREF          th;
@@ -992,7 +992,7 @@ void R_PrecacheLevel(void)
 		{
 			lump = firstflat + i;
 			//flatmemory += lumpinfo[lump].size;
-			W_CacheLumpNumCheck(lump);
+			W_CacheLumpNumCheck(lump, 14);
 			W_CacheLumpNumEMS(lump, PU_CACHE);
 		}
 	}
@@ -1030,7 +1030,7 @@ void R_PrecacheLevel(void)
 		{
 			lump = texture->patches[j].patch;
 			//texturememory += lumpinfo[lump].size;
-			if (W_CacheLumpNumCheck(lump)) {
+			if (W_CacheLumpNumCheck(lump, 15)) {
 				printf("Crash %i %i %i", j, lump, texture->patchcount);
 				I_Error("Crash %i %i %i", j, lump, texture->patchcount);
 			}
@@ -1066,7 +1066,7 @@ void R_PrecacheLevel(void)
 			{
 				lump = firstspritelump + sf->lump[k];
 				//spritememory += lumpinfo[lump].size;
-				W_CacheLumpNumCheck(lump);
+				W_CacheLumpNumCheck(lump, 16);
 				W_CacheLumpNumEMS(lump, PU_CACHE);
 			}
 		}

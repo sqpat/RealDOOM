@@ -51,9 +51,9 @@
 typedef struct
 {
     boolean	istexture;
-    int32_t		picnum;
-    int32_t		basepic;
-    int32_t		numpics;
+    int16_t		picnum;
+    int16_t		basepic;
+    int16_t		numpics;
     
 } anim_t;
 
@@ -136,7 +136,7 @@ extern  int16_t	linespeciallist[MAXLINEANIMS];
 
 void P_InitPicAnims (void)
 {
-    int32_t		i;
+    int16_t		i;
 
     
     //	Init animation
@@ -282,7 +282,7 @@ getNextSector
 //
 fixed_t	P_FindLowestFloorSurrounding(int16_t secnum)
 {
-    int32_t			i;
+    int16_t			i;
     line_t*		check;
 	int16_t		otherSecOffset;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
@@ -464,12 +464,12 @@ fixed_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 //
 // RETURN NEXT SECTOR # THAT LINE TAG REFERS TO
 //
-int32_t
+int16_t
 P_FindSectorFromLineTag
 ( int16_t		linetag,
-  int32_t		start )
+  int16_t		start )
 {
-    int32_t	i;
+    int16_t	i;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 	for (i = start + 1; i < numsectors; i++) {
@@ -537,11 +537,11 @@ P_FindMinSurroundingLight
 //
 void
 P_CrossSpecialLine
-( int32_t		linenum,
-  int32_t		side,
+( int16_t		linenum,
+  int16_t		side,
   MEMREF thingRef )
 {
-    int32_t		ok;
+    int16_t		ok;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t*	line = &lines[linenum];
 	int16_t linetag = line->tag;
@@ -1018,7 +1018,7 @@ P_ShootSpecialLine
 ( MEMREF thingRef,
   int16_t linenum )
 {
-    int32_t		ok;
+    int16_t		ok;
 	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 	int16_t innerlinenum = linebuffer[linenum];
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -1149,11 +1149,11 @@ int32_t		levelTimeCount;
 void P_UpdateSpecials(void)
 {
 	anim_t*	anim;
-	int32_t		pic;
-	int32_t		i;
+	int16_t		pic;
+	int16_t		i;
 	line_t*	line;
-	int32_t * texturetranslation;
-	int32_t * flattranslation;
+	int16_t * texturetranslation;
+	int16_t * flattranslation;
 	side_t* sides;
 	line_t* lines;
 	int16_t sidenum;
@@ -1171,11 +1171,11 @@ void P_UpdateSpecials(void)
 		for (i = anim->basepic; i < anim->basepic + anim->numpics; i++) {
 			pic = anim->basepic + ((leveltime / 8 + i) % anim->numpics);
 			if (anim->istexture) {
-				texturetranslation = (int32_t*)Z_LoadBytesFromEMS(texturetranslationRef);
+				texturetranslation = (int16_t*)Z_LoadBytesFromEMS(texturetranslationRef);
 				texturetranslation[i] = pic;
 			}
 			else {
-				flattranslation = (int32_t*)Z_LoadBytesFromEMS(flattranslationRef);
+				flattranslation = (int16_t*)Z_LoadBytesFromEMS(flattranslationRef);
 				flattranslation[i] = pic;
 			}
 		}
@@ -1237,19 +1237,19 @@ void P_UpdateSpecials(void)
 //
 // Special Stuff that can not be categorized
 //
-int32_t EV_DoDonut(int16_t linetag)
+int16_t EV_DoDonut(int16_t linetag)
 {
     int16_t		s1Offset;
     int16_t		s2Offset;
     int16_t		s3Offset;
-    int32_t			secnum;
-    int32_t			rtn;
-    int32_t			i;
+    int16_t			secnum;
+    int16_t			rtn;
+    int16_t			i;
     floormove_t*	floor;
 	MEMREF floorRef;
 	int16_t* linebuffer;
 	int16_t offset;
-	int32_t lineflags;
+	int16_t lineflags;
 	int16_t linebacksecnum;
 	int16_t lineoffset;
 	int16_t sectors1lineoffset;
@@ -1343,8 +1343,8 @@ int16_t		linespeciallist[MAXLINEANIMS];
 // Parses command line parameters.
 void P_SpawnSpecials (void)
 {
-    int32_t		i;
-    int32_t		episode;
+    int16_t		i;
+    int8_t		episode;
 	line_t* lines;
 	sector_t* sectors;
 

@@ -127,7 +127,7 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048
-#define NUM_EMS_PAGES 32
+#define NUM_EMS_PAGES 4
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 64 * 1024
 
@@ -140,20 +140,6 @@
 #define MAX_PAGE_FRAMES 512
 
 #define PAGE_FRAME_BITS 14
-
-//todo get rid of this when initialization code in i_zonebase rewritten
-typedef struct
-{
-    // total bytes malloced, including header
-	int32_t         size;
-
-    // start / end cap for linked list
-    memblock_t  blocklist;
-    
-    memblock_t* rover;
-    
-} memzone_t;
-
 
 // high 9 bits
 #define PAGE_MASK 0xFF800000

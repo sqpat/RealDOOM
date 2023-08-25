@@ -94,13 +94,13 @@ extern void		(*spanfunc) (void);
 
 //
 // Utility functions.
-int32_t
+fixed_t
 R_PointOnSide
 ( fixed_t	x,
   fixed_t	y,
   node_t*	node );
 
-int32_t
+fixed_t
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,

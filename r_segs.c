@@ -41,9 +41,9 @@ boolean		markfloor;
 boolean		markceiling;
 
 boolean		maskedtexture;
-int32_t		toptexture;
-int32_t		bottomtexture;
-int32_t		midtexture;
+int16_t		toptexture;
+int16_t		bottomtexture;
+int16_t		midtexture;
 
 
 angle_t		rw_normalangle;
@@ -53,8 +53,8 @@ int32_t		rw_angle1;
 //
 // regular wall
 //
-int32_t		rw_x;
-int32_t		rw_stopx;
+int16_t		rw_x;
+int16_t		rw_stopx;
 angle_t		rw_centerangle;
 fixed_t		rw_offset;
 fixed_t		rw_distance;
@@ -98,10 +98,10 @@ R_RenderMaskedSegRange
 {
 	uint32_t	index;
 	column_t*	col;
-	int32_t		lightnum;
-	int32_t		texnum;
+	int16_t		lightnum;
+	int16_t		texnum;
 	fixed_t* textureheight;
-	int32_t* texturetranslation;
+	int16_t* texturetranslation;
 	fixed_t siderowoffset;
 	line_t* lines;
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
@@ -230,8 +230,8 @@ void R_RenderSegLoop (void)
     int32_t			yh;
     int32_t			mid;
     fixed_t		texturecolumn;
-    int32_t			top;
-    int32_t			bottom;
+    int16_t			top;
+    int16_t			bottom;
     //texturecolumn = 0;				// shut up compiler warning
 
 
@@ -404,16 +404,16 @@ void R_RenderSegLoop (void)
 //
 void
 R_StoreWallRange
-( int32_t	start,
-  int32_t	stop )
+( int16_t	start,
+  int16_t	stop )
 {
     fixed_t		hyp;
     fixed_t		sineval;
     angle_t		distangle, offsetangle;
     fixed_t		vtop;
-    int32_t			lightnum;
+    int16_t			lightnum;
 	fixed_t *	textureheight;
-	int32_t* 	texturetranslation;
+	int16_t* 	texturetranslation;
 	vertex_t* vertexes;
 
 	// needs to be refreshed...
@@ -431,7 +431,7 @@ R_StoreWallRange
 	int16_t sidebottomtexture;
 	fixed_t sidetextureoffset;
 	line_t* lines;
-	int32_t lineflags;
+	int16_t lineflags;
 	sector_t* sectors;
 	sector_t frontsector;
 	sector_t backsector;

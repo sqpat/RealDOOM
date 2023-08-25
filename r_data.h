@@ -26,7 +26,7 @@
 // Retrieve column data for span blitting.
 byte*
 R_GetColumn
-( int32_t		tex,
+( int16_t		tex,
   int32_t		col );
 
 
@@ -38,7 +38,7 @@ void R_PrecacheLevel (void);
 // Retrieval.
 // Floor/ceiling opaque texture tiles,
 // lookup by name. For animation?
-int32_t R_FlatNumForName (int8_t* name);
+int16_t R_FlatNumForName (int8_t* name);
 
 
 // Called by P_Ticker for switches and animations,
@@ -46,7 +46,7 @@ int32_t R_FlatNumForName (int8_t* name);
 int16_t R_TextureNumForName(int8_t *name);
 //int16_t R_TextureNumForName (int8_t *name);
 
-int32_t R_CheckTextureNumForName (int8_t *name);
+int16_t R_CheckTextureNumForName (int8_t *name);
 void R_EraseCompositeCache(int16_t texnum);
 
 

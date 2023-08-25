@@ -67,7 +67,7 @@ int16_t	W_GetNumForName (int8_t* name);
 int32_t	W_LumpLength (int16_t lump);
 void    W_ReadLump (int16_t lump, void *dest);
 
-int16_t W_CacheLumpNumCheck(int16_t lump);
+int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error);
 MEMREF  W_CacheLumpNumEMS(int16_t lump, int8_t tag);
 
 //void*	W_CacheLumpName (int8_t* name, int32_t tag);

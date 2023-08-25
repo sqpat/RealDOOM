@@ -476,12 +476,12 @@ W_ReadLump
 }
 
 
-int16_t W_CacheLumpNumCheck(int16_t lump) {
+int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
 
 
-	if ((uint32_t)lump >= numlumps) {
-		printf("W_CacheLumpNumCheck: %i ",  lump);
-		I_Error("W_CacheLumpNumCheck: %i",  lump);
+	if (lump >= numlumps) {
+		printf("W_CacheLumpNumCheck: %i %i",  lump, error);
+		I_Error("W_CacheLumpNumCheck: %i %i",  lump, error);
 		return true;
 	}
 	return false;

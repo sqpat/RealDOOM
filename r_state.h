@@ -49,7 +49,7 @@ extern int16_t		viewwidth;
 extern int16_t		scaledviewwidth;
 extern int16_t		viewheight;
 
-extern int32_t		firstflat;
+extern int16_t		firstflat;
 
 // for global animation
 extern MEMREF	flattranslationRef;	
@@ -57,39 +57,39 @@ extern MEMREF	texturetranslationRef;
 
 
 // Sprite....
-extern int32_t		firstspritelump;
-extern int32_t		lastspritelump;
-extern int32_t		numspritelumps;
+extern int16_t		firstspritelump;
+extern int16_t		lastspritelump;
+extern int16_t		numspritelumps;
 
 
 
 //
 // Lookup tables for map data.
 //
-extern int32_t		numsprites;
+extern int16_t		numsprites;
 extern MEMREF	spritesRef;
 
-extern int32_t		numvertexes;
+extern int16_t		numvertexes;
 //extern vertex_t vertexes[946];
 extern MEMREF	vertexesRef;
 
-extern int32_t		numsegs;
+extern int16_t		numsegs;
 extern MEMREF		segsRef;
 
-extern int32_t		numsectors;
+extern int16_t		numsectors;
 extern MEMREF	sectorsRef;
 
-extern int32_t		numsubsectors;
+extern int16_t		numsubsectors;
 extern MEMREF	subsectorsRef;
 
-extern int32_t		numnodes;
+extern int16_t		numnodes;
 extern MEMREF    nodesRef;
 
 
-extern int32_t		numlines;
+extern int16_t		numlines;
 extern MEMREF   linesRef;
 
-extern int32_t		numsides;
+extern int16_t		numsides;
 extern MEMREF       sidesRef;
 
 //extern int16_t*	linebuffer;

@@ -38,37 +38,33 @@
 #include "doomstat.h"
 
 
-void    P_SpawnMapThing(mapthing_t *    mthing, int32_t key);
+void    P_SpawnMapThing(mapthing_t *    mthing, int16_t key);
 
 //
 // MAP related Lookup tables.
 // Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
 //
-int32_t             numvertexes;
+int16_t             numvertexes;
 MEMREF       vertexesRef;
 
-int32_t             numsegs;
-//seg_t*          segs;
+int16_t             numsegs;
 MEMREF          segsRef;
 
-int32_t             numsectors;
+int16_t             numsectors;
 MEMREF          sectorsRef;
-//sector_t*       sectors;
 
-int32_t             numsubsectors;
-//subsector_t*    subsectors;
+int16_t             numsubsectors;
 MEMREF    subsectorsRef;
 
-int32_t             numnodes;
+int16_t             numnodes;
 MEMREF          nodesRef;
 
-int32_t             numlines;
+int16_t             numlines;
 MEMREF			linesRef;
 
-int32_t             numsides;
+int16_t             numsides;
 MEMREF          sidesRef;
 
-//int16_t*          linebuffer;
 MEMREF          linebufferRef;
 
 // BLOCKMAP
@@ -123,7 +119,7 @@ void P_LoadVertexes(int16_t lump)
 	vertexesRef = Z_MallocEMSNew(numvertexes * sizeof(vertex_t), PU_LEVEL, 0, ALLOC_TYPE_VERTEXES);
 
 	// Load data into cache.
-	W_CacheLumpNumCheck(lump);
+	W_CacheLumpNumCheck(lump, 0);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapvertex_t*)Z_LoadBytesFromEMS(dataRef);
 	
@@ -166,7 +162,7 @@ void P_LoadSegs(int16_t lump)
 	int16_t ldefothersidenum;
 	int16_t sidesecnum;
 	int16_t othersidesecnum;
-	int32_t ldefflags;
+	int16_t ldefflags;
 	line_t* lines;
 	int16_t mlv1;
 	int16_t mlv2;
@@ -179,7 +175,7 @@ void P_LoadSegs(int16_t lump)
 	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	memset(segs, 0xff, numsegs * sizeof(seg_t));
 	
-	W_CacheLumpNumCheck(lump);
+	W_CacheLumpNumCheck(lump, 1);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapseg_t *)Z_LoadBytesFromEMS(dataRef);
 
@@ -254,7 +250,7 @@ void P_LoadSubsectors(int16_t lump)
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
 	subsectorsRef = Z_MallocEMSNew (numsubsectors * sizeof(subsector_t), PU_LEVEL, 0, ALLOC_TYPE_SUBSECS);
 
-	W_CacheLumpNumCheck(lump);
+	W_CacheLumpNumCheck(lump, 2);
 
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapsubsector_t *) Z_LoadBytesFromEMS(dataRef);
@@ -297,7 +293,7 @@ void P_LoadSectors(int16_t lump)
 
 
 	memset(sectors, 0, numsectors * sizeof(sector_t));
-	W_CacheLumpNumCheck(lump);
+	W_CacheLumpNumCheck(lump, 3);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
 
@@ -347,7 +343,7 @@ void P_LoadNodes(int16_t lump)
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 	nodesRef = Z_MallocEMSNew (numnodes * sizeof(node_t), PU_LEVEL, 0, ALLOC_TYPE_NODES);
-	W_CacheLumpNumCheck(lump);
+	W_CacheLumpNumCheck(lump, 4);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
 
@@ -386,7 +382,7 @@ void P_LoadThings(int16_t lump)
 	boolean             spawn;
 	MEMREF				dataRef;
 	node_t*				nodes;
-	W_CacheLumpNumCheck(lump);
+	W_CacheLumpNumCheck(lump, 5);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
@@ -469,7 +465,7 @@ void P_LoadLineDefs(int16_t lump)
 	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
 	memset(lines, 0, numlines * sizeof(line_t));
-	W_CacheLumpNumCheck(lump);
+	W_CacheLumpNumCheck(lump, 6);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
 
@@ -581,7 +577,7 @@ void P_LoadSideDefs(int16_t lump)
 	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 	memset(sides, 0, numsides * sizeof(side_t));
 
-	W_CacheLumpNumCheck(lump);
+	W_CacheLumpNumCheck(lump, 7);
 	
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
@@ -638,7 +634,7 @@ void P_LoadBlockMap(int16_t lump)
 	uint16_t         count;
 	int16_t*		blockmaplump;
 	
-	W_CacheLumpNumCheck(lump);
+	W_CacheLumpNumCheck(lump, 8);
 	
 	blockmaplumpRef = W_CacheLumpNumEMS(lump, PU_LEVEL);
 	blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
@@ -869,7 +865,7 @@ P_SetupLevel
 	P_LoadSegs(lumpnum + ML_SEGS);
 
 
-	W_CacheLumpNumCheck(lumpnum + ML_REJECT);
+	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 9);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
 
 	P_GroupLines();

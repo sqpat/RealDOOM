@@ -80,10 +80,10 @@ int16_t           screenheightarray[SCREENWIDTH];
 // variables used to look up
 //  and range check thing_t sprites patches
 MEMREF			spritesRef;
-int32_t             numsprites;
+int16_t             numsprites;
 
 spriteframe_t   sprtemp[29];
-int32_t             maxframe;
+int16_t             maxframe;
 int8_t*           spritename;
 
 
@@ -95,18 +95,18 @@ int8_t*           spritename;
 //
 void
 R_InstallSpriteLump
-(int32_t           lump,
-	uint32_t      frame,
-	uint32_t      rotation,
+(int16_t           lump,
+	uint16_t      frame,
+	uint16_t      rotation,
   boolean       flipped )
 {
-	int32_t         r;
+	int16_t         r;
         
     if (frame >= 29 || rotation > 8)
         I_Error("R_InstallSpriteLump: "
                 "Bad frame characters in lump %i", lump);
         
-    if ((int32_t)frame > maxframe)
+    if ((int16_t)frame > maxframe)
         maxframe = frame;
                 
     if (rotation == 0)
@@ -168,14 +168,14 @@ R_InstallSpriteLump
 void R_InitSpriteDefs (int8_t** namelist) 
 { 
     int8_t**      check;
-	int32_t         i;
-	int32_t         l;
+	int16_t         i;
+	int16_t         l;
 	int32_t         intname;
-	int32_t         frame;
-	int32_t         rotation;
-	int32_t         start;
-	int32_t         end;
-	int32_t         patched;
+	int16_t         frame;
+	int16_t         rotation;
+	int16_t         start;
+	int16_t         end;
+	int16_t         patched;
 	spritedef_t* sprites;
 	spriteframe_t* spriteframes;
     // count the number of sprite names
@@ -250,7 +250,7 @@ void R_InitSpriteDefs (int8_t** namelist)
         
         for (frame = 0 ; frame < maxframe ; frame++)
         {
-            switch ((int32_t)sprtemp[frame].rotate)
+            switch ((int16_t)sprtemp[frame].rotate)
             {
               case -1:
                 // no rotations were found for that frame at all
@@ -297,7 +297,6 @@ void R_InitSpriteDefs (int8_t** namelist)
 //
 vissprite_t     vissprites[MAXVISSPRITES];
 vissprite_t*    vissprite_p;
-int32_t             newvissprite;
 
 
 
@@ -307,7 +306,7 @@ int32_t             newvissprite;
 //
 void R_InitSprites (int8_t** namelist)
 {
-	int32_t         i;
+	int16_t         i;
         
     for (i=0 ; i<SCREENWIDTH ; i++)
     {

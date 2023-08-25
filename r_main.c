@@ -126,7 +126,7 @@ void (*spanfunc) (void);
 //  check point against partition plane.
 // Returns side 0 (front) or 1 (back).
 //
-int32_t
+fixed_t
 R_PointOnSide
 ( fixed_t	x,
   fixed_t	y,
@@ -179,7 +179,7 @@ R_PointOnSide
 }
 
 
-int32_t
+fixed_t
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,
@@ -706,7 +706,6 @@ uint16_t
     int32_t		side;
     int32_t		nodenum;
 	node_t* nodes;
-	int32_t i = 0;
     // single subsector is a special case
 	if (!numnodes) {
 		return 0;
@@ -718,10 +717,6 @@ uint16_t
 		node = &nodes[nodenum];
 		side = R_PointOnSide (x, y, node);
 		nodenum = node->children[side];
-		i++;
-		if (i > 1000) {
-			I_Error("inf in here? %i %i", x >> FRACBITS, y >> FRACBITS);
-		}
 
     }
 
@@ -735,7 +730,7 @@ uint16_t
 //
 void R_SetupFrame (player_t* player)
 {		
-    int32_t		i;
+    int8_t		i;
 	fixed_t tempan;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 

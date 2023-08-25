@@ -58,8 +58,8 @@ P_ShootSpecialLine
 
 void
 P_CrossSpecialLine
-( int32_t		linenum,
-  int32_t		side,
+( int16_t		linenum,
+  int16_t		side,
 	MEMREF thingRef);
 
 void    P_PlayerInSpecialSector (player_t* player);
@@ -92,10 +92,10 @@ P_FindNextHighestFloor
 fixed_t P_FindLowestCeilingSurrounding(int16_t secnum);
 fixed_t P_FindHighestCeilingSurrounding(int16_t secnum);
 
-int32_t
+int16_t
 P_FindSectorFromLineTag
 ( int16_t		linetag,
-  int32_t		start );
+  int16_t		start );
 
 int32_t
 P_FindMinSurroundingLight
@@ -111,7 +111,7 @@ getNextSector
 //
 // SPECIAL
 //
-int32_t EV_DoDonut(int16_t linetag);
+int16_t EV_DoDonut(int16_t linetag);
 
 
 

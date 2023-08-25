@@ -33,7 +33,7 @@
 #include "p_setup.h"
 
 void G_PlayerReborn ();
-void P_SpawnMapThing (mapthing_t*	mthing, int32_t key);
+void P_SpawnMapThing (mapthing_t*	mthing, int16_t key);
 
 
 void A_Explode(MEMREF moRef);
@@ -766,10 +766,10 @@ void P_SpawnPlayer (mapthing_t* mthing)
 // The fields of the mapthing should
 // already be in host byte order.
 //
-void P_SpawnMapThing (mapthing_t* mthing, int32_t key)
+void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
 {
-    int32_t			i;
-    int32_t			bit;
+    int16_t			i;
+    int16_t			bit;
     mobj_t*		mobj;
     fixed_t		x;
     fixed_t		y;

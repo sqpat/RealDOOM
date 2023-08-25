@@ -29,8 +29,8 @@ extern int16_t linedefOffset;
 extern int16_t	frontsecnum;
 extern int16_t	backsecnum;
 
-extern int32_t		rw_x;
-extern int32_t		rw_stopx;
+extern int16_t		rw_x;
+extern int16_t		rw_stopx;
 
 extern boolean		segtextured;
 
@@ -44,7 +44,7 @@ extern drawseg_t	drawsegs[MAXDRAWSEGS];
 extern drawseg_t*	ds_p;
 
 
-typedef void (*drawfunc_t) (int32_t start, int32_t stop);
+//typedef void (*drawfunc_t) (int16_t start, int16_t stop);
 
 
 // BSP?
