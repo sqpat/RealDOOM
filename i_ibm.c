@@ -298,20 +298,20 @@ byte *pcscreen, *currentscreen, *destscreen, *destview;
 //
 // I_UpdateBox
 //
-void I_UpdateBox(int32_t x, int32_t y, int32_t w, int32_t h)
+void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
 {
-	int32_t i, j, k, count;
-	int32_t sp_x1, sp_x2;
-	int32_t poffset;
-	int32_t offset;
-	int32_t pstep;
-	int32_t step;
+	int16_t i, j, k, count;
+	int16_t sp_x1, sp_x2;
+	uint16_t poffset;
+	uint16_t offset;
+	int16_t pstep;
+	int16_t step;
     byte *dest, *source;
  
     sp_x1 = x / 8;
     sp_x2 = (x + w) / 8;
     count = sp_x2 - sp_x1 + 1;
-    offset = y * SCREENWIDTH + sp_x1 * 8;
+    offset = (uint16_t)y * SCREENWIDTH + sp_x1 * 8;
     step = SCREENWIDTH - count * 8;
     poffset = offset / 4;
     pstep = step / 4;

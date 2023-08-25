@@ -1282,7 +1282,7 @@ int32_t EV_DoDonut(int16_t linetag)
 
 			lineflags = (lines[lineoffset]).flags;
 			linebacksecnum = (lines[lineoffset]).backsecnum;
-			if ((!lineflags & ML_TWOSIDED) || (linebacksecnum == s1Offset));
+			if ((!lineflags & ML_TWOSIDED) || (linebacksecnum == s1Offset))
 				continue;
 			s3Offset = linebacksecnum;
 	    

@@ -253,8 +253,8 @@ extern int32_t	mousebfire;
 extern int32_t	mousebstrafe;
 extern int32_t	mousebforward;
 
-extern int32_t	viewwidth;
-extern int32_t	viewheight;
+extern int16_t	viewwidth;
+extern int16_t	viewheight;
 
 extern int32_t	mouseSensitivity;
 extern int32_t	showMessages;

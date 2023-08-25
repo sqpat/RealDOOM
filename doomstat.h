@@ -119,11 +119,11 @@ extern  boolean		viewactive;
 extern  boolean		nodrawers;
 extern  boolean		noblit;
 
-extern	int32_t		viewwindowx;
-extern	int32_t		viewwindowy;
-extern	int32_t		viewheight;
-extern	int32_t		viewwidth;
-extern	int32_t		scaledviewwidth;
+extern	int16_t		viewwindowx;
+extern	int16_t		viewwindowy;
+extern	int16_t		viewheight;
+extern	int16_t		viewwidth;
+extern	int16_t		scaledviewwidth;
 
 
 

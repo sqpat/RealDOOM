@@ -55,12 +55,12 @@
 
 
 byte*		viewimage; 
-int32_t		viewwidth;
-int32_t		scaledviewwidth;
-int32_t		viewheight;
-int32_t		viewwindowx;
-int32_t		viewwindowy; 
-int32_t		columnofs[MAXWIDTH]; 
+int16_t		viewwidth;
+int16_t		scaledviewwidth;
+int16_t		viewheight;
+int16_t		viewwindowx;
+int16_t		viewwindowy; 
+int16_t		columnofs[MAXWIDTH]; 
 
 // Color tables for different players,
 //  translate a limited part to another
@@ -91,9 +91,9 @@ int32_t		columnofs[MAXWIDTH];
 // Source is the top of the column to scale.
 //
 lighttable_t*		dc_colormap; 
-int32_t			dc_x; 
-int32_t			dc_yl; 
-int32_t			dc_yh; 
+int16_t			dc_x; 
+int16_t			dc_yl; 
+int16_t			dc_yh; 
 fixed_t			dc_iscale; 
 fixed_t			dc_texturemid;
 
@@ -112,7 +112,7 @@ byte*			dc_source;
 
 void R_DrawColumn (void) 
 { 
-    int32_t			count; 
+    int16_t			count; 
     byte*		dest; 
     fixed_t		frac;
     fixed_t		fracstep;	 
@@ -122,13 +122,7 @@ void R_DrawColumn (void)
     // Zero length, column does not exceed a pixel.
     if (count < 0) 
         return; 
-                                 
-#ifdef RANGECHECK 
-    if ((uint32_t)dc_x >= SCREENWIDTH
-        || dc_yl < 0
-        || dc_yh >= SCREENHEIGHT) 
-        I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x); 
-#endif 
+
 
         outp (SC_INDEX+1,1<<(dc_x&3)); 
 
@@ -159,7 +153,7 @@ void R_DrawColumn (void)
 void R_DrawColumnLow (void) 
 { 
 
-	int32_t                 count;
+	int16_t                 count;
 	byte*               dest;
 	fixed_t             frac;
 	fixed_t             fracstep;
@@ -170,15 +164,6 @@ void R_DrawColumnLow (void)
 	if (count < 0)
 		return;
 
-#ifdef RANGECHECK 
-	if ((uint32_t)dc_x >= SCREENWIDTH
-		|| dc_yl < 0
-		|| dc_yh >= SCREENHEIGHT)
-	{
-
-		I_Error("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
-	}
-#endif 
 	if (dc_x & 1)
 		outp(SC_INDEX + 1, 12);
 	else
@@ -209,7 +194,7 @@ void R_DrawColumnLow (void)
 #define FUZZOFF	(SCREENWIDTH/4)
 
 
-int32_t	fuzzoffset[FUZZTABLE] =
+int16_t	fuzzoffset[FUZZTABLE] =
 {
     FUZZOFF,-FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
     FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,
@@ -233,7 +218,7 @@ int32_t	fuzzpos = 0;
 //
 void R_DrawFuzzColumn (void) 
 { 
-    int32_t			count; 
+    int16_t			count; 
     byte*		dest; 
     fixed_t		frac;
     fixed_t		fracstep;	 
@@ -251,16 +236,7 @@ void R_DrawFuzzColumn (void)
     // Zero length.
     if (count < 0) 
 	return; 
-
-    
-#ifdef RANGECHECK 
-    if ((uint32_t)dc_x >= SCREENWIDTH
-	|| dc_yl < 0 || dc_yh >= SCREENHEIGHT)
-    {
-	I_Error ("R_DrawFuzzColumn: %i to %i at %i",
-		 dc_yl, dc_yh, dc_x);
-    }
-#endif
+ 
 
     if (detailshift)
     {
@@ -325,7 +301,7 @@ MEMREF	translationtablesRef;
 
 void R_DrawTranslatedColumn (void) 
 { 
-    int32_t			count; 
+    int16_t			count; 
     byte*		dest; 
     fixed_t		frac;
     fixed_t		fracstep;	 
@@ -333,17 +309,7 @@ void R_DrawTranslatedColumn (void)
     count = dc_yh - dc_yl; 
     if (count < 0) 
 	return; 
-				 
-#ifdef RANGECHECK 
-    if ((uint32_t)dc_x >= SCREENWIDTH
-	|| dc_yl < 0
-	|| dc_yh >= SCREENHEIGHT)
-    {
-	I_Error ( "R_DrawColumn: %i to %i at %i",
-		  dc_yl, dc_yh, dc_x);
-    }
-    
-#endif 
+ 
 
 
     if (detailshift)
@@ -393,7 +359,7 @@ void R_DrawTranslatedColumn (void)
 //
 void R_InitTranslationTables (void)
 {
-    int32_t		i;
+    int16_t		i;
 	byte* translationtables;
 	
     translationtablesRef = Z_MallocEMSNew (256*3+255, PU_STATIC, 0, ALLOC_TYPE_TRANSLATION_TABLES);
@@ -434,9 +400,9 @@ void R_InitTranslationTables (void)
 // In consequence, flats are not stored by column (like walls),
 //  and the inner loop has to step in texture space u and v.
 //
-int32_t                     ds_y;
-int32_t                     ds_x1;
-int32_t                     ds_x2;
+int16_t                     ds_y;
+int16_t                     ds_x1;
+int16_t                     ds_x2;
 
 lighttable_t*           ds_colormap;
 
@@ -458,23 +424,14 @@ void R_DrawSpan(void)
 	fixed_t             xfrac;
 	fixed_t             yfrac;
 	byte*               dest;
-	int32_t                 spot;
-	int32_t                     i;
-	int32_t                     prt;
-	int32_t                     dsp_x1;
-	int32_t                     dsp_x2;
-	int32_t                     countp;
+	uint16_t                 spot;
+	int16_t                     i;
+	int16_t                     prt;
+	int16_t                     dsp_x1;
+	int16_t                     dsp_x2;
+	int16_t                     countp;
 
-#ifdef RANGECHECK 
-	if (ds_x2 < ds_x1
-		|| ds_x1<0
-		|| ds_x2 >= SCREENWIDTH
-		|| (uint32_t)ds_y>SCREENHEIGHT)
-	{
-		I_Error("R_DrawSpan: %i to %i at %i",
-			ds_x1, ds_x2, ds_y);
-	}
-#endif 
+ 
 
 	for (i = 0; i < 4; i++)
 	{
@@ -524,23 +481,14 @@ void R_DrawSpanLow(void)
 	fixed_t             xfrac;
 	fixed_t             yfrac;
 	byte*               dest;
-	int32_t                 spot;
-	int32_t                     i;
-	int32_t                     prt;
-	int32_t                     dsp_x1;
-	int32_t                     dsp_x2;
-	int32_t                     countp;
+	uint16_t                 spot;
+	int16_t                     i;
+	int16_t                     prt;
+	int16_t                     dsp_x1;
+	int16_t                     dsp_x2;
+	int16_t                     countp;
 
-#ifdef RANGECHECK 
-	if (ds_x2 < ds_x1
-		|| ds_x1<0
-		|| ds_x2 >= SCREENWIDTH
-		|| (uint32_t)ds_y>SCREENHEIGHT)
-	{
-		I_Error("R_DrawSpan: %i to %i at %i",
-			ds_x1, ds_x2, ds_y);
-	}
-#endif 
+ 
 
 	for (i = 0; i < 2; i++)
 	{
@@ -587,10 +535,10 @@ void R_DrawSpanLow(void)
 //
 void
 R_InitBuffer
-( int32_t		width,
-  int32_t		height ) 
+( int16_t		width,
+  int16_t		height ) 
 { 
-    int32_t		i; 
+    int16_t		i; 
 
     // Handle resize,
     //  e.g. smaller view windows
@@ -732,7 +680,7 @@ R_VideoErase
 {
     byte* dest;
     byte* source;
-	int32_t countp;
+	int16_t countp;
     outp(SC_INDEX, SC_MAPMASK);
     outp(SC_INDEX + 1, 15);
     outp(GC_INDEX, GC_MODE);

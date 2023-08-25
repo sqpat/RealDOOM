@@ -57,11 +57,11 @@ void V_Init (void);
 
 void
 V_CopyRect
-( int16_t		srcx,
-  int16_t		srcy,
+( uint16_t		srcx,
+  uint16_t		srcy,
   int16_t		srcscrn,
-  int16_t		width,
-  int16_t		height,
+  uint16_t		width,
+  uint16_t		height,
   int16_t		destx,
   int16_t		desty,
   int16_t		destscrn );

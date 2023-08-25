@@ -45,9 +45,9 @@ extern MEMREF		spritetopoffsetRef;
 //extern MEMREF		colormapsRef;
 extern lighttable_t* colormaps;
 
-extern int32_t		viewwidth;
-extern int32_t		scaledviewwidth;
-extern int32_t		viewheight;
+extern int16_t		viewwidth;
+extern int16_t		scaledviewwidth;
+extern int16_t		viewheight;
 
 extern int32_t		firstflat;
 

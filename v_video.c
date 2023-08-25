@@ -164,11 +164,11 @@ V_MarkRect
 // 
 void
 V_CopyRect
-( int16_t		srcx,
-  int16_t		srcy,
+( uint16_t		srcx,
+  uint16_t		srcy,
   int16_t		srcscrn,
-  int16_t		width,
-  int16_t		height,
+  uint16_t		width,
+  uint16_t		height,
   int16_t		destx,
   int16_t		desty,
   int16_t		destscrn ) 
@@ -179,14 +179,13 @@ V_CopyRect
      
     V_MarkRect (destx, desty, width, height); 
 	 
-    src = screens[srcscrn]+SCREENWIDTH*srcy+srcx; 
-    dest = screens[destscrn]+SCREENWIDTH*desty+destx; 
+    src = screens[srcscrn]+((uint16_t)SCREENWIDTH*srcy+srcx); 
+    dest = screens[destscrn]+((uint16_t)SCREENWIDTH*desty+destx); 
 
-    for ( ; height>0 ; height--) 
-    { 
-	memcpy (dest, src, width); 
-	src += SCREENWIDTH; 
-	dest += SCREENWIDTH; 
+    for ( ; height>0 ; height--) { 
+        memcpy (dest, src, width); 
+        src += SCREENWIDTH; 
+        dest += SCREENWIDTH; 
     } 
 } 
  
