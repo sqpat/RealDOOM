@@ -96,13 +96,13 @@ static MEMREF	channelsRef;
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.
 // Internal default is max out of 0-15.
-static int32_t snd_SfxVolume;
+static int8_t snd_SfxVolume;
 
 // Maximum volume of music. Useless so far.
-static int32_t snd_MusicVolume;
+static int8_t snd_MusicVolume;
 
-extern int32_t sfxVolume;
-extern int32_t musicVolume;
+extern int8_t sfxVolume;
+extern int8_t musicVolume;
 
 // whether songs are mus_paused
 static boolean		mus_paused;	
@@ -113,7 +113,7 @@ static musicinfo_t*	mus_playing=0;
 // following is set
 //  by the defaults code in M_misc:
 // number of channels available
-int32_t			numChannels;	
+int8_t			numChannels;	
 
 static int32_t		nextcleanup;
 
@@ -136,9 +136,9 @@ S_AdjustSoundParams
 
 void S_StopChannel(int32_t cnum);
 
-void S_SetMusicVolume(int32_t volume)
+void S_SetMusicVolume(uint8_t volume)
 {
-    if (volume < 0 || volume > 127)
+    if ( volume > 127)
     {
         I_Error("Attempt to set music volume at %d",
             volume);
@@ -226,7 +226,7 @@ void S_StartMusic(int32_t m_id)
 
 void S_StopChannel(int32_t cnum)
 {
-    int32_t		i;
+    int8_t		i;
 	channel_t* channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
 
     channel_t*	c = &channels[cnum];
@@ -334,10 +334,10 @@ S_AdjustSoundParams
     return (*vol > 0);
 }
 
-void S_SetSfxVolume(int32_t volume)
+void S_SetSfxVolume(uint8_t volume)
 {
 
-    if (volume < 0 || volume > 127)
+    if ( volume > 127)
 	I_Error("Attempt to set sfx volume at %d", volume);
 
     snd_SfxVolume = volume;
@@ -390,7 +390,7 @@ void S_StopSound(MEMREF originRef)
 int32_t
 S_getChannel ( MEMREF originRef, sfxinfo_t*	sfxinfo ) {
     // channel number to use
-    int32_t		cnum;
+    int8_t		cnum;
     
     channel_t*	c;
 	channel_t* channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
@@ -686,10 +686,10 @@ void S_UpdateSounds(MEMREF listenerRef)
 //  allocates channel buffer, sets S_sfx lookup.
 //
 void S_Init
-( int32_t		sfxVolume,
-  int32_t		musicVolume )
+( int16_t		sfxVolume,
+  int16_t		musicVolume )
 {  
-  int32_t		i;
+  int16_t		i;
   channel_t* channels;
 
   //fprintf( stderr, "S_Init: default sfx volume %d\n", sfxVolume);

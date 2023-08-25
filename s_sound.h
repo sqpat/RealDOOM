@@ -30,8 +30,8 @@
 //
 void
 S_Init
-( int32_t		sfxVolume,
-  int32_t		musicVolume );
+( int16_t		sfxVolume,
+  int16_t		musicVolume );
 
 
 
@@ -97,8 +97,8 @@ void S_ResumeSound(void);
 //
 void S_UpdateSounds(MEMREF listenerRef);
 
-void S_SetMusicVolume(int32_t volume);
-void S_SetSfxVolume(int32_t volume);
+void S_SetMusicVolume(uint8_t volume);
+void S_SetSfxVolume(uint8_t volume);
 
 
 #endif

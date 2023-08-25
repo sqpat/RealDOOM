@@ -122,8 +122,8 @@ typedef	struct
     // thinker_t for reversable actions
     ///void*	specialdata;
 	MEMREF	specialdataRef;
-    int32_t			linecount;
-//	struct line_s**	lines;	// [linecount] size
+    int32_t			linecount;  // todo can this be int8_t?
+
 	int16_t linesoffset;	// [linecount] size
 
 } sector_t;

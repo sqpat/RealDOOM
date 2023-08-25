@@ -24,9 +24,8 @@
 // NOT called by W_Ticker. Fixme.
 void
 P_SetupLevel
-( int32_t		episode,
-  int32_t		map,
-  int32_t		playermask,
+( int8_t		episode,
+  int8_t		map,
   skill_t	skill);
 
 // Called by startup code.

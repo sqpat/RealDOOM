@@ -205,26 +205,24 @@ mline_t thintriangle_guy[] = {
 
 
 
-static int32_t 	cheating = 0;
-static int32_t 	grid = 0;
+static int16_t 	cheating = 0;
+static int16_t 	grid = 0;
 
-static int32_t 	leveljuststarted = 1; 	// kluge until AM_LevelInit() is called
+static int16_t 	leveljuststarted = 1; 	// kluge until AM_LevelInit() is called
 
 boolean    	automapactive = false;
-static int32_t 	finit_width = SCREENWIDTH;
-static int32_t 	finit_height = SCREENHEIGHT - 32;
+static int16_t 	finit_width = SCREENWIDTH;
+static int16_t 	finit_height = SCREENHEIGHT - 32;
 
 // location of window on screen
-static int32_t 	f_x;
-static int32_t	f_y;
+static int16_t 	f_x;
+static int16_t	f_y;
 
 // size of window on screen
-static int32_t 	f_w;
-static int32_t	f_h;
+static int16_t 	f_w;
+static int16_t	f_h;
 
-static int32_t 	lightlev; 		// used for funky strobing effect
 static byte*	fb; 			// pseudo-frame buffer
-static int32_t 	amclock;
 
 static mpoint_t m_paninc; // how far the window pans each tic (map coords)
 static fixed_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
@@ -272,9 +270,9 @@ static player_t *plr; // the player represented by an arrow
 
 static MEMREF marknums[10]; // numbers used for marking by the automap
 static mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
-static int32_t markpointnum = 0; // next point to be assigned
+static int8_t markpointnum = 0; // next point to be assigned
 
-static int32_t followplayer = 1; // specifies whether to follow the player around
+static int8_t followplayer = 1; // specifies whether to follow the player around
 
 static uint8_t cheat_amap_seq[] = { 0xb2, 0x26, 0x26, 0x2e, 0xff };
 static cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
@@ -362,7 +360,7 @@ void AM_addMark(void)
 //
 void AM_findMinMaxBoundaries(void)
 {
-	int32_t i;
+	int16_t i;
     fixed_t a;
     fixed_t b;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
@@ -430,7 +428,6 @@ void AM_changeWindowLoc(void)
 //
 void AM_initVariables(void)
 {
-	int32_t pnum;
     static event_t st_notify = { ev_keyup, AM_MSGENTERED };
 	mobj_t* playerMo; 
 
@@ -438,8 +435,6 @@ void AM_initVariables(void)
     fb = screens[0];
 
     f_oldloc.x = MAXINT;
-    amclock = 0;
-    lightlev = 0;
 
     m_paninc.x = m_paninc.y = 0;
     ftom_zoommul = FRACUNIT;
@@ -471,7 +466,7 @@ void AM_initVariables(void)
 //
 void AM_loadPics(void)
 {
-	int32_t i;
+	int8_t i;
 	int8_t namebuf[9];
   
     for (i=0;i<10;i++) {
@@ -483,7 +478,7 @@ void AM_loadPics(void)
 
 void AM_unloadPics(void)
 {
-	int32_t i;
+	int8_t i;
   
     for (i=0;i<10;i++)
 	Z_ChangeTagEMSNew(marknums[i], PU_CACHE);
@@ -492,7 +487,7 @@ void AM_unloadPics(void)
 
 void AM_clearMarks(void)
 {
-	int32_t i;
+	int8_t i;
 
     for (i=0;i<AM_NUMMARKPOINTS;i++)
 	markpoints[i].x = -1; // means empty
@@ -542,7 +537,7 @@ void AM_Stop (void)
 //
 void AM_Start (void)
 {
-    static int32_t lastlevel = -1, lastepisode = -1;
+    static int8_t lastlevel = -1, lastepisode = -1;
 
     if (!stopped) AM_Stop();
     stopped = false;
@@ -585,9 +580,8 @@ AM_Responder
 ( event_t*	ev )
 {
 
-	int32_t rc;
-    static int32_t cheatstate=0;
-    static int32_t bigstate=0;
+	boolean rc;
+    static int8_t bigstate=0;
     static int8_t buffer[20];
 
     rc = false;
@@ -665,7 +659,6 @@ AM_Responder
 	    plr->message = AMSTR_MARKSCLEARED;
 	    break;
 	  default:
-	    cheatstate=0;
 	    rc = false;
 	}
 	if ( cht_CheckCheat(&cheat_amap, ev->data1))
@@ -758,8 +751,7 @@ void AM_Ticker (void)
     if (!automapactive)
 	return;
 
-    amclock++;
-
+    
     if (followplayer)
 	AM_doFollowPlayer();
 
@@ -780,7 +772,7 @@ void AM_Ticker (void)
 //
 // Clear automap frame buffer.
 //
-void AM_clearFB(int32_t color)
+void AM_clearFB(int16_t color)
 {
     memset(fb, color, f_w*f_h);
 }
@@ -793,18 +785,17 @@ void AM_clearFB(int32_t color)
 // faster reject and precalculated slopes.  If the speed is needed,
 // use a hash algorithm to handle  the common cases.
 //
+
+#define  LEFT	1
+#define  RIGHT	2
+#define  BOTTOM	4
+#define  TOP	8
+
 boolean
 AM_clipMline
 ( mline_t*	ml,
   fline_t*	fl )
 {
-    enum
-    {
-	LEFT	=1,
-	RIGHT	=2,
-	BOTTOM	=4,
-	TOP	=8
-    };
     
     register	outcode1 = 0;
     register	outcode2 = 0;
@@ -927,7 +918,7 @@ AM_clipMline
 void
 AM_drawFline
 ( fline_t*	fl,
-  int32_t		color )
+  uint8_t		color )
 {
     register int32_t x;
     register int32_t y;
@@ -995,7 +986,7 @@ AM_drawFline
 void
 AM_drawMline
 ( mline_t*	ml,
-  int32_t		color )
+  uint8_t		color )
 {
     static fline_t fl;
 
@@ -1008,7 +999,7 @@ AM_drawMline
 //
 // Draws flat (floor/ceiling tile) aligned grid lines.
 //
-void AM_drawGrid(int32_t color)
+void AM_drawGrid(uint8_t color)
 {
     fixed_t x, y;
     fixed_t start, end;
@@ -1056,7 +1047,7 @@ void AM_drawGrid(int32_t color)
 //
 void AM_drawWalls(void)
 {
-	int32_t i;
+	uint16_t i;
     static mline_t l;
 	line_t* lines;
 	int16_t linev1Offset;
@@ -1089,7 +1080,7 @@ void AM_drawWalls(void)
 			if ((lineflags & LINE_NEVERSEE) && !cheating) {
 				continue;
 			} if (linebacksecnum == SECNUM_NULL) {
-				AM_drawMline(&l, WALLCOLORS+lightlev);
+				AM_drawMline(&l, WALLCOLORS);
 			} else {
 				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 				floorheightnonequal = sectors[linebacksecnum].floorheight != sectors[linefrontsecnum].floorheight;
@@ -1098,17 +1089,17 @@ void AM_drawWalls(void)
 					AM_drawMline(&l, WALLCOLORS+WALLRANGE/2);
 				} else if (lineflags & ML_SECRET){ // secret door
 					if (cheating) { 
-						AM_drawMline(&l, SECRETWALLCOLORS + lightlev); 
+						AM_drawMline(&l, SECRETWALLCOLORS); 
 					} else {
-						AM_drawMline(&l, WALLCOLORS + lightlev);
+						AM_drawMline(&l, WALLCOLORS);
 					}
 				} else if (floorheightnonequal) {
-					AM_drawMline(&l, FDWALLCOLORS + lightlev); // floor level change
+					AM_drawMline(&l, FDWALLCOLORS); // floor level change
 				}
 				else if (ceilingheightnonequal) {
-					AM_drawMline(&l, CDWALLCOLORS+lightlev); // ceiling level change
+					AM_drawMline(&l, CDWALLCOLORS); // ceiling level change
 				} else if (cheating) {
-					AM_drawMline(&l, TSWALLCOLORS+lightlev);
+					AM_drawMline(&l, TSWALLCOLORS);
 				}
 			}
 		} else if (plr->powers[pw_allmap]) {
@@ -1146,14 +1137,14 @@ AM_rotate
 void
 AM_drawLineCharacter
 ( mline_t*	lineguy,
-  int32_t		lineguylines,
+  int16_t		lineguylines,
   fixed_t	scale,
   angle_t	angle,
-  int32_t		color,
+  uint8_t		color,
   fixed_t	x,
   fixed_t	y )
 {
-    int32_t		i;
+    int16_t		i;
     mline_t	l;
 
     for (i=0;i<lineguylines;i++)
@@ -1194,10 +1185,9 @@ AM_drawLineCharacter
 
 void AM_drawPlayers(void)
 {
-	int32_t i;
 	player_t *p;
-	static int32_t their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
-	int32_t color;
+	static uint8_t their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
+	uint8_t color;
 	mobj_t* playerMo;
 	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
 
@@ -1224,10 +1214,9 @@ void AM_drawPlayers(void)
 
 void
 AM_drawThings
-( int32_t	colors,
-	int32_t 	colorrange)
+( uint8_t	colors)
 {
-    int32_t		i;
+    uint16_t		i;
     mobj_t*	t;
 	MEMREF tRef;
 	sector_t* sectors;
@@ -1237,7 +1226,7 @@ AM_drawThings
 		while (tRef) {
 			t = (mobj_t*) Z_LoadBytesFromEMS(tRef);
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
-			 16<<FRACBITS, t->angle, colors+lightlev, t->x, t->y);
+			 16<<FRACBITS, t->angle, colors, t->x, t->y);
 			tRef = t->snextRef;
 		}
     }
@@ -1245,7 +1234,8 @@ AM_drawThings
 
 void AM_drawMarks(void)
 {
-	int32_t i, fx, fy, w, h;
+	int8_t i, w, h;
+	int16_t fx, fy;
 
     for (i=0;i<AM_NUMMARKPOINTS;i++)
     {
@@ -1265,7 +1255,7 @@ void AM_drawMarks(void)
 
 }
 
-void AM_drawCrosshair(int32_t color)
+void AM_drawCrosshair(uint8_t color)
 {
     fb[(f_w*(f_h+1))/2] = color; // single point for now
 
@@ -1281,7 +1271,7 @@ void AM_Drawer (void)
     AM_drawWalls();
     AM_drawPlayers();
     if (cheating==2)
-	AM_drawThings(THINGCOLORS, THINGRANGE);
+	AM_drawThings(THINGCOLORS);
     AM_drawCrosshair(XHAIRCOLORS);
 
     AM_drawMarks();

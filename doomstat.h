@@ -60,8 +60,8 @@ extern  boolean		autostart;
 
 // Selected by user. 
 extern  skill_t         gameskill;
-extern  int32_t		gameepisode;
-extern  int32_t		gamemap;
+extern  int8_t		gameepisode;
+extern  int8_t		gamemap;
 
 extern  boolean         shareware;
 extern  boolean         registered;

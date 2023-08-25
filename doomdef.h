@@ -82,13 +82,11 @@ typedef int32_t fixed_t;
 // The current state of the game: whether we are
 // playing, gazing at the intermission screen,
 // the game final animation, or a demo. 
-typedef enum
-{
-    GS_LEVEL,
-    GS_INTERMISSION,
-    GS_FINALE,
-    GS_DEMOSCREEN
-} gamestate_t;
+#define    GS_LEVEL 0
+#define    GS_INTERMISSION 1
+#define    GS_FINALE 2
+#define     GS_DEMOSCREEN 3
+typedef uint8_t  gamestate_t;
 
 //
 // Difficulty/skill settings/filters.

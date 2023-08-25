@@ -107,11 +107,11 @@ MEMREF           rejectmatrixRef;
 //
 // P_LoadVertexes
 //
-void P_LoadVertexes(int32_t lump)
+void P_LoadVertexes(int16_t lump)
 {
 	MEMREF				dataRef;
 	mapvertex_t*			data;
-	int32_t                 i;
+	uint16_t                 i;
 	mapvertex_t*        ml;
 	vertex_t*           li;
 
@@ -149,15 +149,15 @@ void P_LoadVertexes(int32_t lump)
 //
 // P_LoadSegs
 //
-void P_LoadSegs(int32_t lump)
+void P_LoadSegs(int16_t lump)
 {
 	MEMREF				dataRef;
 	mapseg_t *          data;
-	int32_t                 i;
+	uint16_t                 i;
 	mapseg_t*           ml;
 	seg_t*              li;
 	line_t*             ldef;
-	int32_t                 side;
+	uint16_t                 side;
 	vertex_t*                       vertexes;
 	seg_t*                          segs;
 	int16_t linedef;
@@ -243,10 +243,10 @@ void P_LoadSegs(int32_t lump)
 //
 // P_LoadSubsectors
 //
-void P_LoadSubsectors(int32_t lump)
+void P_LoadSubsectors(int16_t lump)
 {
 	mapsubsector_t *               data;
-	int32_t                 i;
+	uint16_t                 i;
 	mapsubsector_t*     ms;
 	subsector_t*        ss;
 	subsector_t*    subsectors;
@@ -281,10 +281,10 @@ void P_LoadSubsectors(int32_t lump)
 //
 // P_LoadSectors
 //
-void P_LoadSectors(int32_t lump)
+void P_LoadSectors(int16_t lump)
 {
 	mapsector_t*        data;
-	int32_t                 i;
+	uint16_t                 i;
 	mapsector_t        ms;
 	sector_t*           ss;
 	MEMREF				dataRef;
@@ -327,12 +327,12 @@ void P_LoadSectors(int32_t lump)
 //
 // P_LoadNodes
 //
-void P_LoadNodes(int32_t lump)
+void P_LoadNodes(int16_t lump)
 {
 	mapnode_t *       data;
-	int32_t         i;
-	int32_t         j;
-	int32_t         k;
+	uint16_t         i;
+	uint16_t         j;
+	uint16_t         k;
 	node_t*     no;
 	node_t*		nodes;
 	MEMREF		dataRef;
@@ -377,12 +377,12 @@ void P_LoadNodes(int32_t lump)
 //
 // P_LoadThings
 //
-void P_LoadThings(int32_t lump)
+void P_LoadThings(int16_t lump)
 {
 	mapthing_t *		data;
-	int32_t                 i;
+	uint16_t                 i;
 	mapthing_t*         mt;
-	int32_t                 numthings;
+	uint16_t                 numthings;
 	boolean             spawn;
 	MEMREF				dataRef;
 	node_t*				nodes;
@@ -437,10 +437,10 @@ void P_LoadThings(int32_t lump)
 // P_LoadLineDefs
 // Also counts secret lines for intermissions.
 //
-void P_LoadLineDefs(int32_t lump)
+void P_LoadLineDefs(int16_t lump)
 {
 	maplinedef_t *		data;
-	int32_t                 i;
+	uint16_t                 i;
 	maplinedef_t*       mld;
 	line_t*             ld;
 	vertex_t*           v1;
@@ -560,10 +560,10 @@ void P_LoadLineDefs(int32_t lump)
 //
 // P_LoadSideDefs
 //
-void P_LoadSideDefs(int32_t lump)
+void P_LoadSideDefs(int16_t lump)
 {
 	mapsidedef_t*               data;
-	int32_t                 i;
+	uint16_t                 i;
 	mapsidedef_t*       msd;
 	side_t*             sd;
 	side_t* sides;
@@ -632,10 +632,10 @@ void P_LoadSideDefs(int32_t lump)
 //
 // P_LoadBlockMap
 //
-void P_LoadBlockMap(int32_t lump)
+void P_LoadBlockMap(int16_t lump)
 {
-	int32_t         i;
-	int32_t         count;
+	uint16_t         i;
+	uint16_t         count;
 	int16_t*		blockmaplump;
 	
 	W_CacheLumpNumCheck(lump);
@@ -670,9 +670,9 @@ void P_LoadBlockMap(int32_t lump)
 //
 void P_GroupLines(void)
 {
-	int32_t                 i;
-	int32_t                 j;
-	int32_t                 total;
+	uint16_t                 i;
+	uint16_t                 j;
+	uint16_t                 total;
 	line_t*             li;
 	seg_t*              seg;
 	fixed_t             bbox[4];
@@ -692,7 +692,7 @@ void P_GroupLines(void)
 	int16_t				linebufferindex;
 	int16_t				sidesecnum;
 	sector_t*			sectors;
-	int32_t					sectorlinecount;
+	int16_t					sectorlinecount;
 
 	side_t* sides;
 
@@ -802,14 +802,12 @@ void P_GroupLines(void)
 //
 void
 P_SetupLevel
-(int32_t           episode,
-	int32_t           map,
-	int32_t           playermask,
+(int8_t           episode,
+	int8_t           map,
 	skill_t       skill)
 {
-	int32_t         i;
 	int8_t        lumpname[9];
-	int32_t         lumpnum;
+	int16_t         lumpnum;
 
 	byte* nodes;
 

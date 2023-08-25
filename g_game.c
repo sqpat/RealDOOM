@@ -88,8 +88,8 @@ gameaction_t    gameaction;
 gamestate_t     gamestate; 
 skill_t         gameskill; 
 boolean         respawnmonsters;
-int32_t             gameepisode; 
-int32_t             gamemap;
+int8_t             gameepisode; 
+int8_t             gamemap;
  
 boolean         paused; 
 boolean         sendpause;              // send a pause event next tic 
@@ -394,7 +394,6 @@ extern  gamestate_t     wipegamestate;
  
 void G_DoLoadLevel (void) 
 { 
-	int32_t             i;
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
     // DOOM determines the sky texture to be used
     // depending on the current episode, and the game version.
@@ -419,7 +418,7 @@ void G_DoLoadLevel (void)
 	if (players[0].playerstate == PST_DEAD)
 		players[0].playerstate = PST_REBORN;
 
-	P_SetupLevel (gameepisode, gamemap, 0, gameskill);
+	P_SetupLevel (gameepisode, gamemap, gameskill);
 	starttime = ticcount;
     gameaction = ga_nothing; 
     //Z_CheckHeap ();
