@@ -30,7 +30,8 @@
 #     zt# set far data threshold (i.e., larger objects go in far memory)
 # --------------------------------------------------------------------------
 
-CCOPTS = /d2 /omaxet /zp1 /ei /j /zq /mh /zt100
+# CCOPTS = $(EXTERNOPT) -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc
+CCOPTS = /d2 /omaxet /ei /j /zq /mh /zt512
 
 GLOBOBJS = &
  i_main.obj &
@@ -88,7 +89,7 @@ GLOBOBJS = &
 
 newdoom.exe : $(GLOBOBJS) i_ibm.obj
  wlink @newd16.lnk
- copy newdoom.exe doom.exe
+ copy doom16.exe doom.exe
  wstrip doom.exe
 # 4gwbind 4gwpro.exe striptic.exe heretic.exe -V
 # prsucc
@@ -101,4 +102,5 @@ newdoom.exe : $(GLOBOBJS) i_ibm.obj
 
 clean : .SYMBOLIC
  del *.obj
+ del *.err
  del newdoom.exe

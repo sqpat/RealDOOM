@@ -239,6 +239,13 @@ int8_t pagesize[NUM_EMS_PAGES];
 // default order is  11 10 01 00  = 228
 //uint8_t pageevictorder = 228;
 
+#ifdef _M_I86
+
+static uint16_t pageframebase;
+static int16_t emshandle;
+
+#else
+#endif
 
 
 
@@ -305,7 +312,11 @@ void Z_InitEMS (void)
 	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
     printf ("\nattempting z_initEMS\n");
 	
-	pageFrameArea = I_ZoneBase(&size);
+	#ifdef _M_I86
+	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
+	#else
+	pageFrameArea = I_ZoneBaseEMS(&size);
+	#endif
 	memsize = size;
 
     EMSArea = ((byte*)pageFrameArea + pageframeareasize);

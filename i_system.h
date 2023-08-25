@@ -44,8 +44,12 @@ byte* I_InitEMS(int32_t *size);
 // Called by startup code
 // to get the ammount of memory to malloc
 // for the zone management.
-byte *I_ZoneBaseEMS(int32_t *size);
 
+#ifdef _M_I86
+byte *I_ZoneBaseEMS(int32_t *size, int16_t *emshandle);
+#else
+byte *I_ZoneBaseEMS(int32_t *size);
+#endif
 
 extern uint32_t ticcount;
 

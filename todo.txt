@@ -26,12 +26,13 @@ TODO
  
  ? is 2048 mem entries enough? plays demo 1 ok.
  x shrink the allocation_t a bit more
- 2 setup git
+ x setup git
  3 see if we can lessen size of some of those sectors etc fields
- 4 make ems actually work
- 5 build 16 bit for good
+ 1 make ems actually work
+ 2 build 16 bit for good
  - set visiplanes under 64k and see if large compile works
  - test level transitions some more.
+ - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
 
  IMPROVEMENTS
  ? clean up 0 allocation checking code

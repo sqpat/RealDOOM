@@ -712,15 +712,15 @@ G_CheckSpot
         // first spawn of level, before corpses
 		for (i = 0; i < playernum; i++) {
 			playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[i].moRef);
-			if (playerMo->x == mthing->x << FRACBITS
-				&& playerMo->y == mthing->y << FRACBITS)
+			if (playerMo->x == (int32_t)(mthing->x) << FRACBITS
+				&& playerMo->y == (int32_t)mthing->y << FRACBITS)
 				return false;
 		}
         return true;
     }
                 
-    x = mthing->x << FRACBITS; 
-    y = mthing->y << FRACBITS; 
+    x = (int32_t)mthing->x << FRACBITS; 
+    y = (int32_t)mthing->y << FRACBITS; 
          
     if (!P_CheckPosition (players[playernum].moRef, x, y) ) 
         return false; 

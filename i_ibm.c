@@ -942,12 +942,135 @@ void I_Quit(void)
     exit(0);
 }
 
-//
-// I_ZoneBase
-//
-byte *I_ZoneBase(int32_t *size)
+
+
+
+#ifdef _M_I86
+byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 {
-	int32_t meminfo[32];
+
+    // 4 mb
+   int16_t numPagesToAllocate = (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
+   int16_t pageframebase;
+
+   char	emmname[9] = "EMMXXXX0";
+        // todo check for device...
+
+
+    
+    int16_t pagestotal, pagesavail;
+    int16_t errorreg;
+    uint8_t vernum;
+    int16_t j;
+    printf("Checking for EMS existence...");
+
+    regs.h.ah = 0x40;
+    int86(EMS_INT, &regs, &regs);
+    errorreg = regs.h.ah;
+    if (errorreg ) {
+        I_Error("Couldn't init EMS, error %d", errorreg);
+    }
+
+    printf("EMS exists...\n");
+    printf("Checking for EMS functionality...");
+
+
+    regs.h.ah = 0x40;
+    intx86(EMS_INT, &regs, &regs);
+    errorreg = regs.h.ah;
+    if (!errorreg) {
+        I_Error("ems nonfunctional??? status %i\n", errorreg);
+    }
+
+    printf("EMS functional...\n");
+    printf("Checking EMS Version...\n");
+
+    regs.h.ah = 0x46;
+    intx86(EMS_INT, &regs, &regs);
+    vernum = regs.h.al;
+    errorreg = regs.h.ah;
+    if (errorreg!=0){
+        I_Error("Get EMS Version failed!");
+    }
+    //vernum = 10*(vernum >> 4) + (vernum&0xF);
+    I_Error("EMS Version was %i\n", vernum);
+    if (vernum < 32){
+        printf("Warning! EMS Version too low! Expected 3.2, found %i", vernum);
+        //Applications like dosbox may support EMS but not report a proper version #?
+        
+    }
+    
+    printf("Getting page frame\n");
+    // get page frame address
+    regs.h.ah=0x41;  
+    intx86(EMS_INT, &regs, &regs);
+    pageframebase=regs.w.bx;
+    errorreg = regs.h.ah;
+    if (errorreg!=0){
+        I_Error("Could not get page frame!");
+    }
+
+    printf("Page frame was %u\n", pageframebase);
+    printf("Checking pages available\n");
+
+
+    regs.h.ah=0x42;
+    intx86(EMS_INT, &regs, &regs);
+    pagesavail=regs.w.bx;
+    pagestotal=regs.w.dx;
+    printf("%i pages total, %i pages available\n", pagestotal, pagesavail);
+
+    if (pagesavail < numPagesToAllocate){
+        printf("Warning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);
+        printf("TODO In the future quit here unless a command line arg is supplied.");
+        //I_Error("Quitting now...");
+    }
+
+
+    regs.w.bx = numPagesToAllocate;
+    regs.h.ah = 0x43;
+    intx86(EMS_INT, &regs, &regs);
+    *emshandle =regs.w.dx;
+    errorreg = regs.h.ah;
+    if (errorreg!=0){
+    // Error 0 = 0x00 = no error
+    // Error 137 = 0x89 = zero pages
+    // Error 136 = 0x88 = OUT_OF_LOG
+
+        I_Error("Couldn't allocate %d EMS Pages, error %d", numPagesToAllocate, regs.h.ah);
+    } 
+
+
+    // do initial page remapping
+
+
+    for (j = 0; j < 4; j++){
+        regs.h.al=j;  // physical page
+        regs.w.bx=j;    // logical page
+        regs.w.dx=*emshandle; // handle
+        regs.h.ah=0x44;
+        intx86(EMS_INT, &regs, &regs);
+        if (regs.h.ah!=0) {
+            I_Error("Mapping failed on page %i!\n", j);
+        }
+    }
+
+
+
+    // EMS Handle
+    return MK_FP(pageframebase,0);
+ 
+   
+
+       
+}
+
+#else
+byte* I_ZoneBaseEMS(int32_t *size){
+
+    // in 32 bit its ems fakery and emulation 
+
+int32_t meminfo[32];
 	int32_t heap;
     byte *ptr;
 
@@ -992,155 +1115,10 @@ byte *I_ZoneBase(int32_t *size)
     return ptr;
 }
 
-int32_t checkIfEMSExists(){
-
-	int32_t AH = 0x40;
-   regs.w.ax = AH << 8;
-   intx86(EMS_INT, &regs, &regs);
-   AH = regs.w.ax >> 8;
-   return AH;
-
-}
+#endif
 
 
-//
-// I_ZoneBaseEMS
-//
-byte *I_ZoneBaseEMS(int32_t *size)
-{
-	int32_t meminfo[32];
-	int32_t heap;
-    byte *ptr;
 
-    memset(meminfo, 0, sizeof(meminfo));
-    segread(&segregs);
-    segregs.es = segregs.ds;
-    regs.w.ax = 0x500; // get memory info
-    regs.x.edi = (int32_t)&meminfo;
-	intx86x(0x31, &regs, &regs, &segregs);
-
-    heap = meminfo[0];
-    printf("DPMI memory: 0x%x", heap);
-
-    do
-    {
-        heap -= 0x20000; // leave 128k alone
-  //      heap -= 0x200000; // subtract the 4MB used by original memory manager
-        if (heap > 0x800000)
-        {
-            heap = 0x800000;
-        }
-        ptr = malloc(heap);
-    } while (!ptr);
-
-    printf(", 0x%x allocated for zone\n", heap);
-    if (heap < 0x180000)
-    {
-        printf("\n");
-        printf("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
-        printf("free memory available for DOOM to execute.  Reconfigure your CONFIG.SYS\n");
-        printf("or AUTOEXEC.BAT to load fewer device drivers or TSR's.  We recommend\n");
-        printf("creating a custom boot menu item in your CONFIG.SYS for optimum DOOMing.\n");
-        printf("Please consult your DOS manual (\"Making more memory available\") for\n");
-        printf("information on how to free up more memory for DOOM.\n\n");
-        printf("DOOM aborted.\n");
-        exit(1);
-    }
- 
-
-    *size = heap;
-    return ptr;
-}
-
-// int32_t I_InitEMS(void)
-byte* I_InitEMS(int32_t *size)
-{
-
-	int32_t meminfo[32];
-	int32_t heap;
-    byte *ptr;
-
-    memset(meminfo, 0, sizeof(meminfo));
-    segread(&segregs);
-    segregs.es = segregs.ds;
-    regs.w.ax = 0x500; // get memory info
-    regs.x.edi = (int32_t)&meminfo;
-	intx86x(0x31, &regs, &regs, &segregs);
-
-    heap = meminfo[0];
-    printf("DPMI memory: 0x%x\n", heap);
-
-    do
-    {
-        heap -= 0x20000; // leave 128k alone
-        if (heap > 0x800000)
-        {
-            heap = 0x800000;
-        }
-        ptr = malloc(heap);
-    } while (!ptr);
-
-    printf(", 0x%x allocated for zone\n", heap);
-    if (heap < 0x180000)
-    {
-        printf("\n");
-        printf("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
-        printf("free memory available for DOOM to execute.  Reconfigure your CONFIG.SYS\n");
-        printf("or AUTOEXEC.BAT to load fewer device drivers or TSR's.  We recommend\n");
-        printf("creating a custom boot menu item in your CONFIG.SYS for optimum DOOMing.\n");
-        printf("Please consult your DOS manual (\"Making more memory available\") for\n");
-        printf("information on how to free up more memory for DOOM.\n\n");
-        printf("DOOM aborted.\n");
-        exit(1);
-    }
- 
-
-    *size = heap;
-    return ptr;
-
-
-   //todo
-
-    /*
-   uint32_t bytesToAllocate = 4 * 1024 * 1024; // 4 MB
-   int32_t numPagesToAllocate = bytesToAllocate / PAGE_FRAME_SIZE;
-   int32_t AH = 0x43;
-    int32_t EMSExistsError;
-
-   numPagesToAllocate = 1;
-    
-    printf("Checking for EMS existence...");
-
-    EMSExistsError = checkIfEMSExists();
-    
-    if (!EMSExistsError) {
-        printf("EMS exists...");
-
-        regs.w.bx = numPagesToAllocate;
-        regs.w.ax = AH << 8;
-        intx86(EMS_INT, &regs, &regs);
-
-        AH = regs.w.ax >> 8;
-        if (AH != 0){
-        // I_Error("Couldn't allocate %d EMS Pages", numPagesToAllocate);
-        // Error 0 = 0x00 = no error
-        // Error 137 = 0x89 = zero pages
-        // Error 136 = 0x88 = OUT_OF_LOG
-
-            printf("Couldn't allocate %d EMS Pages, error %d", numPagesToAllocate, AH);
-        } 
-
-        // EMS Handle
-        return regs.w.dx;
-
-   } else {
-            printf("Couldn't init EMS, error %d", EMSExistsError);
-   }
-
-
-   return 0;
-       */
-}
 
 
 //

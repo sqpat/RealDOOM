@@ -69,7 +69,7 @@ enum { VERSION =  109 };
 //(int32_t)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
 
 #define	FRACBITS		16
-#define	FRACUNIT		(1<<FRACBITS)
+#define	FRACUNIT		((int32_t)1<<FRACBITS)
 typedef int32_t fixed_t;
 
 
