@@ -42,15 +42,16 @@ static byte*	wipe_scr;
 void
 wipe_shittyColMajorXform
 ( int16_t*	array,
-  int32_t		width,
-  int32_t		height )
+  int16_t		width,
+  int16_t		height )
 {
-    int32_t		x;
-    int32_t		y;
+    int16_t		x;
+    int16_t		y;
 	MEMREF destRef;
     int16_t*	dest;
+    int32_t size = width * height * 2;
 
-	destRef = Z_MallocEMSNew(width*height * 2, PU_STATIC, 0, ALLOC_TYPE_FWIPE);
+	destRef = Z_MallocEMSNew(size, PU_STATIC, 0, ALLOC_TYPE_FWIPE);
 	dest = (int16_t*)Z_LoadBytesFromEMS(destRef);
 
     for(y=0;y<height;y++)
@@ -63,20 +64,20 @@ wipe_shittyColMajorXform
 
 }
 
-int32_t
+int16_t
 wipe_initColorXForm
-( int32_t	width,
-  int32_t	height,
+( int16_t	width,
+  int16_t	height,
   int32_t	ticks )
 {
-    memcpy(wipe_scr, wipe_scr_start, width*height);
+    memcpy(wipe_scr, wipe_scr_start, (((uint16_t) width)*((uint16_t)height)));
     return 0;
 }
 
-int32_t
+int16_t
 wipe_doColorXForm
-( int32_t	width,
-  int32_t	height,
+( int16_t	width,
+  int16_t	height,
   int32_t	ticks )
 {
     boolean	changed;
@@ -88,7 +89,7 @@ wipe_doColorXForm
     w = wipe_scr;
     e = wipe_scr_end;
     
-    while (w!=wipe_scr+width*height)
+    while (w!=wipe_scr+ ((uint16_t)width* (uint16_t)height) )
     {
 	if (*w != *e)
 	{
@@ -119,10 +120,10 @@ wipe_doColorXForm
 
 }
 
-int32_t
+int16_t
 wipe_exitColorXForm
-( int32_t	width,
-  int32_t	height,
+( int16_t	width,
+  int16_t	height,
   int32_t	ticks )
 {
     return 0;
@@ -131,17 +132,17 @@ wipe_exitColorXForm
 
 static MEMREF yRef;
 
-int32_t
+int16_t
 wipe_initMelt
-( int32_t	width,
-  int32_t	height,
+( int16_t	width,
+  int16_t	height,
   int32_t	ticks )
 {
-	int32_t i, r;
-	int32_t* y;
+	int16_t i, r;
+	int16_t* y;
 
     // copy start screen to main screen
-    memcpy(wipe_scr, wipe_scr_start, width*height);
+    memcpy(wipe_scr, wipe_scr_start, (((uint16_t) width)*((uint16_t)height)));
     
     // makes this wipe faster (in theory)
     // to have stuff in column-major format
@@ -153,8 +154,8 @@ wipe_initMelt
 
 	
 
-	yRef = Z_MallocEMSNew(width*sizeof(int32_t), PU_STATIC, 0, ALLOC_TYPE_FWIPE);
-	y = (int32_t*)Z_LoadBytesFromEMS(yRef);
+	yRef = Z_MallocEMSNew(width*sizeof(int16_t), PU_STATIC, 0, ALLOC_TYPE_FWIPE);
+	y = (int16_t*)Z_LoadBytesFromEMS(yRef);
 
 
 
@@ -167,28 +168,30 @@ wipe_initMelt
 	else if (y[i] == -16) y[i] = -15;
     }
 
+
+
     return 0;
 }
 
-int32_t
+int16_t
 wipe_doMelt
-( int32_t	width,
-  int32_t	height,
+( int16_t	width,
+  int16_t	height,
   int32_t	ticks )
 {
-    int32_t		i;
-    int32_t		j;
-    int32_t		dy;
-    int32_t		idx;
+    int16_t		i;
+    int16_t		j;
+    int16_t		dy;
+    int16_t		idx;
     
-	int32_t* y;
+	int16_t* y;
     int16_t*	s;
     int16_t*	d;
     boolean	done = true;
 
     width/=2;
 
-	y = (int32_t*)Z_LoadBytesFromEMS(yRef);
+	y = (int16_t*)Z_LoadBytesFromEMS(yRef);
 	while (ticks--)
     {
 	for (i=0;i<width;i++)
@@ -227,10 +230,10 @@ wipe_doMelt
 
 }
 
-int32_t
+int16_t
 wipe_exitMelt
-( int32_t	width,
-  int32_t	height,
+( int16_t	width,
+  int16_t	height,
   int32_t	ticks )
 {
 	Z_FreeEMSNew(yRef);
@@ -238,24 +241,24 @@ wipe_exitMelt
     return 0;
 }
 
-int32_t
+int16_t
 wipe_StartScreen
 ( int32_t	x,
   int32_t	y,
-  int32_t	width,
-  int32_t	height )
+  int16_t	width,
+  int16_t	height )
 {
     wipe_scr_start = screens[2];
     I_ReadScreen(wipe_scr_start);
     return 0;
 }
 
-int32_t
+int16_t
 wipe_EndScreen
 ( int32_t	x,
   int32_t	y,
-  int32_t	width,
-  int32_t	height )
+  int16_t	width,
+  int16_t	height )
 {
     wipe_scr_end = screens[3];
     I_ReadScreen(wipe_scr_end);
@@ -263,23 +266,23 @@ wipe_EndScreen
     return 0;
 }
 
-int32_t
+int16_t
 wipe_ScreenWipe
 ( int32_t	wipeno,
   int32_t	x,
   int32_t	y,
-  int32_t	width,
-  int32_t	height,
+  int16_t	width,
+  int16_t	height,
   int32_t	ticks )
 {
-	int32_t rc;
-    static int32_t(*wipes[])(int32_t, int32_t, int32_t) =
+	int16_t rc;
+    static int16_t(*wipes[])(int16_t, int16_t, int32_t) =
     {
 	wipe_initColorXForm, wipe_doColorXForm, wipe_exitColorXForm,
 	wipe_initMelt, wipe_doMelt, wipe_exitMelt
     };
 
-    void V_MarkRect(int32_t, int32_t, int32_t, int32_t);
+    void V_MarkRect(int16_t, int16_t, int16_t, int16_t);
 
     // initial stuff
     if (!go)
@@ -293,7 +296,6 @@ wipe_ScreenWipe
     // do a piece of wipe-in
     V_MarkRect(0, 0, width, height);
     rc = (*wipes[wipeno*3+1])(width, height, ticks);
-    //  V_DrawBlock(x, y, 0, width, height, wipe_scr); // DEBUG
 
     // final stuff
     if (rc)

@@ -34,7 +34,7 @@
 // Each screen is [SCREENWIDTH*SCREENHEIGHT]; 
 byte*				screens[5];	
 MEMREF				screen4Ref;
-int32_t				dirtybox[4]; 
+int16_t				dirtybox[4]; 
 
 
 
@@ -149,13 +149,13 @@ int32_t	usegamma;
 // 
 void
 V_MarkRect
-( int32_t		x,
-  int32_t		y,
-  int32_t		width,
-  int32_t		height ) 
+( int16_t		x,
+  int16_t		y,
+  int16_t		width,
+  int16_t		height ) 
 { 
-    M_AddToBox (dirtybox, x, y); 
-    M_AddToBox (dirtybox, x+width-1, y+height-1); 
+    M_AddToBox16 (dirtybox, x, y); 
+    M_AddToBox16 (dirtybox, x+width-1, y+height-1); 
 } 
  
 
@@ -164,32 +164,19 @@ V_MarkRect
 // 
 void
 V_CopyRect
-( int32_t		srcx,
-  int32_t		srcy,
-  int32_t		srcscrn,
-  int32_t		width,
-  int32_t		height,
-  int32_t		destx,
-  int32_t		desty,
-  int32_t		destscrn ) 
+( int16_t		srcx,
+  int16_t		srcy,
+  int16_t		srcscrn,
+  int16_t		width,
+  int16_t		height,
+  int16_t		destx,
+  int16_t		desty,
+  int16_t		destscrn ) 
 { 
     byte*	src;
     byte*	dest; 
 	 
-#ifdef RANGECHECK 
-    if (srcx<0
-	||srcx+width >SCREENWIDTH
-	|| srcy<0
-	|| srcy+height>SCREENHEIGHT 
-	||destx<0||destx+width >SCREENWIDTH
-	|| desty<0
-	|| desty+height>SCREENHEIGHT 
-	|| (uint32_t)srcscrn>4
-	|| (uint32_t)destscrn>4)
-    {
-	I_Error ("Bad V_CopyRect");
-    }
-#endif 
+     
     V_MarkRect (destx, desty, width, height); 
 	 
     src = screens[srcscrn]+SCREENWIDTH*srcy+srcx; 
@@ -210,35 +197,24 @@ V_CopyRect
 //
 void
 V_DrawPatch
-( int32_t		x,
-  int32_t		y,
-  int32_t		scrn,
+( int16_t		x,
+  int16_t		y,
+  int16_t		scrn,
   patch_t*	patch ) 
 { 
 
-    int32_t		count;
-    int32_t		col; 
+    int16_t		count;
+    int16_t		col; 
     column_t*	column; 
     byte*	desttop;
     byte*	dest;
     byte*	source; 
-    int32_t		w; 
+    int16_t		w; 
 	 
     y -= (patch->topoffset); 
     x -= (patch->leftoffset); 
-#ifdef RANGECHECK 
-    if (x<0
-	||x+(patch->width) >SCREENWIDTH
-	|| y<0
-	|| y+(patch->height)>SCREENHEIGHT 
-	|| (uint32_t)scrn>4)
-    {
-      fprintf( stderr, "Patch at %d,%d exceeds LFB\n", x,y );
-      // No I_Error abort - what is up with TNT.WAD?
-      fprintf( stderr, "V_DrawPatch: bad patch (ignored)\n");
-      return;
-    }
-#endif 
+
+
  
     if (!scrn)
 	V_MarkRect (x, y, (patch->width), (patch->height)); 
@@ -258,7 +234,7 @@ V_DrawPatch
 
 		register const byte *source = (byte *)column + 3;
 		register byte *dest = desttop + column->topdelta * SCREENWIDTH;
-		register int32_t count = column->length;
+		register int16_t count = column->length;
 
 		if ((count -= 4) >= 0)
 			do
@@ -294,33 +270,23 @@ V_DrawPatch
 //
 void
 V_DrawPatchFlipped
-( int32_t		x,
-  int32_t		y,
-  int32_t		scrn,
+( int16_t		x,
+  int16_t		y,
+  int16_t		scrn,
   patch_t*	patch ) 
 { 
 
-    int32_t		count;
-    int32_t		col; 
+    int16_t		count;
+    int16_t		col; 
     column_t*	column; 
     byte*	desttop;
     byte*	dest;
     byte*	source; 
-    int32_t		w; 
+    int16_t		w; 
 	 
     y -= (patch->topoffset); 
     x -= (patch->leftoffset); 
-#ifdef RANGECHECK 
-    if (x<0
-	||x+(patch->width) >SCREENWIDTH
-	|| y<0
-	|| y+(patch->height)>SCREENHEIGHT 
-	|| (uint32_t)scrn>4)
-    {
-      fprintf( stderr, "Patch origin %d,%d exceeds LFB\n", x,y );
-      I_Error ("Bad V_DrawPatch in V_DrawPatchFlipped");
-    }
-#endif 
+ 
  
     if (!scrn)
 	V_MarkRect (x, y, (patch->width), (patch->height)); 
@@ -360,32 +326,23 @@ V_DrawPatchFlipped
 //
 void
 V_DrawPatchDirect
-( int32_t		x,
-  int32_t		y,
-  int32_t		scrn,
+( int16_t		x,
+  int16_t		y,
+  int16_t		scrn,
   patch_t*	patch ) 
 {
-    int32_t		count;
-    int32_t		col; 
+    int16_t		count;
+    int16_t		col; 
     column_t*	column; 
     byte*	desttop;
     byte*	dest;
     byte*	source; 
-    int32_t		w; 
+    int16_t		w; 
 	 
     y -= (patch->topoffset); 
     x -= (patch->leftoffset); 
 
-#ifdef RANGECHECK 
-    if (x<0
-	||x+(patch->width) >SCREENWIDTH
-	|| y<0
-	|| y+(patch->height)>SCREENHEIGHT 
-	|| (uint32_t)scrn>4)
-    {
-	I_Error ("Bad V_DrawPatchDirect");
-    }
-#endif 
+
  
     //	V_MarkRect (x, y, (patch->width), (patch->height)); 
     desttop = destscreen + y*SCREENWIDTH/4 + (x>>2); 
@@ -425,25 +382,15 @@ V_DrawPatchDirect
 //
 void
 V_DrawBlock
-( int32_t		x,
-  int32_t		y,
-  int32_t		scrn,
-  int32_t		width,
-  int32_t		height,
+( int16_t		x,
+  int16_t		y,
+  int16_t		scrn,
+  int16_t		width,
+  int16_t		height,
   byte*		src ) 
 { 
     byte*	dest; 
 	 
-#ifdef RANGECHECK 
-    if (x<0
-	||x+width >SCREENWIDTH
-	|| y<0
-	|| y+height>SCREENHEIGHT 
-	|| (uint32_t)scrn>4 )
-    {
-	I_Error ("Bad V_DrawBlock");
-    }
-#endif 
  
     V_MarkRect (x, y, width, height); 
  
@@ -465,7 +412,7 @@ V_DrawBlock
 // 
 void V_Init (void) 
 { 
-    int32_t		i;
+    int16_t		i;
     byte*	base;
 		
     // stick these in low dos memory on PCs

@@ -57,22 +57,20 @@ int32_t P_Random(void);
 void M_ClearRandom(void);
 
 // Bounding box coordinate storage.
-enum
-{
-    BOXTOP,
-    BOXBOTTOM,
-    BOXLEFT,
-    BOXRIGHT
-};	// bbox coordinates
+
+
+#define    BOXTOP 0
+#define    BOXBOTTOM 1
+#define    BOXLEFT 2
+#define    BOXRIGHT 3
+	// bbox coordinates
 
 // Bounding box functions.
 void M_ClearBox (fixed_t*	box);
+void M_AddToBox( fixed_t*	box,fixed_t	x,  fixed_t	y );
 
-void
-M_AddToBox
-( fixed_t*	box,
-  fixed_t	x,
-  fixed_t	y );
+void M_ClearBox16 (int16_t*	box);
+void M_AddToBox16( int16_t*	box,int16_t	x,  int16_t	y );
 
 
 void M_LoadDefaults (void);

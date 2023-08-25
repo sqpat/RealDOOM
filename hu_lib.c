@@ -114,9 +114,9 @@ HUlib_drawTextLine
 // sorta called by HU_Erase and just better darn get things straight
 void HUlib_eraseTextLine(hu_textline_t* l)
 {
-    int32_t			lh;
-    int32_t			y;
-    int32_t			yoffset;
+    uint16_t			lh;
+    uint16_t			y;
+    uint16_t			yoffset;
     static boolean	lastautomapactive = true;
 	patch_t* currentpatch = Z_LoadBytesFromEMS(l->fRef[0]);   // todo can probably cache this
 

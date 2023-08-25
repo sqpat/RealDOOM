@@ -622,10 +622,10 @@ void R_FillBackScreen (void)
 { 
     byte*	src;
     byte*	dest; 
-    int32_t		x;
-    int32_t		y; 
+    int16_t		x;
+    int16_t		y; 
     patch_t*	patch;
-	int32_t i, count;
+	int16_t i, count;
 	MEMREF srcRef;
 
     // DOOM border patch.
@@ -727,8 +727,8 @@ void R_FillBackScreen (void)
 //
 void
 R_VideoErase
-(uint32_t	ofs,
-  int32_t		count ) 
+(uint16_t	ofs,
+  int16_t		count ) 
 {
     byte* dest;
     byte* source;
@@ -755,22 +755,17 @@ R_VideoErase
 // Draws the border around the view
 //  for different size windows?
 //
-void
-V_MarkRect
-( int32_t		x,
-  int32_t		y,
-  int32_t		width,
-  int32_t		height ); 
+
  
 void R_DrawViewBorder (void) 
 { 
-    int32_t		top;
-    int32_t		side;
-    int32_t		ofs;
-    int32_t		i; 
+    uint16_t		top;
+    uint16_t		side;
+    uint16_t		ofs;
+    uint16_t		i; 
  
     if (scaledviewwidth == SCREENWIDTH) 
-	return; 
+		return; 
   
     top = ((SCREENHEIGHT-SBARHEIGHT)-viewheight)/2; 
     side = (SCREENWIDTH-scaledviewwidth)/2; 
@@ -786,14 +781,11 @@ void R_DrawViewBorder (void)
     ofs = top*SCREENWIDTH + SCREENWIDTH-side; 
     side <<= 1;
     
-    for (i=1 ; i<viewheight ; i++) 
-    { 
-	R_VideoErase (ofs, side); 
-	ofs += SCREENWIDTH; 
+    for (i=1 ; i<viewheight ; i++)  { 
+		R_VideoErase (ofs, side); 
+		ofs += SCREENWIDTH; 
     } 
 
-    // ? 
-    //V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
 } 
  
  

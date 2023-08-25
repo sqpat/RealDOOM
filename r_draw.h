@@ -50,8 +50,8 @@ void	R_DrawTranslatedColumnLow (void);
 
 void
 R_VideoErase
-(uint32_t	ofs,
-  int32_t		count );
+(uint16_t	ofs,
+  int16_t		count );
 
 extern int32_t		ds_y;
 extern int32_t		ds_x1;

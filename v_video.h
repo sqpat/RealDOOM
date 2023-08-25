@@ -44,7 +44,7 @@
 extern	byte*		screens[5];
 extern   MEMREF     screen4Ref;
 
-extern  int32_t	dirtybox[4];
+extern  int16_t	dirtybox[4];
 
 extern	byte	gammatable[5][256];
 extern	int32_t	usegamma;
@@ -57,46 +57,46 @@ void V_Init (void);
 
 void
 V_CopyRect
-( int32_t		srcx,
-  int32_t		srcy,
-  int32_t		srcscrn,
-  int32_t		width,
-  int32_t		height,
-  int32_t		destx,
-  int32_t		desty,
-  int32_t		destscrn );
+( int16_t		srcx,
+  int16_t		srcy,
+  int16_t		srcscrn,
+  int16_t		width,
+  int16_t		height,
+  int16_t		destx,
+  int16_t		desty,
+  int16_t		destscrn );
 
 void
 V_DrawPatch
-( int32_t		x,
-  int32_t		y,
-  int32_t		scrn,
+( int16_t		x,
+  int16_t		y,
+  int16_t		scrn,
   patch_t*	patch);
 
 void
 V_DrawPatchDirect
-( int32_t		x,
-  int32_t		y,
-  int32_t		scrn,
+( int16_t		x,
+  int16_t		y,
+  int16_t		scrn,
   patch_t*	patch );
 
 
 // Draw a linear block of pixels into the view buffer.
 void
 V_DrawBlock
-( int32_t		x,
-  int32_t		y,
-  int32_t		scrn,
-  int32_t		width,
-  int32_t		height,
+( int16_t		x,
+  int16_t		y,
+  int16_t		scrn,
+  int16_t		width,
+  int16_t		height,
   byte*		src );
  
 
 void
 V_MarkRect
-( int32_t		x,
-  int32_t		y,
-  int32_t		width,
-  int32_t		height );
+( int16_t		x,
+  int16_t		y,
+  int16_t		width,
+  int16_t		height );
 
 #endif

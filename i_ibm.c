@@ -343,11 +343,11 @@ void I_UpdateBox(int32_t x, int32_t y, int32_t w, int32_t h)
 //
 // I_UpdateNoBlit
 //
-int32_t olddb[2][4];
+int16_t olddb[2][4];
 void I_UpdateNoBlit(void)
 {
-	int32_t realdr[4];
-	int32_t x, y, w, h;
+	int16_t realdr[4];
+	int16_t x, y, w, h;
     // Set current screen
     currentscreen = destscreen;
 
@@ -406,7 +406,8 @@ void I_UpdateNoBlit(void)
         I_UpdateBox(x, y, w, h);
     }
     // Clear box
-    M_ClearBox(dirtybox);
+    M_ClearBox16(dirtybox);
+
 }
 
 //
@@ -476,8 +477,8 @@ void I_ShutdownGraphics(void)
 //
 void I_ReadScreen(byte *scr)
 {
-	int32_t i;
-	int32_t j;
+	uint16_t i;
+	uint16_t j;
 
         outp(GC_INDEX, GC_READMAP);
 
