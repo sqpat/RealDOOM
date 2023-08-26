@@ -244,11 +244,11 @@ typedef struct mobj_s
     int32_t			tics;	// state tic counter
     state_t*		state;
     int32_t			flags;
-    int32_t			health;
+    int16_t			health;
 
     // Movement direction, movement generation (zig-zagging).
-    int32_t			movedir;	// 0-7
-    int32_t			movecount;	// when 0, select a new dir
+    int8_t			movedir;	// 0-7
+    int16_t			movecount;	// when 0, select a new dir
 
     // Thing being chased/attacked (or NULL),
     // also the originator for missiles.
@@ -260,14 +260,14 @@ typedef struct mobj_s
 
     // If >0, the target will be chased
     // no matter what (even if shot)
-    int32_t			threshold;
+    int8_t			threshold;
 
     // Additional info record for player avatars only.
     // Only valid if type == MT_PLAYER
     struct player_s*	player;
 
     // Player number last looked for.
-    int32_t			lastlook;	
+    int8_t			lastlook;	
 
     // For nightmare respawn.
     mapthing_t		spawnpoint;	

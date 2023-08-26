@@ -124,8 +124,8 @@ typedef struct player_s
     int8_t*		message;	
     
     // For screen flashing (red or bright).
-    int32_t			damagecount;
-    int32_t			bonuscount;
+    int16_t			damagecount;
+    int8_t			bonuscount;
 
     // Who did damage (NULL for floors/ceilings).
     MEMREF		attackerRef;

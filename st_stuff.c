@@ -475,7 +475,7 @@ void ST_refreshBackground(void)
 boolean
 ST_Responder (event_t* ev)
 {
-	int32_t           i;
+	int8_t           i;
   mobj_t* plyrmo;
     
   // Filter automap on/off.
@@ -553,7 +553,7 @@ ST_Responder (event_t* ev)
       {
         
 		  int8_t    buf[3];
-		  int32_t             musnum;
+		  int16_t             musnum;
         
         plyr->message = STSTR_MUS;
         cht_GetParam(&cheat_mus, buf);
@@ -649,8 +649,8 @@ ST_Responder (event_t* ev)
     if (cht_CheckCheat(&cheat_clev, ev->data1))
     {
 		int8_t              buf[3];
-		int32_t               epsd;
-		int32_t               map;
+		int8_t               epsd;
+		int8_t               map;
       
       cht_GetParam(&cheat_clev, buf);
       
@@ -690,11 +690,11 @@ ST_Responder (event_t* ev)
 
 
 
-int32_t ST_calcPainOffset(void)
+int16_t ST_calcPainOffset(void)
 {
-	int32_t         health;
-    static int32_t  lastcalc;
-    static int32_t  oldhealth = -1;
+	int16_t         health;
+    static int16_t  lastcalc;
+    static int16_t  oldhealth = -1;
     
     health = plyr->health > 100 ? 100 : plyr->health;
 
@@ -715,11 +715,11 @@ int32_t ST_calcPainOffset(void)
 //
 void ST_updateFaceWidget(void)
 {
-	int32_t         i;
+	int8_t         i;
     angle_t     badguyangle;
     angle_t     diffang;
-    static int32_t  lastattackdown = -1;
-    static int32_t  priority = 0;
+    static int8_t  lastattackdown = -1;
+    static int8_t  priority = 0;
     boolean     doevilgrin;
 	mobj_t* plyrmo;
 	mobj_t* plyrattacker;

@@ -427,11 +427,11 @@ WI_drawOnLnode
   MEMREF*	cRef )
 {
 
-    int32_t		i;
-    int32_t		left;
-    int32_t		top;
-    int32_t		right;
-    int32_t		bottom;
+    int16_t		i;
+    int16_t		left;
+    int16_t		top;
+    int16_t		right;
+    int16_t		bottom;
     boolean	fits = false;
 	patch_t* ci;
 

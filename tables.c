@@ -17,15 +17,15 @@
 //	Do not try to look them up :-).
 //	In the order of appearance: 
 //
-//	int32_t finetangent[4096]	- Tangens LUT.
+//	  finetangent[4096]	- Tangens LUT.
 //	 Should work with BAM fairly well (12 of 16bit,
 //      effectively, by shifting).
 //
-//	int32_t finesine(10240)		- Sine lookup.
+//	  finesine(10240)		- Sine lookup.
 //	 Guess what, serves as cosine, too.
 //	 Remarkable thing is, how to use BAMs with this? 
 //
-//	int32_t tantoangle[2049]	- ArcTan LUT,
+//	  tantoangle[2049]	- ArcTan LUT,
 //	  maps tan(angle) to angle fast. Gotta search.
 //	
 //
@@ -554,7 +554,6 @@ int32_t finetangentinner[2048] =
 
 
 uint16_t finesineinner[2048] =
-//	int32_t finesineinner[10240] =
 
 {
     25,75,125,175,226,276,326,376,

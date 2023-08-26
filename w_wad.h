@@ -70,7 +70,6 @@ void    W_ReadLump (int16_t lump, void *dest);
 int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error);
 MEMREF  W_CacheLumpNumEMS(int16_t lump, int8_t tag);
 
-//void*	W_CacheLumpName (int8_t* name, int32_t tag);
 MEMREF  W_CacheLumpNameEMS(int8_t* name, int8_t tag);
 void	W_EraseLumpCache(int16_t index);
 patch_t* W_CacheLumpNameEMSAsPatch (int8_t*         name, int8_t           tag);

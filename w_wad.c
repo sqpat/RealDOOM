@@ -101,7 +101,7 @@ ExtractFileBase
 //  specially to allow map reloads.
 // But: the reload feature is a fragile hack...
 
-int32_t                     reloadlump;
+uint16_t                     reloadlump;
 int8_t*                   reloadname;
 
 
@@ -112,7 +112,7 @@ void W_AddFile (int8_t *filename)
 	uint16_t            i;
 	int32_t                 handle;
 	int32_t                 length;
-	int32_t                 startlump;
+	uint16_t                 startlump;
     filelump_t*         fileinfo;
     filelump_t          singleinfo;
 	int32_t                 storehandle;
@@ -518,20 +518,7 @@ W_CacheLumpNumEMS
 	return lumpcacheEMS[lump];
 }
 
-
-
-//
-// W_CacheLumpName
-//
-/*
-void*
-W_CacheLumpName
-( int8_t*         name,
-  int32_t           tag )
-{
-    return W_CacheLumpNum (W_GetNumForName(name), tag);
-}
-*/
+ 
 
 //
 // W_CacheLumpName
