@@ -36,16 +36,16 @@
 //
 // TELEPORTATION
 //
-int32_t
+int16_t
 EV_Teleport
 ( int16_t linetag,
-  int32_t		side,
+  int16_t		side,
  MEMREF thingRef )
 {
-    int32_t		i;
+    int16_t		i;
     mobj_t*	m;
     mobj_t*	fog;
-	uint32_t	an;
+	uint16_t	an;
     THINKERREF	thinkerRef;
 	int16_t secnum;
     fixed_t	oldx;

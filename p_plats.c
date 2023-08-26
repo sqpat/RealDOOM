@@ -127,16 +127,16 @@ void T_PlatRaise(MEMREF platRef)
 // Do Platforms
 //  "amount" is only used for SOME platforms.
 //
-int32_t
+int16_t
 EV_DoPlat
 (  int16_t linetag,
 	int16_t lineside0,
   plattype_e	type,
-  int32_t		amount )
+  int16_t		amount )
 {
     plat_t*	plat;
-    int32_t		secnum;
-    int32_t		rtn;
+    int16_t		secnum;
+    int16_t		rtn;
 	MEMREF platRef;
 	side_t* sides;
 	int16_t side0secnum;
@@ -282,8 +282,8 @@ EV_DoPlat
 
 
 
-void P_ActivateInStasis(int32_t tag) {
-    int32_t		j;
+void P_ActivateInStasis(int16_t tag) {
+    int8_t		j;
 	plat_t* plat;
 	for (j = 0; j < MAXPLATS; j++)
 		if (activeplats[j] != NULL_MEMREF) {
@@ -298,7 +298,7 @@ void P_ActivateInStasis(int32_t tag) {
 }
 
 void EV_StopPlat(int16_t linetag) {
-	int32_t		j;
+	int8_t		j;
 	plat_t* plat;
 
 	for (j = 0; j < MAXPLATS; j++) {
@@ -314,12 +314,12 @@ void EV_StopPlat(int16_t linetag) {
 	}
 }
 
-static int32_t platraisecount = 0;
-static int32_t addedplatraisecount = 0;
-static int32_t platindex = 0;
+static int16_t platraisecount = 0;
+static int16_t addedplatraisecount = 0;
+static int16_t platindex = 0;
 
 void P_AddActivePlat(MEMREF memref) {
-    int32_t		i;
+    int8_t		i;
 	addedplatraisecount++;
     for (i = 0;i < MAXPLATS;i++)
 	if (activeplats[i] == NULL_MEMREF) {
@@ -333,7 +333,7 @@ void P_AddActivePlat(MEMREF memref) {
 
 void P_RemoveActivePlat(MEMREF platRef)
 {
-    int32_t		i;
+    int8_t		i;
 	plat_t* plat;
 	sector_t* sectors;
 	int16_t platsecnum;

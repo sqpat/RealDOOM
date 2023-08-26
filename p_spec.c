@@ -486,13 +486,13 @@ P_FindSectorFromLineTag
 //
 // Find minimum light from an adjacent sector
 //
-int32_t
+int16_t
 P_FindMinSurroundingLight
 ( int16_t secnum,
-  int32_t		max )
+  int16_t		max )
 {
     uint8_t		i;
-    int32_t		min;
+    int16_t		min;
     int16_t	offset;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	uint8_t linecount = sectors[secnum].linecount;

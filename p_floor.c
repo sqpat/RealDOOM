@@ -43,8 +43,8 @@ T_MovePlane
   fixed_t	speed,
   fixed_t	dest,
   boolean	crush,
-  int32_t		floorOrCeiling,
-  int32_t		direction )
+  int16_t		floorOrCeiling,
+  int16_t		direction )
 {
     boolean	flag;
     fixed_t	lastpos;
@@ -195,9 +195,9 @@ void T_MoveFloor(MEMREF memref)
     result_e	res;
 	floormove_t* floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
 	int16_t floorsecnum;
-	int32_t floornewspecial;
+	int16_t floornewspecial;
 	floor_e floortype;
-	int32_t floordirection;
+	int16_t floordirection;
 	int16_t floortexture;
 	THINKERREF floorthinkerRef;
 	sector_t* sectors;
@@ -250,16 +250,16 @@ void T_MoveFloor(MEMREF memref)
 //
 // HANDLE FLOOR TYPES
 //
-int32_t
+int16_t
 EV_DoFloor
 ( 
 	int16_t linetag,
 	int16_t linefrontsecnum,
   floor_e	floortype )
 {
-    int32_t			secnum;
-    int32_t			rtn;
-    int32_t			i;
+    int16_t			secnum;
+    int16_t			rtn;
+    int16_t			i;
     //sector_t*		sec;
     floormove_t*	floor;
 	MEMREF floorRef;
@@ -386,7 +386,7 @@ EV_DoFloor
 			break;
 
 		  case raiseToTexture: {
-			  int32_t	minsize = MAXINT;
+			  int16_t	minsize = MAXSHORT;
 			  side_t* sides;
 			  int16_t sidenum;
 			  int16_t sidebottomtexture;
@@ -473,7 +473,7 @@ EV_DoFloor
 //
 // BUILD A STAIRCASE!
 //
-int32_t
+int16_t
 EV_BuildStairs
 ( int16_t	linetag,
   stair_e	type )
@@ -482,9 +482,9 @@ EV_BuildStairs
     int32_t			height;
     uint8_t			i;
     int16_t			newsecnum;
-    int32_t			texture;
-    int32_t			ok;
-    int32_t			rtn;
+    int16_t			texture;
+    int16_t			ok;
+    int16_t			rtn;
     
     //sector_t*		sec;
     int16_t		tsecOffset;

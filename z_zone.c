@@ -211,7 +211,7 @@ typedef struct
 
 
 
-int16_t currentListHead = 0; // main rover
+PAGEREF currentListHead = 0; // main rover
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 
@@ -286,13 +286,7 @@ void Z_ChangeTagEMSNew (MEMREF index, int16_t tag){
 
 void Z_InitEMS (void)
 { 
-    // kinda hacked to coexist with mainzone for now
-
-    // NOTE: sizeof memblock_t is 32
-
-    //memblock_t* block;
-    //memblock_t* prevblock;
-    //memblock_t* currentPointer;
+   
 	int32_t size;
 	int16_t i = 0;
 	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
@@ -840,7 +834,7 @@ void* Z_LoadBytesFromEMS2(MEMREF ref) {
 
 
 int16_t getNumFreePages(){
-	int32_t i = 0;
+	int16_t i = 0;
     int16_t total = 0;
     for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++){
         if (allocations[i].prev == EMS_ALLOCATION_LIST_SIZE){
@@ -852,7 +846,7 @@ int16_t getNumFreePages(){
 }
 
 int32_t getFreeMemoryByteTotal(){
-	int32_t i = 0;
+	int16_t i = 0;
 	int32_t total = 0;
     for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++){
         if (!HAS_USER(allocations[i])){
@@ -865,7 +859,7 @@ int32_t getFreeMemoryByteTotal(){
 
 
 int32_t getBiggestFreeBlock(){
-	int32_t i = 0;
+	int16_t i = 0;
 	int32_t total = 0;
     for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++){
         if (!HAS_USER(allocations[i])){
@@ -878,10 +872,10 @@ int32_t getBiggestFreeBlock(){
     return total;
 }
 
-int32_t getBiggestFreeBlockIndex(){
-	int32_t i = 0;
+int16_t getBiggestFreeBlockIndex(){
+	int16_t i = 0;
 	int32_t total = 0;
-	int32_t totali = 0;
+	int16_t totali = 0;
     for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++){
         if (!HAS_USER(allocations[i])){
 
@@ -895,9 +889,9 @@ int32_t getBiggestFreeBlockIndex(){
     return totali;
 }
 
-int32_t getNumPurgeableBlocks(){
-	int32_t i = 0;
-	int32_t total = 0;
+int16_t getNumPurgeableBlocks(){
+	int16_t i = 0;
+	int16_t total = 0;
     for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++){
         if (!allocations[i].tag >= PU_PURGELEVEL && HAS_USER(allocations[i].user)){
             total ++;
@@ -915,8 +909,8 @@ int32_t getNumPurgeableBlocks(){
 // unused/unallocated
 
 PAGEREF Z_GetNextFreeArrayIndex(){
-	int32_t start = currentListHead;
-	int32_t i;
+	PAGEREF start = currentListHead;
+	PAGEREF i;
     
     for (i = currentListHead + 1; i != currentListHead; i++){
         if (i == EMS_ALLOCATION_LIST_SIZE){
@@ -1091,7 +1085,7 @@ Z_MallocEMSNewWithBackRef
     extra = MAKE_SIZE(allocations[base].page_and_size) - size;
 	
     
-    offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)allocations[base].offset_and_tag & 0x3FFF));
+    offsetToNextPage = (PAGE_FRAME_SIZE - (allocations[base].offset_and_tag & 0x3FFF));
     if (offsetToNextPage == PAGE_FRAME_SIZE){
         offsetToNextPage = 0;
     }
@@ -1137,7 +1131,7 @@ Z_MallocEMSNewWithBackRef
 
 
     
-    offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)(allocations[base].offset_and_tag) & 0x3FFF));
+    offsetToNextPage = (PAGE_FRAME_SIZE - ((allocations[base].offset_and_tag) & 0x3FFF));
 // In this case, PAGE FRAME SIZE is ok/expected.
 
 
@@ -1207,9 +1201,6 @@ Z_MallocEMSNewWithBackRef
 
  
 
-    //printf ("z_malloc returning size %i at offset %i \n", size, base + sizeof(memblock_t));
-
-    
 
     // todo activate page
 	#ifdef MEMORYCHECK
@@ -1233,9 +1224,9 @@ void Z_CheckEMSAllocations(PAGEREF block){
     // all allocation entries should either be in the chain (linked list)
     // OR marked as a free index (prev = EMS_ALLOCATION_LIST_SIZE)
     
-	int32_t unalloactedIndexCount = getNumFreePages();
+	int16_t unalloactedIndexCount = getNumFreePages();
     int16_t start = allocations[block].prev;
-	int32_t iterCount = 1;
+	int16_t iterCount = 1;
     while (start != block){
 
         iterCount++;

@@ -39,9 +39,9 @@
 
 // Stage of animation:
 //  0 = text, 1 = art screen, 2 = character cast
-int32_t		finalestage;
+int16_t		finalestage;
 
-int32_t		finalecount;
+int16_t		finalecount;
 
 #define	TEXTSPEED	3
 #define	TEXTWAIT	250
@@ -89,7 +89,7 @@ void	F_CastDrawer (void);
 //
 void F_StartFinale (void)
 {
-	int32_t finalemusic;
+	int16_t finalemusic;
 
     gameaction = ga_nothing;
     gamestate = GS_FINALE;
@@ -285,7 +285,6 @@ boolean F_Responder (event_t *event)
 //
 void F_Ticker (void)
 {
-    int32_t		i;
     
     // check for skipping
     if ( (commercial)
@@ -339,12 +338,12 @@ void F_TextWrite (void)
     byte*	src;
     byte*	dest;
     
-    int32_t		x,y,w;
-    int32_t		count;
+    int16_t		x,y,w;
+    int16_t		count;
     int8_t*	ch;
-    int32_t		c;
-    int32_t		cx;
-    int32_t		cy;
+    int16_t		c;
+    int16_t		cx;
+    int16_t		cy;
 	MEMREF	srcRef;
 	patch_t* hu_fontC;
     // erase the entire screen to a tiled background
@@ -352,13 +351,11 @@ void F_TextWrite (void)
 	src = Z_LoadBytesFromEMS(srcRef);
     dest = screens[0];
 	
-    for (y=0 ; y<SCREENHEIGHT ; y++)
-    {
-	for (x=0 ; x<SCREENWIDTH/64 ; x++)
-	{
-	    memcpy (dest, src+((y&63)<<6), 64);
-	    dest += 64;
-	}
+    for (y=0 ; y<SCREENHEIGHT ; y++) {
+		for (x=0 ; x<SCREENWIDTH/64 ; x++) {
+			memcpy (dest, src+((y&63)<<6), 64);
+			dest += 64;
+		}
 	 
     }
 
@@ -372,31 +369,28 @@ void F_TextWrite (void)
     count = (finalecount - 10)/TEXTSPEED;
     if (count < 0)
 	count = 0;
-    for ( ; count ; count-- )
-    {
-	c = *ch++;
-	if (!c)
-	    break;
-	if (c == '\n')
-	{
-	    cx = 10;
-	    cy += 11;
-	    continue;
-	}
-		
-	c = toupper(c) - HU_FONTSTART;
-	if (c < 0 || c> HU_FONTSIZE)
-	{
-	    cx += 4;
-	    continue;
-	}
-		
-	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
-	w =  (hu_fontC->width);
-	if (cx+w > SCREENWIDTH)
-	    break;
-	V_DrawPatch(cx, cy, 0, hu_fontC);
-	cx+=w;
+    for ( ; count ; count-- ) {
+		c = *ch++;
+		if (!c)
+			break;
+		if (c == '\n') {
+			cx = 10;
+			cy += 11;
+			continue;
+		}
+			
+		c = toupper(c) - HU_FONTSTART;
+		if (c < 0 || c> HU_FONTSIZE) {
+			cx += 4;
+			continue;
+		}
+			
+		hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
+		w =  (hu_fontC->width);
+		if (cx+w > SCREENWIDTH)
+			break;
+		V_DrawPatch(cx, cy, 0, hu_fontC);
+		cx+=w;
     }
 	
 }
@@ -434,12 +428,12 @@ castinfo_t	castorder[] = {
     {NULL,0}
 };
 
-int32_t		castnum;
-int32_t		casttics;
+int8_t		castnum;
+int8_t		casttics;
 state_t*	caststate;
 boolean		castdeath;
-int32_t		castframes;
-int32_t		castonmelee;
+int8_t		castframes;
+int8_t		castonmelee;
 boolean		castattacking;
 
 
@@ -469,8 +463,8 @@ void F_StartCast (void)
 //
 void F_CastTicker (void)
 {
-    int32_t		st;
-    int32_t		sfx;
+    int16_t		st;
+    int16_t		sfx;
 	
     if (--casttics > 0)
 	return;			// not time to change state yet
@@ -598,10 +592,10 @@ boolean F_CastResponder (event_t* ev)
 void F_CastPrint (int8_t* text)
 {
     int8_t*	ch;
-    int32_t		c;
-    int32_t		cx;
-    int32_t		w;
-    int32_t		width;
+    int16_t		c;
+    int16_t		cx;
+    int16_t		w;
+    int16_t		width;
 	patch_t* hu_fontC;
     
     // find width
@@ -653,13 +647,13 @@ void F_CastPrint (int8_t* text)
 //
 // F_CastDrawer
 //
-void V_DrawPatchFlipped (int32_t x, int32_t y, int32_t scrn, patch_t *patch);
+void V_DrawPatchFlipped (int16_t x, int16_t y, int16_t scrn, patch_t *patch);
 
 void F_CastDrawer (void)
 {
     spritedef_t*	sprite;
     spriteframe_t*	sprframe;
-    int32_t			lump;
+    int16_t			lump;
     boolean		flip;
 	MEMREF			patchRef;
 	patch_t*		patch;
@@ -699,15 +693,15 @@ void F_CastDrawer (void)
 //
 void
 F_DrawPatchCol
-( int32_t		x,
+( int16_t		x,
   patch_t*	patch,
-  int32_t		col )
+  int16_t		col )
 {
     column_t*	column;
     byte*	source;
     byte*	dest;
     byte*	desttop;
-    int32_t		count;
+    int16_t		count;
 	
     column = (column_t *)((byte *)patch + (patch->columnofs[col]));
     desttop = screens[0]+x;
@@ -734,11 +728,11 @@ F_DrawPatchCol
 //
 void F_BunnyScroll (void)
 {
-    int32_t		scrolled;
-    int32_t		x;
+    int16_t		scrolled;
+    int16_t		x;
 	int8_t	name[10];
-    int32_t		stage;
-    static int32_t	laststage;
+    int16_t		stage;
+    static int16_t	laststage;
 		
 
 

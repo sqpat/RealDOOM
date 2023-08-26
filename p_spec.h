@@ -49,7 +49,7 @@ boolean
 P_UseSpecialLine
 ( MEMREF thingRef,
 	int16_t linenum,
-  int32_t		side );
+  int16_t		side );
 
 void
 P_ShootSpecialLine
@@ -97,10 +97,10 @@ P_FindSectorFromLineTag
 ( int16_t		linetag,
   int16_t		start );
 
-int32_t
+int16_t
 P_FindMinSurroundingLight
 ( int16_t secnum,
-  int32_t		max );
+  int16_t		max );
 
 int16_t
 getNextSector
@@ -122,9 +122,9 @@ typedef struct
 {
     THINKERREF	thinkerRef;
 	int16_t secnum;
-    int32_t		count;
-    int32_t		maxlight;
-    int32_t		minlight;
+    int16_t		count;
+    int16_t		maxlight;
+    int16_t		minlight;
     
 } fireflicker_t;
 
@@ -134,11 +134,11 @@ typedef struct
 {
 	THINKERREF	thinkerRef;
 	int16_t secnum;
-    int32_t		count;
-    int32_t		maxlight;
-    int32_t		minlight;
-    int32_t		maxtime;
-    int32_t		mintime;
+    int16_t		count;
+    int16_t		maxlight;
+    int16_t		minlight;
+    int8_t		maxtime;
+    int8_t		mintime;
     
 } lightflash_t;
 
@@ -148,11 +148,11 @@ typedef struct
 {
 	THINKERREF	thinkerRef;
 	int16_t secnum;
-    int32_t		count;
-    int32_t		minlight;
-    int32_t		maxlight;
-    int32_t		darktime;
-    int32_t		brighttime;
+    int16_t		count;
+    int16_t		minlight;
+    int16_t		maxlight;
+    int16_t		darktime;
+    int16_t		brighttime;
     
 } strobe_t;
 
@@ -163,9 +163,9 @@ typedef struct
 {
 	THINKERREF	thinkerRef;
 	int16_t secnum;
-    int32_t		minlight;
-    int32_t		maxlight;
-    int32_t		direction;
+    int16_t		minlight;
+    int16_t		maxlight;
+    int16_t		direction;
 
 } glow_t;
 
@@ -183,8 +183,8 @@ void    T_StrobeFlash (MEMREF memref);
 void
 P_SpawnStrobeFlash
 (int16_t secnum,
-  int32_t		fastOrSlow,
-  int32_t		inSync );
+  int16_t		fastOrSlow,
+  int16_t		inSync );
 
 void    EV_StartLightStrobing(int16_t linetag);
 void    EV_TurnTagLightsOff(int16_t linetag);
@@ -192,7 +192,7 @@ void    EV_TurnTagLightsOff(int16_t linetag);
 void
 EV_LightTurnOn
 ( int16_t linetag,
-  int32_t		bright );
+  int16_t		bright );
 
 void    T_Glow(MEMREF memref);
 void    P_SpawnGlowingLight(int16_t secnum);
@@ -226,8 +226,8 @@ typedef struct
 {
 	int16_t linenum;
     bwhere_e	where;
-    int32_t		btexture;
-    int32_t		btimer;
+    int16_t		btexture;
+    int16_t		btimer;
 	int32_t soundorgX;
 	int32_t soundorgY;
 
@@ -249,7 +249,7 @@ extern button_t	buttonlist[MAXBUTTONS];
 
 void
 P_ChangeSwitchTexture
-(int16_t linenum, int16_t lineside0, int16_t linespecial, int16_t linefrontsecnum, int32_t useAgain);
+(int16_t linenum, int16_t lineside0, int16_t linespecial, int16_t linefrontsecnum, int16_t useAgain);
 
 void P_InitSwitchList(void);
 
@@ -283,12 +283,12 @@ typedef struct
     fixed_t	speed;
     fixed_t	low;
     fixed_t	high;
-    int32_t		wait;
-    int32_t		count;
+    int8_t		wait;
+    int8_t		count;
     plat_e	status;
     plat_e	oldstatus;
     boolean	crush;
-    int32_t		tag;
+    int16_t		tag;
     plattype_e	type;
     
 } plat_t;
@@ -304,17 +304,17 @@ extern MEMREF	activeplats[MAXPLATS];
 
 void    T_PlatRaise(MEMREF platRef);
 
-int32_t
+int16_t
 EV_DoPlat
 ( int16_t linenum,
 	int16_t linetag,
   plattype_e	type,
-  int32_t		amount );
+  int16_t		amount );
 
 void    P_AddActivePlat(MEMREF memref);
 void    P_RemoveActivePlat(MEMREF memref);
 void    EV_StopPlat(int16_t linetag);
-void    P_ActivateInStasis(int32_t tag);
+void    P_ActivateInStasis(int16_t tag);
 
 
 //
@@ -344,13 +344,13 @@ typedef struct
     fixed_t	speed;
 
     // 1 = up, 0 = waiting at top, -1 = down
-	int32_t             direction;
+	int16_t             direction;
     
     // tics to wait at the top
-	int32_t             topwait;
+	int16_t             topwait;
     // (keep in case a door going down is reset)
     // when it reaches 0, start going down
-	int32_t             topcountdown;
+	int16_t             topcountdown;
     
 } vldoor_t;
 
@@ -364,12 +364,12 @@ EV_VerticalDoor
 ( int16_t linenum,
   MEMREF	thingRef );
 
-int32_t
+int16_t
 EV_DoDoor
 ( int16_t linetag,
   vldoor_e	type );
 
-int32_t
+int16_t
 EV_DoLockedDoor
 (int16_t linetag, int16_t linepsecial,
   vldoor_e	type,
@@ -411,11 +411,11 @@ typedef struct
     boolean	crush;
 
     // 1 = up, 0 = waiting, -1 = down
-    int32_t		direction;
+    int16_t		direction;
 
     // ID
-    int32_t		tag;                   
-    int32_t		olddirection;
+    int16_t		tag;                   
+    int16_t		olddirection;
     
 } ceiling_t;
 
@@ -429,7 +429,7 @@ typedef struct
 
 extern MEMREF	activeceilings[MAXCEILINGS];
 
-int32_t
+int16_t
 EV_DoCeiling
 ( int16_t linetag,
   ceiling_e	type );
@@ -437,7 +437,7 @@ EV_DoCeiling
 void    T_MoveCeiling (MEMREF memref);
 void    P_AddActiveCeiling(MEMREF memref);
 void    P_RemoveActiveCeiling(MEMREF memref);
-int32_t	EV_CeilingCrushStop(int16_t linetag);
+int16_t	EV_CeilingCrushStop(int16_t linetag);
 void    P_ActivateInStasisCeiling(int16_t linetag);
 
 
@@ -493,8 +493,8 @@ typedef struct
     floor_e	type;
     boolean	crush;
     int16_t   secnum;
-    int32_t		direction;
-    int32_t		newspecial;
+    int16_t		direction;
+    int16_t		newspecial;
     int16_t	texture;
     fixed_t	floordestheight;
     fixed_t	speed;
@@ -519,15 +519,15 @@ T_MovePlane
   fixed_t	speed,
   fixed_t	dest,
   boolean	crush,
-  int32_t		floorOrCeiling,
-  int32_t		direction );
+  int16_t		floorOrCeiling,
+  int16_t		direction );
 
-int32_t
+int16_t
 EV_BuildStairs
 ( int16_t linetag,
   stair_e	type );
 
-int32_t
+int16_t
 EV_DoFloor
 ( int16_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
 
@@ -536,10 +536,10 @@ void T_MoveFloor(MEMREF memref);
 //
 // P_TELEPT
 //
-int32_t
+int16_t
 EV_Teleport
 ( int16_t linetag,
-  int32_t		side,
+  int16_t		side,
 	MEMREF thingRef);
 
 #endif
