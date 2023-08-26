@@ -254,10 +254,9 @@ static player_t*        plyr;
 static boolean          st_firsttime;
 
 // used to execute ST_Init() only once
-static int32_t              veryfirsttime = 1;
 
 // lump number for PLAYPAL
-static int32_t              lu_palette;
+static int16_t              lu_palette;
 
 // used for timing
 static uint32_t     st_clock;
@@ -336,19 +335,19 @@ static st_number_t      w_maxammo[4];
 
 
 // used to use appopriately pained face
-static int32_t      st_oldhealth = -1;
+static int16_t      st_oldhealth = -1;
 
 // used for evil grin
 static boolean  oldweaponsowned[NUMWEAPONS]; 
 
  // count until face changes
-static int32_t      st_facecount = 0;
+static int16_t      st_facecount = 0;
 
 // current face index, used by w_faces
-static int32_t      st_faceindex = 0;
+static int16_t      st_faceindex = 0;
 
 // holds key-type for each key box on bar
-static int32_t      keyboxes[3];
+static int16_t      keyboxes[3];
 
 // a random number per tick
 static int32_t      st_randomnumber;
@@ -892,8 +891,8 @@ void ST_updateFaceWidget(void)
 
 void ST_updateWidgets(void)
 {
-	static int32_t largeammo = 1994; // means "n/a"
-	int32_t i;
+	static int16_t largeammo = 1994; // means "n/a"
+	int8_t i;
 
 	if (weaponinfo[plyr->readyweapon].ammo == am_noammo)
 		w_ready.num = &largeammo;
@@ -932,15 +931,15 @@ void ST_Ticker (void)
 
 }
 
-static int32_t st_palette = 0;
+static int16_t st_palette = 0;
 
 void ST_doPaletteStuff(void)
 {
 
-	int32_t         palette;
+	int16_t         palette;
     byte*       pal;
-	int32_t         cnt;
-	int32_t         bzc;
+	int16_t         cnt;
+	int16_t         bzc;
 	MEMREF		palRef;
 
     cnt = plyr->damagecount;
@@ -994,7 +993,7 @@ void ST_doPaletteStuff(void)
 
 void ST_drawWidgets(boolean refresh)
 {
-	int32_t i;
+	int8_t i;
 
 	// used by w_arms[] widgets
 	st_armson = st_statusbaron;
@@ -1071,9 +1070,9 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 void ST_loadGraphics(void)
 {
 
-	int32_t         i;
-	int32_t         j;
-	int32_t         facenum;
+	int8_t         i;
+	int8_t         j;
+	int16_t         facenum;
     
 	int8_t        namebuf[9];
 
@@ -1154,7 +1153,7 @@ void ST_loadData(void)
 void ST_unloadGraphics(void)
 {
 
-	int32_t i;
+	int16_t i;
 
     // unload the numbers, tall and short
     for (i=0;i<10;i++)
@@ -1196,7 +1195,7 @@ void ST_unloadData(void)
 void ST_initData(void)
 {
 
-	int32_t         i;
+	int8_t         i;
 
     st_firsttime = true;
     plyr = &players[consoleplayer];
@@ -1226,7 +1225,7 @@ void ST_initData(void)
 void ST_createWidgets(void)
 {
 
-	int32_t i;
+	int8_t i;
 
     // ready weapon ammo
     STlib_initNum(&w_ready,
@@ -1263,7 +1262,7 @@ void ST_createWidgets(void)
         STlib_initMultIcon(&w_arms[i],
                            ST_ARMSX+(i%3)*ST_ARMSXSPACE,
                            ST_ARMSY+(i/3)*ST_ARMSYSPACE,
-                           armsRef[i], (int32_t *) &plyr->weaponowned[i+1],
+                           armsRef[i], (int16_t *) &plyr->weaponowned[i+1],
                            &st_armson);
     }
 
@@ -1408,7 +1407,6 @@ void ST_Stop (void)
 
 void ST_Init (void)
 {
-    veryfirsttime = 0;
     ST_loadData();
 	screen4Ref = Z_MallocEMSNew (ST_WIDTH*ST_HEIGHT, PU_STATIC, 0, ALLOC_TYPE_SCREEN);
     

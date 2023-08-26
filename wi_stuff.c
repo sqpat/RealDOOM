@@ -132,8 +132,6 @@ typedef struct
     // ALWAYS: n/a,
     // RANDOM: random base period,
     // LEVEL: n/a
-	//seems unused...
-    //int32_t		data2; 
 
     // actual graphics for frames of animations
     MEMREF	pRef[3]; 
@@ -141,11 +139,9 @@ typedef struct
     // following must be initialized to zero before use!
 
     // next value of bcnt (used in conjunction with period)
-    int32_t		nexttic;
+    uint16_t		nexttic;
 
     // last drawn animation frame
-	// unused
-    //int32_t		lastdrawn;
 
     // next frame number to animate
     int8_t		ctr;
@@ -288,8 +284,6 @@ static anim_t *anims[NUMEPISODES] =
 // used to accelerate or skip a stage
 static int16_t		acceleratestage;
 
-// wbs->pnum
-//static int32_t		me;
 
  // specifies current state
 static stateenum_t	state;
@@ -300,19 +294,19 @@ static wbstartstruct_t*	wbs;
 static wbplayerstruct_t plrs;  // wbs->plyr[]
 
 // used for general timing
-static int32_t 		cnt;
+static uint16_t 		cnt;
 
 // used for timing of background animation
-static int32_t 		bcnt;
+static uint16_t 		bcnt;
 
 // signals to refresh everything for one frame
 
 static int16_t		cnt_kills;
 static int16_t		cnt_items;
 static int16_t		cnt_secret;
-static int32_t		cnt_time;
-static int32_t		cnt_par;
-static int32_t		cnt_pause;
+static int16_t		cnt_time;
+static int16_t		cnt_par;
+static int16_t		cnt_pause;
 
 // # of commercial levels
 static int8_t		NUMCMAPS; 
@@ -389,7 +383,7 @@ void WI_slamBackground(void)
 void WI_drawLF(void)
 {
 	patch_t* lname;
-	int32_t y = WI_TITLEY;
+	int16_t y = WI_TITLEY;
 	MEMREF* lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
 	lname = (patch_t*)Z_LoadBytesFromEMS(lnames[wbs->last]);
 	// draw <LevelName> 
@@ -429,7 +423,7 @@ void WI_drawEL(void)
 
 void
 WI_drawOnLnode
-( int32_t		n,
+( int16_t		n,
   MEMREF*	cRef )
 {
 

@@ -312,9 +312,9 @@ P_TouchSpecialThing
   MEMREF	toucherRef )
 {
     player_t*	player;
-    int32_t		i;
+    int8_t		i;
     fixed_t	delta;
-    int32_t		sound;
+    int16_t		sound;
 	mobj_t* playerMo;
 	mobj_t* special = (mobj_t*)Z_LoadBytesFromEMS(specialRef);
 	fixed_t specialz = special->z;

@@ -46,12 +46,12 @@ void STlib_init(void)
 void
 STlib_initNum
 ( st_number_t*		n,
-  int32_t			x,
-  int32_t			y,
+  int16_t			x,
+  int16_t			y,
   MEMREF*		plRef,
-  int32_t*			num,
+  int16_t*			num,
   boolean*		on,
-  int32_t			width )
+  int16_t			width )
 {
     n->x	= x;
     n->y	= y;
@@ -73,14 +73,14 @@ STlib_drawNum
 ( st_number_t*	n,
   boolean	refresh )
 {
-    int32_t		numdigits = n->width;
-    int32_t		num = *n->num;
+    int16_t		numdigits = n->width;
+    int16_t		num = *n->num;
 	patch_t* p0 = (patch_t*) Z_LoadBytesFromEMS(n->pRef[0]);
-	int32_t w = (p0->width);
-	int32_t h = (p0->height);
-	int32_t x = n->x;
+	int16_t w = (p0->width);
+	int16_t h = (p0->height);
+	int16_t x = n->x;
     
-    int32_t		neg;
+    int16_t		neg;
 
 	// [crispy] redraw only if necessary
 	if (n->oldnum == num && !refresh) {
@@ -141,10 +141,10 @@ STlib_updateNum
 void
 STlib_initPercent
 ( st_percent_t*		p,
-  int32_t			x,
-  int32_t			y,
+  int16_t			x,
+  int16_t			y,
   MEMREF*		plRef,
-  int32_t*			num,
+  int16_t*			num,
   boolean*		on,
   MEMREF		percentRef )
 {
@@ -158,7 +158,7 @@ STlib_initPercent
 void
 STlib_updatePercent
 ( st_percent_t*		per,
-  int32_t			refresh )
+  int16_t			refresh )
 {
     if (refresh && *per->n.on)
 	V_DrawPatch(per->n.x, per->n.y, FG, (patch_t*)Z_LoadBytesFromEMS(per->pRef));
@@ -172,10 +172,10 @@ STlib_updatePercent
 void
 STlib_initMultIcon
 ( st_multicon_t*	i,
-  int32_t			x,
-  int32_t			y,
+  int16_t			x,
+  int16_t			y,
   MEMREF*		ilRef,
-  int32_t*			inum,
+  int16_t*			inum,
   boolean*		on )
 {
     i->x	= x;
@@ -193,10 +193,10 @@ STlib_updateMultIcon
 ( st_multicon_t*	mi,
   boolean		refresh )
 {
-    int32_t			w;
-    int32_t			h;
-    int32_t			x;
-    int32_t			y;
+    int16_t			w;
+    int16_t			h;
+    int16_t			x;
+    int16_t			y;
 	patch_t*    old;
     if (*mi->on
 	&& (mi->oldinum != *mi->inum || refresh)
@@ -225,8 +225,8 @@ STlib_updateMultIcon
 void
 STlib_initBinIcon
 ( st_binicon_t*		b,
-  int32_t			x,
-  int32_t			y,
+  int16_t			x,
+  int16_t			y,
   MEMREF		iRef,
   boolean*		val,
   boolean*		on )
@@ -246,10 +246,10 @@ STlib_updateBinIcon
 ( st_binicon_t*		bi,
   boolean		refresh )
 {
-    int32_t			x;
-    int32_t			y;
-    int32_t			w;
-    int32_t			h;
+    int16_t			x;
+    int16_t			y;
+    int16_t			w;
+    int16_t			h;
 	patch_t*	bipatch;
     if (*bi->on
 	&& (bi->oldval != *bi->val || refresh)) {

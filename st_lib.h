@@ -42,17 +42,17 @@ typedef struct
 {
     // upper right-hand corner
     //  of the number (right-justified)
-	int32_t 	x;
-	int32_t 	y;
+	int16_t 	x;
+	int16_t 	y;
 
     // max # of digits in number
-	int32_t width;
+	int16_t width;
 
     // last number value
-	int32_t 	oldnum;
+	int16_t 	oldnum;
     
     // pointer to current value
-    int32_t*	num;
+    int16_t*	num;
 
     // pointer to boolean stating
     //  whether to update number
@@ -63,7 +63,7 @@ typedef struct
 	MEMREF* pRef;
 
     // user data
-	int32_t data;
+	int8_t data;
     
 } st_number_t;
 
@@ -88,14 +88,14 @@ typedef struct
 typedef struct
 {
      // center-justified location of icons
-	int32_t 		x;
-	int32_t 		y;
+	int16_t 		x;
+	int16_t 		y;
 
     // last icon number
-	int32_t 		oldinum;
+	int16_t 		oldinum;
 
     // pointer to current icon
-    int32_t*		inum;
+    int16_t*		inum;
 
     // pointer to boolean stating
     //  whether to update icon
@@ -106,7 +106,7 @@ typedef struct
 	MEMREF*		pRef;
     
     // user data
-	int32_t 		data;
+	int16_t 		data;
     
 } st_multicon_t;
 
@@ -118,11 +118,11 @@ typedef struct
 typedef struct
 {
     // center-justified location of icon
-	int32_t 		x;
-	int32_t 		y;
+	int16_t 		x;
+	int16_t 		y;
 
     // last icon value
-	int32_t 		oldval;
+	int16_t 		oldval;
 
     // pointer to current icon status
     boolean*		val;
@@ -134,7 +134,6 @@ typedef struct
 
     //patch_t*		p;	// icon
 	MEMREF		pRef;
-	int32_t 		data;   // user data
     
 } st_binicon_t;
 
@@ -156,12 +155,12 @@ void STlib_init(void);
 void
 STlib_initNum
 ( st_number_t*		n,
-	int32_t 		x,
-	int32_t 		y,
-  MEMREF*		plRef,
-  int32_t*			num,
-  boolean*		on,
-	int32_t 		width );
+	int16_t 		x,
+	int16_t 		y,
+    MEMREF*		plRef,
+    int16_t*			num,
+    boolean*		on,
+	int16_t 		width );
 
 void
 STlib_updateNum
@@ -173,29 +172,29 @@ STlib_updateNum
 void
 STlib_initPercent
 ( st_percent_t*		p,
-	int32_t 		x,
-	int32_t 		y,
-  MEMREF*		plRef,
-  int32_t*			num,
-  boolean*		on,
-  MEMREF		percentRef 
+	int16_t 		x,
+	int16_t 		y,
+    MEMREF*		plRef,
+    int16_t*			num,
+    boolean*		on,
+    MEMREF		percentRef 
 );
 
 
 void
 STlib_updatePercent
 ( st_percent_t*		per,
-	int32_t 		refresh );
+	int16_t 		refresh );
 
 
 // Multiple Icon widget routines
 void
 STlib_initMultIcon
 ( st_multicon_t*	mi,
-	int32_t 		x,
-	int32_t 		y,
+	int16_t 		x,
+	int16_t 		y,
   MEMREF*		ilRef,
-  int32_t*			inum,
+  int16_t*			inum,
   boolean*		on );
 
 
@@ -209,8 +208,8 @@ STlib_updateMultIcon
 void
 STlib_initBinIcon
 ( st_binicon_t*		b,
-	int32_t 		x,
-	int32_t 		y,
+	int16_t 		x,
+	int16_t 		y,
   MEMREF		iRef,
   boolean*		val,
   boolean*		on );
