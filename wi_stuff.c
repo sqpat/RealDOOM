@@ -93,18 +93,16 @@
 
 
 
-typedef enum
-{
-    ANIM_ALWAYS,
-    ANIM_RANDOM,
-    ANIM_LEVEL
+#define ANIM_ALWAYS 0
+#define ANIM_RANDOM 1
+#define ANIM_LEVEL 2
 
-} animenum_t;
+typedef uint8_t animenum_t;
 
 typedef struct
 {
-    int32_t		x;
-    int32_t		y;
+    int16_t		x;
+    int16_t		y;
     
 } point_t;
 
@@ -118,10 +116,10 @@ typedef struct
     animenum_t	type;
 
     // period in tics between animations
-    int32_t		period;
+    uint8_t		period;
 
     // number of animation frames
-    int32_t		nanims;
+    int8_t		nanims;
 
     // location of animation
     point_t	loc;
@@ -129,12 +127,13 @@ typedef struct
     // ALWAYS: n/a,
     // RANDOM: period deviation (<256),
     // LEVEL: level
-    int32_t		data1;
+    int16_t		data1;
 
     // ALWAYS: n/a,
     // RANDOM: random base period,
     // LEVEL: n/a
-    int32_t		data2; 
+	//seems unused...
+    //int32_t		data2; 
 
     // actual graphics for frames of animations
     MEMREF	pRef[3]; 
@@ -145,16 +144,21 @@ typedef struct
     int32_t		nexttic;
 
     // last drawn animation frame
-    int32_t		lastdrawn;
+	// unused
+    //int32_t		lastdrawn;
 
     // next frame number to animate
-    int32_t		ctr;
+    int8_t		ctr;
     
     // used by RANDOM and LEVEL when animating
-    int32_t		state;  
+    int16_t		state;  
 
 } anim_t;
 
+
+
+// these are taking up 864 bytes. can probably halve it by shrinking to 8 bit. 
+// subtract the minimum value from coord 1, 2 indepdentdently. add back in the accessor.
 
 static point_t lnodes[NUMEPISODES][NUMMAPS] =
 {
@@ -282,10 +286,10 @@ static anim_t *anims[NUMEPISODES] =
 
 
 // used to accelerate or skip a stage
-static int32_t		acceleratestage;
+static int16_t		acceleratestage;
 
 // wbs->pnum
-static int32_t		me;
+//static int32_t		me;
 
  // specifies current state
 static stateenum_t	state;
@@ -302,17 +306,16 @@ static int32_t 		cnt;
 static int32_t 		bcnt;
 
 // signals to refresh everything for one frame
-static int32_t 		firstrefresh;
 
-static int32_t		cnt_kills;
-static int32_t		cnt_items;
-static int32_t		cnt_secret;
+static int16_t		cnt_kills;
+static int16_t		cnt_items;
+static int16_t		cnt_secret;
 static int32_t		cnt_time;
 static int32_t		cnt_par;
 static int32_t		cnt_pause;
 
 // # of commercial levels
-static int32_t		NUMCMAPS; 
+static int8_t		NUMCMAPS; 
 
 
 //
@@ -405,11 +408,11 @@ void WI_drawLF(void)
 void WI_drawEL(void)
 {
 	patch_t* lname;
-	int32_t y = WI_TITLEY;
+	int16_t y = WI_TITLEY;
 	MEMREF* lnames;
 	patch_t* entering = (patch_t*)Z_LoadBytesFromEMS(enteringRef);
     // draw "Entering"
-    V_DrawPatch(SCREENWIDTH - (entering->width)/2, y, FB, entering);
+    V_DrawPatch((SCREENWIDTH - (entering->width))/2, y, FB, entering);
 
 
 	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
@@ -468,7 +471,7 @@ WI_drawOnLnode
 
 void WI_initAnimatedBack(void)
 {
-    int32_t		i;
+    int16_t		i;
     anim_t*	a;
 
     if (commercial)
@@ -490,7 +493,8 @@ void WI_initAnimatedBack(void)
 	if (a->type == ANIM_ALWAYS)
 	    a->nexttic = bcnt + 1 + (M_Random()%a->period);
 	else if (a->type == ANIM_RANDOM)
-	    a->nexttic = bcnt + 1 + a->data2+(M_Random()%a->data1);
+	    a->nexttic = bcnt + 1 + 0+(M_Random()%a->data1);
+	    // a->nexttic = bcnt + 1 + a->data2+(M_Random()%a->data1);
 	else if (a->type == ANIM_LEVEL)
 	    a->nexttic = bcnt + 1;
     }
@@ -499,7 +503,7 @@ void WI_initAnimatedBack(void)
 
 void WI_updateAnimatedBack(void)
 {
-    int32_t		i;
+    int16_t		i;
     anim_t*	a;
 
     if (commercial)
@@ -528,7 +532,8 @@ void WI_updateAnimatedBack(void)
 		if (a->ctr == a->nanims)
 		{
 		    a->ctr = -1;
-		    a->nexttic = bcnt+a->data2+(M_Random()%a->data1);
+		    a->nexttic = bcnt+0+(M_Random()%a->data1);
+		    //a->nexttic = bcnt+a->data2+(M_Random()%a->data1);
 		}
 		else a->nexttic = bcnt + a->period;
 		break;
@@ -553,7 +558,7 @@ void WI_updateAnimatedBack(void)
 void WI_drawAnimatedBack(void)
 {
    
-	int32_t i;
+	int16_t i;
 	anim_t *a;
 
 	if (commercial)
@@ -581,17 +586,17 @@ void WI_drawAnimatedBack(void)
 // Returns new x position.
 //
 
-int32_t
+int16_t
 WI_drawNum
-( int32_t		x,
-  int32_t		y,
-  int32_t		n,
-  int32_t		digits )
+( int16_t		x,
+  int16_t		y,
+  int16_t		n,
+  int16_t		digits )
 {
 
-    int32_t		fontwidth = (((patch_t*)Z_LoadBytesFromEMS(numRef[0])) ->width);
-    int32_t		neg;
-    int32_t		temp;
+    int16_t		fontwidth = (((patch_t*)Z_LoadBytesFromEMS(numRef[0])) ->width);
+    int16_t		neg;
+    int16_t		temp;
 
     if (digits < 0)
     {
@@ -640,9 +645,9 @@ WI_drawNum
 
 void
 WI_drawPercent
-( int32_t		x,
-  int32_t		y,
-  int32_t		p )
+( int16_t		x,
+  int16_t		y,
+  int16_t		p )
 {
     if (p < 0)
 	return;
@@ -659,13 +664,13 @@ WI_drawPercent
 //
 void
 WI_drawTime
-( int32_t		x,
-  int32_t		y,
-  int32_t		t )
+( int16_t		x,
+  int16_t		y,
+  int16_t		t )
 {
 
-    int32_t		div;
-    int32_t		n;
+    int16_t		div;
+    int16_t		n;
 	patch_t* colon;
 	patch_t* sucks;
 
@@ -743,8 +748,8 @@ void WI_updateShowNextLoc(void)
 void WI_drawShowNextLoc(void)
 {
 
-    int32_t		i;
-    int32_t		last;
+    int16_t		i;
+    int16_t		last;
 
     WI_slamBackground();
 
@@ -790,10 +795,9 @@ void WI_drawNoState(void)
     WI_drawShowNextLoc();
 }
  
-static int32_t ng_state;
 
 
-static int32_t	sp_state;
+static int16_t	sp_state;
 
 void WI_initStats(void)
 {
@@ -916,7 +920,7 @@ void WI_updateStats(void)
 void WI_drawStats(void)
 {
     // line height
-	int32_t lh;
+	int16_t lh;
 
 	patch_t* num0 = (patch_t*) Z_LoadBytesFromEMS(numRef[0]);
 
@@ -953,7 +957,7 @@ void WI_drawStats(void)
 
 void WI_checkForAccelerate(void)
 {
-	int32_t i;
+	int16_t i;
 	player_t *player;
 
 	player = players;
@@ -1014,8 +1018,8 @@ void WI_Ticker(void)
 
 void WI_loadData(void)
 {
-    int32_t		i;
-    int32_t		j;
+    int16_t		i;
+    int16_t		j;
 	int8_t	name[9];
     anim_t*	a;
 	MEMREF* lnames;
@@ -1155,8 +1159,8 @@ void WI_loadData(void)
 
 void WI_unloadData(void)
 {
-    int32_t		i;
-    int32_t		j;
+    int16_t		i;
+    int16_t		j;
 	MEMREF*	lnames;
 	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
 
@@ -1238,7 +1242,6 @@ void WI_initVariables(wbstartstruct_t* wbstartstruct)
 	wbs = wbstartstruct;
 	acceleratestage = 0;
 	cnt = bcnt = 0;
-	firstrefresh = 1;
 	plrs = wbs->plyr;
 
 	if (!wbs->maxkills)
