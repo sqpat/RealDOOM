@@ -1670,7 +1670,7 @@ void M_Drawer (void)
     int16_t               i;
     int16_t               max;
 	int8_t                string[40];
-	int32_t                 start;
+	int16_t                 start;
 	patch_t*			hu_font0;
 
     inhelpscreens = false;

@@ -87,8 +87,8 @@ switchlist_t alphSwitchList[] =
     {"\0",		"\0",		0}
 };
 
-int32_t		switchlist[MAXSWITCHES * 2];
-int32_t		numswitches;
+int16_t		switchlist[MAXSWITCHES * 2];
+int16_t		numswitches;
 button_t        buttonlist[MAXBUTTONS];
 
 //
@@ -97,9 +97,9 @@ button_t        buttonlist[MAXBUTTONS];
 //
 void P_InitSwitchList(void)
 {
-    int32_t		i;
-    int32_t		index;
-    int32_t		episode;
+    int8_t		i;
+    int8_t		index;
+    int8_t		episode;
 	
     episode = 1;
 
@@ -136,10 +136,10 @@ P_StartButton
 ( int16_t linenum,
 	int16_t linefrontsecnum,
   bwhere_e	w,
-  int32_t		texture,
-  int32_t		time )
+  int16_t		texture,
+  int16_t		time )
 {
-    int32_t		i;
+    int8_t		i;
 	sector_t* sectors;
     // See if button is already pressed
     for (i = 0;i < MAXBUTTONS;i++)

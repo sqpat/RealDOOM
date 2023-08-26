@@ -1315,7 +1315,7 @@ typedef struct
 	statenum_t	xdeathstate;
 	sfxenum_t	deathsound;
     int32_t	speed;
-    int32_t	radius;
+    fixed_t	radius;
     int32_t	height;
     int32_t	mass;
     uint8_t	damage;

@@ -213,7 +213,7 @@ boolean P_CheckMeleeRange (MEMREF actorRef)
     fixed_t	dist;
 	fixed_t plx;
 	fixed_t ply;
-	int32_t plradius;
+	fixed_t plradius;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
     if (!actor->targetRef)
@@ -325,7 +325,7 @@ fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
 #define MAXSPECIALCROSS	8
 
 extern	int16_t	spechit[MAXSPECIALCROSS];
-extern	int32_t	numspechit;
+extern	int16_t	numspechit;
 
 boolean P_Move (MEMREF actorRef)
 {
