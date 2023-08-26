@@ -97,10 +97,10 @@ P_FindSectorFromLineTag
 ( int16_t		linetag,
   int16_t		start );
 
-int16_t
+uint8_t
 P_FindMinSurroundingLight
 ( int16_t secnum,
-  int16_t		max );
+  uint8_t		max );
 
 int16_t
 getNextSector
@@ -123,8 +123,8 @@ typedef struct
     THINKERREF	thinkerRef;
 	int16_t secnum;
     int16_t		count;
-    int16_t		maxlight;
-    int16_t		minlight;
+    uint8_t		maxlight;
+    uint8_t		minlight;
     
 } fireflicker_t;
 
@@ -135,8 +135,8 @@ typedef struct
 	THINKERREF	thinkerRef;
 	int16_t secnum;
     int16_t		count;
-    int16_t		maxlight;
-    int16_t		minlight;
+    uint8_t		maxlight;
+    uint8_t		minlight;
     int8_t		maxtime;
     int8_t		mintime;
     
@@ -149,8 +149,8 @@ typedef struct
 	THINKERREF	thinkerRef;
 	int16_t secnum;
     int16_t		count;
-    int16_t		minlight;
-    int16_t		maxlight;
+    uint8_t		minlight;
+    uint8_t		maxlight;
     int16_t		darktime;
     int16_t		brighttime;
     
@@ -163,8 +163,8 @@ typedef struct
 {
 	THINKERREF	thinkerRef;
 	int16_t secnum;
-    int16_t		minlight;
-    int16_t		maxlight;
+    uint8_t		minlight;
+    uint8_t		maxlight;
     int16_t		direction;
 
 } glow_t;
@@ -192,7 +192,7 @@ void    EV_TurnTagLightsOff(int16_t linetag);
 void
 EV_LightTurnOn
 ( int16_t linetag,
-  int16_t		bright );
+  uint8_t		bright );
 
 void    T_Glow(MEMREF memref);
 void    P_SpawnGlowingLight(int16_t secnum);

@@ -183,13 +183,13 @@ P_StartButton
 void
 P_ChangeSwitchTexture
 ( int16_t linenum, int16_t lineside0, int16_t linespecial, int16_t linefrontsecnum,
-	int32_t 		useAgain )
+	int16_t 		useAgain )
 {
-	int32_t     texTop;
-	int32_t     texMid;
-	int32_t     texBot;
-	int32_t     i;
-	int32_t     sound;
+	int16_t     texTop;
+	int16_t     texMid;
+	int16_t     texBot;
+	int8_t     i;
+	int16_t     sound;
 
  	line_t* line; 
 	side_t* sides;
@@ -264,7 +264,7 @@ boolean
 P_UseSpecialLine
 ( MEMREF	thingRef,
   int16_t linenum,
-  int32_t		side )
+  int16_t		side )
 {               
 	mobj_t*	thing;
 

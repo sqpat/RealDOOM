@@ -73,7 +73,7 @@ void P_SpawnFireFlicker (int16_t secnum)
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int16_t seclightlevel = sectors[secnum].lightlevel;
+	uint8_t seclightlevel = sectors[secnum].lightlevel;
 	sectors[secnum].special = 0;
 
 	
@@ -105,8 +105,8 @@ void T_LightFlash (MEMREF memref)
 {
 	lightflash_t* flash = (lightflash_t*)Z_LoadBytesFromEMS(memref);
 	int16_t flashsecnum = flash->secnum;
-	int32_t flashminlight = flash->minlight;
-	int32_t flashmaxlight = flash->maxlight;
+	uint8_t flashminlight = flash->minlight;
+	uint8_t flashmaxlight = flash->maxlight;
 	sector_t* sectors;
  
 
@@ -140,7 +140,7 @@ void P_SpawnLightFlash (int16_t secnum)
 {
     lightflash_t*	flash;
 	MEMREF flashRef;
-	int32_t lightamount;
+	uint8_t lightamount;
 	// nothing special about it during gameplay
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	int16_t seclightlevel = sectors[secnum].lightlevel;
@@ -209,12 +209,12 @@ void T_StrobeFlash (MEMREF memref)
 void
 P_SpawnStrobeFlash
 ( int16_t secnum,
-  int32_t		fastOrSlow,
-  int32_t		inSync )
+  int16_t		fastOrSlow,
+  int16_t		inSync )
 {
     strobe_t*	flash;
 	MEMREF flashRef;
-	int32_t lightamount;
+	uint8_t lightamount;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	int16_t seclightlevel = sectors[secnum].lightlevel;
 
@@ -255,7 +255,7 @@ P_SpawnStrobeFlash
 //
 void EV_StartLightStrobing(int16_t linetag)
 {
-    int32_t		secnum;
+    int16_t		secnum;
 	sector_t* sectors;
 
     secnum = -1;
@@ -275,9 +275,9 @@ void EV_StartLightStrobing(int16_t linetag)
 //
 void EV_TurnTagLightsOff(int16_t linetag)
 {
-    int32_t			i;
-    int32_t			secnum;
-    int32_t			min;
+    int16_t			i;
+    int16_t			secnum;
+    uint8_t			min;
     int16_t		offset;
     line_t*		templine;
 	int16_t *		linebuffer;
@@ -314,7 +314,7 @@ void EV_TurnTagLightsOff(int16_t linetag)
 void
 EV_LightTurnOn
 ( int16_t linetag,
-  int32_t		bright )
+  uint8_t		bright )
 {
     int16_t secnum;
     uint8_t		j;
@@ -390,7 +390,7 @@ void T_Glow(MEMREF memref)
 void P_SpawnGlowingLight(int16_t secnum)
 {
     glow_t*	g;
-	int32_t lightamount;
+	uint8_t lightamount;
 	MEMREF glowRef;
 	// Note that we are resetting sector attributes.
 	// Nothing special about it during gameplay.

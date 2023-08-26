@@ -188,7 +188,7 @@ void T_VerticalDoor (MEMREF memref)
 // Move a locked door up/down
 //
 
-int32_t
+int16_t
 EV_DoLockedDoor
 ( int16_t linetag,
 	int16_t linespecial,
@@ -247,12 +247,12 @@ EV_DoLockedDoor
 }
 
 
-int32_t
+int16_t
 EV_DoDoor
 ( int16_t linetag,
   vldoor_e	type )
 {
-    int32_t		secnum,rtn;
+    int16_t		secnum,rtn;
     vldoor_t*	door;
 	MEMREF doorRef;
 	fixed_t doortopheight;
@@ -350,10 +350,10 @@ EV_VerticalDoor
   MEMREF thingRef )
 {
     player_t*	player;
-    int32_t		secnum;
+    int16_t		secnum;
     //sector_t*	sec;
     vldoor_t*	door;
-    int32_t		side = 0;
+    int16_t		side = 0;
 	MEMREF doorRef;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	int16_t linespecial = lines[linenum].special;
