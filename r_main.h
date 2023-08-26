@@ -94,7 +94,7 @@ extern void		(*spanfunc) (void);
 
 //
 // Utility functions.
-fixed_t
+int16_t
 R_PointOnSide
 ( fixed_t	x,
   fixed_t	y,
@@ -127,7 +127,7 @@ R_PointToDist
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle);
 
-uint16_t
+int16_t
 R_PointInSubsector
 ( fixed_t	x,
   fixed_t	y );

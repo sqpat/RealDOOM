@@ -126,7 +126,7 @@ void (*spanfunc) (void);
 //  check point against partition plane.
 // Returns side 0 (front) or 1 (back).
 //
-fixed_t
+int16_t
 R_PointOnSide
 ( fixed_t	x,
   fixed_t	y,
@@ -697,14 +697,14 @@ void R_Init (void)
 //
 // R_PointInSubsector
 //
-uint16_t
+int16_t
  R_PointInSubsector
 ( fixed_t	x,
   fixed_t	y )
 {
     node_t*	node;
-    int32_t		side;
-    int32_t		nodenum;
+    int16_t		side;
+    int16_t		nodenum;
 	node_t* nodes;
     // single subsector is a special case
 	if (!numnodes) {

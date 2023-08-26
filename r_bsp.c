@@ -46,8 +46,8 @@ drawseg_t*	ds_p;
 
 void
 R_StoreWallRange
-( int16_t	start,
-  int16_t	stop );
+( int32_t	start,
+  int32_t	stop );
 
 
 
@@ -69,8 +69,8 @@ void R_ClearDrawSegs (void)
 //
 typedef	struct
 {
-    int16_t	first;
-	int16_t last;
+    int32_t	first;
+	int32_t last;
     
 } cliprange_t;
 
@@ -92,8 +92,8 @@ cliprange_t	solidsegs[MAXSEGS];
 // 
 void
 R_ClipSolidWallSegment
-( int16_t			first,
-  int16_t			last )
+( int32_t			first,
+  int32_t			last )
 {
     cliprange_t*	next;
     cliprange_t*	start;
@@ -182,8 +182,8 @@ R_ClipSolidWallSegment
 //
 void
 R_ClipPassWallSegment
-( int16_t	first,
-  int16_t	last )
+( int32_t	first,
+  int32_t	last )
 {
     cliprange_t*	start;
 	#ifdef LOOPCHECK 

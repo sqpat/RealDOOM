@@ -112,12 +112,12 @@ P_TeleportMove
   fixed_t	x,
   fixed_t	y )
 {
-    int32_t			xl;
-    int32_t			xh;
-    int32_t			yl;
-    int32_t			yh;
-    int32_t			bx;
-    int32_t			by;
+    int16_t			xl;
+    int16_t			xh;
+    int16_t			yl;
+    int16_t			yh;
+    int16_t			bx;
+    int16_t			by;
     
 	int16_t	newsubsecsecnum;
 	subsector_t*	subsectors;
@@ -280,7 +280,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 {
     fixed_t		blockdist;
     boolean		solid;
-    int32_t			damage;
+    int16_t			damage;
 	mobj_t* tmthingTarget;
 	mobj_t* thing; 
 	mobj_t* tmthing; 
@@ -436,12 +436,12 @@ P_CheckPosition
   fixed_t	x,
   fixed_t	y )
 {
-    int32_t			xl;
-    int32_t			xh;
-    int32_t			yl;
-    int32_t			yh;
-    int32_t			bx;
-    int32_t			by;
+    int16_t			xl;
+    int16_t			xh;
+    int16_t			yl;
+    int16_t			yh;
+    int16_t			bx;
+    int16_t			by;
 	subsector_t*	subsectors;
 	int16_t newsubsecnum;
 	mobj_t*			tmthing;
@@ -546,8 +546,8 @@ P_TryMove
     fixed_t	oldy;
 	fixed_t	newx;
 	fixed_t	newy;
-    int32_t		side;
-    int32_t		oldside;
+    int16_t	side;
+    int16_t	oldside;
     line_t*	ld;
 	mobj_t* thing;
 	line_t* lines;
@@ -704,7 +704,7 @@ fixed_t		tmymove;
 //
 void P_HitSlideLine (int16_t linenum)
 {
-    int32_t			side;
+    int16_t			side;
 
     angle_t		lineangle;
     angle_t		moveangle;
@@ -823,7 +823,7 @@ void P_SlideMove (MEMREF moRef)
     fixed_t		traily;
     fixed_t		newx;
     fixed_t		newy;
-    int32_t			hitcount;
+    int16_t			hitcount;
 	mobj_t* mo;
 
 		
@@ -931,7 +931,7 @@ MEMREF		shootthingRef;
 // ???: use slope for monsters?
 fixed_t		shootz;	
 
-int32_t		la_damage;
+int16_t		la_damage;
 fixed_t		attackrange;
 
 fixed_t		aimslope;
