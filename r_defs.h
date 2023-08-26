@@ -316,15 +316,15 @@ typedef struct drawseg_s
 {
     int16_t		curlinenum;
 
-    int32_t			x1;
-    int32_t			x2;
+    int16_t			x1;
+    int16_t			x2;
 
     fixed_t		scale1;
     fixed_t		scale2;
     fixed_t		scalestep;
 
     // 0=none, 1=bottom, 2=top, 3=both
-    int32_t			silhouette;
+    int16_t			silhouette;
 
     // do not clip sprites above this
     fixed_t		bsilheight;

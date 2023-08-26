@@ -53,8 +53,8 @@ extern  boolean	modifiedgame;
 
 // Defaults for menu, methinks.
 extern  skill_t		startskill;
-extern  int32_t             startepisode;
-extern	int32_t		startmap;
+extern  int8_t             startepisode;
+extern	int8_t		startmap;
 
 extern  boolean		autostart;
 
@@ -135,16 +135,16 @@ extern	int16_t		scaledviewwidth;
 extern  int32_t	viewangleoffset;
 
 // Player taking events, and displaying.
-extern  int32_t	consoleplayer;	
+extern  int16_t	consoleplayer;	
 
 
 // -------------------------------------
 // Scores, rating.
 // Statistics on a given map, for intermission.
 //
-extern  int32_t	totalkills;
-extern	int32_t	totalitems;
-extern	int32_t	totalsecret;
+extern  int16_t	totalkills;
+extern	int16_t	totalitems;
+extern	int16_t	totalsecret;
 
 // Timer, for scores.
 extern  int32_t	leveltime;	// tics in game play for par
@@ -202,7 +202,7 @@ extern  wbstartstruct_t		wminfo;
 
 // LUT of ammunition limits for each kind.
 // This doubles with BackPack powerup item.
-extern  int32_t		maxammo[NUMAMMO];
+extern  int16_t		maxammo[NUMAMMO];
 
 
 
@@ -249,7 +249,7 @@ extern  doomdata_t*	netbuffer;
 
 
 extern  ticcmd_t	localcmds[BACKUPTICS];
-extern	int32_t		rndindex;
+extern	int16_t		rndindex;
 
 extern	int32_t		maketic;
 extern  int32_t             nettics;

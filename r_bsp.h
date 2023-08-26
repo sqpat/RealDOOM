@@ -52,7 +52,7 @@ void R_ClearClipSegs (void);
 void R_ClearDrawSegs (void);
 
 
-void R_RenderBSPNode (int32_t bspnum);
+void R_RenderBSPNode (int16_t bspnum);
 
 
 #endif

@@ -811,7 +811,7 @@ void R_InitSpriteLumps(void)
 		spriteoffset = (fixed_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
 		spritetopoffset = (fixed_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
 
-
+		//todo... these can be 16 bit right
 		spritewidth[i] = patchwidth << FRACBITS;
 		spriteoffset[i] = patchleftoffset << FRACBITS;
 		spritetopoffset[i] = patchtopoffset << FRACBITS;

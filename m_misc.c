@@ -45,7 +45,7 @@
 #include "m_misc.h"
 
 
-int32_t		myargc;
+int16_t		myargc;
 int8_t**		myargv;
 
 //
@@ -63,9 +63,9 @@ extern MEMREF		hu_fontRef[HU_FONTSIZE];
 // in the program's command line arguments.
 // Returns the argument number (1 to argc-1)
 // or 0 if not present
-int32_t M_CheckParm (int8_t *check)
+int16_t M_CheckParm (int8_t *check)
 {
-    int32_t		i;
+    int16_t		i;
 
     for (i = 1;i<myargc;i++)
     {
@@ -103,9 +103,9 @@ uint8_t rndtable[256] = {
     120, 163, 236, 249
 };
 
-int32_t	rndindex = 0;
-int32_t	prndindex = 0;
-int32_t counter = 0;
+int16_t	rndindex = 0;
+int16_t	prndindex = 0;
+
 // Which one is deterministic?
 int32_t P_Random(void)
 {

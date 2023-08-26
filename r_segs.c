@@ -128,9 +128,7 @@ R_RenderMaskedSegRange
 	siderowoffset = sides[curlinesidedefOffset].rowoffset;
 	sidemidtexture = sides[curlinesidedefOffset].midtexture;
 
-//	if (curline->linedefOffset > numlines) {
-//		I_Error("R_RenderMaskedSegRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, curline->linedefOffset, curline);
-//	}
+
 	frontsecnum = curlinefrontsecnum;
 	backsecnum = curlinebacksecnum;
 	texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
@@ -303,9 +301,7 @@ void R_RenderSegLoop (void)
 	    dc_yh = yh;
 	    dc_texturemid = rw_midtexturemid;
 
-		if (midtexture < 0 || midtexture > 1000) {
-			I_Error("midtexture");
-		}
+
 		dc_source = R_GetColumn(midtexture,texturecolumn);
 		colfunc ();
 		ceilingclip[rw_x] = viewheight;
@@ -330,9 +326,7 @@ void R_RenderSegLoop (void)
 		    dc_yl = yl;
 		    dc_yh = mid;
 		    dc_texturemid = rw_toptexturemid;
-			if (toptexture < 0 || toptexture > 1000) {
-				I_Error("toptex");
-			}
+
 		    dc_source = R_GetColumn(toptexture,texturecolumn);
 		    colfunc ();
 		    ceilingclip[rw_x] = mid;
@@ -362,9 +356,7 @@ void R_RenderSegLoop (void)
 		    dc_yl = mid;
 		    dc_yh = yh;
 		    dc_texturemid = rw_bottomtexturemid;
-			if (bottomtexture < 0 || bottomtexture > 1000) {
-				I_Error("bottex");
-			}
+
 			dc_source = R_GetColumn(bottomtexture,
 					    texturecolumn);
 		    colfunc ();
@@ -438,11 +430,7 @@ R_StoreWallRange
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
-		
-#ifdef RANGECHECK
-    if (start >=viewwidth || start > stop)
-	I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
-#endif
+		 
 
 	linedefOffset = curlinelinedefOffset;
 
@@ -489,21 +477,6 @@ R_StoreWallRange
 		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop]);
 		ds_p->scalestep = rw_scalestep =  (ds_p->scale2 - rw_scale) / (stop-start);
     } else {
-	// UNUSED: try to fix the stretched line bug
-#if 0
-	if (rw_distance < FRACUNIT/2)
-	{
-	    fixed_t		trx,try;
-	    fixed_t		gxt,gyt;
-
-	    trx = curline->v1->x - viewx;
-	    try = curline->v1->y - viewy;
-			
-	    gxt = FixedMul(trx,viewcos); 
-	    gyt = -FixedMul(try,viewsin); 
-	    ds_p->scale1 = FixedDiv(projection, gxt-gyt)<<detailshift;
-	}
-#endif
 		ds_p->scale2 = ds_p->scale1;
     }
     
@@ -626,10 +599,8 @@ R_StoreWallRange
 			 
 			texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 			toptexture = texturetranslation[sidetoptexture];
-			if (toptexture < 0 || toptexture > 1000) {
-				I_Error("toptex %i %i %i ", sidetoptexture, curlinesidedefOffset, curlinenum);
-			}
-
+		
+		
 			if (lineflags & ML_DONTPEGTOP) {
 				// top of texture at top
 				rw_toptexturemid = worldtop;

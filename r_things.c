@@ -42,17 +42,6 @@
 
 
 
-typedef struct
-{
-	int32_t         x1;
-	int32_t         x2;
-        
-	int32_t         column;
-	int32_t         topclip;
-	int32_t         bottomclip;
-
-} maskdraw_t;
-
 
 
 //
@@ -393,11 +382,11 @@ void R_DrawMaskedColumn (column_t* column)
 void
 R_DrawVisSprite
 ( vissprite_t*          vis,
-	int32_t                   x1,
-	int32_t                   x2 )
+	int16_t                   x1,
+	int16_t                   x2 )
 {
     column_t*           column;
-	int32_t                 texturecolumn;
+	int16_t                 texturecolumn;
     fixed_t             frac;
     patch_t*            patch;
 	MEMREF				patchRef;
@@ -425,7 +414,7 @@ R_DrawVisSprite
         
     for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale) {
 		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
-		texturecolumn = frac>>FRACBITS;
+		texturecolumn = (frac>>FRACBITS);
 		#ifdef RANGECHECK
 			if (texturecolumn < 0 || texturecolumn >= (patch->width))
 				I_Error ("R_DrawSpriteRange: bad texturecolumn %i %i", texturecolumn, patch->width);
@@ -912,12 +901,12 @@ void R_DrawSprite (vissprite_t* spr)
     drawseg_t*          ds;
     int16_t               clipbot[SCREENWIDTH];
     int16_t               cliptop[SCREENWIDTH];
-	int32_t                 x;
-	int32_t                 r1;
-	int32_t                 r2;
+	int16_t                 x;
+	int16_t                 r1;
+	int16_t                 r2;
     fixed_t             scale;
     fixed_t             lowscale;
-	int32_t                 silhouette;
+	int16_t                 silhouette;
 	seg_t* segs;
 
     for (x = spr->x1 ; x<=spr->x2 ; x++)

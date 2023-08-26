@@ -43,8 +43,8 @@
 
 // a weapon is found with two clip loads,
 // a big item has five clip loads
-int32_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
-int32_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
+int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
+int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
 
 
 //
@@ -62,9 +62,9 @@ boolean
 P_GiveAmmo
 ( player_t*	player,
   ammotype_t	ammo,
-  int32_t		num )
+  int16_t		num )
 {
-    int32_t		oldammo;
+    int16_t		oldammo;
 	
     if (ammo == am_noammo)
 	return false;
@@ -193,7 +193,7 @@ P_GiveWeapon
 boolean
 P_GiveBody
 ( player_t*	player,
-  int32_t		num )
+  int16_t		num )
 {
 	mobj_t* playerMo;
     if (player->health >= MAXHEALTH)
@@ -219,9 +219,9 @@ P_GiveBody
 boolean
 P_GiveArmor
 ( player_t*	player,
-  int32_t		armortype )
+  int16_t		armortype )
 {
-    int32_t		hits;
+    int16_t		hits;
 	
     hits = armortype*100;
     if (player->armorpoints >= hits)
@@ -257,7 +257,7 @@ P_GiveCard
 boolean
 P_GivePower
 ( player_t*	player,
-	int32_t /*powertype_t*/	power )
+	int16_t /*powertype_t*/	power )
 {
 	mobj_t* playerMo;
     if (power == pw_invulnerability)
@@ -880,17 +880,6 @@ P_DamageMobj
 		temp = damage < 100 ? damage : 100;
 
 
-		if (player->health == 12) {
-			// 28 14 0
-			// 32 28 16 12 0
-			//I_Error("%i %i %i", gametic, damage, inflictor->type); // 1918 4 31
-		}
-
-
-		/*
-		if (player == &players[consoleplayer])
-			I_Tactile (40,10,40+temp*2);
-		*/
  
 
 	}

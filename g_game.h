@@ -28,12 +28,12 @@
 // GAME
 //
 
-void G_InitNew (skill_t skill, int32_t episode, int32_t map);
+void G_InitNew (skill_t skill, int8_t episode, int8_t map);
 
 // Can be called by the startup code or M_Responder.
 // A normal game starts at map 1,
 // but a warp test can start elsewhere
-void G_DeferedInitNew (skill_t skill, int32_t episode, int32_t map);
+void G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
 
 void G_DeferedPlayDemo (int8_t* demo);
 
@@ -44,7 +44,7 @@ void G_LoadGame (int8_t* name);
 void G_DoLoadGame (void);
 
 // Called by M_Responder.
-void G_SaveGame (int32_t slot, int8_t* description);
+void G_SaveGame (int8_t slot, int8_t* description);
 
 // Only called by startup code.
 void G_RecordDemo (int8_t* name);

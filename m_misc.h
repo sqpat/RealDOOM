@@ -25,14 +25,14 @@
 //
 // MISC
 //
-extern  int32_t	myargc;
+extern  int16_t	myargc;
 extern  int8_t**	myargv;
-extern int32_t	prndindex;
+extern int16_t	prndindex;
 
 
 // Returns the position of the given parameter
 // in the arg list (0 if not found).
-int32_t M_CheckParm (int8_t* check);
+int16_t M_CheckParm (int8_t* check);
 
 boolean
 M_WriteFile

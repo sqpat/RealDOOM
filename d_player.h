@@ -178,9 +178,9 @@ typedef struct
     int32_t		last;
     int32_t		next;	
     
-    int32_t		maxkills;
-    int32_t		maxitems;
-    int32_t		maxsecret;
+    int16_t		maxkills;
+    int16_t		maxitems;
+    int16_t		maxsecret;
 
     // the par time
     int32_t		partime;

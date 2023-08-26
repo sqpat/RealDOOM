@@ -124,14 +124,14 @@ boolean         singletics = false; // debug flag to cancel adaptiveness
 
 
 
-extern  int32_t     sfxVolume;
-extern  int32_t     musicVolume;
+extern  uint8_t     sfxVolume;
+extern  uint8_t     musicVolume;
 
 extern  boolean inhelpscreens;
 
 skill_t         startskill;
-int32_t             startepisode;
-int32_t             startmap;
+int8_t             startepisode;
+int8_t             startmap;
 boolean         autostart;
 
 FILE*           debugfile;

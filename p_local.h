@@ -261,8 +261,8 @@ extern fixed_t		bmaporgy;	// origin of block map
 //
 // P_INTER
 //
-extern int32_t		maxammo[NUMAMMO];
-extern int32_t		clipammo[NUMAMMO];
+extern int16_t		maxammo[NUMAMMO];
+extern int8_t		clipammo[NUMAMMO];
 
 void
 P_TouchSpecialThing

@@ -348,7 +348,7 @@ void R_DrawPlanes (void)
 	    // Because of this hack, sky is not affected
 	    //  by INVUL inverse mapping.
 	    dc_colormap = colormaps;
-	    dc_texturemid = skytexturemid;
+	    dc_texturemid = 100*FRACUNIT; // this was hardcoded as the only use of skytexturemid..
 	    for (x=pl->minx ; x <= pl->maxx ; x++)
 	    {
 		dc_yl = pl->top[x];
@@ -359,9 +359,6 @@ void R_DrawPlanes (void)
 		    angle = (viewangle + xtoviewangle[x])>>ANGLETOSKYSHIFT;
 		    dc_x = x;
 
-			if (skytexture == -1882026175) {
-				I_Error("skytexture");
-			}
 			dc_source = R_GetColumn(skytexture, angle);
 		    colfunc ();
 		}
