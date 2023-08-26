@@ -142,7 +142,7 @@ byte gammatable[5][256] =
 #define GC_COLORDONTCARE 7
 #define GC_BITMASK              8
 
-int32_t	usegamma;
+uint8_t	usegamma;
 			 
 //
 // V_MarkRect 

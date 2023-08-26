@@ -264,9 +264,9 @@ void D_Display (void)
     static  gamestate_t         oldgamestate = -1;
     static  int32_t                 borderdrawcount;
 	int32_t                         nowtime;
-	int32_t                         tics;
+	int16_t                         tics;
 	int32_t                         wipestart;
-	int32_t                         y;
+	int16_t                         y;
     boolean                     done;
     boolean                     wipe;
     boolean                     redrawsbar;
@@ -286,18 +286,22 @@ void D_Display (void)
         borderdrawcount = 3;
     }
 
+
     // save the current screen if about to wipe
     if (gamestate != wipegamestate)
     {
         wipe = true;
         wipe_StartScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
-    }
-    else
+    } else{
         wipe = false;
+    }
+
+
 
     if (gamestate == GS_LEVEL && gametic)
         HU_Erase();
 
+    //I_Error("jhere");
     // do buffered drawing
     switch (gamestate)
     {

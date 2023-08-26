@@ -61,26 +61,26 @@ extern boolean          message_dontfuckwithme;
 //
 // defaulted values
 //
-int32_t                     mouseSensitivity;       // has default
+uint8_t                     mouseSensitivity;       // has default
 
 // Show messages has default, 0 = off, 1 = on
-int32_t                     showMessages;
+uint8_t                     showMessages;
         
-int32_t         sfxVolume;
-int32_t         musicVolume;
+uint8_t         sfxVolume;
+uint8_t         musicVolume;
 
 // Blocky mode, has default, 0 = high, 1 = normal
-int32_t                     detailLevel;
-int32_t                     screenblocks;           // has default
+uint8_t                     detailLevel;
+uint8_t                     screenblocks;           // has default
 
 // temp for screenblocks (0-9)
-int32_t                     screenSize;
+uint8_t                     screenSize;
 
 // -1 = no quicksave slot picked!
 int32_t                     quickSaveSlot;
 
  // 1 = message to be printed
-int32_t                     messageToPrint;
+uint8_t                     messageToPrint;
 // ...and here is the message string!
 int8_t*                   messageString;          
 

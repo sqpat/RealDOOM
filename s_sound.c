@@ -71,8 +71,8 @@
 extern int32_t snd_MusicDevice;
 extern int32_t snd_SfxDevice;
 // Config file? Same disclaimer as above.
-extern int32_t snd_DesiredMusicDevice;
-extern int32_t snd_DesiredSfxDevice;
+extern uint8_t snd_DesiredMusicDevice;
+extern uint8_t snd_DesiredSfxDevice;
 
 
 

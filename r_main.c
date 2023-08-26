@@ -552,14 +552,14 @@ void R_InitLightTables (void)
 // The change will take effect next refresh.
 //
 boolean		setsizeneeded;
-int32_t		setblocks;
-int32_t		setdetail;
+uint8_t		setblocks;
+uint8_t		setdetail;
 
 
 void
 R_SetViewSize
-( int32_t		blocks,
-  int32_t		detail )
+( uint8_t		blocks,
+  uint8_t		detail )
 {
     setsizeneeded = true;
     setblocks = blocks;
@@ -575,22 +575,19 @@ void R_ExecuteSetViewSize (void)
 	fixed_t	cosadj;
 	fixed_t	an;
     fixed_t	dy;
-    int32_t		i;
-    int32_t		j;
-    int32_t		level;
-    int32_t		startmap; 	
+    int16_t		i;
+    int16_t		j;
+    int8_t		level;
+    int8_t		startmap; 	
 
     setsizeneeded = false;
 
-    if (setblocks == 11)
-    {
-	scaledviewwidth = SCREENWIDTH;
-	viewheight = SCREENHEIGHT;
-    }
-    else
-    {
-	scaledviewwidth = setblocks*32;
-	viewheight = (setblocks*168/10)&~7;
+    if (setblocks == 11) {
+        scaledviewwidth = SCREENWIDTH;
+        viewheight = SCREENHEIGHT;
+    } else {
+        scaledviewwidth = setblocks*32;
+        viewheight = (setblocks*168/10)&~7;
     }
     
     detailshift = setdetail;
@@ -669,8 +666,8 @@ void R_ExecuteSetViewSize (void)
 //
 // R_Init
 //
-extern int32_t	detailLevel;
-extern int32_t	screenblocks;
+extern uint8_t	detailLevel;
+extern uint8_t	screenblocks;
 
 
 

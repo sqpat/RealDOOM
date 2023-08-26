@@ -234,55 +234,53 @@ M_ReadFile
 //
 // DEFAULTS
 //
-int32_t		usemouse;
+uint8_t		usemouse;
 
-extern int32_t	key_right;
-extern int32_t	key_left;
-extern int32_t	key_up;
-extern int32_t	key_down;
+extern uint8_t	key_right;
+extern uint8_t	key_left;
+extern uint8_t	key_up;
+extern uint8_t	key_down;
 
-extern int32_t	key_strafeleft;
-extern int32_t	key_straferight;
+extern uint8_t	key_strafeleft;
+extern uint8_t	key_straferight;
 
-extern int32_t	key_fire;
-extern int32_t	key_use;
-extern int32_t	key_strafe;
-extern int32_t	key_speed;
+extern uint8_t	key_fire;
+extern uint8_t	key_use;
+extern uint8_t	key_strafe;
+extern uint8_t	key_speed;
 
-extern int32_t	mousebfire;
-extern int32_t	mousebstrafe;
-extern int32_t	mousebforward;
+extern uint8_t	mousebfire;
+extern uint8_t	mousebstrafe;
+extern uint8_t	mousebforward;
 
 extern int16_t	viewwidth;
 extern int16_t	viewheight;
 
-extern int32_t	mouseSensitivity;
-extern int32_t	showMessages;
+extern uint8_t	mouseSensitivity;
+extern uint8_t	showMessages;
 
-extern int32_t	detailLevel;
+extern uint8_t	detailLevel;
 
-extern int32_t	screenblocks;
+extern uint8_t	screenblocks;
 
-extern int32_t	showMessages;
 
 // machine-independent sound params
-extern	int32_t	numChannels;
+extern	uint8_t	numChannels;
 
-extern int32_t sfxVolume;
-extern int32_t musicVolume;
-extern int32_t snd_SBport, snd_SBirq, snd_SBdma;
-extern int32_t snd_Mport;
-
+extern uint8_t sfxVolume;
+extern uint8_t musicVolume;
+extern uint8_t snd_SBport8bit, snd_SBirq, snd_SBdma;
+extern uint8_t snd_Mport8bit;
 
 
 
 typedef struct
 {
     int8_t*	name;
-    int32_t*	location;
-    int32_t		defaultvalue;
-    int32_t		scantranslate;		// PC scan code hack
-    int32_t		untranslated;		// lousy hack
+    uint8_t*	location;
+    uint8_t		defaultvalue;
+    uint8_t		scantranslate;		// PC scan code hack
+    uint8_t		untranslated;		// lousy hack
 } default_t;
 
 #define SC_UPARROW              0x48
@@ -361,10 +359,10 @@ default_t	defaults[] =
     {"snd_channels",&numChannels, 3},
     {"snd_musicdevice",&snd_DesiredMusicDevice, 0},
     {"snd_sfxdevice",&snd_DesiredSfxDevice, 0},
-    {"snd_sbport",&snd_SBport, 0x220},
+    {"snd_sbport",&snd_SBport8bit, 0x22}, // must be shifted one...
     {"snd_sbirq",&snd_SBirq, 5},
     {"snd_sbdma",&snd_SBdma, 1},
-    {"snd_mport",&snd_Mport, 0x330},
+    {"snd_mport",&snd_Mport8bit, 0x33},  // must be shifted one..
 
     {"usegamma",&usegamma, 0}
 	 
@@ -386,22 +384,19 @@ void M_SaveDefaults (void)
 	
     f = fopen (defaultfile, "w");
     if (!f)
-	return; // can't write the file, but don't complain
+	    return; // can't write the file, but don't complain
 		
-    for (i=0 ; i<numdefaults ; i++)
-    {
-        if (defaults[i].scantranslate)
+    for (i=0 ; i<numdefaults ; i++) {
+        if (defaults[i].scantranslate){
             defaults[i].location = &defaults[i].untranslated;
-
-	if (defaults[i].defaultvalue > -0xfff
-	    && defaults[i].defaultvalue < 0xfff)
-	{
-	    v = *defaults[i].location;
-	    fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
-	} else {
-	    fprintf (f,"%s\t\t\"%s\"\n",defaults[i].name,
-		     * (int8_t **) (defaults[i].location));
-	}
+        }
+        //if (defaults[i].defaultvalue > -0xfff && defaults[i].defaultvalue < 0xfff) {
+            v = *defaults[i].location;
+            fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
+        //} else {
+        //    fprintf (f,"%s\t\t\"%s\"\n",defaults[i].name,
+        //        * (int8_t **) (defaults[i].location));
+        //}
     }
 	
     fclose (f);
@@ -415,13 +410,13 @@ extern byte	scantokey[128];
 
 void M_LoadDefaults (void)
 {
-    int32_t		i;
+    int16_t		i;
     int32_t		len;
     FILE*	f;
 	int8_t	def[80];
 	int8_t	strparm[100];
     int8_t*	newstring;
-    int32_t		parm;
+    uint8_t		parm;
     boolean	isstring;
     
     // set everything to base values
@@ -431,52 +426,45 @@ void M_LoadDefaults (void)
     
     // check for a custom default file
     i = M_CheckParm ("-config");
-    if (i && i<myargc-1)
-    {
-	defaultfile = myargv[i+1];
-	printf ("	default file: %s\n",defaultfile);
+    if (i && i<myargc-1) {
+        defaultfile = myargv[i+1];
+        printf ("	default file: %s\n",defaultfile);
+    } else {
+	    defaultfile = basedefault;
     }
-    else
-	defaultfile = basedefault;
-    
     // read the file in, overriding any set defaults
     f = fopen (defaultfile, "r");
-    if (f)
-    {
-	while (!feof(f))
-	{
-	    isstring = false;
-	    if (fscanf (f, "%79s %[^\n]\n", def, strparm) == 2)
-	    {
-		if (strparm[0] == '"')
-		{
-		    // get a string default
-		    isstring = true;
-		    len = strlen(strparm);
-		    newstring = (int8_t *) malloc(len);
-		    strparm[len-1] = 0;
-		    strcpy(newstring, strparm+1);
-		}
-		else if (strparm[0] == '0' && strparm[1] == 'x')
-		    sscanf(strparm+2, "%x", &parm);
-		else
-		    sscanf(strparm, "%i", &parm);
-		for (i=0 ; i<numdefaults ; i++)
-		    if (!strcmp(def, defaults[i].name))
-		    {
-			if (!isstring)
-			    *defaults[i].location = parm;
-			else
-			    *defaults[i].location =
-				(int32_t) newstring;
-			break;
-		    }
-	    }
-	}
-		
-	fclose (f);
+    if (f) {
+        while (!feof(f)) {
+            isstring = false;
+            if (fscanf (f, "%79s %[^\n]\n", def, strparm) == 2) {
+                if (strparm[0] == '"') {
+                    // get a string default
+                    isstring = true;
+                    len = strlen(strparm);
+                    newstring = (int8_t *) malloc(len);
+                    strparm[len-1] = 0;
+                    strcpy(newstring, strparm+1);
+                } else if (strparm[0] == '0' && strparm[1] == 'x'){
+                    sscanf(strparm+2, "%x", &parm);
+                } else {
+                    sscanf(strparm, "%i", &parm);
+                }
+                for (i=0 ; i<numdefaults ; i++){
+                    if (!strcmp(def, defaults[i].name)) {
+                        if (!isstring){
+                            *defaults[i].location = parm;
+                        } else {
+                            *defaults[i].location = (int32_t) newstring;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+            
+        fclose (f);
     }
-
     for (i = 0; i < numdefaults; i++)
     {
         if (defaults[i].scantranslate)

@@ -49,7 +49,7 @@ wipe_shittyColMajorXform
     int16_t		y;
 	MEMREF destRef;
     int16_t*	dest;
-    int32_t size = width * height * 2;
+    uint16_t size = width * height * 2;
 
 	destRef = Z_MallocEMSNew(size, PU_STATIC, 0, ALLOC_TYPE_FWIPE);
 	dest = (int16_t*)Z_LoadBytesFromEMS(destRef);
@@ -68,7 +68,7 @@ int16_t
 wipe_initColorXForm
 ( int16_t	width,
   int16_t	height,
-  int32_t	ticks )
+  int16_t	ticks )
 {
     memcpy(wipe_scr, wipe_scr_start, (((uint16_t) width)*((uint16_t)height)));
     return 0;
@@ -78,12 +78,12 @@ int16_t
 wipe_doColorXForm
 ( int16_t	width,
   int16_t	height,
-  int32_t	ticks )
+  int16_t	ticks )
 {
     boolean	changed;
     byte*	w;
     byte*	e;
-    int32_t		newval;
+    int16_t		newval;
 
     changed = false;
     w = wipe_scr;
@@ -124,7 +124,7 @@ int16_t
 wipe_exitColorXForm
 ( int16_t	width,
   int16_t	height,
-  int32_t	ticks )
+  int16_t	ticks )
 {
     return 0;
 }
@@ -136,7 +136,7 @@ int16_t
 wipe_initMelt
 ( int16_t	width,
   int16_t	height,
-  int32_t	ticks )
+  int16_t	ticks )
 {
 	int16_t i, r;
 	int16_t* y;
@@ -177,7 +177,7 @@ int16_t
 wipe_doMelt
 ( int16_t	width,
   int16_t	height,
-  int32_t	ticks )
+  int16_t	ticks )
 {
     int16_t		i;
     int16_t		j;
@@ -234,7 +234,7 @@ int16_t
 wipe_exitMelt
 ( int16_t	width,
   int16_t	height,
-  int32_t	ticks )
+  int16_t	ticks )
 {
 	Z_FreeEMSNew(yRef);
 
@@ -243,8 +243,8 @@ wipe_exitMelt
 
 int16_t
 wipe_StartScreen
-( int32_t	x,
-  int32_t	y,
+( int16_t	x,
+  int16_t	y,
   int16_t	width,
   int16_t	height )
 {
@@ -255,8 +255,8 @@ wipe_StartScreen
 
 int16_t
 wipe_EndScreen
-( int32_t	x,
-  int32_t	y,
+( int16_t	x,
+  int16_t	y,
   int16_t	width,
   int16_t	height )
 {
@@ -268,15 +268,15 @@ wipe_EndScreen
 
 int16_t
 wipe_ScreenWipe
-( int32_t	wipeno,
-  int32_t	x,
-  int32_t	y,
+( int16_t	wipeno,
+  int16_t	x,
+  int16_t	y,
   int16_t	width,
   int16_t	height,
-  int32_t	ticks )
+  int16_t	ticks )
 {
 	int16_t rc;
-    static int16_t(*wipes[])(int16_t, int16_t, int32_t) =
+    static int16_t(*wipes[])(int16_t, int16_t, int16_t) =
     {
 	wipe_initColorXForm, wipe_doColorXForm, wipe_exitColorXForm,
 	wipe_initMelt, wipe_doMelt, wipe_exitMelt

@@ -96,8 +96,8 @@ extern  boolean         respawnmonsters;
 extern int32_t snd_MusicDevice;
 extern int32_t snd_SfxDevice;
 // Config file? Same disclaimer as above.
-extern int32_t snd_DesiredMusicDevice;
-extern int32_t snd_DesiredSfxDevice;
+extern uint8_t snd_DesiredMusicDevice;
+extern uint8_t snd_DesiredSfxDevice;
 
 
 // -------------------------
@@ -224,7 +224,7 @@ extern  boolean         precache;
 //  to force a wipe on the next draw
 extern  gamestate_t     wipegamestate;
 
-extern  int32_t             mouseSensitivity;
+extern  uint8_t             mouseSensitivity;
 //?
 // debug flag to cancel adaptiveness
 extern  boolean         singletics;	

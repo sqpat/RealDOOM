@@ -147,6 +147,6 @@ void R_RenderPlayerView (player_t *player);
 void R_Init (void);
 
 // Called by M_Responder.
-void R_SetViewSize (int32_t blocks, int32_t detail);
+void R_SetViewSize (uint8_t blocks, uint8_t detail);
 
 #endif

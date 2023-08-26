@@ -62,7 +62,8 @@ const int8_t snd_prefixen[]
 
 int32_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
 
-int32_t snd_SBport, snd_SBirq, snd_SBdma; // sound blaster variables
+int32_t snd_SBport;
+uint8_t snd_SBirq, snd_SBdma; // sound blaster variables
 int32_t snd_Mport; // midi variables
 
 int32_t snd_MusicVolume; // maximum volume for music
@@ -70,9 +71,10 @@ int32_t snd_SfxVolume; // maximum volume for sound
 
 int32_t snd_SfxDevice; // current sfx card # (index to dmxCodes)
 int32_t snd_MusicDevice; // current music card # (index to dmxCodes)
-int32_t snd_DesiredSfxDevice;
-int32_t snd_DesiredMusicDevice;
-
+uint8_t snd_DesiredSfxDevice;
+uint8_t snd_DesiredMusicDevice;
+uint8_t snd_SBport8bit;
+int32_t snd_Mport8bit;
 void I_PauseSong(int32_t handle)
 {
     //MUS_PauseSong(handle);

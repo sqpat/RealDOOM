@@ -130,21 +130,21 @@ MEMREF           savebufferRef;
 // 
 // controls (have defaults) 
 // 
-int32_t             key_right;
-int32_t             key_left;
+uint8_t             key_right;
+uint8_t             key_left;
 
-int32_t             key_up;
-int32_t             key_down;
-int32_t             key_strafeleft;
-int32_t             key_straferight;
-int32_t             key_fire;
-int32_t             key_use;
-int32_t             key_strafe;
-int32_t             key_speed;
+uint8_t             key_up;
+uint8_t             key_down;
+uint8_t             key_strafeleft;
+uint8_t             key_straferight;
+uint8_t             key_fire;
+uint8_t             key_use;
+uint8_t             key_strafe;
+uint8_t             key_speed;
  
-int32_t             mousebfire;
-int32_t             mousebstrafe;
-int32_t             mousebforward;
+uint8_t             mousebfire;
+uint8_t             mousebstrafe;
+uint8_t             mousebforward;
  
  
  
@@ -161,7 +161,7 @@ fixed_t         angleturn[3] = {640, 1280, 320};        // + slow turn
 #define NUMKEYS         256 
 
 boolean         gamekeydown[NUMKEYS]; 
-int32_t             turnheld;                               // for accelerative turning 
+int8_t             turnheld;                               // for accelerative turning 
  
 boolean         mousearray[4]; 
 boolean*        mousebuttons = &mousearray[1];          // allow [-1]

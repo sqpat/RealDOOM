@@ -119,7 +119,7 @@
 
 typedef struct
 {
-	int32_t x, y;
+	fixed_t x, y;
 } fpoint_t;
 
 typedef struct
@@ -802,8 +802,8 @@ AM_clipMline
     register	outside;
     
     fpoint_t	tmp;
-    int32_t		dx;
-    int32_t		dy;
+    fixed_t		dx;
+    fixed_t		dy;
 
     
 #define DOOUTCODE(oc, mx, my) \
