@@ -655,25 +655,12 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 //
 // P_RemoveMobj
 //
-mapthing_t	itemrespawnque[ITEMQUESIZE];
-int32_t		itemrespawntime[ITEMQUESIZE];
-int32_t		iquehead;
-int32_t		iquetail;
 
 
 void P_RemoveMobj (MEMREF mobjRef)
 {
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-    if ((mobj->flags & MF_SPECIAL) && !(mobj->flags & MF_DROPPED) && (mobj->type != MT_INV) && (mobj->type != MT_INS)) {
-		itemrespawnque[iquehead] = mobj->spawnpoint;
-		itemrespawntime[iquehead] = leveltime;
-		iquehead = (iquehead+1)&(ITEMQUESIZE-1);
 
-		// lose one off the end?
-		if (iquehead == iquetail) {
-			iquetail = (iquetail + 1)&(ITEMQUESIZE - 1);
-		}
-    }
 	
     // unlink from sector and block lists
     P_UnsetThingPosition (mobjRef);
