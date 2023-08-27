@@ -943,7 +943,7 @@ void A_FaceTarget (MEMREF actorRef)
 //
 void A_PosAttack (MEMREF actorRef)
 {
-    angle_t		angle;
+    fineangle_t		angle;
     int16_t		damage;
     fixed_t		slope;
 	mobj_t*	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
@@ -953,11 +953,11 @@ void A_PosAttack (MEMREF actorRef)
 		
     A_FaceTarget (actorRef);
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-	angle = actor->angle;
+	angle = actor->angle >> ANGLETOFINESHIFT;
     slope = P_AimLineAttack (actorRef, angle, MISSILERANGE);
 
 	S_StartSoundFromRef(actorRef, sfx_pistol);
-    angle += (P_Random()-P_Random())<<20;
+    angle = MOD_FINE_ANGLE(angle + (((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
     damage = ((P_Random()%5)+1)*3;
     P_LineAttack (actorRef, angle, MISSILERANGE, slope, damage);
 }
@@ -965,8 +965,8 @@ void A_PosAttack (MEMREF actorRef)
 void A_SPosAttack (MEMREF actorRef)
 {
     int8_t		i;
-    angle_t		angle;
-    angle_t		bangle;
+    fineangle_t		angle;
+    fineangle_t		bangle;
     int8_t		damage;
     fixed_t		slope;
 	mobj_t*	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
@@ -978,11 +978,11 @@ void A_SPosAttack (MEMREF actorRef)
     A_FaceTarget (actorRef);
 
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef); 
-	bangle = actor->angle;
+	bangle = actor->angle >> ANGLETOFINESHIFT;
     slope = P_AimLineAttack (actorRef, bangle, MISSILERANGE);
 
     for (i=0 ; i<3 ; i++) {
-		angle = bangle + ((P_Random()-P_Random())<<20);
+		angle = MOD_FINE_ANGLE((bangle + ((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
 		damage = ((P_Random()%5)+1)*3;
 		P_LineAttack (actorRef, angle, MISSILERANGE, slope, damage);
     }
@@ -990,8 +990,8 @@ void A_SPosAttack (MEMREF actorRef)
 
 void A_CPosAttack (MEMREF actorRef)
 {
-    angle_t		angle;
-    angle_t		bangle;
+    fineangle_t		angle;
+    fineangle_t		bangle;
     int8_t		damage;
     fixed_t		slope;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
@@ -1002,10 +1002,10 @@ void A_CPosAttack (MEMREF actorRef)
 	S_StartSoundFromRef(actorRef, sfx_shotgn);
     A_FaceTarget (actorRef);
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-    bangle = actor->angle;
+    bangle = (actor->angle) >> ANGLETOFINESHIFT;
     slope = P_AimLineAttack (actorRef, bangle, MISSILERANGE);
 
-    angle = bangle + ((P_Random()-P_Random())<<20);
+    angle = MOD_FINE_ANGLE((bangle + ((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
     damage = ((P_Random()%5)+1)*3;
     P_LineAttack (actorRef, angle, MISSILERANGE, slope, damage);
 }

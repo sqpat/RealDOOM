@@ -733,7 +733,7 @@ void P_HitSlideLine (int16_t linenum)
     lineangle = R_PointToAngle2 (0,0, ld.dx, ld.dy);
 
     if (side == 1)
-	lineangle += ANG180;
+		lineangle += ANG180;
 
     moveangle = R_PointToAngle2 (0,0, tmxmove, tmymove);
     deltaangle = moveangle-lineangle;
@@ -1169,13 +1169,12 @@ boolean PTR_ShootTraverse (intercept_t* in)
 fixed_t
 P_AimLineAttack
 ( MEMREF	t1Ref,
-  angle_t	angle,
+  fineangle_t	angle,
   fixed_t	distance )
 {
     fixed_t	x2;
     fixed_t	y2;
 	mobj_t* t1 = (mobj_t*) Z_LoadBytesFromEMS(t1Ref);
-    angle >>= ANGLETOFINESHIFT;
     shootthingRef = t1Ref;
     
     x2 = t1->x + (distance>>FRACBITS)*finecosine(angle);
@@ -1209,7 +1208,7 @@ P_AimLineAttack
 void
 P_LineAttack
 ( MEMREF	t1Ref,
-  angle_t	angle,
+  fineangle_t	angle,
   fixed_t	distance,
   fixed_t	slope,
   int16_t		damage )
@@ -1218,7 +1217,6 @@ P_LineAttack
     fixed_t	y2;
 	mobj_t* t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
 
-    angle >>= ANGLETOFINESHIFT;
     shootthingRef = t1Ref;
     la_damage = damage;
     x2 = t1->x + (distance>>FRACBITS)*finecosine(angle);

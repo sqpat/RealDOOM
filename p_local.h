@@ -216,13 +216,13 @@ extern MEMREF	linetargetRef;	// who got hit (or NULL)
 fixed_t
 P_AimLineAttack
 (MEMREF	t1,
-  angle_t	angle,
+  fineangle_t	angle,
   fixed_t	distance );
 
 void
 P_LineAttack
 (MEMREF	t1,
-  angle_t	angle,
+  fineangle_t	angle,
   fixed_t	distance,
   fixed_t	slope,
   int16_t		damage );

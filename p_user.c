@@ -49,10 +49,9 @@ boolean		onground;
 void
 P_Thrust
 ( player_t*	player,
-  angle_t	angle,
+  fineangle_t	angle,
   fixed_t	move )  {
 	mobj_t* playermo = (mobj_t* ) Z_LoadBytesFromEMS(player->moRef);
-    angle >>= ANGLETOFINESHIFT;
     
 	playermo->momx += FixedMul(move,finecosine(angle));
 	playermo->momy += FixedMul(move,finesine(angle));
@@ -141,7 +140,6 @@ void P_MovePlayer (player_t* player)
 {
     ticcmd_t*		cmd;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
-
     cmd = &player->cmd;
 	
 	playermo->angle += (cmd->angleturn<<16);
@@ -149,12 +147,12 @@ void P_MovePlayer (player_t* player)
     // Do not let the player control movement
     //  if not onground.
     onground = (playermo->z <= playermo->floorz);
-	
+
     if (cmd->forwardmove && onground)
-	P_Thrust (player, playermo->angle, cmd->forwardmove*2048);
+	P_Thrust (player, playermo->angle>>ANGLETOFINESHIFT, cmd->forwardmove*2048);
     
     if (cmd->sidemove && onground)
-	P_Thrust (player, playermo->angle-ANG90, cmd->sidemove*2048);
+	P_Thrust (player, MOD_FINE_ANGLE((playermo->angle>>ANGLETOFINESHIFT)-FINE_ANG90), cmd->sidemove*2048);
 
     if ( (cmd->forwardmove || cmd->sidemove) 
 	 && playermo->state == &states[S_PLAY] )

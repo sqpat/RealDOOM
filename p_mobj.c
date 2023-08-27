@@ -1018,7 +1018,7 @@ P_SpawnPlayerMissile
 {
     mobj_t*	th;
 	MEMREF thRef;
-    angle_t	an;
+    fineangle_t	an;
     
 	fixed_t	x;
     fixed_t	y;
@@ -1029,20 +1029,20 @@ P_SpawnPlayerMissile
     
 
     // see which target is to be aimed at
-    an = source->angle;
+    an = source->angle >> ANGLETOFINESHIFT;
     slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
     
     if (!linetargetRef) {
-		an += 1<<26;
+		an = MOD_FINE_ANGLE(an +(1<<(26- ANGLETOFINESHIFT)));
 		slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
 
 		if (!linetargetRef) {
-			an -= 2<<26;
+			an = MOD_FINE_ANGLE(an - (2<<(26-ANGLETOFINESHIFT)));
 			slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
 		}
 		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 		if (!linetargetRef) {
-			an = source->angle;
+			an = source->angle >> ANGLETOFINESHIFT;
 			slope = 0;
 		}
     }
@@ -1058,8 +1058,8 @@ P_SpawnPlayerMissile
 	S_StartSound (th, th->info->seesound);
 
     th->targetRef = sourceRef;
-    th->angle = an;
-	an = an >> ANGLETOFINESHIFT;
+    th->angle = an << ANGLETOFINESHIFT;
+	//an = an >> ANGLETOFINESHIFT;
 
 	speed = MAKESPEED(th->info->speed);
 

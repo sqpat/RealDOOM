@@ -492,7 +492,7 @@ A_Punch
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    angle_t	angle;
+    fineangle_t	angle;
     int16_t		damage;
     fixed_t		slope;
 	mobj_t* playermo = (mobj_t*) Z_LoadBytesFromEMS(player->moRef);
@@ -504,8 +504,8 @@ A_Punch
 		damage *= 10;
 	}
 
-    angle = playermo->angle;
-    angle += (P_Random()-P_Random())<<18;
+    angle = playermo->angle >> ANGLETOFINESHIFT;
+    angle = MOD_FINE_ANGLE(angle + (P_Random()-P_Random())>>(1));
     slope = P_AimLineAttack (player->moRef, angle, MELEERANGE);
     P_LineAttack (player->moRef, angle, MELEERANGE, slope, damage);
 
@@ -529,15 +529,16 @@ A_Saw
 ( player_t*	player,
   pspdef_t*	psp ) 
 {
-    angle_t	angle;
+	angle_t bigangle;
+    fineangle_t	angle;
     int16_t		damage;
     fixed_t		slope;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 	mobj_t* linetarget; 
 
     damage = 2*(P_Random ()%10+1);
-    angle = playermo->angle;
-    angle += (P_Random()-P_Random())<<18;
+    angle = playermo->angle >> ANGLETOFINESHIFT;
+    angle = MOD_FINE_ANGLE( + (P_Random()-P_Random())>>(1));
     
     // use meleerange + 1 se the puff doesn't skip the flash
     slope = P_AimLineAttack (player->moRef, angle, MELEERANGE+1);
@@ -552,18 +553,18 @@ A_Saw
 	
 	linetarget = (mobj_t*)Z_LoadBytesFromEMS(linetargetRef);
     // turn to face target
-    angle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
-    if (angle - playermo->angle > ANG180)
+    bigangle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
+    if (bigangle - playermo->angle > ANG180)
     {
-	if (angle - playermo->angle < -ANG90/20)
-		playermo->angle = angle + ANG90/21;
+	if (bigangle - playermo->angle < -ANG90/20)
+		playermo->angle = bigangle + ANG90/21;
 	else
 		playermo->angle -= ANG90/20;
     }
     else
     {
-	if (angle - playermo->angle > ANG90/20)
-		playermo->angle = angle - ANG90/21;
+	if (bigangle - playermo->angle > ANG90/20)
+		playermo->angle = bigangle - ANG90/21;
 	else
 		playermo->angle += ANG90/20;
     }
@@ -628,17 +629,17 @@ fixed_t		bulletslope;
 
 void P_BulletSlope (MEMREF moRef)
 {
-    angle_t	an;
+    fineangle_t	an;
 	mobj_t*	mo = (mobj_t*) Z_LoadBytesFromEMS(moRef);
     // see which target is to be aimed at
-    an = mo->angle;
+    an = mo->angle >> ANGLETOFINESHIFT;
     bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
 
     if (!linetargetRef) {
-		an += 1<<26;
+		an =  MOD_FINE_ANGLE(an +(1<<(26-ANGLETOFINESHIFT)));
 		bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
 		if (!linetargetRef) {
-			an -= 2<<26;
+			an = MOD_FINE_ANGLE(an- (2<<(26-ANGLETOFINESHIFT)));
 			bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
 		}
     }
@@ -653,16 +654,16 @@ P_GunShot
 ( MEMREF moRef,
   boolean	accurate )
 {
-    angle_t	angle;
+    fineangle_t	angle;
     int16_t		damage;
 
 	mobj_t*	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
  
     damage = 5*(P_Random ()%3+1);
-    angle = mo->angle;
+    angle = mo->angle >> ANGLETOFINESHIFT;
 
     if (!accurate)
-	angle += (P_Random()-P_Random())<<18;
+		angle = MOD_FINE_ANGLE(angle + ((P_Random()-P_Random())>>(1)));
     P_LineAttack (moRef, angle, MISSILERANGE, bulletslope, damage);
 
 }
@@ -729,7 +730,7 @@ A_FireShotgun2
   pspdef_t*	psp ) 
 {
     int8_t		i;
-    angle_t	angle;
+    fineangle_t	angle;
     int16_t		damage;
 	mobj_t* playermo;
 		
@@ -749,8 +750,8 @@ A_FireShotgun2
     for (i=0 ; i<20 ; i++)
     {
 	damage = 5*(P_Random ()%3+1);
-	angle = playermo->angle;
-	angle += (P_Random()-P_Random())<<19;
+	angle = playermo->angle >> ANGLETOFINESHIFT;
+	angle = MOD_FINE_ANGLE( angle + ((P_Random()-P_Random())<<(19-ANGLETOFINESHIFT)));
 	P_LineAttack (player->moRef,
 		      angle,
 		      MISSILERANGE,
@@ -816,36 +817,35 @@ void A_BFGSpray (mobj_t* mo)
     int8_t			i;
     int8_t			j;
     int16_t			damage;
-    angle_t		an;
+    fineangle_t		an;
 	mobj_t* linetarget;
 	
     // offset angles from its attack angle
-    for (i=0 ; i<40 ; i++)
-    {
-	an = mo->angle - ANG90/2 + ANG90/40*i;
+    for (i=0 ; i<40 ; i++) {
+		an = MOD_FINE_ANGLE( (mo->angle >> ANGLETOFINESHIFT) - (FINE_ANG90/2) + (FINE_ANG90/40*i));
 
-	// mo->target is the originator (player)
-	//  of the missile
-	P_AimLineAttack (mo->targetRef, an, 16*64*FRACUNIT);
+		// mo->target is the originator (player)
+		//  of the missile
+		P_AimLineAttack (mo->targetRef, an, 16*64*FRACUNIT);
 
-	if (!linetargetRef)
-	    continue;
-	linetarget = (mobj_t*)Z_LoadBytesFromEMS(linetargetRef);
+		if (!linetargetRef)
+			continue;
+		linetarget = (mobj_t*)Z_LoadBytesFromEMS(linetargetRef);
 
-	P_SpawnMobj (linetarget->x,
-		     linetarget->y,
-		     linetarget->z + (linetarget->height>>2),
-		     MT_EXTRABFG);
-	
-	damage = 0;
-	for (j=0;j<15;j++)
-	    damage += (P_Random()&7) + 1;
+		P_SpawnMobj (linetarget->x,
+				linetarget->y,
+				linetarget->z + (linetarget->height>>2),
+				MT_EXTRABFG);
+		
+		damage = 0;
+		for (j=0;j<15;j++)
+			damage += (P_Random()&7) + 1;
 
-	if (linetargetRef == 0) {
-		I_Error("bad thing caught e");
-	}
+		if (linetargetRef == 0) {
+			I_Error("bad thing caught e");
+		}
 
-	P_DamageMobj (linetargetRef, mo->targetRef,mo->targetRef, damage);
+		P_DamageMobj (linetargetRef, mo->targetRef,mo->targetRef, damage);
     }
 }
 

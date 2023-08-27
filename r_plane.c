@@ -168,7 +168,7 @@ R_MapPlane
 void R_ClearPlanes (void)
 {
     int16_t		i;
-    angle_t	angle;
+    fineangle_t	angle;
     
     // opening / clipping determination
     for (i=0 ; i<viewwidth ; i++)
