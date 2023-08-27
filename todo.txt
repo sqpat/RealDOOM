@@ -19,6 +19,7 @@ TODO 620272
  ~ make ems actually work
  ~ set visiplanes under 64k and see if large compile works
  ~ change a bunch of int_32t to int_16t, see if it still works
+ ~ change angle_ts
  2 change fixed_t stuff
    - make it a union. custom add and subtract just like fixedmul/fixeddiv?
  3 screens in conventional instead of allocced

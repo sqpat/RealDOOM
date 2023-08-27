@@ -1119,10 +1119,9 @@ void
 AM_rotate
 ( fixed_t*	x,
   fixed_t*	y,
-  angle_t	a )
+  fineangle_t	a )
 {
     fixed_t tmpx;
-	a = a >> ANGLETOFINESHIFT;
     tmpx =
 	FixedMul(*x,finecosine(a))
 	- FixedMul(*y,finesine(a));
@@ -1139,7 +1138,7 @@ AM_drawLineCharacter
 ( mline_t*	lineguy,
   int16_t		lineguylines,
   fixed_t	scale,
-  angle_t	angle,
+  fineangle_t	angle,
   uint8_t		color,
   fixed_t	x,
   fixed_t	y )
@@ -1190,24 +1189,11 @@ void AM_drawPlayers(void)
 	uint8_t color;
 	mobj_t* playerMo;
 	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
-
 	if (cheating)
-		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0,
-			playerMo->angle, WHITE, playerMo->x, playerMo->y);
+		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMo->angle>>ANGLETOFINESHIFT, WHITE, playerMo->x, playerMo->y);
 	else
-		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMo->angle,
-			WHITE, playerMo->x, playerMo->y);
-	return;
+		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMo->angle>>ANGLETOFINESHIFT, WHITE, playerMo->x, playerMo->y);
 
-	p = &players[0];
-
-	if (p->powers[pw_invisibility])
-		color = 246; // *close* to black
-	else
-		color = their_colors[0];
-
-	AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMo->angle,
-		color, playerMo->x, playerMo->y);
 
 
 }
@@ -1226,7 +1212,7 @@ AM_drawThings
 		while (tRef) {
 			t = (mobj_t*) Z_LoadBytesFromEMS(tRef);
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
-			 16<<FRACBITS, t->angle, colors, t->x, t->y);
+			 16<<FRACBITS, t->angle>>ANGLETOFINESHIFT, colors, t->x, t->y);
 			tRef = t->snextRef;
 		}
     }

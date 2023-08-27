@@ -121,7 +121,7 @@ extern fineangle_t	rw_normalangle;
 
 
 // angle to line origin
-extern int32_t		rw_angle1;
+extern angle_t		rw_angle1;
 
 
 extern visplane_t*	floorplane;

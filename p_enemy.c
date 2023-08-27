@@ -1263,11 +1263,11 @@ void A_Tracer (MEMREF actorRef)
 		if (exact - actor->angle > 0x80000000) {
 			actor->angle -= TRACEANGLE;
 			if (exact - actor->angle < 0x80000000)
-			actor->angle = exact;
+				actor->angle = exact;
 		} else {
 			actor->angle += TRACEANGLE;
 			if (exact - actor->angle > 0x80000000)
-			actor->angle = exact;
+				actor->angle = exact;
 		}
     }
 	actorspeed = MAKESPEED(actor->info->speed);

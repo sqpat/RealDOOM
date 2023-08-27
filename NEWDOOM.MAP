@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/08/27 22:18:29
+Created on:       23/08/27 22:32:37
 Executable Image: newdoom.exe
 creating an OS/2 linear executable
 
@@ -516,8 +516,8 @@ Module: am_map.obj(C:\REALDOOM\am_map.c)
 0001:00008410+ AM_drawWalls_
 0001:000085e0+ AM_rotate_
 0001:00008670+ AM_drawLineCharacter_
-0001:00008750+ AM_drawPlayers_
-0001:000087f0+ AM_drawThings_
+0001:00008760+ AM_drawPlayers_
+0001:000087e0+ AM_drawThings_
 0001:00008870+ AM_drawMarks_
 0001:00008950* AM_drawCrosshair_
 0001:00008980  AM_Drawer_
@@ -1852,4 +1852,4 @@ C:\WATCOM\lib386\math387r.lib
 Stack size:  6000 (24576.)
 Memory size:  00083500 (537856.)
 Entry point address: 0001:00024e64
-Link time: 00:01.73
+Link time: 00:04.03
