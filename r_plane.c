@@ -200,7 +200,7 @@ visplane_t*
 R_FindPlane
 ( fixed_t	height,
   int16_t		picnum,
-  int16_t		lightlevel )
+  uint8_t		lightlevel )
 {
     visplane_t*	check;
 	
@@ -315,10 +315,10 @@ R_CheckPlane
 void R_DrawPlanes (void)
 {
     visplane_t*		pl;
-    int16_t			light;
+    uint8_t			light;
     int16_t			x;
     int16_t			stop;
-    int32_t			angle;
+    int16_t			angle;
 	int16_t * flattranslation;
 	byte t1, b1, t2, b2;
 
@@ -369,9 +369,7 @@ void R_DrawPlanes (void)
 
 	if (light >= LIGHTLEVELS)
 	    light = LIGHTLEVELS-1;
-
-	if (light < 0)
-	    light = 0;
+ 
 
 	planezlight = zlight[light];
 

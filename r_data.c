@@ -730,9 +730,8 @@ void R_InitTextures(void)
 
 	// Create translation table for global animation.
 
-	// ref 385 ... page 3
-	texturetranslationRef = Z_MallocEMSNew((numtextures + 1) * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE_TRANSLATION);
 
+	texturetranslationRef = Z_MallocEMSNew((numtextures + 1) * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE_TRANSLATION);
 	texturetranslation = (int16_t*)Z_LoadBytesFromEMS(texturetranslationRef);
 
 	for (i = 0; i < numtextures; i++)

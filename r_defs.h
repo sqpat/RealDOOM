@@ -442,7 +442,7 @@ typedef struct
 //
 typedef struct
 {
-    int32_t			numframes;
+    int8_t			numframes;
     MEMREF		spriteframesRef;
 
 } spritedef_t;
@@ -455,7 +455,7 @@ typedef struct
 typedef struct
 {
   fixed_t		height;
-  int32_t			picnum;
+  int16_t			picnum;
   int16_t lightlevel;
   int16_t minx;
   int16_t maxx;
