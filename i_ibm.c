@@ -698,7 +698,7 @@ union REGS in, out;
 //
 // I_AllocLow
 //
-byte *I_AllocLow(filesize_t length)
+byte *I_AllocLow(filelength_t length)
 {
 	byte *mem;
 	mem = malloc(length);

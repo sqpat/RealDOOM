@@ -33,7 +33,7 @@
 # CCOPTS = $(EXTERNOPT) -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc
 # zt1024 too much. 512 ok
 
-CCOPTS = /d2 /omaxet /ei /j /zq /mh /zt768
+CCOPTS = /d2 /omaxet /ei /j /zq /ml /zt768
 
 GLOBOBJS = &
  i_main.obj &
@@ -89,7 +89,7 @@ GLOBOBJS = &
  info.obj &
  dmx.obj 
 
-newdoom.exe : $(GLOBOBJS) i_ibm.obj
+doom16.exe : $(GLOBOBJS) i_ibm.obj
  wlink @newd16.lnk
  copy doom16.exe doom.exe
  wstrip doom.exe

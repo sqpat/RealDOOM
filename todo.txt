@@ -12,13 +12,13 @@ KNOWN ISSUES
  - savegames broken. not sure if it will be compatible with original doom
  - rendering issue with weird line early in demo 3 might be related to rendering fuzzy
  - menu sometimes jumps a bit? might be due to keyboard issues
- - are keys working badly or is it just mac dosbox? test again on pc when possible.
+ - are keys working badly or is it just mac dosbox? test again on pc when possible. didnt notice because i was relying on demos too much but i think i did do some 32 to 16 bit code conversion around keyboard input
 
 TODO 
  
  ~ make ems actually work
  ~ set visiplanes under 64k and see if large compile works
- 1 change a bunch of int_32t to int_16t, see if it still works
+ ~ change a bunch of int_32t to int_16t, see if it still works
  2 change fixed_t stuff
    - make it a union. custom add and subtract just like fixedmul/fixeddiv?
  3 screens in conventional instead of allocced
@@ -27,7 +27,8 @@ TODO
  - get rid of last bits of multiplayer, players array
  - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
  - clean up speed code. probably dont need make_speed in a lot of cases -is high bit projectile only?
- 
+- fix 'shift amount too large' bugs in 16 bit version. probably will go hand in hand with fixed_t work, but some defines may need to explicitly be long typed
+
 CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everything) 
  - thing flags
     - can probably be rewritten as a pair of 16 bits?
