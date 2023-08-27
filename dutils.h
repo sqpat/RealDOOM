@@ -54,7 +54,7 @@ typedef struct
     
 } cheatseq_t;
 
-int32_t
+int8_t
 cht_CheckCheat
 ( cheatseq_t*		cht,
 	int8_t			key );

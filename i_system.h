@@ -75,7 +75,7 @@ void I_Quit (void);
 
 // Allocates from low memory under dos,
 // just mallocs under unix
-byte* I_AllocLow (int32_t length);
+byte* I_AllocLow (filelength_t length);
 
 //void I_Tactile (int32_t on, int32_t off, int32_t total);
 
@@ -89,36 +89,36 @@ void I_EndRead(void);
 //  MUSIC I/O
 //
 
-int32_t I_RegisterSong(void *data);
+int16_t I_RegisterSong(void *data);
 // called by anything that wants to register a song lump with the sound lib
 // calls Paul's function of the similar name to register music only.
 // note that the song data is the same for any sound card and is paul's
 // MUS format.  Returns a handle which will be passed to all other music
 // functions.
 
-void I_UnRegisterSong(int32_t handle);
+void I_UnRegisterSong(int16_t handle);
 // called by anything which is finished with a song and no longer needs
 // the sound library to be aware of it.  All songs should be stopped
 // before calling this, but it will double check and stop it if necessary.
 
-void I_LoopSong(int32_t handle);
+void I_LoopSong(int16_t handle);
 // called by anything that wishes to start music.
 // plays a song, and when the song is done, starts playing it again in
 // an endless loop.  the start is faded in over three seconds.
 
-void I_StopSong(int32_t handle);
+void I_StopSong(int16_t handle);
 // called by anything that wishes to stop music.
 // stops a song abruptly.
-void I_SetMusicVolume(int32_t volume);
-void I_ResumeSong(int32_t handle);
-void I_PlaySong(int32_t handle, boolean looping);
-void I_PauseSong(int32_t handle);
-void I_ResumeSong(int32_t handle);
+void I_SetMusicVolume(uint8_t volume);
+void I_ResumeSong(int16_t handle);
+void I_PlaySong(int16_t handle, boolean looping);
+void I_PauseSong(int16_t handle);
+void I_ResumeSong(int16_t handle);
 
 //  SFX I/O
 //
 
-int32_t I_GetSfxLumpNum(sfxinfo_t* sfx);
+int16_t I_GetSfxLumpNum(sfxinfo_t* sfx);
 // called by routines which wish to play a sound effect at some later
 // time.  Pass it the lump name of a sound effect WITHOUT the sfx
 // prefix.  This means the maximum name length is 7 letters/digits.
@@ -126,19 +126,19 @@ int32_t I_GetSfxLumpNum(sfxinfo_t* sfx);
 // They refer to the card type.  The routine will cache in the
 // appropriate sound effect when it is played.
 
-int32_t I_StartSound (int32_t id, void *data, int32_t vol, int32_t sep, int32_t pitch, int32_t priority);
+int16_t I_StartSound (int16_t id, void *data, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority);
 // Starts a sound in a particular sound channel
 
-void I_UpdateSoundParams(int32_t handle, int32_t vol, int32_t sep, int32_t pitch);
+void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch);
 // Updates the volume, separation, and pitch of a sound channel
 
-void I_StopSound(int32_t handle);
+void I_StopSound(int16_t handle);
 // Stops a sound channel
 
-int32_t I_SoundIsPlaying(int32_t handle);
+boolean I_SoundIsPlaying(int16_t handle);
 // called by S_*()'s to see if a channel is still playing.  Returns 0
 // if no longer playing, 1 if playing.
-void I_SetChannels(int32_t channels);
+void I_SetChannels(int8_t channels);
 
 // Called by D_DoomMain,
 // determines the hardware configuration
@@ -155,7 +155,7 @@ void I_UpdateNoBlit(void);
 void I_FinishUpdate(void);
 
 // Wait for vertical retrace or pause a bit.
-void I_WaitVBL(int32_t count);
+void I_WaitVBL(int16_t count);
 
 void I_ReadScreen(byte* scr);
 

@@ -415,10 +415,6 @@ R_DrawVisSprite
     for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale) {
 		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
 		texturecolumn = (frac>>FRACBITS);
-		#ifdef RANGECHECK
-			if (texturecolumn < 0 || texturecolumn >= (patch->width))
-				I_Error ("R_DrawSpriteRange: bad texturecolumn %i %i", texturecolumn, patch->width);
-		#endif
 		column = (column_t *) ((byte *)patch + (patch->columnofs[texturecolumn]));
         R_DrawMaskedColumn (column);
     }
@@ -501,20 +497,10 @@ void R_ProjectSprite (MEMREF thingRef)
         return;
     
     // decide which patch to use for sprite relative to player
-	#ifdef RANGECHECK
-		if ((uint32_t)thingsprite >= numsprites) {
-			I_Error("R_ProjectSprite: invalid sprite number %i ", thingsprite);
-		}
-	#endif
 	sprites = Z_LoadBytesFromEMS(spritesRef);
 	spritespriteframeRef = sprites[thingsprite].spriteframesRef;
 	spritenumframes = sprites[thingsprite].numframes;
 	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(spritespriteframeRef);
-	#ifdef RANGECHECK
-		if ((thingframe&FF_FRAMEMASK) >= spritenumframes) {
-			I_Error("R_ProjectSprite: invalid sprite frame %i : %i ", thingsprite, thingframe);
-		}
-	#endif
     if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
 		ang = R_PointToAngle (thingx, thingy);
@@ -702,17 +688,9 @@ void R_DrawPSprite (pspdef_t* psp)
 	spriteframe_t*		spriteframes;
 
     // decide which patch to use
-#ifdef RANGECHECK
-    if ( (uint32_t)psp->state->sprite >= numsprites)
-        I_Error ("R_ProjectSprite: invalid sprite number %i ",
-                 psp->state->sprite);
-#endif
+
 	sprites = (spritedef_t*) Z_LoadBytesFromEMS(spritesRef);
-#ifdef RANGECHECK
-    if ( (psp->state->frame & FF_FRAMEMASK)  >= sprites[psp->state->sprite].numframes)
-        I_Error ("R_ProjectSprite: invalid sprite frame %i : %i ",
-                 psp->state->sprite, psp->state->frame);
-#endif
+
 	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(sprites[psp->state->sprite].spriteframesRef);
 
 

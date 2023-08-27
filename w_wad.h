@@ -30,15 +30,15 @@ typedef struct
     // Should be "IWAD" or "PWAD".
 	int8_t		identification[4];
     int32_t			numlumps;
-    int32_t			infotableofs;
+    filelength_t			infotableofs;
     
 } wadinfo_t;
 
 
 typedef struct
 {
-    int32_t			filepos;
-    int32_t			size;
+    filelength_t			filepos;
+    filelength_t			size;
 	int8_t		name[8];
     
 } filelump_t;
@@ -49,9 +49,9 @@ typedef struct
 typedef struct
 {
 	int8_t	name[8];
-    int32_t		handle;
+    filehandle_t		handle;
     int32_t		position;
-    int32_t		size;
+    filelength_t		size;
 } lumpinfo_t;
 
 
@@ -64,7 +64,7 @@ void    W_Reload (void);
 int16_t	W_CheckNumForName (int8_t* name);
 int16_t	W_GetNumForName (int8_t* name);
 
-int32_t	W_LumpLength (int16_t lump);
+filelength_t	W_LumpLength (int16_t lump);
 void    W_ReadLump (int16_t lump, void *dest);
 
 int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error);

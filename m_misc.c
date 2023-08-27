@@ -180,10 +180,10 @@ boolean
 M_WriteFile
 (int8_t const*	name,
   void*		source,
-  int32_t		length )
+  filelength_t		length )
 {
-    int32_t		handle;
-    int32_t		count;
+    filelength_t		handle;
+    filelength_t		count;
 	
     handle = open ( name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
 
@@ -203,12 +203,12 @@ M_WriteFile
 //
 // M_ReadFile
 //
-int32_t
+filelength_t
 M_ReadFile
 (int8_t const*	name,
   MEMREF*	bufferRef )
 {
-    int32_t	handle, count, length;
+    filelength_t	handle, count, length;
     struct stat	fileinfo;
     byte		*buf;
 	
@@ -369,7 +369,7 @@ default_t	defaults[] =
 
 };
 
-int32_t	numdefaults;
+int8_t	numdefaults;
 int8_t*	defaultfile;
 
 
@@ -378,8 +378,8 @@ int8_t*	defaultfile;
 //
 void M_SaveDefaults (void)
 {
-    int32_t		i;
-    int32_t		v;
+    int8_t		i;
+    int8_t		v;
     FILE*	f;
 	
     f = fopen (defaultfile, "w");
@@ -411,7 +411,7 @@ extern byte	scantokey[128];
 void M_LoadDefaults (void)
 {
     int16_t		i;
-    int32_t		len;
+    filelength_t		len;
     FILE*	f;
 	int8_t	def[80];
 	int8_t	strparm[100];

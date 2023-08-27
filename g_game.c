@@ -99,7 +99,7 @@ boolean         usergame;               // ok to save / end game
 boolean         timingdemo;             // if true, exit with report on completion 
 boolean         nodrawers;              // for comparative timing purposes 
 boolean         noblit;                 // for comparative timing purposes 
-int32_t             starttime;              // for comparative timing purposes       
+ticcount_t             starttime;              // for comparative timing purposes       
  
 boolean         viewactive; 
  
@@ -107,7 +107,7 @@ boolean         playeringame[MAXPLAYERS];
 player_t        players[MAXPLAYERS]; 
  
 int16_t             consoleplayer;          // player taking events and displaying 
-int32_t             gametic;
+ticcount_t             gametic;
 int16_t             totalkills, totalitems, totalsecret;    // for intermission 
  
 int8_t            demoname[32];
@@ -690,7 +690,7 @@ G_CheckSpot
     subsector_t*        ss; 
 	uint32_t            an;
     mobj_t*             mo; 
-	int32_t                 i;
+	int8_t                 i;
 	mobj_t*				playerMo;
 	MEMREF				moRef;
 	subsector_t* subsectors;
@@ -703,15 +703,15 @@ G_CheckSpot
         // first spawn of level, before corpses
 		for (i = 0; i < playernum; i++) {
 			playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[i].moRef);
-			if (playerMo->x == (int32_t)(mthing->x) << FRACBITS
-				&& playerMo->y == (int32_t)mthing->y << FRACBITS)
+			if (playerMo->x == (fixed_t)(mthing->x) << FRACBITS
+				&& playerMo->y == (fixed_t)mthing->y << FRACBITS)
 				return false;
 		}
         return true;
     }
                 
-    x = (int32_t)mthing->x << FRACBITS; 
-    y = (int32_t)mthing->y << FRACBITS; 
+    x = (fixed_t)mthing->x << FRACBITS; 
+    y = (fixed_t)mthing->y << FRACBITS; 
          
     if (!P_CheckPosition (players[playernum].moRef, x, y) ) 
         return false; 
@@ -957,8 +957,8 @@ void G_LoadGame (int8_t* name)
 
 void G_DoLoadGame (void) 
 { 
-	int32_t         length;
-	int32_t         a,b,c;
+	filelength_t         length;
+	byte         a,b,c;
 	int8_t        vcheck[VERSIONSIZE];
 	byte*           savebuffer;
     gameaction = ga_nothing; 

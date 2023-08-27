@@ -149,13 +149,7 @@ boolean P_CrossSubsector (int16_t subsecnum)
 	int16_t lineflags;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	sector_t* sectors;
-
-#ifdef RANGECHECK
-	if (subsecnum >= numsubsectors) {
-		I_Error("P_CrossSubsector: ss %i with numss = %i %i %i %i %i", subsecnum, numsubsectors, numreads, pageins, pageouts, bspcounter);
-	}
-#endif
-    
+ 
     // check lines
     count = subsectors[subsecnum].numlines;
     segnum = subsectors[subsecnum].firstline;

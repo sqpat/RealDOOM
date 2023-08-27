@@ -25,7 +25,7 @@
 // CHEAT SEQUENCE PACKAGE
 //
 
-static int32_t		firsttime = 1;
+static int8_t		firsttime = 1;
 static uint8_t	cheat_xlate_table[256];
 
 
@@ -33,13 +33,13 @@ static uint8_t	cheat_xlate_table[256];
 // Called in st_stuff module, which handles the input.
 // Returns a 1 if the cheat was successful, 0 if failed.
 //
-int32_t
+int8_t
 cht_CheckCheat
 ( cheatseq_t*	cht,
 	int8_t		key )
 {
-	int32_t i;
-	int32_t rc = 0;
+	int16_t i;
+	int8_t rc = 0;
 
     if (firsttime)
     {

@@ -555,12 +555,7 @@ void R_Subsector(int16_t subsecnum)
 	int16_t firstline;
 	sector_t* sectors;
 	sector_t* frontsector;
-
-	#ifdef RANGECHECK
-		if (num >= numsubsectors) {
-			I_Error("R_Subsector: ss %i with numss = %i", num, numsubsectors);
-		}
-	#endif
+ 
 	
     frontsecnum = subsectors[subsecnum].secnum;
     count = subsectors[subsecnum].numlines;

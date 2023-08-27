@@ -76,7 +76,7 @@ ExtractFileBase
         if (++length == 9)
             I_Error ("Filename base of %s >8 chars",path);
 
-        *dest++ = toupper((int32_t)*src++);
+        *dest++ = toupper(*src++);
     }
 }
 
@@ -110,12 +110,12 @@ void W_AddFile (int8_t *filename)
     wadinfo_t           header;
     lumpinfo_t*         lump_p;
 	uint16_t            i;
-	int32_t                 handle;
-	int32_t                 length;
+	filehandle_t                 handle;
+	filelength_t                 length;
 	uint16_t                 startlump;
     filelump_t*         fileinfo;
     filelump_t          singleinfo;
-	int32_t                 storehandle;
+	filehandle_t                 storehandle;
     
     // open the file and add to directory
 
@@ -207,8 +207,8 @@ void W_Reload (void)
 	uint16_t                 lumpcount;
     lumpinfo_t*         lump_p;
 	uint16_t            i;
-	int32_t                 handle;
-	int32_t                 length;
+	filehandle_t                 handle;
+	filelength_t                 length;
     filelump_t*         fileinfo;
         
     if (!reloadname)
@@ -263,7 +263,7 @@ void W_Reload (void)
 //
 void W_InitMultipleFiles (int8_t** filenames)
 {       
-	int32_t         size;
+	filelength_t         size;
     
     // open all the files, load headers, and count lumps
     numlumps = 0;
@@ -370,7 +370,7 @@ int16_t W_GetNumForName (int8_t* name)
 // W_LumpLength
 // Returns the buffer size needed to load the given lump.
 //
-int32_t W_LumpLength (int16_t lump)
+filelength_t W_LumpLength (int16_t lump)
 {
     if (lump >= numlumps)
         I_Error ("W_LumpLength: %i >= numlumps",lump);
@@ -390,9 +390,9 @@ W_ReadLumpEMS
 (int16_t           lump,
   MEMREF         lumpRef )
 {
-	int32_t         c;  // size, leave as 32 bit
+	filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t* l;
-	int32_t         handle;
+	filehandle_t         handle;
 	byte		*dest;
 	mapsidedef_t* data;
 
@@ -442,9 +442,9 @@ W_ReadLump
 (int16_t           lump,
 	void*         dest)
 {
-	int32_t         c;
+	filelength_t         c;
 	lumpinfo_t* l;
-	int32_t         handle;
+	filehandle_t         handle;
 
 	if (lump >= numlumps)
 		I_Error("W_ReadLump: %i >= numlumps", lump);

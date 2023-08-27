@@ -41,9 +41,7 @@ enum { VERSION =  109 };
 
 #define EXE_VERSION EXE_VERSION_1_9
 
-// If rangecheck is undefined,
-// most parameter validation debugging code will not be compiled
-// #define RANGECHECK
+
 #define LOOPCHECK
 
 
@@ -233,6 +231,8 @@ fixed_t	FixedDiv2 (fixed_t a, fixed_t b);
 #define intx86(a, b, c) int386(a, b, c)
 #define intx86x(a, b, c, d) int386x(a, b, c, d)
 #endif
+
+
 
 // DOOM basic types (boolean),
 //  and max/min values.

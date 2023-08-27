@@ -549,8 +549,8 @@ void D_DoomLoop (void)
 //
 //  DEMO LOOP
 //
-int32_t             demosequence;
-int32_t             pagetic;
+int8_t             demosequence;
+int16_t             pagetic;
 int8_t                    *pagename;
 
 

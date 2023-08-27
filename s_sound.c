@@ -68,8 +68,8 @@
 
 // Current music/sfx card - index useless
 //  w/o a reference LUT in a sound module.
-extern int32_t snd_MusicDevice;
-extern int32_t snd_SfxDevice;
+extern uint8_t snd_MusicDevice;
+extern uint8_t snd_SfxDevice;
 // Config file? Same disclaimer as above.
 extern uint8_t snd_DesiredMusicDevice;
 extern uint8_t snd_DesiredSfxDevice;
@@ -85,7 +85,7 @@ typedef struct
     MEMREF	originRef;
 
     // handle of the sound being played
-    int32_t		handle;
+    int16_t		handle;
     
 } channel_t;
 
@@ -115,26 +115,26 @@ static musicinfo_t*	mus_playing=0;
 // number of channels available
 int8_t			numChannels;	
 
-static int32_t		nextcleanup;
+static ticcount_t		nextcleanup;
 
 //
 // Internals.
 //
-int32_t
+int8_t
 S_getChannel
 ( MEMREF originRef,
   sfxinfo_t*	sfxinfo );
 
 
-int32_t
+int16_t
 S_AdjustSoundParams
 ( MEMREF	listenerRef,
   MEMREF	sourceRef,
-  int32_t*		vol,
-  int32_t*		sep,
-  int32_t*		pitch );
+  uint8_t*		vol,
+  uint8_t*		sep,
+  uint8_t*		pitch );
 
-void S_StopChannel(int32_t cnum);
+void S_StopChannel(int8_t cnum);
 
 void S_SetMusicVolume(uint8_t volume)
 {
@@ -171,8 +171,8 @@ void S_StopMusic(void)
 
 void
 S_ChangeMusic
-( int32_t			musicnum,
-  int32_t			looping )
+( musicenum_t			musicnum,
+  boolean			looping )
 {
     musicinfo_t*	music;
 	int8_t		namebuf[9];
@@ -183,10 +183,8 @@ S_ChangeMusic
         musicnum = mus_introa;
     }
 
-    if ( (musicnum <= mus_None)
-	 || (musicnum >= NUMMUSIC) )
-    {
-	I_Error("Bad music number %d", musicnum);
+    if ( (musicnum == mus_None) || (musicnum >= NUMMUSIC) ) {
+		I_Error("Bad music number %d", musicnum);
     }
     else
 	music = &S_music[musicnum];
@@ -218,13 +216,13 @@ S_ChangeMusic
 //
 // Starts some music with the music id found in sounds.h.
 //
-void S_StartMusic(int32_t m_id)
+void S_StartMusic(musicenum_t m_id)
 {
 	return;
     S_ChangeMusic(m_id, false);
 }
 
-void S_StopChannel(int32_t cnum)
+void S_StopChannel(int8_t cnum)
 {
     int8_t		i;
 	channel_t* channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
@@ -264,13 +262,13 @@ void S_StopChannel(int32_t cnum)
 // If the sound is not audible, returns a 0.
 // Otherwise, modifies parameters and returns 1.
 //
-int32_t
+int16_t
 S_AdjustSoundParams
 ( MEMREF	listenerRef,
   MEMREF	sourceRef,
-  int32_t*		vol,
-  int32_t*		sep,
-  int32_t*		pitch )
+  uint8_t*		vol,
+  uint8_t*		sep,
+  uint8_t*		pitch )
 {
     fixed_t	approx_dist;
     fixed_t	adx;
@@ -369,7 +367,7 @@ void S_ResumeSound(void)
 
 void S_StopSound(MEMREF originRef)
 {
-	int32_t cnum;
+	int8_t cnum;
 	channel_t* channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
 	return;
 
@@ -387,7 +385,7 @@ void S_StopSound(MEMREF originRef)
 // S_getChannel :
 //   If none available, return -1.  Otherwise channel #.
 //
-int32_t
+int8_t
 S_getChannel ( MEMREF originRef, sfxinfo_t*	sfxinfo ) {
     // channel number to use
     int8_t		cnum;
@@ -433,16 +431,16 @@ void S_StartSoundAtVolume
 ( MEMREF    origin_pRef,
 	fixed_t originX, 
 	fixed_t originY,
-  int32_t		sfx_id,
-  int32_t		volume )
+  sfxenum_t		sfx_id,
+  uint8_t		volume )
 {
 
-  int32_t		rc;
-  int32_t		sep;
-  int32_t		pitch;
-  int32_t		priority;
+  int16_t		rc;
+  uint8_t		sep;
+  uint8_t		pitch;
+  uint8_t		priority;
   sfxinfo_t*	sfx;
-  int32_t		cnum;
+  int8_t		cnum;
   channel_t* channels;
   mobj_t*	playerMo;
   
@@ -463,9 +461,8 @@ void S_StartSoundAtVolume
   
 	// Initialize sound parameters
 	if (sfx->link) {
-		pitch = sfx->pitch;
-		priority = sfx->priority;
-	    volume += sfx->volume;
+		pitch = 150;//   sfx->pitch;
+		priority = 0; // sfx->priority;
     
 		if (volume < 1) {
 			return;
@@ -473,7 +470,7 @@ void S_StartSoundAtVolume
 		if (volume > snd_SfxVolume) {
 			volume = snd_SfxVolume;
 		}
-	}	 else {
+	} else {
 		pitch = NORM_PITCH;
 		priority = NORM_PRIORITY;
 	}
@@ -543,7 +540,7 @@ void S_StartSoundAtVolume
 				       priority);
 }
 
-void S_StartSoundFromRef(MEMREF memref,	int32_t		sfx_id)  {
+void S_StartSoundFromRef(MEMREF memref,	sfxenum_t		sfx_id)  {
 	
 	mobj_t* mobj;
 	if (memref) {
@@ -555,7 +552,7 @@ void S_StartSoundFromRef(MEMREF memref,	int32_t		sfx_id)  {
 	}
 }
 
-void S_StartSound(void*		origin, int32_t		sfx_id) {
+void S_StartSound(void*		origin, sfxenum_t		sfx_id) {
 	mobj_t* mobj = (mobj_t*)origin;
 
 	if (mobj) {
@@ -575,7 +572,7 @@ void S_StartSound(void*		origin, int32_t		sfx_id) {
  
 
 }
-void S_StartSoundWithParams(int32_t x, int32_t y, int32_t		sfx_id) {
+void S_StartSoundWithParams(fixed_t x, fixed_t y, sfxenum_t sfx_id) {
 	S_StartSoundAtVolume(NULL_MEMREF, x, y, sfx_id, snd_SfxVolume);
 }
 
@@ -584,14 +581,14 @@ void S_StartSoundWithParams(int32_t x, int32_t y, int32_t		sfx_id) {
 //
 void S_UpdateSounds(MEMREF listenerRef)
 {
-    int32_t		audible;
-    int32_t		cnum;
-    int32_t		volume;
-    int32_t		sep;
-    int32_t		pitch;
+    int16_t		audible;
+    int8_t		cnum;
+    uint8_t		volume;
+    uint8_t		sep;
+    uint8_t		pitch;
     sfxinfo_t*	sfx;
     channel_t*	c;
-	int32_t         i;
+	uint8_t         i;
 	//mobj_t*	listener_p = (mobj_t*)Z_LoadBytesFromEMS(listenerRef);
     //mobj_t*	listener = (mobj_t*)listener_p;
 	channel_t* channels;
@@ -634,16 +631,15 @@ void S_UpdateSounds(MEMREF listenerRef)
 
 		if (sfx->link)
 		{
-		    pitch = sfx->pitch;
-		    volume += sfx->volume;
-		    if (volume < 1)
-		    {
-			S_StopChannel(cnum);
-			continue;
-		    }
-		    else if (volume > snd_SfxVolume)
-		    {
-			volume = snd_SfxVolume;
+			// link is only used once in the dataset and hardcoded there - rather than including all this extra
+			// data in memory we just hardcode the fields...
+		    pitch = 150;
+		    //volume += 0; 
+		    if (volume < 1) {
+				S_StopChannel(cnum);
+				continue;
+		    } else if (volume > snd_SfxVolume) {
+				volume = snd_SfxVolume;
 		    }
 		}
 
@@ -686,8 +682,8 @@ void S_UpdateSounds(MEMREF listenerRef)
 //  allocates channel buffer, sets S_sfx lookup.
 //
 void S_Init
-( int16_t		sfxVolume,
-  int16_t		musicVolume )
+( uint8_t		sfxVolume,
+  uint8_t		musicVolume )
 {  
   int16_t		i;
   channel_t* channels;

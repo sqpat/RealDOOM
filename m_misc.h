@@ -38,9 +38,9 @@ boolean
 M_WriteFile
 (int8_t const*	name,
   void*		source,
-  int32_t		length );
+  filelength_t		length );
 
-int32_t
+filelength_t
 M_ReadFile
 (int8_t const*	name,
   MEMREF*	bufferRef );

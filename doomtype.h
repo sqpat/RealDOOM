@@ -40,6 +40,9 @@ typedef long long				int64_t;
 typedef unsigned long long		uint64_t;
 #endif
 
+typedef int32_t filehandle_t;
+typedef int32_t filelength_t;
+typedef int32_t ticcount_t ;
 
 #ifndef __BYTEBOOL__
 #define __BYTEBOOL__

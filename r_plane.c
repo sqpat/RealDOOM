@@ -118,16 +118,7 @@ R_MapPlane
     fixed_t	distance;
     fixed_t	length;
 	uint32_t	index;
-	
-#ifdef RANGECHECK
-    if (x2 < x1
-	|| x1<0
-	|| x2>=viewwidth
-	|| (uint32_t)y>viewheight)
-    {
-	I_Error ("R_MapPlane: %i, %i at %i",x1,x2,y);
-    }
-#endif
+ 
 
     if (planeheight != cachedheight[y])
     {

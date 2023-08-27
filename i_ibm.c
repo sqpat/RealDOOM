@@ -173,7 +173,7 @@ int32_t kbdtail, kbdhead;
 
 #define SC_RSHIFT       0x36
 #define SC_LSHIFT       0x2a
-void I_WaitVBL(int32_t vbls);
+void I_WaitVBL(int16_t vbls);
 //void I_StartupCyberMan(void);
 void I_StartupSound(void);
 void I_ShutdownSound(void);
@@ -207,7 +207,7 @@ byte scantokey[128] =
 //
 void I_ColorBorder(void)
 {
-	int32_t i;
+	int8_t i;
 
     I_WaitVBL(1);
     _outbyte(PEL_WRITE_ADR, 0);
@@ -222,7 +222,7 @@ void I_ColorBorder(void)
 //
 void I_UnColorBorder(void)
 {
-	int32_t i;
+	int8_t i;
 
     I_WaitVBL(1);
     _outbyte(PEL_WRITE_ADR, 0);
@@ -239,9 +239,9 @@ void I_UnColorBorder(void)
 //
 // I_WaitVBL
 //
-void I_WaitVBL(int32_t vbls)
+void I_WaitVBL(int16_t vbls)
 {
-	int32_t stat;
+	int16_t stat;
 
     if (novideo)
     {
@@ -274,7 +274,7 @@ void I_WaitVBL(int32_t vbls)
 //
 void I_SetPalette(byte *palette)
 {
-	int32_t i;
+	int16_t i;
 
         if(novideo)
         {
@@ -694,16 +694,11 @@ void I_ShutdownMouse(void)
 
 
 #ifdef _M_I86
-
 union REGS in, out;
-
-
-
-
 //
 // I_AllocLow
 //
-byte *I_AllocLow(int32_t length)
+byte *I_AllocLow(filesize_t length)
 {
 	byte *mem;
 	mem = malloc(length);
@@ -716,12 +711,7 @@ byte *I_AllocLow(int32_t length)
 // DPMIInt
 //
 
-
-
 uint32_t realstackseg;
-
-
-
 
 
 //

@@ -93,8 +93,8 @@ extern  boolean         respawnmonsters;
 //  w/o a reference LUT in a sound module.
 // Ideally, this would use indices found
 //  in: /usr/include/linux/soundcard.h
-extern int32_t snd_MusicDevice;
-extern int32_t snd_SfxDevice;
+extern uint8_t snd_MusicDevice;
+extern uint8_t snd_SfxDevice;
 // Config file? Same disclaimer as above.
 extern uint8_t snd_DesiredMusicDevice;
 extern uint8_t snd_DesiredSfxDevice;
@@ -183,7 +183,7 @@ extern  gamestate_t     gamestate;
 
 
 
-extern	int32_t		gametic;
+extern	ticcount_t		gametic;
 
 
 // Bookkeeping on players - state.

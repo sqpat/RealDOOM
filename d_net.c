@@ -39,10 +39,10 @@ doomdata_t *netbuffer; // points inside doomcom
 
 ticcmd_t localcmds[BACKUPTICS];
 
-int32_t nettics;
+ticcount_t nettics;
 
-int32_t maketic;
-int32_t skiptics;
+ticcount_t maketic;
+ticcount_t skiptics;
 
 void D_ProcessEvents(void);
 void G_BuildTiccmd(ticcmd_t *cmd);
@@ -53,13 +53,13 @@ void D_DoAdvanceDemo(void);
 // Builds ticcmds for console player,
 // sends out a packet
 //
-int32_t gametime;
+ticcount_t gametime;
 
 void NetUpdate(void)
 {
-	int32_t nowtime;
-	int32_t newtics;
-	int32_t i, j;
+	ticcount_t nowtime;
+	ticcount_t newtics;
+	ticcount_t i;
 
 	// check time
 	nowtime = ticcount;
@@ -124,18 +124,17 @@ void D_CheckNetGame(void)
 //
 // TryRunTics
 //
-int32_t oldnettics;
+ticcount_t oldnettics;
 
 extern boolean advancedemo;
 
 void TryRunTics(void)
 {
-	int32_t i;
-	int32_t entertic;
-	static int32_t oldentertics;
-	int32_t realtics;
-	int32_t availabletics;
-	int32_t counts;
+	ticcount_t entertic;
+	static ticcount_t oldentertics;
+	ticcount_t realtics;
+	ticcount_t availabletics;
+	ticcount_t counts;
 
 	// get real tics
 	entertic = ticcount;

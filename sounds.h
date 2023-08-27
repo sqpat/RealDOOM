@@ -33,19 +33,21 @@ struct sfxinfo_struct
     int8_t*	name;
 
     // Sfx singularity (only one at a time)
-    int32_t		singularity;
+    boolean		singularity;
 
     // Sfx priority
-    int32_t		priority;
+    uint8_t		priority;
 
     // referenced sound if a link
     sfxinfo_t*	link;
 
     // pitch if a link
-    int32_t		pitch;
+    // only used in one case - lets hardcode it
+    // int8_t 		pitch;
 
     // volume if a link
-    int32_t		volume;
+    // unused
+    // int8_t		volume;
 
     // sound data
     void*	data;
@@ -53,10 +55,10 @@ struct sfxinfo_struct
     // this is checked every second to see if sound
     // can be thrown out (if 0, then decrement, if -1,
     // then throw out, if > 0, then it is in use)
-    int32_t		usefulness;
+    int8_t		usefulness;
 
     // lump number of sfx
-    int32_t		lumpnum;		
+    int16_t		lumpnum;		
 };
 
 
