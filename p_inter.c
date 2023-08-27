@@ -686,13 +686,11 @@ P_KillMobj
 	
     }
 
-    if (target->health < -target->info->spawnhealth 
-	&& target->info->xdeathstate)
-    {
-	P_SetMobjState (targetRef, target->info->xdeathstate);
-    }
-    else
-	P_SetMobjState (targetRef, target->info->deathstate);
+    if (target->health < -target->info->spawnhealth  && getXDeathState(target->type)) {
+		P_SetMobjState (targetRef, getXDeathState(target->type)) ;
+    } else {
+		P_SetMobjState (targetRef, target->info->deathstate);
+	}
     target->tics -= P_Random()&3;
 
     if (target->tics < 1)
@@ -806,7 +804,7 @@ P_DamageMobj
 				target->x,
 				target->y);
 		
-		thrust = damage*(FRACUNIT>>3)*100/target->info->mass;
+		thrust = damage*(FRACUNIT>>3)*100/getMobjMass(target->type);
 
 		// make fall forwards sometimes
 		if ( damage < 40
@@ -888,7 +886,7 @@ P_DamageMobj
 		return;
     }
 
-    if ( (P_Random () < target->info->painchance) && !(target->flags&MF_SKULLFLY) ) {
+    if ( (P_Random () < getPainChance(target->type)) && !(target->flags&MF_SKULLFLY) ) {
 		target->flags |= MF_JUSTHIT;	// fight back!
 		P_SetMobjState (targetRef, target->info->painstate);
     }

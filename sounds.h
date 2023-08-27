@@ -73,13 +73,13 @@ typedef struct
     int8_t*	name;
 
     // lump number of music
-    int32_t		lumpnum;
+    int16_t		lumpnum;
     
     // music data
     void*	data;
 
     // music handle once registered
-	int32_t handle;
+	int16_t handle;
     
 } musicinfo_t;
 

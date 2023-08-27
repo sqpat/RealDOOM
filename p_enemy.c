@@ -221,7 +221,7 @@ boolean P_CheckMeleeRange (MEMREF actorRef)
 	pl = (mobj_t*)Z_LoadBytesFromEMS(plRef);
 	plx = pl->x;
 	ply = pl->y;
-	plradius = pl->info->radius;
+	plradius = pl->info->radius*FRACUNIT;
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	dist = P_AproxDistance (plx-actor->x, ply-actor->y);
 
@@ -271,7 +271,7 @@ boolean P_CheckMissileRange (MEMREF actorRef)
 	dist = P_AproxDistance ( actor->x- actorTargetx,
 			     actor->y- actorTargety) - 64*FRACUNIT;
 
-    if (!actor->info->meleestate)
+    if (!getMeleeState(actor->type))
 		dist -= 128*FRACUNIT;	// no melee attack, so fire more
 
     dist >>= 16;
@@ -847,13 +847,13 @@ void A_Chase (MEMREF actorRef)
     }
 
     // check for melee attack
-    if (actor->info->meleestate && P_CheckMeleeRange (actorRef)) {
+    if (getMeleeState(actor->type) && P_CheckMeleeRange (actorRef)) {
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		if (actor->info->attacksound) {
 			S_StartSoundFromRef(actorRef, actor->info->attacksound);
 		}
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
- 		P_SetMobjState (actorRef, actor->info->meleestate);
+ 		P_SetMobjState (actorRef, getMeleeState(actor->type));
 
 		return;
     }
@@ -1215,6 +1215,7 @@ void A_Tracer (MEMREF actorRef)
 	fixed_t actorx;
 	fixed_t actory;
 	fixed_t destz;
+	fixed_t actorspeed;
 
     if (gametic & 3)
 		return;
@@ -1269,10 +1270,10 @@ void A_Tracer (MEMREF actorRef)
 			actor->angle = exact;
 		}
     }
-	
+	actorspeed = MAKESPEED(actor->info->speed);
     exact = actor->angle>>ANGLETOFINESHIFT;
-    actor->momx = FixedMul (actor->info->speed, finecosine(exact));
-    actor->momy = FixedMul (actor->info->speed, finesine(exact));
+    actor->momx = FixedMul (actorspeed, finecosine(exact));
+    actor->momy = FixedMul (actorspeed, finesine(exact));
 	actorx = actor->x;
 	actory = actor->y;
 	
@@ -1285,7 +1286,7 @@ void A_Tracer (MEMREF actorRef)
     
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
-    dist = dist / actor->info->speed;
+    dist = dist / actorspeed;
 
 	if (dist < 1) {
 		dist = 1;
@@ -1351,11 +1352,11 @@ boolean PIT_VileCheck (MEMREF thingRef)
 		return true;	// not lying still yet
 	}
 
-	if (thing->info->raisestate == S_NULL) {
+	if (getRaiseState(thing->type) == S_NULL) {
 		return true;	// monster doesn't have a raise state
 	}
 
-    maxdist = thing->info->radius + mobjinfo[MT_VILE].radius;
+    maxdist = (thing->info->radius + mobjinfo[MT_VILE].radius)*FRACUNIT;
 	
 	if (abs(thing->x - viletryx) > maxdist || abs(thing->y - viletryy) > maxdist) {
 		return true;		// not actually touching
@@ -1394,13 +1395,10 @@ void A_VileChase (MEMREF actorRef)
     MEMREF		temp;
 	mobj_t*	corpsehit;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-
     if (actor->movedir != DI_NODIR) {
 		// check for corpses to raise
-		viletryx =
-			actor->x + actor->info->speed*xspeed[actor->movedir];
-		viletryy =
-			actor->y + actor->info->speed*yspeed[actor->movedir];
+		viletryx = actor->x + actor->info->speed*xspeed[actor->movedir];
+		viletryy = actor->y + actor->info->speed*yspeed[actor->movedir];
 
 		xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
 		xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
@@ -1430,7 +1428,7 @@ void A_VileChase (MEMREF actorRef)
 				corpsehit = (mobj_t*)Z_LoadBytesFromEMS(corpsehitRef);
 				info = corpsehit->info;
 		    
-				P_SetMobjState (corpsehitRef,info->raisestate);
+				P_SetMobjState (corpsehitRef,getRaiseState(corpsehit->type));
 				corpsehit = (mobj_t*)Z_LoadBytesFromEMS(corpsehitRef);
 				corpsehit->height <<= 2;
 				corpsehit->flags = info->flags;
@@ -1571,7 +1569,7 @@ void A_VileAttack (MEMREF actorRef)
 
 
 	actorTarget = (mobj_t*)Z_LoadBytesFromEMS(actor->targetRef);
-	actorTarget->momz = 1000*FRACUNIT/ actorTarget->info->mass;
+	actorTarget->momz = 1000*FRACUNIT/ getMobjMass(actorTarget->type);
 	actorTargetx = actorTarget->x;
 	actorTargety = actorTarget->y;
 
@@ -1622,8 +1620,8 @@ void A_FatAttack1 (MEMREF actorRef)
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
     mo->angle += FATSPREAD;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine(an));
-    mo->momy = FixedMul (mo->info->speed, finesine(an));
+    mo->momx = FixedMul (MAKESPEED(mo->info->speed), finecosine(an));
+    mo->momy = FixedMul (MAKESPEED(mo->info->speed), finesine(an));
 }
 
 void A_FatAttack2 (MEMREF actorRef)
@@ -1645,8 +1643,8 @@ void A_FatAttack2 (MEMREF actorRef)
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
     mo->angle -= FATSPREAD*2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine(an));
-    mo->momy = FixedMul (mo->info->speed, finesine(an));
+    mo->momx = FixedMul (MAKESPEED(mo->info->speed), finecosine(an));
+    mo->momy = FixedMul (MAKESPEED(mo->info->speed), finesine(an));
 }
 
 void A_FatAttack3 (MEMREF actorRef)
@@ -1656,24 +1654,27 @@ void A_FatAttack3 (MEMREF actorRef)
 	mobj_t* actor;
 	MEMREF moRef;
 	MEMREF actortargetRef;
-
+	fixed_t mospeed;
 	A_FaceTarget (actorRef);
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	actortargetRef = actor->targetRef;
 
     moRef = P_SpawnMissile (actorRef, actortargetRef, MT_FATSHOT);
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	
+	// todo hardcode this value, it's static..
+	mospeed = MAKESPEED(mo->info->speed);
     mo->angle -= FATSPREAD/2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine(an));
-    mo->momy = FixedMul (mo->info->speed, finesine(an));
+    mo->momx = FixedMul (mospeed, finecosine(an));
+    mo->momy = FixedMul (mospeed, finesine(an));
 
     moRef = P_SpawnMissile (actorRef, actortargetRef, MT_FATSHOT);
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mo->angle += FATSPREAD/2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (mo->info->speed, finecosine(an));
-    mo->momy = FixedMul (mo->info->speed, finesine(an));
+    mo->momx = FixedMul (mospeed, finecosine(an));
+    mo->momy = FixedMul (mospeed, finesine(an));
 }
 
 
@@ -1773,7 +1774,7 @@ A_PainShootSkull
     an = angle >> ANGLETOFINESHIFT;
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	actortargetRef = actor->targetRef;
-	prestep = 4*FRACUNIT + 3*(actor->info->radius + mobjinfo[MT_SKULL].radius)/2;
+	prestep = 4*FRACUNIT + 3*FRACUNIT*(actor->info->radius + mobjinfo[MT_SKULL].radius)/2;
     
     x = actor->x + FixedMul (prestep, finecosine(an));
     y = actor->y + FixedMul (prestep, finesine(an));

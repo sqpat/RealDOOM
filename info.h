@@ -1297,6 +1297,13 @@ extern int8_t *sprnames[NUMSPRITES];
 typedef uint8_t mobjtype_t;
 typedef uint8_t sfxenum_t;
 
+
+#define HIGHBIT 0x80
+#define HIGHBITMASK 0x7F
+#define MAKESPEED(x) x & HIGHBIT ? ((fixed_t)(x & HIGHBITMASK)) << FRACBITS : (fixed_t)x
+
+
+ // most states and sfx fields could probably save space(?) in a getter. most of these arent oft used
 typedef struct
 {
     int16_t	doomednum;
@@ -1307,24 +1314,32 @@ typedef struct
     //int32_t	reactiontime;     always 8 except 0 for player. this can be abstracted in code
 	sfxenum_t	attacksound;
 	statenum_t	painstate;
-    uint16_t	painchance; // want to do char... but two elements have 256. not sure if it's kludge-able in a way that saves space
+    // uint16_t	painchance; // replaced with getter
 	sfxenum_t	painsound;
-	statenum_t	meleestate;
+	// statenum_t	meleestate; 
 	statenum_t	missilestate;
 	statenum_t	deathstate;
-	statenum_t	xdeathstate;
+	//statenum_t	xdeathstate;
 	sfxenum_t	deathsound;
-    int32_t	speed;
-    fixed_t	radius;
-    int32_t	height;
-    int32_t	mass;
+    uint8_t	speed;
+    uint8_t	radius;
+    uint8_t	height;
+    //int32_t	mass;
     uint8_t	damage;
-	sfxenum_t	activesound;
+	sfxenum_t	activesound; 
     int32_t	flags;
-	statenum_t	raisestate;
+	// statenum_t	raisestate;  replaced with getter
 
 } mobjinfo_t;
 
+
+
 extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
+
+extern int32_t getMobjMass(uint8_t id);
+extern int16_t getPainChance(uint8_t id);
+extern int16_t getRaiseState(uint8_t id);
+extern int16_t getMeleeState(uint8_t id);
+extern int16_t getXDeathState(uint8_t id);
 
 #endif

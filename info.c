@@ -1016,6 +1016,172 @@ state_t	states[NUMSTATES] = {
 };
 
 
+
+int16_t getPainChance(uint8_t id){
+
+	switch (id){
+
+		case MT_PLAYER:
+		case MT_BOSSBRAIN:
+			return 255;
+		case MT_POSSESSED:
+		case MT_TROOP:
+			return 200;
+		case MT_SHOTGUY:
+			return 170;
+		case MT_VILE:
+			return 10;
+		case MT_UNDEAD:
+			return 100;
+		case MT_FATSO:
+			return 80;
+		case MT_CHAINGUY:
+			return 170;
+		case MT_SERGEANT:
+		case MT_SHADOWS:
+			return 180;
+		case MT_HEAD:
+			return 128;
+		case MT_BRUISER:
+		case MT_KNIGHT:
+			return 50;
+		case MT_SKULL:
+		case MT_KEEN:
+			return 256;
+		case MT_SPIDER:
+			return 40;
+		case MT_BABY:
+			return 128;
+		case MT_CYBORG:
+			return 20;
+		case MT_PAIN:
+			return 128;
+		case MT_WOLFSS:
+			return 170;
+		default:
+			return 0;
+	}
+}
+
+
+
+int16_t getRaiseState(uint8_t id){
+
+	switch (id){
+		case MT_POSSESSED:
+			return S_POSS_RAISE1;
+		case MT_SHOTGUY:
+			return S_SPOS_RAISE1;
+		case MT_UNDEAD:
+			return S_SKEL_RAISE1;
+		case MT_FATSO:
+			return S_FATT_RAISE1;
+		case MT_CHAINGUY:
+			return S_CPOS_RAISE1;
+		case MT_TROOP:
+			return S_TROO_RAISE1;
+		case MT_SERGEANT:
+		case MT_SHADOWS:
+			return S_SARG_RAISE1;
+		case MT_HEAD:
+			return S_HEAD_RAISE1;
+		case MT_BRUISER:
+			return S_BOSS_RAISE1;
+		case MT_KNIGHT:
+			return S_BOS2_RAISE1;
+		case MT_BABY:
+			return S_BSPI_RAISE1;
+		case MT_PAIN:
+			return S_PAIN_RAISE1;
+		case MT_WOLFSS:
+			return S_SSWV_RAISE1;
+		default:
+			return S_NULL;
+	}
+
+}
+
+
+
+int16_t getXDeathState(uint8_t id){
+
+	switch (id){
+		case MT_PLAYER:
+			return S_PLAY_XDIE1;
+		case MT_POSSESSED:
+			return S_POSS_XDIE1;
+		case MT_SHOTGUY:
+			return S_SPOS_XDIE1;
+		case MT_CHAINGUY:
+			return S_CPOS_XDIE1;
+		case MT_TROOP:
+			return S_TROO_XDIE1;
+		case MT_WOLFSS:
+			return S_SSWV_XDIE1;
+		default:
+			return S_NULL;
+	}
+
+}
+
+int16_t getMeleeState(uint8_t id){
+
+	switch (id){
+		case MT_UNDEAD:
+			return S_SKEL_FIST1;
+		case MT_TROOP:
+			return S_TROO_ATK1;
+		case MT_SERGEANT:
+			return S_SARG_ATK1;
+		case MT_SHADOWS:
+			return S_SARG_ATK1;
+		case MT_BRUISER:
+			return S_BOSS_ATK1;
+		case MT_KNIGHT:
+			return S_BOS2_ATK1;
+		
+		default:
+			return S_NULL;
+	}
+
+}
+
+
+
+int32_t getMobjMass(uint8_t id){
+	switch (id){
+
+		case MT_SKULL:
+			return 50;
+		case MT_SERGEANT:
+		case MT_SHADOWS:
+		case MT_HEAD:
+		case MT_PAIN:
+			return 400;
+
+		case MT_VILE:
+		case MT_UNDEAD:
+			return 500;
+		case MT_BABY:
+			return 600;
+		case MT_FATSO:
+		case MT_BRUISER:
+		case MT_KNIGHT:
+		case MT_SPIDER:
+		case MT_CYBORG:
+			return 1000;
+
+		case MT_KEEN:
+		case MT_BOSSBRAIN:
+			return 10000000;
+
+
+		default:
+
+			return 100;
+	}
+}
+
 mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 
     {		// MT_PLAYER
@@ -1027,21 +1193,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_PLAY_PAIN,		// painstate
-	255,		// painchance
 	sfx_plpain,		// painsound
-	S_NULL,		// meleestate
 	S_PLAY_ATK1,		// missilestate
 	S_PLAY_DIE1,		// deathstate
-	S_PLAY_XDIE1,		// xdeathstate
 	sfx_pldeth,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_DROPOFF|MF_PICKUP|MF_NOTDMATCH,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_POSSESSED
@@ -1053,21 +1215,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_pistol,		// attacksound
 	S_POSS_PAIN,		// painstate
-	200,		// painchance
 	sfx_popain,		// painsound
-	0,		// meleestate
 	S_POSS_ATK1,		// missilestate
 	S_POSS_DIE1,		// deathstate
-	S_POSS_XDIE1,		// xdeathstate
 	sfx_podth1,		// deathsound
 	8,		// speed
-	20*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_posact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_POSS_RAISE1		// raisestate
     },
 
     {		// MT_SHOTGUY
@@ -1079,21 +1237,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_SPOS_PAIN,		// painstate
-	170,		// painchance
 	sfx_popain,		// painsound
-	0,		// meleestate
 	S_SPOS_ATK1,		// missilestate
 	S_SPOS_DIE1,		// deathstate
-	S_SPOS_XDIE1,		// xdeathstate
 	sfx_podth2,		// deathsound
 	8,		// speed
-	20*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_posact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_SPOS_RAISE1		// raisestate
     },
 
     {		// MT_VILE
@@ -1105,21 +1259,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_VILE_PAIN,		// painstate
-	10,		// painchance
 	sfx_vipain,		// painsound
-	0,		// meleestate
 	S_VILE_ATK1,		// missilestate
 	S_VILE_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_vildth,		// deathsound
 	15,		// speed
-	20*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	500,		// mass
+	20         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_vilact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_FIRE
@@ -1131,21 +1281,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_UNDEAD
@@ -1157,21 +1303,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_SKEL_PAIN,		// painstate
-	100,		// painchance
 	sfx_popain,		// painsound
-	S_SKEL_FIST1,		// meleestate
 	S_SKEL_MISS1,		// missilestate
 	S_SKEL_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_skedth,		// deathsound
 	10,		// speed
-	20*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	500,		// mass
+	20         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_skeact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_SKEL_RAISE1		// raisestate
     },
 
     {		// MT_TRACER
@@ -1183,21 +1325,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_TRACEEXP1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_barexp,		// deathsound
-	10*FRACUNIT,		// speed
-	11*FRACUNIT,		// radius
-	8*FRACUNIT,		// height
-	100,		// mass
+	10+HIGHBIT,		// speed
+	11         ,		// radius
+	8         ,		// height
+	
 	10,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_SMOKE
@@ -1209,21 +1347,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_FATSO
@@ -1235,21 +1369,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_FATT_PAIN,		// painstate
-	80,		// painchance
 	sfx_mnpain,		// painsound
-	0,		// meleestate
 	S_FATT_ATK1,		// missilestate
 	S_FATT_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_mandth,		// deathsound
 	8,		// speed
-	48*FRACUNIT,		// radius
-	64*FRACUNIT,		// height
-	1000,		// mass
+	48         ,		// radius
+	64         ,		// height
+	
 	0,		// damage
 	sfx_posact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_FATT_RAISE1		// raisestate
     },
 
     {		// MT_FATSHOT
@@ -1261,21 +1391,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_FATSHOTX1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_firxpl,		// deathsound
-	20*FRACUNIT,		// speed
-	6*FRACUNIT,		// radius
-	8*FRACUNIT,		// height
-	100,		// mass
+	20+HIGHBIT,		// speed
+	6         ,		// radius
+	8         ,		// height
+	
 	8,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_CHAINGUY
@@ -1287,21 +1413,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_CPOS_PAIN,		// painstate
-	170,		// painchance
 	sfx_popain,		// painsound
-	0,		// meleestate
 	S_CPOS_ATK1,		// missilestate
 	S_CPOS_DIE1,		// deathstate
-	S_CPOS_XDIE1,		// xdeathstate
 	sfx_podth2,		// deathsound
 	8,		// speed
-	20*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_posact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_CPOS_RAISE1		// raisestate
     },
 
     {		// MT_TROOP
@@ -1313,21 +1435,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_TROO_PAIN,		// painstate
-	200,		// painchance
 	sfx_popain,		// painsound
-	S_TROO_ATK1,		// meleestate
 	S_TROO_ATK1,		// missilestate
 	S_TROO_DIE1,		// deathstate
-	S_TROO_XDIE1,		// xdeathstate
 	sfx_bgdth1,		// deathsound
 	8,		// speed
-	20*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_bgact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_TROO_RAISE1		// raisestate
     },
 
     {		// MT_SERGEANT
@@ -1339,21 +1457,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_sgtatk,		// attacksound
 	S_SARG_PAIN,		// painstate
-	180,		// painchance
 	sfx_dmpain,		// painsound
-	S_SARG_ATK1,		// meleestate
 	0,		// missilestate
 	S_SARG_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_sgtdth,		// deathsound
 	10,		// speed
-	30*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	400,		// mass
+	30         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_dmact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_SARG_RAISE1		// raisestate
     },
 
     {		// MT_SHADOWS
@@ -1365,21 +1479,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_sgtatk,		// attacksound
 	S_SARG_PAIN,		// painstate
-	180,		// painchance
 	sfx_dmpain,		// painsound
-	S_SARG_ATK1,		// meleestate
 	0,		// missilestate
 	S_SARG_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_sgtdth,		// deathsound
 	10,		// speed
-	30*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	400,		// mass
+	30         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_dmact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_SHADOW|MF_COUNTKILL,		// flags
-	S_SARG_RAISE1		// raisestate
     },
 
     {		// MT_HEAD
@@ -1391,21 +1501,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_HEAD_PAIN,		// painstate
-	128,		// painchance
 	sfx_dmpain,		// painsound
-	0,		// meleestate
 	S_HEAD_ATK1,		// missilestate
 	S_HEAD_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_cacdth,		// deathsound
 	8,		// speed
-	31*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	400,		// mass
+	31         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_dmact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_FLOAT|MF_NOGRAVITY|MF_COUNTKILL,		// flags
-	S_HEAD_RAISE1		// raisestate
     },
 
     {		// MT_BRUISER
@@ -1417,21 +1523,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_BOSS_PAIN,		// painstate
-	50,		// painchance
 	sfx_dmpain,		// painsound
-	S_BOSS_ATK1,		// meleestate
 	S_BOSS_ATK1,		// missilestate
 	S_BOSS_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_brsdth,		// deathsound
 	8,		// speed
-	24*FRACUNIT,		// radius
-	64*FRACUNIT,		// height
-	1000,		// mass
+	24         ,		// radius
+	64         ,		// height
+	
 	0,		// damage
 	sfx_dmact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_BOSS_RAISE1		// raisestate
     },
 
     {		// MT_BRUISERSHOT
@@ -1443,21 +1545,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_BRBALLX1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_firxpl,		// deathsound
-	15*FRACUNIT,		// speed
-	6*FRACUNIT,		// radius
-	8*FRACUNIT,		// height
-	100,		// mass
+	15+HIGHBIT,		// speed
+	6         ,		// radius
+	8         ,		// height
+	
 	8,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_KNIGHT
@@ -1469,21 +1567,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_BOS2_PAIN,		// painstate
-	50,		// painchance
 	sfx_dmpain,		// painsound
-	S_BOS2_ATK1,		// meleestate
 	S_BOS2_ATK1,		// missilestate
 	S_BOS2_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_kntdth,		// deathsound
 	8,		// speed
-	24*FRACUNIT,		// radius
-	64*FRACUNIT,		// height
-	1000,		// mass
+	24         ,		// radius
+	64         ,		// height
+	
 	0,		// damage
 	sfx_dmact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_BOS2_RAISE1		// raisestate
     },
 
     {		// MT_SKULL
@@ -1495,21 +1589,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_sklatk,		// attacksound
 	S_SKULL_PAIN,		// painstate
-	256,		// painchance
 	sfx_dmpain,		// painsound
-	0,		// meleestate
 	S_SKULL_ATK1,		// missilestate
 	S_SKULL_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_firxpl,		// deathsound
 	8,		// speed
-	16*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	50,		// mass
+	16         ,		// radius
+	56         ,		// height
+	
 	3,		// damage
 	sfx_dmact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_FLOAT|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_SPIDER
@@ -1521,21 +1611,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_shotgn,		// attacksound
 	S_SPID_PAIN,		// painstate
-	40,		// painchance
 	sfx_dmpain,		// painsound
-	0,		// meleestate
 	S_SPID_ATK1,		// missilestate
 	S_SPID_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_spidth,		// deathsound
 	12,		// speed
-	128*FRACUNIT,		// radius
-	100*FRACUNIT,		// height
-	1000,		// mass
+	128         ,		// radius
+	100         ,		// height
+	
 	0,		// damage
 	sfx_dmact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_BABY
@@ -1547,21 +1633,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_BSPI_PAIN,		// painstate
-	128,		// painchance
 	sfx_dmpain,		// painsound
-	0,		// meleestate
 	S_BSPI_ATK1,		// missilestate
 	S_BSPI_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_bspdth,		// deathsound
 	12,		// speed
-	64*FRACUNIT,		// radius
-	64*FRACUNIT,		// height
-	600,		// mass
+	64         ,		// radius
+	64         ,		// height
+	
 	0,		// damage
 	sfx_bspact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_BSPI_RAISE1		// raisestate
     },
 
     {		// MT_CYBORG
@@ -1573,21 +1655,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_CYBER_PAIN,		// painstate
-	20,		// painchance
 	sfx_dmpain,		// painsound
-	0,		// meleestate
 	S_CYBER_ATK1,		// missilestate
 	S_CYBER_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_cybdth,		// deathsound
 	16,		// speed
-	40*FRACUNIT,		// radius
-	110*FRACUNIT,		// height
-	1000,		// mass
+	40         ,		// radius
+	110         ,		// height
+	
 	0,		// damage
 	sfx_dmact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_PAIN
@@ -1599,21 +1677,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_PAIN_PAIN,		// painstate
-	128,		// painchance
 	sfx_pepain,		// painsound
-	0,		// meleestate
 	S_PAIN_ATK1,		// missilestate
 	S_PAIN_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_pedth,		// deathsound
 	8,		// speed
-	31*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	400,		// mass
+	31         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_dmact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_FLOAT|MF_NOGRAVITY|MF_COUNTKILL,		// flags
-	S_PAIN_RAISE1		// raisestate
     },
 
     {		// MT_WOLFSS
@@ -1625,21 +1699,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	0,		// attacksound
 	S_SSWV_PAIN,		// painstate
-	170,		// painchance
 	sfx_popain,		// painsound
-	0,		// meleestate
 	S_SSWV_ATK1,		// missilestate
 	S_SSWV_DIE1,		// deathstate
-	S_SSWV_XDIE1,		// xdeathstate
 	sfx_ssdth,		// deathsound
 	8,		// speed
-	20*FRACUNIT,		// radius
-	56*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	56         ,		// height
+	
 	0,		// damage
 	sfx_posact,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_SSWV_RAISE1		// raisestate
     },
 
     {		// MT_KEEN
@@ -1651,21 +1721,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_KEENPAIN,		// painstate
-	256,		// painchance
 	sfx_keenpn,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_COMMKEEN,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_keendt,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	72*FRACUNIT,		// height
-	10000000,		// mass
+	16         ,		// radius
+	72         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY|MF_SHOOTABLE|MF_COUNTKILL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_BOSSBRAIN
@@ -1677,21 +1743,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_BRAIN_PAIN,		// painstate
-	255,		// painchance
 	sfx_bospn,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_BRAIN_DIE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_bosdth,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	10000000,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SHOOTABLE,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_BOSSSPIT
@@ -1703,21 +1765,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	32*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	32         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOSECTOR,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_BOSSTARGET
@@ -1729,21 +1787,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	32*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	32         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOSECTOR,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_SPAWNSHOT
@@ -1755,21 +1809,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_firxpl,		// deathsound
-	10*FRACUNIT,		// speed
-	6*FRACUNIT,		// radius
-	32*FRACUNIT,		// height
-	100,		// mass
+	10+HIGHBIT,		// speed
+	6         ,		// radius
+	32         ,		// height
+	
 	3,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY|MF_NOCLIP,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_SPAWNFIRE
@@ -1781,21 +1831,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_BARREL
@@ -1807,21 +1853,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_BEXP,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_barexp,		// deathsound
 	0,		// speed
-	10*FRACUNIT,		// radius
-	42*FRACUNIT,		// height
-	100,		// mass
+	10         ,		// radius
+	42         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SHOOTABLE|MF_NOBLOOD,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_TROOPSHOT
@@ -1833,21 +1875,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_TBALLX1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_firxpl,		// deathsound
-	10*FRACUNIT,		// speed
-	6*FRACUNIT,		// radius
-	8*FRACUNIT,		// height
-	100,		// mass
+	10+HIGHBIT,		// speed
+	6         ,		// radius
+	8         ,		// height
+	
 	3,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_HEADSHOT
@@ -1859,21 +1897,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_RBALLX1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_firxpl,		// deathsound
-	10*FRACUNIT,		// speed
-	6*FRACUNIT,		// radius
-	8*FRACUNIT,		// height
-	100,		// mass
+	10+HIGHBIT,		// speed
+	6         ,		// radius
+	8         ,		// height
+	
 	5,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_ROCKET
@@ -1885,21 +1919,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_EXPLODE1,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_barexp,		// deathsound
-	20*FRACUNIT,		// speed
-	11*FRACUNIT,		// radius
-	8*FRACUNIT,		// height
-	100,		// mass
+	20+HIGHBIT,		// speed
+	11         ,		// radius
+	8         ,		// height
+	
 	20,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_PLASMA
@@ -1911,21 +1941,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_PLASEXP,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_firxpl,		// deathsound
-	25*FRACUNIT,		// speed
-	13*FRACUNIT,		// radius
-	8*FRACUNIT,		// height
-	100,		// mass
+	25+HIGHBIT,		// speed
+	13         ,		// radius
+	8         ,		// height
+	
 	5,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_BFG
@@ -1937,21 +1963,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_BFGLAND,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_rxplod,		// deathsound
-	25*FRACUNIT,		// speed
-	13*FRACUNIT,		// radius
-	8*FRACUNIT,		// height
-	100,		// mass
+	25+HIGHBIT,		// speed
+	13         ,		// radius
+	8         ,		// height
+	
 	100,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_ARACHPLAZ
@@ -1963,21 +1985,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_ARACH_PLEX,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_firxpl,		// deathsound
-	25*FRACUNIT,		// speed
-	13*FRACUNIT,		// radius
-	8*FRACUNIT,		// height
-	100,		// mass
+	25+HIGHBIT,		// speed
+	13         ,		// radius
+	8         ,		// height
+	
 	5,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_PUFF
@@ -1989,21 +2007,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_BLOOD
@@ -2015,21 +2029,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_TFOG
@@ -2041,21 +2051,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_IFOG
@@ -2067,21 +2073,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_TELEPORTMAN
@@ -2093,21 +2095,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOSECTOR,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_EXTRABFG
@@ -2119,21 +2117,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC0
@@ -2145,21 +2139,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC1
@@ -2171,21 +2161,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC2
@@ -2197,21 +2183,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_COUNTITEM,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC3
@@ -2223,21 +2205,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_COUNTITEM,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC4
@@ -2249,21 +2227,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_NOTDMATCH,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC5
@@ -2275,21 +2249,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_NOTDMATCH,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC6
@@ -2301,21 +2271,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_NOTDMATCH,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC7
@@ -2327,21 +2293,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_NOTDMATCH,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC8
@@ -2353,21 +2315,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_NOTDMATCH,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC9
@@ -2379,21 +2337,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_NOTDMATCH,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC10
@@ -2405,21 +2359,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC11
@@ -2431,21 +2381,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC12
@@ -2457,21 +2403,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_COUNTITEM,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_INV
@@ -2483,21 +2425,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_COUNTITEM,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC13
@@ -2509,21 +2447,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_COUNTITEM,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_INS
@@ -2535,21 +2469,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_COUNTITEM,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC14
@@ -2561,21 +2491,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC15
@@ -2587,21 +2513,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_COUNTITEM,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC16
@@ -2613,21 +2535,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_COUNTITEM,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MEGA
@@ -2639,21 +2557,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL|MF_COUNTITEM,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_CLIP
@@ -2665,21 +2579,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC17
@@ -2691,21 +2601,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC18
@@ -2717,21 +2623,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC19
@@ -2743,21 +2645,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC20
@@ -2769,21 +2667,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC21
@@ -2795,21 +2689,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC22
@@ -2821,21 +2711,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC23
@@ -2847,21 +2733,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC24
@@ -2873,21 +2755,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC25
@@ -2899,21 +2777,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_CHAINGUN
@@ -2925,21 +2799,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC26
@@ -2951,21 +2821,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC27
@@ -2977,21 +2843,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC28
@@ -3003,21 +2865,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_SHOTGUN
@@ -3029,21 +2887,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_SUPERSHOTGUN
@@ -3055,21 +2909,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPECIAL,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC29
@@ -3081,21 +2931,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC30
@@ -3107,21 +2953,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC31
@@ -3133,21 +2975,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC32
@@ -3159,21 +2997,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC33
@@ -3185,21 +3019,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC34
@@ -3211,21 +3041,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC35
@@ -3237,21 +3063,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC36
@@ -3263,21 +3085,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC37
@@ -3289,21 +3107,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC38
@@ -3315,21 +3129,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC39
@@ -3341,21 +3151,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC40
@@ -3367,21 +3173,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC41
@@ -3393,21 +3195,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC42
@@ -3419,21 +3217,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC43
@@ -3445,21 +3239,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC44
@@ -3471,21 +3261,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC45
@@ -3497,21 +3283,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC46
@@ -3523,21 +3305,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC47
@@ -3549,21 +3327,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC48
@@ -3575,21 +3349,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC49
@@ -3601,21 +3371,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC50
@@ -3627,21 +3393,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC51
@@ -3653,21 +3415,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	68*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	68         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC52
@@ -3679,21 +3437,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	84*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	84         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC53
@@ -3705,21 +3459,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	84*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	84         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC54
@@ -3731,21 +3481,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	68*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	68         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC55
@@ -3757,21 +3503,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	52*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	52         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC56
@@ -3783,21 +3525,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	84*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	84         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC57
@@ -3809,21 +3547,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	68*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	68         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC58
@@ -3835,21 +3569,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	52*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	52         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC59
@@ -3861,21 +3591,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	52*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	52         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC60
@@ -3887,21 +3613,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	68*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	68         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC61
@@ -3913,21 +3635,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC62
@@ -3939,21 +3657,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC63
@@ -3965,21 +3679,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC64
@@ -3991,21 +3701,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC65
@@ -4017,21 +3723,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC66
@@ -4043,21 +3745,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC67
@@ -4069,21 +3767,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC68
@@ -4095,21 +3789,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC69
@@ -4121,21 +3811,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC70
@@ -4147,21 +3833,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC71
@@ -4173,21 +3855,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	0,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC72
@@ -4199,21 +3877,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC73
@@ -4225,21 +3899,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC74
@@ -4251,21 +3921,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC75
@@ -4277,21 +3943,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC76
@@ -4303,21 +3965,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	32*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	32         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC77
@@ -4329,21 +3987,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC78
@@ -4355,21 +4009,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	88*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	88         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC79
@@ -4381,21 +4031,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	88*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	88         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC80
@@ -4407,21 +4053,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	64*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	64         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC81
@@ -4433,21 +4075,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	64*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	64         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC82
@@ -4459,21 +4097,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	64*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	64         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC83
@@ -4485,21 +4119,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	16*FRACUNIT,		// radius
-	64*FRACUNIT,		// height
-	100,		// mass
+	16         ,		// radius
+	64         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_SOLID|MF_SPAWNCEILING|MF_NOGRAVITY,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC84
@@ -4511,21 +4141,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC85
@@ -4537,21 +4163,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP,		// flags
-	S_NULL		// raisestate
     },
 
     {		// MT_MISC86
@@ -4563,21 +4185,17 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	
 	sfx_None,		// attacksound
 	S_NULL,		// painstate
-	0,		// painchance
 	sfx_None,		// painsound
-	S_NULL,		// meleestate
 	S_NULL,		// missilestate
 	S_NULL,		// deathstate
-	S_NULL,		// xdeathstate
 	sfx_None,		// deathsound
 	0,		// speed
-	20*FRACUNIT,		// radius
-	16*FRACUNIT,		// height
-	100,		// mass
+	20         ,		// radius
+	16         ,		// height
+	
 	0,		// damage
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP,		// flags
-	S_NULL		// raisestate
     }
 };
 

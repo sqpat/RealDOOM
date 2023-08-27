@@ -597,8 +597,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobj->info = info;
     mobj->x = x;
     mobj->y = y;
-    mobj->radius = info->radius;
-    mobj->height = info->height;
+    mobj->radius = info->radius * FRACUNIT;
+    mobj->height = info->height * FRACUNIT;
     mobj->flags = info->flags;
     mobj->health = info->spawnhealth;
 
@@ -633,7 +633,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     if (z == ONFLOORZ)
 		mobj->z = mobj->floorz;
     else if (z == ONCEILINGZ)
-		mobj->z = mobj->ceilingz - mobj->info->height;
+		mobj->z = mobj->ceilingz - mobj->info->height * FRACUNIT;
     else 
 		mobj->z = z;
 
@@ -973,7 +973,7 @@ P_SpawnMissile
 	}
 	Z_RefIsActive(thRef);
     th->targetRef = sourceRef;	// where it came from
-	thspeed = th->info->speed;
+	thspeed = MAKESPEED(th->info->speed);
 
 	dest = (mobj_t*)Z_LoadBytesFromEMS(destRef);
 	destz = dest->z;
@@ -995,8 +995,8 @@ P_SpawnMissile
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
     th->angle = an;
     an >>= ANGLETOFINESHIFT;
-    th->momx = FixedMul (th->info->speed, finecosine(an));
-    th->momy = FixedMul (th->info->speed, finesine(an));
+    th->momx = FixedMul (thspeed, finecosine(an));
+    th->momy = FixedMul (thspeed, finesine(an));
 	th->momz = momz;
 	Z_RefIsActive(thRef);
 
@@ -1024,6 +1024,7 @@ P_SpawnPlayerMissile
     fixed_t	y;
     fixed_t	z;
     fixed_t	slope;
+	fixed_t speed;
 	mobj_t* source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
     
 
@@ -1059,11 +1060,12 @@ P_SpawnPlayerMissile
     th->targetRef = sourceRef;
     th->angle = an;
 	an = an >> ANGLETOFINESHIFT;
-    th->momx = FixedMul( th->info->speed,
-			 finecosine(an));
-    th->momy = FixedMul( th->info->speed,
-			 finesine(an));
-    th->momz = FixedMul( th->info->speed, slope);
+
+	speed = MAKESPEED(th->info->speed);
+
+    th->momx = FixedMul( speed, finecosine(an));
+    th->momy = FixedMul( speed, finesine(an));
+    th->momz = FixedMul( speed, slope);
 
     P_CheckMissileSpawn (thRef);
 }

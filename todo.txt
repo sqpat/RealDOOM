@@ -6,12 +6,13 @@ MEMORY IMPROVEMENTS
 
 KNOWN ISSUES
  - no sound, need new 16 bit lib
- - no titlepic, etc. requires 65k allocation, 64k currently _maxammo
+ - no titlepic, etc. requires 65k allocation, 64k currently maximum
  - time counter on level finish is wrong
  - doom2 enemies probably nonfunctional, needs testing
  - savegames broken. not sure if it will be compatible with original doom
- - menu sometimes jumps a bit
  - rendering issue with weird line early in demo 3 might be related to rendering fuzzy
+ - menu sometimes jumps a bit? might be due to keyboard issues
+ - are keys working badly or is it just mac dosbox? test again on pc when possible.
 
 TODO 
  
@@ -19,12 +20,14 @@ TODO
  ~ set visiplanes under 64k and see if large compile works
  1 change a bunch of int_32t to int_16t, see if it still works
  2 change fixed_t stuff
+   - make it a union. custom add and subtract just like fixedmul/fixeddiv?
  3 screens in conventional instead of allocced
    - screen2/3 wipe in EMS, or dump it for now.
    - get rid of backbuffer? or make it ems?
  - get rid of last bits of multiplayer, players array
  - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
-
+ - clean up speed code. probably dont need make_speed in a lot of cases -is high bit projectile only?
+ 
 CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everything) 
  - thing flags
     - can probably be rewritten as a pair of 16 bits?

@@ -52,12 +52,7 @@ void R_DrawSprites (void);
 void R_InitSprites (int8_t** namelist);
 void R_ClearSprites (void);
 void R_DrawMasked (void);
-
-void
-R_ClipVisSprite
-( vissprite_t*		vis,
-  int32_t			xl,
-  int32_t			xh );
+ 
 
 
 #endif

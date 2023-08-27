@@ -531,7 +531,7 @@ void F_CastTicker (void)
 	// go into attack frame
 	castattacking = true;
 	if (castonmelee)
-	    caststate=&states[mobjinfo[castorder[castnum].type].meleestate];
+	    caststate=&states[getMeleeState(castorder[castnum].type)];
 	else
 	    caststate=&states[mobjinfo[castorder[castnum].type].missilestate];
 	castonmelee ^= 1;
@@ -539,7 +539,7 @@ void F_CastTicker (void)
 	{
 	    if (castonmelee)
 		caststate=
-		    &states[mobjinfo[castorder[castnum].type].meleestate];
+		    &states[getMeleeState(castorder[castnum].type)];
 	    else
 		caststate=
 		    &states[mobjinfo[castorder[castnum].type].missilestate];
