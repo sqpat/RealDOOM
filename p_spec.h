@@ -28,7 +28,7 @@
 // End-level timer (-TIMER option)
 //
 extern	boolean levelTimer;
-extern	int32_t	levelTimeCount;
+extern	ticcount_t	levelTimeCount;
 
 
 //      Define values for map objects

@@ -127,15 +127,15 @@ int16_t             numspritelumps;
 int16_t             numtextures;
 //texture_t**   textures;
 
-MEMREF  texturesRef;				// texture_t**
+MEMREF  texturesRef;				// MEMREF to texture_t**
 
 MEMREF  texturewidthmaskRef;		// int16_t*
 // needed for texture pegging
-MEMREF  textureheightRef;		    // fixed_t*
-MEMREF  texturecompositesizeRef;	// int32_t*
+MEMREF  textureheightRef;		    // int16_t must be converted by fracbits when used*
+MEMREF  texturecompositesizeRef;	// uint16_t*
 MEMREF  texturecolumnlumpRef;		// int16_t**
 MEMREF	texturecolumnofsRef;		// uint16_t **
-MEMREF  texturecompositeRef;        // byte**
+MEMREF  texturecompositeRef;        // MEMREF to byte**
 
 
  
@@ -248,7 +248,7 @@ void R_GenerateComposite(uint8_t texnum)
 	MEMREF texturecolumnlumptexnum = ((MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef))[texnum];
 	MEMREF texturecolumnofstexnum = ((MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef))[texnum];
 	MEMREF texturecompositetexnum;
-	int32_t texturecompositesize = ((int32_t*)Z_LoadBytesFromEMS(texturecompositesizeRef))[texnum];
+	uint16_t texturecompositesize = ((uint16_t*)Z_LoadBytesFromEMS(texturecompositesizeRef))[texnum];
 
 	MEMREF texturememref = ((MEMREF*)Z_LoadBytesFromEMS(texturesRef))[texnum];
 	MEMREF* texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
@@ -361,7 +361,7 @@ void R_GenerateLookup(uint8_t texnum)
 	MEMREF texturecolumnlump = ((MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef))[texnum];
 	MEMREF texturecolumnofs = ((MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef))[texnum];
 
-	int32_t* texturecompositesize = (int32_t*)Z_LoadBytesFromEMS(texturecompositesizeRef);
+	uint16_t* texturecompositesize = (uint16_t*)Z_LoadBytesFromEMS(texturecompositesizeRef);
 	MEMREF* texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 	texturecomposite[texnum] = NULL_MEMREF;
 	texturecompositesize[texnum] = 0;
@@ -421,7 +421,7 @@ void R_GenerateLookup(uint8_t texnum)
 		}
 	}
 
-	texturecompositesize = (int32_t*)Z_LoadBytesFromEMS(texturecompositesizeRef);
+	texturecompositesize = (uint16_t*)Z_LoadBytesFromEMS(texturecompositesizeRef);
 	colofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofs);
 	collump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlump);
 
@@ -442,9 +442,11 @@ void R_GenerateLookup(uint8_t texnum)
 			collump[x] = -1;
 			colofs[x] = texturecompositesize[texnum];
 
+/*
 			if (texturecompositesize[texnum] > 0x10000 - textureheight) {
 				I_Error("R_GenerateLookup: texture %i is >64k", texnum);
 			}
+			*/
 
 			texturecompositesize[texnum] += textureheight;
 		}
@@ -552,7 +554,7 @@ void R_InitTextures(void)
 
 	int16_t*                texturewidthmask;
 	// needed for texture pegging
-	fixed_t*            textureheight;
+	int16_t*            textureheight;
 	MEMREF *            texturecolumnlump;
 	MEMREF *			texturecolumnofs;
 	MEMREF*				textures;
@@ -608,18 +610,18 @@ void R_InitTextures(void)
 
 	// these are all the very first allocations that occur on level setup and they end up in the same page, 
 	// so there is data locality with EMS paging which is nice.
-	texturesRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturecolumnlumpRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturecolumnofsRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturecompositeRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturecompositesizeRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturewidthmaskRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	textureheightRef = Z_MallocEMSNew(numtextures * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	texturesRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	texturecolumnlumpRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	texturecolumnofsRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	texturecompositeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	texturecompositesizeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	texturewidthmaskRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	textureheightRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 
 	//texturecomposite	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecompositeRef);
 	//texturecompositesize = (int32_t*)			  Z_LoadBytesFromEMS(texturecompositesizeRef);
 	texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
-	textureheight = (fixed_t*)Z_LoadBytesFromEMS(textureheightRef);
+	textureheight = (int16_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 
 	totalwidth = 0;
@@ -699,12 +701,12 @@ void R_InitTextures(void)
 			j <<= 1;
 
 		texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
-		textureheight = (fixed_t*)Z_LoadBytesFromEMS(textureheightRef);
+		textureheight = (int16_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 		Z_RefIsActive(texturewidthmaskRef);
 		Z_RefIsActive(textureheightRef);
 		texturewidthmask[i] = j - 1;
-		textureheight[i] = textureheightval << FRACBITS;
+		textureheight[i] = textureheightval;// << FRACBITS;
 
 		totalwidth += texturewidth;
 	}

@@ -1052,7 +1052,7 @@ void AM_drawWalls(void)
 	line_t* lines;
 	int16_t linev1Offset;
 	int16_t linev2Offset;
-	int32_t lineflags;
+	int16_t lineflags;
 	int16_t linefrontsecnum;
 	int16_t linebacksecnum;
 	int16_t linespecial;

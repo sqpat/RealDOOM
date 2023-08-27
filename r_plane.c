@@ -110,14 +110,14 @@ void R_InitPlanes (void)
 //
 void
 R_MapPlane
-( int32_t		y,
-  int32_t		x1,
-  int32_t		x2 )
+( byte		y,
+  int16_t		x1,
+  int16_t		x2 )
 {
     fineangle_t	angle;
     fixed_t	distance;
     fixed_t	length;
-	uint32_t	index;
+	uint8_t	index;
  
 
     if (planeheight != cachedheight[y])
@@ -171,10 +171,9 @@ void R_ClearPlanes (void)
     fineangle_t	angle;
     
     // opening / clipping determination
-    for (i=0 ; i<viewwidth ; i++)
-    {
-	floorclip[i] = viewheight;
-	ceilingclip[i] = -1;
+    for (i=0 ; i<viewwidth ; i++) {
+		floorclip[i] = viewheight;
+		ceilingclip[i] = -1;
     }
 
     lastvisplane = visplanes;

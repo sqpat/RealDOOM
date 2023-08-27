@@ -1150,7 +1150,7 @@ P_SetMobjState
 			case ETF_A_BrainScream: A_BrainScream(mobjRef); break;
 			case ETF_A_BrainDie: A_BrainDie(mobjRef); break;
 				// ugly hacks because these values didnt fit in the char datatype, so we do this to avoid making that field a int16_t in a 1000 element struct array. 
-				// easily saving extra 1-2kb of binary size is worth this hack imo
+				// easily saving extra 1-2kb of binary size is worth this hack imo - sq
 			case ETF_A_BrainAwake:
 				mobj->tics = 181;
 				A_BrainAwake(mobjRef); break;

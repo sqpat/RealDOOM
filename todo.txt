@@ -14,12 +14,15 @@ KNOWN ISSUES
  - menu sometimes jumps a bit? might be due to keyboard issues
  - are keys working badly or is it just mac dosbox? test again on pc when possible. didnt notice because i was relying on demos too much but i think i did do some 32 to 16 bit code conversion around keyboard input
 
-TODO 620272
+TODO 
  
  ~ make ems actually work
  ~ set visiplanes under 64k and see if large compile works
  ~ change a bunch of int_32t to int_16t, see if it still works
  ~ change angle_ts
+ 1 floorheight and other fixed_ts on sectors etc, save them unshifted and shift on use. 
+    - later we will just automagically set to fixed_t hi byte somehow
+
  2 change fixed_t stuff
    - make it a union. custom add and subtract just like fixedmul/fixeddiv?
  3 screens in conventional instead of allocced
@@ -29,7 +32,7 @@ TODO 620272
  - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
  - clean up speed code. probably dont need make_speed in a lot of cases -is high bit projectile only?
 - fix 'shift amount too large' bugs in 16 bit version. probably will go hand in hand with fixed_t work, but some defines may need to explicitly be long typed
-
+ - check if using 8 instead of 16 bit local vars (especially loop vars) affects 16 bit binary code size
 CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everything) 
  - thing flags
     - can probably be rewritten as a pair of 16 bits?

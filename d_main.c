@@ -252,7 +252,7 @@ FixedDiv2
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t     wipegamestate = GS_DEMOSCREEN;
 extern  boolean setsizeneeded;
-extern  int32_t             showMessages;
+extern  uint8_t             showMessages;
 void R_ExecuteSetViewSize (void);
 
 void D_Display (void)
@@ -262,10 +262,9 @@ void D_Display (void)
     static  boolean             inhelpscreensstate = false;
     static  boolean             fullscreen = false;
     static  gamestate_t         oldgamestate = -1;
-    static  int32_t                 borderdrawcount;
-	int32_t                         nowtime;
+    static  uint8_t                 borderdrawcount;
+	ticcount_t                         nowtime, wipestart;
 	int16_t                         tics;
-	int32_t                         wipestart;
 	int16_t                         y;
     boolean                     done;
     boolean                     wipe;
@@ -423,24 +422,19 @@ void D_Display (void)
 //
 extern  boolean         demorecording;
 
-byte copynode[10540];
 
 void D_DoomLoop (void)
 {
-	int8_t result[3000];
-	int8_t result2[2000];
-	int32_t lasttick = 0;
-	int32_t lastindex = 0;
-	int32_t stoptic;
-	vldoor_t* doorunit;
-	line_t* lines;
-	line_t* check;
+	// debugging stuff i need to find mem leaks...
+    //int8_t result[3000];
+	//int8_t result2[2000];
+	//int32_t lasttick = 0;
+	//int32_t lastindex = 0;
+	//int32_t stoptic;
+	//int32_t linenumber;
+	//int32_t i = 0;
 
-	int32_t linenumber;
 	//plat_t* plat;
-	sector_t* sector;
-	byte* nodes;
-	int32_t i = 0;
     if (demorecording)
         G_BeginRecording ();
                 
@@ -494,7 +488,7 @@ void D_DoomLoop (void)
 
 		}*/
 
-		
+        /*
 		stoptic = 35500;
 		if (gametic > stoptic) {
 			
@@ -521,11 +515,7 @@ void D_DoomLoop (void)
 
 				//sprintf(result2, "%i %i %i %i %i %i %i %i %i \n", gametic, prndindex, doorunit->direction, doorunit->speed, doorunit->topcountdown, doorunit->topheight, doorunit->topwait, doorunit->secnum, sectors[114].ceilingheight);
 
-				//Z_LoadBytesFromEMS(linesRef);
-				//Z_LoadBytesFromEMS(segsRef);
-				//Z_LoadBytesFromEMS(subsectorsRef);
-
-				//Z_LoadBytesFromEMS(textureheightRef);
+		 
 				//lastindex = prndindex;
 
 
@@ -540,7 +530,7 @@ void D_DoomLoop (void)
 			//	I_Error("badcopy");
 			//}
 		}
-
+        */
 	}
 }
 
@@ -674,7 +664,7 @@ void D_StartTitle (void)
 //
 // D_GetCursorColumn
 //
-int32_t D_GetCursorColumn(void)
+int16_t D_GetCursorColumn(void)
 {
     union REGS regs;
 
@@ -688,7 +678,7 @@ int32_t D_GetCursorColumn(void)
 //
 // D_GetCursorRow
 //
-int32_t D_GetCursorRow(void)
+int16_t D_GetCursorRow(void)
 {
     union REGS regs;
 
@@ -702,7 +692,7 @@ int32_t D_GetCursorRow(void)
 //
 // D_SetCursorPosition
 //
-void D_SetCursorPosition(int32_t column, int32_t row)
+void D_SetCursorPosition(int16_t column, int16_t row)
 {
     union REGS regs;
 
@@ -716,13 +706,13 @@ void D_SetCursorPosition(int32_t column, int32_t row)
 //
 // D_DrawTitle
 //
-void D_DrawTitle(int8_t *string, int32_t fc, int32_t bc)
+void D_DrawTitle(int8_t *string, uint8_t fc, uint8_t bc)
 {
     union REGS regs;
     byte color;
-	int32_t column;
-	int32_t row;
-	int32_t i;
+	int16_t column;
+	int16_t row;
+	int16_t i;
 
     //Calculate text color
     color = (bc << 4) | fc;
@@ -761,8 +751,8 @@ int8_t            title[128];
 //
 void D_RedrawTitle(void)
 {
-	int32_t column;
-	int32_t row;
+	int16_t column;
+	int16_t row;
 
     //Get current cursor pos
     column = D_GetCursorColumn();
@@ -783,7 +773,7 @@ void D_RedrawTitle(void)
 //
 void D_AddFile (int8_t *file)
 {
-	int32_t     numwadfiles;
+	int8_t     numwadfiles;
 	int8_t    *newfile;
         
     for (numwadfiles = 0 ; wadfiles[numwadfiles] ; numwadfiles++)
@@ -857,7 +847,7 @@ void IdentifyVersion (void)
 //
 void FindResponseFile (void)
 {
-	int32_t             i;
+	int16_t             i;
 #define MAXARGVS        100
         
     for (i = 1;i < myargc;i++)
@@ -865,9 +855,9 @@ void FindResponseFile (void)
         {
             FILE *          handle;
 			int32_t             size;
-			int32_t             k;
-			int32_t             index;
-			int32_t             indexinfile;
+			int16_t             k;
+			int16_t             index;
+			int16_t             indexinfile;
 			int8_t    *infile;
 			int8_t    *file;
 			int8_t    *moreargs[20];
@@ -931,7 +921,7 @@ void FindResponseFile (void)
 //
 void D_DoomMain (void)
 {
-	int32_t             p;
+	int16_t             p;
 	int8_t                    file[256];
     union REGS regs;
 
@@ -1117,7 +1107,7 @@ void D_DoomMain (void)
             "e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
             "dphoof","bfgga0","heada1","cybra1","spida1d1"
         };
-		int32_t i;
+		int8_t i;
         
         if (shareware)
             I_Error("\nYou cannot -file with the shareware "

@@ -42,7 +42,7 @@ fixed_t		cachedt2y;
 // P_DivlineSide
 // Returns side 0 (front), 1 (back), or 2 (on).
 //
-int32_t
+
 P_DivlineSide
 ( fixed_t	x,
   fixed_t	y,
@@ -129,9 +129,9 @@ boolean P_CrossSubsector (int16_t subsecnum)
     int16_t		segnum;
 	int16_t linedefOffset;
     line_t*		line;
-    int32_t			s1;
-    int32_t			s2;
-    int32_t			count;
+    int8_t			s1;
+    int8_t			s2;
+    int16_t			count;
     int16_t frontsecnum;
 	int16_t backsecnum;
     fixed_t		opentop;
@@ -269,7 +269,7 @@ boolean P_CrossSubsector (int16_t subsecnum)
 boolean P_CrossBSPNode (int32_t bspnum)
 {
     node_t*	bsp;
-    int32_t		side;
+    int8_t		side;
 	node_t* nodes;
 	//bspcounter++;
 	
@@ -326,8 +326,8 @@ P_CheckSight
 {
 
     int32_t		pnum;
-    int32_t		bytenum;
-    int32_t		bitnum;
+    int16_t		bytenum;
+    int16_t		bitnum;
 	mobj_t*	t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
 	fixed_t t1z = t1->z;
 	fixed_t t1x = t1->x;
@@ -356,7 +356,9 @@ P_CheckSight
     // First check for trivial rejection.
 
     // Determine subsector entries in REJECT table.
-    pnum = s1*numsectors + s2;
+    // todo we can do this faster for 16 bite... shifts are slow, we want to avoid the 32 bit int too.
+	// can be 330ish sectors in a level so pnum can surpass 16 bit sizes
+	pnum = s1*numsectors + s2;
     bytenum = pnum>>3;
     bitnum = 1 << (pnum&7);
 	

@@ -42,7 +42,7 @@ enum { VERSION =  109 };
 #define EXE_VERSION EXE_VERSION_1_9
 
 
-#define LOOPCHECK
+//#define LOOPCHECK
 
 
 //

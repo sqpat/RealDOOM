@@ -47,7 +47,7 @@ thinker_t	thinkerlist[MAX_THINKERS];
 //
 void P_InitThinkers (void)
 {
-	int32_t i = 2;
+	int16_t i;
 	thinkerlist[0].next = 1;
 	thinkerlist[0].prev = 1;
 
@@ -64,7 +64,7 @@ void P_InitThinkers (void)
 THINKERREF P_GetNextThinkerRef(void) {
 
     int16_t start = currentThinkerListHead;
-	int32_t i;
+	int16_t i;
     
     for (i = currentThinkerListHead + 1; i != currentThinkerListHead; i++){
         if (i == MAX_THINKERS){
@@ -88,7 +88,7 @@ THINKERREF P_GetNextThinkerRef(void) {
 
 }
 
-int32_t addCount = 0;
+int16_t addCount = 0;
 //
 // P_AddThinker
 // Adds a new thinker at the end of the list.
@@ -139,19 +139,14 @@ void P_RunThinkers (void)
 {
     THINKERREF	currentthinker;
 	void* arg;
-	int32_t i = 0;
+	//int16_t i = 0;
 	vldoor_t* door;
 	THINKERREF	currentthinker2;
-	int32_t j = 0;
 	currentthinker = thinkerlist[0].next;
 
 
 
     while (currentthinker != 0) {
-		
-
-
-
 		if ( thinkerlist[currentthinker].functionType == TF_DELETEME ) {
 			// time to remove it
 			thinkerlist[thinkerlist[currentthinker].next].prev = thinkerlist[currentthinker].prev;
@@ -160,41 +155,6 @@ void P_RunThinkers (void)
 			thinkerlist[currentthinker].prev = MAX_THINKERS;
 
 		} else {
-			// 99 on i = 38
-
-
-			if (i > 2000) {
-				I_Error("caught infinite? %i ", gametic);
-				//setval = 1;
-			}
-		  
-			 
-			if (gametic == 619 && i == 0) {
-				//SAVEDUNIT = Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
-				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
-				///I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, 0, SAVEDUNIT->type, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref);
-				//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
-
-
-			}
-
-			if (gametic == 611 && thinkerlist[currentthinker].functionType == TF_PLATRAISE&& i != 275) {
-				//SAVEDUNIT = Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
-				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
-				///I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, 0, SAVEDUNIT->type, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref);
-				
-				
-				// 611 275 228 2 1702
-				// 611 276 228 2 1703
-				//I_Error("error %i %i %i %i %i ", gametic, i, prndindex, thinkerlist[currentthinker].functionType, thinkerlist[currentthinker].memref);
-
-				//setval = 5;
-
-			}
-
-
-
-
 			
 			if (thinkerlist[currentthinker].functionType) {
 
@@ -234,7 +194,8 @@ void P_RunThinkers (void)
 
 				}
 
-
+// i will need this later to help me debug inevitible doom 2 content memleaks
+/*
 				if (gametic == 619 && i == 0) {
 					//SAVEDUNIT = (mobj_t*) Z_LoadBytesFromEMS(players[0].moRef);
 					//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
@@ -261,6 +222,8 @@ void P_RunThinkers (void)
 
 				 
 				i++;
+
+				*/
 			}
 
 		}
@@ -288,8 +251,6 @@ void P_RunThinkers (void)
 
 void P_Ticker (void)
 {
-    int32_t		i;
-    
     // run the tic
 	// pause if in menu and at least one tic has been run
 	if (paused || (menuactive && !demoplayback && players[consoleplayer].viewz != 1)) {

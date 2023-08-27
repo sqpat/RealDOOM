@@ -40,11 +40,11 @@
 void T_FireFlicker (MEMREF memref)
 
 {
-    int32_t	amount;
+    uint8_t	amount;
 	fireflicker_t* flick = (fireflicker_t*)Z_LoadBytesFromEMS(memref);
 	int16_t flicksecnum = flick->secnum;
-	int32_t flickmaxlight = flick->maxlight;
-	int32_t flickminlight= flick->minlight;
+	uint8_t flickmaxlight = flick->maxlight;
+	uint8_t flickminlight= flick->minlight;
 	sector_t* sectors;
 
     if (--flick->count)
@@ -69,7 +69,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 {
     fireflicker_t*	flick;
 	MEMREF flickRef;
-	int32_t lightamount;
+	uint8_t lightamount;
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
@@ -359,8 +359,8 @@ void T_Glow(MEMREF memref)
 {
 	glow_t* g = (glow_t*)Z_LoadBytesFromEMS(memref);
 	int16_t gsecnum = g->secnum;
-	int32_t gminlight = g->minlight;
-	int32_t gmaxlight = g->maxlight;
+	uint8_t gminlight = g->minlight;
+	uint8_t gmaxlight = g->maxlight;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
     switch(g->direction) {

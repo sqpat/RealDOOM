@@ -180,7 +180,7 @@ P_PathTraverse
   fixed_t	y1,
   fixed_t	x2,
   fixed_t	y2,
-  int32_t		flags,
+  uint8_t		flags,
   boolean	(*trav) (intercept_t *));
 
 void P_UnsetThingPosition (MEMREF thing);

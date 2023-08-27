@@ -1307,8 +1307,8 @@ void G_RecordDemo (int8_t* name)
     strcat (demoname, ".lmp"); 
     maxsize = DEMO_MAX_SIZE;
     i = M_CheckParm ("-maxdemo");
-    if (i && i<myargc-1)
-        maxsize = atoi(myargv[i+1])*1024;
+    if (i && i<myargc-1) 
+            maxsize = atoi(myargv[i+1])*1024;
     demobufferRef = Z_MallocEMSNew (maxsize,PU_STATIC,0, ALLOC_TYPE_DEMO_BUFFER); 
     //demoend = demobuffer + maxsize;
         
@@ -1421,7 +1421,7 @@ void G_TimeDemo (int8_t* name)
  
 boolean G_CheckDemoStatus (void) 
 { 
-	uint32_t             endtime;
+	ticcount_t             endtime;
 	byte* demobuffer;
 
 	// NOTE: WHENEVER WE ENTER THIS FUNCTION demo_p IS ALREADY INCREMENTED BY demobuffer OFFSET;

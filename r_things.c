@@ -504,7 +504,7 @@ void R_ProjectSprite (MEMREF thingRef)
     if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
 		ang = R_PointToAngle (thingx, thingy);
-        rot = (ang-thingangle+(uint32_t)(ANG45/2)*9)>>29;
+        rot = (ang-thingangle+(angle_t)(ANG45/2)*9)>>29;
         lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
         flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[rot];
     }
@@ -675,9 +675,9 @@ void R_AddSprites (int16_t secnum)
 void R_DrawPSprite (pspdef_t* psp)
 {
     fixed_t             tx;
-	int32_t                 x1;
-	int32_t                 x2;
-	int32_t                 lump;
+	int16_t                 x1;
+	int16_t                 x2;
+	int16_t                 lump;
     boolean             flip;
     vissprite_t*        vis;
     vissprite_t         avis;
@@ -774,8 +774,8 @@ void R_DrawPSprite (pspdef_t* psp)
 //
 void R_DrawPlayerSprites (void)
 {
-	int32_t         i;
-	int32_t         lightnum;
+	uint8_t         i;
+	uint8_t         lightnum;
     pspdef_t*   psp;
 	mobj_t*     playermo;
 	sector_t* sectors;

@@ -63,9 +63,9 @@ boolean			message_dontfuckwithme;
 static boolean		message_nottobefuckedwith;
 
 static hu_stext_t	w_message;
-static int32_t		message_counter;
+static uint8_t		message_counter;
 
-extern int32_t		showMessages;
+extern uint8_t		showMessages;
 extern boolean		automapactive;
 
 
@@ -355,8 +355,8 @@ int8_t ForeignTranslation(uint8_t ch)
 void HU_Init(void)
 {
 
-    int32_t		i;
-    int32_t		j;
+    int16_t		i;
+    int16_t		j;
 	int8_t	buffer[9];
 
 	if (french) {
@@ -382,11 +382,11 @@ void HU_Init(void)
 void HU_Start(void)
 {
 
-    int32_t		i;
+    // int32_t		i;
     int8_t*	s;
 	patch_t* hu_font0; 
-	int32_t HU_TITLEY;
-	int32_t HU_INPUTY;
+	int16_t HU_TITLEY;
+	int16_t HU_INPUTY;
 
 	hu_font0 = (patch_t*) Z_LoadBytesFromEMS(hu_fontRef[0]);
 	HU_TITLEY = (167 - (hu_font0->height));
@@ -464,7 +464,6 @@ void HU_Erase(void)
 void HU_Ticker(void)
 {
 
-	int32_t i, rc;
 	int8_t c;
 
 	// tick down message counter if message is up
@@ -504,11 +503,6 @@ boolean HU_Responder(event_t *ev)
 	static boolean shiftdown = false;
 	static boolean altdown = false;
 	uint8_t c;
-	int32_t i;
-
- 
-
-	static int32_t num_nobrainers = 0;
 
 	if (ev->data1 == KEY_RSHIFT)
 	{

@@ -166,7 +166,7 @@ R_RenderMaskedSegRange
     if (lines[curlinelinedefOffset].flags & ML_DONTPEGBOTTOM) {
 		dc_texturemid = frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight;
 		textureheight = Z_LoadBytesFromEMS(textureheightRef);
-		dc_texturemid = dc_texturemid + textureheight[texnum] - viewz;
+		dc_texturemid = dc_texturemid + (textureheight[texnum] << FRACBITS) - viewz;
     } else {
 		dc_texturemid = frontsector.ceilingheight< backsector.ceilingheight ? frontsector.ceilingheight : backsector.ceilingheight;
 		dc_texturemid = dc_texturemid - viewz;
@@ -510,8 +510,7 @@ R_StoreWallRange
 		markfloor = markceiling = true;
 		if (lineflags & ML_DONTPEGBOTTOM) {
 			textureheight = Z_LoadBytesFromEMS(textureheightRef);
-			vtop = frontsector.floorheight +
-			textureheight[sidemidtexture];
+			vtop = frontsector.floorheight + (textureheight[sidemidtexture] << FRACBITS);
 			// bottom of texture at bottom
 			rw_midtexturemid = vtop - viewz;	
 		} else {
@@ -604,7 +603,7 @@ R_StoreWallRange
 				rw_toptexturemid = worldtop;
 			} else {
 				textureheight = Z_LoadBytesFromEMS(textureheightRef);
-				vtop = backsector.ceilingheight + textureheight[sidetoptexture];
+				vtop = backsector.ceilingheight + (textureheight[sidetoptexture]<<FRACBITS);
 		
 				// bottom of texture
 				rw_toptexturemid = vtop - viewz;	

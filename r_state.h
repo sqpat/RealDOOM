@@ -121,6 +121,7 @@ extern fineangle_t	rw_normalangle;
 
 
 // angle to line origin
+ // i have tried to remove this but the extra precision seems necessary to prevent drawing artifcts - sq
 extern angle_t		rw_angle1;
 
 

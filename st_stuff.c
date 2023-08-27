@@ -259,7 +259,6 @@ static boolean          st_firsttime;
 static int16_t              lu_palette;
 
 // used for timing
-static uint32_t     st_clock;
 
 
 // whether in automap or first-person
@@ -922,7 +921,6 @@ void ST_updateWidgets(void)
 void ST_Ticker (void)
 {
 
-    st_clock++;
     st_randomnumber = M_Random();
     ST_updateWidgets();
     st_oldhealth = plyr->health;
@@ -1198,7 +1196,6 @@ void ST_initData(void)
     st_firsttime = true;
     plyr = &players[consoleplayer];
 
-    st_clock = 0;
     st_gamestate = FirstPersonState;
 
     st_statusbaron = true;
