@@ -94,8 +94,8 @@ typedef	struct
 {
     fixed_t	floorheight;
     fixed_t	ceilingheight;
-    int16_t	floorpic;
-    int16_t	ceilingpic;
+    uint8_t	floorpic;
+    uint8_t	ceilingpic;
     uint8_t	lightlevel; // seems to max at 255
     int16_t	special;	// goes beyond 20k
     int16_t	tag;		// cant set to int8_t because of 666 special case.... 
@@ -146,9 +146,9 @@ typedef struct
 
     // Texture indices.
     // We do not maintain names here. 
-    int16_t	toptexture;
-    int16_t	bottomtexture;
-    int16_t	midtexture;
+    uint8_t	toptexture;
+    uint8_t	bottomtexture;
+    uint8_t	midtexture;
 
     // Sector the SideDef is facing.
     int16_t	secnum;
@@ -454,9 +454,9 @@ typedef struct
 // 
 typedef struct
 {
-  fixed_t		height;
-  int16_t			picnum;
-  int16_t lightlevel;
+  fixed_t height;
+  uint8_t picnum;
+  uint8_t lightlevel;
   int16_t minx;
   int16_t maxx;
   

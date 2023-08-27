@@ -501,7 +501,7 @@ EV_BuildStairs
 	sector_t*  sectors;
 	fixed_t sectorceilingheight;
 	fixed_t sectorfloorheight;
-	int16_t sectorfloorpic;
+	uint8_t sectorfloorpic;
 	int16_t sectorlinesoffset;
 	uint8_t sectorlinecount;
     secnum = -1;

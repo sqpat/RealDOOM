@@ -213,20 +213,18 @@ typedef struct
 } switchlist_t;
 
 
-typedef enum
-{
-    top,
-    middle,
-    bottom
+#define top 0
+#define middle 1
+#define bottom 2
 
-} bwhere_e;
+typedef uint8_t bwhere_e;
 
 
 typedef struct
 {
 	int16_t linenum;
     bwhere_e	where;
-    int16_t		btexture;
+    uint8_t		btexture;
     int16_t		btimer;
 	int32_t soundorgX;
 	int32_t soundorgY;

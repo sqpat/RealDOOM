@@ -66,7 +66,7 @@ extern lighttable_t*	scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 extern lighttable_t*	scalelightfixed[MAXLIGHTSCALE];
 extern lighttable_t*	zlight[LIGHTLEVELS][MAXLIGHTZ];
 
-extern int32_t		extralight;
+extern uint8_t		extralight;
 extern lighttable_t*	fixedcolormap;
 
 

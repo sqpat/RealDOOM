@@ -30,6 +30,8 @@ R_GetColumn
   int32_t		col );
 
 
+#define BAD_TEXTURE 255
+
 // I/O, setting up the stuff.
 void R_InitData (void);
 void R_PrecacheLevel (void);
@@ -38,16 +40,16 @@ void R_PrecacheLevel (void);
 // Retrieval.
 // Floor/ceiling opaque texture tiles,
 // lookup by name. For animation?
-int16_t R_FlatNumForName (int8_t* name);
+uint8_t R_FlatNumForName (int8_t* name);
 
 
 // Called by P_Ticker for switches and animations,
 // returns the texture number for the texture name.
-int16_t R_TextureNumForName(int8_t *name);
+uint8_t R_TextureNumForName(int8_t *name);
 //int16_t R_TextureNumForName (int8_t *name);
 
-int16_t R_CheckTextureNumForName (int8_t *name);
-void R_EraseCompositeCache(int16_t texnum);
+uint8_t R_CheckTextureNumForName (int8_t *name);
+void R_EraseCompositeCache(uint8_t texnum);
 
 
 #endif

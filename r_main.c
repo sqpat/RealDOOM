@@ -108,7 +108,7 @@ lighttable_t*		scalelightfixed[MAXLIGHTSCALE];
 lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
 
 // bumped light from gun blasts
-int32_t			extralight;			
+uint8_t			extralight;			
 
 
 

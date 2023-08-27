@@ -1121,7 +1121,7 @@ void G_DoNewGame (void)
 } 
 
 // The sky texture to be used instead of the F_SKY1 dummy.
-extern  int16_t     skytexture;
+extern  uint8_t     skytexture;
 
 
 void

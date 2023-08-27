@@ -51,9 +51,9 @@
 typedef struct
 {
     boolean	istexture;
-    int16_t		picnum;
-    int16_t		basepic;
-    int16_t		numpics;
+    uint8_t		picnum;
+    uint8_t		basepic;
+    uint8_t		numpics;
     
 } anim_t;
 
@@ -137,39 +137,36 @@ extern  int16_t	linespeciallist[MAXLINEANIMS];
 void P_InitPicAnims (void)
 {
     int16_t		i;
-
     
     //	Init animation
     lastanim = anims;
-    for (i=0 ; animdefs[i].istexture != -1 ; i++)
-    {
-	if (animdefs[i].istexture)
-	{
-	    // different episode ?
-	    if (R_CheckTextureNumForName(animdefs[i].startname) == -1)
-		continue;	
+    for (i=0 ; animdefs[i].istexture != -1 ; i++) {
+		if (animdefs[i].istexture)
+		{
+			// different episode ?
+			if (R_CheckTextureNumForName(animdefs[i].startname) == BAD_TEXTURE)
+			continue;	
 
-	    lastanim->picnum = R_TextureNumForName (animdefs[i].endname);
-	    lastanim->basepic = R_TextureNumForName (animdefs[i].startname);
-	}
-	else
-	{
-	    if (W_CheckNumForName(animdefs[i].startname) == -1)
-		continue;
+			lastanim->picnum = R_TextureNumForName (animdefs[i].endname);
+			lastanim->basepic = R_TextureNumForName (animdefs[i].startname);
+		}
+		else
+		{
+			if (W_CheckNumForName(animdefs[i].startname) == -1)
+			continue;
 
-	    lastanim->picnum = R_FlatNumForName (animdefs[i].endname);
-	    lastanim->basepic = R_FlatNumForName (animdefs[i].startname);
-	}
+			lastanim->picnum = R_FlatNumForName (animdefs[i].endname);
+			lastanim->basepic = R_FlatNumForName (animdefs[i].startname);
+		}
 
-	lastanim->istexture = animdefs[i].istexture;
-	lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
-
-	if (lastanim->numpics < 2)
-	    I_Error ("P_InitPicAnims: bad cycle from %s to %s",
-		     animdefs[i].startname,
-		     animdefs[i].endname);
-	
-	lastanim++;
+		lastanim->istexture = animdefs[i].istexture;
+		lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
+		if (lastanim->numpics < 2)
+			I_Error ("P_InitPicAnims: bad cycle from %s to %s",
+				animdefs[i].startname,
+				animdefs[i].endname);
+		
+		lastanim++;
     }
 	
 }
@@ -1149,11 +1146,11 @@ int32_t		levelTimeCount;
 void P_UpdateSpecials(void)
 {
 	anim_t*	anim;
-	int16_t		pic;
+	uint8_t		pic;
 	int16_t		i;
 	line_t*	line;
-	int16_t * texturetranslation;
-	int16_t * flattranslation;
+	uint8_t * texturetranslation;
+	uint8_t * flattranslation;
 	side_t* sides;
 	line_t* lines;
 	int16_t sidenum;
@@ -1171,11 +1168,11 @@ void P_UpdateSpecials(void)
 		for (i = anim->basepic; i < anim->basepic + anim->numpics; i++) {
 			pic = anim->basepic + ((leveltime / 8 + i) % anim->numpics);
 			if (anim->istexture) {
-				texturetranslation = (int16_t*)Z_LoadBytesFromEMS(texturetranslationRef);
+				texturetranslation = (uint8_t*)Z_LoadBytesFromEMS(texturetranslationRef);
 				texturetranslation[i] = pic;
 			}
 			else {
-				flattranslation = (int16_t*)Z_LoadBytesFromEMS(flattranslationRef);
+				flattranslation = (uint8_t*)Z_LoadBytesFromEMS(flattranslationRef);
 				flattranslation[i] = pic;
 			}
 		}
@@ -1210,18 +1207,15 @@ void P_UpdateSpecials(void)
 
 				switch (buttonlist[i].where) {
 				case top:
-					sides[sidenum].toptexture =
-						buttonlist[i].btexture;
+					sides[sidenum].toptexture = buttonlist[i].btexture;
 					break;
 
 				case middle:
-					sides[sidenum].midtexture =
-						buttonlist[i].btexture;
+					sides[sidenum].midtexture = buttonlist[i].btexture;
 					break;
 
 				case bottom:
-					sides[sidenum].bottomtexture =
-						buttonlist[i].btexture;
+					sides[sidenum].bottomtexture = buttonlist[i].btexture;
 					break;
 				}
 				S_StartSoundWithParams(buttonlist[i].soundorgX, buttonlist[i].soundorgY, sfx_swtchn);

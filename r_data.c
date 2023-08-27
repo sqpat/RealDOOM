@@ -239,10 +239,10 @@ void R_GenerateComposite(int32_t texnum)
 	byte*               block;
 	texpatch_t*         patch;
 	patch_t*            realpatch;
-	int32_t                 x;
-	int32_t                 x1;
-	int32_t                 x2;
-	int32_t                 i;
+	int16_t                 x;
+	int16_t                 x1;
+	int16_t                 x2;
+	int16_t                 i;
 	column_t*           patchcol;
 	int16_t*              collump;
 	uint16_t*		colofs;
@@ -537,9 +537,11 @@ void R_InitTextures(void)
 	int16_t                 i;
 	int16_t                 j;
 
+	// memory addresses, must stay int_32...
 	int32_t*                maptex;
 	int32_t*                maptex2;
 	int32_t*                maptex1;
+	int32_t*                directory;
 
 	int8_t                name[9];
 	int8_t*               names;
@@ -555,7 +557,6 @@ void R_InitTextures(void)
 	int16_t                 numtextures1;
 	int16_t                 numtextures2;
 
-	int32_t*                directory;
 
 	int16_t                 temp1;
 	int16_t                 temp2;
@@ -567,7 +568,7 @@ void R_InitTextures(void)
 	MEMREF *            texturecolumnlump;
 	MEMREF *			texturecolumnofs;
 	MEMREF*				textures;
-	int16_t *				texturetranslation;
+	uint8_t *			texturetranslation;
 	MEMREF				namesRef;
 	MEMREF				maptexRef;
 	MEMREF				maptex2Ref;
@@ -731,8 +732,8 @@ void R_InitTextures(void)
 	// Create translation table for global animation.
 
 
-	texturetranslationRef = Z_MallocEMSNew((numtextures + 1) * 4, PU_STATIC, 0, ALLOC_TYPE_TEXTURE_TRANSLATION);
-	texturetranslation = (int16_t*)Z_LoadBytesFromEMS(texturetranslationRef);
+	texturetranslationRef = Z_MallocEMSNew((numtextures + 1) , PU_STATIC, 0, ALLOC_TYPE_TEXTURE_TRANSLATION);
+	texturetranslation = (uint8_t*)Z_LoadBytesFromEMS(texturetranslationRef);
 
 	for (i = 0; i < numtextures; i++)
 		texturetranslation[i] = i;
@@ -746,16 +747,16 @@ void R_InitTextures(void)
 //
 void R_InitFlats(void)
 {
-	int16_t         i;
-	int16_t * flattranslation;
+	uint8_t         i;
+	uint8_t * flattranslation;
 
 	firstflat = W_GetNumForName("F_START") + 1;
 	lastflat = W_GetNumForName("F_END") - 1;
 	numflats = lastflat - firstflat + 1;
 
 	// Create translation table for global animation.
-	flattranslationRef = Z_MallocEMSNew((numflats + 1) * 4, PU_STATIC, 0, ALLOC_TYPE_FLAT_TRANSLATION);
-	flattranslation = (int16_t*)Z_LoadBytesFromEMS(flattranslationRef);
+	flattranslationRef = Z_MallocEMSNew((numflats + 1) , PU_STATIC, 0, ALLOC_TYPE_FLAT_TRANSLATION);
+	flattranslation = (uint8_t*)Z_LoadBytesFromEMS(flattranslationRef);
 
 	for (i = 0; i < numflats; i++)
 		flattranslation[i] = i;
@@ -825,12 +826,11 @@ void R_InitSpriteLumps(void)
 void R_InitColormaps(void)
 {
 	int16_t lump;
-	int32_t length;
 
 	// Load in the light tables, 
 	//  256 byte align tables.
 	lump = W_GetNumForName("COLORMAP");
-	length = W_LumpLength(lump) + 255;
+	//length = W_LumpLength(lump) + 255;
 
 	// todo: big hack.. Making colormaps work in EMS is a major pain. tons of pointers being passed back and forth.
 	// you can convert these to offsets, working off the base pointer of the original allocation which i have done..
@@ -871,7 +871,7 @@ void R_InitData(void)
 // R_FlatNumForName
 // Retrieval, get a flat number for a flat name.
 //
-int16_t R_FlatNumForName(int8_t* name)
+uint8_t R_FlatNumForName(int8_t* name)
 {
 	int16_t         i;
 	int8_t        namet[9];
@@ -884,7 +884,12 @@ int16_t R_FlatNumForName(int8_t* name)
 		memcpy(namet, name, 8);
 		I_Error("R_FlatNumForName: %s not found", namet);
 	}
-	return i - firstflat;
+
+	if (i - firstflat > 255){
+		I_Error ("Flat too big %i %i", i, firstflat);
+	}
+
+	return (uint8_t)(i - firstflat);
 }
 
 
@@ -894,15 +899,14 @@ int16_t R_FlatNumForName(int8_t* name)
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
-int16_t     R_CheckTextureNumForName(int8_t *name)
+uint8_t     R_CheckTextureNumForName(int8_t *name)
 {
-	int16_t         i;
+	uint8_t         i;
 	MEMREF* textures;
 	texture_t* texture;
 	// "NoTexture" marker.
 	if (name[0] == '-')
 		return 0;
-
 
 
 	for (i = 0; i < numtextures; i++) {
@@ -916,7 +920,8 @@ int16_t     R_CheckTextureNumForName(int8_t *name)
 		if (!strncasecmp(texture->name, name, 8))
 			return i;
 	}
-	return -1;
+
+	return BAD_TEXTURE;
 }
 
 
@@ -926,11 +931,11 @@ int16_t     R_CheckTextureNumForName(int8_t *name)
 // Calls R_CheckTextureNumForName,
 //  aborts with error message.
 //
-int16_t     R_TextureNumForName(int8_t* name)
+uint8_t     R_TextureNumForName(int8_t* name)
 {
-	int16_t         i = R_CheckTextureNumForName(name);
+	uint8_t         i = R_CheckTextureNumForName(name);
 
-	if (i == -1) {
+	if (i == BAD_TEXTURE) {
 		I_Error("R_TextureNumForName: %s not found %i %i %i",
 			name, numreads, pageins, pageouts);
 	}
@@ -976,7 +981,8 @@ void R_PrecacheLevel(void)
 	// Precache flats.
 	flatpresent = alloca(numflats);
 	memset(flatpresent, 0, numflats);
-	
+	// numflats 56	
+
 	for (i = 0; i < numsectors; i++)
 	{
 		flatpresent[sectors[i].floorpic] = 1;
@@ -1074,7 +1080,7 @@ void R_PrecacheLevel(void)
 }
 
 
-void R_EraseCompositeCache(int16_t texnum) {
+void R_EraseCompositeCache(uint8_t texnum) {
 
 	// todo are we calling this with 0 all the time?
 

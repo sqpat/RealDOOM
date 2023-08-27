@@ -87,7 +87,7 @@ switchlist_t alphSwitchList[] =
     {"\0",		"\0",		0}
 };
 
-int16_t		switchlist[MAXSWITCHES * 2];
+uint8_t		switchlist[MAXSWITCHES * 2];
 int16_t		numswitches;
 button_t        buttonlist[MAXBUTTONS];
 
@@ -104,26 +104,22 @@ void P_InitSwitchList(void)
     episode = 1;
 
     if (registered)
-	episode = 2;
-    else
-	if (commercial)
-	    episode = 3;
+		episode = 2;
+    else if (commercial)
+		episode = 3;
 		
-    for (index = 0,i = 0;i < MAXSWITCHES;i++)
-    {
-	if (!alphSwitchList[i].episode)
-	{
-	    numswitches = index/2;
-	    switchlist[index] = -1;
-	    break;
-	}
-		
-	if (alphSwitchList[i].episode <= episode)
-	{
+    for (index = 0,i = 0;i < MAXSWITCHES;i++) {
+		if (!alphSwitchList[i].episode) {
+			numswitches = index/2;
+			switchlist[index] = BAD_TEXTURE;
+			break;
+		}
+			
+		if (alphSwitchList[i].episode <= episode) {
 
-		switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name1);
-	    switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name2);
-	}
+			switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name1);
+			switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name2);
+		}
     }
 }
 
@@ -185,9 +181,9 @@ P_ChangeSwitchTexture
 ( int16_t linenum, int16_t lineside0, int16_t linespecial, int16_t linefrontsecnum,
 	int16_t 		useAgain )
 {
-	int16_t     texTop;
-	int16_t     texMid;
-	int16_t     texBot;
+	uint8_t     texTop;
+	uint8_t     texMid;
+	uint8_t     texBot;
 	int8_t     i;
 	int16_t     sound;
 

@@ -336,8 +336,8 @@ fixed_t         sprtopscreen;
 
 void R_DrawMaskedColumn (column_t* column)
 {
-	int32_t         topscreen;
-	int32_t         bottomscreen;
+	fixed_t         topscreen;
+	fixed_t         bottomscreen;
     fixed_t     basetexturemid;
         
     basetexturemid = dc_texturemid;
@@ -442,15 +442,15 @@ void R_ProjectSprite (MEMREF thingRef)
 
     fixed_t             xscale;
     
-	int32_t                 x1;
-	int32_t                 x2;
+	int16_t                 x1;
+	int16_t                 x2;
 
-	int32_t                 lump;
+	int16_t                 lump;
     
-	uint32_t            rot;
+	uint8_t            rot;
     boolean             flip;
     
-	int32_t                 index;
+	int16_t                 index;
 
     vissprite_t*        vis;
     
@@ -471,7 +471,7 @@ void R_ProjectSprite (MEMREF thingRef)
 	int32_t thingflags = thing->flags;
 	angle_t thingangle = thing->angle;
 	MEMREF spritespriteframeRef;
-	int32_t spritenumframes;
+	int8_t spritenumframes;
 		
 	// transform the origin point
     tr_x = thingx - viewx;
@@ -820,8 +820,8 @@ vissprite_t     vsprsortedhead;
 
 void R_SortVisSprites (void)
 {
-	int32_t                 i;
-	int32_t                 count;
+	int16_t                 i;
+	int16_t                 count;
     vissprite_t*        ds;
     vissprite_t*        best;
     vissprite_t         unsorted;

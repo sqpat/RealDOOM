@@ -196,10 +196,9 @@ S_ChangeMusic
     S_StopMusic();
 
     // get lumpnum if neccessary
-    if (!music->lumpnum)
-    {
-	sprintf(namebuf, "d_%s", music->name);
-	music->lumpnum = W_GetNumForName(namebuf);
+    if (!music->lumpnum) {
+		sprintf(namebuf, "d_%s", music->name);
+		music->lumpnum = W_GetNumForName(namebuf);
     }
 
     // load & register it

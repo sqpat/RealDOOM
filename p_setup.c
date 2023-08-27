@@ -562,9 +562,9 @@ void P_LoadSideDefs(int16_t lump)
 	mapsidedef_t*       msd;
 	side_t*             sd;
 	side_t* sides;
-	int16_t toptex;
-	int16_t bottex;
-	int16_t midtex;
+	uint8_t toptex;
+	uint8_t bottex;
+	uint8_t midtex;
 	MEMREF dataRef;
 	int8_t texname[8];
 	int16_t msdtextureoffset;

@@ -199,7 +199,7 @@ void R_ClearPlanes (void)
 visplane_t*
 R_FindPlane
 ( fixed_t	height,
-  int16_t		picnum,
+  uint8_t		picnum,
   uint8_t		lightlevel )
 {
     visplane_t*	check;
@@ -319,7 +319,7 @@ void R_DrawPlanes (void)
     int16_t			x;
     int16_t			stop;
     int16_t			angle;
-	int16_t * flattranslation;
+	uint8_t * flattranslation;
 	byte t1, b1, t2, b2;
 
  

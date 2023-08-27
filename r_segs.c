@@ -41,9 +41,9 @@ boolean		markfloor;
 boolean		markceiling;
 
 boolean		maskedtexture;
-int16_t		toptexture;
-int16_t		bottomtexture;
-int16_t		midtexture;
+uint8_t		toptexture;
+uint8_t		bottomtexture;
+uint8_t		midtexture;
 
 
 angle_t		rw_normalangle;
@@ -64,10 +64,10 @@ fixed_t		rw_midtexturemid;
 fixed_t		rw_toptexturemid;
 fixed_t		rw_bottomtexturemid;
 
-int32_t		worldtop;
-int32_t		worldbottom;
-int32_t		worldhigh;
-int32_t		worldlow;
+fixed_t		worldtop;
+fixed_t		worldbottom;
+fixed_t		worldhigh;
+fixed_t		worldlow;
 
 fixed_t		pixhigh;
 fixed_t		pixlow;
@@ -101,7 +101,7 @@ R_RenderMaskedSegRange
 	int16_t		lightnum;
 	int16_t		texnum;
 	fixed_t* textureheight;
-	int16_t* texturetranslation;
+	uint8_t* texturetranslation;
 	fixed_t siderowoffset;
 	line_t* lines;
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
@@ -405,7 +405,7 @@ R_StoreWallRange
     fixed_t		vtop;
     int16_t			lightnum;
 	fixed_t *	textureheight;
-	int16_t* 	texturetranslation;
+	uint8_t* 	texturetranslation;
 	vertex_t* vertexes;
 
 	// needs to be refreshed...
