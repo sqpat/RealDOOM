@@ -47,10 +47,10 @@ M_ReadFile
 
 // Returns a number from 0 to 255,
 // from a lookup table.
-int32_t M_Random(void);
+uint8_t M_Random(void);
 
 // As M_Random, but used only by the play simulation.
-int32_t P_Random(void);
+uint8_t P_Random(void);
 
 
 // Fix randoms for demos.

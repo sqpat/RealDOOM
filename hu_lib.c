@@ -41,10 +41,10 @@ void HUlib_clearTextLine(hu_textline_t* t)
 void
 HUlib_initTextLine
 ( hu_textline_t*	t,
-  int32_t			x,
-  int32_t			y,
+  int16_t			x,
+  int16_t			y,
   MEMREF*		fRef,
-  int32_t			sc )
+  uint8_t			sc )
 {
     t->x = x;
     t->y = y;
@@ -77,9 +77,9 @@ HUlib_drawTextLine
   boolean		drawcursor )
 {
 
-    int32_t			i;
-    int32_t			w;
-    int32_t			x;
+    int16_t			i;
+    int16_t			w;
+    int16_t			x;
     uint8_t	c;
 	patch_t* currentpatch;
 
@@ -146,15 +146,15 @@ void HUlib_eraseTextLine(hu_textline_t* l)
 void
 HUlib_initSText
 ( hu_stext_t*	s,
-  int32_t		x,
-  int32_t		y,
-  int32_t		h,
+  int16_t		x,
+  int16_t		y,
+  int16_t		h,
   MEMREF*   fontRef,
-  int32_t		startchar,
+  uint8_t		startchar,
   boolean*	on )
 {
 
-	int32_t i;
+	int16_t i;
 	patch_t* font0;
 
     s->h = h;
@@ -173,7 +173,7 @@ HUlib_initSText
 void HUlib_addLineToSText(hu_stext_t* s)
 {
 
-	int32_t i;
+	int16_t i;
 
     // add a clear line
     if (++s->cl == s->h)
@@ -203,7 +203,7 @@ HUlib_addMessageToSText
 
 void HUlib_drawSText(hu_stext_t* s)
 {
-	int32_t i, idx;
+	int16_t i, idx;
     hu_textline_t *l;
 
     if (!*s->on)
@@ -227,7 +227,7 @@ void HUlib_drawSText(hu_stext_t* s)
 void HUlib_eraseSText(hu_stext_t* s)
 {
 
-	int32_t i;
+	int16_t i;
 
     for (i=0 ; i<s->h ; i++)
     {

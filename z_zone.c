@@ -188,8 +188,8 @@ typedef struct
 	// page and offset refer to internal EMS page and offset - in other words the keys
 	// to find the real location in memory for this allocation
 
-	//uint16_t page;       using 9 bits... implies page max count of 512 (8 MB worth)
-	//int32_t size;        use 23 bits implying max of 8MB-1 or 0x007FFFFF max free size,
+	// page;       using 9 bits... implies page max count of 512 (8 MB worth)
+	// size;        use 23 bits implying max of 8MB-1 or 0x007FFFFF max free size,
 	uint32_t page_and_size; // page is 9 high bits, size is 23 low bits
 	// todo: optimize uses of the page 9 bits to use int_16t arithmetic instead of int_32t. Maybe using unions?
 

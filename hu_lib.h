@@ -42,16 +42,16 @@
 typedef struct
 {
     // left-justified position of scrolling text window
-    int32_t		x;
-    int32_t		y;
+    int16_t		x;
+    int16_t		y;
     
     MEMREF*	fRef;			// font
-    int32_t		sc;			// start character
+    uint8_t		sc;			// start character
 	int8_t	l[HU_MAXLINELENGTH+1];	// line of text
-    int32_t		len;		      	// current line length
+    int16_t		len;		      	// current line length
 
     // whether this line needs to be udpated
-    int32_t		needsupdate;	      
+    int8_t		needsupdate;	      
 
 } hu_textline_t;
 
@@ -62,8 +62,8 @@ typedef struct
 typedef struct
 {
     hu_textline_t	l[HU_MAXLINES];	// text lines to draw
-    int32_t			h;		// height in lines
-    int32_t			cl;		// current line number
+    int8_t			h;		// height in lines
+    int8_t			cl;		// current line number
 
     // pointer to boolean stating whether to update window
     boolean*		on;
@@ -80,7 +80,7 @@ typedef struct
     hu_textline_t	l;		// text line to input on
 
      // left margin past which I am not to delete characters
-    int32_t			lm;
+    int16_t			lm;
 
     // pointer to boolean stating whether to update window
     boolean*		on; 
@@ -103,7 +103,7 @@ void HUlib_init(void);
 // clear a line of text
 void	HUlib_clearTextLine(hu_textline_t *t);
 
-void	HUlib_initTextLine(hu_textline_t *t, int32_t x, int32_t y, MEMREF*fRef, int32_t sc);
+void	HUlib_initTextLine(hu_textline_t *t, int16_t x, int16_t y, MEMREF*fRef, uint8_t sc);
 
 // returns success
 boolean HUlib_addCharToTextLine(hu_textline_t *t, int8_t ch);
@@ -123,11 +123,11 @@ void	HUlib_eraseTextLine(hu_textline_t *l);
 void
 HUlib_initSText
 ( hu_stext_t*	s,
-  int32_t		x,
-  int32_t		y,
-  int32_t		h,
+  int16_t		x,
+  int16_t		y,
+  int16_t		h,
   MEMREF*	fontRef,
-  int32_t		startchar,
+  uint8_t		startchar,
   boolean*	on );
 
 // add a new line

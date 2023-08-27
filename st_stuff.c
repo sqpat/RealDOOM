@@ -350,7 +350,7 @@ static int16_t      st_faceindex = 0;
 static int16_t      keyboxes[3];
 
 // a random number per tick
-static int32_t      st_randomnumber;
+static uint8_t      st_randomnumber;
 
 
 

@@ -107,14 +107,14 @@ int16_t	rndindex = 0;
 int16_t	prndindex = 0;
 
 // Which one is deterministic?
-int32_t P_Random(void)
+uint8_t P_Random(void)
 {
 	 
     prndindex = (prndindex+1)&0xff;
     return rndtable[prndindex];
 }
 
-int32_t M_Random (void)
+uint8_t M_Random (void)
 {
     rndindex = (rndindex+1)&0xff;
     return rndtable[rndindex];

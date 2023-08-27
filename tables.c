@@ -1846,8 +1846,6 @@ uint16_t finesineinner[2048] =
 
 int32_t fixedsine(int16_t x) {
 
-	
-
 	switch (x) {
 		case 3822:
 			return 13646;
