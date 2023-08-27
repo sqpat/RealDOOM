@@ -25,6 +25,7 @@
 
 // The sky map is 256*128*4 maps.
 #define ANGLETOSKYSHIFT		22
+#define FINETOSKYSHIFT		3
 
 extern uint8_t		skytexture;
 

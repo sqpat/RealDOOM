@@ -112,11 +112,11 @@ extern angle_t		clipangle;
 extern angle_t fieldofview;
 
 extern int32_t		viewangletox[FINEANGLES/2];
-extern angle_t		xtoviewangle[SCREENWIDTH+1];
+extern fineangle_t		xtoviewangle[SCREENWIDTH+1];
 //extern fixed_t		finetangent[FINEANGLES/2];
 
 extern fixed_t		rw_distance;
-extern angle_t		rw_normalangle;
+extern fineangle_t	rw_normalangle;
 
 
 

@@ -46,7 +46,7 @@ uint8_t		bottomtexture;
 uint8_t		midtexture;
 
 
-angle_t		rw_normalangle;
+fineangle_t	rw_normalangle;
 // angle to line origin
 int32_t		rw_angle1;	
 
@@ -55,7 +55,7 @@ int32_t		rw_angle1;
 //
 int16_t		rw_x;
 int16_t		rw_stopx;
-angle_t		rw_centerangle;
+fineangle_t		rw_centerangle;
 fixed_t		rw_offset;
 fixed_t		rw_distance;
 fixed_t		rw_scale;
@@ -222,7 +222,7 @@ R_RenderMaskedSegRange
 
 void R_RenderSegLoop (void)
 {
-    angle_t		angle;
+    fineangle_t		angle;
 	uint32_t		index;
     int16_t			yl;
     int16_t			yh;
@@ -279,7 +279,7 @@ void R_RenderSegLoop (void)
 	if (segtextured)
 	{
 	    // calculate texture offset
-	    angle = (rw_centerangle + xtoviewangle[rw_x])>>ANGLETOFINESHIFT;
+	    angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
 	    texturecolumn = rw_offset-FixedMul(finetangent(angle),rw_distance)>> FRACBITS;
 	    
 	    // calculate lighting
@@ -401,7 +401,7 @@ R_StoreWallRange
 {
     fixed_t		hyp;
     fixed_t		sineval;
-    angle_t		distangle, offsetangle;
+    fineangle_t	distangle, offsetangle;
     fixed_t		vtop;
     int16_t			lightnum;
 	fixed_t *	textureheight;
@@ -411,7 +411,7 @@ R_StoreWallRange
 	// needs to be refreshed...
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	int16_t curlinelinedefOffset = segs[curlinenum].linedefOffset;
-	angle_t curlineangle = segs[curlinenum].angle;
+	fineangle_t curlineangle = segs[curlinenum].fineangle;
 	int16_t curlinev1Offset = segs[curlinenum].v1Offset;
 	int16_t curlinev2Offset = segs[curlinenum].v2Offset;
 	int16_t curlinesidedefOffset = segs[curlinenum].sidedefOffset;
@@ -447,14 +447,13 @@ R_StoreWallRange
 	lineflags = (&lines[linedefOffset])->flags;
     
     // calculate rw_distance for scale calculation
-    rw_normalangle = curlineangle + ANG90;
-    offsetangle = abs(rw_normalangle-rw_angle1);
+    rw_normalangle = MOD_FINE_ANGLE(curlineangle + FINE_ANG90);
+    offsetangle = abs((rw_normalangle << ANGLETOFINESHIFT)-rw_angle1) >> ANGLETOFINESHIFT;
     
-    if (offsetangle > ANG90)
-	offsetangle = ANG90;
+    if (offsetangle > FINE_ANG90)
+		offsetangle = 	FINE_ANG90;
 
-    distangle = ANG90 - offsetangle;
-	distangle = distangle >> ANGLETOFINESHIFT;
+    distangle = FINE_ANG90 - offsetangle;
 
 	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 	hyp = R_PointToDist (vertexes[curlinev1Offset].x, vertexes[curlinev1Offset].y);
@@ -470,11 +469,10 @@ R_StoreWallRange
 
     
     // calculate scale at both ends and step
-    ds_p->scale1 = rw_scale = 
-	R_ScaleFromGlobalAngle (viewangle + xtoviewangle[start]);
+    ds_p->scale1 = rw_scale =  R_ScaleFromGlobalAngle (viewangle + (xtoviewangle[start] << ANGLETOFINESHIFT));
     
     if (stop > start ) {
-		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle + xtoviewangle[stop]);
+		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle + (xtoviewangle[stop] << ANGLETOFINESHIFT));
 		ds_p->scalestep = rw_scalestep =  (ds_p->scale2 - rw_scale) / (stop-start);
     } else {
 		ds_p->scale2 = ds_p->scale1;
@@ -642,25 +640,24 @@ R_StoreWallRange
     segtextured = midtexture | toptexture | bottomtexture | maskedtexture;
 
     if (segtextured) {
-		offsetangle = rw_normalangle-rw_angle1;
+		offsetangle = (((rw_normalangle<<ANGLETOFINESHIFT))-rw_angle1) >> ANGLETOFINESHIFT;
 	
-		if (offsetangle > ANG180) {
-			offsetangle = -offsetangle;
+		if (offsetangle > FINE_ANG180) {
+			offsetangle = MOD_FINE_ANGLE(-offsetangle);
 		}
 
-		if (offsetangle > ANG90) {
-			offsetangle = ANG90;
+		if (offsetangle > FINE_ANG90) {
+			offsetangle = FINE_ANG90;
 		}
-		offsetangle = offsetangle >> ANGLETOFINESHIFT;
 		sineval = finesine(offsetangle);
 		rw_offset = FixedMul (hyp, sineval);
 
-		if (rw_normalangle - rw_angle1 < ANG180) {
+		if ((rw_normalangle<<ANGLETOFINESHIFT) - rw_angle1 < ANG180) {
 			rw_offset = -rw_offset;
 		}
 
 		rw_offset += sidetextureoffset + curlineOffset;
-		rw_centerangle = ANG90 + viewangle - rw_normalangle;
+		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle>>ANGLETOFINESHIFT) - (rw_normalangle));
 	
 		// calculate light table
 		//  use different light tables

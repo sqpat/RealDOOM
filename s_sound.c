@@ -520,7 +520,7 @@ void S_StartSoundAtVolume
 		//_dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
 		// fprintf( stderr,
 		//	     "S_StartSoundAtVolume: loading %d (lump %d) : 0x%x\n",
-		//       sfx_id, sfx->lumpnum, (int32_t)sfx->data );
+		//       sfx_id, sfx->lumpnum, sfx->data );
     
 	}
   

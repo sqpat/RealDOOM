@@ -114,7 +114,7 @@ R_MapPlane
   int32_t		x1,
   int32_t		x2 )
 {
-    angle_t	angle;
+    fineangle_t	angle;
     fixed_t	distance;
     fixed_t	length;
 	uint32_t	index;
@@ -135,7 +135,8 @@ R_MapPlane
     }
 	
     length = FixedMul (distance,distscale[x1]);
-    angle = (viewangle + xtoviewangle[x1])>>ANGLETOFINESHIFT;
+	angle = MOD_FINE_ANGLE((viewangle >>ANGLETOFINESHIFT)+ xtoviewangle[x1]);
+
     ds_xfrac = viewx + FixedMul(finecosine(angle), length);
     ds_yfrac = -viewy - FixedMul(finesine(angle), length);
 
@@ -347,7 +348,7 @@ void R_DrawPlanes (void)
 
 		if (dc_yl <= dc_yh)
 		{
-		    angle = (viewangle + xtoviewangle[x])>>ANGLETOSKYSHIFT;
+		    angle = MOD_FINE_ANGLE((viewangle + (xtoviewangle[x] << ANGLETOFINESHIFT)) >> ANGLETOSKYSHIFT) ;
 		    dc_x = x;
 
 			dc_source = R_GetColumn(skytexture, angle);

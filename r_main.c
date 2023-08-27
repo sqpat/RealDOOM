@@ -87,7 +87,7 @@ fixed_t			viewangletox[FINEANGLES/2];
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
 // from clipangle to -clipangle.
-angle_t			xtoviewangle[SCREENWIDTH+1];
+fineangle_t			xtoviewangle[SCREENWIDTH+1];
 
 
 // UNUSED.
@@ -398,8 +398,8 @@ R_PointToDist
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 {
     fixed_t		scale;
-    int16_t			anglea;
-    int16_t			angleb;
+    fineangle_t			anglea;
+    fineangle_t			angleb;
     fixed_t			sinea;
     fixed_t			sineb;
     fixed_t		    num;
@@ -407,7 +407,7 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 	 
 
     anglea = (ANG90 + (visangle-viewangle))>> ANGLETOFINESHIFT;
-    angleb = (ANG90 + (visangle-rw_normalangle)) >> ANGLETOFINESHIFT;
+    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle >> ANGLETOFINESHIFT) - rw_normalangle);
 
     // both sines are allways positive
     sinea = finesine(anglea);	
@@ -475,12 +475,11 @@ void R_InitTextureMapping (void)
     // Scan viewangletox[] to generate xtoviewangle[]:
     //  xtoviewangle will give the smallest view angle
     //  that maps to x.	
-    for (x=0;x<=viewwidth;x++)
-    {
-	i = 0;
-	while (viewangletox[i]>x)
-	    i++;
-	xtoviewangle[x] = (i<<ANGLETOFINESHIFT)-ANG90;
+    for (x=0;x<=viewwidth;x++) {
+        i = 0;
+        while (viewangletox[i]>x)
+            i++;
+        xtoviewangle[x] = MOD_FINE_ANGLE((i)-FINE_ANG90);
     }
     
     // Take out the fencepost cases from viewangletox.
@@ -495,7 +494,7 @@ void R_InitTextureMapping (void)
 	    viewangletox[i]  = viewwidth;
     }
 	
-    clipangle = xtoviewangle[0];
+    clipangle = xtoviewangle[0] << ANGLETOFINESHIFT;
 	fieldofview = 2 * clipangle;
 }
 
@@ -568,7 +567,7 @@ R_SetViewSize
 void R_ExecuteSetViewSize (void)
 {
 	fixed_t	cosadj;
-	fixed_t	an;
+	fineangle_t	an;
     fixed_t	dy;
     int16_t		i;
     int16_t		j;
@@ -631,7 +630,7 @@ void R_ExecuteSetViewSize (void)
 	
     for (i=0 ; i<viewwidth ; i++)
     {
-		an = xtoviewangle[i] >> ANGLETOFINESHIFT;
+		an = xtoviewangle[i] ;
 		cosadj = abs(finecosine(an));
 		distscale[i] = FixedDiv (FRACUNIT,cosadj);
     }

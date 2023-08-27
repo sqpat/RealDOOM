@@ -210,7 +210,7 @@ void P_LoadSegs(int16_t lump)
 		li->v1Offset = mlv1;
 		li->v2Offset = mlv2;
 	
-		li->angle = mlangle;
+		li->fineangle = mlangle >> ANGLETOFINESHIFT;
 		li->offset = mloffset;
 		li->linedefOffset = mllinedef;
 		li->sidedefOffset = ldefsidenum;

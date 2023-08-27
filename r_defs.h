@@ -238,7 +238,7 @@ typedef struct
 
     fixed_t	offset;
 
-    angle_t	angle;
+    fineangle_t	fineangle;
 
     int16_t	sidedefOffset;
     int16_t	linedefOffset;

@@ -122,8 +122,9 @@ extern fixed_t		finetangentinner[2048];
 #define FINE_ANG90	    0x800		    
 #define FINE_ANG180		0x1000
 #define FINE_ANG270		0x1800
+#define FINE_ANG360		0x2000
 
-#define MOD_FINE_ANGLE(x)  (x & 0x3FFF)
+#define MOD_FINE_ANGLE(x)  ((x & 0x1FFF))
 
 #define SLOPERANGE		2048
 #define SLOPEBITS		11

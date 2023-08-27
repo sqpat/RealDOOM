@@ -426,7 +426,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 	subsector_t* subsectors;
 	int16_t subsectorsecnum;
 	mobjtype_t mobjtype;
-	angle_t mobjspawnangle;
+	fineangle_t mobjspawnangle;
 	mapthing_t mobjspawnpoint;
 	int16_t mobjspawnoptions;
 	fixed_t sectorfloorheight;
