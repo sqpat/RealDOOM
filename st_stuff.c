@@ -789,9 +789,7 @@ void ST_updateFaceWidget(void)
                     // whether right or left
                     diffang = badguyangle - plyrmo->angle;
                     i = diffang > ANG180; 
-                }
-                else
-                {
+                } else {
                     // whether left or right
                     diffang = plyrmo->angle - badguyangle;
                     i = diffang <= ANG180; 

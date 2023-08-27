@@ -118,12 +118,19 @@ extern fixed_t		finetangentinner[2048];
 #define ANG180		0x80000000
 #define ANG270		0xc0000000
 
+#define FINE_ANG45		0x400
+#define FINE_ANG90	    0x800		    
+#define FINE_ANG180		0x1000
+#define FINE_ANG270		0x1800
+
+#define MOD_FINE_ANGLE(x)  (x & 0x3FFF)
 
 #define SLOPERANGE		2048
 #define SLOPEBITS		11
 #define DBITS			(FRACBITS-SLOPEBITS)
 
 typedef uint32_t angle_t;
+typedef uint16_t fineangle_t;
 
 
 // Effective size is 2049;
