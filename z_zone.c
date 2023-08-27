@@ -81,6 +81,7 @@
 // 4 14870125 2361729 4499651 207 (2134 in 9263) enum removals and fastdoom netplay/code removal imports
 // 4 14872259 2361729 4499651 207 (2134 in 9287) removed joystick code
 // 4 14834692 2361729 4499651 207 (2134 in 9211) removed more code
+// 4 14822330 1697415 2770423 207 (2134 in 9211) removed more code
 
 // 64 14821801 279 262 207 (2134 in 2186)
 // 64 14821801 279 262 207 (2134 in 2163)  // redo draws

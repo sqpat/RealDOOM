@@ -82,7 +82,7 @@ angle_t			fieldofview;
 // maps the visible view angles to screen X coordinates,
 // flattening the arc to a flat projection plane.
 // There will be many angles mapped to the same X. 
-fixed_t			viewangletox[FINEANGLES/2];
+int16_t			viewangletox[FINEANGLES/2];
 
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
