@@ -67,7 +67,7 @@ P_Thrust
 //
 void P_CalcHeight (player_t* player) 
 {
-    int32_t		angle;
+    fineangle_t		angle;
     fixed_t	bob;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 

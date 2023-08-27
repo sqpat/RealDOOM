@@ -27,7 +27,7 @@
 byte*
 R_GetColumn
 ( int16_t		tex,
-  int32_t		col );
+  int16_t		col );
 
 
 #define BAD_TEXTURE 255

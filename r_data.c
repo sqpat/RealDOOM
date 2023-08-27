@@ -129,7 +129,7 @@ int16_t             numtextures;
 
 MEMREF  texturesRef;				// texture_t**
 
-MEMREF  texturewidthmaskRef;		// int32_t*
+MEMREF  texturewidthmaskRef;		// int16_t*
 // needed for texture pegging
 MEMREF  textureheightRef;		    // fixed_t*
 MEMREF  texturecompositesizeRef;	// int32_t*
@@ -138,19 +138,7 @@ MEMREF	texturecolumnofsRef;		// uint16_t **
 MEMREF  texturecompositeRef;        // byte**
 
 
-
-/*
-int32_t*                    texturewidthmask;
-// needed for texture pegging
-fixed_t*                textureheight;
-int32_t*                    texturecompositesize;
-int16_t**                 texturecolumnlump;
-uint16_t**        texturecolumnofs;
-byte**                  texturecomposite;
-*/
-
-
-
+ 
 
 
 // for global animation
@@ -234,7 +222,7 @@ R_DrawColumnInCache
 //  the composite texture is created from the patches,
 //  and each column is cached.
 //
-void R_GenerateComposite(int32_t texnum)
+void R_GenerateComposite(uint8_t texnum)
 {
 	byte*               block;
 	texpatch_t*         patch;
@@ -348,19 +336,19 @@ void R_GenerateComposite(int32_t texnum)
 //
 // R_GenerateLookup
 //
-void R_GenerateLookup(int32_t texnum)
+void R_GenerateLookup(uint8_t texnum)
 {
 	texture_t*          texture;
 	byte*               patchcount;     // patchcount[texture->width]
 	texpatch_t*         patch;
 	patch_t*            realpatch;
-	int32_t                 x;
-	int32_t                 x1;
-	int32_t                 x2;
-	int32_t                 i;
-	int32_t					patchpatch;
+	int16_t                 x;
+	int16_t                 x1;
+	int16_t                 x2;
+	int16_t                 i;
+	int16_t					patchpatch;
 	int16_t*              collump;
-	uint16_t*     colofs;
+	uint16_t*     		colofs;
 	MEMREF				realpatchRef;
 	int16_t				texturepatchcount;
 	int16_t				texturewidth;
@@ -472,7 +460,7 @@ void R_GenerateLookup(int32_t texnum)
 byte*
 R_GetColumn
 (int16_t           tex,
-	int32_t           col)
+	int16_t           col)
 {
 	int16_t         lump; 
 	uint16_t         ofs; 

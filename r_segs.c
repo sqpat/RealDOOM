@@ -224,10 +224,10 @@ void R_RenderSegLoop (void)
 {
     angle_t		angle;
 	uint32_t		index;
-    int32_t			yl;
-    int32_t			yh;
-    int32_t			mid;
-    fixed_t		texturecolumn;
+    int16_t			yl;
+    int16_t			yh;
+    int16_t			mid;
+    int16_t		texturecolumn;
     int16_t			top;
     int16_t			bottom;
     //texturecolumn = 0;				// shut up compiler warning
@@ -280,8 +280,8 @@ void R_RenderSegLoop (void)
 	{
 	    // calculate texture offset
 	    angle = (rw_centerangle + xtoviewangle[rw_x])>>ANGLETOFINESHIFT;
-	    texturecolumn = rw_offset-FixedMul(finetangent(angle),rw_distance);
-	    texturecolumn >>= FRACBITS;
+	    texturecolumn = rw_offset-FixedMul(finetangent(angle),rw_distance)>> FRACBITS;
+	    
 	    // calculate lighting
 	    index = rw_scale>>LIGHTSCALESHIFT;
 

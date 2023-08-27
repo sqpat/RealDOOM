@@ -318,7 +318,7 @@ void R_DrawPlanes (void)
     uint8_t			light;
     int16_t			x;
     int16_t			stop;
-    int16_t			angle;
+    fineangle_t			angle;
 	uint8_t * flattranslation;
 	byte t1, b1, t2, b2;
 
