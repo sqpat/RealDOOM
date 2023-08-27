@@ -1016,9 +1016,9 @@ void D_DoomMain (void)
     // turbo option
     if ( (p=M_CheckParm ("-turbo")) )
     {
-		int32_t     scale = 200;
-        extern int32_t forwardmove[2];
-        extern int32_t sidemove[2];
+		int16_t     scale = 200;
+        extern int16_t forwardmove[2];
+        extern int16_t sidemove[2];
         
         if (p<myargc-1)
             scale = atoi (myargv[p+1]);

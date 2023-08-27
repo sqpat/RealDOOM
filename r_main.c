@@ -42,7 +42,6 @@
 
 
 
-int32_t			viewangleoffset;
 
 // increment every time a check is made
 int16_t			validcount = 1;		
@@ -51,15 +50,12 @@ int16_t			validcount = 1;
 lighttable_t*		fixedcolormap;
 extern lighttable_t**	walllights;
 
-int32_t			centerx;
-int32_t			centery;
+int16_t			centerx;
+int16_t			centery;
 
 fixed_t			centerxfrac;
 fixed_t			centeryfrac;
 fixed_t			projection;
-
-// just for profiling purposes
-int32_t			framecount;	
 
 
 fixed_t			viewx;
@@ -74,7 +70,7 @@ fixed_t			viewsin;
 player_t*		viewplayer;
 
 // 0 = high, 1 = low
-int32_t			detailshift;	
+int8_t			detailshift;	
 
 //
 // precalculated math tables
@@ -86,7 +82,7 @@ angle_t			fieldofview;
 // maps the visible view angles to screen X coordinates,
 // flattening the arc to a flat projection plane.
 // There will be many angles mapped to the same X. 
-int32_t			viewangletox[FINEANGLES/2];
+fixed_t			viewangletox[FINEANGLES/2];
 
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
@@ -365,7 +361,7 @@ R_PointToDist
 ( fixed_t	x,
   fixed_t	y )
 {
-    int32_t		angle;
+    int16_t		angle;
     fixed_t	dx;
     fixed_t	dy;
     fixed_t	temp;
@@ -402,18 +398,17 @@ R_PointToDist
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 {
     fixed_t		scale;
-    int32_t			anglea;
-    int32_t			angleb;
-    int32_t			sinea;
-    int32_t			sineb;
-    fixed_t		num;
-    int32_t			den;
+    int16_t			anglea;
+    int16_t			angleb;
+    fixed_t			sinea;
+    fixed_t			sineb;
+    fixed_t		    num;
+    fixed_t			den;
 	 
 
-    anglea = ANG90 + (visangle-viewangle);
-    angleb = ANG90 + (visangle-rw_normalangle);
-	anglea = anglea >> ANGLETOFINESHIFT;
-	angleb = angleb >> ANGLETOFINESHIFT;
+    anglea = (ANG90 + (visangle-viewangle))>> ANGLETOFINESHIFT;
+    angleb = (ANG90 + (visangle-rw_normalangle)) >> ANGLETOFINESHIFT;
+
     // both sines are allways positive
     sinea = finesine(anglea);	
     sineb = finesine(angleb);
@@ -444,9 +439,9 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 //
 void R_InitTextureMapping (void)
 {
-    int32_t			i;
-    int32_t			x;
-    int32_t			t;
+    int16_t			i;
+    int16_t			x;
+    fixed_t			t;
     fixed_t		focallength;
     
     // Use tangent table to generate viewangletox:
@@ -515,17 +510,17 @@ void R_InitTextureMapping (void)
 
 void R_InitLightTables (void)
 {
-    int32_t		i;
-    int32_t		j;
-    int32_t		level;
-    int32_t		startmap; 	
-    int32_t		scale;
+    int16_t		i;
+    int16_t		j;
+    int16_t		level;
+    int16_t		startmap; 	
+    fixed_t		scale;
     
     // Calculate the light levels to use
     //  for each level / distance combination.
     for (i=0 ; i< LIGHTLEVELS ; i++)
     {
-	startmap = ((LIGHTLEVELS-1-i)*2)*NUMCOLORMAPS/LIGHTLEVELS;
+	startmap = ((LIGHTLEVELS-1-i)*2)*2; // *NUMCOLORMAPS/LIGHTLEVELS;
 	for (j=0 ; j<MAXLIGHTZ ; j++)
 	{
 	    scale = FixedDiv ((SCREENWIDTH/2*FRACUNIT), (j+1)<<LIGHTZSHIFT);
@@ -533,10 +528,10 @@ void R_InitLightTables (void)
 	    level = startmap - scale/DISTMAP;
 	    
 	    if (level < 0)
-		level = 0;
+		    level = 0;
 
 	    if (level >= NUMCOLORMAPS)
-		level = NUMCOLORMAPS-1;
+		    level = NUMCOLORMAPS-1;
 
 	    zlight[i][j] = colormaps + level*256;
 	}
@@ -687,7 +682,7 @@ void R_Init (void)
     printf (".");
     R_InitTranslationTables ();
 	
-    framecount = 0;
+
 }
 
 
@@ -734,7 +729,7 @@ void R_SetupFrame (player_t* player)
     viewplayer = player;
     viewx = playermo->x;
     viewy = playermo->y;
-    viewangle = playermo->angle + viewangleoffset;
+    viewangle = playermo->angle;
     extralight = player->extralight;
 
     viewz = player->viewz;
@@ -756,7 +751,6 @@ void R_SetupFrame (player_t* player)
     else
 	fixedcolormap = 0;
 		
-    framecount++;
     validcount++;
     destview = destscreen + (viewwindowy*SCREENWIDTH/4) + (viewwindowx >> 2);
 }

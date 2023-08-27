@@ -37,8 +37,8 @@ extern int16_t		viewwindowy;
 
 
 
-extern int32_t		centerx;
-extern int32_t		centery;
+extern int16_t		centerx;
+extern int16_t		centery;
 
 extern fixed_t		centerxfrac;
 extern fixed_t		centeryfrac;
@@ -78,7 +78,7 @@ extern lighttable_t*	fixedcolormap;
 // Blocky/low detail mode.
 //B remove this?
 //  0 = high, 1 = low
-extern	int32_t		detailshift;	
+extern	int8_t		detailshift;	
 
 
 //
