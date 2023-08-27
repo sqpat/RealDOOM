@@ -149,8 +149,8 @@ M_AddToBox16
 
 void M_ClearBox (fixed_t *box)
 {
-    box[BOXTOP] = box[BOXRIGHT] = MININT;
-    box[BOXBOTTOM] = box[BOXLEFT] = MAXINT;
+    box[BOXTOP] = box[BOXRIGHT] = MINLONG;
+    box[BOXBOTTOM] = box[BOXLEFT] = MAXLONG;
 }
 
 void

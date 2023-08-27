@@ -229,7 +229,7 @@ extern  uint8_t             mouseSensitivity;
 // debug flag to cancel adaptiveness
 extern  boolean         singletics;	
 
-extern  int32_t             bodyqueslot;
+extern  int8_t             bodyqueslot;
 
 
 

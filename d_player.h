@@ -162,7 +162,7 @@ typedef struct
     int16_t		skills;
     int16_t		sitems;
     int16_t		ssecret;
-    int32_t		stime; 
+    int16_t		stime; 
   
 } wbplayerstruct_t;
 

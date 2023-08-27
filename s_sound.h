@@ -23,6 +23,9 @@
 #include "z_zone.h"
 #include "doomdef.h"
 
+typedef uint8_t musicenum_t;
+typedef uint8_t sfxenum_t;
+
 //
 // Initializes sound stuff, including volume
 // Sets channels, SFX and music volume,

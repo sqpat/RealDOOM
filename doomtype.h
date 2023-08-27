@@ -60,14 +60,17 @@ typedef uint8_t byte;
 #define MAXSHORT	((int16_t)0x7fff)
 
 // Max pos 32-bit int.
-#define MAXINT		((int32_t)0x7fffffff)	
 #define MAXLONG		((int32_t)0x7fffffff)
 #define MINCHAR		((int8_t)0x80)
-#define MINSHORT	((int16_t)0x8000)
 
 // Max negative 32-bit integer.
-#define MININT		((int32_t)0x80000000)	
 #define MINLONG		((int32_t)0x80000000)
+#define MINSHORT	((int16_t)0x8000)
+
+
+// let's avoid 'int' due to it being unclear between 16 and 32 bit
+//#define MAXINT		((int32_t)0x7fffffff)	
+//#define MININT		((int32_t)0x80000000)	
 
 
 

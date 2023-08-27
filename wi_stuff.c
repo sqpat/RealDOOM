@@ -816,7 +816,7 @@ void WI_updateStats(void)
 	cnt_kills = (plrs.skills * 100) / wbs->maxkills;
 	cnt_items = (plrs.sitems * 100) / wbs->maxitems;
 	cnt_secret = (plrs.ssecret * 100) / wbs->maxsecret;
-	cnt_time = plrs.stime / TICRATE;
+	cnt_time = plrs.stime;
 	cnt_par = wbs->partime / TICRATE;
 	S_StartSound(0, sfx_barexp);
 	sp_state = 10;
@@ -872,8 +872,8 @@ void WI_updateStats(void)
 
 	cnt_time += 3;
 
-	if (cnt_time >= plrs.stime / TICRATE)
-	    cnt_time = plrs.stime / TICRATE;
+	if (cnt_time >= plrs.stime)
+	    cnt_time = plrs.stime;
 
 	cnt_par += 3;
 
@@ -881,7 +881,7 @@ void WI_updateStats(void)
 	{
 	    cnt_par = wbs->partime / TICRATE;
 
-	    if (cnt_time >= plrs.stime / TICRATE)
+	    if (cnt_time >= plrs.stime)
 	    {
 		S_StartSound(0, sfx_barexp);
 		sp_state++;

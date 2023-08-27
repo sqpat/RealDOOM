@@ -107,7 +107,7 @@ typedef	struct
     MEMREF	soundtargetRef;
 
     // mapblock bounding box for height changes
-    int32_t		blockbox[4];
+    int16_t	blockbox[4];
 
     // origin for any sounds played by the sector
     // corresponds to fixed_t, not easy to change

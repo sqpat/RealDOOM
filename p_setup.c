@@ -75,9 +75,8 @@ MEMREF          linebufferRef;
 // by spatial subdivision in 2D.
 //
 // Blockmap size.
-int32_t             bmapwidth;
-int32_t             bmapheight;     // size in mapblocks
-int32_t				blockmapOffset;       // int32_t for larger maps
+int16_t             bmapwidth;
+int16_t             bmapheight;     // size in mapblocks
 
 								// offsets in blockmap are from here
 MEMREF          blockmaplumpRef;
@@ -638,7 +637,7 @@ void P_LoadBlockMap(int16_t lump)
 	
 	blockmaplumpRef = W_CacheLumpNumEMS(lump, PU_LEVEL);
 	blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
-	blockmapOffset = 4;
+	//blockmapOffset = 4;  // only ever 4? deleted..
 	count = W_LumpLength(lump) / 2;
 
 	for (i = 0; i < count; i++)
@@ -672,7 +671,7 @@ void P_GroupLines(void)
 	line_t*             li;
 	seg_t*              seg;
 	fixed_t             bbox[4];
-	int32_t                 block;
+	int16_t             block;
 	seg_t*              segs;
 	vertex_t*			vertexes;
 	int16_t				previouslinebufferindex;

@@ -185,7 +185,7 @@ int8_t            savedescription[32];
 #define BODYQUESIZE     32
 
 MEMREF          bodyque[BODYQUESIZE]; 
-int32_t             bodyqueslot;
+int8_t             bodyqueslot;
  
 void*           statcopy;                               // for statistics driver
   
@@ -688,7 +688,7 @@ G_CheckSpot
     fixed_t             x;
     fixed_t             y; 
     subsector_t*        ss; 
-	uint32_t            an;
+	angle_t            an;
     mobj_t*             mo; 
 	int8_t                 i;
 	mobj_t*				playerMo;
@@ -885,7 +885,7 @@ void G_DoCompleted (void)
     wminfo.plyr.skills = players[0].killcount; 
     wminfo.plyr.sitems = players[0].itemcount; 
     wminfo.plyr.ssecret = players[0].secretcount; 
-    wminfo.plyr.stime = leveltime; 
+    wminfo.plyr.stime = (leveltime / TICRATE); 
  
     gamestate = GS_INTERMISSION; 
     viewactive = false; 
@@ -1034,7 +1034,7 @@ void G_DoSaveGame (void)
 	int8_t        name[100];
 	int8_t        name2[VERSIONSIZE];
     int8_t*       description; 
-	int32_t         length;
+	filelength_t         length;
 	byte*       savebuffer;
 
     if (M_CheckParm("-cdrom"))
@@ -1250,8 +1250,9 @@ G_InitNew
 
 void G_ReadDemoTiccmd (ticcmd_t* cmd) 
 { 
-	byte* demobuffer = (byte*) Z_LoadBytesFromEMS(demobufferRef);
-	demo_p = (byte*)((int32_t)demo_p + (int32_t)demobuffer);
+    // this is just used as an offset so lets just store as int;
+	int32_t demobuffer = (int32_t) Z_LoadBytesFromEMS(demobufferRef);
+	demo_p = (byte*)(demo_p + demobuffer);
 	if (*demo_p == DEMOMARKER)  {
         // end of demo data stream 
         G_CheckDemoStatus (); 
@@ -1267,7 +1268,7 @@ void G_ReadDemoTiccmd (ticcmd_t* cmd)
 
 void G_WriteDemoTiccmd (ticcmd_t* cmd) 
 { 
-	byte* demobuffer = (byte*)Z_LoadBytesFromEMS(demobufferRef);
+	int32_t demobuffer = (int32_t) Z_LoadBytesFromEMS(demobufferRef);
 	demo_p = (byte*)((int32_t)demo_p + (int32_t)demobuffer);
 	if (gamekeydown['q'])           // press q to end demo recording 
         G_CheckDemoStatus (); 
@@ -1420,7 +1421,7 @@ void G_TimeDemo (int8_t* name)
  
 boolean G_CheckDemoStatus (void) 
 { 
-	int32_t             endtime;
+	uint32_t             endtime;
 	byte* demobuffer;
 
 	// NOTE: WHENEVER WE ENTER THIS FUNCTION demo_p IS ALREADY INCREMENTED BY demobuffer OFFSET;

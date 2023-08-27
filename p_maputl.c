@@ -56,7 +56,7 @@ P_AproxDistance
 // P_PointOnLineSide
 // Returns 0 or 1
 //
-int32_t
+boolean
 P_PointOnLineSide
 ( fixed_t	x,
   fixed_t	y,
@@ -104,7 +104,7 @@ P_PointOnLineSide
 // Considers the line to be infinite
 // Returns side 0 or 1, -1 if box crosses the line.
 //
-int32_t
+boolean
 P_BoxOnLineSide
 ( fixed_t*	tmbox,
 	slopetype_t	lineslopetype,
@@ -113,8 +113,8 @@ P_BoxOnLineSide
 	int16_t linev1Offset
 	)
 {
-    int32_t		p1;
-    int32_t		p2;
+    boolean		p1;
+    boolean		p2;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
     switch (lineslopetype)
@@ -159,7 +159,7 @@ P_BoxOnLineSide
 // P_PointOnDivlineSide
 // Returns 0 or 1.
 //
-int32_t
+boolean
 P_PointOnDivlineSide
 ( fixed_t	x,
   fixed_t	y,
@@ -316,8 +316,8 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 //
 void P_UnsetThingPosition (MEMREF thingRef)
 {
-    int32_t		blockx;
-    int32_t		blocky;
+    int16_t		blockx;
+    int16_t		blocky;
 	//MEMREF* blocklinksList;
 	mobj_t* changeThing;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
@@ -390,8 +390,8 @@ P_SetThingPosition (MEMREF thingRef)
 {
 	int16_t	subsecnum;
     //sector_t*		sec;
-    int32_t			blockx;
-    int32_t			blocky;
+    int16_t			blockx;
+    int16_t			blocky;
     MEMREF		linkRef;
 	mobj_t*		link;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
@@ -485,12 +485,12 @@ P_SetThingPosition (MEMREF thingRef)
 //
 boolean
 P_BlockLinesIterator
-( int32_t			x,
-  int32_t			y,
+( int16_t			x,
+  int16_t			y,
   boolean(*func)(int16_t) )
 {
-    int32_t			offset;
-	int32_t			index;
+    int16_t			offset;
+	int16_t			index;
     int16_t		list;
     line_t*		ld;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -505,7 +505,7 @@ P_BlockLinesIterator
     
     offset = y*bmapwidth+x;
 	blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
-	offset = *(blockmaplump+blockmapOffset + offset);
+	offset = *(blockmaplump+4 + offset);
 	
     for ( index = offset ; blockmaplump[index] != -1 ; index++) {
 
@@ -536,13 +536,13 @@ P_BlockLinesIterator
 //
 boolean
 P_BlockThingsIterator
-( int32_t			x,
-  int32_t			y,
+( int16_t			x,
+  int16_t			y,
   boolean(*func)(MEMREF) )
 {
 	MEMREF mobjRef;
     mobj_t*		mobj;
-	int32_t i = 0;
+	int16_t i = 0;
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
 	}
@@ -595,8 +595,8 @@ int32_t		ptflags;
 boolean
 PIT_AddLineIntercepts (int16_t linenum)
 {
-    int32_t			s1;
-    int32_t			s2;
+    int16_t			s1;
+    int16_t			s2;
     fixed_t		frac;
     divline_t		dl;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -657,8 +657,8 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     fixed_t		x2;
     fixed_t		y2;
     
-    int32_t			s1;
-    int32_t			s2;
+    int16_t			s1;
+    int16_t			s2;
     
     boolean		tracepositive;
 
@@ -725,7 +725,7 @@ P_TraverseIntercepts
 ( traverser_t	func,
   fixed_t	maxfrac )
 {
-    int32_t			count;
+    int16_t			count;
     fixed_t		dist;
     intercept_t*	scan;
     intercept_t*	in;
@@ -736,7 +736,7 @@ P_TraverseIntercepts
 	
     while (count--)
     {
-	dist = MAXINT;
+	dist = MAXLONG;
 	for (scan = intercepts ; scan<intercept_p ; scan++)
 	{
 	    if (scan->frac < dist)
@@ -753,7 +753,7 @@ P_TraverseIntercepts
      if ( !func (in) )
 	    return false;	// don't bother going farther
 
-	in->frac = MAXINT;
+	in->frac = MAXLONG;
     }
 	
     return true;		// everything was traversed
@@ -778,10 +778,10 @@ P_PathTraverse
   int32_t			flags,
   boolean (*trav) (intercept_t *))
 {
-    fixed_t	xt1;
-    fixed_t	yt1;
-    fixed_t	xt2;
-    fixed_t	yt2;
+    int16_t	xt1;
+    int16_t	yt1;
+    int16_t	xt2;
+    int16_t	yt2;
     
     fixed_t	xstep;
     fixed_t	ystep;
@@ -791,13 +791,13 @@ P_PathTraverse
     fixed_t	xintercept;
     fixed_t	yintercept;
     
-    int32_t		mapx;
-    int32_t		mapy;
+    int16_t		mapx;
+    int16_t		mapy;
     
-    int32_t		mapxstep;
-    int32_t		mapystep;
+    int8_t		mapxstep;
+    int8_t		mapystep;
 
-    int32_t		count;
+    int8_t		count;
 		
     earlyout = flags & PT_EARLYOUT;
 	
@@ -805,10 +805,10 @@ P_PathTraverse
     intercept_p = intercepts;
 	
     if ( ((x1-bmaporgx)&(MAPBLOCKSIZE-1)) == 0)
-	x1 += FRACUNIT;	// don't side exactly on a line
+		x1 += FRACUNIT;	// don't side exactly on a line
     
     if ( ((y1-bmaporgy)&(MAPBLOCKSIZE-1)) == 0)
-	y1 += FRACUNIT;	// don't side exactly on a line
+		y1 += FRACUNIT;	// don't side exactly on a line
 
     trace.x = x1;
     trace.y = y1;
@@ -825,45 +825,35 @@ P_PathTraverse
     xt2 = x2>>MAPBLOCKSHIFT;
     yt2 = y2>>MAPBLOCKSHIFT;
 
-    if (xt2 > xt1)
-    {
-	mapxstep = 1;
-	partial = FRACUNIT - ((x1>>MAPBTOFRAC)&(FRACUNIT-1));
-	ystep = FixedDiv (y2-y1,abs(x2-x1));
-    }
-    else if (xt2 < xt1)
-    {
-	mapxstep = -1;
-	partial = (x1>>MAPBTOFRAC)&(FRACUNIT-1);
-	ystep = FixedDiv (y2-y1,abs(x2-x1));
-    }
-    else
-    {
-	mapxstep = 0;
-	partial = FRACUNIT;
-	ystep = 256*FRACUNIT;
+    if (xt2 > xt1) {
+		mapxstep = 1;
+		partial = FRACUNIT - ((x1>>MAPBTOFRAC)&(FRACUNIT-1));
+		ystep = FixedDiv (y2-y1,abs(x2-x1));
+    } else if (xt2 < xt1) {
+		mapxstep = -1;
+		partial = (x1>>MAPBTOFRAC)&(FRACUNIT-1);
+		ystep = FixedDiv (y2-y1,abs(x2-x1));
+    } else {
+		mapxstep = 0;
+		partial = FRACUNIT;
+		ystep = 256*FRACUNIT;
     }	
 
     yintercept = (y1>>MAPBTOFRAC) + FixedMul (partial, ystep);
 
 	
-    if (yt2 > yt1)
-    {
-	mapystep = 1;
-	partial = FRACUNIT - ((y1>>MAPBTOFRAC)&(FRACUNIT-1));
-	xstep = FixedDiv (x2-x1,abs(y2-y1));
-    }
-    else if (yt2 < yt1)
-    {
-	mapystep = -1;
-	partial = (y1>>MAPBTOFRAC)&(FRACUNIT-1);
-	xstep = FixedDiv (x2-x1,abs(y2-y1));
-    }
-    else
-    {
-	mapystep = 0;
-	partial = FRACUNIT;
-	xstep = 256*FRACUNIT;
+    if (yt2 > yt1) {
+		mapystep = 1;
+		partial = FRACUNIT - ((y1>>MAPBTOFRAC)&(FRACUNIT-1));
+		xstep = FixedDiv (x2-x1,abs(y2-y1));
+    } else if (yt2 < yt1) {
+		mapystep = -1;
+		partial = (y1>>MAPBTOFRAC)&(FRACUNIT-1);
+		xstep = FixedDiv (x2-x1,abs(y2-y1));
+    } else {
+		mapystep = 0;
+		partial = FRACUNIT;
+		xstep = 256*FRACUNIT;
     }	
     xintercept = (x1>>MAPBTOFRAC) + FixedMul (partial, xstep);
     
@@ -872,41 +862,32 @@ P_PathTraverse
     // from skipping the break.
     mapx = xt1;
     mapy = yt1;
-    for (count = 0 ; count < 64 ; count++)
-    {
-	if (flags & PT_ADDLINES)
-	{
-	    if (!P_BlockLinesIterator (mapx, mapy,PIT_AddLineIntercepts))
-			return false;	// early out
-	}
-	
-	if (flags & PT_ADDTHINGS)
-	{
-
-		if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
-			return false;	// early out
-	}
+    for (count = 0 ; count < 64 ; count++) {
+		if (flags & PT_ADDLINES) {
+			if (!P_BlockLinesIterator (mapx, mapy,PIT_AddLineIntercepts))
+				return false;	// early out
+		}
 		
-	if (mapx == xt2
-	    && mapy == yt2)
-	{
-	    break;
-	}
-	
-	if ( (yintercept >> FRACBITS) == mapy)
-	{
-	    yintercept += ystep;
-	    mapx += mapxstep;
-	}
-	else if ( (xintercept >> FRACBITS) == mapx)
-	{
-	    xintercept += xstep;
-	    mapy += mapystep;
-	}
+		if (flags & PT_ADDTHINGS) {
+			if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
+				return false;	// early out
+		}
+			
+		if (mapx == xt2 && mapy == yt2) {
+			break;
+		}
 		
-    }
-    // go through the sorted list
-    return P_TraverseIntercepts ( trav, FRACUNIT );
+		if ( (yintercept >> FRACBITS) == mapy) {
+			yintercept += ystep;
+			mapx += mapxstep;
+		} else if ( (xintercept >> FRACBITS) == mapx) {
+			xintercept += xstep;
+			mapy += mapystep;
+		}
+			
+	}
+	// go through the sorted list
+	return P_TraverseIntercepts ( trav, FRACUNIT );
 }
 
 

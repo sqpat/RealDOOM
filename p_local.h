@@ -91,8 +91,8 @@ void	P_PlayerThink (player_t* player);
 //
 // P_MOBJ
 //
-#define ONFLOORZ		MININT
-#define ONCEILINGZ		MAXINT
+#define ONFLOORZ		MINLONG
+#define ONCEILINGZ		MAXLONG
 
 // Time interval for item respawning.
 
@@ -108,7 +108,7 @@ boolean	P_SetMobjState (MEMREF mobj, statenum_t state);
 void 	P_MobjThinker (MEMREF memref);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
-void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int32_t damage);
+void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
 MEMREF P_SpawnMissile (MEMREF source, MEMREF dest, mobjtype_t type);
 void	P_SpawnPlayerMissile (MEMREF source, mobjtype_t type);
 
@@ -151,11 +151,11 @@ extern intercept_t*	intercept_p;
 typedef boolean (*traverser_t) (intercept_t *in);
 
 fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
-int32_t 	P_PointOnLineSide (fixed_t	x, fixed_t	y, fixed_t linedx, fixed_t linedy, int16_t linev1Offset);
-int32_t 	P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t* line);
+boolean 	P_PointOnLineSide (fixed_t	x, fixed_t	y, fixed_t linedx, fixed_t linedy, int16_t linev1Offset);
+boolean 	P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t* line);
 void 	P_MakeDivline (fixed_t linedx, fixed_t linedy, int16_t linenum, divline_t* dl);
 fixed_t P_InterceptVector (divline_t* v2, divline_t* v1);
-int32_t 	P_BoxOnLineSide (fixed_t* tmbox, slopetype_t	lineslopetype, fixed_t linedx, fixed_t linedy, int16_t linev1Offset);
+boolean 	P_BoxOnLineSide (fixed_t* tmbox, slopetype_t	lineslopetype, fixed_t linedx, fixed_t linedy, int16_t linev1Offset);
 
 
 extern fixed_t		opentop;
@@ -165,8 +165,8 @@ extern fixed_t		lowfloor;
 
 void 	P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
-boolean P_BlockLinesIterator (int32_t x, int32_t y, boolean(*func)(int16_t ) );
-boolean P_BlockThingsIterator (int32_t x, int32_t y, boolean(*func)(MEMREF));
+boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(int16_t ) );
+boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(MEMREF));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -225,13 +225,13 @@ P_LineAttack
   angle_t	angle,
   fixed_t	distance,
   fixed_t	slope,
-  int32_t		damage );
+  int16_t		damage );
 
 void
 P_RadiusAttack
 (MEMREF	spot,
 	MEMREF	source,
-  int32_t		damage );
+  int16_t		damage );
 
 
 
@@ -240,10 +240,8 @@ P_RadiusAttack
 //
 extern MEMREF		rejectmatrixRef;	// for fast sight rejection
 extern MEMREF          blockmaplumpRef;
-//extern int16_t*		blockmaplump;	// offsets in blockmap are from here
-extern int32_t blockmapOffset;
-extern int32_t		bmapwidth;
-extern int32_t		bmapheight;	// in mapblocks
+extern int16_t		bmapwidth;
+extern int16_t		bmapheight;	// in mapblocks
 extern fixed_t		bmaporgx;
 extern fixed_t		bmaporgy;	// origin of block map
 
@@ -265,7 +263,7 @@ P_DamageMobj
 (MEMREF	target,
 	MEMREF	inflictor,
 	MEMREF	source,
-  int32_t		damage );
+  int16_t		damage );
 
 
 //

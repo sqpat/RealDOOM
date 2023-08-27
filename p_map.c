@@ -59,7 +59,7 @@ int16_t		ceilinglinenum;
 #define MAXSPECIALCROSS		8
 
 int16_t		spechit[MAXSPECIALCROSS];
-int32_t		numspechit;
+int16_t		numspechit;
 
 
 
@@ -1212,7 +1212,7 @@ P_LineAttack
   angle_t	angle,
   fixed_t	distance,
   fixed_t	slope,
-  int32_t		damage )
+  int16_t		damage )
 {
     fixed_t	x2;
     fixed_t	y2;
@@ -1243,7 +1243,7 @@ MEMREF		usethingRef;
 
 boolean	PTR_UseTraverse (intercept_t* in)
 {
-    int32_t		side;
+    int16_t		side;
 	mobj_t* usething;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
@@ -1282,7 +1282,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 //
 void P_UseLines (player_t*	player) 
 {
-    int32_t		angle;
+    uint16_t angle;
     fixed_t	x1;
     fixed_t	y1;
     fixed_t	x2;
@@ -1308,7 +1308,7 @@ void P_UseLines (player_t*	player)
 //
 MEMREF		bombsourceRef;
 MEMREF		bombspotRef;
-int32_t		bombdamage;
+int16_t		bombdamage;
 
 
 //
@@ -1371,15 +1371,15 @@ void
 P_RadiusAttack
 (MEMREF	spotRef,
 	MEMREF	sourceRef,
-	int32_t		damage)
+	int16_t		damage)
 {
-	int32_t		x;
-	int32_t		y;
+	int16_t		x;
+	int16_t		y;
 
-	int32_t		xl;
-	int32_t		xh;
-	int32_t		yl;
-	int32_t		yh;
+	int16_t		xl;
+	int16_t		xh;
+	int16_t		yl;
+	int16_t		yh;
 
 	fixed_t	dist;
 	mobj_t* spot = (mobj_t *)Z_LoadBytesFromEMS(spotRef);
@@ -1498,13 +1498,13 @@ P_ChangeSector
 ( int16_t	secnum,
   boolean	crunch )
 {
-    int32_t		x;
-    int32_t		y;
+    int16_t		x;
+    int16_t		y;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int32_t blockleft = sectors[secnum].blockbox[BOXLEFT];
-	int32_t blockright = sectors[secnum].blockbox[BOXRIGHT];
-	int32_t blocktop = sectors[secnum].blockbox[BOXTOP];
-	int32_t blockbottom = sectors[secnum].blockbox[BOXBOTTOM];
+	int16_t blockleft = sectors[secnum].blockbox[BOXLEFT];
+	int16_t blockright = sectors[secnum].blockbox[BOXRIGHT];
+	int16_t blocktop = sectors[secnum].blockbox[BOXTOP];
+	int16_t blockbottom = sectors[secnum].blockbox[BOXBOTTOM];
 
 
     nofit = false;

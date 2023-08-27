@@ -93,9 +93,6 @@ mobj_t* SAVEDUNIT;
 // P_SetMobjState
 // Returns true if the mobj is still present.
 //
-static int32_t test = 0;
-
-
 
 //
 // P_ExplodeMissile  
@@ -145,7 +142,6 @@ void P_XYMovement (MEMREF moRef)
 	int16_t mosecnum;
 	fixed_t sectorfloorheight;
 
-	int32_t i = 0;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	player = mo->player;
 	
@@ -182,7 +178,6 @@ void P_XYMovement (MEMREF moRef)
 
 	
 	do {
-		i++;
 
 		if (xmove > MAXMOVE/2 || ymove > MAXMOVE/2) {
 			ptryx = mo->x + xmove/2;
@@ -507,7 +502,6 @@ P_NightmareRespawn(MEMREF mobjRef)
 void P_MobjThinker (MEMREF mobjRef) {
 
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-	int32_t i;
 	// momentum movement
     if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
@@ -901,7 +895,7 @@ P_SpawnBlood
 ( fixed_t	x,
   fixed_t	y,
   fixed_t	z,
-  int32_t		damage )
+  int16_t		damage )
 {
     mobj_t*	th;
 	MEMREF thRef;
@@ -960,7 +954,7 @@ P_SpawnMissile
 {
     mobj_t*	th;
     angle_t	an;
-    int32_t		dist;
+    fixed_t	dist;
 	mobj_t*	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 	mobj_t*	dest;
 	fixed_t destz;
@@ -1083,7 +1077,7 @@ P_SetMobjState
 {
 	state_t*	st;
 	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-	int32_t i = 0;
+	int16_t i = 0;
 
 	do {
 		if (state == S_NULL) {

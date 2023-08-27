@@ -364,8 +364,8 @@ void AM_findMinMaxBoundaries(void)
     fixed_t a;
     fixed_t b;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-	min_x = min_y =  MAXINT;
-    max_x = max_y = -MAXINT;
+	min_x = min_y =  MAXLONG;
+    max_x = max_y = -MAXLONG;
   
     for (i=0;i<numvertexes;i++) {
 	if (vertexes[i].x < min_x)
@@ -402,7 +402,7 @@ void AM_changeWindowLoc(void)
     if (m_paninc.x || m_paninc.y)
     {
 	followplayer = 0;
-	f_oldloc.x = MAXINT;
+	f_oldloc.x = MAXLONG;
     }
 
     m_x += m_paninc.x;
@@ -434,7 +434,7 @@ void AM_initVariables(void)
     automapactive = true;
     fb = screens[0];
 
-    f_oldloc.x = MAXINT;
+    f_oldloc.x = MAXLONG;
 
     m_paninc.x = m_paninc.y = 0;
     ftom_zoommul = FRACUNIT;
@@ -642,7 +642,7 @@ AM_Responder
 	    break;
 	  case AM_FOLLOWKEY:
 	    followplayer = !followplayer;
-	    f_oldloc.x = MAXINT;
+	    f_oldloc.x = MAXLONG;
 	    plr->message = followplayer ? AMSTR_FOLLOWON : AMSTR_FOLLOWOFF;
 	    break;
 	  case AM_GRIDKEY:

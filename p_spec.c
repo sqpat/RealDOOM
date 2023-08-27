@@ -407,7 +407,7 @@ P_FindLowestCeilingSurrounding(int16_t	secnum)
 {
     uint8_t		i;
 	int16_t		offset;
-	fixed_t		height = MAXINT;
+	fixed_t		height = MAXLONG;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
