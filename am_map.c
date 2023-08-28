@@ -96,7 +96,11 @@
 #define AM_NUMMARKPOINTS 10
 
 // scale on entry
+
+
 #define INITSCALEMTOF (.2*FRACUNIT)
+
+
 // how much the automap moves window per tic in frame-buffer coordinates
 // moves 140 pixels in 1 second
 #define F_PANINC	4
@@ -108,8 +112,17 @@
 #define M_ZOOMOUT       ((int32_t) (FRACUNIT/1.02))
 
 // translates between frame-buffer and map distances
+
+#ifdef UNION_FIXED_POINT
+#define FTOM(x) FixedMul(x.h.intbits,scale_ftom)
+#define FTOM16(x) FixedMul1632(x,scale_ftom)
+#else
 #define FTOM(x) FixedMul(((x)<<16),scale_ftom)
+#define FTOM16(x) FixedMul1632(x,scale_ftom)
 #define MTOF(x) (FixedMul((x),scale_mtof)>>16)
+#define MTOF(x) (FixedMul((x),scale_mtof)>>16)
+#endif
+
 // translates between frame-buffer and map coordinates
 #define CXMTOF(x)  (f_x + MTOF((x)-m_x))
 #define CYMTOF(y)  (f_y + (f_h - MTOF((y)-m_y)))
@@ -234,8 +247,8 @@ static fixed_t 	m_x2, m_y2; // UR x,y where the window is on the map (map coords
 //
 // width/height of window on map (map coords)
 //
-static fixed_t 	m_w;
-static fixed_t	m_h;
+static int16_t 	m_w;
+static int16_t	m_h;
 
 // based on level size
 static fixed_t 	min_x;
@@ -255,14 +268,16 @@ static fixed_t 	min_scale_mtof; // used to tell when to stop zooming out
 static fixed_t 	max_scale_mtof; // used to tell when to stop zooming in
 
 // old stuff for recovery later
-static fixed_t old_m_w, old_m_h;
+static int16_t old_m_w, old_m_h;
 static fixed_t old_m_x, old_m_y;
 
 // old location used by the Follower routine
 static mpoint_t f_oldloc;
 
 // used by MTOF to scale from map-to-frame-buffer coords
-static fixed_t scale_mtof = INITSCALEMTOF;
+
+DECLARE_FIXED_POINT_HIGH (static fixed_t scale_mtof, INITSCALEMTOF);
+
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
 static fixed_t scale_ftom;
 
@@ -297,14 +312,26 @@ V_MarkRect
 //
 void AM_activateNewScale(void)
 {
+/*
+    FIXED_T_PLUS_EQUALS(m_x, FIXED_T_SHIFT_RIGHT(m_w, 1));
+    FIXED_T_PLUS_EQUALS(m_y, FIXED_T_SHIFT_RIGHT(m_h, 1));
+    FIXED_T_SET_FRACBITS(m_w, FTOM16(f_w));
+    FIXED_T_SET_FRACBITS(m_h, FTOM16(f_h));
+   	FIXED_T_MINUS_EQUALS(m_x, FIXED_T_SHIFT_RIGHT(m_w, 1));
+   	FIXED_T_MINUS_EQUALS(m_y, FIXED_T_SHIFT_RIGHT(m_h, 1));
+    m_x2 = FIXED_T_PLUS_FIXED_T(m_x, m_w);
+    m_y2 = FIXED_T_PLUS_FIXED_T(m_y, m_h);
+*/
+
     m_x += m_w/2;
     m_y += m_h/2;
-    m_w = FTOM(f_w);
-    m_h = FTOM(f_h);
+    m_w = FTOM16(f_w);
+    m_h = FTOM16(f_h);
     m_x -= m_w/2;
     m_y -= m_h/2;
     m_x2 = m_x + m_w;
     m_y2 = m_y + m_h;
+
 }
 
 //
@@ -334,6 +361,8 @@ void AM_restoreScaleAndLoc(void)
 		playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
 		m_x = playerMo->x - m_w/2;
 		m_y = playerMo->y - m_h/2;
+		//m_x = FIXED_T_MINUS(playerMo->x, FIXED_T_SHIFT_RIGHT(m_w,1));
+		//m_y = FIXED_T_MINUS(playerMo->y, FIXED_T_SHIFT_RIGHT(m_h,1));
     }
     m_x2 = m_x + m_w;
     m_y2 = m_y + m_h;

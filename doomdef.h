@@ -68,7 +68,68 @@ enum { VERSION =  109 };
 
 #define	FRACBITS		16
 #define	FRACUNIT		((int32_t)1<<FRACBITS)
+
+//#define UNION_FIXED_POINT
+
+typedef int32_t fixed_t32;
+
+
+#ifdef UNION_FIXED_POINT
+
+
+typedef union _fixed_t {
+	struct dual_int16_t {
+		int16_t fracbits;
+		int16_t intbits;
+	} h;
+	
+	int32_t w;
+} fixed_t;
+
+
+#define DECLARE_FIXED_POINT_HIGH(x, y) x = {0, y}
+#define DECLARE_FIXED_POINT_LOW(x, y) x = {y, 0}
+#define FIXED_T_PLUS_EQUALS(x, y) x.w += y
+#define FIXED_T_MINUS_EQUALS(x, y) x.w -= y
+#define FIXED_T_PLUS(x, y) x.w + y
+#define FIXED_T_PLUS_FIXED_T(x, y) x.w + y.w
+#define FIXED_T_MINUS(x, y) x.w - y
+#define FIXED_T_MINUS_FIXED_T(x, y) x.w - y.w
+#define FIXED_T_SHIFT_RIGHT(x, y) x.w >> y
+#define FIXED_T_SET_FRACBITS(x, y) x.h.fracbits = y
+#define FIXED_T_SET_WHOLE(x, y) x.w = y
+
+#else
+
 typedef int32_t fixed_t;
+
+typedef union _longlong_union {
+	int16_t h[4];	
+	int64_t l;
+} longlong_union;
+
+typedef union _fixed_t_union {
+	struct dual_int16_t {
+		int16_t fracbits;
+		int16_t intbits;
+	} h;
+	
+	int32_t w;
+} fixed_t_union;
+
+#define DECLARE_FIXED_POINT_HIGH(x, y) x = y
+#define DECLARE_FIXED_POINT_LOW(x, y) x = y
+
+#define FIXED_T_PLUS_EQUALS(x, y) x += y
+#define FIXED_T_MINUS_EQUALS(x, y) x -= y
+#define FIXED_T_PLUS(x, y) (x + y)
+#define FIXED_T_PLUS_FIXED_T(x, y) (x + y)
+#define FIXED_T_MINUS(x, y) (x - y)
+#define FIXED_T_MINUS_FIXED_T(x, y) (x - y)
+#define FIXED_T_SHIFT_RIGHT(x, y) (x >> y)
+#define FIXED_T_SET_FRACBITS(x, y) x = y
+#define FIXED_T_SET_WHOLE(x, y) x = y
+#endif
 
 
 // The maximum number of players, multiplayer/networking.
@@ -218,9 +279,10 @@ typedef uint8_t powertype_t;
 
 #define KEY_LALT	KEY_RALT
 
-fixed_t	FixedMul (fixed_t a, fixed_t b);
-fixed_t	FixedDiv (fixed_t a, fixed_t b);
-fixed_t	FixedDiv2 (fixed_t a, fixed_t b);
+fixed_t32	FixedMul (fixed_t32 a, fixed_t32 b);
+int16_t	FixedMul1632 (int16_t a, fixed_t b);
+fixed_t32	FixedDiv (fixed_t32 a, fixed_t32 b);
+fixed_t32	FixedDiv2 (fixed_t32 a, fixed_t32 b);
 
 
 

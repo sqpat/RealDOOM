@@ -40,8 +40,6 @@
 //
 
 #define DPMI_INT 0x31
-
-#define PAGE_FRAME_SIZE (16*1024)
 #define EMS_INT 0x67
 
 

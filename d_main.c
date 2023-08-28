@@ -203,24 +203,46 @@ void D_ProcessEvents (void)
 
 // Fixme. __USE_C_FIXED__ or something.
 
-fixed_t
-FixedMul
-(fixed_t	a,
-	fixed_t	b)
-{
-	return ((long long)a * (long long)b) >> FRACBITS;
+fixed_t32 FixedMul (fixed_t32	a, fixed_t32 b) {
+    // fixed_t_union fp;
+    // fp.w = ((long long)a * (long long)b);
+    // return fp.h.intbits;
+    longlong_union llu;
+    fixed_t_union fp;
+    llu.l =  ((long long)a * (long long)b);
+    fp.h.intbits = llu.h[2];
+    fp.h.fracbits = llu.h[1];
+    return fp.w;
 }
 
+#ifdef UNION_FIXED_POINT
+int16_t
+FixedMul1632
+(int16_t	a, fixed_t	b) {
+    fixed_t atohighbits;
+    atohighbits.h.intbits = a;
+	atohighbits.w = ((atohighbits.w) * (b.w));
+    return atohighbits.h.intbits;
+}
+#else
 
+int16_t FixedMul1632 (int16_t	a, fixed_t	b) {
+    fixed_t_union atohighbits;
+    atohighbits.h.intbits = a;
+    atohighbits.h.fracbits = 0;
+	atohighbits.w = ((atohighbits.w) * b);
+    return atohighbits.h.intbits;
+}
+#endif
 
 //
 // FixedDiv, C version.
 //
 
-fixed_t
+fixed_t32
 FixedDiv
-(fixed_t	a,
-	fixed_t	b)
+(fixed_t32	a,
+	fixed_t32	b)
 {
 	if ((abs(a) >> 14) >= abs(b))
 		return (a^b) < 0 ? MINLONG : MAXLONG;
@@ -229,10 +251,10 @@ FixedDiv
 
 
 
-fixed_t
+fixed_t32
 FixedDiv2
-(fixed_t	a,
-	fixed_t	b)
+(fixed_t32	a,
+	fixed_t32	b)
 {
  
 
@@ -242,7 +264,7 @@ FixedDiv2
 
 	if (c >= 2147483648.0 || c < -2147483648.0)
 		I_Error("FixedDiv: divide by zero");
-	return (fixed_t)c;
+	return (fixed_t32)c;
 }
 //
 // D_Display

@@ -93,8 +93,8 @@ int16_t*		maskedtexturecol;
 void
 R_RenderMaskedSegRange
 (drawseg_t*	ds,
-	int32_t		x1,
-	int32_t		x2)
+	int16_t		x1,
+	int16_t		x2)
 {
 	uint32_t	index;
 	column_t*	col;
