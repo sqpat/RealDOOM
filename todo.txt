@@ -14,12 +14,20 @@ KNOWN ISSUES
  - menu sometimes jumps a bit? might be due to keyboard issues
  - are keys working badly or is it just mac dosbox? test again on pc when possible. didnt notice because i was relying on demos too much but i think i did do some 32 to 16 bit code conversion around keyboard input
 
+- doom 16 size currently:
+544704 full visplanes large
+525744 99 visplanes large
+646032 full visplanes huge 
+
+- doom 32 currently
+- 526528
+
 TODO 
  
+ x change a bunch of int_32t to int_16t, see if it still works
+ x change angle_ts
  ~ make ems actually work
  ~ set visiplanes under 64k and see if large compile works
- ~ change a bunch of int_32t to int_16t, see if it still works
- ~ change angle_ts
  1 floorheight and other fixed_ts on sectors etc, save them unshifted and shift on use. 
     - later we will just automagically set to fixed_t hi byte somehow
 
@@ -28,11 +36,17 @@ TODO
  3 screens in conventional instead of allocced
    - screen2/3 wipe in EMS, or dump it for now.
    - get rid of backbuffer? or make it ems?
+ ? visplane in ems? would need to stop passing around visplanes and instead pass around indices. not impossible but small to medium rewrite. 
+   - A benefit is we could split it up into single pages and just do 16k worth of visplanes as a time - grow as much or little as possible.
+   - could have a single allocation with all the smaller fields that are often iterated thru. The byte arrays could be in different bigger allocations
+     
+    
  - get rid of last bits of multiplayer, players array
  - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
  - clean up speed code. probably dont need make_speed in a lot of cases -is high bit projectile only?
 - fix 'shift amount too large' bugs in 16 bit version. probably will go hand in hand with fixed_t work, but some defines may need to explicitly be long typed
  - check if using 8 instead of 16 bit local vars (especially loop vars) affects 16 bit binary code size
+
 CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everything) 
  - thing flags
     - can probably be rewritten as a pair of 16 bits?
@@ -68,16 +82,20 @@ CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everyt
 
 MEMORY IDEAS
  
- ~ compress memory allocation entries by using bit masks and combining values
+ x compress memory allocation entries by using bit masks and combining values
  - support allocating some things in conventional memory. 
    - probably need to use it to support titlepic and other large memory things?
    - test to figure out which variables improve fps most in conventional
       - probably sectors, lines, etc...
 
  - use overlays, especially on startup code to eliminate space
+   - finale code should definitely be overlayed
+   - maybe menu code
+   - maybe demo code 
+   - maybe wipe code
+   - savegame code
    - if we ever do multiple renderers or sound code etc, 
         can fit more in the binary by using overlays?
- - go thru all int32_ts and make as many int16_t as possible
  - explicitly declare things near, far when possible?
  - reduce visiplanes size below 65k somehow to allow large instead of huge memory model.
    - maybe just reduce the number of visplanes for now...

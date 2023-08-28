@@ -125,8 +125,25 @@ extern fineangle_t	rw_normalangle;
 extern angle_t		rw_angle1;
 
 
+#ifdef EMS_VISPLANES
+
+// 644
+#define VISPLANE_BYTE_SIZE (4 + 2 * SCREENWIDTH)
+// 25
+#define VISPLANES_PER_EMS_PAGE (PAGE_FRAME_SIZE  / VISPLANE_BYTE_SIZE)
+#define NUM_VISPLANE_PAGES 6
+#define MAXVISPLANES (NUM_VISPLANE_PAGES * VISPLANES_PER_EMS_PAGE)
+
+
+extern visplaneheader_t*	floorplane;
+extern visplaneheader_t*	ceilingplane;
+extern MEMREF visplanebytesRef[NUM_VISPLANE_PAGES]; 
+
+
+#else
 extern visplane_t*	floorplane;
 extern visplane_t*	ceilingplane;
 
+#endif
 
 #endif

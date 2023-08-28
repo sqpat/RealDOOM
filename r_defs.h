@@ -448,6 +448,42 @@ typedef struct
 } spritedef_t;
 
 
+#ifdef EMS_VISPLANES
+
+typedef struct
+{
+  fixed_t height;
+  uint8_t picnum;
+  uint8_t lightlevel;
+  int16_t minx;
+  int16_t maxx;
+   
+  // page and offset within the data. takes up some space but i think it's better than constant divisions and modulos.
+  int8_t visplanepage;
+  int8_t visplaneoffset;
+
+} visplaneheader_t;
+
+
+
+typedef struct
+{
+  
+  // leave pads for [minx-1]/[maxx+1]
+  
+  byte		pad1;
+  // Here lies the rub for all
+  //  dynamic resize/change of resolution.
+  byte		top[SCREENWIDTH];
+  byte		pad2;
+  byte		pad3;
+  // See above.
+  byte		bottom[SCREENWIDTH];
+  byte		pad4;
+
+} visplanebytes_t;
+
+#else
 
 //
 // Now what is a visplane, anyway?
@@ -474,7 +510,7 @@ typedef struct
 
 } visplane_t;
 
-
+#endif
 
 
 #endif

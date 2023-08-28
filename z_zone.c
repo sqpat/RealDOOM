@@ -83,6 +83,8 @@
 // 4 14834692 2361729 4499651 207 (2134 in 9211) removed more code
 // 4 14822330 1697415 2770423 207 (2134 in)		 after all the 32 to 16 bit stuff
 
+// 4 17810546 2821496 4206470 207       <--- with EMS based visplanes. really rough hit.
+
 // 64 14821801 279 262 207 (2134 in 2186)
 // 64 14821801 279 262 207 (2134 in 2163)  // redo draws
 // 32 14821801 47815 55080 207 (2134 in 2001)  // redo some net code and such
@@ -124,7 +126,6 @@
 // 4 22844306  3540729 6493412 75
 
 
-#define PAGE_FRAME_SIZE 0x4000
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048

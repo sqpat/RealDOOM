@@ -232,8 +232,53 @@ void R_RenderSegLoop (void)
     int16_t			bottom;
     //texturecolumn = 0;				// shut up compiler warning
 
+#ifdef EMS_VISPLANES
 
-    for ( ; rw_x < rw_stopx ; rw_x++)
+	visplanebytes_t* ceilingplanebytes;
+	visplanebytes_t* floorplanebytes;
+
+    for ( ; rw_x < rw_stopx ; rw_x++) {
+		// mark floor / ceiling areas
+		yl = (topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
+
+		// no space above wall?
+		if (yl < ceilingclip[rw_x]+1)
+			yl = ceilingclip[rw_x]+1;
+		
+		if (markceiling) {
+			ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[ceilingplane->visplanepage]))[ceilingplane->visplaneoffset]);
+			top = ceilingclip[rw_x]+1;
+			bottom = yl-1;
+
+			if (bottom >= floorclip[rw_x]){
+				bottom = floorclip[rw_x]-1;
+			}
+			if (top <= bottom) {
+				ceilingplanebytes->top[rw_x] = top;
+				ceilingplanebytes->bottom[rw_x] = bottom;
+			}
+		}
+			
+		yh = bottomfrac>>HEIGHTBITS;
+
+		if (yh >= floorclip[rw_x])
+			yh = floorclip[rw_x]-1;
+
+		if (markfloor) {
+			floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[floorplane->visplanepage]))[floorplane->visplaneoffset]);
+			top = yh+1;
+			bottom = floorclip[rw_x]-1;
+			if (top <= ceilingclip[rw_x]){
+				top = ceilingclip[rw_x]+1;
+			}
+			if (top <= bottom) {
+				floorplanebytes->top[rw_x] = top;
+				floorplanebytes->bottom[rw_x] = bottom;
+	    	}
+		}
+	
+#else
+ for ( ; rw_x < rw_stopx ; rw_x++)
     {
 	// mark floor / ceiling areas
 	yl = (topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
@@ -274,7 +319,11 @@ void R_RenderSegLoop (void)
 		floorplane->bottom[rw_x] = bottom;
 	    }
 	}
-	
+
+
+#endif
+
+
 	// texturecolumn and lighting are independent of wall tiers
 	if (segtextured)
 	{
@@ -442,7 +491,6 @@ R_StoreWallRange
 	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
 	(&lines[linedefOffset])->flags |= ML_MAPPED;
-//	linedef->flags |= ML_MAPPED;
 
 	lineflags = (&lines[linedefOffset])->flags;
     

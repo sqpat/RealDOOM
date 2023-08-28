@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/08/28 00:04:28
+Created on:       23/08/28 11:41:48
 Executable Image: newdoom.exe
 creating an OS/2 linear executable
 
@@ -903,30 +903,31 @@ Module: r_bsp.obj(C:\REALDOOM\r_bsp.c)
 0002:00014390  _drawsegs
 0002:00016b90  _ds_p
 0002:00016b94+ _newend
-0002:00016b98  _backsecnum
-0002:00016b9a  _linedefOffset
-0002:00016b9c  _frontsecnum
-0002:00016b9e  _curlinenum
+0002:00016b98  _curlinenum
+0002:00016b9a  _backsecnum
+0002:00016b9c  _linedefOffset
+0002:00016b9e  _frontsecnum
 Module: r_data.obj(C:\REALDOOM\r_data.c)
 0002:00016ba0+ _colormapbytes
 0002:0001f79c  _colormaps
 0002:0001f7a0+ _texturecompositesizeRef
-0002:0001f7a2+ _texturewidthmaskRef
-0002:0001f7a4+ _texturecompositeRef
-0002:0001f7a6+ _texturecolumnlumpRef
-0002:0001f7a8+ _texturecolumnofsRef
-0002:0001f7aa+ _lastflat
-0002:0001f7ac+ _lastpatch
-0002:0001f7ae+ _numpatches
-0002:0001f7b0+ _texturesRef
-0002:0001f7b2+ _firstpatch
-0002:0001f7b4+ _numtextures
+0002:0001f7a2+ _texturesRef
+0002:0001f7a4+ _texturewidthmaskRef
+0002:0001f7a6+ _numtextures
+0002:0001f7a8+ _texturecompositeRef
+0002:0001f7aa+ _texturecolumnlumpRef
+0002:0001f7ac+ _texturecolumnofsRef
+0002:0001f7ae+ _lastflat
+0002:0001f7b0+ _lastpatch
+0002:0001f7b2+ _numpatches
+0002:0001f7b4+ _firstpatch
 0002:0001f7b6+ _numflats
 0002:0001f7b8  _firstflat
 0002:0001f7ba  _firstspritelump
 0002:0001f7bc  _lastspritelump
 0002:0001f7be  _flattranslationRef
 0002:0001f7c0+ _numspritelumps
+0002:0001f7c2  _texturetranslationRef
 0001:000195e0+ R_DrawColumnInCache_
 0001:00019690+ R_GenerateComposite_
 0001:00019890+ R_GenerateLookup_
@@ -941,7 +942,6 @@ Module: r_data.obj(C:\REALDOOM\r_data.c)
 0001:0001a510  R_TextureNumForName_
 0001:0001a550  R_PrecacheLevel_
 0001:0001a8b0  R_EraseCompositeCache_
-0002:0001f7c2  _texturetranslationRef
 0002:0001f7c4  _spritetopoffsetRef
 0002:0001f7c6  _spriteoffsetRef
 0002:0001f7c8  _textureheightRef
@@ -1851,4 +1851,4 @@ C:\WATCOM\lib386\math387r.lib
 Stack size:  6000 (24576.)
 Memory size:  000808c0 (526528.)
 Entry point address: 0001:00024c74
-Link time: 00:01.28
+Link time: 00:03.85

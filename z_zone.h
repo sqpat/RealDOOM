@@ -77,6 +77,8 @@
 #define ALLOC_TYPE_LINES 26
 #define ALLOC_TYPE_SECTORS 27
 
+#define ALLOC_TYPE_VISPLANE 28
+
 typedef uint16_t MEMREF;  //used externally for allocations list index
 typedef uint16_t PAGEREF; //used internally for allocations list index
 
@@ -100,6 +102,7 @@ typedef struct memblock_s
 } memblock_t;
 
 
+#define PAGE_FRAME_SIZE 0x4000
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS (int16_t tag);
