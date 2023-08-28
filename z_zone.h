@@ -118,11 +118,15 @@ void Z_FreeEMSNew(PAGEREF block);
 
 
 void* Z_LoadBytesFromEMS2(MEMREF index);
-int16_t Z_RefIsActive2(MEMREF memref);
 
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a)
-#define Z_RefIsActive(a) Z_RefIsActive2(a)
 
+#ifdef CHECKREFS
+    int16_t Z_RefIsActive2(MEMREF memref);
+    #define Z_RefIsActive(a) Z_RefIsActive2(a)
+#else
+    #define Z_RefIsActive(a) 
+#endif
 /*
 int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);
 void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);

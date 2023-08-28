@@ -60,8 +60,8 @@
 //
 typedef struct
 {
-    fixed_t	x;
-    fixed_t	y;
+    int16_t	x;
+    int16_t	y;
     
 } vertex_t;
 
@@ -175,8 +175,8 @@ typedef struct line_s
 	int16_t	v2Offset;
 
     // Precalculated v2 - v1 for side checking.
-    fixed_t	dx;
-    fixed_t	dy;
+    int16_t	dx;
+    int16_t	dy;
 
     // Animation related.
     int16_t	flags;

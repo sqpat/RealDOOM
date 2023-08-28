@@ -202,8 +202,8 @@ boolean PIT_CheckLine (int16_t linenum)
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld->slopetype;
-	fixed_t linedx = ld->dx;
-	fixed_t linedy = ld->dy;
+	int16_t linedx = ld->dx;
+	int16_t linedy = ld->dy;
 	int16_t linev1Offset = ld->v1Offset;
 	int16_t linefrontsecnum = ld->frontsecnum;
 	int16_t linebacksecnum = ld->backsecnum;
@@ -551,8 +551,8 @@ P_TryMove
     line_t*	ld;
 	mobj_t* thing;
 	line_t* lines;
- 	fixed_t lddx;
- 	fixed_t lddy;
+ 	int16_t lddx;
+ 	int16_t lddy;
 	int16_t ldspecial;
 	int16_t ldv1Offset;
 	//int32_t i;
@@ -730,7 +730,7 @@ void P_HitSlideLine (int16_t linenum)
     }
 	slidemo = (mobj_t*) Z_LoadBytesFromEMS(slidemoRef);
     side = P_PointOnLineSide (slidemo->x, slidemo->y, ld.dx, ld.dy, ld.v1Offset);
-    lineangle = R_PointToAngle2 (0,0, ld.dx, ld.dy);
+    lineangle = R_PointToAngle2_16 (0,0, ld.dx, ld.dy);
 
     if (side == 1)
 		lineangle += ANG180;

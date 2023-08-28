@@ -177,6 +177,7 @@ R_PointOnSide
 }
 
 
+
 fixed_t
 R_PointOnSegSide
 ( fixed_t	x,
@@ -184,62 +185,68 @@ R_PointOnSegSide
   int16_t linev1Offset,
 	int16_t linev2Offset)
 {
-    fixed_t	lx;
-    fixed_t	ly;
-    fixed_t	ldx;
-    fixed_t	ldy;
-    fixed_t	dx;
-    fixed_t	dy;
+    int16_t	lx;
+    int16_t	ly;
+    int16_t	ldx;
+    int16_t	ldy;
+    fixed_t_union	dx;
+    fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 	
+    fixed_t_union temp;
+    fixed_t_union temp2;
+
 	lx = vertexes[linev1Offset].x;
     ly = vertexes[linev1Offset].y;
 	
     ldx = vertexes[linev2Offset].x - lx;
     ldy = vertexes[linev2Offset].y - ly;
+	temp.h.fracbits = 0;
 	
-    if (!ldx)
-    {
-	if (x <= lx)
-	    return ldy > 0;
-	
-	return ldy < 0;
+    if (!ldx) {
+	    temp.h.intbits = lx;
+        if (x <= temp.w)
+            return ldy > 0;
+        
+        return ldy < 0;
     }
-    if (!ldy)
-    {
-	if (y <= ly)
-	    return ldx < 0;
-	
-	return ldx > 0;
-    }
-	
-    dx = (x - lx);
-    dy = (y - ly);
-	
-    // Try to quickly decide by looking at sign bits.
-    if ( (ldy ^ ldx ^ dx ^ dy)&0x80000000 )
-    {
-	if  ( (ldy ^ dx) & 0x80000000 )
-	{
-	    // (left is negative)
-	    return 1;
-	}
-	return 0;
+    if (!ldy) {
+	    temp.h.intbits = ly;
+        if (y <= temp.w)
+            return ldx < 0;
+        
+        return ldx > 0;
     }
 
-    left = FixedMul ( ldy>>FRACBITS , dx );
-    right = FixedMul ( dy , ldx>>FRACBITS );
+	temp.h.intbits = lx;
+    dx.w = (x - temp.w);
+	temp.h.intbits = ly;
+    dy.w = (y - temp.w);
 	
-    if (right < left)
-    {
-	// front side
-	return 0;
+    // Try to quickly decide by looking at sign bits.
+    if ( (ldy ^ ldx ^ dx.h.intbits ^ dy.h.intbits)&0x8000 ) {
+        if  ( (ldy ^ dx.h.intbits) & 0x8000 ) {
+            // (left is negative)
+            return 1;
+        }
+        return 0;
+    }
+
+    left = FixedMul ( ldy , dx.w );
+    right = FixedMul ( dy.w , ldx );
+	
+    if (right < left) {
+        // front side
+        return 0;
     }
     // back side
     return 1;			
 } 
+
+
+
 // todo is this faster for 16 bit?
 #define SlopeDiv(num, den) ((den < 512) ? SLOPERANGE : min((num << 3) / (den >> 8), SLOPERANGE))
 
@@ -358,25 +365,46 @@ R_PointToAngle2
 }
 
 
+angle_t
+R_PointToAngle2_16
+( int16_t	x1,
+  int16_t	y1,
+  int16_t	x2,
+  int16_t	y2 )
+{	
+    viewx = x1; // called with 0, this is fine
+    viewy = y1;
+    
+    return R_PointToAngle (x2 << FRACBITS, y2 << FRACBITS);
+}
+
+
 fixed_t
 R_PointToDist
-( fixed_t	x,
-  fixed_t	y )
+( int16_t	xarg,
+  int16_t	yarg )
+
 {
     int16_t		angle;
     fixed_t	dx;
     fixed_t	dy;
     fixed_t	temp;
     fixed_t	dist;
-	
-    dx = abs(x - viewx);
-    dy = abs(y - viewy);
-	
-    if (dy>dx)
-    {
-	temp = dx;
-	dx = dy;
-	dy = temp;
+	fixed_t_union x;
+	fixed_t_union y;
+    x.h.fracbits = 0;
+    y.h.fracbits = 0;
+    x.h.intbits = xarg;
+    y.h.intbits = yarg;
+
+
+    dx = abs(x.w - viewx);
+    dy = abs(y.w - viewy);
+
+    if (dy>dx) {
+        temp = dx;
+        dx = dy;
+        dy = temp;
     }
 	
     angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ]+ANG90) >> ANGLETOFINESHIFT;

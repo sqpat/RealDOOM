@@ -119,10 +119,17 @@ R_PointToAngle2
   fixed_t	x2,
   fixed_t	y2 );
 
+angle_t
+R_PointToAngle2_16
+( int16_t	x1,
+  int16_t	y1,
+  int16_t	x2,
+  int16_t	y2 );
+
 fixed_t
 R_PointToDist
-( fixed_t	x,
-  fixed_t	y );
+ ( int16_t	x,
+   int16_t	y );
 
 
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle);

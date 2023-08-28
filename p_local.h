@@ -151,11 +151,11 @@ extern intercept_t*	intercept_p;
 typedef boolean (*traverser_t) (intercept_t *in);
 
 fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
-boolean 	P_PointOnLineSide (fixed_t	x, fixed_t	y, fixed_t linedx, fixed_t linedy, int16_t linev1Offset);
+boolean 	P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy, int16_t linev1Offset);
 boolean 	P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t* line);
-void 	P_MakeDivline (fixed_t linedx, fixed_t linedy, int16_t linenum, divline_t* dl);
+void 	P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
 fixed_t P_InterceptVector (divline_t* v2, divline_t* v1);
-boolean 	P_BoxOnLineSide (fixed_t* tmbox, slopetype_t	lineslopetype, fixed_t linedx, fixed_t linedy, int16_t linev1Offset);
+boolean 	P_BoxOnLineSide (fixed_t* tmbox, slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t linev1Offset);
 
 
 extern fixed_t		opentop;

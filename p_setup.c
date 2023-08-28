@@ -129,8 +129,8 @@ void P_LoadVertexes(int16_t lump)
 	for (i = 0; i < numvertexes; i++, li++) {
 		ml = &data[i];
 
-		li->x = (ml->x) << FRACBITS;
-		li->y = (ml->y) << FRACBITS;
+		li->x = (ml->x);// << FRACBITS;
+		li->y = (ml->y);// << FRACBITS;
 		Z_RefIsActive(dataRef);
 		Z_RefIsActive(vertexesRef);
 	}
@@ -165,8 +165,8 @@ void P_LoadSegs(int16_t lump)
 	line_t* lines;
 	int16_t mlv1;
 	int16_t mlv2;
-	angle_t mlangle;
-	fixed_t mloffset;
+	int16_t mlangle;
+	int16_t mloffset;
 	int16_t mllinedef;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segsRef = Z_MallocEMSNew(numsegs * sizeof(seg_t), PU_LEVEL, 0, ALLOC_TYPE_SEGMENTS);
@@ -179,14 +179,14 @@ void P_LoadSegs(int16_t lump)
 	data = (mapseg_t *)Z_LoadBytesFromEMS(dataRef);
 
 	ml = (mapseg_t *)data;
-	
+
 	for (i = 0; i < numsegs; i++) {
 		data = (mapseg_t *)Z_LoadBytesFromEMS(dataRef);
 		ml = &data[i];
 		mlv1 = (ml->v1);
 		mlv2 = (ml->v2);
-		mlangle = ((ml->angle)) << 16;
-		mloffset = ((ml->offset)) << 16;
+		mlangle = ((ml->angle));// << 16;
+		mloffset = ((ml->offset));// << 16;
 		mllinedef = (ml->linedef);
 		side = (ml->side);
 		linedef = (ml->linedef);
@@ -210,8 +210,8 @@ void P_LoadSegs(int16_t lump)
 		li->v1Offset = mlv1;
 		li->v2Offset = mlv2;
 	
-		li->fineangle = mlangle >> ANGLETOFINESHIFT;
-		li->offset = mloffset;
+		li->fineangle = mlangle >> SHORTTOFINESHIFT;
+		li->offset = mloffset << FRACBITS;
 		li->linedefOffset = mllinedef;
 		li->sidedefOffset = ldefsidenum;
 
@@ -443,10 +443,10 @@ void P_LoadLineDefs(int16_t lump)
 	line_t*         lines;
 	int16_t side0secnum;
 	int16_t side1secnum;
-	fixed_t v1x;
-	fixed_t v1y;
-	fixed_t v2x;
-	fixed_t v2y;
+	int16_t v1x;
+	int16_t v1y;
+	int16_t v2x;
+	int16_t v2y;
 	MEMREF dataRef;
 	int16_t mldflags;
 	int16_t mldspecial;
@@ -518,19 +518,20 @@ void P_LoadLineDefs(int16_t lump)
 			}
 		}
 
+		// todo make these 16 bit too
 		if (v1x < v2x) {
-			ld->bbox[BOXLEFT] = v1x;
-			ld->bbox[BOXRIGHT] = v2x;
+			ld->bbox[BOXLEFT] = v1x << FRACBITS;
+			ld->bbox[BOXRIGHT] = v2x << FRACBITS;
 		} else {
-			ld->bbox[BOXLEFT] = v2x;
-			ld->bbox[BOXRIGHT] = v1x;
+			ld->bbox[BOXLEFT] = v2x << FRACBITS;
+			ld->bbox[BOXRIGHT] = v1x << FRACBITS;
 		}
 		if (v1y < v2y) {
-			ld->bbox[BOXBOTTOM] = v1y;
-			ld->bbox[BOXTOP] = v2y;
+			ld->bbox[BOXBOTTOM] = v1y << FRACBITS;
+			ld->bbox[BOXTOP] = v2y << FRACBITS;
 		} else {
-			ld->bbox[BOXBOTTOM] = v2y;
-			ld->bbox[BOXTOP] = v1y;
+			ld->bbox[BOXBOTTOM] = v2y << FRACBITS;
+			ld->bbox[BOXTOP] = v1y << FRACBITS;
 		}
 
 		if (mldsidenum0 != -1) {
@@ -686,7 +687,8 @@ void P_GroupLines(void)
 	int16_t				sidesecnum;
 	sector_t*			sectors;
 	uint8_t				sectorlinecount;
-
+	fixed_t_union		tempv1;
+	fixed_t_union		tempv2;
 	side_t* sides;
 
 	// look up sector number for each subsector
@@ -730,6 +732,8 @@ void P_GroupLines(void)
 	linebufferRef = Z_MallocEMSNew (total * 2, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
 	linebufferindex = 0;
 
+	tempv1.h.fracbits = 0;
+	tempv2.h.fracbits = 0;
 
 	for (i = 0; i < numsectors; i++) {
 		M_ClearBox(bbox);
@@ -752,8 +756,12 @@ void P_GroupLines(void)
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
 				vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-				M_AddToBox(bbox, vertexes[linev1Offset].x, vertexes[linev1Offset].y);
-				M_AddToBox(bbox, vertexes[linev2Offset].x, vertexes[linev2Offset].y);
+				tempv1.h.intbits = vertexes[linev1Offset].x; 
+				tempv2.h.intbits = vertexes[linev1Offset].y; 
+				M_AddToBox(bbox,  tempv1.w, tempv2.w );
+				tempv1.h.intbits = vertexes[linev2Offset].x; 
+				tempv2.h.intbits = vertexes[linev2Offset].y; 
+				M_AddToBox(bbox,  tempv1.w, tempv2.w );
 			}
 		}
 		if (linebufferindex - previouslinebufferindex != sectorlinecount) {

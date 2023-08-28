@@ -89,13 +89,69 @@ P_DivlineSide
     return 1;		// back side
 }
 
+P_DivlineSide16
+( int16_t	x,
+  int16_t	y,
+  divline_t*	node )
+{
+    fixed_t_union	dx;
+    fixed_t_union	dy;
+    fixed_t	left;
+    fixed_t	right;
+    fixed_t_union	temp;
 
-// Wrote on accident thinking divline was a node_t, keeping it here in case we make divlines 16 bit (doubt it) -sq
+	// NOTE: these divlines have proper 32 bit fixed_t
+
+    if (!node->dx) {
+		temp.w = node->x;
+		if (x==temp.h.intbits)
+			return 2;
+		
+		if (x <= temp.h.intbits)
+			return node->dy > 0;
+
+		return node->dy < 0;
+    }
+    
+    if (!node->dy) {
+		temp.w = node->y;
+		if (x==temp.h.intbits)
+			return 2;
+
+		if (y <= temp.h.intbits)
+			return node->dx < 0;
+
+		return node->dx > 0;
+    }
+	
+	temp.h.intbits = x;
+	temp.h.fracbits = 0;
+
+    dx.w = (temp.w - node->x);
+	temp.h.intbits = y;
+    dy.w = (temp.w - node->y);
+	temp.w = node->dy;
+    left =  (temp.h.intbits) * (dx.h.intbits);
+	temp.w = node->dx;
+    right = (dy.h.intbits) * (temp.h.intbits);
+	
+    if (right < left)
+	return 0;	// front side
+    
+    if (left == right)
+	return 2;
+    return 1;		// back side
+}
+
+
 P_DivlineSideNode
 ( fixed_t	x,
   fixed_t	y,
   node_t*	node )
 {
+
+	// NOTE: these nodes have proper 16 bit integer fields.
+
     fixed_t_union	dx;
     fixed_t_union	dy;
     fixed_t	left;
@@ -154,6 +210,46 @@ P_DivlineSideNode
 // along the first divline.
 // This is only called by the addthings and addlines traversers.
 //
+/*
+fixed_t
+P_InterceptVector2
+( divline_t*	v2,
+  node_t*	v1 )
+{
+    fixed_t	frac;
+    fixed_t	num;
+    fixed_t	den;
+	fixed_t_union tempdy;
+	fixed_t_union tempdx;
+	fixed_t_union tempx;
+	fixed_t_union tempy;
+
+	tempdy.h.intbits = v1->dy;
+	tempdx.h.intbits = v1->dx;
+	tempdy.h.fracbits = 0;
+	tempdx.h.fracbits = 0;
+
+	
+	//v1 has 16 bit fields..
+	
+    den = FixedMul (tempdy.w>>8,v2->dx) - FixedMul(tempdx.w>>8,v2->dy);
+
+    if (den == 0)
+		return 0;
+    
+	tempx.h.intbits = v1->x;
+	tempy.h.intbits = v1->y;
+	tempx.h.fracbits = 0;
+	tempy.h.fracbits = 0;
+
+    num = FixedMul ( (tempx.w - v2->x)>>8 ,tempdy.w) + 
+	FixedMul ( (v2->y - tempy.w)>>8 , v1->dx);
+    frac = FixedDiv (num , den);
+
+    return frac;
+}
+
+*/
 fixed_t
 P_InterceptVector2
 ( divline_t*	v2,
@@ -194,6 +290,7 @@ boolean P_CrossSubsector (int16_t subsecnum)
 	int16_t backsecnum;
     fixed_t		opentop;
     fixed_t		openbottom;
+    node_t		divlNode;
     divline_t		divl;
     vertex_t		v1;
     vertex_t		v2;
@@ -236,19 +333,30 @@ boolean P_CrossSubsector (int16_t subsecnum)
 
 		v1 = vertexes[linev1Offset];
 		v2 = vertexes[linev2Offset];
-		s1 = P_DivlineSide (v1.x,v1.y, &strace);
-		s2 = P_DivlineSide (v2.x, v2.y, &strace);
+		s1 = P_DivlineSide16 (v1.x,v1.y, &strace);
+		s2 = P_DivlineSide16 (v2.x, v2.y, &strace);
+		// s1 = P_DivlineSide (v1.x<<FRACBITS,v1.y<<FRACBITS, &strace);
+		// s2 = P_DivlineSide (v2.x<<FRACBITS, v2.y<<FRACBITS, &strace);
 
 		// line isn't crossed?
 		if (s1 == s2)
 			continue;
 	
-		divl.x = v1.x;
-		divl.y = v1.y;
-		divl.dx = v2.x - v1.x;
-		divl.dy = v2.y - v1.y;
+		divl.x = v1.x << FRACBITS;
+		divl.y = v1.y <<  FRACBITS;
+		divl.dx = (v2.x << FRACBITS) - (v1.x<< FRACBITS);
+		divl.dy = (v2.y << FRACBITS) - (v1.y<< FRACBITS);
 		s1 = P_DivlineSide (strace.x, strace.y, &divl);
 		s2 = P_DivlineSide (cachedt2x, cachedt2y, &divl);
+
+
+		// divlNode.x = v1.x;
+		// divlNode.y = v1.y;
+		// divlNode.dx = v2.x - v1.x;
+		// divlNode.dy = v2.y - v1.y;
+		// s1 = P_DivlineSideNode (strace.x, strace.y, &divlNode);
+		// s2 = P_DivlineSideNode (cachedt2x, cachedt2y, &divlNode);
+
 
 		// line isn't crossed?
 		if (s1 == s2)
@@ -293,6 +401,7 @@ boolean P_CrossSubsector (int16_t subsecnum)
 		}
 	
 		frac = P_InterceptVector2 (&strace, &divl);
+		// frac = P_InterceptVector2 (&strace, &divlNode);
 		
 		if (sectors[frontsecnum].floorheight != sectors[backsecnum].floorheight) {
 			slope = FixedDiv (openbottom - sightzstart , frac);

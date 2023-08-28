@@ -98,6 +98,7 @@ int32_t fixedsine(int16_t x);
 
 // 0x100000000 to 0x2000
 #define ANGLETOFINESHIFT	19		
+#define SHORTTOFINESHIFT	3		
 
 // Effective size is 10240.
 

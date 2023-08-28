@@ -60,12 +60,59 @@ boolean
 P_PointOnLineSide
 ( fixed_t	x,
   fixed_t	y,
-	fixed_t linedx,
-	fixed_t linedy,
+	int16_t linedx,
+	int16_t linedy,
 	int16_t linev1Offset)
 {
     fixed_t	dx;
     fixed_t	dy;
+    fixed_t	left;
+    fixed_t	right;
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
+    if (!linedx) {
+		temp.h.intbits = vertexes[linev1Offset].x;
+		if (x <= temp.w) {
+			return linedy > 0;
+		}
+		return linedy < 0;
+    }
+    if (!linedy) {
+		temp.h.intbits = vertexes[linev1Offset].y;
+		if (y <= temp.w) {
+			return linedx < 0;
+		}
+	
+		return linedx > 0;
+    }
+	
+	temp.h.intbits = vertexes[linev1Offset].x;
+    dx = (x - temp.w);
+	temp.h.intbits = vertexes[linev1Offset].y;
+    dy = (y - temp.w);
+	
+    left = FixedMul ( linedy , dx );
+    right = FixedMul ( dy , linedx );
+	
+	if (right < left) {
+		return 0;		// front side
+	}
+
+    return 1;	
+}
+
+/*
+boolean
+P_PointOnLineSide16
+( 	int16_t	x,
+  	int16_t	y,
+	int16_t linedx,
+	int16_t linedy,
+	int16_t linev1Offset)
+{
+    int16_t	dx;
+    int16_t	dy;
     fixed_t	left;
     fixed_t	right;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
@@ -80,15 +127,15 @@ P_PointOnLineSide
 		if (y <= vertexes[linev1Offset].y) {
 			return linedx < 0;
 		}
-	
 		return linedx > 0;
     }
+
+    dx = (x -  vertexes[linev1Offset].x);
+    dy = (y -  vertexes[linev1Offset].x);
 	
-    dx = (x - vertexes[linev1Offset].x);
-    dy = (y - vertexes[linev1Offset].y);
-	
-    left = FixedMul ( linedy>>FRACBITS , dx );
-    right = FixedMul ( dy , linedx>>FRACBITS );
+	// todo is a 16 bit mult ok...? test
+    left = FixedMul ( linedy , dx );
+    right = FixedMul ( dy , linedx );
 	
 	if (right < left) {
 		return 0;		// front side
@@ -96,8 +143,7 @@ P_PointOnLineSide
 
     return 1;			// back side
 }
-
-
+*/
 
 //
 // P_BoxOnLineSide
@@ -108,49 +154,53 @@ boolean
 P_BoxOnLineSide
 ( fixed_t*	tmbox,
 	slopetype_t	lineslopetype,
-	fixed_t linedx,
-	fixed_t linedy,
+	int16_t linedx,
+	int16_t linedy,
 	int16_t linev1Offset
 	)
 {
+
+
     boolean		p1;
     boolean		p2;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-
-    switch (lineslopetype)
-    {
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
+    switch (lineslopetype) {
       case ST_HORIZONTAL:
-	p1 = tmbox[BOXTOP] > vertexes[linev1Offset].y;
-	p2 = tmbox[BOXBOTTOM] > vertexes[linev1Offset].y;
-	if (linedx < 0) {
-	    p1 ^= 1;
-	    p2 ^= 1;
-	}
-	break;
+	  	temp.h.intbits = vertexes[linev1Offset].y;
+		p1 = tmbox[BOXTOP] > temp.w;
+		p2 = tmbox[BOXBOTTOM] > temp.w;
+		if (linedx < 0) {
+			p1 ^= 1;
+			p2 ^= 1;
+		}
+		break;
 	
       case ST_VERTICAL:
-	p1 = tmbox[BOXRIGHT] < vertexes[linev1Offset].x;
-	p2 = tmbox[BOXLEFT] < vertexes[linev1Offset].x;
-	if (linedy < 0)
-	{
-	    p1 ^= 1;
-	    p2 ^= 1;
-	}
-	break;
+	  	temp.h.intbits = vertexes[linev1Offset].x;
+		p1 = tmbox[BOXRIGHT] < temp.w;
+		p2 = tmbox[BOXLEFT] < temp.w;
+		if (linedy < 0)
+		{
+			p1 ^= 1;
+			p2 ^= 1;
+		}
+		break;
 	
       case ST_POSITIVE:
-	p1 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXTOP], linedx, linedy, linev1Offset);
-	p2 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXBOTTOM], linedx, linedy, linev1Offset);
-	break;
+		p1 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXTOP], linedx, linedy, linev1Offset);
+		p2 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXBOTTOM], linedx, linedy, linev1Offset);
+		break;
 	
       case ST_NEGATIVE:
-	p1 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXTOP], linedx, linedy, linev1Offset);
-	p2 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXBOTTOM], linedx, linedy, linev1Offset);
-	break;
+		p1 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXTOP], linedx, linedy, linev1Offset);
+		p2 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXBOTTOM], linedx, linedy, linev1Offset);
+		break;
     }
 
     if (p1 == p2)
-	return p1;
+		return p1;
     return -1;
 }
 
@@ -205,22 +255,72 @@ P_PointOnDivlineSide
 }
 
 
+// TODO: FIX - sq
+boolean
+P_PointOnDivlineSide16
+( int16_t	x,
+  int16_t	y,
+  divline_t*	line )
+{
+    fixed_t	dx;
+    fixed_t	dy;
+    fixed_t	left;
+    fixed_t	right;
+	fixed_t_union temp;
+	
+    if (!line->dx) {
+		if (x <= line->x)
+			return line->dy > 0;
+		
+		return line->dy < 0;
+    }
+    if (!line->dy) {
+		if (y <= line->y)
+			return line->dx < 0;
+
+		return line->dx > 0;
+    }
+	
+    dx = (x - line->x);
+    dy = (y - line->y);
+	
+    // try to quickly decide by looking at sign bits
+    if ( (line->dy ^ line->dx ^ dx ^ dy)&0x8000 ) {
+	if ( (line->dy ^ dx) & 0x8000 )
+	    return 1;		// (left is negative)
+	return 0;
+    }
+	
+    left = FixedMul ( line->dy, dx );
+    right = FixedMul ( dy , line->dx );
+	
+    if (right < left)
+		return 0;		// front side
+    return 1;			// back side
+}
 
 //
 // P_MakeDivline
 //
 void
 P_MakeDivline
-(fixed_t linedx,
-	fixed_t linedy,
+(int16_t linedx,
+	int16_t linedy,
 	int16_t linev1Offset,
   divline_t*	dl )
 {
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-	dl->x = vertexes[linev1Offset].x;
-    dl->y = vertexes[linev1Offset].y;
-    dl->dx = linedx;
-    dl->dy = linedy;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
+	temp.h.intbits = vertexes[linev1Offset].x;
+	dl->x = temp.w;
+	temp.h.intbits = vertexes[linev1Offset].y;
+    dl->y = temp.w;
+
+	temp.h.intbits = linedx;
+    dl->dx = temp.w;
+	temp.h.intbits = linedy;
+    dl->dy = temp.w;
 }
 
 
@@ -603,8 +703,8 @@ PIT_AddLineIntercepts (int16_t linenum)
 	line_t* ld = &lines[linenum];
 	int16_t linev1Offset = ld->v1Offset;
 	int16_t linev2Offset = ld->v2Offset;
-	fixed_t linedx = ld->dx;
-	fixed_t linedy = ld->dy;
+	int16_t linedx = ld->dx;
+	int16_t linedy = ld->dy;
 	int16_t linebacksecnum = ld->backsecnum;
 
 
@@ -613,8 +713,11 @@ PIT_AddLineIntercepts (int16_t linenum)
 
     // avoid precision problems with two routines
     if ( trace.dx > FRACUNIT*16 || trace.dy > FRACUNIT*16 || trace.dx < -FRACUNIT*16 || trace.dy < -FRACUNIT*16) {
-		s1 = P_PointOnDivlineSide (vertexes[linev1Offset].x, vertexes[linev1Offset].y, &trace);
-		s2 = P_PointOnDivlineSide (vertexes[linev2Offset].x, vertexes[linev2Offset].y, &trace);
+		// we actually know the vertex fields to be 16 bit, but trace has 32 bit fields
+		// s1 = P_PointOnDivlineSide16 (vertexes[linev1Offset].x, vertexes[linev1Offset].y, &trace);
+		// s2 = P_PointOnDivlineSide16 (vertexes[linev2Offset].x, vertexes[linev2Offset].y, &trace);
+		s1 = P_PointOnDivlineSide (vertexes[linev1Offset].x << FRACBITS, vertexes[linev1Offset].y << FRACBITS, &trace);
+		s2 = P_PointOnDivlineSide (vertexes[linev2Offset].x << FRACBITS, vertexes[linev2Offset].y << FRACBITS, &trace);
     } else {
 		s1 = P_PointOnLineSide (trace.x, trace.y, linedx, linedy, linev1Offset);
 		s2 = P_PointOnLineSide (trace.x+trace.dx, trace.y+trace.dy, linedx, linedy, linev1Offset);

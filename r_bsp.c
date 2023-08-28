@@ -279,17 +279,26 @@ void R_AddLine (int16_t linenum)
 	sector_t frontsector;
 	sector_t backsector;
 	vertex_t*   vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-
+	fixed_t_union tempx;
+	fixed_t_union tempy;
     curlinenum = linenum;
 	
 	if (segs[curlinenum].linedefOffset > numlines) {
 		I_Error("R_Addline Error! lines out of bounds! %i %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
 	}
 
+	tempx.h.fracbits = 0;
+	tempy.h.fracbits = 0;
+	tempx.h.intbits = vertexes[linenumv1Offset].x;
+	tempy.h.intbits = vertexes[linenumv1Offset].y;
     // OPTIMIZE: quickly reject orthogonal back sides.
-    angle1 = R_PointToAngle (vertexes[linenumv1Offset].x, vertexes[linenumv1Offset].y);
-    angle2 = R_PointToAngle (vertexes[linenumv2Offset].x, vertexes[linenumv2Offset].y);
+    angle1 = R_PointToAngle (tempx.w, tempy.w);
+	tempx.h.intbits = vertexes[linenumv2Offset].x;
+	tempy.h.intbits = vertexes[linenumv2Offset].y;
+    angle2 = R_PointToAngle (tempx.w, tempy.w);
     
+
+
     // Clip to view edges.
     // OPTIMIZE: make constant out of 2*clipangle (FIELDOFVIEW).
     span = angle1 - angle2;

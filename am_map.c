@@ -397,15 +397,15 @@ void AM_findMinMaxBoundaries(void)
     max_x = max_y = -MAXLONG;
   
     for (i=0;i<numvertexes;i++) {
-	if (vertexes[i].x < min_x)
-	    min_x = vertexes[i].x;
-	else if (vertexes[i].x > max_x)
-	    max_x = vertexes[i].x;
+	if ((vertexes[i].x << FRACBITS) < min_x)
+	    min_x = (vertexes[i].x << FRACBITS);
+	else if ((vertexes[i].x << FRACBITS) > max_x)
+	    max_x = (vertexes[i].x << FRACBITS);
     
-	if (vertexes[i].y < min_y)
-	    min_y = vertexes[i].y;
-	else if (vertexes[i].y > max_y)
-	    max_y = vertexes[i].y;
+	if ((vertexes[i].y << FRACBITS) < min_y)
+	    min_y = (vertexes[i].y << FRACBITS);
+	else if ((vertexes[i].y << FRACBITS) > max_y)
+	    max_y = (vertexes[i].y << FRACBITS);
     }
   
     max_w = max_x - min_x;
@@ -1101,10 +1101,10 @@ void AM_drawWalls(void)
 		linespecial = lines[i].special;
 
 		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-		l.a.x = vertexes[linev1Offset].x;
-		l.a.y = vertexes[linev1Offset].y;
-		l.b.x = vertexes[linev2Offset].x;
-		l.b.y = vertexes[linev2Offset].y;
+		l.a.x = vertexes[linev1Offset].x << FRACBITS;
+		l.a.y = vertexes[linev1Offset].y << FRACBITS;
+		l.b.x = vertexes[linev2Offset].x << FRACBITS;
+		l.b.y = vertexes[linev2Offset].y << FRACBITS;
 		if (cheating || (lineflags & ML_MAPPED)) {
 			if ((lineflags & LINE_NEVERSEE) && !cheating) {
 				continue;
