@@ -90,6 +90,64 @@ P_DivlineSide
 }
 
 
+// Wrote on accident thinking divline was a node_t, keeping it here in case we make divlines 16 bit (doubt it) -sq
+P_DivlineSideNode
+( fixed_t	x,
+  fixed_t	y,
+  node_t*	node )
+{
+    fixed_t_union	dx;
+    fixed_t_union	dy;
+    fixed_t	left;
+    fixed_t	right;
+    fixed_t_union	temp;
+
+
+    if (!node->dx) {
+		temp.h.intbits = node->x;
+		temp.h.fracbits = 0;
+
+		if (x==temp.w)
+			return 2;
+		
+		if (x <= temp.w)
+			return node->dy > 0;
+
+		return node->dy < 0;
+    }
+    
+    if (!node->dy) {
+		temp.h.intbits = node->y;
+		temp.h.fracbits = 0;
+
+		if (x==temp.w)
+			return 2;
+		if (y <= temp.w)
+			return node->dx < 0;
+
+		return node->dx > 0;
+    }
+
+	temp.h.intbits = node->x;
+	temp.h.fracbits = 0;
+
+    dx.w = (x - temp.w);
+	temp.h.intbits = node->y;
+    dy.w = (y - temp.w);
+
+    left =  (node->dy) * (dx.h.intbits);
+    right = (dy.h.intbits) * (node->dx);
+	
+    if (right < left)
+		return 0;	// front side
+    
+    if (left == right)
+		return 2;
+    return 1;		// back side
+}
+
+
+
 //
 // P_InterceptVector2
 // Returns the fractional intercept point
@@ -271,7 +329,6 @@ boolean P_CrossBSPNode (int32_t bspnum)
     node_t*	bsp;
     int8_t		side;
 	node_t* nodes;
-	//bspcounter++;
 	
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == -1) {
@@ -286,7 +343,7 @@ boolean P_CrossBSPNode (int32_t bspnum)
 	bsp = &nodes[bspnum];
     
     // decide which side the start point is on
-    side = P_DivlineSide (strace.x, strace.y, (divline_t *)bsp);
+    side = P_DivlineSideNode (strace.x, strace.y, bsp);
 	if (side == 2) {
 		side = 0;	// an "on" should cross both sides
 	}
@@ -301,7 +358,7 @@ boolean P_CrossBSPNode (int32_t bspnum)
 	bsp = &nodes[bspnum];
 
     // the partition plane is crossed here
-    if (side == P_DivlineSide (cachedt2x, cachedt2y,(divline_t *)bsp)) {
+    if (side == P_DivlineSideNode (cachedt2x, cachedt2y,bsp)) {
 		// the line doesn't touch the other side
 		return true;
     }

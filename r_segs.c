@@ -100,7 +100,9 @@ R_RenderMaskedSegRange
 	column_t*	col;
 	int16_t		lightnum;
 	int16_t		texnum;
-	fixed_t* textureheight;
+	fixed_t_union temp;
+
+	int16_t* textureheight;
 	uint8_t* texturetranslation;
 	fixed_t siderowoffset;
 	line_t* lines;
@@ -166,7 +168,9 @@ R_RenderMaskedSegRange
     if (lines[curlinelinedefOffset].flags & ML_DONTPEGBOTTOM) {
 		dc_texturemid = frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight;
 		textureheight = Z_LoadBytesFromEMS(textureheightRef);
-		dc_texturemid = dc_texturemid + (textureheight[texnum] << FRACBITS) - viewz;
+		temp.h.intbits = textureheight[texnum];
+		temp.h.fracbits = 0;
+		dc_texturemid = dc_texturemid + temp.w - viewz;
     } else {
 		dc_texturemid = frontsector.ceilingheight< backsector.ceilingheight ? frontsector.ceilingheight : backsector.ceilingheight;
 		dc_texturemid = dc_texturemid - viewz;
@@ -230,6 +234,7 @@ void R_RenderSegLoop (void)
     int16_t		texturecolumn;
     int16_t			top;
     int16_t			bottom;
+	fixed_t_union temp;
     //texturecolumn = 0;				// shut up compiler warning
 
 #ifdef EMS_VISPLANES
@@ -329,7 +334,8 @@ void R_RenderSegLoop (void)
 	{
 	    // calculate texture offset
 	    angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
-	    texturecolumn = rw_offset-FixedMul(finetangent(angle),rw_distance)>> FRACBITS;
+	    temp.w = rw_offset-FixedMul(finetangent(angle),rw_distance);
+		texturecolumn = temp.h.intbits;
 	    
 	    // calculate lighting
 	    index = rw_scale>>LIGHTSCALESHIFT;
@@ -453,7 +459,7 @@ R_StoreWallRange
     fineangle_t	distangle, offsetangle;
     fixed_t		vtop;
     int16_t			lightnum;
-	fixed_t *	textureheight;
+	int16_t *	textureheight;
 	uint8_t* 	texturetranslation;
 	vertex_t* vertexes;
 
@@ -476,6 +482,7 @@ R_StoreWallRange
 	sector_t* sectors;
 	sector_t frontsector;
 	sector_t backsector;
+	fixed_t_union temp;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
@@ -558,7 +565,9 @@ R_StoreWallRange
 		markfloor = markceiling = true;
 		if (lineflags & ML_DONTPEGBOTTOM) {
 			textureheight = Z_LoadBytesFromEMS(textureheightRef);
-			vtop = frontsector.floorheight + (textureheight[sidemidtexture] << FRACBITS);
+			temp.h.intbits = textureheight[sidemidtexture];
+			temp.h.fracbits = 0;
+			vtop = frontsector.floorheight + temp.w;
 			// bottom of texture at bottom
 			rw_midtexturemid = vtop - viewz;	
 		} else {
@@ -651,7 +660,9 @@ R_StoreWallRange
 				rw_toptexturemid = worldtop;
 			} else {
 				textureheight = Z_LoadBytesFromEMS(textureheightRef);
-				vtop = backsector.ceilingheight + (textureheight[sidetoptexture]<<FRACBITS);
+				temp.h.intbits = textureheight[sidetoptexture];
+				temp.h.fracbits = 0;
+				vtop = backsector.ceilingheight + temp.w;
 		
 				// bottom of texture
 				rw_toptexturemid = vtop - viewz;	

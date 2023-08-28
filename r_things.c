@@ -456,9 +456,9 @@ void R_ProjectSprite (MEMREF thingRef)
     
     angle_t             ang;
     fixed_t             iscale;
-	fixed_t*			spriteoffset;
-	fixed_t*			spritetopoffset;
-	fixed_t*			spritewidth;
+	int16_t*			spriteoffset;
+	int16_t*			spritetopoffset;
+	int16_t*			spritewidth;
 	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
 	
@@ -472,6 +472,7 @@ void R_ProjectSprite (MEMREF thingRef)
 	angle_t thingangle = thing->angle;
 	MEMREF spritespriteframeRef;
 	int8_t spritenumframes;
+    fixed_t_union temp;
 		
 	// transform the origin point
     tr_x = thingx - viewx;
@@ -516,17 +517,24 @@ void R_ProjectSprite (MEMREF thingRef)
     }
     
     // calculate edges of the shape
-	spriteoffset = (fixed_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
-	tx -= spriteoffset[lump];
-    x1 = (centerxfrac + FixedMul (tx,xscale) ) >>FRACBITS;
+	spriteoffset = (int16_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
+    temp.h.fracbits = 0;
+    temp.h.intbits = spriteoffset[lump];
+	tx -= temp.w;
+    temp.w = (centerxfrac + FixedMul (tx,xscale) );
+    x1 = temp.h.intbits;
 
     // off the right side?
     if (x1 > viewwidth)
         return;
     
-	spritewidth = (fixed_t*)Z_LoadBytesFromEMS(spritewidthRef);
-    tx +=  spritewidth[lump];
-    x2 = ((centerxfrac + FixedMul (tx,xscale) ) >>FRACBITS) - 1;
+	spritewidth = (int16_t*)Z_LoadBytesFromEMS(spritewidthRef);
+    temp.h.fracbits = 0;
+    temp.h.intbits = spritewidth[lump];
+
+    tx +=  temp.w;
+    temp.w = ((centerxfrac + FixedMul (tx,xscale) ));
+    x2 = temp.h.intbits - 1;
 
 	
 
@@ -546,8 +554,10 @@ void R_ProjectSprite (MEMREF thingRef)
     vis->gx = thingx;
     vis->gy = thingy;
     vis->gz = thingz;
-	spritetopoffset = (fixed_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
-	vis->gzt = vis->gz + spritetopoffset[lump];
+	spritetopoffset = (int16_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
+    temp.h.fracbits = 0;
+    temp.h.intbits = spritetopoffset[lump];
+	vis->gzt = vis->gz + temp.w;
 //	vis->gzt = thing->z + spritetopoffset[lump];
     vis->texturemid = vis->gzt - viewz;
     vis->x1 = x1 < 0 ? 0 : x1;
@@ -556,8 +566,10 @@ void R_ProjectSprite (MEMREF thingRef)
 
     if (flip)
     {
-		spritewidth = (fixed_t*)Z_LoadBytesFromEMS(spritewidthRef);
-		vis->startfrac = spritewidth[lump]-1;
+		spritewidth = (int16_t*)Z_LoadBytesFromEMS(spritewidthRef);
+        temp.h.fracbits = 0;
+        temp.h.intbits = spritewidth[lump];
+		vis->startfrac = temp.w-1;
         vis->xiscale = -iscale;
     }
     else
@@ -681,11 +693,12 @@ void R_DrawPSprite (pspdef_t* psp)
     boolean             flip;
     vissprite_t*        vis;
     vissprite_t         avis;
-	fixed_t*			spritetopoffset;
-	fixed_t*			spritewidth;
-	fixed_t*			spriteoffset;
+	int16_t*			spritetopoffset;
+	int16_t*			spritewidth;
+	int16_t*			spriteoffset;
 	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
+    fixed_t_union temp;
 
     // decide which patch to use
 
@@ -700,17 +713,23 @@ void R_DrawPSprite (pspdef_t* psp)
     // calculate edges of the shape
     tx = psp->sx-160*FRACUNIT;
         
-	spriteoffset = (fixed_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
-	tx -= spriteoffset[lump];
-    x1 = (centerxfrac + FixedMul (tx,pspritescale) ) >>FRACBITS;
+	spriteoffset = (int16_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
+    temp.h.fracbits = 0;
+    temp.h.intbits = spriteoffset[lump];
+	tx -= temp.w;
+    temp.w= (centerxfrac + FixedMul (tx,pspritescale) );
+    x1 = temp.h.intbits;
 
     // off the right side
     if (x1 > viewwidth)
         return;         
 
-	spritewidth = (fixed_t*)Z_LoadBytesFromEMS(spritewidthRef);
-	tx +=  spritewidth[lump];
-    x2 = ((centerxfrac + FixedMul (tx, pspritescale) ) >>FRACBITS) - 1;
+	spritewidth = (int16_t*)Z_LoadBytesFromEMS(spritewidthRef);
+    temp.h.fracbits = 0;
+    temp.h.intbits = spritewidth[lump];
+	tx +=  temp.w;
+    temp.w = ((centerxfrac + FixedMul (tx, pspritescale) ) ) ;
+    x2 = temp.h.intbits - 1;
 
     // off the left side
     if (x2 < 0)
@@ -719,8 +738,10 @@ void R_DrawPSprite (pspdef_t* psp)
     // store information in a vissprite
     vis = &avis;
     vis->mobjflags = 0;
-	spritetopoffset = (fixed_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
-	vis->texturemid = (BASEYCENTER<<FRACBITS)+FRACUNIT/2-(psp->sy-spritetopoffset[lump]);
+	spritetopoffset = (int16_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
+    temp.h.fracbits = 0;
+    temp.h.intbits = spritetopoffset[lump];
+	vis->texturemid = (BASEYCENTER<<FRACBITS)+FRACUNIT/2-(psp->sy-temp.w);
     vis->x1 = x1 < 0 ? 0 : x1;
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
     vis->scale = pspritescale<<detailshift;
@@ -728,8 +749,10 @@ void R_DrawPSprite (pspdef_t* psp)
     if (flip)
     {
         vis->xiscale = -pspriteiscale;
-		spritewidth = (fixed_t*)Z_LoadBytesFromEMS(spritewidthRef);
-		vis->startfrac = spritewidth[lump]-1;
+		spritewidth = (int16_t*)Z_LoadBytesFromEMS(spritewidthRef);
+        temp.h.fracbits = 0;
+        temp.h.intbits = spritewidth[lump];
+		vis->startfrac = temp.w - 1;
     }
     else
     {
@@ -788,7 +811,10 @@ void R_DrawPlayerSprites (void)
     // get light level
     lightnum = (sectors[playermosecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
 
-    if (lightnum < 0)           
+
+//    if (lightnum < 0)          
+// not sure if this hack is necessary.. since its unsigned we loop around if its below 0 
+    if (lightnum > 240)          
         spritelights = scalelight[0];
     else if (lightnum >= LIGHTLEVELS)
         spritelights = scalelight[LIGHTLEVELS-1];

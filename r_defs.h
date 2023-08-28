@@ -259,10 +259,10 @@ typedef struct
 typedef struct
 {
     // Partition line.
-    fixed_t	x;
-    fixed_t	y;
-    fixed_t	dx;
-    fixed_t	dy;
+    int16_t	x;
+    int16_t	y;
+    int16_t	dx;
+    int16_t	dy;
 
     // Bounding box for each child.
     fixed_t	bbox[2][4];
@@ -321,7 +321,7 @@ typedef struct drawseg_s
 
     fixed_t		scale1;
     fixed_t		scale2;
-    fixed_t		scalestep;
+    int16_t		scalestep;
 
     // 0=none, 1=bottom, 2=top, 3=both
     int16_t			silhouette;

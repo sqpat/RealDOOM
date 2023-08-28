@@ -128,47 +128,49 @@ R_PointOnSide
   fixed_t	y,
   node_t*	node )
 {
-    fixed_t	dx;
-    fixed_t	dy;
+    fixed_t_union	dx;
+    fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
+    fixed_t_union temp;
+
+    
+        temp.h.fracbits = 0;
 	
-    if (!node->dx)
-    {
-	if (x <= node->x)
-	    return node->dy > 0;
-	
-	return node->dy < 0;
+    if (!node->dx) {
+        temp.h.intbits = node->x;
+        if (x <= temp.w)
+            return node->dy > 0;
+        
+        return node->dy < 0;
     }
-    if (!node->dy)
-    {
-	if (y <= node->y)
-	    return node->dx < 0;
-	
-	return node->dx > 0;
+    if (!node->dy) {
+        temp.h.intbits = node->y;
+        if (y <= temp.w)
+            return node->dx < 0;
+        
+        return node->dx > 0;
     }
-	
-    dx = (x - node->x);
-    dy = (y - node->y);
+    temp.h.intbits = node->x;
+    dx.w = (x - temp.w);
+    temp.h.intbits = node->y;
+    dy.w = (y - temp.w);
 	
     // Try to quickly decide by looking at sign bits.
-    if ( (node->dy ^ node->dx ^ dx ^ dy)&0x80000000 )
-    {
-	if  ( (node->dy ^ dx) & 0x80000000 )
-	{
-	    // (left is negative)
-	    return 1;
-	}
-	return 0;
+    if ( (node->dy ^ node->dx ^ dx.h.intbits ^ dy.h.intbits)&(int16_t)0x8000 ) {
+        if  ( (node->dy ^ dx.h.intbits) &(int16_t) 0x8000 ) {
+	        // (left is negative)
+	        return 1;
+	    }
+	    return 0;
     }
 
-    left = FixedMul ( node->dy>>FRACBITS , dx );
-    right = FixedMul ( dy , node->dx>>FRACBITS );
+    left = FixedMul ( node->dy , dx.w );
+    right = FixedMul ( dy.w , node->dx );
 	
-    if (right < left)
-    {
-	// front side
-	return 0;
+    if (right < left) {
+	    // front side
+	    return 0;
     }
     // back side
     return 1;			
@@ -397,14 +399,13 @@ R_PointToDist
 //
 fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 {
-    fixed_t		scale;
+    fixed_t_union		scale;
     fineangle_t			anglea;
     fineangle_t			angleb;
     fixed_t			sinea;
     fixed_t			sineb;
-    fixed_t		    num;
+    fixed_t_union		    num;
     fixed_t			den;
-	 
 
     anglea = (ANG90 + (visangle-viewangle))>> ANGLETOFINESHIFT;
     angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle >> ANGLETOFINESHIFT) - rw_normalangle);
@@ -412,22 +413,24 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     // both sines are allways positive
     sinea = finesine(anglea);	
     sineb = finesine(angleb);
-    num = FixedMul(projection,sineb)<<detailshift;
+    num.w = FixedMul(projection,sineb)<<detailshift;
     den = FixedMul(rw_distance,sinea);
 
-    if (den > num>>16)
-    {
-	scale = FixedDiv (num, den);
+    // i somewhat wonder (on 16 bit compiler) if setting the union fields
+    // individually produce better code than setting a 32 bit value..? -sq
+    if (den > num.h.intbits) {
+        scale.w = FixedDiv (num.w, den);
 
-	if (scale > 64*FRACUNIT)
-	    scale = 64*FRACUNIT;
-	else if (scale < 256)
-	    scale = 256;
+        if (scale.h.intbits > 64){
+            scale.w = 0x400000;
+            scale.h.fracbits = 0;
+        } else if (scale.w < 256)
+            scale.w = 256;
+    } else{
+        scale.w = 0x400000;
     }
-    else
-	scale = 64*FRACUNIT;
-	
-    return scale;
+    
+    return scale.w;
 }
 
 
@@ -713,7 +716,6 @@ int16_t
 
 	return nodenum & ~NF_SUBSECTOR;
 }
-
 
 
 //

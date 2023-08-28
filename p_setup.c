@@ -352,10 +352,10 @@ void P_LoadNodes(int16_t lump)
 		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 		no = &nodes[i];
 
-		no->x = (currentdata.x) << FRACBITS;
-		no->y = (currentdata.y) << FRACBITS;
-		no->dx = (currentdata.dx) << FRACBITS;
-		no->dy = (currentdata.dy) << FRACBITS;
+		no->x = (currentdata.x);// << FRACBITS;
+		no->y = (currentdata.y);// << FRACBITS;
+		no->dx = (currentdata.dx);// << FRACBITS;
+		no->dy = (currentdata.dy);// << FRACBITS;
 		for (j = 0; j < 2; j++) {
 			no->children[j] = (currentdata.children[j]);
 			for (k = 0; k < 4; k++)
@@ -380,14 +380,12 @@ void P_LoadThings(int16_t lump)
 	uint16_t                 numthings;
 	boolean             spawn;
 	MEMREF				dataRef;
-	node_t*				nodes;
 	W_CacheLumpNumCheck(lump, 5);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
 
 	for (i = 0; i < numthings; i++) {
-		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 		data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);
 		mt = &data[i];
 		spawn = true;

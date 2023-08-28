@@ -603,14 +603,15 @@ void R_Subsector(int16_t subsecnum)
 void R_RenderBSPNode(int16_t bspnum)
 {
 	node_t *bsp;
-	fixed_t dx, dy;
+	fixed_t_union dx, dy;
 	fixed_t left, right;
 	int16_t stack_bsp[MAX_BSP_DEPTH];
 	byte stack_side[MAX_BSP_DEPTH];
 	int16_t sp = 0;
 	byte side = 0;
 	node_t* nodes;
-
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 	while (true)
 	{
 		//Front sides.
@@ -623,11 +624,13 @@ void R_RenderBSPNode(int16_t bspnum)
 			bsp = &nodes[bspnum];
 
 			//decide which side the view point is on
-			dx = (viewx - bsp->x);
-			dy = (viewy - bsp->y);
+			temp.h.intbits = bsp->x;
+			dx.w = (viewx - temp.w);
+			temp.h.intbits = bsp->y;
+			dy.w = (viewy - temp.w);
 
-			left = (bsp->dy >> FRACBITS) * (dx >> FRACBITS);
-			right = (dy >> FRACBITS) * (bsp->dx >> FRACBITS);
+			left = (bsp->dy) * (dx.h.intbits);
+			right = (dy.h.intbits) * (bsp->dx);
 
 			side = right >= left;
 

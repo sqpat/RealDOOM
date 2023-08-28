@@ -263,7 +263,7 @@ EV_DoFloor
     //sector_t*		sec;
     floormove_t*	floor;
 	MEMREF floorRef;
-	fixed_t* textureheight;
+	int16_t* textureheight;
 	fixed_t specialheight;
 	sector_t* sectors;
 	fixed_t sectorceilingheight;

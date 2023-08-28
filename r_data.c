@@ -764,9 +764,9 @@ void R_InitSpriteLumps(void)
 	int16_t         i;
 
 	patch_t     *patch;
-	fixed_t     *spritewidth;
-	fixed_t     *spriteoffset;
-	fixed_t     *spritetopoffset;
+	int16_t     *spritewidth;
+	int16_t     *spriteoffset;
+	int16_t     *spritetopoffset;
 	MEMREF		patchRef;
 	int16_t		patchwidth;
 	int16_t		patchleftoffset;
@@ -776,9 +776,9 @@ void R_InitSpriteLumps(void)
 	lastspritelump = W_GetNumForName("S_END") - 1;
 
 	numspritelumps = lastspritelump - firstspritelump + 1;
-	spritewidthRef = Z_MallocEMSNew(numspritelumps * 4, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
-	spriteoffsetRef = Z_MallocEMSNew(numspritelumps * 4, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
-	spritetopoffsetRef = Z_MallocEMSNew(numspritelumps * 4, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
+	spritewidthRef = Z_MallocEMSNew(numspritelumps * 2, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
+	spriteoffsetRef = Z_MallocEMSNew(numspritelumps * 2, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
+	spritetopoffsetRef = Z_MallocEMSNew(numspritelumps * 2, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
 
 
 	for (i = 0; i < numspritelumps; i++)
@@ -797,14 +797,13 @@ void R_InitSpriteLumps(void)
 		patchleftoffset = (patch->leftoffset);
 		patchtopoffset = (patch->topoffset) ;
 
-		spritewidth = (fixed_t*)Z_LoadBytesFromEMS(spritewidthRef);
-		spriteoffset = (fixed_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
-		spritetopoffset = (fixed_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
+		spritewidth = (int16_t*)Z_LoadBytesFromEMS(spritewidthRef);
+		spriteoffset = (int16_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
+		spritetopoffset = (int16_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
 
-		//todo... these can be 16 bit right
-		spritewidth[i] = patchwidth << FRACBITS;
-		spriteoffset[i] = patchleftoffset << FRACBITS;
-		spritetopoffset[i] = patchtopoffset << FRACBITS;
+		spritewidth[i] = patchwidth;// << FRACBITS;
+		spriteoffset[i] = patchleftoffset;// << FRACBITS;
+		spritetopoffset[i] = patchtopoffset;// << FRACBITS;
 
 	}
 }
