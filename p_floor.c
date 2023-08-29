@@ -46,7 +46,7 @@ T_MovePlane
   int16_t		floorOrCeiling,
   int16_t		direction )
 {
-    boolean	flag;
+    boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
 	sector_t*  sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
@@ -61,8 +61,8 @@ T_MovePlane
 						if ((&sectors[secnum])->floorheight - speed < dest) {
 							lastpos = (&sectors[secnum])->floorheight;
 							(&sectors[secnum])->floorheight = dest;
-							flag = P_ChangeSector(secnum,crush);
-							if (flag == true) {
+							somethingcrushed = P_ChangeSector(secnum,crush);
+							if (somethingcrushed) {
 								sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 								(&sectors[secnum])->floorheight =lastpos;
 
@@ -75,12 +75,9 @@ T_MovePlane
 						} else {
 							lastpos = (&sectors[secnum])->floorheight;
 							(&sectors[secnum])->floorheight -= speed;
-							flag = P_ChangeSector(secnum,crush);
+							somethingcrushed = P_ChangeSector(secnum,crush);
 
-
-					
-
-							if (flag == true) {
+							if (somethingcrushed) {
 								sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 								(&sectors[secnum])->floorheight = lastpos;
 								P_ChangeSector(secnum,crush);
@@ -96,8 +93,8 @@ T_MovePlane
 						if ((&sectors[secnum])->floorheight + speed > dest) {
 							lastpos = (&sectors[secnum])->floorheight;
 							(&sectors[secnum])->floorheight = dest;
-							flag = P_ChangeSector(secnum,crush);
-							if (flag == true) {
+							somethingcrushed = P_ChangeSector(secnum,crush);
+							if (somethingcrushed) {
 								sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 								(&sectors[secnum])->floorheight = lastpos;
 			
@@ -109,8 +106,8 @@ T_MovePlane
 							// COULD GET CRUSHED
 							lastpos = (&sectors[secnum])->floorheight;
 							(&sectors[secnum])->floorheight += speed;
-							flag = P_ChangeSector(secnum,crush);
-							if (flag == true) {
+							somethingcrushed = P_ChangeSector(secnum,crush);
+							if (somethingcrushed) {
 								if (crush == true) {
 									return floor_crushed;
 								}
@@ -133,9 +130,9 @@ T_MovePlane
 						if ((&sectors[secnum])->ceilingheight - speed < dest) {
 							lastpos = (&sectors[secnum])->ceilingheight;
 							(&sectors[secnum])->ceilingheight = dest;
-							flag = P_ChangeSector(secnum,crush);
+							somethingcrushed = P_ChangeSector(secnum,crush);
 
-							if (flag == true) {
+							if (somethingcrushed) {
 								sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 								(&sectors[secnum])->ceilingheight = lastpos;
 								P_ChangeSector(secnum,crush);
@@ -146,9 +143,9 @@ T_MovePlane
 							// COULD GET CRUSHED
 							lastpos = (&sectors[secnum])->ceilingheight;
 							(&sectors[secnum])->ceilingheight -= speed;
-							flag = P_ChangeSector(secnum,crush);
+							somethingcrushed = P_ChangeSector(secnum,crush);
 
-							if (flag == true) {
+							if (somethingcrushed) {
 								if (crush == true) {
 									return floor_crushed;
 								}
@@ -165,8 +162,8 @@ T_MovePlane
 						if ((&sectors[secnum])->ceilingheight + speed > dest) {
 							lastpos = (&sectors[secnum])->ceilingheight;
 							(&sectors[secnum])->ceilingheight = dest;
-							flag = P_ChangeSector(secnum,crush);
-							if (flag == true) {
+							somethingcrushed = P_ChangeSector(secnum,crush);
+							if (somethingcrushed) {
 								sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 								(&sectors[secnum])->ceilingheight = lastpos;
 								P_ChangeSector(secnum,crush);
@@ -176,7 +173,7 @@ T_MovePlane
 						} else {
 							lastpos = (&sectors[secnum])->ceilingheight;
 							(&sectors[secnum])->ceilingheight += speed;
-							flag = P_ChangeSector(secnum,crush);
+							somethingcrushed = P_ChangeSector(secnum,crush);
 						}
 						break;
 					}
@@ -474,7 +471,7 @@ EV_BuildStairs
   stair_e	type )
 {
     int16_t			secnum;
-    int16_t			height;
+    short_height_t	height;
     uint8_t			i;
     int16_t			newsecnum;
     int16_t			texture;
@@ -494,8 +491,8 @@ EV_BuildStairs
 	int16_t linenum;
 	line_t* lines;
 	sector_t*  sectors;
-	int16_t sectorceilingheight;
-	int16_t sectorfloorheight;
+	short_height_t sectorceilingheight;
+	short_height_t sectorfloorheight;
 	uint8_t sectorfloorpic;
 	int16_t sectorlinesoffset;
 	uint8_t sectorlinecount;
@@ -527,12 +524,12 @@ EV_BuildStairs
 
 		switch(type) {
 		  case build8:
-			speed = FLOORSPEED/4;
-			stairsize = 8 << SHORTFLOORBITS;
+			speed = (FLOORSPEED/4);
+			stairsize = (8 << SHORTFLOORBITS);
 			break;
 		  case turbo16:
-			speed = FLOORSPEED*4;
-			stairsize = 16 << SHORTFLOORBITS;
+			speed = (FLOORSPEED*4);
+			stairsize = (16 << SHORTFLOORBITS);
 			break;
 		}
 		floor->speed = speed;

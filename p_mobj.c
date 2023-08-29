@@ -242,7 +242,8 @@ void P_XYMovement (MEMREF moRef)
 	 
 		return; 	// no friction for missiles ever
 	}
-	temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
+	//temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
 	if (mo->z > temp.w) {
 
 		return;		// no friction when airborne
@@ -309,7 +310,8 @@ void P_ZMovement (MEMREF moRef)
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
+	// temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
     // check for smooth step up
     if (mo->player && mo->z < temp.w) {
 		mo->player->viewheight -= temp.w-mo->z;
@@ -368,6 +370,12 @@ void P_ZMovement (MEMREF moRef)
 			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			mo->momz = 0;
 		}
+
+	// if (gametic == 758 && moRef == players[0].moRef){
+	// 	I_Error ("the z value being set %i %i ", temp.w >>  (16-SHORTFLOORBITS), mo->z >>  (16-SHORTFLOORBITS));
+	// }
+
+
 		mo->z = temp.w;
 
 	#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
@@ -389,7 +397,8 @@ void P_ZMovement (MEMREF moRef)
 		}
 	}
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	temp.h.intbits = mo->ceilingz >> SHORTFLOORBITS;
+	//temp.h.intbits = mo->ceilingz >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
     if (mo->z + mo->height > temp.w) {
 		// hit the ceiling
 		if (mo->momz > 0) {
@@ -455,7 +464,8 @@ P_NightmareRespawn(MEMREF mobjRef)
 
 	// spawn a teleport fog at old spot
 	// because of removal of the body?
-	temp.h.intbits = sectors[mobjsecnum].floorheight >> SHORTFLOORBITS;
+	// temp.h.intbits = sectors[mobjsecnum].floorheight >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[mobjsecnum].floorheight);
 	moRef = P_SpawnMobj(mobjx, mobjy, temp.w, MT_TFOG);
 	// initiate teleport sound
 	S_StartSoundFromRef(moRef, sfx_telept);
@@ -522,7 +532,8 @@ void P_MobjThinker (MEMREF mobjRef) {
     } 
 
 	temp.h.fracbits = 0;
-	temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
+	// temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
     if ( (mobj->z != temp.w) || mobj->momz ) {
 		P_ZMovement (mobjRef);
 	 
@@ -641,10 +652,12 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	mobj->ceilingz = sectorceilingheight;
 
     if (z == ONFLOORZ){
-		temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
+		// temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
 		mobj->z = temp.w;
 	} else if (z == ONCEILINGZ){
-		temp.h.intbits = mobj->ceilingz >> SHORTFLOORBITS;
+		// temp.h.intbits = mobj->ceilingz >> SHORTFLOORBITS;
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->ceilingz);
 		mobj->z = temp.w - mobj->info->height * FRACUNIT;
 	}
     else 

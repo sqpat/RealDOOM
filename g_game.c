@@ -733,7 +733,8 @@ G_CheckSpot
 
     an = ( ANG45 * (mthing->angle/45) ) >> ANGLETOFINESHIFT; 
     tempz.h.fracbits = 0;
-    tempz.h.intbits = sectors[secnum].floorheight >> SHORTFLOORBITS;
+    // tempz.h.intbits = sectors[secnum].floorheight >> SHORTFLOORBITS;
+    SET_FIXED_UNION_FROM_SHORT_HEIGHT(tempz, sectors[secnum].floorheight);
     moRef = P_SpawnMobj (tempx.w+20*finecosine(an), tempy.w+20*finesine(an)
                       , tempz.w
                       , MT_TFOG); 

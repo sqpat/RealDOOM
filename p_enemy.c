@@ -351,24 +351,21 @@ boolean P_Move (MEMREF actorRef)
     tryx = actor->x + actor->info->speed*xspeed[actor->movedir];
     tryy = actor->y + actor->info->speed*yspeed[actor->movedir];
 
-	
-
 	try_ok = P_TryMove (actorRef, tryx, tryy);
-
-
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
-
-	temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
 
     if (!try_ok) {
 		// open any specials
 		if (actor->flags & MF_FLOAT && floatok) {
 			// must adjust height
+			//temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
+
 			if (actor->z < temp.w)
-			actor->z += FLOATSPEED;
+				actor->z += FLOATSPEED;
 			else
-			actor->z -= FLOATSPEED;
+				actor->z -= FLOATSPEED;
 
 			actor->flags |= MF_INFLOAT;
 
@@ -399,7 +396,8 @@ boolean P_Move (MEMREF actorRef)
 
 	
 	if (!(actor->flags & MF_FLOAT)) {
-		temp.h.intbits = actor->floorz >> SHORTFLOORBITS;
+		//temp.h.intbits = actor->floorz >> SHORTFLOORBITS;
+    	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, actor->floorz);
 		actor->z = temp.w;
 	}
 
@@ -686,7 +684,6 @@ void A_Look (MEMREF actorRef)
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	int16_t actorsecnum = actor->secnum;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-
 
 	actor->threshold = 0;	// any shot will wake up
 
@@ -1823,11 +1820,6 @@ void A_PainDie (MEMREF actorRef)
     A_PainShootSkull (actorRef, actorangle+ANG270);
 }
 
-
-
-
-
-
 void A_Scream (MEMREF actorRef)
 {
     uint8_t		sound;
@@ -1841,16 +1833,16 @@ void A_Scream (MEMREF actorRef)
       case sfx_podth1:
       case sfx_podth2:
       case sfx_podth3:
-	sound = sfx_podth1 + P_Random ()%3;
+		sound = sfx_podth1 + P_Random ()%3;
 	break;
 		
       case sfx_bgdth1:
       case sfx_bgdth2:
-	sound = sfx_bgdth1 + P_Random ()%2;
+		sound = sfx_bgdth1 + P_Random ()%2;
 	break;
 	
       default:
-	sound = actor->info->deathsound;
+		sound = actor->info->deathsound;
 	break;
     }
 

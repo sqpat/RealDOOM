@@ -556,6 +556,7 @@ P_TryMove
 	int16_t ldspecial;
 	int16_t ldv1Offset;
 	fixed_t_union temp;
+	int16_t temp2;
 	temp.h.fracbits = 0;
 
 	floatok = false;
@@ -565,24 +566,23 @@ P_TryMove
 	}
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
-
     if ( !(thing->flags & MF_NOCLIP) ) {
-		temp.h.intbits = (tmceilingz - tmfloorz)  >> SHORTFLOORBITS;
+		temp2 = (tmceilingz - tmfloorz);
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 		if (temp.w < thing->height) {
 			return false;	// doesn't fit
-			}
-
-
+		}
 
 		floatok = true;
-	
 		
-		temp.h.intbits = tmceilingz >> SHORTFLOORBITS;
+		// temp.h.intbits = tmceilingz >> SHORTFLOORBITS;
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmceilingz);
 		if (!(thing->flags&MF_TELEPORT) && temp.w - thing->z < thing->height) {
 			return false;	// mobj must lower itself to fit
 		}
-		temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
-		if (!(thing->flags&MF_TELEPORT) && temp.w - thing->z > 24 * FRACUNIT) {
+		// temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
+		if (!(thing->flags&MF_TELEPORT) && (temp.w - thing->z) > 24 * FRACUNIT) {
 			return false;	// too big a step up
 		}
 
@@ -654,28 +654,39 @@ boolean P_ThingHeightClip (MEMREF thingRef)
     boolean		onfloor;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	fixed_t_union temp;
+	int16_t temp2;
+	sector_t* sectors;
 	temp.h.fracbits = 0;
-	temp.h.intbits = thing->floorz >> SHORTFLOORBITS;
+	// temp.h.intbits = thing->floorz >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
     onfloor = (thing->z == temp.w);
-	
+
+
     P_CheckPosition (thingRef, thing->x, thing->y);	
     // what about stranding a monster partially off an edge?
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+
+
 
     thing->floorz = tmfloorz;
     thing->ceilingz = tmceilingz;
 	
     if (onfloor) {
 		// walking monsters rise and fall with the floor
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
 		thing->z = temp.w;
+
     } else {
 	// don't adjust a floating monster unless forced to
-		temp.h.intbits = thing->ceilingz >> SHORTFLOORBITS;
+		// temp.h.intbits = thing->ceilingz >> SHORTFLOORBITS;
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->ceilingz);
 		if (thing->z+thing->height > temp.w)
 			thing->z = temp.w - thing->height;
 	}
 
-	temp.h.intbits = (thing->ceilingz - thing->floorz) >> SHORTFLOORBITS;
+	// temp.h.intbits = (thing->ceilingz - thing->floorz) >> SHORTFLOORBITS;
+	temp2 = (thing->ceilingz - thing->floorz);
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 	
     if (temp.w < thing->height)
 		return false;
@@ -784,15 +795,19 @@ boolean PTR_SlideTraverse (intercept_t* in)
 	temp.h.fracbits = 0;
     P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
 	slidemo = (mobj_t*)Z_LoadBytesFromEMS(slidemoRef);
-	temp.h.intbits = openrange >> SHORTFLOORBITS;
+	// temp.h.intbits = openrange >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openrange);
+
     if (temp.w < slidemo->height)
 		goto isblocking;		// doesn't fit
 		
-	temp.h.intbits = opentop >> SHORTFLOORBITS;
+	// temp.h.intbits = opentop >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, opentop);
     if (temp.w - slidemo->z < slidemo->height)
 		goto isblocking;		// mobj is too high
 
-	temp.h.intbits = openbottom >> SHORTFLOORBITS;
+	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openbottom);
     if (temp.w - slidemo->z > 24*FRACUNIT )
 		goto isblocking;		// too big a step up
 
@@ -987,14 +1002,16 @@ PTR_AimTraverse (intercept_t* in)
 
 		temp.h.fracbits = 0;
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
-			temp.h.intbits = openbottom >> SHORTFLOORBITS;
+			// temp.h.intbits = openbottom >> SHORTFLOORBITS;
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openbottom);
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
-			temp.h.intbits = opentop >> SHORTFLOORBITS;
+			// temp.h.intbits = opentop >> SHORTFLOORBITS;
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, opentop);
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope < topslope)
 				topslope = slope;
@@ -1063,6 +1080,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	MEMREF		thRef;
 	line_t*		lines;
 	sector_t*	sectors;
+	int16_t 	temp2;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 
@@ -1083,14 +1101,16 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
-			temp.h.intbits = openbottom >> SHORTFLOORBITS;
+			// temp.h.intbits = openbottom >> SHORTFLOORBITS;
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openbottom);
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope > aimslope)
 				goto hitline;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
-			temp.h.intbits = opentop >> SHORTFLOORBITS;
+			// temp.h.intbits = opentop >> SHORTFLOORBITS;
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, opentop);
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope < aimslope)
 				goto hitline;
@@ -1112,7 +1132,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
 		if (sectors[li.frontsecnum].ceilingpic == skyflatnum) {
 			// don't shoot the sky!
-			temp.h.intbits = sectors[li.frontsecnum].ceilingheight >> SHORTFLOORBITS;
+			// temp.h.intbits = sectors[li.frontsecnum].ceilingheight >> SHORTFLOORBITS;
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[li.frontsecnum].ceilingheight);
 			if (z > temp.w) {
 				return false;
 			}
@@ -1447,57 +1468,50 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 	mobj_t* thing;
 	MEMREF moRef;
 
-    if (P_ThingHeightClip (thingRef))
-    {
-	// keep checking
-	return true;
+    if (P_ThingHeightClip (thingRef)) {
+		// keep checking
+		return true;
     }
     
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
     // crunch bodies to giblets
-    if (thing->health <= 0)
-    {
-	P_SetMobjState (thingRef, S_GIBS);
+    if (thing->health <= 0) {
+		P_SetMobjState (thingRef, S_GIBS);
 
-	thing->flags &= ~MF_SOLID;
-	thing->height = 0;
-	thing->radius = 0;
+		thing->flags &= ~MF_SOLID;
+		thing->height = 0;
+		thing->radius = 0;
 
-	// keep checking
-	return true;		
+		// keep checking
+		return true;		
     }
 
     // crunch dropped items
-    if (thing->flags & MF_DROPPED)
-    {
+    if (thing->flags & MF_DROPPED) {
 		P_RemoveMobj (thingRef);
 	
-	// keep checking
-	return true;		
+		// keep checking
+		return true;		
     }
 
-    if (! (thing->flags & MF_SHOOTABLE) )
-    {
+    if (! (thing->flags & MF_SHOOTABLE) ) {
 	// assume it is bloody gibs or something
-	return true;			
+		return true;			
     }
     
     nofit = true;
 	
-    if (crushchange && !(leveltime&3) )
-    {
+    if (crushchange && !(leveltime&3) ) {
 
-	P_DamageMobj(thingRef,NULL_MEMREF,NULL_MEMREF,10);
+		P_DamageMobj(thingRef,NULL_MEMREF,NULL_MEMREF,10);
 
-	// spray blood in a random direction
-	moRef = P_SpawnMobj (thing->x,
-			  thing->y,
-			  thing->z + thing->height/2, MT_BLOOD);
-	
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	mo->momx = (P_Random() - P_Random ())<<12;
-	mo->momy = (P_Random() - P_Random ())<<12;
+		// spray blood in a random direction
+		moRef = P_SpawnMobj (thing->x, thing->y, thing->z + thing->height/2, MT_BLOOD);
+		
+		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+		mo->momx = (P_Random() - P_Random ())<<12;
+		mo->momy = (P_Random() - P_Random ())<<12;
     }
 
     // keep checking (crush other things)	

@@ -575,7 +575,9 @@ void R_Subsector(int16_t subsecnum)
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	frontsector = &sectors[frontsecnum];
 
-	temp.h.intbits = frontsector->floorheight >> SHORTFLOORBITS;
+	// temp.h.intbits = frontsector->floorheight >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);
+
 	if (temp.w < viewz)
 	{
 		floorplane = R_FindPlane(temp.w,
@@ -585,7 +587,8 @@ void R_Subsector(int16_t subsecnum)
 	else
 		floorplane = NULL;
 
-	temp.h.intbits = frontsector->ceilingheight >> SHORTFLOORBITS;
+	// temp.h.intbits = frontsector->ceilingheight >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->ceilingheight);
 	// todo: if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
 	
 	if (temp.w > viewz || frontsector->ceilingpic == skyflatnum)

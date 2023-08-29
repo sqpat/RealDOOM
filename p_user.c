@@ -70,6 +70,7 @@ void P_CalcHeight (player_t* player)
     fixed_t	bob;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 	fixed_t_union temp;
+	int16_t temp2;
     temp.h.fracbits = 0;
 	// Regular movement bobbing
     // (needs to be calculated for gun swing
@@ -84,10 +85,13 @@ void P_CalcHeight (player_t* player)
     player->bob >>= 2;
 
     if (player->bob>MAXBOB)
-	player->bob = MAXBOB;
+		player->bob = MAXBOB;
     if ((player->cheats & CF_NOMOMENTUM) || !onground) {
 		player->viewz = playermo->z + VIEWHEIGHT;
-		temp.h.intbits = (playermo->ceilingz >> SHORTFLOORBITS)-4;
+		// temp.h.intbits = (playermo->ceilingz >> SHORTFLOORBITS)-4;
+
+		temp2 = (playermo->ceilingz - (4 << SHORTFLOORBITS));
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
 		if (player->viewz > temp.w)
 			player->viewz = temp.w;
@@ -123,7 +127,10 @@ void P_CalcHeight (player_t* player)
     }
     player->viewz = playermo->z + player->viewheight + bob;
 
-	temp.h.intbits = (playermo->ceilingz >> SHORTFLOORBITS)-4;
+	// temp.h.intbits = (playermo->ceilingz >> SHORTFLOORBITS)-4;
+	temp2 = (playermo->ceilingz - (4 << SHORTFLOORBITS));
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
+
     if (player->viewz > temp.w)
 		player->viewz = temp.w;
 }
@@ -142,7 +149,8 @@ void P_MovePlayer (player_t* player)
 	cmd = &player->cmd;
 	
 	playermo->angle += (cmd->angleturn<<16);
-	temp.h.intbits = playermo->floorz >> SHORTFLOORBITS;
+	//temp.h.intbits = playermo->floorz >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playermo->floorz);
 
     // Do not let the player control movement
     //  if not onground.
@@ -188,7 +196,8 @@ void P_DeathThink (player_t* player)
 
     player->deltaviewheight = 0;
 	
-	temp.h.intbits = playermo->floorz >> SHORTFLOORBITS;
+	// temp.h.intbits = playermo->floorz >> SHORTFLOORBITS;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playermo->floorz);
 
     onground = (playermo->z <= temp.w);
     P_CalcHeight (player);

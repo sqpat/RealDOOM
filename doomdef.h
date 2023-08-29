@@ -88,7 +88,16 @@ typedef int16_t short_height_t;
 
 
 
-#define SHORTFLOORBITS 3
+// #define SHORTFLOORBITS 3
+// #define SHORTFLOORBITMASK 0x0007
+#define SHORTFLOORBITS 4
+#define SHORTFLOORBITMASK 0x0F
+
+#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.b.fracbytehigh = (y & SHORTFLOORBITMASK) << (8 - SHORTFLOORBITS)
+//#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.b.fracbytehigh = (y & SHORTFLOORBITMASK) << (8 - SHORTFLOORBITS); x.b.fracbytelow = 0
+//  #define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.h.fracbits = y << (16 - SHORTFLOORBITS)
+// #define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.w  = y << (16 - SHORTFLOORBITS)
+// #define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.w  = y << (16 - SHORTFLOORBITS)
 
 #ifdef UNION_FIXED_POINT
 
@@ -129,7 +138,14 @@ typedef union _fixed_t_union {
 		int16_t fracbits;
 		int16_t intbits;
 	} h;
-	
+
+	struct quad_int8_t {
+		int8_t fracbytehigh;
+		int8_t fracbytelow;
+		int8_t intbytehigh;
+		int8_t intbytelow;
+	} b;
+
 	int32_t w;
 } fixed_t_union;
 

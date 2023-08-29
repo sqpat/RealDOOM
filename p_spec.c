@@ -1078,7 +1078,8 @@ void P_PlayerInSpecialSector (player_t* player) {
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	temp.h.intbits = (sectors[secnum].floorheight >> SHORTFLOORBITS);
+	// temp.h.intbits = (sectors[secnum].floorheight >> SHORTFLOORBITS);
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[secnum].floorheight);
     // Falling, not all the way down yet?
 	if (playerMoz != temp.w) {
 		return;
@@ -1440,13 +1441,13 @@ void P_SpawnSpecials (void)
     
     //	Init other misc stuff
     for (i = 0;i < MAXCEILINGS;i++)
-	activeceilings[i] = NULL_MEMREF;
+		activeceilings[i] = NULL_MEMREF;
 
     for (i = 0;i < MAXPLATS;i++)
-	activeplats[i] = NULL_MEMREF;
+		activeplats[i] = NULL_MEMREF;
     
     for (i = 0;i < MAXBUTTONS;i++)
-	memset(&buttonlist[i],0,sizeof(button_t));
+		memset(&buttonlist[i],0,sizeof(button_t));
 
 	
 }

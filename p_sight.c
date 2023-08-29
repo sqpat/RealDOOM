@@ -405,14 +405,16 @@ boolean P_CrossSubsector (int16_t subsecnum)
 		// frac = P_InterceptVector2 (&strace, &divlNode);
 		
 		if (sectors[frontsecnum].floorheight != sectors[backsecnum].floorheight) {
-		 	temp.h.intbits = openbottom >> SHORTFLOORBITS;
+		 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  openbottom);
 			slope = FixedDiv (temp.w - sightzstart , frac);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
 		
 		if (sectors[frontsecnum].ceilingheight != sectors[backsecnum].ceilingheight) {
-		 	temp.h.intbits = opentop >> SHORTFLOORBITS;
+		 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  opentop);
 			slope = FixedDiv (temp.w - sightzstart , frac);
 			if (slope < topslope)
 				topslope = slope;
