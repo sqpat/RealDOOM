@@ -292,7 +292,7 @@ EV_DoDoor
 		  case blazeClose:
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
 			door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
-			door->topheight = doortopheight - 4;
+			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
 			door->speed = VDOORSPEED * 4;
 			S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_bdcls);
@@ -301,7 +301,7 @@ EV_DoDoor
 		  case close:
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
 			door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
-			door->topheight = doortopheight - 4;
+			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
 			S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_dorcls);
 			break;
@@ -317,7 +317,7 @@ EV_DoDoor
 			door->direction = 1;
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
 			door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
-			door->topheight = doortopheight - 4;
+			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->speed = VDOORSPEED * 4;
 			if (door->topheight != (doorsector.ceilingheight))
 				S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_bdopn);
@@ -328,7 +328,7 @@ EV_DoDoor
 			door->direction = 1;
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
 			door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
-			door->topheight = doortopheight - 4;
+			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			if (door->topheight != doorsector.ceilingheight)
 				S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_doropn);
 			break;
@@ -523,7 +523,7 @@ EV_VerticalDoor
     // find the top and bottom of the movement range
 	doortopheight = P_FindLowestCeilingSurrounding(secnum);
 	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
-	door->topheight = doortopheight - 4;
+	door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 }
 
 
@@ -577,7 +577,7 @@ P_SpawnDoorRaiseIn5Mins
 
 	doortopheight = P_FindLowestCeilingSurrounding(secnum);
 	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
-	door->topheight = doortopheight - 4;
+	door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 	door->topwait = VDOORWAIT;
     door->topcountdown = 5 * 60 * 35;
 

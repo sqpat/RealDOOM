@@ -523,7 +523,6 @@ void D_DoomLoop (void)
 				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
 				 
 				//sector = &((sector_t*)Z_LoadBytesFromEMS(sectorsRef))[23];
-				//sprintf(result2, "%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, sector->ceilingheight, sector->floorheight, sector->soundorgX, sector->soundorgY, sector->floorpic, sector->specialdataRef, 0, 0);
 
 				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->z  , SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->secnum, 0, SAVEDUNIT->type);
 				strcat(result, result2);

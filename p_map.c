@@ -567,7 +567,7 @@ P_TryMove
 
 
     if ( !(thing->flags & MF_NOCLIP) ) {
-		temp.h.intbits = tmceilingz - tmfloorz;
+		temp.h.intbits = (tmceilingz - tmfloorz)  >> SHORTFLOORBITS;
 		if (temp.w < thing->height) {
 			return false;	// doesn't fit
 			}
@@ -577,16 +577,16 @@ P_TryMove
 		floatok = true;
 	
 		
-		temp.h.intbits = tmceilingz;
+		temp.h.intbits = tmceilingz >> SHORTFLOORBITS;
 		if (!(thing->flags&MF_TELEPORT) && temp.w - thing->z < thing->height) {
 			return false;	// mobj must lower itself to fit
 		}
-		temp.h.intbits = tmfloorz;
+		temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
 		if (!(thing->flags&MF_TELEPORT) && temp.w - thing->z > 24 * FRACUNIT) {
 			return false;	// too big a step up
 		}
 
-		if (!(thing->flags&(MF_DROPOFF | MF_FLOAT)) && tmfloorz - tmdropoffz > 24 ) {
+		if (!(thing->flags&(MF_DROPOFF | MF_FLOAT)) && (tmfloorz - tmdropoffz) > (24<<SHORTFLOORBITS) ) {
 			return false;	// don't stand over a dropoff
 		}
 		
@@ -655,7 +655,7 @@ boolean P_ThingHeightClip (MEMREF thingRef)
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	temp.h.intbits = thing->floorz;
+	temp.h.intbits = thing->floorz >> SHORTFLOORBITS;
     onfloor = (thing->z == temp.w);
 	
     P_CheckPosition (thingRef, thing->x, thing->y);	
@@ -670,12 +670,12 @@ boolean P_ThingHeightClip (MEMREF thingRef)
 		thing->z = temp.w;
     } else {
 	// don't adjust a floating monster unless forced to
-		temp.h.intbits = thing->ceilingz;
+		temp.h.intbits = thing->ceilingz >> SHORTFLOORBITS;
 		if (thing->z+thing->height > temp.w)
 			thing->z = temp.w - thing->height;
 	}
 
-	temp.h.intbits = thing->ceilingz - thing->floorz;
+	temp.h.intbits = (thing->ceilingz - thing->floorz) >> SHORTFLOORBITS;
 	
     if (temp.w < thing->height)
 		return false;
@@ -784,15 +784,15 @@ boolean PTR_SlideTraverse (intercept_t* in)
 	temp.h.fracbits = 0;
     P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
 	slidemo = (mobj_t*)Z_LoadBytesFromEMS(slidemoRef);
-	temp.h.intbits = openrange;
+	temp.h.intbits = openrange >> SHORTFLOORBITS;
     if (temp.w < slidemo->height)
 		goto isblocking;		// doesn't fit
 		
-	temp.h.intbits = opentop;
+	temp.h.intbits = opentop >> SHORTFLOORBITS;
     if (temp.w - slidemo->z < slidemo->height)
 		goto isblocking;		// mobj is too high
 
-	temp.h.intbits = openbottom;
+	temp.h.intbits = openbottom >> SHORTFLOORBITS;
     if (temp.w - slidemo->z > 24*FRACUNIT )
 		goto isblocking;		// too big a step up
 
@@ -987,14 +987,14 @@ PTR_AimTraverse (intercept_t* in)
 
 		temp.h.fracbits = 0;
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
-			temp.h.intbits = openbottom;
+			temp.h.intbits = openbottom >> SHORTFLOORBITS;
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
-			temp.h.intbits = opentop;
+			temp.h.intbits = opentop >> SHORTFLOORBITS;
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope < topslope)
 				topslope = slope;
@@ -1083,14 +1083,14 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
-			temp.h.intbits = openbottom;
+			temp.h.intbits = openbottom >> SHORTFLOORBITS;
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope > aimslope)
 				goto hitline;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
-			temp.h.intbits = opentop;
+			temp.h.intbits = opentop >> SHORTFLOORBITS;
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope < aimslope)
 				goto hitline;
@@ -1112,7 +1112,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
 		if (sectors[li.frontsecnum].ceilingpic == skyflatnum) {
 			// don't shoot the sky!
-			temp.h.intbits = sectors[li.frontsecnum].ceilingheight;
+			temp.h.intbits = sectors[li.frontsecnum].ceilingheight >> SHORTFLOORBITS;
 			if (z > temp.w) {
 				return false;
 			}

@@ -1078,7 +1078,7 @@ void P_PlayerInSpecialSector (player_t* player) {
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	temp.h.intbits = sectors[secnum].floorheight;
+	temp.h.intbits = (sectors[secnum].floorheight >> SHORTFLOORBITS);
     // Falling, not all the way down yet?
 	if (playerMoz != temp.w) {
 		return;

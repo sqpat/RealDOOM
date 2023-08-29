@@ -964,12 +964,12 @@ void R_DrawSprite (vissprite_t* spr)
         
         // todo in the MIN_SHORT case do we have to extend the FFFF?
         temp.h.fracbits = 0;
-        temp.h.intbits =  ds->bsilheight;
+        temp.h.intbits =  ds->bsilheight >> SHORTFLOORBITS;
 
         if (spr->gz >= temp.w)
             silhouette &= ~SIL_BOTTOM;
 
-        temp.h.intbits =  ds->tsilheight;
+        temp.h.intbits =  ds->tsilheight >> SHORTFLOORBITS;
         if (spr->gzt <= temp.w)
             silhouette &= ~SIL_TOP;
                         

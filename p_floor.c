@@ -318,7 +318,7 @@ EV_DoFloor
 			floor->floordestheight = specialheight;
 
 			if (floor->floordestheight != sectorfloorheight) {
-				floor->floordestheight += 8;
+				floor->floordestheight += (8 << SHORTFLOORBITS);
 			}
 			break;
 
@@ -334,7 +334,7 @@ EV_DoFloor
 			if (floor->floordestheight > sectorceilingheight) {
 				floor->floordestheight = sectorceilingheight;
 			}
-			floor->floordestheight -= (8)* (floortype == raiseFloorCrush);
+			floor->floordestheight -= (8 << SHORTFLOORBITS)* (floortype == raiseFloorCrush);
 			break;
 
 		  case raiseFloorTurbo:
@@ -360,13 +360,13 @@ EV_DoFloor
 			floor->direction = 1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			floor->floordestheight = sectors[floor->secnum].floorheight + 24;
+			floor->floordestheight = sectors[floor->secnum].floorheight + (24 << SHORTFLOORBITS);
 			break;
 		  case raiseFloor512:
 			floor->direction = 1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			floor->floordestheight = sectors[floor->secnum].floorheight + 512;
+			floor->floordestheight = sectors[floor->secnum].floorheight + (512 << SHORTFLOORBITS);
 			
 			break;
 
@@ -374,7 +374,7 @@ EV_DoFloor
 			floor->direction = 1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			floor->floordestheight = sectors[floor->secnum].floorheight + 24;
+			floor->floordestheight = sectors[floor->secnum].floorheight + (24 << SHORTFLOORBITS);
 			
 			(&sectors[secnum])->floorpic = sectors[linefrontsecnum].floorpic;
 			(&sectors[secnum])->special = sectors[linefrontsecnum].special;
@@ -413,7 +413,7 @@ EV_DoFloor
 				  }
 			  }
 			  floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
-			  floor->floordestheight = sectors[floor->secnum].floorheight + minsize;
+			  floor->floordestheight = sectors[floor->secnum].floorheight + (minsize << SHORTFLOORBITS);
 		  }
 		  break;
 	  
@@ -528,11 +528,11 @@ EV_BuildStairs
 		switch(type) {
 		  case build8:
 			speed = FLOORSPEED/4;
-			stairsize = 8;
+			stairsize = 8 << SHORTFLOORBITS;
 			break;
 		  case turbo16:
 			speed = FLOORSPEED*4;
-			stairsize = 16;
+			stairsize = 16 << SHORTFLOORBITS;
 			break;
 		}
 		floor->speed = speed;

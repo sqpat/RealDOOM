@@ -19,9 +19,14 @@ KNOWN ISSUES
 544704 full visplanes large
 525744 99 visplanes large
 646032 full visplanes huge 
+526528 (32 bit)
+
+- after floor 16 stuff mostly done (no frac shift support)
+
+644832 full visplanes huge
+526688 32 bit
 
 - doom 32 currently
-- 526528
 
 TODO 
  
@@ -39,6 +44,7 @@ TODO
     n eventually spawnmobj z param too? 
  - look into ds->scale1 and associated values to 16 bit? or small fixed, etc
  3 screens in conventional instead of allocced
+ ? can texture height/width be uint8? (add 1 every time used to get 256)
    - screen2/3 wipe in EMS, or dump it for now.
    - get rid of backbuffer? or make it ems?
  ? visplane in ems? would need to stop passing around visplanes and instead pass around indices. not impossible but small to medium rewrite. 
@@ -94,12 +100,12 @@ MEMORY IDEAS
       - probably sectors, lines, etc...
 
  - use overlays, especially on startup code to eliminate space
-   - finale code should definitely be overlayed
-   - maybe menu code
-   - maybe demo code 
-   - maybe wipe code
-   - savegame code
-   - if we ever do multiple renderers or sound code etc, 
+   - maybe menu code in one, finale and p_setup in another? (0x3000 ish each)
+     - maybe demo code 
+     - maybe wipe code
+     - savegame code
+     - level intermission code?
+     - if we ever do multiple renderers or sound code etc, 
         can fit more in the binary by using overlays?
  - explicitly declare things near, far when possible?
  - reduce visiplanes size below 65k somehow to allow large instead of huge memory model.

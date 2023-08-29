@@ -86,7 +86,9 @@ typedef int32_t fixed_t32;
  */
 typedef int16_t short_height_t;
 
-#define SHORTHEIGHTTOHEIGHT 3
+
+
+#define SHORTFLOORBITS 3
 
 #ifdef UNION_FIXED_POINT
 

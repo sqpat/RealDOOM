@@ -242,7 +242,7 @@ void P_XYMovement (MEMREF moRef)
 	 
 		return; 	// no friction for missiles ever
 	}
-	temp.h.intbits = mo->floorz;
+	temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
 	if (mo->z > temp.w) {
 
 		return;		// no friction when airborne
@@ -309,7 +309,7 @@ void P_ZMovement (MEMREF moRef)
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	temp.h.intbits = mo->floorz;
+	temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
     // check for smooth step up
     if (mo->player && mo->z < temp.w) {
 		mo->player->viewheight -= temp.w-mo->z;
@@ -389,7 +389,7 @@ void P_ZMovement (MEMREF moRef)
 		}
 	}
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	temp.h.intbits = mo->ceilingz;
+	temp.h.intbits = mo->ceilingz >> SHORTFLOORBITS;
     if (mo->z + mo->height > temp.w) {
 		// hit the ceiling
 		if (mo->momz > 0) {
@@ -455,7 +455,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 
 	// spawn a teleport fog at old spot
 	// because of removal of the body?
-	temp.h.intbits = sectors[mobjsecnum].floorheight;
+	temp.h.intbits = sectors[mobjsecnum].floorheight >> SHORTFLOORBITS;
 	moRef = P_SpawnMobj(mobjx, mobjy, temp.w, MT_TFOG);
 	// initiate teleport sound
 	S_StartSoundFromRef(moRef, sfx_telept);
@@ -522,7 +522,7 @@ void P_MobjThinker (MEMREF mobjRef) {
     } 
 
 	temp.h.fracbits = 0;
-	temp.h.intbits = mobj->floorz;
+	temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
     if ( (mobj->z != temp.w) || mobj->momz ) {
 		P_ZMovement (mobjRef);
 	 
@@ -641,10 +641,10 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	mobj->ceilingz = sectorceilingheight;
 
     if (z == ONFLOORZ){
-		temp.h.intbits = mobj->floorz;
+		temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
 		mobj->z = temp.w;
 	} else if (z == ONCEILINGZ){
-		temp.h.intbits = mobj->ceilingz;
+		temp.h.intbits = mobj->ceilingz >> SHORTFLOORBITS;
 		mobj->z = temp.w - mobj->info->height * FRACUNIT;
 	}
     else 

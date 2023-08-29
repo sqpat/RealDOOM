@@ -87,7 +87,7 @@ void P_CalcHeight (player_t* player)
 	player->bob = MAXBOB;
     if ((player->cheats & CF_NOMOMENTUM) || !onground) {
 		player->viewz = playermo->z + VIEWHEIGHT;
-		temp.h.intbits = playermo->ceilingz - 4;
+		temp.h.intbits = (playermo->ceilingz >> SHORTFLOORBITS)-4;
 
 		if (player->viewz > temp.w)
 			player->viewz = temp.w;
@@ -123,7 +123,7 @@ void P_CalcHeight (player_t* player)
     }
     player->viewz = playermo->z + player->viewheight + bob;
 
-	temp.h.intbits = playermo->ceilingz - 4;
+	temp.h.intbits = (playermo->ceilingz >> SHORTFLOORBITS)-4;
     if (player->viewz > temp.w)
 		player->viewz = temp.w;
 }
@@ -142,7 +142,7 @@ void P_MovePlayer (player_t* player)
 	cmd = &player->cmd;
 	
 	playermo->angle += (cmd->angleturn<<16);
-	temp.h.intbits = playermo->floorz;
+	temp.h.intbits = playermo->floorz >> SHORTFLOORBITS;
 
     // Do not let the player control movement
     //  if not onground.
@@ -188,7 +188,7 @@ void P_DeathThink (player_t* player)
 
     player->deltaviewheight = 0;
 	
-	temp.h.intbits = playermo->floorz;
+	temp.h.intbits = playermo->floorz >> SHORTFLOORBITS;
 
     onground = (playermo->z <= temp.w);
     P_CalcHeight (player);

@@ -359,7 +359,7 @@ boolean P_Move (MEMREF actorRef)
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
 
-	temp.h.intbits = tmfloorz;
+	temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
 
     if (!try_ok) {
 		// open any specials
@@ -399,7 +399,7 @@ boolean P_Move (MEMREF actorRef)
 
 	
 	if (!(actor->flags & MF_FLOAT)) {
-		temp.h.intbits = actor->floorz;
+		temp.h.intbits = actor->floorz >> SHORTFLOORBITS;
 		actor->z = temp.w;
 	}
 

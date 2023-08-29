@@ -214,7 +214,7 @@ EV_DoCeiling
 	  case fastCrushAndRaise:
 	    ceiling->crush = true;
 	    ceiling->topheight = sector.ceilingheight;
-	    ceiling->bottomheight = sector.floorheight+8;
+	    ceiling->bottomheight = sector.floorheight+(8 << SHORTFLOORBITS);
 	    ceiling->direction = -1;
 	    ceiling->speed = CEILSPEED * 2;
 	    break;
@@ -227,13 +227,13 @@ EV_DoCeiling
 	  case lowerToFloor:
 		ceiling->bottomheight = sector.floorheight;
 	    if (type != lowerToFloor)
-			ceiling->bottomheight += 8;
+			ceiling->bottomheight += (8 << SHORTFLOORBITS);
 	    ceiling->direction = -1;
 	    ceiling->speed = CEILSPEED;
 	    break;
 
 	  case raiseToHighest: {
-		  fixed_t ceilingtopheight = P_FindHighestCeilingSurrounding(secnum);
+		  short_height_t ceilingtopheight = P_FindHighestCeilingSurrounding(secnum);
 		  ceiling = (ceiling_t*)Z_LoadBytesFromEMS(ceilingRef);
 		  ceiling->topheight = ceilingtopheight;
 		  ceiling->direction = 1;

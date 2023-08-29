@@ -295,7 +295,7 @@ typedef struct
 
 #define PLATWAIT		3
 // #define PLATSPEED		FRACUNIT
-#define PLATSPEED		1
+#define PLATSPEED		(1 << SHORTFLOORBITS)
 #define MAXPLATS		30
 
 
@@ -339,8 +339,8 @@ typedef struct
     THINKERREF	thinkerRef;
     vldoor_e	type;
     int16_t	secnum;
-    int16_t	topheight;
-    int16_t	speed;
+    short_height_t	topheight;
+    short_height_t	speed;
 
     // 1 = up, 0 = waiting at top, -1 = down
 	int16_t             direction;
@@ -355,7 +355,7 @@ typedef struct
 
 
 
-#define VDOORSPEED		2
+#define VDOORSPEED		(2 << SHORTFLOORBITS)
 // #define VDOORSPEED		FRACUNIT*2
 #define VDOORWAIT		150
 
@@ -424,7 +424,7 @@ typedef struct
 
 
 // #define CEILSPEED		FRACUNIT
-#define CEILSPEED		1
+#define CEILSPEED		(1 << SHORTFLOORBITS)
 #define CEILWAIT		150
 #define MAXCEILINGS		30
 
@@ -505,7 +505,7 @@ typedef struct
 
 
 // #define FLOORSPEED		FRACUNIT
-#define FLOORSPEED		1
+#define FLOORSPEED		(1 << SHORTFLOORBITS)
 
 #define floor_ok 0
 #define floor_crushed 1
