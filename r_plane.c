@@ -490,18 +490,20 @@ void R_ClearPlanes (void)
 //
 // R_FindPlane
 //
+
+//todo can we change height to 16 bit? the only tricky part is when viewz is involved, but maybe
+// view z can be 16 too. -sq
 visplane_t*
 R_FindPlane
-( fixed_t	height,
+( fixed_t   	height,
   uint8_t		picnum,
   uint8_t		lightlevel )
 {
     visplane_t*	check;
-	
-    if (picnum == skyflatnum)
-    {
-	height = 0;			// all skys map together
-	lightlevel = 0;
+		
+    if (picnum == skyflatnum) {
+		height = 0;			// all skys map together
+		lightlevel = 0;
     }
 	
     for (check=visplanes; check<lastvisplane; check++)

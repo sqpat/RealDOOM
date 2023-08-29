@@ -13,6 +13,7 @@ KNOWN ISSUES
  - rendering issue with weird line early in demo 3 might be related to rendering fuzzy
  - menu sometimes jumps a bit? might be due to keyboard issues
  - are keys working badly or is it just mac dosbox? test again on pc when possible. didnt notice because i was relying on demos too much but i think i did do some 32 to 16 bit code conversion around keyboard input
+ - look into raiseToTexture stuff
 
 - doom 16 size currently:
 544704 full visplanes large
@@ -29,10 +30,14 @@ TODO
  ~ make ems actually work
  ~ set visiplanes under 64k and see if large compile works
  1 floorheight and other fixed_ts on sectors etc, save them unshifted and shift on use. 
-    - later we will just automagically set to fixed_t hi byte somehow
-
- 2 change fixed_t stuff
-   - make it a union. custom add and subtract just like fixedmul/fixeddiv?
+    ~ later we will just automagically set to fixed_t hi byte somehow
+    - this works except some rising and falling floors/ceils use up to 3 bit float precision  (CEILING HEIGHT / 8)
+       - so let's be terrible and shift every height down 3. as far as i can tell in wad editor the max height anything is set to is < 500, and this 
+       - still gets us as much as +/-4096 max height?
+ ~ change fixed_t stuff
+ ~ change all heights of stuff to 16 bits  
+    n eventually spawnmobj z param too? 
+ - look into ds->scale1 and associated values to 16 bit? or small fixed, etc
  3 screens in conventional instead of allocced
    - screen2/3 wipe in EMS, or dump it for now.
    - get rid of backbuffer? or make it ems?

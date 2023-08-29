@@ -301,8 +301,8 @@ void P_LoadSectors(int16_t lump)
 		data = (mapsector_t *)Z_LoadBytesFromEMS(dataRef);
 		ms = data[i];
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-		ss->floorheight = (ms.floorheight) << FRACBITS;
-		ss->ceilingheight = (ms.ceilingheight) << FRACBITS;
+		ss->floorheight = (ms.floorheight);// << FRACBITS;
+		ss->ceilingheight = (ms.ceilingheight);// << FRACBITS;
 		ss->floorpic = R_FlatNumForName(ms.floorpic);
 		ss->ceilingpic = R_FlatNumForName(ms.ceilingpic);
 		ss->lightlevel = (ms.lightlevel);

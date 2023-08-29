@@ -223,8 +223,8 @@ typedef struct mobj_s
 	int16_t secnum;
 
     // The closest interval over all contacted Sectors.
-    fixed_t		floorz;
-    fixed_t		ceilingz;
+    short_height_t		floorz;
+    short_height_t		ceilingz;
 
     // For movement checking.
     fixed_t		radius;

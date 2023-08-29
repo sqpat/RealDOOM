@@ -40,14 +40,14 @@
 result_e
 T_MovePlane
 ( int16_t	secnum,
-  fixed_t	speed,
-  fixed_t	dest,
+  short_height_t	speed,
+  short_height_t	dest,
   boolean	crush,
   int16_t		floorOrCeiling,
   int16_t		direction )
 {
     boolean	flag;
-    fixed_t	lastpos;
+    short_height_t	lastpos;
 	sector_t*  sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		switch(floorOrCeiling) {
@@ -201,10 +201,7 @@ void T_MoveFloor(MEMREF memref)
 	int16_t floortexture;
 	THINKERREF floorthinkerRef;
 	sector_t* sectors;
-    res = T_MovePlane(floor->secnum,
-		      floor->speed,
-		      floor->floordestheight,
-		      floor->crush,0,floor->direction);
+    res = T_MovePlane(floor->secnum, floor->speed, floor->floordestheight, floor->crush,0,floor->direction);
 	floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
 	floorsecnum = floor->secnum;
 	if (!(leveltime & 7)) {
@@ -264,10 +261,10 @@ EV_DoFloor
     floormove_t*	floor;
 	MEMREF floorRef;
 	int16_t* textureheight;
-	fixed_t specialheight;
+	int16_t specialheight;
 	sector_t* sectors;
-	fixed_t sectorceilingheight;
-	fixed_t sectorfloorheight;
+	int16_t sectorceilingheight;
+	int16_t sectorfloorheight;
 
     secnum = -1;
     rtn = 0;
@@ -321,7 +318,7 @@ EV_DoFloor
 			floor->floordestheight = specialheight;
 
 			if (floor->floordestheight != sectorfloorheight) {
-				floor->floordestheight += 8 * FRACUNIT;
+				floor->floordestheight += 8;
 			}
 			break;
 
@@ -337,8 +334,7 @@ EV_DoFloor
 			if (floor->floordestheight > sectorceilingheight) {
 				floor->floordestheight = sectorceilingheight;
 			}
-			floor->floordestheight -= (8*FRACUNIT)*
-			(floortype == raiseFloorCrush);
+			floor->floordestheight -= (8)* (floortype == raiseFloorCrush);
 			break;
 
 		  case raiseFloorTurbo:
@@ -364,29 +360,28 @@ EV_DoFloor
 			floor->direction = 1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			floor->floordestheight = sectors[floor->secnum].floorheight +
-			24 * FRACUNIT;
+			floor->floordestheight = sectors[floor->secnum].floorheight + 24;
 			break;
 		  case raiseFloor512:
 			floor->direction = 1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			floor->floordestheight = sectors[floor->secnum].floorheight +
-			512 * FRACUNIT;
+			floor->floordestheight = sectors[floor->secnum].floorheight + 512;
+			
 			break;
 
 		  case raiseFloor24AndChange:
 			floor->direction = 1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			floor->floordestheight = sectors[floor->secnum].floorheight +
-			24 * FRACUNIT;
+			floor->floordestheight = sectors[floor->secnum].floorheight + 24;
+			
 			(&sectors[secnum])->floorpic = sectors[linefrontsecnum].floorpic;
 			(&sectors[secnum])->special = sectors[linefrontsecnum].special;
 			break;
 
 		  case raiseToTexture: {
-			  int16_t	minsize = MAXSHORT;
+			  short_height_t minsize = MAXSHORT;
 			  side_t* sides;
 			  int16_t sidenum;
 			  int16_t sidebottomtexture;
@@ -479,7 +474,7 @@ EV_BuildStairs
   stair_e	type )
 {
     int16_t			secnum;
-    int32_t			height;
+    int16_t			height;
     uint8_t			i;
     int16_t			newsecnum;
     int16_t			texture;
@@ -491,16 +486,16 @@ EV_BuildStairs
 
     floormove_t*	floor;
     
-    fixed_t		stairsize;
-    fixed_t		speed;
+    int16_t		stairsize;
+    int16_t		speed;
 	MEMREF floorRef;
 	int16_t *linebuffer;
 	int16_t linebufferOffset;
 	int16_t linenum;
 	line_t* lines;
 	sector_t*  sectors;
-	fixed_t sectorceilingheight;
-	fixed_t sectorfloorheight;
+	int16_t sectorceilingheight;
+	int16_t sectorfloorheight;
 	uint8_t sectorfloorpic;
 	int16_t sectorlinesoffset;
 	uint8_t sectorlinecount;
@@ -533,11 +528,11 @@ EV_BuildStairs
 		switch(type) {
 		  case build8:
 			speed = FLOORSPEED/4;
-			stairsize = 8*FRACUNIT;
+			stairsize = 8;
 			break;
 		  case turbo16:
 			speed = FLOORSPEED*4;
-			stairsize = 16*FRACUNIT;
+			stairsize = 16;
 			break;
 		}
 		floor->speed = speed;

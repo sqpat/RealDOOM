@@ -46,9 +46,9 @@ fixed_t		tmy;
 // if within "tmfloorz - tmceilingz".
 boolean		floatok;
 
-fixed_t		tmfloorz;
-fixed_t		tmceilingz;
-fixed_t		tmdropoffz;
+short_height_t		tmfloorz;
+short_height_t		tmceilingz;
+short_height_t		tmdropoffz;
 
 // keep track of the line that lowers the ceiling,
 // so missiles don't explode against sky hack walls
@@ -555,7 +555,8 @@ P_TryMove
  	int16_t lddy;
 	int16_t ldspecial;
 	int16_t ldv1Offset;
-	//int32_t i;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 
 	floatok = false;
 
@@ -566,8 +567,8 @@ P_TryMove
 
 
     if ( !(thing->flags & MF_NOCLIP) ) {
-
-		if (tmceilingz - tmfloorz < thing->height) {
+		temp.h.intbits = tmceilingz - tmfloorz;
+		if (temp.w < thing->height) {
 			return false;	// doesn't fit
 			}
 
@@ -575,15 +576,17 @@ P_TryMove
 
 		floatok = true;
 	
-		if (!(thing->flags&MF_TELEPORT) && tmceilingz - thing->z < thing->height) {
+		
+		temp.h.intbits = tmceilingz;
+		if (!(thing->flags&MF_TELEPORT) && temp.w - thing->z < thing->height) {
 			return false;	// mobj must lower itself to fit
 		}
-
-		if (!(thing->flags&MF_TELEPORT) && tmfloorz - thing->z > 24 * FRACUNIT) {
+		temp.h.intbits = tmfloorz;
+		if (!(thing->flags&MF_TELEPORT) && temp.w - thing->z > 24 * FRACUNIT) {
 			return false;	// too big a step up
 		}
 
-		if (!(thing->flags&(MF_DROPOFF | MF_FLOAT)) && tmfloorz - tmdropoffz > 24 * FRACUNIT) {
+		if (!(thing->flags&(MF_DROPOFF | MF_FLOAT)) && tmfloorz - tmdropoffz > 24 ) {
 			return false;	// don't stand over a dropoff
 		}
 		
@@ -650,8 +653,10 @@ boolean P_ThingHeightClip (MEMREF thingRef)
 {
     boolean		onfloor;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	
-    onfloor = (thing->z == thing->floorz);
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
+	temp.h.intbits = thing->floorz;
+    onfloor = (thing->z == temp.w);
 	
     P_CheckPosition (thingRef, thing->x, thing->y);	
     // what about stranding a monster partially off an edge?
@@ -660,21 +665,21 @@ boolean P_ThingHeightClip (MEMREF thingRef)
     thing->floorz = tmfloorz;
     thing->ceilingz = tmceilingz;
 	
-    if (onfloor)
-    {
-	// walking monsters rise and fall with the floor
-	thing->z = thing->floorz;
-    }
-    else
-    {
+    if (onfloor) {
+		// walking monsters rise and fall with the floor
+		thing->z = temp.w;
+    } else {
 	// don't adjust a floating monster unless forced to
-	if (thing->z+thing->height > thing->ceilingz)
-	    thing->z = thing->ceilingz - thing->height;
-    }
+		temp.h.intbits = thing->ceilingz;
+		if (thing->z+thing->height > temp.w)
+			thing->z = temp.w - thing->height;
+	}
+
+	temp.h.intbits = thing->ceilingz - thing->floorz;
 	
-    if (thing->ceilingz - thing->floorz < thing->height)
-	return false;
-		
+    if (temp.w < thing->height)
+		return false;
+
     return true;
 }
 
@@ -761,7 +766,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
 	mobj_t* slidemo;
 	line_t li;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
-
+	fixed_t_union temp;
 
 	li = lines[in->d.linenum];
 
@@ -776,16 +781,19 @@ boolean PTR_SlideTraverse (intercept_t* in)
     }
 
     // set openrange, opentop, openbottom
+	temp.h.fracbits = 0;
     P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
 	slidemo = (mobj_t*)Z_LoadBytesFromEMS(slidemoRef);
-
-    if (openrange < slidemo->height)
+	temp.h.intbits = openrange;
+    if (temp.w < slidemo->height)
 		goto isblocking;		// doesn't fit
 		
-    if (opentop - slidemo->z < slidemo->height)
+	temp.h.intbits = opentop;
+    if (temp.w - slidemo->z < slidemo->height)
 		goto isblocking;		// mobj is too high
 
-    if (openbottom - slidemo->z > 24*FRACUNIT )
+	temp.h.intbits = openbottom;
+    if (temp.w - slidemo->z > 24*FRACUNIT )
 		goto isblocking;		// too big a step up
 
     // this line doesn't block movement
@@ -957,6 +965,8 @@ PTR_AimTraverse (intercept_t* in)
 	MEMREF		thRef;
 	line_t* lines;
 	sector_t* sectors;
+	fixed_t_union temp;
+
     if (in->isaline) {
 		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 		li = lines[in->d.linenum];
@@ -975,14 +985,17 @@ PTR_AimTraverse (intercept_t* in)
 		dist = FixedMul (attackrange, in->frac);
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
+		temp.h.fracbits = 0;
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
-			slope = FixedDiv (openbottom - shootz , dist);
+			temp.h.intbits = openbottom;
+			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
-			slope = FixedDiv (opentop - shootz , dist);
+			temp.h.intbits = opentop;
+			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope < topslope)
 				topslope = slope;
 		}
@@ -1050,6 +1063,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	MEMREF		thRef;
 	line_t*		lines;
 	sector_t*	sectors;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 
     if (in->isaline) {
 		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -1068,13 +1083,15 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
-			slope = FixedDiv (openbottom - shootz , dist);
+			temp.h.intbits = openbottom;
+			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope > aimslope)
 				goto hitline;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
-			slope = FixedDiv (opentop - shootz , dist);
+			temp.h.intbits = opentop;
+			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope < aimslope)
 				goto hitline;
 		}
@@ -1095,7 +1112,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
 		if (sectors[li.frontsecnum].ceilingpic == skyflatnum) {
 			// don't shoot the sky!
-			if (z > sectors[li.frontsecnum].ceilingheight) {
+			temp.h.intbits = sectors[li.frontsecnum].ceilingheight;
+			if (z > temp.w) {
 				return false;
 			}
 			// it's a sky hack wall

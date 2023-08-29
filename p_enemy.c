@@ -338,8 +338,8 @@ boolean P_Move (MEMREF actorRef)
     boolean	good;
 
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-	
-		
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 	if (actor->movedir == DI_NODIR) {
 		return false;
 	}
@@ -359,13 +359,13 @@ boolean P_Move (MEMREF actorRef)
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
 
-
+	temp.h.intbits = tmfloorz;
 
     if (!try_ok) {
 		// open any specials
 		if (actor->flags & MF_FLOAT && floatok) {
 			// must adjust height
-			if (actor->z < tmfloorz)
+			if (actor->z < temp.w)
 			actor->z += FLOATSPEED;
 			else
 			actor->z -= FLOATSPEED;
@@ -399,7 +399,8 @@ boolean P_Move (MEMREF actorRef)
 
 	
 	if (!(actor->flags & MF_FLOAT)) {
-		actor->z = actor->floorz;
+		temp.h.intbits = actor->floorz;
+		actor->z = temp.w;
 	}
 
 

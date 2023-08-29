@@ -685,8 +685,6 @@ G_CheckSpot
 (int16_t           playernum,
   mapthing_t*   mthing ) 
 { 
-    fixed_t             x;
-    fixed_t             y; 
     subsector_t*        ss; 
 	angle_t            an;
     mobj_t*             mo; 
@@ -697,23 +695,27 @@ G_CheckSpot
 	int16_t subsecnum;
 	int16_t secnum;
 	sector_t* sectors;
+    fixed_t_union tempx;
+    fixed_t_union tempy;
+    fixed_t_union tempz;
         
+    tempx.h.fracbits = 0;
+    tempy.h.fracbits = 0;
+    tempx.h.intbits = mthing->x; 
+    tempy.h.intbits = mthing->y; 
+
     if (!players[playernum].moRef)
     {
         // first spawn of level, before corpses
 		for (i = 0; i < playernum; i++) {
 			playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[i].moRef);
-			if (playerMo->x == (fixed_t)(mthing->x) << FRACBITS
-				&& playerMo->y == (fixed_t)mthing->y << FRACBITS)
+			if (playerMo->x == tempx.w && playerMo->y == tempy.w)
 				return false;
 		}
         return true;
     }
-                
-    x = (fixed_t)mthing->x << FRACBITS; 
-    y = (fixed_t)mthing->y << FRACBITS; 
          
-    if (!P_CheckPosition (players[playernum].moRef, x, y) ) 
+    if (!P_CheckPosition (players[playernum].moRef, tempx.w, tempy.w) ) 
         return false; 
  
     // flush an old corpse if needed 
@@ -723,16 +725,17 @@ G_CheckSpot
     bodyqueslot++; 
         
     // spawn a teleport fog 
-    subsecnum = R_PointInSubsector (x,y); 
+    subsecnum = R_PointInSubsector (tempx.w,tempy.w); 
 	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
 
 	secnum = subsectors[subsecnum].secnum;
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
     an = ( ANG45 * (mthing->angle/45) ) >> ANGLETOFINESHIFT; 
- 
-    moRef = P_SpawnMobj (x+20*finecosine(an), y+20*finesine(an)
-                      , sectors[secnum].floorheight
+    tempz.h.fracbits = 0;
+    tempz.h.intbits = sectors[secnum].floorheight;
+    moRef = P_SpawnMobj (tempx.w+20*finecosine(an), tempy.w+20*finesine(an)
+                      , tempz.w
                       , MT_TFOG); 
          
 	if (players[consoleplayer].viewz != 1) {

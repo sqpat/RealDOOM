@@ -25,6 +25,7 @@
 #endif
 
 #define FLOATSPEED		(FRACUNIT*4)
+#define FLOATSPEED_NONFRAC		(FRACUNIT)
 
 
 #define MAXHEALTH		100
@@ -158,10 +159,10 @@ fixed_t P_InterceptVector (divline_t* v2, divline_t* v1);
 boolean 	P_BoxOnLineSide (fixed_t* tmbox, slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t linev1Offset);
 
 
-extern fixed_t		opentop;
-extern fixed_t 		openbottom;
-extern fixed_t		openrange;
-extern fixed_t		lowfloor;
+extern short_height_t		opentop;
+extern short_height_t 		openbottom;
+extern short_height_t		openrange;
+extern short_height_t		lowfloor;
 
 void 	P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
@@ -194,8 +195,8 @@ void P_SetThingPosition (MEMREF thing);
 // If "floatok" true, move would be ok
 // if within "tmfloorz - tmceilingz".
 extern boolean		floatok;
-extern fixed_t		tmfloorz;
-extern fixed_t		tmceilingz;
+extern short_height_t		tmfloorz;
+extern short_height_t		tmceilingz;
 
 
 extern	int16_t		ceilinglinenum;

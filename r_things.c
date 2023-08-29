@@ -912,6 +912,7 @@ void R_DrawSprite (vissprite_t* spr)
     fixed_t             lowscale;
 	int16_t                 silhouette;
 	seg_t* segs;
+    fixed_t_union temp;
 
     for (x = spr->x1 ; x<=spr->x2 ; x++)
         clipbot[x] = cliptop[x] = -2;
@@ -961,10 +962,15 @@ void R_DrawSprite (vissprite_t* spr)
         // clip this piece of the sprite
         silhouette = ds->silhouette;
         
-        if (spr->gz >= ds->bsilheight)
+        // todo in the MIN_SHORT case do we have to extend the FFFF?
+        temp.h.fracbits = 0;
+        temp.h.intbits =  ds->bsilheight;
+
+        if (spr->gz >= temp.w)
             silhouette &= ~SIL_BOTTOM;
 
-        if (spr->gzt <= ds->tsilheight)
+        temp.h.intbits =  ds->tsilheight;
+        if (spr->gzt <= temp.w)
             silhouette &= ~SIL_TOP;
                         
         if (silhouette == 1)

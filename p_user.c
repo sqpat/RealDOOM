@@ -69,31 +69,31 @@ void P_CalcHeight (player_t* player)
     fineangle_t		angle;
     fixed_t	bob;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
-
-    // Regular movement bobbing
+	fixed_t_union temp;
+    temp.h.fracbits = 0;
+	// Regular movement bobbing
     // (needs to be calculated for gun swing
     // even if not on ground)
     // OPTIMIZE: tablify angle
     // Note: a LUT allows for effects
     //  like a ramp with low health.
-    player->bob =
-	FixedMul (playermo->momx, playermo->momx)
-	+ FixedMul (playermo->momy, playermo->momy);
+    // todo <- yea lets actually optimize with LUT? - sq
+	player->bob =
+	FixedMul (playermo->momx, playermo->momx) + FixedMul (playermo->momy, playermo->momy);
     
     player->bob >>= 2;
 
     if (player->bob>MAXBOB)
 	player->bob = MAXBOB;
+    if ((player->cheats & CF_NOMOMENTUM) || !onground) {
+		player->viewz = playermo->z + VIEWHEIGHT;
+		temp.h.intbits = playermo->ceilingz - 4;
 
-    if ((player->cheats & CF_NOMOMENTUM) || !onground)
-    {
-	player->viewz = playermo->z + VIEWHEIGHT;
+		if (player->viewz > temp.w)
+			player->viewz = temp.w;
 
-	if (player->viewz > playermo->ceilingz-4*FRACUNIT)
-	    player->viewz = playermo->ceilingz-4*FRACUNIT;
-
-	player->viewz = playermo->z + player->viewheight;
-	return;
+		player->viewz = playermo->z + player->viewheight;
+		return;
     }
 		
     angle = (FINEANGLES/20*leveltime)&FINEMASK;
@@ -101,34 +101,31 @@ void P_CalcHeight (player_t* player)
 
     
     // move viewheight
-    if (player->playerstate == PST_LIVE)
-    {
-	player->viewheight += player->deltaviewheight;
+    if (player->playerstate == PST_LIVE) {
+		player->viewheight += player->deltaviewheight;
 
-	if (player->viewheight > VIEWHEIGHT)
-	{
-	    player->viewheight = VIEWHEIGHT;
-	    player->deltaviewheight = 0;
-	}
+		if (player->viewheight > VIEWHEIGHT) {
+			player->viewheight = VIEWHEIGHT;
+			player->deltaviewheight = 0;
+		}
 
-	if (player->viewheight < VIEWHEIGHT/2)
-	{
-	    player->viewheight = VIEWHEIGHT/2;
-	    if (player->deltaviewheight <= 0)
-		player->deltaviewheight = 1;
-	}
-	
-	if (player->deltaviewheight)	
-	{
-	    player->deltaviewheight += FRACUNIT/4;
-	    if (!player->deltaviewheight)
-		player->deltaviewheight = 1;
-	}
+		if (player->viewheight < VIEWHEIGHT/2) {
+			player->viewheight = VIEWHEIGHT/2;
+			if (player->deltaviewheight <= 0)
+				player->deltaviewheight = 1;
+		}
+		
+		if (player->deltaviewheight)	 {
+			player->deltaviewheight += FRACUNIT/4;
+			if (!player->deltaviewheight)
+				player->deltaviewheight = 1;
+		}
     }
     player->viewz = playermo->z + player->viewheight + bob;
 
-    if (player->viewz > playermo->ceilingz-4*FRACUNIT)
-	player->viewz = playermo->ceilingz-4*FRACUNIT;
+	temp.h.intbits = playermo->ceilingz - 4;
+    if (player->viewz > temp.w)
+		player->viewz = temp.w;
 }
 
 
@@ -140,24 +137,25 @@ void P_MovePlayer (player_t* player)
 {
     ticcmd_t*		cmd;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
-    cmd = &player->cmd;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
+	cmd = &player->cmd;
 	
 	playermo->angle += (cmd->angleturn<<16);
+	temp.h.intbits = playermo->floorz;
 
     // Do not let the player control movement
     //  if not onground.
-    onground = (playermo->z <= playermo->floorz);
+    onground = (playermo->z <= temp.w);
 
     if (cmd->forwardmove && onground)
-	P_Thrust (player, playermo->angle>>ANGLETOFINESHIFT, cmd->forwardmove*2048);
+		P_Thrust (player, playermo->angle>>ANGLETOFINESHIFT, cmd->forwardmove*2048);
     
     if (cmd->sidemove && onground)
-	P_Thrust (player, MOD_FINE_ANGLE((playermo->angle>>ANGLETOFINESHIFT)-FINE_ANG90), cmd->sidemove*2048);
+		P_Thrust (player, MOD_FINE_ANGLE((playermo->angle>>ANGLETOFINESHIFT)-FINE_ANG90), cmd->sidemove*2048);
 
-    if ( (cmd->forwardmove || cmd->sidemove) 
-	 && playermo->state == &states[S_PLAY] )
-    {
-	P_SetMobjState (player->moRef, S_PLAY_RUN1);
+    if ( (cmd->forwardmove || cmd->sidemove)  && playermo->state == &states[S_PLAY] ) {
+		P_SetMobjState (player->moRef, S_PLAY_RUN1);
     }
 }	
 
@@ -176,6 +174,8 @@ void P_DeathThink (player_t* player)
     angle_t		delta;
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 	mobj_t* playerattacker;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 
     P_MovePsprites (player);
 	
@@ -187,7 +187,10 @@ void P_DeathThink (player_t* player)
 	player->viewheight = 6*FRACUNIT;
 
     player->deltaviewheight = 0;
-    onground = (playermo->z <= playermo->floorz);
+	
+	temp.h.intbits = playermo->floorz;
+
+    onground = (playermo->z <= temp.w);
     P_CalcHeight (player);
 	
 	if (player->attackerRef && player->attackerRef != player->moRef) {

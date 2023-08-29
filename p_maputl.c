@@ -362,10 +362,10 @@ P_InterceptVector
 // through a two sided line.
 // OPTIMIZE: keep this precalculated
 //
-fixed_t opentop;
-fixed_t openbottom;
-fixed_t openrange;
-fixed_t	lowfloor;
+int16_t opentop;
+int16_t openbottom;
+int16_t openrange;
+int16_t	lowfloor;
 
 
 void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {

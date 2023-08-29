@@ -535,9 +535,6 @@ void D_DoomLoop (void)
 
 				//doorunit = (vldoor_t*)Z_LoadBytesFromEMS(784);
 
-				//sprintf(result2, "%i %i %i %i %i %i %i %i %i \n", gametic, prndindex, doorunit->direction, doorunit->speed, doorunit->topcountdown, doorunit->topheight, doorunit->topwait, doorunit->secnum, sectors[114].ceilingheight);
-
-		 
 				//lastindex = prndindex;
 
 

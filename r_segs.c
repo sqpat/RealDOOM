@@ -114,7 +114,7 @@ R_RenderMaskedSegRange
 	sector_t* sectors;
 	sector_t frontsector;
 	sector_t backsector;
-
+	temp.h.fracbits = 0;
 	// Calculate light table.
 	// Use different light tables
 	//   for horizontal / vertical / diagonal. Diagonal?
@@ -166,14 +166,13 @@ R_RenderMaskedSegRange
     // find positioning
 	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
     if (lines[curlinelinedefOffset].flags & ML_DONTPEGBOTTOM) {
-		dc_texturemid = frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight;
+		temp.h.intbits = frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight;
 		textureheight = Z_LoadBytesFromEMS(textureheightRef);
-		temp.h.intbits = textureheight[texnum];
-		temp.h.fracbits = 0;
-		dc_texturemid = dc_texturemid + temp.w - viewz;
+		temp.h.intbits += textureheight[texnum];
+		dc_texturemid =  temp.w - viewz;
     } else {
-		dc_texturemid = frontsector.ceilingheight< backsector.ceilingheight ? frontsector.ceilingheight : backsector.ceilingheight;
-		dc_texturemid = dc_texturemid - viewz;
+		temp.h.intbits = frontsector.ceilingheight< backsector.ceilingheight ? frontsector.ceilingheight : backsector.ceilingheight;
+		dc_texturemid = temp.w - viewz;
     }
     dc_texturemid += siderowoffset;
 			
@@ -483,6 +482,7 @@ R_StoreWallRange
 	sector_t frontsector;
 	sector_t backsector;
 	fixed_t_union temp;
+	temp.h.fracbits = 0;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
@@ -540,8 +540,10 @@ R_StoreWallRange
 
     // calculate texture boundaries
     //  and decide if floor / ceiling marks are needed
-    worldtop = frontsector.ceilingheight - viewz;
-    worldbottom = frontsector.floorheight - viewz;
+    temp.h.intbits = frontsector.ceilingheight;
+	worldtop = temp.w - viewz;
+    temp.h.intbits = frontsector.floorheight;
+    worldbottom = temp.w - viewz;
 	
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
@@ -565,9 +567,8 @@ R_StoreWallRange
 		markfloor = markceiling = true;
 		if (lineflags & ML_DONTPEGBOTTOM) {
 			textureheight = Z_LoadBytesFromEMS(textureheightRef);
-			temp.h.intbits = textureheight[sidemidtexture];
-			temp.h.fracbits = 0;
-			vtop = frontsector.floorheight + temp.w;
+			temp.h.intbits = textureheight[sidemidtexture]+frontsector.floorheight;
+			vtop = temp.w;
 			// bottom of texture at bottom
 			rw_midtexturemid = vtop - viewz;	
 		} else {
@@ -579,45 +580,49 @@ R_StoreWallRange
 		ds_p->silhouette = SIL_BOTH;
 		ds_p->sprtopclip = screenheightarray;
 		ds_p->sprbottomclip = negonearray;
-		ds_p->bsilheight = MAXLONG;
-		ds_p->tsilheight = MINLONG;
+		ds_p->bsilheight = MAXSHORT;
+		ds_p->tsilheight = MINSHORT;
     } else {
 		// two sided line
 		ds_p->sprtopclip = ds_p->sprbottomclip = NULL;
 		ds_p->silhouette = 0;
-	
+		temp.h.intbits = backsector.floorheight;
 		if (frontsector.floorheight > backsector.floorheight) {
 			ds_p->silhouette = SIL_BOTTOM;
 			ds_p->bsilheight = frontsector.floorheight;
-		} else if (backsector.floorheight > viewz) {
+		} else if (temp.w > viewz) {
 			ds_p->silhouette = SIL_BOTTOM;
-			ds_p->bsilheight = MAXLONG;
+			ds_p->bsilheight = MAXSHORT;
 			// ds_p->sprbottomclip = negonearray;
 		}
 	
+		temp.h.intbits = backsector.ceilingheight;
 		if (frontsector.ceilingheight < backsector.ceilingheight) {
 			ds_p->silhouette |= SIL_TOP;
-			ds_p->tsilheight = frontsector.ceilingheight;
-		} else if (backsector.ceilingheight < viewz) {
+			temp.h.intbits = frontsector.ceilingheight;
+			ds_p->tsilheight = temp.w;
+		} else if (temp.w < viewz) {
 			ds_p->silhouette |= SIL_TOP;
-			ds_p->tsilheight = MINLONG;
+			ds_p->tsilheight = MINSHORT;
 			// ds_p->sprtopclip = screenheightarray;
 		}
 		
 		if (backsector.ceilingheight <= frontsector.floorheight) {
 			ds_p->sprbottomclip = negonearray;
-			ds_p->bsilheight = MAXLONG;
+			ds_p->bsilheight = MAXSHORT;
 			ds_p->silhouette |= SIL_BOTTOM;
 		}
 	
 		if (backsector.floorheight >= frontsector.ceilingheight) {
 			ds_p->sprtopclip = screenheightarray;
-			ds_p->tsilheight = MINLONG;
+			ds_p->tsilheight = MINSHORT;
 			ds_p->silhouette |= SIL_TOP;
 		}
 	
-		worldhigh = backsector.ceilingheight - viewz;
-		worldlow = backsector.floorheight - viewz;
+		temp.h.intbits = backsector.ceilingheight;
+		worldhigh = temp.w - viewz;
+		temp.h.intbits = backsector.floorheight;
+		worldlow = temp.w - viewz;
 		
 		// hack to allow height changes in outdoor areas
 		if (frontsector.ceilingpic == skyflatnum && backsector.ceilingpic == skyflatnum) {
@@ -660,9 +665,8 @@ R_StoreWallRange
 				rw_toptexturemid = worldtop;
 			} else {
 				textureheight = Z_LoadBytesFromEMS(textureheightRef);
-				temp.h.intbits = textureheight[sidetoptexture];
-				temp.h.fracbits = 0;
-				vtop = backsector.ceilingheight + temp.w;
+				temp.h.intbits = textureheight[sidetoptexture] + backsector.ceilingheight;
+				vtop = temp.w;
 		
 				// bottom of texture
 				rw_toptexturemid = vtop - viewz;	
@@ -746,12 +750,13 @@ R_StoreWallRange
     //  and doesn't need to be marked.
     
   
-    if (frontsector.floorheight >= viewz) {
+    temp.h.intbits = frontsector.floorheight;
+    if (temp.w >= viewz) {
 		// above view plane
 		markfloor = false;
     }
-    
-    if (frontsector.ceilingheight <= viewz  && frontsector.ceilingpic != skyflatnum) {
+    temp.h.intbits = frontsector.ceilingheight;
+    if (temp.w <= viewz  && frontsector.ceilingpic != skyflatnum) {
 		// below view plane
 		markceiling = false;
     }
@@ -813,12 +818,12 @@ R_StoreWallRange
     if (maskedtexture && !(ds_p->silhouette&SIL_TOP))
     {
 	ds_p->silhouette |= SIL_TOP;
-	ds_p->tsilheight = MINLONG;
+	ds_p->tsilheight = MINSHORT;
     }
     if (maskedtexture && !(ds_p->silhouette&SIL_BOTTOM))
     {
 	ds_p->silhouette |= SIL_BOTTOM;
-	ds_p->bsilheight = MAXLONG;
+	ds_p->bsilheight = MAXSHORT;
     }
     ds_p++;
 }

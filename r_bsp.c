@@ -564,7 +564,8 @@ void R_Subsector(int16_t subsecnum)
 	int16_t firstline;
 	sector_t* sectors;
 	sector_t* frontsector;
- 
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 	
     frontsecnum = subsectors[subsecnum].secnum;
     count = subsectors[subsecnum].numlines;
@@ -574,18 +575,22 @@ void R_Subsector(int16_t subsecnum)
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	frontsector = &sectors[frontsecnum];
 
-	if (frontsector->floorheight < viewz)
+	temp.h.intbits = frontsector->floorheight;
+	if (temp.w < viewz)
 	{
-		floorplane = R_FindPlane(frontsector->floorheight,
+		floorplane = R_FindPlane(temp.w,
 			frontsector->floorpic,
 			frontsector->lightlevel);
 	}
 	else
 		floorplane = NULL;
 
-	if (frontsector->ceilingheight > viewz || frontsector->ceilingpic == skyflatnum)
+	temp.h.intbits = frontsector->ceilingheight;
+	// todo: if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
+	
+	if (temp.w > viewz || frontsector->ceilingpic == skyflatnum)
 	{
-		ceilingplane = R_FindPlane(frontsector->ceilingheight,
+		ceilingplane = R_FindPlane(temp.w,
 			frontsector->ceilingpic,
 			frontsector->lightlevel);
 	}

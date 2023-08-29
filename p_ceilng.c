@@ -56,10 +56,7 @@ void T_MoveCeiling (MEMREF memref)
 	break;
       case 1:
 	// UP
-	res = T_MovePlane(ceiling->secnum,
-			  ceiling->speed,
-			  ceiling->topheight,
-			  false,1,ceiling->direction);
+	res = T_MovePlane(ceiling->secnum, ceiling->speed, ceiling->topheight, false,1,ceiling->direction);
 	ceiling = (ceiling_t*)Z_LoadBytesFromEMS(memref);
 	ceilingsecnum = ceiling->secnum;
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
@@ -177,7 +174,7 @@ EV_DoCeiling
 	MEMREF ceilingRef;
 	sector_t* sectors;
 	sector_t sector;
-
+	
     secnum = -1;
     rtn = 0;
     
@@ -217,7 +214,7 @@ EV_DoCeiling
 	  case fastCrushAndRaise:
 	    ceiling->crush = true;
 	    ceiling->topheight = sector.ceilingheight;
-	    ceiling->bottomheight = sector.floorheight + (8*FRACUNIT);
+	    ceiling->bottomheight = sector.floorheight+8;
 	    ceiling->direction = -1;
 	    ceiling->speed = CEILSPEED * 2;
 	    break;
@@ -225,12 +222,12 @@ EV_DoCeiling
 	  case silentCrushAndRaise:
 	  case crushAndRaise:
 	    ceiling->crush = true;
-	    ceiling->topheight = sector.ceilingheight;
+		ceiling->topheight = sector.ceilingheight;
 	  case lowerAndCrush:
 	  case lowerToFloor:
-	    ceiling->bottomheight = sector.floorheight;
+		ceiling->bottomheight = sector.floorheight;
 	    if (type != lowerToFloor)
-		ceiling->bottomheight += 8*FRACUNIT;
+			ceiling->bottomheight += 8;
 	    ceiling->direction = -1;
 	    ceiling->speed = CEILSPEED;
 	    break;

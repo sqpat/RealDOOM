@@ -81,16 +81,16 @@ getSideNum
 	int16_t		line,
 	int16_t		side );
 
-fixed_t P_FindLowestFloorSurrounding(int16_t secnum);
-fixed_t P_FindHighestFloorSurrounding(int16_t secnum);
+short_height_t P_FindLowestFloorSurrounding(int16_t secnum);
+short_height_t P_FindHighestFloorSurrounding(int16_t secnum);
 
-fixed_t
+short_height_t
 P_FindNextHighestFloor
 (int16_t secnum,
-  int32_t		currentheight );
+  short_height_t		currentheight );
 
-fixed_t P_FindLowestCeilingSurrounding(int16_t secnum);
-fixed_t P_FindHighestCeilingSurrounding(int16_t secnum);
+short_height_t P_FindLowestCeilingSurrounding(int16_t secnum);
+short_height_t P_FindHighestCeilingSurrounding(int16_t secnum);
 
 int16_t
 P_FindSectorFromLineTag
@@ -278,9 +278,9 @@ typedef struct
 {
 	THINKERREF	thinkerRef;
 	int16_t secnum;
-    fixed_t	speed;
-    fixed_t	low;
-    fixed_t	high;
+    short_height_t	speed;
+    short_height_t	low;
+    short_height_t	high;
     int8_t		wait;
     int8_t		count;
     plat_e	status;
@@ -294,7 +294,8 @@ typedef struct
 
 
 #define PLATWAIT		3
-#define PLATSPEED		FRACUNIT
+// #define PLATSPEED		FRACUNIT
+#define PLATSPEED		1
 #define MAXPLATS		30
 
 
@@ -338,8 +339,8 @@ typedef struct
     THINKERREF	thinkerRef;
     vldoor_e	type;
     int16_t	secnum;
-    fixed_t	topheight;
-    fixed_t	speed;
+    int16_t	topheight;
+    int16_t	speed;
 
     // 1 = up, 0 = waiting at top, -1 = down
 	int16_t             direction;
@@ -354,7 +355,8 @@ typedef struct
 
 
 
-#define VDOORSPEED		FRACUNIT*2
+#define VDOORSPEED		2
+// #define VDOORSPEED		FRACUNIT*2
 #define VDOORWAIT		150
 
 void
@@ -403,9 +405,9 @@ typedef struct
     THINKERREF	thinkerRef;
     ceiling_e	type;
 	int16_t secnum;
-    fixed_t	bottomheight;
-    fixed_t	topheight;
-    fixed_t	speed;
+    short_height_t	bottomheight;
+    short_height_t	topheight;
+    short_height_t	speed;
     boolean	crush;
 
     // 1 = up, 0 = waiting, -1 = down
@@ -421,7 +423,8 @@ typedef struct
 
 
 
-#define CEILSPEED		FRACUNIT
+// #define CEILSPEED		FRACUNIT
+#define CEILSPEED		1
 #define CEILWAIT		150
 #define MAXCEILINGS		30
 
@@ -494,14 +497,15 @@ typedef struct
     int16_t		direction;
     int16_t		newspecial;
     int16_t	texture;
-    fixed_t	floordestheight;
-    fixed_t	speed;
+    short_height_t	floordestheight;
+    short_height_t	speed;
 
 } floormove_t;
 
 
 
-#define FLOORSPEED		FRACUNIT
+// #define FLOORSPEED		FRACUNIT
+#define FLOORSPEED		1
 
 #define floor_ok 0
 #define floor_crushed 1
@@ -514,8 +518,8 @@ typedef uint8_t result_e;
 result_e
 T_MovePlane
 ( int16_t secnum,
-  fixed_t	speed,
-  fixed_t	dest,
+  short_height_t	speed,
+  short_height_t	dest,
   boolean	crush,
   int16_t		floorOrCeiling,
   int16_t		direction );

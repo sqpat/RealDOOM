@@ -92,8 +92,9 @@ typedef struct
 //
 typedef	struct
 {
-    fixed_t	floorheight;
-    fixed_t	ceilingheight;
+
+    short_height_t	floorheight;
+    short_height_t	ceilingheight;
     uint8_t	floorpic;
     uint8_t	ceilingpic;
     uint8_t	lightlevel; // seems to max at 255
@@ -324,13 +325,13 @@ typedef struct drawseg_s
     int16_t		scalestep;
 
     // 0=none, 1=bottom, 2=top, 3=both
-    int16_t			silhouette;
+    int8_t			silhouette;
 
     // do not clip sprites above this
-    fixed_t		bsilheight;
+    int16_t		bsilheight;
 
     // do not clip sprites below this
-    fixed_t		tsilheight;
+    int16_t		tsilheight;
     
     // Pointers to lists for sprite clipping,
     //  all three adjusted so [x1] is first value.

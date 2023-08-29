@@ -140,10 +140,11 @@ void P_XYMovement (MEMREF moRef)
 	int16_t ceilinglinebacksecnum;
 	sector_t* sectors;
 	int16_t mosecnum;
-	fixed_t sectorfloorheight;
-
+	short_height_t sectorfloorheight;
+	fixed_t_union temp;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	player = mo->player;
+	temp.h.fracbits = 0;
 	
 	
 
@@ -241,8 +242,8 @@ void P_XYMovement (MEMREF moRef)
 	 
 		return; 	// no friction for missiles ever
 	}
-
-	if (mo->z > mo->floorz) {
+	temp.h.intbits = mo->floorz;
+	if (mo->z > temp.w) {
 
 		return;		// no friction when airborne
 	}
@@ -306,10 +307,12 @@ void P_ZMovement (MEMREF moRef)
 	fixed_t	moTargetz;
 	mobj_t* moTarget;
 	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
- 
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
+	temp.h.intbits = mo->floorz;
     // check for smooth step up
-    if (mo->player && mo->z < mo->floorz) {
-		mo->player->viewheight -= mo->floorz-mo->z;
+    if (mo->player && mo->z < temp.w) {
+		mo->player->viewheight -= temp.w-mo->z;
 
 		mo->player->deltaviewheight = (VIEWHEIGHT - mo->player->viewheight)>>3;
     }
@@ -331,15 +334,15 @@ void P_ZMovement (MEMREF moRef)
 			delta =(moTargetz + (mo->height>>1)) - mo->z;
 
 			if (delta<0 && dist < -(delta*3) )
-			mo->z -= FLOATSPEED;
+				mo->z -= FLOATSPEED;
 			else if (delta>0 && dist < (delta*3) )
-			mo->z += FLOATSPEED;			
+				mo->z += FLOATSPEED;			
 		}
 	
     }
     
     // clip movement
-    if (mo->z <= mo->floorz) {
+    if (mo->z <= temp.w) {
 		// hit the floor
 
 	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
@@ -365,7 +368,7 @@ void P_ZMovement (MEMREF moRef)
 			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			mo->momz = 0;
 		}
-		mo->z = mo->floorz;
+		mo->z = temp.w;
 
 	#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
 		if (mo->flags & MF_SKULLFLY) {
@@ -386,12 +389,13 @@ void P_ZMovement (MEMREF moRef)
 		}
 	}
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-    if (mo->z + mo->height > mo->ceilingz) {
+	temp.h.intbits = mo->ceilingz;
+    if (mo->z + mo->height > temp.w) {
 		// hit the ceiling
 		if (mo->momz > 0) {
 			mo->momz = 0;
 		}
-		mo->z = mo->ceilingz - mo->height;
+		mo->z = temp.w - mo->height;
 
 		if (mo->flags & MF_SKULLFLY) {	// the skull slammed into something
 			mo->momz = -mo->momz;
@@ -434,7 +438,8 @@ P_NightmareRespawn(MEMREF mobjRef)
 	fixed_t mobjx;
 	fixed_t mobjy;
 	sector_t* sectors;
-
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 	x = mobj->spawnpoint.x << FRACBITS;
 	y = mobj->spawnpoint.y << FRACBITS;
 
@@ -450,7 +455,8 @@ P_NightmareRespawn(MEMREF mobjRef)
 
 	// spawn a teleport fog at old spot
 	// because of removal of the body?
-	moRef = P_SpawnMobj(mobjx, mobjy, sectors[mobjsecnum].floorheight, MT_TFOG);
+	temp.h.intbits = sectors[mobjsecnum].floorheight;
+	moRef = P_SpawnMobj(mobjx, mobjy, temp.w, MT_TFOG);
 	// initiate teleport sound
 	S_StartSoundFromRef(moRef, sfx_telept);
 
@@ -459,7 +465,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	moRef = P_SpawnMobj(x, y, sectors[subsectorsecnum].floorheight, MT_TFOG);
+	moRef = P_SpawnMobj(x, y, temp.w, MT_TFOG);
 
 	S_StartSoundFromRef(moRef, sfx_telept);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -503,7 +509,8 @@ void P_MobjThinker (MEMREF mobjRef) {
 
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	// momentum movement
-    if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
+    fixed_t_union temp;
+	if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
 		P_XYMovement (mobjRef);
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -514,7 +521,9 @@ void P_MobjThinker (MEMREF mobjRef) {
 		}
     } 
 
-    if ( (mobj->z != mobj->floorz) || mobj->momz ) {
+	temp.h.fracbits = 0;
+	temp.h.intbits = mobj->floorz;
+    if ( (mobj->z != temp.w) || mobj->momz ) {
 		P_ZMovement (mobjRef);
 	 
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -582,9 +591,10 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	MEMREF mobjRef;
 	int16_t mobjsecnum;
 	sector_t* sectors;
-	fixed_t sectorfloorheight;
-	fixed_t sectorceilingheight;
-
+	short_height_t sectorfloorheight;
+	short_height_t sectorceilingheight;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 	mobjRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, 0, ALLOC_TYPE_LEVSPEC);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
@@ -630,10 +640,13 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	mobj->floorz = sectorfloorheight;
 	mobj->ceilingz = sectorceilingheight;
 
-    if (z == ONFLOORZ)
-		mobj->z = mobj->floorz;
-    else if (z == ONCEILINGZ)
-		mobj->z = mobj->ceilingz - mobj->info->height * FRACUNIT;
+    if (z == ONFLOORZ){
+		temp.h.intbits = mobj->floorz;
+		mobj->z = temp.w;
+	} else if (z == ONCEILINGZ){
+		temp.h.intbits = mobj->ceilingz;
+		mobj->z = temp.w - mobj->info->height * FRACUNIT;
+	}
     else 
 		mobj->z = z;
 

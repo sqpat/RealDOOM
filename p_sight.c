@@ -288,8 +288,8 @@ boolean P_CrossSubsector (int16_t subsecnum)
     int16_t			count;
     int16_t frontsecnum;
 	int16_t backsecnum;
-    fixed_t		opentop;
-    fixed_t		openbottom;
+    short_height_t		opentop;
+    short_height_t		openbottom;
     node_t		divlNode;
     divline_t		divl;
     vertex_t		v1;
@@ -304,7 +304,8 @@ boolean P_CrossSubsector (int16_t subsecnum)
 	int16_t lineflags;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	sector_t* sectors;
- 
+	fixed_t_union temp;
+ 	temp.h.fracbits = 0;
     // check lines
     count = subsectors[subsecnum].numlines;
     segnum = subsectors[subsecnum].firstline;
@@ -404,13 +405,15 @@ boolean P_CrossSubsector (int16_t subsecnum)
 		// frac = P_InterceptVector2 (&strace, &divlNode);
 		
 		if (sectors[frontsecnum].floorheight != sectors[backsecnum].floorheight) {
-			slope = FixedDiv (openbottom - sightzstart , frac);
+		 	temp.h.intbits = openbottom;
+			slope = FixedDiv (temp.w - sightzstart , frac);
 			if (slope > bottomslope)
 			bottomslope = slope;
 		}
 		
 		if (sectors[frontsecnum].ceilingheight != sectors[backsecnum].ceilingheight) {
-			slope = FixedDiv (opentop - sightzstart , frac);
+		 	temp.h.intbits = opentop;
+			slope = FixedDiv (temp.w - sightzstart , frac);
 			if (slope < topslope)
 			topslope = slope;
 		}

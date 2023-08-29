@@ -51,7 +51,7 @@ void T_PlatRaise(MEMREF platRef)
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	int32_t sectorsoundorgX = sectors[platsecnum].soundorgX;
 	int32_t sectorsoundorgY = sectors[platsecnum].soundorgY;
-	fixed_t sectorfloorheight = sectors[platsecnum].floorheight;
+	short_height_t sectorfloorheight = sectors[platsecnum].floorheight;
 
 	plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 
@@ -59,10 +59,7 @@ void T_PlatRaise(MEMREF platRef)
 
 	switch(plat->status) {
 		  case plat_up:
-				res = T_MovePlane(plat->secnum,
-						  plat->speed,
-						  plat->high,
-						  plat->crush,0,1);
+				res = T_MovePlane(plat->secnum,  plat->speed, plat->high, plat->crush,0,1);
 				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 				if (plat->type == raiseAndChange || plat->type == raiseToNearestAndChange) {
 					if (!(leveltime & 7)) {
@@ -140,10 +137,10 @@ EV_DoPlat
 	MEMREF platRef;
 	side_t* sides;
 	int16_t side0secnum;
-	fixed_t specialheight;
+	short_height_t specialheight;
 	int32_t sectorsoundorgX;
 	int32_t sectorsoundorgY;
-	fixed_t sectorfloorheight;
+	short_height_t sectorfloorheight;
 	sector_t* sectors;
 
     secnum = -1;
@@ -212,7 +209,7 @@ EV_DoPlat
 
 				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 				plat->speed = PLATSPEED / 2;
-				plat->high = sectorfloorheight + amount * FRACUNIT;
+				plat->high = sectorfloorheight + amount;
 				plat->wait = 0;
 				plat->status = plat_up;
 

@@ -277,13 +277,13 @@ getNextSector
 // P_FindLowestFloorSurrounding()
 // FIND LOWEST FLOOR HEIGHT IN SURROUNDING SECTORS
 //
-fixed_t	P_FindLowestFloorSurrounding(int16_t secnum)
+short_height_t	P_FindLowestFloorSurrounding(int16_t secnum)
 {
     int16_t			i;
     line_t*		check;
 	int16_t		otherSecOffset;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	fixed_t		floor = sectors[secnum].floorheight;
+	short_height_t		floor = sectors[secnum].floorheight;
 	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
 	int16_t linenumber;
@@ -312,11 +312,11 @@ fixed_t	P_FindLowestFloorSurrounding(int16_t secnum)
 // P_FindHighestFloorSurrounding()
 // FIND HIGHEST FLOOR HEIGHT IN SURROUNDING SECTORS
 //
-fixed_t	P_FindHighestFloorSurrounding(int16_t secnum)
+short_height_t	P_FindHighestFloorSurrounding(int16_t secnum)
 {
     uint8_t		i;
     int16_t		offset;
-    fixed_t		floor = -500*FRACUNIT;
+    short_height_t		floor = -500;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
@@ -348,22 +348,22 @@ fixed_t	P_FindHighestFloorSurrounding(int16_t secnum)
 // 20 adjoining sectors max!
 #define MAX_ADJOINING_SECTORS    	20
 
-fixed_t
+short_height_t
 P_FindNextHighestFloor
 ( int16_t	secnum,
-  int32_t		currentheight )
+  short_height_t		currentheight )
 {
     uint8_t		i;
-    int16_t			h;
-    int32_t			min;
+    short_height_t			h;
+    short_height_t			min;
 	int16_t		offset;
-	fixed_t		height = currentheight;
+	short_height_t		height = currentheight;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
 
     
-    fixed_t		heightlist[MAX_ADJOINING_SECTORS];		
+    short_height_t		heightlist[MAX_ADJOINING_SECTORS];		
 
     for (i=0, h=0 ;i < linecount ; i++) {
 		offset = sectors[secnum].linesoffset + i;
@@ -399,12 +399,12 @@ P_FindNextHighestFloor
 //
 // FIND LOWEST CEILING IN THE SURROUNDING SECTORS
 //
-fixed_t
+short_height_t
 P_FindLowestCeilingSurrounding(int16_t	secnum)
 {
     uint8_t		i;
 	int16_t		offset;
-	fixed_t		height = MAXLONG;
+	short_height_t		height = MAXSHORT;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
@@ -430,11 +430,11 @@ P_FindLowestCeilingSurrounding(int16_t	secnum)
 //
 // FIND HIGHEST CEILING IN THE SURROUNDING SECTORS
 //
-fixed_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
+short_height_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 {
     uint8_t		i;
 	int16_t		offset;
-	fixed_t	height = 0;
+	short_height_t	height = 0;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
@@ -1076,9 +1076,11 @@ void P_PlayerInSpecialSector (player_t* player) {
 	fixed_t playerMoz = playerMo->z;
 	int16_t secnum = playerMo->secnum;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
+	temp.h.intbits = sectors[secnum].floorheight;
     // Falling, not all the way down yet?
-	if (playerMoz != sectors[secnum].floorheight) {
+	if (playerMoz != temp.w) {
 		return;
 	}
 
@@ -1250,7 +1252,7 @@ int16_t EV_DoDonut(int16_t linetag)
 	line_t* lines;
 	sector_t* sectors;
 	int16_t sectors3floorpic;
-	fixed_t sectors3floorheight;
+	short_height_t sectors3floorheight;
 
     secnum = -1;
     rtn = 0;
