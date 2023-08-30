@@ -13,13 +13,13 @@ file i_main.obj
 file i_ibm.obj
 file i_sound.obj
 file tables.obj
-file f_finale.obj
+#file f_finale.obj
 file d_main.obj
 file d_net.obj
 file g_game.obj
 file m_menu.obj
 file m_misc.obj
-file am_map.obj
+# file am_map.obj
 file p_ceilng.obj
 file p_doors.obj
 file p_enemy.obj
@@ -30,13 +30,13 @@ file p_map.obj
 file p_maputl.obj
 file p_plats.obj
 file p_pspr.obj
-file p_setup.obj
+# file p_saveg.obj
+# file p_setup.obj
 file p_sight.obj
 file p_spec.obj
 file p_switch.obj
 file p_mobj.obj
 file p_telept.obj
-file p_saveg.obj
 file p_tick.obj
 file p_user.obj
 file r_bsp.obj
@@ -58,6 +58,21 @@ file wi_stuff.obj
 file s_sound.obj
 file sounds.obj
 file dutils.obj
-file f_wipe.obj
 file info.obj
+# file f_wipe.obj
 file dmx.obj
+ 
+
+
+
+ # begin overlay area
+ begin
+	# c26    postgame
+	section file f_finale.obj
+	# a73    saving/menu
+	section file p_saveg.obj
+	# fed  4c9     level setup
+	section file p_setup.obj, f_wipe.obj
+	# 1e89   postgame
+	section file am_map.obj
+ end
