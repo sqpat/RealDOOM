@@ -68,24 +68,7 @@ typedef struct
 
 // Forward of LineDefs, for Sectors.
 struct line_s;
-
-/*
-// Each sector has a degenmobj_t in its center
-//  for sound origin purposes.
-// I suppose this does not handle sound from
-//  moving objects (doppler), because
-//  position is prolly just buffered, not
-//  updated.
-typedef struct
-{
-    thinker_t		thinker;	// not used for anything
-    fixed_t		x;
-    fixed_t		y;
-    fixed_t		z;
-
-} degenmobj_t;
-*/
-
+ 
 //
 // The SECTORS record, at runtime.
 // Stores things/mobjs.
@@ -266,7 +249,7 @@ typedef struct
     int16_t	dy;
 
     // Bounding box for each child.
-    fixed_t	bbox[2][4];
+    int16_t	bbox[2][4];
 
     // If NF_SUBSECTOR its a subsector.
     uint16_t children[2];

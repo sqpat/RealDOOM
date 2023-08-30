@@ -99,9 +99,9 @@ extern MEMREF          linebufferRef;
 //
 // POV data.
 //
-extern fixed_t		viewx;
-extern fixed_t		viewy;
-extern fixed_t		viewz;
+extern fixed_t_union		viewx;
+extern fixed_t_union		viewy;
+extern fixed_t_union		viewz;
 
 extern angle_t		viewangle;
 extern player_t*	viewplayer;

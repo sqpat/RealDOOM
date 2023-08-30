@@ -653,10 +653,11 @@ P_BlockThingsIterator
 		i++;
 
 
+#ifdef LOOPCHECK
 		if (i > NUM_BLOCKLINKS) {
 			I_Error("block things caught infinite? %i ", gametic);
 		}
-
+#endif
 
 		if (!func(mobjRef)) {
 			 

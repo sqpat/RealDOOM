@@ -403,16 +403,16 @@ void R_AddLine (int16_t linenum)
 //  if some part of the bbox might be visible.
 //
 
-boolean R_CheckBBox(fixed_t *bspcoord)
+boolean R_CheckBBox(int16_t *bspcoord)
 {
 	byte boxx;
 	byte boxy;
 	byte boxpos;
 
-	fixed_t x1;
-	fixed_t y1;
-	fixed_t x2;
-	fixed_t y2;
+	int16_t x1;
+	int16_t y1;
+	int16_t x2;
+	int16_t y2;
 
 	angle_t angle1;
 	angle_t angle2;
@@ -426,8 +426,9 @@ boolean R_CheckBBox(fixed_t *bspcoord)
 
 	// Find the corners of the box
 	// that define the edges from current viewpoint.
-	boxx = viewx <= bspcoord[BOXLEFT] ? 0 : viewx < bspcoord[BOXRIGHT] ? 1 : 2;
-	boxy = viewy >= bspcoord[BOXTOP] ? 0 : viewy > bspcoord[BOXBOTTOM] ? 1 : 2;
+
+	boxx = (viewx.h.intbits < bspcoord[BOXLEFT] || (viewx.h.fracbits == 0 && viewx.h.intbits == bspcoord[BOXLEFT]))  ? 0 : viewx.h.intbits < bspcoord[BOXRIGHT] ? 1 : 2;
+	boxy = viewy.h.intbits >= bspcoord[BOXTOP] ? 0 : (viewy.h.intbits > bspcoord[BOXBOTTOM] || (viewy.h.fracbits > 0 && viewy.h.intbits == bspcoord[BOXBOTTOM]  )) ? 1 : 2;
 
 	boxpos = (boxy << 2) + boxx;
 	if (boxpos == 5)
@@ -486,8 +487,8 @@ boolean R_CheckBBox(fixed_t *bspcoord)
 	}
 
 	// check clip list for an open space
-	angle1 = R_PointToAngle(x1, y1) - viewangle;
-	angle2 = R_PointToAngle(x2, y2) - viewangle;
+	angle1 = R_PointToAngle16(x1, y1) - viewangle;
+	angle2 = R_PointToAngle16(x2, y2) - viewangle;
 
 	span = angle1 - angle2;
 
@@ -578,7 +579,7 @@ void R_Subsector(int16_t subsecnum)
 	// temp.h.intbits = frontsector->floorheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);
 
-	if (temp.w < viewz)
+	if (temp.w < viewz.w)
 	{
 		floorplane = R_FindPlane(temp.w,
 			frontsector->floorpic,
@@ -589,9 +590,9 @@ void R_Subsector(int16_t subsecnum)
 
 	// temp.h.intbits = frontsector->ceilingheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->ceilingheight);
-	// todo: if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
+	// todo: see if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
 	
-	if (temp.w > viewz || frontsector->ceilingpic == skyflatnum)
+	if (temp.w > viewz.w || frontsector->ceilingpic == skyflatnum)
 	{
 		ceilingplane = R_FindPlane(temp.w,
 			frontsector->ceilingpic,
@@ -642,9 +643,9 @@ void R_RenderBSPNode(int16_t bspnum)
 
 			//decide which side the view point is on
 			temp.h.intbits = bsp->x;
-			dx.w = (viewx - temp.w);
+			dx.w = (viewx.w - temp.w);
 			temp.h.intbits = bsp->y;
-			dy.w = (viewy - temp.w);
+			dy.w = (viewy.w - temp.w);
 
 			left = (bsp->dy) * (dx.h.intbits);
 			right = (dy.h.intbits) * (bsp->dx);

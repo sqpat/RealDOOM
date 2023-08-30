@@ -174,12 +174,12 @@ R_RenderMaskedSegRange
 		// temp.h.intbits += textureheight[texnum];
 		temp2 = (frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight)  + (textureheight[texnum]<<(SHORTFLOORBITS + 8));
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
-		dc_texturemid =  temp.w - viewz;
+		dc_texturemid =  temp.w - viewz.w;
     } else {
 		// temp.h.intbits = (frontsector.ceilingheight< backsector.ceilingheight ? frontsector.ceilingheight : backsector.ceilingheight) >> SHORTFLOORBITS;
 		temp2 = (frontsector.ceilingheight< backsector.ceilingheight ? frontsector.ceilingheight : backsector.ceilingheight) ;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
-		dc_texturemid = temp.w - viewz;
+		dc_texturemid = temp.w - viewz.w;
     }
 	temp.h.intbits = siderowoffset;
 	temp.h.fracbits = 0;
@@ -552,10 +552,10 @@ R_StoreWallRange
     //  and decide if floor / ceiling marks are needed
     // temp.h.intbits = frontsector.ceilingheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.ceilingheight);
-	worldtop = temp.w - viewz;
+	worldtop = temp.w - viewz.w;
     // temp.h.intbits = frontsector.floorheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.floorheight);
-    worldbottom = temp.w - viewz;
+    worldbottom = temp.w - viewz.w;
 	
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
@@ -586,7 +586,7 @@ R_StoreWallRange
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 			vtop = temp.w;
 			// bottom of texture at bottom
-			rw_midtexturemid = vtop - viewz;	
+			rw_midtexturemid = vtop - viewz.w;	
 		} else {
 			// top of texture at top
 			rw_midtexturemid = worldtop;
@@ -611,7 +611,7 @@ R_StoreWallRange
 		if (frontsector.floorheight > backsector.floorheight) {
 			ds_p->silhouette = SIL_BOTTOM;
 			ds_p->bsilheight = frontsector.floorheight;
-		} else if (temp.w > viewz) {
+		} else if (temp.w > viewz.w) {
 			ds_p->silhouette = SIL_BOTTOM;
 			ds_p->bsilheight = MAXSHORT;
 			// ds_p->sprbottomclip = negonearray;
@@ -624,7 +624,7 @@ R_StoreWallRange
 			// temp.h.intbits = frontsector.ceilingheight >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.ceilingheight);
 			ds_p->tsilheight = temp.w;
-		} else if (temp.w < viewz) {
+		} else if (temp.w < viewz.w) {
 			ds_p->silhouette |= SIL_TOP;
 			ds_p->tsilheight = MINSHORT;
 			// ds_p->sprtopclip = screenheightarray;
@@ -644,10 +644,10 @@ R_StoreWallRange
 	
 		// temp.h.intbits = backsector.ceilingheight >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsector.ceilingheight);
-		worldhigh = temp.w - viewz;
+		worldhigh = temp.w - viewz.w;
 		// temp.h.intbits = backsector.floorheight >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsector.floorheight);
-		worldlow = temp.w - viewz;
+		worldlow = temp.w - viewz.w;
 		
 		// hack to allow height changes in outdoor areas
 		if (frontsector.ceilingpic == skyflatnum && backsector.ceilingpic == skyflatnum) {
@@ -696,7 +696,7 @@ R_StoreWallRange
 				vtop = temp.w;
 		
 				// bottom of texture
-				rw_toptexturemid = vtop - viewz;	
+				rw_toptexturemid = vtop - viewz.w;	
 			}
 		}
 		if (worldlow > worldbottom) {
@@ -782,13 +782,13 @@ R_StoreWallRange
   
     // temp.h.intbits = frontsector.floorheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.floorheight);
-    if (temp.w >= viewz) {
+    if (temp.w >= viewz.w) {
 		// above view plane
 		markfloor = false;
     }
     // temp.h.intbits = frontsector.ceilingheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.ceilingheight);
-    if (temp.w <= viewz  && frontsector.ceilingpic != skyflatnum) {
+    if (temp.w <= viewz.w  && frontsector.ceilingpic != skyflatnum) {
 		// below view plane
 		markceiling = false;
     }

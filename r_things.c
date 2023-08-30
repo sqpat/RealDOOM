@@ -475,8 +475,8 @@ void R_ProjectSprite (MEMREF thingRef)
     fixed_t_union temp;
 		
 	// transform the origin point
-    tr_x = thingx - viewx;
-    tr_y = thingy - viewy;
+    tr_x = thingx - viewx.w;
+    tr_y = thingy - viewy.w;
         
     gxt = FixedMul(tr_x,viewcos); 
     gyt = -FixedMul(tr_y,viewsin);
@@ -559,7 +559,7 @@ void R_ProjectSprite (MEMREF thingRef)
     temp.h.intbits = spritetopoffset[lump];
 	vis->gzt = vis->gz + temp.w;
 //	vis->gzt = thing->z + spritetopoffset[lump];
-    vis->texturemid = vis->gzt - viewz;
+    vis->texturemid = vis->gzt - viewz.w;
     vis->x1 = x1 < 0 ? 0 : x1;
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
     

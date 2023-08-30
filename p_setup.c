@@ -369,7 +369,7 @@ void P_LoadNodes(int16_t lump)
 		for (j = 0; j < 2; j++) {
 			no->children[j] = (currentdata.children[j]);
 			for (k = 0; k < 4; k++)
-				no->bbox[j][k] = (currentdata.bbox[j][k]) << FRACBITS;
+				no->bbox[j][k] = (currentdata.bbox[j][k]);// << FRACBITS;
 		}
 		//Z_RefIsActive(nodesRef);
 		//Z_RefIsActive(dataRef);

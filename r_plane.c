@@ -175,8 +175,8 @@ R_MapPlane
     length = FixedMul (distance,distscale[x1]);
 	angle = MOD_FINE_ANGLE((viewangle >>ANGLETOFINESHIFT)+ xtoviewangle[x1]);
 
-    ds_xfrac = viewx + FixedMul(finecosine(angle), length);
-    ds_yfrac = -viewy - FixedMul(finesine(angle), length);
+    ds_xfrac = viewx.w + FixedMul(finecosine(angle), length);
+    ds_yfrac = -viewy.w - FixedMul(finesine(angle), length);
 
     if (fixedcolormap)
 	ds_colormap = fixedcolormap;
@@ -660,7 +660,7 @@ void R_DrawPlanes (void)
 		PU_STATIC);
 	ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
 	
-	planeheight = abs(pl->height-viewz);
+	planeheight = abs(pl->height - viewz.w);
 	light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 	if (light >= LIGHTLEVELS)

@@ -58,9 +58,9 @@ fixed_t			centeryfrac;
 fixed_t			projection;
 
 
-fixed_t			viewx;
-fixed_t			viewy;
-fixed_t			viewz;
+fixed_t_union			viewx;
+fixed_t_union			viewy;
+fixed_t_union			viewz;
 
 angle_t			viewangle;
 
@@ -263,6 +263,19 @@ R_PointOnSegSide
 //
 
 
+angle_t
+R_PointToAngle16
+(int16_t	x,
+	int16_t	y) {
+
+	fixed_t_union xfp, yfp;
+	xfp.h.intbits = x;
+	yfp.h.intbits = y;
+	xfp.h.fracbits = 0;
+	yfp.h.fracbits = 0;
+
+	return R_PointToAngle(xfp.w, yfp.w);
+}
 
 
 angle_t
@@ -270,8 +283,8 @@ R_PointToAngle
 ( fixed_t	x,
   fixed_t	y )
 {	
-    x -= viewx;
-    y -= viewy;
+    x -= viewx.w;
+    y -= viewy.w;
     
     if ( (!x) && (!y) )
 	return 0;
@@ -358,8 +371,8 @@ R_PointToAngle2
   fixed_t	x2,
   fixed_t	y2 )
 {	
-    viewx = x1;
-    viewy = y1;
+    viewx.w = x1;
+    viewy.w = y1;
     
     return R_PointToAngle (x2, y2);
 }
@@ -372,10 +385,15 @@ R_PointToAngle2_16
   int16_t	x2,
   int16_t	y2 )
 {	
-    viewx = x1; // called with 0, this is fine
-    viewy = y1;
-    
-    return R_PointToAngle (x2 << FRACBITS, y2 << FRACBITS);
+	fixed_t_union x2fp, y2fp;
+    viewx.w = x1; // called with 0, this is fine
+    viewy.w = y1;
+	x2fp.h.intbits = x2;
+	y2fp.h.intbits = y2;
+	x2fp.h.fracbits = 0;
+	y2fp.h.fracbits = 0;
+
+    return R_PointToAngle (x2fp.w, y2fp.w);
 }
 
 
@@ -398,8 +416,8 @@ R_PointToDist
     y.h.intbits = yarg;
 
 
-    dx = abs(x.w - viewx);
-    dy = abs(y.w - viewy);
+    dx = abs(x.w - viewx.w);
+    dy = abs(y.w - viewy.w);
 
     if (dy>dx) {
         temp = dx;
@@ -756,12 +774,12 @@ void R_SetupFrame (player_t* player)
 	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 
     viewplayer = player;
-    viewx = playermo->x;
-    viewy = playermo->y;
+    viewx.w = playermo->x;
+    viewy.w = playermo->y;
     viewangle = playermo->angle;
     extralight = player->extralight;
 
-    viewz = player->viewz;
+    viewz.w = player->viewz;
 	tempan = viewangle >> ANGLETOFINESHIFT;
     viewsin = finesine(tempan);
     viewcos = finecosine(tempan);

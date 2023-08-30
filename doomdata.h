@@ -139,8 +139,8 @@ typedef	struct
 {
   int16_t		floorheight;
   int16_t		ceilingheight;
-  uint8_t		floorpic[8];
-  uint8_t		ceilingpic[8];
+  int8_t		floorpic[8];
+  int8_t		ceilingpic[8];
   int16_t		lightlevel;
   int16_t		special;
   int16_t		tag;

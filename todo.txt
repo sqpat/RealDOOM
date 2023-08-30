@@ -52,6 +52,9 @@ TODO
 - fix 'shift amount too large' bugs in 16 bit version. probably will go hand in hand with fixed_t work, but some defines may need to explicitly be long typed
  - check if using 8 instead of 16 bit local vars (especially loop vars) affects 16 bit binary code size
 
+ - crazy idea: all vertices, line_t and seg bounding boxes have coords that are mults of 8. if we shift them by 3, the biggest values of ~5500/-5500 int he wads correspond to a range of like -600 to 600 which can be stored in 10 bits. so do some insane superpacked bit array and cut down 128 to 80 bits per node for example. they arent accessed super frequently so the unpacking is unfrequent... may be a net win.
+   - sector and ceiling heights could also be stored in int8 this way .    
+
 CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everything) 
  - thing flags
     - can probably be rewritten as a pair of 16 bits?

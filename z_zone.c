@@ -135,7 +135,7 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048
-#define NUM_EMS_PAGES 16
+#define NUM_EMS_PAGES 4
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 64 * 1024
 

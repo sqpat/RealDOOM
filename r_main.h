@@ -107,6 +107,12 @@ R_PointOnSegSide
 	int16_t linev1Offset,
 	int16_t linev2Offset);
 
+
+angle_t
+R_PointToAngle16
+(int16_t	x,
+	int16_t	y);
+
 angle_t
 R_PointToAngle
 ( fixed_t	x,
