@@ -69,6 +69,10 @@ enum { VERSION =  109 };
 #define	FRACBITS		16
 #define	FRACUNIT		((int32_t)1<<FRACBITS)
 
+#define TAG_666			121
+#define TAG_667			122
+#define TAG_999			123
+
 //#define UNION_FIXED_POINT
 
 typedef int32_t fixed_t32;

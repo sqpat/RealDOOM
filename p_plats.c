@@ -126,7 +126,7 @@ void T_PlatRaise(MEMREF platRef)
 //
 int16_t
 EV_DoPlat
-(  int16_t linetag,
+(  uint8_t linetag,
 	int16_t lineside0,
   plattype_e	type,
   int16_t		amount )
@@ -209,7 +209,7 @@ EV_DoPlat
 
 				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 				plat->speed = PLATSPEED / 2;
-				plat->high = sectorfloorheight + amount;
+				plat->high = sectorfloorheight + amount << SHORTFLOORBITS;
 				plat->wait = 0;
 				plat->status = plat_up;
 
@@ -279,7 +279,7 @@ EV_DoPlat
 
 
 
-void P_ActivateInStasis(int16_t tag) {
+void P_ActivateInStasis(int8_t tag) {
     int8_t		j;
 	plat_t* plat;
 	for (j = 0; j < MAXPLATS; j++)
@@ -294,7 +294,7 @@ void P_ActivateInStasis(int16_t tag) {
 
 }
 
-void EV_StopPlat(int16_t linetag) {
+void EV_StopPlat(uint8_t linetag) {
 	int8_t		j;
 	plat_t* plat;
 

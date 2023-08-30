@@ -154,7 +154,7 @@ void T_MoveCeiling (MEMREF memref)
 //
 int16_t
 EV_DoCeiling
-( int16_t linetag,
+( uint8_t linetag,
   ceiling_e	type )
 {
     int16_t		secnum;
@@ -288,7 +288,7 @@ void P_RemoveActiveCeiling(MEMREF memref)
 //
 // Restart a ceiling that's in-stasis
 //
-void P_ActivateInStasisCeiling(int16_t linetag)
+void P_ActivateInStasisCeiling(uint8_t linetag)
 {
     int8_t		i;
 	ceiling_t* c;
@@ -311,7 +311,7 @@ void P_ActivateInStasisCeiling(int16_t linetag)
 // EV_CeilingCrushStop
 // Stop a ceiling from crushing!
 //
-int16_t	EV_CeilingCrushStop(int16_t linetag)
+int16_t	EV_CeilingCrushStop(uint8_t linetag)
 {
     int8_t		i;
     int16_t		rtn;

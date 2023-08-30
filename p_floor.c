@@ -192,10 +192,10 @@ void T_MoveFloor(MEMREF memref)
     result_e	res;
 	floormove_t* floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
 	int16_t floorsecnum;
-	int16_t floornewspecial;
+	uint8_t floornewspecial;
 	floor_e floortype;
 	int16_t floordirection;
-	int16_t floortexture;
+	uint8_t floortexture;
 	THINKERREF floorthinkerRef;
 	sector_t* sectors;
     res = T_MovePlane(floor->secnum, floor->speed, floor->floordestheight, floor->crush,0,floor->direction);
@@ -247,7 +247,7 @@ void T_MoveFloor(MEMREF memref)
 int16_t
 EV_DoFloor
 ( 
-	int16_t linetag,
+	uint8_t linetag,
 	int16_t linefrontsecnum,
   floor_e	floortype )
 {
@@ -381,7 +381,7 @@ EV_DoFloor
 			  short_height_t minsize = MAXSHORT;
 			  side_t* sides;
 			  int16_t sidenum;
-			  int16_t sidebottomtexture;
+			  uint8_t sidebottomtexture;
 				
 			  floor->direction = 1;
 			  floor->secnum = secnum;
@@ -391,22 +391,22 @@ EV_DoFloor
 					  sidenum = getSideNum(secnum,i,0);
 					  sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 					  sidebottomtexture = sides[sidenum].bottomtexture;
-					  if (sidebottomtexture >= 0) {
+					  //if (sidebottomtexture >= 0) {
 						  textureheight = Z_LoadBytesFromEMS(textureheightRef);  // todo is this comparison right? used to both be 32 bit but now i converted both to 16...? whoops
 						  if (textureheight[sidebottomtexture] < minsize) {
 							  minsize = textureheight[sidebottomtexture];
 						  }
-					  }
+					  //}
 					  sidenum = getSideNum(secnum,i,1);
 					  sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 					  sidebottomtexture = sides[sidenum].bottomtexture;
 
-					  if (sidebottomtexture >= 0) {
+					  //if (sidebottomtexture >= 0) {
 						  textureheight = Z_LoadBytesFromEMS(textureheightRef); // todo see above?
 						  if (textureheight[sidebottomtexture] < minsize) {
 							  minsize = textureheight[sidebottomtexture];
 						  }
-					  }
+					  //}
 				  }
 			  }
 			  floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
@@ -467,14 +467,14 @@ EV_DoFloor
 //
 int16_t
 EV_BuildStairs
-( int16_t	linetag,
+( uint8_t	linetag,
   stair_e	type )
 {
     int16_t			secnum;
     short_height_t	height;
     uint8_t			i;
     int16_t			newsecnum;
-    int16_t			texture;
+	uint8_t			texture;
     int16_t			ok;
     int16_t			rtn;
     

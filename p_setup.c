@@ -284,7 +284,9 @@ void P_LoadSectors(int16_t lump)
 	sector_t*           ss;
 	MEMREF				dataRef;
 	sector_t* sectors;
-
+	// most tags are under 100, a couple are like 666 or 667 or 999 or other such special numbers.
+	// we will special case those and fit it in 8 bits so allocations are smaller
+	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 	//sectors = Z_Malloc (numsectors * sizeof(sector_t), PU_LEVEL, 0);
 	sectorsRef = Z_MallocEMSNew (numsectors * sizeof(sector_t), PU_LEVEL, 0, ALLOC_TYPE_SECTORS);
@@ -300,6 +302,14 @@ void P_LoadSectors(int16_t lump)
 	for (i = 0; i < numsectors; i++, ss++) {
 		data = (mapsector_t *)Z_LoadBytesFromEMS(dataRef);
 		ms = data[i];
+		convertedtag = ms.tag;
+		if (convertedtag == 666) {
+			convertedtag = TAG_666;
+		} else if (convertedtag == 667) {
+			convertedtag = TAG_667;
+		} else if (convertedtag == 999) {
+			convertedtag = TAG_999;
+		}
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
@@ -307,7 +317,7 @@ void P_LoadSectors(int16_t lump)
 		ss->ceilingpic = R_FlatNumForName(ms.ceilingpic);
 		ss->lightlevel = (ms.lightlevel);
 		ss->special = (ms.special);
-		ss->tag = (ms.tag);
+		ss->tag = (convertedtag);
 		ss->thinglistRef = NULL_MEMREF;
 		Z_RefIsActive(dataRef);
 
@@ -449,8 +459,8 @@ void P_LoadLineDefs(int16_t lump)
 	int16_t v2y;
 	MEMREF dataRef;
 	int16_t mldflags;
-	int16_t mldspecial;
-	int16_t mldtag;
+	uint8_t mldspecial;
+	uint8_t mldtag;
 	int16_t mldv1;
 	int16_t mldv2 = (mld->v2);
 	int16_t mldsidenum0;
@@ -612,7 +622,7 @@ void P_LoadSideDefs(int16_t lump)
 		sd->midtexture = midtex;
 
 		sd->textureoffset = msdtextureoffset << FRACBITS;
-		sd->rowoffset = msdrowoffset << FRACBITS;
+		sd->rowoffset = msdrowoffset;// << FRACBITS;
 		sd->secnum = msdsecnum;
 
 		Z_RefIsActive(sidesRef);

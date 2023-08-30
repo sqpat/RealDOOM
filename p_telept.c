@@ -38,7 +38,7 @@
 //
 int16_t
 EV_Teleport
-( int16_t linetag,
+(uint8_t linetag,
   int16_t		side,
  MEMREF thingRef )
 {

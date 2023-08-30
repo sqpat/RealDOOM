@@ -84,6 +84,11 @@
 // 4 14822330 1697415 2770423 207 (2134 in)		 after all the 32 to 16 bit stuff
 
 // 4 17810546 2821496 4206470 207       <--- with EMS based visplanes. really rough hit.
+// 4 14821970 1691340 2764279 207        <--- sector floor/ceil 16 bit
+// 4 14821970 1691110 2764049 207        <--- tex w/h 8 bit
+// 4 14821971 1691041 2763930 207     <--- a lot more fields reduced on sector line etc... no big difference in paging?
+
+
 
 // 64 14821801 279 262 207 (2134 in 2186)
 // 64 14821801 279 262 207 (2134 in 2163)  // redo draws

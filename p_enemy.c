@@ -95,7 +95,7 @@ MEMREF		soundtargetRef;
 void
 P_RecursiveSound
 ( int16_t		secnum,
-  int32_t		soundblocks)
+	int8_t		soundblocks)
 {
     int16_t		i;
 	line_t* lines;
@@ -134,7 +134,8 @@ P_RecursiveSound
 
 	linecount = soundsector->linecount;
 	
-	// todo load the whole sector's lines into te mp buffer to prevent trashing? Recursive function tho. would be lots of stack memory
+	// todo load the whole sector's lines into te mp buffer to prevent thrashing? Recursive function tho. would be lots of stack memory
+	  // todo maybe 'lock' ems pages here once that function is done so these dont thrash
 	for (i=0 ;i<linecount ; i++) {
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		soundsector = &sectors[secnum];
@@ -665,7 +666,7 @@ void A_KeenDie (MEMREF moRef)
 		}
     }
 
-    EV_DoDoor(666,open);
+    EV_DoDoor(TAG_666,open);
 }
 
 
@@ -2008,13 +2009,13 @@ void A_BossDeath (MEMREF moRef)
 	{
 	    if (motype == MT_FATSO)
 	    {
-		EV_DoFloor(666, -1,lowerFloorToLowest);
+		EV_DoFloor(TAG_666, -1,lowerFloorToLowest);
 		return;
 	    }
 	    
 	    if (motype == MT_BABY)
 	    {
-		EV_DoFloor(667, -1,raiseToTexture);
+		EV_DoFloor(TAG_667, -1,raiseToTexture);
 		return;
 	    }
 	}
@@ -2024,7 +2025,7 @@ void A_BossDeath (MEMREF moRef)
 	switch(gameepisode)
 	{
 	  case 1:
-	    EV_DoFloor (666, -1, lowerFloorToLowest);
+	    EV_DoFloor (TAG_666, -1, lowerFloorToLowest);
 	    return;
 	    break;
 	    
@@ -2032,12 +2033,12 @@ void A_BossDeath (MEMREF moRef)
 	    switch(gamemap)
 	    {
 	      case 6:
-		EV_DoDoor (666, blazeOpen);
+		EV_DoDoor (TAG_666, blazeOpen);
 		return;
 		break;
 		
 	      case 8:
-		EV_DoFloor (666, -1, lowerFloorToLowest);
+		EV_DoFloor (TAG_666, -1, lowerFloorToLowest);
 		return;
 		break;
 	    }

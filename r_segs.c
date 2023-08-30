@@ -102,9 +102,9 @@ R_RenderMaskedSegRange
 	int16_t		texnum;
 	fixed_t_union temp;
 
-	int16_t* textureheight;
+	uint8_t* textureheight;
 	uint8_t* texturetranslation;
-	fixed_t siderowoffset;
+	int16_t siderowoffset;
 	line_t* lines;
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 	int16_t curlinev1Offset; int16_t curlinev2Offset; int16_t curlinefrontsecnum; int16_t curlinebacksecnum; int16_t curlinesidedefOffset; int16_t curlinelinedefOffset;
@@ -168,9 +168,11 @@ R_RenderMaskedSegRange
 	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
     if (lines[curlinelinedefOffset].flags & ML_DONTPEGBOTTOM) {
 		// temp.h.intbits = (frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight) >> SHORTFLOORBITS;
-		// textureheight = Z_LoadBytesFromEMS(textureheightRef);
+		 textureheight = Z_LoadBytesFromEMS(textureheightRef); // note: 8 bit..
+		 //temp.b.intbytelow = textureheight >> (8 - SHORTFLOORBITS);
+		 //temp.b.fracbytehigh = textureheight << (SHORTFLOORBITS);
 		// temp.h.intbits += textureheight[texnum];
-		temp2 = (frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight)  +(textureheight[texnum]<<SHORTFLOORBITS);
+		temp2 = (frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight)  + (textureheight[texnum]<<(SHORTFLOORBITS + 8));
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 		dc_texturemid =  temp.w - viewz;
     } else {
@@ -179,7 +181,9 @@ R_RenderMaskedSegRange
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 		dc_texturemid = temp.w - viewz;
     }
-    dc_texturemid += siderowoffset;
+	temp.h.intbits = siderowoffset;
+	temp.h.fracbits = 0;
+    dc_texturemid += temp.w;
 			
     if (fixedcolormap)
 	dc_colormap = fixedcolormap;
@@ -476,7 +480,7 @@ R_StoreWallRange
 	int16_t curlinesidedefOffset = segs[curlinenum].sidedefOffset;
 	fixed_t curlineOffset = segs[curlinenum].offset;
 	side_t* sides;
-	fixed_t siderowoffset;
+	int16_t siderowoffset;
 	int16_t sidemidtexture;
 	int16_t sidetoptexture;
 	int16_t sidebottomtexture;
@@ -576,7 +580,7 @@ R_StoreWallRange
 		if (lineflags & ML_DONTPEGBOTTOM) {
 			textureheight = Z_LoadBytesFromEMS(textureheightRef);
 			// temp.h.intbits = textureheight[sidemidtexture]+(frontsector.floorheight >> SHORTFLOORBITS);
-			temp2 = (textureheight[sidemidtexture] << SHORTFLOORBITS)  +(frontsector.floorheight);;
+			temp2 = (textureheight[sidemidtexture] << SHORTFLOORBITS)  + (frontsector.floorheight);
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 			vtop = temp.w;
 			// bottom of texture at bottom
@@ -585,7 +589,10 @@ R_StoreWallRange
 			// top of texture at top
 			rw_midtexturemid = worldtop;
 		}
-		rw_midtexturemid += siderowoffset;
+
+		temp.h.intbits = siderowoffset;
+		temp.h.fracbits = 0;
+		rw_midtexturemid += temp.w;
 
 		ds_p->silhouette = SIL_BOTH;
 		ds_p->sprtopclip = screenheightarray;
@@ -682,7 +689,7 @@ R_StoreWallRange
 			} else {
 				textureheight = Z_LoadBytesFromEMS(textureheightRef);
 				// temp.h.intbits = textureheight[sidetoptexture] + (backsector.ceilingheight >> SHORTFLOORBITS);
-				temp2 = (textureheight[sidetoptexture] << SHORTFLOORBITS) + (backsector.ceilingheight);
+				temp2 = (textureheight[sidetoptexture] << (8+SHORTFLOORBITS)) + (backsector.ceilingheight);
 				SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 				vtop = temp.w;
 		
@@ -704,8 +711,10 @@ R_StoreWallRange
 				rw_bottomtexturemid = worldlow;
 			}
 		}
-			rw_toptexturemid += siderowoffset;
-			rw_bottomtexturemid += siderowoffset;
+			temp.h.intbits = siderowoffset;
+			temp.h.fracbits = 0;
+			rw_toptexturemid += temp.w;
+			rw_bottomtexturemid += temp.w;
 	
 		// allocate space for masked texture tables
 		if (sidemidtexture) {

@@ -98,11 +98,11 @@ typedef	struct
     uint8_t	floorpic;
     uint8_t	ceilingpic;
     uint8_t	lightlevel; // seems to max at 255
-    int16_t	special;	// goes beyond 20k
-    int16_t	tag;		// cant set to int8_t because of 666 special case.... 
+	uint8_t	special;	// only a few small numbers
+	uint8_t	tag;		
 
     // 0 = untraversed, 1,2 = sndlines -1
-    int32_t		soundtraversed;
+    int8_t		soundtraversed;
 
     // thing that made a sound (or null)
     MEMREF	soundtargetRef;
@@ -122,9 +122,8 @@ typedef	struct
     MEMREF	thinglistRef;
 
     // thinker_t for reversable actions
-    ///void*	specialdata;
 	MEMREF	specialdataRef;
-    uint8_t			linecount;  // is int8 ok? seems more than 2-3 is rare..
+    uint8_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
 
 	int16_t linesoffset;	// [linecount] size
 
@@ -143,7 +142,7 @@ typedef struct
     fixed_t	textureoffset;
     
     // add this to the calculated texture top
-    fixed_t	rowoffset;
+	int16_t	rowoffset;
 
     // Texture indices.
     // We do not maintain names here. 
@@ -180,9 +179,10 @@ typedef struct line_s
     int16_t	dy;
 
     // Animation related.
-    int16_t	flags;
-    int16_t	special;
-    int16_t	tag;
+    // theres only 9 flags here, lets try to pull one out somewhere...
+	int16_t	flags;
+    uint8_t	special;
+	uint8_t	tag;
 
     // Visual appearance: SideDefs.
     //  sidenum[1] will be -1 if one sided
@@ -354,7 +354,8 @@ typedef struct
     int16_t		height; 
     int16_t		leftoffset;	// pixels to the left of origin 
     int16_t		topoffset;	// pixels below the origin 
-    int32_t			columnofs[8];	// only [width] used
+	// not 100% sure what it is but changing to 16 bit is a crash. might be pointers.
+    int32_t		columnofs[8];	// only [width] used
     // the [0] is &columnofs[width] 
 } patch_t;
 

@@ -562,7 +562,9 @@ void R_ProjectSprite (MEMREF thingRef)
     vis->texturemid = vis->gzt - viewz;
     vis->x1 = x1 < 0 ? 0 : x1;
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
-    iscale = FixedDiv (FRACUNIT, xscale);
+    
+	// todo does a quick  inverse function exist? considering this is fixed point
+	iscale = FixedDiv (FRACUNIT, xscale);
 
     if (flip)
     {

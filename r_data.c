@@ -100,8 +100,9 @@ typedef struct
 {
 	// Keep name for switch changing, etc.
 	int8_t        name[8];
-	int16_t       width;
-	int16_t       height;
+	// width and height max out at 256 and are never 0. we store as real size -  1 and add 1 whenever we readd it
+	uint8_t       width;
+	uint8_t       height;
 
 	// All the patches[patchcount]
 	//  are drawn back to front into the cached texture.
@@ -131,7 +132,7 @@ MEMREF  texturesRef;				// MEMREF to texture_t**
 
 MEMREF  texturewidthmaskRef;		// int16_t*
 // needed for texture pegging
-MEMREF  textureheightRef;		    // int16_t must be converted by fracbits when used*
+MEMREF  textureheightRef;		    // uint8_t must be converted by fracbits when used*
 MEMREF  texturecompositesizeRef;	// uint16_t*
 MEMREF  texturecolumnlumpRef;		// int16_t**
 MEMREF	texturecolumnofsRef;		// uint16_t **
@@ -176,23 +177,18 @@ lighttable_t    *colormaps;
 void
 R_DrawColumnInCache
 (column_t*     patch,
-	byte*         cache,
-	int16_t           originy,
-	int16_t           cacheheight)
+	byte*       cache,
+	int16_t     originy,
+	int16_t     cacheheight)
 {
-	int16_t         count;
-	int16_t         position;
+	int16_t     count;
+	int16_t     position;
 	byte*       source;
 	byte*       dest;
-	int16_t i = 0;
 	dest = (byte *)cache + 3;
 
 	while (patch->topdelta != 0xff)
-	{
-		i++;
-		if (i > 1000) {
-			I_Error("too big?");
-		}
+	{ 
 
 		source = (byte *)patch + 3;
 		count = patch->length;
@@ -261,8 +257,8 @@ void R_GenerateComposite(uint8_t texnum)
 
 
 	texture = (texture_t*)Z_LoadBytesFromEMS(texturememref);
-	texturewidth = texture->width;
-	textureheight = texture->height;
+	texturewidth = texture->width + 1;
+	textureheight = texture->height + 1;
 	texturepatchcount = texture->patchcount;
 	// Composite the columns together.
 
@@ -372,15 +368,15 @@ void R_GenerateLookup(uint8_t texnum)
 	// Composited texture not created yet.
 
 	texture = (texture_t*)Z_LoadBytesFromEMS(textureRef);
-	texturewidth = texture->width;
-	textureheight = texture->height;
+	texturewidth = texture->width + 1;
+	textureheight = texture->height + 1;
 	memcpy(texturename, texture->name, 8);
 	// Now count the number of columns
 	//  that are covered by more than one patch.
 	// Fill in the lump / offset, so columns
 	//  with only a single patch are all done.
-	patchcount = (byte *)alloca(texture->width);
-	memset(patchcount, 0, texture->width);
+	patchcount = (byte *)alloca(texture->width + 1);
+	memset(patchcount, 0, texture->width + 1);
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
 	for (i = 0;
@@ -554,7 +550,7 @@ void R_InitTextures(void)
 
 	int16_t*                texturewidthmask;
 	// needed for texture pegging
-	int16_t*            textureheight;
+	uint8_t*            textureheight;
 	MEMREF *            texturecolumnlump;
 	MEMREF *			texturecolumnofs;
 	MEMREF*				textures;
@@ -563,7 +559,7 @@ void R_InitTextures(void)
 	MEMREF				maptexRef;
 	MEMREF				maptex2Ref;
 	int16_t				texturewidth;
-	int16_t				textureheightval;
+	uint8_t				textureheightval;
 
 
 
@@ -616,12 +612,12 @@ void R_InitTextures(void)
 	texturecompositeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 	texturecompositesizeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 	texturewidthmaskRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	textureheightRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	textureheightRef = Z_MallocEMSNew(numtextures, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 
 	//texturecomposite	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecompositeRef);
 	//texturecompositesize = (int32_t*)			  Z_LoadBytesFromEMS(texturecompositesizeRef);
 	texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
-	textureheight = (int16_t*)Z_LoadBytesFromEMS(textureheightRef);
+	textureheight = (uint8_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 
 	totalwidth = 0;
@@ -668,10 +664,10 @@ void R_InitTextures(void)
 
 		texture = (texture_t*)Z_LoadBytesFromEMS(textureRef);
 
-		texture->width = (mtexture->width);
-		texture->height = (mtexture->height);
+		texture->width = (mtexture->width) - 1;
+		texture->height = (mtexture->height) - 1;
 		texture->patchcount = (mtexture->patchcount);
-		texturewidth = texture->width;
+		texturewidth = texture->width + 1;
 		textureheightval = texture->height;
 
 		memcpy(texture->name, mtexture->name, sizeof(texture->name));
@@ -691,9 +687,9 @@ void R_InitTextures(void)
 		}
 		//printf("name %s", texture->name);
 		texturecolumnlump = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
-		texturecolumnlump[i] = Z_MallocEMSNew(texture->width * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+		texturecolumnlump[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 		texturecolumnofs = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
-		texturecolumnofs[i] = Z_MallocEMSNew(texture->width * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+		texturecolumnofs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 		
 
 		j = 1;
@@ -701,7 +697,7 @@ void R_InitTextures(void)
 			j <<= 1;
 
 		texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
-		textureheight = (int16_t*)Z_LoadBytesFromEMS(textureheightRef);
+		textureheight = (uint8_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 		Z_RefIsActive(texturewidthmaskRef);
 		Z_RefIsActive(textureheightRef);

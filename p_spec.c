@@ -316,7 +316,7 @@ short_height_t	P_FindHighestFloorSurrounding(int16_t secnum)
 {
     uint8_t		i;
     int16_t		offset;
-    short_height_t		floor = -500;
+    short_height_t		floor = -500 << SHORTFLOORBITS;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	uint8_t linecount = sectors[secnum].linecount;
 	int16_t* linebuffer;
@@ -463,7 +463,7 @@ short_height_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 //
 int16_t
 P_FindSectorFromLineTag
-( int16_t		linetag,
+( int8_t		linetag,
   int16_t		start )
 {
     int16_t	i;
@@ -541,7 +541,7 @@ P_CrossSpecialLine
     int16_t		ok;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t*	line = &lines[linenum];
-	int16_t linetag = line->tag;
+	uint8_t linetag = line->tag;
 	int16_t linefrontsecnum = line->frontsecnum;
 	int16_t lineside0 = line->sidenum[0];
 	int16_t linespecial = line->special;
@@ -1021,7 +1021,7 @@ P_ShootSpecialLine
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* line = &lines[innerlinenum];
 	int16_t linespecial = line->special;
-	int16_t linetag = line->tag;
+	uint8_t linetag = line->tag;
 	int16_t linefrontsecnum = line->frontsecnum;
 	int16_t lineside0 = line->sidenum[0];
 
@@ -1234,7 +1234,7 @@ void P_UpdateSpecials(void)
 //
 // Special Stuff that can not be categorized
 //
-int16_t EV_DoDonut(int16_t linetag)
+int16_t EV_DoDonut(uint8_t linetag)
 {
     int16_t		s1Offset;
     int16_t		s2Offset;

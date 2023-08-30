@@ -178,7 +178,7 @@ P_StartButton
 //
 void
 P_ChangeSwitchTexture
-( int16_t linenum, int16_t lineside0, int16_t linespecial, int16_t linefrontsecnum,
+( int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum,
 	int16_t 		useAgain )
 {
 	uint8_t     texTop;
@@ -205,7 +205,7 @@ P_ChangeSwitchTexture
 
     // EXIT SWITCH?
     if (linespecial == 11)                
-	sound = sfx_swtchx;
+		sound = sfx_swtchx;
 	
     for (i = 0;i < numswitches*2;i++) {
 		if (switchlist[i] == texTop) {
@@ -267,8 +267,8 @@ P_UseSpecialLine
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* line = &lines[linenum];
 	
-	int16_t linetag = line->tag;
-	int16_t linespecial = line->special;
+	uint8_t linetag = line->tag;
+	uint8_t linespecial = line->special;
 	int16_t lineflags = line->flags;
 	int16_t linefrontsecnum = line->frontsecnum;
 	int16_t lineside0 = line->sidenum[0];

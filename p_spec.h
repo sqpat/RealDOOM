@@ -94,7 +94,7 @@ short_height_t P_FindHighestCeilingSurrounding(int16_t secnum);
 
 int16_t
 P_FindSectorFromLineTag
-( int16_t		linetag,
+( int8_t		linetag,
   int16_t		start );
 
 uint8_t
@@ -111,7 +111,7 @@ getNextSector
 //
 // SPECIAL
 //
-int16_t EV_DoDonut(int16_t linetag);
+int16_t EV_DoDonut(uint8_t linetag);
 
 
 
@@ -186,12 +186,12 @@ P_SpawnStrobeFlash
   int16_t		fastOrSlow,
   int16_t		inSync );
 
-void    EV_StartLightStrobing(int16_t linetag);
-void    EV_TurnTagLightsOff(int16_t linetag);
+void    EV_StartLightStrobing(uint8_t linetag);
+void    EV_TurnTagLightsOff(uint8_t linetag);
 
 void
 EV_LightTurnOn
-( int16_t linetag,
+(uint8_t linetag,
   uint8_t		bright );
 
 void    T_Glow(MEMREF memref);
@@ -247,7 +247,7 @@ extern button_t	buttonlist[MAXBUTTONS];
 
 void
 P_ChangeSwitchTexture
-(int16_t linenum, int16_t lineside0, int16_t linespecial, int16_t linefrontsecnum, int16_t useAgain);
+(int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum, int16_t useAgain);
 
 void P_InitSwitchList(void);
 
@@ -286,7 +286,7 @@ typedef struct
     plat_e	status;
     plat_e	oldstatus;
     boolean	crush;
-    int16_t		tag;
+	int8_t		tag;
     plattype_e	type;
     
 } plat_t;
@@ -305,32 +305,29 @@ void    T_PlatRaise(MEMREF platRef);
 
 int16_t
 EV_DoPlat
-( int16_t linenum,
-	int16_t linetag,
+(  uint8_t linetag,
+	int16_t linenum,
   plattype_e	type,
   int16_t		amount );
 
 void    P_AddActivePlat(MEMREF memref);
 void    P_RemoveActivePlat(MEMREF memref);
-void    EV_StopPlat(int16_t linetag);
-void    P_ActivateInStasis(int16_t tag);
+void    EV_StopPlat(uint8_t linetag);
+void    P_ActivateInStasis(int8_t tag);
 
 
 //
 // P_DOORS
 //
-typedef enum
-{
-    normal,
-    close30ThenOpen,
-    close,
-    open,
-    raiseIn5Mins,
-    blazeRaise,
-    blazeOpen,
-    blazeClose
-
-} vldoor_e;
+#define normal 0
+#define close30ThenOpen 1
+#define close 2
+#define open 3
+#define raiseIn5Mins 4
+#define blazeRaise 5
+#define blazeOpen 6
+#define blazeClose 7
+typedef int8_t vldoor_e;
 
 
 
@@ -366,12 +363,12 @@ EV_VerticalDoor
 
 int16_t
 EV_DoDoor
-( int16_t linetag,
+(uint8_t linetag,
   vldoor_e	type );
 
 int16_t
 EV_DoLockedDoor
-(int16_t linetag, int16_t linepsecial,
+(uint8_t linetag, int16_t linepsecial,
   vldoor_e	type,
 	MEMREF thingRef);
 
@@ -387,16 +384,14 @@ P_SpawnDoorRaiseIn5Mins
 //
 // P_CEILNG
 //
-typedef enum
-{
-    lowerToFloor,
-    raiseToHighest,
-    lowerAndCrush,
-    crushAndRaise,
-    fastCrushAndRaise,
-    silentCrushAndRaise
-
-} ceiling_e;
+	
+#define lowerToFloor 0
+#define raiseToHighest 1
+#define lowerAndCrush 2
+#define crushAndRaise 3
+#define fastCrushAndRaise 4
+#define silentCrushAndRaise 5
+typedef int8_t ceiling_e;
 
 
 
@@ -411,11 +406,11 @@ typedef struct
     boolean	crush;
 
     // 1 = up, 0 = waiting, -1 = down
-    int16_t		direction;
+    int8_t		direction;
 
     // ID
-    int16_t		tag;                   
-    int16_t		olddirection;
+    int8_t		tag;                   
+	int8_t		olddirection;
     
 } ceiling_t;
 
@@ -432,14 +427,14 @@ extern MEMREF	activeceilings[MAXCEILINGS];
 
 int16_t
 EV_DoCeiling
-( int16_t linetag,
+(uint8_t linetag,
   ceiling_e	type );
 
 void    T_MoveCeiling (MEMREF memref);
 void    P_AddActiveCeiling(MEMREF memref);
 void    P_RemoveActiveCeiling(MEMREF memref);
-int16_t	EV_CeilingCrushStop(int16_t linetag);
-void    P_ActivateInStasisCeiling(int16_t linetag);
+int16_t	EV_CeilingCrushStop(uint8_t linetag);
+void    P_ActivateInStasisCeiling(uint8_t linetag);
 
 
 //
@@ -494,11 +489,13 @@ typedef struct
     floor_e	type;
     boolean	crush;
     int16_t   secnum;
-    int16_t		direction;
-    int16_t		newspecial;
-    int16_t	texture;
+    int8_t		direction;
+	uint8_t		newspecial;
+	uint8_t	texture;
     short_height_t	floordestheight;
-    short_height_t	speed;
+    
+	// todo could be stored smaller and multiplied to save space but theres only a couple of these in memory at a time. not worth?
+	short_height_t	speed;
 
 } floormove_t;
 
@@ -526,12 +523,12 @@ T_MovePlane
 
 int16_t
 EV_BuildStairs
-( int16_t linetag,
+(uint8_t linetag,
   stair_e	type );
 
 int16_t
 EV_DoFloor
-( int16_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
+(uint8_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
 
 void T_MoveFloor(MEMREF memref);
 
@@ -540,7 +537,7 @@ void T_MoveFloor(MEMREF memref);
 //
 int16_t
 EV_Teleport
-( int16_t linetag,
+(uint8_t linetag,
   int16_t		side,
 	MEMREF thingRef);
 
