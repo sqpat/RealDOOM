@@ -22,7 +22,6 @@ KNOWN ISSUES
 526528 (32 bit)
 
 - after floor 16 stuff mostly done (no frac shift support)
-
 644832 full visplanes huge
 526688 32 bit
 
@@ -34,22 +33,18 @@ TODO
  x change angle_ts
  ~ make ems actually work
  ~ set visiplanes under 64k and see if large compile works
- 1 floorheight and other fixed_ts on sectors etc, save them unshifted and shift on use. 
-    ~ later we will just automagically set to fixed_t hi byte somehow
-    - this works except some rising and falling floors/ceils use up to 3 bit float precision  (CEILING HEIGHT / 8)
-       - so let's be terrible and shift every height down 3. as far as i can tell in wad editor the max height anything is set to is < 500, and this 
-       - still gets us as much as +/-4096 max height?
- ~ change fixed_t stuff
+ x floorheight and other fixed_ts on sectors etc, save them unshifted and shift on use. 
+ x change fixed_t stuff
  ~ change all heights of stuff to 16 bits  
-    n eventually spawnmobj z param too? 
- - look into ds->scale1 and associated values to 16 bit? or small fixed, etc
+  ~ fix texture height things to fix platforms.
+   - can texture width be uint8? (add 1 every time used to get 256)
+  - look into ds->scale1 and associated values to 16 bit? or small fixed, etc
  3 screens in conventional instead of allocced
- ? can texture height/width be uint8? (add 1 every time used to get 256)
    - screen2/3 wipe in EMS, or dump it for now.
    - get rid of backbuffer? or make it ems?
- ? visplane in ems? would need to stop passing around visplanes and instead pass around indices. not impossible but small to medium rewrite. 
-   - A benefit is we could split it up into single pages and just do 16k worth of visplanes as a time - grow as much or little as possible.
-   - could have a single allocation with all the smaller fields that are often iterated thru. The byte arrays could be in different bigger allocations
+ - fix the bugs a bit in expanding visplane mode
+   - either make dc_whatever not a global 
+   - or make fixed set of memref handles for visplanes at a time somehow? 
      
     
  - get rid of last bits of multiplayer, players array
