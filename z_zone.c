@@ -87,6 +87,7 @@
 // 4 14821970 1691340 2764279 207        <--- sector floor/ceil 16 bit
 // 4 14821970 1691110 2764049 207        <--- tex w/h 8 bit
 // 4 14821971 1691041 2763930 207     <--- a lot more fields reduced on sector line etc... no big difference in paging?
+// 4 14821971 1685501 2389170 207 (2134 in 4935)    <--- some bounding box stuff made 16 bits
 
 
 
@@ -134,7 +135,7 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048
-#define NUM_EMS_PAGES 4
+#define NUM_EMS_PAGES 16
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 64 * 1024
 

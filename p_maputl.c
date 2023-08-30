@@ -152,7 +152,7 @@ P_PointOnLineSide16
 //
 boolean
 P_BoxOnLineSide
-( fixed_t*	tmbox,
+( fixed_t_union*	tmbox,
 	slopetype_t	lineslopetype,
 	int16_t linedx,
 	int16_t linedy,
@@ -169,8 +169,8 @@ P_BoxOnLineSide
     switch (lineslopetype) {
       case ST_HORIZONTAL:
 	  	temp.h.intbits = vertexes[linev1Offset].y;
-		p1 = tmbox[BOXTOP] > temp.w;
-		p2 = tmbox[BOXBOTTOM] > temp.w;
+		p1 = tmbox[BOXTOP].w > temp.w;
+		p2 = tmbox[BOXBOTTOM].w > temp.w;
 		if (linedx < 0) {
 			p1 ^= 1;
 			p2 ^= 1;
@@ -179,8 +179,8 @@ P_BoxOnLineSide
 	
       case ST_VERTICAL:
 	  	temp.h.intbits = vertexes[linev1Offset].x;
-		p1 = tmbox[BOXRIGHT] < temp.w;
-		p2 = tmbox[BOXLEFT] < temp.w;
+		p1 = tmbox[BOXRIGHT].w < temp.w;
+		p2 = tmbox[BOXLEFT].w < temp.w;
 		if (linedy < 0)
 		{
 			p1 ^= 1;
@@ -189,13 +189,13 @@ P_BoxOnLineSide
 		break;
 	
       case ST_POSITIVE:
-		p1 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXTOP], linedx, linedy, linev1Offset);
-		p2 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXBOTTOM], linedx, linedy, linev1Offset);
+		p1 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
+		p2 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
 		break;
 	
       case ST_NEGATIVE:
-		p1 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXTOP], linedx, linedy, linev1Offset);
-		p2 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXBOTTOM], linedx, linedy, linev1Offset);
+		p1 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
+		p2 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
 		break;
     }
 
@@ -770,28 +770,49 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     fixed_t		frac;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
-	
-    tracepositive = (trace.dx ^ trace.dy)>0;
+/*
+	fixed_t_union thingradius;
+	thingradius.h.intbits = thing->radius;
+	thingradius.h.fracbits = 0;
 		
     // check a corner to corner crossection for hit
     if (tracepositive)
     {
-	x1 = thing->x - thing->radius;
-	y1 = thing->y + thing->radius;
+	x1 = thing->x - thingradius.w;
+	y1 = thing->y + thingradius.w;
 		
-	x2 = thing->x + thing->radius;
-	y2 = thing->y - thing->radius;			
+	x2 = thing->x + thingradius.w;
+	y2 = thing->y - thingradius.w;			
     }
     else
     {
-	x1 = thing->x - thing->radius;
-	y1 = thing->y - thing->radius;
+	x1 = thing->x - thingradius.w;
+	y1 = thing->y - thingradius.w;
 		
-	x2 = thing->x + thing->radius;
-	y2 = thing->y + thing->radius;			
+	x2 = thing->x + thingradius.w;
+	y2 = thing->y + thingradius.w;			
     }
-    
-    s1 = P_PointOnDivlineSide (x1, y1, &trace);
+    */
+
+	tracepositive = (trace.dx ^ trace.dy) > 0;
+
+	if (tracepositive)
+	{
+		x1 = thing->x - (thing->radius << FRACBITS);
+		y1 = thing->y + (thing->radius << FRACBITS);
+
+		x2 = thing->x + (thing->radius << FRACBITS);
+		y2 = thing->y - (thing->radius << FRACBITS);
+	}
+	else
+	{
+		x1 = thing->x - (thing->radius << FRACBITS);
+		y1 = thing->y - (thing->radius << FRACBITS);
+
+		x2 = thing->x + (thing->radius << FRACBITS);
+		y2 = thing->y + (thing->radius << FRACBITS);
+	}
+	s1 = P_PointOnDivlineSide (x1, y1, &trace);
     s2 = P_PointOnDivlineSide (x2, y2, &trace);
 
 	if (s1 == s2) {

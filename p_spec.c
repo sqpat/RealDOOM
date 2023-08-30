@@ -1192,7 +1192,7 @@ void P_UpdateSpecials(void)
 			// EFFECT FIRSTCOL SCROLL +
 			sidenum = line->sidenum[0];
 			sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-			sides[sidenum].textureoffset += FRACUNIT;
+			sides[sidenum].textureoffset += 1; // todo... what about when this goes above 255? need to mod by texsize?
 			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 			break;
 		}

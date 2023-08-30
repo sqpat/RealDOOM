@@ -29,25 +29,24 @@ KNOWN ISSUES
 
 TODO 
  
- x change a bunch of int_32t to int_16t, see if it still works
- x change angle_ts
- ~ make ems actually work
- ~ set visiplanes under 64k and see if large compile works
- x floorheight and other fixed_ts on sectors etc, save them unshifted and shift on use. 
- x change fixed_t stuff
- ~ change all heights of stuff to 16 bits  
-  ~ fix texture height things to fix platforms.
-   - can texture width be uint8? (add 1 every time used to get 256)
-  - look into ds->scale1 and associated values to 16 bit? or small fixed, etc
- 3 screens in conventional instead of allocced
+ x can texture width be uint8? (add 1 every time used to get 256)
+ - fix keyboad bug
+ - fix map bug
+ - get rid of last bits of multiplayer, players array
+ - fix the texture rotate issue?
+
+  2 look into ds->scale1 and associated values to 16 bit? or small fixed, etc
+ 3 convert fixed_t uses to fixed_t_union (then rename)
+ - add feature to 'fix' a page in memory. we could do this in tight loops where page accesses might go abc ade afg etc that would cause A to potentially get paged out unecessarily
+
+ 4 screens in conventional instead of allocced
    - screen2/3 wipe in EMS, or dump it for now.
    - get rid of backbuffer? or make it ems?
- - fix the bugs a bit in expanding visplane mode
+ 5 fix the bugs a bit in expanding visplane mode
    - either make dc_whatever not a global 
    - or make fixed set of memref handles for visplanes at a time somehow? 
-     
-    
- - get rid of last bits of multiplayer, players array
+ - make pathtraverse work mostly off 16 bit math? i think its possible
+
  - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
  - clean up speed code. probably dont need make_speed in a lot of cases -is high bit projectile only?
 - fix 'shift amount too large' bugs in 16 bit version. probably will go hand in hand with fixed_t work, but some defines may need to explicitly be long typed
@@ -82,6 +81,11 @@ CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everyt
   ? more enums
   ? any more net code to dump?
   ? dump bad savegame code
+
+
+ True 16 bit mode ideas
+  - 250 pixel width, and then 1 byte various screen width based vars incl those in visplane...
+
   
 
 

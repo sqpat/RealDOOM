@@ -530,18 +530,18 @@ void P_LoadLineDefs(int16_t lump)
 
 		// todo make these 16 bit too
 		if (v1x < v2x) {
-			ld->bbox[BOXLEFT] = v1x << FRACBITS;
-			ld->bbox[BOXRIGHT] = v2x << FRACBITS;
+			ld->bbox[BOXLEFT] = v1x;// << FRACBITS;
+			ld->bbox[BOXRIGHT] = v2x;// << FRACBITS;
 		} else {
-			ld->bbox[BOXLEFT] = v2x << FRACBITS;
-			ld->bbox[BOXRIGHT] = v1x << FRACBITS;
+			ld->bbox[BOXLEFT] = v2x;// << FRACBITS;
+			ld->bbox[BOXRIGHT] = v1x;// << FRACBITS;
 		}
 		if (v1y < v2y) {
-			ld->bbox[BOXBOTTOM] = v1y << FRACBITS;
-			ld->bbox[BOXTOP] = v2y << FRACBITS;
+			ld->bbox[BOXBOTTOM] = v1y;// << FRACBITS;
+			ld->bbox[BOXTOP] = v2y;// << FRACBITS;
 		} else {
-			ld->bbox[BOXBOTTOM] = v2y << FRACBITS;
-			ld->bbox[BOXTOP] = v1y << FRACBITS;
+			ld->bbox[BOXBOTTOM] = v2y;// << FRACBITS;
+			ld->bbox[BOXTOP] = v1y;// << FRACBITS;
 		}
 
 		if (mldsidenum0 != -1) {
@@ -576,8 +576,8 @@ void P_LoadSideDefs(int16_t lump)
 	uint8_t midtex;
 	MEMREF dataRef;
 	int8_t texname[8];
-	int16_t msdtextureoffset;
-	int16_t msdrowoffset;
+	texsize_t msdtextureoffset;
+	texsize_t msdrowoffset;
 	int16_t msdsecnum;
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
@@ -599,7 +599,9 @@ void P_LoadSideDefs(int16_t lump)
 		msdtextureoffset = (msd->textureoffset);
 		msdrowoffset = (msd->rowoffset);
 		msdsecnum = (msd->sector);
-	
+
+ 
+
 		memcpy(texname, msd->toptexture, 8);
 		toptex = R_TextureNumForName(texname);
 
@@ -621,14 +623,16 @@ void P_LoadSideDefs(int16_t lump)
 		sd->bottomtexture = bottex;
 		sd->midtexture = midtex;
 
-		sd->textureoffset = msdtextureoffset << FRACBITS;
+		sd->textureoffset = msdtextureoffset;// << FRACBITS;
 		sd->rowoffset = msdrowoffset;// << FRACBITS;
 		sd->secnum = msdsecnum;
 
 		Z_RefIsActive(sidesRef);
-
+		
 
 	}
+
+ 
 	Z_FreeEMSNew(dataRef);
 }
 

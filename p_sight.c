@@ -503,7 +503,7 @@ P_CheckSight
 	fixed_t t1z = t1->z;
 	fixed_t t1x = t1->x;
 	fixed_t t1y = t1->y;
-	fixed_t t1height = t1->height;
+	fixed_t t1height = t1->height.w;
 	int16_t s1 = t1->secnum;
 
 	mobj_t*	t2;
@@ -519,7 +519,7 @@ P_CheckSight
 	t2z = t2->z;
 	t2x = t2->x;
 	t2y = t2->y;
-	t2height = t2->height;
+	t2height = t2->height.w;
 	s2 = t2->secnum;
 
 

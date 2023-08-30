@@ -506,8 +506,8 @@ A_Punch
 
     angle = playermo->angle >> ANGLETOFINESHIFT;
     angle = MOD_FINE_ANGLE(angle + (P_Random()-P_Random())>>(1));
-    slope = P_AimLineAttack (player->moRef, angle, MELEERANGE);
-    P_LineAttack (player->moRef, angle, MELEERANGE, slope, damage);
+    slope = P_AimLineAttack (player->moRef, angle, MELEERANGE * FRACUNIT);
+    P_LineAttack (player->moRef, angle, MELEERANGE * FRACUNIT, slope, damage);
 
     // turn to face target
     if (linetargetRef)
@@ -541,8 +541,8 @@ A_Saw
     angle = MOD_FINE_ANGLE( + (P_Random()-P_Random())>>(1));
     
     // use meleerange + 1 se the puff doesn't skip the flash
-    slope = P_AimLineAttack (player->moRef, angle, MELEERANGE+1);
-    P_LineAttack (player->moRef, angle, MELEERANGE+1, slope, damage);
+    slope = P_AimLineAttack (player->moRef, angle, (MELEERANGE * FRACUNIT) +1);
+    P_LineAttack (player->moRef, angle, (MELEERANGE*FRACUNIT)+1, slope, damage);
 
     if (!linetargetRef)
     {
@@ -834,7 +834,7 @@ void A_BFGSpray (mobj_t* mo)
 
 		P_SpawnMobj (linetarget->x,
 				linetarget->y,
-				linetarget->z + (linetarget->height>>2),
+				linetarget->z + (linetarget->height.w>>2),
 				MT_EXTRABFG);
 		
 		damage = 0;

@@ -212,7 +212,8 @@ boolean P_CheckMeleeRange (MEMREF actorRef)
     fixed_t	dist;
 	fixed_t plx;
 	fixed_t ply;
-	fixed_t plradius;
+	//fixed_t plradius;
+	fixed_t_union plradius;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
     if (!actor->targetRef)
@@ -222,11 +223,16 @@ boolean P_CheckMeleeRange (MEMREF actorRef)
 	pl = (mobj_t*)Z_LoadBytesFromEMS(plRef);
 	plx = pl->x;
 	ply = pl->y;
-	plradius = pl->info->radius*FRACUNIT;
+	plradius.h.intbits = pl->info->radius;
+	plradius.h.fracbits = 0;
+	//plradius = pl->info->radius*FRACUNIT;
+
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	dist = P_AproxDistance (plx-actor->x, ply-actor->y);
+	plradius.h.intbits += (MELEERANGE - 20);
+    if (dist >= plradius.w)
+	//if (dist >= MELEERANGE - 20 * FRACUNIT + plradius)
 
-    if (dist >= MELEERANGE-20*FRACUNIT+plradius)
 		return false;
     if (! P_CheckSight (actorRef, actor->targetRef) )
 		return false;
@@ -620,7 +626,7 @@ P_LookForPlayers
 			if (an > ANG90 && an < ANG270) {
 				dist = P_AproxDistance (playerMox - actor->x, playerMoy - actor->y);
 				// if real close, react anyway
-				if (dist > MELEERANGE) {
+				if (dist > MELEERANGE * FRACUNIT) {
 					continue;	// behind back
 				}
 			}
@@ -1339,10 +1345,10 @@ fixed_t		viletryy;
 
 boolean PIT_VileCheck (MEMREF thingRef)
 {
-    fixed_t		maxdist;
+	fixed_t_union				maxdist;
     boolean	check;
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	
+
 	if (!(thing->flags & MF_CORPSE)) {
 		return true;	// not a monster
 	}
@@ -1355,18 +1361,20 @@ boolean PIT_VileCheck (MEMREF thingRef)
 		return true;	// monster doesn't have a raise state
 	}
 
-    maxdist = (thing->info->radius + mobjinfo[MT_VILE].radius)*FRACUNIT;
+	maxdist.h.intbits = (thing->info->radius + mobjinfo[MT_VILE].radius);
+	maxdist.h.fracbits = 0;
+
 	
-	if (abs(thing->x - viletryx) > maxdist || abs(thing->y - viletryy) > maxdist) {
+	if (abs(thing->x - viletryx) > maxdist.w || abs(thing->y - viletryy) > maxdist.w) {
 		return true;		// not actually touching
 	}
 		
 	corpsehitRef = thingRef;
     thing->momx = thing->momy = 0;
-	thing->height <<= 2;
+	thing->height.h.intbits <<= 2;
     check = P_CheckPosition (corpsehitRef, thing->x, thing->y);
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
-	thing->height >>= 2;
+	thing->height.h.intbits >>= 2;
 
 	if (!check) {
 		return true;		// doesn't fit here
@@ -1429,7 +1437,7 @@ void A_VileChase (MEMREF actorRef)
 		    
 				P_SetMobjState (corpsehitRef,getRaiseState(corpsehit->type));
 				corpsehit = (mobj_t*)Z_LoadBytesFromEMS(corpsehitRef);
-				corpsehit->height <<= 2;
+				corpsehit->height.h.intbits <<= 2;
 				corpsehit->flags = info->flags;
 				corpsehit->health = info->spawnhealth;
 				corpsehit->targetRef = NULL_MEMREF;
@@ -1709,7 +1717,7 @@ void A_SkullAttack (MEMREF actorRef)
 	destx = dest->x;
 	desty = dest->y;
 	destz = dest->z;
-	destheight = dest->height;
+	destheight = dest->height.w;
 
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
     an = actor->angle >> ANGLETOFINESHIFT;
@@ -1740,12 +1748,13 @@ A_PainShootSkull
     
     mobj_t*	newmobj;
     angle_t	an;
-    fixed_t		prestep;
+    fixed_t_union	prestep;
     int16_t		count;
     THINKERREF	currentthinker;
 	MEMREF newmobjRef;
 	MEMREF actortargetRef;
 	mobj_t* actor;
+	int16_t radii;
 	
 	// count total number of skull currently on the level
     count = 0;
@@ -1773,10 +1782,18 @@ A_PainShootSkull
     an = angle >> ANGLETOFINESHIFT;
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	actortargetRef = actor->targetRef;
-	prestep = 4*FRACUNIT + 3*FRACUNIT*(actor->info->radius + mobjinfo[MT_SKULL].radius)/2;
+	radii = actor->info->radius + mobjinfo[MT_SKULL].radius;
+	prestep.h.intbits= 4 + 3 * (radii) / 2;
+	if (radii % 1)
+		prestep.h.fracbits = -32768; // handle the radii / 2 case
+	else
+		prestep.h.fracbits = 0x0000;
+
+
+
     
-    x = actor->x + FixedMul (prestep, finecosine(an));
-    y = actor->y + FixedMul (prestep, finesine(an));
+    x = actor->x + FixedMul (prestep.w, finecosine(an));
+    y = actor->y + FixedMul (prestep.w, finesine(an));
     z = actor->z + 8*FRACUNIT;
 		
     newmobjRef = P_SpawnMobj (x , y, z, MT_SKULL);

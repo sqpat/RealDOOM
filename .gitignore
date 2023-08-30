@@ -17,3 +17,6 @@
 # going to leave the map in, i think its interesting to see changes over time..
 # *.map
 
+/packages/Microsoft.Build.Tasks.Git.1.1.1
+/Debug
+/.vs/RealDOOM/v15

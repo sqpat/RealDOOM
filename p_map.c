@@ -35,7 +35,7 @@
 #include "sounds.h"
 
 
-fixed_t		tmbbox[4];
+fixed_t_union		tmbbox[4];
 MEMREF		tmthingRef;
 int32_t		tmflags;
 fixed_t		tmx;
@@ -72,7 +72,7 @@ int16_t		numspechit;
 //
 boolean PIT_StompThing (MEMREF thingRef)
 {
-    fixed_t	blockdist;
+    fixed_t_union	blockdist;
 	mobj_t* tmthing;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
@@ -80,10 +80,11 @@ boolean PIT_StompThing (MEMREF thingRef)
 	return true;
 		
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
-    blockdist = thing->radius + tmthing->radius;
+    blockdist.h.intbits = thing->radius + tmthing->radius;
+	blockdist.h.fracbits = 0;
     
-    if ( abs(thing->x - tmx) >= blockdist
-	 || abs(thing->y - tmy) >= blockdist )
+    if ( abs(thing->x - tmx) >= blockdist.w
+	 || abs(thing->y - tmy) >= blockdist.w )
     {
 	// didn't hit it
 	return true;
@@ -134,12 +135,19 @@ P_TeleportMove
 
     tmx = x;
     tmy = y;
-	
-    tmbbox[BOXTOP] = y + tmthing->radius;
-    tmbbox[BOXBOTTOM] = y - tmthing->radius;
-    tmbbox[BOXRIGHT] = x + tmthing->radius;
-    tmbbox[BOXLEFT] = x - tmthing->radius;
-
+	// todo imrpove how to do the minus cases? can underflow happen?
+	/*
+	tmbbox[BOXTOP].w = y; 
+	tmbbox[BOXTOP].h.intbits += tmthing->radius;
+	tmbbox[BOXBOTTOM].w = y - (tmthing->radius << FRACBITS);
+	tmbbox[BOXRIGHT].w = x; 
+	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
+    tmbbox[BOXLEFT].w = x - (tmthing->radius << FRACBITS);
+	*/
+	tmbbox[BOXTOP].w = y + (tmthing->radius << FRACBITS);
+	tmbbox[BOXBOTTOM].w = y - (tmthing->radius << FRACBITS);
+	tmbbox[BOXRIGHT].w = x + (tmthing->radius << FRACBITS);
+	tmbbox[BOXLEFT].w = x - (tmthing->radius << FRACBITS);
     newsubsecnum = R_PointInSubsector (x,y);
 	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
 	newsubsecsecnum = subsectors[newsubsecnum].secnum;
@@ -157,10 +165,10 @@ P_TeleportMove
     numspechit = 0;
     
     // stomp on any things contacted
-    xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
-    xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
-    yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
-    yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
+    xl = (tmbbox[BOXLEFT].w - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
+    xh = (tmbbox[BOXRIGHT].w - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
+    yl = (tmbbox[BOXBOTTOM].w - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
+    yh = (tmbbox[BOXTOP].w - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
 
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
@@ -210,12 +218,19 @@ boolean PIT_CheckLine (int16_t linenum)
 	int16_t lineflags = ld->flags;
 	int16_t linespecial = ld->special;
 	int16_t lineside1 = ld->sidenum[1];
+ 
 
 	
+	if (tmbbox[BOXLEFT].h.intbits >= ld->bbox[BOXRIGHT] || tmbbox[BOXBOTTOM].h.intbits >= ld->bbox[BOXTOP]
+		|| ((tmbbox[BOXRIGHT].h.intbits < ld->bbox[BOXLEFT]) || ((tmbbox[BOXRIGHT].h.intbits == ld->bbox[BOXLEFT]   && tmbbox[BOXRIGHT].h.fracbits == 0)))
+		|| ((tmbbox[BOXTOP].h.intbits < ld->bbox[BOXBOTTOM]) || ((tmbbox[BOXTOP].h.intbits   == ld->bbox[BOXBOTTOM]) &&  tmbbox[BOXTOP].h.fracbits == 0))
+		) {
+		
+ 
 
-	if (tmbbox[BOXRIGHT] <= ld->bbox[BOXLEFT] || tmbbox[BOXLEFT] >= ld->bbox[BOXRIGHT] || tmbbox[BOXTOP] <= ld->bbox[BOXBOTTOM] || tmbbox[BOXBOTTOM] >= ld->bbox[BOXTOP]) {
 		return true;
 	}
+
 
 	if (P_BoxOnLineSide(tmbbox, lineslopetype, linedx, linedy, linev1Offset) != -1) {
 		return true;
@@ -292,9 +307,9 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	fixed_t thingy;
 	fixed_t thingz;
 	fixed_t tmthingz;
-	fixed_t tmthingheight;
-	fixed_t thingheight;
-	fixed_t thingradius;
+	fixed_t_union tmthingheight;
+	fixed_t_union thingheight;
+	fixed_t_union thingradius;
 	// don't clip against self
 
 
@@ -313,12 +328,14 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	thingy = thing->y;
 	thingz = thing->z;
 	thingheight = thing->height;
-	thingradius = thing->radius;
+	thingradius.h.intbits = thing->radius;
+	thingradius.h.fracbits = 0;
 
 
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
-
-	blockdist = thingradius + tmthing->radius;
+	
+	thingradius.h.intbits += tmthing->radius;
+	blockdist = thingradius.w;
 
     if ( abs(thingx - tmx) >= blockdist || abs(thingy - tmy) >= blockdist ) {
 		// didn't hit it
@@ -346,10 +363,10 @@ boolean PIT_CheckThing (MEMREF thingRef)
     // missiles can hit other things
     if (tmthing->flags & MF_MISSILE) {
 		// see if it went over / under
-		if (tmthingz > thingz + thingheight) {
+		if (tmthingz > thingz + thingheight.w) {
 			return true;		// overhead
 		}
-		if (tmthingz + tmthingheight < thingz) {
+		if (tmthingz + tmthingheight.w < thingz) {
 			return true;		// underneath
 		}
 		if (tmthingtargetRef) {
@@ -453,15 +470,22 @@ P_CheckPosition
 	
     tmx = x;
     tmy = y;
+ 
+
 	
-    tmbbox[BOXTOP] = y + tmthing->radius;
-    tmbbox[BOXBOTTOM] = y - tmthing->radius;
-    tmbbox[BOXRIGHT] = x + tmthing->radius;
-    tmbbox[BOXLEFT] = x - tmthing->radius;
-
-
-
-    
+	// todo imrpove how to do the minus cases? can underflow happen?
+	tmbbox[BOXTOP].w = y;
+	tmbbox[BOXTOP].h.intbits += tmthing->radius;
+	tmbbox[BOXBOTTOM].w = y - (tmthing->radius << FRACBITS);
+	tmbbox[BOXRIGHT].w = x;
+	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
+	tmbbox[BOXLEFT].w = x - (tmthing->radius << FRACBITS);
+	/*
+	tmbbox[BOXTOP].w = y + (tmthing->radius << FRACBITS);
+	tmbbox[BOXBOTTOM].w = y - (tmthing->radius << FRACBITS);
+	tmbbox[BOXRIGHT].w = x + (tmthing->radius << FRACBITS);
+	tmbbox[BOXLEFT].w = x - (tmthing->radius << FRACBITS);
+	*/
 	newsubsecnum = R_PointInSubsector(x, y);
 	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
 	newsubsecsecnum = subsectors[newsubsecnum].secnum;
@@ -491,10 +515,10 @@ P_CheckPosition
     // because mobj_ts are grouped into mapblocks
     // based on their origin point, and can overlap
     // into adjacent blocks by up to MAXRADIUS units.
-    xl = (tmbbox[BOXLEFT] - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
-    xh = (tmbbox[BOXRIGHT] - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
-    yl = (tmbbox[BOXBOTTOM] - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
-    yh = (tmbbox[BOXTOP] - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
+    xl = (tmbbox[BOXLEFT].w - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
+    xh = (tmbbox[BOXRIGHT].w - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
+    yl = (tmbbox[BOXBOTTOM].w - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
+    yh = (tmbbox[BOXTOP].w - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
 
 
 
@@ -510,10 +534,10 @@ P_CheckPosition
 	}
 	
 	// check lines
-    xl = (tmbbox[BOXLEFT] - bmaporgx)>>MAPBLOCKSHIFT;
-    xh = (tmbbox[BOXRIGHT] - bmaporgx)>>MAPBLOCKSHIFT;
-    yl = (tmbbox[BOXBOTTOM] - bmaporgy)>>MAPBLOCKSHIFT;
-    yh = (tmbbox[BOXTOP] - bmaporgy)>>MAPBLOCKSHIFT;
+    xl = (tmbbox[BOXLEFT].w - bmaporgx)>>MAPBLOCKSHIFT;
+    xh = (tmbbox[BOXRIGHT].w - bmaporgx)>>MAPBLOCKSHIFT;
+    yl = (tmbbox[BOXBOTTOM].w - bmaporgy)>>MAPBLOCKSHIFT;
+    yh = (tmbbox[BOXTOP].w - bmaporgy)>>MAPBLOCKSHIFT;
 
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
@@ -569,7 +593,8 @@ P_TryMove
     if ( !(thing->flags & MF_NOCLIP) ) {
 		temp2 = (tmceilingz - tmfloorz);
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
-		if (temp.w < thing->height) {
+//		if (temp.w < thing->height.w) { 
+		if (temp.h.intbits < thing->height.h.intbits) { // 16 bit logic handles the fractional fine
 			return false;	// doesn't fit
 		}
 
@@ -577,7 +602,7 @@ P_TryMove
 		
 		// temp.h.intbits = tmceilingz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmceilingz);
-		if (!(thing->flags&MF_TELEPORT) && temp.w - thing->z < thing->height) {
+		if (!(thing->flags&MF_TELEPORT) && temp.w - thing->z < thing->height.w) {
 			return false;	// mobj must lower itself to fit
 		}
 		// temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
@@ -680,15 +705,16 @@ boolean P_ThingHeightClip (MEMREF thingRef)
 	// don't adjust a floating monster unless forced to
 		// temp.h.intbits = thing->ceilingz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->ceilingz);
-		if (thing->z+thing->height > temp.w)
-			thing->z = temp.w - thing->height;
+		if (thing->z+ thing->height.w > temp.w)
+			thing->z = temp.w - thing->height.w;
 	}
 
 	// temp.h.intbits = (thing->ceilingz - thing->floorz) >> SHORTFLOORBITS;
 	temp2 = (thing->ceilingz - thing->floorz);
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 	
-    if (temp.w < thing->height)
+//	if (temp.w < thing->height.w) 
+	if (temp.h.intbits < thing->height.h.intbits) // 16 bit math should be ok
 		return false;
 
     return true;
@@ -798,12 +824,12 @@ boolean PTR_SlideTraverse (intercept_t* in)
 	// temp.h.intbits = openrange >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openrange);
 
-    if (temp.w < slidemo->height)
+    if (temp.h.intbits < slidemo->height.h.intbits) // 16 bit okay
 		goto isblocking;		// doesn't fit
 		
 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, opentop);
-    if (temp.w - slidemo->z < slidemo->height)
+    if (temp.w - slidemo->z < slidemo->height.w)
 		goto isblocking;		// mobj is too high
 
 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
@@ -840,15 +866,15 @@ boolean PTR_SlideTraverse (intercept_t* in)
 //
 void P_SlideMove (MEMREF moRef)
 {
-    fixed_t		leadx;
-    fixed_t		leady;
-    fixed_t		trailx;
-    fixed_t		traily;
-    fixed_t		newx;
-    fixed_t		newy;
+    fixed_t_union		leadx;
+	fixed_t_union		leady;
+	fixed_t_union		trailx;
+	fixed_t_union		traily;
+	fixed_t		newx;
+	fixed_t		newy;
     int16_t			hitcount;
 	mobj_t* mo;
-
+	fixed_t_union   temp;
 		
     slidemoRef = moRef;
     hitcount = 0;
@@ -860,35 +886,39 @@ void P_SlideMove (MEMREF moRef)
 	 
 
     // trace along the three leading corners
-    if (mo->momx > 0)
-    {
-	leadx = mo->x + mo->radius;
-	trailx = mo->x - mo->radius;
-    }
-    else
-    {
-	leadx = mo->x - mo->radius;
-	trailx = mo->x + mo->radius;
+	// todo improve the minus cases
+	temp.h.fracbits = 0;
+	temp.h.intbits = mo->radius;
+	leadx.w = mo->x;
+	trailx.w = mo->x;
+	leady.w = mo->y;
+	traily.w = mo->y;
+	if (mo->momx > 0) {
+		leadx.h.intbits += temp.h.intbits;
+		trailx.w -= temp.w;
+    } else {
+		leadx.w -= temp.w;
+		trailx.h.intbits += temp.h.intbits;
     }
 	
-    if (mo->momy > 0)
-    {
-	leady = mo->y + mo->radius;
-	traily = mo->y - mo->radius;
-    }
-    else
-    {
-	leady = mo->y - mo->radius;
-	traily = mo->y + mo->radius;
-    }
+    if (mo->momy > 0) {
+		leady.h.intbits += temp.h.intbits;
+		traily.w -= temp.w;
+    } else {
+		leady.w -= temp.w;
+		traily.h.intbits += temp.h.intbits;
+
+    } 
 		
     bestslidefrac = FRACUNIT+1;
 	
-    P_PathTraverse ( leadx, leady, leadx+mo->momx, leady+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
+	//todo we can probably rewrite this without re-fetching mo every time? do the variabels chane?
+
+    P_PathTraverse ( leadx.w, leady.w, leadx.w+mo->momx, leady.w+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
- 	P_PathTraverse ( trailx, leady, trailx+mo->momx, leady+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
+ 	P_PathTraverse ( trailx.w, leady.w, trailx.w+mo->momx, leady.w+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
- 	P_PathTraverse ( leadx, traily, leadx+mo->momx, traily+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
+ 	P_PathTraverse ( leadx.w, traily.w, leadx.w+mo->momx, traily.w+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
  
     // move up to the wall
@@ -1035,7 +1065,7 @@ PTR_AimTraverse (intercept_t* in)
 
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange, in->frac);
-    thingtopslope = FixedDiv (th->z+th->height - shootz , dist);
+    thingtopslope = FixedDiv (th->z+th->height.w - shootz , dist);
 
     if (thingtopslope < bottomslope)
 		return true;			// shot over the thing
@@ -1165,7 +1195,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange, in->frac);
-    thingtopslope = FixedDiv (th->z+th->height - shootz , dist);
+    thingtopslope = FixedDiv (th->z+th->height.w - shootz , dist);
 
 	
 
@@ -1213,12 +1243,15 @@ P_AimLineAttack
 {
     fixed_t	x2;
     fixed_t	y2;
+	fixed_t_union t1height;
 	mobj_t* t1 = (mobj_t*) Z_LoadBytesFromEMS(t1Ref);
     shootthingRef = t1Ref;
     
     x2 = t1->x + (distance>>FRACBITS)*finecosine(angle);
     y2 = t1->y + (distance>>FRACBITS)*finesine(angle);
-    shootz = t1->z + (t1->height>>1) + 8*FRACUNIT;
+	t1height.h.fracbits = 0;
+	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
+    shootz = t1->z + t1height.w;
 
     // can't shoot outside view angles
     topslope = 100*FRACUNIT/160;	
@@ -1255,12 +1288,17 @@ P_LineAttack
     fixed_t	x2;
     fixed_t	y2;
 	mobj_t* t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
-
+	fixed_t_union t1height;
     shootthingRef = t1Ref;
     la_damage = damage;
     x2 = t1->x + (distance>>FRACBITS)*finecosine(angle);
     y2 = t1->y + (distance>>FRACBITS)*finesine(angle);
-    shootz = t1->z + (t1->height>>1) + 8*FRACUNIT;
+
+	t1height.h.fracbits = 0;
+	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
+	shootz = t1->z + t1height.w;
+
+
     attackrange = distance;
     aimslope = slope;
 		
@@ -1357,10 +1395,10 @@ boolean PIT_RadiusAttack (MEMREF thingRef)
 {
     fixed_t	dx;
     fixed_t	dy;
-    fixed_t	dist;
+    fixed_t_union	dist;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	mobj_t* bombspot;
-
+	
 	if (!(thing->flags & MF_SHOOTABLE)) {
 		return true;
 	}
@@ -1375,14 +1413,14 @@ boolean PIT_RadiusAttack (MEMREF thingRef)
     dx = abs(thing->x - bombspot->x);
     dy = abs(thing->y - bombspot->y);
     
-    dist = dx>dy ? dx : dy;
-    dist = (dist - thing->radius) >> FRACBITS;
+    dist.w = dx>dy ? dx : dy;
+    dist.h.intbits = (dist.h.intbits - thing->radius ) ;
 
-	if (dist < 0) {
-		dist = 0;
+	if (dist.h.intbits < 0) {
+		dist.h.intbits = 0;
 	}
 
-	if (dist >= bombdamage) {
+	if (dist.h.intbits >= bombdamage) {
 		return true;	// out of range
 	}
 
@@ -1393,7 +1431,7 @@ boolean PIT_RadiusAttack (MEMREF thingRef)
 			I_Error("bad thing caught d");
 		}
 
-		P_DamageMobj (thingRef, bombspotRef, bombsourceRef, bombdamage - dist);
+		P_DamageMobj (thingRef, bombspotRef, bombsourceRef, bombdamage - dist.h.intbits);
     }
     
     return true;
@@ -1480,7 +1518,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 		P_SetMobjState (thingRef, S_GIBS);
 
 		thing->flags &= ~MF_SOLID;
-		thing->height = 0;
+		thing->height.w = 0;
 		thing->radius = 0;
 
 		// keep checking
@@ -1507,7 +1545,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 		P_DamageMobj(thingRef,NULL_MEMREF,NULL_MEMREF,10);
 
 		// spray blood in a random direction
-		moRef = P_SpawnMobj (thing->x, thing->y, thing->z + thing->height/2, MT_BLOOD);
+		moRef = P_SpawnMobj (thing->x, thing->y, thing->z + thing->height.w/2, MT_BLOOD);
 		
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 		mo->momx = (P_Random() - P_Random ())<<12;

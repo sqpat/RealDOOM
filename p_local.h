@@ -52,7 +52,7 @@
 #define MAXMOVE		(30*FRACUNIT)
 
 #define USERANGE		(64*FRACUNIT)
-#define MELEERANGE		(64*FRACUNIT)
+#define MELEERANGE		(64)
 #define MISSILERANGE	(32*64*FRACUNIT)
 
 // follow a player exlusively for 3 seconds
@@ -156,7 +156,7 @@ boolean 	P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy
 boolean 	P_PointOnDivlineSide (fixed_t x, fixed_t y, divline_t* line);
 void 	P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
 fixed_t P_InterceptVector (divline_t* v2, divline_t* v1);
-boolean 	P_BoxOnLineSide (fixed_t* tmbox, slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t linev1Offset);
+boolean 	P_BoxOnLineSide (fixed_t_union* tmbox, slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t linev1Offset);
 
 
 extern short_height_t		opentop;

@@ -333,7 +333,7 @@ void P_ZMovement (MEMREF moRef)
 			dist = P_AproxDistance (mo->x - moTargetx,
 						mo->y - moTargety);
 	    
-			delta =(moTargetz + (mo->height>>1)) - mo->z;
+			delta =(moTargetz + (mo->height.w>>1)) - mo->z;
 
 			if (delta<0 && dist < -(delta*3) )
 				mo->z -= FLOATSPEED;
@@ -399,12 +399,12 @@ void P_ZMovement (MEMREF moRef)
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	//temp.h.intbits = mo->ceilingz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
-    if (mo->z + mo->height > temp.w) {
+    if (mo->z + mo->height.w > temp.w) {
 		// hit the ceiling
 		if (mo->momz > 0) {
 			mo->momz = 0;
 		}
-		mo->z = temp.w - mo->height;
+		mo->z = temp.w - mo->height.w;
 
 		if (mo->flags & MF_SKULLFLY) {	// the skull slammed into something
 			mo->momz = -mo->momz;
@@ -618,8 +618,9 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobj->info = info;
     mobj->x = x;
     mobj->y = y;
-    mobj->radius = info->radius * FRACUNIT;
-    mobj->height = info->height * FRACUNIT;
+	mobj->radius = info->radius;// *FRACUNIT;
+	mobj->height.h.intbits = info->height;// *FRACUNIT;
+	mobj->height.h.fracbits = 0;
     mobj->flags = info->flags;
     mobj->health = info->spawnhealth;
 
@@ -907,7 +908,7 @@ P_SpawnPuff
 		th->tics = 1;
 	
     // don't make punches spark on the wall
-    if (attackrange == MELEERANGE)
+    if (attackrange == MELEERANGE * FRACUNIT)
 		P_SetMobjState (thRef, S_PUFF3);
 }
 

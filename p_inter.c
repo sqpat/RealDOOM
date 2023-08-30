@@ -325,7 +325,7 @@ P_TouchSpecialThing
 		
     delta = specialz - toucher->z;
 
-    if (delta > toucher->height
+    if (delta > toucher->height.w
 	|| delta < -8*FRACUNIT)
     {
 	// out of reach
@@ -649,7 +649,7 @@ P_KillMobj
 	target->flags &= ~MF_NOGRAVITY;
 
     target->flags |= MF_CORPSE|MF_DROPOFF;
-    target->height >>= 2;
+    target->height.w >>= 2;
 
     if (sourceRef) {
 		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);

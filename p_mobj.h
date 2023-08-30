@@ -227,8 +227,8 @@ typedef struct mobj_s
     short_height_t		ceilingz;
 
     // For movement checking.
-    fixed_t		radius;
-    fixed_t		height;	
+    int16_t		radius;
+    fixed_t_union		height;	
 
     // Momentums, used to update position.
     fixed_t		momx;

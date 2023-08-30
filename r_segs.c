@@ -480,11 +480,11 @@ R_StoreWallRange
 	int16_t curlinesidedefOffset = segs[curlinenum].sidedefOffset;
 	fixed_t curlineOffset = segs[curlinenum].offset;
 	side_t* sides;
-	int16_t siderowoffset;
-	int16_t sidemidtexture;
+	uint8_t siderowoffset;
+	uint8_t sidemidtexture;
 	int16_t sidetoptexture;
-	int16_t sidebottomtexture;
-	fixed_t sidetextureoffset;
+	texsize_t sidebottomtexture;
+	texsize_t sidetextureoffset;
 	line_t* lines;
 	int16_t lineflags;
 	sector_t* sectors;
@@ -571,6 +571,8 @@ R_StoreWallRange
 	sidebottomtexture = sides[curlinesidedefOffset].bottomtexture;
 	sidetextureoffset = sides[curlinesidedefOffset].textureoffset;
 	
+ 
+
 	if (backsecnum == SECNUM_NULL) {
 	// single sided line
 		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
@@ -745,7 +747,8 @@ R_StoreWallRange
 			rw_offset = -rw_offset;
 		}
 
-		rw_offset += sidetextureoffset + curlineOffset;
+		temp.h.intbits = sidetextureoffset;
+		rw_offset += temp.w + curlineOffset;
 		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle>>ANGLETOFINESHIFT) - (rw_normalangle));
 	
 		// calculate light table

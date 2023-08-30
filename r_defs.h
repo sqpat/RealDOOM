@@ -139,10 +139,10 @@ typedef	struct
 typedef struct
 {
     // add this to the calculated texture column
-    fixed_t	textureoffset;
+	texsize_t	textureoffset;
     
     // add this to the calculated texture top
-	int16_t	rowoffset;
+	texsize_t	rowoffset;
 
     // Texture indices.
     // We do not maintain names here. 
@@ -190,7 +190,7 @@ typedef struct line_s
 
     // Neat. Another bounding box, for the extent
     //  of the LineDef.
-    fixed_t	bbox[4];
+	int16_t	bbox[4];
 
     // To aid move clipping.
     slopetype_t	slopetype;

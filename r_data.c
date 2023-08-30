@@ -130,7 +130,7 @@ int16_t             numtextures;
 
 MEMREF  texturesRef;				// MEMREF to texture_t**
 
-MEMREF  texturewidthmaskRef;		// int16_t*
+MEMREF  texturewidthmaskRef;		// uint8_t*
 // needed for texture pegging
 MEMREF  textureheightRef;		    // uint8_t must be converted by fracbits when used*
 MEMREF  texturecompositesizeRef;	// uint16_t*
@@ -472,9 +472,8 @@ R_GetColumn
 	byte* texturecompositebytes;
 
 	// reordered to require fewer things in memory at same time
-	int16_t* texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
+	uint8_t* texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 	col &= texturewidthmask[tex];
-
 
 	texturecolumnofsTex = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
 	texturecolumnofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofsTex[tex]);
@@ -535,7 +534,6 @@ void R_InitTextures(void)
 
 	int16_t*                patchlookup;
 
-	int16_t                 totalwidth;
 	int16_t                 nummappatches;
 	int16_t                 offset;
 	int16_t                 maxoff;
@@ -548,7 +546,7 @@ void R_InitTextures(void)
 	int16_t                 temp2;
 	int16_t                 temp3;
 
-	int16_t*                texturewidthmask;
+	uint8_t*                texturewidthmask;
 	// needed for texture pegging
 	uint8_t*            textureheight;
 	MEMREF *            texturecolumnlump;
@@ -561,7 +559,7 @@ void R_InitTextures(void)
 	int16_t				texturewidth;
 	uint8_t				textureheightval;
 
-
+	int16_t maxwidth = 0;
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
@@ -611,16 +609,15 @@ void R_InitTextures(void)
 	texturecolumnofsRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 	texturecompositeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 	texturecompositesizeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturewidthmaskRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	textureheightRef = Z_MallocEMSNew(numtextures, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	texturewidthmaskRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	textureheightRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
 
 	//texturecomposite	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecompositeRef);
 	//texturecompositesize = (int32_t*)			  Z_LoadBytesFromEMS(texturecompositesizeRef);
-	texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
+	texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 	textureheight = (uint8_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 
-	totalwidth = 0;
 
 	//  Really complex printing shit...
 	temp1 = W_GetNumForName("S_START");  // P_???????
@@ -696,7 +693,7 @@ void R_InitTextures(void)
 		while (j * 2 <= texturewidth)
 			j <<= 1;
 
-		texturewidthmask = (int16_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
+		texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 		textureheight = (uint8_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 		Z_RefIsActive(texturewidthmaskRef);
@@ -704,8 +701,9 @@ void R_InitTextures(void)
 		texturewidthmask[i] = j - 1;
 		textureheight[i] = textureheightval;// << FRACBITS;
 
-		totalwidth += texturewidth;
+
 	}
+
 
 	Z_FreeEMSNew(maptexRef);
 	if (maptex2) {
