@@ -319,7 +319,7 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
     for (i = 0; i < 4; i++)
     {
         outp(SC_INDEX + 1, 1 << i);
-        source = &screens[0][offset + i];
+        source = &screen0[offset + i];
         dest = destscreen + poffset;
 
         for (j = 0; j < h; j++)
@@ -1145,7 +1145,7 @@ void I_InitDiskFlash(void)
     }
     temp = destscreen;
     destscreen = (byte *)0xac000;
-    V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, 0, pic);
+    V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, pic);
     destscreen = temp;
 }
 

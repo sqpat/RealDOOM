@@ -248,7 +248,7 @@ wipe_StartScreen
   int16_t	width,
   int16_t	height )
 {
-    wipe_scr_start = screens[2];
+    wipe_scr_start = screen2;
     I_ReadScreen(wipe_scr_start);
     return 0;
 }
@@ -260,9 +260,9 @@ wipe_EndScreen
   int16_t	width,
   int16_t	height )
 {
-    wipe_scr_end = screens[3];
+    wipe_scr_end = screen3;
     I_ReadScreen(wipe_scr_end);
-    V_DrawBlock(x, y, 0, width, height, wipe_scr_start); // restore start scr.
+    V_DrawBlock(x, y,  width, height, wipe_scr_start); // restore start scr.
     return 0;
 }
 
@@ -289,7 +289,7 @@ wipe_ScreenWipe
     {
 	go = 1;
 	
-	wipe_scr = screens[0];
+	wipe_scr = screen0;
 	(*wipes[wipeno*3])(width, height, ticks);
     }
 

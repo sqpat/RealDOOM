@@ -44,6 +44,7 @@ enum { VERSION =  109 };
 
 //#define LOOPCHECK
 //#define EMS_VISPLANES
+#define SKIPWIPE
 
 
 //

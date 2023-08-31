@@ -32,7 +32,11 @@
 
 
 // Each screen is [SCREENWIDTH*SCREENHEIGHT]; 
-byte*				screens[5];	
+byte*				screen0;
+byte*				screen1;
+byte*				screen2;
+byte*				screen3;
+byte*				screen4;
 MEMREF				screen4Ref;
 int16_t				dirtybox[4]; 
 
@@ -179,8 +183,8 @@ V_CopyRect
      
     V_MarkRect (destx, desty, width, height); 
 	 
-    src = screens[srcscrn]+((uint16_t)SCREENWIDTH*srcy+srcx); 
-    dest = screens[destscrn]+((uint16_t)SCREENWIDTH*desty+destx); 
+    src = screen4+((uint16_t)SCREENWIDTH*srcy+srcx); 
+    dest = screen0 +((uint16_t)SCREENWIDTH*desty+destx);
 
     for ( ; height>0 ; height--) { 
         memcpy (dest, src, width); 
@@ -205,21 +209,41 @@ V_DrawPatch
     int16_t		count;
     int16_t		col; 
     column_t*	column; 
-    byte*	desttop;
+	uint16_t offset;
+	byte* desttop;
     byte*	dest;
     byte*	source; 
     int16_t		w; 
 	 
     y -= (patch->topoffset); 
     x -= (patch->leftoffset); 
+	offset = y * SCREENWIDTH + x;
 
-
- 
     if (!scrn)
-	V_MarkRect (x, y, (patch->width), (patch->height)); 
+		V_MarkRect (x, y, (patch->width), (patch->height)); 
+
+	switch (scrn) {
+		case 0:
+			desttop = screen0 + offset;
+			break;
+		case 1:
+			desttop = screen1 + offset;
+			break;
+		case 2:
+			desttop = screen2 + offset;
+			break;
+		case 3:
+			desttop = screen3 + offset;
+			break;
+		case 4:
+			desttop = screen4 + offset;
+			break;
+	}
+
+
 
     col = 0; 
-    desttop = screens[scrn]+y*SCREENWIDTH+x; 
+    ///desttop = screens[scrn] + y * SCREENWIDTH + x;
 	 
     w = (patch->width); 
 
@@ -271,7 +295,6 @@ void
 V_DrawPatchFlipped
 ( int16_t		x,
   int16_t		y,
-  int16_t		scrn,
   patch_t*	patch ) 
 { 
 
@@ -287,11 +310,11 @@ V_DrawPatchFlipped
     x -= (patch->leftoffset); 
  
  
-    if (!scrn)
+    //if (!0)
 	V_MarkRect (x, y, (patch->width), (patch->height)); 
 
     col = 0; 
-    desttop = screens[scrn]+y*SCREENWIDTH+x; 
+    desttop = screen0+y*SCREENWIDTH+x; 
 	 
     w = (patch->width); 
 
@@ -327,7 +350,6 @@ void
 V_DrawPatchDirect
 ( int16_t		x,
   int16_t		y,
-  int16_t		scrn,
   patch_t*	patch ) 
 {
     int16_t		count;
@@ -383,7 +405,6 @@ void
 V_DrawBlock
 ( int16_t		x,
   int16_t		y,
-  int16_t		scrn,
   int16_t		width,
   int16_t		height,
   byte*		src ) 
@@ -393,7 +414,7 @@ V_DrawBlock
  
     V_MarkRect (x, y, width, height); 
  
-    dest = screens[scrn] + y*SCREENWIDTH+x; 
+    dest = screen0 + y*SCREENWIDTH+x; 
 
     while (height--) 
     { 
@@ -418,6 +439,17 @@ void V_Init (void)
 
     base = I_AllocLow (SCREENWIDTH*SCREENHEIGHT*4);
 
-    for (i=0 ; i<4 ; i++)
-	screens[i] = base + i*SCREENWIDTH*SCREENHEIGHT;
+
+#ifdef SKIPWIPE
+	base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 2);
+	screen0 = base;
+	screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
+
+#else
+	base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 4);
+	screen0 = base;
+	screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
+	screen2 = base + SCREENWIDTH * SCREENHEIGHT * 2;
+	screen3 = base + SCREENWIDTH * SCREENHEIGHT * 3;
+#endif
 }

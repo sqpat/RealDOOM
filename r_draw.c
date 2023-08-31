@@ -594,7 +594,7 @@ void R_FillBackScreen (void)
     
     srcRef = W_CacheLumpNameEMS (name, PU_CACHE); 
 	src = Z_LoadBytesFromEMS(srcRef);
-	dest = screens[1]; 
+	dest = screen1; 
 	 
     for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++) 
     { 
@@ -659,7 +659,7 @@ void R_FillBackScreen (void)
         outp(SC_INDEX + 1, 1 << i);
 
         dest = (byte*)0xac000;
-        src = screens[1] + i;
+        src = screen1 + i;
         do
         {
             *dest++ = *src;

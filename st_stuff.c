@@ -1034,7 +1034,7 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
 */
 void ST_Drawer(boolean fullscreen, boolean refresh)
 {
-	screens[4] = (byte *)Z_LoadBytesFromEMS(screen4Ref);
+	screen4 = (byte *)Z_LoadBytesFromEMS(screen4Ref);
 	st_statusbaron = (!fullscreen) || automapactive;
 	st_firsttime = st_firsttime || refresh;
 
@@ -1055,7 +1055,7 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 	// Otherwise, update as little as possible
 	else
 		ST_drawWidgets(false);
-	screens[4] = NULL;
+	screen4 = NULL;
 
 }
 

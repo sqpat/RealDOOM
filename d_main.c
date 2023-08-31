@@ -307,7 +307,9 @@ void D_Display (void)
         borderdrawcount = 3;
     }
 
-
+#ifdef SKIPWIPE
+	wipe = false;
+#else
     // save the current screen if about to wipe
     if (gamestate != wipegamestate)
     {
@@ -316,7 +318,7 @@ void D_Display (void)
     } else{
         wipe = false;
     }
-
+#endif
 
 
     if (gamestate == GS_LEVEL && gametic)
@@ -401,7 +403,7 @@ void D_Display (void)
         else
             y = viewwindowy+4;
         V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2,
-                          y,0, W_CacheLumpNameEMSAsPatch("M_PAUSE", PU_CACHE));
+                          y,W_CacheLumpNameEMSAsPatch("M_PAUSE", PU_CACHE));
     }
 
     // menus go directly to the screen

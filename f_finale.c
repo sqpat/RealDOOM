@@ -349,7 +349,7 @@ void F_TextWrite (void)
     // erase the entire screen to a tiled background
     srcRef = W_CacheLumpNameEMS ( finaleflat , PU_CACHE);
 	src = Z_LoadBytesFromEMS(srcRef);
-    dest = screens[0];
+    dest = screen0;
 	
     for (y=0 ; y<SCREENHEIGHT ; y++) {
 		for (x=0 ; x<SCREENWIDTH/64 ; x++) {
@@ -647,7 +647,7 @@ void F_CastPrint (int8_t* text)
 //
 // F_CastDrawer
 //
-void V_DrawPatchFlipped (int16_t x, int16_t y, int16_t scrn, patch_t *patch);
+void V_DrawPatchFlipped (int16_t x, int16_t y,  patch_t *patch);
 
 void F_CastDrawer (void)
 {
@@ -680,7 +680,7 @@ void F_CastDrawer (void)
 	patch = Z_LoadBytesFromEMS(patchRef);
 	
 	if (flip) {
-		V_DrawPatchFlipped(160, 170, 0, patch);
+		V_DrawPatchFlipped(160, 170, patch);
 	}
 	else {
 		V_DrawPatch(160, 170, 0, patch);
@@ -704,7 +704,7 @@ F_DrawPatchCol
     int16_t		count;
 	
     column = (column_t *)((byte *)patch + (patch->columnofs[col]));
-    desttop = screens[0]+x;
+    desttop = screen0+x;
 
     // step through the posts in a column
     while (column->topdelta != 0xff )

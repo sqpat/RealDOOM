@@ -93,7 +93,7 @@ HUlib_drawTextLine
 			if (x + w > SCREENWIDTH) {
 				break;
 			}
-			V_DrawPatchDirect(x, l->y, FG, currentpatch);
+			V_DrawPatchDirect(x, l->y,  currentpatch);
 			x += w;
 		} else {
 			x += 4;
@@ -106,7 +106,7 @@ HUlib_drawTextLine
 	currentpatch = (patch_t*)Z_LoadBytesFromEMS(l->fRef['_' - l->sc]);
     // draw the cursor if requested
     if (drawcursor && x + (currentpatch->width) <= SCREENWIDTH) {
-		V_DrawPatchDirect(x, l->y, FG, currentpatch);
+		V_DrawPatchDirect(x, l->y, currentpatch);
     }
 }
 

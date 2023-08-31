@@ -41,7 +41,12 @@
 
 
 
-extern	byte*		screens[5];
+extern	byte*		screen0;
+extern	byte*		screen1;
+extern	byte*		screen2;
+extern	byte*		screen3;
+extern	byte*		screen4;
+
 extern   MEMREF     screen4Ref;
 
 extern  int16_t	dirtybox[4];
@@ -77,7 +82,6 @@ void
 V_DrawPatchDirect
 ( int16_t		x,
   int16_t		y,
-  int16_t		scrn,
   patch_t*	patch );
 
 
@@ -86,7 +90,6 @@ void
 V_DrawBlock
 ( int16_t		x,
   int16_t		y,
-  int16_t		scrn,
   int16_t		width,
   int16_t		height,
   byte*		src );

@@ -459,7 +459,7 @@ void AM_initVariables(void)
 	mobj_t* playerMo; 
 
     automapactive = true;
-    fb = screens[0];
+    fb = screen0;
 
     f_oldloc.x = MAXLONG;
 
