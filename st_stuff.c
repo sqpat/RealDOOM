@@ -606,7 +606,7 @@ ST_Responder (event_t* ev)
         if (cht_CheckCheat(&cheat_powerup[i], ev->data1))
         {
           if (!players.powers[i])
-            P_GivePower(&players, i);
+            P_GivePower( i);
           else if (i!=pw_strength)
 			  players.powers[i] = 1;
           else

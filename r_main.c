@@ -67,8 +67,6 @@ angle_t			viewangle;
 fixed_t			viewcos;
 fixed_t			viewsin;
 
-player_t*		viewplayer;
-
 // 0 = high, 1 = low
 int8_t			detailshift;	
 
@@ -767,28 +765,27 @@ int16_t
 //
 // R_SetupFrame
 //
-void R_SetupFrame (player_t* player)
+void R_SetupFrame ()
 {		
     int8_t		i;
 	fixed_t tempan;
-	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 
-    viewplayer = player;
     viewx.w = playermo->x;
     viewy.w = playermo->y;
     viewangle = playermo->angle;
-    extralight = player->extralight;
+    extralight = players.extralight;
 
-    viewz.w = player->viewz;
+    viewz.w = players.viewz;
 	tempan = viewangle >> ANGLETOFINESHIFT;
     viewsin = finesine(tempan);
     viewcos = finecosine(tempan);
 	
-    if (player->fixedcolormap)
+    if (players.fixedcolormap)
     {
 	fixedcolormap =
 	    colormaps
-	    + player->fixedcolormap*256*sizeof(lighttable_t);
+	    + players.fixedcolormap*256*sizeof(lighttable_t);
 	
 	walllights = scalelightfixed;
 
@@ -807,10 +804,10 @@ void R_SetupFrame (player_t* player)
 //
 // R_RenderView
 //
-void R_RenderPlayerView (player_t* player)
+void R_RenderPlayerView ()
 {	
 
-	R_SetupFrame (player);
+	R_SetupFrame ();
 
     // Clear buffers.
     R_ClearClipSegs ();

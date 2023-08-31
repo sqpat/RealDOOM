@@ -31,14 +31,20 @@ KNOWN ISSUES
 631890 full visplanes huge 
 528384 32 bit
 
+- removing the extra players, net code
+532018 large 16
+627986 huge 16
+526608 32 bit
+
 TODO 
  
  ~ convert fixed_t uses to fixed_t_union (then rename)
    - fix 'shift amount too large' bugs in 16 bit version. probably will go hand in hand with fixed_t work, but some defines may need to explicitly be long typed
  1 MINOR BUGS/IMPROVEMENTS
+  x get rid of last bits of multiplayer, players array
+   x get rid of extra arguments in functions etc
   - fix keyboard bug
   - fix automap not working bug
-  - get rid of last bits of multiplayer, players array
   - fix the texture rotate issue?
 
  2 add feature to 'fix' a page in memory. we could do this in tight loops where page accesses might go abc ade afg etc that would cause A to potentially get paged out unecessarily

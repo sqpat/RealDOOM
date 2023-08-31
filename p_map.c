@@ -1355,7 +1355,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 // P_UseLines
 // Looks for special lines in front of the player to activate.
 //
-void P_UseLines (player_t*	player) 
+void P_UseLines () 
 {
     uint16_t angle;
     fixed_t	x1;
@@ -1364,7 +1364,7 @@ void P_UseLines (player_t*	player)
     fixed_t	y2;
 	mobj_t* usething;
 
-    usethingRef = player->moRef;
+    usethingRef = players.moRef;
 	usething = (mobj_t*)Z_LoadBytesFromEMS(usethingRef);
 		
     angle = usething->angle >> ANGLETOFINESHIFT;

@@ -104,7 +104,6 @@ extern fixed_t_union		viewy;
 extern fixed_t_union		viewz;
 
 extern angle_t		viewangle;
-extern player_t*	viewplayer;
 
 
 // ?

@@ -2065,32 +2065,32 @@ void A_BabyMetal (MEMREF moRef)
 
 void
 A_OpenShotgun2
-( player_t*	player,
+( 
   pspdef_t*	psp )
 {
-	S_StartSoundFromRef(player->moRef, sfx_dbopn);
+	S_StartSoundFromRef(players.moRef, sfx_dbopn);
 }
 
 void
 A_LoadShotgun2
-( player_t*	player,
+( 
   pspdef_t*	psp )
 {
-	S_StartSoundFromRef(player->moRef, sfx_dbload);
+	S_StartSoundFromRef(players.moRef, sfx_dbload);
 }
 
 void
 A_ReFire
-( player_t*	player,
+( 
   pspdef_t*	psp );
 
 void
 A_CloseShotgun2
-( player_t*	player,
+( 
   pspdef_t*	psp )
 {
-    S_StartSoundFromRef (player->moRef, sfx_dbcls);
-    A_ReFire(player,psp);
+    S_StartSoundFromRef (players.moRef, sfx_dbcls);
+    A_ReFire(psp);
 }
 
 

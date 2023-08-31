@@ -78,15 +78,15 @@ void P_RemoveThinker (THINKERREF thinkerRef);
 //
 // P_PSPR
 //
-void P_SetupPsprites (player_t* curplayer);
-void P_MovePsprites (player_t* curplayer);
-void P_DropWeapon (player_t* player);
+void P_SetupPsprites ();
+void P_MovePsprites ();
+void P_DropWeapon ();
 
 
 //
 // P_USER
 //
-void	P_PlayerThink (player_t* player);
+void	P_PlayerThink ();
 
 
 //
@@ -208,7 +208,7 @@ void	P_SlideMove (MEMREF mo);
 boolean P_CheckSight (MEMREF t1, MEMREF t2);
 
 
-void 	P_UseLines (player_t* player);
+void 	P_UseLines ();
 
 boolean P_ChangeSector (int16_t secnum, boolean crunch);
 

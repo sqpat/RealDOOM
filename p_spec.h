@@ -62,7 +62,7 @@ P_CrossSpecialLine
   int16_t		side,
 	MEMREF thingRef);
 
-void    P_PlayerInSpecialSector (player_t* player);
+void    P_PlayerInSpecialSector ();
 
 int16_t
 twoSided

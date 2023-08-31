@@ -1210,7 +1210,6 @@ AM_drawLineCharacter
 
 void AM_drawPlayers(void)
 {
-	player_t *p;
 	static uint8_t their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
 	uint8_t color;
 	mobj_t* playerMo;
