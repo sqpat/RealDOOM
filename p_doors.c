@@ -31,19 +31,6 @@
 #include "sounds.h"
 #include "i_system.h"
 
-#if 0
-//
-// Sliding door frame information
-//
-slidename_t	slideFrameNames[MAXSLIDEDOORS] =
-{
-    {"GDOORF1","GDOORF2","GDOORF3","GDOORF4",	// front
-     "GDOORB1","GDOORB2","GDOORB3","GDOORB4"},	// back
-	 
-    {"\0","\0","\0","\0"}
-};
-#endif
-
 
 //
 // VERTICAL DOORS

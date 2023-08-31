@@ -91,6 +91,7 @@
 // 4 14821971 1447746 1993284 207 (2134 in 4200)    <---- node bounding box stuff made 16 bits
 // 4 14199294 1142934 1517335 207 (2134 in 3685)    <----- got rid of multiplayer for good
 // 4 14199294 1142934 1517335 207 (2134 in 3689)    <----- got rid of netplay
+// 4 17197007 2259978 2948257 207 (2134 in 6579)    <----- tried ems visplanes again
 
 
 
@@ -481,7 +482,7 @@ Z_FreeTagsEMS
 }
 
 void Z_MarkPageLRU(uint16_t pagenumber) {
-
+	
 
 	int16_t i;
 	int16_t j;

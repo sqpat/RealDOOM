@@ -391,10 +391,7 @@ A_CheckReload
   pspdef_t*	psp )
 {
     P_CheckAmmo ();
-#if 0
-    if (players.ammo[am_shell]<2)
-	P_SetPsprite (ps_weapon, S_DSNR1);
-#endif
+ 
 }
 
 

@@ -391,8 +391,18 @@ void I_UpdateNoBlit(void)
     }
 
     // Leave current box for next update
-    memcpy(olddb[0], olddb[1], 16);
-    memcpy(olddb[1], dirtybox, 16);
+    memcpy(olddb[0], olddb[1], 8);
+    memcpy(olddb[1], dirtybox, 8);
+	/*
+	olddb[0][0] = olddb[1][0];
+	olddb[0][1] = olddb[1][1];
+	olddb[0][2] = olddb[1][2];
+	olddb[0][3] = olddb[1][3];
+	olddb[1][0] = dirtybox[0];
+	olddb[1][1] = dirtybox[1];
+	olddb[1][2] = dirtybox[2];
+	olddb[1][3] = dirtybox[3];
+	*/
 
     // Update screen
     if (realdr[BOXBOTTOM] <= realdr[BOXTOP])
@@ -509,71 +519,66 @@ void I_ReadScreen(byte *scr)
 
 void I_StartTic(void)
 {
-	int32_t k;
-    event_t ev;
+	uint8_t k;
+	event_t ev;
 
-    I_ReadMouse();
+	I_ReadMouse();
 
-    //
-    // keyboard events
-    //
-    while (kbdtail < kbdhead)
-    {
-        k = keyboardque[kbdtail&(KBDQUESIZE - 1)];
-        kbdtail++;
+ 
+	//
+	// keyboard events
+	//
+	while (kbdtail < kbdhead) {
+		k = keyboardque[kbdtail&(KBDQUESIZE - 1)];
+		kbdtail++;
+		// extended keyboard shift key bullshit
+		if ((k & 0x7f) == SC_LSHIFT || (k & 0x7f) == SC_RSHIFT) {
+			if (keyboardque[(kbdtail - 2)&(KBDQUESIZE - 1)] == 0xe0)
+			{
+				continue;
+			}
+			k &= 0x80;
+			k |= SC_RSHIFT;
+		}
 
-        // extended keyboard shift key bullshit
-        if ((k & 0x7f) == SC_LSHIFT || (k & 0x7f) == SC_RSHIFT)
-        {
-            if (keyboardque[(kbdtail - 2)&(KBDQUESIZE - 1)] == 0xe0)
-            {
-                continue;
-            }
-            k &= 0x80;
-            k |= SC_RSHIFT;
-        }
+		if (k == 0xe0) {
+			continue;   // special / pause keys
+		}
+		if (keyboardque[(kbdtail - 2)&(KBDQUESIZE - 1)] == 0xe1) {
+			continue;   // pause key bullshit
+		}
+		if (k == 0xc5 && keyboardque[(kbdtail - 2)&(KBDQUESIZE - 1)] == 0x9d) {
+			ev.type = ev_keydown;
+			ev.data1 = KEY_PAUSE;
+			D_PostEvent(&ev);
+			continue;
+		}
 
-        if (k == 0xe0)
-        {
-            continue;   // special / pause keys
-        }
-        if (keyboardque[(kbdtail - 2)&(KBDQUESIZE - 1)] == 0xe1)
-        {
-            continue;   // pause key bullshit
-        }
-        if (k == 0xc5 && keyboardque[(kbdtail - 2)&(KBDQUESIZE - 1)] == 0x9d)
-        {
-            ev.type = ev_keydown;
-            ev.data1 = KEY_PAUSE;
-            D_PostEvent(&ev);
-            continue;
-        }
+		if (k & 0x80)
+			ev.type = ev_keyup;
+		else
+			ev.type = ev_keydown;
+		k &= 0x7f;
+		switch (k) {
+			case SC_UPARROW:
+				ev.data1 = KEY_UPARROW;
+				break;
+			case SC_DOWNARROW:
+				ev.data1 = KEY_DOWNARROW;
+				break;
+			case SC_LEFTARROW:
+				ev.data1 = KEY_LEFTARROW;
+				break;
+			case SC_RIGHTARROW:
+				ev.data1 = KEY_RIGHTARROW;
+				break;
+			default:
+				ev.data1 = scantokey[k];
 
-        if (k & 0x80)
-            ev.type = ev_keyup;
-        else
-            ev.type = ev_keydown;
-        k &= 0x7f;
-        switch (k)
-        {
-        case SC_UPARROW:
-            ev.data1 = KEY_UPARROW;
-            break;
-        case SC_DOWNARROW:
-            ev.data1 = KEY_DOWNARROW;
-            break;
-        case SC_LEFTARROW:
-            ev.data1 = KEY_LEFTARROW;
-            break;
-        case SC_RIGHTARROW:
-            ev.data1 = KEY_RIGHTARROW;
-            break;
-        default:
-            ev.data1 = scantokey[k];
-            break;
-        }
-        D_PostEvent(&ev);
-    }
+				break;
+		}
+		D_PostEvent(&ev);
+	}
 }
  
 
@@ -597,7 +602,6 @@ void I_TimerISR(void)
 
 void (__interrupt __far *oldkeyboardisr) () = NULL;
 
-int32_t lastpress;
 
 //
 // I_KeyboardISR
@@ -606,9 +610,17 @@ int32_t lastpress;
 void __interrupt I_KeyboardISR(void)
 {
 // Get the scan code
+	byte value = _inbyte(0x60);
+    keyboardque[kbdhead&(KBDQUESIZE - 1)] = value;
 
-    keyboardque[kbdhead&(KBDQUESIZE - 1)] = lastpress = _inbyte(0x60);
-    kbdhead++;
+	
+	if (value == 64) {
+		I_Error("caught early 192 %i", value);
+	}
+
+	kbdhead++;
+
+
 
 // acknowledge the interrupt
 
@@ -619,8 +631,12 @@ void __interrupt I_KeyboardISR(void)
 //
 // I_StartupKeyboard
 //
-void I_StartupKeyboard(void)
-{
+void I_StartupKeyboard(void) {
+	int8_t i = 0;
+	for (i = 0; i < KBDQUESIZE; i++) {
+		keyboardque[i] = 0;
+	}
+
         oldkeyboardisr = _dos_getvect(KEYBOARDINT);
 #ifdef _M_I86
 		_dos_setvect ( KEYBOARDINT, I_KeyboardISR);

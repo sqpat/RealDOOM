@@ -403,7 +403,7 @@ void R_DrawPlanes (void)
 		PU_STATIC);
 	ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
 	
-	planeheight = abs(pl->height-viewz);
+	planeheight = abs(pl->height-viewz.w);
 	light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 	if (light >= LIGHTLEVELS)

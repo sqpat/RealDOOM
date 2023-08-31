@@ -1472,13 +1472,15 @@ boolean M_Responder (event_t* ev)
             return true;
                                 
           case KEY_F2:            // Save
-            M_StartControlPanel();
+			  I_Error("blah");
+			M_StartControlPanel();
             S_StartSound(NULL,sfx_swtchn);
             M_SaveGame(0);
             return true;
                                 
           case KEY_F3:            // Load
-            M_StartControlPanel();
+			  I_Error("blah2");
+			  M_StartControlPanel();
             S_StartSound(NULL,sfx_swtchn);
             M_LoadGame(0);
             return true;
@@ -1496,7 +1498,8 @@ boolean M_Responder (event_t* ev)
             return true;
                                 
           case KEY_F6:            // Quicksave
-            S_StartSound(NULL,sfx_swtchn);
+			  I_Error("blah3 %i", ev->data1);
+			  S_StartSound(NULL,sfx_swtchn);
             M_QuickSave();
             return true;
                                 

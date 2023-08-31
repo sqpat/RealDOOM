@@ -209,7 +209,7 @@ EV_DoPlat
 
 				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 				plat->speed = PLATSPEED / 2;
-				plat->high = sectorfloorheight + amount << SHORTFLOORBITS;
+				plat->high = sectorfloorheight + amount << SHORTFLOORBITS; // todo test, this looks wrong
 				plat->wait = 0;
 				plat->status = plat_up;
 

@@ -660,7 +660,6 @@ void R_InitTextures(void)
 		textures[i] = textureRef;
 
 		texture = (texture_t*)Z_LoadBytesFromEMS(textureRef);
-
 		texture->width = (mtexture->width) - 1;
 		texture->height = (mtexture->height) - 1;
 		texture->patchcount = (mtexture->patchcount);
@@ -671,8 +670,7 @@ void R_InitTextures(void)
 		mpatch = &mtexture->patches[0];
 		patch = &texture->patches[0];
 
-		for (j = 0; j < texture->patchcount; j++, mpatch++, patch++)
-		{
+		for (j = 0; j < texture->patchcount; j++, mpatch++, patch++) {
 			patch->originx = (mpatch->originx);
 			patch->originy = (mpatch->originy);
 			patch->patch = patchlookup[(mpatch->patch)];
@@ -681,7 +679,19 @@ void R_InitTextures(void)
 				I_Error("R_InitTextures: Missing patch in texture %s %i",
 					texture->name, textureRef);
 			}
+
+			if (i == 2 && j == 1) {
+//				I_Error("values %i %i %i", i, j, patch->patch);
+			}
+
+
 		}
+
+		if (i == 2) {
+			//I_Error("values %i %i %i", i, texture->patchcount, texture->patches[1]);
+		}
+
+
 		//printf("name %s", texture->name);
 		texturecolumnlump = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
 		texturecolumnlump[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
@@ -1018,6 +1028,9 @@ void R_PrecacheLevel(void)
 		{
 			lump = texture->patches[j].patch;
 			//texturememory += lumpinfo[lump].size;
+			if (lump == 22873) {
+				I_Error("1389 was %i %i ", i, j);
+			}
 			if (W_CacheLumpNumCheck(lump, 15)) {
 				printf("Crash %i %i %i", j, lump, texture->patchcount);
 				I_Error("Crash %i %i %i", j, lump, texture->patchcount);

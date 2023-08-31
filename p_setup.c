@@ -345,7 +345,7 @@ void P_LoadNodes(int16_t lump)
  
 
 
-		fixed_t	bbox[2][4];
+	uint16_t	bbox[2][4];
 
 	// If NF_SUBSECTOR its a subsector.
 	uint16_t children[2];
@@ -368,8 +368,9 @@ void P_LoadNodes(int16_t lump)
 		no->dy = (currentdata.dy);// << FRACBITS;
 		for (j = 0; j < 2; j++) {
 			no->children[j] = (currentdata.children[j]);
-			for (k = 0; k < 4; k++)
+			for (k = 0; k < 4; k++) {
 				no->bbox[j][k] = (currentdata.bbox[j][k]);// << FRACBITS;
+			}
 		}
 		//Z_RefIsActive(nodesRef);
 		//Z_RefIsActive(dataRef);

@@ -43,9 +43,10 @@ TODO
  1 MINOR BUGS/IMPROVEMENTS
   x get rid of last bits of multiplayer, players array
    x get rid of extra arguments in functions etc
-  - fix keyboard bug
+  x fix keyboard bug
   - fix automap not working bug
-  - fix the texture rotate issue?
+  - fix the texture rotate/offset issue?
+  ? melee range bug
 
  2 add feature to 'fix' a page in memory. we could do this in tight loops where page accesses might go abc ade afg etc that would cause A to potentially get paged out unecessarily
  3 screens in conventional instead of allocced
@@ -62,8 +63,9 @@ TODO
 
 
 
- - crazy idea: all vertices, line_t and seg bounding boxes have coords that are mults of 8. if we shift them by 3, the biggest values of ~5500/-5500 int he wads correspond to a range of like -600 to 600 which can be stored in 10 bits. so do some insane superpacked bit array and cut down 128 to 80 bits per node for example. they arent accessed super frequently so the unpacking is unfrequent... may be a net win.
-   - sector and ceiling heights could also be stored in int8 this way .    
+ x crazy idea: all vertices, line_t and seg bounding boxes have coords that are mults of 8. if we shift them by 3, the biggest values of ~5500/-5500 int he wads correspond to a range of like -600 to 600 which can be stored in 10 bits. so do some insane superpacked bit array and cut down 128 to 80 bits per node for example. they arent accessed super frequently so the unpacking is unfrequent... may be a net win.
+   sector and ceiling heights could also be stored in int8 this way .    
+   ! cant do this. they are mostly 8 (actually 16) aligned but the odd ones do exist.
 
 PROFILING
  - check if using 8 instead of 16 bit local vars (especially loop vars) affects 16 bit binary code size
