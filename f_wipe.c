@@ -18,6 +18,7 @@
 
 
 
+
 #include "z_zone.h"
 #include "i_system.h"
 #include "v_video.h"
@@ -26,6 +27,9 @@
 #include "doomdef.h"
 
 #include "f_wipe.h"
+
+#ifdef SKIPWIPE
+#else
 
 //
 //                       SCREEN WIPE PACKAGE
@@ -307,3 +311,4 @@ wipe_ScreenWipe
     return !go;
 
 }
+#endif
