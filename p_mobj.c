@@ -371,7 +371,7 @@ void P_ZMovement (MEMREF moRef)
 			mo->momz = 0;
 		}
 
-	// if (gametic == 758 && moRef == players[0].moRef){
+	// if (gametic == 758 && moRef == players.moRef){
 	// 	I_Error ("the z value being set %i %i ", temp.w >>  (16-SHORTFLOORBITS), mo->z >>  (16-SHORTFLOORBITS));
 	// }
 
@@ -613,7 +613,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 
 	info = &mobjinfo[type];
-	
+
     mobj->type = type;
     mobj->info = info;
     mobj->x = x;
@@ -629,7 +629,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 		mobj->reactiontime = 8;
 	}
     
-    mobj->lastlook = P_Random () % MAXPLAYERS;
+    mobj->lastlook = P_Random () % 1;
+	
     // do not set the state with P_SetMobjState,
     // because action routines can not be called yet
     st = &states[info->spawnstate];
@@ -706,8 +707,7 @@ void P_RemoveMobj (MEMREF mobjRef)
 //
 void P_SpawnPlayer (mapthing_t* mthing)
 {
-    player_t*		p;
-    fixed_t		x;
+     fixed_t		x;
     fixed_t		y;
     fixed_t		z;
 
@@ -719,16 +719,15 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	int16_t mthingangle = mthing->angle;
 	 
 		
-    p = &players[0];
-
-	if (p->playerstate == PST_REBORN) {
+ 
+	if (players.playerstate == PST_REBORN) {
 		G_PlayerReborn();
 	}
 
     x 		= mthingx << FRACBITS;
     y 		= mthingy << FRACBITS;
     z		= ONFLOORZ;
-    mobjRef	= P_SpawnMobj (x,y,z, MT_PLAYER);
+	mobjRef	= P_SpawnMobj (x,y,z, MT_PLAYER);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	mobj->reactiontime = 0;
 
@@ -737,22 +736,22 @@ void P_SpawnPlayer (mapthing_t* mthing)
 		mobj->flags |= (mthingtype-1)<<MF_TRANSSHIFT;
 		
     mobj->angle	= ANG45 * (mthingangle/45);
-    mobj->player = p;
-    mobj->health = p->health;
+    mobj->player = &players;
+    mobj->health = players.health;
 
-    p->moRef = mobjRef;
-    p->playerstate = PST_LIVE;	
-    p->refire = 0;
-    p->message = NULL;
-    p->damagecount = 0;
-    p->bonuscount = 0;
-    p->extralight = 0;
-    p->fixedcolormap = 0;
-    p->viewheight = VIEWHEIGHT;
-	 
+	players.moRef = mobjRef;
+	players.playerstate = PST_LIVE;
+	players.refire = 0;
+	players.message = NULL;
+	players.damagecount = 0;
+	players.bonuscount = 0;
+	players.extralight = 0;
+	players.fixedcolormap = 0;
+	players.viewheight = VIEWHEIGHT;
+
 
     // setup gun psprite
-    P_SetupPsprites (p);
+    P_SetupPsprites (&players);
     
  
 
@@ -800,9 +799,8 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
     // check for players specially
     if (mthingtype == 1) {
 		// save spots for respawning in network games
- 
 		P_SpawnPlayer(mthing);
- 
+
 
 		return;
     }

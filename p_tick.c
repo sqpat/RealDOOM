@@ -197,7 +197,7 @@ void P_RunThinkers (void)
 // i will need this later to help me debug inevitible doom 2 content memleaks
 /*
 				if (gametic == 619 && i == 0) {
-					//SAVEDUNIT = (mobj_t*) Z_LoadBytesFromEMS(players[0].moRef);
+					//SAVEDUNIT = (mobj_t*) Z_LoadBytesFromEMS(players.moRef);
 					//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
 					// 454 122 157
 
@@ -233,7 +233,7 @@ void P_RunThinkers (void)
 
 	if (gametic == 1050) {
 		//SAVEDUNIT = Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
-		//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+		//SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);
 
 		// 1 230 122
 
@@ -253,12 +253,12 @@ void P_Ticker (void)
 {
     // run the tic
 	// pause if in menu and at least one tic has been run
-	if (paused || (menuactive && !demoplayback && players[consoleplayer].viewz != 1)) {
+	if (paused || (menuactive && !demoplayback && players.viewz != 1)) {
 		return;
     }
     
 
-	P_PlayerThink(&players[0]);
+	P_PlayerThink(&players);
 
 	P_RunThinkers ();
 	P_UpdateSpecials ();

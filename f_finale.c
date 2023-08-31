@@ -292,7 +292,7 @@ void F_Ticker (void)
     {
       // go on to the next level
 				
-		if (players[0].cmd.buttons)
+		if (players.cmd.buttons)
 		{
 	if (gamemap == 30)
 	  F_StartCast ();

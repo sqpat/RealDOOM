@@ -357,7 +357,7 @@ void D_Display (void)
     I_UpdateNoBlit ();
 	// draw the view directly
     if (gamestate == GS_LEVEL && !automapactive && gametic)
-        R_RenderPlayerView (&players[0]);
+        R_RenderPlayerView (&players);
 
 
     if (gamestate == GS_LEVEL && gametic)
@@ -488,13 +488,13 @@ void D_DoomLoop (void)
         {
             TryRunTics (); // will run at least one tic
         }
-		S_UpdateSounds (players[consoleplayer].moRef);// move positional sounds
+		S_UpdateSounds (players.moRef);// move positional sounds
         // Update display, next frame, with current state.
 
 		 
 		D_Display ();
 		 
-		//SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+		//SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);
 	
 		/*
 		if (gametic == 5) {
@@ -520,7 +520,7 @@ void D_DoomLoop (void)
 				//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
 
 				//SAVEDUNIT = Z_LoadBytesFromEMS(1523);
-				SAVEDUNIT = Z_LoadBytesFromEMS(players[0].moRef);
+				SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);
 				 
 				sector = ((sector_t*)Z_LoadBytesFromEMS(sectorsRef))[SAVEDUNIT->secnum];
 
@@ -599,7 +599,7 @@ void D_AdvanceDemo (void)
 //
  void D_DoAdvanceDemo (void)
 {
-    players[consoleplayer].playerstate = PST_LIVE;  // not reborn
+    players.playerstate = PST_LIVE;  // not reborn
     advancedemo = false;
     usergame = false;               // no save / end game here
     paused = false;

@@ -623,7 +623,8 @@ P_TouchSpecialThing
 		player->itemcount++;
     P_RemoveMobj (specialRef);
     player->bonuscount += BONUSADD;
-    if (player == &players[consoleplayer])
+    //  always true? 
+	//if (player == &players)
 	S_StartSound (NULL, sound);
 }
 
@@ -666,7 +667,7 @@ P_KillMobj
 	{
 	// count all monster deaths,
 	// even those caused by other monsters
-	players[0].killcount++;
+	players.killcount++;
     }
     
     if (target->player)
@@ -676,7 +677,7 @@ P_KillMobj
 	target->player->playerstate = PST_DEAD;
 	P_DropWeapon (target->player);
 
-	if (target->player == &players[consoleplayer]
+	if (target->player == &players
 	    && automapactive)
 	{
 	    // don't die in auto map,

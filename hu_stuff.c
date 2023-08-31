@@ -53,7 +53,6 @@
 
  
 
-static player_t*	plr;
 MEMREF		hu_fontRef[HU_FONTSIZE];
 static hu_textline_t	w_title;
 static boolean		always_off = false;
@@ -392,7 +391,6 @@ void HU_Start(void)
 	HU_TITLEY = (167 - (hu_font0->height));
 	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * ((hu_font0->height) + 1));
 
-    plr = &players[consoleplayer];
     message_on = false;
     message_dontfuckwithme = false;
     message_nottobefuckedwith = false;
@@ -477,10 +475,10 @@ void HU_Ticker(void)
 	{
 
 		// display message if necessary
-		if ((plr->message && !message_nottobefuckedwith) || (plr->message && message_dontfuckwithme))
+		if ((players.message && !message_nottobefuckedwith) || (players.message && message_dontfuckwithme))
 		{
-			HUlib_addMessageToSText(&w_message, 0, plr->message);
-			plr->message = 0;
+			HUlib_addMessageToSText(&w_message, 0, players.message);
+			players.message = 0;
 			message_on = true;
 			message_counter = HU_MSGTIMEOUT;
 			message_nottobefuckedwith = message_dontfuckwithme;

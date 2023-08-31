@@ -103,8 +103,7 @@ ticcount_t             starttime;              // for comparative timing purpose
  
 boolean         viewactive; 
  
-boolean         playeringame[MAXPLAYERS]; 
-player_t        players[MAXPLAYERS]; 
+player_t        players;
  
 int16_t             consoleplayer;          // player taking events and displaying 
 ticcount_t             gametic;
@@ -408,8 +407,8 @@ void G_DoLoadLevel (void)
     gamestate = GS_LEVEL; 
 
 
-	if (players[0].playerstate == PST_DEAD)
-		players[0].playerstate = PST_REBORN;
+	if (players.playerstate == PST_DEAD)
+		players.playerstate = PST_REBORN;
 
 	P_SetupLevel (gameepisode, gamemap, gameskill);
 	starttime = ticcount;
@@ -508,9 +507,9 @@ void G_Ticker (void)
     ticcmd_t*   cmd;
 	mobj_t* playerMo;
     // do player reborns if needed
-	if (players[0].playerstate == PST_REBORN)
+	if (players.playerstate == PST_REBORN)
 		G_DoReborn();
-    
+
     // do things to change the game state
     while (gameaction != ga_nothing) 
     { 
@@ -551,7 +550,7 @@ void G_Ticker (void)
 	 // and build new consistancy check
 	buf = (gametic) % BACKUPTICS;
 
-	cmd = &players[0].cmd;
+	cmd = &players.cmd;
 
 	memcpy(cmd, &localcmds[buf], sizeof(ticcmd_t));
 
@@ -563,9 +562,9 @@ void G_Ticker (void)
 
     
     // check for special buttons
-	if (players[0].cmd.buttons & BT_SPECIAL)
+	if (players.cmd.buttons & BT_SPECIAL)
 	{
-		switch (players[0].cmd.buttons & BT_SPECIALMASK)
+		switch (players.cmd.buttons & BT_SPECIALMASK)
 		{
 		case BTS_PAUSE:
 			paused ^= 1;
@@ -579,7 +578,7 @@ void G_Ticker (void)
 			if (!savedescription[0])
 				strcpy(savedescription, "NET GAME");
 			savegameslot =
-				(players[0].cmd.buttons & BTS_SAVEMASK) >> BTS_SAVESHIFT;
+				(players.cmd.buttons & BTS_SAVEMASK) >> BTS_SAVESHIFT;
 			gameaction = ga_savegame;
 			break;
 		}
@@ -620,18 +619,16 @@ void G_Ticker (void)
 //
 void G_PlayerFinishLevel () 
 { 
-    player_t*   p = &players[0];
-	mobj_t* playerMo = Z_LoadBytesFromEMS(p->moRef);
+	mobj_t* playerMo = Z_LoadBytesFromEMS(players.moRef);
 
-    p = &players[0]; 
-         
-    memset (p->powers, 0, sizeof (p->powers)); 
-    memset (p->cards, 0, sizeof (p->cards)); 
+          
+    memset (players.powers, 0, sizeof (players.powers));
+    memset (players.cards, 0, sizeof (players.cards));
     playerMo->flags &= ~MF_SHADOW;         // cancel invisibility 
-    p->extralight = 0;                  // cancel gun flashes 
-    p->fixedcolormap = 0;               // cancel ir gogles 
-    p->damagecount = 0;                 // no palette changes 
-    p->bonuscount = 0; 
+	players.extralight = 0;                  // cancel gun flashes 
+	players.fixedcolormap = 0;               // cancel ir gogles 
+	players.damagecount = 0;                 // no palette changes 
+	players.bonuscount = 0;
 } 
  
 
@@ -642,33 +639,31 @@ void G_PlayerFinishLevel ()
 //
 void G_PlayerReborn () 
 { 
-    player_t*   p; 
-	int8_t         i;
+ 	int8_t         i;
 	int16_t         killcount;
 	int16_t         itemcount;
 	int16_t         secretcount;
          
-    killcount = players[0].killcount; 
-    itemcount = players[0].itemcount; 
-    secretcount = players[0].secretcount; 
+    killcount = players.killcount; 
+    itemcount = players.itemcount; 
+    secretcount = players.secretcount; 
          
-    p = &players[0]; 
-    memset (p, 0, sizeof(*p)); 
+    memset (&players, 0, sizeof(players));
  
-    players[0].killcount = killcount; 
-    players[0].itemcount = itemcount; 
-    players[0].secretcount = secretcount; 
+    players.killcount = killcount; 
+    players.itemcount = itemcount; 
+    players.secretcount = secretcount; 
  
-    p->usedown = p->attackdown = true;  // don't do anything immediately 
-    p->playerstate = PST_LIVE;       
-    p->health = MAXHEALTH; 
-    p->readyweapon = p->pendingweapon = wp_pistol; 
-    p->weaponowned[wp_fist] = true; 
-    p->weaponowned[wp_pistol] = true; 
-    p->ammo[am_clip] = 50; 
+	players.usedown = players.attackdown = true;  // don't do anything immediately 
+	players.playerstate = PST_LIVE;
+	players.health = MAXHEALTH;
+	players.readyweapon = players.pendingweapon = wp_pistol;
+	players.weaponowned[wp_fist] = true;
+	players.weaponowned[wp_pistol] = true;
+	players.ammo[am_clip] = 50;
          
     for (i=0 ; i<NUMAMMO ; i++) 
-        p->maxammo[i] = maxammo[i]; 
+		players.maxammo[i] = maxammo[i];
                  
 }
 
@@ -704,24 +699,22 @@ G_CheckSpot
     tempx.h.intbits = mthing->x; 
     tempy.h.intbits = mthing->y; 
 
-    if (!players[playernum].moRef)
+    if (!players.moRef)
     {
         // first spawn of level, before corpses
-		for (i = 0; i < playernum; i++) {
-			playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[i].moRef);
-			if (playerMo->x == tempx.w && playerMo->y == tempy.w)
-				return false;
-		}
+		playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+		if (playerMo->x == tempx.w && playerMo->y == tempy.w)
+			return false;
         return true;
     }
          
-    if (!P_CheckPosition (players[playernum].moRef, tempx.w, tempy.w) ) 
+    if (!P_CheckPosition (players.moRef, tempx.w, tempy.w) ) 
         return false; 
  
     // flush an old corpse if needed 
     if (bodyqueslot >= BODYQUESIZE) 
         P_RemoveMobj (bodyque[bodyqueslot%BODYQUESIZE]); 
-    bodyque[bodyqueslot%BODYQUESIZE] = players[playernum].moRef; 
+    bodyque[bodyqueslot%BODYQUESIZE] = players.moRef; 
     bodyqueslot++; 
         
     // spawn a teleport fog 
@@ -739,7 +732,7 @@ G_CheckSpot
                       , tempz.w
                       , MT_TFOG); 
          
-	if (players[consoleplayer].viewz != 1) {
+	if (players.viewz != 1) {
 		S_StartSoundFromRef(moRef, sfx_telept);  // don't start sound on first frame 
 	}
     return true; 
@@ -820,14 +813,14 @@ void G_DoCompleted (void)
             gameaction = ga_victory;
             return;
           case 9: 
-            players[0].didsecret = true; 
+            players.didsecret = true; 
             break;
         }
                 
  
     
          
-    wminfo.didsecret = players[consoleplayer].didsecret; 
+    wminfo.didsecret = players.didsecret; 
     wminfo.epsd = gameepisode -1; 
     wminfo.last = gamemap -1;
     
@@ -886,9 +879,9 @@ void G_DoCompleted (void)
     wminfo.pnum = consoleplayer; 
  
 	wminfo.plyr.in = true;
-    wminfo.plyr.skills = players[0].killcount; 
-    wminfo.plyr.sitems = players[0].itemcount; 
-    wminfo.plyr.ssecret = players[0].secretcount; 
+    wminfo.plyr.skills = players.killcount; 
+    wminfo.plyr.sitems = players.itemcount; 
+    wminfo.plyr.ssecret = players.secretcount; 
     wminfo.plyr.stime = (leveltime / TICRATE); 
  
     gamestate = GS_INTERMISSION; 
@@ -910,7 +903,7 @@ void G_WorldDone (void)
     gameaction = ga_worlddone; 
 
     if (secretexit) 
-        players[consoleplayer].didsecret = true; 
+        players.didsecret = true; 
 
     if ( commercial )
     {
@@ -981,7 +974,7 @@ void G_DoLoadGame (void)
     gameskill = *save_p++; 
     gameepisode = *save_p++; 
     gamemap = *save_p++; 
-    playeringame[0]= *save_p++; 
+    *save_p++;  // playeringam,e
 	*save_p++; *save_p++; *save_p++;
 
     // load a base level 
@@ -1082,7 +1075,7 @@ void G_DoSaveGame (void)
     gameaction = ga_nothing; 
     savedescription[0] = 0;              
          
-    players[consoleplayer].message = GGSAVED; 
+    players.message = GGSAVED; 
 
     // draw the pattern into the back screen
     R_FillBackScreen ();        
@@ -1115,7 +1108,7 @@ void G_DoNewGame (void)
 {
     demoplayback = false; 
     netdemo = false;
-    playeringame[1] = playeringame[2] = playeringame[3] = 0;
+    //playeringame[1] = playeringame[2] = playeringame[3] = 0;
     respawnparm = false;
     fastparm = false;
     nomonsters = false;
@@ -1200,7 +1193,7 @@ G_InitNew
          
                          
     // force players to be initialized upon first level load         
-    players[0].playerstate = PST_REBORN; 
+    players.playerstate = PST_REBORN; 
  
     usergame = true;                // will be set false if a demo 
     paused = false; 
@@ -1371,7 +1364,7 @@ void G_DoPlayDemo (void)
     {
       I_Error("Demo is from a different game version!");
     }
-    
+
     skill = *demo_p++; 
     episode = *demo_p++; 
     map = *demo_p++; 
@@ -1380,15 +1373,15 @@ void G_DoPlayDemo (void)
     fastparm = *demo_p++;
     nomonsters = *demo_p++;
     consoleplayer = *demo_p++;
-        
-	playeringame[0] = *demo_p++;
+
+	*demo_p++; // playeringame
 	*demo_p++;
 	*demo_p++;
 	*demo_p++;
 
     // don't spend a lot of time in loadlevel 
     precache = false;
-    G_InitNew (skill, episode, map); 
+	G_InitNew (skill, episode, map);
     precache = true; 
 
     usergame = false; 
@@ -1445,7 +1438,6 @@ boolean G_CheckDemoStatus (void)
         Z_ChangeTagEMSNew (demobufferRef, PU_CACHE); 
         demoplayback = false; 
         netdemo = false;
-        playeringame[1] = playeringame[2] = playeringame[3] = 0;
         respawnparm = false;
         fastparm = false;
         nomonsters = false;

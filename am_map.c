@@ -281,8 +281,6 @@ DECLARE_FIXED_POINT_HIGH (static fixed_t scale_mtof, INITSCALEMTOF);
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
 static fixed_t scale_ftom;
 
-static player_t *plr; // the player represented by an arrow
-
 static MEMREF marknums[10]; // numbers used for marking by the automap
 static mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
 static int8_t markpointnum = 0; // next point to be assigned
@@ -358,7 +356,7 @@ void AM_restoreScaleAndLoc(void)
 		m_x = old_m_x;
 		m_y = old_m_y;
     } else {
-		playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+		playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 		m_x = playerMo->x - m_w/2;
 		m_y = playerMo->y - m_h/2;
 		//m_x = FIXED_T_MINUS(playerMo->x, FIXED_T_SHIFT_RIGHT(m_w,1));
@@ -473,8 +471,7 @@ void AM_initVariables(void)
     m_h = FTOM(f_h);
 
   
-    plr = &players[0];
-	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 	m_x = playerMo->x - m_w/2;
     m_y = playerMo->y - m_h/2;
     AM_changeWindowLoc();
@@ -672,20 +669,20 @@ AM_Responder
 	  case AM_FOLLOWKEY:
 	    followplayer = !followplayer;
 	    f_oldloc.x = MAXLONG;
-	    plr->message = followplayer ? AMSTR_FOLLOWON : AMSTR_FOLLOWOFF;
+		players.message = followplayer ? AMSTR_FOLLOWON : AMSTR_FOLLOWOFF;
 	    break;
 	  case AM_GRIDKEY:
 	    grid = !grid;
-	    plr->message = grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
+		players.message = grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
 	    break;
 	  case AM_MARKKEY:
 	    sprintf(buffer, "%s %d", AMSTR_MARKEDSPOT, markpointnum);
-	    plr->message = buffer;
+		players.message = buffer;
 	    AM_addMark();
 	    break;
 	  case AM_CLEARMARKKEY:
 	    AM_clearMarks();
-	    plr->message = AMSTR_MARKSCLEARED;
+		players.message = AMSTR_MARKSCLEARED;
 	    break;
 	  default:
 	    rc = false;
@@ -753,7 +750,7 @@ void AM_doFollowPlayer(void) {
 
 	mobj_t* playerMo;
 
-	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 
     if (f_oldloc.x != playerMo->x || f_oldloc.y != playerMo->y)
     {
@@ -1131,7 +1128,7 @@ void AM_drawWalls(void)
 					AM_drawMline(&l, TSWALLCOLORS);
 				}
 			}
-		} else if (plr->powers[pw_allmap]) {
+		} else if (players.powers[pw_allmap]) {
 			if (!(lineflags & LINE_NEVERSEE)) {
 				AM_drawMline(&l, GRAYS + 3);
 			}
@@ -1217,7 +1214,7 @@ void AM_drawPlayers(void)
 	static uint8_t their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
 	uint8_t color;
 	mobj_t* playerMo;
-	playerMo = (mobj_t*)Z_LoadBytesFromEMS(plr->moRef);
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 	if (cheating)
 		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMo->angle>>ANGLETOFINESHIFT, WHITE, playerMo->x, playerMo->y);
 	else

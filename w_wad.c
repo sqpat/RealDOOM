@@ -196,56 +196,7 @@ void W_AddFile (int8_t *filename)
 
 
 
-//
-// W_Reload
-// Flushes any of the reloadable lumps in memory
-//  and reloads the directory.
-//
-void W_Reload (void)
-{
-    wadinfo_t           header;
-	uint16_t                 lumpcount;
-    lumpinfo_t*         lump_p;
-	uint16_t            i;
-	filehandle_t                 handle;
-	filelength_t                 length;
-    filelump_t*         fileinfo;
-        
-    if (!reloadname)
-        return;
-                
-    if ( (handle = open (reloadname,O_RDONLY | O_BINARY)) == -1)
-        I_Error ("W_Reload: couldn't open %s",reloadname);
-
-    read (handle, &header, sizeof(header));
-    lumpcount = (header.numlumps);
-    header.infotableofs = (header.infotableofs);
-    length = lumpcount*sizeof(filelump_t);
-    fileinfo = alloca (length);
-    lseek (handle, header.infotableofs, SEEK_SET);
-    read (handle, fileinfo, length);
-    
-    // Fill in lumpinfo
-    lump_p = &lumpinfo[reloadlump];
-        
-    for (i=reloadlump ;
-         i<reloadlump+lumpcount ;
-         i++,lump_p++, fileinfo++)
-    {
-
-        lump_p->position = (fileinfo->filepos);
-        lump_p->size = (fileinfo->size);
-
-		if (lumpcacheEMS[i]) {
-			Z_FreeEMSNew(lumpcacheEMS[i]);
-		}
-
-
-    }
-        
-    close (handle);
-}
-
+ 
 
 
 //

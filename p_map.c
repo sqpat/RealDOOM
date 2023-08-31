@@ -408,7 +408,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	solid = thingflags &MF_SOLID;
 	if (tmflags&MF_PICKUP)
 	{
-		//I_Error("%i %i %i", players[0].moRef, tmthingRef, thingRef);
+		//I_Error("%i %i %i", players.moRef, tmthingRef, thingRef);
 	    // can remove thing
 	    P_TouchSpecialThing (thingRef, tmthingRef);
 	}

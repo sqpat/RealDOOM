@@ -421,14 +421,10 @@ void P_LoadThings(int16_t lump)
 			break;
 		}
 		// Do spawn all other stuff. 
-		mt->x = (mt->x);
-		mt->y = (mt->y);
-		mt->angle = (mt->angle);
-		mt->type = (mt->type);
-		mt->options = (mt->options);
-
+	
 		P_SpawnMapThing(mt, i);
-	 
+	
+
 
 	}
 
@@ -830,11 +826,11 @@ P_SetupLevel
 	byte* nodes;
 
 	wminfo.partime = 180;
-	players[0].killcount = players[0].secretcount = players[0].itemcount = 0;
+	players.killcount = players.secretcount = players.itemcount = 0;
 
 	// Initial height of PointOfView
 	// will be set by player think.
-	players[consoleplayer].viewz = 1;
+	players.viewz = 1;
 
 	S_Start();
 	Z_FreeTagsEMS(PU_LEVEL);
@@ -843,7 +839,6 @@ P_SetupLevel
 	P_InitThinkers();
 
 	// if working with a devlopment map, reload it
-	W_Reload();
 
 	// find map name
 	if (commercial)

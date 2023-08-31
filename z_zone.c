@@ -88,6 +88,10 @@
 // 4 14821970 1691110 2764049 207        <--- tex w/h 8 bit
 // 4 14821971 1691041 2763930 207     <--- a lot more fields reduced on sector line etc... no big difference in paging?
 // 4 14821971 1685501 2389170 207 (2134 in 4935)    <--- some bounding box stuff made 16 bits
+// 4 14821971 1447746 1993284 207 (2134 in 4200)    <---- node bounding box stuff made 16 bits
+// 4 14199294 1142934 1517335 207 (2134 in 3685)    <----- got rid of multiplayer for good
+// 4 14199294 1142934 1517335 207 (2134 in 3689)    <----- got rid of netplay
+
 
 
 

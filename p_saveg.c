@@ -38,29 +38,23 @@ byte*           save_p;
 //
 void P_ArchivePlayers (void)
 {
-    int16_t		i;
     int16_t		j;
     player_t*	dest;
 		
-    for (i=0 ; i<MAXPLAYERS ; i++)
-    {
-	if (!playeringame[i])
-	    continue;
+	
+
 	
 	PADSAVEP();
 
 	dest = (player_t *)save_p;
-	memcpy (dest,&players[i],sizeof(player_t));
+	memcpy (dest,&players,sizeof(player_t));
 	save_p += sizeof(player_t);
-	for (j=0 ; j<NUMPSPRITES ; j++)
-	{
-	    if (dest->psprites[j].state)
-	    {
-		dest->psprites[j].state 
-		    = (state_t *)(dest->psprites[j].state-states);
-	    }
+	for (j=0 ; j<NUMPSPRITES ; j++) {
+		if (dest->psprites[j].state) {
+			dest->psprites[j].state  = (state_t *)(dest->psprites[j].state-states);
+		}
 	}
-    }
+	
 }
 
 
@@ -73,30 +67,24 @@ void P_UnArchivePlayers (void)
     int16_t		i;
     int16_t		j;
 	
-    for (i=0 ; i<MAXPLAYERS ; i++)
-    {
-	if (!playeringame[i])
-	    continue;
-	
 	PADSAVEP();
 
-	memcpy (&players[i],save_p, sizeof(player_t));
+	memcpy (&players,save_p, sizeof(player_t));
 	save_p += sizeof(player_t);
 	
 	// will be set when unarc thinker
-	players[i].moRef = NULL_MEMREF;	
-	players[i].message = NULL;
-	players[i].attackerRef = NULL_MEMREF;
+	players.moRef = NULL_MEMREF;	
+	players.message = NULL;
+	players.attackerRef = NULL_MEMREF;
 
 	for (j=0 ; j<NUMPSPRITES ; j++)
 	{
-	    if (players[i]. psprites[j].state)
+	    if (players. psprites[j].state)
 	    {
-		players[i]. psprites[j].state 
-		    = &states[ (int16_t)players[i].psprites[j].state ];
+		players. psprites[j].state 
+		    = &states[ (int16_t)players.psprites[j].state ];
 	    }
 	}
-    }
 }
 
 
@@ -247,8 +235,9 @@ void P_ArchiveThinkers (void)
 	    save_p += sizeof(*mobj);
 	    mobj->state = (state_t *)(mobj->state - states);
 	    
-	    if (mobj->player)
-		mobj->player = (player_t *)((mobj->player-players) + 1);
+		// todo what to do here
+	    //if (mobj->player)
+			//mobj->player = mobj->player
 	    continue;
 	}
 		
@@ -309,7 +298,7 @@ void P_UnArchiveThinkers (void)
 	    mobj->state = &states[(int16_t)mobj->state];
 	    mobj->targetRef = NULL_MEMREF;
 	    if (mobj->player) {
-			mobj->player = &players[(int16_t)mobj->player-1];
+			mobj->player = &players;
 			mobj->player->moRef = thinkerRef;
 	    }
 	    P_SetThingPosition (thinkerRef);

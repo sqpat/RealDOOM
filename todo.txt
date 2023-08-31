@@ -25,35 +25,43 @@ KNOWN ISSUES
 644832 full visplanes huge
 526688 32 bit
 
-- doom 32 currently
+
+- after making a bunch of fields smaller
+534818 full visplanes large with a couple overlays 
+631890 full visplanes huge 
+528384 32 bit
 
 TODO 
  
- x can texture width be uint8? (add 1 every time used to get 256)
- - fix keyboad bug
- - fix map bug
- - get rid of last bits of multiplayer, players array
- - fix the texture rotate issue?
+ ~ convert fixed_t uses to fixed_t_union (then rename)
+   - fix 'shift amount too large' bugs in 16 bit version. probably will go hand in hand with fixed_t work, but some defines may need to explicitly be long typed
+ 1 MINOR BUGS/IMPROVEMENTS
+  - fix keyboard bug
+  - fix automap not working bug
+  - get rid of last bits of multiplayer, players array
+  - fix the texture rotate issue?
 
-  2 look into ds->scale1 and associated values to 16 bit? or small fixed, etc
- 3 convert fixed_t uses to fixed_t_union (then rename)
- - add feature to 'fix' a page in memory. we could do this in tight loops where page accesses might go abc ade afg etc that would cause A to potentially get paged out unecessarily
-
- 4 screens in conventional instead of allocced
+ 2 add feature to 'fix' a page in memory. we could do this in tight loops where page accesses might go abc ade afg etc that would cause A to potentially get paged out unecessarily
+ 3 screens in conventional instead of allocced
    - screen2/3 wipe in EMS, or dump it for now.
    - get rid of backbuffer? or make it ems?
- 5 fix the bugs a bit in expanding visplane mode
+ 4 fix the bugs a bit in expanding visplane mode
    - either make dc_whatever not a global 
    - or make fixed set of memref handles for visplanes at a time somehow? 
  - make pathtraverse work mostly off 16 bit math? i think its possible
+ - look into ds->scale1 and associated values to 16 bit? or small fixed, etc
 
  - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
  - clean up speed code. probably dont need make_speed in a lot of cases -is high bit projectile only?
-- fix 'shift amount too large' bugs in 16 bit version. probably will go hand in hand with fixed_t work, but some defines may need to explicitly be long typed
- - check if using 8 instead of 16 bit local vars (especially loop vars) affects 16 bit binary code size
+
+
 
  - crazy idea: all vertices, line_t and seg bounding boxes have coords that are mults of 8. if we shift them by 3, the biggest values of ~5500/-5500 int he wads correspond to a range of like -600 to 600 which can be stored in 10 bits. so do some insane superpacked bit array and cut down 128 to 80 bits per node for example. they arent accessed super frequently so the unpacking is unfrequent... may be a net win.
    - sector and ceiling heights could also be stored in int8 this way .    
+
+PROFILING
+ - check if using 8 instead of 16 bit local vars (especially loop vars) affects 16 bit binary code size
+
 
 CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everything) 
  - thing flags
@@ -101,7 +109,7 @@ MEMORY IDEAS
    - test to figure out which variables improve fps most in conventional
       - probably sectors, lines, etc...
 
- - use overlays, especially on startup code to eliminate space
+ ~ use overlays, especially on startup code to eliminate space
    - maybe menu code in one, finale and p_setup in another? (0x3000 ish each)
      - maybe demo code 
      - maybe wipe code

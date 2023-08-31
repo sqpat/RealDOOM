@@ -187,10 +187,9 @@ extern	ticcount_t		gametic;
 
 
 // Bookkeeping on players - state.
-extern	player_t	players[MAXPLAYERS];
+extern	player_t	players;
 
 // Alive? Disconnected?
-extern  boolean		playeringame[MAXPLAYERS];
 
 
  

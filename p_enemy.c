@@ -581,8 +581,7 @@ P_LookForPlayers
 {
     int16_t		c;
     int8_t		stop;
-    player_t*	player;
-	//int16_t secnum;
+ 	//int16_t secnum;
     angle_t	an;
     fixed_t	dist;
 	mobj_t*	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
@@ -592,53 +591,33 @@ P_LookForPlayers
 
 	//secnum = actor->subsectorsecnum;
 
-    c = 0;
-    stop = (actor->lastlook-1)&3;
+    
+	Z_RefIsActive(actorRef);
+ 	if (players.health <= 0)
+		return false;		// dead
 
-
-    for ( ; ; actor->lastlook = (actor->lastlook+1)&3 ) {
-		Z_RefIsActive(actorRef);
-		if (!playeringame[actor->lastlook])
-			continue;
-			
-		if (c++ == 2
-			|| actor->lastlook == stop)
-		{
-			// done looking
-			return false;	
-		}
-	
-		player = &players[actor->lastlook];
-		if (player->health <= 0)
-			continue;		// dead
-	
-		if (!P_CheckSight(actorRef, player->moRef)) {
-			actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
-			continue;		// out of sight
-		}
-		playerMo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
-		playerMox = playerMo->x;
-		playerMoy = playerMo->y;
+	if (!P_CheckSight(actorRef, players.moRef)) {
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+		return false;		// out of sight
+	}
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	playerMox = playerMo->x;
+	playerMoy = playerMo->y;
+	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 
-		if (!allaround) {
-			an = R_PointToAngle2 (actor->x, actor->y,  playerMox, playerMoy) - actor->angle;
-			if (an > ANG90 && an < ANG270) {
-				dist = P_AproxDistance (playerMox - actor->x, playerMoy - actor->y);
-				// if real close, react anyway
-				if (dist > MELEERANGE * FRACUNIT) {
-					continue;	// behind back
-				}
+	if (!allaround) {
+		an = R_PointToAngle2(actor->x, actor->y, playerMox, playerMoy) - actor->angle;
+		if (an > ANG90 && an < ANG270) {
+			dist = P_AproxDistance(playerMox - actor->x, playerMoy - actor->y);
+			// if real close, react anyway
+			if (dist > MELEERANGE * FRACUNIT) {
+				return false;	// behind back
 			}
 		}
+	}
 
-		actor->targetRef = player->moRef;
-
-
-		return true;
-    }
-
-    return false;
+	actor->targetRef = players.moRef;
+	return true;
 }
 
 
@@ -1999,7 +1978,7 @@ void A_BossDeath (MEMREF moRef)
 
     
 	// make sure there is a player alive for victory
-	if (players[0].health <= 0)
+	if (players.health <= 0)
 		return; // no one left alive, so do not end game
 
     // scan the remaining thinkers to see

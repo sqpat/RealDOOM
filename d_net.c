@@ -57,9 +57,9 @@ ticcount_t gametime;
 
 void NetUpdate(void)
 {
-	ticcount_t nowtime;
-	ticcount_t newtics;
-	ticcount_t i;
+	int nowtime;
+	int newtics;
+	int i;
 
 	// check time
 	nowtime = ticcount;
@@ -88,14 +88,12 @@ void NetUpdate(void)
 		if (maketic - gametic >= BACKUPTICS / 2 - 1)
 			break; // can't hold any more
 
-		G_BuildTiccmd(&localcmds[maketic % BACKUPTICS]);
+		G_BuildTiccmd(&localcmds[maketic & (BACKUPTICS - 1)]);
 		maketic++;
 	}
 
 	if (singletics)
 		return; // singletic update is syncronous
-
-	nettics = maketic;
 }
 
 //
@@ -104,37 +102,20 @@ void NetUpdate(void)
 //
 void D_CheckNetGame(void)
 {
-	// which tic to start sending
-	nettics = 0;
+	maketic = 0;
 
-	// I_InitNetwork sets doomcom and netgame
-	I_InitNetwork();
-
-	printf("startskill %i  deathmatch: %i  startmap: %i  startepisode: %i\n",
-		startskill, 0, startmap, startepisode);
-
-	// read values out of doomcom
-
-	playeringame[0] = true;
-
-	printf("player %i of %i (%i nodes)\n",
-		1, 1, 1);
 }
 
-//
-// TryRunTics
-//
-ticcount_t oldnettics;
-
-extern boolean advancedemo;
+extern byte advancedemo;
 
 void TryRunTics(void)
 {
-	ticcount_t entertic;
-	static ticcount_t oldentertics;
-	ticcount_t realtics;
-	ticcount_t availabletics;
-	ticcount_t counts;
+	int i;
+	int entertic;
+	static int oldentertics;
+	int realtics;
+	int availabletics;
+	int counts;
 
 	// get real tics
 	entertic = ticcount;
@@ -144,10 +125,10 @@ void TryRunTics(void)
 	// get available tics
 	NetUpdate();
 
-	availabletics = nettics - gametic;
+	availabletics = maketic - gametic;
 
 	// decide how many tics to run
-	if (realtics < availabletics - 1)
+	if (realtics + 1 < availabletics)
 		counts = realtics + 1;
 	else if (realtics < availabletics)
 		counts = realtics;
@@ -158,7 +139,7 @@ void TryRunTics(void)
 		counts = 1;
 
 	// wait for new tics if needed
-	while (nettics < gametic + counts)
+	while (maketic < gametic + counts)
 	{
 		NetUpdate();
 

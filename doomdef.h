@@ -75,7 +75,6 @@ enum { VERSION =  109 };
 
 
 // The maximum number of players, multiplayer/networking.
-#define MAXPLAYERS		4
 
 // State updates, number of tics / second.
 #define TICRATE		35

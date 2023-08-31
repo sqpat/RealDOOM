@@ -477,10 +477,10 @@ void S_StartSoundAtVolume
 
 	// Check to see if it is audible,
 	//  and if not, modify the params
-	if (origin_pRef && origin_pRef != players[consoleplayer].moRef) {
-		rc = S_AdjustSoundParams(players[consoleplayer].moRef, origin_pRef, &volume, &sep, &pitch);
+	if (origin_pRef && origin_pRef != players.moRef) {
+		rc = S_AdjustSoundParams(players.moRef, origin_pRef, &volume, &sep, &pitch);
 	
-		playerMo = (mobj_t*)Z_LoadBytesFromEMS(players[consoleplayer].moRef);
+		playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 		if ( originX == playerMo->x && originY == playerMo->y) {	
 			sep 	= NORM_SEP;
 		}
