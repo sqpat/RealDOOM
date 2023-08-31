@@ -32,10 +32,21 @@
 
 
 // Each screen is [SCREENWIDTH*SCREENHEIGHT]; 
+/*
 byte*				screen0;
 byte*				screen1;
 byte*				screen2;
 byte*				screen3;
+*/
+byte				screen0[SCREENWIDTH*SCREENHEIGHT];
+byte				screen1[SCREENWIDTH*SCREENHEIGHT];
+#ifdef SKIPWIPE
+byte* screen2;
+byte* screen3;
+#else
+byte				screen2[SCREENWIDTH*SCREENHEIGHT];
+byte				screen3[SCREENWIDTH*SCREENHEIGHT];
+#endif
 byte*				screen4;
 MEMREF				screen4Ref;
 int16_t				dirtybox[4]; 
@@ -437,13 +448,10 @@ void V_Init (void)
 		
     // stick these in low dos memory on PCs
 
-    base = I_AllocLow (SCREENWIDTH*SCREENHEIGHT*4);
-
-
 #ifdef SKIPWIPE
-	base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 2);
-	screen0 = base;
-	screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
+	//base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 2);
+	//screen0 = base;
+	//screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
 
 #else
 	base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 4);

@@ -40,11 +40,24 @@
 // Screen 1 is an extra buffer.
 
 
-
+/*
 extern	byte*		screen0;
 extern	byte*		screen1;
 extern	byte*		screen2;
 extern	byte*		screen3;
+*/
+
+extern byte				screen0[SCREENWIDTH*SCREENHEIGHT];
+extern byte				screen1[SCREENWIDTH*SCREENHEIGHT];
+#ifdef SKIPWIPE
+extern byte* screen2;
+extern byte* screen3;
+#else
+byte				screen2[SCREENWIDTH*SCREENHEIGHT];
+byte				screen3[SCREENWIDTH*SCREENHEIGHT];
+#endif
+
+
 extern	byte*		screen4;
 
 extern   MEMREF     screen4Ref;
