@@ -32,21 +32,29 @@
 
 
 // Each screen is [SCREENWIDTH*SCREENHEIGHT]; 
-/*
+
+
+#ifdef STATIC_ALLOCATED_SCREENS
+byte				screen0[SCREENWIDTH*SCREENHEIGHT];
+byte				screen1[SCREENWIDTH*SCREENHEIGHT];
+
+	#ifdef SKIPWIPE
+	byte* screen2;
+	byte* screen3;
+	#else
+	byte				screen2[SCREENWIDTH*SCREENHEIGHT];
+	byte				screen3[SCREENWIDTH*SCREENHEIGHT];
+	#endif
+
+
+#else
 byte*				screen0;
 byte*				screen1;
 byte*				screen2;
 byte*				screen3;
-*/
-byte				screen0[SCREENWIDTH*SCREENHEIGHT];
-byte				screen1[SCREENWIDTH*SCREENHEIGHT];
-#ifdef SKIPWIPE
-byte* screen2;
-byte* screen3;
-#else
-byte				screen2[SCREENWIDTH*SCREENHEIGHT];
-byte				screen3[SCREENWIDTH*SCREENHEIGHT];
+
 #endif
+
 byte*				screen4;
 MEMREF				screen4Ref;
 int16_t				dirtybox[4]; 
@@ -443,21 +451,25 @@ V_DrawBlock
 // 
 void V_Init (void) 
 { 
-    int16_t		i;
-    byte*	base;
-		
-    // stick these in low dos memory on PCs
-
-#ifdef SKIPWIPE
-	//base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 2);
-	//screen0 = base;
-	//screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
-
+#ifdef STATIC_ALLOCATED_SCREENS
 #else
-	base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 4);
-	screen0 = base;
-	screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
-	screen2 = base + SCREENWIDTH * SCREENHEIGHT * 2;
-	screen3 = base + SCREENWIDTH * SCREENHEIGHT * 3;
+	int16_t		i;
+	byte*	base;
+
+	// stick these in low dos memory on PCs
+
+
+	#ifdef SKIPWIPE
+		base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 2);
+		screen0 = base;
+		screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
+
+	#else
+		base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 4);
+		screen0 = base;
+		screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
+		screen2 = base + SCREENWIDTH * SCREENHEIGHT * 2;
+		screen3 = base + SCREENWIDTH * SCREENHEIGHT * 3;
+	#endif
 #endif
 }

@@ -247,8 +247,8 @@ static fixed_t 	m_x2, m_y2; // UR x,y where the window is on the map (map coords
 //
 // width/height of window on map (map coords)
 //
-static int16_t 	m_w;
-static int16_t	m_h;
+static fixed_t	m_w;
+static fixed_t	m_h;
 
 // based on level size
 static fixed_t 	min_x;
@@ -268,7 +268,7 @@ static fixed_t 	min_scale_mtof; // used to tell when to stop zooming out
 static fixed_t 	max_scale_mtof; // used to tell when to stop zooming in
 
 // old stuff for recovery later
-static int16_t old_m_w, old_m_h;
+static fixed_t old_m_w, old_m_h;
 static fixed_t old_m_x, old_m_y;
 
 // old location used by the Follower routine

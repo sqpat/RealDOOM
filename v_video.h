@@ -40,23 +40,28 @@
 // Screen 1 is an extra buffer.
 
 
-/*
-extern	byte*		screen0;
-extern	byte*		screen1;
-extern	byte*		screen2;
-extern	byte*		screen3;
-*/
-
+#ifdef STATIC_ALLOCATED_SCREENS
 extern byte				screen0[SCREENWIDTH*SCREENHEIGHT];
 extern byte				screen1[SCREENWIDTH*SCREENHEIGHT];
-#ifdef SKIPWIPE
-extern byte* screen2;
-extern byte* screen3;
-#else
-byte				screen2[SCREENWIDTH*SCREENHEIGHT];
-byte				screen3[SCREENWIDTH*SCREENHEIGHT];
-#endif
 
+	#ifdef SKIPWIPE
+	extern byte* screen2;
+	extern byte* screen3;
+	#else
+	extern byte				screen2[SCREENWIDTH*SCREENHEIGHT];
+	extern byte				screen3[SCREENWIDTH*SCREENHEIGHT];
+	#endif
+
+
+#else
+extern byte*				screen0;
+extern byte*				screen1;
+extern byte*				screen2;
+extern byte*				screen3;
+
+#endif
+ 
+ 
 
 extern	byte*		screen4;
 

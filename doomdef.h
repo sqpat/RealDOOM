@@ -45,7 +45,7 @@ enum { VERSION =  109 };
 //#define LOOPCHECK
 //#define EMS_VISPLANES
 #define SKIPWIPE
-
+//#define STATIC_ALLOCATED_SCREENS
 
 //
 // For resize of screen, at start of game.

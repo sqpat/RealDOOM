@@ -59,6 +59,9 @@ void I_InitDiskFlash(void);
 
 extern int32_t usemouse;
 
+
+
+
 //
 // Constants
 //
