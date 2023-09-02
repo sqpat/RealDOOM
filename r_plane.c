@@ -362,7 +362,7 @@ void R_DrawPlanes (void)
 	int8_t currentplanebyteRef;
 
 	currentplanebyteRef = 0; // visplaneheaders->visplanepage is always 0;
-	base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], 0, PAGE_LOCKED))[0]); // load into locked page
+	base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], PAGE_LOCKED))[0]); // load into locked page
 
     for (pl = visplaneheaders ; pl < lastvisplaneheader ; pl++) {
 		if (pl->minx > pl->maxx)
@@ -372,7 +372,7 @@ void R_DrawPlanes (void)
 			Z_SetLocked(visplanebytesRef[currentplanebyteRef], PAGE_NOT_LOCKED, 130);
 			currentplanebyteRef = pl->visplanepage;
 //			base = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[currentplanebyteRef]))[0]);
-			base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], 0, PAGE_LOCKED))[0]); // load into locked page
+			base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], PAGE_LOCKED))[0]); // load into locked page
 
 		}
 		plbytes = &(base[pl->visplaneoffset]);

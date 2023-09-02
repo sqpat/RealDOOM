@@ -536,7 +536,7 @@ void
 P_CrossSpecialLine
 ( int16_t		linenum,
   int16_t		side,
-  MEMREF thingRef )
+  mobj_t*	thing )
 {
     int16_t		ok;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -546,7 +546,6 @@ P_CrossSpecialLine
 	int16_t lineside0 = line->sidenum[0];
 	int16_t linespecial = line->special;
 	int16_t setlinespecial = -1;
-	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
 	 
     //	Triggers that other things can activate
@@ -707,7 +706,7 @@ P_CrossSpecialLine
 	
       case 39:
 		// TELEPORT!
-		EV_Teleport( linetag, side, thingRef );
+		EV_Teleport( linetag, side, thing );
 		setlinespecial = 0;
 		break;
 
@@ -815,7 +814,7 @@ P_CrossSpecialLine
       case 125:
 		// TELEPORT MonsterONLY
 		if (!thing->player) {
-			EV_Teleport( linetag, side, thingRef );
+			EV_Teleport( linetag, side, thing );
 			setlinespecial = 0;
 		}
 		break;
@@ -952,7 +951,7 @@ P_CrossSpecialLine
 	
 	  case 97:
 		// TELEPORT!
-		EV_Teleport( linetag, side, thingRef );
+		EV_Teleport( linetag, side, thing );
 		break;
 	
       case 98:
@@ -983,7 +982,7 @@ P_CrossSpecialLine
       case 126:
 	// TELEPORT MonsterONLY.
 		if (!thing->player)
-	    EV_Teleport( linetag, side, thingRef );
+	    EV_Teleport( linetag, side, thing );
 		break;
 	
       case 128:
@@ -1010,9 +1009,10 @@ P_CrossSpecialLine
 // P_ShootSpecialLine - IMPACT SPECIALS
 // Called when a thing shoots a special line.
 //
+//thing is locked
 void
 P_ShootSpecialLine
-( MEMREF thingRef,
+( mobj_t* thing,
   int16_t linenum )
 {
     int16_t		ok;
@@ -1026,7 +1026,6 @@ P_ShootSpecialLine
 	int16_t lineside0 = line->sidenum[0];
 
 	
-	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     
     //	Impacts that other things can activate.
     if (!thing->player) {
@@ -1071,9 +1070,7 @@ P_ShootSpecialLine
 // Called every tic frame
 //  that the player origin is in a special sector
 //
-void P_PlayerInSpecialSector () {
-	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
-	fixed_t playerMoz = playerMo->z;
+void P_PlayerInSpecialSector (mobj_t* playerMo) {
 	int16_t secnum = playerMo->secnum;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	fixed_t_union temp;
@@ -1081,7 +1078,7 @@ void P_PlayerInSpecialSector () {
 	// temp.h.intbits = (sectors[secnum].floorheight >> SHORTFLOORBITS);
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[secnum].floorheight);
     // Falling, not all the way down yet?
-	if (playerMoz != temp.w) {
+	if (playerMo->z != temp.w) {
 		return;
 	}
 
@@ -1091,14 +1088,14 @@ void P_PlayerInSpecialSector () {
 			// HELLSLIME DAMAGE
 			if (!players.powers[pw_ironfeet])
 				if (!(leveltime&0x1f))
-					P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 10);
+					P_DamageMobj (playerMo, NULL, NULL_MEMREF, 10);
 			break;
 	
 		case 7:
 			// NUKAGE DAMAGE
 			if (!players.powers[pw_ironfeet])
 				if (!(leveltime&0x1f))
-					P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 5);
+					P_DamageMobj (playerMo, NULL, NULL_MEMREF, 5);
 			break;
 	
 		case 16:
@@ -1107,7 +1104,7 @@ void P_PlayerInSpecialSector () {
 				// STROBE HURT
 				if (!players.powers[pw_ironfeet] || (P_Random()<5) ) {
 					if (!(leveltime&0x1f))
-						P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 20);
+						P_DamageMobj (playerMo, NULL, NULL_MEMREF, 20);
 				}
 				break;
 			
@@ -1123,7 +1120,7 @@ void P_PlayerInSpecialSector () {
 			players.cheats &= ~CF_GODMODE;
 
 			if (!(leveltime&0x1f))
-				P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 20);
+				P_DamageMobj (playerMo, NULL, NULL_MEMREF, 20);
 
 			if (players.health <= 10)
 				G_ExitLevel();

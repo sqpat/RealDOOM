@@ -492,14 +492,13 @@ boolean P_CrossBSPNode (int32_t bspnum)
 //
 boolean
 P_CheckSight
-( MEMREF t1Ref,
+( mobj_t* t1,
   MEMREF t2Ref)
 {
 
     int32_t		pnum;
     int16_t		bytenum;
     int16_t		bitnum;
-	mobj_t*	t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
 	fixed_t t1z = t1->z;
 	fixed_t t1x = t1->x;
 	fixed_t t1y = t1->y;

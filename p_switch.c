@@ -258,11 +258,10 @@ P_ChangeSwitchTexture
 //
 boolean
 P_UseSpecialLine
-( MEMREF	thingRef,
+( mobj_t*	thing,
   int16_t linenum,
   int16_t		side )
 {               
-	mobj_t*	thing;
 
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* line = &lines[linenum];
@@ -287,7 +286,6 @@ P_UseSpecialLine
     }
 
 
-	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
     
     // Switches that other things can activate.
@@ -330,7 +328,7 @@ P_UseSpecialLine
 
 		 
 
-		  EV_VerticalDoor (linenum, thingRef);
+		  EV_VerticalDoor (linenum, thing->selfRef);
 	break;
 	
 
@@ -494,7 +492,7 @@ P_UseSpecialLine
 	// BlzOpenDoor RED
       case 137:
 	// BlzOpenDoor YELLOW
-	if (EV_DoLockedDoor (linetag, linespecial,blazeOpen,thingRef))
+	if (EV_DoLockedDoor (linetag, linespecial,blazeOpen,thing->selfRef))
 		P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
 	break;
 	
@@ -625,7 +623,7 @@ P_UseSpecialLine
 	// BlzOpenDoor RED
       case 136:
 	// BlzOpenDoor YELLOW
-	if (EV_DoLockedDoor (linetag, linespecial,blazeOpen,thingRef))
+	if (EV_DoLockedDoor (linetag, linespecial,blazeOpen,thing->selfRef))
 		P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
 	break;
 	

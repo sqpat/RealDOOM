@@ -609,8 +609,7 @@ void R_Subsector(int16_t subsecnum)
 
 #define MAX_BSP_DEPTH 64
 
-void R_RenderBSPNode(int16_t bspnum)
-{
+void R_RenderBSPNode(int16_t bspnum) {
 	node_t *bsp;
 	fixed_t_union dx, dy;
 	fixed_t left, right;
@@ -621,8 +620,10 @@ void R_RenderBSPNode(int16_t bspnum)
 	node_t* nodes;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	while (true)
-	{
+
+//	nodes = (node_t*)Z_LoadBytesFromEMSWithOptions(nodesRef, 3, true);
+
+	while (true) {
 		//Front sides.
 		while ((bspnum & NF_SUBSECTOR) == 0) {
 			if (sp == MAX_BSP_DEPTH)
@@ -673,10 +674,8 @@ void R_RenderBSPNode(int16_t bspnum)
 		// Possibly divide back space.
 		//Walk back up the tree until we find
 		//a node that has a visible backspace.
-		while (!R_CheckBBox(bsp->bbox[side ^ 1]))
-		{
-			if (sp == 0)
-			{
+		while (!R_CheckBBox(bsp->bbox[side ^ 1])) {
+			if (sp == 0) {
 				//back at root node and not visible. All done!
 				return;
 			}
@@ -694,4 +693,6 @@ void R_RenderBSPNode(int16_t bspnum)
 
 		bspnum = bsp->children[side ^ 1];
 	}
+
+	//Z_SetLocked(nodesRef, PAGE_NOT_LOCKED, 11);
 }

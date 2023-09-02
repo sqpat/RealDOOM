@@ -36,11 +36,12 @@
 //
 // TELEPORTATION
 //
+// thign already locked coming in
 int16_t
 EV_Teleport
 (uint8_t linetag,
   int16_t		side,
- MEMREF thingRef )
+ mobj_t* thing )
 {
     int16_t		i;
     mobj_t*	m;
@@ -51,18 +52,18 @@ EV_Teleport
     fixed_t	oldx;
     fixed_t	oldy;
     fixed_t	oldz;
-	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	MEMREF fogRef;
 	sector_t* sectors;
     // don't teleport missiles
-    if (thing->flags & MF_MISSILE)
-		return 0;		
+	if (thing->flags & MF_MISSILE) {
+		return 0;
+	}
 
     // Don't teleport if hit back of line,
     //  so you can get out of teleporter.
-    if (side == 1)		
-		return 0;	
-
+	if (side == 1) {
+		return 0;
+	}
     
     
     for (i = 0; i < numsectors; i++) {
@@ -90,8 +91,9 @@ EV_Teleport
 				oldy = thing->y;
 				oldz = thing->z;
 				
-				if (!P_TeleportMove (thingRef, m->x, m->y))
+				if (!P_TeleportMove(thing, m->x, m->y)) {
 					return 0;
+				}
 		#if (EXE_VERSION != EXE_VERSION_FINAL)
 				thing->z = thing->floorz;  //fixme: not needed?
 		#endif
@@ -118,6 +120,6 @@ EV_Teleport
 			}	
 		}
     }
-    return 0;
+	return 0;
 }
 

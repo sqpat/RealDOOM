@@ -80,6 +80,7 @@
 #define ALLOC_TYPE_SECTORS 27
 
 #define ALLOC_TYPE_VISPLANE 28
+#define ALLOC_TYPE_MOBJ 29
 
 #define PAGE_LOCKED true
 #define PAGE_NOT_LOCKED false
@@ -124,9 +125,13 @@ void Z_FreeEMSNew(PAGEREF block);
 
 void Z_SetLocked(MEMREF ref, boolean value, int index);
 //void* Z_LoadBytesFromEMS2(MEMREF index);
-void* Z_LoadBytesFromEMSWithOptions(MEMREF index, int16_t pagenumber, boolean locked);
+void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked, int8_t* file, int32_t line);
 
-#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions(a, -1, PAGE_NOT_LOCKED)
+
+//void* Z_LoadBytesFromEMSWithOptions(MEMREF index, boolean locked, int8_t* file, int32_t line);
+#define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b, __FILE__, __LINE__)
+
+#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED, __FILE__, __LINE__)
 
 #ifdef CHECKREFS
 	int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);

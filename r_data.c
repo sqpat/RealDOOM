@@ -258,10 +258,10 @@ void R_GenerateComposite(uint8_t texnum)
 	texturecompositetexnum = texturecomposite[texnum];
 
 #if NUM_EMS_PAGES >= 8
-	texture = (texture_t*)Z_LoadBytesFromEMSWithOptions(texturememref, -1, PAGE_LOCKED);
-	block = (byte*)Z_LoadBytesFromEMSWithOptions(texturecompositetexnum, -1, PAGE_LOCKED);
-	collump = (int16_t*)Z_LoadBytesFromEMSWithOptions(texturecolumnlumptexnum, -1, PAGE_LOCKED);
-	colofs = (uint16_t*)Z_LoadBytesFromEMSWithOptions(texturecolumnofstexnum, -1, PAGE_LOCKED);
+	texture = (texture_t*)Z_LoadBytesFromEMSWithOptions(texturememref, PAGE_LOCKED);
+	block = (byte*)Z_LoadBytesFromEMSWithOptions(texturecompositetexnum, PAGE_LOCKED);
+	collump = (int16_t*)Z_LoadBytesFromEMSWithOptions(texturecolumnlumptexnum, PAGE_LOCKED);
+	colofs = (uint16_t*)Z_LoadBytesFromEMSWithOptions(texturecolumnofstexnum, PAGE_LOCKED);
 #else
 	texture = (texture_t*)Z_LoadBytesFromEMS(texturememref);
 
@@ -289,7 +289,7 @@ void R_GenerateComposite(uint8_t texnum)
 		realpatchRef = W_CacheLumpNumEMS(patchpatch, PU_CACHE);
 
 #if NUM_EMS_PAGES >= 8
-		realpatch = (patch_t*)Z_LoadBytesFromEMSWithOptions(realpatchRef, -1, PAGE_LOCKED);
+		realpatch = (patch_t*)Z_LoadBytesFromEMSWithOptions(realpatchRef, PAGE_LOCKED);
 #else
 		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
 

@@ -1034,7 +1034,7 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
 */
 void ST_Drawer(boolean fullscreen, boolean refresh)
 {
-	screen4 = (byte *)Z_LoadBytesFromEMSWithOptions(screen4Ref, 0, true);
+	screen4 = (byte *)Z_LoadBytesFromEMSWithOptions(screen4Ref, true);
 	st_statusbaron = (!fullscreen) || automapactive;
 	st_firsttime = st_firsttime || refresh;
 

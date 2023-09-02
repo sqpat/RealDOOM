@@ -414,13 +414,13 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void P_UnsetThingPosition (MEMREF thingRef)
+// should be called with locked mobj
+void P_UnsetThingPosition (mobj_t* thing)
 {
     int16_t		blockx;
     int16_t		blocky;
 	//MEMREF* blocklinksList;
 	mobj_t* changeThing;
-	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	MEMREF thingsprevRef = thing->sprevRef;
 	MEMREF thingsnextRef = thing->snextRef;
 	MEMREF thingbprevRef = thing->bprevRef;
@@ -486,7 +486,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 // Sets thing->subsector properly
 //
 void
-P_SetThingPosition (MEMREF thingRef)
+P_SetThingPosition (mobj_t* thing)
 {
 	int16_t	subsecnum;
     //sector_t*		sec;
@@ -494,7 +494,6 @@ P_SetThingPosition (MEMREF thingRef)
     int16_t			blocky;
     MEMREF		linkRef;
 	mobj_t*		link;
-	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	mobj_t* thingList;
 	int16_t subsectorsecnum;
 	subsector_t* subsectors;
@@ -507,11 +506,10 @@ P_SetThingPosition (MEMREF thingRef)
 
 	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
-	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	thing->secnum = subsectorsecnum;
 
 	if (thing->secnum < 0 || thing->secnum > numsectors) {
-		I_Error("P_SetThingPosition: thing being set with bad secnum %i: numsectors:%i subsecnum %i num subsectors %i thingRef %i", subsectorsecnum, numsectors, subsecnum, numsubsectors, thingRef);
+		I_Error("P_SetThingPosition: thing being set with bad secnum %i: numsectors:%i subsecnum %i num subsectors %i thingRef %i", subsectorsecnum, numsectors, subsecnum, numsubsectors, thing->selfRef);
 	}
 
     if ( ! (thing->flags & MF_NOSECTOR) ) {
@@ -519,9 +517,8 @@ P_SetThingPosition (MEMREF thingRef)
 
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		oldsectorthinglist = sectors[subsectorsecnum].thinglistRef;
-		sectors[subsectorsecnum].thinglistRef = thingRef;
+		sectors[subsectorsecnum].thinglistRef = thing->selfRef;
 
-		thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
 
 		thing->sprevRef = NULL_MEMREF;
@@ -529,13 +526,12 @@ P_SetThingPosition (MEMREF thingRef)
 
 		if (thing->snextRef) {
 			thingList = (mobj_t*)Z_LoadBytesFromEMS(thing->snextRef);
-			thingList->sprevRef = thingRef;
+			thingList->sprevRef = thing->selfRef;
 		}
 
     }
 
 
-	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
     
     // link into blockmap
     if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
@@ -550,12 +546,12 @@ P_SetThingPosition (MEMREF thingRef)
 			thing->bnextRef = linkRef;
 			if (linkRef) {
 				link = (mobj_t*)Z_LoadBytesFromEMS(linkRef);
-				link->bprevRef = thingRef;
+				link->bprevRef = thing->selfRef;
 			}
 			
 			//*link = thing;
 			// todo is this right?
-			blocklinks[blocky*bmapwidth + blockx] = thingRef;
+			blocklinks[blocky*bmapwidth + blockx] = thing->selfRef;
 
 		} else {
 			// thing is off the map
@@ -638,7 +634,7 @@ boolean
 P_BlockThingsIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(MEMREF) )
+  boolean(*func)(mobj_t*) )
 {
 	MEMREF mobjRef;
     mobj_t*		mobj;
@@ -647,7 +643,7 @@ P_BlockThingsIterator
 		return true;
 	}
 	 
-
+	
 	for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
 		// will this cause stuff to lose scope...?
 		i++;
@@ -658,14 +654,15 @@ P_BlockThingsIterator
 			I_Error("block things caught infinite? %i ", gametic);
 		}
 #endif
+		mobj = (mobj_t*)Z_LoadBytesFromEMSWithOptions(mobjRef, PAGE_LOCKED); // necessary for bnextref...
 
-		if (!func(mobjRef)) {
-			 
+		if (!func(mobj)) {
+			Z_SetLocked(mobjRef, PAGE_NOT_LOCKED, 92);
+
 			return false;
 		}
 
-		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef); // necessary for bnextref...
-		 
+		Z_SetLocked(mobjRef, PAGE_NOT_LOCKED, 92);
 	} 
 
 	return true;
@@ -754,7 +751,7 @@ PIT_AddLineIntercepts (int16_t linenum)
 //
 // PIT_AddThingIntercepts
 //
-boolean PIT_AddThingIntercepts (MEMREF thingRef)
+boolean PIT_AddThingIntercepts (mobj_t* thing)
 {
     fixed_t		x1;
     fixed_t		y1;
@@ -769,7 +766,6 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     divline_t		dl;
     
     fixed_t		frac;
-	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 
 /*
 	fixed_t_union thingradius;
@@ -833,7 +829,7 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
 
     intercept_p->frac = frac;
     intercept_p->isaline = false;
-    intercept_p->d.thingRef = thingRef;
+    intercept_p->d.thingRef = thing->selfRef;
     intercept_p++;
 
     return true;		// keep going

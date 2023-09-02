@@ -181,10 +181,6 @@ int8_t             savegameslot;
 int8_t            savedescription[32];
  
  
-#define BODYQUESIZE     32
-
-MEMREF          bodyque[BODYQUESIZE]; 
-int8_t             bodyqueslot;
  
 void*           statcopy;                               // for statistics driver
   
@@ -693,7 +689,8 @@ G_CheckSpot
     fixed_t_union tempx;
     fixed_t_union tempy;
     fixed_t_union tempz;
-        
+	mobj_t* bodymobj;
+
     tempx.h.fracbits = 0;
     tempy.h.fracbits = 0;
     tempx.h.intbits = mthing->x; 
@@ -707,35 +704,11 @@ G_CheckSpot
 			return false;
         return true;
     }
-         
-    if (!P_CheckPosition (players.moRef, tempx.w, tempy.w) ) 
-        return false; 
- 
-    // flush an old corpse if needed 
-    if (bodyqueslot >= BODYQUESIZE) 
-        P_RemoveMobj (bodyque[bodyqueslot%BODYQUESIZE]); 
-    bodyque[bodyqueslot%BODYQUESIZE] = players.moRef; 
-    bodyqueslot++; 
         
-    // spawn a teleport fog 
-    subsecnum = R_PointInSubsector (tempx.w,tempy.w); 
-	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
 
-	secnum = subsectors[subsecnum].secnum;
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	I_Error("shouldn't run? netplay spawn code");
+	return true;
 
-    an = ( ANG45 * (mthing->angle/45) ) >> ANGLETOFINESHIFT; 
-    tempz.h.fracbits = 0;
-    // tempz.h.intbits = sectors[secnum].floorheight >> SHORTFLOORBITS;
-    SET_FIXED_UNION_FROM_SHORT_HEIGHT(tempz, sectors[secnum].floorheight);
-    moRef = P_SpawnMobj (tempx.w+20*finecosine(an), tempy.w+20*finesine(an)
-                      , tempz.w
-                      , MT_TFOG); 
-         
-	if (players.viewz != 1) {
-		S_StartSoundFromRef(moRef, sfx_telept);  // don't start sound on first frame 
-	}
-    return true; 
 } 
 
  

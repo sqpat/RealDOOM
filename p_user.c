@@ -140,10 +140,10 @@ void P_CalcHeight ()
 //
 // P_MovePlayer
 //
-void P_MovePlayer ()
+// player locked coming in
+void P_MovePlayer (mobj_t* playermo)
 {
     ticcmd_t*		cmd;
-	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	cmd = &players.cmd;
@@ -163,7 +163,7 @@ void P_MovePlayer ()
 		P_Thrust (MOD_FINE_ANGLE((playermo->angle>>ANGLETOFINESHIFT)-FINE_ANG90), cmd->sidemove*2048);
 
     if ( (cmd->forwardmove || cmd->sidemove)  && playermo->state == &states[S_PLAY] ) {
-		P_SetMobjState (players.moRef, S_PLAY_RUN1);
+		P_SetMobjState (playermo, S_PLAY_RUN1);
     }
 }	
 
@@ -235,11 +235,10 @@ void P_DeathThink ()
 //
 // P_PlayerThink
 //
-void P_PlayerThink ()
+void P_PlayerThink (mobj_t* playermo)
 {
     ticcmd_t*		cmd;
     weapontype_t	newweapon;
-	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 	int16_t playermosecnum;
 	sector_t* sectors;
 
@@ -260,10 +259,10 @@ void P_PlayerThink ()
     }
 			
 	
-    if (players.playerstate == PST_DEAD)
-    {
-	P_DeathThink();
-	return;
+    if (players.playerstate == PST_DEAD) {
+		P_DeathThink();
+
+		return;
     }
     
     // Move around.
@@ -272,15 +271,14 @@ void P_PlayerThink ()
     if (playermo->reactiontime)
 		playermo->reactiontime--;
     else
-	P_MovePlayer();
+		P_MovePlayer(playermo);
     
     P_CalcHeight();
-	playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 	playermosecnum = playermo->secnum;
 
 	sectors = (sector_t*) Z_LoadBytesFromEMS(sectorsRef);
 	if (sectors[playermosecnum].special) {
-		P_PlayerInSpecialSector();
+		P_PlayerInSpecialSector(playermo);
 	}
     // Check for weapon change.
 
@@ -331,7 +329,7 @@ void P_PlayerThink ()
     {
 	if (!players.usedown)
 	{
-	    P_UseLines ();
+	    P_UseLines (playermo);
 		players.usedown = true;
 	}
     }
@@ -350,7 +348,6 @@ void P_PlayerThink ()
     if (players.powers[pw_invulnerability])
 		players.powers[pw_invulnerability]--;
 
-	playermo = (mobj_t*) Z_LoadBytesFromEMS(players.moRef);
 
     if (players.powers[pw_invisibility])
 		if (! --players.powers[pw_invisibility] )
@@ -385,6 +382,8 @@ void P_PlayerThink ()
 	} else {
 		players.fixedcolormap = 0;
 	}
+
+
 }
 
 

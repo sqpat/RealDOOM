@@ -36,57 +36,57 @@ void G_PlayerReborn ();
 void P_SpawnMapThing (mapthing_t*	mthing, int16_t key);
 
 
-void A_Explode(MEMREF moRef);
-void A_Pain(MEMREF moRef);
-void A_PlayerScream(MEMREF moRef);
-void A_Fall(MEMREF moRef);
-void A_XScream(MEMREF moRef);
-void A_Look(MEMREF moRef);
-void A_Chase(MEMREF moRef);
-void A_FaceTarget(MEMREF moRef);
-void A_PosAttack(MEMREF moRef);
-void A_Scream(MEMREF moRef);
-void A_SPosAttack(MEMREF moRef);
-void A_VileChase(MEMREF moRef);
-void A_VileStart(MEMREF moRef);
-void A_VileTarget(MEMREF moRef);
-void A_VileAttack(MEMREF moRef);
-void A_StartFire(MEMREF moRef);
-void A_Fire(MEMREF moRef);
-void A_FireCrackle(MEMREF moRef);
-void A_Tracer(MEMREF moRef);
-void A_SkelWhoosh(MEMREF moRef);
-void A_SkelFist(MEMREF moRef);
-void A_SkelMissile(MEMREF moRef);
-void A_FatRaise(MEMREF moRef);
-void A_FatAttack1(MEMREF moRef);
-void A_FatAttack2(MEMREF moRef);
-void A_FatAttack3(MEMREF moRef);
-void A_BossDeath(MEMREF moRef);
-void A_CPosAttack(MEMREF moRef);
-void A_CPosRefire(MEMREF moRef);
-void A_TroopAttack(MEMREF moRef);
-void A_SargAttack(MEMREF moRef);
-void A_HeadAttack(MEMREF moRef);
-void A_BruisAttack(MEMREF moRef);
-void A_SkullAttack(MEMREF moRef);
-void A_Metal(MEMREF moRef);
-void A_SpidRefire(MEMREF moRef);
-void A_BabyMetal(MEMREF moRef);
-void A_BspiAttack(MEMREF moRef);
-void A_Hoof(MEMREF moRef);
-void A_CyberAttack(MEMREF moRef);
-void A_PainAttack(MEMREF moRef);
-void A_PainDie(MEMREF moRef);
-void A_KeenDie(MEMREF moRef);
-void A_BrainPain(MEMREF moRef);
-void A_BrainScream(MEMREF moRef);
-void A_BrainDie(MEMREF moRef);
-void A_BrainAwake(MEMREF moRef);
-void A_BrainSpit(MEMREF moRef);
-void A_SpawnSound(MEMREF moRef);
-void A_SpawnFly(MEMREF moRef);
-void A_BrainExplode(MEMREF moRef);
+void A_Explode(mobj_t* mo);
+void A_Pain(mobj_t* mo);
+void A_PlayerScream(mobj_t* mo);
+void A_Fall(mobj_t* mo);
+void A_XScream(mobj_t* mo);
+void A_Look(mobj_t* mo);
+void A_Chase(mobj_t* mo);
+void A_FaceTarget(mobj_t* mo);
+void A_PosAttack(mobj_t* mo);
+void A_Scream(mobj_t* mo);
+void A_SPosAttack(mobj_t* mo);
+void A_VileChase(mobj_t* mo);
+void A_VileStart(mobj_t* mo);
+void A_VileTarget(mobj_t* mo);
+void A_VileAttack(mobj_t* mo);
+void A_StartFire(mobj_t* mo);
+void A_Fire(mobj_t* mo);
+void A_FireCrackle(mobj_t* mo);
+void A_Tracer(mobj_t* mo);
+void A_SkelWhoosh(mobj_t* mo);
+void A_SkelFist(mobj_t* mo);
+void A_SkelMissile(mobj_t* mo);
+void A_FatRaise(mobj_t* mo);
+void A_FatAttack1(mobj_t* mo);
+void A_FatAttack2(mobj_t* mo);
+void A_FatAttack3(mobj_t* mo);
+void A_BossDeath(mobj_t* mo);
+void A_CPosAttack(mobj_t* mo);
+void A_CPosRefire(mobj_t* mo);
+void A_TroopAttack(mobj_t* mo);
+void A_SargAttack(mobj_t* mo);
+void A_HeadAttack(mobj_t* mo);
+void A_BruisAttack(mobj_t* mo);
+void A_SkullAttack(mobj_t* mo);
+void A_Metal(mobj_t* mo);
+void A_SpidRefire(mobj_t* mo);
+void A_BabyMetal(mobj_t* mo);
+void A_BspiAttack(mobj_t* mo);
+void A_Hoof(mobj_t* mo);
+void A_CyberAttack(mobj_t* mo);
+void A_PainAttack(mobj_t* mo);
+void A_PainDie(mobj_t* mo);
+void A_KeenDie(mobj_t* mo);
+void A_BrainPain(mobj_t* mo);
+void A_BrainScream(mobj_t* mo);
+void A_BrainDie(mobj_t* mo);
+void A_BrainAwake(mobj_t* mo);
+void A_BrainSpit(mobj_t* mo);
+void A_SpawnSound(mobj_t* mo);
+void A_SpawnFly(mobj_t* mo);
+void A_BrainExplode(mobj_t* mo);
 
 mobj_t* SAVEDUNIT;
 //
@@ -97,14 +97,12 @@ mobj_t* SAVEDUNIT;
 //
 // P_ExplodeMissile  
 //
-void P_ExplodeMissile(MEMREF moRef){
+void P_ExplodeMissile(mobj_t* mo){
 
 
-	mobj_t* mo = (mobj_t*) Z_LoadBytesFromEMS(moRef);
     mo->momx = mo->momy = mo->momz = 0;
 	
-    P_SetMobjState (moRef, mobjinfo[mo->type].deathstate);
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+    P_SetMobjState (mo, mobjinfo[mo->type].deathstate);
 
     mo->tics -= P_Random()&3;
 
@@ -126,14 +124,15 @@ void P_ExplodeMissile(MEMREF moRef){
 #define STOPSPEED		0x1000
 #define FRICTION		0xe800
 
-void P_XYMovement (MEMREF moRef) 
+// mobj is LOCKED page 0 going in
+void P_XYMovement (mobj_t* mo)
 { 	
     fixed_t 	ptryx;
     fixed_t	ptryy;
     player_t*	player;
     fixed_t	xmove;
     fixed_t	ymove;
-	mobj_t* playermo;
+	//mobj_t* playermo;
 	fixed_t momomx;
 	fixed_t momomy;
 	line_t* lines;
@@ -142,7 +141,6 @@ void P_XYMovement (MEMREF moRef)
 	int16_t mosecnum;
 	short_height_t sectorfloorheight;
 	fixed_t_union temp;
-	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	player = mo->player;
 	temp.h.fracbits = 0;
 	
@@ -155,12 +153,11 @@ void P_XYMovement (MEMREF moRef)
 			mo->flags &= ~MF_SKULLFLY;
 			mo->momx = mo->momy = mo->momz = 0;
 
-			P_SetMobjState (moRef, mo->info->spawnstate);
+			P_SetMobjState (mo, mo->info->spawnstate);
 		}
 		return;
     }
 
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mosecnum = mo->secnum;
 
 
@@ -193,12 +190,11 @@ void P_XYMovement (MEMREF moRef)
 		
 
 
-		if (!P_TryMove (moRef, ptryx, ptryy)) {
+		if (!P_TryMove (mo, ptryx, ptryy)) {
 
-			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			// blocked move
 			if (player) {	// try to slide along it
-				P_SlideMove (moRef);
+				P_SlideMove (mo);
 			} else if (mo->flags & MF_MISSILE) {
 				// explode a missile
 				lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -210,23 +206,21 @@ void P_XYMovement (MEMREF moRef)
 					// against the sky.
 					// Does not handle sky floors.
  
-					P_RemoveMobj (moRef);
+					P_RemoveMobj (mo);
 					return;
 				}
 			
 
-				P_ExplodeMissile (moRef);
+				P_ExplodeMissile (mo);
 			} else {
 				mo->momx = mo->momy = 0;
 			}
 		}
 
 
-		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	 
+ 
     } while (xmove || ymove);
 
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
 
     // slow down
@@ -254,7 +248,6 @@ void P_XYMovement (MEMREF moRef)
 		//  if halfway off a step with some momentum
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		sectorfloorheight = sectors[mosecnum].floorheight;
-		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
 			if (mo->floorz != sectorfloorheight) {
 				
@@ -264,29 +257,19 @@ void P_XYMovement (MEMREF moRef)
     }
 	momomx = mo->momx;
 	momomy = mo->momy;
-	// mo and player can dereference each other here... let's not create a situation where both pointers are needed in the same if block
-	if (player) {
-		playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
-
-	}
-
 
     if ((momomx > -STOPSPEED && momomx < STOPSPEED && momomy > -STOPSPEED && momomy < STOPSPEED) && 
 			(!player || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) 
 		) {
 	// if in a walking frame, stop moving
-		if (player) {
-			playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
+		
+		if (player && (uint32_t)((mo->state - states) - S_PLAY_RUN1) < 4) {
+			P_SetMobjState(mo, S_PLAY);
 		}
-		if (player && (uint32_t)((playermo->state - states) - S_PLAY_RUN1) < 4) {
-			P_SetMobjState(player->moRef, S_PLAY);
-		}
-		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
 		mo->momx = 0;
 		mo->momy = 0;
     } else {
-		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
 
 		mo->momx = FixedMul (momomx, FRICTION);
@@ -299,7 +282,8 @@ void P_XYMovement (MEMREF moRef)
 //
 // P_ZMovement
 //
-void P_ZMovement (MEMREF moRef)
+// mobj is LOCKED page 0 going in
+void P_ZMovement (mobj_t* mo)
 {
     fixed_t	dist;
 	fixed_t	delta;
@@ -307,7 +291,6 @@ void P_ZMovement (MEMREF moRef)
 	fixed_t	moTargety;
 	fixed_t	moTargetz;
 	mobj_t* moTarget;
-	mobj_t* mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	// temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
@@ -329,7 +312,6 @@ void P_ZMovement (MEMREF moRef)
 			moTargetx = moTarget->x;
 			moTargety = moTarget->y;
 			moTargetz = moTarget->z;
-			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			dist = P_AproxDistance (mo->x - moTargetx,
 						mo->y - moTargety);
 	    
@@ -367,7 +349,6 @@ void P_ZMovement (MEMREF moRef)
 				mo->player->deltaviewheight = mo->momz>>3;
 				S_StartSound (mo, sfx_oof);
 			}
-			mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 			mo->momz = 0;
 		}
 
@@ -386,7 +367,7 @@ void P_ZMovement (MEMREF moRef)
 	#endif
 
 		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
-			P_ExplodeMissile (moRef);
+			P_ExplodeMissile (mo);
 			return;
 		}
 	} else if (! (mo->flags & MF_NOGRAVITY) ) {
@@ -396,7 +377,6 @@ void P_ZMovement (MEMREF moRef)
 			mo->momz -= GRAVITY;
 		}
 	}
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	//temp.h.intbits = mo->ceilingz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
     if (mo->z + mo->height.w > temp.w) {
@@ -411,7 +391,7 @@ void P_ZMovement (MEMREF moRef)
 		}
 	
 		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
-			P_ExplodeMissile (moRef);
+			P_ExplodeMissile (mo);
 			return;
 		}
     }
@@ -426,15 +406,13 @@ void P_ZMovement (MEMREF moRef)
 // P_NightmareRespawn
 //
 void
-P_NightmareRespawn(MEMREF mobjRef)
+P_NightmareRespawn(mobj_t* mobj)
 {
 	fixed_t		x;
 	fixed_t		y;
 	fixed_t		z;
-	mobj_t*		mo;
 	mapthing_t*		mthing;
 	MEMREF moRef;
-	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	int16_t subsecnum;
 	subsector_t* subsectors;
 	int16_t subsectorsecnum;
@@ -448,15 +426,16 @@ P_NightmareRespawn(MEMREF mobjRef)
 	fixed_t mobjy;
 	sector_t* sectors;
 	fixed_t_union temp;
+	mobj_t* newmo;
+	mobj_t* mo;
 	temp.h.fracbits = 0;
 	x = mobj->spawnpoint.x << FRACBITS;
 	y = mobj->spawnpoint.y << FRACBITS;
 
 	// somthing is occupying it's position?
-	if (!P_CheckPosition(mobjRef, x, y)) {
+	if (!P_CheckPosition(mobj, x, y)) {
 		return;	// no respwan
 	}
-	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	mobjsecnum = mobj->secnum;
 	mobjx = mobj->x;
 	mobjy = mobj->y;
@@ -476,9 +455,10 @@ P_NightmareRespawn(MEMREF mobjRef)
 	subsectorsecnum = subsectors[subsecnum].secnum;
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	moRef = P_SpawnMobj(x, y, temp.w, MT_TFOG);
+	mo = (mobj_t*)Z_LoadBytesFromEMSWithOptions(moRef, PAGE_LOCKED);
 
-	S_StartSoundFromRef(moRef, sfx_telept);
-	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	S_StartSound(mo, sfx_telept);
+	Z_SetLocked(moRef, PAGE_NOT_LOCKED, 119);
 
 	// spawn the new monster
 
@@ -497,37 +477,39 @@ P_NightmareRespawn(MEMREF mobjRef)
 
     // inherit attributes from deceased one
     moRef = P_SpawnMobj (x,y,z, mobjtype);
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
-	mo->spawnpoint = mobjspawnpoint;
-    mo->angle = ANG45 * (mobjspawnangle/45);
+	newmo = (mobj_t*)Z_LoadBytesFromEMSWithOptions(moRef, PAGE_LOCKED);
+	newmo->spawnpoint = mobjspawnpoint;
+	newmo->angle = ANG45 * (mobjspawnangle/45);
 
 	if (mobjspawnoptions & MTF_AMBUSH) {
-		mo->flags |= MF_AMBUSH;
+		newmo->flags |= MF_AMBUSH;
 	}
 
-    mo->reactiontime = 18;
-	
+	newmo->reactiontime = 18;
+	Z_SetLocked(moRef, PAGE_NOT_LOCKED, 114);
+
     // remove the old monster,
-    P_RemoveMobj (mobjRef);
+    P_RemoveMobj (mobj);
+
+
 }
 
 
 //
 // P_MobjThinker
 //
-void P_MobjThinker (MEMREF mobjRef) {
+void P_MobjThinker (mobj_t* mobj) {
 
-	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	// momentum movement
     fixed_t_union temp;
 	if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
-		P_XYMovement (mobjRef);
-		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+		P_XYMovement (mobj);
+		//mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	 
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
-			return;		// mobj was removed
+ 			return;		// mobj was removed
 		}
     } 
 
@@ -535,12 +517,12 @@ void P_MobjThinker (MEMREF mobjRef) {
 	// temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
     if ( (mobj->z != temp.w) || mobj->momz ) {
-		P_ZMovement (mobjRef);
+		P_ZMovement (mobj);
 	 
-		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+		//mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
-			return;		// mobj was removed
+ 			return;		// mobj was removed
 		}
     }
 
@@ -552,18 +534,18 @@ void P_MobjThinker (MEMREF mobjRef) {
 		
 		// you can cycle through multiple states in a tic
 		if (!mobj->tics) {
-			mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+			//mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
-			if (!P_SetMobjState(mobjRef, mobj->state->nextstate)) {
-
+			if (!P_SetMobjState(mobj, mobj->state->nextstate)) {
+ 
 				return;		// freed itself
 			}
-			mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+			//mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 			
 
 		}
 	} else {
-		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+		//mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
 		// check for nightmare respawn
 		if (!(mobj->flags & MF_COUNTKILL)) {
@@ -584,7 +566,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		if (P_Random() > 4) {
 			return;
 		}
-		P_NightmareRespawn (mobjRef);
+		P_NightmareRespawn (mobj);
     }
 
 
@@ -606,14 +588,17 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	short_height_t sectorceilingheight;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	mobjRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, 0, ALLOC_TYPE_LEVSPEC);
-	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	mobjRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, 0, ALLOC_TYPE_MOBJ);
+
+
+
+	mobj = (mobj_t*)Z_LoadBytesFromEMSWithOptions(mobjRef, PAGE_LOCKED );
 
 	memset (mobj, 0, sizeof (*mobj));
 
 
 	info = &mobjinfo[type];
-
+	mobj->selfRef = mobjRef;
     mobj->type = type;
     mobj->info = info;
     mobj->x = x;
@@ -641,7 +626,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 
     // set subsector and/or block links
-    P_SetThingPosition (mobjRef);
+    P_SetThingPosition (mobj);
  
 
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -670,6 +655,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
  
 
+	Z_SetLocked(mobj->selfRef, PAGE_NOT_LOCKED, 201);
+
     return mobjRef;
 }
 
@@ -678,18 +665,15 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 // P_RemoveMobj
 //
 
-
-void P_RemoveMobj (MEMREF mobjRef)
+// Should be called with locked mobj
+void P_RemoveMobj (mobj_t* mobj)
 {
-	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-
 	
     // unlink from sector and block lists
-    P_UnsetThingPosition (mobjRef);
+    P_UnsetThingPosition (mobj);
     
     // stop any playing sound
-    S_StopSound (mobjRef);
-	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+    S_StopSound (mobj->selfRef);
     // free block
     P_RemoveThinker (mobj->thinkerRef);
 }
@@ -728,7 +712,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
     y 		= mthingy << FRACBITS;
     z		= ONFLOORZ;
 	mobjRef	= P_SpawnMobj (x,y,z, MT_PLAYER);
-	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	mobj = (mobj_t*)Z_LoadBytesFromEMSWithOptions(mobjRef, PAGE_LOCKED);
 	mobj->reactiontime = 0;
 
     // set color translations for player sprites
@@ -764,7 +748,8 @@ void P_SpawnPlayer (mapthing_t* mthing)
 		// wake up the heads up text
 		HU_Start ();		
     }
- 
+	Z_SetLocked(mobjRef, PAGE_NOT_LOCKED, 113);
+
 }
 
 
@@ -789,8 +774,7 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
 	int16_t mthingangle = mthing->angle;
 	mapthing_t copyofthing = *mthing;
 
-		
-	
+
 
 	if (mthing->type == 11 || mthing->type == 2 || mthing->type == 3 || mthing->type == 4) {
 		return;
@@ -856,7 +840,7 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
 	// 55
 	mobjRef = P_SpawnMobj (x,y,z, i);
 
-	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
+	mobj = (mobj_t*)Z_LoadBytesFromEMSWithOptions(mobjRef, PAGE_LOCKED);
     mobj->spawnpoint = copyofthing;
 	
     if (mobj->tics > 0)
@@ -871,7 +855,8 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
 	if (mthingoptions & MTF_AMBUSH)
 		mobj->flags |= MF_AMBUSH;
 
- 
+	Z_SetLocked(mobjRef, PAGE_NOT_LOCKED, 112);
+
 }
 
 
@@ -898,8 +883,8 @@ P_SpawnPuff
     z += ((P_Random()-P_Random())<<10);
 
     thRef = P_SpawnMobj (x,y,z, MT_PUFF);
-	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
-    th->momz = FRACUNIT;
+	th = (mobj_t*)Z_LoadBytesFromEMSWithOptions(thRef, PAGE_LOCKED);
+	th->momz = FRACUNIT;
     th->tics -= P_Random()&3;
 
     if (th->tics < 1)
@@ -907,7 +892,9 @@ P_SpawnPuff
 	
     // don't make punches spark on the wall
     if (attackrange == MELEERANGE * FRACUNIT)
-		P_SetMobjState (thRef, S_PUFF3);
+		P_SetMobjState (th, S_PUFF3);
+	Z_SetLocked(thRef, PAGE_NOT_LOCKED, 111);
+
 }
 
 
@@ -927,17 +914,19 @@ P_SpawnBlood
 	
     z += ((P_Random()-P_Random())<<10);
 	thRef  = P_SpawnMobj (x,y,z, MT_BLOOD);
-	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
-    th->momz = FRACUNIT*2;
+	th = (mobj_t*)Z_LoadBytesFromEMSWithOptions(thRef, PAGE_LOCKED);
+	th->momz = FRACUNIT*2;
     th->tics -= P_Random()&3;
 
     if (th->tics < 1)
 		th->tics = 1;
 		
     if (damage <= 12 && damage >= 9)
-		P_SetMobjState (thRef,S_BLOOD2);
+		P_SetMobjState (th,S_BLOOD2);
     else if (damage < 9)
-		P_SetMobjState (thRef,S_BLOOD3);
+		P_SetMobjState (th,S_BLOOD3);
+
+	Z_SetLocked(thRef, PAGE_NOT_LOCKED, 108);
 }
 
 
@@ -947,9 +936,8 @@ P_SpawnBlood
 // Moves the missile forward a bit
 //  and possibly explodes it right there.
 //
-void P_CheckMissileSpawn (MEMREF thRef)
+void P_CheckMissileSpawn (mobj_t* th)
 {
-	mobj_t* th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
 
     th->tics -= P_Random()&3;
 	if (th->tics < 1) {
@@ -960,10 +948,9 @@ void P_CheckMissileSpawn (MEMREF thRef)
     th->x += (th->momx>>1);
     th->y += (th->momy>>1);
     th->z += (th->momz>>1);
-	Z_RefIsActive(thRef);
 
-	if (!P_TryMove(thRef, th->x, th->y)) {
-		P_ExplodeMissile(thRef);
+	if (!P_TryMove(th, th->x, th->y)) {
+		P_ExplodeMissile(th);
 	}
 }
 
@@ -973,14 +960,13 @@ void P_CheckMissileSpawn (MEMREF thRef)
 //
 MEMREF
 P_SpawnMissile
-( MEMREF	sourceRef,
+(mobj_t*	source,
   MEMREF	destRef,
   mobjtype_t	type )
 {
     mobj_t*	th;
     angle_t	an;
     fixed_t	dist;
-	mobj_t*	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 	mobj_t*	dest;
 	fixed_t destz;
 	fixed_t sourcex = source->x;
@@ -990,14 +976,13 @@ P_SpawnMissile
 	int32_t thspeed;
 	MEMREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type);
 
-	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
+	th = (mobj_t*)Z_LoadBytesFromEMSWithOptions(thRef, PAGE_LOCKED);
 	if (th->info->seesound) {
 		S_StartSound(th, th->info->seesound);
-		th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
 
 	}
 	Z_RefIsActive(thRef);
-    th->targetRef = sourceRef;	// where it came from
+    th->targetRef = source->selfRef;	// where it came from
 	thspeed = MAKESPEED(th->info->speed);
 
 	dest = (mobj_t*)Z_LoadBytesFromEMS(destRef);
@@ -1017,17 +1002,15 @@ P_SpawnMissile
 		dist = 1;
 
 
-	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
-    th->angle = an;
+     th->angle = an;
     an >>= ANGLETOFINESHIFT;
     th->momx = FixedMul (thspeed, finecosine(an));
     th->momy = FixedMul (thspeed, finesine(an));
 	th->momz = momz;
-	Z_RefIsActive(thRef);
 
 
-	P_CheckMissileSpawn (thRef);
-	
+	P_CheckMissileSpawn (th);
+	Z_SetLocked(thRef, PAGE_NOT_LOCKED, 75);
     return thRef;
 }
 
@@ -1038,7 +1021,7 @@ P_SpawnMissile
 //
 void
 P_SpawnPlayerMissile
-( MEMREF	sourceRef,
+( mobj_t* source,
   mobjtype_t	type )
 {
     mobj_t*	th;
@@ -1050,39 +1033,36 @@ P_SpawnPlayerMissile
     fixed_t	z;
     fixed_t	slope;
 	fixed_t speed;
-	mobj_t* source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
     
 
     // see which target is to be aimed at
     an = source->angle >> ANGLETOFINESHIFT;
-    slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
+    slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
     
     if (!linetargetRef) {
 		an = MOD_FINE_ANGLE(an +(1<<(26- ANGLETOFINESHIFT)));
-		slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
+		slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
 
 		if (!linetargetRef) {
 			an = MOD_FINE_ANGLE(an - (2<<(26-ANGLETOFINESHIFT)));
-			slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
+			slope = P_AimLineAttack (source, an, 16*64*FRACUNIT);
 		}
-		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 		if (!linetargetRef) {
 			an = source->angle >> ANGLETOFINESHIFT;
 			slope = 0;
 		}
     }
-	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
     x = source->x;
     y = source->y;
     z = source->z + 4*8*FRACUNIT;
 	
     thRef = P_SpawnMobj (x,y,z, type);
-	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
+	th = (mobj_t*)Z_LoadBytesFromEMSWithOptions(thRef, PAGE_LOCKED);
 
     if (th->info->seesound)
 	S_StartSound (th, th->info->seesound);
 
-    th->targetRef = sourceRef;
+    th->targetRef = source->selfRef;
     th->angle = an << ANGLETOFINESHIFT;
 	//an = an >> ANGLETOFINESHIFT;
 
@@ -1092,24 +1072,28 @@ P_SpawnPlayerMissile
     th->momy = FixedMul( speed, finesine(an));
     th->momz = FixedMul( speed, slope);
 
-    P_CheckMissileSpawn (thRef);
+    P_CheckMissileSpawn (th);
+
+	Z_SetLocked(thRef, PAGE_NOT_LOCKED, 107);
 }
 
 
 
 boolean
 P_SetMobjState
-(MEMREF mobjRef,
+// mobj locked (?) to page 0 coming in
+
+(mobj_t*	mobj,
 	statenum_t	state)
 {
 	state_t*	st;
-	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	int16_t i = 0;
 
 	do {
 		if (state == S_NULL) {
 			mobj->state = (state_t *)S_NULL;
-			P_RemoveMobj(mobjRef);
+			P_RemoveMobj(mobj);
+			//Z_SetLocked(mobj, PAGE_NOT_LOCKED, 41);
 			return false;
 		}
 
@@ -1128,75 +1112,75 @@ P_SetMobjState
 
 		switch (st->action) {
 
-			case ETF_A_Explode: A_Explode(mobjRef); break;
-			case ETF_A_Pain: A_Pain(mobjRef); break;
-			case ETF_A_PlayerScream: A_PlayerScream(mobjRef); break;
-			case ETF_A_Fall: A_Fall(mobjRef); break;
-			case ETF_A_XScream: A_XScream(mobjRef); break;
-			case ETF_A_Look: A_Look(mobjRef); break;
-			case ETF_A_Chase: A_Chase(mobjRef); break;
-			case ETF_A_FaceTarget: A_FaceTarget(mobjRef); break;
-			case ETF_A_PosAttack: A_PosAttack(mobjRef); break;
-			case ETF_A_Scream: A_Scream(mobjRef); break;
-			case ETF_A_SPosAttack: A_SPosAttack(mobjRef); break;
-			case ETF_A_VileChase: A_VileChase(mobjRef); break;
-			case ETF_A_VileStart: A_VileStart(mobjRef); break;
-			case ETF_A_VileTarget: A_VileTarget(mobjRef); break;
-			case ETF_A_VileAttack: A_VileAttack(mobjRef); break;
-			case ETF_A_StartFire: A_StartFire(mobjRef); break;
-			case ETF_A_Fire: A_Fire(mobjRef); break;
-			case ETF_A_FireCrackle: A_FireCrackle(mobjRef); break;
-			case ETF_A_Tracer: A_Tracer(mobjRef); break;
-			case ETF_A_SkelWhoosh: A_SkelWhoosh(mobjRef); break;
-			case ETF_A_SkelFist: A_SkelFist(mobjRef); break;
-			case ETF_A_SkelMissile: A_SkelMissile(mobjRef); break;
-			case ETF_A_FatRaise: A_FatRaise(mobjRef); break;
-			case ETF_A_FatAttack1: A_FatAttack1(mobjRef); break;
-			case ETF_A_FatAttack2: A_FatAttack2(mobjRef); break;
-			case ETF_A_FatAttack3: A_FatAttack3(mobjRef); break;
-			case ETF_A_BossDeath: A_BossDeath(mobjRef); break;
-			case ETF_A_CPosAttack: A_CPosAttack(mobjRef); break;
-			case ETF_A_CPosRefire: A_CPosRefire(mobjRef); break;
-			case ETF_A_TroopAttack: A_TroopAttack(mobjRef); break;
-			case ETF_A_SargAttack: A_SargAttack(mobjRef); break;
-			case ETF_A_HeadAttack: A_HeadAttack(mobjRef); break;
-			case ETF_A_BruisAttack: A_BruisAttack(mobjRef); break;
-			case ETF_A_SkullAttack: A_SkullAttack(mobjRef); break;
-			case ETF_A_Metal: A_Metal(mobjRef); break;
-			case ETF_A_SpidRefire: A_SpidRefire(mobjRef); break;
-			case ETF_A_BabyMetal: A_BabyMetal(mobjRef); break;
-			case ETF_A_BspiAttack: A_BspiAttack(mobjRef); break;
-			case ETF_A_Hoof: A_Hoof(mobjRef); break;
-			case ETF_A_CyberAttack: A_CyberAttack(mobjRef); break;
-			case ETF_A_PainAttack: A_PainAttack(mobjRef); break;
-			case ETF_A_PainDie: A_PainDie(mobjRef); break;
-			case ETF_A_KeenDie: A_KeenDie(mobjRef); break;
-			case ETF_A_BrainPain: A_BrainPain(mobjRef); break;
-			case ETF_A_BrainScream: A_BrainScream(mobjRef); break;
-			case ETF_A_BrainDie: A_BrainDie(mobjRef); break;
+			case ETF_A_Explode: A_Explode(mobj); break;
+			case ETF_A_Pain: A_Pain(mobj); break;
+			case ETF_A_PlayerScream: A_PlayerScream(mobj); break;
+			case ETF_A_Fall: A_Fall(mobj); break;
+			case ETF_A_XScream: A_XScream(mobj); break;
+			case ETF_A_Look: A_Look(mobj); break;
+			case ETF_A_Chase: A_Chase(mobj); break;
+			case ETF_A_FaceTarget: A_FaceTarget(mobj); break;
+			case ETF_A_PosAttack: A_PosAttack(mobj); break;
+			case ETF_A_Scream: A_Scream(mobj); break;
+			case ETF_A_SPosAttack: A_SPosAttack(mobj); break;
+			case ETF_A_VileChase: A_VileChase(mobj); break;
+			case ETF_A_VileStart: A_VileStart(mobj); break;
+			case ETF_A_VileTarget: A_VileTarget(mobj); break;
+			case ETF_A_VileAttack: A_VileAttack(mobj); break;
+			case ETF_A_StartFire: A_StartFire(mobj); break;
+			case ETF_A_Fire: A_Fire(mobj); break;
+			case ETF_A_FireCrackle: A_FireCrackle(mobj); break;
+			case ETF_A_Tracer: A_Tracer(mobj); break;
+			case ETF_A_SkelWhoosh: A_SkelWhoosh(mobj); break;
+			case ETF_A_SkelFist: A_SkelFist(mobj); break;
+			case ETF_A_SkelMissile: A_SkelMissile(mobj); break;
+			case ETF_A_FatRaise: A_FatRaise(mobj); break;
+			case ETF_A_FatAttack1: A_FatAttack1(mobj); break;
+			case ETF_A_FatAttack2: A_FatAttack2(mobj); break;
+			case ETF_A_FatAttack3: A_FatAttack3(mobj); break;
+			case ETF_A_BossDeath: A_BossDeath(mobj); break;
+			case ETF_A_CPosAttack: A_CPosAttack(mobj); break;
+			case ETF_A_CPosRefire: A_CPosRefire(mobj); break;
+			case ETF_A_TroopAttack: A_TroopAttack(mobj); break;
+			case ETF_A_SargAttack: A_SargAttack(mobj); break;
+			case ETF_A_HeadAttack: A_HeadAttack(mobj); break;
+			case ETF_A_BruisAttack: A_BruisAttack(mobj); break;
+			case ETF_A_SkullAttack: A_SkullAttack(mobj); break;
+			case ETF_A_Metal: A_Metal(mobj); break;
+			case ETF_A_SpidRefire: A_SpidRefire(mobj); break;
+			case ETF_A_BabyMetal: A_BabyMetal(mobj); break;
+			case ETF_A_BspiAttack: A_BspiAttack(mobj); break;
+			case ETF_A_Hoof: A_Hoof(mobj); break;
+			case ETF_A_CyberAttack: A_CyberAttack(mobj); break;
+			case ETF_A_PainAttack: A_PainAttack(mobj); break;
+			case ETF_A_PainDie: A_PainDie(mobj); break;
+			case ETF_A_KeenDie: A_KeenDie(mobj); break;
+			case ETF_A_BrainPain: A_BrainPain(mobj); break;
+			case ETF_A_BrainScream: A_BrainScream(mobj); break;
+			case ETF_A_BrainDie: A_BrainDie(mobj); break;
 				// ugly hacks because these values didnt fit in the char datatype, so we do this to avoid making that field a int16_t in a 1000 element struct array. 
 				// easily saving extra 1-2kb of binary size is worth this hack imo - sq
 			case ETF_A_BrainAwake:
 				mobj->tics = 181;
-				A_BrainAwake(mobjRef); break;
+				A_BrainAwake(mobj); break;
 			case ETF_A_BrainSpit: 
 				mobj->tics = 150;
-				A_BrainSpit(mobjRef); break;
-			case ETF_A_SpawnSound: A_SpawnSound(mobjRef); break;
-			case ETF_A_SpawnFly: A_SpawnFly(mobjRef); break;
-			case ETF_A_BrainExplode: A_BrainExplode(mobjRef); break;
+				A_BrainSpit(mobj); break;
+			case ETF_A_SpawnSound: A_SpawnSound(mobj); break;
+			case ETF_A_SpawnFly: A_SpawnFly(mobj); break;
+			case ETF_A_BrainExplode: A_BrainExplode(mobj); break;
 			//default:
 		}
 
 
 
-		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 
 
 		state = st->nextstate;
 		i++;
 	} while (!mobj->tics);
 
+	//Z_SetLocked(mobj->selfRef, PAGE_NOT_LOCKED, 42);
 
 	return true;
 }

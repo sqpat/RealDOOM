@@ -47,22 +47,22 @@ void    P_UpdateSpecials (void);
 // when needed
 boolean
 P_UseSpecialLine
-( MEMREF thingRef,
+( mobj_t* actor,
 	int16_t linenum,
   int16_t		side );
 
 void
 P_ShootSpecialLine
-(MEMREF thingRef,
+(mobj_t* thing,
   int16_t linenum);
 
 void
 P_CrossSpecialLine
 ( int16_t		linenum,
   int16_t		side,
-	MEMREF thingRef);
+	mobj_t* thing);
 
-void    P_PlayerInSpecialSector ();
+void    P_PlayerInSpecialSector (mobj_t* playermo);
 
 int16_t
 twoSided
@@ -539,6 +539,6 @@ int16_t
 EV_Teleport
 (uint8_t linetag,
   int16_t		side,
-	MEMREF thingRef);
+	mobj_t* thing);
 
 #endif

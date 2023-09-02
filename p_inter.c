@@ -306,21 +306,20 @@ P_GivePower
 //
 // P_TouchSpecialThing
 //
+// marked locked coming in
 void
 P_TouchSpecialThing
-( MEMREF	specialRef,
-  MEMREF	toucherRef )
+(mobj_t*	special,
+  mobj_t*	toucher )
 {
      int8_t		i;
     fixed_t	delta;
     int16_t		sound;
 	mobj_t* playerMo;
-	mobj_t* special = (mobj_t*)Z_LoadBytesFromEMS(specialRef);
 	fixed_t specialz = special->z;
 	spritenum_t specialsprite = special->sprite;
 	boolean specialflagsdropped =  special->flags&MF_DROPPED ? 1 : 0;
 	boolean specialflagscountitem =  special->flags&MF_COUNTITEM ? 1 : 0;
-	mobj_t* toucher = (mobj_t*)Z_LoadBytesFromEMS(toucherRef);
 		
     delta = specialz - toucher->z;
 
@@ -619,7 +618,7 @@ P_TouchSpecialThing
 	
     if (specialflagscountitem)
 		players.itemcount++;
-    P_RemoveMobj (specialRef);
+    P_RemoveMobj (special);
     players.bonuscount += BONUSADD;
     //  always true? 
 	//if (player == &players)
@@ -632,13 +631,11 @@ P_TouchSpecialThing
 //
 void
 P_KillMobj
-( MEMREF	sourceRef,
-	MEMREF	targetRef )
+( mobj_t*	source,
+	mobj_t* target )
 {
     mobjtype_t	item;
     mobj_t*	mo;
-	mobj_t* source;
-	mobj_t*	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
 	MEMREF moRef;
 
 	
@@ -650,8 +647,7 @@ P_KillMobj
     target->flags |= MF_CORPSE|MF_DROPOFF;
     target->height.w >>= 2;
 
-    if (sourceRef) {
-		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+    if (source) {
 		if (source->player) {
 			// count for intermission
 			if (target->flags & MF_COUNTKILL)
@@ -686,9 +682,9 @@ P_KillMobj
     }
 
     if (target->health < -target->info->spawnhealth  && getXDeathState(target->type)) {
-		P_SetMobjState (targetRef, getXDeathState(target->type)) ;
+		P_SetMobjState (target, getXDeathState(target->type)) ;
     } else {
-		P_SetMobjState (targetRef, target->info->deathstate);
+		P_SetMobjState (target, target->info->deathstate);
 	}
     target->tics -= P_Random()&3;
 
@@ -701,23 +697,22 @@ P_KillMobj
     // Drop stuff.
     // This determines the kind of object spawned
     // during the death frame of a thing.
-    switch (target->type)
-    {
-      case MT_WOLFSS:
-      case MT_POSSESSED:
-	item = MT_CLIP;
-	break;
+    switch (target->type) {
+		  case MT_WOLFSS:
+		  case MT_POSSESSED:
+			item = MT_CLIP;
+			break;
 	
-      case MT_SHOTGUY:
-	item = MT_SHOTGUN;
-	break;
+		  case MT_SHOTGUY:
+			item = MT_SHOTGUN;
+			break;
 	
-      case MT_CHAINGUY:
-	item = MT_CHAINGUN;
-	break;
+		  case MT_CHAINGUY:
+			item = MT_CHAINGUN;
+			break;
 	
-      default:
-	return;
+		  default:
+			return;
     }
 
     moRef = P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
@@ -739,10 +734,12 @@ P_KillMobj
 // Source can be NULL for slime, barrel explosions
 // and other environmental stuff.
 //
+
+// target and inflictor are locked?
 void
 P_DamageMobj
-( MEMREF	targetRef,
-	MEMREF	inflictorRef,
+( mobj_t* target,
+	mobj_t* inflictor,
 	MEMREF	sourceRef,
 	int16_t 		damage )
 {
@@ -751,8 +748,6 @@ P_DamageMobj
     player_t*	player;
     fixed_t	thrust;
 	mobj_t* source;
-	mobj_t* inflictor;
-	mobj_t* target;
 	fixed_t inflictorx;
 	fixed_t inflictory;
 	fixed_t inflictorz;
@@ -763,7 +758,6 @@ P_DamageMobj
 	//if (targetRef == 0) {
 	//	I_Error("bad damage %i %i %i %i ", targetRef, inflictorRef, sourceRef, damage);
 	//}
-	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
  
 	if (!(target->flags & MF_SHOOTABLE)) {
 		return;	// shouldn't happen...
@@ -790,13 +784,11 @@ P_DamageMobj
 		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 	}
 
-    if (inflictorRef && !(target->flags & MF_NOCLIP) && (!sourceRef || !source->player || source->player->readyweapon != wp_chainsaw)) {
+    if (inflictor && !(target->flags & MF_NOCLIP) && (!sourceRef || !source->player || source->player->readyweapon != wp_chainsaw)) {
 
-		inflictor = (mobj_t*)Z_LoadBytesFromEMS(inflictorRef);
 		inflictorx = inflictor->x;
 		inflictory = inflictor->y;
 		inflictorz = inflictor->z;
-		target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
 
 		ang = R_PointToAngle2 ( inflictorx,
 				inflictory,
@@ -877,17 +869,16 @@ P_DamageMobj
     
 
 
-	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
     // do the damage	
     target->health -= damage;	
     if (target->health <= 0) {
-		P_KillMobj (sourceRef, targetRef);
+		P_KillMobj (source, target);
 		return;
     }
 
     if ( (P_Random () < getPainChance(target->type)) && !(target->flags&MF_SKULLFLY) ) {
 		target->flags |= MF_JUSTHIT;	// fight back!
-		P_SetMobjState (targetRef, target->info->painstate);
+		P_SetMobjState (target, target->info->painstate);
     }
 			
 
@@ -896,7 +887,7 @@ P_DamageMobj
 		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 	}
     if ( (!target->threshold || target->type == MT_VILE)
-	 && sourceRef && sourceRef != targetRef
+	 && sourceRef && sourceRef != target->selfRef
 	 && source->type != MT_VILE)
     {
 	// if not intent on another player,
@@ -905,7 +896,7 @@ P_DamageMobj
 	target->threshold = BASETHRESHOLD;
 	if (target->state == &states[target->info->spawnstate]
 	    && target->info->seestate != S_NULL)
-	    P_SetMobjState (targetRef, target->info->seestate);
+	    P_SetMobjState (target, target->info->seestate);
     }
 	 
 

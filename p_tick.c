@@ -159,9 +159,12 @@ void P_RunThinkers (void)
 			if (thinkerlist[currentthinker].functionType) {
 
 				switch (thinkerlist[currentthinker].functionType) {
-					case TF_MOBJTHINKER:
-						P_MobjThinker(thinkerlist[currentthinker].memref);
+					case TF_MOBJTHINKER: {
+						mobj_t* mobj = Z_LoadBytesFromEMSWithOptions(thinkerlist[currentthinker].memref, PAGE_LOCKED);
+						P_MobjThinker(mobj);
+						Z_SetLocked(thinkerlist[currentthinker].memref, PAGE_NOT_LOCKED, 129);
 						break;
+					}
 					case TF_PLATRAISE:
 						T_PlatRaise(thinkerlist[currentthinker].memref);
 						break;
@@ -253,12 +256,15 @@ void P_Ticker (void)
 {
     // run the tic
 	// pause if in menu and at least one tic has been run
+	mobj_t* playermo;
 	if (paused || (menuactive && !demoplayback && players.viewz != 1)) {
 		return;
     }
     
 
-	P_PlayerThink(&players);
+	playermo = (mobj_t*)Z_LoadBytesFromEMSWithOptions(players.moRef, PAGE_LOCKED);
+	P_PlayerThink(playermo);
+	Z_SetLocked(players.moRef, PAGE_NOT_LOCKED, 47);
 
 	P_RunThinkers ();
 	P_UpdateSpecials ();

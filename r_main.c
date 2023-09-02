@@ -816,7 +816,7 @@ void R_RenderPlayerView ()
 
 
     // The head node is the last node output.
-	Z_LoadBytesFromEMS(nodesRef);
+	//Z_LoadBytesFromEMS(nodesRef);
 
 	R_RenderBSPNode (numnodes-1);
 

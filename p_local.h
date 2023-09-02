@@ -86,7 +86,7 @@ void P_DropWeapon ();
 //
 // P_USER
 //
-void	P_PlayerThink ();
+void	P_PlayerThink (mobj_t* playermo);
 
 
 //
@@ -104,14 +104,14 @@ P_SpawnMobj
   fixed_t	z,
   mobjtype_t	type );
 
-void 	P_RemoveMobj (MEMREF th);
-boolean	P_SetMobjState (MEMREF mobj, statenum_t state);
-void 	P_MobjThinker (MEMREF memref);
+void 	P_RemoveMobj (mobj_t* mobj);
+boolean	P_SetMobjState (mobj_t* mobj, statenum_t state);
+void 	P_MobjThinker (mobj_t* mobj);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
-MEMREF P_SpawnMissile (MEMREF source, MEMREF dest, mobjtype_t type);
-void	P_SpawnPlayerMissile (MEMREF source, mobjtype_t type);
+MEMREF P_SpawnMissile (mobj_t* source, MEMREF dest, mobjtype_t type);
+void	P_SpawnPlayerMissile (mobj_t* source, mobjtype_t type);
 
 
 
@@ -119,7 +119,7 @@ void	P_SpawnPlayerMissile (MEMREF source, mobjtype_t type);
 //
 // P_ENEMY
 //
-void P_NoiseAlert (MEMREF target, MEMREF emmiter);
+void P_NoiseAlert (mobj_t* target, mobj_t* emmiter);
 
 
 //
@@ -167,7 +167,7 @@ extern short_height_t		lowfloor;
 void 	P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
 boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(int16_t ) );
-boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(MEMREF));
+boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(mobj_t*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -184,8 +184,8 @@ P_PathTraverse
   uint8_t		flags,
   boolean	(*trav) (intercept_t *));
 
-void P_UnsetThingPosition (MEMREF thing);
-void P_SetThingPosition (MEMREF thing);
+void P_UnsetThingPosition (mobj_t* thing);
+void P_SetThingPosition (mobj_t* thing);
 
 
 //
@@ -201,14 +201,14 @@ extern short_height_t		tmceilingz;
 
 extern	int16_t		ceilinglinenum;
 
-boolean P_CheckPosition (MEMREF thing, fixed_t x, fixed_t y);
-boolean P_TryMove (MEMREF thing, fixed_t x, fixed_t y);
-boolean P_TeleportMove (MEMREF thing, fixed_t x, fixed_t y);
-void	P_SlideMove (MEMREF mo);
-boolean P_CheckSight (MEMREF t1, MEMREF t2);
+boolean P_CheckPosition (mobj_t* thing, fixed_t x, fixed_t y);
+boolean P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
+boolean P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y);
+void	P_SlideMove (mobj_t* mo);
+boolean P_CheckSight (mobj_t* t1, MEMREF t2);
 
 
-void 	P_UseLines ();
+void 	P_UseLines (mobj_t* playermo);
 
 boolean P_ChangeSector (int16_t secnum, boolean crunch);
 
@@ -216,13 +216,13 @@ extern MEMREF	linetargetRef;	// who got hit (or NULL)
 
 fixed_t
 P_AimLineAttack
-(MEMREF	t1,
+(mobj_t*	t1,
   fineangle_t	angle,
   fixed_t	distance );
 
 void
 P_LineAttack
-(MEMREF	t1,
+(mobj_t*	t1,
   fineangle_t	angle,
   fixed_t	distance,
   fixed_t	slope,
@@ -230,8 +230,8 @@ P_LineAttack
 
 void
 P_RadiusAttack
-(MEMREF	spot,
-	MEMREF	source,
+(mobj_t*	spot,
+	mobj_t*	source,
   int16_t		damage );
 
 
@@ -256,13 +256,13 @@ extern int8_t		clipammo[NUMAMMO];
 
 void
 P_TouchSpecialThing
-(MEMREF	special,
-	MEMREF	toucher );
+(mobj_t*	special,
+	mobj_t*	toucher );
 
 void
 P_DamageMobj
-(MEMREF	target,
-	MEMREF	inflictor,
+(mobj_t*	target,
+	mobj_t*	inflictor,
 	MEMREF	source,
   int16_t		damage );
 

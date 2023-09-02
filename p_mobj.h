@@ -274,7 +274,10 @@ typedef struct mobj_s
     mapthing_t		spawnpoint;	
 
     // Thing being chased/attacked for tracers.
-    MEMREF	tracerRef;	
+	MEMREF	tracerRef;
+	
+	// Reference to self
+	MEMREF	selfRef;
     
 } mobj_t;
 

@@ -393,13 +393,24 @@ void P_LoadThings(int16_t lump)
 	MEMREF				dataRef;
 	W_CacheLumpNumCheck(lump, 5);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-
+	data = (mapthing_t *)Z_LoadBytesFromEMSWithOptions(dataRef, PAGE_LOCKED);
+	
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
 
 	for (i = 0; i < numthings; i++) {
-		data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);
+		//data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);
+
+
 		mt = &data[i];
 		spawn = true;
+
+		if (mt->type == 0 ) {
+
+			// 110 2048
+			// 202 is 0
+			I_Error("0 found a %i %i", numthings, i);
+		}
+
 
 		// Do not spawn cool, new monsters if !commercial
 		if (!commercial) {
@@ -424,10 +435,12 @@ void P_LoadThings(int16_t lump)
 		// Do spawn all other stuff. 
 	
 		P_SpawnMapThing(mt, i);
-	
+ 
 
 
 	}
+
+	Z_SetLocked(dataRef, PAGE_NOT_LOCKED, 199);
 
 	Z_FreeEMSNew(dataRef);
 }
@@ -887,7 +900,6 @@ P_SetupLevel
 
 
 
-	bodyqueslot = 0;
 
 	P_LoadThings(lumpnum + ML_THINGS);
 

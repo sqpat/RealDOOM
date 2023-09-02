@@ -326,8 +326,7 @@ void D_Display (void)
 
     //I_Error("jhere");
     // do buffered drawing
-    switch (gamestate)
-    {
+    switch (gamestate) {
       case GS_LEVEL:
         if (!gametic)
             break;

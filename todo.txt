@@ -47,21 +47,12 @@ TODO
  x screens in conventional instead of allocced
  ~ convert fixed_t uses to fixed_t_union (then rename)
  ~ MINOR BUGS/IMPROVEMENTS
- x get rid of last bits of multiplayer, players array
- x get rid of extra arguments in functions etc
- x fix keyboard bug
- x fix automap not working bug
- 1 fix the bugs a bit in expanding visplane mode
-   - clean up the #defines etc
-   - make sure non EMS visplanes still works
-   ? why does 4 page need forced page 0 visplane, and 8 page needs it not there?
-   - rename to lock page
 
- 2 fix melee range bug
- 3 implement EMS paging
- 4 do all the 16 bit fixed union stuff to make 16 bit warnings go away
- 5 some improvements using the page locking feature
- 6 fix the texture rotate/offset issue?
+ 1 fix melee range bug
+ 2 implement EMS paging
+ 3 do all the 16 bit fixed union stuff to make 16 bit warnings go away
+ 4 some improvements using the page locking feature
+ 5 fix the texture rotate/offset issue?
 
 
  - make pathtraverse work mostly off 16 bit math? i think its possible
