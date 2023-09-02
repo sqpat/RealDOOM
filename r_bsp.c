@@ -572,39 +572,30 @@ void R_Subsector(int16_t subsecnum)
     count = subsectors[subsecnum].numlines;
 	firstline = subsectors[subsecnum].firstline;
 
-
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	frontsector = &sectors[frontsecnum];
 
 	// temp.h.intbits = frontsector->floorheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);
 
-	if (temp.w < viewz.w)
-	{
-		floorplane = R_FindPlane(temp.w,
-			frontsector->floorpic,
-			frontsector->lightlevel);
-	}
-	else
+	if (temp.w < viewz.w) {
+		floorplane = R_FindPlane(temp.w, frontsector->floorpic, frontsector->lightlevel);
+	} else {
 		floorplane = NULL;
-
+	}
 	// temp.h.intbits = frontsector->ceilingheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->ceilingheight);
 	// todo: see if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
 	
-	if (temp.w > viewz.w || frontsector->ceilingpic == skyflatnum)
-	{
-		ceilingplane = R_FindPlane(temp.w,
-			frontsector->ceilingpic,
-			frontsector->lightlevel);
-	}
-	else
+	if (temp.w > viewz.w || frontsector->ceilingpic == skyflatnum) {
+		ceilingplane = R_FindPlane(temp.w, frontsector->ceilingpic, frontsector->lightlevel);
+	} else {
 		ceilingplane = NULL;
+	}
 
 	R_AddSprites(frontsecnum);
 
 	while (count--)	{
-
 		R_AddLine(firstline + lineoffset);
 		lineoffset++;
 	}
@@ -633,8 +624,7 @@ void R_RenderBSPNode(int16_t bspnum)
 	while (true)
 	{
 		//Front sides.
-		while ((bspnum & NF_SUBSECTOR) == 0)
-		{
+		while ((bspnum & NF_SUBSECTOR) == 0) {
 			if (sp == MAX_BSP_DEPTH)
 				break;
 

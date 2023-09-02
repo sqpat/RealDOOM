@@ -640,19 +640,16 @@ void R_ExecuteSetViewSize (void)
     centeryfrac = centery<<FRACBITS;
     projection = centerxfrac;
 
-    if (!detailshift)
-    {
-	colfunc = basecolfunc = R_DrawColumn;
-	fuzzcolfunc = R_DrawFuzzColumn;
-	transcolfunc = R_DrawTranslatedColumn;
-	spanfunc = R_DrawSpan;
-    }
-    else
-    {
-	colfunc = basecolfunc = R_DrawColumnLow;
-	fuzzcolfunc = R_DrawFuzzColumn;
-	transcolfunc = R_DrawTranslatedColumn;
-	spanfunc = R_DrawSpanLow;
+    if (!detailshift) {
+		colfunc = basecolfunc = R_DrawColumn;
+		fuzzcolfunc = R_DrawFuzzColumn;
+		transcolfunc = R_DrawTranslatedColumn;
+		spanfunc = R_DrawSpan;
+    } else {
+		colfunc = basecolfunc = R_DrawColumnLow;
+		fuzzcolfunc = R_DrawFuzzColumn;
+		transcolfunc = R_DrawTranslatedColumn;
+		spanfunc = R_DrawSpanLow;
     }
 
     R_InitBuffer (scaledviewwidth, viewheight);
@@ -664,19 +661,18 @@ void R_ExecuteSetViewSize (void)
     pspriteiscale = FRACUNIT*SCREENWIDTH/viewwidth;
     
     // thing clipping
-    for (i=0 ; i<viewwidth ; i++)
-	screenheightarray[i] = viewheight;
-    
+	for (i = 0; i < viewwidth; i++) {
+		screenheightarray[i] = viewheight;
+	}
+
     // planes
-    for (i=0 ; i<viewheight ; i++)
-    {
-	dy = ((i-viewheight/2)<<FRACBITS)+FRACUNIT/2;
-	dy = abs(dy);
-	yslope[i] = FixedDiv ( (viewwidth<<detailshift)/2*FRACUNIT, dy);
+    for (i=0 ; i<viewheight ; i++) {
+		dy = ((i-viewheight/2)<<FRACBITS)+FRACUNIT/2;
+		dy = abs(dy);
+		yslope[i] = FixedDiv ( (viewwidth<<detailshift)/2*FRACUNIT, dy);
     }
 	
-    for (i=0 ; i<viewwidth ; i++)
-    {
+    for (i=0 ; i<viewwidth ; i++) {
 		an = xtoviewangle[i] ;
 		cosadj = abs(finecosine(an));
 		distscale[i] = FixedDiv (FRACUNIT,cosadj);
@@ -684,21 +680,21 @@ void R_ExecuteSetViewSize (void)
     
     // Calculate the light levels to use
     //  for each level / scale combination.
-    for (i=0 ; i< LIGHTLEVELS ; i++)
-    {
-	startmap = ((LIGHTLEVELS-1-i)*2)*NUMCOLORMAPS/LIGHTLEVELS;
-	for (j=0 ; j<MAXLIGHTSCALE ; j++)
-	{
-	    level = startmap - j*SCREENWIDTH/(viewwidth<<detailshift)/DISTMAP;
+    for (i=0 ; i< LIGHTLEVELS ; i++) {
+		startmap = ((LIGHTLEVELS-1-i)*2)*NUMCOLORMAPS/LIGHTLEVELS;
+		for (j=0 ; j<MAXLIGHTSCALE ; j++) {
+			level = startmap - j*SCREENWIDTH/(viewwidth<<detailshift)/DISTMAP;
 	    
-	    if (level < 0)
-		level = 0;
+			if (level < 0) {
+				level = 0;
+			}
 
-	    if (level >= NUMCOLORMAPS)
-		level = NUMCOLORMAPS-1;
+			if (level >= NUMCOLORMAPS) {
+				level = NUMCOLORMAPS - 1;
+			}
 
-	    scalelight[i][j] = colormaps + level*256;
-	}
+			scalelight[i][j] = colormaps + level*256;
+		}
     }
 }
 

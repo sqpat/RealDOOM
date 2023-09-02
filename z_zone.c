@@ -92,8 +92,12 @@
 // 4 14199294 1142934 1517335 207 (2134 in 3685)    <----- got rid of multiplayer for good
 // 4 14199294 1142934 1517335 207 (2134 in 3689)    <----- got rid of netplay
 // 4 17197007 2259978 2948257 207 (2134 in 6579)    <----- tried ems visplanes again
+// 4 16620699 2224028 2911385 207 (2134 in 6864)    <----- tried ems visplanes again, with fixed paging.
 
+// 4 16624733 2224018 2911371 207 (2134 in 6903)    <----- ems visplanes again, with bugfixes
+// 4 16632880 2228730 2917927 207 (2134 in 7135)    <----- ems visplanes, bugfixed for 4 pages
 
+// 4 13653120 1145838 1520843 207 (2134 in 4087)    <----- conventional visplanes 4 pages 
 
 
 // 64 14821801 279 262 207 (2134 in 2186)
@@ -140,7 +144,6 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048
-#define NUM_EMS_PAGES 4
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 64 * 1024
 
@@ -232,6 +235,12 @@ allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 int16_t activepages[NUM_EMS_PAGES];
 int8_t pageevictorder[NUM_EMS_PAGES];
 int8_t pagesize[NUM_EMS_PAGES];
+
+// we do ref counts here. important to remember you can have a single page be marked "locked"
+// from multiple different references at once. You dont want to remove the page's stickiness
+// when other references are expecting it there.
+// Also, if this goes to -1 then you were bad.
+int8_t loockedpages[NUM_EMS_PAGES];
 
 
 // 4 pages = 2 bits. Times 4 = 8 bits. least significant = least recent used
@@ -514,12 +523,46 @@ void Z_MarkPageLRU(uint16_t pagenumber) {
 }
 
 
-//int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
-int16_t Z_RefIsActive2(MEMREF memref){
+#ifdef CHECKREFS
+
+
+void Z_Pagedump(int8_t* string, int numallocatepages ) {
+
+#if NUM_EMS_PAGES == 8
+	char*  message = "\n %i %i %i %i %i %i %i %i\n %i %i %i %i %i %i %i %i\n %i %i %i %i %i %i %i %i\n %i %i %i %i %i %i %i %i";
+	strcat(string, message);
+
+	I_Error(string,
+		numallocatepages, 
+		activepages[0], activepages[1], activepages[2], activepages[3], activepages[4], activepages[5], activepages[6], activepages[7],
+		pagesize[0], pagesize[1], pagesize[2], pagesize[3], pagesize[4], pagesize[5], pagesize[6], pagesize[7],
+		pageevictorder[0], pageevictorder[1], pageevictorder[2], pageevictorder[3], pageevictorder[4], pageevictorder[5], pageevictorder[6], pageevictorder[7],
+		loockedpages[0], loockedpages[1], loockedpages[2], loockedpages[3], loockedpages[4], loockedpages[5], loockedpages[6], loockedpages[7]
+	);
+#else 
+	char*  message = "\n %i %i %i %i\n %i %i %i %i\n %i %i %i %i\n %i %i %i %i";
+	strcat(string, message);
+
+
+	I_Error(string,
+		numallocatepages,
+		activepages[0], activepages[1], activepages[2], activepages[3],
+		pagesize[0], pagesize[1], pagesize[2], pagesize[3],
+		pageevictorder[0], pageevictorder[1], pageevictorder[2], pageevictorder[3],
+		loockedpages[0], loockedpages[1], loockedpages[2], loockedpages[3]
+	);
+#endif
+
+
+}
+
+int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
+//int16_t Z_RefIsActive2(MEMREF memref){
 	int16_t pageframeindex;
 	boolean allpagesgood;
 	int16_t i;
 	uint16_t numallocatepages = 1 + ((MAKE_SIZE(allocations[memref].page_and_size) - 1) >> PAGE_FRAME_BITS);
+	
 	if (numallocatepages > 100) {
 		numallocatepages = 1;
 	}
@@ -557,10 +600,15 @@ int16_t Z_RefIsActive2(MEMREF memref){
 	}
 	*/
 
-	I_Error("Z_RefIsActive: Found inactive ref! %i %s %i tick %i ", memref, gametic);
+	//Z_Pagedump();
+
+	printf("Z_RefIsActive: Found inactive ref! %i %i %s %i %i", memref, gametic, file, line, numallocatepages);
+	I_Error("Z_RefIsActive: Found inactive ref! %i %i %s %i %i", memref, gametic, file, line, numallocatepages);
 
 	return 0;
 }
+
+#endif
 
 // marks page as most recently used
 // error behavior if pagenumber not in the list?
@@ -598,7 +646,7 @@ void Z_MarkPageMRU(uint16_t pagenumber) {
 }
 
 
-void Z_DoPageOut(uint16_t pageframeindex) {
+void Z_DoPageOut(uint16_t pageframeindex, int source) {
 	// swap OUT memory
 	int16_t i = 0;
 	int16_t numPagesToSwap = pagesize[pageframeindex];
@@ -627,7 +675,10 @@ void Z_DoPageOut(uint16_t pageframeindex) {
 		activepages[pageframeindex+i] = -1;
 		pagesize[pageframeindex + i] = -1;
 		Z_MarkPageLRU(pageframeindex + i);
-
+		if (loockedpages[pageframeindex + i]) {
+			I_Error("paging out locked %i %i", source, numPagesToSwap);
+			//Z_Pagedump("paging out locked %i", source);
+		}
 	}
 
 }
@@ -676,8 +727,7 @@ void Z_PageOutIfInMemory(uint32_t page_and_size) {
 		for (i = 0; i < numallocatepages; i++) {
 			for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 				if (activepages[pageframeindex] == logicalpage + i) {
-					Z_DoPageOut(pageframeindex);
-
+					Z_DoPageOut(pageframeindex, 0);
 				}
 			}
 		}
@@ -692,7 +742,10 @@ void Z_PageOutIfInMemory(uint32_t page_and_size) {
 // "page frame" is the upper memory EMS page frame
 // logical page is where it corresponds to in the big block of otherwise inaccessible memory..
 
-int16_t Z_GetEMSPageFrame(uint32_t page_and_size){  //todo allocations < 65k? if so size can be an uint16_t?
+
+//todo copy this into Z_LoadBytesFromEMS as thats the only place its called
+
+int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, int16_t pagenumber){  //todo allocations < 65k? if so size can be an uint16_t?
     uint16_t logicalpage = MAKE_PAGE(page_and_size);
 	uint32_t size = MAKE_SIZE(page_and_size);
 	uint16_t pageframeindex;
@@ -700,26 +753,95 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size){  //todo allocations < 65k? if
 	uint16_t extradeallocatepages = 0;
 	uint16_t numallocatepages;
 	uint16_t i;
+	uint8_t j;
+	boolean skip;
 	boolean allpagesgood;
 	numreads++;
 
 	if (size == 0) {
 		//I_Error("why a zero allocation!?");
 	}
-
-
-
+	   
 	// Note: if multiple pages, then we must evict multiple
 	numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
-
-
-
 
 	//todo happens on size 0
 	if (numallocatepages > 100) {
 		numallocatepages = 1;
 	}
-	 
+
+
+	/*
+		I_Error("earlyest %i %i %i %i %i %i %i %i %i %i %i %i",  
+			activepages[0], activepages[1], activepages[2], activepages[3],
+			pagesize[0], pagesize[1], pagesize[2], pagesize[3],
+			pageevictorder[0], pageevictorder[1], pageevictorder[2], pageevictorder[3]
+			);
+		*/	
+
+
+	if (pagenumber != -1) {
+		// we are being told to force this into a specific page. A common reason is because we want 
+		// to set the page locked, but we also know that we may be using a multi-page allocation soon after.
+		// in order to avoid the situation where we have 4 pages and set page 2 locked, and need to do a 3 page
+		// allocation, we want to force page 0 to be locked... so we have special-cased logic here for that
+
+		// if we are forcing this page into memory somewhere, let's make sure we don't
+		// end up with duplicates, so get rid of it.
+
+ 		for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
+			if (activepages[pageframeindex] == logicalpage) {
+				// clear out the page from there?
+
+				allpagesgood = true;
+
+				for (i = 1; i < numallocatepages; i++) {
+					if (activepages[pageframeindex + i] != logicalpage + i) {
+						allpagesgood = false;
+						break;
+					}
+				}
+
+				if (allpagesgood) {
+					if (pageframeindex == pagenumber) {
+						return pagenumber; // no need to do shenanigans, just return
+					} else {
+						//I_Error(*"this is happening with %i", ref);
+						for (i = 0; i < numallocatepages; i++) {
+							if (activepages[pageframeindex + i] >= 0) {
+								//I_Error("shouldn't happen...? %i", pagenumber);
+
+								Z_DoPageOut(pageframeindex + i, pageframeindex);
+							}
+						}
+					}
+					break;
+				}
+			}
+		}
+
+		// now we know the
+
+		// force pages out if there is anything there
+		for (i = 0; i < numallocatepages; i++) {
+			if (loockedpages[i]) {
+				I_Error("forcing out a locked page %i %i %i", i, pagenumber, page_and_size);
+			}
+
+			if (activepages[pagenumber + i] >= 0) {
+				Z_DoPageOut(pagenumber + i, 2);
+			}
+		}
+
+
+		Z_DoPageIn(logicalpage, pagenumber, numallocatepages);
+		pageins++;
+
+		return pagenumber;
+	}
+			
+
+	// BEGIN NORMAL, NON-FORCED PAGE FINDING USING LRU ETC
 
 	// loop to search for page alread in cache
 	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
@@ -740,9 +862,6 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size){  //todo allocations < 65k? if
 				for (i = 0; i < numallocatepages; i++) {
 					Z_MarkPageMRU(pageframeindex + i);
 				}
-
-
-				// linesref is page 2.. logical page 128
 
 				return pageframeindex;
 			}  
@@ -766,7 +885,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size){  //todo allocations < 65k? if
 		for (i = 1; i < numallocatepages; i++) {
 			for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 				if (activepages[pageframeindex] == logicalpage + i) {
-					Z_DoPageOut(pageframeindex);
+					Z_DoPageOut(pageframeindex, 3);
 
 				}
 			}
@@ -775,13 +894,31 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size){  //todo allocations < 65k? if
 	}
 
     // decide on page to evict
-	for (i = 0; i< NUM_EMS_PAGES ; i++) {
-		
+	for (i = 0; i< NUM_EMS_PAGES+1 ; i++) {
+		if (i == NUM_EMS_PAGES) {
+
+			I_Error("Could not find EMS page to evict! %i ", MAKE_SIZE(allocations[ref].page_and_size));
+		}
+
 		// lets go down the LRU cache and find the next index
 		pageframeindex = pageevictorder[i];
 
 		// break loop if there is enough space to dealloate..  
 		// TODO: could this be improved? average evict orders for multiple pages?
+
+		skip = false;
+
+		for (j = 0; j < numallocatepages; j++) {
+			if (loockedpages[pageframeindex + j]) {
+				skip = true;
+				break;
+			}
+		}
+		if (skip) { // skip locked pages
+			continue;
+		}
+
+		// should really be a for loop to check for locked pages? 
 		if (numallocatepages + pageframeindex <= NUM_EMS_PAGES) {
 			break;
 		}
@@ -791,7 +928,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size){  //todo allocations < 65k? if
 	// update active EMS pages
 	for (i = 0; i < numallocatepages; i++) {
 		if (activepages[pageframeindex + i] >= 0){
-			Z_DoPageOut(pageframeindex+i);
+			Z_DoPageOut(pageframeindex+i, numallocatepages);
 		}  
 	}
 
@@ -812,9 +949,122 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size){  //todo allocations < 65k? if
     return pageframeindex;
 }
 
+
+
+int16_t Z_GetEMSPageFrameNoUpdate(uint32_t page_and_size, MEMREF ref) {  //todo allocations < 65k? if so size can be an uint16_t?
+	uint16_t logicalpage = MAKE_PAGE(page_and_size);
+	uint32_t size = MAKE_SIZE(page_and_size);
+	uint16_t pageframeindex;
+
+	uint16_t extradeallocatepages = 0;
+	uint16_t numallocatepages;
+	uint16_t i;
+	boolean allpagesgood;
+	numreads++;
+
+	if (size == 0) {
+		//I_Error("why a zero allocation!?");
+	}
+
+
+	// Note: if multiple pages, then we must evict multiple
+	numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
+
+	//todo happens on size 0
+	if (numallocatepages > 100) {
+		numallocatepages = 1;
+	}
+
+
+	// loop to search for page alread in cache
+	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
+		if (activepages[pageframeindex] == logicalpage) {
+			//printf("\nEMS CACHE HIT on page %i size %i", page, size);
+			allpagesgood = true;
+
+
+
+			for (i = 1; i < numallocatepages; i++) {
+				if (activepages[pageframeindex + i] != logicalpage + i) {
+					allpagesgood = false;
+					break;
+				}
+			}
+
+			if (allpagesgood) {
+				// linesref is page 2.. logical page 128
+				return pageframeindex;
+			}
+		}
+	}
+
+	//Z_Pagedump();
+	/*
+	1 24 25 -1
+	1  2 -1 -1
+	3  0  1  2
+	0  0  0  0
+	
+	*/
+
+	// I_Error("page was not found for set locked! %i %i", ref, tag );
+	return -1 ;
+}
+
+
+
+
+
+// assumes the page is already in memory. 
+// todo add this as a Z_Malloc argument so we can avoid calls to Z_GetEMSPageFrame
+void Z_SetLocked(MEMREF ref, boolean value, int index) {
+	int16_t pageframeindex = Z_GetEMSPageFrameNoUpdate(allocations[ref].page_and_size, ref);
+	uint16_t i;
+	//uint8_t i;
+
+	if (ref > EMS_ALLOCATION_LIST_SIZE) {
+		I_Error("index too big in set_locked: %i %i", ref, index);
+	}
+	
+	if (pageframeindex == -1) {
+		I_Error("page was not found for this locked", index);
+	}
+
+
+	// there is this unfortunate edge case where you have a reference that is in the 'left over' portion of a 
+	// multi page allocation. imagine a 20k allocation with several items in the remaining 12k of page 2. in that
+	// case, pagesize is going to be -1 for that 2nd page. we're hacking this to set the whole big allocation locked inthis case. however
+	// i feel like there is a better way to architect this so it doesnt happen this way.
+	if (pagesize[pageframeindex] == -1) {
+		for (; ; pageframeindex--) {
+			if (pagesize[pageframeindex] != -1) {
+				break;
+			}
+			if (pageframeindex == 0) {
+				I_Error("couldn't find the page to set locked?");
+			}
+		}
+	}
+
+	for (i = 0; i < pagesize[pageframeindex]; i++) {
+		if (value)
+			loockedpages[pageframeindex+i]++;
+		else
+			loockedpages[pageframeindex+i]--;
+
+		if (loockedpages[pageframeindex+i] < 0)
+			I_Error("over de-allocated! %i %i %i %i %i", ref, loockedpages[pageframeindex + i], pageframeindex, i,  index);
+
+	}
+
+}
+
+
 //void* Z_LoadBytesFromEMS2(MEMREF ref, int8_t* file, int32_t line) {
-void* Z_LoadBytesFromEMS2(MEMREF ref) {
-		byte* memorybase;
+//void* Z_LoadBytesFromEMS2(MEMREF ref) {
+
+void* Z_LoadBytesFromEMSWithOptions(MEMREF ref, int16_t pagenumber, boolean locked){
+	byte* memorybase;
 	uint16_t pageframeindex;
     byte* address;
 	mobj_t* thing;
@@ -831,11 +1081,17 @@ void* Z_LoadBytesFromEMS2(MEMREF ref) {
 //		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref, file, line);
 	}
 
- 
 
-	pageframeindex = Z_GetEMSPageFrame(allocations[ref].page_and_size);
+		
+ 
+	pageframeindex = Z_GetEMSPageFrame(allocations[ref].page_and_size, ref, pagenumber);
 	memorybase = (byte*)pageFrameArea;
  
+	if (locked) {
+		// todo pass in page frame index.
+		Z_SetLocked(ref, PAGE_LOCKED, 115);
+	}
+
 	address = memorybase
 		+ PAGE_FRAME_SIZE * pageframeindex
 		+ MAKE_OFFSET(allocations[ref]);
@@ -950,6 +1206,7 @@ PAGEREF Z_GetNextFreeArrayIndex(){
     
 }
 
+
 MEMREF Z_MallocEMSNew
 (uint32_t           size,
 	uint8_t tag,
@@ -983,7 +1240,7 @@ Z_MallocEMSNewWithBackRef
 	if (tag == 0){
 		I_Error("tag cannot be 0!");
 	}
-
+ 
     
 // TODO : make use of sourceHint?
 // ideally alllocations with the same sourceHint try to be in the same block if possible
@@ -995,10 +1252,10 @@ Z_MallocEMSNewWithBackRef
 		I_Error ("Z_MallocEMS: allocation too big! size was %i bytes %i %i %i", size, tag, user, sourceHint);
     }
 
+	// todo get rid of this? 32 bit relic?
     size = (size + 3) & ~3;
 
-
-
+ 
 // algorithm:
 	 
 	 
@@ -1013,7 +1270,7 @@ Z_MallocEMSNewWithBackRef
 
     if (!HAS_USER(allocations[allocations[base].prev])){
          base = allocations[base].prev;
-
+		
     }
 
 
@@ -1104,7 +1361,6 @@ Z_MallocEMSNewWithBackRef
     }
 
 
-
    // handle the case where we push to the next frame. create a free block before it.
     if (offsetToNextPage != 0 && size > offsetToNextPage)
     {
@@ -1112,6 +1368,9 @@ Z_MallocEMSNewWithBackRef
         // insert a new free block here..
         
         newfreeblockindex = Z_GetNextFreeArrayIndex();
+
+
+
         allocations[newfreeblockindex].prev = allocations[base].prev;
         allocations[allocations[base].prev].next = newfreeblockindex;
         allocations[newfreeblockindex].next = base;
@@ -1154,6 +1413,7 @@ Z_MallocEMSNewWithBackRef
 
         // there will be a free fragment after the allocated block
         newfreeblockindex = Z_GetNextFreeArrayIndex();
+
 
         
 		allocations[newfreeblockindex].prev = base;
@@ -1201,7 +1461,7 @@ Z_MallocEMSNewWithBackRef
     }
 	
 
-		
+
 
     SET_TAG(allocations[base], tag);
 	SET_BACKREF(allocations[base],  backRef);

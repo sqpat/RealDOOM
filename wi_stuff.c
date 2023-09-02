@@ -1032,21 +1032,16 @@ void WI_loadData(void)
 
 
 
-    if (commercial)
-    {
-	NUMCMAPS = 32;								
-	lnamesRef = Z_MallocEMSNew (sizeof(patch_t*) * NUMCMAPS,
-				       PU_STATIC, 0, ALLOC_TYPE_LNAMES);
-	lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
+    if (commercial) {
+		NUMCMAPS = 32;								
+		lnamesRef = Z_MallocEMSNew (sizeof(patch_t*) * NUMCMAPS, PU_STATIC, 0, ALLOC_TYPE_LNAMES);
+		lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
 
-	for (i=0 ; i<NUMCMAPS ; i++)
-	{								
-	    sprintf(name, "CWILV%2.2d", i);
-	    lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
-	}					
-    }
-    else
-    {
+		for (i=0 ; i<NUMCMAPS ; i++) {								
+			sprintf(name, "CWILV%2.2d", i);
+			lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
+		}					
+    } else {
 	lnamesRef =  Z_MallocEMSNew (sizeof(patch_t*) * NUMMAPS,
 				       PU_STATIC, 0, ALLOC_TYPE_LNAMES);
 	lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);

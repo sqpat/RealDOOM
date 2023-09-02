@@ -334,16 +334,15 @@ int16_t*          mceilingclip;
 fixed_t         spryscale;
 fixed_t         sprtopscreen;
 
-void R_DrawMaskedColumn (column_t* column)
-{
+void R_DrawMaskedColumn (column_t* column) {
+	
 	fixed_t         topscreen;
 	fixed_t         bottomscreen;
     fixed_t     basetexturemid;
         
     basetexturemid = dc_texturemid;
         
-    for ( ; column->topdelta != 0xff ; ) 
-    {
+    for ( ; column->topdelta != 0xff ; )  {
         // calculate unclipped screen coordinates
         //  for post
         topscreen = sprtopscreen + spryscale*column->topdelta;
@@ -357,8 +356,7 @@ void R_DrawMaskedColumn (column_t* column)
         if (dc_yl <= mceilingclip[dc_x])
             dc_yl = mceilingclip[dc_x]+1;
 
-        if (dc_yl <= dc_yh)
-        {
+        if (dc_yl <= dc_yh) {
             dc_source = (byte *)column + 3;
             dc_texturemid = basetexturemid - (column->topdelta<<FRACBITS);
             // dc_source = (byte *)column + 3 - column->topdelta;
@@ -379,6 +377,7 @@ void R_DrawMaskedColumn (column_t* column)
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
 //
+// NO LOCKED PAGES GOING IN
 void
 R_DrawVisSprite
 ( vissprite_t*          vis,
@@ -386,11 +385,11 @@ R_DrawVisSprite
 	int16_t                   x2 )
 {
     column_t*           column;
-	int16_t                 texturecolumn;
+	int16_t             texturecolumn;
     fixed_t             frac;
     patch_t*            patch;
 	MEMREF				patchRef;
-	byte* translationtables;
+	byte*				translationtables;
         
     patchRef = W_CacheLumpNumEMS (vis->patch+firstspritelump, PU_CACHE);
 
@@ -412,13 +411,14 @@ R_DrawVisSprite
     spryscale = vis->scale;
     sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
         
-    for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale) {
-		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
+	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, 0, true);
+	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale) {
 		texturecolumn = (frac>>FRACBITS);
 		column = (column_t *) ((byte *)patch + (patch->columnofs[texturecolumn]));
         R_DrawMaskedColumn (column);
+		Z_RefIsActive(patchRef);
     }
-
+	Z_SetLocked(patchRef, PAGE_NOT_LOCKED, 17);
     colfunc = basecolfunc;
 }
 
@@ -902,6 +902,7 @@ void R_SortVisSprites (void)
 //
 // R_DrawSprite
 //
+// NO LOCKED PAGES GOING IN
 void R_DrawSprite (vissprite_t* spr)
 {
     drawseg_t*          ds;
@@ -1028,6 +1029,7 @@ void R_DrawSprite (vissprite_t* spr)
 //
 // R_DrawMasked
 //
+// NO LOCKED PAGES GOING IN
 void R_DrawMasked (void)
 {
     vissprite_t*        spr;

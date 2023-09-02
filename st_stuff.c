@@ -1034,7 +1034,7 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
 */
 void ST_Drawer(boolean fullscreen, boolean refresh)
 {
-	screen4 = (byte *)Z_LoadBytesFromEMS(screen4Ref);
+	screen4 = (byte *)Z_LoadBytesFromEMSWithOptions(screen4Ref, 0, true);
 	st_statusbaron = (!fullscreen) || automapactive;
 	st_firsttime = st_firsttime || refresh;
 
@@ -1050,11 +1050,13 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 
 		// and refresh all widgets
 		ST_drawWidgets(true);
+	} else {
+	// Otherwise, update as little as possible
+		ST_drawWidgets(false);
 	}
 
-	// Otherwise, update as little as possible
-	else
-		ST_drawWidgets(false);
+	Z_SetLocked(screen4Ref, PAGE_NOT_LOCKED, 56);
+
 	screen4 = NULL;
 
 }

@@ -32,8 +32,6 @@
 
 
 
-planefunction_t		floorfunc;
-planefunction_t		ceilingfunc;
 
 //
 // opening
@@ -119,7 +117,7 @@ void R_InitPlanes (void) {
 	int16_t j;
 
 	for (i = 0; i < NUM_VISPLANE_PAGES; i++){
-		visplanebytesRef[i] = Z_MallocEMSNew(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0xff, ALLOC_TYPE_VISPLANE);
+		visplanebytesRef[i] = Z_MallocEMSNew(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0, ALLOC_TYPE_VISPLANE);
 
 		for (j = 0; j < VISPLANES_PER_EMS_PAGE; j++){
 			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplanepage = i;
@@ -127,6 +125,8 @@ void R_InitPlanes (void) {
 		}
 
 	}
+
+
 #endif
 
 
@@ -158,18 +158,15 @@ R_MapPlane
 	uint8_t	index;
  
 
-    if (planeheight != cachedheight[y])
-    {
-	cachedheight[y] = planeheight;
-	distance = cacheddistance[y] = FixedMul (planeheight, yslope[y]);
-	ds_xstep = cachedxstep[y] = FixedMul (distance,basexscale);
-	ds_ystep = cachedystep[y] = FixedMul (distance,baseyscale);
-    }
-    else
-    {
-	distance = cacheddistance[y];
-	ds_xstep = cachedxstep[y];
-	ds_ystep = cachedystep[y];
+    if (planeheight != cachedheight[y]) {
+		cachedheight[y] = planeheight;
+		distance = cacheddistance[y] = FixedMul (planeheight, yslope[y]);
+		ds_xstep = cachedxstep[y] = FixedMul (distance,basexscale);
+		ds_ystep = cachedystep[y] = FixedMul (distance,baseyscale);
+    } else {
+		distance = cacheddistance[y];
+		ds_xstep = cachedxstep[y];
+		ds_ystep = cachedystep[y];
     }
 	
     length = FixedMul (distance,distscale[x1]);
@@ -178,16 +175,16 @@ R_MapPlane
     ds_xfrac = viewx.w + FixedMul(finecosine(angle), length);
     ds_yfrac = -viewy.w - FixedMul(finesine(angle), length);
 
-    if (fixedcolormap)
-	ds_colormap = fixedcolormap;
-    else
-    {
-	index = distance >> LIGHTZSHIFT;
+	if (fixedcolormap) {
+		ds_colormap = fixedcolormap;
+	} else {
+		index = distance >> LIGHTZSHIFT;
 	
-	if (index >= MAXLIGHTZ )
-	    index = MAXLIGHTZ-1;
+		if (index >= MAXLIGHTZ) {
+			index = MAXLIGHTZ - 1;
+		}
 
-	ds_colormap = planezlight[index];
+		ds_colormap = planezlight[index];
     }
 	
     ds_y = y;
@@ -195,7 +192,8 @@ R_MapPlane
     ds_x2 = x2;
 
     // high or low detail
-    spanfunc ();	
+    // NOTE: ds_sourceRef must be active at this point. it's loaded up in R_DrawPlanes
+	spanfunc ();	
 }
 
 
@@ -239,33 +237,31 @@ visplaneheader_t*
 R_FindPlane
 ( fixed_t	height,
   uint8_t		picnum,
-  uint8_t		lightlevel )
-{
+  uint8_t		lightlevel ) {
     visplaneheader_t*	check;
 	visplanebytes_t* checkbytes;
 	
-    if (picnum == skyflatnum)
-    {
-	height = 0;			// all skys map together
-	lightlevel = 0;
+    if (picnum == skyflatnum) {
+		height = 0;			// all skys map together
+		lightlevel = 0;
     }
 	
-    for (check=visplaneheaders; check<lastvisplaneheader; check++)
-    {
-	if (height == check->height
-	    && picnum == check->picnum
-	    && lightlevel == check->lightlevel)
-	{
-	    break;
-	}
+    for (check=visplaneheaders; check<lastvisplaneheader; check++) {
+		if (height == check->height
+			&& picnum == check->picnum
+			&& lightlevel == check->lightlevel) {
+			break;
+		}
     }
     
 			
-    if (check < lastvisplaneheader)
-	return check;
+	if (check < lastvisplaneheader) {
+		return check;
+	}
 		//todo change to index
-    if (lastvisplaneheader - visplaneheaders == MAXVISPLANES)
-	I_Error ("R_FindPlane: no more visplanes");
+	if (lastvisplaneheader - visplaneheaders == MAXVISPLANES) {
+		I_Error("R_FindPlane: no more visplanes");
+	}
 		
     lastvisplaneheader++;
 
@@ -337,8 +333,9 @@ R_CheckPlane
     pl = lastvisplaneheader++;
     pl->minx = start;
     pl->maxx = stop;
+	
+	//todo dont z_load if same page frame
 	plbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[pl->visplanepage]))[pl->visplaneoffset]);
-
     memset (plbytes->top,0xff,sizeof(plbytes->top));
 		
     return pl;
@@ -361,97 +358,111 @@ void R_DrawPlanes (void)
     fineangle_t			angle;
 	uint8_t * flattranslation;
 	byte t1, b1, t2, b2;
+	visplanebytes_t* base;
+	int8_t currentplanebyteRef;
 
- 
-    for (pl = visplaneheaders ; pl < lastvisplaneheader ; pl++)
-    {
-	if (pl->minx > pl->maxx)
-	    continue;
+	currentplanebyteRef = 0; // visplaneheaders->visplanepage is always 0;
+	base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], 0, PAGE_LOCKED))[0]); // load into locked page
+
+    for (pl = visplaneheaders ; pl < lastvisplaneheader ; pl++) {
+		if (pl->minx > pl->maxx)
+			continue;
+
+		if (currentplanebyteRef != pl->visplanepage) { // new page to set locked..
+			Z_SetLocked(visplanebytesRef[currentplanebyteRef], PAGE_NOT_LOCKED, 130);
+			currentplanebyteRef = pl->visplanepage;
+//			base = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[currentplanebyteRef]))[0]);
+			base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], 0, PAGE_LOCKED))[0]); // load into locked page
+
+		}
+		plbytes = &(base[pl->visplaneoffset]);
 
 	
-	// sky flat
-	if (pl->picnum == skyflatnum)
-	{
-	    dc_iscale = pspriteiscale>>detailshift;
+		// sky flat
+		if (pl->picnum == skyflatnum) {
+			dc_iscale = pspriteiscale>>detailshift;
 	    
-	    // Sky is allways drawn full bright,
-	    //  i.e. colormaps[0] is used.
-	    // Because of this hack, sky is not affected
-	    //  by INVUL inverse mapping.
-	    dc_colormap = colormaps;
-	    dc_texturemid = 100*FRACUNIT; // this was hardcoded as the only use of skytexturemid..
-		plbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[pl->visplanepage]))[pl->visplaneoffset]);
-	    for (x=pl->minx ; x <= pl->maxx ; x++) {
-			dc_yl = plbytes->top[x];
-			dc_yh = plbytes->bottom[x];
+			// Sky is allways drawn full bright,
+			//  i.e. colormaps[0] is used.
+			// Because of this hack, sky is not affected
+			//  by INVUL inverse mapping.
+			dc_colormap = colormaps;
+			dc_texturemid = 100*FRACUNIT; // this was hardcoded as the only use of skytexturemid..
+			//copy = (((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[pl->visplanepage]))[pl->visplaneoffset]);
+			for (x=pl->minx ; x <= pl->maxx ; x++) {
+				//plbytes = &;
+				dc_yl = plbytes->top[x];
+				dc_yh = plbytes->bottom[x];
 
-			if (dc_yl <= dc_yh) {
-				angle = MOD_FINE_ANGLE((viewangle + (xtoviewangle[x] << ANGLETOFINESHIFT)) >> ANGLETOSKYSHIFT) ;
-				dc_x = x;
+				if (dc_yl <= dc_yh) {
+					angle = MOD_FINE_ANGLE((viewangle + (xtoviewangle[x] << ANGLETOFINESHIFT)) >> ANGLETOSKYSHIFT) ;
+					dc_x = x;
 
-				dc_source = R_GetColumn(skytexture, angle);
-				colfunc ();
+					dc_source = R_GetColumn(skytexture, angle);
+					colfunc ();
+					//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 7);
+
+				}
 			}
-	    }
-	    continue;
-	}
+			continue;
+		}
 	
-	flattranslation = Z_LoadBytesFromEMS(flattranslationRef);
-	// regular flat
-	ds_sourceRef = W_CacheLumpNumEMS(firstflat +
-		flattranslation[pl->picnum],
-		PU_STATIC);
-	ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
-	
-	planeheight = abs(pl->height-viewz.w);
-	light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
+		flattranslation = Z_LoadBytesFromEMS(flattranslationRef);
+		// regular flat
+		ds_sourceRef = W_CacheLumpNumEMS(firstflat +
+			flattranslation[pl->picnum],
+			PU_STATIC);
+		ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
+		//Z_SetLocked(ds_sourceRef, PAGE_LOCKED, 28);
+		planeheight = abs(pl->height-viewz.w);
+		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
-	if (light >= LIGHTLEVELS)
-	    light = LIGHTLEVELS-1;
+		if (light >= LIGHTLEVELS)
+			light = LIGHTLEVELS-1;
  
 
-	planezlight = zlight[light];
-	plbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[pl->visplanepage]))[pl->visplaneoffset]);
+		planezlight = zlight[light];
 
-	plbytes->top[pl->maxx+1] = 0xff;
-	plbytes->top[pl->minx-1] = 0xff;
+		plbytes->top[pl->maxx+1] = 0xff;
+		plbytes->top[pl->minx-1] = 0xff;
 		
-	stop = pl->maxx + 1;
+		stop = pl->maxx + 1;
 
-	for (x=pl->minx ; x<= stop ; x++)
-	{
+		for (x=pl->minx ; x<= stop ; x++) {
+
 			t1 = plbytes->top[x - 1];
 			b1 = plbytes->bottom[x - 1];
 			t2 = plbytes->top[x];
 			b2 = plbytes->bottom[x];
 
 
-		while (t1 < t2 && t1 <= b1)
-		{
-			R_MapPlane(t1, spanstart[t1], x - 1);
-			t1++;
-		}
-		while (b1 > b2 && b1 >= t1)
-		{
-			R_MapPlane(b1, spanstart[b1], x - 1);
-			b1--;
-		}
+			while (t1 < t2 && t1 <= b1) {
+				// ds_sourceRef used in here
+				R_MapPlane(t1, spanstart[t1], x - 1);
+				t1++;
+			}
+			while (b1 > b2 && b1 >= t1) {
+				// ds_sourceRef used in here
+				R_MapPlane(b1, spanstart[b1], x - 1);
+				b1--;
+			}
 
-		while (t2 < t1 && t2 <= b2)
-		{
-			spanstart[t2] = x;
-			t2++;
-		}
-		while (b2 > b1 && b2 >= t2)
-		{
-			spanstart[b2] = x;
-			b2--;
-		}
+			while (t2 < t1 && t2 <= b2) {
+				spanstart[t2] = x;
+				t2++;
+			}
+			while (b2 > b1 && b2 >= t2) {
+				spanstart[b2] = x;
+				b2--;
+			}
 
-	}
-	
-	Z_ChangeTagEMSNew (ds_sourceRef, PU_CACHE);
+		}
+		//Z_SetLocked(ds_sourceRef, PAGE_NOT_LOCKED, 27);
+		Z_ChangeTagEMSNew (ds_sourceRef, PU_CACHE);
     }
+
+	Z_SetLocked(visplanebytesRef[currentplanebyteRef], PAGE_NOT_LOCKED, 132);
+
 }
 
 #else
@@ -648,6 +659,8 @@ void R_DrawPlanes (void)
 
 			dc_source = R_GetColumn(skytexture, angle);
 		    colfunc ();
+			
+
 		}
 	    }
 	    continue;

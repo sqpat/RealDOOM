@@ -114,7 +114,7 @@ void R_DrawColumn (void)
 { 
     int16_t			count; 
     byte*		dest; 
-    fixed_t		frac;
+    fixed_t_union		frac;
     fixed_t		fracstep;	 
 
     count = dc_yh - dc_yl; 
@@ -131,19 +131,18 @@ void R_DrawColumn (void)
     // Determine scaling,
     //  which is the only mapping to be done.
     fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+    frac.w = dc_texturemid + (dc_yl-centery)*fracstep; 
 
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
     // This is as fast as it gets.
-    do 
-    {
+    do  {
         // Re-map color indices from wall texture column
         //  using a lighting/special effects LUT.
-        *dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
+        *dest = dc_colormap[dc_source[frac.h.intbits&127]];
         
         dest += SCREENWIDTH/4;
-        frac += fracstep;
+        frac.w += fracstep;
         
     } while (count--); 
 } 

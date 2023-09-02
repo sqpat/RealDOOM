@@ -112,6 +112,7 @@ typedef struct
 } texture_t;
 
 
+MEMREF lockedRef;
 
 int16_t             firstflat;
 int16_t             lastflat;
@@ -238,6 +239,7 @@ void R_GenerateComposite(uint8_t texnum)
 	int16_t				patchoriginx;
 	int16_t				patchoriginy;
 	texture_t* texture;
+	int16_t				colofsx;
 
 
 
@@ -252,27 +254,32 @@ void R_GenerateComposite(uint8_t texnum)
 
 	texturecomposite[texnum] = Z_MallocEMSNewWithBackRef(texturecompositesize,
 		PU_STATIC,
-		0xff, ALLOC_TYPE_TEXTURE, texnum+1);
+		0xff, ALLOC_TYPE_TEXTURE + 160, texnum+1);
 	texturecompositetexnum = texturecomposite[texnum];
 
-
+#if NUM_EMS_PAGES >= 8
+	texture = (texture_t*)Z_LoadBytesFromEMSWithOptions(texturememref, -1, PAGE_LOCKED);
+	block = (byte*)Z_LoadBytesFromEMSWithOptions(texturecompositetexnum, -1, PAGE_LOCKED);
+	collump = (int16_t*)Z_LoadBytesFromEMSWithOptions(texturecolumnlumptexnum, -1, PAGE_LOCKED);
+	colofs = (uint16_t*)Z_LoadBytesFromEMSWithOptions(texturecolumnofstexnum, -1, PAGE_LOCKED);
+#else
 	texture = (texture_t*)Z_LoadBytesFromEMS(texturememref);
+
+#endif
+
+
+
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 	texturepatchcount = texture->patchcount;
 	// Composite the columns together.
 
-	for (i = 0;
-		i < texturepatchcount;
-		i++)
-	{
-#ifdef LOOPCHECK
-		if (i > 1000) {
-			I_Error("too big? texpatch");
-		}
-#endif	
+	for (i = 0; i < texturepatchcount; i++) {
 
+
+#if NUM_EMS_PAGES < 8
 		texture = (texture_t*)Z_LoadBytesFromEMS(texturememref);
+#endif
 		patch = &texture->patches[i];
 		patchpatch = patch->patch;
 		patchoriginx = patch->originx;
@@ -280,7 +287,15 @@ void R_GenerateComposite(uint8_t texnum)
 
 		W_CacheLumpNumCheck(patchpatch, 10);
 		realpatchRef = W_CacheLumpNumEMS(patchpatch, PU_CACHE);
+
+#if NUM_EMS_PAGES >= 8
+		realpatch = (patch_t*)Z_LoadBytesFromEMSWithOptions(realpatchRef, -1, PAGE_LOCKED);
+#else
 		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
+
+#endif
+
+
 		x1 = patchoriginx;
 		x2 = x1 + (realpatch->width);
 
@@ -291,34 +306,73 @@ void R_GenerateComposite(uint8_t texnum)
 
 		if (x2 > texturewidth)
 			x2 = texturewidth;
-		collump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlumptexnum);
 
-		for (; x < x2; x++)
-		{
+
+		//I_Error("composite?");
+
+
+
+
+
+
+		for (; x < x2; x++) {
 			// seems ok. if this ever barks up, we can bring the above Z_LoadBytesFromEMS calls down into one of these loops
 
-
+#if NUM_EMS_PAGES < 8
+			collump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlumptexnum);
+#endif
 			// Column does not have multiple patches?
 			if (collump[x] >= 0)
 				continue;
-			block = (byte*)Z_LoadBytesFromEMS(texturecompositetexnum);
-			colofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofstexnum);
-			realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
+#if NUM_EMS_PAGES < 8
 
-			patchcol = (column_t *)((byte *)realpatch
-				+ (realpatch->columnofs[x - x1]));
+			colofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofstexnum);
+			colofsx = colofs[x];
+
+			realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
+			patchcol = (column_t *)((byte *)realpatch + (realpatch->columnofs[x - x1]));
+			block = (byte*)Z_LoadBytesFromEMS(texturecompositetexnum);
+			R_DrawColumnInCache(patchcol,
+				block + colofsx,
+				patchoriginy,
+				textureheight);
+#else 
+			patchcol = (column_t *)((byte *)realpatch + (realpatch->columnofs[x - x1]));
 			R_DrawColumnInCache(patchcol,
 				block + colofs[x],
 				patchoriginy,
 				textureheight);
-			Z_RefIsActive(texturecompositetexnum);
-			Z_RefIsActive(texturecolumnofstexnum);
-			Z_RefIsActive(realpatchRef);
-			collump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlumptexnum);
+#endif
+
+
+
+
+			//Z_RefIsActive(texturecompositetexnum);
+			//Z_RefIsActive(texturecolumnofstexnum);
+			//Z_RefIsActive(realpatchRef);
 
 		}
 
+
+#if NUM_EMS_PAGES >= 8
+		Z_SetLocked(realpatchRef, PAGE_NOT_LOCKED, 32);
+
+#endif	
+
+
 	}
+
+#if NUM_EMS_PAGES >= 8
+
+	Z_SetLocked(texturecolumnofstexnum, PAGE_NOT_LOCKED, 33);
+	Z_SetLocked(texturecompositetexnum,  PAGE_NOT_LOCKED, 33);
+	Z_SetLocked(texturememref,			 PAGE_NOT_LOCKED, 34);
+	Z_SetLocked(texturecolumnlumptexnum, PAGE_NOT_LOCKED, 35);
+
+#else
+
+#endif
+
 
 	// Now that the texture has been built in column cache,
 	//  it is purgable from zone memory.
@@ -379,10 +433,8 @@ void R_GenerateLookup(uint8_t texnum)
 	memset(patchcount, 0, texture->width + 1);
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
-	for (i = 0;
-		i < texturepatchcount;
-		i++)
-	{
+ 
+	for (i = 0; i < texturepatchcount; i++) {
 		texture = (texture_t*)Z_LoadBytesFromEMS(textureRef);
 		patch = &texture->patches[i];
 		x1 = patch->originx;
@@ -395,19 +447,19 @@ void R_GenerateLookup(uint8_t texnum)
 
 		if (x1 < 0) {
 			x = 0;
-		}
-		else {
+		} else {
 			x = x1;
 		}
 
 		if (x2 > texturewidth) {
 			x2 = texturewidth;
 		}
+		
 		collump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlump);
 		colofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofs);
 		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
-		for (; x < x2; x++)
-		{
+
+		for (; x < x2; x++) {
 			Z_RefIsActive(realpatchRef);
 			Z_RefIsActive(texturecolumnlump);
 			Z_RefIsActive(texturecolumnofs);
@@ -437,13 +489,7 @@ void R_GenerateLookup(uint8_t texnum)
 			// Use the cached block.
 			collump[x] = -1;
 			colofs[x] = texturecompositesize[texnum];
-
-/*
-			if (texturecompositesize[texnum] > 0x10000 - textureheight) {
-				I_Error("R_GenerateLookup: texture %i is >64k", texnum);
-			}
-			*/
-
+			 
 			texturecompositesize[texnum] += textureheight;
 		}
 	}
@@ -451,10 +497,10 @@ void R_GenerateLookup(uint8_t texnum)
 
 
 
-
 //
 // R_GetColumn
 //
+// USUALLY PAGE 0 IS locked
 byte*
 R_GetColumn
 (int16_t           tex,
@@ -470,6 +516,7 @@ R_GetColumn
 	MEMREF columnRef;
 
 	byte* texturecompositebytes;
+	byte* returnval;
 
 	// reordered to require fewer things in memory at same time
 	uint8_t* texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
@@ -488,7 +535,11 @@ R_GetColumn
 		W_CacheLumpNumCheck(lump, 12);
 		//return (byte *)W_CacheLumpNum(lump, PU_CACHE) + ofs;
 		columnRef = W_CacheLumpNumEMS(lump, PU_CACHE);
-		return (byte*)Z_LoadBytesFromEMS(columnRef) + ofs;
+		lockedRef = columnRef;
+		returnval = (byte*)Z_LoadBytesFromEMS(columnRef) + ofs;
+		//Z_SetLocked(lockedRef, PAGE_LOCKED, 26);
+		return returnval;
+
 	}
 
 	texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
@@ -499,7 +550,8 @@ R_GetColumn
 
 	texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 	texturecompositebytes = (byte*)Z_LoadBytesFromEMS(texturecomposite[tex]);
-
+	lockedRef = texturecomposite[tex];
+	//Z_SetLocked(lockedRef, PAGE_LOCKED, 6);
 	return texturecompositebytes + ofs;
 }
 
@@ -604,13 +656,13 @@ void R_InitTextures(void)
 
 	// these are all the very first allocations that occur on level setup and they end up in the same page, 
 	// so there is data locality with EMS paging which is nice.
-	texturesRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturecolumnlumpRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturecolumnofsRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturecompositeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturecompositesizeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	texturewidthmaskRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
-	textureheightRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+	texturesRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 60);
+	texturecolumnlumpRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 70);
+	texturecolumnofsRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 80);
+	texturecompositeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 90);
+	texturecompositesizeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 100);
+	texturewidthmaskRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 110);
+	textureheightRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 120);
 
 	//texturecomposite	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecompositeRef);
 	//texturecompositesize = (int32_t*)			  Z_LoadBytesFromEMS(texturecompositesizeRef);
@@ -654,7 +706,7 @@ void R_InitTextures(void)
 
 		textureRef = Z_MallocEMSNew(sizeof(texture_t)
 			+ sizeof(texpatch_t)*((mtexture->patchcount) - 1),
-			PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+			PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 130);
 
 		textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 		textures[i] = textureRef;
@@ -674,6 +726,11 @@ void R_InitTextures(void)
 			patch->originx = (mpatch->originx);
 			patch->originy = (mpatch->originy);
 			patch->patch = patchlookup[(mpatch->patch)];
+
+			if (patch->patch == 22873) {
+				I_Error("caught early %i %i %i %i", j, mpatch, mpatch->patch, 0);
+			}
+
 			if (patch->patch == -1)
 			{
 				I_Error("R_InitTextures: Missing patch in texture %s %i",
@@ -694,9 +751,9 @@ void R_InitTextures(void)
 
 		//printf("name %s", texture->name);
 		texturecolumnlump = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
-		texturecolumnlump[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+		texturecolumnlump[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 140);
 		texturecolumnofs = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
-		texturecolumnofs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE);
+		texturecolumnofs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 150);
 		
 
 		j = 1;
@@ -1021,16 +1078,14 @@ void R_PrecacheLevel(void)
 		if (!texturepresent[i])
 			continue;
 
-		textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
-		texture = (texture_t*)Z_LoadBytesFromEMS(textures[i]);
 
 		for (j = 0; j < texture->patchcount; j++)
 		{
+
+			textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef); // todo make locked
+			texture = (texture_t*)Z_LoadBytesFromEMS(textures[i]); // todo make locked
 			lump = texture->patches[j].patch;
 			//texturememory += lumpinfo[lump].size;
-			if (lump == 22873) {
-				I_Error("1389 was %i %i ", i, j);
-			}
 			if (W_CacheLumpNumCheck(lump, 15)) {
 				printf("Crash %i %i %i", j, lump, texture->patchcount);
 				I_Error("Crash %i %i %i", j, lump, texture->patchcount);

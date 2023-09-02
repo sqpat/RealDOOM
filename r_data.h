@@ -24,6 +24,10 @@
 #include "r_state.h"
 
 // Retrieve column data for span blitting.
+
+
+extern MEMREF lockedRef;
+
 byte*
 R_GetColumn
 ( int16_t		tex,

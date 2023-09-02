@@ -25,6 +25,8 @@
 
 #include <stdio.h>
 #include "doomtype.h"
+#include "doomdef.h"
+
 //
 // ZONE MEMORY
 // PU - purge tags.
@@ -79,6 +81,9 @@
 
 #define ALLOC_TYPE_VISPLANE 28
 
+#define PAGE_LOCKED true
+#define PAGE_NOT_LOCKED false
+
 typedef uint16_t MEMREF;  //used externally for allocations list index
 typedef uint16_t PAGEREF; //used internally for allocations list index
 
@@ -117,22 +122,26 @@ void Z_ChangeTagEMSNew (MEMREF index, int16_t tag);
 void Z_FreeEMSNew(PAGEREF block);
 
 
-void* Z_LoadBytesFromEMS2(MEMREF index);
+void Z_SetLocked(MEMREF ref, boolean value, int index);
+//void* Z_LoadBytesFromEMS2(MEMREF index);
+void* Z_LoadBytesFromEMSWithOptions(MEMREF index, int16_t pagenumber, boolean locked);
 
-#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a)
+#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions(a, -1, PAGE_NOT_LOCKED)
 
 #ifdef CHECKREFS
-    int16_t Z_RefIsActive2(MEMREF memref);
-    #define Z_RefIsActive(a) Z_RefIsActive2(a)
+	int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);
+	#define Z_RefIsActive(a) Z_RefIsActive2(a, __FILE__, __LINE__)
 #else
     #define Z_RefIsActive(a) 
 #endif
 /*
-int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);
 void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
-
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a, __FILE__, __LINE__)
-#define Z_RefIsActive(a) Z_RefIsActive2(a, __FILE__, __LINE__)
+
+
+	int16_t Z_RefIsActive2(MEMREF memref);
+	#define Z_RefIsActive(a) Z_RefIsActive2(a)
+
 */
 
 

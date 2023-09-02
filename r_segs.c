@@ -209,9 +209,9 @@ R_RenderMaskedSegRange
 	    
 	    // draw the texture
 	    col = (column_t *)((byte *)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
-			
 	    R_DrawMaskedColumn (col);
-	    maskedtexturecol[dc_x] = MAXSHORT;
+		//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 13);
+		maskedtexturecol[dc_x] = MAXSHORT;
 	}
 	spryscale += rw_scalestep;
     }
@@ -243,12 +243,10 @@ void R_RenderSegLoop (void)
     int16_t			top;
     int16_t			bottom;
 	fixed_t_union temp;
-    //texturecolumn = 0;				// shut up compiler warning
+
 
 #ifdef EMS_VISPLANES
 
-	visplanebytes_t* ceilingplanebytes;
-	visplanebytes_t* floorplanebytes;
 
     for ( ; rw_x < rw_stopx ; rw_x++) {
 		// mark floor / ceiling areas
@@ -259,7 +257,8 @@ void R_RenderSegLoop (void)
 			yl = ceilingclip[rw_x]+1;
 		
 		if (markceiling) {
-			ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[ceilingplane->visplanepage]))[ceilingplane->visplaneoffset]);
+			visplanebytes_t* ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[ceilingplane->visplanepage]))[ceilingplane->visplaneoffset]);
+			//Z_SetLocked(visplanebytesRef[ceilingplane->visplanepage], PAGE_LOCKED, 14);
 			top = ceilingclip[rw_x]+1;
 			bottom = yl-1;
 
@@ -278,7 +277,8 @@ void R_RenderSegLoop (void)
 			yh = floorclip[rw_x]-1;
 
 		if (markfloor) {
-			floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[floorplane->visplanepage]))[floorplane->visplaneoffset]);
+			visplanebytes_t* floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[floorplane->visplanepage]))[floorplane->visplaneoffset]);
+			//Z_SetLocked(visplanebytesRef[floorplane->visplanepage], PAGE_LOCKED, 15);
 			top = yh+1;
 			bottom = floorclip[rw_x]-1;
 			if (top <= ceilingclip[rw_x]){
@@ -291,162 +291,156 @@ void R_RenderSegLoop (void)
 		}
 	
 #else
- for ( ; rw_x < rw_stopx ; rw_x++)
-    {
+	for ( ; rw_x < rw_stopx ; rw_x++)
+	{
 	// mark floor / ceiling areas
 	yl = (topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
 
 	// no space above wall?
 	if (yl < ceilingclip[rw_x]+1)
-	    yl = ceilingclip[rw_x]+1;
+		yl = ceilingclip[rw_x]+1;
 	
 	if (markceiling)
 	{
-	    top = ceilingclip[rw_x]+1;
-	    bottom = yl-1;
+		top = ceilingclip[rw_x]+1;
+		bottom = yl-1;
 
-	    if (bottom >= floorclip[rw_x])
+		if (bottom >= floorclip[rw_x])
 		bottom = floorclip[rw_x]-1;
 
-	    if (top <= bottom)
-	    {
+		if (top <= bottom)
+		{
 		ceilingplane->top[rw_x] = top;
 		ceilingplane->bottom[rw_x] = bottom;
-	    }
+		}
 	}
 		
 	yh = bottomfrac>>HEIGHTBITS;
 
 	if (yh >= floorclip[rw_x])
-	    yh = floorclip[rw_x]-1;
+		yh = floorclip[rw_x]-1;
 
 	if (markfloor)
 	{
-	    top = yh+1;
-	    bottom = floorclip[rw_x]-1;
-	    if (top <= ceilingclip[rw_x])
+		top = yh+1;
+		bottom = floorclip[rw_x]-1;
+		if (top <= ceilingclip[rw_x])
 		top = ceilingclip[rw_x]+1;
-	    if (top <= bottom)
-	    {
+		if (top <= bottom)
+		{
 		floorplane->top[rw_x] = top;
 		floorplane->bottom[rw_x] = bottom;
-	    }
+		}
 	}
 
 
 #endif
 
 
-	// texturecolumn and lighting are independent of wall tiers
-	if (segtextured)
-	{
-	    // calculate texture offset
-	    angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
-	    temp.w = rw_offset-FixedMul(finetangent(angle),rw_distance);
-		texturecolumn = temp.h.intbits;
+		// texturecolumn and lighting are independent of wall tiers
+		if (segtextured) {
+			// calculate texture offset
+			angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
+			temp.w = rw_offset-FixedMul(finetangent(angle),rw_distance);
+			texturecolumn = temp.h.intbits;
 	    
-	    // calculate lighting
-	    index = rw_scale>>LIGHTSCALESHIFT;
+			// calculate lighting
+			index = rw_scale>>LIGHTSCALESHIFT;
 
-	    if (index >=  MAXLIGHTSCALE )
-		index = MAXLIGHTSCALE-1;
+			if (index >=  MAXLIGHTSCALE )
+				index = MAXLIGHTSCALE-1;
 
-	    dc_colormap = walllights[index];
-	    dc_x = rw_x;
-	    dc_iscale = 0xffffffffu / (uint32_t)rw_scale;
-	}
+			dc_colormap = walllights[index];
+			dc_x = rw_x;
+			dc_iscale = 0xffffffffu / (uint32_t)rw_scale;
+		}
 
-	// draw the wall tiers
-	if (midtexture)
-	{
-		// single sided line
-	    dc_yl = yl;
-	    dc_yh = yh;
-	    dc_texturemid = rw_midtexturemid;
+		// draw the wall tiers
+		if (midtexture) {
+			// single sided line
+			dc_yl = yl;
+			dc_yh = yh;
+			dc_texturemid = rw_midtexturemid;
 
 
-		dc_source = R_GetColumn(midtexture,texturecolumn);
-		colfunc ();
-		ceilingclip[rw_x] = viewheight;
-	    floorclip[rw_x] = -1;
-	}
-	else
-	{
+			dc_source = R_GetColumn(midtexture,texturecolumn);
+			colfunc ();
+			//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 8);
+			ceilingclip[rw_x] = viewheight;
+			floorclip[rw_x] = -1;
+		} else {
 	    
 		
-		// two sided line
-	    if (toptexture)
-	    {
-		// top wall
-		mid = pixhigh>>HEIGHTBITS;
-		pixhigh += pixhighstep;
+			// two sided line
+			if (toptexture) {
+				// top wall
+				mid = pixhigh>>HEIGHTBITS;
+				pixhigh += pixhighstep;
 
-		if (mid >= floorclip[rw_x])
-		    mid = floorclip[rw_x]-1;
+				if (mid >= floorclip[rw_x])
+					mid = floorclip[rw_x]-1;
 
-		if (mid >= yl)
-		{
-		    dc_yl = yl;
-		    dc_yh = mid;
-		    dc_texturemid = rw_toptexturemid;
+				if (mid >= yl) {
+					dc_yl = yl;
+					dc_yh = mid;
+					dc_texturemid = rw_toptexturemid;
 
-		    dc_source = R_GetColumn(toptexture,texturecolumn);
-		    colfunc ();
-		    ceilingclip[rw_x] = mid;
-		}
-		else
-		    ceilingclip[rw_x] = yl-1;
-	    }
-	    else
-	    {
-		// no top wall
-		if (markceiling)
-		    ceilingclip[rw_x] = yl-1;
-	    }
+					dc_source = R_GetColumn(toptexture,texturecolumn);
+					colfunc ();
+					//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 9);
+					ceilingclip[rw_x] = mid;
+				} else {
+					ceilingclip[rw_x] = yl - 1;
+				}
+			} else {
+				// no top wall
+				if (markceiling) {
+					ceilingclip[rw_x] = yl - 1;
+				}
+			}
 			
-	    if (bottomtexture)
-	    {
-		// bottom wall
-		mid = (pixlow+HEIGHTUNIT-1)>>HEIGHTBITS;
-		pixlow += pixlowstep;
+			if (bottomtexture) {
+				// bottom wall
+				mid = (pixlow + HEIGHTUNIT - 1) >> HEIGHTBITS;
+				pixlow += pixlowstep;
 
-		// no space above wall?
-		if (mid <= ceilingclip[rw_x])
-		    mid = ceilingclip[rw_x]+1;
+				// no space above wall?
+				if (mid <= ceilingclip[rw_x]) {
+					mid = ceilingclip[rw_x] + 1;
+				}
+				if (mid <= yh) {
+					dc_yl = mid;
+					dc_yh = yh;
+					dc_texturemid = rw_bottomtexturemid;
+
+					dc_source = R_GetColumn(bottomtexture, texturecolumn);
+					colfunc();
+					//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 10);
+					floorclip[rw_x] = mid;
+				}
+				else {
+					floorclip[rw_x] = yh + 1;
+				}
+			} else {
+				// no bottom wall
+				if (markfloor) {
+					floorclip[rw_x] = yh + 1;
+				}
+			}
+			
+			if (maskedtexture) {
+				// save texturecol
+				//  for backdrawing of masked mid texture
+				maskedtexturecol[rw_x] = texturecolumn;
+			}
+			
+		}
 		
-		if (mid <= yh)
-		{
-		    dc_yl = mid;
-		    dc_yh = yh;
-		    dc_texturemid = rw_bottomtexturemid;
-
-			dc_source = R_GetColumn(bottomtexture,
-					    texturecolumn);
-		    colfunc ();
-		    floorclip[rw_x] = mid;
-		}
-		else
-		    floorclip[rw_x] = yh+1;
-	    }
-	    else
-	    {
-		// no bottom wall
-		if (markfloor)
-		    floorclip[rw_x] = yh+1;
-	    }
-			
-	    if (maskedtexture)
-	    {
-		// save texturecol
-		//  for backdrawing of masked mid texture
-		maskedtexturecol[rw_x] = texturecolumn;
-	    }
+		rw_scale += rw_scalestep;
+		topfrac += topstep;
+		bottomfrac += bottomstep;
 	}
-		
-	rw_scale += rw_scalestep;
-	topfrac += topstep;
-	bottomfrac += bottomstep;
-    }
+
 }
 
 

@@ -27,12 +27,6 @@
 // Visplane related.
 extern  int16_t*		lastopening;
 
-
-typedef void (*planefunction_t) (int32_t top, int32_t bottom);
-
-extern planefunction_t	floorfunc;
-extern planefunction_t	ceilingfunc_t;
-
 extern int16_t		floorclip[SCREENWIDTH];
 extern int16_t		ceilingclip[SCREENWIDTH];
 
