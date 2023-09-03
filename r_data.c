@@ -885,7 +885,7 @@ void R_InitColormaps(void)
 	//printf("Size %i", length);
 	//I_Error("size %i", length);
 
-	W_ReadLump(lump, colormaps);
+	W_ReadLumpStatic(lump, colormaps);
 }
 
 

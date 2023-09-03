@@ -255,6 +255,7 @@ fixed_t32	FixedDiv2 (fixed_t32 a, fixed_t32 b);
 #define DPMI_INT 0x31
 #define EMS_INT 0x67
 
+#define PAGE_FRAME_SIZE 0x4000l
 
 
 #endif          // __DOOMDEF__

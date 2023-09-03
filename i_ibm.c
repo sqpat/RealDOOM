@@ -964,6 +964,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
    int16_t numPagesToAllocate = 256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
    int16_t pageframebase;
 
+
    char	emmname[9] = "EMMXXXX0";
         // todo check for device...
 
@@ -974,6 +975,8 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
     uint8_t vernum;
     int16_t j;
     printf("Checking for EMS existence...");
+
+
 
     regs.h.ah = 0x40;
     int86(EMS_INT, &regs, &regs);
@@ -1057,6 +1060,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
     }
 
 
+	*size = numPagesToAllocate * PAGE_FRAME_SIZE;
 
     // EMS Handle
     return MK_FP(pageframebase,0);

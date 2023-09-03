@@ -167,7 +167,7 @@
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048
 // todo make this PAGE * PAGE SIZE 
-#define MAX_ZMALLOC_SIZE 64 * 1024u
+#define MAX_ZMALLOC_SIZE 0x10000
 
 // demo commented out...
 
@@ -283,9 +283,6 @@ extern union REGS regs;
 #else
 #endif
 
-
-
-uint32_t memsize;
 byte*			pageFrameArea;
 byte*			EMSArea;
 
@@ -348,12 +345,11 @@ void Z_InitEMS(void)
 	pageFrameArea = I_ZoneBaseEMS(&size);
 	EMSArea = ((byte*)pageFrameArea + pageframeareasize);
 #endif
-	memsize = size;
 
 
 
 	printf("EMS zone location  %p  \n", pageFrameArea);
-	printf("allocated size in z_initEMS was %i or %p\n", memsize, memsize);
+	printf("allocated size in z_initEMS was %i or %p\n", size, size);
 	// mark ems pages unused
 	for (i = 0; i < NUM_EMS_PAGES; i++) {
 		activepages[i] = -1;
@@ -887,8 +883,12 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 	boolean allpagesgood;
 	numreads++;
 
+	// f6800af4
+	//   size came out ok (2804)
+	//   logical page out on right (493)  but shouldnt be 493...
+	// so MAKE_PAGE and MAKE_SIZE are ok
 
-	//I_Error("\nfirst %u %ul %lx %i", logicalpage, size, page_and_size, 0);
+	//I_Error("\nfirst %u %li %lx %i", logicalpage, size, page_and_size, 0);
 
 	if (size == 0) {
 		//I_Error("why a zero allocation!?");
@@ -1270,8 +1270,12 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 		//I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref, file, line);
 	}
 
-
-
+	/*
+	if (allocations[ref].page_and_size == 0xf6800af4) {
+		I_Error("blah found it");
+	}
+	I_Error("\nother first %lx %i %i", allocations[ref].page_and_size, ref, locked);
+	*/
 
 	pageframeindex = Z_GetEMSPageFrame(allocations[ref].page_and_size, ref, locked);
 	memorybase = (byte*)pageFrameArea;
@@ -1435,8 +1439,8 @@ Z_MallocEMSNewWithBackRef
 
 
 
-	//if (size > MAX_ZMALLOC_SIZE) {
-	if (size & 0xffff0000) {
+	if (size > MAX_ZMALLOC_SIZE) {
+	//if (size & 0xffff0000) {
 		I_Error("Z_MallocEMS: allocation too big! size was %i bytes %i %i %i", size, tag, user, sourceHint);
 	}
 
@@ -1567,6 +1571,8 @@ Z_MallocEMSNewWithBackRef
 
 
 		allocations[newfreeblockindex].page_and_size = (allocations[base].page_and_size & PAGE_MASK) + offsetToNextPage;
+
+
 		// using tag NOT_IN_USE
 		allocations[newfreeblockindex].offset_and_tag = MAKE_OFFSET(allocations[base]);
 
@@ -1621,14 +1627,16 @@ Z_MallocEMSNewWithBackRef
 			(allocations[base].page_and_size & PAGE_MASK) +
 			(((MAKE_OFFSET(allocations[base]) + size) >> PAGE_FRAME_BITS) << PAGE_AND_SIZE_SHIFT)
 			+ (extra);
+
+
+
 		// divide by 16k
-
-
 
 		allocations[base].next = newfreeblockindex;
 		allocations[base].page_and_size =
 			(allocations[base].page_and_size & PAGE_MASK) +
 			(size);
+
 
 
 

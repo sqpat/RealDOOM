@@ -65,7 +65,7 @@ int16_t	W_CheckNumForName (int8_t* name);
 int16_t	W_GetNumForName (int8_t* name);
 
 filelength_t	W_LumpLength (int16_t lump);
-void    W_ReadLump (int16_t lump, void *dest);
+void    W_ReadLumpStatic (int16_t lump, void *dest);
 
 int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error);
 MEMREF  W_CacheLumpNumEMS(int16_t lump, int8_t tag);

@@ -345,7 +345,9 @@ W_ReadLumpEMS
     lumpinfo_t* l;
 	filehandle_t         handle;
 	byte		*dest;
-	mapsidedef_t* data;
+
+
+ 
 
     if (lump >= numlumps)
         I_Error ("W_ReadLump: %i >= numlumps",lump);
@@ -366,20 +368,18 @@ W_ReadLumpEMS
     lseek (handle, l->position, SEEK_SET);
     c = read (handle, dest, l->size);
 
-    if (c < l->size)
-        I_Error ("W_ReadLump: only read %i of %i on lump %i",
-                 c,l->size,lump);       
+	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
+#ifdef _M_I86
+	if (c < l->size && c + 65536l != l->size) // error check
+#else
+	if (c < l->size) // error check
+#endif
+		I_Error("\nW_ReadLump: only read %il of %il on lump %i",
+			c, l->size, lump);
 
     if (l->handle == -1)
         close (handle);
-
-	if (lump == 75) {
-		data = (mapsidedef_t *)dest;
-		//I_Error("data is %i %i %i %s", lump, lumpRef, l->size, data->toptexture);
-
-
-
-	}
+ 
 
 
     I_EndRead ();
@@ -389,7 +389,7 @@ W_ReadLumpEMS
 
 
 void
-W_ReadLump
+W_ReadLumpStatic
 (int16_t           lump,
 	void*         dest)
 {
@@ -416,14 +416,16 @@ W_ReadLump
 	lseek(handle, l->position, SEEK_SET);
 	c = read(handle, dest, l->size);
 
-	if (c < l->size)
-		I_Error("W_ReadLump: only read %i of %i on lump %i",
+	if (c < l->size && c + 65536l != l->size)
+		I_Error("\nW_ReadLump: only read %il of %il on lump %i",
 			c, l->size, lump);
 
 	if (l->handle == -1)
 		close(handle);
 
 	I_EndRead();
+	 
+
 }
 
 
@@ -448,6 +450,9 @@ W_CacheLumpNumEMS
 	int8_t			tag)
 {
 	byte	*lumpmem;
+
+
+
 	if (lump >= numlumps)
 		I_Error("W_CacheLumpNum: %i >= numlumps", lump);
 
@@ -458,6 +463,10 @@ W_CacheLumpNumEMS
 		//printf ("cache miss on lump %i\n",lump);
 		// needs an 'owner' apparently...
 		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump + BACKREF_LUMP_OFFSET);
+
+		if (lump == -30456) {
+			I_Error("found it");
+		}
 
 		W_ReadLumpEMS(lump, lumpcacheEMS[lump]);
 	} else {

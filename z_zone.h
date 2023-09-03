@@ -108,7 +108,6 @@ typedef struct memblock_s
 } memblock_t;
 
 
-#define PAGE_FRAME_SIZE 0x4000
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS(int16_t tag);
