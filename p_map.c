@@ -127,6 +127,8 @@ P_TeleportMove
 	
 	mobj_t* tmthing;
 	mobj_t* thing;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 	thing = Z_LoadBytesFromEMS(thingRef);
     // kill anything occupying the position
     tmthingRef = thingRef;
@@ -136,19 +138,14 @@ P_TeleportMove
     tmx = x;
     tmy = y;
 	// todo imrpove how to do the minus cases? can underflow happen?
-	/*
 	tmbbox[BOXTOP].w = y; 
 	tmbbox[BOXTOP].h.intbits += tmthing->radius;
-	tmbbox[BOXBOTTOM].w = y - (tmthing->radius << FRACBITS);
+	temp.h.intbits = tmthing->radius;
+	tmbbox[BOXBOTTOM].w = y - temp.w;
 	tmbbox[BOXRIGHT].w = x; 
 	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
-    tmbbox[BOXLEFT].w = x - (tmthing->radius << FRACBITS);
-	*/
-	tmbbox[BOXTOP].w = y + (tmthing->radius << FRACBITS);
-	tmbbox[BOXBOTTOM].w = y - (tmthing->radius << FRACBITS);
-	tmbbox[BOXRIGHT].w = x + (tmthing->radius << FRACBITS);
-	tmbbox[BOXLEFT].w = x - (tmthing->radius << FRACBITS);
-    newsubsecnum = R_PointInSubsector (x,y);
+	tmbbox[BOXLEFT].w = x - temp.w;
+	newsubsecnum = R_PointInSubsector (x,y);
 	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
 	newsubsecsecnum = subsectors[newsubsecnum].secnum;
     ceilinglinenum = -1;
@@ -464,6 +461,8 @@ P_CheckPosition
 	mobj_t*			tmthing;
 	int16_t newsubsecsecnum;
 	sector_t* sectors;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
     tmthingRef = thingRef;
 	tmthing = (mobj_t*)Z_LoadBytesFromEMS(tmthingRef);
     tmflags = tmthing->flags;
@@ -474,18 +473,18 @@ P_CheckPosition
 
 	
 	// todo imrpove how to do the minus cases? can underflow happen?
+
 	tmbbox[BOXTOP].w = y;
 	tmbbox[BOXTOP].h.intbits += tmthing->radius;
-	tmbbox[BOXBOTTOM].w = y - (tmthing->radius << FRACBITS);
+	temp.h.intbits = tmthing->radius;
+	tmbbox[BOXBOTTOM].w = y - temp.w;
 	tmbbox[BOXRIGHT].w = x;
 	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
-	tmbbox[BOXLEFT].w = x - (tmthing->radius << FRACBITS);
-	/*
-	tmbbox[BOXTOP].w = y + (tmthing->radius << FRACBITS);
-	tmbbox[BOXBOTTOM].w = y - (tmthing->radius << FRACBITS);
-	tmbbox[BOXRIGHT].w = x + (tmthing->radius << FRACBITS);
-	tmbbox[BOXLEFT].w = x - (tmthing->radius << FRACBITS);
-	*/
+	tmbbox[BOXLEFT].w = x - temp.w;
+
+ 
+
+
 	newsubsecnum = R_PointInSubsector(x, y);
 	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
 	newsubsecsecnum = subsectors[newsubsecnum].secnum;
@@ -1154,8 +1153,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		  hitline:
 		// position a bit closer
 		frac = in->frac - FixedDiv (4*FRACUNIT,attackrange);
-		x = trace.x + FixedMul (trace.dx, frac);
-		y = trace.y + FixedMul (trace.dy, frac);
+		x = trace.x.w + FixedMul (trace.dx.w, frac);
+		y = trace.y.w + FixedMul (trace.dy.w, frac);
 		z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
 
 
@@ -1212,8 +1211,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
     // position a bit closer
     frac = in->frac - FixedDiv (10*FRACUNIT,attackrange);
 
-    x = trace.x + FixedMul (trace.dx, frac);
-    y = trace.y + FixedMul (trace.dy, frac);
+    x = trace.x.w + FixedMul (trace.dx.w, frac);
+    y = trace.y.w + FixedMul (trace.dy.w, frac);
     z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
 
     // Spawn bullet puffs or blod spots,
@@ -1540,7 +1539,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
     
     nofit = true;
 	
-    if (crushchange && !(leveltime&3) ) {
+    if (crushchange && !(leveltime.w &3) ) {
 
 		P_DamageMobj(thingRef,NULL_MEMREF,NULL_MEMREF,10);
 

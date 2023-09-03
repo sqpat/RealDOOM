@@ -147,7 +147,7 @@ extern	int16_t	totalitems;
 extern	int16_t	totalsecret;
 
 // Timer, for scores.
-extern  int32_t	leveltime;	// tics in game play for par
+extern  fixed_t_union	leveltime;	// tics in game play for par
 
 
 

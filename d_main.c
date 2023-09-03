@@ -214,38 +214,24 @@ fixed_t32 FixedMul (fixed_t32	a, fixed_t32 b) {
     fp.h.fracbits = llu.h[1];
     return fp.w;
 }
-
-#ifdef UNION_FIXED_POINT
-int16_t
-FixedMul1632
-(int16_t	a, fixed_t	b) {
-    fixed_t atohighbits;
-    atohighbits.h.intbits = a;
-	atohighbits.w = ((atohighbits.w) * (b.w));
-    return atohighbits.h.intbits;
+ 
+fixed_t32 FixedMul1632 (int16_t	a, fixed_t	b) {
+    fixed_t_union biga;
+	biga.h.intbits = a;
+	biga.h.fracbits = 0;
+	biga.w = ((biga.w) * b);
+    return biga.w;
 }
-#else
-
-int16_t FixedMul1632 (int16_t	a, fixed_t	b) {
-    fixed_t_union atohighbits;
-    atohighbits.h.intbits = a;
-    atohighbits.h.fracbits = 0;
-	atohighbits.w = ((atohighbits.w) * b);
-    return atohighbits.h.intbits;
-}
-#endif
 
 //
 // FixedDiv, C version.
 //
 
-fixed_t32
-FixedDiv
-(fixed_t32	a,
-	fixed_t32	b)
-{
+//fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
+fixed_t32 FixedDiv (fixed_t32	a, fixed_t32	b) {
 	if ((abs(a) >> 14) >= abs(b))
 		return (a^b) < 0 ? MINLONG : MAXLONG;
+	//return FixedDiv2(a, b, file, line);
 	return FixedDiv2(a, b);
 }
 
@@ -253,18 +239,21 @@ FixedDiv
 
 fixed_t32
 FixedDiv2
-(fixed_t32	a,
-	fixed_t32	b)
+(fixed_t32	a, fixed_t32	b
+	//,int8_t* file, int32_t line
+)
 {
- 
-
 	double c;
-
 	c = ((double)a) / ((double)b) * FRACUNIT;
+
+	//fixed_t32 c = a / b;
 
 	if (c >= 2147483648.0 || c < -2147483648.0)
 		I_Error("FixedDiv: divide by zero");
-	return (fixed_t32)c;
+			//, file, line,  a, b, c, c, c > 2147483648.0, c < -2147483648.0, c == 0, a / b);
+
+
+	return (fixed_t32) c;
 }
 //
 // D_Display

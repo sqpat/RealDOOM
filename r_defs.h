@@ -220,6 +220,7 @@ typedef struct
 	int16_t	v1Offset;
 	int16_t	v2Offset;
 
+	// todo can this be made 16 bit?
     fixed_t	offset;
 
     fineangle_t	fineangle;

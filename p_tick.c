@@ -25,7 +25,7 @@
 #include "m_misc.h"
 #include "p_setup.h"
 
-int32_t	leveltime;
+fixed_t_union	leveltime;
 int16_t currentThinkerListHead;
 //
 // THINKERS
@@ -264,5 +264,5 @@ void P_Ticker (void)
 	P_UpdateSpecials ();
 
 	// for par times
-    leveltime++;	
+    leveltime.w++;	
 }

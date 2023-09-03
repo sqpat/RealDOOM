@@ -35,7 +35,7 @@
 
 
 #define MINZ                            (FRACUNIT*4)
-#define BASEYCENTER                     100
+#define BASEYCENTER                     100L
 
 //void R_DrawColumn (void);
 //void R_DrawFuzzColumn (void);
@@ -338,8 +338,9 @@ void R_DrawMaskedColumn (column_t* column) {
 	
 	fixed_t         topscreen;
 	fixed_t         bottomscreen;
-    fixed_t     basetexturemid;
-        
+	fixed_t     basetexturemid;
+	fixed_t_union     temp;
+	temp.h.fracbits = 0;
     basetexturemid = dc_texturemid;
         
     for ( ; column->topdelta != 0xff ; )  {
@@ -358,8 +359,10 @@ void R_DrawMaskedColumn (column_t* column) {
 
         if (dc_yl <= dc_yh) {
             dc_source = (byte *)column + 3;
-            dc_texturemid = basetexturemid - (column->topdelta<<FRACBITS);
-            // dc_source = (byte *)column + 3 - column->topdelta;
+			temp.h.intbits = column->topdelta;
+            dc_texturemid = basetexturemid - temp.w;
+
+			// dc_source = (byte *)column + 3 - column->topdelta;
 
             // Drawn by either R_DrawColumn
             //  or (SHADOW) R_DrawFuzzColumn.
@@ -696,7 +699,7 @@ void R_DrawPSprite (pspdef_t* psp)
 	spriteframe_t*		spriteframes;
     fixed_t_union temp;
 
-    // decide which patch to use
+	// decide which patch to use
 
 	sprites = (spritedef_t*) Z_LoadBytesFromEMS(spritesRef);
 

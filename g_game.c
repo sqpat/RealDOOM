@@ -882,7 +882,7 @@ void G_DoCompleted (void)
     wminfo.plyr.skills = players.killcount; 
     wminfo.plyr.sitems = players.itemcount; 
     wminfo.plyr.ssecret = players.secretcount; 
-    wminfo.plyr.stime = (leveltime / TICRATE); 
+    wminfo.plyr.stime = (leveltime.w / TICRATE); 
  
     gamestate = GS_INTERMISSION; 
     viewactive = false; 
@@ -984,7 +984,9 @@ void G_DoLoadGame (void)
     a = *save_p++; 
     b = *save_p++; 
     c = *save_p++; 
-    leveltime = (a<<16) + (b<<8) + c; 
+	leveltime.b.intbytelow = a;
+	leveltime.b.fracbytehigh = b;
+	leveltime.b.fracbytelow = c;
          
     // dearchive all the modifications
     P_UnArchivePlayers (); 
@@ -1057,9 +1059,9 @@ void G_DoSaveGame (void)
 	*save_p++ = false;
 	*save_p++ = false;
 	*save_p++ = false;
-	*save_p++ = leveltime >> 16;
-	*save_p++ = leveltime >> 8;
-	*save_p++ = leveltime;
+	*save_p++ = leveltime.b.intbytelow;
+	*save_p++ = leveltime.b.fracbytehigh;
+	*save_p++ = leveltime.b.fracbytelow;
  
     P_ArchivePlayers (); 
     P_ArchiveWorld (); 

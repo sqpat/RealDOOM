@@ -100,7 +100,7 @@ void P_CalcHeight ()
 		return;
     }
 		
-    angle = (FINEANGLES/20*leveltime)&FINEMASK;
+    angle = (FINEANGLES/20*leveltime.w)&FINEMASK;
     bob = FixedMul (players.bob/2, finesine(angle));
 
     
@@ -147,8 +147,8 @@ void P_MovePlayer ()
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	cmd = &players.cmd;
-	
-	playermo->angle += (cmd->angleturn<<16);
+	temp.h.intbits = cmd->angleturn;
+	playermo->angle += temp.w;
 	//temp.h.intbits = playermo->floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playermo->floorz);
 

@@ -758,11 +758,10 @@ void A_Look (MEMREF actorRef)
 //
 void A_Chase (MEMREF actorRef)
 {
-    int32_t		delta; // cant set to angle_t due to it being uint
-
 	mobj_t*	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	MEMREF actortargetRef = actor->targetRef;
 	mobj_t*	actorTarget;
+	fixed_t_union temp;
 
     if (actor->reactiontime)
 		actor->reactiontime--;
@@ -786,12 +785,19 @@ void A_Chase (MEMREF actorRef)
 	
     // turn towards movement direction if not there yet
     if (actor->movedir < 8) {
-		actor->angle &= (7<<29);
-		delta = actor->angle - (actor->movedir << 29);
+		//actor->angle &= (7<<29);
+		//delta = actor->angle - (actor->movedir << 29);
+		actor->angle &= 0xE0000000;
+		temp.w = 0;
+		temp.b.intbytehigh = actor->movedir << 5;
+		
+		// TODO we're just taking delta so quick check without the subtraction. this can all be faster
+		//delta = actor->angle - temp.w;
 	
-		if (delta > 0)
+		//todo make actor angle fixed_t_union and we can do this faster with 16 bit compares. We already ANDed to a bit mask that got rid of all the 32 bit precision anyway
+		if (actor->angle > temp.w)
 			actor->angle -= ANG90/2;
-		else if (delta < 0)
+		else if (temp.w < actor->angle)
 			actor->angle += ANG90/2;
     }
 	if (actortargetRef) {
@@ -900,7 +906,7 @@ void A_FaceTarget (MEMREF actorRef)
 	fixed_t actorTargetx;
 	fixed_t actorTargety;
 	int8_t actorTargetShadow;
-
+	fixed_t_union temp;
     if (!actor->targetRef)
 		return;
     
@@ -917,8 +923,14 @@ void A_FaceTarget (MEMREF actorRef)
 		actorTargetx,
 		actorTargety);
     
-    if (actorTargetShadow)
-		actor->angle += (P_Random()-P_Random())<<21;
+	if (actorTargetShadow) {
+
+		temp.h.fracbits = 0;
+		temp.h.intbits = (P_Random() - P_Random());
+		temp.h.intbits <<= 5;
+		actor->angle += temp.w;
+		
+	}
 }
 
 

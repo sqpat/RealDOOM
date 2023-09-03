@@ -85,6 +85,7 @@ int16_t             bmapheight;     // size in mapblocks
 MEMREF          blockmaplumpRef;
 
 // origin of block map
+// todo can this be made 16 bit
 fixed_t         bmaporgx;
 fixed_t         bmaporgy;
 
@@ -171,6 +172,9 @@ void P_LoadSegs(int16_t lump)
 	int16_t mlangle;
 	int16_t mloffset;
 	int16_t mllinedef;
+	fixed_t_union temp;
+	
+	temp.h.fracbits = 0;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segsRef = Z_MallocEMSNew(numsegs * sizeof(seg_t), PU_LEVEL, 0, ALLOC_TYPE_SEGMENTS);
 	
@@ -214,7 +218,8 @@ void P_LoadSegs(int16_t lump)
 		li->v2Offset = mlv2;
 	
 		li->fineangle = mlangle >> SHORTTOFINESHIFT;
-		li->offset = mloffset << FRACBITS;
+		temp.h.intbits = mloffset;
+		li->offset = temp.w;
 		li->linedefOffset = mllinedef;
 		li->sidedefOffset = ldefsidenum;
 
@@ -646,7 +651,9 @@ void P_LoadBlockMap(int16_t lump)
 	uint16_t         i;
 	uint16_t         count;
 	int16_t*		blockmaplump;
-	
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
+
 	W_CacheLumpNumCheck(lump, 8);
 	
 	blockmaplumpRef = W_CacheLumpNumEMS(lump, PU_LEVEL);
@@ -656,9 +663,11 @@ void P_LoadBlockMap(int16_t lump)
 
 	for (i = 0; i < count; i++)
 		blockmaplump[i] = (blockmaplump[i]);
-
-	bmaporgx = blockmaplump[0] << FRACBITS;
-	bmaporgy = blockmaplump[1] << FRACBITS;
+	
+	temp.h.intbits = blockmaplump[0];
+	bmaporgx = temp.w;
+	temp.h.intbits = blockmaplump[1];
+	bmaporgy = temp.w;
 	bmapwidth = blockmaplump[2];
 	bmapheight = blockmaplump[3];
 
@@ -864,7 +873,7 @@ P_SetupLevel
 
 	lumpnum = W_GetNumForName(lumpname);
 
-	leveltime = 0;
+	leveltime.w = 0;
 
 
 

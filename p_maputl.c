@@ -220,41 +220,41 @@ P_PointOnDivlineSide
     fixed_t	left;
     fixed_t	right;
 	
-    if (!line->dx)
+    if (!line->dx.w)
     {
-	if (x <= line->x)
-	    return line->dy > 0;
+	if (x <= line->x.w)
+	    return line->dy.w > 0;
 	
-	return line->dy < 0;
+	return line->dy.w < 0;
     }
-    if (!line->dy)
+    if (!line->dy.w)
     {
-	if (y <= line->y)
-	    return line->dx < 0;
+	if (y <= line->y.w)
+	    return line->dx.w < 0;
 
-	return line->dx > 0;
+	return line->dx.w > 0;
     }
 	
-    dx = (x - line->x);
-    dy = (y - line->y);
+    dx = (x - line->x.w);
+    dy = (y - line->y.w);
 	
     // try to quickly decide by looking at sign bits
-    if ( (line->dy ^ line->dx ^ dx ^ dy)&0x80000000 )
+    if ( (line->dy.w ^ line->dx.w ^ dx ^ dy)&0x80000000 )
     {
-	if ( (line->dy ^ dx) & 0x80000000 )
+	if ( (line->dy.w ^ dx) & 0x80000000 )
 	    return 1;		// (left is negative)
 	return 0;
     }
 	
-    left = FixedMul ( line->dy>>8, dx>>8 );
-    right = FixedMul ( dy>>8 , line->dx>>8 );
+    left = FixedMul ( line->dy.w >>8, dx>>8 );
+    right = FixedMul ( dy>>8 , line->dx.w >>8 );
 	
-    if (right < left)
-	return 0;		// front side
-    return 1;			// back side
+	return (right >= left);
+
+	
 }
 
-
+/*
 // TODO: FIX - sq
 boolean
 P_PointOnDivlineSide16
@@ -299,6 +299,8 @@ P_PointOnDivlineSide16
     return 1;			// back side
 }
 
+*/
+
 //
 // P_MakeDivline
 //
@@ -313,14 +315,14 @@ P_MakeDivline
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	temp.h.intbits = vertexes[linev1Offset].x;
-	dl->x = temp.w;
+	dl->x = temp;
 	temp.h.intbits = vertexes[linev1Offset].y;
-    dl->y = temp.w;
+    dl->y = temp;
 
 	temp.h.intbits = linedx;
-    dl->dx = temp.w;
+    dl->dx.w = temp.w;
 	temp.h.intbits = linedy;
-    dl->dy = temp.w;
+    dl->dy.w = temp.w;
 }
 
 
@@ -341,13 +343,13 @@ P_InterceptVector
     fixed_t	num;
     fixed_t	den;
 	
-    den = FixedMul (v1->dy>>8,v2->dx) - FixedMul(v1->dx>>8,v2->dy);
+    den = FixedMul (v1->dy.w>>8,v2->dx.w) - FixedMul(v1->dx.w >>8,v2->dy.w);
 
     if (den == 0)
 	return 0;
     //	I_Error ("P_InterceptVector: parallel");
     
-    num = FixedMul ( (v1->x - v2->x)>>8 ,v1->dy ) + FixedMul ( (v2->y - v1->y)>>8, v1->dx );
+    num = FixedMul ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + FixedMul ( (v2->y.w - v1->y.w)>>8, v1->dx.w);
 
     frac = FixedDiv (num , den);
 
@@ -707,21 +709,26 @@ PIT_AddLineIntercepts (int16_t linenum)
 	int16_t linedx = ld->dx;
 	int16_t linedy = ld->dy;
 	int16_t linebacksecnum = ld->backsecnum;
-
-
-
+	fixed_t_union tempx;
+	fixed_t_union tempy;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
+	tempx.h.fracbits = 0;
+	tempy.h.fracbits = 0;
+
+
     // avoid precision problems with two routines
-    if ( trace.dx > FRACUNIT*16 || trace.dy > FRACUNIT*16 || trace.dx < -FRACUNIT*16 || trace.dy < -FRACUNIT*16) {
+	if ( trace.dx.h.intbits > 16 || trace.dy.h.intbits > 16 || trace.dx.h.intbits < -16 || trace.dy.h.intbits < -16) {
 		// we actually know the vertex fields to be 16 bit, but trace has 32 bit fields
-		// s1 = P_PointOnDivlineSide16 (vertexes[linev1Offset].x, vertexes[linev1Offset].y, &trace);
-		// s2 = P_PointOnDivlineSide16 (vertexes[linev2Offset].x, vertexes[linev2Offset].y, &trace);
-		s1 = P_PointOnDivlineSide (vertexes[linev1Offset].x << FRACBITS, vertexes[linev1Offset].y << FRACBITS, &trace);
-		s2 = P_PointOnDivlineSide (vertexes[linev2Offset].x << FRACBITS, vertexes[linev2Offset].y << FRACBITS, &trace);
-    } else {
-		s1 = P_PointOnLineSide (trace.x, trace.y, linedx, linedy, linev1Offset);
-		s2 = P_PointOnLineSide (trace.x+trace.dx, trace.y+trace.dy, linedx, linedy, linev1Offset);
+		tempx.h.intbits = vertexes[linev1Offset].x;
+		tempy.h.intbits = vertexes[linev1Offset].y;
+		s1 = P_PointOnDivlineSide (tempx.w, tempy.w, &trace);
+		tempx.h.intbits = vertexes[linev2Offset].x;
+		tempy.h.intbits = vertexes[linev2Offset].y;
+		s2 = P_PointOnDivlineSide(tempx.w, tempy.w, &trace);
+	} else {
+		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, linev1Offset);
+		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, linev1Offset);
     }
     
     if (s1 == s2)
@@ -770,48 +777,27 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     
     fixed_t		frac;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	fixed_t_union temp;
+ 
+	tracepositive = (trace.dx.w ^ trace.dy.w) > 0;
 
-/*
-	fixed_t_union thingradius;
-	thingradius.h.intbits = thing->radius;
-	thingradius.h.fracbits = 0;
-		
-    // check a corner to corner crossection for hit
-    if (tracepositive)
-    {
-	x1 = thing->x - thingradius.w;
-	y1 = thing->y + thingradius.w;
-		
-	x2 = thing->x + thingradius.w;
-	y2 = thing->y - thingradius.w;			
-    }
-    else
-    {
-	x1 = thing->x - thingradius.w;
-	y1 = thing->y - thingradius.w;
-		
-	x2 = thing->x + thingradius.w;
-	y2 = thing->y + thingradius.w;			
-    }
-    */
-
-	tracepositive = (trace.dx ^ trace.dy) > 0;
-
+	temp.h.fracbits = 0;
+	temp.h.intbits = thing->radius;
 	if (tracepositive)
 	{
-		x1 = thing->x - (thing->radius << FRACBITS);
-		y1 = thing->y + (thing->radius << FRACBITS);
+		x1 = thing->x - temp.w;
+		y1 = thing->y + temp.w;
 
-		x2 = thing->x + (thing->radius << FRACBITS);
-		y2 = thing->y - (thing->radius << FRACBITS);
+		x2 = thing->x + temp.w;
+		y2 = thing->y - temp.w;
 	}
 	else
 	{
-		x1 = thing->x - (thing->radius << FRACBITS);
-		y1 = thing->y - (thing->radius << FRACBITS);
+		x1 = thing->x - temp.w;
+		y1 = thing->y - temp.w;
 
-		x2 = thing->x + (thing->radius << FRACBITS);
-		y2 = thing->y + (thing->radius << FRACBITS);
+		x2 = thing->x + temp.w;
+		y2 = thing->y + temp.w;
 	}
 	s1 = P_PointOnDivlineSide (x1, y1, &trace);
     s2 = P_PointOnDivlineSide (x2, y2, &trace);
@@ -820,10 +806,10 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
 		return true;		// line isn't crossed
 	}
 
-    dl.x = x1;
-    dl.y = y1;
-    dl.dx = x2-x1;
-    dl.dy = y2-y1;
+    dl.x.w = x1;
+    dl.y.w = y1;
+    dl.dx.w = x2-x1;
+    dl.dy.w = y2-y1;
     
     frac = P_InterceptVector (&trace, &dl);
 
@@ -935,10 +921,10 @@ P_PathTraverse
     if ( ((y1-bmaporgy)&(MAPBLOCKSIZE-1)) == 0)
 		y1 += FRACUNIT;	// don't side exactly on a line
 
-    trace.x = x1;
-    trace.y = y1;
-    trace.dx = x2 - x1;
-    trace.dy = y2 - y1;
+    trace.x.w = x1;
+    trace.y.w = y1;
+    trace.dx.w = x2 - x1;
+    trace.dy.w = y2 - y1;
 
     x1 -= bmaporgx;
     y1 -= bmaporgy;

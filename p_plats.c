@@ -62,7 +62,7 @@ void T_PlatRaise(MEMREF platRef)
 				res = T_MovePlane(plat->secnum,  plat->speed, plat->high, plat->crush,0,1);
 				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 				if (plat->type == raiseAndChange || plat->type == raiseToNearestAndChange) {
-					if (!(leveltime & 7)) {
+					if (!(leveltime.w & 7)) {
 						S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_stnmov);
 					}
 				}

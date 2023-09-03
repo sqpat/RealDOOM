@@ -1090,14 +1090,14 @@ void P_PlayerInSpecialSector () {
 		case 5:
 			// HELLSLIME DAMAGE
 			if (!players.powers[pw_ironfeet])
-				if (!(leveltime&0x1f))
+				if (!(leveltime.h.fracbits &0x1f))
 					P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 10);
 			break;
 	
 		case 7:
 			// NUKAGE DAMAGE
 			if (!players.powers[pw_ironfeet])
-				if (!(leveltime&0x1f))
+				if (!(leveltime.h.fracbits &0x1f))
 					P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 5);
 			break;
 	
@@ -1106,7 +1106,7 @@ void P_PlayerInSpecialSector () {
 			case 4:
 				// STROBE HURT
 				if (!players.powers[pw_ironfeet] || (P_Random()<5) ) {
-					if (!(leveltime&0x1f))
+					if (!(leveltime.h.fracbits &0x1f))
 						P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 20);
 				}
 				break;
@@ -1122,7 +1122,7 @@ void P_PlayerInSpecialSector () {
 			// EXIT SUPER DAMAGE! (for E1M8 finale)
 			players.cheats &= ~CF_GODMODE;
 
-			if (!(leveltime&0x1f))
+			if (!(leveltime.h.fracbits &0x1f))
 				P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 20);
 
 			if (players.health <= 10)
@@ -1169,7 +1169,7 @@ void P_UpdateSpecials(void)
 	//	ANIMATE FLATS AND TEXTURES GLOBALLY
 	for (anim = anims; anim < lastanim; anim++) {
 		for (i = anim->basepic; i < anim->basepic + anim->numpics; i++) {
-			pic = anim->basepic + ((leveltime / 8 + i) % anim->numpics);
+			pic = anim->basepic + ((leveltime.h.fracbits / 8 + i) % anim->numpics);
 			if (anim->istexture) {
 				texturetranslation = (uint8_t*)Z_LoadBytesFromEMS(texturetranslationRef);
 				texturetranslation[i] = pic;

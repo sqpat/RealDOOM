@@ -62,7 +62,7 @@ void T_MoveCeiling (MEMREF memref)
 			ceilingsector = sectors[ceilingsecnum];
 			ceiling = (ceiling_t*)Z_LoadBytesFromEMS(memref);
 
-			if (!(leveltime&7)) {
+			if (!(leveltime.h.fracbits &7)) {
 				switch(ceiling->type) {
 					case silentCrushAndRaise:
 						break;
@@ -101,7 +101,7 @@ void T_MoveCeiling (MEMREF memref)
 					ceiling->bottomheight,
 					ceiling->crush,1,ceiling->direction);
 			ceiling = (ceiling_t*)Z_LoadBytesFromEMS(memref);
-			if (!(leveltime&7))
+			if (!(leveltime.h.fracbits &7))
 			{
 				switch(ceiling->type) {
 					case silentCrushAndRaise: break;

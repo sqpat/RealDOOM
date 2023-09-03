@@ -127,10 +127,10 @@ void P_NoiseAlert (MEMREF target, MEMREF emmiter);
 //
 typedef struct
 {
-    fixed_t	x;
-    fixed_t	y;
-    fixed_t	dx;
-    fixed_t	dy;
+	fixed_t_union	x;
+	fixed_t_union	y;
+    fixed_t_union	dx;
+	fixed_t_union	dy;
     
 } divline_t;
 

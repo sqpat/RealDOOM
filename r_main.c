@@ -556,7 +556,8 @@ void R_InitTextureMapping (void)
     int16_t			i;
     int16_t			x;
     fixed_t			t;
-    fixed_t		focallength;
+	fixed_t		focallength;
+	fixed_t_union		temp;
     
     // Use tangent table to generate viewangletox:
     //  viewangletox will give the next greatest x
@@ -608,7 +609,10 @@ void R_InitTextureMapping (void)
 	    viewangletox[i]  = viewwidth;
     }
 	
-    clipangle = xtoviewangle[0] << ANGLETOFINESHIFT;
+	temp.h.fracbits = 0;
+	temp.h.intbits = xtoviewangle[0];
+	temp.h.intbits <<= 3;
+	clipangle = temp.w;
 	fieldofview = 2 * clipangle;
 }
 
@@ -627,16 +631,23 @@ void R_InitLightTables (void)
     int16_t		j;
     int16_t		level;
     int16_t		startmap; 	
-    fixed_t		scale;
+	fixed_t		scale;
+	fixed_t_union		temp, temp2;
     
     // Calculate the light levels to use
     //  for each level / distance combination.
-    for (i=0 ; i< LIGHTLEVELS ; i++)
+	temp.h.fracbits = 0;
+	temp2.h.fracbits = 0;
+	temp2.h.intbits = SCREENWIDTH/2;
+	for (i=0 ; i< LIGHTLEVELS ; i++)
     {
 	startmap = ((LIGHTLEVELS-1-i)*2)*2; // *NUMCOLORMAPS/LIGHTLEVELS;
+	temp.h.intbits = 1;
 	for (j=0 ; j<MAXLIGHTZ ; j++)
 	{
-	    scale = FixedDiv ((SCREENWIDTH/2*FRACUNIT), (j+1)<<LIGHTZSHIFT);
+		temp.h.intbits += 16;
+
+	    scale = FixedDiv (temp2.w, temp.w);
 	    scale >>= LIGHTSCALESHIFT;
 	    level = startmap - scale/DISTMAP;
 	    
@@ -687,7 +698,8 @@ void R_ExecuteSetViewSize (void)
     int16_t		j;
     int8_t		level;
     int8_t		startmap; 	
-
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
     setsizeneeded = false;
 
     if (setblocks == 11) {
@@ -703,8 +715,10 @@ void R_ExecuteSetViewSize (void)
 	
     centery = viewheight/2;
     centerx = viewwidth/2;
-    centerxfrac = centerx<<FRACBITS;
-    centeryfrac = centery<<FRACBITS;
+	temp.h.intbits = centerx;
+	centerxfrac = temp.w;
+	temp.h.intbits = centery;
+	centeryfrac = temp.w;
     projection = centerxfrac;
 
     if (!detailshift) {
@@ -734,15 +748,28 @@ void R_ExecuteSetViewSize (void)
 
     // planes
     for (i=0 ; i<viewheight ; i++) {
-		dy = ((i-viewheight/2)<<FRACBITS)+FRACUNIT/2;
+		temp.h.intbits = (i - viewheight / 2);
+		dy = (temp.w)+FRACUNIT/2;
 		dy = abs(dy);
 		yslope[i] = FixedDiv ( (viewwidth<<detailshift)/2*FRACUNIT, dy);
     }
 	
     for (i=0 ; i<viewwidth ; i++) {
-		an = xtoviewangle[i] ;
+		an = xtoviewangle[i];
+
+
 		cosadj = abs(finecosine(an));
-		distscale[i] = FixedDiv (FRACUNIT,cosadj);
+
+		if (cosadj == 0) {
+			I_Error("bad cosadj? %i %li %i", i, cosadj, an);
+
+		}
+
+		distscale[i] = FixedDiv (FRACUNIT,cosadj); // divide by zero in 16 bit mode here.
+
+			
+
+
     }
     
     // Calculate the light levels to use

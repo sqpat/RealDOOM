@@ -103,7 +103,7 @@
 
 // how much the automap moves window per tic in frame-buffer coordinates
 // moves 140 pixels in 1 second
-#define F_PANINC	4
+#define F_PANINC	4L
 // how much zoom-in per tic
 // goes to 2x in 1 second
 #define M_ZOOMIN        ((int32_t) (1.02*FRACUNIT))
@@ -113,15 +113,10 @@
 
 // translates between frame-buffer and map distances
 
-#ifdef UNION_FIXED_POINT
-#define FTOM(x) FixedMul(x.h.intbits,scale_ftom)
-#define FTOM16(x) FixedMul1632(x,scale_ftom)
-#else
 #define FTOM(x) FixedMul(((x)<<16),scale_ftom)
 #define FTOM16(x) FixedMul1632(x,scale_ftom)
 #define MTOF(x) (FixedMul((x),scale_mtof)>>16)
 #define MTOF(x) (FixedMul((x),scale_mtof)>>16)
-#endif
 
 // translates between frame-buffer and map coordinates
 #define CXMTOF(x)  (f_x + MTOF((x)-m_x))
@@ -310,16 +305,7 @@ V_MarkRect
 //
 void AM_activateNewScale(void)
 {
-/*
-    FIXED_T_PLUS_EQUALS(m_x, FIXED_T_SHIFT_RIGHT(m_w, 1));
-    FIXED_T_PLUS_EQUALS(m_y, FIXED_T_SHIFT_RIGHT(m_h, 1));
-    FIXED_T_SET_FRACBITS(m_w, FTOM16(f_w));
-    FIXED_T_SET_FRACBITS(m_h, FTOM16(f_h));
-   	FIXED_T_MINUS_EQUALS(m_x, FIXED_T_SHIFT_RIGHT(m_w, 1));
-   	FIXED_T_MINUS_EQUALS(m_y, FIXED_T_SHIFT_RIGHT(m_h, 1));
-    m_x2 = FIXED_T_PLUS_FIXED_T(m_x, m_w);
-    m_y2 = FIXED_T_PLUS_FIXED_T(m_y, m_h);
-*/
+ 
 
     m_x += m_w/2;
     m_y += m_h/2;
@@ -343,12 +329,11 @@ void AM_saveScaleAndLoc(void)
     old_m_h = m_h;
 }
 
-//
-//
-//
 void AM_restoreScaleAndLoc(void)
 {
 	mobj_t* playerMo;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
 
     m_w = old_m_w;
     m_h = old_m_h;
@@ -359,14 +344,14 @@ void AM_restoreScaleAndLoc(void)
 		playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 		m_x = playerMo->x - m_w/2;
 		m_y = playerMo->y - m_h/2;
-		//m_x = FIXED_T_MINUS(playerMo->x, FIXED_T_SHIFT_RIGHT(m_w,1));
-		//m_y = FIXED_T_MINUS(playerMo->y, FIXED_T_SHIFT_RIGHT(m_h,1));
     }
     m_x2 = m_x + m_w;
     m_y2 = m_y + m_h;
 
     // Change the scaling multipliers
-    scale_mtof = FixedDiv(f_w<<FRACBITS, m_w);
+
+	temp.h.intbits = f_w;
+    scale_mtof = FixedDiv(temp.w, m_w);
     scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
 }
 
@@ -390,20 +375,28 @@ void AM_findMinMaxBoundaries(void)
 	int16_t i;
     fixed_t a;
     fixed_t b;
+	fixed_t_union temp;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 	min_x = min_y =  MAXLONG;
     max_x = max_y = -MAXLONG;
-  
+	temp.h.fracbits = 0;
+
     for (i=0;i<numvertexes;i++) {
-	if ((vertexes[i].x << FRACBITS) < min_x)
-	    min_x = (vertexes[i].x << FRACBITS);
-	else if ((vertexes[i].x << FRACBITS) > max_x)
-	    max_x = (vertexes[i].x << FRACBITS);
+
+		temp.h.intbits = vertexes[i].x;
+
+		if ((temp.w) < min_x)
+			min_x = temp.w;
+		else if ((temp.w) > max_x)
+			max_x = temp.w;
     
-	if ((vertexes[i].y << FRACBITS) < min_y)
-	    min_y = (vertexes[i].y << FRACBITS);
-	else if ((vertexes[i].y << FRACBITS) > max_y)
-	    max_y = (vertexes[i].y << FRACBITS);
+		temp.h.intbits = vertexes[i].y;
+
+		if (temp.w < min_y)
+			min_y = temp.w;
+		else if (temp.w > max_y)
+			max_y = temp.w;
+
     }
   
     max_w = max_x - min_x;
@@ -412,11 +405,13 @@ void AM_findMinMaxBoundaries(void)
     min_w = 2*PLAYERRADIUS; // const? never changed?
     min_h = 2*PLAYERRADIUS;
 
-    a = FixedDiv(f_w<<FRACBITS, max_w);
-    b = FixedDiv(f_h<<FRACBITS, max_h);
+	temp.h.intbits = f_w;
+	a = FixedDiv(temp.w, max_w);
+	temp.h.intbits = f_h;
+	b = FixedDiv(temp.w, max_h);
   
     min_scale_mtof = a < b ? a : b;
-    max_scale_mtof = FixedDiv(f_h<<FRACBITS, 2*PLAYERRADIUS);
+	max_scale_mtof = FixedDiv(temp.w, 2*PLAYERRADIUS);
 
 }
 
@@ -458,6 +453,7 @@ void AM_initVariables(void)
     static event_t st_notify = { ev_keyup, AM_MSGENTERED };
 	mobj_t* playerMo; 
 
+
     automapactive = true;
     fb = screen0;
 
@@ -467,8 +463,8 @@ void AM_initVariables(void)
     ftom_zoommul = FRACUNIT;
     mtof_zoommul = FRACUNIT;
 
-    m_w = FTOM(f_w);
-    m_h = FTOM(f_h);
+    m_w = FTOM16(f_w);
+    m_h = FTOM16(f_h);
 
   
 	playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
@@ -1033,36 +1029,35 @@ void AM_drawGrid(uint8_t color)
 
     // Figure out start of vertical gridlines
     start = m_x;
-    if ((start-bmaporgx)%(MAPBLOCKUNITS<<FRACBITS))
-	start += (MAPBLOCKUNITS<<FRACBITS)
-	    - ((start-bmaporgx)%(MAPBLOCKUNITS<<FRACBITS));
+	
+	if ((start - bmaporgx) % (0x800000)) {
+		start += (0x800000) - ((start - bmaporgx) % (0x800000));
+	}
     end = m_x + m_w;
 
     // draw vertical gridlines
     ml.a.y = m_y;
     ml.b.y = m_y+m_h;
-    for (x=start; x<end; x+=(MAPBLOCKUNITS<<FRACBITS))
-    {
-	ml.a.x = x;
-	ml.b.x = x;
-	AM_drawMline(&ml, color);
+    for (x=start; x<end; x+=(0x800000)) {
+		ml.a.x = x;
+		ml.b.x = x;
+		AM_drawMline(&ml, color);
     }
 
     // Figure out start of horizontal gridlines
     start = m_y;
-    if ((start-bmaporgy)%(MAPBLOCKUNITS<<FRACBITS))
-	start += (MAPBLOCKUNITS<<FRACBITS)
-	    - ((start-bmaporgy)%(MAPBLOCKUNITS<<FRACBITS));
+	if ((start - bmaporgy) % (0x800000)) {
+		start += (0x800000) - ((start - bmaporgy) % (0x800000));
+	}
     end = m_y + m_h;
 
     // draw horizontal gridlines
     ml.a.x = m_x;
     ml.b.x = m_x + m_w;
-    for (y=start; y<end; y+=(MAPBLOCKUNITS<<FRACBITS))
-    {
-	ml.a.y = y;
-	ml.b.y = y;
-	AM_drawMline(&ml, color);
+    for (y=start; y<end; y+=(0x800000)) {
+		ml.a.y = y;
+		ml.b.y = y;
+		AM_drawMline(&ml, color);
     }
 
 }
@@ -1085,8 +1080,9 @@ void AM_drawWalls(void)
 	sector_t* sectors;
 	boolean floorheightnonequal;
 	boolean ceilingheightnonequal;
-
+	fixed_t_union temp;
 	vertex_t* vertexes;
+	temp.h.fracbits = 0;
 
     for (i=0;i<numlines;i++) {
 		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -1098,10 +1094,15 @@ void AM_drawWalls(void)
 		linespecial = lines[i].special;
 
 		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-		l.a.x = vertexes[linev1Offset].x << FRACBITS;
-		l.a.y = vertexes[linev1Offset].y << FRACBITS;
-		l.b.x = vertexes[linev2Offset].x << FRACBITS;
-		l.b.y = vertexes[linev2Offset].y << FRACBITS;
+		temp.h.intbits = vertexes[linev1Offset].x;
+		l.a.x = temp.w;
+		temp.h.intbits = vertexes[linev1Offset].y;
+		l.a.y = temp.w;
+		temp.h.intbits = vertexes[linev2Offset].x;
+		l.b.x = temp.w;
+		temp.h.intbits = vertexes[linev2Offset].y;
+		l.b.y = temp.w;
+
 		if (cheating || (lineflags & ML_MAPPED)) {
 			if ((lineflags & LINE_NEVERSEE) && !cheating) {
 				continue;
@@ -1231,13 +1232,15 @@ AM_drawThings
     mobj_t*	t;
 	MEMREF tRef;
 	sector_t* sectors;
+	fixed_t_union temp;
 	for (i=0;i<numsectors;i++) {
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		tRef = sectors[i].thinglistRef;
 		while (tRef) {
 			t = (mobj_t*) Z_LoadBytesFromEMS(tRef);
+			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
-			 16<<FRACBITS, t->angle>>ANGLETOFINESHIFT, colors, t->x, t->y);
+			 0x100000, t->angle>>ANGLETOFINESHIFT, colors, t->x, t->y);
 			tRef = t->snextRef;
 		}
     }

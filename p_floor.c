@@ -201,7 +201,7 @@ void T_MoveFloor(MEMREF memref)
     res = T_MovePlane(floor->secnum, floor->speed, floor->floordestheight, floor->crush,0,floor->direction);
 	floor = (floormove_t*)Z_LoadBytesFromEMS(memref);
 	floorsecnum = floor->secnum;
-	if (!(leveltime & 7)) {
+	if (!(leveltime.h.fracbits & 7)) {
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		S_StartSoundWithParams(sectors[floorsecnum].soundorgX, sectors[floorsecnum].soundorgY, sfx_stnmov);
 	}

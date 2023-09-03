@@ -20,9 +20,17 @@
 #define __AMMAP_H__
 
 // Used by ST StatusBar stuff.
-#define AM_MSGHEADER (('a'<<24)+('m'<<16))
-#define AM_MSGENTERED (AM_MSGHEADER | ('e'<<8))
-#define AM_MSGEXITED (AM_MSGHEADER | ('x'<<8))
+
+//616D0000
+// 1627389952 61000000
+ // 6D0000
+
+//#define AM_MSGHEADER (('a'<<24)+('m'<<16))
+#define AM_MSGHEADER 0x616D0000
+//#define AM_MSGENTERED (AM_MSGHEADER | ('e'<<8))
+#define AM_MSGENTERED 0x616D6500
+//#define AM_MSGEXITED (AM_MSGHEADER | ('x'<<8))
+#define AM_MSGEXITED 0x616D7800
 
 
 // Called by main loop.

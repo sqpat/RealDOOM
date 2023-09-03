@@ -48,38 +48,38 @@ P_DivlineSide
   fixed_t	y,
   divline_t*	node )
 {
-    fixed_t	dx;
-    fixed_t	dy;
+    fixed_t_union	dx;
+	fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
 
-    if (!node->dx)
+    if (!node->dx.w)
     {
-	if (x==node->x)
+	if (x==node->x.w)
 	    return 2;
 	
-	if (x <= node->x)
-	    return node->dy > 0;
+	if (x <= node->x.w)
+	    return node->dy.w > 0;
 
-	return node->dy < 0;
+	return node->dy.w < 0;
     }
     
-    if (!node->dy)
+    if (!node->dy.w)
     {
-	if (x==node->y)
+	if (x==node->y.w)
 	    return 2;
 
-	if (y <= node->y)
-	    return node->dx < 0;
+	if (y <= node->y.w)
+	    return node->dx.w < 0;
 
-	return node->dx > 0;
+	return node->dx.w > 0;
     }
 	
-    dx = (x - node->x);
-    dy = (y - node->y);
-
-    left =  (node->dy>>FRACBITS) * (dx>>FRACBITS);
-    right = (dy>>FRACBITS) * (node->dx>>FRACBITS);
+    dx.w = (x - node->x.w);
+    dy.w = (y - node->y.w);
+	
+    left =  (node->dy.h.intbits) * (dx.h.intbits);
+    right = (dy.h.intbits) * (node->dx.h.intbits);
 	
     if (right < left)
 	return 0;	// front side
@@ -102,37 +102,37 @@ P_DivlineSide16
 
 	// NOTE: these divlines have proper 32 bit fixed_t
 
-    if (!node->dx) {
-		temp.w = node->x;
+    if (!node->dx.w) {
+		temp.w = node->x.w;
 		if (x==temp.h.intbits)
 			return 2;
 		
 		if (x <= temp.h.intbits)
-			return node->dy > 0;
+			return node->dy.w > 0;
 
-		return node->dy < 0;
+		return node->dy.w < 0;
     }
     
-    if (!node->dy) {
-		temp.w = node->y;
+    if (!node->dy.w) {
+		temp.w = node->y.w;
 		if (x==temp.h.intbits)
 			return 2;
 
 		if (y <= temp.h.intbits)
-			return node->dx < 0;
+			return node->dx.w < 0;
 
-		return node->dx > 0;
+		return node->dx.w > 0;
     }
 	
 	temp.h.intbits = x;
 	temp.h.fracbits = 0;
 
-    dx.w = (temp.w - node->x);
+    dx.w = (temp.w - node->x.w);
 	temp.h.intbits = y;
-    dy.w = (temp.w - node->y);
-	temp.w = node->dy;
+    dy.w = (temp.w - node->y.w);
+	temp.w = node->dy.w;
     left =  (temp.h.intbits) * (dx.h.intbits);
-	temp.w = node->dx;
+	temp.w = node->dx.w;
     right = (dy.h.intbits) * (temp.h.intbits);
 	
     if (right < left)
@@ -259,13 +259,13 @@ P_InterceptVector2
     fixed_t	num;
     fixed_t	den;
 	
-    den = FixedMul (v1->dy>>8,v2->dx) - FixedMul(v1->dx>>8,v2->dy);
+    den = FixedMul (v1->dy.w>>8,v2->dx.w) - FixedMul(v1->dx.w>>8,v2->dy.w);
 
     if (den == 0)
 		return 0;
     
-    num = FixedMul ( (v1->x - v2->x)>>8 ,v1->dy) + 
-	FixedMul ( (v2->y - v1->y)>>8 , v1->dx);
+    num = FixedMul ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + 
+	FixedMul ( (v2->y.w - v1->y.w)>>8 , v1->dx.w);
     frac = FixedDiv (num , den);
 
     return frac;
@@ -334,21 +334,25 @@ boolean P_CrossSubsector (int16_t subsecnum)
 
 		v1 = vertexes[linev1Offset];
 		v2 = vertexes[linev2Offset];
-		s1 = P_DivlineSide16 (v1.x,v1.y, &strace);
+		s1 = P_DivlineSide16 (v1.x, v1.y, &strace);
 		s2 = P_DivlineSide16 (v2.x, v2.y, &strace);
-		// s1 = P_DivlineSide (v1.x<<FRACBITS,v1.y<<FRACBITS, &strace);
-		// s2 = P_DivlineSide (v2.x<<FRACBITS, v2.y<<FRACBITS, &strace);
 
 		// line isn't crossed?
 		if (s1 == s2)
 			continue;
-	
-		divl.x = v1.x << FRACBITS;
-		divl.y = v1.y <<  FRACBITS;
-		divl.dx = (v2.x << FRACBITS) - (v1.x<< FRACBITS);
-		divl.dy = (v2.y << FRACBITS) - (v1.y<< FRACBITS);
-		s1 = P_DivlineSide (strace.x, strace.y, &divl);
-		s2 = P_DivlineSide (cachedt2x, cachedt2y, &divl);
+		
+		divl.x.h.fracbits = 0;
+		divl.y.h.fracbits = 0;
+		divl.dx.h.fracbits = 0;
+		divl.dy.h.fracbits = 0;
+		
+		divl.x.h.intbits = v1.x;
+		divl.y.h.intbits = v1.y;
+		divl.dx.h.intbits = v2.x - v1.x;
+		divl.dy.h.intbits = v2.y - v1.y;
+
+		s1 = P_DivlineSide(strace.x.w, strace.y.w, &divl);
+		s2 = P_DivlineSide(cachedt2x, cachedt2y, &divl);
 
 
 		// divlNode.x = v1.x;
@@ -457,7 +461,7 @@ boolean P_CrossBSPNode (int32_t bspnum)
 	bsp = &nodes[bspnum];
     
     // decide which side the start point is on
-    side = P_DivlineSideNode (strace.x, strace.y, bsp);
+    side = P_DivlineSideNode (strace.x.w, strace.y.w, bsp);
 	if (side == 2) {
 		side = 0;	// an "on" should cross both sides
 	}
@@ -551,12 +555,12 @@ P_CheckSight
     topslope = (t2z+t2height) - sightzstart;
     bottomslope = (t2z) - sightzstart;
 	
-    strace.x = t1x;
-    strace.y = t1y;
+    strace.x.w = t1x;
+    strace.y.w = t1y;
     cachedt2x = t2x;
 	cachedt2y = t2y;
-    strace.dx = t2x - t1x;
-    strace.dy = t2y - t1y;
+    strace.dx.w = t2x - t1x;
+    strace.dy.w = t2y - t1y;
 
     // the head node is the last node output
     return P_CrossBSPNode (numnodes-1);	

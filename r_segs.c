@@ -507,7 +507,15 @@ R_StoreWallRange
     
     // calculate rw_distance for scale calculation
     rw_normalangle = MOD_FINE_ANGLE(curlineangle + FINE_ANG90);
-    offsetangle = abs((rw_normalangle << ANGLETOFINESHIFT)-rw_angle1) >> ANGLETOFINESHIFT;
+	
+	temp.h.intbits = rw_normalangle;
+	temp.h.intbits <<= 3;
+	temp.w -= rw_angle1;
+	temp.w = abs(temp.w);
+	temp.h.intbits >>= 3;
+
+	offsetangle = temp.h.intbits;
+	temp.h.fracbits = 0;
     
     if (offsetangle > FINE_ANG90)
 		offsetangle = 	FINE_ANG90;
@@ -526,13 +534,28 @@ R_StoreWallRange
     rw_stopx = stop+1;
 
 
-    
+	temp.h.intbits = xtoviewangle[start];
+	temp.h.intbits <<= 3;
+	temp.w += viewangle;
+
     // calculate scale at both ends and step
-    ds_p->scale1 = rw_scale =  R_ScaleFromGlobalAngle (viewangle + (xtoviewangle[start] << ANGLETOFINESHIFT));
-    
+    ds_p->scale1 = rw_scale =  R_ScaleFromGlobalAngle (temp.w);
+	temp.h.fracbits = 0;
+
+	//ds_p->scale1 = rw_scale = R_ScaleFromGlobalAngle(viewangle + (xtoviewangle[start] << ANGLETOFINESHIFT));
+
+
     if (stop > start ) {
-		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle + (xtoviewangle[stop] << ANGLETOFINESHIFT));
+		temp.h.intbits = xtoviewangle[stop];
+		temp.h.intbits <<= 3;
+		temp.w += viewangle;
+	
+		ds_p->scale2 = R_ScaleFromGlobalAngle (temp.w);
+
 		ds_p->scalestep = rw_scalestep =  (ds_p->scale2 - rw_scale) / (stop-start);
+
+		temp.h.fracbits = 0;
+
     } else {
 		ds_p->scale2 = ds_p->scale1;
     }
@@ -725,8 +748,20 @@ R_StoreWallRange
     segtextured = midtexture | toptexture | bottomtexture | maskedtexture;
 
     if (segtextured) {
-		offsetangle = (((rw_normalangle<<ANGLETOFINESHIFT))-rw_angle1) >> ANGLETOFINESHIFT;
-	
+
+		//offsetangle = (((rw_normalangle << ANGLETOFINESHIFT)) - rw_angle1) >> ANGLETOFINESHIFT;
+		
+		temp.h.intbits = rw_normalangle;
+		temp.h.intbits <<= 3;
+		temp.w -= rw_angle1;
+		temp.h.fracbits = temp.h.intbits;
+		temp.h.fracbits >>= 3;
+
+
+		offsetangle = temp.h.fracbits;
+		temp.h.fracbits = 0;
+		
+
 		if (offsetangle > FINE_ANG180) {
 			offsetangle = MOD_FINE_ANGLE(-offsetangle);
 		}
@@ -737,9 +772,15 @@ R_StoreWallRange
 		sineval = finesine(offsetangle);
 		rw_offset = FixedMul (hyp, sineval);
 
-		if ((rw_normalangle<<ANGLETOFINESHIFT) - rw_angle1 < ANG180) {
+		temp.h.intbits = rw_normalangle;
+		temp.h.intbits <<= 3;
+		temp.w -= rw_angle1;
+
+		if (temp.w < ANG180) {
+
 			rw_offset = -rw_offset;
 		}
+		temp.h.fracbits = 0;
 
 		temp.h.intbits = sidetextureoffset;
 		rw_offset += temp.w + curlineOffset;

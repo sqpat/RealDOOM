@@ -329,13 +329,63 @@ filelength_t W_LumpLength (int16_t lump)
     return lumpinfo[lump].size;
 }
 
+#ifdef _M_I86
 
+
+#define FILEBUFSIZE 1024
+// adapted from: https://github.com/Scalibq/DOS_SDK/blob/main/C/COMMON.C
+// thanks, Scali!
+
+uint32_t _farread(filehandle_t handle, void* buf, uint32_t size)
+{
+	int32_t totalSize;
+	uint32_t retSize;
+	uint8_t* pDest = (uint8_t *)buf;
+	uint8_t* pLocalBuf = _alloca(FILEBUFSIZE);
+
+	totalSize = size;
+
+	if (totalSize == 0)
+		return 0;
+
+	retSize = 0;
+
+	while (totalSize > 0)
+	{
+		size_t ret;
+		size_t chunkSize = totalSize < FILEBUFSIZE ? totalSize : FILEBUFSIZE;
+
+		// Read chunk
+		ret = read(handle, pLocalBuf, chunkSize);
+
+		retSize += ret;
+
+		// Copy from local buffer to destination
+		_fmemcpy(pDest, pLocalBuf, ret);
+
+		pDest += ret;
+
+		totalSize -= ret;
+
+		if (ret != chunkSize)
+			break;
+	}
+
+	// Return total size read
+	return retSize;
+}
+
+#endif
 
 //
 // W_ReadLump
 // Loads the lump into the given buffer,
 //  which must be >= W_LumpLength().
 //
+
+
+
+
 void
 W_ReadLumpEMS
 (int16_t           lump,
@@ -364,16 +414,18 @@ W_ReadLumpEMS
     }
     else
         handle = l->handle;
+
 	dest = Z_LoadBytesFromEMS(lumpRef);
-    lseek (handle, l->position, SEEK_SET);
-    c = read (handle, dest, l->size);
+	lseek(handle, l->position, SEEK_SET);
 
 	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
 #ifdef _M_I86
-	if (c < l->size && c + 65536l != l->size) // error check
+	c = _farread(handle, dest, l->size);
+
 #else
-	if (c < l->size) // error check
+	c = read(handle, dest, l->size);
 #endif
+	if (c < l->size) // error check
 		I_Error("\nW_ReadLump: only read %il of %il on lump %i",
 			c, l->size, lump);
 

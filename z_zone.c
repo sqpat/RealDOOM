@@ -119,6 +119,9 @@
 // 4 13315550 1684755 2094035 207 (2134 in 4959)    <- locking in PIT_
 // 4 13522324 11193610 1568681 207 (2134 in 3926)    <- locking in R_ProjectSprite
 
+// 4 16594448 2234441 2923661 207 (2134 in 6367)    <----- after removing the 16 bit warnings
+
+
  // CONCLUSION: page locking is not helping ? lru just wins?
 
 
@@ -1263,7 +1266,7 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 
 	if (ref > EMS_ALLOCATION_LIST_SIZE) {
 		//I_Error("out of bounds memref.. tick %i    %i %s %i", gametic, ref, file, line);
-		I_Error("out of bounds memref.. tick %i    %i %s %i", gametic, ref);
+		I_Error("out of bounds memref.. tick %li    %i ", gametic, ref);
 	}
 	if (ref == 0) {
 		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref);

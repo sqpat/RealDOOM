@@ -428,9 +428,9 @@ void P_ZMovement (MEMREF moRef)
 void
 P_NightmareRespawn(MEMREF mobjRef)
 {
-	fixed_t		x;
-	fixed_t		y;
-	fixed_t		z;
+	fixed_t_union		x;
+	fixed_t_union		y;
+	fixed_t_union		z;
 	mobj_t*		mo;
 	mapthing_t*		mthing;
 	MEMREF moRef;
@@ -449,11 +449,13 @@ P_NightmareRespawn(MEMREF mobjRef)
 	sector_t* sectors;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	x = mobj->spawnpoint.x << FRACBITS;
-	y = mobj->spawnpoint.y << FRACBITS;
+	x.h.fracbits = 0;
+	y.h.fracbits = 0;
+	x.h.intbits = mobj->spawnpoint.x;
+	y.h.intbits = mobj->spawnpoint.y;
 
 	// somthing is occupying it's position?
-	if (!P_CheckPosition(mobjRef, x, y)) {
+	if (!P_CheckPosition(mobjRef, x.w, y.w)) {
 		return;	// no respwan
 	}
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -471,11 +473,11 @@ P_NightmareRespawn(MEMREF mobjRef)
 	S_StartSoundFromRef(moRef, sfx_telept);
 
 	// spawn a teleport fog at the new spot
-	subsecnum = R_PointInSubsector(x, y);
+	subsecnum = R_PointInSubsector(x.w, y.w);
 	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	moRef = P_SpawnMobj(x, y, temp.w, MT_TFOG);
+	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG);
 
 	S_StartSoundFromRef(moRef, sfx_telept);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
@@ -484,9 +486,9 @@ P_NightmareRespawn(MEMREF mobjRef)
 
 	// spawn it
 	if (mobj->info->flags & MF_SPAWNCEILING){
-		z = ONCEILINGZ;
+		z.w = ONCEILINGZ;
 	} else {
-		z = ONFLOORZ;
+		z.w = ONFLOORZ;
 	}
 
 	mobjtype = mobj->type;
@@ -496,7 +498,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 
 
     // inherit attributes from deceased one
-    moRef = P_SpawnMobj (x,y,z, mobjtype);
+    moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype);
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mo->spawnpoint = mobjspawnpoint;
     mo->angle = ANG45 * (mobjspawnangle/45);
@@ -577,7 +579,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		if (mobj->movecount < 12 * 35) {
 			return;
 		}
-		if (leveltime & 31) {
+		if (leveltime.w & 31) {
 			return;
 		}
 
@@ -707,9 +709,9 @@ void P_RemoveMobj (MEMREF mobjRef)
 //
 void P_SpawnPlayer (mapthing_t* mthing)
 {
-     fixed_t		x;
-    fixed_t		y;
-    fixed_t		z;
+    fixed_t_union		x;
+	fixed_t_union		y;
+	fixed_t_union		z;
 
 	MEMREF mobjRef;
 	mobj_t*		mobj;
@@ -724,16 +726,19 @@ void P_SpawnPlayer (mapthing_t* mthing)
 		G_PlayerReborn();
 	}
 
-    x 		= mthingx << FRACBITS;
-    y 		= mthingy << FRACBITS;
-    z		= ONFLOORZ;
-	mobjRef	= P_SpawnMobj (x,y,z, MT_PLAYER);
+	x.h.fracbits = 0;
+	y.h.fracbits = 0;
+	x.h.intbits = mthingx;
+	y.h.intbits = mthingy;
+	z.w = ONFLOORZ;
+
+	mobjRef	= P_SpawnMobj (x.w,y.w,z.w, MT_PLAYER);
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	mobj->reactiontime = 0;
 
     // set color translations for player sprites
-    if (mthingtype > 1)		
-		mobj->flags |= (mthingtype-1)<<MF_TRANSSHIFT;
+//    if (mthingtype > 1)		
+		//mobj->flags |= (mthingtype-1)<<MF_TRANSSHIFT;
 		
     mobj->angle	= ANG45 * (mthingangle/45);
     mobj->player = &players;
@@ -778,9 +783,9 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
     int16_t			i;
     int16_t			bit;
     mobj_t*		mobj;
-    fixed_t		x;
-    fixed_t		y;
-    fixed_t		z;
+    fixed_t_union		x;
+	fixed_t_union		y;
+	fixed_t_union		z;
 	MEMREF mobjRef;
 	int16_t mthingtype = mthing->type;
 	int16_t mthingoptions = mthing->options;
@@ -844,17 +849,19 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
     }
     
     // spawn it
-    x = mthingx << FRACBITS;
-    y = mthingy << FRACBITS;
+	x.h.fracbits = 0;
+	y.h.fracbits = 0;
+    x.h.intbits = mthingx;
+    y.h.intbits = mthingy;
 
 	if (mobjinfo[i].flags & MF_SPAWNCEILING) {
-		z = ONCEILINGZ;
+		z.w = ONCEILINGZ;
 	} else {
-		z = ONFLOORZ;
+		z.w = ONFLOORZ;
 	}
  
 	// 55
-	mobjRef = P_SpawnMobj (x,y,z, i);
+	mobjRef = P_SpawnMobj (x.w,y.w,z.w, i);
 
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
     mobj->spawnpoint = copyofthing;
@@ -989,6 +996,7 @@ P_SpawnMissile
 	fixed_t momz;
 	int32_t thspeed;
 	MEMREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type);
+	fixed_t_union temp;
 
 	th = (mobj_t*)Z_LoadBytesFromEMS(thRef);
 	if (th->info->seesound) {
@@ -1007,6 +1015,12 @@ P_SpawnMissile
     // fuzzy player
 	if (dest->flags & MF_SHADOW) {
 		an += (P_Random() - P_Random()) << 20;
+/*
+		temp.h.fracbits = 0;
+		temp.h.intbits = (P_Random() - P_Random());
+		temp.h.intbits <<= 4;
+		an += temp.w;
+		*/
 	}
 
 	dist = P_AproxDistance(dest->x - sourcex, dest->y - sourcey);
@@ -1050,6 +1064,7 @@ P_SpawnPlayerMissile
     fixed_t	z;
     fixed_t	slope;
 	fixed_t speed;
+	fixed_t_union temp;
 	mobj_t* source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
     
 
@@ -1083,7 +1098,12 @@ P_SpawnPlayerMissile
 	S_StartSound (th, th->info->seesound);
 
     th->targetRef = sourceRef;
-    th->angle = an << ANGLETOFINESHIFT;
+/*	temp.h.fracbits = 0;
+	temp.h.intbits = an;
+	temp.h.intbits <<= 3;
+	th->angle = temp.w;*/
+
+	th->angle = an << ANGLETOFINESHIFT;
 	//an = an >> ANGLETOFINESHIFT;
 
 	speed = MAKESPEED(th->info->speed);
