@@ -8,11 +8,9 @@ KNOWN ISSUES
  - no sound, need new 16 bit lib
  - no titlepic, etc. requires 65k allocation, 64k currently maximum
  - time counter on level finish is wrong
- - doom2 enemies probably nonfunctional, needs testing
+ - non shareware enemies probably nonfunctional, needs testing
  - savegames broken. not sure if it will be compatible with original doom
  - rendering issue with weird line early in demo 3 might be related to rendering fuzzy
- - menu sometimes jumps a bit? might be due to keyboard issues
- - are keys working badly or is it just mac dosbox? test again on pc when possible. didnt notice because i was relying on demos too much but i think i did do some 32 to 16 bit code conversion around keyboard input
  - look into raiseToTexture stuff
 
 - doom 16 size currently:
@@ -47,22 +45,18 @@ TODO
  x screens in conventional instead of allocced
  ~ convert fixed_t uses to fixed_t_union (then rename)
  ~ MINOR BUGS/IMPROVEMENTS
- x get rid of last bits of multiplayer, players array
- x get rid of extra arguments in functions etc
- x fix keyboard bug
- x fix automap not working bug
- 1 fix the bugs a bit in expanding visplane mode
-   - clean up the #defines etc
-   - make sure non EMS visplanes still works
-   ? why does 4 page need forced page 0 visplane, and 8 page needs it not there?
-   - rename to lock page
 
- 2 fix melee range bug
- 3 implement EMS paging
- 4 do all the 16 bit fixed union stuff to make 16 bit warnings go away
- 5 some improvements using the page locking feature
- 6 fix the texture rotate/offset issue?
-
+ - put all mobj in the same page if possible?
+ 1 fix melee range bug
+ 2 implement EMS paging
+ 3 do all the 16 bit fixed union stuff to make 16 bit warnings go away
+ 
+ ? look into no backbuffer
+ 
+ 5 fix the texture rotate/offset issue?
+ 
+ x start passing around pointers instead of refs in spots where we lock a page?
+  x for example on the pspr and enemy action code
 
  - make pathtraverse work mostly off 16 bit math? i think its possible
  - look into ds->scale1 and associated values to 16 bit? or small fixed, etc
@@ -97,15 +91,7 @@ CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everyt
  - tics
     - if they are deltas they can usually be 16 bit but otherwise probably needs to be 32?
 
-
-
- IMPROVEMENTS
- ? clean up 0 allocation checking code
- - TEST DOOM2 STUFF
- ? remove disk reading icon (?)
- - save file fixes
- - make titlepic work with > 4 pages?
- - investigate runtime improvements in z_zone.
+ 
 
 
 - get rid of:

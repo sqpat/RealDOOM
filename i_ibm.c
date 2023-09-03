@@ -35,12 +35,7 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
-//
-// Macros
-//
-
-#define DPMI_INT 0x31
-#define EMS_INT 0x67
+ 
 
 
 //#define NOKBD
@@ -656,6 +651,10 @@ void I_ShutdownKeyboard(void)
         *(int16_t *)0x41c = *(int16_t *)0x41a;      // clear bios key buffer
 }
 
+void I_ShutdownMemory(void)
+{
+	Z_ShutdownEMS();
+}
 
 //
 // Mouse
@@ -899,6 +898,7 @@ void I_Shutdown(void)
     I_ShutdownTimer();
     I_ShutdownMouse();
     I_ShutdownKeyboard();
+	I_ShutdownMemory();
 }
 
 //
@@ -938,6 +938,8 @@ void I_Quit(void)
     I_ShutdownTimer();
     I_ShutdownMouse();
     I_ShutdownKeyboard();
+	Z_ShutdownEMS();
+
 	scr = Z_LoadBytesFromEMS(scrRef);
     memcpy((void *)0xb8000, scr, 80 * 25 * 2);
     regs.w.ax = 0x0200;
@@ -945,6 +947,7 @@ void I_Quit(void)
     regs.h.dl = 0;
     regs.h.dh = 23;
 	intx86(0x10, (union REGS *)&regs, &regs); // Set text pos
+
     printf("\n");
 
     exit(0);
@@ -958,7 +961,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 {
 
     // 4 mb
-   int16_t numPagesToAllocate = (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
+   int16_t numPagesToAllocate = 256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
    int16_t pageframebase;
 
    char	emmname[9] = "EMMXXXX0";
@@ -980,18 +983,8 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
     }
 
     printf("EMS exists...\n");
-    printf("Checking for EMS functionality...");
 
-
-    regs.h.ah = 0x40;
-    intx86(EMS_INT, &regs, &regs);
-    errorreg = regs.h.ah;
-    if (!errorreg) {
-        I_Error("ems nonfunctional??? status %i\n", errorreg);
-    }
-
-    printf("EMS functional...\n");
-    printf("Checking EMS Version...\n");
+	printf("Checking EMS Version...\n");
 
     regs.h.ah = 0x46;
     intx86(EMS_INT, &regs, &regs);
@@ -1001,7 +994,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
         I_Error("Get EMS Version failed!");
     }
     //vernum = 10*(vernum >> 4) + (vernum&0xF);
-    I_Error("EMS Version was %i\n", vernum);
+	printf("EMS Version was %i\n", vernum);
     if (vernum < 32){
         printf("Warning! EMS Version too low! Expected 3.2, found %i", vernum);
         //Applications like dosbox may support EMS but not report a proper version #?
@@ -1018,7 +1011,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
         I_Error("Could not get page frame!");
     }
 
-    printf("Page frame was %u\n", pageframebase);
+    printf("Page frame addr was %u\n", pageframebase);
     printf("Checking pages available\n");
 
 
@@ -1030,7 +1023,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 
     if (pagesavail < numPagesToAllocate){
         printf("Warning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);
-        printf("TODO In the future quit here unless a command line arg is supplied.");
+		I_Error("TODO In the future allow command line arg to bypass this.");
         //I_Error("Quitting now...");
     }
 
@@ -1045,7 +1038,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
     // Error 137 = 0x89 = zero pages
     // Error 136 = 0x88 = OUT_OF_LOG
 
-        I_Error("Couldn't allocate %d EMS Pages, error %d", numPagesToAllocate, regs.h.ah);
+        I_Error("Couldn't allocate %i EMS Pages, error %d", numPagesToAllocate, regs.h.ah);
     } 
 
 

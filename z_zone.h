@@ -152,6 +152,7 @@ void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
 
 */
 
+void Z_ShutdownEMS();
 
 
 #endif

@@ -69,13 +69,13 @@ typedef struct
 //
 typedef struct
 {
-	int8_t                name[8];
-	boolean             masked;
-	int16_t               width;
-	int16_t               height;
-	void                **columndirectory;      // OBSOLETE
-	int16_t               patchcount;
-	mappatch_t  patches[1];
+	int8_t                name[8];  // 8
+	byte				unusedA[4];        // 12  defining this in bytes to avoid 16/32 bit compiler differences
+	int16_t               width;    // 14
+	int16_t               height;   // 16
+	byte                unusedB[4];      // 20 defining this in bytes to avoid 16/32 bit compiler differences
+	int16_t               patchcount;// 22
+	mappatch_t  patches[1];			 // 32
 } maptexture_t;
 
 
@@ -727,27 +727,19 @@ void R_InitTextures(void)
 			patch->originy = (mpatch->originy);
 			patch->patch = patchlookup[(mpatch->patch)];
 
-			if (patch->patch == 22873) {
-				I_Error("caught early %i %i %i %i", j, mpatch, mpatch->patch, 0);
-			}
 
 			if (patch->patch == -1)
 			{
-				I_Error("R_InitTextures: Missing patch in texture %s %i",
-					texture->name, textureRef);
+				I_Error("\nR_InitTextures: Missing patch in texture %s \n %i %i %i %i %i %i",
+					texture->name, 
+					textureRef, i, j, mpatch->patch, nummappatches,
+					texture->patchcount
+					);
 			}
-
-			if (i == 2 && j == 1) {
-//				I_Error("values %i %i %i", i, j, patch->patch);
-			}
-
+			 
 
 		}
-
-		if (i == 2) {
-			//I_Error("values %i %i %i", i, texture->patchcount, texture->patches[1]);
-		}
-
+ 
 
 		//printf("name %s", texture->name);
 		texturecolumnlump = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);

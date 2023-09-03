@@ -27,6 +27,9 @@
 #include "doomstat.h"
 #include "r_bsp.h"
 
+#include <dos.h>
+
+
 //
 // ZONE MEMORY ALLOCATION
 //
@@ -164,7 +167,7 @@
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048
 // todo make this PAGE * PAGE SIZE 
-#define MAX_ZMALLOC_SIZE 64 * 1024
+#define MAX_ZMALLOC_SIZE 64 * 1024u
 
 // demo commented out...
 
@@ -273,6 +276,9 @@ int8_t lockedpages[NUM_EMS_PAGES];
 
 static uint16_t pageframebase;
 static int16_t emshandle;
+extern union REGS regs;
+
+
 
 #else
 #endif
@@ -340,10 +346,10 @@ void Z_InitEMS(void)
 	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
 #else
 	pageFrameArea = I_ZoneBaseEMS(&size);
+	EMSArea = ((byte*)pageFrameArea + pageframeareasize);
 #endif
 	memsize = size;
 
-	EMSArea = ((byte*)pageFrameArea + pageframeareasize);
 
 
 	printf("EMS zone location  %p  \n", pageFrameArea);
@@ -670,6 +676,48 @@ void Z_MarkPageMRU(uint16_t pagenumber) {
 
 
 void Z_DoPageOut(uint16_t pageframeindex, int source) {
+#ifdef _M_I86
+
+	// swap OUT memory
+	int16_t i = 0;
+	int16_t numPagesToSwap = pagesize[pageframeindex];
+	// don't swap out an already swapped out page
+	if (activepages[pageframeindex] == -1) {
+		return;
+	}
+		
+	actualpageouts++;
+	pageouts += numPagesToSwap;
+
+
+	if (numPagesToSwap <= 0) {
+		numPagesToSwap = 1;
+	}
+
+
+	for (i = 0; i < numPagesToSwap; i++) {
+		activepages[pageframeindex + i] = -1;
+		pagesize[pageframeindex + i] = -1;
+		Z_MarkPageLRU(pageframeindex + i);
+		if (lockedpages[pageframeindex + i]) {
+			I_Error("paging out locked %i %i", source, numPagesToSwap);
+			//Z_PageDump("paging out locked %i", source);
+		}
+
+
+		regs.h.al = pageframeindex+i;  // physical page
+		regs.w.bx = activepages[pageframeindex+i];    // logical page
+		regs.w.dx = emshandle; // handle
+		regs.h.ah = 0x44;
+		intx86(EMS_INT, &regs, &regs);
+		if (regs.h.ah != 0) {
+			I_Error("Mapping failed on page %i!\n", pageframeindex+i);
+		}
+
+	}
+
+#else
+
 	// swap OUT memory
 	int16_t i = 0;
 	int16_t numPagesToSwap = pagesize[pageframeindex];
@@ -704,9 +752,44 @@ void Z_DoPageOut(uint16_t pageframeindex, int source) {
 		}
 	}
 
+#endif
+
 }
 
 void Z_DoPageIn(uint16_t logicalpage, uint16_t pageframeindex, uint16_t numallocatepages) {
+
+#ifdef _M_I86
+
+	int16_t i = 0;
+
+	//todo implement multi-page pagination at once (ems 4.0?)
+
+	for (i = 0; i < numallocatepages; i++) {
+
+		regs.h.al = pageframeindex + i;				// physical page
+		regs.w.bx = logicalpage + i;		// logical page
+		regs.w.dx = emshandle;						// handle
+		regs.h.ah = 0x44;
+		intx86(EMS_INT, &regs, &regs);
+		if (regs.h.ah != 0) {
+			I_Error("Mapping failed on page %i %i %i %i %i %i %i %i!\n", activepages[pageframeindex + i], i, pageframeindex, logicalpage, pageins, actualpageins, pageouts, actualpageouts);
+		}
+
+
+		activepages[pageframeindex + i] = logicalpage + i;
+
+		if (i == 0) {
+			pagesize[pageframeindex + i] = numallocatepages;
+		}
+		else {
+			pagesize[pageframeindex + i] = -1;
+		}
+
+	}
+
+
+#else
+
 
 	int16_t i = 0;
 	byte* copydst = pageFrameArea + pageframeindex * PAGE_FRAME_SIZE;
@@ -727,6 +810,28 @@ void Z_DoPageIn(uint16_t logicalpage, uint16_t pageframeindex, uint16_t numalloc
 		}
 		Z_MarkPageMRU(pageframeindex + i);
 	}
+
+#endif
+
+}
+
+void Z_ShutdownEMS() {
+
+
+#ifdef _M_I86
+	int16_t result;
+	
+	if (emshandle){
+
+		regs.w.dx = emshandle; // handle
+		regs.h.ah = 0x45;
+		intx86(EMS_INT, &regs, &regs);
+		result = regs.h.ah;
+		if (result != 0) {
+			printf("Failed deallocating EMS memory! %i!\n", result);
+		}
+	}
+#endif
 
 }
 
@@ -781,6 +886,9 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 	boolean skip;
 	boolean allpagesgood;
 	numreads++;
+
+
+	//I_Error("\nfirst %u %ul %lx %i", logicalpage, size, page_and_size, 0);
 
 	if (size == 0) {
 		//I_Error("why a zero allocation!?");
@@ -1153,10 +1261,6 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 	mobj_t* thing;
 	line_t* lines;
 
-	if (MAKE_SIZE(allocations[ref].page_and_size == 33860)) {
-		I_Error("33860 was %i ", allocations[ref].sourcehint);
-	}
-
 	if (ref > EMS_ALLOCATION_LIST_SIZE) {
 		//I_Error("out of bounds memref.. tick %i    %i %s %i", gametic, ref, file, line);
 		I_Error("out of bounds memref.. tick %i    %i %s %i", gametic, ref);
@@ -1331,7 +1435,8 @@ Z_MallocEMSNewWithBackRef
 
 
 
-	if (size > MAX_ZMALLOC_SIZE) {
+	//if (size > MAX_ZMALLOC_SIZE) {
+	if (size & 0xffff0000) {
 		I_Error("Z_MallocEMS: allocation too big! size was %i bytes %i %i %i", size, tag, user, sourceHint);
 	}
 
