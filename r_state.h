@@ -61,6 +61,7 @@ extern int16_t		firstspritelump;
 extern int16_t		lastspritelump;
 extern int16_t		numspritelumps;
 
+extern int16_t firstnode;
 
 
 //

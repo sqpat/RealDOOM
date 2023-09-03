@@ -362,17 +362,17 @@ void R_DrawPlanes (void)
 	int8_t currentplanebyteRef;
 
 	currentplanebyteRef = 0; // visplaneheaders->visplanepage is always 0;
-	base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], 0, PAGE_LOCKED))[0]); // load into locked page
+	base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], PAGE_LOCKED))[0]); // load into locked page
 
     for (pl = visplaneheaders ; pl < lastvisplaneheader ; pl++) {
 		if (pl->minx > pl->maxx)
 			continue;
 
 		if (currentplanebyteRef != pl->visplanepage) { // new page to set locked..
-			Z_SetLocked(visplanebytesRef[currentplanebyteRef], PAGE_NOT_LOCKED, 130);
+			Z_SetUnlocked(visplanebytesRef[currentplanebyteRef],  130);
 			currentplanebyteRef = pl->visplanepage;
 //			base = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[currentplanebyteRef]))[0]);
-			base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], 0, PAGE_LOCKED))[0]); // load into locked page
+			base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], PAGE_LOCKED))[0]); // load into locked page
 
 		}
 		plbytes = &(base[pl->visplaneoffset]);
@@ -400,7 +400,7 @@ void R_DrawPlanes (void)
 
 					dc_source = R_GetColumn(skytexture, angle);
 					colfunc ();
-					//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 7);
+					//Z_SetUnlocked(lockedRef,  7);
 
 				}
 			}
@@ -413,7 +413,7 @@ void R_DrawPlanes (void)
 			flattranslation[pl->picnum],
 			PU_STATIC);
 		ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
-		//Z_SetLocked(ds_sourceRef, PAGE_LOCKED, 28);
+		//Z_SetUnlocked(ds_sourceRef, PAGE_LOCKED, 28);
 		planeheight = abs(pl->height-viewz.w);
 		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
@@ -457,11 +457,11 @@ void R_DrawPlanes (void)
 			}
 
 		}
-		//Z_SetLocked(ds_sourceRef, PAGE_NOT_LOCKED, 27);
+		//Z_SetUnlocked(ds_sourceRef,  27);
 		Z_ChangeTagEMSNew (ds_sourceRef, PU_CACHE);
     }
 
-	Z_SetLocked(visplanebytesRef[currentplanebyteRef], PAGE_NOT_LOCKED, 132);
+	Z_SetUnlocked(visplanebytesRef[currentplanebyteRef],  132);
 
 }
 

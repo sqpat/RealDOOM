@@ -1104,7 +1104,6 @@ P_SetMobjState
 {
 	state_t*	st;
 	mobj_t*	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-	int16_t i = 0;
 
 	do {
 		if (state == S_NULL) {
@@ -1194,7 +1193,6 @@ P_SetMobjState
 
 
 		state = st->nextstate;
-		i++;
 	} while (!mobj->tics);
 
 

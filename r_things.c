@@ -411,14 +411,14 @@ R_DrawVisSprite
     spryscale = vis->scale;
     sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
         
-	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, 0, true);
+	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, true);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale) {
 		texturecolumn = (frac>>FRACBITS);
 		column = (column_t *) ((byte *)patch + (patch->columnofs[texturecolumn]));
         R_DrawMaskedColumn (column);
 		Z_RefIsActive(patchRef);
     }
-	Z_SetLocked(patchRef, PAGE_NOT_LOCKED, 17);
+	Z_SetUnlocked(patchRef,  17);
     colfunc = basecolfunc;
 }
 
@@ -667,13 +667,7 @@ void R_AddSprites (int16_t secnum)
 		thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 		 
 		lastThingRef = thingRef;
-		#ifdef LOOPCHECK 
-			i++;
-			if (i > 1000) {
-				// 625, 463, 463...   type 2, 0
-				I_Error("caught inf %i %i %i %i %i", gametic, prndindex, thingRef, thing->snextRef, thing->type);
-			}
-		#endif
+	
 	}
 
 

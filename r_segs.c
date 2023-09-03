@@ -210,7 +210,7 @@ R_RenderMaskedSegRange
 	    // draw the texture
 	    col = (column_t *)((byte *)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
 	    R_DrawMaskedColumn (col);
-		//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 13);
+		//Z_SetUnlocked(lockedRef,  13);
 		maskedtexturecol[dc_x] = MAXSHORT;
 	}
 	spryscale += rw_scalestep;
@@ -258,7 +258,7 @@ void R_RenderSegLoop (void)
 		
 		if (markceiling) {
 			visplanebytes_t* ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[ceilingplane->visplanepage]))[ceilingplane->visplaneoffset]);
-			//Z_SetLocked(visplanebytesRef[ceilingplane->visplanepage], PAGE_LOCKED, 14);
+			//Z_SetUnlocked(visplanebytesRef[ceilingplane->visplanepage], PAGE_LOCKED, 14);
 			top = ceilingclip[rw_x]+1;
 			bottom = yl-1;
 
@@ -278,7 +278,7 @@ void R_RenderSegLoop (void)
 
 		if (markfloor) {
 			visplanebytes_t* floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[floorplane->visplanepage]))[floorplane->visplaneoffset]);
-			//Z_SetLocked(visplanebytesRef[floorplane->visplanepage], PAGE_LOCKED, 15);
+			//Z_SetUnlocked(visplanebytesRef[floorplane->visplanepage], PAGE_LOCKED, 15);
 			top = yh+1;
 			bottom = floorclip[rw_x]-1;
 			if (top <= ceilingclip[rw_x]){
@@ -365,7 +365,7 @@ void R_RenderSegLoop (void)
 
 			dc_source = R_GetColumn(midtexture,texturecolumn);
 			colfunc ();
-			//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 8);
+			//Z_SetUnlocked(lockedRef,  8);
 			ceilingclip[rw_x] = viewheight;
 			floorclip[rw_x] = -1;
 		} else {
@@ -387,7 +387,7 @@ void R_RenderSegLoop (void)
 
 					dc_source = R_GetColumn(toptexture,texturecolumn);
 					colfunc ();
-					//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 9);
+					//Z_SetUnlocked(lockedRef,  9);
 					ceilingclip[rw_x] = mid;
 				} else {
 					ceilingclip[rw_x] = yl - 1;
@@ -415,7 +415,7 @@ void R_RenderSegLoop (void)
 
 					dc_source = R_GetColumn(bottomtexture, texturecolumn);
 					colfunc();
-					//Z_SetLocked(lockedRef, PAGE_NOT_LOCKED, 10);
+					//Z_SetUnlocked(lockedRef,  10);
 					floorclip[rw_x] = mid;
 				}
 				else {

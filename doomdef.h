@@ -46,7 +46,7 @@ enum { VERSION =  109 };
 // Probably going to remove this eventually, checks for some infinite loops in a few places. I used this when tracking down freezing bugs when there were many memory leaks early in development.
 //#define LOOPCHECK
 // Moves visplanes out of conventional memory into EMS. On its own, makes things slower. But this also frees up like 85k of conventional memory which may be better used speeding up the game in other ways.
-#define EMS_VISPLANES
+//#define EMS_VISPLANES
 
 // Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off.
 //#define CHECKREFS

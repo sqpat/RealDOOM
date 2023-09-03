@@ -80,6 +80,7 @@
 #define ALLOC_TYPE_SECTORS 27
 
 #define ALLOC_TYPE_VISPLANE 28
+#define ALLOC_TYPE_MOBJ 29
 
 #define PAGE_LOCKED true
 #define PAGE_NOT_LOCKED false
@@ -99,18 +100,18 @@ extern int32_t pageouts;
 typedef struct memblock_s
 {
 	int32_t                 size;   // including the header and possibly tiny fragments
-    void**              user;   // NULL if a free block
+	void**              user;   // NULL if a free block
 	int32_t                 tag;    // purgelevel
 	int32_t                 id;     // should be ZONEID
-    struct memblock_s*  next;
-    struct memblock_s*  prev;
+	struct memblock_s*  next;
+	struct memblock_s*  prev;
 } memblock_t;
 
 
 #define PAGE_FRAME_SIZE 0x4000
 
 void Z_InitEMS(void);
-void Z_FreeTagsEMS (int16_t tag);
+void Z_FreeTagsEMS(int16_t tag);
 
 #define BACKREF_LUMP_OFFSET 2048
 MEMREF Z_MallocEMSNew(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
@@ -118,21 +119,28 @@ MEMREF Z_MallocEMSNewWithBackRef(uint32_t size, uint8_t tag, uint8_t user, uint8
 #ifdef MEMORYCHECK
 void Z_CheckEMSAllocations(PAGEREF block, int32_t i, int32_t var2, int32_t var3);
 #endif
-void Z_ChangeTagEMSNew (MEMREF index, int16_t tag);
+void Z_ChangeTagEMSNew(MEMREF index, int16_t tag);
 void Z_FreeEMSNew(PAGEREF block);
 
 
-void Z_SetLocked(MEMREF ref, boolean value, int index);
+void Z_SetUnlocked(MEMREF ref, int index);
 //void* Z_LoadBytesFromEMS2(MEMREF index);
-void* Z_LoadBytesFromEMSWithOptions(MEMREF index, int16_t pagenumber, boolean locked);
+//void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked, int8_t* file, int32_t line);
+void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
 
-#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions(a, -1, PAGE_NOT_LOCKED)
+
+//void* Z_LoadBytesFromEMSWithOptions(MEMREF index, boolean locked, int8_t* file, int32_t line);
+//#define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b, __FILE__, __LINE__)
+#define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b)
+
+//#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED, __FILE__, __LINE__)
+#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED)
 
 #ifdef CHECKREFS
-	int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);
-	#define Z_RefIsActive(a) Z_RefIsActive2(a, __FILE__, __LINE__)
+int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);
+#define Z_RefIsActive(a) Z_RefIsActive2(a, __FILE__, __LINE__)
 #else
-    #define Z_RefIsActive(a) 
+#define Z_RefIsActive(a) 
 #endif
 /*
 void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
@@ -148,4 +156,4 @@ void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
 
 #endif
 
- 
+

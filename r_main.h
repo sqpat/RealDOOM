@@ -100,7 +100,7 @@ R_PointOnSide
   fixed_t	y,
   node_t*	node );
 
-fixed_t
+uint8_t
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,

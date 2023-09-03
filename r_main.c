@@ -176,7 +176,7 @@ R_PointOnSide
 
 
 
-fixed_t
+uint8_t
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,
@@ -224,23 +224,17 @@ R_PointOnSegSide
     dy.w = (y - temp.w);
 	
     // Try to quickly decide by looking at sign bits.
-    if ( (ldy ^ ldx ^ dx.h.intbits ^ dy.h.intbits)&0x8000 ) {
-        if  ( (ldy ^ dx.h.intbits) & 0x8000 ) {
-            // (left is negative)
-            return 1;
-        }
-        return 0;
-    }
+    if ( (ldy ^ ldx ^ dx.h.intbits ^ dy.h.intbits)&0x8000 ) 
+		// (left is negative)
+		return  ((ldy ^ dx.h.intbits) & 0x8000);
+    
 
     left = FixedMul ( ldy , dx.w );
     right = FixedMul ( dy.w , ldx );
 	
-    if (right < left) {
-        // front side
-        return 0;
-    }
-    // back side
-    return 1;			
+	// front side if true, back side if false
+	return right >= left;
+
 } 
 
 
@@ -281,84 +275,157 @@ R_PointToAngle
 ( fixed_t	x,
   fixed_t	y )
 {	
-    x -= viewx.w;
-    y -= viewy.w;
-    
-    if ( (!x) && (!y) )
+	fixed_t tempDivision, slopeDiv;
+
+	x -= viewx.w;
+	y -= viewy.w;
+
+	if ((!x) && (!y))
+		return 0;
+
+	if (x >= 0)
+	{
+		// x >=0
+		if (y >= 0)
+		{
+			// y>= 0
+			if (x > y)
+			{
+				// octant 0
+				if (x < 512)
+					return 536870912;
+				else
+				{
+					tempDivision = (y << 3) / (x >> 8);
+					if (tempDivision < SLOPERANGE)
+						return tantoangle[tempDivision];
+					else
+						return 536870912;
+				}
+			}
+			else
+			{
+				// octant 1
+				if (y < 512)
+					return ANG90 - 1 - 536870912;
+				else
+				{
+					tempDivision = (x << 3) / (y >> 8);
+					if (tempDivision < SLOPERANGE)
+						return ANG90 - 1 - tantoangle[tempDivision];
+					else
+						return ANG90 - 1 - 536870912;
+				}
+			}
+		}
+		else
+		{
+			// y<0
+			y = -y;
+
+			if (x > y)
+			{
+				// octant 8
+				if (x < 512)
+					return -536870912;
+				else
+				{
+					tempDivision = (y << 3) / (x >> 8);
+					if (tempDivision < SLOPERANGE)
+						return -tantoangle[tempDivision];
+					else
+						return -536870912;
+				}
+			}
+			else
+			{
+				// octant 7
+				if (y < 512)
+					return ANG270 + 536870912;
+				else
+				{
+					tempDivision = (x << 3) / (y >> 8);
+					if (tempDivision < SLOPERANGE)
+						return ANG270 + tantoangle[tempDivision];
+					else
+						return ANG270 + 536870912;
+				}
+			}
+		}
+	}
+	else
+	{
+		// x<0
+		x = -x;
+
+		if (y >= 0)
+		{
+			// y>= 0
+			if (x > y)
+			{
+				// octant 3
+				if (x < 512)
+					return ANG180 - 1 - 536870912;
+				else
+				{
+					tempDivision = (y << 3) / (x >> 8);
+					if (tempDivision < SLOPERANGE)
+						return ANG180 - 1 - tantoangle[tempDivision];
+					else
+						return ANG180 - 1 - 536870912;
+				}
+			}
+			else
+			{
+				// octant 2
+				if (y < 512)
+					return ANG90 + 536870912;
+				else
+				{
+					tempDivision = (x << 3) / (y >> 8);
+					if (tempDivision < SLOPERANGE)
+						return ANG90 + tantoangle[tempDivision];
+					else
+						return ANG90 + 536870912;
+				};
+			}
+		}
+		else
+		{
+			// y<0
+			y = -y;
+
+			if (x > y)
+			{
+				// octant 4
+				if (x < 512)
+					return ANG180 + 536870912;
+				else
+				{
+					tempDivision = (y << 3) / (x >> 8);
+					if (tempDivision < SLOPERANGE)
+						return ANG180 + tantoangle[tempDivision];
+					else
+						return ANG180 + 536870912;
+				}
+			}
+			else
+			{
+				// octant 5
+				if (y < 512)
+					return ANG270 - 1 - 536870912;
+				else
+				{
+					tempDivision = (x << 3) / (y >> 8);
+					if (tempDivision < SLOPERANGE)
+						return ANG270 - 1 - tantoangle[tempDivision];
+					else
+						return ANG270 - 1 - 536870912;
+				}
+			}
+		}
+	}
 	return 0;
-
-    if (x>= 0)
-    {
-	// x >=0
-	if (y>= 0)
-	{
-	    // y>= 0
-
-	    if (x>y)
-	    {
-		// octant 0
-		return tantoangle[ SlopeDiv(y,x)];
-	    }
-	    else
-	    {
-		// octant 1
-		return ANG90-1-tantoangle[ SlopeDiv(x,y)];
-	    }
-	}
-	else
-	{
-	    // y<0
-	    y = -y;
-
-	    if (x>y)
-	    {
-		// octant 8
-		return -tantoangle[SlopeDiv(y,x)];
-	    }
-	    else
-	    {
-		// octant 7
-		return ANG270+tantoangle[ SlopeDiv(x,y)];
-	    }
-	}
-    }
-    else
-    {
-	// x<0
-	x = -x;
-
-	if (y>= 0)
-	{
-	    // y>= 0
-	    if (x>y)
-	    {
-		// octant 3
-		return ANG180-1-tantoangle[ SlopeDiv(y,x)];
-	    }
-	    else
-	    {
-		// octant 2
-		return ANG90+ tantoangle[ SlopeDiv(x,y)];
-	    }
-	}
-	else
-	{
-	    // y<0
-	    y = -y;
-
-	    if (x>y)
-	    {
-		// octant 4
-		return ANG180+tantoangle[ SlopeDiv(y,x)];
-	    }
-	    else
-	    {
-		 // octant 5
-		return ANG270-1-tantoangle[ SlopeDiv(x,y)];
-	    }
-	}
-    }
-    return 0;
 }
 
 
@@ -745,7 +812,7 @@ int16_t
 		return 0;
 	}
 		
-    nodenum = numnodes-1;
+	nodenum = firstnode;
 	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 	while (! (nodenum & NF_SUBSECTOR) ) {
 		node = &nodes[nodenum];
@@ -816,9 +883,9 @@ void R_RenderPlayerView ()
 
 
     // The head node is the last node output.
-	Z_LoadBytesFromEMS(nodesRef);
-
-	R_RenderBSPNode (numnodes-1);
+	//Z_LoadBytesFromEMSWithOptions(nodesRef, PAGE_LOCKED);
+	R_RenderBSPNode (firstnode);
+	//Z_SetUnlocked(nodesRef, 118)
 
     // Check for new console commands.
     NetUpdate ();

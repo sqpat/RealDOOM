@@ -67,6 +67,9 @@ MEMREF          sidesRef;
 
 MEMREF          linebufferRef;
 
+int16_t firstnode;
+
+
 // BLOCKMAP
 // Created from axis aligned bounding box
 // of the map, a rectangular array of
@@ -351,6 +354,7 @@ void P_LoadNodes(int16_t lump)
 	uint16_t children[2];
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
+	firstnode = numnodes - 1;
 	nodesRef = Z_MallocEMSNew (numnodes * sizeof(node_t), PU_LEVEL, 0, ALLOC_TYPE_NODES);
 	W_CacheLumpNumCheck(lump, 4);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
