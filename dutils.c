@@ -19,15 +19,6 @@
 #include "dutils.h"
 #include "i_system.h"
 #include "z_zone.h"
-  
- 
-//
-// CHEAT SEQUENCE PACKAGE
-//
-
-static int8_t		firsttime = 1;
-static uint8_t	cheat_xlate_table[256];
-
 
 //
 // Called in st_stuff module, which handles the input.
@@ -38,14 +29,7 @@ cht_CheckCheat
 ( cheatseq_t*	cht,
 	int8_t		key )
 {
-	int16_t i;
 	int8_t rc = 0;
-
-    if (firsttime)
-    {
-	firsttime = 0;
-	for (i=0;i<256;i++) cheat_xlate_table[i] = SCRAMBLE(i);
-    }
 
     if (!cht->p)
 	cht->p = cht->sequence; // initialize if first time
@@ -53,7 +37,7 @@ cht_CheckCheat
     if (*cht->p == 0)
 	*(cht->p++) = key;
     else if
-	(cheat_xlate_table[(uint8_t)key] == *cht->p) cht->p++;
+	((uint8_t)key == *cht->p) cht->p++;
     else
 	cht->p = cht->sequence;
 
