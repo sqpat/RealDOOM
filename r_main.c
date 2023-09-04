@@ -109,7 +109,6 @@ uint8_t			extralight;
 void (*colfunc) (void);
 void (*basecolfunc) (void);
 void (*fuzzcolfunc) (void);
-void (*transcolfunc) (void);
 void (*spanfunc) (void);
 
  
@@ -724,12 +723,10 @@ void R_ExecuteSetViewSize (void)
     if (!detailshift) {
 		colfunc = basecolfunc = R_DrawColumn;
 		fuzzcolfunc = R_DrawFuzzColumn;
-		transcolfunc = R_DrawTranslatedColumn;
 		spanfunc = R_DrawSpan;
     } else {
 		colfunc = basecolfunc = R_DrawColumnLow;
 		fuzzcolfunc = R_DrawFuzzColumn;
-		transcolfunc = R_DrawTranslatedColumn;
 		spanfunc = R_DrawSpanLow;
     }
 
@@ -816,9 +813,7 @@ void R_Init (void)
     printf (".");
     R_InitSkyMap ();
     printf (".");
-    R_InitTranslationTables ();
 	
-
 }
 
 
