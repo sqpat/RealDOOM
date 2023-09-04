@@ -68,10 +68,6 @@ extern fixed_t		ds_ystep;
 extern MEMREF       ds_sourceRef;
 extern byte*		ds_source;		
 
-extern MEMREF		translationtablesRef;
-extern byte*		dc_translation;
-
-
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.
 void 	R_DrawSpan (void);
@@ -84,13 +80,6 @@ void
 R_InitBuffer
 ( int16_t		width,
   int16_t		height );
-
-
-// Initialize color translation tables,
-//  for player rendering etc.
-void	R_InitTranslationTables (void);
-
-
 
 // Rendering function.
 void R_FillBackScreen (void);
