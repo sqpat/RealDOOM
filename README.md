@@ -2,25 +2,23 @@
 
 There are a few people looking at this repo now so I figured I would write up something very quickly here.
 
-
 RealDOOM is a (currently in progress) port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical fidelity as the original game.
 
 While the port current builds to Real Mode, it fails during before drawing on the first frame, so it is not playable yet. In order to build the 16-bit build, run make16.bat. 16-bit RealDOOM requires EMS 3.2 or higher for 4 pages of EMS memory.
 
 The port also builds to 32 bit mode (for development and testing purposes) and runs with many of the 16 bit constraints in mind such as using an EMS simulator. To build this build, run make.bat.
+ 
 
-Right now the primary focus of RealDOOM is accuracy - speed is a nice 2nd.
-
-
-You can adjust the EMS page frames available by changing NUM_EMS_PAGES from 4 to a higher number. This is not really hooked up in 16-bit mode yet.
+You can adjust the EMS page frames available by changing NUM_EMS_PAGES in doomdefs.h from 4 to a higher number. This is not really hooked up in 16-bit mode yet. Eventually, 8-10 EMS active pages will represent a very well-configured 286 system and 'best case' performance for a 16 bit cpu running the game.
 
 
-There are a few features removed from RealDOOM including:
+
+### Removed features (not planned to be re-added)
  - multiplayer and netplay
  - joystick support
  
 
-And a few features broken and unimplemented:
+###  Broken/unimplemented features (planned to be fixed)
  - sound (will require a 16 bit library)
  - savegames (will require a rewrite of the archive/unarchive code)
  - TitlePic/etc display (requires 65k memory allocations, which is bigger than the 64k that 4 EMS pages requires). This can probably be fixed with custom code but isn't a high priority now.
@@ -34,10 +32,24 @@ For those interested in the technical details, a quick summary of what has been 
  - Changed many 32 bit variables internally to 16 and 8 bit when those extra bits weren't being used.
 
 
-Known bugs:
+### Known bugs:
  - melee attack range seems to be broken
  - there is a texture mapping bug especially with animated textures and doors. i think it has something to do with texture offsets having been made 8 bits.
  - sound, saves are unimplemented/nonfunctional
  - various fullscreen artwork will fail to allocate due to being > 64k 
  - content outside of doom1 shareware has not been tested at all and may be very broken
  - finale has not been tested at all
+ - there is a particular render bug with fuzz draws, it comes up twice in demo3 early on where you see a vertical fuzzy line drawn around the first spectre towards when its killed. not sure the cause of this yet.
+
+### Long term ideas:
+ - If conventional memory has enough space, add wolf3d-style conventional allocations of key variables
+ - Move strings into an external file so we can load it into an ems variable at runtime and free several KB of static space.
+ - Use Z_Malloc "source hints" to store items in EMS pages locally to other fields that will be used at the same time. having pages dedicated to mobj_t allocations will probably result in much less paging.
+ - Reduce backbuffer usage or add option to get rid of it (probably)
+ - More aggressive use of overlays and rewriting of some files to increase the amount of memory saved by overlays
+
+
+
+## Progress of 16-bit build
+Memory usage is low enough now, so compilation works, and the initialization code seems to process the wads and textures and such just fine. However, the game tends to to fail during the first tic of game processing due to a variety of bugs, possibly memory corruption. __FILE__ and __LINE__ macros seem to get corruped in a lot of these cases too. (stack overflow?) I need to investigate if this is related to far/near pointers needing to be explicitly declared or what. I may have to strip down the code a whole bunch and build it back up little by little to figure out what is going wrong.
+Nonetheless it's closer than ever before to actually working.
