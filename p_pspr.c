@@ -942,18 +942,6 @@ P_SetPsprite
 		psp->state = state;
 		psp->tics = state->tics;	// could be 0
 
-		/*
-		apparently nused feature in release DOOM, these misc longs are always 0 and add like 8kb to the final executable
-		
-		if (state->misc1)
-		{
-			// coordinate set
-			psp->sx = state->misc1 << FRACBITS;
-			psp->sy = state->misc2 << FRACBITS;
-		}
-
-		*/
-
 
 		// Call action routine.
 		// Modified handling.

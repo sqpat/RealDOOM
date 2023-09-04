@@ -135,15 +135,18 @@ extern angle_t		rw_angle1;
 #define MAXVISPLANES (NUM_VISPLANE_PAGES * VISPLANES_PER_EMS_PAGE)
 
 
-extern visplaneheader_t*	floorplane;
-extern visplaneheader_t*	ceilingplane;
 extern MEMREF visplanebytesRef[NUM_VISPLANE_PAGES]; 
+extern visplaneheader_t		visplaneheaders[MAXVISPLANES];
 
 
 #else
-extern visplane_t*	floorplane;
-extern visplane_t*	ceilingplane;
+#define MAXVISPLANES	128
+extern	visplane_t		visplanes[MAXVISPLANES];
 
 #endif
+
+extern int16_t	floorplaneindex;
+extern int16_t	ceilingplaneindex;
+
 
 #endif

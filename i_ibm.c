@@ -411,9 +411,10 @@ void I_UpdateNoBlit(void)
         h = realdr[BOXTOP] - realdr[BOXBOTTOM] + 1;
         I_UpdateBox(x, y, w, h);
     }
-    // Clear box
-    M_ClearBox16(dirtybox);
+	// Clear box
 
+	dirtybox[BOXTOP] = dirtybox[BOXRIGHT] = MINSHORT;
+	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
 }
 
 //
@@ -444,8 +445,8 @@ void I_InitGraphics(void)
     grmode = true;
     regs.w.ax = 0x13;
 	intx86(0x10, (union REGS *)&regs, &regs);
-    pcscreen = currentscreen = (byte *)0xa0000;
-    destscreen = (byte *)0xa4000;
+    pcscreen = currentscreen = (byte *)0xA0000l;
+    destscreen = (byte *)0xa4000l;
 
     outp(SC_INDEX, SC_MEMMODE);
     outp(SC_INDEX + 1, (inp(SC_INDEX + 1)&~8) | 4);
@@ -522,7 +523,7 @@ void I_StartTic(void)
 
 	I_ReadMouse();
 
- 
+
 	//
 	// keyboard events
 	//
@@ -846,7 +847,7 @@ void I_ReadMouse(void)
 
 
 #endif
-	
+
 
 
 	D_PostEvent(&ev);

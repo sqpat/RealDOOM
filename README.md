@@ -32,3 +32,12 @@ For those interested in the technical details, a quick summary of what has been 
  - Moved all Z_Malloc allocations to an EMS based version and new Zone Memory manager that supports 16k memory blocks
  - Rewrote much of the game code to prevent pulling too many heap variables at once, as they will get paged out and dereferenced
  - Changed many 32 bit variables internally to 16 and 8 bit when those extra bits weren't being used.
+
+
+Known bugs:
+ - melee attack range seems to be broken
+ - there is a texture mapping bug especially with animated textures and doors. i think it has something to do with texture offsets having been made 8 bits.
+ - sound, saves are unimplemented/nonfunctional
+ - various fullscreen artwork will fail to allocate due to being > 64k 
+ - content outside of doom1 shareware has not been tested at all and may be very broken
+ - finale has not been tested at all

@@ -746,31 +746,29 @@ void R_ExecuteSetViewSize (void)
 		screenheightarray[i] = viewheight;
 	}
 
+	// 168 viewheight
     // planes
-    for (i=0 ; i<viewheight ; i++) {
+	for (i=0 ; i<viewheight ; i++) {
 		temp.h.intbits = (i - viewheight / 2);
 		dy = (temp.w)+FRACUNIT/2;
 		dy = abs(dy);
-		yslope[i] = FixedDiv ( (viewwidth<<detailshift)/2*FRACUNIT, dy);
+		temp.h.intbits = (viewwidth << detailshift) / 2;
+		yslope[i] = FixedDiv ( temp.w, dy);
+		//yslope[i] = FixedDiv((viewwidth << detailshift) / 2 * FRACUNIT, dy);
+
     }
-	
+	// 320 viewwidth
+
     for (i=0 ; i<viewwidth ; i++) {
 		an = xtoviewangle[i];
 
 
 		cosadj = abs(finecosine(an));
 
-		if (cosadj == 0) {
-			I_Error("bad cosadj? %i %li %i", i, cosadj, an);
-
-		}
-
 		distscale[i] = FixedDiv (FRACUNIT,cosadj); // divide by zero in 16 bit mode here.
-
-			
-
-
     }
+
+
     
     // Calculate the light levels to use
     //  for each level / scale combination.
@@ -904,7 +902,7 @@ void R_RenderPlayerView ()
     R_ClearDrawSegs ();
     R_ClearPlanes ();
     R_ClearSprites ();
-    
+
     // check for new console commands.
     NetUpdate ();
 

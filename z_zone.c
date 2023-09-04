@@ -554,7 +554,7 @@ void Z_MarkPageLRU(uint16_t pagenumber) {
 #ifdef CHECKREFS
 
 
-void Z_PageDump(int8_t* string, int numallocatepages) {
+void Z_PageDump(int8_t* string, int16_t numallocatepages) {
 
 #if NUM_EMS_PAGES == 8
 	char*  message = "\n %i %i %i %i %i %i %i %i\n %i %i %i %i %i %i %i %i\n %i %i %i %i %i %i %i %i\n %i %i %i %i %i %i %i %i";
@@ -674,7 +674,7 @@ void Z_MarkPageMRU(uint16_t pagenumber) {
 }
 
 
-void Z_DoPageOut(uint16_t pageframeindex, int source) {
+void Z_DoPageOut(uint16_t pageframeindex, int16_t source) {
 #ifdef _M_I86
 
 	// swap OUT memory
@@ -722,9 +722,6 @@ void Z_DoPageOut(uint16_t pageframeindex, int source) {
 	int16_t numPagesToSwap = pagesize[pageframeindex];
 	byte* copysrc = pageFrameArea + (pageframeindex * PAGE_FRAME_SIZE);
 	byte* copydst = EMSArea + (activepages[pageframeindex] * PAGE_FRAME_SIZE);
-
-
-
 
 	// don't swap out an already swapped out page
 	if (activepages[pageframeindex] == -1) {
@@ -1181,7 +1178,7 @@ int16_t Z_GetEMSPageFrameNoUpdate(uint32_t page_and_size, MEMREF ref) {  //todo 
 
 // assumes the page is already in memory. 
 // todo add this as a Z_Malloc argument so we can avoid calls to Z_GetEMSPageFrame
-void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex, int index) {
+void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex, int16_t index) {
 	//int16_t pageframeindex = Z_GetEMSPageFrameNoUpdate(allocations[ref].page_and_size, ref);
 	uint8_t i;
 
@@ -1240,7 +1237,7 @@ void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex, i
 
 
 
-void Z_SetUnlocked(MEMREF ref, int index) {
+void Z_SetUnlocked(MEMREF ref, int16_t index) {
 	int16_t pagenumber = MAKE_PAGE(allocations[ref].page_and_size);
 	int16_t pageframeindex;
 	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
@@ -1265,12 +1262,12 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 	line_t* lines;
 
 	if (ref > EMS_ALLOCATION_LIST_SIZE) {
-		//I_Error("out of bounds memref.. tick %i    %i %s %i", gametic, ref, file, line);
+		//I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
 		I_Error("out of bounds memref.. tick %li    %i ", gametic, ref);
 	}
 	if (ref == 0) {
 		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref);
-		//I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref, file, line);
+		//I_Error("tried to load memref 0... tick %li    %i %s %i", gametic, ref, file, line);
 	}
 
 	/*

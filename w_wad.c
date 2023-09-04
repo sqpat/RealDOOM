@@ -304,14 +304,16 @@ int16_t W_CheckNumForName (int8_t* name)
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
 //
-int16_t W_GetNumForName (int8_t* name)
+int16_t W_GetNumForName(int8_t* name)
+//int16_t W_GetNumForName2 (int8_t* name, int8_t*file, int line)
 {
 	int16_t i;
 
     i = W_CheckNumForName (name);
     
-    if (i == -1)
-      I_Error ("W_GetNumForName: %s not found!", name);
+	if (i == -1)
+		I_Error("W_GetNumForName: %s not found! %s, %i", name, "", 0);
+		  //, file, line);
       
     return i;
 }
@@ -420,12 +422,14 @@ W_ReadLumpEMS
 
 	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
 #ifdef _M_I86
-	c = _farread(handle, dest, l->size);
+	//c = _farread(handle, dest, l->size);
 
+	c = read(handle, dest, l->size);
+	if (c < l->size && c + 65536l != l->size ) // error check
 #else
 	c = read(handle, dest, l->size);
-#endif
 	if (c < l->size) // error check
+#endif
 		I_Error("\nW_ReadLump: only read %il of %il on lump %i",
 			c, l->size, lump);
 

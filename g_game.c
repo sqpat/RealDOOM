@@ -159,10 +159,11 @@ fixed_t         angleturn[3] = {640, 1280, 320};        // + slow turn
  
 #define NUMKEYS         256 
 
-boolean         gamekeydown[NUMKEYS]; 
+boolean			gamekeydown[NUMKEYS];
 int8_t             turnheld;                               // for accelerative turning 
  
 boolean         mousearray[4]; 
+// note: i think the -1 array thing  might be causing 16 bit binary to act up - not 100% sure - sq
 boolean*        mousebuttons = &mousearray[1];          // allow [-1]
 
 // mouse values are used once 
@@ -195,27 +196,29 @@ void*           statcopy;                               // for statistics driver
 // or reads it from the demo buffer. 
 // If recording a demo, write it out 
 // 
-ticcmd_t emptycmd;
-void G_BuildTiccmd (ticcmd_t* cmd)
+//ticcmd_t emptycmd;
+void G_BuildTiccmd (int8_t index)
 { 
 	int8_t         i;
-    boolean     strafe;
+	int8_t     strafe;
     boolean     bstrafe; 
 	int8_t         speed;
 	int8_t         tspeed;
 	fixed_t         forward;
 	fixed_t         side;
     
-    ticcmd_t*   base;
+    //ticcmd_t*   base;
+	ticcmd_t* cmd = &localcmds[index];
 
-	base = &emptycmd;
-	memcpy(cmd, base, sizeof(*cmd));
+	//base = &emptycmd;
+	//memcpy(cmd, base, sizeof(*cmd));
+
+	memset(cmd, 0, sizeof(ticcmd_t));
         
-    strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe]  ; 
-    speed = gamekeydown[key_speed] ;
- 
+    strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe]  ;
+	speed = gamekeydown[key_speed] ;
     forward = side = 0;
-    
+
     // use two stage accelerative turning
     // on the keyboard 
     if (
@@ -229,7 +232,7 @@ void G_BuildTiccmd (ticcmd_t* cmd)
         tspeed = 2;             // slow turn 
     else 
         tspeed = speed;
-    
+
     // let movement keys cancel each other out
     if (strafe) 
     { 
@@ -252,7 +255,7 @@ void G_BuildTiccmd (ticcmd_t* cmd)
         if (gamekeydown[key_left]) 
             cmd->angleturn += angleturn[tspeed]; 
     } 
- 
+
     if (gamekeydown[key_up]) 
     {
         // fprintf(stderr, "up\n");
@@ -267,10 +270,10 @@ void G_BuildTiccmd (ticcmd_t* cmd)
         side += sidemove[speed]; 
     if (gamekeydown[key_strafeleft]) 
         side -= sidemove[speed];
-    
+ 
     // buttons
     
-    if (gamekeydown[key_fire] || mousebuttons[mousebfire] 
+    if (gamekeydown[key_fire] || mousebuttons[mousebfire]
         ) 
         cmd->buttons |= BT_ATTACK; 
  
@@ -291,13 +294,13 @@ void G_BuildTiccmd (ticcmd_t* cmd)
         }
     
     // mouse
-    if (mousebuttons[mousebforward]) 
+    if (mousebuttons[mousebforward])
         forward += forwardmove[speed];
     
     // forward double click
-    if (mousebuttons[mousebforward] != dclickstate && dclicktime > 1 ) 
+    if (mousebuttons[mousebforward] != dclickstate && dclicktime > 1 )
     { 
-        dclickstate = mousebuttons[mousebforward]; 
+        dclickstate = mousebuttons[mousebforward];
         if (dclickstate) 
             dclicks++; 
         if (dclicks == 2) 
@@ -320,7 +323,7 @@ void G_BuildTiccmd (ticcmd_t* cmd)
     
     // strafe double click
     bstrafe =
-        mousebuttons[mousebstrafe]  ; 
+		mousebuttons[mousebstrafe]  ;
     if (bstrafe != dclickstate2 && dclicktime2 > 1 ) 
     { 
         dclickstate2 = bstrafe; 
@@ -419,7 +422,7 @@ void G_DoLoadLevel (void)
     memset (gamekeydown, 0, sizeof(gamekeydown)); 
     mousex = mousey = 0; 
     sendpause = sendsave = paused = false; 
-    memset (mousebuttons, 0, sizeof(mousebuttons)); 
+    memset (mousebuttons, 0, sizeof(mousebuttons));
 
 
 
@@ -479,9 +482,9 @@ boolean G_Responder (event_t* ev)
 		return false; // always let key up events filter down
 
 	case ev_mouse:
-		mousebuttons[0] = ev->data1 & 1;
-		mousebuttons[1] = ev->data1 & 2;
-		mousebuttons[2] = ev->data1 & 4;
+		mousearray[0] = ev->data1 & 1;
+		mousearray[1] = ev->data1 & 2;
+		mousearray[2] = ev->data1 & 4;
 		mousex = ev->data2 * (mouseSensitivity + 5) / 10;
 		mousey = ev->data3 * (mouseSensitivity + 5) / 10;
 		return true; // eat events
@@ -1009,7 +1012,7 @@ void G_DoLoadGame (void)
         R_ExecuteSetViewSize ();
     
     // draw the pattern into the back screen
-    R_FillBackScreen ();   
+	R_FillBackScreen ();   
 } 
  
 

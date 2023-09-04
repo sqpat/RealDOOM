@@ -762,6 +762,7 @@ void A_Chase (MEMREF actorRef)
 	MEMREF actortargetRef = actor->targetRef;
 	mobj_t*	actorTarget;
 	fixed_t_union temp;
+	fixed_t delta;
 
     if (actor->reactiontime)
 		actor->reactiontime--;
@@ -785,20 +786,28 @@ void A_Chase (MEMREF actorRef)
 	
     // turn towards movement direction if not there yet
     if (actor->movedir < 8) {
-		//actor->angle &= (7<<29);
-		//delta = actor->angle - (actor->movedir << 29);
+
 		actor->angle &= 0xE0000000;
 		temp.w = 0;
-		temp.b.intbytehigh = actor->movedir << 5;
+		temp.b.intbytelow = actor->movedir;
+		temp.h.intbits <<= 5;
+
+		delta = actor->angle - temp.w;
 		
-		// TODO we're just taking delta so quick check without the subtraction. this can all be faster
-		//delta = actor->angle - temp.w;
-	
 		//todo make actor angle fixed_t_union and we can do this faster with 16 bit compares. We already ANDed to a bit mask that got rid of all the 32 bit precision anyway
+		if (delta > 0)
+			actor->angle -= ANG90 / 2;
+		else if (delta < 0)
+			actor->angle += ANG90 / 2;
+		
+		/*
+		// todo i dont understand why this doesnt work - sq
 		if (actor->angle > temp.w)
 			actor->angle -= ANG90/2;
 		else if (temp.w < actor->angle)
 			actor->angle += ANG90/2;
+			*/
+			
     }
 	if (actortargetRef) {
 		actorTarget = (mobj_t*)Z_LoadBytesFromEMS(actortargetRef);

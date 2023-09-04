@@ -257,7 +257,10 @@ void R_RenderSegLoop (void)
 			yl = ceilingclip[rw_x]+1;
 		
 		if (markceiling) {
-			visplanebytes_t* ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[ceilingplane->visplanepage]))[ceilingplane->visplaneoffset]);
+			visplanebytes_t* ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[ceilingplaneindex].visplanepage]))[visplaneheaders[ceilingplaneindex].visplaneoffset]);
+			if (ceilingplaneindex == -1) {
+				I_Error("blah");
+			}
 			//Z_SetUnlocked(visplanebytesRef[ceilingplane->visplanepage], PAGE_LOCKED, 14);
 			top = ceilingclip[rw_x]+1;
 			bottom = yl-1;
@@ -277,7 +280,7 @@ void R_RenderSegLoop (void)
 			yh = floorclip[rw_x]-1;
 
 		if (markfloor) {
-			visplanebytes_t* floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[floorplane->visplanepage]))[floorplane->visplaneoffset]);
+			visplanebytes_t* floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[floorplaneindex].visplanepage]))[visplaneheaders[floorplaneindex].visplaneoffset]);
 			//Z_SetUnlocked(visplanebytesRef[floorplane->visplanepage], PAGE_LOCKED, 15);
 			top = yh+1;
 			bottom = floorclip[rw_x]-1;
@@ -310,8 +313,8 @@ void R_RenderSegLoop (void)
 
 		if (top <= bottom)
 		{
-		ceilingplane->top[rw_x] = top;
-		ceilingplane->bottom[rw_x] = bottom;
+		visplanes[ceilingplaneindex].top[rw_x] = top;
+		visplanes[ceilingplaneindex].bottom[rw_x] = bottom;
 		}
 	}
 		
@@ -328,8 +331,8 @@ void R_RenderSegLoop (void)
 		top = ceilingclip[rw_x]+1;
 		if (top <= bottom)
 		{
-		floorplane->top[rw_x] = top;
-		floorplane->bottom[rw_x] = bottom;
+			visplanes[floorplaneindex].top[rw_x] = top;
+			visplanes[floorplaneindex].bottom[rw_x] = bottom;
 		}
 	}
 
@@ -856,11 +859,11 @@ R_StoreWallRange
 
     // render it
 	if (markceiling) {
-		ceilingplane = R_CheckPlane(ceilingplane, rw_x, rw_stopx - 1);
+		ceilingplaneindex = R_CheckPlane(ceilingplaneindex, rw_x, rw_stopx - 1);
 	}
     
 	if (markfloor) {
-		floorplane = R_CheckPlane(floorplane, rw_x, rw_stopx - 1);
+		floorplaneindex = R_CheckPlane(floorplaneindex, rw_x, rw_stopx - 1);
 	}
 	
 	R_RenderSegLoop ();

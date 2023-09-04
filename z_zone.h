@@ -122,7 +122,7 @@ void Z_ChangeTagEMSNew(MEMREF index, int16_t tag);
 void Z_FreeEMSNew(PAGEREF block);
 
 
-void Z_SetUnlocked(MEMREF ref, int index);
+void Z_SetUnlocked(MEMREF ref, int16_t index);
 //void* Z_LoadBytesFromEMS2(MEMREF index);
 //void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked, int8_t* file, int32_t line);
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);

@@ -62,7 +62,9 @@ void    W_InitMultipleFiles (int8_t** filenames);
 void    W_Reload (void);
 
 int16_t	W_CheckNumForName (int8_t* name);
-int16_t	W_GetNumForName (int8_t* name);
+int16_t	W_GetNumForName(int8_t* name);
+//int16_t W_GetNumForName2(int8_t* name, int8_t*file, int line);
+//#define W_GetNumForName(a) W_GetNumForName2(a, __FILE__, __LINE__)
 
 filelength_t	W_LumpLength (int16_t lump);
 void    W_ReadLumpStatic (int16_t lump, void *dest);

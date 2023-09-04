@@ -349,6 +349,7 @@ void R_DrawMaskedColumn (column_t* column) {
         topscreen = sprtopscreen + spryscale*column->topdelta;
         bottomscreen = topscreen + spryscale*column->length;
 
+		// todo add by 65535  ? dc_yl = topscreen.fracbits == 0 ? intbits : intbits+1
         dc_yl = (topscreen+FRACUNIT-1)>>FRACBITS;
         dc_yh = (bottomscreen-1)>>FRACBITS;
                 
