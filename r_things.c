@@ -393,7 +393,6 @@ R_DrawVisSprite
     fixed_t             frac;
     patch_t*            patch;
 	MEMREF				patchRef;
-	byte*				translationtables;
         
     patchRef = W_CacheLumpNumEMS (vis->patch+firstspritelump, PU_CACHE);
 
@@ -402,11 +401,6 @@ R_DrawVisSprite
     if (!dc_colormap) {
         // NULL colormap = shadow draw
         colfunc = fuzzcolfunc;
-    } else if (vis->mobjflags & MF_TRANSLATION) {
-		translationtables = Z_LoadBytesFromEMS(translationtablesRef);
-        colfunc = R_DrawTranslatedColumn;
-        dc_translation = translationtables - 256 +
-            ( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
     }
         
     dc_iscale = abs(vis->xiscale)>>detailshift;
