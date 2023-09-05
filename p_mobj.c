@@ -745,7 +745,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	players.moRef = mobjRef;
 	players.playerstate = PST_LIVE;
 	players.refire = 0;
-	players.message = NULL;
+	players.message = -1;
 	players.damagecount = 0;
 	players.bonuscount = 0;
 	players.extralight = 0;

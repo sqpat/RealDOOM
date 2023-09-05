@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <alloca.h>
 
 
 #include "doomdef.h"
@@ -46,7 +47,6 @@
 #include "s_sound.h"
 
 #include "doomstat.h"
-
 // Data.
 #include "sounds.h"
 
@@ -94,7 +94,7 @@ void    (*messageRoutine)(int16_t response);
 
 #define SAVESTRINGSIZE  24
 
-int8_t gammamsg[5][26] =
+int16_t gammamsg[5] =
 {
     GAMMALVL0,
     GAMMALVL1,
@@ -103,30 +103,31 @@ int8_t gammamsg[5][26] =
     GAMMALVL4
 };
 
-int8_t endmsg[NUM_QUITMESSAGES][80] =
+int16_t endmsg[NUM_QUITMESSAGES][80] =
 {
     // DOOM1
-    QUITMSG,
-    "please don't leave, there's more\ndemons to toast!",
-    "let's beat it -- this is turning\ninto a bloodbath!",
-    "i wouldn't leave if i were you.\ndos is much worse.",
-    "you're trying to say you like dos\nbetter than me, right?",
-    "don't leave yet -- there's a\ndemon around that corner!",
-    "ya know, next time you come in here\ni'm gonna toast ya.",
-    "go ahead and leave. see if i care."
+	QUITMSG,
+	QUITMSGD11,
+	QUITMSGD12,
+	QUITMSGD13,
+	QUITMSGD14,
+	QUITMSGD15,
+	QUITMSGD16,
+	QUITMSGD17
 };
 
-int8_t endmsg2[NUM_QUITMESSAGES][80] =
+int16_t endmsg2[NUM_QUITMESSAGES] =
 {
     // QuitDOOM II messages
-    QUITMSG,
-    "you want to quit?\nthen, thou hast lost an eighth!",
-    "don't go now, there's a \ndimensional shambler waiting\nat the dos prompt!",
-    "get outta here and go back\nto your boring programs.",
-    "if i were your boss, i'd \n deathmatch ya in a minute!",
-    "look, bud. you leave now\nand you forfeit your body count!",
-    "just leave. when you come\nback, i'll be waiting with a bat.",
-    "you're lucky i don't smack\nyou for thinking about leaving."
+	QUITMSG,
+	QUITMSGD21,
+	QUITMSGD22,
+	QUITMSGD23,
+	QUITMSGD24,
+	QUITMSGD25,
+	QUITMSGD26,
+	QUITMSGD27
+
 };
 
 // we are going to be entering a savegame string
@@ -554,7 +555,7 @@ void M_ReadSaveStrings(void)
         handle = open (name, O_RDONLY | 0, 0666);
         if (handle == -1)
         {
-            strcpy(&savegamestrings[i][0],EMPTYSTRING);
+            strcpy(&savegamestrings[i][0],getStringByIndex(EMPTYSTRING));
             LoadMenu[i].status = 0;
             continue;
         }
@@ -672,7 +673,7 @@ void M_SaveSelect(int16_t choice)
     
     saveSlot = choice;
     strcpy(saveOldString,savegamestrings[choice]);
-    if (!strcmp(savegamestrings[choice],EMPTYSTRING))
+    if (!strcmp(savegamestrings[choice], getStringByIndex(EMPTYSTRING)))
         savegamestrings[choice][0] = 0;
     saveCharIndex = strlen(savegamestrings[choice]);
 }
@@ -684,7 +685,7 @@ void M_SaveGame (int16_t choice)
 {
     if (!usergame)
     {
-        M_StartMessage(SAVEDEAD,NULL,false);
+        M_StartMessage(getStringByIndex(SAVEDEAD),NULL,false);
         return;
     }
         
@@ -730,7 +731,7 @@ void M_QuickSave(void)
         quickSaveSlot = 254;     // means to pick a slot now
         return;
     }
-    sprintf(tempstring,QSPROMPT,savegamestrings[quickSaveSlot]);
+    sprintf(tempstring, getStringByIndex(QSPROMPT),savegamestrings[quickSaveSlot]);
     M_StartMessage(tempstring,M_QuickSaveResponse,true);
 }
 
@@ -754,10 +755,10 @@ void M_QuickLoad(void)
     
     if (quickSaveSlot > 250) // means to pick a slot now
     {
-        M_StartMessage(QSAVESPOT,NULL,false);
+        M_StartMessage(getStringByIndex(QSAVESPOT),NULL,false);
         return;
     }
-    sprintf(tempstring,QLPROMPT,savegamestrings[quickSaveSlot]);
+    sprintf(tempstring, getStringByIndex(QLPROMPT),savegamestrings[quickSaveSlot]);
     M_StartMessage(tempstring,M_QuickLoadResponse,true);
 }
 
@@ -902,7 +903,7 @@ void M_ChooseSkill(int16_t choice)
 {
     if (choice == nightmare)
     {
-        M_StartMessage(NIGHTMARE,M_VerifyNightmare,true);
+        M_StartMessage(getStringByIndex(NIGHTMARE),M_VerifyNightmare,true);
         return;
     }
         
@@ -915,7 +916,7 @@ void M_Episode(int16_t choice)
     if ( shareware
          && choice)
     {
-        M_StartMessage(SWSTRING,NULL,false);
+        M_StartMessage(getStringByIndex(SWSTRING),NULL,false);
         M_SetupNextMenu(&ReadDef1);
         return;
     }
@@ -997,7 +998,7 @@ void M_EndGame(int16_t choice)
 		return;
 	}
 
-	M_StartMessage(ENDGAME, M_EndGameResponse, true);
+	M_StartMessage(getStringByIndex(ENDGAME), M_EndGameResponse, true);
 }
 
 
@@ -1081,18 +1082,18 @@ void M_QuitDOOM(int16_t choice)
     {
         if (french)
         {
-            sprintf(endstring, "%s\n\n"DOSY, endmsg2[0]);
+            sprintf(endstring, "%s%s\n\n",getStringByIndex(DOSY), getStringByIndex(endmsg2[0]) );
         }
         else
         {
-            sprintf(endstring, "%s\n\n"DOSY,
-                    endmsg2[(gametic >> 2) % NUM_QUITMESSAGES]);
+            sprintf(endstring, "%s%s\n\n",getStringByIndex(DOSY),
+				getStringByIndex(endmsg2[(gametic >> 2) % NUM_QUITMESSAGES]));
         }
     }
     else
     {
-        sprintf(endstring, "%s\n\n"DOSY,
-                endmsg[(gametic >> 2) % NUM_QUITMESSAGES]);
+        sprintf(endstring, "%s%s\n\n",getStringByIndex(DOSY),
+			getStringByIndex(endmsg[(gametic >> 2) % NUM_QUITMESSAGES]));
     }
   
   M_StartMessage(endstring,M_QuitResponse,true);

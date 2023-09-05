@@ -81,6 +81,7 @@
 
 #define ALLOC_TYPE_VISPLANE 28
 #define ALLOC_TYPE_MOBJ 29
+#define ALLOC_TYPE_STRINGS 30
 
 #define PAGE_LOCKED true
 #define PAGE_NOT_LOCKED false

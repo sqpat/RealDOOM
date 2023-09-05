@@ -637,7 +637,7 @@ ST_Responder (event_t* ev)
                 plyrmo->angle,
 			plyrmo->x,
 			plyrmo->y);
-		players.message = buf;
+		players.messagestring = buf;
       }
     }
     

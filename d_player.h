@@ -121,8 +121,9 @@ typedef struct player_s
     int16_t			secretcount;
 
     // Hint messages.
-    int8_t*		message;	
-    
+    int16_t		message;
+	int8_t*		messagestring;
+
     // For screen flashing (red or bright).
     int16_t			damagecount;
     int8_t			bonuscount;

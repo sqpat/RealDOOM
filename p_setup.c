@@ -892,7 +892,8 @@ P_SetupLevel
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 9);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
 
-	P_GroupLines(); // 49 tics (362 total)
+	P_GroupLines(); // 49 tics (362 ics total  in 16 bit, 45 tics in 32 bit)
+
 
 
 

@@ -16,6 +16,7 @@
 //
 
 #include <ctype.h>
+#include <alloca.h>
 
 #include "doomdef.h"
 
@@ -73,7 +74,7 @@ extern boolean		automapactive;
 // The actual names can be found in DStrings.h.
 //
 
-int8_t*	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
+int16_t	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
 {
 
     HUSTR_E1M1,
@@ -116,18 +117,18 @@ int8_t*	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
     HUSTR_E4M8,
     HUSTR_E4M9,
 
-    "NEWLEVEL",
-    "NEWLEVEL",
-    "NEWLEVEL",
-    "NEWLEVEL",
-    "NEWLEVEL",
-    "NEWLEVEL",
-    "NEWLEVEL",
-    "NEWLEVEL",
-    "NEWLEVEL"
+	NEWLEVELMSG,
+	NEWLEVELMSG,
+	NEWLEVELMSG,
+	NEWLEVELMSG,
+	NEWLEVELMSG,
+	NEWLEVELMSG,
+	NEWLEVELMSG,
+	NEWLEVELMSG,
+	NEWLEVELMSG
 };
 
-int8_t*	mapnames2[] =	// DOOM 2 map names.
+int16_t	mapnames2[] =	// DOOM 2 map names.
 {
     HUSTR_1,
     HUSTR_2,
@@ -166,7 +167,7 @@ int8_t*	mapnames2[] =	// DOOM 2 map names.
 };
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-int8_t*	mapnamesp[] =	// Plutonia WAD map names.
+int16_t	mapnamesp[] =	// Plutonia WAD map names.
 {
     PHUSTR_1,
     PHUSTR_2,
@@ -205,7 +206,7 @@ int8_t*	mapnamesp[] =	// Plutonia WAD map names.
 };
 
 
-int8_t *mapnamest[] =	// TNT WAD map names.
+int16_t mapnamest[] =	// TNT WAD map names.
 {
     THUSTR_1,
     THUSTR_2,
@@ -382,7 +383,8 @@ void HU_Start(void)
 {
 
     // int32_t		i;
-    int8_t*	s;
+    int16_t	sindex;
+	int8_t* s;
 	patch_t* hu_font0; 
 	int16_t HU_TITLEY;
 	int16_t HU_INPUTY;
@@ -413,27 +415,29 @@ void HU_Start(void)
     if (commercial)
     {
 #if (EXE_VERSION < EXE_VERSION_FINAL)
-        s = HU_TITLE2;
+        sindex = HU_TITLE2;
 #else
         if (plutonia)
         {
-            s = HU_TITLEP;
+			sindex = HU_TITLEP;
         }
         else if (tnt)
         {
-            s = HU_TITLET;
+			sindex = HU_TITLET;
         }
         else
         {
-            s = HU_TITLE2;
+			sindex = HU_TITLE2;
         }
 #endif
     }
     else
     {
-        s = HU_TITLE;
+		sindex = HU_TITLE;
     }
     
+	s = getStringByIndex(sindex);
+
     while (*s)
 	HUlib_addCharToTextLine(&w_title, *(s++));
 
@@ -475,10 +479,17 @@ void HU_Ticker(void)
 	{
 
 		// display message if necessary
-		if ((players.message && !message_nottobefuckedwith) || (players.message && message_dontfuckwithme))
+		if (((players.messagestring || players.message != -1) && !message_nottobefuckedwith) || (players.message && message_dontfuckwithme))
 		{
-			HUlib_addMessageToSText(&w_message, 0, players.message);
-			players.message = 0;
+			if (players.message != -1) {
+				HUlib_addMessageToSText(&w_message, 0, getStringByIndex(players.message));
+				players.message = -1;
+			}
+			else {
+				HUlib_addMessageToSText(&w_message, 0, players.messagestring);
+				players.messagestring = NULL;
+
+			}
 			message_on = true;
 			message_counter = HU_MSGTIMEOUT;
 			message_nottobefuckedwith = message_dontfuckwithme;

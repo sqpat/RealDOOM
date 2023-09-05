@@ -16,7 +16,7 @@
 //
 
 #include <stdio.h>
-
+#include <alloca.h>
 
 #include "z_zone.h"
 #include "doomdef.h"
@@ -665,8 +665,8 @@ AM_Responder
 		players.message = grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
 	    break;
 	  case AM_MARKKEY:
-	    sprintf(buffer, "%s %d", AMSTR_MARKEDSPOT, markpointnum);
-		players.message = buffer;
+	    sprintf(buffer, "%s %d", getStringByIndex(AMSTR_MARKEDSPOT), markpointnum);
+		players.messagestring = buffer;
 	    AM_addMark();
 	    break;
 	  case AM_CLEARMARKKEY:

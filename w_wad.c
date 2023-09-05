@@ -489,8 +489,7 @@ int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
 
 
 	if (lump >= numlumps) {
-		printf("W_CacheLumpNumCheck: %i %i",  lump, error);
-		I_Error("W_CacheLumpNumCheck: %i %i",  lump, error);
+		I_Error("W_CacheLumpNumCheck out of bounds: %i %i",  lump, error);
 		return true;
 	}
 	return false;

@@ -75,7 +75,7 @@ void P_UnArchivePlayers (void)
 	
 	// will be set when unarc thinker
 	players.moRef = NULL_MEMREF;	
-	players.message = NULL;
+	players.message = -1;
 	players.attackerRef = NULL_MEMREF;
 
 	for (j=0 ; j<NUMPSPRITES ; j++)

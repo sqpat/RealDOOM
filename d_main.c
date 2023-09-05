@@ -24,6 +24,8 @@
 //#include <graph.h>
 #include <direct.h>
 #include <io.h>
+#include <fcntl.h>
+#include <alloca.h>
 
 #include "doomdef.h"
 #include "doomstat.h"
@@ -197,6 +199,68 @@ void D_ProcessEvents (void)
 		}
 		G_Responder (ev);
     }
+}
+
+#define MAX_STRINGS 300
+
+uint16_t stringoffsets[MAX_STRINGS];
+
+MEMREF		stringRefs[4];
+
+
+int8_t* getStringByIndex2(int16_t stringindex, int8_t* returndata) {
+
+	uint16_t stringoffset = stringoffsets[stringindex];
+	int8_t index = stringoffset >> 14;
+	byte* stringdata = Z_LoadBytesFromEMS(stringRefs[index]);
+
+	// string ends at the start of the next string...
+	uint16_t length = stringoffsets[stringindex + 1] - stringoffsets[stringindex];
+
+	memcpy(returndata, &(stringdata[stringoffset & 0x3FFF]), length);
+	// add null terminator?
+	returndata[length] = '\0';
+
+	return returndata;
+}
+
+
+void D_InitStrings() {
+
+	// load file
+	filehandle_t handle;
+	filelength_t length;
+	int16_t stringlength;
+	int8_t* buffer;
+	int16_t i;
+	int16_t j = 0;;
+	int16_t laststringoffset;
+
+	handle = open("dstrings.txt", O_RDONLY | O_TEXT);
+	if (handle == -1) {
+		I_Error("\tcouldn't open dstrings.txt\n");
+		return;
+	}
+
+	length = filelength(handle);
+
+	stringRefs[0] = Z_MallocEMSNew(16383, PU_STATIC, 0xFF, ALLOC_TYPE_STRINGS);
+	buffer = Z_LoadBytesFromEMS(stringRefs[0]);
+	stringoffsets[0] = 0;
+
+
+	read(handle, buffer, length);
+	close(handle);
+
+
+	for (i = 0; i < length; i++) {
+		if (buffer[i] == '\n') {
+			j++;
+			stringoffsets[j] = i - stringoffsets[i - 1];
+		};
+	}
+
+
 }
 
 
@@ -1017,7 +1081,7 @@ void D_DoomMain (void)
 
     if (M_CheckParm("-cdrom"))
     {
-        printf(D_CDROM);
+        printf(getStringByIndex(D_CDROM));
         mkdir("c:\\doomdata");
         strcpy (basedefault,"c:/doomdata/default.cfg");
     }   
@@ -1111,9 +1175,13 @@ void D_DoomMain (void)
     printf ("Z_InitEMS: Init EMS memory allocation daemon. \n");
     Z_InitEMS ();
 
+	// init subsystems
+
     printf ("W_Init: Init WADfiles.\n");
     W_InitMultipleFiles (wadfiles);
-    
+
+
+
 
     // Check for -file in shareware
     if (modifiedgame)
@@ -1198,6 +1266,10 @@ void D_DoomMain (void)
     printf ("\nP_Init: Init Playloop state.\n");
     D_RedrawTitle();
     P_Init ();
+
+	printf("D_InitStrings: loading text.\n");
+	D_InitStrings();
+
 
     printf ("I_Init: Setting up machine state.\n");
     D_RedrawTitle();

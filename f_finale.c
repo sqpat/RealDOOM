@@ -32,10 +32,9 @@
 #include "doomstat.h"
 #include "r_state.h"
 
-// ?
-//#include "doomstat.h"
-//#include "r_local.h"
-//#include "f_finale.h"
+
+#include <alloca.h>
+
 
 // Stage of animation:
 //  0 = text, 1 = art screen, 2 = character cast
@@ -46,37 +45,37 @@ int16_t		finalecount;
 #define	TEXTSPEED	3
 #define	TEXTWAIT	250
 
-int8_t*	e1text = E1TEXT;
-int8_t*	e2text = E2TEXT;
-int8_t*	e3text = E3TEXT;
+int16_t	e1text = E1TEXT;
+int16_t	e2text = E2TEXT;
+int16_t	e3text = E3TEXT;
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 int8_t*	e4text = E4TEXT;
 #endif
 
-int8_t*	c1text = C1TEXT;
-int8_t*	c2text = C2TEXT;
-int8_t*	c3text = C3TEXT;
-int8_t*	c4text = C4TEXT;
-int8_t*	c5text = C5TEXT;
-int8_t*	c6text = C6TEXT;
+int16_t	c1text = C1TEXT;
+int16_t	c2text = C2TEXT;
+int16_t	c3text = C3TEXT;
+int16_t	c4text = C4TEXT;
+int16_t	c5text = C5TEXT;
+int16_t	c6text = C6TEXT;
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-int8_t*	p1text = P1TEXT;
-int8_t*	p2text = P2TEXT;
-int8_t*	p3text = P3TEXT;
-int8_t*	p4text = P4TEXT;
-int8_t*	p5text = P5TEXT;
-int8_t*	p6text = P6TEXT;
+int16_t	p1text = P1TEXT;
+int16_t	p2text = P2TEXT;
+int16_t	p3text = P3TEXT;
+int16_t	p4text = P4TEXT;
+int16_t	p5text = P5TEXT;
+int16_t	p6text = P6TEXT;
 
-int8_t*	t1text = T1TEXT;
-int8_t*	t2text = T2TEXT;
-int8_t*	t3text = T3TEXT;
-int8_t*	t4text = T4TEXT;
-int8_t*	t5text = T5TEXT;
-int8_t*	t6text = T6TEXT;
+int16_t	t1text = T1TEXT;
+int16_t	t2text = T2TEXT;
+int16_t	t3text = T3TEXT;
+int16_t	t4text = T4TEXT;
+int16_t	t5text = T5TEXT;
+int16_t	t6text = T6TEXT;
 #endif
 
-int8_t*	finaletext;
+int16_t	finaletext;
 int8_t*	finaleflat;
 
 void	F_StartCast (void);
@@ -313,7 +312,7 @@ void F_Ticker (void)
     if (commercial)
 	return;
 		
-    if (!finalestage && finalecount>strlen (finaletext)*TEXTSPEED + TEXTWAIT)
+    if (!finalestage && finalecount>strlen (getStringByIndex(finaletext))*TEXTSPEED + TEXTWAIT)
     {
 	finalecount = 0;
 	finalestage = 1;
@@ -364,7 +363,7 @@ void F_TextWrite (void)
     // draw some of the text onto the screen
     cx = 10;
     cy = 10;
-    ch = finaletext;
+    ch = getStringByIndex(finaletext);
 	
     count = (finalecount - 10)/TEXTSPEED;
     if (count < 0)
@@ -402,7 +401,7 @@ void F_TextWrite (void)
 //
 typedef struct
 {
-	int8_t		*name;
+	int16_t		nameindex;
     mobjtype_t	type;
 } castinfo_t;
 
@@ -425,7 +424,7 @@ castinfo_t	castorder[] = {
     {CC_CYBER, MT_CYBORG},
     {CC_HERO, MT_PLAYER},
 
-    {NULL,0}
+    {-1,0}
 };
 
 int8_t		castnum;
@@ -474,7 +473,7 @@ void F_CastTicker (void)
 	// switch from deathstate to next monster
 	castnum++;
 	castdeath = false;
-	if (castorder[castnum].name == NULL)
+	if (castorder[castnum].nameindex == -1)
 	    castnum = 0;
 	if (mobjinfo[castorder[castnum].type].seesound)
 	    S_StartSound (NULL, mobjinfo[castorder[castnum].type].seesound);
@@ -662,7 +661,7 @@ void F_CastDrawer (void)
     // erase the entire screen to a background
     V_DrawPatch (0,0,0, W_CacheLumpNameEMSAsPatch("BOSSBACK", PU_CACHE));
 
-    F_CastPrint (castorder[castnum].name);
+    F_CastPrint (getStringByIndex(castorder[castnum].nameindex));
     
     // draw the current frame in the middle of the screen
 	sprites = (spritedef_t*) Z_LoadBytesFromEMS(spritesRef);
