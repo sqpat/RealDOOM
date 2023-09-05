@@ -719,13 +719,11 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	int16_t mthingx = mthing->x;
 	int16_t mthingy = mthing->y;
 	int16_t mthingangle = mthing->angle;
-	 
 		
- 
+
 	if (players.playerstate == PST_REBORN) {
 		G_PlayerReborn();
 	}
-
 	x.h.fracbits = 0;
 	y.h.fracbits = 0;
 	x.h.intbits = mthingx;
@@ -754,9 +752,13 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	players.fixedcolormap = 0;
 	players.viewheight = VIEWHEIGHT;
 
+	// 171 -7959 83504be8 in playerthink  and p_ticker
+	// 171 1383 83504be8 here
+	// demo3: 0 1384 83504be8
+
 
     // setup gun psprite
-    P_SetupPsprites (&players);
+    P_SetupPsprites ();
     
  
 
@@ -1014,13 +1016,10 @@ P_SpawnMissile
 
     // fuzzy player
 	if (dest->flags & MF_SHADOW) {
-		an += (P_Random() - P_Random()) << 20;
-/*
 		temp.h.fracbits = 0;
 		temp.h.intbits = (P_Random() - P_Random());
 		temp.h.intbits <<= 4;
 		an += temp.w;
-		*/
 	}
 
 	dist = P_AproxDistance(dest->x - sourcex, dest->y - sourcey);
@@ -1098,13 +1097,10 @@ P_SpawnPlayerMissile
 	S_StartSound (th, th->info->seesound);
 
     th->targetRef = sourceRef;
-/*	temp.h.fracbits = 0;
+	temp.h.fracbits = 0;
 	temp.h.intbits = an;
 	temp.h.intbits <<= 3;
-	th->angle = temp.w;*/
-
-	th->angle = an << ANGLETOFINESHIFT;
-	//an = an >> ANGLETOFINESHIFT;
+	th->angle = temp.w;
 
 	speed = MAKESPEED(th->info->speed);
 

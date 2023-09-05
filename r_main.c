@@ -899,10 +899,10 @@ void R_RenderPlayerView ()
     R_ClearSprites ();
 
     // check for new console commands.
-    NetUpdate ();
+	NetUpdate (); // calling netupdate crashesin 16 it??
 
 
-    // The head node is the last node output.
+	// The head node is the last node output.
 	//Z_LoadBytesFromEMSWithOptions(nodesRef, PAGE_LOCKED);
 	R_RenderBSPNode (firstnode);
 	//Z_SetUnlocked(nodesRef, 118)

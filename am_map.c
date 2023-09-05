@@ -1225,7 +1225,6 @@ AM_drawThings
     mobj_t*	t;
 	MEMREF tRef;
 	sector_t* sectors;
-	fixed_t_union temp;
 	for (i=0;i<numsectors;i++) {
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		tRef = sectors[i].thinglistRef;
@@ -1233,7 +1232,7 @@ AM_drawThings
 			t = (mobj_t*) Z_LoadBytesFromEMS(tRef);
 			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
-			 0x100000, t->angle>>ANGLETOFINESHIFT, colors, t->x, t->y);
+			 0x100000L, t->angle>>ANGLETOFINESHIFT, colors, t->x, t->y);
 			tRef = t->snextRef;
 		}
     }

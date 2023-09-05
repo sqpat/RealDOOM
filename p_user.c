@@ -25,6 +25,7 @@
 #include "p_local.h"
 
 #include "doomstat.h"
+#include "i_system.h"
 
 
 
@@ -226,8 +227,6 @@ void P_DeathThink ()
 		players.damagecount--;
 	
 
-    if (players.cmd.buttons & BT_USE)
-		players.playerstate = PST_REBORN;
 }
 
 
@@ -235,13 +234,15 @@ void P_DeathThink ()
 //
 // P_PlayerThink
 //
-void P_PlayerThink ()
+void P_PlayerThink (void)
 {
     ticcmd_t*		cmd;
     weapontype_t	newweapon;
-	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	mobj_t* playermo;
 	int16_t playermosecnum;
 	sector_t* sectors;
+
+	playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 
     // fixme: do this in the cheat code
     if (players.cheats & CF_NOCLIP)

@@ -217,10 +217,14 @@ fixed_t32 FixedMul (fixed_t32	a, fixed_t32 b) {
  
 fixed_t32 FixedMul1632 (int16_t	a, fixed_t	b) {
     fixed_t_union biga;
+	longlong_union llu;
 	biga.h.intbits = a;
 	biga.h.fracbits = 0;
-	biga.w = ((biga.w) * b);
-    return biga.w;
+	llu.l = (biga.w * (long long)b);
+
+	biga.h.intbits = llu.h[2];
+	biga.h.fracbits = llu.h[1];
+	return biga.w;
 }
 
 //
@@ -349,7 +353,7 @@ void D_Display (void)
     I_UpdateNoBlit ();
 	// draw the view directly
 	if (gamestate == GS_LEVEL && !automapactive && gametic)
-        R_RenderPlayerView (&players);
+        R_RenderPlayerView ();
 
 
     if (gamestate == GS_LEVEL && gametic)
@@ -384,7 +388,7 @@ void D_Display (void)
     viewactivestate = viewactive;
     inhelpscreensstate = inhelpscreens;
     oldgamestate = wipegamestate = gamestate;
-    
+
     // draw pause pic
     if (paused)
     {
@@ -474,7 +478,7 @@ void D_DoomLoop (void)
 			}
 
 			M_Ticker ();
-			
+
 			G_Ticker ();
 
 			gametic++;
@@ -488,7 +492,7 @@ void D_DoomLoop (void)
 		S_UpdateSounds (players.moRef);// move positional sounds
         // Update display, next frame, with current state.
 
-
+		 
 		D_Display ();
 
 		//SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);

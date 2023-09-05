@@ -51,5 +51,5 @@ For those interested in the technical details, a quick summary of what has been 
 
 
 ## Progress of 16-bit build
-Memory usage is low enough now, so compilation works, and the initialization code seems to process the wads and textures and such just fine. However, the game tends to to fail during the first tic of game processing due to a variety of bugs, possibly memory corruption. __FILE__ and __LINE__ macros seem to get corruped in a lot of these cases too. (stack overflow?) I need to investigate if this is related to far/near pointers needing to be explicitly declared or what. I may have to strip down the code a whole bunch and build it back up little by little to figure out what is going wrong.
-Nonetheless it's closer than ever before to actually working.
+The 16 bit build just randomly fails to complete certain function calls like NetTics after the level is setup. I'm not sure what is going on - i will have to try debugging on real hardware or a better environment in a few days.
+In the short term I will just go back to a couple of general improvements to lower memory usage as i have wanted to do for a while, then go back to tackling the 16 bit build.

@@ -257,8 +257,7 @@ void P_Ticker (void)
 		return;
     }
     
-
-	P_PlayerThink(&players);
+	P_PlayerThink();
 
 	P_RunThinkers ();
 	P_UpdateSpecials ();

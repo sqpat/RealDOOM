@@ -187,6 +187,7 @@ void P_LoadSegs(int16_t lump)
 
 	ml = (mapseg_t *)data;
 
+//	data = (mapseg_t *)Z_LoadBytesFromEMSWithOptions(dataRef, PAGE_LOCKED);
 	for (i = 0; i < numsegs; i++) {
 		data = (mapseg_t *)Z_LoadBytesFromEMS(dataRef);
 		ml = &data[i];
@@ -231,14 +232,10 @@ void P_LoadSegs(int16_t lump)
 		else
 			li->backsecnum = SECNUM_NULL;
 
-		//Z_RefIsActive(sidesRef);
-		//Z_RefIsActive(vertexesRef);
-		//Z_RefIsActive(segsRef);
-		//Z_RefIsActive(dataRef);
 	}
 
+	//Z_SetUnlocked(dataRef, 197);
 	Z_FreeEMSNew(dataRef);
-	//Z_Free(data);
 }
 
 
@@ -581,25 +578,26 @@ void P_LoadSideDefs(int16_t lump)
 	uint8_t bottex;
 	uint8_t midtex;
 	MEMREF dataRef;
-	int8_t texname[8];
+	int8_t texnametop[8];
+	int8_t texnamemid[8];
+	int8_t texnamebot[8];
 	texsize_t msdtextureoffset;
 	texsize_t msdrowoffset;
 	int16_t msdsecnum;
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sidesRef = Z_MallocEMSNew (numsides * sizeof(side_t), PU_LEVEL, 0, ALLOC_TYPE_SIDES);
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-	memset(sides, 0, numsides * sizeof(side_t));
+	//sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	//memset(sides, 0, numsides * sizeof(side_t));
 
 	W_CacheLumpNumCheck(lump, 7);
 	
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-
-	
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	data = (mapsidedef_t *)Z_LoadBytesFromEMSWithOptions(dataRef, PAGE_LOCKED);
+	//sides = (side_t*)Z_LoadBytesFromEMSWithOptions(sidesRef, PAGE_LOCKED);
 
 	for (i = 0; i < numsides; i++) {
-		data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
+		//data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
 		msd = &data[i];
 
 		msdtextureoffset = (msd->textureoffset);
@@ -608,19 +606,13 @@ void P_LoadSideDefs(int16_t lump)
 
  
 
-		memcpy(texname, msd->toptexture, 8);
-		toptex = R_TextureNumForName(texname);
+		memcpy(texnametop, msd->toptexture, 8);
+		memcpy(texnamebot, msd->bottomtexture, 8);
+		memcpy(texnamemid, msd->midtexture, 8);
 
-		data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
-		msd = &data[i];
-		memcpy(texname, msd->bottomtexture, 8);
-		bottex = R_TextureNumForName(texname);
-
-		data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
-		msd = &data[i];
-		memcpy(texname, msd->midtexture, 8);
-		midtex = R_TextureNumForName(texname);
-
+		toptex = R_TextureNumForName(texnametop);
+		bottex = R_TextureNumForName(texnamebot);
+		midtex = R_TextureNumForName(texnamemid);
 
 
 		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
@@ -634,11 +626,11 @@ void P_LoadSideDefs(int16_t lump)
 		sd->secnum = msdsecnum;
 
 		Z_RefIsActive(sidesRef);
-		
 
 	}
 
- 
+	Z_SetUnlocked(dataRef, 0);
+	//Z_SetUnlocked(sidesRef, 0);
 	Z_FreeEMSNew(dataRef);
 }
 
@@ -675,7 +667,6 @@ void P_LoadBlockMap(int16_t lump)
 	count = sizeof(*blocklinks)* bmapwidth*bmapheight;
 
 	//	blocklinksRef = Z_MallocEMSNew (count, PU_LEVEL, 0, ALLOC_TYPE_BLOCKLINKS);
-//	blocklinks = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
 	memset(blocklinks, 0, count);
 }
 
@@ -716,25 +707,25 @@ void P_GroupLines(void)
 	side_t* sides;
 
 	// look up sector number for each subsector
+	subsectors = (subsector_t*)Z_LoadBytesFromEMSWithOptions(subsectorsRef, PAGE_LOCKED);
 	for (i = 0; i < numsubsectors; i++) {
-		subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef); 
 		firstlinenum = subsectors[i].firstline;
 		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
 		
 		sidedefOffset = segs[firstlinenum].sidedefOffset;
 		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 		sidesecnum = sides[sidedefOffset].secnum;
-		subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 
-		Z_RefIsActive(subsectorsRef);
 		subsectors[i].secnum = sidesecnum;
 
 	}
 
+	Z_SetUnlocked(subsectorsRef, 195);
+
 	// count number of lines in each sector
 	total = 0;
+	lines = (line_t*)Z_LoadBytesFromEMSWithOptions(linesRef, PAGE_LOCKED);
 	for (i = 0; i < numlines; i++) {
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 		li = &lines[i];
 		linebacksecnum = li->backsecnum;
 		linefrontsecnum = li->frontsecnum;
@@ -750,6 +741,7 @@ void P_GroupLines(void)
 			}
 		}
 	}
+	Z_SetUnlocked(linesRef, 194);
 
 	// build line tables for each sector        
 
@@ -759,28 +751,31 @@ void P_GroupLines(void)
 	tempv1.h.fracbits = 0;
 	tempv2.h.fracbits = 0;
 
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	for (i = 0; i < numsectors; i++) {
 		M_ClearBox(bbox);
 		
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 		sectorlinecount = sectors[i].linecount;
 
 		sectors[i].linesoffset = linebufferindex;
 		previouslinebufferindex = linebufferindex;
 	 
+		lines = (line_t*)Z_LoadBytesFromEMSWithOptions(linesRef, PAGE_LOCKED);
+		//linebuffer = (int16_t*)Z_LoadBytesFromEMSWithOptions(linebufferRef, PAGE_LOCKED);
+		//vertexes = (vertex_t*)Z_LoadBytesFromEMSWithOptions(vertexesRef, PAGE_LOCKED);
+
 		for (j = 0; j < numlines; j++) {
-			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+			//lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 			li = &lines[j];
 			linev1Offset = li->v1Offset;
 			linev2Offset = li->v2Offset;
 
 			if (li->frontsecnum == i || li->backsecnum == i) {
-
 				linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
 				vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-				tempv1.h.intbits = vertexes[linev1Offset].x; 
+				tempv1.h.intbits = vertexes[linev1Offset].x;
 				tempv2.h.intbits = vertexes[linev1Offset].y; 
 				M_AddToBox(bbox,  tempv1.w, tempv2.w );
 				tempv1.h.intbits = vertexes[linev2Offset].x; 
@@ -788,6 +783,9 @@ void P_GroupLines(void)
 				M_AddToBox(bbox,  tempv1.w, tempv2.w );
 			}
 		}
+		Z_SetUnlocked(linesRef, 193);
+		//Z_SetUnlocked(linebufferRef, 194);
+		//Z_SetUnlocked(vertexesRef, 195);
 		if (linebufferindex - previouslinebufferindex != sectorlinecount) {
 			linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 			I_Error("P_GroupLines: miscounted %i %i   iteration %i      %i != (%i - %i)", linebuffer, sectors[i].linesoffset,  i, sectors[i].linecount, linebufferindex , previouslinebufferindex);
@@ -838,6 +836,7 @@ P_SetupLevel
 	int16_t         lumpnum;
 
 	byte* nodes;
+	uint32_t time;
 
 	wminfo.partime = 180;
 	players.killcount = players.secretcount = players.itemcount = 0;
@@ -875,43 +874,42 @@ P_SetupLevel
 
 	leveltime.w = 0;
 
-
+	time = ticcount;
 
 	// note: most of this ordering is important 
-	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
-	P_LoadVertexes(lumpnum + ML_VERTEXES);
-	P_LoadSectors(lumpnum + ML_SECTORS);
-	P_LoadSideDefs(lumpnum + ML_SIDEDEFS);
+	P_LoadBlockMap(lumpnum + ML_BLOCKMAP); // 0ms
+	P_LoadVertexes(lumpnum + ML_VERTEXES); // 3 tic
+	P_LoadSectors(lumpnum + ML_SECTORS);  // 1 tic
+	P_LoadSideDefs(lumpnum + ML_SIDEDEFS); // 216 tics (slow because of texture name lookups. this is the only place texture names are ever used. during init_textures can we make a clever name to int backwards cache?
 
-	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
-	P_LoadSubsectors(lumpnum + ML_SSECTORS);
-	P_LoadNodes(lumpnum + ML_NODES);
-	nodes = Z_LoadBytesFromEMS(nodesRef);
+	P_LoadLineDefs(lumpnum + ML_LINEDEFS); // 40 tics
+	P_LoadSubsectors(lumpnum + ML_SSECTORS);// 1 tic
+	P_LoadNodes(lumpnum + ML_NODES); // 5 tics (263 total)
 
-
-
-	P_LoadSegs(lumpnum + ML_SEGS);
+	P_LoadSegs(lumpnum + ML_SEGS); // 50 tics (313 total)
 
 
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 9);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
 
-	P_GroupLines();
+	P_GroupLines(); // 49 tics (362 total)
 
 
 
 	bodyqueslot = 0;
 
-	P_LoadThings(lumpnum + ML_THINGS);
+	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 
+
 
 	// set up world state
-	P_SpawnSpecials();
+	P_SpawnSpecials();  // 3 tics
 
 
 	// preload graphics
 	if (precache)
 		R_PrecacheLevel();
-	//printf ("free memory: 0x%x\n", Z_FreeMemory());
+
+
 
 }
 

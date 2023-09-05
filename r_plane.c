@@ -650,6 +650,7 @@ void R_DrawPlanes (void)
 	uint8_t * flattranslation;
 	byte t1, b1, t2, b2;
 	int16_t			i;
+	fixed_t_union	temp;
 
  
     for (i = 0; i < lastvisplane ; i++)
@@ -677,8 +678,16 @@ void R_DrawPlanes (void)
 
 		if (dc_yl <= dc_yh)
 		{
-		    angle = MOD_FINE_ANGLE((viewangle + (xtoviewangle[x] << ANGLETOFINESHIFT)) >> ANGLETOSKYSHIFT) ;
-		    dc_x = x;
+			// feel like this can be done with less shifting because its ultimately modded to a fine angle. -sq
+
+			temp.h.fracbits = 0;
+			temp.h.intbits = (xtoviewangle[x]);
+			temp.h.intbits <<= 3;
+			temp.w += viewangle;
+			temp.h.intbits >>= 6;
+			//temp.w >>= ANGLETOSKYSHIFT;
+			angle = MOD_FINE_ANGLE(temp.h.intbits);
+			dc_x = x;
 
 			dc_source = R_GetColumn(skytexture, angle);
 		    colfunc ();

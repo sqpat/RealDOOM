@@ -420,7 +420,6 @@ void P_UnsetThingPosition (MEMREF thingRef)
 {
     int16_t		blockx;
     int16_t		blocky;
-	//MEMREF* blocklinksList;
 	mobj_t* changeThing;
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	MEMREF thingsprevRef = thing->sprevRef;
@@ -473,7 +472,6 @@ void P_UnsetThingPosition (MEMREF thingRef)
 			blocky = (thingy - bmaporgy)>>MAPBLOCKSHIFT;
 
 			if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky <bmapheight) {
-				//blocklinksList = (MEMREF*) Z_LoadBytesFromEMS(blocklinksRef);
 				blocklinks[blocky*bmapwidth+blockx] = thingbnextRef;
 			}
 		}
@@ -502,7 +500,6 @@ P_SetThingPosition (MEMREF thingRef)
 	subsector_t* subsectors;
 	sector_t* sectors;
 	MEMREF oldsectorthinglist;
-//	MEMREF* blocklinksList;
 
     // link into subsector
     subsecnum = R_PointInSubsector (thing->x,thing->y);
@@ -546,7 +543,6 @@ P_SetThingPosition (MEMREF thingRef)
 		blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
 
 		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
-			//blocklinksList = (MEMREF*)Z_LoadBytesFromEMS(blocklinksRef);
 			linkRef = blocklinks[blocky*bmapwidth+blockx];
 			thing->bprevRef = NULL_MEMREF;
 			thing->bnextRef = linkRef;
@@ -556,7 +552,6 @@ P_SetThingPosition (MEMREF thingRef)
 			}
 			
 			//*link = thing;
-			// todo is this right?
 			blocklinks[blocky*bmapwidth + blockx] = thingRef;
 
 		} else {

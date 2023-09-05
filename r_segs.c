@@ -258,10 +258,6 @@ void R_RenderSegLoop (void)
 		
 		if (markceiling) {
 			visplanebytes_t* ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[ceilingplaneindex].visplanepage]))[visplaneheaders[ceilingplaneindex].visplaneoffset]);
-			if (ceilingplaneindex == -1) {
-				I_Error("blah");
-			}
-			//Z_SetUnlocked(visplanebytesRef[ceilingplane->visplanepage], PAGE_LOCKED, 14);
 			top = ceilingclip[rw_x]+1;
 			bottom = yl-1;
 
@@ -281,7 +277,6 @@ void R_RenderSegLoop (void)
 
 		if (markfloor) {
 			visplanebytes_t* floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[floorplaneindex].visplanepage]))[visplaneheaders[floorplaneindex].visplaneoffset]);
-			//Z_SetUnlocked(visplanebytesRef[floorplane->visplanepage], PAGE_LOCKED, 15);
 			top = yh+1;
 			bottom = floorclip[rw_x]-1;
 			if (top <= ceilingclip[rw_x]){

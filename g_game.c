@@ -410,7 +410,7 @@ void G_DoLoadLevel (void)
     }
 #endif
 
-    
+
     if (wipegamestate == GS_LEVEL) 
         wipegamestate = -1;             // force a wipe 
 
@@ -430,7 +430,6 @@ void G_DoLoadLevel (void)
     mousex = mousey = 0; 
     sendpause = sendsave = paused = false; 
     memset (mousebuttons, 0, sizeof(mousebuttons));
-
 
 
 } 
@@ -757,7 +756,7 @@ void G_DoReborn ()
 { 
         // reload the level from scratch
         gameaction = ga_loadlevel;  
- 
+		I_Error("reborn");
 } 
  
  
@@ -1245,7 +1244,7 @@ G_InitNew
             break;
         } 
 
- 
+
     G_DoLoadLevel (); 
 } 
  
@@ -1389,11 +1388,11 @@ void G_DoPlayDemo (void)
 	*demo_p++;
 	*demo_p++;
 	*demo_p++;
-
+	
     // don't spend a lot of time in loadlevel 
     precache = false;
 	G_InitNew (skill, episode, map);
-    precache = true; 
+	precache = true;
 
     usergame = false; 
     demoplayback = true; 

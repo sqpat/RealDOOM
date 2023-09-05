@@ -129,15 +129,21 @@ int16_t             numspritelumps;
 int16_t             numtextures;
 //texture_t**   textures;
 
-MEMREF  texturesRef;				// MEMREF to texture_t**
+
+#define NUM_TEXTURE_CACHE 255
+
+MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
+MEMREF texturecomposite[NUM_TEXTURE_CACHE];  // see above
+
+
+MEMREF texturecolumnlumpRefs[NUM_TEXTURE_CACHE];
+MEMREF texturecolumnofsRefs[NUM_TEXTURE_CACHE];
+
 
 MEMREF  texturewidthmaskRef;		// uint8_t*
 // needed for texture pegging
 MEMREF  textureheightRef;		    // uint8_t must be converted by fracbits when used*
 MEMREF  texturecompositesizeRef;	// uint16_t*
-MEMREF  texturecolumnlumpRef;		// int16_t**
-MEMREF	texturecolumnofsRef;		// uint16_t **
-MEMREF  texturecompositeRef;        // MEMREF to byte**
 
 
  
@@ -243,13 +249,12 @@ void R_GenerateComposite(uint8_t texnum)
 
 
 
-	MEMREF texturecolumnlumptexnum = ((MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef))[texnum];
-	MEMREF texturecolumnofstexnum = ((MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef))[texnum];
+	MEMREF texturecolumnlumptexnum = texturecolumnlumpRefs[texnum];
+	MEMREF texturecolumnofstexnum = texturecolumnofsRefs[texnum];
 	MEMREF texturecompositetexnum;
 	uint16_t texturecompositesize = ((uint16_t*)Z_LoadBytesFromEMS(texturecompositesizeRef))[texnum];
 
-	MEMREF texturememref = ((MEMREF*)Z_LoadBytesFromEMS(texturesRef))[texnum];
-	MEMREF* texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
+	MEMREF texturememref = textures[texnum];
 
 
 	texturecomposite[texnum] = Z_MallocEMSNewWithBackRef(texturecompositesize,
@@ -347,9 +352,6 @@ void R_GenerateComposite(uint8_t texnum)
 
 
 
-			//Z_RefIsActive(texturecompositetexnum);
-			//Z_RefIsActive(texturecolumnofstexnum);
-			//Z_RefIsActive(realpatchRef);
 
 		}
 
@@ -405,14 +407,12 @@ void R_GenerateLookup(uint8_t texnum)
 	int16_t				textureheight;
 	int8_t				texturename[8];
 
-	MEMREF* textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 	MEMREF textureRef = textures[texnum];
 
-	MEMREF texturecolumnlump = ((MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef))[texnum];
-	MEMREF texturecolumnofs = ((MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef))[texnum];
+	MEMREF texturecolumnlump = texturecolumnlumpRefs[texnum];
+	MEMREF texturecolumnofs = texturecolumnofsRefs[texnum];
 
 	uint16_t* texturecompositesize = (uint16_t*)Z_LoadBytesFromEMS(texturecompositesizeRef);
-	MEMREF* texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 	texturecomposite[texnum] = NULL_MEMREF;
 	texturecompositesize[texnum] = 0;
 
@@ -474,7 +474,6 @@ void R_GenerateLookup(uint8_t texnum)
 	collump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlump);
 
 	Z_RefIsActive(texturecompositesizeRef);
-	Z_RefIsActive(texturecolumnofsRef);
 	Z_RefIsActive(texturecolumnofs);
 	Z_RefIsActive(texturecolumnlump);
 	for (x = 0; x < texturewidth; x++) {
@@ -508,11 +507,8 @@ R_GetColumn
 {
 	int16_t         lump; 
 	uint16_t         ofs; 
-	MEMREF* texturecolumnlumpTex; 
-	MEMREF* texturecolumnofsTex; 
 	int16_t* texturecolumnlump; 
-	uint16_t* texturecolumnofs; 
-	MEMREF* texturecomposite;
+	uint16_t* texturecolumnofs;
 	MEMREF columnRef;
 
 	byte* texturecompositebytes;
@@ -522,13 +518,10 @@ R_GetColumn
 	uint8_t* texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 	col &= texturewidthmask[tex];
 
-	texturecolumnofsTex = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
-	texturecolumnofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofsTex[tex]);
+	texturecolumnofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofsRefs[tex]);
 	ofs = texturecolumnofs[col];
 
-	texturecolumnlumpTex = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
-
-	texturecolumnlump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlumpTex[tex]);
+	texturecolumnlump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlumpRefs[tex]);
 	lump = texturecolumnlump[col];
 
 	if (lump > 0) {
@@ -542,13 +535,11 @@ R_GetColumn
 
 	}
 
-	texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 
 	if (texturecomposite[tex] == NULL_MEMREF) {
 		R_GenerateComposite(tex);
 	}
 
-	texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 	texturecompositebytes = (byte*)Z_LoadBytesFromEMS(texturecomposite[tex]);
 	lockedRef = texturecomposite[tex];
 	//Z_SetUnlocked(lockedRef, 6);
@@ -601,9 +592,6 @@ void R_InitTextures(void)
 	uint8_t*                texturewidthmask;
 	// needed for texture pegging
 	uint8_t*            textureheight;
-	MEMREF *            texturecolumnlump;
-	MEMREF *			texturecolumnofs;
-	MEMREF*				textures;
 	uint8_t *			texturetranslation;
 	MEMREF				namesRef;
 	MEMREF				maptexRef;
@@ -634,6 +622,7 @@ void R_InitTextures(void)
 	maptexRef = W_CacheLumpNameEMS("TEXTURE1", PU_STATIC);
 	maptex = maptex1 = Z_LoadBytesFromEMS(maptexRef);
 	numtextures1 = (*maptex);
+
 	maxoff = W_LumpLength(W_GetNumForName("TEXTURE1"));
 	directory = maptex + 1;
 
@@ -656,16 +645,10 @@ void R_InitTextures(void)
 
 	// these are all the very first allocations that occur on level setup and they end up in the same page, 
 	// so there is data locality with EMS paging which is nice.
-	texturesRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 60);
-	texturecolumnlumpRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 70);
-	texturecolumnofsRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 80);
-	texturecompositeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 90);
 	texturecompositesizeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 100);
 	texturewidthmaskRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 110);
 	textureheightRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 120);
 
-	//texturecomposite	 = (MEMREF*)  Z_LoadBytesFromEMS(texturecompositeRef);
-	//texturecompositesize = (int32_t*)			  Z_LoadBytesFromEMS(texturecompositesizeRef);
 	texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 	textureheight = (uint8_t*)Z_LoadBytesFromEMS(textureheightRef);
 
@@ -708,7 +691,6 @@ void R_InitTextures(void)
 			+ sizeof(texpatch_t)*((mtexture->patchcount) - 1),
 			PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 130);
 
-		textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 		textures[i] = textureRef;
 
 		texture = (texture_t*)Z_LoadBytesFromEMS(textureRef);
@@ -742,10 +724,8 @@ void R_InitTextures(void)
  
 
 		//printf("name %s", texture->name);
-		texturecolumnlump = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnlumpRef);
-		texturecolumnlump[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 140);
-		texturecolumnofs = (MEMREF*)Z_LoadBytesFromEMS(texturecolumnofsRef);
-		texturecolumnofs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 150);
+		texturecolumnlumpRefs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 140);
+		texturecolumnofsRefs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 150);
 		
 
 		j = 1;
@@ -944,7 +924,6 @@ uint8_t R_FlatNumForName(int8_t* name)
 uint8_t     R_CheckTextureNumForName(int8_t *name)
 {
 	uint8_t         i;
-	MEMREF* textures;
 	texture_t* texture;
 	// "NoTexture" marker.
 	if (name[0] == '-')
@@ -952,15 +931,15 @@ uint8_t     R_CheckTextureNumForName(int8_t *name)
 
 
 	for (i = 0; i < numtextures; i++) {
-		textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef);
 		texture = (texture_t*)Z_LoadBytesFromEMS(textures[i]);
 		//printf("texname %s", texture->name);
 				//I_Error("found it? %i %i %s", i, textures[i], texture->name);
 
 
 
-		if (!strncasecmp(texture->name, name, 8))
+		if (!strncasecmp(texture->name, name, 8)) {
 			return i;
+		}
 	}
 
 	return BAD_TEXTURE;
@@ -1012,8 +991,6 @@ void R_PrecacheLevel(void)
 	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
 	side_t* sides;
-	MEMREF* textures;
-
 
 	sector_t* sectors = (sector_t*) Z_LoadBytesFromEMS(sectorsRef);
 
@@ -1074,7 +1051,6 @@ void R_PrecacheLevel(void)
 		for (j = 0; j < texture->patchcount; j++)
 		{
 
-			textures = (MEMREF*)Z_LoadBytesFromEMS(texturesRef); // todo make locked
 			texture = (texture_t*)Z_LoadBytesFromEMS(textures[i]); // todo make locked
 			lump = texture->patches[j].patch;
 			//texturememory += lumpinfo[lump].size;
@@ -1127,7 +1103,6 @@ void R_EraseCompositeCache(uint8_t texnum) {
 
 	// todo are we calling this with 0 all the time?
 
-	MEMREF* texturecomposite = (MEMREF*)Z_LoadBytesFromEMS(texturecompositeRef);
 	texturecomposite[texnum] = NULL_MEMREF;
 }
 

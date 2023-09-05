@@ -123,6 +123,9 @@
 
 
 // 4 13578495 1151503 1526490 207 (2134 in 3766)  <--- long long fixeddiv, index visplanes, removed cheats, removed translation tables
+// 4 12154692 1144295 1515989 207 (2134 in 3918)  <--- cleaned up init code, memref arrays made static
+// 4  9780880 1144286 1515980 207 (2134 in 3850)  <--- more static memref arrays
+
 // 8 13569197 422735  521499  207 (2134 in 1843)  <---- same as above with 8
 // 8 13578495 422543  521292  207 (2134 in 1851)  <---- same as above with the EMS_PAGE check changed to 16. maybe it doesnt help performance at all?
 
@@ -528,7 +531,7 @@ void Z_MarkPageLRU(uint16_t pagenumber) {
 
 
 	if (pagenumber >= NUM_EMS_PAGES) {
-		I_Error("Z_MarkPageLRU: page number too big %i %i", pageevictorder, pagenumber);
+		I_Error("Z_MarkPageLRU: page number too big %u",  pagenumber);
 	}
 
 	for (i = NUM_EMS_PAGES - 1; i >= 0; i--) {
@@ -678,43 +681,41 @@ void Z_MarkPageMRU(uint16_t pagenumber) {
 void Z_DoPageOut(uint16_t pageframeindex, int16_t source) {
 #ifdef _M_I86
 
+
+
 	// swap OUT memory
 	int16_t i = 0;
-	int16_t numPagesToSwap = pagesize[pageframeindex];
+	// this already gets called once per page on the outside, no need to run an inner loop with numpages to swap
+
 	// don't swap out an already swapped out page
 	if (activepages[pageframeindex] == -1) {
 		return;
 	}
 		
 	actualpageouts++;
-	pageouts += numPagesToSwap;
+	pageouts ++;
 
-
-	if (numPagesToSwap <= 0) {
-		numPagesToSwap = 1;
+	if (pageframeindex >= NUM_EMS_PAGES) {
+		I_Error("bad page frame index %i", pageframeindex);
 	}
 
-
-	for (i = 0; i < numPagesToSwap; i++) {
-		activepages[pageframeindex + i] = -1;
-		pagesize[pageframeindex + i] = -1;
-		Z_MarkPageLRU(pageframeindex + i);
-		if (lockedpages[pageframeindex + i]) {
-			I_Error("paging out locked %i %i", source, numPagesToSwap);
-			//Z_PageDump("paging out locked %i", source);
-		}
-
-
-		regs.h.al = pageframeindex+i;  // physical page
-		regs.w.bx = activepages[pageframeindex+i];    // logical page
-		regs.w.dx = emshandle; // handle
-		regs.h.ah = 0x44;
-		intx86(EMS_INT, &regs, &regs);
-		if (regs.h.ah != 0) {
-			I_Error("Mapping failed on page %i!\n", pageframeindex+i);
-		}
-
+	activepages[pageframeindex] = -1;
+	pagesize[pageframeindex] = -1;
+	Z_MarkPageLRU(pageframeindex);
+	if (lockedpages[pageframeindex]) {
+		I_Error("paging out locked %i", source);
+		//Z_PageDump("paging out locked %i", source);
 	}
+
+	regs.h.al = pageframeindex+i;  // physical page
+	regs.w.bx = 0xFFFF; // activepages[pageframeindex + i];    // logical page
+	regs.w.dx = emshandle; // handle
+	regs.h.ah = 0x44;
+	intx86(EMS_INT, &regs, &regs);
+	if (regs.h.ah != 0) {
+		I_Error("Mapping failed on page %i!\n", pageframeindex+i);
+	}
+
 
 #else
 
@@ -795,7 +796,6 @@ void Z_DoPageIn(uint16_t logicalpage, uint16_t pageframeindex, uint16_t numalloc
 	memcpy(copydst, copysrc, PAGE_FRAME_SIZE * numallocatepages);
 
 	// mark the page size. needed for dealocating all pages later
-	pagesize[pageframeindex] = numallocatepages;
 
 	for (i = 0; i < numallocatepages; i++) {
 		activepages[pageframeindex + i] = logicalpage + i;
@@ -940,7 +940,10 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 				}
 				else {
 					// paging out the previous allocation
-					for (i = 0; i < numallocatepages; i++) {
+					for (i = 0; i < numallocatepages; i++)
+					
+					
+					{ 
 						if (activepages[pageframeindex + i] >= 0) {
 							Z_DoPageOut(pageframeindex + i, pageframeindex);
 						}
@@ -1055,12 +1058,11 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 			//Z_PageDump("Could not find EMS page to evict!  %i ", line);
 			//Z_PageDump("Could not find EMS page to evict! %i ", (allocations[ref].sourcehint));
 			//Z_PageDump("Could not find EMS page to evict! %i ", (allocations[ref].sourcehint));
-
+			I_Error("Could not find EMS page to evict!");
 		}
 
 		// lets go down the LRU cache and find the next index
 		pageframeindex = pageevictorder[i];
-
 		// break loop if there is enough space to dealloate..  
 		// TODO: could this be improved? average evict orders for multiple pages?
 
@@ -1214,17 +1216,6 @@ void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex, i
 	}
 
 
-	if (lockedpages[0] == 0 &&
-		lockedpages[1] == 0 &&
-		lockedpages[2] == 1 &&
-		lockedpages[3] == 0) {
-
-
-		I_Error("blah %i %i %i %i", index, gametic, ref, pageframeindex);
-
-	}
-
-
 }
 
 
@@ -1259,7 +1250,6 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 	}
 	if (ref == 0) {
 		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref);
-		//I_Error("tried to load memref 0... tick %li    %i %s %i", gametic, ref, file, line);
 	}
 
 	/*
