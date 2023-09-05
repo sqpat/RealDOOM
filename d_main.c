@@ -151,7 +151,6 @@ boolean         french;
 
 
 int8_t            wadfile[1024];          // primary wad file
-int8_t            mapdir[1024];           // directory of development maps
 int8_t            basedefault[1024];      // default file
 
 
