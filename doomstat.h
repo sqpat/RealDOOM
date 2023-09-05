@@ -232,11 +232,6 @@ extern uint8_t		skyflatnum;
 
 
 // This is ???
-extern  doomcom_t*	doomcom;
-
-// This points inside doomcom.
-extern  doomdata_t*	netbuffer;	
-
 
 extern  ticcmd_t	localcmds[BACKUPTICS];
 extern	int16_t		rndindex;

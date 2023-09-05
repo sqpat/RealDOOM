@@ -1205,37 +1205,3 @@ void I_EndRead(void)
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
 }
-
-
-
-
-//
-// Networking
-//
-
-
-#define DOOMCOM_ID 0x12345678l
-
- 
-
-extern doomcom_t *doomcom;
-
-//
-// I_InitNetwork
-//
-void I_InitNetwork(void)
-{
-	//
-// single player game
-//
-	doomcom = malloc(sizeof(*doomcom));
-	if (!doomcom)
-	{
-		I_Error("malloc() in I_InitNetwork() failed");
-	}
-	memset(doomcom, 0, sizeof(*doomcom));
-	doomcom->id = DOOMCOM_ID;
-	doomcom->deathmatch = false;
-	doomcom->ticdup = 1;
-
-} 
