@@ -196,37 +196,6 @@ byte scantokey[128] =
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0         // 7
 };
-  
-
-//
-// I_ColorBorder
-//
-void I_ColorBorder(void)
-{
-	int8_t i;
-
-    I_WaitVBL(1);
-    _outbyte(PEL_WRITE_ADR, 0);
-    for (i = 0; i < 3; i++)
-    {
-        _outbyte(PEL_DATA, 63);
-    }
-}
-
-//
-// I_UnColorBorder
-//
-void I_UnColorBorder(void)
-{
-	int8_t i;
-
-    I_WaitVBL(1);
-    _outbyte(PEL_WRITE_ADR, 0);
-    for (i = 0; i < 3; i++)
-    {
-        _outbyte(PEL_DATA, 0);
-    }
-}
 
 //
 // User input

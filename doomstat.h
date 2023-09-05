@@ -125,15 +125,6 @@ extern	int16_t		viewheight;
 extern	int16_t		viewwidth;
 extern	int16_t		scaledviewwidth;
 
-
-
-
-
-
-// This one is related to the 3-screen display mode.
-// ANG90 = left side, ANG270 = right
-extern  int32_t	viewangleoffset;
-
 // Player taking events, and displaying.
 extern  int16_t	consoleplayer;	
 
