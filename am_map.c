@@ -255,10 +255,6 @@ static fixed_t 	max_w; // max_x-min_x,
 static fixed_t  max_h; // max_y-min_y
 
 // based on player size
-static fixed_t 	min_w;
-static fixed_t  min_h;
-
-
 static fixed_t 	min_scale_mtof; // used to tell when to stop zooming out
 static fixed_t 	max_scale_mtof; // used to tell when to stop zooming in
 
@@ -401,9 +397,6 @@ void AM_findMinMaxBoundaries(void)
   
     max_w = max_x - min_x;
     max_h = max_y - min_y;
-
-    min_w = 2*PLAYERRADIUS; // const? never changed?
-    min_h = 2*PLAYERRADIUS;
 
 	temp.h.intbits = f_w;
 	a = FixedDiv(temp.w, max_w);
