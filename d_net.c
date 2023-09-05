@@ -37,7 +37,6 @@ doomdata_t *netbuffer; // points inside doomcom
 //
 #define PL_DRONE 0x80 // bit flag in doomdata->player
 
-ticcmd_t localcmds[BACKUPTICS];
 
 ticcount_t nettics;
 

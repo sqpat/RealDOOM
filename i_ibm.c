@@ -719,6 +719,9 @@ byte *I_AllocLow(filelength_t length)
 {
 	byte *mem;
 	mem = malloc(length);
+	if (mem == NULL) {
+		I_Error("Error: Couldn't malloc length %li", length);
+	}
 	memset(mem, 0, length);
 	return mem;
 }

@@ -122,6 +122,10 @@
 // 4 16594448 2234441 2923661 207 (2134 in 6367)    <----- after removing the 16 bit warnings
 
 
+// 4 13578495 1151503 1526490 207 (2134 in 3766)  <--- long long fixeddiv, index visplanes, removed cheats, removed translation tables
+// 8 13569197 422735  521499  207 (2134 in 1843)  <---- same as above with 8
+// 8 13578495 422543  521292  207 (2134 in 1851)  <---- same as above with the EMS_PAGE check changed to 16. maybe it doesnt help performance at all?
+
  // CONCLUSION: page locking is not helping ? lru just wins?
 
 
@@ -170,14 +174,14 @@
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048
 // todo make this PAGE * PAGE SIZE 
-#define MAX_ZMALLOC_SIZE 0x10000
+#define MAX_ZMALLOC_SIZE 0x10000L
 
 // demo commented out...
 
 
 
 // 8 MB worth. Letting us set 8 MB as a max lets us get away with 
-// some smaller allocation_t sies
+// some smaller allocation_t sizes
 #define MAX_PAGE_FRAMES 512
 
 #define PAGE_FRAME_BITS 14
@@ -244,9 +248,6 @@ typedef struct
 	// deleted so the caches can also be cleared. Used in compositeTextures
 	// and wad lumps
 	uint16_t backref_and_user;  //12 bytes per struct, dont think we can do better.
-
-	uint8_t sourcehint; // use for debugging...
-	int8_t lockcount; // for debugging
 
 } allocation_t;
 
@@ -883,18 +884,11 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 	boolean allpagesgood;
 	numreads++;
 
-	// f6800af4
-	//   size came out ok (2804)
-	//   logical page out on right (493)  but shouldnt be 493...
-	// so MAKE_PAGE and MAKE_SIZE are ok
-
-	//I_Error("\nfirst %u %li %lx %i", logicalpage, size, page_and_size, 0);
 
 	if (size == 0) {
 		//I_Error("why a zero allocation!?");
 	}
 
-	// Note: if multiple pages, then we must evict multiple
 	numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
 
 	//todo happens on size 0
@@ -971,7 +965,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 					// locked page in the middle? shouldn't happen but i guess fragmentation can happen with freeing of these pages
 					// if this is really happening a lot... then redo in code where the pages are being locked to prevent this? but realistically page locking should grow/shrink in "stack" pattern
 
-					I_Error("forcing out locked page? %i %i %i %i %i", i, ref, MAKE_SIZE(allocations[i].page_and_size), allocations[i].sourcehint, ((mobj_t*)(allocations[i].sourcehint))->type);
+					I_Error("forcing out locked page? %i %i  %i", i, ref, MAKE_SIZE(allocations[i].page_and_size));
 
 				}
 
@@ -997,7 +991,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 
 		}
 
-		I_Error("couldnt find page to deallocate for a locked page? %i %i %i %i %i", i, ref, MAKE_SIZE(allocations[i].page_and_size), allocations[i].sourcehint, ((mobj_t*)(allocations[i].sourcehint))->type);
+		I_Error("couldnt find page to deallocate for a locked page? %i %i  %i", i, ref, MAKE_SIZE(allocations[i].page_and_size));
 
 	}
 
@@ -1211,11 +1205,9 @@ void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex, i
 	for (i = 0; i < pagesize[pageframeindex]; i++) {
 		if (value) {
 			lockedpages[pageframeindex + i]++;
-			allocations[ref].lockcount++; // for debugging
 		}
 		else {
 			lockedpages[pageframeindex + i]--;
-			allocations[ref].lockcount--; // for debugging
 		}
 		if (lockedpages[pageframeindex + i] < 0)
 			I_Error("over de-allocated! %i %i %i %i %i", ref, lockedpages[pageframeindex + i], pageframeindex, i, index);
@@ -1660,7 +1652,6 @@ Z_MallocEMSNewWithBackRef
 
 
 
-	allocations[base].sourcehint = sourceHint;
 	SET_TAG(allocations[base], tag);
 	SET_BACKREF(allocations[base], backRef);
 

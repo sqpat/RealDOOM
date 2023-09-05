@@ -2,7 +2,7 @@
 
 option quiet
 option map
-option stack=26768
+option stack=22000
 debug all
 libpath %WATCOM%\lib286
 libpath %WATCOM%\lib286\dos

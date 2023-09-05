@@ -186,9 +186,8 @@ int8_t            savedescription[32];
 
 MEMREF          bodyque[BODYQUESIZE]; 
 int8_t             bodyqueslot;
- 
-void*           statcopy;                               // for statistics driver
-  
+ticcmd_t localcmds[BACKUPTICS];
+
 
 //
 // G_BuildTiccmd
@@ -213,9 +212,17 @@ void G_BuildTiccmd (int8_t index)
 	//base = &emptycmd;
 	//memcpy(cmd, base, sizeof(*cmd));
 
+
+	// 2e276460 (2c7e:6460) gamekeydown
+	// 75414af2 (7398:36a0) mousebuttons
+	// 75414af0 (7398:4af0) mousearray
+	// 1aa25a0  (0000:25a0) G_BuildTiccmd
+
+
+
 	memset(cmd, 0, sizeof(ticcmd_t));
-        
-    strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe]  ;
+
+	strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe]  ;
 	speed = gamekeydown[key_speed] ;
     forward = side = 0;
 
@@ -548,7 +555,7 @@ void G_Ticker (void)
             break; 
         } 
     }
-    
+
 	// get commands, check consistancy,
 	 // and build new consistancy check
 	buf = (gametic) % BACKUPTICS;
@@ -563,7 +570,7 @@ void G_Ticker (void)
 		G_WriteDemoTiccmd(cmd);
 
 
-    
+
     // check for special buttons
 	if (players.cmd.buttons & BT_SPECIAL)
 	{
@@ -587,7 +594,7 @@ void G_Ticker (void)
 		}
 	}
 
-    
+
     // do main actions
     switch (gamestate) 
     { 
@@ -595,7 +602,7 @@ void G_Ticker (void)
 
 	    P_Ticker();
 		ST_Ticker();
-        AM_Ticker (); 
+		AM_Ticker ();
 		HU_Ticker ();            
 		break;
          
@@ -611,6 +618,7 @@ void G_Ticker (void)
         D_PageTicker (); 
         break; 
     }        
+
 } 
  
  
@@ -891,8 +899,6 @@ void G_DoCompleted (void)
     viewactive = false; 
     automapactive = false; 
  
-    if (statcopy)
-        memcpy (statcopy, &wminfo, sizeof(wminfo));
         
     WI_Start (&wminfo); 
 } 

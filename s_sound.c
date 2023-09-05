@@ -138,7 +138,8 @@ void S_StopChannel(int8_t cnum);
 
 void S_SetMusicVolume(uint8_t volume)
 {
-    if ( volume > 127)
+	/*
+	if ( volume > 127)
     {
         I_Error("Attempt to set music volume at %d",
             volume);
@@ -147,12 +148,14 @@ void S_SetMusicVolume(uint8_t volume)
     I_SetMusicVolume(127);
     I_SetMusicVolume(volume);
     snd_MusicVolume = volume;
+	*/
 }
 
 
 void S_StopMusic(void)
 {
 	return;
+	/*
     if (mus_playing)
     {
         if (mus_paused)
@@ -167,6 +170,9 @@ void S_StopMusic(void)
         mus_playing->data = 0;
         mus_playing = 0;
     }
+
+	*/
+
 }
 
 void
@@ -174,6 +180,8 @@ S_ChangeMusic
 ( musicenum_t			musicnum,
   boolean			looping )
 {
+
+	/*
     musicinfo_t*	music;
 	int8_t		namebuf[9];
 	return;
@@ -210,6 +218,8 @@ S_ChangeMusic
     I_PlaySong(music->handle, looping);
 
     mus_playing = music;
+
+	*/
 }
 
 //
@@ -218,11 +228,12 @@ S_ChangeMusic
 void S_StartMusic(musicenum_t m_id)
 {
 	return;
-    S_ChangeMusic(m_id, false);
+    //S_ChangeMusic(m_id, false);
 }
 
 void S_StopChannel(int8_t cnum)
 {
+	/*
     int8_t		i;
 	channel_t* channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
 
@@ -253,6 +264,9 @@ void S_StopChannel(int8_t cnum)
 
 	c->sfxinfo = 0;
     }
+
+
+	*/
 }
 
 //
@@ -269,7 +283,9 @@ S_AdjustSoundParams
   uint8_t*		sep,
   uint8_t*		pitch )
 {
-    fixed_t	approx_dist;
+	return 0;
+	/*
+	fixed_t	approx_dist;
     fixed_t	adx;
     fixed_t	ady;
     angle_t	angle;
@@ -329,6 +345,9 @@ S_AdjustSoundParams
     }
     
     return (*vol > 0);
+
+	*/
+
 }
 
 void S_SetSfxVolume(uint8_t volume)
@@ -347,25 +366,30 @@ void S_SetSfxVolume(uint8_t volume)
 void S_PauseSound(void)
 {
 	return;
+	/*
     if (mus_playing && !mus_paused)
     {
 	I_PauseSong(mus_playing->handle);
 	mus_paused = true;
     }
+	*/
 }
 
 void S_ResumeSound(void)
 {
 	return;
+	/*
     if (mus_playing && mus_paused)
     {
 	I_ResumeSong(mus_playing->handle);
 	mus_paused = false;
     }
+	*/
 }
 
 void S_StopSound(MEMREF originRef)
 {
+	/*
 	int8_t cnum;
 	channel_t* channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
 	return;
@@ -378,6 +402,9 @@ void S_StopSound(MEMREF originRef)
 	    break;
 	}
     }
+
+	*/
+
 }
 
 //
@@ -387,6 +414,10 @@ void S_StopSound(MEMREF originRef)
 int8_t
 S_getChannel ( MEMREF originRef, sfxinfo_t*	sfxinfo ) {
     // channel number to use
+
+	return 0;
+	/*
+
     int8_t		cnum;
     
     channel_t*	c;
@@ -424,6 +455,9 @@ S_getChannel ( MEMREF originRef, sfxinfo_t*	sfxinfo ) {
     c->originRef = originRef;
 
     return cnum;
+
+	*/
+
 }
 
 void S_StartSoundAtVolume
@@ -433,6 +467,8 @@ void S_StartSoundAtVolume
   sfxenum_t		sfx_id,
   uint8_t		volume )
 {
+
+	/*
 
   int16_t		rc;
   uint8_t		sep;
@@ -447,10 +483,7 @@ void S_StartSoundAtVolume
   return;
 
 	
-	// Debug.
-	/*fprintf( stderr,
-		   "S_StartSoundAtVolume: playing sound %d (%s)\n",
-		   sfx_id, S_sfx[sfx_id].name );*/
+ 
   
 	// check for bogus sound #
 	if (sfx_id < 1 || sfx_id > NUMSFX) {
@@ -537,6 +570,8 @@ void S_StartSoundAtVolume
 				       sep,
 				       pitch,
 				       priority);
+
+	*/
 }
 
 void S_StartSoundFromRef(MEMREF memref,	sfxenum_t		sfx_id)  {
@@ -580,7 +615,10 @@ void S_StartSoundWithParams(fixed_t x, fixed_t y, sfxenum_t sfx_id) {
 //
 void S_UpdateSounds(MEMREF listenerRef)
 {
-    int16_t		audible;
+	/*
+
+	
+	int16_t		audible;
     int8_t		cnum;
     uint8_t		volume;
     uint8_t		sep;
@@ -593,6 +631,7 @@ void S_UpdateSounds(MEMREF listenerRef)
 	channel_t* channels;
 
 	return;
+
 
     // Clean up unused data.
     if (gametic > nextcleanup)
@@ -673,6 +712,8 @@ void S_UpdateSounds(MEMREF listenerRef)
     //      && !I_QrySongPlaying(mus_playing->handle)
     //      && !mus_paused )
     // S_StopMusic();
+	*/
+
 }
 
 //
@@ -684,6 +725,9 @@ void S_Init
 ( uint8_t		sfxVolume,
   uint8_t		musicVolume )
 {  
+
+	/*
+
   int16_t		i;
   channel_t* channels;
 
@@ -712,6 +756,9 @@ void S_Init
   // Note that sounds have not been cached (yet).
   for (i=1 ; i<NUMSFX ; i++)
     S_sfx[i].lumpnum = S_sfx[i].usefulness = -1;
+
+  */
+
 }
 
 //
@@ -721,6 +768,9 @@ void S_Init
 //
 void S_Start(void)
 {
+
+	/*
+
 	int8_t cnum;
 	int8_t mnum;
   channel_t* channels = (channel_t*)Z_LoadBytesFromEMS(channelsRef);
@@ -766,4 +816,6 @@ void S_Start(void)
   S_ChangeMusic(mnum, true);
   
   nextcleanup = 15;
+
+  */
 }

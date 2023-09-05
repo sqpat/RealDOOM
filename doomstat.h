@@ -247,7 +247,6 @@ extern  doomcom_t*	doomcom;
 extern  doomdata_t*	netbuffer;	
 
 
-extern  ticcmd_t	localcmds[BACKUPTICS];
 extern	int16_t		rndindex;
 
 extern	int32_t		maketic;

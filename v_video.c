@@ -460,9 +460,9 @@ void V_Init (void)
 
 
 	#ifdef SKIPWIPE
-		base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 2);
+		base = I_AllocLow(2L*SCREENWIDTH*SCREENHEIGHT);
 		screen0 = base;
-		screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
+		screen1 = base + 1L*SCREENWIDTH * SCREENHEIGHT;
 
 	#else
 		base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 4);

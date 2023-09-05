@@ -349,7 +349,7 @@ void D_Display (void)
     // draw buffered stuff to screen
     I_UpdateNoBlit ();
 	// draw the view directly
-    if (gamestate == GS_LEVEL && !automapactive && gametic)
+	if (gamestate == GS_LEVEL && !automapactive && gametic)
         R_RenderPlayerView (&players);
 
 
@@ -489,9 +489,9 @@ void D_DoomLoop (void)
 		S_UpdateSounds (players.moRef);// move positional sounds
         // Update display, next frame, with current state.
 
-		 
+
 		D_Display ();
-		 
+
 		//SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);
 	
 		/*
@@ -1216,17 +1216,7 @@ void D_DoomMain (void)
     D_RedrawTitle();
     ST_Init ();
 
-    // check for a driver that wants intermission stats
-    p = M_CheckParm ("-statcopy");
-    if (p && p<myargc-1)
-    {
-        // for statistics driver
-        extern  void*   statcopy;                            
-
-        statcopy = (void*)atoi(myargv[p+1]);
-        printf ("External statistics registered.\n");
-        D_RedrawTitle();
-    }
+  
     
     // start the apropriate game based on parms
     p = M_CheckParm ("-record");
