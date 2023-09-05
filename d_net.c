@@ -23,9 +23,6 @@
 #include "doomdef.h"
 #include "doomstat.h"
 
-doomcom_t *doomcom;
-doomdata_t *netbuffer; // points inside doomcom
-
 //
 // NETWORKING
 //

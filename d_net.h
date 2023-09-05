@@ -30,10 +30,6 @@
 //  be transmitted.
 //
 
-#define DOOMCOM_ID		0x12345678l
-
-
-
 // Networking and tick handling related.
 #define BACKUPTICS		16
 
@@ -57,60 +53,6 @@ typedef struct
     ticcmd_t		cmds[BACKUPTICS];
 
 } doomdata_t;
-
-
-
-
-typedef struct
-{
-    // Supposed to be DOOMCOM_ID?
-    int32_t		id;
-    
-    // DOOM executes an int to execute commands.
-    int16_t		intnum;		
-    // Communication between DOOM and the driver.
-    // Is CMD_SEND or CMD_GET.
-    int16_t		command;
-    // Is dest for send, set by get (-1 = no packet).
-    int16_t		remotenode;
-    
-    // Number of bytes in doomdata to be sent
-    int16_t		datalength;
-
-    // Info common to all nodes.
-    // Console is allways node 0.
-    int16_t		numnodes;
-    // Flag: 1 = no duplication, 2-5 = dup for slow nets.
-    int16_t		ticdup;
-    // Flag: 1 = send a backup tic in every packet.
-    int16_t		extratics;
-    int16_t		deathmatch;
-    // Flag: -1 = new game, 0-5 = load savegame
-    int16_t		savegame;
-    int16_t		episode;	// 1-3
-    int16_t		map;		// 1-9
-    int16_t		skill;		// 1-5
-
-    // Info specific to this node.
-    int16_t		consoleplayer;
-    int16_t		numplayers;
-    
-    // These are related to the 3-display mode,
-    //  in which two drones looking left and right
-    //  were used to render two additional views
-    //  on two additional computers.
-    // Probably not operational anymore.
-    // 1 = left, 0 = center, -1 = right
-    int16_t		angleoffset;
-    // 1 = drone
-    int16_t		drone;		
-
-    // The packet data to be sent.
-    doomdata_t		data;
-    
-} doomcom_t;
-
-
 
 // Create any new ticcmds and broadcast to other players.
 void NetUpdate (void);
