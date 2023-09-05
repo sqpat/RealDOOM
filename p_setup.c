@@ -133,8 +133,8 @@ void P_LoadVertexes(int16_t lump)
 	for (i = 0; i < numvertexes; i++, li++) {
 		ml = &data[i];
 
-		li->x = (ml->x);// << FRACBITS;
-		li->y = (ml->y);// << FRACBITS;
+		li->x = (ml->x);
+		li->y = (ml->y);
 		Z_RefIsActive(dataRef);
 		Z_RefIsActive(vertexesRef);
 	}
@@ -371,14 +371,14 @@ void P_LoadNodes(int16_t lump)
 		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
 		no = &nodes[i];
 
-		no->x = (currentdata.x);// << FRACBITS;
-		no->y = (currentdata.y);// << FRACBITS;
-		no->dx = (currentdata.dx);// << FRACBITS;
-		no->dy = (currentdata.dy);// << FRACBITS;
+		no->x = (currentdata.x);
+		no->y = (currentdata.y);
+		no->dx = (currentdata.dx);
+		no->dy = (currentdata.dy);
 		for (j = 0; j < 2; j++) {
 			no->children[j] = (currentdata.children[j]);
 			for (k = 0; k < 4; k++) {
-				no->bbox[j][k] = (currentdata.bbox[j][k]);// << FRACBITS;
+				no->bbox[j][k] = (currentdata.bbox[j][k]);
 			}
 		}
 		//Z_RefIsActive(nodesRef);
@@ -536,18 +536,18 @@ void P_LoadLineDefs(int16_t lump)
 
 		// todo make these 16 bit too
 		if (v1x < v2x) {
-			ld->bbox[BOXLEFT] = v1x;// << FRACBITS;
-			ld->bbox[BOXRIGHT] = v2x;// << FRACBITS;
+			ld->bbox[BOXLEFT] = v1x;
+			ld->bbox[BOXRIGHT] = v2x;
 		} else {
-			ld->bbox[BOXLEFT] = v2x;// << FRACBITS;
-			ld->bbox[BOXRIGHT] = v1x;// << FRACBITS;
+			ld->bbox[BOXLEFT] = v2x;
+			ld->bbox[BOXRIGHT] = v1x;
 		}
 		if (v1y < v2y) {
-			ld->bbox[BOXBOTTOM] = v1y;// << FRACBITS;
-			ld->bbox[BOXTOP] = v2y;// << FRACBITS;
+			ld->bbox[BOXBOTTOM] = v1y;
+			ld->bbox[BOXTOP] = v2y;
 		} else {
-			ld->bbox[BOXBOTTOM] = v2y;// << FRACBITS;
-			ld->bbox[BOXTOP] = v1y;// << FRACBITS;
+			ld->bbox[BOXBOTTOM] = v2y;
+			ld->bbox[BOXTOP] = v1y;
 		}
 
 		if (mldsidenum0 != -1) {
@@ -629,8 +629,8 @@ void P_LoadSideDefs(int16_t lump)
 		sd->bottomtexture = bottex;
 		sd->midtexture = midtex;
 
-		sd->textureoffset = msdtextureoffset;// << FRACBITS;
-		sd->rowoffset = msdrowoffset;// << FRACBITS;
+		sd->textureoffset = msdtextureoffset;
+		sd->rowoffset = msdrowoffset;
 		sd->secnum = msdsecnum;
 
 		Z_RefIsActive(sidesRef);

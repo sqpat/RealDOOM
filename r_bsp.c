@@ -278,14 +278,15 @@ void R_AddLine (int16_t linenum)
 	sector_t* sectors;
 	sector_t frontsector;
 	sector_t backsector;
-	vertex_t*   vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertex_t*   vertexes;
 	fixed_t_union tempx;
 	fixed_t_union tempy;
     curlinenum = linenum;
 	
 	if (segs[curlinenum].linedefOffset > numlines) {
-		I_Error("R_Addline Error! lines out of bounds! %i %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
+		I_Error("R_Addline Error! lines out of bounds! %li %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
 	}
+	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
 
 	tempx.h.fracbits = 0;
 	tempy.h.fracbits = 0;
@@ -547,7 +548,6 @@ boolean R_CheckBBox(int16_t *bspcoord)
 }
 
 
-
 //
 // R_Subsector
 // Determine floor/ceiling planes.
@@ -579,18 +579,19 @@ void R_Subsector(int16_t subsecnum)
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);
 
 	if (temp.w < viewz.w) {
-		floorplane = R_FindPlane(temp.w, frontsector->floorpic, frontsector->lightlevel);
+		floorplaneindex = R_FindPlane(temp.w, frontsector->floorpic, frontsector->lightlevel);
 	} else {
-		floorplane = NULL;
+		floorplaneindex = -1;
 	}
+
 	// temp.h.intbits = frontsector->ceilingheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->ceilingheight);
 	// todo: see if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
 	
 	if (temp.w > viewz.w || frontsector->ceilingpic == skyflatnum) {
-		ceilingplane = R_FindPlane(temp.w, frontsector->ceilingpic, frontsector->lightlevel);
+		ceilingplaneindex = R_FindPlane(temp.w, frontsector->ceilingpic, frontsector->lightlevel);
 	} else {
-		ceilingplane = NULL;
+		ceilingplaneindex = -1;
 	}
 
 	R_AddSprites(frontsecnum);

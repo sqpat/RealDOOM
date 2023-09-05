@@ -23,9 +23,6 @@
 #include "doomdef.h"
 #include "doomstat.h"
 
-doomcom_t *doomcom;
-doomdata_t *netbuffer; // points inside doomcom
-
 //
 // NETWORKING
 //
@@ -45,7 +42,9 @@ ticcount_t maketic;
 ticcount_t skiptics;
 
 void D_ProcessEvents(void);
-void G_BuildTiccmd(ticcmd_t *cmd);
+//void G_BuildTiccmd(ticcmd_t *cmd);
+void G_BuildTiccmd(int8_t index);
+
 void D_DoAdvanceDemo(void);
 
 //
@@ -57,9 +56,9 @@ ticcount_t gametime;
 
 void NetUpdate(void)
 {
-	int nowtime;
-	int newtics;
-	int i;
+	uint32_t nowtime;
+	int32_t newtics;
+	int32_t i;
 
 	// check time
 	nowtime = ticcount;
@@ -88,7 +87,7 @@ void NetUpdate(void)
 		if (maketic - gametic >= BACKUPTICS / 2 - 1)
 			break; // can't hold any more
 
-		G_BuildTiccmd(&localcmds[maketic & (BACKUPTICS - 1)]);
+		G_BuildTiccmd(maketic & (BACKUPTICS - 1));
 		maketic++;
 	}
 
@@ -110,12 +109,12 @@ extern byte advancedemo;
 
 void TryRunTics(void)
 {
-	int i;
-	int entertic;
-	static int oldentertics;
-	int realtics;
-	int availabletics;
-	int counts;
+	int32_t i;
+	int32_t entertic;
+	static int32_t oldentertics;
+	int32_t realtics;
+	int32_t availabletics;
+	int32_t counts;
 
 	// get real tics
 	entertic = ticcount;

@@ -162,9 +162,4 @@ void I_ReadScreen(byte* scr);
 void I_BeginRead(void);
 void I_EndRead(void);
 
-
-// Called by D_DoomMain.
-void I_InitNetwork(void);
-void I_NetCmd(void);
-
 #endif

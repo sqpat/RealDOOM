@@ -46,7 +46,7 @@ enum { VERSION =  109 };
 // Probably going to remove this eventually, checks for some infinite loops in a few places. I used this when tracking down freezing bugs when there were many memory leaks early in development.
 //#define LOOPCHECK
 // Moves visplanes out of conventional memory into EMS. On its own, makes things slower. But this also frees up like 85k of conventional memory which may be better used speeding up the game in other ways.
- #define EMS_VISPLANES
+#define EMS_VISPLANES
 
 // Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off.
 //#define CHECKREFS
@@ -58,7 +58,7 @@ enum { VERSION =  109 };
 #define NUM_EMS_PAGES 4
 
 // Allocates backbuffers statically. 16 bit seems to not liek it.
-// #define STATIC_ALLOCATED_SCREENS
+//#define STATIC_ALLOCATED_SCREENS
 
 
 //
@@ -83,7 +83,7 @@ enum { VERSION =  109 };
 //(int32_t)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
 
 #define	FRACBITS		16
-#define	FRACUNIT		0x10000
+#define	FRACUNIT		0x10000l
 //#define	FRACUNIT		((int32_t)1<<FRACBITS)
 
 #define TAG_666			121

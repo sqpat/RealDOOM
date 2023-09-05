@@ -196,37 +196,6 @@ byte scantokey[128] =
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0         // 7
 };
-  
-
-//
-// I_ColorBorder
-//
-void I_ColorBorder(void)
-{
-	int8_t i;
-
-    I_WaitVBL(1);
-    _outbyte(PEL_WRITE_ADR, 0);
-    for (i = 0; i < 3; i++)
-    {
-        _outbyte(PEL_DATA, 63);
-    }
-}
-
-//
-// I_UnColorBorder
-//
-void I_UnColorBorder(void)
-{
-	int8_t i;
-
-    I_WaitVBL(1);
-    _outbyte(PEL_WRITE_ADR, 0);
-    for (i = 0; i < 3; i++)
-    {
-        _outbyte(PEL_DATA, 0);
-    }
-}
 
 //
 // User input
@@ -411,9 +380,10 @@ void I_UpdateNoBlit(void)
         h = realdr[BOXTOP] - realdr[BOXBOTTOM] + 1;
         I_UpdateBox(x, y, w, h);
     }
-    // Clear box
-    M_ClearBox16(dirtybox);
+	// Clear box
 
+	dirtybox[BOXTOP] = dirtybox[BOXRIGHT] = MINSHORT;
+	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
 }
 
 //
@@ -444,8 +414,8 @@ void I_InitGraphics(void)
     grmode = true;
     regs.w.ax = 0x13;
 	intx86(0x10, (union REGS *)&regs, &regs);
-    pcscreen = currentscreen = (byte *)0xa0000;
-    destscreen = (byte *)0xa4000;
+    pcscreen = currentscreen = (byte *)0xA0000l;
+    destscreen = (byte *)0xa4000l;
 
     outp(SC_INDEX, SC_MEMMODE);
     outp(SC_INDEX + 1, (inp(SC_INDEX + 1)&~8) | 4);
@@ -522,7 +492,7 @@ void I_StartTic(void)
 
 	I_ReadMouse();
 
- 
+
 	//
 	// keyboard events
 	//
@@ -846,7 +816,7 @@ void I_ReadMouse(void)
 
 
 #endif
-	
+
 
 
 	D_PostEvent(&ev);
@@ -1235,37 +1205,3 @@ void I_EndRead(void)
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
 }
-
-
-
-
-//
-// Networking
-//
-
-
-#define DOOMCOM_ID 0x12345678l
-
- 
-
-extern doomcom_t *doomcom;
-
-//
-// I_InitNetwork
-//
-void I_InitNetwork(void)
-{
-	//
-// single player game
-//
-	doomcom = malloc(sizeof(*doomcom));
-	if (!doomcom)
-	{
-		I_Error("malloc() in I_InitNetwork() failed");
-	}
-	memset(doomcom, 0, sizeof(*doomcom));
-	doomcom->id = DOOMCOM_ID;
-	doomcom->deathmatch = false;
-	doomcom->ticdup = 1;
-
-} 

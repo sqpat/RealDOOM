@@ -758,7 +758,7 @@ void R_InitTextures(void)
 		Z_RefIsActive(texturewidthmaskRef);
 		Z_RefIsActive(textureheightRef);
 		texturewidthmask[i] = j - 1;
-		textureheight[i] = textureheightval;// << FRACBITS;
+		textureheight[i] = textureheightval;
 
 
 	}
@@ -854,9 +854,9 @@ void R_InitSpriteLumps(void)
 		spriteoffset = (int16_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
 		spritetopoffset = (int16_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
 
-		spritewidth[i] = patchwidth;// << FRACBITS;
-		spriteoffset[i] = patchleftoffset;// << FRACBITS;
-		spritetopoffset[i] = patchtopoffset;// << FRACBITS;
+		spritewidth[i] = patchwidth;
+		spriteoffset[i] = patchleftoffset;
+		spritetopoffset[i] = patchtopoffset;
 
 	}
 }

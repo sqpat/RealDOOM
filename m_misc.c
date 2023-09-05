@@ -124,12 +124,7 @@ void M_ClearRandom (void)
 {
     rndindex = prndindex = 0;
 }
-
-void M_ClearBox16 (int16_t *box)
-{
-    box[BOXTOP] = box[BOXRIGHT] = MINSHORT;
-    box[BOXBOTTOM] = box[BOXLEFT] = MAXSHORT;
-}
+ 
 
 void
 M_AddToBox16

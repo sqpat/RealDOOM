@@ -151,13 +151,13 @@ boolean         french;
 
 
 int8_t            wadfile[1024];          // primary wad file
-int8_t            mapdir[1024];           // directory of development maps
 int8_t            basedefault[1024];      // default file
 
 
 void D_CheckNetGame (void);
 void D_ProcessEvents (void);
-void G_BuildTiccmd (ticcmd_t* cmd);
+void G_BuildTiccmd(int8_t index);
+//void G_BuildTiccmd (ticcmd_t* cmd);
 void D_DoAdvanceDemo (void);
 
 
@@ -168,8 +168,8 @@ void D_DoAdvanceDemo (void);
 // Events can be discarded if no responder claims them
 //
 event_t         events[MAXEVENTS];
-int32_t             eventhead;
-int32_t             eventtail;
+int8_t             eventhead;
+int8_t             eventtail;
 
 
 //
@@ -192,8 +192,8 @@ void D_ProcessEvents (void)
         
     for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
         ev = &events[eventtail];
-		if (M_Responder(ev)) {
-			continue;               // menu ate the event
+			if (M_Responder(ev)) {
+				continue;               // menu ate the event
 		}
 		G_Responder (ev);
     }
@@ -243,15 +243,17 @@ FixedDiv2
 	//,int8_t* file, int32_t line
 )
 {
-	double c;
-	c = ((double)a) / ((double)b) * FRACUNIT;
+	// all seem to work, but i think long long is probably the least problematic for 16 bit cpu for now. - sq
 
-	//fixed_t32 c = a / b;
+	long long c;
+	c = ((long long)a << 16) / ((long long)b);
 
-	if (c >= 2147483648.0 || c < -2147483648.0)
-		I_Error("FixedDiv: divide by zero");
-			//, file, line,  a, b, c, c, c > 2147483648.0, c < -2147483648.0, c == 0, a / b);
 
+	//float c;
+	//c = (((float)a) / ((float)b) * FRACUNIT);
+	
+	//double c;
+	//c = (((double)a) / ((double)b) * FRACUNIT);
 
 	return (fixed_t32) c;
 }
@@ -313,7 +315,6 @@ void D_Display (void)
     if (gamestate == GS_LEVEL && gametic)
         HU_Erase();
 
-    //I_Error("jhere");
     // do buffered drawing
     switch (gamestate)
     {
@@ -327,7 +328,7 @@ void D_Display (void)
         if (inhelpscreensstate && !inhelpscreens)
             redrawsbar = true;              // just put away the help screen
         ST_Drawer (viewheight == 200, redrawsbar );
-        fullscreen = viewheight == 200;
+		fullscreen = viewheight == 200;
         break;
 
       case GS_INTERMISSION:
@@ -444,8 +445,8 @@ extern  boolean         demorecording;
 void D_DoomLoop (void)
 {
 	// debugging stuff i need to find mem leaks...
-    int8_t result[3000];
-	int8_t result2[2000];
+//    int8_t result[3000];
+//	int8_t result2[2000];
 	int32_t lasttick = 0;
 	int32_t lastindex = 0;
 	int32_t stoptic;
@@ -467,7 +468,7 @@ void D_DoomLoop (void)
         if (singletics) {
 			I_StartTic ();
 			D_ProcessEvents ();
-			G_BuildTiccmd(&localcmds[maketic % BACKUPTICS]);
+			G_BuildTiccmd(maketic % BACKUPTICS);
 			if (advancedemo) {
 				D_DoAdvanceDemo();
 			}
@@ -506,7 +507,7 @@ void D_DoomLoop (void)
 			}
 
 		}*/
-
+		/*
 		stoptic = 23735;
 		if (gametic > stoptic) {
 			
@@ -544,6 +545,7 @@ void D_DoomLoop (void)
 			//	I_Error("badcopy");
 			//}
 		}
+		*/
 	}
 }
 
