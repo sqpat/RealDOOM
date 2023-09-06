@@ -254,7 +254,7 @@ EV_DoFloor
     int16_t			secnum;
     int16_t			rtn;
     int16_t			i;
-    //sector_t*		sec;
+	int16_t		j = 0;
     floormove_t*	floor;
 	MEMREF floorRef;
 	int16_t* textureheight;
@@ -262,17 +262,18 @@ EV_DoFloor
 	sector_t* sectors;
 	int16_t sectorceilingheight;
 	int16_t sectorfloorheight;
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
     secnum = -1;
     rtn = 0;
-    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
+	P_FindSectorsFromLineTag(linetag, secnumlist, false);
+	while (secnumlist[j] >= 0) {
 		//sec = &sectors[secnum];
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
-		// ALREADY MOVING?  IF SO, KEEP GOING...
-		if ((&sectors[secnum])->specialdataRef)
-			continue;
-	
+		secnum = secnumlist[j];
+		j++;
+
 		// new floor thinker
 		rtn = 1;
 		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
@@ -496,17 +497,20 @@ EV_BuildStairs
 	uint8_t sectorfloorpic;
 	int16_t sectorlinesoffset;
 	uint8_t sectorlinecount;
-    secnum = -1;
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+	int16_t		j = 0;
+	secnum = -1;
     rtn = 0;
-    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
-	//sec = &sectors[secnum];
+	P_FindSectorsFromLineTag(linetag, secnumlist, false);
+	while (secnumlist[j] >= 0) {
+		//sec = &sectors[secnum];
 		
 	// ALREADY MOVING?  IF SO, KEEP GOING...
 
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-		if ((&sectors[secnum])->specialdataRef)
-			continue;
-	
+		secnum = secnumlist[j];
+		j++;
+
 		// new floor thinker
 		rtn = 1;
 		floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);

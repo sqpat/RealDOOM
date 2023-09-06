@@ -375,7 +375,7 @@ void R_DrawPlanes (void)
 			continue;
 
 		if (currentplanebyteRef != pl->visplanepage) { // new page to set locked..
-			Z_SetUnlocked(visplanebytesRef[currentplanebyteRef],  130);
+			Z_SetUnlocked(visplanebytesRef[currentplanebyteRef]);
 			currentplanebyteRef = pl->visplanepage;
 //			base = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[currentplanebyteRef]))[0]);
 			base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], PAGE_LOCKED))[0]); // load into locked page
@@ -416,7 +416,7 @@ void R_DrawPlanes (void)
 
 					dc_source = R_GetColumn(skytexture, angle);
 					colfunc ();
-					//Z_SetUnlocked(lockedRef,  7);
+					//Z_SetUnlocked(lockedRef);
 
 				}
 			}
@@ -429,7 +429,7 @@ void R_DrawPlanes (void)
 			flattranslation[pl->picnum],
 			PU_STATIC);
 		ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
-		//Z_SetUnlocked(ds_sourceRef, PAGE_LOCKED, 28);
+		//Z_SetUnlocked(ds_sourceRef, PAGE_LOCKED);
 		planeheight = abs(pl->height-viewz.w);
 		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
@@ -473,11 +473,11 @@ void R_DrawPlanes (void)
 			}
 
 		}
-		//Z_SetUnlocked(ds_sourceRef,  27);
+		//Z_SetUnlocked(ds_sourceRef);
 		Z_ChangeTagEMSNew (ds_sourceRef, PU_CACHE);
     }
 
-	Z_SetUnlocked(visplanebytesRef[currentplanebyteRef],  132);
+	Z_SetUnlocked(visplanebytesRef[currentplanebyteRef]);
 
 }
 

@@ -234,7 +234,7 @@ void P_LoadSegs(int16_t lump)
 
 	}
 
-	//Z_SetUnlocked(dataRef, 197);
+	//Z_SetUnlocked(dataRef);
 	Z_FreeEMSNew(dataRef);
 }
 
@@ -629,8 +629,8 @@ void P_LoadSideDefs(int16_t lump)
 
 	}
 
-	Z_SetUnlocked(dataRef, 0);
-	//Z_SetUnlocked(sidesRef, 0);
+	Z_SetUnlocked(dataRef);
+	//Z_SetUnlocked(sidesRef);
 	Z_FreeEMSNew(dataRef);
 }
 
@@ -720,7 +720,7 @@ void P_GroupLines(void)
 
 	}
 
-	Z_SetUnlocked(subsectorsRef, 195);
+	Z_SetUnlocked(subsectorsRef);
 
 	// count number of lines in each sector
 	total = 0;
@@ -741,7 +741,7 @@ void P_GroupLines(void)
 			}
 		}
 	}
-	Z_SetUnlocked(linesRef, 194);
+	Z_SetUnlocked(linesRef);
 
 	// build line tables for each sector        
 
@@ -783,9 +783,9 @@ void P_GroupLines(void)
 				M_AddToBox(bbox,  tempv1.w, tempv2.w );
 			}
 		}
-		Z_SetUnlocked(linesRef, 193);
-		//Z_SetUnlocked(linebufferRef, 194);
-		//Z_SetUnlocked(vertexesRef, 195);
+		Z_SetUnlocked(linesRef);
+		//Z_SetUnlocked(linebufferRef);
+		//Z_SetUnlocked(vertexesRef);
 		if (linebufferindex - previouslinebufferindex != sectorlinecount) {
 			linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 			I_Error("P_GroupLines: miscounted %i %i   iteration %i      %i != (%i - %i)", linebuffer, sectors[i].linesoffset,  i, sectors[i].linecount, linebufferindex , previouslinebufferindex);

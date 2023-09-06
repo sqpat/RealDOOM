@@ -246,15 +246,17 @@ EV_DoDoor
 	int16_t doortopheight;
 	sector_t* sectors;
 	sector_t doorsector;
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+	int16_t		j = 0;
 
     secnum = -1;
     rtn = 0;
-    
-    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 
-		if (sectors[secnum].specialdataRef)
-			continue;
+	while (secnumlist[j] >= 0) {
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		secnum = secnumlist[j];
+		j++;
 		
 	
 		// new door thinker

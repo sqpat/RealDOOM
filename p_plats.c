@@ -134,6 +134,7 @@ EV_DoPlat
     plat_t*	plat;
     int16_t		secnum;
     int16_t		rtn;
+	int16_t		j = 0;
 	MEMREF platRef;
 	side_t* sides;
 	int16_t side0secnum;
@@ -142,6 +143,7 @@ EV_DoPlat
 	int32_t sectorsoundorgY;
 	short_height_t sectorfloorheight;
 	sector_t* sectors;
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
     secnum = -1;
     rtn = 0;
@@ -158,14 +160,13 @@ EV_DoPlat
 	
 	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 	side0secnum = sides[lineside0].secnum;
-	while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
+	P_FindSectorsFromLineTag(linetag, secnumlist, false);
+	while (secnumlist[j] >= 0) {
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
  
+		secnum = secnumlist[j];
+		j++;
 
-
-		if ((&sectors[secnum])->specialdataRef) {
-			continue;
-		}
 		// Find lowest & highest floors around sector
 		rtn = 1;
 

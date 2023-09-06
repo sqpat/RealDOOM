@@ -905,7 +905,7 @@ void R_RenderPlayerView ()
 	// The head node is the last node output.
 	//Z_LoadBytesFromEMSWithOptions(nodesRef, PAGE_LOCKED);
 	R_RenderBSPNode (firstnode);
-	//Z_SetUnlocked(nodesRef, 118)
+	//Z_SetUnlocked(nodesRef)
 
     // Check for new console commands.
     NetUpdate ();

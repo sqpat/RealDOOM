@@ -1055,7 +1055,7 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 		ST_drawWidgets(false);
 	}
 
-	Z_SetUnlocked(screen4Ref,  56);
+	Z_SetUnlocked(screen4Ref);
 
 	screen4 = NULL;
 

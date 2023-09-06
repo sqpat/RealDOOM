@@ -257,13 +257,15 @@ void EV_StartLightStrobing(uint8_t linetag)
 {
     int16_t		secnum;
 	sector_t* sectors;
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+	int16_t		j = 0;
 
     secnum = -1;
-    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-		if (sectors[secnum].specialdataRef) {
-			continue;
-		}
+	P_FindSectorsFromLineTag(linetag, secnumlist, false);
+	while (secnumlist[j] >= 0) {
+ 		secnum = secnumlist[j];
+		j++;
+
 		P_SpawnStrobeFlash (secnum,SLOWDARK, 0);
     }
 }
@@ -275,36 +277,50 @@ void EV_StartLightStrobing(uint8_t linetag)
 //
 void EV_TurnTagLightsOff(uint8_t linetag)
 {
-    int16_t			i;
+	int16_t			i;
+	int16_t			j = 0;
     int16_t			secnum;
     uint8_t			min;
-    int16_t		offset;
-    line_t*		templine;
+     line_t*		templine;
 	int16_t *		linebuffer;
 	int16_t		linenumber;
 	sector_t*   sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	uint8_t linecount;
+	int16_t offset = sectors[secnum].linesoffset;
+	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
+	int16_t tagsecnumlist[MAX_ADJOINING_SECTORS];
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
-    for (secnum = 0; secnum < numsectors; secnum++) {
-		if (sectors[secnum].tag == linetag) {
-			min = sectors[secnum].lightlevel;
-			for (i = 0; i < sectors[secnum].linecount; i++) {
-				offset = sectors[secnum].linesoffset + i;
-				linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
-				linenumber = linebuffer[offset];
 
-				offset = getNextSector(linenumber, secnum);
-				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-				if (offset == SECNUM_NULL){
-					continue;
-				}
-				if (sectors[offset].lightlevel < min) {
-					min = sectors[offset].lightlevel;
-				}
+	
+	P_FindSectorsFromLineTag(linetag, tagsecnumlist, true);
+
+
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
+	while (tagsecnumlist[j] >= 0) {
+		secnum = tagsecnumlist[j];
+		j++;
+		linecount = sectors[secnum].linecount;
+		offset = sectors[secnum].linesoffset;
+		
+		min = sectors[secnum].lightlevel;
+
+		linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+		memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+		linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
+
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
+		for (i = 0; i < linecount; i++) {
+ 			 offset = secnumlist[i];
+
+			if (sectors[offset].lightlevel < min) {
+				min = sectors[offset].lightlevel;
 			}
-			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-			sectors[secnum].lightlevel = min;
 		}
-    }
+		sectors[secnum].lightlevel = min;
+	}
 }
 
 
@@ -317,37 +333,45 @@ EV_LightTurnOn
   uint8_t		bright )
 {
     int16_t secnum;
-    uint8_t		j;
+	uint8_t		j = 0;
+	uint8_t		i;
     int16_t	tempsecnum;
     line_t*	templine;
 	uint8_t linecount;
 	int16_t* linebuffer;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t*   sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	int16_t offset = sectors[secnum].linesoffset;
+	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
+	int16_t tagsecnumlist[MAX_ADJOINING_SECTORS];
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
-    for (secnum=0;secnum<numsectors;secnum++) {
-		if (sectors[secnum].tag == linetag){
-			// bright = 0 means to search
-			// for highest light level
-			// surrounding sector
-			if (!bright) {
-				linecount = sectors[secnum].linecount;
-				for (j = 0;j < linecount; j++) {
-					tempsecnum = sectors[secnum].linesoffset + j;
-					linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	P_FindSectorsFromLineTag(linetag, tagsecnumlist, true);
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
-					tempsecnum = getNextSector(linebuffer[tempsecnum],secnum);
-					sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	while (tagsecnumlist[j] >= 0) {
+		secnum = tagsecnumlist[j];
+		j++;
 
-					if (tempsecnum == SECNUM_NULL)
-						continue;
+		if (!bright) {
+			linecount = sectors[secnum].linecount;
+			offset = sectors[secnum].linesoffset;
+			linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+			memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+			linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
-					if (sectors[tempsecnum].lightlevel > bright)
-						bright = sectors[tempsecnum].lightlevel;
-				}
+			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
+			for (i = 0; i < linecount; i++) {
+				offset = secnumlist[i];
+
+				if (sectors[offset].lightlevel > bright)
+					bright = sectors[offset].lightlevel;
 			}
-			sectors[secnum].lightlevel = bright;
+
 		}
-    }
+		sectors[secnum].lightlevel = bright;
+
+	}
 }
 
     

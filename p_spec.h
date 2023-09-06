@@ -34,6 +34,9 @@ extern	ticcount_t	levelTimeCount;
 //      Define values for map objects
 #define MO_TELEPORTMAN          14
 
+// 32 adjoining sectors max!
+#define MAX_ADJOINING_SECTORS    32
+
 
 // at game start
 void    P_InitPicAnims (void);
@@ -93,20 +96,26 @@ short_height_t P_FindLowestCeilingSurrounding(int16_t secnum);
 short_height_t P_FindHighestCeilingSurrounding(int16_t secnum);
 
 int16_t
-P_FindSectorFromLineTag
+getNextSectorList
+(int16_t* linenums,
+	int16_t	sec,
+	int16_t* secnums,
+	int16_t linecount,
+	boolean onlybacksecnum);
+
+void
+P_FindSectorsFromLineTag
 ( int8_t		linetag,
-  int16_t		start );
+  int16_t*		foundsectors, 
+	boolean includespecials
+	);
 
 uint8_t
 P_FindMinSurroundingLight
 ( int16_t secnum,
   uint8_t		max );
 
-int16_t
-getNextSector
-( int16_t linenum,
-  int16_t	sec );
-
+ 
 
 //
 // SPECIAL

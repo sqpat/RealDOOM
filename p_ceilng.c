@@ -160,11 +160,13 @@ EV_DoCeiling
     int16_t		secnum;
     int16_t		rtn;
     //sector_t*	sec;
+	int16_t		j = 0;
     ceiling_t*	ceiling;
 	MEMREF ceilingRef;
 	sector_t* sectors;
 	sector_t sector;
-	
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+
     secnum = -1;
     rtn = 0;
     
@@ -178,62 +180,63 @@ EV_DoCeiling
 		break;
     }
 	
-    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0)
-    {
+	P_FindSectorsFromLineTag(linetag, secnumlist, false);
+
+	while (secnumlist[j] >= 0) {
+		secnum = secnumlist[j];
+		j++;
+			
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	if (sectors[secnum].specialdataRef != NULL_MEMREF)
-	    continue;
+
+		sector = sectors[secnum];
+
+		// new door thinker
+		rtn = 1;
+		ceilingRef = Z_MallocEMSNew(sizeof(*ceiling), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+		sectors[secnum].specialdataRef = ceilingRef;
+		ceiling = (ceiling_t*)Z_LoadBytesFromEMS(ceilingRef);
+
+		ceiling->thinkerRef = P_AddThinker (ceilingRef, TF_MOVECEILING);
 	
-
-	sector = sectors[secnum];
-
-	// new door thinker
-	rtn = 1;
-	ceilingRef = Z_MallocEMSNew(sizeof(*ceiling), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
-	sectors[secnum].specialdataRef = ceilingRef;
-	ceiling = (ceiling_t*)Z_LoadBytesFromEMS(ceilingRef);
-
-	ceiling->thinkerRef = P_AddThinker (ceilingRef, TF_MOVECEILING);
+		ceiling->secnum = secnum;
+		ceiling->crush = false;
 	
-	ceiling->secnum = secnum;
-	ceiling->crush = false;
-	
-	switch(type)
-	{
-	  case fastCrushAndRaise:
-	    ceiling->crush = true;
-	    ceiling->topheight = sector.ceilingheight;
-	    ceiling->bottomheight = sector.floorheight+(8 << SHORTFLOORBITS);
-	    ceiling->direction = -1;
-	    ceiling->speed = CEILSPEED * 2;
-	    break;
+		switch(type)
+		{
+		  case fastCrushAndRaise:
+			ceiling->crush = true;
+			ceiling->topheight = sector.ceilingheight;
+			ceiling->bottomheight = sector.floorheight+(8 << SHORTFLOORBITS);
+			ceiling->direction = -1;
+			ceiling->speed = CEILSPEED * 2;
+			break;
 
-	  case silentCrushAndRaise:
-	  case crushAndRaise:
-	    ceiling->crush = true;
-		ceiling->topheight = sector.ceilingheight;
-	  case lowerAndCrush:
-	  case lowerToFloor:
-		ceiling->bottomheight = sector.floorheight;
-	    if (type != lowerToFloor)
-			ceiling->bottomheight += (8 << SHORTFLOORBITS);
-	    ceiling->direction = -1;
-	    ceiling->speed = CEILSPEED;
-	    break;
+		  case silentCrushAndRaise:
+		  case crushAndRaise:
+			ceiling->crush = true;
+			ceiling->topheight = sector.ceilingheight;
+		  case lowerAndCrush:
+		  case lowerToFloor:
+			ceiling->bottomheight = sector.floorheight;
+			if (type != lowerToFloor)
+				ceiling->bottomheight += (8 << SHORTFLOORBITS);
+			ceiling->direction = -1;
+			ceiling->speed = CEILSPEED;
+			break;
 
-	  case raiseToHighest: {
-		  short_height_t ceilingtopheight = P_FindHighestCeilingSurrounding(secnum);
-		  ceiling = (ceiling_t*)Z_LoadBytesFromEMS(ceilingRef);
-		  ceiling->topheight = ceilingtopheight;
-		  ceiling->direction = 1;
-		  ceiling->speed = CEILSPEED;
-		  break;
-		   }
-	}
+		  case raiseToHighest: {
+			  short_height_t ceilingtopheight = P_FindHighestCeilingSurrounding(secnum);
+			  ceiling = (ceiling_t*)Z_LoadBytesFromEMS(ceilingRef);
+			  ceiling->topheight = ceilingtopheight;
+			  ceiling->direction = 1;
+			  ceiling->speed = CEILSPEED;
+			  break;
+			   }
+		}
 		
-	ceiling->tag = sector.tag;
-	ceiling->type = type;
-	P_AddActiveCeiling(ceilingRef);
+		ceiling->tag = sector.tag;
+		ceiling->type = type;
+		P_AddActiveCeiling(ceilingRef);
     }
     return rtn;
 }

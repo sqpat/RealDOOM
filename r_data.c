@@ -357,7 +357,7 @@ void R_GenerateComposite(uint8_t texnum)
 
 
 #if NUM_EMS_PAGES >= 8
-		Z_SetUnlocked(realpatchRef, 32);
+		Z_SetUnlocked(realpatchRef);
 
 #endif	
 
@@ -366,10 +366,10 @@ void R_GenerateComposite(uint8_t texnum)
 
 #if NUM_EMS_PAGES >= 8
 
-	Z_SetUnlocked(texturecolumnofstexnum, 33);
-	Z_SetUnlocked(texturecompositetexnum,   33);
-	Z_SetUnlocked(texturememref,			  34);
-	Z_SetUnlocked(texturecolumnlumptexnum, 35);
+	Z_SetUnlocked(texturecolumnofstexnum);
+	Z_SetUnlocked(texturecompositetexnum);
+	Z_SetUnlocked(texturememref);
+	Z_SetUnlocked(texturecolumnlumptexnum);
 
 #else
 
@@ -530,7 +530,7 @@ R_GetColumn
 		columnRef = W_CacheLumpNumEMS(lump, PU_CACHE);
 		lockedRef = columnRef;
 		returnval = (byte*)Z_LoadBytesFromEMS(columnRef) + ofs;
-		//Z_SetUnlocked(lockedRef,  26);
+		//Z_SetUnlocked(lockedRef);
 		return returnval;
 
 	}
@@ -542,7 +542,7 @@ R_GetColumn
 
 	texturecompositebytes = (byte*)Z_LoadBytesFromEMS(texturecomposite[tex]);
 	lockedRef = texturecomposite[tex];
-	//Z_SetUnlocked(lockedRef, 6);
+	//Z_SetUnlocked(lockedRef);
 	return texturecompositebytes + ofs;
 }
 

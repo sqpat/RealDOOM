@@ -125,6 +125,11 @@
 // 4 13578495 1151503 1526490 207 (2134 in 3766)  <--- long long fixeddiv, index visplanes, removed cheats, removed translation tables
 // 4 12154692 1144295 1515989 207 (2134 in 3918)  <--- cleaned up init code, memref arrays made static
 // 4  9780880 1144286 1515980 207 (2134 in 3850)  <--- more static memref arrays
+// 4  9784299 1145354 1518415 207 (2134 in 3771)
+// 4  9783841 1145337 1518399 207 (2134 in 3812)
+// 4  9783827 1145334 1518397 207 (2134 in 3823)
+// 4  9783827 1145334 1518397 207 (2134 in 3823)
+
 
 // 8 13569197 422735  521499  207 (2134 in 1843)  <---- same as above with 8
 // 8 13578495 422543  521292  207 (2134 in 1851)  <---- same as above with the EMS_PAGE check changed to 16. maybe it doesnt help performance at all?
@@ -1172,18 +1177,18 @@ int16_t Z_GetEMSPageFrameNoUpdate(uint32_t page_and_size, MEMREF ref) {  //todo 
 
 // assumes the page is already in memory. 
 // todo add this as a Z_Malloc argument so we can avoid calls to Z_GetEMSPageFrame
-void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex, int16_t index) {
+void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex) {
 	//int16_t pageframeindex = Z_GetEMSPageFrameNoUpdate(allocations[ref].page_and_size, ref);
 	uint8_t i;
 
 
 
 	if (ref > EMS_ALLOCATION_LIST_SIZE) {
-		I_Error("index too big in set_locked: %i %i", ref, index);
+		I_Error("index too big in set_locked: %i %i", ref);
 	}
 
 	if (pageframeindex == -1) {
-		I_Error("page was not found for this locked", index);
+		I_Error("page was not found for this locked");
 	}
 
 
@@ -1210,7 +1215,7 @@ void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex, i
 			lockedpages[pageframeindex + i]--;
 		}
 		if (lockedpages[pageframeindex + i] < 0)
-			I_Error("over de-allocated! %i %i %i %i %i", ref, lockedpages[pageframeindex + i], pageframeindex, i, index);
+			I_Error("over de-allocated! %i %i %i %i %i", ref, lockedpages[pageframeindex + i], pageframeindex, i);
 	}
 
 
@@ -1218,16 +1223,16 @@ void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex, i
 
 
 
-void Z_SetUnlocked(MEMREF ref, int16_t index) {
+void Z_SetUnlocked(MEMREF ref) {
 	int16_t pagenumber = MAKE_PAGE(allocations[ref].page_and_size);
 	int16_t pageframeindex;
 	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 		if (activepages[pageframeindex] == pagenumber) {
-			Z_SetUnlockedWithPage(ref, PAGE_NOT_LOCKED, pageframeindex, index);
+			Z_SetUnlockedWithPage(ref, PAGE_NOT_LOCKED, pageframeindex);
 			return;
 		}
 	}
-	I_Error("Tried to unlock inactive page %i %i", ref, index);
+	I_Error("Tried to unlock inactive page %i", ref);
 }
 
 
@@ -1262,7 +1267,7 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 
 	if (locked) {
 		// todo pass in page frame index.
-		Z_SetUnlockedWithPage(ref, PAGE_LOCKED, pageframeindex, 115);
+		Z_SetUnlockedWithPage(ref, PAGE_LOCKED, pageframeindex);
 	}
 
 	address = memorybase

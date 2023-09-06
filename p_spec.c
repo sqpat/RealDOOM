@@ -67,8 +67,6 @@ typedef struct
 	int8_t	startname[9];
 } animdef_t;
 
-
-
 #define MAXANIMS                32
 
 extern anim_t	anims[MAXANIMS];
@@ -248,27 +246,35 @@ twoSided
 
 
 
-//
-// getNextSector()
-// Return sector_t * of sector next to current.
-// SECNUM_NULL if not two-sided line
-//
 int16_t
-getNextSector
-( int16_t linenum,
-  int16_t	sec )
+getNextSectorList
+(int16_t* linenums,
+	int16_t	sec,
+	int16_t* secnums,
+	int16_t linecount,
+	boolean onlybacksecnums)
 {
-	line_t* lines = (line_t*) Z_LoadBytesFromEMS(linesRef);
-	line_t* line = &lines[linenum];
+	
+	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* line;
+	int16_t i = 0;
+	int16_t skipped = 0;
 
-	if (!(line->flags & ML_TWOSIDED))
-		return SECNUM_NULL; 
-		
+	for (i = 0; i < linecount; i++) {
+		line = &lines[linenums[i]];
+		if (!(line->flags & ML_TWOSIDED)) {
+			skipped++;
+			continue;
+		}
 
-    if (line->frontsecnum == sec)
-		return line->backsecnum;
-	else 
-		return line->frontsecnum;
+
+		if (line->frontsecnum == sec)
+			secnums[i-skipped] = line->backsecnum;
+		else if (!onlybacksecnums)
+			secnums[i-skipped] = line->frontsecnum;
+
+	}
+	return linecount - skipped;
 }
 
 
@@ -280,30 +286,26 @@ getNextSector
 short_height_t	P_FindLowestFloorSurrounding(int16_t secnum)
 {
     int16_t			i;
-    line_t*		check;
-	int16_t		otherSecOffset;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	int16_t offset = sectors[secnum].linesoffset;
 	short_height_t		floor = sectors[secnum].floorheight;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer;
-	int16_t linenumber;
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+ 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+	
+	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 
+	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
     for (i=0 ;i < linecount ; i++) {
-		otherSecOffset = sectors[secnum].linesoffset + i;
-		linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
-		linenumber = linebuffer[otherSecOffset];
+		offset = secnumlist[i];
 
-		otherSecOffset = getNextSector(linenumber, secnum);
-
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-		if (otherSecOffset == SECNUM_NULL) {
-			continue;
-		}
-		if (sectors[otherSecOffset].floorheight < floor) {
-			floor = sectors[otherSecOffset].floorheight;
+		if (sectors[offset].floorheight < floor) {
+			floor = sectors[offset].floorheight;
 		}
     }
-    return floor;
+	return floor; 
 }
 
 
@@ -314,28 +316,28 @@ short_height_t	P_FindLowestFloorSurrounding(int16_t secnum)
 //
 short_height_t	P_FindHighestFloorSurrounding(int16_t secnum)
 {
-    uint8_t		i;
-    int16_t		offset;
-    short_height_t		floor = -500 << SHORTFLOORBITS;
+    uint8_t		i;    
+	short_height_t		floor = -500 << SHORTFLOORBITS;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer;
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
+	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+
+	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
     for (i=0 ;i < linecount ; i++) {
-		offset = sectors[secnum].linesoffset + i;
-		linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
-
-		offset = getNextSector(linebuffer[offset], secnum);
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-
-		if (offset == SECNUM_NULL) {
-			continue;
-		}
+		offset = secnumlist[i];
+	 
 		if (sectors[offset].floorheight > floor) {
 			floor = sectors[offset].floorheight;
 		}
     }
-    return floor;
+    return floor; 
 }
 
 
@@ -345,8 +347,6 @@ short_height_t	P_FindHighestFloorSurrounding(int16_t secnum)
 // FIND NEXT HIGHEST FLOOR IN SURROUNDING SECTORS
 // Note: this should be doable w/o a fixed array.
 
-// 20 adjoining sectors max!
-#define MAX_ADJOINING_SECTORS    	20
 
 short_height_t
 P_FindNextHighestFloor
@@ -356,31 +356,29 @@ P_FindNextHighestFloor
     uint8_t		i;
     short_height_t			h;
     short_height_t			min;
-	int16_t		offset;
-	short_height_t		height = currentheight;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	int16_t offset = sectors[secnum].linesoffset;
+	short_height_t		height = currentheight;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer;
-
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
     
     short_height_t		heightlist[MAX_ADJOINING_SECTORS];		
 
-    for (i=0, h=0 ;i < linecount ; i++) {
-		offset = sectors[secnum].linesoffset + i;
-		linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
-		offset = getNextSector(linebuffer[offset], secnum);
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 
-		if (offset == SECNUM_NULL) {
-			continue;
-		}
-	
+	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
+    for (i=0, h=0 ;i < linecount ; i++) {
+		offset = secnumlist[i];		
+	 
 		if (sectors[offset].floorheight > height) {
 			heightlist[h++] = sectors[offset].floorheight;
 		}
 
     }
-    
     // Find lowest height in list
     if (!h)
 		return currentheight;
@@ -403,27 +401,27 @@ short_height_t
 P_FindLowestCeilingSurrounding(int16_t	secnum)
 {
     uint8_t		i;
-	int16_t		offset;
 	short_height_t		height = MAXSHORT;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer;
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+
+	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+
+	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
     for (i=0 ;i < linecount ; i++) {
-		offset = sectors[secnum].linesoffset + i;
-		linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
-
-		offset = getNextSector(linebuffer[offset], secnum);
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-
-		if (offset == SECNUM_NULL) {
-			continue;
-		}
+		offset = secnumlist[i];
+		 
 		if (sectors[offset].ceilingheight < height) {
 			height = sectors[offset].ceilingheight;
 		}
 	}
-    return height;
+	return height;
 }
 
 
@@ -433,27 +431,27 @@ P_FindLowestCeilingSurrounding(int16_t	secnum)
 short_height_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 {
     uint8_t		i;
-	int16_t		offset;
 	short_height_t	height = 0;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer;
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+	
+	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+
+	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
     for (i=0 ;i < linecount ; i++) {
-		offset = sectors[secnum].linesoffset + i;
-		linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
-
-		offset = getNextSector(linebuffer[offset], secnum);
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-
-		if (offset == SECNUM_NULL) {
-			continue;
-		}
+		offset = secnumlist[i];
+ 
 		if (sectors[offset].ceilingheight > height) {
 			height = sectors[offset].ceilingheight;
 		}
 	}
-    return height;
+	return height;
 }
 
 
@@ -461,20 +459,23 @@ short_height_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 //
 // RETURN NEXT SECTOR # THAT LINE TAG REFERS TO
 //
-int16_t
-P_FindSectorFromLineTag
+void
+P_FindSectorsFromLineTag
 ( int8_t		linetag,
-  int16_t		start )
+  int16_t*		foundsectors,
+	boolean		includespecials)
 {
     int16_t	i;
+	int16_t	j = 0;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
-	for (i = start + 1; i < numsectors; i++) {
-		if (sectors[i].tag == linetag) {
-			return i;
+	for (i = 0; i < numsectors; i++) {
+		if (sectors[i].tag == linetag && (includespecials || !sectors[i].specialdataRef)) {
+			foundsectors[j] = i;
+			j++;
 		}
 	}
-    return -1;
+	foundsectors[j] = -1;
 }
 
 
@@ -490,30 +491,26 @@ P_FindMinSurroundingLight
 {
     uint8_t		i;
     uint8_t		min;
-    int16_t	offset;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer;
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+
+	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+
+	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
     min = max;
     for (i=0 ; i < linecount ; i++) {
-		offset = sectors[secnum].linesoffset + i;
-		linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
-		 
-		offset = getNextSector(linebuffer[offset], secnum);
-
-		
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-
-		if (offset == SECNUM_NULL) {
-			continue;
-		}
-
+		offset = secnumlist[i];
+	 
 		if (sectors[offset].lightlevel < min) {
 			min = sectors[offset].lightlevel;
 		}
     }
-
 
 	return min;
 
@@ -1241,7 +1238,9 @@ int16_t EV_DoDonut(uint8_t linetag)
     int16_t		s3Offset;
     int16_t			secnum;
     int16_t			rtn;
-    int16_t			i;
+	int16_t			i;
+	int16_t			j = 0;
+	uint8_t			linecount;
     floormove_t*	floor;
 	MEMREF floorRef;
 	int16_t* linebuffer;
@@ -1254,39 +1253,81 @@ int16_t EV_DoDonut(uint8_t linetag)
 	sector_t* sectors;
 	int16_t sectors3floorpic;
 	short_height_t sectors3floorheight;
-
+	line_t* line;
+	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+	int16_t innersecnumlist[MAX_ADJOINING_SECTORS];
+	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
+	int16_t linebufferoffsets[MAX_ADJOINING_SECTORS];
+	int16_t skipped = 0;
     secnum = -1;
-    rtn = 0;
-    while ((secnum = P_FindSectorFromLineTag(linetag,secnum)) >= 0) {
-		s1Offset = secnum;
-		
-		// ALREADY MOVING?  IF SO, KEEP GOING...
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-		if (sectors[s1Offset].specialdataRef)
+ 
+	
+	
+	P_FindSectorsFromLineTag(linetag, secnumlist, false);
+
+	//todo prefetch the lists outside the loop?
+
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+
+	if (secnumlist[0] == -1) {
+		return 0; // none found
+	}
+
+
+	while (secnumlist[j] >= 0) {
+		s1Offset = secnumlist[j];
+		linebufferoffsets[j] = sectors[s1Offset].linesoffset;
+		j++;
+
+	}
+	linebufferoffsets[j] = -1;
+	j = 0;
+	linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	while (linebufferoffsets[j] >= 0) {
+		s1Offset = linebufferoffsets[j];
+		linebufferoffsets[j] = linebuffer[s1Offset]; // overwrite with lines
+		j++;
+	}
+	
+	j = 0;
+	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	while (linebufferoffsets[j] >= 0) {
+
+		line = &lines[linebufferoffsets[j]];
+
+		if (!(line->flags & ML_TWOSIDED)) {
+			skipped++;
+			j++;
 			continue;
-		sectors1lineoffset = sectors[s1Offset].linesoffset;
+		}
+		else if (line->frontsecnum == s1Offset)
+			secnumlist[j-skipped] = line->backsecnum;
+		else
+			secnumlist[j-skipped] = line->frontsecnum;
+		j++;
+	}
 
-		rtn = 1;
-		linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
-		lineoffset = linebuffer[sectors1lineoffset];
-		s2Offset = getNextSector(lineoffset,s1Offset);
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	while (secnumlist[j] >= 0){
+		s2Offset = secnumlist[j];
+		
+		linecount = sectors[s2Offset].linecount;
+		offset = sectors[s2Offset].linesoffset;
+		memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+		linecount = getNextSectorList(linebufferlines, secnum, innersecnumlist, linecount, true);
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-		for (i = 0;i < sectors[s2Offset].linecount;i++) {
-			offset = sectors[s2Offset].linesoffset + i;
-			linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
-			lineoffset = linebuffer[offset];
-			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
-			lineflags = (lines[lineoffset]).flags;
-			linebacksecnum = (lines[lineoffset]).backsecnum;
-			if ((!lineflags & ML_TWOSIDED) || (linebacksecnum == s1Offset))
+
+		for (i = 0;i < linecount;i++) {
+			if (innersecnumlist[i] == s1Offset) {
 				continue;
-			s3Offset = linebacksecnum;
+			}
+ 		 
+			s3Offset = innersecnumlist[i];
 	    
 			//	Spawn rising slime
 
 			floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
-			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 			sectors[s2Offset].specialdataRef = floorRef;
 			sectors3floorpic = sectors[s3Offset].floorpic;
 			sectors3floorheight = sectors[s3Offset].floorheight;
@@ -1319,7 +1360,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 			break;
 		}
     }
-    return rtn;
+    return 1;
 }
 
 

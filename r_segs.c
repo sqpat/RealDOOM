@@ -210,7 +210,7 @@ R_RenderMaskedSegRange
 	    // draw the texture
 	    col = (column_t *)((byte *)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
 	    R_DrawMaskedColumn (col);
-		//Z_SetUnlocked(lockedRef,  13);
+		//Z_SetUnlocked(lockedRef);
 		maskedtexturecol[dc_x] = MAXSHORT;
 	}
 	spryscale += rw_scalestep;
@@ -363,7 +363,7 @@ void R_RenderSegLoop (void)
 
 			dc_source = R_GetColumn(midtexture,texturecolumn);
 			colfunc ();
-			//Z_SetUnlocked(lockedRef,  8);
+			//Z_SetUnlocked(lockedRef);
 			ceilingclip[rw_x] = viewheight;
 			floorclip[rw_x] = -1;
 		} else {
@@ -385,7 +385,7 @@ void R_RenderSegLoop (void)
 
 					dc_source = R_GetColumn(toptexture,texturecolumn);
 					colfunc ();
-					//Z_SetUnlocked(lockedRef,  9);
+					//Z_SetUnlocked(lockedRef);
 					ceilingclip[rw_x] = mid;
 				} else {
 					ceilingclip[rw_x] = yl - 1;
@@ -413,7 +413,7 @@ void R_RenderSegLoop (void)
 
 					dc_source = R_GetColumn(bottomtexture, texturecolumn);
 					colfunc();
-					//Z_SetUnlocked(lockedRef,  10);
+					//Z_SetUnlocked(lockedRef);
 					floorclip[rw_x] = mid;
 				}
 				else {

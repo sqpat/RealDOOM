@@ -416,7 +416,7 @@ R_DrawVisSprite
         R_DrawMaskedColumn (column);
 		Z_RefIsActive(patchRef);
     }
-	Z_SetUnlocked(patchRef,  17);
+	Z_SetUnlocked(patchRef);
     colfunc = basecolfunc;
 }
 
