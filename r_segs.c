@@ -103,7 +103,6 @@ R_RenderMaskedSegRange
 	fixed_t_union temp;
 
 	uint8_t* textureheight;
-	uint8_t* texturetranslation;
 	int16_t siderowoffset;
 	line_t* lines;
 	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
@@ -134,8 +133,7 @@ R_RenderMaskedSegRange
 
 	frontsecnum = curlinefrontsecnum;
 	backsecnum = curlinebacksecnum;
-	texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
-	texnum = texturetranslation[sidemidtexture];
+ 	texnum = texturetranslation[sidemidtexture];
 
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	frontsector = sectors[frontsecnum];
@@ -460,7 +458,6 @@ R_StoreWallRange
     fixed_t		vtop;
     int16_t			lightnum;
 	int16_t *	textureheight;
-	uint8_t* 	texturetranslation;
 	vertex_t* vertexes;
 
 	// needs to be refreshed...
@@ -590,7 +587,6 @@ R_StoreWallRange
 
 	if (backsecnum == SECNUM_NULL) {
 	// single sided line
-		texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 		midtexture = texturetranslation[sidemidtexture];
 		// a single sided line is terminal, so it must mark ends
 		markfloor = markceiling = true;
@@ -696,7 +692,6 @@ R_StoreWallRange
 
 		if (worldhigh < worldtop) {
 			 
-			texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 			toptexture = texturetranslation[sidetoptexture];
 		
 		
@@ -716,7 +711,6 @@ R_StoreWallRange
 		}
 		if (worldlow > worldbottom) {
 			// bottom texture
-			texturetranslation = Z_LoadBytesFromEMS(texturetranslationRef);
 			bottomtexture = texturetranslation[sidebottomtexture];
 
 			if (lineflags & ML_DONTPEGBOTTOM ) {

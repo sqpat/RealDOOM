@@ -359,7 +359,6 @@ void R_DrawPlanes (void)
     int16_t			x;
     int16_t			stop;
     fineangle_t			angle;
-	uint8_t * flattranslation;
 	byte t1, b1, t2, b2;
 	visplanebytes_t* base;
 	int8_t currentplanebyteRef;
@@ -423,7 +422,6 @@ void R_DrawPlanes (void)
 			continue;
 		}
 	
-		flattranslation = Z_LoadBytesFromEMS(flattranslationRef);
 		// regular flat
 		ds_sourceRef = W_CacheLumpNumEMS(firstflat +
 			flattranslation[pl->picnum],
@@ -647,7 +645,6 @@ void R_DrawPlanes (void)
     int16_t			x;
     int16_t			stop;
     fineangle_t			angle;
-	uint8_t * flattranslation;
 	byte t1, b1, t2, b2;
 	int16_t			i;
 	fixed_t_union	temp;
@@ -698,7 +695,6 @@ void R_DrawPlanes (void)
 	    continue;
 	}
 	
-	flattranslation = Z_LoadBytesFromEMS(flattranslationRef);
 	// regular flat
 	ds_sourceRef = W_CacheLumpNumEMS(firstflat +
 		flattranslation[pl->picnum],

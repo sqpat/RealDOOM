@@ -130,7 +130,6 @@ int16_t             numtextures;
 //texture_t**   textures;
 
 
-#define NUM_TEXTURE_CACHE 255
 
 MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
 MEMREF texturecomposite[NUM_TEXTURE_CACHE];  // see above
@@ -150,8 +149,8 @@ MEMREF  texturecompositesizeRef;	// uint16_t*
 
 
 // for global animation
-MEMREF            flattranslationRef;
-MEMREF            texturetranslationRef;
+uint8_t			flattranslation[NUM_TEXTURE_CACHE]; // can almost certainly be smaller
+uint8_t			texturetranslation[NUM_TEXTURE_CACHE];
 
 // needed for pre rendering
 MEMREF        spritewidthRef;
@@ -592,7 +591,6 @@ void R_InitTextures(void)
 	uint8_t*                texturewidthmask;
 	// needed for texture pegging
 	uint8_t*            textureheight;
-	uint8_t *			texturetranslation;
 	MEMREF				namesRef;
 	MEMREF				maptexRef;
 	MEMREF				maptex2Ref;
@@ -755,9 +753,6 @@ void R_InitTextures(void)
 	// Create translation table for global animation.
 
 
-	texturetranslationRef = Z_MallocEMSNew((numtextures + 1) , PU_STATIC, 0, ALLOC_TYPE_TEXTURE_TRANSLATION);
-	texturetranslation = (uint8_t*)Z_LoadBytesFromEMS(texturetranslationRef);
-
 	for (i = 0; i < numtextures; i++)
 		texturetranslation[i] = i;
 
@@ -771,15 +766,12 @@ void R_InitTextures(void)
 void R_InitFlats(void)
 {
 	uint8_t         i;
-	uint8_t * flattranslation;
 
 	firstflat = W_GetNumForName("F_START") + 1;
 	lastflat = W_GetNumForName("F_END") - 1;
 	numflats = lastflat - firstflat + 1;
 
 	// Create translation table for global animation.
-	flattranslationRef = Z_MallocEMSNew((numflats + 1) , PU_STATIC, 0, ALLOC_TYPE_FLAT_TRANSLATION);
-	flattranslation = (uint8_t*)Z_LoadBytesFromEMS(flattranslationRef);
 
 	for (i = 0; i < numflats; i++)
 		flattranslation[i] = i;

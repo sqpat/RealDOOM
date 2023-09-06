@@ -1149,8 +1149,6 @@ void P_UpdateSpecials(void)
 	uint8_t		pic;
 	int16_t		i;
 	line_t*	line;
-	uint8_t * texturetranslation;
-	uint8_t * flattranslation;
 	side_t* sides;
 	line_t* lines;
 	int16_t sidenum;
@@ -1168,11 +1166,9 @@ void P_UpdateSpecials(void)
 		for (i = anim->basepic; i < anim->basepic + anim->numpics; i++) {
 			pic = anim->basepic + ((leveltime.h.fracbits / 8 + i) % anim->numpics);
 			if (anim->istexture) {
-				texturetranslation = (uint8_t*)Z_LoadBytesFromEMS(texturetranslationRef);
 				texturetranslation[i] = pic;
 			}
 			else {
-				flattranslation = (uint8_t*)Z_LoadBytesFromEMS(flattranslationRef);
 				flattranslation[i] = pic;
 			}
 		}

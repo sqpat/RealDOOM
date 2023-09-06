@@ -60,6 +60,8 @@ enum { VERSION =  109 };
 // Allocates backbuffers statically
 //#define STATIC_ALLOCATED_SCREENS
 
+//Show page count by source hint on timedemo finish
+//#define PROFILE_PAGE_COUNT
 
 //
 // For resize of screen, at start of game.

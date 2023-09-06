@@ -28,6 +28,9 @@
 
 #define SECNUM_NULL -1
 #define LINENUM_NULL -1
+
+#define NUM_TEXTURE_CACHE 255
+
 //
 // Refresh internal data structures,
 //  for rendering.
@@ -52,8 +55,9 @@ extern int16_t		viewheight;
 extern int16_t		firstflat;
 
 // for global animation
-extern MEMREF	flattranslationRef;	
-extern MEMREF	texturetranslationRef;	
+extern uint8_t			flattranslation[NUM_TEXTURE_CACHE];
+extern uint8_t			texturetranslation[NUM_TEXTURE_CACHE];
+
 
 
 // Sprite....

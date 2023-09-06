@@ -257,6 +257,9 @@ typedef struct
 	// and wad lumps
 	uint16_t backref_and_user;  //12 bytes per struct, dont think we can do better.
 
+#ifdef PROFILE_PAGE_COUNT
+	int8_t sourcehint;
+#endif
 } allocation_t;
 
 //#define OWNED_USER 2
@@ -309,6 +312,10 @@ int32_t pageins = 0;
 int32_t pageouts = 0;
 int32_t actualpageins = 0;
 int32_t actualpageouts = 0;
+
+#ifdef PROFILE_PAGE_COUNT
+int32_t pagecount[40];
+#endif
 
 void Z_PageOutIfInMemory(uint32_t page_and_size);
 
@@ -597,10 +604,15 @@ int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
 	int16_t pageframeindex;
 	boolean allpagesgood;
 	int16_t i;
-	uint16_t numallocatepages = 1 + ((MAKE_SIZE(allocations[memref].page_and_size) - 1) >> PAGE_FRAME_BITS);
+	uint32_t size = MAKE_SIZE(allocations[memref].page_and_size);
 
-	if (numallocatepages > 100) {
+	uint16_t numallocatepages;
+
+	if (size == 0) {
 		numallocatepages = 1;
+	}
+	else {
+		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
 	}
 
 	if (memref > EMS_ALLOCATION_LIST_SIZE) {
@@ -742,7 +754,6 @@ void Z_DoPageOut(uint16_t pageframeindex, int16_t source) {
 
 	actualpageouts++;
 	pageouts += numPagesToSwap;
-
 	for (i = 0; i < numPagesToSwap; i++) {
 		activepages[pageframeindex + i] = -1;
 		pagesize[pageframeindex + i] = -1;
@@ -840,13 +851,14 @@ void Z_PageOutIfInMemory(uint32_t page_and_size) {
 	uint16_t logicalpage = MAKE_PAGE(page_and_size);
 	uint32_t size = MAKE_SIZE(page_and_size);
 	uint16_t pageframeindex;
-	uint16_t numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
+	uint16_t numallocatepages;
 	boolean allpagesgood;
 	uint16_t i;
 
 
-	//todo happens on size 0
-	if (numallocatepages > 100) {
+	if (size) {
+		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
+	} else {
 		numallocatepages = 1;
 	}
 
@@ -890,13 +902,10 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 
 	if (size == 0) {
 		//I_Error("why a zero allocation!?");
-	}
-
-	numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
-
-	//todo happens on size 0
-	if (numallocatepages > 100) {
 		numallocatepages = 1;
+	}
+	else {
+		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
 	}
 
 
@@ -1104,7 +1113,9 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 	// can do multiple pages in one go...
 	// swap IN memory
 
-
+#ifdef PROFILE_PAGE_COUNT
+	pagecount[allocations[ref].sourcehint]++;
+#endif
 	Z_DoPageIn(logicalpage, pageframeindex, numallocatepages);
 	pageins++;
 
@@ -1129,13 +1140,13 @@ int16_t Z_GetEMSPageFrameNoUpdate(uint32_t page_and_size, MEMREF ref) {  //todo 
 		//I_Error("why a zero allocation!?");
 	}
 
+ 
 
-	// Note: if multiple pages, then we must evict multiple
-	numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
-
-	//todo happens on size 0
-	if (numallocatepages > 100) {
+	if (size == 0) {
 		numallocatepages = 1;
+	}
+	else {
+		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
 	}
 
 
@@ -1647,7 +1658,9 @@ Z_MallocEMSNewWithBackRef
 
 	SET_TAG(allocations[base], tag);
 	SET_BACKREF(allocations[base], backRef);
-
+#ifdef PROFILE_PAGE_COUNT
+	allocations[base].sourcehint = sourceHint;
+#endif
 
 	// next allocation will start looking here
 	//mainzoneEMS->rover = base->next;
