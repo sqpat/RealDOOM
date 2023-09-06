@@ -199,7 +199,6 @@ mline_t triangle_guy[] = {
     { { 0, R }, { -.867*R, -.5*R } }
 };
 #undef R
-#define NUMTRIANGLEGUYLINES (sizeof(triangle_guy)/sizeof(mline_t))
 
 #define R (FRACUNIT)
 mline_t thintriangle_guy[] = {
@@ -597,7 +596,8 @@ AM_Responder
 
 	boolean rc;
     static int8_t bigstate=0;
-    static int8_t buffer[20];
+	static int8_t buffer[20];
+	int8_t text[100];
 
     rc = false;
 
@@ -665,7 +665,8 @@ AM_Responder
 		players.message = grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
 	    break;
 	  case AM_MARKKEY:
-	    sprintf(buffer, "%s %d", getStringByIndex(AMSTR_MARKEDSPOT), markpointnum);
+		getStringByIndex(AMSTR_MARKEDSPOT, text);
+	    sprintf(buffer, "%s %d", text, markpointnum);
 		players.messagestring = buffer;
 	    AM_addMark();
 	    break;

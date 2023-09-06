@@ -149,7 +149,6 @@ boolean         commercial;
 boolean         plutonia;
 boolean         tnt;
 #endif
-boolean         french;
 
 
 int8_t            wadfile[1024];          // primary wad file
@@ -204,20 +203,34 @@ void D_ProcessEvents (void)
 #define MAX_STRINGS 300
 
 uint16_t stringoffsets[MAX_STRINGS];
+uint16_t stringbuffersizes[2];
 
-MEMREF		stringRefs[4];
+MEMREF		stringRefs[2];
 
+int16_t getStringLength(int16_t stringindex) {
+	return  stringoffsets[stringindex + 1] - stringoffsets[stringindex];
+}
 
-int8_t* getStringByIndex2(int16_t stringindex, int8_t* returndata) {
+int8_t* getStringByIndex(int16_t stringindex, int8_t* returndata) {
 
 	uint16_t stringoffset = stringoffsets[stringindex];
-	int8_t index = stringoffset >> 14;
-	byte* stringdata = Z_LoadBytesFromEMS(stringRefs[index]);
+	uint16_t length = getStringLength(stringindex);
+	int16_t index;
+	byte* stringdata;
+	if (stringoffset < stringbuffersizes[0]) {
+		index = 0;
+	} else {
+		// todo havent actually tested this..
+		index = 1;
+		stringoffset -= stringbuffersizes[0];
+	}
 
-	// string ends at the start of the next string...
-	uint16_t length = stringoffsets[stringindex + 1] - stringoffsets[stringindex];
 
-	memcpy(returndata, &(stringdata[stringoffset & 0x3FFF]), length);
+	stringdata = Z_LoadBytesFromEMS(stringRefs[index]);
+
+		// string ends at the start of the next string...
+
+	memcpy(returndata, &(stringdata[stringoffset]), length);
 	// add null terminator?
 	returndata[length] = '\0';
 
@@ -228,37 +241,73 @@ int8_t* getStringByIndex2(int16_t stringindex, int8_t* returndata) {
 void D_InitStrings() {
 
 	// load file
-	filehandle_t handle;
-	filelength_t length;
+	FILE* handle;
+	//filelength_t length;
 	int16_t stringlength;
 	int8_t* buffer;
+	int8_t* lastbuffer;
 	int16_t i;
 	int16_t j = 0;;
 	int16_t laststringoffset;
-
-	handle = open("dstrings.txt", O_RDONLY | O_TEXT);
-	if (handle == -1) {
-		I_Error("\tcouldn't open dstrings.txt\n");
+	int16_t readlength;
+	int16_t page = 0;
+	int8_t letter;
+	int16_t carryover = 0;
+	//handle = open("dstrings.txt", O_RDONLY | O_TEXT);
+	handle = fopen("dstrings.txt", "r");
+	if (handle == NULL) {
+		I_Error("\dstrings.txt missing?\n");
 		return;
 	}
-
-	length = filelength(handle);
-
-	stringRefs[0] = Z_MallocEMSNew(16383, PU_STATIC, 0xFF, ALLOC_TYPE_STRINGS);
-	buffer = Z_LoadBytesFromEMS(stringRefs[0]);
+	
+	//length = filelength(handle);
 	stringoffsets[0] = 0;
 
+	while (1) {
+		// break up in pagesize
+		
+		stringRefs[page] = Z_MallocEMSNew(16384, PU_STATIC, 0, ALLOC_TYPE_STRINGS);
+		buffer = Z_LoadBytesFromEMS(stringRefs[page]);
 
-	read(handle, buffer, length);
-	close(handle);
+	 
+		if (carryover) {
+			memcpy(buffer, &lastbuffer[stringoffsets[j]], carryover);
+		}
 
+		for (i = 0; i < 16384-carryover; i++) {
+			letter = fgetc(handle);
+			buffer[i+ carryover] = letter;
+			if (letter == 'n') {
+				if (buffer[i + carryover - 1] == '\\') {
+					// hacky, but oh well.
+					buffer[i + carryover - 1] = '\r';
+					buffer[i + carryover] = '\n';
+				}
+			}
+			if (letter == '\n') {
+				j++;
+				stringoffsets[j] = i + (page * 16384);
+			
+			};
 
-	for (i = 0; i < length; i++) {
-		if (buffer[i] == '\n') {
-			j++;
-			stringoffsets[j] = i - stringoffsets[i - 1];
-		};
+			if (feof(handle)) {
+				break;
+			}
+		}
+		stringbuffersizes[page] = stringoffsets[j];
+		if (feof(handle)) {
+			break;
+		}
+
+		page++;
+		lastbuffer = buffer;
+		
+		carryover = i - stringoffsets[j];
+
 	}
+	
+
+	fclose(handle);
 
 
 }
@@ -1007,6 +1056,7 @@ void D_DoomMain (void)
 	int16_t             p;
 	int8_t                    file[256];
     union REGS regs;
+	int8_t*          textbuffer;
 
     FindResponseFile ();
         
@@ -1018,7 +1068,7 @@ void D_DoomMain (void)
     nomonsters = M_CheckParm ("-nomonsters");
     respawnparm = M_CheckParm ("-respawn");
     fastparm = M_CheckParm ("-fast");
- 
+
 
     if (!commercial)
     {
@@ -1079,12 +1129,6 @@ void D_DoomMain (void)
     printf("\nP_Init: Checking cmd-line parameters...\n");
 
 
-    if (M_CheckParm("-cdrom"))
-    {
-        printf(getStringByIndex(D_CDROM));
-        mkdir("c:\\doomdata");
-        strcpy (basedefault,"c:/doomdata/default.cfg");
-    }   
     
     // turbo option
     if ( (p=M_CheckParm ("-turbo")) )
@@ -1175,15 +1219,16 @@ void D_DoomMain (void)
     printf ("Z_InitEMS: Init EMS memory allocation daemon. \n");
     Z_InitEMS ();
 
-	// init subsystems
 
-    printf ("W_Init: Init WADfiles.\n");
+	printf ("W_Init: Init WADfiles.\n");
     W_InitMultipleFiles (wadfiles);
 
+	// init subsystems
+	printf("D_InitStrings: loading text.\n");
+	D_InitStrings();
 
 
-
-    // Check for -file in shareware
+	// Check for -file in shareware
     if (modifiedgame)
     {
         // These are the lumps that will be checked in IWAD,
@@ -1211,87 +1256,75 @@ void D_DoomMain (void)
     // Iff additonal PWAD files are used, print modified banner
     if (modifiedgame)
     {
-        /*m*/printf (
-            "===========================================================================\n"
-            "ATTENTION:  This version of DOOM has been modified.  If you would like to\n"
-            "get a copy of the original game, call 1-800-IDGAMES or see the readme file.\n"
-            "        You will not receive technical support for modified games.\n"
-            "                      press enter to continue\n"
-            "===========================================================================\n"
-            );
+		getStringByIndex(MODIFIED_GAME, textbuffer);
+        /*m*/printf ( textbuffer );
         getchar ();
     }
         
 
+
     // Check and print which version is executed.
-    
-    if (registered)
-    {
-        printf("\tregistered version.\n");
+    if (registered) {
+		getStringByIndex(VERSION_REGISTERED, textbuffer);
+        printf(textbuffer);
         D_RedrawTitle();
-        printf(
-            "===========================================================================\n"
-            "              This version is NOT SHAREWARE, do not distribute!\n"
-            "         Please report software piracy to the SPA: 1-800-388-PIR8\n"
-            "===========================================================================\n"
-        );
+		getStringByIndex(NOT_SHAREWARE, textbuffer);
+		printf( textbuffer );
         D_RedrawTitle();
     }
-    if (shareware)
-    {
-        printf("\tshareware version.\n");
+    if (shareware) {
+		getStringByIndex(VERSION_SHAREWARE, textbuffer);
+        printf(textbuffer);
         D_RedrawTitle();
     }
-    if (commercial)
-    {
-        printf("\tcommercial version.\n");
+    if (commercial) {
+		getStringByIndex(VERSION_COMMERCIAL, textbuffer);
+        printf(textbuffer);
         D_RedrawTitle();
-        printf(
-            "===========================================================================\n"
-            "                            Do not distribute!\n"
-            "         Please report software piracy to the SPA: 1-800-388-PIR8\n"
-            "===========================================================================\n"
-        );
+
+		getStringByIndex(DO_NOT_DISTRIBUTE, textbuffer);
+        printf( textbuffer );
         D_RedrawTitle();
     }
 
-    printf ("M_Init: Init miscellaneous info.\n");
+	getStringByIndex(M_INIT_TEXT, textbuffer);
+	printf (textbuffer);
     D_RedrawTitle();
     M_Init ();
 
-    printf ("R_Init: Init DOOM refresh daemon - ");
-    D_RedrawTitle();
+	getStringByIndex(R_INIT_TEXT, textbuffer);
+	printf(textbuffer);
+	D_RedrawTitle();
     R_Init ();
 
-    printf ("\nP_Init: Init Playloop state.\n");
-    D_RedrawTitle();
+
+	getStringByIndex(P_INIT_TEXT, textbuffer);
+	printf(textbuffer);
+	D_RedrawTitle();
     P_Init ();
 
-	printf("D_InitStrings: loading text.\n");
-	D_InitStrings();
 
-
-    printf ("I_Init: Setting up machine state.\n");
-    D_RedrawTitle();
+	getStringByIndex(I_INIT_TEXT, textbuffer);
+	printf(textbuffer);
+	D_RedrawTitle();
     I_Init ();
+	D_CheckNetGame ();
 
-    printf ("D_CheckNetGame: Checking network game status.\n");
-    D_RedrawTitle();
-    D_CheckNetGame ();
-
-    printf ("S_Init: Setting up sound.\n");
-    D_RedrawTitle();
+	getStringByIndex(S_INIT_TEXT, textbuffer);
+	printf(textbuffer);
+	D_RedrawTitle();
     S_Init (sfxVolume*8, musicVolume*8);
 
-    printf ("HU_Init: Setting up heads up display.\n");
-    D_RedrawTitle();
+	getStringByIndex(HU_INIT_TEXT, textbuffer);
+	printf(textbuffer);
+	D_RedrawTitle();
     HU_Init ();
 
-    printf ("ST_Init: Init status bar.\n");
+	getStringByIndex(ST_INIT_TEXT, textbuffer);
+	printf (textbuffer);
     D_RedrawTitle();
     ST_Init ();
 
-  
     
     // start the apropriate game based on parms
     p = M_CheckParm ("-record");
@@ -1320,10 +1353,7 @@ void D_DoomMain (void)
     p = M_CheckParm ("-loadgame");
     if (p && p < myargc-1)
     {
-        if (M_CheckParm("-cdrom"))
-            sprintf(file, "c:\\doomdata\\"SAVEGAMENAME"%c.dsg",myargv[p+1][0]);
-        else
-            sprintf(file, SAVEGAMENAME"%c.dsg",myargv[p+1][0]);
+        sprintf(file, SAVEGAMENAME"%c.dsg",myargv[p+1][0]);
         G_LoadGame (file);
     }
         

@@ -157,9 +157,12 @@ void I_FinishUpdate(void);
 // Wait for vertical retrace or pause a bit.
 void I_WaitVBL(int16_t count);
 
-void I_ReadScreen(byte* scr);
-
 void I_BeginRead(void);
 void I_EndRead(void);
+
+#ifndef SKIPWIPE
+void I_ReadScreen(byte* scr);
+#endif
+
 
 #endif

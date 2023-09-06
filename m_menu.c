@@ -103,7 +103,7 @@ int16_t gammamsg[5] =
     GAMMALVL4
 };
 
-int16_t endmsg[NUM_QUITMESSAGES][80] =
+int16_t endmsg[NUM_QUITMESSAGES] =
 {
     // DOOM1
 	QUITMSG,
@@ -479,16 +479,7 @@ menu_t  SoundDef =
 //
 // LOAD GAME MENU
 //
-enum
-{
-    load1,
-    load2,
-    load3,
-    load4,
-    load5,
-    load6,
-    load_end
-} load_e;
+#define load_end 6
 
 menuitem_t LoadMenu[]=
 {
@@ -544,6 +535,7 @@ void M_ReadSaveStrings(void)
 	int16_t             count;
 	int8_t             i;
 	int8_t    name[256];
+	int8_t    temp[256];
         
     for (i = 0;i < load_end;i++)
     {
@@ -555,7 +547,8 @@ void M_ReadSaveStrings(void)
         handle = open (name, O_RDONLY | 0, 0666);
         if (handle == -1)
         {
-            strcpy(&savegamestrings[i][0],getStringByIndex(EMPTYSTRING));
+			getStringByIndex(EMPTYSTRING, temp);
+            strcpy(&savegamestrings[i][0],temp);
             LoadMenu[i].status = 0;
             continue;
         }
@@ -668,12 +661,14 @@ void M_DoSave(int16_t slot)
 //
 void M_SaveSelect(int16_t choice)
 {
-    // we are going to be intercepting all chars
+	int8_t temp[256];
+	// we are going to be intercepting all chars
     saveStringEnter = 1;
     
     saveSlot = choice;
     strcpy(saveOldString,savegamestrings[choice]);
-    if (!strcmp(savegamestrings[choice], getStringByIndex(EMPTYSTRING)))
+	getStringByIndex(EMPTYSTRING, temp);
+    if (!strcmp(savegamestrings[choice], temp))
         savegamestrings[choice][0] = 0;
     saveCharIndex = strlen(savegamestrings[choice]);
 }
@@ -683,9 +678,11 @@ void M_SaveSelect(int16_t choice)
 //
 void M_SaveGame (int16_t choice)
 {
-    if (!usergame)
+	int8_t temp[256];
+	if (!usergame)
     {
-        M_StartMessage(getStringByIndex(SAVEDEAD),NULL,false);
+		getStringByIndex(SAVEDEAD, temp);
+		M_StartMessage(temp,NULL,false);
         return;
     }
         
@@ -714,6 +711,7 @@ void M_QuickSaveResponse(int16_t ch)
 
 void M_QuickSave(void)
 {
+	int8_t temp[256];
     if (!usergame)
     {
         S_StartSound(NULL,sfx_oof);
@@ -731,7 +729,8 @@ void M_QuickSave(void)
         quickSaveSlot = 254;     // means to pick a slot now
         return;
     }
-    sprintf(tempstring, getStringByIndex(QSPROMPT),savegamestrings[quickSaveSlot]);
+	getStringByIndex(QSPROMPT, temp);
+    sprintf(tempstring, temp,savegamestrings[quickSaveSlot]);
     M_StartMessage(tempstring,M_QuickSaveResponse,true);
 }
 
@@ -753,12 +752,15 @@ void M_QuickLoadResponse(int16_t ch)
 void M_QuickLoad(void)
 {
     
-    if (quickSaveSlot > 250) // means to pick a slot now
+	int8_t temp[256];
+	if (quickSaveSlot > 250) // means to pick a slot now
     {
-        M_StartMessage(getStringByIndex(QSAVESPOT),NULL,false);
+		getStringByIndex(QSAVESPOT, temp);
+		M_StartMessage(temp,NULL,false);
         return;
     }
-    sprintf(tempstring, getStringByIndex(QLPROMPT),savegamestrings[quickSaveSlot]);
+	getStringByIndex(QLPROMPT, temp);
+	sprintf(tempstring, temp,savegamestrings[quickSaveSlot]);
     M_StartMessage(tempstring,M_QuickLoadResponse,true);
 }
 
@@ -901,9 +903,11 @@ void M_VerifyNightmare(int16_t ch)
 
 void M_ChooseSkill(int16_t choice)
 {
+	int8_t temp[256];
     if (choice == nightmare)
     {
-        M_StartMessage(getStringByIndex(NIGHTMARE),M_VerifyNightmare,true);
+		getStringByIndex(NIGHTMARE, temp);
+        M_StartMessage(temp,M_VerifyNightmare,true);
         return;
     }
         
@@ -913,10 +917,12 @@ void M_ChooseSkill(int16_t choice)
 
 void M_Episode(int16_t choice)
 {
-    if ( shareware
+	int8_t temp[256];
+	if ( shareware
          && choice)
     {
-        M_StartMessage(getStringByIndex(SWSTRING),NULL,false);
+		getStringByIndex(SWSTRING, temp);
+        M_StartMessage(temp,NULL,false);
         M_SetupNextMenu(&ReadDef1);
         return;
     }
@@ -991,14 +997,15 @@ void M_EndGameResponse(int16_t ch)
 
 void M_EndGame(int16_t choice)
 {
+	int8_t temp[256];
 	choice = 0;
 	if (!usergame)
 	{
 		S_StartSound(NULL, sfx_oof);
 		return;
 	}
-
-	M_StartMessage(getStringByIndex(ENDGAME), M_EndGameResponse, true);
+	getStringByIndex(ENDGAME, temp);
+	M_StartMessage(temp, M_EndGameResponse, true);
 }
 
 
@@ -1078,22 +1085,25 @@ void M_QuitDOOM(int16_t choice)
 {
   // We pick index 0 which is language sensitive,
   //  or one at random, between 1 and maximum number.
-    if (commercial)
+	int8_t temp[256];
+	int8_t temp2[256];
+	getStringByIndex(DOSY, temp2);
+	if (commercial)
     {
-        if (french)
-        {
-            sprintf(endstring, "%s%s\n\n",getStringByIndex(DOSY), getStringByIndex(endmsg2[0]) );
-        }
-        else
-        {
-            sprintf(endstring, "%s%s\n\n",getStringByIndex(DOSY),
-				getStringByIndex(endmsg2[(gametic >> 2) % NUM_QUITMESSAGES]));
-        }
+		getStringByIndex(endmsg2[(gametic >> 2) % NUM_QUITMESSAGES], temp);
+            sprintf(endstring, "%s%s",
+				temp,
+				temp2
+			);
     }
     else
     {
-        sprintf(endstring, "%s%s\n\n",getStringByIndex(DOSY),
-			getStringByIndex(endmsg[(gametic >> 2) % NUM_QUITMESSAGES]));
+		getStringByIndex(endmsg[(gametic >> 2) % NUM_QUITMESSAGES], temp);
+		sprintf(endstring, "%s%s",
+			temp,
+			temp2
+		);
+		    
     }
   
   M_StartMessage(endstring,M_QuitResponse,true);

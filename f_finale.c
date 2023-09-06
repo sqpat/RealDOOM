@@ -284,7 +284,7 @@ boolean F_Responder (event_t *event)
 //
 void F_Ticker (void)
 {
-    
+	int8_t* text;
     // check for skipping
     if ( (commercial)
       && ( finalecount > 50) )
@@ -311,8 +311,9 @@ void F_Ticker (void)
 	
     if (commercial)
 	return;
-		
-    if (!finalestage && finalecount>strlen (getStringByIndex(finaletext))*TEXTSPEED + TEXTWAIT)
+	
+	getStringByIndex(finaletext, text);
+    if (!finalestage && finalecount>strlen (text)*TEXTSPEED + TEXTWAIT)
     {
 	finalecount = 0;
 	finalestage = 1;
@@ -363,7 +364,7 @@ void F_TextWrite (void)
     // draw some of the text onto the screen
     cx = 10;
     cy = 10;
-    ch = getStringByIndex(finaletext);
+    getStringByIndex(finaletext, ch);
 	
     count = (finalecount - 10)/TEXTSPEED;
     if (count < 0)
@@ -658,10 +659,12 @@ void F_CastDrawer (void)
 	patch_t*		patch;
 	spritedef_t*	sprites;
 	spriteframe_t*  spriteframes;
+	int8_t			text[100];
+
     // erase the entire screen to a background
     V_DrawPatch (0,0,0, W_CacheLumpNameEMSAsPatch("BOSSBACK", PU_CACHE));
-
-    F_CastPrint (getStringByIndex(castorder[castnum].nameindex));
+	getStringByIndex(castorder[castnum].nameindex, text);
+    F_CastPrint (text);
     
     // draw the current frame in the middle of the screen
 	sprites = (spritedef_t*) Z_LoadBytesFromEMS(spritesRef);

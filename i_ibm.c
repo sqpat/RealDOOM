@@ -447,6 +447,9 @@ void I_ShutdownGraphics(void)
     }
 }
 
+
+#ifndef SKIPWIPE
+
 //
 // I_ReadScreen
 // Reads the screen currently displayed into a linear buffer.
@@ -467,6 +470,7 @@ void I_ReadScreen(byte *scr)
                 }
         }
 }
+#endif
 
 
 //
@@ -947,7 +951,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
     int16_t errorreg;
     uint8_t vernum;
     int16_t j;
-    printf("Checking for EMS existence...");
+    printf("Checking EMS...");
 
 
 
@@ -958,8 +962,6 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
         I_Error("Couldn't init EMS, error %d", errorreg);
     }
 
-    printf("EMS exists...\n");
-
 	printf("Checking EMS Version...\n");
 
     regs.h.ah = 0x46;
@@ -967,28 +969,25 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
     vernum = regs.h.al;
     errorreg = regs.h.ah;
     if (errorreg!=0){
-        I_Error("Get EMS Version failed!");
+        I_Error("EMS Error 0x46");
     }
     //vernum = 10*(vernum >> 4) + (vernum&0xF);
 	printf("EMS Version was %i\n", vernum);
     if (vernum < 32){
         printf("Warning! EMS Version too low! Expected 3.2, found %i", vernum);
-        //Applications like dosbox may support EMS but not report a proper version #?
         
     }
     
-    printf("Getting page frame\n");
     // get page frame address
     regs.h.ah=0x41;  
     intx86(EMS_INT, &regs, &regs);
     pageframebase=regs.w.bx;
     errorreg = regs.h.ah;
     if (errorreg!=0){
-        I_Error("Could not get page frame!");
-    }
+		I_Error("EMS Error 0x41");
+	}
 
-    printf("Page frame addr was %u\n", pageframebase);
-    printf("Checking pages available\n");
+ 
 
 
     regs.h.ah=0x42;
@@ -999,8 +998,6 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 
     if (pagesavail < numPagesToAllocate){
         printf("Warning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);
-		I_Error("TODO In the future allow command line arg to bypass this.");
-        //I_Error("Quitting now...");
     }
 
 
@@ -1010,11 +1007,10 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
     *emshandle =regs.w.dx;
     errorreg = regs.h.ah;
     if (errorreg!=0){
-    // Error 0 = 0x00 = no error
-    // Error 137 = 0x89 = zero pages
-    // Error 136 = 0x88 = OUT_OF_LOG
-
-        I_Error("Couldn't allocate %i EMS Pages, error %d", numPagesToAllocate, regs.h.ah);
+		// Error 0 = 0x00 = no error
+		// Error 137 = 0x89 = zero pages
+		// Error 136 = 0x88 = OUT_OF_LOG
+		I_Error("EMS Error 0x43 %i", errorreg);
     } 
 
 
@@ -1028,8 +1024,8 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
         regs.h.ah=0x44;
         intx86(EMS_INT, &regs, &regs);
         if (regs.h.ah!=0) {
-            I_Error("Mapping failed on page %i!\n", j);
-        }
+			I_Error("EMS Error 0x44");
+		}
     }
 
 
@@ -1044,50 +1040,44 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 }
 
 #else
-byte* I_ZoneBaseEMS(int32_t *size){
+byte* I_ZoneBaseEMS(int32_t *size) {
 
-    // in 32 bit its ems fakery and emulation 
+	// in 32 bit its ems fakery and emulation 
 
-int32_t meminfo[32];
+	int32_t meminfo[32];
 	int32_t heap;
-    byte *ptr;
+	byte *ptr;
 
-    memset(meminfo, 0, sizeof(meminfo));
-    segread(&segregs);
-    segregs.es = segregs.ds;
-    regs.w.ax = 0x500; // get memory info
-    regs.x.edi = (int32_t)&meminfo;
+	memset(meminfo, 0, sizeof(meminfo));
+	segread(&segregs);
+	segregs.es = segregs.ds;
+	regs.w.ax = 0x500; // get memory info
+	regs.x.edi = (int32_t)&meminfo;
 	intx86x(0x31, &regs, &regs, &segregs);
 
-    heap = meminfo[0];
-    printf("DPMI memory: 0x%x", heap);
+	heap = meminfo[0];
+	printf("DPMI memory: 0x%x", heap);
 
-    do
-    {
-        heap -= 0x20000; // leave 128k alone
-        // cap at 8M - 16384. 8 MB-1, or 0x7FFFFF at 23 bits is max addressable single region size in allocation_t. 
-            // But subtract by a whole page frame worth of size to not have any weird situations.
-        if (heap > 0x7FC000) 
-        {
-            heap = 0x7FC000;
-        }
-        ptr = malloc(heap);
-    } while (!ptr);
+	do
+	{
+		heap -= 0x20000; // leave 128k alone
+		// cap at 8M - 16384. 8 MB-1, or 0x7FFFFF at 23 bits is max addressable single region size in allocation_t. 
+			// But subtract by a whole page frame worth of size to not have any weird situations.
+		if (heap > 0x7FC000)
+		{
+			heap = 0x7FC000;
+		}
+		ptr = malloc(heap);
+	} while (!ptr);
 
-    printf(", 0x%x allocated for zone\n", heap);
-    if (heap < 0x180000)
-    {
-        printf("\n");
-        printf("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
-        printf("free memory available for DOOM to execute.  Reconfigure your CONFIG.SYS\n");
-        printf("or AUTOEXEC.BAT to load fewer device drivers or TSR's.  We recommend\n");
-        printf("creating a custom boot menu item in your CONFIG.SYS for optimum DOOMing.\n");
-        printf("Please consult your DOS manual (\"Making more memory available\") for\n");
-        printf("information on how to free up more memory for DOOM.\n\n");
-        printf("DOOM aborted.\n");
-        exit(1);
-    }
- 
+	printf(", 0x%x allocated for zone\n", heap);
+	if (heap < 0x180000)
+	{
+		printf("\n");
+		printf("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
+
+	}
+
 
     *size = heap;
     return ptr;
@@ -1105,6 +1095,7 @@ int32_t meminfo[32];
 
 void I_InitDiskFlash(void)
 {
+	/*
     void *pic;
     byte *temp;
 
@@ -1120,11 +1111,14 @@ void I_InitDiskFlash(void)
     destscreen = (byte *)0xac000;
     V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, pic);
     destscreen = temp;
+	*/
 }
 
 // draw disk icon
 void I_BeginRead(void)
 {
+	/*
+
     byte *src, *dest;
 	int32_t y;
 
@@ -1170,11 +1164,13 @@ void I_BeginRead(void)
     // set write mode 0
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
+	*/
 }
 
 // erase disk icon
 void I_EndRead(void)
 {
+	/*
     byte *src, *dest;
 	int32_t y;
 
@@ -1207,4 +1203,5 @@ void I_EndRead(void)
     // set write mode 0
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
+	*/
 }

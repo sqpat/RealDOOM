@@ -60,7 +60,7 @@ void I_ShutdownTimer(void)
 const int8_t snd_prefixen[]
 = { 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S', 'S', 'S' };
 
-int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
+//int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
 
 int16_t snd_SBport;
 uint8_t snd_SBirq, snd_SBdma; // sound blaster variables
@@ -369,6 +369,7 @@ void I_StartupSound(void)
     //
     // initialize dmxCodes[]
     //
+	/*
     dmxCodes[0] = 0;
     dmxCodes[snd_PC] = AHW_PC_SPEAKER;
     dmxCodes[snd_Adlib] = AHW_ADLIB;
@@ -380,11 +381,13 @@ void I_StartupSound(void)
     dmxCodes[snd_ENSONIQ] = AHW_ENSONIQ;
     dmxCodes[snd_CODEC] = AHW_CODEC;
     
+	*/
+
     //
     // inits sound library timer stuff
     //
     I_StartupTimer();
-
+	/*
     //
     // pick the sound cards i'm going to use
     //
@@ -397,6 +400,8 @@ void I_StartupSound(void)
     printf("  calling DMX_Init\n");
 
     //rc = DMX_Init(SND_TICRATE, SND_MAXSONGS, dmxCodes[snd_MusicDevice], dmxCodes[snd_SfxDevice]);
+
+	*/
 
 }
 //

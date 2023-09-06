@@ -31,9 +31,9 @@
 # --------------------------------------------------------------------------
 
 # CCOPTS = $(EXTERNOPT) -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc
-# zt1024 too much. 512 ok
+# zt1024 too much. 512 ok. 255 ok
 
-CCOPTS = /d2 /omaxet /ei /j /zq /ml /zt255
+CCOPTS = /zp1 /omaxet /oi /zq /j /ml /zt768 /zc
 
 GLOBOBJS = &
  i_main.obj &

@@ -21,8 +21,10 @@
 #define __D_ENGLSH__
 
 
-int8_t* getStringByIndex2(int16_t stringindex, int8_t* returndata);
-#define getStringByIndex(a) getStringByIndex2(a, (char*) alloca(1024))
+int8_t* getStringByIndex(int16_t stringindex, int8_t* returndata);
+int16_t getStringLength(int16_t stringindex);
+//#define getStringByIndex(a) getStringByIndex(a, (char*) alloca(getStringLength(a)+1))
+#define getStringByIndexWithBuffer(a, b) getStringByIndex(a, (char*) alloca(b))
 
 
 #define D_DEVSTR		    0  
@@ -316,6 +318,19 @@ int8_t* getStringByIndex2(int16_t stringindex, int8_t* returndata);
 #define QUITMSGD26			288
 #define QUITMSGD27			289
 #define NEWLEVELMSG			290
+#define MODIFIED_GAME		291
+#define NOT_SHAREWARE		292
+#define DO_NOT_DISTRIBUTE	293
+#define VERSION_REGISTERED	294
+#define VERSION_SHAREWARE	295
+#define VERSION_COMMERCIAL	296
+#define M_INIT_TEXT			297
+#define R_INIT_TEXT			298
+#define P_INIT_TEXT			299
+#define I_INIT_TEXT			300
+#define S_INIT_TEXT			301
+#define HU_INIT_TEXT		302
+#define ST_INIT_TEXT		303
 
 
 

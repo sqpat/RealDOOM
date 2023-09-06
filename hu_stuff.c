@@ -247,49 +247,7 @@ int16_t mapnamest[] =	// TNT WAD map names.
 
 
 const int8_t*	shiftxform;
-
-const int8_t french_shiftxform[] =
-{
-    0,
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-    11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-    31,
-    ' ', '!', '"', '#', '$', '%', '&',
-    '"', // shift-'
-    '(', ')', '*', '+',
-    '?', // shift-,
-    '_', // shift--
-    '>', // shift-.
-    '?', // shift-/
-    '0', // shift-0
-    '1', // shift-1
-    '2', // shift-2
-    '3', // shift-3
-    '4', // shift-4
-    '5', // shift-5
-    '6', // shift-6
-    '7', // shift-7
-    '8', // shift-8
-    '9', // shift-9
-    '/',
-    '.', // shift-;
-    '<',
-    '+', // shift-=
-    '>', '?', '@',
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-    'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    '[', // shift-[
-    '!', // shift-backslash - OH MY GOD DOES WATCOM SUCK
-    ']', // shift-]
-    '"', '_',
-    '\'', // shift-`
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-    'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    '{', '|', '}', '~', 127
-
-};
-
+ 
 const int8_t english_shiftxform[] =
 {
 
@@ -331,26 +289,7 @@ const int8_t english_shiftxform[] =
     'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
     '{', '|', '}', '~', 127
 };
-
-int8_t frenchKeyMap[128]=
-{
-    0,
-    1,2,3,4,5,6,7,8,9,10,
-    11,12,13,14,15,16,17,18,19,20,
-    21,22,23,24,25,26,27,28,29,30,
-    31,
-    ' ','!','"','#','$','%','&','%','(',')','*','+',';','-',':','!',
-    '0','1','2','3','4','5','6','7','8','9',':','M','<','=','>','?',
-    '@','Q','B','C','D','E','F','G','H','I','J','K','L',',','N','O',
-    'P','A','R','S','T','U','V','Z','X','Y','W','^','\\','$','^','_',
-    '@','Q','B','C','D','E','F','G','H','I','J','K','L',',','N','O',
-    'P','A','R','S','T','U','V','Z','X','Y','W','^','\\','$','^',127
-};
-
-int8_t ForeignTranslation(uint8_t ch)
-{
-    return ch < 128 ? frenchKeyMap[ch] : ch;
-}
+ 
 
 void HU_Init(void)
 {
@@ -359,11 +298,7 @@ void HU_Init(void)
     int16_t		j;
 	int8_t	buffer[9];
 
-	if (french) {
-		shiftxform = french_shiftxform;
-	} else {
-		shiftxform = english_shiftxform;
-	}
+	shiftxform = english_shiftxform;
 
     // load the heads-up font
     j = HU_FONTSTART;
@@ -436,10 +371,12 @@ void HU_Start(void)
 		sindex = HU_TITLE;
     }
     
-	s = getStringByIndex(sindex);
+	s = alloca(256);
+
+	getStringByIndex(sindex, s);
 
     while (*s)
-	HUlib_addCharToTextLine(&w_title, *(s++));
+		HUlib_addCharToTextLine(&w_title, *(s++));
 
 
 
@@ -467,7 +404,7 @@ void HU_Ticker(void)
 {
 
 	int8_t c;
-
+	int8_t temp[256];
 	// tick down message counter if message is up
 	if (message_counter && !--message_counter)
 	{
@@ -482,7 +419,8 @@ void HU_Ticker(void)
 		if (((players.messagestring || players.message != -1) && !message_nottobefuckedwith) || (players.message && message_dontfuckwithme))
 		{
 			if (players.message != -1) {
-				HUlib_addMessageToSText(&w_message, 0, getStringByIndex(players.message));
+				 getStringByIndex(players.message, temp);
+				HUlib_addMessageToSText(&w_message, 0, temp);
 				players.message = -1;
 			}
 			else {

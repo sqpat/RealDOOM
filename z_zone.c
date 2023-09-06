@@ -344,7 +344,6 @@ void Z_InitEMS(void)
 	int32_t size;
 	int16_t i = 0;
 	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
-	printf("\nattempting z_initEMS\n");
 
 #ifdef _M_I86
 	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
@@ -355,8 +354,8 @@ void Z_InitEMS(void)
 
 
 
-	printf("EMS zone location  %p  \n", pageFrameArea);
-	printf("allocated size in z_initEMS was %i or %p\n", size, size);
+	//printf("EMS zone location  %p\n", pageFrameArea);
+	//printf("Allocated size in z_initEMS was %i or %p\n", size, size);
 	// mark ems pages unused
 	for (i = 0; i < NUM_EMS_PAGES; i++) {
 		activepages[i] = -1;
@@ -634,7 +633,6 @@ int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
 
 		//Z_PageDump();
 
-	printf("Z_RefIsActive: Found inactive ref! %i %i %s %i %i", memref, gametic, file, line, numallocatepages);
 	I_Error("Z_RefIsActive: Found inactive ref! %i %i %s %i %i", memref, gametic, file, line, numallocatepages);
 
 	return 0;
