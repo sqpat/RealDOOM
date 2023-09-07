@@ -119,14 +119,14 @@ void P_LoadVertexes(int16_t lump)
 	numvertexes = W_LumpLength(lump) / sizeof(mapvertex_t);
 
 	// Allocate zone memory for buffer.
-	vertexesRef = Z_MallocEMSNew(numvertexes * sizeof(vertex_t), PU_LEVEL, 0, ALLOC_TYPE_VERTEXES);
+	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), PU_LEVEL, 0, ALLOC_TYPE_VERTEXES);
 
 	// Load data into cache.
 	W_CacheLumpNumCheck(lump, 0);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapvertex_t*)Z_LoadBytesFromEMS(dataRef);
 	
-	li = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	li = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 	// Copy and convert vertex coordinates,
 	// internal representation as fixed.
@@ -176,9 +176,9 @@ void P_LoadSegs(int16_t lump)
 	
 	temp.h.fracbits = 0;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
-	segsRef = Z_MallocEMSNew(numsegs * sizeof(seg_t), PU_LEVEL, 0, ALLOC_TYPE_SEGMENTS);
+	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), PU_LEVEL, 0, ALLOC_TYPE_SEGMENTS);
 	
-	segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+	segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 	memset(segs, 0xff, numsegs * sizeof(seg_t));
 	
 	W_CacheLumpNumCheck(lump, 1);
@@ -200,7 +200,7 @@ void P_LoadSegs(int16_t lump)
 		linedef = (ml->linedef);
 
 
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		ldef = &lines[linedef];
 		ldefsidenum = ldef->sidenum[side];
 		ldefothersidenum = ldef->sidenum[side ^ 1];
@@ -212,7 +212,7 @@ void P_LoadSegs(int16_t lump)
 		othersidesecnum = sides[ldefothersidenum].secnum;
 
 
-		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+		segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 
 		li = &segs[i];
 		li->v1Offset = mlv1;
@@ -294,8 +294,8 @@ void P_LoadSectors(int16_t lump)
 	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 	//sectors = Z_Malloc (numsectors * sizeof(sector_t), PU_LEVEL, 0);
-	sectorsRef = Z_MallocEMSNew (numsectors * sizeof(sector_t), PU_LEVEL, 0, ALLOC_TYPE_SECTORS);
-	sectors = (sector_t*) Z_LoadBytesFromEMS(sectorsRef);
+	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), PU_LEVEL, 0, ALLOC_TYPE_SECTORS);
+	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
 
 
 	memset(sectors, 0, numsectors * sizeof(sector_t));
@@ -315,7 +315,7 @@ void P_LoadSectors(int16_t lump)
 		} else if (convertedtag == 999) {
 			convertedtag = TAG_999;
 		}
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
 		ss->floorpic = R_FlatNumForName(ms.floorpic);
@@ -357,7 +357,7 @@ void P_LoadNodes(int16_t lump)
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 	firstnode = numnodes - 1;
-	nodesRef = Z_MallocEMSNew (numnodes * sizeof(node_t), PU_LEVEL, 0, ALLOC_TYPE_NODES);
+	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), PU_LEVEL, 0, ALLOC_TYPE_NODES);
 	W_CacheLumpNumCheck(lump, 4);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
@@ -365,7 +365,7 @@ void P_LoadNodes(int16_t lump)
 	for (i = 0; i < numnodes; i++) {
 		data = (mapnode_t *)Z_LoadBytesFromEMS(dataRef);
 		currentdata = data[i];
-		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+		nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 		no = &nodes[i];
 
 		no->x = (currentdata.x);
@@ -471,8 +471,8 @@ void P_LoadLineDefs(int16_t lump)
 
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
-	linesRef = Z_MallocEMSNew (numlines * sizeof(line_t), PU_LEVEL, 0, ALLOC_TYPE_LINES);
-	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	linesRef = Z_MallocConventional(numlines * sizeof(line_t), PU_LEVEL, 0, ALLOC_TYPE_LINES);
+	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	memset(lines, 0, numlines * sizeof(line_t));
 	W_CacheLumpNumCheck(lump, 6);
@@ -495,7 +495,7 @@ void P_LoadLineDefs(int16_t lump)
 		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 		side0secnum = sides[mldsidenum0].secnum;
 		side1secnum = sides[mldsidenum1].secnum;
-		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+		vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 		v1 = &vertexes[mldv1];
 		v2 = &vertexes[mldv2];
 		v1x = v1->x;
@@ -503,7 +503,7 @@ void P_LoadLineDefs(int16_t lump)
 		v2x = v2->x;
 		v2y = v2->y;
 
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		ld = &lines[i];
 
 		ld->sidenum[0] = mldsidenum0;
@@ -549,7 +549,7 @@ void P_LoadLineDefs(int16_t lump)
 			ld->backsecnum = SECNUM_NULL;
 		}
 	}
-	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	Z_FreeEMSNew(dataRef);
 }
@@ -699,7 +699,7 @@ void P_GroupLines(void)
 	subsectors = (subsector_t*)Z_LoadBytesFromEMSWithOptions(subsectorsRef, PAGE_LOCKED);
 	for (i = 0; i < numsubsectors; i++) {
 		firstlinenum = subsectors[i].firstline;
-		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+		segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 		
 		sidedefOffset = segs[firstlinenum].sidedefOffset;
 		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
@@ -713,13 +713,13 @@ void P_GroupLines(void)
 
 	// count number of lines in each sector
 	total = 0;
-	lines = (line_t*)Z_LoadBytesFromEMSWithOptions(linesRef, PAGE_LOCKED);
+	lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef, PAGE_LOCKED);
 	for (i = 0; i < numlines; i++) {
 		li = &lines[i];
 		linebacksecnum = li->backsecnum;
 		linefrontsecnum = li->frontsecnum;
 		total++;
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		sectors[linefrontsecnum].linecount++;
 
 		if (linebacksecnum != -1 && linebacksecnum != linefrontsecnum) {
@@ -740,7 +740,7 @@ void P_GroupLines(void)
 	tempv1.h.fracbits = 0;
 	tempv2.h.fracbits = 0;
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	for (i = 0; i < numsectors; i++) {
 		M_ClearBox16(bbox);
 		
@@ -749,12 +749,12 @@ void P_GroupLines(void)
 		sectors[i].linesoffset = linebufferindex;
 		previouslinebufferindex = linebufferindex;
 	 
-		lines = (line_t*)Z_LoadBytesFromEMSWithOptions(linesRef, PAGE_LOCKED);
+		lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef, PAGE_LOCKED);
 		//linebuffer = (int16_t*)Z_LoadBytesFromEMSWithOptions(linebufferRef, PAGE_LOCKED);
-		//vertexes = (vertex_t*)Z_LoadBytesFromEMSWithOptions(vertexesRef, PAGE_LOCKED);
+		//vertexes = (vertex_t*)Z_LoadBytesFromConventionalWithOptions(vertexesRef, PAGE_LOCKED);
 
 		for (j = 0; j < numlines; j++) {
-			//lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+			//lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef);
 			li = &lines[j];
 			linev1Offset = li->v1Offset & VERTEX_OFFSET_MASK;
 			linev2Offset = li->v2Offset & VERTEX_OFFSET_MASK;
@@ -763,7 +763,7 @@ void P_GroupLines(void)
 				linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
-				vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+				vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 				M_AddToBox16(bbox, vertexes[linev1Offset].x, vertexes[linev1Offset].y);
 				M_AddToBox16(bbox, vertexes[linev2Offset].x, vertexes[linev2Offset].y);
 			}
@@ -779,7 +779,7 @@ void P_GroupLines(void)
 		// set the degenmobj_t to the middle of the bounding box
 		
 
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		
 		sectors[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
 		sectors[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
@@ -832,7 +832,7 @@ P_SetupLevel
 
 	S_Start();
 	Z_FreeTagsEMS(PU_LEVEL);
-
+	Z_FreeConventionalAllocations();
 
 	P_InitThinkers();
 

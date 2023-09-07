@@ -57,6 +57,9 @@ enum { VERSION =  109 };
 // Reasonable values include 4 (minimum), 8, and maybe even 10 or 12 which on an incredibly optimal machine might be possible. Of course in 32 bit mode with simulated EMS you can set it to like 32 or 64 but at that point it's not representative of real world performance.
 #define NUM_EMS_PAGES 4
 
+// going over 65535 in 16 bit wiil require a small rewrite but not a big deal. but first, we'd need to actually free up that much memory fromt he build.
+#define MAX_CONVENTIONAL_SIZE 65535L 
+
 // Allocates backbuffers statically
 //#define STATIC_ALLOCATED_SCREENS
 

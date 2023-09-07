@@ -66,7 +66,7 @@ EV_Teleport
     
     
     for (i = 0; i < numsectors; i++) {
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		if (sectors[ i ].tag == linetag ) {
 			thinkerRef = thinkerlist[0].next;

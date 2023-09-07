@@ -190,7 +190,7 @@ R_PointOnSegSide
     fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	
     fixed_t_union temp;
     fixed_t_union temp2;
@@ -833,7 +833,7 @@ int16_t
 	}
 		
 	nodenum = firstnode;
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	while (! (nodenum & NF_SUBSECTOR) ) {
 		node = &nodes[nodenum];
 		side = R_PointOnSide (x, y, node);
@@ -903,7 +903,7 @@ void R_RenderPlayerView ()
 
 
 	// The head node is the last node output.
-	//Z_LoadBytesFromEMSWithOptions(nodesRef, PAGE_LOCKED);
+	//Z_LoadBytesFromConventionalWithOptions(nodesRef, PAGE_LOCKED);
 	R_RenderBSPNode (firstnode);
 	//Z_SetUnlocked(nodesRef)
 

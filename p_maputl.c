@@ -68,7 +68,7 @@ P_PointOnLineSide
     fixed_t	dy;
     fixed_t	left;
     fixed_t	right;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
     if (!linedx) {
@@ -115,7 +115,7 @@ P_PointOnLineSide16
     int16_t	dy;
     fixed_t	left;
     fixed_t	right;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
     if (!linedx) {
 		if (x <= vertexes[linev1Offset].x) {
@@ -163,7 +163,7 @@ P_BoxOnLineSide
 
     boolean		p1;
     boolean		p2;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
     switch (lineslopetype) {
@@ -311,7 +311,7 @@ P_MakeDivline
 	int16_t linev1Offset,
   divline_t*	dl )
 {
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	temp.h.intbits = vertexes[linev1Offset].x;
@@ -380,7 +380,7 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 		return;
 	}
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	
 	front = &sectors[linefrontsecnum];
 	back = &sectors[linebacksecnum];
@@ -448,7 +448,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 			changeThing->snextRef = thingsnextRef;
 		}
 		else {
-			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 			sectors[thingsecnum].thinglistRef = thingsnextRef;
 			 
 
@@ -518,7 +518,7 @@ P_SetThingPosition (MEMREF thingRef)
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
 
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		oldsectorthinglist = sectors[subsectorsecnum].thinglistRef;
 		sectors[subsectorsecnum].thinglistRef = thingRef;
 
@@ -594,7 +594,7 @@ P_BlockLinesIterator
 	int16_t			index;
     int16_t		list;
     line_t*		ld;
-	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	int16_t *blockmaplump;
     if (x<0
 	|| y<0
@@ -611,7 +611,7 @@ P_BlockLinesIterator
     for ( index = offset ; blockmaplump[index] != -1 ; index++) {
 
 		list = blockmaplump[index];
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 		ld = &lines[list];
 
@@ -694,7 +694,7 @@ PIT_AddLineIntercepts (int16_t linenum)
     int16_t			s2;
     fixed_t		frac;
     divline_t		dl;
-	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	line_t* ld = &lines[linenum];
 	int16_t linev1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
 	int16_t linev2Offset = ld->v2Offset & VERTEX_OFFSET_MASK;
@@ -703,7 +703,7 @@ PIT_AddLineIntercepts (int16_t linenum)
 	int16_t linebacksecnum = ld->backsecnum;
 	fixed_t_union tempx;
 	fixed_t_union tempy;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 	tempx.h.fracbits = 0;
 	tempy.h.fracbits = 0;
@@ -912,11 +912,11 @@ P_PathTraverse
 	temp.h.fracbits = 0;
 
 
-    if ( ((x1.w - temp.w)&((MAPBLOCKSIZE<<FRACBITS) -1)) == 0)
+    if ( ((x1.w - temp.w)&((MAPBLOCKSIZE*1000L) -1)) == 0)
 		x1.h.intbits += 1;	// don't side exactly on a line
     
 	temp.h.intbits = bmaporgy;
-	if ( ((y1.w -temp.w)&((MAPBLOCKSIZE << FRACBITS) -1)) == 0)
+	if ( ((y1.w -temp.w)&((MAPBLOCKSIZE * 1000L) -1)) == 0)
 		y1.h.intbits += 1;	// don't side exactly on a line
 
     trace.x = x1;

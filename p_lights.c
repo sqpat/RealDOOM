@@ -52,7 +52,7 @@ void T_FireFlicker (MEMREF memref)
 	
 	flick->count = 4;
 	amount = (P_Random()&3)*16;
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
     if (sectors[flicksecnum].lightlevel - amount < flickminlight)
 		sectors[flicksecnum].lightlevel = flickminlight;
     else
@@ -72,7 +72,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 	uint8_t lightamount;
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	uint8_t seclightlevel = sectors[secnum].lightlevel;
 	sectors[secnum].special = 0;
 
@@ -112,7 +112,7 @@ void T_LightFlash (MEMREF memref)
 
     if (--flash->count)
 		return;
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
     if (sectors[flashsecnum].lightlevel == flashmaxlight) {
 		sectors[flashsecnum].lightlevel = flashminlight;
@@ -142,7 +142,7 @@ void P_SpawnLightFlash (int16_t secnum)
 	MEMREF flashRef;
 	uint8_t lightamount;
 	// nothing special about it during gameplay
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t seclightlevel = sectors[secnum].lightlevel;
 	sectors[secnum].special = 0;
 
@@ -184,7 +184,7 @@ void T_StrobeFlash (MEMREF memref)
 	if (--flash->count)
 		return;
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 	
     if (sectors[flashsecnum].lightlevel == flashminlight) {
@@ -215,7 +215,7 @@ P_SpawnStrobeFlash
     strobe_t*	flash;
 	MEMREF flashRef;
 	uint8_t lightamount;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t seclightlevel = sectors[secnum].lightlevel;
 
 	// nothing special about it during gameplay
@@ -284,7 +284,7 @@ void EV_TurnTagLightsOff(uint8_t linetag)
      line_t*		templine;
 	int16_t *		linebuffer;
 	int16_t		linenumber;
-	sector_t*   sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t*   sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	uint8_t linecount;
 	int16_t offset = sectors[secnum].linesoffset;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
@@ -296,7 +296,7 @@ void EV_TurnTagLightsOff(uint8_t linetag)
 	P_FindSectorsFromLineTag(linetag, tagsecnumlist, true);
 
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 	while (tagsecnumlist[j] >= 0) {
 		secnum = tagsecnumlist[j];
@@ -310,7 +310,7 @@ void EV_TurnTagLightsOff(uint8_t linetag)
 		memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 		linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		for (i = 0; i < linecount; i++) {
  			 offset = secnumlist[i];
@@ -339,14 +339,14 @@ EV_LightTurnOn
     line_t*	templine;
 	uint8_t linecount;
 	int16_t* linebuffer;
-	sector_t*   sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t*   sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t offset = sectors[secnum].linesoffset;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t tagsecnumlist[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
 	P_FindSectorsFromLineTag(linetag, tagsecnumlist, true);
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 	while (tagsecnumlist[j] >= 0) {
 		secnum = tagsecnumlist[j];
@@ -359,7 +359,7 @@ EV_LightTurnOn
 			memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 			linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
-			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 			for (i = 0; i < linecount; i++) {
 				offset = secnumlist[i];
@@ -385,7 +385,7 @@ void T_Glow(MEMREF memref)
 	int16_t gsecnum = g->secnum;
 	uint8_t gminlight = g->minlight;
 	uint8_t gmaxlight = g->maxlight;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
     switch(g->direction) {
       case -1:
@@ -419,7 +419,7 @@ void P_SpawnGlowingLight(int16_t secnum)
 	// Note that we are resetting sector attributes.
 	// Nothing special about it during gameplay.
 	
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t seclightlevel = sectors[secnum].lightlevel;
 	sectors[secnum].special = 0;
 

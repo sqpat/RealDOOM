@@ -104,7 +104,7 @@ void P_ArchiveWorld (void)
     int16_t*		put;
 	side_t* sides;
 	line_t* lines;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	put = (int16_t *)save_p;
     
     // do sectors
@@ -119,7 +119,7 @@ void P_ArchiveWorld (void)
 	*put++ = sec->tag;		// needed?
     }
 
-	lines = (line_t*) Z_LoadBytesFromEMS(linesRef);
+	lines = (line_t*) Z_LoadBytesFromConventional(linesRef);
     // do lines
     for (i=0, li = lines ; i<numlines ; i++,li++)
     {
@@ -162,7 +162,7 @@ void P_UnArchiveWorld (void)
     int16_t*		get;
 	side_t* sides;
 	line_t* lines;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	get = (int16_t *)save_p;
 
     // do sectors
@@ -181,7 +181,7 @@ void P_UnArchiveWorld (void)
     
     // do lines
 	for (i=0 ; i<numlines ; i++,li++) {
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		li = &lines[i];
 		li->flags = *get++;
 		li->special = *get++;
@@ -269,7 +269,7 @@ void P_UnArchiveThinkers (void)
 	THINKERREF		next;
 	MEMREF thinkerRef;
 	mobj_t* mobj;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	
     
     // remove all the current thinkers

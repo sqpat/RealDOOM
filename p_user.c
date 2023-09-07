@@ -279,7 +279,7 @@ void P_PlayerThink (void)
 	playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 	playermosecnum = playermo->secnum;
 
-	sectors = (sector_t*) Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
 	if (sectors[playermosecnum].special) {
 		P_PlayerInSpecialSector();
 	}

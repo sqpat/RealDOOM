@@ -201,9 +201,9 @@ void P_XYMovement (MEMREF moRef)
 				P_SlideMove (moRef);
 			} else if (mo->flags & MF_MISSILE) {
 				// explode a missile
-				lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+				lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 				ceilinglinebacksecnum=lines[ceilinglinenum].backsecnum;
-				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+				sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 				if (ceilinglinenum != SECNUM_NULL && ceilinglinebacksecnum != SECNUM_NULL && sectors[ceilinglinebacksecnum].ceilingpic == skyflatnum) {
 					// Hack to prevent missiles exploding
@@ -252,7 +252,7 @@ void P_XYMovement (MEMREF moRef)
 	if (mo->flags & MF_CORPSE) {
 		// do not stop sliding
 		//  if halfway off a step with some momentum
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		sectorfloorheight = sectors[mosecnum].floorheight;
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
@@ -461,7 +461,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 	mobjsecnum = mobj->secnum;
 	mobjx = mobj->x;
 	mobjy = mobj->y;
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 	// spawn a teleport fog at old spot
 	// because of removal of the body?
@@ -475,7 +475,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 	subsecnum = R_PointInSubsector(x.w, y.w);
 	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG);
 
 	S_StartSoundFromRef(moRef, sfx_telept);
@@ -648,7 +648,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	mobjsecnum = mobj->secnum;
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectorfloorheight = sectors[mobjsecnum].floorheight;
 	sectorceilingheight = sectors[mobjsecnum].ceilingheight;
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);

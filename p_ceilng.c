@@ -58,7 +58,7 @@ void T_MoveCeiling (MEMREF memref)
 			res = T_MovePlane(ceiling->secnum, ceiling->speed, ceiling->topheight, false,1,ceiling->direction);
 			ceiling = (ceiling_t*)Z_LoadBytesFromEMS(memref);
 			ceilingsecnum = ceiling->secnum;
-			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 			ceilingsector = sectors[ceilingsecnum];
 			ceiling = (ceiling_t*)Z_LoadBytesFromEMS(memref);
 
@@ -186,7 +186,7 @@ EV_DoCeiling
 		secnum = secnumlist[j];
 		j++;
 			
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		sector = sectors[secnum];
 
@@ -276,7 +276,7 @@ void P_RemoveActiveCeiling(MEMREF memref)
 		c = (ceiling_t*)Z_LoadBytesFromEMS(memref);
 		cthinkerRef = c->thinkerRef;
 		csecnum = c->secnum;
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		sectors[csecnum].specialdataRef = NULL_MEMREF;
 	    P_RemoveThinker (cthinkerRef);

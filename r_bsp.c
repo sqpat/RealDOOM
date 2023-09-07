@@ -268,7 +268,7 @@ void R_AddLine (int16_t linenum)
     angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
-	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+	seg_t* segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 	int16_t linebacksecnum = segs[linenum].backsecnum;
 	int16_t curlinesidedefOffset = segs[linenum].sidedefOffset;
 	int16_t linenumv1Offset = segs[linenum].v1Offset;
@@ -286,7 +286,7 @@ void R_AddLine (int16_t linenum)
 	if (segs[curlinenum].linedefOffset > numlines) {
 		I_Error("R_Addline Error! lines out of bounds! %li %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
 	}
-	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 	tempx.h.fracbits = 0;
 	tempy.h.fracbits = 0;
@@ -353,7 +353,7 @@ void R_AddLine (int16_t linenum)
 		goto clipsolid;		
 
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	frontsector = sectors[frontsecnum];
 	backsector = sectors[backsecnum];
 
@@ -572,7 +572,7 @@ void R_Subsector(int16_t subsecnum)
     count = subsectors[subsecnum].numlines;
 	firstline = subsectors[subsecnum].firstline;
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	frontsector = &sectors[frontsecnum];
 
 	// temp.h.intbits = frontsector->floorheight >> SHORTFLOORBITS;
@@ -629,7 +629,7 @@ void R_RenderBSPNode(int16_t bspnum)
 			if (sp == MAX_BSP_DEPTH)
 				break;
 
-			nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+			nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 			bsp = &nodes[bspnum];
 
 			//decide which side the view point is on
@@ -668,7 +668,7 @@ void R_RenderBSPNode(int16_t bspnum)
 
 		bspnum = stack_bsp[sp];
 		side = stack_side[sp];
-		nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+		nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 		bsp = &nodes[bspnum];
 
 		// Possibly divide back space.
@@ -689,7 +689,7 @@ void R_RenderBSPNode(int16_t bspnum)
 			bspnum = stack_bsp[sp];
 			side = stack_side[sp];
 
-			nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+			nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 			bsp = &nodes[bspnum];
 		}
 

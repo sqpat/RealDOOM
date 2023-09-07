@@ -105,7 +105,7 @@ R_RenderMaskedSegRange
 	uint8_t* textureheight;
 	int16_t siderowoffset;
 	line_t* lines;
-	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+	seg_t* segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 	int16_t curlinev1Offset; int16_t curlinev2Offset; int16_t curlinefrontsecnum; int16_t curlinebacksecnum; int16_t curlinesidedefOffset; int16_t curlinelinedefOffset;
 	side_t* sides;
 	int16_t sidemidtexture;
@@ -135,13 +135,13 @@ R_RenderMaskedSegRange
 	backsecnum = curlinebacksecnum;
  	texnum = texturetranslation[sidemidtexture];
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	frontsector = sectors[frontsecnum];
 	backsector = sectors[backsecnum];
 
 	lightnum = (frontsector.lightlevel >> LIGHTSEGSHIFT) + extralight;
 	
-	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	if (vertexes[curlinev1Offset].y == vertexes[curlinev2Offset].y) {
 		lightnum--;
 	}
@@ -163,7 +163,7 @@ R_RenderMaskedSegRange
     mceilingclip = ds->sprtopclip;
     
     // find positioning
-	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
     if (lines[curlinelinedefOffset].flags & ML_DONTPEGBOTTOM) {
 		// temp.h.intbits = (frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight) >> SHORTFLOORBITS;
 		 textureheight = Z_LoadBytesFromEMS(textureheightRef); // note: 8 bit..
@@ -461,7 +461,7 @@ R_StoreWallRange
 	vertex_t* vertexes;
 
 	// needs to be refreshed...
-	seg_t* segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+	seg_t* segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 	int16_t curlinelinedefOffset = segs[curlinenum].linedefOffset;
 	fineangle_t curlineangle = segs[curlinenum].fineangle;
 	int16_t curlinev1Offset = segs[curlinenum].v1Offset;
@@ -494,7 +494,7 @@ R_StoreWallRange
 	}
 
     // mark the segment as visible for auto map
-	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	(&lines[linedefOffset])->v1Offset |= LINE_VERTEX_FLAG_9;
 
@@ -517,7 +517,7 @@ R_StoreWallRange
 
     distangle = FINE_ANG90 - offsetangle;
 
-	vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	hyp = R_PointToDist (vertexes[curlinev1Offset].x, vertexes[curlinev1Offset].y);
     sineval = finesine(distangle);
     rw_distance = FixedMul (hyp, sineval);
@@ -555,7 +555,7 @@ R_StoreWallRange
 		ds_p->scale2 = ds_p->scale1;
     }
     
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	frontsector = sectors[frontsecnum];
 	backsector = sectors[backsecnum];
 
@@ -784,7 +784,7 @@ R_StoreWallRange
 		// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 		if (!fixedcolormap){
 			lightnum = (frontsector.lightlevel >> LIGHTSEGSHIFT)+extralight;
-			vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+			vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 			if (vertexes[curlinev1Offset].y == vertexes[curlinev2Offset].y) {
 				lightnum--;

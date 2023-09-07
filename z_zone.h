@@ -121,10 +121,14 @@ typedef struct memblock_s
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS(int16_t tag);
+void Z_InitConventional(void);
+void Z_FreeConventionalAllocations();
 
 #define BACKREF_LUMP_OFFSET 2048
 MEMREF Z_MallocEMSNew(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
 MEMREF Z_MallocEMSNewWithBackRef(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
+MEMREF Z_MallocConventional(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
+
 #ifdef MEMORYCHECK
 void Z_CheckEMSAllocations(PAGEREF block, int32_t i, int32_t var2, int32_t var3);
 #endif
@@ -136,17 +140,20 @@ void Z_SetUnlocked(MEMREF ref);
 //void* Z_LoadBytesFromEMS2(MEMREF index);
 
 
+void* Z_LoadBytesFromConventionalWithOptions(MEMREF index, boolean locked);
+#define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions(a, PAGE_NOT_LOCKED)
+
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
 #define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b)
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED)
 
 
 /*
-
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked, int8_t* file, int32_t line);
 #define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b, __FILE__, __LINE__)
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED, __FILE__, __LINE__)
 */
+
 
 #ifdef CHECKREFS
 int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);

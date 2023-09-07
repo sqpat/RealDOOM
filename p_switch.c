@@ -149,7 +149,7 @@ P_StartButton
     }
     
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
     for (i = 0;i < MAXBUTTONS;i++)
     {
@@ -189,7 +189,7 @@ P_ChangeSwitchTexture
 
  	line_t* line; 
 	side_t* sides;
-	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	if (!useAgain) {
 		line = &lines[linenum];
@@ -264,7 +264,7 @@ P_UseSpecialLine
 {               
 	mobj_t*	thing;
 
-	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	line_t* line = &lines[linenum];
 	
 	uint8_t linetag = line->tag;

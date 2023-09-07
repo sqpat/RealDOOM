@@ -154,7 +154,7 @@ P_TeleportMove
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
     tmceilingz = sectors[newsubsecsecnum].ceilingheight;
 			
@@ -204,7 +204,7 @@ boolean PIT_CheckLine (int16_t linenum)
 	mobj_t* tmthing;
 	//int16_t linespecial;
 	//fixed_t linedx; , fixed_t linedy, int16_t linev1Offset, int16_t linev2Offset, int16_t linefrontsecnum, int16_t linebacksecnum, int16_t lineside1, slopetype_t lineslopetype
-	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	line_t* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld->v2Offset & LINE_VERTEX_SLOPETYPE;
 	int16_t linedx = ld->dx;
@@ -512,7 +512,7 @@ P_CheckPosition
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
     tmceilingz = sectors[newsubsecsecnum].ceilingheight;
 	
@@ -656,7 +656,7 @@ P_TryMove
     if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
 		while (numspechit--) {
 			// see if the line was crossed
-			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+			lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 			ld = &lines[spechit[numspechit]];
 			lddx = ld->dx;
 			lddy = ld->dy;
@@ -768,7 +768,7 @@ void P_HitSlideLine (int16_t linenum)
     fixed_t		movelen;
     fixed_t		newlen;
 	mobj_t* slidemo;
-	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	line_t ld = lines[linenum];
 	
@@ -813,7 +813,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
 {
 	mobj_t* slidemo;
 	line_t li;
-	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	fixed_t_union temp;
 
 	li = lines[in->d.linenum];
@@ -1044,7 +1044,7 @@ PTR_AimTraverse (intercept_t* in)
 	fixed_t_union temp;
 
     if (in->isaline) {
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		li = lines[in->d.linenum];
 	
 		if (!(li.flags & ML_TWOSIDED)) {
@@ -1059,7 +1059,7 @@ PTR_AimTraverse (intercept_t* in)
 			return false;		// stop
 	
 		dist = FixedMul (attackrange.w, in->frac);
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		temp.h.fracbits = 0;
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
@@ -1146,7 +1146,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	temp.h.fracbits = 0;
 
     if (in->isaline) {
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		li = lines[in->d.linenum];
 		
 		if (li.special)
@@ -1159,7 +1159,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		P_LineOpening(li.sidenum[1], li.frontsecnum, li.backsecnum);
 		
 		dist = FixedMul (attackrange.w, in->frac);
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
 			// temp.h.intbits = openbottom >> SHORTFLOORBITS;
@@ -1372,7 +1372,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 {
     int16_t		side;
 	mobj_t* usething;
-	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	line_t line = lines[in->d.linenum];
 	if (!line.special) {
@@ -1619,7 +1619,7 @@ P_ChangeSector
 {
     int16_t		x;
     int16_t		y;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t blockleft = sectors[secnum].blockbox[BOXLEFT];
 	int16_t blockright = sectors[secnum].blockbox[BOXRIGHT];
 	int16_t blocktop = sectors[secnum].blockbox[BOXTOP];

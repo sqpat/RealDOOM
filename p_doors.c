@@ -44,7 +44,7 @@ void T_VerticalDoor (MEMREF memref)
     result_e	res;
 	vldoor_t* door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
 	int16_t doorsecnum = door->secnum;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sector_t doorsector = sectors[doorsecnum];
 	THINKERREF doorthinkerRef;
 	door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
@@ -101,7 +101,7 @@ void T_VerticalDoor (MEMREF memref)
 				switch(door->type) {
 					case blazeRaise:
 					case blazeClose:
-						sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+						sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 						sectors[doorsecnum].specialdataRef = NULL_MEMREF;
 						P_RemoveThinker (doorthinkerRef);  // unlink and free
 						S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_bdcls);
@@ -109,7 +109,7 @@ void T_VerticalDoor (MEMREF memref)
 		
 					case normal:
 					case close:
-						sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+						sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 						sectors[doorsecnum].specialdataRef = NULL_MEMREF;
 						P_RemoveThinker (doorthinkerRef);  // unlink and free
 						break;
@@ -156,7 +156,7 @@ void T_VerticalDoor (MEMREF memref)
 						case close30ThenOpen:
 						case blazeOpen:
 						case open:
-							sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+							sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 							sectors[doorsecnum].specialdataRef = NULL_MEMREF;
 							P_RemoveThinker (doorthinkerRef);  // unlink and free
 						break;
@@ -254,7 +254,7 @@ EV_DoDoor
 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 
 	while (secnumlist[j] >= 0) {
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		secnum = secnumlist[j];
 		j++;
 		
@@ -345,7 +345,7 @@ EV_VerticalDoor
     vldoor_t*	door;
     int16_t		side = 0;
 	MEMREF doorRef;
-	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	int16_t linespecial = lines[linenum].special;
 	int16_t sidenum;
 	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
@@ -407,12 +407,12 @@ EV_VerticalDoor
     // if the sector has an active thinker, use it
 	
 
-	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	sidenum = lines[linenum].sidenum[side ^ 1];
 
 	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 	secnum = sides[sidenum].secnum;
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	doorsector = sectors[secnum];
 
 
@@ -466,7 +466,7 @@ EV_VerticalDoor
     
     // new door thinker
 	doorRef = Z_MallocEMSNew(sizeof(*door), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectors[secnum].specialdataRef = doorRef;
 
 	
@@ -491,7 +491,7 @@ EV_VerticalDoor
 		case 33:
 		case 34:
 			door->type = open;
-			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+			lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 			(&lines[linenum])->special = 0;
 			linespecial = lines[linenum].special;
 			break;
@@ -503,7 +503,7 @@ EV_VerticalDoor
 		case 118:	// blazing door open
 			door->type = blazeOpen;
 			door->speed = VDOORSPEED*4;
-			lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+			lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 			(&lines[linenum])->special = 0;
 			linespecial = lines[linenum].special;
 			break;
@@ -535,7 +535,7 @@ void P_SpawnDoorCloseIn30 (int16_t secnum)
 	door->speed = VDOORSPEED;
 	door->topcountdown = 30 * 35;
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectors[secnum].specialdataRef = doorRef;
 	sectors[secnum].special = 0;
 
@@ -570,7 +570,7 @@ P_SpawnDoorRaiseIn5Mins
 	door->topwait = VDOORWAIT;
     door->topcountdown = 5 * 60 * 35;
 
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectors[secnum].specialdataRef = doorRef;
 	sectors[secnum].special = 0;
 

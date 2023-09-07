@@ -825,7 +825,7 @@ P_DamageMobj
     if (player) {
 
 		// end of game hell hack
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		if (sectors[targetsecnum].special == 11 && damage >= targethealth) {
 			damage = target->health - 1;
 		}

@@ -312,11 +312,11 @@ boolean P_CrossSubsector (int16_t subsecnum)
 	
 
     for ( ; count ; segnum++, count--) {
-		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+		segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 		linedefOffset = segs[segnum].linedefOffset;
 		frontsecnum = segs[segnum].frontsecnum;
 		backsecnum = segs[segnum].backsecnum;
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		line = &lines[linedefOffset];
 
 
@@ -330,7 +330,7 @@ boolean P_CrossSubsector (int16_t subsecnum)
 		linev2Offset = line->v2Offset & VERTEX_OFFSET_MASK;
 		lineflags = line->flags;
 
-		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+		vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 		v1 = vertexes[linev1Offset];
 		v2 = vertexes[linev2Offset];
@@ -379,7 +379,7 @@ boolean P_CrossSubsector (int16_t subsecnum)
 
 		// no wall to block sight with?
 
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		if (sectors[frontsecnum].floorheight == sectors[backsecnum].floorheight && sectors[frontsecnum].ceilingheight == sectors[backsecnum].ceilingheight) {
 			continue;
@@ -457,7 +457,7 @@ boolean P_CrossBSPNode (int32_t bspnum)
     }
 		
 
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	bsp = &nodes[bspnum];
     
     // decide which side the start point is on
@@ -465,14 +465,14 @@ boolean P_CrossBSPNode (int32_t bspnum)
 	if (side == 2) {
 		side = 0;	// an "on" should cross both sides
 	}
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	bsp = &nodes[bspnum];
 
 	if (!P_CrossBSPNode(bsp->children[side])) {
 		return false;
 	}
 
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	bsp = &nodes[bspnum];
 
     // the partition plane is crossed here
@@ -480,7 +480,7 @@ boolean P_CrossBSPNode (int32_t bspnum)
 		// the line doesn't touch the other side
 		return true;
     }
-	nodes = (node_t*)Z_LoadBytesFromEMS(nodesRef);
+	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	bsp = &nodes[bspnum];
 
     // cross the ending side		

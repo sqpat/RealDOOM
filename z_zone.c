@@ -28,6 +28,8 @@
 #include "r_bsp.h"
 
 #include <dos.h>
+#include <stdlib.h>
+#include <malloc.h>
 
 
 //
@@ -131,6 +133,9 @@
 // 4  9707835 1094939 1468082 207 (2134 in 3721)  <- translation tables to memory
 // 4  9727235 1095037 1468186 207 (2134 in 3804)  <- blockmaps as 16 bit?
 // 4  9727235 1223378 1597109 207 (2134 in 4071)  <- line flags 8 bit, mapped in v1offset, slopetype in v2offset
+// 4  9727235 1223379 1597109 207 (2134 in 4071)  <- line bounding boxes changed
+// 4  9100444 584187  675843  207 (2134 in 2304)  <- lines fudged into conventional 
+// 4  8460235 464178  532405  207 (2134 in 1863)  <- 64k conventional space first come first serve.
 
 
 // 8 13569197 422735  521499  207 (2134 in 1843)  <---- same as above with 8
@@ -183,6 +188,8 @@
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048
+// we dont make many conventional allocations, only a small number of important ones
+#define CONVENTIONAL_ALLOCATION_LIST_SIZE 8
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 0x10000L
 
@@ -264,14 +271,27 @@ typedef struct
 #endif
 } allocation_t;
 
+
+typedef struct
+{
+	uint16_t size;
+	uint8_t tag;
+	uint8_t user;
+	void*	datalocation;
+} allocation_conventional_t;
+
+
 //#define OWNED_USER 2
 //#define UNOWNED_USER 1
 
-
+void* conventionalmemoryblock;
+int32_t totalconventionalfree;
+int32_t remainingconventional;
 
 PAGEREF currentListHead = 0; // main rover
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
+allocation_conventional_t conventional_allocations[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 
 
 int16_t activepages[NUM_EMS_PAGES];
@@ -340,16 +360,34 @@ void Z_ChangeTagEMSNew(MEMREF index, int16_t tag) {
 }
 
 
+
+// CONVENTIONAL MEMORY ALLOCATION STUFF
+
+size_t Z_GetFreeConventionalSize() {
+	size_t availablememory = _memavl();
+
+	// around 20k 16 bit right now.
+	//I_Error("Size available: %u  ", availablememory);
+
+	if (availablememory >= MAX_CONVENTIONAL_SIZE) {
+		return MAX_CONVENTIONAL_SIZE;
+	}
+	
+	return availablememory; 
+}
+
+void Z_InitConventional(void) {
+	totalconventionalfree = Z_GetFreeConventionalSize();
+	conventionalmemoryblock = malloc(totalconventionalfree);
+	remainingconventional = totalconventionalfree;
+}
+
 // EMS STUFF
-
-
-
 
 
 //
 // Z_InitEMS
 //
-
 
 
 void Z_InitEMS(void)
@@ -846,6 +884,8 @@ void Z_ShutdownEMS() {
 	}
 #endif
 
+	free(conventionalmemoryblock);
+
 }
 
 
@@ -1196,7 +1236,7 @@ void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex) {
 
 
 
-	if (ref > EMS_ALLOCATION_LIST_SIZE) {
+	if (ref >= EMS_ALLOCATION_LIST_SIZE) {
 		I_Error("index too big in set_locked: %i %i", ref);
 	}
 
@@ -1239,6 +1279,9 @@ void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex) {
 void Z_SetUnlocked(MEMREF ref) {
 	int16_t pagenumber = MAKE_PAGE(allocations[ref].page_and_size);
 	int16_t pageframeindex;
+	if (ref >= EMS_ALLOCATION_LIST_SIZE) {
+		return; // conventionals dont need to get locked;;
+	}
 	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 		if (activepages[pageframeindex] == pagenumber) {
 			Z_SetUnlockedWithPage(ref, PAGE_NOT_LOCKED, pageframeindex);
@@ -1249,8 +1292,67 @@ void Z_SetUnlocked(MEMREF ref) {
 }
 
 
-//void* Z_LoadBytesFromEMS2(MEMREF ref, int8_t* file, int32_t line) {
-//void* Z_LoadBytesFromEMS2(MEMREF ref) {
+
+void* Z_LoadBytesFromConventionalWithOptions(MEMREF ref, boolean locked) {
+	int8_t i;
+
+	if (ref < EMS_ALLOCATION_LIST_SIZE) {
+		return Z_LoadBytesFromEMSWithOptions(ref, locked);
+	}
+	ref -= EMS_ALLOCATION_LIST_SIZE;
+
+	if (ref > CONVENTIONAL_ALLOCATION_LIST_SIZE) {
+		I_Error("Conventional allocation too big! %i", ref);
+	}
+
+	return conventional_allocations[ref].datalocation;
+
+}
+
+ 
+void Z_FreeConventionalAllocations() {
+	int8_t i = 0;
+
+	for (i = 0; i < CONVENTIONAL_ALLOCATION_LIST_SIZE; i++) {
+		conventional_allocations[i].datalocation = 0;
+		conventional_allocations[i].size = 0;
+		conventional_allocations[i].tag = 0;
+		conventional_allocations[i].user = 0;
+	}
+
+}
+
+// very easy because we just do it linearly and never remove except all at once. no fragmentation
+MEMREF Z_MallocConventional( 
+	uint32_t           size,
+		uint8_t           tag,
+		uint8_t user,
+		uint8_t sourceHint){
+
+	int8_t ref;
+	byte* datalocation;
+
+	if (size > remainingconventional) {
+		return Z_MallocEMSNew(size, tag, user, sourceHint);
+	}
+	datalocation = conventionalmemoryblock;
+	for (ref = 0; ref < CONVENTIONAL_ALLOCATION_LIST_SIZE; ref++) {
+		if (conventional_allocations[ref].size == 0) {
+			break;
+		}
+		datalocation += conventional_allocations[ref].size;
+ 
+	}
+	conventional_allocations[ref].size = size;
+	conventional_allocations[ref].user = user;
+	conventional_allocations[ref].tag = tag;
+	conventional_allocations[ref].datalocation = datalocation;
+
+	remainingconventional -= size;
+	return ref + EMS_ALLOCATION_LIST_SIZE;
+}
+
+
 
 //void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked, int8_t* file, int32_t line) {
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
@@ -1260,7 +1362,7 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 	mobj_t* thing;
 	line_t* lines;
 
-	if (ref > EMS_ALLOCATION_LIST_SIZE) {
+	if (ref >= EMS_ALLOCATION_LIST_SIZE) {
 		//I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
 		I_Error("out of bounds memref.. tick %li    %i ", gametic, ref);
 	}

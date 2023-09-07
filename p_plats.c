@@ -48,7 +48,7 @@ void T_PlatRaise(MEMREF platRef)
 	plat_t* plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
 	int16_t platsecnum = plat->secnum;
 
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t sectorsoundorgX = sectors[platsecnum].soundorgX;
 	int16_t sectorsoundorgY = sectors[platsecnum].soundorgY;
 	short_height_t sectorfloorheight = sectors[platsecnum].floorheight;
@@ -162,7 +162,7 @@ EV_DoPlat
 	side0secnum = sides[lineside0].secnum;
 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 	while (secnumlist[j] >= 0) {
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
  
 		secnum = secnumlist[j];
 		j++;
@@ -190,7 +190,7 @@ EV_DoPlat
 		switch (type) {
 			case raiseToNearestAndChange:
 				plat->speed = PLATSPEED / 2;
-				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+				sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 				(&sectors[secnum])->floorpic = sectors[side0secnum].floorpic;
 				specialheight = P_FindNextHighestFloor(secnum, sectorfloorheight);
 				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
@@ -198,14 +198,14 @@ EV_DoPlat
 				plat->wait = 0;
 				plat->status = plat_up;
 				// NO MORE DAMAGE, IF APPLICABLE
-				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+				sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 				(&sectors[secnum])->special = 0;
 
 				S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_stnmov);
 				break;
 
 			case raiseAndChange:
-				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+				sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 				(&sectors[secnum])->floorpic = sectors[side0secnum].floorpic;
 
 				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
@@ -343,7 +343,7 @@ void P_RemoveActivePlat(MEMREF platRef)
 			platsecnum = plat->secnum;
 			platthinkerRef = plat->thinkerRef;
 
-			sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 			(&sectors[platsecnum])->specialdataRef = NULL_MEMREF;
 
 			P_RemoveThinker(platthinkerRef);

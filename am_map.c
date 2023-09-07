@@ -371,7 +371,7 @@ void AM_findMinMaxBoundaries(void)
     fixed_t a;
     fixed_t b;
 	fixed_t_union temp;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	min_x = min_y =  MAXLONG;
     max_x = max_y = -MAXLONG;
 	temp.h.fracbits = 0;
@@ -1084,7 +1084,7 @@ void AM_drawWalls(void)
 	temp.h.fracbits = 0;
 
     for (i=0;i<numlines;i++) {
-		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
+		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		linev1Offset = lines[i].v1Offset & VERTEX_OFFSET_MASK;
 		linev2Offset = lines[i].v2Offset & VERTEX_OFFSET_MASK;
 		mappedflag = lines[i].v1Offset & LINE_VERTEX_FLAG_9;
@@ -1093,7 +1093,7 @@ void AM_drawWalls(void)
 		linefrontsecnum = lines[i].frontsecnum;
 		linespecial = lines[i].special;
 
-		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
+		vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 		temp.h.intbits = vertexes[linev1Offset].x;
 		l.a.x = temp.w;
 		temp.h.intbits = vertexes[linev1Offset].y;
@@ -1109,7 +1109,7 @@ void AM_drawWalls(void)
 			} if (linebacksecnum == SECNUM_NULL) {
 				AM_drawMline(&l, WALLCOLORS);
 			} else {
-				sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+				sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 				floorheightnonequal = sectors[linebacksecnum].floorheight != sectors[linefrontsecnum].floorheight;
 				ceilingheightnonequal = sectors[linebacksecnum].ceilingheight != sectors[linefrontsecnum].ceilingheight;
 				if (linespecial == 39) { // teleporters
@@ -1233,7 +1233,7 @@ AM_drawThings
 	MEMREF tRef;
 	sector_t* sectors;
 	for (i=0;i<numsectors;i++) {
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		tRef = sectors[i].thinglistRef;
 		while (tRef) {
 			t = (mobj_t*) Z_LoadBytesFromEMS(tRef);

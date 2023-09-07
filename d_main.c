@@ -636,7 +636,7 @@ void D_DoomLoop (void)
 				//SAVEDUNIT = Z_LoadBytesFromEMS(1523);
 				SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);
 				 
-				sector = ((sector_t*)Z_LoadBytesFromEMS(sectorsRef))[SAVEDUNIT->secnum];
+				sector = ((sector_t*)Z_LoadBytesFromConventional(sectorsRef))[SAVEDUNIT->secnum];
 
 				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->z >> (16-SHORTFLOORBITS), SAVEDUNIT->floorz, SAVEDUNIT->ceilingz  , SAVEDUNIT->secnum, sector.floorheight, sector.ceilingheight, 0, SAVEDUNIT->type);
 				strcat(result, result2);
@@ -1217,7 +1217,8 @@ void D_DoomMain (void)
     M_LoadDefaults ();              // load before initing other systems
 
     printf ("Z_InitEMS: Init EMS memory allocation daemon. \n");
-    Z_InitEMS ();
+	Z_InitEMS();
+	Z_InitConventional();
 
 
 	printf ("W_Init: Init WADfiles.\n");

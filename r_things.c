@@ -637,7 +637,7 @@ void R_AddSprites (int16_t secnum)
     //  subsectors during BSP building.
     // Thus we check whether its already added.
     
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 	if (sectors[secnum].validcount == validcount)
         return;         
@@ -799,7 +799,7 @@ void R_DrawPlayerSprites (void)
 	int16_t		playermosecnum;
 	playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 	playermosecnum = playermo->secnum;
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
     
     // get light level
@@ -941,7 +941,7 @@ void R_DrawSprite (vissprite_t* spr)
             scale = ds->scale2;
         }
                 
-		segs = (seg_t*)Z_LoadBytesFromEMS(segsRef);
+		segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 		if (scale < spr->scale
             || ( lowscale < spr->scale
                  && !R_PointOnSegSide (spr->gx, spr->gy, segs[ds->curlinenum].v1Offset, segs[ds->curlinenum].v2Offset) ) )

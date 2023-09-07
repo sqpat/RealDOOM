@@ -40,23 +40,26 @@ KNOWN ISSUES
 652896 32 bit
 
 TODO 
- 
- x add feature to 'fix' a page in memory. 
- x screens in conventional instead of allocced
- ~ convert fixed_t uses to fixed_t_union (then rename)
- ~ MINOR BUGS/IMPROVEMENTS
+ x profile what causes most page swaps (probably texture)
+ - NUM_BLOCKLINKS is 2000. can be way less. 
+    - block x and y are bytes. have a 2 byte thing in a list. iterate thru the list.
 
- - put all mobj in the same page if possible?
+ ~ make actor->angle  fixed_t_union for a_chase improvement
+ - move other data into external files. sprnames?
+
+ ~ conventional memory allocator
+    - test 16 bit version
+    - 
+
+ 2 compile flag for errors
+ - do the mobj locality thing
+
+ - fix stage 3 load bug?
  1 fix melee range bug
- 2 implement EMS paging
- 3 do all the 16 bit fixed union stuff to make 16 bit warnings go away
- 
- ? look into no backbuffer
- 
  5 fix the texture rotate/offset issue?
  
- x start passing around pointers instead of refs in spots where we lock a page?
-  x for example on the pspr and enemy action code
+ ? look into no backbuffer
+
 
  - make pathtraverse work mostly off 16 bit math? i think its possible
  - look into ds->scale1 and associated values to 16 bit? or small fixed, etc

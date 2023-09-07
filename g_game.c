@@ -732,7 +732,7 @@ G_CheckSpot
 	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
 
 	secnum = subsectors[subsecnum].secnum;
-	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
     an = ( ANG45 * (mthing->angle/45) ) >> ANGLETOFINESHIFT; 
     tempz.h.fracbits = 0;

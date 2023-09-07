@@ -984,7 +984,7 @@ void R_PrecacheLevel(void)
 	spriteframe_t*		spriteframes;
 	side_t* sides;
 
-	sector_t* sectors = (sector_t*) Z_LoadBytesFromEMS(sectorsRef);
+	sector_t* sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
 
 	if (demoplayback)
 		return;
