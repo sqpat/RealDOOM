@@ -215,12 +215,27 @@ boolean PIT_CheckLine (int16_t linenum)
 	uint8_t lineflags = ld->flags;
 	int16_t linespecial = ld->special;
 	int16_t lineside1 = ld->sidenum[1];
- 
+	int16_t lineright = ld->baseX;
+	int16_t lineleft = ld->baseX;
+	int16_t linetop = ld->baseY;
+	int16_t linebot = ld->baseY;
+
+	if (linedx > 0) {
+		lineright += linedx;
+	} else if (linedx < 0){
+		lineleft += linedx;
+	}
+	if (linedy > 0) {
+		linetop += linedy;
+	} else if (linedy < 0) {
+		linebot += linedy;
+	}
+
 
 	
-	if (tmbbox[BOXLEFT].h.intbits >= ld->bbox[BOXRIGHT] || tmbbox[BOXBOTTOM].h.intbits >= ld->bbox[BOXTOP]
-		|| ((tmbbox[BOXRIGHT].h.intbits < ld->bbox[BOXLEFT]) || ((tmbbox[BOXRIGHT].h.intbits == ld->bbox[BOXLEFT]   && tmbbox[BOXRIGHT].h.fracbits == 0)))
-		|| ((tmbbox[BOXTOP].h.intbits < ld->bbox[BOXBOTTOM]) || ((tmbbox[BOXTOP].h.intbits   == ld->bbox[BOXBOTTOM]) &&  tmbbox[BOXTOP].h.fracbits == 0))
+	if (tmbbox[BOXLEFT].h.intbits >= lineright || tmbbox[BOXBOTTOM].h.intbits >= linetop
+		|| ((tmbbox[BOXRIGHT].h.intbits < lineleft) || ((tmbbox[BOXRIGHT].h.intbits == lineleft   && tmbbox[BOXRIGHT].h.fracbits == 0)))
+		|| ((tmbbox[BOXTOP].h.intbits < linebot) || ((tmbbox[BOXTOP].h.intbits   == linebot) &&  tmbbox[BOXTOP].h.fracbits == 0))
 		) {
 		
  

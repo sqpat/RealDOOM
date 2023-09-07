@@ -178,11 +178,9 @@ typedef struct line_s
     //  sidenum[1] will be -1 if one sided
     int16_t	sidenum[2];			
 
-    // Neat. Another bounding box, for the extent
-    //  of the LineDef.
-	int16_t	bbox[4];
-	// int16_t baseX   can determine bounding box with just the above dx/dy and baseX/baseY. 
-	// int16_t baseY
+	//   can determine bounding box with just the above dx/dy and baseX/baseY. 
+	int16_t baseX;
+	int16_t baseY;
 
     // To aid move clipping.
     //slopetype_t	slopetype;

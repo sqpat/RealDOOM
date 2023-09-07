@@ -674,7 +674,7 @@ void R_RenderBSPNode(int16_t bspnum)
 		// Possibly divide back space.
 		//Walk back up the tree until we find
 		//a node that has a visible backspace.
-		while (!R_CheckBBox(bsp->bbox[side ^ 1]))
+		while (!R_CheckBBox(bsp->bbox[side ^ 1]))  // - only used once, is it better to inline this?
 		{
 			if (sp == 0)
 			{

@@ -520,7 +520,8 @@ void P_LoadLineDefs(int16_t lump)
 		ld->v2Offset = mldv2;
 		ld->dx = v2x - v1x;
 		ld->dy = v2y - v1y;
-
+		
+		// setting the slopetype in the high bits of v2Offset
 		if (!ld->dx) {
 			ld->v2Offset |= (ST_VERTICAL_HIGH);
 		} else if (!ld->dy) {
@@ -533,20 +534,9 @@ void P_LoadLineDefs(int16_t lump)
 			}
 		}
 
- 		if (v1x < v2x) {
-			ld->bbox[BOXLEFT] = v1x;
-			ld->bbox[BOXRIGHT] = v2x;
-		} else {
-			ld->bbox[BOXLEFT] = v2x;
-			ld->bbox[BOXRIGHT] = v1x;
-		}
-		if (v1y < v2y) {
-			ld->bbox[BOXBOTTOM] = v1y;
-			ld->bbox[BOXTOP] = v2y;
-		} else {
-			ld->bbox[BOXBOTTOM] = v2y;
-			ld->bbox[BOXTOP] = v1y;
-		}
+  
+		ld->baseX = v1x;
+		ld->baseY = v1y;
 
 		if (mldsidenum0 != -1) {
 			ld->frontsecnum = side0secnum;
