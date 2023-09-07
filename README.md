@@ -42,8 +42,8 @@ For those interested in the technical details, a quick summary of what has been 
  - there is a particular render bug with fuzz draws, it comes up twice in demo3 early on where you see a vertical fuzzy line drawn around the first spectre towards when its killed. not sure the cause of this yet.
 
 ### Long term ideas:
-<strike> - If conventional memory has enough space, add wolf3d-style conventional allocations of key variables </strike>
-<strike> - Move strings into an external file so we can load it into an ems variable at runtime and free several KB of static space. </strike>
+ - <strike> If conventional memory has enough space, add wolf3d-style conventional allocations of key variables </strike>
+ - <strike> Move strings into an external file so we can load it into an ems variable at runtime and free several KB of static space. </strike>
  - Use Z_Malloc "source hints" to store items in EMS pages locally to other fields that will be used at the same time. having pages dedicated to mobj_t allocations will probably result in much less paging.
  - Reduce backbuffer usage or add option to get rid of it (probably)
  - More aggressive use of overlays and rewriting of some files to increase the amount of memory saved by overlays
