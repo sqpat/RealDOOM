@@ -143,27 +143,34 @@ typedef struct
 //
 // Move clipping aid for LineDefs.
 //
-#define     ST_HORIZONTAL 0
-#define     ST_VERTICAL 1
-#define     ST_POSITIVE 2
-#define     ST_NEGATIVE 3
-typedef uint8_t slopetype_t;
+#define     ST_HORIZONTAL_HIGH	0x0000
+#define     ST_VERTICAL_HIGH	0x4000
+#define     ST_POSITIVE_HIGH	0x8000
+#define     ST_NEGATIVE_HIGH	0xC000
+ 
+typedef int16_t slopetype_t;
 
 
+#define		VERTEX_OFFSET_MASK		0x3FFF
+#define		LINE_VERTEX_FLAG_9		0x8000
+#define		LINE_VERTEX_SLOPETYPE	0xC000
+#define		FLAG9_SHIFT				15
+#define		SLOPETYPE_SHIFT			14
+#define		MAKE_SLOPETYPE(a)		((a & LINE_VERTEX_SLOPETYPE) >> SLOPETYPE_SHIFT)
 
 typedef struct line_s
 {
     // Vertices, from v1 to v2.
-	int16_t	v1Offset;
-	int16_t	v2Offset;
+	int16_t	v1Offset;	//highest bit is flag 9
+	int16_t	v2Offset;	//high two bits are the slopetype
 
     // Precalculated v2 - v1 for side checking.
     int16_t	dx;
     int16_t	dy;
 
     // Animation related.
-    // theres only 9 flags here, lets try to pull one out somewhere...
-	int16_t	flags;
+    // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag elsewhere now in 
+	uint8_t	flags;
     uint8_t	special;
 	uint8_t	tag;
 
@@ -174,9 +181,11 @@ typedef struct line_s
     // Neat. Another bounding box, for the extent
     //  of the LineDef.
 	int16_t	bbox[4];
+	// int16_t baseX   can determine bounding box with just the above dx/dy and baseX/baseY. 
+	// int16_t baseY
 
     // To aid move clipping.
-    slopetype_t	slopetype;
+    //slopetype_t	slopetype;
 
     // Front and back sector.
     // Note: redundant? Can be retrieved from SideDefs.

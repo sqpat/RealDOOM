@@ -269,7 +269,7 @@ P_UseSpecialLine
 	
 	uint8_t linetag = line->tag;
 	uint8_t linespecial = line->special;
-	int16_t lineflags = line->flags;
+	uint8_t lineflags = line->flags;
 	int16_t linefrontsecnum = line->frontsecnum;
 	int16_t lineside0 = line->sidenum[0];
  

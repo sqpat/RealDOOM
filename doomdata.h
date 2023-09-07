@@ -129,7 +129,8 @@ typedef struct
 #define ML_DONTDRAW		128
 
 // Set if already seen, thus drawn in automap.
-#define ML_MAPPED		256
+// NOTE - this has been moved to high bit of v1Offset
+// #define ML_MAPPED		256
 
 
 

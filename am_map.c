@@ -1078,14 +1078,16 @@ void AM_drawWalls(void)
 	sector_t* sectors;
 	boolean floorheightnonequal;
 	boolean ceilingheightnonequal;
+	int16_t mappedflag;
 	fixed_t_union temp;
 	vertex_t* vertexes;
 	temp.h.fracbits = 0;
 
     for (i=0;i<numlines;i++) {
 		lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
-		linev1Offset = lines[i].v1Offset;
-		linev2Offset = lines[i].v2Offset;
+		linev1Offset = lines[i].v1Offset & VERTEX_OFFSET_MASK;
+		linev2Offset = lines[i].v2Offset & VERTEX_OFFSET_MASK;
+		mappedflag = lines[i].v1Offset & LINE_VERTEX_FLAG_9;
 		lineflags = lines[i].flags;
 		linebacksecnum = lines[i].backsecnum;
 		linefrontsecnum = lines[i].frontsecnum;
@@ -1101,7 +1103,7 @@ void AM_drawWalls(void)
 		temp.h.intbits = vertexes[linev2Offset].y;
 		l.b.y = temp.w;
 
-		if (cheating || (lineflags & ML_MAPPED)) {
+		if (cheating || mappedflag) {
 			if ((lineflags & LINE_NEVERSEE) && !cheating) {
 				continue;
 			} if (linebacksecnum == SECNUM_NULL) {

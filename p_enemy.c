@@ -107,7 +107,7 @@ P_RecursiveSound
 	int16_t *linebuffer;
 	side_t* sides;
 	int16_t linenumber;
-	int16_t checkflags;
+	uint8_t checkflags;
 	int16_t checksidenum0;
 	int16_t checksidenum1;
 	int16_t checkfrontsecnum;

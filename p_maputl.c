@@ -167,7 +167,7 @@ P_BoxOnLineSide
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
     switch (lineslopetype) {
-      case ST_HORIZONTAL:
+      case ST_HORIZONTAL_HIGH:
 	  	temp.h.intbits = vertexes[linev1Offset].y;
 		p1 = tmbox[BOXTOP].w > temp.w;
 		p2 = tmbox[BOXBOTTOM].w > temp.w;
@@ -177,7 +177,7 @@ P_BoxOnLineSide
 		}
 		break;
 	
-      case ST_VERTICAL:
+      case ST_VERTICAL_HIGH:
 	  	temp.h.intbits = vertexes[linev1Offset].x;
 		p1 = tmbox[BOXRIGHT].w < temp.w;
 		p2 = tmbox[BOXLEFT].w < temp.w;
@@ -188,12 +188,12 @@ P_BoxOnLineSide
 		}
 		break;
 	
-      case ST_POSITIVE:
+      case ST_POSITIVE_HIGH:
 		p1 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
 		p2 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
 		break;
 	
-      case ST_NEGATIVE:
+      case ST_NEGATIVE_HIGH:
 		p1 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
 		p2 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
 		break;
@@ -696,8 +696,8 @@ PIT_AddLineIntercepts (int16_t linenum)
     divline_t		dl;
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* ld = &lines[linenum];
-	int16_t linev1Offset = ld->v1Offset;
-	int16_t linev2Offset = ld->v2Offset;
+	int16_t linev1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
+	int16_t linev2Offset = ld->v2Offset & VERTEX_OFFSET_MASK;
 	int16_t linedx = ld->dx;
 	int16_t linedy = ld->dy;
 	int16_t linebacksecnum = ld->backsecnum;

@@ -165,7 +165,7 @@ void P_LoadSegs(int16_t lump)
 	int16_t ldefothersidenum;
 	int16_t sidesecnum;
 	int16_t othersidesecnum;
-	int16_t ldefflags;
+	uint8_t ldefflags;
 	line_t* lines;
 	int16_t mlv1;
 	int16_t mlv2;
@@ -509,9 +509,11 @@ void P_LoadLineDefs(int16_t lump)
 		ld->sidenum[0] = mldsidenum0;
 		ld->sidenum[1] = mldsidenum1;
 
+		if (mldflags & 0xFF00) {
+			I_Error("found high flag set in wad : revisit!"); // remove if this doesnt happen
+		}
 
-
-		ld->flags = mldflags;
+		ld->flags = mldflags&0xff;
 		ld->special = mldspecial;
 		ld->tag = mldtag;
 		ld->v1Offset = mldv1;
@@ -520,19 +522,18 @@ void P_LoadLineDefs(int16_t lump)
 		ld->dy = v2y - v1y;
 
 		if (!ld->dx) {
-			ld->slopetype = ST_VERTICAL;
+			ld->v2Offset |= (ST_VERTICAL_HIGH);
 		} else if (!ld->dy) {
-			ld->slopetype = ST_HORIZONTAL;
+			ld->v2Offset |= (ST_HORIZONTAL_HIGH);
 		} else {
 			if (FixedDiv(ld->dy, ld->dx) > 0) {
-				ld->slopetype = ST_POSITIVE;
+				ld->v2Offset |= (ST_POSITIVE_HIGH);
 			} else {
-				ld->slopetype = ST_NEGATIVE;
+				ld->v2Offset |= (ST_NEGATIVE_HIGH);
 			}
 		}
 
-		// todo make these 16 bit too
-		if (v1x < v2x) {
+ 		if (v1x < v2x) {
 			ld->bbox[BOXLEFT] = v1x;
 			ld->bbox[BOXRIGHT] = v2x;
 		} else {
@@ -765,8 +766,8 @@ void P_GroupLines(void)
 		for (j = 0; j < numlines; j++) {
 			//lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 			li = &lines[j];
-			linev1Offset = li->v1Offset;
-			linev2Offset = li->v2Offset;
+			linev1Offset = li->v1Offset & VERTEX_OFFSET_MASK;
+			linev2Offset = li->v2Offset & VERTEX_OFFSET_MASK;
 
 			if (li->frontsecnum == i || li->backsecnum == i) {
 				linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);

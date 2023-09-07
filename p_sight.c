@@ -301,7 +301,7 @@ boolean P_CrossSubsector (int16_t subsecnum)
 	line_t* lines;
 	int16_t linev1Offset;
 	int16_t linev2Offset;
-	int16_t lineflags;
+	uint8_t lineflags;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
 	sector_t* sectors;
 	fixed_t_union temp;
@@ -326,8 +326,8 @@ boolean P_CrossSubsector (int16_t subsecnum)
 			continue;
 		}
 		line->validcount = validcount;
-		linev1Offset = line->v1Offset;
-		linev2Offset = line->v2Offset;
+		linev1Offset = line->v1Offset & VERTEX_OFFSET_MASK;
+		linev2Offset = line->v2Offset & VERTEX_OFFSET_MASK;
 		lineflags = line->flags;
 
 		vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);

@@ -496,7 +496,7 @@ R_StoreWallRange
     // mark the segment as visible for auto map
 	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 
-	(&lines[linedefOffset])->flags |= ML_MAPPED;
+	(&lines[linedefOffset])->v1Offset |= LINE_VERTEX_FLAG_9;
 
 	lineflags = (&lines[linedefOffset])->flags;
     

@@ -206,13 +206,13 @@ boolean PIT_CheckLine (int16_t linenum)
 	//fixed_t linedx; , fixed_t linedy, int16_t linev1Offset, int16_t linev2Offset, int16_t linefrontsecnum, int16_t linebacksecnum, int16_t lineside1, slopetype_t lineslopetype
 	line_t* lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
 	line_t* ld = &lines[linenum];
-	slopetype_t lineslopetype = ld->slopetype;
+	slopetype_t lineslopetype = ld->v2Offset & LINE_VERTEX_SLOPETYPE;
 	int16_t linedx = ld->dx;
 	int16_t linedy = ld->dy;
-	int16_t linev1Offset = ld->v1Offset;
+	int16_t linev1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
 	int16_t linefrontsecnum = ld->frontsecnum;
 	int16_t linebacksecnum = ld->backsecnum;
-	int16_t lineflags = ld->flags;
+	uint8_t lineflags = ld->flags;
 	int16_t linespecial = ld->special;
 	int16_t lineside1 = ld->sidenum[1];
  
@@ -645,7 +645,7 @@ P_TryMove
 			ld = &lines[spechit[numspechit]];
 			lddx = ld->dx;
 			lddy = ld->dy;
-			ldv1Offset = ld->v1Offset;
+			ldv1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
 			ldspecial = ld->special;
 
 			side = P_PointOnLineSide (newx, newy, lddx, lddy, ldv1Offset);
@@ -757,19 +757,17 @@ void P_HitSlideLine (int16_t linenum)
 
 	line_t ld = lines[linenum];
 	
-    if (ld.slopetype == ST_HORIZONTAL)
-    {
-	tmymove = 0;
-	return;
+    if ((ld.v2Offset&LINE_VERTEX_SLOPETYPE) == ST_HORIZONTAL_HIGH) {
+		tmymove = 0;
+		return;
     }
     
-    if (ld.slopetype == ST_VERTICAL)
-    {
-	tmxmove = 0;
-	return;
+    if ((ld.v2Offset&LINE_VERTEX_SLOPETYPE) == ST_VERTICAL_HIGH) {
+		tmxmove = 0;
+		return;
     }
 	slidemo = (mobj_t*) Z_LoadBytesFromEMS(slidemoRef);
-    side = P_PointOnLineSide (slidemo->x, slidemo->y, ld.dx, ld.dy, ld.v1Offset);
+    side = P_PointOnLineSide (slidemo->x, slidemo->y, ld.dx, ld.dy, ld.v1Offset & VERTEX_OFFSET_MASK);
     lineangle = R_PointToAngle2_16 (0,0, ld.dx, ld.dy);
 
     if (side == 1)
@@ -808,7 +806,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
     
     if ( ! (li.flags & ML_TWOSIDED) ) {
 		slidemo = (mobj_t*)Z_LoadBytesFromEMS(slidemoRef);
-		if (P_PointOnLineSide (slidemo->x, slidemo->y, li.dx, li.dy, li.v1Offset)) {
+		if (P_PointOnLineSide (slidemo->x, slidemo->y, li.dx, li.dy, li.v1Offset & VERTEX_OFFSET_MASK)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -1378,7 +1376,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
     side = 0;
 	usething = (mobj_t*)Z_LoadBytesFromEMS(usethingRef);
 
-	if (P_PointOnLineSide(usething->x, usething->y, line.dx, line.dy, line.v1Offset) == 1) {
+	if (P_PointOnLineSide(usething->x, usething->y, line.dx, line.dy, line.v1Offset & VERTEX_OFFSET_MASK) == 1) {
 		side = 1;
 	}
     
