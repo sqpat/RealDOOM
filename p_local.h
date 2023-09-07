@@ -34,10 +34,8 @@
 // mapblocks are used to check movement
 // against lines and things
 #define MAPBLOCKUNITS	128
-#define MAPBLOCKSIZE	(MAPBLOCKUNITS*FRACUNIT)
-#define MAPBLOCKSHIFT	(FRACBITS+7)
-#define MAPBMASK		(MAPBLOCKSIZE-1)
-#define MAPBTOFRAC		(MAPBLOCKSHIFT-FRACBITS)
+#define MAPBLOCKSIZE MAPBLOCKUNITS
+#define MAPBLOCKSHIFT	7
 
 
 // player radius for movement checking
@@ -47,13 +45,14 @@
 // the spider demon is larger,
 // but we do not have any moving sectors nearby
 #define MAXRADIUS		32*FRACUNIT
+#define MAXRADIUSNONFRAC		32
 
 #define GRAVITY		FRACUNIT
 #define MAXMOVE		(30*FRACUNIT)
 
-#define USERANGE		(64*FRACUNIT)
+#define USERANGE		(64)
 #define MELEERANGE		(64)
-#define MISSILERANGE	(32*64*FRACUNIT)
+#define MISSILERANGE	(32*64)
 
 // follow a player exlusively for 3 seconds
 #define	BASETHRESHOLD	 	100
@@ -177,10 +176,10 @@ extern divline_t	trace;
 
 boolean
 P_PathTraverse
-( fixed_t	x1,
-  fixed_t	y1,
-  fixed_t	x2,
-  fixed_t	y2,
+( fixed_t_union	x1,
+	fixed_t_union	y1,
+	fixed_t_union	x2,
+	fixed_t_union	y2,
   uint8_t		flags,
   boolean	(*trav) (intercept_t *));
 
@@ -214,17 +213,19 @@ boolean P_ChangeSector (int16_t secnum, boolean crunch);
 
 extern MEMREF	linetargetRef;	// who got hit (or NULL)
 
+#define CHAINSAW_FLAG 0x4000
+
 fixed_t
 P_AimLineAttack
 (MEMREF	t1,
   fineangle_t	angle,
-  fixed_t	distance );
+  int16_t	distance);
 
 void
 P_LineAttack
 (MEMREF	t1,
   fineangle_t	angle,
-  fixed_t	distance,
+	int16_t	distance,
   fixed_t	slope,
   int16_t		damage );
 
@@ -243,8 +244,8 @@ extern MEMREF		rejectmatrixRef;	// for fast sight rejection
 extern MEMREF          blockmaplumpRef;
 extern int16_t		bmapwidth;
 extern int16_t		bmapheight;	// in mapblocks
-extern fixed_t		bmaporgx;
-extern fixed_t		bmaporgy;	// origin of block map
+extern int16_t		bmaporgx;
+extern int16_t		bmaporgy;	// origin of block map
 
 
 

@@ -86,8 +86,8 @@ MEMREF          blockmaplumpRef;
 
 // origin of block map
 // todo can this be made 16 bit
-fixed_t         bmaporgx;
-fixed_t         bmaporgy;
+int16_t         bmaporgx;
+int16_t         bmaporgy;
 
 // for thing chains
 MEMREF        blocklinks[NUM_BLOCKLINKS];
@@ -656,10 +656,8 @@ void P_LoadBlockMap(int16_t lump)
 	for (i = 0; i < count; i++)
 		blockmaplump[i] = (blockmaplump[i]);
 	
-	temp.h.intbits = blockmaplump[0];
-	bmaporgx = temp.w;
-	temp.h.intbits = blockmaplump[1];
-	bmaporgy = temp.w;
+	bmaporgx = blockmaplump[0];
+	bmaporgy = blockmaplump[1];
 	bmapwidth = blockmaplump[2];
 	bmapheight = blockmaplump[3];
 
@@ -684,7 +682,7 @@ void P_GroupLines(void)
 	uint16_t                 total;
 	line_t*             li;
 	seg_t*              seg;
-	fixed_t             bbox[4];
+	int16_t             bbox[4];
 	int16_t             block;
 	seg_t*              segs;
 	vertex_t*			vertexes;
@@ -753,7 +751,7 @@ void P_GroupLines(void)
 
 	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	for (i = 0; i < numsectors; i++) {
-		M_ClearBox(bbox);
+		M_ClearBox16(bbox);
 		
 		sectorlinecount = sectors[i].linecount;
 
@@ -775,12 +773,8 @@ void P_GroupLines(void)
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
 				vertexes = (vertex_t*)Z_LoadBytesFromEMS(vertexesRef);
-				tempv1.h.intbits = vertexes[linev1Offset].x;
-				tempv2.h.intbits = vertexes[linev1Offset].y; 
-				M_AddToBox(bbox,  tempv1.w, tempv2.w );
-				tempv1.h.intbits = vertexes[linev2Offset].x; 
-				tempv2.h.intbits = vertexes[linev2Offset].y; 
-				M_AddToBox(bbox,  tempv1.w, tempv2.w );
+				M_AddToBox16(bbox, vertexes[linev1Offset].x, vertexes[linev1Offset].y);
+				M_AddToBox16(bbox, vertexes[linev2Offset].x, vertexes[linev2Offset].y);
 			}
 		}
 		Z_SetUnlocked(linesRef);
@@ -800,19 +794,19 @@ void P_GroupLines(void)
 		sectors[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
 
 		// adjust bounding box to map blocks
-		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUS) >> MAPBLOCKSHIFT;
+		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block >= bmapheight ? bmapheight - 1 : block;
 		sectors[i].blockbox[BOXTOP] = block;
 
-		block = (bbox[BOXBOTTOM] - bmaporgy - MAXRADIUS) >> MAPBLOCKSHIFT;
+		block = (bbox[BOXBOTTOM] - bmaporgy - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block < 0 ? 0 : block;
 		sectors[i].blockbox[BOXBOTTOM] = block;
 
-		block = (bbox[BOXRIGHT] - bmaporgx + MAXRADIUS) >> MAPBLOCKSHIFT;
+		block = (bbox[BOXRIGHT] - bmaporgx + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block >= bmapwidth ? bmapwidth - 1 : block;
 		sectors[i].blockbox[BOXRIGHT] = block;
 
-		block = (bbox[BOXLEFT] - bmaporgx - MAXRADIUS) >> MAPBLOCKSHIFT;
+		block = (bbox[BOXLEFT] - bmaporgx - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block < 0 ? 0 : block;
 		sectors[i].blockbox[BOXLEFT] = block;
 	}

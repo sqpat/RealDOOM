@@ -462,8 +462,8 @@ S_getChannel ( MEMREF originRef, sfxinfo_t*	sfxinfo ) {
 
 void S_StartSoundAtVolume
 ( MEMREF    origin_pRef,
-	fixed_t originX, 
-	fixed_t originY,
+	int16_t originX,
+	int16_t originY,
   sfxenum_t		sfx_id,
   uint8_t		volume )
 {
@@ -606,7 +606,7 @@ void S_StartSound(void*		origin, sfxenum_t		sfx_id) {
  
 
 }
-void S_StartSoundWithParams(fixed_t x, fixed_t y, sfxenum_t sfx_id) {
+void S_StartSoundWithParams(int16_t x, int16_t y, sfxenum_t sfx_id) {
 	S_StartSoundAtVolume(NULL_MEMREF, x, y, sfx_id, snd_SfxVolume);
 }
 

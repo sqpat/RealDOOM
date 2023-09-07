@@ -141,29 +141,13 @@ M_AddToBox16
     else if (y>box[BOXTOP])
 	box[BOXTOP] = y;
 }
-
-void M_ClearBox (fixed_t *box)
+ 
+void M_ClearBox16(int16_t *box)
 {
-    box[BOXTOP] = box[BOXRIGHT] = MINLONG;
-    box[BOXBOTTOM] = box[BOXLEFT] = MAXLONG;
+	box[BOXTOP] = box[BOXRIGHT] = MINSHORT;
+	box[BOXBOTTOM] = box[BOXLEFT] = MAXSHORT;
 }
-
-void
-M_AddToBox
-( fixed_t*	box,
-  fixed_t	x,
-  fixed_t	y )
-{
-    if (x<box[BOXLEFT])
-	box[BOXLEFT] = x;
-    else if (x>box[BOXRIGHT])
-	box[BOXRIGHT] = x;
-    if (y<box[BOXBOTTOM])
-	box[BOXBOTTOM] = y;
-    else if (y>box[BOXTOP])
-	box[BOXTOP] = y;
-}
-
+ 
 //
 // M_WriteFile
 //

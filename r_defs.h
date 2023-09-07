@@ -95,8 +95,8 @@ typedef	struct
 
     // origin for any sounds played by the sector
     // corresponds to fixed_t, not easy to change
-	int32_t soundorgX;
-	int32_t soundorgY;
+	int16_t soundorgX;
+	int16_t soundorgY;
 
     // if == validcount, already checked
     int16_t		validcount;

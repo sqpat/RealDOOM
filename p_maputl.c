@@ -426,12 +426,14 @@ void P_UnsetThingPosition (MEMREF thingRef)
 	MEMREF thingsnextRef = thing->snextRef;
 	MEMREF thingbprevRef = thing->bprevRef;
 	MEMREF thingbnextRef = thing->bnextRef;
-	fixed_t thingx = thing->x;
-	fixed_t thingy = thing->y;
+	fixed_t_union thingx;
+	fixed_t_union thingy;
 	int32_t thingflags = thing->flags;
 	//int16_t thingsubsecnum = thing->subsecnum;
 	int16_t thingsecnum = thing->secnum;
 	sector_t* sectors;
+	thingx.w = thing->x;
+	thingy.w = thing->y;
 
     if ( ! (thingflags & MF_NOSECTOR) ) {
 	// inert things don't need to be in blockmap?
@@ -456,7 +458,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 	
 
 
-    if ( ! (thingflags & MF_NOBLOCKMAP) ) {
+    if (! (thingflags & MF_NOBLOCKMAP) ) {
 	// inert things don't need to be in blockmap
 	// unlink from block map
 		if (thingbnextRef) {
@@ -468,8 +470,8 @@ void P_UnsetThingPosition (MEMREF thingRef)
 			changeThing = (mobj_t*)Z_LoadBytesFromEMS(thingbprevRef);
 			changeThing->bnextRef = thingbnextRef;
 		} else {
-			blockx = (thingx - bmaporgx)>>MAPBLOCKSHIFT;
-			blocky = (thingy - bmaporgy)>>MAPBLOCKSHIFT;
+			blockx = (thingx.h.intbits - bmaporgx)>> MAPBLOCKSHIFT;
+			blocky = (thingy.h.intbits - bmaporgy)>> MAPBLOCKSHIFT;
 
 			if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky <bmapheight) {
 				blocklinks[blocky*bmapwidth+blockx] = thingbnextRef;
@@ -500,7 +502,7 @@ P_SetThingPosition (MEMREF thingRef)
 	subsector_t* subsectors;
 	sector_t* sectors;
 	MEMREF oldsectorthinglist;
-
+	fixed_t_union temp;
     // link into subsector
     subsecnum = R_PointInSubsector (thing->x,thing->y);
 
@@ -539,8 +541,10 @@ P_SetThingPosition (MEMREF thingRef)
     // link into blockmap
     if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
 		// inert things don't need to be in blockmap		
-		blockx = (thing->x - bmaporgx)>>MAPBLOCKSHIFT;
-		blocky = (thing->y - bmaporgy)>>MAPBLOCKSHIFT;
+		temp.w = thing->x;
+		blockx = (temp.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
+		temp.w = thing->y;
+		blocky = (temp.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 
 		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
 			linkRef = blocklinks[blocky*bmapwidth+blockx];
@@ -639,7 +643,6 @@ P_BlockThingsIterator
 {
 	MEMREF mobjRef;
     mobj_t*		mobj;
-	int16_t i = 0;
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
 	}
@@ -647,14 +650,8 @@ P_BlockThingsIterator
 
 	for (mobjRef = blocklinks[y*bmapwidth + x]; mobjRef; mobjRef = mobj->bnextRef) {
 		// will this cause stuff to lose scope...?
-		i++;
 
 
-#ifdef LOOPCHECK
-		if (i > NUM_BLOCKLINKS) {
-			I_Error("block things caught infinite? %i ", gametic);
-		}
-#endif
 
 		if (!func(mobjRef)) {
 			 
@@ -877,10 +874,10 @@ P_TraverseIntercepts
 //
 boolean
 P_PathTraverse
-( fixed_t		x1,
-  fixed_t		y1,
-  fixed_t		x2,
-  fixed_t		y2,
+( fixed_t_union		x1,
+  fixed_t_union		y1,
+	fixed_t_union		x2,
+	fixed_t_union		y2,
   uint8_t			flags,
   boolean (*trav) (intercept_t *))
 {
@@ -894,8 +891,8 @@ P_PathTraverse
     
     fixed_t	partial;
     
-    fixed_t	xintercept;
-    fixed_t	yintercept;
+	fixed_t_union	xintercept;
+    fixed_t_union	yintercept;
     
     int16_t		mapx;
     int16_t		mapy;
@@ -904,65 +901,72 @@ P_PathTraverse
     int8_t		mapystep;
 
     int8_t		count;
+	fixed_t_union temp;
 		
     earlyout = flags & PT_EARLYOUT;
 	
     validcount++;
     intercept_p = intercepts;
-	
-    if ( ((x1-bmaporgx)&(MAPBLOCKSIZE-1)) == 0)
-		x1 += FRACUNIT;	// don't side exactly on a line
+ 
+	temp.h.intbits = bmaporgx;
+	temp.h.fracbits = 0;
+
+
+    if ( ((x1.w - temp.w)&((MAPBLOCKSIZE<<FRACBITS) -1)) == 0)
+		x1.h.intbits += 1;	// don't side exactly on a line
     
-    if ( ((y1-bmaporgy)&(MAPBLOCKSIZE-1)) == 0)
-		y1 += FRACUNIT;	// don't side exactly on a line
+	temp.h.intbits = bmaporgy;
+	if ( ((y1.w -temp.w)&((MAPBLOCKSIZE << FRACBITS) -1)) == 0)
+		y1.h.intbits += 1;	// don't side exactly on a line
 
-    trace.x.w = x1;
-    trace.y.w = y1;
-    trace.dx.w = x2 - x1;
-    trace.dy.w = y2 - y1;
+    trace.x = x1;
+    trace.y = y1;
+    trace.dx.w = x2.w - x1.w;
+    trace.dy.w = y2.w - y1.w;
+	
+    x1.h.intbits -= bmaporgx;
+    y1.h.intbits -= bmaporgy;
+    xt1 = x1.h.intbits>> MAPBLOCKSHIFT;
+    yt1 = y1.h.intbits >> MAPBLOCKSHIFT;
 
-    x1 -= bmaporgx;
-    y1 -= bmaporgy;
-    xt1 = x1>>MAPBLOCKSHIFT;
-    yt1 = y1>>MAPBLOCKSHIFT;
-
-    x2 -= bmaporgx;
-    y2 -= bmaporgy;
-    xt2 = x2>>MAPBLOCKSHIFT;
-    yt2 = y2>>MAPBLOCKSHIFT;
-
+    x2.h.intbits -= bmaporgx;
+    y2.h.intbits -= bmaporgy;
+    xt2 = x2.h.intbits >> MAPBLOCKSHIFT;
+    yt2 = y2.h.intbits >>MAPBLOCKSHIFT;
+ 
     if (xt2 > xt1) {
 		mapxstep = 1;
-		partial = FRACUNIT - ((x1>>MAPBTOFRAC)&(FRACUNIT-1));
-		ystep = FixedDiv (y2-y1,abs(x2-x1));
+		partial = FRACUNIT - ((x1.w>> MAPBLOCKSHIFT)&(0xFFFF));
+		ystep = FixedDiv (y2.w-y1.w,abs(x2.w-x1.w));
     } else if (xt2 < xt1) {
 		mapxstep = -1;
-		partial = (x1>>MAPBTOFRAC)&(FRACUNIT-1);
-		ystep = FixedDiv (y2-y1,abs(x2-x1));
+		partial = (x1.w>> MAPBLOCKSHIFT)&(0xFFFF);
+		ystep = FixedDiv (y2.w-y1.w,abs(x2.w-x1.w));
     } else {
 		mapxstep = 0;
 		partial = FRACUNIT;
 		ystep = 256*FRACUNIT;
     }	
 
-    yintercept = (y1>>MAPBTOFRAC) + FixedMul (partial, ystep);
+    yintercept.w = (y1.w>> MAPBLOCKSHIFT) + FixedMul (partial, ystep);
 
 	
     if (yt2 > yt1) {
 		mapystep = 1;
-		partial = FRACUNIT - ((y1>>MAPBTOFRAC)&(FRACUNIT-1));
-		xstep = FixedDiv (x2-x1,abs(y2-y1));
+		partial = FRACUNIT - ((y1.w>> MAPBLOCKSHIFT)&(0xFFFF));
+		xstep = FixedDiv (x2.w -x1.w,abs(y2.w -y1.w));
     } else if (yt2 < yt1) {
 		mapystep = -1;
-		partial = (y1>>MAPBTOFRAC)&(FRACUNIT-1);
-		xstep = FixedDiv (x2-x1,abs(y2-y1));
+		partial = (y1.w >> MAPBLOCKSHIFT)&(0xFFFF);
+		xstep = FixedDiv (x2.w -x1.w,abs(y2.w -y1.w));
     } else {
 		mapystep = 0;
 		partial = FRACUNIT;
 		xstep = 256*FRACUNIT;
     }	
-    xintercept = (x1>>MAPBTOFRAC) + FixedMul (partial, xstep);
-    
+    xintercept.w = (x1.w >> MAPBLOCKSHIFT) + FixedMul (partial, xstep);
+
+
     // Step through map blocks.
     // Count is present to prevent a round off error
     // from skipping the break.
@@ -983,11 +987,11 @@ P_PathTraverse
 			break;
 		}
 		
-		if ( (yintercept >> FRACBITS) == mapy) {
-			yintercept += ystep;
+		if ( (yintercept.h.intbits) == mapy) {
+			yintercept.w += ystep;
 			mapx += mapxstep;
-		} else if ( (xintercept >> FRACBITS) == mapx) {
-			xintercept += xstep;
+		} else if ( (xintercept.h.intbits) == mapx) {
+			xintercept.w += xstep;
 			mapy += mapystep;
 		}
 			

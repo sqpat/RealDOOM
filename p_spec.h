@@ -34,8 +34,10 @@ extern	ticcount_t	levelTimeCount;
 //      Define values for map objects
 #define MO_TELEPORTMAN          14
 
+#define MAX_LINE_COUNT			256
+
 // 32 adjoining sectors max!
-#define MAX_ADJOINING_SECTORS    32
+#define MAX_ADJOINING_SECTORS    256
 
 
 // at game start
@@ -235,8 +237,8 @@ typedef struct
     bwhere_e	where;
     uint8_t		btexture;
     int16_t		btimer;
-	int32_t soundorgX;
-	int32_t soundorgY;
+	int16_t soundorgX;
+	int16_t soundorgY;
 
 } button_t;
 

@@ -220,12 +220,12 @@ void P_XYMovement (MEMREF moRef)
 				mo->momx = mo->momy = 0;
 			}
 		}
-
+	
 
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	 
     } while (xmove || ymove);
-
+	
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
 
@@ -269,7 +269,7 @@ void P_XYMovement (MEMREF moRef)
 		playermo = (mobj_t*)Z_LoadBytesFromEMS(player->moRef);
 
 	}
-
+	
 
     if ((momomx > -STOPSPEED && momomx < STOPSPEED && momomy > -STOPSPEED && momomy < STOPSPEED) && 
 			(!player || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) 
@@ -288,10 +288,9 @@ void P_XYMovement (MEMREF moRef)
     } else {
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
-
 		mo->momx = FixedMul (momomx, FRICTION);
 		mo->momy = FixedMul (momomy, FRICTION);
-
+		 
 	}
 
 }
@@ -513,7 +512,7 @@ P_NightmareRespawn(MEMREF mobjRef)
     P_RemoveMobj (mobjRef);
 }
 
-
+extern int setval;
 //
 // P_MobjThinker
 //
@@ -522,11 +521,12 @@ void P_MobjThinker (MEMREF mobjRef) {
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	// momentum movement
     fixed_t_union temp;
+
 	if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
 		P_XYMovement (mobjRef);
 		mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
-	 
+
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
 			return;		// mobj was removed
@@ -1065,26 +1065,25 @@ P_SpawnPlayerMissile
 	fixed_t speed;
 	fixed_t_union temp;
 	mobj_t* source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
-    
 
     // see which target is to be aimed at
     an = source->angle >> ANGLETOFINESHIFT;
-    slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
+	slope = P_AimLineAttack (sourceRef, an, 16*64);
     
     if (!linetargetRef) {
 		an = MOD_FINE_ANGLE(an +(1<<(26- ANGLETOFINESHIFT)));
-		slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
-
+		slope = P_AimLineAttack (sourceRef, an, 16*64);
 		if (!linetargetRef) {
 			an = MOD_FINE_ANGLE(an - (2<<(26-ANGLETOFINESHIFT)));
-			slope = P_AimLineAttack (sourceRef, an, 16*64*FRACUNIT);
+			slope = P_AimLineAttack (sourceRef, an, 16*64);
 		}
-		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 		if (!linetargetRef) {
+			source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 			an = source->angle >> ANGLETOFINESHIFT;
 			slope = 0;
 		}
     }
+
 	source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
     x = source->x;
     y = source->y;

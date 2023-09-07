@@ -1020,12 +1020,15 @@ void AM_drawGrid(uint8_t color)
     fixed_t x, y;
     fixed_t start, end;
     mline_t ml;
+	fixed_t_union temp;
+	temp.h.fracbits = 0;
+	temp.h.intbits = bmaporgx;
 
     // Figure out start of vertical gridlines
     start = m_x;
 	
-	if ((start - bmaporgx) % (0x800000)) {
-		start += (0x800000) - ((start - bmaporgx) % (0x800000));
+	if ((start - temp.w) % (0x800000)) {
+		start += (0x800000) - ((start - temp.w) % (0x800000));
 	}
     end = m_x + m_w;
 
@@ -1039,9 +1042,10 @@ void AM_drawGrid(uint8_t color)
     }
 
     // Figure out start of horizontal gridlines
-    start = m_y;
-	if ((start - bmaporgy) % (0x800000)) {
-		start += (0x800000) - ((start - bmaporgy) % (0x800000));
+	temp.h.intbits = bmaporgy;
+	start = m_y;
+	if ((start - temp.w) % (0x800000)) {
+		start += (0x800000) - ((start - temp.w) % (0x800000));
 	}
     end = m_y + m_h;
 

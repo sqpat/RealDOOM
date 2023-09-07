@@ -49,8 +49,8 @@ void T_PlatRaise(MEMREF platRef)
 	int16_t platsecnum = plat->secnum;
 
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
-	int32_t sectorsoundorgX = sectors[platsecnum].soundorgX;
-	int32_t sectorsoundorgY = sectors[platsecnum].soundorgY;
+	int16_t sectorsoundorgX = sectors[platsecnum].soundorgX;
+	int16_t sectorsoundorgY = sectors[platsecnum].soundorgY;
 	short_height_t sectorfloorheight = sectors[platsecnum].floorheight;
 
 	plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
@@ -139,8 +139,8 @@ EV_DoPlat
 	side_t* sides;
 	int16_t side0secnum;
 	short_height_t specialheight;
-	int32_t sectorsoundorgX;
-	int32_t sectorsoundorgY;
+	int16_t sectorsoundorgX;
+	int16_t sectorsoundorgY;
 	short_height_t sectorfloorheight;
 	sector_t* sectors;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];

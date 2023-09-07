@@ -503,8 +503,8 @@ A_Punch
 
     angle = playermo->angle >> ANGLETOFINESHIFT;
     angle = MOD_FINE_ANGLE(angle + (P_Random()-P_Random())>>(1));
-    slope = P_AimLineAttack (players.moRef, angle, MELEERANGE * FRACUNIT);
-    P_LineAttack (players.moRef, angle, MELEERANGE * FRACUNIT, slope, damage);
+    slope = P_AimLineAttack (players.moRef, angle, MELEERANGE);
+    P_LineAttack (players.moRef, angle, MELEERANGE , slope, damage);
 
     // turn to face target
     if (linetargetRef)
@@ -538,8 +538,8 @@ A_Saw
     angle = MOD_FINE_ANGLE( + (P_Random()-P_Random())>>(1));
     
     // use meleerange + 1 se the puff doesn't skip the flash
-    slope = P_AimLineAttack (players.moRef, angle, (MELEERANGE * FRACUNIT) +1);
-    P_LineAttack (players.moRef, angle, (MELEERANGE*FRACUNIT)+1, slope, damage);
+    slope = P_AimLineAttack (players.moRef, angle, MELEERANGE + CHAINSAW_FLAG);
+    P_LineAttack (players.moRef, angle, MELEERANGE + CHAINSAW_FLAG, slope, damage);
 
     if (!linetargetRef)
     {
@@ -630,14 +630,14 @@ void P_BulletSlope (MEMREF moRef)
 	mobj_t*	mo = (mobj_t*) Z_LoadBytesFromEMS(moRef);
     // see which target is to be aimed at
     an = mo->angle >> ANGLETOFINESHIFT;
-    bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
+    bulletslope = P_AimLineAttack (moRef, an, 16*64);
 
     if (!linetargetRef) {
 		an =  MOD_FINE_ANGLE(an +(1<<(26-ANGLETOFINESHIFT)));
-		bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
+		bulletslope = P_AimLineAttack (moRef, an, 16*64);
 		if (!linetargetRef) {
 			an = MOD_FINE_ANGLE(an- (2<<(26-ANGLETOFINESHIFT)));
-			bulletslope = P_AimLineAttack (moRef, an, 16*64*FRACUNIT);
+			bulletslope = P_AimLineAttack (moRef, an, 16*64);
 		}
     }
 }
@@ -751,7 +751,7 @@ A_FireShotgun2
 	angle = MOD_FINE_ANGLE( angle + ((P_Random()-P_Random())<<(19-ANGLETOFINESHIFT)));
 	P_LineAttack (players.moRef,
 		      angle,
-		      MISSILERANGE,
+		MISSILERANGE,
 		      bulletslope + ((P_Random()-P_Random())<<5), damage);
     }
 }
@@ -823,7 +823,7 @@ void A_BFGSpray (mobj_t* mo)
 
 		// mo->target is the originator ()
 		//  of the missile
-		P_AimLineAttack (mo->targetRef, an, 16*64*FRACUNIT);
+		P_AimLineAttack (mo->targetRef, an, 16*64);
 
 		if (!linetargetRef)
 			continue;

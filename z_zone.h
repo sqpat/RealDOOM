@@ -88,6 +88,8 @@
 
 #define ALLOC_TYPE_STRINGS 30
 
+// most paged in order:
+// as expected, we need to find a way to get lines segs verts sectors nodes into conventional to greatly improve perf.
 //  lines, segments vertexes Sectors, nodes, cachelump(wad),  levspec (mobj)  ,  sprite, spritedefs
 
 #define PAGE_LOCKED true

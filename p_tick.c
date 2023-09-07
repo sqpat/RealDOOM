@@ -131,7 +131,7 @@ void P_RemoveThinker (THINKERREF thinkerRef)
 
  
 
-
+int setval = 0;
 //
 // P_RunThinkers
 //
@@ -139,7 +139,7 @@ void P_RunThinkers (void)
 {
     THINKERREF	currentthinker;
 	void* arg;
-	//int16_t i = 0;
+	int16_t i = 0;
 	vldoor_t* door;
 	THINKERREF	currentthinker2;
 	currentthinker = thinkerlist[0].next;
@@ -155,7 +155,16 @@ void P_RunThinkers (void)
 			thinkerlist[currentthinker].prev = MAX_THINKERS;
 
 		} else {
-			
+			if (gametic == 1773 && i == 216) {
+				// 37 214   44 218   46 219   216 224
+				//SAVEDUNIT = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+				SAVEDUNIT = (mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
+				//I_Error("error %i %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy, thinkerlist[currentthinker].functionType);
+				// 454 122 157
+				//setval = 1;
+
+			}
+		
 			if (thinkerlist[currentthinker].functionType) {
 
 				switch (thinkerlist[currentthinker].functionType) {
@@ -194,6 +203,8 @@ void P_RunThinkers (void)
 
 				}
 
+			
+
 // i will need this later to help me debug inevitible doom 2 content memleaks
 /*
 				if (gametic == 619 && i == 0) {
@@ -201,7 +212,6 @@ void P_RunThinkers (void)
 					//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
 					// 454 122 157
 
-					//setval = 1;
 
 				}
 
@@ -221,26 +231,15 @@ void P_RunThinkers (void)
 				
 
 				 
-				i++;
 
 				*/
+				i++;
 			}
 
 		}
 		currentthinker = thinkerlist[currentthinker].next;
     }
- 
-
-	if (gametic == 1050) {
-		//SAVEDUNIT = Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
-		//SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);
-
-		// 1 230 122
-
-		//I_Error("error %i %i %i", gametic, i, prndindex);
-
-		//setval = 0;
-	}
+  
 }
 
 

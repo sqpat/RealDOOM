@@ -1395,40 +1395,38 @@ void P_SpawnSpecials (void)
 
 	//I_Error("sector: %p %i", sectors, numsectors);
 
+	sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 	for (i=0 ; i<numsectors ; i++) {
-		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (!sectors[i].special)
 			continue;
-		//I_Error("stopping");
 
-		switch (sectors[i].special)
-		{
+		switch (sectors[i].special) {
 		  case 1:
 			// FLICKERING LIGHTS
-			P_SpawnLightFlash (i);
-			break;
+			  P_SpawnLightFlash (i);
+			  break;
 
 		  case 2:
 			// STROBE FAST
-			P_SpawnStrobeFlash(i,FASTDARK,0);
-			break;
+			  P_SpawnStrobeFlash(i,FASTDARK,0);
+			  break;
 	    
 		  case 3:
 			// STROBE SLOW
-			P_SpawnStrobeFlash(i,SLOWDARK,0);
-			break;
+			  P_SpawnStrobeFlash(i,SLOWDARK,0);
+			  break;
 	    
 		  case 4:
 			// STROBE FAST/DEATH SLIME
-			P_SpawnStrobeFlash(i,FASTDARK,0);
+			  P_SpawnStrobeFlash(i,FASTDARK,0);
 			sectors[i].special = 4;
 			break;
 	    
 		  case 8:
 			// GLOWING LIGHT
-			P_SpawnGlowingLight(i);
-			break;
+			  P_SpawnGlowingLight(i);
+			  break;
 		  case 9:
 			// SECRET SECTOR
 			totalsecret++;
@@ -1436,31 +1434,32 @@ void P_SpawnSpecials (void)
 	    
 		  case 10:
 			// DOOR CLOSE IN 30 SECONDS
-			P_SpawnDoorCloseIn30 (i);
+			  P_SpawnDoorCloseIn30 (i);
 			break;
 	    
 		  case 12:
 			// SYNC STROBE SLOW
-			P_SpawnStrobeFlash (i, SLOWDARK, 1);
+			  P_SpawnStrobeFlash (i, SLOWDARK, 1);
 			break;
 
 		  case 13:
 			// SYNC STROBE FAST
-			P_SpawnStrobeFlash (i, FASTDARK, 1);
+			  P_SpawnStrobeFlash (i, FASTDARK, 1);
 			break;
 
 		  case 14:
 			// DOOR RAISE IN 5 MINUTES
-			P_SpawnDoorRaiseIn5Mins (i);
+			  P_SpawnDoorRaiseIn5Mins (i);
 			break;
 	    
 		  case 17:
-			P_SpawnFireFlicker(i);
+			  P_SpawnFireFlicker(i);
 			break;
 		}
-    }
-	
-    
+		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
+	}
+
+
     //	Init line EFFECTs
     numlinespecials = 0;
 	lines = (line_t*)Z_LoadBytesFromEMS(linesRef);
@@ -1475,7 +1474,7 @@ void P_SpawnSpecials (void)
 		}
     }
 
-    
+
     //	Init other misc stuff
     for (i = 0;i < MAXCEILINGS;i++)
 		activeceilings[i] = NULL_MEMREF;

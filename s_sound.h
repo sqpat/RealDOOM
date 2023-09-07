@@ -59,7 +59,7 @@ S_StartSound
   sfxenum_t		sound_id );
 
 void
-S_StartSoundWithParams(fixed_t x, fixed_t y, sfxenum_t sound_id);
+S_StartSoundWithParams(int16_t x, int16_t y, sfxenum_t sound_id);
 
 
 
@@ -67,8 +67,8 @@ S_StartSoundWithParams(fixed_t x, fixed_t y, sfxenum_t sound_id);
 void
 S_StartSoundAtVolume
 ( MEMREF		originRef,
-	fixed_t x,
-	fixed_t y,
+	int16_t x,
+	int16_t y,
   sfxenum_t		sound_id,
   uint8_t		volume );
 

@@ -1399,18 +1399,21 @@ void A_VileChase (MEMREF actorRef)
     int16_t			by;
 
     mobjinfo_t*		info;
-    MEMREF		temp;
+	fixed_t_union   coord;
+	MEMREF		temp;
 	mobj_t*	corpsehit;
 	mobj_t* actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
+	coord.h.fracbits = 0;
     if (actor->movedir != DI_NODIR) {
 		// check for corpses to raise
 		viletryx = actor->x + actor->info->speed*xspeed[actor->movedir];
 		viletryy = actor->y + actor->info->speed*yspeed[actor->movedir];
-
-		xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-		xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
-		yl = (viletryy - bmaporgy - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-		yh = (viletryy - bmaporgy + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		coord.h.intbits = bmaporgx;
+		xl = (viletryx - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		xh = (viletryx - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		coord.h.intbits = bmaporgy;
+		yl = (viletryy - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		yh = (viletryy - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
 	
 		vileobj = actor;
 		for (bx=xl ; bx<=xh ; bx++)

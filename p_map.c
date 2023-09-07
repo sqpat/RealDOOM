@@ -162,10 +162,10 @@ P_TeleportMove
     numspechit = 0;
     
     // stomp on any things contacted
-    xl = (tmbbox[BOXLEFT].w - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
-    xh = (tmbbox[BOXRIGHT].w - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
-    yl = (tmbbox[BOXBOTTOM].w - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
-    yh = (tmbbox[BOXTOP].w - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
+    xl = (tmbbox[BOXLEFT].h.intbits - bmaporgx - MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
+    xh = (tmbbox[BOXRIGHT].h.intbits - bmaporgx + MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
+    yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
+    yh = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
 
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
@@ -514,10 +514,10 @@ P_CheckPosition
     // because mobj_ts are grouped into mapblocks
     // based on their origin point, and can overlap
     // into adjacent blocks by up to MAXRADIUS units.
-    xl = (tmbbox[BOXLEFT].w - bmaporgx - MAXRADIUS)>>MAPBLOCKSHIFT;
-    xh = (tmbbox[BOXRIGHT].w - bmaporgx + MAXRADIUS)>>MAPBLOCKSHIFT;
-    yl = (tmbbox[BOXBOTTOM].w - bmaporgy - MAXRADIUS)>>MAPBLOCKSHIFT;
-    yh = (tmbbox[BOXTOP].w - bmaporgy + MAXRADIUS)>>MAPBLOCKSHIFT;
+ 	xl = (tmbbox[BOXLEFT].h.intbits - bmaporgx - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
+	xh = (tmbbox[BOXRIGHT].h.intbits - bmaporgx + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
+	yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
+	yh = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 
 
 
@@ -533,11 +533,10 @@ P_CheckPosition
 	}
 	
 	// check lines
-    xl = (tmbbox[BOXLEFT].w - bmaporgx)>>MAPBLOCKSHIFT;
-    xh = (tmbbox[BOXRIGHT].w - bmaporgx)>>MAPBLOCKSHIFT;
-    yl = (tmbbox[BOXBOTTOM].w - bmaporgy)>>MAPBLOCKSHIFT;
-    yh = (tmbbox[BOXTOP].w - bmaporgy)>>MAPBLOCKSHIFT;
-
+	xl = (tmbbox[BOXLEFT].h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
+	xh = (tmbbox[BOXRIGHT].h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
+	yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
+	yh = (tmbbox[BOXTOP].h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
 
@@ -853,7 +852,6 @@ boolean PTR_SlideTraverse (intercept_t* in)
 }
 
 
-
 //
 // P_SlideMove
 // The momx / momy move is bad, so try to slide
@@ -874,6 +872,9 @@ void P_SlideMove (MEMREF moRef)
     int16_t			hitcount;
 	mobj_t* mo;
 	fixed_t_union   temp;
+	fixed_t_union   temp2;
+	fixed_t_union   temp3;
+	fixed_t_union   temp4;
 		
     slidemoRef = moRef;
     hitcount = 0;
@@ -911,17 +912,27 @@ void P_SlideMove (MEMREF moRef)
 		
     bestslidefrac = FRACUNIT+1;
 	
-	//todo we can probably rewrite this without re-fetching mo every time? do the variabels chane?
+ 
+	
+	temp.w = leadx.w + mo->momx;
+	temp2.w = leady.w + mo->momy;
+	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	temp2.w = leady.w + mo->momy;
+	temp3.w = trailx.w + mo->momx;
+	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
+	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	temp.w = leadx.w + mo->momx;
+	temp4.w = traily.w + mo->momy;
 
-    P_PathTraverse ( leadx.w, leady.w, leadx.w+mo->momx, leady.w+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
- 	P_PathTraverse ( trailx.w, leady.w, trailx.w+mo->momx, leady.w+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
- 	P_PathTraverse ( leadx.w, traily.w, leadx.w+mo->momx, traily.w+mo->momy, PT_ADDLINES, PTR_SlideTraverse );
+	P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
+
+
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
  
     // move up to the wall
-    if (bestslidefrac == FRACUNIT+1) {
+
+	if (bestslidefrac == FRACUNIT+1) {
 	// the move most have hit the middle, so stairstep
       stairstep:
 		mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
@@ -931,8 +942,14 @@ void P_SlideMove (MEMREF moRef)
  
 			P_TryMove(moRef, mo->x + mo->momx, mo->y);
 		}
+
+		
+
 		return;
     }
+
+	
+
 
     // fudge a bit to make sure it doesn't hit
     bestslidefrac -= 0x800;	
@@ -945,6 +962,8 @@ void P_SlideMove (MEMREF moRef)
 		}
     }
 
+ 
+
     // Now continue along the wall.
     // First calculate remainder.
     bestslidefrac = FRACUNIT-(bestslidefrac+0x800);
@@ -952,8 +971,9 @@ void P_SlideMove (MEMREF moRef)
     if (bestslidefrac > FRACUNIT)
 		bestslidefrac = FRACUNIT;
     
-    if (bestslidefrac <= 0)
+	if (bestslidefrac <= 0) {
 		return;
+	}
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 
     tmxmove = FixedMul (mo->momx, bestslidefrac);
@@ -962,7 +982,6 @@ void P_SlideMove (MEMREF moRef)
     P_HitSlideLine (bestslidelinenum);	// clip the moves
 
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
- 
 
     mo->momx = tmxmove;
     mo->momy = tmymove;
@@ -984,7 +1003,7 @@ MEMREF		shootthingRef;
 fixed_t		shootz;	
 
 int16_t		la_damage;
-fixed_t		attackrange;
+fixed_t_union		attackrange;
 
 fixed_t		aimslope;
 
@@ -1026,7 +1045,7 @@ PTR_AimTraverse (intercept_t* in)
 		if (openbottom >= opentop)
 			return false;		// stop
 	
-		dist = FixedMul (attackrange, in->frac);
+		dist = FixedMul (attackrange.w, in->frac);
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		temp.h.fracbits = 0;
@@ -1063,7 +1082,7 @@ PTR_AimTraverse (intercept_t* in)
 		return true;			// corpse or something
 
     // check angles to see if the thing can be aimed at
-    dist = FixedMul (attackrange, in->frac);
+    dist = FixedMul (attackrange.w, in->frac);
     thingtopslope = FixedDiv (th->z+th->height.w - shootz , dist);
 
     if (thingtopslope < bottomslope)
@@ -1126,7 +1145,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		// crosses a two sided line
 		P_LineOpening(li.sidenum[1], li.frontsecnum, li.backsecnum);
 		
-		dist = FixedMul (attackrange, in->frac);
+		dist = FixedMul (attackrange.w, in->frac);
 		sectors = (sector_t*)Z_LoadBytesFromEMS(sectorsRef);
 
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
@@ -1152,10 +1171,10 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		// hit line
 		  hitline:
 		// position a bit closer
-		frac = in->frac - FixedDiv (4*FRACUNIT,attackrange);
+		frac = in->frac - FixedDiv (4*FRACUNIT, attackrange.w); // todo can we use intbits and remove fracunit?
 		x = trace.x.w + FixedMul (trace.dx.w, frac);
 		y = trace.y.w + FixedMul (trace.dy.w, frac);
-		z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
+		z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange.w));
 
 
 
@@ -1193,7 +1212,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	}
 
     // check angles to see if the thing can be aimed at
-    dist = FixedMul (attackrange, in->frac);
+    dist = FixedMul (attackrange.w, in->frac);
     thingtopslope = FixedDiv (th->z+th->height.w - shootz , dist);
 
 	
@@ -1209,11 +1228,11 @@ boolean PTR_ShootTraverse (intercept_t* in)
     
     // hit thing
     // position a bit closer
-    frac = in->frac - FixedDiv (10*FRACUNIT,attackrange);
+    frac = in->frac - FixedDiv (10*FRACUNIT, attackrange.w); // todo can we use intbits and remove fracunit?
 
     x = trace.x.w + FixedMul (trace.dx.w, frac);
     y = trace.y.w + FixedMul (trace.dy.w, frac);
-    z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange));
+    z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange.w));
 
     // Spawn bullet puffs or blod spots,
     // depending on target type.
@@ -1230,7 +1249,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	
 }
 
-
+extern int setval;
 //
 // P_AimLineAttack
 //
@@ -1238,16 +1257,25 @@ fixed_t
 P_AimLineAttack
 ( MEMREF	t1Ref,
   fineangle_t	angle,
-  fixed_t	distance )
+  int16_t	distance16
+	)
 {
-    fixed_t	x2;
-    fixed_t	y2;
+    fixed_t_union	x2;
+	fixed_t_union	y2;
+	fixed_t_union	x;
+	fixed_t_union	y;
 	fixed_t_union t1height;
+	fixed_t_union distance;
+	boolean ischainsaw = distance16 & CHAINSAW_FLAG;
+	
 	mobj_t* t1 = (mobj_t*) Z_LoadBytesFromEMS(t1Ref);
     shootthingRef = t1Ref;
+	distance16 &= (CHAINSAW_FLAG-1);
+	x.w = t1->x;
+	y.w = t1->y;
     
-    x2 = t1->x + (distance>>FRACBITS)*finecosine(angle);
-    y2 = t1->y + (distance>>FRACBITS)*finesine(angle);
+    x2.w = x.w + ((int32_t)distance16)*finecosine(angle);
+    y2.w = y.w + ((int32_t)distance16)*finesine(angle);
 	t1height.h.fracbits = 0;
 	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
     shootz = t1->z + t1height.w;
@@ -1256,10 +1284,13 @@ P_AimLineAttack
     topslope = 100*FRACUNIT/160;	
     bottomslope = -100*FRACUNIT/160;
     
+	distance.h.fracbits = ischainsaw ? 1 : 0;
+	distance.h.intbits = distance16;
     attackrange = distance;
     linetargetRef = NULL_MEMREF;
 	
-    P_PathTraverse ( t1->x, t1->y,
+ 
+    P_PathTraverse ( x, y,
 		     x2, y2,
 		     PT_ADDLINES|PT_ADDTHINGS,
 		     PTR_AimTraverse );
@@ -1280,28 +1311,37 @@ void
 P_LineAttack
 ( MEMREF	t1Ref,
   fineangle_t	angle,
-  fixed_t	distance,
+	int16_t	distance16,
   fixed_t	slope,
   int16_t		damage )
 {
-    fixed_t	x2;
-    fixed_t	y2;
+    fixed_t_union	x2;
+	fixed_t_union	y2;
 	mobj_t* t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
+	fixed_t_union	x;
+	fixed_t_union	y;
+	fixed_t_union	distance;
+	boolean ischainsaw = distance16 & CHAINSAW_FLAG; //sigh... look into why this needs to be here, remove if at all possible - sq
 	fixed_t_union t1height;
-    shootthingRef = t1Ref;
+	x.w = t1->x;
+	y.w = t1->y;
+	distance16 ^= CHAINSAW_FLAG;
+	shootthingRef = t1Ref;
     la_damage = damage;
-    x2 = t1->x + (distance>>FRACBITS)*finecosine(angle);
-    y2 = t1->y + (distance>>FRACBITS)*finesine(angle);
+    x2.w = x.w + (distance16)*finecosine(angle);
+    y2.w = y.w + (distance16)*finesine(angle);
 
 	t1height.h.fracbits = 0;
 	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
 	shootz = t1->z + t1height.w;
 
-
-    attackrange = distance;
+	distance.h.intbits = distance16;
+	distance.h.fracbits = ischainsaw ? 1 : 0;
+	attackrange = distance;
     aimslope = slope;
-		
-    P_PathTraverse ( t1->x, t1->y,
+	
+
+    P_PathTraverse ( x, y,
 		     x2, y2,
 		     PT_ADDLINES|PT_ADDTHINGS,
 		     PTR_ShootTraverse );
@@ -1357,10 +1397,10 @@ boolean	PTR_UseTraverse (intercept_t* in)
 void P_UseLines () 
 {
     uint16_t angle;
-    fixed_t	x1;
-    fixed_t	y1;
-    fixed_t	x2;
-    fixed_t	y2;
+    fixed_t_union	x1;
+	fixed_t_union	y1;
+	fixed_t_union	x2;
+	fixed_t_union	y2;
 	mobj_t* usething;
 
     usethingRef = players.moRef;
@@ -1368,10 +1408,10 @@ void P_UseLines ()
 		
     angle = usething->angle >> ANGLETOFINESHIFT;
 
-    x1 = usething->x;
-    y1 = usething->y;
-    x2 = x1 + (USERANGE>>FRACBITS)*finecosine(angle);
-    y2 = y1 + (USERANGE>>FRACBITS)*finesine(angle);
+    x1.w = usething->x;
+    y1.w = usething->y;
+    x2.w = x1.w + (USERANGE)*finecosine(angle);
+    y2.w = y1.w + (USERANGE)*finesine(angle);
 	
     P_PathTraverse ( x1, y1, x2, y2, PT_ADDLINES, PTR_UseTraverse );
 }
@@ -1454,15 +1494,14 @@ P_RadiusAttack
 	int16_t		xh;
 	int16_t		yl;
 	int16_t		yh;
-
-	fixed_t	dist;
+	fixed_t_union pos;
 	mobj_t* spot = (mobj_t *)Z_LoadBytesFromEMS(spotRef);
-
-	dist = (damage + MAXRADIUS) << FRACBITS;
-	yh = (spot->y + dist - bmaporgy) >> MAPBLOCKSHIFT;
-	yl = (spot->y - dist - bmaporgy) >> MAPBLOCKSHIFT;
-	xh = (spot->x + dist - bmaporgx) >> MAPBLOCKSHIFT;
-	xl = (spot->x - dist - bmaporgx) >> MAPBLOCKSHIFT;
+	pos.w = spot->y;
+	yh = (pos.h.intbits + damage - bmaporgy) >> MAPBLOCKSHIFT;
+	yl = (pos.h.intbits - damage - bmaporgy) >> MAPBLOCKSHIFT;
+	pos.w = spot->x;
+	xh = (pos.h.intbits + damage - bmaporgx) >> MAPBLOCKSHIFT;
+	xl = (pos.h.intbits - damage - bmaporgx) >> MAPBLOCKSHIFT;
 	bombspotRef = spotRef;
 	bombsourceRef = sourceRef;
 	bombdamage = damage;
