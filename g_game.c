@@ -1039,7 +1039,7 @@ void G_DoSaveGame (void)
     description = savedescription; 
 
 	savebuffer = (byte*)Z_LoadBytesFromEMS(savebufferRef);
-    save_p = savebuffer = screen1+0x4000; 
+    save_p = savebuffer = screen0+0x4000; 
          
     memcpy (save_p, description, SAVESTRINGSIZE); 
     save_p += SAVESTRINGSIZE; 

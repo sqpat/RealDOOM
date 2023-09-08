@@ -489,7 +489,7 @@ void R_FillBackScreen (void)
     
     srcRef = W_CacheLumpNameEMS (name, PU_CACHE); 
 	src = Z_LoadBytesFromEMS(srcRef);
-	dest = screen1; 
+	dest = screen0; 
 	 
     for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++) 
     { 
@@ -509,43 +509,43 @@ void R_FillBackScreen (void)
     patch = W_CacheLumpNameEMSAsPatch ("brdr_t",PU_CACHE);
 
 	for (x = 0; x < scaledviewwidth; x += 8) {
-		V_DrawPatch(viewwindowx + x, viewwindowy - 8, 1, patch);
+		V_DrawPatch(viewwindowx + x, viewwindowy - 8, 0, patch);
 	}
 	patch = W_CacheLumpNameEMSAsPatch("brdr_b",PU_CACHE);
 
 	for (x = 0; x < scaledviewwidth; x += 8) {
-		V_DrawPatch(viewwindowx + x, viewwindowy + viewheight, 1, patch);
+		V_DrawPatch(viewwindowx + x, viewwindowy + viewheight, 0, patch);
 	}
 	patch = W_CacheLumpNameEMSAsPatch("brdr_l",PU_CACHE);
 	for (y = 0; y < viewheight; y += 8) {
-		V_DrawPatch(viewwindowx - 8, viewwindowy + y, 1, patch);
+		V_DrawPatch(viewwindowx - 8, viewwindowy + y, 0, patch);
 	}
     patch = W_CacheLumpNameEMSAsPatch("brdr_r",PU_CACHE);
 
 	for (y = 0; y < viewheight; y += 8) {
-		V_DrawPatch(viewwindowx + scaledviewwidth, viewwindowy + y, 1, patch);
+		V_DrawPatch(viewwindowx + scaledviewwidth, viewwindowy + y, 0, patch);
 	}
 
 
     // Draw beveled edge. 
     V_DrawPatch (viewwindowx-8,
 		 viewwindowy-8,
-		 1,
+		 0,
 		W_CacheLumpNameEMSAsPatch("brdr_tl",PU_CACHE));
     
     V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy-8,
-		 1,
+		 0,
 		W_CacheLumpNameEMSAsPatch("brdr_tr",PU_CACHE));
     
     V_DrawPatch (viewwindowx-8,
 		 viewwindowy+viewheight,
-		 1,
+		 0,
 		W_CacheLumpNameEMSAsPatch("brdr_bl",PU_CACHE));
     
     V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy+viewheight,
-		 1,
+		 0,
 		W_CacheLumpNameEMSAsPatch("brdr_br",PU_CACHE));
 
     for (i = 0; i < 4; i++)
@@ -554,7 +554,7 @@ void R_FillBackScreen (void)
         outp(SC_INDEX + 1, 1 << i);
 
         dest = (byte*)0xac000;
-        src = screen1 + i;
+        src = screen0 + i;
         do
         {
             *dest++ = *src;

@@ -69,12 +69,8 @@ enum { VERSION =  109 };
 // Error checking. recommended ON during development. however, turning this off makes the binary like 10-12k smaller
 #define CHECK_FOR_ERRORS
 
-// Avoid 64k memory usage by backbuffer if off
-//#define USE_BACKBUFFER
-
-
 // Allocates backbuffers statically
-//#define STATIC_ALLOCATED_SCREENS
+#define STATIC_ALLOCATED_SCREENS
 
 //Show page count by source hint on timedemo finish
 //#define PROFILE_PAGE_COUNT

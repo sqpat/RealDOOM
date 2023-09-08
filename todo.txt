@@ -44,16 +44,21 @@ TODO
  ~ make actor->angle  fixed_t_union for a_chase improvement
  - move other data into external files. sprnames?
 
- 1 look into no backbuffer
+ ~ look into no backbuffer
+   - works but intermission is jank
+     - but it was always jank because titlepics not working. fix that first..
+ 
  ~ conventional memory allocator
     ~ test 16 bit version
     x implement 2nd conventional pool
     3 implement 'smart' allocator in setup level
+	? any other small items that can go in there?
 
- - make all the PIT_blah etc work off switch instead of function poiners? Does it compile smaller?
-
+ 0 make all the PIT_blah etc work off switch instead of function poiners? Does it compile smaller for 16 bit?
  1 fix melee range bug
- 2 do the mobj locality thing
+ 2 fix titlepic loading
+ 3 do the mobj locality thing
+   - or consider if it can fit in conventional? (later)
 
  - probably remove zoom in am_map if it makes a decent difference in code size and complexity
 

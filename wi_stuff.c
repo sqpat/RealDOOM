@@ -373,11 +373,11 @@ MEMREF				lnamesRef;
 
 void WI_slamBackground(void)
 {
-    memcpy(screen0, screen1, SCREENWIDTH * SCREENHEIGHT);
+    //memcpy(screen0, screen1, SCREENWIDTH * SCREENHEIGHT);
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 }
 
- 
+
 
 // Draws "<Levelname> Finished!"
 void WI_drawLF(void)

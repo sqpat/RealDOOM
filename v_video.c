@@ -36,7 +36,7 @@
 
 #ifdef STATIC_ALLOCATED_SCREENS
 byte				screen0[1L*SCREENWIDTH*SCREENHEIGHT];
-byte				screen1[1L*SCREENWIDTH*SCREENHEIGHT];
+//byte				screen1[1L*SCREENWIDTH*SCREENHEIGHT];
 
 	#ifdef SKIPWIPE
 	byte* screen2;
@@ -49,7 +49,7 @@ byte				screen1[1L*SCREENWIDTH*SCREENHEIGHT];
 
 #else
 byte*				screen0;
-byte*				screen1;
+//byte*				screen1;
 byte*				screen2;
 byte*				screen3;
 
@@ -243,10 +243,8 @@ V_DrawPatch
 
 	switch (scrn) {
 		case 0:
-			desttop = screen0 + offset;
-			break;
 		case 1:
-			desttop = screen1 + offset;
+			desttop = screen0 + offset;
 			break;
 		case 2:
 			desttop = screen2 + offset;
@@ -460,14 +458,14 @@ void V_Init (void)
 
 
 	#ifdef SKIPWIPE
-		base = I_AllocLow(2L*SCREENWIDTH*SCREENHEIGHT);
+		base = I_AllocLow(1L*SCREENWIDTH*SCREENHEIGHT);
 		screen0 = base;
-		screen1 = base + 1L*SCREENWIDTH * SCREENHEIGHT;
+//		screen1 = base + 1L*SCREENWIDTH * SCREENHEIGHT;
 
 	#else
 		base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 4);
 		screen0 = base;
-		screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
+//		screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
 		screen2 = base + SCREENWIDTH * SCREENHEIGHT * 2;
 		screen3 = base + SCREENWIDTH * SCREENHEIGHT * 3;
 	#endif
