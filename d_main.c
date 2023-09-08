@@ -965,6 +965,7 @@ void D_DoomMain(void)
 	respawnparm = M_CheckParm("-respawn");
 	fastparm = M_CheckParm("-fast");
 
+#ifdef DEBUG_PRINTING
 
 	if (!commercial)
 	{
@@ -1023,7 +1024,7 @@ void D_DoomMain(void)
 	D_DrawTitle(title, FGCOLOR, BGCOLOR);
 
 	printf("\nP_Init: Checking cmd-line parameters...\n");
-
+#endif
 
 
 	// turbo option
@@ -1039,7 +1040,9 @@ void D_DoomMain(void)
 			scale = 10;
 		if (scale > 400)
 			scale = 400;
+#ifdef DEBUG_PRINTING
 		printf("turbo scale: %i%%\n", scale);
+#endif
 		forwardmove[0] = forwardmove[0] * scale / 100;
 		forwardmove[1] = forwardmove[1] * scale / 100;
 		sidemove[0] = sidemove[0] * scale / 100;
@@ -1066,7 +1069,9 @@ void D_DoomMain(void)
 	{
 		sprintf(file, "%s.lmp", myargv[p + 1]);
 		D_AddFile(file);
+#ifdef DEBUG_PRINTING
 		printf("Playing demo %s.lmp.\n", myargv[p + 1]);
+#endif
 	}
 
 	// get skill / episode / map from parms
@@ -1106,22 +1111,33 @@ void D_DoomMain(void)
 	}
 
 	// init subsystems
+
+#ifdef DEBUG_PRINTING
 	printf("V_Init: allocate screens.\n");
+#endif
 	V_Init();
 
+#ifdef DEBUG_PRINTING
 	printf("M_LoadDefaults: Load system defaults.\n");
+#endif
 	M_LoadDefaults();              // load before initing other systems
 
+#ifdef DEBUG_PRINTING
 	printf("Z_InitEMS: Init EMS memory allocation daemon. \n");
+#endif
 	Z_InitEMS();
 	Z_InitConventional();
 
 
+#ifdef DEBUG_PRINTING
 	printf("W_Init: Init WADfiles.\n");
+#endif
 	W_InitMultipleFiles(wadfiles);
 
 	// init subsystems
+#ifdef DEBUG_PRINTING
 	printf("D_InitStrings: loading text.\n");
+#endif
 	D_InitStrings();
 
 	// Check for -file in shareware
@@ -1172,66 +1188,79 @@ void D_DoomMain(void)
 #endif
  
 
-    // Check and print which version is executed.
-    if (registered) {
+#ifdef DEBUG_PRINTING
+	if (registered) {
 		getStringByIndex(VERSION_REGISTERED, textbuffer);
         printf(textbuffer);
-        D_RedrawTitle();
+		D_RedrawTitle();
 		getStringByIndex(NOT_SHAREWARE, textbuffer);
 		printf( textbuffer );
-        D_RedrawTitle();
+		D_RedrawTitle();
     }
     if (shareware) {
 		getStringByIndex(VERSION_SHAREWARE, textbuffer);
         printf(textbuffer);
-        D_RedrawTitle();
+		D_RedrawTitle();
     }
     if (commercial) {
 		getStringByIndex(VERSION_COMMERCIAL, textbuffer);
         printf(textbuffer);
-        D_RedrawTitle();
+		D_RedrawTitle();
 
 		getStringByIndex(DO_NOT_DISTRIBUTE, textbuffer);
         printf( textbuffer );
-        D_RedrawTitle();
+		D_RedrawTitle();
     }
 
 	getStringByIndex(M_INIT_TEXT, textbuffer);
 	printf (textbuffer);
-    D_RedrawTitle();
+	D_RedrawTitle();
+#endif
     M_Init ();
 
+#ifdef DEBUG_PRINTING
 	getStringByIndex(R_INIT_TEXT, textbuffer);
 	printf(textbuffer);
 	D_RedrawTitle();
+#endif
     R_Init ();
 
 
+#ifdef DEBUG_PRINTING
 	getStringByIndex(P_INIT_TEXT, textbuffer);
 	printf(textbuffer);
 	D_RedrawTitle();
+#endif
     P_Init ();
 
 
+#ifdef DEBUG_PRINTING
 	getStringByIndex(I_INIT_TEXT, textbuffer);
 	printf(textbuffer);
 	D_RedrawTitle();
+#endif
     I_Init ();
 	D_CheckNetGame ();
 
+#ifdef DEBUG_PRINTING
 	getStringByIndex(S_INIT_TEXT, textbuffer);
 	printf(textbuffer);
 	D_RedrawTitle();
+#endif
     S_Init (sfxVolume*8, musicVolume*8);
 
+#ifdef DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT, textbuffer);
 	printf(textbuffer);
 	D_RedrawTitle();
+#endif
     HU_Init ();
 
+#ifdef DEBUG_PRINTING
 	getStringByIndex(ST_INIT_TEXT, textbuffer);
 	printf (textbuffer);
-    D_RedrawTitle();
+	D_RedrawTitle();
+#endif
     ST_Init ();
 
     

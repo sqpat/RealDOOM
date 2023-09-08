@@ -132,11 +132,15 @@ void W_AddFile (int8_t *filename)
                 
     if ( (handle = open (filename,O_RDONLY | O_BINARY)) == -1)
     {
-        printf ("\tcouldn't open %s\n",filename);
+#ifdef DEBUG_PRINTING
+		printf ("\tcouldn't open %s\n",filename);
+#endif
         return;
     }
 
-    printf ("\tadding %s\n",filename);
+#ifdef DEBUG_PRINTING
+	printf ("\tadding %s\n",filename);
+#endif
     startlump = numlumps;
         
     if (strcmpi (filename+strlen(filename)-3 , "wad" ) )

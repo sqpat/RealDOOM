@@ -275,23 +275,23 @@ typedef struct
 typedef struct
 {
 	uint16_t size;
-	uint8_t tag;
-	uint8_t user;
 	void*	datalocation;
 } allocation_conventional_t;
 
 
-//#define OWNED_USER 2
-//#define UNOWNED_USER 1
-
-void* conventionalmemoryblock;
-int32_t totalconventionalfree;
-int32_t remainingconventional;
+// ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
+void* conventionalmemoryblock1;
+void* conventionalmemoryblock2;
+int32_t totalconventionalfree1;
+int32_t totalconventionalfree2;
+int32_t remainingconventional1;
+int32_t remainingconventional2;
 
 PAGEREF currentListHead = 0; // main rover
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
-allocation_conventional_t conventional_allocations[CONVENTIONAL_ALLOCATION_LIST_SIZE];
+allocation_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
+allocation_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 
 
 int16_t activepages[NUM_EMS_PAGES];
@@ -365,22 +365,53 @@ void Z_ChangeTagEMSNew(MEMREF index, int16_t tag) {
 // CONVENTIONAL MEMORY ALLOCATION STUFF
 
 size_t Z_GetFreeConventionalSize() {
-	size_t availablememory = _memavl();
 
+#ifdef _M_I86
+	size_t availablememory = _memmax();
+#else
+	size_t availablememory = _memmax();
+#endif
 	// around 20k 16 bit right now.
 	//I_Error("Size available: %u  ", availablememory);
 
-	if (availablememory >= MAX_CONVENTIONAL_SIZE) {
-		return MAX_CONVENTIONAL_SIZE;
+	if (availablememory >= MAX_CONVENTIONAL_ALLOCATION_SIZE) {
+		return MAX_CONVENTIONAL_ALLOCATION_SIZE;
+	}
+
+	if (availablememory < MIN_CONVENTIONAL_ALLOCATION_SIZE) {
+		return 0;
 	}
 	
 	return availablememory; 
 }
-
+//todo make these alloc low - sq
 void Z_InitConventional(void) {
-	totalconventionalfree = Z_GetFreeConventionalSize();
-	conventionalmemoryblock = malloc(totalconventionalfree);
-	remainingconventional = totalconventionalfree;
+#ifdef DEBUG_PRINTING
+	printf("Initializing conventional allocation blocks...");
+#endif
+	totalconventionalfree1 = Z_GetFreeConventionalSize();
+	if (totalconventionalfree1) {
+#ifdef _M_I86
+		conventionalmemoryblock1 = malloc(totalconventionalfree1);
+#else
+		conventionalmemoryblock1 = malloc(totalconventionalfree1);
+#endif
+	}
+	remainingconventional1 = totalconventionalfree1;
+
+	totalconventionalfree2 = Z_GetFreeConventionalSize();
+	if (totalconventionalfree2) {
+#ifdef _M_I86
+		conventionalmemoryblock2 = malloc(totalconventionalfree2);
+#else
+		conventionalmemoryblock2 = malloc(totalconventionalfree2);
+#endif
+	}
+#ifdef DEBUG_PRINTING
+	printf("\Conventional block sizes %i %i", totalconventionalfree1, totalconventionalfree2);
+#endif
+
+	remainingconventional2 = totalconventionalfree2;
 }
 
 // EMS STUFF
@@ -895,7 +926,8 @@ void Z_ShutdownEMS() {
 	}
 #endif
 
-	free(conventionalmemoryblock);
+	free(conventionalmemoryblock1);
+	free(conventionalmemoryblock2);
 
 }
 
@@ -1311,7 +1343,6 @@ void Z_SetUnlocked(MEMREF ref) {
 
 
 void* Z_LoadBytesFromConventionalWithOptions(MEMREF ref, boolean locked) {
-	int8_t i;
 
 	if (ref < EMS_ALLOCATION_LIST_SIZE) {
 		return Z_LoadBytesFromEMSWithOptions(ref, locked);
@@ -1319,11 +1350,15 @@ void* Z_LoadBytesFromConventionalWithOptions(MEMREF ref, boolean locked) {
 	ref -= EMS_ALLOCATION_LIST_SIZE;
 
 #ifdef CHECK_FOR_ERRORS
-	if (ref > CONVENTIONAL_ALLOCATION_LIST_SIZE) {
+	if (ref >= 2* CONVENTIONAL_ALLOCATION_LIST_SIZE) {
 		I_Error("Conventional allocation too big! %i", ref);
 	}
 #endif
-	return conventional_allocations[ref].datalocation;
+
+	if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
+		return conventional_allocations1[ref].datalocation;
+	else 
+		return conventional_allocations2[ref].datalocation;
 
 }
 
@@ -1332,10 +1367,10 @@ void Z_FreeConventionalAllocations() {
 	int8_t i = 0;
 
 	for (i = 0; i < CONVENTIONAL_ALLOCATION_LIST_SIZE; i++) {
-		conventional_allocations[i].datalocation = 0;
-		conventional_allocations[i].size = 0;
-		conventional_allocations[i].tag = 0;
-		conventional_allocations[i].user = 0;
+		conventional_allocations1[i].datalocation = 0;
+		conventional_allocations1[i].size = 0;
+		conventional_allocations2[i].datalocation = 0;
+		conventional_allocations2[i].size = 0;
 	}
 
 }
@@ -1349,25 +1384,37 @@ MEMREF Z_MallocConventional(
 
 	int8_t ref;
 	byte* datalocation;
-
-	if (size > remainingconventional) {
-		return Z_MallocEMSNew(size, tag, user, sourceHint);
+	allocation_conventional_t *allocations;
+	boolean useblock2 = false;
+	
+	if (size > remainingconventional1) {
+		if (size > remainingconventional2) {
+			return Z_MallocEMSNew(size, tag, user, sourceHint);
+		}
+		useblock2 = true;
 	}
-	datalocation = conventionalmemoryblock;
+	if (useblock2) {
+		datalocation = conventionalmemoryblock2;
+		allocations = conventional_allocations2;
+		remainingconventional2 -= size;
+	} else {
+		datalocation = conventionalmemoryblock1;
+		allocations = conventional_allocations1;
+		remainingconventional1 -= size;
+	}
+
 	for (ref = 0; ref < CONVENTIONAL_ALLOCATION_LIST_SIZE; ref++) {
-		if (conventional_allocations[ref].size == 0) {
+		if (allocations[ref].size == 0) {
 			break;
 		}
-		datalocation += conventional_allocations[ref].size;
+		datalocation += allocations[ref].size;
  
 	}
-	conventional_allocations[ref].size = size;
-	conventional_allocations[ref].user = user;
-	conventional_allocations[ref].tag = tag;
-	conventional_allocations[ref].datalocation = datalocation;
 
-	remainingconventional -= size;
-	return ref + EMS_ALLOCATION_LIST_SIZE;
+	allocations[ref].size = size;
+	allocations[ref].datalocation = datalocation;
+	 
+	return ref + EMS_ALLOCATION_LIST_SIZE + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
 }
 
 

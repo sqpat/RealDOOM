@@ -1049,7 +1049,9 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 	intx86x(0x31, &regs, &regs, &segregs);
 
 	heap = meminfo[0];
+#ifdef DEBUG_PRINTING
 	printf("DPMI memory: 0x%x", heap);
+#endif
 
 	do
 	{
@@ -1063,6 +1065,8 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 		ptr = malloc(heap);
 	} while (!ptr);
 
+#ifdef DEBUG_PRINTING
+
 	printf(", 0x%x allocated for zone\n", heap);
 	if (heap < 0x180000)
 	{
@@ -1070,7 +1074,7 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 		printf("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
 
 	}
-
+#endif
 
     *size = heap;
     return ptr;
