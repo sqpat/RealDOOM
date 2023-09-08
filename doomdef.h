@@ -60,6 +60,10 @@ enum { VERSION =  109 };
 // going over 65535 in 16 bit wiil require a small rewrite but not a big deal. but first, we'd need to actually free up that much memory fromt he build.
 #define MAX_CONVENTIONAL_SIZE 65535L 
 
+// Error checking. recommended ON during development. however, turning this off makes the binary like 10-12k smaller
+#define CHECK_FOR_ERRORS
+
+
 // Allocates backbuffers statically
 //#define STATIC_ALLOCATED_SCREENS
 
@@ -89,7 +93,6 @@ enum { VERSION =  109 };
 
 #define	FRACBITS		16
 #define	FRACUNIT		0x10000L
-//#define	FRACUNIT		((int32_t)1<<FRACBITS)
 
 #define TAG_666			121
 #define TAG_667			122

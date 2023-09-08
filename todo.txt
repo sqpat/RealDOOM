@@ -40,30 +40,31 @@ KNOWN ISSUES
 652896 32 bit
 
 TODO 
- x profile what causes most page swaps (probably texture)
- x conventional memory allocator
- - NUM_BLOCKLINKS is 2000. can be way less. 
-    - block x and y are bytes. have a 2 byte thing in a list. iterate thru the list.
 
  ~ make actor->angle  fixed_t_union for a_chase improvement
  - move other data into external files. sprnames?
 
+ ~ conventional memory allocator
+    - test 16 bit version
+
+ - make all the PIT_blah etc work off switch instead of function poiners? Does it compile smaller?
+
+ ? look into no backbuffer
+ - do the mobj locality thing
 
 
- 1 compile flag for errors
- 2 do the mobj locality thing
-
- 3 fix stage 3 load bug?
- 4 fix melee range bug
+ - fix stage 3 load bug?
+ 1 fix melee range bug
  5 fix the texture rotate/offset issue?
  
- ? look into no backbuffer
+ - NUM_BLOCKLINKS is 2000. can be way less. 
+    - block x and y are bytes. have a 2 byte thing in a list. iterate thru the list.
 
 
  - make pathtraverse work mostly off 16 bit math? i think its possible
+
  - look into ds->scale1 and associated values to 16 bit? or small fixed, etc
 
- ? get rid of screen1? or make it ems?
 
 
  - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
@@ -104,14 +105,19 @@ CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everyt
 
  True 16 bit mode ideas
   - 250 pixel width, and then 1 byte various screen width based vars incl those in visplane...
-  - do we really need 32 bit fixed_t ever?
+
   
 
 
 
 MEMORY IDEAS
  
- 
+ x compress memory allocation entries by using bit masks and combining values
+ - support allocating some things in conventional memory. 
+   - probably need to use it to support titlepic and other large memory things?
+   - test to figure out which variables improve fps most in conventional
+      - probably sectors, lines, etc...
+
  ~ use overlays, especially on startup code to eliminate space
    - maybe menu code in one, finale and p_setup in another? (0x3000 ish each)
      - maybe demo code 
@@ -123,7 +129,11 @@ MEMORY IDEAS
  - explicitly declare things near, far when possible?
  - reduce visiplanes size below 65k somehow to allow large instead of huge memory model.
    - maybe just reduce the number of visplanes for now...
-
+ - pull strings into ems at runtime by loading from a file rather than compiling
+   as data alongside code.  strings are generally used once every blue moon, and 
+   d_english.h has got about 15k worth of data sitting there..
+  several dozen frames at the most so doesnt make sense for them to be in conventional
+  and sectors being paged in and out... 
  - look into using the sourceHint to allocate items with some sort of locality to 
     decrease pagination. rather than marking blocks themselves as reserved,
     probably maintain a fixed list of preferred pages by type, and use that as 

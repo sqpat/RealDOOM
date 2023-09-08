@@ -91,24 +91,28 @@ R_InstallSpriteLump
 {
 	int16_t         r;
         
-    if (frame >= 29 || rotation > 8)
+#ifdef CHECK_FOR_ERRORS
+	if (frame >= 29 || rotation > 8)
         I_Error("R_InstallSpriteLump: "
                 "Bad frame characters in lump %i", lump);
-        
+#endif
+
     if ((int16_t)frame > maxframe)
         maxframe = frame;
                 
     if (rotation == 0)
     {
         // the lump should be used for all rotations
-        if (sprtemp[frame].rotate == false)
+#ifdef CHECK_FOR_ERRORS
+		if (sprtemp[frame].rotate == false)
             I_Error ("R_InitSprites: Sprite %s frame %c has "
                      "multip rot=0 lump", spritename, 'A'+frame);
 
         if (sprtemp[frame].rotate == true)
             I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
                      "and a rot=0 lump", spritename, 'A'+frame);
-                        
+#endif
+
         sprtemp[frame].rotate = false;
         for (r=0 ; r<8 ; r++)
         {
@@ -119,19 +123,21 @@ R_InstallSpriteLump
     }
         
     // the lump is only used for one rotation
-    if (sprtemp[frame].rotate == false)
+#ifdef CHECK_FOR_ERRORS
+	if (sprtemp[frame].rotate == false)
         I_Error ("R_InitSprites: Sprite %s frame %c has rotations "
                  "and a rot=0 lump", spritename, 'A'+frame);
-                
-    sprtemp[frame].rotate = true;
+#endif            
+	sprtemp[frame].rotate = true;
 
     // make 0 based
     rotation--;         
-    if (sprtemp[frame].lump[rotation] != -1)
+#ifdef CHECK_FOR_ERRORS
+	if (sprtemp[frame].lump[rotation] != -1)
         I_Error ("R_InitSprites: Sprite %s : %c : %c "
                  "has two lumps mapped to it",
                  spritename, 'A'+frame, '1'+rotation);
-                
+#endif            
     sprtemp[frame].lump[rotation] = lump - firstspritelump;
     sprtemp[frame].flip[rotation] = (byte)flipped;
 }
@@ -243,23 +249,28 @@ void R_InitSpriteDefs (int8_t** namelist)
             {
               case -1:
                 // no rotations were found for that frame at all
-                I_Error ("R_InitSprites: No patches found "
+#ifdef CHECK_FOR_ERRORS
+				  I_Error ("R_InitSprites: No patches found "
                          "for %s frame %c", namelist[i], frame+'A');
                 break;
-                
-              case 0:
+#endif
+
+			  case 0:
                 // only the first rotation is needed
                 break;
                         
               case 1:
                 // must have all 8 frames
                 for (rotation=0 ; rotation<8 ; rotation++)
-                    if (sprtemp[frame].lump[rotation] == -1)
-                        I_Error ("R_InitSprites: Sprite %s frame %c "
-                                 "is missing rotations",
-                                 namelist[i], frame+'A');
-                break;
-            }
+					if (sprtemp[frame].lump[rotation] == -1) {
+#ifdef CHECK_FOR_ERRORS
+						I_Error("R_InitSprites: Sprite %s frame %c "
+							"is missing rotations",
+							namelist[i], frame + 'A');
+						break;
+#endif
+					}
+			}
         }
         
         // allocate space for the frames present and copy sprtemp to it

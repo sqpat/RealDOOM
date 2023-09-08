@@ -210,8 +210,10 @@ STlib_updateMultIcon
 	    w = (old->width);
 	    h = (old->height);
 
-	    if (y - ST_Y < 0)
-		I_Error("updateMultIcon: y - ST_Y < 0");
+#ifdef CHECK_FOR_ERRORS
+		if (y - ST_Y < 0)
+			I_Error("updateMultIcon: y - ST_Y < 0");
+#endif
 
 	    V_CopyRect(x, y-ST_Y, BG, w, h, x, y, FG);
 	}
@@ -259,9 +261,10 @@ STlib_updateBinIcon
 		w = (bipatch->width);
 		h = (bipatch->height);
 
+#ifdef CHECK_FOR_ERRORS
 		if (y - ST_Y < 0)
 			I_Error("updateBinIcon: y - ST_Y < 0");
-
+#endif
 		if (*bi->val)
 			V_DrawPatch(bi->x, bi->y, FG, (patch_t*)Z_LoadBytesFromEMS(bi->pRef));
 		else

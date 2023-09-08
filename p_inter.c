@@ -613,8 +613,10 @@ P_TouchSpecialThing
 			sound = sfx_wpnup;	
 			break;
 				
+#ifdef CHECK_FOR_ERRORS
 		default:
 			I_Error ("P_SpecialThing: Unknown gettable thing");
+#endif
     }
 	
     if (specialflagscountitem)
@@ -760,9 +762,6 @@ P_DamageMobj
 	int16_t targetsecnum;
 	int16_t targethealth;
 
-	//if (targetRef == 0) {
-	//	I_Error("bad damage %i %i %i %i ", targetRef, inflictorRef, sourceRef, damage);
-	//}
 	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
  
 	if (!(target->flags & MF_SHOOTABLE)) {

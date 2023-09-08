@@ -800,9 +800,8 @@ extern uint8_t	screenblocks;
 void R_Init (void)
 {
 	R_InitData ();
-    printf (".");
+    printf ("..");
     // viewwidth / viewheight / detailLevel are set by the defaults
-    printf (".");
 
 	R_SetViewSize (screenblocks, detailLevel);
 	R_InitPlanes ();

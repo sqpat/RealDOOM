@@ -68,38 +68,8 @@
 #define FGCOLOR         4
 #endif
 
-
-
-#define	normal 0
-#define close30ThenOpen 1
-#define blah1 2
-#define blah2 3
-#define raiseIn5Mins 4
-#define blazeRaise 5
-#define blazeOpen 6
-#define blazeClose 7
-
-typedef uint8_t vldoor_e;
-
-
-typedef struct
-{
-	THINKERREF	thinkerRef;
-	vldoor_e	type;
-	int16_t	secnum;
-	fixed_t	topheight;
-	fixed_t	speed;
-
-	// 1 = up, 0 = waiting at top, -1 = down
-	int8_t             direction;
-
-	// tics to wait at the top
-	int16_t             topwait;
-	// (keep in case a door going down is reset)
-	// when it reaches 0, start going down
-	int16_t             topcountdown;
-
-} vldoor_t;
+ 
+ 
 
 //
 // D-DoomLoop()
@@ -525,8 +495,7 @@ void D_Display (void)
         return;
     }
 
-#ifdef SKIPWIPE
-#else
+#ifndef SKIPWIPE
 
     
     // wipe update
@@ -972,297 +941,236 @@ void IdentifyVersion (void)
     printf("Game mode indeterminate.\n");
     exit(1);
     //I_Error ("Game mode indeterminate\n");
-}
-
-//
-// Find a Response File
-//
-void FindResponseFile (void)
-{
-	int16_t             i;
-#define MAXARGVS        100
-        
-    for (i = 1;i < myargc;i++)
-        if (myargv[i][0] == '@')
-        {
-            FILE *          handle;
-			int32_t             size;
-			int16_t             k;
-			int16_t             index;
-			int16_t             indexinfile;
-			int8_t    *infile;
-			int8_t    *file;
-			int8_t    *moreargs[20];
-			int8_t    *firstargv;
-                        
-            // READ THE RESPONSE FILE INTO MEMORY
-            handle = fopen (&myargv[i][1],"rb");
-            if (!handle)
-            {
-                printf ("\nNo such response file!");
-                exit(1);
-            }
-            printf("Found response file %s!\n",&myargv[i][1]);
-            fseek (handle,0,SEEK_END);
-            size = ftell(handle);
-            fseek (handle,0,SEEK_SET);
-            file = malloc (size);
-            fread (file,size,1,handle);
-            fclose (handle);
-                        
-            // KEEP ALL CMDLINE ARGS FOLLOWING @RESPONSEFILE ARG
-            for (index = 0,k = i+1; k < myargc; k++)
-                moreargs[index++] = myargv[k];
-                        
-            firstargv = myargv[0];
-            myargv = malloc(sizeof(int8_t *)*MAXARGVS);
-            memset(myargv,0,sizeof(int8_t *)*MAXARGVS);
-            myargv[0] = firstargv;
-                        
-            infile = file;
-            indexinfile = k = 0;
-            indexinfile++;  // SKIP PAST ARGV[0] (KEEP IT)
-            do
-            {
-                myargv[indexinfile++] = infile+k;
-                while(k < size &&
-                      ((*(infile+k)>= ' '+1) && (*(infile+k)<='z')))
-                    k++;
-                *(infile+k) = 0;
-                while(k < size &&
-                      ((*(infile+k)<= ' ') || (*(infile+k)>'z')))
-                    k++;
-            } while(k < size);
-                        
-            for (k = 0;k < index;k++)
-                myargv[indexinfile++] = moreargs[k];
-            myargc = indexinfile;
-        
-            // DISPLAY ARGS
-            printf("%d command-line args:\n",myargc);
-            for (k=1;k<myargc;k++)
-                printf("%s\n",myargv[k]);
-
-            break;
-        }
-}
-
+} 
 
 //
 // D_DoomMain
 //
-void D_DoomMain (void)
+void D_DoomMain(void)
 {
 	int16_t             p;
 	int8_t                    file[256];
-    union REGS regs;
+	union REGS regs;
 	int8_t*          textbuffer;
 
-    FindResponseFile ();
-        
-    IdentifyVersion ();
-        
-    setbuf (stdout, NULL);
-    modifiedgame = false;
-        
-    nomonsters = M_CheckParm ("-nomonsters");
-    respawnparm = M_CheckParm ("-respawn");
-    fastparm = M_CheckParm ("-fast");
+	// Removed
+	//FindResponseFile ();
+
+	IdentifyVersion();
+
+	setbuf(stdout, NULL);
+	modifiedgame = false;
+
+	nomonsters = M_CheckParm("-nomonsters");
+	respawnparm = M_CheckParm("-respawn");
+	fastparm = M_CheckParm("-fast");
 
 
-    if (!commercial)
-    {
+	if (!commercial)
+	{
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-        sprintf(title,
-                "                         "
-                "The Ultimate DOOM Startup v%i.%i"
-                "                        ",
-                VERSION/100,VERSION%100);
+		sprintf(title,
+			"                         "
+			"The Ultimate DOOM Startup v%i.%i"
+			"                        ",
+			VERSION / 100, VERSION % 100);
 #else
-        sprintf(title,
-                "                          "
-                "DOOM System Startup v%i.%i"
-                "                          ",
-                VERSION/100,VERSION%100);
+		sprintf(title,
+			"                          "
+			"DOOM System Startup v%i.%i"
+			"                          ",
+			VERSION / 100, VERSION % 100);
 #endif
-    }
-    else
-    {
+	}
+	else
+	{
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-        if (plutonia)
-        {
-            sprintf(title,
-                    "                   "
-                    "DOOM 2: Plutonia Experiment v%i.%i"
-                    "                           ",
-                    VERSION/100,VERSION%100);
-        }
-        else if(tnt)
-        {
-            sprintf(title,
-                    "                     "
-                    "DOOM 2: TNT - Evilution v%i.%i"
-                    "                           ",
-                    VERSION/100,VERSION%100);
-        }
-        else
-        {
-            sprintf(title,
-                    "                         "
-                    "DOOM 2: Hell on Earth v%i.%i"
-                    "                           ",
-                    VERSION/100,VERSION%100);
-        }
+		if (plutonia)
+		{
+			sprintf(title,
+				"                   "
+				"DOOM 2: Plutonia Experiment v%i.%i"
+				"                           ",
+				VERSION / 100, VERSION % 100);
+		}
+		else if (tnt)
+		{
+			sprintf(title,
+				"                     "
+				"DOOM 2: TNT - Evilution v%i.%i"
+				"                           ",
+				VERSION / 100, VERSION % 100);
+		}
+		else
+		{
+			sprintf(title,
+				"                         "
+				"DOOM 2: Hell on Earth v%i.%i"
+				"                           ",
+				VERSION / 100, VERSION % 100);
+		}
 #else
-        sprintf(title,
-                "                         "
-                "DOOM 2: Hell on Earth v%i.%i"
-                "                           ",
-                VERSION/100,VERSION%100);
+		sprintf(title,
+			"                         "
+			"DOOM 2: Hell on Earth v%i.%i"
+			"                           ",
+			VERSION / 100, VERSION % 100);
 #endif
-    }
-    
-    regs.w.ax = 3;
-    intx86(0x10, &regs, &regs);
-    D_DrawTitle(title, FGCOLOR, BGCOLOR);
+	}
 
-    printf("\nP_Init: Checking cmd-line parameters...\n");
+	regs.w.ax = 3;
+	intx86(0x10, &regs, &regs);
+	D_DrawTitle(title, FGCOLOR, BGCOLOR);
+
+	printf("\nP_Init: Checking cmd-line parameters...\n");
 
 
-    
-    // turbo option
-    if ( (p=M_CheckParm ("-turbo")) )
-    {
+
+	// turbo option
+	if ((p = M_CheckParm("-turbo")))
+	{
 		int16_t     scale = 200;
-        extern int16_t forwardmove[2];
-        extern int16_t sidemove[2];
-        
-        if (p<myargc-1)
-            scale = atoi (myargv[p+1]);
-        if (scale < 10)
-            scale = 10;
-        if (scale > 400)
-            scale = 400;
-        printf ("turbo scale: %i%%\n",scale);
-        forwardmove[0] = forwardmove[0]*scale/100;
-        forwardmove[1] = forwardmove[1]*scale/100;
-        sidemove[0] = sidemove[0]*scale/100;
-        sidemove[1] = sidemove[1]*scale/100;
-    }
-  
-        
-    p = M_CheckParm ("-file");
-    if (p)
-    {
-        // the parms after p are wadfile/lump names,
-        // until end of parms or another - preceded parm
-        modifiedgame = true;            // homebrew levels
-        while (++p != myargc && myargv[p][0] != '-')
-            D_AddFile (myargv[p]);
-    }
+		extern int16_t forwardmove[2];
+		extern int16_t sidemove[2];
 
-    p = M_CheckParm ("-playdemo");
+		if (p < myargc - 1)
+			scale = atoi(myargv[p + 1]);
+		if (scale < 10)
+			scale = 10;
+		if (scale > 400)
+			scale = 400;
+		printf("turbo scale: %i%%\n", scale);
+		forwardmove[0] = forwardmove[0] * scale / 100;
+		forwardmove[1] = forwardmove[1] * scale / 100;
+		sidemove[0] = sidemove[0] * scale / 100;
+		sidemove[1] = sidemove[1] * scale / 100;
+	}
 
-    if (!p)
-        p = M_CheckParm ("-timedemo");
 
-    if (p && p < myargc-1)
-    {
-        sprintf (file,"%s.lmp", myargv[p+1]);
-        D_AddFile (file);
-        printf("Playing demo %s.lmp.\n",myargv[p+1]);
-    }
-    
-    // get skill / episode / map from parms
-    startskill = sk_medium;
-    startepisode = 1;
-    startmap = 1;
-    autostart = false;
+	p = M_CheckParm("-file");
+	if (p)
+	{
+		// the parms after p are wadfile/lump names,
+		// until end of parms or another - preceded parm
+		modifiedgame = true;            // homebrew levels
+		while (++p != myargc && myargv[p][0] != '-')
+			D_AddFile(myargv[p]);
+	}
 
-                
-    p = M_CheckParm ("-skill");
-    if (p && p < myargc-1)
-    {
-        startskill = myargv[p+1][0]-'1';
-        autostart = true;
-    }
+	p = M_CheckParm("-playdemo");
 
-    p = M_CheckParm ("-episode");
-    if (p && p < myargc-1)
-    {
-        startepisode = myargv[p+1][0]-'0';
-        startmap = 1;
-        autostart = true;
-    }
-  
+	if (!p)
+		p = M_CheckParm("-timedemo");
 
-    p = M_CheckParm ("-warp");
-    if (p && p < myargc-1)
-    {
-        if (commercial)
-            startmap = atoi (myargv[p+1]);
-        else
-        {
-            startepisode = myargv[p+1][0]-'0';
-            startmap = myargv[p+2][0]-'0';
-        }
-        autostart = true;
-    }
-    
-    // init subsystems
-    printf ("V_Init: allocate screens.\n");
-    V_Init ();
+	if (p && p < myargc - 1)
+	{
+		sprintf(file, "%s.lmp", myargv[p + 1]);
+		D_AddFile(file);
+		printf("Playing demo %s.lmp.\n", myargv[p + 1]);
+	}
 
-    printf ("M_LoadDefaults: Load system defaults.\n");
-    M_LoadDefaults ();              // load before initing other systems
+	// get skill / episode / map from parms
+	startskill = sk_medium;
+	startepisode = 1;
+	startmap = 1;
+	autostart = false;
 
-    printf ("Z_InitEMS: Init EMS memory allocation daemon. \n");
+
+	p = M_CheckParm("-skill");
+	if (p && p < myargc - 1)
+	{
+		startskill = myargv[p + 1][0] - '1';
+		autostart = true;
+	}
+
+	p = M_CheckParm("-episode");
+	if (p && p < myargc - 1)
+	{
+		startepisode = myargv[p + 1][0] - '0';
+		startmap = 1;
+		autostart = true;
+	}
+
+
+	p = M_CheckParm("-warp");
+	if (p && p < myargc - 1)
+	{
+		if (commercial)
+			startmap = atoi(myargv[p + 1]);
+		else
+		{
+			startepisode = myargv[p + 1][0] - '0';
+			startmap = myargv[p + 2][0] - '0';
+		}
+		autostart = true;
+	}
+
+	// init subsystems
+	printf("V_Init: allocate screens.\n");
+	V_Init();
+
+	printf("M_LoadDefaults: Load system defaults.\n");
+	M_LoadDefaults();              // load before initing other systems
+
+	printf("Z_InitEMS: Init EMS memory allocation daemon. \n");
 	Z_InitEMS();
 	Z_InitConventional();
 
 
-	printf ("W_Init: Init WADfiles.\n");
-    W_InitMultipleFiles (wadfiles);
+	printf("W_Init: Init WADfiles.\n");
+	W_InitMultipleFiles(wadfiles);
 
 	// init subsystems
 	printf("D_InitStrings: loading text.\n");
 	D_InitStrings();
 
-
 	// Check for -file in shareware
-    if (modifiedgame)
-    {
-        // These are the lumps that will be checked in IWAD,
-        // if any one is not present, execution will be aborted.
+#ifdef CHECK_FOR_ERRORS
+	if (modifiedgame) {
+		// These are the lumps that will be checked in IWAD,
+		// if any one is not present, execution will be aborted.
 		int8_t name[23][8]=
-        {
-            "e2m1","e2m2","e2m3","e2m4","e2m5","e2m6","e2m7","e2m8","e2m9",
-            "e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
-            "dphoof","bfgga0","heada1","cybra1","spida1d1"
-        };
+		{
+			"e2m1","e2m2","e2m3","e2m4","e2m5","e2m6","e2m7","e2m8","e2m9",
+			"e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
+			"dphoof","bfgga0","heada1","cybra1","spida1d1"
+		};
 		int8_t i;
-        
-        if (shareware)
-            I_Error("\nYou cannot -file with the shareware "
-                    "version. Register!");
 
-        // Check for fake IWAD with right name,
-        // but w/o all the lumps of the registered version. 
-        if (registered)
-            for (i = 0;i < 23; i++)
-                if (W_CheckNumForName(name[i])<0)
-                    I_Error("\nThis is not the registered version.");
-    }
-    
-    // Iff additonal PWAD files are used, print modified banner
-    if (modifiedgame)
-    {
+		if (shareware)
+			I_Error("\nYou cannot -file with the shareware "
+					"version. Register!");
+
+					// Check for fake IWAD with right name,
+					// but w/o all the lumps of the registered version. 
+		if (registered)
+			for (i = 0; i < 23; i++)
+				if (W_CheckNumForName(name[i]) < 0)
+					I_Error("\nThis is not the registered version.");
+
+	}
+
+	// Iff additonal PWAD files are used, print modified banner
+	if (modifiedgame) {
 		getStringByIndex(MODIFIED_GAME, textbuffer);
-        /*m*/printf ( textbuffer );
-        getchar ();
-    }
-        
+		printf(textbuffer);
+		getchar();
+	}
 
+
+#else
+
+	// very weird. game crashes at startup if there is not a name array and a name check here. i dont see it used as an extern anywhere..
+	if (0) {
+		int8_t name[23][1] = { "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""};
+		if (name[0]) {
+
+		}
+
+	}
+
+#endif
+ 
 
     // Check and print which version is executed.
     if (registered) {

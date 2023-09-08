@@ -72,8 +72,7 @@ void    G_WriteDemoTiccmd (ticcmd_t* cmd);
 void    G_PlayerReborn (); 
 void    G_InitNew (skill_t skill, int8_t episode, int8_t map);
  
-void    G_DoReborn ();
- 
+  
 void    G_DoLoadLevel (void); 
 void    G_DoNewGame (void); 
 void    G_DoLoadGame (void); 
@@ -516,9 +515,7 @@ void G_Ticker (void)
     ticcmd_t*   cmd;
 	mobj_t* playerMo;
     // do player reborns if needed
-	if (players.playerstate == PST_REBORN)
-		G_DoReborn();
-
+ 
     // do things to change the game state
     while (gameaction != ga_nothing) 
     { 
@@ -749,15 +746,6 @@ G_CheckSpot
 } 
 
  
-//
-// G_DoReborn 
-// 
-void G_DoReborn ()
-{ 
-        // reload the level from scratch
-        gameaction = ga_loadlevel;  
-		I_Error("reborn");
-} 
  
  
 
@@ -962,6 +950,7 @@ void G_LoadGame (int8_t* name)
 
 void G_DoLoadGame (void) 
 { 
+	/*
 	filelength_t         length;
 	byte         a,b,c;
 	int8_t        vcheck[VERSIONSIZE];
@@ -1001,16 +990,12 @@ void G_DoLoadGame (void)
     P_UnArchiveWorld (); 
     P_UnArchiveThinkers (); 
     P_UnArchiveSpecials (); 
- 
+#ifdef CHECK_FOR_ERRORS
+
     if (*save_p != 0x1d) 
         I_Error ("Bad savegame");
-    
-    // done 
-	if (savebufferRef == 0) {
-		I_Error("ERROR: early fail \n");
-
-	}
-
+#endif
+   
     Z_FreeEMSNew (savebufferRef); 
  
     if (setsizeneeded)
@@ -1018,6 +1003,8 @@ void G_DoLoadGame (void)
     
     // draw the pattern into the back screen
 	R_FillBackScreen ();   
+
+	*/
 } 
  
 
@@ -1038,6 +1025,7 @@ G_SaveGame
  
 void G_DoSaveGame (void) 
 { 
+	/*
 	int8_t        name[100];
 	int8_t        name2[VERSIONSIZE];
     int8_t*       description; 
@@ -1079,8 +1067,10 @@ void G_DoSaveGame (void)
     *save_p++ = 0x1d;           // consistancy marker 
          
     length = save_p - savebuffer; 
-    if (length > SAVEGAMESIZE) 
+#ifdef CHECK_FOR_ERRORS
+	if (length > SAVEGAMESIZE)
         I_Error ("Savegame buffer overrun"); 
+#endif
     M_WriteFile (name, savebuffer, length); 
     gameaction = ga_nothing; 
     savedescription[0] = 0;              
@@ -1089,6 +1079,7 @@ void G_DoSaveGame (void)
 
     // draw the pattern into the back screen
     R_FillBackScreen ();        
+	*/
 } 
  
 
@@ -1370,10 +1361,14 @@ void G_DoPlayDemo (void)
     demobufferRef = W_CacheLumpNameEMS (defdemoname, PU_STATIC); 
 	demobuffer = (byte*) Z_LoadBytesFromEMS(demobufferRef);
 	demo_p = demobuffer;
-    if ( *demo_p++ != VERSION)
+
+
+	if ( *demo_p++ != VERSION)
     {
-      I_Error("Demo is from a different game version!");
-    }
+#ifdef CHECK_FOR_ERRORS
+		I_Error("Demo is from a different game version!");
+#endif
+}
 
     skill = *demo_p++; 
     episode = *demo_p++; 

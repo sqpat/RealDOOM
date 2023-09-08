@@ -260,9 +260,11 @@ R_FindPlane
 		return i;
 	}
 
+#ifdef CHECK_FOR_ERRORS
 	if (lastvisplaneheader == MAXVISPLANES) {
 		I_Error("R_FindPlane: no more visplanes");
 	}
+#endif
 
 	lastvisplaneheader++;
 	check = &visplaneheaders[i];
@@ -548,9 +550,11 @@ R_FindPlane
     if (i < lastvisplane)
 		return i;
 		
-    if (lastvisplane == MAXVISPLANES)
+#ifdef CHECK_FOR_ERRORS
+	if (lastvisplane == MAXVISPLANES)
 		I_Error ("R_FindPlane: no more visplanes");
-		
+#endif
+
     lastvisplane++;
 	check = &visplanes[i];
 

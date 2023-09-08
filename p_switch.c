@@ -165,7 +165,9 @@ P_StartButton
 	}
     }
     
-    I_Error("P_StartButton: no button slots left!");
+#ifdef CHECK_FOR_ERRORS
+	I_Error("P_StartButton: no button slots left!");
+#endif
 }
 
 

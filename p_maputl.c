@@ -346,8 +346,7 @@ P_InterceptVector
     den = FixedMul (v1->dy.w>>8,v2->dx.w) - FixedMul(v1->dx.w >>8,v2->dy.w);
 
     if (den == 0)
-	return 0;
-    //	I_Error ("P_InterceptVector: parallel");
+		return 0;
     
     num = FixedMul ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + FixedMul ( (v2->y.w - v1->y.w)>>8, v1->dx.w);
 
@@ -511,10 +510,11 @@ P_SetThingPosition (MEMREF thingRef)
 	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	thing->secnum = subsectorsecnum;
 
+#ifdef CHECK_FOR_ERRORS
 	if (thing->secnum < 0 || thing->secnum > numsectors) {
 		I_Error("P_SetThingPosition: thing being set with bad secnum %i: numsectors:%i subsecnum %i num subsectors %i thingRef %i", subsectorsecnum, numsectors, subsecnum, numsubsectors, thingRef);
 	}
-
+#endif
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
 

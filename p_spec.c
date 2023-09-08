@@ -159,11 +159,13 @@ void P_InitPicAnims (void)
 
 		lastanim->istexture = animdefs[i].istexture;
 		lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
+#ifdef CHECK_FOR_ERRORS
 		if (lastanim->numpics < 2)
 			I_Error ("P_InitPicAnims: bad cycle from %s to %s",
 				animdefs[i].startname,
 				animdefs[i].endname);
-		
+#endif
+
 		lastanim++;
     }
 	
@@ -1126,10 +1128,12 @@ void P_PlayerInSpecialSector () {
 				G_ExitLevel();
 			break;
 			
+#ifdef CHECK_FOR_ERRORS
 		default:
 			I_Error ("P_PlayerInSpecialSector: unknown special %i", sectors[secnum].special);
 			break;
-    };
+#endif
+	};
 
 }
 
@@ -1392,8 +1396,6 @@ void P_SpawnSpecials (void)
 	
     //	Init special SECTORs.
     //sector = sectors;
-
-	//I_Error("sector: %p %i", sectors, numsectors);
 
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	for (i=0 ; i<numsectors ; i++) {

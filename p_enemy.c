@@ -114,6 +114,7 @@ P_RecursiveSound
 	int16_t checkbacksecnum;
 	uint16_t lineoffset;
 
+#ifdef CHECK_FOR_ERRORS
 	if (soundblocks < 0) {
 		I_Error("bad soundblock P_RecursiveSound %i %i", soundblocks);
 	}
@@ -122,7 +123,9 @@ P_RecursiveSound
 		// TODO remove
 		I_Error("bad sectors in P_RecursiveSound %i %i", secnum);
 	}
-    // wake up all monsters in this sector
+#endif
+
+	// wake up all monsters in this sector
     if (soundsector->validcount == validcount && soundsector->soundtraversed <= soundblocks+1) {
 		return;		// already flooded
     }
@@ -351,10 +354,12 @@ boolean P_Move (MEMREF actorRef)
 		return false;
 	}
 		
+#ifdef CHECK_FOR_ERRORS
 	if (actor->movedir >= 8) {
 		I_Error("Weird actor->movedir!");
 	}
-		
+#endif
+
     tryx = actor->x + actor->info->speed*xspeed[actor->movedir];
     tryy = actor->y + actor->info->speed*yspeed[actor->movedir];
 
@@ -456,8 +461,10 @@ void P_NewChaseDir (MEMREF actorRef)
 
 	mobj_t* actorTarget;
 	
-    if (!actor->targetRef)
+#ifdef CHECK_FOR_ERRORS
+	if (!actor->targetRef)
 		I_Error ("P_NewChaseDir: called with no target");
+#endif
 	olddir = actor->movedir;
 	actorTarget = (mobj_t*)Z_LoadBytesFromEMS(actor->targetRef);
 		

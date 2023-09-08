@@ -71,10 +71,13 @@ ExtractFileBase
     memset (dest,0,8);
     length = 0;
     
-    while (*src && *src != '.')
-    {
-        if (++length == 9)
-            I_Error ("Filename base of %s >8 chars",path);
+	while (*src && *src != '.')
+	{
+		if (++length == 9) {
+#ifdef CHECK_FOR_ERRORS
+			I_Error("Filename base of %s >8 chars", path);
+#endif
+		}
 
         *dest++ = toupper(*src++);
     }
@@ -151,13 +154,15 @@ void W_AddFile (int8_t *filename)
         read (handle, &header, sizeof(header));
         if (strncmp(header.identification,"IWAD",4))
         {
-            // Homebrew levels?
+#ifdef CHECK_FOR_ERRORS
+			// Homebrew levels?
             if (strncmp(header.identification,"PWAD",4))
             {
-                I_Error ("Wad file %s doesn't have IWAD "
+				I_Error ("Wad file %s doesn't have IWAD "
                          "or PWAD id\n", filename);
             }
-            
+#endif
+
             modifiedgame = true;                
         }
         header.numlumps = (header.numlumps);
@@ -225,16 +230,18 @@ void W_InitMultipleFiles (int8_t** filenames)
     for ( ; *filenames ; filenames++)
         W_AddFile (*filenames);
 
-    if (!numlumps)
+#ifdef CHECK_FOR_ERRORS
+	if (!numlumps)
         I_Error ("W_InitFiles: no files found");
-    
+#endif
 
 	size = numlumps * sizeof(*lumpcacheEMS);
 	lumpcacheEMS = malloc(size);
+#ifdef CHECK_FOR_ERRORS
 
 	if (!lumpcacheEMS)
 		I_Error("Couldn't allocate lumpcacheEMS");
-
+#endif
 	memset(lumpcacheEMS, 0, size);
 
 }
@@ -311,10 +318,11 @@ int16_t W_GetNumForName(int8_t* name)
 
     i = W_CheckNumForName (name);
     
+#ifdef CHECK_FOR_ERRORS
 	if (i == -1)
 		I_Error("W_GetNumForName: %s not found! %s, %i", name, "", 0);
-		  //, file, line);
-      
+#endif
+
     return i;
 }
 
@@ -325,9 +333,10 @@ int16_t W_GetNumForName(int8_t* name)
 //
 filelength_t W_LumpLength (int16_t lump)
 {
-    if (lump >= numlumps)
+#ifdef CHECK_FOR_ERRORS
+	if (lump >= numlumps)
         I_Error ("W_LumpLength: %i >= numlumps",lump);
-
+#endif
     return lumpinfo[lump].size;
 }
 
@@ -401,9 +410,10 @@ W_ReadLumpEMS
 
  
 
-    if (lump >= numlumps)
+#ifdef CHECK_FOR_ERRORS
+	if (lump >= numlumps)
         I_Error ("W_ReadLump: %i >= numlumps",lump);
-
+#endif
     l = lumpinfo+lump;
         
     I_BeginRead ();
@@ -411,8 +421,11 @@ W_ReadLumpEMS
     if (l->handle == -1)
     {
         // reloadable file, so use open / read / close
-        if ( (handle = open (reloadname,O_RDONLY | O_BINARY)) == -1)
-            I_Error ("W_ReadLump: couldn't open %s",reloadname);
+		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1) {
+#ifdef CHECK_FOR_ERRORS
+			I_Error("W_ReadLump: couldn't open %s", reloadname);
+#endif
+		}
     }
     else
         handle = l->handle;
@@ -420,18 +433,22 @@ W_ReadLumpEMS
 	dest = Z_LoadBytesFromEMS(lumpRef);
 	lseek(handle, l->position, SEEK_SET);
 
+	c = read(handle, dest, l->size);
 	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
 #ifdef _M_I86
 	//c = _farread(handle, dest, l->size);
 
-	c = read(handle, dest, l->size);
 	if (c < l->size && c + 65536l != l->size ) // error check
 #else
-	c = read(handle, dest, l->size);
-	if (c < l->size) // error check
+	if (c < l->size) 
 #endif
+
+{
+#ifdef CHECK_FOR_ERRORS
 		I_Error("\nW_ReadLump: only read %il of %il on lump %i",
 			c, l->size, lump);
+#endif
+	}
 
     if (l->handle == -1)
         close (handle);
@@ -453,8 +470,10 @@ W_ReadLumpStatic
 	lumpinfo_t* l;
 	filehandle_t         handle;
 
+#ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps)
 		I_Error("W_ReadLump: %i >= numlumps", lump);
+#endif
 
 	l = lumpinfo + lump;
 
@@ -463,8 +482,11 @@ W_ReadLumpStatic
 	if (l->handle == -1)
 	{
 		// reloadable file, so use open / read / close
-		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1)
+		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1) {
+#ifdef CHECK_FOR_ERRORS
 			I_Error("W_ReadLump: couldn't open %s", reloadname);
+#endif
+		}
 	}
 	else
 		handle = l->handle;
@@ -472,9 +494,11 @@ W_ReadLumpStatic
 	lseek(handle, l->position, SEEK_SET);
 	c = read(handle, dest, l->size);
 
-	if (c < l->size && c + 65536l != l->size)
-		I_Error("\nW_ReadLump: only read %il of %il on lump %i",
-			c, l->size, lump);
+	if (c < l->size && c + 65536l != l->size) {
+#ifdef CHECK_FOR_ERRORS
+		I_Error("\nW_ReadLump: only read %il of %il on lump %i", c, l->size, lump);
+#endif
+	}
 
 	if (l->handle == -1)
 		close(handle);
@@ -488,10 +512,12 @@ W_ReadLumpStatic
 int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
 
 
+#ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps) {
 		I_Error("W_CacheLumpNumCheck out of bounds: %i %i",  lump, error);
 		return true;
 	}
+#endif
 	return false;
 }
 
@@ -508,8 +534,11 @@ W_CacheLumpNumEMS
 
 
 
+#ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps)
 		I_Error("W_CacheLumpNum: %i >= numlumps", lump);
+#endif
+
 
 
 //	if (!lumpcache[lump])
@@ -518,10 +547,6 @@ W_CacheLumpNumEMS
 		//printf ("cache miss on lump %i\n",lump);
 		// needs an 'owner' apparently...
 		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump + BACKREF_LUMP_OFFSET);
-
-		if (lump == -30456) {
-			I_Error("found it");
-		}
 
 		W_ReadLumpEMS(lump, lumpcacheEMS[lump]);
 	} else {

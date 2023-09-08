@@ -585,14 +585,7 @@ void __interrupt I_KeyboardISR(void)
 	byte value = _inbyte(0x60);
     keyboardque[kbdhead&(KBDQUESIZE - 1)] = value;
 
-	
-	if (value == 64) {
-		I_Error("caught early 192 %i", value);
-	}
-
 	kbdhead++;
-
-
 
 // acknowledge the interrupt
 

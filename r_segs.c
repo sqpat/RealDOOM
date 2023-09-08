@@ -489,9 +489,11 @@ R_StoreWallRange
 
 	linedefOffset = curlinelinedefOffset;
 
+#ifdef CHECK_FOR_ERRORS
 	if (linedefOffset > numlines) {
 		I_Error("R_StoreWallRange Error! lines out of bounds! %i %i %i %i", gametic, numlines, linedefOffset, curlinenum);
 	}
+#endif
 
     // mark the segment as visible for auto map
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
@@ -572,9 +574,11 @@ R_StoreWallRange
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
 	
+#ifdef CHECK_FOR_ERRORS
 	if (curlinesidedefOffset > numsides) {
 		I_Error("Error! sides out of bounds! %i %i %i %i", gametic, numsides, curlinesidedefOffset, curlinenum);
 	}
+#endif
 
 	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 	siderowoffset = sides[curlinesidedefOffset].rowoffset;

@@ -370,9 +370,6 @@ void P_ZMovement (MEMREF moRef)
 			mo->momz = 0;
 		}
 
-	// if (gametic == 758 && moRef == players.moRef){
-	// 	I_Error ("the z value being set %i %i ", temp.w >>  (16-SHORTFLOORBITS), mo->z >>  (16-SHORTFLOORBITS));
-	// }
 
 
 		mo->z = temp.w;
@@ -838,11 +835,13 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
 	}
 
 
+#ifdef CHECK_FOR_ERRORS
 	if (i == NUMMOBJTYPES) {
 		I_Error("P_SpawnMapThing: Unknown type %i at (%i, %i)",
 			mthingtype,
 			mthingx, mthingy);
 	}
+#endif
 
 
     // don't spawn any monsters if -nomonsters

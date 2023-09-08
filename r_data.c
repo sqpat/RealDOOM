@@ -312,11 +312,6 @@ void R_GenerateComposite(uint8_t texnum)
 			x2 = texturewidth;
 
 
-		//I_Error("composite?");
-
-
-
-
 
 
 		for (; x < x2; x++) {
@@ -481,7 +476,6 @@ void R_GenerateLookup(uint8_t texnum)
 			printf("R_GenerateLookup: column without a patch (%s)\n", texturename);
 			return;
 		}
-		// I_Error ("R_GenerateLookup: column without a patch");
 
 		if (patchcount[x] > 1) {
 			// Use the cached block.
@@ -679,8 +673,10 @@ void R_InitTextures(void)
 
 		offset = (*directory);
 
+#ifdef CHECK_FOR_ERRORS
 		if (offset > maxoff)
 			I_Error("R_InitTextures: bad texture directory");
+#endif
 
 		mtexture = (maptexture_t *)((byte *)maptex + offset);
 
@@ -708,6 +704,7 @@ void R_InitTextures(void)
 			patch->patch = patchlookup[(mpatch->patch)];
 
 
+#ifdef CHECK_FOR_ERRORS
 			if (patch->patch == -1)
 			{
 				I_Error("\nR_InitTextures: Missing patch in texture %s \n %i %i %i %i %i %i",
@@ -716,7 +713,8 @@ void R_InitTextures(void)
 					texture->patchcount
 					);
 			}
-			 
+#endif
+
 
 		}
  
@@ -892,6 +890,7 @@ uint8_t R_FlatNumForName(int8_t* name)
 
 	i = W_CheckNumForName(name);
 
+#ifdef CHECK_FOR_ERRORS
 	if (i == -1)
 	{
 		namet[8] = 0;
@@ -902,6 +901,7 @@ uint8_t R_FlatNumForName(int8_t* name)
 	if (i - firstflat > 255){
 		I_Error ("Flat too big %i %i", i, firstflat);
 	}
+#endif
 
 	return (uint8_t)(i - firstflat);
 }
@@ -1046,10 +1046,12 @@ void R_PrecacheLevel(void)
 			texture = (texture_t*)Z_LoadBytesFromEMS(textures[i]); // todo make locked
 			lump = texture->patches[j].patch;
 			//texturememory += lumpinfo[lump].size;
+#ifdef CHECK_FOR_ERRORS
 			if (W_CacheLumpNumCheck(lump, 15)) {
-				printf("Crash %i %i %i", j, lump, texture->patchcount);
 				I_Error("Crash %i %i %i", j, lump, texture->patchcount);
 			}
+#endif
+
 			W_CacheLumpNumEMS(lump, PU_CACHE);
 		}
 	}
@@ -1064,7 +1066,6 @@ void R_PrecacheLevel(void)
 			spritepresent[((mobj_t *)Z_LoadBytesFromEMS(thinkerlist[th].memref))->sprite] = 1;
 		}
 	}
-	//I_Error("blah 1 %i %i %i", numreads, pageins, pageouts);
 
 	//spritememory = 0;
 	//todo does this have to be pulled into the for loop

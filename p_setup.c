@@ -509,10 +509,6 @@ void P_LoadLineDefs(int16_t lump)
 		ld->sidenum[0] = mldsidenum0;
 		ld->sidenum[1] = mldsidenum1;
 
-		if (mldflags & 0xFF00) {
-			I_Error("found high flag set in wad : revisit!"); // remove if this doesnt happen
-		}
-
 		ld->flags = mldflags&0xff;
 		ld->special = mldspecial;
 		ld->tag = mldtag;
@@ -725,9 +721,6 @@ void P_GroupLines(void)
 		if (linebacksecnum != -1 && linebacksecnum != linefrontsecnum) {
 			sectors[linebacksecnum].linecount++;
 			total++;
-			if (sectors[linebacksecnum].linecount == 255){
-				I_Error ("warning - sector linecounts hit 255, change back to int16_t");
-			}
 		}
 	}
 	Z_SetUnlocked(linesRef);
@@ -771,10 +764,12 @@ void P_GroupLines(void)
 		Z_SetUnlocked(linesRef);
 		//Z_SetUnlocked(linebufferRef);
 		//Z_SetUnlocked(vertexesRef);
+#ifdef CHECK_FOR_ERRORS
 		if (linebufferindex - previouslinebufferindex != sectorlinecount) {
 			linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
 			I_Error("P_GroupLines: miscounted %i %i   iteration %i      %i != (%i - %i)", linebuffer, sectors[i].linesoffset,  i, sectors[i].linecount, linebufferindex , previouslinebufferindex);
 		}
+#endif
 
 		// set the degenmobj_t to the middle of the bounding box
 		

@@ -78,10 +78,11 @@ THINKERREF P_GetNextThinkerRef(void) {
 
     }
 
-    // error case
+#ifdef CHECK_FOR_ERRORS
+	// error case
     printf("P_GetNextThinkerRef: Couldn't find a free index!");
     I_Error ("P_GetNextThinkerRef: Couldn't find a free index!");
-    
+#endif
 
     return -1;
     
@@ -195,10 +196,11 @@ void P_RunThinkers (void)
 					case TF_GLOW:
 						T_Glow(thinkerlist[currentthinker].memref);
 						break;
+#ifdef CHECK_FOR_ERRORS
 					default:
 						I_Error("Bad thinker func! %i %i", currentthinker, thinkerlist[currentthinker].functionType);
 						break;
-				
+#endif				
 			
 
 				}

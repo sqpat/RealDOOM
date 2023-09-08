@@ -308,7 +308,6 @@ void HU_Init(void)
     }
 
 
-	//I_Error("value %i", hu_fontRef[0]);
 
 
 }

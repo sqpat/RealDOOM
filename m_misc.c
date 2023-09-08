@@ -192,19 +192,22 @@ M_ReadFile
     byte		*buf;
 	
     handle = open (name, O_RDONLY | O_BINARY, 0666);
-    if (handle == -1)
-	I_Error ("Couldn't read file %s", name);
-    if (fstat (handle,&fileinfo) == -1)
-	I_Error ("Couldn't read file %s", name);
+#ifdef CHECK_FOR_ERRORS
+
+	if (handle == -1)
+		I_Error ("Couldn't read file %s", name);
+#endif
+	if (fstat (handle,&fileinfo) == -1)
+		I_Error ("Couldn't read file %s", name);
     length = fileinfo.st_size;
     *bufferRef = Z_MallocEMSNew (length, PU_STATIC, 0xff, ALLOC_TYPE_READFILE);
 	buf = Z_LoadBytesFromEMS(*bufferRef);
     count = read (handle, buf, length);
     close (handle);
-	
+#ifdef CHECK_FOR_ERRORS
     if (count < length)
-	I_Error ("Couldn't read file %s", name);
-		
+		I_Error ("Couldn't read file %s", name);
+#endif		
     //*buffer = buf;
     return length;
 }

@@ -283,9 +283,12 @@ void R_AddLine (int16_t linenum)
 	fixed_t_union tempy;
     curlinenum = linenum;
 	
+#ifdef CHECK_FOR_ERRORS
 	if (segs[curlinenum].linedefOffset > numlines) {
 		I_Error("R_Addline Error! lines out of bounds! %li %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
 	}
+#endif
+
 	vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 	tempx.h.fracbits = 0;
