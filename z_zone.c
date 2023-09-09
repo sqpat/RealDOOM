@@ -408,7 +408,7 @@ void Z_InitConventional(void) {
 #endif
 	}
 #ifdef DEBUG_PRINTING
-	printf("\Conventional block sizes %i %i", totalconventionalfree1, totalconventionalfree2);
+	printf("\Conventional block sizes %i %i\n", totalconventionalfree1, totalconventionalfree2);
 #endif
 
 	remainingconventional2 = totalconventionalfree2;

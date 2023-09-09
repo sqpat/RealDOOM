@@ -21,8 +21,7 @@ You can adjust the EMS page frames available by changing NUM_EMS_PAGES in doomde
 ###  Broken/unimplemented features (planned to be fixed)
  - sound (will require a 16 bit library)
  - savegames (will require a rewrite of the archive/unarchive code)
- - TitlePic/etc display (requires 65k memory allocations, which is bigger than the 64k that 4 EMS pages requires). This can probably be fixed with custom code but isn't a high priority now.
-
+ 
 
 There are also a lot of hard caps on things like texture size and count, node count, etc, which will probably make many WADs unplayable. oh well.
 
@@ -36,10 +35,11 @@ For those interested in the technical details, a quick summary of what has been 
  - melee attack range seems to be broken
  - there is a texture mapping bug especially with animated textures and doors. i think it has something to do with texture offsets having been made 8 bits.
  - sound, saves are unimplemented/nonfunctional
- - various fullscreen artwork will fail to allocate due to being > 64k 
  - content outside of doom1 shareware has not been tested at all and may be very broken
  - finale has not been tested at all
  - there is a particular render bug with fuzz draws, it comes up twice in demo3 early on where you see a vertical fuzzy line drawn around the first spectre towards when its killed. not sure the cause of this yet.
+ - some issues with fullscreen drawing/backbuffer, especially in intermissions and help screen
+ 
 
 ### Long term ideas:
  - <strike> If conventional memory has enough space, add wolf3d-style conventional allocations of key variables </strike>

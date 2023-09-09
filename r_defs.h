@@ -333,6 +333,16 @@ typedef struct drawseg_s
 } drawseg_t;
 
 
+typedef struct 
+{ 
+    int16_t		width;		// bounding box size 
+    int16_t		height; 
+    int16_t		leftoffset;	// pixels to the left of origin 
+    int16_t		topoffset;	// pixels below the origin 
+	// not 100% sure what it is but changing to 16 bit is a crash. might be pointers.
+    int32_t		columnofs[8];	// only [width] used
+    // the [0] is &columnofs[width] 
+} patch_header_t;
 
 // Patches.
 // A patch holds one or more columns.

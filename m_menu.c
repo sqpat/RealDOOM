@@ -774,7 +774,7 @@ void M_QuickLoad(void)
 void M_DrawReadThis1(void)
 {
     inhelpscreens = true;
-    V_DrawPatchDirect(0, 0, W_CacheLumpNameEMSAsPatch("HELP2", PU_CACHE));
+    V_DrawFullscreenPatch("HELP2");
 }
 
 
@@ -786,14 +786,14 @@ void M_DrawReadThis1(void)
 void M_DrawReadThis2(void)
 {
     inhelpscreens = true;
-    V_DrawPatchDirect(0, 0, W_CacheLumpNameEMSAsPatch("HELP1", PU_CACHE));
+    V_DrawFullscreenPatch("HELP1");
 }
 #endif
 
 void M_DrawReadThisRetail(void)
 {
     inhelpscreens = true;
-    V_DrawPatchDirect(0, 0, W_CacheLumpNameEMSAsPatch("HELP", PU_CACHE));
+    V_DrawFullscreenPatch("HELP");
 }
 
 

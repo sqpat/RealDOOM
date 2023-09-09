@@ -801,8 +801,8 @@ void F_Drawer (void)
 			W_CacheLumpNameEMSAsPatch("HELP2", PU_CACHE));
 	    break;
 #else
-		  V_DrawPatch(0, 0, 0,
-			  W_CacheLumpNameEMSAsPatch("CREDIT", PU_CACHE));
+		  //V_DrawPatch(0, 0, 0, W_CacheLumpNameEMSAsPatch("CREDIT", PU_CACHE));
+		   V_DrawFullscreenPatch("CREDIT");
 	    break;
 #endif
 	  case 2:

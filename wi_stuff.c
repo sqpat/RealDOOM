@@ -1026,10 +1026,7 @@ void WI_loadData(void)
 
 
     // background
-	// todo fix bigger than 64k
-	//    bg = W_CacheLumpName(name, PU_CACHE);    
-	//    V_DrawPatch(0, 0, 1, bg);   
-
+	 	V_DrawFullscreenPatch(name);
 
 
     if (commercial) {

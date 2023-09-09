@@ -54,11 +54,11 @@ TODO
     3 implement 'smart' allocator in setup level
 	? any other small items that can go in there?
 
- 0 make all the PIT_blah etc work off switch instead of function poiners? Does it compile smaller for 16 bit?
  1 fix melee range bug
  2 fix titlepic loading
  3 do the mobj locality thing
    - or consider if it can fit in conventional? (later)
+ - test if changed int8 to int16 in local vars etc results in smaller code.
 
  - probably remove zoom in am_map if it makes a decent difference in code size and complexity
 

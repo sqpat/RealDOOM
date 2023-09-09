@@ -212,6 +212,115 @@ V_CopyRect
     } 
 } 
  
+MEMREF  W_CacheLumpNameEMSFragment(int8_t* name, int8_t tag, int16_t pagenum, int32_t offset, int16_t amount);
+
+// Specially handles titlepic and other ~68k textures that exceed the 64k 4x page frames limit.
+// Requires loading data in one page frame at a time
+// It's okay if this is kind of slow... its only used in menus.
+
+void
+V_DrawFullscreenPatch
+( 
+  int8_t*       pagename ) 
+{ 
+    int16_t		count;
+    int16_t		col; 
+    column_t*	column; 
+	byte* desttop;
+    byte*	dest;
+    byte*	source; 
+    int16_t		w; 
+    patch_t*	patch;
+    int16_t     i;
+    MEMREF patchref;
+    MEMREF colref;
+    int16_t     page = 0;
+    int16_t     needtopage = 0;
+    int32_t    offset = 0;
+    int16_t    pageoffset = 0;
+    byte*       extradata;
+
+
+    patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 0, 0, 16384);
+    patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchref, PAGE_LOCKED);
+    extradata = (byte*)patch;
+
+    V_MarkRect (0, 0, (patch->width), (patch->height)); 
+
+    desttop = screen0;
+    col = 0; 
+	 
+    w = (patch->width); 
+
+    for ( ; col<w ;  col++, desttop++) { 
+
+        // todo dynamically calculate the offsets
+
+	    column = (column_t *)((byte *)extradata + ((patch->columnofs[col]) - offset));
+        pageoffset = (byte *)column - extradata;
+
+       if (pageoffset > 16000){
+            offset+= pageoffset;
+            colref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 1,offset , 16384);
+            extradata = Z_LoadBytesFromEMS(colref);
+	        column = (column_t *)((byte *)extradata + patch->columnofs[col] - offset);
+        }
+
+
+
+// 70 is 15918
+// 72 is 16336
+        if (col == 71){
+            // 2203704
+            //I_Error("column! %i %i %i %i %i %i %i %i %i", (byte*)column - (byte*)extradata, offset, patch->columnofs[col], column, pageoffset, patch, extradata, patchref, colref);
+        }
+      
+
+ 
+	// step through the posts in a column 
+	while (column->topdelta != 0xff )  { 
+        //todo
+        //209 each column
+        //16302 for 72 col?
+
+ 
+
+
+         source = (byte *)column + 3;
+		 dest = desttop + column->topdelta * SCREENWIDTH;
+		 count = column->length;
+
+    
+
+		if ((count -= 4) >= 0)
+			do
+			{
+				register byte s0, s1;
+				s0 = source[0];
+				s1 = source[1];
+				dest[0] = s0;
+				dest[SCREENWIDTH] = s1;
+				dest += SCREENWIDTH * 2;
+				s0 = source[2];
+				s1 = source[3];
+				source += 4;
+				dest[0] = s0;
+				dest[SCREENWIDTH] = s1;
+				dest += SCREENWIDTH * 2;
+			} while ((count -= 4) >= 0);
+			if (count += 4)
+				do
+				{
+					*dest = *source++;
+					dest += SCREENWIDTH;
+				} while (--count);
+				column = (column_t *)(source + 1);
+	} 
+    }			
+
+    Z_SetUnlocked(patchref);
+
+}
 
 //
 // V_DrawPatch
@@ -460,14 +569,12 @@ void V_Init (void)
 	#ifdef SKIPWIPE
 		base = I_AllocLow(1L*SCREENWIDTH*SCREENHEIGHT);
 		screen0 = base;
-//		screen1 = base + 1L*SCREENWIDTH * SCREENHEIGHT;
 
 	#else
-		base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 4);
+		base = I_AllocLow(SCREENWIDTH*SCREENHEIGHT * 3);
 		screen0 = base;
-//		screen1 = base + SCREENWIDTH * SCREENHEIGHT * 1;
-		screen2 = base + SCREENWIDTH * SCREENHEIGHT * 2;
-		screen3 = base + SCREENWIDTH * SCREENHEIGHT * 3;
+		screen2 = base + SCREENWIDTH * SCREENHEIGHT * 1;
+		screen3 = base + SCREENWIDTH * SCREENHEIGHT * 2;
 	#endif
 #endif
 }

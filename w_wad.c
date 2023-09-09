@@ -48,6 +48,9 @@ uint16_t                     numlumps;
 
 MEMREF*					lumpcacheEMS;
 
+// we use this explicitly for fullscreen graphics. 
+MEMREF              pagedlumpcacheEMS[2];
+
 
 void
 ExtractFileBase
@@ -404,7 +407,9 @@ uint32_t _farread(filehandle_t handle, void* buf, uint32_t size)
 void
 W_ReadLumpEMS
 (int16_t           lump,
-  MEMREF         lumpRef )
+  MEMREF         lumpRef,
+  int32_t           start,
+  int32_t           size )
 {
 	filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t* l;
@@ -434,17 +439,18 @@ W_ReadLumpEMS
     else
         handle = l->handle;
 
-	dest = Z_LoadBytesFromEMS(lumpRef);
-	lseek(handle, l->position, SEEK_SET);
+    dest = Z_LoadBytesFromEMS(lumpRef);
 
-	c = read(handle, dest, l->size);
+	lseek(handle, l->position + start, SEEK_SET);
+
+	c = read(handle, dest, size ? size : l->size);
 	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
 #ifdef _M_I86
 	//c = _farread(handle, dest, l->size);
 
 	if (c < l->size && c + 65536l != l->size ) // error check
 #else
-	if (c < l->size) 
+	if (c < (size ? size : l->size)) 
 #endif
 
 {
@@ -525,11 +531,9 @@ int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
 	return false;
 }
 
- 
-//
-// W_CacheLumpNum
-//
-MEMREF
+
+
+ MEMREF
 W_CacheLumpNumEMS
 (	int16_t           lump,
 	int8_t			tag)
@@ -543,16 +547,14 @@ W_CacheLumpNumEMS
 		I_Error("W_CacheLumpNum: %i >= numlumps", lump);
 #endif
 
-
+    //
 
 //	if (!lumpcache[lump])
 	if (!lumpcacheEMS[lump]) {
-		// read the lump in
-		//printf ("cache miss on lump %i\n",lump);
-		// needs an 'owner' apparently...
+        //todo they are all 16k in this case but last one should be
 		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump + BACKREF_LUMP_OFFSET);
 
-		W_ReadLumpEMS(lump, lumpcacheEMS[lump]);
+		W_ReadLumpEMS(lump, lumpcacheEMS[lump], 0, 0);
 	} else {
 		//printf ("cache hit on lump %i\n",lump);
 		//I_Error("cache hit on lump %i and tag %i", lump, tag);
@@ -560,9 +562,7 @@ W_CacheLumpNumEMS
 	}
 
 	return lumpcacheEMS[lump];
-}
-
- 
+} 
 
 //
 // W_CacheLumpName
@@ -575,6 +575,26 @@ W_CacheLumpNameEMS
 	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
 }
 
+// used for stuff > 64k, especially titlepics, to draw one ems frame at a tiem
+MEMREF
+W_CacheLumpNameEMSFragment
+(int8_t*         name,
+	int8_t           tag,
+    int16_t         pagenum,
+    int32_t offset, 
+    int16_t amount){
+ 
+
+    if (pagedlumpcacheEMS[pagenum]){
+        // erase cache
+        Z_FreeEMSNew(pagedlumpcacheEMS[pagenum]);
+    }
+
+    pagedlumpcacheEMS[pagenum] = Z_MallocEMSNew(amount, tag, 0, ALLOC_TYPE_CACHE_LUMP);
+    W_ReadLumpEMS(W_GetNumForName(name), pagedlumpcacheEMS[pagenum], offset, amount);
+
+    return pagedlumpcacheEMS[pagenum];
+}
 // W_CacheLumpName
 //
 patch_t*

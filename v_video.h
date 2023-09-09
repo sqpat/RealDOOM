@@ -89,6 +89,11 @@ V_CopyRect
   int16_t		desty,
   int16_t		destscrn );
 
+void 
+V_DrawFullscreenPatch
+( 
+  int8_t*       texname ) ;
+
 void
 V_DrawPatch
 ( int16_t		x,

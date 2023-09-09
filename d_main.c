@@ -226,7 +226,7 @@ void D_InitStrings() {
 	//handle = open("dstrings.txt", O_RDONLY | O_TEXT);
 	handle = fopen("dstrings.txt", "r");
 	if (handle == NULL) {
-		I_Error("\dstrings.txt missing?\n");
+		I_Error("strings.txt missing?\n");
 		return;
 	}
 	
@@ -662,8 +662,7 @@ void D_PageTicker (void)
 //
 void D_PageDrawer (void)
 {
-        // bigger than 64k todo fix     
-    //V_DrawPatch (0,0, 0, W_CacheLumpName(pagename, PU_CACHE));
+	 V_DrawFullscreenPatch(pagename);
 }
 
 
