@@ -1178,22 +1178,7 @@ void P_UpdateSpecials(void)
 		}
 	}
 
-
-	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
-
-	//	ANIMATE LINE SPECIALS
-	for (i = 0; i < numlinespecials; i++) {
-		line = &lines[linespeciallist[i]];
-		switch (line->special) {
-		  case 48:
-			// EFFECT FIRSTCOL SCROLL +
-			sidenum = line->sidenum[0];
-			sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
-			sides[sidenum].textureoffset += 1; // todo... what about when this goes above 255? need to mod by texsize?
-			lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
-			break;
-		}
-	}
+// we now handle animate specials in the renderer
 
 
 	//	DO BUTTONS
@@ -1217,6 +1202,8 @@ void P_UpdateSpecials(void)
 				case bottom:
 					sides[sidenum].bottomtexture = buttonlist[i].btexture;
 					break;
+				default:
+					I_Error("goofy switch");
 				}
 				S_StartSoundWithParams(buttonlist[i].soundorgX, buttonlist[i].soundorgY, sfx_swtchn);
 				memset(&buttonlist[i], 0, sizeof(button_t));

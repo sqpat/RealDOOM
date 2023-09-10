@@ -89,7 +89,7 @@ typedef struct
 	// for the internal origin of the patch.
 	int16_t         originx;
 	int16_t         originy;
-	int16_t         patch;
+	int16_t         patch; // lump num
 } texpatch_t;
 
 
@@ -106,7 +106,7 @@ typedef struct
 
 	// All the patches[patchcount]
 	//  are drawn back to front into the cached texture.
-	int16_t       patchcount;
+	uint8_t       patchcount;
 	texpatch_t  patches[1];
 
 } texture_t;
@@ -239,7 +239,7 @@ void R_GenerateComposite(uint8_t texnum)
 	MEMREF				realpatchRef;
 	int16_t				textureheight;
 	int16_t				texturewidth;
-	int16_t				texturepatchcount;
+	uint8_t				texturepatchcount;
 	int16_t				patchpatch;
 	int16_t				patchoriginx;
 	int16_t				patchoriginy;
@@ -276,6 +276,7 @@ void R_GenerateComposite(uint8_t texnum)
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 	texturepatchcount = texture->patchcount;
+
 	// Composite the columns together.
 
 	for (i = 0; i < texturepatchcount; i++) {
@@ -396,7 +397,7 @@ void R_GenerateLookup(uint8_t texnum)
 	int16_t*              collump;
 	uint16_t*     		colofs;
 	MEMREF				realpatchRef;
-	int16_t				texturepatchcount;
+	uint8_t				texturepatchcount;
 	int16_t				texturewidth;
 	int16_t				textureheight;
 	int8_t				texturename[8];
@@ -730,9 +731,6 @@ void R_InitTextures(void)
 
 		texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
 		textureheight = (uint8_t*)Z_LoadBytesFromEMS(textureheightRef);
-
-		Z_RefIsActive(texturewidthmaskRef);
-		Z_RefIsActive(textureheightRef);
 		texturewidthmask[i] = j - 1;
 		textureheight[i] = textureheightval;
 

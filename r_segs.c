@@ -481,6 +481,7 @@ R_StoreWallRange
 	sector_t backsector;
 	fixed_t_union temp;
 	int16_t temp2;
+	int16_t animateoffset = 0;
 	temp.h.fracbits = 0;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
@@ -498,9 +499,14 @@ R_StoreWallRange
     // mark the segment as visible for auto map
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
-	(&lines[linedefOffset])->v1Offset |= LINE_VERTEX_FLAG_9;
+	lines[linedefOffset].v1Offset |= LINE_VERTEX_FLAG_9;
 
-	lineflags = (&lines[linedefOffset])->flags;
+	lineflags = lines[linedefOffset].flags;
+
+	// if this is an animated line and offset 0 then set texture offset
+	if (lines[linedefOffset].special == 48 && lines[linedefOffset].sidenum[0] == curlinesidedefOffset){
+		animateoffset = gametic;
+	}
     
     // calculate rw_distance for scale calculation
     rw_normalangle = MOD_FINE_ANGLE(curlineangle + FINE_ANG90);
@@ -538,9 +544,6 @@ R_StoreWallRange
     // calculate scale at both ends and step
     ds_p->scale1 = rw_scale =  R_ScaleFromGlobalAngle (temp.w);
 	temp.h.fracbits = 0;
-
-	//ds_p->scale1 = rw_scale = R_ScaleFromGlobalAngle(viewangle + (xtoviewangle[start] << ANGLETOFINESHIFT));
-
 
     if (stop > start ) {
 		temp.h.intbits = xtoviewangle[stop];
@@ -585,7 +588,7 @@ R_StoreWallRange
 	sidemidtexture = sides[curlinesidedefOffset].midtexture;
 	sidetoptexture = sides[curlinesidedefOffset].toptexture;
 	sidebottomtexture = sides[curlinesidedefOffset].bottomtexture;
-	sidetextureoffset = sides[curlinesidedefOffset].textureoffset;
+	sidetextureoffset = sides[curlinesidedefOffset].textureoffset + animateoffset;
 	
  
 

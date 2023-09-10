@@ -401,7 +401,7 @@ R_DrawVisSprite
 {
     column_t*           column;
 	int16_t             texturecolumn;
-    fixed_t             frac;
+    fixed_t_union             frac;
     patch_t*            patch;
 	MEMREF				patchRef;
         
@@ -416,13 +416,13 @@ R_DrawVisSprite
         
     dc_iscale = abs(vis->xiscale)>>detailshift;
     dc_texturemid = vis->texturemid;
-    frac = vis->startfrac;
+    frac.w = vis->startfrac;
     spryscale = vis->scale;
     sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
         
 	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, true);
-	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac += vis->xiscale) {
-		texturecolumn = (frac>>FRACBITS);
+	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
+		texturecolumn = (frac.h.intbits);
 		column = (column_t *) ((byte *)patch + (patch->columnofs[texturecolumn]));
         R_DrawMaskedColumn (column);
 		Z_RefIsActive(patchRef);

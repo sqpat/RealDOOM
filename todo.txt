@@ -54,16 +54,21 @@ TODO
     3 implement 'smart' allocator in setup level
 	? any other small items that can go in there?
 
- 1 fix melee range bug
- 2 fix titlepic loading
- 3 do the mobj locality thing
+ x fix the texture rotate/offset issue?
+ - fix the patch issue with doors and buttons and stuff?
+ - see how many things at end of a demo 
+ - see how many blockchain entries at end of demo
+ 
+ 2 test if #if NUM_EMS_PAGES >= 8 stuff is faster
+
+   3 do the mobj locality thing
    - or consider if it can fit in conventional? (later)
- - test if changed int8 to int16 in local vars etc results in smaller code.
-
+ 
+ 
  - probably remove zoom in am_map if it makes a decent difference in code size and complexity
-
+- change keyboard down booleans to bits?
+ 
  - fix stage 3 load bug?
- 5 fix the texture rotate/offset issue?
  
  - NUM_BLOCKLINKS is 2000. can be way less. 
     - block x and y are bytes. have a 2 byte thing in a list. iterate thru the list.
