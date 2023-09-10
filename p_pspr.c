@@ -501,8 +501,11 @@ A_Punch
 		damage *= 10;
 	}
 
+
     angle = playermo->angle >> ANGLETOFINESHIFT;
-    angle = MOD_FINE_ANGLE(angle + (P_Random()-P_Random())>>(1));
+	angle += ((P_Random()-P_Random())>> 1);
+
+	//I_Error("%i %i %i", angle, playermo-angle, playermo->angle >> ANGLETOFINESHIFT); //0 2254236  2048;
     slope = P_AimLineAttack (players.moRef, angle, MELEERANGE);
     P_LineAttack (players.moRef, angle, MELEERANGE , slope, damage);
 
@@ -510,8 +513,8 @@ A_Punch
     if (linetargetRef)
     {
 		S_StartSoundFromRef(players.moRef, sfx_punch);
-	linetarget = (mobj_t*) Z_LoadBytesFromEMS(linetargetRef);
-	playermo->angle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
+		linetarget = (mobj_t*) Z_LoadBytesFromEMS(linetargetRef);
+		playermo->angle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
     }
 
 

@@ -1125,13 +1125,14 @@ void D_DoomMain(void)
 	printf("Z_InitEMS: Init EMS memory allocation daemon. \n");
 #endif
 	Z_InitEMS();
-	Z_InitConventional();
 
 
 #ifdef DEBUG_PRINTING
 	printf("W_Init: Init WADfiles.\n");
 #endif
 	W_InitMultipleFiles(wadfiles);
+
+	Z_InitConventional(); // wad loading using a lot of conventional, so do this after..
 
 	// init subsystems
 #ifdef DEBUG_PRINTING

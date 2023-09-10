@@ -415,7 +415,8 @@ W_ReadLumpEMS
     lumpinfo_t* l;
 	filehandle_t         handle;
 	byte		*dest;
-
+    int32_t sizetoread;
+    int32_t startoffset;
 
  
 
@@ -440,23 +441,32 @@ W_ReadLumpEMS
         handle = l->handle;
 
     dest = Z_LoadBytesFromEMS(lumpRef);
+    startoffset = l->position + start;
 
-	lseek(handle, l->position + start, SEEK_SET);
+#ifdef _M_I86
+    sizetoread = size ? size : l->size;
+#else
+    sizetoread = size ? size : l->size;
+#endif
+
+    lseek(handle, startoffset, SEEK_SET);
+
+
 
 	c = read(handle, dest, size ? size : l->size);
 	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
 #ifdef _M_I86
 	//c = _farread(handle, dest, l->size);
 
-	if (c < l->size && c + 65536l != l->size ) // error check
+       if (c < sizetoread && c + 65536l != sizetoread ) // error check
 #else
-	if (c < (size ? size : l->size)) 
+       if (c < (sizetoread)) 
 #endif
 
 {
 #ifdef CHECK_FOR_ERRORS
 		I_Error("\nW_ReadLump: only read %il of %il on lump %i",
-			c, l->size, lump);
+			c, sizetoread, lump);
 #endif
 	}
 
@@ -581,8 +591,7 @@ W_CacheLumpNameEMSFragment
 (int8_t*         name,
 	int8_t           tag,
     int16_t         pagenum,
-    int32_t offset, 
-    int16_t amount){
+    int32_t offset){
  
 
     if (pagedlumpcacheEMS[pagenum]){
@@ -590,8 +599,8 @@ W_CacheLumpNameEMSFragment
         Z_FreeEMSNew(pagedlumpcacheEMS[pagenum]);
     }
 
-    pagedlumpcacheEMS[pagenum] = Z_MallocEMSNew(amount, tag, 0, ALLOC_TYPE_CACHE_LUMP);
-    W_ReadLumpEMS(W_GetNumForName(name), pagedlumpcacheEMS[pagenum], offset, amount);
+    pagedlumpcacheEMS[pagenum] = Z_MallocEMSNew(16384, tag, 0, ALLOC_TYPE_CACHE_LUMP);
+    W_ReadLumpEMS(W_GetNumForName(name), pagedlumpcacheEMS[pagenum], offset, 16384);
 
     return pagedlumpcacheEMS[pagenum];
 }

@@ -1284,11 +1284,13 @@ P_AimLineAttack
 	mobj_t* t1 = (mobj_t*) Z_LoadBytesFromEMS(t1Ref);
     shootthingRef = t1Ref;
 	distance16 &= (CHAINSAW_FLAG-1);
+
 	x.w = t1->x;
 	y.w = t1->y;
     
     x2.w = x.w + ((int32_t)distance16)*finecosine(angle);
     y2.w = y.w + ((int32_t)distance16)*finesine(angle);
+
 	t1height.h.fracbits = 0;
 	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
     shootz = t1->z + t1height.w;
@@ -1309,7 +1311,7 @@ P_AimLineAttack
 		     PTR_AimTraverse );
 		
     if (linetargetRef)
-	return aimslope;
+		return aimslope;
 
     return 0;
 }
@@ -1338,7 +1340,7 @@ P_LineAttack
 	fixed_t_union t1height;
 	x.w = t1->x;
 	y.w = t1->y;
-	distance16 ^= CHAINSAW_FLAG;
+	distance16 &= (CHAINSAW_FLAG-1);
 	shootthingRef = t1Ref;
     la_damage = damage;
     x2.w = x.w + (distance16)*finecosine(angle);
