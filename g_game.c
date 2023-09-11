@@ -54,7 +54,6 @@
 
 // SKY handling - still the wrong place.
 #include "r_data.h"
-#include "r_sky.h"
 
 
 
@@ -393,7 +392,8 @@ void G_BuildTiccmd (int8_t index)
 // G_DoLoadLevel 
 //
 extern  gamestate_t     wipegamestate; 
- 
+extern uint8_t		skytexture;
+
 void G_DoLoadLevel (void) 
 { 
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)

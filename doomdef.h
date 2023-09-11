@@ -74,7 +74,7 @@ enum { VERSION =  109 };
 
 // Maximum number of wad files openable at once. Are we really ever using more than 1 in RealDOOM? if so, be my guest... increases memory usage in a few ways
 // #define SUPPORT_MULTIWAD
-#define MAX_WAD_FILES 1
+// #define MAX_WAD_FILES 1
 
 
 //Show page count by source hint on timedemo finish

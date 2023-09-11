@@ -30,7 +30,6 @@
 #include "m_misc.h"
 
 #include "r_local.h"
-#include "r_sky.h"
 
 
 #include "i_system.h"
@@ -796,19 +795,48 @@ extern uint8_t	screenblocks;
 
 
 
+
+//
+// sky mapping
+//
+uint8_t			skyflatnum;
+uint8_t			skytexture;
+
+
+#define			SKYFLATNAME  "F_SKY1"
+
+//
+// R_InitSkyMap
+// Called whenever the view size changes.
+//
+void R_InitSkyMap(void)
+{
+	skyflatnum = R_FlatNumForName(SKYFLATNAME);
+}
+
+
+
 void R_Init (void)
 {
 	R_InitData ();
-    printf ("..");
+#ifdef DEBUG_PRINTING
+	printf ("..");
+#endif
     // viewwidth / viewheight / detailLevel are set by the defaults
 
 	R_SetViewSize (screenblocks, detailLevel);
 	R_InitPlanes ();
+#ifdef DEBUG_PRINTING
 	printf (".");
+#endif
 	R_InitLightTables ();
-	printf (".");
-    R_InitSkyMap ();
-	printf (".");
+#ifdef DEBUG_PRINTING
+	printf(".");
+#endif
+	R_InitSkyMap ();
+#ifdef DEBUG_PRINTING
+	printf(".");
+#endif
 
 }
 

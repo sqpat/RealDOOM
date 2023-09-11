@@ -28,7 +28,6 @@
 #include "doomstat.h"
 
 #include "r_local.h"
-#include "r_sky.h"
 
 
 

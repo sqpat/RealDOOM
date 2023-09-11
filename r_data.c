@@ -27,7 +27,6 @@
 #include "p_local.h"
 
 #include "doomstat.h"
-#include "r_sky.h"
 
 #include  <alloca.h>
 
@@ -474,7 +473,9 @@ void R_GenerateLookup(uint8_t texnum)
 	for (x = 0; x < texturewidth; x++) {
 
 		if (!patchcount[x]) {
+#ifdef DEBUG_PRINTING
 			printf("R_GenerateLookup: column without a patch (%s)\n", texturename);
+#endif
 			return;
 		}
 
@@ -649,6 +650,7 @@ void R_InitTextures(void)
 	temp1 = W_GetNumForName("S_START");  // P_???????
 	temp2 = W_GetNumForName("S_END") - 1;
 	temp3 = ((temp2 - temp1 + 63) / 64) + ((numtextures + 63) / 64);
+#ifdef DEBUG_PRINTING
 	printf("[");
 	for (i = 0; i < temp3; i++)
 		printf(" ");
@@ -656,11 +658,14 @@ void R_InitTextures(void)
 	for (i = 0; i < temp3; i++)
 		printf("\x8");
 	printf("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
+#endif
 
 	for (i = 0; i < numtextures; i++, directory++)
 	{
+#ifdef DEBUG_PRINTING
 		if (!(i & 63))
 			printf(".");
+#endif
 
 		if (i == numtextures1)
 		{
@@ -802,8 +807,11 @@ void R_InitSpriteLumps(void)
 
 	for (i = 0; i < numspritelumps; i++)
 	{
+
+#ifdef DEBUG_PRINTING
 		if (!(i & 63))
 			printf(".");
+#endif
 		Z_RefIsActive(spritewidthRef);
 		Z_RefIsActive(spriteoffsetRef);
 		Z_RefIsActive(spritetopoffsetRef);
@@ -865,11 +873,17 @@ void R_InitColormaps(void)
 void R_InitData(void)
 {
 	R_InitTextures();
+#ifdef DEBUG_PRINTING
 	printf(".");
+#endif
 	R_InitFlats();
+#ifdef DEBUG_PRINTING
 	printf(".");
+#endif
 	R_InitSpriteLumps();
+#ifdef DEBUG_PRINTING
 	printf(".");
+#endif
 	R_InitColormaps();
 }
 

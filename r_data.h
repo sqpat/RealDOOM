@@ -25,6 +25,7 @@
 
 // Retrieve column data for span blitting.
 
+extern uint8_t		skytexture;
 
 extern MEMREF lockedRef;
 
