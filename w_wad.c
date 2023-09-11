@@ -618,7 +618,6 @@ W_ReadLumpStatic
 
 int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
 
-
 #ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps) {
 		I_Error("W_CacheLumpNumCheck out of bounds: %i %i",  lump, error);

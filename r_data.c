@@ -756,26 +756,7 @@ void R_InitTextures(void)
 		texturetranslation[i] = i;
 
 }
-
-
-
-//
-// R_InitFlats
-//
-void R_InitFlats(void)
-{
-	uint8_t         i;
-
-	firstflat = W_GetNumForName("F_START") + 1;
-	lastflat = W_GetNumForName("F_END") - 1;
-	numflats = lastflat - firstflat + 1;
-
-	// Create translation table for global animation.
-
-	for (i = 0; i < numflats; i++)
-		flattranslation[i] = i;
-}
-
+ 
 
 //
 // R_InitSpriteLumps
@@ -812,9 +793,9 @@ void R_InitSpriteLumps(void)
 		if (!(i & 63))
 			printf(".");
 #endif
-		Z_RefIsActive(spritewidthRef);
-		Z_RefIsActive(spriteoffsetRef);
-		Z_RefIsActive(spritetopoffsetRef);
+		//Z_RefIsActive(spritewidthRef);
+		//Z_RefIsActive(spriteoffsetRef);
+		//Z_RefIsActive(spritetopoffsetRef);
 
 
 		W_CacheLumpNumCheck(firstspritelump + i, 13);
@@ -825,23 +806,55 @@ void R_InitSpriteLumps(void)
 		patchtopoffset = (patch->topoffset) ;
 
 		spritewidth = (int16_t*)Z_LoadBytesFromEMS(spritewidthRef);
-		spriteoffset = (int16_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
-		spritetopoffset = (int16_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
-
 		spritewidth[i] = patchwidth;
+		spriteoffset = (int16_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
 		spriteoffset[i] = patchleftoffset;
+		spritetopoffset = (int16_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
 		spritetopoffset[i] = patchtopoffset;
 
 	}
 }
  
 
+ 
+
+
 //
-// R_InitColormaps
+// R_InitData
+// Locates all the lumps
+//  that will be used by all views
+// Must be called after W_Init.
 //
-void R_InitColormaps(void)
-{
+void R_InitData(void) {
+	uint8_t         i;
 	int16_t lump;
+
+	R_InitTextures();
+#ifdef DEBUG_PRINTING
+	printf(".");
+#endif
+
+// R_InitFlats();
+
+	firstflat = W_GetNumForName("F_START") + 1;
+	lastflat = W_GetNumForName("F_END") - 1;
+	numflats = lastflat - firstflat + 1;
+
+	// Create translation table for global animation.
+
+	for (i = 0; i < numflats; i++)
+		flattranslation[i] = i;
+
+
+#ifdef DEBUG_PRINTING
+	printf(".");
+#endif
+	R_InitSpriteLumps();
+#ifdef DEBUG_PRINTING
+	printf(".");
+#endif
+
+// R_InitColormaps();
 
 	// Load in the light tables, 
 	//  256 byte align tables.
@@ -860,31 +873,7 @@ void R_InitColormaps(void)
 	//I_Error("size %i", length);
 
 	W_ReadLumpStatic(lump, colormaps);
-}
 
-
-
-//
-// R_InitData
-// Locates all the lumps
-//  that will be used by all views
-// Must be called after W_Init.
-//
-void R_InitData(void)
-{
-	R_InitTextures();
-#ifdef DEBUG_PRINTING
-	printf(".");
-#endif
-	R_InitFlats();
-#ifdef DEBUG_PRINTING
-	printf(".");
-#endif
-	R_InitSpriteLumps();
-#ifdef DEBUG_PRINTING
-	printf(".");
-#endif
-	R_InitColormaps();
 }
 
 

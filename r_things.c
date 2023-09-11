@@ -299,24 +299,7 @@ vissprite_t     vissprites[MAXVISSPRITES];
 vissprite_t*    vissprite_p;
 
 
-
-//
-// R_InitSprites
-// Called at program start.
-//
-void R_InitSprites (int8_t** namelist)
-{
-	int16_t         i;
-        
-    for (i=0 ; i<SCREENWIDTH ; i++)
-    {
-        negonearray[i] = -1;
-    }
-        
-    R_InitSpriteDefs (namelist);
-}
-
-
+ 
 
 //
 // R_ClearSprites

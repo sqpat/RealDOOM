@@ -49,7 +49,7 @@ enum { VERSION =  109 };
 // #define EMS_VISPLANES
 
 // Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off.
-//#define CHECKREFS
+#define CHECKREFS
 
 // The below flag skips wipes. They just aren't going to work well unless you dedicate 128k of conventional memory to them, so it's probably best to not use for this project. If we can do it with EMS then great, but low priority. We also get to cut out f_wipe.c code from memory usage.
 #define SKIPWIPE

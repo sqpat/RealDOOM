@@ -111,7 +111,7 @@ void P_LoadVertexes(int16_t lump)
 	MEMREF				dataRef;
 	mapvertex_t*			data;
 	uint16_t                 i;
-	mapvertex_t*        ml;
+	mapvertex_t			ml;
 	vertex_t*           li;
 
 	// Determine number of lumps:
@@ -124,17 +124,17 @@ void P_LoadVertexes(int16_t lump)
 	// Load data into cache.
 	W_CacheLumpNumCheck(lump, 0);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	data = (mapvertex_t*)Z_LoadBytesFromEMS(dataRef);
 	
-	li = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 	// Copy and convert vertex coordinates,
 	// internal representation as fixed.
-	for (i = 0; i < numvertexes; i++, li++) {
-		ml = &data[i];
+	for (i = 0; i < numvertexes; i++) {
+		data = (mapvertex_t*)Z_LoadBytesFromEMS(dataRef);
+		ml = data[i];
 
-		li->x = (ml->x);
-		li->y = (ml->y);
+		li = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
+		li[i].x = (ml.x);
+		li[i].y = (ml.y);
 		Z_RefIsActive(dataRef);
 		Z_RefIsActive(vertexesRef);
 	}
@@ -886,15 +886,52 @@ P_SetupLevel
 }
 
 
+extern switchlist_t* alphSwitchList;
+extern uint8_t		switchlist[MAXSWITCHES * 2];
+extern int16_t		numswitches;
 
+extern R_InitSpriteDefs(int8_t** namelist);
 //
 // P_Init
 //
 void P_Init(void)
 {
-	P_InitSwitchList();
+	//P_InitSwitchList();
+
+	int16_t		i;
+	int8_t		index;
+	int8_t		episode = 1;
+
+	if (registered)
+		episode = 2;
+	else if (commercial)
+		episode = 3;
+
+	for (index = 0, i = 0; i < MAXSWITCHES; i++) {
+		if (!alphSwitchList[i].episode) {
+			numswitches = index / 2;
+			switchlist[index] = BAD_TEXTURE;
+			break;
+		}
+
+		if (alphSwitchList[i].episode <= episode) {
+
+			switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name1);
+			switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name2);
+		}
+	}
+
+
+
 	P_InitPicAnims();
-    R_InitSprites(sprnames);
+   
+	// R_InitSprites(sprnames);
+	for (i = 0; i < SCREENWIDTH; i++) {
+		negonearray[i] = -1;
+	}
+
+	R_InitSpriteDefs(sprnames);
+
 }
 
 

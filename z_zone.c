@@ -680,15 +680,18 @@ int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
 
 	uint16_t numallocatepages;
 
+	if (memref >= EMS_ALLOCATION_LIST_SIZE ) {
+		if (memref >= (EMS_ALLOCATION_LIST_SIZE + 2 * CONVENTIONAL_ALLOCATION_LIST_SIZE)) {
+			I_Error("Z_RefIsActive: alloc too big %i ", memref);
+		}
+		return 1; // if its in conventional then its good.
+	}
+
 	if (size == 0) {
 		numallocatepages = 1;
 	}
 	else {
 		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
-	}
-
-	if (memref > EMS_ALLOCATION_LIST_SIZE) {
-		I_Error("Z_RefIsActive: alloc too big %i ", memref);
 	}
 
 	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {

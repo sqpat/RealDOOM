@@ -398,8 +398,8 @@ boolean P_CrossSubsector (int16_t subsecnum)
 			return false;		// stop
 		}
 	
+		// todo pull this out? only use
 		frac = P_InterceptVector2 (&strace, &divl);
-		// frac = P_InterceptVector2 (&strace, &divlNode);
 		
 		if (sectors[frontsecnum].floorheight != sectors[backsecnum].floorheight) {
 		 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;

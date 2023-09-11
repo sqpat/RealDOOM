@@ -335,18 +335,16 @@ void P_RemoveActivePlat(MEMREF platRef)
 	plat_t* plat;
 	sector_t* sectors;
 	int16_t platsecnum;
-	THINKERREF platthinkerRef;
 	platraisecount++;
 	for (i = 0; i < MAXPLATS; i++) {
 		if (platRef == activeplats[i]) {
 			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[i]);
 			platsecnum = plat->secnum;
-			platthinkerRef = plat->thinkerRef;
+			P_RemoveThinker(plat->thinkerRef);
 
 			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 			(&sectors[platsecnum])->specialdataRef = NULL_MEMREF;
 
-			P_RemoveThinker(platthinkerRef);
 			activeplats[i] = NULL_MEMREF;
 
 			return;
