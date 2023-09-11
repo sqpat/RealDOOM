@@ -122,6 +122,7 @@ void W_AddFile (int8_t *filename)
     wadinfo_t           header;
     lumpinfo_t*         lump_p;
 	uint16_t            i;
+	uint16_t            j = 65535;
 	filehandle_t                 handle;
 	filelength_t                 length;
 	uint16_t                 startlump;
@@ -227,16 +228,27 @@ void W_AddFile (int8_t *filename)
 		if (i) {
 			diff = fileinfo->filepos - lastpos;
 			if (fileinfo->filepos) { // sometimes there are 0 size 'marker' items that also lie and set their position as 0... just skip these as it throws off the algorithm
+
 				diff = lastsize - diff;
 
+				// we need to backtrack and push all 0 length items to the position of the next nonzero length item so size calculatiosn work
+				if (j != 65535) {
+					for (; j < i; j++) {
+						lumpinfo[j].position = fileinfo->filepos;
+					}
+					j = 65535;
+				}
 //				if (lastsize != diff) {
 //					if (diff > 127 || diff < -128)
 //						I_Error("\nbad size? %i %i %i %i", i, lastsize, lastpos, fileinfo->filepos);
 //				}
-				lastpos = (fileinfo->filepos);
+				lastpos = fileinfo->filepos;
 				lastsize = fileinfo->size;
 			}
 			else {
+				if (j == 65535)
+					j = i;
+
 				diff = 0;
 				lump_p->position = lastpos;
 			}
@@ -252,8 +264,8 @@ void W_AddFile (int8_t *filename)
 #ifdef	SUPPORT_MULTIWAD
 	currentfilehandle++;
 #endif
+	 
 
-        
     if (reloadname)
         close (handle);
 }
