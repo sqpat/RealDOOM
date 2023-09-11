@@ -1071,7 +1071,7 @@ P_ShootSpecialLine
 //  that the player origin is in a special sector
 //
 void P_PlayerInSpecialSector () {
-	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
 	fixed_t playerMoz = playerMo->z;
 	int16_t secnum = playerMo->secnum;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
@@ -1088,43 +1088,43 @@ void P_PlayerInSpecialSector () {
     switch (sectors[secnum].special) {
 		case 5:
 			// HELLSLIME DAMAGE
-			if (!players.powers[pw_ironfeet])
+			if (!player.powers[pw_ironfeet])
 				if (!(leveltime.h.fracbits &0x1f))
-					P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 10);
+					P_DamageMobj (playermoRef, NULL_MEMREF, NULL_MEMREF, 10);
 			break;
 	
 		case 7:
 			// NUKAGE DAMAGE
-			if (!players.powers[pw_ironfeet])
+			if (!player.powers[pw_ironfeet])
 				if (!(leveltime.h.fracbits &0x1f))
-					P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 5);
+					P_DamageMobj (playermoRef, NULL_MEMREF, NULL_MEMREF, 5);
 			break;
 	
 		case 16:
 			// SUPER HELLSLIME DAMAGE
 			case 4:
 				// STROBE HURT
-				if (!players.powers[pw_ironfeet] || (P_Random()<5) ) {
+				if (!player.powers[pw_ironfeet] || (P_Random()<5) ) {
 					if (!(leveltime.h.fracbits &0x1f))
-						P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 20);
+						P_DamageMobj (playermoRef, NULL_MEMREF, NULL_MEMREF, 20);
 				}
 				break;
 			
 		case 9:
 			// SECRET SECTOR
-			players.secretcount++;
+			player.secretcount++;
 			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 			sectors[secnum].special = 0;
 			break;
 			
 		case 11:
 			// EXIT SUPER DAMAGE! (for E1M8 finale)
-			players.cheats &= ~CF_GODMODE;
+			player.cheats &= ~CF_GODMODE;
 
 			if (!(leveltime.h.fracbits &0x1f))
-				P_DamageMobj (players.moRef, NULL_MEMREF, NULL_MEMREF, 20);
+				P_DamageMobj (playermoRef, NULL_MEMREF, NULL_MEMREF, 20);
 
-			if (players.health <= 10)
+			if (player.health <= 10)
 				G_ExitLevel();
 			break;
 			

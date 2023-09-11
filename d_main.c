@@ -571,7 +571,7 @@ void D_DoomLoop (void)
         {
             TryRunTics (); // will run at least one tic
         }
-		S_UpdateSounds (players.moRef);// move positional sounds
+		S_UpdateSounds (playermoRef);// move positional sounds
         // Update display, next frame, with current state.
 
 		 
@@ -682,7 +682,7 @@ void D_AdvanceDemo (void)
 //
  void D_DoAdvanceDemo (void)
 {
-    players.playerstate = PST_LIVE;  // not reborn
+    player.playerstate = PST_LIVE;  // not reborn
     advancedemo = false;
     usergame = false;               // no save / end game here
     paused = false;
@@ -894,9 +894,6 @@ void D_AddFile (int8_t *file)
 void IdentifyVersion (void)
 {
     strcpy(basedefault,"default.cfg");
-	 
-
- 
 
     if ( !access ("doom2.wad",R_OK) )
     {

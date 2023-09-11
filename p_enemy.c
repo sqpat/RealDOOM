@@ -595,14 +595,14 @@ P_LookForPlayers
 
     
 	Z_RefIsActive(actorRef);
- 	if (players.health <= 0)
+ 	if (player.health <= 0)
 		return false;		// dead
 
-	if (!P_CheckSight(actorRef, players.moRef)) {
+	if (!P_CheckSight(actorRef, playermoRef)) {
 		actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 		return false;		// out of sight
 	}
-	playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
 	playerMox = playerMo->x;
 	playerMoy = playerMo->y;
 	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
@@ -618,7 +618,7 @@ P_LookForPlayers
 		}
 	}
 
-	actor->targetRef = players.moRef;
+	actor->targetRef = playermoRef;
 	return true;
 }
 
@@ -2003,7 +2003,7 @@ void A_BossDeath (MEMREF moRef)
 
     
 	// make sure there is a player alive for victory
-	if (players.health <= 0)
+	if (player.health <= 0)
 		return; // no one left alive, so do not end game
 
     // scan the remaining thinkers to see
@@ -2093,7 +2093,7 @@ A_OpenShotgun2
 ( 
   pspdef_t*	psp )
 {
-	S_StartSoundFromRef(players.moRef, sfx_dbopn);
+	S_StartSoundFromRef(playermoRef, sfx_dbopn);
 }
 
 void
@@ -2101,7 +2101,7 @@ A_LoadShotgun2
 ( 
   pspdef_t*	psp )
 {
-	S_StartSoundFromRef(players.moRef, sfx_dbload);
+	S_StartSoundFromRef(playermoRef, sfx_dbload);
 }
 
 void
@@ -2114,7 +2114,7 @@ A_CloseShotgun2
 ( 
   pspdef_t*	psp )
 {
-    S_StartSoundFromRef (players.moRef, sfx_dbcls);
+    S_StartSoundFromRef (playermoRef, sfx_dbcls);
     A_ReFire(psp);
 }
 

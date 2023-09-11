@@ -974,9 +974,9 @@ void M_ChangeMessages(int16_t choice)
     showMessages = 1 - showMessages;
         
     if (!showMessages)
-        players.message = MSGOFF;
+        player.message = MSGOFF;
     else
-        players.message = MSGON ;
+        player.message = MSGON ;
 
     message_dontfuckwithme = true;
 }
@@ -1138,9 +1138,9 @@ void M_ChangeDetail(int16_t choice)
     R_SetViewSize (screenblocks, detailLevel);
 
     if (!detailLevel)
-        players.message = DETAILHI;
+        player.message = DETAILHI;
     else
-        players.message = DETAILLO;
+        player.message = DETAILLO;
 }
 
 
@@ -1535,7 +1535,7 @@ boolean M_Responder (event_t* ev)
             usegamma++;
             if (usegamma > 4)
                 usegamma = 0;
-            players.message = gammamsg[usegamma];
+            player.message = gammamsg[usegamma];
             I_SetPalette (Z_LoadBytesFromEMS(W_CacheLumpNameEMS("PLAYPAL", PU_CACHE)));
             return true;
                                 

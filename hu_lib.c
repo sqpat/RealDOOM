@@ -30,28 +30,7 @@
 
 extern boolean	automapactive;	// in AM_map.c
 
-
-void HUlib_clearTextLine(hu_textline_t* t)
-{
-    t->len = 0;
-    t->l[0] = 0;
-    t->needsupdate = true;
-}
-
-void
-HUlib_initTextLine
-( hu_textline_t*	t,
-  int16_t			x,
-  int16_t			y,
-  MEMREF*		fRef,
-  uint8_t			sc )
-{
-    t->x = x;
-    t->y = y;
-    t->fRef = fRef;
-    t->sc = sc;
-    HUlib_clearTextLine(t);
-}
+ 
 
 boolean
 HUlib_addCharToTextLine
@@ -142,49 +121,7 @@ void HUlib_eraseTextLine(hu_textline_t* l)
     if (l->needsupdate) l->needsupdate--;
 
 }
-
-void
-HUlib_initSText
-( hu_stext_t*	s,
-  int16_t		x,
-  int16_t		y,
-  int16_t		h,
-  MEMREF*   fontRef,
-  uint8_t		startchar,
-  boolean*	on )
-{
-
-	int16_t i;
-	patch_t* font0;
-
-    s->h = h;
-    s->on = on;
-    s->laston = true;
-    s->cl = 0;
-	font0 = (patch_t*)Z_LoadBytesFromEMS(fontRef[0]);
-	for (i = 0; i < h; i++) {
-		HUlib_initTextLine(&s->l[i],
-			x, y - i * ((font0->height) + 1),
-			fontRef, startchar);
-	}
-
-}
-
-void HUlib_addLineToSText(hu_stext_t* s)
-{
-
-	int16_t i;
-
-    // add a clear line
-    if (++s->cl == s->h)
-	s->cl = 0;
-    HUlib_clearTextLine(&s->l[s->cl]);
-
-    // everything needs updating
-    for (i=0 ; i<s->h ; i++)
-	s->l[i].needsupdate = 4;
-
-}
+ 
 
 void
 HUlib_addMessageToSText
@@ -192,8 +129,23 @@ HUlib_addMessageToSText
   int8_t*		prefix,
   int8_t*		msg )
 {
-    HUlib_addLineToSText(s);
-    if (prefix)
+
+	int16_t i;
+	hu_textline_t* t;
+	// add a clear line
+	if (++s->cl == s->h)
+		s->cl = 0;
+
+	t = &s->l[s->cl];
+	t->len = 0;
+	t->l[0] = 0;
+	t->needsupdate = true;
+
+	// everything needs updating
+	for (i = 0; i < s->h; i++)
+		s->l[i].needsupdate = 4;
+	
+	if (prefix)
 	while (*prefix)
 	    HUlib_addCharToTextLine(&s->l[s->cl], *(prefix++));
 
@@ -201,41 +153,4 @@ HUlib_addMessageToSText
 	HUlib_addCharToTextLine(&s->l[s->cl], *(msg++));
 }
 
-void HUlib_drawSText(hu_stext_t* s)
-{
-	int16_t i, idx;
-    hu_textline_t *l;
-
-    if (!*s->on)
-	return; // if not on, don't draw
-
-    // draw everything
-    for (i=0 ; i<s->h ; i++)
-    {
-	idx = s->cl - i;
-	if (idx < 0)
-	    idx += s->h; // handle queue of lines
-	
-	l = &s->l[idx];
-
-	// need a decision made here on whether to skip the draw
-	HUlib_drawTextLine(l, false); // no cursor, please
-    }
-
-}
-
-void HUlib_eraseSText(hu_stext_t* s)
-{
-
-	int16_t i;
-
-    for (i=0 ; i<s->h ; i++)
-    {
-	if (s->laston && !*s->on)
-	    s->l[i].needsupdate = 4;
-	HUlib_eraseTextLine(&s->l[i]);
-    }
-    s->laston = *s->on;
-
-}
  

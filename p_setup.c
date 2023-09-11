@@ -810,11 +810,11 @@ P_SetupLevel
 	uint32_t time;
 
 	wminfo.partime = 180;
-	players.killcount = players.secretcount = players.itemcount = 0;
+	player.killcount = player.secretcount = player.itemcount = 0;
 
 	// Initial height of PointOfView
 	// will be set by player think.
-	players.viewz = 1;
+	player.viewz = 1;
 
 	S_Start();
 	Z_FreeTagsEMS(PU_LEVEL);

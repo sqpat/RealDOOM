@@ -243,51 +243,7 @@ int16_t mapnamest[] =	// TNT WAD map names.
     THUSTR_32
 };
 #endif
-
-
-const int8_t*	shiftxform;
  
-const int8_t english_shiftxform[] =
-{
-
-    0,
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-    11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-    31,
-    ' ', '!', '"', '#', '$', '%', '&',
-    '"', // shift-'
-    '(', ')', '*', '+',
-    '<', // shift-,
-    '_', // shift--
-    '>', // shift-.
-    '?', // shift-/
-    ')', // shift-0
-    '!', // shift-1
-    '@', // shift-2
-    '#', // shift-3
-    '$', // shift-4
-    '%', // shift-5
-    '^', // shift-6
-    '&', // shift-7
-    '*', // shift-8
-    '(', // shift-9
-    ':',
-    ':', // shift-;
-    '<',
-    '+', // shift-=
-    '>', '?', '@',
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-    'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    '[', // shift-[
-    '!', // shift-backslash - OH MY GOD DOES WATCOM SUCK
-    ']', // shift-]
-    '"', '_',
-    '\'', // shift-`
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-    'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    '{', '|', '}', '~', 127
-};
  
 
 void HU_Init(void)
@@ -297,7 +253,6 @@ void HU_Init(void)
     int16_t		j;
 	int8_t	buffer[9];
 
-	shiftxform = english_shiftxform;
 
     // load the heads-up font
     j = HU_FONTSTART;
@@ -321,7 +276,9 @@ void HU_Start(void)
 	patch_t* hu_font0; 
 	int16_t HU_TITLEY;
 	int16_t HU_INPUTY;
-
+	int16_t i;
+	patch_t* font0;
+	hu_textline_t*	t;
 	hu_font0 = (patch_t*) Z_LoadBytesFromEMS(hu_fontRef[0]);
 	HU_TITLEY = (167 - (hu_font0->height));
 	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * ((hu_font0->height) + 1));
@@ -332,17 +289,39 @@ void HU_Start(void)
     // create the message widget
 
 	
-	HUlib_initSText(&w_message,
-		    HU_MSGX, HU_MSGY, HU_MSGHEIGHT,
-		    hu_fontRef,
-		    HU_FONTSTART, &message_on);
+ 
+
+
+	w_message.h = HU_MSGHEIGHT;
+	w_message.on = &message_on;
+	w_message.laston = true;
+	w_message.cl = 0;
+	font0 = (patch_t*)Z_LoadBytesFromEMS(hu_fontRef[0]);
+	for (i = 0; i < HU_MSGHEIGHT; i++) {
+		t = &w_message.l[i];
+		t->x = HU_MSGX;
+		t->y = HU_MSGY - i * ((font0->height) + 1);
+		t->fRef = hu_fontRef;
+		t->sc = HU_FONTSTART;
+
+		t->len = 0;
+		t->l[0] = 0;
+		t->needsupdate = true;
+
+
+	}
+
+
 
     // create the map title widget
-    HUlib_initTextLine(&w_title,
-		       HU_TITLEX, HU_TITLEY,
-		       hu_fontRef,
-		       HU_FONTSTART);
-    
+ 
+	w_title.x = HU_TITLEX;
+	w_title.y = HU_TITLEY;
+	w_title.fRef = hu_fontRef;
+	w_title.sc = HU_FONTSTART;
+	w_title.len = 0;
+	w_title.l[0] = 0;
+	w_title.needsupdate = true;
 
 
     if (commercial)
@@ -384,16 +363,44 @@ void HU_Start(void)
 void HU_Drawer(void)
 {
 
-    HUlib_drawSText(&w_message);
+
+	hu_stext_t* s = &w_message;
+	int16_t i, idx;
+	hu_textline_t *l;
+
+	if (!*s->on)
+		return; // if not on, don't draw
+
+		// draw everything
+	for (i = 0; i < s->h; i++)
+	{
+		idx = s->cl - i;
+		if (idx < 0)
+			idx += s->h; // handle queue of lines
+
+		l = &s->l[idx];
+
+		// need a decision made here on whether to skip the draw
+		HUlib_drawTextLine(l, false); // no cursor, please
+	}
+
     if (automapactive)
-	HUlib_drawTextLine(&w_title, false);
+		HUlib_drawTextLine(&w_title, false);
 
 }
 
 void HU_Erase(void)
 {
+	int16_t i;
 
-    HUlib_eraseSText(&w_message);
+	for (i = 0; i < w_message.h; i++)
+	{
+		if (w_message.laston && !*w_message.on)
+			w_message.l[i].needsupdate = 4;
+		HUlib_eraseTextLine(&w_message.l[i]);
+	}
+	w_message.laston = *w_message.on;
+
     HUlib_eraseTextLine(&w_title);
 
 }
@@ -413,16 +420,16 @@ void HU_Ticker(void)
 	{
 
 		// display message if necessary
-		if (((players.messagestring || players.message != -1) && !message_nottobefuckedwith) || (players.message && message_dontfuckwithme))
+		if (((player.messagestring || player.message != -1) && !message_nottobefuckedwith) || (player.message && message_dontfuckwithme))
 		{
-			if (players.message != -1) {
-				 getStringByIndex(players.message, temp);
+			if (player.message != -1) {
+				 getStringByIndex(player.message, temp);
 				HUlib_addMessageToSText(&w_message, 0, temp);
-				players.message = -1;
+				player.message = -1;
 			}
 			else {
-				HUlib_addMessageToSText(&w_message, 0, players.messagestring);
-				players.messagestring = NULL;
+				HUlib_addMessageToSText(&w_message, 0, player.messagestring);
+				player.messagestring = NULL;
 
 			}
 			message_on = true;

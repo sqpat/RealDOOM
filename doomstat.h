@@ -177,11 +177,8 @@ extern	ticcount_t		gametic;
 
 
 // Bookkeeping on players - state.
-extern	player_t	players;
-
-// Alive? Disconnected?
-
-
+extern	player_t	player;
+extern	MEMREF		playermoRef;
  
 
 // Intermission stats.

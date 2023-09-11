@@ -52,6 +52,7 @@ typedef struct
 #ifdef	SUPPORT_MULTIWAD
 	int8_t	handleindex;
 #endif
+	// (probably could cap at 16 bit and use high bit as sizediff)
     int32_t		position; 
 	// dont know if this might have to change to int16_t at some point, but basically this is the diff between declared lump size and diff of adjacent positions. I think the wad is (annoyingly) made with some overlapping items. saves us 3 bytes per lump still.
 	int8_t	sizediff; 
@@ -63,7 +64,6 @@ extern	lumpinfo_t*	lumpinfo;
 extern	uint16_t		numlumps;
 
 void    W_InitMultipleFiles (int8_t** filenames);
-void    W_Reload (void);
 
 int16_t	W_CheckNumForName (int8_t* name);
 int16_t	W_GetNumForName(int8_t* name);

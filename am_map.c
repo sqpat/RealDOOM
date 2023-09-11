@@ -336,7 +336,7 @@ void AM_restoreScaleAndLoc(void)
 		m_x = old_m_x;
 		m_y = old_m_y;
     } else {
-		playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+		playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
 		m_x = playerMo->x - m_w/2;
 		m_y = playerMo->y - m_h/2;
     }
@@ -459,7 +459,7 @@ void AM_initVariables(void)
     m_h = FTOM16(f_h);
 
   
-	playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
 	m_x = playerMo->x - m_w/2;
     m_y = playerMo->y - m_h/2;
     AM_changeWindowLoc();
@@ -658,21 +658,21 @@ AM_Responder
 	  case AM_FOLLOWKEY:
 	    followplayer = !followplayer;
 	    f_oldloc.x = MAXLONG;
-		players.message = followplayer ? AMSTR_FOLLOWON : AMSTR_FOLLOWOFF;
+		player.message = followplayer ? AMSTR_FOLLOWON : AMSTR_FOLLOWOFF;
 	    break;
 	  case AM_GRIDKEY:
 	    grid = !grid;
-		players.message = grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
+		player.message = grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
 	    break;
 	  case AM_MARKKEY:
 		getStringByIndex(AMSTR_MARKEDSPOT, text);
 	    sprintf(buffer, "%s %d", text, markpointnum);
-		players.messagestring = buffer;
+		player.messagestring = buffer;
 	    AM_addMark();
 	    break;
 	  case AM_CLEARMARKKEY:
 	    AM_clearMarks();
-		players.message = AMSTR_MARKSCLEARED;
+		player.message = AMSTR_MARKSCLEARED;
 	    break;
 	  default:
 	    rc = false;
@@ -740,7 +740,7 @@ void AM_doFollowPlayer(void) {
 
 	mobj_t* playerMo;
 
-	playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
 
     if (f_oldloc.x != playerMo->x || f_oldloc.y != playerMo->y)
     {
@@ -1007,7 +1007,7 @@ AM_drawMline
     static fline_t fl;
 
     if (AM_clipMline(ml, &fl))
-	AM_drawFline(&fl, color); // draws it on frame buffer using fb coords
+		AM_drawFline(&fl, color); // draws it on frame buffer using fb coords
 }
 
 
@@ -1129,7 +1129,7 @@ void AM_drawWalls(void)
 					AM_drawMline(&l, TSWALLCOLORS);
 				}
 			}
-		} else if (players.powers[pw_allmap]) {
+		} else if (player.powers[pw_allmap]) {
 			if (!(lineflags & LINE_NEVERSEE)) {
 				AM_drawMline(&l, GRAYS + 3);
 			}
@@ -1173,45 +1173,42 @@ AM_drawLineCharacter
     int16_t		i;
     mline_t	l;
 
-    for (i=0;i<lineguylines;i++)
-    {
-	l.a.x = lineguy[i].a.x;
-	l.a.y = lineguy[i].a.y;
+    for (i=0;i<lineguylines;i++) {
+		l.a.x = lineguy[i].a.x;
+		l.a.y = lineguy[i].a.y;
 
-	if (scale)
-	{
-	    l.a.x = FixedMul(scale, l.a.x);
-	    l.a.y = FixedMul(scale, l.a.y);
-	}
+		if (scale) {
+			l.a.x = FixedMul(scale, l.a.x);
+			l.a.y = FixedMul(scale, l.a.y);
+		}
 
-	if (angle)
-	    AM_rotate(&l.a.x, &l.a.y, angle);
+		if (angle)
+			AM_rotate(&l.a.x, &l.a.y, angle);
 
-	l.a.x += x;
-	l.a.y += y;
+		l.a.x += x;
+		l.a.y += y;
 
-	l.b.x = lineguy[i].b.x;
-	l.b.y = lineguy[i].b.y;
+		l.b.x = lineguy[i].b.x;
+		l.b.y = lineguy[i].b.y;
 
-	if (scale)
-	{
-	    l.b.x = FixedMul(scale, l.b.x);
-	    l.b.y = FixedMul(scale, l.b.y);
-	}
+		if (scale) {
+			l.b.x = FixedMul(scale, l.b.x);
+			l.b.y = FixedMul(scale, l.b.y);
+		}
 
-	if (angle)
-	    AM_rotate(&l.b.x, &l.b.y, angle);
+		if (angle)
+			AM_rotate(&l.b.x, &l.b.y, angle);
 	
-	l.b.x += x;
-	l.b.y += y;
+		l.b.x += x;
+		l.b.y += y;
 
-	AM_drawMline(&l, color);
+		AM_drawMline(&l, color);
     }
 }
 
 void AM_drawPlayers(void)
 {
-	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
 	if (cheating)
 		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMo->angle>>ANGLETOFINESHIFT, WHITE, playerMo->x, playerMo->y);
 	else

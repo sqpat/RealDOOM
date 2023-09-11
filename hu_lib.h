@@ -94,16 +94,9 @@ typedef struct
 //
 
 // initializes heads-up widget library
-void HUlib_init(void);
 
-//
-// textline code
-//
+ 
 
-// clear a line of text
-void	HUlib_clearTextLine(hu_textline_t *t);
-
-void	HUlib_initTextLine(hu_textline_t *t, int16_t x, int16_t y, MEMREF*fRef, uint8_t sc);
 
 // returns success
 boolean HUlib_addCharToTextLine(hu_textline_t *t, int8_t ch);
@@ -119,32 +112,14 @@ void	HUlib_eraseTextLine(hu_textline_t *l);
 // Scrolling Text window widget routines
 //
 
-// ?
-void
-HUlib_initSText
-( hu_stext_t*	s,
-  int16_t		x,
-  int16_t		y,
-  int16_t		h,
-  MEMREF*	fontRef,
-  uint8_t		startchar,
-  boolean*	on );
+ 
 
-// add a new line
-void HUlib_addLineToSText(hu_stext_t* s);  
-
-// ?
 void
 HUlib_addMessageToSText
 ( hu_stext_t*	s,
   int8_t*		prefix,
   int8_t*		msg );
-
-// draws stext
-void HUlib_drawSText(hu_stext_t* s);
-
-// erases all stext lines
-void HUlib_eraseSText(hu_stext_t* s); 
+ 
 
 // Input Text Line widget routines
  

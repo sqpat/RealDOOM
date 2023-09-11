@@ -850,23 +850,23 @@ void R_SetupFrame ()
 {		
     int8_t		i;
 	fixed_t tempan;
-	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
 
     viewx.w = playermo->x;
     viewy.w = playermo->y;
     viewangle = playermo->angle;
-    extralight = players.extralight;
+    extralight = player.extralight;
 
-    viewz.w = players.viewz;
+    viewz.w = player.viewz;
 	tempan = viewangle >> ANGLETOFINESHIFT;
     viewsin = finesine(tempan);
     viewcos = finecosine(tempan);
 	
-    if (players.fixedcolormap)
+    if (player.fixedcolormap)
     {
 	fixedcolormap =
 	    colormaps
-	    + players.fixedcolormap*256*sizeof(lighttable_t);
+	    + player.fixedcolormap*256*sizeof(lighttable_t);
 	
 	walllights = scalelightfixed;
 

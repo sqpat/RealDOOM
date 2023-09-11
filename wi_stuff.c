@@ -950,22 +950,22 @@ void WI_drawStats(void)
 void WI_checkForAccelerate(void)
 {
  
-	if (players.cmd.buttons & BT_ATTACK)
+	if (player.cmd.buttons & BT_ATTACK)
 	{
-		if (!players.attackdown)
+		if (!player.attackdown)
 			acceleratestage = 1;
-		players.attackdown = true;
+		player.attackdown = true;
 	}
 	else
-		players.attackdown = false;
-	if (players.cmd.buttons & BT_USE)
+		player.attackdown = false;
+	if (player.cmd.buttons & BT_USE)
 	{
-		if (!players.usedown)
+		if (!player.usedown)
 			acceleratestage = 1;
-		players.usedown = true;
+		player.usedown = true;
 	}
 	else
-		players.usedown = false;
+		player.usedown = false;
 }
 
 

@@ -716,7 +716,7 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	int16_t mthingangle = mthing->angle;
 		
 
-	if (players.playerstate == PST_REBORN) {
+	if (player.playerstate == PST_REBORN) {
 		G_PlayerReborn();
 	}
 	x.h.fracbits = 0;
@@ -734,18 +734,18 @@ void P_SpawnPlayer (mapthing_t* mthing)
 		//mobj->flags |= (mthingtype-1)<<MF_TRANSSHIFT;
 		
     mobj->angle	= ANG45 * (mthingangle/45);
-    mobj->player = &players;
-    mobj->health = players.health;
+    mobj->player = &player;
+    mobj->health = player.health;
 
-	players.moRef = mobjRef;
-	players.playerstate = PST_LIVE;
-	players.refire = 0;
-	players.message = -1;
-	players.damagecount = 0;
-	players.bonuscount = 0;
-	players.extralight = 0;
-	players.fixedcolormap = 0;
-	players.viewheight = VIEWHEIGHT;
+	player.moRef = playermoRef = mobjRef;
+	player.playerstate = PST_LIVE;
+	player.refire = 0;
+	player.message = -1;
+	player.damagecount = 0;
+	player.bonuscount = 0;
+	player.extralight = 0;
+	player.fixedcolormap = 0;
+	player.viewheight = VIEWHEIGHT;
 
 	// 171 -7959 83504be8 in playerthink  and p_ticker
 	// 171 1383 83504be8 here

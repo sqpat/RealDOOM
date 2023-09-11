@@ -500,49 +500,49 @@ ST_Responder (event_t* ev)
       // 'dqd' cheat for toggleable god mode
       if (cht_CheckCheat(&cheat_god, ev->data1))
       {
-		  players.cheats ^= CF_GODMODE;
-        if (players.cheats & CF_GODMODE)
+		  player.cheats ^= CF_GODMODE;
+        if (player.cheats & CF_GODMODE)
         {
-			plyrmo = (mobj_t*) Z_LoadBytesFromEMS(players.moRef);
+			plyrmo = (mobj_t*) Z_LoadBytesFromEMS(playermoRef);
           if (plyrmo)
             plyrmo->health = 100;
           
-		  players.health = 100;
-		  players.message = STSTR_DQDON;
+		  player.health = 100;
+		  player.message = STSTR_DQDON;
         }
         else 
-			players.message = STSTR_DQDOFF;
+			player.message = STSTR_DQDOFF;
       }
       // 'fa' cheat for killer fucking arsenal
       else if (cht_CheckCheat(&cheat_ammonokey, ev->data1))
       {
-		  players.armorpoints = 200;
-		  players.armortype = 2;
+		  player.armorpoints = 200;
+		  player.armortype = 2;
         
         for (i=0;i<NUMWEAPONS;i++)
-			players.weaponowned[i] = true;
+			player.weaponowned[i] = true;
         
         for (i=0;i<NUMAMMO;i++)
-			players.ammo[i] = players.maxammo[i];
+			player.ammo[i] = player.maxammo[i];
         
-		players.message = STSTR_FAADDED;
+		player.message = STSTR_FAADDED;
       }
       // 'kfa' cheat for key full ammo
       else if (cht_CheckCheat(&cheat_ammo, ev->data1))
       {
-		  players.armorpoints = 200;
-		  players.armortype = 2;
+		  player.armorpoints = 200;
+		  player.armortype = 2;
         
         for (i=0;i<NUMWEAPONS;i++)
-			players.weaponowned[i] = true;
+			player.weaponowned[i] = true;
         
         for (i=0;i<NUMAMMO;i++)
-			players.ammo[i] = players.maxammo[i];
+			player.ammo[i] = player.maxammo[i];
         
         for (i=0;i<NUMCARDS;i++)
-			players.cards[i] = true;
+			player.cards[i] = true;
         
-		players.message = STSTR_KFAADDED;
+		player.message = STSTR_KFAADDED;
       }
       // 'mus' cheat for changing music
       else if (cht_CheckCheat(&cheat_mus, ev->data1))
@@ -551,13 +551,13 @@ ST_Responder (event_t* ev)
 		  int8_t    buf[3];
 		  int16_t             musnum;
         
-		  players.message = STSTR_MUS;
+		  player.message = STSTR_MUS;
         cht_GetParam(&cheat_mus, buf);
 #if (EXE_VERSION < EXE_VERSION_ULTIMATE)
         musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
           
         if (((buf[0]-'0')*10 + buf[1]-'0') > 35)
-			players.message = STSTR_NOMUS;
+			player.message = STSTR_NOMUS;
         else
           S_ChangeMusic(musnum, 1);
 #else
@@ -583,61 +583,61 @@ ST_Responder (event_t* ev)
       }
       else if(!commercial && cht_CheckCheat(&cheat_noclip, ev->data1))
       { 
-		  players.cheats ^= CF_NOCLIP;
+		  player.cheats ^= CF_NOCLIP;
         
-        if (players.cheats & CF_NOCLIP)
-			players.message = STSTR_NCON;
+        if (player.cheats & CF_NOCLIP)
+			player.message = STSTR_NCON;
         else
-			players.message = STSTR_NCOFF;
+			player.message = STSTR_NCOFF;
       }
       else if (commercial
           && cht_CheckCheat(&cheat_commercial_noclip, ev->data1))
       {
-		  players.cheats ^= CF_NOCLIP;
+		  player.cheats ^= CF_NOCLIP;
         
-        if (players.cheats & CF_NOCLIP)
-			players.message = STSTR_NCON;
+        if (player.cheats & CF_NOCLIP)
+			player.message = STSTR_NCON;
         else
-			players.message = STSTR_NCOFF;
+			player.message = STSTR_NCOFF;
       }
       // 'behold?' power-up cheats
       for (i=0;i<6;i++)
       {
         if (cht_CheckCheat(&cheat_powerup[i], ev->data1))
         {
-          if (!players.powers[i])
+          if (!player.powers[i])
             P_GivePower( i);
           else if (i!=pw_strength)
-			  players.powers[i] = 1;
+			  player.powers[i] = 1;
           else
-			  players.powers[i] = 0;
+			  player.powers[i] = 0;
           
-		  players.message = STSTR_BEHOLDX;
+		  player.message = STSTR_BEHOLDX;
         }
       }
       
       // 'behold' power-up menu
       if (cht_CheckCheat(&cheat_powerup[6], ev->data1))
       {
-		  players.message = STSTR_BEHOLD;
+		  player.message = STSTR_BEHOLD;
       }
       // 'choppers' invulnerability & chainsaw
       else if (cht_CheckCheat(&cheat_choppers, ev->data1))
       {
-		  players.weaponowned[wp_chainsaw] = true;
-		  players.powers[pw_invulnerability] = true;
-		  players.message = STSTR_CHOPPERS;
+		  player.weaponowned[wp_chainsaw] = true;
+		  player.powers[pw_invulnerability] = true;
+		  player.message = STSTR_CHOPPERS;
       }
       // 'mypos' for player position
       else if (cht_CheckCheat(&cheat_mypos, ev->data1))
       {
         static int8_t     buf[ST_MSGWIDTH];
-		plyrmo = Z_LoadBytesFromEMS(players.moRef);
+		plyrmo = Z_LoadBytesFromEMS(playermoRef);
 		sprintf(buf, "ang=0x%x;x,y=(0x%x,0x%x)",
                 plyrmo->angle,
 			plyrmo->x,
 			plyrmo->y);
-		players.messagestring = buf;
+		player.messagestring = buf;
       }
     }
     
@@ -667,7 +667,7 @@ ST_Responder (event_t* ev)
        || (commercial && map > 0 && map <= 40))
       {
           // So be it.
-		  players.message = STSTR_CLEV;
+		  player.message = STSTR_CLEV;
           G_DeferedInitNew(gameskill, epsd, map);
       }
 #else
@@ -692,7 +692,7 @@ int16_t ST_calcPainOffset(void)
     static int16_t  lastcalc;
     static int16_t  oldhealth = -1;
     
-    health = players.health > 100 ? 100 : players.health;
+    health = player.health > 100 ? 100 : player.health;
 
     if (health != oldhealth)
     {
@@ -723,7 +723,7 @@ void ST_updateFaceWidget(void)
     if (priority < 10)
     {
         // dead
-        if (!players.health)
+        if (!player.health)
         {
             priority = 9;
             st_faceindex = ST_DEADFACE;
@@ -733,17 +733,17 @@ void ST_updateFaceWidget(void)
 
     if (priority < 9)
     {
-        if (players.bonuscount)
+        if (player.bonuscount)
         {
             // picking up bonus
             doevilgrin = false;
 
             for (i=0;i<NUMWEAPONS;i++)
             {
-                if (oldweaponsowned[i] != players.weaponowned[i])
+                if (oldweaponsowned[i] != player.weaponowned[i])
                 {
                     doevilgrin = true;
-                    oldweaponsowned[i] = players.weaponowned[i];
+                    oldweaponsowned[i] = player.weaponowned[i];
                 }
             }
             if (doevilgrin) 
@@ -759,22 +759,22 @@ void ST_updateFaceWidget(void)
   
     if (priority < 8)
     {
-        if (players.damagecount
-            && players.attackerRef
-            && players.attackerRef != players.moRef)
+        if (player.damagecount
+            && player.attackerRef
+            && player.attackerRef != playermoRef)
         {
             // being attacked
             priority = 7;
             
-            if (players.health - st_oldhealth > ST_MUCHPAIN)
+            if (player.health - st_oldhealth > ST_MUCHPAIN)
             {
                 st_facecount = ST_TURNCOUNT;
                 st_faceindex = ST_calcPainOffset() + ST_OUCHOFFSET;
             }
             else
             {
-				plyrmo = (mobj_t*) Z_LoadBytesFromEMS(players.moRef);
-				plyrattacker = (mobj_t*)Z_LoadBytesFromEMS(players.attackerRef);
+				plyrmo = (mobj_t*) Z_LoadBytesFromEMS(playermoRef);
+				plyrattacker = (mobj_t*)Z_LoadBytesFromEMS(player.attackerRef);
 				badguyangle = R_PointToAngle2(plyrmo->x,
                                               plyrmo->y,
                                               plyrattacker->x,
@@ -817,9 +817,9 @@ void ST_updateFaceWidget(void)
     if (priority < 7)
     {
         // getting hurt because of your own damn stupidity
-        if (players.damagecount)
+        if (player.damagecount)
         {
-            if (players.health - st_oldhealth > ST_MUCHPAIN)
+            if (player.health - st_oldhealth > ST_MUCHPAIN)
             {
                 priority = 7;
                 st_facecount = ST_TURNCOUNT;
@@ -839,7 +839,7 @@ void ST_updateFaceWidget(void)
     if (priority < 6)
     {
         // rapid firing
-        if (players.attackdown)
+        if (player.attackdown)
         {
             if (lastattackdown==-1)
                 lastattackdown = ST_RAMPAGEDELAY;
@@ -859,8 +859,8 @@ void ST_updateFaceWidget(void)
     if (priority < 5)
     {
         // invulnerability
-        if ((players.cheats & CF_GODMODE)
-            || players.powers[pw_invulnerability])
+        if ((player.cheats & CF_GODMODE)
+            || player.powers[pw_invulnerability])
         {
             priority = 4;
 
@@ -888,18 +888,18 @@ void ST_updateWidgets(void)
 	static int16_t largeammo = 1994; // means "n/a"
 	int8_t i;
 
-	if (weaponinfo[players.readyweapon].ammo == am_noammo)
+	if (weaponinfo[player.readyweapon].ammo == am_noammo)
 		w_ready.num = &largeammo;
 	else
-		w_ready.num = &players.ammo[weaponinfo[players.readyweapon].ammo];
-	w_ready.data = players.readyweapon;
+		w_ready.num = &player.ammo[weaponinfo[player.readyweapon].ammo];
+	w_ready.data = player.readyweapon;
 
 	// update keycard multiple widgets
 	for (i = 0; i < 3; i++)
 	{
-		keyboxes[i] = players.cards[i] ? i : -1;
+		keyboxes[i] = player.cards[i] ? i : -1;
 
-		if (players.cards[i + 3])
+		if (player.cards[i + 3])
 			keyboxes[i] = i + 3;
 	}
 
@@ -920,7 +920,7 @@ void ST_Ticker (void)
 
     st_randomnumber = M_Random();
     ST_updateWidgets();
-    st_oldhealth = players.health;
+    st_oldhealth = player.health;
 
 }
 
@@ -935,12 +935,12 @@ void ST_doPaletteStuff(void)
 	int16_t         bzc;
 	MEMREF		palRef;
 
-    cnt = players.damagecount;
+    cnt = player.damagecount;
 
-    if (players.powers[pw_strength])
+    if (player.powers[pw_strength])
     {
         // slowly fade the berzerk out
-        bzc = 12 - (players.powers[pw_strength]>>6);
+        bzc = 12 - (player.powers[pw_strength]>>6);
 
         if (bzc > cnt)
             cnt = bzc;
@@ -956,9 +956,9 @@ void ST_doPaletteStuff(void)
         palette += STARTREDPALS;
     }
 
-    else if (players.bonuscount)
+    else if (player.bonuscount)
     {
-        palette = (players.bonuscount+7)>>3;
+        palette = (player.bonuscount+7)>>3;
 
         if (palette >= NUMBONUSPALS)
             palette = NUMBONUSPALS-1;
@@ -966,8 +966,8 @@ void ST_doPaletteStuff(void)
         palette += STARTBONUSPALS;
     }
 
-    else if (players.powers[pw_ironfeet] > 4*32
-              || players.powers[pw_ironfeet]&8)
+    else if (player.powers[pw_ironfeet] > 4*32
+              || player.powers[pw_ironfeet]&8)
         palette = RADIATIONPAL;
     else
         palette = 0;
@@ -1204,7 +1204,7 @@ void ST_initData(void)
     st_oldhealth = -1;
 
     for (i=0;i<NUMWEAPONS;i++)
-        oldweaponsowned[i] = players.weaponowned[i];
+        oldweaponsowned[i] = player.weaponowned[i];
 
     for (i=0;i<3;i++)
         keyboxes[i] = -1;
@@ -1225,19 +1225,19 @@ void ST_createWidgets(void)
                   ST_AMMOX,
                   ST_AMMOY,
                   tallnumRef,
-                  &players.ammo[weaponinfo[players.readyweapon].ammo],
+                  &player.ammo[weaponinfo[player.readyweapon].ammo],
                   &st_statusbaron,
                   ST_AMMOWIDTH );
 
     // the last weapon type
-    w_ready.data = players.readyweapon;
+    w_ready.data = player.readyweapon;
 
     // health percentage
     STlib_initPercent(&w_health,
                       ST_HEALTHX,
                       ST_HEALTHY,
                       tallnumRef,
-                      &players.health,
+                      &player.health,
                       &st_statusbaron,
                       tallpercentRef);
 
@@ -1255,7 +1255,7 @@ void ST_createWidgets(void)
         STlib_initMultIcon(&w_arms[i],
                            ST_ARMSX+(i%3)*ST_ARMSXSPACE,
                            ST_ARMSY+(i/3)*ST_ARMSYSPACE,
-                           armsRef[i], (int16_t *) &players.weaponowned[i+1],
+                           armsRef[i], (int16_t *) &player.weaponowned[i+1],
                            &st_armson);
     }
 
@@ -1274,7 +1274,7 @@ void ST_createWidgets(void)
                       ST_ARMORX,
                       ST_ARMORY,
                       tallnumRef,
-                      &players.armorpoints,
+                      &player.armorpoints,
                       &st_statusbaron, 
 					tallpercentRef);
 
@@ -1305,7 +1305,7 @@ void ST_createWidgets(void)
                   ST_AMMO0X,
                   ST_AMMO0Y,
                   shortnumRef,
-                  &players.ammo[0],
+                  &player.ammo[0],
                   &st_statusbaron,
                   ST_AMMO0WIDTH);
 
@@ -1313,7 +1313,7 @@ void ST_createWidgets(void)
                   ST_AMMO1X,
                   ST_AMMO1Y,
                   shortnumRef,
-                  &players.ammo[1],
+                  &player.ammo[1],
                   &st_statusbaron,
                   ST_AMMO1WIDTH);
 
@@ -1321,7 +1321,7 @@ void ST_createWidgets(void)
                   ST_AMMO2X,
                   ST_AMMO2Y,
                   shortnumRef,
-                  &players.ammo[2],
+                  &player.ammo[2],
                   &st_statusbaron,
                   ST_AMMO2WIDTH);
     
@@ -1329,7 +1329,7 @@ void ST_createWidgets(void)
                   ST_AMMO3X,
                   ST_AMMO3Y,
                   shortnumRef,
-                  &players.ammo[3],
+                  &player.ammo[3],
                   &st_statusbaron,
                   ST_AMMO3WIDTH);
 
@@ -1338,7 +1338,7 @@ void ST_createWidgets(void)
                   ST_MAXAMMO0X,
                   ST_MAXAMMO0Y,
                   shortnumRef,
-                  &players.maxammo[0],
+                  &player.maxammo[0],
                   &st_statusbaron,
                   ST_MAXAMMO0WIDTH);
 
@@ -1346,7 +1346,7 @@ void ST_createWidgets(void)
                   ST_MAXAMMO1X,
                   ST_MAXAMMO1Y,
                   shortnumRef,
-                  &players.maxammo[1],
+                  &player.maxammo[1],
                   &st_statusbaron,
                   ST_MAXAMMO1WIDTH);
 
@@ -1354,7 +1354,7 @@ void ST_createWidgets(void)
                   ST_MAXAMMO2X,
                   ST_MAXAMMO2Y,
                   shortnumRef,
-                  &players.maxammo[2],
+                  &player.maxammo[2],
                   &st_statusbaron,
                   ST_MAXAMMO2WIDTH);
     
@@ -1362,7 +1362,7 @@ void ST_createWidgets(void)
                   ST_MAXAMMO3X,
                   ST_MAXAMMO3Y,
                   shortnumRef,
-                  &players.maxammo[3],
+                  &player.maxammo[3],
                   &st_statusbaron,
                   ST_MAXAMMO3WIDTH);
 

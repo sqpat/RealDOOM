@@ -769,8 +769,8 @@ void R_DrawPSprite (pspdef_t* psp)
 
     vis->patch = lump;
 
-    if (players.powers[pw_invisibility] > 4*32
-        || players.powers[pw_invisibility] & 8)
+    if (player.powers[pw_invisibility] > 4*32
+        || player.powers[pw_invisibility] & 8)
     {
         // shadow draw
         vis->colormap = NULL;
@@ -807,7 +807,7 @@ void R_DrawPlayerSprites (void)
 	mobj_t*     playermo;
 	sector_t* sectors;
 	int16_t		playermosecnum;
-	playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	playermo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
 	playermosecnum = playermo->secnum;
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
@@ -830,7 +830,7 @@ void R_DrawPlayerSprites (void)
     mceilingclip = negonearray;
     
     // add all active psprites
-    for (i=0, psp= players.psprites;
+    for (i=0, psp= player.psprites;
          i<NUMPSPRITES;
          i++,psp++)
     {
