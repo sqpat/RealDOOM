@@ -231,11 +231,8 @@ V_DrawFullscreenPatch
     byte*	source; 
     int16_t		w; 
     patch_t*	patch;
-    int16_t     i;
     MEMREF patchref;
     MEMREF colref;
-    int16_t     page = 0;
-    int16_t     needtopage = 0;
     int32_t    offset = 0;
     int16_t    pageoffset = 0;
     byte*       extradata;
@@ -334,13 +331,10 @@ V_DrawPatch
   patch_t*	patch ) 
 { 
 
-    int16_t		count;
     int16_t		col; 
     column_t*	column; 
 	uint16_t offset;
 	byte* desttop;
-    byte*	dest;
-    byte*	source; 
     int16_t		w; 
 	 
     y -= (patch->topoffset); 
@@ -560,7 +554,6 @@ void V_Init (void)
 { 
 #ifdef STATIC_ALLOCATED_SCREENS
 #else
-	int16_t		i;
 	byte*	base;
 
 	// stick these in low dos memory on PCs

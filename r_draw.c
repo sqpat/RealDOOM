@@ -468,7 +468,7 @@ void R_FillBackScreen (void)
     int16_t		x;
     int16_t		y; 
     patch_t*	patch;
-	int16_t i, count;
+	int16_t i;
 	MEMREF srcRef;
 
     // DOOM border patch.
@@ -498,12 +498,14 @@ void R_FillBackScreen (void)
 	    memcpy (dest, src+((y&63)<<6), 64); 
 	    dest += 64; 
 	} 
-
+	/*
 	if (SCREENWIDTH&63) 
 	{ 
 	    memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63); 
 	    dest += (SCREENWIDTH&63); 
 	} 
+	*/
+
     } 
 	
     patch = W_CacheLumpNameEMSAsPatch ("brdr_t",PU_CACHE);

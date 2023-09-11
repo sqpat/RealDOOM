@@ -316,8 +316,6 @@ static int8_t		NUMCMAPS;
 //	GRAPHICS
 //
 
-// background (map of levels).
-static MEMREF		bgRef;
 
 // You Are Here graphic
 static MEMREF		yahRef[2];

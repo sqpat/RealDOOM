@@ -63,7 +63,6 @@ void P_InitThinkers (void)
 
 THINKERREF P_GetNextThinkerRef(void) {
 
-    int16_t start = currentThinkerListHead;
 	int16_t i;
     
     for (i = currentThinkerListHead + 1; i != currentThinkerListHead; i++){
@@ -139,10 +138,7 @@ int setval = 0;
 void P_RunThinkers (void)
 {
     THINKERREF	currentthinker;
-	void* arg;
 	int16_t i = 0;
-	vldoor_t* door;
-	THINKERREF	currentthinker2;
 	currentthinker = thinkerlist[0].next;
 
 

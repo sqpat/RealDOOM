@@ -91,24 +91,22 @@ typedef struct
 
 
 // the set of channels available
-static MEMREF	channelsRef;
+//static MEMREF	channelsRef;
 
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.
 // Internal default is max out of 0-15.
 static int8_t snd_SfxVolume;
 
-// Maximum volume of music. Useless so far.
-static int8_t snd_MusicVolume;
 
 extern int8_t sfxVolume;
 extern int8_t musicVolume;
 
 // whether songs are mus_paused
-static boolean		mus_paused;	
+//static boolean		mus_paused;	
 
 // music currently being played
-static musicinfo_t*	mus_playing=0;
+//static musicinfo_t*	mus_playing=0;
 
 // following is set
 //  by the defaults code in M_misc:

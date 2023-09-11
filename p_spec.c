@@ -1152,7 +1152,6 @@ void P_UpdateSpecials(void)
 	anim_t*	anim;
 	uint8_t		pic;
 	int16_t		i;
-	line_t*	line;
 	side_t* sides;
 	line_t* lines;
 	int16_t sidenum;
@@ -1224,7 +1223,6 @@ int16_t EV_DoDonut(uint8_t linetag)
     int16_t		s2Offset;
     int16_t		s3Offset;
     int16_t			secnum;
-    int16_t			rtn;
 	int16_t			i;
 	int16_t			j = 0;
 	uint8_t			linecount;
@@ -1232,10 +1230,6 @@ int16_t EV_DoDonut(uint8_t linetag)
 	MEMREF floorRef;
 	int16_t* linebuffer;
 	int16_t offset;
-	int16_t lineflags;
-	int16_t linebacksecnum;
-	int16_t lineoffset;
-	int16_t sectors1lineoffset;
 	line_t* lines;
 	sector_t* sectors;
 	int16_t sectors3floorpic;

@@ -85,8 +85,6 @@ static void TS_SetTimerToMaxTaskRate(void)
 
 static void __interrupt __far TS_ServiceScheduleIntEnabled(void)
 {
-	task *ptr;
-	task *next;
 
 	TS_TimesInInterrupt++;
 	TaskServiceCount += TaskServiceRate;

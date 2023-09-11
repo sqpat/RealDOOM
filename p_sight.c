@@ -43,7 +43,7 @@ fixed_t		cachedt2y;
 // Returns side 0 (front), 1 (back), or 2 (on).
 //
 
-P_DivlineSide
+int16_t P_DivlineSide
 ( fixed_t	x,
   fixed_t	y,
   divline_t*	node )
@@ -89,7 +89,7 @@ P_DivlineSide
     return 1;		// back side
 }
 
-P_DivlineSide16
+int16_t  P_DivlineSide16
 ( int16_t	x,
   int16_t	y,
   divline_t*	node )
@@ -144,7 +144,7 @@ P_DivlineSide16
 }
 
 
-P_DivlineSideNode
+int16_t  P_DivlineSideNode
 ( fixed_t	x,
   fixed_t	y,
   node_t*	node )
@@ -290,7 +290,6 @@ boolean P_CrossSubsector (int16_t subsecnum)
 	int16_t backsecnum;
     short_height_t		opentop;
     short_height_t		openbottom;
-    node_t		divlNode;
     divline_t		divl;
     vertex_t		v1;
     vertex_t		v2;
@@ -354,13 +353,7 @@ boolean P_CrossSubsector (int16_t subsecnum)
 		s1 = P_DivlineSide(strace.x.w, strace.y.w, &divl);
 		s2 = P_DivlineSide(cachedt2x, cachedt2y, &divl);
 
-
-		// divlNode.x = v1.x;
-		// divlNode.y = v1.y;
-		// divlNode.dx = v2.x - v1.x;
-		// divlNode.dy = v2.y - v1.y;
-		// s1 = P_DivlineSideNode (strace.x, strace.y, &divlNode);
-		// s2 = P_DivlineSideNode (cachedt2x, cachedt2y, &divlNode);
+		 
 
 
 		// line isn't crossed?

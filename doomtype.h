@@ -40,8 +40,13 @@ typedef long long				int64_t;
 typedef unsigned long long		uint64_t;
 #endif
 
+#ifdef _M_I86
+typedef int16_t filehandle_t;
+typedef int16_t filelength_t;
+#else
 typedef int32_t filehandle_t;
 typedef int32_t filelength_t;
+#endif
 typedef int32_t ticcount_t;
 typedef uint8_t texsize_t;
 

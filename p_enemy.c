@@ -586,17 +586,12 @@ P_LookForPlayers
 ( MEMREF	actorRef,
   boolean	allaround )
 {
-    int16_t		c;
-    int8_t		stop;
- 	//int16_t secnum;
     angle_t	an;
     fixed_t	dist;
 	mobj_t*	actor = (mobj_t*)Z_LoadBytesFromEMS(actorRef);
 	mobj_t* playerMo;
 	fixed_t playerMoy;
 	fixed_t playerMox;
-
-	//secnum = actor->subsectorsecnum;
 
     
 	Z_RefIsActive(actorRef);
@@ -1930,7 +1925,6 @@ void A_BossDeath (MEMREF moRef)
 {
     THINKERREF	th;
     mobj_t*	mo2;
-    line_t	junk;
 	mobj_t* mo = (mobj_t *)Z_LoadBytesFromEMS(moRef);
 	mobjtype_t motype = mo->type;
 		
@@ -2278,7 +2272,6 @@ void A_SpawnSound (MEMREF moRef)
 void A_SpawnFly (MEMREF moRef)
 {
     mobj_t*	newmobj;
-    mobj_t*	fog;
     mobj_t*	targ;
     uint8_t		r;
     mobjtype_t	type;

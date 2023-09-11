@@ -592,8 +592,6 @@ void R_InitTextures(void)
 	int16_t				texturewidth;
 	uint8_t				textureheightval;
 
-	int16_t maxwidth = 0;
-
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
 	namesRef = W_CacheLumpNameEMS("PNAMES", PU_STATIC);

@@ -157,7 +157,6 @@ void P_LoadSegs(int16_t lump)
 	seg_t*              li;
 	line_t*             ldef;
 	uint16_t                 side;
-	vertex_t*                       vertexes;
 	seg_t*                          segs;
 	int16_t linedef;
 	side_t*         sides;
@@ -349,12 +348,6 @@ void P_LoadNodes(int16_t lump)
 	mapnode_t	currentdata;
  
 
-
-	uint16_t	bbox[2][4];
-
-	// If NF_SUBSECTOR its a subsector.
-	uint16_t children[2];
-
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 	firstnode = numnodes - 1;
 	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), PU_LEVEL, 0, ALLOC_TYPE_NODES);
@@ -465,7 +458,7 @@ void P_LoadLineDefs(int16_t lump)
 	uint8_t mldspecial;
 	uint8_t mldtag;
 	int16_t mldv1;
-	int16_t mldv2 = (mld->v2);
+	int16_t mldv2;
 	int16_t mldsidenum0;
 	int16_t mldsidenum1;
 
@@ -668,7 +661,6 @@ void P_GroupLines(void)
 	uint16_t                 j;
 	uint16_t                 total;
 	line_t*             li;
-	seg_t*              seg;
 	int16_t             bbox[4];
 	int16_t             block;
 	seg_t*              segs;
@@ -815,7 +807,6 @@ P_SetupLevel
 	int8_t        lumpname[9];
 	int16_t         lumpnum;
 
-	byte* nodes;
 	uint32_t time;
 
 	wminfo.partime = 180;

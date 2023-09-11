@@ -265,7 +265,6 @@ boolean P_CheckAmmo ()
 void P_FireWeapon ()
 {
     statenum_t	newstate;
-	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 
     if (!P_CheckAmmo ())
 		return;

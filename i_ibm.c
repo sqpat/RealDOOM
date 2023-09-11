@@ -836,7 +836,6 @@ void I_ReadMouse(void)
 //
 void I_Init(void)
 {
-	int32_t p;
     novideo = M_CheckParm("novideo");
 
 
@@ -935,8 +934,8 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
    int16_t pageframebase;
 
 
-   char	emmname[9] = "EMMXXXX0";
-        // todo check for device...
+   // todo check for device...
+   // char	emmname[9] = "EMMXXXX0";
 
 
     

@@ -49,9 +49,13 @@ typedef struct
 typedef struct
 {
 	int8_t	name[8];
-    filehandle_t		handle;
-    int32_t		position;
-    filelength_t		size;
+#ifdef	SUPPORT_MULTIWAD
+	int8_t	handleindex;
+#endif
+    int32_t		position; 
+	// dont know if this might have to change to int16_t at some point, but basically this is the diff between declared lump size and diff of adjacent positions. I think the wad is (annoyingly) made with some overlapping items. saves us 3 bytes per lump still.
+	int8_t	sizediff; 
+	//filelength_t		size;  // calculate size from next position minus your own plus diff.
 } lumpinfo_t;
 
 

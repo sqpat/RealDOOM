@@ -37,7 +37,6 @@
 
 
 
-
 //
 // GLOBALS
 //
@@ -51,6 +50,13 @@ MEMREF*					lumpcacheEMS;
 // we use this explicitly for fullscreen graphics. 
 MEMREF              pagedlumpcacheEMS[2];
 
+// rather than storing a billion duplicate file handles, we'll store a couple
+#ifdef	SUPPORT_MULTIWAD
+filehandle_t				filehandles[MAX_WAD_FILES];
+int8_t						currentfilehandle = 0;
+#else
+filehandle_t				wadfilehandle;
+#endif
 
 void
 ExtractFileBase
@@ -123,6 +129,10 @@ void W_AddFile (int8_t *filename)
     filelump_t          singleinfo;
 	filehandle_t                 storehandle;
     
+	int32_t lastpos = 0;
+	int32_t lastsize = 0;
+	int32_t diff;
+
     // open the file and add to directory
 
     // handle reload indicator.
@@ -185,6 +195,10 @@ void W_AddFile (int8_t *filename)
     
     // Fill in lumpinfo
     lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
+	// 25k in size! 
+	// now 16.4k..
+
+	//I_Error("lumpsize %i", numlumps * sizeof(lumpinfo_t));
 
     if (!lumpinfo)
         I_Error ("Couldn't realloc lumpinfo");
@@ -192,14 +206,53 @@ void W_AddFile (int8_t *filename)
     lump_p = &lumpinfo[startlump];
         
     storehandle = reloadname ? -1 : handle;
-        
+
+#ifdef	SUPPORT_MULTIWAD
+	if (currentfilehandle >= MAX_WAD_FILES) {
+		I_Error("Too many wad handles!");
+	}
+	filehandles[currentfilehandle] = storehandle;
+#else
+	wadfilehandle = storehandle;
+#endif
     for (i=startlump ; i<numlumps ; i++,lump_p++, fileinfo++)
     {
-        lump_p->handle = storehandle;
+		
+#ifdef	SUPPORT_MULTIWAD
+		lump_p->handleindex = currentfilehandle;
+#endif
         lump_p->position = (fileinfo->filepos);
-        lump_p->size = (fileinfo->size);
+		
+		// set up the diff
+		if (i) {
+			diff = fileinfo->filepos - lastpos;
+			if (fileinfo->filepos) { // sometimes there are 0 size 'marker' items that also lie and set their position as 0... just skip these as it throws off the algorithm
+				diff = lastsize - diff;
+
+//				if (lastsize != diff) {
+//					if (diff > 127 || diff < -128)
+//						I_Error("\nbad size? %i %i %i %i", i, lastsize, lastpos, fileinfo->filepos);
+//				}
+				lastpos = (fileinfo->filepos);
+				lastsize = fileinfo->size;
+			}
+			else {
+				diff = 0;
+				lump_p->position = lastpos;
+			}
+			lumpinfo[i - 1].sizediff = diff;
+
+		}
+		else {
+			lastsize = fileinfo->size;
+		}
         strncpy (lump_p->name, fileinfo->name, 8);
     }
+	lumpinfo[i - 1].sizediff = 0;
+#ifdef	SUPPORT_MULTIWAD
+	currentfilehandle++;
+#endif
+
         
     if (reloadname)
         close (handle);
@@ -340,11 +393,16 @@ int16_t W_GetNumForName(int8_t* name)
 //
 filelength_t W_LumpLength (int16_t lump)
 {
+	int32_t size;
 #ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps)
         I_Error ("W_LumpLength: %i >= numlumps",lump);
 #endif
-    return lumpinfo[lump].size;
+    size = (lumpinfo[lump+1].position - lumpinfo[lump].position) + lumpinfo[lump].sizediff;
+	if (size < 0) {
+		I_Error("\nfound it %i %i %i", lump, size, lumpinfo[lump].sizediff, lumpinfo[lump + 1].position, lumpinfo[lump].position);
+	}
+	return size;
 }
 
 #ifdef _M_I86
@@ -417,6 +475,7 @@ W_ReadLumpEMS
 	byte		*dest;
     int32_t sizetoread;
     int32_t startoffset;
+	filelength_t         lumpsize;
 
  
 
@@ -425,38 +484,47 @@ W_ReadLumpEMS
         I_Error ("W_ReadLump: %i >= numlumps",lump);
 #endif
     l = lumpinfo+lump;
-        
+	lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
+
     I_BeginRead ();
         
-    if (l->handle == -1)
-    {
-        // reloadable file, so use open / read / close
+#ifdef	SUPPORT_MULTIWAD
+	if (filehandles[l->handleindex] == -1)
+#else
+	if (wadfilehandle == -1)
+#endif
+	{
+		// reloadable file, so use open / read / close
 		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1) {
 #ifdef CHECK_FOR_ERRORS
 			I_Error("W_ReadLump: couldn't open %s", reloadname);
 #endif
 		}
-    }
-    else
-        handle = l->handle;
-
+	}
+	else {
+#ifdef	SUPPORT_MULTIWAD
+		handle = filehandles[l->handleindex];
+#else
+		handle = wadfilehandle;
+#endif
+	}
     dest = Z_LoadBytesFromEMS(lumpRef);
     startoffset = l->position + start;
 
 #ifdef _M_I86
-    sizetoread = size ? size : l->size;
+    sizetoread = size ? size : lumpsize;
 #else
-    sizetoread = size ? size : l->size;
+    sizetoread = size ? size : lumpsize;
 #endif
 
     lseek(handle, startoffset, SEEK_SET);
 
 
 
-	c = read(handle, dest, size ? size : l->size);
+	c = read(handle, dest, size ? size : lumpsize);
 	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
 #ifdef _M_I86
-	//c = _farread(handle, dest, l->size);
+	//c = _farread(handle, dest, lumpsize);
 
        if (c < sizetoread && c + 65536l != sizetoread ) // error check
 #else
@@ -470,7 +538,12 @@ W_ReadLumpEMS
 #endif
 	}
 
-    if (l->handle == -1)
+#ifdef	SUPPORT_MULTIWAD
+	   if (filehandles[l->handleindex] == -1)
+#else
+	   if (wadfilehandle == -1)
+#endif
+	   
         close (handle);
  
 
@@ -488,7 +561,8 @@ W_ReadLumpStatic
 {
 	filelength_t         c;
 	lumpinfo_t* l;
-	filehandle_t         handle;
+	filehandle_t		handle;
+	filelength_t		lumpsize;
 
 #ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps)
@@ -496,10 +570,14 @@ W_ReadLumpStatic
 #endif
 
 	l = lumpinfo + lump;
-
+	lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
 	I_BeginRead();
 
-	if (l->handle == -1)
+#ifdef	SUPPORT_MULTIWAD
+	if (filehandles[l->handleindex] == -1)
+#else
+	if (wadfilehandle == -1)
+#endif
 	{
 		// reloadable file, so use open / read / close
 		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1) {
@@ -508,19 +586,28 @@ W_ReadLumpStatic
 #endif
 		}
 	}
-	else
-		handle = l->handle;
-
+	else {
+#ifdef	SUPPORT_MULTIWAD
+		handle = filehandles[l->handleindex];
+#else
+		handle = wadfilehandle;
+#endif
+	}
 	lseek(handle, l->position, SEEK_SET);
-	c = read(handle, dest, l->size);
+	c = read(handle, dest, lumpsize);
 
-	if (c < l->size && c + 65536l != l->size) {
+	// todo make this suck less. 16 bit hack for large reads...
+	if (c < lumpsize && c + 65536l != lumpsize) {
 #ifdef CHECK_FOR_ERRORS
-		I_Error("\nW_ReadLump: only read %il of %il on lump %i", c, l->size, lump);
+		I_Error("\nW_ReadLump: only read %il of %il on lump %i", c, lumpsize, lump);
 #endif
 	}
 
-	if (l->handle == -1)
+#ifdef	SUPPORT_MULTIWAD
+	if (filehandles[l->handleindex] == -1)
+#else
+	if (wadfilehandle == -1)
+#endif
 		close(handle);
 
 	I_EndRead();
@@ -548,7 +635,6 @@ W_CacheLumpNumEMS
 (	int16_t           lump,
 	int8_t			tag)
 {
-	byte	*lumpmem;
 
 
 

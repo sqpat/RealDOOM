@@ -137,6 +137,9 @@
 // 4  9100444 584187  675843  207 (2134 in 2304)  <- lines fudged into conventional 
 // 4  8460235 464178  532405  207 (2134 in 1863)  <- 64k conventional space first come first serve.
 
+// 4  9688463 1219770 1591390 207 (2134 in 3662)  <- no conventional, post some cleanup, different cpu
+// 4  9050016 732304  967816  207 (2134 in 2563)  <- after wad lump cleanup, some conventional freed up
+
 
 // 8 13569197 422735  521499  207 (2134 in 1843)  <---- same as above with 8
 // 8 13578495 422543  521292  207 (2134 in 1851)  <---- same as above with the EMS_PAGE check changed to 16. maybe it doesnt help performance at all?
@@ -184,6 +187,7 @@
 // after sectors
 // 4 22844306  3540729 6493412 75
 
+#define ALLOCATION_LIST_HEAD	0
 
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
@@ -287,7 +291,7 @@ int32_t totalconventionalfree2;
 int32_t remainingconventional1;
 int32_t remainingconventional2;
 
-PAGEREF currentListHead = 0; // main rover
+PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 allocation_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
@@ -311,7 +315,6 @@ int8_t lockedpages[NUM_EMS_PAGES];
 
 #ifdef _M_I86
 
-static uint16_t pageframebase;
 static int16_t emshandle;
 extern union REGS regs;
 
@@ -324,10 +327,6 @@ byte*			pageFrameArea;
 byte*			EMSArea;
 
 // count allocations etc, can be used for benchmarking purposes.
-static int32_t freeCount;
-static int32_t plusAllocations = 0;
-static int32_t minusAllocations = 0;
-static int32_t totalAllocations = 0;
 
 int32_t numreads = 0;
 int32_t pageins = 0;
@@ -394,7 +393,7 @@ void Z_InitConventional(void) {
 #ifdef _M_I86
 		conventionalmemoryblock1 = malloc(totalconventionalfree1);
 #else
-		conventionalmemoryblock1 = malloc(totalconventionalfree1);
+		conventionalmemoryblock1 = _nmalloc(totalconventionalfree1);
 #endif
 	}
 	remainingconventional1 = totalconventionalfree1;
@@ -404,7 +403,7 @@ void Z_InitConventional(void) {
 #ifdef _M_I86
 		conventionalmemoryblock2 = malloc(totalconventionalfree2);
 #else
-		conventionalmemoryblock2 = malloc(totalconventionalfree2);
+		conventionalmemoryblock2 = _nmalloc(totalconventionalfree2);
 #endif
 	}
 #ifdef DEBUG_PRINTING
@@ -427,6 +426,7 @@ void Z_InitEMS(void)
 
 	int32_t size;
 	int16_t i = 0;
+	//todo figure this out based on settings, hardware, etc
 	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
 
 #ifdef _M_I86
@@ -474,10 +474,8 @@ void Z_FreeEMSNew(PAGEREF block) {
 
 	uint16_t         other;
 
-	freeCount++;
-
 #ifdef CHECK_FOR_ERRORS
-	if (block == 0) {
+	if (block == ALLOCATION_LIST_HEAD) {
 		// 0 is the head of the list, its a special-case size 0 block that shouldnt ever get allocated or deallocated.
 		I_Error("ERROR: Called Z_FreeEMSNew with 0! \n");
 	}
@@ -576,12 +574,10 @@ Z_FreeTagsEMS
 (int16_t           tag)
 {
 	int16_t block;
-	int16_t iter = 0;
-	int16_t start = 0;
 
 
 	// Now check if consecutive empties
-	for (block = allocations[start].next; ; block = allocations[block].next) {
+	for (block = allocations[ALLOCATION_LIST_HEAD].next; ; block = allocations[block].next) {
 
 		/*
 				if (block->tag >= lowtag && block->tag <= hightag)
@@ -589,8 +585,7 @@ Z_FreeTagsEMS
 							block, block->size, block->user, block->tag);*/
 
 
-		if (block == start)
-		{
+		if (block == ALLOCATION_LIST_HEAD){
 			// all blocks have been hit
 			break;
 		}
@@ -937,7 +932,6 @@ void Z_PageOutIfInMemory(uint32_t page_and_size) {
 	uint32_t size = MAKE_SIZE(page_and_size);
 	uint16_t pageframeindex;
 	uint16_t numallocatepages;
-	boolean allpagesgood;
 	uint16_t i;
 
 
@@ -976,7 +970,6 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 	uint32_t size = MAKE_SIZE(page_and_size);
 	uint16_t pageframeindex;
 
-	uint16_t extradeallocatepages = 0;
 	uint16_t numallocatepages;
 	uint16_t i;
 	uint8_t j;
@@ -1214,7 +1207,6 @@ int16_t Z_GetEMSPageFrameNoUpdate(uint32_t page_and_size, MEMREF ref) {  //todo 
 	uint32_t size = MAKE_SIZE(page_and_size);
 	uint16_t pageframeindex;
 
-	uint16_t extradeallocatepages = 0;
 	uint16_t numallocatepages;
 	uint16_t i;
 	boolean allpagesgood;
@@ -1424,8 +1416,6 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 	byte* memorybase;
 	uint16_t pageframeindex;
 	byte* address;
-	mobj_t* thing;
-	line_t* lines;
 
 #ifdef CHECK_FOR_ERRORS
 	if (ref >= EMS_ALLOCATION_LIST_SIZE) {
@@ -1538,7 +1528,6 @@ int16_t getNumPurgeableBlocks() {
 // unused/unallocated
 
 PAGEREF Z_GetNextFreeArrayIndex() {
-	PAGEREF start = currentListHead;
 	PAGEREF i;
 
 	for (i = currentListHead + 1; i != currentListHead; i++) {
@@ -1583,18 +1572,14 @@ Z_MallocEMSNewWithBackRef
 	uint8_t sourceHint,
 	int16_t backRef)
 {
-	int16_t internal;
 	int16_t base;
 	int16_t start;
 	int16_t newfreeblockindex;
 
 	int32_t         extra;
 	int16_t rover;
-	int16_t currentEMSHandle = 0;
 	uint16_t offsetToNextPage = 0;
-	int16_t iter = 0;
 
-	int16_t iterator = 0;
 
 
 #ifdef CHECK_FOR_ERRORS
@@ -1648,19 +1633,13 @@ Z_MallocEMSNewWithBackRef
 
 	do
 	{
-		iter++;
 
-#ifdef LOOPCHECK
-
-		if (iter > 2 * EMS_ALLOCATION_LIST_SIZE) {
-			I_Error("looping forever?");
-		}
-#endif	
+ 
 
 #ifdef CHECK_FOR_ERRORS
 		if (rover == start) {
 			// scanned all the way around the list
-			I_Error("Z_MallocEMSNew: failed on allocation of %u bytes tag %i iter %i and %i\n\n", size, tag, iter, allocations[start].page_and_size);
+			I_Error("Z_MallocEMSNew: failed on allocation of %u bytes tag %i  and %i\n\n", size, tag, allocations[start].page_and_size);
 		}
 #endif
 
@@ -1683,9 +1662,6 @@ Z_MallocEMSNewWithBackRef
 			}
 			else {  // tag is > PU_PURGELEVEL
 			 // free this block (connect the links, add size to base)
-				// printf ("freeing %p %i %i %i %i %i\n", allocations[base].user, base, allocations[base].size, size, plusAllocations, minusAllocations  );
-
-				// printf ("stats %i %i %i %i %i %i\n", base, allocations[base].prev, allocations[base].next, rover, allocations[rover].prev, allocations[rover].next);
 
 				base = allocations[base].prev;
 				Z_FreeEMSNew(rover);

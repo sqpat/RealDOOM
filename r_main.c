@@ -193,7 +193,6 @@ R_PointOnSegSide
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	
     fixed_t_union temp;
-    fixed_t_union temp2;
 
 	lx = vertexes[linev1Offset].x;
     ly = vertexes[linev1Offset].y;
@@ -274,7 +273,7 @@ R_PointToAngle
 ( fixed_t	x,
   fixed_t	y )
 {	
-	fixed_t tempDivision, slopeDiv;
+	fixed_t tempDivision;
 
 	x -= viewx.w;
 	y -= viewy.w;

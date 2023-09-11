@@ -60,7 +60,7 @@ enum { VERSION =  109 };
 // to avoid messiness, lets stay at this size
 #define MAX_CONVENTIONAL_ALLOCATION_SIZE 65535L 
 // small blocks wont fit any of the structures we hope to put in there.
-#define MIN_CONVENTIONAL_ALLOCATION_SIZE 4096L 
+#define MIN_CONVENTIONAL_ALLOCATION_SIZE 2048L 
 
 
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
@@ -71,6 +71,11 @@ enum { VERSION =  109 };
 
 // Allocates backbuffers statically
 #define STATIC_ALLOCATED_SCREENS
+
+// Maximum number of wad files openable at once. Are we really ever using more than 1 in RealDOOM? if so, be my guest... increases memory usage in a few ways
+// #define SUPPORT_MULTIWAD
+#define MAX_WAD_FILES 1
+
 
 //Show page count by source hint on timedemo finish
 //#define PROFILE_PAGE_COUNT

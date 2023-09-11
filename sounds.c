@@ -25,6 +25,7 @@
 // Information about all the music
 //
 
+/*
 musicinfo_t S_music[] =
 {
     { 0 },
@@ -97,7 +98,7 @@ musicinfo_t S_music[] =
     { "dm2int", 0 } 
 };
 
-
+*/
 //
 // Information about all the sfx
 //

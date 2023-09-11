@@ -44,7 +44,6 @@ EV_Teleport
 {
     int16_t		i;
     mobj_t*	m;
-    mobj_t*	fog;
 	uint16_t	an;
     THINKERREF	thinkerRef;
 	int16_t secnum;

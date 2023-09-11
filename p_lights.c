@@ -179,7 +179,6 @@ void T_StrobeFlash (MEMREF memref)
 	int16_t flashminlight = flash->minlight;
 	int16_t flashmaxlight = flash->maxlight;
 	sector_t* sectors;
-	int16_t seclightlevel;
 
 	if (--flash->count)
 		return;
@@ -256,7 +255,6 @@ P_SpawnStrobeFlash
 void EV_StartLightStrobing(uint8_t linetag)
 {
     int16_t		secnum;
-	sector_t* sectors;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	int16_t		j = 0;
 
@@ -281,12 +279,10 @@ void EV_TurnTagLightsOff(uint8_t linetag)
 	int16_t			j = 0;
     int16_t			secnum;
     uint8_t			min;
-     line_t*		templine;
 	int16_t *		linebuffer;
-	int16_t		linenumber;
 	sector_t*   sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	uint8_t linecount;
-	int16_t offset = sectors[secnum].linesoffset;
+	int16_t offset;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t tagsecnumlist[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
@@ -335,12 +331,10 @@ EV_LightTurnOn
     int16_t secnum;
 	uint8_t		j = 0;
 	uint8_t		i;
-    int16_t	tempsecnum;
-    line_t*	templine;
 	uint8_t linecount;
 	int16_t* linebuffer;
-	sector_t*   sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-	int16_t offset = sectors[secnum].linesoffset;
+	sector_t*   sectors;
+	int16_t offset;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t tagsecnumlist[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];

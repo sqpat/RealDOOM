@@ -513,7 +513,6 @@ void G_Ticker (void)
 { 
 	int8_t         buf;
     ticcmd_t*   cmd;
-	mobj_t* playerMo;
     // do player reborns if needed
  
     // do things to change the game state
@@ -687,10 +686,7 @@ G_CheckSpot
 (int16_t           playernum,
   mapthing_t*   mthing ) 
 { 
-    subsector_t*        ss; 
 	angle_t            an;
-    mobj_t*             mo; 
-	int8_t                 i;
 	mobj_t*				playerMo;
 	MEMREF				moRef;
 	subsector_t* subsectors;
@@ -937,12 +933,12 @@ void G_DoWorldDone (void)
 extern boolean setsizeneeded;
 void R_ExecuteSetViewSize (void);
 
-int8_t    savename[256];
+//int8_t    savename[256];
 
 void G_LoadGame (int8_t* name) 
 { 
-    strcpy (savename, name); 
-    gameaction = ga_loadgame; 
+    //strcpy (savename, name); 
+    //gameaction = ga_loadgame; 
 } 
  
 #define VERSIONSIZE             16 

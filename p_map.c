@@ -693,7 +693,6 @@ boolean P_ThingHeightClip (MEMREF thingRef)
 	mobj_t* thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
 	fixed_t_union temp;
 	int16_t temp2;
-	sector_t* sectors;
 	temp.h.fracbits = 0;
 	// temp.h.intbits = thing->floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
@@ -1141,7 +1140,6 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	MEMREF		thRef;
 	line_t*		lines;
 	sector_t*	sectors;
-	int16_t 	temp2;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 

@@ -813,9 +813,9 @@ AM_clipMline
   fline_t*	fl )
 {
     
-    register	outcode1 = 0;
-    register	outcode2 = 0;
-    register	outside;
+    register	int16_t outcode1 = 0;
+    register	int16_t outcode2 = 0;
+    register	int16_t outside;
     
     fpoint_t	tmp;
     fixed_t		dx;
@@ -1211,10 +1211,7 @@ AM_drawLineCharacter
 
 void AM_drawPlayers(void)
 {
-	static uint8_t their_colors[] = { GREENS, GRAYS, BROWNS, REDS };
-	uint8_t color;
-	mobj_t* playerMo;
-	playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
+	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
 	if (cheating)
 		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMo->angle>>ANGLETOFINESHIFT, WHITE, playerMo->x, playerMo->y);
 	else

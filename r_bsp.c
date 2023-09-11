@@ -35,7 +35,6 @@
 
 
 int16_t		curlinenum;
-//line_t*		linedef;
 int16_t linedefOffset;
 int16_t	frontsecnum;
 int16_t	backsecnum;
@@ -560,10 +559,7 @@ boolean R_CheckBBox(int16_t *bspcoord)
 void R_Subsector(int16_t subsecnum)
 {
 	int16_t count;
-	seg_t *line;
-	subsector_t *sub;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
-	//seg_t* segs;
 	int16_t lineoffset = 0;
 	int16_t firstline;
 	sector_t* sectors;

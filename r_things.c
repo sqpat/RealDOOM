@@ -637,7 +637,6 @@ void R_AddSprites (int16_t secnum)
     mobj_t*             thing;
 	MEMREF				thingRef;
 	int32_t                 lightnum;
-	mobj_t*				thingList;
 	MEMREF				lastThingRef = -1;
 	#ifdef LOOPCHECK 
 	int32_t i = 0;

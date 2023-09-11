@@ -428,7 +428,6 @@ P_NightmareRespawn(MEMREF mobjRef)
 	fixed_t_union		y;
 	fixed_t_union		z;
 	mobj_t*		mo;
-	mapthing_t*		mthing;
 	MEMREF moRef;
 	mobj_t* mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	int16_t subsecnum;
@@ -438,7 +437,6 @@ P_NightmareRespawn(MEMREF mobjRef)
 	fineangle_t mobjspawnangle;
 	mapthing_t mobjspawnpoint;
 	int16_t mobjspawnoptions;
-	fixed_t sectorfloorheight;
 	int16_t mobjsecnum;
 	fixed_t mobjx;
 	fixed_t mobjy;

@@ -56,7 +56,6 @@
 
 MEMREF		hu_fontRef[HU_FONTSIZE];
 static hu_textline_t	w_title;
-static boolean		always_off = false;
 
 static boolean		message_on;
 boolean			message_dontfuckwithme;
@@ -402,7 +401,6 @@ void HU_Erase(void)
 void HU_Ticker(void)
 {
 
-	int8_t c;
 	int8_t temp[256];
 	// tick down message counter if message is up
 	if (message_counter && !--message_counter)
@@ -443,12 +441,9 @@ void HU_Ticker(void)
 boolean HU_Responder(event_t *ev)
 {
 
-	static int8_t lastmessage[HU_MAXLINELENGTH + 1];
-	int8_t *macromessage;
 	boolean eatkey = false;
 	static boolean shiftdown = false;
 	static boolean altdown = false;
-	uint8_t c;
 
 	if (ev->data1 == KEY_RSHIFT)
 	{

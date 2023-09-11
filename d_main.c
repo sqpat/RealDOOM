@@ -213,13 +213,10 @@ void D_InitStrings() {
 	// load file
 	FILE* handle;
 	//filelength_t length;
-	int16_t stringlength;
 	int8_t* buffer;
 	int8_t* lastbuffer;
 	int16_t i;
 	int16_t j = 0;;
-	int16_t laststringoffset;
-	int16_t readlength;
 	int16_t page = 0;
 	int8_t letter;
 	int16_t carryover = 0;
@@ -363,10 +360,11 @@ void D_Display (void)
     static  boolean             fullscreen = false;
     static  gamestate_t         oldgamestate = -1;
     static  uint8_t                 borderdrawcount;
+#ifndef SKIPWIPE
 	ticcount_t                         nowtime, wipestart;
 	int16_t                         tics;
+#endif
 	int16_t                         y;
-    boolean                     done;
     boolean                     wipe;
     boolean                     redrawsbar;
 
@@ -531,14 +529,16 @@ extern  boolean         demorecording;
 void D_DoomLoop (void)
 {
 	// debugging stuff i need to find mem leaks...
-//    int8_t result[3000];
-//	int8_t result2[2000];
+	/*
+	int8_t result[3000];
+	int8_t result2[2000];
 	int32_t lasttick = 0;
 	int32_t lastindex = 0;
 	int32_t stoptic;
 	int32_t linenumber;
     sector_t sector;
-	//int32_t i = 0;
+	int32_t i = 0;
+	*/
 
 	//plat_t* plat;
     if (demorecording)
@@ -939,7 +939,6 @@ void IdentifyVersion (void)
 
     printf("Game mode indeterminate.\n");
     exit(1);
-    //I_Error ("Game mode indeterminate\n");
 } 
 
 //
