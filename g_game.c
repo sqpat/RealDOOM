@@ -104,7 +104,7 @@ player_t        player;
 MEMREF			playermoRef;
  
 int16_t             consoleplayer;          // player taking events and displaying 
-ticcount_t             gametic;
+ticcount_t          gametic;
 int16_t             totalkills, totalitems, totalsecret;    // for intermission 
  
 int8_t            demoname[32];
@@ -534,7 +534,7 @@ void G_Ticker (void)
             break; 
           case ga_playdemo: 
             G_DoPlayDemo (); 
-            break; 
+			break;
           case ga_completed: 
             G_DoCompleted (); 
             break; 
@@ -580,8 +580,8 @@ void G_Ticker (void)
 			break;
 
 		case BTS_SAVEGAME:
-			if (!savedescription[0])
-				strcpy(savedescription, "NET GAME");
+//			if (!savedescription[0])
+//				strcpy(savedescription, "NET GAME");
 			savegameslot =
 				(player.cmd.buttons & BTS_SAVEMASK) >> BTS_SAVESHIFT;
 			gameaction = ga_savegame;
@@ -920,7 +920,7 @@ void G_DoWorldDone (void)
     gamestate = GS_LEVEL; 
     gamemap = wminfo.next+1; 
     G_DoLoadLevel (); 
-    gameaction = ga_nothing; 
+	gameaction = ga_nothing;
     viewactive = true; 
 } 
  
@@ -1428,8 +1428,8 @@ boolean G_CheckDemoStatus (void)
 
 	// NOTE: WHENEVER WE ENTER THIS FUNCTION demo_p IS ALREADY INCREMENTED BY demobuffer OFFSET;
 
-    if (timingdemo || !timingdemo) 
-    { 
+	if (timingdemo)
+	{
 		endtime = ticcount;
 #ifdef PROFILE_PAGE_COUNT
 

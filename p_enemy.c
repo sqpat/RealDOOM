@@ -143,7 +143,7 @@ P_RecursiveSound
 		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		soundsector = &sectors[secnum];
 		lineoffset = soundsector->linesoffset + i;
-		linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+		linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 		linenumber = linebuffer[lineoffset];
 
 		

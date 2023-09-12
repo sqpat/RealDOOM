@@ -925,7 +925,7 @@ void R_RenderPlayerView ()
     R_ClearSprites ();
 
     // check for new console commands.
-	NetUpdate (); // calling netupdate crashesin 16 it??
+	NetUpdate ();
 
 
 	// The head node is the last node output.

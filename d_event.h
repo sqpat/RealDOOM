@@ -96,8 +96,8 @@ typedef uint8_t buttoncode_t;
 //
 #define MAXEVENTS		64
 
-extern  event_t		events[MAXEVENTS];
-extern  gameaction_t    gameaction;
+extern  event_t			events[MAXEVENTS];
+extern  gameaction_t	gameaction;
 
 
 #endif

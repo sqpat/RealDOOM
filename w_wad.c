@@ -119,16 +119,16 @@ int8_t*                   reloadname;
 
 void W_AddFile (int8_t *filename)
 {
-    wadinfo_t           header;
-    lumpinfo_t*         lump_p;
-	uint16_t            i;
-	uint16_t            j = 65535;
-	filehandle_t                 handle;
-	filelength_t                 length;
-	uint16_t                 startlump;
-    filelump_t*         fileinfo;
-    filelump_t          singleinfo;
-	filehandle_t                 storehandle;
+    wadinfo_t			header;
+    lumpinfo_t*			lump_p;
+	uint16_t			i;
+	uint16_t			j = 65535;
+	filehandle_t		handle;
+	int32_t				length;
+	uint16_t			startlump;
+    filelump_t*			fileinfo;
+    filelump_t			singleinfo;
+	filehandle_t		storehandle;
     
 	int32_t lastpos = 0;
 	int32_t lastsize = 0;
@@ -183,13 +183,13 @@ void W_AddFile (int8_t *filename)
 
             modifiedgame = true;                
         }
-        header.numlumps = (header.numlumps);
-        header.infotableofs = (header.infotableofs);
+        //header.numlumps = (header.numlumps);
+        //header.infotableofs = (header.infotableofs);
         length = header.numlumps*sizeof(filelump_t);
         fileinfo = alloca (length);
         lseek (handle, header.infotableofs, SEEK_SET);
-        read (handle, fileinfo, length);
-        numlumps += header.numlumps;
+		read (handle, fileinfo, length);
+		numlumps += header.numlumps;
     }
 // numlumps 1264
     
@@ -376,9 +376,6 @@ int16_t W_CheckNumForName (int8_t* name)
     return -1;
 }
 
-
-
-
 //
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
@@ -392,7 +389,7 @@ int16_t W_GetNumForName(int8_t* name)
     
 #ifdef CHECK_FOR_ERRORS
 	if (i == -1)
-		I_Error("W_GetNumForName: %s not found! %s, %i", name, "", 0);
+		I_Error("\nW_GetNumForName: %s not found!", name);
 #endif
 
     return i;
@@ -403,7 +400,7 @@ int16_t W_GetNumForName(int8_t* name)
 // W_LumpLength
 // Returns the buffer size needed to load the given lump.
 //
-filelength_t W_LumpLength (int16_t lump)
+int32_t W_LumpLength (int16_t lump)
 {
 	int32_t size;
 #ifdef CHECK_FOR_ERRORS
@@ -677,8 +674,7 @@ W_CacheLumpNumEMS
 MEMREF
 W_CacheLumpNameEMS
 (int8_t*         name,
-	int8_t           tag)
-{
+	int8_t           tag) {
 	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
 }
 

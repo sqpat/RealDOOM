@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <graph.h>
+#include <malloc.h>
 #include "d_main.h"
 #include "doomstat.h"
 #include "doomdef.h"
@@ -684,7 +685,7 @@ union REGS in, out;
 byte *I_AllocLow(filelength_t length)
 {
 	byte *mem;
-	mem = malloc(length);
+	mem = _fmalloc(length);
 	if (mem == NULL) {
 		I_Error("Error: Couldn't malloc length %li", length);
 	}

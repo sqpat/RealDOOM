@@ -194,7 +194,7 @@ getSideNum
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	offset = sectors[currentSector].linesoffset + offset;
 
-	linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	offset = linebuffer[offset];
 	return ((line_t*)Z_LoadBytesFromConventional(linesRef))[offset].sidenum[side];
 	
@@ -218,7 +218,7 @@ getSector
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	offset = sectors[currentSector].linesoffset + offset;
 
-	linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	offset = linebuffer[offset];
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	offset = lines[offset].sidenum[side];
@@ -240,7 +240,7 @@ twoSided
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t* linebuffer;
 	line = sectors[sector].linesoffset + line;
-	linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	line = linebuffer[line];
     return (((line_t*)Z_LoadBytesFromConventional(linesRef))[line]).flags & ML_TWOSIDED;
 }
@@ -292,7 +292,7 @@ short_height_t	P_FindLowestFloorSurrounding(int16_t secnum)
 	int16_t offset = sectors[secnum].linesoffset;
 	short_height_t		floor = sectors[secnum].floorheight;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
  	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
@@ -323,7 +323,7 @@ short_height_t	P_FindHighestFloorSurrounding(int16_t secnum)
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
@@ -362,7 +362,7 @@ P_FindNextHighestFloor
 	int16_t offset = sectors[secnum].linesoffset;
 	short_height_t		height = currentheight;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
     
@@ -407,7 +407,7 @@ P_FindLowestCeilingSurrounding(int16_t	secnum)
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
@@ -437,7 +437,7 @@ short_height_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
@@ -496,7 +496,7 @@ P_FindMinSurroundingLight
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
@@ -1015,7 +1015,7 @@ P_ShootSpecialLine
   int16_t linenum )
 {
     int16_t		ok;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t innerlinenum = linebuffer[linenum];
 	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	line_t* line = &lines[innerlinenum];
@@ -1263,7 +1263,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 	}
 	linebufferoffsets[j] = -1;
 	j = 0;
-	linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	while (linebufferoffsets[j] >= 0) {
 		s1Offset = linebufferoffsets[j];
 		linebufferoffsets[j] = linebuffer[s1Offset]; // overwrite with lines

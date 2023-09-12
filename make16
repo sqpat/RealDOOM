@@ -33,7 +33,7 @@
 # CCOPTS = $(EXTERNOPT) -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc
 # zt1024 too much. 512 ok. 255 ok
 
-CCOPTS = /zp1 /omaxet /oi /zq /j /ml /zt768 /zc
+CCOPTS = -zp1 -oaxes -oi -zq -j -ml -zt768 -zc
 
 #doom8088 build opts for comparison
 #CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99

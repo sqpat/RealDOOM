@@ -1325,7 +1325,7 @@ M_WriteText
 //
 // M_Responder
 //
-boolean M_Responder (event_t* ev)
+boolean M_Responder (event_t*  ev)
 {
 	int16_t             ch;
 	int16_t             i;
@@ -1334,9 +1334,8 @@ boolean M_Responder (event_t* ev)
     static  int16_t     lasty = 0;
     static  int16_t     mousex = 0;
     static  int16_t     lastx = 0;
-        
+	
     ch = -1;
-        
     
     if (ev->type == ev_mouse && mousewait < ticcount)
     {
@@ -1385,7 +1384,7 @@ boolean M_Responder (event_t* ev)
         {
             ch = ev->data1;
         }
-    
+
     if (ch == -1)
         return false;
 
@@ -1649,7 +1648,7 @@ boolean M_Responder (event_t* ev)
         
     }
 
-    return false;
+	return false;
 }
 
 

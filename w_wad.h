@@ -30,15 +30,15 @@ typedef struct
     // Should be "IWAD" or "PWAD".
 	int8_t		identification[4];
     int32_t			numlumps;
-    filelength_t			infotableofs;
+	int32_t			infotableofs;
     
 } wadinfo_t;
 
 
 typedef struct
 {
-    filelength_t			filepos;
-    filelength_t			size;
+	int32_t			filepos;
+	int32_t			size;
 	int8_t		name[8];
     
 } filelump_t;
@@ -56,7 +56,7 @@ typedef struct
     int32_t		position; 
 	// dont know if this might have to change to int16_t at some point, but basically this is the diff between declared lump size and diff of adjacent positions. I think the wad is (annoyingly) made with some overlapping items. saves us 3 bytes per lump still.
 	int8_t	sizediff; 
-	//filelength_t		size;  // calculate size from next position minus your own plus diff.
+	//int32_t		size;  // calculate size from next position minus your own plus diff.
 } lumpinfo_t;
 
 
@@ -70,7 +70,7 @@ int16_t	W_GetNumForName(int8_t* name);
 //int16_t W_GetNumForName2(int8_t* name, int8_t*file, int line);
 //#define W_GetNumForName(a) W_GetNumForName2(a, __FILE__, __LINE__)
 
-filelength_t	W_LumpLength (int16_t lump);
+int32_t	W_LumpLength (int16_t lump);
 void    W_ReadLumpStatic (int16_t lump, void *dest);
 
 int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error);

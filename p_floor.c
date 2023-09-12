@@ -549,7 +549,7 @@ EV_BuildStairs
 			ok = 0;
 			for (i = 0;i < sectorlinecount;i++) {
 				linebufferOffset = sectorlinesoffset + i;
-				linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+				linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 				linenum = linebuffer[linebufferOffset];
 				lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 				if (!((&lines[linenum])->flags & ML_TWOSIDED)) {

@@ -44,7 +44,7 @@ enum { VERSION =  109 };
 // MAIN FEATURE FLAGS
 
 // Probably going to remove this eventually, checks for some infinite loops in a few places. I used this when tracking down freezing bugs when there were many memory leaks early in development.
-//#define LOOPCHECK
+// #define LOOPCHECK
 // Moves visplanes out of conventional memory into EMS. On its own, makes things slower. But this also frees up like 85k of conventional memory which may be better used speeding up the game in other ways.
 // #define EMS_VISPLANES
 
@@ -58,7 +58,10 @@ enum { VERSION =  109 };
 #define NUM_EMS_PAGES 4
 
 // to avoid messiness, lets stay at this size
-#define MAX_CONVENTIONAL_ALLOCATION_SIZE 65535L 
+//#define MAX_CONVENTIONAL_ALLOCATION_SIZE 2048
+#define MAX_CONVENTIONAL_ALLOCATION_SIZE 32768L 
+//#define MAX_CONVENTIONAL_ALLOCATION_SIZE 64512L 
+//#define MAX_CONVENTIONAL_ALLOCATION_SIZE 2048L
 // small blocks wont fit any of the structures we hope to put in there.
 #define MIN_CONVENTIONAL_ALLOCATION_SIZE 2048L 
 

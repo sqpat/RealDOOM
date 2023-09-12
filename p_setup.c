@@ -719,14 +719,14 @@ void P_GroupLines(void)
 
 	// build line tables for each sector        
 
-	linebufferRef = Z_MallocEMSNew (total * 2, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
+	linebufferRef = Z_MallocConventional (total * 2, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
 	linebufferindex = 0;
 
 	tempv1.h.fracbits = 0;
 	tempv2.h.fracbits = 0;
 
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	for (i = 0; i < numsectors; i++) {
+		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		M_ClearBox16(bbox);
 		
 		sectorlinecount = sectors[i].linecount;
@@ -745,7 +745,7 @@ void P_GroupLines(void)
 			linev2Offset = li->v2Offset & VERTEX_OFFSET_MASK;
 
 			if (li->frontsecnum == i || li->backsecnum == i) {
-				linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+				linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
 				vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
@@ -758,7 +758,7 @@ void P_GroupLines(void)
 		//Z_SetUnlocked(vertexesRef);
 #ifdef CHECK_FOR_ERRORS
 		if (linebufferindex - previouslinebufferindex != sectorlinecount) {
-			linebuffer = (int16_t*)Z_LoadBytesFromEMS(linebufferRef);
+			linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 			I_Error("P_GroupLines: miscounted %i %i   iteration %i      %i != (%i - %i)", linebuffer, sectors[i].linesoffset,  i, sectors[i].linecount, linebufferindex , previouslinebufferindex);
 		}
 #endif
@@ -847,6 +847,7 @@ P_SetupLevel
 
 	time = ticcount;
 
+
 	// note: most of this ordering is important 
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP); // 0ms
 	P_LoadVertexes(lumpnum + ML_VERTEXES); // 3 tic
@@ -886,51 +887,17 @@ P_SetupLevel
 }
 
 
-extern switchlist_t* alphSwitchList;
-extern uint8_t		switchlist[MAXSWITCHES * 2];
-extern int16_t		numswitches;
-
-extern R_InitSpriteDefs(int8_t** namelist);
-//
+ 
+ //
 // P_Init
 //
 void P_Init(void)
 {
-	//P_InitSwitchList();
-
-	int16_t		i;
-	int8_t		index;
-	int8_t		episode = 1;
-
-	if (registered)
-		episode = 2;
-	else if (commercial)
-		episode = 3;
-
-	for (index = 0, i = 0; i < MAXSWITCHES; i++) {
-		if (!alphSwitchList[i].episode) {
-			numswitches = index / 2;
-			switchlist[index] = BAD_TEXTURE;
-			break;
-		}
-
-		if (alphSwitchList[i].episode <= episode) {
-
-			switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name1);
-			switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name2);
-		}
-	}
-
-
-
+	int16_t i;
+	P_InitSwitchList();
 	P_InitPicAnims();
-   
-	// R_InitSprites(sprnames);
-	for (i = 0; i < SCREENWIDTH; i++) {
-		negonearray[i] = -1;
-	}
-
-	R_InitSpriteDefs(sprnames);
+	R_InitSprites(sprnames);
+ 
 
 }
 

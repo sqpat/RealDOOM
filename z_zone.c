@@ -355,62 +355,46 @@ void Z_ChangeTagEMSNew(MEMREF index, int16_t tag) {
 	}
 #endif
 	SET_TAG(allocations[index], tag);
-
-
 }
 
 
 
 // CONVENTIONAL MEMORY ALLOCATION STUFF
 
-size_t Z_GetFreeConventionalSize() {
+size_t Z_GetFreeConventionalSize(void** block) {
 
-#ifdef _M_I86
-	size_t availablememory = _memmax();
-#else
-	size_t availablememory = _memmax();
-#endif
 	// around 20k 16 bit right now.
-	//I_Error("Size available: %u  ", availablememory);
-
-	if (availablememory >= MAX_CONVENTIONAL_ALLOCATION_SIZE) {
-		return MAX_CONVENTIONAL_ALLOCATION_SIZE;
+#ifdef _M_I86
+	int16_t size = MAX_CONVENTIONAL_ALLOCATION_SIZE;
+#else
+	size_t size = _memmax();
+#endif
+	while (size >= MIN_CONVENTIONAL_ALLOCATION_SIZE) {
+#ifdef _M_I86
+		*block = _fmalloc(size);
+#else
+		*block = _nmalloc(size);
+#endif
+		if (*block) {
+			return size;
+		}
+		size -= 1024;
 	}
 
-	if (availablememory < MIN_CONVENTIONAL_ALLOCATION_SIZE) {
-		return 0;
-	}
-	
-	return availablememory; 
+	return 0;
 }
-//todo make these alloc low - sq
 void Z_InitConventional(void) {
 #ifdef DEBUG_PRINTING
 	printf("Initializing conventional allocation blocks...");
 #endif
-	totalconventionalfree1 = Z_GetFreeConventionalSize();
-	if (totalconventionalfree1) {
-#ifdef _M_I86
-		conventionalmemoryblock1 = malloc(totalconventionalfree1);
-#else
-		conventionalmemoryblock1 = _nmalloc(totalconventionalfree1);
-#endif
-	}
+	totalconventionalfree1 = Z_GetFreeConventionalSize(&conventionalmemoryblock1);
 	remainingconventional1 = totalconventionalfree1;
 
-	totalconventionalfree2 = Z_GetFreeConventionalSize();
-	if (totalconventionalfree2) {
-#ifdef _M_I86
-		conventionalmemoryblock2 = malloc(totalconventionalfree2);
-#else
-		conventionalmemoryblock2 = _nmalloc(totalconventionalfree2);
-#endif
-	}
+	totalconventionalfree2 = Z_GetFreeConventionalSize(&conventionalmemoryblock2);
+	remainingconventional2 = totalconventionalfree2;
 #ifdef DEBUG_PRINTING
 	printf("\Conventional block sizes %i %i\n", totalconventionalfree1, totalconventionalfree2);
 #endif
-
-	remainingconventional2 = totalconventionalfree2;
 }
 
 // EMS STUFF
@@ -559,13 +543,9 @@ void Z_FreeEMSNew(PAGEREF block) {
 		allocations[other].offset_and_tag &= OFFSET_MASK; // set tag to NOT_IN_USE
 	}
 
-
-
 #ifdef MEMORYCHECK
 	Z_CheckEMSAllocations(block);
 #endif
-
-
 }
 
 
@@ -584,12 +564,10 @@ Z_FreeTagsEMS
 					printf ("block:%p    size:%7i    user:%p    tag:%3i\n",
 							block, block->size, block->user, block->tag);*/
 
-
 		if (block == ALLOCATION_LIST_HEAD){
 			// all blocks have been hit
 			break;
 		}
-
 
 		// free block?
 		if (!HAS_USER(allocations[block]))
@@ -599,16 +577,11 @@ Z_FreeTagsEMS
 			Z_FreeEMSNew(block);
 	}
 
-
 }
 
 void Z_MarkPageLRU(uint16_t pagenumber) {
-
-
 	int16_t i;
 	int16_t j;
-
-
 
 #ifdef CHECK_FOR_ERRORS
 	if (pagenumber >= NUM_EMS_PAGES) {
@@ -640,7 +613,6 @@ void Z_MarkPageLRU(uint16_t pagenumber) {
 
 #ifdef CHECKREFS
 
-
 void Z_PageDump(int8_t* string, int16_t numallocatepages) {
 
 #if NUM_EMS_PAGES == 8
@@ -667,8 +639,6 @@ void Z_PageDump(int8_t* string, int16_t numallocatepages) {
 		lockedpages[0], lockedpages[1], lockedpages[2], lockedpages[3]
 	);
 #endif
-
-
 }
 
 int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
@@ -699,8 +669,6 @@ int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
 			//printf("\nEMS CACHE HIT on page %i size %i", page, size);
 			allpagesgood = true;
 
-
-
 			for (i = 1; i < numallocatepages; i++) {
 				if (activepages[pageframeindex + i] != MAKE_PAGE(allocations[memref].page_and_size) + i) {
 					allpagesgood = false;
@@ -714,7 +682,6 @@ int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
 		}
 	}
 
-
 	/*
 		for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 			if (activepages[pageframeindex] == allocations[memref].page) {
@@ -725,7 +692,7 @@ int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
 
 		//Z_PageDump();
 
-	I_Error("Z_RefIsActive: Found inactive ref! %i %i %s %i %i", memref, gametic, file, line, numallocatepages);
+	I_Error("\nZ_RefIsActive: Found inactive ref! %i %li %s %i %i", memref, gametic, file, line, numallocatepages);
 
 	return 0;
 }

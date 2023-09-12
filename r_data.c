@@ -400,6 +400,7 @@ void R_GenerateLookup(uint8_t texnum)
 	int16_t				texturewidth;
 	int16_t				textureheight;
 	int8_t				texturename[8];
+	int16_t				temp;
 
 	MEMREF textureRef = textures[texnum];
 
@@ -449,10 +450,8 @@ void R_GenerateLookup(uint8_t texnum)
 			x2 = texturewidth;
 		}
 		
-		collump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlump);
-		colofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofs);
-		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
-
+	
+		/*
 		for (; x < x2; x++) {
 			Z_RefIsActive(realpatchRef);
 			Z_RefIsActive(texturecolumnlump);
@@ -460,6 +459,17 @@ void R_GenerateLookup(uint8_t texnum)
 			patchcount[x]++;
 			collump[x] = patchpatch;
 			colofs[x] = (realpatch->columnofs[x - x1]) + 3;
+		}*/
+
+ 
+		for (; x < x2; x++) {
+			patchcount[x]++;
+			collump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlump);
+			collump[x] = patchpatch;
+			realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
+			temp = (realpatch->columnofs[x - x1]) + 3;
+			colofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofs);
+			colofs[x] = temp;
 		}
 	}
 
@@ -932,7 +942,11 @@ uint8_t     R_CheckTextureNumForName(int8_t *name)
 			return i;
 		}
 	}
-
+	/*
+	I_Error("\n%i %i %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c", i, textures[i],
+		name[0], name[1], name[2], name[3], name[4], name[5], name[6], name[7],
+		texture->name[0], texture->name[1], texture->name[2], texture->name[3], texture->name[4], texture->name[5], texture->name[6], texture->name[7]);
+		*/
 	return BAD_TEXTURE;
 }
 
@@ -943,13 +957,14 @@ uint8_t     R_CheckTextureNumForName(int8_t *name)
 // Calls R_CheckTextureNumForName,
 //  aborts with error message.
 //
+//uint8_t R_TextureNumForName2(int8_t *name, int8_t*file, int16_t line)
 uint8_t     R_TextureNumForName(int8_t* name)
 {
 	uint8_t         i = R_CheckTextureNumForName(name);
 
 	if (i == BAD_TEXTURE) {
-		I_Error("R_TextureNumForName: %s not found %i %i %i",
-			name, numreads, pageins, pageouts);
+		I_Error("\nR_TextureNumForName: %s not found %li %li %li", name, numreads, pageins, pageouts);
+		//I_Error("\nR_TextureNumForName: %s not found %li %li %li %s %i", name, numreads, pageins, pageouts, file, line);
 	}
 	return i;
 }
