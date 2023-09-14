@@ -1,6 +1,6 @@
 # RealDOOM
 
-![]https://github.com/sqpat/RealDOOM/blob/master/superalpha.gif
+![](https://github.com/sqpat/RealDOOM/blob/master/superalpha.gif)
 
 RealDOOM is a (currently in progress) port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical fidelity as the original game.
 
