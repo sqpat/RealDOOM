@@ -1290,7 +1290,8 @@ M_WriteText
         
     while(1)
     {
-        c = *ch++;
+		c = *ch;
+		ch++;
         if (!c)
             break;
         if (c == '\n')

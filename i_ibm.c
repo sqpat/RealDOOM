@@ -147,7 +147,7 @@ boolean grmode;
 
 boolean mousepresent;
 
-uint32_t ticcount;
+volatile uint32_t ticcount;
 
 // REGS stuff used for int calls
 union REGS regs;
@@ -247,10 +247,17 @@ void I_SetPalette(byte *palette)
                 return;
         }
         I_WaitVBL(1);
-        _outbyte(PEL_WRITE_ADR, 0);
+#ifndef	SKIP_DRAW
+		_outbyte(PEL_WRITE_ADR, 0);
+#endif
         for(i = 0; i < 768; i++)
         {
-                _outbyte(PEL_DATA, (gammatable[usegamma][*palette++])>>2);
+#ifndef	SKIP_DRAW
+//			_outbyte(PEL_DATA, (gammatable[usegamma][*palette++]) >> 2);
+			_outbyte(PEL_DATA, gammatable[usegamma][*palette] >> 2);
+			palette++;
+
+#endif
         }
 }
 
@@ -260,13 +267,12 @@ void I_SetPalette(byte *palette)
 
 byte *pcscreen, *currentscreen, *destscreen, *destview;
 
-
 //
 // I_UpdateBox
 //
 void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
 {
-	int16_t i, j, k, count;
+	uint16_t i, j, k, count;
 	int16_t sp_x1, sp_x2;
 	uint16_t poffset;
 	uint16_t offset;
@@ -281,21 +287,26 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
     step = SCREENWIDTH - count * 8;
     poffset = offset / 4;
     pstep = step / 4;
-
-    outp(SC_INDEX, SC_MAPMASK);
-
+#ifndef	SKIP_DRAW
+	outp(SC_INDEX, SC_MAPMASK);
+#endif
     for (i = 0; i < 4; i++)
     {
-        outp(SC_INDEX + 1, 1 << i);
+#ifndef	SKIP_DRAW
+		outp(SC_INDEX + 1, 1 << i);
+#endif
         source = &screen0[offset + i];
         dest = destscreen + poffset;
+		TEXT_MODE_DEBUG_PRINT("I_UpdateBox to dest %lx", dest);
 
         for (j = 0; j < h; j++)
         {
             k = count;
             while (k--)
             {
-                *(uint16_t *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
+#ifndef	SKIP_DRAW
+				*(uint16_t *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
+#endif
                 dest += 2;
                 source += 8;
             }
@@ -393,14 +404,23 @@ void I_UpdateNoBlit(void)
 void I_FinishUpdate(void)
 {
 
+#ifndef	SKIP_DRAW
 	outpw(CRTC_INDEX, ((int32_t)destscreen & 0xff00) + 0xc);
-
+#endif
     //Next plane
     destscreen += 0x4000;
-    if (destscreen == (byte*)0xac000)
+#ifdef _M_I86
+	if (destscreen == (byte*)0xac000000)
     {
-        destscreen = (byte*)0xa0000;
+        destscreen = (byte*)0xa0000000;
     }
+#else
+	if (destscreen == (byte*)0xac000)
+	{
+		destscreen = (byte*)0xa0000;
+	}
+#endif
+
 }
 
 //
@@ -412,26 +432,39 @@ void I_InitGraphics(void)
     {
         return;
     }
-    grmode = true;
+	grmode = true;
     regs.w.ax = 0x13;
+#ifndef	SKIP_DRAW
 	intx86(0x10, (union REGS *)&regs, &regs);
-    pcscreen = currentscreen = (byte *)0xA0000l;
-    destscreen = (byte *)0xa4000l;
+#endif
+#ifdef _M_I86
+	pcscreen = currentscreen = 0xA0000000L;
+	destscreen = 0xA0400000;
+#else
+	pcscreen = currentscreen = (byte *)0xA0000l;
+	destscreen = (byte *)0xa4000l;
+#endif
+ 
 
-    outp(SC_INDEX, SC_MEMMODE);
+#ifndef	SKIP_DRAW
+	outp(SC_INDEX, SC_MEMMODE);
     outp(SC_INDEX + 1, (inp(SC_INDEX + 1)&~8) | 4);
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~0x13);
     outp(GC_INDEX, GC_MISCELLANEOUS);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~2);
     outpw(SC_INDEX, 0xf02);
-    memset(pcscreen, 0, 0x10000);
+#ifdef _M_I86
+	memset(pcscreen, 0, 0xFFFF);
+#else
+	memset(pcscreen, 0, 0x10000L);
+#endif
     outp(CRTC_INDEX, CRTC_UNDERLINE);
     outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1)&~0x40);
     outp(CRTC_INDEX, CRTC_MODE);
     outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1) | 0x40);
     outp(GC_INDEX, GC_READMAP);
-
+#endif
     I_SetPalette(Z_LoadBytesFromEMS(W_CacheLumpNameEMS("PLAYPAL", PU_CACHE)));
     I_InitDiskFlash();
 }
@@ -444,7 +477,10 @@ void I_ShutdownGraphics(void)
     if (*(byte *)0x449 == 0x13) // don't reset mode if it didn't get set
     {
         regs.w.ax = 3;
-        intx86(0x10, &regs, &regs); // back to text mode
+#ifndef	SKIP_DRAW
+		intx86(0x10, &regs, &regs); // back to text mode
+		//I_Error("shutdown successful");
+#endif
     }
 }
 
@@ -460,14 +496,19 @@ void I_ReadScreen(byte *scr)
 	uint16_t i;
 	uint16_t j;
 
-        outp(GC_INDEX, GC_READMAP);
-
+#ifndef	SKIP_DRAW
+	outp(GC_INDEX, GC_READMAP);
+#endif
         for (i = 0; i < 4; i++)
         {
-                outp(GC_INDEX+1, i);
+#ifndef	SKIP_DRAW
+			outp(GC_INDEX+1, i);
+#endif
                 for (j = 0; j < SCREENWIDTH*SCREENHEIGHT/4; j++)
                 {
-                        scr[i+j*4] = currentscreen[j];
+#ifndef	SKIP_DRAW
+					scr[i+j*4] = currentscreen[j];
+#endif
                 }
         }
 }
@@ -1049,9 +1090,7 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 	intx86x(0x31, &regs, &regs, &segregs);
 
 	heap = meminfo[0];
-#ifdef DEBUG_PRINTING
-	printf("DPMI memory: 0x%x", heap);
-#endif
+	DEBUG_PRINT("DPMI memory: 0x%x", heap);
 
 	do
 	{
@@ -1105,7 +1144,11 @@ void I_InitDiskFlash(void)
         pic = W_CacheLumpNameEMSAsPatch("STDISK", PU_CACHE);
     }
     temp = destscreen;
-    destscreen = (byte *)0xac000;
+#ifdef _M_I86
+	destscreen = (byte *)0xac000000;
+#else
+	destscreen = (byte *)0xac000;
+#endif
     V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, pic);
     destscreen = temp;
 	*/
@@ -1124,43 +1167,58 @@ void I_BeginRead(void)
         return;
     }
 
-    // write through all planes
+#ifndef	SKIP_DRAW
+	// write through all planes
     outp(SC_INDEX, SC_MAPMASK);
     outp(SC_INDEX + 1, 15);
     // set write mode 1
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
-
+#endif
     // copy to backup
     src = currentscreen + 184 * 80 + 304 / 4;
-    dest = (byte *)0xac000 + 184 * 80 + 288 / 4;
+#ifdef _M_I86
+	dest = 0xac000000 + 184 * 80 + 288 / 4;
+#else
+	dest = (byte *)0xac000 + 184 * 80 + 288 / 4;
+#endif
     for (y = 0; y<16; y++)
     {
-        dest[0] = src[0];
+#ifndef	SKIP_DRAW
+		dest[0] = src[0];
         dest[1] = src[1];
         dest[2] = src[2];
         dest[3] = src[3];
+#endif
         src += 80;
         dest += 80;
     }
 
     // copy disk over
     dest = currentscreen + 184 * 80 + 304 / 4;
-    src = (byte *)0xac000 + 184 * 80 + 304 / 4;
+#ifdef _M_I86
+	src = 0xac000000 + 184 * 80 + 304 / 4;
+#else
+	src = (byte *)0xac000 + 184 * 80 + 304 / 4;
+#endif
     for (y = 0; y<16; y++)
     {
-        dest[0] = src[0];
+#ifndef	SKIP_DRAW
+		dest[0] = src[0];
         dest[1] = src[1];
         dest[2] = src[2];
         dest[3] = src[3];
+#endif
         src += 80;
         dest += 80;
     }
 
 
     // set write mode 0
-    outp(GC_INDEX, GC_MODE);
+#ifndef	SKIP_DRAW
+	outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
+#endif
 	*/
 }
 
@@ -1177,28 +1235,39 @@ void I_EndRead(void)
     }
 
     // write through all planes
-    outp(SC_INDEX, SC_MAPMASK);
+#ifndef	SKIP_DRAW
+	outp(SC_INDEX, SC_MAPMASK);
     outp(SC_INDEX + 1, 15);
+#endif
     // set write mode 1
-    outp(GC_INDEX, GC_MODE);
+#ifndef	SKIP_DRAW
+	outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
-
+#endif
 
     // copy disk over
     dest = currentscreen + 184 * 80 + 304 / 4;
-    src = (byte *)0xac000 + 184 * 80 + 288 / 4;
+#ifdef _M_I86
+	src = 0xac000000 + 184 * 80 + 288 / 4;
+#else
+	src = (byte *)0xac000 + 184 * 80 + 288 / 4;
+#endif
     for (y = 0; y<16; y++)
     {
-        dest[0] = src[0];
+#ifndef	SKIP_DRAW
+		dest[0] = src[0];
         dest[1] = src[1];
         dest[2] = src[2];
         dest[3] = src[3];
+#endif
         src += 80;
         dest += 80;
     }
 
     // set write mode 0
-    outp(GC_INDEX, GC_MODE);
+#ifndef	SKIP_DRAW
+	outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
+#endif
 	*/
 }

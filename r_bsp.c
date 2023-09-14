@@ -163,8 +163,10 @@ R_ClipSolidWallSegment
 
     while (next++ != newend)
     {
-	// Remove a post.
-	*++start = *next;
+	// Remove a post
+		start++;
+		*start = *next;
+
     }
 
     newend = start+1;

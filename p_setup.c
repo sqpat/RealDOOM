@@ -820,6 +820,7 @@ P_SetupLevel
 	Z_FreeTagsEMS(PU_LEVEL);
 	Z_FreeConventionalAllocations();
 
+	TEXT_MODE_DEBUG_PRINT("\n P_InitThinkers");
 	P_InitThinkers();
 
 	// if working with a devlopment map, reload it
@@ -848,16 +849,24 @@ P_SetupLevel
 	time = ticcount;
 
 
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	// note: most of this ordering is important 
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP); // 0ms
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadVertexes");
 	P_LoadVertexes(lumpnum + ML_VERTEXES); // 3 tic
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadSectors");
 	P_LoadSectors(lumpnum + ML_SECTORS);  // 1 tic
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadSideDefs");
 	P_LoadSideDefs(lumpnum + ML_SIDEDEFS); // 216 tics (slow because of texture name lookups. this is the only place texture names are ever used. during init_textures can we make a clever name to int backwards cache?
 
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadLineDefs");
 	P_LoadLineDefs(lumpnum + ML_LINEDEFS); // 40 tics
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadSubsectors");
 	P_LoadSubsectors(lumpnum + ML_SSECTORS);// 1 tic
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadNodes");
 	P_LoadNodes(lumpnum + ML_NODES); // 5 tics (263 total)
 
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadSegs");
 	P_LoadSegs(lumpnum + ML_SEGS); // 50 tics (313 total)
 
 
@@ -871,10 +880,12 @@ P_SetupLevel
 
 	bodyqueslot = 0;
 
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadThings");
 	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 
 
 
 	// set up world state
+	TEXT_MODE_DEBUG_PRINT("\n P_SpawnSpecials");
 	P_SpawnSpecials();  // 3 tics
 
 

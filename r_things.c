@@ -93,7 +93,7 @@ R_InstallSpriteLump
         
 #ifdef CHECK_FOR_ERRORS
 	if (frame >= 29 || rotation > 8)
-        I_Error("R_InstallSpriteLump: "
+        I_Error("\nR_InstallSpriteLump: "
                 "Bad frame characters in lump %i", lump);
 #endif
 

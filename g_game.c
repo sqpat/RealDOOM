@@ -62,7 +62,8 @@
 
 #define SAVEGAMESIZE    0x2c000
 #define SAVESTRINGSIZE  24
-#define DEMO_MAX_SIZE 0x20000
+// lets keep this comfortably 16 bit. otherwise how do we fit in ems without big rewrite?
+#define DEMO_MAX_SIZE 0xF800
 
 
 boolean G_CheckDemoStatus (void); 
@@ -113,7 +114,7 @@ boolean         demoplayback;
 boolean         netdemo; 
 MEMREF           demobufferRef;
 
-byte*           demo_p;
+uint16_t           demo_p;				// buffer
 //byte*           demoend; 
 boolean         singledemo;             // quit after playing a demo from cmdline 
  
@@ -419,6 +420,7 @@ void G_DoLoadLevel (void)
 	if (player.playerstate == PST_DEAD)
 		player.playerstate = PST_REBORN;
 
+	TEXT_MODE_DEBUG_PRINT("\ncalling P_SetupLevel");
 	P_SetupLevel (gameepisode, gamemap, gameskill);
 	starttime = ticcount;
     gameaction = ga_nothing; 
@@ -518,6 +520,7 @@ void G_Ticker (void)
     // do things to change the game state
     while (gameaction != ga_nothing) 
     { 
+		TEXT_MODE_DEBUG_PRINT("\n carrying out gameaction %i", gameaction);
         switch (gameaction) 
         { 
           case ga_loadlevel: 
@@ -559,12 +562,15 @@ void G_Ticker (void)
 
 	memcpy(cmd, &localcmds[buf], sizeof(ticcmd_t));
 
-	if (demoplayback)
+	if (demoplayback) {
 		G_ReadDemoTiccmd(cmd);
-	if (demorecording)
+		TEXT_MODE_DEBUG_PRINT("\ndemo command demo_p %i ANG %i BUTN %x FWD %i SIDE %i ", demo_p, cmd->angleturn, cmd->buttons, cmd->forwardmove, cmd->sidemove);
+		 
+
+	}
+	if (demorecording) {
 		G_WriteDemoTiccmd(cmd);
-
-
+	}
 
     // check for special buttons
 	if (player.cmd.buttons & BT_SPECIAL)
@@ -589,29 +595,38 @@ void G_Ticker (void)
 		}
 	}
 
+	TEXT_MODE_DEBUG_PRINT("\n checking gamestate %i", gamestate);
 
     // do main actions
     switch (gamestate) 
     { 
-      case GS_LEVEL: 
+	case GS_LEVEL:
 
-	    P_Ticker();
+		TEXT_MODE_DEBUG_PRINT("\n GS_LEVEL");
+		P_Ticker();
+		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: P_Ticker done");
 		ST_Ticker();
+		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: ST_Ticker done");
 		AM_Ticker ();
-		HU_Ticker ();            
+		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: AM_Ticker done");
+		HU_Ticker ();
+		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: HU_Ticker done");
 		break;
          
       case GS_INTERMISSION: 
         WI_Ticker (); 
-        break; 
+		TEXT_MODE_DEBUG_PRINT("\n GS_INTERMISSION: WI_Ticker done");
+		break;
                          
       case GS_FINALE: 
         F_Ticker (); 
-        break; 
+		TEXT_MODE_DEBUG_PRINT("\n GS_FINALE: F_Ticker done");
+		break;
  
       case GS_DEMOSCREEN: 
         D_PageTicker (); 
-        break; 
+		TEXT_MODE_DEBUG_PRINT("\n GS_DEMOSCREEN: D_PageTicker done");
+		break;
     }        
 
 } 
@@ -1232,7 +1247,8 @@ G_InitNew
         } 
 
 
-    G_DoLoadLevel (); 
+	TEXT_MODE_DEBUG_PRINT("\nloading level");
+	G_DoLoadLevel ();
 } 
  
 
@@ -1246,36 +1262,39 @@ void G_ReadDemoTiccmd (ticcmd_t* cmd)
 { 
     // this is just used as an offset so lets just store as int;
 	int32_t demobuffer = (int32_t) Z_LoadBytesFromEMS(demobufferRef);
-	demo_p = (byte*)(demo_p + demobuffer);
-	if (*demo_p == DEMOMARKER)  {
+	byte* demo_addr = (byte*)(demo_p + demobuffer);
+	
+	if (*demo_addr == DEMOMARKER)  {
         // end of demo data stream 
         G_CheckDemoStatus (); 
         return; 
     } 
-    cmd->forwardmove = ((int8_t)*demo_p++); 
-    cmd->sidemove = ((int8_t)*demo_p++);
-    cmd->angleturn = ((uint8_t)*demo_p++)<<8; 
-    cmd->buttons = (uint8_t)*demo_p++; 
-	demo_p = (byte*)(demo_p - demobuffer);
+
+
+	cmd->forwardmove = ((int8_t)*demo_addr++);
+    cmd->sidemove = ((int8_t)*demo_addr++);
+    cmd->angleturn = ((uint8_t)*demo_addr++)<<8;
+    cmd->buttons = (uint8_t)*demo_addr++;
+	demo_p = (demo_addr - demobuffer);
 }
 
 
 void G_WriteDemoTiccmd (ticcmd_t* cmd) 
 { 
 	int32_t demobuffer = (int32_t) Z_LoadBytesFromEMS(demobufferRef);
-	demo_p = (byte*)((int32_t)demo_p + (int32_t)demobuffer);
-	if (gamekeydown['q'])           // press q to end demo recording 
+	byte* demo_addr = (byte*)(demo_p + demobuffer);
+ 	if (gamekeydown['q'])           // press q to end demo recording 
         G_CheckDemoStatus (); 
 
 	
 
-	*demo_p++ = cmd->forwardmove; 
-    *demo_p++ = cmd->sidemove; 
-    *demo_p++ = (cmd->angleturn+128)>>8; 
-    *demo_p++ = cmd->buttons; 
-    demo_p -= 4; 
+	*demo_addr++ = cmd->forwardmove;
+    *demo_addr++ = cmd->sidemove;
+    *demo_addr++ = (cmd->angleturn+128)>>8;
+    *demo_addr++ = cmd->buttons;
+	demo_addr -= 4;
 	
-    if ((int32_t)demo_p > (DEMO_MAX_SIZE - 16))
+    if (demo_p > (DEMO_MAX_SIZE - 16))
     {
         // no more space 
         G_CheckDemoStatus (); 
@@ -1283,7 +1302,7 @@ void G_WriteDemoTiccmd (ticcmd_t* cmd)
     } 
         
     G_ReadDemoTiccmd (cmd);         // make SURE it is exactly the same 
-	demo_p = (byte*)(demo_p - demobuffer);
+	demo_p = (demo_addr - demobuffer);
 
 } 
  
@@ -1313,24 +1332,26 @@ void G_RecordDemo (int8_t* name)
 void G_BeginRecording (void) 
 { 
 	byte* demobuffer = Z_LoadBytesFromEMS(demobufferRef);
-	
-    demo_p = demobuffer;
-        
-    *demo_p++ = VERSION;
-    *demo_p++ = gameskill; 
-    *demo_p++ = gameepisode; 
-    *demo_p++ = gamemap; 
-    *demo_p++ = false;
-    *demo_p++ = respawnparm;
-    *demo_p++ = fastparm;
-    *demo_p++ = nomonsters;
-    *demo_p++ = consoleplayer;
+	byte* demo_addr = (byte*)(demobuffer);
 
-	*demo_p++ = true;
-	*demo_p++ = false;
-	*demo_p++ = false;
-	*demo_p++ = false;
-	demo_p = (byte*)(demo_p - demobuffer);
+    demo_p = 0;
+        
+    *demo_addr++ = VERSION;
+    *demo_addr++ = gameskill;
+    *demo_addr++ = gameepisode;
+    *demo_addr++ = gamemap;
+    *demo_addr++ = false;
+    *demo_addr++ = respawnparm;
+    *demo_addr++ = fastparm;
+    *demo_addr++ = nomonsters;
+    *demo_addr++ = consoleplayer;
+
+	*demo_addr++ = true;
+	*demo_addr++ = false;
+	*demo_addr++ = false;
+	*demo_addr++ = false;
+	
+	demo_p = (demo_addr - demobuffer);
 
 } 
  
@@ -1352,43 +1373,46 @@ void G_DoPlayDemo (void)
     skill_t skill; 
 	int8_t             episode, map;
 	byte* demobuffer;
-	
+	byte* demo_addr;
+
 	gameaction = ga_nothing;
     demobufferRef = W_CacheLumpNameEMS (defdemoname, PU_STATIC); 
 	demobuffer = (byte*) Z_LoadBytesFromEMS(demobufferRef);
-	demo_p = demobuffer;
+	demo_addr = (byte*)(demobuffer);
+	demo_p = 0;
 
 
-	if ( *demo_p++ != VERSION)
+	if ( *demo_addr++ != VERSION)
     {
 #ifdef CHECK_FOR_ERRORS
 		I_Error("Demo is from a different game version!");
 #endif
 }
 
-    skill = *demo_p++; 
-    episode = *demo_p++; 
-    map = *demo_p++; 
-     *demo_p++; // deathmatch
-    respawnparm = *demo_p++;
-    fastparm = *demo_p++;
-    nomonsters = *demo_p++;
-    consoleplayer = *demo_p++;
+    skill = *demo_addr++;
+    episode = *demo_addr++;
+    map = *demo_addr++;
+     *demo_addr++; // deathmatch
+    respawnparm = *demo_addr++;
+    fastparm = *demo_addr++;
+    nomonsters = *demo_addr++;
+    consoleplayer = *demo_addr++;
 
-	*demo_p++; // playeringame
-	*demo_p++;
-	*demo_p++;
-	*demo_p++;
+	*demo_addr++; // playeringame
+	*demo_addr++;
+	*demo_addr++;
+	*demo_addr++;
 	
     // don't spend a lot of time in loadlevel 
     precache = false;
+	TEXT_MODE_DEBUG_PRINT("\ndemo loaded, initializing game/world");
 	G_InitNew (skill, episode, map);
 	precache = true;
 
     usergame = false; 
     demoplayback = true; 
 
-	demo_p = (byte*)(demo_p - demobuffer);
+	demo_p = (demo_addr - demobuffer);
 
 } 
 
@@ -1425,7 +1449,7 @@ boolean G_CheckDemoStatus (void)
 { 
 	ticcount_t             endtime;
 	byte* demobuffer;
-
+	byte* demo_addr;
 	// NOTE: WHENEVER WE ENTER THIS FUNCTION demo_p IS ALREADY INCREMENTED BY demobuffer OFFSET;
 
 	if (timingdemo)
@@ -1441,7 +1465,7 @@ boolean G_CheckDemoStatus (void)
 
 		);
 #else
-        I_Error ("timed %i gametics in %i realtics %i %i %i prnd %i",gametic 
+        I_Error ("\ntimed %li gametics in %li realtics %li %li %li prnd %i",gametic 
                  , endtime-starttime, numreads, pageins, pageouts, prndindex); 
 #endif
     } 
@@ -1465,8 +1489,11 @@ boolean G_CheckDemoStatus (void)
     if (demorecording) 
     { 
 		demobuffer = Z_LoadBytesFromEMS(demobufferRef);
-        *demo_p++ = DEMOMARKER; 
-        M_WriteFile (demoname, demobuffer, demo_p - demobuffer);
+		demo_addr = (byte*)(demo_p + demobuffer);
+
+		*demo_addr++ = DEMOMARKER;
+		demo_p++;
+        M_WriteFile (demoname, demobuffer, demo_p);
         Z_FreeEMSNew (demobufferRef); 
         demorecording = false; 
         I_Error ("Demo %s recorded",demoname); 

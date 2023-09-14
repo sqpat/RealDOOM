@@ -185,7 +185,7 @@ V_MarkRect
 //
 // V_CopyRect 
 // 
-void
+void  // todo remove the unused srcscrn destscrn
 V_CopyRect
 ( uint16_t		srcx,
   uint16_t		srcy,
@@ -308,7 +308,8 @@ V_DrawFullscreenPatch
 			if (count += 4)
 				do
 				{
-					*dest = *source++;
+					*dest = *source;
+					source++;
 					dest += SCREENWIDTH;
 				} while (--count);
 				column = (column_t *)(source + 1);
@@ -398,7 +399,8 @@ V_DrawPatch
 			if (count += 4)
 				do
 				{
-					*dest = *source++;
+					*dest = *source;
+					source++;
 					dest += SCREENWIDTH;
 				} while (--count);
 				column = (column_t *)(source + 1);
@@ -451,8 +453,9 @@ V_DrawPatchFlipped
 			 
 	    while (count--) 
 	    { 
-		*dest = *source++; 
-		dest += SCREENWIDTH; 
+			*dest = *source;
+			source++;
+			dest += SCREENWIDTH;
 	    } 
 	    column = (column_t *)(  (byte *)column + column->length 
 				    + 4 ); 
@@ -491,7 +494,9 @@ V_DrawPatchDirect
     w = (patch->width); 
     for ( col = 0 ; col<w ; col++) 
     { 
-	outp (SC_INDEX+1,1<<(x&3)); 
+#ifndef	SKIP_DRAW
+		outp (SC_INDEX+1,1<<(x&3));
+#endif
 	column = (column_t *)((byte *)patch + (patch->columnofs[col])); 
  
 	// step through the posts in a column 
@@ -504,7 +509,10 @@ V_DrawPatchDirect
  
 	    while (count--) 
 	    { 
-		*dest = *source++; 
+#ifndef	SKIP_DRAW
+			*dest = *source;
+			source++;
+#endif
 		dest += SCREENWIDTH/4; 
 	    } 
 	    column = (column_t *)(  (byte *)column + column->length 

@@ -483,9 +483,7 @@ void R_GenerateLookup(uint8_t texnum)
 	for (x = 0; x < texturewidth; x++) {
 
 		if (!patchcount[x]) {
-#ifdef DEBUG_PRINTING
-			printf("R_GenerateLookup: column without a patch (%s)\n", texturename);
-#endif
+			DEBUG_PRINT("R_GenerateLookup: column without a patch (%s)\n", texturename);
 			return;
 		}
 
@@ -840,9 +838,7 @@ void R_InitData(void) {
 	int16_t lump;
 
 	R_InitTextures();
-#ifdef DEBUG_PRINTING
-	printf(".");
-#endif
+	DEBUG_PRINT(".");
 
 // R_InitFlats();
 
@@ -856,13 +852,9 @@ void R_InitData(void) {
 		flattranslation[i] = i;
 
 
-#ifdef DEBUG_PRINTING
-	printf(".");
-#endif
+	DEBUG_PRINT(".");
 	R_InitSpriteLumps();
-#ifdef DEBUG_PRINTING
-	printf(".");
-#endif
+	DEBUG_PRINT(".");
 
 // R_InitColormaps();
 
@@ -904,7 +896,7 @@ uint8_t R_FlatNumForName(int8_t* name)
 	{
 		namet[8] = 0;
 		memcpy(namet, name, 8);
-		I_Error("R_FlatNumForName: %s not found", namet);
+		I_Error("\nR_FlatNumForName: %s not found", namet);
 	}
 
 	if (i - firstflat > 255){

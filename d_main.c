@@ -161,6 +161,7 @@ void D_ProcessEvents (void)
 {
     event_t*     ev;
 	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
+		//TEXT_MODE_DEBUG_PRINT("\neventhead %i %i", eventtail, eventhead);
 		ev = &events[eventtail];
 		if (M_Responder(ev)) {  // 16 bit crashes going here tick 1
 			continue;               // menu ate the event
@@ -370,7 +371,8 @@ void D_Display (void)
 
     if (nodrawers)
         return;                    // for comparative timing / profiling
-                
+ 
+
     redrawsbar = false;
     
 
@@ -397,8 +399,10 @@ void D_Display (void)
 #endif
 
 	
-    if (gamestate == GS_LEVEL && gametic)
-        HU_Erase();
+	if (gamestate == GS_LEVEL && gametic) {
+		HU_Erase();
+		TEXT_MODE_DEBUG_PRINT("\n D_Display: HU_Erase done");
+	}
 
     // do buffered drawing
     switch (gamestate)
@@ -413,12 +417,13 @@ void D_Display (void)
         if (inhelpscreensstate && !inhelpscreens)
             redrawsbar = true;              // just put away the help screen
         ST_Drawer (viewheight == 200, redrawsbar );
+		TEXT_MODE_DEBUG_PRINT("\n D_Display: ST_Drawer done");
 		fullscreen = viewheight == 200;
         break;
 
       case GS_INTERMISSION:
         WI_Drawer ();
-        break;
+		break;
 
       case GS_FINALE:
         F_Drawer ();
@@ -426,20 +431,25 @@ void D_Display (void)
 
       case GS_DEMOSCREEN:
         D_PageDrawer ();
-        break;
+		TEXT_MODE_DEBUG_PRINT("\n D_Display: GS_DEMOSCREEN done");
+		break;
     }
 
 
     // draw buffered stuff to screen
     I_UpdateNoBlit ();
+	TEXT_MODE_DEBUG_PRINT("\n D_Display: I_UpdateNoBlit done");
 	// draw the view directly
-	if (gamestate == GS_LEVEL && !automapactive && gametic)
-        R_RenderPlayerView ();
+	if (gamestate == GS_LEVEL && !automapactive && gametic) {
+		TEXT_MODE_DEBUG_PRINT("\n D_Display: R_RenderPlayerView start");
+		R_RenderPlayerView();
+		TEXT_MODE_DEBUG_PRINT("\n D_Display: R_RenderPlayerView done");
+	}
 
-
-    if (gamestate == GS_LEVEL && gametic)
-        HU_Drawer ();
-
+	if (gamestate == GS_LEVEL && gametic) {
+		HU_Drawer();
+		TEXT_MODE_DEBUG_PRINT("\n D_Display: HU_Drawer done");
+	}
     // clean up border stuff
 	if (gamestate != oldgamestate && gamestate != GS_LEVEL) {
 		I_SetPalette(Z_LoadBytesFromEMS(W_CacheLumpNameEMS("PLAYPAL", PU_CACHE)));
@@ -483,14 +493,17 @@ void D_Display (void)
 
     // menus go directly to the screen
     M_Drawer ();          // menu is drawn even on top of everything
-    NetUpdate ();         // send out any new accumulation
+	TEXT_MODE_DEBUG_PRINT("\n D_Display: M_Drawer done");
+	NetUpdate ();         // send out any new accumulation
+	TEXT_MODE_DEBUG_PRINT("\n D_Display: NetUpdate done");
 
 
     // normal update
     if (!wipe)
     {
         I_FinishUpdate ();              // page flip or blit buffer
-        return;
+		TEXT_MODE_DEBUG_PRINT("\n D_Display: I_FinishUpdate done");
+		return;
     }
 
 #ifndef SKIPWIPE
@@ -552,16 +565,23 @@ void D_DoomLoop (void)
     {
         // process one or more tics
         if (singletics) {
+			TEXT_MODE_DEBUG_PRINT("\n tick %li start", gametic);
 			I_StartTic ();
+			TEXT_MODE_DEBUG_PRINT("\n tick %li I_StartTic done", gametic);
 			D_ProcessEvents ();
+			TEXT_MODE_DEBUG_PRINT("\n tick %li D_ProcessEvents done", gametic);
 			G_BuildTiccmd(maketic % BACKUPTICS);
+			TEXT_MODE_DEBUG_PRINT("\n tick %li G_BuildTiccmd done", gametic);
 			if (advancedemo) {
 				D_DoAdvanceDemo();
+				TEXT_MODE_DEBUG_PRINT("\n tick %li D_DoAdvanceDemo done", gametic);
 			}
 
 			M_Ticker ();
+			TEXT_MODE_DEBUG_PRINT("\n tick %li M_Ticker done", gametic);
 
 			G_Ticker ();
+			TEXT_MODE_DEBUG_PRINT("\n tick %li G_Ticker done", gametic);
 
 			gametic++;
             maketic++;
@@ -572,10 +592,12 @@ void D_DoomLoop (void)
             TryRunTics (); // will run at least one tic
         }
 		S_UpdateSounds (playermoRef);// move positional sounds
-        // Update display, next frame, with current state.
+		TEXT_MODE_DEBUG_PRINT("\n tick %li S_UpdateSounds done", gametic);
+		// Update display, next frame, with current state.
 
-		
+	 
 		D_Display ();
+		TEXT_MODE_DEBUG_PRINT("\n tick %li D_Display done", gametic);
 
 		//SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);
 	
@@ -1035,9 +1057,9 @@ void D_DoomMain(void)
 			scale = 10;
 		if (scale > 400)
 			scale = 400;
-#ifdef DEBUG_PRINTING
-		printf("turbo scale: %i%%\n", scale);
-#endif
+
+		DEBUG_PRINT("turbo scale: %i%%\n", scale);
+
 		forwardmove[0] = forwardmove[0] * scale / 100;
 		forwardmove[1] = forwardmove[1] * scale / 100;
 		sidemove[0] = sidemove[0] * scale / 100;
@@ -1064,9 +1086,7 @@ void D_DoomMain(void)
 	{
 		sprintf(file, "%s.lmp", myargv[p + 1]);
 		D_AddFile(file);
-#ifdef DEBUG_PRINTING
-		printf("Playing demo %s.lmp.\n", myargv[p + 1]);
-#endif
+		DEBUG_PRINT("Playing demo %s.lmp.\n", myargv[p + 1]);
 	}
 
 	// get skill / episode / map from parms
@@ -1107,33 +1127,23 @@ void D_DoomMain(void)
 
 	// init subsystems
 
-#ifdef DEBUG_PRINTING
-	printf("V_Init: allocate screens.\n");
-#endif
+	DEBUG_PRINT("V_Init: allocate screens.\n");
 	V_Init();
 
-#ifdef DEBUG_PRINTING
-	printf("M_LoadDefaults: Load system defaults.\n");
-#endif
+	DEBUG_PRINT("M_LoadDefaults: Load system defaults.\n");
 	M_LoadDefaults();              // load before initing other systems
 
-#ifdef DEBUG_PRINTING
-	printf("Z_InitEMS: Init EMS memory allocation daemon. \n");
-#endif
+	DEBUG_PRINT("Z_InitEMS: Init EMS memory allocation daemon. \n");
 	Z_InitEMS();
 
 
-#ifdef DEBUG_PRINTING
-	printf("W_Init: Init WADfiles.\n");
-#endif
+	DEBUG_PRINT("W_Init: Init WADfiles.\n");
 	W_InitMultipleFiles(wadfiles);
 
 	Z_InitConventional(); // wad loading using a lot of conventional, so do this after..
 
 	// init subsystems
-#ifdef DEBUG_PRINTING
-	printf("D_InitStrings: loading text.\n");
-#endif
+	DEBUG_PRINT("D_InitStrings: loading text.\n");
 	D_InitStrings();
 
 	// Check for -file in shareware

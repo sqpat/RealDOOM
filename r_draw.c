@@ -124,9 +124,11 @@ void R_DrawColumn (void)
         return; 
 
 
-        outp (SC_INDEX+1,1<<(dc_x&3)); 
+#ifndef	SKIP_DRAW
+	outp (SC_INDEX+1,1<<(dc_x&3));
+#endif
 
-        dest = destview + dc_yl*80 + (dc_x>>2); 
+    dest = destview + dc_yl*80 + (dc_x>>2); 
 
     // Determine scaling,
     //  which is the only mapping to be done.
@@ -139,7 +141,9 @@ void R_DrawColumn (void)
     do  {
         // Re-map color indices from wall texture column
         //  using a lighting/special effects LUT.
-        *dest = dc_colormap[dc_source[frac.h.intbits&127]];
+#ifndef	SKIP_DRAW
+		*dest = dc_colormap[dc_source[frac.h.intbits&127]];
+#endif
         
         dest += SCREENWIDTH/4;
         frac.w += fracstep;
@@ -163,11 +167,12 @@ void R_DrawColumnLow (void)
 	if (count < 0)
 		return;
 
+#ifndef	SKIP_DRAW
 	if (dc_x & 1)
 		outp(SC_INDEX + 1, 12);
 	else
 		outp(SC_INDEX + 1, 3);
-
+#endif
 	dest = destview + dc_yl * 80 + (dc_x >> 1);
 
 	fracstep = dc_iscale;
@@ -175,7 +180,9 @@ void R_DrawColumnLow (void)
 
 	do
 	{
+#ifndef	SKIP_DRAW
 		*dest = dc_colormap[dc_source[(frac >> FRACBITS) & 127]];
+#endif
 
 		dest += SCREENWIDTH / 4;
 		frac += fracstep;
@@ -224,38 +231,39 @@ void R_DrawFuzzColumn (void)
 
     // Adjust borders. Low... 
     if (!dc_yl) 
-	dc_yl = 1;
+		dc_yl = 1;
 
     // .. and high.
     if (dc_yh == viewheight-1) 
-	dc_yh = viewheight - 2; 
+		dc_yh = viewheight - 2; 
 		 
     count = dc_yh - dc_yl; 
 
     // Zero length.
     if (count < 0) 
-	return; 
+		return; 
  
 
-    if (detailshift)
-    {
-	if (dc_x & 1)
-	{
-	    outpw (GC_INDEX,GC_READMAP+(2<<8) ); 
+    if (detailshift) {
+		if (dc_x & 1) {
+#ifndef	SKIP_DRAW
+		outpw (GC_INDEX,GC_READMAP+(2<<8) );
 	    outp (SC_INDEX+1,12); 
-	}
-	else
-	{
-	    outpw (GC_INDEX,GC_READMAP); 
+#endif
+	} else {
+#ifndef	SKIP_DRAW
+		outpw (GC_INDEX,GC_READMAP);
 	    outp (SC_INDEX+1,3); 
-	}
-	dest = destview + dc_yl*80 + (dc_x>>1); 
+#endif
+		}
+		dest = destview + dc_yl*80 + (dc_x>>1); 
     }
-    else
-    {
-	outpw (GC_INDEX,GC_READMAP+((dc_x&3)<<8) ); 
-	outp (SC_INDEX+1,1<<(dc_x&3)); 
-	dest = destview + dc_yl*80 + (dc_x>>2); 
+    else {
+#ifndef	SKIP_DRAW
+		outpw (GC_INDEX,GC_READMAP+((dc_x&3)<<8) );
+		outp (SC_INDEX+1,1<<(dc_x&3)); 
+#endif
+	dest = destview + dc_yl*80 + (dc_x>>2);
     }
 
     // Looks familiar.
@@ -265,21 +273,22 @@ void R_DrawFuzzColumn (void)
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit
     //  brighter than average).
-    do 
-    {
-	// Lookup framebuffer, and retrieve
-	//  a pixel that is either one column
-	//  left or right of the current one.
-	// Add index from colormap to index.
-	*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]]; 
+    do  {
+		// Lookup framebuffer, and retrieve
+		//  a pixel that is either one column
+		//  left or right of the current one.
+		// Add index from colormap to index.
+#ifndef	SKIP_DRAW
+		*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]];
+#endif
 
-	// Clamp table lookup index.
-	if (++fuzzpos == FUZZTABLE) 
-	    fuzzpos = 0;
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
 	
-	dest += SCREENWIDTH/4;
+		dest += SCREENWIDTH/4;
 
-	frac += fracstep; 
+		frac += fracstep; 
     } while (count--); 
 } 
 
@@ -330,7 +339,9 @@ void R_DrawSpan(void)
 
 	for (i = 0; i < 4; i++)
 	{
+#ifndef	SKIP_DRAW
 		outp(SC_INDEX + 1, 1 << i);
+#endif
 		dsp_x1 = (ds_x1 - i) / 4;
 		if (dsp_x1 * 4 + i < ds_x1)
 			dsp_x1++;
@@ -358,7 +369,10 @@ void R_DrawSpan(void)
 			//  re-index using light/colormap.
 
 			Z_RefIsActive(ds_sourceRef);
-			*dest++ = ds_colormap[ds_source[spot]];
+#ifndef	SKIP_DRAW
+			*dest = ds_colormap[ds_source[spot]];
+			dest++;
+#endif
 			// Next step in u,v.
 			xfrac += ds_xstep * 4;
 			yfrac += ds_ystep * 4;
@@ -387,7 +401,9 @@ void R_DrawSpanLow(void)
 
 	for (i = 0; i < 2; i++)
 	{
+#ifndef	SKIP_DRAW
 		outp(SC_INDEX + 1, 3 << (i * 2));
+#endif
 		dsp_x1 = (ds_x1 - i) / 2;
 		if (dsp_x1 * 2 + i < ds_x1)
 			dsp_x1++;
@@ -413,7 +429,10 @@ void R_DrawSpanLow(void)
 			// Lookup pixel from flat texture tile,
 			Z_RefIsActive(ds_sourceRef);
 			//  re-index using light/colormap.
-			*dest++ = ds_colormap[ds_source[spot]];
+#ifndef	SKIP_DRAW
+			*dest = ds_colormap[ds_source[spot]];
+			dest++;
+#endif
 			// Next step in u,v.
 			xfrac += ds_xstep * 2;
 			yfrac += ds_ystep * 2;
@@ -552,17 +571,37 @@ void R_FillBackScreen (void)
 
     for (i = 0; i < 4; i++)
     {
-        outp(SC_INDEX, SC_MAPMASK);
+#ifndef	SKIP_DRAW
+		outp(SC_INDEX, SC_MAPMASK);
         outp(SC_INDEX + 1, 1 << i);
+#endif
 
-        dest = (byte*)0xac000;
+#ifdef _M_I86
+		dest = (byte*)0xac000000;
+#else
+		dest = (byte*)0xac000;
+#endif
+
         src = screen0 + i;
         do
         {
-            *dest++ = *src;
+#ifndef	SKIP_DRAW
+			*dest = *src;
+			dest++;
+#endif
             src += 4;
-        } while (dest != (byte*)(0xac000
-                              + (SCREENHEIGHT-SBARHEIGHT)*SCREENWIDTH / 4));
+        } 
+
+#ifdef _M_I86
+		while (dest != (byte*)(0xac000000
+			+ (SCREENHEIGHT - SBARHEIGHT)*SCREENWIDTH / 4));
+
+#else
+		while (dest != (byte*)(0xac000
+			+ (SCREENHEIGHT - SBARHEIGHT)*SCREENWIDTH / 4));
+
+#endif
+
     }
 } 
  
@@ -578,20 +617,31 @@ R_VideoErase
     byte* dest;
     byte* source;
 	int16_t countp;
-    outp(SC_INDEX, SC_MAPMASK);
+#ifndef	SKIP_DRAW
+	outp(SC_INDEX, SC_MAPMASK);
     outp(SC_INDEX + 1, 15);
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
+#endif
     dest = destscreen + (ofs >> 2);
-    source = (byte*)0xac000 + (ofs >> 2);
+#ifdef _M_I86
+	source = (byte*)0xac000000 + (ofs >> 2);
+#else
+	source = (byte*)0xac000 + (ofs >> 2);
+#endif
+
     countp = count / 4;
     while (--countp >= 0)
     {
-        dest[countp] = source[countp];
+#ifndef	SKIP_DRAW
+		dest[countp] = source[countp];
+#endif
     }
 
-    outp(GC_INDEX, GC_MODE);
+#ifndef	SKIP_DRAW
+	outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
+#endif
 } 
 
 

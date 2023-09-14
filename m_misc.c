@@ -133,13 +133,13 @@ M_AddToBox16
   int16_t	y )
 {
     if (x<box[BOXLEFT])
-	box[BOXLEFT] = x;
+		box[BOXLEFT] = x;
     else if (x>box[BOXRIGHT])
-	box[BOXRIGHT] = x;
+		box[BOXRIGHT] = x;
     if (y<box[BOXBOTTOM])
-	box[BOXBOTTOM] = y;
+		box[BOXBOTTOM] = y;
     else if (y>box[BOXTOP])
-	box[BOXTOP] = y;
+		box[BOXTOP] = y;
 }
  
 void M_ClearBox16(int16_t *box)
@@ -161,7 +161,7 @@ M_WriteFile
   void*		source,
   filelength_t		length )
 {
-    filelength_t		handle;
+    filehandle_t		handle;
     filelength_t		count;
 	
     handle = open ( name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
@@ -187,7 +187,8 @@ M_ReadFile
 (int8_t const*	name,
   MEMREF*	bufferRef )
 {
-    filelength_t	handle, count, length;
+    filelength_t count, length;
+	filehandle_t handle;
     struct stat	fileinfo;
     byte		*buf;
 	

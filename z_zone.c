@@ -137,6 +137,9 @@
 // 4  9100444 584187  675843  207 (2134 in 2304)  <- lines fudged into conventional 
 // 4  8460235 464178  532405  207 (2134 in 1863)  <- 64k conventional space first come first serve.
 
+// 4  4527347 1637252 1995397 151 (2134 in 37821) <- first 16 bit run with d_display and text mode debug
+// 4  4510266 1630139 1989477 151 (2134 in 34757) <- first 16 bit run with d_display and text mode debug
+
 // 4  9688463 1219770 1591390 207 (2134 in 3662)  <- no conventional, post some cleanup, different cpu
 // 4  9050016 732304  967816  207 (2134 in 2563)  <- after wad lump cleanup, some conventional freed up
 
@@ -365,7 +368,7 @@ size_t Z_GetFreeConventionalSize(void** block) {
 
 	// around 20k 16 bit right now.
 #ifdef _M_I86
-	int16_t size = MAX_CONVENTIONAL_ALLOCATION_SIZE;
+	size_t size = MAX_CONVENTIONAL_ALLOCATION_SIZE;
 #else
 	size_t size = _memmax();
 #endif
@@ -384,17 +387,13 @@ size_t Z_GetFreeConventionalSize(void** block) {
 	return 0;
 }
 void Z_InitConventional(void) {
-#ifdef DEBUG_PRINTING
-	printf("Initializing conventional allocation blocks...");
-#endif
+	DEBUG_PRINT("Initializing conventional allocation blocks...");
 	totalconventionalfree1 = Z_GetFreeConventionalSize(&conventionalmemoryblock1);
 	remainingconventional1 = totalconventionalfree1;
 
 	totalconventionalfree2 = Z_GetFreeConventionalSize(&conventionalmemoryblock2);
 	remainingconventional2 = totalconventionalfree2;
-#ifdef DEBUG_PRINTING
-	printf("\Conventional block sizes %i %i\n", totalconventionalfree1, totalconventionalfree2);
-#endif
+	DEBUG_PRINT("\Conventional block sizes %u %u\n", totalconventionalfree1, totalconventionalfree2);
 }
 
 // EMS STUFF
@@ -1381,8 +1380,8 @@ MEMREF Z_MallocConventional(
 
 
 
-//void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked, int8_t* file, int32_t line) {
-void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
+void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked, int8_t* file, int32_t line) {
+//void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 	byte* memorybase;
 	uint16_t pageframeindex;
 	byte* address;
@@ -1390,10 +1389,11 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 #ifdef CHECK_FOR_ERRORS
 	if (ref >= EMS_ALLOCATION_LIST_SIZE) {
 		//I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
-		I_Error("out of bounds memref.. tick %li    %i ", gametic, ref);
+		I_Error("\nout of bounds memref.. tick %li    %i ", gametic, ref);
 	}
 	if (ref == 0) {
-		I_Error("tried to load memref 0... tick %i    %i %s %i", gametic, ref);
+		//I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
+		I_Error("\ntried to load memref 0... tick %i    %i", gametic, ref);
 	}
 #endif
 

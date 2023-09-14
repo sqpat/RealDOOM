@@ -51,7 +51,7 @@ byte *I_ZoneBaseEMS(int32_t *size, int16_t *emshandle);
 byte *I_ZoneBaseEMS(int32_t *size);
 #endif
 
-extern uint32_t ticcount;
+extern volatile uint32_t ticcount;
 
 
  

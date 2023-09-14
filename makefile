@@ -23,7 +23,7 @@
 #
 # --------------------------------------------------------------------------
 
-CCOPTS = /d2 /omaxet /zp1 /4r /ei /j /zq 
+CCOPTS = /d2 /omaxes /zp1 /4r /ei /j /zq 
 
 GLOBOBJS = &
  i_main.obj &

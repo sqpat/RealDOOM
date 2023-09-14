@@ -1,6 +1,6 @@
 # RealDOOM
 
-There are a few people looking at this repo now so I figured I would write up something very quickly here.
+![]https://github.com/sqpat/RealDOOM/blob/master/superalpha.gif
 
 RealDOOM is a (currently in progress) port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical fidelity as the original game.
 
@@ -32,8 +32,6 @@ For those interested in the technical details, a quick summary of what has been 
 
 
 ### Known bugs:
- - melee attack range seems to be broken
- - there is a texture mapping bug especially with animated textures and doors. i think it has something to do with texture offsets having been made 8 bits.
  - sound, saves are unimplemented/nonfunctional
  - content outside of doom1 shareware has not been tested at all and may be very broken
  - finale has not been tested at all
@@ -51,5 +49,5 @@ For those interested in the technical details, a quick summary of what has been 
 
 
 ## Progress of 16-bit build
-The 16 bit build just randomly fails to complete certain function calls like NetTics after the level is setup. I'm not sure what is going on - i will have to try debugging on real hardware or a better environment in a few days.
-In the short term I will just go back to a couple of general improvements to lower memory usage as i have wanted to do for a while, then go back to tackling the 16 bit build.
+ - Update! Fixed a number of bugs, mostly around pointer arithmetic. Timedemos can play, but play wrong. the video is also all wrong. But the game is sort of running in 16 bit mode! This was great progress after a long time with no progress and mysterious crashes. There are going to be many bugs to fix, but it's a lot better than figuring out memory corruption.
+

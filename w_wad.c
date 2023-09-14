@@ -88,7 +88,9 @@ ExtractFileBase
 #endif
 		}
 
-        *dest++ = toupper(*src++);
+        *dest = toupper(*src);
+		dest++;
+		src++;
     }
 }
 
@@ -146,15 +148,11 @@ void W_AddFile (int8_t *filename)
                 
     if ( (handle = open (filename,O_RDONLY | O_BINARY)) == -1)
     {
-#ifdef DEBUG_PRINTING
-		printf ("\tcouldn't open %s\n",filename);
-#endif
+		DEBUG_PRINT("\tcouldn't open %s\n",filename);
         return;
     }
 
-#ifdef DEBUG_PRINTING
-	printf ("\tadding %s\n",filename);
-#endif
+	DEBUG_PRINT("\tadding %s\n",filename);
     startlump = numlumps;
         
     if (strcmpi (filename+strlen(filename)-3 , "wad" ) )

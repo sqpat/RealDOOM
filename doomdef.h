@@ -59,7 +59,9 @@ enum { VERSION =  109 };
 
 // to avoid messiness, lets stay at this size
 //#define MAX_CONVENTIONAL_ALLOCATION_SIZE 2048
+//#define MAX_CONVENTIONAL_ALLOCATION_SIZE 4096 
 #define MAX_CONVENTIONAL_ALLOCATION_SIZE 32768L 
+
 //#define MAX_CONVENTIONAL_ALLOCATION_SIZE 64512L 
 //#define MAX_CONVENTIONAL_ALLOCATION_SIZE 2048L
 // small blocks wont fit any of the structures we hope to put in there.
@@ -69,11 +71,31 @@ enum { VERSION =  109 };
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
 #define DEBUG_PRINTING
 
+#ifdef DEBUG_PRINTING
+	#define DEBUG_PRINT(...) printf(__VA_ARGS__)
+#else
+	#define DEBUG_PRINT(...) 
+#endif
+
 // Error checking. recommended ON during development. however, turning this off makes the binary like 10-12k smaller
 #define CHECK_FOR_ERRORS
 
 // Allocates backbuffers statically
 #define STATIC_ALLOCATED_SCREENS
+
+// run a timedemo with -nodraw novideo and prints out progress of the engine by tic
+//#define TEXT_MODE_DEBUG
+#ifdef TEXT_MODE_DEBUG
+	#define TEXT_MODE_DEBUG_PRINT(...) printf(__VA_ARGS__)
+#else
+	#define TEXT_MODE_DEBUG_PRINT(...) 
+#endif
+
+// like nodraw, but actually runs d_display and only skips the actual video memory writes
+//#define SKIP_DRAW
+
+
+
 
 // Maximum number of wad files openable at once. Are we really ever using more than 1 in RealDOOM? if so, be my guest... increases memory usage in a few ways
 // #define SUPPORT_MULTIWAD

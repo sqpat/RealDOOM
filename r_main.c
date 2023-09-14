@@ -803,7 +803,6 @@ uint8_t			skyflatnum;
 uint8_t			skytexture;
 
 
-#define			SKYFLATNAME  "F_SKY1"
 
 //
 // R_InitSkyMap
@@ -811,7 +810,7 @@ uint8_t			skytexture;
 //
 void R_InitSkyMap(void)
 {
-	skyflatnum = R_FlatNumForName(SKYFLATNAME);
+	skyflatnum = R_FlatNumForName("F_SKY1");
 }
 
 
@@ -819,24 +818,16 @@ void R_InitSkyMap(void)
 void R_Init (void)
 {
 	R_InitData ();
-#ifdef DEBUG_PRINTING
-	printf ("..");
-#endif
+	DEBUG_PRINT("..");
     // viewwidth / viewheight / detailLevel are set by the defaults
 
 	R_SetViewSize (screenblocks, detailLevel);
 	R_InitPlanes ();
-#ifdef DEBUG_PRINTING
-	printf (".");
-#endif
+	DEBUG_PRINT(".");
 	R_InitLightTables ();
-#ifdef DEBUG_PRINTING
-	printf(".");
-#endif
+	DEBUG_PRINT(".");
 	R_InitSkyMap ();
-#ifdef DEBUG_PRINTING
-	printf(".");
-#endif
+	DEBUG_PRINT(".");
 
 }
 
@@ -920,7 +911,7 @@ void R_RenderPlayerView ()
 
     // Clear buffers.
     R_ClearClipSegs ();
-    R_ClearDrawSegs ();
+	R_ClearDrawSegs ();
     R_ClearPlanes ();
     R_ClearSprites ();
 
@@ -930,19 +921,24 @@ void R_RenderPlayerView ()
 
 	// The head node is the last node output.
 	//Z_LoadBytesFromConventionalWithOptions(nodesRef, PAGE_LOCKED);
+	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_RenderBSPNode running...");
 	R_RenderBSPNode (firstnode);
+	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_RenderBSPNode done");
 	//Z_SetUnlocked(nodesRef)
 
     // Check for new console commands.
     NetUpdate ();
-    
+
     R_DrawPlanes ();
-    
-    // Check for new console commands.
-    NetUpdate ();
-    
-    R_DrawMasked ();
+	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_DrawPlanes done");
 
     // Check for new console commands.
-    NetUpdate ();				
+    NetUpdate ();
+
+    R_DrawMasked ();
+	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_DrawMasked done");
+
+    // Check for new console commands.
+    NetUpdate ();	
+
 }
