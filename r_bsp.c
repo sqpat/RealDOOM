@@ -610,8 +610,9 @@ void R_Subsector(int16_t subsecnum)
 // Just call with BSP root.
 
 #define MAX_BSP_DEPTH 64
+extern int16_t firstnode;
 
-void R_RenderBSPNode(int16_t bspnum)
+void R_RenderBSPNode()
 {
 	node_t *bsp;
 	fixed_t_union dx, dy;
@@ -622,6 +623,7 @@ void R_RenderBSPNode(int16_t bspnum)
 	byte side = 0;
 	node_t* nodes;
 	fixed_t_union temp;
+	int16_t bspnum = firstnode;
 	temp.h.fracbits = 0;
 	while (true)
 	{
@@ -675,7 +677,7 @@ void R_RenderBSPNode(int16_t bspnum)
 		// Possibly divide back space.
 		//Walk back up the tree until we find
 		//a node that has a visible backspace.
-		while (!R_CheckBBox(bsp->bbox[side ^ 1]))  // - only used once, is it better to inline this?
+		while (!R_CheckBBox(bsp->bbox[side ^ 1]))  // - todo only used once, is it better to inline this? - sq
 		{
 			if (sp == 0)
 			{

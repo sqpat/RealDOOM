@@ -290,28 +290,28 @@ R_PointToAngle
 			{
 				// octant 0
 				if (x < 512)
-					return 536870912;
+					return 536870912L;
 				else
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
 						return tantoangle[tempDivision];
 					else
-						return 536870912;
+						return 536870912L;
 				}
 			}
 			else
 			{
 				// octant 1
 				if (y < 512)
-					return ANG90 - 1 - 536870912;
+					return ANG90 - 1 - 536870912L;
 				else
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
 						return ANG90 - 1 - tantoangle[tempDivision];
 					else
-						return ANG90 - 1 - 536870912;
+						return ANG90 - 1 - 536870912L;
 				}
 			}
 		}
@@ -324,28 +324,28 @@ R_PointToAngle
 			{
 				// octant 8
 				if (x < 512)
-					return -536870912;
+					return -536870912L;
 				else
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
 						return -tantoangle[tempDivision];
 					else
-						return -536870912;
+						return -536870912L;
 				}
 			}
 			else
 			{
 				// octant 7
 				if (y < 512)
-					return ANG270 + 536870912;
+					return ANG270 + 536870912L;
 				else
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
 						return ANG270 + tantoangle[tempDivision];
 					else
-						return ANG270 + 536870912;
+						return ANG270 + 536870912L;
 				}
 			}
 		}
@@ -362,28 +362,28 @@ R_PointToAngle
 			{
 				// octant 3
 				if (x < 512)
-					return ANG180 - 1 - 536870912;
+					return ANG180 - 1 - 536870912L;
 				else
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
 						return ANG180 - 1 - tantoangle[tempDivision];
 					else
-						return ANG180 - 1 - 536870912;
+						return ANG180 - 1 - 536870912L;
 				}
 			}
 			else
 			{
 				// octant 2
 				if (y < 512)
-					return ANG90 + 536870912;
+					return ANG90 + 536870912L;
 				else
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
 						return ANG90 + tantoangle[tempDivision];
 					else
-						return ANG90 + 536870912;
+						return ANG90 + 536870912L;
 				};
 			}
 		}
@@ -396,28 +396,28 @@ R_PointToAngle
 			{
 				// octant 4
 				if (x < 512)
-					return ANG180 + 536870912;
+					return ANG180 + 536870912L;
 				else
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
 						return ANG180 + tantoangle[tempDivision];
 					else
-						return ANG180 + 536870912;
+						return ANG180 + 536870912L;
 				}
 			}
 			else
 			{
 				// octant 5
 				if (y < 512)
-					return ANG270 - 1 - 536870912;
+					return ANG270 - 1 - 536870912L;
 				else
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
 						return ANG270 - 1 - tantoangle[tempDivision];
 					else
-						return ANG270 - 1 - 536870912;
+						return ANG270 - 1 - 536870912L;
 				}
 			}
 		}
@@ -530,12 +530,12 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
         scale.w = FixedDiv (num.w, den);
 
         if (scale.h.intbits > 64){
-            scale.w = 0x400000;
+            scale.w = 0x400000L;
             scale.h.fracbits = 0;
         } else if (scale.w < 256)
             scale.w = 256;
     } else{
-        scale.w = 0x400000;
+        scale.w = 0x400000L;
     }
     
     return scale.w;
@@ -923,7 +923,7 @@ void R_RenderPlayerView ()
 	// The head node is the last node output.
 	//Z_LoadBytesFromConventionalWithOptions(nodesRef, PAGE_LOCKED);
 	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_RenderBSPNode running...");
-	R_RenderBSPNode (firstnode);
+	R_RenderBSPNode ();
 	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_RenderBSPNode done");
 	//Z_SetUnlocked(nodesRef)
 

@@ -53,7 +53,7 @@ P_Thrust
   fineangle_t	angle,
   fixed_t	move )  {
 	mobj_t* playermo = (mobj_t* ) Z_LoadBytesFromEMS(playermoRef);
-    
+
 	playermo->momx += FixedMul(move,finecosine(angle));
 	playermo->momy += FixedMul(move,finesine(angle));
 }
@@ -157,11 +157,13 @@ void P_MovePlayer ()
     //  if not onground.
     onground = (playermo->z <= temp.w);
 
-    if (cmd->forwardmove && onground)
-		P_Thrust (playermo->angle>>ANGLETOFINESHIFT, cmd->forwardmove*2048);
-    
-    if (cmd->sidemove && onground)
-		P_Thrust (MOD_FINE_ANGLE((playermo->angle>>ANGLETOFINESHIFT)-FINE_ANG90), cmd->sidemove*2048);
+	if (cmd->forwardmove && onground) {
+		P_Thrust(playermo->angle >> ANGLETOFINESHIFT, cmd->forwardmove * 2048L);
+	}
+	
+	if (cmd->sidemove && onground) {
+		P_Thrust(MOD_FINE_ANGLE((playermo->angle >> ANGLETOFINESHIFT) - FINE_ANG90), cmd->sidemove * 2048L);
+	}
 
     if ( (cmd->forwardmove || cmd->sidemove)  && playermo->state == &states[S_PLAY] ) {
 		P_SetMobjState (playermoRef, S_PLAY_RUN1);

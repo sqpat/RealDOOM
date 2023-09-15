@@ -729,10 +729,6 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);
 	mobj->reactiontime = 0;
 
-    // set color translations for player sprites
-//    if (mthingtype > 1)		
-		//mobj->flags |= (mthingtype-1)<<MF_TRANSSHIFT;
-		
     mobj->angle	= ANG45 * (mthingangle/45);
     mobj->player = &player;
     mobj->health = player.health;
@@ -747,25 +743,14 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	player.fixedcolormap = 0;
 	player.viewheight = VIEWHEIGHT;
 
-	// 171 -7959 83504be8 in playerthink  and p_ticker
-	// 171 1383 83504be8 here
-	// demo3: 0 1384 83504be8
-
-
     // setup gun psprite
     P_SetupPsprites ();
-    
- 
 
-    if (mthingtype-1 == consoleplayer) {
 		// wake up the status bar
-	 
 		ST_Start ();
-		 
 
 		// wake up the heads up text
 		HU_Start ();		
-    }
  
 }
 
@@ -802,8 +787,6 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
     if (mthingtype == 1) {
 		// save spots for respawning in network games
 		P_SpawnPlayer(mthing);
-
-
 		return;
     }
 
@@ -859,7 +842,6 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
 		z.w = ONFLOORZ;
 	}
  
-	// 55
 	mobjRef = P_SpawnMobj (x.w,y.w,z.w, i);
 
 	mobj = (mobj_t*)Z_LoadBytesFromEMS(mobjRef);

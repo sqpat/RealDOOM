@@ -371,7 +371,7 @@ void R_DrawMaskedColumn (column_t* column) {
 
             // Drawn by either R_DrawColumn
             //  or (SHADOW) R_DrawFuzzColumn.
-            colfunc(); 
+			colfunc();
         }
         column = (column_t *)(  (byte *)column + column->length + 4);
     }

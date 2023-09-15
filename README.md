@@ -48,5 +48,6 @@ For those interested in the technical details, a quick summary of what has been 
 
 
 ## Progress of 16-bit build
- - Update! Fixed a number of bugs, mostly around pointer arithmetic. Timedemos can play, but play wrong. the video is also all wrong. But the game is sort of running in 16 bit mode! This was great progress after a long time with no progress and mysterious crashes. There are going to be many bugs to fix, but it's a lot better than figuring out memory corruption.
+ - More bugfixing going on. There have been a lot of pointer and arithmetic bugs - for example, i had to replace abs with labs everywhere, the cosine and sine lookup tables had issues, and fixing each one of these gets the 16 bit engine a little bit closer to working properly as I've been debugging things.
+ - Things are very slow right now - a couple seconds per frame, but theres a lot of debugging code in there, and some other issues. Once things are accurate, im sure I can rip stuff out and itll change from a few seconds per frame to a few frames per seconds.
 

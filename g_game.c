@@ -104,7 +104,6 @@ boolean         viewactive;
 player_t        player;
 MEMREF			playermoRef;
  
-int16_t             consoleplayer;          // player taking events and displaying 
 ticcount_t          gametic;
 int16_t             totalkills, totalitems, totalsecret;    // for intermission 
  
@@ -885,7 +884,7 @@ void G_DoCompleted (void)
         wminfo.partime = 35*cpars[gamemap-1]; 
     else
         wminfo.partime = 35*pars[gameepisode][gamemap]; 
-    wminfo.pnum = consoleplayer; 
+    wminfo.pnum = 0; 
  
 	wminfo.plyr.in = true;
     wminfo.plyr.skills = player.killcount; 
@@ -1124,7 +1123,6 @@ void G_DoNewGame (void)
     respawnparm = false;
     fastparm = false;
     nomonsters = false;
-    consoleplayer = 0;
     G_InitNew (d_skill, d_episode, d_map); 
     gameaction = ga_nothing; 
 } 
@@ -1344,7 +1342,7 @@ void G_BeginRecording (void)
     *demo_addr++ = respawnparm;
     *demo_addr++ = fastparm;
     *demo_addr++ = nomonsters;
-    *demo_addr++ = consoleplayer;
+    *demo_addr++ = 0;
 
 	*demo_addr++ = true;
 	*demo_addr++ = false;
@@ -1396,7 +1394,7 @@ void G_DoPlayDemo (void)
     respawnparm = *demo_addr++;
     fastparm = *demo_addr++;
     nomonsters = *demo_addr++;
-    consoleplayer = *demo_addr++;
+    *demo_addr++; // consoleplayer
 
 	*demo_addr++; // playeringame
 	*demo_addr++;
@@ -1481,7 +1479,6 @@ boolean G_CheckDemoStatus (void)
         respawnparm = false;
         fastparm = false;
         nomonsters = false;
-        consoleplayer = 0;
         D_AdvanceDemo (); 
         return true; 
     } 

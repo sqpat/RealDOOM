@@ -67,11 +67,11 @@ typedef uint8_t byte;
 #define MAXSHORT	((int16_t)0x7fff)
 
 // Max pos 32-bit int.
-#define MAXLONG		((int32_t)0x7fffffff)
+#define MAXLONG		((int32_t)0x7fffffffL)
 #define MINCHAR		((int8_t)0x80)
 
 // Max negative 32-bit integer.
-#define MINLONG		((int32_t)0x80000000)
+#define MINLONG		((int32_t)0x80000000L)
 #define MINSHORT	((int16_t)0x8000)
 
 
@@ -109,33 +109,7 @@ typedef int16_t short_height_t;
 
 #define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.b.fracbytehigh = (y & SHORTFLOORBITMASK) << (8 - SHORTFLOORBITS)
 
-
-#ifdef UNION_FIXED_POINT
-
-
-typedef union _fixed_t {
-	struct dual_int16_t {
-		int16_t fracbits;
-		int16_t intbits;
-	} h;
-
-	int32_t w;
-} fixed_t;
-
-
-#define DECLARE_FIXED_POINT_HIGH(x, y) x = {0, y}
-#define DECLARE_FIXED_POINT_LOW(x, y) x = {y, 0}
-#define FIXED_T_PLUS_EQUALS(x, y) x.w += y
-#define FIXED_T_MINUS_EQUALS(x, y) x.w -= y
-#define FIXED_T_PLUS(x, y) x.w + y
-#define FIXED_T_PLUS_FIXED_T(x, y) x.w + y.w
-#define FIXED_T_MINUS(x, y) x.w - y
-#define FIXED_T_MINUS_FIXED_T(x, y) x.w - y.w
-#define FIXED_T_SHIFT_RIGHT(x, y) x.w >> y
-#define FIXED_T_SET_FRACBITS(x, y) x.h.fracbits = y
-#define FIXED_T_SET_WHOLE(x, y) x.w = y
-
-#else
+ 
 
 typedef int32_t fixed_t;
 
@@ -159,22 +133,7 @@ typedef union _fixed_t_union {
 
 	int32_t w;
 } fixed_t_union;
-
-#define DECLARE_FIXED_POINT_HIGH(x, y) x = y
-#define DECLARE_FIXED_POINT_LOW(x, y) x = y
-
-#define FIXED_T_PLUS_EQUALS(x, y) x += y
-#define FIXED_T_MINUS_EQUALS(x, y) x -= y
-#define FIXED_T_PLUS(x, y) (x + y)
-#define FIXED_T_PLUS_FIXED_T(x, y) (x + y)
-#define FIXED_T_MINUS(x, y) (x - y)
-#define FIXED_T_MINUS_FIXED_T(x, y) (x - y)
-#define FIXED_T_SHIFT_RIGHT(x, y) (x >> y)
-#define FIXED_T_SET_FRACBITS(x, y) x = y
-#define FIXED_T_SET_WHOLE(x, y) x = y
-#endif
-
-
-
+ 
 
 #endif
+

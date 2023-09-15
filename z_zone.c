@@ -1388,12 +1388,12 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked, int8_t* file, i
 
 #ifdef CHECK_FOR_ERRORS
 	if (ref >= EMS_ALLOCATION_LIST_SIZE) {
-		//I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
-		I_Error("\nout of bounds memref.. tick %li    %i ", gametic, ref);
+		I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
+		//I_Error("\nout of bounds memref.. tick %li    %i ", gametic, ref);
 	}
 	if (ref == 0) {
-		//I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
-		I_Error("\ntried to load memref 0... tick %i    %i", gametic, ref);
+		I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
+		//I_Error("\ntried to load memref 0... tick %i    %i", gametic, ref);
 	}
 #endif
 

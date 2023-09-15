@@ -1,8 +1,12 @@
+BUGS
+ - fix the patch issue with doors and buttons and stuff?
+ - why are stages not loading right anymore? 
+ - backbuffer redraw jank in intermission?
+
+
  
 MEMORY IMPROVEMENTS
- - reuse local variables to create fewer in stack
- - create a 'getter' function that just grabs a value from memory without paging somehow?
-
+ - reuse local variables to create fewer in stack?
 
 KNOWN ISSUES
  - no sound, need new 16 bit lib
@@ -11,152 +15,47 @@ KNOWN ISSUES
  - non shareware enemies probably nonfunctional, needs testing
  - savegames broken. not sure if it will be compatible with original doom
  - rendering issue with weird line early in demo 3 might be related to rendering fuzzy
- - look into raiseToTexture stuff
-
-- doom 16 size currently:
-544704 full visplanes large
-525744 99 visplanes large
-646032 full visplanes huge 
-526528 (32 bit)
-
-- after floor 16 stuff mostly done (no frac shift support)
-644832 full visplanes huge
-526688 32 bit
-
-
-- after making a bunch of fields smaller
-534818 full visplanes large with a couple overlays 
-631890 full visplanes huge 
-528384 32 bit
-
-- removing the extra players, net code
-532018 large 16
-627986 huge 16
-526608 32 bit
-
-- screens to conventional, visplanes in memory
-
-
-652896 32 bit
 
 TODO 
 
  ~ make actor->angle  fixed_t_union for a_chase improvement
  - move other data into external files. sprnames?
 
- ~ look into no backbuffer
-   - works but intermission is jank
-     - but it was always jank because titlepics not working. fix that first..
  
- ~ conventional memory allocator
-    ~ test 16 bit version
-    x implement 2nd conventional pool
-    3 implement 'smart' allocator in setup level
-	? any other small items that can go in there?
+ ~ Memory improvements
+    - near heap is largely unused after fileinfo alloca
+      - put something in there. over 20k (?) or so unused
+    - implement 'smart' allocator in setup level 
+      - allocate most important items in conventional first
+    - mobjs, or player into conventional?
+ - do the mobj ems page locality thing
 
- x fix the texture rotate/offset issue?
- - fix the patch issue with doors and buttons and stuff?
- - see how many things at end of a demo 
- - see how many blockchain entries at end of demo
- 
- 2 test if #if NUM_EMS_PAGES >= 8 stuff is faster
-
-   3 do the mobj locality thing
-   - or consider if it can fit in conventional? (later)
- 
- 
- - probably remove zoom in am_map if it makes a decent difference in code size and complexity
-- change keyboard down booleans to bits?
- 
- - fix stage 3 load bug?
- 
  - NUM_BLOCKLINKS is 2000. can be way less. 
     - block x and y are bytes. have a 2 byte thing in a list. iterate thru the list.
+   - or consider if it can fit in conventional? (later)
+ 
+ - do a pass of fixedmul, div calls... find 32 and 16 param ones instead of 32 and 32, use an alternate call with one fewer cast. faster?
 
-
- - make pathtraverse work mostly off 16 bit math? i think its possible
-
- - look into ds->scale1 and associated values to 16 bit? or small fixed, etc
-
-
-
- - integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
+ ? probably remove zoom in am_map if it makes a decent difference in code size and complexity
+ - change keyboard down booleans to bits? can save a few hundred bytes
+ ? integrate asm based EMS implementation from catacombs 3d or somewhere else see https://github.com/CatacombGames/Catacomb3D/blob/aa97f4995dc7dbea3ecc1794a2d4d4354839cad4/ID_MM.C#L147
  - clean up speed code. probably dont need make_speed in a lot of cases -is high bit projectile only?
 
-
-
- x crazy idea: all vertices, line_t and seg bounding boxes have coords that are mults of 8. if we shift them by 3, the biggest values of ~5500/-5500 int he wads correspond to a range of like -600 to 600 which can be stored in 10 bits. so do some insane superpacked bit array and cut down 128 to 80 bits per node for example. they arent accessed super frequently so the unpacking is unfrequent... may be a net win.
-   sector and ceiling heights could also be stored in int8 this way .    
-   ! cant do this. they are mostly 8 (actually 16) aligned but the odd ones do exist.
+ - explicitly declare things near, far when possible?
+ - drop conventional visplanes lower, use hybrid solution with EMS visplanes when the # gets high. Definitely under 64k visplanes, but how much is optimal?
+ - look into 24 bit fixed point. maxmove caps momx, momy to 30 * fracunit, for example...
 
 PROFILING
  - check if using 8 instead of 16 bit local vars (especially loop vars) affects 16 bit binary code size
-
-
-CATEGORIES OF 32 BIT VARIABLES THAT NEED TO BE KEPT (maybe we can typedef everything) 
- - thing flags
-    - can probably be rewritten as a pair of 16 bits?
- - fixed_t 
-    - will proably be a dual 16 bit union. in 32 bit form they are often shifted 16 bits to do something simple. we can save a lot of time    
- - angle_t
-    - it's sometimes also shifted a lot, like fixed_t. even though its not usually by 16, i think we can save time by unioning it and doing smaller shifts on a 16-bit structure
- - file handles  
-    - not even sure if these are 32 or 16 bit in 16 bit mode. might typedef them.
- - filesizes, lengths (lump lengths)
-    - dont think we can avoid 32 bit lengths. might typedef these for readability...
- - tics
-    - if they are deltas they can usually be 16 bit but otherwise probably needs to be 32?
-
- 
-
-
-- get rid of:
-  ? more enums
-  ? any more net code to dump?
-  ? dump bad savegame code
+  
 
 
  True 16 bit mode ideas
   - 250 pixel width, and then 1 byte various screen width based vars incl those in visplane...
 
-  
-
-
-
-MEMORY IDEAS
- 
- x compress memory allocation entries by using bit masks and combining values
- - support allocating some things in conventional memory. 
-   - probably need to use it to support titlepic and other large memory things?
-   - test to figure out which variables improve fps most in conventional
-      - probably sectors, lines, etc...
-
- ~ use overlays, especially on startup code to eliminate space
-   - maybe menu code in one, finale and p_setup in another? (0x3000 ish each)
-     - maybe demo code 
-     - maybe wipe code
-     - savegame code
-     - level intermission code?
-     - if we ever do multiple renderers or sound code etc, 
-        can fit more in the binary by using overlays?
- - explicitly declare things near, far when possible?
- - reduce visiplanes size below 65k somehow to allow large instead of huge memory model.
-   - maybe just reduce the number of visplanes for now...
- - pull strings into ems at runtime by loading from a file rather than compiling
-   as data alongside code.  strings are generally used once every blue moon, and 
-   d_english.h has got about 15k worth of data sitting there..
-  several dozen frames at the most so doesnt make sense for them to be in conventional
-  and sectors being paged in and out... 
- - look into using the sourceHint to allocate items with some sort of locality to 
-    decrease pagination. rather than marking blocks themselves as reserved,
-    probably maintain a fixed list of preferred pages by type, and use that as 
-    a temporary rover head for the allocation. mobj for sure would benefit from
-    this. can probably benchmark by pagination count and try and lower that number.
- - investigate benefits of fewer bigger source files (less far calls?)
-
- 
+   
 
 TESTING:
  - finale  
- - doom2... viles and other enemy (heads, head spawns)
+ - doom1/2... viles and other enemy (heads, head spawns)
 

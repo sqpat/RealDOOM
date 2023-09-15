@@ -266,7 +266,7 @@ static mpoint_t f_oldloc;
 
 // used by MTOF to scale from map-to-frame-buffer coords
 
-DECLARE_FIXED_POINT_HIGH (static fixed_t scale_mtof, INITSCALEMTOF);
+static fixed_t scale_mtof = INITSCALEMTOF;
 
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
 static fixed_t scale_ftom;

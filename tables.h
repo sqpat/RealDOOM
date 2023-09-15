@@ -62,8 +62,8 @@
 //#define finecosine(x) (x < 2048 ? finesineinner[2047-x] : x < 4096 ? -(finesineinner[(x-2048)]) : x < 6144 ? -(finesineinner[2047-(x-4096)]) : x < 8192 ? (finesineinner[(x-6144)]) : finesineinner[2047-(x-8192)] )
 
 // for 2048
-#define finesineexpr(x) (int32_t) (x < 2048 ? finesineinner[x] : x < 4096 ? finesineinner[2047-(x-2048)] : x < 6144 ? -(finesineinner[x-4096]) :  -(finesineinner[2047-(x-6144)]) )
-#define finecosineexpr(x) (int32_t) (x < 2048 ? finesineinner[2047-x] : x < 4096 ? -(finesineinner[(x-2048)]) : x < 6144 ? -(finesineinner[2047-(x-4096)]) :  (finesineinner[(x-6144)])   )
+#define finesineexpr(x) (int32_t) (x < 2048 ? (int32_t)finesineinner[x] : x < 4096 ? (int32_t)finesineinner[2047-(x-2048)] : x < 6144 ? -((int32_t)finesineinner[x-4096]) :  -((int32_t)finesineinner[2047-(x-6144)]) )
+#define finecosineexpr(x) (int32_t) (x < 2048 ? (int32_t)finesineinner[2047-x] : x < 4096 ? -((int32_t)finesineinner[(x-2048)]) : x < 6144 ? -((int32_t)finesineinner[2047-(x-4096)]) :  ((int32_t)finesineinner[(x-6144)])   )
 
 #ifdef USE_FUNCTION_TRIG
 
@@ -106,7 +106,6 @@ int32_t fixedsine(int16_t x);
 #else
 
 extern  uint16_t		finesineinner[2048];
-//extern  int32_t		finesineinner[10240];
 
 #endif
 

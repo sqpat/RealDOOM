@@ -124,9 +124,6 @@ extern	int16_t		viewheight;
 extern	int16_t		viewwidth;
 extern	int16_t		scaledviewwidth;
 
-// Player taking events, and displaying.
-extern  int16_t	consoleplayer;	
-
 
 // -------------------------------------
 // Scores, rating.

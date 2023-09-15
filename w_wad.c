@@ -412,53 +412,6 @@ int32_t W_LumpLength (int16_t lump)
 	return size;
 }
 
-#ifdef _M_I86
-
-
-#define FILEBUFSIZE 1024
-// adapted from: https://github.com/Scalibq/DOS_SDK/blob/main/C/COMMON.C
-// thanks, Scali!
-
-uint32_t _farread(filehandle_t handle, void* buf, uint32_t size)
-{
-	int32_t totalSize;
-	uint32_t retSize;
-	uint8_t* pDest = (uint8_t *)buf;
-	uint8_t* pLocalBuf = _alloca(FILEBUFSIZE);
-
-	totalSize = size;
-
-	if (totalSize == 0)
-		return 0;
-
-	retSize = 0;
-
-	while (totalSize > 0)
-	{
-		size_t ret;
-		size_t chunkSize = totalSize < FILEBUFSIZE ? totalSize : FILEBUFSIZE;
-
-		// Read chunk
-		ret = read(handle, pLocalBuf, chunkSize);
-
-		retSize += ret;
-
-		// Copy from local buffer to destination
-		_fmemcpy(pDest, pLocalBuf, ret);
-
-		pDest += ret;
-
-		totalSize -= ret;
-
-		if (ret != chunkSize)
-			break;
-	}
-
-	// Return total size read
-	return retSize;
-}
-
-#endif
 
 //
 // W_ReadLump
