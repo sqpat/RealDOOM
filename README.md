@@ -4,10 +4,9 @@
 
 RealDOOM is a (currently in progress) port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical fidelity as the original game.
 
-While the port current builds to Real Mode, it fails during before drawing on the first frame, so it is not playable yet. In order to build the 16-bit build, run make16.bat. 16-bit RealDOOM requires EMS 3.2 or higher for 4 pages of EMS memory.
+While the port current builds to Real Mode, it still has many issues as you can see from the gif above.
 
 The port also builds to 32 bit mode (for development and testing purposes) and runs with many of the 16 bit constraints in mind such as using an EMS simulator. To build this build, run make.bat.
- 
 
 You can adjust the EMS page frames available by changing NUM_EMS_PAGES in doomdefs.h from 4 to a higher number. This is not really hooked up in 16-bit mode yet. Eventually, 8-10 EMS active pages will represent a very well-configured 286 system and 'best case' performance for a 16 bit cpu running the game.
 
