@@ -849,7 +849,7 @@ int16_t
 		return 0;
 	}
 		
-	nodenum = firstnode;
+	nodenum = numnodes - 1;
 	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	while (! (nodenum & NF_SUBSECTOR) ) {
 		node = &nodes[nodenum];

@@ -278,13 +278,13 @@ P_InterceptVector2
 // Returns true
 //  if strace crosses the given subsector successfully.
 //
-boolean P_CrossSubsector (int16_t subsecnum)
+boolean P_CrossSubsector (uint16_t subsecnum)
 {
     int16_t		segnum;
 	int16_t linedefOffset;
     line_t*		line;
-    int8_t			s1;
-    int8_t			s2;
+	int16_t			s1;
+	int16_t			s2;
     int16_t			count;
     int16_t frontsecnum;
 	int16_t backsecnum;
@@ -435,14 +435,15 @@ boolean P_CrossSubsector (int16_t subsecnum)
 // Returns true
 //  if strace crosses the given node successfully.
 //
-boolean P_CrossBSPNode (int32_t bspnum)
+boolean P_CrossBSPNode (uint16_t bspnum)
 {
     node_t*	bsp;
     int8_t		side;
 	node_t* nodes;
 	
 	if (bspnum & NF_SUBSECTOR) {
-		if (bspnum == -1) {
+		if (bspnum == 65535) { // -1 case. was thing for single sector maps?
+			// todo inline p_crosssubsector here?
 			return P_CrossSubsector(0);
 		} else {
 			return P_CrossSubsector(bspnum&(~NF_SUBSECTOR));

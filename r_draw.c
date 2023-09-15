@@ -150,8 +150,13 @@ void R_DrawColumn (void)
 			frac.w, frac.h.intbits, frac.h.fracbits,
 			dc_iscale, dc_texturemid, dc_yh, dc_yl, dc_x, centery, fracstep, destview, count);
 			*/
-// -5406720 -83 -32768  0     -5406720 167 167 155 84 0     -1610612736 0
-// 51293 0 -14243       63723 -2752519 129 128 162 84 63723 671744      1
+
+// 16 bit			
+// 
+// -11141127 -171 -7,     16777215 -11141127, 84 84 0  84 16777215 -1610596352 0
+// 941849     14  24345,  56664    5701625   131 0  63 84 56664    671744      131
+
+
 
 /*
 		I_Error("values... are they te same?\n %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu\n %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu",

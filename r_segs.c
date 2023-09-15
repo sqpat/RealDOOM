@@ -357,7 +357,6 @@ void R_RenderSegLoop (void)
 			dc_yh = yh;
 			dc_texturemid = rw_midtexturemid;
 
-
 			dc_source = R_GetColumn(midtexture,texturecolumn);
 			colfunc();
 			//Z_SetUnlocked(lockedRef);

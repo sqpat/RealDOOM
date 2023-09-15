@@ -346,9 +346,11 @@ void R_AddLine (int16_t linenum)
     x1 = viewangletox[angle1];
     x2 = viewangletox[angle2];
 
+	//todo can we just compare angle 1 and angle 2? - sq
+
     // Does not cross a pixel?
     if (x1 == x2)
-	return;				
+		return;				
 
 	backsecnum = linebacksecnum;
 
@@ -366,12 +368,12 @@ void R_AddLine (int16_t linenum)
     // Closed door.
     if (backsector.ceilingheight <= frontsector.floorheight
 	|| backsector.floorheight >= frontsector.ceilingheight)
-	goto clipsolid;		
+		goto clipsolid;		
 
     // Window.
     if (backsector.ceilingheight != frontsector.ceilingheight
 	|| backsector.floorheight != frontsector.floorheight)
-	goto clippass;	
+		goto clippass;	
 		
     // Reject empty lines used for triggers
     //  and special events.
@@ -385,9 +387,8 @@ void R_AddLine (int16_t linenum)
 	if (backsector.ceilingpic == sectors[frontsecnum].ceilingpic
 	&& backsector.floorpic == sectors[frontsecnum].floorpic
 	&& backsector.lightlevel == sectors[frontsecnum].lightlevel
-	&& sidemidtex == 0)
-    {
-	return;
+	&& sidemidtex == 0) {
+		return;
     }
     
 				
@@ -610,7 +611,6 @@ void R_Subsector(int16_t subsecnum)
 // Just call with BSP root.
 
 #define MAX_BSP_DEPTH 64
-extern int16_t firstnode;
 
 void R_RenderBSPNode()
 {
@@ -623,8 +623,11 @@ void R_RenderBSPNode()
 	byte side = 0;
 	node_t* nodes;
 	fixed_t_union temp;
-	int16_t bspnum = firstnode;
+	int16_t bspnum = numnodes - 1;
+	//int16_t bspnum = firstnode;  i dont know why but 16 bit version has firstnode's value lose scope here. but numnodes is fine.
 	temp.h.fracbits = 0;
+	
+
 	while (true)
 	{
 		//Front sides.
@@ -641,8 +644,8 @@ void R_RenderBSPNode()
 			temp.h.intbits = bsp->y;
 			dy.w = (viewy.w - temp.w);
 
-			left = (bsp->dy) * (dx.h.intbits);
-			right = (dy.h.intbits) * (bsp->dx);
+			left =	FixedMul1616(bsp->dy,dx.h.intbits);
+			right = FixedMul1616(dy.h.intbits, bsp->dx);
 
 			side = right >= left;
 
@@ -653,7 +656,7 @@ void R_RenderBSPNode()
 
 			bspnum = bsp->children[side];
 		}
-
+		
 		if (bspnum == -1)
 			R_Subsector(0);
 		else

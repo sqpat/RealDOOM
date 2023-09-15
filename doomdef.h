@@ -282,6 +282,8 @@ typedef uint8_t powertype_t;
 
 fixed_t32	FixedMul (fixed_t32 a, fixed_t32 b);
 fixed_t32	FixedMul1632 (int16_t a, fixed_t b);
+fixed_t32	FixedMul1616(int16_t a, int16_t b);
+
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
 fixed_t32	FixedDiv2(fixed_t32 a, fixed_t32 b);
 //fixed_t32	FixedDivinner (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);

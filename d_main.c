@@ -308,6 +308,10 @@ fixed_t32 FixedMul1632 (int16_t	a, fixed_t	b) {
 	return biga.w;
 }
 
+fixed_t32 FixedMul1616(int16_t	a, int16_t	b) {
+	return (int32_t)a * b;
+}
+
 //
 // FixedDiv, C version.
 //
@@ -542,16 +546,12 @@ extern  boolean         demorecording;
 void D_DoomLoop (void)
 {
 	// debugging stuff i need to find mem leaks...
-	/*
 	int8_t result[3000];
 	int8_t result2[2000];
 	int32_t lasttick = 0;
 	int32_t lastindex = 0;
 	int32_t stoptic;
-	int32_t linenumber;
-    sector_t sector;
 	int32_t i = 0;
-	*/
 
 	//plat_t* plat;
     if (demorecording)
@@ -615,8 +615,10 @@ void D_DoomLoop (void)
 			}
 
 		}*/
+
 		/*
-		stoptic = 23735;
+
+		stoptic = 0;
 		if (gametic > stoptic) {
 			
 			if (gametic != lasttick) {
@@ -625,11 +627,10 @@ void D_DoomLoop (void)
 				//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
 
 				//SAVEDUNIT = Z_LoadBytesFromEMS(1523);
-				SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);
+				SAVEDUNIT = Z_LoadBytesFromEMS(playermoRef);
 				 
-				sector = ((sector_t*)Z_LoadBytesFromConventional(sectorsRef))[SAVEDUNIT->secnum];
-
-				sprintf(result2, "%i %i %i %i %i %i %i %i %i %i \n", gametic, prndindex, SAVEDUNIT->z >> (16-SHORTFLOORBITS), SAVEDUNIT->floorz, SAVEDUNIT->ceilingz  , SAVEDUNIT->secnum, sector.floorheight, sector.ceilingheight, 0, SAVEDUNIT->type);
+				sprintf(result2, "%li %hhu %li %li %li %li %li %l %l %i \n", gametic, prndindex, 
+					SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->z, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->floorz, SAVEDUNIT->ceilingz  , SAVEDUNIT->secnum );
 				strcat(result, result2);
 				
 
