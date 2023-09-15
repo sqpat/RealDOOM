@@ -185,7 +185,7 @@ V_MarkRect
 //
 // V_CopyRect 
 // 
-void  // todo remove the unused srcscrn destscrn
+void  // todo remove the unused srcscrn destscrn as its always BG/FG or 4/0
 V_CopyRect
 ( uint16_t		srcx,
   uint16_t		srcy,
@@ -202,6 +202,7 @@ V_CopyRect
      
     V_MarkRect (destx, desty, width, height); 
 	 
+
     src = screen4+((uint16_t)SCREENWIDTH*srcy+srcx); 
     dest = screen0 +((uint16_t)SCREENWIDTH*desty+destx);
 
@@ -350,12 +351,15 @@ V_DrawPatch
 		case 1:
 			desttop = screen0 + offset;
 			break;
+
+#ifndef SKIPWIPE
 		case 2:
 			desttop = screen2 + offset;
 			break;
 		case 3:
 			desttop = screen3 + offset;
 			break;
+#endif
 		case 4:
 			desttop = screen4 + offset;
 			break;

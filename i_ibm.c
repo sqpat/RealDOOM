@@ -410,7 +410,7 @@ void I_FinishUpdate(void)
     //Next plane
     destscreen += 0x4000;
 #ifdef _M_I86
-	if (destscreen == (byte*)0xac000000)
+	if (destscreen == (byte*)0xac010000)
     {
         destscreen = (byte*)0xa0000000;
     }
@@ -439,7 +439,7 @@ void I_InitGraphics(void)
 #endif
 #ifdef _M_I86
 	pcscreen = currentscreen = 0xA0000000L;
-	destscreen = 0xA0400000;
+	destscreen = 0xA0004000;
 #else
 	pcscreen = currentscreen = (byte *)0xA0000l;
 	destscreen = (byte *)0xa4000l;
