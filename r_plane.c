@@ -415,7 +415,7 @@ void R_DrawPlanes (void)
 					dc_x = x;
 
 					dc_source = R_GetColumn(skytexture, angle);
-					colfunc ();
+					colfunc();
 					//Z_SetUnlocked(lockedRef);
 
 				}
@@ -429,7 +429,7 @@ void R_DrawPlanes (void)
 			PU_STATIC);
 		ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
 		//Z_SetUnlocked(ds_sourceRef, PAGE_LOCKED);
-		planeheight = abs(pl->height-viewz.w);
+		planeheight = labs(pl->height-viewz.w);
 		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 		if (light >= LIGHTLEVELS)
@@ -690,7 +690,7 @@ void R_DrawPlanes (void)
 			dc_x = x;
 
 			dc_source = R_GetColumn(skytexture, angle);
-		    colfunc ();
+		    colfunc();
 			
 
 		}
@@ -704,7 +704,7 @@ void R_DrawPlanes (void)
 		PU_STATIC);
 	ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
 	
-	planeheight = abs(pl->height - viewz.w);
+	planeheight = labs(pl->height - viewz.w);
 	light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 	if (light >= LIGHTLEVELS)

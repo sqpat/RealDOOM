@@ -314,7 +314,7 @@ fixed_t32 FixedMul1632 (int16_t	a, fixed_t	b) {
 
 //fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
 fixed_t32 FixedDiv (fixed_t32	a, fixed_t32	b) {
-	if ((abs(a) >> 14) >= abs(b))
+	if ((labs(a) >> 14) >= labs(b))
 		return (a^b) < 0 ? MINLONG : MAXLONG;
 	//return FixedDiv2(a, b, file, line);
 	return FixedDiv2(a, b);

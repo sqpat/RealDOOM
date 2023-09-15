@@ -83,8 +83,8 @@ boolean PIT_StompThing (MEMREF thingRef)
     blockdist.h.intbits = thing->radius + tmthing->radius;
 	blockdist.h.fracbits = 0;
     
-    if ( abs(thing->x - tmx) >= blockdist.w
-	 || abs(thing->y - tmy) >= blockdist.w )
+    if ( labs(thing->x - tmx) >= blockdist.w
+	 || labs(thing->y - tmy) >= blockdist.w )
     {
 	// didn't hit it
 	return true;
@@ -349,7 +349,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	thingradius.h.intbits += tmthing->radius;
 	blockdist = thingradius.w;
 
-    if ( abs(thingx - tmx) >= blockdist || abs(thingy - tmy) >= blockdist ) {
+    if ( labs(thingx - tmx) >= blockdist || labs(thingy - tmy) >= blockdist ) {
 		// didn't hit it
 			return true;
     }
@@ -1462,8 +1462,8 @@ boolean PIT_RadiusAttack (MEMREF thingRef)
 
 	bombspot = (mobj_t*)Z_LoadBytesFromEMS(bombspotRef);
 
-    dx = abs(thing->x - bombspot->x);
-    dy = abs(thing->y - bombspot->y);
+    dx = labs(thing->x - bombspot->x);
+    dy = labs(thing->y - bombspot->y);
     
     dist.w = dx>dy ? dx : dy;
     dist.h.intbits = (dist.h.intbits - thing->radius ) ;

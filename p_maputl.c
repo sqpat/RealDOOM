@@ -44,8 +44,8 @@ P_AproxDistance
 ( fixed_t	dx,
   fixed_t	dy )
 {
-    dx = abs(dx);
-    dy = abs(dy);
+    dx = labs(dx);
+    dy = labs(dy);
     if (dx < dy)
 	return dx+dy-(dx>>1);
     return dx+dy-(dy>>1);
@@ -937,11 +937,11 @@ P_PathTraverse
     if (xt2 > xt1) {
 		mapxstep = 1;
 		partial = FRACUNIT - ((x1.w>> MAPBLOCKSHIFT)&(0xFFFF));
-		ystep = FixedDiv (y2.w-y1.w,abs(x2.w-x1.w));
+		ystep = FixedDiv (y2.w-y1.w,labs(x2.w-x1.w));
     } else if (xt2 < xt1) {
 		mapxstep = -1;
 		partial = (x1.w>> MAPBLOCKSHIFT)&(0xFFFF);
-		ystep = FixedDiv (y2.w-y1.w,abs(x2.w-x1.w));
+		ystep = FixedDiv (y2.w-y1.w,labs(x2.w-x1.w));
     } else {
 		mapxstep = 0;
 		partial = FRACUNIT;
@@ -954,11 +954,11 @@ P_PathTraverse
     if (yt2 > yt1) {
 		mapystep = 1;
 		partial = FRACUNIT - ((y1.w>> MAPBLOCKSHIFT)&(0xFFFF));
-		xstep = FixedDiv (x2.w -x1.w,abs(y2.w -y1.w));
+		xstep = FixedDiv (x2.w -x1.w,labs(y2.w -y1.w));
     } else if (yt2 < yt1) {
 		mapystep = -1;
 		partial = (y1.w >> MAPBLOCKSHIFT)&(0xFFFF);
-		xstep = FixedDiv (x2.w -x1.w,abs(y2.w -y1.w));
+		xstep = FixedDiv (x2.w -x1.w,labs(y2.w -y1.w));
     } else {
 		mapystep = 0;
 		partial = FRACUNIT;

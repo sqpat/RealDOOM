@@ -493,7 +493,7 @@ V_DrawPatchDirect
 
  
     //	V_MarkRect (x, y, (patch->width), (patch->height)); 
-    desttop = destscreen + y*SCREENWIDTH/4 + (x>>2); 
+	desttop = (byte*)(destscreen.w + y*SCREENWIDTH/4 + (x>>2));
 	 
     w = (patch->width); 
     for ( col = 0 ; col<w ; col++) 

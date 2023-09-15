@@ -496,7 +496,7 @@ void P_NewChaseDir (MEMREF actorRef)
     }
 
     // try other directions
-    if (P_Random() > 200 ||  abs(deltay)>abs(deltax)) {
+    if (P_Random() > 200 ||  labs(deltay)>labs(deltax)) {
 		tdir=d[1];
 		d[1]=d[2];
 		d[2]=tdir;
@@ -1367,7 +1367,7 @@ boolean PIT_VileCheck (MEMREF thingRef)
 	maxdist.h.fracbits = 0;
 
 	
-	if (abs(thing->x - viletryx) > maxdist.w || abs(thing->y - viletryy) > maxdist.w) {
+	if (labs(thing->x - viletryx) > maxdist.w || labs(thing->y - viletryy) > maxdist.w) {
 		return true;		// not actually touching
 	}
 		

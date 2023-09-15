@@ -359,7 +359,7 @@ void R_RenderSegLoop (void)
 
 
 			dc_source = R_GetColumn(midtexture,texturecolumn);
-			colfunc ();
+			colfunc();
 			//Z_SetUnlocked(lockedRef);
 			ceilingclip[rw_x] = viewheight;
 			floorclip[rw_x] = -1;
@@ -381,7 +381,7 @@ void R_RenderSegLoop (void)
 					dc_texturemid = rw_toptexturemid;
 
 					dc_source = R_GetColumn(toptexture,texturecolumn);
-					colfunc ();
+					colfunc();
 					//Z_SetUnlocked(lockedRef);
 					ceilingclip[rw_x] = mid;
 				} else {
@@ -513,7 +513,7 @@ R_StoreWallRange
 	temp.h.intbits = rw_normalangle;
 	temp.h.intbits <<= 3;
 	temp.w -= rw_angle1;
-	temp.w = abs(temp.w);
+	temp.w = labs(temp.w);
 	temp.h.intbits >>= 3;
 
 	offsetangle = temp.h.intbits;

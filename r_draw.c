@@ -141,13 +141,33 @@ void R_DrawColumn (void)
     do  {
         // Re-map color indices from wall texture column
         //  using a lighting/special effects LUT.
+
 #ifndef	SKIP_DRAW
-		*dest = dc_colormap[dc_source[frac.h.intbits&127]];
+		*dest = dc_colormap[dc_source[frac.h.intbits & 127]];
 #endif
-        
+		/*
+		I_Error("values... %li %i %i,    %li %li %i %i %i %i %li %li %i", 
+			frac.w, frac.h.intbits, frac.h.fracbits,
+			dc_iscale, dc_texturemid, dc_yh, dc_yl, dc_x, centery, fracstep, destview, count);
+			*/
+// -5406720 -83 -32768  0     -5406720 167 167 155 84 0     -1610612736 0
+// 51293 0 -14243       63723 -2752519 129 128 162 84 63723 671744      1
+
+/*
+		I_Error("values... are they te same?\n %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu\n %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu",
+			dc_colormap[dc_source[0]], dc_colormap[dc_source[1]], dc_colormap[dc_source[2]], dc_colormap[dc_source[3]],
+			dc_colormap[dc_source[4]], dc_colormap[dc_source[5]], dc_colormap[dc_source[6]], dc_colormap[dc_source[7]],
+		//);
+
+		//I_Error("values... are they te same? %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu",
+			dc_source[0], dc_source[1], dc_source[2], dc_source[3],
+			dc_source[4], dc_source[5], dc_source[6], dc_source[7]
+		);
+		*/
         dest += SCREENWIDTH/4;
         frac.w += fracstep;
         
+
     } while (count--); 
 } 
 
@@ -158,7 +178,7 @@ void R_DrawColumnLow (void)
 
 	int16_t                 count;
 	byte*               dest;
-	fixed_t             frac;
+	fixed_t_union             frac;
 	fixed_t             fracstep;
 
 	count = dc_yh - dc_yl;
@@ -176,16 +196,17 @@ void R_DrawColumnLow (void)
 	dest = destview + dc_yl * 80 + (dc_x >> 1);
 
 	fracstep = dc_iscale;
-	frac = dc_texturemid + (dc_yl - centery)*fracstep;
+	frac.w = dc_texturemid + (dc_yl - centery)*fracstep;
 
 	do
 	{
 #ifndef	SKIP_DRAW
-		*dest = dc_colormap[dc_source[(frac >> FRACBITS) & 127]];
+		*dest = dc_colormap[dc_source[(frac.h.intbits) & 127]];
 #endif
 
+
 		dest += SCREENWIDTH / 4;
-		frac += fracstep;
+		frac.w += fracstep;
 
 	} while (count--);
 }
@@ -623,7 +644,7 @@ R_VideoErase
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
 #endif
-    dest = destscreen + (ofs >> 2);
+    dest = (byte*)(destscreen.w + (ofs >> 2));
 #ifdef _M_I86
 	source = (byte*)0xac000000 + (ofs >> 2);
 #else

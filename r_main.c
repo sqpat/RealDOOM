@@ -478,8 +478,8 @@ R_PointToDist
     y.h.intbits = yarg;
 
 
-    dx = abs(x.w - viewx.w);
-    dy = abs(y.w - viewy.w);
+    dx = labs(x.w - viewx.w);
+    dy = labs(y.w - viewy.w);
 
     if (dy>dx) {
         temp = dx;
@@ -746,7 +746,7 @@ void R_ExecuteSetViewSize (void)
 	for (i=0 ; i<viewheight ; i++) {
 		temp.h.intbits = (i - viewheight / 2);
 		dy = (temp.w)+FRACUNIT/2;
-		dy = abs(dy);
+		dy = labs(dy);
 		temp.h.intbits = (viewwidth << detailshift) / 2;
 		yslope[i] = FixedDiv ( temp.w, dy);
 		//yslope[i] = FixedDiv((viewwidth << detailshift) / 2 * FRACUNIT, dy);
@@ -758,7 +758,7 @@ void R_ExecuteSetViewSize (void)
 		an = xtoviewangle[i];
 
 
-		cosadj = abs(finecosine(an));
+		cosadj = labs(finecosine(an));
 
 		distscale[i] = FixedDiv (FRACUNIT,cosadj); // divide by zero in 16 bit mode here.
     }
@@ -896,7 +896,8 @@ void R_SetupFrame ()
 	fixedcolormap = 0;
 		
     validcount++;
-    destview = destscreen + (viewwindowy*SCREENWIDTH/4) + (viewwindowx >> 2);
+	// i think this sets the view within the border for when screen size is increased/shrunk
+    destview = (byte*)(destscreen.w + (viewwindowy*SCREENWIDTH/4) + (viewwindowx >> 2));
 }
 
 

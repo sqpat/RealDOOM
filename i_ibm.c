@@ -265,7 +265,8 @@ void I_SetPalette(byte *palette)
 // Graphics mode
 //
 
-byte *pcscreen, *currentscreen, *destscreen, *destview;
+byte *pcscreen, *currentscreen, *destview;
+fixed_t_union destscreen;
 
 //
 // I_UpdateBox
@@ -296,7 +297,7 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
 		outp(SC_INDEX + 1, 1 << i);
 #endif
         source = &screen0[offset + i];
-        dest = destscreen + poffset;
+        dest = (byte*) (destscreen.w + poffset);
 		TEXT_MODE_DEBUG_PRINT("I_UpdateBox to dest %lx", dest);
 
         for (j = 0; j < h; j++)
@@ -326,7 +327,7 @@ void I_UpdateNoBlit(void)
 	int16_t realdr[4];
 	int16_t x, y, w, h;
     // Set current screen
-    currentscreen = destscreen;
+    currentscreen = (byte*) destscreen.w;
 
     // Update dirtybox size
     realdr[BOXTOP] = dirtybox[BOXTOP];
@@ -405,22 +406,14 @@ void I_FinishUpdate(void)
 {
 
 #ifndef	SKIP_DRAW
-	outpw(CRTC_INDEX, ((int32_t)destscreen & 0xff00) + 0xc);
+	outpw(CRTC_INDEX, (destscreen.w & 0xff00) + 0xc);
 #endif
     //Next plane
-    destscreen += 0x4000;
-#ifdef _M_I86
-	if (destscreen == (byte*)0xac010000)
-    {
-        destscreen = (byte*)0xa0000000;
-    }
-#else
-	if (destscreen == (byte*)0xac000)
-	{
-		destscreen = (byte*)0xa0000;
+    destscreen.h.fracbits += 0x4000;
+	if ((uint16_t)destscreen.h.fracbits == 0xc000) {
+		destscreen.h.fracbits = 0x0000;
 	}
-#endif
-
+ 
 }
 
 //
@@ -439,10 +432,10 @@ void I_InitGraphics(void)
 #endif
 #ifdef _M_I86
 	pcscreen = currentscreen = 0xA0000000L;
-	destscreen = 0xA0004000;
+	destscreen.w = 0xA0004000;
 #else
 	pcscreen = currentscreen = (byte *)0xA0000l;
-	destscreen = (byte *)0xa4000l;
+	destscreen.w = 0xa4000l;
 #endif
  
 
@@ -454,11 +447,7 @@ void I_InitGraphics(void)
     outp(GC_INDEX, GC_MISCELLANEOUS);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~2);
     outpw(SC_INDEX, 0xf02);
-#ifdef _M_I86
 	memset(pcscreen, 0, 0xFFFF);
-#else
-	memset(pcscreen, 0, 0x10000L);
-#endif
     outp(CRTC_INDEX, CRTC_UNDERLINE);
     outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1)&~0x40);
     outp(CRTC_INDEX, CRTC_MODE);
@@ -1133,7 +1122,7 @@ void I_InitDiskFlash(void)
 {
 	/*
     void *pic;
-    byte *temp;
+    fixed_t_union temp;
 
     if (M_CheckParm("-cdrom"))
     {
@@ -1145,9 +1134,9 @@ void I_InitDiskFlash(void)
     }
     temp = destscreen;
 #ifdef _M_I86
-	destscreen = (byte *)0xac000000;
+	destscreen.w = 0xac000000;
 #else
-	destscreen = (byte *)0xac000;
+	destscreen.w = 0xac000;
 #endif
     V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, pic);
     destscreen = temp;

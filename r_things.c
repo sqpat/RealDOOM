@@ -37,11 +37,6 @@
 #define MINZ                            (FRACUNIT*4)
 #define BASEYCENTER                     100L
 
-//void R_DrawColumn (void);
-//void R_DrawFuzzColumn (void);
-
-
-
 
 
 //
@@ -376,7 +371,7 @@ void R_DrawMaskedColumn (column_t* column) {
 
             // Drawn by either R_DrawColumn
             //  or (SHADOW) R_DrawFuzzColumn.
-            colfunc (); 
+            colfunc(); 
         }
         column = (column_t *)(  (byte *)column + column->length + 4);
     }
@@ -412,12 +407,12 @@ R_DrawVisSprite
         colfunc = fuzzcolfunc;
     }
         
-    dc_iscale = abs(vis->xiscale)>>detailshift;
+    dc_iscale = labs(vis->xiscale)>>detailshift;
     dc_texturemid = vis->texturemid;
     frac.w = vis->startfrac;
     spryscale = vis->scale;
     sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
-        
+         
 	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, true);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		texturecolumn = (frac.h.intbits);
@@ -501,7 +496,7 @@ void R_ProjectSprite (MEMREF thingRef)
     tx = -(gyt+gxt); 
 
     // too far off the side?
-    if (abs(tx)>(tz<<2))
+    if (labs(tx)>(tz<<2))
         return;
     
     // decide which patch to use for sprite relative to player
@@ -682,7 +677,6 @@ void R_AddSprites (int16_t secnum)
 
 }
 
-
 //
 // R_DrawPSprite
 //
@@ -788,7 +782,7 @@ void R_DrawPSprite (pspdef_t* psp)
         // local light
         vis->colormap = spritelights[MAXLIGHTSCALE-1];
     }
-        
+
     R_DrawVisSprite (vis, vis->x1, vis->x2);
 }
 

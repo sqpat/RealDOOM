@@ -1275,7 +1275,7 @@ void G_ReadDemoTiccmd (ticcmd_t* cmd)
     cmd->sidemove = ((int8_t)*demo_addr++);
     cmd->angleturn = ((uint8_t)*demo_addr++)<<8;
     cmd->buttons = (uint8_t)*demo_addr++;
-	demo_p = (demo_addr - demobuffer);
+	demo_p = (uint16_t)(demo_addr - demobuffer);
 }
 
 
@@ -1302,7 +1302,7 @@ void G_WriteDemoTiccmd (ticcmd_t* cmd)
     } 
         
     G_ReadDemoTiccmd (cmd);         // make SURE it is exactly the same 
-	demo_p = (demo_addr - demobuffer);
+	demo_p = (uint16_t)(demo_addr - demobuffer);
 
 } 
  

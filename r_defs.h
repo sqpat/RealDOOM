@@ -281,7 +281,7 @@ typedef post_t	column_t;
 
 // PC direct to screen pointers
 extern byte*	destview;
-extern byte*	destscreen;
+extern fixed_t_union	destscreen;
 
 
 
