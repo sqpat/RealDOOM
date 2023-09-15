@@ -4,7 +4,7 @@
 
 RealDOOM is a (currently in progress) port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical fidelity as the original game.
 
-While the port current builds to Real Mode, it still has many issues as you can see from the gif above.
+While the port current builds to Real Mode, it still has many issues as you can see from the gif above. Things are rapidly changing, though.
 
 The port also builds to 32 bit mode (for development and testing purposes) and runs with many of the 16 bit constraints in mind such as using an EMS simulator. To build this build, run make.bat.
 
@@ -49,5 +49,6 @@ For those interested in the technical details, a quick summary of what has been 
 
 ## Progress of 16-bit build
  - More bugfixing going on. There have been a lot of pointer and arithmetic bugs - for example, i had to replace abs with labs everywhere, the cosine and sine lookup tables had issues, and fixing each one of these gets the 16 bit engine a little bit closer to working properly as I've been debugging things.
- - Things are very slow right now - a couple seconds per frame, but theres a lot of debugging code in there, and some other issues. Once things are accurate, im sure I can rip stuff out and itll change from a few seconds per frame to a few frames per seconds.
+ - Things are very slow right now - a couple seconds per frame, but theres a lot of debugging code in there, and some other temporary issues. Once things are accurate, im sure I can rip stuff out and itll change from a few seconds per frame to a few frames per seconds. But as always speed takes a backseat to accuracy.
 
+![](https://github.com/sqpat/RealDOOM/blob/master/current16.png)
