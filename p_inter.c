@@ -160,25 +160,23 @@ P_GiveWeapon
     boolean	gaveweapon;
 	
 	
-    if (weaponinfo[weapon].ammo != am_noammo)
-    {
+    if (weaponinfo[weapon].ammo != am_noammo) {
 	// give one clip with a dropped weapon,
 	// two clips with a found weapon
-	if (dropped)
-	    gaveammo = P_GiveAmmo (weaponinfo[weapon].ammo, 1);
-	else
-	    gaveammo = P_GiveAmmo (weaponinfo[weapon].ammo, 2);
-    }
-    else
-	gaveammo = false;
-	
-    if (player.weaponowned[weapon])
-	gaveweapon = false;
-    else
-    {
-	gaveweapon = true;
-	player.weaponowned[weapon] = true;
-	player.pendingweapon = weapon;
+		if (dropped) {
+			gaveammo = P_GiveAmmo(weaponinfo[weapon].ammo, 1);
+		} else {
+			gaveammo = P_GiveAmmo(weaponinfo[weapon].ammo, 2);
+		}
+	} else {
+		gaveammo = false;
+	}
+	if (player.weaponowned[weapon]) {
+		gaveweapon = false;
+	} else {
+		gaveweapon = true;
+		player.weaponowned[weapon] = true;
+		player.pendingweapon = weapon;
     }
 	
     return (gaveweapon || gaveammo);

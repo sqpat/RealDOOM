@@ -50,21 +50,11 @@ typedef struct
 
     // last number value
 	int16_t 	oldnum;
-    
-    // pointer to current value
-    int16_t*	num;
-
-    // pointer to boolean stating
-    //  whether to update number
-    boolean*	on;
 
     // list of patches for 0-9
     //patch_t**	p;
 	MEMREF* pRef;
 
-    // user data
-	int8_t data;
-    
 } st_number_t;
 
 
@@ -95,48 +85,19 @@ typedef struct
 	int16_t 		oldinum;
 
     // pointer to current icon
-    int16_t*		inum;
 
-    // pointer to boolean stating
+	// pointer to boolean stating
     //  whether to update icon
-    boolean*		on;
 
     // list of icons
     //patch_t**		p;
 	MEMREF*		pRef;
     
-    // user data
-	int16_t 		data;
-    
 } st_multicon_t;
 
 
 
-
-// Binary Icon widget
-
-typedef struct
-{
-    // center-justified location of icon
-	int16_t 		x;
-	int16_t 		y;
-
-    // last icon value
-	int16_t 		oldval;
-
-    // pointer to current icon status
-    boolean*		val;
-
-    // pointer to boolean
-    //  stating whether to update icon
-    boolean*		on;  
-
-
-    //patch_t*		p;	// icon
-	MEMREF		pRef;
-    
-} st_binicon_t;
-
+ 
 
 
 //
@@ -147,8 +108,6 @@ typedef struct
 // More precisely, initialize STMINUS,
 //  everything else is done somewhere else.
 //
-void STlib_init(void);
-
 
 
 // Number widget routines
@@ -158,15 +117,13 @@ STlib_initNum
 	int16_t 		x,
 	int16_t 		y,
     MEMREF*		plRef,
-    int16_t*			num,
-    boolean*		on,
 	int16_t 		width );
 
 void
-STlib_updateNum
-( st_number_t*		n,
-  boolean		refresh );
-
+STlib_drawNum
+(st_number_t*	n,
+	boolean	refresh,
+	int16_t num);
 
 // Percent widget routines
 void
@@ -175,8 +132,6 @@ STlib_initPercent
 	int16_t 		x,
 	int16_t 		y,
     MEMREF*		plRef,
-    int16_t*			num,
-    boolean*		on,
     MEMREF		percentRef 
 );
 
@@ -184,7 +139,8 @@ STlib_initPercent
 void
 STlib_updatePercent
 ( st_percent_t*		per,
-	int16_t 		refresh );
+	int16_t 		refresh,
+	int16_t			num);
 
 
 // Multiple Icon widget routines
@@ -193,30 +149,15 @@ STlib_initMultIcon
 ( st_multicon_t*	mi,
 	int16_t 		x,
 	int16_t 		y,
-  MEMREF*		ilRef,
-  int16_t*			inum,
-  boolean*		on );
+  MEMREF*		ilRef);
 
 
 void
 STlib_updateMultIcon
 ( st_multicon_t*	mi,
-  boolean		refresh );
-
-// Binary Icon widget routines
-
-void
-STlib_initBinIcon
-( st_binicon_t*		b,
-	int16_t 		x,
-	int16_t 		y,
-  MEMREF		iRef,
-  boolean*		val,
-  boolean*		on );
-
-void
-STlib_updateBinIcon
-( st_binicon_t*		bi,
-  boolean		refresh );
+  boolean		refresh,
+	int16_t			inum,
+	boolean is_binicon);
+ 
 
 #endif

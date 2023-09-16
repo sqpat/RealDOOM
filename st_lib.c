@@ -29,18 +29,7 @@
 #include "st_stuff.h"
 #include "st_lib.h"
 #include "r_local.h"
-
-
-// in AM_map.c
-extern boolean		automapactive; 
-
-
-
-
-void STlib_init(void)
-{
-}
-
+ 
 
 // ?
 void
@@ -49,16 +38,12 @@ STlib_initNum
   int16_t			x,
   int16_t			y,
   MEMREF*		plRef,
-  int16_t*			num,
-  boolean*		on,
   int16_t			width )
 {
     n->x	= x;
     n->y	= y;
     n->oldnum	= 0;
     n->width	= width;
-    n->num	= num;
-    n->on	= on;
     n->pRef	= plRef;
 }
 
@@ -71,10 +56,10 @@ STlib_initNum
 void
 STlib_drawNum
 ( st_number_t*	n,
-  boolean	refresh )
+  boolean	refresh,
+	int16_t num)
 {
     int16_t		numdigits = n->width;
-    int16_t		num = *n->num;
 	patch_t* p0 = (patch_t*) Z_LoadBytesFromEMS(n->pRef[0]);
 	int16_t w = (p0->width);
 	int16_t h = (p0->height);
@@ -87,7 +72,7 @@ STlib_drawNum
 		return;
 	}
 
-    n->oldnum = *n->num;
+    n->oldnum = num;
 
     neg = num < 0;
 
@@ -108,33 +93,24 @@ STlib_drawNum
 
     // if non-number, do not draw it
     if (num == 1994)
-	return;
+		return;
 
     x = n->x;
 
     // in the special case of 0, you draw 0
-    if (!num)
-	V_DrawPatch(x - w, n->y, FG, (patch_t*)Z_LoadBytesFromEMS(n->pRef[ 0 ]));
-
+	if (!num) {
+		V_DrawPatch(x - w, n->y, FG, (patch_t*)Z_LoadBytesFromEMS(n->pRef[0]));
+	}
     // draw the new number
-    while (num && numdigits--)
-    {
-	x -= w;
-	V_DrawPatch(x, n->y, FG, (patch_t*)Z_LoadBytesFromEMS( n->pRef[ num % 10 ]));
-	num /= 10;
+    while (num && numdigits--) {
+		x -= w;
+		V_DrawPatch(x, n->y, FG, (patch_t*)Z_LoadBytesFromEMS( n->pRef[ num % 10 ]));
+		num /= 10;
     }
  
 }
 
 
-//
-void
-STlib_updateNum
-( st_number_t*		n,
-  boolean		refresh )
-{
-    if (*n->on) STlib_drawNum(n, refresh);
-}
 
 
 //
@@ -144,11 +120,8 @@ STlib_initPercent
   int16_t			x,
   int16_t			y,
   MEMREF*		plRef,
-  int16_t*			num,
-  boolean*		on,
-  MEMREF		percentRef )
-{
-    STlib_initNum(&p->n, x, y, plRef, num, on, 3);
+  MEMREF		percentRef ) {
+    STlib_initNum(&p->n, x, y, plRef, 3);
     p->pRef = percentRef;
 }
 
@@ -158,13 +131,13 @@ STlib_initPercent
 void
 STlib_updatePercent
 ( st_percent_t*		per,
-  int16_t			refresh )
+  int16_t			refresh, 
+	int16_t			value)
 {
-    if (refresh && *per->n.on)
-	V_DrawPatch(per->n.x, per->n.y, FG, (patch_t*)Z_LoadBytesFromEMS(per->pRef));
+    if (refresh)
+		V_DrawPatch(per->n.x, per->n.y, FG, (patch_t*)Z_LoadBytesFromEMS(per->pRef));
 	
-    
-    STlib_updateNum(&per->n, refresh);
+	STlib_drawNum(&per->n, refresh, value);
 }
 
 
@@ -174,16 +147,13 @@ STlib_initMultIcon
 ( st_multicon_t*	i,
   int16_t			x,
   int16_t			y,
-  MEMREF*		ilRef,
-  int16_t*			inum,
-  boolean*		on )
+  MEMREF*		ilRef)
 {
     i->x	= x;
     i->y	= y;
     i->oldinum 	= -1;
-    i->inum	= inum;
-    i->on	= on;
     i->pRef	= ilRef;
+
 }
 
 
@@ -191,87 +161,36 @@ STlib_initMultIcon
 void
 STlib_updateMultIcon
 ( st_multicon_t*	mi,
-  boolean		refresh )
+  boolean		refresh,
+	int16_t		inum,
+	boolean		is_binicon)
 {
     int16_t			w;
     int16_t			h;
     int16_t			x;
     int16_t			y;
 	patch_t*    old;
-    if (*mi->on
-	&& (mi->oldinum != *mi->inum || refresh)
-	&& (*mi->inum!=-1))
-    {
-	if (mi->oldinum != -1)
-	{
-		old = (patch_t*)Z_LoadBytesFromEMS(mi->pRef[mi->oldinum]);
-	    x = mi->x - (old->leftoffset);
-	    y = mi->y - (old->topoffset);
-	    w = (old->width);
-	    h = (old->height);
+	if ((mi->oldinum != inum || refresh) && (inum != -1)) {
+		if (!is_binicon && mi->oldinum != -1) {
+			old = (patch_t*)Z_LoadBytesFromEMS(mi->pRef[mi->oldinum]);
+			x = mi->x - (old->leftoffset);
+			y = mi->y - (old->topoffset);
+			w = (old->width);
+			h = (old->height);
 
 #ifdef CHECK_FOR_ERRORS
-		if (y - ST_Y < 0)
-			I_Error("updateMultIcon: y - ST_Y < 0");
+			if (y - ST_Y < 0) {
+				I_Error("updateMultIcon: y - ST_Y < 0");
+			}
 #endif
+			V_CopyRect(x, y - ST_Y, BG, w, h, x, y, FG);
+		} 
+			
+		// binicon only has an array length zero and inum is always 1; this inum-is_binicon
+		// to work on the same line of code.
+		V_DrawPatch(mi->x, mi->y, FG, (patch_t*)Z_LoadBytesFromEMS(mi->pRef[inum-is_binicon]));
 
-	    V_CopyRect(x, y-ST_Y, BG, w, h, x, y, FG);
+		mi->oldinum = inum;
 	}
-	V_DrawPatch(mi->x, mi->y, FG, (patch_t*)Z_LoadBytesFromEMS(mi->pRef[*mi->inum]));
-	mi->oldinum = *mi->inum;
-    }
-}
-
-
-
-void
-STlib_initBinIcon
-( st_binicon_t*		b,
-  int16_t			x,
-  int16_t			y,
-  MEMREF		iRef,
-  boolean*		val,
-  boolean*		on )
-{
-    b->x	= x;
-    b->y	= y;
-    b->oldval	= 0;
-    b->val	= val;
-    b->on	= on;
-    b->pRef	= iRef;
-}
-
-
-
-void
-STlib_updateBinIcon
-( st_binicon_t*		bi,
-  boolean		refresh )
-{
-    int16_t			x;
-    int16_t			y;
-    int16_t			w;
-    int16_t			h;
-	patch_t*	bipatch;
-    if (*bi->on
-	&& (bi->oldval != *bi->val || refresh)) {
-		bipatch = (patch_t*)Z_LoadBytesFromEMS(bi->pRef);
-		x = bi->x - (bipatch->leftoffset);
-		y = bi->y - (bipatch->topoffset);
-		w = (bipatch->width);
-		h = (bipatch->height);
-
-#ifdef CHECK_FOR_ERRORS
-		if (y - ST_Y < 0)
-			I_Error("updateBinIcon: y - ST_Y < 0");
-#endif
-		if (*bi->val)
-			V_DrawPatch(bi->x, bi->y, FG, (patch_t*)Z_LoadBytesFromEMS(bi->pRef));
-		else
-			V_CopyRect(x, y-ST_Y, BG, w, h, x, y, FG);
-
-		bi->oldval = *bi->val;
-    }
-
 }
 
