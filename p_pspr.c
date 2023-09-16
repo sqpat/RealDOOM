@@ -501,10 +501,10 @@ A_Punch
 	}
 
 
-    angle = playermo->angle >> ANGLETOFINESHIFT;
+	// todo use fixed_t_union to reduce shift
+	angle = playermo->angle >> ANGLETOFINESHIFT;
 	angle += ((P_Random()-P_Random())>> 1);
 
-	//I_Error("%i %i %i", angle, playermo-angle, playermo->angle >> ANGLETOFINESHIFT); //0 2254236  2048;
     slope = P_AimLineAttack (playermoRef, angle, MELEERANGE);
     P_LineAttack (playermoRef, angle, MELEERANGE , slope, damage);
 
@@ -536,7 +536,8 @@ A_Saw
 	mobj_t* linetarget; 
 
     damage = 2*(P_Random ()%10+1);
-    angle = playermo->angle >> ANGLETOFINESHIFT;
+	// todo use fixed_t_union to reduce shift
+	angle = playermo->angle >> ANGLETOFINESHIFT;
     angle = MOD_FINE_ANGLE( + (P_Random()-P_Random())>>(1));
     
     // use meleerange + 1 se the puff doesn't skip the flash
@@ -631,13 +632,16 @@ void P_BulletSlope (MEMREF moRef)
     fineangle_t	an;
 	mobj_t*	mo = (mobj_t*) Z_LoadBytesFromEMS(moRef);
     // see which target is to be aimed at
-    an = mo->angle >> ANGLETOFINESHIFT;
+	// todo use fixed_t_union to reduce shift
+	an = mo->angle >> ANGLETOFINESHIFT;
     bulletslope = P_AimLineAttack (moRef, an, 16*64);
 
     if (!linetargetRef) {
+		// todo use fixed_t_union to reduce shift
 		an =  MOD_FINE_ANGLE(an +(1<<(26-ANGLETOFINESHIFT)));
 		bulletslope = P_AimLineAttack (moRef, an, 16*64);
 		if (!linetargetRef) {
+			// todo use fixed_t_union to reduce shift
 			an = MOD_FINE_ANGLE(an- (2<<(26-ANGLETOFINESHIFT)));
 			bulletslope = P_AimLineAttack (moRef, an, 16*64);
 		}
@@ -659,7 +663,8 @@ P_GunShot
 	mobj_t*	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
  
     damage = 5*(P_Random ()%3+1);
-    angle = mo->angle >> ANGLETOFINESHIFT;
+	// todo use fixed_t_union to reduce shift
+	angle = mo->angle >> ANGLETOFINESHIFT;
 
     if (!accurate)
 		angle = MOD_FINE_ANGLE(angle + ((P_Random()-P_Random())>>(1)));
@@ -749,6 +754,7 @@ A_FireShotgun2
     for (i=0 ; i<20 ; i++)
     {
 	damage = 5*(P_Random ()%3+1);
+	// todo use fixed_t_union to reduce shift
 	angle = playermo->angle >> ANGLETOFINESHIFT;
 	angle = MOD_FINE_ANGLE( angle + ((P_Random()-P_Random())<<(19-ANGLETOFINESHIFT)));
 	P_LineAttack (playermoRef,
@@ -821,6 +827,7 @@ void A_BFGSpray (mobj_t* mo)
 	
     // offset angles from its attack angle
     for (i=0 ; i<40 ; i++) {
+		// todo use fixed_t_union to reduce shift
 		an = MOD_FINE_ANGLE( (mo->angle >> ANGLETOFINESHIFT) - (FINE_ANG90/2) + (FINE_ANG90/40*i));
 
 		// mo->target is the originator ()

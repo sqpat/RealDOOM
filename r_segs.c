@@ -439,12 +439,12 @@ void R_RenderSegLoop (void)
 
 
 
-
 //
 // R_StoreWallRange
 // A wall segment will be drawn
 //  between start and stop pixels (inclusive).
 //
+// Note: Start/stop refer to x coordinate pixels
 void
 R_StoreWallRange
 ( int16_t	start,
@@ -460,7 +460,6 @@ R_StoreWallRange
 
 	// needs to be refreshed...
 	seg_t* segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
-	int16_t curlinelinedefOffset = segs[curlinenum].linedefOffset;
 	fineangle_t curlineangle = segs[curlinenum].fineangle;
 	int16_t curlinev1Offset = segs[curlinenum].v1Offset;
 	int16_t curlinev2Offset = segs[curlinenum].v2Offset;
@@ -485,8 +484,8 @@ R_StoreWallRange
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
 		 
+	linedefOffset = segs[curlinenum].linedefOffset;
 
-	linedefOffset = curlinelinedefOffset;
 
 #ifdef CHECK_FOR_ERRORS
 	if (linedefOffset > numlines) {
@@ -745,9 +744,6 @@ R_StoreWallRange
     segtextured = midtexture | toptexture | bottomtexture | maskedtexture;
 
     if (segtextured) {
-
-		//offsetangle = (((rw_normalangle << ANGLETOFINESHIFT)) - rw_angle1) >> ANGLETOFINESHIFT;
-		
 		temp.h.intbits = rw_normalangle;
 		temp.h.intbits <<= 3;
 		temp.w -= rw_angle1;
@@ -781,6 +777,7 @@ R_StoreWallRange
 
 		temp.h.intbits = sidetextureoffset;
 		rw_offset += temp.w + curlineOffset;
+		// todo use fixed_t_union to reduce shift
 		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle>>ANGLETOFINESHIFT) - (rw_normalangle));
 	
 		// calculate light table

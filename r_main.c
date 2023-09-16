@@ -487,7 +487,8 @@ R_PointToDist
         dy = temp;
     }
 	
-    angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ]+ANG90) >> ANGLETOFINESHIFT;
+	// todo use fixed_t_union to reduce shift
+	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ]+ANG90) >> ANGLETOFINESHIFT;
 
     // use as cosine
     dist = FixedDiv (dx, finesine(angle) );	
@@ -515,6 +516,7 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     fixed_t_union		    num;
     fixed_t			den;
 
+	// todo use fixed_t_union to reduce shift
     anglea = (ANG90 + (visangle-viewangle))>> ANGLETOFINESHIFT;
     angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle >> ANGLETOFINESHIFT) - rw_normalangle);
 
@@ -531,7 +533,7 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 
         if (scale.h.intbits > 64){
             scale.w = 0x400000L;
-            scale.h.fracbits = 0;
+            //scale.h.fracbits = 0;
         } else if (scale.w < 256)
             scale.w = 256;
     } else{
@@ -552,7 +554,7 @@ void R_InitTextureMapping (void)
 {
     int16_t			i;
     int16_t			x;
-    fixed_t			t;
+    fixed_t_union	t;
 	fixed_t		focallength;
 	fixed_t_union		temp;
     
@@ -565,23 +567,21 @@ void R_InitTextureMapping (void)
     focallength = FixedDiv (centerxfrac,
 			    finetangent(FINEANGLES/4+FIELDOFVIEW/2) );
 	
-    for (i=0 ; i<FINEANGLES/2 ; i++)
-    {
-	if (finetangent(i) > FRACUNIT*2)
-	    t = -1;
-	else if (finetangent(i) < -FRACUNIT*2)
-	    t = viewwidth+1;
-	else
-	{
-	    t = FixedMul (finetangent(i), focallength);
-	    t = (centerxfrac - t+FRACUNIT-1)>>FRACBITS;
-
-	    if (t < -1)
-		t = -1;
-	    else if (t>viewwidth+1)
-		t = viewwidth+1;
-	}
-	viewangletox[i] = t;
+    for (i=0 ; i<FINEANGLES/2 ; i++) {
+		if (finetangent(i) > FRACUNIT*2)
+			t.h.intbits = -1;
+		else if (finetangent(i) < -FRACUNIT*2)
+			t.h.intbits = viewwidth+1;
+		else {
+			t.w = FixedMul (finetangent(i), focallength);
+			t.w = (centerxfrac - t.w+FRACUNIT-1);
+		
+			if (t.h.intbits < -1)
+				t.h.intbits = -1;
+			else if (t.h.intbits>viewwidth+1)
+				t.h.intbits = viewwidth+1;
+		}
+		viewangletox[i] = t.h.intbits;
     }
     
     // Scan viewangletox[] to generate xtoviewangle[]:
@@ -597,8 +597,9 @@ void R_InitTextureMapping (void)
     // Take out the fencepost cases from viewangletox.
     for (i=0 ; i<FINEANGLES/2 ; i++)
     {
-	t = FixedMul (finetangent(i), focallength);
-	t = centerx - t;
+	// am i blind or is t unused here?
+	t.w = FixedMul (finetangent(i), focallength);
+	t.w = centerx - t.w;
 	
 	if (viewangletox[i] == -1)
 	    viewangletox[i] = 0;
@@ -877,6 +878,7 @@ void R_SetupFrame ()
     extralight = player.extralight;
 
     viewz.w = player.viewz;
+	// todo use fixed_t_union to reduce shift
 	tempan = viewangle >> ANGLETOFINESHIFT;
     viewsin = finesine(tempan);
     viewcos = finecosine(tempan);

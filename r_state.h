@@ -75,7 +75,6 @@ extern int16_t		numsprites;
 extern MEMREF	spritesRef;
 
 extern int16_t		numvertexes;
-//extern vertex_t vertexes[946];
 extern MEMREF	vertexesRef;
 
 extern int16_t		numsegs;
@@ -97,7 +96,6 @@ extern MEMREF   linesRef;
 extern int16_t		numsides;
 extern MEMREF       sidesRef;
 
-//extern int16_t*	linebuffer;
 extern MEMREF          linebufferRef;
 
 

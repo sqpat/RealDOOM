@@ -114,7 +114,7 @@
 // translates between frame-buffer and map distances
 
 #define FTOM(x) FixedMul(((x)<<16),scale_ftom)
-#define FTOM16(x) FixedMul1632(x,scale_ftom)
+#define FTOM16(x) FixedMulBig1632(x,scale_ftom)
 #define MTOF(x) (FixedMul((x),scale_mtof)>>16)
 #define MTOF(x) (FixedMul((x),scale_mtof)>>16)
 

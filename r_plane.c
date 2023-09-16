@@ -169,6 +169,7 @@ R_MapPlane
     }
 	
     length = FixedMul (distance,distscale[x1]);
+	// todo use fixed_t_union
 	angle = MOD_FINE_ANGLE((viewangle >>ANGLETOFINESHIFT)+ xtoviewangle[x1]);
 
     ds_xfrac = viewx.w + FixedMul(finecosine(angle), length);

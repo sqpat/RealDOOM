@@ -544,6 +544,7 @@ void R_FillBackScreen (void)
 	    dest += 64; 
 	} 
 	/*
+	// always 0 with screenwidth 320... 
 	if (SCREENWIDTH&63) 
 	{ 
 	    memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63); 

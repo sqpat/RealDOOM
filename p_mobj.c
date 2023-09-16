@@ -1046,18 +1046,22 @@ P_SpawnPlayerMissile
 	mobj_t* source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
 
     // see which target is to be aimed at
-    an = source->angle >> ANGLETOFINESHIFT;
+    // todo use fixed_t_union
+	an = source->angle >> ANGLETOFINESHIFT;
 	slope = P_AimLineAttack (sourceRef, an, 16*64);
     
     if (!linetargetRef) {
+		// todo use fixed_t_union
 		an = MOD_FINE_ANGLE(an +(1<<(26- ANGLETOFINESHIFT)));
 		slope = P_AimLineAttack (sourceRef, an, 16*64);
 		if (!linetargetRef) {
+			// todo use fixed_t_union
 			an = MOD_FINE_ANGLE(an - (2<<(26-ANGLETOFINESHIFT)));
 			slope = P_AimLineAttack (sourceRef, an, 16*64);
 		}
 		if (!linetargetRef) {
 			source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+			// todo use fixed_t_union
 			an = source->angle >> ANGLETOFINESHIFT;
 			slope = 0;
 		}

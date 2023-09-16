@@ -281,7 +281,10 @@ typedef uint8_t powertype_t;
 #define KEY_LALT	KEY_RALT
 
 fixed_t32	FixedMul (fixed_t32 a, fixed_t32 b);
-fixed_t32	FixedMul1632 (int16_t a, fixed_t b);
+// puts int16 into the high bits of a 32 bit
+fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
+// puts int16 into the low bits of a 32 bit
+fixed_t32	FixedMulSmall1632(int16_t a, fixed_t b);
 fixed_t32	FixedMul1616(int16_t a, int16_t b);
 
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);

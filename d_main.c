@@ -296,7 +296,7 @@ fixed_t32 FixedMul (fixed_t32	a, fixed_t32 b) {
     return fp.w;
 }
  
-fixed_t32 FixedMul1632 (int16_t	a, fixed_t	b) {
+fixed_t32 FixedMulBig1632 (int16_t	a, fixed_t	b) {
     fixed_t_union biga;
 	longlong_union llu;
 	biga.h.intbits = a;
@@ -307,6 +307,20 @@ fixed_t32 FixedMul1632 (int16_t	a, fixed_t	b) {
 	biga.h.fracbits = llu.h[1];
 	return biga.w;
 }
+
+
+fixed_t32 FixedMulSmall1632(int16_t	a, fixed_t	b) {
+	fixed_t_union biga;
+	longlong_union llu;
+	biga.h.fracbits = a;
+	biga.h.intbits = 0;
+	llu.l = (biga.w * (long long)b);
+
+	biga.h.intbits = llu.h[2];
+	biga.h.fracbits = llu.h[1];
+	return biga.w;
+}
+
 
 fixed_t32 FixedMul1616(int16_t	a, int16_t	b) {
 	return (int32_t)a * b;

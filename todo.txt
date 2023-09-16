@@ -44,6 +44,13 @@ TODO
  - explicitly declare things near, far when possible?
  - drop conventional visplanes lower, use hybrid solution with EMS visplanes when the # gets high. Definitely under 64k visplanes, but how much is optimal?
  - look into 24 bit fixed point. maxmove caps momx, momy to 30 * fracunit, for example...
+ - look into time vs size optimization flags on a per-file basis ?
+
+ASM Improvement ideas
+ - fast math calls (multiply by 10, etc)
+ - asm draw functions (of course)
+ - asm EMS calls
+
 
 PROFILING
  - check if using 8 instead of 16 bit local vars (especially loop vars) affects 16 bit binary code size

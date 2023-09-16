@@ -289,7 +289,6 @@ void R_AddLine (int16_t linenum)
 		I_Error("R_Addline Error! lines out of bounds! %li %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
 	}
 #endif
-
 	vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 	tempx.h.fracbits = 0;
@@ -307,10 +306,12 @@ void R_AddLine (int16_t linenum)
     // Clip to view edges.
     // OPTIMIZE: make constant out of 2*clipangle (FIELDOFVIEW).
     span = angle1 - angle2;
-    
+	 
+
     // Back side? I.e. backface culling?
-    if (span >= ANG180)
-	return;		
+	if (span >= ANG180) {
+		return;
+	}
 
     // Global angle needed by segcalc.
     rw_angle1 = angle1;
@@ -323,8 +324,9 @@ void R_AddLine (int16_t linenum)
 	tspan -= fieldofview;
 
 	// Totally off the left edge?
-	if (tspan >= span)
-	    return;
+	if (tspan >= span) {
+		return;
+	}
 	
 	angle1 = clipangle;
     }
@@ -334,14 +336,16 @@ void R_AddLine (int16_t linenum)
 		tspan -= fieldofview;
 	
 	// Totally off the left edge?
-	if (tspan >= span)
-	    return;	
+		if (tspan >= span) {
+			return;
+		}
 	angle2 = -clipangle;
     }
     
     // The seg is in the view range,
     // but not necessarily visible.
-    angle1 = (angle1+ANG90)>>ANGLETOFINESHIFT;
+	// todo use fixed_t_union to reduce shift
+	angle1 = (angle1+ANG90)>>ANGLETOFINESHIFT;
     angle2 = (angle2+ANG90)>>ANGLETOFINESHIFT;
     x1 = viewangletox[angle1];
     x2 = viewangletox[angle2];
@@ -349,15 +353,16 @@ void R_AddLine (int16_t linenum)
 	//todo can we just compare angle 1 and angle 2? - sq
 
     // Does not cross a pixel?
-    if (x1 == x2)
-		return;				
+	if (x1 == x2) {
+		return;
+	}
 
 	backsecnum = linebacksecnum;
 
     // Single sided line?
-    if (backsecnum == SECNUM_NULL)
-		goto clipsolid;		
-
+	if (backsecnum == SECNUM_NULL) {
+		goto clipsolid;
+	}
 
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	frontsector = sectors[frontsecnum];
@@ -366,10 +371,10 @@ void R_AddLine (int16_t linenum)
  
 
     // Closed door.
-    if (backsector.ceilingheight <= frontsector.floorheight
-	|| backsector.floorheight >= frontsector.ceilingheight)
-		goto clipsolid;		
-
+	if (backsector.ceilingheight <= frontsector.floorheight
+		|| backsector.floorheight >= frontsector.ceilingheight) {
+		goto clipsolid;
+	}
     // Window.
     if (backsector.ceilingheight != frontsector.ceilingheight
 	|| backsector.floorheight != frontsector.floorheight)
@@ -391,13 +396,14 @@ void R_AddLine (int16_t linenum)
 		return;
     }
     
-				
+
+
   clippass:
     R_ClipPassWallSegment (x1, x2-1);	
 	return;
 		
   clipsolid:
-    R_ClipSolidWallSegment (x1, x2-1);
+	R_ClipSolidWallSegment (x1, x2-1);
 
 }
 

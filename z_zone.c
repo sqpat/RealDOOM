@@ -196,7 +196,7 @@
 #define EMS_MINFRAGMENT         32
 #define EMS_ALLOCATION_LIST_SIZE 2048
 // we dont make many conventional allocations, only a small number of important ones
-#define CONVENTIONAL_ALLOCATION_LIST_SIZE 8
+#define CONVENTIONAL_ALLOCATION_LIST_SIZE 16
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 0x10000L
 
@@ -289,10 +289,10 @@ typedef struct
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
 void* conventionalmemoryblock1;
 void* conventionalmemoryblock2;
-int32_t totalconventionalfree1;
-int32_t totalconventionalfree2;
-int32_t remainingconventional1;
-int32_t remainingconventional2;
+uint16_t totalconventionalfree1;
+uint16_t totalconventionalfree2;
+uint16_t remainingconventional1;
+uint16_t remainingconventional2;
 
 PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
@@ -364,13 +364,16 @@ void Z_ChangeTagEMSNew(MEMREF index, int16_t tag) {
 
 // CONVENTIONAL MEMORY ALLOCATION STUFF
 
-size_t Z_GetFreeConventionalSize(void** block) {
+uint16_t Z_GetFreeConventionalSize(void** block) {
 
 	// around 20k 16 bit right now.
 #ifdef _M_I86
-	size_t size = MAX_CONVENTIONAL_ALLOCATION_SIZE;
+	uint16_t size = MAX_CONVENTIONAL_ALLOCATION_SIZE;
 #else
 	size_t size = _memmax();
+	if (size > MAX_CONVENTIONAL_ALLOCATION_SIZE) {
+		size = MAX_CONVENTIONAL_ALLOCATION_SIZE;
+	}
 #endif
 	while (size >= MIN_CONVENTIONAL_ALLOCATION_SIZE) {
 #ifdef _M_I86
@@ -1315,11 +1318,10 @@ void* Z_LoadBytesFromConventionalWithOptions(MEMREF ref, boolean locked) {
 		I_Error("Conventional allocation too big! %i", ref);
 	}
 #endif
-
 	if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
 		return conventional_allocations1[ref].datalocation;
 	else 
-		return conventional_allocations2[ref].datalocation;
+		return conventional_allocations2[ref- CONVENTIONAL_ALLOCATION_LIST_SIZE].datalocation;
 
 }
 
