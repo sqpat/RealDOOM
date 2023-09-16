@@ -78,14 +78,14 @@ int16_t P_DivlineSide
     dx.w = (x - node->x.w);
     dy.w = (y - node->y.w);
 	
-    left =  (node->dy.h.intbits) * (dx.h.intbits);
-    right = (dy.h.intbits) * (node->dx.h.intbits);
+    left = FixedMul1616(node->dy.h.intbits,dx.h.intbits);
+    right = FixedMul1616(dy.h.intbits,node->dx.h.intbits);
 	
     if (right < left)
-	return 0;	// front side
+		return 0;	// front side
     
     if (left == right)
-	return 2;
+		return 2;
     return 1;		// back side
 }
 
@@ -131,18 +131,17 @@ int16_t  P_DivlineSide16
 	temp.h.intbits = y;
     dy.w = (temp.w - node->y.w);
 	temp.w = node->dy.w;
-    left =  (temp.h.intbits) * (dx.h.intbits);
+    left =  FixedMul1616(temp.h.intbits,dx.h.intbits);
 	temp.w = node->dx.w;
-    right = (dy.h.intbits) * (temp.h.intbits);
+    right = FixedMul1616(dy.h.intbits,temp.h.intbits);
 	
     if (right < left)
-	return 0;	// front side
+		return 0;	// front side
     
     if (left == right)
-	return 2;
+		return 2;
     return 1;		// back side
 }
-
 
 int16_t  P_DivlineSideNode
 ( fixed_t	x,
@@ -157,7 +156,6 @@ int16_t  P_DivlineSideNode
     fixed_t	left;
     fixed_t	right;
     fixed_t_union	temp;
-
 
     if (!node->dx) {
 		temp.h.intbits = node->x;
@@ -191,10 +189,10 @@ int16_t  P_DivlineSideNode
 	temp.h.intbits = node->y;
     dy.w = (y - temp.w);
 
-    left =  (node->dy) * (dx.h.intbits);
-    right = (dy.h.intbits) * (node->dx);
-	
-    if (right < left)
+    left =  FixedMul1616(node->dy, dx.h.intbits);
+    right = FixedMul1616(dy.h.intbits, node->dx);
+
+	    if (right < left)
 		return 0;	// front side
     
     if (left == right)
@@ -429,7 +427,6 @@ boolean P_CrossSubsector (uint16_t subsecnum)
     return true;		
 }
 
-
 //
 // P_CrossBSPNode
 // Returns true
@@ -440,10 +437,11 @@ boolean P_CrossBSPNode (uint16_t bspnum)
     node_t*	bsp;
     int8_t		side;
 	node_t* nodes;
-	
+
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == 65535) { // -1 case. was thing for single sector maps?
 			// todo inline p_crosssubsector here?
+			I_Error("blah crosssub 65535");
 			return P_CrossSubsector(0);
 		} else {
 			return P_CrossSubsector(bspnum&(~NF_SUBSECTOR));
@@ -453,9 +451,8 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 
 	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	bsp = &nodes[bspnum];
-    
-    // decide which side the start point is on
-    side = P_DivlineSideNode (strace.x.w, strace.y.w, bsp);
+	 
+	side = P_DivlineSideNode (strace.x.w, strace.y.w, bsp);
 	if (side == 2) {
 		side = 0;	// an "on" should cross both sides
 	}
@@ -480,7 +477,6 @@ boolean P_CrossBSPNode (uint16_t bspnum)
     // cross the ending side		
     return P_CrossBSPNode (bsp->children[side^1]);
 }
-
 
 //
 // P_CheckSight
@@ -533,7 +529,6 @@ P_CheckSight
 	
 
 	
-
     // Check in REJECT table.
     if (((byte*) Z_LoadBytesFromEMS(rejectmatrixRef)) [bytenum]&bitnum) {
 

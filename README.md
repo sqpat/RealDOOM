@@ -33,6 +33,12 @@ For those interested in the technical details, a quick summary of what has been 
 
 
 ### Known bugs:
+ - in 16 bit mode, various physics bugs
+ - in 16 bit mode, timedemos work but normal game does not load right
+ - in 16 bit mode, the menu has issues with the bottom half of the screen not rendering
+ - in 16 bit mode, smaller screen sizes are crashing
+ - in 16 bit mode, the wrong facepic is sometimes displayed
+ - loading a 2nd level stopped working in 1p mode at some point...
  - sound, saves are unimplemented/nonfunctional
  - content outside of doom1 shareware has not been tested at all and may be very broken
  - finale has not been tested at all
@@ -50,7 +56,7 @@ For those interested in the technical details, a quick summary of what has been 
 
 
 ## Progress of 16-bit build
- - More bugfixing going on. The renderer seems fine. There is a crash on frame 47 of demo 3, i think when the shotgun is picked up. A null MEMREF in st lib code. Currently investigating . . .
+ - More bugfixing going on, fixing timedemo desyncs
 
 
 ![](https://github.com/sqpat/RealDOOM/blob/master/current16.png)
