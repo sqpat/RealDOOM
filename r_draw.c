@@ -525,12 +525,12 @@ void R_FillBackScreen (void)
     int8_t*	name;
 	
     if (scaledviewwidth == 320)
-	return;
+		return;
 	
     if (commercial)
-	name = name2;
+		name = name2;
     else
-	name = name1;
+		name = name1;
     
     srcRef = W_CacheLumpNameEMS (name, PU_CACHE); 
 	src = Z_LoadBytesFromEMS(srcRef);
@@ -620,12 +620,10 @@ void R_FillBackScreen (void)
         } 
 
 #ifdef _M_I86
-		while (dest != (byte*)(0xac000000
-			+ (SCREENHEIGHT - SBARHEIGHT)*SCREENWIDTH / 4));
+		while (dest != (byte*)(0xac003480));
 
 #else
-		while (dest != (byte*)(0xac000
-			+ (SCREENHEIGHT - SBARHEIGHT)*SCREENWIDTH / 4));
+		while (dest != (byte*)(0xac000 + (SCREENHEIGHT - SBARHEIGHT)*SCREENWIDTH / 4));
 
 #endif
 
