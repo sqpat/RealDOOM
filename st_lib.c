@@ -89,7 +89,7 @@ STlib_drawNum
     // clear the area
     x = n->x - numdigits*w;
 
-    V_CopyRect(x, n->y - ST_Y, BG, w*numdigits, h, x, n->y, FG);
+    V_CopyRect(x, n->y - ST_Y, w*numdigits, h, x, n->y);
 
     // if non-number, do not draw it
     if (num == 1994)
@@ -183,7 +183,7 @@ STlib_updateMultIcon
 				I_Error("updateMultIcon: y - ST_Y < 0");
 			}
 #endif
-			V_CopyRect(x, y - ST_Y, BG, w, h, x, y, FG);
+			V_CopyRect(x, y - ST_Y,   w, h, x, y);
 		} 
 			
 		// binicon only has an array length zero and inum is always 1; this inum-is_binicon

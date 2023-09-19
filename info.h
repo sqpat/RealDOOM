@@ -1147,7 +1147,7 @@ typedef struct
   // void		(*action) ();
   //actionf_t			action;
   ENEMYTHINKFUNCTION   action;
-  statenum_t			nextstate;
+  statenum_t			nextstate; // todo i think this can be a int8_t diff that adds to current state.
   //int32_t			misc1, misc2;
 } state_t;
 
@@ -1308,7 +1308,7 @@ typedef struct
 {
     int16_t	doomednum;
 	statenum_t	spawnstate;
-	int16_t	spawnhealth;
+	int16_t	spawnhealth;  // can probably divide by 10 and store as int8_t and mult by 10 on init
 	statenum_t	seestate;
 	sfxenum_t	seesound;
     //int32_t	reactiontime;     always 8 except 0 for player. this can be abstracted in code
@@ -1317,7 +1317,7 @@ typedef struct
     // uint16_t	painchance; // replaced with getter
 	sfxenum_t	painsound;
 	// statenum_t	meleestate; 
-	statenum_t	missilestate;
+	statenum_t	missilestate;		// todo i wonder if these states can be combined into fewer bits in a bitmask.
 	statenum_t	deathstate;
 	//statenum_t	xdeathstate;
 	sfxenum_t	deathsound;

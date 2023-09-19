@@ -212,7 +212,6 @@ void M_SfxVol(int16_t choice);
 void M_MusicVol(int16_t choice);
 void M_ChangeDetail(int16_t choice);
 void M_SizeDisplay(int16_t choice);
-void M_StartGame(int16_t choice);
 void M_Sound(int16_t choice);
 
 void M_FinishReadThis(int16_t choice);
@@ -241,7 +240,6 @@ int16_t  M_StringWidth(int8_t *string);
 int16_t  M_StringHeight(int8_t *string);
 void M_StartControlPanel(void);
 void M_StartMessage(int8_t *string,void *routine,boolean input);
-void M_StopMessage(void);
 void M_ClearMenus (void);
 
 

@@ -406,7 +406,8 @@ void I_FinishUpdate(void)
 {
 
 #ifndef	SKIP_DRAW
-	outpw(CRTC_INDEX, (destscreen.w & 0xff00) + 0xc);
+	outpw(CRTC_INDEX, (destscreen.h.fracbits & 0xff00L) + 0xc);
+
 #endif
     //Next plane
     destscreen.h.fracbits += 0x4000;
@@ -961,6 +962,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 {
 
     // 4 mb
+	// todo test 3, 2 MB, etc. i know we use less..
    int16_t numPagesToAllocate = 256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
    int16_t pageframebase;
 
@@ -1021,6 +1023,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 
     if (pagesavail < numPagesToAllocate){
         printf("Warning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);
+		numPagesToAllocate = pagesavail;
     }
 
 

@@ -505,8 +505,7 @@ void D_Display (void)
             y = 4;
         else
             y = viewwindowy+4;
-        V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2,
-                          y,W_CacheLumpNameEMSAsPatch("M_PAUSE", PU_CACHE));
+        V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2, y,W_CacheLumpNameEMSAsPatch("M_PAUSE", PU_CACHE));
     }
 
     // menus go directly to the screen
@@ -560,12 +559,11 @@ extern  boolean         demorecording;
 void D_DoomLoop (void)
 {
 	// debugging stuff i need to find mem leaks...
-	int8_t result[3000];
-	int8_t result2[2000];
-	int32_t lasttick = 0;
-	int32_t lastindex = 0;
-	int32_t stoptic;
-	int32_t i = 0;
+#ifdef DEBUGLOG_TO_FILE
+	//int8_t result2[100];
+	//int32_t lasttick = 0;
+	FILE* fp;
+#endif
 
 	//plat_t* plat;
     if (demorecording)
@@ -612,63 +610,35 @@ void D_DoomLoop (void)
 	 
 		D_Display ();
 		TEXT_MODE_DEBUG_PRINT("\n tick %li D_Display done", gametic);
+ 
 
-		//SAVEDUNIT = Z_LoadBytesFromEMS(players.moRef);
-	
-		/*
-		if (gametic == 5) {
-			memcpy(&copynode, &sectors, numsectors * sizeof(sector_t));
-		} else {
-
-
-		}
-
-		if (gametic > 5) {
-			if (memcmp(&copynode, &sectors, numsectors * sizeof(sector_t))) {  //46240
-				I_Error("badcopy %i %i", gametic, numsectors * sizeof(sector_t));
-			}
-
-		}*/
-
-		/*
-
-		stoptic = 0;
-		if (gametic > stoptic) {
+#ifdef DEBUGLOG_TO_FILE
 			
-			if (gametic != lasttick) {
-				lasttick = gametic;
+//		if (gametic != lasttick) {
+//			lasttick = gametic;
 				
-				//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
-
-				//SAVEDUNIT = Z_LoadBytesFromEMS(1523);
-				SAVEDUNIT = Z_LoadBytesFromEMS(playermoRef);
-				 
-				sprintf(result2, "%li %hhu %li %li %li %li %li %l %l %i \n", gametic, prndindex, 
-					SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->z, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->floorz, SAVEDUNIT->ceilingz  , SAVEDUNIT->secnum );
-				strcat(result, result2);
-				
-
-				// frame 140: prnd index different
-				// thing 319?
-
-
-				//doorunit = (vldoor_t*)Z_LoadBytesFromEMS(784);
-
-				//lastindex = prndindex;
-
-
+			//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
+			SAVEDUNIT = Z_LoadBytesFromEMS(1483); // 1457
+			//SAVEDUNIT = Z_LoadBytesFromEMS(playermoRef);
+			if (gametic == 1) {
+				fp = fopen("debuglog.txt", "w"); // clear old file
+			} else {
+				fp = fopen("debuglog.txt", "a");
 			}
-		}
+			//sprintf(result2, "%li %hhu %li %li %li %li %li %l %l %i \n", gametic, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->z, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->floorz, SAVEDUNIT->ceilingz, SAVEDUNIT->secnum);
+			fprintf(fp, "%li %hhu %li %li %li %li %li %i %li %i \n", gametic, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->z, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->health, SAVEDUNIT->angle, SAVEDUNIT->secnum);
+			//fprintf(result2, fp);
+			fclose(fp);
+				
+			//strcat(result, result2);
+//			if (gametic == 5000) {
+//				I_Error("done");
+//			}
+//		}
 
-		if (gametic == stoptic + 25) {
-			I_Error(result);
-			//nodes = (byte*)Z_LoadBytesFromEMS(nodesRef);
-			//memcpy(copynode, nodes, 46240);
-			//if (memcmp(copynode, nodes, 46240)) {  //46240
-			//	I_Error("badcopy");
-			//}
-		}
-		*/
+#endif
+		
+		
 	}
 }
 

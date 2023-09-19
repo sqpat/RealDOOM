@@ -1286,8 +1286,11 @@ P_AimLineAttack
 	x.w = t1->x;
 	y.w = t1->y;
     
-    x2.w = x.w + ((int32_t)distance16)*finecosine(angle);
-    y2.w = y.w + ((int32_t)distance16)*finesine(angle);
+    //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
+    //y2.w = y.w + FixedMul1616(distance16,finesine(angle));
+
+	x2.w = x.w + ((int32_t)distance16)*finecosine(angle);
+	y2.w = y.w + ((int32_t)distance16)*finesine(angle);
 
 	t1height.h.fracbits = 0;
 	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
@@ -1341,8 +1344,10 @@ P_LineAttack
 	distance16 &= (CHAINSAW_FLAG-1);
 	shootthingRef = t1Ref;
     la_damage = damage;
-    x2.w = x.w + (distance16)*finecosine(angle);
-    y2.w = y.w + (distance16)*finesine(angle);
+    //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
+    //y2.w = y.w + FixedMul1616(distance16,finesine(angle));
+	x2.w = x.w + (distance16)*finecosine(angle);
+	y2.w = y.w + (distance16)*finesine(angle);
 
 	t1height.h.fracbits = 0;
 	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
@@ -1423,9 +1428,9 @@ void P_UseLines ()
 
     x1.w = usething->x;
     y1.w = usething->y;
-    x2.w = x1.w + (USERANGE)*finecosine(angle);
-    y2.w = y1.w + (USERANGE)*finesine(angle);
-	
+    // todo replace with bit shift? - sq
+	x2.w = x1.w + (USERANGE)*finecosine(angle);
+	y2.w = y1.w + (USERANGE)*finesine(angle);
     P_PathTraverse ( x1, y1, x2, y2, PT_ADDLINES, PTR_UseTraverse );
 }
 

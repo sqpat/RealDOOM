@@ -185,16 +185,14 @@ V_MarkRect
 //
 // V_CopyRect 
 // 
-void  // todo remove the unused srcscrn destscrn as its always BG/FG or 4/0
+void 
 V_CopyRect
 ( uint16_t		srcx,
   uint16_t		srcy,
-  int16_t		srcscrn,
   uint16_t		width,
   uint16_t		height,
   int16_t		destx,
-  int16_t		desty,
-  int16_t		destscrn ) 
+  int16_t		desty ) 
 { 
     byte*	src;
     byte*	dest; 
@@ -213,7 +211,7 @@ V_CopyRect
     } 
 } 
  
-MEMREF  W_CacheLumpNameEMSFragment(int8_t* name, int8_t tag, int16_t pagenum, int32_t offset, int16_t amount);
+MEMREF  W_CacheLumpNameEMSFragment(int8_t* name, int8_t tag, int16_t pagenum, int32_t offset);
 
 // Specially handles titlepic and other ~68k textures that exceed the 64k 4x page frames limit.
 // Requires loading data in one page frame at a time
@@ -239,7 +237,7 @@ V_DrawFullscreenPatch
     byte*       extradata;
 
 
-    patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 0, 0, 16384);
+    patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 0, 0);
     patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchref, PAGE_LOCKED);
     extradata = (byte*)patch;
 
@@ -259,7 +257,7 @@ V_DrawFullscreenPatch
 
        if (pageoffset > 16000){
             offset+= pageoffset;
-            colref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 1,offset , 16384);
+            colref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 1, offset);
             extradata = Z_LoadBytesFromEMS(colref);
 	        column = (column_t *)((byte *)extradata + patch->columnofs[col] - offset);
         }
@@ -489,11 +487,8 @@ V_DrawPatchDirect
 	 
     y -= (patch->topoffset); 
     x -= (patch->leftoffset); 
-
-
  
-    //	V_MarkRect (x, y, (patch->width), (patch->height)); 
-	desttop = (byte*)(destscreen.w + y*SCREENWIDTH/4 + (x>>2));
+	desttop = (byte*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
 	 
     w = (patch->width); 
     for ( col = 0 ; col<w ; col++) 
@@ -508,19 +503,16 @@ V_DrawPatchDirect
 	while (column->topdelta != 0xff ) 
 	{ 
 	    source = (byte *)column + 3; 
-	    dest = desttop + column->topdelta*SCREENWIDTH/4; 
+		dest = desttop + column->topdelta * (SCREENWIDTH / 4);
 	    count = column->length; 
- 
-	    while (count--) 
-	    { 
+	    while (count--)  { 
 #ifndef	SKIP_DRAW
 			*dest = *source;
 			source++;
 #endif
-		dest += SCREENWIDTH/4; 
+			dest +=  (SCREENWIDTH / 4);
 	    } 
-	    column = (column_t *)(  (byte *)column + column->length 
-				    + 4 ); 
+	    column = (column_t *)(  (byte *)column + column->length + 4 ); 
 	} 
 	if ( ((++x)&3) == 0 ) 
 	    desttop++;	// go to next byte, not next plane 

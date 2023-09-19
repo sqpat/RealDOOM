@@ -184,7 +184,12 @@ void W_AddFile (int8_t *filename)
         //header.numlumps = (header.numlumps);
         //header.infotableofs = (header.infotableofs);
         length = header.numlumps*sizeof(filelump_t);
-        fileinfo = alloca (length);
+		fileinfo = alloca(length);
+		/*
+		fileinfo = _nmalloc (length);
+		if (!fileinfo) {
+			I_Error("couldn't _nmalloc for fileinfo");
+		}*/
         lseek (handle, header.infotableofs, SEEK_SET);
 		read (handle, fileinfo, length);
 		numlumps += header.numlumps;
@@ -266,6 +271,7 @@ void W_AddFile (int8_t *filename)
 
     if (reloadname)
         close (handle);
+	//free(fileinfo);
 }
 
 
@@ -290,7 +296,8 @@ void W_AddFile (int8_t *filename)
 void W_InitMultipleFiles (int8_t** filenames)
 {       
 	filelength_t         size;
-    
+	//printf("\n\nsize is %u \n\n", _memmax());
+
     // open all the files, load headers, and count lumps
     numlumps = 0;
 
@@ -299,6 +306,7 @@ void W_InitMultipleFiles (int8_t** filenames)
 
     for ( ; *filenames ; filenames++)
         W_AddFile (*filenames);
+	//printf("\n\nsize is %u \n\n", _memmax());
 
 #ifdef CHECK_FOR_ERRORS
 	if (!numlumps)

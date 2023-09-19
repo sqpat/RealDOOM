@@ -236,9 +236,6 @@ extern uint8_t	mousebfire;
 extern uint8_t	mousebstrafe;
 extern uint8_t	mousebforward;
 
-extern int16_t	viewwidth;
-extern int16_t	viewheight;
-
 extern uint8_t	mouseSensitivity;
 extern uint8_t	showMessages;
 

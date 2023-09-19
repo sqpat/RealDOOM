@@ -495,7 +495,8 @@ P_NightmareRespawn(MEMREF mobjRef)
     moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype);
 	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
 	mo->spawnpoint = mobjspawnpoint;
-    mo->angle = ANG45 * (mobjspawnangle/45);
+    //todo does this work? or need to be in fixed_mul? -sq
+	mo->angle = ANG45 * (mobjspawnangle/45);
 
 	if (mobjspawnoptions & MTF_AMBUSH) {
 		mo->flags |= MF_AMBUSH;
@@ -854,6 +855,7 @@ void P_SpawnMapThing (mapthing_t* mthing, int16_t key)
     if (mobj->flags & MF_COUNTITEM)
 		totalitems++;
 		
+	//todo does this work? or need to be in fixed_mul? -sq
     mobj->angle = ANG45 * (mthingangle/45);
     
 	if (mthingoptions & MTF_AMBUSH)

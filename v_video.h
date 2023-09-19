@@ -82,12 +82,10 @@ void
 V_CopyRect
 ( uint16_t		srcx,
   uint16_t		srcy,
-  int16_t		srcscrn,
   uint16_t		width,
   uint16_t		height,
   int16_t		destx,
-  int16_t		desty,
-  int16_t		destscrn );
+  int16_t		desty);
 
 void 
 V_DrawFullscreenPatch

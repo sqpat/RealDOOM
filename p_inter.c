@@ -800,7 +800,8 @@ P_DamageMobj
 				target->x,
 				target->y);
 		
-		thrust = damage*(FRACUNIT>>3)*100/getMobjMass(target->type);
+		//thrust = FixedDiv(damage*(FRACUNIT >> 3) * 100, getMobjMass(target->type));
+		thrust = (damage*(FRACUNIT>>3)*100L) / getMobjMass(target->type);
 
 		// make fall forwards sometimes
 		if ( damage < 40

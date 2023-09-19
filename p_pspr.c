@@ -706,7 +706,7 @@ A_FireShotgun
   pspdef_t*	psp ) 
 {
     int8_t		i;
-	
+
 	S_StartSoundFromRef(playermoRef, sfx_shotgn);
     P_SetMobjState (playermoRef, S_PLAY_ATK2);
 
@@ -896,21 +896,19 @@ void P_MovePsprites ()
     state_t*	state;
 	
     psp = &player.psprites[0];
-    for (i=0 ; i<NUMPSPRITES ; i++, psp++)
-    {
-	// a null state means not active
-	if ( (state = psp->state) )	
-	{
-	    // drop tic count and possibly change state
+    for (i=0 ; i<NUMPSPRITES ; i++, psp++) {
+		// a null state means not active
+		if ( (state = psp->state) )	 {
+			// drop tic count and possibly change state
 
-	    // a -1 tic count never changes
-	    if (psp->tics != -1)	
-	    {
-		psp->tics--;
-		if (!psp->tics)
-		    P_SetPsprite (i, psp->state->nextstate);
-	    }				
-	}
+			// a -1 tic count never changes
+			if (psp->tics != -1)	 {
+				psp->tics--;
+				if (!psp->tics) {
+					P_SetPsprite(i, psp->state->nextstate);
+				}
+			}				
+		}
     }
     
     player.psprites[ps_flash].sx = player.psprites[ps_weapon].sx;
@@ -980,6 +978,22 @@ P_SetPsprite
 		default:
 			found = false;
 		}
+
+
+		//1:  0 22 9 ETF_A_FireShotgun
+		//2:  1 30 8 ETF_A_Light1
+
+		//1:  142 194 1361 1 30 8
+		//2:  142 250 1361 0 22 9
+/*
+		if (setval >= 1) {
+			if (setval == 2) {
+				//I_Error("values %li %hhu %i %hhu %hhu %hhu", gametic, prndindex, playermoRef, position, stnum, state->action);
+			}
+			setval++;
+		}
+		*/
+
 		if (found)
 			if (!psp->state)
 				break;

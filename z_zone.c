@@ -1306,10 +1306,11 @@ void Z_SetUnlocked(MEMREF ref) {
 
 
 
-void* Z_LoadBytesFromConventionalWithOptions(MEMREF ref, boolean locked) {
+void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int8_t* file, int32_t line) {
 
 	if (ref < EMS_ALLOCATION_LIST_SIZE) {
-		return Z_LoadBytesFromEMSWithOptions(ref, locked);
+		return Z_LoadBytesFromEMSWithOptions2(ref, locked, file, line);
+		//return Z_LoadBytesFromEMSWithOptions(ref, locked);
 	}
 	ref -= EMS_ALLOCATION_LIST_SIZE;
 

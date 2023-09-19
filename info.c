@@ -1173,7 +1173,7 @@ int32_t getMobjMass(uint8_t id){
 
 		case MT_KEEN:
 		case MT_BOSSBRAIN:
-			return 10000000;
+			return 10000000L;
 
 
 		default:

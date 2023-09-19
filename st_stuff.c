@@ -449,12 +449,9 @@ void ST_Stop(void);
 void ST_refreshBackground(void)
 {
 
-    if (st_statusbaron)
-    {
+    if (st_statusbaron) {
         V_DrawPatch(ST_X, 0, BG, (patch_t*)Z_LoadBytesFromEMS(sbarRef));
-
-
-        V_CopyRect(ST_X, 0, BG, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y, FG);
+        V_CopyRect(ST_X, 0, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
     }
 
 }

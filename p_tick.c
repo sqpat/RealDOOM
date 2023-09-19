@@ -139,6 +139,14 @@ void P_RunThinkers (void)
 {
     THINKERREF	currentthinker;
 	int16_t i = 0;
+#ifdef DEBUGLOG_TO_FILE
+
+	int8_t result2[100];
+	int32_t lasttick = 0;
+	FILE* fp;
+	ticcount_t stoptic = 255;
+#endif
+
 	currentthinker = thinkerlist[0].next;
 
 
@@ -152,10 +160,10 @@ void P_RunThinkers (void)
 			thinkerlist[currentthinker].prev = MAX_THINKERS;
 
 		} else {
-			if (gametic == 1773 && i == 216) {
+			if (gametic == 142 && i == 0) {
 				// 37 214   44 218   46 219   216 224
 				//SAVEDUNIT = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
-				SAVEDUNIT = (mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
+				//SAVEDUNIT = (mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
 				//I_Error("error %i %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy, thinkerlist[currentthinker].functionType);
 				// 454 122 157
 				//setval = 1;
@@ -200,8 +208,31 @@ void P_RunThinkers (void)
 			
 
 				}
+#ifdef DEBUGLOG_TO_FILE
+				/*
+				if (gametic == 205) {
+					SAVEDUNIT = Z_LoadBytesFromEMS(playermoRef);
+					if (SAVEDUNIT->momx == -43471L) {
+						// i == 208: -76958L 
+						I_Error("player momx momy %li %li %i", SAVEDUNIT->momx, SAVEDUNIT->momy, i);
+					}
+				}
+				*/
+				if (gametic == stoptic) {
+					
+					//SAVEDUNIT = Z_LoadBytesFromEMS(playermoRef);
+					if (i == 0) {
+						fp = fopen("debgtick.txt", "w"); // clear old file
+					} else {
+						fp = fopen("debgtick.txt", "a");
+					}
 
-			
+					fprintf(fp, "%li %hhu %i %i %hhu \n", gametic, prndindex, i, thinkerlist[currentthinker].memref, thinkerlist[currentthinker].functionType);
+					fclose(fp);
+
+
+				}
+#endif
 
 // i will need this later to help me debug inevitible doom 2 content memleaks
 /*
@@ -212,22 +243,6 @@ void P_RunThinkers (void)
 
 
 				}
-
-				if (gametic == 1 && prndindex >= 122) {
-					//door = ((vldoor_t*)((byte*)Z_LoadBytesFromEMS(784)));
-					//I_Error("ab made the door  %i %i %i %i %i %i %i %i %i", gametic, i, door->topheight, door->type, door->speed, door->secnum, door->direction, door->topwait, door->topcountdown);
-					//I_Error("caught %i %i %i %i %i %i %i %i %i", gametic, i, thinkerlist[currentthinker].memref, thinkerlist[currentthinker].functionType);
-
-					// 0, 170
-					// 48, 173 1     vs   173 92
-					// 51, 176 2
-
-					//I_Error("inne %i %i %i %i %i", gametic, prndindex, i, thinkerlist[currentthinker].functionType, ((mobj_t*) Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref))->type   );
-						
-				}
-				
-				
-
 				 
 
 				*/
@@ -237,7 +252,11 @@ void P_RunThinkers (void)
 		}
 		currentthinker = thinkerlist[currentthinker].next;
     }
-  
+#ifdef DEBUGLOG_TO_FILE
+	if (gametic == stoptic) {
+		I_Error("done");
+	}
+#endif
 }
 
 
@@ -253,11 +272,16 @@ void P_Ticker (void)
 	if (paused || (menuactive && !demoplayback && player.viewz != 1)) {
 		return;
     }
-    
 	P_PlayerThink();
+	// 31105 38150
 
 	P_RunThinkers ();
+
+	// -76958 173728
+
 	P_UpdateSpecials ();
+	// -76958 173728
+
 
 	// for par times
     leveltime.w++;	

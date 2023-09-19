@@ -43,16 +43,18 @@ enum { VERSION =  109 };
 
 // MAIN FEATURE FLAGS
 
-// Probably going to remove this eventually, checks for some infinite loops in a few places. I used this when tracking down freezing bugs when there were many memory leaks early in development.
-// #define LOOPCHECK
+
 // Moves visplanes out of conventional memory into EMS. On its own, makes things slower. But this also frees up like 85k of conventional memory which may be better used speeding up the game in other ways.
 // #define EMS_VISPLANES
 
-// Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off.
-#define CHECKREFS
+// Allocates backbuffers statically
+#define STATIC_ALLOCATED_SCREENS
 
 // The below flag skips wipes. They just aren't going to work well unless you dedicate 128k of conventional memory to them, so it's probably best to not use for this project. If we can do it with EMS then great, but low priority. We also get to cut out f_wipe.c code from memory usage.
 #define SKIPWIPE
+
+// like nodraw, but actually runs d_display and only skips the actual video memory writes
+//#define SKIP_DRAW
 
 // Reasonable values include 4 (minimum), 8, and maybe even 10 or 12 which on an incredibly optimal machine might be possible. Of course in 32 bit mode with simulated EMS you can set it to like 32 or 64 but at that point it's not representative of real world performance.
 #define NUM_EMS_PAGES 4
@@ -77,11 +79,18 @@ enum { VERSION =  109 };
 	#define DEBUG_PRINT(...) 
 #endif
 
+// Print player fields by tic to file. useful for debugging 16 vs 32 bit demo playback
+//#define DEBUGLOG_TO_FILE
+
 // Error checking. recommended ON during development. however, turning this off makes the binary like 10-12k smaller
 #define CHECK_FOR_ERRORS
 
-// Allocates backbuffers statically
-#define STATIC_ALLOCATED_SCREENS
+// Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off.
+#define CHECKREFS
+
+// Probably going to remove this eventually, checks for some infinite loops in a few places. I used this when tracking down freezing bugs when there were many memory leaks early in development.
+ // #define LOOPCHECK
+
 
 // run a timedemo with -nodraw novideo and prints out progress of the engine by tic
 //#define TEXT_MODE_DEBUG
@@ -91,8 +100,6 @@ enum { VERSION =  109 };
 	#define TEXT_MODE_DEBUG_PRINT(...) 
 #endif
 
-// like nodraw, but actually runs d_display and only skips the actual video memory writes
-//#define SKIP_DRAW
 
 
 
