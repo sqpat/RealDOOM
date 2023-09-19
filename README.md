@@ -1,18 +1,18 @@
 # RealDOOM
 
-![](https://github.com/sqpat/RealDOOM/blob/master/superalpha.gif)
+[![Recent Demo Recording](http://img.youtube.com/vi/sjIFxr6fVPU/0.jpg)](http://www.youtube.com/watch?v=sjIFxr6fVPU "RealDOOM Timedemo 2")
 
-(the above gif was sped up signficiantly :) )
+Above is a youtube link that takes you to video of a recent 
 
-RealDOOM is a (currently in progress) port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical fidelity as the original game.
+RealDOOM is a (currently in progress) port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
 
 While the port current builds to Real Mode, it still has a number of issues compared to the 32 bit version. However, it is very nearly in a playable alpha or beta state.
 
-The port also builds to 32 bit mode (for development and testing purposes) and runs with many of the 16 bit constraints in mind such as using an EMS simulator. To build this build, run make.bat.
+The port also builds to 32-bit mode (for development and testing purposes) and runs with many of the 16 bit constraints in mind such as using an EMS simulator. To build this build, run make.bat. The 16-bit build uses make16.bat
 
-You can adjust the EMS page frames available by changing NUM_EMS_PAGES in doomdefs.h from 4 to a higher number. This is not really hooked up in 16-bit mode yet. Eventually, 8-10 EMS active pages will represent a very well-configured 286 system and 'best case' performance for a 16 bit cpu running the game.
+You can adjust the EMS page frames available by changing NUM_EMS_PAGES in doomdefs.h from 4 to a higher number. This is not really hooked up in 16-bit mode yet. Eventually, 8-10 EMS active pages will represent a very well-configured 286 system and 'best case' performance for a 16 bit cpu running the game. EMM386 works great for 386 and later.
 
-
+86box is heavily recommended over DOSBox for the 16 bit version. It is over 10 times faster. There are still a few bugs preventing the game from running smoothly on real hardware.
 
 ### Removed features (not planned to be re-added)
  - multiplayer and netplay
@@ -33,30 +33,26 @@ For those interested in the technical details, a quick summary of what has been 
 
 
 ### Known bugs:
- - in 16 bit mode, various physics bugs
- - in 16 bit mode, timedemos work but normal game does not load right
- - in 16 bit mode, the menu has issues with the bottom half of the screen not rendering
- - in 16 bit mode, smaller screen sizes are crashing
- - in 16 bit mode, the wrong facepic is sometimes displayed
- - loading a 2nd level stopped working in 1p mode at some point...
- - sound, saves are unimplemented/nonfunctional
- - content outside of doom1 shareware has not been tested at all and may be very broken
+ - in 16 bit mode, there's a memory leak somewhere causing random bugs
+ - in 16 bit mode, the intermission screens display all wrong
+ - content outside of doom1 shareware has not been tested at all and may be very broken.
  - finale has not been tested at all
  - there is a particular render bug with fuzz draws, it comes up twice in demo3 early on where you see a vertical fuzzy line drawn around the first spectre towards when its killed. not sure the cause of this yet.
  - some issues with fullscreen drawing/backbuffer, especially in intermissions and help screen
  
 
 ### Long term ideas:
- - <strike> If conventional memory has enough space, add wolf3d-style conventional allocations of key variables </strike>
- - <strike> Move strings into an external file so we can load it into an ems variable at runtime and free several KB of static space. </strike>
  - Use Z_Malloc "source hints" to store items in EMS pages locally to other fields that will be used at the same time. having pages dedicated to mobj_t allocations will probably result in much less paging.
- - <strike> Reduce backbuffer usage or add option to get rid of it (probably) </strike>
  - More aggressive use of overlays and rewriting of some files to increase the amount of memory saved by overlays
-
+ - Stick mobjs (or something) in that free 20-30k of the default data segment
+ - Make smaller versions of mobjs that do not store momx, momy, health, and other such 'monster' type fields.
+ - Improve blocklinks implementation
+ - Hybride EMS/conventional visplanes
+ - Assembly code versions of the main math and render functions
+ - EMS 4.0 style support of more than 4 page frames in 16 bit mode
 
 
 ## Progress of 16-bit build
  - More bugfixing going on, fixing timedemo desyncs
 
 
-![](https://github.com/sqpat/RealDOOM/blob/master/current16.png)
