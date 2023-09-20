@@ -1,6 +1,6 @@
 # RealDOOM
 
-[![Recent Demo Recording](http://img.youtube.com/vi/LBlKNW41xcI/0.jpg)](http://www.youtube.com/watch?v=LBlKNW41xcI "RealDOOM Timedemo 2")
+[![Recent Demo Recording](http://img.youtube.com/vi/Hhpkw7wM1vI/0.jpg)](http://www.youtube.com/watch?v=Hhpkw7wM1vI "RealDOOM Timedemo 2 On 286")
 
 Above is a youtube link that takes you to video of a recent demo playback showing off the port.
 
@@ -12,7 +12,7 @@ The port also builds to 32-bit mode (for development and testing purposes) and r
 
 You can adjust the EMS page frames available by changing NUM_EMS_PAGES in doomdefs.h from 4 to a higher number. This is not really hooked up in 16-bit mode yet. Eventually, 8-10 EMS active pages will represent a very well-configured 286 system and 'best case' performance for a 16 bit cpu running the game. EMM386 works great for 386 and later.
 
-86box is heavily recommended over DOSBox for the 16 bit version. It is over 10 times faster. There are still a few bugs preventing the game from running smoothly on real hardware.
+86box is heavily recommended over DOSBox for the 16 bit version. It is over 10 times faster. If running on real hardware, an MMX 233 or so should be fine to get decent framerate with the current build.
 
 ### Removed features (not planned to be re-added)
  - multiplayer and netplay
@@ -53,6 +53,6 @@ For those interested in the technical details, a quick summary of what has been 
 
 
 ## Progress of 16-bit build
- - More bugfixing going on, fixing timedemo desyncs
-
+ - It ran on a 286! Poorly, as expected. There are still a few bugfixes necessary to fix desyncs, then work will continue on optimizations.
+ 
 
