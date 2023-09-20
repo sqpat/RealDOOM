@@ -30,6 +30,8 @@
 #define LINENUM_NULL -1
 
 #define NUM_TEXTURE_CACHE 255
+// todo i think this might have to increase outside of shareware version?
+#define NUM_SPRITE_LUMPS_CACHE 500
 
 //
 // Refresh internal data structures,
@@ -37,13 +39,12 @@
 //
 
 // needed for texture pegging
-extern MEMREF		textureheightRef;
+extern uint8_t		textureheights[NUM_TEXTURE_CACHE];
 
 // needed for pre rendering (fracs)
-extern MEMREF		spritewidthRef;
-
-extern MEMREF		spriteoffsetRef;
-extern MEMREF		spritetopoffsetRef;
+extern int16_t		spritewidths[NUM_SPRITE_LUMPS_CACHE];
+extern int16_t		spriteoffsets[NUM_SPRITE_LUMPS_CACHE];
+extern int16_t		spritetopoffsets[NUM_SPRITE_LUMPS_CACHE];
 
 //extern MEMREF		colormapsRef;
 extern lighttable_t* colormaps;

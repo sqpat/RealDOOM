@@ -396,7 +396,7 @@ void Z_InitConventional(void) {
 
 	totalconventionalfree2 = Z_GetFreeConventionalSize(&conventionalmemoryblock2);
 	remainingconventional2 = totalconventionalfree2;
-	DEBUG_PRINT("\Conventional block sizes %u %u\n", totalconventionalfree1, totalconventionalfree2);
+	DEBUG_PRINT("\Conventional block sizes %u %u at %lx and %lx\n", totalconventionalfree1, totalconventionalfree2, conventionalmemoryblock1, conventionalmemoryblock2);
 }
 
 // EMS STUFF

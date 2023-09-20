@@ -257,7 +257,6 @@ EV_DoFloor
 	int16_t		j = 0;
     floormove_t*	floor;
 	MEMREF floorRef;
-	int16_t* textureheight;
 	int16_t specialheight;
 	sector_t* sectors;
 	int16_t sectorceilingheight;
@@ -393,9 +392,8 @@ EV_DoFloor
 					  sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 					  sidebottomtexture = sides[sidenum].bottomtexture;
 					  //if (sidebottomtexture >= 0) {
-						  textureheight = Z_LoadBytesFromEMS(textureheightRef);  // todo is this comparison right? used to both be 32 bit but now i converted both to 16...? whoops
-						  if (textureheight[sidebottomtexture] < minsize) {
-							  minsize = textureheight[sidebottomtexture];
+						  if (textureheights[sidebottomtexture] < minsize) {
+							  minsize = textureheights[sidebottomtexture];
 						  }
 					  //}
 					  sidenum = getSideNum(secnum,i,1);
@@ -403,9 +401,8 @@ EV_DoFloor
 					  sidebottomtexture = sides[sidenum].bottomtexture;
 
 					  //if (sidebottomtexture >= 0) {
-						  textureheight = Z_LoadBytesFromEMS(textureheightRef); // todo see above?
-						  if (textureheight[sidebottomtexture] < minsize) {
-							  minsize = textureheight[sidebottomtexture];
+						  if (textureheights[sidebottomtexture] < minsize) {
+							  minsize = textureheights[sidebottomtexture];
 						  }
 					  //}
 				  }

@@ -165,11 +165,10 @@ R_RenderMaskedSegRange
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
     if (lines[curlinelinedefOffset].flags & ML_DONTPEGBOTTOM) {
 		// temp.h.intbits = (frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight) >> SHORTFLOORBITS;
-		 textureheight = Z_LoadBytesFromEMS(textureheightRef); // note: 8 bit..
 		 //temp.b.intbytelow = textureheight >> (8 - SHORTFLOORBITS);
 		 //temp.b.fracbytehigh = textureheight << (SHORTFLOORBITS);
 		// temp.h.intbits += textureheight[texnum];
-		temp2 = (frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight)  + (textureheight[texnum]<<(SHORTFLOORBITS + 8));
+		temp2 = (frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight)  + (textureheights[texnum]<<(SHORTFLOORBITS + 8));
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 		dc_texturemid =  temp.w - viewz.w;
     } else {
@@ -455,7 +454,6 @@ R_StoreWallRange
     fineangle_t	distangle, offsetangle;
     fixed_t		vtop;
     int16_t			lightnum;
-	int16_t *	textureheight;
 	vertex_t* vertexes;
 
 	// needs to be refreshed...
@@ -595,9 +593,8 @@ R_StoreWallRange
 		// a single sided line is terminal, so it must mark ends
 		markfloor = markceiling = true;
 		if (lineflags & ML_DONTPEGBOTTOM) {
-			textureheight = Z_LoadBytesFromEMS(textureheightRef);
 			// temp.h.intbits = textureheight[sidemidtexture]+(frontsector.floorheight >> SHORTFLOORBITS);
-			temp2 = (textureheight[sidemidtexture] << SHORTFLOORBITS)  + (frontsector.floorheight);
+			temp2 = (textureheights[sidemidtexture] << SHORTFLOORBITS)  + (frontsector.floorheight);
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 			vtop = temp.w;
 			// bottom of texture at bottom
@@ -703,9 +700,8 @@ R_StoreWallRange
 				// top of texture at top
 				rw_toptexturemid = worldtop;
 			} else {
-				textureheight = Z_LoadBytesFromEMS(textureheightRef);
 				// temp.h.intbits = textureheight[sidetoptexture] + (backsector.ceilingheight >> SHORTFLOORBITS);
-				temp2 = (textureheight[sidetoptexture] << (8+SHORTFLOORBITS)) + (backsector.ceilingheight);
+				temp2 = (textureheights[sidetoptexture] << (8+SHORTFLOORBITS)) + (backsector.ceilingheight);
 				SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 				vtop = temp.w;
 		

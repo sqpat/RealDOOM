@@ -138,10 +138,10 @@ MEMREF texturecolumnlumpRefs[NUM_TEXTURE_CACHE];
 MEMREF texturecolumnofsRefs[NUM_TEXTURE_CACHE];
 
 
-MEMREF  texturewidthmaskRef;		// uint8_t*
+uint8_t  texturewidthmasks[NUM_TEXTURE_CACHE];
 // needed for texture pegging
-MEMREF  textureheightRef;		    // uint8_t must be converted by fracbits when used*
-MEMREF  texturecompositesizeRef;	// uint16_t*
+uint8_t  textureheights[NUM_TEXTURE_CACHE];		    // uint8_t must be converted by fracbits when used*
+uint16_t  texturecompositesizes[NUM_TEXTURE_CACHE];	// uint16_t*
 
 
  
@@ -152,9 +152,9 @@ uint8_t			flattranslation[NUM_TEXTURE_CACHE]; // can almost certainly be smaller
 uint8_t			texturetranslation[NUM_TEXTURE_CACHE];
 
 // needed for pre rendering
-MEMREF        spritewidthRef;
-MEMREF        spriteoffsetRef;
-MEMREF        spritetopoffsetRef;
+int16_t        spritewidths[NUM_SPRITE_LUMPS_CACHE];
+int16_t        spriteoffsets[NUM_SPRITE_LUMPS_CACHE];
+int16_t        spritetopoffsets[NUM_SPRITE_LUMPS_CACHE];
 
 byte*         colormapbytes[8959];
 lighttable_t    *colormaps;
@@ -250,7 +250,7 @@ void R_GenerateComposite(uint8_t texnum)
 	MEMREF texturecolumnlumptexnum = texturecolumnlumpRefs[texnum];
 	MEMREF texturecolumnofstexnum = texturecolumnofsRefs[texnum];
 	MEMREF texturecompositetexnum;
-	uint16_t texturecompositesize = ((uint16_t*)Z_LoadBytesFromEMS(texturecompositesizeRef))[texnum];
+	uint16_t texturecompositesize = texturecompositesizes[texnum];
 
 	MEMREF texturememref = textures[texnum];
 
@@ -328,7 +328,7 @@ void R_GenerateComposite(uint8_t texnum)
 			colofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofstexnum);
 			colofsx = colofs[x];
 
-			realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
+			realpatch = (patch_t*)Z_LoadBytesFromConventionalWithOptions(realpatchRef, PAGE_LOCKED);
 			patchcol = (column_t *)((byte *)realpatch + (realpatch->columnofs[x - x1]));
 			block = (byte*)Z_LoadBytesFromEMS(texturecompositetexnum);
 			R_DrawColumnInCache(patchcol,
@@ -343,6 +343,7 @@ void R_GenerateComposite(uint8_t texnum)
 				textureheight);
 #endif
 
+			Z_SetUnlocked(realpatchRef);
 
 
 
@@ -407,9 +408,8 @@ void R_GenerateLookup(uint8_t texnum)
 	MEMREF texturecolumnlump = texturecolumnlumpRefs[texnum];
 	MEMREF texturecolumnofs = texturecolumnofsRefs[texnum];
 
-	uint16_t* texturecompositesize = (uint16_t*)Z_LoadBytesFromEMS(texturecompositesizeRef);
 	texturecomposite[texnum] = NULL_MEMREF;
-	texturecompositesize[texnum] = 0;
+	texturecompositesizes[texnum] = 0;
 
 
 
@@ -424,6 +424,8 @@ void R_GenerateLookup(uint8_t texnum)
 	//  that are covered by more than one patch.
 	// Fill in the lump / offset, so columns
 	//  with only a single patch are all done.
+	
+	// todo examine alloca use...
 	patchcount = (byte *)alloca(texture->width + 1);
 	memset(patchcount, 0, texture->width + 1);
 	patch = texture->patches;
@@ -473,11 +475,10 @@ void R_GenerateLookup(uint8_t texnum)
 		}
 	}
 
-	texturecompositesize = (uint16_t*)Z_LoadBytesFromEMS(texturecompositesizeRef);
+	
 	colofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofs);
 	collump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlump);
 
-	Z_RefIsActive(texturecompositesizeRef);
 	Z_RefIsActive(texturecolumnofs);
 	Z_RefIsActive(texturecolumnlump);
 	for (x = 0; x < texturewidth; x++) {
@@ -490,9 +491,9 @@ void R_GenerateLookup(uint8_t texnum)
 		if (patchcount[x] > 1) {
 			// Use the cached block.
 			collump[x] = -1;
-			colofs[x] = texturecompositesize[texnum];
+			colofs[x] = texturecompositesizes[texnum];
 			 
-			texturecompositesize[texnum] += textureheight;
+			texturecompositesizes[texnum] += textureheight;
 		}
 	}
 }
@@ -516,13 +517,11 @@ R_GetColumn
 
 	byte* texturecompositebytes;
 	byte* returnval;
-
-	// reordered to require fewer things in memory at same time
-	uint8_t* texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
-	col &= texturewidthmask[tex];
-
 	texturecolumnofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofsRefs[tex]);
 	ofs = texturecolumnofs[col];
+	
+	// reordered to require fewer things in memory at same time
+	col &= texturewidthmasks[tex];
 
 	texturecolumnlump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlumpRefs[tex]);
 	lump = texturecolumnlump[col];
@@ -592,7 +591,6 @@ void R_InitTextures(void)
 	int16_t                 temp2;
 	int16_t                 temp3;
 
-	uint8_t*                texturewidthmask;
 	// needed for texture pegging
 	uint8_t*            textureheight;
 	MEMREF				namesRef;
@@ -645,12 +643,6 @@ void R_InitTextures(void)
 
 	// these are all the very first allocations that occur on level setup and they end up in the same page, 
 	// so there is data locality with EMS paging which is nice.
-	texturecompositesizeRef = Z_MallocEMSNew(numtextures * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 100);
-	texturewidthmaskRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 110);
-	textureheightRef = Z_MallocEMSNew(numtextures * 1, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 120);
-
-	texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
-	textureheight = (uint8_t*)Z_LoadBytesFromEMS(textureheightRef);
 
 
 
@@ -734,16 +726,14 @@ void R_InitTextures(void)
 		//printf("name %s", texture->name);
 		texturecolumnlumpRefs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 140);
 		texturecolumnofsRefs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 150);
-		
+
 
 		j = 1;
 		while (j * 2 <= texturewidth)
 			j <<= 1;
 
-		texturewidthmask = (uint8_t*)Z_LoadBytesFromEMS(texturewidthmaskRef);
-		textureheight = (uint8_t*)Z_LoadBytesFromEMS(textureheightRef);
-		texturewidthmask[i] = j - 1;
-		textureheight[i] = textureheightval;
+		texturewidthmasks[i] = j - 1;
+		textureheights[i] = textureheightval;
 
 
 	}
@@ -777,9 +767,6 @@ void R_InitSpriteLumps(void)
 	int16_t         i;
 
 	patch_t     *patch;
-	int16_t     *spritewidth;
-	int16_t     *spriteoffset;
-	int16_t     *spritetopoffset;
 	MEMREF		patchRef;
 	int16_t		patchwidth;
 	int16_t		patchleftoffset;
@@ -789,10 +776,6 @@ void R_InitSpriteLumps(void)
 	lastspritelump = W_GetNumForName("S_END") - 1;
 
 	numspritelumps = lastspritelump - firstspritelump + 1;
-	spritewidthRef = Z_MallocEMSNew(numspritelumps * 2, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
-	spriteoffsetRef = Z_MallocEMSNew(numspritelumps * 2, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
-	spritetopoffsetRef = Z_MallocEMSNew(numspritelumps * 2, PU_STATIC, 0, ALLOC_TYPE_SPRITE);
-
 
 	for (i = 0; i < numspritelumps; i++)
 	{
@@ -801,9 +784,6 @@ void R_InitSpriteLumps(void)
 		if (!(i & 63))
 			printf(".");
 #endif
-		//Z_RefIsActive(spritewidthRef);
-		//Z_RefIsActive(spriteoffsetRef);
-		//Z_RefIsActive(spritetopoffsetRef);
 
 
 		W_CacheLumpNumCheck(firstspritelump + i, 13);
@@ -813,12 +793,9 @@ void R_InitSpriteLumps(void)
 		patchleftoffset = (patch->leftoffset);
 		patchtopoffset = (patch->topoffset) ;
 
-		spritewidth = (int16_t*)Z_LoadBytesFromEMS(spritewidthRef);
-		spritewidth[i] = patchwidth;
-		spriteoffset = (int16_t*)Z_LoadBytesFromEMS(spriteoffsetRef);
-		spriteoffset[i] = patchleftoffset;
-		spritetopoffset = (int16_t*)Z_LoadBytesFromEMS(spritetopoffsetRef);
-		spritetopoffset[i] = patchtopoffset;
+		spritewidths[i] = patchwidth;
+		spriteoffsets[i] = patchleftoffset;
+		spritetopoffsets[i] = patchtopoffset;
 
 	}
 }
@@ -863,16 +840,9 @@ void R_InitData(void) {
 	lump = W_GetNumForName("COLORMAP");
 	//length = W_LumpLength(lump) + 255;
 
-	// todo: big hack.. Making colormaps work in EMS is a major pain. tons of pointers being passed back and forth.
-	// you can convert these to offsets, working off the base pointer of the original allocation which i have done..
-	// but ultimately the light values are used in 386-style asm in planar.obj (see dc_source and ds_source and
-	// _ds_colormap) so until that asm is redone im not sure how to make colormaps work off the heap. For performance
-	// reasons it may even be best to keep it in a static allocation...
 	colormaps = (byte*)colormapbytes;
 	colormaps = (byte *)(((int32_t)colormaps + 255)&~0xff);
 
-	//printf("Size %i", length);
-	//I_Error("size %i", length);
 
 	W_ReadLumpStatic(lump, colormaps);
 

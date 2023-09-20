@@ -585,7 +585,6 @@ void P_LoadSideDefs(int16_t lump)
 		msdsecnum = (msd->sector);
 
  
-
 		memcpy(texnametop, msd->toptexture, 8);
 		memcpy(texnamebot, msd->bottomtexture, 8);
 		memcpy(texnamemid, msd->midtexture, 8);
@@ -593,8 +592,9 @@ void P_LoadSideDefs(int16_t lump)
 		toptex = R_TextureNumForName(texnametop);
 		bottex = R_TextureNumForName(texnamebot);
 		midtex = R_TextureNumForName(texnamemid);
-
-
+		
+		// sides gets unloaded by the above calls, and theres not enough room in ems to 
+		// hold it in memory in the worst case alongside data
 		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 		sd = &sides[i];
 		sd->toptexture = toptex;
@@ -610,7 +610,6 @@ void P_LoadSideDefs(int16_t lump)
 	}
 
 	Z_SetUnlocked(dataRef);
-	//Z_SetUnlocked(sidesRef);
 	Z_FreeEMSNew(dataRef);
 }
 
@@ -848,7 +847,6 @@ P_SetupLevel
 
 	time = ticcount;
 
-
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	// note: most of this ordering is important 
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP); // 0ms
@@ -887,7 +885,6 @@ P_SetupLevel
 	// set up world state
 	TEXT_MODE_DEBUG_PRINT("\n P_SpawnSpecials");
 	P_SpawnSpecials();  // 3 tics
-
 
 	// preload graphics
 	if (precache)
