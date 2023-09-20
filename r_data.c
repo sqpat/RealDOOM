@@ -335,6 +335,8 @@ void R_GenerateComposite(uint8_t texnum)
 				block + colofsx,
 				patchoriginy,
 				textureheight);
+			Z_SetUnlocked(realpatchRef);
+
 #else 
 			patchcol = (column_t *)((byte *)realpatch + (realpatch->columnofs[x - x1]));
 			R_DrawColumnInCache(patchcol,
@@ -343,7 +345,6 @@ void R_GenerateComposite(uint8_t texnum)
 				textureheight);
 #endif
 
-			Z_SetUnlocked(realpatchRef);
 
 
 
@@ -517,11 +518,13 @@ R_GetColumn
 
 	byte* texturecompositebytes;
 	byte* returnval;
+
+	// reordered to require fewer things in memory at same time
+	col &= texturewidthmasks[tex];
+
 	texturecolumnofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofsRefs[tex]);
 	ofs = texturecolumnofs[col];
 	
-	// reordered to require fewer things in memory at same time
-	col &= texturewidthmasks[tex];
 
 	texturecolumnlump = (int16_t*)Z_LoadBytesFromEMS(texturecolumnlumpRefs[tex]);
 	lump = texturecolumnlump[col];
