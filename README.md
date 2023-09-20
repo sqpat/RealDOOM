@@ -1,8 +1,8 @@
 # RealDOOM
 
-[![Recent Demo Recording](http://img.youtube.com/vi/sjIFxr6fVPU/0.jpg)](http://www.youtube.com/watch?v=sjIFxr6fVPU "RealDOOM Timedemo 2")
+[![Recent Demo Recording](http://img.youtube.com/vi/LBlKNW41xcI/0.jpg)](http://www.youtube.com/watch?v=LBlKNW41xcI "RealDOOM Timedemo 2")
 
-Above is a youtube link that takes you to video of a recent 
+Above is a youtube link that takes you to video of a recent demo playback showing off the port.
 
 RealDOOM is a (currently in progress) port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
 
@@ -33,7 +33,7 @@ For those interested in the technical details, a quick summary of what has been 
 
 
 ### Known bugs:
- - in 16 bit mode, there's a memory leak somewhere causing random bugs
+ - in 16 bit mode, there are some issues with physics causing timedemo desyncs.
  - in 16 bit mode, the intermission screens display all wrong
  - content outside of doom1 shareware has not been tested at all and may be very broken.
  - finale has not been tested at all
