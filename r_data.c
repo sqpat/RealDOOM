@@ -328,7 +328,7 @@ void R_GenerateComposite(uint8_t texnum)
 			colofs = (uint16_t*)Z_LoadBytesFromEMS(texturecolumnofstexnum);
 			colofsx = colofs[x];
 
-			realpatch = (patch_t*)Z_LoadBytesFromConventionalWithOptions(realpatchRef, PAGE_LOCKED);
+			realpatch = (patch_t*)Z_LoadBytesFromEMSWithOptions(realpatchRef, PAGE_LOCKED);
 			patchcol = (column_t *)((byte *)realpatch + (realpatch->columnofs[x - x1]));
 			block = (byte*)Z_LoadBytesFromEMS(texturecompositetexnum);
 			R_DrawColumnInCache(patchcol,
