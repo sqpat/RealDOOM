@@ -17,9 +17,6 @@
 //
 
 
-
-
-
 #include <stdlib.h>
 
 #include "i_system.h"
@@ -239,96 +236,62 @@ void R_RenderSegLoop (void)
     int16_t			top;
     int16_t			bottom;
 	fixed_t_union temp;
+	
 
-
-#ifdef EMS_VISPLANES
-
-
-    for ( ; rw_x < rw_stopx ; rw_x++) {
+	for ( ; rw_x < rw_stopx ; rw_x++) {
 		// mark floor / ceiling areas
 		yl = (topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
 
 		// no space above wall?
-		if (yl < ceilingclip[rw_x]+1)
+		if (yl < ceilingclip[rw_x]+1){
 			yl = ceilingclip[rw_x]+1;
-		
+		}
+
 		if (markceiling) {
-			visplanebytes_t* ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[ceilingplaneindex].visplanepage]))[visplaneheaders[ceilingplaneindex].visplaneoffset]);
 			top = ceilingclip[rw_x]+1;
 			bottom = yl-1;
 
-			if (bottom >= floorclip[rw_x]){
-				bottom = floorclip[rw_x]-1;
-			}
+			if (bottom >= floorclip[rw_x])
+			bottom = floorclip[rw_x]-1;
+
 			if (top <= bottom) {
-				ceilingplanebytes->top[rw_x] = top;
-				ceilingplanebytes->bottom[rw_x] = bottom;
+				if (ceilingplaneindex < MAXCONVENTIONALVISPLANES){
+					visplanes[ceilingplaneindex].top[rw_x] = top;
+					visplanes[ceilingplaneindex].bottom[rw_x] = bottom;
+				} else {
+					visplanebytes_t* ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[ceilingplaneindex-MAXCONVENTIONALVISPLANES].visplanepage]))[visplaneheaders[ceilingplaneindex-MAXCONVENTIONALVISPLANES].visplaneoffset]);
+					ceilingplanebytes->top[rw_x] = top;
+					ceilingplanebytes->bottom[rw_x] = bottom;
+				}
 			}
 		}
+		
 			
 		yh = bottomfrac>>HEIGHTBITS;
 
-		if (yh >= floorclip[rw_x])
+		if (yh >= floorclip[rw_x]){
 			yh = floorclip[rw_x]-1;
+		}
 
 		if (markfloor) {
-			visplanebytes_t* floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[floorplaneindex].visplanepage]))[visplaneheaders[floorplaneindex].visplaneoffset]);
 			top = yh+1;
 			bottom = floorclip[rw_x]-1;
 			if (top <= ceilingclip[rw_x]){
 				top = ceilingclip[rw_x]+1;
 			}
 			if (top <= bottom) {
-				floorplanebytes->top[rw_x] = top;
-				floorplanebytes->bottom[rw_x] = bottom;
-	    	}
+				if (floorplaneindex < MAXCONVENTIONALVISPLANES){
+					visplanes[floorplaneindex].top[rw_x] = top;
+					visplanes[floorplaneindex].bottom[rw_x] = bottom;
+				} else {
+					visplanebytes_t* floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[floorplaneindex-MAXCONVENTIONALVISPLANES].visplanepage]))[visplaneheaders[floorplaneindex-MAXCONVENTIONALVISPLANES].visplaneoffset]);
+					floorplanebytes->top[rw_x] = top;
+					floorplanebytes->bottom[rw_x] = bottom;
+				}
+			}
 		}
-	
-#else
-	for ( ; rw_x < rw_stopx ; rw_x++)
-	{
-	// mark floor / ceiling areas
-	yl = (topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
-
-	// no space above wall?
-	if (yl < ceilingclip[rw_x]+1)
-		yl = ceilingclip[rw_x]+1;
-	
-	if (markceiling)
-	{
-		top = ceilingclip[rw_x]+1;
-		bottom = yl-1;
-
-		if (bottom >= floorclip[rw_x])
-		bottom = floorclip[rw_x]-1;
-
-		if (top <= bottom)
-		{
-		visplanes[ceilingplaneindex].top[rw_x] = top;
-		visplanes[ceilingplaneindex].bottom[rw_x] = bottom;
-		}
-	}
-		
-	yh = bottomfrac>>HEIGHTBITS;
-
-	if (yh >= floorclip[rw_x])
-		yh = floorclip[rw_x]-1;
-
-	if (markfloor)
-	{
-		top = yh+1;
-		bottom = floorclip[rw_x]-1;
-		if (top <= ceilingclip[rw_x])
-		top = ceilingclip[rw_x]+1;
-		if (top <= bottom)
-		{
-			visplanes[floorplaneindex].top[rw_x] = top;
-			visplanes[floorplaneindex].bottom[rw_x] = bottom;
-		}
-	}
 
 
-#endif
 
 
 		// texturecolumn and lighting are independent of wall tiers

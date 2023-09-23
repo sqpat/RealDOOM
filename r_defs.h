@@ -451,7 +451,6 @@ typedef struct
 } spritedef_t;
 
 
-#ifdef EMS_VISPLANES
 
 typedef struct
 {
@@ -486,7 +485,6 @@ typedef struct
 
 } visplanebytes_t;
 
-#else
 
 //
 // Now what is a visplane, anyway?
@@ -513,7 +511,6 @@ typedef struct
 
 } visplane_t;
 
-#endif
 
 
 #endif

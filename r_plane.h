@@ -38,21 +38,6 @@ void R_ClearPlanes (void);
 
 void R_DrawPlanes (void);
 
-#ifdef EMS_VISPLANES
-
-int16_t
-R_FindPlane
-( fixed_t	height,
-  uint8_t		picnum,
-  uint8_t		lightlevel );
-
-int16_t
-R_CheckPlane
-(int16_t	pl,
-  int16_t		start,
-  int16_t		stop );
-
-#else
 
 int16_t
 R_FindPlane
@@ -67,6 +52,5 @@ R_CheckPlane
   int16_t		stop );
 
 
-#endif
 
 #endif

@@ -23,10 +23,29 @@ TODO
 
  
  ~ Memory improvements
+    x colormap, palette things
+    x statically allocated far blocks?
+      x use for wad initialization?
+    x shrink colormaps again
+    x hybrid ems visplanes?
+    - fix demo1/3 crash
+    2 smaller static mobj
+      - whats size of all of them combined? num mobjs?
+    - alternate thinker allocator block
+
+
+    ? colormaps in near heap?
+
+    - improve blocklinks implementation
+    ? playpal in conventional?
+    - re-examine pagination amounts per type
+    - ems 4.0 implementation
+    
     - near heap is largely unused after fileinfo alloca
       - put something in there. over 20k (?) or so unused
     - implement 'smart' allocator in setup level 
       - allocate most important items in conventional first
+
     - mobjs, or player into conventional?
  - do the mobj ems page locality thing
 
