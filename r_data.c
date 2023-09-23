@@ -156,7 +156,7 @@ int16_t        spritewidths[NUM_SPRITE_LUMPS_CACHE];
 int16_t        spriteoffsets[NUM_SPRITE_LUMPS_CACHE];
 int16_t        spritetopoffsets[NUM_SPRITE_LUMPS_CACHE];
 
-byte*         colormapbytes[8959];
+byte         	colormapbytes[(33 * 256) + 255];
 lighttable_t    *colormaps;
 
 

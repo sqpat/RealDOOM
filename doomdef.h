@@ -43,10 +43,6 @@ enum { VERSION =  109 };
 
 // MAIN FEATURE FLAGS
 
-
-// Moves visplanes out of conventional memory into EMS. On its own, makes things slower. But this also frees up like 85k of conventional memory which may be better used speeding up the game in other ways.
-// #define EMS_VISPLANES
-
 // Allocates backbuffers statically
 #define STATIC_ALLOCATED_SCREENS
 
@@ -59,16 +55,16 @@ enum { VERSION =  109 };
 // Reasonable values include 4 (minimum), 8, and maybe even 10 or 12 which on an incredibly optimal machine might be possible. Of course in 32 bit mode with simulated EMS you can set it to like 32 or 64 but at that point it's not representative of real world performance.
 #define NUM_EMS_PAGES 4
 
-// to avoid messiness, lets stay at this size
-//#define MAX_CONVENTIONAL_ALLOCATION_SIZE 2048
-//#define MAX_CONVENTIONAL_ALLOCATION_SIZE 4096 
-#define MAX_CONVENTIONAL_ALLOCATION_SIZE 32768L 
+// Use a statically allocationed conventional block instead of getting one as runtime
+#define USE_STATIC_CONVENTIONAL_BLOCKS
 
-//#define MAX_CONVENTIONAL_ALLOCATION_SIZE 64512L 
-//#define MAX_CONVENTIONAL_ALLOCATION_SIZE 2048L
-// small blocks wont fit any of the structures we hope to put in there.
-#define MIN_CONVENTIONAL_ALLOCATION_SIZE 2048L 
-
+#ifdef USE_STATIC_CONVENTIONAL_BLOCKS
+	#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 32768
+	#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 4096
+#else
+	#define MAX_CONVENTIONAL_ALLOCATION_SIZE 32768L 
+	#define MIN_CONVENTIONAL_ALLOCATION_SIZE 2048L 
+#endif
 
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
 #define DEBUG_PRINTING

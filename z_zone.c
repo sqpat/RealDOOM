@@ -287,12 +287,21 @@ typedef struct
 
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
+#ifdef USE_STATIC_CONVENTIONAL_BLOCKS
+byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
+byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
+uint16_t totalconventionalfree1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
+uint16_t remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
+uint16_t remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
+uint16_t totalconventionalfree2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
+#else
 void* conventionalmemoryblock1;
 void* conventionalmemoryblock2;
 uint16_t totalconventionalfree1;
 uint16_t totalconventionalfree2;
 uint16_t remainingconventional1;
 uint16_t remainingconventional2;
+#endif
 
 PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
@@ -363,6 +372,7 @@ void Z_ChangeTagEMSNew(MEMREF index, int16_t tag) {
 
 
 // CONVENTIONAL MEMORY ALLOCATION STUFF
+#ifndef USE_STATIC_CONVENTIONAL_BLOCKS
 
 uint16_t Z_GetFreeConventionalSize(void** block) {
 
@@ -389,13 +399,16 @@ uint16_t Z_GetFreeConventionalSize(void** block) {
 
 	return 0;
 }
+#endif
+
 void Z_InitConventional(void) {
 	DEBUG_PRINT("Initializing conventional allocation blocks...");
+#ifndef USE_STATIC_CONVENTIONAL_BLOCKS
 	totalconventionalfree1 = Z_GetFreeConventionalSize(&conventionalmemoryblock1);
 	remainingconventional1 = totalconventionalfree1;
-
 	totalconventionalfree2 = Z_GetFreeConventionalSize(&conventionalmemoryblock2);
 	remainingconventional2 = totalconventionalfree2;
+#endif
 	DEBUG_PRINT("\Conventional block sizes %u %u at %lx and %lx\n", totalconventionalfree1, totalconventionalfree2, conventionalmemoryblock1, conventionalmemoryblock2);
 }
 
