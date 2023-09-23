@@ -521,6 +521,7 @@ W_ReadLumpEMS
 
 
 
+extern byte* colormaps;
 
 void
 W_ReadLumpStatic
@@ -539,6 +540,10 @@ W_ReadLumpStatic
 
 	l = lumpinfo + lump;
 	lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
+	if (dest == colormaps){
+		lumpsize = 33 * 256; // hack to override lumpsize of colormaps
+	}
+
 	I_BeginRead();
 
 #ifdef	SUPPORT_MULTIWAD
