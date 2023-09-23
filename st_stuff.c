@@ -253,7 +253,8 @@ static boolean          st_firsttime;
 // used to execute ST_Init() only once
 
 // lump number for PLAYPAL
-static int16_t              lu_palette;
+//static int16_t              lu_palette;
+MEMREF               palRef;
 
 // used for timing
 
@@ -910,16 +911,15 @@ void ST_Ticker (void)
 
 }
 
-static int16_t st_palette = 0;
+static int8_t st_palette = 0;
 
 void ST_doPaletteStuff(void)
 {
 
-	int16_t         palette;
+	int8_t         palette;
     byte*       pal;
 	int16_t         cnt;
 	int16_t         bzc;
-	MEMREF		palRef;
 
     cnt = player.damagecount;
 
@@ -961,11 +961,11 @@ void ST_doPaletteStuff(void)
     if (palette != st_palette)
     {
         st_palette = palette;
-        palRef =  W_CacheLumpNumEMS (lu_palette, PU_CACHE);
-		pal = (byte*)Z_LoadBytesFromEMS(palRef) + palette * 768;
+        //palRef =  W_CacheLumpNumEMS (lu_palette, PU_CACHE);
+		//pal = (byte*)Z_LoadBytesFromEMS(palRef) + palette * 768;
 
 		//pal = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + palette * 768;
-        I_SetPalette (pal);
+        I_SetPalette (palette);
     }
 
 }
@@ -1000,24 +1000,6 @@ void ST_drawWidgets(boolean refresh)
 	}
 }
   
-
-/*
-void ST_Drawer (boolean fullscreen, boolean refresh)
-{
-
-    st_statusbaron = (!fullscreen) || automapactive;
-    st_firsttime = st_firsttime || refresh;
-
-    // Do red-/gold-shifts from damage/items
-    ST_doPaletteStuff();
-
-    // If just after ST_Start(), refresh all
-    if (st_firsttime) ST_doRefresh();
-    // Otherwise, update as little as possible
-    else ST_diffDraw();
-}
-
-*/
 void ST_Drawer(boolean fullscreen, boolean refresh)
 {
 	screen4 = (byte *)Z_LoadBytesFromEMSWithOptions(screen4Ref, true);
@@ -1127,7 +1109,9 @@ void ST_loadGraphics(void)
 
 void ST_loadData(void)
 {
-    lu_palette = W_GetNumForName ("PLAYPAL");
+    int16_t lu_palette = W_GetNumForName ("PLAYPAL");
+	palRef = W_CacheLumpNumEMS(lu_palette, PU_CACHE);
+
     ST_loadGraphics();
 }
 
@@ -1325,14 +1309,14 @@ void ST_Start (void)
 
 void ST_Stop (void)
 {
-	MEMREF palRef;
+	//MEMREF palRef;
 	byte*       pal;
 	if (st_stopped)
         return;
 
-	palRef = W_CacheLumpNumEMS(lu_palette, PU_CACHE);
+	//palRef = W_CacheLumpNumEMS(lu_palette, PU_CACHE);
 	pal = (byte*)Z_LoadBytesFromEMS(palRef);
-	I_SetPalette (pal);
+	I_SetPalette (0);
 
 //	I_SetPalette(W_CacheLumpNum(lu_palette, PU_CACHE));
 

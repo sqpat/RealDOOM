@@ -1534,7 +1534,7 @@ boolean M_Responder (event_t*  ev)
             if (usegamma > 4)
                 usegamma = 0;
             player.message = gammamsg[usegamma];
-            I_SetPalette (Z_LoadBytesFromEMS(W_CacheLumpNameEMS("PLAYPAL", PU_CACHE)));
+            I_SetPalette (0);
             return true;
                                 
         }

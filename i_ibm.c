@@ -234,13 +234,15 @@ void I_WaitVBL(int16_t vbls)
     }
 }
 
+extern MEMREF palRef;
 //
 // I_SetPalette
 // Palette source must use 8 bit RGB elements.
 //
-void I_SetPalette(byte *palette)
+void I_SetPalette(int8_t paletteNumber)
 {
 	int16_t i;
+    byte* palette = ((byte*) Z_LoadBytesFromEMS(palRef)) + paletteNumber * 768;
 
         if(novideo)
         {
@@ -455,7 +457,7 @@ void I_InitGraphics(void)
     outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1) | 0x40);
     outp(GC_INDEX, GC_READMAP);
 #endif
-    I_SetPalette(Z_LoadBytesFromEMS(W_CacheLumpNameEMS("PLAYPAL", PU_CACHE)));
+    I_SetPalette(0);
     I_InitDiskFlash();
 }
 
