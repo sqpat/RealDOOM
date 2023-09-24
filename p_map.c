@@ -1289,8 +1289,8 @@ P_AimLineAttack
     //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
     //y2.w = y.w + FixedMul1616(distance16,finesine(angle));
 
-	x2.w = x.w + ((int32_t)distance16)*finecosine(angle);
-	y2.w = y.w + ((int32_t)distance16)*finesine(angle);
+	x2.w = x.w + FixedMulBig1632(distance16,finecosine(angle));
+	y2.w = y.w + FixedMulBig1632(distance16,finesine(angle));
 
 	t1height.h.fracbits = 0;
 	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
@@ -1346,8 +1346,8 @@ P_LineAttack
     la_damage = damage;
     //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
     //y2.w = y.w + FixedMul1616(distance16,finesine(angle));
-	x2.w = x.w + (distance16)*finecosine(angle);
-	y2.w = y.w + (distance16)*finesine(angle);
+	x2.w = x.w + FixedMulBig1632(distance16,finecosine(angle));
+	y2.w = y.w + FixedMulBig1632(distance16,finesine(angle));
 
 	t1height.h.fracbits = 0;
 	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;

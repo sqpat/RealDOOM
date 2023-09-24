@@ -1048,12 +1048,12 @@ void R_PrecacheLevel(void)
 
 	//spritememory = 0;
 	//todo does this have to be pulled into the for loop
-	sprites = (spritedef_t*)Z_LoadBytesFromEMS(spritesRef);
+	sprites = (spritedef_t*)Z_LoadSpriteFromConventional(spritesRef);
 	for (i = 0; i < numsprites; i++)
 	{
 		if (!spritepresent[i])
 			continue;
-		spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(sprites[i].spriteframesRef);
+		spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprites[i].spriteframesRef);
 
 		for (j = 0; j < sprites[i].numframes; j++)
 		{

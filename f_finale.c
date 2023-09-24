@@ -667,9 +667,10 @@ void F_CastDrawer (void)
     F_CastPrint (text);
     
     // draw the current frame in the middle of the screen
-	sprites = (spritedef_t*) Z_LoadBytesFromEMS(spritesRef);
+	sprites = (spritedef_t*) Z_LoadSpriteFromConventional(spritesRef);
+		
 	sprite = &sprites[caststate->sprite];
-	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(sprite->spriteframesRef);
+	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprite->spriteframesRef);
 
 	sprframe = &spriteframes[caststate->frame & FF_FRAMEMASK];
 

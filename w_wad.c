@@ -603,16 +603,21 @@ int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
 
 
  MEMREF
-W_CacheLumpNumEMS
+W_CacheLumpNumEMS2
 (	int16_t           lump,
-	int8_t			tag)
+	int8_t			tag,
+	int8_t* file,
+	 int32_t line
+	
+	
+	)
 {
 
 
 
 #ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps)
-		I_Error("W_CacheLumpNum: %i >= numlumps", lump);
+		I_Error("W_CacheLumpNumEMS: %i >= numlumps %s %li", lump, file, line);
 #endif
 
     //
@@ -639,6 +644,7 @@ MEMREF
 W_CacheLumpNameEMS
 (int8_t*         name,
 	int8_t           tag) {
+		
 	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
 }
 

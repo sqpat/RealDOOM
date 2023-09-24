@@ -185,7 +185,8 @@ void R_InitSpriteDefs (int8_t** namelist)
     if (!numsprites)
         return;
                 
-    spritesRef = Z_MallocEMSNew (numsprites *sizeof(*sprites), PU_STATIC, 0x00, ALLOC_TYPE_SPRITEDEFS);
+    spritesRef = Z_MallocConventional (numsprites *sizeof(*sprites), PU_STATIC, CA_TYPE_SPRITE,0x00, ALLOC_TYPE_SPRITEDEFS);
+
 	//todo does this have to move into the loop for safety?
 	start = firstspritelump-1;
     end = lastspritelump+1;
@@ -225,7 +226,7 @@ void R_InitSpriteDefs (int8_t** namelist)
                 }
             }
         }
-	    sprites = (spritedef_t*)Z_LoadBytesFromEMS(spritesRef);
+	    sprites = (spritedef_t*)Z_LoadSpriteFromConventional(spritesRef);
         
         // check the frames that were found for completeness
         if (maxframe == -1)
@@ -270,10 +271,10 @@ void R_InitSpriteDefs (int8_t** namelist)
         
         // allocate space for the frames present and copy sprtemp to it
         sprites[i].numframes = maxframe;
-        sprites[i].spriteframesRef = Z_MallocEMSNew (maxframe * sizeof(spriteframe_t), PU_STATIC, 0x00, ALLOC_TYPE_SPRITEFRAMES);
+        sprites[i].spriteframesRef = Z_MallocConventional (maxframe * sizeof(spriteframe_t), PU_STATIC, CA_TYPE_SPRITE, 0x00, ALLOC_TYPE_SPRITEFRAMES);
 		//Z_RefIsActive(spritesRef);
 		
-		spriteframes = Z_LoadBytesFromEMS(sprites[i].spriteframesRef);
+		spriteframes = Z_LoadSpriteFromConventional(sprites[i].spriteframesRef);
 
 
 
@@ -398,6 +399,7 @@ R_DrawVisSprite
     patch_t*            patch;
 	MEMREF				patchRef;
         
+
     patchRef = W_CacheLumpNumEMS (vis->patch+firstspritelump, PU_CACHE);
 
     dc_colormap = vis->colormap;
@@ -413,7 +415,7 @@ R_DrawVisSprite
     spryscale = vis->scale;
     sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
          
-	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, true);
+	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, PAGE_LOCKED);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		texturecolumn = (frac.h.intbits);
 		column = (column_t *) ((byte *)patch + (patch->columnofs[texturecolumn]));
@@ -497,10 +499,11 @@ void R_ProjectSprite (MEMREF thingRef)
         return;
     
     // decide which patch to use for sprite relative to player
-	sprites = Z_LoadBytesFromEMS(spritesRef);
+	sprites = Z_LoadSpriteFromConventional(spritesRef);
 	spritespriteframeRef = sprites[thingsprite].spriteframesRef;
 	spritenumframes = sprites[thingsprite].numframes;
-	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(spritespriteframeRef);
+	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(spritespriteframeRef);
+
     if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
 		ang = R_PointToAngle (thingx, thingy);
@@ -691,9 +694,9 @@ void R_DrawPSprite (pspdef_t* psp)
 
 	// decide which patch to use
 
-	sprites = (spritedef_t*) Z_LoadBytesFromEMS(spritesRef);
+	sprites = (spritedef_t*) Z_LoadSpriteFromConventional(spritesRef);
 
-	spriteframes = (spriteframe_t*)Z_LoadBytesFromEMS(sprites[psp->state->sprite].spriteframesRef);
+	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprites[psp->state->sprite].spriteframesRef);
 
 
     lump = spriteframes[psp->state->frame & FF_FRAMEMASK].lump[0];

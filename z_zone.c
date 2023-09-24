@@ -197,11 +197,20 @@
 #define EMS_ALLOCATION_LIST_SIZE 2048
 // we dont make many conventional allocations, only a small number of important ones
 #define CONVENTIONAL_ALLOCATION_LIST_SIZE 16
+#define SPRITE_ALLOCATION_LIST_SIZE 150
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 0x10000L
 
 // demo commented out...
+// Use a statically allocationed conventional block instead of getting one as runtime
 
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 1
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 1
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 64512u
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 4096
+// good enough for sprites in doom1.wad (shareware). Increase for other types?
+// #define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
+	#define STATIC_CONVENTIONAL_SPRITE_SIZE 1
 
 
 // 8 MB worth. Letting us set 8 MB as a max lets us get away with 
@@ -282,32 +291,28 @@ typedef struct
 typedef struct
 {
 	uint16_t size;
-	void*	datalocation;
+	uint16_t	offset; // todo make this a uint16_t offset
 } allocation_conventional_t;
 
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
-#ifdef USE_STATIC_CONVENTIONAL_BLOCKS
 byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
+byte spritememoryblock[STATIC_CONVENTIONAL_SPRITE_SIZE];
+
 uint16_t totalconventionalfree1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 uint16_t remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 uint16_t remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
 uint16_t totalconventionalfree2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
-#else
-void* conventionalmemoryblock1;
-void* conventionalmemoryblock2;
-uint16_t totalconventionalfree1;
-uint16_t totalconventionalfree2;
-uint16_t remainingconventional1;
-uint16_t remainingconventional2;
-#endif
+uint16_t remainingspriteconventional = STATIC_CONVENTIONAL_SPRITE_SIZE;
+uint16_t totalconventionalsprite = 	  STATIC_CONVENTIONAL_SPRITE_SIZE;
 
 PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 allocation_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 allocation_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATION_LIST_SIZE];
+allocation_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
 
 
 int16_t activepages[NUM_EMS_PAGES];
@@ -371,45 +376,10 @@ void Z_ChangeTagEMSNew(MEMREF index, int16_t tag) {
 
 
 
-// CONVENTIONAL MEMORY ALLOCATION STUFF
-#ifndef USE_STATIC_CONVENTIONAL_BLOCKS
-
-uint16_t Z_GetFreeConventionalSize(void** block) {
-
-	// around 20k 16 bit right now.
-#ifdef _M_I86
-	uint16_t size = MAX_CONVENTIONAL_ALLOCATION_SIZE;
-#else
-	size_t size = _memmax();
-	if (size > MAX_CONVENTIONAL_ALLOCATION_SIZE) {
-		size = MAX_CONVENTIONAL_ALLOCATION_SIZE;
-	}
-#endif
-	while (size >= MIN_CONVENTIONAL_ALLOCATION_SIZE) {
-#ifdef _M_I86
-		*block = _fmalloc(size);
-#else
-		*block = _nmalloc(size);
-#endif
-		if (*block) {
-			return size;
-		}
-		size -= 1024;
-	}
-
-	return 0;
-}
-#endif
 
 void Z_InitConventional(void) {
-	DEBUG_PRINT("Initializing conventional allocation blocks...");
-#ifndef USE_STATIC_CONVENTIONAL_BLOCKS
-	totalconventionalfree1 = Z_GetFreeConventionalSize(&conventionalmemoryblock1);
-	remainingconventional1 = totalconventionalfree1;
-	totalconventionalfree2 = Z_GetFreeConventionalSize(&conventionalmemoryblock2);
-	remainingconventional2 = totalconventionalfree2;
-#endif
-	DEBUG_PRINT("\Conventional block sizes %u %u at %lx and %lx\n", totalconventionalfree1, totalconventionalfree2, conventionalmemoryblock1, conventionalmemoryblock2);
+//	DEBUG_PRINT("Initializing conventional allocation blocks...");
+//	DEBUG_PRINT("\Conventional block sizes %u %u at %lx and %lx\n", totalconventionalfree1, totalconventionalfree2, conventionalmemoryblock1, conventionalmemoryblock2);
 }
 
 // EMS STUFF
@@ -906,8 +876,8 @@ void Z_ShutdownEMS() {
 	}
 #endif
 
-	free(conventionalmemoryblock1);
-	free(conventionalmemoryblock2);
+	//free(conventionalmemoryblock1);
+	//free(conventionalmemoryblock2);
 
 }
 
@@ -1317,36 +1287,42 @@ void Z_SetUnlocked(MEMREF ref) {
 #endif
 }
 
-
-
-void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int8_t* file, int32_t line) {
-
+void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_t type, int8_t* file, int32_t line) {
 	if (ref < EMS_ALLOCATION_LIST_SIZE) {
 		return Z_LoadBytesFromEMSWithOptions2(ref, locked, file, line);
-		//return Z_LoadBytesFromEMSWithOptions(ref, locked);
-	}
-	ref -= EMS_ALLOCATION_LIST_SIZE;
+	} else {
+		ref -= EMS_ALLOCATION_LIST_SIZE;
+		switch (type){
+			case CA_TYPE_SPRITE:
+				if (ref >= SPRITE_ALLOCATION_LIST_SIZE){
+					I_Error ("caught c");
+				}
+				return spritememoryblock + sprite_allocations[ref].offset;
+			default:
 
-#ifdef CHECK_FOR_ERRORS
-	if (ref >= 2* CONVENTIONAL_ALLOCATION_LIST_SIZE) {
-		I_Error("Conventional allocation too big! %i", ref);
+				if (ref >= 2*CONVENTIONAL_ALLOCATION_LIST_SIZE){
+					I_Error ("caught d");
+				}
+
+
+				if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
+					return conventionalmemoryblock1 + conventional_allocations1[ref].offset;
+				else 
+					return conventionalmemoryblock2 + conventional_allocations2[ref- CONVENTIONAL_ALLOCATION_LIST_SIZE].offset;
+		}
+
 	}
-#endif
-	if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
-		return conventional_allocations1[ref].datalocation;
-	else 
-		return conventional_allocations2[ref- CONVENTIONAL_ALLOCATION_LIST_SIZE].datalocation;
 
 }
 
  
 void Z_FreeConventionalAllocations() {
-	int8_t i = 0;
+	int16_t i = 0;
 
 	for (i = 0; i < CONVENTIONAL_ALLOCATION_LIST_SIZE; i++) {
-		conventional_allocations1[i].datalocation = 0;
+		conventional_allocations1[i].offset = 0;
 		conventional_allocations1[i].size = 0;
-		conventional_allocations2[i].datalocation = 0;
+		conventional_allocations2[i].offset = 0;
 		conventional_allocations2[i].size = 0;
 	}
 
@@ -1356,40 +1332,57 @@ void Z_FreeConventionalAllocations() {
 MEMREF Z_MallocConventional( 
 	uint32_t           size,
 		uint8_t           tag,
+		int16_t				type,
 		uint8_t user,
 		uint8_t sourceHint){
 
-	int8_t ref;
-	byte* datalocation;
+	int16_t ref=0;
+	uint16_t offset = 0;
 	allocation_conventional_t *allocations;
 	boolean useblock2 = false;
+	int16_t loopamount;
 	
-	if (size > remainingconventional1) {
-		if (size > remainingconventional2) {
+
+	if (type == CA_TYPE_LEVELDATA) {
+		if (size > remainingconventional1) {
+			if (size > remainingconventional2) {
+				return Z_MallocEMSNew(size, tag, user, sourceHint);
+			}
+			useblock2 = true;
+		}
+	
+		if (useblock2) {
+			allocations = conventional_allocations2;
+			remainingconventional2 -= size;
+		} else {
+			allocations = conventional_allocations1;
+			remainingconventional1 -= size;
+		}
+		loopamount = CONVENTIONAL_ALLOCATION_LIST_SIZE;
+	} else if (type == CA_TYPE_SPRITE){
+		if (size > remainingspriteconventional){
 			return Z_MallocEMSNew(size, tag, user, sourceHint);
 		}
-		useblock2 = true;
+		allocations = sprite_allocations;
+		remainingspriteconventional -= size;
+		loopamount = SPRITE_ALLOCATION_LIST_SIZE;
 	}
-	if (useblock2) {
-		datalocation = conventionalmemoryblock2;
-		allocations = conventional_allocations2;
-		remainingconventional2 -= size;
-	} else {
-		datalocation = conventionalmemoryblock1;
-		allocations = conventional_allocations1;
-		remainingconventional1 -= size;
-	}
+	
+	
 
-	for (ref = 0; ref < CONVENTIONAL_ALLOCATION_LIST_SIZE; ref++) {
+	for (; ref < loopamount; ref++) {
 		if (allocations[ref].size == 0) {
 			break;
 		}
-		datalocation += allocations[ref].size;
+		offset += allocations[ref].size;
  
+	}
+	if (ref == loopamount){
+		I_Error("ran out of refs for conventional allocation  %i %i", type, sourceHint);
 	}
 
 	allocations[ref].size = size;
-	allocations[ref].datalocation = datalocation;
+	allocations[ref].offset = offset;
 	 
 	return ref + EMS_ALLOCATION_LIST_SIZE + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
 }

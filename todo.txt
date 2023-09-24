@@ -29,6 +29,8 @@ TODO
     x shrink colormaps again
     x hybrid ems visplanes?
     - fix demo1/3 crash
+    - sprites are in conventional memory but unoften used and high in number and it makes more useful allocations like lines take longer to find in search. do something to change this
+    
     2 smaller static mobj
       - whats size of all of them combined? num mobjs?
     - alternate thinker allocator block

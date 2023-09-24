@@ -119,7 +119,7 @@ void P_LoadVertexes(int16_t lump)
 	numvertexes = W_LumpLength(lump) / sizeof(mapvertex_t);
 
 	// Allocate zone memory for buffer.
-	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), PU_LEVEL, 0, ALLOC_TYPE_VERTEXES);
+	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_VERTEXES);
 
 	// Load data into cache.
 	W_CacheLumpNumCheck(lump, 0);
@@ -175,7 +175,7 @@ void P_LoadSegs(int16_t lump)
 	
 	temp.h.fracbits = 0;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
-	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), PU_LEVEL, 0, ALLOC_TYPE_SEGMENTS);
+	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_SEGMENTS);
 	
 	segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 	memset(segs, 0xff, numsegs * sizeof(seg_t));
@@ -293,7 +293,7 @@ void P_LoadSectors(int16_t lump)
 	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 	//sectors = Z_Malloc (numsectors * sizeof(sector_t), PU_LEVEL, 0);
-	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), PU_LEVEL, 0, ALLOC_TYPE_SECTORS);
+	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_SECTORS);
 	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
 
 
@@ -350,7 +350,7 @@ void P_LoadNodes(int16_t lump)
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 	firstnode = numnodes - 1;
-	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), PU_LEVEL, 0, ALLOC_TYPE_NODES);
+	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_NODES);
 	W_CacheLumpNumCheck(lump, 4);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
@@ -464,7 +464,7 @@ void P_LoadLineDefs(int16_t lump)
 
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
-	linesRef = Z_MallocConventional(numlines * sizeof(line_t), PU_LEVEL, 0, ALLOC_TYPE_LINES);
+	linesRef = Z_MallocConventional(numlines * sizeof(line_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_LINES);
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	memset(lines, 0, numlines * sizeof(line_t));
@@ -700,7 +700,7 @@ void P_GroupLines(void)
 
 	// count number of lines in each sector
 	total = 0;
-	lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef, PAGE_LOCKED);
+	lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef, PAGE_LOCKED, CA_TYPE_LEVELDATA);
 	for (i = 0; i < numlines; i++) {
 		li = &lines[i];
 		linebacksecnum = li->backsecnum;
@@ -718,7 +718,7 @@ void P_GroupLines(void)
 
 	// build line tables for each sector        
 
-	linebufferRef = Z_MallocConventional (total * 2, PU_LEVEL, 0, ALLOC_TYPE_LINEBUFFER);
+	linebufferRef = Z_MallocConventional (total * 2, PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_LINEBUFFER);
 	linebufferindex = 0;
 
 	tempv1.h.fracbits = 0;
@@ -733,7 +733,7 @@ void P_GroupLines(void)
 		sectors[i].linesoffset = linebufferindex;
 		previouslinebufferindex = linebufferindex;
 	 
-		lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef, PAGE_LOCKED);
+		lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef, PAGE_LOCKED, CA_TYPE_LEVELDATA);
 		//linebuffer = (int16_t*)Z_LoadBytesFromEMSWithOptions(linebufferRef, PAGE_LOCKED);
 		//vertexes = (vertex_t*)Z_LoadBytesFromConventionalWithOptions(vertexesRef, PAGE_LOCKED);
 

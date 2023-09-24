@@ -55,17 +55,6 @@ enum { VERSION =  109 };
 // Reasonable values include 4 (minimum), 8, and maybe even 10 or 12 which on an incredibly optimal machine might be possible. Of course in 32 bit mode with simulated EMS you can set it to like 32 or 64 but at that point it's not representative of real world performance.
 #define NUM_EMS_PAGES 4
 
-// Use a statically allocationed conventional block instead of getting one as runtime
-#define USE_STATIC_CONVENTIONAL_BLOCKS
-
-#ifdef USE_STATIC_CONVENTIONAL_BLOCKS
-	#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 64512u
-	#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 4096
-#else
-	#define MAX_CONVENTIONAL_ALLOCATION_SIZE 32768L 
-	#define MIN_CONVENTIONAL_ALLOCATION_SIZE 2048L 
-#endif
-
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
 #define DEBUG_PRINTING
 
@@ -106,7 +95,7 @@ enum { VERSION =  109 };
 
 
 //Show page count by source hint on timedemo finish
-//#define PROFILE_PAGE_COUNT
+#define PROFILE_PAGE_COUNT
 
 //
 // For resize of screen, at start of game.
