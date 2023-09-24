@@ -1006,7 +1006,7 @@ void G_DoLoadGame (void)
         I_Error ("Bad savegame");
 #endif
    
-    Z_FreeEMSNew (savebufferRef); 
+    Z_FreeEMS (savebufferRef); 
  
     if (setsizeneeded)
         R_ExecuteSetViewSize ();
@@ -1320,7 +1320,7 @@ void G_RecordDemo (int8_t* name)
     i = M_CheckParm ("-maxdemo");
     if (i && i<myargc-1) 
             maxsize = atoi(myargv[i+1])*1024;
-    demobufferRef = Z_MallocEMSNew (maxsize,PU_STATIC,0, ALLOC_TYPE_DEMO_BUFFER); 
+    demobufferRef = Z_MallocEMS (maxsize,PU_STATIC,0, ALLOC_TYPE_DEMO_BUFFER); 
     //demoend = demobuffer + maxsize;
         
     demorecording = true; 
@@ -1510,7 +1510,7 @@ n ALLOC_TYPE_STRINGS 30
         if (singledemo) 
             I_Quit (); 
                          
-        Z_ChangeTagEMSNew (demobufferRef, PU_CACHE); 
+        Z_ChangeTagEMS (demobufferRef, PU_CACHE); 
         demoplayback = false; 
         netdemo = false;
         respawnparm = false;
@@ -1528,7 +1528,7 @@ n ALLOC_TYPE_STRINGS 30
 		*demo_addr++ = DEMOMARKER;
 		demo_p++;
         M_WriteFile (demoname, demobuffer, demo_p);
-        Z_FreeEMSNew (demobufferRef); 
+        Z_FreeEMS (demobufferRef); 
         demorecording = false; 
         I_Error ("Demo %s recorded",demoname); 
     } 

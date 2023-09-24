@@ -1241,10 +1241,10 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 73af:0f38+     _remainingspriteconventional
 73af:0f3a*     _totalconventionalsprite
 73af:0f3c+     _remainingthinkerconventional
-1f24:5036      Z_ChangeTagEMSNew_
+1f24:5036      Z_ChangeTagEMS_
 1f24:5088      Z_InitConventional_
 1f24:50ac      Z_InitEMS_
-1f24:5162      Z_FreeEMSNew_
+1f24:5162      Z_FreeEMS_
 1f24:5162      Z_FreeConventional_
 1f24:5324      Z_FreeTagsEMS_
 1f24:537e+     Z_MarkPageLRU_
@@ -1264,8 +1264,8 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 1f24:5e6c      Z_MallocConventional_
 1f24:5fc4      Z_LoadBytesFromEMSWithOptions2_
 1f24:6098+     Z_GetNextFreeArrayIndex_
-1f24:60ea      Z_MallocEMSNew_
-1f24:610c      Z_MallocEMSNewWithBackRef_
+1f24:60ea      Z_MallocEMS_
+1f24:610c      Z_MallocEMSWithBackRef_
 73af:0f3e*     _totalconventionalthinker
 73af:0f40+     _currentListHead
 73af:0f44      _numreads

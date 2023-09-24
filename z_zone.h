@@ -130,15 +130,15 @@ void Z_InitConventional(void);
 void Z_FreeConventionalAllocations();
 
 #define BACKREF_LUMP_OFFSET 2048
-MEMREF Z_MallocEMSNew(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
-MEMREF Z_MallocEMSNewWithBackRef(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
+MEMREF Z_MallocEMS(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
+MEMREF Z_MallocEMSWithBackRef(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
 MEMREF Z_MallocConventional(uint32_t size, uint8_t tag, int16_t type, uint8_t user, uint8_t sourceHint);
 
 #ifdef MEMORYCHECK
 void Z_CheckEMSAllocations(PAGEREF block, int32_t i, int32_t var2, int32_t var3);
 #endif
-void Z_ChangeTagEMSNew(MEMREF index, int16_t tag);
-void Z_FreeEMSNew(PAGEREF block);
+void Z_ChangeTagEMS(MEMREF index, int16_t tag);
+void Z_FreeEMS(PAGEREF block);
 void Z_FreeConventional(PAGEREF block);
 
 

@@ -362,13 +362,13 @@ int32_t pagecount[40];
 
 void Z_PageOutIfInMemory(uint32_t page_and_size);
 
-void Z_ChangeTagEMSNew(MEMREF index, int16_t tag) {
+void Z_ChangeTagEMS(MEMREF index, int16_t tag) {
 
 
 	// if tag is equal to PU_PURGELEVEL
 #ifdef CHECK_FOR_ERRORS
 	if ((allocations[index].offset_and_tag & 0xC000) == 0xC000 && !HAS_USER(allocations[index])) {
-		I_Error("Z_ChangeTagEMSNew: an owner is required for purgable blocks %i %i %i %i %i",
+		I_Error("Z_ChangeTagEMS: an owner is required for purgable blocks %i %i %i %i %i",
 			allocations[index].offset_and_tag,
 			tag,
 			index,
@@ -444,10 +444,10 @@ void Z_InitEMS(void)
 
 void Z_FreeConventional(PAGEREF block){
 	// todo impelement... used for when thinkers get freed.
-	Z_FreeEMSNew(block);
+	Z_FreeEMS(block);
 }
 
-void Z_FreeEMSNew(PAGEREF block) {
+void Z_FreeEMS(PAGEREF block) {
 
 
 	uint16_t         other;
@@ -455,12 +455,12 @@ void Z_FreeEMSNew(PAGEREF block) {
 #ifdef CHECK_FOR_ERRORS
 	if (block == ALLOCATION_LIST_HEAD) {
 		// 0 is the head of the list, its a special-case size 0 block that shouldnt ever get allocated or deallocated.
-		I_Error("ERROR: Called Z_FreeEMSNew with 0! \n");
+		I_Error("ERROR: Called Z_FreeEMS with 0! \n");
 	}
 
 	if (block >= EMS_ALLOCATION_LIST_SIZE) {
 		// 0 is the head of the list, its a special-case size 0 block that shouldnt ever get allocated or deallocated.
-		I_Error("ERROR: Called Z_FreeEMSNew with too big of size: max %i vs %i! \n", EMS_ALLOCATION_LIST_SIZE - 1, block);
+		I_Error("ERROR: Called Z_FreeEMS with too big of size: max %i vs %i! \n", EMS_ALLOCATION_LIST_SIZE - 1, block);
 	}
 #endif
 
@@ -568,7 +568,7 @@ Z_FreeTagsEMS
 			continue;
 
 		if (MAKE_TAG(allocations[block]) == tag)
-			Z_FreeEMSNew(block);
+			Z_FreeEMS(block);
 	}
 
 }
@@ -1334,7 +1334,7 @@ void Z_FreeConventionalAllocations() {
 
 	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * 4);
 	memset(conventional_allocations2, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * 4);
-	memset(thinkerallocations, 0, THINKER_ALLOCATION_LIST_SIZE * 4);
+	memset(thinker_allocations, 0, THINKER_ALLOCATION_LIST_SIZE * 4);
 
 }
 
@@ -1356,7 +1356,7 @@ MEMREF Z_MallocConventional(
 	if (type == CA_TYPE_LEVELDATA) {
 		if (size > remainingconventional1) {
 			if (size > remainingconventional2) {
-				return Z_MallocEMSNew(size, tag, user, sourceHint);
+				return Z_MallocEMS(size, tag, user, sourceHint);
 			}
 			useblock2 = true;
 		}
@@ -1371,7 +1371,7 @@ MEMREF Z_MallocConventional(
 		loopamount = CONVENTIONAL_ALLOCATION_LIST_SIZE;
 	} else if (type == CA_TYPE_THINKER){
 		if (size > remainingthinkerconventional){
-			return Z_MallocEMSNew(size, tag, user, sourceHint);
+			return Z_MallocEMS(size, tag, user, sourceHint);
 		}
 
 		allocations = thinker_allocations;
@@ -1380,7 +1380,7 @@ MEMREF Z_MallocConventional(
 
 	} else if (type == CA_TYPE_SPRITE){
 		if (size > remainingspriteconventional){
-			return Z_MallocEMSNew(size, tag, user, sourceHint);
+			return Z_MallocEMS(size, tag, user, sourceHint);
 		}
 		allocations = sprite_allocations;
 		remainingspriteconventional -= size;
@@ -1554,16 +1554,16 @@ PAGEREF Z_GetNextFreeArrayIndex() {
 }
 
 
-MEMREF Z_MallocEMSNew
+MEMREF Z_MallocEMS
 (uint32_t           size,
 	uint8_t tag,
 	uint8_t user,
 	uint8_t sourceHint)
 {
-	return Z_MallocEMSNewWithBackRef(size, tag, user, sourceHint, -1);
+	return Z_MallocEMSWithBackRef(size, tag, user, sourceHint, -1);
 }
 MEMREF
-Z_MallocEMSNewWithBackRef
+Z_MallocEMSWithBackRef
 (uint32_t           size,
 	uint8_t           tag,
 	uint8_t user,
@@ -1637,7 +1637,7 @@ Z_MallocEMSNewWithBackRef
 #ifdef CHECK_FOR_ERRORS
 		if (rover == start) {
 			// scanned all the way around the list
-			I_Error("Z_MallocEMSNew: failed on allocation of %u bytes tag %i  and %i\n\n", size, tag, allocations[start].page_and_size);
+			I_Error("Z_MallocEMS: failed on allocation of %u bytes tag %i  and %i\n\n", size, tag, allocations[start].page_and_size);
 		}
 #endif
 
@@ -1662,7 +1662,7 @@ Z_MallocEMSNewWithBackRef
 			 // free this block (connect the links, add size to base)
 
 				base = allocations[base].prev;
-				Z_FreeEMSNew(rover);
+				Z_FreeEMS(rover);
 				base = allocations[base].next;
 				rover = allocations[base].next;
 			}

@@ -282,7 +282,7 @@ void P_UnArchiveThinkers (void)
 			P_RemoveMobj(thinkerlist[currentthinker].memref);
 		} 
 		else {
-			Z_FreeEMSNew(thinkerlist[currentthinker].memref);
+			Z_FreeEMS(thinkerlist[currentthinker].memref);
 		}
 
 	currentthinker = next;
@@ -300,7 +300,7 @@ void P_UnArchiveThinkers (void)
 			
 	  case tc_mobj:
 	    PADSAVEP();
-		thinkerRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, 0x00, ALLOC_TYPE_LEVSPEC);
+		thinkerRef = Z_MallocEMS(sizeof(*mobj), PU_LEVEL, 0x00, ALLOC_TYPE_LEVSPEC);
 		mobj = (mobj_t*)Z_LoadThinkerFromConventional(thinkerRef);
 	    memcpy (mobj, save_p, sizeof(*mobj));
 	    save_p += sizeof(*mobj);
@@ -497,7 +497,7 @@ void P_UnArchiveSpecials (void) {
 			
 	  case tc_ceiling:
 	    PADSAVEP();
-		thinkerRef = Z_MallocEMSNew(sizeof(*ceiling), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
+		thinkerRef = Z_MallocEMS(sizeof(*ceiling), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
 		ceiling = (ceiling_t*)Z_LoadBytesFromEMS(thinkerRef);
 
 	    memcpy (ceiling, save_p, sizeof(*ceiling));
@@ -519,7 +519,7 @@ void P_UnArchiveSpecials (void) {
 				
 	  case tc_door:
 	    PADSAVEP();
-		thinkerRef = Z_MallocEMSNew(sizeof(*door), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
+		thinkerRef = Z_MallocEMS(sizeof(*door), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
 		door = (vldoor_t*)Z_LoadBytesFromEMS(thinkerRef);
 
 	    memcpy (door, save_p, sizeof(*door));
@@ -533,7 +533,7 @@ void P_UnArchiveSpecials (void) {
 				
 	  case tc_floor:
 	    PADSAVEP();
-		thinkerRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
+		thinkerRef = Z_MallocEMS(sizeof(*floor), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
 		floor = (floormove_t*)Z_LoadBytesFromEMS(thinkerRef);
 
 	    memcpy (floor, save_p, sizeof(*floor));
@@ -547,7 +547,7 @@ void P_UnArchiveSpecials (void) {
 				
 	  case tc_plat:
 	    PADSAVEP();
-		thinkerRef = Z_MallocEMSNew(sizeof(*plat), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
+		thinkerRef = Z_MallocEMS(sizeof(*plat), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
 		plat = (plat_t*)Z_LoadBytesFromEMS(thinkerRef);
 
 	    memcpy (plat, save_p, sizeof(*plat));
@@ -565,7 +565,7 @@ void P_UnArchiveSpecials (void) {
 				
 	  case tc_flash:
 	    PADSAVEP();
-		thinkerRef = Z_MallocEMSNew(sizeof(*flash), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
+		thinkerRef = Z_MallocEMS(sizeof(*flash), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
 		flash = (lightflash_t*)Z_LoadBytesFromEMS(thinkerRef);
 
 	    memcpy (flash, save_p, sizeof(*flash));
@@ -578,7 +578,7 @@ void P_UnArchiveSpecials (void) {
 				
 	  case tc_strobe:
 	    PADSAVEP();
-		thinkerRef = Z_MallocEMSNew(sizeof(*strobe), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
+		thinkerRef = Z_MallocEMS(sizeof(*strobe), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
 		strobe = (strobe_t*)Z_LoadBytesFromEMS(thinkerRef);
 		
 	    memcpy (strobe, save_p, sizeof(*strobe));
@@ -590,7 +590,7 @@ void P_UnArchiveSpecials (void) {
 				
 	  case tc_glow:
 	    PADSAVEP();
-		thinkerRef = Z_MallocEMSNew(sizeof(*glow), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
+		thinkerRef = Z_MallocEMS(sizeof(*glow), PU_LEVEL, 0xFF, ALLOC_TYPE_LEVSPEC);
 		glow = (glow_t*)Z_LoadBytesFromEMS(thinkerRef);
 
 	    memcpy (glow, save_p, sizeof(*glow));

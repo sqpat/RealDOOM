@@ -742,7 +742,7 @@ void S_Init
   // Allocating the internal channels for mixing
   // (the maximum numer of sounds rendered
   // simultaneously) within zone memory.
-  channelsRef =  Z_MallocEMSNew (numChannels*sizeof(channel_t), PU_STATIC, 0, ALLOC_TYPE_SOUND_CHANNELS);
+  channelsRef =  Z_MallocEMS (numChannels*sizeof(channel_t), PU_STATIC, 0, ALLOC_TYPE_SOUND_CHANNELS);
   channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
 
   // Free all channels for use

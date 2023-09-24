@@ -495,7 +495,7 @@ void AM_unloadPics(void)
 	int8_t i;
   
     for (i=0;i<10;i++)
-	Z_ChangeTagEMSNew(marknums[i], PU_CACHE);
+	Z_ChangeTagEMS(marknums[i], PU_CACHE);
 
 }
 

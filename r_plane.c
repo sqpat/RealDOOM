@@ -109,7 +109,7 @@ void R_InitPlanes (void) {
 	int16_t j;
 	
 	for (i = 0; i < NUM_VISPLANE_PAGES; i++){
-		visplanebytesRef[i] = Z_MallocEMSNew(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0, ALLOC_TYPE_VISPLANE);
+		visplanebytesRef[i] = Z_MallocEMS(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0, ALLOC_TYPE_VISPLANE);
 
 		for (j = 0; j < VISPLANES_PER_EMS_PAGE; j++){
 			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplanepage = i;
@@ -538,7 +538,7 @@ void R_DrawPlanes (void)
 
 		}
 		
-		Z_ChangeTagEMSNew (ds_sourceRef, PU_CACHE);
+		Z_ChangeTagEMS (ds_sourceRef, PU_CACHE);
     }
 
 

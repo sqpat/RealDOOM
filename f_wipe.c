@@ -55,7 +55,7 @@ wipe_shittyColMajorXform
     int16_t*	dest;
     uint16_t size = width * height * 2;
 
-	destRef = Z_MallocEMSNew(size, PU_STATIC, 0, ALLOC_TYPE_FWIPE);
+	destRef = Z_MallocEMS(size, PU_STATIC, 0, ALLOC_TYPE_FWIPE);
 	dest = (int16_t*)Z_LoadBytesFromEMS(destRef);
 
     for(y=0;y<height;y++)
@@ -64,7 +64,7 @@ wipe_shittyColMajorXform
 
     memcpy(array, dest, width*height*2);
 
-    Z_FreeEMSNew(destRef);
+    Z_FreeEMS(destRef);
 
 }
 
@@ -158,7 +158,7 @@ wipe_initMelt
 
 	
 
-	yRef = Z_MallocEMSNew(width*sizeof(int16_t), PU_STATIC, 0, ALLOC_TYPE_FWIPE);
+	yRef = Z_MallocEMS(width*sizeof(int16_t), PU_STATIC, 0, ALLOC_TYPE_FWIPE);
 	y = (int16_t*)Z_LoadBytesFromEMS(yRef);
 
 
@@ -240,7 +240,7 @@ wipe_exitMelt
   int16_t	height,
   int16_t	ticks )
 {
-	Z_FreeEMSNew(yRef);
+	Z_FreeEMS(yRef);
 
     return 0;
 }

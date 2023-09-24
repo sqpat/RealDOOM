@@ -255,7 +255,7 @@ void R_GenerateComposite(uint8_t texnum)
 	MEMREF texturememref = textures[texnum];
 
 
-	texturecomposite[texnum] = Z_MallocEMSNewWithBackRef(texturecompositesize,
+	texturecomposite[texnum] = Z_MallocEMSWithBackRef(texturecompositesize,
 		PU_STATIC,
 		0xff, ALLOC_TYPE_TEXTURE + 160, texnum+1);
 	texturecompositetexnum = texturecomposite[texnum];
@@ -376,7 +376,7 @@ void R_GenerateComposite(uint8_t texnum)
 	//  it is purgable from zone memory.
 
 	// TODO: if we free this and the texture handle is still active that's bad?
-	Z_ChangeTagEMSNew(texturecompositetexnum, PU_CACHE);
+	Z_ChangeTagEMS(texturecompositetexnum, PU_CACHE);
 }
 
 
@@ -615,7 +615,7 @@ void R_InitTextures(void)
 		strncpy(name, name_p + i * 8, 8);
 		patchlookup[i] = W_CheckNumForName(name);
 	}
-	Z_FreeEMSNew(namesRef);
+	Z_FreeEMS(namesRef);
 
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,
@@ -688,7 +688,7 @@ void R_InitTextures(void)
 		mtexture = (maptexture_t *)((byte *)maptex + offset);
 
 
-		textureRef = Z_MallocEMSNew(sizeof(texture_t)
+		textureRef = Z_MallocEMS(sizeof(texture_t)
 			+ sizeof(texpatch_t)*((mtexture->patchcount) - 1),
 			PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 130);
 
@@ -727,8 +727,8 @@ void R_InitTextures(void)
  
 
 		//printf("name %s", texture->name);
-		texturecolumnlumpRefs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 140);
-		texturecolumnofsRefs[i] = Z_MallocEMSNew(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 150);
+		texturecolumnlumpRefs[i] = Z_MallocEMS(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 140);
+		texturecolumnofsRefs[i] = Z_MallocEMS(texturewidth * 2, PU_STATIC, 0, ALLOC_TYPE_TEXTURE + 150);
 
 
 		j = 1;
@@ -742,9 +742,9 @@ void R_InitTextures(void)
 	}
 
 
-	Z_FreeEMSNew(maptexRef);
+	Z_FreeEMS(maptexRef);
 	if (maptex2) {
-		Z_FreeEMSNew(maptex2Ref);
+		Z_FreeEMS(maptex2Ref);
 	}
 	// Precalculate whatever possible.  
 	for (i = 0; i < numtextures; i++)

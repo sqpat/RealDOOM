@@ -1123,28 +1123,28 @@ void ST_unloadGraphics(void)
     // unload the numbers, tall and short
     for (i=0;i<10;i++)
     {
-        Z_ChangeTagEMSNew(tallnumRef[i], PU_CACHE);
-		Z_ChangeTagEMSNew(shortnumRef[i], PU_CACHE);
+        Z_ChangeTagEMS(tallnumRef[i], PU_CACHE);
+		Z_ChangeTagEMS(shortnumRef[i], PU_CACHE);
     }
     // unload tall percent
-	Z_ChangeTagEMSNew(tallpercentRef, PU_CACHE);
+	Z_ChangeTagEMS(tallpercentRef, PU_CACHE);
 
     // unload arms background
-    Z_ChangeTagEMSNew(armsbgRef[0], PU_CACHE); 
+    Z_ChangeTagEMS(armsbgRef[0], PU_CACHE); 
 
     // unload gray #'s
     for (i=0;i<6;i++)
-		Z_ChangeTagEMSNew(armsRef[i][0], PU_CACHE);
+		Z_ChangeTagEMS(armsRef[i][0], PU_CACHE);
     
     // unload the key cards
     for (i=0;i<NUMCARDS;i++)
-		Z_ChangeTagEMSNew(keysRef[i], PU_CACHE);
+		Z_ChangeTagEMS(keysRef[i], PU_CACHE);
 
-	Z_ChangeTagEMSNew(sbarRef, PU_CACHE);
-	Z_ChangeTagEMSNew(facebackRef, PU_CACHE);
+	Z_ChangeTagEMS(sbarRef, PU_CACHE);
+	Z_ChangeTagEMS(facebackRef, PU_CACHE);
 
     for (i=0;i<ST_NUMFACES;i++)
-		Z_ChangeTagEMSNew(facesRef[i], PU_CACHE);
+		Z_ChangeTagEMS(facesRef[i], PU_CACHE);
 
     // Note: nobody ain't seen no unloading
     //   of stminus yet. Dude.
@@ -1326,6 +1326,6 @@ void ST_Stop (void)
 void ST_Init (void)
 {
     ST_loadData();
-	screen4Ref = Z_MallocEMSNew (ST_WIDTH*ST_HEIGHT, PU_STATIC, 0, ALLOC_TYPE_SCREEN);
+	screen4Ref = Z_MallocEMS (ST_WIDTH*ST_HEIGHT, PU_STATIC, 0, ALLOC_TYPE_SCREEN);
     
 }

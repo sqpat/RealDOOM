@@ -1029,7 +1029,7 @@ void WI_loadData(void)
 
     if (commercial) {
 		NUMCMAPS = 32;								
-		lnamesRef = Z_MallocEMSNew (sizeof(patch_t*) * NUMCMAPS, PU_STATIC, 0, ALLOC_TYPE_LNAMES);
+		lnamesRef = Z_MallocEMS (sizeof(patch_t*) * NUMCMAPS, PU_STATIC, 0, ALLOC_TYPE_LNAMES);
 		lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
 
 		for (i=0 ; i<NUMCMAPS ; i++) {								
@@ -1037,7 +1037,7 @@ void WI_loadData(void)
 			lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
 		}					
     } else {
-	lnamesRef =  Z_MallocEMSNew (sizeof(patch_t*) * NUMMAPS,
+	lnamesRef =  Z_MallocEMS (sizeof(patch_t*) * NUMMAPS,
 				       PU_STATIC, 0, ALLOC_TYPE_LNAMES);
 	lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
 
@@ -1144,26 +1144,26 @@ void WI_unloadData(void)
 	MEMREF*	lnames;
 	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
 
-    Z_ChangeTagEMSNew(wiminusRef, PU_CACHE);
+    Z_ChangeTagEMS(wiminusRef, PU_CACHE);
 
     for (i=0 ; i<10 ; i++)
-		Z_ChangeTagEMSNew(numRef[i], PU_CACHE);
+		Z_ChangeTagEMS(numRef[i], PU_CACHE);
     
     if (commercial)
     {
 		for (i = 0; i < NUMCMAPS; i++) {
-			//Z_ChangeTagEMSNew(lnames[i], PU_CACHE);
+			//Z_ChangeTagEMS(lnames[i], PU_CACHE);
 		}
     }
     else
     {
-		Z_ChangeTagEMSNew(yahRef[0], PU_CACHE);
-		Z_ChangeTagEMSNew(yahRef[1], PU_CACHE);
+		Z_ChangeTagEMS(yahRef[0], PU_CACHE);
+		Z_ChangeTagEMS(yahRef[1], PU_CACHE);
 
-		Z_ChangeTagEMSNew(splatRef, PU_CACHE);
+		Z_ChangeTagEMS(splatRef, PU_CACHE);
 
 	for (i = 0; i < NUMMAPS; i++) {
-		//Z_ChangeTagEMSNew(lnames[i], PU_CACHE);
+		//Z_ChangeTagEMS(lnames[i], PU_CACHE);
 	}
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 	if (wbs->epsd < 3)
@@ -1173,28 +1173,28 @@ void WI_unloadData(void)
 	    {
 		if (wbs->epsd != 1 || j != 8)
 		    for (i=0;i<anims[wbs->epsd][j].nanims;i++)
-				Z_ChangeTagEMSNew(anims[wbs->epsd][j].pRef[i], PU_CACHE);
+				Z_ChangeTagEMS(anims[wbs->epsd][j].pRef[i], PU_CACHE);
 	    }
 	}
     }
     
-    Z_FreeEMSNew(lnamesRef);
+    Z_FreeEMS(lnamesRef);
 
-	Z_ChangeTagEMSNew(percentRef, PU_CACHE);
-	Z_ChangeTagEMSNew(colonRef, PU_CACHE);
-	Z_ChangeTagEMSNew(finishedRef, PU_CACHE);
-	Z_ChangeTagEMSNew(enteringRef, PU_CACHE);
-	Z_ChangeTagEMSNew(killsRef, PU_CACHE);
-	Z_ChangeTagEMSNew(secretRef, PU_CACHE);
-	Z_ChangeTagEMSNew(sp_secretRef, PU_CACHE);
-	Z_ChangeTagEMSNew(itemsRef, PU_CACHE);
-	Z_ChangeTagEMSNew(timeRef, PU_CACHE);
-	Z_ChangeTagEMSNew(sucksRef, PU_CACHE);
-	Z_ChangeTagEMSNew(parRef, PU_CACHE);
+	Z_ChangeTagEMS(percentRef, PU_CACHE);
+	Z_ChangeTagEMS(colonRef, PU_CACHE);
+	Z_ChangeTagEMS(finishedRef, PU_CACHE);
+	Z_ChangeTagEMS(enteringRef, PU_CACHE);
+	Z_ChangeTagEMS(killsRef, PU_CACHE);
+	Z_ChangeTagEMS(secretRef, PU_CACHE);
+	Z_ChangeTagEMS(sp_secretRef, PU_CACHE);
+	Z_ChangeTagEMS(itemsRef, PU_CACHE);
+	Z_ChangeTagEMS(timeRef, PU_CACHE);
+	Z_ChangeTagEMS(sucksRef, PU_CACHE);
+	Z_ChangeTagEMS(parRef, PU_CACHE);
 
-	Z_ChangeTagEMSNew(totalRef, PU_CACHE);
-    //  Z_ChangeTagEMSNew(star, PU_CACHE);
-    //  Z_ChangeTagEMSNew(bstar, PU_CACHE);
+	Z_ChangeTagEMS(totalRef, PU_CACHE);
+    //  Z_ChangeTagEMS(star, PU_CACHE);
+    //  Z_ChangeTagEMS(bstar, PU_CACHE);
     
 }
 

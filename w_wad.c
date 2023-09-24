@@ -625,13 +625,13 @@ W_CacheLumpNumEMS2
 //	if (!lumpcache[lump])
 	if (!lumpcacheEMS[lump]) {
         //todo they are all 16k in this case but last one should be
-		lumpcacheEMS[lump] = Z_MallocEMSNewWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump + BACKREF_LUMP_OFFSET);
+		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump + BACKREF_LUMP_OFFSET);
 
 		W_ReadLumpEMS(lump, lumpcacheEMS[lump], 0, 0);
 	} else {
 		//printf ("cache hit on lump %i\n",lump);
 		//I_Error("cache hit on lump %i and tag %i", lump, tag);
-		Z_ChangeTagEMSNew(lumpcacheEMS[lump], tag);
+		Z_ChangeTagEMS(lumpcacheEMS[lump], tag);
 	}
 
 	return lumpcacheEMS[lump];
@@ -659,10 +659,10 @@ W_CacheLumpNameEMSFragment
 
     if (pagedlumpcacheEMS[pagenum]){
         // erase cache
-        Z_FreeEMSNew(pagedlumpcacheEMS[pagenum]);
+        Z_FreeEMS(pagedlumpcacheEMS[pagenum]);
     }
 
-    pagedlumpcacheEMS[pagenum] = Z_MallocEMSNew(16384, tag, 0, ALLOC_TYPE_CACHE_LUMP);
+    pagedlumpcacheEMS[pagenum] = Z_MallocEMS(16384, tag, 0, ALLOC_TYPE_CACHE_LUMP);
     W_ReadLumpEMS(W_GetNumForName(name), pagedlumpcacheEMS[pagenum], offset, 16384);
 
     return pagedlumpcacheEMS[pagenum];

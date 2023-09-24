@@ -140,7 +140,7 @@ void P_LoadVertexes(int16_t lump)
 	}
 
 	// Free buffer memory.
-	Z_FreeEMSNew(dataRef);
+	Z_FreeEMS(dataRef);
 }
 
 
@@ -234,7 +234,7 @@ void P_LoadSegs(int16_t lump)
 	}
 
 	//Z_SetUnlocked(dataRef);
-	Z_FreeEMSNew(dataRef);
+	Z_FreeEMS(dataRef);
 }
 
 
@@ -251,7 +251,7 @@ void P_LoadSubsectors(int16_t lump)
 	subsector_t*    subsectors;
 	MEMREF			dataRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectorsRef = Z_MallocEMSNew (numsubsectors * sizeof(subsector_t), PU_LEVEL, 0, ALLOC_TYPE_SUBSECS);
+	subsectorsRef = Z_MallocEMS (numsubsectors * sizeof(subsector_t), PU_LEVEL, 0, ALLOC_TYPE_SUBSECS);
 
 	W_CacheLumpNumCheck(lump, 2);
 
@@ -272,7 +272,7 @@ void P_LoadSubsectors(int16_t lump)
 
 	}
 
-	Z_FreeEMSNew(dataRef);
+	Z_FreeEMS(dataRef);
 }
 
 
@@ -329,7 +329,7 @@ void P_LoadSectors(int16_t lump)
 
 	}
 
-	Z_FreeEMSNew(dataRef);
+	Z_FreeEMS(dataRef);
 }
 
 
@@ -375,7 +375,7 @@ void P_LoadNodes(int16_t lump)
 		//Z_RefIsActive(dataRef);
 	}
 
-	Z_FreeEMSNew(dataRef);
+	Z_FreeEMS(dataRef);
 }
 
 
@@ -428,7 +428,7 @@ void P_LoadThings(int16_t lump)
 
 	}
 
-	Z_FreeEMSNew(dataRef);
+	Z_FreeEMS(dataRef);
 }
 
 
@@ -540,7 +540,7 @@ void P_LoadLineDefs(int16_t lump)
 	}
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
-	Z_FreeEMSNew(dataRef);
+	Z_FreeEMS(dataRef);
 }
 
 
@@ -566,7 +566,7 @@ void P_LoadSideDefs(int16_t lump)
 	int16_t msdsecnum;
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	sidesRef = Z_MallocEMSNew (numsides * sizeof(side_t), PU_LEVEL, 0, ALLOC_TYPE_SIDES);
+	sidesRef = Z_MallocEMS (numsides * sizeof(side_t), PU_LEVEL, 0, ALLOC_TYPE_SIDES);
 	//sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
 	//memset(sides, 0, numsides * sizeof(side_t));
 
@@ -610,7 +610,7 @@ void P_LoadSideDefs(int16_t lump)
 	}
 
 	Z_SetUnlocked(dataRef);
-	Z_FreeEMSNew(dataRef);
+	Z_FreeEMS(dataRef);
 }
 
 
@@ -643,7 +643,7 @@ void P_LoadBlockMap(int16_t lump)
 	// clear out mobj chains
 	count = sizeof(*blocklinks)* bmapwidth*bmapheight;
 
-	//	blocklinksRef = Z_MallocEMSNew (count, PU_LEVEL, 0, ALLOC_TYPE_BLOCKLINKS);
+	//	blocklinksRef = Z_MallocEMS (count, PU_LEVEL, 0, ALLOC_TYPE_BLOCKLINKS);
 	memset(blocklinks, 0, count);
 }
 

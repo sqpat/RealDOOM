@@ -234,7 +234,7 @@ void D_InitStrings() {
 	while (1) {
 		// break up in pagesize
 		
-		stringRefs[page] = Z_MallocEMSNew(16384, PU_STATIC, 0, ALLOC_TYPE_STRINGS);
+		stringRefs[page] = Z_MallocEMS(16384, PU_STATIC, 0, ALLOC_TYPE_STRINGS);
 		buffer = Z_LoadBytesFromEMS(stringRefs[page]);
 
 	 
