@@ -545,7 +545,7 @@ P_CrossSpecialLine
 	int16_t lineside0 = line->sidenum[0];
 	int16_t linespecial = line->special;
 	int16_t setlinespecial = -1;
-	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	mobj_t*	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
 
 	 
     //	Triggers that other things can activate
@@ -1025,7 +1025,7 @@ P_ShootSpecialLine
 	int16_t lineside0 = line->sidenum[0];
 
 	
-	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	mobj_t*	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
     
     //	Impacts that other things can activate.
     if (!thing->player) {
@@ -1071,7 +1071,7 @@ P_ShootSpecialLine
 //  that the player origin is in a special sector
 //
 void P_PlayerInSpecialSector () {
-	mobj_t* playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
+	mobj_t* playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
 	fixed_t playerMoz = playerMo->z;
 	int16_t secnum = playerMo->secnum;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
@@ -1308,12 +1308,12 @@ int16_t EV_DoDonut(uint8_t linetag)
 	    
 			//	Spawn rising slime
 
-			floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+			floorRef = Z_MallocConventional(sizeof(*floor), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
 			sectors[s2Offset].specialdataRef = floorRef;
 			sectors3floorpic = sectors[s3Offset].floorpic;
 			sectors3floorheight = sectors[s3Offset].floorheight;
 
-			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
 
 
 			floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
@@ -1327,10 +1327,10 @@ int16_t EV_DoDonut(uint8_t linetag)
 			floor->floordestheight = sectors3floorheight;
 	    
 			//	Spawn lowering donut-hole
-			floorRef = Z_MallocEMSNew(sizeof(*floor), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+			floorRef = Z_MallocConventional(sizeof(*floor), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
 			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 			sectors[s1Offset].specialdataRef = floorRef;
-			floor = (floormove_t*)Z_LoadBytesFromEMS(floorRef);
+			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
 			floor->thinkerRef = P_AddThinker (floorRef, TF_MOVEFLOOR);
 			floor->type = lowerFloor;
 			floor->crush = false;

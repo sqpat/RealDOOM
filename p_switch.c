@@ -289,7 +289,7 @@ P_UseSpecialLine
     }
 
 
-	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
 
     
     // Switches that other things can activate.

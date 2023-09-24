@@ -42,12 +42,12 @@
 void T_VerticalDoor (MEMREF memref)
 {
     result_e	res;
-	vldoor_t* door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
+	vldoor_t* door = (vldoor_t*)Z_LoadThinkerFromConventional(memref);
 	int16_t doorsecnum = door->secnum;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sector_t doorsector = sectors[doorsecnum];
 	THINKERREF doorthinkerRef;
-	door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
+	door = (vldoor_t*)Z_LoadThinkerFromConventional(memref);
 
 	switch(door->direction) {
 		  case 0:
@@ -95,7 +95,7 @@ void T_VerticalDoor (MEMREF memref)
 		// DOWN
 
 			res = T_MovePlane(door->secnum, door->speed, doorsector.floorheight, false,1,door->direction);
-			door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
+			door = (vldoor_t*)Z_LoadThinkerFromConventional(memref);
 			doorthinkerRef = door->thinkerRef;
 			if (res == floor_pastdest) {
 				switch(door->type) {
@@ -139,7 +139,7 @@ void T_VerticalDoor (MEMREF memref)
 			case 1:
 				// UP
 				res = T_MovePlane(door->secnum,   door->speed, door->topheight, false,1,door->direction);
-				door = (vldoor_t*)Z_LoadBytesFromEMS(memref);
+				door = (vldoor_t*)Z_LoadThinkerFromConventional(memref);
 
 				doorthinkerRef = door->thinkerRef;
 
@@ -184,7 +184,7 @@ EV_DoLockedDoor
   MEMREF thingRef )
 {
     player_t*	p;
-	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	mobj_t*	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
 	
     p = thing->player;
 	
@@ -264,10 +264,10 @@ EV_DoDoor
 
 
 
-		doorRef = Z_MallocEMSNew(sizeof(*door), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+		doorRef = Z_MallocConventional(sizeof(*door), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
 		sectors[secnum].specialdataRef = doorRef;
 		doorsector = sectors[secnum];
-		door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+		door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 
 		door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR);
 	
@@ -280,7 +280,7 @@ EV_DoDoor
 		{
 		  case blazeClose:
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
-			door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+			door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
 			door->speed = VDOORSPEED * 4;
@@ -289,7 +289,7 @@ EV_DoDoor
 	    
 		  case close:
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
-			door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+			door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
 			S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_dorcls);
@@ -305,7 +305,7 @@ EV_DoDoor
 		  case blazeOpen:
 			door->direction = 1;
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
-			door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+			door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->speed = VDOORSPEED * 4;
 			if (door->topheight != (doorsector.ceilingheight))
@@ -316,7 +316,7 @@ EV_DoDoor
 		  case open:
 			door->direction = 1;
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
-			door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+			door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			if (door->topheight != doorsector.ceilingheight)
 				S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_doropn);
@@ -348,7 +348,7 @@ EV_VerticalDoor
 	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	int16_t linespecial = lines[linenum].special;
 	int16_t sidenum;
-	mobj_t*	thing = (mobj_t*)Z_LoadBytesFromEMS(thingRef);
+	mobj_t*	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
 	side_t* sides;
 	int16_t doortopheight;
 	sector_t doorsector;
@@ -419,7 +419,7 @@ EV_VerticalDoor
     if (doorsector.specialdataRef) {
 		
 		doorRef = doorsector.specialdataRef;
-		door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+		door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 	 
 
 		switch(linespecial) {
@@ -465,12 +465,12 @@ EV_VerticalDoor
 	
     
     // new door thinker
-	doorRef = Z_MallocEMSNew(sizeof(*door), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	doorRef = Z_MallocConventional(sizeof(*door), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectors[secnum].specialdataRef = doorRef;
 
 	
-	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+	door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
     door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR);
 	door->secnum = secnum;
 	door->direction = 1;
@@ -511,7 +511,7 @@ EV_VerticalDoor
     
     // find the top and bottom of the movement range
 	doortopheight = P_FindLowestCeilingSurrounding(secnum);
-	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+	door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 	door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 }
 
@@ -525,9 +525,9 @@ void P_SpawnDoorCloseIn30 (int16_t secnum)
 	MEMREF doorRef;
 	sector_t* sectors;
 
-	doorRef = Z_MallocEMSNew(sizeof(*door), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	doorRef = Z_MallocConventional(sizeof(*door), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
 
-	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+	door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR);
 	door->secnum = secnum;
 	door->direction = 0;
@@ -553,9 +553,9 @@ P_SpawnDoorRaiseIn5Mins
 	MEMREF doorRef;
 	int16_t doortopheight;
 	sector_t* sectors;
-	doorRef = Z_MallocEMSNew(sizeof(*door), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	doorRef = Z_MallocConventional(sizeof(*door), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
 
-	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+	door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR);
 
 	
@@ -565,7 +565,7 @@ P_SpawnDoorRaiseIn5Mins
     door->speed = VDOORSPEED;
 
 	doortopheight = P_FindLowestCeilingSurrounding(secnum);
-	door = (vldoor_t*)Z_LoadBytesFromEMS(doorRef);
+	door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 	door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 	door->topwait = VDOORWAIT;
     door->topcountdown = 5 * 60 * 35;

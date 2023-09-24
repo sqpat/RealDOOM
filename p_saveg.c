@@ -233,7 +233,7 @@ void P_ArchiveThinkers (void)
     {
 	if (thinkerlist[th].functionType == TF_MOBJTHINKER)
 	{
-		thinkerobj = Z_LoadBytesFromEMS(thinkerlist[th].memref);
+		thinkerobj = Z_LoadThinkerFromConventional(thinkerlist[th].memref);
 
 		*save_p++ = tc_mobj;
 	    PADSAVEP();
@@ -301,7 +301,7 @@ void P_UnArchiveThinkers (void)
 	  case tc_mobj:
 	    PADSAVEP();
 		thinkerRef = Z_MallocEMSNew(sizeof(*mobj), PU_LEVEL, 0x00, ALLOC_TYPE_LEVSPEC);
-		mobj = (mobj_t*)Z_LoadBytesFromEMS(thinkerRef);
+		mobj = (mobj_t*)Z_LoadThinkerFromConventional(thinkerRef);
 	    memcpy (mobj, save_p, sizeof(*mobj));
 	    save_p += sizeof(*mobj);
 	    mobj->state = &states[(int16_t)mobj->state];
@@ -372,7 +372,7 @@ void P_ArchiveSpecials (void)
 	
     // save off the current thinkers
     for (th = thinkerlist[0].next ; th != 0 ; th=thinkerlist[th].next) {
-		thinkerobj = Z_LoadBytesFromEMS(thinkerlist[th].memref);
+		thinkerobj = Z_LoadThinkerFromConventional(thinkerlist[th].memref);
 		if (thinkerlist[th].functionType == TF_NULL) {
 			for (i = 0; i < MAXCEILINGS;i++)
 				if (activeceilings[i] == thinkerlist[th].memref)

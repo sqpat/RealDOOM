@@ -639,7 +639,7 @@ void G_Ticker (void)
 //
 void G_PlayerFinishLevel () 
 { 
-	mobj_t* playerMo = Z_LoadBytesFromEMS(playermoRef);
+	mobj_t* playerMo = Z_LoadThinkerFromConventional(playermoRef);
 
           
     memset (player.powers, 0, sizeof (player.powers));
@@ -719,7 +719,7 @@ G_CheckSpot
     if (!playermoRef)
     {
         // first spawn of level, before corpses
-		playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
+		playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
 		if (playerMo->x == tempx.w && playerMo->y == tempy.w)
 			return false;
         return true;

@@ -201,7 +201,7 @@ P_GiveBody
     if (player.health > MAXHEALTH)
 		player.health = MAXHEALTH;
 
-	playerMo = (mobj_t*) Z_LoadBytesFromEMS(playermoRef);
+	playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
 	playerMo->health = player.health;
 	
     return true;
@@ -266,7 +266,7 @@ P_GivePower
     
     if (power == pw_invisibility)
     {
-	playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
+	playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
 
 	player.powers[power] = INVISTICS;
 	playerMo->flags |= MF_SHADOW;
@@ -313,12 +313,12 @@ P_TouchSpecialThing
     fixed_t	delta;
     int16_t		sound;
 	mobj_t* playerMo;
-	mobj_t* special = (mobj_t*)Z_LoadBytesFromEMS(specialRef);
+	mobj_t* special = (mobj_t*)Z_LoadThinkerFromConventional(specialRef);
 	fixed_t specialz = special->z;
 	spritenum_t specialsprite = special->sprite;
 	boolean specialflagsdropped =  special->flags&MF_DROPPED ? 1 : 0;
 	boolean specialflagscountitem =  special->flags&MF_COUNTITEM ? 1 : 0;
-	mobj_t* toucher = (mobj_t*)Z_LoadBytesFromEMS(toucherRef);
+	mobj_t* toucher = (mobj_t*)Z_LoadThinkerFromConventional(toucherRef);
 		
     delta = specialz - toucher->z;
 
@@ -357,7 +357,7 @@ P_TouchSpecialThing
 			player.health++;		// can go over 100%
 			if (player.health > 200)
 				player.health = 200;
-			playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
+			playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
 			playerMo->health = player.health;
 			player.message = GOTHTHBONUS;
 			break;
@@ -375,7 +375,7 @@ P_TouchSpecialThing
 			player.health += 100;
 			if (player.health > 200)
 				player.health = 200;
-			playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
+			playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
 			playerMo->health = player.health;
 			player.message = GOTSUPER;
 			sound = sfx_getpow;
@@ -385,7 +385,7 @@ P_TouchSpecialThing
 			if (!commercial)
 				return;
 			player.health = 200;
-			playerMo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
+			playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
 			playerMo->health = player.health;
 			P_GiveArmor (2);
 			player.message = GOTMSPHERE;
@@ -638,7 +638,7 @@ P_KillMobj
     mobjtype_t	item;
     mobj_t*	mo;
 	mobj_t* source;
-	mobj_t*	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
+	mobj_t*	target = (mobj_t*)Z_LoadThinkerFromConventional(targetRef);
 	MEMREF moRef;
 
 	
@@ -651,7 +651,7 @@ P_KillMobj
     target->height.w >>= 2;
 
     if (sourceRef) {
-		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+		source = (mobj_t*)Z_LoadThinkerFromConventional(sourceRef);
 		if (source->player) {
 			// count for intermission
 			if (target->flags & MF_COUNTKILL)
@@ -721,7 +721,7 @@ P_KillMobj
     }
 
     moRef = P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
-	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	mo = (mobj_t*)Z_LoadThinkerFromConventional(moRef);
     mo->flags |= MF_DROPPED;	// special versions of items
 }
 
@@ -760,7 +760,7 @@ P_DamageMobj
 	int16_t targetsecnum;
 	int16_t targethealth;
 
-	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
+	target = (mobj_t*)Z_LoadThinkerFromConventional(targetRef);
  
 	if (!(target->flags & MF_SHOOTABLE)) {
 		return;	// shouldn't happen...
@@ -784,16 +784,16 @@ P_DamageMobj
     // thus kick away unless using the chainsaw.
 
 	if (sourceRef) {
-		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+		source = (mobj_t*)Z_LoadThinkerFromConventional(sourceRef);
 	}
 
     if (inflictorRef && !(target->flags & MF_NOCLIP) && (!sourceRef || !source->player || source->player->readyweapon != wp_chainsaw)) {
 
-		inflictor = (mobj_t*)Z_LoadBytesFromEMS(inflictorRef);
+		inflictor = (mobj_t*)Z_LoadThinkerFromConventional(inflictorRef);
 		inflictorx = inflictor->x;
 		inflictory = inflictor->y;
 		inflictorz = inflictor->z;
-		target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
+		target = (mobj_t*)Z_LoadThinkerFromConventional(targetRef);
 
 		ang = R_PointToAngle2 ( inflictorx,
 				inflictory,
@@ -875,7 +875,7 @@ P_DamageMobj
     
 
 
-	target = (mobj_t*)Z_LoadBytesFromEMS(targetRef);
+	target = (mobj_t*)Z_LoadThinkerFromConventional(targetRef);
     // do the damage	
     target->health -= damage;	
     if (target->health <= 0) {
@@ -891,7 +891,7 @@ P_DamageMobj
 
     target->reactiontime = 0;		// we're awake now...	
 	if (sourceRef) {
-		source = (mobj_t*)Z_LoadBytesFromEMS(sourceRef);
+		source = (mobj_t*)Z_LoadThinkerFromConventional(sourceRef);
 	}
     if ( (!target->threshold || target->type == MT_VILE)
 	 && sourceRef && sourceRef != targetRef

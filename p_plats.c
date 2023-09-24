@@ -45,7 +45,7 @@ void T_PlatRaise(MEMREF platRef)
 {
 
     result_e	res;
-	plat_t* plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+	plat_t* plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 	int16_t platsecnum = plat->secnum;
 
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
@@ -53,14 +53,14 @@ void T_PlatRaise(MEMREF platRef)
 	int16_t sectorsoundorgY = sectors[platsecnum].soundorgY;
 	short_height_t sectorfloorheight = sectors[platsecnum].floorheight;
 
-	plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+	plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 
 
 
 	switch(plat->status) {
 		  case plat_up:
 				res = T_MovePlane(plat->secnum,  plat->speed, plat->high, plat->crush,0,1);
-				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+				plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 				if (plat->type == raiseAndChange || plat->type == raiseToNearestAndChange) {
 					if (!(leveltime.w & 7)) {
 						S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_stnmov);
@@ -98,7 +98,7 @@ void T_PlatRaise(MEMREF platRef)
 	
 		  case	plat_down:
 				res = T_MovePlane(platsecnum,plat->speed,plat->low,false,0,-1);
-				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+				plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 				if (res == floor_pastdest) {
 					plat->count = plat->wait;
 					plat->status = plat_waiting;
@@ -174,9 +174,9 @@ EV_DoPlat
 		sectorsoundorgX = sectors[secnum].soundorgX;
 		sectorsoundorgY = sectors[secnum].soundorgY;
 		sectorfloorheight = sectors[secnum].floorheight;
-		platRef = Z_MallocEMSNew(sizeof(*plat), PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+		platRef = Z_MallocConventional(sizeof(*plat), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
 		(&sectors[secnum])->specialdataRef = platRef;
-		plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+		plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 		plat->thinkerRef = P_AddThinker(platRef, TF_PLATRAISE);
 	 
 
@@ -193,7 +193,7 @@ EV_DoPlat
 				sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 				(&sectors[secnum])->floorpic = sectors[side0secnum].floorpic;
 				specialheight = P_FindNextHighestFloor(secnum, sectorfloorheight);
-				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+				plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 				plat->high = specialheight;
 				plat->wait = 0;
 				plat->status = plat_up;
@@ -208,7 +208,7 @@ EV_DoPlat
 				sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 				(&sectors[secnum])->floorpic = sectors[side0secnum].floorpic;
 
-				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+				plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 				plat->speed = PLATSPEED / 2;
 				plat->high = sectorfloorheight + amount << SHORTFLOORBITS; // todo test, this looks wrong
 				plat->wait = 0;
@@ -220,7 +220,7 @@ EV_DoPlat
 			case downWaitUpStay:
 				plat->speed = PLATSPEED * 4;
 				specialheight = P_FindLowestFloorSurrounding(secnum);
-				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+				plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 				plat->low = specialheight;
 
 				if (plat->low > sectorfloorheight) {
@@ -236,7 +236,7 @@ EV_DoPlat
 			case blazeDWUS:
 				plat->speed = PLATSPEED * 8;
 				specialheight = P_FindLowestFloorSurrounding(secnum);
-				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+				plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 
 				plat->low = specialheight;
 
@@ -256,11 +256,11 @@ EV_DoPlat
 					specialheight = sectorfloorheight;
 				}
 
-				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+				plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 				plat->low = specialheight;
 
 				specialheight = P_FindHighestFloorSurrounding(secnum);
-				plat = (plat_t*)Z_LoadBytesFromEMS(platRef);
+				plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 				plat->high = specialheight;
 
 				if (plat->high < sectorfloorheight) {
@@ -285,7 +285,7 @@ void P_ActivateInStasis(int8_t tag) {
 	plat_t* plat;
 	for (j = 0; j < MAXPLATS; j++)
 		if (activeplats[j] != NULL_MEMREF) {
-			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[j]);
+			plat = (plat_t*)Z_LoadThinkerFromConventional(activeplats[j]);
 			if ((plat->status == plat_in_stasis) && (plat->tag == tag)) {
 				plat->oldstatus = plat->status;
 
@@ -301,7 +301,7 @@ void EV_StopPlat(uint8_t linetag) {
 
 	for (j = 0; j < MAXPLATS; j++) {
 		if (activeplats[j] != NULL_MEMREF) {
-			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[j]);
+			plat = (plat_t*)Z_LoadThinkerFromConventional(activeplats[j]);
 			if ((plat->status != plat_in_stasis) && (plat->tag == linetag)) {
 				plat->oldstatus = plat->status;
 				plat->status = plat_in_stasis;
@@ -338,7 +338,7 @@ void P_RemoveActivePlat(MEMREF platRef)
 	platraisecount++;
 	for (i = 0; i < MAXPLATS; i++) {
 		if (platRef == activeplats[i]) {
-			plat = (plat_t*)Z_LoadBytesFromEMS(activeplats[i]);
+			plat = (plat_t*)Z_LoadThinkerFromConventional(activeplats[i]);
 			platsecnum = plat->secnum;
 			P_RemoveThinker(plat->thinkerRef);
 

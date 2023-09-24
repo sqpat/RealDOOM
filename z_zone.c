@@ -198,6 +198,7 @@
 // we dont make many conventional allocations, only a small number of important ones
 #define CONVENTIONAL_ALLOCATION_LIST_SIZE 16
 #define SPRITE_ALLOCATION_LIST_SIZE 150
+#define THINKER_ALLOCATION_LIST_SIZE 400
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 0x10000L
 
@@ -211,7 +212,7 @@
 // good enough for sprites in doom1.wad (shareware). Increase for other types?
 // #define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
 	#define STATIC_CONVENTIONAL_SPRITE_SIZE 1
-
+#define STATIC_CONVENTIONAL_THINKER_SIZE 1
 
 // 8 MB worth. Letting us set 8 MB as a max lets us get away with 
 // some smaller allocation_t sizes
@@ -290,7 +291,7 @@ typedef struct
 
 typedef struct
 {
-	uint16_t size;
+	uint16_t	size;
 	uint16_t	offset; // todo make this a uint16_t offset
 } allocation_conventional_t;
 
@@ -299,6 +300,7 @@ typedef struct
 byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
 byte spritememoryblock[STATIC_CONVENTIONAL_SPRITE_SIZE];
+byte thinkermemoryblock[STATIC_CONVENTIONAL_THINKER_SIZE];
 
 uint16_t totalconventionalfree1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 uint16_t remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
@@ -306,6 +308,8 @@ uint16_t remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
 uint16_t totalconventionalfree2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
 uint16_t remainingspriteconventional = STATIC_CONVENTIONAL_SPRITE_SIZE;
 uint16_t totalconventionalsprite = 	  STATIC_CONVENTIONAL_SPRITE_SIZE;
+uint16_t remainingthinkerconventional = STATIC_CONVENTIONAL_THINKER_SIZE;
+uint16_t totalconventionalthinker = 	  STATIC_CONVENTIONAL_THINKER_SIZE;
 
 PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
@@ -313,6 +317,7 @@ allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 allocation_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 allocation_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 allocation_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
+allocation_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
 
 
 int16_t activepages[NUM_EMS_PAGES];
@@ -437,6 +442,10 @@ void Z_InitEMS(void)
 	currentListHead = 1;
 }
 
+void Z_FreeConventional(PAGEREF block){
+	// todo impelement... used for when thinkers get freed.
+	Z_FreeEMSNew(block);
+}
 
 void Z_FreeEMSNew(PAGEREF block) {
 
@@ -637,7 +646,7 @@ int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
 
 	if (memref >= EMS_ALLOCATION_LIST_SIZE ) {
 		if (memref >= (EMS_ALLOCATION_LIST_SIZE + 2 * CONVENTIONAL_ALLOCATION_LIST_SIZE)) {
-			I_Error("Z_RefIsActive: alloc too big %i ", memref);
+			//I_Error("Z_RefIsActive: alloc too big %i ", memref);
 		}
 		return 1; // if its in conventional then its good.
 	}
@@ -1298,6 +1307,11 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
 					I_Error ("caught c");
 				}
 				return spritememoryblock + sprite_allocations[ref].offset;
+			case CA_TYPE_THINKER:
+				if (ref >= THINKER_ALLOCATION_LIST_SIZE) {
+					I_Error("caught e");
+				}
+				return thinkermemoryblock + thinker_allocations[ref].offset;
 			default:
 
 				if (ref >= 2*CONVENTIONAL_ALLOCATION_LIST_SIZE){
@@ -1317,14 +1331,10 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
 
  
 void Z_FreeConventionalAllocations() {
-	int16_t i = 0;
 
-	for (i = 0; i < CONVENTIONAL_ALLOCATION_LIST_SIZE; i++) {
-		conventional_allocations1[i].offset = 0;
-		conventional_allocations1[i].size = 0;
-		conventional_allocations2[i].offset = 0;
-		conventional_allocations2[i].size = 0;
-	}
+	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * 4);
+	memset(conventional_allocations2, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * 4);
+	memset(thinkerallocations, 0, THINKER_ALLOCATION_LIST_SIZE * 4);
 
 }
 
@@ -1359,13 +1369,22 @@ MEMREF Z_MallocConventional(
 			remainingconventional1 -= size;
 		}
 		loopamount = CONVENTIONAL_ALLOCATION_LIST_SIZE;
+	} else if (type == CA_TYPE_THINKER){
+		if (size > remainingthinkerconventional){
+			return Z_MallocEMSNew(size, tag, user, sourceHint);
+		}
+
+		allocations = thinker_allocations;
+		remainingthinkerconventional -= size;
+		loopamount = THINKER_ALLOCATION_LIST_SIZE;
+
 	} else if (type == CA_TYPE_SPRITE){
 		if (size > remainingspriteconventional){
 			return Z_MallocEMSNew(size, tag, user, sourceHint);
 		}
 		allocations = sprite_allocations;
 		remainingspriteconventional -= size;
-		loopamount = SPRITE_ALLOCATION_LIST_SIZE;
+		loopamount = SPRITE_ALLOCATION_LIST_SIZE;		
 	}
 	
 	

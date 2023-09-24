@@ -305,7 +305,7 @@ A_WeaponReady
 {	
     statenum_t	newstate;
     fixed_t		angle;
-	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
+	mobj_t* playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
     
     // get out of attack state
     if (playermo->state == &states[S_PLAY_ATK1]
@@ -491,7 +491,7 @@ A_Punch
     fineangle_t	angle;
     int16_t		damage;
     fixed_t		slope;
-	mobj_t* playermo = (mobj_t*) Z_LoadBytesFromEMS(playermoRef);
+	mobj_t* playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
 	mobj_t* linetarget;
 
     damage = (P_Random ()%10+1)<<1;
@@ -512,7 +512,7 @@ A_Punch
     if (linetargetRef)
     {
 		S_StartSoundFromRef(playermoRef, sfx_punch);
-		linetarget = (mobj_t*) Z_LoadBytesFromEMS(linetargetRef);
+		linetarget = (mobj_t*)Z_LoadThinkerFromConventional(linetargetRef);
 		playermo->angle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
     }
 
@@ -532,7 +532,7 @@ A_Saw
     fineangle_t	angle;
     int16_t		damage;
     fixed_t		slope;
-	mobj_t* playermo = (mobj_t*)Z_LoadBytesFromEMS(playermoRef);
+	mobj_t* playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
 	mobj_t* linetarget; 
 
     damage = 2*(P_Random ()%10+1);
@@ -551,7 +551,7 @@ A_Saw
     }
 	S_StartSoundFromRef(playermoRef, sfx_sawhit);
 	
-	linetarget = (mobj_t*)Z_LoadBytesFromEMS(linetargetRef);
+	linetarget = (mobj_t*)Z_LoadThinkerFromConventional(linetargetRef);
     // turn to face target
     bigangle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
     if (bigangle - playermo->angle > ANG180)
@@ -630,7 +630,7 @@ fixed_t		bulletslope;
 void P_BulletSlope (MEMREF moRef)
 {
     fineangle_t	an;
-	mobj_t*	mo = (mobj_t*) Z_LoadBytesFromEMS(moRef);
+	mobj_t*	mo = (mobj_t*)Z_LoadThinkerFromConventional(moRef);
     // see which target is to be aimed at
 	// todo use fixed_t_union to reduce shift
 	an = mo->angle >> ANGLETOFINESHIFT;
@@ -660,7 +660,7 @@ P_GunShot
     fineangle_t	angle;
     int16_t		damage;
 
-	mobj_t*	mo = (mobj_t*)Z_LoadBytesFromEMS(moRef);
+	mobj_t*	mo = (mobj_t*)Z_LoadThinkerFromConventional(moRef);
  
     damage = 5*(P_Random ()%3+1);
 	// todo use fixed_t_union to reduce shift
@@ -750,7 +750,7 @@ A_FireShotgun2
 
     P_BulletSlope (playermoRef);
 	
-	playermo = (mobj_t*) Z_LoadBytesFromEMS(playermoRef);
+	playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
     for (i=0 ; i<20 ; i++)
     {
 	damage = 5*(P_Random ()%3+1);
@@ -836,7 +836,7 @@ void A_BFGSpray (mobj_t* mo)
 
 		if (!linetargetRef)
 			continue;
-		linetarget = (mobj_t*)Z_LoadBytesFromEMS(linetargetRef);
+		linetarget = (mobj_t*)Z_LoadThinkerFromConventional(linetargetRef);
 
 		P_SpawnMobj (linetarget->x,
 				linetarget->y,

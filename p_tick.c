@@ -156,14 +156,14 @@ void P_RunThinkers (void)
 			// time to remove it
 			thinkerlist[thinkerlist[currentthinker].next].prev = thinkerlist[currentthinker].prev;
 			thinkerlist[thinkerlist[currentthinker].prev].next = thinkerlist[currentthinker].next;
-			Z_FreeEMSNew (thinkerlist[currentthinker].memref);
+			Z_FreeConventional (thinkerlist[currentthinker].memref);
 			thinkerlist[currentthinker].prev = MAX_THINKERS;
 
 		} else {
 			if (gametic == 142 && i == 0) {
 				// 37 214   44 218   46 219   216 224
-				//SAVEDUNIT = (mobj_t*)Z_LoadBytesFromEMS(players.moRef);
-				//SAVEDUNIT = (mobj_t*)Z_LoadBytesFromEMS(thinkerlist[currentthinker].memref);
+				//SAVEDUNIT = (mobj_t*)Z_LoadThinkerFromConventional(players.moRef);
+				//SAVEDUNIT = (mobj_t*)Z_LoadThinkerFromConventional(thinkerlist[currentthinker].memref);
 				//I_Error("error %i %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy, thinkerlist[currentthinker].functionType);
 				// 454 122 157
 				//setval = 1;
@@ -211,7 +211,7 @@ void P_RunThinkers (void)
 #ifdef DEBUGLOG_TO_FILE
 				/*
 				if (gametic == 205) {
-					SAVEDUNIT = Z_LoadBytesFromEMS(playermoRef);
+					SAVEDUNIT = Z_LoadThinkerFromConventional(playermoRef);
 					if (SAVEDUNIT->momx == -43471L) {
 						// i == 208: -76958L 
 						I_Error("player momx momy %li %li %i", SAVEDUNIT->momx, SAVEDUNIT->momy, i);
@@ -220,7 +220,7 @@ void P_RunThinkers (void)
 				*/
 				if (gametic == stoptic) {
 					
-					//SAVEDUNIT = Z_LoadBytesFromEMS(playermoRef);
+					//SAVEDUNIT = Z_LoadThinkerFromConventional(playermoRef);
 					if (i == 0) {
 						fp = fopen("debgtick.txt", "w"); // clear old file
 					} else {
@@ -237,7 +237,7 @@ void P_RunThinkers (void)
 // i will need this later to help me debug inevitible doom 2 content memleaks
 /*
 				if (gametic == 619 && i == 0) {
-					//SAVEDUNIT = (mobj_t*) Z_LoadBytesFromEMS(players.moRef);
+					//SAVEDUNIT = (mobj_t*)Z_LoadThinkerFromConventional(players.moRef);
 					//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
 					// 454 122 157
 

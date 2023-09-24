@@ -493,7 +493,7 @@ P_CheckSight
     int32_t		pnum;
     int16_t		bytenum;
     int16_t		bitnum;
-	mobj_t*	t1 = (mobj_t*)Z_LoadBytesFromEMS(t1Ref);
+	mobj_t*	t1 = (mobj_t*)Z_LoadThinkerFromConventional(t1Ref);
 	fixed_t t1z = t1->z;
 	fixed_t t1x = t1->x;
 	fixed_t t1y = t1->y;
@@ -509,7 +509,7 @@ P_CheckSight
 
 	 
 
-	t2 = (mobj_t*)Z_LoadBytesFromEMS(t2Ref);
+	t2 = (mobj_t*)Z_LoadThinkerFromConventional(t2Ref);
 	t2z = t2->z;
 	t2x = t2->x;
 	t2y = t2->y;
