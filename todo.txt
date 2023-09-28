@@ -24,30 +24,37 @@ TODO
  
  ~ Memory improvements
    x alternate thinker allocator block
+     - implement Z_FreeConventional to free thinkers... or proper algorithm to allocate thinkers.
+       - can use single byte for size. should store head and use different allocator.       
+        - can probably even use high bit for 'freed memory'. 
+          - if all mobj are the same size, then dont need size, just "free" bit map and memref map?
+            - memref mapping to position in map?
+       - non mobj thinker goes in different map?
 
    - fix demo1/3 crash
+  ? how big is texcols, etc? can it fit in conventional?
+   - // 21552 each for shareware... this could potentially fit
 
-  - sprites are in conventional memory but unoften used and high in number and it makes more useful allocations like lines take longer to find in search. do something to change this
+  - Do something about blocklinks and NUM_BLOCKLINKS
+
     
     2 smaller static mobj
       - whats size of all of them combined? num mobjs?
 
 
-    ? colormaps in near heap?
 
-    - improve blocklinks implementation
     ? playpal in conventional?
-    - re-examine pagination amounts per type
-    - ems 4.0 implementation
+    x re-examine pagination amounts per type
+    ~ ems 4.0 implementation
+      - difficult, most drivers do not support 4+ page frames... maybe qemm386
+     
     
     - near heap is largely unused after fileinfo alloca
       - put something in there. over 20k (?) or so unused
-    - implement 'smart' allocator in setup level 
+    ? implement 'smart' allocator in setup level 
       - allocate most important items in conventional first
 
-    - mobjs, or player into conventional?
- - do the mobj ems page locality thing
-
+ 
  - NUM_BLOCKLINKS is 2000. can be way less. 
     - block x and y are bytes. have a 2 byte thing in a list. iterate thru the list.
    - or consider if it can fit in conventional? (later)

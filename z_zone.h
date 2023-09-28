@@ -123,6 +123,8 @@ typedef struct memblock_s
 #define CA_TYPE_SPRITE 3
 // mobjs and thinkers
 #define CA_TYPE_THINKER 4
+// texcols and tex
+#define CA_TYPE_TEXTURE_INFO 5
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS(int16_t tag);
@@ -151,6 +153,7 @@ void Z_SetUnlocked(MEMREF ref);
 void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type);
 #define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE)
 #define Z_LoadThinkerFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_THINKER)
+#define Z_LoadTextureInfoFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_TEXTURE_INFO)
 #define Z_LoadBytesFromConventional(a, b, c) Z_LoadBytesFromConventionalWithOptions(a, b, c)
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
 #define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b)
@@ -160,6 +163,7 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
 void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type, int8_t* file, int32_t line);
 #define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE, __FILE__, __LINE__)
 #define Z_LoadThinkerFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_THINKER, __FILE__, __LINE__)
+#define Z_LoadTextureInfoFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_TEXTURE_INFO, __FILE__, __LINE__)
 #define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c, __FILE__, __LINE__)
 #define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA, __FILE__, __LINE__)
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked, int8_t* file, int32_t line);

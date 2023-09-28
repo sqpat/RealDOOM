@@ -206,7 +206,7 @@ void P_LoadSegs(int16_t lump)
 		ldefflags = ldef->flags;
 
 
-		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		sidesecnum = sides[ldefsidenum].secnum;
 		othersidesecnum = sides[ldefothersidenum].secnum;
 
@@ -251,14 +251,14 @@ void P_LoadSubsectors(int16_t lump)
 	subsector_t*    subsectors;
 	MEMREF			dataRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectorsRef = Z_MallocEMS (numsubsectors * sizeof(subsector_t), PU_LEVEL, 0, ALLOC_TYPE_SUBSECS);
+	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_SUBSECS);
 
 	W_CacheLumpNumCheck(lump, 2);
 
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapsubsector_t *) Z_LoadBytesFromEMS(dataRef);
 
-	subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
+	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 
 	for (i = 0; i < numsubsectors; i++)
@@ -268,7 +268,7 @@ void P_LoadSubsectors(int16_t lump)
 		ss->numlines = (ms->numsegs);
 		ss->firstline = (ms->firstseg);
 		Z_RefIsActive(dataRef);
-		Z_RefIsActive(subsectorsRef);
+		//Z_RefIsActive(subsectorsRef);
 
 	}
 
@@ -485,7 +485,7 @@ void P_LoadLineDefs(int16_t lump)
 		mldsidenum1 = (mld->sidenum[1]);
 		 
 
-		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		side0secnum = sides[mldsidenum0].secnum;
 		side1secnum = sides[mldsidenum1].secnum;
 		vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
@@ -566,15 +566,15 @@ void P_LoadSideDefs(int16_t lump)
 	int16_t msdsecnum;
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	sidesRef = Z_MallocEMS (numsides * sizeof(side_t), PU_LEVEL, 0, ALLOC_TYPE_SIDES);
-	//sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_SIDES);
+	//sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	//memset(sides, 0, numsides * sizeof(side_t));
 
 	W_CacheLumpNumCheck(lump, 7);
 	
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapsidedef_t *)Z_LoadBytesFromEMSWithOptions(dataRef, PAGE_LOCKED);
-	//sides = (side_t*)Z_LoadBytesFromEMSWithOptions(sidesRef, PAGE_LOCKED);
+
 
 	for (i = 0; i < numsides; i++) {
 		//data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
@@ -584,10 +584,11 @@ void P_LoadSideDefs(int16_t lump)
 		msdrowoffset = (msd->rowoffset);
 		msdsecnum = (msd->sector);
 
- 
 		memcpy(texnametop, msd->toptexture, 8);
 		memcpy(texnamebot, msd->bottomtexture, 8);
 		memcpy(texnamemid, msd->midtexture, 8);
+
+		// side i = 225 textop "bigdoor4-" not found??
 
 		toptex = R_TextureNumForName(texnametop);
 		bottex = R_TextureNumForName(texnamebot);
@@ -595,7 +596,7 @@ void P_LoadSideDefs(int16_t lump)
 		
 		// sides gets unloaded by the above calls, and theres not enough room in ems to 
 		// hold it in memory in the worst case alongside data
-		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		sd = &sides[i];
 		sd->toptexture = toptex;
 		sd->bottomtexture = bottex;
@@ -683,13 +684,13 @@ void P_GroupLines(void)
 	side_t* sides;
 
 	// look up sector number for each subsector
-	subsectors = (subsector_t*)Z_LoadBytesFromEMSWithOptions(subsectorsRef, PAGE_LOCKED);
+	subsectors = (subsector_t*)Z_LoadBytesFromConventionalWithOptions(subsectorsRef, PAGE_LOCKED, CA_TYPE_LEVELDATA);
 	for (i = 0; i < numsubsectors; i++) {
 		firstlinenum = subsectors[i].firstline;
 		segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 		
 		sidedefOffset = segs[firstlinenum].sidedefOffset;
-		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		sidesecnum = sides[sidedefOffset].secnum;
 
 		subsectors[i].secnum = sidesecnum;
@@ -808,6 +809,7 @@ P_SetupLevel
 
 	uint32_t time;
 
+
 	wminfo.partime = 180;
 	player.killcount = player.secretcount = player.itemcount = 0;
 
@@ -847,6 +849,7 @@ P_SetupLevel
 
 	time = ticcount;
 
+
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	// note: most of this ordering is important 
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP); // 0ms
@@ -872,6 +875,15 @@ P_SetupLevel
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
 
 	P_GroupLines(); // 49 tics (362 ics total  in 16 bit, 45 tics in 32 bit)
+
+    //if (spritespriteframeRef == (57857)){
+
+		//sprites = Z_LoadSpriteFromConventional(spritesRef);
+		//spritespriteframeRef =;
+		//spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional( sprites[28].spriteframesRef);
+	
+
+    //}
 
 
 

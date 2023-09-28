@@ -736,7 +736,7 @@ G_CheckSpot
         
     // spawn a teleport fog 
     subsecnum = R_PointInSubsector (tempx.w,tempy.w); 
-	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
+	subsectors = (subsector_t*) Z_LoadBytesFromConventional(subsectorsRef);
 
 	secnum = subsectors[subsecnum].secnum;
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
@@ -1463,7 +1463,7 @@ boolean G_CheckDemoStatus (void)
 
 /*
 
-0 ALLOC_TYPE_CACHE_LUMP 2  (wad stuff) --- needs more detail/drilldown
+0 ALLOC_TYPE_CACHE_LUMP 2  (wad stuff) --- needs more detail/drilldown. probably textures.
 0 ALLOC_TYPE_LEVSPEC 3  (thinkers etc)
 x #define ALLOC_TYPE_SPRITEDEFS 12  (spritedfs)
 0 #define ALLOC_TYPE_SEGMENTS 15    (segments)

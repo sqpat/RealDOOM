@@ -386,7 +386,7 @@ void R_AddLine (int16_t linenum)
     // identical light levels on both sides,
     // and no middle texture.
     
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	sidemidtex = sides[curlinesidedefOffset].midtexture;
 
 	if (backsector.ceilingpic == sectors[frontsecnum].ceilingpic
@@ -568,7 +568,7 @@ boolean R_CheckBBox(int16_t *bspcoord)
 void R_Subsector(int16_t subsecnum)
 {
 	int16_t count;
-	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
+	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	int16_t lineoffset = 0;
 	int16_t firstline;
 	sector_t* sectors;

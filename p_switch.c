@@ -198,7 +198,7 @@ P_ChangeSwitchTexture
 		line->special = 0;
 	}
 	
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
     texTop = sides[lineside0].toptexture;
     texMid = sides[lineside0].midtexture;
     texBot = sides[lineside0].bottomtexture;
@@ -212,7 +212,7 @@ P_ChangeSwitchTexture
     for (i = 0;i < numswitches*2;i++) {
 		if (switchlist[i] == texTop) {
 			S_StartSoundWithParams(buttonlist->soundorgX, buttonlist->soundorgY, sound);
-			sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+			sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 			sides[lineside0].toptexture = switchlist[i^1];
 
 			if (useAgain) {
@@ -223,7 +223,7 @@ P_ChangeSwitchTexture
 		else {
 			if (switchlist[i] == texMid) {
 				S_StartSoundWithParams(buttonlist->soundorgX, buttonlist->soundorgY, sound);
-				sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+				sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 				sides[lineside0].midtexture = switchlist[i^1];
 
 				if (useAgain) {
@@ -235,7 +235,7 @@ P_ChangeSwitchTexture
 			} else {
 				if (switchlist[i] == texBot) {
 					S_StartSoundWithParams(buttonlist->soundorgX, buttonlist->soundorgY, sound);
-					sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+					sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 					sides[lineside0].bottomtexture = switchlist[i^1];
 
 					if (useAgain) {

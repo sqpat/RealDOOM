@@ -223,7 +223,7 @@ getSector
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	offset = lines[offset].sidenum[side];
 
-    return ((side_t*)Z_LoadBytesFromEMS(sidesRef))[offset].secnum;
+    return ((side_t*)Z_LoadBytesFromConventional(sidesRef))[offset].secnum;
 }
 
 
@@ -1187,7 +1187,7 @@ void P_UpdateSpecials(void)
 			if (!buttonlist[i].btimer) {
 				lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 				sidenum = lines[buttonlist[i].linenum].sidenum[0];
-				sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+				sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 
 				switch (buttonlist[i].where) {
 				case top:

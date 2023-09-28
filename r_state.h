@@ -29,7 +29,8 @@
 #define SECNUM_NULL -1
 #define LINENUM_NULL -1
 
-#define NUM_TEXTURE_CACHE 255
+// DOOM 1 SHAREWARE VALUE
+#define NUM_TEXTURE_CACHE 125
 // todo i think this might have to increase outside of shareware version?
 #define NUM_SPRITE_LUMPS_CACHE 500
 

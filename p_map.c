@@ -146,7 +146,7 @@ P_TeleportMove
 	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
 	tmbbox[BOXLEFT].w = x - temp.w;
 	newsubsecnum = R_PointInSubsector (x,y);
-	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
+	subsectors = Z_LoadBytesFromConventional(subsectorsRef);
 	newsubsecsecnum = subsectors[newsubsecnum].secnum;
     ceilinglinenum = -1;
     
@@ -501,7 +501,7 @@ P_CheckPosition
 
 
 	newsubsecnum = R_PointInSubsector(x, y);
-	subsectors = Z_LoadBytesFromEMS(subsectorsRef);
+	subsectors = Z_LoadBytesFromConventional(subsectorsRef);
 	newsubsecsecnum = subsectors[newsubsecnum].secnum;
 
 

@@ -74,7 +74,7 @@ enum { VERSION =  109 };
 #define CHECKREFS
 
 // Probably going to remove this eventually, checks for some infinite loops in a few places. I used this when tracking down freezing bugs when there were many memory leaks early in development.
- // #define LOOPCHECK
+#define LOOPCHECK
 
 
 // run a timedemo with -nodraw novideo and prints out progress of the engine by tic

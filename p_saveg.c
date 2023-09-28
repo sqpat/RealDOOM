@@ -131,7 +131,7 @@ void P_ArchiveWorld (void)
 	    if (li->sidenum[j] == -1)
 		continue;
 	    
-		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		si = &sides[li->sidenum[j]];
 
 	    *put++ = si->textureoffset >> FRACBITS;
@@ -189,7 +189,7 @@ void P_UnArchiveWorld (void)
 		for (j=0 ; j<2 ; j++) {
 			if (li->sidenum[j] == -1)
 				continue;
-			sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+			sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 			si = &sides[li->sidenum[j]];
 			si->textureoffset = *get++ << FRACBITS;
 			si->rowoffset = *get++ << FRACBITS;

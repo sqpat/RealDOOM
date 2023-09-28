@@ -272,8 +272,8 @@ void R_InitSpriteDefs (int8_t** namelist)
         // allocate space for the frames present and copy sprtemp to it
         sprites[i].numframes = maxframe;
         sprites[i].spriteframesRef = Z_MallocConventional (maxframe * sizeof(spriteframe_t), PU_STATIC, CA_TYPE_SPRITE, 0x00, ALLOC_TYPE_SPRITEFRAMES);
-		//Z_RefIsActive(spritesRef);
-		
+//Z_RefIsActive(spritesRef);
+
 		spriteframes = Z_LoadSpriteFromConventional(sprites[i].spriteframesRef);
 
 
@@ -497,7 +497,7 @@ void R_ProjectSprite (MEMREF thingRef)
     // too far off the side?
     if (labs(tx)>(tz<<2))
         return;
-    
+
     // decide which patch to use for sprite relative to player
 	sprites = Z_LoadSpriteFromConventional(spritesRef);
 	spritespriteframeRef = sprites[thingsprite].spriteframesRef;

@@ -158,7 +158,7 @@ EV_DoPlat
 			break;
 	}
 	
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	side0secnum = sides[lineside0].secnum;
 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 	while (secnumlist[j] >= 0) {

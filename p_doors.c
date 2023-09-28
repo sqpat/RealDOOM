@@ -410,7 +410,7 @@ EV_VerticalDoor
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	sidenum = lines[linenum].sidenum[side ^ 1];
 
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	secnum = sides[sidenum].secnum;
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	doorsector = sectors[secnum];

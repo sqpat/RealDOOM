@@ -199,20 +199,30 @@
 #define CONVENTIONAL_ALLOCATION_LIST_SIZE 16
 #define SPRITE_ALLOCATION_LIST_SIZE 150
 #define THINKER_ALLOCATION_LIST_SIZE 400
+#define TEXTUREINFO_ALLOCATION_LIST_SIZE NUM_TEXTURE_CACHE * 3
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 0x10000L
 
 // demo commented out...
 // Use a statically allocationed conventional block instead of getting one as runtime
 
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 1
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 1
 #define STATIC_CONVENTIONAL_BLOCK_SIZE_2 1
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 64512u
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 4096
-// good enough for sprites in doom1.wad (shareware). Increase for other types?
-// #define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
-	#define STATIC_CONVENTIONAL_SPRITE_SIZE 1
+
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 16384
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 16384
+// DOOM SHAREWARE VALUE
+#define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
+// SET TO 1 TO DISABLE
+//#define STATIC_CONVENTIONAL_SPRITE_SIZE 1
+// Currently bugged/not fully implemented, leave as 1 to not use
 #define STATIC_CONVENTIONAL_THINKER_SIZE 1
+
+// DOOM SHAREWARE VALUE
+//#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+4963u+10u)
+// SET TO 1 TO DISABLE
+#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE 1
+
 
 // 8 MB worth. Letting us set 8 MB as a max lets us get away with 
 // some smaller allocation_t sizes
@@ -291,9 +301,19 @@ typedef struct
 
 typedef struct
 {
-	uint16_t	size;
-	uint16_t	offset; // todo make this a uint16_t offset
-} allocation_conventional_t;
+	uint16_t	offset;
+
+} allocation_static_conventional_t;
+
+
+
+typedef struct
+{
+	uint16_t	offset; 
+	// size needed due to deallocations? 
+	// the only things that use these are thinkers and mobj which are smaller than 128 bytes so this works
+	uint8_t	size;  
+} allocation_dynamic_thinker_t;
 
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
@@ -301,23 +321,36 @@ byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
 byte spritememoryblock[STATIC_CONVENTIONAL_SPRITE_SIZE];
 byte thinkermemoryblock[STATIC_CONVENTIONAL_THINKER_SIZE];
+byte textureinfomemoryblock[STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE];
 
-uint16_t totalconventionalfree1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 uint16_t remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 uint16_t remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
-uint16_t totalconventionalfree2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
 uint16_t remainingspriteconventional = STATIC_CONVENTIONAL_SPRITE_SIZE;
-uint16_t totalconventionalsprite = 	  STATIC_CONVENTIONAL_SPRITE_SIZE;
 uint16_t remainingthinkerconventional = STATIC_CONVENTIONAL_THINKER_SIZE;
-uint16_t totalconventionalthinker = 	  STATIC_CONVENTIONAL_THINKER_SIZE;
+uint16_t remainingtextureinfoconventional = STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE;
+
+uint16_t conventional1head = 	  0;
+uint16_t conventional2head = 	  0;
+uint16_t spritehead = 	  0;
+uint16_t thinkerhead = 	  0;
+uint16_t textureinfohead = 	  0;
+
+uint16_t conventional1headindex = 	  0;
+uint16_t conventional2headindex = 	  0;
+uint16_t spriteheadindex = 	  0;
+uint16_t thinkerheadindex = 	  0;
+uint16_t textureinfoheadindex = 	  0;
+
 
 PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
-allocation_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
-allocation_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATION_LIST_SIZE];
-allocation_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
-allocation_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
+allocation_static_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
+allocation_static_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATION_LIST_SIZE];
+allocation_static_conventional_t textureinfo_allocations[TEXTUREINFO_ALLOCATION_LIST_SIZE];
+// todo turn these into dynamic ones
+allocation_static_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
+allocation_static_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
 
 
 int16_t activepages[NUM_EMS_PAGES];
@@ -767,7 +800,7 @@ void Z_DoPageOut(uint16_t pageframeindex, int16_t source) {
 	regs.h.ah = 0x44;
 	intx86(EMS_INT, &regs, &regs);
 	if (regs.h.ah != 0) {
-		I_Error("Mapping failed on page %i!\n", pageframeindex+i);
+		I_Error("Mapping failed on page out %i!\n", pageframeindex+i);
 	}
 
 
@@ -825,7 +858,7 @@ void Z_DoPageIn(uint16_t logicalpage, uint16_t pageframeindex, uint16_t numalloc
 		regs.h.ah = 0x44;
 		intx86(EMS_INT, &regs, &regs);
 		if (regs.h.ah != 0) {
-			I_Error("Mapping failed on page %i %i %i %i %i %i %i %i!\n", activepages[pageframeindex + i], i, pageframeindex, logicalpage, pageins, actualpageins, pageouts, actualpageouts);
+			I_Error("Mapping failed on page in %i %i %i %i %i %i %i %i!\n", activepages[pageframeindex + i], i, pageframeindex, logicalpage, pageins, actualpageins, pageouts, actualpageouts);
 		}
 
 
@@ -1304,20 +1337,26 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
 		switch (type){
 			case CA_TYPE_SPRITE:
 				if (ref >= SPRITE_ALLOCATION_LIST_SIZE){
-					I_Error ("caught c");
+					I_Error ("caught c %u %s %li", ref, file, line);
 				}
+				// 0 0 6bce6b20
+				//I_Error("getting thing %i %i %lx", ref, sprite_allocations[ref].offset, spritememoryblock);
 				return spritememoryblock + sprite_allocations[ref].offset;
 			case CA_TYPE_THINKER:
 				if (ref >= THINKER_ALLOCATION_LIST_SIZE) {
-					I_Error("caught e");
+					I_Error("caught e %u %s %li", ref, file, line);
 				}
 				return thinkermemoryblock + thinker_allocations[ref].offset;
+			case CA_TYPE_TEXTURE_INFO:
+				if (ref >= THINKER_ALLOCATION_LIST_SIZE) {
+					I_Error("caught f %u %s %li", ref, file, line);
+				}
+				return textureinfomemoryblock + textureinfo_allocations[ref].offset;
 			default:
 
 				if (ref >= 2*CONVENTIONAL_ALLOCATION_LIST_SIZE){
-					I_Error ("caught d");
+					I_Error ("caught d %u %s %li", ref, file, line);
 				}
-
 
 				if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
 					return conventionalmemoryblock1 + conventional_allocations1[ref].offset;
@@ -1332,9 +1371,10 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
  
 void Z_FreeConventionalAllocations() {
 
-	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * 4);
-	memset(conventional_allocations2, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * 4);
-	memset(thinker_allocations, 0, THINKER_ALLOCATION_LIST_SIZE * 4);
+	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
+	memset(conventional_allocations2, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
+	// todo if we change this from static to dynamic, change here...
+	memset(thinker_allocations, 0, THINKER_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
 
 }
 
@@ -1346,12 +1386,16 @@ MEMREF Z_MallocConventional(
 		uint8_t user,
 		uint8_t sourceHint){
 
-	int16_t ref=0;
-	uint16_t offset = 0;
-	allocation_conventional_t *allocations;
+	allocation_static_conventional_t *allocations;
 	boolean useblock2 = false;
 	int16_t loopamount;
-	
+	uint16_t* ref=0;
+	uint16_t* blockhead;
+	uint16_t refcopy;
+
+
+	//return Z_MallocEMS(size, tag, user, sourceHint);
+
 
 	if (type == CA_TYPE_LEVELDATA) {
 		if (size > remainingconventional1) {
@@ -1364,9 +1408,13 @@ MEMREF Z_MallocConventional(
 		if (useblock2) {
 			allocations = conventional_allocations2;
 			remainingconventional2 -= size;
+			blockhead = &conventional2head;
+			ref = &conventional2headindex;
 		} else {
 			allocations = conventional_allocations1;
 			remainingconventional1 -= size;
+			blockhead = &conventional1head;
+			ref = &conventional1headindex;
 		}
 		loopamount = CONVENTIONAL_ALLOCATION_LIST_SIZE;
 	} else if (type == CA_TYPE_THINKER){
@@ -1377,7 +1425,9 @@ MEMREF Z_MallocConventional(
 		allocations = thinker_allocations;
 		remainingthinkerconventional -= size;
 		loopamount = THINKER_ALLOCATION_LIST_SIZE;
-
+		blockhead = &thinkerhead;
+		ref = &thinkerheadindex;
+	
 	} else if (type == CA_TYPE_SPRITE){
 		if (size > remainingspriteconventional){
 			return Z_MallocEMS(size, tag, user, sourceHint);
@@ -1385,25 +1435,34 @@ MEMREF Z_MallocConventional(
 		allocations = sprite_allocations;
 		remainingspriteconventional -= size;
 		loopamount = SPRITE_ALLOCATION_LIST_SIZE;		
-	}
-	
-	
-
-	for (; ref < loopamount; ref++) {
-		if (allocations[ref].size == 0) {
-			break;
+		blockhead = &spritehead;
+		ref = &spriteheadindex;
+	} else if (type == CA_TYPE_TEXTURE_INFO){
+		if (size > remainingtextureinfoconventional){
+			return Z_MallocEMS(size, tag, user, sourceHint);
 		}
-		offset += allocations[ref].size;
- 
+		allocations = textureinfo_allocations;
+		remainingtextureinfoconventional -= size;
+		loopamount = TEXTUREINFO_ALLOCATION_LIST_SIZE;		
+		blockhead = &textureinfohead;
+		ref = &textureinfoheadindex;
 	}
-	if (ref == loopamount){
+	refcopy = *ref;
+	*ref = *ref +1;
+ 
+	if (refcopy == loopamount){
 		I_Error("ran out of refs for conventional allocation  %i %i", type, sourceHint);
 	}
 
-	allocations[ref].size = size;
-	allocations[ref].offset = offset;
-	 
-	return ref + EMS_ALLOCATION_LIST_SIZE + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
+	//allocations[ref].size = size;	
+	allocations[refcopy].offset = *blockhead;
+
+	 // ref and blockhead increament up ahead..
+	*blockhead += size; 
+	return (refcopy) + EMS_ALLOCATION_LIST_SIZE + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
+	
+	// the below wasnt working...
+	//return (*ref++) + EMS_ALLOCATION_LIST_SIZE + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
 }
 
 

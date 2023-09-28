@@ -299,7 +299,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 	int16_t linev1Offset;
 	int16_t linev2Offset;
 	uint8_t lineflags;
-	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromEMS(subsectorsRef);
+	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	sector_t* sectors;
 	fixed_t_union temp;
  	temp.h.fracbits = 0;

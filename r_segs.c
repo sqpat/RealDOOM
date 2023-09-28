@@ -122,7 +122,7 @@ R_RenderMaskedSegRange
 	curlinebacksecnum = segs[curlinenum].backsecnum;
 	curlinesidedefOffset = segs[curlinenum].sidedefOffset;
 	curlinelinedefOffset = segs[curlinenum].linedefOffset;
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	siderowoffset = sides[curlinesidedefOffset].rowoffset;
 	sidemidtexture = sides[curlinesidedefOffset].midtexture;
 
@@ -541,7 +541,7 @@ R_StoreWallRange
 	}
 #endif
 
-	sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	siderowoffset = sides[curlinesidedefOffset].rowoffset;
 	sidemidtexture = sides[curlinesidedefOffset].midtexture;
 	sidetoptexture = sides[curlinesidedefOffset].toptexture;

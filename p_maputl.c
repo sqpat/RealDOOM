@@ -505,7 +505,7 @@ P_SetThingPosition (MEMREF thingRef)
     // link into subsector
     subsecnum = R_PointInSubsector (thing->x,thing->y);
 
-	subsectors = (subsector_t*) Z_LoadBytesFromEMS(subsectorsRef);
+	subsectors = (subsector_t*) Z_LoadBytesFromConventional(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
 	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
 	thing->secnum = subsectorsecnum;

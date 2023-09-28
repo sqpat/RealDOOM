@@ -389,7 +389,7 @@ EV_DoFloor
 			  for (i = 0; i < (&sectors[secnum])->linecount; i++) {
 				  if (twoSided (secnum, i) ) {
 					  sidenum = getSideNum(secnum,i,0);
-					  sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+					  sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 					  sidebottomtexture = sides[sidenum].bottomtexture;
 					  //if (sidebottomtexture >= 0) {
 						  if (textureheights[sidebottomtexture] < minsize) {
@@ -397,7 +397,7 @@ EV_DoFloor
 						  }
 					  //}
 					  sidenum = getSideNum(secnum,i,1);
-					  sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+					  sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 					  sidebottomtexture = sides[sidenum].bottomtexture;
 
 					  //if (sidebottomtexture >= 0) {
@@ -428,7 +428,7 @@ EV_DoFloor
 			for (i = 0; i < (&sectors[secnum])->linecount; i++) {
 				if (twoSided(secnum, i)) {
 					sidenum = getSideNum(secnum, i, 0);
-					sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+					sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 					if (sides[sidenum].secnum == secnum) {
 						secnum = getSector(secnum, i, 1);
 

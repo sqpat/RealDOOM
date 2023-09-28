@@ -167,7 +167,7 @@ P_RecursiveSound
 			continue;	// closed door
 		}
 	
-		sides = (side_t*)Z_LoadBytesFromEMS(sidesRef);
+		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		if (sides[checksidenum0].secnum == secnum) {
 			othersecnum = sides[checksidenum1].secnum;
 		} else {
