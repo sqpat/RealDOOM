@@ -42,14 +42,11 @@ For those interested in the technical details, a quick summary of what has been 
  
 
 ### Long term ideas:
- - Use Z_Malloc "source hints" to store items in EMS pages locally to other fields that will be used at the same time. having pages dedicated to mobj_t allocations will probably result in much less paging.
  - More aggressive use of overlays and rewriting of some files to increase the amount of memory saved by overlays
- - Stick mobjs (or something) in that free 20-30k of the default data segment
  - Make smaller versions of mobjs that do not store momx, momy, health, and other such 'monster' type fields.
  - Improve blocklinks implementation
- - Hybride EMS/conventional visplanes
  - Assembly code versions of the main math and render functions
- - EMS 4.0 style support of more than 4 page frames in 16 bit mode
+ - EMS 4.0 style support of more than 4 page frames in 16 bit mode (?)
 
 
 ## Progress of 16-bit build
