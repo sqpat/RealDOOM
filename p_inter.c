@@ -726,8 +726,6 @@ P_KillMobj
 }
 
 
-
-
 //
 // P_DamageMobj
 // Damages both enemies and players
@@ -783,40 +781,44 @@ P_DamageMobj
     // inflict thrust and push the victim out of reach,
     // thus kick away unless using the chainsaw.
 
-	if (sourceRef) {
-		source = (mobj_t*)Z_LoadThinkerFromConventional(sourceRef);
-	}
+	if (inflictorRef && !(target->flags & MF_NOCLIP)) {
+		if (sourceRef) {
+			source = (mobj_t*)Z_LoadThinkerFromConventional(sourceRef);
+		}
+		if ((!sourceRef || !source->player || source->player->readyweapon != wp_chainsaw)) {
 
-    if (inflictorRef && !(target->flags & MF_NOCLIP) && (!sourceRef || !source->player || source->player->readyweapon != wp_chainsaw)) {
+			inflictor = (mobj_t*)Z_LoadThinkerFromConventional(inflictorRef);
+			inflictorx = inflictor->x;
+			inflictory = inflictor->y;
+			inflictorz = inflictor->z;
+			target = (mobj_t*)Z_LoadThinkerFromConventional(targetRef);
 
-		inflictor = (mobj_t*)Z_LoadThinkerFromConventional(inflictorRef);
-		inflictorx = inflictor->x;
-		inflictory = inflictor->y;
-		inflictorz = inflictor->z;
-		target = (mobj_t*)Z_LoadThinkerFromConventional(targetRef);
-
-		ang = R_PointToAngle2 ( inflictorx,
+			ang = R_PointToAngle2(inflictorx,
 				inflictory,
 				target->x,
 				target->y);
-		
-		//thrust = FixedDiv(damage*(FRACUNIT >> 3) * 100, getMobjMass(target->type));
-		thrust = (damage*(FRACUNIT>>3)*100L) / getMobjMass(target->type);
 
-		// make fall forwards sometimes
-		if ( damage < 40
-			 && damage > target->health
-			 && target->z - inflictorz > 64*FRACUNIT
-			 && (P_Random ()&1) )
-		{
-			ang += ANG180;
-			thrust *= 4;
+			//thrust = FixedDiv(damage*(FRACUNIT >> 3) * 100, getMobjMass(target->type));
+			thrust = (damage*(FRACUNIT >> 3) * 100L) / getMobjMass(target->type);
+
+			// make fall forwards sometimes
+			if (damage < 40
+				&& damage > target->health
+				&& target->z - inflictorz > 64 * FRACUNIT
+				&& (P_Random() & 1))
+			{
+				ang += ANG180;
+				thrust *= 4;
+			}
+
+			ang >>= ANGLETOFINESHIFT;
+			target->momx += FixedMul(thrust, finecosine(ang));
+			target->momy += FixedMul(thrust, finesine(ang));
 		}
-
-		ang >>= ANGLETOFINESHIFT;
-		target->momx += FixedMul (thrust, finecosine(ang));
-		target->momy += FixedMul (thrust, finesine(ang));
-    }
+		else {
+			target = (mobj_t*)Z_LoadThinkerFromConventional(targetRef);
+		}
+	}
 	targetsecnum = target->secnum;
 	targethealth = target->health;
     // player specific

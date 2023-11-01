@@ -144,7 +144,7 @@ void P_RunThinkers (void)
 	int8_t result2[100];
 	int32_t lasttick = 0;
 	FILE* fp;
-	ticcount_t stoptic = 255;
+	ticcount_t stoptic = 6000;
 #endif
 
 	currentthinker = thinkerlist[0].next;
@@ -164,7 +164,10 @@ void P_RunThinkers (void)
 				// 37 214   44 218   46 219   216 224
 				//SAVEDUNIT = (mobj_t*)Z_LoadThinkerFromConventional(players.moRef);
 				//SAVEDUNIT = (mobj_t*)Z_LoadThinkerFromConventional(thinkerlist[currentthinker].memref);
-				//I_Error("error %i %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy, thinkerlist[currentthinker].functionType);
+		
+				//I_Error("error %li %i %i %li %li %li %li %hu", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy, thinkerlist[currentthinker].functionType);
+ 
+
 				// 454 122 157
 				//setval = 1;
 
@@ -273,15 +276,10 @@ void P_Ticker (void)
 		return;
     }
 	P_PlayerThink();
-	// 31105 38150
-
+	
 	P_RunThinkers ();
 
-	// -76958 173728
-
 	P_UpdateSpecials ();
-	// -76958 173728
-
 
 	// for par times
     leveltime.w++;	

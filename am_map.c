@@ -371,7 +371,7 @@ void AM_findMinMaxBoundaries(void)
     fixed_t a;
     fixed_t b;
 	fixed_t_union temp;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
+	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);  // vertexesRef is 0 sometimes?
 	min_x = min_y =  MAXLONG;
     max_x = max_y = -MAXLONG;
 	temp.h.fracbits = 0;

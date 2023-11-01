@@ -204,17 +204,15 @@
 #define MAX_ZMALLOC_SIZE 0x10000L
 
 // demo commented out...
-// Use a statically allocationed conventional block instead of getting one as runtime
-
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 1
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 1
 #define STATIC_CONVENTIONAL_BLOCK_SIZE_2 1
 
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 16384
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 16384
 //#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 16384
 // DOOM SHAREWARE VALUE
-#define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
+//#define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
 // SET TO 1 TO DISABLE
-//#define STATIC_CONVENTIONAL_SPRITE_SIZE 1
+#define STATIC_CONVENTIONAL_SPRITE_SIZE 1
 // Currently bugged/not fully implemented, leave as 1 to not use
 #define STATIC_CONVENTIONAL_THINKER_SIZE 1
 
@@ -348,7 +346,7 @@ allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 allocation_static_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 allocation_static_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 allocation_static_conventional_t textureinfo_allocations[TEXTUREINFO_ALLOCATION_LIST_SIZE];
-// todo turn these into dynamic ones
+// todo turn these into dynamic allocations
 allocation_static_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
 allocation_static_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
 
@@ -1344,7 +1342,7 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
 				return spritememoryblock + sprite_allocations[ref].offset;
 			case CA_TYPE_THINKER:
 				if (ref >= THINKER_ALLOCATION_LIST_SIZE) {
-					I_Error("caught e %u %s %li", ref, file, line);
+					I_Error("caught e %u %u %s %li", ref, playermoRef, file, line);
 				}
 				return thinkermemoryblock + thinker_allocations[ref].offset;
 			case CA_TYPE_TEXTURE_INFO:

@@ -95,7 +95,7 @@ enum { VERSION =  109 };
 
 
 //Show page count by source hint on timedemo finish
-#define PROFILE_PAGE_COUNT
+// #define PROFILE_PAGE_COUNT
 
 //
 // For resize of screen, at start of game.
