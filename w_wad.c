@@ -42,13 +42,22 @@
 //
 
 // Location of each lump on disk.
-lumpinfo_t*             lumpinfo;               
-uint16_t                     numlumps;
 
+// correct value for DOOM Sharware
+#define LUMPINFO_SIZE 16432 
+#define LUMPCACHE_SIZE 2528 
+
+byte	lumpbytes[LUMPINFO_SIZE];
+lumpinfo_t*             lumpinfo;               
+byte	lumpcachebytes[LUMPCACHE_SIZE];
+uint16_t                     numlumps;
 MEMREF*					lumpcacheEMS;
 
 // we use this explicitly for fullscreen graphics. 
 MEMREF              pagedlumpcacheEMS[2];
+
+extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
+
 
 // rather than storing a billion duplicate file handles, we'll store a couple
 #ifdef	SUPPORT_MULTIWAD
@@ -184,12 +193,12 @@ void W_AddFile (int8_t *filename)
         //header.numlumps = (header.numlumps);
         //header.infotableofs = (header.infotableofs);
         length = header.numlumps*sizeof(filelump_t);
-		fileinfo = alloca(length);
-		/*
-		fileinfo = _nmalloc (length);
-		if (!fileinfo) {
-			I_Error("couldn't _nmalloc for fileinfo");
-		}*/
+		
+		//fileinfo = alloca(length);
+
+		// let's piggyback off conventional memory during game startup
+		fileinfo = (filelump_t*) conventionalmemoryblock1;
+
         lseek (handle, header.infotableofs, SEEK_SET);
 		read (handle, fileinfo, length);
 		numlumps += header.numlumps;
@@ -197,15 +206,20 @@ void W_AddFile (int8_t *filename)
 // numlumps 1264
     
     
+
     // Fill in lumpinfo
-    lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
+    //lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
+
+	// using static allocation instead of realloc...
+
+
 	// 25k in size! 
 	// now 16.4k..
 
 	//I_Error("lumpsize %i", numlumps * sizeof(lumpinfo_t));
 
-    if (!lumpinfo)
-        I_Error ("Couldn't realloc lumpinfo");
+    //if (!lumpinfo)
+        //I_Error ("Couldn't realloc lumpinfo");
 
     lump_p = &lumpinfo[startlump];
         
@@ -272,6 +286,7 @@ void W_AddFile (int8_t *filename)
     if (reloadname)
         close (handle);
 	//free(fileinfo);
+	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
 }
 
 
@@ -302,7 +317,7 @@ void W_InitMultipleFiles (int8_t** filenames)
     numlumps = 0;
 
     // will be realloced as lumps are added
-    lumpinfo = malloc(1);       
+	lumpinfo = (lumpinfo_t*) lumpbytes;
 
     for ( ; *filenames ; filenames++)
         W_AddFile (*filenames);
@@ -313,8 +328,12 @@ void W_InitMultipleFiles (int8_t** filenames)
         I_Error ("W_InitFiles: no files found");
 #endif
 
-	size = numlumps * sizeof(*lumpcacheEMS);
-	lumpcacheEMS = malloc(size);
+	//size = numlumps * sizeof(*lumpcacheEMS);
+	//I_Error("size %li", size);
+
+	//2528
+	lumpcacheEMS = (MEMREF*)lumpcachebytes;
+
 #ifdef CHECK_FOR_ERRORS
 
 	if (!lumpcacheEMS)

@@ -28,6 +28,7 @@
 extern  int16_t	myargc;
 extern  int8_t**	myargv;
 extern int16_t	prndindex;
+extern int setval;
 
 
 // Returns the position of the given parameter

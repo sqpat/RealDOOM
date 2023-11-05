@@ -43,183 +43,47 @@
 //  because it will get overwritten automatically if needed.
 // 
 
-// 20 11180047 16 1   14 health
-// 20 11179909 16 1   14 health
-
-
-// 13 11165535 17252 19333
-// 12 11195222 26340 28968
-// 12 11195029 26301 28909  < discrepency?
-// 12 11195017 26301 28908  12% health
-// 12 11194907 26331 28957  12% health
-// 12 11187592 26278 28854  
-// 12 11194989 26348 28980  12% health
-
-
-
-// 13 11791514 17394 19472 14% 207
-// 12 11791300 26025 28650 14% 207
-// 11 11791407 39107 44269 14% 207
-// 10 11790714 56451 65828 14% 207
-
-// 9  11746226 75692 89281 207
-// 8 11744336 123321 155180 207
-// 7 11508909 176129 226035 207
-// 6 11494858 232827 298074 207
-// 5 11430693 347033 451908 207
-// 4 11446037 645867 922684 207
-
-// after sidedefs, lines
-
-// 5 12873066 1300704 2714124 207  (2134 in 5639)
-// 4 12987667 1617971 3137312 207  (2134 in 6062)
-
-// after lots of wad stuff
-// 4 14588095 2151855 4282095 207  (2134 in 8305new comp)
-
-// after sectors
-// 16 14918439 208260 295358 207 (2134 in 1859)
-// 4 14918437 2361076 4498999 207 (2134 in 9112)
-
-// 4 14918435 2361076 4498999 207 (2134 in 9225) after reducing code, incl function pointer changes
-// 4 14918435 2363430 4501352 207 (2134 in 9223) major info.c changes
-// 4 14870125 2361729 4499651 207 (2134 in 9263) enum removals and fastdoom netplay/code removal imports
-// 4 14872259 2361729 4499651 207 (2134 in 9287) removed joystick code
-// 4 14834692 2361729 4499651 207 (2134 in 9211) removed more code
-// 4 14822330 1697415 2770423 207 (2134 in)		 after all the 32 to 16 bit stuff
-
-// 4 17810546 2821496 4206470 207       <--- with EMS based visplanes. really rough hit.
-// 4 14821970 1691340 2764279 207        <--- sector floor/ceil 16 bit
-// 4 14821970 1691110 2764049 207        <--- tex w/h 8 bit
-// 4 14821971 1691041 2763930 207     <--- a lot more fields reduced on sector line etc... no big difference in paging?
-// 4 14821971 1685501 2389170 207 (2134 in 4935)    <--- some bounding box stuff made 16 bits
-// 4 14821971 1447746 1993284 207 (2134 in 4200)    <---- node bounding box stuff made 16 bits
-// 4 14199294 1142934 1517335 207 (2134 in 3685)    <----- got rid of multiplayer for good
-// 4 14199294 1142934 1517335 207 (2134 in 3689)    <----- got rid of netplay
-// 4 17197007 2259978 2948257 207 (2134 in 6579)    <----- tried ems visplanes again
-// 4 16620699 2224028 2911385 207 (2134 in 6864)    <----- tried ems visplanes again, with fixed paging.
-
-// 4 16624733 2224018 2911371 207 (2134 in 6903)    <----- ems visplanes again, with bugfixes
-// 4 16632880 2228730 2917927 207 (2134 in 7135)    <----- ems visplanes, bugfixed for 4 pages
-
-// 4 13653120 1145838 1520843 207 (2134 in 4087)    <----- conventional visplanes 4 pages 
-// 4 17437089 2184185 2899356 207 (2134 in 6845)    <----- ems visplanes with mobj thinker sticky page
-// 4 17433911 2184185 2899356 207 (2134 in 6868)    <----- ^^  
-// 4 17415864 2184181 2899349 207 (2134 in 6781)    <----- ^^  
-// 4 17526550 2184181 2899349 207 (2134 in 6812)    <----- ^^  
-// 4 17431288 2204871 2928938 207 (2134 in 6831)    <----- ^^  
-
-// 4 16293123 2766196 3489654 207 (2134 in 7961)    <- passing around mobj instead of ref. Fewer reads but more thrashing?? by a lot???
-// 8 16284007 1068989 1174227 207 (2134 in 3271)    <- same as above but 8
-// 8 13306434 994631  1094351 207 (2134 in 3023)    <- same as above with 8 but with conventional visplanes
-
-// 4 16594448 2234408 2923606 207 (2134 in 6860)    <- back to pre-locking. ems visplanes
-// 4 13616875 1151662 1526661 207 (2134 in 3843)    <- back to pre-locking. conventional visplanes
-// 4 13616875 1151662 1526661 207 (2134 in 3843)    <- back to pre-locking. conventional visplanes
-
-
-// 4 13315550 1684755 2094035 207 (2134 in 4959)    <- locking in PIT_
-// 4 13522324 11193610 1568681 207 (2134 in 3926)    <- locking in R_ProjectSprite
-
-// 4 16594448 2234441 2923661 207 (2134 in 6367)    <----- after removing the 16 bit warnings
-
-
-// 4 13578495 1151503 1526490 207 (2134 in 3766)  <--- long long fixeddiv, index visplanes, removed cheats, removed translation tables
-// 4 12154692 1144295 1515989 207 (2134 in 3918)  <--- cleaned up init code, memref arrays made static
-// 4  9780880 1144286 1515980 207 (2134 in 3850)  <--- more static memref arrays
-// 4  9784299 1145354 1518415 207 (2134 in 3771)
-// 4  9783841 1145337 1518399 207 (2134 in 3812)
-// 4  9783827 1145334 1518397 207 (2134 in 3823)
-// 4  9707835 1094939 1468082 207 (2134 in 3721)  <- translation tables to memory
-// 4  9727235 1095037 1468186 207 (2134 in 3804)  <- blockmaps as 16 bit?
-// 4  9727235 1223378 1597109 207 (2134 in 4071)  <- line flags 8 bit, mapped in v1offset, slopetype in v2offset
-// 4  9727235 1223379 1597109 207 (2134 in 4071)  <- line bounding boxes changed
-// 4  9100444 584187  675843  207 (2134 in 2304)  <- lines fudged into conventional 
-// 4  8460235 464178  532405  207 (2134 in 1863)  <- 64k conventional space first come first serve.
-
-// 4  4527347 1637252 1995397 151 (2134 in 37821) <- first 16 bit run with d_display and text mode debug
-// 4  4510266 1630139 1989477 151 (2134 in 34757) <- first 16 bit run with d_display and text mode debug
-
-// 4  9688463 1219770 1591390 207 (2134 in 3662)  <- no conventional, post some cleanup, different cpu
-// 4  9050016 732304  967816  207 (2134 in 2563)  <- after wad lump cleanup, some conventional freed up
-
-
-// 8 13569197 422735  521499  207 (2134 in 1843)  <---- same as above with 8
-// 8 13578495 422543  521292  207 (2134 in 1851)  <---- same as above with the EMS_PAGE check changed to 16. maybe it doesnt help performance at all?
-
- // CONCLUSION: page locking is not helping ? lru just wins?
-
-
-// 64 14821801 279 262 207 (2134 in 2186)
-// 64 14821801 279 262 207 (2134 in 2163)  // redo draws
-// 32 14821801 47815 55080 207 (2134 in 2001)  // redo some net code and such
-// 32 14821801 47815 55080 207 (2134 in 1869)  // some various optimizations copied over from fastdoom
-   // 1828 after some r_bsp redos
-   // 1782 multiplayer mostly removed
-   // 1849 redid sine tables with function lookup
-
-// demo 1
-// 4 26890040 1545385 2221063 181
-// 4 26693807 1545283 2220732 181
-
-// 4 27529006 1413669 2119421 181
-
-// after sidedefs:
-
-// 4 27594330 2009571 2836062 181
-
-// after lines
-// 32 29792581      23 1       181
-// 16 29792218  154693 207202  181
-// 8 29789279  1169872 1868816 181
-// 4 29785273  3061492 5564953 181
-
-
-// after all but sectors:
-// 4 33851350  3687662 6452365 181  5026 in 14811
-
-
-// after sectors :
-// 16 34504173 310429 398971 181 5026 in 4150
-// 4  34506371 3893022 6696821 181 5026 in 15635
-
-// demo 2 
-
-// after all but sectors
-// 4 22437957  3266557 6213387 75
-// after sectors
-// 4 22844306  3540729 6493412 75
 
 #define ALLOCATION_LIST_HEAD	0
 
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
-#define EMS_ALLOCATION_LIST_SIZE 2048
+#define EMS_ALLOCATION_LIST_SIZE 1450
 // we dont make many conventional allocations, only a small number of important ones
 #define CONVENTIONAL_ALLOCATION_LIST_SIZE 16
-#define SPRITE_ALLOCATION_LIST_SIZE 150
-#define THINKER_ALLOCATION_LIST_SIZE 400
-#define TEXTUREINFO_ALLOCATION_LIST_SIZE NUM_TEXTURE_CACHE * 3
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 0x10000L
 
 // demo commented out...
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 1
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 1
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 65535
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 32767
 
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 16384
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 16384
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 1
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 24678
 // DOOM SHAREWARE VALUE
-//#define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
+#define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
+#define SPRITE_ALLOCATION_LIST_SIZE 150
 // SET TO 1 TO DISABLE
-#define STATIC_CONVENTIONAL_SPRITE_SIZE 1
+//#define STATIC_CONVENTIONAL_SPRITE_SIZE 1
+//#define SPRITE_ALLOCATION_LIST_SIZE 1
+
+
 // Currently bugged/not fully implemented, leave as 1 to not use
+// todo calc actual sizeof mobj or whatever thinker is biggest...
+// mobj sizeof is 97u
+//#define STATIC_CONVENTIONAL_THINKER_SIZE 65535
+//#define THINKER_ALLOCATION_LIST_SIZE 600
+
 #define STATIC_CONVENTIONAL_THINKER_SIZE 1
+#define THINKER_ALLOCATION_LIST_SIZE 1
 
 // DOOM SHAREWARE VALUE
-//#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+4963u+10u)
+#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+4963u+10u)
 // SET TO 1 TO DISABLE
-#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE 1
+//#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE 1
+
+// #define TEXTUREINFO_ALLOCATION_LIST_SIZE 1
+#define TEXTUREINFO_ALLOCATION_LIST_SIZE NUM_TEXTURE_CACHE * 3
 
 
 // 8 MB worth. Letting us set 8 MB as a max lets us get away with 
@@ -303,7 +167,16 @@ typedef struct
 
 } allocation_static_conventional_t;
 
+typedef struct
+{
+	uint16_t	offset;
+	
+	// size is 7 bits, high bit is 1 if deleted
+	uint8_t		size_and_active;
 
+} allocation_thinker_conventional_t;
+
+ 
 
 typedef struct
 {
@@ -348,7 +221,7 @@ allocation_static_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATI
 allocation_static_conventional_t textureinfo_allocations[TEXTUREINFO_ALLOCATION_LIST_SIZE];
 // todo turn these into dynamic allocations
 allocation_static_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
-allocation_static_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
+allocation_thinker_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
 
 
 int16_t activepages[NUM_EMS_PAGES];
@@ -475,7 +348,11 @@ void Z_InitEMS(void)
 
 void Z_FreeConventional(PAGEREF block){
 	// todo impelement... used for when thinkers get freed.
-	Z_FreeEMS(block);
+	if (block >= EMS_ALLOCATION_LIST_SIZE) {
+		thinker_allocations[block - EMS_ALLOCATION_LIST_SIZE].size_and_active |= 0x80;
+	}  else {
+		Z_FreeEMS(block);
+	}
 }
 
 void Z_FreeEMS(PAGEREF block) {
@@ -1327,33 +1204,34 @@ void Z_SetUnlocked(MEMREF ref) {
 #endif
 }
 
-void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_t type, int8_t* file, int32_t line) {
+//void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_t type, int8_t* file, int32_t line) {
+void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_t type) {
 	if (ref < EMS_ALLOCATION_LIST_SIZE) {
-		return Z_LoadBytesFromEMSWithOptions2(ref, locked, file, line);
+		return Z_LoadBytesFromEMSWithOptions2(ref, locked);
 	} else {
 		ref -= EMS_ALLOCATION_LIST_SIZE;
 		switch (type){
 			case CA_TYPE_SPRITE:
 				if (ref >= SPRITE_ALLOCATION_LIST_SIZE){
-					I_Error ("caught c %u %s %li", ref, file, line);
+					I_Error ("caught c %u %s %li", ref);
 				}
 				// 0 0 6bce6b20
 				//I_Error("getting thing %i %i %lx", ref, sprite_allocations[ref].offset, spritememoryblock);
 				return spritememoryblock + sprite_allocations[ref].offset;
 			case CA_TYPE_THINKER:
 				if (ref >= THINKER_ALLOCATION_LIST_SIZE) {
-					I_Error("caught e %u %u %s %li", ref, playermoRef, file, line);
+					I_Error("caught e %u %u %s %li", ref, playermoRef);
 				}
 				return thinkermemoryblock + thinker_allocations[ref].offset;
 			case CA_TYPE_TEXTURE_INFO:
-				if (ref >= THINKER_ALLOCATION_LIST_SIZE) {
-					I_Error("caught f %u %s %li", ref, file, line);
+				if (ref >= TEXTUREINFO_ALLOCATION_LIST_SIZE) {
+					I_Error("caught f %u %s %li", ref);
 				}
 				return textureinfomemoryblock + textureinfo_allocations[ref].offset;
 			default:
 
 				if (ref >= 2*CONVENTIONAL_ALLOCATION_LIST_SIZE){
-					I_Error ("caught d %u %s %li", ref, file, line);
+					I_Error ("caught d %u %s %li", ref);
 				}
 
 				if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
@@ -1371,12 +1249,16 @@ void Z_FreeConventionalAllocations() {
 
 	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
 	memset(conventional_allocations2, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
+	
 	// todo if we change this from static to dynamic, change here...
-	memset(thinker_allocations, 0, THINKER_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
+	memset(thinker_allocations, 0, THINKER_ALLOCATION_LIST_SIZE * sizeof(allocation_thinker_conventional_t));
 
 }
 
-// very easy because we just do it linearly and never remove except all at once. no fragmentation
+
+
+// mostly very easy because we just allocate sequentially and never remove except all at once. no fragmentation
+//  EXCEPT thinkers
 MEMREF Z_MallocConventional( 
 	uint32_t           size,
 		uint8_t           tag,
@@ -1393,7 +1275,6 @@ MEMREF Z_MallocConventional(
 
 
 	//return Z_MallocEMS(size, tag, user, sourceHint);
-
 
 	if (type == CA_TYPE_LEVELDATA) {
 		if (size > remainingconventional1) {
@@ -1415,16 +1296,7 @@ MEMREF Z_MallocConventional(
 			ref = &conventional1headindex;
 		}
 		loopamount = CONVENTIONAL_ALLOCATION_LIST_SIZE;
-	} else if (type == CA_TYPE_THINKER){
-		if (size > remainingthinkerconventional){
-			return Z_MallocEMS(size, tag, user, sourceHint);
-		}
-
-		allocations = thinker_allocations;
-		remainingthinkerconventional -= size;
-		loopamount = THINKER_ALLOCATION_LIST_SIZE;
-		blockhead = &thinkerhead;
-		ref = &thinkerheadindex;
+	
 	
 	} else if (type == CA_TYPE_SPRITE){
 		if (size > remainingspriteconventional){
@@ -1463,9 +1335,57 @@ MEMREF Z_MallocConventional(
 	//return (*ref++) + EMS_ALLOCATION_LIST_SIZE + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
 }
 
+// Unlike other conventional allocations, these are freed and cause fragmentation of the memory block
+
+MEMREF Z_MallocThinkerConventional(
+	uint8_t           size
+) {
+
+	if (size > remainingthinkerconventional || (thinkerheadindex == THINKER_ALLOCATION_LIST_SIZE) ) {
+		int16_t i = 0;
+		// we have exhausted the memory block and need to iterate back over it to find a free allocation
+		for (i = 0; i < THINKER_ALLOCATION_LIST_SIZE; i++) {
+			if ((thinker_allocations[i].size_and_active & 0x80) && size < (thinker_allocations[i].size_and_active & 0x7F) ) {
+				// allocation deleted and big enough. use this
+				thinker_allocations[i].size_and_active &= 0x7F;
+
+				// todo zero out the memory?
+				return i + EMS_ALLOCATION_LIST_SIZE;
+			}
+
+		}
+
+		return Z_MallocEMS(size, PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+	}
+	else {
+
+		// if we havent reached the end of the original memory block doing sequential allocations, then just allocate it straight away at the end.
+		allocation_static_conventional_t *allocations;
+		uint16_t refcopy;
+
+		remainingthinkerconventional -= size;
+		refcopy = thinkerheadindex;
+		thinkerheadindex++;
+
+		// todo remove, checked above for this case
+		if (refcopy == THINKER_ALLOCATION_LIST_SIZE) {
+			I_Error("ran out of refs for conventional allocation  %i", CA_TYPE_THINKER);
+		}
+
+		//allocations[ref].size = size;	
+		thinker_allocations[refcopy].offset = thinkerhead;
+		thinker_allocations[refcopy].size_and_active = size;
+
+		// ref and blockhead increament up ahead..
+		thinkerhead += size;
+		return (refcopy)+EMS_ALLOCATION_LIST_SIZE;
+
+	}
+
+}
 
 
-void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked, int8_t* file, int32_t line) {
+void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 //void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 	byte* memorybase;
 	uint16_t pageframeindex;

@@ -264,7 +264,7 @@ EV_DoDoor
 
 
 
-		doorRef = Z_MallocConventional(sizeof(*door), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+		doorRef = Z_MallocThinkerConventional(sizeof(*door));
 		sectors[secnum].specialdataRef = doorRef;
 		doorsector = sectors[secnum];
 		door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
@@ -465,7 +465,7 @@ EV_VerticalDoor
 	
     
     // new door thinker
-	doorRef = Z_MallocConventional(sizeof(*door), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+	doorRef = Z_MallocThinkerConventional(sizeof(*door));
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectors[secnum].specialdataRef = doorRef;
 
@@ -525,7 +525,7 @@ void P_SpawnDoorCloseIn30 (int16_t secnum)
 	MEMREF doorRef;
 	sector_t* sectors;
 
-	doorRef = Z_MallocConventional(sizeof(*door), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+	doorRef = Z_MallocThinkerConventional(sizeof(*door));
 
 	door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR);
@@ -553,7 +553,7 @@ P_SpawnDoorRaiseIn5Mins
 	MEMREF doorRef;
 	int16_t doortopheight;
 	sector_t* sectors;
-	doorRef = Z_MallocConventional(sizeof(*door), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+	doorRef = Z_MallocThinkerConventional(sizeof(*door));
 
 	door = (vldoor_t*)Z_LoadThinkerFromConventional(doorRef);
 	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR);

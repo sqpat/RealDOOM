@@ -126,6 +126,9 @@ typedef struct memblock_s
 // texcols and tex
 #define CA_TYPE_TEXTURE_INFO 5
 
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 59472
+
+
 void Z_InitEMS(void);
 void Z_FreeTagsEMS(int16_t tag);
 void Z_InitConventional(void);
@@ -135,6 +138,7 @@ void Z_FreeConventionalAllocations();
 MEMREF Z_MallocEMS(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
 MEMREF Z_MallocEMSWithBackRef(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
 MEMREF Z_MallocConventional(uint32_t size, uint8_t tag, int16_t type, uint8_t user, uint8_t sourceHint);
+MEMREF Z_MallocThinkerConventional(uint8_t size);
 
 #ifdef MEMORYCHECK
 void Z_CheckEMSAllocations(PAGEREF block, int32_t i, int32_t var2, int32_t var3);
@@ -149,17 +153,17 @@ void Z_SetUnlocked(MEMREF ref);
 
 
 
-/*
+
 void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type);
 #define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE)
 #define Z_LoadThinkerFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_THINKER)
 #define Z_LoadTextureInfoFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_TEXTURE_INFO)
-#define Z_LoadBytesFromConventional(a, b, c) Z_LoadBytesFromConventionalWithOptions(a, b, c)
+#define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c)
+#define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA)
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
 #define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b)
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED)
-*/
-
+/*
 void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type, int8_t* file, int32_t line);
 #define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE, __FILE__, __LINE__)
 #define Z_LoadThinkerFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_THINKER, __FILE__, __LINE__)
@@ -169,7 +173,7 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int1
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked, int8_t* file, int32_t line);
 #define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b, __FILE__, __LINE__)
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED, __FILE__, __LINE__)
-
+*/
 
 #ifdef CHECKREFS
 int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);

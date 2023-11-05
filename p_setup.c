@@ -120,7 +120,6 @@ void P_LoadVertexes(int16_t lump)
 
 	// Allocate zone memory for buffer.
 	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_VERTEXES);
-
 	// Load data into cache.
 	W_CacheLumpNumCheck(lump, 0);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
@@ -567,8 +566,7 @@ void P_LoadSideDefs(int16_t lump)
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_SIDES);
-	//sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
-	//memset(sides, 0, numsides * sizeof(side_t));
+	
 
 	W_CacheLumpNumCheck(lump, 7);
 	
@@ -871,22 +869,19 @@ P_SetupLevel
 	P_LoadSegs(lumpnum + ML_SEGS); // 50 tics (313 total)
 
 
+	//     sector    linedef      node      linebuffer
+	// side     vertex     subsec       seg
+	// 1223 170   896   958  467  466   1371        num x
+	//    7  33     4    27    6   28     18        sizeof type
+	// 8561 5610 3584 25866 2802 13048 24678  2440  bytes used
+	//   3    2     1     4    5     6     7     8  load order
+	//                           59471 
+
+
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 9);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
 
 	P_GroupLines(); // 49 tics (362 ics total  in 16 bit, 45 tics in 32 bit)
-
-    //if (spritespriteframeRef == (57857)){
-
-		//sprites = Z_LoadSpriteFromConventional(spritesRef);
-		//spritespriteframeRef =;
-		//spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional( sprites[28].spriteframesRef);
-	
-
-    //}
-
-
-
 
 	bodyqueslot = 0;
 

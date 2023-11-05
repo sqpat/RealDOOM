@@ -77,7 +77,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 	sectors[secnum].special = 0;
 
 	
-	flickRef = Z_MallocConventional(sizeof(*flick), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+	flickRef = Z_MallocThinkerConventional(sizeof(*flick));
 	flick = (fireflicker_t*) Z_LoadThinkerFromConventional(flickRef);
 
 	flick->thinkerRef = P_AddThinker(flickRef, TF_FIREFLICKER);
@@ -148,7 +148,7 @@ void P_SpawnLightFlash (int16_t secnum)
 
 	
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
-	flashRef = Z_MallocConventional(sizeof(*flash), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+	flashRef = Z_MallocThinkerConventional(sizeof(*flash));
 	flash = (lightflash_t*) Z_LoadThinkerFromConventional(flashRef);
 	flash->thinkerRef = P_AddThinker(flashRef, TF_LIGHTFLASH);
 
@@ -220,7 +220,7 @@ P_SpawnStrobeFlash
 	// nothing special about it during gameplay
 	sectors[secnum].special = 0;
 
-	flashRef = Z_MallocConventional(sizeof(*flash), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+	flashRef = Z_MallocThinkerConventional(sizeof(*flash));
 	flash = (strobe_t*) Z_LoadThinkerFromConventional(flashRef);
 
 
@@ -418,7 +418,7 @@ void P_SpawnGlowingLight(int16_t secnum)
 	sectors[secnum].special = 0;
 
 
-	glowRef = Z_MallocConventional(sizeof(*g), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+	glowRef = Z_MallocThinkerConventional(sizeof(*g));
 	g = (glow_t*)Z_LoadThinkerFromConventional(glowRef);
 
 	g->thinkerRef = P_AddThinker(glowRef, TF_GLOW);

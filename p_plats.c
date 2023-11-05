@@ -174,7 +174,7 @@ EV_DoPlat
 		sectorsoundorgX = sectors[secnum].soundorgX;
 		sectorsoundorgY = sectors[secnum].soundorgY;
 		sectorfloorheight = sectors[secnum].floorheight;
-		platRef = Z_MallocConventional(sizeof(*plat), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+		platRef = Z_MallocThinkerConventional(sizeof(*plat));
 		(&sectors[secnum])->specialdataRef = platRef;
 		plat = (plat_t*)Z_LoadThinkerFromConventional(platRef);
 		plat->thinkerRef = P_AddThinker(platRef, TF_PLATRAISE);

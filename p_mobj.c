@@ -508,7 +508,6 @@ P_NightmareRespawn(MEMREF mobjRef)
     P_RemoveMobj (mobjRef);
 }
 
-extern int setval;
 //
 // P_MobjThinker
 //
@@ -604,7 +603,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	short_height_t sectorceilingheight;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	mobjRef = Z_MallocConventional(sizeof(*mobj), PU_LEVEL, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+	mobjRef = Z_MallocThinkerConventional(sizeof(*mobj));
 	mobj = (mobj_t*)Z_LoadThinkerFromConventional(mobjRef);
 
 	memset (mobj, 0, sizeof (*mobj));
@@ -1098,12 +1097,17 @@ P_SpawnPlayerMissile
 
 
 boolean
-P_SetMobjState
-(MEMREF mobjRef,
-	statenum_t	state)
+P_SetMobjState2
+(MEMREF mobjRef, statenum_t state, int8_t* file, int32_t line)
 {
 	state_t*	st;
-	mobj_t*	mobj = (mobj_t*)Z_LoadThinkerFromConventional(mobjRef);
+	mobj_t*	mobj;
+	
+	if (mobjRef > 10000) {
+		I_Error("caught bad ref? %u %u %s %li", mobjRef, state, file, line);
+	}
+	
+	mobj = (mobj_t*)Z_LoadThinkerFromConventional(mobjRef);
 
 	do {
 		if (state == S_NULL) {

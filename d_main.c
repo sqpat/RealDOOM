@@ -125,8 +125,7 @@ int8_t            wadfile[1024];          // primary wad file
 int8_t            basedefault[1024];      // default file
 
 
-void D_CheckNetGame (void);
-void D_ProcessEvents (void);
+ void D_ProcessEvents (void);
 void G_BuildTiccmd(int8_t index);
 //void G_BuildTiccmd (ticcmd_t* cmd);
 void D_DoAdvanceDemo (void);
@@ -1231,7 +1230,7 @@ void D_DoomMain(void)
 	D_RedrawTitle();
 #endif
     I_Init ();
-	D_CheckNetGame ();
+	maketic = 0;
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(S_INIT_TEXT, textbuffer);

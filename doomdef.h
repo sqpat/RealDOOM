@@ -56,7 +56,7 @@ enum { VERSION =  109 };
 #define NUM_EMS_PAGES 4
 
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
-#define DEBUG_PRINTING
+//#define DEBUG_PRINTING
 
 #ifdef DEBUG_PRINTING
 	#define DEBUG_PRINT(...) printf(__VA_ARGS__)
@@ -68,13 +68,13 @@ enum { VERSION =  109 };
 //#define DEBUGLOG_TO_FILE
 
 // Error checking. recommended ON during development. however, turning this off makes the binary like 10-12k smaller
-#define CHECK_FOR_ERRORS
+// #define CHECK_FOR_ERRORS
 
-// Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off.
-#define CHECKREFS
+// Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off for performance, on for development
+//#define CHECKREFS
 
 // Probably going to remove this eventually, checks for some infinite loops in a few places. I used this when tracking down freezing bugs when there were many memory leaks early in development.
-#define LOOPCHECK
+//#define LOOPCHECK
 
 
 // run a timedemo with -nodraw novideo and prints out progress of the engine by tic

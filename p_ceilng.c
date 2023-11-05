@@ -192,7 +192,7 @@ EV_DoCeiling
 
 		// new door thinker
 		rtn = 1;
-		ceilingRef = Z_MallocConventional(sizeof(*ceiling), PU_LEVSPEC, CA_TYPE_THINKER,0, ALLOC_TYPE_LEVSPEC);
+		ceilingRef = Z_MallocThinkerConventional(sizeof(*ceiling));
 		sectors[secnum].specialdataRef = ceilingRef;
 		ceiling = (ceiling_t*)Z_LoadThinkerFromConventional(ceilingRef);
 

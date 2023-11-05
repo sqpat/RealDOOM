@@ -929,6 +929,8 @@ void P_SlideMove (MEMREF moRef)
 	temp.w = leadx.w + mo->momx;
 	temp2.w = leady.w + mo->momy;
 	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
+	
+	//todo do these mo fields change? if not then pull out momx/momy into locals to avoid extra loads
 	mo = (mobj_t*)Z_LoadThinkerFromConventional(moRef);
 	temp2.w = leady.w + mo->momy;
 	temp3.w = trailx.w + mo->momx;
@@ -1047,6 +1049,7 @@ PTR_AimTraverse (intercept_t* in)
 		li = lines[in->d.linenum];
 	
 		if (!(li.flags & ML_TWOSIDED)) {
+			//I_Error("caught a");
 			return false;		// stop
 		}
 		// Crosses a two sided line.
@@ -1054,8 +1057,10 @@ PTR_AimTraverse (intercept_t* in)
 		// the possible target ranges.
 		P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
 	
-		if (openbottom >= opentop)
+		if (openbottom >= opentop) {
+			//I_Error("caught b");
 			return false;		// stop
+		}
 	
 		dist = FixedMul (attackrange.w, in->frac);
 		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
@@ -1077,43 +1082,54 @@ PTR_AimTraverse (intercept_t* in)
 				topslope = slope;
 		}
 		
-		if (topslope <= bottomslope)
+		if (topslope <= bottomslope) {
+			I_Error("caught c %i", setval);
 			return false;		// stop
-			
+		}
+
+		//I_Error("caught d");
 		return true;			// shot continues
     }
     
     // shoot a thing
     thRef = in->d.thingRef;
-    if (thRef == shootthingRef)
+	if (thRef == shootthingRef) {
+		//I_Error("caught e");
 		return true;			// can't shoot self
-    
+	}
 	th = (mobj_t*)Z_LoadThinkerFromConventional(thRef);
 
-    if (!(th->flags&MF_SHOOTABLE))
+	if (!(th->flags&MF_SHOOTABLE)) {
+		//I_Error("caught f");
 		return true;			// corpse or something
-
+	}
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange.w, in->frac);
     thingtopslope = FixedDiv (th->z+th->height.w - shootz , dist);
 
-    if (thingtopslope < bottomslope)
+	if (thingtopslope < bottomslope) {
+		//I_Error("caught g");
 		return true;			// shot over the thing
-
+	}
     thingbottomslope = FixedDiv (th->z - shootz, dist);
 
-    if (thingbottomslope > topslope)
+	if (thingbottomslope > topslope) {
+		//I_Error("caught h");
 		return true;			// shot under the thing
-    
+	}
     // this thing can be hit!
     if (thingtopslope > topslope)
-	thingtopslope = topslope;
+		thingtopslope = topslope;
     
     if (thingbottomslope < bottomslope)
-	thingbottomslope = bottomslope;
+		thingbottomslope = bottomslope;
 
     aimslope = (thingtopslope+thingbottomslope)/2;
     linetargetRef = thRef;
+	
+	if (setval >3 )
+		I_Error("caught i %u %i", linetargetRef, setval);
+		
 
     return false;			// don't go any farther
 }
@@ -1305,14 +1321,23 @@ P_AimLineAttack
     attackrange = distance;
     linetargetRef = NULL_MEMREF;
 	
- 
+	//setval = 1;
+
     P_PathTraverse ( x, y,
 		     x2, y2,
 		     PT_ADDLINES|PT_ADDTHINGS,
 		     PTR_AimTraverse );
 		
-    if (linetargetRef)
+
+
+	if (linetargetRef) {
+//		if (setval)
+//			printf("crash second? %li %u %i", aimslope, linetargetRef, setval);
+
 		return aimslope;
+	}
+//	if (setval)
+//		printf("crash second 2? %li %u %i", aimslope, linetargetRef, setval);
 
     return 0;
 }

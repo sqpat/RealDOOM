@@ -94,16 +94,6 @@ void NetUpdate(void)
 		return; // singletic update is syncronous
 }
 
-//
-// D_CheckNetGame
-// Works out player numbers among the net participants
-//
-void D_CheckNetGame(void)
-{
-	maketic = 0;
-
-}
-
 extern byte advancedemo;
 
 void TryRunTics(void)

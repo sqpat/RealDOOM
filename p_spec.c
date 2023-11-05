@@ -1308,7 +1308,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 	    
 			//	Spawn rising slime
 
-			floorRef = Z_MallocConventional(sizeof(*floor), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+			floorRef = Z_MallocThinkerConventional(sizeof(*floor));
 			sectors[s2Offset].specialdataRef = floorRef;
 			sectors3floorpic = sectors[s3Offset].floorpic;
 			sectors3floorheight = sectors[s3Offset].floorheight;
@@ -1327,7 +1327,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 			floor->floordestheight = sectors3floorheight;
 	    
 			//	Spawn lowering donut-hole
-			floorRef = Z_MallocConventional(sizeof(*floor), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+			floorRef = Z_MallocThinkerConventional(sizeof(*floor));
 			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 			sectors[s1Offset].specialdataRef = floorRef;
 			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);

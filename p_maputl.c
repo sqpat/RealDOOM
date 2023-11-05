@@ -212,13 +212,14 @@ P_BoxOnLineSide
 boolean
 P_PointOnDivlineSide
 ( fixed_t	x,
-  fixed_t	y,
-  divline_t*	line )
+  fixed_t	y
+   )
 {
     fixed_t	dx;
     fixed_t	dy;
     fixed_t	left;
     fixed_t	right;
+	divline_t*	line = &trace;
 	
     if (!line->dx.w)
     {
@@ -336,12 +337,13 @@ P_MakeDivline
 //
 fixed_t
 P_InterceptVector
-( divline_t*	v2,
+( 
   divline_t*	v1 )
 {
     fixed_t	frac;
     fixed_t	num;
     fixed_t	den;
+	divline_t*	v2 = &trace;
 	
     den = FixedMul (v1->dy.w>>8,v2->dx.w) - FixedMul(v1->dx.w >>8,v2->dy.w);
 
@@ -714,10 +716,10 @@ PIT_AddLineIntercepts (int16_t linenum)
 		// we actually know the vertex fields to be 16 bit, but trace has 32 bit fields
 		tempx.h.intbits = vertexes[linev1Offset].x;
 		tempy.h.intbits = vertexes[linev1Offset].y;
-		s1 = P_PointOnDivlineSide (tempx.w, tempy.w, &trace);
+		s1 = P_PointOnDivlineSide (tempx.w, tempy.w);
 		tempx.h.intbits = vertexes[linev2Offset].x;
 		tempy.h.intbits = vertexes[linev2Offset].y;
-		s2 = P_PointOnDivlineSide(tempx.w, tempy.w, &trace);
+		s2 = P_PointOnDivlineSide(tempx.w, tempy.w);
 	} else {
 		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, linev1Offset);
 		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, linev1Offset);
@@ -728,7 +730,7 @@ PIT_AddLineIntercepts (int16_t linenum)
     
     // hit the line
     P_MakeDivline(linedx, linedy, linev1Offset, &dl);
-    frac = P_InterceptVector (&trace, &dl);
+    frac = P_InterceptVector (&dl);
 
 	if (frac < 0) {
 		return true;	// behind source
@@ -791,8 +793,8 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
 		x2 = thing->x + temp.w;
 		y2 = thing->y + temp.w;
 	}
-	s1 = P_PointOnDivlineSide (x1, y1, &trace);
-    s2 = P_PointOnDivlineSide (x2, y2, &trace);
+	s1 = P_PointOnDivlineSide (x1, y1);
+    s2 = P_PointOnDivlineSide (x2, y2);
 
 	if (s1 == s2) {
 		return true;		// line isn't crossed
@@ -803,7 +805,7 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     dl.dx.w = x2-x1;
     dl.dy.w = y2-y1;
     
-    frac = P_InterceptVector (&trace, &dl);
+    frac = P_InterceptVector (&dl);
 
 	if (frac < 0) {
 		return true;		// behind source
@@ -823,43 +825,55 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
 // Returns true if the traverser function returns true
 // for all lines.
 // 
-boolean
+
+// todo: only called once, pull out the func argument or inline?
+void
 P_TraverseIntercepts
-( traverser_t	func,
-  fixed_t	maxfrac )
+( traverser_t	func
+   )
 {
     int16_t			count;
     fixed_t		dist;
     intercept_t*	scan;
-    intercept_t*	in;
-	
-    count = intercept_p - intercepts;
+    intercept_t*	in = NULL;
+	fixed_t maxfrac = FRACUNIT;
+	int16_t i = 0;
+	count = intercept_p - intercepts;
     
-    in = 0;			// shut up compiler warning
 	
-    while (count--)
-    {
-	dist = MAXLONG;
-	for (scan = intercepts ; scan<intercept_p ; scan++)
-	{
-	    if (scan->frac < dist)
-	    {
-		dist = scan->frac;
-		in = scan;
-	    }
-	}
+	//if (setval == 1)
+	//	I_Error("inner lets see? %li %li %li %i %li %li", gametic, intercept_p, intercepts, count, maxfrac, MAXLONG);
+
+
+    while (count--) {
+		i++;
+		if (i > 1000) {
+			I_Error("infinite?");
+		}
+		if (setval)
+			setval++;
+		dist = MAXLONG;
+		for (scan = intercepts ; scan<intercept_p ; scan++) {
+			if (scan->frac < dist) {
+				dist = scan->frac;
+				in = scan;
+			}
+		}
 	
-	if (dist > maxfrac)
-	    return true;	// checked everything in range		
-	 
+		if (dist > maxfrac) {
+			return;	// checked everything in range		
+		}
 
-     if ( !func (in) )
-	    return false;	// don't bother going farther
+		if (!func(in)) {
+			return;	// don't bother going farther
+		}
 
-	in->frac = MAXLONG;
+		in->frac = MAXLONG;
     }
-	
-    return true;		// everything was traversed
+	if (setval > 3)
+		I_Error("found c %i", count);
+
+
 }
 
 
@@ -872,7 +886,7 @@ P_TraverseIntercepts
 // Returns true if the traverser function returns true
 // for all lines.
 //
-boolean
+void
 P_PathTraverse
 ( fixed_t_union		x1,
   fixed_t_union		y1,
@@ -966,21 +980,21 @@ P_PathTraverse
     }	
     xintercept.w = (x1.w >> MAPBLOCKSHIFT) + FixedMul (partial, xstep);
 
-
     // Step through map blocks.
     // Count is present to prevent a round off error
     // from skipping the break.
     mapx = xt1;
     mapy = yt1;
-    for (count = 0 ; count < 64 ; count++) {
+
+	for (count = 0 ; count < 64 ; count++) {
 		if (flags & PT_ADDLINES) {
 			if (!P_BlockLinesIterator (mapx, mapy,PIT_AddLineIntercepts))
-				return false;	// early out
+				return;	// early out
 		}
 		
 		if (flags & PT_ADDTHINGS) {
 			if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
-				return false;	// early out
+				return;	// early out
 		}
 			
 		if (mapx == xt2 && mapy == yt2) {
@@ -996,8 +1010,19 @@ P_PathTraverse
 		}
 			
 	}
+
+	//if (setval == 1)
+		//I_Error("crash base? %li %i %i %li %li %li %li %li %li %li %hi", gametic, mapy, mapx, xintercept.w, yintercept.w, x1.w, y1.w, partial, xstep, ystep, mapystep);
+		//I_Error("crash earlier more? %li %li %li %li %li", gametic, mapy, mapx, xintercept.w, yintercept.w);
+
 	// go through the sorted list
-	return P_TraverseIntercepts ( trav, FRACUNIT );
+	// todo inline this only used in one spot
+	 P_TraverseIntercepts ( trav);
+
+	 if (setval > 3)
+		 I_Error("crash after return? %li %u", gametic, linetargetRef);
+
+
 }
 
 

@@ -1448,8 +1448,7 @@ boolean G_CheckDemoStatus (void)
 	ticcount_t             endtime;
 	byte* demobuffer;
 	byte* demo_addr;
-	// NOTE: WHENEVER WE ENTER THIS FUNCTION demo_p IS ALREADY INCREMENTED BY demobuffer OFFSET;
-//5428 592876 299660 360889
+ 
 	if (timingdemo)
 	{
 		endtime = ticcount;

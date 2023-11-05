@@ -646,6 +646,7 @@ void P_BulletSlope (MEMREF moRef)
 			bulletslope = P_AimLineAttack (moRef, an, 16*64);
 		}
     }
+
 }
 
 
@@ -716,7 +717,9 @@ A_FireShotgun
 		  ps_flash,
 		  weaponinfo[player.readyweapon].flashstate);
 
-    P_BulletSlope (playermoRef);
+	P_BulletSlope (playermoRef);
+	if (setval)
+		I_Error("made it thru");
 
 	for (i = 0; i < 7; i++) {
 		P_GunShot(playermoRef, false);

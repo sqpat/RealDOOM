@@ -275,7 +275,7 @@ EV_DoFloor
 
 		// new floor thinker
 		rtn = 1;
-		floorRef = Z_MallocConventional(sizeof(*floor), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+		floorRef = Z_MallocThinkerConventional(sizeof(*floor));
 		(&sectors[secnum])->specialdataRef = floorRef;
 		sectorceilingheight = (&sectors[secnum])->ceilingheight;
 		sectorfloorheight = (&sectors[secnum])->floorheight;
@@ -510,7 +510,7 @@ EV_BuildStairs
 
 		// new floor thinker
 		rtn = 1;
-		floorRef = Z_MallocConventional(sizeof(*floor), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+		floorRef = Z_MallocThinkerConventional(sizeof(*floor));
 		(&sectors[secnum])->specialdataRef = floorRef;
 		sectorceilingheight = (&sectors[secnum])->ceilingheight;
 		sectorfloorheight = (&sectors[secnum])->floorheight;
@@ -573,7 +573,7 @@ EV_BuildStairs
 				//sec = tsecOffset;
 				secnum = newsecnum;
 
-				floorRef = Z_MallocConventional(sizeof(*floor), PU_LEVSPEC, CA_TYPE_THINKER, 0, ALLOC_TYPE_LEVSPEC);
+				floorRef = Z_MallocThinkerConventional(sizeof(*floor));
 				sectors[tsecOffset].specialdataRef = floorRef;
 				floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
 
