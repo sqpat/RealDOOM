@@ -617,52 +617,6 @@ void R_InitTextureMapping (void)
 
 
 //
-// R_InitLightTables
-// Only inits the zlight table,
-//  because the scalelight table changes with view size.
-//
-#define DISTMAP		2
-
-void R_InitLightTables (void)
-{
-    int16_t		i;
-    int16_t		j;
-    int16_t		level;
-    int16_t		startmap; 	
-	fixed_t		scale;
-	fixed_t_union		temp, temp2;
-    
-    // Calculate the light levels to use
-    //  for each level / distance combination.
-	temp.h.fracbits = 0;
-	temp2.h.fracbits = 0;
-	temp2.h.intbits = SCREENWIDTH/2;
-	for (i=0 ; i< LIGHTLEVELS ; i++)
-    {
-	startmap = ((LIGHTLEVELS-1-i)*2)*2; // *NUMCOLORMAPS/LIGHTLEVELS;
-	temp.h.intbits = 1;
-	for (j=0 ; j<MAXLIGHTZ ; j++)
-	{
-		temp.h.intbits += 16;
-
-	    scale = FixedDiv (temp2.w, temp.w);
-	    scale >>= LIGHTSCALESHIFT;
-	    level = startmap - scale/DISTMAP;
-	    
-	    if (level < 0)
-		    level = 0;
-
-	    if (level >= NUMCOLORMAPS)
-		    level = NUMCOLORMAPS-1;
-
-	    zlight[i][j] = colormaps + level*256;
-	}
-    }
-}
-
-
-
-//
 // R_SetViewSize
 // Do not really change anything here,
 //  because it might be in the middle of a refresh.
@@ -683,6 +637,7 @@ R_SetViewSize
     setdetail = detail;
 }
 
+#define DISTMAP		2
 
 //
 // R_ExecuteSetViewSize
@@ -804,33 +759,6 @@ uint8_t			skyflatnum;
 uint8_t			skytexture;
 
 
-
-//
-// R_InitSkyMap
-// Called whenever the view size changes.
-//
-void R_InitSkyMap(void)
-{
-	skyflatnum = R_FlatNumForName("F_SKY1");
-}
-
-
-
-void R_Init (void)
-{
-	R_InitData ();
-	DEBUG_PRINT("..");
-    // viewwidth / viewheight / detailLevel are set by the defaults
-
-	R_SetViewSize (screenblocks, detailLevel);
-	R_InitPlanes ();
-	DEBUG_PRINT(".");
-	R_InitLightTables ();
-	DEBUG_PRINT(".");
-	R_InitSkyMap ();
-	DEBUG_PRINT(".");
-
-}
 
 
 //

@@ -19,8 +19,13 @@
 
 #include "doomdef.h"
 
-#include "m_misc.h"
-#include "d_main.h"
+//#include "m_misc.h"
+//#include "d_main.h"
+
+extern void D_DoomMain();
+
+extern int16_t		myargc;
+extern int8_t**		myargv;
 
 int32_t
 main

@@ -716,51 +716,6 @@ void S_UpdateSounds(MEMREF listenerRef)
 }
 
 //
-// Initializes sound stuff, including volume
-// Sets channels, SFX and music volume,
-//  allocates channel buffer, sets S_sfx lookup.
-//
-void S_Init
-( uint8_t		sfxVolume,
-  uint8_t		musicVolume )
-{  
-
-	/*
-
-  int16_t		i;
-  channel_t* channels;
-
-  //fprintf( stderr, "S_Init: default sfx volume %d\n", sfxVolume);
-
-  // Whatever these did with DMX, these are rather dummies now.
-  I_SetChannels(numChannels);
-  
-  S_SetSfxVolume(sfxVolume);
-  // No music with Linux - another dummy.
-  S_SetMusicVolume(musicVolume);
-
-  // Allocating the internal channels for mixing
-  // (the maximum numer of sounds rendered
-  // simultaneously) within zone memory.
-  channelsRef =  Z_MallocEMS (numChannels*sizeof(channel_t), PU_STATIC, 0, ALLOC_TYPE_SOUND_CHANNELS);
-  channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
-
-  // Free all channels for use
-  for (i=0 ; i<numChannels ; i++)
-    channels[i].sfxinfo = 0;
-  
-  // no sounds are playing, and they are not mus_paused
-  mus_paused = 0;
-
-  // Note that sounds have not been cached (yet).
-  for (i=1 ; i<NUMSFX ; i++)
-    S_sfx[i].lumpnum = S_sfx[i].usefulness = -1;
-
-  */
-
-}
-
-//
 // Per level startup code.
 // Kills playing sounds at start of level,
 //  determines music if any, changes music.

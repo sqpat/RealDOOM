@@ -901,19 +901,3 @@ P_SetupLevel
 
 }
 
-
- 
- //
-// P_Init
-//
-void P_Init(void)
-{
-	int16_t i;
-	P_InitSwitchList();
-	P_InitPicAnims();
-	R_InitSprites(sprnames);
- 
-
-}
-
-

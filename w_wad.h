@@ -86,6 +86,9 @@ MEMREF  W_CacheLumpNameEMS(int8_t* name, int8_t tag);
 void	W_EraseLumpCache(int16_t index);
 patch_t* W_CacheLumpNameEMSAsPatch (int8_t*         name, int8_t           tag);
 
+// correct value for DOOM Sharware
+#define LUMPINFO_SIZE 16432 
+#define LUMPCACHE_SIZE 2528 
 
 
 #endif

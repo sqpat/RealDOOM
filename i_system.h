@@ -29,27 +29,11 @@
 // Called by DoomMain.
 void I_Init (void);
 
+ 
+ 
 // Called by startup code
 // to get the ammount of memory to malloc
 // for the zone management.
-byte*   I_ZoneBase (int32_t *size);
-
-
-// Called by startup code
-// to prep EMS memory system used
-// in the zone management.
-byte* I_InitEMS(int32_t *size);
-// int32_t I_InitEMS(void);
-
-// Called by startup code
-// to get the ammount of memory to malloc
-// for the zone management.
-
-#ifdef _M_I86
-byte *I_ZoneBaseEMS(int32_t *size, int16_t *emshandle);
-#else
-byte *I_ZoneBaseEMS(int32_t *size);
-#endif
 
 extern volatile uint32_t ticcount;
 
@@ -140,10 +124,7 @@ boolean I_SoundIsPlaying(int16_t handle);
 // if no longer playing, 1 if playing.
 void I_SetChannels(int8_t channels);
 
-// Called by D_DoomMain,
-// determines the hardware configuration
-// and sets up the video mode
-void I_InitGraphics(void);
+
 
 
 void I_ShutdownGraphics(void);

@@ -51,7 +51,6 @@ void I_ShutdownNet(void);
 
 
 void I_ReadMouse(void);
-void I_InitDiskFlash(void);
 
 extern int32_t usemouse;
 
@@ -97,16 +96,6 @@ extern int32_t usemouse;
 #define CRTC_LINECOMPARE        24
 
 
-#define GC_INDEX                0x3CE
-#define GC_SETRESET             0
-#define GC_ENABLESETRESET       1
-#define GC_COLORCOMPARE         2
-#define GC_DATAROTATE           3
-#define GC_READMAP              4
-#define GC_MODE                 5
-#define GC_MISCELLANEOUS        6
-#define GC_COLORDONTCARE        7
-#define GC_BITMASK              8
 
 #define ATR_INDEX               0x3c0
 #define ATR_MODE                16
@@ -171,8 +160,6 @@ int32_t kbdtail, kbdhead;
 #define SC_RSHIFT       0x36
 #define SC_LSHIFT       0x2a
 void I_WaitVBL(int16_t vbls);
-//void I_StartupCyberMan(void);
-void I_StartupSound(void);
 void I_ShutdownSound(void);
 void I_ShutdownTimer(void);
 
@@ -197,6 +184,12 @@ byte scantokey[128] =
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0,
         0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0  ,    0         // 7
 };
+
+
+#ifdef _M_I86
+union REGS in, out;
+#else
+#endif
 
 //
 // User input
@@ -419,47 +412,6 @@ void I_FinishUpdate(void)
  
 }
 
-//
-// I_InitGraphics
-//
-void I_InitGraphics(void)
-{
-    if (novideo)
-    {
-        return;
-    }
-	grmode = true;
-    regs.w.ax = 0x13;
-#ifndef	SKIP_DRAW
-	intx86(0x10, (union REGS *)&regs, &regs);
-#endif
-#ifdef _M_I86
-	pcscreen = currentscreen = 0xA0000000L;
-	destscreen.w = 0xA0004000;
-#else
-	pcscreen = currentscreen = (byte *)0xA0000l;
-	destscreen.w = 0xa4000l;
-#endif
- 
-
-#ifndef	SKIP_DRAW
-	outp(SC_INDEX, SC_MEMMODE);
-    outp(SC_INDEX + 1, (inp(SC_INDEX + 1)&~8) | 4);
-    outp(GC_INDEX, GC_MODE);
-    outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~0x13);
-    outp(GC_INDEX, GC_MISCELLANEOUS);
-    outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~2);
-    outpw(SC_INDEX, 0xf02);
-	memset(pcscreen, 0, 0xFFFF);
-    outp(CRTC_INDEX, CRTC_UNDERLINE);
-    outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1)&~0x40);
-    outp(CRTC_INDEX, CRTC_MODE);
-    outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1) | 0x40);
-    outp(GC_INDEX, GC_READMAP);
-#endif
-    I_SetPalette(0);
-    I_InitDiskFlash();
-}
 
 //
 // I_ShutdownGraphics
@@ -627,23 +579,6 @@ void __interrupt I_KeyboardISR(void)
 }
 
 
-//
-// I_StartupKeyboard
-//
-void I_StartupKeyboard(void) {
-	int8_t i = 0;
-	for (i = 0; i < KBDQUESIZE; i++) {
-		keyboardque[i] = 0;
-	}
-
-        oldkeyboardisr = _dos_getvect(KEYBOARDINT);
-#ifdef _M_I86
-		_dos_setvect ( KEYBOARDINT, I_KeyboardISR);
-#else
-		_dos_setvect(0x8000 | KEYBOARDINT, I_KeyboardISR);
-#endif
-}
-
 
 void I_ShutdownKeyboard(void)
 {
@@ -669,32 +604,6 @@ int32_t I_ResetMouse(void)
 }
 
 
-//
-// StartupMouse
-//
-
-void I_StartupMouse(void)
-{
-    //
-    // General mouse detection
-    //
-    mousepresent = 0;
-    if (M_CheckParm("-nomouse") || !usemouse)
-    {
-        return;
-    }
-
-    if (I_ResetMouse() != 0xffff)
-    {
-        printf("Mouse: not present\n", 0);
-        return;
-    }
-    printf("Mouse: detected\n", 0);
-
-    mousepresent = 1;
-
-    //I_StartupCyberMan();
-}
 
 //
 // ShutdownMouse
@@ -710,8 +619,12 @@ void I_ShutdownMouse(void)
 }
 
 
+
+#ifndef STATIC_ALLOCATED_SCREENS
+
+uint32_t realstackseg;
+
 #ifdef _M_I86
-union REGS in, out;
 //
 // I_AllocLow
 //
@@ -731,7 +644,7 @@ byte *I_AllocLow(filelength_t length)
 // DPMIInt
 //
 
-uint32_t realstackseg;
+
 
 
 //
@@ -759,6 +672,8 @@ byte *I_AllocLow(int32_t length)
 	memset(mem, 0, length);
 	return mem;
 }
+
+
 
 //
 // I_StartupDPMI
@@ -803,6 +718,7 @@ void DPMIInt(int32_t i)
 }
 
 
+#endif
 
 #endif
 
@@ -864,31 +780,7 @@ void I_ReadMouse(void)
 
 
  
-//
-// I_Init
-// hook interrupts and set graphics mode
-//
-void I_Init(void)
-{
-    novideo = M_CheckParm("novideo");
 
-
-#ifdef _M_I86
-
-#else
-
-	printf("I_StartupDPMI\n");
-    I_StartupDPMI();
-
-#endif
-
-    printf("I_StartupMouse\n");
-    I_StartupMouse();
-    printf("I_StartupKeyboard\n");
-    I_StartupKeyboard();
-    printf("I_StartupSound\n");
-    I_StartupSound();
-}
 
 //
 // I_Shutdown
@@ -956,197 +848,6 @@ void I_Quit(void)
     exit(0);
 }
 
-
-
-
-#ifdef _M_I86
-byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
-{
-
-    // 4 mb
-	// todo test 3, 2 MB, etc. i know we use less..
-   int16_t numPagesToAllocate = 256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
-   int16_t pageframebase;
-
-
-   // todo check for device...
-   // char	emmname[9] = "EMMXXXX0";
-
-
-    
-    int16_t pagestotal, pagesavail;
-    int16_t errorreg;
-    uint8_t vernum;
-    int16_t j;
-    printf("Checking EMS...");
-
-
-
-    regs.h.ah = 0x40;
-    int86(EMS_INT, &regs, &regs);
-    errorreg = regs.h.ah;
-    if (errorreg ) {
-        I_Error("Couldn't init EMS, error %d", errorreg);
-    }
-
-	printf("Checking EMS Version...\n");
-
-    regs.h.ah = 0x46;
-    intx86(EMS_INT, &regs, &regs);
-    vernum = regs.h.al;
-    errorreg = regs.h.ah;
-    if (errorreg!=0){
-        I_Error("EMS Error 0x46");
-    }
-    //vernum = 10*(vernum >> 4) + (vernum&0xF);
-	printf("EMS Version was %i\n", vernum);
-    if (vernum < 32){
-        printf("Warning! EMS Version too low! Expected 3.2, found %i", vernum);
-        
-    }
-    
-    // get page frame address
-    regs.h.ah=0x41;  
-    intx86(EMS_INT, &regs, &regs);
-    pageframebase=regs.w.bx;
-    errorreg = regs.h.ah;
-    if (errorreg!=0){
-		I_Error("EMS Error 0x41");
-	}
-
- 
-
-
-    regs.h.ah=0x42;
-    intx86(EMS_INT, &regs, &regs);
-    pagesavail=regs.w.bx;
-    pagestotal=regs.w.dx;
-    printf("%i pages total, %i pages available\n", pagestotal, pagesavail);
-
-    if (pagesavail < numPagesToAllocate){
-        printf("Warning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);
-		numPagesToAllocate = pagesavail;
-    }
-
-
-    regs.w.bx = numPagesToAllocate;
-    regs.h.ah = 0x43;
-    intx86(EMS_INT, &regs, &regs);
-    *emshandle =regs.w.dx;
-    errorreg = regs.h.ah;
-    if (errorreg!=0){
-		// Error 0 = 0x00 = no error
-		// Error 137 = 0x89 = zero pages
-		// Error 136 = 0x88 = OUT_OF_LOG
-		I_Error("EMS Error 0x43 %i", errorreg);
-    } 
-
-
-    // do initial page remapping
-
-
-    for (j = 0; j < 4; j++){
-        regs.h.al=j;  // physical page
-        regs.w.bx=j;    // logical page
-        regs.w.dx=*emshandle; // handle
-        regs.h.ah=0x44;
-        intx86(EMS_INT, &regs, &regs);
-        if (regs.h.ah!=0) {
-			I_Error("EMS Error 0x44");
-		}
-    }
-
-
-	*size = numPagesToAllocate * PAGE_FRAME_SIZE;
-
-    // EMS Handle
-    return MK_FP(pageframebase,0);
- 
-   
-
-       
-}
-
-#else
-byte* I_ZoneBaseEMS(int32_t *size) {
-
-	// in 32 bit its ems fakery and emulation 
-
-	int32_t meminfo[32];
-	int32_t heap;
-	byte *ptr;
-
-	memset(meminfo, 0, sizeof(meminfo));
-	segread(&segregs);
-	segregs.es = segregs.ds;
-	regs.w.ax = 0x500; // get memory info
-	regs.x.edi = (int32_t)&meminfo;
-	intx86x(0x31, &regs, &regs, &segregs);
-
-	heap = meminfo[0];
-	DEBUG_PRINT("DPMI memory: 0x%x", heap);
-
-	do
-	{
-		heap -= 0x20000; // leave 128k alone
-		// cap at 8M - 16384. 8 MB-1, or 0x7FFFFF at 23 bits is max addressable single region size in allocation_t. 
-			// But subtract by a whole page frame worth of size to not have any weird situations.
-		if (heap > 0x7FC000)
-		{
-			heap = 0x7FC000;
-		}
-		ptr = malloc(heap);
-	} while (!ptr);
-
-#ifdef DEBUG_PRINTING
-
-	printf(", 0x%x allocated for zone\n", heap);
-	if (heap < 0x180000)
-	{
-		printf("\n");
-		printf("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
-
-	}
-#endif
-
-    *size = heap;
-    return ptr;
-}
-
-#endif
-
-
-
-
-
-//
-// Disk icon flashing
-//
-
-void I_InitDiskFlash(void)
-{
-	/*
-    void *pic;
-    fixed_t_union temp;
-
-    if (M_CheckParm("-cdrom"))
-    {
-        pic = W_CacheLumpNameEMSAsPatch("STCDDISK", PU_CACHE);
-    }
-    else
-    {
-        pic = W_CacheLumpNameEMSAsPatch("STDISK", PU_CACHE);
-    }
-    temp = destscreen;
-#ifdef _M_I86
-	destscreen.w = 0xac000000;
-#else
-	destscreen.w = 0xac000;
-#endif
-    V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, pic);
-    destscreen = temp;
-	*/
-}
 
 // draw disk icon
 void I_BeginRead(void)

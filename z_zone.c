@@ -29,7 +29,6 @@
 
 #include <dos.h>
 #include <stdlib.h>
-#include <malloc.h>
 
 
 //
@@ -44,11 +43,10 @@
 // 
 
 
-#define ALLOCATION_LIST_HEAD	0
+
 
 #define MINFRAGMENT             64
 #define EMS_MINFRAGMENT         32
-#define EMS_ALLOCATION_LIST_SIZE 1450
 // we dont make many conventional allocations, only a small number of important ones
 #define CONVENTIONAL_ALLOCATION_LIST_SIZE 16
 // todo make this PAGE * PAGE SIZE 
@@ -131,34 +129,6 @@
 #define SET_BACKREF(x, y) (x.backref_and_user = y + (x.backref_and_user & USER_MASK))
 #define SET_BACKREF_ZERO(x) (x.backref_and_user &= USER_MASK)
 
-typedef struct
-{
-	PAGEREF prev;    //2    using 16 bits but need 11 or 12...
-	PAGEREF next;    //4    using 16 bits but need 11 or 12...         these 3 could fit in 32 bits?
-
-	// page and offset refer to internal EMS page and offset - in other words the keys
-	// to find the real location in memory for this allocation
-
-	// page;       using 9 bits... implies page max count of 512 (8 MB worth)
-	// size;        use 23 bits implying max of 8MB-1 or 0x007FFFFF max free size,
-	uint32_t page_and_size; // page is 9 high bits, size is 23 low bits
-	// todo: optimize uses of the page 9 bits to use int_16t arithmetic instead of int_32t. Maybe using unions?
-
-	// offset is the location within the page frame. 16kb page frame size means
-	// 14 bits needed. Tag is a 2 bit field stored in the two high bits. Used to
-	// managecaching behavior
-	uint16_t offset_and_tag;  //10
-	// user is sort of a standby of the old code but implies the block has an
-	// "owner". it combines with the tag field to determine a couple behaviors. 
-	// backref is an index passed to external caches when the allocation is
-	// deleted so the caches can also be cleared. Used in compositeTextures
-	// and wad lumps
-	uint16_t backref_and_user;  //12 bytes per struct, dont think we can do better.
-
-#ifdef PROFILE_PAGE_COUNT
-	int8_t sourcehint;
-#endif
-} allocation_t;
 
 
 typedef struct
@@ -244,8 +214,6 @@ int8_t lockedpages[NUM_EMS_PAGES];
 static int16_t emshandle;
 extern union REGS regs;
 
-
-
 #else
 #endif
 
@@ -285,66 +253,6 @@ void Z_ChangeTagEMS(MEMREF index, int16_t tag) {
 
 
 
-
-void Z_InitConventional(void) {
-//	DEBUG_PRINT("Initializing conventional allocation blocks...");
-//	DEBUG_PRINT("\Conventional block sizes %u %u at %lx and %lx\n", totalconventionalfree1, totalconventionalfree2, conventionalmemoryblock1, conventionalmemoryblock2);
-}
-
-// EMS STUFF
-
-
-//
-// Z_InitEMS
-//
-
-
-void Z_InitEMS(void)
-{
-
-	int32_t size;
-	int16_t i = 0;
-	//todo figure this out based on settings, hardware, etc
-	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
-
-#ifdef _M_I86
-	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
-#else
-	pageFrameArea = I_ZoneBaseEMS(&size);
-	EMSArea = ((byte*)pageFrameArea + pageframeareasize);
-#endif
-
-
-
-	//printf("EMS zone location  %p\n", pageFrameArea);
-	//printf("Allocated size in z_initEMS was %i or %p\n", size, size);
-	// mark ems pages unused
-	for (i = 0; i < NUM_EMS_PAGES; i++) {
-		activepages[i] = -1;
-		pageevictorder[i] = i;
-		pagesize[i] = -1;
-	}
-
-	// prepare the link indices? as allocations and deallocations happen
-	// the links wont be in order, but these presets 
-	allocations[0].next = 1;
-	allocations[0].prev = 1;
-	allocations[0].page_and_size = 0;
-	allocations[0].backref_and_user = USER_MASK;
-	allocations[0].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
-
-	allocations[1].next = 0;
-	allocations[1].prev = 0;
-	allocations[1].backref_and_user = 0;
-	allocations[1].page_and_size = size;
-	allocations[1].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
-
-	// use this index to mark an unused block..
-	for (i = 2; i < EMS_ALLOCATION_LIST_SIZE; i++) {
-		allocations[i].prev = EMS_ALLOCATION_LIST_SIZE;
-	}
-	currentListHead = 1;
-}
 
 void Z_FreeConventional(PAGEREF block){
 	// todo impelement... used for when thinkers get freed.
@@ -733,7 +641,7 @@ void Z_DoPageIn(uint16_t logicalpage, uint16_t pageframeindex, uint16_t numalloc
 		regs.h.ah = 0x44;
 		intx86(EMS_INT, &regs, &regs);
 		if (regs.h.ah != 0) {
-			I_Error("Mapping failed on page in %i %i %i %i %i %i %i %i!\n", activepages[pageframeindex + i], i, pageframeindex, logicalpage, pageins, actualpageins, pageouts, actualpageouts);
+			I_Error("Mapping failed on page in %i %i %u %u %li %li %li %li!\n", activepages[pageframeindex + i], i, pageframeindex, logicalpage, pageins, actualpageins, pageouts, actualpageouts);
 		}
 
 
@@ -1870,3 +1778,56 @@ void Z_CheckEMSAllocations(PAGEREF block) {
 #endif
 
 
+#ifdef _M_I86
+byte *I_ZoneBaseEMS(int32_t *size, int16_t *emshandle);
+#else
+byte *I_ZoneBaseEMS(int32_t *size);
+#endif
+
+
+void Z_InitEMS(void)
+{
+
+	int32_t size;
+	int16_t i = 0;
+	//todo figure this out based on settings, hardware, etc
+	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
+
+#ifdef _M_I86
+	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
+#else
+	pageFrameArea = I_ZoneBaseEMS(&size);
+	EMSArea = ((byte*)pageFrameArea + pageframeareasize);
+#endif
+
+
+
+	//printf("EMS zone location  %p\n", pageFrameArea);
+	//printf("Allocated size in z_initEMS was %li or %p\n", size, size);
+	// mark ems pages unused
+	for (i = 0; i < NUM_EMS_PAGES; i++) {
+		activepages[i] = -1;
+		pageevictorder[i] = i;
+		pagesize[i] = -1;
+	}
+
+	// prepare the link indices? as allocations and deallocations happen
+	// the links wont be in order, but these presets 
+	allocations[0].next = 1;
+	allocations[0].prev = 1;
+	allocations[0].page_and_size = 0;
+	allocations[0].backref_and_user = USER_MASK;
+	allocations[0].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
+
+	allocations[1].next = 0;
+	allocations[1].prev = 0;
+	allocations[1].backref_and_user = 0;
+	allocations[1].page_and_size = size;
+	allocations[1].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
+
+	// use this index to mark an unused block..
+	for (i = 2; i < EMS_ALLOCATION_LIST_SIZE; i++) {
+		allocations[i].prev = EMS_ALLOCATION_LIST_SIZE;
+	}
+	currentListHead = 1;
+}

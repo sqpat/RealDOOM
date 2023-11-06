@@ -243,21 +243,20 @@ void M_StartMessage(int8_t *string,void *routine,boolean input);
 void M_ClearMenus (void);
 
 
-
-
 //
 // DOOM MENU
 //
-enum
+typedef enum main_e
 {
-    newgame = 0,
-    options,
-    loadgame,
-    savegame,
-    readthis,
-    quitdoom,
-    main_end
+	newgame = 0,
+	options,
+	loadgame,
+	savegame,
+	readthis,
+	quitdoom,
+	main_end
 } main_e;
+
 
 menuitem_t MainMenu[]=
 {
@@ -1774,36 +1773,6 @@ void M_Ticker (void)
     {
         whichSkull ^= 1;
         skullAnimCounter = 8;
-    }
-}
-
-
-//
-// M_Init
-//
-void M_Init (void)
-{
-    currentMenu = &MainDef;
-    menuactive = 0;
-    itemOn = currentMenu->lastOn;
-    whichSkull = 0;
-    skullAnimCounter = 10;
-    screenSize = screenblocks - 3;
-    messageToPrint = 0;
-    messageString = NULL;
-    messageLastMenuActive = menuactive;
-    quickSaveSlot = 255;  // means to pick a slot now
-
-    if (commercial)
-    {
-        MainMenu[readthis] = MainMenu[quitdoom];
-        MainDef.numitems--;
-        MainDef.y += 8;
-        NewDef.prevMenu = &MainDef;
-        ReadDef1.routine = M_DrawReadThisRetail;
-        ReadDef1.x = 330;
-        ReadDef1.y = 165;
-        ReadMenu1[0].routine = M_FinishReadThis;
     }
 }
 

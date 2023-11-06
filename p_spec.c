@@ -60,63 +60,12 @@ typedef struct
 //
 //      source animation definition
 //
-typedef struct
-{
-    boolean	istexture;	// if false, it is a flat
-	int8_t	endname[9];
-	int8_t	startname[9];
-} animdef_t;
+
 
 #define MAXANIMS                32
 
 extern anim_t	anims[MAXANIMS];
 extern anim_t*	lastanim;
-
-//
-// P_InitPicAnims
-//
-
-// Floor/ceiling animation sequences,
-//  defined by first and last frame,
-//  i.e. the flat (64x64 tile) name to
-//  be used.
-// The full animation sequence is given
-//  using all the flats between the start
-//  and end entry, in the order found in
-//  the WAD file.
-//
-animdef_t		animdefs[] =
-{
-    {false,	"NUKAGE3",	"NUKAGE1"},
-    {false,	"FWATER4",	"FWATER1"},
-    {false,	"SWATER4",	"SWATER1"},
-    {false,	"LAVA4",	"LAVA1"},
-    {false,	"BLOOD3",	"BLOOD1"},
-
-    // DOOM II flat animations.
-	{false,	"RROCK08",	"RROCK05"},
-    {false,	"SLIME04",	"SLIME01"},
-    {false,	"SLIME08",	"SLIME05"},
-    {false,	"SLIME12",	"SLIME09"},
-
-    {true,	"BLODGR4",	"BLODGR1"},
-    {true,	"SLADRIP3",	"SLADRIP1"},
-
-    {true,	"BLODRIP4",	"BLODRIP1"},
-    {true,	"FIREWALL",	"FIREWALA"},
-    {true,	"GSTFONT3",	"GSTFONT1"},
-    {true,	"FIRELAVA",	"FIRELAV3"},
-    {true,	"FIREMAG3",	"FIREMAG1"},
-    {true,	"FIREBLU2",	"FIREBLU1"},
-    {true,	"ROCKRED3",	"ROCKRED1"},
-
-    {true,	"BFALL4",	"BFALL1"},
-    {true,	"SFALL4",	"SFALL1"},
-    {true,	"WFALL4",	"WFALL1"},
-    {true,	"DBRAIN4",	"DBRAIN1"},
-	
-    {-1}
-};
 
 anim_t		anims[MAXANIMS];
 anim_t*		lastanim;
@@ -130,46 +79,6 @@ anim_t*		lastanim;
 extern  int16_t	numlinespecials;
 extern  int16_t	linespeciallist[MAXLINEANIMS];
 
-
-
-void P_InitPicAnims (void)
-{
-    int16_t		i;
-    
-    //	Init animation
-    lastanim = anims;
-    for (i=0 ; animdefs[i].istexture != -1 ; i++) {
-		if (animdefs[i].istexture)
-		{
-			// different episode ?
-			if (R_CheckTextureNumForName(animdefs[i].startname) == BAD_TEXTURE)
-			continue;	
-
-			lastanim->picnum = R_TextureNumForName (animdefs[i].endname);
-			lastanim->basepic = R_TextureNumForName (animdefs[i].startname);
-		}
-		else
-		{
-			if (W_CheckNumForName(animdefs[i].startname) == -1)
-			continue;
-
-			lastanim->picnum = R_FlatNumForName (animdefs[i].endname);
-			lastanim->basepic = R_FlatNumForName (animdefs[i].startname);
-		}
-
-		lastanim->istexture = animdefs[i].istexture;
-		lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
-#ifdef CHECK_FOR_ERRORS
-		if (lastanim->numpics < 2)
-			I_Error ("P_InitPicAnims: bad cycle from %s to %s",
-				animdefs[i].startname,
-				animdefs[i].endname);
-#endif
-
-		lastanim++;
-    }
-	
-}
 
 
 

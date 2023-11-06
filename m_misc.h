@@ -75,7 +75,8 @@ void M_LoadDefaults (void);
 
 void M_SaveDefaults (void);
 
- 
+#define NUM_DEFAULTS 28
+
 
 
 #endif

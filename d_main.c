@@ -60,13 +60,6 @@
 
 #include "d_main.h"
  
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-#define BGCOLOR         7
-#define FGCOLOR         8
-#else
-#define BGCOLOR         7
-#define FGCOLOR         4
-#endif
 
  
  
@@ -80,7 +73,6 @@
 //  calls all ?_Responder, ?_Ticker, and ?_Drawer,
 //  calls I_GetTime,  and I_StartTic
 //
-void D_DoomLoop (void);
 
 
 int8_t*           wadfiles[MAXWADFILES];
@@ -96,8 +88,6 @@ boolean         singletics = false; // debug flag to cancel adaptiveness
 
 
 
-extern  uint8_t     sfxVolume;
-extern  uint8_t     musicVolume;
 
 extern  boolean inhelpscreens;
 
@@ -115,6 +105,11 @@ boolean         modifiedgame;
 boolean         shareware;
 boolean         registered;
 boolean         commercial;
+
+extern uint8_t     sfxVolume;
+extern uint8_t     musicVolume;
+int8_t      demosequence;
+
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
 boolean         plutonia;
 boolean         tnt;
@@ -125,7 +120,6 @@ int8_t            wadfile[1024];          // primary wad file
 int8_t            basedefault[1024];      // default file
 
 
- void D_ProcessEvents (void);
 void G_BuildTiccmd(int8_t index);
 //void G_BuildTiccmd (ticcmd_t* cmd);
 void D_DoAdvanceDemo (void);
@@ -174,7 +168,6 @@ void D_ProcessEvents (void)
 
 uint16_t stringoffsets[MAX_STRINGS];
 uint16_t stringbuffersizes[2];
-
 MEMREF		stringRefs[2];
 
 int16_t getStringLength(int16_t stringindex) {
@@ -208,76 +201,6 @@ int8_t* getStringByIndex(int16_t stringindex, int8_t* returndata) {
 }
 
 
-void D_InitStrings() {
-
-	// load file
-	FILE* handle;
-	//filelength_t length;
-	int8_t* buffer;
-	int8_t* lastbuffer;
-	int16_t i;
-	int16_t j = 0;;
-	int16_t page = 0;
-	int8_t letter;
-	int16_t carryover = 0;
-	//handle = open("dstrings.txt", O_RDONLY | O_TEXT);
-	handle = fopen("dstrings.txt", "r");
-	if (handle == NULL) {
-		I_Error("strings.txt missing?\n");
-		return;
-	}
-	
-	//length = filelength(handle);
-	stringoffsets[0] = 0;
-
-	while (1) {
-		// break up in pagesize
-		
-		stringRefs[page] = Z_MallocEMS(16384, PU_STATIC, 0, ALLOC_TYPE_STRINGS);
-		buffer = Z_LoadBytesFromEMS(stringRefs[page]);
-
-	 
-		if (carryover) {
-			memcpy(buffer, &lastbuffer[stringoffsets[j]], carryover);
-		}
-
-		for (i = 0; i < 16384-carryover; i++) {
-			letter = fgetc(handle);
-			buffer[i+ carryover] = letter;
-			if (letter == 'n') {
-				if (buffer[i + carryover - 1] == '\\') {
-					// hacky, but oh well.
-					buffer[i + carryover - 1] = '\r';
-					buffer[i + carryover] = '\n';
-				}
-			}
-			if (letter == '\n') {
-				j++;
-				stringoffsets[j] = i + (page * 16384);
-			
-			};
-
-			if (feof(handle)) {
-				break;
-			}
-		}
-		stringbuffersizes[page] = stringoffsets[j];
-		if (feof(handle)) {
-			break;
-		}
-
-		page++;
-		lastbuffer = buffer;
-		
-		carryover = i - stringoffsets[j];
-
-	}
-	
-
-	fclose(handle);
-
-
-}
 
 
 
@@ -554,6 +477,11 @@ void D_Display (void)
 //
 extern  boolean         demorecording;
 
+// Called by D_DoomMain,
+// determines the hardware configuration
+// and sets up the video mode
+void I_InitGraphics(void);
+
 
 void D_DoomLoop (void)
 {
@@ -756,544 +684,10 @@ void D_AdvanceDemo (void)
 }
 
 
+ void D_DoomMain2(void);
 
-//
-// D_StartTitle
-//
-void D_StartTitle (void)
-{
-    gameaction = ga_nothing;
-    demosequence = -1;
-    D_AdvanceDemo ();
-}
 
-//
-// D_GetCursorColumn
-//
-int16_t D_GetCursorColumn(void)
-{
-    union REGS regs;
-
-    regs.h.ah = 3;
-    regs.h.bh = 0;
-    intx86(0x10, &regs, &regs);
-
-    return regs.h.dl;
-}
-
-//
-// D_GetCursorRow
-//
-int16_t D_GetCursorRow(void)
-{
-    union REGS regs;
-
-    regs.h.ah = 3;
-    regs.h.bh = 0;
-    intx86(0x10, &regs, &regs);
-
-    return regs.h.dh;
-}
-
-//
-// D_SetCursorPosition
-//
-void D_SetCursorPosition(int16_t column, int16_t row)
-{
-    union REGS regs;
-
-    regs.h.dh = row;
-    regs.h.dl = column;
-    regs.h.ah = 2;
-    regs.h.bh = 0;
-    intx86(0x10, &regs, &regs);
-}
-
-//
-// D_DrawTitle
-//
-void D_DrawTitle(int8_t *string, uint8_t fc, uint8_t bc)
-{
-    union REGS regs;
-    byte color;
-	int16_t column;
-	int16_t row;
-	int16_t i;
-
-    //Calculate text color
-    color = (bc << 4) | fc;
-
-    //Get column position
-    column = D_GetCursorColumn();
-
-    //Get row position
-    row = D_GetCursorRow();
-
-    for (i = 0; i < strlen(string); i++)
-    {
-        //Set character
-        regs.h.ah = 9;
-        regs.h.al = string[i];
-        regs.w.cx = 1;
-        regs.h.bl = color;
-        regs.h.bh = 0;
-        intx86(0x10, &regs, &regs);
-
-        //Check cursor position
-        if (++column > 79)
-            column = 0;
-
-        //Set position
-        D_SetCursorPosition(column, row);
-    }
-}
-
-
-//      print title for every printed line
-int8_t            title[128];
-
-//
-// D_RedrawTitle
-//
-void D_RedrawTitle(void)
-{
-	int16_t column;
-	int16_t row;
-
-    //Get current cursor pos
-    column = D_GetCursorColumn();
-    row = D_GetCursorRow();
-
-    //Set cursor pos to zero
-    D_SetCursorPosition(0, 0);
-
-    //Draw title
-    D_DrawTitle(title, FGCOLOR, BGCOLOR);
-
-    //Restore old cursor pos
-    D_SetCursorPosition(column, row);
-}
-
-//
-// D_AddFile
-//
-void D_AddFile (int8_t *file)
-{
-	int8_t     numwadfiles;
-	int8_t    *newfile;
-        
-    for (numwadfiles = 0 ; wadfiles[numwadfiles] ; numwadfiles++)
-        ;
-
-    newfile = malloc (strlen(file)+1);
-    strcpy (newfile, file);
-        
-    wadfiles[numwadfiles] = newfile;
-}
-
-//
-// IdentifyVersion
-// Checks availability of IWAD files by name,
-// to determine whether registered/commercial features
-// should be executed (notably loading PWAD's).
-//
-void IdentifyVersion (void)
-{
-    strcpy(basedefault,"default.cfg");
-
-    if ( !access ("doom2.wad",R_OK) )
-    {
-        commercial = true;
-        D_AddFile ("doom2.wad");
-        return;
-    }
-
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-    if ( !access ("plutonia.wad", R_OK ) )
-    {
-      commercial = true;
-      plutonia = true;
-      D_AddFile ("plutonia.wad");
-      return;
-    }
-
-    if ( !access ( "tnt.wad", R_OK ) )
-    {
-      commercial = true;
-      tnt = true;
-      D_AddFile ("tnt.wad");
-      return;
-    }
-#endif
-
-    if ( !access ("doom.wad",R_OK) )
-    {
-      registered = true;
-      D_AddFile ("doom.wad");
-      return;
-    }
-
-    if ( !access ("doom1.wad",R_OK) )
-    {
-      shareware = true;
-      D_AddFile ("doom1.wad");
-      return;
-    }
-
-    printf("Game mode indeterminate.\n");
-    exit(1);
-} 
-
-//
-// D_DoomMain
-//
-void D_DoomMain(void)
-{
-	int16_t             p;
-	int8_t                    file[256];
-	union REGS regs;
-	int8_t*          textbuffer;
-
-	// Removed
-	//FindResponseFile ();
-
-	IdentifyVersion();
-
-	setbuf(stdout, NULL);
-	modifiedgame = false;
-
-	nomonsters = M_CheckParm("-nomonsters");
-	respawnparm = M_CheckParm("-respawn");
-	fastparm = M_CheckParm("-fast");
-
-#ifdef DEBUG_PRINTING
-
-	if (!commercial)
-	{
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-		sprintf(title,
-			"                         "
-			"The Ultimate DOOM Startup v%i.%i"
-			"                        ",
-			VERSION / 100, VERSION % 100);
-#else
-		sprintf(title,
-			"                          "
-			"DOOM System Startup v%i.%i"
-			"                          ",
-			VERSION / 100, VERSION % 100);
-#endif
-	}
-	else
-	{
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-		if (plutonia)
-		{
-			sprintf(title,
-				"                   "
-				"DOOM 2: Plutonia Experiment v%i.%i"
-				"                           ",
-				VERSION / 100, VERSION % 100);
-		}
-		else if (tnt)
-		{
-			sprintf(title,
-				"                     "
-				"DOOM 2: TNT - Evilution v%i.%i"
-				"                           ",
-				VERSION / 100, VERSION % 100);
-		}
-		else
-		{
-			sprintf(title,
-				"                         "
-				"DOOM 2: Hell on Earth v%i.%i"
-				"                           ",
-				VERSION / 100, VERSION % 100);
-		}
-#else
-		sprintf(title,
-			"                         "
-			"DOOM 2: Hell on Earth v%i.%i"
-			"                           ",
-			VERSION / 100, VERSION % 100);
-#endif
-	}
-
-	regs.w.ax = 3;
-	intx86(0x10, &regs, &regs);
-	D_DrawTitle(title, FGCOLOR, BGCOLOR);
-
-	printf("\nP_Init: Checking cmd-line parameters...\n");
-#endif
-
-
-	// turbo option
-	if ((p = M_CheckParm("-turbo")))
-	{
-		int16_t     scale = 200;
-		extern int16_t forwardmove[2];
-		extern int16_t sidemove[2];
-
-		if (p < myargc - 1)
-			scale = atoi(myargv[p + 1]);
-		if (scale < 10)
-			scale = 10;
-		if (scale > 400)
-			scale = 400;
-
-		DEBUG_PRINT("turbo scale: %i%%\n", scale);
-
-		forwardmove[0] = forwardmove[0] * scale / 100;
-		forwardmove[1] = forwardmove[1] * scale / 100;
-		sidemove[0] = sidemove[0] * scale / 100;
-		sidemove[1] = sidemove[1] * scale / 100;
-	}
-
-
-	p = M_CheckParm("-file");
-	if (p)
-	{
-		// the parms after p are wadfile/lump names,
-		// until end of parms or another - preceded parm
-		modifiedgame = true;            // homebrew levels
-		while (++p != myargc && myargv[p][0] != '-')
-			D_AddFile(myargv[p]);
-	}
-
-	p = M_CheckParm("-playdemo");
-
-	if (!p)
-		p = M_CheckParm("-timedemo");
-
-	if (p && p < myargc - 1)
-	{
-		sprintf(file, "%s.lmp", myargv[p + 1]);
-		D_AddFile(file);
-		DEBUG_PRINT("Playing demo %s.lmp.\n", myargv[p + 1]);
-	}
-
-	// get skill / episode / map from parms
-	startskill = sk_medium;
-	startepisode = 1;
-	startmap = 1;
-	autostart = false;
-
-
-	p = M_CheckParm("-skill");
-	if (p && p < myargc - 1)
-	{
-		startskill = myargv[p + 1][0] - '1';
-		autostart = true;
-	}
-
-	p = M_CheckParm("-episode");
-	if (p && p < myargc - 1)
-	{
-		startepisode = myargv[p + 1][0] - '0';
-		startmap = 1;
-		autostart = true;
-	}
-
-
-	p = M_CheckParm("-warp");
-	if (p && p < myargc - 1)
-	{
-		if (commercial)
-			startmap = atoi(myargv[p + 1]);
-		else
-		{
-			startepisode = myargv[p + 1][0] - '0';
-			startmap = myargv[p + 2][0] - '0';
-		}
-		autostart = true;
-	}
-
-	// init subsystems
-
-	DEBUG_PRINT("V_Init: allocate screens.\n");
-	V_Init();
-
-	DEBUG_PRINT("M_LoadDefaults: Load system defaults.\n");
-	M_LoadDefaults();              // load before initing other systems
-
-	DEBUG_PRINT("Z_InitEMS: Init EMS memory allocation daemon. \n");
-	Z_InitEMS();
-
-
-	DEBUG_PRINT("W_Init: Init WADfiles.\n");
-	W_InitMultipleFiles(wadfiles);
-
-	Z_InitConventional(); // wad loading using a lot of conventional, so do this after..
-
-	// init subsystems
-	DEBUG_PRINT("D_InitStrings: loading text.\n");
-	D_InitStrings();
-
-	// Check for -file in shareware
-#ifdef CHECK_FOR_ERRORS
-	if (modifiedgame) {
-		// These are the lumps that will be checked in IWAD,
-		// if any one is not present, execution will be aborted.
-		int8_t name[23][8]=
-		{
-			"e2m1","e2m2","e2m3","e2m4","e2m5","e2m6","e2m7","e2m8","e2m9",
-			"e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
-			"dphoof","bfgga0","heada1","cybra1","spida1d1"
-		};
-		int8_t i;
-
-		if (shareware)
-			I_Error("\nYou cannot -file with the shareware "
-					"version. Register!");
-
-					// Check for fake IWAD with right name,
-					// but w/o all the lumps of the registered version. 
-		if (registered)
-			for (i = 0; i < 23; i++)
-				if (W_CheckNumForName(name[i]) < 0)
-					I_Error("\nThis is not the registered version.");
-
-	}
-
-	// Iff additonal PWAD files are used, print modified banner
-	if (modifiedgame) {
-		getStringByIndex(MODIFIED_GAME, textbuffer);
-		printf(textbuffer);
-		getchar();
-	}
-
-
-#else
-
-	// very weird. game crashes at startup if there is not a name array and a name check here. i dont see it used as an extern anywhere..
-	if (0) {
-		int8_t name[23][1] = { "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""};
-		if (name[0]) {
-
-		}
-
-	}
-
-#endif
- 
-
-#ifdef DEBUG_PRINTING
-	if (registered) {
-		getStringByIndex(VERSION_REGISTERED, textbuffer);
-        printf(textbuffer);
-		D_RedrawTitle();
-		getStringByIndex(NOT_SHAREWARE, textbuffer);
-		printf( textbuffer );
-		D_RedrawTitle();
-    }
-    if (shareware) {
-		getStringByIndex(VERSION_SHAREWARE, textbuffer);
-        printf(textbuffer);
-		D_RedrawTitle();
-    }
-    if (commercial) {
-		getStringByIndex(VERSION_COMMERCIAL, textbuffer);
-        printf(textbuffer);
-		D_RedrawTitle();
-
-		getStringByIndex(DO_NOT_DISTRIBUTE, textbuffer);
-        printf( textbuffer );
-		D_RedrawTitle();
-    }
-
-	getStringByIndex(M_INIT_TEXT, textbuffer);
-	printf (textbuffer);
-	D_RedrawTitle();
-#endif
-    M_Init ();
-
-#ifdef DEBUG_PRINTING
-	getStringByIndex(R_INIT_TEXT, textbuffer);
-	printf(textbuffer);
-	D_RedrawTitle();
-#endif
-    R_Init ();
-
-
-#ifdef DEBUG_PRINTING
-	getStringByIndex(P_INIT_TEXT, textbuffer);
-	printf(textbuffer);
-	D_RedrawTitle();
-#endif
-    P_Init ();
-
-
-#ifdef DEBUG_PRINTING
-	getStringByIndex(I_INIT_TEXT, textbuffer);
-	printf(textbuffer);
-	D_RedrawTitle();
-#endif
-    I_Init ();
-	maketic = 0;
-
-#ifdef DEBUG_PRINTING
-	getStringByIndex(S_INIT_TEXT, textbuffer);
-	printf(textbuffer);
-	D_RedrawTitle();
-#endif
-    S_Init (sfxVolume*8, musicVolume*8);
-
-#ifdef DEBUG_PRINTING
-	getStringByIndex(HU_INIT_TEXT, textbuffer);
-	printf(textbuffer);
-	D_RedrawTitle();
-#endif
-    HU_Init ();
-
-#ifdef DEBUG_PRINTING
-	getStringByIndex(ST_INIT_TEXT, textbuffer);
-	printf (textbuffer);
-	D_RedrawTitle();
-#endif
-    ST_Init ();
-
-    
-    // start the apropriate game based on parms
-    p = M_CheckParm ("-record");
-
-    if (p && p < myargc-1)
-    {
-        G_RecordDemo (myargv[p+1]);
-        autostart = true;
-    }
-        
-    p = M_CheckParm ("-playdemo");
-    if (p && p < myargc-1)
-    {
-        singledemo = true;              // quit after one demo
-        G_DeferedPlayDemo (myargv[p+1]);
-        D_DoomLoop ();  // never returns
-    }
-        
-    p = M_CheckParm ("-timedemo");
-    if (p && p < myargc-1)
-    {
-        G_TimeDemo (myargv[p+1]);
-        D_DoomLoop ();  // never returns
-    }
-        
-    p = M_CheckParm ("-loadgame");
-    if (p && p < myargc-1)
-    {
-        sprintf(file, SAVEGAMENAME"%c.dsg",myargv[p+1][0]);
-        G_LoadGame (file);
-    }
-        
-
-    if ( gameaction != ga_loadgame )
-    {
-        if (autostart)
-            G_InitNew (startskill, startepisode, startmap);
-        else
-            D_StartTitle ();                // start up intro loop
-
-    }
-
-    D_DoomLoop ();  // never returns
-}
+ void D_DoomMain(void) {
+	 D_DoomMain2();
+	 D_DoomLoop();  // never returns
+ }

@@ -309,7 +309,7 @@ typedef struct
 #define SC_KEY_Z                0x2c
 #define SC_BACKSPACE            0x0e
 
-default_t	defaults[] =
+default_t	defaults[28] =
 {
     {"mouse_sensitivity",&mouseSensitivity, 5},
     {"sfx_volume",&sfxVolume, 8},
@@ -349,7 +349,6 @@ default_t	defaults[] =
 
 };
 
-int8_t	numdefaults;
 int8_t*	defaultfile;
 
 
@@ -366,7 +365,7 @@ void M_SaveDefaults (void)
     if (!f)
 	    return; // can't write the file, but don't complain
 		
-    for (i=0 ; i<numdefaults ; i++) {
+    for (i=0 ; i< NUM_DEFAULTS; i++) {
         if (defaults[i].scantranslate){
             defaults[i].location = &defaults[i].untranslated;
         }
@@ -382,79 +381,6 @@ void M_SaveDefaults (void)
     fclose (f);
 }
 
-
-//
-// M_LoadDefaults
-//
-extern byte	scantokey[128];
-
-void M_LoadDefaults (void)
-{
-    int16_t		i;
-    filelength_t		len;
-    FILE*	f;
-	int8_t	def[80];
-	int8_t	strparm[100];
-    int8_t*	newstring;
-    uint8_t		parm;
-    boolean	isstring;
-    
-    // set everything to base values
-    numdefaults = sizeof(defaults)/sizeof(defaults[0]);
-    for (i=0 ; i<numdefaults ; i++)
-	*defaults[i].location = defaults[i].defaultvalue;
-    
-    // check for a custom default file
-    i = M_CheckParm ("-config");
-    if (i && i<myargc-1) {
-        defaultfile = myargv[i+1];
-        printf ("	default file: %s\n",defaultfile);
-    } else {
-	    defaultfile = basedefault;
-    }
-    // read the file in, overriding any set defaults
-    f = fopen (defaultfile, "r");
-    if (f) {
-        while (!feof(f)) {
-            isstring = false;
-            if (fscanf (f, "%79s %[^\n]\n", def, strparm) == 2) {
-                if (strparm[0] == '"') {
-                    // get a string default
-                    isstring = true;
-                    len = strlen(strparm);
-                    newstring = (int8_t *) malloc(len);
-                    strparm[len-1] = 0;
-                    strcpy(newstring, strparm+1);
-                } else if (strparm[0] == '0' && strparm[1] == 'x'){
-                    sscanf(strparm+2, "%x", &parm);
-                } else {
-                    sscanf(strparm, "%i", &parm);
-                }
-                for (i=0 ; i<numdefaults ; i++){
-                    if (!strcmp(def, defaults[i].name)) {
-                        if (!isstring){
-                            *defaults[i].location = parm;
-                        } else {
-                            *defaults[i].location = (uint8_t)newstring;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-            
-        fclose (f);
-    }
-    for (i = 0; i < numdefaults; i++)
-    {
-        if (defaults[i].scantranslate)
-        {
-            parm = *defaults[i].location;
-            defaults[i].untranslated = parm;
-            *defaults[i].location = scantokey[parm];
-        }
-    }
-}
 
 
 

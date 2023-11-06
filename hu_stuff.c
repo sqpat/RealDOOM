@@ -245,26 +245,6 @@ int16_t mapnamest[] =	// TNT WAD map names.
 #endif
  
  
-
-void HU_Init(void)
-{
-
-    int16_t		i;
-    int16_t		j;
-	int8_t	buffer[9];
-
-
-    // load the heads-up font
-    j = HU_FONTSTART;
-    for (i=0;i<HU_FONTSIZE;i++) {
-		sprintf(buffer, "STCFN%.3d", j++);
-		hu_fontRef[i] = W_CacheLumpNameEMS(buffer, PU_STATIC);
-    }
-
-
-
-
-}
  
 
 void HU_Start(void)

@@ -549,7 +549,7 @@ V_DrawBlock
 } 
  
  
-
+/*
 
 //
 // V_Init
@@ -575,3 +575,5 @@ void V_Init (void)
 	#endif
 #endif
 }
+*/
+

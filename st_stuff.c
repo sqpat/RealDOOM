@@ -248,100 +248,100 @@
 
             
 // ST_Start() has just been called
-static boolean          st_firsttime;
+boolean          st_firsttime;
 
 // used to execute ST_Init() only once
 
 // lump number for PLAYPAL
-//static int16_t              lu_palette;
+//int16_t              lu_palette;
 MEMREF               palRef;
 
 // used for timing
 
 
 // whether in automap or first-person
-static st_stateenum_t   st_gamestate;
+st_stateenum_t   st_gamestate;
 
 // whether left-side main status bar is active
-static boolean          st_statusbaron;
+boolean          st_statusbaron;
 
 // main bar left
-static MEMREF         sbarRef;
+MEMREF         sbarRef;
 
 // 0-9, tall numbers
-static MEMREF         tallnumRef[10];
+MEMREF         tallnumRef[10];
 
 // tall % sign
-static MEMREF         tallpercentRef;
+MEMREF         tallpercentRef;
 
 // 0-9, short, yellow (,different!) numbers
-static MEMREF         shortnumRef[10];
+MEMREF         shortnumRef[10];
 
 // 3 key-cards, 3 skulls
-static MEMREF         keysRef[NUMCARDS];
+MEMREF         keysRef[NUMCARDS];
 
 // face status patches
-static MEMREF         facesRef[ST_NUMFACES];
+MEMREF         facesRef[ST_NUMFACES];
 
 // face background
-static MEMREF         facebackRef;
+MEMREF         facebackRef;
 
  // main bar right
-static MEMREF         armsbgRef[1];
+MEMREF         armsbgRef[1];
 
 // weapon ownership patches
-static MEMREF	armsRef[6][2]; 
+MEMREF	armsRef[6][2]; 
 
 // ready-weapon widget
-static st_number_t      w_ready;
+st_number_t      w_ready;
 
 
 // health widget
-static st_percent_t     w_health;
+st_percent_t     w_health;
 
 // arms background
-static st_multicon_t     w_armsbg;
-//static st_binicon_t     w_armsbg;
+st_multicon_t     w_armsbg;
+//st_binicon_t     w_armsbg;
 
 
 // weapon ownership widgets
-static st_multicon_t    w_arms[6];
+st_multicon_t    w_arms[6];
 
 // face status widget
-static st_multicon_t    w_faces; 
+st_multicon_t    w_faces; 
 
 // keycard widgets
-static st_multicon_t    w_keyboxes[3];
+st_multicon_t    w_keyboxes[3];
 
 // armor widget
-static st_percent_t     w_armor;
+st_percent_t     w_armor;
 
 // ammo widgets
-static st_number_t      w_ammo[4];
+st_number_t      w_ammo[4];
 
 // max ammo widgets
-static st_number_t      w_maxammo[4]; 
+st_number_t      w_maxammo[4]; 
 
 
 
 
 // used to use appopriately pained face
-static int16_t      st_oldhealth = -1;
+int16_t      st_oldhealth = -1;
 
 // used for evil grin
-static boolean  oldweaponsowned[NUMWEAPONS]; 
+boolean  oldweaponsowned[NUMWEAPONS]; 
 
  // count until face changes
-static int16_t      st_facecount = 0;
+int16_t      st_facecount = 0;
 
 // current face index, used by w_faces
-static int16_t      st_faceindex = 0;
+int16_t      st_faceindex = 0;
 
 // holds key-type for each key box on bar
-static int16_t      keyboxes[3];
+int16_t      keyboxes[3];
 
 // a random number per tick
-static uint8_t      st_randomnumber;
+uint8_t      st_randomnumber;
 
 
 
@@ -1030,90 +1030,8 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 }
 
 
-void ST_loadGraphics(void)
-{
 
-	int8_t         i;
-	int8_t         j;
-	int16_t         facenum;
-    
-	int8_t        namebuf[9];
 
-    // Load the numbers, tall and short
-    for (i=0;i<10;i++)
-    {
-        sprintf(namebuf, "STTNUM%d", i);
-        tallnumRef[i] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
-
-        sprintf(namebuf, "STYSNUM%d", i);
-        shortnumRef[i] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
-    }
-
-    // Load percent key.
-    //Note: why not load STMINUS here, too?
-    tallpercentRef = W_CacheLumpNameEMS("STTPRCNT", PU_STATIC);
-
-    // key cards
-    for (i=0;i<NUMCARDS;i++)
-    {
-        sprintf(namebuf, "STKEYS%d", i);
-        keysRef[i] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
-    }
-
-    // arms background
-    armsbgRef[0] = W_CacheLumpNameEMS("STARMS", PU_STATIC);
-
-    // arms ownership widgets
-    for (i=0;i<6;i++)
-    {
-        sprintf(namebuf, "STGNUM%d", i+2);
-
-        // gray #
-        armsRef[i][0] =  W_CacheLumpNameEMS(namebuf, PU_STATIC);
-
-        // yellow #
-        armsRef[i][1] = shortnumRef[i+2]; 
-    }
-
-    // face backgrounds for different color players
-    sprintf(namebuf, "STFB0");
-    facebackRef =  W_CacheLumpNameEMS(namebuf, PU_STATIC);
-
-    // status bar background bits
-    sbarRef = W_CacheLumpNameEMS("STBAR", PU_STATIC);
-
-    // face states
-    facenum = 0;
-    for (i=0;i<ST_NUMPAINFACES;i++)
-    {
-        for (j=0;j<ST_NUMSTRAIGHTFACES;j++)
-        {
-            sprintf(namebuf, "STFST%d%d", i, j);
-            facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
-        }
-        sprintf(namebuf, "STFTR%d0", i);        // turn right
-        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
-        sprintf(namebuf, "STFTL%d0", i);        // turn left
-        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
-        sprintf(namebuf, "STFOUCH%d", i);       // ouch!
-        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
-        sprintf(namebuf, "STFEVL%d", i);        // evil grin ;)
-        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
-        sprintf(namebuf, "STFKILL%d", i);       // pissed off
-        facesRef[facenum++] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
-    }
-    facesRef[facenum++] = W_CacheLumpNameEMS("STFGOD0", PU_STATIC);
-    facesRef[facenum++] = W_CacheLumpNameEMS("STFDEAD0", PU_STATIC);
-
-}
-
-void ST_loadData(void)
-{
-    int16_t lu_palette = W_GetNumForName ("PLAYPAL");
-	palRef = W_CacheLumpNumEMS(lu_palette, PU_CACHE);
-
-    ST_loadGraphics();
-}
 
 void ST_unloadGraphics(void)
 {
@@ -1321,11 +1239,4 @@ void ST_Stop (void)
 //	I_SetPalette(W_CacheLumpNum(lu_palette, PU_CACHE));
 
     st_stopped = true;
-}
-
-void ST_Init (void)
-{
-    ST_loadData();
-	screen4Ref = Z_MallocEMS (ST_WIDTH*ST_HEIGHT, PU_STATIC, 0, ALLOC_TYPE_SCREEN);
-    
 }

@@ -193,6 +193,40 @@ void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
 
 void Z_ShutdownEMS();
 
+#define ALLOCATION_LIST_HEAD	0
+#define EMS_ALLOCATION_LIST_SIZE 1450
+
+
+
+typedef struct
+{
+	PAGEREF prev;    //2    using 16 bits but need 11 or 12...
+	PAGEREF next;    //4    using 16 bits but need 11 or 12...         these 3 could fit in 32 bits?
+
+	// page and offset refer to internal EMS page and offset - in other words the keys
+	// to find the real location in memory for this allocation
+
+	// page;       using 9 bits... implies page max count of 512 (8 MB worth)
+	// size;        use 23 bits implying max of 8MB-1 or 0x007FFFFF max free size,
+	uint32_t page_and_size; // page is 9 high bits, size is 23 low bits
+	// todo: optimize uses of the page 9 bits to use int_16t arithmetic instead of int_32t. Maybe using unions?
+
+	// offset is the location within the page frame. 16kb page frame size means
+	// 14 bits needed. Tag is a 2 bit field stored in the two high bits. Used to
+	// managecaching behavior
+	uint16_t offset_and_tag;  //10
+	// user is sort of a standby of the old code but implies the block has an
+	// "owner". it combines with the tag field to determine a couple behaviors. 
+	// backref is an index passed to external caches when the allocation is
+	// deleted so the caches can also be cleared. Used in compositeTextures
+	// and wad lumps
+	uint16_t backref_and_user;  //12 bytes per struct, dont think we can do better.
+
+#ifdef PROFILE_PAGE_COUNT
+	int8_t sourcehint;
+#endif
+} allocation_t;
+
 
 #endif
 

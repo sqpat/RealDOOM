@@ -49,7 +49,6 @@ file st_stuff.obj
 file st_lib.obj
 file hu_stuff.obj
 file hu_lib.obj
-file wi_stuff.obj
 file s_sound.obj
 file sounds.obj
 file dutils.obj
@@ -63,17 +62,32 @@ file dmx.obj
 #file p_setup.obj
 #file f_wipe.obj
 #file am_map.obj
+#file d_init.obj
+#file w_init.obj
+file z_init.obj
+#file i_init.obj
+#file st_init.obj
+#file p_init.obj
+#file r_init.obj
+#file wi_stuff.obj
 
 
 
 # # begin overlay area
 begin
-#	# c26    postgame
-section file f_finale.obj, i_main.obj
-#	# a73    saving/menu
+
+#	postgame
+section file f_finale.obj
+#	saving/menu
 section file p_saveg.obj
-#	# fed  4c9     level/game setup
-section file p_setup.obj, f_wipe.obj
-#	# 1e89   postgame
+#	intermission
+section file wi_stuff.obj
+#	alternate setup code
+section file r_init.obj
+#	alternate setup code
+section file w_init.obj, i_init.obj, st_init.obj, p_init.obj
+#	level/game setup
+section file p_setup.obj, f_wipe.obj, d_init.obj, i_main.obj
+#	ingame
 section file am_map.obj
 end
