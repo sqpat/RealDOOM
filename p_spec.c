@@ -980,16 +980,14 @@ P_ShootSpecialLine
 //  that the player origin is in a special sector
 //
 void P_PlayerInSpecialSector () {
-	mobj_t* playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-	fixed_t playerMoz = playerMo->z;
-	int16_t secnum = playerMo->secnum;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
+	int16_t secnum = playerMobj.secnum;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	// temp.h.intbits = (sectors[secnum].floorheight >> SHORTFLOORBITS);
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[secnum].floorheight);
     // Falling, not all the way down yet?
-	if (playerMoz != temp.w) {
+	if (playerMobj.z != temp.w) {
 		return;
 	}
 
@@ -999,14 +997,14 @@ void P_PlayerInSpecialSector () {
 			// HELLSLIME DAMAGE
 			if (!player.powers[pw_ironfeet])
 				if (!(leveltime.h.fracbits &0x1f))
-					P_DamageMobj (playermoRef, NULL_MEMREF, NULL_MEMREF, 10);
+					P_DamageMobj (PLAYER_MOBJ_REF, NULL_MEMREF, NULL_MEMREF, 10);
 			break;
 	
 		case 7:
 			// NUKAGE DAMAGE
 			if (!player.powers[pw_ironfeet])
 				if (!(leveltime.h.fracbits &0x1f))
-					P_DamageMobj (playermoRef, NULL_MEMREF, NULL_MEMREF, 5);
+					P_DamageMobj (PLAYER_MOBJ_REF, NULL_MEMREF, NULL_MEMREF, 5);
 			break;
 	
 		case 16:
@@ -1015,7 +1013,7 @@ void P_PlayerInSpecialSector () {
 				// STROBE HURT
 				if (!player.powers[pw_ironfeet] || (P_Random()<5) ) {
 					if (!(leveltime.h.fracbits &0x1f))
-						P_DamageMobj (playermoRef, NULL_MEMREF, NULL_MEMREF, 20);
+						P_DamageMobj (PLAYER_MOBJ_REF, NULL_MEMREF, NULL_MEMREF, 20);
 				}
 				break;
 			
@@ -1031,7 +1029,7 @@ void P_PlayerInSpecialSector () {
 			player.cheats &= ~CF_GODMODE;
 
 			if (!(leveltime.h.fracbits &0x1f))
-				P_DamageMobj (playermoRef, NULL_MEMREF, NULL_MEMREF, 20);
+				P_DamageMobj (PLAYER_MOBJ_REF, NULL_MEMREF, NULL_MEMREF, 20);
 
 			if (player.health <= 10)
 				G_ExitLevel();

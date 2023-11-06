@@ -560,14 +560,11 @@ void R_DrawPlayerSprites (void)
     pspdef_t*   psp;
 	mobj_t*     playermo;
 	sector_t* sectors;
-	int16_t		playermosecnum;
-	playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-	playermosecnum = playermo->secnum;
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
     
     // get light level
-    lightnum = (sectors[playermosecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
+    lightnum = (sectors[playerMobj.secnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
 
 
 //    if (lightnum < 0)          

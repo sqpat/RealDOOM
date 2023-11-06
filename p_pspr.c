@@ -162,7 +162,7 @@ void P_BringUpWeapon ()
 	player.pendingweapon = player.readyweapon;
 		
     if (player.pendingweapon == wp_chainsaw)
-	S_StartSoundFromRef (playermoRef, sfx_sawup);
+	S_StartSoundFromRef (PLAYER_MOBJ_REF, sfx_sawup);
 		
     newstate = weaponinfo[player.pendingweapon].upstate;
 
@@ -269,11 +269,11 @@ void P_FireWeapon ()
     if (!P_CheckAmmo ())
 		return;
 	
-	P_SetMobjState (playermoRef, S_PLAY_ATK1);
+	P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY_ATK1);
     newstate = weaponinfo[player.readyweapon].atkstate;
 
 	P_SetPsprite (ps_weapon, newstate);
-	P_NoiseAlert (playermoRef, playermoRef);
+	P_NoiseAlert (PLAYER_MOBJ_REF, PLAYER_MOBJ_REF);
 }
 
 
@@ -305,19 +305,18 @@ A_WeaponReady
 {	
     statenum_t	newstate;
     fixed_t		angle;
-	mobj_t* playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
     
     // get out of attack state
-    if (playermo->state == &states[S_PLAY_ATK1]
-	|| playermo->state == &states[S_PLAY_ATK2] )
+    if (playerMobj.state == &states[S_PLAY_ATK1]
+	|| playerMobj.state == &states[S_PLAY_ATK2] )
     {
-	P_SetMobjState (playermoRef, S_PLAY);
+	P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY);
     }
     
     if (player.readyweapon == wp_chainsaw
 	&& psp->state == &states[S_SAW])
     {
-	S_StartSoundFromRef (playermoRef, sfx_sawidl);
+	S_StartSoundFromRef (PLAYER_MOBJ_REF, sfx_sawidl);
     }
     
     // check for change
@@ -469,7 +468,7 @@ A_GunFlash
 ( 
   pspdef_t*	psp ) 
 {
-    P_SetMobjState (playermoRef, S_PLAY_ATK2);
+    P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY_ATK2);
     P_SetPsprite (ps_flash,weaponinfo[player.readyweapon].flashstate);
 }
 
@@ -491,7 +490,6 @@ A_Punch
     fineangle_t	angle;
     int16_t		damage;
     fixed_t		slope;
-	mobj_t* playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 	mobj_t* linetarget;
 
     damage = (P_Random ()%10+1)<<1;
@@ -502,18 +500,18 @@ A_Punch
 
 
 	// todo use fixed_t_union to reduce shift
-	angle = playermo->angle >> ANGLETOFINESHIFT;
+	angle = playerMobj.angle >> ANGLETOFINESHIFT;
 	angle += ((P_Random()-P_Random())>> 1);
 
-    slope = P_AimLineAttack (playermoRef, angle, MELEERANGE);
-    P_LineAttack (playermoRef, angle, MELEERANGE , slope, damage);
+    slope = P_AimLineAttack (PLAYER_MOBJ_REF, angle, MELEERANGE);
+    P_LineAttack (PLAYER_MOBJ_REF, angle, MELEERANGE , slope, damage);
 
     // turn to face target
     if (linetargetRef)
     {
-		S_StartSoundFromRef(playermoRef, sfx_punch);
+		S_StartSoundFromRef(PLAYER_MOBJ_REF, sfx_punch);
 		linetarget = (mobj_t*)Z_LoadThinkerBytesFromEMS(linetargetRef);
-		playermo->angle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
+		playerMobj.angle = R_PointToAngle2 (playerMobj.x, playerMobj.y, linetarget->x, linetarget->y);
     }
 
 
@@ -532,43 +530,42 @@ A_Saw
     fineangle_t	angle;
     int16_t		damage;
     fixed_t		slope;
-	mobj_t* playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 	mobj_t* linetarget; 
 
     damage = 2*(P_Random ()%10+1);
 	// todo use fixed_t_union to reduce shift
-	angle = playermo->angle >> ANGLETOFINESHIFT;
+	angle = playerMobj.angle >> ANGLETOFINESHIFT;
     angle = MOD_FINE_ANGLE( + (P_Random()-P_Random())>>(1));
     
     // use meleerange + 1 se the puff doesn't skip the flash
-    slope = P_AimLineAttack (playermoRef, angle, MELEERANGE + CHAINSAW_FLAG);
-    P_LineAttack (playermoRef, angle, MELEERANGE + CHAINSAW_FLAG, slope, damage);
+    slope = P_AimLineAttack (PLAYER_MOBJ_REF, angle, MELEERANGE + CHAINSAW_FLAG);
+    P_LineAttack (PLAYER_MOBJ_REF, angle, MELEERANGE + CHAINSAW_FLAG, slope, damage);
 
     if (!linetargetRef)
     {
-		S_StartSoundFromRef(playermoRef, sfx_sawful);
+		S_StartSoundFromRef(PLAYER_MOBJ_REF, sfx_sawful);
 	return;
     }
-	S_StartSoundFromRef(playermoRef, sfx_sawhit);
+	S_StartSoundFromRef(PLAYER_MOBJ_REF, sfx_sawhit);
 	
 	linetarget = (mobj_t*)Z_LoadThinkerBytesFromEMS(linetargetRef);
     // turn to face target
-    bigangle = R_PointToAngle2 (playermo->x, playermo->y, linetarget->x, linetarget->y);
-    if (bigangle - playermo->angle > ANG180)
+    bigangle = R_PointToAngle2 (playerMobj.x, playerMobj.y, linetarget->x, linetarget->y);
+    if (bigangle - playerMobj.angle > ANG180)
     {
-	if (bigangle - playermo->angle < -ANG90/20)
-		playermo->angle = bigangle + ANG90/21;
+	if (bigangle - playerMobj.angle < -ANG90/20)
+		playerMobj.angle = bigangle + ANG90/21;
 	else
-		playermo->angle -= ANG90/20;
+		playerMobj.angle -= ANG90/20;
     }
     else
     {
-	if (bigangle - playermo->angle > ANG90/20)
-		playermo->angle = bigangle - ANG90/21;
+	if (bigangle - playerMobj.angle > ANG90/20)
+		playerMobj.angle = bigangle - ANG90/21;
 	else
-		playermo->angle += ANG90/20;
+		playerMobj.angle += ANG90/20;
     }
-	playermo->flags |= MF_JUSTATTACKED;
+	playerMobj.flags |= MF_JUSTATTACKED;
 }
 
 
@@ -582,7 +579,7 @@ A_FireMissile
   pspdef_t*	psp ) 
 {
     player.ammo[weaponinfo[player.readyweapon].ammo]--;
-    P_SpawnPlayerMissile (playermoRef, MT_ROCKET);
+    P_SpawnPlayerMissile (PLAYER_MOBJ_REF, MT_ROCKET);
 }
 
 
@@ -595,7 +592,7 @@ A_FireBFG
   pspdef_t*	psp ) 
 {
     player.ammo[weaponinfo[player.readyweapon].ammo] -= BFGCELLS;
-    P_SpawnPlayerMissile (playermoRef, MT_BFG);
+    P_SpawnPlayerMissile (PLAYER_MOBJ_REF, MT_BFG);
 }
 
 
@@ -614,7 +611,7 @@ A_FirePlasma
 		  ps_flash,
 		  weaponinfo[player.readyweapon].flashstate+(P_Random ()&1) );
 
-    P_SpawnPlayerMissile (playermoRef, MT_PLASMA);
+    P_SpawnPlayerMissile (PLAYER_MOBJ_REF, MT_PLASMA);
 }
 
 
@@ -683,17 +680,17 @@ A_FirePistol
   pspdef_t*	psp ) 
 {
 	
-	S_StartSoundFromRef(playermoRef, sfx_pistol);
+	S_StartSoundFromRef(PLAYER_MOBJ_REF, sfx_pistol);
 
-    P_SetMobjState (playermoRef, S_PLAY_ATK2);
+    P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY_ATK2);
     player.ammo[weaponinfo[player.readyweapon].ammo]--;
 
     P_SetPsprite (
 		  ps_flash,
 		  weaponinfo[player.readyweapon].flashstate);
 
-    P_BulletSlope (playermoRef);
-    P_GunShot (playermoRef, !player.refire);
+    P_BulletSlope (PLAYER_MOBJ_REF);
+    P_GunShot (PLAYER_MOBJ_REF, !player.refire);
 
 }
 
@@ -708,8 +705,8 @@ A_FireShotgun
 {
     int8_t		i;
 
-	S_StartSoundFromRef(playermoRef, sfx_shotgn);
-    P_SetMobjState (playermoRef, S_PLAY_ATK2);
+	S_StartSoundFromRef(PLAYER_MOBJ_REF, sfx_shotgn);
+    P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY_ATK2);
 
     player.ammo[weaponinfo[player.readyweapon].ammo]--;
 
@@ -717,12 +714,12 @@ A_FireShotgun
 		  ps_flash,
 		  weaponinfo[player.readyweapon].flashstate);
 
-	P_BulletSlope (playermoRef);
+	P_BulletSlope (PLAYER_MOBJ_REF);
 	if (setval)
 		I_Error("made it thru");
 
 	for (i = 0; i < 7; i++) {
-		P_GunShot(playermoRef, false);
+		P_GunShot(PLAYER_MOBJ_REF, false);
 	}
 }
 
@@ -739,11 +736,9 @@ A_FireShotgun2
     int8_t		i;
     fineangle_t	angle;
     int16_t		damage;
-	mobj_t* playermo;
-		
 	
-	S_StartSoundFromRef(playermoRef, sfx_dshtgn);
-    P_SetMobjState (playermoRef, S_PLAY_ATK2);
+	S_StartSoundFromRef(PLAYER_MOBJ_REF, sfx_dshtgn);
+    P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY_ATK2);
 
     player.ammo[weaponinfo[player.readyweapon].ammo]-=2;
 
@@ -751,16 +746,15 @@ A_FireShotgun2
 		  ps_flash,
 		  weaponinfo[player.readyweapon].flashstate);
 
-    P_BulletSlope (playermoRef);
+    P_BulletSlope (PLAYER_MOBJ_REF);
 	
-	playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
     for (i=0 ; i<20 ; i++)
     {
 	damage = 5*(P_Random ()%3+1);
 	// todo use fixed_t_union to reduce shift
-	angle = playermo->angle >> ANGLETOFINESHIFT;
+	angle = playerMobj.angle >> ANGLETOFINESHIFT;
 	angle = MOD_FINE_ANGLE( angle + ((P_Random()-P_Random())<<(19-ANGLETOFINESHIFT)));
-	P_LineAttack (playermoRef,
+	P_LineAttack (PLAYER_MOBJ_REF,
 		      angle,
 		MISSILERANGE,
 		      bulletslope + ((P_Random()-P_Random())<<5), damage);
@@ -776,12 +770,12 @@ A_FireCGun
 ( 
   pspdef_t*	psp ) 
 {
-    S_StartSoundFromRef (playermoRef, sfx_pistol);
+    S_StartSoundFromRef (PLAYER_MOBJ_REF, sfx_pistol);
 
     if (!player.ammo[weaponinfo[player.readyweapon].ammo])
 	return;
 		
-    P_SetMobjState (playermoRef, S_PLAY_ATK2);
+    P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY_ATK2);
     player.ammo[weaponinfo[player.readyweapon].ammo]--;
 
     P_SetPsprite (
@@ -790,9 +784,9 @@ A_FireCGun
 		  + psp->state
 		  - &states[S_CHAIN1] );
 
-    P_BulletSlope (playermoRef);
+    P_BulletSlope (PLAYER_MOBJ_REF);
 	
-    P_GunShot (playermoRef, !player.refire);
+    P_GunShot (PLAYER_MOBJ_REF, !player.refire);
 }
 
 
@@ -863,7 +857,7 @@ A_BFGsound
 ( 
   pspdef_t*	psp )
 {
-	S_StartSoundFromRef(playermoRef, sfx_bfg);
+	S_StartSoundFromRef(PLAYER_MOBJ_REF, sfx_bfg);
 }
 
 
@@ -991,7 +985,7 @@ P_SetPsprite
 /*
 		if (setval >= 1) {
 			if (setval == 2) {
-				//I_Error("values %li %hhu %i %hhu %hhu %hhu", gametic, prndindex, playermoRef, position, stnum, state->action);
+				//I_Error("values %li %hhu %i %hhu %hhu %hhu", gametic, prndindex, PLAYER_MOBJ_REF, position, stnum, state->action);
 			}
 			setval++;
 		}

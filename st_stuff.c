@@ -495,9 +495,7 @@ ST_Responder (event_t* ev)
 		  player.cheats ^= CF_GODMODE;
         if (player.cheats & CF_GODMODE)
         {
-			plyrmo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-          if (plyrmo)
-            plyrmo->health = 100;
+            playerMobj.health = 100;
           
 		  player.health = 100;
 		  player.message = STSTR_DQDON;
@@ -624,11 +622,11 @@ ST_Responder (event_t* ev)
       else if (cht_CheckCheat(&cheat_mypos, ev->data1))
       {
         static int8_t     buf[ST_MSGWIDTH];
-		plyrmo = Z_LoadBytesFromEMS(playermoRef);
+		
 		sprintf(buf, "ang=0x%x;x,y=(0x%x,0x%x)",
-                plyrmo->angle,
-			plyrmo->x,
-			plyrmo->y);
+                playerMobj.angle,
+			playerMobj.x,
+			playerMobj.y);
 		player.messagestring = buf;
       }
     }
@@ -753,7 +751,7 @@ void ST_updateFaceWidget(void)
     {
         if (player.damagecount
             && player.attackerRef
-            && player.attackerRef != playermoRef)
+            && player.attackerRef != PLAYER_MOBJ_REF)
         {
             // being attacked
             priority = 7;
@@ -765,21 +763,21 @@ void ST_updateFaceWidget(void)
             }
             else
             {
-				plyrmo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
+				 
 				plyrattacker = (mobj_t*)Z_LoadThinkerBytesFromEMS(player.attackerRef);
-				badguyangle = R_PointToAngle2(plyrmo->x,
-                                              plyrmo->y,
+				badguyangle = R_PointToAngle2(playerMobj.x,
+                                              playerMobj.y,
                                               plyrattacker->x,
                                               plyrattacker->y);
                 
-                if (badguyangle > plyrmo->angle)
+                if (badguyangle > playerMobj.angle)
                 {
                     // whether right or left
-                    diffang = badguyangle - plyrmo->angle;
+                    diffang = badguyangle - playerMobj.angle;
                     i = diffang > ANG180; 
                 } else {
                     // whether left or right
-                    diffang = plyrmo->angle - badguyangle;
+                    diffang = playerMobj.angle - badguyangle;
                     i = diffang <= ANG180; 
                 } // confusing, aint it?
 

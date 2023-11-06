@@ -326,7 +326,6 @@ void AM_saveScaleAndLoc(void)
 
 void AM_restoreScaleAndLoc(void)
 {
-	mobj_t* playerMo;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 
@@ -336,9 +335,8 @@ void AM_restoreScaleAndLoc(void)
 		m_x = old_m_x;
 		m_y = old_m_y;
     } else {
-		playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-		m_x = playerMo->x - m_w/2;
-		m_y = playerMo->y - m_h/2;
+		m_x = playerMobj.x - m_w/2;
+		m_y = playerMobj.y - m_h/2;
     }
     m_x2 = m_x + m_w;
     m_y2 = m_y + m_h;
@@ -443,8 +441,6 @@ void AM_changeWindowLoc(void)
 void AM_initVariables(void)
 {
     static event_t st_notify = { ev_keyup, AM_MSGENTERED };
-	mobj_t* playerMo; 
-
 
     automapactive = true;
     fb = screen0;
@@ -459,9 +455,8 @@ void AM_initVariables(void)
     m_h = FTOM16(f_h);
 
   
-	playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-	m_x = playerMo->x - m_w/2;
-    m_y = playerMo->y - m_h/2;
+	m_x = playerMobj.x - m_w/2;
+    m_y = playerMobj.y - m_h/2;
     AM_changeWindowLoc();
 
     // for saving & restoring
@@ -738,18 +733,15 @@ void AM_changeWindowScale(void)
 //
 void AM_doFollowPlayer(void) {
 
-	mobj_t* playerMo;
 
-	playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-
-    if (f_oldloc.x != playerMo->x || f_oldloc.y != playerMo->y)
+    if (f_oldloc.x != playerMobj.x || f_oldloc.y != playerMobj.y)
     {
-	m_x = FTOM(MTOF(playerMo->x)) - m_w/2;
-	m_y = FTOM(MTOF(playerMo->y)) - m_h/2;
+	m_x = FTOM(MTOF(playerMobj.x)) - m_w/2;
+	m_y = FTOM(MTOF(playerMobj.y)) - m_h/2;
 	m_x2 = m_x + m_w;
 	m_y2 = m_y + m_h;
-	f_oldloc.x = playerMo->x;
-	f_oldloc.y = playerMo->y;
+	f_oldloc.x = playerMobj.x;
+	f_oldloc.y = playerMobj.y;
 
 
     }
@@ -1208,11 +1200,11 @@ AM_drawLineCharacter
 
 void AM_drawPlayers(void)
 {
-	mobj_t* playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
+	
 	if (cheating)
-		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMo->angle>>ANGLETOFINESHIFT, WHITE, playerMo->x, playerMo->y);
+		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj.angle>>ANGLETOFINESHIFT, WHITE, playerMobj.x, playerMobj.y);
 	else
-		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMo->angle>>ANGLETOFINESHIFT, WHITE, playerMo->x, playerMo->y);
+		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj.angle>>ANGLETOFINESHIFT, WHITE, playerMobj.x, playerMobj.y);
 
 
 

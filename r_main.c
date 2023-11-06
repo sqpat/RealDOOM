@@ -798,11 +798,10 @@ void R_SetupFrame ()
 {		
     int8_t		i;
 	fixed_t tempan;
-	mobj_t* playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 
-    viewx.w = playermo->x;
-    viewy.w = playermo->y;
-    viewangle = playermo->angle;
+    viewx.w = playerMobj.x;
+    viewy.w = playerMobj.y;
+    viewangle = playerMobj.angle;
     extralight = player.extralight;
 
     viewz.w = player.viewz;

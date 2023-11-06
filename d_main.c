@@ -530,7 +530,7 @@ void D_DoomLoop (void)
         {
             TryRunTics (); // will run at least one tic
         }
-		S_UpdateSounds (playermoRef);// move positional sounds
+		S_UpdateSounds (PLAYER_MOBJ_REF);// move positional sounds
 		TEXT_MODE_DEBUG_PRINT("\n tick %li S_UpdateSounds done", gametic);
 		// Update display, next frame, with current state.
 
@@ -546,7 +546,7 @@ void D_DoomLoop (void)
 				
 			//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
 			SAVEDUNIT = Z_LoadThinkerBytesFromEMS(1483); // 1457
-			//SAVEDUNIT = Z_LoadThinkerBytesFromEMS(playermoRef);
+			//SAVEDUNIT = Z_LoadThinkerBytesFromEMS(PLAYER_MOBJ_REF);
 			if (gametic == 1) {
 				fp = fopen("debuglog.txt", "w"); // clear old file
 			} else {

@@ -214,7 +214,7 @@ void P_RunThinkers (void)
 #ifdef DEBUGLOG_TO_FILE
 				/*
 				if (gametic == 205) {
-					SAVEDUNIT = Z_LoadThinkerBytesFromEMS(playermoRef);
+					SAVEDUNIT = Z_LoadThinkerBytesFromEMS(PLAYER_MOBJ_REF);
 					if (SAVEDUNIT->momx == -43471L) {
 						// i == 208: -76958L 
 						I_Error("player momx momy %li %li %i", SAVEDUNIT->momx, SAVEDUNIT->momy, i);
@@ -223,7 +223,7 @@ void P_RunThinkers (void)
 				*/
 				if (gametic == stoptic) {
 					
-					//SAVEDUNIT = Z_LoadThinkerBytesFromEMS(playermoRef);
+					//SAVEDUNIT = Z_LoadThinkerBytesFromEMS(PLAYER_MOBJ_REF);
 					if (i == 0) {
 						fp = fopen("debgtick.txt", "w"); // clear old file
 					} else {

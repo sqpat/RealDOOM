@@ -201,8 +201,8 @@ P_GiveBody
     if (player.health > MAXHEALTH)
 		player.health = MAXHEALTH;
 
-	playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-	playerMo->health = player.health;
+	
+	playerMobj.health = player.health;
 	
     return true;
 }
@@ -257,7 +257,6 @@ P_GivePower
 ( 
 	int16_t /*powertype_t*/	power )
 {
-	mobj_t* playerMo;
     if (power == pw_invulnerability)
     {
 		player.powers[power] = INVULNTICS;
@@ -266,10 +265,9 @@ P_GivePower
     
     if (power == pw_invisibility)
     {
-	playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 
 	player.powers[power] = INVISTICS;
-	playerMo->flags |= MF_SHADOW;
+	playerMobj.flags |= MF_SHADOW;
 	return true;
     }
     
@@ -357,8 +355,7 @@ P_TouchSpecialThing
 			player.health++;		// can go over 100%
 			if (player.health > 200)
 				player.health = 200;
-			playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-			playerMo->health = player.health;
+			playerMobj.health = player.health;
 			player.message = GOTHTHBONUS;
 			break;
 		
@@ -375,8 +372,7 @@ P_TouchSpecialThing
 			player.health += 100;
 			if (player.health > 200)
 				player.health = 200;
-			playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-			playerMo->health = player.health;
+			playerMobj.health = player.health;
 			player.message = GOTSUPER;
 			sound = sfx_getpow;
 			break;
@@ -385,8 +381,7 @@ P_TouchSpecialThing
 			if (!commercial)
 				return;
 			player.health = 200;
-			playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-			playerMo->health = player.health;
+			playerMobj.health = player.health;
 			P_GiveArmor (2);
 			player.message = GOTMSPHERE;
 			sound = sfx_getpow;

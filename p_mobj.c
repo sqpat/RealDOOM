@@ -32,6 +32,9 @@
 #include "doomstat.h"
 #include "p_setup.h"
 
+
+extern boolean playerSpawned;
+
 void G_PlayerReborn ();
 void P_SpawnMapThing (mapthing_t*	mthing, int16_t key);
 
@@ -603,7 +606,14 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	short_height_t sectorceilingheight;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	mobjRef = Z_MallocThinkerEMS(sizeof(*mobj));
+
+	if (type == MT_PLAYER) {
+		mobjRef = PLAYER_MOBJ_REF;
+		playerSpawned = true;
+	} else {
+		mobjRef = Z_MallocThinkerEMS(sizeof(*mobj));
+	}
+
 	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 
 	memset (mobj, 0, sizeof (*mobj));
@@ -726,14 +736,14 @@ void P_SpawnPlayer (mapthing_t* mthing)
 	z.w = ONFLOORZ;
 
 	mobjRef	= P_SpawnMobj (x.w,y.w,z.w, MT_PLAYER);
-	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+	mobj = &playerMobj;
 	mobj->reactiontime = 0;
 
     mobj->angle	= ANG45 * (mthingangle/45);
     mobj->player = &player;
     mobj->health = player.health;
 
-	player.moRef = playermoRef = mobjRef;
+	player.moRef = mobjRef;
 	player.playerstate = PST_LIVE;
 	player.refire = 0;
 	player.message = -1;
@@ -1103,10 +1113,12 @@ P_SetMobjState2
 	state_t*	st;
 	mobj_t*	mobj;
 	
-	if (mobjRef > 10000) {
+#if CHECK_FOR_ERRORS
+	if (mobjRef > 10000 && mobjRef != PLAYER_MOBJ_REF) {
 		I_Error("caught bad ref? %u %u %s %li", mobjRef, state, file, line);
 	}
-	
+#endif
+
 	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 
 	do {

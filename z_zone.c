@@ -1149,6 +1149,8 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
 
 }
 
+extern boolean playerSpawned;
+
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
 void Z_FreeConventionalAllocations() {
 
@@ -1160,6 +1162,8 @@ void Z_FreeConventionalAllocations() {
 	currentThinkerAllocationListHead = 1;
 	thinkerAllocationListFull = false;
 
+	memset(&playerMobj, 0, sizeof(mobj_t));
+	playerSpawned = false;
 }
 
 
@@ -1252,6 +1256,10 @@ void* Z_LoadThinkerBytesFromEMS2(MEMREF ref) {
 	uint16_t offset;
 	uint32_t page_and_size = 0;
 	
+	if (ref == PLAYER_MOBJ_REF) {
+		return &playerMobj;
+	}
+
 	// 97 bytes or whatever doesnt go into 16384 cleanly, 
 	// so we will skip bytes at the end of ems page this way
 	while (refcounter > THINKERS_PER_PAGE) {

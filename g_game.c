@@ -102,8 +102,9 @@ ticcount_t             starttime;              // for comparative timing purpose
 boolean         viewactive; 
  
 player_t        player;
-MEMREF			playermoRef;
- 
+boolean			playerSpawned = false;
+mobj_t			playerMobj;
+
 ticcount_t          gametic;
 int16_t             totalkills, totalitems, totalsecret;    // for intermission 
  
@@ -639,12 +640,11 @@ void G_Ticker (void)
 //
 void G_PlayerFinishLevel () 
 { 
-	mobj_t* playerMo = Z_LoadThinkerBytesFromEMS(playermoRef);
 
           
     memset (player.powers, 0, sizeof (player.powers));
     memset (player.cards, 0, sizeof (player.cards));
-    playerMo->flags &= ~MF_SHADOW;         // cancel invisibility 
+    playerMobj.flags &= ~MF_SHADOW;         // cancel invisibility 
 	player.extralight = 0;                  // cancel gun flashes 
 	player.fixedcolormap = 0;               // cancel ir gogles 
 	player.damagecount = 0;                 // no palette changes 
@@ -701,7 +701,6 @@ G_CheckSpot
   mapthing_t*   mthing ) 
 { 
 	angle_t            an;
-	mobj_t*				playerMo;
 	MEMREF				moRef;
 	subsector_t* subsectors;
 	int16_t subsecnum;
@@ -716,22 +715,21 @@ G_CheckSpot
     tempx.h.intbits = mthing->x; 
     tempy.h.intbits = mthing->y; 
 
-    if (!playermoRef)
+    if (!playerSpawned)
     {
         // first spawn of level, before corpses
-		playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-		if (playerMo->x == tempx.w && playerMo->y == tempy.w)
+		if (playerMobj.x == tempx.w && playerMobj.y == tempy.w)
 			return false;
         return true;
     }
          
-    if (!P_CheckPosition (playermoRef, tempx.w, tempy.w) ) 
+    if (!P_CheckPosition (PLAYER_MOBJ_REF, tempx.w, tempy.w) )
         return false; 
  
     // flush an old corpse if needed 
     if (bodyqueslot >= BODYQUESIZE) 
         P_RemoveMobj (bodyque[bodyqueslot%BODYQUESIZE]); 
-    bodyque[bodyqueslot%BODYQUESIZE] = playermoRef; 
+    bodyque[bodyqueslot%BODYQUESIZE] = PLAYER_MOBJ_REF; 
     bodyqueslot++; 
         
     // spawn a teleport fog 

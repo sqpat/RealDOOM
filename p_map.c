@@ -1446,7 +1446,7 @@ void P_UseLines ()
 	fixed_t_union	y2;
 	mobj_t* usething;
 
-    usethingRef = playermoRef;
+    usethingRef = PLAYER_MOBJ_REF;
 	usething = (mobj_t*)Z_LoadThinkerBytesFromEMS(usethingRef);
 		
     angle = usething->angle >> ANGLETOFINESHIFT;

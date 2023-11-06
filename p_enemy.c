@@ -589,28 +589,22 @@ P_LookForPlayers
     angle_t	an;
     fixed_t	dist;
 	mobj_t*	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-	mobj_t* playerMo;
-	fixed_t playerMoy;
-	fixed_t playerMox;
 
     
 	Z_RefIsActive(actorRef);
  	if (player.health <= 0)
 		return false;		// dead
 
-	if (!P_CheckSight(actorRef, playermoRef)) {
+	if (!P_CheckSight(actorRef, PLAYER_MOBJ_REF)) {
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 		return false;		// out of sight
 	}
-	playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
-	playerMox = playerMo->x;
-	playerMoy = playerMo->y;
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 
 	if (!allaround) {
-		an = R_PointToAngle2(actor->x, actor->y, playerMox, playerMoy) - actor->angle;
+		an = R_PointToAngle2(actor->x, actor->y, playerMobj.x, playerMobj.y) - actor->angle;
 		if (an > ANG90 && an < ANG270) {
-			dist = P_AproxDistance(playerMox - actor->x, playerMoy - actor->y);
+			dist = P_AproxDistance(playerMobj.x - actor->x, playerMobj.y - actor->y);
 			// if real close, react anyway
 			if (dist > MELEERANGE * FRACUNIT) {
 				return false;	// behind back
@@ -618,7 +612,7 @@ P_LookForPlayers
 		}
 	}
 
-	actor->targetRef = playermoRef;
+	actor->targetRef = PLAYER_MOBJ_REF;
 	return true;
 }
 
@@ -2093,7 +2087,7 @@ A_OpenShotgun2
 ( 
   pspdef_t*	psp )
 {
-	S_StartSoundFromRef(playermoRef, sfx_dbopn);
+	S_StartSoundFromRef(PLAYER_MOBJ_REF, sfx_dbopn);
 }
 
 void
@@ -2101,7 +2095,7 @@ A_LoadShotgun2
 ( 
   pspdef_t*	psp )
 {
-	S_StartSoundFromRef(playermoRef, sfx_dbload);
+	S_StartSoundFromRef(PLAYER_MOBJ_REF, sfx_dbload);
 }
 
 void
@@ -2114,7 +2108,7 @@ A_CloseShotgun2
 ( 
   pspdef_t*	psp )
 {
-    S_StartSoundFromRef (playermoRef, sfx_dbcls);
+    S_StartSoundFromRef (PLAYER_MOBJ_REF, sfx_dbcls);
     A_ReFire(psp);
 }
 
