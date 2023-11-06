@@ -422,7 +422,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
     int16_t		blockx;
     int16_t		blocky;
 	mobj_t* changeThing;
-	mobj_t* thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	MEMREF thingsprevRef = thing->sprevRef;
 	MEMREF thingsnextRef = thing->snextRef;
 	MEMREF thingbprevRef = thing->bprevRef;
@@ -440,12 +440,12 @@ void P_UnsetThingPosition (MEMREF thingRef)
 	// inert things don't need to be in blockmap?
 	// unlink from subsector
 		if (thingsnextRef) {
-			changeThing = (mobj_t*)Z_LoadThinkerFromConventional(thingsnextRef);
+			changeThing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingsnextRef);
 			changeThing->sprevRef = thingsprevRef;
 		}
 		
 		if (thingsprevRef) {
-			changeThing = (mobj_t*)Z_LoadThinkerFromConventional(thingsprevRef);
+			changeThing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingsprevRef);
 			changeThing->snextRef = thingsnextRef;
 		}
 		else {
@@ -463,12 +463,12 @@ void P_UnsetThingPosition (MEMREF thingRef)
 	// inert things don't need to be in blockmap
 	// unlink from block map
 		if (thingbnextRef) {
-			changeThing = (mobj_t*)Z_LoadThinkerFromConventional(thingbnextRef);
+			changeThing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingbnextRef);
 			changeThing->bprevRef = thingbprevRef;
 		}
 	
 		if (thingbprevRef) {
-			changeThing = (mobj_t*)Z_LoadThinkerFromConventional(thingbprevRef);
+			changeThing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingbprevRef);
 			changeThing->bnextRef = thingbnextRef;
 		} else {
 			blockx = (thingx.h.intbits - bmaporgx)>> MAPBLOCKSHIFT;
@@ -497,7 +497,7 @@ P_SetThingPosition (MEMREF thingRef)
     int16_t			blocky;
     MEMREF		linkRef;
 	mobj_t*		link;
-	mobj_t* thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	mobj_t* thingList;
 	int16_t subsectorsecnum;
 	subsector_t* subsectors;
@@ -509,7 +509,7 @@ P_SetThingPosition (MEMREF thingRef)
 
 	subsectors = (subsector_t*) Z_LoadBytesFromConventional(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
-	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	thing->secnum = subsectorsecnum;
 
 #ifdef CHECK_FOR_ERRORS
@@ -524,21 +524,21 @@ P_SetThingPosition (MEMREF thingRef)
 		oldsectorthinglist = sectors[subsectorsecnum].thinglistRef;
 		sectors[subsectorsecnum].thinglistRef = thingRef;
 
-		thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+		thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 
 
 		thing->sprevRef = NULL_MEMREF;
 		thing->snextRef = oldsectorthinglist;
 
 		if (thing->snextRef) {
-			thingList = (mobj_t*)Z_LoadThinkerFromConventional(thing->snextRef);
+			thingList = (mobj_t*)Z_LoadThinkerBytesFromEMS(thing->snextRef);
 			thingList->sprevRef = thingRef;
 		}
 
     }
 
 
-	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
     
     // link into blockmap
     if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
@@ -553,7 +553,7 @@ P_SetThingPosition (MEMREF thingRef)
 			thing->bprevRef = NULL_MEMREF;
 			thing->bnextRef = linkRef;
 			if (linkRef) {
-				link = (mobj_t*)Z_LoadThinkerFromConventional(linkRef);
+				link = (mobj_t*)Z_LoadThinkerBytesFromEMS(linkRef);
 				link->bprevRef = thingRef;
 			}
 			
@@ -660,7 +660,7 @@ P_BlockThingsIterator
 			return false;
 		}
 
-		mobj = (mobj_t*)Z_LoadThinkerFromConventional(mobjRef); // necessary for bnextref...
+		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef); // necessary for bnextref...
 		 
 	} 
 
@@ -770,7 +770,7 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     divline_t		dl;
     
     fixed_t		frac;
-	mobj_t* thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	fixed_t_union temp;
  
 	tracepositive = (trace.dx.w ^ trace.dy.w) > 0;

@@ -336,8 +336,12 @@ void R_GenerateLookup(uint8_t texnum)
 	memset(patchcount, 0, texture->width + 1);
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
-
+//	printf("\n%i %hu", texnum, texturepatchcount);
+	// 19 11
+	// 20 24
 	for (i = 0; i < texturepatchcount; i++) {
+//		printf(" %i", i);
+
 		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textureRef);
 		patch = &texture->patches[i];
 		x1 = patch->originx;
@@ -462,7 +466,6 @@ void R_InitTextures(void)
 	nummappatches = (*((int32_t *)names));
 	name_p = names + 4;
 	patchlookup = alloca(nummappatches * sizeof(*patchlookup));
-
 	for (i = 0; i < nummappatches; i++)
 	{
 		strncpy(name, name_p + i * 8, 8);
@@ -603,7 +606,7 @@ void R_InitTextures(void)
 		R_GenerateLookup(i);
 
 	// Create translation table for global animation.
-
+	
 
 	for (i = 0; i < numtextures; i++)
 		texturetranslation[i] = i;

@@ -52,7 +52,7 @@ P_Thrust
 ( 
   fineangle_t	angle,
   fixed_t	move )  {
-	mobj_t* playermo = (mobj_t* ) Z_LoadThinkerFromConventional(playermoRef);
+	mobj_t* playermo = (mobj_t* ) Z_LoadThinkerBytesFromEMS(playermoRef);
 
 	playermo->momx += FixedMul(move,finecosine(angle));
 	playermo->momy += FixedMul(move,finesine(angle));
@@ -69,7 +69,7 @@ void P_CalcHeight ()
 {
     fineangle_t		angle;
     fixed_t	bob;
-	mobj_t* playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	mobj_t* playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 	fixed_t_union temp;
 	int16_t temp2;
     temp.h.fracbits = 0;
@@ -144,7 +144,7 @@ void P_CalcHeight ()
 void P_MovePlayer ()
 {
     ticcmd_t*		cmd;
-	mobj_t* playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	mobj_t* playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	cmd = &player.cmd;
@@ -183,7 +183,7 @@ void P_DeathThink ()
 {
     angle_t		angle;
     angle_t		delta;
-	mobj_t* playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	mobj_t* playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 	mobj_t* playerattacker;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
@@ -206,7 +206,7 @@ void P_DeathThink ()
     P_CalcHeight();
 	
 	if (player.attackerRef && player.attackerRef != playermoRef) {
-		playerattacker = (mobj_t*)Z_LoadThinkerFromConventional(player.attackerRef);
+		playerattacker = (mobj_t*)Z_LoadThinkerBytesFromEMS(player.attackerRef);
 		angle = R_PointToAngle2(playermo->x, playermo->y, playerattacker->x, playerattacker->y);
 	
 
@@ -244,7 +244,7 @@ void P_PlayerThink (void)
 	int16_t playermosecnum;
 	sector_t* sectors;
 
-	playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 
     // fixme: do this in the cheat code
     if (player.cheats & CF_NOCLIP)
@@ -278,7 +278,7 @@ void P_PlayerThink (void)
 	P_MovePlayer();
     
     P_CalcHeight();
-	playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 	playermosecnum = playermo->secnum;
 
 	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
@@ -353,7 +353,7 @@ void P_PlayerThink (void)
     if (player.powers[pw_invulnerability])
 		player.powers[pw_invulnerability]--;
 
-	playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 
     if (player.powers[pw_invisibility])
 		if (! --player.powers[pw_invisibility] )

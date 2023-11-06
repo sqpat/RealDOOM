@@ -178,21 +178,7 @@ void W_AddFile(int8_t *filename)
 	}
 	// numlumps 1264
 
-
-
-		// Fill in lumpinfo
-		//lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
-
-		// using static allocation instead of realloc...
-
-
-		// 25k in size! 
-		// now 16.4k..
-
-		//I_Error("lumpsize %i", numlumps * sizeof(lumpinfo_t));
-
-		//if (!lumpinfo)
-			//I_Error ("Couldn't realloc lumpinfo");
+	 
 
 	lump_p = &lumpinfo[startlump];
 
@@ -255,16 +241,11 @@ void W_AddFile(int8_t *filename)
 	currentfilehandle++;
 #endif
 
-
 	if (reloadname)
 		close(handle);
 	//free(fileinfo);
 	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
 }
-
-
-
-
 
 
 
@@ -301,7 +282,7 @@ void W_InitMultipleFiles(int8_t** filenames)
 		I_Error("W_InitFiles: no files found");
 #endif
 
-	//size = numlumps * sizeof(*lumpcacheEMS);
+	size = numlumps * sizeof(*lumpcacheEMS);
 	//I_Error("size %li", size);
 
 	//2528

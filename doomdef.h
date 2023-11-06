@@ -68,7 +68,7 @@ enum { VERSION =  109 };
 //#define DEBUGLOG_TO_FILE
 
 // Error checking. recommended ON during development. however, turning this off makes the binary like 10-12k smaller
-// #define CHECK_FOR_ERRORS
+//#define CHECK_FOR_ERRORS
 
 // Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off for performance, on for development
 //#define CHECKREFS
@@ -299,7 +299,7 @@ fixed_t32	FixedDiv2(fixed_t32 a, fixed_t32 b);
 #define DPMI_INT 0x31
 #define EMS_INT 0x67
 
-#define PAGE_FRAME_SIZE 0x4000l
+#define PAGE_FRAME_SIZE 0x4000L
 
 
 #endif          // __DOOMDEF__

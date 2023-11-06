@@ -233,7 +233,7 @@ void R_ProjectSprite (MEMREF thingRef)
 	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
 	
-	mobj_t* thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	spritenum_t thingsprite = thing->sprite;
 	spriteframenum_t thingframe = thing->frame;
 	fixed_t thingx = thing->x;
@@ -431,7 +431,7 @@ void R_AddSprites (int16_t secnum)
 	// todo, should we quit out early of drawing player sprite? matters for netplay maybe? if its self, shouldnt render and its a lot of extra traversal?
 	for (thingRef = sectors[secnum].thinglistRef; thingRef; thingRef = thing->snextRef) {
 		R_ProjectSprite(thingRef);
-		thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+		thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 		 
 		lastThingRef = thingRef;
 	
@@ -561,7 +561,7 @@ void R_DrawPlayerSprites (void)
 	mobj_t*     playermo;
 	sector_t* sectors;
 	int16_t		playermosecnum;
-	playermo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 	playermosecnum = playermo->secnum;
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 

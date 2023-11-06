@@ -50,7 +50,7 @@ EV_Teleport
     fixed_t	oldx;
     fixed_t	oldy;
     fixed_t	oldz;
-	mobj_t*	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	MEMREF fogRef;
 	sector_t* sectors;
     // don't teleport missiles
@@ -74,7 +74,7 @@ EV_Teleport
 				if (thinkerlist[thinkerRef].functionType != TF_MOBJTHINKER) {
 					continue;
 				}
-				m = (mobj_t *)Z_LoadThinkerFromConventional(thinkerlist[thinkerRef].memref);
+				m = (mobj_t *)Z_LoadThinkerBytesFromEMS(thinkerlist[thinkerRef].memref);
 		
 				// not a teleportman
 				if (m->type != MT_TELEPORTMAN )

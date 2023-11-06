@@ -26,17 +26,20 @@
 CCOPTS = /d2 /omaxes /zp1 /4r /ei /j /zq 
 
 GLOBOBJS = &
+ i_init.obj &
  i_main.obj &
  i_ibm.obj &
  i_sound.obj &
  tables.obj &
  f_finale.obj &
+ d_init.obj &
  d_main.obj &
  d_net.obj &
  g_game.obj &
  m_menu.obj &
  m_misc.obj &
  am_map.obj &
+ p_init.obj &
  p_ceilng.obj &
  p_doors.obj &
  p_enemy.obj &
@@ -56,6 +59,7 @@ GLOBOBJS = &
  p_saveg.obj &
  p_tick.obj &
  p_user.obj &
+ r_init.obj &
  r_bsp.obj &
  r_data.obj &
  r_draw.obj &
@@ -63,9 +67,12 @@ GLOBOBJS = &
  r_plane.obj &
  r_segs.obj &
  r_things.obj &
+ w_init.obj &
  w_wad.obj &
  v_video.obj &
+ z_init.obj &
  z_zone.obj &
+ st_init.obj &
  st_stuff.obj &
  st_lib.obj &
  hu_stuff.obj &
@@ -76,7 +83,7 @@ GLOBOBJS = &
  dutils.obj &
  f_wipe.obj &
  info.obj &
- dmx.obj  
+ dmx.obj 
 
 newdoom.exe : $(GLOBOBJS) i_ibm.obj
  wlink @newdoom.lnk

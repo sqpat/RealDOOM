@@ -27,6 +27,8 @@
 #include "doomstat.h"
 #include "r_bsp.h"
 
+#include "p_local.h"
+
 #include <dos.h>
 #include <stdlib.h>
 
@@ -72,8 +74,10 @@
 //#define STATIC_CONVENTIONAL_THINKER_SIZE 65535
 //#define THINKER_ALLOCATION_LIST_SIZE 600
 
+// equal to sizeof(mobj_t), the largest thinker. 
+#define THINKER_BLOCK_SIZE 97
 #define STATIC_CONVENTIONAL_THINKER_SIZE 1
-#define THINKER_ALLOCATION_LIST_SIZE 1
+#define THINKER_ALLOCATION_LIST_SIZE MAX_THINKERS+1
 
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+4963u+10u)
@@ -139,10 +143,7 @@ typedef struct
 
 typedef struct
 {
-	uint16_t	offset;
-	
-	// size is 7 bits, high bit is 1 if deleted
-	uint8_t		size_and_active;
+	uint8_t		active;
 
 } allocation_thinker_conventional_t;
 
@@ -185,13 +186,20 @@ uint16_t textureinfoheadindex = 	  0;
 
 PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
+
+PAGEREF currentThinkerAllocationListHead = 1;
+
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
+allocation_thinker_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
+boolean thinkerAllocationListFull = false;
+
+
 allocation_static_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 allocation_static_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 allocation_static_conventional_t textureinfo_allocations[TEXTUREINFO_ALLOCATION_LIST_SIZE];
 // todo turn these into dynamic allocations
 allocation_static_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
-allocation_thinker_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
+//allocation_thinker_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
 
 
 int16_t activepages[NUM_EMS_PAGES];
@@ -211,14 +219,16 @@ int8_t lockedpages[NUM_EMS_PAGES];
 
 #ifdef _M_I86
 
-static int16_t emshandle;
-extern union REGS regs;
+	static int16_t emshandle;
+	extern union REGS regs;
 
 #else
+	byte*			EMSArea;
 #endif
 
+#define NUM_THINKER_PAGES 6L
+
 byte*			pageFrameArea;
-byte*			EMSArea;
 
 // count allocations etc, can be used for benchmarking purposes.
 
@@ -254,13 +264,8 @@ void Z_ChangeTagEMS(MEMREF index, int16_t tag) {
 
 
 
-void Z_FreeConventional(PAGEREF block){
-	// todo impelement... used for when thinkers get freed.
-	if (block >= EMS_ALLOCATION_LIST_SIZE) {
-		thinker_allocations[block - EMS_ALLOCATION_LIST_SIZE].size_and_active |= 0x80;
-	}  else {
-		Z_FreeEMS(block);
-	}
+void Z_FreeThinker(PAGEREF block){
+	thinker_allocations[EMS_ALLOCATION_LIST_SIZE].active = false;
 }
 
 void Z_FreeEMS(PAGEREF block) {
@@ -744,8 +749,8 @@ void Z_PageOutIfInMemory(uint32_t page_and_size) {
 
 //todo copy this into Z_LoadBytesFromEMS as thats the only place its called
 
-//int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked, int8_t* file, int32_t line) {  //todo allocations < 65k? if so size can be an uint16_t?
-int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) {  //todo allocations < 65k? if so size can be an uint16_t?
+//int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, int8_t* file, int32_t line) {  //todo allocations < 65k? if so size can be an uint16_t?
+int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked) {  //todo allocations < 65k? if so size can be an uint16_t?
 	uint16_t logicalpage = MAKE_PAGE(page_and_size);
 	uint32_t size = MAKE_SIZE(page_and_size);
 	uint16_t pageframeindex;
@@ -835,7 +840,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 					// locked page in the middle? shouldn't happen but i guess fragmentation can happen with freeing of these pages
 					// if this is really happening a lot... then redo in code where the pages are being locked to prevent this? but realistically page locking should grow/shrink in "stack" pattern
 
-					I_Error("forcing out locked page? %i %i  %i", i, ref, MAKE_SIZE(allocations[i].page_and_size));
+					I_Error("forcing out locked page? %i %i  %i", i, -1, MAKE_SIZE(allocations[i].page_and_size));
 
 				}
 #endif
@@ -849,7 +854,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 			/*
 				for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++) {
 					if (allocations[i].lockcount > 0) {
-						I_Error("forcing out %i %i %i %i %i", i, ref, MAKE_SIZE(allocations[i].page_and_size), allocations[i].sourcehint, ((mobj_t*) (allocations[i].sourcehint))->type );
+						I_Error("forcing out %i %i %i %i %i", i, -1, MAKE_SIZE(allocations[i].page_and_size), allocations[i].sourcehint, ((mobj_t*) (allocations[i].sourcehint))->type );
 					}
 				}
 				*/
@@ -862,7 +867,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 		}
 
 #ifdef CHECK_FOR_ERRORS
-		I_Error("couldnt find page to deallocate for a locked page? %i %i  %i", i, ref, MAKE_SIZE(allocations[i].page_and_size));
+		I_Error("couldnt find page to deallocate for a locked page? %i %i  %i", i, -1, MAKE_SIZE(allocations[i].page_and_size));
 #endif
 	}
 
@@ -924,9 +929,6 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, MEMREF ref, boolean locked) { 
 #ifdef CHECK_FOR_ERRORS
 		if (i == NUM_EMS_PAGES) {
 
-			//Z_PageDump("Could not find EMS page to evict!  %i ", line);
-			//Z_PageDump("Could not find EMS page to evict! %i ", (allocations[ref].sourcehint));
-			//Z_PageDump("Could not find EMS page to evict! %i ", (allocations[ref].sourcehint));
 			I_Error("Could not find EMS page to evict!");
 		}
 #endif
@@ -1126,11 +1128,6 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
 				// 0 0 6bce6b20
 				//I_Error("getting thing %i %i %lx", ref, sprite_allocations[ref].offset, spritememoryblock);
 				return spritememoryblock + sprite_allocations[ref].offset;
-			case CA_TYPE_THINKER:
-				if (ref >= THINKER_ALLOCATION_LIST_SIZE) {
-					I_Error("caught e %u %u %s %li", ref, playermoRef);
-				}
-				return thinkermemoryblock + thinker_allocations[ref].offset;
 			case CA_TYPE_TEXTURE_INFO:
 				if (ref >= TEXTUREINFO_ALLOCATION_LIST_SIZE) {
 					I_Error("caught f %u %s %li", ref);
@@ -1152,7 +1149,7 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
 
 }
 
- 
+ // called in between levels, frees level stuff like sectors, frees thinkers, etc.
 void Z_FreeConventionalAllocations() {
 
 	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
@@ -1160,6 +1157,8 @@ void Z_FreeConventionalAllocations() {
 	
 	// todo if we change this from static to dynamic, change here...
 	memset(thinker_allocations, 0, THINKER_ALLOCATION_LIST_SIZE * sizeof(allocation_thinker_conventional_t));
+	currentThinkerAllocationListHead = 1;
+	thinkerAllocationListFull = false;
 
 }
 
@@ -1245,91 +1244,93 @@ MEMREF Z_MallocConventional(
 
 // Unlike other conventional allocations, these are freed and cause fragmentation of the memory block
 
-MEMREF Z_MallocThinkerConventional(
+#define THINKERS_PER_PAGE (PAGE_FRAME_SIZE / THINKER_BLOCK_SIZE)
+
+void* Z_LoadThinkerBytesFromEMS2(MEMREF ref) {
+	uint16_t refcounter = ref;
+	uint16_t pageframeindex;
+	uint16_t offset;
+	uint32_t page_and_size = 0;
+	
+	// 97 bytes or whatever doesnt go into 16384 cleanly, 
+	// so we will skip bytes at the end of ems page this way
+	while (refcounter > THINKERS_PER_PAGE) {
+		page_and_size += (int32_t)0x800000; // 1 << PAGE_AND_SIZE_SHIFT
+		refcounter -= THINKERS_PER_PAGE;
+	}
+
+	offset = (refcounter * THINKER_BLOCK_SIZE);
+	page_and_size += THINKER_BLOCK_SIZE;
+
+	pageframeindex = Z_GetEMSPageFrame(page_and_size, false);
+
+	return (byte*)pageFrameArea
+		+ PAGE_FRAME_SIZE * pageframeindex
+		+ offset;
+
+}
+
+MEMREF Z_MallocThinkerEMS(
 	uint8_t           size
 ) {
 
-	if (size > remainingthinkerconventional || (thinkerheadindex == THINKER_ALLOCATION_LIST_SIZE) ) {
+	if (thinkerAllocationListFull || (currentThinkerAllocationListHead > (MAX_THINKERS))) {
+		// we've exhausted the first 1000 thinker allocations and now things are fragmented and we have to loop to find a free allocation
 		int16_t i = 0;
-		// we have exhausted the memory block and need to iterate back over it to find a free allocation
-		for (i = 0; i < THINKER_ALLOCATION_LIST_SIZE; i++) {
-			if ((thinker_allocations[i].size_and_active & 0x80) && size < (thinker_allocations[i].size_and_active & 0x7F) ) {
-				// allocation deleted and big enough. use this
-				thinker_allocations[i].size_and_active &= 0x7F;
-
-				// todo zero out the memory?
-				return i + EMS_ALLOCATION_LIST_SIZE;
+		if (!thinkerAllocationListFull) {
+			thinkerAllocationListFull = true;
+			currentThinkerAllocationListHead = 1;
+		}
+		for (i = 0; i < MAX_THINKERS; i++) {
+			if (currentThinkerAllocationListHead > MAX_THINKERS) {
+				currentThinkerAllocationListHead = 1;
 			}
-
+			if (!thinker_allocations[currentThinkerAllocationListHead].active) {
+				goto foundthinkerslot;
+			}
+				
+			currentThinkerAllocationListHead++;
 		}
-
-		return Z_MallocEMS(size, PU_LEVSPEC, 0, ALLOC_TYPE_LEVSPEC);
+		I_Error("out of thinkers");
 	}
-	else {
+	foundthinkerslot:
+	thinker_allocations[currentThinkerAllocationListHead].active = true;
+	currentThinkerAllocationListHead++;
 
-		// if we havent reached the end of the original memory block doing sequential allocations, then just allocate it straight away at the end.
-		allocation_static_conventional_t *allocations;
-		uint16_t refcopy;
-
-		remainingthinkerconventional -= size;
-		refcopy = thinkerheadindex;
-		thinkerheadindex++;
-
-		// todo remove, checked above for this case
-		if (refcopy == THINKER_ALLOCATION_LIST_SIZE) {
-			I_Error("ran out of refs for conventional allocation  %i", CA_TYPE_THINKER);
-		}
-
-		//allocations[ref].size = size;	
-		thinker_allocations[refcopy].offset = thinkerhead;
-		thinker_allocations[refcopy].size_and_active = size;
-
-		// ref and blockhead increament up ahead..
-		thinkerhead += size;
-		return (refcopy)+EMS_ALLOCATION_LIST_SIZE;
-
-	}
-
+	// todo looping and freeing?
+	// looping at memory page edge?
+	return currentThinkerAllocationListHead -1;
 }
 
 
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 //void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
-	byte* memorybase;
 	uint16_t pageframeindex;
-	byte* address;
 
 #ifdef CHECK_FOR_ERRORS
 	if (ref >= EMS_ALLOCATION_LIST_SIZE) {
-		I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
-		//I_Error("\nout of bounds memref.. tick %li    %i ", gametic, ref);
+		//I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
+		I_Error("\nout of bounds memref.. tick %li    %i ", gametic, ref);
 	}
 	if (ref == 0) {
-		I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
-		//I_Error("\ntried to load memref 0... tick %i    %i", gametic, ref);
+		//I_Error("out of bounds memref.. tick %li    %i %s %i", gametic, ref, file, line);
+		I_Error("\ntried to load memref 0... tick %i    %i", gametic, ref);
 	}
 #endif
 
-	/*
-	if (allocations[ref].page_and_size == 0xf6800af4) {
-		I_Error("blah found it");
-	}
-	I_Error("\nother first %lx %i %i", allocations[ref].page_and_size, ref, locked);
-	*/
-
-	pageframeindex = Z_GetEMSPageFrame(allocations[ref].page_and_size, ref, locked);
-	memorybase = (byte*)pageFrameArea;
+ 
+	pageframeindex = Z_GetEMSPageFrame(allocations[ref].page_and_size, locked);
 
 	if (locked) {
 		// todo pass in page frame index.
 		Z_SetUnlockedWithPage(ref, PAGE_LOCKED, pageframeindex);
 	}
 
-	address = memorybase
+	return (byte*)pageFrameArea
 		+ PAGE_FRAME_SIZE * pageframeindex
 		+ MAKE_OFFSET(allocations[ref]);
 
-	return (byte *)address;
+	
 }
 
 #ifdef MEMORYCHECK
@@ -1795,6 +1796,7 @@ void Z_InitEMS(void)
 
 #ifdef _M_I86
 	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
+	
 #else
 	pageFrameArea = I_ZoneBaseEMS(&size);
 	EMSArea = ((byte*)pageFrameArea + pageframeareasize);
@@ -1815,14 +1817,17 @@ void Z_InitEMS(void)
 	// the links wont be in order, but these presets 
 	allocations[0].next = 1;
 	allocations[0].prev = 1;
-	allocations[0].page_and_size = 0;
+	// Start the allocation list and page (num thinker pages)
+	allocations[0].page_and_size = NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT;
 	allocations[0].backref_and_user = USER_MASK;
 	allocations[0].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 
 	allocations[1].next = 0;
 	allocations[1].prev = 0;
 	allocations[1].backref_and_user = 0;
-	allocations[1].page_and_size = size;
+	// Start the allocation list and page (num thinker pages)
+	allocations[1].page_and_size = size + (NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT);
+
 	allocations[1].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 
 	// use this index to mark an unused block..
@@ -1831,3 +1836,6 @@ void Z_InitEMS(void)
 	}
 	currentListHead = 1;
 }
+
+
+

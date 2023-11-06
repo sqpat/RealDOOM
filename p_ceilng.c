@@ -44,7 +44,7 @@ MEMREF	activeceilings[MAXCEILINGS];
 void T_MoveCeiling (MEMREF memref)
 {
     result_e	res;
-	ceiling_t* ceiling = (ceiling_t*)Z_LoadThinkerFromConventional(memref);
+	ceiling_t* ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
 	sector_t* sectors;
 	sector_t ceilingsector;
 	int16_t ceilingsecnum;
@@ -56,11 +56,11 @@ void T_MoveCeiling (MEMREF memref)
 		case 1:
 			// UP
 			res = T_MovePlane(ceiling->secnum, ceiling->speed, ceiling->topheight, false,1,ceiling->direction);
-			ceiling = (ceiling_t*)Z_LoadThinkerFromConventional(memref);
+			ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
 			ceilingsecnum = ceiling->secnum;
 			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 			ceilingsector = sectors[ceilingsecnum];
-			ceiling = (ceiling_t*)Z_LoadThinkerFromConventional(memref);
+			ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
 
 			if (!(leveltime.h.fracbits &7)) {
 				switch(ceiling->type) {
@@ -100,7 +100,7 @@ void T_MoveCeiling (MEMREF memref)
 					ceiling->speed,
 					ceiling->bottomheight,
 					ceiling->crush,1,ceiling->direction);
-			ceiling = (ceiling_t*)Z_LoadThinkerFromConventional(memref);
+			ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
 			if (!(leveltime.h.fracbits &7))
 			{
 				switch(ceiling->type) {
@@ -192,9 +192,9 @@ EV_DoCeiling
 
 		// new door thinker
 		rtn = 1;
-		ceilingRef = Z_MallocThinkerConventional(sizeof(*ceiling));
+		ceilingRef = Z_MallocThinkerEMS(sizeof(*ceiling));
 		sectors[secnum].specialdataRef = ceilingRef;
-		ceiling = (ceiling_t*)Z_LoadThinkerFromConventional(ceilingRef);
+		ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(ceilingRef);
 
 		ceiling->thinkerRef = P_AddThinker (ceilingRef, TF_MOVECEILING);
 	
@@ -226,7 +226,7 @@ EV_DoCeiling
 
 		  case raiseToHighest: {
 			  short_height_t ceilingtopheight = P_FindHighestCeilingSurrounding(secnum);
-			  ceiling = (ceiling_t*)Z_LoadThinkerFromConventional(ceilingRef);
+			  ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(ceilingRef);
 			  ceiling->topheight = ceilingtopheight;
 			  ceiling->direction = 1;
 			  ceiling->speed = CEILSPEED;
@@ -273,7 +273,7 @@ void P_RemoveActiveCeiling(MEMREF memref)
     {
 	if (activeceilings[i] == memref)
 	{
-		c = (ceiling_t*)Z_LoadThinkerFromConventional(memref);
+		c = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
 		cthinkerRef = c->thinkerRef;
 		csecnum = c->secnum;
 		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
@@ -298,7 +298,7 @@ void P_ActivateInStasisCeiling(uint8_t linetag)
 
 	for (i = 0; i < MAXCEILINGS; i++) {
 		if (activeceilings[i] != NULL_MEMREF) {
-			c = (ceiling_t*)Z_LoadThinkerFromConventional(activeceilings[i]);
+			c = (ceiling_t*)Z_LoadThinkerBytesFromEMS(activeceilings[i]);
 			if ((c->tag == linetag) && (c->direction == 0)) {
 				c->direction = c->olddirection;
 
@@ -322,7 +322,7 @@ int16_t	EV_CeilingCrushStop(uint8_t linetag)
 	rtn = 0;
 	for (i = 0; i < MAXCEILINGS; i++) {
 		if (activeceilings[i] != NULL_MEMREF) {
-			c = (ceiling_t*)Z_LoadThinkerFromConventional(activeceilings[i]);
+			c = (ceiling_t*)Z_LoadThinkerBytesFromEMS(activeceilings[i]);
 			if ((c->tag == linetag) && (c->direction != 0)) {
 				c->olddirection = c->direction;
 				P_UpdateThinkerFunc(c->thinkerRef, TF_NULL);

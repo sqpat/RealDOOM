@@ -545,8 +545,8 @@ void D_DoomLoop (void)
 //			lasttick = gametic;
 				
 			//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
-			SAVEDUNIT = Z_LoadThinkerFromConventional(1483); // 1457
-			//SAVEDUNIT = Z_LoadThinkerFromConventional(playermoRef);
+			SAVEDUNIT = Z_LoadThinkerBytesFromEMS(1483); // 1457
+			//SAVEDUNIT = Z_LoadThinkerBytesFromEMS(playermoRef);
 			if (gametic == 1) {
 				fp = fopen("debuglog.txt", "w"); // clear old file
 			} else {

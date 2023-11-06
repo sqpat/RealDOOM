@@ -201,7 +201,7 @@ P_UseSpecialLine
     }
 
 
-	thing = (mobj_t*)Z_LoadThinkerFromConventional(thingRef);
+	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 
     
     // Switches that other things can activate.

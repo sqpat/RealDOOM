@@ -592,7 +592,7 @@ void R_PrecacheLevel(void)
 	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)
 	{
 		if (thinkerlist[th].functionType == TF_MOBJTHINKER) {
-			spritepresent[((mobj_t *)Z_LoadThinkerFromConventional(thinkerlist[th].memref))->sprite] = 1;
+			spritepresent[((mobj_t *)Z_LoadThinkerBytesFromEMS(thinkerlist[th].memref))->sprite] = 1;
 		}
 	}
 

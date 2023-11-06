@@ -620,26 +620,38 @@ void I_ShutdownMouse(void)
 
 
 
-#ifndef STATIC_ALLOCATED_SCREENS
+
+#ifdef _M_I86
+
+#else
 
 uint32_t realstackseg;
 
-#ifdef _M_I86
-//
-// I_AllocLow
-//
-byte *I_AllocLow(filelength_t length)
+typedef struct
 {
-	byte *mem;
-	mem = _fmalloc(length);
-	if (mem == NULL) {
-		I_Error("Error: Couldn't malloc length %li", length);
-	}
-	memset(mem, 0, length);
-	return mem;
+	uint32_t        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
+	uint16_t  flags, es, ds, fs, gs, ip, cs, sp, ss;
+} dpmiregs_t;
+
+dpmiregs_t dpmiregs;
+#define REALSTACKSIZE 1024
+
+void DPMIInt(int32_t i)
+{
+	dpmiregs.ss = realstackseg;
+	dpmiregs.sp = REALSTACKSIZE - 4;
+
+	segread(&segregs);
+	regs.w.ax = 0x300;
+	regs.w.bx = i;
+	regs.w.cx = 0;
+	regs.x.edi = (uint32_t)&dpmiregs;
+	segregs.es = segregs.ds;
+	intx86x(DPMI_INT, &regs, &regs, &segregs);
 }
 
-#else
+
+
 //
 // DPMIInt
 //
@@ -674,6 +686,8 @@ byte *I_AllocLow(int32_t length)
 }
 
 
+ 
+byte *I_AllocLow(filelength_t length);
 
 //
 // I_StartupDPMI
@@ -692,37 +706,31 @@ void I_StartupDPMI(void)
 }
 
 
+#endif
 
-typedef struct
+
+
+#ifndef STATIC_ALLOCATED_SCREENS
+
+#ifdef _M_I86
+//
+// I_AllocLow
+//
+byte *I_AllocLow(filelength_t length)
 {
-	uint32_t        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
-	uint16_t  flags, es, ds, fs, gs, ip, cs, sp, ss;
-} dpmiregs_t;
-
-extern dpmiregs_t dpmiregs;
-dpmiregs_t dpmiregs;
-#define REALSTACKSIZE 1024
-
-void DPMIInt(int32_t i)
-{
-	dpmiregs.ss = realstackseg;
-	dpmiregs.sp = REALSTACKSIZE - 4;
-
-	segread(&segregs);
-	regs.w.ax = 0x300;
-	regs.w.bx = i;
-	regs.w.cx = 0;
-	regs.x.edi = (uint32_t)&dpmiregs;
-	segregs.es = segregs.ds;
-	intx86x(DPMI_INT, &regs, &regs, &segregs);
+	byte *mem;
+	mem = _fmalloc(length);
+	if (mem == NULL) {
+		I_Error("Error: Couldn't malloc length %li", length);
+	}
+	memset(mem, 0, length);
+	return mem;
 }
 
-
+#else
 #endif
-
 #endif
-
-
+ 
 //
 // I_ReadMouse
 //

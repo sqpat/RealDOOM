@@ -179,6 +179,11 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 }
 
 #else
+
+extern union REGS regs;
+extern struct SREGS segregs;
+
+
 byte* I_ZoneBaseEMS(int32_t *size) {
 
 	// in 32 bit its ems fakery and emulation 

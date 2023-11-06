@@ -42,6 +42,7 @@ extern uint8_t		switchlist[MAXSWITCHES * 2];
 extern int16_t		numswitches;
 extern button_t        buttonlist[MAXBUTTONS];
 
+extern int8_t*           spritename;
 
 
 //
@@ -313,7 +314,6 @@ extern int16_t             numsprites;
 
 extern spriteframe_t   sprtemp[29];
 extern int16_t             maxframe;
-extern int8_t*           spritename;
 
 //
 // R_InitSpriteDefs

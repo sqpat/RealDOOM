@@ -41,7 +41,7 @@ void T_FireFlicker (MEMREF memref)
 
 {
     uint8_t	amount;
-	fireflicker_t* flick = (fireflicker_t*)Z_LoadThinkerFromConventional(memref);
+	fireflicker_t* flick = (fireflicker_t*)Z_LoadThinkerBytesFromEMS(memref);
 	int16_t flicksecnum = flick->secnum;
 	uint8_t flickmaxlight = flick->maxlight;
 	uint8_t flickminlight= flick->minlight;
@@ -77,15 +77,15 @@ void P_SpawnFireFlicker (int16_t secnum)
 	sectors[secnum].special = 0;
 
 	
-	flickRef = Z_MallocThinkerConventional(sizeof(*flick));
-	flick = (fireflicker_t*) Z_LoadThinkerFromConventional(flickRef);
+	flickRef = Z_MallocThinkerEMS(sizeof(*flick));
+	flick = (fireflicker_t*) Z_LoadThinkerBytesFromEMS(flickRef);
 
 	flick->thinkerRef = P_AddThinker(flickRef, TF_FIREFLICKER);
 
     flick->secnum = secnum;
     flick->maxlight = seclightlevel;
 	lightamount = P_FindMinSurroundingLight(secnum,seclightlevel)+16;
-	flick = (fireflicker_t*)Z_LoadThinkerFromConventional(flickRef);
+	flick = (fireflicker_t*)Z_LoadThinkerBytesFromEMS(flickRef);
 	flick->minlight = lightamount;
     flick->count = 4;
 }
@@ -103,7 +103,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 //
 void T_LightFlash (MEMREF memref)
 {
-	lightflash_t* flash = (lightflash_t*)Z_LoadThinkerFromConventional(memref);
+	lightflash_t* flash = (lightflash_t*)Z_LoadThinkerBytesFromEMS(memref);
 	int16_t flashsecnum = flash->secnum;
 	uint8_t flashminlight = flash->minlight;
 	uint8_t flashmaxlight = flash->maxlight;
@@ -116,12 +116,12 @@ void T_LightFlash (MEMREF memref)
 
     if (sectors[flashsecnum].lightlevel == flashmaxlight) {
 		sectors[flashsecnum].lightlevel = flashminlight;
-		flash = (lightflash_t*)Z_LoadThinkerFromConventional(memref);
+		flash = (lightflash_t*)Z_LoadThinkerBytesFromEMS(memref);
 		flash->count = (P_Random()&flash->mintime)+1;
     }
     else {
 		sectors[flashsecnum].lightlevel = flashmaxlight;
-		flash = (lightflash_t*)Z_LoadThinkerFromConventional(memref);
+		flash = (lightflash_t*)Z_LoadThinkerBytesFromEMS(memref);
 		flash->count = (P_Random()&flash->maxtime)+1;
     }
 	
@@ -148,8 +148,8 @@ void P_SpawnLightFlash (int16_t secnum)
 
 	
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
-	flashRef = Z_MallocThinkerConventional(sizeof(*flash));
-	flash = (lightflash_t*) Z_LoadThinkerFromConventional(flashRef);
+	flashRef = Z_MallocThinkerEMS(sizeof(*flash));
+	flash = (lightflash_t*) Z_LoadThinkerBytesFromEMS(flashRef);
 	flash->thinkerRef = P_AddThinker(flashRef, TF_LIGHTFLASH);
 
 	flash->secnum = secnum;
@@ -174,7 +174,7 @@ void P_SpawnLightFlash (int16_t secnum)
 //
 void T_StrobeFlash (MEMREF memref)
 {
-	strobe_t* flash = (strobe_t*)Z_LoadThinkerFromConventional(memref);
+	strobe_t* flash = (strobe_t*)Z_LoadThinkerBytesFromEMS(memref);
 	int16_t flashsecnum = flash->secnum;
 	int16_t flashminlight = flash->minlight;
 	int16_t flashmaxlight = flash->maxlight;
@@ -188,11 +188,11 @@ void T_StrobeFlash (MEMREF memref)
 	
     if (sectors[flashsecnum].lightlevel == flashminlight) {
 		sectors[flashsecnum].lightlevel = flashmaxlight;
-		flash = (strobe_t*)Z_LoadThinkerFromConventional(memref);
+		flash = (strobe_t*)Z_LoadThinkerBytesFromEMS(memref);
 		flash->count = flash->brighttime;
     } else {
 		sectors[flashsecnum].lightlevel = flashminlight;
-		flash = (strobe_t*)Z_LoadThinkerFromConventional(memref);
+		flash = (strobe_t*)Z_LoadThinkerBytesFromEMS(memref);
 		flash->count =flash->darktime;
     }
 
@@ -220,8 +220,8 @@ P_SpawnStrobeFlash
 	// nothing special about it during gameplay
 	sectors[secnum].special = 0;
 
-	flashRef = Z_MallocThinkerConventional(sizeof(*flash));
-	flash = (strobe_t*) Z_LoadThinkerFromConventional(flashRef);
+	flashRef = Z_MallocThinkerEMS(sizeof(*flash));
+	flash = (strobe_t*) Z_LoadThinkerBytesFromEMS(flashRef);
 
 
 	flash->thinkerRef = P_AddThinker(flashRef, TF_STROBEFLASH);
@@ -232,7 +232,7 @@ P_SpawnStrobeFlash
     flash->maxlight = seclightlevel;
 
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
-	flash = (strobe_t*)Z_LoadThinkerFromConventional(flashRef);
+	flash = (strobe_t*)Z_LoadThinkerBytesFromEMS(flashRef);
 	flash->minlight = lightamount;
 
 	
@@ -375,7 +375,7 @@ EV_LightTurnOn
 
 void T_Glow(MEMREF memref)
 {
-	glow_t* g = (glow_t*)Z_LoadThinkerFromConventional(memref);
+	glow_t* g = (glow_t*)Z_LoadThinkerBytesFromEMS(memref);
 	int16_t gsecnum = g->secnum;
 	uint8_t gminlight = g->minlight;
 	uint8_t gmaxlight = g->maxlight;
@@ -387,7 +387,7 @@ void T_Glow(MEMREF memref)
 		sectors[gsecnum].lightlevel -= GLOWSPEED;
 		if (sectors[gsecnum].lightlevel <= gminlight) {
 			sectors[gsecnum].lightlevel += GLOWSPEED;
-			g = (glow_t*)Z_LoadThinkerFromConventional(memref);
+			g = (glow_t*)Z_LoadThinkerBytesFromEMS(memref);
 			g->direction = 1;
 		}
 		break;
@@ -397,7 +397,7 @@ void T_Glow(MEMREF memref)
 		sectors[gsecnum].lightlevel += GLOWSPEED;
 		if (sectors[gsecnum].lightlevel >= gmaxlight) {
 			sectors[gsecnum].lightlevel -= GLOWSPEED;
-			g = (glow_t*)Z_LoadThinkerFromConventional(memref);
+			g = (glow_t*)Z_LoadThinkerBytesFromEMS(memref);
 			g->direction = -1;
 		}
 		break;
@@ -418,8 +418,8 @@ void P_SpawnGlowingLight(int16_t secnum)
 	sectors[secnum].special = 0;
 
 
-	glowRef = Z_MallocThinkerConventional(sizeof(*g));
-	g = (glow_t*)Z_LoadThinkerFromConventional(glowRef);
+	glowRef = Z_MallocThinkerEMS(sizeof(*g));
+	g = (glow_t*)Z_LoadThinkerBytesFromEMS(glowRef);
 
 	g->thinkerRef = P_AddThinker(glowRef, TF_GLOW);
 
@@ -428,7 +428,7 @@ void P_SpawnGlowingLight(int16_t secnum)
 
 	
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
-	g = (glow_t*)Z_LoadThinkerFromConventional(glowRef);
+	g = (glow_t*)Z_LoadThinkerBytesFromEMS(glowRef);
 	g->minlight = lightamount;
 	g->minlight = 
     g->maxlight = seclightlevel;

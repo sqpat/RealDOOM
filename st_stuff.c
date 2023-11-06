@@ -495,7 +495,7 @@ ST_Responder (event_t* ev)
 		  player.cheats ^= CF_GODMODE;
         if (player.cheats & CF_GODMODE)
         {
-			plyrmo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+			plyrmo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
           if (plyrmo)
             plyrmo->health = 100;
           
@@ -765,8 +765,8 @@ void ST_updateFaceWidget(void)
             }
             else
             {
-				plyrmo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
-				plyrattacker = (mobj_t*)Z_LoadThinkerFromConventional(player.attackerRef);
+				plyrmo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
+				plyrattacker = (mobj_t*)Z_LoadThinkerBytesFromEMS(player.attackerRef);
 				badguyangle = R_PointToAngle2(plyrmo->x,
                                               plyrmo->y,
                                               plyrattacker->x,

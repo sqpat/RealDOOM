@@ -287,8 +287,8 @@ S_AdjustSoundParams
     fixed_t	adx;
     fixed_t	ady;
     angle_t	angle;
-	mobj_t* listener = (mobj_t*)Z_LoadThinkerFromConventional(listenerRef);
-	mobj_t* source = (mobj_t*)Z_LoadThinkerFromConventional(sourceRef);
+	mobj_t* listener = (mobj_t*)Z_LoadThinkerBytesFromEMS(listenerRef);
+	mobj_t* source = (mobj_t*)Z_LoadThinkerBytesFromEMS(sourceRef);
 	return 0;
     // calculate the distance to sound origin
     //  and clip it if necessary
@@ -512,7 +512,7 @@ void S_StartSoundAtVolume
 	if (origin_pRef && origin_pRef != players.moRef) {
 		rc = S_AdjustSoundParams(players.moRef, origin_pRef, &volume, &sep, &pitch);
 	
-		playerMo = (mobj_t*)Z_LoadThinkerFromConventional(players.moRef);
+		playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(players.moRef);
 		if ( originX == playerMo->x && originY == playerMo->y) {	
 			sep 	= NORM_SEP;
 		}
@@ -577,7 +577,7 @@ void S_StartSoundFromRef(MEMREF memref,	sfxenum_t		sfx_id)  {
 	
 	mobj_t* mobj;
 	if (memref) {
-		mobj = (mobj_t*)Z_LoadThinkerFromConventional(memref);
+		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(memref);
 		 
 		S_StartSoundAtVolume(memref, mobj->x, mobj->y, sfx_id, snd_SfxVolume);
 	} else {
@@ -625,7 +625,7 @@ void S_UpdateSounds(MEMREF listenerRef)
     sfxinfo_t*	sfx;
     channel_t*	c;
 	uint8_t         i;
-	//mobj_t*	listener_p = (mobj_t*)Z_LoadThinkerFromConventional(listenerRef);
+	//mobj_t*	listener_p = (mobj_t*)Z_LoadThinkerBytesFromEMS(listenerRef);
     //mobj_t*	listener = (mobj_t*)listener_p;
 	channel_t* channels;
 

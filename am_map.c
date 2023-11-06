@@ -336,7 +336,7 @@ void AM_restoreScaleAndLoc(void)
 		m_x = old_m_x;
 		m_y = old_m_y;
     } else {
-		playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+		playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 		m_x = playerMo->x - m_w/2;
 		m_y = playerMo->y - m_h/2;
     }
@@ -459,7 +459,7 @@ void AM_initVariables(void)
     m_h = FTOM16(f_h);
 
   
-	playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 	m_x = playerMo->x - m_w/2;
     m_y = playerMo->y - m_h/2;
     AM_changeWindowLoc();
@@ -740,7 +740,7 @@ void AM_doFollowPlayer(void) {
 
 	mobj_t* playerMo;
 
-	playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 
     if (f_oldloc.x != playerMo->x || f_oldloc.y != playerMo->y)
     {
@@ -1208,7 +1208,7 @@ AM_drawLineCharacter
 
 void AM_drawPlayers(void)
 {
-	mobj_t* playerMo = (mobj_t*)Z_LoadThinkerFromConventional(playermoRef);
+	mobj_t* playerMo = (mobj_t*)Z_LoadThinkerBytesFromEMS(playermoRef);
 	if (cheating)
 		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMo->angle>>ANGLETOFINESHIFT, WHITE, playerMo->x, playerMo->y);
 	else
@@ -1230,7 +1230,7 @@ AM_drawThings
 		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		tRef = sectors[i].thinglistRef;
 		while (tRef) {
-			t = (mobj_t*)Z_LoadThinkerFromConventional(tRef);
+			t = (mobj_t*)Z_LoadThinkerBytesFromEMS(tRef);
 			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
 			 0x100000L, t->angle>>ANGLETOFINESHIFT, colors, t->x, t->y);

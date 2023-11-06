@@ -190,7 +190,7 @@ T_MovePlane
 void T_MoveFloor(MEMREF memref)
 {
     result_e	res;
-	floormove_t* floor = (floormove_t*)Z_LoadThinkerFromConventional(memref);
+	floormove_t* floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(memref);
 	int16_t floorsecnum;
 	uint8_t floornewspecial;
 	floor_e floortype;
@@ -199,7 +199,7 @@ void T_MoveFloor(MEMREF memref)
 	THINKERREF floorthinkerRef;
 	sector_t* sectors;
     res = T_MovePlane(floor->secnum, floor->speed, floor->floordestheight, floor->crush,0,floor->direction);
-	floor = (floormove_t*)Z_LoadThinkerFromConventional(memref);
+	floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(memref);
 	floorsecnum = floor->secnum;
 	if (!(leveltime.h.fracbits & 7)) {
 		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
@@ -207,7 +207,7 @@ void T_MoveFloor(MEMREF memref)
 	}
 
     if (res == floor_pastdest) {
-		floor = (floormove_t*)Z_LoadThinkerFromConventional(memref);
+		floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(memref);
 		floornewspecial = floor->newspecial;
 		floortype = floor->type;
 		floordirection = floor->direction;
@@ -275,11 +275,11 @@ EV_DoFloor
 
 		// new floor thinker
 		rtn = 1;
-		floorRef = Z_MallocThinkerConventional(sizeof(*floor));
+		floorRef = Z_MallocThinkerEMS(sizeof(*floor));
 		(&sectors[secnum])->specialdataRef = floorRef;
 		sectorceilingheight = (&sectors[secnum])->ceilingheight;
 		sectorfloorheight = (&sectors[secnum])->floorheight;
-		floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+		floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 
 		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
 
@@ -292,7 +292,7 @@ EV_DoFloor
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
 			specialheight =  P_FindHighestFloorSurrounding(secnum); 
-			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 			floor->floordestheight = specialheight;
 			break;
 
@@ -301,7 +301,7 @@ EV_DoFloor
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
 			specialheight = P_FindLowestFloorSurrounding(secnum);
-			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 			floor->floordestheight = specialheight;
 
 			break;
@@ -311,7 +311,7 @@ EV_DoFloor
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED * 4;
 			specialheight = P_FindHighestFloorSurrounding(secnum);
-			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 			floor->floordestheight = specialheight;
 
 			if (floor->floordestheight != sectorfloorheight) {
@@ -326,7 +326,7 @@ EV_DoFloor
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
 			specialheight = P_FindLowestCeilingSurrounding(secnum);
-			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 			floor->floordestheight = specialheight;
 			if (floor->floordestheight > sectorceilingheight) {
 				floor->floordestheight = sectorceilingheight;
@@ -339,7 +339,7 @@ EV_DoFloor
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED*4;
 			specialheight =  P_FindNextHighestFloor(secnum, sectorfloorheight);
-			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 			floor->floordestheight = specialheight;
 
 			break;
@@ -349,7 +349,7 @@ EV_DoFloor
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
 			specialheight = P_FindNextHighestFloor(secnum, sectorfloorheight);
-			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 			floor->floordestheight = specialheight;
 			break;
 
@@ -407,7 +407,7 @@ EV_DoFloor
 					  //}
 				  }
 			  }
-			  floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+			  floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 			  floor->floordestheight = sectors[floor->secnum].floorheight + (minsize << SHORTFLOORBITS);
 		  }
 		  break;
@@ -421,7 +421,7 @@ EV_DoFloor
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
 			specialheight = P_FindLowestFloorSurrounding(secnum);
-			floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 			floor->floordestheight = specialheight;
 			floor->texture = (&sectors[secnum])->floorpic;
 
@@ -510,14 +510,14 @@ EV_BuildStairs
 
 		// new floor thinker
 		rtn = 1;
-		floorRef = Z_MallocThinkerConventional(sizeof(*floor));
+		floorRef = Z_MallocThinkerEMS(sizeof(*floor));
 		(&sectors[secnum])->specialdataRef = floorRef;
 		sectorceilingheight = (&sectors[secnum])->ceilingheight;
 		sectorfloorheight = (&sectors[secnum])->floorheight;
 		sectorfloorpic = (&sectors[secnum])->floorpic;
 		sectorlinecount = (&sectors[secnum])->linecount;
 		sectorlinesoffset = (&sectors[secnum])->linesoffset;
-		floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+		floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 
 		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
 		floor->direction = 1;
@@ -573,9 +573,9 @@ EV_BuildStairs
 				//sec = tsecOffset;
 				secnum = newsecnum;
 
-				floorRef = Z_MallocThinkerConventional(sizeof(*floor));
+				floorRef = Z_MallocThinkerEMS(sizeof(*floor));
 				sectors[tsecOffset].specialdataRef = floorRef;
-				floor = (floormove_t*)Z_LoadThinkerFromConventional(floorRef);
+				floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 
 				floor->floordestheight = height;
 
