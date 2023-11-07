@@ -688,30 +688,6 @@ void Z_DoPageIn(uint16_t logicalpage, uint16_t pageframeindex, uint16_t numalloc
 
 }
 
-void Z_ShutdownEMS() {
-
-
-#ifdef _M_I86
-	int16_t result;
-	
-	if (emshandle){
-
-		regs.w.dx = emshandle; // handle
-		regs.h.ah = 0x45;
-		intx86(EMS_INT, &regs, &regs);
-		result = regs.h.ah;
-		if (result != 0) {
-			printf("Failed deallocating EMS memory! %i!\n", result);
-		}
-	}
-#endif
-
-	//free(conventionalmemoryblock1);
-	//free(conventionalmemoryblock2);
-
-}
-
-
 void Z_PageOutIfInMemory(uint32_t page_and_size) {
 	uint16_t logicalpage = MAKE_PAGE(page_and_size);
 	uint32_t size = MAKE_SIZE(page_and_size);

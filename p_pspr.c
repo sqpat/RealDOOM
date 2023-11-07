@@ -862,23 +862,6 @@ A_BFGsound
 
 
 
-//
-// P_SetupPsprites
-// Called at start of level for each player.
-//
-void P_SetupPsprites () 
-{
-    int8_t	i;
-	
-    // remove all psprites
-    for (i=0 ; i<NUMPSPRITES ; i++)
-	player.psprites[i].state = NULL;
-		
-    // spawn the gun
-    player.pendingweapon = player.readyweapon;
-    P_BringUpWeapon ();
-}
-
 
 
 

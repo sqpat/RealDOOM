@@ -70,8 +70,10 @@ file dmx.obj
 #file r_init.obj
 #file wi_stuff.obj
 file z_init.obj
-
-
+#file i_quit.obj
+#file st_setup.obj
+#file hu_setup.obj
+#file g_setup.obj
 
 # # begin overlay area
 begin
@@ -79,7 +81,7 @@ begin
 #	postgame
 section file f_finale.obj
 #	shutdown related code
-
+section file i_quit.obj
 #	saving/menu
 section file p_saveg.obj
 #	intermission
@@ -87,9 +89,9 @@ section file wi_stuff.obj
 #	alternate setup code
 section file r_init.obj
 #	alternate setup code
-section file w_init.obj, i_init.obj, st_init.obj, p_init.obj
+section file d_init.obj, w_init.obj, i_init.obj, st_init.obj, p_init.obj
 #	level/game setup
-section file p_setup.obj, f_wipe.obj, d_init.obj, i_main.obj
+section file p_setup.obj, f_wipe.obj, i_main.obj, st_setup.obj, hu_setup.obj, g_setup.obj
 #	ingame
 section file am_map.obj
 end

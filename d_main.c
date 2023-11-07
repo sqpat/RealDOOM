@@ -248,17 +248,6 @@ fixed_t32 FixedMul1616(int16_t	a, int16_t	b) {
 	return (int32_t)a * b;
 }
 
-//
-// FixedDiv, C version.
-//
-
-//fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
-fixed_t32 FixedDiv (fixed_t32	a, fixed_t32	b) {
-	if ((labs(a) >> 14) >= labs(b))
-		return (a^b) < 0 ? MINLONG : MAXLONG;
-	//return FixedDiv2(a, b, file, line);
-	return FixedDiv2(a, b);
-}
 
 
 
@@ -282,6 +271,20 @@ FixedDiv2
 
 	return (fixed_t32) c;
 }
+
+//
+// FixedDiv, C version.
+//
+
+//fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
+fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
+	if ((labs(a) >> 14) >= labs(b))
+		return (a^b) < 0 ? MINLONG : MAXLONG;
+	//return FixedDiv2(a, b, file, line);
+	return FixedDiv2(a, b);
+}
+
+
 //
 // D_Display
 //  draw current display, possibly wiping it from the previous

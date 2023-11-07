@@ -413,22 +413,6 @@ void I_FinishUpdate(void)
 }
 
 
-//
-// I_ShutdownGraphics
-//
-void I_ShutdownGraphics(void)
-{
-    if (*(byte *)0x449 == 0x13) // don't reset mode if it didn't get set
-    {
-        regs.w.ax = 3;
-#ifndef	SKIP_DRAW
-		intx86(0x10, &regs, &regs); // back to text mode
-		//I_Error("shutdown successful");
-#endif
-    }
-}
-
-
 #ifndef SKIPWIPE
 
 //
@@ -580,17 +564,6 @@ void __interrupt I_KeyboardISR(void)
 
 
 
-void I_ShutdownKeyboard(void)
-{
-        if (oldkeyboardisr)
-                _dos_setvect (KEYBOARDINT, oldkeyboardisr);
-        *(int16_t *)0x41c = *(int16_t *)0x41a;      // clear bios key buffer
-}
-
-void I_ShutdownMemory(void)
-{
-	Z_ShutdownEMS();
-}
 
 //
 // Mouse
@@ -604,19 +577,6 @@ int32_t I_ResetMouse(void)
 }
 
 
-
-//
-// ShutdownMouse
-//
-void I_ShutdownMouse(void)
-{
-    if (!mousepresent)
-    {
-        return;
-    }
-
-    I_ResetMouse();
-}
 
 
 
@@ -786,23 +746,9 @@ void I_ReadMouse(void)
 
 
 
+void I_Shutdown(void);
 
  
-
-
-//
-// I_Shutdown
-// return to default system state
-//
-void I_Shutdown(void)
-{
-    I_ShutdownGraphics();
-    I_ShutdownSound();
-    I_ShutdownTimer();
-    I_ShutdownMouse();
-    I_ShutdownKeyboard();
-	I_ShutdownMemory();
-}
 
 //
 // I_Error
@@ -817,43 +763,6 @@ void I_Error (int8_t *error, ...)
     va_end(argptr);
     printf("\n");
     exit(1);
-}
-
-//
-// I_Quit
-//
-// Shuts down net game, saves defaults, prints the exit text message,
-// goes to text mode, and exits.
-//
-void I_Quit(void)
-{
-    byte *scr;
-	MEMREF scrRef;
-    if (demorecording)
-    {
-        G_CheckDemoStatus();
-    }
-
-	M_SaveDefaults();
-    scrRef = W_CacheLumpNameEMS("ENDOOM", PU_CACHE);
-    I_ShutdownGraphics();
-    I_ShutdownSound();
-    I_ShutdownTimer();
-    I_ShutdownMouse();
-    I_ShutdownKeyboard();
-	Z_ShutdownEMS();
-
-	scr = Z_LoadBytesFromEMS(scrRef);
-    memcpy((void *)0xb8000, scr, 80 * 25 * 2);
-    regs.w.ax = 0x0200;
-    regs.h.bh = 0;
-    regs.h.dl = 0;
-    regs.h.dh = 23;
-	intx86(0x10, (union REGS *)&regs, &regs); // Set text pos
-
-    printf("\n");
-
-    exit(0);
 }
 
 

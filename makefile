@@ -27,6 +27,7 @@ CCOPTS = /d2 /omaxes /zp1 /4r /ei /j /zq
 
 GLOBOBJS = &
  i_init.obj &
+ i_quit.obj &
  i_main.obj &
  i_ibm.obj &
  i_sound.obj &
@@ -35,6 +36,7 @@ GLOBOBJS = &
  d_init.obj &
  d_main.obj &
  d_net.obj &
+ g_setup.obj &
  g_game.obj &
  m_menu.obj &
  m_misc.obj &
@@ -73,8 +75,10 @@ GLOBOBJS = &
  z_init.obj &
  z_zone.obj &
  st_init.obj &
+ st_setup.obj &
  st_stuff.obj &
  st_lib.obj &
+ hu_setup.obj &
  hu_stuff.obj &
  hu_lib.obj &
  wi_stuff.obj &

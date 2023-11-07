@@ -31,23 +31,6 @@
 #include "r_local.h"
  
 
-// ?
-void
-STlib_initNum
-( st_number_t*		n,
-  int16_t			x,
-  int16_t			y,
-  MEMREF*		plRef,
-  int16_t			width )
-{
-    n->x	= x;
-    n->y	= y;
-    n->oldnum	= 0;
-    n->width	= width;
-    n->pRef	= plRef;
-}
-
-
 // 
 // A fairly efficient way to draw a number
 //  based on differences from the old number.
@@ -113,20 +96,6 @@ STlib_drawNum
 
 
 
-//
-void
-STlib_initPercent
-( st_percent_t*		p,
-  int16_t			x,
-  int16_t			y,
-  MEMREF*		plRef,
-  MEMREF		percentRef ) {
-    STlib_initNum(&p->n, x, y, plRef, 3);
-    p->pRef = percentRef;
-}
-
-
-
 
 void
 STlib_updatePercent
@@ -141,20 +110,6 @@ STlib_updatePercent
 }
 
 
-
-void
-STlib_initMultIcon
-( st_multicon_t*	i,
-  int16_t			x,
-  int16_t			y,
-  MEMREF*		ilRef)
-{
-    i->x	= x;
-    i->y	= y;
-    i->oldinum 	= -1;
-    i->pRef	= ilRef;
-
-}
 
 
 

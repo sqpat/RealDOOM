@@ -388,52 +388,6 @@ void G_BuildTiccmd (int8_t index)
 } 
  
 
-//
-// G_DoLoadLevel 
-//
-extern  gamestate_t     wipegamestate; 
-extern uint8_t		skytexture;
-
-void G_DoLoadLevel (void) 
-{ 
-#if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
-    // DOOM determines the sky texture to be used
-    // depending on the current episode, and the game version.
-    if ( commercial )
-    {
-        skytexture = R_TextureNumForName ("SKY3");
-        if (gamemap < 12)
-            skytexture = R_TextureNumForName ("SKY1");
-        else
-            if (gamemap < 21)
-                skytexture = R_TextureNumForName ("SKY2");
-    }
-#endif
-
-
-    if (wipegamestate == GS_LEVEL) 
-        wipegamestate = -1;             // force a wipe 
-
-    gamestate = GS_LEVEL; 
-
-
-	if (player.playerstate == PST_DEAD)
-		player.playerstate = PST_REBORN;
-
-	TEXT_MODE_DEBUG_PRINT("\ncalling P_SetupLevel");
-	P_SetupLevel (gameepisode, gamemap, gameskill);
-	starttime = ticcount;
-    gameaction = ga_nothing; 
-    //Z_CheckHeap ();
-
-    // clear cmd building stuff
-    memset (gamekeydown, 0, sizeof(gamekeydown)); 
-    mousex = mousey = 0; 
-    sendpause = sendsave = paused = false; 
-    memset (mousebuttons, 0, sizeof(mousebuttons));
-
-
-} 
  
  
 //
@@ -523,9 +477,10 @@ void G_Ticker (void)
 		TEXT_MODE_DEBUG_PRINT("\n carrying out gameaction %i", gameaction);
         switch (gameaction) 
         { 
-          case ga_loadlevel: 
+          /* Seemingly never used.
+		  case ga_loadlevel: 
             G_DoLoadLevel (); 
-            break; 
+            break; */
           case ga_newgame: 
             G_DoNewGame (); 
             break; 
@@ -927,15 +882,6 @@ void G_WorldDone (void)
     }
 } 
  
-void G_DoWorldDone (void) 
-{        
-    gamestate = GS_LEVEL; 
-    gamemap = wminfo.next+1; 
-    G_DoLoadLevel (); 
-	gameaction = ga_nothing;
-    viewactive = true; 
-} 
- 
 
 
 //
@@ -1112,140 +1058,11 @@ G_DeferedInitNew
     gameaction = ga_newgame; 
 } 
 
-
-void G_DoNewGame (void) 
-{
-    demoplayback = false; 
-    netdemo = false;
-    //playeringame[1] = playeringame[2] = playeringame[3] = 0;
-    respawnparm = false;
-    fastparm = false;
-    nomonsters = false;
-    G_InitNew (d_skill, d_episode, d_map); 
-    gameaction = ga_nothing; 
-} 
-
-// The sky texture to be used instead of the F_SKY1 dummy.
-extern  uint8_t     skytexture;
+void G_InitNew(skill_t       skill, int8_t           episode, int8_t           map);
 
 
-void
-G_InitNew
-( skill_t       skill,
-	int8_t           episode,
-	int8_t           map )
-{ 
-	int16_t             i;
-         
-    if (paused) 
-    { 
-        paused = false; 
-        S_ResumeSound (); 
-    } 
-        
-
-    if (skill > sk_nightmare) 
-        skill = sk_nightmare;
-
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-    if (episode < 1)
-    {
-        episode = 1;
-    }
-    if (episode > 3)
-    {
-        episode = 3;
-    }
-#else
-    if (episode == 0)
-    {
-        episode = 4;
-    }
-#endif
-
-    if (episode > 1 && shareware)
-    {
-        episode = 1;
-    }
-
-    if (map < 1) 
-        map = 1;
-    
-    if ( (map > 9)
-         && (!commercial) )
-      map = 9; 
-                 
-    M_ClearRandom (); 
-         
-    if (skill == sk_nightmare || respawnparm )
-        respawnmonsters = true;
-    else
-        respawnmonsters = false;
-                
-    if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare) )
-    { 
-        for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++) 
-            states[i].tics >>= 1; 
-        mobjinfo[MT_BRUISERSHOT].speed = 20+HIGHBIT; 
-        mobjinfo[MT_HEADSHOT].speed = 20+HIGHBIT; 
-        mobjinfo[MT_TROOPSHOT].speed = 20+HIGHBIT; 
-    } 
-    else if (skill != sk_nightmare && gameskill == sk_nightmare) 
-    { 
-        for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++) 
-            states[i].tics <<= 1; 
-        mobjinfo[MT_BRUISERSHOT].speed = 15+HIGHBIT; 
-        mobjinfo[MT_HEADSHOT].speed = 10+HIGHBIT; 
-        mobjinfo[MT_TROOPSHOT].speed = 10+HIGHBIT; 
-    } 
-         
-                         
-    // force players to be initialized upon first level load         
-    player.playerstate = PST_REBORN; 
- 
-    usergame = true;                // will be set false if a demo 
-    paused = false; 
-    demoplayback = false; 
-    automapactive = false; 
-    viewactive = true; 
-    gameepisode = episode; 
-    gamemap = map; 
-    gameskill = skill; 
- 
-    viewactive = true;
-
-	
-    // set the sky map for the episode
-    if (commercial)
-    {
-        skytexture = R_TextureNumForName ("SKY3");
-        if (gamemap < 12)
-            skytexture = R_TextureNumForName ("SKY1");
-        else
-            if (gamemap < 21)
-                skytexture = R_TextureNumForName ("SKY2");
-    }
-    else
-        switch (episode) 
-        { 
-          case 1: 
-            skytexture = R_TextureNumForName ("SKY1"); 
-            break; 
-          case 2: 
-            skytexture = R_TextureNumForName ("SKY2"); 
-            break; 
-          case 3: 
-            skytexture = R_TextureNumForName ("SKY3"); 
-            break; 
-          case 4:       // Special Edition sky
-            skytexture = R_TextureNumForName ("SKY4");
-            break;
-        } 
 
 
-	TEXT_MODE_DEBUG_PRINT("\nloading level");
-	G_DoLoadLevel ();
-} 
  
 
 //
@@ -1441,6 +1258,8 @@ void G_TimeDemo (int8_t* name)
 extern int32_t pagecount[40];
 #endif
 
+extern uint16_t currentListHead;
+
 boolean G_CheckDemoStatus (void) 
 { 
 	ticcount_t             endtime;
@@ -1497,8 +1316,8 @@ n ALLOC_TYPE_STRINGS 30
 
 		);
 #else
-        I_Error ("\ntimed %li gametics in %li realtics %li %li %li prnd %i",gametic 
-                 , endtime-starttime, numreads, pageins, pageouts, prndindex); 
+        I_Error ("\ntimed %li gametics in %li realtics %li %li %li prnd %i %u",gametic 
+                 , endtime-starttime, numreads, pageins, pageouts, prndindex, currentListHead);
 #endif
     } 
          

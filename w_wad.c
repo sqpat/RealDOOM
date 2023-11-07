@@ -349,9 +349,9 @@ int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
  MEMREF
 W_CacheLumpNumEMS2
 (	int16_t           lump,
-	int8_t			tag,
-	int8_t* file,
-	 int32_t line
+	int8_t			tag
+	//,int8_t* file,
+	 //int32_t line
 	
 	
 	)

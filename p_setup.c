@@ -378,6 +378,203 @@ void P_LoadNodes(int16_t lump)
 }
 
 
+void P_BringUpWeapon();
+
+//
+// P_SetupPsprites
+// Called at start of level for each player.
+//
+void P_SetupPsprites()
+{
+	int8_t	i;
+
+	// remove all psprites
+	for (i = 0; i < NUMPSPRITES; i++)
+		player.psprites[i].state = NULL;
+
+	// spawn the gun
+	player.pendingweapon = player.readyweapon;
+	P_BringUpWeapon();
+}
+
+
+//
+// P_SpawnPlayer
+// Called when a player is spawned on the level.
+// Most of the player structure stays unchanged
+//  between levels.
+//
+
+void ST_Start(void);
+void G_PlayerReborn();
+void HU_Start(void);
+
+void P_SpawnPlayer(mapthing_t* mthing)
+{
+	fixed_t_union		x;
+	fixed_t_union		y;
+	fixed_t_union		z;
+
+	MEMREF mobjRef;
+	mobj_t*		mobj;
+	int16_t mthingtype = mthing->type;
+	int16_t mthingx = mthing->x;
+	int16_t mthingy = mthing->y;
+	int16_t mthingangle = mthing->angle;
+
+
+	if (player.playerstate == PST_REBORN) {
+		G_PlayerReborn();
+	}
+	x.h.fracbits = 0;
+	y.h.fracbits = 0;
+	x.h.intbits = mthingx;
+	y.h.intbits = mthingy;
+	z.w = ONFLOORZ;
+
+	mobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER);
+	mobj = &playerMobj;
+	mobj->reactiontime = 0;
+
+	mobj->angle = ANG45 * (mthingangle / 45);
+	mobj->player = &player;
+	mobj->health = player.health;
+
+	player.moRef = mobjRef;
+	player.playerstate = PST_LIVE;
+	player.refire = 0;
+	player.message = -1;
+	player.damagecount = 0;
+	player.bonuscount = 0;
+	player.extralight = 0;
+	player.fixedcolormap = 0;
+	player.viewheight = VIEWHEIGHT;
+
+	// setup gun psprite
+	P_SetupPsprites();
+
+	// wake up the status bar
+	ST_Start();
+
+	// wake up the heads up text
+	HU_Start();
+
+}
+
+
+//
+// P_SpawnMapThing
+// The fields of the mapthing should
+// already be in host byte order.
+//
+void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
+{
+	int16_t			i;
+	int16_t			bit;
+	mobj_t*		mobj;
+	fixed_t_union		x;
+	fixed_t_union		y;
+	fixed_t_union		z;
+	MEMREF mobjRef;
+	int16_t mthingtype = mthing->type;
+	int16_t mthingoptions = mthing->options;
+	int16_t mthingx = mthing->x;
+	int16_t mthingy = mthing->y;
+	int16_t mthingangle = mthing->angle;
+	mapthing_t copyofthing = *mthing;
+
+
+
+
+	if (mthing->type == 11 || mthing->type == 2 || mthing->type == 3 || mthing->type == 4) {
+		return;
+	}
+
+	// check for players specially
+	if (mthingtype == 1) {
+		// save spots for respawning in network games
+		P_SpawnPlayer(mthing);
+		return;
+	}
+
+
+	// check for apropriate skill level
+	if ((mthingoptions & 16)) {
+		return;
+	}
+	if (gameskill == sk_baby) {
+		bit = 1;
+	}
+	else if (gameskill == sk_nightmare) {
+		bit = 4;
+	}
+	else {
+		bit = 1 << (gameskill - 1);
+	}
+	if (!(mthingoptions & bit)) {
+
+		return;
+	}
+
+
+	// find which type to spawn
+	for (i = 0; i < NUMMOBJTYPES; i++) {
+		if (mthingtype == mobjinfo[i].doomednum) {
+			break;
+		}
+	}
+
+
+#ifdef CHECK_FOR_ERRORS
+	if (i == NUMMOBJTYPES) {
+		I_Error("P_SpawnMapThing: Unknown type %i at (%i, %i)",
+			mthingtype,
+			mthingx, mthingy);
+	}
+#endif
+
+
+	// don't spawn any monsters if -nomonsters
+	if (nomonsters && (i == MT_SKULL || (mobjinfo[i].flags & MF_COUNTKILL))) {
+		return;
+	}
+
+	// spawn it
+	x.h.fracbits = 0;
+	y.h.fracbits = 0;
+	x.h.intbits = mthingx;
+	y.h.intbits = mthingy;
+
+	if (mobjinfo[i].flags & MF_SPAWNCEILING) {
+		z.w = ONCEILINGZ;
+	}
+	else {
+		z.w = ONFLOORZ;
+	}
+
+	mobjRef = P_SpawnMobj(x.w, y.w, z.w, i);
+
+	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+	mobj->spawnpoint = copyofthing;
+
+	if (mobj->tics > 0)
+		mobj->tics = 1 + (P_Random() % mobj->tics);
+	if (mobj->flags & MF_COUNTKILL)
+		totalkills++;
+	if (mobj->flags & MF_COUNTITEM)
+		totalitems++;
+
+	//todo does this work? or need to be in fixed_mul? -sq
+	mobj->angle = ANG45 * (mthingangle / 45);
+
+	if (mthingoptions & MTF_AMBUSH)
+		mobj->flags |= MF_AMBUSH;
+
+
+}
+
+
+
 //
 // P_LoadThings
 //

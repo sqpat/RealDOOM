@@ -44,6 +44,7 @@ extern button_t        buttonlist[MAXBUTTONS];
 
 extern int8_t*           spritename;
 
+//todo move this data into functions so it's pulled into overlay space and paged out to free memory
 
 //
 // CHANGE THE TEXTURE OF A WALL SWITCH TO ITS OPPOSITE

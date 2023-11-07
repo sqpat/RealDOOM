@@ -48,12 +48,6 @@ void I_StartupTimer(void)
 	TS_Dispatch();
 }
 
-void I_ShutdownTimer(void)
-{
-	TS_Terminate();
-	TS_Shutdown();
-}
-
 //
 // Sound header & data
 //
@@ -404,21 +398,7 @@ void I_StartupSound(void)
 	*/
 
 }
-//
-// I_ShutdownSound
-// Shuts down all sound stuff
-//
-void I_ShutdownSound(void)
-{
-	/*
-    ticcount_t s;
-    extern volatile ticcount_t ticcount;
-    S_PauseSound();
-    s = ticcount + 30;
-    while (s != ticcount);
-    DMX_DeInit();
-	*/
-}
+
 
 void I_SetChannels(int8_t channels)
 {

@@ -280,7 +280,6 @@ fixed_t32	FixedMulSmall1632(int16_t a, fixed_t b);
 fixed_t32	FixedMul1616(int16_t a, int16_t b);
 
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
-fixed_t32	FixedDiv2(fixed_t32 a, fixed_t32 b);
 //fixed_t32	FixedDivinner (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);
 //fixed_t32	FixedDiv2 (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);
 //#define FixedDiv(a, b) FixedDivinner(a, b, __FILE__, __LINE__)

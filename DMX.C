@@ -17,38 +17,38 @@
    Global variables
 ---------------------------------------------------------------------*/
 
-static task HeadTask;
-static void(__interrupt __far *OldInt8)(void);
-static volatile int32_t TaskServiceRate = 0x10000L;
-static volatile int32_t TaskServiceCount = 0;
+task HeadTask;
+void(__interrupt __far *OldInt8)(void);
+volatile int32_t TaskServiceRate = 0x10000L;
+volatile int32_t TaskServiceCount = 0;
 
-static volatile int32_t TS_TimesInInterrupt;
-static int8_t TS_Installed = FALSE;
+volatile int32_t TS_TimesInInterrupt;
+int8_t TS_Installed = FALSE;
 volatile int32_t TS_InInterrupt = FALSE;
 
 /*---------------------------------------------------------------------
    Function prototypes
 ---------------------------------------------------------------------*/
 
-static void TS_FreeTaskList(void);
-static void TS_SetClockSpeed(int32_t speed);
-static uint16_t TS_SetTimer(int32_t TickBase);
-static void TS_SetTimerToMaxTaskRate(void);
-static void __interrupt __far TS_ServiceSchedule(void);
-static void __interrupt __far TS_ServiceScheduleIntEnabled(void);
-static void TS_AddTask(task *ptr);
-static void TS_Startup(void);
-static void RestoreRealTimeClock(void);
+void TS_FreeTaskList(void);
+void TS_SetClockSpeed(int32_t speed);
+uint16_t TS_SetTimer(int32_t TickBase);
+void TS_SetTimerToMaxTaskRate(void);
+void __interrupt __far TS_ServiceSchedule(void);
+void __interrupt __far TS_ServiceScheduleIntEnabled(void);
+void TS_AddTask(task *ptr);
+void TS_Startup(void);
+void RestoreRealTimeClock(void);
 
 
-static void TS_FreeTaskList(void)
+void TS_FreeTaskList(void)
 {
 	_disable();
 	free(&HeadTask);
 	_enable();
 }
 
-static void TS_SetClockSpeed(int32_t speed)
+void TS_SetClockSpeed(int32_t speed)
 {
 	_disable();
 	if ((speed > 0) && (speed < 0x10000L)) {
@@ -63,7 +63,7 @@ static void TS_SetClockSpeed(int32_t speed)
 	_enable();
 }
 
-static uint16_t TS_SetTimer(int32_t TickBase)
+uint16_t TS_SetTimer(int32_t TickBase)
 {
 	uint16_t speed;
 	// VITI95: OPTIMIZE
@@ -76,14 +76,14 @@ static uint16_t TS_SetTimer(int32_t TickBase)
 	return (speed);
 }
 
-static void TS_SetTimerToMaxTaskRate(void)
+void TS_SetTimerToMaxTaskRate(void)
 {
 	_disable();
 	TS_SetClockSpeed(0x10000L);
 	_enable();
 }
 
-static void __interrupt __far TS_ServiceScheduleIntEnabled(void)
+void __interrupt __far TS_ServiceScheduleIntEnabled(void)
 {
 
 	TS_TimesInInterrupt++;
@@ -155,29 +155,6 @@ void TS_Startup(
 
 }
 
-/*---------------------------------------------------------------------
-   Function: TS_Shutdown
-
-   Ends processing of all tasks.
----------------------------------------------------------------------*/
-
-void TS_Shutdown(
-	void)
-
-{
-	if (TS_Installed)
-	{
-		TS_FreeTaskList();
-		TS_SetClockSpeed(0);
-		_dos_setvect(0x08, OldInt8);
-
-
-		// Set Date and Time from CMOS
-		//      RestoreRealTimeClock();
-
-		TS_Installed = FALSE;
-	}
-}
 
 /*---------------------------------------------------------------------
    Function: TS_ScheduleTask
@@ -195,24 +172,7 @@ void TS_ScheduleTask( void(*Function)(void ), uint16_t rate) {
 
 }
 
- 
 
-/*---------------------------------------------------------------------
-   Function: TS_Terminate
-
-   Ends processing of a specific task.
----------------------------------------------------------------------*/
-
-void TS_Terminate()
-
-{
-	_disable();
-	free(&HeadTask);
-	TS_SetTimerToMaxTaskRate();
-	_enable();
-
-
-}
 
 /*---------------------------------------------------------------------
    Function: TS_Dispatch
