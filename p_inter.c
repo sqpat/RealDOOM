@@ -680,10 +680,10 @@ P_KillMobj
 	
     }
 
-    if (target->health < -target->info->spawnhealth  && getXDeathState(target->type)) {
+    if (target->health < (-getSpawnHealth(target->type))  && getXDeathState(target->type)) {
 		P_SetMobjState (targetRef, getXDeathState(target->type)) ;
     } else {
-		P_SetMobjState (targetRef, target->info->deathstate);
+		P_SetMobjState (targetRef, getDeathState(target->type));
 	}
     target->tics -= P_Random()&3;
 
@@ -882,7 +882,7 @@ P_DamageMobj
 
     if ( (P_Random () < getPainChance(target->type)) && !(target->flags&MF_SKULLFLY) ) {
 		target->flags |= MF_JUSTHIT;	// fight back!
-		P_SetMobjState (targetRef, target->info->painstate);
+		P_SetMobjState (targetRef, getPainState(target->type));
     }
 			
 
@@ -899,8 +899,8 @@ P_DamageMobj
 	target->targetRef = sourceRef;
 	target->threshold = BASETHRESHOLD;
 	if (target->state == &states[target->info->spawnstate]
-	    && target->info->seestate != S_NULL)
-	    P_SetMobjState (targetRef, target->info->seestate);
+	    && getSeeState(target->type) != S_NULL)
+	    P_SetMobjState (targetRef, getSeeState(target->type));
     }
 	 
 

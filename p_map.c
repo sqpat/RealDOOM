@@ -366,7 +366,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 
     // check for skulls slamming into things
     if (tmthing->flags & MF_SKULLFLY) {
-		damage = ((P_Random()%8)+1)*tmthing->info->damage;
+		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 		P_DamageMobj (thingRef, tmthingRef, tmthingRef, damage);
 		tmthing = (mobj_t*)Z_LoadThinkerBytesFromEMS(tmthingRef);
 		tmthing->flags &= ~MF_SKULLFLY;
@@ -411,7 +411,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 	
 		// damage / explode
 		tmthing = (mobj_t*)Z_LoadThinkerBytesFromEMS(tmthingRef);
-		damage = ((P_Random()%8)+1)*tmthing->info->damage;
+		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 		
 
 		P_DamageMobj (thingRef, tmthingRef, tmthingtargetRef, damage);

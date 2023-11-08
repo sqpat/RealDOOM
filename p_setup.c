@@ -491,6 +491,252 @@ void P_SpawnPlayer(mapthing_t* mthing)
 
 }
 
+int16_t getDoomEdNum(uint8_t id) {
+	switch (id) {
+	case 1:
+		return 3004;
+	case 2:
+		return 9;
+	case 3:
+		return 64;
+	case 5:
+		return 66;
+	case 8:
+		return 67;
+	case 10:
+		return 65;
+	case 11:
+		return 3001;
+	case 12:
+		return 3002;
+	case 13:
+		return 58;
+	case 14:
+		return 3005;
+	case 15:
+		return 3003;
+	case 17:
+		return 69;
+	case 18:
+		return 3006;
+	case 19:
+		return 7;
+	case 20:
+		return 68;
+	case 21:
+		return 16;
+	case 22:
+		return 71;
+	case 23:
+		return 84;
+	case 24:
+		return 72;
+	case 25:
+		return 88;
+	case 26:
+		return 89;
+	case 27:
+		return 87;
+	case 30:
+		return 2035;
+	case 41:
+		return 14;
+	case 43:
+		return 2018;
+	case 44:
+		return 2019;
+	case 45:
+		return 2014;
+	case 46:
+		return 2015;
+	case 47:
+		return 5;
+	case 48:
+		return 13;
+	case 49:
+		return 6;
+	case 50:
+		return 39;
+	case 51:
+		return 38;
+	case 52:
+		return 40;
+	case 53:
+		return 2011;
+	case 54:
+		return 2012;
+	case 55:
+		return 2013;
+	case 56:
+		return 2022;
+	case 57:
+		return 2023;
+	case 58:
+		return 2024;
+	case 59:
+		return 2025;
+	case 60:
+		return 2026;
+	case 61:
+		return 2045;
+	case 62:
+		return 83;
+	case 63:
+		return 2007;
+	case 64:
+		return 2048;
+	case 65:
+		return 2010;
+	case 66:
+		return 2046;
+	case 67:
+		return 2047;
+	case 68:
+		return 17;
+	case 69:
+		return 2008;
+	case 70:
+		return 2049;
+	case 71:
+		return 8;
+	case 72:
+		return 2006;
+	case 73:
+		return 2002;
+	case 74:
+		return 2005;
+	case 75:
+		return 2003;
+	case 76:
+		return 2004;
+	case 77:
+		return 2001;
+	case 78:
+		return 82;
+	case 79:
+		return 85;
+	case 80:
+		return 86;
+	case 81:
+		return 2028;
+	case 82:
+		return 30;
+	case 83:
+		return 31;
+	case 84:
+		return 32;
+	case 85:
+		return 33;
+	case 86:
+		return 37;
+	case 87:
+		return 36;
+	case 88:
+		return 41;
+	case 89:
+		return 42;
+	case 90:
+		return 43;
+	case 91:
+		return 44;
+	case 92:
+		return 45;
+	case 93:
+		return 46;
+	case 94:
+		return 55;
+	case 95:
+		return 56;
+	case 96:
+		return 57;
+	case 97:
+		return 47;
+	case 98:
+		return 48;
+	case 99:
+		return 34;
+	case 100:
+		return 35;
+	case 101:
+		return 49;
+	case 102:
+		return 50;
+	case 103:
+		return 51;
+	case 104:
+		return 52;
+	case 105:
+		return 53;
+	case 106:
+		return 59;
+	case 107:
+		return 60;
+	case 108:
+		return 61;
+	case 109:
+		return 62;
+	case 110:
+		return 63;
+	case 111:
+		return 22;
+	case 112:
+		return 15;
+	case 113:
+		return 18;
+	case 114:
+		return 21;
+	case 115:
+		return 23;
+	case 116:
+		return 20;
+	case 117:
+		return 19;
+	case 118:
+		return 10;
+	case 119:
+		return 12;
+	case 120:
+		return 28;
+	case 121:
+		return 24;
+	case 122:
+		return 27;
+	case 123:
+		return 29;
+	case 124:
+		return 25;
+	case 125:
+		return 26;
+	case 126:
+		return 54;
+	case 127:
+		return 70;
+	case 128:
+		return 73;
+	case 129:
+		return 74;
+	case 130:
+		return 75;
+	case 131:
+		return 76;
+	case 132:
+		return 77;
+	case 133:
+		return 78;
+	case 134:
+		return 79;
+	case 135:
+		return 80;
+	case 136:
+		return 81;
+	default:
+		return -1;
+
+
+	}
+
+}
+
 
 //
 // P_SpawnMapThing
@@ -499,6 +745,9 @@ void P_SpawnPlayer(mapthing_t* mthing)
 //
 void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
 {
+
+
+
 	int16_t			i;
 	int16_t			bit;
 	mobj_t*		mobj;
@@ -549,7 +798,7 @@ void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
 
 	// find which type to spawn
 	for (i = 0; i < NUMMOBJTYPES; i++) {
-		if (mthingtype == mobjinfo[i].doomednum) {
+		if (mthingtype == getDoomEdNum(i)) {
 			break;
 		}
 	}

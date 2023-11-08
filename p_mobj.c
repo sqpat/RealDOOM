@@ -106,7 +106,7 @@ void P_ExplodeMissile(MEMREF moRef){
 	mobj_t* mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
     mo->momx = mo->momy = mo->momz = 0;
 	
-    P_SetMobjState (moRef, mobjinfo[mo->type].deathstate);
+    P_SetMobjState (moRef, getDeathState(mo->type));
 	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 
     mo->tics -= P_Random()&3;
@@ -629,7 +629,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	mobj->height.h.intbits = info->height;// *FRACUNIT;
 	mobj->height.h.fracbits = 0;
     mobj->flags = info->flags;
-    mobj->health = info->spawnhealth;
+    mobj->health = getSpawnHealth(type);
 
 
 	if (gameskill != sk_nightmare) {

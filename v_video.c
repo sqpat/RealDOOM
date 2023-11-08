@@ -356,4 +356,3 @@ V_DrawPatchDirect
     }
 } 
  
- 

@@ -743,7 +743,7 @@ void A_Look (MEMREF actorRef)
     }
 
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-    P_SetMobjState (actorRef, actor->info->seestate);
+    P_SetMobjState (actorRef, getSeeState(actor->type));
 }
 
 
@@ -844,8 +844,8 @@ void A_Chase (MEMREF actorRef)
     // check for melee attack
     if (getMeleeState(actor->type) && P_CheckMeleeRange (actorRef)) {
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-		if (actor->info->attacksound) {
-			S_StartSoundFromRef(actorRef, actor->info->attacksound);
+		if (getAttackSound(actor->type)) {
+			S_StartSoundFromRef(actorRef, getAttackSound(actor->type));
 		}
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
  		P_SetMobjState (actorRef, getMeleeState(actor->type));
@@ -854,7 +854,7 @@ void A_Chase (MEMREF actorRef)
     }
 
     // check for missile attack
-    if (actor->info->missilestate) {
+    if (getMissileState(actor->type)) {
 		
 		if (gameskill < sk_nightmare
 			&& !fastparm && actor->movecount) {
@@ -866,7 +866,7 @@ void A_Chase (MEMREF actorRef)
 		}
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
  
-		P_SetMobjState (actorRef, actor->info->missilestate);
+		P_SetMobjState (actorRef, getMissileState(actor->type));
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 		actor->flags |= MF_JUSTATTACKED;
 
@@ -894,8 +894,8 @@ void A_Chase (MEMREF actorRef)
 	}
 
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-    if (actor->info->activesound && P_Random () < 3) {
-		S_StartSoundFromRef(actorRef, actor->info->activesound);
+    if (getActiveSound(actor->type) && P_Random () < 3) {
+		S_StartSoundFromRef(actorRef, getActiveSound(actor->type));
     }
 
 }
@@ -1030,7 +1030,7 @@ void A_CPosRefire (MEMREF actorRef)
 	actorTarget = (mobj_t*)Z_LoadThinkerBytesFromEMS(actortargetRef);
     if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actorRef, actortargetRef)) {
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-		P_SetMobjState (actorRef, actor->info->seestate);
+		P_SetMobjState (actorRef, getSeeState(actor->type));
     }
 }
 
@@ -1057,7 +1057,7 @@ void A_SpidRefire (MEMREF actorRef)
 
     if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actorRef, actortargetRef)) {
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-		P_SetMobjState (actorRef, actor->info->seestate);
+		P_SetMobjState (actorRef, getSeeState(actor->type));
     }
 }
 
@@ -1438,7 +1438,7 @@ void A_VileChase (MEMREF actorRef)
 				corpsehit = (mobj_t*)Z_LoadThinkerBytesFromEMS(corpsehitRef);
 				corpsehit->height.h.intbits <<= 2;
 				corpsehit->flags = info->flags;
-				corpsehit->health = info->spawnhealth;
+				corpsehit->health = getSpawnHealth(corpsehit->type);
 				corpsehit->targetRef = NULL_MEMREF;
 
 				return;
@@ -1710,7 +1710,7 @@ void A_SkullAttack (MEMREF actorRef)
 
     destRef = actor->targetRef;	
 
-	S_StartSoundFromRef(actorRef, actor->info->attacksound);
+	S_StartSoundFromRef(actorRef, getAttackSound(actor->type));
     A_FaceTarget (actorRef);
 	dest = (mobj_t*)Z_LoadThinkerBytesFromEMS(destRef);
 	destx = dest->x;
@@ -1882,8 +1882,8 @@ void A_XScream (MEMREF actorRef)
 void A_Pain (MEMREF actorRef)
 {
 	mobj_t* actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-    if (actor->info->painsound)
-		S_StartSoundFromRef(actorRef, actor->info->painsound);
+    if (getPainSound(actor->type))
+		S_StartSoundFromRef(actorRef, getPainSound(actor->type));
 }
 
 
@@ -2319,7 +2319,7 @@ void A_SpawnFly (MEMREF moRef)
     newmobjRef	= P_SpawnMobj (targ->x, targ->y, targ->z, type);
 	newmobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(newmobjRef);
 	if (P_LookForPlayers(newmobjRef, true)) {
-		P_SetMobjState(newmobjRef, newmobj->info->seestate);
+		P_SetMobjState(newmobjRef, getSeeState(newmobj->type));
 	}
 	newmobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(newmobjRef);
 

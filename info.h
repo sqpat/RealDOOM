@@ -1306,27 +1306,27 @@ typedef uint8_t sfxenum_t;
  // most states and sfx fields could probably save space(?) in a getter. most of these arent oft used
 typedef struct
 {
-    int16_t	doomednum;
-	statenum_t	spawnstate;
-	int16_t	spawnhealth;  // can probably divide by 10 and store as int8_t and mult by 10 on init
-	statenum_t	seestate;
-	sfxenum_t	seesound;
+    //int16_t	doomednum;  // moved into code in overlay
+	statenum_t	spawnstate;	// pretty much  every value different, probably cant remove
+	//int8_t	spawnhealth;  // can probably divide by 10 and store as int8_t and mult by 10 on init
+	//statenum_t	seestate; // replaced with getter saved 80 bytes
+	sfxenum_t	seesound;	// cant remove, net plus 80 bytes
     //int32_t	reactiontime;     always 8 except 0 for player. this can be abstracted in code
-	sfxenum_t	attacksound;
-	statenum_t	painstate;
+	//sfxenum_t	attacksound; // replaced with getter saved 80 bytes
+	//statenum_t	painstate; // replaced with getter saved 96 bytes
     // uint16_t	painchance; // replaced with getter
-	sfxenum_t	painsound;
+	//sfxenum_t	painsound; // replaced with getter  saved 16 bytes
 	// statenum_t	meleestate; 
-	statenum_t	missilestate;		// todo i wonder if these states can be combined into fewer bits in a bitmask.
-	statenum_t	deathstate;
+	//statenum_t	missilestate;	// replaced with getter saved 96 bytes
+	//statenum_t	deathstate; // replaced with getter  saved 16 bytes
 	//statenum_t	xdeathstate;
-	sfxenum_t	deathsound;
-    uint8_t	speed;
-    uint8_t	radius;
-    uint8_t	height;
+	sfxenum_t	deathsound;	// cant remove, net plus 48 bytes
+    uint8_t	speed;	// we're encoding this in a funky way to save space already - leave it alone
+    uint8_t	radius; // too much variety to compact
+    uint8_t	height;// too much variety to compact. low and high bit are unused.
     //int32_t	mass;
-    uint8_t	damage;
-	sfxenum_t	activesound; 
+    //uint8_t	damage;	// replaced with getter saved 64 bytes
+	// sfxenum_t	activesound;   replaced with getter  saved 48 bytes
     int32_t	flags;
 	// statenum_t	raisestate;  replaced with getter
 
@@ -1341,5 +1341,14 @@ extern int16_t getPainChance(uint8_t id);
 extern int16_t getRaiseState(uint8_t id);
 extern int16_t getMeleeState(uint8_t id);
 extern int16_t getXDeathState(uint8_t id);
+extern sfxenum_t getActiveSound(uint8_t id);
+extern sfxenum_t getPainSound(uint8_t id);
+extern sfxenum_t getAttackSound(uint8_t id);
+extern uint8_t getDamage(uint8_t id);
+extern statenum_t getSeeState(uint8_t id);
+extern statenum_t getMissileState(uint8_t id);
+extern statenum_t getDeathState(uint8_t id);
+extern statenum_t getPainState(uint8_t id);
+extern int16_t getSpawnHealth(uint8_t id);
 
 #endif

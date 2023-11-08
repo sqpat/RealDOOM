@@ -507,7 +507,7 @@ void F_StartCast (void)
 {
     wipegamestate = -1;		// force a screen wipe
     castnum = 0;
-    caststate = &states[mobjinfo[castorder[castnum].type].seestate];
+    caststate = &states[getSeeState(castorder[castnum].type)];
     casttics = caststate->tics;
     castdeath = false;
     finalestage = 2;	
@@ -537,8 +537,8 @@ void F_CastTicker (void)
 	if (castorder[castnum].nameindex == -1)
 	    castnum = 0;
 	if (mobjinfo[castorder[castnum].type].seesound)
-	    S_StartSound (NULL, mobjinfo[castorder[castnum].type].seesound);
-	caststate = &states[mobjinfo[castorder[castnum].type].seestate];
+	    S_StartSound (NULL, getSeeState(castorder[castnum].type));
+	caststate = &states[getSeeState(castorder[castnum].type)];
 	castframes = 0;
     }
     else
@@ -593,7 +593,7 @@ void F_CastTicker (void)
 	if (castonmelee)
 	    caststate=&states[getMeleeState(castorder[castnum].type)];
 	else
-	    caststate=&states[mobjinfo[castorder[castnum].type].missilestate];
+	    caststate=&states[getMissileState(castorder[castnum].type)];
 	castonmelee ^= 1;
 	if (caststate == &states[S_NULL])
 	{
@@ -602,19 +602,19 @@ void F_CastTicker (void)
 		    &states[getMeleeState(castorder[castnum].type)];
 	    else
 		caststate=
-		    &states[mobjinfo[castorder[castnum].type].missilestate];
+		    &states[getMissileState(castorder[castnum].type)];
 	}
     }
 	
     if (castattacking)
     {
 	if (castframes == 24
-	    ||	caststate == &states[mobjinfo[castorder[castnum].type].seestate] )
+	    ||	caststate == &states[getSeeState(castorder[castnum].type)] )
 	{
 	  stopattack:
 	    castattacking = false;
 	    castframes = 0;
-	    caststate = &states[mobjinfo[castorder[castnum].type].seestate];
+	    caststate = &states[getSeeState(castorder[castnum].type)];
 	}
     }
 	
@@ -638,7 +638,7 @@ boolean F_CastResponder (event_t* ev)
 		
     // go into death frame
     castdeath = true;
-    caststate = &states[mobjinfo[castorder[castnum].type].deathstate];
+    caststate = &states[getDeathState(castorder[castnum].type)];
     casttics = caststate->tics;
     castframes = 0;
     castattacking = false;
