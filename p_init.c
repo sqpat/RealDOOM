@@ -46,60 +46,6 @@ extern int8_t*           spritename;
 
 //todo move this data into functions so it's pulled into overlay space and paged out to free memory
 
-//
-// CHANGE THE TEXTURE OF A WALL SWITCH TO ITS OPPOSITE
-//
-switchlist_t alphSwitchList[] =
-{
-	// Doom shareware episode 1 switches
-	{"SW1BRCOM",	"SW2BRCOM",	1},
-	{"SW1BRN1",	"SW2BRN1",	1},
-	{"SW1BRN2",	"SW2BRN2",	1},
-	{"SW1BRNGN",	"SW2BRNGN",	1},
-	{"SW1BROWN",	"SW2BROWN",	1},
-	{"SW1COMM",	"SW2COMM",	1},
-	{"SW1COMP",	"SW2COMP",	1},
-	{"SW1DIRT",	"SW2DIRT",	1},
-	{"SW1EXIT",	"SW2EXIT",	1},
-	{"SW1GRAY",	"SW2GRAY",	1},
-	{"SW1GRAY1",	"SW2GRAY1",	1},
-	{"SW1METAL",	"SW2METAL",	1},
-	{"SW1PIPE",	"SW2PIPE",	1},
-	{"SW1SLAD",	"SW2SLAD",	1},
-	{"SW1STARG",	"SW2STARG",	1},
-	{"SW1STON1",	"SW2STON1",	1},
-	{"SW1STON2",	"SW2STON2",	1},
-	{"SW1STONE",	"SW2STONE",	1},
-	{"SW1STRTN",	"SW2STRTN",	1},
-
-	// Doom registered episodes 2&3 switches
-	{"SW1BLUE",	"SW2BLUE",	2},
-	{"SW1CMT",		"SW2CMT",	2},
-	{"SW1GARG",	"SW2GARG",	2},
-	{"SW1GSTON",	"SW2GSTON",	2},
-	{"SW1HOT",		"SW2HOT",	2},
-	{"SW1LION",	"SW2LION",	2},
-	{"SW1SATYR",	"SW2SATYR",	2},
-	{"SW1SKIN",	"SW2SKIN",	2},
-	{"SW1VINE",	"SW2VINE",	2},
-	{"SW1WOOD",	"SW2WOOD",	2},
-
-	// Doom II switches
-	{"SW1PANEL",	"SW2PANEL",	3},
-	{"SW1ROCK",	"SW2ROCK",	3},
-	{"SW1MET2",	"SW2MET2",	3},
-	{"SW1WDMET",	"SW2WDMET",	3},
-	{"SW1BRIK",	"SW2BRIK",	3},
-	{"SW1MOD1",	"SW2MOD1",	3},
-	{"SW1ZIM",		"SW2ZIM",	3},
-	{"SW1STON6",	"SW2STON6",	3},
-	{"SW1TEK",		"SW2TEK",	3},
-	{"SW1MARB",	"SW2MARB",	3},
-	{"SW1SKULL",	"SW2SKULL",	3},
-
-	{"\0",		"\0",		0}
-};
-
 
 
 extern MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
@@ -188,6 +134,62 @@ void P_InitSwitchList(void)
 	int8_t		i;
 	int8_t		index;
 	int8_t		episode;
+	//
+// CHANGE THE TEXTURE OF A WALL SWITCH TO ITS OPPOSITE
+//
+	switchlist_t alphSwitchList[] =
+	{
+		// Doom shareware episode 1 switches
+		{"SW1BRCOM",	"SW2BRCOM",	1},
+		{"SW1BRN1",	"SW2BRN1",	1},
+		{"SW1BRN2",	"SW2BRN2",	1},
+		{"SW1BRNGN",	"SW2BRNGN",	1},
+		{"SW1BROWN",	"SW2BROWN",	1},
+		{"SW1COMM",	"SW2COMM",	1},
+		{"SW1COMP",	"SW2COMP",	1},
+		{"SW1DIRT",	"SW2DIRT",	1},
+		{"SW1EXIT",	"SW2EXIT",	1},
+		{"SW1GRAY",	"SW2GRAY",	1},
+		{"SW1GRAY1",	"SW2GRAY1",	1},
+		{"SW1METAL",	"SW2METAL",	1},
+		{"SW1PIPE",	"SW2PIPE",	1},
+		{"SW1SLAD",	"SW2SLAD",	1},
+		{"SW1STARG",	"SW2STARG",	1},
+		{"SW1STON1",	"SW2STON1",	1},
+		{"SW1STON2",	"SW2STON2",	1},
+		{"SW1STONE",	"SW2STONE",	1},
+		{"SW1STRTN",	"SW2STRTN",	1},
+
+		// Doom registered episodes 2&3 switches
+		{"SW1BLUE",	"SW2BLUE",	2},
+		{"SW1CMT",		"SW2CMT",	2},
+		{"SW1GARG",	"SW2GARG",	2},
+		{"SW1GSTON",	"SW2GSTON",	2},
+		{"SW1HOT",		"SW2HOT",	2},
+		{"SW1LION",	"SW2LION",	2},
+		{"SW1SATYR",	"SW2SATYR",	2},
+		{"SW1SKIN",	"SW2SKIN",	2},
+		{"SW1VINE",	"SW2VINE",	2},
+		{"SW1WOOD",	"SW2WOOD",	2},
+
+		// Doom II switches
+		{"SW1PANEL",	"SW2PANEL",	3},
+		{"SW1ROCK",	"SW2ROCK",	3},
+		{"SW1MET2",	"SW2MET2",	3},
+		{"SW1WDMET",	"SW2WDMET",	3},
+		{"SW1BRIK",	"SW2BRIK",	3},
+		{"SW1MOD1",	"SW2MOD1",	3},
+		{"SW1ZIM",		"SW2ZIM",	3},
+		{"SW1STON6",	"SW2STON6",	3},
+		{"SW1TEK",		"SW2TEK",	3},
+		{"SW1MARB",	"SW2MARB",	3},
+		{"SW1SKULL",	"SW2SKULL",	3},
+
+		{"\0",		"\0",		0}
+	};
+
+
+
 
 	episode = 1;
 
@@ -238,47 +240,7 @@ typedef struct
 // P_InitPicAnims
 //
 
-// Floor/ceiling animation sequences,
-//  defined by first and last frame,
-//  i.e. the flat (64x64 tile) name to
-//  be used.
-// The full animation sequence is given
-//  using all the flats between the start
-//  and end entry, in the order found in
-//  the WAD file.
-//
-animdef_t		animdefs[] =
-{
-	{false,	"NUKAGE3",	"NUKAGE1"},
-	{false,	"FWATER4",	"FWATER1"},
-	{false,	"SWATER4",	"SWATER1"},
-	{false,	"LAVA4",	"LAVA1"},
-	{false,	"BLOOD3",	"BLOOD1"},
 
-	// DOOM II flat animations.
-	{false,	"RROCK08",	"RROCK05"},
-	{false,	"SLIME04",	"SLIME01"},
-	{false,	"SLIME08",	"SLIME05"},
-	{false,	"SLIME12",	"SLIME09"},
-
-	{true,	"BLODGR4",	"BLODGR1"},
-	{true,	"SLADRIP3",	"SLADRIP1"},
-
-	{true,	"BLODRIP4",	"BLODRIP1"},
-	{true,	"FIREWALL",	"FIREWALA"},
-	{true,	"GSTFONT3",	"GSTFONT1"},
-	{true,	"FIRELAVA",	"FIRELAV3"},
-	{true,	"FIREMAG3",	"FIREMAG1"},
-	{true,	"FIREBLU2",	"FIREBLU1"},
-	{true,	"ROCKRED3",	"ROCKRED1"},
-
-	{true,	"BFALL4",	"BFALL1"},
-	{true,	"SFALL4",	"SFALL1"},
-	{true,	"WFALL4",	"WFALL1"},
-	{true,	"DBRAIN4",	"DBRAIN1"},
-
-	{-1}
-};
 
 
 
@@ -316,7 +278,47 @@ uint8_t R_FlatNumForNameA(int8_t* name)
 void P_InitPicAnims(void)
 {
 	int16_t		i;
+	// Floor/ceiling animation sequences,
+//  defined by first and last frame,
+//  i.e. the flat (64x64 tile) name to
+//  be used.
+// The full animation sequence is given
+//  using all the flats between the start
+//  and end entry, in the order found in
+//  the WAD file.
+//
+	animdef_t		animdefs[] =
+	{
+		{false,	"NUKAGE3",	"NUKAGE1"},
+		{false,	"FWATER4",	"FWATER1"},
+		{false,	"SWATER4",	"SWATER1"},
+		{false,	"LAVA4",	"LAVA1"},
+		{false,	"BLOOD3",	"BLOOD1"},
 
+		// DOOM II flat animations.
+		{false,	"RROCK08",	"RROCK05"},
+		{false,	"SLIME04",	"SLIME01"},
+		{false,	"SLIME08",	"SLIME05"},
+		{false,	"SLIME12",	"SLIME09"},
+
+		{true,	"BLODGR4",	"BLODGR1"},
+		{true,	"SLADRIP3",	"SLADRIP1"},
+
+		{true,	"BLODRIP4",	"BLODRIP1"},
+		{true,	"FIREWALL",	"FIREWALA"},
+		{true,	"GSTFONT3",	"GSTFONT1"},
+		{true,	"FIRELAVA",	"FIRELAV3"},
+		{true,	"FIREMAG3",	"FIREMAG1"},
+		{true,	"FIREBLU2",	"FIREBLU1"},
+		{true,	"ROCKRED3",	"ROCKRED1"},
+
+		{true,	"BFALL4",	"BFALL1"},
+		{true,	"SFALL4",	"SFALL1"},
+		{true,	"WFALL4",	"WFALL1"},
+		{true,	"DBRAIN4",	"DBRAIN1"},
+
+		{-1}
+	};
 	//	Init animation
 	lastanim = anims;
 	for (i = 0; animdefs[i].istexture != -1; i++) {
@@ -442,7 +444,7 @@ extern int16_t             maxframe;
 //  letter/number appended.
 // The rotation character can be 0 to signify no rotations.
 //
-void R_InitSpriteDefs(int8_t** namelist)
+void R_InitSpriteDefs()
 {
 	int8_t**      check;
 	int16_t         i;
@@ -455,6 +457,26 @@ void R_InitSpriteDefs(int8_t** namelist)
 	int16_t         patched;
 	spritedef_t* sprites;
 	spriteframe_t* spriteframes;
+
+
+	int8_t *namelist[NUMSPRITES] = {
+		"TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
+		"MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
+		"PLSS","PLSE","MISL","BFS1","BFE1","BFE2","TFOG","IFOG","PLAY","POSS",
+		"SPOS","VILE","FIRE","FATB","FBXP","SKEL","MANF","FATT","CPOS","SARG",
+		"HEAD","BAL7","BOSS","BOS2","SKUL","SPID","BSPI","APLS","APBX","CYBR",
+		"PAIN","SSWV","KEEN","BBRN","BOSF","ARM1","ARM2","BAR1","BEXP","FCAN",
+		"BON1","BON2","BKEY","RKEY","YKEY","BSKU","RSKU","YSKU","STIM","MEDI",
+		"SOUL","PINV","PSTR","PINS","MEGA","SUIT","PMAP","PVIS","CLIP","AMMO",
+		"ROCK","BROK","CELL","CELP","SHEL","SBOX","BPAK","BFUG","MGUN","CSAW",
+		"LAUN","PLAS","SHOT","SGN2","COLU","SMT2","GOR1","POL2","POL5","POL4",
+		"POL3","POL1","POL6","GOR2","GOR3","GOR4","GOR5","SMIT","COL1","COL2",
+		"COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
+		"COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
+		"HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2"
+	};
+
+
 	// count the number of sprite names
 	check = namelist;
 
@@ -578,8 +600,9 @@ void R_InitSpriteDefs(int8_t** namelist)
 // R_InitSprites
 // Called at program start.
 //
-void R_InitSprites(char** namelist)
+void R_InitSprites()
 {
+	
 	int		i;
 
 	for (i = 0; i < SCREENWIDTH; i++)
@@ -587,7 +610,7 @@ void R_InitSprites(char** namelist)
 		negonearray[i] = -1;
 	}
 
-	R_InitSpriteDefs(namelist);
+	R_InitSpriteDefs();
 }
 
 //
@@ -598,7 +621,7 @@ void P_Init(void)
 	int16_t i;
 	P_InitSwitchList();
 	P_InitPicAnims();
-	R_InitSprites(sprnames);
+	R_InitSprites();
 
 
 }

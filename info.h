@@ -1152,8 +1152,7 @@ typedef struct
 } state_t;
 
 extern state_t	states[NUMSTATES];
-extern int8_t *sprnames[NUMSPRITES];
-
+ 
 #define PLAYER_MOBJ_REF 61111u
 
 #define MT_PLAYER 0
