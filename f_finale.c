@@ -83,6 +83,66 @@ void	F_CastTicker (void);
 boolean F_CastResponder (event_t *ev);
 void	F_CastDrawer (void);
 
+
+
+
+
+//
+// V_DrawPatchFlipped 
+// Masks a column based masked pic to the screen.
+// Flips horizontally, e.g. to mirror face.
+//
+void
+V_DrawPatchFlipped
+(int16_t		x,
+	int16_t		y,
+	patch_t*	patch)
+{
+
+	int16_t		count;
+	int16_t		col;
+	column_t*	column;
+	byte*	desttop;
+	byte*	dest;
+	byte*	source;
+	int16_t		w;
+
+	y -= (patch->topoffset);
+	x -= (patch->leftoffset);
+
+
+	//if (!0)
+	V_MarkRect(x, y, (patch->width), (patch->height));
+
+	col = 0;
+	desttop = screen0 + y * SCREENWIDTH + x;
+
+	w = (patch->width);
+
+	for (; col < w; x++, col++, desttop++)
+	{
+		column = (column_t *)((byte *)patch + (patch->columnofs[w - 1 - col]));
+
+		// step through the posts in a column 
+		while (column->topdelta != 0xff)
+		{
+			source = (byte *)column + 3;
+			dest = desttop + column->topdelta*SCREENWIDTH;
+			count = column->length;
+
+			while (count--)
+			{
+				*dest = *source;
+				source++;
+				dest += SCREENWIDTH;
+			}
+			column = (column_t *)((byte *)column + column->length
+				+ 4);
+		}
+	}
+}
+
+
 //
 // F_StartFinale
 //

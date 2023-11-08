@@ -41,13 +41,45 @@
 
 extern uint8_t			skyflatnum;
 
+
+
+//
+// R_FlatNumForName
+// Retrieval, get a flat number for a flat name.
+//
+// note this function got duped across different overlays, but this ends up reducing overall conventional memory use
+uint8_t R_FlatNumForNameB(int8_t* name)
+{
+	int16_t         i;
+	int8_t        namet[9];
+
+	i = W_CheckNumForName(name);
+
+#ifdef CHECK_FOR_ERRORS
+	if (i == -1)
+	{
+		namet[8] = 0;
+		memcpy(namet, name, 8);
+		I_Error("\nR_FlatNumForName: %s not found", namet);
+	}
+
+	if (i - firstflat > 255) {
+		I_Error("Flat too big %i %i", i, firstflat);
+	}
+#endif
+
+	return (uint8_t)(i - firstflat);
+}
+
+
+
 //
 // R_InitSkyMap
 // Called whenever the view size changes.
 //
 void R_InitSkyMap(void)
 {
-	skyflatnum = R_FlatNumForName("F_SKY1");
+	skyflatnum = R_FlatNumForNameB("F_SKY1");
 }
 
 

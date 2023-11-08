@@ -440,8 +440,6 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == 65535) { // -1 case. was thing for single sector maps?
-			// todo inline p_crosssubsector here?
-			I_Error("blah crosssub 65535");
 			return P_CrossSubsector(0);
 		} else {
 			return P_CrossSubsector(bspnum&(~NF_SUBSECTOR));
@@ -456,8 +454,8 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 	if (side == 2) {
 		side = 0;	// an "on" should cross both sides
 	}
-	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
-	bsp = &nodes[bspnum];
+	//nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
+	//bsp = &nodes[bspnum];
 
 	if (!P_CrossBSPNode(bsp->children[side])) {
 		return false;
@@ -471,8 +469,8 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 		// the line doesn't touch the other side
 		return true;
     }
-	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
-	bsp = &nodes[bspnum];
+	//nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
+	//bsp = &nodes[bspnum];
 
     // cross the ending side		
     return P_CrossBSPNode (bsp->children[side^1]);
@@ -530,7 +528,7 @@ P_CheckSight
 
 	
     // Check in REJECT table.
-    if (((byte*) Z_LoadBytesFromEMS(rejectmatrixRef)) [bytenum]&bitnum) {
+	if (((byte*)Z_LoadBytesFromEMS(rejectmatrixRef))[bytenum] & bitnum) {
 
 		// can't possibly be connected
 		return false;	

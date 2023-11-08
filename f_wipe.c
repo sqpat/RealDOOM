@@ -257,6 +257,38 @@ wipe_StartScreen
     return 0;
 }
 
+
+
+
+//
+// V_DrawBlock
+// Draw a linear block of pixels into the view buffer.
+//
+void
+V_DrawBlock
+(int16_t		x,
+	int16_t		y,
+	int16_t		width,
+	int16_t		height,
+	byte*		src)
+{
+	byte*	dest;
+
+
+	V_MarkRect(x, y, width, height);
+
+	dest = screen0 + y * SCREENWIDTH + x;
+
+	while (height--)
+	{
+		memcpy(dest, src, width);
+		src += width;
+		dest += SCREENWIDTH;
+	}
+}
+
+
+
 int16_t
 wipe_EndScreen
 ( int16_t	x,

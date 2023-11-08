@@ -42,8 +42,6 @@
 // status bar height at bottom of screen
 #define SBARHEIGHT		32
 
-#define IGNORE_PLANAR_ASM 1
-
 //
 // All drawing to the view buffer is accomplished in this file.
 // The other refresh files only know about ccordinates,
@@ -101,7 +99,6 @@ fixed_t			dc_texturemid;
 byte*			dc_source;		
 
 
-#if IGNORE_PLANAR_ASM
 //
 // A column is a vertical slice/span from a wall texture that,
 //  given the DOOM style restrictions on the view orientation,
@@ -144,31 +141,7 @@ void R_DrawColumn (void)
 
 #ifndef	SKIP_DRAW
 		*dest = dc_colormap[dc_source[frac.h.intbits & 127]];
-#endif
-		/*
-		I_Error("values... %li %i %i,    %li %li %i %i %i %i %li %li %i", 
-			frac.w, frac.h.intbits, frac.h.fracbits,
-			dc_iscale, dc_texturemid, dc_yh, dc_yl, dc_x, centery, fracstep, destview, count);
-			*/
-
-// 16 bit			
-// 
-// -11141127 -171 -7,     16777215 -11141127, 84 84 0  84 16777215 -1610596352 0
-// 941849     14  24345,  56664    5701625   131 0  63 84 56664    671744      131
-
-
-
-/*
-		I_Error("values... are they te same?\n %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu\n %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu",
-			dc_colormap[dc_source[0]], dc_colormap[dc_source[1]], dc_colormap[dc_source[2]], dc_colormap[dc_source[3]],
-			dc_colormap[dc_source[4]], dc_colormap[dc_source[5]], dc_colormap[dc_source[6]], dc_colormap[dc_source[7]],
-		//);
-
-		//I_Error("values... are they te same? %hhu %hhu %hhu %hhu %hhu %hhu %hhu %hhu",
-			dc_source[0], dc_source[1], dc_source[2], dc_source[3],
-			dc_source[4], dc_source[5], dc_source[6], dc_source[7]
-		);
-		*/
+#endif  
         dest += SCREENWIDTH/4;
         frac.w += fracstep;
         
@@ -216,8 +189,7 @@ void R_DrawColumnLow (void)
 	} while (count--);
 }
 
-#endif
-
+ 
 
 //
 // Spectre/Invisibility.
@@ -465,39 +437,6 @@ void R_DrawSpanLow(void)
 		} while (countp--);
 	}
 }
-
-//
-// R_InitBuffer 
-// Creats lookup tables that avoid
-//  multiplies and other hazzles
-//  for getting the framebuffer address
-//  of a pixel to draw.
-//
-void
-R_InitBuffer
-( int16_t		width,
-  int16_t		height ) 
-{ 
-    int16_t		i; 
-
-    // Handle resize,
-    //  e.g. smaller view windows
-    //  with border and/or status bar.
-    viewwindowx = (SCREENWIDTH-width) >> 1; 
-
-    // Column offset. For windows.
-    for (i=0 ; i<width ; i++) 
-	columnofs[i] = viewwindowx + i;
-
-    // Samw with base row offset.
-    if (width == SCREENWIDTH) 
-	viewwindowy = 0; 
-    else 
-	viewwindowy = (SCREENHEIGHT-SBARHEIGHT-height) >> 1; 
-
-} 
- 
- 
 
 
 //

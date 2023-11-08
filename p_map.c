@@ -167,6 +167,12 @@ P_TeleportMove
     yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
     yh = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
 
+
+	if (xl < 0) xl = 0;
+	if (yl < 0) yl = 0;
+	if (xh >= bmapwidth) xh = bmapwidth - 1;
+	if (yh >= bmapheight) yh = bmapheight - 1;
+
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
 			if (!P_BlockThingsIterator(bx, by, PIT_StompThing)) {
@@ -534,7 +540,10 @@ P_CheckPosition
 	yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 	yh = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 
-
+	if (xl < 0) xl = 0;
+	if (yl < 0) yl = 0;
+	if (xh >= bmapwidth) xh = bmapwidth - 1;
+	if (yh >= bmapheight) yh = bmapheight - 1;
 
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
@@ -552,6 +561,12 @@ P_CheckPosition
 	xh = (tmbbox[BOXRIGHT].h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
 	yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 	yh = (tmbbox[BOXTOP].h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
+
+	if (xl < 0) xl = 0;
+	if (yl < 0) yl = 0;
+	if (xh >= bmapwidth) xh = bmapwidth - 1;
+	if (yh >= bmapheight) yh = bmapheight - 1;
+
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
 
@@ -1549,6 +1564,11 @@ P_RadiusAttack
 	bombsourceRef = sourceRef;
 	bombdamage = damage;
 
+
+	if (xl < 0) xl = 0;
+	if (yl < 0) yl = 0;
+	if (xh >= bmapwidth) xh = bmapwidth - 1;
+	if (yh >= bmapheight) yh = bmapheight - 1;
 	for (y = yl; y <= yh; y++) {
 		for (x = xl; x <= xh; x++) {
 			P_BlockThingsIterator(x, y, PIT_RadiusAttack);
@@ -1650,18 +1670,23 @@ P_ChangeSector
     int16_t		x;
     int16_t		y;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-	int16_t blockleft = sectors[secnum].blockbox[BOXLEFT];
-	int16_t blockright = sectors[secnum].blockbox[BOXRIGHT];
-	int16_t blocktop = sectors[secnum].blockbox[BOXTOP];
-	int16_t blockbottom = sectors[secnum].blockbox[BOXBOTTOM];
+	int16_t xl = sectors[secnum].blockbox[BOXLEFT];
+	int16_t xh = sectors[secnum].blockbox[BOXRIGHT];
+	int16_t yh = sectors[secnum].blockbox[BOXTOP];
+	int16_t yl = sectors[secnum].blockbox[BOXBOTTOM];
 
 
     nofit = false;
     crushchange = crunch;
 
+
+	if (xl < 0) xl = 0;
+	if (yl < 0) yl = 0;
+	if (xh >= bmapwidth) xh = bmapwidth - 1;
+	if (yh >= bmapheight) yh = bmapheight - 1;
     // re-check heights for all things near the moving sector
-	for (x = blockleft; x <= blockright; x++) {
-		for (y = blockbottom; y <= blocktop; y++) {
+	for (x = xl; x <= xh; x++) {
+		for (y = yl; y <= yh; y++) {
 				P_BlockThingsIterator(x, y, PIT_ChangeSector); {
 			}
 		}

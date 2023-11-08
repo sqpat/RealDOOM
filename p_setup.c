@@ -277,6 +277,36 @@ void P_LoadSubsectors(int16_t lump)
 
 
 //
+// R_FlatNumForName
+// Retrieval, get a flat number for a flat name.
+//
+// note this function got duped across different overlays, but this ends up reducing overall conventional memory use
+uint8_t R_FlatNumForNameC(int8_t* name)
+{
+	int16_t         i;
+	int8_t        namet[9];
+
+	i = W_CheckNumForName(name);
+
+#ifdef CHECK_FOR_ERRORS
+	if (i == -1)
+	{
+		namet[8] = 0;
+		memcpy(namet, name, 8);
+		I_Error("\nR_FlatNumForName: %s not found", namet);
+	}
+
+	if (i - firstflat > 255) {
+		I_Error("Flat too big %i %i", i, firstflat);
+	}
+#endif
+
+	return (uint8_t)(i - firstflat);
+}
+
+
+
+//
 // P_LoadSectors
 //
 void P_LoadSectors(int16_t lump)
@@ -316,8 +346,8 @@ void P_LoadSectors(int16_t lump)
 		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
-		ss->floorpic = R_FlatNumForName(ms.floorpic);
-		ss->ceilingpic = R_FlatNumForName(ms.ceilingpic);
+		ss->floorpic = R_FlatNumForNameC(ms.floorpic);
+		ss->ceilingpic = R_FlatNumForNameC(ms.ceilingpic);
 		ss->lightlevel = (ms.lightlevel);
 		ss->special = (ms.special);
 		ss->tag = (convertedtag);
@@ -739,6 +769,8 @@ void P_LoadLineDefs(int16_t lump)
 	Z_FreeEMS(dataRef);
 }
 
+uint8_t     R_TextureNumForNameB(int8_t* name);
+
 
 //
 // P_LoadSideDefs
@@ -785,9 +817,9 @@ void P_LoadSideDefs(int16_t lump)
 
 		// side i = 225 textop "bigdoor4-" not found??
 
-		toptex = R_TextureNumForName(texnametop);
-		bottex = R_TextureNumForName(texnamebot);
-		midtex = R_TextureNumForName(texnamemid);
+		toptex = R_TextureNumForNameB(texnametop);
+		bottex = R_TextureNumForNameB(texnamebot);
+		midtex = R_TextureNumForNameB(texnamemid);
 		
 		// sides gets unloaded by the above calls, and theres not enough room in ems to 
 		// hold it in memory in the worst case alongside data
@@ -987,6 +1019,9 @@ void P_GroupLines(void)
 
 
 }
+
+
+
 
 
 

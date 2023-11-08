@@ -47,10 +47,9 @@
 
 
 
-#define MINFRAGMENT             64
-#define EMS_MINFRAGMENT         32
+#define MINFRAGMENT         32
 // we dont make many conventional allocations, only a small number of important ones
-#define CONVENTIONAL_ALLOCATION_LIST_SIZE 16
+#define CONVENTIONAL_ALLOCATION_LIST_SIZE 12
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 0x10000L
 
@@ -1611,7 +1610,7 @@ Z_MallocEMSWithBackRef
 	// In this case, PAGE FRAME SIZE is ok/expected.
 
 
-	if (extra > EMS_MINFRAGMENT)
+	if (extra > MINFRAGMENT)
 	{
 
 

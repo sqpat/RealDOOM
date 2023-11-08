@@ -82,6 +82,80 @@ extern boolean         mousearray[4];
 // The sky texture to be used instead of the F_SKY1 dummy.
 extern  uint8_t     skytexture;
 
+
+typedef struct
+{
+	// Block origin (allways UL),
+	// which has allready accounted
+	// for the internal origin of the patch.
+	int16_t         originx;
+	int16_t         originy;
+	int16_t         patch; // lump num
+} texpatch_t;
+
+typedef struct
+{
+	// Keep name for switch changing, etc.
+	int8_t        name[8];
+	// width and height max out at 256 and are never 0. we store as real size -  1 and add 1 whenever we readd it
+	uint8_t       width;
+	uint8_t       height;
+
+	// All the patches[patchcount]
+	//  are drawn back to front into the cached texture.
+	uint8_t       patchcount;
+	texpatch_t  patches[1];
+
+} texture_t;
+extern int16_t             numtextures;
+extern MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
+
+
+// R_CheckTextureNumForName
+// Check whether texture is available.
+// Filter out NoTexture indicator.
+//
+uint8_t     R_CheckTextureNumForNameB(int8_t *name)
+{
+	uint8_t         i;
+	texture_t* texture;
+	// "NoTexture" marker.
+	if (name[0] == '-')
+		return 0;
+
+
+	for (i = 0; i < numtextures; i++) {
+		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]);
+		//printf("texname %s", texture->name);
+				//I_Error("found it? %i %i %s", i, textures[i], texture->name);
+
+
+
+		if (!strncasecmp(texture->name, name, 8)) {
+			return i;
+		}
+	}
+	return BAD_TEXTURE;
+}
+
+
+
+//
+// R_TextureNumForName
+// Calls R_CheckTextureNumForName,
+//  aborts with error message.
+// 
+uint8_t     R_TextureNumForNameB(int8_t* name)
+{
+	uint8_t         i = R_CheckTextureNumForNameB(name);
+
+	if (i == BAD_TEXTURE) {
+		I_Error("\nR_TextureNumForName: %s not found %li %li %li", name, numreads, pageins, pageouts);
+	}
+	return i;
+}
+
+
 void G_DoLoadLevel(void)
 {
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
@@ -89,12 +163,12 @@ void G_DoLoadLevel(void)
 	// depending on the current episode, and the game version.
 	if (commercial)
 	{
-		skytexture = R_TextureNumForName("SKY3");
+		skytexture = R_TextureNumForNameB("SKY3");
 		if (gamemap < 12)
-			skytexture = R_TextureNumForName("SKY1");
+			skytexture = R_TextureNumForNameB("SKY1");
 		else
 			if (gamemap < 21)
-				skytexture = R_TextureNumForName("SKY2");
+				skytexture = R_TextureNumForNameB("SKY2");
 	}
 #endif
 
@@ -215,27 +289,27 @@ G_InitNew
 	// set the sky map for the episode
 	if (commercial)
 	{
-		skytexture = R_TextureNumForName("SKY3");
+		skytexture = R_TextureNumForNameB("SKY3");
 		if (gamemap < 12)
-			skytexture = R_TextureNumForName("SKY1");
+			skytexture = R_TextureNumForNameB("SKY1");
 		else
 			if (gamemap < 21)
-				skytexture = R_TextureNumForName("SKY2");
+				skytexture = R_TextureNumForNameB("SKY2");
 	}
 	else
 		switch (episode)
 		{
 		case 1:
-			skytexture = R_TextureNumForName("SKY1");
+			skytexture = R_TextureNumForNameB("SKY1");
 			break;
 		case 2:
-			skytexture = R_TextureNumForName("SKY2");
+			skytexture = R_TextureNumForNameB("SKY2");
 			break;
 		case 3:
-			skytexture = R_TextureNumForName("SKY3");
+			skytexture = R_TextureNumForNameB("SKY3");
 			break;
 		case 4:       // Special Edition sky
-			skytexture = R_TextureNumForName("SKY4");
+			skytexture = R_TextureNumForNameB("SKY4");
 			break;
 		}
 

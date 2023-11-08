@@ -235,11 +235,6 @@ R_PointOnSegSide
 } 
 
 
-
-// todo is this faster for 16 bit?
-#define SlopeDiv(num, den) ((den < 512) ? SLOPERANGE : min((num << 3) / (den >> 8), SLOPERANGE))
-
-
 //
 // R_PointToAngle
 // To get a global angle from cartesian coordinates,
@@ -547,74 +542,6 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 
  
 
-//
-// R_InitTextureMapping
-//
-void R_InitTextureMapping (void)
-{
-    int16_t			i;
-    int16_t			x;
-    fixed_t_union	t;
-	fixed_t		focallength;
-	fixed_t_union		temp;
-    
-    // Use tangent table to generate viewangletox:
-    //  viewangletox will give the next greatest x
-    //  after the view angle.
-    //
-    // Calc focallength
-    //  so FIELDOFVIEW angles covers SCREENWIDTH.
-    focallength = FixedDiv (centerxfrac,
-			    finetangent(FINEANGLES/4+FIELDOFVIEW/2) );
-	
-    for (i=0 ; i<FINEANGLES/2 ; i++) {
-		if (finetangent(i) > FRACUNIT*2)
-			t.h.intbits = -1;
-		else if (finetangent(i) < -FRACUNIT*2)
-			t.h.intbits = viewwidth+1;
-		else {
-			t.w = FixedMul (finetangent(i), focallength);
-			t.w = (centerxfrac - t.w+FRACUNIT-1);
-		
-			if (t.h.intbits < -1)
-				t.h.intbits = -1;
-			else if (t.h.intbits>viewwidth+1)
-				t.h.intbits = viewwidth+1;
-		}
-		viewangletox[i] = t.h.intbits;
-    }
-    
-    // Scan viewangletox[] to generate xtoviewangle[]:
-    //  xtoviewangle will give the smallest view angle
-    //  that maps to x.	
-    for (x=0;x<=viewwidth;x++) {
-        i = 0;
-        while (viewangletox[i]>x)
-            i++;
-        xtoviewangle[x] = MOD_FINE_ANGLE((i)-FINE_ANG90);
-    }
-    
-    // Take out the fencepost cases from viewangletox.
-    for (i=0 ; i<FINEANGLES/2 ; i++)
-    {
-	// am i blind or is t unused here?
-	t.w = FixedMul (finetangent(i), focallength);
-	t.w = centerx - t.w;
-	
-	if (viewangletox[i] == -1)
-	    viewangletox[i] = 0;
-	else if (viewangletox[i] == viewwidth+1)
-	    viewangletox[i]  = viewwidth;
-    }
-	
-	temp.h.fracbits = 0;
-	temp.h.intbits = xtoviewangle[0];
-	temp.h.intbits <<= 3;
-	clipangle = temp.w;
-	fieldofview = 2 * clipangle;
-}
-
-
 
 //
 // R_SetViewSize
@@ -638,108 +565,6 @@ R_SetViewSize
 }
 
 #define DISTMAP		2
-
-//
-// R_ExecuteSetViewSize
-//
-void R_ExecuteSetViewSize (void)
-{
-	fixed_t	cosadj;
-	fineangle_t	an;
-    fixed_t	dy;
-    int16_t		i;
-    int16_t		j;
-    int8_t		level;
-    int8_t		startmap; 	
-	fixed_t_union temp;
-	temp.h.fracbits = 0;
-    setsizeneeded = false;
-
-    if (setblocks == 11) {
-        scaledviewwidth = SCREENWIDTH;
-        viewheight = SCREENHEIGHT;
-    } else {
-        scaledviewwidth = setblocks*32;
-        viewheight = (setblocks*168/10)&~7;
-    }
-    
-    detailshift = setdetail;
-    viewwidth = scaledviewwidth>>detailshift;
-	
-    centery = viewheight/2;
-    centerx = viewwidth/2;
-	temp.h.intbits = centerx;
-	centerxfrac = temp.w;
-	temp.h.intbits = centery;
-	centeryfrac = temp.w;
-    projection = centerxfrac;
-
-    if (!detailshift) {
-		colfunc = basecolfunc = R_DrawColumn;
-		fuzzcolfunc = R_DrawFuzzColumn;
-		spanfunc = R_DrawSpan;
-    } else {
-		colfunc = basecolfunc = R_DrawColumnLow;
-		fuzzcolfunc = R_DrawFuzzColumn;
-		spanfunc = R_DrawSpanLow;
-    }
-
-    R_InitBuffer (scaledviewwidth, viewheight);
-	
-    R_InitTextureMapping ();
-    
-    // psprite scales
-    pspritescale = FRACUNIT*viewwidth/SCREENWIDTH;
-    pspriteiscale = FRACUNIT*SCREENWIDTH/viewwidth;
-    
-    // thing clipping
-	for (i = 0; i < viewwidth; i++) {
-		screenheightarray[i] = viewheight;
-	}
-
-	// 168 viewheight
-    // planes
-	for (i=0 ; i<viewheight ; i++) {
-		temp.h.intbits = (i - viewheight / 2);
-		dy = (temp.w)+FRACUNIT/2;
-		dy = labs(dy);
-		temp.h.intbits = (viewwidth << detailshift) / 2;
-		yslope[i] = FixedDiv ( temp.w, dy);
-		//yslope[i] = FixedDiv((viewwidth << detailshift) / 2 * FRACUNIT, dy);
-
-    }
-	// 320 viewwidth
-
-    for (i=0 ; i<viewwidth ; i++) {
-		an = xtoviewangle[i];
-
-
-		cosadj = labs(finecosine(an));
-
-		distscale[i] = FixedDiv (FRACUNIT,cosadj); // divide by zero in 16 bit mode here.
-    }
-
-
-    
-    // Calculate the light levels to use
-    //  for each level / scale combination.
-    for (i=0 ; i< LIGHTLEVELS ; i++) {
-		startmap = ((LIGHTLEVELS-1-i)*2)*NUMCOLORMAPS/LIGHTLEVELS;
-		for (j=0 ; j<MAXLIGHTSCALE ; j++) {
-			level = startmap - j*SCREENWIDTH/(viewwidth<<detailshift)/DISTMAP;
-	    
-			if (level < 0) {
-				level = 0;
-			}
-
-			if (level >= NUMCOLORMAPS) {
-				level = NUMCOLORMAPS - 1;
-			}
-
-			scalelight[i][j] = colormaps + level*256;
-		}
-    }
-}
 
 
 

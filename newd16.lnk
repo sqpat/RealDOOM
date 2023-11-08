@@ -74,6 +74,7 @@ file z_init.obj
 #file st_setup.obj
 #file hu_setup.obj
 #file g_setup.obj
+#file r_setup.obj
 
 # # begin overlay area
 begin
@@ -86,12 +87,17 @@ section file i_quit.obj
 section file p_saveg.obj
 #	intermission
 section file wi_stuff.obj
-#	alternate setup code
+#	game init code
 section file r_init.obj
-#	alternate setup code
+#	more game init code
 section file d_init.obj, w_init.obj, i_init.obj, st_init.obj, p_init.obj
 #	level/game setup
-section file p_setup.obj, f_wipe.obj, i_main.obj, st_setup.obj, hu_setup.obj, g_setup.obj
+section file p_setup.obj, f_wipe.obj, i_main.obj, g_setup.obj, r_setup.obj
+#   more level/game setup
+section file st_setup.obj, hu_setup.obj
 #	ingame
 section file am_map.obj
+#   fullscreen drawing code
+section file v_extra.obj
+
 end

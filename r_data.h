@@ -41,23 +41,10 @@ R_GetColumn
 void R_InitData (void);
 void R_PrecacheLevel (void);
 
-
-// Retrieval.
-// Floor/ceiling opaque texture tiles,
-// lookup by name. For animation?
-uint8_t R_FlatNumForName (int8_t* name);
+ 
 
 
-// Called by P_Ticker for switches and animations,
-// returns the texture number for the texture name.
-//uint8_t R_TextureNumForName2(int8_t *name, int8_t*file, int16_t line);
-//#define R_TextureNumForName(a) R_TextureNumForName2(a, __FILE__, __LINE__)
 
-uint8_t R_TextureNumForName(int8_t *name);
-
-//int16_t R_TextureNumForName (int8_t *name);
-
-uint8_t R_CheckTextureNumForName (int8_t *name);
 void R_EraseCompositeCache(uint8_t texnum);
 
 

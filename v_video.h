@@ -105,15 +105,6 @@ V_DrawPatchDirect
   int16_t		y,
   patch_t*	patch );
 
-
-// Draw a linear block of pixels into the view buffer.
-void
-V_DrawBlock
-( int16_t		x,
-  int16_t		y,
-  int16_t		width,
-  int16_t		height,
-  byte*		src );
  
 
 void
