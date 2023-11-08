@@ -576,6 +576,10 @@ void S_StartSoundAtVolume
 void S_StartSoundFromRef(MEMREF memref,	sfxenum_t		sfx_id)  {
 	
 	mobj_t* mobj;
+	
+	if (sfx_id == 0) {
+		return;
+	}
 	if (memref) {
 		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(memref);
 		 
@@ -587,7 +591,9 @@ void S_StartSoundFromRef(MEMREF memref,	sfxenum_t		sfx_id)  {
 
 void S_StartSound(void*		origin, sfxenum_t		sfx_id) {
 	mobj_t* mobj = (mobj_t*)origin;
-
+	if (sfx_id == 0) {
+		return;
+	}
 	if (mobj) {
 		S_StartSoundAtVolume(NULL_MEMREF, mobj->x, mobj->y, sfx_id, snd_SfxVolume);
 	}

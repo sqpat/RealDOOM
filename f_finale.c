@@ -527,65 +527,61 @@ void F_CastTicker (void)
     int16_t		sfx;
 	
     if (--casttics > 0)
-	return;			// not time to change state yet
+		return;			// not time to change state yet
 		
-    if (caststate->tics == -1 || caststate->nextstate == S_NULL)
-    {
-	// switch from deathstate to next monster
-	castnum++;
-	castdeath = false;
-	if (castorder[castnum].nameindex == -1)
-	    castnum = 0;
-	if (mobjinfo[castorder[castnum].type].seesound)
-	    S_StartSound (NULL, getSeeState(castorder[castnum].type));
-	caststate = &states[getSeeState(castorder[castnum].type)];
-	castframes = 0;
-    }
-    else
-    {
-	// just advance to next state in animation
-	if (caststate == &states[S_PLAY_ATK1])
-	    goto stopattack;	// Oh, gross hack!
-	st = caststate->nextstate;
-	caststate = &states[st];
-	castframes++;
+    if (caststate->tics == -1 || caststate->nextstate == S_NULL) {
+		// switch from deathstate to next monster
+		castnum++;
+		castdeath = false;
+		if (castorder[castnum].nameindex == -1)
+			castnum = 0;
 	
-	// sound hacks....
-	switch (st)
-	{
-	  case S_PLAY_ATK1:	sfx = sfx_dshtgn; break;
-	  case S_POSS_ATK2:	sfx = sfx_pistol; break;
-	  case S_SPOS_ATK2:	sfx = sfx_shotgn; break;
-	  case S_VILE_ATK2:	sfx = sfx_vilatk; break;
-	  case S_SKEL_FIST2:	sfx = sfx_skeswg; break;
-	  case S_SKEL_FIST4:	sfx = sfx_skepch; break;
-	  case S_SKEL_MISS2:	sfx = sfx_skeatk; break;
-	  case S_FATT_ATK8:
-	  case S_FATT_ATK5:
-	  case S_FATT_ATK2:	sfx = sfx_firsht; break;
-	  case S_CPOS_ATK2:
-	  case S_CPOS_ATK3:
-	  case S_CPOS_ATK4:	sfx = sfx_shotgn; break;
-	  case S_TROO_ATK3:	sfx = sfx_claw; break;
-	  case S_SARG_ATK2:	sfx = sfx_sgtatk; break;
-	  case S_BOSS_ATK2:
-	  case S_BOS2_ATK2:
-	  case S_HEAD_ATK2:	sfx = sfx_firsht; break;
-	  case S_SKULL_ATK2:	sfx = sfx_sklatk; break;
-	  case S_SPID_ATK2:
-	  case S_SPID_ATK3:	sfx = sfx_shotgn; break;
-	  case S_BSPI_ATK2:	sfx = sfx_plasma; break;
-	  case S_CYBER_ATK2:
-	  case S_CYBER_ATK4:
-	  case S_CYBER_ATK6:	sfx = sfx_rlaunc; break;
-	  case S_PAIN_ATK3:	sfx = sfx_sklatk; break;
-	  default: sfx = 0; break;
+		S_StartSound (NULL, getSeeState(castorder[castnum].type));
+		caststate = &states[getSeeState(castorder[castnum].type)];
+		castframes = 0;
 	}
-		
-	if (sfx)
-	    S_StartSound (NULL, sfx);
-    }
-	
+	else {
+		// just advance to next state in animation
+		if (caststate == &states[S_PLAY_ATK1])
+			goto stopattack;	// Oh, gross hack!
+		st = caststate->nextstate;
+		caststate = &states[st];
+		castframes++;
+
+		// sound hacks....
+		switch (st)
+		{
+		case S_PLAY_ATK1:	sfx = sfx_dshtgn; break;
+		case S_POSS_ATK2:	sfx = sfx_pistol; break;
+		case S_SPOS_ATK2:	sfx = sfx_shotgn; break;
+		case S_VILE_ATK2:	sfx = sfx_vilatk; break;
+		case S_SKEL_FIST2:	sfx = sfx_skeswg; break;
+		case S_SKEL_FIST4:	sfx = sfx_skepch; break;
+		case S_SKEL_MISS2:	sfx = sfx_skeatk; break;
+		case S_FATT_ATK8:
+		case S_FATT_ATK5:
+		case S_FATT_ATK2:	sfx = sfx_firsht; break;
+		case S_CPOS_ATK2:
+		case S_CPOS_ATK3:
+		case S_CPOS_ATK4:	sfx = sfx_shotgn; break;
+		case S_TROO_ATK3:	sfx = sfx_claw; break;
+		case S_SARG_ATK2:	sfx = sfx_sgtatk; break;
+		case S_BOSS_ATK2:
+		case S_BOS2_ATK2:
+		case S_HEAD_ATK2:	sfx = sfx_firsht; break;
+		case S_SKULL_ATK2:	sfx = sfx_sklatk; break;
+		case S_SPID_ATK2:
+		case S_SPID_ATK3:	sfx = sfx_shotgn; break;
+		case S_BSPI_ATK2:	sfx = sfx_plasma; break;
+		case S_CYBER_ATK2:
+		case S_CYBER_ATK4:
+		case S_CYBER_ATK6:	sfx = sfx_rlaunc; break;
+		case S_PAIN_ATK3:	sfx = sfx_sklatk; break;
+		default: sfx = 0; break;
+		}
+
+		S_StartSound(NULL, sfx);
+	}
     if (castframes == 12)
     {
 	// go into attack frame
@@ -620,7 +616,7 @@ void F_CastTicker (void)
 	
     casttics = caststate->tics;
     if (casttics == -1)
-	casttics = 15;
+		casttics = 15;
 }
 
 
@@ -642,7 +638,6 @@ boolean F_CastResponder (event_t* ev)
     casttics = caststate->tics;
     castframes = 0;
     castattacking = false;
-    if (mobjinfo[castorder[castnum].type].deathsound)
 	S_StartSound (NULL, mobjinfo[castorder[castnum].type].deathsound);
 	
     return true;

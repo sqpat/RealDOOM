@@ -844,9 +844,7 @@ void A_Chase (MEMREF actorRef)
     // check for melee attack
     if (getMeleeState(actor->type) && P_CheckMeleeRange (actorRef)) {
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-		if (getAttackSound(actor->type)) {
-			S_StartSoundFromRef(actorRef, getAttackSound(actor->type));
-		}
+		S_StartSoundFromRef(actorRef, getAttackSound(actor->type));
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
  		P_SetMobjState (actorRef, getMeleeState(actor->type));
 
@@ -894,9 +892,7 @@ void A_Chase (MEMREF actorRef)
 	}
 
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-    if (getActiveSound(actor->type) && P_Random () < 3) {
-		S_StartSoundFromRef(actorRef, getActiveSound(actor->type));
-    }
+	S_StartSoundFromRef(actorRef, getActiveSound(actor->type));
 
 }
 
@@ -1882,8 +1878,7 @@ void A_XScream (MEMREF actorRef)
 void A_Pain (MEMREF actorRef)
 {
 	mobj_t* actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-    if (getPainSound(actor->type))
-		S_StartSoundFromRef(actorRef, getPainSound(actor->type));
+	S_StartSoundFromRef(actorRef, getPainSound(actor->type));
 }
 
 
