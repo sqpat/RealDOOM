@@ -1202,32 +1202,32 @@ sfxenum_t getPainSound(uint8_t id) {
 		case 1:
 		case 2:
 		case 5:
-		case 9:
 		case 10:
+		case 11:
+		case 23:
 			return sfx_popain;
 		case 3:
 			return sfx_vipain;
 		case 8:
 			return sfx_mnpain;
 
-		case 11:
 		case 12:
 		case 13:
 		case 14:
-		case 16:
+		case 15:
+
 		case 17:
 		case 18:
 		case 19:
 		case 20:
+		case 21:
 			return sfx_dmpain;
 
-		case 21:
-			return sfx_pepain;
 		case 22:
-			return sfx_popain;
-		case 23:
-			return sfx_keenpn;
+			return sfx_pepain;
 		case 24:
+			return sfx_keenpn;
+		case 25:
 			return sfx_bospn;
 		default:
 			return sfx_None;
