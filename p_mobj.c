@@ -531,6 +531,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		}
     } 
 
+
 	temp.h.fracbits = 0;
 	// temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
@@ -553,12 +554,11 @@ void P_MobjThinker (MEMREF mobjRef) {
 		// you can cycle through multiple states in a tic
 		if (!mobj->tics) {
 			mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
-
 			if (!P_SetMobjState(mobjRef, mobj->state->nextstate)) {
 
 				return;		// freed itself
 			}
-			mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+
 			
 
 		}
@@ -586,6 +586,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		}
 		P_NightmareRespawn (mobjRef);
     }
+
 
 
 }
@@ -940,7 +941,8 @@ P_SpawnPlayerMissile
 
 boolean
 P_SetMobjState2
-(MEMREF mobjRef, statenum_t state, int8_t* file, int32_t line)
+(MEMREF mobjRef, statenum_t state)
+//(MEMREF mobjRef, statenum_t state, int8_t* file, int32_t line)
 {
 	state_t*	st;
 	mobj_t*	mobj;

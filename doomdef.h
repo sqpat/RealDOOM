@@ -65,7 +65,7 @@ enum { VERSION =  109 };
 #endif
 
 // Print player fields by tic to file. useful for debugging 16 vs 32 bit demo playback
-#define DEBUGLOG_TO_FILE
+//#define DEBUGLOG_TO_FILE
 
 // Error checking. recommended ON during development. however, turning this off makes the binary like 10-12k smaller
 //#define CHECK_FOR_ERRORS

@@ -548,7 +548,7 @@ void D_DoomLoop (void)
 //			lasttick = gametic;
 				
 			//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
-			SAVEDUNIT = Z_LoadThinkerBytesFromEMS(1483); // 1457
+			SAVEDUNIT = &playerMobj;// Z_LoadThinkerBytesFromEMS(1483); // 1457
 			//SAVEDUNIT = Z_LoadThinkerBytesFromEMS(PLAYER_MOBJ_REF);
 			if (gametic == 1) {
 				fp = fopen("debuglog.txt", "w"); // clear old file

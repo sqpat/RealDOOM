@@ -104,8 +104,10 @@ P_SpawnMobj
   mobjtype_t	type );
 
 void 	P_RemoveMobj (MEMREF th);
-boolean	P_SetMobjState2(MEMREF mobj, statenum_t state, int8_t* file, int32_t line);
-#define	P_SetMobjState(a, b) P_SetMobjState2(a, b, __FILE__, __LINE__)
+//boolean	P_SetMobjState2(MEMREF mobj, statenum_t state, int8_t* file, int32_t line);
+//#define	P_SetMobjState(a, b) P_SetMobjState2(a, b, __FILE__, __LINE__)
+boolean	P_SetMobjState2(MEMREF mobj, statenum_t state);
+#define	P_SetMobjState(a, b) P_SetMobjState2(a, b)
 void 	P_MobjThinker (MEMREF memref);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);

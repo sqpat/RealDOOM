@@ -665,9 +665,10 @@ void A_Look (MEMREF actorRef)
 	MEMREF targRef;
 	mobj_t* actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 	int16_t actorsecnum = actor->secnum;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-
+	sector_t* sectors;
 	actor->threshold = 0;	// any shot will wake up
+	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
+
 
 	#ifdef RANGECHECK
 		if (actorsecnum > numsectors) {
@@ -689,7 +690,7 @@ void A_Look (MEMREF actorRef)
 			if (actor->flags & MF_AMBUSH)
 			{
 
-				if (P_CheckSight(actorRef, actor->targetRef)) {
+				if (P_CheckSight(actorRef, targRef)) {
 
 					goto seeyou;
 				}
@@ -743,7 +744,10 @@ void A_Look (MEMREF actorRef)
     }
 
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-    P_SetMobjState (actorRef, getSeeState(actor->type));
+	if (setval == 1) {
+		setval = 2;
+	}
+	P_SetMobjState (actorRef, getSeeState(actor->type));
 }
 
 
@@ -759,6 +763,7 @@ void A_Chase (MEMREF actorRef)
 	mobj_t*	actorTarget;
 	fixed_t_union temp;
 	fixed_t delta;
+	uint8_t sound;
 
     if (actor->reactiontime)
 		actor->reactiontime--;
@@ -810,24 +815,22 @@ void A_Chase (MEMREF actorRef)
 	}
 
 
+
 	
     if (!actortargetRef || !(actorTarget->flags&MF_SHOOTABLE)) {
 		// look for a new target
 		if (P_LookForPlayers(actorRef, true)) {
 			 
-	
-
 			return; 	// got a new target
 		}
-	 
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 		P_SetMobjState (actorRef, actor->info->spawnstate);
-	 
+
+
 
 		return;
     }
-
-	
+	 
 
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
     // do not attack twice in a row
@@ -845,11 +848,14 @@ void A_Chase (MEMREF actorRef)
     if (getMeleeState(actor->type) && P_CheckMeleeRange (actorRef)) {
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 		S_StartSoundFromRef(actorRef, getAttackSound(actor->type));
+	
+		
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
  		P_SetMobjState (actorRef, getMeleeState(actor->type));
 
 		return;
     }
+	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 
     // check for missile attack
     if (getMissileState(actor->type)) {
@@ -858,7 +864,8 @@ void A_Chase (MEMREF actorRef)
 			&& !fastparm && actor->movecount) {
 		 		goto nomissile;
 		}
-	
+		
+
 		if (!P_CheckMissileRange(actorRef)) {
  			goto nomissile;
 		}
@@ -879,20 +886,22 @@ void A_Chase (MEMREF actorRef)
 	
 	
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-	
+
     // chase towards player
 
- 
+
 	if (--actor->movecount < 0 || !P_Move(actorRef)) {
 		P_NewChaseDir(actorRef);
-
-		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-
 
 	}
 
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-	S_StartSoundFromRef(actorRef, getActiveSound(actor->type));
+
+	// make active sound
+	sound = getActiveSound(actor->type);
+	if (sound && P_Random() < 3) {
+		S_StartSoundFromRef(actorRef, sound);
+	}
 
 }
 
