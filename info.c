@@ -1505,11 +1505,10 @@ statenum_t getPainState(uint8_t id) {
 
 int16_t getSpawnHealth(uint8_t id) {
 	switch (id) {
-
 		case 0:
 		case 18:
 		case 24:
-			return 10;
+			return 100;
 		case 1:
 		case 30:
 			return 20;

@@ -1098,7 +1098,6 @@ PTR_AimTraverse (intercept_t* in)
 		}
 		
 		if (topslope <= bottomslope) {
-			I_Error("caught c %i", setval);
 			return false;		// stop
 		}
 
@@ -1142,10 +1141,6 @@ PTR_AimTraverse (intercept_t* in)
     aimslope = (thingtopslope+thingbottomslope)/2;
     linetargetRef = thRef;
 	
-	if (setval >3 )
-		I_Error("caught i %u %i", linetargetRef, setval);
-		
-
     return false;			// don't go any farther
 }
 

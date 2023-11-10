@@ -62,6 +62,7 @@ GLOBOBJS = &
  p_tick.obj &
  p_user.obj &
  r_init.obj &
+ r_setup.obj &
  r_bsp.obj &
  r_data.obj &
  r_draw.obj &
@@ -71,6 +72,7 @@ GLOBOBJS = &
  r_things.obj &
  w_init.obj &
  w_wad.obj &
+ v_extra.obj &
  v_video.obj &
  z_init.obj &
  z_zone.obj &
@@ -88,6 +90,7 @@ GLOBOBJS = &
  f_wipe.obj &
  info.obj &
  dmx.obj 
+
 
 newdoom.exe : $(GLOBOBJS) i_ibm.obj
  wlink @newdoom.lnk
