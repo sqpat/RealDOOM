@@ -590,7 +590,7 @@ boolean
 P_BlockLinesIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(int16_t) )
+  boolean(*func)(line_t*, int16_t) )
 {
     int16_t			offset;
 	int16_t			index;
@@ -623,7 +623,7 @@ P_BlockLinesIterator
 		}
 		ld->validcount = validcount;
 			
-		if (!func(list)) {
+		if (!func(ld, list)) {
 			return false;
 		}
 		blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
@@ -690,14 +690,13 @@ int32_t		ptflags;
 // Returns true if earlyout and a solid line hit.
 //
 boolean
-PIT_AddLineIntercepts (int16_t linenum)
+PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 {
     int16_t			s1;
     int16_t			s2;
     fixed_t		frac;
     divline_t		dl;
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
-	line_t* ld = &lines[linenum];
+	
 	int16_t linev1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
 	int16_t linev2Offset = ld->v2Offset & VERTEX_OFFSET_MASK;
 	int16_t linedx = ld->dx;

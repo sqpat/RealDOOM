@@ -641,73 +641,7 @@ void G_PlayerReborn ()
 		player.maxammo[i] = maxammo[i];
                  
 }
-
-//
-// G_CheckSpot  
-// Returns false if the player cannot be respawned
-// at the given mapthing_t spot  
-// because something is occupying it 
-//
-void P_SpawnPlayer (mapthing_t* mthing); 
  
-boolean
-G_CheckSpot
-(int16_t           playernum,
-  mapthing_t*   mthing ) 
-{ 
-	angle_t            an;
-	MEMREF				moRef;
-	subsector_t* subsectors;
-	int16_t subsecnum;
-	int16_t secnum;
-	sector_t* sectors;
-    fixed_t_union tempx;
-    fixed_t_union tempy;
-    fixed_t_union tempz;
-        
-    tempx.h.fracbits = 0;
-    tempy.h.fracbits = 0;
-    tempx.h.intbits = mthing->x; 
-    tempy.h.intbits = mthing->y; 
-
-    if (!playerSpawned)
-    {
-        // first spawn of level, before corpses
-		if (playerMobj.x == tempx.w && playerMobj.y == tempy.w)
-			return false;
-        return true;
-    }
-         
-    if (!P_CheckPosition (PLAYER_MOBJ_REF, tempx.w, tempy.w) )
-        return false; 
- 
-    // flush an old corpse if needed 
-    if (bodyqueslot >= BODYQUESIZE) 
-        P_RemoveMobj (bodyque[bodyqueslot%BODYQUESIZE]); 
-    bodyque[bodyqueslot%BODYQUESIZE] = PLAYER_MOBJ_REF; 
-    bodyqueslot++; 
-        
-    // spawn a teleport fog 
-    subsecnum = R_PointInSubsector (tempx.w,tempy.w); 
-	subsectors = (subsector_t*) Z_LoadBytesFromConventional(subsectorsRef);
-
-	secnum = subsectors[subsecnum].secnum;
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-
-    an = ( ANG45 * (mthing->angle/45) ) >> ANGLETOFINESHIFT; 
-    tempz.h.fracbits = 0;
-    // tempz.h.intbits = sectors[secnum].floorheight >> SHORTFLOORBITS;
-    SET_FIXED_UNION_FROM_SHORT_HEIGHT(tempz, sectors[secnum].floorheight);
-    moRef = P_SpawnMobj (tempx.w+20*finecosine(an), tempy.w+20*finesine(an)
-                      , tempz.w
-                      , MT_TFOG); 
-         
-	if (player.viewz != 1) {
-		S_StartSoundFromRef(moRef, sfx_telept);  // don't start sound on first frame 
-	}
-    return true; 
-} 
-
  
  
  

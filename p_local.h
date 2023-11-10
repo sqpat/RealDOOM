@@ -106,14 +106,14 @@ P_SpawnMobj
 void 	P_RemoveMobj (MEMREF th);
 //boolean	P_SetMobjState2(MEMREF mobj, statenum_t state, int8_t* file, int32_t line);
 //#define	P_SetMobjState(a, b) P_SetMobjState2(a, b, __FILE__, __LINE__)
-boolean	P_SetMobjState2(MEMREF mobj, statenum_t state);
-#define	P_SetMobjState(a, b) P_SetMobjState2(a, b)
+boolean	P_SetMobjState2(MEMREF mobjRef, statenum_t state, mobj_t* mobj);
+#define	P_SetMobjState(a, b, c) P_SetMobjState2(a, b, c)
 void 	P_MobjThinker (MEMREF memref);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
-MEMREF P_SpawnMissile (MEMREF source, MEMREF dest, mobjtype_t type);
-void	P_SpawnPlayerMissile (MEMREF source, mobjtype_t type);
+MEMREF P_SpawnMissile (MEMREF sourceRef, MEMREF dest, mobjtype_t type, mobj_t* source);
+void	P_SpawnPlayerMissile (mobjtype_t type);
 
 
 
@@ -168,7 +168,7 @@ extern short_height_t		lowfloor;
 
 void 	P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
-boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(int16_t ) );
+boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_t* ld, int16_t ) );
 boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(MEMREF));
 
 #define PT_ADDLINES		1
@@ -203,10 +203,10 @@ extern short_height_t		tmceilingz;
 
 extern	int16_t		ceilinglinenum;
 
-boolean P_CheckPosition (MEMREF thing, fixed_t x, fixed_t y);
+boolean P_CheckPosition (MEMREF thingRef, fixed_t x, fixed_t y, mobj_t* thing);
 boolean P_TryMove (MEMREF thing, fixed_t x, fixed_t y);
 boolean P_TeleportMove (MEMREF thing, fixed_t x, fixed_t y);
-void	P_SlideMove (MEMREF mo);
+void	P_SlideMove ();
 boolean P_CheckSight (MEMREF t1, MEMREF t2);
 
 

@@ -701,7 +701,7 @@ void R_RenderBSPNode()
 			bspnum = stack_bsp[sp];
 			side = stack_side[sp];
 
-			nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
+			//nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 			bsp = &nodes[bspnum];
 		}
 

@@ -205,13 +205,12 @@ P_TeleportMove
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-boolean PIT_CheckLine (int16_t linenum)
+boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 {
 	mobj_t* tmthing;
 	//int16_t linespecial;
 	//fixed_t linedx; , fixed_t linedy, int16_t linev1Offset, int16_t linev2Offset, int16_t linefrontsecnum, int16_t linebacksecnum, int16_t lineside1, slopetype_t lineslopetype
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
-	line_t* ld = &lines[linenum];
+	
 	slopetype_t lineslopetype = ld->v2Offset & LINE_VERTEX_SLOPETYPE;
 	int16_t linedx = ld->dx;
 	int16_t linedy = ld->dy;
@@ -372,7 +371,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 		tmthing->flags &= ~MF_SKULLFLY;
 		tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
-		P_SetMobjState (tmthingRef, tmthing->info->spawnstate);
+		P_SetMobjState (tmthingRef, tmthing->info->spawnstate, tmthing);
 
 		return false;		// stop moving
     }
@@ -469,7 +468,8 @@ boolean
 P_CheckPosition
 ( MEMREF	thingRef,
   fixed_t	x,
-  fixed_t	y )
+  fixed_t	y,
+	mobj_t* tmthing)
 {
     int16_t			xl;
     int16_t			xh;
@@ -479,13 +479,11 @@ P_CheckPosition
     int16_t			by;
 	subsector_t*	subsectors;
 	int16_t newsubsecnum;
-	mobj_t*			tmthing;
 	int16_t newsubsecsecnum;
 	sector_t* sectors;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
     tmthingRef = thingRef;
-	tmthing = (mobj_t*)Z_LoadThinkerBytesFromEMS(tmthingRef);
     tmflags = tmthing->flags;
 	
     tmx = x;
@@ -613,7 +611,8 @@ P_TryMove
 
 	floatok = false;
 
-	if (!P_CheckPosition(thingRef, x, y)) {
+	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+	if (!P_CheckPosition(thingRef, x, y, thing)) {
 		return false;		// solid wall or thing
 	}
 	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
@@ -714,7 +713,7 @@ boolean P_ThingHeightClip (MEMREF thingRef)
     onfloor = (thing->z == temp.w);
 
 
-    P_CheckPosition (thingRef, thing->x, thing->y);	
+    P_CheckPosition (thingRef, thing->x, thing->y, thing);	
     // what about stranding a monster partially off an edge?
 	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 
@@ -759,8 +758,6 @@ fixed_t		secondslidefrac;
 int16_t		bestslidelinenum;
 int16_t		secondslidelinenum;
 
-MEMREF		slidemoRef;
-
 fixed_t		tmxmove;
 fixed_t		tmymove;
 
@@ -781,7 +778,6 @@ void P_HitSlideLine (int16_t linenum)
     
     fixed_t		movelen;
     fixed_t		newlen;
-	mobj_t* slidemo;
 	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	line_t ld = lines[linenum];
@@ -795,8 +791,8 @@ void P_HitSlideLine (int16_t linenum)
 		tmxmove = 0;
 		return;
     }
-	slidemo = (mobj_t*)Z_LoadThinkerBytesFromEMS(slidemoRef);
-    side = P_PointOnLineSide (slidemo->x, slidemo->y, ld.dx, ld.dy, ld.v1Offset & VERTEX_OFFSET_MASK);
+	
+    side = P_PointOnLineSide (playerMobj.x, playerMobj.y, ld.dx, ld.dy, ld.v1Offset & VERTEX_OFFSET_MASK);
     lineangle = R_PointToAngle2_16 (0,0, ld.dx, ld.dy);
 
     if (side == 1)
@@ -834,8 +830,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
 
     
     if ( ! (li.flags & ML_TWOSIDED) ) {
-		slidemo = (mobj_t*)Z_LoadThinkerBytesFromEMS(slidemoRef);
-		if (P_PointOnLineSide (slidemo->x, slidemo->y, li.dx, li.dy, li.v1Offset & VERTEX_OFFSET_MASK)) {
+ 		if (P_PointOnLineSide (playerMobj.x, playerMobj.y, li.dx, li.dy, li.v1Offset & VERTEX_OFFSET_MASK)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -845,21 +840,20 @@ boolean PTR_SlideTraverse (intercept_t* in)
     // set openrange, opentop, openbottom
 	temp.h.fracbits = 0;
     P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
-	slidemo = (mobj_t*)Z_LoadThinkerBytesFromEMS(slidemoRef);
-	// temp.h.intbits = openrange >> SHORTFLOORBITS;
+ 	// temp.h.intbits = openrange >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openrange);
 
-    if (temp.h.intbits < slidemo->height.h.intbits) // 16 bit okay
+    if (temp.h.intbits < playerMobj.height.h.intbits) // 16 bit okay
 		goto isblocking;		// doesn't fit
 		
 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, opentop);
-    if (temp.w - slidemo->z < slidemo->height.w)
+    if (temp.w - playerMobj.z < playerMobj.height.w)
 		goto isblocking;		// mobj is too high
 
 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openbottom);
-    if (temp.w - slidemo->z > 24*FRACUNIT )
+    if (temp.w - playerMobj.z > 24*FRACUNIT )
 		goto isblocking;		// too big a step up
 
     // this line doesn't block movement
@@ -888,7 +882,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
 //
 // This is a kludgy mess.
 //
-void P_SlideMove (MEMREF moRef)
+void P_SlideMove ()
 {
     fixed_t_union		leadx;
 	fixed_t_union		leady;
@@ -897,30 +891,26 @@ void P_SlideMove (MEMREF moRef)
 	fixed_t		newx;
 	fixed_t		newy;
     int16_t			hitcount;
-	mobj_t* mo;
 	fixed_t_union   temp;
 	fixed_t_union   temp2;
 	fixed_t_union   temp3;
 	fixed_t_union   temp4;
 		
-    slidemoRef = moRef;
-    hitcount = 0;
+     hitcount = 0;
     
   retry:
     if (++hitcount == 3)
 		goto stairstep;		// don't loop forever
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
-	 
 
     // trace along the three leading corners
 	// todo improve the minus cases
 	temp.h.fracbits = 0;
-	temp.h.intbits = mo->radius;
-	leadx.w = mo->x;
-	trailx.w = mo->x;
-	leady.w = mo->y;
-	traily.w = mo->y;
-	if (mo->momx > 0) {
+	temp.h.intbits = playerMobj.radius;
+	leadx.w = playerMobj.x;
+	trailx.w = playerMobj.x;
+	leady.w = playerMobj.y;
+	traily.w = playerMobj.y;
+	if (playerMobj.momx > 0) {
 		leadx.h.intbits += temp.h.intbits;
 		trailx.w -= temp.w;
     } else {
@@ -928,7 +918,7 @@ void P_SlideMove (MEMREF moRef)
 		trailx.h.intbits += temp.h.intbits;
     }
 	
-    if (mo->momy > 0) {
+    if (playerMobj.momy > 0) {
 		leady.h.intbits += temp.h.intbits;
 		traily.w -= temp.w;
     } else {
@@ -941,52 +931,42 @@ void P_SlideMove (MEMREF moRef)
 	
  
 	
-	temp.w = leadx.w + mo->momx;
-	temp2.w = leady.w + mo->momy;
+	temp.w = leadx.w + playerMobj.momx;
+	temp2.w = leady.w + playerMobj.momy;
 	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 	
 	//todo do these mo fields change? if not then pull out momx/momy into locals to avoid extra loads
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
-	temp2.w = leady.w + mo->momy;
-	temp3.w = trailx.w + mo->momx;
+	temp2.w = leady.w + playerMobj.momy;
+	temp3.w = trailx.w + playerMobj.momx;
 	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
-	temp.w = leadx.w + mo->momx;
-	temp4.w = traily.w + mo->momy;
+
+	temp.w = leadx.w + playerMobj.momx;
+	temp4.w = traily.w + playerMobj.momy;
 
 	P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
 
 
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
  
     // move up to the wall
 
 	if (bestslidefrac == FRACUNIT+1) {
 	// the move most have hit the middle, so stairstep
       stairstep:
-		mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
  
-		if (!P_TryMove(moRef, mo->x, mo->y + mo->momy)) {
-			mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
- 
-			P_TryMove(moRef, mo->x + mo->momx, mo->y);
+		if (!P_TryMove(PLAYER_MOBJ_REF, playerMobj.x, playerMobj.y + playerMobj.momy)) {
+			P_TryMove(PLAYER_MOBJ_REF, playerMobj.x + playerMobj.momx, playerMobj.y);
 		}
-
-		
 
 		return;
     }
 
-	
-
-
     // fudge a bit to make sure it doesn't hit
     bestslidefrac -= 0x800;	
     if (bestslidefrac > 0) {
-		newx = FixedMul (mo->momx, bestslidefrac);
-		newy = FixedMul (mo->momy, bestslidefrac);
+		newx = FixedMul (playerMobj.momx, bestslidefrac);
+		newy = FixedMul (playerMobj.momy, bestslidefrac);
 	
-		if (!P_TryMove(moRef, mo->x + newx, mo->y + newy)) {
+		if (!P_TryMove(PLAYER_MOBJ_REF, playerMobj.x + newx, playerMobj.y + newy)) {
 			goto stairstep;
 		}
     }
@@ -1003,19 +983,17 @@ void P_SlideMove (MEMREF moRef)
 	if (bestslidefrac <= 0) {
 		return;
 	}
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
-
-    tmxmove = FixedMul (mo->momx, bestslidefrac);
-    tmymove = FixedMul (mo->momy, bestslidefrac);
+ 
+    tmxmove = FixedMul (playerMobj.momx, bestslidefrac);
+    tmymove = FixedMul (playerMobj.momy, bestslidefrac);
 
     P_HitSlideLine (bestslidelinenum);	// clip the moves
 
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
-
-    mo->momx = tmxmove;
-    mo->momy = tmymove;
+ 
+	playerMobj.momx = tmxmove;
+	playerMobj.momy = tmymove;
 		
-    if (!P_TryMove (moRef, mo->x+tmxmove, mo->y+tmymove)) {
+    if (!P_TryMove (PLAYER_MOBJ_REF, playerMobj.x+tmxmove, playerMobj.y+tmymove)) {
 		goto retry;
     }
 }
@@ -1419,7 +1397,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 		P_LineOpening (line.sidenum[1], line.frontsecnum, line.backsecnum);
 		if (openrange <= 0)
 		{
-			S_StartSoundFromRef (usethingRef, sfx_noway);
+			S_StartSoundFromRef (usethingRef, sfx_noway, (mobj_t*)Z_LoadThinkerBytesFromEMS(usethingRef));
 	    
 			// can't use through a wall
 			return false;	
@@ -1611,7 +1589,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 
     // crunch bodies to giblets
     if (thing->health <= 0) {
-		P_SetMobjState (thingRef, S_GIBS);
+		P_SetMobjState (thingRef, S_GIBS, thing);
 
 		thing->flags &= ~MF_SOLID;
 		thing->height.w = 0;

@@ -163,7 +163,7 @@ void P_MovePlayer ()
 	}
 
     if ( (cmd->forwardmove || cmd->sidemove)  && playerMobj.state == &states[S_PLAY] ) {
-		P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY_RUN1);
+		P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY_RUN1, &playerMobj);
     }
 }	
 

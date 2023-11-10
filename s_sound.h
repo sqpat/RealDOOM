@@ -22,6 +22,7 @@
 
 #include "z_zone.h"
 #include "doomdef.h"
+#include "p_mobj.h"
 
 typedef uint8_t musicenum_t;
 typedef uint8_t sfxenum_t;
@@ -46,7 +47,7 @@ S_Init
 //
 void S_Start(void);
 
-void S_StartSoundFromRef(MEMREF memref, sfxenum_t	sfx_id);
+void S_StartSoundFromRef(MEMREF memref, sfxenum_t	sfx_id, mobj_t* mobj);
 
 
 //
