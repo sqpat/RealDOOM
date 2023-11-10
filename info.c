@@ -1188,6 +1188,8 @@ sfxenum_t getActiveSound(uint8_t id) {
 		case 21:
 		case 22:
 			return sfx_dmact;
+		case 20:
+			return sfx_bspact;
 		default:
 			return sfx_None;
 	}
