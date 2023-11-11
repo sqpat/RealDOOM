@@ -22,7 +22,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <alloca.h>
 
 
 #include "doomdef.h"

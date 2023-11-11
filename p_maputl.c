@@ -62,14 +62,16 @@ P_PointOnLineSide
   fixed_t	y,
 	int16_t linedx,
 	int16_t linedy,
-	int16_t linev1Offset)
+	int16_t linev1Offset, 
+	vertex_t* vertexes)
 {
     fixed_t	dx;
     fixed_t	dy;
     fixed_t	left;
     fixed_t	right;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	fixed_t_union temp;
+	if (!vertexes)
+		vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	temp.h.fracbits = 0;
     if (!linedx) {
 		temp.h.intbits = vertexes[linev1Offset].x;
@@ -189,13 +191,13 @@ P_BoxOnLineSide
 		break;
 	
       case ST_POSITIVE_HIGH:
-		p1 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
-		p2 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
+		p1 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset, vertexes);
+		p2 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset, vertexes);
 		break;
 	
       case ST_NEGATIVE_HIGH:
-		p1 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
-		p2 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
+		p1 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset, vertexes);
+		p2 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset, vertexes);
 		break;
     }
 
@@ -302,29 +304,7 @@ P_PointOnDivlineSide16
 
 */
 
-//
-// P_MakeDivline
-//
-void
-P_MakeDivline
-(int16_t linedx,
-	int16_t linedy,
-	int16_t linev1Offset,
-  divline_t*	dl )
-{
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
-	fixed_t_union temp;
-	temp.h.fracbits = 0;
-	temp.h.intbits = vertexes[linev1Offset].x;
-	dl->x = temp;
-	temp.h.intbits = vertexes[linev1Offset].y;
-    dl->y = temp;
-
-	temp.h.intbits = linedx;
-    dl->dx.w = temp.w;
-	temp.h.intbits = linedy;
-    dl->dy.w = temp.w;
-}
+ 
 
 
 
@@ -704,6 +684,7 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 	int16_t linebacksecnum = ld->backsecnum;
 	fixed_t_union tempx;
 	fixed_t_union tempy;
+	fixed_t_union temp;
 	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 	tempx.h.fracbits = 0;
@@ -720,15 +701,28 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 		tempy.h.intbits = vertexes[linev2Offset].y;
 		s2 = P_PointOnDivlineSide(tempx.w, tempy.w);
 	} else {
-		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, linev1Offset);
-		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, linev1Offset);
+		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, linev1Offset, vertexes);
+		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, linev1Offset, vertexes);
     }
     
     if (s1 == s2)
 		return true;	// line isn't crossed
     
     // hit the line
-    P_MakeDivline(linedx, linedy, linev1Offset, &dl);
+    //P_MakeDivline(linedx, linedy, linev1Offset, &dl);
+
+	temp.h.fracbits = 0;
+	temp.h.intbits = vertexes[linev1Offset].x;
+	dl.x = temp;
+	temp.h.intbits = vertexes[linev1Offset].y;
+	dl.y = temp;
+
+	temp.h.intbits = linedx;
+	dl.dx.w = temp.w;
+	temp.h.intbits = linedy;
+	dl.dy.w = temp.w;
+
+
     frac = P_InterceptVector (&dl);
 
 	if (frac < 0) {
@@ -846,9 +840,6 @@ P_TraverseIntercepts
 
     while (count--) {
 		i++;
-		if (i > 1000) {
-			I_Error("infinite?");
-		}
 		if (setval)
 			setval++;
 		dist = MAXLONG;
@@ -869,8 +860,6 @@ P_TraverseIntercepts
 
 		in->frac = MAXLONG;
     }
-	if (setval > 3)
-		I_Error("found c %i", count);
 
 
 }
@@ -1018,8 +1007,6 @@ P_PathTraverse
 	// todo inline this only used in one spot
 	 P_TraverseIntercepts ( trav);
 
-	 if (setval > 3)
-		 I_Error("crash after return? %li %u", gametic, linetargetRef);
 
 
 }

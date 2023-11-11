@@ -677,8 +677,8 @@ P_TryMove
 			ldv1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
 			ldspecial = ld->special;
 
-			side = P_PointOnLineSide (newx, newy, lddx, lddy, ldv1Offset);
-			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, ldv1Offset);
+			side = P_PointOnLineSide (newx, newy, lddx, lddy, ldv1Offset, NULL);
+			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, ldv1Offset, NULL);
 			if (side != oldside) {
 				if (ldspecial) {
 					P_CrossSpecialLine(spechit[numspechit], oldside, thingRef);
@@ -792,7 +792,7 @@ void P_HitSlideLine (int16_t linenum)
 		return;
     }
 	
-    side = P_PointOnLineSide (playerMobj.x, playerMobj.y, ld.dx, ld.dy, ld.v1Offset & VERTEX_OFFSET_MASK);
+    side = P_PointOnLineSide (playerMobj.x, playerMobj.y, ld.dx, ld.dy, ld.v1Offset & VERTEX_OFFSET_MASK, NULL);
     lineangle = R_PointToAngle2_16 (0,0, ld.dx, ld.dy);
 
     if (side == 1)
@@ -830,7 +830,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
 
     
     if ( ! (li.flags & ML_TWOSIDED) ) {
- 		if (P_PointOnLineSide (playerMobj.x, playerMobj.y, li.dx, li.dy, li.v1Offset & VERTEX_OFFSET_MASK)) {
+ 		if (P_PointOnLineSide (playerMobj.x, playerMobj.y, li.dx, li.dy, li.v1Offset & VERTEX_OFFSET_MASK, NULL)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -1409,7 +1409,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
     side = 0;
 	usething = (mobj_t*)Z_LoadThinkerBytesFromEMS(usethingRef);
 
-	if (P_PointOnLineSide(usething->x, usething->y, line.dx, line.dy, line.v1Offset & VERTEX_OFFSET_MASK) == 1) {
+	if (P_PointOnLineSide(usething->x, usething->y, line.dx, line.dy, line.v1Offset & VERTEX_OFFSET_MASK, NULL) == 1) {
 		side = 1;
 	}
     

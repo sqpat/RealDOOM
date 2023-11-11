@@ -260,6 +260,7 @@ FixedDiv2
 	// all seem to work, but i think long long is probably the least problematic for 16 bit cpu for now. - sq
 
 	long long c;
+	//longlong_union c;
 	c = ((long long)a << 16) / ((long long)b);
 
 
