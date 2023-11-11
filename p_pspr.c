@@ -307,10 +307,8 @@ A_WeaponReady
     fixed_t		angle;
     
     // get out of attack state
-    if (playerMobj.state == &states[S_PLAY_ATK1]
-	|| playerMobj.state == &states[S_PLAY_ATK2] )
-    {
-	P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY, &playerMobj);
+    if (playerMobj.state == &states[S_PLAY_ATK1] || playerMobj.state == &states[S_PLAY_ATK2] ) {
+		P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY, &playerMobj);
     }
     
     if (player.readyweapon == wp_chainsaw

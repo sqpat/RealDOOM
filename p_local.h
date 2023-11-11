@@ -103,7 +103,7 @@ P_SpawnMobj
   fixed_t	z,
   mobjtype_t	type );
 
-void 	P_RemoveMobj (MEMREF th);
+void 	P_RemoveMobj (MEMREF thRef, mobj_t* mobj);
 //boolean	P_SetMobjState2(MEMREF mobj, statenum_t state, int8_t* file, int32_t line);
 //#define	P_SetMobjState(a, b) P_SetMobjState2(a, b, __FILE__, __LINE__)
 boolean	P_SetMobjState2(MEMREF mobjRef, statenum_t state, mobj_t* mobj);
@@ -185,8 +185,8 @@ P_PathTraverse
   uint8_t		flags,
   boolean	(*trav) (intercept_t *));
 
-void P_UnsetThingPosition (MEMREF thing);
-void P_SetThingPosition (MEMREF thing);
+void P_UnsetThingPosition (MEMREF thingRef, mobj_t* thing);
+void P_SetThingPosition (MEMREF thingRef, mobj_t* thing);
 
 
 //
@@ -203,10 +203,10 @@ extern short_height_t		tmceilingz;
 extern	int16_t		ceilinglinenum;
 
 boolean P_CheckPosition (MEMREF thingRef, fixed_t x, fixed_t y, mobj_t* thing);
-boolean P_TryMove (MEMREF thing, fixed_t x, fixed_t y);
+boolean P_TryMove (MEMREF thingRef, fixed_t x, fixed_t y, mobj_t* thing);
 boolean P_TeleportMove (MEMREF thing, fixed_t x, fixed_t y);
 void	P_SlideMove ();
-boolean P_CheckSight (MEMREF t1, MEMREF t2);
+boolean P_CheckSight (MEMREF t1ref, MEMREF t2ref, mobj_t* t1);
 
 
 void 	P_UseLines ();

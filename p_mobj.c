@@ -92,6 +92,8 @@ void A_SpawnFly(MEMREF moRef, mobj_t* mobj);
 void A_BrainExplode(MEMREF moRef, mobj_t* mobj);
 
 mobj_t* SAVEDUNIT;
+mobj_t* setStateReturn;
+
 //
 // P_SetMobjState
 // Returns true if the mobj is still present.
@@ -104,7 +106,7 @@ void P_ExplodeMissile(MEMREF moRef, mobj_t* mo){
 
     mo->momx = mo->momy = mo->momz = 0;
     P_SetMobjState (moRef, getDeathState(mo->type), mo);
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
+	mo = setStateReturn;
 
     mo->tics -= P_Random()&3;
 
@@ -159,7 +161,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 		return;
     }
 
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 	mosecnum = mo->secnum;
 
 
@@ -192,7 +193,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 		
 
 
-		if (!P_TryMove (moRef, ptryx, ptryy)) {
+		if (!P_TryMove (moRef, ptryx, ptryy, mo)) {
 
 			mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 			// blocked move
@@ -209,7 +210,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 					// against the sky.
 					// Does not handle sky floors.
  
-					P_RemoveMobj (moRef);
+					P_RemoveMobj (moRef, (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef));
 					return;
 				}
 			
@@ -226,7 +227,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	 
     } while (xmove || ymove);
 	
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
+	//mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 
 
     // slow down
@@ -266,7 +267,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	momomy = mo->momy;
 	// mo and player can dereference each other here... let's not create a situation where both pointers are needed in the same if block
 	if (player) {
-		playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(player->moRef);
+		playermo = &playerMobj;
 
 	}
 	
@@ -276,17 +277,16 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 		) {
 	// if in a walking frame, stop moving
 		if (player) {
-			playermo = (mobj_t*)Z_LoadThinkerBytesFromEMS(player->moRef);
+			playermo = &playerMobj;
 		}
 		if (player && (uint32_t)((playermo->state - states) - S_PLAY_RUN1) < 4) {
 			P_SetMobjState(PLAYER_MOBJ_REF, S_PLAY, &playerMobj);
+			mo = setStateReturn;
 		}
-		mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 
 		mo->momx = 0;
 		mo->momy = 0;
     } else {
-		mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 
 		mo->momx = FixedMul (momomx, FRICTION);
 		mo->momy = FixedMul (momomy, FRICTION);
@@ -365,8 +365,8 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 				// and utter appropriate sound.
 				mo->player->deltaviewheight = mo->momz>>3;
 				S_StartSound (mo, sfx_oof);
+				mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 			}
-			mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 			mo->momz = 0;
 		}
 
@@ -392,7 +392,7 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 			mo->momz -= GRAVITY;
 		}
 	}
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
+	//mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 	//temp.h.intbits = mo->ceilingz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
     if (mo->z + mo->height.w > temp.w) {
@@ -422,14 +422,13 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 // P_NightmareRespawn
 //
 void
-P_NightmareRespawn(MEMREF mobjRef)
+P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 {
 	fixed_t_union		x;
 	fixed_t_union		y;
 	fixed_t_union		z;
 	mobj_t*		mo;
 	MEMREF moRef;
-	mobj_t* mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 	int16_t subsecnum;
 	subsector_t* subsectors;
 	int16_t subsectorsecnum;
@@ -464,7 +463,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[mobjsecnum].floorheight);
 	moRef = P_SpawnMobj(mobjx, mobjy, temp.w, MT_TFOG);
 	// initiate teleport sound
-	S_StartSoundFromRef(moRef, sfx_telept, Z_LoadThinkerBytesFromEMS(moRef));
+	S_StartSoundFromRef(moRef, sfx_telept, setStateReturn);
 
 	// spawn a teleport fog at the new spot
 	subsecnum = R_PointInSubsector(x.w, y.w);
@@ -473,7 +472,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG);
 
-	S_StartSoundFromRef(moRef, sfx_telept, Z_LoadThinkerBytesFromEMS(moRef));
+	S_StartSoundFromRef(moRef, sfx_telept, setStateReturn);
 	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 
 	// spawn the new monster
@@ -493,7 +492,7 @@ P_NightmareRespawn(MEMREF mobjRef)
 
     // inherit attributes from deceased one
     moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype);
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
+	mo = setStateReturn;
 	mo->spawnpoint = mobjspawnpoint;
     //todo does this work? or need to be in fixed_mul? -sq
 	mo->angle = ANG45 * (mobjspawnangle/45);
@@ -505,7 +504,7 @@ P_NightmareRespawn(MEMREF mobjRef)
     mo->reactiontime = 18;
 	
     // remove the old monster,
-    P_RemoveMobj (mobjRef);
+    P_RemoveMobj (mobjRef, mo);
 }
 
 //
@@ -549,7 +548,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		
 		// you can cycle through multiple states in a tic
 		if (!mobj->tics) {
-			mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+
 			if (!P_SetMobjState(mobjRef, mobj->state->nextstate, mobj)) {
 
 				return;		// freed itself
@@ -579,7 +578,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		if (P_Random() > 4) {
 			return;
 		}
-		P_NightmareRespawn (mobjRef);
+		P_NightmareRespawn (mobjRef, mobj);
     }
 
 
@@ -644,7 +643,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 
     // set subsector and/or block links
-    P_SetThingPosition (mobjRef);
+    P_SetThingPosition (mobjRef, mobj);
  
 
 	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
@@ -671,7 +670,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	 
 
 	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
- 
+	setStateReturn = mobj;
 
     return mobjRef;
 }
@@ -682,11 +681,10 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 //
 
 
-void P_RemoveMobj (MEMREF mobjRef)
+void P_RemoveMobj (MEMREF mobjRef, mobj_t* mobj)
 {
-	mobj_t* mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
     // unlink from sector and block lists
-    P_UnsetThingPosition (mobjRef);
+    P_UnsetThingPosition (mobjRef, mobj);
     
     // stop any playing sound
     S_StopSound (mobjRef);
@@ -723,7 +721,7 @@ P_SpawnPuff
     z += ((P_Random()-P_Random())<<10);
 
     thRef = P_SpawnMobj (x,y,z, MT_PUFF);
-	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
+	th = setStateReturn;
     th->momz = FRACUNIT;
     th->tics -= P_Random()&3;
 
@@ -752,7 +750,7 @@ P_SpawnBlood
 	
     z += ((P_Random()-P_Random())<<10);
 	thRef  = P_SpawnMobj (x,y,z, MT_BLOOD);
-	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
+	th = setStateReturn;
     th->momz = FRACUNIT*2;
     th->tics -= P_Random()&3;
 
@@ -785,7 +783,7 @@ void P_CheckMissileSpawn (MEMREF thRef, mobj_t* th)
     th->y += (th->momy>>1);
     th->z += (th->momz>>1);
 
-	if (!P_TryMove(thRef, th->x, th->y)) {
+	if (!P_TryMove(thRef, th->x, th->y, th)) {
 		th = Z_LoadThinkerBytesFromEMS(thRef);
 		P_ExplodeMissile(thRef, th);
 	}
@@ -815,13 +813,13 @@ P_SpawnMissile
 	MEMREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type);
 	fixed_t_union temp;
 
-	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
+	th = setStateReturn;
 	if (th->info->seesound) {
 		S_StartSound(th, th->info->seesound);
 		th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
 
 	}
-	Z_RefIsActive(thRef);
+
     th->targetRef = sourceRef;	// where it came from
 	thspeed = MAKESPEED(th->info->speed);
 
@@ -906,7 +904,7 @@ P_SpawnPlayerMissile
     z = playerMobj.z + 4*8*FRACUNIT;
 	
     thRef = P_SpawnMobj (x,y,z, type);
-	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
+	th = setStateReturn;
 
     if (th->info->seesound)
 	S_StartSound (th, th->info->seesound);
@@ -927,7 +925,6 @@ P_SpawnPlayerMissile
 }
 
 
-
 boolean
 P_SetMobjState2
 (MEMREF mobjRef, statenum_t state, mobj_t* mobj)
@@ -941,11 +938,13 @@ P_SetMobjState2
 	}
 #endif
 
-
+	setStateReturn = mobj;
 	do {
 		if (state == S_NULL) {
 			mobj->state = (state_t *)S_NULL;
-			P_RemoveMobj(mobjRef);
+			P_RemoveMobj(mobjRef, mobj);
+			mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+			setStateReturn = mobj;
 			return false;
 		}
 
@@ -1027,6 +1026,7 @@ P_SetMobjState2
 
 
 		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+		setStateReturn = mobj;
 
 
 		state = st->nextstate;

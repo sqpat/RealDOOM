@@ -31,7 +31,7 @@
 // State.
 #include "r_state.h"
 
-
+extern mobj_t* setStateReturn;
 
 //
 // TELEPORTATION
@@ -99,13 +99,13 @@ EV_Teleport
 				
 				// spawn teleport fog at source and destination
 				fogRef = P_SpawnMobj (oldx, oldy, oldz, MT_TFOG);
-				S_StartSoundFromRef (fogRef, sfx_telept, Z_LoadThinkerBytesFromEMS(fogRef));
+				S_StartSoundFromRef (fogRef, sfx_telept, setStateReturn);
 				an = m->angle >> ANGLETOFINESHIFT;
 				fogRef = P_SpawnMobj (m->x+20*finecosine(an), m->y+20*finesine(an)
 						   , thing->z, MT_TFOG);
 
 				// emit sound, where?
-				S_StartSoundFromRef(fogRef, sfx_telept, Z_LoadThinkerBytesFromEMS(fogRef));
+				S_StartSoundFromRef(fogRef, sfx_telept, setStateReturn);
 		
 				// don't move for a bit
 				if (thing->player) {

@@ -470,7 +470,7 @@ void P_SpawnPlayer(mapthing_t* mthing)
 	mobj->player = &player;
 	mobj->health = player.health;
 
-	player.moRef = mobjRef;
+
 	player.playerstate = PST_LIVE;
 	player.refire = 0;
 	player.message = -1;
@@ -738,6 +738,8 @@ int16_t getDoomEdNum(uint8_t id) {
 }
 
 
+extern mobj_t* setStateReturn;
+
 //
 // P_SpawnMapThing
 // The fields of the mapthing should
@@ -833,7 +835,7 @@ void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
 
 	mobjRef = P_SpawnMobj(x.w, y.w, z.w, i);
 
-	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+	mobj = setStateReturn;
 	mobj->spawnpoint = copyofthing;
 
 	if (mobj->tics > 0)

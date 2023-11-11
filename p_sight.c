@@ -485,27 +485,34 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 boolean
 P_CheckSight
 ( MEMREF t1Ref,
-  MEMREF t2Ref)
+  MEMREF t2Ref, 
+	mobj_t* t1)
 {
 
     int32_t		pnum;
     int16_t		bytenum;
     int16_t		bitnum;
-	mobj_t*	t1 = (mobj_t*)Z_LoadThinkerBytesFromEMS(t1Ref);
-	fixed_t t1z = t1->z;
-	fixed_t t1x = t1->x;
-	fixed_t t1y = t1->y;
-	fixed_t t1height = t1->height.w;
-	int16_t s1 = t1->secnum;
+	fixed_t t1z;
+	fixed_t t1x;
+	fixed_t t1y;
+	fixed_t t1height;
+	int16_t s1;
 
 	mobj_t*	t2;
-		fixed_t t2z;
-		fixed_t t2x;
-		fixed_t t2y;
-		fixed_t t2height;
-		int16_t s2;
+	fixed_t t2z;
+	fixed_t t2x;
+	fixed_t t2y;
+	fixed_t t2height;
+	int16_t s2;
+	if (!t1) {
+		t1 = (mobj_t*)Z_LoadThinkerBytesFromEMS(t1Ref);
+	}
+	t1z = t1->z;
+	t1x = t1->x;
+	t1y = t1->y;
+	t1height = t1->height.w;
+	s1 = t1->secnum;
 
-	 
 
 	t2 = (mobj_t*)Z_LoadThinkerBytesFromEMS(t2Ref);
 	t2z = t2->z;

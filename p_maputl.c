@@ -397,12 +397,12 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void P_UnsetThingPosition (MEMREF thingRef)
+void P_UnsetThingPosition (MEMREF thingRef, mobj_t* thing)
 {
     int16_t		blockx;
     int16_t		blocky;
 	mobj_t* changeThing;
-	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+	
 	MEMREF thingsprevRef = thing->sprevRef;
 	MEMREF thingsnextRef = thing->snextRef;
 	MEMREF thingbprevRef = thing->bprevRef;
@@ -469,7 +469,7 @@ void P_UnsetThingPosition (MEMREF thingRef)
 // Sets thing->subsector properly
 //
 void
-P_SetThingPosition (MEMREF thingRef)
+P_SetThingPosition (MEMREF thingRef, mobj_t* thing)
 {
 	int16_t	subsecnum;
     //sector_t*		sec;
@@ -477,7 +477,7 @@ P_SetThingPosition (MEMREF thingRef)
     int16_t			blocky;
     MEMREF		linkRef;
 	mobj_t*		link;
-	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+	
 	mobj_t* thingList;
 	int16_t subsectorsecnum;
 	subsector_t* subsectors;

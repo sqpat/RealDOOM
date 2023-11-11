@@ -1097,23 +1097,27 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
 		ref -= EMS_ALLOCATION_LIST_SIZE;
 		switch (type){
 			case CA_TYPE_SPRITE:
+#ifdef CHECK_FOR_ERRORS
 				if (ref >= SPRITE_ALLOCATION_LIST_SIZE){
 					I_Error ("caught c %u %s %li", ref);
 				}
+#endif
 				// 0 0 6bce6b20
 				//I_Error("getting thing %i %i %lx", ref, sprite_allocations[ref].offset, spritememoryblock);
 				return spritememoryblock + sprite_allocations[ref].offset;
 			case CA_TYPE_TEXTURE_INFO:
+#ifdef CHECK_FOR_ERRORS
 				if (ref >= TEXTUREINFO_ALLOCATION_LIST_SIZE) {
 					I_Error("caught f %u %s %li", ref);
 				}
+#endif
 				return textureinfomemoryblock + textureinfo_allocations[ref].offset;
 			default:
-
+#ifdef CHECK_FOR_ERRORS
 				if (ref >= 2*CONVENTIONAL_ALLOCATION_LIST_SIZE){
 					I_Error ("caught d %u %s %li", ref);
 				}
-
+#endif
 				if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
 					return conventionalmemoryblock1 + conventional_allocations1[ref].offset;
 				else 

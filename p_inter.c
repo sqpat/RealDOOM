@@ -614,12 +614,14 @@ P_TouchSpecialThing
 	
     if (specialflagscountitem)
 		player.itemcount++;
-    P_RemoveMobj (specialRef);
+    P_RemoveMobj (specialRef, (mobj_t*)Z_LoadThinkerBytesFromEMS(specialRef));
     player.bonuscount += BONUSADD;
     //  always true? 
 	//if (player == &players)
 	S_StartSound (NULL, sound);
 }
+
+extern mobj_t* setStateReturn;
 
 
 //
@@ -628,19 +630,20 @@ P_TouchSpecialThing
 void
 P_KillMobj
 ( MEMREF	sourceRef,
-	MEMREF	targetRef )
+	MEMREF	targetRef, 
+	mobj_t*	target)
 {
     mobjtype_t	item;
     mobj_t*	mo;
 	mobj_t* source;
-	mobj_t*	target = (mobj_t*)Z_LoadThinkerBytesFromEMS(targetRef);
+	
 	MEMREF moRef;
 
 	
     target->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
 
     if (target->type != MT_SKULL)
-	target->flags &= ~MF_NOGRAVITY;
+		target->flags &= ~MF_NOGRAVITY;
 
     target->flags |= MF_CORPSE|MF_DROPOFF;
     target->height.w >>= 2;
@@ -654,29 +657,26 @@ P_KillMobj
 
 			 
 		}
-			
-    }
-	else if (target->flags & MF_COUNTKILL)
-	{
-	// count all monster deaths,
-	// even those caused by other monsters
-	player.killcount++;
+		target = (mobj_t*)Z_LoadThinkerBytesFromEMS(targetRef);
+    } else if (target->flags & MF_COUNTKILL) {
+		// count all monster deaths,
+		// even those caused by other monsters
+		player.killcount++;
     }
     
-    if (target->player)
-    {
+    if (target->player) {
 			
-	target->flags &= ~MF_SOLID;
-	target->player->playerstate = PST_DEAD;
-	P_DropWeapon (target->player);
+		target->flags &= ~MF_SOLID;
+		target->player->playerstate = PST_DEAD;
+		P_DropWeapon ();
 
-	if (target->player == &player
-	    && automapactive)
-	{
-	    // don't die in auto map,
-	    // switch view prior to dying
-	    AM_Stop ();
-	}
+		if (
+			//target->player == &player &&
+			automapactive) {
+			// don't die in auto map,
+			// switch view prior to dying
+			AM_Stop ();
+		}
 	
     }
 
@@ -685,6 +685,8 @@ P_KillMobj
     } else {
 		P_SetMobjState (targetRef, getDeathState(target->type), target);
 	}
+	target = setStateReturn;
+
     target->tics -= P_Random()&3;
 
     if (target->tics < 1)
@@ -716,7 +718,7 @@ P_KillMobj
     }
 
     moRef = P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
-	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
+	mo = setStateReturn;
     mo->flags |= MF_DROPPED;	// special versions of items
 }
 
@@ -876,14 +878,15 @@ P_DamageMobj
     // do the damage	
     target->health -= damage;	
     if (target->health <= 0) {
-		P_KillMobj (sourceRef, targetRef);
+		P_KillMobj (sourceRef, targetRef, target);
 		return;
     }
 
     if ( (P_Random () < getPainChance(target->type)) && !(target->flags&MF_SKULLFLY) ) {
 		target->flags |= MF_JUSTHIT;	// fight back!
 		P_SetMobjState (targetRef, getPainState(target->type), target);
-    }
+		target = setStateReturn;
+	}
 			
 
     target->reactiontime = 0;		// we're awake now...	

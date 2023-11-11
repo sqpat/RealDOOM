@@ -183,14 +183,16 @@ P_TeleportMove
     
     // the move is ok,
     // so link the thing into its new position
-    P_UnsetThingPosition (thingRef);
+	thing = Z_LoadThinkerBytesFromEMS(thingRef);
+	P_UnsetThingPosition (thingRef, thing);
 
+	thing = Z_LoadThinkerBytesFromEMS(thingRef);
     thing->floorz = tmfloorz;
     thing->ceilingz = tmceilingz;	
     thing->x = x;
     thing->y = y;
 
-    P_SetThingPosition (thingRef);
+    P_SetThingPosition (thingRef, thing);
 	
     return true;
 }
@@ -590,7 +592,8 @@ boolean
 P_TryMove
 (MEMREF thingRef,
   fixed_t	x,
-  fixed_t	y )
+  fixed_t	y, 
+	mobj_t* thing)
 {
     fixed_t	oldx;
     fixed_t	oldy;
@@ -599,7 +602,6 @@ P_TryMove
     int16_t	side;
     int16_t	oldside;
     line_t*	ld;
-	mobj_t* thing;
 	line_t* lines;
  	int16_t lddx;
  	int16_t lddy;
@@ -611,7 +613,6 @@ P_TryMove
 
 	floatok = false;
 
-	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	if (!P_CheckPosition(thingRef, x, y, thing)) {
 		return false;		// solid wall or thing
 	}
@@ -647,7 +648,7 @@ P_TryMove
 
     // the move is ok,
     // so link the thing into its new position
-	P_UnsetThingPosition (thingRef);
+	P_UnsetThingPosition (thingRef, thing);
 
 	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
     oldx = thing->x;
@@ -659,7 +660,7 @@ P_TryMove
 
 
 
-	P_SetThingPosition (thingRef);
+	P_SetThingPosition (thingRef, thing);
 	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 
 
@@ -953,8 +954,8 @@ void P_SlideMove ()
 	// the move most have hit the middle, so stairstep
       stairstep:
  
-		if (!P_TryMove(PLAYER_MOBJ_REF, playerMobj.x, playerMobj.y + playerMobj.momy)) {
-			P_TryMove(PLAYER_MOBJ_REF, playerMobj.x + playerMobj.momx, playerMobj.y);
+		if (!P_TryMove(PLAYER_MOBJ_REF, playerMobj.x, playerMobj.y + playerMobj.momy, &playerMobj)) {
+			P_TryMove(PLAYER_MOBJ_REF, playerMobj.x + playerMobj.momx, playerMobj.y, &playerMobj);
 		}
 
 		return;
@@ -966,7 +967,7 @@ void P_SlideMove ()
 		newx = FixedMul (playerMobj.momx, bestslidefrac);
 		newy = FixedMul (playerMobj.momy, bestslidefrac);
 	
-		if (!P_TryMove(PLAYER_MOBJ_REF, playerMobj.x + newx, playerMobj.y + newy)) {
+		if (!P_TryMove(PLAYER_MOBJ_REF, playerMobj.x + newx, playerMobj.y + newy, &playerMobj)) {
 			goto stairstep;
 		}
     }
@@ -993,7 +994,7 @@ void P_SlideMove ()
 	playerMobj.momx = tmxmove;
 	playerMobj.momy = tmymove;
 		
-    if (!P_TryMove (PLAYER_MOBJ_REF, playerMobj.x+tmxmove, playerMobj.y+tmymove)) {
+    if (!P_TryMove (PLAYER_MOBJ_REF, playerMobj.x+tmxmove, playerMobj.y+tmymove, &playerMobj)) {
 		goto retry;
     }
 }
@@ -1494,7 +1495,7 @@ boolean PIT_RadiusAttack (MEMREF thingRef)
 		return true;	// out of range
 	}
 
-    if ( P_CheckSight (thingRef, bombspotRef) ) {
+    if ( P_CheckSight (thingRef, bombspotRef, NULL) ) {
 		// must be in direct path
 
 		if (thingRef == 0) {
@@ -1570,6 +1571,7 @@ P_RadiusAttack
 boolean		crushchange;
 boolean		nofit;
 
+extern mobj_t* setStateReturn;
 
 //
 // PIT_ChangeSector
@@ -1590,7 +1592,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
     // crunch bodies to giblets
     if (thing->health <= 0) {
 		P_SetMobjState (thingRef, S_GIBS, thing);
-
+		thing = setStateReturn;
 		thing->flags &= ~MF_SOLID;
 		thing->height.w = 0;
 		thing->radius = 0;
@@ -1601,7 +1603,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 
     // crunch dropped items
     if (thing->flags & MF_DROPPED) {
-		P_RemoveMobj (thingRef);
+		P_RemoveMobj (thingRef, thing);
 	
 		// keep checking
 		return true;		
@@ -1621,7 +1623,7 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 		// spray blood in a random direction
 		moRef = P_SpawnMobj (thing->x, thing->y, thing->z + thing->height.w/2, MT_BLOOD);
 		
-		mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
+		mo = setStateReturn;
 		mo->momx = (P_Random() - P_Random ())<<12;
 		mo->momy = (P_Random() - P_Random ())<<12;
     }

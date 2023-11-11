@@ -68,7 +68,6 @@ typedef int8_t cheat_t;
 //
 typedef struct player_s
 {
-	MEMREF			moRef;
     playerstate_t	playerstate;
     ticcmd_t		cmd;
 
