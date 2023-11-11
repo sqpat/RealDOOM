@@ -104,7 +104,7 @@ getSideNum
 
 	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	offset = linebuffer[offset];
-	return ((line_t*)Z_LoadBytesFromConventional(linesRef))[offset].sidenum[side];
+	return lines[offset].sidenum[side];
 	
 }
 
@@ -121,13 +121,11 @@ getSector
   int16_t		offset,
   int16_t		side )
 {
-	line_t* lines;
 	int16_t* linebuffer;
 	offset = sectors[currentSector].linesoffset + offset;
 
 	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	offset = linebuffer[offset];
-	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	offset = lines[offset].sidenum[side];
 
     return ((side_t*)Z_LoadBytesFromConventional(sidesRef))[offset].secnum;
@@ -148,7 +146,7 @@ twoSided
 	line = sectors[sector].linesoffset + line;
 	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	line = linebuffer[line];
-    return (((line_t*)Z_LoadBytesFromConventional(linesRef))[line]).flags & ML_TWOSIDED;
+    return lines[line].flags & ML_TWOSIDED;
 }
 
 
@@ -163,7 +161,6 @@ getNextSectorList
 	boolean onlybacksecnums)
 {
 	
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	line_t* line;
 	int16_t i = 0;
 	int16_t skipped = 0;
@@ -431,7 +428,6 @@ P_CrossSpecialLine
   MEMREF thingRef )
 {
     int16_t		ok;
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	line_t*	line = &lines[linenum];
 	uint8_t linetag = line->tag;
 	int16_t linefrontsecnum = line->frontsecnum;
@@ -890,7 +886,6 @@ P_CrossSpecialLine
     }
 
 	if (setlinespecial != -1) {
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		lines[linenum].special = setlinespecial;
 	}
 
@@ -910,7 +905,6 @@ P_ShootSpecialLine
     int16_t		ok;
 	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t innerlinenum = linebuffer[linenum];
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	line_t* line = &lines[innerlinenum];
 	int16_t linespecial = line->special;
 	uint8_t linetag = line->tag;
@@ -1042,7 +1036,6 @@ void P_UpdateSpecials(void)
 	uint8_t		pic;
 	int16_t		i;
 	side_t* sides;
-	line_t* lines;
 	int16_t sidenum;
 
 	//	LEVEL TIMER
@@ -1074,7 +1067,6 @@ void P_UpdateSpecials(void)
 		if (buttonlist[i].btimer) {
 			buttonlist[i].btimer--;
 			if (!buttonlist[i].btimer) {
-				lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 				sidenum = lines[buttonlist[i].linenum].sidenum[0];
 				sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 
@@ -1119,7 +1111,6 @@ int16_t EV_DoDonut(uint8_t linetag)
 	MEMREF floorRef;
 	int16_t* linebuffer;
 	int16_t offset;
-	line_t* lines;
 	int16_t sectors3floorpic;
 	short_height_t sectors3floorheight;
 	line_t* line;
@@ -1157,7 +1148,6 @@ int16_t EV_DoDonut(uint8_t linetag)
 	}
 	
 	j = 0;
-	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	while (linebufferoffsets[j] >= 0) {
 
 		line = &lines[linebufferoffsets[j]];
@@ -1246,7 +1236,6 @@ void P_SpawnSpecials (void)
 {
     int16_t		i;
     int8_t		episode;
-	line_t* lines;
 
     episode = 1;
     if (W_CheckNumForName("texture2") >= 0)
@@ -1324,7 +1313,6 @@ void P_SpawnSpecials (void)
 
     //	Init line EFFECTs
     numlinespecials = 0;
-	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	for (i = 0;i < numlines; i++) {
 		switch(lines[i].special) {

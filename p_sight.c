@@ -294,8 +294,6 @@ boolean P_CrossSubsector (uint16_t subsecnum)
     fixed_t		frac;
     fixed_t		slope;
 	seg_t* segs;
-	vertex_t* vertexes;
-	line_t* lines;
 	int16_t linev1Offset;
 	int16_t linev2Offset;
 	uint8_t lineflags;
@@ -312,7 +310,6 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 		linedefOffset = segs[segnum].linedefOffset;
 		frontsecnum = segs[segnum].frontsecnum;
 		backsecnum = segs[segnum].backsecnum;
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		line = &lines[linedefOffset];
 
 
@@ -325,8 +322,6 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 		linev1Offset = line->v1Offset & VERTEX_OFFSET_MASK;
 		linev2Offset = line->v2Offset & VERTEX_OFFSET_MASK;
 		lineflags = line->flags;
-
-		vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 		v1 = vertexes[linev1Offset];
 		v2 = vertexes[linev2Offset];

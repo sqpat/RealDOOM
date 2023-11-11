@@ -62,16 +62,13 @@ P_PointOnLineSide
   fixed_t	y,
 	int16_t linedx,
 	int16_t linedy,
-	int16_t linev1Offset, 
-	vertex_t* vertexes)
+	int16_t linev1Offset)
 {
     fixed_t	dx;
     fixed_t	dy;
     fixed_t	left;
     fixed_t	right;
 	fixed_t_union temp;
-	if (!vertexes)
-		vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	temp.h.fracbits = 0;
     if (!linedx) {
 		temp.h.intbits = vertexes[linev1Offset].x;
@@ -117,7 +114,6 @@ P_PointOnLineSide16
     int16_t	dy;
     fixed_t	left;
     fixed_t	right;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
     if (!linedx) {
 		if (x <= vertexes[linev1Offset].x) {
@@ -165,7 +161,6 @@ P_BoxOnLineSide
 
     boolean		p1;
     boolean		p2;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
     switch (lineslopetype) {
@@ -191,13 +186,13 @@ P_BoxOnLineSide
 		break;
 	
       case ST_POSITIVE_HIGH:
-		p1 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset, vertexes);
-		p2 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset, vertexes);
+		p1 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
+		p2 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
 		break;
 	
       case ST_NEGATIVE_HIGH:
-		p1 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset, vertexes);
-		p2 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset, vertexes);
+		p1 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
+		p2 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
 		break;
     }
 
@@ -570,7 +565,6 @@ P_BlockLinesIterator
 	int16_t			index;
     int16_t		list;
     line_t*		ld;
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	int16_t *blockmaplump;
     if (x<0
 	|| y<0
@@ -587,7 +581,6 @@ P_BlockLinesIterator
     for ( index = offset ; blockmaplump[index] != -1 ; index++) {
 
 		list = blockmaplump[index];
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 		ld = &lines[list];
 
@@ -679,7 +672,6 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 	fixed_t_union tempx;
 	fixed_t_union tempy;
 	fixed_t_union temp;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 	tempx.h.fracbits = 0;
 	tempy.h.fracbits = 0;
@@ -695,8 +687,8 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 		tempy.h.intbits = vertexes[linev2Offset].y;
 		s2 = P_PointOnDivlineSide(tempx.w, tempy.w);
 	} else {
-		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, linev1Offset, vertexes);
-		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, linev1Offset, vertexes);
+		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, linev1Offset);
+		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, linev1Offset);
     }
     
     if (s1 == s2)

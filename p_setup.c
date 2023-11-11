@@ -45,7 +45,8 @@ void    P_SpawnMapThing(mapthing_t *    mthing, int16_t key);
 // Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
 //
 int16_t             numvertexes;
-MEMREF       vertexesRef;
+//MEMREF       vertexesRef;
+vertex_t*		vertexes;
 
 int16_t             numsegs;
 MEMREF          segsRef;
@@ -61,7 +62,8 @@ int16_t             numnodes;
 MEMREF          nodesRef;
 
 int16_t             numlines;
-MEMREF			linesRef;
+line_t*			lines;
+//MEMREF			linesRef;
 
 int16_t             numsides;
 MEMREF          sidesRef;
@@ -114,29 +116,27 @@ void P_LoadVertexes(int16_t lump)
 	uint16_t                 i;
 	mapvertex_t			ml;
 	vertex_t*           li;
-
+	MEMREF vertexesRef;
 	// Determine number of lumps:
 	//  total lump length / vertex record length.
 	numvertexes = W_LumpLength(lump) / sizeof(mapvertex_t);
 
 	// Allocate zone memory for buffer.
 	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_VERTEXES);
+	vertexes = Z_LoadBytesFromConventional(vertexesRef);
 	// Load data into cache.
 	W_CacheLumpNumCheck(lump, 0);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	
+	data = (mapvertex_t*)Z_LoadBytesFromEMS(dataRef);
 
 	// Copy and convert vertex coordinates,
 	// internal representation as fixed.
 	for (i = 0; i < numvertexes; i++) {
-		data = (mapvertex_t*)Z_LoadBytesFromEMS(dataRef);
 		ml = data[i];
 
-		li = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
-		li[i].x = (ml.x);
-		li[i].y = (ml.y);
-		Z_RefIsActive(dataRef);
-		Z_RefIsActive(vertexesRef);
+		vertexes[i].x = (ml.x);
+		vertexes[i].y = (ml.y);
 	}
 
 	// Free buffer memory.
@@ -165,7 +165,6 @@ void P_LoadSegs(int16_t lump)
 	int16_t sidesecnum;
 	int16_t othersidesecnum;
 	uint8_t ldefflags;
-	line_t* lines;
 	int16_t mlv1;
 	int16_t mlv2;
 	int16_t mlangle;
@@ -199,7 +198,6 @@ void P_LoadSegs(int16_t lump)
 		linedef = (ml->linedef);
 
 
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		ldef = &lines[linedef];
 		ldefsidenum = ldef->sidenum[side];
 		ldefothersidenum = ldef->sidenum[side ^ 1];
@@ -922,9 +920,7 @@ void P_LoadLineDefs(int16_t lump)
 	line_t*             ld;
 	vertex_t*           v1;
 	vertex_t*           v2;
-	vertex_t*           vertexes;
 	side_t* sides;
-	line_t*         lines;
 	int16_t side0secnum;
 	int16_t side1secnum;
 	int16_t v1x;
@@ -939,7 +935,7 @@ void P_LoadLineDefs(int16_t lump)
 	int16_t mldv2;
 	int16_t mldsidenum0;
 	int16_t mldsidenum1;
-
+	MEMREF linesRef;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
 	linesRef = Z_MallocConventional(numlines * sizeof(line_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_LINES);
@@ -966,7 +962,6 @@ void P_LoadLineDefs(int16_t lump)
 		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		side0secnum = sides[mldsidenum0].secnum;
 		side1secnum = sides[mldsidenum1].secnum;
-		vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 		v1 = &vertexes[mldv1];
 		v2 = &vertexes[mldv2];
 		v1x = v1->x;
@@ -974,7 +969,6 @@ void P_LoadLineDefs(int16_t lump)
 		v2x = v2->x;
 		v2y = v2->y;
 
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		ld = &lines[i];
 
 		ld->sidenum[0] = mldsidenum0;
@@ -1016,7 +1010,6 @@ void P_LoadLineDefs(int16_t lump)
 			ld->backsecnum = SECNUM_NULL;
 		}
 	}
-	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	Z_FreeEMS(dataRef);
 }
@@ -1143,13 +1136,11 @@ void P_GroupLines(void)
 	int16_t             bbox[4];
 	int16_t             block;
 	seg_t*              segs;
-	vertex_t*			vertexes;
 	int16_t				previouslinebufferindex;
 	int16_t*				linebuffer;
 	subsector_t*		subsectors;
 	int16_t				firstlinenum;
 	int16_t				sidedefOffset;
-	line_t*				lines;
 	int16_t				linev1Offset;
 	int16_t				linev2Offset;
 	int16_t				linebacksecnum;
@@ -1179,7 +1170,6 @@ void P_GroupLines(void)
 
 	// count number of lines in each sector
 	total = 0;
-	lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef, PAGE_LOCKED, CA_TYPE_LEVELDATA);
 	for (i = 0; i < numlines; i++) {
 		li = &lines[i];
 		linebacksecnum = li->backsecnum;
@@ -1192,7 +1182,6 @@ void P_GroupLines(void)
 			total++;
 		}
 	}
-	Z_SetUnlocked(linesRef);
 
 	// build line tables for each sector        
 
@@ -1210,12 +1199,10 @@ void P_GroupLines(void)
 		sectors[i].linesoffset = linebufferindex;
 		previouslinebufferindex = linebufferindex;
 	 
-		lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef, PAGE_LOCKED, CA_TYPE_LEVELDATA);
 		//linebuffer = (int16_t*)Z_LoadBytesFromEMSWithOptions(linebufferRef, PAGE_LOCKED);
 		//vertexes = (vertex_t*)Z_LoadBytesFromConventionalWithOptions(vertexesRef, PAGE_LOCKED);
 
 		for (j = 0; j < numlines; j++) {
-			//lines = (line_t*)Z_LoadBytesFromConventionalWithOptions(linesRef);
 			li = &lines[j];
 			linev1Offset = li->v1Offset & VERTEX_OFFSET_MASK;
 			linev2Offset = li->v2Offset & VERTEX_OFFSET_MASK;
@@ -1224,14 +1211,11 @@ void P_GroupLines(void)
 				linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
-				vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 				M_AddToBox16(bbox, vertexes[linev1Offset].x, vertexes[linev1Offset].y);
 				M_AddToBox16(bbox, vertexes[linev2Offset].x, vertexes[linev2Offset].y);
 			}
 		}
-		Z_SetUnlocked(linesRef);
 		//Z_SetUnlocked(linebufferRef);
-		//Z_SetUnlocked(vertexesRef);
 #ifdef CHECK_FOR_ERRORS
 		if (linebufferindex - previouslinebufferindex != sectorlinecount) {
 			linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
@@ -1329,23 +1313,23 @@ P_SetupLevel
 
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	// note: most of this ordering is important 
-	P_LoadBlockMap(lumpnum + ML_BLOCKMAP); // 0ms
+	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadVertexes");
-	P_LoadVertexes(lumpnum + ML_VERTEXES); // 3 tic
+	P_LoadVertexes(lumpnum + ML_VERTEXES);
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadSectors");
-	P_LoadSectors(lumpnum + ML_SECTORS);  // 1 tic
+	P_LoadSectors(lumpnum + ML_SECTORS);
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadSideDefs");
-	P_LoadSideDefs(lumpnum + ML_SIDEDEFS); // 216 tics (slow because of texture name lookups. this is the only place texture names are ever used. during init_textures can we make a clever name to int backwards cache?
+	P_LoadSideDefs(lumpnum + ML_SIDEDEFS);
 
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadLineDefs");
-	P_LoadLineDefs(lumpnum + ML_LINEDEFS); // 40 tics
+	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadSubsectors");
-	P_LoadSubsectors(lumpnum + ML_SSECTORS);// 1 tic
+	P_LoadSubsectors(lumpnum + ML_SSECTORS);
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadNodes");
-	P_LoadNodes(lumpnum + ML_NODES); // 5 tics (263 total)
+	P_LoadNodes(lumpnum + ML_NODES);
 
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadSegs");
-	P_LoadSegs(lumpnum + ML_SEGS); // 50 tics (313 total)
+	P_LoadSegs(lumpnum + ML_SEGS);
 
 
 	//     sector    linedef      node      linebuffer

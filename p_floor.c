@@ -477,7 +477,6 @@ EV_BuildStairs
 	int16_t *linebuffer;
 	int16_t linebufferOffset;
 	int16_t linenum;
-	line_t* lines;
 	short_height_t sectorceilingheight;
 	short_height_t sectorfloorheight;
 	uint8_t sectorfloorpic;
@@ -537,7 +536,6 @@ EV_BuildStairs
 				linebufferOffset = sectorlinesoffset + i;
 				linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 				linenum = linebuffer[linebufferOffset];
-				lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 				if (!((&lines[linenum])->flags & ML_TWOSIDED)) {
 					continue;
 				}

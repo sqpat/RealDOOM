@@ -598,7 +598,6 @@ P_TryMove
     int16_t	side;
     int16_t	oldside;
     line_t*	ld;
-	line_t* lines;
  	int16_t lddx;
  	int16_t lddy;
 	int16_t ldspecial;
@@ -667,15 +666,14 @@ P_TryMove
     if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
 		while (numspechit--) {
 			// see if the line was crossed
-			lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 			ld = &lines[spechit[numspechit]];
 			lddx = ld->dx;
 			lddy = ld->dy;
 			ldv1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
 			ldspecial = ld->special;
 
-			side = P_PointOnLineSide (newx, newy, lddx, lddy, ldv1Offset, NULL);
-			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, ldv1Offset, NULL);
+			side = P_PointOnLineSide (newx, newy, lddx, lddy, ldv1Offset);
+			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, ldv1Offset);
 			if (side != oldside) {
 				if (ldspecial) {
 					P_CrossSpecialLine(spechit[numspechit], oldside, thingRef);
@@ -775,7 +773,6 @@ void P_HitSlideLine (int16_t linenum)
     
     fixed_t		movelen;
     fixed_t		newlen;
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	line_t ld = lines[linenum];
 	
@@ -789,7 +786,7 @@ void P_HitSlideLine (int16_t linenum)
 		return;
     }
 	
-    side = P_PointOnLineSide (playerMobj.x, playerMobj.y, ld.dx, ld.dy, ld.v1Offset & VERTEX_OFFSET_MASK, NULL);
+    side = P_PointOnLineSide (playerMobj.x, playerMobj.y, ld.dx, ld.dy, ld.v1Offset & VERTEX_OFFSET_MASK);
     lineangle = R_PointToAngle2_16 (0,0, ld.dx, ld.dy);
 
     if (side == 1)
@@ -820,14 +817,13 @@ boolean PTR_SlideTraverse (intercept_t* in)
 {
 	mobj_t* slidemo;
 	line_t li;
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	fixed_t_union temp;
 
 	li = lines[in->d.linenum];
 
     
     if ( ! (li.flags & ML_TWOSIDED) ) {
- 		if (P_PointOnLineSide (playerMobj.x, playerMobj.y, li.dx, li.dy, li.v1Offset & VERTEX_OFFSET_MASK, NULL)) {
+ 		if (P_PointOnLineSide (playerMobj.x, playerMobj.y, li.dx, li.dy, li.v1Offset & VERTEX_OFFSET_MASK)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -1030,11 +1026,9 @@ PTR_AimTraverse (intercept_t* in)
     fixed_t		thingbottomslope;
     fixed_t		dist;
 	MEMREF		thRef;
-	line_t* lines;
 	fixed_t_union temp;
 
     if (in->isaline) {
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		li = lines[in->d.linenum];
 	
 		if (!(li.flags & ML_TWOSIDED)) {
@@ -1137,12 +1131,10 @@ boolean PTR_ShootTraverse (intercept_t* in)
     fixed_t		thingtopslope;
     fixed_t		thingbottomslope;
 	MEMREF		thRef;
-	line_t*		lines;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 
     if (in->isaline) {
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		li = lines[in->d.linenum];
 		
 		if (li.special)
@@ -1383,7 +1375,6 @@ boolean	PTR_UseTraverse (intercept_t* in)
 {
     int16_t		side;
 	mobj_t* usething;
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
 	line_t line = lines[in->d.linenum];
 	if (!line.special) {
@@ -1402,7 +1393,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
     side = 0;
 	usething = (mobj_t*)Z_LoadThinkerBytesFromEMS(usethingRef);
 
-	if (P_PointOnLineSide(usething->x, usething->y, line.dx, line.dy, line.v1Offset & VERTEX_OFFSET_MASK, NULL) == 1) {
+	if (P_PointOnLineSide(usething->x, usething->y, line.dx, line.dy, line.v1Offset & VERTEX_OFFSET_MASK) == 1) {
 		side = 1;
 	}
     

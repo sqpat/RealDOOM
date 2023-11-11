@@ -16,7 +16,6 @@
 //
 
 #include <stdio.h>
-#include <alloca.h>
 
 #include "z_zone.h"
 #include "doomdef.h"
@@ -369,7 +368,6 @@ void AM_findMinMaxBoundaries(void)
     fixed_t a;
     fixed_t b;
 	fixed_t_union temp;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);  // vertexesRef is 0 sometimes?
 	min_x = min_y =  MAXLONG;
     max_x = max_y = -MAXLONG;
 	temp.h.fracbits = 0;
@@ -1060,7 +1058,6 @@ void AM_drawWalls(void)
 {
 	uint16_t i;
     static mline_t l;
-	line_t* lines;
 	int16_t linev1Offset;
 	int16_t linev2Offset;
 	int16_t lineflags;
@@ -1071,11 +1068,9 @@ void AM_drawWalls(void)
 	boolean ceilingheightnonequal;
 	int16_t mappedflag;
 	fixed_t_union temp;
-	vertex_t* vertexes;
 	temp.h.fracbits = 0;
 
     for (i=0;i<numlines;i++) {
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		linev1Offset = lines[i].v1Offset & VERTEX_OFFSET_MASK;
 		linev2Offset = lines[i].v2Offset & VERTEX_OFFSET_MASK;
 		mappedflag = lines[i].v1Offset & LINE_VERTEX_FLAG_9;
@@ -1084,7 +1079,6 @@ void AM_drawWalls(void)
 		linefrontsecnum = lines[i].frontsecnum;
 		linespecial = lines[i].special;
 
-		vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 		temp.h.intbits = vertexes[linev1Offset].x;
 		l.a.x = temp.w;
 		temp.h.intbits = vertexes[linev1Offset].y;

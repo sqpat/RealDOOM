@@ -337,7 +337,6 @@ EV_VerticalDoor
     vldoor_t*	door;
     int16_t		side = 0;
 	MEMREF doorRef;
-	line_t* lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	int16_t linespecial = lines[linenum].special;
 	int16_t sidenum;
 	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
@@ -398,7 +397,6 @@ EV_VerticalDoor
     // if the sector has an active thinker, use it
 	
 
-	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 	sidenum = lines[linenum].sidenum[side ^ 1];
 
 	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
@@ -480,7 +478,6 @@ EV_VerticalDoor
 		case 33:
 		case 34:
 			door->type = open;
-			lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 			(&lines[linenum])->special = 0;
 			linespecial = lines[linenum].special;
 			break;
@@ -492,7 +489,6 @@ EV_VerticalDoor
 		case 118:	// blazing door open
 			door->type = blazeOpen;
 			door->speed = VDOORSPEED*4;
-			lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 			(&lines[linenum])->special = 0;
 			linespecial = lines[linenum].special;
 			break;

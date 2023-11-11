@@ -99,7 +99,6 @@ P_RecursiveSound
 	int8_t		soundblocks)
 {
     int16_t		i;
-	line_t* lines;
 	line_t*	check;
     int16_t	othersecnum;
 	int16_t linecount;
@@ -147,7 +146,6 @@ P_RecursiveSound
 
 		
 
-		lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 		check = &lines[linenumber];
 		checkflags = check->flags;
 		checksidenum0 = check->sidenum[0];

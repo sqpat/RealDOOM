@@ -278,7 +278,6 @@ void R_AddLine (int16_t linenum)
 	int16_t sidemidtex;
 	sector_t frontsector;
 	sector_t backsector;
-	vertex_t*   vertexes;
 	fixed_t_union tempx;
 	fixed_t_union tempy;
     curlinenum = linenum;
@@ -288,7 +287,6 @@ void R_AddLine (int16_t linenum)
 		I_Error("R_Addline Error! lines out of bounds! %li %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
 	}
 #endif
-	vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 
 	tempx.h.fracbits = 0;
 	tempy.h.fracbits = 0;

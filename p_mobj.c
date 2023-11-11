@@ -138,7 +138,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	mobj_t* playermo;
 	fixed_t momomx;
 	fixed_t momomy;
-	line_t* lines;
 	int16_t ceilinglinebacksecnum;
 	int16_t mosecnum;
 	short_height_t sectorfloorheight;
@@ -200,7 +199,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 				P_SlideMove ();
 			} else if (mo->flags & MF_MISSILE) {
 				// explode a missile
-				lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 				ceilinglinebacksecnum=lines[ceilinglinenum].backsecnum;
 
 				if (ceilinglinenum != SECNUM_NULL && ceilinglinebacksecnum != SECNUM_NULL && sectors[ceilinglinebacksecnum].ceilingpic == skyflatnum) {

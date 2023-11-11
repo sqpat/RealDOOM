@@ -189,7 +189,6 @@ R_PointOnSegSide
     fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
-	vertex_t* vertexes = (vertex_t*)Z_LoadBytesFromConventional(vertexesRef);
 	
     fixed_t_union temp;
 

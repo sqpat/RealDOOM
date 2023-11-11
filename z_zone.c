@@ -999,7 +999,6 @@ int16_t Z_GetEMSPageFrameNoUpdate(uint32_t page_and_size, MEMREF ref) {  //todo 
 			}
 
 			if (allpagesgood) {
-				// linesref is page 2.. logical page 128
 				return pageframeindex;
 			}
 		}
