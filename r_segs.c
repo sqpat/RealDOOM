@@ -106,7 +106,6 @@ R_RenderMaskedSegRange
 	side_t* sides;
 	int16_t sidemidtexture;
 	vertex_t* vertexes; 
-	sector_t* sectors;
 	sector_t frontsector;
 	sector_t backsector;
 	int16_t temp2;
@@ -131,7 +130,6 @@ R_RenderMaskedSegRange
 	backsecnum = curlinebacksecnum;
  	texnum = texturetranslation[sidemidtexture];
 
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	frontsector = sectors[frontsecnum];
 	backsector = sectors[backsecnum];
 
@@ -434,7 +432,6 @@ R_StoreWallRange
 	texsize_t sidetextureoffset;
 	line_t* lines;
 	int16_t lineflags;
-	sector_t* sectors;
 	sector_t frontsector;
 	sector_t backsector;
 	fixed_t_union temp;
@@ -518,7 +515,6 @@ R_StoreWallRange
 		ds_p->scale2 = ds_p->scale1;
     }
     
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	frontsector = sectors[frontsecnum];
 	backsector = sectors[backsecnum];
 

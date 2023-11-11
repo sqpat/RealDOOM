@@ -751,7 +751,6 @@ P_DamageMobj
 	fixed_t inflictorx;
 	fixed_t inflictory;
 	fixed_t inflictorz;
-	sector_t* sectors;
 	int16_t targetsecnum;
 	int16_t targethealth;
 
@@ -822,7 +821,6 @@ P_DamageMobj
     if (targetplayer) {
 
 		// end of game hell hack
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		if (sectors[targetsecnum].special == 11 && damage >= targethealth) {
 			damage = target->health - 1;
 		}

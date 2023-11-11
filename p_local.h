@@ -121,7 +121,7 @@ void	P_SpawnPlayerMissile (mobjtype_t type);
 //
 // P_ENEMY
 //
-void P_NoiseAlert (MEMREF target, MEMREF emmiter);
+void P_NoiseAlert ();
 
 
 //
@@ -211,7 +211,7 @@ boolean P_CheckSight (MEMREF t1ref, MEMREF t2ref, mobj_t* t1);
 
 void 	P_UseLines ();
 
-boolean P_ChangeSector (int16_t secnum, boolean crunch);
+boolean P_ChangeSector (sector_t* sector, boolean crunch);
 
 extern MEMREF	linetargetRef;	// who got hit (or NULL)
 

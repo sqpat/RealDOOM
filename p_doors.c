@@ -31,7 +31,6 @@
 #include "sounds.h"
 #include "i_system.h"
 
-
 //
 // VERTICAL DOORS
 //
@@ -43,9 +42,7 @@ void T_VerticalDoor (MEMREF memref)
 {
     result_e	res;
 	vldoor_t* door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(memref);
-	int16_t doorsecnum = door->secnum;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-	sector_t doorsector = sectors[doorsecnum];
+	sector_t* doorsector = &sectors[door->secnum];
 	THINKERREF doorthinkerRef;
 	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(memref);
 
@@ -56,17 +53,17 @@ void T_VerticalDoor (MEMREF memref)
 			switch(door->type) {
 				case blazeRaise:
 					door->direction = -1; // time to go back down
-					S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_bdcls);
+					S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_bdcls);
 					break;
 		
 				case normal:
 					door->direction = -1; // time to go back down
-					S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_dorcls);
+					S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_dorcls);
 					break;
 		
 				case close30ThenOpen:
 					door->direction = 1;
-					S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_doropn);
+					S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_doropn);
 					break;
 		
 				default:
@@ -82,7 +79,7 @@ void T_VerticalDoor (MEMREF memref)
 				case raiseIn5Mins:
 					door->direction = 1;
 					door->type = normal;
-					S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_doropn);
+					S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_doropn);
 					break;
 		
 				default:
@@ -94,23 +91,21 @@ void T_VerticalDoor (MEMREF memref)
 		  case -1:
 		// DOWN
 
-			res = T_MovePlane(door->secnum, door->speed, doorsector.floorheight, false,1,door->direction);
+			res = T_MovePlane(doorsector, door->speed, doorsector->floorheight, false,1,door->direction);
 			door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(memref);
 			doorthinkerRef = door->thinkerRef;
 			if (res == floor_pastdest) {
 				switch(door->type) {
 					case blazeRaise:
 					case blazeClose:
-						sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-						sectors[doorsecnum].specialdataRef = NULL_MEMREF;
+						sectors[door->secnum].specialdataRef = NULL_MEMREF;
 						P_RemoveThinker (doorthinkerRef);  // unlink and free
-						S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_bdcls);
+						S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_bdcls);
 						break;
 		
 					case normal:
 					case close:
-						sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-						sectors[doorsecnum].specialdataRef = NULL_MEMREF;
+						sectors[door->secnum].specialdataRef = NULL_MEMREF;
 						P_RemoveThinker (doorthinkerRef);  // unlink and free
 						break;
 		
@@ -130,7 +125,7 @@ void T_VerticalDoor (MEMREF memref)
 		
 					default:
 						door->direction = 1;
-						S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_doropn);
+						S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_doropn);
 						break;
 				}
 			}
@@ -138,7 +133,7 @@ void T_VerticalDoor (MEMREF memref)
 	
 			case 1:
 				// UP
-				res = T_MovePlane(door->secnum,   door->speed, door->topheight, false,1,door->direction);
+				res = T_MovePlane(doorsector,   door->speed, door->topheight, false,1,door->direction);
 				door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(memref);
 
 				doorthinkerRef = door->thinkerRef;
@@ -156,8 +151,7 @@ void T_VerticalDoor (MEMREF memref)
 						case close30ThenOpen:
 						case blazeOpen:
 						case open:
-							sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-							sectors[doorsecnum].specialdataRef = NULL_MEMREF;
+							sectors[door->secnum].specialdataRef = NULL_MEMREF;
 							P_RemoveThinker (doorthinkerRef);  // unlink and free
 						break;
 		
@@ -244,8 +238,7 @@ EV_DoDoor
     vldoor_t*	door;
 	MEMREF doorRef;
 	int16_t doortopheight;
-	sector_t* sectors;
-	sector_t doorsector;
+	sector_t *doorsector;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	int16_t		j = 0;
 
@@ -254,7 +247,6 @@ EV_DoDoor
 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 
 	while (secnumlist[j] >= 0) {
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		secnum = secnumlist[j];
 		j++;
 		
@@ -266,7 +258,7 @@ EV_DoDoor
 
 		doorRef = Z_MallocThinkerEMS(sizeof(*door));
 		sectors[secnum].specialdataRef = doorRef;
-		doorsector = sectors[secnum];
+		doorsector = &sectors[secnum];
 		door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 
 		door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR);
@@ -284,7 +276,7 @@ EV_DoDoor
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
 			door->speed = VDOORSPEED * 4;
-			S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_bdcls);
+			S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_bdcls);
 			break;
 	    
 		  case close:
@@ -292,13 +284,13 @@ EV_DoDoor
 			door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
-			S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_dorcls);
+			S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_dorcls);
 			break;
 	    
 		  case close30ThenOpen:
-			door->topheight = doorsector.ceilingheight;
+			door->topheight = doorsector->ceilingheight;
 			door->direction = -1;
-			S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_dorcls);
+			S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_dorcls);
 			break;
 	    
 		  case blazeRaise:
@@ -308,8 +300,8 @@ EV_DoDoor
 			door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->speed = VDOORSPEED * 4;
-			if (door->topheight != (doorsector.ceilingheight))
-				S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_bdopn);
+			if (door->topheight != (doorsector->ceilingheight))
+				S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_bdopn);
 			break;
 	    
 		  case normal:
@@ -318,8 +310,8 @@ EV_DoDoor
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
 			door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
-			if (door->topheight != doorsector.ceilingheight)
-				S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_doropn);
+			if (door->topheight != doorsector->ceilingheight)
+				S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_doropn);
 			break;
 	    
 		  default:
@@ -351,8 +343,7 @@ EV_VerticalDoor
 	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	side_t* sides;
 	int16_t doortopheight;
-	sector_t doorsector;
-	sector_t* sectors;
+	sector_t *doorsector;
 
 
 
@@ -412,13 +403,12 @@ EV_VerticalDoor
 
 	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	secnum = sides[sidenum].secnum;
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-	doorsector = sectors[secnum];
+	doorsector = &sectors[secnum];
 
 
-    if (doorsector.specialdataRef) {
+    if (doorsector->specialdataRef) {
 		
-		doorRef = doorsector.specialdataRef;
+		doorRef = doorsector->specialdataRef;
 		door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 	 
 
@@ -450,23 +440,22 @@ EV_VerticalDoor
     {
       case 117:	// BLAZING DOOR RAISE
       case 118:	// BLAZING DOOR OPEN
-		  S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_bdopn);
+		  S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_bdopn);
 	break;
 	
       case 1:	// NORMAL DOOR SOUND
       case 31:
-		  S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_doropn);
+		  S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_doropn);
 	break;
 	
       default:	// LOCKED DOOR SOUND
-		  S_StartSoundWithParams(doorsector.soundorgX, doorsector.soundorgY, sfx_doropn);
+		  S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_doropn);
 	break;
     }
 	
     
     // new door thinker
 	doorRef = Z_MallocThinkerEMS(sizeof(*door));
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectors[secnum].specialdataRef = doorRef;
 
 	
@@ -523,7 +512,6 @@ void P_SpawnDoorCloseIn30 (int16_t secnum)
 {
     vldoor_t*	door;
 	MEMREF doorRef;
-	sector_t* sectors;
 
 	doorRef = Z_MallocThinkerEMS(sizeof(*door));
 
@@ -535,7 +523,6 @@ void P_SpawnDoorCloseIn30 (int16_t secnum)
 	door->speed = VDOORSPEED;
 	door->topcountdown = 30 * 35;
 
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectors[secnum].specialdataRef = doorRef;
 	sectors[secnum].special = 0;
 
@@ -552,7 +539,6 @@ P_SpawnDoorRaiseIn5Mins
 	vldoor_t*	door;
 	MEMREF doorRef;
 	int16_t doortopheight;
-	sector_t* sectors;
 	doorRef = Z_MallocThinkerEMS(sizeof(*door));
 
 	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
@@ -570,7 +556,6 @@ P_SpawnDoorRaiseIn5Mins
 	door->topwait = VDOORWAIT;
     door->topcountdown = 5 * 60 * 35;
 
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectors[secnum].specialdataRef = doorRef;
 	sectors[secnum].special = 0;
 

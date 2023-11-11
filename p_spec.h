@@ -525,7 +525,7 @@ typedef uint8_t result_e;
 
 result_e
 T_MovePlane
-( int16_t secnum,
+( sector_t* sector,
   short_height_t	speed,
   short_height_t	dest,
   boolean	crush,

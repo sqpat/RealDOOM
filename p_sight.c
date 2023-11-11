@@ -300,7 +300,6 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 	int16_t linev2Offset;
 	uint8_t lineflags;
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
-	sector_t* sectors;
 	fixed_t_union temp;
  	temp.h.fracbits = 0;
     // check lines
@@ -370,7 +369,6 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 
 		// no wall to block sight with?
 
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		if (sectors[frontsecnum].floorheight == sectors[backsecnum].floorheight && sectors[frontsecnum].ceilingheight == sectors[backsecnum].ceilingheight) {
 			continue;

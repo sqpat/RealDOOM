@@ -406,7 +406,6 @@ void R_AddSprites (int16_t secnum)
     //  subsectors during BSP building.
     // Thus we check whether its already added.
     
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 	if (sectors[secnum].validcount == validcount)
         return;         
@@ -559,8 +558,6 @@ void R_DrawPlayerSprites (void)
 	uint8_t         lightnum;
     pspdef_t*   psp;
 	mobj_t*     playermo;
-	sector_t* sectors;
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
     
     // get light level

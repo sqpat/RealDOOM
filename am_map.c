@@ -1067,7 +1067,6 @@ void AM_drawWalls(void)
 	int16_t linefrontsecnum;
 	int16_t linebacksecnum;
 	int16_t linespecial;
-	sector_t* sectors;
 	boolean floorheightnonequal;
 	boolean ceilingheightnonequal;
 	int16_t mappedflag;
@@ -1101,7 +1100,6 @@ void AM_drawWalls(void)
 			} if (linebacksecnum == SECNUM_NULL) {
 				AM_drawMline(&l, WALLCOLORS);
 			} else {
-				sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 				floorheightnonequal = sectors[linebacksecnum].floorheight != sectors[linefrontsecnum].floorheight;
 				ceilingheightnonequal = sectors[linebacksecnum].ceilingheight != sectors[linefrontsecnum].ceilingheight;
 				if (linespecial == 39) { // teleporters
@@ -1217,9 +1215,7 @@ AM_drawThings
     uint16_t		i;
     mobj_t*	t;
 	MEMREF tRef;
-	sector_t* sectors;
 	for (i=0;i<numsectors;i++) {
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		tRef = sectors[i].thinglistRef;
 		while (tRef) {
 			t = (mobj_t*)Z_LoadThinkerBytesFromEMS(tRef);

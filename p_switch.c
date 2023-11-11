@@ -48,7 +48,6 @@ P_StartButton
   int16_t		time )
 {
     int8_t		i;
-	sector_t* sectors;
     // See if button is already pressed
     for (i = 0;i < MAXBUTTONS;i++)
     {
@@ -60,8 +59,6 @@ P_StartButton
 	}
     }
     
-
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
     for (i = 0;i < MAXBUTTONS;i++)
     {

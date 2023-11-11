@@ -276,7 +276,6 @@ void R_AddLine (int16_t linenum)
 	int16_t linenumv2Offset = segs[linenum].v2Offset;
 	side_t* sides;
 	int16_t sidemidtex;
-	sector_t* sectors;
 	sector_t frontsector;
 	sector_t backsector;
 	vertex_t*   vertexes;
@@ -364,7 +363,6 @@ void R_AddLine (int16_t linenum)
 		goto clipsolid;
 	}
 
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	frontsector = sectors[frontsecnum];
 	backsector = sectors[backsecnum];
 
@@ -571,7 +569,6 @@ void R_Subsector(int16_t subsecnum)
 	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	int16_t lineoffset = 0;
 	int16_t firstline;
-	sector_t* sectors;
 	sector_t* frontsector;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
@@ -580,7 +577,6 @@ void R_Subsector(int16_t subsecnum)
     count = subsectors[subsecnum].numlines;
 	firstline = subsectors[subsecnum].firstline;
 
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	frontsector = &sectors[frontsecnum];
 
 	// temp.h.intbits = frontsector->floorheight >> SHORTFLOORBITS;

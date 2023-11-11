@@ -103,7 +103,6 @@ P_RecursiveSound
 	line_t*	check;
     int16_t	othersecnum;
 	int16_t linecount;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sector_t* soundsector = &sectors[secnum];
 	int16_t *linebuffer;
 	side_t* sides;
@@ -141,7 +140,6 @@ P_RecursiveSound
 	// todo load the whole sector's lines into te mp buffer to prevent thrashing? Recursive function tho. would be lots of stack memory
 	  // todo maybe 'lock' ems pages here once that function is done so these dont thrash
 	for (i=0 ;i<linecount ; i++) {
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		soundsector = &sectors[secnum];
 		lineoffset = soundsector->linesoffset + i;
 		linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
@@ -194,13 +192,12 @@ P_RecursiveSound
 //
 void
 P_NoiseAlert
-( MEMREF	targetRef,
-  MEMREF	emmiterRef )
+(  )
 {
-	mobj_t* emmiter = (mobj_t*)Z_LoadThinkerBytesFromEMS(emmiterRef);
-	soundtargetRef = targetRef;
+	
+	soundtargetRef = PLAYER_MOBJ_REF;
     validcount++;
-    P_RecursiveSound (emmiter->secnum, 0);
+    P_RecursiveSound (playerMobj.secnum, 0);
 }
 
 
@@ -659,9 +656,7 @@ void A_Look (MEMREF actorRef, mobj_t* actor)
     mobj_t*	targ;
 	MEMREF targRef;
 	int16_t actorsecnum = actor->secnum;
-	sector_t* sectors;
 	actor->threshold = 0;	// any shot will wake up
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 
 	#ifdef RANGECHECK

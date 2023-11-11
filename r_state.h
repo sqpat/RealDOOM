@@ -83,7 +83,8 @@ extern int16_t		numsegs;
 extern MEMREF		segsRef;
 
 extern int16_t		numsectors;
-extern MEMREF	sectorsRef;
+//extern MEMREF	sectorsRef;
+extern sector_t* sectors;
 
 extern int16_t		numsubsectors;
 extern MEMREF	subsectorsRef;

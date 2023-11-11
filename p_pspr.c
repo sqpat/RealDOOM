@@ -273,7 +273,7 @@ void P_FireWeapon ()
     newstate = weaponinfo[player.readyweapon].atkstate;
 
 	P_SetPsprite (ps_weapon, newstate);
-	P_NoiseAlert (PLAYER_MOBJ_REF, PLAYER_MOBJ_REF);
+	P_NoiseAlert ();
 }
 
 

@@ -354,14 +354,12 @@ int16_t	lowfloor;
 void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {
     sector_t*	front;
     sector_t*	back;
-	sector_t*   sectors;
     if (lineside1 == -1) {
 		// single sided line
 		openrange = 0;
 		return;
 	}
 
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	
 	front = &sectors[linefrontsecnum];
 	back = &sectors[linebacksecnum];
@@ -412,7 +410,6 @@ void P_UnsetThingPosition (MEMREF thingRef, mobj_t* thing)
 	int32_t thingflags = thing->flags;
 	//int16_t thingsubsecnum = thing->subsecnum;
 	int16_t thingsecnum = thing->secnum;
-	sector_t* sectors;
 	thingx.w = thing->x;
 	thingy.w = thing->y;
 
@@ -429,7 +426,6 @@ void P_UnsetThingPosition (MEMREF thingRef, mobj_t* thing)
 			changeThing->snextRef = thingsnextRef;
 		}
 		else {
-			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 			sectors[thingsecnum].thinglistRef = thingsnextRef;
 			 
 
@@ -481,7 +477,6 @@ P_SetThingPosition (MEMREF thingRef, mobj_t* thing)
 	mobj_t* thingList;
 	int16_t subsectorsecnum;
 	subsector_t* subsectors;
-	sector_t* sectors;
 	MEMREF oldsectorthinglist;
 	fixed_t_union temp;
     // link into subsector
@@ -500,7 +495,6 @@ P_SetThingPosition (MEMREF thingRef, mobj_t* thing)
     if ( ! (thing->flags & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
 
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		oldsectorthinglist = sectors[subsectorsecnum].thinglistRef;
 		sectors[subsectorsecnum].thinglistRef = thingRef;
 

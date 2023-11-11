@@ -45,9 +45,8 @@ void T_MoveCeiling (MEMREF memref)
 {
     result_e	res;
 	ceiling_t* ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
-	sector_t* sectors;
-	sector_t ceilingsector;
-	int16_t ceilingsecnum;
+	sector_t* ceilingsector = &sectors[ceiling->secnum];
+	//int16_t ceilingsecnum;
 
     switch(ceiling->direction) {
 		case 0:
@@ -55,11 +54,7 @@ void T_MoveCeiling (MEMREF memref)
 			break;
 		case 1:
 			// UP
-			res = T_MovePlane(ceiling->secnum, ceiling->speed, ceiling->topheight, false,1,ceiling->direction);
-			ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
-			ceilingsecnum = ceiling->secnum;
-			sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-			ceilingsector = sectors[ceilingsecnum];
+			res = T_MovePlane(ceilingsector, ceiling->speed, ceiling->topheight, false,1,ceiling->direction);
 			ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
 
 			if (!(leveltime.h.fracbits &7)) {
@@ -67,7 +62,7 @@ void T_MoveCeiling (MEMREF memref)
 					case silentCrushAndRaise:
 						break;
 					default:
-						S_StartSoundWithParams(ceilingsector.soundorgX, ceilingsector.soundorgY, sfx_stnmov);
+						S_StartSoundWithParams(ceilingsector->soundorgX, ceilingsector->soundorgY, sfx_stnmov);
 						// ? 
 						break;
 				}
@@ -81,7 +76,7 @@ void T_MoveCeiling (MEMREF memref)
 					break;
 					
 					case silentCrushAndRaise:
-						S_StartSoundWithParams(ceilingsector.soundorgX, ceilingsector.soundorgY, sfx_pstop);
+						S_StartSoundWithParams(ceilingsector->soundorgX, ceilingsector->soundorgY, sfx_pstop);
 					case fastCrushAndRaise:
 					case crushAndRaise:
 						ceiling->direction = -1;
@@ -96,7 +91,7 @@ void T_MoveCeiling (MEMREF memref)
 			
 		case -1:
 			// DOWN
-			res = T_MovePlane(ceiling->secnum,
+			res = T_MovePlane(ceilingsector,
 					ceiling->speed,
 					ceiling->bottomheight,
 					ceiling->crush,1,ceiling->direction);
@@ -106,7 +101,7 @@ void T_MoveCeiling (MEMREF memref)
 				switch(ceiling->type) {
 					case silentCrushAndRaise: break;
 						default:
-						S_StartSoundWithParams(ceilingsector.soundorgX, ceilingsector.soundorgY, sfx_stnmov);
+						S_StartSoundWithParams(ceilingsector->soundorgX, ceilingsector->soundorgY, sfx_stnmov);
 				}
 			}
 			
@@ -114,7 +109,7 @@ void T_MoveCeiling (MEMREF memref)
 			{
 				switch(ceiling->type) {
 					case silentCrushAndRaise:
-						S_StartSoundWithParams(ceilingsector.soundorgX, ceilingsector.soundorgY, sfx_pstop);
+						S_StartSoundWithParams(ceilingsector->soundorgX, ceilingsector->soundorgY, sfx_pstop);
 					case crushAndRaise:
 						ceiling->speed = CEILSPEED;
 					case fastCrushAndRaise:
@@ -159,12 +154,10 @@ EV_DoCeiling
 {
     int16_t		secnum;
     int16_t		rtn;
-    //sector_t*	sec;
+    sector_t*	sector;
 	int16_t		j = 0;
     ceiling_t*	ceiling;
 	MEMREF ceilingRef;
-	sector_t* sectors;
-	sector_t sector;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
     secnum = -1;
@@ -186,9 +179,8 @@ EV_DoCeiling
 		secnum = secnumlist[j];
 		j++;
 			
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
-		sector = sectors[secnum];
+		sector = &sectors[secnum];
 
 		// new door thinker
 		rtn = 1;
@@ -205,8 +197,8 @@ EV_DoCeiling
 		{
 		  case fastCrushAndRaise:
 			ceiling->crush = true;
-			ceiling->topheight = sector.ceilingheight;
-			ceiling->bottomheight = sector.floorheight+(8 << SHORTFLOORBITS);
+			ceiling->topheight = sector->ceilingheight;
+			ceiling->bottomheight = sector->floorheight+(8 << SHORTFLOORBITS);
 			ceiling->direction = -1;
 			ceiling->speed = CEILSPEED * 2;
 			break;
@@ -214,10 +206,10 @@ EV_DoCeiling
 		  case silentCrushAndRaise:
 		  case crushAndRaise:
 			ceiling->crush = true;
-			ceiling->topheight = sector.ceilingheight;
+			ceiling->topheight = sector->ceilingheight;
 		  case lowerAndCrush:
 		  case lowerToFloor:
-			ceiling->bottomheight = sector.floorheight;
+			ceiling->bottomheight = sector->floorheight;
 			if (type != lowerToFloor)
 				ceiling->bottomheight += (8 << SHORTFLOORBITS);
 			ceiling->direction = -1;
@@ -234,7 +226,7 @@ EV_DoCeiling
 			   }
 		}
 		
-		ceiling->tag = sector.tag;
+		ceiling->tag = sector->tag;
 		ceiling->type = type;
 		P_AddActiveCeiling(ceilingRef);
     }
@@ -265,9 +257,7 @@ void P_RemoveActiveCeiling(MEMREF memref)
 {
     int8_t		i;
 	ceiling_t* c;
-	int16_t csecnum;
 	THINKERREF cthinkerRef;
-	sector_t* sectors;
 
     for (i = 0;i < MAXCEILINGS;i++)
     {
@@ -275,10 +265,8 @@ void P_RemoveActiveCeiling(MEMREF memref)
 	{
 		c = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
 		cthinkerRef = c->thinkerRef;
-		csecnum = c->secnum;
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
-		sectors[csecnum].specialdataRef = NULL_MEMREF;
+		sectors[c->secnum].specialdataRef = NULL_MEMREF;
 	    P_RemoveThinker (cthinkerRef);
 	    activeceilings[i] = NULL_MEMREF;
 	    break;

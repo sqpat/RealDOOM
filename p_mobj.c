@@ -140,7 +140,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	fixed_t momomy;
 	line_t* lines;
 	int16_t ceilinglinebacksecnum;
-	sector_t* sectors;
 	int16_t mosecnum;
 	short_height_t sectorfloorheight;
 	fixed_t_union temp;
@@ -203,7 +202,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 				// explode a missile
 				lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 				ceilinglinebacksecnum=lines[ceilinglinenum].backsecnum;
-				sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 				if (ceilinglinenum != SECNUM_NULL && ceilinglinebacksecnum != SECNUM_NULL && sectors[ceilinglinebacksecnum].ceilingpic == skyflatnum) {
 					// Hack to prevent missiles exploding
@@ -253,7 +251,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	if (mo->flags & MF_CORPSE) {
 		// do not stop sliding
 		//  if halfway off a step with some momentum
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		sectorfloorheight = sectors[mosecnum].floorheight;
 		mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
@@ -439,7 +436,6 @@ P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 	int16_t mobjsecnum;
 	fixed_t mobjx;
 	fixed_t mobjy;
-	sector_t* sectors;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	x.h.fracbits = 0;
@@ -455,7 +451,6 @@ P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 	mobjsecnum = mobj->secnum;
 	mobjx = mobj->x;
 	mobjy = mobj->y;
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 	// spawn a teleport fog at old spot
 	// because of removal of the body?
@@ -469,7 +464,6 @@ P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 	subsecnum = R_PointInSubsector(x.w, y.w);
 	subsectors = Z_LoadBytesFromConventional(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG);
 
 	S_StartSoundFromRef(moRef, sfx_telept, setStateReturn);
@@ -596,7 +590,6 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobjinfo_t*	info;
 	MEMREF mobjRef;
 	int16_t mobjsecnum;
-	sector_t* sectors;
 	short_height_t sectorfloorheight;
 	short_height_t sectorceilingheight;
 	fixed_t_union temp;
@@ -648,7 +641,6 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 	mobjsecnum = mobj->secnum;
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	sectorfloorheight = sectors[mobjsecnum].floorheight;
 	sectorceilingheight = sectors[mobjsecnum].ceilingheight;
 	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);

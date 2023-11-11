@@ -123,7 +123,6 @@ P_TeleportMove
 	int16_t	newsubsecsecnum;
 	subsector_t*	subsectors;
 	int16_t	newsubsecnum;
-	sector_t* sectors;
 	
 	mobj_t* tmthing;
 	mobj_t* thing;
@@ -154,7 +153,6 @@ P_TeleportMove
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
     tmceilingz = sectors[newsubsecsecnum].ceilingheight;
 			
@@ -482,7 +480,6 @@ P_CheckPosition
 	subsector_t*	subsectors;
 	int16_t newsubsecnum;
 	int16_t newsubsecsecnum;
-	sector_t* sectors;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
     tmthingRef = thingRef;
@@ -518,7 +515,6 @@ P_CheckPosition
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-	sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
     tmceilingz = sectors[newsubsecsecnum].ceilingheight;
 	
@@ -1035,7 +1031,6 @@ PTR_AimTraverse (intercept_t* in)
     fixed_t		dist;
 	MEMREF		thRef;
 	line_t* lines;
-	sector_t* sectors;
 	fixed_t_union temp;
 
     if (in->isaline) {
@@ -1057,7 +1052,6 @@ PTR_AimTraverse (intercept_t* in)
 		}
 	
 		dist = FixedMul (attackrange.w, in->frac);
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		temp.h.fracbits = 0;
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
@@ -1144,7 +1138,6 @@ boolean PTR_ShootTraverse (intercept_t* in)
     fixed_t		thingbottomslope;
 	MEMREF		thRef;
 	line_t*		lines;
-	sector_t*	sectors;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 
@@ -1162,7 +1155,6 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		P_LineOpening(li.sidenum[1], li.frontsecnum, li.backsecnum);
 		
 		dist = FixedMul (attackrange.w, in->frac);
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
 			// temp.h.intbits = openbottom >> SHORTFLOORBITS;
@@ -1639,16 +1631,15 @@ boolean PIT_ChangeSector (MEMREF thingRef)
 //
 boolean
 P_ChangeSector
-( int16_t	secnum,
+( sector_t*	sector,
   boolean	crunch )
 {
     int16_t		x;
     int16_t		y;
-	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-	int16_t xl = sectors[secnum].blockbox[BOXLEFT];
-	int16_t xh = sectors[secnum].blockbox[BOXRIGHT];
-	int16_t yh = sectors[secnum].blockbox[BOXTOP];
-	int16_t yl = sectors[secnum].blockbox[BOXBOTTOM];
+	int16_t xl = sector->blockbox[BOXLEFT];
+	int16_t xh = sector->blockbox[BOXRIGHT];
+	int16_t yh = sector->blockbox[BOXTOP];
+	int16_t yl = sector->blockbox[BOXBOTTOM];
 
 
     nofit = false;

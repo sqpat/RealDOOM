@@ -51,7 +51,8 @@ int16_t             numsegs;
 MEMREF          segsRef;
 
 int16_t             numsectors;
-MEMREF          sectorsRef;
+//MEMREF          sectorsRef;
+sector_t*		sectors;
 
 int16_t             numsubsectors;
 MEMREF    subsectorsRef;
@@ -316,7 +317,7 @@ void P_LoadSectors(int16_t lump)
 	mapsector_t        ms;
 	sector_t*           ss;
 	MEMREF				dataRef;
-	sector_t* sectors;
+	MEMREF sectorsRef;
 	// most tags are under 100, a couple are like 666 or 667 or 999 or other such special numbers.
 	// we will special case those and fit it in 8 bits so allocations are smaller
 	int16_t convertedtag;
@@ -343,7 +344,7 @@ void P_LoadSectors(int16_t lump)
 		} else if (convertedtag == 999) {
 			convertedtag = TAG_999;
 		}
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
+		//sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
 		ss->floorpic = R_FlatNumForNameC(ms.floorpic);
@@ -1155,7 +1156,6 @@ void P_GroupLines(void)
 	int16_t				linefrontsecnum;
 	int16_t				linebufferindex;
 	int16_t				sidesecnum;
-	sector_t*			sectors;
 	uint8_t				sectorlinecount;
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
@@ -1185,7 +1185,6 @@ void P_GroupLines(void)
 		linebacksecnum = li->backsecnum;
 		linefrontsecnum = li->frontsecnum;
 		total++;
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		sectors[linefrontsecnum].linecount++;
 
 		if (linebacksecnum != -1 && linebacksecnum != linefrontsecnum) {
@@ -1204,7 +1203,6 @@ void P_GroupLines(void)
 	tempv2.h.fracbits = 0;
 
 	for (i = 0; i < numsectors; i++) {
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		M_ClearBox16(bbox);
 		
 		sectorlinecount = sectors[i].linecount;
@@ -1244,8 +1242,6 @@ void P_GroupLines(void)
 		// set the degenmobj_t to the middle of the bounding box
 		
 
-		sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-		
 		sectors[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
 		sectors[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
 
