@@ -253,7 +253,9 @@ typedef struct
 uint8_t R_FlatNumForNameA(int8_t* name)
 {
 	int16_t         i;
+#ifdef CHECK_FOR_ERRORS
 	int8_t        namet[9];
+#endif
 
 	i = W_CheckNumForName(name);
 
@@ -423,7 +425,9 @@ R_InstallSpriteLump
 
 
 
-extern MEMREF			spritesRef;
+//extern MEMREF			spritesRef;
+extern spritedef_t* sprites;
+
 extern int16_t             numsprites;
 
 extern spriteframe_t   sprtemp[29];
@@ -455,9 +459,8 @@ void R_InitSpriteDefs()
 	int16_t         start;
 	int16_t         end;
 	int16_t         patched;
-	spritedef_t* sprites;
 	spriteframe_t* spriteframes;
-
+	MEMREF spritesRef;
 
 	int8_t *namelist[NUMSPRITES] = {
 		"TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
@@ -495,6 +498,7 @@ void R_InitSpriteDefs()
 		return;
 
 	spritesRef = Z_MallocConventional(numsprites * sizeof(*sprites), PU_STATIC, CA_TYPE_SPRITE, 0x00, ALLOC_TYPE_SPRITEDEFS);
+	sprites = (spritedef_t*)Z_LoadSpriteFromConventional(spritesRef);
 
 	//todo does this have to move into the loop for safety?
 	start = firstspritelump - 1;
@@ -535,7 +539,6 @@ void R_InitSpriteDefs()
 				}
 			}
 		}
-		sprites = (spritedef_t*)Z_LoadSpriteFromConventional(spritesRef);
 
 		// check the frames that were found for completeness
 		if (maxframe == -1)
@@ -581,7 +584,7 @@ void R_InitSpriteDefs()
 		// allocate space for the frames present and copy sprtemp to it
 		sprites[i].numframes = maxframe;
 		sprites[i].spriteframesRef = Z_MallocConventional(maxframe * sizeof(spriteframe_t), PU_STATIC, CA_TYPE_SPRITE, 0x00, ALLOC_TYPE_SPRITEFRAMES);
-		//Z_RefIsActive(spritesRef);
+
 
 		spriteframes = Z_LoadSpriteFromConventional(sprites[i].spriteframesRef);
 
@@ -618,7 +621,6 @@ void R_InitSprites()
 //
 void P_Init(void)
 {
-	int16_t i;
 	P_InitSwitchList();
 	P_InitPicAnims();
 	R_InitSprites();

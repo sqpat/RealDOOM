@@ -193,7 +193,6 @@ P_GiveBody
 ( 
   int16_t		num )
 {
-	mobj_t* playerMo;
     if (player.health >= MAXHEALTH)
 	return false;
 		
@@ -310,7 +309,6 @@ P_TouchSpecialThing
      int8_t		i;
     fixed_t	delta;
     int16_t		sound;
-	mobj_t* playerMo;
 	mobj_t* special = (mobj_t*)Z_LoadThinkerBytesFromEMS(specialRef);
 	fixed_t specialz = special->z;
 	spritenum_t specialsprite = special->sprite;

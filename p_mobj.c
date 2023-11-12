@@ -135,7 +135,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
     player_t*	player;
     fixed_t	xmove;
     fixed_t	ymove;
-	mobj_t* playermo;
 	fixed_t momomx;
 	fixed_t momomy;
 	int16_t ceilinglinebacksecnum;
@@ -261,20 +260,13 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	momomx = mo->momx;
 	momomy = mo->momy;
 	// mo and player can dereference each other here... let's not create a situation where both pointers are needed in the same if block
-	if (player) {
-		playermo = &playerMobj;
-
-	}
 	
 
     if ((momomx > -STOPSPEED && momomx < STOPSPEED && momomy > -STOPSPEED && momomy < STOPSPEED) && 
 			(!player || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) 
 		) {
 	// if in a walking frame, stop moving
-		if (player) {
-			playermo = &playerMobj;
-		}
-		if (player && (uint32_t)((playermo->state - states) - S_PLAY_RUN1) < 4) {
+		if (player && (uint32_t)((playerMobj.state - states) - S_PLAY_RUN1) < 4) {
 			P_SetMobjState(PLAYER_MOBJ_REF, S_PLAY, &playerMobj);
 			mo = setStateReturn;
 		}

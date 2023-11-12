@@ -63,7 +63,7 @@ int16_t           screenheightarray[SCREENWIDTH];
 
 // variables used to look up
 //  and range check thing_t sprites patches
-MEMREF			spritesRef;
+spritedef_t*	sprites;
 int16_t             numsprites;
 
 
@@ -230,7 +230,6 @@ void R_ProjectSprite (MEMREF thingRef)
     
     angle_t             ang;
     fixed_t             iscale;
-	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
 	
 	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
@@ -269,7 +268,6 @@ void R_ProjectSprite (MEMREF thingRef)
         return;
 
     // decide which patch to use for sprite relative to player
-	sprites = Z_LoadSpriteFromConventional(spritesRef);
 	spritespriteframeRef = sprites[thingsprite].spriteframesRef;
 	spritenumframes = sprites[thingsprite].numframes;
 	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(spritespriteframeRef);
@@ -454,16 +452,10 @@ void R_DrawPSprite (pspdef_t* psp)
     boolean             flip;
     vissprite_t*        vis;
     vissprite_t         avis;
-	int16_t*			spritetopoffset;
-	int16_t*			spritewidth;
-	int16_t*			spriteoffset;
-	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
     fixed_t_union temp;
 
 	// decide which patch to use
-
-	sprites = (spritedef_t*) Z_LoadSpriteFromConventional(spritesRef);
 
 	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprites[psp->state->sprite].spriteframesRef);
 
@@ -557,7 +549,6 @@ void R_DrawPlayerSprites (void)
 	uint8_t         i;
 	uint8_t         lightnum;
     pspdef_t*   psp;
-	mobj_t*     playermo;
 
     
     // get light level

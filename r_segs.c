@@ -98,7 +98,6 @@ R_RenderMaskedSegRange
 	int16_t		texnum;
 	fixed_t_union temp;
 
-	uint8_t* textureheight;
 	int16_t siderowoffset;
 	int16_t curlinev1Offset; int16_t curlinev2Offset; int16_t curlinefrontsecnum; int16_t curlinebacksecnum; int16_t curlinesidedefOffset; int16_t curlinelinedefOffset;
 	int16_t sidemidtexture;

@@ -269,7 +269,6 @@ boolean
 ST_Responder (event_t* ev)
 {
 	int8_t           i;
-  mobj_t* plyrmo;
     
   // Filter automap on/off.
   if (ev->type == ev_keyup
@@ -512,7 +511,6 @@ void ST_updateFaceWidget(void)
     static int8_t  lastattackdown = -1;
     static int8_t  priority = 0;
     boolean     doevilgrin;
-	mobj_t* plyrmo;
 	mobj_t* plyrattacker;
 
     if (priority < 10)
@@ -680,7 +678,7 @@ void ST_updateFaceWidget(void)
 
 void ST_updateWidgets(void)
 {
-	static int16_t largeammo = 1994; // means "n/a"
+	//static int16_t largeammo = 1994; // means "n/a"
 	int8_t i;
 
 	/*
@@ -720,7 +718,6 @@ void ST_doPaletteStuff(void)
 {
 
 	int8_t         palette;
-    byte*       pal;
 	int16_t         cnt;
 	int16_t         bzc;
 

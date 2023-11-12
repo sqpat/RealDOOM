@@ -115,7 +115,6 @@ void P_LoadVertexes(int16_t lump)
 	mapvertex_t*			data;
 	uint16_t                 i;
 	mapvertex_t			ml;
-	vertex_t*           li;
 	MEMREF vertexesRef;
 	// Determine number of lumps:
 	//  total lump length / vertex record length.
@@ -277,7 +276,9 @@ void P_LoadSubsectors(int16_t lump)
 uint8_t R_FlatNumForNameC(int8_t* name)
 {
 	int16_t         i;
+#ifdef CHECK_FOR_ERRORS
 	int8_t        namet[9];
+#endif
 
 	i = W_CheckNumForName(name);
 
@@ -439,7 +440,7 @@ void P_SpawnPlayer(mapthing_t* mthing)
 
 	MEMREF mobjRef;
 	mobj_t*		mobj;
-	int16_t mthingtype = mthing->type;
+	//int16_t mthingtype = mthing->type;
 	int16_t mthingx = mthing->x;
 	int16_t mthingy = mthing->y;
 	int16_t mthingangle = mthing->angle;

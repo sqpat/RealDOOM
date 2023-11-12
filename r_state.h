@@ -74,7 +74,8 @@ extern int16_t firstnode;
 // Lookup tables for map data.
 //
 extern int16_t		numsprites;
-extern MEMREF	spritesRef;
+//extern MEMREF	spritesRef;
+extern spritedef_t*	sprites;
 
 extern int16_t		numvertexes;
 extern vertex_t*	vertexes;

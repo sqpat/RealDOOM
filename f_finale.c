@@ -712,7 +712,6 @@ void F_CastDrawer (void)
     boolean		flip;
 	MEMREF			patchRef;
 	patch_t*		patch;
-	spritedef_t*	sprites;
 	spriteframe_t*  spriteframes;
 	int8_t			text[100];
 
@@ -722,7 +721,6 @@ void F_CastDrawer (void)
     F_CastPrint (text);
     
     // draw the current frame in the middle of the screen
-	sprites = (spritedef_t*) Z_LoadSpriteFromConventional(spritesRef);
 		
 	sprite = &sprites[caststate->sprite];
 	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprite->spriteframesRef);

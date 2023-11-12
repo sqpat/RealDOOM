@@ -236,7 +236,6 @@ void P_PlayerThink (void)
 {
     ticcmd_t*		cmd;
     weapontype_t	newweapon;
-	mobj_t* playermo;
 
     // fixme: do this in the cheat code
     if (player.cheats & CF_NOCLIP)

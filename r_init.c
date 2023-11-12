@@ -51,7 +51,9 @@ extern uint8_t			skyflatnum;
 uint8_t R_FlatNumForNameB(int8_t* name)
 {
 	int16_t         i;
+#ifdef CHECK_FOR_ERRORS
 	int8_t        namet[9];
+#endif
 
 	i = W_CheckNumForName(name);
 
@@ -484,7 +486,7 @@ void R_InitTextures(void)
 	int16_t                 temp3;
 
 	// needed for texture pegging
-	uint8_t*            textureheight;
+	//uint8_t*            textureheight;
 	MEMREF				namesRef;
 	MEMREF				maptexRef;
 	MEMREF				maptex2Ref;

@@ -811,7 +811,6 @@ void P_HitSlideLine (int16_t linenum)
 //
 boolean PTR_SlideTraverse (intercept_t* in)
 {
-	mobj_t* slidemo;
 	line_t li;
 	fixed_t_union temp;
 
