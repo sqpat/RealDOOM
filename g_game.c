@@ -649,21 +649,21 @@ void G_PlayerReborn ()
 //todo make int_8 and divide by 5
 
 // DOOM Par Times
-int16_t pars[4][10] = 
+int8_t pars[4][10] =
 { 
     {0}, 
-    {0,30,75,120,90,165,180,180,30,165}, 
-    {0,90,90,90,120,90,360,240,30,170}, 
-    {0,90,45,90,150,90,90,165,30,135} 
+    {0,6,15,24,18,33,36,36,6,33}, 
+    {0,18,18,18,24,18,72,48,6,34}, 
+    {0,18,9,18,30,18,18,33,6,27} 
 }; 
 
 // DOOM II Par Times
-int16_t cpars[32] =
+int8_t cpars[32] =
 {
-    30,90,120,120,90,150,120,120,270,90,        //  1-10
-    210,150,150,150,210,150,420,150,210,150,    // 11-20
-    240,150,180,150,150,300,330,420,300,180,    // 21-30
-    120,30                                      // 31-32
+    3,9,12,12,9,15,12,12,27,9,        //  1-10
+    21,15,15,15,21,15,42,15,21,15,    // 11-20
+    24,15,18,15,15,30,33,42,30,18,    // 21-30
+    12,3                                      // 31-32
 };
  
 
@@ -768,9 +768,9 @@ void G_DoCompleted (void)
     wminfo.maxsecret = totalsecret; 
 
 	if ( commercial )
-        wminfo.partime = 35*cpars[gamemap-1]; 
+        wminfo.partime = 35*10*cpars[gamemap-1]; 
     else
-        wminfo.partime = 35*pars[gameepisode][gamemap]; 
+        wminfo.partime = 35*5*pars[gameepisode][gamemap]; 
     wminfo.pnum = 0; 
  
 	wminfo.plyr.in = true;
