@@ -94,8 +94,9 @@ boolean PIT_StompThing (MEMREF thingRef)
     if (thing == tmthing)
 	return true;
     
+	
     // monsters don't stomp things except on boss level
-    if ( !tmthing->player && gamemap != 30)
+    if ( !tmthing->type == MT_PLAYER && gamemap != 30)
 	return false;	
 		
     P_DamageMobj (thingRef, tmthingRef, tmthingRef, 10000);
@@ -272,7 +273,7 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 		if (lineflags & ML_BLOCKING) {
 			return false;	// explicitly blocking everything
 		}
-		if (!tmthing->player && lineflags & ML_BLOCKMONSTERS) {
+		if (tmthing->type != MT_PLAYER && lineflags & ML_BLOCKMONSTERS) {
 			return false;	// block monsters only
 		}
     }
@@ -369,7 +370,7 @@ boolean PIT_CheckThing (MEMREF thingRef)
 		tmthing->flags &= ~MF_SKULLFLY;
 		tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
-		P_SetMobjState (tmthingRef, tmthing->info->spawnstate, tmthing);
+		P_SetMobjState (tmthingRef, mobjinfo[tmthing->type].spawnstate, tmthing);
 
 		return false;		// stop moving
     }

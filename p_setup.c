@@ -460,7 +460,7 @@ void P_SpawnPlayer(mapthing_t* mthing)
 	mobj->reactiontime = 0;
 
 	mobj->angle = ANG45 * (mthingangle / 45);
-	mobj->player = &player;
+	//mobj->player = &player;
 	mobj->health = player.health;
 
 

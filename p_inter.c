@@ -648,10 +648,10 @@ P_KillMobj
 
     if (sourceRef) {
 		source = (mobj_t*)Z_LoadThinkerBytesFromEMS(sourceRef);
-		if (source->player) {
+		if (source->type == MT_PLAYER) {
 			// count for intermission
 			if (target->flags & MF_COUNTKILL)
-				source->player->killcount++;
+				player.killcount++;
 
 			 
 		}
@@ -662,10 +662,10 @@ P_KillMobj
 		player.killcount++;
     }
     
-    if (target->player) {
+    if (target->type == MT_PLAYER) {
 			
 		target->flags &= ~MF_SOLID;
-		target->player->playerstate = PST_DEAD;
+		player.playerstate = PST_DEAD;
 		P_DropWeapon ();
 
 		if (
@@ -741,7 +741,6 @@ P_DamageMobj
 {
 	angle_t	ang;
     int16_t		saved;
-    player_t*	targetplayer;
     fixed_t	thrust;
 	mobj_t* source;
 	mobj_t* inflictor;
@@ -749,8 +748,6 @@ P_DamageMobj
 	fixed_t inflictorx;
 	fixed_t inflictory;
 	fixed_t inflictorz;
-	int16_t targetsecnum;
-	int16_t targethealth;
 
 	target = (mobj_t*)Z_LoadThinkerBytesFromEMS(targetRef);
  
@@ -765,9 +762,8 @@ P_DamageMobj
 		target->momx = target->momy = target->momz = 0;
     }
 	
-	targetplayer = target->player;
     
-	if (targetplayer && gameskill == sk_baby) {
+	if (target->type == MT_PLAYER && gameskill == sk_baby) {
 		damage >>= 1; 	// take half damage in trainer mode
 	}
 
@@ -779,7 +775,7 @@ P_DamageMobj
 		if (sourceRef) {
 			source = (mobj_t*)Z_LoadThinkerBytesFromEMS(sourceRef);
 		}
-		if ((!sourceRef || !source->player || source->player->readyweapon != wp_chainsaw)) {
+		if ((!sourceRef || source->type == MT_PLAYER || player.readyweapon != wp_chainsaw)) {
 
 			inflictor = (mobj_t*)Z_LoadThinkerBytesFromEMS(inflictorRef);
 			inflictorx = inflictor->x;
@@ -813,13 +809,11 @@ P_DamageMobj
 			target = (mobj_t*)Z_LoadThinkerBytesFromEMS(targetRef);
 		}
 	}
-	targetsecnum = target->secnum;
-	targethealth = target->health;
     // player specific
-    if (targetplayer) {
+    if (target->type == MT_PLAYER) {
 
 		// end of game hell hack
-		if (sectors[targetsecnum].special == 11 && damage >= targethealth) {
+		if (sectors[target->secnum].special == 11 && damage >= target->health) {
 			damage = target->health - 1;
 		}
 
@@ -897,7 +891,7 @@ P_DamageMobj
 	// chase after this one
 	target->targetRef = sourceRef;
 	target->threshold = BASETHRESHOLD;
-	if (target->state == &states[target->info->spawnstate]
+	if (target->stateNum == mobjinfo[target->type].spawnstate
 	    && getSeeState(target->type) != S_NULL)
 	    P_SetMobjState (targetRef, getSeeState(target->type), target);
     }

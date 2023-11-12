@@ -195,7 +195,7 @@ P_UseSpecialLine
 
     
     // Switches that other things can activate.
-    if (!thing->player)
+    if (thing->type != MT_PLAYER)
     {
 	// never open secret doors
 	if (lineflags & ML_SECRET)

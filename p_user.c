@@ -162,7 +162,7 @@ void P_MovePlayer ()
 		P_Thrust(MOD_FINE_ANGLE((playerMobj.angle >> ANGLETOFINESHIFT) - FINE_ANG90), cmd->sidemove * 2048L);
 	}
 
-    if ( (cmd->forwardmove || cmd->sidemove)  && playerMobj.state == &states[S_PLAY] ) {
+    if ( (cmd->forwardmove || cmd->sidemove)  && playerMobj.stateNum == S_PLAY ) {
 		P_SetMobjState (PLAYER_MOBJ_REF, S_PLAY_RUN1, &playerMobj);
     }
 }	

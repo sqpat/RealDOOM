@@ -221,7 +221,7 @@ boolean P_CheckMeleeRange (MEMREF actorRef, mobj_t* actor)
 	pl = (mobj_t*)Z_LoadThinkerBytesFromEMS(plRef);
 	plx = pl->x;
 	ply = pl->y;
-	plradius.h.intbits = pl->info->radius;
+	plradius.h.intbits = mobjinfo[pl->type].radius;
 	plradius.h.fracbits = 0;
 	//plradius = pl->info->radius*FRACUNIT;
 
@@ -351,8 +351,8 @@ boolean P_Move (MEMREF actorRef)
 	}
 #endif
 
-    tryx = actor->x + actor->info->speed*xspeed[actor->movedir];
-    tryy = actor->y + actor->info->speed*yspeed[actor->movedir];
+    tryx = actor->x + mobjinfo[actor->type].speed*xspeed[actor->movedir];
+    tryy = actor->y + mobjinfo[actor->type].speed*yspeed[actor->movedir];
 
 	try_ok = P_TryMove (actorRef, tryx, tryy, actor);
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
@@ -698,9 +698,9 @@ void A_Look (MEMREF actorRef, mobj_t* actor)
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 
 
-	if (actor->info->seesound) {
+	if (mobjinfo[actor->type].seesound) {
 		int16_t		sound;
-		switch (actor->info->seesound)
+		switch (mobjinfo[actor->type].seesound)
 		{
 		  case sfx_posit1:
 		  case sfx_posit2:
@@ -714,7 +714,7 @@ void A_Look (MEMREF actorRef, mobj_t* actor)
 			break;
 
 		  default:
-			  sound = actor->info->seesound;
+			  sound = mobjinfo[actor->type].seesound;
 			  break;
 		}
 		if (actor->type==MT_SPIDER || actor->type == MT_CYBORG) {
@@ -804,7 +804,7 @@ void A_Chase (MEMREF actorRef, mobj_t*	actor)
 			return; 	// got a new target
 		}
 		actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
-		P_SetMobjState (actorRef, actor->info->spawnstate, actor);
+		P_SetMobjState (actorRef, mobjinfo[actor->type].spawnstate, actor);
 
 
 
@@ -1249,7 +1249,7 @@ void A_Tracer (MEMREF actorRef, mobj_t* actor)
 				actor->angle = exact;
 		}
     }
-	actorspeed = MAKESPEED(actor->info->speed);
+	actorspeed = MAKESPEED(mobjinfo[actor->type].speed);
     exact = actor->angle>>ANGLETOFINESHIFT;
     actor->momx = FixedMul (actorspeed, finecosine(exact));
     actor->momy = FixedMul (actorspeed, finesine(exact));
@@ -1336,7 +1336,7 @@ boolean PIT_VileCheck (MEMREF thingRef)
 		return true;	// monster doesn't have a raise state
 	}
 
-	maxdist.h.intbits = (thing->info->radius + mobjinfo[MT_VILE].radius);
+	maxdist.h.intbits = (mobjinfo[thing->type].radius + mobjinfo[MT_VILE].radius);
 	maxdist.h.fracbits = 0;
 
 	
@@ -1380,8 +1380,8 @@ void A_VileChase (MEMREF actorRef, mobj_t* actor)
 	coord.h.fracbits = 0;
     if (actor->movedir != DI_NODIR) {
 		// check for corpses to raise
-		viletryx = actor->x + actor->info->speed*xspeed[actor->movedir];
-		viletryy = actor->y + actor->info->speed*yspeed[actor->movedir];
+		viletryx = actor->x + mobjinfo[actor->type].speed*xspeed[actor->movedir];
+		viletryy = actor->y + mobjinfo[actor->type].speed*yspeed[actor->movedir];
 		coord.h.intbits = bmaporgx;
 		xl = (viletryx - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
 		xh = (viletryx - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
@@ -1412,7 +1412,7 @@ void A_VileChase (MEMREF actorRef, mobj_t* actor)
 
 				S_StartSoundFromRef(corpsehitRef, sfx_slop, actor);
 				corpsehit = (mobj_t*)Z_LoadThinkerBytesFromEMS(corpsehitRef);
-				info = corpsehit->info;
+				info = &mobjinfo[corpsehit->type];
 		    
 				P_SetMobjState (corpsehitRef,getRaiseState(corpsehit->type), corpsehit);
 				corpsehit = setStateReturn;
@@ -1608,8 +1608,8 @@ void A_FatAttack1 (MEMREF actorRef, mobj_t*	actor)
 	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
     mo->angle += FATSPREAD;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (MAKESPEED(mo->info->speed), finecosine(an));
-    mo->momy = FixedMul (MAKESPEED(mo->info->speed), finesine(an));
+    mo->momx = FixedMul (MAKESPEED(mobjinfo[mo->type].speed), finecosine(an));
+    mo->momy = FixedMul (MAKESPEED(mobjinfo[mo->type].speed), finesine(an));
 }
 
 void A_FatAttack2 (MEMREF actorRef, mobj_t*	actor)
@@ -1631,8 +1631,8 @@ void A_FatAttack2 (MEMREF actorRef, mobj_t*	actor)
 	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
     mo->angle -= FATSPREAD*2;
     an = mo->angle >> ANGLETOFINESHIFT;
-    mo->momx = FixedMul (MAKESPEED(mo->info->speed), finecosine(an));
-    mo->momy = FixedMul (MAKESPEED(mo->info->speed), finesine(an));
+    mo->momx = FixedMul (MAKESPEED(mobjinfo[mo->type].speed), finecosine(an));
+    mo->momy = FixedMul (MAKESPEED(mobjinfo[mo->type].speed), finesine(an));
 }
 
 void A_FatAttack3 (MEMREF actorRef, mobj_t*	actor)
@@ -1650,7 +1650,7 @@ void A_FatAttack3 (MEMREF actorRef, mobj_t*	actor)
 	mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 	
 	// todo hardcode this value, it's static..
-	mospeed = MAKESPEED(mo->info->speed);
+	mospeed = MAKESPEED(mobjinfo[mo->type].speed);
     mo->angle -= FATSPREAD/2;
     an = mo->angle >> ANGLETOFINESHIFT;
     mo->momx = FixedMul (mospeed, finecosine(an));
@@ -1762,7 +1762,7 @@ A_PainShootSkull
     an = angle >> ANGLETOFINESHIFT;
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 	actortargetRef = actor->targetRef;
-	radii = actor->info->radius + mobjinfo[MT_SKULL].radius;
+	radii = mobjinfo[actor->type].radius + mobjinfo[MT_SKULL].radius;
 	prestep.h.intbits= 4 + 3 * (radii) / 2;
 	if (radii % 1)
 		prestep.h.fracbits = -32768; // handle the radii / 2 case
@@ -1820,7 +1820,7 @@ void A_Scream (MEMREF actorRef, mobj_t* actor)
 {
     uint8_t		sound;
 	
-    switch (actor->info->deathsound)
+    switch (mobjinfo[actor->type].deathsound)
     {
       case 0:
 	return;
@@ -1837,7 +1837,7 @@ void A_Scream (MEMREF actorRef, mobj_t* actor)
 	break;
 	
       default:
-		sound = actor->info->deathsound;
+		sound = mobjinfo[actor->type].deathsound;
 	break;
     }
 
@@ -2220,7 +2220,7 @@ void A_BrainSpit (MEMREF moRef, mobj_t* mo)
     newmobjRef = P_SpawnMissile (moRef, targRef, MT_SPAWNSHOT, mo);
 	newmobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(newmobjRef);
 	newmobj->targetRef = targRef;
-    newmobj->reactiontime = ((targy - moy)/newmobj->momy) / newmobj->state->tics;
+    newmobj->reactiontime = ((targy - moy)/newmobj->momy) / states[newmobj->stateNum].tics;
 
 	S_StartSoundFromRef(NULL_MEMREF, sfx_bospit, NULL);
 }

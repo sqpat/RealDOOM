@@ -426,7 +426,7 @@ P_CrossSpecialLine
 
 	 
     //	Triggers that other things can activate
-    if (!thing->player)
+    if (thing->type != MT_PLAYER)
     {
 	// Things that should NOT trigger specials...
 	switch(thing->type)
@@ -690,7 +690,7 @@ P_CrossSpecialLine
 		
       case 125:
 		// TELEPORT MonsterONLY
-		if (!thing->player) {
+		if (thing->type != MT_PLAYER) {
 			EV_Teleport( linetag, side, thingRef );
 			setlinespecial = 0;
 		}
@@ -858,7 +858,7 @@ P_CrossSpecialLine
 	
       case 126:
 	// TELEPORT MonsterONLY.
-		if (!thing->player)
+		if (thing->type != MT_PLAYER)
 	    EV_Teleport( linetag, side, thingRef );
 		break;
 	
@@ -902,7 +902,7 @@ P_ShootSpecialLine
 	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
     
     //	Impacts that other things can activate.
-    if (!thing->player) {
+    if (thing->type != MT_PLAYER) {
 		ok = 0;
 		switch(linespecial) {
 		  case 46:

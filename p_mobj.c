@@ -116,8 +116,8 @@ void P_ExplodeMissile(MEMREF moRef, mobj_t* mo){
 
     mo->flags &= ~MF_MISSILE;
 	
-	if (mo->info->deathsound) {
-		S_StartSound(mo, mo->info->deathsound);
+	if (mobjinfo[mo->type].deathsound) {
+		S_StartSound(mo, mobjinfo[mo->type].deathsound);
 	}
 }
 
@@ -132,7 +132,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 { 	
     fixed_t 	ptryx;
     fixed_t	ptryy;
-    player_t*	player;
+	int16_t motype = mo->type;
     fixed_t	xmove;
     fixed_t	ymove;
 	fixed_t momomx;
@@ -141,7 +141,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	int16_t mosecnum;
 	short_height_t sectorfloorheight;
 	fixed_t_union temp;
-	player = mo->player;
 	temp.h.fracbits = 0;
 	
 	
@@ -153,7 +152,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 			mo->flags &= ~MF_SKULLFLY;
 			mo->momx = mo->momy = mo->momz = 0;
 
-			P_SetMobjState (moRef, mo->info->spawnstate, mo);
+			P_SetMobjState (moRef, mobjinfo[mo->type].spawnstate, mo);
 		}
 		return;
     }
@@ -194,7 +193,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 
 			mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 			// blocked move
-			if (player) {	// try to slide along it
+			if (motype == MT_PLAYER) {	// try to slide along it
 				P_SlideMove ();
 			} else if (mo->flags & MF_MISSILE) {
 				// explode a missile
@@ -226,7 +225,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 
 
     // slow down
-    if (player && player->cheats & CF_NOMOMENTUM) {
+    if (motype == MT_PLAYER && player.cheats & CF_NOMOMENTUM) {
 		// debug option for no sliding at all
 		mo->momx = mo->momy = 0;
  
@@ -259,14 +258,13 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
     }
 	momomx = mo->momx;
 	momomy = mo->momy;
-	// mo and player can dereference each other here... let's not create a situation where both pointers are needed in the same if block
-	
+
 
     if ((momomx > -STOPSPEED && momomx < STOPSPEED && momomy > -STOPSPEED && momomy < STOPSPEED) && 
-			(!player || (player->cmd.forwardmove== 0 && player->cmd.sidemove == 0 ) ) 
+			(motype != MT_PLAYER || (player.cmd.forwardmove== 0 && player.cmd.sidemove == 0 ) )
 		) {
 	// if in a walking frame, stop moving
-		if (player && (uint32_t)((playerMobj.state - states) - S_PLAY_RUN1) < 4) {
+		if (motype == MT_PLAYER && (uint32_t)((playerMobj.stateNum) - S_PLAY_RUN1) < 4) {
 			P_SetMobjState(PLAYER_MOBJ_REF, S_PLAY, &playerMobj);
 			mo = setStateReturn;
 		}
@@ -295,14 +293,15 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 	mobj_t* moTarget;
 	
 	fixed_t_union temp;
+	int16_t motype = mo->type;
 	temp.h.fracbits = 0;
 	// temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
     // check for smooth step up
-    if (mo->player && mo->z < temp.w) {
-		mo->player->viewheight -= temp.w-mo->z;
+    if (motype == MT_PLAYER && mo->z < temp.w) {
+		player.viewheight -= temp.w-mo->z;
 
-		mo->player->deltaviewheight = (VIEWHEIGHT - mo->player->viewheight)>>3;
+		player.deltaviewheight = (VIEWHEIGHT - player.viewheight)>>3;
     }
     
     // adjust height
@@ -345,12 +344,12 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 	#endif
 	
 		if (mo->momz < 0) {
-			if (mo->player && mo->momz < -GRAVITY*8)	 {
+			if (motype == MT_PLAYER && mo->momz < -GRAVITY*8)	 {
 				// Squat down.
 				// Decrease viewheight for a moment
 				// after hitting the ground (hard),
 				// and utter appropriate sound.
-				mo->player->deltaviewheight = mo->momz>>3;
+				player.deltaviewheight = mo->momz>>3;
 				S_StartSound (mo, sfx_oof);
 				mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 			}
@@ -459,14 +458,15 @@ P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 
 	// spawn the new monster
 
+	mobjtype = mobj->type;
+
 	// spawn it
-	if (mobj->info->flags & MF_SPAWNCEILING){
+	if (mobjinfo[mobjtype].flags & MF_SPAWNCEILING){
 		z.w = ONCEILINGZ;
 	} else {
 		z.w = ONFLOORZ;
 	}
 
-	mobjtype = mobj->type;
 	mobjspawnpoint = mobj->spawnpoint;
 	mobjspawnangle = mobj->spawnpoint.angle;
 	mobjspawnoptions = mobj->spawnpoint.options;
@@ -531,7 +531,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		// you can cycle through multiple states in a tic
 		if (!mobj->tics) {
 
-			if (!P_SetMobjState(mobjRef, mobj->state->nextstate, mobj)) {
+			if (!P_SetMobjState(mobjRef, states[mobj->stateNum].nextstate, mobj)) {
 
 				return;		// freed itself
 			}
@@ -598,7 +598,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	info = &mobjinfo[type];
 
     mobj->type = type;
-    mobj->info = info;
+    //mobj->info = info;
     mobj->x = x;
     mobj->y = y;
 	mobj->radius = info->radius;// *FRACUNIT;
@@ -612,12 +612,13 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 		mobj->reactiontime = 8;
 	}
     
-    mobj->lastlook = P_Random () % 1;
-	
+    //mobj->lastlook = P_Random () % 1;
+	P_Random();
+
     // do not set the state with P_SetMobjState,
     // because action routines can not be called yet
     st = &states[info->spawnstate];
-	mobj->state = st;
+	mobj->stateNum = info->spawnstate;
     mobj->tics = st->tics;
     mobj->sprite = st->sprite;
     mobj->frame = st->frame;
@@ -642,7 +643,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	} else if (z == ONCEILINGZ){
 		// temp.h.intbits = mobj->ceilingz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->ceilingz);
-		mobj->z = temp.w - mobj->info->height * FRACUNIT;
+		mobj->z = temp.w - mobjinfo[mobj->type].height * FRACUNIT;
 	}
     else 
 		mobj->z = z;
@@ -794,14 +795,14 @@ P_SpawnMissile
 	fixed_t_union temp;
 
 	th = setStateReturn;
-	if (th->info->seesound) {
-		S_StartSound(th, th->info->seesound);
+	if (mobjinfo[type].seesound) {
+		S_StartSound(th, mobjinfo[type].seesound);
 		th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
 
 	}
 
     th->targetRef = sourceRef;	// where it came from
-	thspeed = MAKESPEED(th->info->speed);
+	thspeed = MAKESPEED(mobjinfo[type].speed);
 
 	dest = (mobj_t*)Z_LoadThinkerBytesFromEMS(destRef);
 	destz = dest->z;
@@ -886,8 +887,8 @@ P_SpawnPlayerMissile
     thRef = P_SpawnMobj (x,y,z, type);
 	th = setStateReturn;
 
-    if (th->info->seesound)
-	S_StartSound (th, th->info->seesound);
+    if (mobjinfo[type].seesound)
+		S_StartSound (th, mobjinfo[type].seesound);
 
     th->targetRef = PLAYER_MOBJ_REF;
 	temp.h.fracbits = 0;
@@ -895,7 +896,7 @@ P_SpawnPlayerMissile
 	temp.h.intbits <<= 3;
 	th->angle = temp.w;
 
-	speed = MAKESPEED(th->info->speed);
+	speed = MAKESPEED(mobjinfo[type].speed);
 
     th->momx = FixedMul( speed, finecosine(an));
     th->momy = FixedMul( speed, finesine(an));
@@ -921,7 +922,7 @@ P_SetMobjState2
 	setStateReturn = mobj;
 	do {
 		if (state == S_NULL) {
-			mobj->state = (state_t *)S_NULL;
+			mobj->stateNum = S_NULL;
 			P_RemoveMobj(mobjRef, mobj);
 			mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 			setStateReturn = mobj;
@@ -930,7 +931,7 @@ P_SetMobjState2
 
 
 		st = &states[state];
-		mobj->state = st;
+		mobj->stateNum = state;
 		mobj->tics = st->tics;
 		mobj->sprite = st->sprite;
 		mobj->frame = st->frame;

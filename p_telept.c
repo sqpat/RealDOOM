@@ -19,6 +19,7 @@
 
 
 #include "doomdef.h"
+#include "doomstat.h"
 
 #include "s_sound.h"
 
@@ -92,8 +93,8 @@ EV_Teleport
 		#if (EXE_VERSION != EXE_VERSION_FINAL)
 				thing->z = thing->floorz;  //fixme: not needed?
 		#endif
-				if (thing->player)
-					thing->player->viewz = thing->z + thing->player->viewheight;
+				if (thingRef == PLAYER_MOBJ_REF)
+					player.viewz = thing->z + player.viewheight;
 				
 				// spawn teleport fog at source and destination
 				fogRef = P_SpawnMobj (oldx, oldy, oldz, MT_TFOG);
@@ -106,8 +107,8 @@ EV_Teleport
 				S_StartSoundFromRef(fogRef, sfx_telept, setStateReturn);
 		
 				// don't move for a bit
-				if (thing->player) {
-					thing->reactiontime = 18;
+				if (thingRef == PLAYER_MOBJ_REF){
+					playerMobj.reactiontime = 18;
 				}
 				thing->angle = m->angle;
 				thing->momx = thing->momy = thing->momz = 0;

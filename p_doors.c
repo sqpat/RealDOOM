@@ -177,23 +177,20 @@ EV_DoLockedDoor
   vldoor_e	type,
   MEMREF thingRef )
 {
-    player_t*	p;
-	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+	//mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+    
 	
-    p = thing->player;
-	
-    if (!p)
-	return 0;
+    if (thingRef != PLAYER_MOBJ_REF)
+		return 0;
 		
     switch(linespecial)
     {
       case 99:	// Blue Lock
       case 133:
-	if ( !p )
-	    return 0;
-	if (!p->cards[it_bluecard] && !p->cards[it_blueskull])
+
+		  if (!player.cards[it_bluecard] && !player.cards[it_blueskull])
 	{
-	    p->message = PD_BLUEO;
+			  player.message = PD_BLUEO;
 	    S_StartSound(NULL,sfx_oof);
 	    return 0;
 	}
@@ -201,11 +198,10 @@ EV_DoLockedDoor
 	
       case 134: // Red Lock
       case 135:
-	if ( !p )
-	    return 0;
-	if (!p->cards[it_redcard] && !p->cards[it_redskull])
+
+		  if (!player.cards[it_redcard] && !player.cards[it_redskull])
 	{
-	    p->message = PD_REDO;
+			  player.message = PD_REDO;
 	    S_StartSound(NULL,sfx_oof);
 	    return 0;
 	}
@@ -213,12 +209,11 @@ EV_DoLockedDoor
 	
       case 136:	// Yellow Lock
       case 137:
-	if ( !p )
-	    return 0;
-	if (!p->cards[it_yellowcard] &&
-	    !p->cards[it_yellowskull])
+
+		  if (!player.cards[it_yellowcard] &&
+	    !player.cards[it_yellowskull])
 	{
-	    p->message = PD_YELLOWO;
+		player.message = PD_YELLOWO;
 	    S_StartSound(NULL,sfx_oof);
 	    return 0;
 	}
@@ -331,7 +326,6 @@ EV_VerticalDoor
 ( int16_t linenum,
   MEMREF thingRef )
 {
-    player_t*	player;
     int16_t		secnum;
     //sector_t*	sec;
     vldoor_t*	door;
@@ -339,39 +333,36 @@ EV_VerticalDoor
 	MEMREF doorRef;
 	int16_t linespecial = lines[linenum].special;
 	int16_t sidenum;
-	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	int16_t doortopheight;
 	sector_t *doorsector;
 
 
 
-    //	Check for locks
-    player = thing->player;
 		
     switch(linespecial)
     {
       case 26: // Blue Lock
       case 32:
-	if ( !player )
-	    return;
+		if ( thingRef != PLAYER_MOBJ_REF )
+			return;
 	
-	if (!player->cards[it_bluecard] && !player->cards[it_blueskull])
-	{
-	    player->message = PD_BLUEK;
-	    S_StartSound(NULL,sfx_oof);
-	    return;
-	}
+		if (!player.cards[it_bluecard] && !player.cards[it_blueskull])
+		{
+			player.message = PD_BLUEK;
+			S_StartSound(NULL,sfx_oof);
+			return;
+		}
 	break;
 	
       case 27: // Yellow Lock
       case 34:
-	if ( !player )
-	    return;
+		  if (thingRef != PLAYER_MOBJ_REF)
+			  return;
 	
-	if (!player->cards[it_yellowcard] &&
-	    !player->cards[it_yellowskull])
+	if (!player.cards[it_yellowcard] &&
+	    !player.cards[it_yellowskull])
 	{
-	    player->message = PD_YELLOWK;
+	    player.message = PD_YELLOWK;
 	    S_StartSound(NULL,sfx_oof);
 	    return;
 	}
@@ -379,13 +370,12 @@ EV_VerticalDoor
 	
       case 28: // Red Lock
       case 33:
-		  if (!player) {
+		  if (thingRef != PLAYER_MOBJ_REF)
 			  return;
-		  }
 
-	if (!player->cards[it_redcard] && !player->cards[it_redskull])
+	if (!player.cards[it_redcard] && !player.cards[it_redskull])
 	{
-	    player->message = PD_REDK;
+	    player.message = PD_REDK;
 	    S_StartSound(NULL,sfx_oof);
 	    return;
 	}
@@ -419,11 +409,8 @@ EV_VerticalDoor
 				if (door->direction == -1) {
 					door->direction = 1;	// go back up
 				} else {
-					if (!player) {
-
-					
-						return;		// JDC: bad guys never close doors
-					}
+					if (thingRef != PLAYER_MOBJ_REF)
+						return;
 					door->direction = -1;	// start going down immediately
 				}
 
