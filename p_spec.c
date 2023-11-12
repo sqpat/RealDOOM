@@ -99,10 +99,8 @@ getSideNum
 ( int16_t		currentSector,
   int16_t		offset,
   int16_t		side ) {
-	int16_t* linebuffer;
 	offset = sectors[currentSector].linesoffset + offset;
 
-	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	offset = linebuffer[offset];
 	return lines[offset].sidenum[side];
 	
@@ -121,10 +119,8 @@ getSector
   int16_t		offset,
   int16_t		side )
 {
-	int16_t* linebuffer;
 	offset = sectors[currentSector].linesoffset + offset;
 
-	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	offset = linebuffer[offset];
 	offset = lines[offset].sidenum[side];
 
@@ -142,9 +138,7 @@ twoSided
 ( int16_t	sector,
   int16_t	line )
 {
-	int16_t* linebuffer;
 	line = sectors[sector].linesoffset + line;
-	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	line = linebuffer[line];
     return lines[line].flags & ML_TWOSIDED;
 }
@@ -194,7 +188,6 @@ short_height_t	P_FindLowestFloorSurrounding(int16_t secnum)
 	int16_t offset = sectors[secnum].linesoffset;
 	short_height_t		floor = sectors[secnum].floorheight;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
  	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
@@ -223,7 +216,6 @@ short_height_t	P_FindHighestFloorSurrounding(int16_t secnum)
 	short_height_t		floor = -500 << SHORTFLOORBITS;
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
@@ -260,7 +252,6 @@ P_FindNextHighestFloor
 	int16_t offset = sectors[secnum].linesoffset;
 	short_height_t		height = currentheight;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
     
@@ -303,7 +294,6 @@ P_FindLowestCeilingSurrounding(int16_t	secnum)
 	short_height_t		height = MAXSHORT;
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
@@ -331,7 +321,6 @@ short_height_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 	short_height_t	height = 0;
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
@@ -387,7 +376,6 @@ P_FindMinSurroundingLight
     uint8_t		min;
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
@@ -903,7 +891,6 @@ P_ShootSpecialLine
   int16_t linenum )
 {
     int16_t		ok;
-	int16_t* linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	int16_t innerlinenum = linebuffer[linenum];
 	line_t* line = &lines[innerlinenum];
 	int16_t linespecial = line->special;
@@ -1107,7 +1094,6 @@ int16_t EV_DoDonut(uint8_t linetag)
 	uint8_t			linecount;
     floormove_t*	floor;
 	MEMREF floorRef;
-	int16_t* linebuffer;
 	int16_t offset;
 	int16_t sectors3floorpic;
 	short_height_t sectors3floorheight;
@@ -1138,7 +1124,6 @@ int16_t EV_DoDonut(uint8_t linetag)
 	}
 	linebufferoffsets[j] = -1;
 	j = 0;
-	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	while (linebufferoffsets[j] >= 0) {
 		s1Offset = linebufferoffsets[j];
 		linebufferoffsets[j] = linebuffer[s1Offset]; // overwrite with lines

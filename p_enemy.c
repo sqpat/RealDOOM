@@ -103,7 +103,6 @@ P_RecursiveSound
     int16_t	othersecnum;
 	int16_t linecount;
 	sector_t* soundsector = &sectors[secnum];
-	int16_t *linebuffer;
 	int16_t linenumber;
 	uint8_t checkflags;
 	int16_t checksidenum0;
@@ -140,7 +139,6 @@ P_RecursiveSound
 	for (i=0 ;i<linecount ; i++) {
 		soundsector = &sectors[secnum];
 		lineoffset = soundsector->linesoffset + i;
-		linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 		linenumber = linebuffer[lineoffset];
 
 		

@@ -98,7 +98,7 @@ extern line_t*   lines;
 extern int16_t		numsides;
 extern side_t*       sides;
 
-extern MEMREF          linebufferRef;
+extern int16_t*          linebuffer;
 
 
 //

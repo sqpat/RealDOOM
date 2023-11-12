@@ -68,7 +68,7 @@ line_t*			lines;
 int16_t             numsides;
 side_t*          sides;
 
-MEMREF          linebufferRef;
+int16_t*          linebuffer;
 
 int16_t firstnode;
 
@@ -1126,7 +1126,6 @@ void P_GroupLines(void)
 	int16_t             bbox[4];
 	int16_t             block;
 	int16_t				previouslinebufferindex;
-	int16_t*				linebuffer;
 	int16_t				firstlinenum;
 	int16_t				sidedefOffset;
 	int16_t				linev1Offset;
@@ -1138,7 +1137,7 @@ void P_GroupLines(void)
 	uint8_t				sectorlinecount;
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
-
+	MEMREF linebufferRef;
 	// look up sector number for each subsector
 	for (i = 0; i < numsubsectors; i++) {
 		firstlinenum = subsectors[i].firstline;
@@ -1169,6 +1168,7 @@ void P_GroupLines(void)
 	// build line tables for each sector        
 
 	linebufferRef = Z_MallocConventional (total * 2, PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_LINEBUFFER);
+	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	linebufferindex = 0;
 
 	tempv1.h.fracbits = 0;
@@ -1182,26 +1182,20 @@ void P_GroupLines(void)
 		sectors[i].linesoffset = linebufferindex;
 		previouslinebufferindex = linebufferindex;
 	 
-		//linebuffer = (int16_t*)Z_LoadBytesFromEMSWithOptions(linebufferRef, PAGE_LOCKED);
-		//vertexes = (vertex_t*)Z_LoadBytesFromConventionalWithOptions(vertexesRef, PAGE_LOCKED);
-
 		for (j = 0; j < numlines; j++) {
 			li = &lines[j];
 			linev1Offset = li->v1Offset & VERTEX_OFFSET_MASK;
 			linev2Offset = li->v2Offset & VERTEX_OFFSET_MASK;
 
 			if (li->frontsecnum == i || li->backsecnum == i) {
-				linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
 				M_AddToBox16(bbox, vertexes[linev1Offset].x, vertexes[linev1Offset].y);
 				M_AddToBox16(bbox, vertexes[linev2Offset].x, vertexes[linev2Offset].y);
 			}
 		}
-		//Z_SetUnlocked(linebufferRef);
 #ifdef CHECK_FOR_ERRORS
 		if (linebufferindex - previouslinebufferindex != sectorlinecount) {
-			linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 			I_Error("P_GroupLines: miscounted %i %i   iteration %i      %i != (%i - %i)", linebuffer, sectors[i].linesoffset,  i, sectors[i].linecount, linebufferindex , previouslinebufferindex);
 		}
 #endif
