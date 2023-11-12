@@ -1213,8 +1213,8 @@ void A_Tracer (MEMREF actorRef, mobj_t* actor)
 
     th->momz = FRACUNIT;
     th->tics -= P_Random()&3;
-    if (th->tics < 1)
-	th->tics = 1;
+    if (th->tics < 1 || th->tics > 240)
+		th->tics = 1;
     
 	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 
@@ -1328,7 +1328,7 @@ boolean PIT_VileCheck (MEMREF thingRef)
 		return true;	// not a monster
 	}
     
-	if (thing->tics != -1) {
+	if (thing->tics != 255) {
 		return true;	// not lying still yet
 	}
 
@@ -2148,7 +2148,7 @@ void A_BrainScream (MEMREF moRef, mobj_t* mo)
 	th = setStateReturn;
 
 	th->tics -= P_Random()&7;
-	if (th->tics < 1)
+	if (th->tics < 1 || th->tics > 240)
 	    th->tics = 1;
     }
 	
@@ -2179,8 +2179,8 @@ void A_BrainExplode (MEMREF moRef, mobj_t*mo)
 	th = setStateReturn;
 
     th->tics -= P_Random()&7;
-    if (th->tics < 1)
-	th->tics = 1;
+    if (th->tics < 1 || th->tics > 240)
+		th->tics = 1;
 }
 
 

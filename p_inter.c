@@ -311,7 +311,7 @@ P_TouchSpecialThing
     int16_t		sound;
 	mobj_t* special = (mobj_t*)Z_LoadThinkerBytesFromEMS(specialRef);
 	fixed_t specialz = special->z;
-	spritenum_t specialsprite = special->sprite;
+	spritenum_t specialsprite = states[special->stateNum].sprite;
 	boolean specialflagsdropped =  special->flags&MF_DROPPED ? 1 : 0;
 	boolean specialflagscountitem =  special->flags&MF_COUNTITEM ? 1 : 0;
 	mobj_t* toucher = (mobj_t*)Z_LoadThinkerBytesFromEMS(toucherRef);
@@ -687,7 +687,7 @@ P_KillMobj
 
     target->tics -= P_Random()&3;
 
-    if (target->tics < 1)
+    if (target->tics < 1 || target->tics > 240)
 	target->tics = 1;
 		
     //	I_StartSound (&actor->r, actor->info->deathsound);

@@ -831,7 +831,7 @@ void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
 	mobj = setStateReturn;
 	mobj->spawnpoint = copyofthing;
 
-	if (mobj->tics > 0)
+	if (mobj->tics > 0 && mobj->tics < 240)
 		mobj->tics = 1 + (P_Random() % mobj->tics);
 	if (mobj->flags & MF_COUNTKILL)
 		totalkills++;

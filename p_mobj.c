@@ -110,7 +110,7 @@ void P_ExplodeMissile(MEMREF moRef, mobj_t* mo){
 
     mo->tics -= P_Random()&3;
 
-	if (mo->tics < 1) {
+	if (mo->tics < 1 || mo->tics > 240) {
 		mo->tics = 1;
 	}
 
@@ -525,7 +525,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 
     // cycle through states,
     // calling action functions at transitions
-    if (mobj->tics != -1) {
+    if (mobj->tics != 255) {
 		mobj->tics--;
 		
 		// you can cycle through multiple states in a tic
@@ -620,8 +620,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     st = &states[info->spawnstate];
 	mobj->stateNum = info->spawnstate;
     mobj->tics = st->tics;
-    mobj->sprite = st->sprite;
-    mobj->frame = st->frame;
+    //mobj->sprite = st->sprite;
+    //mobj->frame = st->frame;
 
 
     // set subsector and/or block links
@@ -706,7 +706,7 @@ P_SpawnPuff
     th->momz = FRACUNIT;
     th->tics -= P_Random()&3;
 
-    if (th->tics < 1)
+    if (th->tics < 1 || th->tics > 240)
 		th->tics = 1;
 	
     // don't make punches spark on the wall
@@ -735,7 +735,7 @@ P_SpawnBlood
     th->momz = FRACUNIT*2;
     th->tics -= P_Random()&3;
 
-    if (th->tics < 1)
+    if (th->tics < 1 || th->tics > 240)
 		th->tics = 1;
 		
     if (damage <= 12 && damage >= 9)
@@ -755,7 +755,7 @@ void P_CheckMissileSpawn (MEMREF thRef, mobj_t* th)
 {
 
     th->tics -= P_Random()&3;
-	if (th->tics < 1) {
+	if (th->tics < 1 || th->tics > 240) {
 		th->tics = 1;
 	}
     // move a little forward so an angle can
@@ -933,8 +933,9 @@ P_SetMobjState2
 		st = &states[state];
 		mobj->stateNum = state;
 		mobj->tics = st->tics;
-		mobj->sprite = st->sprite;
-		mobj->frame = st->frame;
+
+		//mobj->sprite = st->sprite;
+		//mobj->frame = st->frame;
 
 
 		// Modified handling.

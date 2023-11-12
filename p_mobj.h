@@ -211,8 +211,8 @@ typedef struct mobj_s
 
     //More drawing info: to determine current sprite.
     angle_t		angle;	// orientation
-    spritenum_t		sprite;	// used to find patch_t and flip value
-	spriteframenum_t frame;	// might be ORed with FF_FULLBRIGHT
+    //spritenum_t		sprite;	// used to find patch_t and flip value
+	//spriteframenum_t frame;	// might be ORed with FF_FULLBRIGHT
 
     // Interaction info, by BLOCKMAP.
     // Links in blocks (if needed).
@@ -239,7 +239,7 @@ typedef struct mobj_s
 
     mobjtype_t		type;
     
-    int16_t			tics;	// state tic counter
+    uint8_t			tics;	// state tic counter
     statenum_t		stateNum;
     int32_t			flags;
     int16_t			health;
@@ -254,15 +254,13 @@ typedef struct mobj_s
 
     // Reaction time: if non 0, don't attack yet.
     // Used by player to freeze a bit after teleporting.
+	
+	// uses 5 bits, up to 18. 
 	int8_t			reactiontime;
 
     // If >0, the target will be chased
     // no matter what (even if shot)
     int8_t			threshold;
-
-    // Additional info record for player avatars only.
-    // Only valid if type == MT_PLAYER
-
 
     // For nightmare respawn.
     mapthing_t		spawnpoint;	

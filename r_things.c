@@ -233,8 +233,9 @@ void R_ProjectSprite (MEMREF thingRef)
 	spriteframe_t*		spriteframes;
 	
 	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
-	spritenum_t thingsprite = thing->sprite;
-	spriteframenum_t thingframe = thing->frame;
+	spritenum_t thingsprite = states[thing->stateNum].sprite;
+	spriteframenum_t thingframe = states[thing->stateNum].frame;
+
 	fixed_t thingx = thing->x;
 	fixed_t thingy = thing->y;
 	fixed_t thingz = thing->z;
