@@ -269,12 +269,10 @@ void R_AddLine (int16_t linenum)
     angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
-	seg_t* segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 	int16_t linebacksecnum = segs[linenum].backsecnum;
 	int16_t curlinesidedefOffset = segs[linenum].sidedefOffset;
 	int16_t linenumv1Offset = segs[linenum].v1Offset;
 	int16_t linenumv2Offset = segs[linenum].v2Offset;
-	side_t* sides;
 	int16_t sidemidtex;
 	sector_t frontsector;
 	sector_t backsector;
@@ -382,7 +380,6 @@ void R_AddLine (int16_t linenum)
     // identical light levels on both sides,
     // and no middle texture.
     
-	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	sidemidtex = sides[curlinesidedefOffset].midtexture;
 
 	if (backsector.ceilingpic == sectors[frontsecnum].ceilingpic
@@ -564,7 +561,6 @@ boolean R_CheckBBox(int16_t *bspcoord)
 void R_Subsector(int16_t subsecnum)
 {
 	int16_t count;
-	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	int16_t lineoffset = 0;
 	int16_t firstline;
 	sector_t* frontsector;
@@ -621,7 +617,6 @@ void R_RenderBSPNode()
 	byte stack_side[MAX_BSP_DEPTH];
 	int16_t sp = 0;
 	byte side = 0;
-	node_t* nodes;
 	fixed_t_union temp;
 	int16_t bspnum = numnodes - 1;
 	//int16_t bspnum = firstnode;  i dont know why but 16 bit version has firstnode's value lose scope here. but numnodes is fine.
@@ -635,7 +630,6 @@ void R_RenderBSPNode()
 			if (sp == MAX_BSP_DEPTH)
 				break;
 
-			nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 			bsp = &nodes[bspnum];
 
 			//decide which side the view point is on
@@ -674,7 +668,6 @@ void R_RenderBSPNode()
 
 		bspnum = stack_bsp[sp];
 		side = stack_side[sp];
-		nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 		bsp = &nodes[bspnum];
 
 		// Possibly divide back space.
@@ -695,7 +688,6 @@ void R_RenderBSPNode()
 			bspnum = stack_bsp[sp];
 			side = stack_side[sp];
 
-			//nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 			bsp = &nodes[bspnum];
 		}
 

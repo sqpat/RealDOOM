@@ -136,7 +136,6 @@ EV_DoPlat
     int16_t		rtn;
 	int16_t		j = 0;
 	MEMREF platRef;
-	side_t* sides;
 	int16_t side0secnum;
 	short_height_t specialheight;
 	int16_t sectorsoundorgX;
@@ -157,7 +156,6 @@ EV_DoPlat
 			break;
 	}
 	
-	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	side0secnum = sides[lineside0].secnum;
 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 	while (secnumlist[j] >= 0) {

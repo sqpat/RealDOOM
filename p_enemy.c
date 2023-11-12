@@ -104,7 +104,6 @@ P_RecursiveSound
 	int16_t linecount;
 	sector_t* soundsector = &sectors[secnum];
 	int16_t *linebuffer;
-	side_t* sides;
 	int16_t linenumber;
 	uint8_t checkflags;
 	int16_t checksidenum0;
@@ -164,7 +163,6 @@ P_RecursiveSound
 			continue;	// closed door
 		}
 	
-		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		if (sides[checksidenum0].secnum == secnum) {
 			othersecnum = sides[checksidenum1].secnum;
 		} else {

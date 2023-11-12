@@ -425,7 +425,6 @@ P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 	mobj_t*		mo;
 	MEMREF moRef;
 	int16_t subsecnum;
-	subsector_t* subsectors;
 	int16_t subsectorsecnum;
 	mobjtype_t mobjtype;
 	fineangle_t mobjspawnangle;
@@ -460,7 +459,6 @@ P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 
 	// spawn a teleport fog at the new spot
 	subsecnum = R_PointInSubsector(x.w, y.w);
-	subsectors = Z_LoadBytesFromConventional(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
 	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG);
 

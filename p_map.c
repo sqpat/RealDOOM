@@ -121,7 +121,6 @@ P_TeleportMove
     int16_t			by;
     
 	int16_t	newsubsecsecnum;
-	subsector_t*	subsectors;
 	int16_t	newsubsecnum;
 	
 	mobj_t* tmthing;
@@ -145,7 +144,6 @@ P_TeleportMove
 	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
 	tmbbox[BOXLEFT].w = x - temp.w;
 	newsubsecnum = R_PointInSubsector (x,y);
-	subsectors = Z_LoadBytesFromConventional(subsectorsRef);
 	newsubsecsecnum = subsectors[newsubsecnum].secnum;
     ceilinglinenum = -1;
     
@@ -477,7 +475,6 @@ P_CheckPosition
     int16_t			yh;
     int16_t			bx;
     int16_t			by;
-	subsector_t*	subsectors;
 	int16_t newsubsecnum;
 	int16_t newsubsecsecnum;
 	fixed_t_union temp;
@@ -504,7 +501,6 @@ P_CheckPosition
 
 
 	newsubsecnum = R_PointInSubsector(x, y);
-	subsectors = Z_LoadBytesFromConventional(subsectorsRef);
 	newsubsecsecnum = subsectors[newsubsecnum].secnum;
 
 

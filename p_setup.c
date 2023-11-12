@@ -49,24 +49,24 @@ int16_t             numvertexes;
 vertex_t*		vertexes;
 
 int16_t             numsegs;
-MEMREF          segsRef;
+seg_t*				segs;
 
 int16_t             numsectors;
 //MEMREF          sectorsRef;
 sector_t*		sectors;
 
 int16_t             numsubsectors;
-MEMREF    subsectorsRef;
+subsector_t*    subsectors;
 
 int16_t             numnodes;
-MEMREF          nodesRef;
+node_t*          nodes;
 
 int16_t             numlines;
 line_t*			lines;
 //MEMREF			linesRef;
 
 int16_t             numsides;
-MEMREF          sidesRef;
+side_t*          sides;
 
 MEMREF          linebufferRef;
 
@@ -157,9 +157,7 @@ void P_LoadSegs(int16_t lump)
 	seg_t*              li;
 	line_t*             ldef;
 	uint16_t                 side;
-	seg_t*                          segs;
 	int16_t linedef;
-	side_t*         sides;
 	int16_t ldefsidenum;
 	int16_t ldefothersidenum;
 	int16_t sidesecnum;
@@ -171,7 +169,8 @@ void P_LoadSegs(int16_t lump)
 	int16_t mloffset;
 	int16_t mllinedef;
 	fixed_t_union temp;
-	
+	MEMREF segsRef; 
+
 	temp.h.fracbits = 0;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_SEGMENTS);
@@ -204,12 +203,9 @@ void P_LoadSegs(int16_t lump)
 		ldefflags = ldef->flags;
 
 
-		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		sidesecnum = sides[ldefsidenum].secnum;
 		othersidesecnum = sides[ldefothersidenum].secnum;
 
-
-		segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 
 		li = &segs[i];
 		li->v1Offset = mlv1;
@@ -246,18 +242,18 @@ void P_LoadSubsectors(int16_t lump)
 	uint16_t                 i;
 	mapsubsector_t*     ms;
 	subsector_t*        ss;
-	subsector_t*    subsectors;
 	MEMREF			dataRef;
+	MEMREF		subsectorsRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
 	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_SUBSECS);
-
+	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
+	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 	W_CacheLumpNumCheck(lump, 2);
 
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapsubsector_t *) Z_LoadBytesFromEMS(dataRef);
 
-	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
-	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
+
 
 	for (i = 0; i < numsubsectors; i++)
 	{
@@ -265,8 +261,6 @@ void P_LoadSubsectors(int16_t lump)
 		ss = &subsectors[i];
 		ss->numlines = (ms->numsegs);
 		ss->firstline = (ms->firstseg);
-		Z_RefIsActive(dataRef);
-		//Z_RefIsActive(subsectorsRef);
 
 	}
 
@@ -371,14 +365,14 @@ void P_LoadNodes(int16_t lump)
 	uint16_t         j;
 	uint16_t         k;
 	node_t*     no;
-	node_t*		nodes;
 	MEMREF		dataRef;
 	mapnode_t	currentdata;
- 
+	MEMREF	nodesRef;
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 	firstnode = numnodes - 1;
 	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_NODES);
+	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	W_CacheLumpNumCheck(lump, 4);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
@@ -386,7 +380,6 @@ void P_LoadNodes(int16_t lump)
 	for (i = 0; i < numnodes; i++) {
 		data = (mapnode_t *)Z_LoadBytesFromEMS(dataRef);
 		currentdata = data[i];
-		nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 		no = &nodes[i];
 
 		no->x = (currentdata.x);
@@ -920,7 +913,6 @@ void P_LoadLineDefs(int16_t lump)
 	line_t*             ld;
 	vertex_t*           v1;
 	vertex_t*           v2;
-	side_t* sides;
 	int16_t side0secnum;
 	int16_t side1secnum;
 	int16_t v1x;
@@ -959,7 +951,6 @@ void P_LoadLineDefs(int16_t lump)
 		mldsidenum1 = (mld->sidenum[1]);
 		 
 
-		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		side0secnum = sides[mldsidenum0].secnum;
 		side1secnum = sides[mldsidenum1].secnum;
 		v1 = &vertexes[mldv1];
@@ -1026,7 +1017,6 @@ void P_LoadSideDefs(int16_t lump)
 	uint16_t                 i;
 	mapsidedef_t*       msd;
 	side_t*             sd;
-	side_t* sides;
 	uint8_t toptex;
 	uint8_t bottex;
 	uint8_t midtex;
@@ -1037,10 +1027,12 @@ void P_LoadSideDefs(int16_t lump)
 	texsize_t msdtextureoffset;
 	texsize_t msdrowoffset;
 	int16_t msdsecnum;
+	MEMREF sidesRef;
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_SIDES);
-	
+	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
+
 
 	W_CacheLumpNumCheck(lump, 7);
 	
@@ -1068,7 +1060,6 @@ void P_LoadSideDefs(int16_t lump)
 		
 		// sides gets unloaded by the above calls, and theres not enough room in ems to 
 		// hold it in memory in the worst case alongside data
-		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		sd = &sides[i];
 		sd->toptexture = toptex;
 		sd->bottomtexture = bottex;
@@ -1078,7 +1069,6 @@ void P_LoadSideDefs(int16_t lump)
 		sd->rowoffset = msdrowoffset;
 		sd->secnum = msdsecnum;
 
-		Z_RefIsActive(sidesRef);
 
 	}
 
@@ -1135,10 +1125,8 @@ void P_GroupLines(void)
 	line_t*             li;
 	int16_t             bbox[4];
 	int16_t             block;
-	seg_t*              segs;
 	int16_t				previouslinebufferindex;
 	int16_t*				linebuffer;
-	subsector_t*		subsectors;
 	int16_t				firstlinenum;
 	int16_t				sidedefOffset;
 	int16_t				linev1Offset;
@@ -1150,23 +1138,18 @@ void P_GroupLines(void)
 	uint8_t				sectorlinecount;
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
-	side_t* sides;
 
 	// look up sector number for each subsector
-	subsectors = (subsector_t*)Z_LoadBytesFromConventionalWithOptions(subsectorsRef, PAGE_LOCKED, CA_TYPE_LEVELDATA);
 	for (i = 0; i < numsubsectors; i++) {
 		firstlinenum = subsectors[i].firstline;
-		segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 		
 		sidedefOffset = segs[firstlinenum].sidedefOffset;
-		sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 		sidesecnum = sides[sidedefOffset].secnum;
 
 		subsectors[i].secnum = sidesecnum;
 
 	}
 
-	Z_SetUnlocked(subsectorsRef);
 
 	// count number of lines in each sector
 	total = 0;

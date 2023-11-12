@@ -340,7 +340,6 @@ EV_VerticalDoor
 	int16_t linespecial = lines[linenum].special;
 	int16_t sidenum;
 	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
-	side_t* sides;
 	int16_t doortopheight;
 	sector_t *doorsector;
 
@@ -399,7 +398,6 @@ EV_VerticalDoor
 
 	sidenum = lines[linenum].sidenum[side ^ 1];
 
-	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	secnum = sides[sidenum].secnum;
 	doorsector = &sectors[secnum];
 

@@ -471,13 +471,11 @@ P_SetThingPosition (MEMREF thingRef, mobj_t* thing)
 	
 	mobj_t* thingList;
 	int16_t subsectorsecnum;
-	subsector_t* subsectors;
 	MEMREF oldsectorthinglist;
 	fixed_t_union temp;
     // link into subsector
     subsecnum = R_PointInSubsector (thing->x,thing->y);
 
-	subsectors = (subsector_t*) Z_LoadBytesFromConventional(subsectorsRef);
 	subsectorsecnum = subsectors[subsecnum].secnum;
 	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	thing->secnum = subsectorsecnum;

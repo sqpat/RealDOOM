@@ -80,23 +80,23 @@ extern int16_t		numvertexes;
 extern vertex_t*	vertexes;
 
 extern int16_t		numsegs;
-extern MEMREF		segsRef;
+extern seg_t*		segs;
 
 extern int16_t		numsectors;
 extern sector_t* sectors;
 
 extern int16_t		numsubsectors;
-extern MEMREF	subsectorsRef;
+extern subsector_t*	subsectors;
 
 extern int16_t		numnodes;
-extern MEMREF    nodesRef;
+extern node_t*      nodes;
 
 
 extern int16_t		numlines;
 extern line_t*   lines;
 
 extern int16_t		numsides;
-extern MEMREF       sidesRef;
+extern side_t*       sides;
 
 extern MEMREF          linebufferRef;
 

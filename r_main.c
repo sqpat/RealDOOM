@@ -596,14 +596,12 @@ int16_t
     node_t*	node;
     int16_t		side;
     int16_t		nodenum;
-	node_t* nodes;
     // single subsector is a special case
 	if (!numnodes) {
 		return 0;
 	}
 		
 	nodenum = numnodes - 1;
-	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	while (! (nodenum & NF_SUBSECTOR) ) {
 		node = &nodes[nodenum];
 		side = R_PointOnSide (x, y, node);

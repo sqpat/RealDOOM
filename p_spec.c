@@ -128,7 +128,7 @@ getSector
 	offset = linebuffer[offset];
 	offset = lines[offset].sidenum[side];
 
-    return ((side_t*)Z_LoadBytesFromConventional(sidesRef))[offset].secnum;
+    return sides[offset].secnum;
 }
 
 
@@ -1035,7 +1035,6 @@ void P_UpdateSpecials(void)
 	anim_t*	anim;
 	uint8_t		pic;
 	int16_t		i;
-	side_t* sides;
 	int16_t sidenum;
 
 	//	LEVEL TIMER
@@ -1068,7 +1067,6 @@ void P_UpdateSpecials(void)
 			buttonlist[i].btimer--;
 			if (!buttonlist[i].btimer) {
 				sidenum = lines[buttonlist[i].linenum].sidenum[0];
-				sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 
 				switch (buttonlist[i].where) {
 				case top:

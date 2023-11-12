@@ -664,7 +664,6 @@ void R_DrawSprite (vissprite_t* spr)
     fixed_t             scale;
     fixed_t             lowscale;
 	int16_t                 silhouette;
-	seg_t* segs;
     fixed_t_union temp;
 
     for (x = spr->x1 ; x<=spr->x2 ; x++)
@@ -699,7 +698,6 @@ void R_DrawSprite (vissprite_t* spr)
             scale = ds->scale2;
         }
                 
-		segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 		if (scale < spr->scale
             || ( lowscale < spr->scale
                  && !R_PointOnSegSide (spr->gx, spr->gy, segs[ds->curlinenum].v1Offset, segs[ds->curlinenum].v2Offset) ) )

@@ -293,11 +293,9 @@ boolean P_CrossSubsector (uint16_t subsecnum)
     vertex_t		v2;
     fixed_t		frac;
     fixed_t		slope;
-	seg_t* segs;
 	int16_t linev1Offset;
 	int16_t linev2Offset;
 	uint8_t lineflags;
-	subsector_t* subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	fixed_t_union temp;
  	temp.h.fracbits = 0;
     // check lines
@@ -306,7 +304,6 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 	
 
     for ( ; count ; segnum++, count--) {
-		segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 		linedefOffset = segs[segnum].linedefOffset;
 		frontsecnum = segs[segnum].frontsecnum;
 		backsecnum = segs[segnum].backsecnum;
@@ -429,7 +426,6 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 {
     node_t*	bsp;
     int8_t		side;
-	node_t* nodes;
 
 	if (bspnum & NF_SUBSECTOR) {
 		if (bspnum == 65535) { // -1 case. was thing for single sector maps?
@@ -440,7 +436,6 @@ boolean P_CrossBSPNode (uint16_t bspnum)
     }
 		
 
-	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	bsp = &nodes[bspnum];
 	 
 	side = P_DivlineSideNode (strace.x.w, strace.y.w, bsp);
@@ -454,7 +449,6 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 		return false;
 	}
 
-	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	bsp = &nodes[bspnum];
 
     // the partition plane is crossed here
@@ -462,7 +456,6 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 		// the line doesn't touch the other side
 		return true;
     }
-	//nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	//bsp = &nodes[bspnum];
 
     // cross the ending side		

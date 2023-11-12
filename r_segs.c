@@ -100,9 +100,7 @@ R_RenderMaskedSegRange
 
 	uint8_t* textureheight;
 	int16_t siderowoffset;
-	seg_t* segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 	int16_t curlinev1Offset; int16_t curlinev2Offset; int16_t curlinefrontsecnum; int16_t curlinebacksecnum; int16_t curlinesidedefOffset; int16_t curlinelinedefOffset;
-	side_t* sides;
 	int16_t sidemidtexture;
 	sector_t frontsector;
 	sector_t backsector;
@@ -119,7 +117,6 @@ R_RenderMaskedSegRange
 	curlinebacksecnum = segs[curlinenum].backsecnum;
 	curlinesidedefOffset = segs[curlinenum].sidedefOffset;
 	curlinelinedefOffset = segs[curlinenum].linedefOffset;
-	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	siderowoffset = sides[curlinesidedefOffset].rowoffset;
 	sidemidtexture = sides[curlinesidedefOffset].midtexture;
 
@@ -413,13 +410,11 @@ R_StoreWallRange
     int16_t			lightnum;
 
 	// needs to be refreshed...
-	seg_t* segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 	fineangle_t curlineangle = segs[curlinenum].fineangle;
 	int16_t curlinev1Offset = segs[curlinenum].v1Offset;
 	int16_t curlinev2Offset = segs[curlinenum].v2Offset;
 	int16_t curlinesidedefOffset = segs[curlinenum].sidedefOffset;
 	fixed_t curlineOffset = segs[curlinenum].offset;
-	side_t* sides;
 	uint8_t siderowoffset;
 	uint8_t sidemidtexture;
 	int16_t sidetoptexture;
@@ -529,7 +524,6 @@ R_StoreWallRange
 	}
 #endif
 
-	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	siderowoffset = sides[curlinesidedefOffset].rowoffset;
 	sidemidtexture = sides[curlinesidedefOffset].midtexture;
 	sidetoptexture = sides[curlinesidedefOffset].toptexture;

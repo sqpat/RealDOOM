@@ -320,7 +320,6 @@ void R_PrecacheLevel(void)
 	spriteframe_t*      sf;
 	spritedef_t*		sprites;
 	spriteframe_t*		spriteframes;
-	side_t* sides;
 
 
 	if (demoplayback)
@@ -353,7 +352,6 @@ void R_PrecacheLevel(void)
 	// Precache textures.
 	texturepresent = alloca(numtextures);
 	memset(texturepresent, 0, numtextures);
-	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	for (i = 0; i < numsides; i++)
 	{
 
