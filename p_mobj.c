@@ -503,7 +503,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		P_XYMovement (mobjRef, mobj);
 		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 
-		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
+		if ((thinkerlist[mobj->thinkerRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
 		}
     } 
@@ -517,7 +517,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 	 
 		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 		// FIXME: decent NOP/NULL/Nil function pointer please.
-		if (thinkerlist[mobj->thinkerRef].functionType == TF_DELETEME) {
+		if ((thinkerlist[mobj->thinkerRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
 		}
     }
@@ -650,7 +650,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 	 
 
-	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER);
+	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER_HIGHBITS);
 	setStateReturn = mobj;
 
     return mobjRef;

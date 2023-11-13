@@ -77,7 +77,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 	flickRef = Z_MallocThinkerEMS(sizeof(*flick));
 	flick = (fireflicker_t*) Z_LoadThinkerBytesFromEMS(flickRef);
 
-	flick->thinkerRef = P_AddThinker(flickRef, TF_FIREFLICKER);
+	flick->thinkerRef = P_AddThinker(flickRef, TF_FIREFLICKER_HIGHBITS);
 
     flick->secnum = secnum;
     flick->maxlight = seclightlevel;
@@ -144,7 +144,7 @@ void P_SpawnLightFlash (int16_t secnum)
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
 	flashRef = Z_MallocThinkerEMS(sizeof(*flash));
 	flash = (lightflash_t*) Z_LoadThinkerBytesFromEMS(flashRef);
-	flash->thinkerRef = P_AddThinker(flashRef, TF_LIGHTFLASH);
+	flash->thinkerRef = P_AddThinker(flashRef, TF_LIGHTFLASH_HIGHBITS);
 
 	flash->secnum = secnum;
     flash->maxlight = seclightlevel;
@@ -215,7 +215,7 @@ P_SpawnStrobeFlash
 	flash = (strobe_t*) Z_LoadThinkerBytesFromEMS(flashRef);
 
 
-	flash->thinkerRef = P_AddThinker(flashRef, TF_STROBEFLASH);
+	flash->thinkerRef = P_AddThinker(flashRef, TF_STROBEFLASH_HIGHBITS);
 
     flash->secnum = secnum;
     flash->darktime = fastOrSlow;
@@ -400,7 +400,7 @@ void P_SpawnGlowingLight(int16_t secnum)
 	glowRef = Z_MallocThinkerEMS(sizeof(*g));
 	g = (glow_t*)Z_LoadThinkerBytesFromEMS(glowRef);
 
-	g->thinkerRef = P_AddThinker(glowRef, TF_GLOW);
+	g->thinkerRef = P_AddThinker(glowRef, TF_GLOW_HIGHBITS);
 
 
     g->secnum = secnum;

@@ -70,7 +70,7 @@ EV_Teleport
 			thinkerRef = thinkerlist[0].next;
 			for (thinkerRef = thinkerlist[0].next; thinkerRef != 0; thinkerRef = thinkerlist[thinkerRef].next) {
 				// not a mobj
-				if (thinkerlist[thinkerRef].functionType != TF_MOBJTHINKER) {
+				if ((thinkerlist[thinkerRef].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS) {
 					continue;
 				}
 				m = (mobj_t *)Z_LoadThinkerBytesFromEMS(thinkerlist[thinkerRef].memref);

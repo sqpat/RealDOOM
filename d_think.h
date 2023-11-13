@@ -146,17 +146,33 @@ typedef uint8_t  THINKFUNCTION;
 #define TF_STROBEFLASH      8
 #define TF_GLOW             9
 
+#define TF_DELETEME         10
 
-#define TF_DELETEME         255
+#define TF_NULL_HIGHBITS			0
+#define TF_MOBJTHINKER_HIGHBITS		2048u
+#define TF_PLATRAISE_HIGHBITS       4096u
+#define TF_MOVECEILING_HIGHBITS		6144u
+#define TF_VERTICALDOOR_HIGHBITS	8192u
+#define TF_MOVEFLOOR_HIGHBITS       10240u
+#define TF_FIREFLICKER_HIGHBITS     12288u
+#define TF_LIGHTFLASH_HIGHBITS      14336u
+#define TF_STROBEFLASH_HIGHBITS     16384u
+#define TF_GLOW_HIGHBITS            18432u
+#define TF_DELETEME_HIGHBITS		20480u
+
+#define TF_FUNCBITS					0xF800u
+#define TF_PREVBITS					0x07FFu
 
 // Doubly linked list of actors.
 typedef struct thinker_s
 {
-	THINKERREF	prev;
+	// functiontype is the five high bits
+
+	THINKERREF	prevFunctype;
 	THINKERREF	next;
 	//MEMREF		prev;
 	//MEMREF		next;
-	THINKFUNCTION functionType;
+	//THINKFUNCTION functionType;
 
 	MEMREF		memref;		// needed to delete the 'owner' of the thinker. All thinkers are owned by a memref controlled allocations..
     

@@ -272,7 +272,7 @@ EV_DoFloor
 		sectorfloorheight = sector->floorheight;
 		floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 
-		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR_HIGHBITS);
 
 		floor->type = floortype;
 		floor->crush = false;
@@ -501,7 +501,7 @@ EV_BuildStairs
 		sectorlinesoffset = sector->linesoffset;
 		floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 
-		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR_HIGHBITS);
 		floor->direction = 1;
 		floor->secnum = secnum;
 
@@ -558,7 +558,7 @@ EV_BuildStairs
 
 				floor->floordestheight = height;
 
-				floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+				floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR_HIGHBITS);
 
 				floor->direction = 1;
 				floor->secnum = tsecOffset;

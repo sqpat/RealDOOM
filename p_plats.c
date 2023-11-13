@@ -172,7 +172,7 @@ EV_DoPlat
 		platRef = Z_MallocThinkerEMS(sizeof(*plat));
 		(&sectors[secnum])->specialdataRef = platRef;
 		plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
-		plat->thinkerRef = P_AddThinker(platRef, TF_PLATRAISE);
+		plat->thinkerRef = P_AddThinker(platRef, TF_PLATRAISE_HIGHBITS);
 	 
 
 		plat->type = type;
@@ -281,7 +281,7 @@ void P_ActivateInStasis(int8_t tag) {
 			if ((plat->status == plat_in_stasis) && (plat->tag == tag)) {
 				plat->oldstatus = plat->status;
 
-				P_UpdateThinkerFunc(plat->thinkerRef, TF_PLATRAISE);
+				P_UpdateThinkerFunc(plat->thinkerRef, TF_PLATRAISE_HIGHBITS);
 			}
 		}
 

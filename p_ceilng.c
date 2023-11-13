@@ -188,7 +188,7 @@ EV_DoCeiling
 		sectors[secnum].specialdataRef = ceilingRef;
 		ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(ceilingRef);
 
-		ceiling->thinkerRef = P_AddThinker (ceilingRef, TF_MOVECEILING);
+		ceiling->thinkerRef = P_AddThinker (ceilingRef, TF_MOVECEILING_HIGHBITS);
 	
 		ceiling->secnum = secnum;
 		ceiling->crush = false;
@@ -290,7 +290,7 @@ void P_ActivateInStasisCeiling(uint8_t linetag)
 			if ((c->tag == linetag) && (c->direction == 0)) {
 				c->direction = c->olddirection;
 
-				P_UpdateThinkerFunc(c->thinkerRef, TF_MOVECEILING);
+				P_UpdateThinkerFunc(c->thinkerRef, TF_MOVECEILING_HIGHBITS);
 			}
 		}
 	}

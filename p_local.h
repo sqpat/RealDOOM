@@ -69,8 +69,8 @@ extern	thinker_t	thinkerlist[MAX_THINKERS];
 
 
 void P_InitThinkers ();
-THINKERREF P_AddThinker (MEMREF argref, THINKFUNCTION thinkfunc);
-void P_UpdateThinkerFunc(THINKERREF thinker, THINKFUNCTION argfunc);
+THINKERREF P_AddThinker (MEMREF argref, uint16_t thinkfunc);
+void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
 void P_RemoveThinker (THINKERREF thinkerRef);
 
 

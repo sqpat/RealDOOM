@@ -396,7 +396,7 @@ void R_PrecacheLevel(void)
 
 	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)
 	{
-		if (thinkerlist[th].functionType == TF_MOBJTHINKER) {
+		if ((thinkerlist[th].prevFunctype & TF_FUNCBITS) == TF_MOBJTHINKER_HIGHBITS) {
 			spritepresent[ states[((mobj_t *)Z_LoadThinkerBytesFromEMS(thinkerlist[th].memref))->stateNum].sprite ] = 1;
 		}
 	}

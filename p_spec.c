@@ -1172,7 +1172,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 
 
-			floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR);
+			floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR_HIGHBITS);
 			floor->type = donutRaise;
 			floor->crush = false;
 			floor->direction = 1;
@@ -1186,7 +1186,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 			floorRef = Z_MallocThinkerEMS(sizeof(*floor));
 			sectors[s1Offset].specialdataRef = floorRef;
 			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
-			floor->thinkerRef = P_AddThinker (floorRef, TF_MOVEFLOOR);
+			floor->thinkerRef = P_AddThinker (floorRef, TF_MOVEFLOOR_HIGHBITS);
 			floor->type = lowerFloor;
 			floor->crush = false;
 			floor->direction = -1;

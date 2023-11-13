@@ -256,7 +256,7 @@ EV_DoDoor
 		doorsector = &sectors[secnum];
 		door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 
-		door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR);
+		door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR_HIGHBITS);
 	
 		door->secnum = secnum;
 		door->type = type;
@@ -443,7 +443,7 @@ EV_VerticalDoor
 
 	
 	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
-    door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR);
+    door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR_HIGHBITS);
 	door->secnum = secnum;
 	door->direction = 1;
 	door->speed = VDOORSPEED;
@@ -497,7 +497,7 @@ void P_SpawnDoorCloseIn30 (int16_t secnum)
 	doorRef = Z_MallocThinkerEMS(sizeof(*door));
 
 	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
-	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR);
+	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR_HIGHBITS);
 	door->secnum = secnum;
 	door->direction = 0;
 	door->type = normal;
@@ -523,7 +523,7 @@ P_SpawnDoorRaiseIn5Mins
 	doorRef = Z_MallocThinkerEMS(sizeof(*door));
 
 	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
-	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR);
+	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR_HIGHBITS);
 
 	
     door->secnum = secnum;

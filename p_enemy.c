@@ -622,7 +622,7 @@ void A_KeenDie (MEMREF moRef, mobj_t* mo)
     // scan the remaining thinkers
     // to see if all Keens are dead
     for (th = thinkerlist[0].next ; th != 0 ; th= thinkerlist[th].next) {
-		if (thinkerlist[th].functionType != TF_MOBJTHINKER) {
+		if ((thinkerlist[th].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS) {
 			continue;
 		}
 
@@ -1741,7 +1741,7 @@ A_PainShootSkull
 
     currentthinker = thinkerlist[0].next;
     while (currentthinker != 0) {
-		if ((thinkerlist[currentthinker].functionType == TF_MOBJTHINKER)
+		if (((thinkerlist[currentthinker].prevFunctype & TF_FUNCBITS) == TF_MOBJTHINKER_HIGHBITS)
 			&& ((mobj_t *)Z_LoadThinkerBytesFromEMS(thinkerlist[currentthinker].memref))->type == MT_SKULL) {
 			count++;
 		}
@@ -1979,7 +1979,7 @@ void A_BossDeath (MEMREF moRef, mobj_t* mo)
     // if all bosses are dead
 	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)
 	{
-	if (thinkerlist[th].functionType != TF_MOBJTHINKER)
+	if ((thinkerlist[th].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS)
 	    continue;
 	
 	mo2 = (mobj_t *)Z_LoadThinkerBytesFromEMS(thinkerlist[th].memref);
@@ -2105,7 +2105,9 @@ void A_BrainAwake ()
 	 thinkerRef != 0 ;
 	 thinkerRef = thinkerlist[thinkerRef].next)
     {
-	if (thinkerlist[thinkerRef].functionType != TF_MOBJTHINKER)
+
+
+	if ((thinkerlist[thinkerRef].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS)
 	    continue;	// not a mobj
 
 	m = (mobj_t *)Z_LoadThinkerBytesFromEMS(thinkerlist[thinkerRef].memref);

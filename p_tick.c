@@ -49,11 +49,11 @@ void P_InitThinkers (void)
 {
 	int16_t i;
 	thinkerlist[0].next = 1;
-	thinkerlist[0].prev = 1;
+	thinkerlist[0].prevFunctype = 1;
 
 	
 	for (i = 0; i < MAX_THINKERS; i++) {
-		thinkerlist[i].prev = MAX_THINKERS;
+		thinkerlist[i].prevFunctype = MAX_THINKERS;
 	}
 
 	currentThinkerListHead = 0;
@@ -70,7 +70,7 @@ THINKERREF P_GetNextThinkerRef(void) {
             i = 0;
         }
         
-        if (thinkerlist[i].prev == MAX_THINKERS){
+        if (thinkerlist[i].prevFunctype == MAX_THINKERS){
 			currentThinkerListHead = i;
             return i;
         }
@@ -93,27 +93,28 @@ int16_t addCount = 0;
 // P_AddThinker
 // Adds a new thinker at the end of the list.
 //
-THINKERREF P_AddThinker (MEMREF argref, THINKFUNCTION thinkfunc)
+THINKERREF P_AddThinker (MEMREF argref, uint16_t thinkfunc)
 {
 	// get next index
 	// sets nexts, prevs
 	int16_t index = P_GetNextThinkerRef();
-
+	THINKERREF temp = thinkerlist[0].prevFunctype;// &0x7FF;
+	
 	thinkerlist[index].next = 0;
-	thinkerlist[index].prev = thinkerlist[0].prev;
+	thinkerlist[index].prevFunctype = temp+thinkfunc;
 
-	thinkerlist[thinkerlist[0].prev].next = index;
-	thinkerlist[0].prev = index;
+	thinkerlist[temp].next = index;
+	thinkerlist[0].prevFunctype = index;
 
     thinkerlist[index].memref = argref;
-	thinkerlist[index].functionType = thinkfunc;
+	
 	addCount++;
 	return index;
 
 }
 
-void P_UpdateThinkerFunc(THINKERREF thinker, THINKFUNCTION argfunc) {
-	thinkerlist[thinker].functionType = argfunc;
+void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc) {
+	thinkerlist[thinker].prevFunctype = (thinkerlist[thinker].prevFunctype & TF_PREVBITS) + argfunc;
 }
 
 
@@ -126,10 +127,10 @@ void P_RemoveThinker (THINKERREF thinkerRef)
 {
   // FIXME: NOP.
 
-	thinkerlist[thinkerRef].functionType = TF_DELETEME;
+	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
 }
 
- 
+
 
 int setval = 0;
 //
@@ -137,7 +138,8 @@ int setval = 0;
 //
 void P_RunThinkers (void)
 {
-    THINKERREF	currentthinker;
+	THINKERREF	currentthinker;
+	uint16_t	currentthinkerFunc;
 	int16_t i = 0;
 #ifdef DEBUGLOG_TO_FILE
 
@@ -150,49 +152,57 @@ void P_RunThinkers (void)
 	currentthinker = thinkerlist[0].next;
 
 
-
     while (currentthinker != 0) {
-		if ( thinkerlist[currentthinker].functionType == TF_DELETEME ) {
-			// time to remove it
-			thinkerlist[thinkerlist[currentthinker].next].prev = thinkerlist[currentthinker].prev;
-			thinkerlist[thinkerlist[currentthinker].prev].next = thinkerlist[currentthinker].next;
-			Z_FreeThinker (thinkerlist[currentthinker].memref);
-			thinkerlist[currentthinker].prev = MAX_THINKERS;
+		currentthinkerFunc = thinkerlist[currentthinker].prevFunctype & TF_FUNCBITS;
 
+
+		if (currentthinkerFunc == TF_DELETEME_HIGHBITS ) {
+			// time to remove it
+			THINKERREF prevRef = thinkerlist[currentthinker].prevFunctype & TF_PREVBITS;
+			THINKERREF nextRef = thinkerlist[currentthinker].next;
+
+			thinkerlist[nextRef].prevFunctype &= TF_FUNCBITS;
+			thinkerlist[nextRef].prevFunctype += prevRef;
+
+					//thinkerlist[thinkerlist[currentthinker].next].prevFunctype & TF_FUNCBITS + 
+					//prevRef;
+			
+			thinkerlist[prevRef].next = nextRef;;
+
+			Z_FreeThinker (thinkerlist[currentthinker].memref);
+			thinkerlist[currentthinker].prevFunctype = MAX_THINKERS;
 		} else {
 		
 
 			
-			
 		
-			if (thinkerlist[currentthinker].functionType) {
-
-				switch (thinkerlist[currentthinker].functionType) {
-					case TF_MOBJTHINKER:
+			if (currentthinkerFunc) {
+				switch (currentthinkerFunc) {
+					case TF_MOBJTHINKER_HIGHBITS:
 						P_MobjThinker(thinkerlist[currentthinker].memref);
 						break;
-					case TF_PLATRAISE:
+					case TF_PLATRAISE_HIGHBITS:
 						T_PlatRaise(thinkerlist[currentthinker].memref);
 						break;
-					case TF_MOVECEILING:
+					case TF_MOVECEILING_HIGHBITS:
 						T_MoveCeiling(thinkerlist[currentthinker].memref);
 						break;
-					case TF_VERTICALDOOR:
+					case TF_VERTICALDOOR_HIGHBITS:
 						T_VerticalDoor(thinkerlist[currentthinker].memref);
 						break;
-					case TF_MOVEFLOOR:
+					case TF_MOVEFLOOR_HIGHBITS:
 						T_MoveFloor(thinkerlist[currentthinker].memref);
 						break;
-					case TF_FIREFLICKER:
+					case TF_FIREFLICKER_HIGHBITS:
 						T_FireFlicker(thinkerlist[currentthinker].memref);
 						break;
-					case TF_LIGHTFLASH:
+					case TF_LIGHTFLASH_HIGHBITS:
 						T_LightFlash(thinkerlist[currentthinker].memref);
 						break;
-					case TF_STROBEFLASH:
+					case TF_STROBEFLASH_HIGHBITS:
 						T_StrobeFlash(thinkerlist[currentthinker].memref);
 						break;
-					case TF_GLOW:
+					case TF_GLOW_HIGHBITS:
 						T_Glow(thinkerlist[currentthinker].memref);
 						break;
 #ifdef CHECK_FOR_ERRORS
