@@ -52,8 +52,8 @@ int16_t             numsegs;
 seg_t*				segs;
 
 int16_t             numsectors;
-//MEMREF          sectorsRef;
 sector_t*		sectors;
+MEMREF			sectorBlockBoxesRef;
 
 int16_t             numsubsectors;
 subsector_t*    subsectors;
@@ -156,7 +156,6 @@ void P_LoadSegs(int16_t lump)
 	seg_t*              li;
 	line_t*             ldef;
 	uint16_t                 side;
-	int16_t linedef;
 	int16_t ldefsidenum;
 	int16_t ldefothersidenum;
 	int16_t sidesecnum;
@@ -181,11 +180,7 @@ void P_LoadSegs(int16_t lump)
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapseg_t *)Z_LoadBytesFromEMS(dataRef);
 
-	ml = (mapseg_t *)data;
-
-//	data = (mapseg_t *)Z_LoadBytesFromEMSWithOptions(dataRef, PAGE_LOCKED);
 	for (i = 0; i < numsegs; i++) {
-		data = (mapseg_t *)Z_LoadBytesFromEMS(dataRef);
 		ml = &data[i];
 		mlv1 = (ml->v1);
 		mlv2 = (ml->v2);
@@ -193,10 +188,9 @@ void P_LoadSegs(int16_t lump)
 		mloffset = ((ml->offset));// << 16;
 		mllinedef = (ml->linedef);
 		side = (ml->side);
-		linedef = (ml->linedef);
 
 
-		ldef = &lines[linedef];
+		ldef = &lines[mllinedef];
 		ldefsidenum = ldef->sidenum[side];
 		ldefothersidenum = ldef->sidenum[side ^ 1];
 		ldefflags = ldef->flags;
@@ -208,22 +202,20 @@ void P_LoadSegs(int16_t lump)
 
 		li = &segs[i];
 		li->v1Offset = mlv1;
-		li->v2Offset = mlv2;
+		li->v2Offset = mlv2 + (side ? SEG_V2_SIDE_1_HIGHBIT : 0);
 	
 		li->fineangle = mlangle >> SHORTTOFINESHIFT;
-		temp.h.intbits = mloffset;
-		li->offset = temp.w;
+		li->offset = mloffset;
 		li->linedefOffset = mllinedef;
 		li->sidedefOffset = ldefsidenum;
 
-
-
+		/*
 		li->frontsecnum = sidesecnum;
 		if (ldefflags & ML_TWOSIDED)
 			li->backsecnum = othersidesecnum;
 		else
 			li->backsecnum = SECNUM_NULL;
-
+			*/
 	}
 
 	//Z_SetUnlocked(dataRef);
@@ -310,7 +302,7 @@ void P_LoadSectors(int16_t lump)
 	mapsector_t        ms;
 	sector_t*           ss;
 	MEMREF				dataRef;
-	MEMREF sectorsRef;
+	MEMREF				sectorsRef;
 	// most tags are under 100, a couple are like 666 or 667 or 999 or other such special numbers.
 	// we will special case those and fit it in 8 bits so allocations are smaller
 	int16_t convertedtag;
@@ -829,7 +821,7 @@ void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
 	mobjRef = P_SpawnMobj(x.w, y.w, z.w, i);
 
 	mobj = setStateReturn;
-	mobj->spawnpoint = copyofthing;
+	//mobj->spawnpoint = copyofthing;
 
 	if (mobj->tics > 0 && mobj->tics < 240)
 		mobj->tics = 1 + (P_Random() % mobj->tics);
@@ -1139,6 +1131,7 @@ void P_GroupLines(void)
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
 	MEMREF linebufferRef;
+	int16_t* sectorBlockBoxes;
 	// look up sector number for each subsector
 	for (i = 0; i < numsubsectors; i++) {
 		firstlinenum = subsectors[i].firstline;
@@ -1174,7 +1167,8 @@ void P_GroupLines(void)
 
 	tempv1.h.fracbits = 0;
 	tempv2.h.fracbits = 0;
-
+	sectorBlockBoxesRef = Z_MallocEMS(numsectors * 8, PU_LEVEL, 0, ALLOC_TYPE_SECTORS);
+	sectorBlockBoxes = (int16_t*)Z_LoadBytesFromEMS(sectorBlockBoxesRef);
 	for (i = 0; i < numsectors; i++) {
 		M_ClearBox16(bbox);
 		
@@ -1210,19 +1204,19 @@ void P_GroupLines(void)
 		// adjust bounding box to map blocks
 		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block >= bmapheight ? bmapheight - 1 : block;
-		sectors[i].blockbox[BOXTOP] = block;
+		sectorBlockBoxes[i*4+BOXTOP] = block;
 
 		block = (bbox[BOXBOTTOM] - bmaporgy - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block < 0 ? 0 : block;
-		sectors[i].blockbox[BOXBOTTOM] = block;
+		sectorBlockBoxes[i * 4 + BOXBOTTOM] = block;
 
 		block = (bbox[BOXRIGHT] - bmaporgx + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block >= bmapwidth ? bmapwidth - 1 : block;
-		sectors[i].blockbox[BOXRIGHT] = block;
+		sectorBlockBoxes[i * 4 + BOXRIGHT] = block;
 
 		block = (bbox[BOXLEFT] - bmaporgx - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block < 0 ? 0 : block;
-		sectors[i].blockbox[BOXLEFT] = block;
+		sectorBlockBoxes[i * 4 + BOXLEFT] = block;
 	}
 
 
@@ -1313,11 +1307,19 @@ P_SetupLevel
 	//     sector    linedef      node      linebuffer
 	// side     vertex     subsec       seg
 	// 1223 170   896   958  467  466   1371        num x
-	//    7  33     4    27    6   28     18        sizeof type
-	// 8561 5610 3584 25866 2802 13048 24678  2440  bytes used
+	//    7  23     4    27    5   28     12        sizeof type
+	// 8561 3910 3584 25866 2335 13048 16452  2440  bytes used
+	//								   21936
 	//   3    2     1     4    5     6     7     8  load order
-	//                           59471 
+	//                           57304        18892
+	//											24376
 
+	/*
+	I_Error("%i %i %i %i %i %i %i %i %i %i",
+		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t), sizeof(subsector_t),
+		sizeof(node_t), sizeof(seg_t), 0, 0, 0
+	);;
+	*/
 
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 9);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);

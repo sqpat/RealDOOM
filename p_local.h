@@ -58,7 +58,7 @@
 #define	BASETHRESHOLD	 	100
 
 
-#define MAX_THINKERS 1000
+#define MAX_THINKERS 600
 
 //
 // P_TICK

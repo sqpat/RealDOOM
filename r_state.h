@@ -85,6 +85,7 @@ extern seg_t*		segs;
 
 extern int16_t		numsectors;
 extern sector_t* sectors;
+extern MEMREF    sectorBlockBoxesRef;
 
 extern int16_t		numsubsectors;
 extern subsector_t*	subsectors;

@@ -49,17 +49,13 @@
 
 #define MINFRAGMENT         32
 // we dont make many conventional allocations, only a small number of important ones
-#define CONVENTIONAL_ALLOCATION_LIST_SIZE 12
+#define CONVENTIONAL_ALLOCATION_LIST_SIZE 10
 // todo make this PAGE * PAGE SIZE 
 #define MAX_ZMALLOC_SIZE 0x10000L
 
-// demo commented out...
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 65535
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 32767
-
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 1
+ 
 // shareware timedemo 3 value
- #define STATIC_CONVENTIONAL_BLOCK_SIZE_2 27118  
+ #define STATIC_CONVENTIONAL_BLOCK_SIZE_2 18892  
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
 #define SPRITE_ALLOCATION_LIST_SIZE 150
@@ -75,9 +71,9 @@
 //#define THINKER_ALLOCATION_LIST_SIZE 600
 
 // equal to sizeof(mobj_t), the largest thinker. 
-#define THINKER_BLOCK_SIZE 97
-#define STATIC_CONVENTIONAL_THINKER_SIZE 1
-#define THINKER_ALLOCATION_LIST_SIZE MAX_THINKERS+1
+#define THINKER_BLOCK_SIZE 69u
+#define STATIC_CONVENTIONAL_THINKER_SIZE MAX_THINKERS * THINKER_BLOCK_SIZE
+#define THINKER_ALLOCATION_LIST_SIZE MAX_THINKERS
 
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+4963u+10u)
@@ -149,14 +145,6 @@ typedef struct
 
  
 
-typedef struct
-{
-	uint16_t	offset; 
-	// size needed due to deallocations? 
-	// the only things that use these are thinkers and mobj which are smaller than 128 bytes so this works
-	uint8_t	size;  
-} allocation_dynamic_thinker_t;
-
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
 byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
@@ -190,7 +178,6 @@ PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 PAGEREF currentThinkerAllocationListHead = 1;
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
-allocation_thinker_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
 boolean thinkerAllocationListFull = false;
 
 
@@ -199,7 +186,7 @@ allocation_static_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATI
 allocation_static_conventional_t textureinfo_allocations[TEXTUREINFO_ALLOCATION_LIST_SIZE];
 // todo turn these into dynamic allocations
 allocation_static_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
-//allocation_thinker_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
+allocation_thinker_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
 
 
 int16_t activepages[NUM_EMS_PAGES];
@@ -265,7 +252,7 @@ void Z_ChangeTagEMS(MEMREF index, int16_t tag) {
 
 
 void Z_FreeThinker(PAGEREF block){
-	thinker_allocations[EMS_ALLOCATION_LIST_SIZE].active = false;
+	thinker_allocations[block].active = false;
 }
 
 void Z_FreeEMS(PAGEREF block) {
@@ -1138,6 +1125,9 @@ void Z_FreeConventionalAllocations() {
 	
 	// todo if we change this from static to dynamic, change here...
 	memset(thinker_allocations, 0, THINKER_ALLOCATION_LIST_SIZE * sizeof(allocation_thinker_conventional_t));
+	memset(thinkermemoryblock, 0, STATIC_CONVENTIONAL_THINKER_SIZE);
+	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
+	memset(conventionalmemoryblock2, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_2);
 	currentThinkerAllocationListHead = 1;
 	thinkerAllocationListFull = false;
 
@@ -1230,17 +1220,24 @@ MEMREF Z_MallocConventional(
 #define THINKERS_PER_PAGE (PAGE_FRAME_SIZE / THINKER_BLOCK_SIZE)
 
 void* Z_LoadThinkerBytesFromEMS2(MEMREF ref) {
-	uint16_t refcounter = ref;
-	uint16_t pageframeindex;
-	uint16_t offset;
-	uint32_t page_and_size = 0;
+
 	
 	if (ref == PLAYER_MOBJ_REF) {
 		return &playerMobj;
 	}
 
+	return (byte*)thinkermemoryblock + ref * THINKER_BLOCK_SIZE;
+
+	/*
+		uint16_t refcounter = ref;
+	uint16_t pageframeindex;
+	uint16_t offset;
+	uint32_t page_and_size = 0;
+
 	// 97 bytes or whatever doesnt go into 16384 cleanly, 
 	// so we will skip bytes at the end of ems page this way
+
+
 	while (refcounter > THINKERS_PER_PAGE) {
 		page_and_size += (int32_t)0x800000; // 1 << PAGE_AND_SIZE_SHIFT
 		refcounter -= THINKERS_PER_PAGE;
@@ -1254,6 +1251,7 @@ void* Z_LoadThinkerBytesFromEMS2(MEMREF ref) {
 	return (byte*)pageFrameArea
 		+ PAGE_FRAME_SIZE * pageframeindex
 		+ offset;
+		*/
 
 }
 
@@ -1284,8 +1282,6 @@ MEMREF Z_MallocThinkerEMS(
 	thinker_allocations[currentThinkerAllocationListHead].active = true;
 	currentThinkerAllocationListHead++;
 
-	// todo looping and freeing?
-	// looping at memory page edge?
 	return currentThinkerAllocationListHead -1;
 }
 

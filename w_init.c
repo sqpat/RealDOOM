@@ -32,7 +32,6 @@
 #include "w_wad.h"
 #include "r_defs.h"
 
-extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 extern filehandle_t				wadfilehandle;
 extern lumpinfo_t*             lumpinfo;
 extern uint16_t                     numlumps;

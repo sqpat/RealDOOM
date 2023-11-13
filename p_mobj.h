@@ -183,11 +183,7 @@ typedef enum
     //  in death match mode (e.g. key cards).
     MF_NOTDMATCH    	= 0x2000000,
 
-    // Player sprites in multiplayer modes are modified
-    //  using an internal color lookup table for re-indexing.
-    // If 0x4 0x8 or 0xc,
-    //  use a translation table for player colormaps
-    MF_TRANSLATION  	= 0xc000000,
+
     // Hmm ???.
     MF_TRANSSHIFT	= 26
 
@@ -198,7 +194,7 @@ typedef enum
 typedef struct mobj_s
 {
     // List: thinker links.
-    THINKERREF thinkerRef;
+	THINKERREF thinkerRef;
 
     // Info for drawing: position.
     fixed_t		x;
@@ -263,7 +259,7 @@ typedef struct mobj_s
     int8_t			threshold;
 
     // For nightmare respawn.
-    mapthing_t		spawnpoint;	
+    //mapthing_t		spawnpoint;	
 
     // Thing being chased/attacked for tracers.
     MEMREF	tracerRef;	

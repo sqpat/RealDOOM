@@ -683,7 +683,7 @@ P_KillMobj
     } else {
 		P_SetMobjState (targetRef, getDeathState(target->type), target);
 	}
-	target = setStateReturn;
+	//target = setStateReturn;
 
     target->tics -= P_Random()&3;
 
@@ -875,7 +875,7 @@ P_DamageMobj
     if ( (P_Random () < getPainChance(target->type)) && !(target->flags&MF_SKULLFLY) ) {
 		target->flags |= MF_JUSTHIT;	// fight back!
 		P_SetMobjState (targetRef, getPainState(target->type), target);
-		target = setStateReturn;
+		//target = setStateReturn;
 	}
 			
 

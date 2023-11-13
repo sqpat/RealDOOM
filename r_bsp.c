@@ -269,10 +269,14 @@ void R_AddLine (int16_t linenum)
     angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
-	int16_t linebacksecnum = segs[linenum].backsecnum;
-	int16_t curlinesidedefOffset = segs[linenum].sidedefOffset;
-	int16_t linenumv1Offset = segs[linenum].v1Offset;
-	int16_t linenumv2Offset = segs[linenum].v2Offset;
+	seg_t curline = segs[linenum];
+	int16_t curlineside = curline.v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
+	line_t sideline = lines[curline.linedefOffset];
+	int16_t linebacksecnum;
+
+	int16_t curlinesidedefOffset = curline.sidedefOffset;
+	vertex_t v1 = vertexes[curline.v1Offset];
+	vertex_t v2 = vertexes[curline.v2Offset & SEG_V2_OFFSET_MASK];
 	int16_t sidemidtex;
 	sector_t frontsector;
 	sector_t backsector;
@@ -280,6 +284,12 @@ void R_AddLine (int16_t linenum)
 	fixed_t_union tempy;
     curlinenum = linenum;
 	
+	linebacksecnum =
+		sideline.flags & ML_TWOSIDED ?
+		sides[sideline.sidenum[curlineside ^ 1]].secnum
+		: SECNUM_NULL;
+
+
 #ifdef CHECK_FOR_ERRORS
 	if (segs[curlinenum].linedefOffset > numlines) {
 		I_Error("R_Addline Error! lines out of bounds! %li %i %i %i", gametic, numlines, segs[curlinenum].linedefOffset, curlinenum);
@@ -288,12 +298,12 @@ void R_AddLine (int16_t linenum)
 
 	tempx.h.fracbits = 0;
 	tempy.h.fracbits = 0;
-	tempx.h.intbits = vertexes[linenumv1Offset].x;
-	tempy.h.intbits = vertexes[linenumv1Offset].y;
+	tempx.h.intbits = v1.x;
+	tempy.h.intbits = v1.y;
     // OPTIMIZE: quickly reject orthogonal back sides.
     angle1 = R_PointToAngle (tempx.w, tempy.w);
-	tempx.h.intbits = vertexes[linenumv2Offset].x;
-	tempy.h.intbits = vertexes[linenumv2Offset].y;
+	tempx.h.intbits = v2.x;
+	tempy.h.intbits = v2.y;
     angle2 = R_PointToAngle (tempx.w, tempy.w);
     
 

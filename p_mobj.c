@@ -106,7 +106,7 @@ void P_ExplodeMissile(MEMREF moRef, mobj_t* mo){
 
     mo->momx = mo->momy = mo->momz = 0;
     P_SetMobjState (moRef, getDeathState(mo->type), mo);
-	mo = setStateReturn;
+	//mo = setStateReturn;
 
     mo->tics -= P_Random()&3;
 
@@ -191,7 +191,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 
 		if (!P_TryMove (moRef, ptryx, ptryy, mo)) {
 
-			mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 			// blocked move
 			if (motype == MT_PLAYER) {	// try to slide along it
 				P_SlideMove ();
@@ -204,12 +203,11 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 					// against the sky.
 					// Does not handle sky floors.
  
-					P_RemoveMobj (moRef, (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef));
+					P_RemoveMobj (moRef, mo);
 					return;
 				}
 			
 
-				mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 				P_ExplodeMissile (moRef, mo);
 			} else {
 				mo->momx = mo->momy = 0;
@@ -217,7 +215,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 		}
 	
 
-		mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 	 
     } while (xmove || ymove);
 	
@@ -248,7 +245,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 		// do not stop sliding
 		//  if halfway off a step with some momentum
 		sectorfloorheight = sectors[mosecnum].floorheight;
-		mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 		if (mo->momx > FRACUNIT/4 || mo->momx < -FRACUNIT/4 || mo->momy > FRACUNIT/4 || mo->momy < -FRACUNIT/4) {
 			if (mo->floorz != sectorfloorheight) {
 				
@@ -266,7 +262,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	// if in a walking frame, stop moving
 		if (motype == MT_PLAYER && (uint32_t)((playerMobj.stateNum) - S_PLAY_RUN1) < 4) {
 			P_SetMobjState(PLAYER_MOBJ_REF, S_PLAY, &playerMobj);
-			mo = setStateReturn;
+			//mo = setStateReturn;
 		}
 
 		mo->momx = 0;
@@ -314,7 +310,6 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 			moTargetx = moTarget->x;
 			moTargety = moTarget->y;
 			moTargetz = moTarget->z;
-			mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 			dist = P_AproxDistance (mo->x - moTargetx,
 						mo->y - moTargety);
 	    
@@ -351,7 +346,6 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 				// and utter appropriate sound.
 				player.deltaviewheight = mo->momz>>3;
 				S_StartSound (mo, sfx_oof);
-				mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
 			}
 			mo->momz = 0;
 		}
@@ -410,6 +404,8 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 void
 P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 {
+
+	/*
 	fixed_t_union		x;
 	fixed_t_union		y;
 	fixed_t_union		z;
@@ -419,17 +415,21 @@ P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 	int16_t subsectorsecnum;
 	mobjtype_t mobjtype;
 	fineangle_t mobjspawnangle;
-	mapthing_t mobjspawnpoint;
 	int16_t mobjspawnoptions;
 	int16_t mobjsecnum;
 	fixed_t mobjx;
 	fixed_t mobjy;
 	fixed_t_union temp;
+	mapthing_t mobjspawnpoint;
+
 	temp.h.fracbits = 0;
 	x.h.fracbits = 0;
 	y.h.fracbits = 0;
-	x.h.intbits = mobj->spawnpoint.x;
-	y.h.intbits = mobj->spawnpoint.y;
+	
+	
+	x.h.intbits = mobjspawnpoint.x;
+	y.h.intbits = mobjspawnpoint.y;
+	
 
 	// somthing is occupying it's position?
 	if (!P_CheckPosition(mobjRef, x.w, y.w, mobj)) {
@@ -467,15 +467,15 @@ P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 		z.w = ONFLOORZ;
 	}
 
-	mobjspawnpoint = mobj->spawnpoint;
-	mobjspawnangle = mobj->spawnpoint.angle;
-	mobjspawnoptions = mobj->spawnpoint.options;
+	//mobjspawnpoint = mobj->spawnpoint;
+	mobjspawnangle = mobjspawnpoint.angle;
+	mobjspawnoptions = mobjspawnpoint.options;
 
 
     // inherit attributes from deceased one
     moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype);
 	mo = setStateReturn;
-	mo->spawnpoint = mobjspawnpoint;
+	//mo->spawnpoint = mobjspawnpoint;
     //todo does this work? or need to be in fixed_mul? -sq
 	mo->angle = ANG45 * (mobjspawnangle/45);
 
@@ -487,6 +487,8 @@ P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
 	
     // remove the old monster,
     P_RemoveMobj (mobjRef, mo);
+
+	*/
 }
 
 //
@@ -501,7 +503,6 @@ void P_MobjThinker (MEMREF mobjRef) {
 	if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
 		P_XYMovement (mobjRef, mobj);
-		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 
 		if ((thinkerlist[mobj->thinkerRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
@@ -515,7 +516,6 @@ void P_MobjThinker (MEMREF mobjRef) {
     if ( (mobj->z != temp.w) || mobj->momz ) {
 		P_ZMovement (mobjRef, mobj);
 	 
-		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if ((thinkerlist[mobj->thinkerRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
@@ -628,11 +628,10 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     P_SetThingPosition (mobjRef, mobj);
  
 
-	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 	mobjsecnum = mobj->secnum;
 	sectorfloorheight = sectors[mobjsecnum].floorheight;
 	sectorceilingheight = sectors[mobjsecnum].ceilingheight;
-	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+
 	mobj->floorz = sectorfloorheight;
 	mobj->ceilingz = sectorceilingheight;
 
@@ -669,9 +668,9 @@ void P_RemoveMobj (MEMREF mobjRef, mobj_t* mobj)
     
     // stop any playing sound
     S_StopSound (mobjRef);
-	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
-    // free block
-    P_RemoveThinker (mobj->thinkerRef);
+
+	// free block
+	P_RemoveThinker(mobj->thinkerRef);
 }
 
 
@@ -765,7 +764,7 @@ void P_CheckMissileSpawn (MEMREF thRef, mobj_t* th)
     th->z += (th->momz>>1);
 
 	if (!P_TryMove(thRef, th->x, th->y, th)) {
-		th = Z_LoadThinkerBytesFromEMS(thRef);
+
 		P_ExplodeMissile(thRef, th);
 	}
 }
@@ -797,7 +796,7 @@ P_SpawnMissile
 	th = setStateReturn;
 	if (mobjinfo[type].seesound) {
 		S_StartSound(th, mobjinfo[type].seesound);
-		th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
+
 
 	}
 
@@ -824,7 +823,6 @@ P_SpawnMissile
 		dist = 1;
 
 
-	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
     th->angle = an;
     an >>= ANGLETOFINESHIFT;
     th->momx = FixedMul (thspeed, finecosine(an));
@@ -924,7 +922,6 @@ P_SetMobjState2
 		if (state == S_NULL) {
 			mobj->stateNum = S_NULL;
 			P_RemoveMobj(mobjRef, mobj);
-			mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 			setStateReturn = mobj;
 			return false;
 		}
@@ -1007,7 +1004,6 @@ P_SetMobjState2
 
 
 
-		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 		setStateReturn = mobj;
 
 

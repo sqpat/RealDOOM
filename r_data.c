@@ -27,10 +27,6 @@
 #include "p_local.h"
 
 #include "doomstat.h"
-
-#include  <alloca.h>
-
-
 #include "r_data.h"
 
 //

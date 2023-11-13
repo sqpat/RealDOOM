@@ -88,10 +88,11 @@ typedef	struct
     int8_t		soundtraversed;
 
     // thing that made a sound (or null)
-    MEMREF	soundtargetRef;
+	// this is only ever player, and only ever active when soundtraversed is not 0.
+    //MEMREF	soundtargetRef;
 
     // mapblock bounding box for height changes
-    int16_t	blockbox[4];
+    //int16_t	blockbox[4];
 
     // origin for any sounds played by the sector
     // corresponds to fixed_t, not easy to change
@@ -129,6 +130,8 @@ typedef struct
 
     // Texture indices.
     // We do not maintain names here. 
+
+	// idea - store unique texturetrios, and then single (or dual byte) references here to save space. im sure it might save a couple thousand bytes per level.
     uint8_t	toptexture;
     uint8_t	bottomtexture;
     uint8_t	midtexture;
@@ -169,7 +172,7 @@ typedef struct line_s
     int16_t	dy;
 
     // Animation related.
-    // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag elsewhere now in 
+    // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag in v1offset
 	uint8_t	flags;
     uint8_t	special;
 	uint8_t	tag;
@@ -186,11 +189,11 @@ typedef struct line_s
     //slopetype_t	slopetype;
 
     // Front and back sector.
-    // Note: redundant? Can be retrieved from SideDefs.
 	int16_t	frontsecnum;
 	int16_t	backsecnum;
 
     // if == validcount, already checked
+	// todo can it be 8 bit?
     int16_t		validcount;
 
     // thinker_t for reversable actions
@@ -211,24 +214,24 @@ typedef struct line_s
 typedef struct subsector_s
 {
     int16_t	secnum;
-    int16_t	numlines;
+    uint8_t	numlines;
     int16_t	firstline;
     
 } subsector_t;
 
 
-
+#define SEG_V2_SIDE_1_HIGHBIT 0x8000u
+#define SEG_V2_OFFSET_MASK 0x7FFFu
 //
 // The LineSeg.
 //
 typedef struct
 {
 
-	int16_t	v1Offset;
-	int16_t	v2Offset;
+	uint16_t	v1Offset;
+	uint16_t	v2Offset; // high bit contains side, necessary to determine frontsecnum/backsecnum dynamically
 
-	// todo can this be made 16 bit?
-    fixed_t	offset;
+	int16_t	offset;
 
     fineangle_t	fineangle;
 
@@ -238,8 +241,8 @@ typedef struct
     // Sector references.
     // Could be retrieved from linedef, too.
     // backsector is NULL for one sided lines
-    int16_t	frontsecnum;
-    int16_t	backsecnum;
+    //int16_t	frontsecnum;
+    //int16_t	backsecnum;
     
 } seg_t;
 

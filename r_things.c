@@ -692,7 +692,7 @@ void R_DrawSprite (vissprite_t* spr)
                 
 		if (scale < spr->scale
             || ( lowscale < spr->scale
-                 && !R_PointOnSegSide (spr->gx, spr->gy, segs[ds->curlinenum].v1Offset, segs[ds->curlinenum].v2Offset) ) )
+                 && !R_PointOnSegSide (spr->gx, spr->gy, segs[ds->curlinenum].v1Offset, segs[ds->curlinenum].v2Offset&SEG_V2_OFFSET_MASK) ) )
         {
             // masked mid texture?
             if (ds->maskedtexturecol)   

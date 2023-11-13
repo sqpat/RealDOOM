@@ -126,8 +126,9 @@ typedef struct memblock_s
 // texcols and tex
 #define CA_TYPE_TEXTURE_INFO 5
 
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 59472
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 57304
 
+extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS(int16_t tag);
@@ -195,7 +196,7 @@ void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
 void Z_ShutdownEMS();
 
 #define ALLOCATION_LIST_HEAD	0
-#define EMS_ALLOCATION_LIST_SIZE 1100
+#define EMS_ALLOCATION_LIST_SIZE 1000
 
 
 

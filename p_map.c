@@ -1623,10 +1623,12 @@ P_ChangeSector
 {
     int16_t		x;
     int16_t		y;
-	int16_t xl = sector->blockbox[BOXLEFT];
-	int16_t xh = sector->blockbox[BOXRIGHT];
-	int16_t yh = sector->blockbox[BOXTOP];
-	int16_t yl = sector->blockbox[BOXBOTTOM];
+	int16_t*	sectorBlockBoxes = Z_LoadBytesFromEMS(sectorBlockBoxesRef);
+	uint16_t secnumx4 = 4*(sector - sectors);
+	int16_t xl = sectorBlockBoxes[secnumx4 + BOXLEFT];
+	int16_t xh = sectorBlockBoxes[secnumx4 + BOXRIGHT];
+	int16_t yh = sectorBlockBoxes[secnumx4 + BOXTOP];
+	int16_t yl = sectorBlockBoxes[secnumx4 + BOXBOTTOM];
 
 
     nofit = false;

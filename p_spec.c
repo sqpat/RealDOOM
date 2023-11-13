@@ -99,10 +99,7 @@ getSideNum
 ( int16_t		currentSector,
   int16_t		offset,
   int16_t		side ) {
-	offset = sectors[currentSector].linesoffset + offset;
-
-	offset = linebuffer[offset];
-	return lines[offset].sidenum[side];
+	return lines[linebuffer[sectors[currentSector].linesoffset + offset]].sidenum[side];
 	
 }
 

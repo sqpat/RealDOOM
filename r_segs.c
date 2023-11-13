@@ -95,44 +95,44 @@ R_RenderMaskedSegRange
 	uint32_t	index;
 	column_t*	col;
 	int16_t		lightnum;
-	int16_t		texnum;
 	fixed_t_union temp;
 
-	int16_t siderowoffset;
-	int16_t curlinev1Offset; int16_t curlinev2Offset; int16_t curlinefrontsecnum; int16_t curlinebacksecnum; int16_t curlinesidedefOffset; int16_t curlinelinedefOffset;
-	int16_t sidemidtexture;
+
+	
 	sector_t frontsector;
 	sector_t backsector;
 	int16_t temp2;
-	temp.h.fracbits = 0;
+	seg_t curline = segs[ds->curlinenum];
+	side_t side = sides[curline.sidedefOffset];
+	int16_t curlineside = curline.v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
+	vertex_t v1 = vertexes[curline.v1Offset];
+	vertex_t v2 = vertexes[curline.v2Offset & SEG_V2_OFFSET_MASK];
+	line_t sideline = lines[curline.linedefOffset];
+	int16_t		texnum = texturetranslation[side.midtexture];
 	// Calculate light table.
 	// Use different light tables
 	//   for horizontal / vertical / diagonal. Diagonal?
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 	curlinenum = ds->curlinenum;
-	curlinev1Offset = segs[curlinenum].v1Offset;
-	curlinev2Offset = segs[curlinenum].v1Offset;
-	curlinefrontsecnum = segs[curlinenum].frontsecnum;
-	curlinebacksecnum = segs[curlinenum].backsecnum;
-	curlinesidedefOffset = segs[curlinenum].sidedefOffset;
-	curlinelinedefOffset = segs[curlinenum].linedefOffset;
-	siderowoffset = sides[curlinesidedefOffset].rowoffset;
-	sidemidtexture = sides[curlinesidedefOffset].midtexture;
+	
 
 
-	frontsecnum = curlinefrontsecnum;
-	backsecnum = curlinebacksecnum;
- 	texnum = texturetranslation[sidemidtexture];
+	frontsecnum = sides[sideline.sidenum[curlineside]].secnum;
+	backsecnum =
+		sideline.flags & ML_TWOSIDED ?
+		sides[sideline.sidenum[curlineside ^ 1]].secnum
+		: SECNUM_NULL;
+
 
 	frontsector = sectors[frontsecnum];
 	backsector = sectors[backsecnum];
 
 	lightnum = (frontsector.lightlevel >> LIGHTSEGSHIFT) + extralight;
 	
-	if (vertexes[curlinev1Offset].y == vertexes[curlinev2Offset].y) {
+	if (v1.y == v2.y) {
 		lightnum--;
 	}
-	else if (vertexes[curlinev1Offset].x == vertexes[curlinev2Offset].x) {
+	else if (v1.x == v2.x) {
 		lightnum++;
 	}
 	if (lightnum < 0){
@@ -150,7 +150,7 @@ R_RenderMaskedSegRange
     mceilingclip = ds->sprtopclip;
     
     // find positioning
-    if (lines[curlinelinedefOffset].flags & ML_DONTPEGBOTTOM) {
+    if (sideline.flags & ML_DONTPEGBOTTOM) {
 		// temp.h.intbits = (frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight) >> SHORTFLOORBITS;
 		 //temp.b.intbytelow = textureheight >> (8 - SHORTFLOORBITS);
 		 //temp.b.fracbytehigh = textureheight << (SHORTFLOORBITS);
@@ -164,7 +164,7 @@ R_RenderMaskedSegRange
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 		dc_texturemid = temp.w - viewz.w;
     }
-	temp.h.intbits = siderowoffset;
+	temp.h.intbits = side.rowoffset;
 	temp.h.fracbits = 0;
     dc_texturemid += temp.w;
 			
@@ -409,15 +409,10 @@ R_StoreWallRange
     int16_t			lightnum;
 
 	// needs to be refreshed...
-	fineangle_t curlineangle = segs[curlinenum].fineangle;
-	int16_t curlinev1Offset = segs[curlinenum].v1Offset;
-	int16_t curlinev2Offset = segs[curlinenum].v2Offset;
-	int16_t curlinesidedefOffset = segs[curlinenum].sidedefOffset;
-	fixed_t curlineOffset = segs[curlinenum].offset;
-	uint8_t siderowoffset;
-	uint8_t sidemidtexture;
-	int16_t sidetoptexture;
-	texsize_t sidebottomtexture;
+	seg_t curline = segs[curlinenum];
+	side_t side = sides[curline.sidedefOffset];
+	vertex_t curlinev1 = vertexes[curline.v1Offset];
+	vertex_t curlinev2 = vertexes[curline.v2Offset&SEG_V2_OFFSET_MASK];
 	texsize_t sidetextureoffset;
 	int16_t lineflags;
 	sector_t frontsector;
@@ -430,7 +425,7 @@ R_StoreWallRange
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
 		 
-	linedefOffset = segs[curlinenum].linedefOffset;
+	linedefOffset = curline.linedefOffset;
 
 
 #ifdef CHECK_FOR_ERRORS
@@ -446,12 +441,12 @@ R_StoreWallRange
 	lineflags = lines[linedefOffset].flags;
 
 	// if this is an animated line and offset 0 then set texture offset
-	if (lines[linedefOffset].special == 48 && lines[linedefOffset].sidenum[0] == curlinesidedefOffset){
+	if (lines[linedefOffset].special == 48 && lines[linedefOffset].sidenum[0] == curline.sidedefOffset){
 		animateoffset = gametic;
 	}
     
     // calculate rw_distance for scale calculation
-    rw_normalangle = MOD_FINE_ANGLE(curlineangle + FINE_ANG90);
+    rw_normalangle = MOD_FINE_ANGLE(curline.fineangle + FINE_ANG90);
 	
 	temp.h.intbits = rw_normalangle;
 	temp.h.intbits <<= 3;
@@ -467,7 +462,7 @@ R_StoreWallRange
 
     distangle = FINE_ANG90 - offsetangle;
 
-	hyp = R_PointToDist (vertexes[curlinev1Offset].x, vertexes[curlinev1Offset].y);
+	hyp = R_PointToDist (curlinev1.x, curlinev1.y);
     sineval = finesine(distangle);
     rw_distance = FixedMul (hyp, sineval);
 		
@@ -502,7 +497,6 @@ R_StoreWallRange
     }
     
 	frontsector = sectors[frontsecnum];
-	backsector = sectors[backsecnum];
 
 
     // calculate texture boundaries
@@ -523,22 +517,18 @@ R_StoreWallRange
 	}
 #endif
 
-	siderowoffset = sides[curlinesidedefOffset].rowoffset;
-	sidemidtexture = sides[curlinesidedefOffset].midtexture;
-	sidetoptexture = sides[curlinesidedefOffset].toptexture;
-	sidebottomtexture = sides[curlinesidedefOffset].bottomtexture;
-	sidetextureoffset = sides[curlinesidedefOffset].textureoffset + animateoffset;
+	sidetextureoffset = side.textureoffset + animateoffset;
 	
  
 
 	if (backsecnum == SECNUM_NULL) {
 	// single sided line
-		midtexture = texturetranslation[sidemidtexture];
+		midtexture = texturetranslation[side.midtexture];
 		// a single sided line is terminal, so it must mark ends
 		markfloor = markceiling = true;
 		if (lineflags & ML_DONTPEGBOTTOM) {
-			// temp.h.intbits = textureheight[sidemidtexture]+(frontsector.floorheight >> SHORTFLOORBITS);
-			temp2 = (textureheights[sidemidtexture] << SHORTFLOORBITS)  + (frontsector.floorheight);
+			// temp.h.intbits = textureheight[side.midtexture]+(frontsector.floorheight >> SHORTFLOORBITS);
+			temp2 = (textureheights[side.midtexture] << SHORTFLOORBITS)  + (frontsector.floorheight);
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 			vtop = temp.w;
 			// bottom of texture at bottom
@@ -548,7 +538,7 @@ R_StoreWallRange
 			rw_midtexturemid = worldtop;
 		}
 
-		temp.h.intbits = siderowoffset;
+		temp.h.intbits = side.rowoffset;
 		temp.h.fracbits = 0;
 		rw_midtexturemid += temp.w;
 
@@ -559,6 +549,7 @@ R_StoreWallRange
 		ds_p->tsilheight = MINSHORT;
     } else {
 		// two sided line
+		backsector = sectors[backsecnum];
 		ds_p->sprtopclip = ds_p->sprbottomclip = NULL;
 		ds_p->silhouette = 0;
 		// temp.h.intbits = backsector.floorheight >> SHORTFLOORBITS;
@@ -637,15 +628,15 @@ R_StoreWallRange
 
 		if (worldhigh < worldtop) {
 			 
-			toptexture = texturetranslation[sidetoptexture];
+			toptexture = texturetranslation[side.toptexture];
 		
 		
 			if (lineflags & ML_DONTPEGTOP) {
 				// top of texture at top
 				rw_toptexturemid = worldtop;
 			} else {
-				// temp.h.intbits = textureheight[sidetoptexture] + (backsector.ceilingheight >> SHORTFLOORBITS);
-				temp2 = (textureheights[sidetoptexture] << (8+SHORTFLOORBITS)) + (backsector.ceilingheight);
+				// temp.h.intbits = textureheight[side.toptexture] + (backsector.ceilingheight >> SHORTFLOORBITS);
+				temp2 = (textureheights[side.toptexture] << (8+SHORTFLOORBITS)) + (backsector.ceilingheight);
 				SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 				vtop = temp.w;
 		
@@ -655,7 +646,7 @@ R_StoreWallRange
 		}
 		if (worldlow > worldbottom) {
 			// bottom texture
-			bottomtexture = texturetranslation[sidebottomtexture];
+			bottomtexture = texturetranslation[side.bottomtexture];
 
 			if (lineflags & ML_DONTPEGBOTTOM ) {
 				// bottom of texture at bottom
@@ -666,13 +657,13 @@ R_StoreWallRange
 				rw_bottomtexturemid = worldlow;
 			}
 		}
-			temp.h.intbits = siderowoffset;
+			temp.h.intbits = side.rowoffset;
 			temp.h.fracbits = 0;
 			rw_toptexturemid += temp.w;
 			rw_bottomtexturemid += temp.w;
 	
 		// allocate space for masked texture tables
-		if (sidemidtexture) {
+		if (side.midtexture) {
 			// masked midtexture
 			maskedtexture = true;
 			ds_p->maskedtexturecol = maskedtexturecol = lastopening - rw_x;
@@ -714,9 +705,8 @@ R_StoreWallRange
 			rw_offset = -rw_offset;
 		}
 		temp.h.fracbits = 0;
-
-		temp.h.intbits = sidetextureoffset;
-		rw_offset += temp.w + curlineOffset;
+		temp.h.intbits = sidetextureoffset+curline.offset;
+		rw_offset += temp.w;
 		// todo use fixed_t_union to reduce shift
 		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle>>ANGLETOFINESHIFT) - (rw_normalangle));
 	
@@ -727,9 +717,9 @@ R_StoreWallRange
 		if (!fixedcolormap){
 			lightnum = (frontsector.lightlevel >> LIGHTSEGSHIFT)+extralight;
 
-			if (vertexes[curlinev1Offset].y == vertexes[curlinev2Offset].y) {
+			if (curlinev1.y == curlinev2.y) {
 				lightnum--;
-			} else if (vertexes[curlinev1Offset].x == vertexes[curlinev2Offset].x) {
+			} else if (curlinev1.x == curlinev2.x) {
 				lightnum++;
 			}
 

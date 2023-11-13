@@ -30,6 +30,7 @@
 #include "m_misc.h"
 
 #include "r_local.h"
+#include "p_local.h"
 
 
 #include "i_system.h"
@@ -287,12 +288,10 @@ typedef struct
 
 } texture_t;
 
-#define MAX_THINKERS 1000
 
 extern int16_t             numflats;
 extern int16_t             numtextures;
 extern int16_t             numtextures;
-extern	thinker_t	thinkerlist[MAX_THINKERS];
 
 extern MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
 

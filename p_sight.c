@@ -297,6 +297,9 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 	int16_t linev2Offset;
 	uint8_t lineflags;
 	fixed_t_union temp;
+	sector_t frontsector;
+	sector_t backsector;
+	int16_t curlineside;
  	temp.h.fracbits = 0;
     // check lines
     count = subsectors[subsecnum].numlines;
@@ -305,9 +308,15 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 
     for ( ; count ; segnum++, count--) {
 		linedefOffset = segs[segnum].linedefOffset;
-		frontsecnum = segs[segnum].frontsecnum;
-		backsecnum = segs[segnum].backsecnum;
 		line = &lines[linedefOffset];
+		curlineside = segs[segnum].v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
+		frontsecnum = sides[line->sidenum[curlineside]].secnum;
+		backsecnum =
+			line->flags & ML_TWOSIDED ?
+			sides[line->sidenum[curlineside^1]].secnum
+			: SECNUM_NULL;
+		frontsector = sectors[frontsecnum];
+		backsector = sectors[backsecnum];
 
 
 
@@ -362,22 +371,22 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 		// no wall to block sight with?
 
 
-		if (sectors[frontsecnum].floorheight == sectors[backsecnum].floorheight && sectors[frontsecnum].ceilingheight == sectors[backsecnum].ceilingheight) {
+		if (frontsector.floorheight == backsector.floorheight && frontsector.ceilingheight == backsector.ceilingheight) {
 			continue;
 		}
 
 		// possible occluder
 		// because of ceiling height differences
-		if (sectors[frontsecnum].ceilingheight < sectors[backsecnum].ceilingheight)
-			opentop = sectors[frontsecnum].ceilingheight;
+		if (frontsector.ceilingheight < backsector.ceilingheight)
+			opentop = frontsector.ceilingheight;
 		else
-			opentop = sectors[backsecnum].ceilingheight;
+			opentop = backsector.ceilingheight;
 
 		// because of ceiling height differences
-		if (sectors[frontsecnum].floorheight > sectors[backsecnum].floorheight)
-			openbottom = sectors[frontsecnum].floorheight;
+		if (frontsector.floorheight > backsector.floorheight)
+			openbottom = frontsector.floorheight;
 		else
-			openbottom = sectors[backsecnum].floorheight;
+			openbottom = backsector.floorheight;
 		
 		// quick test for totally closed doors
 		if (openbottom >= opentop) {
@@ -389,7 +398,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 		// todo pull this out? only use
 		frac = P_InterceptVector2 (&strace, &divl);
 		
-		if (sectors[frontsecnum].floorheight != sectors[backsecnum].floorheight) {
+		if (frontsector.floorheight != backsector.floorheight) {
 		 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  openbottom);
 			slope = FixedDiv (temp.w - sightzstart , frac);
@@ -397,7 +406,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 				bottomslope = slope;
 		}
 		
-		if (sectors[frontsecnum].ceilingheight != sectors[backsecnum].ceilingheight) {
+		if (frontsector.ceilingheight != backsector.ceilingheight) {
 		 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  opentop);
 			slope = FixedDiv (temp.w - sightzstart , frac);
