@@ -44,7 +44,6 @@ void T_VerticalDoor (MEMREF memref)
 	vldoor_t* door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(memref);
 	sector_t* doorsector = &sectors[door->secnum];
 	THINKERREF doorthinkerRef;
-	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(memref);
 
 	switch(door->direction) {
 		  case 0:
@@ -92,7 +91,6 @@ void T_VerticalDoor (MEMREF memref)
 		// DOWN
 
 			res = T_MovePlane(doorsector, door->speed, doorsector->floorheight, false,1,door->direction);
-			door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(memref);
 			doorthinkerRef = door->thinkerRef;
 			if (res == floor_pastdest) {
 				switch(door->type) {
@@ -134,7 +132,6 @@ void T_VerticalDoor (MEMREF memref)
 			case 1:
 				// UP
 				res = T_MovePlane(doorsector,   door->speed, door->topheight, false,1,door->direction);
-				door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(memref);
 
 				doorthinkerRef = door->thinkerRef;
 
@@ -177,8 +174,6 @@ EV_DoLockedDoor
   vldoor_e	type,
   MEMREF thingRef )
 {
-	//mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
-    
 	
     if (thingRef != PLAYER_MOBJ_REF)
 		return 0;
@@ -267,7 +262,6 @@ EV_DoDoor
 		{
 		  case blazeClose:
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
-			door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
 			door->speed = VDOORSPEED * 4;
@@ -276,7 +270,6 @@ EV_DoDoor
 	    
 		  case close:
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
-			door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
 			S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_dorcls);
@@ -292,7 +285,6 @@ EV_DoDoor
 		  case blazeOpen:
 			door->direction = 1;
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
-			door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->speed = VDOORSPEED * 4;
 			if (door->topheight != (doorsector->ceilingheight))
@@ -303,7 +295,6 @@ EV_DoDoor
 		  case open:
 			door->direction = 1;
 			doortopheight = P_FindLowestCeilingSurrounding(secnum);
-			door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			if (door->topheight != doorsector->ceilingheight)
 				S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_doropn);
@@ -481,7 +472,6 @@ EV_VerticalDoor
     
     // find the top and bottom of the movement range
 	doortopheight = P_FindLowestCeilingSurrounding(secnum);
-	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 	door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 }
 
@@ -532,7 +522,6 @@ P_SpawnDoorRaiseIn5Mins
     door->speed = VDOORSPEED;
 
 	doortopheight = P_FindLowestCeilingSurrounding(secnum);
-	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
 	door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 	door->topwait = VDOORWAIT;
     door->topcountdown = 5 * 60 * 35;

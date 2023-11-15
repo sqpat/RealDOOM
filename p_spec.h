@@ -65,7 +65,7 @@ void
 P_CrossSpecialLine
 ( int16_t		linenum,
   int16_t		side,
-	MEMREF thingRef);
+	mobj_t* thing);
 
 void    P_PlayerInSpecialSector ();
 
@@ -550,6 +550,6 @@ int16_t
 EV_Teleport
 (uint8_t linetag,
   int16_t		side,
-	MEMREF thingRef);
+	mobj_t*	thing);
 
 #endif

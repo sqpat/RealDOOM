@@ -479,7 +479,7 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 //
 boolean
 P_CheckSight
-( MEMREF t1Ref,
+( 
   MEMREF t2Ref, 
 	mobj_t* t1)
 {
@@ -499,9 +499,7 @@ P_CheckSight
 	fixed_t t2y;
 	fixed_t t2height;
 	int16_t s2;
-	if (!t1) {
-		t1 = (mobj_t*)Z_LoadThinkerBytesFromEMS(t1Ref);
-	}
+	 
 	t1z = t1->z;
 	t1x = t1->x;
 	t1y = t1->y;

@@ -571,7 +571,6 @@ boolean R_CheckBBox(int16_t *bspcoord)
 void R_Subsector(int16_t subsecnum)
 {
 	int16_t count;
-	int16_t lineoffset = 0;
 	int16_t firstline;
 	sector_t* frontsector;
 	fixed_t_union temp;
@@ -605,8 +604,8 @@ void R_Subsector(int16_t subsecnum)
 	R_AddSprites(frontsecnum);
 
 	while (count--)	{
-		R_AddLine(firstline + lineoffset);
-		lineoffset++;
+		R_AddLine(firstline);
+		firstline++;
 	}
 }
 

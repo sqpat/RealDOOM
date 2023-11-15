@@ -1219,6 +1219,14 @@ MEMREF Z_MallocConventional(
 
 #define THINKERS_PER_PAGE (PAGE_FRAME_SIZE / THINKER_BLOCK_SIZE)
 
+MEMREF Z_GetThinkerRef(void* thing) {
+	if (thing == &playerMobj) {
+		return PLAYER_MOBJ_REF;
+	}
+
+	return ((byte*)thing - thinkermemoryblock) / THINKER_BLOCK_SIZE;
+}
+
 void* Z_LoadThinkerBytesFromEMS2(MEMREF ref) {
 
 	

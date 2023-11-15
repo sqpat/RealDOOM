@@ -209,13 +209,6 @@ void P_LoadSegs(int16_t lump)
 		li->linedefOffset = mllinedef;
 		li->sidedefOffset = ldefsidenum;
 
-		/*
-		li->frontsecnum = sidesecnum;
-		if (ldefflags & ML_TWOSIDED)
-			li->backsecnum = othersidesecnum;
-		else
-			li->backsecnum = SECNUM_NULL;
-			*/
 	}
 
 	//Z_SetUnlocked(dataRef);

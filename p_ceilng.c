@@ -55,7 +55,6 @@ void T_MoveCeiling (MEMREF memref)
 		case 1:
 			// UP
 			res = T_MovePlane(ceilingsector, ceiling->speed, ceiling->topheight, false,1,ceiling->direction);
-			ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
 
 			if (!(leveltime.h.fracbits &7)) {
 				switch(ceiling->type) {
@@ -95,7 +94,6 @@ void T_MoveCeiling (MEMREF memref)
 					ceiling->speed,
 					ceiling->bottomheight,
 					ceiling->crush,1,ceiling->direction);
-			ceiling = (ceiling_t*)Z_LoadThinkerBytesFromEMS(memref);
 			if (!(leveltime.h.fracbits &7))
 			{
 				switch(ceiling->type) {

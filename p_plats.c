@@ -53,14 +53,12 @@ void T_PlatRaise(MEMREF platRef)
 	int16_t sectorsoundorgY = platsector->soundorgY;
 	short_height_t sectorfloorheight = platsector->floorheight;
 
-	plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 
 
 
 	switch(plat->status) {
 		  case plat_up:
 				res = T_MovePlane(platsector,  plat->speed, plat->high, plat->crush,0,1);
-				plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 				if (plat->type == raiseAndChange || plat->type == raiseToNearestAndChange) {
 					if (!(leveltime.w & 7)) {
 						S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_stnmov);
@@ -98,7 +96,6 @@ void T_PlatRaise(MEMREF platRef)
 	
 		  case	plat_down:
 				res = T_MovePlane(platsector,plat->speed,plat->low,false,0,-1);
-				plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 				if (res == floor_pastdest) {
 					plat->count = plat->wait;
 					plat->status = plat_waiting;
@@ -187,7 +184,6 @@ EV_DoPlat
 				plat->speed = PLATSPEED / 2;
 				(&sectors[secnum])->floorpic = sectors[side0secnum].floorpic;
 				specialheight = P_FindNextHighestFloor(secnum, sectorfloorheight);
-				plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 				plat->high = specialheight;
 				plat->wait = 0;
 				plat->status = plat_up;
@@ -200,7 +196,6 @@ EV_DoPlat
 			case raiseAndChange:
 				(&sectors[secnum])->floorpic = sectors[side0secnum].floorpic;
 
-				plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 				plat->speed = PLATSPEED / 2;
 				plat->high = sectorfloorheight + amount << SHORTFLOORBITS; // todo test, this looks wrong
 				plat->wait = 0;
@@ -212,7 +207,6 @@ EV_DoPlat
 			case downWaitUpStay:
 				plat->speed = PLATSPEED * 4;
 				specialheight = P_FindLowestFloorSurrounding(secnum);
-				plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 				plat->low = specialheight;
 
 				if (plat->low > sectorfloorheight) {
@@ -228,7 +222,6 @@ EV_DoPlat
 			case blazeDWUS:
 				plat->speed = PLATSPEED * 8;
 				specialheight = P_FindLowestFloorSurrounding(secnum);
-				plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 
 				plat->low = specialheight;
 
@@ -248,11 +241,9 @@ EV_DoPlat
 					specialheight = sectorfloorheight;
 				}
 
-				plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 				plat->low = specialheight;
 
 				specialheight = P_FindHighestFloorSurrounding(secnum);
-				plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 				plat->high = specialheight;
 
 				if (plat->high < sectorfloorheight) {

@@ -121,7 +121,8 @@ getSector
 	offset = linebuffer[offset];
 	offset = lines[offset].sidenum[side];
 
-    return sides[offset].secnum;
+	return sides[offset].secnum;
+    //return sides[lines[linebuffer[sectors[currentSector].linesoffset + offset]].sidenum[side]].secnum;
 }
 
 
@@ -152,22 +153,21 @@ getNextSectorList
 	boolean onlybacksecnums)
 {
 	
-	line_t* line;
 	int16_t i = 0;
 	int16_t skipped = 0;
 
 	for (i = 0; i < linecount; i++) {
-		line = &lines[linenums[i]];
-		if (!(line->flags & ML_TWOSIDED)) {
+		line_t line  = lines[linenums[i]];
+		if (!(line.flags & ML_TWOSIDED)) {
 			skipped++;
 			continue;
 		}
 
 
-		if (line->frontsecnum == sec)
-			secnums[i-skipped] = line->backsecnum;
+		if (line.frontsecnum == sec)
+			secnums[i-skipped] = line.backsecnum;
 		else if (!onlybacksecnums)
-			secnums[i-skipped] = line->frontsecnum;
+			secnums[i-skipped] = line.frontsecnum;
 
 	}
 	return linecount - skipped;
@@ -410,7 +410,7 @@ void
 P_CrossSpecialLine
 ( int16_t		linenum,
   int16_t		side,
-  MEMREF thingRef )
+	mobj_t*	thing)
 {
     int16_t		ok;
 	line_t*	line = &lines[linenum];
@@ -419,7 +419,7 @@ P_CrossSpecialLine
 	int16_t lineside0 = line->sidenum[0];
 	int16_t linespecial = line->special;
 	int16_t setlinespecial = -1;
-	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+	
 
 	 
     //	Triggers that other things can activate
@@ -580,7 +580,7 @@ P_CrossSpecialLine
 	
       case 39:
 		// TELEPORT!
-		EV_Teleport( linetag, side, thingRef );
+		EV_Teleport( linetag, side, thing );
 		setlinespecial = 0;
 		break;
 
@@ -688,7 +688,7 @@ P_CrossSpecialLine
       case 125:
 		// TELEPORT MonsterONLY
 		if (thing->type != MT_PLAYER) {
-			EV_Teleport( linetag, side, thingRef );
+			EV_Teleport( linetag, side, thing );
 			setlinespecial = 0;
 		}
 		break;
@@ -825,7 +825,7 @@ P_CrossSpecialLine
 	
 	  case 97:
 		// TELEPORT!
-		EV_Teleport( linetag, side, thingRef );
+		EV_Teleport( linetag, side, thing );
 		break;
 	
       case 98:
@@ -856,7 +856,7 @@ P_CrossSpecialLine
       case 126:
 	// TELEPORT MonsterONLY.
 		if (thing->type != MT_PLAYER)
-	    EV_Teleport( linetag, side, thingRef );
+	    EV_Teleport( linetag, side, thing );
 		break;
 	
       case 128:

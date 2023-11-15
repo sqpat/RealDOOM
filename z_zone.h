@@ -156,6 +156,7 @@ void Z_SetUnlocked(MEMREF ref);
 
 
 void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type);
+MEMREF Z_GetThinkerRef(void* thing); // todo remove?
 void* Z_LoadThinkerBytesFromEMS2(MEMREF ref);
 #define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE)
 #define Z_LoadThinkerBytesFromEMS(a) Z_LoadThinkerBytesFromEMS2 (a)

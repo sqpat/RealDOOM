@@ -87,8 +87,6 @@ void P_CalcHeight ()
 		player.bob = MAXBOB;
     if ((player.cheats & CF_NOMOMENTUM) || !onground) {
 		player.viewz = playerMobj.z + VIEWHEIGHT;
-		// temp.h.intbits = (playerMobj.ceilingz >> SHORTFLOORBITS)-4;
-
 		temp2 = (playerMobj.ceilingz - (4 << SHORTFLOORBITS));
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
@@ -126,7 +124,6 @@ void P_CalcHeight ()
     }
 	player.viewz = playerMobj.z + player.viewheight + bob;
 
-	// temp.h.intbits = (playerMobj.ceilingz >> SHORTFLOORBITS)-4;
 	temp2 = (playerMobj.ceilingz - (4 << SHORTFLOORBITS));
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
@@ -147,7 +144,6 @@ void P_MovePlayer ()
 	cmd = &player.cmd;
 	temp.h.intbits = cmd->angleturn;
 	playerMobj.angle += temp.w;
-	//temp.h.intbits = playerMobj.floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj.floorz);
 
     // Do not let the player control movement
@@ -195,7 +191,6 @@ void P_DeathThink ()
 
 	player.deltaviewheight = 0;
 	
-	// temp.h.intbits = playerMobj.floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj.floorz);
 
     onground = (playerMobj.z <= temp.w);

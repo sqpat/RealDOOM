@@ -231,8 +231,6 @@ typedef struct mobj_s
     fixed_t		momy;
     fixed_t		momz;
 
-    // If == validcount, already checked.
-
     mobjtype_t		type;
     
     uint8_t			tics;	// state tic counter
@@ -241,7 +239,7 @@ typedef struct mobj_s
     int16_t			health;
 
     // Movement direction, movement generation (zig-zagging).
-    int8_t			movedir;	// 0-7
+    int8_t			movedir;	// 0-7  // uses 4 bits
     int16_t			movecount;	// when 0, select a new dir
 
     // Thing being chased/attacked (or NULL),

@@ -228,7 +228,7 @@ boolean P_CheckMeleeRange (MEMREF actorRef, mobj_t* actor)
 	plradius.h.intbits += (MELEERANGE - 20);
     if (dist >= plradius.w)
 		return false;
-    if (! P_CheckSight (actorRef, plRef, NULL) )
+    if (! P_CheckSight (plRef, actor) )
 		return false;
 							
     return true;		
@@ -245,7 +245,7 @@ boolean P_CheckMissileRange (MEMREF actorRef, mobj_t* actor)
 	fixed_t actorTargetx;
 	fixed_t actorTargety;
 
-	if (!P_CheckSight(actorRef, actor->targetRef, actor)) {
+	if (!P_CheckSight(actor->targetRef, actor)) {
 
 		return false;
 	}
@@ -352,7 +352,7 @@ boolean P_Move (MEMREF actorRef)
     tryx = actor->x + mobjinfo[actor->type].speed*xspeed[actor->movedir];
     tryy = actor->y + mobjinfo[actor->type].speed*yspeed[actor->movedir];
 
-	try_ok = P_TryMove (actorRef, tryx, tryy, actor);
+	try_ok = P_TryMove (actor, tryx, tryy);
 
 
     if (!try_ok) {
@@ -396,7 +396,6 @@ boolean P_Move (MEMREF actorRef)
 
 	
 	if (!(actor->flags & MF_FLOAT)) {
-		//temp.h.intbits = actor->floorz >> SHORTFLOORBITS;
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, actor->floorz);
 		actor->z = temp.w;
 	}
@@ -568,17 +567,17 @@ void P_NewChaseDir (MEMREF actorRef)
 //
 boolean
 P_LookForPlayers
-( MEMREF	actorRef,
+(mobj_t*	actor,
   boolean	allaround )
 {
     angle_t	an;
     fixed_t	dist;
-	mobj_t*	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
+	
     
  	if (player.health <= 0)
 		return false;		// dead
 
-	if (!P_CheckSight(actorRef, PLAYER_MOBJ_REF, actor)) {
+	if (!P_CheckSight(PLAYER_MOBJ_REF, actor)) {
 
 		return false;		// out of sight
 	}
@@ -666,7 +665,7 @@ void A_Look (MEMREF actorRef, mobj_t* actor)
 			if (actor->flags & MF_AMBUSH)
 			{
 
-				if (P_CheckSight(actorRef, targRef, actor)) {
+				if (P_CheckSight(targRef, actor)) {
 
 					goto seeyou;
 				}
@@ -679,7 +678,7 @@ void A_Look (MEMREF actorRef, mobj_t* actor)
 	}
  
 
-	if (!P_LookForPlayers(actorRef, false)) {
+	if (!P_LookForPlayers(actor, false)) {
 		return;
 	}
 
@@ -792,7 +791,7 @@ void A_Chase (MEMREF actorRef, mobj_t*	actor)
 	
     if (!actortargetRef || !(actorTarget->flags&MF_SHOOTABLE)) {
 		// look for a new target
-		if (P_LookForPlayers(actorRef, true)) {
+		if (P_LookForPlayers(actor, true)) {
 			 
 			return; 	// got a new target
 		}
@@ -917,12 +916,11 @@ void A_FaceTarget (MEMREF actorRef, mobj_t* actor)
 //
 // A_PosAttack
 //
-void A_PosAttack (MEMREF actorRef)
+void A_PosAttack (MEMREF actorRef, mobj_t* actor)
 {
     fineangle_t		angle;
     int16_t		damage;
     fixed_t		slope;
-	mobj_t*	actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 
     if (!actor->targetRef)
 		return;
@@ -999,7 +997,7 @@ void A_CPosRefire (MEMREF actorRef, mobj_t* actor)
 		return;
 
 	actorTarget = (mobj_t*)Z_LoadThinkerBytesFromEMS(actortargetRef);
-    if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actorRef, actortargetRef, NULL)) {
+    if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actortargetRef, actor)) {
 
 		P_SetMobjState (actorRef, getSeeState(actor->type), actor);
     }
@@ -1025,7 +1023,7 @@ void A_SpidRefire (MEMREF actorRef, mobj_t* actor)
 
 	actorTarget = (mobj_t*)Z_LoadThinkerBytesFromEMS(actortargetRef);
 
-    if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actorRef, actortargetRef, NULL)) {
+    if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actortargetRef, actor)) {
 
 		P_SetMobjState (actorRef, getSeeState(actor->type), actor);
     }
@@ -1306,11 +1304,11 @@ mobj_t*		vileobj;
 fixed_t		viletryx;
 fixed_t		viletryy;
 
-boolean PIT_VileCheck (MEMREF thingRef)
+boolean PIT_VileCheck (MEMREF thingRef, mobj_t*	thing)
 {
 	fixed_t_union				maxdist;
     boolean	check;
-	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+	
 
 	if (!(thing->flags & MF_CORPSE)) {
 		return true;	// not a monster
@@ -1335,7 +1333,7 @@ boolean PIT_VileCheck (MEMREF thingRef)
 	corpsehitRef = thingRef;
     thing->momx = thing->momy = 0;
 	thing->height.h.intbits <<= 2;
-    check = P_CheckPosition (corpsehitRef, thing->x, thing->y, thing);
+    check = P_CheckPosition (thing, thing->x, thing->y);
 	thing->height.h.intbits >>= 2;
 
 	if (!check) {
@@ -1431,25 +1429,24 @@ void A_VileStart (MEMREF actorRef, mobj_t* actor)
 // A_Fire
 // Keep fire in front of player unless out of sight
 //
-void A_Fire (MEMREF actorRef);
+void A_Fire (MEMREF actorRef, mobj_t* actor);
 
 void A_StartFire (MEMREF actorRef, mobj_t* actor)
 {
 	S_StartSoundFromRef(actorRef,sfx_flamst, actor);
-    A_Fire(actorRef);
+    A_Fire(actorRef, actor);
 }
 
 void A_FireCrackle (MEMREF actorRef, mobj_t* actor)
 {
 	S_StartSoundFromRef(actorRef,sfx_flame, actor);
-    A_Fire(actorRef);
+    A_Fire(actorRef, actor);
 }
 
-void A_Fire (MEMREF actorRef)
+void A_Fire (MEMREF actorRef, mobj_t* actor)
 {
     MEMREF	destRef;
 	uint16_t	an;
-	mobj_t* actor = (mobj_t*)Z_LoadThinkerBytesFromEMS(actorRef);
 	mobj_t* dest;
 	fixed_t destx;
 	fixed_t desty;
@@ -1460,7 +1457,7 @@ void A_Fire (MEMREF actorRef)
 		return;
 		
     // don't move it if the vile lost sight
-    if (!P_CheckSight (actor->targetRef, destRef, actor) )
+    if (!P_CheckSight (destRef, Z_LoadThinkerBytesFromEMS(actor->targetRef)) )
 		return;
 	dest = (mobj_t*)Z_LoadThinkerBytesFromEMS(destRef);
 	destx = dest->x;
@@ -1506,7 +1503,7 @@ void A_VileTarget (MEMREF actorRef, mobj_t* actor)
 
     actor->tracerRef = fogRef;
 
-    A_Fire (fogRef);
+    A_Fire (fogRef, fog);
 }
 
 
@@ -1527,7 +1524,7 @@ void A_VileAttack (MEMREF actorRef, mobj_t* actor)
 		return;
     
     A_FaceTarget (actorRef, actor);
-    if (!P_CheckSight(actorRef, actor->targetRef, actor))
+    if (!P_CheckSight(actor->targetRef, actor))
 		return;
 
 	S_StartSoundFromRef (actorRef, sfx_barexp, actor);
@@ -1752,7 +1749,7 @@ A_PainShootSkull
 	newmobj = setStateReturn;
     // Check for movements.
 
-	if (!P_TryMove (newmobjRef, newmobj->x, newmobj->y, newmobj)) {
+	if (!P_TryMove (newmobj, newmobj->x, newmobj->y)) {
 		// kill it immediately
 		P_DamageMobj (newmobjRef,actorRef,actorRef,10000);	
 		return;
@@ -2262,12 +2259,12 @@ void A_SpawnFly (MEMREF moRef, mobj_t* mo)
 
     newmobjRef	= P_SpawnMobj (targ->x, targ->y, targ->z, type);
 	newmobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(newmobjRef);
-	if (P_LookForPlayers(newmobjRef, true)) {
+	if (P_LookForPlayers(newmobj, true)) {
 		P_SetMobjState(newmobjRef, getSeeState(newmobj->type), newmobj);
 	}
 
     // telefrag anything in this spot
-    P_TeleportMove (newmobjRef, newmobj->x, newmobj->y);
+    P_TeleportMove (newmobj, newmobj->x, newmobj->y);
 
     // remove self (i.e., cube).
     P_RemoveMobj (moRef, mo);

@@ -189,7 +189,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 		
 
 
-		if (!P_TryMove (moRef, ptryx, ptryy, mo)) {
+		if (!P_TryMove (mo, ptryx, ptryy)) {
 
 			// blocked move
 			if (motype == MT_PLAYER) {	// try to slide along it
@@ -218,8 +218,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	 
     } while (xmove || ymove);
 	
-	//mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
-
 
     // slow down
     if (motype == MT_PLAYER && player.cheats & CF_NOMOMENTUM) {
@@ -234,7 +232,6 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 	 
 		return; 	// no friction for missiles ever
 	}
-	//temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
 	if (mo->z > temp.w) {
 
@@ -291,7 +288,6 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 	fixed_t_union temp;
 	int16_t motype = mo->type;
 	temp.h.fracbits = 0;
-	// temp.h.intbits = mo->floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
     // check for smooth step up
     if (motype == MT_PLAYER && mo->z < temp.w) {
@@ -372,8 +368,6 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 			mo->momz -= GRAVITY;
 		}
 	}
-	//mo = (mobj_t*)Z_LoadThinkerBytesFromEMS(moRef);
-	//temp.h.intbits = mo->ceilingz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
     if (mo->z + mo->height.w > temp.w) {
 		// hit the ceiling
@@ -511,7 +505,6 @@ void P_MobjThinker (MEMREF mobjRef) {
 
 
 	temp.h.fracbits = 0;
-	// temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
     if ( (mobj->z != temp.w) || mobj->momz ) {
 		P_ZMovement (mobjRef, mobj);
@@ -625,7 +618,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 
     // set subsector and/or block links
-    P_SetThingPosition (mobjRef, mobj);
+    P_SetThingPosition (mobj);
  
 
 	mobjsecnum = mobj->secnum;
@@ -636,11 +629,9 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 	mobj->ceilingz = sectorceilingheight;
 
     if (z == ONFLOORZ){
-		// temp.h.intbits = mobj->floorz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
 		mobj->z = temp.w;
 	} else if (z == ONCEILINGZ){
-		// temp.h.intbits = mobj->ceilingz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->ceilingz);
 		mobj->z = temp.w - mobjinfo[mobj->type].height * FRACUNIT;
 	}
@@ -664,7 +655,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 void P_RemoveMobj (MEMREF mobjRef, mobj_t* mobj)
 {
     // unlink from sector and block lists
-    P_UnsetThingPosition (mobjRef, mobj);
+    P_UnsetThingPosition (mobj);
     
     // stop any playing sound
     S_StopSound (mobjRef);
@@ -763,7 +754,7 @@ void P_CheckMissileSpawn (MEMREF thRef, mobj_t* th)
     th->y += (th->momy>>1);
     th->z += (th->momz>>1);
 
-	if (!P_TryMove(thRef, th->x, th->y, th)) {
+	if (!P_TryMove(th, th->x, th->y)) {
 
 		P_ExplodeMissile(thRef, th);
 	}

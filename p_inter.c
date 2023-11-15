@@ -655,7 +655,6 @@ P_KillMobj
 
 			 
 		}
-		target = (mobj_t*)Z_LoadThinkerBytesFromEMS(targetRef);
     } else if (target->flags & MF_COUNTKILL) {
 		// count all monster deaths,
 		// even those caused by other monsters
@@ -781,7 +780,6 @@ P_DamageMobj
 			inflictorx = inflictor->x;
 			inflictory = inflictor->y;
 			inflictorz = inflictor->z;
-			target = (mobj_t*)Z_LoadThinkerBytesFromEMS(targetRef);
 
 			ang = R_PointToAngle2(inflictorx,
 				inflictory,
@@ -804,9 +802,6 @@ P_DamageMobj
 			ang >>= ANGLETOFINESHIFT;
 			target->momx += FixedMul(thrust, finecosine(ang));
 			target->momy += FixedMul(thrust, finesine(ang));
-		}
-		else {
-			target = (mobj_t*)Z_LoadThinkerBytesFromEMS(targetRef);
 		}
 	}
     // player specific
@@ -864,7 +859,6 @@ P_DamageMobj
     
 
 
-	target = (mobj_t*)Z_LoadThinkerBytesFromEMS(targetRef);
     // do the damage	
     target->health -= damage;	
     if (target->health <= 0) {

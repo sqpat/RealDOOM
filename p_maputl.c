@@ -382,7 +382,6 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 // THING POSITION SETTING
 //
 
-
 //
 // P_UnsetThingPosition
 // Unlinks a thing from block map and sectors.
@@ -390,7 +389,7 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void P_UnsetThingPosition (MEMREF thingRef, mobj_t* thing)
+void P_UnsetThingPosition (mobj_t* thing)
 {
     int16_t		blockx;
     int16_t		blocky;
@@ -407,7 +406,6 @@ void P_UnsetThingPosition (MEMREF thingRef, mobj_t* thing)
 	int16_t thingsecnum = thing->secnum;
 	thingx.w = thing->x;
 	thingy.w = thing->y;
-
     if ( ! (thingflags & MF_NOSECTOR) ) {
 	// inert things don't need to be in blockmap?
 	// unlink from subsector
@@ -460,7 +458,7 @@ void P_UnsetThingPosition (MEMREF thingRef, mobj_t* thing)
 // Sets thing->subsector properly
 //
 void
-P_SetThingPosition (MEMREF thingRef, mobj_t* thing)
+P_SetThingPosition (mobj_t* thing)
 {
 	int16_t	subsecnum;
     //sector_t*		sec;
@@ -473,11 +471,11 @@ P_SetThingPosition (MEMREF thingRef, mobj_t* thing)
 	int16_t subsectorsecnum;
 	MEMREF oldsectorthinglist;
 	fixed_t_union temp;
-    // link into subsector
+	MEMREF thingRef = Z_GetThinkerRef(thing);
+	// link into subsector
     subsecnum = R_PointInSubsector (thing->x,thing->y);
-
 	subsectorsecnum = subsectors[subsecnum].secnum;
-	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+	
 	thing->secnum = subsectorsecnum;
 
 #ifdef CHECK_FOR_ERRORS
@@ -606,7 +604,7 @@ boolean
 P_BlockThingsIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(MEMREF) )
+  boolean(*func)(MEMREF, mobj_t*) )
 {
 	MEMREF mobjRef;
     mobj_t*		mobj;
@@ -619,13 +617,13 @@ P_BlockThingsIterator
 		// will this cause stuff to lose scope...?
 
 
+		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef); // necessary for bnextref...
 
-		if (!func(mobjRef)) {
+		if (!func(mobjRef, mobj)) {
 			 
 			return false;
 		}
 
-		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef); // necessary for bnextref...
 		 
 	} 
 
@@ -732,7 +730,7 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 //
 // PIT_AddThingIntercepts
 //
-boolean PIT_AddThingIntercepts (MEMREF thingRef)
+boolean PIT_AddThingIntercepts (MEMREF thingRef, mobj_t* thing)
 {
     fixed_t		x1;
     fixed_t		y1;
@@ -747,7 +745,7 @@ boolean PIT_AddThingIntercepts (MEMREF thingRef)
     divline_t		dl;
     
     fixed_t		frac;
-	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+	
 	fixed_t_union temp;
  
 	tracepositive = (trace.dx.w ^ trace.dy.w) > 0;

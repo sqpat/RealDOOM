@@ -168,7 +168,7 @@ extern short_height_t		lowfloor;
 void 	P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
 boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_t* ld, int16_t ) );
-boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(MEMREF));
+boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(MEMREF, mobj_t*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -185,8 +185,8 @@ P_PathTraverse
   uint8_t		flags,
   boolean	(*trav) (intercept_t *));
 
-void P_UnsetThingPosition (MEMREF thingRef, mobj_t* thing);
-void P_SetThingPosition (MEMREF thingRef, mobj_t* thing);
+void P_UnsetThingPosition (mobj_t* thing);
+void P_SetThingPosition (mobj_t* thing);
 
 
 //
@@ -202,11 +202,11 @@ extern short_height_t		tmceilingz;
 
 extern	int16_t		ceilinglinenum;
 
-boolean P_CheckPosition (MEMREF thingRef, fixed_t x, fixed_t y, mobj_t* thing);
-boolean P_TryMove (MEMREF thingRef, fixed_t x, fixed_t y, mobj_t* thing);
-boolean P_TeleportMove (MEMREF thing, fixed_t x, fixed_t y);
+boolean P_CheckPosition (mobj_t* thing, fixed_t x, fixed_t y);
+boolean P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
+boolean P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y);
 void	P_SlideMove ();
-boolean P_CheckSight (MEMREF t1ref, MEMREF t2ref, mobj_t* t1);
+boolean P_CheckSight (MEMREF t2ref, mobj_t* t1);
 
 
 void 	P_UseLines ();

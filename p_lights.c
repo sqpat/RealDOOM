@@ -82,7 +82,6 @@ void P_SpawnFireFlicker (int16_t secnum)
     flick->secnum = secnum;
     flick->maxlight = seclightlevel;
 	lightamount = P_FindMinSurroundingLight(secnum,seclightlevel)+16;
-	flick = (fireflicker_t*)Z_LoadThinkerBytesFromEMS(flickRef);
 	flick->minlight = lightamount;
     flick->count = 4;
 }
@@ -111,12 +110,10 @@ void T_LightFlash (MEMREF memref)
 
     if (sectors[flashsecnum].lightlevel == flashmaxlight) {
 		sectors[flashsecnum].lightlevel = flashminlight;
-		flash = (lightflash_t*)Z_LoadThinkerBytesFromEMS(memref);
 		flash->count = (P_Random()&flash->mintime)+1;
     }
     else {
 		sectors[flashsecnum].lightlevel = flashmaxlight;
-		flash = (lightflash_t*)Z_LoadThinkerBytesFromEMS(memref);
 		flash->count = (P_Random()&flash->maxtime)+1;
     }
 	
@@ -180,11 +177,9 @@ void T_StrobeFlash (MEMREF memref)
 	
     if (sectors[flashsecnum].lightlevel == flashminlight) {
 		sectors[flashsecnum].lightlevel = flashmaxlight;
-		flash = (strobe_t*)Z_LoadThinkerBytesFromEMS(memref);
 		flash->count = flash->brighttime;
     } else {
 		sectors[flashsecnum].lightlevel = flashminlight;
-		flash = (strobe_t*)Z_LoadThinkerBytesFromEMS(memref);
 		flash->count =flash->darktime;
     }
 
@@ -223,7 +218,6 @@ P_SpawnStrobeFlash
     flash->maxlight = seclightlevel;
 
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
-	flash = (strobe_t*)Z_LoadThinkerBytesFromEMS(flashRef);
 	flash->minlight = lightamount;
 
 	
@@ -367,7 +361,6 @@ void T_Glow(MEMREF memref)
 		sectors[gsecnum].lightlevel -= GLOWSPEED;
 		if (sectors[gsecnum].lightlevel <= gminlight) {
 			sectors[gsecnum].lightlevel += GLOWSPEED;
-			g = (glow_t*)Z_LoadThinkerBytesFromEMS(memref);
 			g->direction = 1;
 		}
 		break;
@@ -377,7 +370,6 @@ void T_Glow(MEMREF memref)
 		sectors[gsecnum].lightlevel += GLOWSPEED;
 		if (sectors[gsecnum].lightlevel >= gmaxlight) {
 			sectors[gsecnum].lightlevel -= GLOWSPEED;
-			g = (glow_t*)Z_LoadThinkerBytesFromEMS(memref);
 			g->direction = -1;
 		}
 		break;
@@ -407,7 +399,6 @@ void P_SpawnGlowingLight(int16_t secnum)
 
 	
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
-	g = (glow_t*)Z_LoadThinkerBytesFromEMS(glowRef);
 	g->minlight = lightamount;
 	g->minlight = 
     g->maxlight = seclightlevel;
