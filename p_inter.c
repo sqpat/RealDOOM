@@ -303,18 +303,16 @@ P_GivePower
 //
 void
 P_TouchSpecialThing
-( MEMREF	specialRef,
-  MEMREF	toucherRef )
+( mobj_t*	special,
+  mobj_t*	toucher )
 {
      int8_t		i;
     fixed_t	delta;
     int16_t		sound;
-	mobj_t* special = (mobj_t*)Z_LoadThinkerBytesFromEMS(specialRef);
 	fixed_t specialz = special->z;
 	spritenum_t specialsprite = states[special->stateNum].sprite;
 	boolean specialflagsdropped =  special->flags&MF_DROPPED ? 1 : 0;
 	boolean specialflagscountitem =  special->flags&MF_COUNTITEM ? 1 : 0;
-	mobj_t* toucher = (mobj_t*)Z_LoadThinkerBytesFromEMS(toucherRef);
 		
     delta = specialz - toucher->z;
 
@@ -612,7 +610,7 @@ P_TouchSpecialThing
 	
     if (specialflagscountitem)
 		player.itemcount++;
-    P_RemoveMobj (specialRef, (mobj_t*)Z_LoadThinkerBytesFromEMS(specialRef));
+    P_RemoveMobj (special);
     player.bonuscount += BONUSADD;
     //  always true? 
 	//if (player == &players)
@@ -627,14 +625,11 @@ extern mobj_t* setStateReturn;
 //
 void
 P_KillMobj
-( MEMREF	sourceRef,
-	MEMREF	targetRef, 
+(	mobj_t* source,
 	mobj_t*	target)
 {
     mobjtype_t	item;
     mobj_t*	mo;
-	mobj_t* source;
-	
 	MEMREF moRef;
 
 	
@@ -646,8 +641,7 @@ P_KillMobj
     target->flags |= MF_CORPSE|MF_DROPOFF;
     target->height.w >>= 2;
 
-    if (sourceRef) {
-		source = (mobj_t*)Z_LoadThinkerBytesFromEMS(sourceRef);
+    if (source) {
 		if (source->type == MT_PLAYER) {
 			// count for intermission
 			if (target->flags & MF_COUNTKILL)
@@ -678,9 +672,9 @@ P_KillMobj
     }
 
     if (target->health < (-getSpawnHealth(target->type))  && getXDeathState(target->type)) {
-		P_SetMobjState (targetRef, getXDeathState(target->type), target) ;
+		P_SetMobjState (target, getXDeathState(target->type)) ;
     } else {
-		P_SetMobjState (targetRef, getDeathState(target->type), target);
+		P_SetMobjState (target, getDeathState(target->type));
 	}
 	//target = setStateReturn;
 
@@ -714,7 +708,7 @@ P_KillMobj
 	return;
     }
 
-    moRef = P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
+    P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
 	mo = setStateReturn;
     mo->flags |= MF_DROPPED;	// special versions of items
 }
@@ -733,22 +727,18 @@ P_KillMobj
 //
 void
 P_DamageMobj
-( MEMREF	targetRef,
-	MEMREF	inflictorRef,
-	MEMREF	sourceRef,
+(mobj_t*	target,
+	mobj_t*	inflictor,
+	mobj_t*	source,
 	int16_t 		damage )
 {
 	angle_t	ang;
     int16_t		saved;
     fixed_t	thrust;
-	mobj_t* source;
-	mobj_t* inflictor;
-	mobj_t* target;
 	fixed_t inflictorx;
 	fixed_t inflictory;
 	fixed_t inflictorz;
 
-	target = (mobj_t*)Z_LoadThinkerBytesFromEMS(targetRef);
  
 	if (!(target->flags & MF_SHOOTABLE)) {
 		return;	// shouldn't happen...
@@ -770,13 +760,11 @@ P_DamageMobj
     // inflict thrust and push the victim out of reach,
     // thus kick away unless using the chainsaw.
 
-	if (inflictorRef && !(target->flags & MF_NOCLIP)) {
-		if (sourceRef) {
-			source = (mobj_t*)Z_LoadThinkerBytesFromEMS(sourceRef);
+	if (inflictor && !(target->flags & MF_NOCLIP)) {
+		if (source) {
 		}
-		if ((!sourceRef || source->type == MT_PLAYER || player.readyweapon != wp_chainsaw)) {
+		if ((!source || source->type == MT_PLAYER || player.readyweapon != wp_chainsaw)) {
 
-			inflictor = (mobj_t*)Z_LoadThinkerBytesFromEMS(inflictorRef);
 			inflictorx = inflictor->x;
 			inflictory = inflictor->y;
 			inflictorz = inflictor->z;
@@ -845,7 +833,7 @@ P_DamageMobj
 		if (player.health < 0)
 			player.health = 0;
 	
-		player.attackerRef = sourceRef;
+		player.attackerRef = Z_GetThinkerRef(source);
 		player.damagecount += damage;	// add damage after armor / invuln
 
 		if (player.damagecount > 100)
@@ -862,32 +850,30 @@ P_DamageMobj
     // do the damage	
     target->health -= damage;	
     if (target->health <= 0) {
-		P_KillMobj (sourceRef, targetRef, target);
+		P_KillMobj (source, target);
 		return;
     }
 
     if ( (P_Random () < getPainChance(target->type)) && !(target->flags&MF_SKULLFLY) ) {
 		target->flags |= MF_JUSTHIT;	// fight back!
-		P_SetMobjState (targetRef, getPainState(target->type), target);
+		P_SetMobjState (target, getPainState(target->type));
 		//target = setStateReturn;
 	}
 			
 
     target->reactiontime = 0;		// we're awake now...	
-	if (sourceRef) {
-		source = (mobj_t*)Z_LoadThinkerBytesFromEMS(sourceRef);
-	}
-    if ( (!target->threshold || target->type == MT_VILE)
-	 && sourceRef && sourceRef != targetRef
+
+	if ( (!target->threshold || target->type == MT_VILE)
+	 && source && source != target
 	 && source->type != MT_VILE)
     {
 	// if not intent on another player,
 	// chase after this one
-	target->targetRef = sourceRef;
+	target->targetRef = Z_GetThinkerRef(source);
 	target->threshold = BASETHRESHOLD;
 	if (target->stateNum == mobjinfo[target->type].spawnstate
 	    && getSeeState(target->type) != S_NULL)
-	    P_SetMobjState (targetRef, getSeeState(target->type), target);
+	    P_SetMobjState (target, getSeeState(target->type));
     }
 	 
 

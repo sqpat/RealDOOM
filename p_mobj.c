@@ -39,57 +39,57 @@ void G_PlayerReborn ();
 void P_SpawnMapThing (mapthing_t*	mthing, int16_t key);
 
 
-void A_Explode(MEMREF, mobj_t* mobjmoRef);
-void A_Pain(MEMREF moRef, mobj_t* mobj);
+void A_Explode(mobj_t* mobjmoRef);
+void A_Pain(mobj_t* mobj);
 void A_PlayerScream();
-void A_Fall(MEMREF moRef, mobj_t* mobj);
-void A_XScream(MEMREF moRef, mobj_t* mobj);
-void A_Look(MEMREF moRef, mobj_t* mobj);
-void A_Chase(MEMREF moRef, mobj_t* mobj);
-void A_FaceTarget(MEMREF moRef, mobj_t* mobj);
-void A_PosAttack(MEMREF moRef, mobj_t* mobj);
-void A_Scream(MEMREF moRef, mobj_t* mobj);
-void A_SPosAttack(MEMREF moRef, mobj_t* mobj);
-void A_VileChase(MEMREF moRef, mobj_t* mobj);
-void A_VileStart(MEMREF moRef, mobj_t* mobj);
-void A_VileTarget(MEMREF moRef, mobj_t* mobj);
-void A_VileAttack(MEMREF moRef, mobj_t* mobj);
-void A_StartFire(MEMREF moRef, mobj_t* mobj);
-void A_Fire(MEMREF moRef, mobj_t* mobj);
-void A_FireCrackle(MEMREF moRef, mobj_t* mobj);
-void A_Tracer(MEMREF moRef, mobj_t* mobj);
-void A_SkelWhoosh(MEMREF moRef, mobj_t* mobj);
-void A_SkelFist(MEMREF moRef, mobj_t* mobj);
-void A_SkelMissile(MEMREF moRef, mobj_t* mobj);
-void A_FatRaise(MEMREF moRef, mobj_t* mobj);
-void A_FatAttack1(MEMREF moRef, mobj_t* mobj);
-void A_FatAttack2(MEMREF moRef, mobj_t* mobj);
-void A_FatAttack3(MEMREF moRef, mobj_t* mobj);
-void A_BossDeath(MEMREF moRef, mobj_t* mobj);
-void A_CPosAttack(MEMREF moRef, mobj_t* mobj);
-void A_CPosRefire(MEMREF moRef, mobj_t* mobj);
-void A_TroopAttack(MEMREF moRef, mobj_t* mobj);
-void A_SargAttack(MEMREF moRef, mobj_t* mobj);
-void A_HeadAttack(MEMREF moRef, mobj_t* mobj);
-void A_BruisAttack(MEMREF moRef, mobj_t* mobj);
-void A_SkullAttack(MEMREF moRef, mobj_t* mobj);
-void A_Metal(MEMREF moRef, mobj_t* mobj);
-void A_SpidRefire(MEMREF moRef, mobj_t* mobj);
-void A_BabyMetal(MEMREF moRef, mobj_t* mobj);
-void A_BspiAttack(MEMREF moRef, mobj_t* mobj);
-void A_Hoof(MEMREF moRef, mobj_t* mobj);
-void A_CyberAttack(MEMREF moRef, mobj_t* mobj);
-void A_PainAttack(MEMREF moRef, mobj_t* mobj);
-void A_PainDie(MEMREF moRef, mobj_t* mobj);
-void A_KeenDie(MEMREF moRef, mobj_t* mobj);
+void A_Fall(mobj_t* mobj);
+void A_XScream(mobj_t* mobj);
+void A_Look(mobj_t* mobj);
+void A_Chase(mobj_t* mobj);
+void A_FaceTarget(mobj_t* mobj);
+void A_PosAttack(mobj_t* mobj);
+void A_Scream(mobj_t* mobj);
+void A_SPosAttack(mobj_t* mobj);
+void A_VileChase(mobj_t* mobj);
+void A_VileStart(mobj_t* mobj);
+void A_VileTarget(mobj_t* mobj);
+void A_VileAttack(mobj_t* mobj);
+void A_StartFire(mobj_t* mobj);
+void A_Fire(mobj_t* mobj);
+void A_FireCrackle(mobj_t* mobj);
+void A_Tracer(mobj_t* mobj);
+void A_SkelWhoosh(mobj_t* mobj);
+void A_SkelFist(mobj_t* mobj);
+void A_SkelMissile(mobj_t* mobj);
+void A_FatRaise(mobj_t* mobj);
+void A_FatAttack1(mobj_t* mobj);
+void A_FatAttack2(mobj_t* mobj);
+void A_FatAttack3(mobj_t* mobj);
+void A_BossDeath(mobj_t* mobj);
+void A_CPosAttack(mobj_t* mobj);
+void A_CPosRefire(mobj_t* mobj);
+void A_TroopAttack(mobj_t* mobj);
+void A_SargAttack(mobj_t* mobj);
+void A_HeadAttack(mobj_t* mobj);
+void A_BruisAttack(mobj_t* mobj);
+void A_SkullAttack(mobj_t* mobj);
+void A_Metal(mobj_t* mobj);
+void A_SpidRefire(mobj_t* mobj);
+void A_BabyMetal(mobj_t* mobj);
+void A_BspiAttack(mobj_t* mobj);
+void A_Hoof(mobj_t* mobj);
+void A_CyberAttack(mobj_t* mobj);
+void A_PainAttack(mobj_t* mobj);
+void A_PainDie(mobj_t* mobj);
+void A_KeenDie(mobj_t* mobj);
 void A_BrainPain();
-void A_BrainScream(MEMREF moRef, mobj_t* mobj);
+void A_BrainScream(mobj_t* mobj);
 void A_BrainDie();
 void A_BrainAwake();
-void A_BrainSpit(MEMREF moRef, mobj_t* mobj);
-void A_SpawnSound(MEMREF moRef, mobj_t* mobj);
-void A_SpawnFly(MEMREF moRef, mobj_t* mobj);
-void A_BrainExplode(MEMREF moRef, mobj_t* mobj);
+void A_BrainSpit(mobj_t* mobj);
+void A_SpawnSound(mobj_t* mobj);
+void A_SpawnFly(mobj_t* mobj);
+void A_BrainExplode(mobj_t* mobj);
 
 mobj_t* SAVEDUNIT;
 mobj_t* setStateReturn;
@@ -102,10 +102,10 @@ mobj_t* setStateReturn;
 //
 // P_ExplodeMissile  
 //
-void P_ExplodeMissile(MEMREF moRef, mobj_t* mo){
+void P_ExplodeMissile(mobj_t* mo){
 
     mo->momx = mo->momy = mo->momz = 0;
-    P_SetMobjState (moRef, getDeathState(mo->type), mo);
+    P_SetMobjState (mo,getDeathState(mo->type));
 	//mo = setStateReturn;
 
     mo->tics -= P_Random()&3;
@@ -128,7 +128,7 @@ void P_ExplodeMissile(MEMREF moRef, mobj_t* mo){
 #define STOPSPEED		0x1000
 #define FRICTION		0xe800
 
-void P_XYMovement (MEMREF moRef, mobj_t* mo)
+void P_XYMovement (mobj_t* mo)
 { 	
     fixed_t 	ptryx;
     fixed_t	ptryy;
@@ -152,7 +152,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 			mo->flags &= ~MF_SKULLFLY;
 			mo->momx = mo->momy = mo->momz = 0;
 
-			P_SetMobjState (moRef, mobjinfo[mo->type].spawnstate, mo);
+			P_SetMobjState (mo,mobjinfo[mo->type].spawnstate);
 		}
 		return;
     }
@@ -203,12 +203,12 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 					// against the sky.
 					// Does not handle sky floors.
  
-					P_RemoveMobj (moRef, mo);
+					P_RemoveMobj (mo);
 					return;
 				}
 			
 
-				P_ExplodeMissile (moRef, mo);
+				P_ExplodeMissile (mo);
 			} else {
 				mo->momx = mo->momy = 0;
 			}
@@ -258,7 +258,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 		) {
 	// if in a walking frame, stop moving
 		if (motype == MT_PLAYER && (uint32_t)((playerMobj.stateNum) - S_PLAY_RUN1) < 4) {
-			P_SetMobjState(PLAYER_MOBJ_REF, S_PLAY, &playerMobj);
+			P_SetMobjState(&playerMobj,S_PLAY);
 			//mo = setStateReturn;
 		}
 
@@ -276,7 +276,7 @@ void P_XYMovement (MEMREF moRef, mobj_t* mo)
 //
 // P_ZMovement
 //
-void P_ZMovement (MEMREF moRef, mobj_t* mo)
+void P_ZMovement (mobj_t* mo)
 {
     fixed_t	dist;
 	fixed_t	delta;
@@ -358,7 +358,7 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 	#endif
 
 		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
-			P_ExplodeMissile (moRef, mo);
+			P_ExplodeMissile (mo);
 			return;
 		}
 	} else if (! (mo->flags & MF_NOGRAVITY) ) {
@@ -381,7 +381,7 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 		}
 	
 		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
-			P_ExplodeMissile (moRef, mo);
+			P_ExplodeMissile (mo);
 			return;
 		}
     }
@@ -396,7 +396,7 @@ void P_ZMovement (MEMREF moRef, mobj_t* mo)
 // P_NightmareRespawn
 //
 void
-P_NightmareRespawn(MEMREF mobjRef, mobj_t* mobj)
+P_NightmareRespawn(mobj_t* mobj)
 {
 
 	/*
@@ -496,7 +496,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 
 	if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
 
-		P_XYMovement (mobjRef, mobj);
+		P_XYMovement (mobj);
 
 		if ((thinkerlist[mobj->thinkerRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
@@ -507,7 +507,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
     if ( (mobj->z != temp.w) || mobj->momz ) {
-		P_ZMovement (mobjRef, mobj);
+		P_ZMovement (mobj);
 	 
 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if ((thinkerlist[mobj->thinkerRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
@@ -524,7 +524,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		// you can cycle through multiple states in a tic
 		if (!mobj->tics) {
 
-			if (!P_SetMobjState(mobjRef, states[mobj->stateNum].nextstate, mobj)) {
+			if (!P_SetMobjState(mobj, states[mobj->stateNum].nextstate)) {
 
 				return;		// freed itself
 			}
@@ -553,7 +553,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		if (P_Random() > 4) {
 			return;
 		}
-		P_NightmareRespawn (mobjRef, mobj);
+		P_NightmareRespawn (mobj);
     }
 
 
@@ -652,13 +652,13 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 //
 
 
-void P_RemoveMobj (MEMREF mobjRef, mobj_t* mobj)
+void P_RemoveMobj (mobj_t* mobj)
 {
     // unlink from sector and block lists
     P_UnsetThingPosition (mobj);
     
     // stop any playing sound
-    S_StopSound (mobjRef);
+    S_StopSound (mobj);
 
 	// free block
 	P_RemoveThinker(mobj->thinkerRef);
@@ -701,7 +701,7 @@ P_SpawnPuff
 	
     // don't make punches spark on the wall
     if (attackrange == MELEERANGE * FRACUNIT)
-		P_SetMobjState (thRef, S_PUFF3, th);
+		P_SetMobjState (th, S_PUFF3);
 }
 
 
@@ -729,9 +729,9 @@ P_SpawnBlood
 		th->tics = 1;
 		
     if (damage <= 12 && damage >= 9)
-		P_SetMobjState (thRef,S_BLOOD2, th);
+		P_SetMobjState (th,S_BLOOD2);
     else if (damage < 9)
-		P_SetMobjState (thRef,S_BLOOD3, th);
+		P_SetMobjState (th,S_BLOOD3);
 }
 
 
@@ -741,7 +741,7 @@ P_SpawnBlood
 // Moves the missile forward a bit
 //  and possibly explodes it right there.
 //
-void P_CheckMissileSpawn (MEMREF thRef, mobj_t* th)
+void P_CheckMissileSpawn (mobj_t* th)
 {
 
     th->tics -= P_Random()&3;
@@ -756,7 +756,7 @@ void P_CheckMissileSpawn (MEMREF thRef, mobj_t* th)
 
 	if (!P_TryMove(th, th->x, th->y)) {
 
-		P_ExplodeMissile(thRef, th);
+		P_ExplodeMissile(th);
 	}
 }
 
@@ -766,15 +766,14 @@ void P_CheckMissileSpawn (MEMREF thRef, mobj_t* th)
 //
 MEMREF
 P_SpawnMissile
-( MEMREF	sourceRef,
-  MEMREF	destRef,
-  mobjtype_t	type,
-	mobj_t* source)
+(mobj_t* source,
+  mobj_t*	dest,
+  mobjtype_t	type
+	)
 {
     mobj_t*	th;
     angle_t	an;
     fixed_t	dist;
-	mobj_t*	dest;
 	fixed_t destz;
 	fixed_t sourcex = source->x;
 	fixed_t sourcey = source->y;
@@ -791,10 +790,9 @@ P_SpawnMissile
 
 	}
 
-    th->targetRef = sourceRef;	// where it came from
+    th->targetRef = Z_GetThinkerRef(source);	// where it came from
 	thspeed = MAKESPEED(mobjinfo[type].speed);
 
-	dest = (mobj_t*)Z_LoadThinkerBytesFromEMS(destRef);
 	destz = dest->z;
 	an = R_PointToAngle2 (sourcex, sourcey, dest->x, dest->y);	
 
@@ -821,7 +819,7 @@ P_SpawnMissile
 	th->momz = momz;
 
 
-	P_CheckMissileSpawn (thRef, th);
+	P_CheckMissileSpawn (th);
 	
     return thRef;
 }
@@ -850,18 +848,18 @@ P_SpawnPlayerMissile
     // see which target is to be aimed at
     // todo use fixed_t_union
 	an = playerMobj.angle >> ANGLETOFINESHIFT;
-	slope = P_AimLineAttack (PLAYER_MOBJ_REF, an, 16*64);
+	slope = P_AimLineAttack (&playerMobj, an, 16*64);
     
-    if (!linetargetRef) {
+    if (!linetarget) {
 		// todo use fixed_t_union
 		an = MOD_FINE_ANGLE(an +(1<<(26- ANGLETOFINESHIFT)));
-		slope = P_AimLineAttack (PLAYER_MOBJ_REF, an, 16*64);
-		if (!linetargetRef) {
+		slope = P_AimLineAttack (&playerMobj, an, 16*64);
+		if (!linetarget) {
 			// todo use fixed_t_union
 			an = MOD_FINE_ANGLE(an - (2<<(26-ANGLETOFINESHIFT)));
-			slope = P_AimLineAttack (PLAYER_MOBJ_REF, an, 16*64);
+			slope = P_AimLineAttack (&playerMobj, an, 16*64);
 		}
-		if (!linetargetRef) {
+		if (!linetarget) {
 			// todo use fixed_t_union
 			an = playerMobj.angle >> ANGLETOFINESHIFT;
 			slope = 0;
@@ -891,13 +889,13 @@ P_SpawnPlayerMissile
     th->momy = FixedMul( speed, finesine(an));
     th->momz = FixedMul( speed, slope);
 
-    P_CheckMissileSpawn (thRef, th);
+    P_CheckMissileSpawn (th);
 }
 
 
 boolean
 P_SetMobjState2
-(MEMREF mobjRef, statenum_t state, mobj_t* mobj)
+(mobj_t* mobj, statenum_t state)
 //(MEMREF mobjRef, statenum_t state, int8_t* file, int32_t line)
 {
 	state_t*	st;
@@ -912,7 +910,7 @@ P_SetMobjState2
 	do {
 		if (state == S_NULL) {
 			mobj->stateNum = S_NULL;
-			P_RemoveMobj(mobjRef, mobj);
+			P_RemoveMobj(mobj);
 			setStateReturn = mobj;
 			return false;
 		}
@@ -933,51 +931,51 @@ P_SetMobjState2
 
 		switch (st->action) {
 
-			case ETF_A_Explode: A_Explode(mobjRef, mobj); break;
-			case ETF_A_Pain: A_Pain(mobjRef, mobj); break;
+			case ETF_A_Explode: A_Explode(mobj); break;
+			case ETF_A_Pain: A_Pain(mobj); break;
 			case ETF_A_PlayerScream: A_PlayerScream(); break;
-			case ETF_A_Fall: A_Fall(mobjRef, mobj); break;
-			case ETF_A_XScream: A_XScream(mobjRef, mobj); break;
-			case ETF_A_Look: A_Look(mobjRef, mobj); break;
-			case ETF_A_Chase: A_Chase(mobjRef, mobj); break;
-			case ETF_A_FaceTarget: A_FaceTarget(mobjRef, mobj); break;
-			case ETF_A_PosAttack: A_PosAttack(mobjRef, mobj); break;
-			case ETF_A_Scream: A_Scream(mobjRef, mobj); break;
-			case ETF_A_SPosAttack: A_SPosAttack(mobjRef, mobj); break;
-			case ETF_A_VileChase: A_VileChase(mobjRef, mobj); break;
-			case ETF_A_VileStart: A_VileStart(mobjRef, mobj); break;
-			case ETF_A_VileTarget: A_VileTarget(mobjRef, mobj); break;
-			case ETF_A_VileAttack: A_VileAttack(mobjRef, mobj); break;
-			case ETF_A_StartFire: A_StartFire(mobjRef, mobj); break;
-			case ETF_A_Fire: A_Fire(mobjRef, mobj); break;
-			case ETF_A_FireCrackle: A_FireCrackle(mobjRef, mobj); break;
-			case ETF_A_Tracer: A_Tracer(mobjRef, mobj); break;
-			case ETF_A_SkelWhoosh: A_SkelWhoosh(mobjRef, mobj); break;
-			case ETF_A_SkelFist: A_SkelFist(mobjRef, mobj); break;
-			case ETF_A_SkelMissile: A_SkelMissile(mobjRef, mobj); break;
-			case ETF_A_FatRaise: A_FatRaise(mobjRef, mobj); break;
-			case ETF_A_FatAttack1: A_FatAttack1(mobjRef, mobj); break;
-			case ETF_A_FatAttack2: A_FatAttack2(mobjRef, mobj); break;
-			case ETF_A_FatAttack3: A_FatAttack3(mobjRef, mobj); break;
-			case ETF_A_BossDeath: A_BossDeath(mobjRef, mobj); break;
-			case ETF_A_CPosAttack: A_CPosAttack(mobjRef, mobj); break;
-			case ETF_A_CPosRefire: A_CPosRefire(mobjRef, mobj); break;
-			case ETF_A_TroopAttack: A_TroopAttack(mobjRef, mobj); break;
-			case ETF_A_SargAttack: A_SargAttack(mobjRef, mobj); break;
-			case ETF_A_HeadAttack: A_HeadAttack(mobjRef, mobj); break;
-			case ETF_A_BruisAttack: A_BruisAttack(mobjRef, mobj); break;
-			case ETF_A_SkullAttack: A_SkullAttack(mobjRef, mobj); break;
-			case ETF_A_Metal: A_Metal(mobjRef, mobj); break;
-			case ETF_A_SpidRefire: A_SpidRefire(mobjRef, mobj); break;
-			case ETF_A_BabyMetal: A_BabyMetal(mobjRef, mobj); break;
-			case ETF_A_BspiAttack: A_BspiAttack(mobjRef, mobj); break;
-			case ETF_A_Hoof: A_Hoof(mobjRef, mobj); break;
-			case ETF_A_CyberAttack: A_CyberAttack(mobjRef, mobj); break;
-			case ETF_A_PainAttack: A_PainAttack(mobjRef, mobj); break;
-			case ETF_A_PainDie: A_PainDie(mobjRef, mobj); break;
-			case ETF_A_KeenDie: A_KeenDie(mobjRef, mobj); break;
+			case ETF_A_Fall: A_Fall(mobj); break;
+			case ETF_A_XScream: A_XScream(mobj); break;
+			case ETF_A_Look: A_Look(mobj); break;
+			case ETF_A_Chase: A_Chase(mobj); break;
+			case ETF_A_FaceTarget: A_FaceTarget(mobj); break;
+			case ETF_A_PosAttack: A_PosAttack(mobj); break;
+			case ETF_A_Scream: A_Scream(mobj); break;
+			case ETF_A_SPosAttack: A_SPosAttack(mobj); break;
+			case ETF_A_VileChase: A_VileChase(mobj); break;
+			case ETF_A_VileStart: A_VileStart(mobj); break;
+			case ETF_A_VileTarget: A_VileTarget(mobj); break;
+			case ETF_A_VileAttack: A_VileAttack(mobj); break;
+			case ETF_A_StartFire: A_StartFire(mobj); break;
+			case ETF_A_Fire: A_Fire(mobj); break;
+			case ETF_A_FireCrackle: A_FireCrackle(mobj); break;
+			case ETF_A_Tracer: A_Tracer(mobj); break;
+			case ETF_A_SkelWhoosh: A_SkelWhoosh(mobj); break;
+			case ETF_A_SkelFist: A_SkelFist(mobj); break;
+			case ETF_A_SkelMissile: A_SkelMissile(mobj); break;
+			case ETF_A_FatRaise: A_FatRaise(mobj); break;
+			case ETF_A_FatAttack1: A_FatAttack1(mobj); break;
+			case ETF_A_FatAttack2: A_FatAttack2(mobj); break;
+			case ETF_A_FatAttack3: A_FatAttack3(mobj); break;
+			case ETF_A_BossDeath: A_BossDeath(mobj); break;
+			case ETF_A_CPosAttack: A_CPosAttack(mobj); break;
+			case ETF_A_CPosRefire: A_CPosRefire(mobj); break;
+			case ETF_A_TroopAttack: A_TroopAttack(mobj); break;
+			case ETF_A_SargAttack: A_SargAttack(mobj); break;
+			case ETF_A_HeadAttack: A_HeadAttack(mobj); break;
+			case ETF_A_BruisAttack: A_BruisAttack(mobj); break;
+			case ETF_A_SkullAttack: A_SkullAttack(mobj); break;
+			case ETF_A_Metal: A_Metal(mobj); break;
+			case ETF_A_SpidRefire: A_SpidRefire(mobj); break;
+			case ETF_A_BabyMetal: A_BabyMetal(mobj); break;
+			case ETF_A_BspiAttack: A_BspiAttack(mobj); break;
+			case ETF_A_Hoof: A_Hoof(mobj); break;
+			case ETF_A_CyberAttack: A_CyberAttack(mobj); break;
+			case ETF_A_PainAttack: A_PainAttack(mobj); break;
+			case ETF_A_PainDie: A_PainDie(mobj); break;
+			case ETF_A_KeenDie: A_KeenDie(mobj); break;
 			case ETF_A_BrainPain: A_BrainPain(); break;
-			case ETF_A_BrainScream: A_BrainScream(mobjRef, mobj); break;
+			case ETF_A_BrainScream: A_BrainScream(mobj); break;
 			case ETF_A_BrainDie: A_BrainDie(); break;
 				// ugly hacks because these values didnt fit in the char datatype, so we do this to avoid making that field a int16_t in a 1000 element struct array. 
 				// easily saving extra 1-2kb of binary size is worth this hack imo - sq
@@ -986,10 +984,10 @@ P_SetMobjState2
 				A_BrainAwake(); break;
 			case ETF_A_BrainSpit: 
 				mobj->tics = 150;
-				A_BrainSpit(mobjRef, mobj); break;
-			case ETF_A_SpawnSound: A_SpawnSound(mobjRef, mobj); break;
-			case ETF_A_SpawnFly: A_SpawnFly(mobjRef, mobj); break;
-			case ETF_A_BrainExplode: A_BrainExplode(mobjRef, mobj); break;
+				A_BrainSpit(mobj); break;
+			case ETF_A_SpawnSound: A_SpawnSound(mobj); break;
+			case ETF_A_SpawnFly: A_SpawnFly(mobj); break;
+			case ETF_A_BrainExplode: A_BrainExplode(mobj); break;
 			//default:
 		}
 

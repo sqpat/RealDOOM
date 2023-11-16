@@ -103,16 +103,16 @@ P_SpawnMobj
   fixed_t	z,
   mobjtype_t	type );
 
-void 	P_RemoveMobj (MEMREF thRef, mobj_t* mobj);
+void 	P_RemoveMobj (mobj_t* mobj);
 //boolean	P_SetMobjState2(MEMREF mobj, statenum_t state, int8_t* file, int32_t line);
 //#define	P_SetMobjState(a, b) P_SetMobjState2(a, b, __FILE__, __LINE__)
-boolean	P_SetMobjState2(MEMREF mobjRef, statenum_t state, mobj_t* mobj);
-#define	P_SetMobjState(a, b, c) P_SetMobjState2(a, b, c)
+boolean	P_SetMobjState2(mobj_t* mobj, statenum_t state);
+#define	P_SetMobjState(a, b) P_SetMobjState2(a, b)
 void 	P_MobjThinker (MEMREF memref);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
-MEMREF P_SpawnMissile (MEMREF sourceRef, MEMREF dest, mobjtype_t type, mobj_t* source);
+MEMREF P_SpawnMissile (mobj_t* source, mobj_t* dest, mobjtype_t type);
 void	P_SpawnPlayerMissile (mobjtype_t type);
 
 
@@ -206,26 +206,26 @@ boolean P_CheckPosition (mobj_t* thing, fixed_t x, fixed_t y);
 boolean P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
 boolean P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y);
 void	P_SlideMove ();
-boolean P_CheckSight (MEMREF t2ref, mobj_t* t1);
+boolean P_CheckSight (mobj_t* t1,mobj_t* t2);
 
 
 void 	P_UseLines ();
 
 boolean P_ChangeSector (sector_t* sector, boolean crunch);
 
-extern MEMREF	linetargetRef;	// who got hit (or NULL)
+extern mobj_t*	linetarget;	// who got hit (or NULL)
 
 #define CHAINSAW_FLAG 0x4000
 
 fixed_t
 P_AimLineAttack
-(MEMREF	t1,
+(mobj_t*	t1,
   fineangle_t	angle,
   int16_t	distance);
 
 void
 P_LineAttack
-(MEMREF	t1,
+(mobj_t*	t1,
   fineangle_t	angle,
 	int16_t	distance,
   fixed_t	slope,
@@ -233,8 +233,8 @@ P_LineAttack
 
 void
 P_RadiusAttack
-(MEMREF	spot,
-	MEMREF	source,
+(mobj_t*	spot,
+	mobj_t*	source,
   int16_t		damage );
 
 
@@ -259,14 +259,14 @@ extern int8_t		clipammo[NUMAMMO];
 
 void
 P_TouchSpecialThing
-(MEMREF	special,
-	MEMREF	toucher );
+(mobj_t*	special,
+	mobj_t*	toucher );
 
 void
 P_DamageMobj
-(MEMREF	target,
-	MEMREF	inflictor,
-	MEMREF	source,
+(mobj_t*	target,
+	mobj_t*	inflictor,
+	mobj_t*	source,
   int16_t		damage );
 
 

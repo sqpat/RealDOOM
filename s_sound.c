@@ -126,8 +126,8 @@ S_getChannel
 
 int16_t
 S_AdjustSoundParams
-( MEMREF	listenerRef,
-  MEMREF	sourceRef,
+( mobj_t*	listener,
+	mobj_t*	source,
   uint8_t*		vol,
   uint8_t*		sep,
   uint8_t*		pitch );
@@ -275,8 +275,8 @@ void S_StopChannel(int8_t cnum)
 //
 int16_t
 S_AdjustSoundParams
-( MEMREF	listenerRef,
-  MEMREF	sourceRef,
+( mobj_t*	listener,
+	mobj_t*	source,
   uint8_t*		vol,
   uint8_t*		sep,
   uint8_t*		pitch )
@@ -386,7 +386,7 @@ void S_ResumeSound(void)
 	*/
 }
 
-void S_StopSound(MEMREF originRef)
+void S_StopSound(mobj_t* origin)
 {
 	/*
 	int8_t cnum;
@@ -460,7 +460,7 @@ S_getChannel ( MEMREF originRef, sfxinfo_t*	sfxinfo ) {
 }
 
 void S_StartSoundAtVolume
-( MEMREF    origin_pRef,
+( mobj_t*    origin,
 	int16_t originX,
 	int16_t originY,
   sfxenum_t		sfx_id,
@@ -573,20 +573,19 @@ void S_StartSoundAtVolume
 	*/
 }
 
-void S_StartSoundFromRef(MEMREF memref,	sfxenum_t sfx_id, mobj_t* mobj)  {
+void S_StartSoundFromRef(mobj_t* mobj,	sfxenum_t sfx_id)  {
 	
 	if (sfx_id == 0) {
 		return;
 	}
-	if (memref) {
-		S_StartSoundAtVolume(memref, mobj->x, mobj->y, sfx_id, snd_SfxVolume);
+	if (mobj) {
+		S_StartSoundAtVolume(mobj, mobj->x, mobj->y, sfx_id, snd_SfxVolume);
 	} else {
-		S_StartSoundAtVolume(memref, 0, 0, sfx_id, snd_SfxVolume);
+		S_StartSoundAtVolume(mobj, 0, 0, sfx_id, snd_SfxVolume);
 	}
 }
 
-void S_StartSound(void*		origin, sfxenum_t		sfx_id) {
-	mobj_t* mobj = (mobj_t*)origin;
+void S_StartSound(mobj_t*		mobj, sfxenum_t		sfx_id) {
 	if (sfx_id == 0) {
 		return;
 	}

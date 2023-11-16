@@ -36,7 +36,7 @@
 
 
 fixed_t_union		tmbbox[4];
-MEMREF		tmthingRef;
+mobj_t*		tmthing;
 int32_t		tmflags;
 fixed_t		tmx;
 fixed_t		tmy;
@@ -73,12 +73,10 @@ int16_t		numspechit;
 boolean PIT_StompThing (MEMREF thingRef, mobj_t*	thing)
 {
     fixed_t_union	blockdist;
-	mobj_t* tmthing;
 
     if (!(thing->flags & MF_SHOOTABLE) )
 		return true;
 		
-	tmthing = (mobj_t*)Z_LoadThinkerBytesFromEMS(tmthingRef);
     blockdist.h.intbits = thing->radius + tmthing->radius;
 	blockdist.h.fracbits = 0;
     
@@ -98,12 +96,10 @@ boolean PIT_StompThing (MEMREF thingRef, mobj_t*	thing)
     if ( !tmthing->type == MT_PLAYER && gamemap != 30)
 	return false;	
 		
-    P_DamageMobj (thingRef, tmthingRef, tmthingRef, 10000);
+    P_DamageMobj (thing, tmthing, tmthing, 10000);
 	
     return true;
 }
-
-
 
 
 //
@@ -125,13 +121,11 @@ P_TeleportMove
 	int16_t	newsubsecsecnum;
 	int16_t	newsubsecnum;
 	
-	mobj_t* tmthing;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
     // kill anything occupying the position
-    tmthingRef = Z_GetThinkerRef(thing);
-    tmflags = thing->flags;
 	tmthing = thing;
+	tmflags = thing->flags;
 
     tmx = x;
     tmy = y;
@@ -203,7 +197,6 @@ P_TeleportMove
 //
 boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 {
-	mobj_t* tmthing;
 	//int16_t linespecial;
 	//fixed_t linedx; , fixed_t linedy, int16_t linev1Offset, int16_t linev2Offset, int16_t linefrontsecnum, int16_t linebacksecnum, int16_t lineside1, slopetype_t lineslopetype
 	
@@ -264,7 +257,6 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 		return false;		// one sided line
 	}
 
-	tmthing = (mobj_t*)Z_LoadThinkerBytesFromEMS(tmthingRef);
 
     if (!(tmthing->flags & MF_MISSILE) ) {
 		if (lineflags & ML_BLOCKING) {
@@ -310,7 +302,6 @@ boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
     boolean		solid;
     int16_t			damage;
 	mobj_t* tmthingTarget;
-	mobj_t* tmthing; 
 	mobjtype_t tmthingTargettype;
 	mobjtype_t thingtype;
 	MEMREF tmthingtargetRef;
@@ -325,7 +316,7 @@ boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
 	// don't clip against self
 
 
-	if (thingRef == tmthingRef) {
+	if (thing == tmthing) {
 			return true;
 	}
 
@@ -343,7 +334,6 @@ boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
 	thingradius.h.fracbits = 0;
 
 
-	tmthing = (mobj_t*)Z_LoadThinkerBytesFromEMS(tmthingRef);
 	
 	thingradius.h.intbits += tmthing->radius;
 	blockdist = thingradius.w;
@@ -360,11 +350,11 @@ boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
     // check for skulls slamming into things
     if (tmthing->flags & MF_SKULLFLY) {
 		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
-		P_DamageMobj (thingRef, tmthingRef, tmthingRef, damage);
+		P_DamageMobj (thing, tmthing, tmthing, damage);
 		tmthing->flags &= ~MF_SKULLFLY;
 		tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
-		P_SetMobjState (tmthingRef, mobjinfo[tmthing->type].spawnstate, tmthing);
+		P_SetMobjState (tmthing, mobjinfo[tmthing->type].spawnstate);
 
 		return false;		// stop moving
     }
@@ -378,12 +368,12 @@ boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
 		if (tmthingz + tmthingheight.w < thingz) {
 			return true;		// underneath
 		}
-		if (tmthingtargetRef) {
-			tmthingTarget = (mobj_t*)Z_LoadThinkerBytesFromEMS(tmthingtargetRef);
+		tmthingTarget = (mobj_t*)Z_LoadThinkerBytesFromEMS(tmthingtargetRef);
+		if (tmthingTarget) {
 			tmthingTargettype = tmthingTarget->type;
 			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
 				// Don't hit same species as originator.
- 			if (thingRef == tmthingtargetRef) {
+ 			if (thing == tmthingTarget) {
 					return true;
 				}
 
@@ -404,7 +394,7 @@ boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
 		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 		
 
-		P_DamageMobj (thingRef, tmthingRef, tmthingtargetRef, damage);
+		P_DamageMobj (thing, tmthing, tmthingTarget, damage);
 
 		// don't traverse any more
 		return false;				
@@ -418,7 +408,7 @@ boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
 	{
 		//I_Error("%i %i %i", players.moRef, tmthingRef, thingRef);
 	    // can remove thing
-	    P_TouchSpecialThing (thingRef, tmthingRef);
+	    P_TouchSpecialThing (thing, tmthing);
 	}
 	return !solid;
     }
@@ -472,7 +462,7 @@ P_CheckPosition
 	int16_t newsubsecsecnum;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-    tmthingRef = Z_GetThinkerRef(thing);
+    tmthing = thing;
     tmflags = thing->flags;
 	
     tmx = x;
@@ -972,8 +962,8 @@ void P_SlideMove ()
 //
 // P_LineAttack
 //
-MEMREF		linetargetRef;	// who got hit (or NULL)
-MEMREF		shootthingRef;
+mobj_t*		linetarget;	// who got hit (or NULL)
+mobj_t*		shootthing;
 
 // Height if not aiming up or down
 // ???: use slope for monsters?
@@ -1002,7 +992,6 @@ PTR_AimTraverse (intercept_t* in)
     fixed_t		thingtopslope;
     fixed_t		thingbottomslope;
     fixed_t		dist;
-	MEMREF		thRef;
 	fixed_t_union temp;
 
     if (in->isaline) {
@@ -1050,12 +1039,11 @@ PTR_AimTraverse (intercept_t* in)
     }
     
     // shoot a thing
-    thRef = in->d.thingRef;
-	if (thRef == shootthingRef) {
+	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(in->d.thingRef);
+	if (th == shootthing) {
 		//I_Error("caught e");
 		return true;			// can't shoot self
 	}
-	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
 
 	if (!(th->flags&MF_SHOOTABLE)) {
 		//I_Error("caught f");
@@ -1083,7 +1071,7 @@ PTR_AimTraverse (intercept_t* in)
 		thingbottomslope = bottomslope;
 
     aimslope = (thingtopslope+thingbottomslope)/2;
-    linetargetRef = thRef;
+    linetarget = th;
 	
     return false;			// don't go any farther
 }
@@ -1115,7 +1103,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		li = lines[in->d.linenum];
 		
 		if (li.special)
-			P_ShootSpecialLine (shootthingRef, in->d.linenum);
+			P_ShootSpecialLine (shootthing, in->d.linenum);
 
 		if ( !(li.flags & ML_TWOSIDED) )
 			goto hitline;
@@ -1177,10 +1165,10 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	 
     // shoot a thing
     thRef = in->d.thingRef;
-	if (thRef == shootthingRef) {
+	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
+	if (th == shootthing) {
 		return true;		// can't shoot self
 	}
-	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
 
 
 
@@ -1219,7 +1207,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		P_SpawnBlood (x,y,z, la_damage);
 
     if (la_damage)
-		P_DamageMobj (thRef, shootthingRef, shootthingRef, la_damage);
+		P_DamageMobj (th, shootthing, shootthing, la_damage);
 
     // don't go any farther
     return false;
@@ -1232,7 +1220,7 @@ extern int setval;
 //
 fixed_t
 P_AimLineAttack
-( MEMREF	t1Ref,
+( mobj_t*	t1,
   fineangle_t	angle,
   int16_t	distance16
 	)
@@ -1245,8 +1233,7 @@ P_AimLineAttack
 	fixed_t_union distance;
 	boolean ischainsaw = distance16 & CHAINSAW_FLAG;
 	
-	mobj_t* t1 = (mobj_t*)Z_LoadThinkerBytesFromEMS(t1Ref);
-    shootthingRef = t1Ref;
+    shootthing = t1;
 	distance16 &= (CHAINSAW_FLAG-1);
 
 	x.w = t1->x;
@@ -1269,7 +1256,7 @@ P_AimLineAttack
 	distance.h.fracbits = ischainsaw ? 1 : 0;
 	distance.h.intbits = distance16;
     attackrange = distance;
-    linetargetRef = NULL_MEMREF;
+    linetarget = NULL;
 	
 	//setval = 1;
 
@@ -1280,14 +1267,10 @@ P_AimLineAttack
 		
 
 
-	if (linetargetRef) {
-//		if (setval)
-//			printf("crash second? %li %u %i", aimslope, linetargetRef, setval);
+	if (linetarget) {
 
 		return aimslope;
 	}
-//	if (setval)
-//		printf("crash second 2? %li %u %i", aimslope, linetargetRef, setval);
 
     return 0;
 }
@@ -1300,7 +1283,7 @@ P_AimLineAttack
 //
 void
 P_LineAttack
-( MEMREF	t1Ref,
+(mobj_t* t1,
   fineangle_t	angle,
 	int16_t	distance16,
   fixed_t	slope,
@@ -1308,7 +1291,7 @@ P_LineAttack
 {
     fixed_t_union	x2;
 	fixed_t_union	y2;
-	mobj_t* t1 = (mobj_t*)Z_LoadThinkerBytesFromEMS(t1Ref);
+	
 	fixed_t_union	x;
 	fixed_t_union	y;
 	fixed_t_union	distance;
@@ -1317,7 +1300,7 @@ P_LineAttack
 	x.w = t1->x;
 	y.w = t1->y;
 	distance16 &= (CHAINSAW_FLAG-1);
-	shootthingRef = t1Ref;
+	shootthing = t1;
     la_damage = damage;
     //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
     //y2.w = y.w + FixedMul1616(distance16,finesine(angle));
@@ -1356,7 +1339,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 		P_LineOpening (line.sidenum[1], line.frontsecnum, line.backsecnum);
 		if (openrange <= 0)
 		{
-			S_StartSoundFromRef (PLAYER_MOBJ_REF, sfx_noway, &playerMobj);
+			S_StartSoundFromRef (&playerMobj, sfx_noway);
 	    
 			// can't use through a wall
 			return false;	
@@ -1372,7 +1355,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 	}
     
     //	return false;		// don't use back side
-    P_UseSpecialLine (PLAYER_MOBJ_REF, in->d.linenum, side);
+    P_UseSpecialLine (&playerMobj, in->d.linenum, side, PLAYER_MOBJ_REF);
 
     // can't use for than one special line in a row
     return false;
@@ -1405,8 +1388,8 @@ void P_UseLines ()
 //
 // RADIUS ATTACK
 //
-MEMREF		bombsourceRef;
-MEMREF		bombspotRef;
+mobj_t*		bombsource;
+mobj_t*		bombspot;
 int16_t		bombdamage;
 
 
@@ -1421,7 +1404,6 @@ boolean PIT_RadiusAttack (MEMREF thingRef, mobj_t*	thing)
     fixed_t	dy;
     fixed_t_union	dist;
 
-	mobj_t* bombspot;
 	
 	if (!(thing->flags & MF_SHOOTABLE)) {
 		return true;
@@ -1432,7 +1414,6 @@ boolean PIT_RadiusAttack (MEMREF thingRef, mobj_t*	thing)
 		return true;
 	}
 
-	bombspot = (mobj_t*)Z_LoadThinkerBytesFromEMS(bombspotRef);
 
     dx = labs(thing->x - bombspot->x);
     dy = labs(thing->y - bombspot->y);
@@ -1448,14 +1429,14 @@ boolean PIT_RadiusAttack (MEMREF thingRef, mobj_t*	thing)
 		return true;	// out of range
 	}
 
-    if ( P_CheckSight (bombspotRef, thing) ) {
+    if ( P_CheckSight (thing, bombspot) ) {
 		// must be in direct path
 
-		if (thingRef == 0) {
-			I_Error("bad thing caught d");
-		}
+//		if (thing == 0) {
+//			I_Error("bad thing caught d");
+//		}
 
-		P_DamageMobj (thingRef, bombspotRef, bombsourceRef, bombdamage - dist.h.intbits);
+		P_DamageMobj (thing, bombspot, bombsource, bombdamage - dist.h.intbits);
     }
     
     return true;
@@ -1468,8 +1449,8 @@ boolean PIT_RadiusAttack (MEMREF thingRef, mobj_t*	thing)
 //
 void
 P_RadiusAttack
-(MEMREF	spotRef,
-	MEMREF	sourceRef,
+(mobj_t* spot,
+	mobj_t* source,
 	int16_t		damage)
 {
 	int16_t		x;
@@ -1480,15 +1461,15 @@ P_RadiusAttack
 	int16_t		yl;
 	int16_t		yh;
 	fixed_t_union pos;
-	mobj_t* spot = (mobj_t *)Z_LoadThinkerBytesFromEMS(spotRef);
+	
 	pos.w = spot->y;
 	yh = (pos.h.intbits + damage - bmaporgy) >> MAPBLOCKSHIFT;
 	yl = (pos.h.intbits - damage - bmaporgy) >> MAPBLOCKSHIFT;
 	pos.w = spot->x;
 	xh = (pos.h.intbits + damage - bmaporgx) >> MAPBLOCKSHIFT;
 	xl = (pos.h.intbits - damage - bmaporgx) >> MAPBLOCKSHIFT;
-	bombspotRef = spotRef;
-	bombsourceRef = sourceRef;
+	bombspot = spot;
+	bombsource = source;
 	bombdamage = damage;
 
 
@@ -1542,7 +1523,7 @@ boolean PIT_ChangeSector (MEMREF thingRef, mobj_t*	thing)
 
     // crunch bodies to giblets
     if (thing->health <= 0) {
-		P_SetMobjState (thingRef, S_GIBS, thing);
+		P_SetMobjState (thing, S_GIBS);
 		thing = setStateReturn;
 		thing->flags &= ~MF_SOLID;
 		thing->height.w = 0;
@@ -1554,7 +1535,7 @@ boolean PIT_ChangeSector (MEMREF thingRef, mobj_t*	thing)
 
     // crunch dropped items
     if (thing->flags & MF_DROPPED) {
-		P_RemoveMobj (thingRef, thing);
+		P_RemoveMobj (thing);
 	
 		// keep checking
 		return true;		
@@ -1569,7 +1550,7 @@ boolean PIT_ChangeSector (MEMREF thingRef, mobj_t*	thing)
 	
     if (crushchange && !(leveltime.w &3) ) {
 
-		P_DamageMobj(thingRef,NULL_MEMREF,NULL_MEMREF,10);
+		P_DamageMobj(thing,NULL_MEMREF,NULL_MEMREF,10);
 
 		// spray blood in a random direction
 		moRef = P_SpawnMobj (thing->x, thing->y, thing->z + thing->height.w/2, MT_BLOOD);

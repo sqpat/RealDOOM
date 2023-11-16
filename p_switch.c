@@ -163,11 +163,11 @@ P_ChangeSwitchTexture
 //
 boolean
 P_UseSpecialLine
-( MEMREF	thingRef,
+( mobj_t*	thing,
   int16_t linenum,
-  int16_t		side )
+  int16_t		side,
+	MEMREF thingRef)
 {               
-	mobj_t*	thing;
 
 	line_t* line = &lines[linenum];
 	
@@ -191,11 +191,10 @@ P_UseSpecialLine
     }
 
 
-	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 
     
     // Switches that other things can activate.
-    if (thing->type != MT_PLAYER)
+    if (thingRef != PLAYER_MOBJ_REF)
     {
 	// never open secret doors
 	if (lineflags & ML_SECRET)

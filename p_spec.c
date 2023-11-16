@@ -884,7 +884,7 @@ P_CrossSpecialLine
 //
 void
 P_ShootSpecialLine
-( MEMREF thingRef,
+( mobj_t* thing,
   int16_t linenum )
 {
     int16_t		ok;
@@ -896,7 +896,6 @@ P_ShootSpecialLine
 	int16_t lineside0 = line->sidenum[0];
 
 	
-	mobj_t*	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
     
     //	Impacts that other things can activate.
     if (thing->type != MT_PLAYER) {
@@ -958,14 +957,14 @@ void P_PlayerInSpecialSector () {
 			// HELLSLIME DAMAGE
 			if (!player.powers[pw_ironfeet])
 				if (!(leveltime.h.fracbits &0x1f))
-					P_DamageMobj (PLAYER_MOBJ_REF, NULL_MEMREF, NULL_MEMREF, 10);
+					P_DamageMobj (&playerMobj, NULL, NULL, 10);
 			break;
 	
 		case 7:
 			// NUKAGE DAMAGE
 			if (!player.powers[pw_ironfeet])
 				if (!(leveltime.h.fracbits &0x1f))
-					P_DamageMobj (PLAYER_MOBJ_REF, NULL_MEMREF, NULL_MEMREF, 5);
+					P_DamageMobj (&playerMobj, NULL, NULL, 5);
 			break;
 	
 		case 16:
@@ -974,7 +973,7 @@ void P_PlayerInSpecialSector () {
 				// STROBE HURT
 				if (!player.powers[pw_ironfeet] || (P_Random()<5) ) {
 					if (!(leveltime.h.fracbits &0x1f))
-						P_DamageMobj (PLAYER_MOBJ_REF, NULL_MEMREF, NULL_MEMREF, 20);
+						P_DamageMobj (&playerMobj, NULL, NULL, 20);
 				}
 				break;
 			
@@ -989,7 +988,7 @@ void P_PlayerInSpecialSector () {
 			player.cheats &= ~CF_GODMODE;
 
 			if (!(leveltime.h.fracbits &0x1f))
-				P_DamageMobj (PLAYER_MOBJ_REF, NULL_MEMREF, NULL_MEMREF, 20);
+				P_DamageMobj (&playerMobj, NULL, NULL, 20);
 
 			if (player.health <= 10)
 				G_ExitLevel();

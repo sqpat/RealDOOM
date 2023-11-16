@@ -52,13 +52,14 @@ void    P_UpdateSpecials (void);
 // when needed
 boolean
 P_UseSpecialLine
-( MEMREF thingRef,
+( mobj_t* thing,
 	int16_t linenum,
-  int16_t		side );
+  int16_t		side, 
+	MEMREF thingRef );
 
 void
 P_ShootSpecialLine
-(MEMREF thingRef,
+(mobj_t* thing,
   int16_t linenum);
 
 void
