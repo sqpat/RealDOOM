@@ -70,7 +70,7 @@ int16_t		numspechit;
 //
 // PIT_StompThing
 //
-boolean PIT_StompThing (MEMREF thingRef, mobj_t*	thing)
+boolean PIT_StompThing (THINKERREF thingRef, mobj_t*	thing)
 {
     fixed_t_union	blockdist;
 
@@ -204,15 +204,16 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 	int16_t linedx = ld->dx;
 	int16_t linedy = ld->dy;
 	int16_t linev1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
+	vertex_t v1 = vertexes[linev1Offset];
 	int16_t linefrontsecnum = ld->frontsecnum;
 	int16_t linebacksecnum = ld->backsecnum;
 	uint8_t lineflags = ld->flags;
 	int16_t linespecial = ld->special;
 	int16_t lineside1 = ld->sidenum[1];
-	int16_t lineright = ld->baseX;
-	int16_t lineleft = ld->baseX;
-	int16_t linetop = ld->baseY;
-	int16_t linebot = ld->baseY;
+	int16_t lineright = v1.x;
+	int16_t lineleft = v1.x;
+	int16_t linetop = v1.y;
+	int16_t linebot = v1.y;
 
 	if (linedx > 0) {
 		lineright += linedx;
@@ -296,7 +297,7 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 //
 // PIT_CheckThing
 //
-boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
+boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing)
 {
     fixed_t		blockdist;
     boolean		solid;
@@ -304,7 +305,7 @@ boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
 	mobj_t* tmthingTarget;
 	mobjtype_t tmthingTargettype;
 	mobjtype_t thingtype;
-	MEMREF tmthingtargetRef;
+	THINKERREF tmthingtargetRef;
 	int32_t thingflags;
 	fixed_t thingx;
 	fixed_t thingy;
@@ -368,7 +369,7 @@ boolean PIT_CheckThing (MEMREF thingRef, mobj_t*	thing)
 		if (tmthingz + tmthingheight.w < thingz) {
 			return true;		// underneath
 		}
-		tmthingTarget = (mobj_t*)Z_LoadThinkerBytesFromEMS(tmthingtargetRef);
+		tmthingTarget = (mobj_t*)&thinkerlist[tmthingtargetRef].data;
 		if (tmthingTarget) {
 			tmthingTargettype = tmthingTarget->type;
 			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
@@ -754,7 +755,7 @@ void P_HitSlideLine (int16_t linenum)
 		return;
     }
 	
-    side = P_PointOnLineSide (playerMobj.x, playerMobj.y, ld.dx, ld.dy, ld.v1Offset & VERTEX_OFFSET_MASK);
+    side = P_PointOnLineSide (playerMobj->x, playerMobj->y, ld.dx, ld.dy, ld.v1Offset & VERTEX_OFFSET_MASK);
     lineangle = R_PointToAngle2_16 (0,0, ld.dx, ld.dy);
 
     if (side == 1)
@@ -790,7 +791,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
 
     
     if ( ! (li.flags & ML_TWOSIDED) ) {
- 		if (P_PointOnLineSide (playerMobj.x, playerMobj.y, li.dx, li.dy, li.v1Offset & VERTEX_OFFSET_MASK)) {
+ 		if (P_PointOnLineSide (playerMobj->x, playerMobj->y, li.dx, li.dy, li.v1Offset & VERTEX_OFFSET_MASK)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -803,17 +804,17 @@ boolean PTR_SlideTraverse (intercept_t* in)
  	// temp.h.intbits = openrange >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openrange);
 
-    if (temp.h.intbits < playerMobj.height.h.intbits) // 16 bit okay
+    if (temp.h.intbits < playerMobj->height.h.intbits) // 16 bit okay
 		goto isblocking;		// doesn't fit
 		
 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, opentop);
-    if (temp.w - playerMobj.z < playerMobj.height.w)
+    if (temp.w - playerMobj->z < playerMobj->height.w)
 		goto isblocking;		// mobj is too high
 
 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openbottom);
-    if (temp.w - playerMobj.z > 24*FRACUNIT )
+    if (temp.w - playerMobj->z > 24*FRACUNIT )
 		goto isblocking;		// too big a step up
 
     // this line doesn't block movement
@@ -865,12 +866,12 @@ void P_SlideMove ()
     // trace along the three leading corners
 	// todo improve the minus cases
 	temp.h.fracbits = 0;
-	temp.h.intbits = playerMobj.radius;
-	leadx.w = playerMobj.x;
-	trailx.w = playerMobj.x;
-	leady.w = playerMobj.y;
-	traily.w = playerMobj.y;
-	if (playerMobj.momx > 0) {
+	temp.h.intbits = playerMobj->radius;
+	leadx.w = playerMobj->x;
+	trailx.w = playerMobj->x;
+	leady.w = playerMobj->y;
+	traily.w = playerMobj->y;
+	if (playerMobj->momx > 0) {
 		leadx.h.intbits += temp.h.intbits;
 		trailx.w -= temp.w;
     } else {
@@ -878,7 +879,7 @@ void P_SlideMove ()
 		trailx.h.intbits += temp.h.intbits;
     }
 	
-    if (playerMobj.momy > 0) {
+    if (playerMobj->momy > 0) {
 		leady.h.intbits += temp.h.intbits;
 		traily.w -= temp.w;
     } else {
@@ -891,17 +892,17 @@ void P_SlideMove ()
 	
  
 	
-	temp.w = leadx.w + playerMobj.momx;
-	temp2.w = leady.w + playerMobj.momy;
+	temp.w = leadx.w + playerMobj->momx;
+	temp2.w = leady.w + playerMobj->momy;
 	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 	
 	//todo do these mo fields change? if not then pull out momx/momy into locals to avoid extra loads
-	temp2.w = leady.w + playerMobj.momy;
-	temp3.w = trailx.w + playerMobj.momx;
+	temp2.w = leady.w + playerMobj->momy;
+	temp3.w = trailx.w + playerMobj->momx;
 	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-	temp.w = leadx.w + playerMobj.momx;
-	temp4.w = traily.w + playerMobj.momy;
+	temp.w = leadx.w + playerMobj->momx;
+	temp4.w = traily.w + playerMobj->momy;
 
 	P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
 
@@ -913,8 +914,8 @@ void P_SlideMove ()
 	// the move most have hit the middle, so stairstep
       stairstep:
  
-		if (!P_TryMove(&playerMobj, playerMobj.x, playerMobj.y + playerMobj.momy)) {
-			P_TryMove(&playerMobj, playerMobj.x + playerMobj.momx, playerMobj.y);
+		if (!P_TryMove(playerMobj, playerMobj->x, playerMobj->y + playerMobj->momy)) {
+			P_TryMove(playerMobj, playerMobj->x + playerMobj->momx, playerMobj->y);
 		}
 
 		return;
@@ -923,10 +924,10 @@ void P_SlideMove ()
     // fudge a bit to make sure it doesn't hit
     bestslidefrac -= 0x800;	
     if (bestslidefrac > 0) {
-		newx = FixedMul (playerMobj.momx, bestslidefrac);
-		newy = FixedMul (playerMobj.momy, bestslidefrac);
+		newx = FixedMul (playerMobj->momx, bestslidefrac);
+		newy = FixedMul (playerMobj->momy, bestslidefrac);
 	
-		if (!P_TryMove(&playerMobj, playerMobj.x + newx, playerMobj.y + newy)) {
+		if (!P_TryMove(playerMobj, playerMobj->x + newx, playerMobj->y + newy)) {
 			goto stairstep;
 		}
     }
@@ -944,16 +945,16 @@ void P_SlideMove ()
 		return;
 	}
  
-    tmxmove = FixedMul (playerMobj.momx, bestslidefrac);
-    tmymove = FixedMul (playerMobj.momy, bestslidefrac);
+    tmxmove = FixedMul (playerMobj->momx, bestslidefrac);
+    tmymove = FixedMul (playerMobj->momy, bestslidefrac);
 
     P_HitSlideLine (bestslidelinenum);	// clip the moves
 
  
-	playerMobj.momx = tmxmove;
-	playerMobj.momy = tmymove;
+	playerMobj->momx = tmxmove;
+	playerMobj->momy = tmymove;
 		
-    if (!P_TryMove (&playerMobj, playerMobj.x+tmxmove, playerMobj.y+tmymove)) {
+    if (!P_TryMove (playerMobj, playerMobj->x+tmxmove, playerMobj->y+tmymove)) {
 		goto retry;
     }
 }
@@ -1039,7 +1040,7 @@ PTR_AimTraverse (intercept_t* in)
     }
     
     // shoot a thing
-	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(in->d.thingRef);
+	th = (mobj_t*)&thinkerlist[in->d.thingRef].data;
 	if (th == shootthing) {
 		//I_Error("caught e");
 		return true;			// can't shoot self
@@ -1095,7 +1096,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
     fixed_t		dist;
     fixed_t		thingtopslope;
     fixed_t		thingbottomslope;
-	MEMREF		thRef;
+	THINKERREF		thRef;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 
@@ -1165,7 +1166,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	 
     // shoot a thing
     thRef = in->d.thingRef;
-	th = (mobj_t*)Z_LoadThinkerBytesFromEMS(thRef);
+	th = (mobj_t*)&thinkerlist[thRef].data;
 	if (th == shootthing) {
 		return true;		// can't shoot self
 	}
@@ -1239,6 +1240,7 @@ P_AimLineAttack
 	x.w = t1->x;
 	y.w = t1->y;
     
+	//todo re-enable?
     //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
     //y2.w = y.w + FixedMul1616(distance16,finesine(angle));
 
@@ -1339,7 +1341,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 		P_LineOpening (line.sidenum[1], line.frontsecnum, line.backsecnum);
 		if (openrange <= 0)
 		{
-			S_StartSoundFromRef (&playerMobj, sfx_noway);
+			S_StartSoundFromRef (playerMobj, sfx_noway);
 	    
 			// can't use through a wall
 			return false;	
@@ -1350,12 +1352,12 @@ boolean	PTR_UseTraverse (intercept_t* in)
 	
     side = 0;
 
-	if (P_PointOnLineSide(playerMobj.x, playerMobj.y, line.dx, line.dy, line.v1Offset & VERTEX_OFFSET_MASK) == 1) {
+	if (P_PointOnLineSide(playerMobj->x, playerMobj->y, line.dx, line.dy, line.v1Offset & VERTEX_OFFSET_MASK) == 1) {
 		side = 1;
 	}
     
     //	return false;		// don't use back side
-    P_UseSpecialLine (&playerMobj, in->d.linenum, side, PLAYER_MOBJ_REF);
+    P_UseSpecialLine (playerMobj, in->d.linenum, side, playerMobjRef);
 
     // can't use for than one special line in a row
     return false;
@@ -1374,10 +1376,10 @@ void P_UseLines ()
 	fixed_t_union	x2;
 	fixed_t_union	y2;
 		
-    angle = playerMobj.angle >> ANGLETOFINESHIFT;
+    angle = playerMobj->angle >> ANGLETOFINESHIFT;
 
-    x1.w = playerMobj.x;
-    y1.w = playerMobj.y;
+    x1.w = playerMobj->x;
+    y1.w = playerMobj->y;
     // todo replace with bit shift? - sq
 	x2.w = x1.w + (USERANGE)*finecosine(angle);
 	y2.w = y1.w + (USERANGE)*finesine(angle);
@@ -1398,7 +1400,7 @@ int16_t		bombdamage;
 // "bombsource" is the creature
 // that caused the explosion at "bombspot".
 //
-boolean PIT_RadiusAttack (MEMREF thingRef, mobj_t*	thing)
+boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t*	thing)
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -1510,10 +1512,10 @@ extern mobj_t* setStateReturn;
 //
 // PIT_ChangeSector
 //
-boolean PIT_ChangeSector (MEMREF thingRef, mobj_t*	thing)
+boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing)
 {
     mobj_t*	mo;
-	MEMREF moRef;
+	THINKERREF moRef;
 
     if (P_ThingHeightClip (thing)) {
 		// keep checking
@@ -1550,7 +1552,7 @@ boolean PIT_ChangeSector (MEMREF thingRef, mobj_t*	thing)
 	
     if (crushchange && !(leveltime.w &3) ) {
 
-		P_DamageMobj(thing,NULL_MEMREF,NULL_MEMREF,10);
+		P_DamageMobj(thing,NULL_THINKERREF,NULL_THINKERREF,10);
 
 		// spray blood in a random direction
 		moRef = P_SpawnMobj (thing->x, thing->y, thing->z + thing->height.w/2, MT_BLOOD);

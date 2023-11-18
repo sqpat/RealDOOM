@@ -179,17 +179,16 @@ T_MovePlane
 //
 // MOVE A FLOOR TO IT'S DESTINATION (UP OR DOWN)
 //
-void T_MoveFloor(MEMREF memref)
+void T_MoveFloor(floormove_t* floor, THINKERREF floorRef)
 {
     result_e	res;
-	floormove_t* floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(memref);
+	
 	sector_t* floorsector = &sectors[floor->secnum];
 	int16_t floorsecnum;
 	uint8_t floornewspecial;
 	floor_e floortype;
 	int16_t floordirection;
 	uint8_t floortexture;
-	THINKERREF floorthinkerRef;
     res = T_MovePlane(floorsector, floor->speed, floor->floordestheight, floor->crush,0,floor->direction);
 	floorsecnum = floor->secnum;
 	if (!(leveltime.h.fracbits & 7)) {
@@ -201,9 +200,8 @@ void T_MoveFloor(MEMREF memref)
 		floortype = floor->type;
 		floordirection = floor->direction;
 		floortexture = floor->texture;
-		floorthinkerRef = floor->thinkerRef;
 
-		sectors[floorsecnum].specialdataRef = NULL_MEMREF;
+		sectors[floorsecnum].specialdataRef = NULL_THINKERREF;
 
 		if (floordirection == 1) {
 			switch(floortype) {
@@ -222,7 +220,7 @@ void T_MoveFloor(MEMREF memref)
 			break;
 			}
 		}
-		P_RemoveThinker(floorthinkerRef);
+		P_RemoveThinker(floorRef);
 
 		S_StartSoundWithParams(sectors[floorsecnum].soundorgX, sectors[floorsecnum].soundorgY, sfx_pstop);
     }
@@ -244,7 +242,7 @@ EV_DoFloor
     int16_t			i;
 	int16_t		j = 0;
     floormove_t*	floor;
-	MEMREF floorRef;
+	THINKERREF floorRef;
 	int16_t specialheight;
 	sector_t* sector;
 
@@ -264,13 +262,14 @@ EV_DoFloor
 
 		// new floor thinker
 		rtn = 1;
-		floorRef = Z_MallocThinkerEMS(sizeof(*floor));
-		sector->specialdataRef = floorRef;
 		sectorceilingheight = sector->ceilingheight;
 		sectorfloorheight = sector->floorheight;
-		floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 
-		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR_HIGHBITS);
+
+		floor = (floormove_t*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+		floorRef = GETTHINKERREF(floor);
+		sector->specialdataRef = floorRef;
+
 
 		floor->type = floortype;
 		floor->crush = false;
@@ -458,7 +457,7 @@ EV_BuildStairs
     
     int16_t		stairsize;
     int16_t		speed;
-	MEMREF floorRef;
+	THINKERREF floorRef;
 	int16_t linebufferOffset;
 	int16_t linenum;
 	short_height_t sectorceilingheight;
@@ -482,18 +481,17 @@ EV_BuildStairs
 		sector = &sectors[secnum];
 		// new floor thinker
 		rtn = 1;
-		floorRef = Z_MallocThinkerEMS(sizeof(*floor));
-		sector->specialdataRef = floorRef;
 		sectorceilingheight = sector->ceilingheight;
 		sectorfloorheight = sector->floorheight;
 		sectorfloorpic = sector->floorpic;
 		sectorlinecount = sector->linecount;
 		sectorlinesoffset = sector->linesoffset;
-		floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 
-		floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR_HIGHBITS);
+		floor = (floormove_t*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+		floorRef = GETTHINKERREF(floor);		
 		floor->direction = 1;
 		floor->secnum = secnum;
+		sector->specialdataRef = floorRef;
 
 		switch(type) {
 		  case build8:
@@ -542,18 +540,16 @@ EV_BuildStairs
 				//sec = tsecOffset;
 				secnum = newsecnum;
 
-				floorRef = Z_MallocThinkerEMS(sizeof(*floor));
-				sectors[tsecOffset].specialdataRef = floorRef;
-				floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
+
+				floor = (floormove_t*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+				floorRef = GETTHINKERREF(floor);		
 
 				floor->floordestheight = height;
-
-				floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR_HIGHBITS);
-
 				floor->direction = 1;
 				floor->secnum = tsecOffset;
 				floor->speed = speed;
 				floor->floordestheight = height;
+				sectors[tsecOffset].specialdataRef = floorRef;
 				ok = 1;
 				break;
 			}

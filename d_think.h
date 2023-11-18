@@ -132,51 +132,7 @@ typedef uint8_t  ENEMYTHINKFUNCTION;
 #define ETF_A_SpawnFly 73
 #define ETF_A_BrainExplode 74
 
-typedef uint16_t THINKERREF;
-typedef uint8_t  THINKFUNCTION;
 
-#define TF_NULL				0
-#define TF_MOBJTHINKER		1
-#define TF_PLATRAISE        2
-#define TF_MOVECEILING		3
-#define TF_VERTICALDOOR		4
-#define TF_MOVEFLOOR        5
-#define TF_FIREFLICKER      6
-#define TF_LIGHTFLASH       7
-#define TF_STROBEFLASH      8
-#define TF_GLOW             9
-
-#define TF_DELETEME         10
-
-#define TF_NULL_HIGHBITS			0
-#define TF_MOBJTHINKER_HIGHBITS		2048u
-#define TF_PLATRAISE_HIGHBITS       4096u
-#define TF_MOVECEILING_HIGHBITS		6144u
-#define TF_VERTICALDOOR_HIGHBITS	8192u
-#define TF_MOVEFLOOR_HIGHBITS       10240u
-#define TF_FIREFLICKER_HIGHBITS     12288u
-#define TF_LIGHTFLASH_HIGHBITS      14336u
-#define TF_STROBEFLASH_HIGHBITS     16384u
-#define TF_GLOW_HIGHBITS            18432u
-#define TF_DELETEME_HIGHBITS		20480u
-
-#define TF_FUNCBITS					0xF800u
-#define TF_PREVBITS					0x07FFu
-
-// Doubly linked list of actors.
-typedef struct thinker_s
-{
-	// functiontype is the five high bits
-
-	THINKERREF	prevFunctype;
-	THINKERREF	next;
-	//MEMREF		prev;
-	//MEMREF		next;
-	//THINKFUNCTION functionType;
-
-	MEMREF		memref;		// needed to delete the 'owner' of the thinker. All thinkers are owned by a memref controlled allocations..
-    
-} thinker_t;
 
 
 

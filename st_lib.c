@@ -43,9 +43,9 @@ STlib_drawNum
 	int16_t num)
 {
     int16_t		numdigits = n->width;
-	patch_t* p0 = (patch_t*) Z_LoadBytesFromEMS(n->pRef[0]);
-	int16_t w = (p0->width);
-	int16_t h = (p0->height);
+	patch_t* p0;
+	int16_t w;
+	int16_t h;
 	int16_t x = n->x;
     
     int16_t		neg;
@@ -54,6 +54,11 @@ STlib_drawNum
 	if (n->oldnum == num && !refresh) {
 		return;
 	}
+	
+	p0 = (patch_t*)Z_LoadBytesFromEMS(n->pRef[0]);
+	w = (p0->width);
+	h = (p0->height);
+
 
     n->oldnum = num;
 

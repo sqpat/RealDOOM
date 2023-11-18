@@ -23,7 +23,6 @@
 #ifndef __P_SPEC__
 #define __P_SPEC__
 
-
 //
 // End-level timer (-TIMER option)
 //
@@ -55,7 +54,7 @@ P_UseSpecialLine
 ( mobj_t* thing,
 	int16_t linenum,
   int16_t		side, 
-	MEMREF thingRef );
+	THINKERREF thingRef );
 
 void
 P_ShootSpecialLine
@@ -132,7 +131,6 @@ int16_t EV_DoDonut(uint8_t linetag);
 //
 typedef struct
 {
-    THINKERREF	thinkerRef;
 	int16_t secnum;
     int16_t		count;
     uint8_t		maxlight;
@@ -144,7 +142,6 @@ typedef struct
 
 typedef struct
 {
-	THINKERREF	thinkerRef;
 	int16_t secnum;
     int16_t		count;
     uint8_t		maxlight;
@@ -158,7 +155,6 @@ typedef struct
 
 typedef struct
 {
-	THINKERREF	thinkerRef;
 	int16_t secnum;
     int16_t		count;
     uint8_t		minlight;
@@ -173,7 +169,6 @@ typedef struct
 
 typedef struct
 {
-	THINKERREF	thinkerRef;
 	int16_t secnum;
     uint8_t		minlight;
     uint8_t		maxlight;
@@ -188,9 +183,9 @@ typedef struct
 #define SLOWDARK			35
 
 void    P_SpawnFireFlicker (int16_t secnum);
-void    T_LightFlash (MEMREF memref);
+void T_LightFlash(lightflash_t* flash, THINKERREF flashRef);
 void    P_SpawnLightFlash (int16_t secnum);
-void    T_StrobeFlash (MEMREF memref);
+void	T_StrobeFlash(strobe_t* flash, THINKERREF flashRef);
 
 void
 P_SpawnStrobeFlash
@@ -206,11 +201,11 @@ EV_LightTurnOn
 (uint8_t linetag,
   uint8_t		bright );
 
-void    T_Glow(MEMREF memref);
+void T_Glow(glow_t* glow, THINKERREF glowRef);
 void    P_SpawnGlowingLight(int16_t secnum);
 
 
-void T_FireFlicker(MEMREF memref);
+void T_FireFlicker(fireflicker_t* flick, THINKERREF flickRef);
 
 
 //
@@ -288,7 +283,6 @@ typedef uint8_t plattype_e;
 
 typedef struct
 {
-	THINKERREF	thinkerRef;
 	int16_t secnum;
     short_height_t	speed;
     short_height_t	low;
@@ -311,9 +305,9 @@ typedef struct
 #define MAXPLATS		30
 
 
-extern MEMREF	activeplats[MAXPLATS];
+extern THINKERREF	activeplats[MAXPLATS];
 
-void    T_PlatRaise(MEMREF platRef);
+void T_PlatRaise(plat_t* plat, THINKERREF platRef);
 
 int16_t
 EV_DoPlat
@@ -322,8 +316,8 @@ EV_DoPlat
   plattype_e	type,
   int16_t		amount );
 
-void    P_AddActivePlat(MEMREF memref);
-void    P_RemoveActivePlat(MEMREF memref);
+void    P_AddActivePlat(THINKERREF platref);
+void    P_RemoveActivePlat(THINKERREF platref);
 void    EV_StopPlat(uint8_t linetag);
 void    P_ActivateInStasis(int8_t tag);
 
@@ -345,7 +339,6 @@ typedef int8_t vldoor_e;
 
 typedef struct
 {
-    THINKERREF	thinkerRef;
     vldoor_e	type;
     int16_t	secnum;
     short_height_t	topheight;
@@ -371,7 +364,7 @@ typedef struct
 void
 EV_VerticalDoor
 ( int16_t linenum,
-  MEMREF	thingRef );
+	THINKERREF	thingRef );
 
 int16_t
 EV_DoDoor
@@ -382,9 +375,9 @@ int16_t
 EV_DoLockedDoor
 (uint8_t linetag, int16_t linepsecial,
   vldoor_e	type,
-	MEMREF thingRef);
+	THINKERREF thingRef);
 
-void    T_VerticalDoor (MEMREF memref);
+void T_VerticalDoor(vldoor_t* door, THINKERREF doorRef);
 void    P_SpawnDoorCloseIn30 (int16_t secnum);
 
 void
@@ -409,7 +402,6 @@ typedef int8_t ceiling_e;
 
 typedef struct
 {
-    THINKERREF	thinkerRef;
     ceiling_e	type;
 	int16_t secnum;
     short_height_t	bottomheight;
@@ -435,16 +427,16 @@ typedef struct
 #define CEILWAIT		150
 #define MAXCEILINGS		30
 
-extern MEMREF	activeceilings[MAXCEILINGS];
+extern THINKERREF	activeceilings[MAXCEILINGS];
 
 int16_t
 EV_DoCeiling
 (uint8_t linetag,
   ceiling_e	type );
 
-void    T_MoveCeiling (MEMREF memref);
-void    P_AddActiveCeiling(MEMREF memref);
-void    P_RemoveActiveCeiling(MEMREF memref);
+void T_MoveCeiling(ceiling_t* ceiling, THINKERREF ceilingRef);
+void    P_AddActiveCeiling(THINKERREF ceilingRef);
+void    P_RemoveActiveCeiling(ceiling_t* ceiling, THINKERREF ceilingRef);
 int16_t	EV_CeilingCrushStop(uint8_t linetag);
 void    P_ActivateInStasisCeiling(uint8_t linetag);
 
@@ -497,7 +489,6 @@ typedef uint8_t  stair_e;
 
 typedef struct
 {
-    THINKERREF	thinkerRef;
     floor_e	type;
     boolean	crush;
     int16_t   secnum;
@@ -542,7 +533,7 @@ int16_t
 EV_DoFloor
 (uint8_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
 
-void T_MoveFloor(MEMREF memref);
+void T_MoveFloor(floormove_t* floor, THINKERREF floorRef);
 
 //
 // P_TELEPT

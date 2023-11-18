@@ -41,11 +41,10 @@ MEMREF		activeplats[MAXPLATS];
 //
 // Move a plat up and down
 //
-void T_PlatRaise(MEMREF platRef)
+void T_PlatRaise(plat_t* plat, THINKERREF platRef)
 {
 
     result_e	res;
-	plat_t* plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
 	int16_t platsecnum = plat->secnum;
 	sector_t* platsector = &sectors[platsecnum];
 
@@ -132,7 +131,7 @@ EV_DoPlat
     int16_t		secnum;
     int16_t		rtn;
 	int16_t		j = 0;
-	MEMREF platRef;
+	THINKERREF platRef;
 	int16_t side0secnum;
 	short_height_t specialheight;
 	int16_t sectorsoundorgX;
@@ -166,11 +165,11 @@ EV_DoPlat
 		sectorsoundorgX = sectors[secnum].soundorgX;
 		sectorsoundorgY = sectors[secnum].soundorgY;
 		sectorfloorheight = sectors[secnum].floorheight;
-		platRef = Z_MallocThinkerEMS(sizeof(*plat));
-		(&sectors[secnum])->specialdataRef = platRef;
-		plat = (plat_t*)Z_LoadThinkerBytesFromEMS(platRef);
-		plat->thinkerRef = P_AddThinker(platRef, TF_PLATRAISE_HIGHBITS);
-	 
+
+
+		plat = (plat_t*)P_CreateThinker(TF_PLATRAISE_HIGHBITS);
+		platRef = GETTHINKERREF(plat);
+		sectors[secnum].specialdataRef = platRef;
 
 		plat->type = type;
 		plat->secnum = secnum;
@@ -268,11 +267,12 @@ void P_ActivateInStasis(int8_t tag) {
 	plat_t* plat;
 	for (j = 0; j < MAXPLATS; j++)
 		if (activeplats[j] != NULL_MEMREF) {
-			plat = (plat_t*)Z_LoadThinkerBytesFromEMS(activeplats[j]);
+			plat = (plat_t*)&thinkerlist[activeplats[j]].data;
+
 			if ((plat->status == plat_in_stasis) && (plat->tag == tag)) {
 				plat->oldstatus = plat->status;
 
-				P_UpdateThinkerFunc(plat->thinkerRef, TF_PLATRAISE_HIGHBITS);
+				P_UpdateThinkerFunc(activeplats[j], TF_PLATRAISE_HIGHBITS);
 			}
 		}
 
@@ -284,12 +284,12 @@ void EV_StopPlat(uint8_t linetag) {
 
 	for (j = 0; j < MAXPLATS; j++) {
 		if (activeplats[j] != NULL_MEMREF) {
-			plat = (plat_t*)Z_LoadThinkerBytesFromEMS(activeplats[j]);
+			plat = (plat_t*)&thinkerlist[activeplats[j]].data;
 			if ((plat->status != plat_in_stasis) && (plat->tag == linetag)) {
 				plat->oldstatus = plat->status;
 				plat->status = plat_in_stasis;
 
-				P_UpdateThinkerFunc(plat->thinkerRef, TF_NULL);
+				P_UpdateThinkerFunc(activeplats[j], TF_NULL);
 			}
 		}
 	}
@@ -312,7 +312,7 @@ void P_AddActivePlat(MEMREF memref) {
 
 
 
-void P_RemoveActivePlat(MEMREF platRef)
+void P_RemoveActivePlat(THINKERREF platRef)
 {
     int8_t		i;
 	plat_t* plat;
@@ -320,10 +320,9 @@ void P_RemoveActivePlat(MEMREF platRef)
 	platraisecount++;
 	for (i = 0; i < MAXPLATS; i++) {
 		if (platRef == activeplats[i]) {
-			plat = (plat_t*)Z_LoadThinkerBytesFromEMS(activeplats[i]);
+			plat = (plat_t*)&thinkerlist[platRef].data;
 			platsecnum = plat->secnum;
-			P_RemoveThinker(plat->thinkerRef);
-
+			P_RemoveThinker(platRef);
 			(&sectors[platsecnum])->specialdataRef = NULL_MEMREF;
 
 			activeplats[i] = NULL_MEMREF;

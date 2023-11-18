@@ -166,7 +166,7 @@ P_UseSpecialLine
 ( mobj_t*	thing,
   int16_t linenum,
   int16_t		side,
-	MEMREF thingRef)
+	THINKERREF thingRef)
 {               
 
 	line_t* line = &lines[linenum];
@@ -194,24 +194,22 @@ P_UseSpecialLine
 
     
     // Switches that other things can activate.
-    if (thingRef != PLAYER_MOBJ_REF)
-    {
-	// never open secret doors
-	if (lineflags & ML_SECRET)
-	    return false;
+    if (thingRef != playerMobjRef) {
+		// never open secret doors
+		if (lineflags & ML_SECRET)
+			return false;
 	
-	switch(linespecial)
-	{
-	  case 1: 	// MANUAL DOOR RAISE
-	  case 32:	// MANUAL BLUE
-	  case 33:	// MANUAL RED
-	  case 34:	// MANUAL YELLOW
-	    break;
+		switch(linespecial) {
+		  case 1: 	// MANUAL DOOR RAISE
+		  case 32:	// MANUAL BLUE
+		  case 33:	// MANUAL RED
+		  case 34:	// MANUAL YELLOW
+			break;
 	    
-	  default:
-	    return false;
-	    break;
-	}
+		  default:
+			return false;
+			break;
+		}
     }
 
     

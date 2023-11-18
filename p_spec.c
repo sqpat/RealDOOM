@@ -419,14 +419,14 @@ P_CrossSpecialLine
 	int16_t lineside0 = line->sidenum[0];
 	int16_t linespecial = line->special;
 	int16_t setlinespecial = -1;
-	
+	mobjtype_t thingtype = thing->type;
 
 	 
     //	Triggers that other things can activate
-    if (thing->type != MT_PLAYER)
+    if (thingtype != MT_PLAYER)
     {
 	// Things that should NOT trigger specials...
-	switch(thing->type)
+	switch(thingtype)
 	{
 	  case MT_ROCKET:
 	  case MT_PLASMA:
@@ -687,7 +687,7 @@ P_CrossSpecialLine
 		
       case 125:
 		// TELEPORT MonsterONLY
-		if (thing->type != MT_PLAYER) {
+		if (thingtype != MT_PLAYER) {
 			EV_Teleport( linetag, side, thing );
 			setlinespecial = 0;
 		}
@@ -855,7 +855,7 @@ P_CrossSpecialLine
 	
       case 126:
 	// TELEPORT MonsterONLY.
-		if (thing->type != MT_PLAYER)
+		if (thingtype != MT_PLAYER)
 	    EV_Teleport( linetag, side, thing );
 		break;
 	
@@ -941,13 +941,13 @@ P_ShootSpecialLine
 //  that the player origin is in a special sector
 //
 void P_PlayerInSpecialSector () {
-	int16_t secnum = playerMobj.secnum;
+	int16_t secnum = playerMobj->secnum;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	// temp.h.intbits = (sectors[secnum].floorheight >> SHORTFLOORBITS);
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[secnum].floorheight);
     // Falling, not all the way down yet?
-	if (playerMobj.z != temp.w) {
+	if (playerMobj->z != temp.w) {
 		return;
 	}
 
@@ -957,14 +957,14 @@ void P_PlayerInSpecialSector () {
 			// HELLSLIME DAMAGE
 			if (!player.powers[pw_ironfeet])
 				if (!(leveltime.h.fracbits &0x1f))
-					P_DamageMobj (&playerMobj, NULL, NULL, 10);
+					P_DamageMobj (playerMobj, NULL, NULL, 10);
 			break;
 	
 		case 7:
 			// NUKAGE DAMAGE
 			if (!player.powers[pw_ironfeet])
 				if (!(leveltime.h.fracbits &0x1f))
-					P_DamageMobj (&playerMobj, NULL, NULL, 5);
+					P_DamageMobj (playerMobj, NULL, NULL, 5);
 			break;
 	
 		case 16:
@@ -973,7 +973,7 @@ void P_PlayerInSpecialSector () {
 				// STROBE HURT
 				if (!player.powers[pw_ironfeet] || (P_Random()<5) ) {
 					if (!(leveltime.h.fracbits &0x1f))
-						P_DamageMobj (&playerMobj, NULL, NULL, 20);
+						P_DamageMobj (playerMobj, NULL, NULL, 20);
 				}
 				break;
 			
@@ -988,7 +988,7 @@ void P_PlayerInSpecialSector () {
 			player.cheats &= ~CF_GODMODE;
 
 			if (!(leveltime.h.fracbits &0x1f))
-				P_DamageMobj (&playerMobj, NULL, NULL, 20);
+				P_DamageMobj (playerMobj, NULL, NULL, 20);
 
 			if (player.health <= 10)
 				G_ExitLevel();
@@ -1063,8 +1063,6 @@ void P_UpdateSpecials(void)
 				case bottom:
 					sides[sidenum].bottomtexture = buttonlist[i].btexture;
 					break;
-				default:
-					I_Error("goofy switch");
 				}
 				S_StartSoundWithParams(buttonlist[i].soundorgX, buttonlist[i].soundorgY, sfx_swtchn);
 				memset(&buttonlist[i], 0, sizeof(button_t));
@@ -1089,7 +1087,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 	int16_t			j = 0;
 	uint8_t			linecount;
     floormove_t*	floor;
-	MEMREF floorRef;
+	THINKERREF floorRef;
 	int16_t offset;
 	int16_t sectors3floorpic;
 	short_height_t sectors3floorheight;
@@ -1160,15 +1158,14 @@ int16_t EV_DoDonut(uint8_t linetag)
 	    
 			//	Spawn rising slime
 
-			floorRef = Z_MallocThinkerEMS(sizeof(*floor));
-			sectors[s2Offset].specialdataRef = floorRef;
 			sectors3floorpic = sectors[s3Offset].floorpic;
 			sectors3floorheight = sectors[s3Offset].floorheight;
 
-			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
 
+			floor = (floormove_t*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+			floorRef = GETTHINKERREF(floor);
+			sectors[s2Offset].specialdataRef = floorRef;
 
-			floor->thinkerRef = P_AddThinker(floorRef, TF_MOVEFLOOR_HIGHBITS);
 			floor->type = donutRaise;
 			floor->crush = false;
 			floor->direction = 1;
@@ -1179,10 +1176,9 @@ int16_t EV_DoDonut(uint8_t linetag)
 			floor->floordestheight = sectors3floorheight;
 	    
 			//	Spawn lowering donut-hole
-			floorRef = Z_MallocThinkerEMS(sizeof(*floor));
+			floor = (floormove_t*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+			floorRef = GETTHINKERREF(floor);
 			sectors[s1Offset].specialdataRef = floorRef;
-			floor = (floormove_t*)Z_LoadThinkerBytesFromEMS(floorRef);
-			floor->thinkerRef = P_AddThinker (floorRef, TF_MOVEFLOOR_HIGHBITS);
 			floor->type = lowerFloor;
 			floor->crush = false;
 			floor->direction = -1;
@@ -1306,10 +1302,10 @@ void P_SpawnSpecials (void)
 
     //	Init other misc stuff
     for (i = 0;i < MAXCEILINGS;i++)
-		activeceilings[i] = NULL_MEMREF;
+		activeceilings[i] = NULL_THINKERREF;
 
     for (i = 0;i < MAXPLATS;i++)
-		activeplats[i] = NULL_MEMREF;
+		activeplats[i] = NULL_THINKERREF;
     
     for (i = 0;i < MAXBUTTONS;i++)
 		memset(&buttonlist[i],0,sizeof(button_t));

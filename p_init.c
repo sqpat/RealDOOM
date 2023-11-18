@@ -90,8 +90,6 @@ uint8_t     R_CheckTextureNumForNameA(int8_t *name)
 
 	for (i = 0; i < numtextures; i++) {
 		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]);
-		//printf("texname %s", texture->name);
-				//I_Error("found it? %i %i %s", i, textures[i], texture->name);
 
 
 

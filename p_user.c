@@ -53,8 +53,8 @@ P_Thrust
   fineangle_t	angle,
   fixed_t	move )  {
 
-	playerMobj.momx += FixedMul(move,finecosine(angle));
-	playerMobj.momy += FixedMul(move,finesine(angle));
+	playerMobj->momx += FixedMul(move,finecosine(angle));
+	playerMobj->momy += FixedMul(move,finesine(angle));
 }
 
 
@@ -79,21 +79,21 @@ void P_CalcHeight ()
     //  like a ramp with low health.
     // todo <- yea lets actually optimize with LUT? - sq
 	player.bob =
-	FixedMul (playerMobj.momx, playerMobj.momx) + FixedMul (playerMobj.momy, playerMobj.momy);
+	FixedMul (playerMobj->momx, playerMobj->momx) + FixedMul (playerMobj->momy, playerMobj->momy);
     
 	player.bob >>= 2;
 
     if (player.bob>MAXBOB)
 		player.bob = MAXBOB;
     if ((player.cheats & CF_NOMOMENTUM) || !onground) {
-		player.viewz = playerMobj.z + VIEWHEIGHT;
-		temp2 = (playerMobj.ceilingz - (4 << SHORTFLOORBITS));
+		player.viewz = playerMobj->z + VIEWHEIGHT;
+		temp2 = (playerMobj->ceilingz - (4 << SHORTFLOORBITS));
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
 		if (player.viewz > temp.w)
 			player.viewz = temp.w;
 
-		player.viewz = playerMobj.z + player.viewheight;
+		player.viewz = playerMobj->z + player.viewheight;
 		return;
     }
 		
@@ -122,9 +122,9 @@ void P_CalcHeight ()
 				player.deltaviewheight = 1;
 		}
     }
-	player.viewz = playerMobj.z + player.viewheight + bob;
+	player.viewz = playerMobj->z + player.viewheight + bob;
 
-	temp2 = (playerMobj.ceilingz - (4 << SHORTFLOORBITS));
+	temp2 = (playerMobj->ceilingz - (4 << SHORTFLOORBITS));
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
     if (player.viewz > temp.w)
@@ -143,23 +143,23 @@ void P_MovePlayer ()
 	temp.h.fracbits = 0;
 	cmd = &player.cmd;
 	temp.h.intbits = cmd->angleturn;
-	playerMobj.angle += temp.w;
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj.floorz);
+	playerMobj->angle += temp.w;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj->floorz);
 
     // Do not let the player control movement
     //  if not onground.
-    onground = (playerMobj.z <= temp.w);
+    onground = (playerMobj->z <= temp.w);
 
 	if (cmd->forwardmove && onground) {
-		P_Thrust(playerMobj.angle >> ANGLETOFINESHIFT, cmd->forwardmove * 2048L);
+		P_Thrust(playerMobj->angle >> ANGLETOFINESHIFT, cmd->forwardmove * 2048L);
 	}
 	
 	if (cmd->sidemove && onground) {
-		P_Thrust(MOD_FINE_ANGLE((playerMobj.angle >> ANGLETOFINESHIFT) - FINE_ANG90), cmd->sidemove * 2048L);
+		P_Thrust(MOD_FINE_ANGLE((playerMobj->angle >> ANGLETOFINESHIFT) - FINE_ANG90), cmd->sidemove * 2048L);
 	}
 
-    if ( (cmd->forwardmove || cmd->sidemove)  && playerMobj.stateNum == S_PLAY ) {
-		P_SetMobjState (&playerMobj, S_PLAY_RUN1);
+    if ( (cmd->forwardmove || cmd->sidemove)  && playerMobj->stateNum == S_PLAY ) {
+		P_SetMobjState (playerMobj, S_PLAY_RUN1);
     }
 }	
 
@@ -191,30 +191,30 @@ void P_DeathThink ()
 
 	player.deltaviewheight = 0;
 	
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj.floorz);
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj->floorz);
 
-    onground = (playerMobj.z <= temp.w);
+    onground = (playerMobj->z <= temp.w);
     P_CalcHeight();
 	
-	if (player.attackerRef && player.attackerRef != PLAYER_MOBJ_REF) {
-		playerattacker = (mobj_t*)Z_LoadThinkerBytesFromEMS(player.attackerRef);
-		angle = R_PointToAngle2(playerMobj.x, playerMobj.y, playerattacker->x, playerattacker->y);
+	if (player.attackerRef && player.attackerRef != playerMobjRef) {
+		playerattacker = (mobj_t*)&thinkerlist[player.attackerRef].data;
+		angle = R_PointToAngle2(playerMobj->x, playerMobj->y, playerattacker->x, playerattacker->y);
 	
 
-		delta = angle - playerMobj.angle;
+		delta = angle - playerMobj->angle;
 	
 		if (delta < ANG5 || delta > (uint32_t)-ANG5) {
 			// Looking at killer,
 			//  so fade damage flash down.
-			playerMobj.angle = angle;
+			playerMobj->angle = angle;
 
 			if (player.damagecount)
 				player.damagecount--;
 		}
 		else if (delta < ANG180)
-			playerMobj.angle += ANG5;
+			playerMobj->angle += ANG5;
 		else
-			playerMobj.angle -= ANG5;
+			playerMobj->angle -= ANG5;
     }
     else if (player.damagecount)
 		player.damagecount--;
@@ -234,18 +234,18 @@ void P_PlayerThink (void)
 
     // fixme: do this in the cheat code
     if (player.cheats & CF_NOCLIP)
-		playerMobj.flags |= MF_NOCLIP;
+		playerMobj->flags |= MF_NOCLIP;
     else
-		playerMobj.flags &= ~MF_NOCLIP;
+		playerMobj->flags &= ~MF_NOCLIP;
     
     // chain saw run forward
     cmd = &player.cmd;
-    if (playerMobj.flags & MF_JUSTATTACKED)
+    if (playerMobj->flags & MF_JUSTATTACKED)
     {
 	cmd->angleturn = 0;
 	cmd->forwardmove = 100; // 0xc800/512;
 	cmd->sidemove = 0;
-	playerMobj.flags &= ~MF_JUSTATTACKED;
+	playerMobj->flags &= ~MF_JUSTATTACKED;
     }
 			
 	
@@ -258,14 +258,14 @@ void P_PlayerThink (void)
     // Move around.
     // Reactiontime is used to prevent movement
     //  for a bit after a teleport.
-    if (playerMobj.reactiontime)
-		playerMobj.reactiontime--;
+    if (playerMobj->reactiontime)
+		playerMobj->reactiontime--;
     else
 	P_MovePlayer();
     
     P_CalcHeight();
 
-	if (sectors[playerMobj.secnum].special) {
+	if (sectors[playerMobj->secnum].special) {
 		P_PlayerInSpecialSector();
 	}
     // Check for weapon change.
@@ -339,7 +339,7 @@ void P_PlayerThink (void)
 
     if (player.powers[pw_invisibility])
 		if (! --player.powers[pw_invisibility] )
-			playerMobj.flags &= ~MF_SHADOW;
+			playerMobj->flags &= ~MF_SHADOW;
 			
     if (player.powers[pw_infrared])
 		player.powers[pw_infrared]--;

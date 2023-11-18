@@ -79,7 +79,6 @@ THINKERREF P_GetNextThinkerRef(void) {
 
 #ifdef CHECK_FOR_ERRORS
 	// error case
-    printf("P_GetNextThinkerRef: Couldn't find a free index!");
     I_Error ("P_GetNextThinkerRef: Couldn't find a free index!");
 #endif
 
@@ -89,27 +88,17 @@ THINKERREF P_GetNextThinkerRef(void) {
 }
 
 int16_t addCount = 0;
-//
-// P_AddThinker
-// Adds a new thinker at the end of the list.
-//
-THINKERREF P_AddThinker (MEMREF argref, uint16_t thinkfunc)
-{
-	// get next index
-	// sets nexts, prevs
+void* P_CreateThinker(uint16_t thinkfunc) {
 	int16_t index = P_GetNextThinkerRef();
 	THINKERREF temp = thinkerlist[0].prevFunctype;// &0x7FF;
-	
 	thinkerlist[index].next = 0;
-	thinkerlist[index].prevFunctype = temp+thinkfunc;
+	thinkerlist[index].prevFunctype = temp + thinkfunc;
 
 	thinkerlist[temp].next = index;
 	thinkerlist[0].prevFunctype = index;
 
-    thinkerlist[index].memref = argref;
-	
 	addCount++;
-	return index;
+	return &thinkerlist[index].data;
 
 }
 
@@ -117,20 +106,15 @@ void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc) {
 	thinkerlist[thinker].prevFunctype = (thinkerlist[thinker].prevFunctype & TF_PREVBITS) + argfunc;
 }
 
-
 //
 // P_RemoveThinker
 // Deallocation is lazy -- it will not actually be freed
 // until its thinking turn comes up.
-//
+// 
 void P_RemoveThinker (THINKERREF thinkerRef)
 {
-  // FIXME: NOP.
-
 	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
 }
-
-
 
 int setval = 0;
 //
@@ -146,7 +130,7 @@ void P_RunThinkers (void)
 	int8_t result2[100];
 	int32_t lasttick = 0;
 	FILE* fp;
-	ticcount_t stoptic = 2500;
+	ticcount_t stoptic = 1818;
 #endif
 
 	currentthinker = thinkerlist[0].next;
@@ -169,7 +153,7 @@ void P_RunThinkers (void)
 			
 			thinkerlist[prevRef].next = nextRef;;
 
-			Z_FreeThinker (thinkerlist[currentthinker].memref);
+			memset(&thinkerlist[currentthinker].data, 0, sizeof(mobj_t));
 			thinkerlist[currentthinker].prevFunctype = MAX_THINKERS;
 		} else {
 		
@@ -179,60 +163,51 @@ void P_RunThinkers (void)
 			if (currentthinkerFunc) {
 				switch (currentthinkerFunc) {
 					case TF_MOBJTHINKER_HIGHBITS:
-						P_MobjThinker(thinkerlist[currentthinker].memref);
+						P_MobjThinker(&thinkerlist[currentthinker].data, currentthinker);
 						break;
 					case TF_PLATRAISE_HIGHBITS:
-						T_PlatRaise(thinkerlist[currentthinker].memref);
+						T_PlatRaise((plat_t*)&thinkerlist[currentthinker].data, currentthinker);
 						break;
 					case TF_MOVECEILING_HIGHBITS:
-						T_MoveCeiling(thinkerlist[currentthinker].memref);
+						T_MoveCeiling((ceiling_t*)&thinkerlist[currentthinker].data, currentthinker);
 						break;
 					case TF_VERTICALDOOR_HIGHBITS:
-						T_VerticalDoor(thinkerlist[currentthinker].memref);
+						T_VerticalDoor((vldoor_t*)&thinkerlist[currentthinker].data, currentthinker);
 						break;
 					case TF_MOVEFLOOR_HIGHBITS:
-						T_MoveFloor(thinkerlist[currentthinker].memref);
+						T_MoveFloor((floormove_t*)&thinkerlist[currentthinker].data, currentthinker);
 						break;
 					case TF_FIREFLICKER_HIGHBITS:
-						T_FireFlicker(thinkerlist[currentthinker].memref);
+						T_FireFlicker((fireflicker_t*)&thinkerlist[currentthinker].data, currentthinker);
 						break;
 					case TF_LIGHTFLASH_HIGHBITS:
-						T_LightFlash(thinkerlist[currentthinker].memref);
+						T_LightFlash((lightflash_t*)&thinkerlist[currentthinker].data, currentthinker);
 						break;
 					case TF_STROBEFLASH_HIGHBITS:
-						T_StrobeFlash(thinkerlist[currentthinker].memref);
+						T_StrobeFlash((strobe_t*)&thinkerlist[currentthinker].data, currentthinker);
 						break;
 					case TF_GLOW_HIGHBITS:
-						T_Glow(thinkerlist[currentthinker].memref);
+						T_Glow((glow_t*)&thinkerlist[currentthinker].data, currentthinker);
 						break;
 #ifdef CHECK_FOR_ERRORS
-					default:
-						I_Error("Bad thinker func! %i %i", currentthinker, thinkerlist[currentthinker].functionType);
-						break;
+//					default:
+						//I_Error("Bad thinker func! %i %i", currentthinker, thinkerlist[currentthinker].functionType);
+//						break;
 #endif				
 			
 
 				}
 #ifdef DEBUGLOG_TO_FILE
-				/*
-				if (gametic == 205) {
-					SAVEDUNIT = Z_LoadThinkerBytesFromEMS(PLAYER_MOBJ_REF);
-					if (SAVEDUNIT->momx == -43471L) {
-						// i == 208: -76958L 
-						I_Error("player momx momy %li %li %i", SAVEDUNIT->momx, SAVEDUNIT->momy, i);
-					}
-				}
-				*/
+
 				if (gametic == stoptic) {
 					
-					//SAVEDUNIT = Z_LoadThinkerBytesFromEMS(PLAYER_MOBJ_REF);
 					if (i == 0) {
 						fp = fopen("debgtick.txt", "w"); // clear old file
 					} else {
 						fp = fopen("debgtick.txt", "a");
 					}
 
-					fprintf(fp, "%li %hhu %i %i %hhu \n", gametic, prndindex, i, thinkerlist[currentthinker].memref, thinkerlist[currentthinker].functionType);
+					fprintf(fp, "%li %hhu %i %i %hhu \n", gametic, prndindex, i, currentthinker, currentthinkerFunc);
 					fclose(fp);
 
 

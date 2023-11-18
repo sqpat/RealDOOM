@@ -175,9 +175,8 @@ extern	ticcount_t		gametic;
 
 // Bookkeeping on players - state.
 extern	player_t	player;
-extern mobj_t			playerMobj;
-
-//extern	MEMREF		playermoRef;
+extern mobj_t*		playerMobj;
+extern	THINKERREF  playerMobjRef;
  
 
 // Intermission stats.

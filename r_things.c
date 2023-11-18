@@ -31,6 +31,7 @@
 
 #include "doomstat.h"
 #include "m_misc.h"
+#include "p_local.h"
 
 
 
@@ -203,7 +204,7 @@ R_DrawVisSprite
 // Generates a vissprite for a thing
 //  if it might be visible.
 //
-void R_ProjectSprite (MEMREF thingRef)
+void R_ProjectSprite (mobj_t* thing)
 {
     fixed_t             tr_x;
     fixed_t             tr_y;
@@ -232,7 +233,6 @@ void R_ProjectSprite (MEMREF thingRef)
     fixed_t             iscale;
 	spriteframe_t*		spriteframes;
 	
-	mobj_t* thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
 	spritenum_t thingsprite = states[thing->stateNum].sprite;
 	spriteframenum_t thingframe = states[thing->stateNum].frame;
 
@@ -393,12 +393,9 @@ void R_ProjectSprite (MEMREF thingRef)
 void R_AddSprites (int16_t secnum)
 {
     mobj_t*             thing;
-	MEMREF				thingRef;
+	THINKERREF				thingRef;
 	int32_t                 lightnum;
-	MEMREF				lastThingRef = -1;
-	#ifdef LOOPCHECK 
-	int32_t i = 0;
-	#endif
+ 
 
     // BSP is traversed by subsector.
     // A sector might have been split into several
@@ -428,10 +425,9 @@ void R_AddSprites (int16_t secnum)
     // Handle all things in sector.
 	// todo, should we quit out early of drawing player sprite? matters for netplay maybe? if its self, shouldnt render and its a lot of extra traversal?
 	for (thingRef = sectors[secnum].thinglistRef; thingRef; thingRef = thing->snextRef) {
-		R_ProjectSprite(thingRef);
-		thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+		thing = (mobj_t*)&thinkerlist[thingRef].data;
+		R_ProjectSprite(thing);
 		 
-		lastThingRef = thingRef;
 	
 	}
 
@@ -550,10 +546,8 @@ void R_DrawPlayerSprites (void)
 	uint8_t         i;
 	uint8_t         lightnum;
     pspdef_t*   psp;
-
-    
     // get light level
-    lightnum = (sectors[playerMobj.secnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
+    lightnum = (sectors[playerMobj->secnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
 
 
 //    if (lightnum < 0)          

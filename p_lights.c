@@ -37,11 +37,10 @@
 //
 // T_FireFlicker
 //
-void T_FireFlicker (MEMREF memref)
+void T_FireFlicker (fireflicker_t* flick, THINKERREF flickRef)
 
 {
     uint8_t	amount;
-	fireflicker_t* flick = (fireflicker_t*)Z_LoadThinkerBytesFromEMS(memref);
 	int16_t flicksecnum = flick->secnum;
 	uint8_t flickmaxlight = flick->maxlight;
 	uint8_t flickminlight= flick->minlight;
@@ -66,7 +65,6 @@ void T_FireFlicker (MEMREF memref)
 void P_SpawnFireFlicker (int16_t secnum)
 {
     fireflicker_t*	flick;
-	MEMREF flickRef;
 	uint8_t lightamount;
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
@@ -74,10 +72,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 	sectors[secnum].special = 0;
 
 	
-	flickRef = Z_MallocThinkerEMS(sizeof(*flick));
-	flick = (fireflicker_t*) Z_LoadThinkerBytesFromEMS(flickRef);
-
-	flick->thinkerRef = P_AddThinker(flickRef, TF_FIREFLICKER_HIGHBITS);
+	flick = (fireflicker_t*)P_CreateThinker(TF_FIREFLICKER_HIGHBITS);
 
     flick->secnum = secnum;
     flick->maxlight = seclightlevel;
@@ -97,9 +92,8 @@ void P_SpawnFireFlicker (int16_t secnum)
 // T_LightFlash
 // Do flashing lights.
 //
-void T_LightFlash (MEMREF memref)
+void T_LightFlash (lightflash_t* flash, THINKERREF flashRef)
 {
-	lightflash_t* flash = (lightflash_t*)Z_LoadThinkerBytesFromEMS(memref);
 	int16_t flashsecnum = flash->secnum;
 	uint8_t flashminlight = flash->minlight;
 	uint8_t flashmaxlight = flash->maxlight;
@@ -131,7 +125,6 @@ void T_LightFlash (MEMREF memref)
 void P_SpawnLightFlash (int16_t secnum)
 {
     lightflash_t*	flash;
-	MEMREF flashRef;
 	uint8_t lightamount;
 	// nothing special about it during gameplay
 	int16_t seclightlevel = sectors[secnum].lightlevel;
@@ -139,9 +132,9 @@ void P_SpawnLightFlash (int16_t secnum)
 
 	
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
-	flashRef = Z_MallocThinkerEMS(sizeof(*flash));
-	flash = (lightflash_t*) Z_LoadThinkerBytesFromEMS(flashRef);
-	flash->thinkerRef = P_AddThinker(flashRef, TF_LIGHTFLASH_HIGHBITS);
+
+	flash = (lightflash_t*)P_CreateThinker(TF_LIGHTFLASH_HIGHBITS);
+
 
 	flash->secnum = secnum;
     flash->maxlight = seclightlevel;
@@ -163,9 +156,8 @@ void P_SpawnLightFlash (int16_t secnum)
 //
 // T_StrobeFlash
 //
-void T_StrobeFlash (MEMREF memref)
+void T_StrobeFlash (strobe_t* flash, THINKERREF flashRef)
 {
-	strobe_t* flash = (strobe_t*)Z_LoadThinkerBytesFromEMS(memref);
 	int16_t flashsecnum = flash->secnum;
 	int16_t flashminlight = flash->minlight;
 	int16_t flashmaxlight = flash->maxlight;
@@ -199,18 +191,15 @@ P_SpawnStrobeFlash
   int16_t		inSync )
 {
     strobe_t*	flash;
-	MEMREF flashRef;
 	uint8_t lightamount;
 	int16_t seclightlevel = sectors[secnum].lightlevel;
 
 	// nothing special about it during gameplay
 	sectors[secnum].special = 0;
 
-	flashRef = Z_MallocThinkerEMS(sizeof(*flash));
-	flash = (strobe_t*) Z_LoadThinkerBytesFromEMS(flashRef);
 
 
-	flash->thinkerRef = P_AddThinker(flashRef, TF_STROBEFLASH_HIGHBITS);
+	flash = (strobe_t*)P_CreateThinker(TF_STROBEFLASH_HIGHBITS);
 
     flash->secnum = secnum;
     flash->darktime = fastOrSlow;
@@ -348,20 +337,19 @@ EV_LightTurnOn
 // Spawn glowing light
 //
 
-void T_Glow(MEMREF memref)
+void T_Glow(glow_t* glow, THINKERREF glowRef)
 {
-	glow_t* g = (glow_t*)Z_LoadThinkerBytesFromEMS(memref);
-	int16_t gsecnum = g->secnum;
-	uint8_t gminlight = g->minlight;
-	uint8_t gmaxlight = g->maxlight;
+	int16_t gsecnum = glow->secnum;
+	uint8_t gminlight = glow->minlight;
+	uint8_t gmaxlight = glow->maxlight;
 
-    switch(g->direction) {
+    switch(glow->direction) {
       case -1:
 		// DOWN
 		sectors[gsecnum].lightlevel -= GLOWSPEED;
 		if (sectors[gsecnum].lightlevel <= gminlight) {
 			sectors[gsecnum].lightlevel += GLOWSPEED;
-			g->direction = 1;
+			glow->direction = 1;
 		}
 		break;
 	
@@ -370,7 +358,7 @@ void T_Glow(MEMREF memref)
 		sectors[gsecnum].lightlevel += GLOWSPEED;
 		if (sectors[gsecnum].lightlevel >= gmaxlight) {
 			sectors[gsecnum].lightlevel -= GLOWSPEED;
-			g->direction = -1;
+			glow->direction = -1;
 		}
 		break;
 	}
@@ -381,7 +369,6 @@ void P_SpawnGlowingLight(int16_t secnum)
 {
     glow_t*	g;
 	uint8_t lightamount;
-	MEMREF glowRef;
 	// Note that we are resetting sector attributes.
 	// Nothing special about it during gameplay.
 	
@@ -389,10 +376,8 @@ void P_SpawnGlowingLight(int16_t secnum)
 	sectors[secnum].special = 0;
 
 
-	glowRef = Z_MallocThinkerEMS(sizeof(*g));
-	g = (glow_t*)Z_LoadThinkerBytesFromEMS(glowRef);
 
-	g->thinkerRef = P_AddThinker(glowRef, TF_GLOW_HIGHBITS);
+	g = (glow_t*)P_CreateThinker(TF_GLOW_HIGHBITS);
 
 
     g->secnum = secnum;

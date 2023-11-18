@@ -287,8 +287,8 @@ S_AdjustSoundParams
     fixed_t	adx;
     fixed_t	ady;
     angle_t	angle;
-	mobj_t* listener = (mobj_t*)Z_LoadThinkerBytesFromEMS(listenerRef);
-	mobj_t* source = (mobj_t*)Z_LoadThinkerBytesFromEMS(sourceRef);
+	mobj_t* listener = (mobj_t*)&thinkerlist[listenerRef].data;
+	mobj_t* source = (mobj_t*)&thinkerlist[sourceRef].data;;
 	return 0;
     // calculate the distance to sound origin
     //  and clip it if necessary

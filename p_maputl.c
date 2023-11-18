@@ -395,10 +395,10 @@ void P_UnsetThingPosition (mobj_t* thing)
     int16_t		blocky;
 	mobj_t* changeThing;
 	
-	MEMREF thingsprevRef = thing->sprevRef;
-	MEMREF thingsnextRef = thing->snextRef;
-	MEMREF thingbprevRef = thing->bprevRef;
-	MEMREF thingbnextRef = thing->bnextRef;
+	THINKERREF thingsprevRef = thing->sprevRef;
+	THINKERREF thingsnextRef = thing->snextRef;
+	THINKERREF thingbprevRef = thing->bprevRef;
+	THINKERREF thingbnextRef = thing->bnextRef;
 	fixed_t_union thingx;
 	fixed_t_union thingy;
 	int32_t thingflags = thing->flags;
@@ -410,12 +410,12 @@ void P_UnsetThingPosition (mobj_t* thing)
 	// inert things don't need to be in blockmap?
 	// unlink from subsector
 		if (thingsnextRef) {
-			changeThing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingsnextRef);
+			changeThing = (mobj_t*)&thinkerlist[thingsnextRef].data;
 			changeThing->sprevRef = thingsprevRef;
 		}
 		
 		if (thingsprevRef) {
-			changeThing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingsprevRef);
+			changeThing = (mobj_t*)&thinkerlist[thingsprevRef].data;
 			changeThing->snextRef = thingsnextRef;
 		}
 		else {
@@ -432,12 +432,12 @@ void P_UnsetThingPosition (mobj_t* thing)
 	// inert things don't need to be in blockmap
 	// unlink from block map
 		if (thingbnextRef) {
-			changeThing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingbnextRef);
+			changeThing = (mobj_t*)&thinkerlist[thingbnextRef].data;
 			changeThing->bprevRef = thingbprevRef;
 		}
 	
 		if (thingbprevRef) {
-			changeThing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingbprevRef);
+			changeThing = (mobj_t*)&thinkerlist[thingbprevRef].data;
 			changeThing->bnextRef = thingbnextRef;
 		} else {
 			blockx = (thingx.h.intbits - bmaporgx)>> MAPBLOCKSHIFT;
@@ -464,14 +464,14 @@ P_SetThingPosition (mobj_t* thing)
     //sector_t*		sec;
     int16_t			blockx;
     int16_t			blocky;
-    MEMREF		linkRef;
+	THINKERREF		linkRef;
 	mobj_t*		link;
 	
 	mobj_t* thingList;
 	int16_t subsectorsecnum;
-	MEMREF oldsectorthinglist;
+	THINKERREF oldsectorthinglist;
 	fixed_t_union temp;
-	MEMREF thingRef = Z_GetThinkerRef(thing);
+	THINKERREF thingRef = GETTHINKERREF(thing);
 	// link into subsector
     subsecnum = R_PointInSubsector (thing->x,thing->y);
 	subsectorsecnum = subsectors[subsecnum].secnum;
@@ -489,22 +489,23 @@ P_SetThingPosition (mobj_t* thing)
 		oldsectorthinglist = sectors[subsectorsecnum].thinglistRef;
 		sectors[subsectorsecnum].thinglistRef = thingRef;
 
-		thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
+
+		thing = (mobj_t*)&thinkerlist[thingRef].data;
 
 
-		thing->sprevRef = NULL_MEMREF;
+		thing->sprevRef = NULL_THINKERREF;
 		thing->snextRef = oldsectorthinglist;
 
 		if (thing->snextRef) {
-			thingList = (mobj_t*)Z_LoadThinkerBytesFromEMS(thing->snextRef);
+			thingList = (mobj_t*)&thinkerlist[thing->snextRef].data; ;
 			thingList->sprevRef = thingRef;
 		}
 
     }
 
 
-	thing = (mobj_t*)Z_LoadThinkerBytesFromEMS(thingRef);
-    
+	thing = (mobj_t*)&thinkerlist[thingRef].data;
+
     // link into blockmap
     if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
 		// inert things don't need to be in blockmap		
@@ -515,10 +516,10 @@ P_SetThingPosition (mobj_t* thing)
 
 		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
 			linkRef = blocklinks[blocky*bmapwidth+blockx];
-			thing->bprevRef = NULL_MEMREF;
+			thing->bprevRef = NULL_THINKERREF;
 			thing->bnextRef = linkRef;
 			if (linkRef) {
-				link = (mobj_t*)Z_LoadThinkerBytesFromEMS(linkRef);
+				link = (mobj_t*)&thinkerlist[linkRef].data;
 				link->bprevRef = thingRef;
 			}
 			
@@ -527,7 +528,7 @@ P_SetThingPosition (mobj_t* thing)
 
 		} else {
 			// thing is off the map
-			thing->bnextRef = thing->bprevRef = NULL_MEMREF;
+			thing->bnextRef = thing->bprevRef = NULL_THINKERREF;
 		}
     }
 }
@@ -604,9 +605,9 @@ boolean
 P_BlockThingsIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(MEMREF, mobj_t*) )
+  boolean(*func)(THINKERREF, mobj_t*) )
 {
-	MEMREF mobjRef;
+	THINKERREF mobjRef;
     mobj_t*		mobj;
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
@@ -617,7 +618,7 @@ P_BlockThingsIterator
 		// will this cause stuff to lose scope...?
 
 
-		mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef); // necessary for bnextref...
+		mobj = (mobj_t*)&thinkerlist[mobjRef].data;  
 
 		if (!func(mobjRef, mobj)) {
 			 
@@ -730,7 +731,7 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 //
 // PIT_AddThingIntercepts
 //
-boolean PIT_AddThingIntercepts (MEMREF thingRef, mobj_t* thing)
+boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t* thing)
 {
     fixed_t		x1;
     fixed_t		y1;

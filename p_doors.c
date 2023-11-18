@@ -38,12 +38,10 @@
 //
 // T_VerticalDoor
 //
-void T_VerticalDoor (MEMREF memref)
+void T_VerticalDoor (vldoor_t* door, THINKERREF doorRef)
 {
     result_e	res;
-	vldoor_t* door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(memref);
 	sector_t* doorsector = &sectors[door->secnum];
-	THINKERREF doorthinkerRef;
 
 	switch(door->direction) {
 		  case 0:
@@ -91,20 +89,19 @@ void T_VerticalDoor (MEMREF memref)
 		// DOWN
 
 			res = T_MovePlane(doorsector, door->speed, doorsector->floorheight, false,1,door->direction);
-			doorthinkerRef = door->thinkerRef;
 			if (res == floor_pastdest) {
 				switch(door->type) {
 					case blazeRaise:
 					case blazeClose:
-						sectors[door->secnum].specialdataRef = NULL_MEMREF;
-						P_RemoveThinker (doorthinkerRef);  // unlink and free
+						sectors[door->secnum].specialdataRef = NULL_THINKERREF;
+						P_RemoveThinker (doorRef);  // unlink and free
 						S_StartSoundWithParams(doorsector->soundorgX, doorsector->soundorgY, sfx_bdcls);
 						break;
 		
 					case normal:
 					case close:
-						sectors[door->secnum].specialdataRef = NULL_MEMREF;
-						P_RemoveThinker (doorthinkerRef);  // unlink and free
+						sectors[door->secnum].specialdataRef = NULL_THINKERREF;
+						P_RemoveThinker(doorRef);  // unlink and free
 						break;
 		
 					case close30ThenOpen:
@@ -133,7 +130,6 @@ void T_VerticalDoor (MEMREF memref)
 				// UP
 				res = T_MovePlane(doorsector,   door->speed, door->topheight, false,1,door->direction);
 
-				doorthinkerRef = door->thinkerRef;
 
 
 
@@ -148,9 +144,9 @@ void T_VerticalDoor (MEMREF memref)
 						case close30ThenOpen:
 						case blazeOpen:
 						case open:
-							sectors[door->secnum].specialdataRef = NULL_MEMREF;
-							P_RemoveThinker (doorthinkerRef);  // unlink and free
-						break;
+							sectors[door->secnum].specialdataRef = NULL_THINKERREF;
+							P_RemoveThinker(doorRef);  // unlink and free
+							break;
 		
 						default:
 							break;
@@ -172,10 +168,10 @@ EV_DoLockedDoor
 ( uint8_t linetag,
 	int16_t linespecial,
   vldoor_e	type,
-  MEMREF thingRef )
+	THINKERREF thingRef )
 {
 	
-    if (thingRef != PLAYER_MOBJ_REF)
+    if (thingRef != playerMobjRef)
 		return 0;
 		
     switch(linespecial)
@@ -226,7 +222,7 @@ EV_DoDoor
 {
     int16_t		secnum,rtn;
     vldoor_t*	door;
-	MEMREF doorRef;
+	THINKERREF doorRef;
 	int16_t doortopheight;
 	sector_t *doorsector;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
@@ -246,12 +242,11 @@ EV_DoDoor
 
 
 
-		doorRef = Z_MallocThinkerEMS(sizeof(*door));
-		sectors[secnum].specialdataRef = doorRef;
 		doorsector = &sectors[secnum];
-		door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
+		door  = (vldoor_t*)P_CreateThinker (TF_VERTICALDOOR_HIGHBITS);
+		doorRef = GETTHINKERREF(door);
+		sectors[secnum].specialdataRef = doorRef;
 
-		door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR_HIGHBITS);
 	
 		door->secnum = secnum;
 		door->type = type;
@@ -315,18 +310,17 @@ EV_DoDoor
 void
 EV_VerticalDoor
 ( int16_t linenum,
-  MEMREF thingRef )
+	THINKERREF thingRef )
 {
     int16_t		secnum;
     //sector_t*	sec;
     vldoor_t*	door;
     int16_t		side = 0;
-	MEMREF doorRef;
+	THINKERREF doorRef;
 	int16_t linespecial = lines[linenum].special;
 	int16_t sidenum;
 	int16_t doortopheight;
 	sector_t *doorsector;
-
 
 
 		
@@ -334,7 +328,7 @@ EV_VerticalDoor
     {
       case 26: // Blue Lock
       case 32:
-		if ( thingRef != PLAYER_MOBJ_REF )
+		if ( thingRef != playerMobjRef)
 			return;
 	
 		if (!player.cards[it_bluecard] && !player.cards[it_blueskull])
@@ -347,7 +341,7 @@ EV_VerticalDoor
 	
       case 27: // Yellow Lock
       case 34:
-		  if (thingRef != PLAYER_MOBJ_REF)
+		  if (thingRef != playerMobjRef)
 			  return;
 	
 	if (!player.cards[it_yellowcard] &&
@@ -361,7 +355,7 @@ EV_VerticalDoor
 	
       case 28: // Red Lock
       case 33:
-		  if (thingRef != PLAYER_MOBJ_REF)
+		  if (thingRef != playerMobjRef)
 			  return;
 
 	if (!player.cards[it_redcard] && !player.cards[it_redskull])
@@ -386,8 +380,8 @@ EV_VerticalDoor
     if (doorsector->specialdataRef) {
 		
 		doorRef = doorsector->specialdataRef;
-		door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
-	 
+		door = (vldoor_t*)&thinkerlist[doorRef].data;
+
 
 		switch(linespecial) {
 			case	1: // ONLY FOR "RAISE" DOORS, NOT "OPEN"s
@@ -400,7 +394,7 @@ EV_VerticalDoor
 				if (door->direction == -1) {
 					door->direction = 1;	// go back up
 				} else {
-					if (thingRef != PLAYER_MOBJ_REF)
+					if (thingRef != playerMobjRef)
 						return;
 					door->direction = -1;	// start going down immediately
 				}
@@ -429,17 +423,16 @@ EV_VerticalDoor
 	
     
     // new door thinker
-	doorRef = Z_MallocThinkerEMS(sizeof(*door));
-	sectors[secnum].specialdataRef = doorRef;
 
 	
-	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
-    door->thinkerRef = P_AddThinker (doorRef, TF_VERTICALDOOR_HIGHBITS);
+	door = (vldoor_t*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+	doorRef = GETTHINKERREF(door);
 	door->secnum = secnum;
 	door->direction = 1;
 	door->speed = VDOORSPEED;
 	door->topwait = VDOORWAIT;
- 
+	sectors[secnum].specialdataRef = doorRef;
+
 
     switch(linespecial) {
 		case 1:
@@ -482,12 +475,10 @@ EV_VerticalDoor
 void P_SpawnDoorCloseIn30 (int16_t secnum)
 {
     vldoor_t*	door;
-	MEMREF doorRef;
+	THINKERREF doorRef;
 
-	doorRef = Z_MallocThinkerEMS(sizeof(*door));
-
-	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
-	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR_HIGHBITS);
+	door = (vldoor_t*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+	doorRef = GETTHINKERREF(door);
 	door->secnum = secnum;
 	door->direction = 0;
 	door->type = normal;
@@ -508,12 +499,11 @@ P_SpawnDoorRaiseIn5Mins
 ( int16_t secnum)
 {
 	vldoor_t*	door;
-	MEMREF doorRef;
+	THINKERREF doorRef;
 	int16_t doortopheight;
-	doorRef = Z_MallocThinkerEMS(sizeof(*door));
 
-	door = (vldoor_t*)Z_LoadThinkerBytesFromEMS(doorRef);
-	door->thinkerRef = P_AddThinker(doorRef, TF_VERTICALDOOR_HIGHBITS);
+	door = (vldoor_t*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+	doorRef = GETTHINKERREF(door);
 
 	
     door->secnum = secnum;

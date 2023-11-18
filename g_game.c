@@ -102,8 +102,8 @@ ticcount_t             starttime;              // for comparative timing purpose
 boolean         viewactive; 
  
 player_t        player;
-boolean			playerSpawned = false;
-mobj_t			playerMobj;
+mobj_t*			playerMobj;
+THINKERREF		playerMobjRef;
 
 ticcount_t          gametic;
 int16_t             totalkills, totalitems, totalsecret;    // for intermission 
@@ -599,7 +599,7 @@ void G_PlayerFinishLevel ()
           
     memset (player.powers, 0, sizeof (player.powers));
     memset (player.cards, 0, sizeof (player.cards));
-    playerMobj.flags &= ~MF_SHADOW;         // cancel invisibility 
+    playerMobj->flags &= ~MF_SHADOW;         // cancel invisibility 
 	player.extralight = 0;                  // cancel gun flashes 
 	player.fixedcolormap = 0;               // cancel ir gogles 
 	player.damagecount = 0;                 // no palette changes 

@@ -156,8 +156,8 @@ void D_ProcessEvents (void)
 	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
 		//TEXT_MODE_DEBUG_PRINT("\neventhead %i %i", eventtail, eventhead);
 		ev = &events[eventtail];
-		if (M_Responder(ev)) {  // 16 bit crashes going here tick 1
-			continue;               // menu ate the event
+		if (M_Responder(ev)) {  
+			continue;           
 		}
 
 		G_Responder (ev);
@@ -230,19 +230,7 @@ fixed_t32 FixedMulBig1632 (int16_t	a, fixed_t	b) {
 	return biga.w;
 }
 
-
-fixed_t32 FixedMulSmall1632(int16_t	a, fixed_t	b) {
-	fixed_t_union biga;
-	longlong_union llu;
-	biga.h.fracbits = a;
-	biga.h.intbits = 0;
-	llu.l = (biga.w * (long long)b);
-
-	biga.h.intbits = llu.h[2];
-	biga.h.fracbits = llu.h[1];
-	return biga.w;
-}
-
+ 
 
 fixed_t32 FixedMul1616(int16_t	a, int16_t	b) {
 	return (int32_t)a * b;
@@ -380,7 +368,7 @@ void D_Display (void)
     }
 
 
-    // draw buffered stuff to screen
+	    // draw buffered stuff to screen
     I_UpdateNoBlit ();
 	TEXT_MODE_DEBUG_PRINT("\n D_Display: I_UpdateNoBlit done");
 	// draw the view directly
@@ -441,7 +429,7 @@ void D_Display (void)
 	TEXT_MODE_DEBUG_PRINT("\n D_Display: NetUpdate done");
 
 
-    // normal update
+	// normal update
     if (!wipe)
     {
         I_FinishUpdate ();              // page flip or blit buffer
@@ -534,7 +522,7 @@ void D_DoomLoop (void)
         {
             TryRunTics (); // will run at least one tic
         }
-		S_UpdateSounds (PLAYER_MOBJ_REF);// move positional sounds
+		S_UpdateSounds (playerMobjRef);// move positional sounds
 		TEXT_MODE_DEBUG_PRINT("\n tick %li S_UpdateSounds done", gametic);
 		// Update display, next frame, with current state.
 
@@ -549,8 +537,8 @@ void D_DoomLoop (void)
 //			lasttick = gametic;
 				
 			//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
-			SAVEDUNIT = &playerMobj;// Z_LoadThinkerBytesFromEMS(1483); // 1457
-			//SAVEDUNIT = Z_LoadThinkerBytesFromEMS(PLAYER_MOBJ_REF);
+			SAVEDUNIT = playerMobj;// Z_LoadThinkerBytesFromEMS(1483); // 1457
+			//SAVEDUNIT = &thinkerlist[playerMobjRef].data;
 			if (gametic == 1) {
 				fp = fopen("debuglog.txt", "w"); // clear old file
 			} else {
@@ -561,12 +549,7 @@ void D_DoomLoop (void)
 			//fprintf(result2, fp);
 			fclose(fp);
 				
-			//strcat(result, result2);
-//			if (gametic == 5000) {
-//				I_Error("done");
-//			}
-//		}
-
+ 
 #endif
 		
 		

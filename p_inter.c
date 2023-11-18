@@ -201,7 +201,7 @@ P_GiveBody
 		player.health = MAXHEALTH;
 
 	
-	playerMobj.health = player.health;
+	playerMobj->health = player.health;
 	
     return true;
 }
@@ -266,7 +266,7 @@ P_GivePower
     {
 
 	player.powers[power] = INVISTICS;
-	playerMobj.flags |= MF_SHADOW;
+	playerMobj->flags |= MF_SHADOW;
 	return true;
     }
     
@@ -351,7 +351,7 @@ P_TouchSpecialThing
 			player.health++;		// can go over 100%
 			if (player.health > 200)
 				player.health = 200;
-			playerMobj.health = player.health;
+			playerMobj->health = player.health;
 			player.message = GOTHTHBONUS;
 			break;
 		
@@ -368,7 +368,7 @@ P_TouchSpecialThing
 			player.health += 100;
 			if (player.health > 200)
 				player.health = 200;
-			playerMobj.health = player.health;
+			playerMobj->health = player.health;
 			player.message = GOTSUPER;
 			sound = sfx_getpow;
 			break;
@@ -377,7 +377,7 @@ P_TouchSpecialThing
 			if (!commercial)
 				return;
 			player.health = 200;
-			playerMobj.health = player.health;
+			playerMobj->health = player.health;
 			P_GiveArmor (2);
 			player.message = GOTMSPHERE;
 			sound = sfx_getpow;
@@ -612,8 +612,6 @@ P_TouchSpecialThing
 		player.itemcount++;
     P_RemoveMobj (special);
     player.bonuscount += BONUSADD;
-    //  always true? 
-	//if (player == &players)
 	S_StartSound (NULL, sound);
 }
 
@@ -630,7 +628,7 @@ P_KillMobj
 {
     mobjtype_t	item;
     mobj_t*	mo;
-	MEMREF moRef;
+	THINKERREF moRef;
 
 	
     target->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
@@ -662,7 +660,6 @@ P_KillMobj
 		P_DropWeapon ();
 
 		if (
-			//target->player == &player &&
 			automapactive) {
 			// don't die in auto map,
 			// switch view prior to dying
@@ -833,7 +830,7 @@ P_DamageMobj
 		if (player.health < 0)
 			player.health = 0;
 	
-		player.attackerRef = Z_GetThinkerRef(source);
+		player.attackerRef = GETTHINKERREF(source);
 		player.damagecount += damage;	// add damage after armor / invuln
 
 		if (player.damagecount > 100)
@@ -869,7 +866,7 @@ P_DamageMobj
     {
 	// if not intent on another player,
 	// chase after this one
-	target->targetRef = Z_GetThinkerRef(source);
+	target->targetRef = GETTHINKERREF(source);
 	target->threshold = BASETHRESHOLD;
 	if (target->stateNum == mobjinfo[target->type].spawnstate
 	    && getSeeState(target->type) != S_NULL)

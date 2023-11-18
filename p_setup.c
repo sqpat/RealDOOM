@@ -70,9 +70,6 @@ side_t*          sides;
 
 int16_t*          linebuffer;
 
-int16_t firstnode;
-
-
 // BLOCKMAP
 // Created from axis aligned bounding box
 // of the map, a rectangular array of
@@ -330,7 +327,7 @@ void P_LoadSectors(int16_t lump)
 		ss->lightlevel = (ms.lightlevel);
 		ss->special = (ms.special);
 		ss->tag = (convertedtag);
-		ss->thinglistRef = NULL_MEMREF;
+		ss->thinglistRef = NULL_THINKERREF;
 		Z_RefIsActive(dataRef);
 
 
@@ -356,7 +353,6 @@ void P_LoadNodes(int16_t lump)
 	MEMREF	nodesRef;
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
-	firstnode = numnodes - 1;
 	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_NODES);
 	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	W_CacheLumpNumCheck(lump, 4);
@@ -412,19 +408,17 @@ void P_SetupPsprites()
 // Most of the player structure stays unchanged
 //  between levels.
 //
+extern mobj_t* setStateReturn;
 
 void ST_Start(void);
 void G_PlayerReborn();
 void HU_Start(void);
-
 void P_SpawnPlayer(mapthing_t* mthing)
 {
 	fixed_t_union		x;
 	fixed_t_union		y;
 	fixed_t_union		z;
 
-	MEMREF mobjRef;
-	mobj_t*		mobj;
 	//int16_t mthingtype = mthing->type;
 	int16_t mthingx = mthing->x;
 	int16_t mthingy = mthing->y;
@@ -440,13 +434,13 @@ void P_SpawnPlayer(mapthing_t* mthing)
 	y.h.intbits = mthingy;
 	z.w = ONFLOORZ;
 
-	mobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER);
-	mobj = &playerMobj;
-	mobj->reactiontime = 0;
+	playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER);
+	playerMobj = setStateReturn;
 
-	mobj->angle = ANG45 * (mthingangle / 45);
-	//mobj->player = &player;
-	mobj->health = player.health;
+	playerMobj->reactiontime = 0;
+
+	playerMobj->angle = ANG45 * (mthingangle / 45);
+	playerMobj->health = player.health;
 
 
 	player.playerstate = PST_LIVE;
@@ -734,7 +728,7 @@ void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
 	fixed_t_union		x;
 	fixed_t_union		y;
 	fixed_t_union		z;
-	MEMREF mobjRef;
+	THINKERREF mobjRef;
 	int16_t mthingtype = mthing->type;
 	int16_t mthingoptions = mthing->options;
 	int16_t mthingx = mthing->x;
@@ -973,8 +967,8 @@ void P_LoadLineDefs(int16_t lump)
 		}
 
   
-		ld->baseX = v1x;
-		ld->baseY = v1y;
+		//ld->baseX = v1x;
+		//ld->baseY = v1y;
 
 		if (mldsidenum0 != -1) {
 			ld->frontsecnum = side0secnum;
@@ -1246,6 +1240,9 @@ P_SetupLevel
 	S_Start();
 	Z_FreeTagsEMS(PU_LEVEL);
 	Z_FreeConventionalAllocations();
+	
+	// TODO reset 32 bit counters to start values here..
+	validcount = 1;
 
 	TEXT_MODE_DEBUG_PRINT("\n P_InitThinkers");
 	P_InitThinkers();
@@ -1275,7 +1272,7 @@ P_SetupLevel
 
 	time = ticcount;
 
-
+	// TODO reorder allocations with regards to physics and rendering segment locality
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	// note: most of this ordering is important 
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
@@ -1300,19 +1297,26 @@ P_SetupLevel
 	//     sector    linedef      node      linebuffer
 	// side     vertex     subsec       seg
 	// 1223 170   896   958  467  466   1371        num x
-	//    7  23     4    27    5   28     12        sizeof type
-	// 8561 3910 3584 25866 2335 13048 16452  2440  bytes used
+	//    7  23     4    21    5   28     12        sizeof type
+	// 8561 3910 3584 20118 2335 13048 16452  2440  bytes used
 	//								   21936
 	//   3    2     1     4    5     6     7     8  load order
-	//                           57304        18892
+	//                           51556        18892
 	//											24376
-
+	// biggest shareware
+	//                  1351            1861
+	// doom 2 map 14
+	//	2586 347  1428 1680  850  849	2815
+	// 18102 7981 5712 35280 4250 23772 33780  = 128877 too big ... also sides array > 64k, problematic...
+	//                 67075 up to here   61802 
+	
 	/*
 	I_Error("%i %i %i %i %i %i %i %i %i %i",
 		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t), sizeof(subsector_t),
 		sizeof(node_t), sizeof(seg_t), 0, 0, 0
-	);;
+	);
 	*/
+ 
 
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 9);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);

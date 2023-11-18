@@ -511,11 +511,6 @@ R_StoreWallRange
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
 	
-#ifdef CHECK_FOR_ERRORS
-	if (curlinesidedefOffset > numsides) {
-		I_Error("Error! sides out of bounds! %i %i %i %i", gametic, numsides, curlinesidedefOffset, curlinenum);
-	}
-#endif
 
 	sidetextureoffset = side.textureoffset + animateoffset;
 	

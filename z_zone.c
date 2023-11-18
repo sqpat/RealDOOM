@@ -71,9 +71,9 @@
 //#define THINKER_ALLOCATION_LIST_SIZE 600
 
 // equal to sizeof(mobj_t), the largest thinker. 
-#define THINKER_BLOCK_SIZE 69u
-#define STATIC_CONVENTIONAL_THINKER_SIZE MAX_THINKERS * THINKER_BLOCK_SIZE
-#define THINKER_ALLOCATION_LIST_SIZE MAX_THINKERS
+//#define THINKER_BLOCK_SIZE 69u
+//#define STATIC_CONVENTIONAL_THINKER_SIZE MAX_THINKERS * THINKER_BLOCK_SIZE
+//#define THINKER_ALLOCATION_LIST_SIZE MAX_THINKERS
 
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+4963u+10u)
@@ -150,35 +150,29 @@ typedef struct
 byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
 byte spritememoryblock[STATIC_CONVENTIONAL_SPRITE_SIZE];
-byte thinkermemoryblock[STATIC_CONVENTIONAL_THINKER_SIZE];
 byte textureinfomemoryblock[STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE];
 
 uint16_t remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 uint16_t remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
 uint16_t remainingspriteconventional = STATIC_CONVENTIONAL_SPRITE_SIZE;
-uint16_t remainingthinkerconventional = STATIC_CONVENTIONAL_THINKER_SIZE;
 uint16_t remainingtextureinfoconventional = STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE;
 
 uint16_t conventional1head = 	  0;
 uint16_t conventional2head = 	  0;
 uint16_t spritehead = 	  0;
-uint16_t thinkerhead = 	  0;
 uint16_t textureinfohead = 	  0;
 
 uint16_t conventional1headindex = 	  0;
 uint16_t conventional2headindex = 	  0;
 uint16_t spriteheadindex = 	  0;
-uint16_t thinkerheadindex = 	  0;
 uint16_t textureinfoheadindex = 	  0;
 
 
 PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
 
-PAGEREF currentThinkerAllocationListHead = 1;
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
-boolean thinkerAllocationListFull = false;
 
 
 allocation_static_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
@@ -186,7 +180,6 @@ allocation_static_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATI
 allocation_static_conventional_t textureinfo_allocations[TEXTUREINFO_ALLOCATION_LIST_SIZE];
 // todo turn these into dynamic allocations
 allocation_static_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
-allocation_thinker_conventional_t thinker_allocations[THINKER_ALLOCATION_LIST_SIZE];
 
 
 int16_t activepages[NUM_EMS_PAGES];
@@ -213,7 +206,6 @@ int8_t lockedpages[NUM_EMS_PAGES];
 	byte*			EMSArea;
 #endif
 
-#define NUM_THINKER_PAGES 6L
 
 byte*			pageFrameArea;
 
@@ -249,11 +241,6 @@ void Z_ChangeTagEMS(MEMREF index, int16_t tag) {
 }
 
 
-
-
-void Z_FreeThinker(PAGEREF block){
-	thinker_allocations[block].active = false;
-}
 
 void Z_FreeEMS(PAGEREF block) {
 
@@ -1115,24 +1102,18 @@ void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_
 
 }
 
-extern boolean playerSpawned;
 
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
 void Z_FreeConventionalAllocations() {
 
 	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
 	memset(conventional_allocations2, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
-	
-	// todo if we change this from static to dynamic, change here...
-	memset(thinker_allocations, 0, THINKER_ALLOCATION_LIST_SIZE * sizeof(allocation_thinker_conventional_t));
-	memset(thinkermemoryblock, 0, STATIC_CONVENTIONAL_THINKER_SIZE);
+
+	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
+
 	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
 	memset(conventionalmemoryblock2, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_2);
-	currentThinkerAllocationListHead = 1;
-	thinkerAllocationListFull = false;
-
-	memset(&playerMobj, 0, sizeof(mobj_t));
-	playerSpawned = false;
+	
 }
 
 
@@ -1217,81 +1198,8 @@ MEMREF Z_MallocConventional(
 
 // Unlike other conventional allocations, these are freed and cause fragmentation of the memory block
 
-#define THINKERS_PER_PAGE (PAGE_FRAME_SIZE / THINKER_BLOCK_SIZE)
-
-MEMREF Z_GetThinkerRef(void* thing) {
-	if (thing == &playerMobj) {
-		return PLAYER_MOBJ_REF;
-	}
-
-	return ((byte*)thing - thinkermemoryblock) / THINKER_BLOCK_SIZE;
-}
-
-void* Z_LoadThinkerBytesFromEMS2(MEMREF ref) {
-
-	
-	if (ref == PLAYER_MOBJ_REF) {
-		return &playerMobj;
-	}
-
-	return (byte*)thinkermemoryblock + ref * THINKER_BLOCK_SIZE;
-
-	/*
-		uint16_t refcounter = ref;
-	uint16_t pageframeindex;
-	uint16_t offset;
-	uint32_t page_and_size = 0;
-
-	// 97 bytes or whatever doesnt go into 16384 cleanly, 
-	// so we will skip bytes at the end of ems page this way
 
 
-	while (refcounter > THINKERS_PER_PAGE) {
-		page_and_size += (int32_t)0x800000; // 1 << PAGE_AND_SIZE_SHIFT
-		refcounter -= THINKERS_PER_PAGE;
-	}
-
-	offset = (refcounter * THINKER_BLOCK_SIZE);
-	page_and_size += THINKER_BLOCK_SIZE;
-
-	pageframeindex = Z_GetEMSPageFrame(page_and_size, false);
-
-	return (byte*)pageFrameArea
-		+ PAGE_FRAME_SIZE * pageframeindex
-		+ offset;
-		*/
-
-}
-
-MEMREF Z_MallocThinkerEMS(
-	uint8_t           size
-) {
-
-	if (thinkerAllocationListFull || (currentThinkerAllocationListHead > (MAX_THINKERS))) {
-		// we've exhausted the first 1000 thinker allocations and now things are fragmented and we have to loop to find a free allocation
-		int16_t i = 0;
-		if (!thinkerAllocationListFull) {
-			thinkerAllocationListFull = true;
-			currentThinkerAllocationListHead = 1;
-		}
-		for (i = 0; i < MAX_THINKERS; i++) {
-			if (currentThinkerAllocationListHead > MAX_THINKERS) {
-				currentThinkerAllocationListHead = 1;
-			}
-			if (!thinker_allocations[currentThinkerAllocationListHead].active) {
-				goto foundthinkerslot;
-			}
-				
-			currentThinkerAllocationListHead++;
-		}
-		I_Error("out of thinkers");
-	}
-	foundthinkerslot:
-	thinker_allocations[currentThinkerAllocationListHead].active = true;
-	currentThinkerAllocationListHead++;
-
-	return currentThinkerAllocationListHead -1;
-}
 
 
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
@@ -1809,7 +1717,7 @@ void Z_InitEMS(void)
 	allocations[0].next = 1;
 	allocations[0].prev = 1;
 	// Start the allocation list and page (num thinker pages)
-	allocations[0].page_and_size = NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT;
+	allocations[0].page_and_size = 0; // NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT;
 	allocations[0].backref_and_user = USER_MASK;
 	allocations[0].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 
@@ -1817,7 +1725,7 @@ void Z_InitEMS(void)
 	allocations[1].prev = 0;
 	allocations[1].backref_and_user = 0;
 	// Start the allocation list and page (num thinker pages)
-	allocations[1].page_and_size = size + (NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT);
+	allocations[1].page_and_size = size;// +(NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT);
 
 	allocations[1].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 

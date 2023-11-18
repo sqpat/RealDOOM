@@ -126,7 +126,7 @@ typedef struct memblock_s
 // texcols and tex
 #define CA_TYPE_TEXTURE_INFO 5
 
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 57304
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 51556
 
 extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 
@@ -139,14 +139,12 @@ void Z_FreeConventionalAllocations();
 MEMREF Z_MallocEMS(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
 MEMREF Z_MallocEMSWithBackRef(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
 MEMREF Z_MallocConventional(uint32_t size, uint8_t tag, int16_t type, uint8_t user, uint8_t sourceHint);
-MEMREF Z_MallocThinkerEMS(uint8_t size);
 
 #ifdef MEMORYCHECK
 void Z_CheckEMSAllocations(PAGEREF block, int32_t i, int32_t var2, int32_t var3);
 #endif
 void Z_ChangeTagEMS(MEMREF index, int16_t tag);
 void Z_FreeEMS(PAGEREF block);
-void Z_FreeThinker(PAGEREF block);
 
 
 void Z_SetUnlocked(MEMREF ref);
@@ -156,10 +154,7 @@ void Z_SetUnlocked(MEMREF ref);
 
 
 void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type);
-MEMREF Z_GetThinkerRef(void* thing); // todo remove?
-void* Z_LoadThinkerBytesFromEMS2(MEMREF ref);
 #define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE)
-#define Z_LoadThinkerBytesFromEMS(a) Z_LoadThinkerBytesFromEMS2 (a)
 #define Z_LoadTextureInfoFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_TEXTURE_INFO)
 #define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c)
 #define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA)
@@ -169,7 +164,6 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
 /*
 void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type, int8_t* file, int32_t line);
 #define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE, __FILE__, __LINE__)
-#define Z_LoadThinkerBytesFromEMS(a) Z_LoadThinkerBytesFromEMS2 (a)
 #define Z_LoadTextureInfoFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_TEXTURE_INFO, __FILE__, __LINE__)
 #define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c, __FILE__, __LINE__)
 #define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA, __FILE__, __LINE__)

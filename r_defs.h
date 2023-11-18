@@ -103,10 +103,10 @@ typedef	struct
     int16_t		validcount;
 
     // list of mobjs in sector
-    MEMREF	thinglistRef;
+    THINKERREF	thinglistRef;
 
     // thinker_t for reversable actions
-	MEMREF	specialdataRef;
+	THINKERREF	specialdataRef;
     uint8_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
 
 	int16_t linesoffset;	// [linecount] size
@@ -181,13 +181,6 @@ typedef struct line_s
     //  sidenum[1] will be -1 if one sided
     int16_t	sidenum[2];			
 
-	//   can determine bounding box with just the above dx/dy and baseX/baseY. 
-	int16_t baseX;
-	int16_t baseY;
-
-    // To aid move clipping.
-    //slopetype_t	slopetype;
-
     // Front and back sector.
 	int16_t	frontsecnum;
 	int16_t	backsecnum;
@@ -196,9 +189,6 @@ typedef struct line_s
 	// todo can it be 8 bit?
     int16_t		validcount;
 
-    // thinker_t for reversable actions
-    //void*	specialdata;		
-	MEMREF specialdataRef;
 } line_t;
 
 

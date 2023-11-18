@@ -52,7 +52,7 @@ EV_Teleport
     fixed_t	oldy;
     fixed_t	oldz;
 	
-	MEMREF fogRef;
+	THINKERREF fogRef;
     // don't teleport missiles
     if (thing->flags & MF_MISSILE)
 		return 0;		
@@ -73,7 +73,7 @@ EV_Teleport
 				if ((thinkerlist[thinkerRef].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS) {
 					continue;
 				}
-				m = (mobj_t *)Z_LoadThinkerBytesFromEMS(thinkerlist[thinkerRef].memref);
+				m = (mobj_t *)(&thinkerlist[thinkerRef].data);
 		
 				// not a teleportman
 				if (m->type != MT_TELEPORTMAN )
@@ -108,7 +108,7 @@ EV_Teleport
 		
 				// don't move for a bit
 				if (thing->type == MT_PLAYER){
-					playerMobj.reactiontime = 18;
+					playerMobj->reactiontime = 18;
 				}
 				thing->angle = m->angle;
 				thing->momx = thing->momy = thing->momz = 0;

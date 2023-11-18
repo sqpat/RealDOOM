@@ -33,7 +33,6 @@
 #include "p_setup.h"
 
 
-extern boolean playerSpawned;
 
 void G_PlayerReborn ();
 void P_SpawnMapThing (mapthing_t*	mthing, int16_t key);
@@ -257,8 +256,8 @@ void P_XYMovement (mobj_t* mo)
 			(motype != MT_PLAYER || (player.cmd.forwardmove== 0 && player.cmd.sidemove == 0 ) )
 		) {
 	// if in a walking frame, stop moving
-		if (motype == MT_PLAYER && (uint32_t)((playerMobj.stateNum) - S_PLAY_RUN1) < 4) {
-			P_SetMobjState(&playerMobj,S_PLAY);
+		if (motype == MT_PLAYER && (uint32_t)((playerMobj->stateNum) - S_PLAY_RUN1) < 4) {
+			P_SetMobjState(playerMobj,S_PLAY);
 			//mo = setStateReturn;
 		}
 
@@ -302,7 +301,7 @@ void P_ZMovement (mobj_t* mo)
     if ( mo->flags & MF_FLOAT && mo->targetRef) {
 		// float down towards target if too close
 		if ( !(mo->flags & MF_SKULLFLY) && !(mo->flags & MF_INFLOAT) ) {
-			moTarget = (mobj_t*)Z_LoadThinkerBytesFromEMS(mo->targetRef);
+			moTarget = (mobj_t*)&thinkerlist[mo->targetRef].data;
 			moTargetx = moTarget->x;
 			moTargety = moTarget->y;
 			moTargetz = moTarget->z;
@@ -404,7 +403,7 @@ P_NightmareRespawn(mobj_t* mobj)
 	fixed_t_union		y;
 	fixed_t_union		z;
 	mobj_t*		mo;
-	MEMREF moRef;
+	THINKERREF moRef;
 	int16_t subsecnum;
 	int16_t subsectorsecnum;
 	mobjtype_t mobjtype;
@@ -429,7 +428,7 @@ P_NightmareRespawn(mobj_t* mobj)
 	if (!P_CheckPosition(mobjRef, x.w, y.w, mobj)) {
 		return;	// no respwan
 	}
-	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+	mobj = (mobj_t*)P_GetThinkerFromRef(mobjRef);
 	mobjsecnum = mobj->secnum;
 	mobjx = mobj->x;
 	mobjy = mobj->y;
@@ -448,7 +447,7 @@ P_NightmareRespawn(mobj_t* mobj)
 	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG);
 
 	S_StartSoundFromRef(moRef, sfx_telept, setStateReturn);
-	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+	mobj = (mobj_t*)P_GetThinkerFromRef(mobjRef);
 
 	// spawn the new monster
 
@@ -488,9 +487,8 @@ P_NightmareRespawn(mobj_t* mobj)
 //
 // P_MobjThinker
 //
-void P_MobjThinker (MEMREF mobjRef) {
+void P_MobjThinker (mobj_t* mobj, THINKERREF mobjRef) {
 
-	mobj_t* mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
 	// momentum movement
     fixed_t_union temp;
 
@@ -498,7 +496,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 
 		P_XYMovement (mobj);
 
-		if ((thinkerlist[mobj->thinkerRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
+		if ((thinkerlist[mobjRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
 		}
     } 
@@ -510,7 +508,7 @@ void P_MobjThinker (MEMREF mobjRef) {
 		P_ZMovement (mobj);
 	 
 		// FIXME: decent NOP/NULL/Nil function pointer please.
-		if ((thinkerlist[mobj->thinkerRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
+		if ((thinkerlist[mobjRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
 		}
     }
@@ -564,26 +562,20 @@ void P_MobjThinker (MEMREF mobjRef) {
 //
 // P_SpawnMobj
 //
-MEMREF
+THINKERREF
 P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobj_t*	mobj;
     state_t*	st;
     mobjinfo_t*	info;
-	MEMREF mobjRef;
+	THINKERREF mobjRef;
 	int16_t mobjsecnum;
 	short_height_t sectorfloorheight;
 	short_height_t sectorceilingheight;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 
-	if (type == MT_PLAYER) {
-		mobjRef = PLAYER_MOBJ_REF;
-		playerSpawned = true;
-	} else {
-		mobjRef = Z_MallocThinkerEMS(sizeof(*mobj));
-	}
-
-	mobj = (mobj_t*)Z_LoadThinkerBytesFromEMS(mobjRef);
+	mobj = (mobj_t*)P_CreateThinker(TF_MOBJTHINKER_HIGHBITS);
+	mobjRef = GETTHINKERREF(mobj);
 
 	memset (mobj, 0, sizeof (*mobj));
 
@@ -640,7 +632,6 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 	 
 
-	mobj->thinkerRef = P_AddThinker(mobjRef, TF_MOBJTHINKER_HIGHBITS);
 	setStateReturn = mobj;
 
     return mobjRef;
@@ -661,7 +652,7 @@ void P_RemoveMobj (mobj_t* mobj)
     S_StopSound (mobj);
 
 	// free block
-	P_RemoveThinker(mobj->thinkerRef);
+	P_RemoveThinker(GETTHINKERREF(mobj));
 }
 
 
@@ -687,7 +678,7 @@ P_SpawnPuff
   fixed_t	z )
 {
     mobj_t*	th;
-	MEMREF thRef;
+	THINKERREF thRef;
 	
     z += ((P_Random()-P_Random())<<10);
 
@@ -717,7 +708,7 @@ P_SpawnBlood
   int16_t		damage )
 {
     mobj_t*	th;
-	MEMREF thRef;
+	THINKERREF thRef;
 	
     z += ((P_Random()-P_Random())<<10);
 	thRef  = P_SpawnMobj (x,y,z, MT_BLOOD);
@@ -764,7 +755,7 @@ void P_CheckMissileSpawn (mobj_t* th)
 //
 // P_SpawnMissile
 //
-MEMREF
+THINKERREF
 P_SpawnMissile
 (mobj_t* source,
   mobj_t*	dest,
@@ -780,7 +771,7 @@ P_SpawnMissile
 	fixed_t sourcez = source->z;
 	fixed_t momz;
 	int32_t thspeed;
-	MEMREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type);
+	THINKERREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type);
 	fixed_t_union temp;
 
 	th = setStateReturn;
@@ -790,7 +781,7 @@ P_SpawnMissile
 
 	}
 
-    th->targetRef = Z_GetThinkerRef(source);	// where it came from
+    th->targetRef = GETTHINKERREF(source);	// where it came from
 	thspeed = MAKESPEED(mobjinfo[type].speed);
 
 	destz = dest->z;
@@ -835,7 +826,7 @@ P_SpawnPlayerMissile
   mobjtype_t	type )
 {
     mobj_t*	th;
-	MEMREF thRef;
+	THINKERREF thRef;
     fineangle_t	an;
     
 	fixed_t	x;
@@ -847,29 +838,29 @@ P_SpawnPlayerMissile
 
     // see which target is to be aimed at
     // todo use fixed_t_union
-	an = playerMobj.angle >> ANGLETOFINESHIFT;
-	slope = P_AimLineAttack (&playerMobj, an, 16*64);
+	an = playerMobj->angle >> ANGLETOFINESHIFT;
+	slope = P_AimLineAttack (playerMobj, an, 16*64);
     
     if (!linetarget) {
 		// todo use fixed_t_union
 		an = MOD_FINE_ANGLE(an +(1<<(26- ANGLETOFINESHIFT)));
-		slope = P_AimLineAttack (&playerMobj, an, 16*64);
+		slope = P_AimLineAttack (playerMobj, an, 16*64);
 		if (!linetarget) {
 			// todo use fixed_t_union
 			an = MOD_FINE_ANGLE(an - (2<<(26-ANGLETOFINESHIFT)));
-			slope = P_AimLineAttack (&playerMobj, an, 16*64);
+			slope = P_AimLineAttack (playerMobj, an, 16*64);
 		}
 		if (!linetarget) {
 			// todo use fixed_t_union
-			an = playerMobj.angle >> ANGLETOFINESHIFT;
+			an = playerMobj->angle >> ANGLETOFINESHIFT;
 			slope = 0;
 		}
     }
 
 	
-    x = playerMobj.x;
-    y = playerMobj.y;
-    z = playerMobj.z + 4*8*FRACUNIT;
+    x = playerMobj->x;
+    y = playerMobj->y;
+    z = playerMobj->z + 4*8*FRACUNIT;
 	
     thRef = P_SpawnMobj (x,y,z, type);
 	th = setStateReturn;
@@ -877,7 +868,7 @@ P_SpawnPlayerMissile
     if (mobjinfo[type].seesound)
 		S_StartSound (th, mobjinfo[type].seesound);
 
-    th->targetRef = PLAYER_MOBJ_REF;
+    th->targetRef = playerMobjRef;
 	temp.h.fracbits = 0;
 	temp.h.intbits = an;
 	temp.h.intbits <<= 3;
@@ -896,14 +887,14 @@ P_SpawnPlayerMissile
 boolean
 P_SetMobjState2
 (mobj_t* mobj, statenum_t state)
-//(MEMREF mobjRef, statenum_t state, int8_t* file, int32_t line)
+//(THINKERREF mobjRef, statenum_t state, int8_t* file, int32_t line)
 {
 	state_t*	st;
 	
-#if CHECK_FOR_ERRORS
-	if (mobjRef > 10000 && mobjRef != PLAYER_MOBJ_REF) {
-		I_Error("caught bad ref? %u %u %s %li", mobjRef, state, file, line);
-	}
+#ifdef CHECK_FOR_ERRORS
+//	if (mobjRef > 10000 && mobjRef != playerMobjRef) {
+//		I_Error("caught bad ref? %u %u %s %li", mobjRef, state, file, line);
+//	}
 #endif
 
 	setStateReturn = mobj;

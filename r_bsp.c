@@ -628,7 +628,6 @@ void R_RenderBSPNode()
 	byte side = 0;
 	fixed_t_union temp;
 	int16_t bspnum = numnodes - 1;
-	//int16_t bspnum = firstnode;  i dont know why but 16 bit version has firstnode's value lose scope here. but numnodes is fine.
 	temp.h.fracbits = 0;
 	
 
@@ -642,10 +641,15 @@ void R_RenderBSPNode()
 			bsp = &nodes[bspnum];
 
 			//decide which side the view point is on
+			// todo try and use just the high 16 bits (dont subtract w's, they may not even be used below?)
 			temp.h.intbits = bsp->x;
 			dx.w = (viewx.w - temp.w);
 			temp.h.intbits = bsp->y;
 			dy.w = (viewy.w - temp.w);
+
+
+			// is a*b > c*d?
+			// i have a feeling there might be a clever fast way to determine this?
 
 			left =	FixedMul1616(bsp->dy,dx.h.intbits);
 			right = FixedMul1616(dy.h.intbits, bsp->dx);
@@ -659,7 +663,7 @@ void R_RenderBSPNode()
 
 			bspnum = bsp->children[side];
 		}
-		
+		 
 		if (bspnum == -1)
 			R_Subsector(0);
 		else

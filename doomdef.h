@@ -276,7 +276,6 @@ fixed_t32	FixedMul (fixed_t32 a, fixed_t32 b);
 // puts int16 into the high bits of a 32 bit
 fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 // puts int16 into the low bits of a 32 bit
-fixed_t32	FixedMulSmall1632(int16_t a, fixed_t b);
 fixed_t32	FixedMul1616(int16_t a, int16_t b);
 
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
@@ -284,6 +283,11 @@ fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
 //fixed_t32	FixedDiv2 (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);
 //#define FixedDiv(a, b) FixedDivinner(a, b, __FILE__, __LINE__)
 
+
+typedef uint16_t THINKERREF;
+typedef uint8_t  THINKFUNCTION;
+
+#define NULL_THINKERREF 0
 
 
 #ifdef _M_I86

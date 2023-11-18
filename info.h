@@ -1153,8 +1153,6 @@ typedef struct
 
 extern state_t	states[NUMSTATES];
  
-#define PLAYER_MOBJ_REF 61111u
-
 #define MT_PLAYER 0
 #define MT_POSSESSED 1
 #define MT_SHOTGUY 2

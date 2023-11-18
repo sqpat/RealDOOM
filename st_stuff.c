@@ -299,7 +299,7 @@ ST_Responder (event_t* ev)
 		  player.cheats ^= CF_GODMODE;
         if (player.cheats & CF_GODMODE)
         {
-            playerMobj.health = 100;
+            playerMobj->health = 100;
           
 		  player.health = 100;
 		  player.message = STSTR_DQDON;
@@ -428,9 +428,9 @@ ST_Responder (event_t* ev)
         static int8_t     buf[ST_MSGWIDTH];
 		
 		sprintf(buf, "ang=0x%x;x,y=(0x%x,0x%x)",
-                playerMobj.angle,
-			playerMobj.x,
-			playerMobj.y);
+                playerMobj->angle,
+			playerMobj->x,
+			playerMobj->y);
 		player.messagestring = buf;
       }
     }
@@ -554,7 +554,7 @@ void ST_updateFaceWidget(void)
     {
         if (player.damagecount
             && player.attackerRef
-            && player.attackerRef != PLAYER_MOBJ_REF)
+            && player.attackerRef != playerMobjRef)
         {
             // being attacked
             priority = 7;
@@ -567,20 +567,22 @@ void ST_updateFaceWidget(void)
             else
             {
 				 
-				plyrattacker = (mobj_t*)Z_LoadThinkerBytesFromEMS(player.attackerRef);
-				badguyangle = R_PointToAngle2(playerMobj.x,
-                                              playerMobj.y,
+				plyrattacker = (mobj_t*)(&thinkerlist[player.attackerRef].data);
+				badguyangle = R_PointToAngle2(playerMobj->x,
+                                              playerMobj->y,
                                               plyrattacker->x,
                                               plyrattacker->y);
                 
-                if (badguyangle > playerMobj.angle)
+                if (badguyangle > playerMobj->angle)
                 {
+					//TODO optimize. Shouldnt need to do a 32 bit subtract to figure this out?
+
                     // whether right or left
-                    diffang = badguyangle - playerMobj.angle;
+                    diffang = badguyangle - playerMobj->angle;
                     i = diffang > ANG180; 
                 } else {
                     // whether left or right
-                    diffang = playerMobj.angle - badguyangle;
+                    diffang = playerMobj->angle - badguyangle;
                     i = diffang <= ANG180; 
                 } // confusing, aint it?
 

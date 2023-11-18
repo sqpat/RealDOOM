@@ -64,14 +64,67 @@
 // P_TICK
 //
 
+
+
+#define TF_NULL				0
+#define TF_MOBJTHINKER		1
+#define TF_PLATRAISE        2
+#define TF_MOVECEILING		3
+#define TF_VERTICALDOOR		4
+#define TF_MOVEFLOOR        5
+#define TF_FIREFLICKER      6
+#define TF_LIGHTFLASH       7
+#define TF_STROBEFLASH      8
+#define TF_GLOW             9
+
+#define TF_DELETEME         10
+
+#define TF_NULL_HIGHBITS			0
+#define TF_MOBJTHINKER_HIGHBITS		2048u
+#define TF_PLATRAISE_HIGHBITS       4096u
+#define TF_MOVECEILING_HIGHBITS		6144u
+#define TF_VERTICALDOOR_HIGHBITS	8192u
+#define TF_MOVEFLOOR_HIGHBITS       10240u
+#define TF_FIREFLICKER_HIGHBITS     12288u
+#define TF_LIGHTFLASH_HIGHBITS      14336u
+#define TF_STROBEFLASH_HIGHBITS     16384u
+#define TF_GLOW_HIGHBITS            18432u
+#define TF_DELETEME_HIGHBITS		20480u
+
+#define TF_FUNCBITS					0xF800u
+#define TF_PREVBITS					0x07FFu
+
+// Doubly linked list of actors.
+
+
+// 71 bytes, 67 of which is mobj_t currently
+typedef struct thinker_s
+{
+	// functiontype is the five high bits
+
+	// contains previous reference mixed with functin type (in the high five bits)
+	THINKERREF	prevFunctype;
+	THINKERREF	next;
+
+	mobj_t			data;
+
+} thinker_t;
+
+
 // both the head and tail of the thinker list
 extern	thinker_t	thinkerlist[MAX_THINKERS];	
 
 
 void P_InitThinkers ();
-THINKERREF P_AddThinker (MEMREF argref, uint16_t thinkfunc);
+void* P_CreateThinker(uint16_t thinkfunc);
+
 void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
-void P_RemoveThinker (THINKERREF thinkerRef);
+void P_RemoveThinker(THINKERREF thinkerRef);
+
+#define THINKER_SIZE 71
+#define GETTHINKERREF(a) ((((uint16_t)((byte*)a - (byte*)thinkerlist))-4)/THINKER_SIZE)
+//#define GETTHINKERREF(a) ((((byte*)a - (byte*)thinkerlist)-4)/THINKER_SIZE)
+//#define GETTHINKERREF(a) ((((byte*)a-4u) - thinkerlist) / THINKER_SIZE)
 
 
 //
@@ -96,7 +149,7 @@ void	P_PlayerThink ();
 
 // Time interval for item respawning.
 
-MEMREF
+THINKERREF
 P_SpawnMobj
 ( fixed_t	x,
   fixed_t	y,
@@ -104,15 +157,15 @@ P_SpawnMobj
   mobjtype_t	type );
 
 void 	P_RemoveMobj (mobj_t* mobj);
-//boolean	P_SetMobjState2(MEMREF mobj, statenum_t state, int8_t* file, int32_t line);
+//boolean	P_SetMobjState2(THINKERREF mobj, statenum_t state, int8_t* file, int32_t line);
 //#define	P_SetMobjState(a, b) P_SetMobjState2(a, b, __FILE__, __LINE__)
 boolean	P_SetMobjState2(mobj_t* mobj, statenum_t state);
 #define	P_SetMobjState(a, b) P_SetMobjState2(a, b)
-void 	P_MobjThinker (MEMREF memref);
+void P_MobjThinker(mobj_t* mobj, THINKERREF mobjRef);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
-MEMREF P_SpawnMissile (mobj_t* source, mobj_t* dest, mobjtype_t type);
+THINKERREF P_SpawnMissile (mobj_t* source, mobj_t* dest, mobjtype_t type);
 void	P_SpawnPlayerMissile (mobjtype_t type);
 
 
@@ -141,7 +194,7 @@ typedef struct
     fixed_t	frac;		// along trace line
     boolean	isaline;
     union {
-	MEMREF	thingRef;
+		THINKERREF	thingRef;
 	int16_t linenum;
     }			d;
 } intercept_t;
@@ -168,7 +221,7 @@ extern short_height_t		lowfloor;
 void 	P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 
 boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_t* ld, int16_t ) );
-boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(MEMREF, mobj_t*));
+boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(THINKERREF, mobj_t*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
