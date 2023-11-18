@@ -99,7 +99,7 @@ extern side_t*       sides;
 
 extern int16_t*          linebuffer;
 
-
+extern MEMREF		nightmareSpawnPointsRef;
 //
 // POV data.
 //

@@ -38,7 +38,7 @@
 #include "doomstat.h"
 
 
-void    P_SpawnMapThing(mapthing_t *    mthing, int16_t key);
+void    P_SpawnMapThing(mapthing_t     mthing, int16_t key);
 
 //
 // MAP related Lookup tables.
@@ -69,6 +69,9 @@ int16_t             numsides;
 side_t*          sides;
 
 int16_t*          linebuffer;
+
+// for things nightmare respawn data
+MEMREF			nightmareSpawnPointsRef;
 
 // BLOCKMAP
 // Created from axis aligned bounding box
@@ -717,7 +720,7 @@ extern mobj_t* setStateReturn;
 // The fields of the mapthing should
 // already be in host byte order.
 //
-void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
+void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 {
 
 
@@ -729,24 +732,23 @@ void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
 	fixed_t_union		y;
 	fixed_t_union		z;
 	THINKERREF mobjRef;
-	int16_t mthingtype = mthing->type;
-	int16_t mthingoptions = mthing->options;
-	int16_t mthingx = mthing->x;
-	int16_t mthingy = mthing->y;
-	int16_t mthingangle = mthing->angle;
-	mapthing_t copyofthing = *mthing;
+	int16_t mthingtype = mthing.type;
+	int16_t mthingoptions = mthing.options;
+	int16_t mthingx = mthing.x;
+	int16_t mthingy = mthing.y;
+	int16_t mthingangle = mthing.angle;
 
 
 
 
-	if (mthing->type == 11 || mthing->type == 2 || mthing->type == 3 || mthing->type == 4) {
+	if (mthing.type == 11 || mthing.type == 2 || mthing.type == 3 || mthing.type == 4) {
 		return;
 	}
 
 	// check for players specially
 	if (mthingtype == 1) {
 		// save spots for respawning in network games
-		P_SpawnPlayer(mthing);
+		P_SpawnPlayer(&mthing);
 		return;
 	}
 
@@ -808,8 +810,8 @@ void P_SpawnMapThing(mapthing_t* mthing, int16_t key)
 	mobjRef = P_SpawnMobj(x.w, y.w, z.w, i);
 
 	mobj = setStateReturn;
-	//mobj->spawnpoint = copyofthing;
-
+	((mapthing_t*)Z_LoadBytesFromEMS(nightmareSpawnPointsRef))[mobjRef]= mthing;
+	
 	if (mobj->tics > 0 && mobj->tics < 240)
 		mobj->tics = 1 + (P_Random() % mobj->tics);
 	if (mobj->flags & MF_COUNTKILL)
@@ -835,7 +837,7 @@ void P_LoadThings(int16_t lump)
 {
 	mapthing_t *		data;
 	uint16_t                 i;
-	mapthing_t*         mt;
+	mapthing_t         mt;
 	uint16_t                 numthings;
 	boolean             spawn;
 	MEMREF				dataRef;
@@ -846,12 +848,12 @@ void P_LoadThings(int16_t lump)
 
 	for (i = 0; i < numthings; i++) {
 		data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);
-		mt = &data[i];
+		mt = data[i];
 		spawn = true;
 
 		// Do not spawn cool, new monsters if !commercial
 		if (!commercial) {
-			switch (mt->type) {
+			switch (mt.type) {
 				case 68:  // Arachnotron
 				case 64:  // Archvile
 				case 88:  // Boss Brain
@@ -1243,7 +1245,7 @@ P_SetupLevel
 	
 	// TODO reset 32 bit counters to start values here..
 	validcount = 1;
-
+	
 	TEXT_MODE_DEBUG_PRINT("\n P_InitThinkers");
 	P_InitThinkers();
 

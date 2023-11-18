@@ -212,7 +212,6 @@ typedef struct mobj_s
     // Interaction info, by BLOCKMAP.
     // Links in blocks (if needed).
 	THINKERREF	bnextRef;
-	//THINKERREF	bprevRef;
     
 	// added secnum, because subsecnum is mostly used to look this up, so it seems like a worthwhile cache.
 	int16_t secnum;

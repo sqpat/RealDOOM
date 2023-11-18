@@ -398,7 +398,7 @@ void
 P_NightmareRespawn(mobj_t* mobj)
 {
 
-	/*
+	
 	fixed_t_union		x;
 	fixed_t_union		y;
 	fixed_t_union		z;
@@ -414,6 +414,7 @@ P_NightmareRespawn(mobj_t* mobj)
 	fixed_t mobjy;
 	fixed_t_union temp;
 	mapthing_t mobjspawnpoint;
+	THINKERREF mobjRef = GETTHINKERREF(mobjRef);
 
 	temp.h.fracbits = 0;
 	x.h.fracbits = 0;
@@ -425,10 +426,9 @@ P_NightmareRespawn(mobj_t* mobj)
 	
 
 	// somthing is occupying it's position?
-	if (!P_CheckPosition(mobjRef, x.w, y.w, mobj)) {
+	if (!P_CheckPosition(mobj, x.w, y.w)) {
 		return;	// no respwan
 	}
-	mobj = (mobj_t*)P_GetThinkerFromRef(mobjRef);
 	mobjsecnum = mobj->secnum;
 	mobjx = mobj->x;
 	mobjy = mobj->y;
@@ -439,15 +439,14 @@ P_NightmareRespawn(mobj_t* mobj)
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[mobjsecnum].floorheight);
 	moRef = P_SpawnMobj(mobjx, mobjy, temp.w, MT_TFOG);
 	// initiate teleport sound
-	S_StartSoundFromRef(moRef, sfx_telept, setStateReturn);
+	S_StartSoundFromRef(setStateReturn, sfx_telept);
 
 	// spawn a teleport fog at the new spot
 	subsecnum = R_PointInSubsector(x.w, y.w);
 	subsectorsecnum = subsectors[subsecnum].secnum;
 	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG);
 
-	S_StartSoundFromRef(moRef, sfx_telept, setStateReturn);
-	mobj = (mobj_t*)P_GetThinkerFromRef(mobjRef);
+	S_StartSoundFromRef(setStateReturn, sfx_telept);
 
 	// spawn the new monster
 
@@ -460,10 +459,11 @@ P_NightmareRespawn(mobj_t* mobj)
 		z.w = ONFLOORZ;
 	}
 
-	//mobjspawnpoint = mobj->spawnpoint;
+	mobjspawnpoint = ((mapthing_t*)(Z_LoadBytesFromEMS(nightmareSpawnPointsRef)))[mobjRef];
 	mobjspawnangle = mobjspawnpoint.angle;
 	mobjspawnoptions = mobjspawnpoint.options;
 
+	// todo probably fix this, its fudging the indices, i think we want to force it to reuse the same one to maintain nightmare spawn point ref 
 
     // inherit attributes from deceased one
     moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype);
@@ -479,9 +479,8 @@ P_NightmareRespawn(mobj_t* mobj)
     mo->reactiontime = 18;
 	
     // remove the old monster,
-    P_RemoveMobj (mobjRef, mo);
+    P_RemoveMobj (mo);
 
-	*/
 }
 
 //

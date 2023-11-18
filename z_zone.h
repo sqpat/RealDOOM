@@ -87,6 +87,7 @@
 #define ALLOC_TYPE_MOBJ 29
 
 #define ALLOC_TYPE_STRINGS 30
+#define ALLOC_TYPE_NIGHTMARE_SPAWN_DATA 31
 
 // most paged in order:
 // as expected, we need to find a way to get lines segs verts sectors nodes into conventional to greatly improve perf.

@@ -393,30 +393,30 @@ void P_UnsetThingPosition (mobj_t* thing)
 {
     int16_t		blockx;
     int16_t		blocky;
-	//int16_t_union temp;
-
 	mobj_t* changeThing;
-	THINKERREF nextRef;
 
+	THINKERREF nextRef;
 	THINKERREF thingsprevRef = thing->sprevRef;
+
 	THINKERREF thingsnextRef = thing->snextRef;
-	//THINKERREF thingbprevRef = thing->bprevRef;
 	THINKERREF thingbnextRef = thing->bnextRef;
 	fixed_t_union thingx;
 	fixed_t_union thingy;
 	int32_t thingflags = thing->flags;
 	//int16_t thingsubsecnum = thing->subsecnum;
 	int16_t thingsecnum = thing->secnum;
+	THINKERREF thisRef = GETTHINKERREF(thing);
 	thingx.w = thing->x;
 	thingy.w = thing->y;
-    if ( ! (thingflags & MF_NOSECTOR) ) {
-	// inert things don't need to be in blockmap?
-	// unlink from subsector
+    
+	if (!(thingflags & MF_NOSECTOR)) {
+		// inert things don't need to be in blockmap?
+		// unlink from subsector
 		if (thingsnextRef) {
 			changeThing = (mobj_t*)&thinkerlist[thingsnextRef].data;
 			changeThing->sprevRef = thingsprevRef;
 		}
-		
+
 		if (thingsprevRef) {
 			changeThing = (mobj_t*)&thinkerlist[thingsprevRef].data;
 			changeThing->snextRef = thingsnextRef;
@@ -424,8 +424,30 @@ void P_UnsetThingPosition (mobj_t* thing)
 		else {
 			sectors[thingsecnum].thinglistRef = thingsnextRef;
 		}
-    }
+	}
 
+	/*
+	if ( ! (thingflags & MF_NOSECTOR) ) {
+	// inert things don't need to be in blockmap?
+	// unlink from subsector
+
+		nextRef = sectors[thingsecnum].thinglistRef;
+		// if nextref check here?
+		while (nextRef) {
+			mobj_t* innerthing = &thinkerlist[nextRef].data;
+			if (innerthing->snextRef == thisRef) {
+				innerthing->snextRef = thingsnextRef;
+				break;
+			}
+			nextRef = innerthing->snextRef;
+		}
+
+		// if it was not found in the block previously then...
+		if (nextRef == NULL_THINKERREF) {
+			sectors[thingsecnum].thinglistRef = thingsnextRef;
+		}
+    }
+	*/
 	
 
 
@@ -449,15 +471,15 @@ void P_UnsetThingPosition (mobj_t* thing)
 		if (blockx >= 0 && blockx < bmapwidth && blocky >= 0 && blocky < bmapheight){
 
 			int16_t bindex = blocky * bmapwidth + blockx;
-			THINKERREF thisRef = GETTHINKERREF(thing);
 			nextRef = blocklinks[bindex];
+			// if nextref check here?
 			while (nextRef) {
-				mobj_t* thing = &thinkerlist[nextRef].data;
-				if (thing->bnextRef == thisRef) {
-					thing->bnextRef = thingbnextRef;
+				mobj_t* innerthing = &thinkerlist[nextRef].data;
+				if (innerthing->bnextRef == thisRef) {
+					innerthing->bnextRef = thingbnextRef;
 					break;
 				}
-				nextRef = thing->bnextRef;
+				nextRef = innerthing->bnextRef;
 			}
 			
 			// if it was not found in the block previously then...
@@ -478,21 +500,18 @@ void P_UnsetThingPosition (mobj_t* thing)
 void
 P_SetThingPosition (mobj_t* thing)
 {
-	int16_t	subsecnum;
+	int16_t	subsecnum = R_PointInSubsector(thing->x, thing->y);;
     //sector_t*		sec;
     int16_t			blockx;
     int16_t			blocky;
 	THINKERREF		linkRef;
-	mobj_t*		link;
 	
 	mobj_t* thingList;
-	int16_t subsectorsecnum;
+	int16_t subsectorsecnum = subsectors[subsecnum].secnum;
 	THINKERREF oldsectorthinglist;
 	fixed_t_union temp;
 	THINKERREF thingRef = GETTHINKERREF(thing);
 	// link into subsector
-    subsecnum = R_PointInSubsector (thing->x,thing->y);
-	subsectorsecnum = subsectors[subsecnum].secnum;
 	
 	thing->secnum = subsectorsecnum;
 
@@ -501,7 +520,8 @@ P_SetThingPosition (mobj_t* thing)
 		I_Error("P_SetThingPosition: thing being set with bad secnum %i: numsectors:%i subsecnum %i num subsectors %i thingRef %i", subsectorsecnum, numsectors, subsecnum, numsubsectors, thingRef);
 	}
 #endif
-    if ( ! (thing->flags & MF_NOSECTOR) ) {
+
+	if (!(thing->flags & MF_NOSECTOR)) {
 		// invisible things don't go into the sector links
 
 		oldsectorthinglist = sectors[subsectorsecnum].thinglistRef;
@@ -519,10 +539,20 @@ P_SetThingPosition (mobj_t* thing)
 			thingList->sprevRef = thingRef;
 		}
 
-    }
+	}
 
 
-	thing = (mobj_t*)&thinkerlist[thingRef].data;
+	/*
+    if ( ! (thing->flags & MF_NOSECTOR) ) {
+		// invisible things don't go into the sector links
+
+		thing->snextRef = sectors[subsectorsecnum].thinglistRef;
+		sectors[subsectorsecnum].thinglistRef = thingRef;
+		 
+
+    }*/
+
+
 
     // link into blockmap
     if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
@@ -531,16 +561,13 @@ P_SetThingPosition (mobj_t* thing)
 		blockx = (temp.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
 		temp.w = thing->y;
 		blocky = (temp.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
-
+		
 		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
-			linkRef = blocklinks[blocky*bmapwidth+blockx];
+			int16_t bindex = blocky * bmapwidth + blockx;
+			linkRef = blocklinks[bindex];
 			thing->bnextRef = linkRef;
-			if (linkRef) {
-				link = (mobj_t*)&thinkerlist[linkRef].data;
-			}
-			
-			//*link = thing;
-			blocklinks[blocky*bmapwidth + blockx] = thingRef;
+		 
+			blocklinks[bindex] = thingRef;
 
 		} else {
 			// thing is off the map

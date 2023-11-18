@@ -1114,6 +1114,8 @@ void Z_FreeConventionalAllocations() {
 	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
 	memset(conventionalmemoryblock2, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_2);
 	
+	memset(Z_LoadBytesFromEMS(nightmareSpawnPointsRef), 0, 16384);
+	
 }
 
 

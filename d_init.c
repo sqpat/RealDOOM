@@ -59,6 +59,7 @@
 #include "r_local.h"
 
 #include "d_main.h"
+#include "p_local.h"
 
 
 
@@ -920,6 +921,8 @@ void D_DoomMain2(void)
 	D_RedrawTitle();
 #endif
 	ST_Init();
+
+	nightmareSpawnPointsRef = Z_MallocEMS(16384, PU_STATIC, 0, ALLOC_TYPE_NIGHTMARE_SPAWN_DATA);
 
 
 	// start the apropriate game based on parms

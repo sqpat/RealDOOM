@@ -666,19 +666,9 @@ void R_RenderPlayerView ()
 	R_ClearDrawSegs ();
     R_ClearPlanes ();
     R_ClearSprites ();
-	if (gametic > 1817) {
-		FILE* fp = fopen("debuglog.txt", "a");
-		fprintf(fp, "check ada %li\n", gametic);
-		fclose(fp);
-	}
 
     // check for new console commands.
 	NetUpdate ();
-	if (gametic > 1817) {
-		FILE* fp = fopen("debuglog.txt", "a");
-		fprintf(fp, "check adb %li\n", gametic);
-		fclose(fp);
-	}
 
 
 	// The head node is the last node output.
@@ -687,49 +677,19 @@ void R_RenderPlayerView ()
 	R_RenderBSPNode ();
 	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_RenderBSPNode done");
 	//Z_SetUnlocked(nodesRef)
-	if (gametic > 1817) {
-		FILE* fp = fopen("debuglog.txt", "a");
-		fprintf(fp, "check adc %li\n", gametic);
-		fclose(fp);
-	}
 
     // Check for new console commands.
     NetUpdate ();
-	if (gametic > 1817) {
-		FILE* fp = fopen("debuglog.txt", "a");
-		fprintf(fp, "check add %li\n", gametic);
-		fclose(fp);
-	}
 
     R_DrawPlanes ();
 	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_DrawPlanes done");
-	if (gametic > 1817) {
-		FILE* fp = fopen("debuglog.txt", "a");
-		fprintf(fp, "check ade %li\n", gametic);
-		fclose(fp);
-	}
 
     // Check for new console commands.
     NetUpdate ();
-	if (gametic > 1817) {
-		FILE* fp = fopen("debuglog.txt", "a");
-		fprintf(fp, "check adf %li\n", gametic);
-		fclose(fp);
-	}
 
     R_DrawMasked ();
-	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_DrawMasked done");
-	if (gametic > 1817) {
-		FILE* fp = fopen("debuglog.txt", "a");
-		fprintf(fp, "check adg %li\n", gametic);
-		fclose(fp);
-	}
+
 	// Check for new console commands.
     NetUpdate ();	
-	if (gametic > 1817) {
-		FILE* fp = fopen("debuglog.txt", "a");
-		fprintf(fp, "check adh %li\n", gametic);
-		fclose(fp);
-	}
 
 }
