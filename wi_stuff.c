@@ -99,14 +99,15 @@
 
 typedef uint8_t animenum_t;
 
+// in practice the used values are all 8 bit, 0 - 224
 typedef struct
 {
-    int16_t		x;
-    int16_t		y;
+    uint8_t		x;
+    uint8_t		y;
     
 } point_t;
 
-
+// 20 bytes each .. 10, 9, 6 of them so 25 * 20 = 500 bytes total.
 //
 // Animation.
 // There is another anim_t used in p_spec.
@@ -127,7 +128,8 @@ typedef struct
     // ALWAYS: n/a,
     // RANDOM: period deviation (<256),
     // LEVEL: level
-    int16_t		data1;
+	// in practice values up to 8 are used
+    int8_t		data1;
 
     // ALWAYS: n/a,
     // RANDOM: random base period,
@@ -147,7 +149,7 @@ typedef struct
     int8_t		ctr;
     
     // used by RANDOM and LEVEL when animating
-    int16_t		state;  
+    uint8_t		state;  
 
 } anim_t;
 
@@ -155,49 +157,101 @@ typedef struct
 
 // these are taking up 864 bytes. can probably halve it by shrinking to 8 bit. 
 // subtract the minimum value from coord 1, 2 indepdentdently. add back in the accessor.
+ 
+int16_t getLnodeX(int16_t episode, int16_t map) {
+	if (episode == 0) {
+		// Episode 0 World Map
+		switch (map) {
+			case 0: return 185;
+			case 1: return 148;	// location of level 1 (CJ)
+			case 2: return 69;	// location of level 2 (CJ)
+			case 3: return 209;	// location of level 3 (CJ)
+			case 4: return 116;	// location of level 4 (CJ)
+			case 5: return 166;	// location of level 5 (CJ)
+			case 6: return 71;	// location of level 6 (CJ)
+			case 7: return 135;	// location of level 7 (CJ)
+			case 8: return 71;	// location of level 8 (CJ)
+		}
+	} else if (episode == 1) {
+		// Episode 1 World Map
+		switch (map) {
+			case 0: return 254;
+			case 1: return 97;	// location of level 1 (CJ)
+			case 2: return 188;	// location of level 2 (CJ)
+			case 3: return 128;	// location of level 3 (CJ)
+			case 4: return 214;	// location of level 4 (CJ)
+			case 5: return 133;	// location of level 5 (CJ)
+			case 6: return 208;	// location of level 6 (CJ)
+			case 7: return 148;	// location of level 7 (CJ)
+			case 8: return 235;	// location of level 8 (CJ)
+		}
+	} else {
+		// Episode 2 World Map
+		switch (map) {
+			case 0: return 156;
+			case 1: return 48;	// location of level 1 (CJ)
+			case 2: return 174;	// location of level 2 (CJ)
+			case 3: return 265;	// location of level 3 (CJ)
+			case 4: return 130;	// location of level 4 (CJ)
+			case 5: return 279;	// location of level 5 (CJ)
+			case 6: return 198;	// location of level 6 (CJ)
+			case 7: return 140;	// location of level 7 (CJ)
+			case 8: return 281;	// location of level 8 (CJ)
+		}
+	}
+	return 0;
+ 
+}
 
-static point_t lnodes[NUMEPISODES][NUMMAPS] =
-{
-    // Episode 0 World Map
-    {
-	{ 185, 164 },	// location of level 0 (CJ)
-	{ 148, 143 },	// location of level 1 (CJ)
-	{ 69, 122 },	// location of level 2 (CJ)
-	{ 209, 102 },	// location of level 3 (CJ)
-	{ 116, 89 },	// location of level 4 (CJ)
-	{ 166, 55 },	// location of level 5 (CJ)
-	{ 71, 56 },	// location of level 6 (CJ)
-	{ 135, 29 },	// location of level 7 (CJ)
-	{ 71, 24 }	// location of level 8 (CJ)
-    },
+int16_t getLnodeY(int16_t episode, int16_t map) {
+	if (episode == 0) {
 
-    // Episode 1 World Map should go here
-    {
-	{ 254, 25 },	// location of level 0 (CJ)
-	{ 97, 50 },	// location of level 1 (CJ)
-	{ 188, 64 },	// location of level 2 (CJ)
-	{ 128, 78 },	// location of level 3 (CJ)
-	{ 214, 92 },	// location of level 4 (CJ)
-	{ 133, 130 },	// location of level 5 (CJ)
-	{ 208, 136 },	// location of level 6 (CJ)
-	{ 148, 140 },	// location of level 7 (CJ)
-	{ 235, 158 }	// location of level 8 (CJ)
-    },
+		// Episode 0 World Map
+		switch (map) {
+			case 0: return 164;
+			case 1: return 143;	// location of level 1 (CJ)
+			case 2: return 122;	// location of level 2 (CJ)
+			case 3: return 102;	// location of level 3 (CJ)
+			case 4: return 89;	// location of level 4 (CJ)
+			case 5: return 55;	// location of level 5 (CJ)
+			case 6: return 56;	// location of level 6 (CJ)
+			case 7: return 29;	// location of level 7 (CJ)
+			case 8: return 24;	// location of level 8 (CJ)
+		}
+	}
+	else if (episode == 1) {
+		// Episode 1 World Map
+		switch (map) {
+			case 0: return 25;
+			case 1: return 50;	// location of level 1 (CJ)
+			case 2: return 64;	// location of level 2 (CJ)
+			case 3: return 78;	// location of level 3 (CJ)
+			case 4: return 92;	// location of level 4 (CJ)
+			case 5: return 130;	// location of level 5 (CJ)
+			case 6: return 136;	// location of level 6 (CJ)
+			case 7: return 140;	// location of level 7 (CJ)
+			case 8: return 158;	// location of level 8 (CJ)
+		}
+	}
+	else {
+		// Episode 2 World Map
+		switch (map) {
+			case 0: return 168;
+			case 1: return 154;	// location of level 1 (CJ)
+			case 2: return 95;	// location of level 2 (CJ)
+			case 3: return 75;	// location of level 3 (CJ)
+			case 4: return 48;	// location of level 4 (CJ)
+			case 5: return 23;	// location of level 5 (CJ)
+			case 6: return 48;	// location of level 6 (CJ)
+			case 7: return 25;	// location of level 7 (CJ)
+			case 8: return 136;	// location of level 8 (CJ)
+		}
+	}
+	return 0;
 
-    // Episode 2 World Map should go here
-    {
-	{ 156, 168 },	// location of level 0 (CJ)
-	{ 48, 154 },	// location of level 1 (CJ)
-	{ 174, 95 },	// location of level 2 (CJ)
-	{ 265, 75 },	// location of level 3 (CJ)
-	{ 130, 48 },	// location of level 4 (CJ)
-	{ 279, 23 },	// location of level 5 (CJ)
-	{ 198, 48 },	// location of level 6 (CJ)
-	{ 140, 25 },	// location of level 7 (CJ)
-	{ 281, 136 }	// location of level 8 (CJ)
-    }
+}
+ 
 
-};
 
 
 //
@@ -242,7 +296,7 @@ static anim_t epsd2animinfo[] =
     { ANIM_ALWAYS, TICRATE/4, 3, { 40, 0 } }
 };
 
-static int16_t NUMANIMS[NUMEPISODES] =
+static int8_t NUMANIMS[NUMEPISODES] =
 {
     sizeof(epsd0animinfo)/sizeof(anim_t),
     sizeof(epsd1animinfo)/sizeof(anim_t),
@@ -354,9 +408,6 @@ static MEMREF		sucksRef;
 
 
 // "Total", your face, your dead face
-static MEMREF		totalRef;
-static MEMREF		starRef;
-static MEMREF		bstarRef;
 
 
  // Name graphics of each level (centered)
@@ -432,12 +483,13 @@ WI_drawOnLnode
     int16_t		bottom;
     boolean	fits = false;
 	patch_t* ci;
-
+	int16_t lnodeX = getLnodeX(wbs->epsd, n);
+	int16_t lnodeY = getLnodeY(wbs->epsd, n);
     i = 0;
     do {
 		ci = (patch_t*)Z_LoadBytesFromEMS(cRef[i]);
-		left = lnodes[wbs->epsd][n].x - (ci->leftoffset);
-		top = lnodes[wbs->epsd][n].y - (ci->topoffset);
+		left = lnodeX - (ci->leftoffset);
+		top = lnodeY - (ci->topoffset);
 		right = left + (ci->width);
 		bottom = top + (ci->height);
 
@@ -452,7 +504,7 @@ WI_drawOnLnode
     } while (!fits && i!=2);
 
     if (fits && i<2) {
-		V_DrawPatch(lnodes[wbs->epsd][n].x, lnodes[wbs->epsd][n].y, FB, ((patch_t*)Z_LoadBytesFromEMS(cRef[i])));
+		V_DrawPatch(lnodeX, lnodeY, FB, ((patch_t*)Z_LoadBytesFromEMS(cRef[i])));
     } else {
 		// DEBUG
 		printf("Could not place patch on level %d", n+1); 
@@ -486,7 +538,6 @@ void WI_initAnimatedBack(void)
 	    a->nexttic = bcnt + 1 + (M_Random()%a->period);
 	else if (a->type == ANIM_RANDOM)
 	    a->nexttic = bcnt + 1 + 0+(M_Random()%a->data1);
-	    // a->nexttic = bcnt + 1 + a->data2+(M_Random()%a->data1);
 	else if (a->type == ANIM_LEVEL)
 	    a->nexttic = bcnt + 1;
     }
@@ -525,7 +576,6 @@ void WI_updateAnimatedBack(void)
 		{
 		    a->ctr = -1;
 		    a->nexttic = bcnt+0+(M_Random()%a->data1);
-		    //a->nexttic = bcnt+a->data2+(M_Random()%a->data1);
 		}
 		else a->nexttic = bcnt + a->period;
 		break;
@@ -1125,14 +1175,6 @@ void WI_loadData(void)
     // "par"
     parRef = W_CacheLumpNameEMS("WIPAR", PU_STATIC);
 
-    // "total"
-    totalRef = W_CacheLumpNameEMS("WIMSTT", PU_STATIC);
-
-    // your face
-    starRef = W_CacheLumpNameEMS("STFST01", PU_STATIC);
-
-    // dead face
-    bstarRef = W_CacheLumpNameEMS("STFDEAD0", PU_STATIC);
  
 
 }
@@ -1192,9 +1234,6 @@ void WI_unloadData(void)
 	Z_ChangeTagEMS(sucksRef, PU_CACHE);
 	Z_ChangeTagEMS(parRef, PU_CACHE);
 
-	Z_ChangeTagEMS(totalRef, PU_CACHE);
-    //  Z_ChangeTagEMS(star, PU_CACHE);
-    //  Z_ChangeTagEMS(bstar, PU_CACHE);
     
 }
 
