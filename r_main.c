@@ -43,7 +43,8 @@
 
 
 // increment every time a check is made
-int16_t			validcount = 1;		
+//uint8_t			validcount = 1;
+int16_t			validcount = 1;
 
 
 lighttable_t*		fixedcolormap;

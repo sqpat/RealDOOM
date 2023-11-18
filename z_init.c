@@ -42,8 +42,7 @@ extern int8_t pagesize[NUM_EMS_PAGES];
 
 #ifdef _M_I86
 
-static int16_t emshandle;
-extern union REGS regs;
+ extern union REGS regs;
 
 #else
 #endif

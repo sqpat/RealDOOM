@@ -127,6 +127,7 @@ typedef struct memblock_s
 // texcols and tex
 #define CA_TYPE_TEXTURE_INFO 5
 
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 50598
 #define STATIC_CONVENTIONAL_BLOCK_SIZE_1 51556
 
 extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];

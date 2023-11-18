@@ -199,7 +199,7 @@ int8_t lockedpages[NUM_EMS_PAGES];
 
 #ifdef _M_I86
 
-	static int16_t emshandle;
+	int16_t emshandle;
 	extern union REGS regs;
 
 #else

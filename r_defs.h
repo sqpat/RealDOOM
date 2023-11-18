@@ -109,6 +109,7 @@ typedef	struct
 	THINKERREF	specialdataRef;
     uint8_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
 
+	//uint8_t linesoffset;	// [linecount] size
 	int16_t linesoffset;	// [linecount] size
 
 } sector_t;
@@ -187,7 +188,9 @@ typedef struct line_s
 
     // if == validcount, already checked
 	// todo can it be 8 bit?
-    int16_t		validcount;
+    //uint8_t		validcount;
+	int16_t		validcount;
+
 
 } line_t;
 

@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/11/18 12:40:10
+Created on:       23/11/18 15:18:26
 Executable Image: doom16.exe
 creating a DOS overlayed executable
 
@@ -1043,6 +1043,7 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 8f6c:0a44      _pageouts
 8f6c:0a48+     _actualpageins
 8f6c:0a4c+     _actualpageouts
+8f6c:43da      _emshandle
 6aa1:0000+     _spritememoryblock
 6aa1:1b58      _conventionalmemoryblock1
 78ed:0000+     _allocations
@@ -1773,7 +1774,7 @@ Overlay section 2 address 2379:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-i_quit_TEXT            CODE           AUTO           2379:0000       0000022c
+i_quit_TEXT            CODE           AUTO           2379:0000       00000219
 
 
                         +----------------+
@@ -1787,16 +1788,16 @@ Address        Symbol
 =======        ======
 
 Module: i_quit.obj(C:\REALDOOM\i_quit.c)
-2379:002e*     I_ShutdownSound_
-2379:0030+     I_ShutdownGraphics_
-2379:005a*     TS_Terminate_
-2379:0070+     TS_Shutdown_
-2379:00aa*     I_ShutdownTimer_
-2379:00c4+     I_ShutdownKeyboard_
-2379:00f6+     I_ShutdownMouse_
-2379:0108+     Z_ShutdownEMS_
-2379:014c      I_Shutdown_
-2379:0176      I_Quit_
+2379:002c*     I_ShutdownSound_
+2379:002e+     I_ShutdownGraphics_
+2379:0058*     TS_Terminate_
+2379:006e+     TS_Shutdown_
+2379:00a8*     I_ShutdownTimer_
+2379:00c2+     I_ShutdownKeyboard_
+2379:00f4+     I_ShutdownMouse_
+2379:0106+     Z_ShutdownEMS_
+2379:014a      I_Shutdown_
+2379:0174      I_Quit_
 
 
 Overlay section 3 address 2379:0000
@@ -2291,4 +2292,4 @@ C:\WATCOM\lib286\dos\wovl.lib
 Stack size:  0bb8 (3000.)
 Memory size:  0009515a (610650.)
 Entry point address: 1ae8:7b45
-Link time: 00:00.50
+Link time: 00:00.94

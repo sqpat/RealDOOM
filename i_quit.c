@@ -42,14 +42,13 @@ void I_ShutdownSound(void)
 //
 void I_ShutdownGraphics(void)
 {
+#ifndef	SKIP_DRAW
 	if (*(byte *)0x449 == 0x13) // don't reset mode if it didn't get set
 	{
 		regs.w.ax = 3;
-#ifndef	SKIP_DRAW
 		intx86(0x10, &regs, &regs); // back to text mode
-		//I_Error("shutdown successful");
-#endif
 	}
+#endif
 }
 
 extern void(__interrupt __far *OldInt8)(void);
@@ -154,7 +153,7 @@ void I_ShutdownMouse(void)
 
 #ifdef _M_I86
 
-static int16_t emshandle;
+extern int16_t emshandle;
 
 #else
 #endif
@@ -189,6 +188,7 @@ void Z_ShutdownEMS() {
 // I_Shutdown
 // return to default system state
 //
+// called from I_Error
 void I_Shutdown(void)
 {
 	I_ShutdownGraphics();
@@ -216,24 +216,28 @@ void I_Quit(void)
 	}
 
 	M_SaveDefaults();
-	scrRef = W_CacheLumpNameEMS("ENDOOM", PU_CACHE);
 	I_ShutdownGraphics();
 	I_ShutdownSound();
 	I_ShutdownTimer();
 	I_ShutdownMouse();
 	I_ShutdownKeyboard();
-
+	
+	scrRef = W_CacheLumpNameEMS("ENDOOM", PU_CACHE);
 	scr = Z_LoadBytesFromEMS(scrRef);
-	memcpy((void *)0xb8000, scr, 80 * 25 * 2);
+#ifdef _M_I86
+	memcpy((char far *)0xb8000000, scr, 4000);
+#else
+	memcpy((void *)0xb8000, scr, 4000 / 4);
+#endif
 	regs.w.ax = 0x0200;
 	regs.h.bh = 0;
 	regs.h.dl = 0;
 	regs.h.dh = 23;
 	intx86(0x10, (union REGS *)&regs, &regs); // Set text pos
-
-	printf("\n");
+	
+	//printf("\n");
 	Z_ShutdownEMS();
 
 
-	exit(0);
+	exit(1);
 }
