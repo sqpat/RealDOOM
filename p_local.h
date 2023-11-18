@@ -97,7 +97,7 @@
 // Doubly linked list of actors.
 
 
-// 71 bytes, 67 of which is mobj_t currently
+// 69 bytes, 65 of which is mobj_t currently
 typedef struct thinker_s
 {
 	// functiontype is the five high bits
@@ -121,7 +121,7 @@ void* P_CreateThinker(uint16_t thinkfunc);
 void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
 void P_RemoveThinker(THINKERREF thinkerRef);
 
-#define THINKER_SIZE 71
+#define THINKER_SIZE 69
 #define GETTHINKERREF(a) ((((uint16_t)((byte*)a - (byte*)thinkerlist))-4)/THINKER_SIZE)
 //#define GETTHINKERREF(a) ((((byte*)a - (byte*)thinkerlist)-4)/THINKER_SIZE)
 //#define GETTHINKERREF(a) ((((byte*)a-4u) - thinkerlist) / THINKER_SIZE)

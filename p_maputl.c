@@ -393,11 +393,14 @@ void P_UnsetThingPosition (mobj_t* thing)
 {
     int16_t		blockx;
     int16_t		blocky;
+	//int16_t_union temp;
+
 	mobj_t* changeThing;
-	
+	THINKERREF nextRef;
+
 	THINKERREF thingsprevRef = thing->sprevRef;
 	THINKERREF thingsnextRef = thing->snextRef;
-	THINKERREF thingbprevRef = thing->bprevRef;
+	//THINKERREF thingbprevRef = thing->bprevRef;
 	THINKERREF thingbnextRef = thing->bnextRef;
 	fixed_t_union thingx;
 	fixed_t_union thingy;
@@ -420,8 +423,6 @@ void P_UnsetThingPosition (mobj_t* thing)
 		}
 		else {
 			sectors[thingsecnum].thinglistRef = thingsnextRef;
-			 
-
 		}
     }
 
@@ -431,20 +432,37 @@ void P_UnsetThingPosition (mobj_t* thing)
     if (! (thingflags & MF_NOBLOCKMAP) ) {
 	// inert things don't need to be in blockmap
 	// unlink from block map
-		if (thingbnextRef) {
-			changeThing = (mobj_t*)&thinkerlist[thingbnextRef].data;
-			changeThing->bprevRef = thingbprevRef;
-		}
-	
-		if (thingbprevRef) {
-			changeThing = (mobj_t*)&thinkerlist[thingbprevRef].data;
-			changeThing->bnextRef = thingbnextRef;
-		} else {
-			blockx = (thingx.h.intbits - bmaporgx)>> MAPBLOCKSHIFT;
-			blocky = (thingy.h.intbits - bmaporgy)>> MAPBLOCKSHIFT;
 
-			if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky <bmapheight) {
-				blocklinks[blocky*bmapwidth+blockx] = thingbnextRef;
+
+		//todo how can this trip the < 0 check anyway?
+
+		// should be faster for 16 bit than a shift right by 7?
+		blockx = (thingx.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
+		blocky = (thingy.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
+		/*		temp.h = (thingx.h.intbits - bmaporgx);
+		blockx = temp.b.bytehigh << 1;
+		blockx += temp.h & 0x0080 ? 1 : 0;*/
+		/*			temp.h = (thingy.h.intbits - bmaporgy);
+		blocky = temp.b.bytehigh << 1;
+		blocky += temp.b.bytelow & 0x80 ? 1 : 0;*/
+
+		if (blockx >= 0 && blockx < bmapwidth && blocky >= 0 && blocky < bmapheight){
+
+			int16_t bindex = blocky * bmapwidth + blockx;
+			THINKERREF thisRef = GETTHINKERREF(thing);
+			nextRef = blocklinks[bindex];
+			while (nextRef) {
+				mobj_t* thing = &thinkerlist[nextRef].data;
+				if (thing->bnextRef == thisRef) {
+					thing->bnextRef = thingbnextRef;
+					break;
+				}
+				nextRef = thing->bnextRef;
+			}
+			
+			// if it was not found in the block previously then...
+			if (nextRef == NULL_THINKERREF) {
+				blocklinks[bindex] = thingbnextRef;
 			}
 		}
     }
@@ -516,11 +534,9 @@ P_SetThingPosition (mobj_t* thing)
 
 		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
 			linkRef = blocklinks[blocky*bmapwidth+blockx];
-			thing->bprevRef = NULL_THINKERREF;
 			thing->bnextRef = linkRef;
 			if (linkRef) {
 				link = (mobj_t*)&thinkerlist[linkRef].data;
-				link->bprevRef = thingRef;
 			}
 			
 			//*link = thing;
@@ -528,7 +544,7 @@ P_SetThingPosition (mobj_t* thing)
 
 		} else {
 			// thing is off the map
-			thing->bnextRef = thing->bprevRef = NULL_THINKERREF;
+			thing->bnextRef = NULL_THINKERREF;
 		}
     }
 }

@@ -134,6 +134,15 @@ typedef union _fixed_t_union {
 	int32_t w;
 } fixed_t_union;
  
+typedef union _int16_t_union {
+
+	struct dual_int8_t {
+		int8_t bytehigh;
+		int8_t bytelow;
+	} b;
+
+	int16_t h;
+} int16_t_union;
 
 #endif
 
