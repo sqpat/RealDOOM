@@ -235,7 +235,7 @@ extern MEMREF palRef;
 void I_SetPalette(int8_t paletteNumber)
 {
 	int16_t i;
-    byte* palette = ((byte*) Z_LoadBytesFromEMS(palRef)) + paletteNumber * 768;
+    byte* palette = ((byte*) Z_LoadBytesFromEMS(palRef)) + paletteNumber * 768u;
 
         if(novideo)
         {

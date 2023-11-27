@@ -543,7 +543,7 @@ void Z_DoPageOut(uint16_t pageframeindex, int16_t source) {
 	pageouts ++;
 
 	if (pageframeindex >= NUM_EMS_PAGES) {
-		I_Error("bad page frame index %i", pageframeindex, source);
+		I_Error("bad page frame index %i %i", pageframeindex, source);
 	}
 
 	activepages[pageframeindex] = -1;
@@ -679,7 +679,7 @@ void Z_PageOutIfInMemory(uint32_t page_and_size) {
 		for (i = 0; i < numallocatepages; i++) {
 			for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 				if (activepages[pageframeindex] == logicalpage + i) {
-					Z_DoPageOut(pageframeindex, 0);
+					Z_DoPageOut(pageframeindex, 6000 + pageframeindex + 100 * i);
 				}
 			}
 		}
@@ -764,7 +764,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked) {  //todo allo
 					// paging out the previous allocation
 					for (i = 0; i < numallocatepages; i++) { 
 						if (activepages[pageframeindex + i] >= 0) {
-							Z_DoPageOut(pageframeindex + i, pageframeindex);
+							Z_DoPageOut(pageframeindex + i, 3000 + 100 * pageframeindex + i);
 						}
 					}
 					break;
@@ -794,7 +794,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked) {  //todo allo
 #endif
 				// page out what was there
 				if (activepages[pageframeindex + i] >= 0) {
-					Z_DoPageOut(pageframeindex + i, 2);
+					Z_DoPageOut(pageframeindex + i, 4000 + pageframeindex  * 100 + i);
 				}
 
 			}
@@ -864,7 +864,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked) {  //todo allo
 		for (i = 1; i < numallocatepages; i++) {
 			for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 				if (activepages[pageframeindex] == logicalpage + i) {
-					Z_DoPageOut(pageframeindex, 3);
+					Z_DoPageOut(pageframeindex, 2000 + pageframeindex * 100 + i);
 
 				}
 			}
@@ -907,7 +907,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked) {  //todo allo
 	// update active EMS pages
 	for (i = 0; i < numallocatepages; i++) {
 		if (activepages[pageframeindex + i] >= 0) {
-			Z_DoPageOut(pageframeindex + i, numallocatepages);
+			Z_DoPageOut(pageframeindex + i, 5000 + 100 * numallocatepages +  i);
 		}
 	}
 
@@ -1112,6 +1112,17 @@ void Z_FreeConventionalAllocations() {
 	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
 	memset(conventionalmemoryblock2, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_2);
 	
+
+
+	remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
+	remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
+
+	conventional1head = 0;
+	conventional2head = 0;
+
+	conventional1headindex = 0;
+	conventional2headindex = 0;
+
 	memset(Z_LoadBytesFromEMS(nightmareSpawnPointsRef), 0, 16384);
 	
 }
@@ -1140,7 +1151,9 @@ MEMREF Z_MallocConventional(
 	if (type == CA_TYPE_LEVELDATA) {
 		if (size > remainingconventional1) {
 			if (size > remainingconventional2) {
-				return Z_MallocEMS(size, tag, user, sourceHint);
+				//return Z_MallocEMS(size, tag, user, sourceHint);
+				I_Error("out of conventional space %li %hhi %u %u", size, tag, remainingconventional1, remainingconventional2);
+
 			}
 			useblock2 = true;
 		}
@@ -1161,7 +1174,9 @@ MEMREF Z_MallocConventional(
 	
 	} else if (type == CA_TYPE_SPRITE){
 		if (size > remainingspriteconventional){
-			return Z_MallocEMS(size, tag, user, sourceHint);
+			//return Z_MallocEMS(size, tag, user, sourceHint);
+			I_Error("out of sprite space %li %hhi %u %u", size, tag, remainingconventional1, remainingconventional2);
+
 		}
 		allocations = sprite_allocations;
 		remainingspriteconventional -= size;
@@ -1170,7 +1185,8 @@ MEMREF Z_MallocConventional(
 		ref = &spriteheadindex;
 	} else if (type == CA_TYPE_TEXTURE_INFO){
 		if (size > remainingtextureinfoconventional){
-			return Z_MallocEMS(size, tag, user, sourceHint);
+			//return Z_MallocEMS(size, tag, user, sourceHint);
+			I_Error("out of texture space %li %hhi %u %u", size, tag, remainingconventional1, remainingconventional2);
 		}
 		allocations = textureinfo_allocations;
 		remainingtextureinfoconventional -= size;

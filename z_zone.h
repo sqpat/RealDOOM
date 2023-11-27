@@ -129,9 +129,17 @@ typedef struct memblock_s
 // texcols and tex
 #define CA_TYPE_TEXTURE_INFO 5
 
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 51556
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 18892  
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 25598  
+//			   e1m1 = less
+//			   e1m2 = 54078, 27412
+//			   e1m3-e1m5 probably ok
+//             e1m6 huge
+// timedemo1 = e1m7 = 51556, 27431
+//			   e1m8, m9 small
+
+
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54078
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 18892   // no lineopenings demo 3
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 30035  
 
 extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 extern byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];

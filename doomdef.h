@@ -124,10 +124,11 @@ enum { VERSION =  109 };
 #define	FRACBITS		16
 #define	FRACUNIT		0x10000L
 
+#define TAG_77			59
+#define TAG_99			60
 #define TAG_666			61
 #define TAG_667			62
 #define TAG_999			63
-#define TAG_99			60
 
 // ?? tag 99? make them all 63 or under?
 

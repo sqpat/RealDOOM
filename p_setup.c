@@ -97,8 +97,7 @@ int16_t         bmaporgx;
 int16_t         bmaporgy;
 
 // for thing chains
-MEMREF        blocklinks[NUM_BLOCKLINKS];
-
+THINKERREF*		blocklinks;
 
 // REJECT
 // For fast sight rejection.
@@ -327,8 +326,10 @@ void P_LoadSectors(int16_t lump)
 			convertedtag = TAG_999;
 		} else if (convertedtag == 99) {
 			convertedtag = TAG_99;
-		} else if (convertedtag >= 60) {
-			I_Error("found line tag that was too high! %i", convertedtag);
+		} else if (convertedtag == 77) {
+			convertedtag = TAG_77;
+		} else if (convertedtag >= 58) {
+			I_Error("found (sector) line tag that was too high! %i %i", convertedtag, i);
 		}
 		//sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
@@ -1009,8 +1010,10 @@ void P_LoadLineDefs(int16_t lump)
 			convertedtag = TAG_999;
 		} else if (convertedtag == 99) {
 			convertedtag = TAG_99;
-		} else if (convertedtag >= 60) {
-			I_Error("found line tag that was too high! %i", convertedtag);
+		} else if (convertedtag == 77) {
+			convertedtag = TAG_77;
+		} else if (convertedtag >= 58) {
+			I_Error("found (line) line tag that was too high! %i %i", convertedtag, i);
 		}
 
 		ld->tag = convertedtag;
@@ -1132,6 +1135,7 @@ void P_LoadBlockMap(int16_t lump)
 	uint16_t         count;
 	int16_t*		blockmaplump;
 	fixed_t_union temp;
+	MEMREF			blocklinksRef;
 	temp.h.fracbits = 0;
 
 	W_CacheLumpNumCheck(lump, 8);
@@ -1141,22 +1145,30 @@ void P_LoadBlockMap(int16_t lump)
 	//blockmapOffset = 4;  // only ever 4? deleted..
 	count = W_LumpLength(lump) / 2;
 
-	for (i = 0; i < count; i++)
-		blockmaplump[i] = (blockmaplump[i]);
+	//for (i = 0; i < count; i++)
+	//	blockmaplump[i] = (blockmaplump[i]);
 	
 	bmaporgx = blockmaplump[0];
 	bmaporgy = blockmaplump[1];
 	bmapwidth = blockmaplump[2];
 	bmapheight = blockmaplump[3];
 
+	// 9700 52 56     2 * 52 * 56 too big?  5824 
+	// 4423 32 27 
+
+
 	// clear out mobj chains
-	count = sizeof(*blocklinks)* bmapwidth*bmapheight;
 
 	//	blocklinksRef = Z_MallocEMS (count, PU_LEVEL, 0, ALLOC_TYPE_BLOCKLINKS);
+	count = sizeof(THINKERREF) * bmapwidth*bmapheight;
+
+	blocklinksRef = Z_MallocConventional(count, PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_SUBSECS);
+	blocklinks = (THINKERREF*)Z_LoadBytesFromConventional(blocklinksRef);
 	memset(blocklinks, 0, count);
 }
 
 
+uint16_t                 total;
 
 //
 // P_GroupLines
@@ -1167,7 +1179,6 @@ void P_GroupLines(void)
 {
 	uint16_t                 i;
 	uint16_t                 j;
-	uint16_t                 total;
 	line_t*             li;
 	int16_t             bbox[4];
 	int16_t             block;
@@ -1339,15 +1350,15 @@ P_SetupLevel
 	time = ticcount;
 
 	
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	// note: most of this ordering is important 
-	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
+
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadVertexes");
 	P_LoadVertexes(lumpnum + ML_VERTEXES);
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadSectors");
 	P_LoadSectors(lumpnum + ML_SECTORS);
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadSideDefs");
 	P_LoadSideDefs(lumpnum + ML_SIDEDEFS);
+
 
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadLineDefs");
 	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
@@ -1359,18 +1370,74 @@ P_SetupLevel
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadSegs");
 	P_LoadSegs(lumpnum + ML_SEGS);
 
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
+	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 
-	//     sector    linedef      node      linebuffer
-	// side     vertex     subsec       seg		   lineopenings
-	// 1223 170   896   958  467  466   1371			958		num x
-	//    7  23     4    21    5   28     12			7		sizeof type
-	// 8561 3910 3584 19160 2335 13048 16452  2440		6706	bytes used
-	//								   21936
+
+	//     sector    linedef      node      lineopenings	blocklinks
+	// side     vertex     subsec       seg		   linebyffer
+
+	// e1m1
+	// 648    85  467   475	 237  236   732    475   642    828			num x
+	//   7   23     4    21    5   28     12	 7	   2	  2			size of type
+	// 4536 1995 1868  9975 1185 6608  8784   3325  1284   1656			bytes used
+	//							34951					  15049
 	//   3    2     1     4    5     6     7     8		load order
-	//                           51556        18892		+ lineopenings 6706
-	//										  24376
-	// biggest shareware
-	//                  1351            1861
+
+	// e1m2
+	// 1323 200  942   1033   448  447   1463 1033  1322   1302
+	//   7   23     4    21    5   28     12	 7	   2	  2				size of type
+	// 9261 4600 3768 21693 2240 12516  17556 7231  2644   2604
+	//							54078                  30035
+
+
+		// e1m3
+	// 1326 177  946   1026  461  460  1445	   1026 1318   850
+	//   7   23     4    21    5   28     12	 7	   2	  2				size of type
+	// 9282 4071 3784 21546 2305 12880 17340   7182 2636  1700
+	//							53868                  28858
+
+		// e1m4
+	// 1054 139  780   830   355  354   1172   830  1051   660
+	//   7   23     4    21    5   28     12	 7	   2	  2				size of type
+	// 7378 3197 3120 17430  1775 9912 14064  5810  2102  1320
+	//							42812                  23296
+	// e1m5
+	// 1053 143  746   825   384  383   1141   825  1051    832
+	//   7   23     4    21    5   28     12	 7	   2	  2				size of type
+	// 7371 3289 2984 17325 1920 10724 13692   5775 2102   1664
+	//							43613                  23233
+
+
+	// biggest shareware e1m6?
+	// 1726 249  1206 1351   605  604    1861   ???   1351
+	//   7   23     4    21    5   28     12	 7	   2	  2				size of type
+	//12082 5727 4824 28371 3030 16912 22332           9457
+	//						54034      48701 + linebuffer (big)
+	
+	// e1m7 timedemo 3
+	//     sector    linedef      node      linebuffer		blocklinks
+	// side     vertex     subsec       seg		   lineopenings
+	// 1223 170   896   958  467  466   1371   958	1220   864				count
+	//   7   23     4    21    5   28     12	 7	   2	 2				size of type
+	// 8561 3910 3584 20118 2335 13048 16452  6707  2440	1728				bytes used
+	//							51556						27327
+	//   3    2     1     4    5     6     7     8		load order
+	
+
+	// e1m8
+	// 511   74   328   333  177  176    586   333   507   2912
+	//   7   23     4    21    5   28     12	 7	   2	  2
+	// 3577 1702 1312  6993  885 4928   7032  2331  1014   5824
+	//							19397						 16201
+
+
+	// e1m9
+	// 902  147  581    653  288  287    978   653   898    702
+	//   7   23     4    21    5   28     12	 7	   2	  2
+	// 6314 3381 2324 13713 1440 8036  11736  4571  1796   1404
+	//							35208						19507
+
 	// doom 2 map 14
 	//	2586 347  1428 1680  850  849	2815
 	// 18102 7981 5712 35280 4250 23772 33780  = 128877 too big ... also sides array > 64k, problematic...
@@ -1389,23 +1456,25 @@ P_SetupLevel
 	TEXT_MODE_DEBUG_PRINT("\nP_CacheLineOpenings");
 	P_CacheLineOpenings();
 #endif
-	//I_Error("\n%p %p", lineopenings, &lineopenings[950]);
 
 	/*
-	
-	I_Error("%i %i %i %i %i %i %i %i\n%u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p %p",
+	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p %p",
 		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t),
-		sizeof(subsector_t), sizeof(node_t), sizeof(seg_t), sizeof(lineopening_t),
+		sizeof(subsector_t), sizeof(node_t), sizeof(seg_t), sizeof(lineopening_t), 2, sizeof(THINKERREF),
 		
+		numsides , numsectors , numvertexes , numlines ,
+		numsubsectors , numnodes , numsegs  , numlines , total,  bmapheight * bmapwidth,
+
+
 		numsides * sizeof(side_t), numsectors * sizeof(sector_t), numvertexes * sizeof(vertex_t), numlines * sizeof(line_t),
-		numsubsectors * sizeof(subsector_t), numnodes * sizeof(node_t), numsegs * sizeof(seg_t), numlines * sizeof(lineopening_t),
+		numsubsectors * sizeof(subsector_t), numnodes * sizeof(node_t), numsegs * sizeof(seg_t), numlines * sizeof(lineopening_t), total * 2, bmapheight * bmapwidth *sizeof(THINKERREF),
 		
 		sides, sectors, vertexes, lines,
 		subsectors, nodes, vertexes, lineopenings,
 		
 		conventionalmemoryblock1, conventionalmemoryblock2
-	);*/
-	
+	);
+	*/
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadThings");
 	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 
 

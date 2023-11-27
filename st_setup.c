@@ -326,16 +326,10 @@ void ST_createWidgets(void)
 
 void ST_Stop(void)
 {
-	//MEMREF palRef;
-	byte*       pal;
 	if (st_stopped)
 		return;
 
-	//palRef = W_CacheLumpNumEMS(lu_palette, PU_CACHE);
-	pal = (byte*)Z_LoadBytesFromEMS(palRef);
 	I_SetPalette(0);
-
-	//	I_SetPalette(W_CacheLumpNum(lu_palette, PU_CACHE));
 
 	st_stopped = true;
 }

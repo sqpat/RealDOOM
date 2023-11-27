@@ -763,10 +763,6 @@ void ST_doPaletteStuff(void)
     if (palette != st_palette)
     {
         st_palette = palette;
-        //palRef =  W_CacheLumpNumEMS (lu_palette, PU_CACHE);
-		//pal = (byte*)Z_LoadBytesFromEMS(palRef) + palette * 768;
-
-		//pal = (byte*)W_CacheLumpNum(lu_palette, PU_CACHE) + palette * 768;
         I_SetPalette (palette);
     }
 
