@@ -503,15 +503,15 @@ void P_MobjThinker (mobj_t* mobj, THINKERREF mobjRef) {
 
 	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
-    if ( (mobj->z != temp.w) || mobj->momz ) {
+		if ( (mobj->z != temp.w) || mobj->momz ) {
 		P_ZMovement (mobj);
-	 
-		// FIXME: decent NOP/NULL/Nil function pointer please.
+
+ 		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if ((thinkerlist[mobjRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
 		}
     }
-
+ 
 
     // cycle through states,
     // calling action functions at transitions
@@ -568,8 +568,6 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
     mobjinfo_t*	info;
 	THINKERREF mobjRef;
 	int16_t mobjsecnum;
-	short_height_t sectorfloorheight;
-	short_height_t sectorceilingheight;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 
@@ -613,11 +611,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
  
 
 	mobjsecnum = mobj->secnum;
-	sectorfloorheight = sectors[mobjsecnum].floorheight;
-	sectorceilingheight = sectors[mobjsecnum].ceilingheight;
-
-	mobj->floorz = sectorfloorheight;
-	mobj->ceilingz = sectorceilingheight;
+	mobj->floorz = sectors[mobjsecnum].floorheight;
+	mobj->ceilingz = sectors[mobjsecnum].ceilingheight;
 
     if (z == ONFLOORZ){
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);

@@ -48,6 +48,9 @@ T_MovePlane
 {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
+#ifdef		PRECALCULATE_OPENINGS
+	int16_t secnum = sector - sectors;
+#endif
 
 		switch(floorOrCeiling) {
 			case 0:
@@ -60,23 +63,39 @@ T_MovePlane
 						if (sector->floorheight - speed < dest) {
 							lastpos = sector->floorheight;
 							sector->floorheight = dest;
+#ifdef		PRECALCULATE_OPENINGS
+							P_UpdateLineOpening(secnum, true);
+#endif
+
 							somethingcrushed = P_ChangeSector(sector,crush);
+
+
 							if (somethingcrushed) {
-								sector->floorheight =lastpos;
+								sector->floorheight = lastpos;
+#ifdef		PRECALCULATE_OPENINGS
+								P_UpdateLineOpening(secnum, true);
+#endif
 
 								P_ChangeSector(sector,crush);
 								//return floor_crushed;
 							}
 
-
 							return floor_pastdest;
 						} else {
 							lastpos = sector->floorheight;
 							sector->floorheight -= speed;
+#ifdef		PRECALCULATE_OPENINGS
+							P_UpdateLineOpening(secnum, true);
+#endif
+
 							somethingcrushed = P_ChangeSector(sector,crush);
 
 							if (somethingcrushed) {
 								sector->floorheight = lastpos;
+#ifdef		PRECALCULATE_OPENINGS
+								P_UpdateLineOpening(secnum, true);
+#endif
+
 								P_ChangeSector(sector,crush);
 								return floor_crushed;
 							}
@@ -90,10 +109,16 @@ T_MovePlane
 						if (sector->floorheight + speed > dest) {
 							lastpos = sector->floorheight;
 							sector->floorheight = dest;
+#ifdef		PRECALCULATE_OPENINGS
+							P_UpdateLineOpening(secnum, true);
+#endif
 							somethingcrushed = P_ChangeSector(sector,crush);
 							if (somethingcrushed) {
 								sector->floorheight = lastpos;
-			
+#ifdef		PRECALCULATE_OPENINGS
+								P_UpdateLineOpening(secnum, true);
+#endif
+
 								P_ChangeSector(sector,crush);
 								//return floor_crushed;
 							}
@@ -102,16 +127,22 @@ T_MovePlane
 							// COULD GET CRUSHED
 							lastpos = sector->floorheight;
 							sector->floorheight += speed;
+#ifdef		PRECALCULATE_OPENINGS
+							P_UpdateLineOpening(secnum, true);
+#endif
 							somethingcrushed = P_ChangeSector(sector,crush);
 							if (somethingcrushed) {
 								if (crush == true) {
 									return floor_crushed;
 								}
 								sector->floorheight = lastpos;
+#ifdef		PRECALCULATE_OPENINGS
+								P_UpdateLineOpening(secnum, true);
+#endif
 								P_ChangeSector(sector,crush);
 								return floor_crushed;
 							}
-		
+
 						}
 						break;
 				}
@@ -125,10 +156,16 @@ T_MovePlane
 						if (sector->ceilingheight - speed < dest) {
 							lastpos = sector->ceilingheight;
 							sector->ceilingheight = dest;
+#ifdef		PRECALCULATE_OPENINGS
+							P_UpdateLineOpening(secnum, false);
+#endif
 							somethingcrushed = P_ChangeSector(sector,crush);
 
 							if (somethingcrushed) {
 								sector->ceilingheight = lastpos;
+#ifdef		PRECALCULATE_OPENINGS
+								P_UpdateLineOpening(secnum, false);
+#endif
 								P_ChangeSector(sector,crush);
 								//return floor_crushed;
 							}
@@ -137,6 +174,9 @@ T_MovePlane
 							// COULD GET CRUSHED
 							lastpos = sector->ceilingheight;
 							sector->ceilingheight -= speed;
+#ifdef		PRECALCULATE_OPENINGS
+							P_UpdateLineOpening(secnum, false);
+#endif
 							somethingcrushed = P_ChangeSector(sector,crush);
 
 							if (somethingcrushed) {
@@ -144,6 +184,9 @@ T_MovePlane
 									return floor_crushed;
 								}
 								sector->ceilingheight = lastpos;
+#ifdef		PRECALCULATE_OPENINGS
+								P_UpdateLineOpening(secnum, false);
+#endif
 								P_ChangeSector(sector,crush);
 								return floor_crushed;
 							}
@@ -155,9 +198,15 @@ T_MovePlane
 						if (sector->ceilingheight + speed > dest) {
 							lastpos = sector->ceilingheight;
 							sector->ceilingheight = dest;
+#ifdef		PRECALCULATE_OPENINGS
+							P_UpdateLineOpening(secnum, false);
+#endif
 							somethingcrushed = P_ChangeSector(sector,crush);
 							if (somethingcrushed) {
 								sector->ceilingheight = lastpos;
+#ifdef		PRECALCULATE_OPENINGS
+								P_UpdateLineOpening(secnum, false);
+#endif
 								P_ChangeSector(sector,crush);
 								//return crushed;
 							}
@@ -165,6 +214,9 @@ T_MovePlane
 						} else {
 							lastpos = sector->ceilingheight;
 							sector->ceilingheight += speed;
+#ifdef	PRECALCULATE_OPENINGS
+							P_UpdateLineOpening(secnum, false);
+#endif
 							somethingcrushed = P_ChangeSector(sector,crush);
 						}
 						break;

@@ -100,6 +100,11 @@ extern side_t*       sides;
 extern int16_t*          linebuffer;
 
 extern MEMREF		nightmareSpawnPointsRef;
+
+#ifdef PRECALCULATE_OPENINGS
+extern lineopening_t*	lineopenings;
+#endif
+
 //
 // POV data.
 //

@@ -340,19 +340,86 @@ P_InterceptVector
 // through a two sided line.
 // OPTIMIZE: keep this precalculated
 //
-int16_t opentop;
-int16_t openbottom;
-int16_t openrange;
-int16_t	lowfloor;
+lineopening_t lineopening;
 
+#ifdef	PRECALCULATE_OPENINGS
+
+
+void P_LoadLineOpening(int16_t linenum) {
+	
+	//recalc if cache dirty if necessary
+	if (lineopenings[linenum].cachebits) {
+
+		// we do the backsecnum check when setting bit dirty, so backsecnum always good
+		int16_t linefrontsecnum = lines[linenum].frontsecnum;
+		int16_t linebacksecnum = lines[linenum].backsecnum;
+
+		sector_t* front = &sectors[linefrontsecnum];
+		sector_t* back = &sectors[linebacksecnum];
+	 
+
+
+		if (lineopenings[linenum].cachebits & LO_CEILING_DIRTY_BIT) {
+			if (front->ceilingheight < back->ceilingheight) {
+				lineopenings[linenum].opentop = front->ceilingheight;
+			}
+			else {
+				lineopenings[linenum].opentop = back->ceilingheight;
+			}
+		}
+		if (lineopenings[linenum].cachebits & LO_FLOOR_DIRTY_BIT) {
+			if (front->floorheight > back->floorheight) {
+				lineopenings[linenum].openbottom = front->floorheight;
+				lineopenings[linenum].lowfloor = back->floorheight;
+			}
+			else {
+				lineopenings[linenum].openbottom = back->floorheight;
+				lineopenings[linenum].lowfloor = front->floorheight;
+			}
+		}
+
+		// this is used in two spots, we'll just calc ont he fly.
+		//lineopenings[linenum].openrange = lineopenings[linenum].opentop - lineopenings[linenum].openbottom;
+
+		lineopenings[linenum].cachebits = 0;
+	}
+	lineopening = lineopenings[linenum];
+}
+
+void P_UpdateLineOpening(int16_t secnum, boolean changedFloor) {
+	int16_t max = sectors[secnum].linecount;
+	int16_t i;
+	sector_t* front;
+	sector_t* back;
+
+//	if (secnum > numsectors || secnum < 0) {
+//		I_Error("bad secnum %i", secnum);
+//	}
+	//lineopening_t* lineopenings = Z_LoadBytesFromEMS(lineopeningsRef);
+	
+	for (i = 0; i < max; i++) {
+		int16_t linenum = linebuffer[sectors[secnum].linesoffset + i];
+		int16_t lineside1 = lines[linenum].sidenum[1];
+		if (lineside1 == -1) {
+			// single sided line
+			continue;
+		}
+
+		lineopenings[linenum].cachebits |= 
+				(changedFloor ? LO_FLOOR_DIRTY_BIT : LO_CEILING_DIRTY_BIT);
+
+
+
+	}
+}
+#else
 
 void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {
-    sector_t*	front;
+	sector_t*	front;
     sector_t*	back;
     if (lineside1 == -1) {
 		// single sided line
-		openrange = 0;
-		return;
+ 		return;
 	}
 
 	
@@ -360,23 +427,22 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 	back = &sectors[linebacksecnum];
 	
 	if (front->ceilingheight < back->ceilingheight) {
-		opentop = front->ceilingheight;
+		lineopening.opentop = front->ceilingheight;
 	} else {
-		opentop = back->ceilingheight;
+		lineopening.opentop = back->ceilingheight;
 	}
 	if (front->floorheight > back->floorheight) {
-		openbottom = front->floorheight;
-		lowfloor = back->floorheight;
+		lineopening.openbottom = front->floorheight;
+		lineopening.lowfloor = back->floorheight;
 	} else {
-		openbottom = back->floorheight;
-		lowfloor = front->floorheight;
+		lineopening.openbottom = back->floorheight;
+		lineopening.lowfloor = front->floorheight;
 	}
 	
-    openrange = opentop - openbottom;
-
+ 
 
 }
-
+#endif
 
 //
 // THING POSITION SETTING
@@ -501,13 +567,13 @@ void
 P_SetThingPosition (mobj_t* thing)
 {
 	int16_t	subsecnum = R_PointInSubsector(thing->x, thing->y);;
-    //sector_t*		sec;
+	int16_t subsectorsecnum = subsectors[subsecnum].secnum;
+	//sector_t*		sec;
     int16_t			blockx;
     int16_t			blocky;
 	THINKERREF		linkRef;
 	
 	mobj_t* thingList;
-	int16_t subsectorsecnum = subsectors[subsecnum].secnum;
 	THINKERREF oldsectorthinglist;
 	fixed_t_union temp;
 	THINKERREF thingRef = GETTHINKERREF(thing);
@@ -624,11 +690,12 @@ P_BlockLinesIterator
 
 		ld = &lines[list];
 
+		//if (ld->validcount == (validcount & 0xFF)) {
 		if (ld->validcount == validcount) {
-			blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
 			continue; 	// line has already been checked
 		}
 		ld->validcount = validcount;
+		//ld->validcount = (validcount & 0xFF);
 			
 		if (!func(ld, list)) {
 			return false;
@@ -652,6 +719,7 @@ P_BlockThingsIterator
 {
 	THINKERREF mobjRef;
     mobj_t*		mobj;
+
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
 	}
@@ -664,7 +732,7 @@ P_BlockThingsIterator
 		mobj = (mobj_t*)&thinkerlist[mobjRef].data;  
 
 		if (!func(mobjRef, mobj)) {
-			 
+
 			return false;
 		}
 
@@ -716,7 +784,6 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 	tempx.h.fracbits = 0;
 	tempy.h.fracbits = 0;
 
-
     // avoid precision problems with two routines
 	if ( trace.dx.h.intbits > 16 || trace.dy.h.intbits > 16 || trace.dx.h.intbits < -16 || trace.dy.h.intbits < -16) {
 		// we actually know the vertex fields to be 16 bit, but trace has 32 bit fields
@@ -731,8 +798,9 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, linev1Offset);
     }
     
-    if (s1 == s2)
+	if (s1 == s2) {
 		return true;	// line isn't crossed
+	}
     
     // hit the line
     //P_MakeDivline(linedx, linedy, linev1Offset, &dl);
@@ -760,7 +828,7 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 		return false;	// stop checking
     }
     
-	
+ 
     intercept_p->frac = frac;
     intercept_p->isaline = true;
     intercept_p->d.linenum = linenum;
@@ -858,16 +926,12 @@ P_TraverseIntercepts
 	fixed_t maxfrac = FRACUNIT;
 	int16_t i = 0;
 	count = intercept_p - intercepts;
-    
-	
-	//if (setval == 1)
-	//	I_Error("inner lets see? %li %li %li %i %li %li", gametic, intercept_p, intercepts, count, maxfrac, MAXLONG);
+ 
+	 
 
 
     while (count--) {
 		i++;
-		if (setval)
-			setval++;
 		dist = MAXLONG;
 		for (scan = intercepts ; scan<intercept_p ; scan++) {
 			if (scan->frac < dist) {
@@ -875,7 +939,8 @@ P_TraverseIntercepts
 				in = scan;
 			}
 		}
-	
+
+		   
 		if (dist > maxfrac) {
 			return;	// checked everything in range		
 		}
@@ -930,7 +995,7 @@ P_PathTraverse
 
     int8_t		count;
 	fixed_t_union temp;
-		
+
     earlyout = flags & PT_EARLYOUT;
 	
     validcount++;
@@ -1005,7 +1070,7 @@ P_PathTraverse
 			if (!P_BlockLinesIterator (mapx, mapy,PIT_AddLineIntercepts))
 				return;	// early out
 		}
-		
+
 		if (flags & PT_ADDTHINGS) {
 			if (!P_BlockThingsIterator (mapx, mapy,PIT_AddThingIntercepts))
 				return;	// early out
@@ -1024,10 +1089,6 @@ P_PathTraverse
 		}
 			
 	}
-
-	//if (setval == 1)
-		//I_Error("crash base? %li %i %i %li %li %li %li %li %li %li %hi", gametic, mapy, mapx, xintercept.w, yintercept.w, x1.w, y1.w, partial, xstep, ystep, mapystep);
-		//I_Error("crash earlier more? %li %li %li %li %li", gametic, mapy, mapx, xintercept.w, yintercept.w);
 
 	// go through the sorted list
 	// todo inline this only used in one spot

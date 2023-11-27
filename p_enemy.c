@@ -138,23 +138,29 @@ P_RecursiveSound
 		lineoffset = soundsector->linesoffset + i;
 		linenumber = linebuffer[lineoffset];
 
-		
+	
 
 		check = &lines[linenumber];
 		checkflags = check->flags;
 		checksidenum0 = check->sidenum[0];
 		checksidenum1 = check->sidenum[1];
+#ifndef		PRECALCULATE_OPENINGS
 		checkfrontsecnum = check->frontsecnum;
 		checkbacksecnum = check->backsecnum;
+#endif
 
-	 
+
 
 		if (!(checkflags & ML_TWOSIDED)) {
 			continue;
 		}
+#ifdef	PRECALCULATE_OPENINGS
+		lineopening = lineopenings[linenumber];
+#else
 		P_LineOpening(checksidenum1, checkfrontsecnum, checkbacksecnum);
+#endif
 
-		if (openrange <= 0) {
+		if (lineopening.opentop <= lineopening.openbottom) {
 			continue;	// closed door
 		}
 
@@ -164,7 +170,7 @@ P_RecursiveSound
 		else {
 			othersecnum = sides[checksidenum0].secnum;
 		}
- 
+			 
 		if (checkflags & ML_SOUNDBLOCK) {
 			if (!soundblocks) {
 				P_RecursiveSound(othersecnum, 1);
@@ -660,7 +666,7 @@ void A_Look (mobj_t* actor)
 
 			if (actor->flags & MF_AMBUSH)
 			{
-
+				
 				if (P_CheckSight(actor, targ)) {
 
 					goto seeyou;
@@ -846,7 +852,7 @@ void A_Chase (mobj_t*	actor)
     // possibly choose another target
 
 	
-	
+
 
 
     // chase towards player
@@ -915,7 +921,7 @@ void A_PosAttack (mobj_t* actor)
 
     if (!actor->targetRef)
 		return;
-		
+
     A_FaceTarget (actor);
 
 	angle = actor->angle >> ANGLETOFINESHIFT;
@@ -924,7 +930,7 @@ void A_PosAttack (mobj_t* actor)
 	S_StartSoundFromRef(actor, sfx_pistol);
     angle = MOD_FINE_ANGLE(angle + (((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
     damage = ((P_Random()%5)+1)*3;
-    P_LineAttack (actor, angle, MISSILERANGE, slope, damage);
+	P_LineAttack (actor, angle, MISSILERANGE, slope, damage);
 }
 
 void A_SPosAttack (mobj_t*	actor)

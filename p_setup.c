@@ -73,6 +73,10 @@ int16_t*          linebuffer;
 // for things nightmare respawn data
 MEMREF			nightmareSpawnPointsRef;
 
+#ifdef PRECALCULATE_OPENINGS
+lineopening_t*	lineopenings;
+#endif
+
 // BLOCKMAP
 // Created from axis aligned bounding box
 // of the map, a rectangular array of
@@ -321,6 +325,10 @@ void P_LoadSectors(int16_t lump)
 			convertedtag = TAG_667;
 		} else if (convertedtag == 999) {
 			convertedtag = TAG_999;
+		} else if (convertedtag == 99) {
+			convertedtag = TAG_99;
+		} else if (convertedtag >= 60) {
+			I_Error("found line tag that was too high! %i", convertedtag);
 		}
 		//sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
@@ -827,9 +835,50 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 
 
 }
+#ifdef PRECALCULATE_OPENINGS
 
+void P_CacheLineOpenings() {
+	int16_t linenum, linefrontsecnum, linebacksecnum;
+	sector_t* front;
+	sector_t* back;
+	
+	MEMREF lineopeningsRef = Z_MallocConventional(numlines * sizeof(lineopening_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_LINEOPENINGS);
+	lineopenings = (lineopening_t*)Z_LoadBytesFromConventional(lineopeningsRef);
+	memset(lineopenings, 0, numlines * sizeof(lineopening_t));
 
+	for (linenum = 0; linenum < numlines; linenum++) {
+		int16_t lineside1 = lines[linenum].sidenum[1];
+		if (lineside1 == -1) {
+			// single sided line
+			continue;
+		}
+		linefrontsecnum = lines[linenum].frontsecnum;
+		linebacksecnum = lines[linenum].backsecnum;
 
+		front = &sectors[linefrontsecnum];
+		back = &sectors[linebacksecnum];
+
+		if (front->ceilingheight < back->ceilingheight) {
+			lineopenings[linenum].opentop = front->ceilingheight;
+		}
+		else {
+			lineopenings[linenum].opentop = back->ceilingheight;
+		}
+		if (front->floorheight > back->floorheight) {
+			lineopenings[linenum].openbottom = front->floorheight;
+			lineopenings[linenum].lowfloor = back->floorheight;
+		}
+		else {
+			lineopenings[linenum].openbottom = back->floorheight;
+			lineopenings[linenum].lowfloor = front->floorheight;
+		}
+
+		//lineopenings[linenum].openrange = lineopenings[linenum].opentop - lineopenings[linenum].openbottom;
+	}
+	 
+}
+
+#endif
 //
 // P_LoadThings
 //
@@ -910,6 +959,7 @@ void P_LoadLineDefs(int16_t lump)
 	int16_t mldsidenum0;
 	int16_t mldsidenum1;
 	MEMREF linesRef;
+	int16_t convertedtag;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
 	linesRef = Z_MallocConventional(numlines * sizeof(line_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_LINES);
@@ -949,7 +999,21 @@ void P_LoadLineDefs(int16_t lump)
 
 		ld->flags = mldflags&0xff;
 		ld->special = mldspecial;
-		ld->tag = mldtag;
+
+		convertedtag = mldtag;
+		if (convertedtag == 666) {
+			convertedtag = TAG_666;
+		} else if (convertedtag == 667) {
+			convertedtag = TAG_667;
+		} else if (convertedtag == 999) {
+			convertedtag = TAG_999;
+		} else if (convertedtag == 99) {
+			convertedtag = TAG_99;
+		} else if (convertedtag >= 60) {
+			I_Error("found line tag that was too high! %i", convertedtag);
+		}
+
+		ld->tag = convertedtag;
 		ld->v1Offset = mldv1;
 		ld->v2Offset = mldv2;
 		ld->dx = v2x - v1x;
@@ -1274,7 +1338,7 @@ P_SetupLevel
 
 	time = ticcount;
 
-	// TODO reorder allocations with regards to physics and rendering segment locality
+	
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	// note: most of this ordering is important 
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
@@ -1297,14 +1361,14 @@ P_SetupLevel
 
 
 	//     sector    linedef      node      linebuffer
-	// side     vertex     subsec       seg
-	// 1223 170   896   958  467  466   1371        num x
-	//    7  23     4    21    5   28     12        sizeof type
-	// 8561 3910 3584 20118 2335 13048 16452  2440  bytes used
+	// side     vertex     subsec       seg		   lineopenings
+	// 1223 170   896   958  467  466   1371			958		num x
+	//    7  23     4    21    5   28     12			7		sizeof type
+	// 8561 3910 3584 19160 2335 13048 16452  2440		6706	bytes used
 	//								   21936
-	//   3    2     1     4    5     6     7     8  load order
-	//                           51556        18892
-	//											24376
+	//   3    2     1     4    5     6     7     8		load order
+	//                           51556        18892		+ lineopenings 6706
+	//										  24376
 	// biggest shareware
 	//                  1351            1861
 	// doom 2 map 14
@@ -1312,12 +1376,6 @@ P_SetupLevel
 	// 18102 7981 5712 35280 4250 23772 33780  = 128877 too big ... also sides array > 64k, problematic...
 	//                 67075 up to here   61802 
 	
-	/*
-	I_Error("%i %i %i %i %i %i %i %i %i %i",
-		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t), sizeof(subsector_t),
-		sizeof(node_t), sizeof(seg_t), 0, 0, 0
-	);
-	*/
  
 
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 9);
@@ -1327,6 +1385,27 @@ P_SetupLevel
 
 	bodyqueslot = 0;
 
+#ifdef PRECALCULATE_OPENINGS
+	TEXT_MODE_DEBUG_PRINT("\nP_CacheLineOpenings");
+	P_CacheLineOpenings();
+#endif
+	//I_Error("\n%p %p", lineopenings, &lineopenings[950]);
+
+	/*
+	
+	I_Error("%i %i %i %i %i %i %i %i\n%u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p %p",
+		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t),
+		sizeof(subsector_t), sizeof(node_t), sizeof(seg_t), sizeof(lineopening_t),
+		
+		numsides * sizeof(side_t), numsectors * sizeof(sector_t), numvertexes * sizeof(vertex_t), numlines * sizeof(line_t),
+		numsubsectors * sizeof(subsector_t), numnodes * sizeof(node_t), numsegs * sizeof(seg_t), numlines * sizeof(lineopening_t),
+		
+		sides, sectors, vertexes, lines,
+		subsectors, nodes, vertexes, lineopenings,
+		
+		conventionalmemoryblock1, conventionalmemoryblock2
+	);*/
+	
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadThings");
 	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 
 

@@ -100,7 +100,8 @@ typedef	struct
 	int16_t soundorgY;
 
     // if == validcount, already checked
-    int16_t		validcount;
+	//uint8_t validcount;	// [linecount] size
+	int16_t		validcount;
 
     // list of mobjs in sector
     THINKERREF	thinglistRef;
@@ -109,7 +110,6 @@ typedef	struct
 	THINKERREF	specialdataRef;
     uint8_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
 
-	//uint8_t linesoffset;	// [linecount] size
 	int16_t linesoffset;	// [linecount] size
 
 } sector_t;
@@ -161,6 +161,8 @@ typedef int16_t slopetype_t;
 #define		FLAG9_SHIFT				15
 #define		SLOPETYPE_SHIFT			14
 #define		MAKE_SLOPETYPE(a)		((a & LINE_VERTEX_SLOPETYPE) >> SLOPETYPE_SHIFT)
+//#define		LINETAG_MASK		0x3F
+//#define		LINETAG_VALIDCOUNT_MASK		0xC0
 
 typedef struct line_s
 {
@@ -176,7 +178,7 @@ typedef struct line_s
     // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag in v1offset
 	uint8_t	flags;
     uint8_t	special;
-	uint8_t	tag;
+	uint8_t	tag; // high 2 bits are free... could be used for something
 
     // Visual appearance: SideDefs.
     //  sidenum[1] will be -1 if one sided
@@ -187,14 +189,28 @@ typedef struct line_s
 	int16_t	backsecnum;
 
     // if == validcount, already checked
-	// todo can it be 8 bit?
+	// todo make this work 8 bit
+	// tricky, collisions do seem to happen with 8 bit. I think 10 or 11 would work. would need to fit those 3 high bits elsewhere.
     //uint8_t		validcount;
 	int16_t		validcount;
 
 
 } line_t;
 
+#define	LO_FLOOR_DIRTY_BIT 0x01
+#define	LO_CEILING_DIRTY_BIT  0x02
 
+
+
+typedef struct lineopening_s
+{
+	short_height_t		opentop;
+	short_height_t 		openbottom;
+	short_height_t		lowfloor;
+	byte				cachebits;
+	//short_height_t		openrange; // not worth storing thousands of bytes of a subtraction result
+
+} lineopening_t;
 
 
 //

@@ -418,9 +418,6 @@ void R_AddSprites (int16_t secnum)
 		spritelights = scalelight[lightnum];
 	}
 
-	// todo:  gross... can be a bunch of things in diff pages..
-
-	
 
     // Handle all things in sector.
 	// todo, should we quit out early of drawing player sprite? matters for netplay maybe? if its self, shouldnt render and its a lot of extra traversal?

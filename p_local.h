@@ -213,12 +213,15 @@ void 	P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t*
 boolean 	P_BoxOnLineSide (fixed_t_union* tmbox, slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t linev1Offset);
 
 
-extern short_height_t		opentop;
-extern short_height_t 		openbottom;
-extern short_height_t		openrange;
-extern short_height_t		lowfloor;
+extern lineopening_t lineopening;
 
-void 	P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
+#ifdef	PRECALCULATE_OPENINGS
+void P_LoadLineOpening(int16_t linenumer);
+void P_UpdateLineOpening(int16_t secnum, boolean changedFloor);
+#else
+void 	P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
+#endif
+
 
 boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_t* ld, int16_t ) );
 boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(THINKERREF, mobj_t*));

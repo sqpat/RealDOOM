@@ -87,7 +87,9 @@
 #define ALLOC_TYPE_MOBJ 29
 
 #define ALLOC_TYPE_STRINGS 30
+
 #define ALLOC_TYPE_NIGHTMARE_SPAWN_DATA 31
+#define ALLOC_TYPE_LINEOPENINGS 32
 
 // most paged in order:
 // as expected, we need to find a way to get lines segs verts sectors nodes into conventional to greatly improve perf.
@@ -127,10 +129,12 @@ typedef struct memblock_s
 // texcols and tex
 #define CA_TYPE_TEXTURE_INFO 5
 
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 50598
 #define STATIC_CONVENTIONAL_BLOCK_SIZE_1 51556
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 18892  
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 25598  
 
 extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
+extern byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS(int16_t tag);

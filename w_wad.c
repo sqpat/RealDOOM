@@ -361,7 +361,7 @@ W_CacheLumpNumEMS2
 
 #ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps)
-		I_Error("W_CacheLumpNumEMS: %i >= numlumps %s %li", lump, file, line);
+		I_Error("W_CacheLumpNumEMS: %i >= numlumps %s %li", lump);
 #endif
 
     //

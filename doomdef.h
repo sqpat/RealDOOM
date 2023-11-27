@@ -52,6 +52,9 @@ enum { VERSION =  109 };
 // like nodraw, but actually runs d_display and only skips the actual video memory writes
 //#define SKIP_DRAW
 
+// line opening caching. Unfortunately seems to be 0.5% slower or so - also uses extra memory. 
+#define PRECALCULATE_OPENINGS
+
 // Reasonable values include 4 (minimum), 8, and maybe even 10 or 12 which on an incredibly optimal machine might be possible. Of course in 32 bit mode with simulated EMS you can set it to like 32 or 64 but at that point it's not representative of real world performance.
 #define NUM_EMS_PAGES 4
 
@@ -121,10 +124,12 @@ enum { VERSION =  109 };
 #define	FRACBITS		16
 #define	FRACUNIT		0x10000L
 
-#define TAG_666			121
-#define TAG_667			122
-#define TAG_999			123
+#define TAG_666			61
+#define TAG_667			62
+#define TAG_999			63
+#define TAG_99			60
 
+// ?? tag 99? make them all 63 or under?
 
 // The maximum number of players, multiplayer/networking.
 

@@ -54,8 +54,6 @@
 #define MAX_ZMALLOC_SIZE 0x10000L
 
  
-// shareware timedemo 3 value
- #define STATIC_CONVENTIONAL_BLOCK_SIZE_2 18892  
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
 #define SPRITE_ALLOCATION_LIST_SIZE 150
@@ -532,7 +530,7 @@ void Z_DoPageOut(uint16_t pageframeindex, int16_t source) {
 
 
 
-	// swap OUT memory
+	   	// swap OUT memory
 	int16_t i = 0;
 	// this already gets called once per page on the outside, no need to run an inner loop with numpages to swap
 
@@ -545,7 +543,7 @@ void Z_DoPageOut(uint16_t pageframeindex, int16_t source) {
 	pageouts ++;
 
 	if (pageframeindex >= NUM_EMS_PAGES) {
-		I_Error("bad page frame index %i", pageframeindex);
+		I_Error("bad page frame index %i", pageframeindex, source);
 	}
 
 	activepages[pageframeindex] = -1;

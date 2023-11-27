@@ -205,16 +205,18 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 	int16_t linedy = ld->dy;
 	int16_t linev1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
 	vertex_t v1 = vertexes[linev1Offset];
-	int16_t linefrontsecnum = ld->frontsecnum;
 	int16_t linebacksecnum = ld->backsecnum;
 	uint8_t lineflags = ld->flags;
 	int16_t linespecial = ld->special;
-	int16_t lineside1 = ld->sidenum[1];
 	int16_t lineright = v1.x;
 	int16_t lineleft = v1.x;
 	int16_t linetop = v1.y;
 	int16_t linebot = v1.y;
 
+#ifndef	PRECALCULATE_OPENINGS
+	int16_t linefrontsecnum = ld->frontsecnum;
+	int16_t lineside1 = ld->sidenum[1];
+#endif
 	if (linedx > 0) {
 		lineright += linedx;
 	} else if (linedx < 0){
@@ -269,20 +271,24 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
     }
 
     // set openrange, opentop, openbottom
-    P_LineOpening (lineside1, linefrontsecnum, linebacksecnum);	
+#ifdef	PRECALCULATE_OPENINGS
+	P_LoadLineOpening(linenum);
+#else
+	P_LineOpening (lineside1, linefrontsecnum, linebacksecnum);
+#endif
 	
     // adjust floor / ceiling heights
-    if (opentop < tmceilingz) {
-		tmceilingz = opentop;
+    if (lineopening.opentop < tmceilingz) {
+		tmceilingz = lineopening.opentop;
 		ceilinglinenum = linenum;
     } 
 
-	if (openbottom > tmfloorz) {
-		tmfloorz = openbottom;
+	if (lineopening.openbottom > tmfloorz) {
+		tmfloorz = lineopening.openbottom;
 	}
 
-	if (lowfloor < tmdropoffz) {
-		tmdropoffz = lowfloor;
+	if (lineopening.lowfloor < tmdropoffz) {
+		tmdropoffz = lineopening.lowfloor;
 	}
 
     // if contacted a special line, add it to the list
@@ -472,7 +478,7 @@ P_CheckPosition
 
 	
 	// todo imrpove how to do the minus cases? can underflow happen?
-
+	// todo can this move down
 	tmbbox[BOXTOP].w = y;
 	tmbbox[BOXTOP].h.intbits += thing->radius;
 	temp.h.intbits = thing->radius;
@@ -800,20 +806,22 @@ boolean PTR_SlideTraverse (intercept_t* in)
 
     // set openrange, opentop, openbottom
 	temp.h.fracbits = 0;
-    P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
- 	// temp.h.intbits = openrange >> SHORTFLOORBITS;
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openrange);
+#ifdef	PRECALCULATE_OPENINGS
+	P_LoadLineOpening(in ->d.linenum);
+#else
+	P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
+#endif
+	
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, (lineopening.opentop - lineopening.openbottom));
 
     if (temp.h.intbits < playerMobj->height.h.intbits) // 16 bit okay
 		goto isblocking;		// doesn't fit
 		
-	// temp.h.intbits = opentop >> SHORTFLOORBITS;
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, opentop);
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
     if (temp.w - playerMobj->z < playerMobj->height.w)
 		goto isblocking;		// mobj is too high
 
-	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openbottom);
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
     if (temp.w - playerMobj->z > 24*FRACUNIT )
 		goto isblocking;		// too big a step up
 
@@ -1005,9 +1013,16 @@ PTR_AimTraverse (intercept_t* in)
 		// Crosses a two sided line.
 		// A two sided line will restrict
 		// the possible target ranges.
-		P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
-	
-		if (openbottom >= opentop) {
+#ifdef	PRECALCULATE_OPENINGS
+		P_LoadLineOpening(in->d.linenum);
+#else
+		P_LineOpening(li.sidenum[1], li.frontsecnum, li.backsecnum);
+#endif
+
+
+
+
+		if (lineopening.openbottom >= lineopening.opentop) {
 			//I_Error("caught b");
 			return false;		// stop
 		}
@@ -1016,16 +1031,14 @@ PTR_AimTraverse (intercept_t* in)
 
 		temp.h.fracbits = 0;
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
-			// temp.h.intbits = openbottom >> SHORTFLOORBITS;
-			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openbottom);
+ 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
-			// temp.h.intbits = opentop >> SHORTFLOORBITS;
-			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, opentop);
+ 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope < topslope)
 				topslope = slope;
@@ -1070,9 +1083,9 @@ PTR_AimTraverse (intercept_t* in)
     
     if (thingbottomslope < bottomslope)
 		thingbottomslope = bottomslope;
-
-    aimslope = (thingtopslope+thingbottomslope)/2;
-    linetarget = th;
+ 
+	aimslope = (thingtopslope+thingbottomslope)/2;
+	linetarget = th;
 	
     return false;			// don't go any farther
 }
@@ -1110,21 +1123,23 @@ boolean PTR_ShootTraverse (intercept_t* in)
 			goto hitline;
 	
 		// crosses a two sided line
+#ifdef	PRECALCULATE_OPENINGS
+		P_LoadLineOpening(in->d.linenum);
+#else
 		P_LineOpening(li.sidenum[1], li.frontsecnum, li.backsecnum);
-		
+#endif
+
 		dist = FixedMul (attackrange.w, in->frac);
 
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
-			// temp.h.intbits = openbottom >> SHORTFLOORBITS;
-			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, openbottom);
+ 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope > aimslope)
 				goto hitline;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
-			// temp.h.intbits = opentop >> SHORTFLOORBITS;
-			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, opentop);
+ 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
 			slope = FixedDiv (temp.w - shootz , dist);
 			if (slope < aimslope)
 				goto hitline;
@@ -1181,7 +1196,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
     dist = FixedMul (attackrange.w, in->frac);
     thingtopslope = FixedDiv (th->z+th->height.w - shootz , dist);
 
-	
+
 
     if (thingtopslope < aimslope)
 		return true;		// shot over the thing
@@ -1202,20 +1217,20 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
     // Spawn bullet puffs or blod spots,
     // depending on target type.
-	if (th->flags & MF_NOBLOOD)
-		P_SpawnPuff (x,y,z);
-    else
-		P_SpawnBlood (x,y,z, la_damage);
-
-    if (la_damage)
-		P_DamageMobj (th, shootthing, shootthing, la_damage);
-
+	if (th->flags & MF_NOBLOOD) {
+		P_SpawnPuff(x, y, z);
+	}
+	else {
+		P_SpawnBlood(x, y, z, la_damage);
+	}
+	if (la_damage) {
+		P_DamageMobj(th, shootthing, shootthing, la_damage);
+	}
     // don't go any farther
     return false;
 	
 }
 
-extern int setval;
 //
 // P_AimLineAttack
 //
@@ -1260,7 +1275,6 @@ P_AimLineAttack
     attackrange = distance;
     linetarget = NULL;
 	
-	//setval = 1;
 
     P_PathTraverse ( x, y,
 		     x2, y2,
@@ -1338,11 +1352,16 @@ boolean	PTR_UseTraverse (intercept_t* in)
 
 	line_t line = lines[in->d.linenum];
 	if (!line.special) {
-		P_LineOpening (line.sidenum[1], line.frontsecnum, line.backsecnum);
-		if (openrange <= 0)
+#ifdef	PRECALCULATE_OPENINGS
+		P_LoadLineOpening(in->d.linenum);
+#else
+		P_LineOpening(line.sidenum[1], line.frontsecnum, line.backsecnum);
+#endif
+
+ 		if (lineopening.opentop < lineopening.openbottom)
 		{
 			S_StartSoundFromRef (playerMobj, sfx_noway);
-	    
+
 			// can't use through a wall
 			return false;	
 		}
@@ -1355,7 +1374,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 	if (P_PointOnLineSide(playerMobj->x, playerMobj->y, line.dx, line.dy, line.v1Offset & VERTEX_OFFSET_MASK) == 1) {
 		side = 1;
 	}
-    
+
     //	return false;		// don't use back side
     P_UseSpecialLine (playerMobj, in->d.linenum, side, playerMobjRef);
 
@@ -1514,8 +1533,7 @@ extern mobj_t* setStateReturn;
 //
 boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing)
 {
-    mobj_t*	mo;
-	THINKERREF moRef;
+
 
     if (P_ThingHeightClip (thing)) {
 		// keep checking
@@ -1551,7 +1569,8 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing)
     nofit = true;
 	
     if (crushchange && !(leveltime.w &3) ) {
-
+		mobj_t*	mo;
+		THINKERREF moRef;
 		P_DamageMobj(thing,NULL_THINKERREF,NULL_THINKERREF,10);
 
 		// spray blood in a random direction

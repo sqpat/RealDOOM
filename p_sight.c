@@ -304,7 +304,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
     // check lines
     count = subsectors[subsecnum].numlines;
     segnum = subsectors[subsecnum].firstline;
-	
+
 
     for ( ; count ; segnum++, count--) {
 		linedefOffset = segs[segnum].linedefOffset;
@@ -318,12 +318,14 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 		frontsector = sectors[frontsecnum];
 		backsector = sectors[backsecnum];
 
-
-
 		// allready checked other side?
-		if (line->validcount == validcount) {
+		// if (line->validcount == (validcount & 0xFF)) {
+		
+
+		if (line->validcount == validcount ) {
 			continue;
 		}
+		//line->validcount = (validcount & 0xFF);
 		line->validcount = validcount;
 		linev1Offset = line->v1Offset & VERTEX_OFFSET_MASK;
 		linev2Offset = line->v2Offset & VERTEX_OFFSET_MASK;

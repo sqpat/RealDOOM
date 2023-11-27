@@ -266,7 +266,7 @@ void P_FireWeapon ()
 {
     statenum_t	newstate;
 
-    if (!P_CheckAmmo ())
+	if (!P_CheckAmmo ())
 		return;
 	
 	P_SetMobjState (playerMobj, S_PLAY_ATK1);
@@ -708,8 +708,6 @@ A_FireShotgun
 		  weaponinfo[player.readyweapon].flashstate);
 
 	P_BulletSlope ();
-	if (setval)
-		I_Error("made it thru");
 
 	for (i = 0; i < 7; i++) {
 		P_GunShot(false);
@@ -953,21 +951,7 @@ P_SetPsprite
 		default:
 			found = false;
 		}
-
-
-		//1:  0 22 9 ETF_A_FireShotgun
-		//2:  1 30 8 ETF_A_Light1
-
-		//1:  142 194 1361 1 30 8
-		//2:  142 250 1361 0 22 9
-/*
-		if (setval >= 1) {
-			if (setval == 2) {
-				//I_Error("values %li %hhu %i %hhu %hhu %hhu", gametic, prndindex, playerMobjRef, position, stnum, state->action);
-			}
-			setval++;
-		}
-		*/
+ 
 
 		if (found)
 			if (!psp->state)
