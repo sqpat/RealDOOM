@@ -81,7 +81,7 @@ uint8_t                     quickSaveSlot;
  // 1 = message to be printed
 uint8_t                     messageToPrint;
 // ...and here is the message string!
-int8_t*                   messageString;          
+int8_t                   messageString[100];          
 
 // message x & y
 int16_t                     messageLastMenuActive;
@@ -1207,7 +1207,8 @@ M_StartMessage
 {
     messageLastMenuActive = menuactive;
     messageToPrint = 1;
-    messageString = string;
+    //messageString = 
+	strcpy(messageString, string);
     messageRoutine = routine;
     messageNeedsInput = input;
     menuactive = true;
