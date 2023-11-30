@@ -705,7 +705,7 @@ P_KillMobj
 	return;
     }
 
-    P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
+    P_SpawnMobj (target->x,target->y,ONFLOORZ, item, target->secnum);
 	mo = setStateReturn;
     mo->flags |= MF_DROPPED;	// special versions of items
 }

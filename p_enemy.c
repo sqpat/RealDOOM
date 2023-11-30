@@ -1191,7 +1191,7 @@ void A_Tracer (mobj_t* actor)
 
 	thRef = P_SpawnMobj (actor->x-actor->momx,
 		      actor->y-actor->momy,
-		      actor->z, MT_SMOKE);
+		      actor->z, MT_SMOKE, -1);
     
 	th = setStateReturn;
 
@@ -1330,7 +1330,7 @@ boolean PIT_VileCheck (THINKERREF thingRef, mobj_t*	thing)
 	corpsehitRef = thingRef;
     thing->momx = thing->momy = 0;
 	thing->height.h.intbits <<= 2;
-    check = P_CheckPosition (thing, thing->x, thing->y);
+    check = P_CheckPosition (thing, thing->x, thing->y, thing->secnum);
 	thing->height.h.intbits >>= 2;
 
 	if (!check) {
@@ -1469,7 +1469,7 @@ void A_Fire (mobj_t* actor)
 	actor->x = destx + FixedMul (24*FRACUNIT, finecosine(an));
     actor->y = desty + FixedMul (24*FRACUNIT, finesine(an));
     actor->z = destz;
-    P_SetThingPosition (actor);
+    P_SetThingPosition (actor, -1);
 }
 
 
@@ -1492,8 +1492,8 @@ void A_VileTarget (mobj_t* actor)
 	actortargetRef = actor->targetRef;
 	actorTarget = (mobj_t*)(&thinkerlist[actor->targetRef].data);
     fogRef = P_SpawnMobj (actorTarget->x,
-		actorTarget->x,
-		actorTarget->z, MT_FIRE);
+		actorTarget->y,
+		actorTarget->z, MT_FIRE, actorTarget->secnum);
 	fog = setStateReturn;
 	fog->targetRef = GETTHINKERREF(actor);
 	fog->tracerRef = actortargetRef;
@@ -1740,7 +1740,7 @@ A_PainShootSkull
     y = actor->y + FixedMul (prestep.w, finesine(an));
     z = actor->z + 8*FRACUNIT;
 		
-    newmobjRef = P_SpawnMobj (x , y, z, MT_SKULL);
+    newmobjRef = P_SpawnMobj (x , y, z, MT_SKULL, -1);
 	newmobj = setStateReturn;
     // Check for movements.
 
@@ -2106,7 +2106,7 @@ void A_BrainScream (mobj_t* mo)
     {
 	y = mo->y - 320*FRACUNIT;
 	z = 128 + P_Random()*2*FRACUNIT;
-	thRef = P_SpawnMobj (x,y,z, MT_ROCKET);
+	thRef = P_SpawnMobj (x,y,z, MT_ROCKET, -1);
 	th = setStateReturn;
 	th->momz = P_Random()*512;
 
@@ -2137,7 +2137,7 @@ void A_BrainExplode (mobj_t*mo)
     x = mo->x + (P_Random () - P_Random ())*2048;
     y = mo->y;
     z = 128 + P_Random()*2*FRACUNIT;
-    thRef = P_SpawnMobj (x,y,z, MT_ROCKET);
+    thRef = P_SpawnMobj (x,y,z, MT_ROCKET, -1);
 	th = setStateReturn;
     th->momz = P_Random()*512;
 
@@ -2221,7 +2221,7 @@ void A_SpawnFly (mobj_t* mo)
 	targ = (mobj_t*)&thinkerlist[targRef].data;
 
     // First spawn teleport fog.
-    fogRef = P_SpawnMobj (targ->x, targ->y, targ->z, MT_SPAWNFIRE);
+    fogRef = P_SpawnMobj (targ->x, targ->y, targ->z, MT_SPAWNFIRE, targ->secnum);
     S_StartSoundFromRef (setStateReturn, sfx_telept);
 
     // Randomly select monster to spawn.
@@ -2253,14 +2253,14 @@ void A_SpawnFly (mobj_t* mo)
 	type = MT_BRUISER;		
 
 
-    newmobjRef	= P_SpawnMobj (targ->x, targ->y, targ->z, type);
+    newmobjRef	= P_SpawnMobj (targ->x, targ->y, targ->z, type, targ->secnum);
 	newmobj = (mobj_t*)&thinkerlist[newmobjRef].data;
 	if (P_LookForPlayers(newmobj, true)) {
 		P_SetMobjState(newmobj, getSeeState(newmobj->type));
 	}
 
     // telefrag anything in this spot
-    P_TeleportMove (newmobj, newmobj->x, newmobj->y);
+    P_TeleportMove (newmobj, newmobj->x, newmobj->y, newmobj->secnum);
 
     // remove self (i.e., cube).
     P_RemoveMobj (mo);

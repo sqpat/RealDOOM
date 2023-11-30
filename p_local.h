@@ -154,7 +154,8 @@ P_SpawnMobj
 ( fixed_t	x,
   fixed_t	y,
   fixed_t	z,
-  mobjtype_t	type );
+  mobjtype_t	type, 
+	int16_t knownsecnum );
 
 void 	P_RemoveMobj (mobj_t* mobj);
 //boolean	P_SetMobjState2(THINKERREF mobj, statenum_t state, int8_t* file, int32_t line);
@@ -242,7 +243,7 @@ P_PathTraverse
   boolean	(*trav) (intercept_t *));
 
 void P_UnsetThingPosition (mobj_t* thing);
-void P_SetThingPosition (mobj_t* thing);
+void P_SetThingPosition (mobj_t* thing, int16_t knownsecnum);
 
 
 //
@@ -258,9 +259,9 @@ extern short_height_t		tmceilingz;
 
 extern	int16_t		ceilinglinenum;
 
-boolean P_CheckPosition (mobj_t* thing, fixed_t x, fixed_t y);
+boolean P_CheckPosition (mobj_t* thing, fixed_t x, fixed_t y, int16_t oldsecnum);
 boolean P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
-boolean P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y);
+boolean P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y, int16_t oldsecnum);
 void	P_SlideMove ();
 boolean P_CheckSight (mobj_t* t1,mobj_t* t2);
 

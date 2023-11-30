@@ -564,10 +564,11 @@ void P_UnsetThingPosition (mobj_t* thing)
 // Sets thing->subsector properly
 //
 void
-P_SetThingPosition (mobj_t* thing)
+P_SetThingPosition (mobj_t* thing, int16_t knownsecnum)
 {
-	int16_t	subsecnum = R_PointInSubsector(thing->x, thing->y);;
-	int16_t subsectorsecnum = subsectors[subsecnum].secnum;
+
+
+
 	//sector_t*		sec;
     int16_t			blockx;
     int16_t			blocky;
@@ -578,8 +579,17 @@ P_SetThingPosition (mobj_t* thing)
 	fixed_t_union temp;
 	THINKERREF thingRef = GETTHINKERREF(thing);
 	// link into subsector
-	
-	thing->secnum = subsectorsecnum;
+
+	if (knownsecnum != -1) {
+		thing->secnum = knownsecnum;
+
+	}
+	else {
+		int16_t	subsecnum = R_PointInSubsector(thing->x, thing->y);;
+		int16_t subsectorsecnum = subsectors[subsecnum].secnum;
+		thing->secnum = subsectorsecnum;
+	}
+
 
 #ifdef CHECK_FOR_ERRORS
 	if (thing->secnum < 0 || thing->secnum > numsectors) {
@@ -590,8 +600,8 @@ P_SetThingPosition (mobj_t* thing)
 	if (!(thing->flags & MF_NOSECTOR)) {
 		// invisible things don't go into the sector links
 
-		oldsectorthinglist = sectors[subsectorsecnum].thinglistRef;
-		sectors[subsectorsecnum].thinglistRef = thingRef;
+		oldsectorthinglist = sectors[thing->secnum].thinglistRef;
+		sectors[thing->secnum].thinglistRef = thingRef;
 
 
 		thing = (mobj_t*)&thinkerlist[thingRef].data;

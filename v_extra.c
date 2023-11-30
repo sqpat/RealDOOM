@@ -57,22 +57,19 @@ V_DrawFullscreenPatch
 	int16_t    pageoffset = 0;
 	byte*       extradata;
 
-
-	patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 0, 0);
+ 	patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 0, 0);
 	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchref, PAGE_LOCKED);
 	extradata = (byte*)patch;
-
-	V_MarkRect(0, 0, (patch->width), (patch->height));
-
-	desttop = screen0;
-	col = 0;
-
 	w = (patch->width);
 
-	for (; col < w; col++, desttop++) {
+
+	V_MarkRect(0, 0, w, (patch->height));
+	desttop = screen0;
+	
+
+	for (col = 0; col < w; col++, desttop++) {
 
 		// todo dynamically calculate the offsets
-
 		column = (column_t *)((byte *)extradata + ((patch->columnofs[col]) - offset));
 		pageoffset = (byte *)column - extradata;
 
@@ -90,8 +87,6 @@ V_DrawFullscreenPatch
 			source = (byte *)column + 3;
 			dest = desttop + column->topdelta * SCREENWIDTH;
 			count = column->length;
-
-
 
 			if ((count -= 4) >= 0)
 				do

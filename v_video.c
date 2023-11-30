@@ -166,7 +166,7 @@ byte gammatable[5][256] =
 #define GC_BITMASK              8
 
 uint8_t	usegamma;
-			 
+extern boolean skipdirectdraws;
 //
 // V_MarkRect 
 // 
@@ -196,7 +196,9 @@ V_CopyRect
 { 
     byte*	src;
     byte*	dest; 
-	 
+	if (skipdirectdraws) {
+		return;
+	}
      
     V_MarkRect (destx, desty, width, height); 
 	 
@@ -211,6 +213,7 @@ V_CopyRect
     } 
 } 
  
+extern boolean skipdirectdraws;
 //
 // V_DrawPatch
 // Masks a column based masked pic to the screen. 
@@ -229,6 +232,10 @@ V_DrawPatch
 	byte* desttop;
     int16_t		w; 
 	 
+	if (skipdirectdraws) {
+		return;
+	}
+
     y -= (patch->topoffset); 
     x -= (patch->leftoffset); 
 	offset = y * SCREENWIDTH + x;

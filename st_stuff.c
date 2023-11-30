@@ -816,11 +816,11 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 
 		// and refresh all widgets
 		ST_drawWidgets(true);
-	} else {
-	// Otherwise, update as little as possible
+	}
+	else {
+		// Otherwise, update as little as possible
 		ST_drawWidgets(false);
 	}
-
 	Z_SetUnlocked(screen4Ref);
 
 	screen4 = NULL;

@@ -279,6 +279,7 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 //  draw current display, possibly wiping it from the previous
 //
 
+boolean skipdirectdraws;
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t     wipegamestate = GS_DEMOSCREEN;
 extern  boolean setsizeneeded;
@@ -346,9 +347,16 @@ void D_Display (void)
             AM_Drawer ();
         if (wipe || (viewheight != 200 && fullscreen) )
             redrawsbar = true;
-        if (inhelpscreensstate && !inhelpscreens)
-            redrawsbar = true;              // just put away the help screen
-        ST_Drawer (viewheight == 200, redrawsbar );
+		if (inhelpscreensstate && !inhelpscreens) 
+			redrawsbar = true;              // just put away the help screen
+		
+		if (inhelpscreens) {
+			skipdirectdraws = true;
+		
+		}
+        ST_Drawer (viewheight == 200, redrawsbar);
+		skipdirectdraws = false;
+
 		TEXT_MODE_DEBUG_PRINT("\n D_Display: ST_Drawer done");
 		fullscreen = viewheight == 200;
         break;
@@ -373,13 +381,17 @@ void D_Display (void)
 	TEXT_MODE_DEBUG_PRINT("\n D_Display: I_UpdateNoBlit done");
 	// draw the view directly
 	if (gamestate == GS_LEVEL && !automapactive && gametic) {
-		TEXT_MODE_DEBUG_PRINT("\n D_Display: R_RenderPlayerView start");
-		R_RenderPlayerView();
-		TEXT_MODE_DEBUG_PRINT("\n D_Display: R_RenderPlayerView done");
+		if (!inhelpscreens) {
+			TEXT_MODE_DEBUG_PRINT("\n D_Display: R_RenderPlayerView start");
+			R_RenderPlayerView();
+			TEXT_MODE_DEBUG_PRINT("\n D_Display: R_RenderPlayerView done");
+		}
 	}
 
 	if (gamestate == GS_LEVEL && gametic) {
-		HU_Drawer();
+		if (!inhelpscreens) {
+			HU_Drawer();
+		}
 		TEXT_MODE_DEBUG_PRINT("\n D_Display: HU_Drawer done");
 	}
     // clean up border stuff
@@ -677,6 +689,14 @@ void D_PageTicker (void)
 //
 void D_PageDrawer (void)
 {
+
+	// we dont have various screen buffers anymore, so we cant draw to buffer in 'read this'
+	// screen - this would draw direct to screen and overwrite the read this screen.
+	// so we just dont draw titlepic in that situation
+	if (inhelpscreens) { 
+		return;
+	}
+
 	 V_DrawFullscreenPatch(pagename);
 }
 
@@ -716,8 +736,8 @@ void D_AdvanceDemo (void)
             pagetic = 35 * 11;
         else
             pagetic = 170;
-        gamestate = GS_DEMOSCREEN;
-        pagename = "TITLEPIC"; 
+			gamestate = GS_DEMOSCREEN;
+			pagename = "TITLEPIC"; 
         if ( commercial )
           S_StartMusic(mus_dm2ttl);
         else

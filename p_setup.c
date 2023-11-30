@@ -447,7 +447,7 @@ void P_SpawnPlayer(mapthing_t* mthing)
 	y.h.intbits = mthingy;
 	z.w = ONFLOORZ;
 
-	playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER);
+	playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
 	playerMobj = setStateReturn;
 
 	playerMobj->reactiontime = 0;
@@ -817,7 +817,7 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 		z.w = ONFLOORZ;
 	}
 
-	mobjRef = P_SpawnMobj(x.w, y.w, z.w, i);
+	mobjRef = P_SpawnMobj(x.w, y.w, z.w, i, -1);
 
 	mobj = setStateReturn;
 	((mapthing_t*)Z_LoadBytesFromEMS(nightmareSpawnPointsRef))[mobjRef]= mthing;

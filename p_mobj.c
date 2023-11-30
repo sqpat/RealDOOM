@@ -426,7 +426,7 @@ P_NightmareRespawn(mobj_t* mobj)
 	
 
 	// somthing is occupying it's position?
-	if (!P_CheckPosition(mobj, x.w, y.w)) {
+	if (!P_CheckPosition(mobj, x.w, y.w, -1)) {
 		return;	// no respwan
 	}
 	mobjsecnum = mobj->secnum;
@@ -437,14 +437,14 @@ P_NightmareRespawn(mobj_t* mobj)
 	// because of removal of the body?
 	// temp.h.intbits = sectors[mobjsecnum].floorheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[mobjsecnum].floorheight);
-	moRef = P_SpawnMobj(mobjx, mobjy, temp.w, MT_TFOG);
+	moRef = P_SpawnMobj(mobjx, mobjy, temp.w, MT_TFOG, mobjsecnum);
 	// initiate teleport sound
 	S_StartSoundFromRef(setStateReturn, sfx_telept);
 
 	// spawn a teleport fog at the new spot
 	subsecnum = R_PointInSubsector(x.w, y.w);
 	subsectorsecnum = subsectors[subsecnum].secnum;
-	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG);
+	moRef = P_SpawnMobj(x.w, y.w, temp.w, MT_TFOG, subsectorsecnum);
 
 	S_StartSoundFromRef(setStateReturn, sfx_telept);
 
@@ -466,7 +466,7 @@ P_NightmareRespawn(mobj_t* mobj)
 	// todo probably fix this, its fudging the indices, i think we want to force it to reuse the same one to maintain nightmare spawn point ref 
 
     // inherit attributes from deceased one
-    moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype);
+    moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype, -1);
 	mo = setStateReturn;
 	//mo->spawnpoint = mobjspawnpoint;
     //todo does this work? or need to be in fixed_mul? -sq
@@ -562,7 +562,7 @@ void P_MobjThinker (mobj_t* mobj, THINKERREF mobjRef) {
 // P_SpawnMobj
 //
 THINKERREF
-P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
+P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
     mobj_t*	mobj;
     state_t*	st;
     mobjinfo_t*	info;
@@ -607,7 +607,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type ) {
 
 
     // set subsector and/or block links
-    P_SetThingPosition (mobj);
+    P_SetThingPosition (mobj, knownsecnum);
  
 
 	mobjsecnum = mobj->secnum;
@@ -676,7 +676,7 @@ P_SpawnPuff
 	
     z += ((P_Random()-P_Random())<<10);
 
-    thRef = P_SpawnMobj (x,y,z, MT_PUFF);
+    thRef = P_SpawnMobj (x,y,z, MT_PUFF, -1);
 	th = setStateReturn;
     th->momz = FRACUNIT;
     th->tics -= P_Random()&3;
@@ -705,7 +705,7 @@ P_SpawnBlood
 	THINKERREF thRef;
 	
     z += ((P_Random()-P_Random())<<10);
-	thRef  = P_SpawnMobj (x,y,z, MT_BLOOD);
+	thRef  = P_SpawnMobj (x,y,z, MT_BLOOD, -1);
 	th = setStateReturn;
     th->momz = FRACUNIT*2;
     th->tics -= P_Random()&3;
@@ -765,7 +765,7 @@ P_SpawnMissile
 	fixed_t sourcez = source->z;
 	fixed_t momz;
 	int32_t thspeed;
-	THINKERREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type);
+	THINKERREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type, source->secnum);
 	fixed_t_union temp;
 
 	th = setStateReturn;
@@ -856,7 +856,7 @@ P_SpawnPlayerMissile
     y = playerMobj->y;
     z = playerMobj->z + 4*8*FRACUNIT;
 	
-    thRef = P_SpawnMobj (x,y,z, type);
+    thRef = P_SpawnMobj (x,y,z, type, playerMobj->secnum);
 	th = setStateReturn;
 
     if (mobjinfo[type].seesound)

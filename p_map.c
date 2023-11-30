@@ -109,7 +109,8 @@ boolean
 P_TeleportMove
 (mobj_t* thing,
   fixed_t	x,
-  fixed_t	y )
+  fixed_t	y,
+	int16_t oldsecnum)
 {
     int16_t			xl;
     int16_t			xh;
@@ -118,8 +119,7 @@ P_TeleportMove
     int16_t			bx;
     int16_t			by;
     
-	int16_t	newsubsecsecnum;
-	int16_t	newsubsecnum;
+	 
 	
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
@@ -137,16 +137,16 @@ P_TeleportMove
 	tmbbox[BOXRIGHT].w = x; 
 	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
 	tmbbox[BOXLEFT].w = x - temp.w;
-	newsubsecnum = R_PointInSubsector (x,y);
-	newsubsecsecnum = subsectors[newsubsecnum].secnum;
+//	newsubsecnum = R_PointInSubsector (x,y);
+//	newsubsecsecnum = oldsecnum;  subsectors[newsubsecnum].secnum;
     ceilinglinenum = -1;
     
     // The base floor/ceiling is from the subsector
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-	tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
-    tmceilingz = sectors[newsubsecsecnum].ceilingheight;
+	tmfloorz = tmdropoffz = sectors[oldsecnum].floorheight;
+    tmceilingz = sectors[oldsecnum].ceilingheight;
 			
     validcount++;
     numspechit = 0;
@@ -180,7 +180,7 @@ P_TeleportMove
     thing->x = x;
     thing->y = y;
 
-    P_SetThingPosition (thing);
+    P_SetThingPosition (thing, oldsecnum);
 	
     return true;
 }
@@ -452,11 +452,14 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing)
 //  speciallines[]
 //  numspeciallines
 //
+
+int16_t lastcalculatedsector;
 boolean
 P_CheckPosition
 (mobj_t* thing,
-  fixed_t	x,
-  fixed_t	y
+	fixed_t	x,
+	fixed_t	y,
+	int16_t oldsecnum
 	)
 {
     int16_t			xl;
@@ -465,8 +468,6 @@ P_CheckPosition
     int16_t			yh;
     int16_t			bx;
     int16_t			by;
-	int16_t newsubsecnum;
-	int16_t newsubsecsecnum;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
     tmthing = thing;
@@ -487,12 +488,15 @@ P_CheckPosition
 	tmbbox[BOXRIGHT].h.intbits += thing->radius;
 	tmbbox[BOXLEFT].w = x - temp.w;
 
- 
 
+	if (oldsecnum != -1) {
+		lastcalculatedsector = oldsecnum;
+	}
+	else {
+		int16_t newsubsecnum = R_PointInSubsector(x, y);
+		lastcalculatedsector = subsectors[newsubsecnum].secnum;
 
-	newsubsecnum = R_PointInSubsector(x, y);
-	newsubsecsecnum = subsectors[newsubsecnum].secnum;
-
+	}
 
 
 	ceilinglinenum = -1;
@@ -501,8 +505,8 @@ P_CheckPosition
     // that contains the point.
     // Any contacted lines the step closer together
     // will adjust them.
-	tmfloorz = tmdropoffz = sectors[newsubsecsecnum].floorheight;
-    tmceilingz = sectors[newsubsecsecnum].ceilingheight;
+	tmfloorz = tmdropoffz = sectors[lastcalculatedsector].floorheight;
+    tmceilingz = sectors[lastcalculatedsector].ceilingheight;
 	
 
     validcount++;
@@ -594,7 +598,7 @@ P_TryMove
 
 	floatok = false;
 
-	if (!P_CheckPosition(thing, x, y)) {
+	if (!P_CheckPosition(thing, x, y, -1)) {
 		return false;		// solid wall or thing
 	}
 
@@ -638,8 +642,8 @@ P_TryMove
     thing->y = y;
 
 
-
-	P_SetThingPosition (thing);
+	// we calculated the sector above in checkposition, now it's cached.
+	P_SetThingPosition (thing, lastcalculatedsector);
 
 
 	newx = thing->x;
@@ -689,7 +693,7 @@ boolean P_ThingHeightClip (mobj_t* thing)
     onfloor = (thing->z == temp.w);
 
 
-    P_CheckPosition (thing, thing->x, thing->y);	
+    P_CheckPosition (thing, thing->x, thing->y, thing->secnum);	
     // what about stranding a monster partially off an edge?
 
     thing->floorz = tmfloorz;
@@ -1574,7 +1578,7 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing)
 		P_DamageMobj(thing,NULL_THINKERREF,NULL_THINKERREF,10);
 
 		// spray blood in a random direction
-		moRef = P_SpawnMobj (thing->x, thing->y, thing->z + thing->height.w/2, MT_BLOOD);
+		moRef = P_SpawnMobj (thing->x, thing->y, thing->z + thing->height.w/2, MT_BLOOD, thing->secnum);
 		
 		mo = setStateReturn;
 		mo->momx = (P_Random() - P_Random ())<<12;

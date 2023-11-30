@@ -75,6 +75,7 @@ file z_init.obj
 #file hu_setup.obj
 #file g_setup.obj
 #file r_setup.obj
+#file v_extra.obj
 
 # # begin overlay area
 begin

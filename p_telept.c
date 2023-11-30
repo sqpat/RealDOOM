@@ -51,7 +51,8 @@ EV_Teleport
     fixed_t	oldx;
     fixed_t	oldy;
     fixed_t	oldz;
-	
+	int16_t		oldsecnum;
+
 	THINKERREF fogRef;
     // don't teleport missiles
     if (thing->flags & MF_MISSILE)
@@ -87,8 +88,9 @@ EV_Teleport
 				oldx = thing->x;
 				oldy = thing->y;
 				oldz = thing->z;
+				oldsecnum = thing->secnum;
 				
-				if (!P_TeleportMove (thing, m->x, m->y))
+				if (!P_TeleportMove (thing, m->x, m->y, m->secnum))
 					return 0;
 		#if (EXE_VERSION != EXE_VERSION_FINAL)
 				thing->z = thing->floorz;  //fixme: not needed?
@@ -97,11 +99,11 @@ EV_Teleport
 					player.viewz = thing->z + player.viewheight;
 				}
 				// spawn teleport fog at source and destination
-				fogRef = P_SpawnMobj (oldx, oldy, oldz, MT_TFOG);
+				fogRef = P_SpawnMobj (oldx, oldy, oldz, MT_TFOG, oldsecnum);
 				S_StartSoundFromRef (setStateReturn, sfx_telept);
 				an = m->angle >> ANGLETOFINESHIFT;
 				fogRef = P_SpawnMobj (m->x+20*finecosine(an), m->y+20*finesine(an)
-						   , thing->z, MT_TFOG);
+						   , thing->z, MT_TFOG, -1);
 
 				// emit sound, where?
 				S_StartSoundFromRef(setStateReturn, sfx_telept);
