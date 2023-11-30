@@ -155,19 +155,16 @@ typedef struct
 typedef int16_t slopetype_t;
 
 
-#define		VERTEX_OFFSET_MASK		0x3FFF
-#define		LINE_VERTEX_FLAG_9		0x8000
 #define		LINE_VERTEX_SLOPETYPE	0xC000
-#define		FLAG9_SHIFT				15
+#define		VERTEX_OFFSET_MASK		0x3FFF
 #define		SLOPETYPE_SHIFT			14
-#define		MAKE_SLOPETYPE(a)		((a & LINE_VERTEX_SLOPETYPE) >> SLOPETYPE_SHIFT)
 //#define		LINETAG_MASK		0x3F
 //#define		LINETAG_VALIDCOUNT_MASK		0xC0
 
 typedef struct line_s
 {
     // Vertices, from v1 to v2.
-	int16_t	v1Offset;	//highest bit is flag 9
+	int16_t	v1Offset;	
 	int16_t	v2Offset;	//high two bits are the slopetype
 
     // Precalculated v2 - v1 for side checking.
@@ -175,7 +172,7 @@ typedef struct line_s
     int16_t	dy;
 
     // Animation related.
-    // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag in v1offset
+    // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag in seenlines bit array
 	uint8_t	flags;
     uint8_t	special;
 	uint8_t	tag; // high 2 bits are free... could be used for something

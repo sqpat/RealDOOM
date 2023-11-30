@@ -327,7 +327,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 		}
 		//line->validcount = (validcount & 0xFF);
 		line->validcount = validcount;
-		linev1Offset = line->v1Offset & VERTEX_OFFSET_MASK;
+		linev1Offset = line->v1Offset;
 		linev2Offset = line->v2Offset & VERTEX_OFFSET_MASK;
 		lineflags = line->flags;
 

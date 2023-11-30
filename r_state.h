@@ -93,6 +93,8 @@ extern node_t*      nodes;
 
 extern int16_t		numlines;
 extern line_t*   lines;
+extern uint8_t*		seenlines;
+
 
 extern int16_t		numsides;
 extern side_t*       sides;

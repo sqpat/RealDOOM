@@ -436,7 +436,7 @@ R_StoreWallRange
 
     // mark the segment as visible for auto map
 
-	lines[linedefOffset].v1Offset |= LINE_VERTEX_FLAG_9;
+	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
 
 	lineflags = lines[linedefOffset].flags;
 

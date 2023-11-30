@@ -137,7 +137,7 @@ typedef struct memblock_s
 //			   e1m8, m9 small
 
 
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54078
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54208
 //#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 18892   // no lineopenings demo 3
 #define STATIC_CONVENTIONAL_BLOCK_SIZE_2 30035  
 

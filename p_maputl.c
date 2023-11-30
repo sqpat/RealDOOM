@@ -772,7 +772,7 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
     fixed_t		frac;
     divline_t		dl;
 	
-	int16_t linev1Offset = ld->v1Offset & VERTEX_OFFSET_MASK;
+	int16_t linev1Offset = ld->v1Offset;
 	int16_t linev2Offset = ld->v2Offset & VERTEX_OFFSET_MASK;
 	int16_t linedx = ld->dx;
 	int16_t linedy = ld->dy;

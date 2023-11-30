@@ -227,15 +227,18 @@ void I_WaitVBL(int16_t vbls)
     }
 }
 
-extern MEMREF palRef;
+extern MEMREF               palRef;
+
 //
 // I_SetPalette
 // Palette source must use 8 bit RGB elements.
 //
+
 void I_SetPalette(int8_t paletteNumber)
 {
 	int16_t i;
-    byte* palette = ((byte*) Z_LoadBytesFromEMS(palRef)) + paletteNumber * 768u;
+//	byte* palette = ((byte*)Z_LoadBytesFromEMS(W_CacheLumpNumEMS(lu_palette, PU_CACHE)) + paletteNumber * 768u);
+	byte* palette = ((byte*)Z_LoadBytesFromEMS(palRef)) + paletteNumber * 768u;
 
         if(novideo)
         {

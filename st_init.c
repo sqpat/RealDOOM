@@ -238,7 +238,7 @@ void ST_loadGraphics(void)
 void ST_loadData(void)
 {
 	int16_t lu_palette = W_GetNumForName("PLAYPAL");
-	palRef = W_CacheLumpNumEMS(lu_palette, PU_CACHE);
+	palRef = W_CacheLumpNumEMS(lu_palette, PU_STATIC);
 
 	ST_loadGraphics();
 }
