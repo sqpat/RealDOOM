@@ -125,25 +125,23 @@ P_RecursiveSound
     if (soundsector->validcount == validcount && soundsector->soundtraversed <= soundblocks+1) {
 		return;		// already flooded
     }
-    
+
 	soundsector->validcount = validcount;
 	soundsector->soundtraversed = soundblocks+1;
 	//soundsector->soundtargetRef = 1;
 
 
 	linecount = soundsector->linecount;
-	
+	soundsector = &sectors[secnum];
+
 	for (i=0 ;i<linecount ; i++) {
-		soundsector = &sectors[secnum];
 		lineoffset = soundsector->linesoffset + i;
 		linenumber = linebuffer[lineoffset];
-
-	
-
 		check = &lines[linenumber];
 		checkflags = check->flags;
 		checksidenum0 = check->sidenum[0];
 		checksidenum1 = check->sidenum[1];
+
 #ifndef		PRECALCULATE_OPENINGS
 		checkfrontsecnum = check->frontsecnum;
 		checkbacksecnum = check->backsecnum;
@@ -155,7 +153,7 @@ P_RecursiveSound
 			continue;
 		}
 #ifdef	PRECALCULATE_OPENINGS
-		lineopening = lineopenings[linenumber];
+		P_LoadLineOpening(linenumber);
 #else
 		P_LineOpening(checksidenum1, checkfrontsecnum, checkbacksecnum);
 #endif
@@ -192,7 +190,8 @@ void
 P_NoiseAlert
 (  )
 {
-	
+
+
     validcount++;
     P_RecursiveSound (playerMobj->secnum, 0);
 }
@@ -678,7 +677,7 @@ void A_Look (mobj_t* actor)
 		}
 
 	}
- 
+
 
 	if (!P_LookForPlayers(actor, false)) {
 		return;

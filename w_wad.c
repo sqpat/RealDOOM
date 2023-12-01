@@ -158,9 +158,11 @@ int32_t W_LumpLength (int16_t lump)
         I_Error ("W_LumpLength: %i >= numlumps",lump);
 #endif
     size = (lumpinfo[lump+1].position - lumpinfo[lump].position) + lumpinfo[lump].sizediff;
+#ifdef CHECK_FOR_ERRORS
 	if (size < 0) {
 		I_Error("\nfound it %i %i %i", lump, size, lumpinfo[lump].sizediff, lumpinfo[lump + 1].position, lumpinfo[lump].position);
 	}
+#endif
 	return size;
 }
 
