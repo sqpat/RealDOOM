@@ -205,7 +205,7 @@ void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
 void Z_ShutdownEMS();
 
 #define ALLOCATION_LIST_HEAD	0
-#define EMS_ALLOCATION_LIST_SIZE 1000
+#define EMS_ALLOCATION_LIST_SIZE 1200
 
 
 
