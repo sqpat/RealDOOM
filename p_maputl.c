@@ -212,8 +212,8 @@ P_PointOnDivlineSide
   fixed_t	y
    )
 {
-    fixed_t	dx;
-    fixed_t	dy;
+    fixed_t_union	dx;
+    fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
 	divline_t*	line = &trace;
@@ -233,19 +233,21 @@ P_PointOnDivlineSide
 	return line->dx.w > 0;
     }
 	
-    dx = (x - line->x.w);
-    dy = (y - line->y.w);
+    dx.w = (x - line->x.w);
+    dy.w = (y - line->y.w);
 	
     // try to quickly decide by looking at sign bits
-    if ( (line->dy.w ^ line->dx.w ^ dx ^ dy)&0x80000000 )
+	
+    if ( (line->dy.h.intbits ^ line->dx.h.intbits ^ dx.h.intbits ^ dy.h.intbits)&0x8000 )
     {
-	if ( (line->dy.w ^ dx) & 0x80000000 )
+	if ( (line->dy.h.intbits ^ dx.h.intbits) & 0x8000 )
 	    return 1;		// (left is negative)
 	return 0;
     }
 	
-    left = FixedMul ( line->dy.w >>8, dx>>8 );
-    right = FixedMul ( dy>>8 , line->dx.w >>8 );
+	//todo is there a faster way to use just the 3 bytes?
+    left = FixedMul ( line->dy.w >>8, dx.w>>8 );
+    right = FixedMul ( dy.w>>8 , line->dx.w >>8 );
 	
 	return (right >= left);
 

@@ -265,8 +265,8 @@ void R_AddLine (int16_t linenum)
 {
     int16_t			x1;
     int16_t			x2;
-    angle_t		angle1;
-    angle_t		angle2;
+    fixed_t_union		angle1;
+	fixed_t_union		angle2;
     angle_t		span;
     angle_t		tspan;
 	seg_t curline = segs[linenum];
@@ -301,16 +301,16 @@ void R_AddLine (int16_t linenum)
 	tempx.h.intbits = v1.x;
 	tempy.h.intbits = v1.y;
     // OPTIMIZE: quickly reject orthogonal back sides.
-    angle1 = R_PointToAngle (tempx.w, tempy.w);
+    angle1.w = R_PointToAngle (tempx.w, tempy.w);
 	tempx.h.intbits = v2.x;
 	tempy.h.intbits = v2.y;
-    angle2 = R_PointToAngle (tempx.w, tempy.w);
+    angle2.w = R_PointToAngle (tempx.w, tempy.w);
     
 
 
     // Clip to view edges.
     // OPTIMIZE: make constant out of 2*clipangle (FIELDOFVIEW).
-    span = angle1 - angle2;
+    span = angle1.w - angle2.w;
 	 
 
     // Back side? I.e. backface culling?
@@ -319,11 +319,11 @@ void R_AddLine (int16_t linenum)
 	}
 
     // Global angle needed by segcalc.
-    rw_angle1 = angle1;
-    angle1 -= viewangle;
-    angle2 -= viewangle;
+    rw_angle1 = angle1.w;
+    angle1.w -= viewangle;
+    angle2.w -= viewangle;
 	
-    tspan = angle1 + clipangle;
+    tspan = angle1.w + clipangle;
 	if (tspan > fieldofview)
 	{
 	tspan -= fieldofview;
@@ -333,9 +333,9 @@ void R_AddLine (int16_t linenum)
 		return;
 	}
 	
-	angle1 = clipangle;
+	angle1.w = clipangle;
     }
-    tspan = clipangle - angle2;
+    tspan = clipangle - angle2.w;
 	if (tspan > fieldofview)
 	{
 		tspan -= fieldofview;
@@ -344,16 +344,16 @@ void R_AddLine (int16_t linenum)
 		if (tspan >= span) {
 			return;
 		}
-	angle2 = -clipangle;
+	angle2.w = -clipangle;
     }
     
     // The seg is in the view range,
     // but not necessarily visible.
-	// todo use fixed_t_union to reduce shift
-	angle1 = (angle1+ANG90)>>ANGLETOFINESHIFT;
-    angle2 = (angle2+ANG90)>>ANGLETOFINESHIFT;
-    x1 = viewangletox[angle1];
-    x2 = viewangletox[angle2];
+
+	angle1.h.fracbits = (angle1.h.intbits+0x4000u)>> SHORTTOFINESHIFT;
+    angle2.h.fracbits = (angle2.h.intbits+0x4000u)>> SHORTTOFINESHIFT;
+    x1 = viewangletox[angle1.h.fracbits];
+    x2 = viewangletox[angle2.h.fracbits];
 
 	//todo can we just compare angle 1 and angle 2? - sq
 
