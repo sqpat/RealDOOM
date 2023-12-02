@@ -112,8 +112,8 @@ fixed_t         sprtopscreen;
 
 void R_DrawMaskedColumn (column_t* column) {
 	
-	fixed_t         topscreen;
-	fixed_t         bottomscreen;
+	fixed_t_union         topscreen;
+	fixed_t_union         bottomscreen;
 	fixed_t     basetexturemid;
 	fixed_t_union     temp;
 	temp.h.fracbits = 0;
@@ -122,13 +122,16 @@ void R_DrawMaskedColumn (column_t* column) {
     for ( ; column->topdelta != 0xff ; )  {
         // calculate unclipped screen coordinates
         //  for post
-        topscreen = sprtopscreen + spryscale.w*column->topdelta;
-        bottomscreen = topscreen + spryscale.w*column->length;
+        topscreen.w = sprtopscreen + spryscale.w*column->topdelta;
+        bottomscreen.w = topscreen.w + spryscale.w*column->length;
 
-		// todo add by 65535  ? dc_yl = topscreen.fracbits == 0 ? intbits : intbits+1
-        dc_yl = (topscreen+FRACUNIT-1)>>FRACBITS;
-        dc_yh = (bottomscreen-1)>>FRACBITS;
-                
+		dc_yl = topscreen.h.intbits; // (topscreen + FRACUNIT - 1) >> FRACBITS;
+		dc_yh = bottomscreen.h.intbits;// (bottomscreen - 1) >> FRACBITS;
+		if (!bottomscreen.h.fracbits)
+			dc_yh--;
+		if (topscreen.h.fracbits)
+			dc_yl++;
+
         if (dc_yh >= mfloorclip[dc_x])
             dc_yh = mfloorclip[dc_x]-1;
         if (dc_yl <= mceilingclip[dc_x])
@@ -292,7 +295,8 @@ void R_ProjectSprite (mobj_t* thing)
     temp.h.fracbits = 0;
     temp.h.intbits = spriteoffsets[lump];
 	tx -= temp.w;
-    temp.w = (centerxfrac.w + FixedMul (tx,xscale) );
+	temp.h.intbits = centerxfrac.h.intbits;
+    temp.w +=  FixedMul (tx,xscale);
     x1 = temp.h.intbits;
 
     // off the right side?
@@ -303,7 +307,8 @@ void R_ProjectSprite (mobj_t* thing)
     temp.h.intbits = spritewidths[lump];
 
     tx +=  temp.w;
-    temp.w = ((centerxfrac.w + FixedMul (tx,xscale) ));
+	temp.h.intbits = centerxfrac.h.intbits;
+	temp.w += FixedMul (tx,xscale);
     x2 = temp.h.intbits - 1;
 
 	

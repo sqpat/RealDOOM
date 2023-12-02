@@ -980,7 +980,7 @@ mobj_t*		shootthing;
 
 // Height if not aiming up or down
 // ???: use slope for monsters?
-fixed_t		shootz;	
+fixed_t_union		shootz;	
 
 int16_t		la_damage;
 fixed_t_union		attackrange;
@@ -1036,14 +1036,14 @@ PTR_AimTraverse (intercept_t* in)
 		temp.h.fracbits = 0;
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
-			slope = FixedDiv (temp.w - shootz , dist);
+			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
-			slope = FixedDiv (temp.w - shootz , dist);
+			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope < topslope)
 				topslope = slope;
 		}
@@ -1069,13 +1069,13 @@ PTR_AimTraverse (intercept_t* in)
 	}
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange.w, in->frac);
-    thingtopslope = FixedDiv (th->z+th->height.w - shootz , dist);
+    thingtopslope = FixedDiv (th->z+th->height.w - shootz.w , dist);
 
 	if (thingtopslope < bottomslope) {
 		//I_Error("caught g");
 		return true;			// shot over the thing
 	}
-    thingbottomslope = FixedDiv (th->z - shootz, dist);
+    thingbottomslope = FixedDiv (th->z - shootz.w, dist);
 
 	if (thingbottomslope > topslope) {
 		//I_Error("caught h");
@@ -1137,14 +1137,14 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
 		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
-			slope = FixedDiv (temp.w - shootz , dist);
+			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope > aimslope)
 				goto hitline;
 		}
 		
 		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
-			slope = FixedDiv (temp.w - shootz , dist);
+			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope < aimslope)
 				goto hitline;
 		}
@@ -1159,7 +1159,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		frac = in->frac - FixedDiv (4*FRACUNIT, attackrange.w); // todo can we use intbits and remove fracunit?
 		x = trace.x.w + FixedMul (trace.dx.w, frac);
 		y = trace.y.w + FixedMul (trace.dy.w, frac);
-		z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange.w));
+		z = shootz.w + FixedMul (aimslope, FixedMul(frac, attackrange.w));
 
 
 
@@ -1198,14 +1198,14 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange.w, in->frac);
-    thingtopslope = FixedDiv (th->z+th->height.w - shootz , dist);
+    thingtopslope = FixedDiv (th->z+th->height.w - shootz.w , dist);
 
 
 
     if (thingtopslope < aimslope)
 		return true;		// shot over the thing
 
-    thingbottomslope = FixedDiv (th->z - shootz, dist);
+    thingbottomslope = FixedDiv (th->z - shootz.w, dist);
 
     if (thingbottomslope > aimslope)
 		return true;		// shot under the thing
@@ -1217,7 +1217,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
     x = trace.x.w + FixedMul (trace.dx.w, frac);
     y = trace.y.w + FixedMul (trace.dy.w, frac);
-    z = shootz + FixedMul (aimslope, FixedMul(frac, attackrange.w));
+    z = shootz.w + FixedMul (aimslope, FixedMul(frac, attackrange.w));
 
     // Spawn bullet puffs or blod spots,
     // depending on target type.
@@ -1249,7 +1249,6 @@ P_AimLineAttack
 	fixed_t_union	y2;
 	fixed_t_union	x;
 	fixed_t_union	y;
-	fixed_t_union t1height;
 	fixed_t_union distance;
 	boolean ischainsaw = distance16 & CHAINSAW_FLAG;
 	
@@ -1259,16 +1258,15 @@ P_AimLineAttack
 	x.w = t1->x;
 	y.w = t1->y;
     
-	//todo re-enable?
+	//todo re-enable? oh, but cosine and sine are 17 bit...
     //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
     //y2.w = y.w + FixedMul1616(distance16,finesine(angle));
 
 	x2.w = x.w + FixedMulBig1632(distance16,finecosine(angle));
 	y2.w = y.w + FixedMulBig1632(distance16,finesine(angle));
 
-	t1height.h.fracbits = 0;
-	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
-    shootz = t1->z + t1height.w;
+	shootz.w = t1->z;
+	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
 
     // can't shoot outside view angles
     topslope = 100*FRACUNIT/160;	
@@ -1316,7 +1314,6 @@ P_LineAttack
 	fixed_t_union	y;
 	fixed_t_union	distance;
 	boolean ischainsaw = distance16 & CHAINSAW_FLAG; //sigh... look into why this needs to be here, remove if at all possible - sq
-	fixed_t_union t1height;
 	x.w = t1->x;
 	y.w = t1->y;
 	distance16 &= (CHAINSAW_FLAG-1);
@@ -1327,9 +1324,8 @@ P_LineAttack
 	x2.w = x.w + FixedMulBig1632(distance16,finecosine(angle));
 	y2.w = y.w + FixedMulBig1632(distance16,finesine(angle));
 
-	t1height.h.fracbits = 0;
-	t1height.h.intbits = (t1->height.h.intbits >> 1) + 8;
-	shootz = t1->z + t1height.w;
+	shootz.w = t1->z;
+	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
 
 	distance.h.intbits = distance16;
 	distance.h.fracbits = ischainsaw ? 1 : 0;

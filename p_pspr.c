@@ -304,7 +304,7 @@ A_WeaponReady
   pspdef_t*	psp )
 {	
     statenum_t	newstate;
-    fixed_t		angle;
+    int16_t		angle;
     
     // get out of attack state
     if (playerMobj->stateNum == S_PLAY_ATK1 || playerMobj->stateNum == S_PLAY_ATK2 ) {
@@ -345,8 +345,9 @@ A_WeaponReady
 	player.attackdown = false;
     
     // bob the weapon based on movement speed
-    angle = (128*leveltime.w)&FINEMASK;
-    psp->sx = FRACUNIT + FixedMul (player.bob, finecosine(angle));
+	angle = (128*(leveltime.b.fracbytehigh&63))&FINEMASK;
+	//angle = (128 * leveltime.w)&FINEMASK;
+	psp->sx = FRACUNIT + FixedMul (player.bob, finecosine(angle));
     angle &= FINEANGLES/2-1;
     psp->sy = WEAPONTOP + FixedMul (player.bob, finesine(angle));
 

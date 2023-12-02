@@ -323,7 +323,7 @@ byte*                   ds_source;
 // Draws the actual span.
 void R_DrawSpan(void)
 {
-	fixed_t             xfrac;
+	fixed_t_union             xfrac;
 	fixed_t             yfrac;
 	byte*               dest;
 	uint16_t                 spot;
@@ -347,12 +347,12 @@ void R_DrawSpan(void)
 		dsp_x2 = (ds_x2 - i) / 4;
 		countp = dsp_x2 - dsp_x1;
 
-		xfrac = ds_xfrac;
+		xfrac.w = ds_xfrac;
 		yfrac = ds_yfrac;
 
 		prt = dsp_x1 * 4 - ds_x1 + i;
 
-		xfrac += ds_xstep * prt;
+		xfrac.w += ds_xstep * prt;
 		yfrac += ds_ystep * prt;
 		if (countp < 0) {
 			continue;
@@ -361,7 +361,7 @@ void R_DrawSpan(void)
 		do
 		{
 			// Current texture index in u,v.
-			spot = ((yfrac >> (16 - 6))&(63 * 64)) + ((xfrac >> 16) & 63);
+			spot = ((yfrac >> (16 - 6))&(63 * 64)) + ((xfrac.h.intbits) & 63);
 
 			// Lookup pixel from flat texture tile,
 			//  re-index using light/colormap.
@@ -372,7 +372,7 @@ void R_DrawSpan(void)
 			dest++;
 #endif
 			// Next step in u,v.
-			xfrac += ds_xstep * 4;
+			xfrac.w += ds_xstep * 4;
 			yfrac += ds_ystep * 4;
 		} while (countp--);
 	}

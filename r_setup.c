@@ -189,10 +189,9 @@ void R_ExecuteSetViewSize(void)
 	centery = viewheight / 2;
 	centerx = viewwidth / 2;
 	temp.h.intbits = centerx;
-	centerxfrac = temp;
+	projection = centerxfrac = temp;
 	temp.h.intbits = centery;
 	centeryfrac = temp;
-	projection = centerxfrac;
 
 	if (!detailshift) {
 		colfunc = basecolfunc = R_DrawColumn;

@@ -1016,8 +1016,8 @@ P_PathTraverse
 	temp.h.intbits = bmaporgx;
 	temp.h.fracbits = 0;
 
-
-    if ( ((x1.w - temp.w)&((MAPBLOCKSIZE*1000L) -1)) == 0)
+	
+    if ( ((x1.w - temp.w)&((MAPBLOCKSIZE * 1000L) -1)) == 0)
 		x1.h.intbits += 1;	// don't side exactly on a line
     
 	temp.h.intbits = bmaporgy;
