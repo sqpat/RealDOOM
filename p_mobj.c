@@ -279,9 +279,6 @@ void P_ZMovement (mobj_t* mo)
 {
     fixed_t	dist;
 	fixed_t	delta;
-	fixed_t	moTargetx;
-	fixed_t	moTargety;
-	fixed_t	moTargetz;
 	mobj_t* moTarget;
 	
 	fixed_t_union temp;
@@ -302,13 +299,10 @@ void P_ZMovement (mobj_t* mo)
 		// float down towards target if too close
 		if ( !(mo->flags & MF_SKULLFLY) && !(mo->flags & MF_INFLOAT) ) {
 			moTarget = (mobj_t*)&thinkerlist[mo->targetRef].data;
-			moTargetx = moTarget->x;
-			moTargety = moTarget->y;
-			moTargetz = moTarget->z;
-			dist = P_AproxDistance (mo->x - moTargetx,
-						mo->y - moTargety);
+			dist = P_AproxDistance (mo->x - moTarget->x,
+						mo->y - moTarget->y);
 	    
-			delta =(moTargetz + (mo->height.w>>1)) - mo->z;
+			delta =(moTarget->z + (mo->height.w>>1)) - mo->z;
 
 			if (delta<0 && dist < -(delta*3) )
 				mo->z -= FLOATSPEED;
@@ -760,12 +754,9 @@ P_SpawnMissile
     angle_t	an;
     fixed_t	dist;
 	fixed_t destz;
-	fixed_t sourcex = source->x;
-	fixed_t sourcey = source->y;
-	fixed_t sourcez = source->z;
 	fixed_t momz;
 	int32_t thspeed;
-	THINKERREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type, source->secnum);
+	THINKERREF thRef = P_SpawnMobj (source->x, source->y, source->z + 4*8*FRACUNIT, type, source->secnum);
 	uint16_t temp;
 
 	th = setStateReturn;
@@ -779,7 +770,7 @@ P_SpawnMissile
 	thspeed = MAKESPEED(mobjinfo[type].speed);
 
 	destz = dest->z;
-	an.w = R_PointToAngle2 (sourcex, sourcey, dest->x, dest->y);	
+	an.w = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);
 
     // fuzzy player
 	if (dest->flags & MF_SHADOW) {
@@ -788,9 +779,9 @@ P_SpawnMissile
 		an.h.intbits += temp;
 	}
 
-	dist = P_AproxDistance(dest->x - sourcex, dest->y - sourcey);
+	dist = P_AproxDistance(dest->x - source->x, dest->y - source->y);
 	dist = dist / thspeed;
-	momz = (destz - sourcez) / dist;
+	momz = (destz - source->z) / dist;
 
 	if (dist < 1)
 		dist = 1;
@@ -822,8 +813,6 @@ P_SpawnPlayerMissile
 	THINKERREF thRef;
     fineangle_t	an;
     
-	fixed_t	x;
-    fixed_t	y;
     fixed_t	z;
     fixed_t	slope;
 	fixed_t speed;
@@ -849,11 +838,9 @@ P_SpawnPlayerMissile
     }
 
 	
-    x = playerMobj->x;
-    y = playerMobj->y;
     z = playerMobj->z + 4*8*FRACUNIT;
 	
-    thRef = P_SpawnMobj (x,y,z, type, playerMobj->secnum);
+    thRef = P_SpawnMobj (playerMobj->x, playerMobj->y,z, type, playerMobj->secnum);
 	th = setStateReturn;
 
     if (mobjinfo[type].seesound)

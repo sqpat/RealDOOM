@@ -968,6 +968,9 @@ P_TraverseIntercepts
 }
 
 
+#define MAPBLOCK1000_BITMASK (MAPBLOCKSIZE * 1000L) -1)
+#define MAPBLOCK1000_LOWBITMASK 0xF3FF
+#define MAPBLOCK1000_HIGHBITMASK 0x0001
 
 
 //
@@ -1006,23 +1009,30 @@ P_PathTraverse
     int8_t		mapystep;
 
     int8_t		count;
-	fixed_t_union temp;
 
     earlyout = flags & PT_EARLYOUT;
 	
     validcount++;
     intercept_p = intercepts;
  
-	temp.h.intbits = bmaporgx;
-	temp.h.fracbits = 0;
+	if (x1.h.fracbits & MAPBLOCK1000_LOWBITMASK == 0) {
+		// only low bit matters, so xor is faster than subtract and just as accurate..
+		// maybe during ASM optim do shift and check carry
 
-	
-    if ( ((x1.w - temp.w)&((MAPBLOCKSIZE * 1000L) -1)) == 0)
-		x1.h.intbits += 1;	// don't side exactly on a line
+		if ((x1.h.intbits ^ bmaporgx) & MAPBLOCK1000_LOWBITMASK == 0) {
+			x1.h.intbits += 1;	// don't side exactly on a line
+		}
+	}
     
-	temp.h.intbits = bmaporgy;
-	if ( ((y1.w -temp.w)&((MAPBLOCKSIZE * 1000L) -1)) == 0)
-		y1.h.intbits += 1;	// don't side exactly on a line
+
+	if (y1.h.fracbits & MAPBLOCK1000_LOWBITMASK == 0) {
+		// only low bit matters, so xor is faster than subtract and just as accurate..
+		// maybe during ASM optim do shift and check carry
+		if ((y1.h.intbits ^ bmaporgy) & MAPBLOCK1000_LOWBITMASK == 0) {
+			y1.h.intbits += 1;	// don't side exactly on a line
+		}
+	}
+
 
     trace.x = x1;
     trace.y = y1;
