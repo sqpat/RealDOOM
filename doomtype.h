@@ -119,6 +119,8 @@ typedef union _longlong_union {
 } longlong_union;
 
 typedef union _fixed_t_union {
+	int32_t w;
+
 	struct dual_int16_t {
 		int16_t fracbits;
 		int16_t intbits;
@@ -131,8 +133,26 @@ typedef union _fixed_t_union {
 		int8_t intbytelow;
 	} b;
 
-	int32_t w;
 } fixed_t_union;
+
+
+
+typedef union _fixed_t_union_unsigned {
+	uint32_t w;
+
+	struct dual_uint16_t {
+		uint16_t fracbits;
+		uint16_t intbits;
+	} h;
+
+	struct quad_uint8_t {
+		uint8_t fracbytehigh;
+		uint8_t fracbytelow;
+		uint8_t intbytehigh;
+		uint8_t intbytelow;
+	} b;
+
+} fixed_t_union_unsigned;
  
 typedef union _int16_t_union {
 

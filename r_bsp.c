@@ -265,8 +265,8 @@ void R_AddLine (int16_t linenum)
 {
     int16_t			x1;
     int16_t			x2;
-    fixed_t_union		angle1;
-	fixed_t_union		angle2;
+    angle_t		angle1;
+	angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
 	seg_t curline = segs[linenum];
@@ -280,8 +280,8 @@ void R_AddLine (int16_t linenum)
 	int16_t sidemidtex;
 	sector_t frontsector;
 	sector_t backsector;
-	fixed_t_union tempx;
-	fixed_t_union tempy;
+	angle_t tempx;
+	angle_t tempy;
     curlinenum = linenum;
 	
 	linebacksecnum =
@@ -310,52 +310,58 @@ void R_AddLine (int16_t linenum)
 
     // Clip to view edges.
     // OPTIMIZE: make constant out of 2*clipangle (FIELDOFVIEW).
-    span = angle1.w - angle2.w;
+    span.w = angle1.w - angle2.w;
 	 
 
     // Back side? I.e. backface culling?
-	if (span >= ANG180) {
+	//if (span.h.intbits >= ANG180_HIGHBITS) {
+	if (span.w >= ANG180) {
+
 		return;
 	}
 
     // Global angle needed by segcalc.
-    rw_angle1 = angle1.w;
-    angle1.w -= viewangle;
-    angle2.w -= viewangle;
+    rw_angle1 = angle1;
+    angle1.w -= viewangle.w;
+    angle2.w -= viewangle.w;
 	
-    tspan = angle1.w + clipangle;
-	if (tspan > fieldofview)
+    tspan.w = angle1.w + clipangle.w;
+	if (tspan.w > fieldofview.w)
 	{
-	tspan -= fieldofview;
+	tspan.w -= fieldofview.w;
 
 	// Totally off the left edge?
-	if (tspan >= span) {
+	if (tspan.w >= span.w) {
 		return;
 	}
 	
-	angle1.w = clipangle;
+	angle1 = clipangle;
     }
-    tspan = clipangle - angle2.w;
-	if (tspan > fieldofview)
+    tspan.w = clipangle.w - angle2.w;
+	if (tspan.w > fieldofview.w)
 	{
-		tspan -= fieldofview;
+		tspan.w -= fieldofview.w;
 	
 	// Totally off the left edge?
-		if (tspan >= span) {
+		if (tspan.w >= span.w) {
 			return;
 		}
-	angle2.w = -clipangle;
+	angle2.w = -clipangle.w;
     }
     
     // The seg is in the view range,
     // but not necessarily visible.
 
-	angle1.h.fracbits = (angle1.h.intbits+0x4000u)>> SHORTTOFINESHIFT;
-    angle2.h.fracbits = (angle2.h.intbits+0x4000u)>> SHORTTOFINESHIFT;
-    x1 = viewangletox[angle1.h.fracbits];
-    x2 = viewangletox[angle2.h.fracbits];
-
-	//todo can we just compare angle 1 and angle 2? - sq
+	angle1.h.fracbits = (angle1.h.intbits+ ANG90_HIGHBITS)>> SHORTTOFINESHIFT;
+    angle2.h.fracbits = (angle2.h.intbits+ ANG90_HIGHBITS)>> SHORTTOFINESHIFT;
+	x1 = viewangletox[angle1.h.fracbits];
+	x2 = viewangletox[angle2.h.fracbits];
+	/*
+	angle1.w = (angle1.w+ ANG90) >> ANGLETOFINESHIFT;
+	angle2.w = (angle2.w+ ANG90) >> ANGLETOFINESHIFT;
+	x1 = viewangletox[angle1.w];
+    x2 = viewangletox[angle2.w];
+	*/
 
     // Does not cross a pixel?
 	if (x1 == x2) {
@@ -502,46 +508,54 @@ boolean R_CheckBBox(int16_t *bspcoord)
 	}
 
 	// check clip list for an open space
-	angle1 = R_PointToAngle16(x1, y1) - viewangle;
-	angle2 = R_PointToAngle16(x2, y2) - viewangle;
+	angle1.w = R_PointToAngle16(x1, y1) - viewangle.w;
+	angle2.w = R_PointToAngle16(x2, y2) - viewangle.w;
 
-	span = angle1 - angle2;
+	span.w = angle1.w - angle2.w;
 
 	// Sitting on a line?
-	if (span >= ANG180)
+	if (span.h.intbits >= ANG180_HIGHBITS)
 		return true;
 
-	tspan = angle1 + clipangle;
+	tspan.w = angle1.w + clipangle.w;
 
-	if (tspan > fieldofview)
+	if (tspan.w > fieldofview.w)
 	{
-		tspan -= fieldofview;
+		tspan.w -= fieldofview.w;
 
 		// Totally off the left edge?
-		if (tspan >= span)
+		if (tspan.w >= span.w)
 			return false;
 
 		angle1 = clipangle;
 	}
-	tspan = clipangle - angle2;
-	if (tspan > fieldofview)
+	tspan.w = clipangle.w - angle2.w;
+	if (tspan.w > fieldofview.w)
 	{
-		tspan -= fieldofview;
+		tspan.w -= fieldofview.w;
 
 		// Totally off the left edge?
-		if (tspan >= span)
+		if (tspan.w >= span.w)
 			return false;
 
-		angle2 = -clipangle;
+		angle2.w = -clipangle.w;
 	}
 
 	// Find the first clippost
 	//  that touches the source post
 	//  (adjacent pixels are touching).
-	angle1 = (angle1 + ANG90) >> ANGLETOFINESHIFT;
-	angle2 = (angle2 + ANG90) >> ANGLETOFINESHIFT;
-	sx1 = viewangletox[angle1];
-	sx2 = viewangletox[angle2];
+	sx1 = (angle1.h.intbits + ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+	sx2 = (angle2.h.intbits + ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+	sx1 = viewangletox[sx1];
+	sx2 = viewangletox[sx2]; 
+	/*
+
+	angle1.w = (angle1.w + ANG90) >> ANGLETOFINESHIFT;
+	angle2.w = (angle2.w + ANG90) >> ANGLETOFINESHIFT;
+	sx1 = viewangletox[angle1.w];
+	sx2 = viewangletox[angle2.w];
+		*/
+
 
 	// Does not cross a pixel.
 	if (sx1 == sx2)

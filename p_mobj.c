@@ -470,7 +470,7 @@ P_NightmareRespawn(mobj_t* mobj)
 	mo = setStateReturn;
 	//mo->spawnpoint = mobjspawnpoint;
     //todo does this work? or need to be in fixed_mul? -sq
-	mo->angle = ANG45 * (mobjspawnangle/45);
+	mo->angle.w = ANG45 * (mobjspawnangle/45);
 
 	if (mobjspawnoptions & MTF_AMBUSH) {
 		mo->flags |= MF_AMBUSH;
@@ -766,7 +766,7 @@ P_SpawnMissile
 	fixed_t momz;
 	int32_t thspeed;
 	THINKERREF thRef = P_SpawnMobj (sourcex, sourcey, sourcez + 4*8*FRACUNIT, type, source->secnum);
-	fixed_t_union temp;
+	uint16_t temp;
 
 	th = setStateReturn;
 	if (mobjinfo[type].seesound) {
@@ -779,14 +779,13 @@ P_SpawnMissile
 	thspeed = MAKESPEED(mobjinfo[type].speed);
 
 	destz = dest->z;
-	an = R_PointToAngle2 (sourcex, sourcey, dest->x, dest->y);	
+	an.w = R_PointToAngle2 (sourcex, sourcey, dest->x, dest->y);	
 
     // fuzzy player
 	if (dest->flags & MF_SHADOW) {
-		temp.h.fracbits = 0;
-		temp.h.intbits = (P_Random() - P_Random());
-		temp.h.intbits <<= 4;
-		an += temp.w;
+		temp = (P_Random() - P_Random());
+		temp  <<= 4;
+		an.h.intbits += temp;
 	}
 
 	dist = P_AproxDistance(dest->x - sourcex, dest->y - sourcey);
@@ -798,9 +797,9 @@ P_SpawnMissile
 
 
     th->angle = an;
-    an >>= ANGLETOFINESHIFT;
-    th->momx = FixedMul (thspeed, finecosine(an));
-    th->momy = FixedMul (thspeed, finesine(an));
+    an.h.intbits >>= SHORTTOFINESHIFT;
+    th->momx = FixedMul (thspeed, finecosine(an.h.intbits));
+    th->momy = FixedMul (thspeed, finesine(an.h.intbits));
 	th->momz = momz;
 
 
@@ -828,11 +827,10 @@ P_SpawnPlayerMissile
     fixed_t	z;
     fixed_t	slope;
 	fixed_t speed;
-	fixed_t_union temp;
 
     // see which target is to be aimed at
     // todo use fixed_t_union
-	an = playerMobj->angle >> ANGLETOFINESHIFT;
+	an = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
 	slope = P_AimLineAttack (playerMobj, an, 16*64);
     
     if (!linetarget) {
@@ -845,8 +843,7 @@ P_SpawnPlayerMissile
 			slope = P_AimLineAttack (playerMobj, an, 16*64);
 		}
 		if (!linetarget) {
-			// todo use fixed_t_union
-			an = playerMobj->angle >> ANGLETOFINESHIFT;
+			an = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
 			slope = 0;
 		}
     }
@@ -863,10 +860,9 @@ P_SpawnPlayerMissile
 		S_StartSound (th, mobjinfo[type].seesound);
 
     th->targetRef = playerMobjRef;
-	temp.h.fracbits = 0;
-	temp.h.intbits = an;
-	temp.h.intbits <<= 3;
-	th->angle = temp.w;
+	th->angle.h.intbits = an;
+	th->angle.h.intbits <<= 3;
+	th->angle.h.fracbits = 0;
 
 	speed = MAKESPEED(mobjinfo[type].speed);
 

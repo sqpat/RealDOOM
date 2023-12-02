@@ -113,10 +113,15 @@ extern  uint16_t		finesineinner[2048];
 extern fixed_t		finetangentinner[2048];
 
 // Binary Angle Measument, BAM.
-#define ANG45			0x20000000
-#define ANG90			0x40000000
-#define ANG180		0x80000000
-#define ANG270		0xc0000000
+#define ANG45			0x20000000u
+#define ANG90			0x40000000u
+#define ANG180			0x80000000u
+#define ANG270			0xc0000000u
+
+#define ANG45_HIGHBITS			0x2000u
+#define ANG90_HIGHBITS			0x4000u
+#define ANG180_HIGHBITS		0x8000u
+#define ANG270_HIGHBITS		0xc000u
 
 #define FINE_ANG45		0x400
 #define FINE_ANG90	    0x800		    
@@ -130,14 +135,16 @@ extern fixed_t		finetangentinner[2048];
 #define SLOPEBITS		11
 #define DBITS			(FRACBITS-SLOPEBITS)
 
-typedef uint32_t angle_t;
+typedef fixed_t_union_unsigned angle_t;
+typedef fixed_t_union signed_angle_t;
 typedef uint16_t fineangle_t;
 
 
 // Effective size is 2049;
 // The +1 size is to handle the case when x==y
 //  without additional checking.
-extern angle_t		tantoangle[SLOPERANGE+1];
+extern angle_t		tantoangle[SLOPERANGE + 1];
+//extern signed_angle_t		tantoangle[SLOPERANGE+1];
 
 
 #endif

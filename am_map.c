@@ -1194,9 +1194,9 @@ void AM_drawPlayers(void)
 {
 	
 	if (cheating)
-		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj->angle>>ANGLETOFINESHIFT, WHITE, playerMobj->x, playerMobj->y);
+		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj->angle.h.intbits>>SHORTTOFINESHIFT, WHITE, playerMobj->x, playerMobj->y);
 	else
-		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj->angle>>ANGLETOFINESHIFT, WHITE, playerMobj->x, playerMobj->y);
+		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj->angle.h.intbits >> SHORTTOFINESHIFT, WHITE, playerMobj->x, playerMobj->y);
 
 
 
@@ -1215,7 +1215,7 @@ AM_drawThings
 			t = (mobj_t*)(&thinkerlist[tRef].data);
 			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
-			 0x100000L, t->angle>>ANGLETOFINESHIFT, colors, t->x, t->y);
+			 0x100000L, t->angle.h.intbits >> SHORTTOFINESHIFT, colors, t->x, t->y);
 			tRef = t->snextRef;
 		}
     }

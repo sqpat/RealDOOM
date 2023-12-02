@@ -126,10 +126,10 @@ R_MapPlane
     }
 	
     length = FixedMul (distance,distscale[x1]);
-	// todo use fixed_t_union
-	angle = MOD_FINE_ANGLE((viewangle >>ANGLETOFINESHIFT)+ xtoviewangle[x1]);
+	angle = MOD_FINE_ANGLE((viewangle.h.intbits >>SHORTTOFINESHIFT)+ xtoviewangle[x1]);
+	//angle = MOD_FINE_ANGLE((viewangle.w >> ANGLETOFINESHIFT) + xtoviewangle[x1]);
 
-    ds_xfrac = viewx.w + FixedMul(finecosine(angle), length);
+	ds_xfrac = viewx.w + FixedMul(finecosine(angle), length);
     ds_yfrac = -viewy.w - FixedMul(finesine(angle), length);
 
 if (fixedcolormap) {
@@ -178,8 +178,9 @@ void R_ClearPlanes (void)
     memset (cachedheight, 0, sizeof(cachedheight));
 
     // left to right mapping
-    angle = (viewangle-ANG90)>>ANGLETOFINESHIFT;
-	
+	angle = (viewangle.h.intbits - ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+	//angle = (viewangle.w - ANG90) >> ANGLETOFINESHIFT;
+
     // scale will be unit scale at SCREENWIDTH/2 distance
     basexscale = FixedDiv (finecosine(angle),centerxfrac);
     baseyscale = -FixedDiv (finesine(angle),centerxfrac);
@@ -237,7 +238,7 @@ R_FindPlane
 
 	if (lastvisplane == MAXCONVENTIONALVISPLANES + MAXEMSVISPLANES){
 		// swap out to EMS
-		I_Error("ran out of visplanes");
+		I_Error("out of visplanes");
 	}
 
 	// didnt find it, make a new visplane
@@ -430,7 +431,7 @@ void R_DrawPlanes (void)
 					temp.h.fracbits = 0;
 					temp.h.intbits = (xtoviewangle[x]);
 					temp.h.intbits <<= 3;
-					temp.w += viewangle;
+					temp.w += viewangle.w;
 					temp.h.intbits >>= 6;
 					//temp.w >>= ANGLETOSKYSHIFT;
 					angle = MOD_FINE_ANGLE(temp.h.intbits);

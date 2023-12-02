@@ -397,6 +397,10 @@ void R_RenderSegLoop (void)
 //  between start and stop pixels (inclusive).
 //
 // Note: Start/stop refer to x coordinate pixels
+
+// sq note: temp and temp angle have become confusing here, but basically angles are uint32_t
+// while normal fixed_t is int32_t, and you have to make sure you use angles and fixed_t in the
+// correct spots or you end up doing things like comparisons between uint32_t and int32_t.
 void
 R_StoreWallRange
 ( int16_t	start,
@@ -418,9 +422,11 @@ R_StoreWallRange
 	sector_t frontsector;
 	sector_t backsector;
 	fixed_t_union temp;
+	angle_t tempangle;
 	int16_t temp2;
 	int16_t animateoffset = 0;
 	temp.h.fracbits = 0;
+	tempangle.h.fracbits = 0;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
@@ -448,14 +454,14 @@ R_StoreWallRange
     // calculate rw_distance for scale calculation
     rw_normalangle = MOD_FINE_ANGLE(curline.fineangle + FINE_ANG90);
 	
-	temp.h.intbits = rw_normalangle;
-	temp.h.intbits <<= 3;
-	temp.w -= rw_angle1;
-	temp.w = labs(temp.w);
-	temp.h.intbits >>= 3;
+	tempangle.h.intbits = rw_normalangle;
+	tempangle.h.intbits <<= 3;
+	tempangle.w -= rw_angle1.w;
+	tempangle.w = labs(tempangle.w);
+	tempangle.h.intbits >>= 3;
 
-	offsetangle = temp.h.intbits;
-	temp.h.fracbits = 0;
+	offsetangle = tempangle.h.intbits;
+	tempangle.h.fracbits = 0;
     
     if (offsetangle > FINE_ANG90)
 		offsetangle = 	FINE_ANG90;
@@ -473,24 +479,24 @@ R_StoreWallRange
     rw_stopx = stop+1;
 
 
-	temp.h.intbits = xtoviewangle[start];
-	temp.h.intbits <<= 3;
-	temp.w += viewangle;
+	tempangle.h.intbits = xtoviewangle[start];
+	tempangle.h.intbits <<= 3;
+	tempangle.w += viewangle.w;
 
     // calculate scale at both ends and step
-    ds_p->scale1 = rw_scale =  R_ScaleFromGlobalAngle (temp.w);
-	temp.h.fracbits = 0;
+    ds_p->scale1 = rw_scale =  R_ScaleFromGlobalAngle (tempangle);
+	tempangle.h.fracbits = 0;
 
     if (stop > start ) {
-		temp.h.intbits = xtoviewangle[stop];
-		temp.h.intbits <<= 3;
-		temp.w += viewangle;
+		tempangle.h.intbits = xtoviewangle[stop];
+		tempangle.h.intbits <<= 3;
+		tempangle.w += viewangle.w;
 	
-		ds_p->scale2 = R_ScaleFromGlobalAngle (temp.w);
+		ds_p->scale2 = R_ScaleFromGlobalAngle (tempangle);
 
 		ds_p->scalestep = rw_scalestep =  (ds_p->scale2 - rw_scale) / (stop-start);
 
-		temp.h.fracbits = 0;
+		tempangle.h.fracbits = 0;
 
     } else {
 		ds_p->scale2 = ds_p->scale1;
@@ -670,15 +676,15 @@ R_StoreWallRange
     segtextured = midtexture | toptexture | bottomtexture | maskedtexture;
 
     if (segtextured) {
-		temp.h.intbits = rw_normalangle;
-		temp.h.intbits <<= 3;
-		temp.w -= rw_angle1;
-		temp.h.fracbits = temp.h.intbits;
-		temp.h.fracbits >>= 3;
+		tempangle.h.intbits = rw_normalangle;
+		tempangle.h.intbits <<= 3;
+		tempangle.w -= rw_angle1.w;
+		tempangle.h.fracbits = tempangle.h.intbits;
+		tempangle.h.fracbits >>= 3;
 
 
-		offsetangle = temp.h.fracbits;
-		temp.h.fracbits = 0;
+		offsetangle = tempangle.h.fracbits;
+		tempangle.h.fracbits = 0;
 		
 
 		if (offsetangle > FINE_ANG180) {
@@ -691,20 +697,21 @@ R_StoreWallRange
 		sineval = finesine(offsetangle);
 		rw_offset = FixedMul (hyp, sineval);
 
-		temp.h.intbits = rw_normalangle;
-		temp.h.intbits <<= 3;
-		temp.w -= rw_angle1;
+		tempangle.h.intbits = rw_normalangle;
+		tempangle.h.intbits <<= 3;
+		tempangle.w -= rw_angle1.w;
 
-		if (temp.w < ANG180) {
+		if (tempangle.h.intbits < ANG180_HIGHBITS) {
 
 			rw_offset = -rw_offset;
 		}
 		temp.h.fracbits = 0;
 		temp.h.intbits = sidetextureoffset+curline.offset;
 		rw_offset += temp.w;
-		// todo use fixed_t_union to reduce shift
-		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle>>ANGLETOFINESHIFT) - (rw_normalangle));
-	
+		
+		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle.h.intbits >> SHORTTOFINESHIFT) - (rw_normalangle));
+		//rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle.w >> ANGLETOFINESHIFT) - (rw_normalangle));
+
 		// calculate light table
 		//  use different light tables
 		//  for horizontal / vertical / diagonal
@@ -732,14 +739,12 @@ R_StoreWallRange
     //  of the view plane, it is definitely invisible
     //  and doesn't need to be marked.
     
-  
-    // temp.h.intbits = frontsector.floorheight >> SHORTFLOORBITS;
+	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.floorheight);
     if (temp.w >= viewz.w) {
 		// above view plane
 		markfloor = false;
     }
-    // temp.h.intbits = frontsector.ceilingheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.ceilingheight);
     if (temp.w <= viewz.w  && frontsector.ceilingpic != skyflatnum) {
 		// below view plane

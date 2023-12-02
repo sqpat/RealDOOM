@@ -247,7 +247,7 @@ R_PointOnSegSide
 //
 
 
-angle_t
+uint32_t
 R_PointToAngle16
 (int16_t	x,
 	int16_t	y) {
@@ -262,7 +262,7 @@ R_PointToAngle16
 }
 
 
-angle_t
+uint32_t
 R_PointToAngle
 ( fixed_t	x,
   fixed_t	y )
@@ -290,7 +290,7 @@ R_PointToAngle
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
-						return tantoangle[tempDivision];
+						return tantoangle[tempDivision].w;
 					else
 						return 536870912L;
 				}
@@ -304,7 +304,7 @@ R_PointToAngle
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG90 - 1 - tantoangle[tempDivision];
+						return ANG90 - 1 - tantoangle[tempDivision].w;
 					else
 						return ANG90 - 1 - 536870912L;
 				}
@@ -324,7 +324,7 @@ R_PointToAngle
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
-						return -tantoangle[tempDivision];
+						return -(tantoangle[tempDivision].w);
 					else
 						return -536870912L;
 				}
@@ -338,7 +338,7 @@ R_PointToAngle
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG270 + tantoangle[tempDivision];
+						return ANG270 + tantoangle[tempDivision].w;
 					else
 						return ANG270 + 536870912L;
 				}
@@ -362,7 +362,7 @@ R_PointToAngle
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG180 - 1 - tantoangle[tempDivision];
+						return ANG180 - 1 - tantoangle[tempDivision].w;
 					else
 						return ANG180 - 1 - 536870912L;
 				}
@@ -376,7 +376,7 @@ R_PointToAngle
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG90 + tantoangle[tempDivision];
+						return ANG90 + tantoangle[tempDivision].w;
 					else
 						return ANG90 + 536870912L;
 				};
@@ -396,7 +396,7 @@ R_PointToAngle
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG180 + tantoangle[tempDivision];
+						return ANG180 + tantoangle[tempDivision].w;
 					else
 						return ANG180 + 536870912L;
 				}
@@ -410,7 +410,7 @@ R_PointToAngle
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG270 - 1 - tantoangle[tempDivision];
+						return ANG270 - 1 - tantoangle[tempDivision].w;
 					else
 						return ANG270 - 1 - 536870912L;
 				}
@@ -421,7 +421,7 @@ R_PointToAngle
 }
 
 
-angle_t
+uint32_t
 R_PointToAngle2
 ( fixed_t	x1,
   fixed_t	y1,
@@ -435,7 +435,7 @@ R_PointToAngle2
 }
 
 
-angle_t
+uint32_t
 R_PointToAngle2_16
 ( int16_t	x1,
   int16_t	y1,
@@ -460,7 +460,7 @@ R_PointToDist
   int16_t	yarg )
 
 {
-    int16_t		angle;
+    fineangle_t		angle;
     fixed_t	dx;
     fixed_t	dy;
     fixed_t	temp;
@@ -482,8 +482,8 @@ R_PointToDist
         dy = temp;
     }
 	
-	// todo use fixed_t_union to reduce shift
-	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ]+ANG90) >> ANGLETOFINESHIFT;
+	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].h.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+	//angle = (tantoangle[FixedDiv(dy, dx) >> DBITS].w + ANG90) >> ANGLETOFINESHIFT;
 
     // use as cosine
     dist = FixedDiv (dx, finesine(angle) );	
@@ -511,9 +511,13 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     fixed_t_union		    num;
     fixed_t			den;
 
-	// todo use fixed_t_union to reduce shift
-    anglea = (ANG90 + (visangle-viewangle))>> ANGLETOFINESHIFT;
-    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle >> ANGLETOFINESHIFT) - rw_normalangle);
+    anglea = MOD_FINE_ANGLE(FINE_ANG90 + ((visangle.w-viewangle.w)>> ANGLETOFINESHIFT));
+    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle.h.intbits >> SHORTTOFINESHIFT) - rw_normalangle);
+
+	//anglea = (ANG90 + (visangle.w - viewangle.w)) >> ANGLETOFINESHIFT;
+	//angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle.w >> ANGLETOFINESHIFT) - rw_normalangle);
+
+
 
     // both sines are allways positive
     sinea = finesine(anglea);	
@@ -620,7 +624,7 @@ int16_t
 void R_SetupFrame ()
 {		
     int8_t		i;
-	fixed_t tempan;
+	fineangle_t tempan;
 
     viewx.w = playerMobj->x;
     viewy.w = playerMobj->y;
@@ -628,8 +632,8 @@ void R_SetupFrame ()
     extralight = player.extralight;
 
     viewz.w = player.viewz;
-	// todo use fixed_t_union to reduce shift
-	tempan = viewangle >> ANGLETOFINESHIFT;
+
+	tempan = viewangle.h.intbits >> SHORTTOFINESHIFT;
     viewsin = finesine(tempan);
     viewcos = finecosine(tempan);
 	

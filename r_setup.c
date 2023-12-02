@@ -151,8 +151,8 @@ void R_InitTextureMapping(void)
 	temp.h.fracbits = 0;
 	temp.h.intbits = xtoviewangle[0];
 	temp.h.intbits <<= 3;
-	clipangle = temp.w;
-	fieldofview = 2 * clipangle;
+	clipangle.w = temp.w;
+	fieldofview.w = 2 * clipangle.w;
 }
 
 

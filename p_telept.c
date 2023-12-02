@@ -101,7 +101,7 @@ EV_Teleport
 				// spawn teleport fog at source and destination
 				fogRef = P_SpawnMobj (oldx, oldy, oldz, MT_TFOG, oldsecnum);
 				S_StartSoundFromRef (setStateReturn, sfx_telept);
-				an = m->angle >> ANGLETOFINESHIFT;
+				an = m->angle.h.intbits >> SHORTTOFINESHIFT;
 				fogRef = P_SpawnMobj (m->x+20*finecosine(an), m->y+20*finesine(an)
 						   , thing->z, MT_TFOG, -1);
 
