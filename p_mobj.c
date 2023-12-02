@@ -813,7 +813,7 @@ P_SpawnPlayerMissile
 	THINKERREF thRef;
     fineangle_t	an;
     
-    fixed_t	z;
+    fixed_t_union	z;
     fixed_t	slope;
 	fixed_t speed;
 
@@ -838,9 +838,10 @@ P_SpawnPlayerMissile
     }
 
 	
-    z = playerMobj->z + 4*8*FRACUNIT;
+	z.w = playerMobj->z;
+	z.h.intbits += 4 * 8;
 	
-    thRef = P_SpawnMobj (playerMobj->x, playerMobj->y,z, type, playerMobj->secnum);
+    thRef = P_SpawnMobj (playerMobj->x, playerMobj->y,z.w, type, playerMobj->secnum);
 	th = setStateReturn;
 
     if (mobjinfo[type].seesound)

@@ -297,8 +297,8 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 	int16_t linev2Offset;
 	uint8_t lineflags;
 	fixed_t_union temp;
-	sector_t frontsector;
-	sector_t backsector;
+	sector_t* frontsector;
+	sector_t* backsector;
 	int16_t curlineside;
  	temp.h.fracbits = 0;
     // check lines
@@ -309,14 +309,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
     for ( ; count ; segnum++, count--) {
 		linedefOffset = segs[segnum].linedefOffset;
 		line = &lines[linedefOffset];
-		curlineside = segs[segnum].v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
-		frontsecnum = sides[line->sidenum[curlineside]].secnum;
-		backsecnum =
-			line->flags & ML_TWOSIDED ?
-			sides[line->sidenum[curlineside^1]].secnum
-			: SECNUM_NULL;
-		frontsector = sectors[frontsecnum];
-		backsector = sectors[backsecnum];
+
 
 		// allready checked other side?
 		// if (line->validcount == (validcount & 0xFF)) {
@@ -325,6 +318,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 		if (line->validcount == validcount ) {
 			continue;
 		}
+
 		//line->validcount = (validcount & 0xFF);
 		line->validcount = validcount;
 		linev1Offset = line->v1Offset;
@@ -372,23 +366,31 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 
 		// no wall to block sight with?
 
+		curlineside = segs[segnum].v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
+		frontsecnum = sides[line->sidenum[curlineside]].secnum;
+		backsecnum =
+			line->flags & ML_TWOSIDED ?
+			sides[line->sidenum[curlineside ^ 1]].secnum
+			: SECNUM_NULL;
+		frontsector = &sectors[frontsecnum];
+		backsector = &sectors[backsecnum];
 
-		if (frontsector.floorheight == backsector.floorheight && frontsector.ceilingheight == backsector.ceilingheight) {
+		if (frontsector->floorheight == backsector->floorheight && frontsector->ceilingheight == backsector->ceilingheight) {
 			continue;
 		}
 
 		// possible occluder
 		// because of ceiling height differences
-		if (frontsector.ceilingheight < backsector.ceilingheight)
-			opentop = frontsector.ceilingheight;
+		if (frontsector->ceilingheight < backsector->ceilingheight)
+			opentop = frontsector->ceilingheight;
 		else
-			opentop = backsector.ceilingheight;
+			opentop = backsector->ceilingheight;
 
 		// because of ceiling height differences
-		if (frontsector.floorheight > backsector.floorheight)
-			openbottom = frontsector.floorheight;
+		if (frontsector->floorheight > backsector->floorheight)
+			openbottom = frontsector->floorheight;
 		else
-			openbottom = backsector.floorheight;
+			openbottom = backsector->floorheight;
 		
 		// quick test for totally closed doors
 		if (openbottom >= opentop) {
@@ -400,7 +402,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 		// todo pull this out? only use
 		frac = P_InterceptVector2 (&strace, &divl);
 		
-		if (frontsector.floorheight != backsector.floorheight) {
+		if (frontsector->floorheight != backsector->floorheight) {
 		 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  openbottom);
 			slope = FixedDiv (temp.w - sightzstart , frac);
@@ -408,7 +410,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 				bottomslope = slope;
 		}
 		
-		if (frontsector.ceilingheight != backsector.ceilingheight) {
+		if (frontsector->ceilingheight != backsector->ceilingheight) {
 		 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  opentop);
 			slope = FixedDiv (temp.w - sightzstart , frac);
@@ -453,8 +455,7 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 	if (side == 2) {
 		side = 0;	// an "on" should cross both sides
 	}
-	//nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
-	//bsp = &nodes[bspnum];
+	 
 
 	if (!P_CrossBSPNode(bsp->children[side])) {
 		return false;
@@ -488,33 +489,11 @@ P_CheckSight
 )
 {
 
-    int32_t		pnum;
+    fixed_t_union		pnum;
     int16_t		bytenum;
     int16_t		bitnum;
-	fixed_t t1z;
-	fixed_t t1x;
-	fixed_t t1y;
-	fixed_t t1height;
-	int16_t s1;
-
-	fixed_t t2z;
-	fixed_t t2x;
-	fixed_t t2y;
-	fixed_t t2height;
-	int16_t s2;
-	 	t1z = t1->z;
-	t1x = t1->x;
-	t1y = t1->y;
-	t1height = t1->height.w;
-	s1 = t1->secnum;
-
-
-	t2z = t2->z;
-	t2x = t2->x;
-	t2y = t2->y;
-	t2height = t2->height.w;
-	s2 = t2->secnum;
-
+	 
+	 
 
 	
     // First check for trivial rejection.
@@ -522,10 +501,9 @@ P_CheckSight
     // Determine subsector entries in REJECT table.
     // todo we can do this faster for 16 bite... shifts are slow, we want to avoid the 32 bit int too.
 	// can be 330ish sectors in a level so pnum can surpass 16 bit sizes
-	pnum = s1*numsectors + s2;
-    bytenum = pnum>>3;
-    bitnum = 1 << (pnum&7);
-	
+	pnum.w = t1->secnum*numsectors + t2->secnum;
+    bytenum = pnum.w>>3;
+    bitnum = 1 << (pnum.h.fracbits&7);
 
 	
     // Check in REJECT table.
@@ -539,16 +517,16 @@ P_CheckSight
     // Now look from eyes of t1 to any part of t2.
     validcount++;
 	
-    sightzstart = t1z + t1height - (t1height>>2);
-    topslope = (t2z+t2height) - sightzstart;
-    bottomslope = (t2z) - sightzstart;
+    sightzstart = t1->z + t1->height.w - (t1->height.w>>2);
+    topslope = (t2->z+t2->height.w) - sightzstart;
+    bottomslope = (t2->z) - sightzstart;
 	
-    strace.x.w = t1x;
-    strace.y.w = t1y;
-    cachedt2x = t2x;
-	cachedt2y = t2y;
-    strace.dx.w = t2x - t1x;
-    strace.dy.w = t2y - t1y;
+    strace.x.w = t1->x;
+    strace.y.w = t1->y;
+    cachedt2x = t2->x;
+	cachedt2y = t2->y;
+    strace.dx.w = t2->x - t1->x;
+    strace.dy.w = t2->y - t1->y;
 
     // the head node is the last node output
     return P_CrossBSPNode (numnodes-1);	
