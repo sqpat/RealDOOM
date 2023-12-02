@@ -74,7 +74,7 @@ enum { VERSION =  109 };
 //#define CHECK_FOR_ERRORS
 
 // Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off for performance, on for development
-#define CHECKREFS
+//#define CHECKREFS
 
 // Probably going to remove this eventually, checks for some infinite loops in a few places. I used this when tracking down freezing bugs when there were many memory leaks early in development.
 //#define LOOPCHECK

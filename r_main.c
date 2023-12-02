@@ -483,7 +483,6 @@ R_PointToDist
     }
 	
 	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].h.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
-	//angle = (tantoangle[FixedDiv(dy, dx) >> DBITS].w + ANG90) >> ANGLETOFINESHIFT;
 
     // use as cosine
     dist = FixedDiv (dx, finesine(angle) );	
@@ -514,9 +513,6 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     anglea = MOD_FINE_ANGLE(FINE_ANG90 + ((visangle.w-viewangle.w)>> ANGLETOFINESHIFT));
     angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle.h.intbits >> SHORTTOFINESHIFT) - rw_normalangle);
 
-	//anglea = (ANG90 + (visangle.w - viewangle.w)) >> ANGLETOFINESHIFT;
-	//angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle.w >> ANGLETOFINESHIFT) - rw_normalangle);
-
 
 
     // both sines are allways positive
@@ -525,8 +521,6 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     num.w = FixedMul(projection,sineb)<<detailshift;
     den = FixedMul(rw_distance,sinea);
 
-    // i somewhat wonder (on 16 bit compiler) if setting the union fields
-    // individually produce better code than setting a 32 bit value..? -sq
     if (den > num.h.intbits) {
         scale.w = FixedDiv (num.w, den);
 

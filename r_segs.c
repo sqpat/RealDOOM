@@ -710,7 +710,6 @@ R_StoreWallRange
 		rw_offset += temp.w;
 		
 		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle.h.intbits >> SHORTTOFINESHIFT) - (rw_normalangle));
-		//rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle.w >> ANGLETOFINESHIFT) - (rw_normalangle));
 
 		// calculate light table
 		//  use different light tables

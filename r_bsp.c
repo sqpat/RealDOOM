@@ -314,9 +314,7 @@ void R_AddLine (int16_t linenum)
 	 
 
     // Back side? I.e. backface culling?
-	//if (span.h.intbits >= ANG180_HIGHBITS) {
-	if (span.w >= ANG180) {
-
+	if (span.h.intbits >= ANG180_HIGHBITS) {
 		return;
 	}
 
@@ -356,12 +354,6 @@ void R_AddLine (int16_t linenum)
     angle2.h.fracbits = (angle2.h.intbits+ ANG90_HIGHBITS)>> SHORTTOFINESHIFT;
 	x1 = viewangletox[angle1.h.fracbits];
 	x2 = viewangletox[angle2.h.fracbits];
-	/*
-	angle1.w = (angle1.w+ ANG90) >> ANGLETOFINESHIFT;
-	angle2.w = (angle2.w+ ANG90) >> ANGLETOFINESHIFT;
-	x1 = viewangletox[angle1.w];
-    x2 = viewangletox[angle2.w];
-	*/
 
     // Does not cross a pixel?
 	if (x1 == x2) {
@@ -548,14 +540,7 @@ boolean R_CheckBBox(int16_t *bspcoord)
 	sx2 = (angle2.h.intbits + ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
 	sx1 = viewangletox[sx1];
 	sx2 = viewangletox[sx2]; 
-	/*
-
-	angle1.w = (angle1.w + ANG90) >> ANGLETOFINESHIFT;
-	angle2.w = (angle2.w + ANG90) >> ANGLETOFINESHIFT;
-	sx1 = viewangletox[angle1.w];
-	sx2 = viewangletox[angle2.w];
-		*/
-
+ 
 
 	// Does not cross a pixel.
 	if (sx1 == sx2)
@@ -596,7 +581,6 @@ void R_Subsector(int16_t subsecnum)
 
 	frontsector = &sectors[frontsecnum];
 
-	// temp.h.intbits = frontsector->floorheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);
 
 	if (temp.w < viewz.w) {
@@ -605,7 +589,6 @@ void R_Subsector(int16_t subsecnum)
 		floorplaneindex = -1;
 	}
 
-	// temp.h.intbits = frontsector->ceilingheight >> SHORTFLOORBITS;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->ceilingheight);
 	// todo: see if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
 	

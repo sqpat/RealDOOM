@@ -127,7 +127,6 @@ R_MapPlane
 	
     length = FixedMul (distance,distscale[x1]);
 	angle = MOD_FINE_ANGLE((viewangle.h.intbits >>SHORTTOFINESHIFT)+ xtoviewangle[x1]);
-	//angle = MOD_FINE_ANGLE((viewangle.w >> ANGLETOFINESHIFT) + xtoviewangle[x1]);
 
 	ds_xfrac = viewx.w + FixedMul(finecosine(angle), length);
     ds_yfrac = -viewy.w - FixedMul(finesine(angle), length);
@@ -179,7 +178,6 @@ void R_ClearPlanes (void)
 
     // left to right mapping
 	angle = (viewangle.h.intbits - ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
-	//angle = (viewangle.w - ANG90) >> ANGLETOFINESHIFT;
 
     // scale will be unit scale at SCREENWIDTH/2 distance
     basexscale = FixedDiv (finecosine(angle),centerxfrac);
@@ -433,7 +431,6 @@ void R_DrawPlanes (void)
 					temp.h.intbits <<= 3;
 					temp.w += viewangle.w;
 					temp.h.intbits >>= 6;
-					//temp.w >>= ANGLETOSKYSHIFT;
 					angle = MOD_FINE_ANGLE(temp.h.intbits);
 					dc_x = x;
 
