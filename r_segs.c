@@ -54,8 +54,8 @@ int16_t		rw_stopx;
 fineangle_t		rw_centerangle;
 fixed_t		rw_offset;
 fixed_t		rw_distance;
-fixed_t		rw_scale;
-fixed_t		rw_scalestep;
+fixed_t_union		rw_scale;
+int16_t		rw_scalestep;
 fixed_t		rw_midtexturemid;
 fixed_t		rw_toptexturemid;
 fixed_t		rw_bottomtexturemid;
@@ -92,7 +92,7 @@ R_RenderMaskedSegRange
 	int16_t		x1,
 	int16_t		x2)
 {
-	uint32_t	index;
+	uint16_t	index;
 	column_t*	col;
 	int16_t		lightnum;
 	fixed_t_union temp;
@@ -145,7 +145,7 @@ R_RenderMaskedSegRange
     maskedtexturecol = ds->maskedtexturecol;
 
     rw_scalestep = ds->scalestep;		
-    spryscale = ds->scale1 + (x1 - ds->x1)*rw_scalestep;
+    spryscale.w = ds->scale1 + (x1 - ds->x1)*rw_scalestep;
     mfloorclip = ds->sprbottomclip;
     mceilingclip = ds->sprtopclip;
     
@@ -175,20 +175,23 @@ R_RenderMaskedSegRange
     for (dc_x = x1 ; dc_x <= x2 ; dc_x++)
     {
 	// calculate lighting
-	if (maskedtexturecol[dc_x] != MAXSHORT)
-	{
-	    if (!fixedcolormap)
-	    {
-		index = spryscale>>LIGHTSCALESHIFT;
+	if (maskedtexturecol[dc_x] != MAXSHORT) {
+	    if (!fixedcolormap) {
 
-		if (index >=  MAXLIGHTSCALE )
-		    index = MAXLIGHTSCALE-1;
+			// prevents a 12 bit shift in many cases. 
+			// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4)
+			if (spryscale.h.intbits >= 3) {
+				index = MAXLIGHTSCALE - 1;
+			}
+			else {
+				index = spryscale.w >> LIGHTSCALESHIFT;
+			}
 
 		dc_colormap = walllights[index];
 	    }
 			
-	    sprtopscreen = centeryfrac - FixedMul(dc_texturemid, spryscale);
-	    dc_iscale = 0xffffffffu / (uint32_t)spryscale;
+	    sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid, spryscale.w);
+	    dc_iscale = 0xffffffffu / (uint32_t)spryscale.w;
 	    
 	    // draw the texture
 	    col = (column_t *)((byte *)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
@@ -196,7 +199,7 @@ R_RenderMaskedSegRange
 		//Z_SetUnlocked(lockedRef);
 		maskedtexturecol[dc_x] = MAXSHORT;
 	}
-	spryscale += rw_scalestep;
+	spryscale.w += rw_scalestep;
     }
 	
 }
@@ -218,7 +221,7 @@ R_RenderMaskedSegRange
 void R_RenderSegLoop (void)
 {
     fineangle_t		angle;
-	uint32_t		index;
+	uint16_t		index;
     int16_t			yl;
     int16_t			yh;
     int16_t			mid;
@@ -292,14 +295,19 @@ void R_RenderSegLoop (void)
 			texturecolumn = temp.h.intbits;
 	    
 			// calculate lighting
-			index = rw_scale>>LIGHTSCALESHIFT;
 
-			if (index >=  MAXLIGHTSCALE )
-				index = MAXLIGHTSCALE-1;
+			// prevents a 12 bit shift in many cases. 
+			// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4)
+			if (rw_scale.h.intbits >= 3) {
+				index = MAXLIGHTSCALE - 1;
+			} else {
+				index = rw_scale.w >> LIGHTSCALESHIFT;
+			}
+
 
 			dc_colormap = walllights[index];
 			dc_x = rw_x;
-			dc_iscale = 0xffffffffu / (uint32_t)rw_scale;
+			dc_iscale = 0xffffffffu / (uint32_t)rw_scale.w;
 		}
 
 		// draw the wall tiers
@@ -382,7 +390,7 @@ void R_RenderSegLoop (void)
 			
 		}
 		
-		rw_scale += rw_scalestep;
+		rw_scale.w += rw_scalestep;
 		topfrac += topstep;
 		bottomfrac += bottomstep;
 	}
@@ -453,7 +461,8 @@ R_StoreWallRange
     
     // calculate rw_distance for scale calculation
     rw_normalangle = MOD_FINE_ANGLE(curline.fineangle + FINE_ANG90);
-	
+
+/*
 	tempangle.h.intbits = rw_normalangle;
 	tempangle.h.intbits <<= 3;
 	tempangle.w -= rw_angle1.w;
@@ -462,6 +471,8 @@ R_StoreWallRange
 
 	offsetangle = tempangle.h.intbits;
 	tempangle.h.fracbits = 0;
+	*/
+	offsetangle = abs((rw_normalangle << 3)- (rw_angle1.h.intbits)) >> 3;
     
     if (offsetangle > FINE_ANG90)
 		offsetangle = 	FINE_ANG90;
@@ -484,7 +495,7 @@ R_StoreWallRange
 	tempangle.w += viewangle.w;
 
     // calculate scale at both ends and step
-    ds_p->scale1 = rw_scale =  R_ScaleFromGlobalAngle (tempangle);
+    ds_p->scale1 = rw_scale.w =  R_ScaleFromGlobalAngle (tempangle);
 	tempangle.h.fracbits = 0;
 
     if (stop > start ) {
@@ -494,7 +505,7 @@ R_StoreWallRange
 	
 		ds_p->scale2 = R_ScaleFromGlobalAngle (tempangle);
 
-		ds_p->scalestep = rw_scalestep =  (ds_p->scale2 - rw_scale) / (stop-start);
+		ds_p->scalestep = rw_scalestep =  (ds_p->scale2 - rw_scale.w) / (stop-start);
 
 		tempangle.h.fracbits = 0;
 
@@ -590,10 +601,9 @@ R_StoreWallRange
 			ds_p->silhouette |= SIL_TOP;
 		}
 	
-		// temp.h.intbits = backsector.ceilingheight >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsector.ceilingheight);
 		worldhigh = temp.w - viewz.w;
-		// temp.h.intbits = backsector.floorheight >> SHORTFLOORBITS;
+		
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsector.floorheight);
 		worldlow = temp.w - viewz.w;
 		
@@ -628,9 +638,7 @@ R_StoreWallRange
 	
 
 		if (worldhigh < worldtop) {
-			 
 			toptexture = texturetranslation[side.toptexture];
-		
 		
 			if (lineflags & ML_DONTPEGTOP) {
 				// top of texture at top
@@ -676,6 +684,7 @@ R_StoreWallRange
     segtextured = midtexture | toptexture | bottomtexture | maskedtexture;
 
     if (segtextured) {
+		/*
 		tempangle.h.intbits = rw_normalangle;
 		tempangle.h.intbits <<= 3;
 		tempangle.w -= rw_angle1.w;
@@ -685,7 +694,10 @@ R_StoreWallRange
 
 		offsetangle = tempangle.h.fracbits;
 		tempangle.h.fracbits = 0;
+		*/
 		
+		offsetangle = ((rw_normalangle << 3) - (rw_angle1.h.intbits)) >> 3;
+
 
 		if (offsetangle > FINE_ANG180) {
 			offsetangle = MOD_FINE_ANGLE(-offsetangle);
@@ -696,6 +708,9 @@ R_StoreWallRange
 		}
 		sineval = finesine(offsetangle);
 		rw_offset = FixedMul (hyp, sineval);
+
+		// todo: we are subtracting then checking vs 0x8000 (or 0x80000000). 
+		// Is this equivalent to a simpler operation?
 
 		tempangle.h.intbits = rw_normalangle;
 		tempangle.h.intbits <<= 3;
@@ -755,24 +770,23 @@ R_StoreWallRange
     worldtop >>= 4;
     worldbottom >>= 4;
 	
-    topstep = -FixedMul (rw_scalestep, worldtop);
-    topfrac = (centeryfrac>>4) - FixedMul (worldtop, rw_scale);
+    topstep = -FixedMul1632 (rw_scalestep, worldtop);
+    topfrac = (centeryfrac.w >>4) - FixedMul (worldtop, rw_scale.w);
 
-    bottomstep = -FixedMul (rw_scalestep,worldbottom);
-    bottomfrac = (centeryfrac>>4) - FixedMul (worldbottom, rw_scale);
+    bottomstep = -FixedMul1632 (rw_scalestep,worldbottom);
+    bottomfrac = (centeryfrac.w >>4) - FixedMul (worldbottom, rw_scale.w);
 	
     if (backsecnum != SECNUM_NULL) {	
 		worldhigh >>= 4;
 		worldlow >>= 4;
-
 		if (worldhigh < worldtop) {
-			pixhigh = (centeryfrac>>4) - FixedMul (worldhigh, rw_scale);
-			pixhighstep = -FixedMul (rw_scalestep,worldhigh);
+			pixhigh = (centeryfrac.w >>4) - FixedMul (worldhigh, rw_scale.w);
+			pixhighstep = -FixedMul1632 (rw_scalestep,worldhigh);
 		}
 	
 		if (worldlow > worldbottom) {
-			pixlow = (centeryfrac>>4) - FixedMul (worldlow, rw_scale);
-			pixlowstep = -FixedMul (rw_scalestep,worldlow);
+			pixlow = (centeryfrac.w >>4) - FixedMul (worldlow, rw_scale.w);
+			pixlowstep = -FixedMul1632 (rw_scalestep,worldlow);
 		}
     }
 

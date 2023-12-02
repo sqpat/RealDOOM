@@ -40,9 +40,9 @@ extern int16_t		viewwindowy;
 extern int16_t		centerx;
 extern int16_t		centery;
 
-extern fixed_t		centerxfrac;
-extern fixed_t		centeryfrac;
-extern fixed_t		projection;
+extern fixed_t_union		centerxfrac;
+extern fixed_t_union		centeryfrac;
+extern fixed_t_union		projection;
 
 //extern uint8_t		validcount;
 extern int16_t		validcount;

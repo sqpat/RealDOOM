@@ -47,7 +47,7 @@
 //  which increases counter clockwise (protractor).
 // There was a lot of stuff grabbed wrong, so I changed it...
 //
-fixed_t         pspritescale;
+uint16_t         pspritescale;
 fixed_t         pspriteiscale;
 
 lighttable_t**  spritelights;
@@ -107,7 +107,7 @@ vissprite_t     overflowsprite;
 int16_t*          mfloorclip;
 int16_t*          mceilingclip;
 
-fixed_t         spryscale;
+fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
 
 void R_DrawMaskedColumn (column_t* column) {
@@ -122,8 +122,8 @@ void R_DrawMaskedColumn (column_t* column) {
     for ( ; column->topdelta != 0xff ; )  {
         // calculate unclipped screen coordinates
         //  for post
-        topscreen = sprtopscreen + spryscale*column->topdelta;
-        bottomscreen = topscreen + spryscale*column->length;
+        topscreen = sprtopscreen + spryscale.w*column->topdelta;
+        bottomscreen = topscreen + spryscale.w*column->length;
 
 		// todo add by 65535  ? dc_yl = topscreen.fracbits == 0 ? intbits : intbits+1
         dc_yl = (topscreen+FRACUNIT-1)>>FRACBITS;
@@ -183,8 +183,8 @@ R_DrawVisSprite
     dc_iscale = labs(vis->xiscale)>>detailshift;
     dc_texturemid = vis->texturemid;
     frac.w = vis->startfrac;
-    spryscale = vis->scale;
-    sprtopscreen = centeryfrac - FixedMul(dc_texturemid,spryscale);
+    spryscale.w = vis->scale;
+    sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid,spryscale.w);
          
 	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, PAGE_LOCKED);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
@@ -258,7 +258,7 @@ void R_ProjectSprite (mobj_t* thing)
     if (tz < MINZ)
         return;
     
-    xscale = FixedDiv(projection, tz);
+    xscale = FixedDiv(projection.w, tz);
         
     gxt = -FixedMul(tr_x,viewsin); 
     gyt = FixedMul(tr_y,viewcos); 
@@ -292,7 +292,7 @@ void R_ProjectSprite (mobj_t* thing)
     temp.h.fracbits = 0;
     temp.h.intbits = spriteoffsets[lump];
 	tx -= temp.w;
-    temp.w = (centerxfrac + FixedMul (tx,xscale) );
+    temp.w = (centerxfrac.w + FixedMul (tx,xscale) );
     x1 = temp.h.intbits;
 
     // off the right side?
@@ -303,7 +303,7 @@ void R_ProjectSprite (mobj_t* thing)
     temp.h.intbits = spritewidths[lump];
 
     tx +=  temp.w;
-    temp.w = ((centerxfrac + FixedMul (tx,xscale) ));
+    temp.w = ((centerxfrac.w + FixedMul (tx,xscale) ));
     x2 = temp.h.intbits - 1;
 
 	
@@ -464,7 +464,14 @@ void R_DrawPSprite (pspdef_t* psp)
     temp.h.fracbits = 0;
     temp.h.intbits = spriteoffsets[lump];
 	tx -= temp.w;
-    temp.w= (centerxfrac + FixedMul (tx,pspritescale) );
+	temp.h.intbits = centerxfrac.h.intbits;
+	if (pspritescale) {
+		temp.w += FixedMul1632(pspritescale, tx);
+	}
+	else {
+		temp.w += tx;
+	}
+
     x1 = temp.h.intbits;
 
     // off the right side
@@ -474,7 +481,12 @@ void R_DrawPSprite (pspdef_t* psp)
     temp.h.fracbits = 0;
     temp.h.intbits = spritewidths[lump];
 	tx +=  temp.w;
-    temp.w = ((centerxfrac + FixedMul (tx, pspritescale) ) ) ;
+	temp.h.intbits = centerxfrac.h.intbits;
+	if (pspritescale) {
+		temp.w += FixedMul1632(pspritescale, tx);
+	} else {
+		temp.w += tx;
+	}
     x2 = temp.h.intbits - 1;
 
     // off the left side
@@ -489,7 +501,11 @@ void R_DrawPSprite (pspdef_t* psp)
 	vis->texturemid = (BASEYCENTER<<FRACBITS)+FRACUNIT/2-(psp->sy-temp.w);
     vis->x1 = x1 < 0 ? 0 : x1;
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
-    vis->scale = pspritescale<<detailshift;
+	if (pspritescale) {
+		vis->scale = (int32_t)pspritescale << detailshift;
+	} else {
+		vis->scale = FRACUNIT << detailshift;
+	}
     
     if (flip)
     {
@@ -699,12 +715,10 @@ void R_DrawSprite (vissprite_t* spr)
         
         // todo in the MIN_SHORT case do we have to extend the FFFF?
         temp.h.fracbits = 0;
-        // temp.h.intbits =  ds->bsilheight >> SHORTFLOORBITS;
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
         if (spr->gz >= temp.w)
             silhouette &= ~SIL_BOTTOM;
 
-        // temp.h.intbits =  ds->tsilheight >> SHORTFLOORBITS;
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->tsilheight);
         
         if (spr->gzt <= temp.w)

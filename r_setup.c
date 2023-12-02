@@ -105,7 +105,7 @@ void R_InitTextureMapping(void)
 	//
 	// Calc focallength
 	//  so FIELDOFVIEW angles covers SCREENWIDTH.
-	focallength = FixedDiv(centerxfrac,
+	focallength = FixedDiv(centerxfrac.w,
 		finetangent(FINEANGLES / 4 + FIELDOFVIEW / 2));
 
 	for (i = 0; i < FINEANGLES / 2; i++) {
@@ -115,7 +115,8 @@ void R_InitTextureMapping(void)
 			t.h.intbits = viewwidth + 1;
 		else {
 			t.w = FixedMul(finetangent(i), focallength);
-			t.w = (centerxfrac - t.w + FRACUNIT - 1);
+			//todo optimize given centerxfrac low bits are 0
+			t.w = (centerxfrac.w - t.w + FRACUNIT - 1);
 
 			if (t.h.intbits < -1)
 				t.h.intbits = -1;
@@ -188,9 +189,9 @@ void R_ExecuteSetViewSize(void)
 	centery = viewheight / 2;
 	centerx = viewwidth / 2;
 	temp.h.intbits = centerx;
-	centerxfrac = temp.w;
+	centerxfrac = temp;
 	temp.h.intbits = centery;
-	centeryfrac = temp.w;
+	centeryfrac = temp;
 	projection = centerxfrac;
 
 	if (!detailshift) {
@@ -209,8 +210,16 @@ void R_ExecuteSetViewSize(void)
 	R_InitTextureMapping();
 
 	// psprite scales
-	pspritescale = FRACUNIT * viewwidth / SCREENWIDTH;
-	pspriteiscale = FRACUNIT * SCREENWIDTH / viewwidth;
+	if (viewwidth == SCREENWIDTH) {
+		// will be specialcased as 1 later;
+		pspritescale = 0;
+		pspriteiscale = FRACUNIT;
+	}
+	else {
+		// max of FRACUNIT, we set it to 0 in that case
+		pspritescale = (FRACUNIT * viewwidth / SCREENWIDTH);
+		pspriteiscale = (FRACUNIT * SCREENWIDTH / viewwidth);
+	}
 
 	// thing clipping
 	for (i = 0; i < viewwidth; i++) {

@@ -180,8 +180,8 @@ void R_ClearPlanes (void)
 	angle = (viewangle.h.intbits - ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
 
     // scale will be unit scale at SCREENWIDTH/2 distance
-    basexscale = FixedDiv (finecosine(angle),centerxfrac);
-    baseyscale = -FixedDiv (finesine(angle),centerxfrac);
+    basexscale = FixedDiv (finecosine(angle),centerxfrac.w);
+    baseyscale = -FixedDiv (finesine(angle),centerxfrac.w);
 
 }
 

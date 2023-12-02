@@ -34,10 +34,10 @@ extern int16_t		screenheightarray[SCREENWIDTH];
 // vars for R_DrawMaskedColumn
 extern int16_t*		mfloorclip;
 extern int16_t*		mceilingclip;
-extern fixed_t		spryscale;
+extern fixed_t_union		spryscale;
 extern fixed_t		sprtopscreen;
 
-extern fixed_t		pspritescale;
+extern uint16_t		pspritescale;
 extern fixed_t		pspriteiscale;
 
 

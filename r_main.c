@@ -53,9 +53,10 @@ extern lighttable_t**	walllights;
 int16_t			centerx;
 int16_t			centery;
 
-fixed_t			centerxfrac;
-fixed_t			centeryfrac;
-fixed_t			projection;
+// these basically equal: (16 low bits are 0, 16 high bits are view size / 2)
+fixed_t_union			centerxfrac;
+fixed_t_union			centeryfrac;
+fixed_t_union			projection;
 
 
 fixed_t_union			viewx;
@@ -518,7 +519,7 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     // both sines are allways positive
     sinea = finesine(anglea);	
     sineb = finesine(angleb);
-    num.w = FixedMul(projection,sineb)<<detailshift;
+    num.w = FixedMul(projection.w,sineb)<<detailshift;
     den = FixedMul(rw_distance,sinea);
 
     if (den > num.h.intbits) {
