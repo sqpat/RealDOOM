@@ -343,8 +343,8 @@ void AM_restoreScaleAndLoc(void)
     // Change the scaling multipliers
 
 	temp.h.intbits = f_w;
-    scale_mtof = FixedDiv(temp.w, m_w);
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_mtof = FixedDivWholeA(temp.w, m_w);
+    scale_ftom = FixedDivWholeA(FRACUNIT, scale_mtof);
 }
 
 //
@@ -394,12 +394,12 @@ void AM_findMinMaxBoundaries(void)
     max_h = max_y - min_y;
 
 	temp.h.intbits = f_w;
-	a = FixedDiv(temp.w, max_w);
+	a = FixedDivWholeA(temp.w, max_w);
 	temp.h.intbits = f_h;
-	b = FixedDiv(temp.w, max_h);
+	b = FixedDivWholeA(temp.w, max_h);
   
     min_scale_mtof = a < b ? a : b;
-	max_scale_mtof = FixedDiv(temp.w, 2*PLAYERRADIUS);
+	max_scale_mtof = FixedDivWholeA(temp.w, 2*PLAYERRADIUS);
 
 }
 
@@ -516,11 +516,12 @@ void AM_LevelInit(void)
     AM_clearMarks();
 
     AM_findMinMaxBoundaries();
-    scale_mtof = FixedDiv(min_scale_mtof, (int32_t) (0.7*FRACUNIT));
+    //todo should this be a fixedMul by 1/0.7 instead?
+	scale_mtof = FixedDiv(min_scale_mtof, (int32_t) (0.7*FRACUNIT));
 	if (scale_mtof > max_scale_mtof) {
 		scale_mtof = min_scale_mtof;
 	}
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_ftom = FixedDivWholeA(FRACUNIT, scale_mtof);
 }
 
 
@@ -564,7 +565,7 @@ void AM_Start (void)
 void AM_minOutWindowScale(void)
 {
     scale_mtof = min_scale_mtof;
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_ftom = FixedDivWholeA(FRACUNIT, scale_mtof);
     AM_activateNewScale();
 }
 
@@ -574,7 +575,7 @@ void AM_minOutWindowScale(void)
 void AM_maxOutWindowScale(void)
 {
     scale_mtof = max_scale_mtof;
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_ftom = FixedDivWholeA(FRACUNIT, scale_mtof);
     AM_activateNewScale();
 }
 
@@ -715,7 +716,7 @@ void AM_changeWindowScale(void)
 
     // Change the scaling multipliers
     scale_mtof = FixedMul(scale_mtof, mtof_zoommul);
-    scale_ftom = FixedDiv(FRACUNIT, scale_mtof);
+    scale_ftom = FixedDivWholeA(FRACUNIT, scale_mtof);
 
     if (scale_mtof < min_scale_mtof)
 	AM_minOutWindowScale();
@@ -1134,12 +1135,12 @@ AM_rotate
 {
     fixed_t tmpx;
     tmpx =
-	FixedMul(*x,finecosine(a))
-	- FixedMul(*y,finesine(a));
+		FixedMulTrig(*x,finecosine(a))
+	- FixedMulTrig(*y,finesine(a));
     
     *y   =
-	FixedMul(*x,finesine(a))
-	+ FixedMul(*y,finecosine(a));
+		FixedMulTrig(*x,finesine(a))
+	+ FixedMulTrig(*y,finecosine(a));
 
     *x = tmpx;
 }

@@ -263,7 +263,7 @@ P_InterceptVector2
 		return 0;
     
     num = FixedMul2432 ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + 
-	FixedMul2432 ( (v2->y.w - v1->y.w)>>8 , v1->dx.w);
+		  FixedMul2432 ( (v2->y.w - v1->y.w)>>8 , v1->dx.w);
     frac = FixedDiv (num , den);
 
     return frac;

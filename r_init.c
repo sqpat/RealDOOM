@@ -155,7 +155,7 @@ void R_InitLightTables(void)
 		{
 			temp.h.intbits += 16;
 
-			scale = FixedDiv(temp2.w, temp.w);
+			scale = FixedDivWholeAB(temp2.w, temp.w);
 			scale >>= LIGHTSCALESHIFT;
 			level = startmap - scale / DISTMAP;
 

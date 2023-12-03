@@ -105,7 +105,7 @@ void R_InitTextureMapping(void)
 	//
 	// Calc focallength
 	//  so FIELDOFVIEW angles covers SCREENWIDTH.
-	focallength = FixedDiv(centerxfrac.w,
+	focallength = FixedDivWholeA(centerxfrac.w,
 		finetangent(FINEANGLES / 4 + FIELDOFVIEW / 2));
 
 	for (i = 0; i < FINEANGLES / 2; i++) {
@@ -116,7 +116,7 @@ void R_InitTextureMapping(void)
 		else {
 			t.w = FixedMul(finetangent(i), focallength);
 			//todo optimize given centerxfrac low bits are 0
-			t.w = (centerxfrac.w - t.w + FRACUNIT - 1);
+			t.w = (centerxfrac.w - t.w + 0xFFFFu);
 
 			if (t.h.intbits < -1)
 				t.h.intbits = -1;
@@ -229,11 +229,10 @@ void R_ExecuteSetViewSize(void)
 	// planes
 	for (i = 0; i < viewheight; i++) {
 		temp.h.intbits = (i - viewheight / 2);
-		dy = (temp.w) + FRACUNIT / 2;
+		dy = (temp.w) + 0x8000u;
 		dy = labs(dy);
 		temp.h.intbits = (viewwidth << detailshift) / 2;
-		yslope[i] = FixedDiv(temp.w, dy);
-		//yslope[i] = FixedDiv((viewwidth << detailshift) / 2 * FRACUNIT, dy);
+		yslope[i] = FixedDivWholeA(temp.w, dy);
 
 	}
 	// 320 viewwidth
@@ -244,7 +243,7 @@ void R_ExecuteSetViewSize(void)
 
 		cosadj = labs(finecosine(an));
 
-		distscale[i] = FixedDiv(FRACUNIT, cosadj); // divide by zero in 16 bit mode here.
+		distscale[i] = FixedDivWholeA(FRACUNIT, cosadj); // divide by zero in 16 bit mode here.
 	}
 
 

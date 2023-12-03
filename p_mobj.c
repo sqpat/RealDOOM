@@ -265,8 +265,8 @@ void P_XYMovement (mobj_t* mo)
 		mo->momy = 0;
     } else {
 
-		mo->momx = FixedMul (momomx, FRICTION);
-		mo->momy = FixedMul (momomy, FRICTION);
+		mo->momx = FixedMul16u32 (FRICTION, momomx );
+		mo->momy = FixedMul16u32 (FRICTION, momomy);
 		 
 	}
 
@@ -789,8 +789,8 @@ P_SpawnMissile
 
     th->angle = an;
     an.h.intbits >>= SHORTTOFINESHIFT;
-    th->momx = FixedMul (thspeed, finecosine(an.h.intbits));
-    th->momy = FixedMul (thspeed, finesine(an.h.intbits));
+    th->momx = FixedMulTrig (thspeed, finecosine(an.h.intbits));
+    th->momy = FixedMulTrig(thspeed, finesine(an.h.intbits));
 	th->momz = momz;
 
 
@@ -854,8 +854,8 @@ P_SpawnPlayerMissile
 
 	speed = MAKESPEED(mobjinfo[type].speed);
 
-    th->momx = FixedMul( speed, finecosine(an));
-    th->momy = FixedMul( speed, finesine(an));
+    th->momx = FixedMulTrig( speed, finecosine(an));
+    th->momy = FixedMulTrig( speed, finesine(an));
     th->momz = FixedMul( speed, slope);
 
     P_CheckMissileSpawn (th);

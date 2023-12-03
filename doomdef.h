@@ -279,11 +279,11 @@ typedef uint8_t powertype_t;
 #define KEY_LALT	KEY_RALT
 
 // todo make this optimized version of fixedmul 
-//#define FixedMul1632(a,b) FixedMul(a, b) 
-//#define FixedMul16u32(a,b) FixedMul(a, b) 
 #define FixedMul2424(a,b) FixedMul(a, b) 
-#define FixedMul2432(a,b) FixedMul(a, b) 
+#define FixedMul2432(a,b) FixedMul(a, b)
 
+// sine/cosine LUT values go in b. This is 16 or 17 bits max - can be like a 24 bit mult except we can 0 check the high 8 bits and maybe just do 2 bytes of mult
+#define FixedMulTrig(a,b) FixedMul(a, b)
 fixed_t32	FixedMul1632(int16_t a, fixed_t32 b);
 fixed_t32	FixedMul16u32(uint16_t a, fixed_t32 b);
 
@@ -294,6 +294,13 @@ fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 fixed_t32	FixedMul1616(int16_t a, int16_t b);
 
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
+
+
+// A or (and) B is a whole number (0 in the low 16 bits). should be optimizable?
+#define	FixedDivWholeA(a,b) FixedDiv(a, b)
+#define	FixedDivWholeB(a,b) FixedDiv(a, b)
+#define	FixedDivWholeAB(a,b) FixedDiv(a, b)
+
 //fixed_t32	FixedDivinner (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);
 //fixed_t32	FixedDiv2 (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);
 //#define FixedDiv(a, b) FixedDivinner(a, b, __FILE__, __LINE__)

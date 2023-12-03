@@ -787,10 +787,10 @@ void P_HitSlideLine (int16_t linenum)
     deltaangle.h.fracbits = deltaangle.h.intbits >>= SHORTTOFINESHIFT;
 	
     movelen = P_AproxDistance (tmxmove, tmymove);
-    newlen = FixedMul (movelen, finecosine(deltaangle.h.fracbits));
+    newlen = FixedMulTrig(movelen, finecosine(deltaangle.h.fracbits));
 
-    tmxmove = FixedMul (newlen, finecosine(lineangle.h.fracbits));
-    tmymove = FixedMul (newlen, finesine(lineangle.h.fracbits));
+    tmxmove = FixedMulTrig(newlen, finecosine(lineangle.h.fracbits));
+    tmymove = FixedMulTrig(newlen, finesine(lineangle.h.fracbits));
 }
 
 
@@ -958,7 +958,7 @@ void P_SlideMove ()
 
 
 		// negative check
-	if (bestslidefrac.w >= (FRACUNIT - 0x800)) {
+	if (bestslidefrac.w >= (0xF800)) {
 		I_Error("catch?"); // i think this never happens and can be removed
 		return;
 	}
@@ -1172,7 +1172,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 		// hit line
 		  hitline:
 		// position a bit closer
-		frac = in->frac - FixedDiv (4*FRACUNIT, attackrange.w); // todo can we use intbits and remove fracunit?
+		frac = in->frac - FixedDivWholeA (4*FRACUNIT, attackrange.w); // todo can we use intbits and remove fracunit?
 		x = trace.x.w + FixedMul (trace.dx.w, frac);
 		y = trace.y.w + FixedMul (trace.dy.w, frac);
 		z = shootz.w + FixedMul (aimslope, FixedMul(frac, attackrange.w));
@@ -1229,7 +1229,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
     
     // hit thing
     // position a bit closer
-    frac = in->frac - FixedDiv (10*FRACUNIT, attackrange.w); // todo can we use intbits and remove fracunit?
+    frac = in->frac - FixedDivWholeA (10*FRACUNIT, attackrange.w); // todo can we use intbits and remove fracunit?
 
     x = trace.x.w + FixedMul (trace.dx.w, frac);
     y = trace.y.w + FixedMul (trace.dy.w, frac);

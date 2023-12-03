@@ -520,8 +520,8 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     // both sines are allways positive
     sinea = finesine(anglea);	
     sineb = finesine(angleb);
-    num.w = FixedMul(projection.w,sineb)<<detailshift;
-    den = FixedMul(rw_distance,sinea);
+    num.w = FixedMulTrig(projection.w,sineb)<<detailshift;
+    den = FixedMulTrig(rw_distance,sinea);
 
     if (den > num.h.intbits) {
         scale.w = FixedDiv (num.w, den);

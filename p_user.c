@@ -53,8 +53,8 @@ P_Thrust
   fineangle_t	angle,
   fixed_t	move )  {
 
-	playerMobj->momx += FixedMul(move,finecosine(angle));
-	playerMobj->momy += FixedMul(move,finesine(angle));
+	playerMobj->momx += FixedMulTrig(move,finecosine(angle));
+	playerMobj->momy += FixedMulTrig(move,finesine(angle));
 }
 
 

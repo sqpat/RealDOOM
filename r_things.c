@@ -125,8 +125,8 @@ void R_DrawMaskedColumn (column_t* column) {
         topscreen.w = sprtopscreen + spryscale.w*column->topdelta;
         bottomscreen.w = topscreen.w + spryscale.w*column->length;
 
-		dc_yl = topscreen.h.intbits; // (topscreen + FRACUNIT - 1) >> FRACBITS;
-		dc_yh = bottomscreen.h.intbits;// (bottomscreen - 1) >> FRACBITS;
+		dc_yl = topscreen.h.intbits; 
+		dc_yh = bottomscreen.h.intbits;
 		if (!bottomscreen.h.fracbits)
 			dc_yh--;
 		if (topscreen.h.fracbits)
@@ -252,8 +252,8 @@ void R_ProjectSprite (mobj_t* thing)
     tr_x = thingx - viewx.w;
     tr_y = thingy - viewy.w;
         
-    gxt = FixedMul(tr_x,viewcos); 
-    gyt = -FixedMul(tr_y,viewsin);
+    gxt = FixedMulTrig(tr_x,viewcos);
+    gyt = -FixedMulTrig(tr_y,viewsin);
     
     tz = gxt-gyt; 
 
@@ -263,8 +263,8 @@ void R_ProjectSprite (mobj_t* thing)
     
     xscale = FixedDiv(projection.w, tz);
         
-    gxt = -FixedMul(tr_x,viewsin); 
-    gyt = FixedMul(tr_y,viewcos); 
+    gxt = -FixedMulTrig(tr_x,viewsin);
+    gyt = FixedMulTrig(tr_y,viewcos);
     tx = -(gyt+gxt); 
 
     // too far off the side?

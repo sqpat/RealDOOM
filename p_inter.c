@@ -785,8 +785,8 @@ P_DamageMobj
 			}
 
 			ang.h.fracbits = ang.h.intbits >> SHORTTOFINESHIFT;
-			target->momx += FixedMul(thrust, finecosine(ang.h.fracbits));
-			target->momy += FixedMul(thrust, finesine(ang.h.fracbits));
+			target->momx += FixedMulTrig(thrust, finecosine(ang.h.fracbits));
+			target->momy += FixedMulTrig(thrust, finesine(ang.h.fracbits));
 		}
 	}
     // player specific
