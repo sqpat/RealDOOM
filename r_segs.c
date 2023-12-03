@@ -499,13 +499,30 @@ R_StoreWallRange
 	tempangle.h.fracbits = 0;
 
     if (stop > start ) {
+		fixed_t_union rw_scalestep_extraprecision = { 0L };
 		tempangle.h.intbits = xtoviewangle[stop];
 		tempangle.h.intbits <<= 3;
 		tempangle.w += viewangle.w;
 	
 		ds_p->scale2 = R_ScaleFromGlobalAngle (tempangle);
 
-		ds_p->scalestep = rw_scalestep =  (ds_p->scale2 - rw_scale.w) / (stop-start);
+		// this is jank (using 32 bits for rw_scalestep) but the precision is actually
+		// necessary for rare situations, generally when screen size is greatly lowered
+		// and something is being drawn at a near 90 degree angle. In those cases the
+		// precision needed is too great.
+		rw_scalestep_extraprecision.w =  (ds_p->scale2 - rw_scale.w) / (stop-start);
+
+		if (rw_scalestep_extraprecision.w == rw_scalestep_extraprecision.h.fracbits) {
+			rw_scalestep = rw_scalestep_extraprecision.h.fracbits;
+			//rw_scalestep_extraprecision.h.fracbits = 0;
+		} else {
+			// Clip to max. When i do this happens i don't see any visual artifacts personally...
+			rw_scalestep = 32767;
+			//rw_scalestep_extraprecision.h.fracbits = 0;
+
+		}
+		
+		ds_p->scalestep = rw_scalestep;
 
 		tempangle.h.fracbits = 0;
 
@@ -770,23 +787,38 @@ R_StoreWallRange
     worldtop >>= 4;
     worldbottom >>= 4;
 	
-    topstep = -FixedMul1632 (rw_scalestep, worldtop);
     topfrac = (centeryfrac.w >>4) - FixedMul (worldtop, rw_scale.w);
-
-    bottomstep = -FixedMul1632 (rw_scalestep,worldbottom);
     bottomfrac = (centeryfrac.w >>4) - FixedMul (worldbottom, rw_scale.w);
+//	if (rw_scalestep) {
+		topstep = -FixedMul1632(rw_scalestep, worldtop);
+		bottomstep = -FixedMul1632(rw_scalestep, worldbottom);
+/*	}
+	else {
+		topstep = -FixedMul(rw_scalestep_extraprecision.w, worldtop);
+		bottomstep = -FixedMul(rw_scalestep_extraprecision.w, worldbottom);
+	}*/
 	
     if (backsecnum != SECNUM_NULL) {	
 		worldhigh >>= 4;
 		worldlow >>= 4;
 		if (worldhigh < worldtop) {
 			pixhigh = (centeryfrac.w >>4) - FixedMul (worldhigh, rw_scale.w);
-			pixhighstep = -FixedMul1632 (rw_scalestep,worldhigh);
+//			if (rw_scalestep) {
+				pixhighstep = -FixedMul1632(rw_scalestep, worldhigh);
+//			} else {
+//				pixhighstep = -FixedMul(rw_scalestep_extraprecision.w, worldhigh);
+//			}
 		}
 	
 		if (worldlow > worldbottom) {
 			pixlow = (centeryfrac.w >>4) - FixedMul (worldlow, rw_scale.w);
-			pixlowstep = -FixedMul1632 (rw_scalestep,worldlow);
+//			if (rw_scalestep) {
+				pixlowstep = -FixedMul1632(rw_scalestep, worldlow);
+//			}
+//			else {
+//				pixlowstep = -FixedMul(rw_scalestep_extraprecision.w, worldlow);
+//			}
+
 		}
     }
 
