@@ -731,8 +731,8 @@ boolean P_ThingHeightClip (mobj_t* thing)
 // SLIDE MOVE
 // Allows the player to slide along any angled walls.
 //
-fixed_t		bestslidefrac;
-fixed_t		secondslidefrac;
+fixed_t_union		bestslidefrac;
+fixed_t_union		secondslidefrac;
 
 int16_t		bestslidelinenum;
 int16_t		secondslidelinenum;
@@ -840,10 +840,10 @@ boolean PTR_SlideTraverse (intercept_t* in)
     // the line does block movement,
     // see if it is closer than best so far
   isblocking:		
-    if (in->frac < bestslidefrac) {
+    if (in->frac < bestslidefrac.w) {
 		secondslidefrac = bestslidefrac;
 		secondslidelinenum = bestslidelinenum;
-		bestslidefrac = in->frac;
+		bestslidefrac.w = in->frac;
 		bestslidelinenum = in->d.linenum;
     }
 	
@@ -905,10 +905,10 @@ void P_SlideMove ()
 
     } 
 		
-    bestslidefrac = FRACUNIT+1;
+	bestslidefrac.w = FRACUNIT + 1;
+
 	
  
-	
 	temp.w = leadx.w + playerMobj->momx;
 	temp2.w = leady.w + playerMobj->momy;
 	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
@@ -927,7 +927,7 @@ void P_SlideMove ()
  
     // move up to the wall
 
-	if (bestslidefrac == FRACUNIT+1) {
+	if (bestslidefrac.w == FRACUNIT+1) {
 	// the move most have hit the middle, so stairstep
       stairstep:
  
@@ -939,10 +939,10 @@ void P_SlideMove ()
     }
 
     // fudge a bit to make sure it doesn't hit
-    bestslidefrac -= 0x800;	
-    if (bestslidefrac > 0) {
-		newx = FixedMul (playerMobj->momx, bestslidefrac);
-		newy = FixedMul (playerMobj->momy, bestslidefrac);
+    bestslidefrac.w -= 0x800;	
+    if (bestslidefrac.w > 0) {
+		newx = FixedMul (playerMobj->momx, bestslidefrac.w);
+		newy = FixedMul (playerMobj->momy, bestslidefrac.w);
 	
 		if (!P_TryMove(playerMobj, playerMobj->x + newx, playerMobj->y + newy)) {
 			goto stairstep;
@@ -953,17 +953,28 @@ void P_SlideMove ()
 
     // Now continue along the wall.
     // First calculate remainder.
-    bestslidefrac = FRACUNIT-(bestslidefrac+0x800);
-    
-    if (bestslidefrac > FRACUNIT)
-		bestslidefrac = FRACUNIT;
-    
-	if (bestslidefrac <= 0) {
+
+
+
+
+		// negative check
+	if (bestslidefrac.w >= (FRACUNIT - 0x800)) {
+		I_Error("catch?"); // i think this never happens and can be removed
 		return;
 	}
- 
-    tmxmove = FixedMul (playerMobj->momx, bestslidefrac);
-    tmymove = FixedMul (playerMobj->momy, bestslidefrac);
+
+	
+	if (bestslidefrac.hu.fracbits == 0xF800) {
+		tmxmove = playerMobj->momx;
+		tmymove = playerMobj->momy;
+	} else {
+		// same as 1 - (this+0x800) 
+		bestslidefrac.hu.fracbits += 0x7FF; 
+		bestslidefrac.hu.fracbits ^= 0xFFFF;
+
+		tmxmove = FixedMul16u32(bestslidefrac.hu.fracbits, playerMobj->momx);
+		tmymove = FixedMul16u32(bestslidefrac.hu.fracbits, playerMobj->momy);
+	}
 
     P_HitSlideLine (bestslidelinenum);	// clip the moves
 

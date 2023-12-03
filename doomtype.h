@@ -133,6 +133,11 @@ typedef union _fixed_t_union {
 		int16_t intbits;
 	} h;
 
+	struct dual_uuint16_t {
+		uint16_t fracbits;
+		uint16_t intbits;
+	} hu;
+
 	struct quad_int8_t {
 		int8_t fracbytehigh;
 		int8_t fracbytelow;

@@ -1069,6 +1069,7 @@ P_PathTraverse
 		if (xt2 > xt1) {
 			mapxstep = 1;
 			partial ^= 0xFFFF;
+			partial ++;
 		} else {
 			mapxstep = -1;
 		}
@@ -1087,6 +1088,8 @@ P_PathTraverse
 		if (yt2 > yt1) {
 			mapystep = 1;
 			partial ^= 0xFFFF;
+			partial++;
+
 		} else {
 			mapystep = -1;
 		}
