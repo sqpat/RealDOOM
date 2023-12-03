@@ -279,10 +279,13 @@ typedef uint8_t powertype_t;
 #define KEY_LALT	KEY_RALT
 
 // todo make this optimized version of fixedmul 
-#define FixedMul1632(a,b) FixedMul(a, b) 
-#define FixedMul16u32(a,b) FixedMul(a, b) 
+//#define FixedMul1632(a,b) FixedMul(a, b) 
+//#define FixedMul16u32(a,b) FixedMul(a, b) 
 #define FixedMul2424(a,b) FixedMul(a, b) 
 #define FixedMul2432(a,b) FixedMul(a, b) 
+
+fixed_t32	FixedMul1632(int16_t a, fixed_t32 b);
+fixed_t32	FixedMul16u32(uint16_t a, fixed_t32 b);
 
 fixed_t32	FixedMul (fixed_t32 a, fixed_t32 b);
 // puts int16 into the high bits of a 32 bit

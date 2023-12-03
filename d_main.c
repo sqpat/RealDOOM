@@ -211,23 +211,35 @@ fixed_t32 FixedMul (fixed_t32	a, fixed_t32 b) {
     // fp.w = ((long long)a * (long long)b);
     // return fp.h.intbits;
     longlong_union llu;
-    fixed_t_union fp;
     llu.l =  ((long long)a * (long long)b);
-    fp.h.intbits = llu.h[2];
-    fp.h.fracbits = llu.h[1];
-    return fp.w;
+	return llu.productresult.usemid;
 }
- 
+
+fixed_t32 FixedMul1632(int16_t	a, fixed_t32 b) {
+	// fixed_t_union fp;
+	// fp.w = ((long long)a * (long long)b);
+	// return fp.h.intbits;
+	longlong_union llu;
+	llu.l = (a * (long long)b);
+	return llu.productresult.usemid;
+}
+
+fixed_t32 FixedMul16u32(uint16_t	a, fixed_t32 b) {
+	// fixed_t_union fp;
+	// fp.w = ((long long)a * (long long)b);
+	// return fp.h.intbits;
+	longlong_union llu;
+	llu.l = (a * (long long)b);
+	return llu.productresult.usemid;
+}
+
 fixed_t32 FixedMulBig1632 (int16_t	a, fixed_t	b) {
     fixed_t_union biga;
 	longlong_union llu;
 	biga.h.intbits = a;
 	biga.h.fracbits = 0;
 	llu.l = (biga.w * (long long)b);
-
-	biga.h.intbits = llu.h[2];
-	biga.h.fracbits = llu.h[1];
-	return biga.w;
+	return llu.productresult.usemid;
 }
 
  

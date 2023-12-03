@@ -115,6 +115,13 @@ typedef int32_t fixed_t;
 
 typedef union _longlong_union {
 	int16_t h[4];
+
+	struct productresult_t {
+		int16_t throwawayhigh;
+		int32_t usemid;
+		int16_t throwawaylow;
+	} productresult;
+
 	int64_t l;
 } longlong_union;
 
