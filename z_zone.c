@@ -524,7 +524,7 @@ void Z_MarkPageMRU(uint16_t pagenumber) {
 }
 
 
-//void Z_DoPageOut(uint16_t pageframeindex, int16_t source, int16_t param1, int16_t param2, int16_t param3) {
+//void Z_DoPageOut(uint16_t pageframeindex, int16_t source, int16_t param1, int16_t param2, int16_t param3, uint16_t param4) {
 void Z_DoPageOut(uint16_t pageframeindex) {
 #ifdef _M_I86
 
@@ -544,7 +544,7 @@ void Z_DoPageOut(uint16_t pageframeindex) {
 
 	if (pageframeindex >= NUM_EMS_PAGES) {
 		I_Error("bad page frame index %i %i", pageframeindex);
-		//I_Error("bad page frame index %i %i %i %i %i", pageframeindex, source, param1, param2, param3);
+		//I_Error("bad page frame index %i %i %i %i %i %u", pageframeindex, source, param1, param2, param3, param4);
 	}
 
 	activepages[pageframeindex] = -1;
@@ -681,7 +681,7 @@ void Z_PageOutIfInMemory(uint32_t page_and_size) {
 		for (i = 0; i < numallocatepages; i++) {
 			for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 				if (activepages[pageframeindex] == logicalpage + i) {
-					//Z_DoPageOut(pageframeindex, 1, pageframeindex, i, numallocatepages);
+					//Z_DoPageOut(pageframeindex, 1, pageframeindex, i, numallocatepages, 0);
 					Z_DoPageOut(pageframeindex);
 
 				}
@@ -721,7 +721,11 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, PAGEREF ref) {
 	else {
 		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
 	}
-
+	
+	if (numallocatepages >= 4) {
+		// 5495C000
+		I_Error("ref is %u %i %lu %u %lu", ref, numallocatepages, page_and_size, logicalpage, size);
+	}
 
 	/*
 		I_Error("earlyest %i %i %i %i %i %i %i %i %i %i %i %i",
@@ -768,7 +772,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, PAGEREF ref) {
 					// paging out the previous allocation
 					for (i = 0; i < numallocatepages; i++) { 
 						if (activepages[pageframeindex + i] >= 0) {
-							//Z_DoPageOut(pageframeindex + i, 2, pageframeindex, i, numallocatepages);
+							//Z_DoPageOut(pageframeindex + i, 2, pageframeindex, i, numallocatepages, ref);
 							Z_DoPageOut(pageframeindex+i);
 
 						}
@@ -801,7 +805,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, PAGEREF ref) {
 				// page out what was there
 				if (activepages[pageframeindex + i] >= 0) {
 					Z_DoPageOut(pageframeindex+i);
-					//Z_DoPageOut(pageframeindex + i, 3, pageframeindex, i, numallocatepages);
+					//Z_DoPageOut(pageframeindex + i, 3, pageframeindex, i, numallocatepages, ref);
 				}
 
 			}
@@ -872,7 +876,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, PAGEREF ref) {
 			for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 				if (activepages[pageframeindex] == logicalpage + i) {
 					Z_DoPageOut(pageframeindex);
-					//Z_DoPageOut(pageframeindex, 4, pageframeindex, i, numallocatepages);
+					//Z_DoPageOut(pageframeindex, 4, pageframeindex, i, numallocatepages, ref);
 
 				}
 			}
@@ -916,7 +920,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, PAGEREF ref) {
 	for (i = 0; i < numallocatepages; i++) {
 		if (activepages[pageframeindex + i] >= 0) {
 			Z_DoPageOut(pageframeindex + i);
-			//Z_DoPageOut(pageframeindex + i, 5, pageframeindex, i, numallocatepages);
+			//Z_DoPageOut(pageframeindex + i, 5, pageframeindex, i, numallocatepages, ref);
 		}
 	}
 

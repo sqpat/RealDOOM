@@ -257,13 +257,13 @@ P_InterceptVector2
     fixed_t	num;
     fixed_t	den;
 	
-    den = FixedMul (v1->dy.w>>8,v2->dx.w) - FixedMul(v1->dx.w>>8,v2->dy.w);
+    den = FixedMul2432 (v1->dy.w>>8,v2->dx.w) - FixedMul2432(v1->dx.w>>8,v2->dy.w);
 
     if (den == 0)
 		return 0;
     
-    num = FixedMul ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + 
-	FixedMul ( (v2->y.w - v1->y.w)>>8 , v1->dx.w);
+    num = FixedMul2432 ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + 
+	FixedMul2432 ( (v2->y.w - v1->y.w)>>8 , v1->dx.w);
     frac = FixedDiv (num , den);
 
     return frac;

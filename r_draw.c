@@ -209,7 +209,7 @@ int16_t	fuzzoffset[FUZZTABLE] =
     FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF,FUZZOFF,-FUZZOFF,FUZZOFF 
 }; 
 
-int32_t	fuzzpos = 0; 
+int16_t	fuzzpos = 0; 
 
 
 //
@@ -559,6 +559,7 @@ void R_FillBackScreen (void)
         } 
 
 #ifdef _M_I86
+		// todo can we just check the lower 16 bits?
 		while (dest != (byte*)(0xac003480));
 
 #else

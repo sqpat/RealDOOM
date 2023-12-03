@@ -138,11 +138,11 @@ void P_CalcHeight ()
 //
 void P_MovePlayer ()
 {
-    ticcmd_t*		cmd;
+    ticcmd_t*		cmd = &player.cmd;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
-	cmd = &player.cmd;
 	temp.h.intbits = cmd->angleturn;
+	 
 	playerMobj->angle.w += temp.w;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj->floorz);
 
@@ -240,19 +240,17 @@ void P_PlayerThink (void)
     
     // chain saw run forward
     cmd = &player.cmd;
-    if (playerMobj->flags & MF_JUSTATTACKED)
-    {
-	cmd->angleturn = 0;
-	cmd->forwardmove = 100; // 0xc800/512;
-	cmd->sidemove = 0;
-	playerMobj->flags &= ~MF_JUSTATTACKED;
+    if (playerMobj->flags & MF_JUSTATTACKED) {
+		cmd->angleturn = 0;
+		cmd->forwardmove = 100; // 0xc800/512;
+		cmd->sidemove = 0;
+		playerMobj->flags &= ~MF_JUSTATTACKED;
     }
 			
 	
-    if (player.playerstate == PST_DEAD)
-    {
-	P_DeathThink();
-	return;
+    if (player.playerstate == PST_DEAD) {
+		P_DeathThink();
+		return;
     }
     
     // Move around.
@@ -261,7 +259,7 @@ void P_PlayerThink (void)
     if (playerMobj->reactiontime)
 		playerMobj->reactiontime--;
     else
-	P_MovePlayer();
+		P_MovePlayer();
     
     P_CalcHeight();
 
@@ -272,58 +270,50 @@ void P_PlayerThink (void)
 
     // A special event has no other buttons.
     if (cmd->buttons & BT_SPECIAL)
-	cmd->buttons = 0;			
+		cmd->buttons = 0;			
 		
-    if (cmd->buttons & BT_CHANGE)
-    {
-	// The actual changing of the weapon is done
-	//  when the weapon psprite can do it
-	//  (read: not in the middle of an attack).
-	newweapon = (cmd->buttons&BT_WEAPONMASK)>>BT_WEAPONSHIFT;
+    if (cmd->buttons & BT_CHANGE) {
+		// The actual changing of the weapon is done
+		//  when the weapon psprite can do it
+		//  (read: not in the middle of an attack).
+		newweapon = (cmd->buttons&BT_WEAPONMASK)>>BT_WEAPONSHIFT;
 	
-	if (newweapon == wp_fist
-	    && player.weaponowned[wp_chainsaw]
-	    && !(player.readyweapon == wp_chainsaw
-		 && player.powers[pw_strength]))
-	{
-	    newweapon = wp_chainsaw;
-	}
+		if (newweapon == wp_fist
+			&& player.weaponowned[wp_chainsaw]
+			&& !(player.readyweapon == wp_chainsaw
+			 && player.powers[pw_strength])) {
+			newweapon = wp_chainsaw;
+		}
 	
-	if (commercial
-	    && newweapon == wp_shotgun 
-	    && player.weaponowned[wp_supershotgun]
-	    && player.readyweapon != wp_supershotgun)
-	{
-	    newweapon = wp_supershotgun;
-	}
+		if (commercial
+			&& newweapon == wp_shotgun 
+			&& player.weaponowned[wp_supershotgun]
+			&& player.readyweapon != wp_supershotgun) {
+			newweapon = wp_supershotgun;
+		}
 	
 
-	if (player.weaponowned[newweapon]
-	    && newweapon != player.readyweapon)
-	{
-	    // Do not go to plasma or BFG in shareware,
-	    //  even if cheated.
-	    if ((newweapon != wp_plasma
-		 && newweapon != wp_bfg)
-		|| !shareware )
-	    {
-			player.pendingweapon = newweapon;
-	    }
-	}
+		if (player.weaponowned[newweapon]
+			&& newweapon != player.readyweapon) {
+			// Do not go to plasma or BFG in shareware,
+			//  even if cheated.
+			if ((newweapon != wp_plasma
+			 && newweapon != wp_bfg)
+			|| !shareware ) {
+				player.pendingweapon = newweapon;
+			}
+		}
     }
     
     // check for use
-    if (cmd->buttons & BT_USE)
-    {
-	if (!player.usedown)
-	{
-	    P_UseLines ();
-		player.usedown = true;
-	}
-    }
-    else
+    if (cmd->buttons & BT_USE) {
+		if (!player.usedown) {
+			P_UseLines ();
+			player.usedown = true;
+		}
+    } else {
 		player.usedown = false;
-    
+	}
     // cycle psprites
     P_MovePsprites();
     

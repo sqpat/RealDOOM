@@ -128,8 +128,8 @@ R_PointToAngle2
 
 uint32_t
 R_PointToAngle2_16
-( int16_t	x1,
-  int16_t	y1,
+( //int16_t	x1,
+  //int16_t	y1,
   int16_t	x2,
   int16_t	y2 );
 

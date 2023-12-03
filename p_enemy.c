@@ -1451,6 +1451,7 @@ void A_Fire (mobj_t* actor)
 
 	P_UnsetThingPosition (actor);
 
+	//todo isnt this just multiplied by 24?
 	actor->x = dest->x + FixedMul (24*FRACUNIT, finecosine(an));
     actor->y = dest->y + FixedMul (24*FRACUNIT, finesine(an));
     actor->z = dest->z;
@@ -1522,7 +1523,8 @@ void A_VileAttack (mobj_t* actor)
 		
 	fire = (mobj_t*)(&thinkerlist[fireRef].data);
 	// move the fire between the vile and the player
-    fire->x = actorTarget->x - FixedMul (24*FRACUNIT, finecosine(an));
+	//todo isnt this just multiplied by 24?
+	fire->x = actorTarget->x - FixedMul (24*FRACUNIT, finecosine(an));
     fire->y = actorTarget->y - FixedMul (24*FRACUNIT, finesine(an));
     P_RadiusAttack (fire, actor, 70 );
 }

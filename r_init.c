@@ -398,17 +398,6 @@ void R_GenerateLookup(uint8_t texnum)
 		}
 
 
-		/*
-		for (; x < x2; x++) {
-			Z_RefIsActive(realpatchRef);
-			Z_RefIsActive(texturecolumnlump);
-			Z_RefIsActive(texturecolumnofs);
-			patchcount[x]++;
-			collump[x] = patchpatch;
-			colofs[x] = (realpatch->columnofs[x - x1]) + 3;
-		}*/
-
-
 		for (; x < x2; x++) {
 			patchcount[x]++;
 			collump = (int16_t*)Z_LoadTextureInfoFromConventional(texturecolumnlump);

@@ -62,7 +62,8 @@ P_PointOnLineSide
   fixed_t	y,
 	int16_t linedx,
 	int16_t linedy,
-	int16_t linev1Offset)
+	int16_t v1x,
+	int16_t v1y)
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -71,14 +72,14 @@ P_PointOnLineSide
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
     if (!linedx) {
-		temp.h.intbits = vertexes[linev1Offset].x;
+		temp.h.intbits = v1x;
 		if (x <= temp.w) {
 			return linedy > 0;
 		}
 		return linedy < 0;
     }
     if (!linedy) {
-		temp.h.intbits = vertexes[linev1Offset].y;
+		temp.h.intbits = v1y;
 		if (y <= temp.w) {
 			return linedx < 0;
 		}
@@ -86,13 +87,13 @@ P_PointOnLineSide
 		return linedx > 0;
     }
 	
-	temp.h.intbits = vertexes[linev1Offset].x;
+	temp.h.intbits = v1x;
     dx = (x - temp.w);
-	temp.h.intbits = vertexes[linev1Offset].y;
+	temp.h.intbits = v1y;
     dy = (y - temp.w);
 	
-    left = FixedMul ( linedy , dx );
-    right = FixedMul ( dy , linedx );
+    left = FixedMul1632 ( linedy , dx );
+    right = FixedMul1632 ( linedx , dy);
 	
 	if (right < left) {
 		return 0;		// front side
@@ -154,7 +155,8 @@ P_BoxOnLineSide
 	slopetype_t	lineslopetype,
 	int16_t linedx,
 	int16_t linedy,
-	int16_t linev1Offset
+	int16_t v1x,
+	int16_t v1y
 	)
 {
 
@@ -165,7 +167,7 @@ P_BoxOnLineSide
 	temp.h.fracbits = 0;
     switch (lineslopetype) {
       case ST_HORIZONTAL_HIGH:
-	  	temp.h.intbits = vertexes[linev1Offset].y;
+	  	temp.h.intbits = v1y;
 		p1 = tmbox[BOXTOP].w > temp.w;
 		p2 = tmbox[BOXBOTTOM].w > temp.w;
 		if (linedx < 0) {
@@ -175,7 +177,7 @@ P_BoxOnLineSide
 		break;
 	
       case ST_VERTICAL_HIGH:
-	  	temp.h.intbits = vertexes[linev1Offset].x;
+	  	temp.h.intbits = v1x;
 		p1 = tmbox[BOXRIGHT].w < temp.w;
 		p2 = tmbox[BOXLEFT].w < temp.w;
 		if (linedy < 0)
@@ -186,13 +188,13 @@ P_BoxOnLineSide
 		break;
 	
       case ST_POSITIVE_HIGH:
-		p1 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
-		p2 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
+		p1 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXTOP].w, linedx, linedy, v1x, v1y);
+		p2 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXBOTTOM].w, linedx, linedy, v1x, v1y);
 		break;
 	
       case ST_NEGATIVE_HIGH:
-		p1 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXTOP].w, linedx, linedy, linev1Offset);
-		p2 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXBOTTOM].w, linedx, linedy, linev1Offset);
+		p1 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXTOP].w, linedx, linedy, v1x, v1y);
+		p2 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXBOTTOM].w, linedx, linedy, v1x, v1y);
 		break;
     }
 
@@ -200,6 +202,8 @@ P_BoxOnLineSide
 		return p1;
     return -1;
 }
+
+
 
 
 //
@@ -246,61 +250,63 @@ P_PointOnDivlineSide
     }
 	
 	//todo is there a faster way to use just the 3 bytes?
-    left = FixedMul ( line->dy.w >>8, dx.w>>8 );
-    right = FixedMul ( dy.w>>8 , line->dx.w >>8 );
+    left = FixedMul2424 ( line->dy.w >>8, dx.w>>8 );
+    right = FixedMul2424 ( dy.w>>8 , line->dx.w >>8 );
 	
 	return (right >= left);
 
 	
 }
 
+// we know x/y low 16 bits is 0, small number of optimizaitons possible
+// edit: decided not worth it, one comparison is slightly faster but it requires a new dupe function
+#define P_PointOnDivlineSide16(a, b) P_PointOnDivlineSide(a, b)
 /*
-// TODO: FIX - sq
 boolean
 P_PointOnDivlineSide16
-( int16_t	x,
-  int16_t	y,
-  divline_t*	line )
+(fixed_t_union	x,
+	fixed_t_union	y )
 {
-    fixed_t	dx;
-    fixed_t	dy;
+	fixed_t_union	dx;
+	fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
+	divline_t*	line = &trace;
 	fixed_t_union temp;
 	
-    if (!line->dx) {
-		if (x <= line->x)
-			return line->dy > 0;
+    if (!line->dx.w) {
+		if (x.h.intbits <= line->x.h.intbits)
+			return line->dy.w > 0;
 		
-		return line->dy < 0;
-    }
-    if (!line->dy) {
-		if (y <= line->y)
-			return line->dx < 0;
+		return line->dy.w < 0;
+	}
+    if (!line->dy.w) {
+		if (y.h.intbits <= line->y.h.intbits)
+			return line->dx.w < 0;
 
-		return line->dx > 0;
+		return line->dx.w > 0;
     }
 	
-    dx = (x - line->x);
-    dy = (y - line->y);
+	dx.w = (x.w - line->x.w);
+	dy.w = (y.w - line->y.w);
 	
     // try to quickly decide by looking at sign bits
-    if ( (line->dy ^ line->dx ^ dx ^ dy)&0x8000 ) {
-	if ( (line->dy ^ dx) & 0x8000 )
-	    return 1;		// (left is negative)
-	return 0;
-    }
+	if ((line->dy.h.intbits ^ line->dx.h.intbits ^ dx.h.intbits ^ dy.h.intbits) & 0x8000)
+	{
+		if ((line->dy.h.intbits ^ dx.h.intbits) & 0x8000)
+			return 1;		// (left is negative)
+		return 0;
+	}
 	
-    left = FixedMul ( line->dy, dx );
-    right = FixedMul ( dy , line->dx );
+	left = FixedMul2424(line->dy.w >> 8, dx.w >> 8);
+	right = FixedMul2424(dy.w >> 8, line->dx.w >> 8);
+
 	
-    if (right < left)
-		return 0;		// front side
-    return 1;			// back side
+	return (right >= left);
+
 }
 
 */
-
  
 
 
@@ -322,12 +328,14 @@ P_InterceptVector
     fixed_t	den;
 	divline_t*	v2 = &trace;
 	
-    den = FixedMul (v1->dy.w>>8,v2->dx.w) - FixedMul(v1->dx.w >>8,v2->dy.w);
+    den = FixedMul2432 (v1->dy.w>>8,v2->dx.w) - 
+		FixedMul2432(v1->dx.w >>8,v2->dy.w);
 
     if (den == 0)
 		return 0;
     
-    num = FixedMul ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + FixedMul ( (v2->y.w - v1->y.w)>>8, v1->dx.w);
+    num = FixedMul2432 ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + 
+		FixedMul2432 ( (v2->y.w - v1->y.w)>>8, v1->dx.w);
 
     frac = FixedDiv (num , den);
 
@@ -468,15 +476,11 @@ void P_UnsetThingPosition (mobj_t* thing)
 
 	THINKERREF thingsnextRef = thing->snextRef;
 	THINKERREF thingbnextRef = thing->bnextRef;
-	fixed_t_union thingx;
-	fixed_t_union thingy;
 	int32_t thingflags = thing->flags;
 	//int16_t thingsubsecnum = thing->subsecnum;
 	int16_t thingsecnum = thing->secnum;
 	THINKERREF thisRef = GETTHINKERREF(thing);
-	thingx.w = thing->x;
-	thingy.w = thing->y;
-    
+
 	if (!(thingflags & MF_NOSECTOR)) {
 		// inert things don't need to be in blockmap?
 		// unlink from subsector
@@ -520,8 +524,12 @@ void P_UnsetThingPosition (mobj_t* thing)
 
 
     if (! (thingflags & MF_NOBLOCKMAP) ) {
-	// inert things don't need to be in blockmap
+	// insert things don't need to be in blockmap
 	// unlink from block map
+		fixed_t_union thingx;
+		fixed_t_union thingy;
+		thingx.w = thing->x;
+		thingy.w = thing->y;
 
 
 		//todo how can this trip the < 0 check anyway?
@@ -529,6 +537,7 @@ void P_UnsetThingPosition (mobj_t* thing)
 		// should be faster for 16 bit than a shift right by 7?
 		blockx = (thingx.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
 		blocky = (thingy.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
+		
 		/*		temp.h = (thingx.h.intbits - bmaporgx);
 		blockx = temp.b.bytehigh << 1;
 		blockx += temp.h & 0x0080 ? 1 : 0;*/
@@ -784,11 +793,11 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
     fixed_t		frac;
     divline_t		dl;
 	
-	int16_t linev1Offset = ld->v1Offset;
-	int16_t linev2Offset = ld->v2Offset & VERTEX_OFFSET_MASK;
 	int16_t linedx = ld->dx;
 	int16_t linedy = ld->dy;
-	int16_t linebacksecnum = ld->backsecnum;
+	int16_t linev1Offset = ld->v1Offset;
+	int16_t v1x = vertexes[linev1Offset].x;
+	int16_t v1y = vertexes[linev1Offset].y;
 	fixed_t_union tempx;
 	fixed_t_union tempy;
 	fixed_t_union temp;
@@ -799,15 +808,16 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
     // avoid precision problems with two routines
 	if ( trace.dx.h.intbits > 16 || trace.dy.h.intbits > 16 || trace.dx.h.intbits < -16 || trace.dy.h.intbits < -16) {
 		// we actually know the vertex fields to be 16 bit, but trace has 32 bit fields
-		tempx.h.intbits = vertexes[linev1Offset].x;
-		tempy.h.intbits = vertexes[linev1Offset].y;
-		s1 = P_PointOnDivlineSide (tempx.w, tempy.w);
+		int16_t linev2Offset = ld->v2Offset & VERTEX_OFFSET_MASK;
+		tempx.h.intbits = v1x;
+		tempy.h.intbits = v1y;
+		s1 = P_PointOnDivlineSide16(tempx.w, tempy.w);
 		tempx.h.intbits = vertexes[linev2Offset].x;
 		tempy.h.intbits = vertexes[linev2Offset].y;
-		s2 = P_PointOnDivlineSide(tempx.w, tempy.w);
+		s2 = P_PointOnDivlineSide16(tempx.w, tempy.w);
 	} else {
-		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, linev1Offset);
-		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, linev1Offset);
+		s1 = P_PointOnLineSide (trace.x.w, trace.y.w, linedx, linedy, v1x, v1y);
+		s2 = P_PointOnLineSide (trace.x.w+trace.dx.w, trace.y.w+trace.dy.w, linedx, linedy, v1x, v1y);
     }
     
 	if (s1 == s2) {
@@ -815,12 +825,11 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 	}
     
     // hit the line
-    //P_MakeDivline(linedx, linedy, linev1Offset, &dl);
 
 	temp.h.fracbits = 0;
-	temp.h.intbits = vertexes[linev1Offset].x;
+	temp.h.intbits = v1x;
 	dl.x = temp;
-	temp.h.intbits = vertexes[linev1Offset].y;
+	temp.h.intbits = v1y;
 	dl.y = temp;
 
 	temp.h.intbits = linedx;
@@ -836,7 +845,7 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 	}
 
     // try to early out the check
-    if (earlyout && frac < FRACUNIT && linebacksecnum == SECNUM_NULL) {
+    if (earlyout && frac < FRACUNIT && ld->backsecnum == SECNUM_NULL) {
 		return false;	// stop checking
     }
     
@@ -856,10 +865,10 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 //
 boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t* thing)
 {
-    fixed_t		x1;
-    fixed_t		y1;
-    fixed_t		x2;
-    fixed_t		y2;
+    fixed_t_union		x1;
+	fixed_t_union		y1;
+	fixed_t_union		x2;
+	fixed_t_union		y2;
     
     int16_t			s1;
     int16_t			s2;
@@ -870,39 +879,32 @@ boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t* thing)
     
     fixed_t		frac;
 	
-	fixed_t_union temp;
  
-	tracepositive = (trace.dx.w ^ trace.dy.w) > 0;
+	tracepositive = (trace.dx.h.intbits ^ trace.dy.h.intbits) > 0;
 
-	temp.h.fracbits = 0;
-	temp.h.intbits = thing->radius;
-	if (tracepositive)
-	{
-		x1 = thing->x - temp.w;
-		y1 = thing->y + temp.w;
-
-		x2 = thing->x + temp.w;
-		y2 = thing->y - temp.w;
+	x1.w = x2.w = thing->x;
+	y1.w = y2.w = thing->y;
+	x1.h.intbits -= thing->radius;
+	x2.h.intbits += thing->radius;
+	
+	if (tracepositive) {
+		y1.h.intbits += thing->radius;
+		y2.h.intbits -= thing->radius;
+	} else {
+		y1.h.intbits -= thing->radius;
+		y2.h.intbits += thing->radius;
 	}
-	else
-	{
-		x1 = thing->x - temp.w;
-		y1 = thing->y - temp.w;
-
-		x2 = thing->x + temp.w;
-		y2 = thing->y + temp.w;
-	}
-	s1 = P_PointOnDivlineSide (x1, y1);
-    s2 = P_PointOnDivlineSide (x2, y2);
+	s1 = P_PointOnDivlineSide (x1.w, y1.w);
+    s2 = P_PointOnDivlineSide (x2.w, y2.w);
 
 	if (s1 == s2) {
 		return true;		// line isn't crossed
 	}
 
-    dl.x.w = x1;
-    dl.y.w = y1;
-    dl.dx.w = x2-x1;
-    dl.dy.w = y2-y1;
+    dl.x = x1;
+    dl.y = y1;
+    dl.dx.w = x2.w-x1.w;
+    dl.dy.w = y2.w-y1.w;
     
     frac = P_InterceptVector (&dl);
 
@@ -932,10 +934,9 @@ P_TraverseIntercepts
    )
 {
     int16_t			count;
-    fixed_t		dist;
+    fixed_t_union		dist;
     intercept_t*	scan;
     intercept_t*	in = NULL;
-	fixed_t maxfrac = FRACUNIT;
 	int16_t i = 0;
 	count = intercept_p - intercepts;
  
@@ -944,16 +945,17 @@ P_TraverseIntercepts
 
     while (count--) {
 		i++;
-		dist = MAXLONG;
+		dist.w = MAXLONG;
 		for (scan = intercepts ; scan<intercept_p ; scan++) {
-			if (scan->frac < dist) {
-				dist = scan->frac;
+			if (scan->frac < dist.w) {
+				dist.w = scan->frac;
 				in = scan;
 			}
 		}
 
 		   
-		if (dist > maxfrac) {
+		//if (dist.h.intbits) {
+		if (dist.w > FRACUNIT) {
 			return;	// checked everything in range		
 		}
 
@@ -997,7 +999,7 @@ P_PathTraverse
     fixed_t	xstep;
     fixed_t	ystep;
     
-    fixed_t	partial;
+	uint16_t	partial;
     
 	fixed_t_union	xintercept;
     fixed_t_union	yintercept;
@@ -1009,6 +1011,8 @@ P_PathTraverse
     int8_t		mapystep;
 
     int8_t		count;
+	fixed_t_union		x1mapblockshifted;
+	fixed_t_union		y1mapblockshifted;
 
     earlyout = flags & PT_EARLYOUT;
 	
@@ -1049,37 +1053,46 @@ P_PathTraverse
     xt2 = x2.h.intbits >> MAPBLOCKSHIFT;
     yt2 = y2.h.intbits >>MAPBLOCKSHIFT;
  
-    if (xt2 > xt1) {
-		mapxstep = 1;
-		partial = FRACUNIT - ((x1.w>> MAPBLOCKSHIFT)&(0xFFFF));
-		ystep = FixedDiv (y2.w-y1.w,labs(x2.w-x1.w));
-    } else if (xt2 < xt1) {
-		mapxstep = -1;
-		partial = (x1.w>> MAPBLOCKSHIFT)&(0xFFFF);
-		ystep = FixedDiv (y2.w-y1.w,labs(x2.w-x1.w));
-    } else {
-		mapxstep = 0;
-		partial = FRACUNIT;
-		ystep = 256*FRACUNIT;
-    }	
 
-    yintercept.w = (y1.w>> MAPBLOCKSHIFT) + FixedMul (partial, ystep);
-
+	x1mapblockshifted.w = (x1.w >> MAPBLOCKSHIFT);
+	y1mapblockshifted.w = (y1.w >> MAPBLOCKSHIFT);
 	
-    if (yt2 > yt1) {
-		mapystep = 1;
-		partial = FRACUNIT - ((y1.w>> MAPBLOCKSHIFT)&(0xFFFF));
-		xstep = FixedDiv (x2.w -x1.w,labs(y2.w -y1.w));
-    } else if (yt2 < yt1) {
-		mapystep = -1;
-		partial = (y1.w >> MAPBLOCKSHIFT)&(0xFFFF);
-		xstep = FixedDiv (x2.w -x1.w,labs(y2.w -y1.w));
-    } else {
+	yintercept = y1mapblockshifted;
+
+	if (xt2 == xt1) {
+		mapxstep = 0;
+		yintercept.h.intbits += 256;
+	} else {
+		ystep = FixedDiv(y2.w - y1.w, labs(x2.w - x1.w));
+		partial = x1mapblockshifted.h.fracbits;
+
+		if (xt2 > xt1) {
+			mapxstep = 1;
+			partial ^= 0xFFFF;
+		} else {
+			mapxstep = -1;
+		}
+		yintercept.w += FixedMul16u32(partial, ystep);
+	}
+
+
+	xintercept = x1mapblockshifted;
+	if (yt2 == yt1) {
+		xintercept.h.intbits += 256;
 		mapystep = 0;
-		partial = FRACUNIT;
-		xstep = 256*FRACUNIT;
-    }	
-    xintercept.w = (x1.w >> MAPBLOCKSHIFT) + FixedMul (partial, xstep);
+
+	} else {
+		xstep = FixedDiv(x2.w - x1.w, labs(y2.w - y1.w));
+		partial = y1mapblockshifted.h.fracbits;
+		if (yt2 > yt1) {
+			mapystep = 1;
+			partial ^= 0xFFFF;
+		} else {
+			mapystep = -1;
+		}
+
+		xintercept.w += FixedMul16u32(partial, xstep);
+	}
 
     // Step through map blocks.
     // Count is present to prevent a round off error

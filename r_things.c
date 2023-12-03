@@ -169,7 +169,7 @@ R_DrawVisSprite
 {
     column_t*           column;
 	int16_t             texturecolumn;
-    fixed_t_union             frac;
+    fixed_t_union       frac;
     patch_t*            patch;
 	MEMREF				patchRef;
         
@@ -471,7 +471,7 @@ void R_DrawPSprite (pspdef_t* psp)
 	tx -= temp.w;
 	temp.h.intbits = centerxfrac.h.intbits;
 	if (pspritescale) {
-		temp.w += FixedMul1632(pspritescale, tx);
+		temp.w += FixedMul16u32(pspritescale, tx);
 	}
 	else {
 		temp.w += tx;
@@ -488,7 +488,7 @@ void R_DrawPSprite (pspdef_t* psp)
 	tx +=  temp.w;
 	temp.h.intbits = centerxfrac.h.intbits;
 	if (pspritescale) {
-		temp.w += FixedMul1632(pspritescale, tx);
+		temp.w += FixedMul16u32(pspritescale, tx);
 	} else {
 		temp.w += tx;
 	}
@@ -515,7 +515,6 @@ void R_DrawPSprite (pspdef_t* psp)
     if (flip)
     {
         vis->xiscale = -pspriteiscale;
-        temp.h.fracbits = 0;
         temp.h.intbits = spritewidths[lump];
 		vis->startfrac = temp.w - 1;
     }

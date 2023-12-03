@@ -203,15 +203,13 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 	slopetype_t lineslopetype = ld->v2Offset & LINE_VERTEX_SLOPETYPE;
 	int16_t linedx = ld->dx;
 	int16_t linedy = ld->dy;
-	int16_t linev1Offset = ld->v1Offset;
-	vertex_t v1 = vertexes[linev1Offset];
-	int16_t linebacksecnum = ld->backsecnum;
-	uint8_t lineflags = ld->flags;
-	int16_t linespecial = ld->special;
-	int16_t lineright = v1.x;
-	int16_t lineleft = v1.x;
-	int16_t linetop = v1.y;
-	int16_t linebot = v1.y;
+	vertex_t v1 = vertexes[ld->v1Offset];
+	int16_t v1x = v1.x;
+	int16_t v1y = v1.y;
+	int16_t lineright = v1x;
+	int16_t lineleft = v1x;
+	int16_t linetop = v1y;
+	int16_t linebot = v1y;
 
 #ifndef	PRECALCULATE_OPENINGS
 	int16_t linefrontsecnum = ld->frontsecnum;
@@ -241,7 +239,7 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 	}
 
 
-	if (P_BoxOnLineSide(tmbbox, lineslopetype, linedx, linedy, linev1Offset) != -1) {
+	if (P_BoxOnLineSide(tmbbox, lineslopetype, linedx, linedy, v1x, v1y) != -1) {
 		return true;
 	}
 
@@ -256,16 +254,16 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
     // so two special lines that are only 8 pixels apart
     // could be crossed in either order.
     
-	if (linebacksecnum == SECNUM_NULL) {
+	if (ld->backsecnum == SECNUM_NULL) {
 		return false;		// one sided line
 	}
 
 
     if (!(tmthing->flags & MF_MISSILE) ) {
-		if (lineflags & ML_BLOCKING) {
+		if (ld->flags & ML_BLOCKING) {
 			return false;	// explicitly blocking everything
 		}
-		if (tmthing->type != MT_PLAYER && lineflags & ML_BLOCKMONSTERS) {
+		if (tmthing->type != MT_PLAYER && ld->flags & ML_BLOCKMONSTERS) {
 			return false;	// block monsters only
 		}
     }
@@ -292,7 +290,7 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 	}
 
     // if contacted a special line, add it to the list
-    if (linespecial) {
+    if (ld->special) {
 		spechit[numspechit] = linenum;
 		numspechit++;
     }
@@ -585,13 +583,9 @@ P_TryMove
     fixed_t	oldy;
 	fixed_t	newx;
 	fixed_t	newy;
-    int16_t	side;
-    int16_t	oldside;
+
     line_t*	ld;
- 	int16_t lddx;
- 	int16_t lddy;
-	int16_t ldspecial;
-	int16_t ldv1Offset;
+
 	fixed_t_union temp;
 	int16_t temp2;
 	temp.h.fracbits = 0;
@@ -651,16 +645,27 @@ P_TryMove
     
 	// if any special lines were hit, do the effect
     if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
+		int16_t v1x;
+		int16_t v1y;
+		int16_t lddx;
+		int16_t lddy;
+		int16_t ldspecial;
+		int16_t ldv1Offset;
+		int16_t	side;
+		int16_t	oldside;
+		
 		while (numspechit--) {
 			// see if the line was crossed
 			ld = &lines[spechit[numspechit]];
 			lddx = ld->dx;
 			lddy = ld->dy;
 			ldv1Offset = ld->v1Offset;
+			v1x = vertexes[ldv1Offset].x;
+			v1y = vertexes[ldv1Offset].y;
 			ldspecial = ld->special;
 
-			side = P_PointOnLineSide (newx, newy, lddx, lddy, ldv1Offset);
-			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, ldv1Offset);
+			side = P_PointOnLineSide (newx, newy, lddx, lddy, v1x, v1y);
+			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, v1x, v1y);
 			if (side != oldside) {
 				if (ldspecial) {
 					P_CrossSpecialLine(spechit[numspechit], oldside, thing);
@@ -765,8 +770,8 @@ void P_HitSlideLine (int16_t linenum)
 		return;
     }
 	
-    side = P_PointOnLineSide (playerMobj->x, playerMobj->y, ld.dx, ld.dy, ld.v1Offset);
-    lineangle.w = R_PointToAngle2_16 (0,0, ld.dx, ld.dy);
+    side = P_PointOnLineSide (playerMobj->x, playerMobj->y, ld.dx, ld.dy, vertexes[ld.v1Offset].x, vertexes[ld.v1Offset].y);
+    lineangle.w = R_PointToAngle2_16 ( ld.dx, ld.dy);
 
     if (side == 1)
 		lineangle.h.intbits += ANG180_HIGHBITS;
@@ -801,7 +806,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
 
     
     if ( ! (li.flags & ML_TWOSIDED) ) {
- 		if (P_PointOnLineSide (playerMobj->x, playerMobj->y, li.dx, li.dy, li.v1Offset)) {
+ 		if (P_PointOnLineSide (playerMobj->x, playerMobj->y, li.dx, li.dy, vertexes[li.v1Offset].x, vertexes[li.v1Offset].y)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -1371,7 +1376,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 	
     side = 0;
 
-	if (P_PointOnLineSide(playerMobj->x, playerMobj->y, line.dx, line.dy, line.v1Offset) == 1) {
+	if (P_PointOnLineSide(playerMobj->x, playerMobj->y, line.dx, line.dy, vertexes[line.v1Offset].x, vertexes[line.v1Offset].y) == 1) {
 		side = 1;
 	}
 

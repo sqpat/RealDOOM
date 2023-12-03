@@ -146,7 +146,7 @@ boolean novideo; // if true, stay in text mode for debugging
 
 #define KBDQUESIZE 32
 byte keyboardque[KBDQUESIZE];
-int32_t kbdtail, kbdhead;
+uint8_t kbdtail, kbdhead;
 
 #define KEY_LSHIFT      0xfe
 
@@ -474,6 +474,12 @@ void I_StartTic(void)
 	// keyboard events
 	//
 	while (kbdtail < kbdhead) {
+
+		if (kbdtail > KBDQUESIZE && kbdhead > KBDQUESIZE) {
+			kbdtail -= KBDQUESIZE;
+			kbdhead -= KBDQUESIZE;
+		}
+
 		k = keyboardque[kbdtail&(KBDQUESIZE - 1)];
 		kbdtail++;
 		// extended keyboard shift key bullshit

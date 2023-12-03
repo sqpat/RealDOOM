@@ -163,8 +163,8 @@ R_PointOnSide
 	    return 0;
     }
 
-    left = FixedMul ( node->dy , dx.w );
-    right = FixedMul ( dy.w , node->dx );
+    left = FixedMul1632 ( node->dy , dx.w );
+    right = FixedMul1632 (node->dx, dy.w );
 	
     if (right < left) {
 	    // front side
@@ -227,8 +227,8 @@ R_PointOnSegSide
 		return  ((ldy ^ dx.h.intbits) & 0x8000);
     
 
-    left = FixedMul ( ldy , dx.w );
-    right = FixedMul ( dy.w , ldx );
+    left = FixedMul1632 ( ldy , dx.w );
+    right = FixedMul1632 (ldx, dy.w );
 	
 	// front side if true, back side if false
 	return right >= left;
@@ -438,14 +438,15 @@ R_PointToAngle2
 
 uint32_t
 R_PointToAngle2_16
-( int16_t	x1,
-  int16_t	y1,
+( 
+	//int16_t	x1,
+  //int16_t	y1,
   int16_t	x2,
   int16_t	y2 )
 {	
 	fixed_t_union x2fp, y2fp;
-    viewx.w = x1; // called with 0, this is fine
-    viewy.w = y1;
+    viewx.w = 0; // called with 0, this is fine
+    viewy.w = 0;
 	x2fp.h.intbits = x2;
 	y2fp.h.intbits = y2;
 	x2fp.h.fracbits = 0;
