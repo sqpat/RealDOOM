@@ -51,24 +51,10 @@ extern uint8_t			skyflatnum;
 uint8_t R_FlatNumForNameB(int8_t* name)
 {
 	int16_t         i;
-#ifdef CHECK_FOR_ERRORS
-	int8_t        namet[9];
-#endif
-
+ 
 	i = W_CheckNumForName(name);
 
-#ifdef CHECK_FOR_ERRORS
-	if (i == -1)
-	{
-		namet[8] = 0;
-		memcpy(namet, name, 8);
-		I_Error("\nR_FlatNumForName: %s not found", namet);
-	}
-
-	if (i - firstflat > 255) {
-		I_Error("Flat too big %i %i", i, firstflat);
-	}
-#endif
+ 
 
 	return (uint8_t)(i - firstflat);
 }
@@ -248,39 +234,7 @@ typedef struct
 } mappatch_t;
 
 
-
-// A single patch from a texture definition,
-//  basically a rectangular area within
-//  the texture rectangle.
-typedef struct
-{
-	// Block origin (allways UL),
-	// which has allready accounted
-	// for the internal origin of the patch.
-	int16_t         originx;
-	int16_t         originy;
-	int16_t         patch; // lump num
-} texpatch_t;
-
-
-// A maptexturedef_t describes a rectangular texture,
-//  which is composed of one or more mappatch_t structures
-//  that arrange graphic patches.
-typedef struct
-{
-	// Keep name for switch changing, etc.
-	int8_t        name[8];
-	// width and height max out at 256 and are never 0. we store as real size -  1 and add 1 whenever we readd it
-	uint8_t       width;
-	uint8_t       height;
-
-	// All the patches[patchcount]
-	//  are drawn back to front into the cached texture.
-	uint8_t       patchcount;
-	texpatch_t  patches[1];
-
-} texture_t;
-
+ 
 
 //
 // Texture definition.
@@ -559,13 +513,8 @@ void R_InitTextures(void)
 
 		offset = (*directory);
 
-#ifdef CHECK_FOR_ERRORS
-		if (offset > maxoff)
-			I_Error("R_InitTextures: bad texture directory");
-#endif
 
 		mtexture = (maptexture_t *)((byte *)maptex + offset);
-
 
 		textureRef = Z_MallocConventional(sizeof(texture_t)
 			+ sizeof(texpatch_t)*((mtexture->patchcount) - 1),
@@ -588,19 +537,7 @@ void R_InitTextures(void)
 			patch->originx = (mpatch->originx);
 			patch->originy = (mpatch->originy);
 			patch->patch = patchlookup[(mpatch->patch)];
-
-
-#ifdef CHECK_FOR_ERRORS
-			if (patch->patch == -1)
-			{
-				I_Error("\nR_InitTextures: Missing patch in texture %s \n %i %i %i %i %i %i",
-					texture->name,
-					textureRef, i, j, mpatch->patch, nummappatches,
-					texture->patchcount
-				);
-			}
-#endif
-
+ 
 
 		}
 
@@ -695,4 +632,4 @@ void R_Init(void)
 	R_InitSkyMap();
 	DEBUG_PRINT(".");
 
-}
+	}

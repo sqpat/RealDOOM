@@ -81,32 +81,7 @@ extern boolean         mousearray[4];
 
 // The sky texture to be used instead of the F_SKY1 dummy.
 extern  uint8_t     skytexture;
-
-
-typedef struct
-{
-	// Block origin (allways UL),
-	// which has allready accounted
-	// for the internal origin of the patch.
-	int16_t         originx;
-	int16_t         originy;
-	int16_t         patch; // lump num
-} texpatch_t;
-
-typedef struct
-{
-	// Keep name for switch changing, etc.
-	int8_t        name[8];
-	// width and height max out at 256 and are never 0. we store as real size -  1 and add 1 whenever we readd it
-	uint8_t       width;
-	uint8_t       height;
-
-	// All the patches[patchcount]
-	//  are drawn back to front into the cached texture.
-	uint8_t       patchcount;
-	texpatch_t  patches[1];
-
-} texture_t;
+ 
 extern int16_t             numtextures;
 extern MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
 

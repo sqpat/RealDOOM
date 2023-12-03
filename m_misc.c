@@ -182,6 +182,8 @@ M_WriteFile
 //
 // M_ReadFile
 //
+
+/*
 filelength_t
 M_ReadFile
 (int8_t const*	name,
@@ -201,7 +203,7 @@ M_ReadFile
 	if (fstat (handle,&fileinfo) == -1)
 		I_Error ("Couldn't read file %s", name);
     length = fileinfo.st_size;
-    *bufferRef = Z_MallocEMS (length, PU_STATIC, 0xff, ALLOC_TYPE_READFILE);
+    *bufferRef = Z_MallocEMS (length, PU_STATIC, 1, ALLOC_TYPE_READFILE);
 	buf = Z_LoadBytesFromEMS(*bufferRef);
     count = read (handle, buf, length);
     close (handle);
@@ -212,7 +214,7 @@ M_ReadFile
     //*buffer = buf;
     return length;
 }
-
+*/
 
 //
 // DEFAULTS

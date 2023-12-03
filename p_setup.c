@@ -265,24 +265,9 @@ void P_LoadSubsectors(int16_t lump)
 uint8_t R_FlatNumForNameC(int8_t* name)
 {
 	int16_t         i;
-#ifdef CHECK_FOR_ERRORS
-	int8_t        namet[9];
-#endif
 
 	i = W_CheckNumForName(name);
 
-#ifdef CHECK_FOR_ERRORS
-	if (i == -1)
-	{
-		namet[8] = 0;
-		memcpy(namet, name, 8);
-		I_Error("\nR_FlatNumForName: %s not found", namet);
-	}
-
-	if (i - firstflat > 255) {
-		I_Error("Flat too big %i %i", i, firstflat);
-	}
-#endif
 
 	return (uint8_t)(i - firstflat);
 }
@@ -1320,7 +1305,7 @@ P_SetupLevel
 	player.viewz = 1;
 
 	S_Start();
-	Z_FreeTagsEMS(PU_LEVEL);
+	Z_FreeTagsEMS();
 	Z_FreeConventionalAllocations();
 	
 	// TODO reset 32 bit counters to start values here..

@@ -74,7 +74,7 @@
 //#define THINKER_ALLOCATION_LIST_SIZE MAX_THINKERS
 
 // DOOM SHAREWARE VALUE
-#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+4963u+10u)
+#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+3767u)
 // SET TO 1 TO DISABLE
 //#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE 1
 
@@ -329,15 +329,14 @@ void Z_FreeEMS(PAGEREF block) {
 		allocations[other].offset_and_tag &= OFFSET_MASK; // set tag to NOT_IN_USE
 	}
 
-#ifdef MEMORYCHECK
-	Z_CheckEMSAllocations(block);
-#endif
+ 
 }
 
 
 void
-Z_FreeTagsEMS
-(int16_t           tag)
+Z_FreeTagsEMS ()
+// tag is always PU_LEVEL == 0x2
+//(int16_t           tag)
 {
 	int16_t block;
 
@@ -359,8 +358,10 @@ Z_FreeTagsEMS
 		if (!HAS_USER(allocations[block]))
 			continue;
 
-		if (MAKE_TAG(allocations[block]) == tag)
+		// catches PU_LEVEL  ?
+		if (allocations[block].offset_and_tag & 0xC000 == 0x8000) {
 			Z_FreeEMS(block);
+		}
 	}
 
 }
@@ -1259,78 +1260,7 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF ref, boolean locked) {
 
 	
 }
-
-#ifdef MEMORYCHECK
-
-
-int16_t getNumFreePages() {
-	int16_t i = 0;
-	int16_t total = 0;
-	for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++) {
-		if (allocations[i].prev == EMS_ALLOCATION_LIST_SIZE) {
-			total++;
-		}
-
-	}
-	return total;
-}
-
-int32_t getFreeMemoryByteTotal() {
-	int16_t i = 0;
-	int32_t total = 0;
-	for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++) {
-		if (!HAS_USER(allocations[i])) {
-
-			total += allocations[i].size;
-		}
-	}
-	return total;
-}
-
-
-int32_t getBiggestFreeBlock() {
-	int16_t i = 0;
-	int32_t total = 0;
-	for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++) {
-		if (!HAS_USER(allocations[i])) {
-
-			if (allocations[i].size > total)
-				total = allocations[i].size;
-		}
-
-	}
-	return total;
-}
-
-int16_t getBiggestFreeBlockIndex() {
-	int16_t i = 0;
-	int32_t total = 0;
-	int16_t totali = 0;
-	for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++) {
-		if (!HAS_USER(allocations[i])) {
-
-			if (allocations[i].size > total) {
-				total = allocations[i].size;
-				totali = i;
-			}
-		}
-
-	}
-	return totali;
-}
-
-int16_t getNumPurgeableBlocks() {
-	int16_t i = 0;
-	int16_t total = 0;
-	for (i = 0; i < EMS_ALLOCATION_LIST_SIZE; i++) {
-		if (!allocations[i].tag >= PU_PURGELEVEL && HAS_USER(allocations[i].user)) {
-			total++;
-		}
-
-	}
-	return total;
-}
-#endif
+ 
 
 // Gets the next unused spot in the doubly linked list of allocations
 // NOTE: this does not mean it gets the next "free block of memory"
@@ -1358,9 +1288,7 @@ PAGEREF Z_GetNextFreeArrayIndex() {
 #endif
 	// error case
 
-#ifdef MEMORYCHECK
-	I_Error("Z_GetNextFreeArrayIndex: failed on allocation of %i pages %i bytes %i biggest %i ", getNumFreePages(), getFreeMemoryByteTotal(), getBiggestFreeBlock());
-#endif
+ 
 
 	return -1;
 
@@ -1424,8 +1352,6 @@ Z_MallocEMSWithBackRef
 
 	base = currentListHead;
 
-
-
 	if (!HAS_USER(allocations[allocations[base].prev])) {
 		base = allocations[base].prev;
 
@@ -1440,10 +1366,7 @@ Z_MallocEMSWithBackRef
 		offsetToNextPage = 0;
 	}
 
-
-
-	do
-	{
+	do {
 
  
 
@@ -1460,7 +1383,7 @@ Z_MallocEMSWithBackRef
 
 
 
-// problem is base (1) has a user. user should be 0
+			// problem is base (1) has a user. user should be 0
 
 
 			if (allocations[rover].offset_and_tag < 0xC000) {  //  tag < PU_PURGELEVEL
@@ -1478,7 +1401,7 @@ Z_MallocEMSWithBackRef
 				base = allocations[base].next;
 				rover = allocations[base].next;
 			}
-			offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)allocations[base].offset_and_tag & 0x3FFF)) % PAGE_FRAME_SIZE;
+			offsetToNextPage = (PAGE_FRAME_SIZE - ((uint32_t)allocations[base].offset_and_tag & OFFSET_MASK)) % PAGE_FRAME_SIZE;
 
 		}
 		else {
@@ -1528,7 +1451,7 @@ Z_MallocEMSWithBackRef
 		allocations[newfreeblockindex].offset_and_tag = MAKE_OFFSET(allocations[base]);
 
 		// implies -1 backref and 0 user
-		allocations[newfreeblockindex].backref_and_user = (int16_t)INVERSE_USER_MASK;
+		allocations[newfreeblockindex].backref_and_user = INVERSE_USER_MASK;
 
 		allocations[base].page_and_size -= offsetToNextPage;
 		// todo are we okay with respect to not wrapping around? should never happen because initial size should be set in a way this doesnt happen?
@@ -1626,84 +1549,14 @@ Z_MallocEMSWithBackRef
 
 
 
-	// todo activate page
-#ifdef MEMORYCHECK
-	Z_CheckEMSAllocations(base, 0, 0, 0);
-#endif
+ 
 
 
 
 	return base;
 	//return (void *) ((byte *)mainzoneEMS + ( allocations[base].page * PAGE_FRAME_SIZE + allocations[base].offset ) );
 
-}
-
-#ifdef MEMORYCHECK
-int32_t GetBlockAddress(PAGEREF block) {
-	return MAKE_PAGE(allocations[block].page_and_size) * PAGE_FRAME_SIZE + allocations[block].offset;
-}
-
-void Z_CheckEMSAllocations(PAGEREF block) {
-
-	// all allocation entries should either be in the chain (linked list)
-	// OR marked as a free index (prev = EMS_ALLOCATION_LIST_SIZE)
-
-	int16_t unalloactedIndexCount = getNumFreePages();
-	int16_t start = allocations[block].prev;
-	int16_t iterCount = 1;
-	while (start != block) {
-
-		iterCount++;
-#ifdef CHECK_FOR_ERRORS
-		if (iterCount > EMS_ALLOCATION_LIST_SIZE) {
-			I_Error("\nZ_CheckEMSAllocations: infinite loop detected with block start %i %i %i %i %i %i %i", start, iterCount, getNumFreePages(), getFreeMemoryByteTotal(), getNumPurgeableBlocks, getBiggestFreeBlock(), getBiggestFreeBlockIndex());
-		}
-#endif
-		block = allocations[block].next;
-	}
-
-	/*    printf("\n0:  %i %i %i", allocations[0].prev, allocations[0].next, allocations[0].size);
-		printf("\n1:  %i %i %i", allocations[1].prev, allocations[1].next, allocations[1].size);
-		printf("\n2:  %i %i %i", allocations[2].prev, allocations[2].next, allocations[2].size);
-	  */
-
-#ifdef CHECK_FOR_ERRORS
-	if (unalloactedIndexCount + iterCount != EMS_ALLOCATION_LIST_SIZE) {
-		I_Error("\nZ_CheckEMSAllocations: %i unallocated indices, %i rover size, %i expected list size", unalloactedIndexCount, iterCount, EMS_ALLOCATION_LIST_SIZE);
-	}
-#endif
-
-
-	// Now check if consecutive empties
-	for (block = allocations[start].next; ; block = allocations[block].next) {
-
-		/*
-				if (block->tag >= lowtag && block->tag <= hightag)
-					printf ("block:%p    size:%7i    user:%p    tag:%3i\n",
-							block, block->size, block->user, block->tag);*/
-
-
-		if (block == start)
-		{
-			// all blocks have been hit
-			break;
-		}
-
-		if (GetBlockAddress(block) + allocations[block].size != GetBlockAddress(allocations[block].next) && GetBlockAddress(allocations[block].next) != 0) {
-			I_Error("ERROR: block size does not touch the next block %i %i %i %i %i %i %i %i\n", GetBlockAddress(block), allocations[block].size, GetBlockAddress(allocations[block].next), block, start, allocations[block].next);
-		}
-
-		if (allocations[allocations[block].next].prev != block) {
-			I_Error("ERROR: next block doesn't have proper back link\n");
-		}
-
-		if (!allocations[block].user && !allocations[allocations[block].next].user) {
-			I_Error("ERROR: two consecutive free blocks\n");
-		}
-	}
-}
-#endif
-
+} 
 
 #ifdef _M_I86
 byte *I_ZoneBaseEMS(int32_t *size, int16_t *emshandle);

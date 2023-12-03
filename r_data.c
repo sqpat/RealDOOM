@@ -38,41 +38,7 @@
 // 
 
 
-
-
-
-// A single patch from a texture definition,
-//  basically a rectangular area within
-//  the texture rectangle.
-typedef struct
-{
-	// Block origin (allways UL),
-	// which has allready accounted
-	// for the internal origin of the patch.
-	int16_t         originx;
-	int16_t         originy;
-	int16_t         patch; // lump num
-} texpatch_t;
-
-
-// A maptexturedef_t describes a rectangular texture,
-//  which is composed of one or more mappatch_t structures
-//  that arrange graphic patches.
-typedef struct
-{
-	// Keep name for switch changing, etc.
-	int8_t        name[8];
-	// width and height max out at 256 and are never 0. we store as real size -  1 and add 1 whenever we readd it
-	uint8_t       width;
-	uint8_t       height;
-
-	// All the patches[patchcount]
-	//  are drawn back to front into the cached texture.
-	uint8_t       patchcount;
-	texpatch_t  patches[1];
-
-} texture_t;
-
+  
 
 MEMREF lockedRef;
 
@@ -203,8 +169,8 @@ void R_GenerateComposite(uint8_t texnum)
 	int16_t				texturewidth;
 	uint8_t				texturepatchcount;
 	int16_t				patchpatch;
-	int16_t				patchoriginx;
-	int16_t				patchoriginy;
+	uint8_t				patchoriginx;
+	uint8_t				patchoriginy;
 	texture_t* texture;
 	int16_t				colofsx;
 
@@ -325,6 +291,9 @@ R_GetColumn
 
 	texturecolumnlump = (int16_t*)Z_LoadTextureInfoFromConventional(texturecolumnlumpRefs[tex]);
 	lump = texturecolumnlump[col];
+
+
+
 
 	if (lump > 0) {
 		W_CacheLumpNumCheck(lump, 12);

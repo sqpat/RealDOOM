@@ -800,51 +800,7 @@ void D_DoomMain2(void)
 	D_InitStrings();
 
 	// Check for -file in shareware
-#ifdef CHECK_FOR_ERRORS
-	if (modifiedgame) {
-		// These are the lumps that will be checked in IWAD,
-		// if any one is not present, execution will be aborted.
-		int8_t name[23][8] =
-		{
-			"e2m1","e2m2","e2m3","e2m4","e2m5","e2m6","e2m7","e2m8","e2m9",
-			"e3m1","e3m3","e3m3","e3m4","e3m5","e3m6","e3m7","e3m8","e3m9",
-			"dphoof","bfgga0","heada1","cybra1","spida1d1"
-		};
-		int8_t i;
 
-		if (shareware)
-			I_Error("\nYou cannot -file with the shareware "
-				"version. Register!");
-
-		// Check for fake IWAD with right name,
-		// but w/o all the lumps of the registered version. 
-		if (registered)
-			for (i = 0; i < 23; i++)
-				if (W_CheckNumForName(name[i]) < 0)
-					I_Error("\nThis is not the registered version.");
-
-	}
-
-	// Iff additonal PWAD files are used, print modified banner
-	if (modifiedgame) {
-		getStringByIndex(MODIFIED_GAME, textbuffer);
-		printf(textbuffer);
-		getchar();
-	}
-
-
-#else
-
-	// very weird. game crashes at startup if there is not a name array and a name check here. i dont see it used as an extern anywhere..
-	if (0) {
-		int8_t name[23][1] = { "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" };
-		if (name[0]) {
-
-		}
-
-	}
-
-#endif
 
 
 #ifdef DEBUG_PRINTING

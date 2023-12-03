@@ -602,12 +602,6 @@ P_SetThingPosition (mobj_t* thing, int16_t knownsecnum)
 	}
 
 
-#ifdef CHECK_FOR_ERRORS
-	if (thing->secnum < 0 || thing->secnum > numsectors) {
-		I_Error("P_SetThingPosition: thing being set with bad secnum %i: numsectors:%i subsecnum %i num subsectors %i thingRef %i", subsectorsecnum, numsectors, subsecnum, numsubsectors, thingRef);
-	}
-#endif
-
 	if (!(thing->flags & MF_NOSECTOR)) {
 		// invisible things don't go into the sector links
 

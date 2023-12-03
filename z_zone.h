@@ -136,6 +136,8 @@ typedef struct memblock_s
 // timedemo1 = e1m7 = 51556, 27431
 //			   e1m8, m9 small
 
+#define ALLOCATION_LIST_HEAD	0
+#define EMS_ALLOCATION_LIST_SIZE 1200
 
 #define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54208
 //#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 18892   // no lineopenings demo 3
@@ -145,18 +147,16 @@ extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 extern byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
 
 void Z_InitEMS(void);
-void Z_FreeTagsEMS(int16_t tag);
+void Z_FreeTagsEMS();
 void Z_InitConventional(void);
 void Z_FreeConventionalAllocations();
 
-#define BACKREF_LUMP_OFFSET 2048
+#define BACKREF_LUMP_OFFSET EMS_ALLOCATION_LIST_SIZE
 MEMREF Z_MallocEMS(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
 MEMREF Z_MallocEMSWithBackRef(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
 MEMREF Z_MallocConventional(uint32_t size, uint8_t tag, int16_t type, uint8_t user, uint8_t sourceHint);
 
-#ifdef MEMORYCHECK
-void Z_CheckEMSAllocations(PAGEREF block, int32_t i, int32_t var2, int32_t var3);
-#endif
+
 void Z_ChangeTagEMS(MEMREF index, int16_t tag);
 void Z_FreeEMS(PAGEREF block);
 
@@ -204,8 +204,6 @@ void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
 
 void Z_ShutdownEMS();
 
-#define ALLOCATION_LIST_HEAD	0
-#define EMS_ALLOCATION_LIST_SIZE 1200
 
 
 

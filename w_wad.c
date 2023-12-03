@@ -364,17 +364,11 @@ W_CacheLumpNumEMS2
 		I_Error("W_CacheLumpNumEMS: %i >= numlumps %s %li", lump);
 #endif
 
-    //
-
-//	if (!lumpcache[lump])
 	if (!lumpcacheEMS[lump]) {
-        //todo they are all 16k in this case but last one should be
-		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef(W_LumpLength(lump), tag, 0xFF, ALLOC_TYPE_CACHE_LUMP, lump + BACKREF_LUMP_OFFSET);
+		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef(W_LumpLength(lump), tag, 1, ALLOC_TYPE_CACHE_LUMP, lump + BACKREF_LUMP_OFFSET);
 
 		W_ReadLumpEMS(lump, lumpcacheEMS[lump], 0, 0);
 	} else {
-		//printf ("cache hit on lump %i\n",lump);
-		//I_Error("cache hit on lump %i and tag %i", lump, tag);
 		Z_ChangeTagEMS(lumpcacheEMS[lump], tag);
 	}
 
