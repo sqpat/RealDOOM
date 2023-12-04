@@ -93,7 +93,7 @@ int16_t			dc_x;
 int16_t			dc_yl; 
 int16_t			dc_yh; 
 fixed_t			dc_iscale; 
-fixed_t			dc_texturemid;
+fixed_t_union	dc_texturemid;
 
 // first pixel in a column (possibly virtual) 
 byte*			dc_source;		
@@ -117,9 +117,9 @@ void R_DrawColumn (void)
     count = dc_yh - dc_yl; 
 
     // Zero length, column does not exceed a pixel.
-    if (count < 0) 
-        return; 
-
+	if (count < 0) {
+		return;
+	}
 
 #ifndef	SKIP_DRAW
 	outp (SC_INDEX+1,1<<(dc_x&3));
@@ -130,7 +130,7 @@ void R_DrawColumn (void)
     // Determine scaling,
     //  which is the only mapping to be done.
     fracstep = dc_iscale; 
-    frac.w = dc_texturemid + (dc_yl-centery)*fracstep; 
+    frac.w = dc_texturemid.w + (dc_yl-centery)*fracstep; 
 
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
@@ -174,7 +174,7 @@ void R_DrawColumnLow (void)
 	dest = destview + dc_yl * 80 + (dc_x >> 1);
 
 	fracstep = dc_iscale;
-	frac.w = dc_texturemid + (dc_yl - centery)*fracstep;
+	frac.w = dc_texturemid.w + (dc_yl - centery)*fracstep;
 
 	do
 	{
@@ -266,7 +266,7 @@ void R_DrawFuzzColumn (void)
 
     // Looks familiar.
     fracstep = dc_iscale; 
-    frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+    frac = dc_texturemid.w + (dc_yl-centery)*fracstep; 
 
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit

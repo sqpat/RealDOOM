@@ -69,7 +69,7 @@ MEMREF texturecolumnofsRefs[NUM_TEXTURE_CACHE];
 
 uint8_t  texturewidthmasks[NUM_TEXTURE_CACHE];
 // needed for texture pegging
-uint8_t  textureheights[NUM_TEXTURE_CACHE];		    // uint8_t must be converted by fracbits when used*
+uint8_t  textureheights[NUM_TEXTURE_CACHE];		    // uint8_t must be + 1 and then shifted to fracbits when used
 uint16_t  texturecompositesizes[NUM_TEXTURE_CACHE];	// uint16_t*
 
 

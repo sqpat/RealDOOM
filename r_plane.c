@@ -413,7 +413,9 @@ void R_DrawPlanes (void)
 			// Because of this hack, sky is not affected
 			//  by INVUL inverse mapping.
 			dc_colormap = colormaps;
-			dc_texturemid = 100*FRACUNIT; // this was hardcoded as the only use of skytexturemid..
+			dc_texturemid.h.intbits = 100;
+			dc_texturemid.h.fracbits = 0;
+
 			for (x=pl->minx ; x <= pl->maxx ; x++) {
 				if (plbytes){
 					dc_yl = plbytes->top[x];
@@ -425,12 +427,20 @@ void R_DrawPlanes (void)
 				
 
 				if (dc_yl <= dc_yh) {
-					// feel like this can be done with less shifting because its ultimately modded to a fine angle. -sq
 					temp.h.fracbits = 0;
 					temp.h.intbits = (xtoviewangle[x]);
+
+					/*
 					temp.h.intbits <<= 3;
 					temp.w += viewangle.wu;
 					temp.h.intbits >>= 6;
+					*/
+
+					// this is much faster than the above. i think there migth be a round issue on the
+					// lowest bit but i can't tell any difference -sq
+
+					temp.hu.intbits += (viewangle.hu.intbits >> 3);
+					temp.h.intbits >>= 3;
 					angle = MOD_FINE_ANGLE(temp.h.intbits);
 					dc_x = x;
 

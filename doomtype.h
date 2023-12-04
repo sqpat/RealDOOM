@@ -107,7 +107,7 @@ typedef int16_t short_height_t;
 //#define SHORTFLOORBITS 4
 //#define SHORTFLOORBITMASK 0x0F
 
-#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.b.fracbytehigh = (y & SHORTFLOORBITMASK) << (8 - SHORTFLOORBITS)
+#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.h.fracbits = (y & SHORTFLOORBITMASK) << (8 - SHORTFLOORBITS)
 
  
 

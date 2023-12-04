@@ -424,16 +424,16 @@ EV_DoFloor
 					  sidenum = getSideNum(secnum,i,0);
 					  sidebottomtexture = sides[sidenum].bottomtexture;
 					  //if (sidebottomtexture >= 0) {
-						  if (textureheights[sidebottomtexture] < minsize) {
-							  minsize = textureheights[sidebottomtexture];
+						  if ((textureheights[sidebottomtexture]+1) < minsize) {
+							  minsize = textureheights[sidebottomtexture]+1;
 						  }
 					  //}
 					  sidenum = getSideNum(secnum,i,1);
 					  sidebottomtexture = sides[sidenum].bottomtexture;
 
 					  //if (sidebottomtexture >= 0) {
-						  if (textureheights[sidebottomtexture] < minsize) {
-							  minsize = textureheights[sidebottomtexture];
+						  if ((textureheights[sidebottomtexture]+1) < minsize) {
+							  minsize = textureheights[sidebottomtexture]+1;
 						  }
 					  //}
 				  }

@@ -26,7 +26,7 @@ extern int16_t		dc_x;
 extern int16_t		dc_yl;
 extern int16_t		dc_yh;
 extern fixed_t		dc_iscale;
-extern fixed_t		dc_texturemid;
+extern fixed_t_union		dc_texturemid;
 
 // first pixel in a column
 extern byte*		dc_source;		

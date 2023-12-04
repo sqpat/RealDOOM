@@ -117,7 +117,7 @@ void R_DrawMaskedColumn (column_t* column) {
 	fixed_t     basetexturemid;
 	fixed_t_union     temp;
 	temp.h.fracbits = 0;
-    basetexturemid = dc_texturemid;
+    basetexturemid = dc_texturemid.w;
         
     for ( ; column->topdelta != 0xff ; )  {
         // calculate unclipped screen coordinates
@@ -139,8 +139,8 @@ void R_DrawMaskedColumn (column_t* column) {
 
         if (dc_yl <= dc_yh) {
             dc_source = (byte *)column + 3;
-			temp.h.intbits = column->topdelta;
-            dc_texturemid = basetexturemid - temp.w;
+			dc_texturemid.w = basetexturemid;
+			dc_texturemid.h.intbits -= column->topdelta;
 
 			// dc_source = (byte *)column + 3 - column->topdelta;
 
@@ -151,7 +151,7 @@ void R_DrawMaskedColumn (column_t* column) {
         column = (column_t *)(  (byte *)column + column->length + 4);
     }
         
-    dc_texturemid = basetexturemid;
+    dc_texturemid.w = basetexturemid;
 }
 
 
@@ -184,10 +184,10 @@ R_DrawVisSprite
     }
         
     dc_iscale = labs(vis->xiscale)>>detailshift;
-    dc_texturemid = vis->texturemid;
+    dc_texturemid.w = vis->texturemid;
     frac.w = vis->startfrac;
     spryscale.w = vis->scale;
-    sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid,spryscale.w);
+    sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
          
 	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, PAGE_LOCKED);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
