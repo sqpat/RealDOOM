@@ -401,8 +401,6 @@ P_NightmareRespawn(mobj_t* mobj)
 	int16_t subsecnum;
 	int16_t subsectorsecnum;
 	mobjtype_t mobjtype;
-	fineangle_t mobjspawnangle;
-	int16_t mobjspawnoptions;
 	int16_t mobjsecnum;
 	fixed_t mobjx;
 	fixed_t mobjy;
@@ -414,7 +412,8 @@ P_NightmareRespawn(mobj_t* mobj)
 	x.h.fracbits = 0;
 	y.h.fracbits = 0;
 	
-	
+	mobjspawnpoint = ((mapthing_t*)(Z_LoadBytesFromEMS(nightmareSpawnPointsRef)))[mobjRef];
+
 	x.h.intbits = mobjspawnpoint.x;
 	y.h.intbits = mobjspawnpoint.y;
 	
@@ -453,27 +452,27 @@ P_NightmareRespawn(mobj_t* mobj)
 		z.w = ONFLOORZ;
 	}
 
-	mobjspawnpoint = ((mapthing_t*)(Z_LoadBytesFromEMS(nightmareSpawnPointsRef)))[mobjRef];
-	mobjspawnangle = mobjspawnpoint.angle;
-	mobjspawnoptions = mobjspawnpoint.options;
-
-	// todo probably fix this, its fudging the indices, i think we want to force it to reuse the same one to maintain nightmare spawn point ref 
 
     // inherit attributes from deceased one
     moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype, -1);
+	
+	// update nightmare respawn data for this new moref..
+	((mapthing_t*)Z_LoadBytesFromEMS(nightmareSpawnPointsRef))[moRef] = mobjspawnpoint;
+
+
 	mo = setStateReturn;
 	//mo->spawnpoint = mobjspawnpoint;
     //todo does this work? or need to be in fixed_mul? -sq
-	mo->angle.wu = ANG45 * (mobjspawnangle/45);
+	mo->angle.wu = ANG45 * (mobjspawnpoint.angle/45);
 
-	if (mobjspawnoptions & MTF_AMBUSH) {
+	if (mobjspawnpoint.options & MTF_AMBUSH) {
 		mo->flags |= MF_AMBUSH;
 	}
 
     mo->reactiontime = 18;
 	
     // remove the old monster,
-    P_RemoveMobj (mo);
+    P_RemoveMobj (mobj);
 
 }
 

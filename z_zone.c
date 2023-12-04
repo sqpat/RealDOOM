@@ -62,16 +62,7 @@
 //#define SPRITE_ALLOCATION_LIST_SIZE 1
 
 
-// Currently bugged/not fully implemented, leave as 1 to not use
-// todo calc actual sizeof mobj or whatever thinker is biggest...
-// mobj sizeof is 97u
-//#define STATIC_CONVENTIONAL_THINKER_SIZE 65535
-//#define THINKER_ALLOCATION_LIST_SIZE 600
-
-// equal to sizeof(mobj_t), the largest thinker. 
-//#define THINKER_BLOCK_SIZE 69u
-//#define STATIC_CONVENTIONAL_THINKER_SIZE MAX_THINKERS * THINKER_BLOCK_SIZE
-//#define THINKER_ALLOCATION_LIST_SIZE MAX_THINKERS
+ 
 
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+3767u)
