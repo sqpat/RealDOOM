@@ -49,15 +49,15 @@ For those interested in the technical details, a quick summary of what has been 
 Current Realtics/FPS for timedemo3 with screenblocks 5 and high quality:
 
 | Machine Specs  | 86box  |  FPS | Real Hardware | FPS |
-| ------------- | ------------- |
+| ------------- | ------------- | ------------- | ------------- | ------------- |
 | Pentium MMX 233  | 1148 | 65.06 |  830  | 89.99 |
-| Pentium 133  | 1695  |44.06 | ||
-| AMD 5x86 P90  | 2637 | 28.32 | | |
-| 486 DX2-66  | 5637| | 13.25 | |
-| 486 SX-33  | 10529 | 7.09| | |
+| Pentium 133  | 1695  |44.06 |||
+| AMD 5x86 P90  | 2637 | 28.32 |||
+| 486 DX2-66  | 5637|  13.25 |||
+| 486 SX-33  | 10529 | 7.09| ||
 | 386 DX-40  | 12989  | 5.75| 12534| 5.96|
-| 286-25  | 31821   | 2.35| | |
-| 286-20  |   | | 32377 | 2.31|
-| XT  |  | | Coming Soon...  |  |  |
+| 286-25  | 31821   | 2.35| ||
+| 286-20  ||| 32377 | 2.31|
+| XT  | || Coming Soon...  | |  
 
 I think we are looking for around 5-10x performance uplift from the current point to reach playability on fast 286es.
