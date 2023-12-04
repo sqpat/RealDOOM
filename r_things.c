@@ -278,9 +278,9 @@ void R_ProjectSprite (mobj_t* thing)
 
     if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
-		ang.w = R_PointToAngle (thingx, thingy);
+		ang.wu = R_PointToAngle (thingx, thingy);
 		//todo make this not shift 29
-        rot = (ang.w-thingangle.w+ (uint32_t)(ANG45/2)*9)>>29;
+        rot = (ang.wu-thingangle.wu+ (uint32_t)(ANG45/2)*9)>>29;
         lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
         flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[rot];
     }

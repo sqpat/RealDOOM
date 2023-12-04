@@ -568,29 +568,29 @@ void ST_updateFaceWidget(void)
             {
 				 
 				plyrattacker = (mobj_t*)(&thinkerlist[player.attackerRef].data);
-				badguyangle.w = R_PointToAngle2(playerMobj->x,
+				badguyangle.wu = R_PointToAngle2(playerMobj->x,
                                               playerMobj->y,
                                               plyrattacker->x,
                                               plyrattacker->y);
                 
-                if (badguyangle.w > playerMobj->angle.w)
+                if (badguyangle.wu > playerMobj->angle.wu)
                 {
 					//TODO optimize. Shouldnt need to do a 32 bit subtract to figure this out?
 
                     // whether right or left
-                    diffang.w = badguyangle.w - playerMobj->angle.w;
-                    i = diffang.w > ANG180; 
+                    diffang.wu = badguyangle.wu - playerMobj->angle.wu;
+                    i = diffang.wu > ANG180; 
                 } else {
                     // whether left or right
-                    diffang.w = playerMobj->angle.w - badguyangle.w;
-                    i = diffang.w <= ANG180; 
+                    diffang.wu = playerMobj->angle.wu - badguyangle.wu;
+                    i = diffang.wu <= ANG180; 
                 } // confusing, aint it?
 
                 
                 st_facecount = ST_TURNCOUNT;
                 st_faceindex = ST_calcPainOffset();
                 
-                if (diffang.h.intbits < ANG45_HIGHBITS)
+                if (diffang.hu.intbits < ANG45_HIGHBITS)
                 {
                     // head-on    
                     st_faceindex += ST_RAMPAGEOFFSET;

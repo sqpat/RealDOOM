@@ -135,8 +135,7 @@ extern fixed_t		finetangentinner[2048];
 #define SLOPEBITS		11
 #define DBITS			(FRACBITS-SLOPEBITS)
 
-typedef fixed_t_union_unsigned angle_t;
-typedef fixed_t_union signed_angle_t;
+typedef fixed_t_union angle_t;
 typedef uint16_t fineangle_t;
 
 
@@ -144,7 +143,6 @@ typedef uint16_t fineangle_t;
 // The +1 size is to handle the case when x==y
 //  without additional checking.
 extern angle_t		tantoangle[SLOPERANGE + 1];
-//extern signed_angle_t		tantoangle[SLOPERANGE+1];
 
 
 #endif

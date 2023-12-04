@@ -291,7 +291,7 @@ R_PointToAngle
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
-						return tantoangle[tempDivision].w;
+						return tantoangle[tempDivision].wu;
 					else
 						return 536870912L;
 				}
@@ -305,7 +305,7 @@ R_PointToAngle
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG90 - 1 - tantoangle[tempDivision].w;
+						return ANG90 - 1 - tantoangle[tempDivision].wu;
 					else
 						return ANG90 - 1 - 536870912L;
 				}
@@ -325,7 +325,7 @@ R_PointToAngle
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
-						return -(tantoangle[tempDivision].w);
+						return -(tantoangle[tempDivision].wu);
 					else
 						return -536870912L;
 				}
@@ -339,7 +339,7 @@ R_PointToAngle
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG270 + tantoangle[tempDivision].w;
+						return ANG270 + tantoangle[tempDivision].wu;
 					else
 						return ANG270 + 536870912L;
 				}
@@ -363,7 +363,7 @@ R_PointToAngle
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG180 - 1 - tantoangle[tempDivision].w;
+						return ANG180 - 1 - tantoangle[tempDivision].wu;
 					else
 						return ANG180 - 1 - 536870912L;
 				}
@@ -377,7 +377,7 @@ R_PointToAngle
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG90 + tantoangle[tempDivision].w;
+						return ANG90 + tantoangle[tempDivision].wu;
 					else
 						return ANG90 + 536870912L;
 				};
@@ -397,7 +397,7 @@ R_PointToAngle
 				{
 					tempDivision = (y << 3) / (x >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG180 + tantoangle[tempDivision].w;
+						return ANG180 + tantoangle[tempDivision].wu;
 					else
 						return ANG180 + 536870912L;
 				}
@@ -411,7 +411,7 @@ R_PointToAngle
 				{
 					tempDivision = (x << 3) / (y >> 8);
 					if (tempDivision < SLOPERANGE)
-						return ANG270 - 1 - tantoangle[tempDivision].w;
+						return ANG270 - 1 - tantoangle[tempDivision].wu;
 					else
 						return ANG270 - 1 - 536870912L;
 				}
@@ -484,7 +484,7 @@ R_PointToDist
         dy = temp;
     }
 	
-	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].h.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
 
     // use as cosine
     dist = FixedDiv (dx, finesine(angle) );	
@@ -512,8 +512,8 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     fixed_t_union		    num;
     fixed_t			den;
 
-    anglea = MOD_FINE_ANGLE(FINE_ANG90 + ((visangle.w-viewangle.w)>> ANGLETOFINESHIFT));
-    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle.h.intbits >> SHORTTOFINESHIFT) - rw_normalangle);
+    anglea = MOD_FINE_ANGLE(FINE_ANG90 + ((visangle.wu-viewangle.wu)>> ANGLETOFINESHIFT));
+    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle.hu.intbits >> SHORTTOFINESHIFT) - rw_normalangle);
 
 
 
@@ -629,7 +629,7 @@ void R_SetupFrame ()
 
     viewz.w = player.viewz;
 
-	tempan = viewangle.h.intbits >> SHORTTOFINESHIFT;
+	tempan = viewangle.hu.intbits >> SHORTTOFINESHIFT;
     viewsin = finesine(tempan);
     viewcos = finecosine(tempan);
 	

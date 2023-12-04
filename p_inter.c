@@ -766,7 +766,7 @@ P_DamageMobj
 			inflictory = inflictor->y;
 			inflictorz = inflictor->z;
 
-			ang.w = R_PointToAngle2(inflictorx,
+			ang.wu = R_PointToAngle2(inflictorx,
 				inflictory,
 				target->x,
 				target->y);
@@ -780,13 +780,13 @@ P_DamageMobj
 				&& target->z - inflictorz > 64 * FRACUNIT
 				&& (P_Random() & 1))
 			{
-				ang.w += ANG180;
+				ang.wu += ANG180;
 				thrust *= 4;
 			}
 
-			ang.h.fracbits = ang.h.intbits >> SHORTTOFINESHIFT;
-			target->momx += FixedMulTrig(thrust, finecosine(ang.h.fracbits));
-			target->momy += FixedMulTrig(thrust, finesine(ang.h.fracbits));
+			ang.hu.fracbits = ang.hu.intbits >> SHORTTOFINESHIFT;
+			target->momx += FixedMulTrig(thrust, finecosine(ang.hu.fracbits));
+			target->momy += FixedMulTrig(thrust, finesine(ang.hu.fracbits));
 		}
 	}
     // player specific

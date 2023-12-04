@@ -296,64 +296,64 @@ void R_AddLine (int16_t linenum)
 	}
 #endif
 
-	tempx.h.fracbits = 0;
-	tempy.h.fracbits = 0;
-	tempx.h.intbits = v1.x;
-	tempy.h.intbits = v1.y;
+	tempx.hu.fracbits = 0;
+	tempy.hu.fracbits = 0;
+	tempx.hu.intbits = v1.x;
+	tempy.hu.intbits = v1.y;
     // OPTIMIZE: quickly reject orthogonal back sides.
-    angle1.w = R_PointToAngle (tempx.w, tempy.w);
-	tempx.h.intbits = v2.x;
-	tempy.h.intbits = v2.y;
-    angle2.w = R_PointToAngle (tempx.w, tempy.w);
+    angle1.wu = R_PointToAngle (tempx.wu, tempy.wu);
+	tempx.hu.intbits = v2.x;
+	tempy.hu.intbits = v2.y;
+    angle2.wu = R_PointToAngle (tempx.wu, tempy.wu);
     
 
 
     // Clip to view edges.
     // OPTIMIZE: make constant out of 2*clipangle (FIELDOFVIEW).
-    span.w = angle1.w - angle2.w;
+    span.wu = angle1.wu - angle2.wu;
 	 
 
     // Back side? I.e. backface culling?
-	if (span.h.intbits >= ANG180_HIGHBITS) {
+	if (span.hu.intbits >= ANG180_HIGHBITS) {
 		return;
 	}
 
     // Global angle needed by segcalc.
     rw_angle1 = angle1;
-    angle1.w -= viewangle.w;
-    angle2.w -= viewangle.w;
+    angle1.wu -= viewangle.wu;
+    angle2.wu -= viewangle.wu;
 	
-    tspan.w = angle1.w + clipangle.w;
-	if (tspan.w > fieldofview.w)
+    tspan.wu = angle1.wu + clipangle.wu;
+	if (tspan.wu > fieldofview.wu)
 	{
-	tspan.w -= fieldofview.w;
+	tspan.wu -= fieldofview.wu;
 
 	// Totally off the left edge?
-	if (tspan.w >= span.w) {
+	if (tspan.wu >= span.wu) {
 		return;
 	}
 	
 	angle1 = clipangle;
     }
-    tspan.w = clipangle.w - angle2.w;
-	if (tspan.w > fieldofview.w)
+    tspan.wu = clipangle.wu - angle2.wu;
+	if (tspan.wu > fieldofview.wu)
 	{
-		tspan.w -= fieldofview.w;
+		tspan.wu -= fieldofview.wu;
 	
 	// Totally off the left edge?
-		if (tspan.w >= span.w) {
+		if (tspan.wu >= span.wu) {
 			return;
 		}
-	angle2.w = -clipangle.w;
+	angle2.wu = -clipangle.wu;
     }
     
     // The seg is in the view range,
     // but not necessarily visible.
 
-	angle1.h.fracbits = (angle1.h.intbits+ ANG90_HIGHBITS)>> SHORTTOFINESHIFT;
-    angle2.h.fracbits = (angle2.h.intbits+ ANG90_HIGHBITS)>> SHORTTOFINESHIFT;
-	x1 = viewangletox[angle1.h.fracbits];
-	x2 = viewangletox[angle2.h.fracbits];
+	angle1.hu.fracbits = (angle1.hu.intbits+ ANG90_HIGHBITS)>> SHORTTOFINESHIFT;
+    angle2.hu.fracbits = (angle2.hu.intbits+ ANG90_HIGHBITS)>> SHORTTOFINESHIFT;
+	x1 = viewangletox[angle1.hu.fracbits];
+	x2 = viewangletox[angle2.hu.fracbits];
 
     // Does not cross a pixel?
 	if (x1 == x2) {
@@ -500,44 +500,44 @@ boolean R_CheckBBox(int16_t *bspcoord)
 	}
 
 	// check clip list for an open space
-	angle1.w = R_PointToAngle16(x1, y1) - viewangle.w;
-	angle2.w = R_PointToAngle16(x2, y2) - viewangle.w;
+	angle1.wu = R_PointToAngle16(x1, y1) - viewangle.wu;
+	angle2.wu = R_PointToAngle16(x2, y2) - viewangle.wu;
 
-	span.w = angle1.w - angle2.w;
+	span.wu = angle1.wu - angle2.wu;
 
 	// Sitting on a line?
-	if (span.h.intbits >= ANG180_HIGHBITS)
+	if (span.hu.intbits >= ANG180_HIGHBITS)
 		return true;
 
-	tspan.w = angle1.w + clipangle.w;
+	tspan.wu = angle1.wu + clipangle.wu;
 
-	if (tspan.w > fieldofview.w)
+	if (tspan.wu > fieldofview.wu)
 	{
-		tspan.w -= fieldofview.w;
+		tspan.wu -= fieldofview.wu;
 
 		// Totally off the left edge?
-		if (tspan.w >= span.w)
+		if (tspan.wu >= span.wu)
 			return false;
 
 		angle1 = clipangle;
 	}
-	tspan.w = clipangle.w - angle2.w;
-	if (tspan.w > fieldofview.w)
+	tspan.wu = clipangle.wu - angle2.wu;
+	if (tspan.wu > fieldofview.wu)
 	{
-		tspan.w -= fieldofview.w;
+		tspan.wu -= fieldofview.wu;
 
 		// Totally off the left edge?
-		if (tspan.w >= span.w)
+		if (tspan.wu >= span.wu)
 			return false;
 
-		angle2.w = -clipangle.w;
+		angle2.wu = -clipangle.wu;
 	}
 
 	// Find the first clippost
 	//  that touches the source post
 	//  (adjacent pixels are touching).
-	sx1 = (angle1.h.intbits + ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
-	sx2 = (angle2.h.intbits + ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+	sx1 = (angle1.hu.intbits + ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+	sx2 = (angle2.hu.intbits + ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
 	sx1 = viewangletox[sx1];
 	sx2 = viewangletox[sx2]; 
  

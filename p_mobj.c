@@ -464,7 +464,7 @@ P_NightmareRespawn(mobj_t* mobj)
 	mo = setStateReturn;
 	//mo->spawnpoint = mobjspawnpoint;
     //todo does this work? or need to be in fixed_mul? -sq
-	mo->angle.w = ANG45 * (mobjspawnangle/45);
+	mo->angle.wu = ANG45 * (mobjspawnangle/45);
 
 	if (mobjspawnoptions & MTF_AMBUSH) {
 		mo->flags |= MF_AMBUSH;
@@ -770,13 +770,13 @@ P_SpawnMissile
 	thspeed = MAKESPEED(mobjinfo[type].speed);
 
 	destz = dest->z;
-	an.w = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);
+	an.wu = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);
 
     // fuzzy player
 	if (dest->flags & MF_SHADOW) {
 		temp = (P_Random() - P_Random());
 		temp  <<= 4;
-		an.h.intbits += temp;
+		an.hu.intbits += temp;
 	}
 
 	dist = P_AproxDistance(dest->x - source->x, dest->y - source->y);
@@ -788,9 +788,9 @@ P_SpawnMissile
 
 
     th->angle = an;
-    an.h.intbits >>= SHORTTOFINESHIFT;
-    th->momx = FixedMulTrig (thspeed, finecosine(an.h.intbits));
-    th->momy = FixedMulTrig(thspeed, finesine(an.h.intbits));
+    an.hu.intbits >>= SHORTTOFINESHIFT;
+    th->momx = FixedMulTrig (thspeed, finecosine(an.hu.intbits));
+    th->momy = FixedMulTrig(thspeed, finesine(an.hu.intbits));
 	th->momz = momz;
 
 
@@ -819,7 +819,7 @@ P_SpawnPlayerMissile
 
     // see which target is to be aimed at
     // todo use fixed_t_union
-	an = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
+	an = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
 	slope = P_AimLineAttack (playerMobj, an, 16*64);
     
     if (!linetarget) {
@@ -832,7 +832,7 @@ P_SpawnPlayerMissile
 			slope = P_AimLineAttack (playerMobj, an, 16*64);
 		}
 		if (!linetarget) {
-			an = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
+			an = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
 			slope = 0;
 		}
     }
@@ -848,9 +848,9 @@ P_SpawnPlayerMissile
 		S_StartSound (th, mobjinfo[type].seesound);
 
     th->targetRef = playerMobjRef;
-	th->angle.h.intbits = an;
-	th->angle.h.intbits <<= 3;
-	th->angle.h.fracbits = 0;
+	th->angle.hu.intbits = an;
+	th->angle.hu.intbits <<= 3;
+	th->angle.hu.fracbits = 0;
 
 	speed = MAKESPEED(mobjinfo[type].speed);
 

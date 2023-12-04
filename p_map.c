@@ -771,26 +771,26 @@ void P_HitSlideLine (int16_t linenum)
     }
 	
     side = P_PointOnLineSide (playerMobj->x, playerMobj->y, ld.dx, ld.dy, vertexes[ld.v1Offset].x, vertexes[ld.v1Offset].y);
-    lineangle.w = R_PointToAngle2_16 ( ld.dx, ld.dy);
+    lineangle.wu = R_PointToAngle2_16 ( ld.dx, ld.dy);
 
     if (side == 1)
-		lineangle.h.intbits += ANG180_HIGHBITS;
+		lineangle.hu.intbits += ANG180_HIGHBITS;
 
-    moveangle.w = R_PointToAngle2 (0,0, tmxmove, tmymove);
-    deltaangle.w = moveangle.w-lineangle.w;
+    moveangle.wu = R_PointToAngle2 (0,0, tmxmove, tmymove);
+    deltaangle.wu = moveangle.wu-lineangle.wu;
 
-    if (deltaangle.w > ANG180)
-		deltaangle.h.intbits += ANG180_HIGHBITS;
+    if (deltaangle.wu > ANG180)
+		deltaangle.hu.intbits += ANG180_HIGHBITS;
     //	I_Error ("SlideLine: ang>ANG180");
 
-    lineangle.h.fracbits = lineangle.h.intbits >>= SHORTTOFINESHIFT;
-    deltaangle.h.fracbits = deltaangle.h.intbits >>= SHORTTOFINESHIFT;
+    lineangle.hu.fracbits = lineangle.hu.intbits >>= SHORTTOFINESHIFT;
+    deltaangle.hu.fracbits = deltaangle.hu.intbits >>= SHORTTOFINESHIFT;
 	
     movelen = P_AproxDistance (tmxmove, tmymove);
-    newlen = FixedMulTrig(movelen, finecosine(deltaangle.h.fracbits));
+    newlen = FixedMulTrig(movelen, finecosine(deltaangle.hu.fracbits));
 
-    tmxmove = FixedMulTrig(newlen, finecosine(lineangle.h.fracbits));
-    tmymove = FixedMulTrig(newlen, finesine(lineangle.h.fracbits));
+    tmxmove = FixedMulTrig(newlen, finecosine(lineangle.hu.fracbits));
+    tmymove = FixedMulTrig(newlen, finesine(lineangle.hu.fracbits));
 }
 
 
@@ -1411,7 +1411,7 @@ void P_UseLines ()
 	fixed_t_union	x2;
 	fixed_t_union	y2;
 		
-    angle = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
+    angle = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
 
     x1.w = playerMobj->x;
     y1.w = playerMobj->y;

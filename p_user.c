@@ -143,7 +143,7 @@ void P_MovePlayer ()
 	temp.h.fracbits = 0;
 	temp.h.intbits = cmd->angleturn;
 	 
-	playerMobj->angle.w += temp.w;
+	playerMobj->angle.wu += temp.w;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj->floorz);
 
     // Do not let the player control movement
@@ -151,11 +151,11 @@ void P_MovePlayer ()
     onground = (playerMobj->z <= temp.w);
 
 	if (cmd->forwardmove && onground) {
-		P_Thrust(playerMobj->angle.h.intbits >> SHORTTOFINESHIFT, cmd->forwardmove * 2048L);
+		P_Thrust(playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT, cmd->forwardmove * 2048L);
 	}
 	
 	if (cmd->sidemove && onground) {
-		P_Thrust(MOD_FINE_ANGLE((playerMobj->angle.h.intbits >> SHORTTOFINESHIFT) - FINE_ANG90), cmd->sidemove * 2048L);
+		P_Thrust(MOD_FINE_ANGLE((playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT) - FINE_ANG90), cmd->sidemove * 2048L);
 	}
 
     if ( (cmd->forwardmove || cmd->sidemove)  && playerMobj->stateNum == S_PLAY ) {
@@ -198,12 +198,12 @@ void P_DeathThink ()
 	
 	if (player.attackerRef && player.attackerRef != playerMobjRef) {
 		playerattacker = (mobj_t*)&thinkerlist[player.attackerRef].data;
-		angle.w = R_PointToAngle2(playerMobj->x, playerMobj->y, playerattacker->x, playerattacker->y);
+		angle.wu = R_PointToAngle2(playerMobj->x, playerMobj->y, playerattacker->x, playerattacker->y);
 	
 
-		delta.w = angle.w - playerMobj->angle.w;
+		delta.wu = angle.wu - playerMobj->angle.wu;
 	
-		if (delta.w < ANG5 || delta.w > (uint32_t)-ANG5) {
+		if (delta.wu < ANG5 || delta.wu > (uint32_t)-ANG5) {
 			// Looking at killer,
 			//  so fade damage flash down.
 			playerMobj->angle = angle;
@@ -211,10 +211,10 @@ void P_DeathThink ()
 			if (player.damagecount)
 				player.damagecount--;
 		}
-		else if (delta.h.intbits < ANG180_HIGHBITS)
-			playerMobj->angle.w += ANG5;
+		else if (delta.hu.intbits < ANG180_HIGHBITS)
+			playerMobj->angle.wu += ANG5;
 		else
-			playerMobj->angle.w -= ANG5;
+			playerMobj->angle.wu -= ANG5;
     }
     else if (player.damagecount)
 		player.damagecount--;

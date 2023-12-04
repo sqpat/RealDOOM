@@ -585,8 +585,8 @@ P_LookForPlayers
 
 
 	if (!allaround) {
-		an.w = R_PointToAngle2(actor->x, actor->y, playerMobj->x, playerMobj->y) - actor->angle.w;
-		if (an.w > ANG90 && an.w < ANG270) {
+		an.wu = R_PointToAngle2(actor->x, actor->y, playerMobj->x, playerMobj->y) - actor->angle.wu;
+		if (an.wu > ANG90 && an.wu < ANG270) {
 			dist = P_AproxDistance(playerMobj->x - actor->x, playerMobj->y - actor->y);
 			// if real close, react anyway
 			if (dist > MELEERANGE * FRACUNIT) {
@@ -770,16 +770,16 @@ void A_Chase (mobj_t*	actor)
     // turn towards movement direction if not there yet
     if (actor->movedir < 8) {
 
-		actor->angle.h.intbits &= 0xE000;
-		actor->angle.h.fracbits = 0;
-		delta = actor->angle.h.intbits - movedirangles[actor->movedir];
+		actor->angle.hu.intbits &= 0xE000;
+		actor->angle.hu.fracbits = 0;
+		delta = actor->angle.hu.intbits - movedirangles[actor->movedir];
 
 
 		
-		if (actor->angle.h.intbits > movedirangles[actor->movedir])
-			actor->angle.h.intbits -= ANG90_HIGHBITS / 2;
-		else if (actor->angle.h.intbits < movedirangles[actor->movedir])
-			actor->angle.h.intbits += ANG90_HIGHBITS / 2;
+		if (actor->angle.hu.intbits > movedirangles[actor->movedir])
+			actor->angle.hu.intbits -= ANG90_HIGHBITS / 2;
+		else if (actor->angle.hu.intbits < movedirangles[actor->movedir])
+			actor->angle.hu.intbits += ANG90_HIGHBITS / 2;
 		
  
     }
@@ -891,7 +891,7 @@ void A_FaceTarget (mobj_t* actor)
 
 
 
-	actor->angle.w = R_PointToAngle2 (actor->x,
+	actor->angle.wu = R_PointToAngle2 (actor->x,
 				    actor->y,
 		actorTarget->x,
 		actorTarget->y);
@@ -900,7 +900,7 @@ void A_FaceTarget (mobj_t* actor)
 
 		temp = (P_Random() - P_Random());
 		temp <<= 5;
-		actor->angle.h.intbits += temp;
+		actor->angle.hu.intbits += temp;
 		
 	}
 }
@@ -920,7 +920,7 @@ void A_PosAttack (mobj_t* actor)
 
     A_FaceTarget (actor);
 
-	angle = actor->angle.h.intbits >> SHORTTOFINESHIFT;
+	angle = actor->angle.hu.intbits >> SHORTTOFINESHIFT;
     slope = P_AimLineAttack (actor, angle, MISSILERANGE);
 
 	S_StartSoundFromRef(actor, sfx_pistol);
@@ -944,7 +944,7 @@ void A_SPosAttack (mobj_t*	actor)
 	S_StartSoundFromRef(actor, sfx_shotgn);
     A_FaceTarget (actor);
 
-	bangle = actor->angle.h.intbits >> SHORTTOFINESHIFT;
+	bangle = actor->angle.hu.intbits >> SHORTTOFINESHIFT;
     slope = P_AimLineAttack (actor, bangle, MISSILERANGE);
 
     for (i=0 ; i<3 ; i++) {
@@ -967,7 +967,7 @@ void A_CPosAttack (mobj_t*	actor)
 	S_StartSoundFromRef(actor, sfx_shotgn);
     A_FaceTarget (actor);
 
-	bangle = actor->angle.h.intbits >> SHORTTOFINESHIFT;
+	bangle = actor->angle.hu.intbits >> SHORTTOFINESHIFT;
     slope = P_AimLineAttack (actor, bangle, MISSILERANGE);
 
     angle = MOD_FINE_ANGLE((bangle + ((P_Random()-P_Random())<<(20-ANGLETOFINESHIFT))));
@@ -1208,25 +1208,25 @@ void A_Tracer (mobj_t* actor)
 		return;
     
     // change angle	
-    exact.w = R_PointToAngle2 (actor->x,
+    exact.wu = R_PointToAngle2 (actor->x,
 			     actor->y,
 			     dest->x,
 			     dest->y);
 	
  
-    if (exact.w != actor->angle.w) {
-		if (exact.w - actor->angle.w > 0x80000000) {
-			actor->angle.w -= TRACEANGLE;
-			if (exact.w - actor->angle.w < 0x80000000)
+    if (exact.wu != actor->angle.wu) {
+		if (exact.wu - actor->angle.wu > 0x80000000) {
+			actor->angle.wu -= TRACEANGLE;
+			if (exact.wu - actor->angle.wu < 0x80000000)
 				actor->angle = exact;
 		} else {
-			actor->angle.w += TRACEANGLE;
-			if (exact.w - actor->angle.w > 0x80000000)
+			actor->angle.wu += TRACEANGLE;
+			if (exact.wu - actor->angle.wu > 0x80000000)
 				actor->angle = exact;
 		}
     }
 	actorspeed = MAKESPEED(mobjinfo[actor->type].speed);
-    fineexact = actor->angle.h.intbits >> SHORTTOFINESHIFT;
+    fineexact = actor->angle.hu.intbits >> SHORTTOFINESHIFT;
     actor->momx = FixedMulTrig(actorspeed, finecosine(fineexact));
     actor->momy = FixedMulTrig(actorspeed, finesine(fineexact));
 	
@@ -1446,7 +1446,7 @@ void A_Fire (mobj_t* actor)
 	if (!P_CheckSight ((&thinkerlist[actor->targetRef].data), dest) )
 		return;
 
-    an = dest->angle.h.intbits >> SHORTTOFINESHIFT;
+    an = dest->angle.hu.intbits >> SHORTTOFINESHIFT;
 
 
 	P_UnsetThingPosition (actor);
@@ -1511,7 +1511,7 @@ void A_VileAttack (mobj_t* actor)
 
 	S_StartSoundFromRef (actor, sfx_barexp);
 	P_DamageMobj ((&thinkerlist[actor->targetRef].data), actor, actor, 20);
-	an = actor->angle.h.intbits >> SHORTTOFINESHIFT;
+	an = actor->angle.hu.intbits >> SHORTTOFINESHIFT;
 	fireRef = actor->tracerRef;
 
 
@@ -1555,13 +1555,13 @@ void A_FatAttack1 (mobj_t*	actor)
 
     A_FaceTarget (actor);
     // Change direction  to ...
-    actor->angle.w += FATSPREAD;
+    actor->angle.wu += FATSPREAD;
     P_SpawnMissile (actor, (&thinkerlist[actor->targetRef].data), MT_FATSHOT);
 
     moRef = P_SpawnMissile (actor, (&thinkerlist[actor->targetRef].data), MT_FATSHOT);
 	mo = (mobj_t*)(&thinkerlist[moRef].data);
-    mo->angle.w += FATSPREAD;
-    an = mo->angle.h.intbits >> SHORTTOFINESHIFT;
+    mo->angle.wu += FATSPREAD;
+    an = mo->angle.hu.intbits >> SHORTTOFINESHIFT;
     mo->momx = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finecosine(an));
     mo->momy = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine(an));
 }
@@ -1575,14 +1575,14 @@ void A_FatAttack2 (mobj_t*	actor)
 	
 	A_FaceTarget (actor);
 	// Now here choose opposite deviation.
-    actor->angle.w -= FATSPREAD;
+    actor->angle.wu -= FATSPREAD;
 	actortargetRef = actor->targetRef;
     P_SpawnMissile (actor, (&thinkerlist[actor->targetRef].data), MT_FATSHOT);
 
 	moRef = P_SpawnMissile (actor, (&thinkerlist[actor->targetRef].data), MT_FATSHOT);
 	mo = (mobj_t*)(&thinkerlist[moRef].data);
-    mo->angle.w -= FATSPREAD*2;
-    an = mo->angle.h.intbits >> SHORTTOFINESHIFT;
+    mo->angle.wu -= FATSPREAD*2;
+    an = mo->angle.hu.intbits >> SHORTTOFINESHIFT;
     mo->momx = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finecosine(an));
     mo->momy = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine(an));
 }
@@ -1602,15 +1602,15 @@ void A_FatAttack3 (mobj_t*	actor)
 	
 	// todo hardcode this value, it's static..
 	mospeed = MAKESPEED(mobjinfo[mo->type].speed);
-    mo->angle.w -= FATSPREAD/2;
-    an = mo->angle.h.intbits >> SHORTTOFINESHIFT;
+    mo->angle.wu -= FATSPREAD/2;
+    an = mo->angle.hu.intbits >> SHORTTOFINESHIFT;
     mo->momx = FixedMulTrig(mospeed, finecosine(an));
     mo->momy = FixedMulTrig(mospeed, finesine(an));
 
 	moRef = P_SpawnMissile (actor, (&thinkerlist[actortargetRef].data), MT_FATSHOT);
 	mo = (mobj_t*)(&thinkerlist[moRef].data);
-	mo->angle.w += FATSPREAD/2;
-    an = mo->angle.h.intbits >> SHORTTOFINESHIFT;
+	mo->angle.wu += FATSPREAD/2;
+    an = mo->angle.hu.intbits >> SHORTTOFINESHIFT;
     mo->momx = FixedMulTrig(mospeed, finecosine(an));
     mo->momy = FixedMulTrig(mospeed, finesine(an));
 }
@@ -1641,7 +1641,7 @@ void A_SkullAttack (mobj_t* actor)
 	A_FaceTarget(actor);
 	dest = (mobj_t*)(&thinkerlist[destRef].data);
 
-    an = actor->angle.h.intbits >> SHORTTOFINESHIFT;
+    an = actor->angle.hu.intbits >> SHORTTOFINESHIFT;
     actor->momx = FixedMulTrig(SKULLSPEED, finecosine(an));
     actor->momy = FixedMulTrig(SKULLSPEED, finesine(an));
     dist = P_AproxDistance (dest->x - actor->x, dest->y - actor->y);
@@ -1699,7 +1699,7 @@ A_PainShootSkull
 	}
 
     // okay, there's playe for another one
-    an = angle.h.intbits >> SHORTTOFINESHIFT;
+    an = angle.hu.intbits >> SHORTTOFINESHIFT;
 	actortargetRef = actor->targetRef;
 	radii = mobjinfo[actor->type].radius + mobjinfo[MT_SKULL].radius;
 	prestep.h.intbits= 4 + 3 * (radii) / 2;
@@ -1748,11 +1748,11 @@ void A_PainDie (mobj_t* actor)
 {
 	angle_t actorangle = actor->angle;
     A_Fall (actor);
-	actorangle.h.intbits += ANG90_HIGHBITS;
+	actorangle.hu.intbits += ANG90_HIGHBITS;
     A_PainShootSkull (actor, actorangle);
-	actorangle.h.intbits += ANG90_HIGHBITS;
+	actorangle.hu.intbits += ANG90_HIGHBITS;
 	A_PainShootSkull(actor, actorangle);
-	actorangle.h.intbits += ANG90_HIGHBITS;
+	actorangle.hu.intbits += ANG90_HIGHBITS;
 	A_PainShootSkull(actor, actorangle);
 
 }

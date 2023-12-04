@@ -434,7 +434,7 @@ R_StoreWallRange
 	int16_t temp2;
 	int16_t animateoffset = 0;
 	temp.h.fracbits = 0;
-	tempangle.h.fracbits = 0;
+	tempangle.hu.fracbits = 0;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
@@ -472,7 +472,7 @@ R_StoreWallRange
 	offsetangle = tempangle.h.intbits;
 	tempangle.h.fracbits = 0;
 	*/
-	offsetangle = abs((rw_normalangle << 3)- (rw_angle1.h.intbits)) >> 3;
+	offsetangle = abs((rw_normalangle << 3)- (rw_angle1.hu.intbits)) >> 3;
     
     if (offsetangle > FINE_ANG90)
 		offsetangle = 	FINE_ANG90;
@@ -490,19 +490,19 @@ R_StoreWallRange
     rw_stopx = stop+1;
 
 
-	tempangle.h.intbits = xtoviewangle[start];
-	tempangle.h.intbits <<= 3;
-	tempangle.w += viewangle.w;
+	tempangle.hu.intbits = xtoviewangle[start];
+	tempangle.hu.intbits <<= 3;
+	tempangle.wu += viewangle.wu;
 
     // calculate scale at both ends and step
     ds_p->scale1 = rw_scale.w =  R_ScaleFromGlobalAngle (tempangle);
-	tempangle.h.fracbits = 0;
+	tempangle.hu.fracbits = 0;
 
     if (stop > start ) {
 		fixed_t_union rw_scalestep_extraprecision = { 0L };
-		tempangle.h.intbits = xtoviewangle[stop];
-		tempangle.h.intbits <<= 3;
-		tempangle.w += viewangle.w;
+		tempangle.hu.intbits = xtoviewangle[stop];
+		tempangle.hu.intbits <<= 3;
+		tempangle.wu += viewangle.wu;
 	
 		ds_p->scale2 = R_ScaleFromGlobalAngle (tempangle);
 
@@ -524,7 +524,7 @@ R_StoreWallRange
 		
 		ds_p->scalestep = rw_scalestep;
 
-		tempangle.h.fracbits = 0;
+		tempangle.hu.fracbits = 0;
 
     } else {
 		ds_p->scale2 = ds_p->scale1;
@@ -713,7 +713,7 @@ R_StoreWallRange
 		tempangle.h.fracbits = 0;
 		*/
 		
-		offsetangle = ((rw_normalangle << 3) - (rw_angle1.h.intbits)) >> 3;
+		offsetangle = ((rw_normalangle << 3) - (rw_angle1.hu.intbits)) >> 3;
 
 
 		if (offsetangle > FINE_ANG180) {
@@ -729,11 +729,11 @@ R_StoreWallRange
 		// todo: we are subtracting then checking vs 0x8000 (or 0x80000000). 
 		// Is this equivalent to a simpler operation?
 
-		tempangle.h.intbits = rw_normalangle;
-		tempangle.h.intbits <<= 3;
-		tempangle.w -= rw_angle1.w;
+		tempangle.hu.intbits = rw_normalangle;
+		tempangle.hu.intbits <<= 3;
+		tempangle.wu -= rw_angle1.wu;
 
-		if (tempangle.h.intbits < ANG180_HIGHBITS) {
+		if (tempangle.hu.intbits < ANG180_HIGHBITS) {
 
 			rw_offset = -rw_offset;
 		}
@@ -741,7 +741,7 @@ R_StoreWallRange
 		temp.h.intbits = sidetextureoffset+curline.offset;
 		rw_offset += temp.w;
 		
-		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle.h.intbits >> SHORTTOFINESHIFT) - (rw_normalangle));
+		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle.hu.intbits >> SHORTTOFINESHIFT) - (rw_normalangle));
 
 		// calculate light table
 		//  use different light tables

@@ -498,7 +498,7 @@ A_Punch
 
 
 	// todo use fixed_t_union to reduce shift
-	angle = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
+	angle = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
 	angle += ((P_Random()-P_Random())>> 1);
 
     slope = P_AimLineAttack (playerMobj, angle, MELEERANGE);
@@ -508,7 +508,7 @@ A_Punch
     if (linetarget)
     {
 		S_StartSoundFromRef(playerMobj, sfx_punch);
-		playerMobj->angle.w = R_PointToAngle2 (playerMobj->x, playerMobj->y, linetarget->x, linetarget->y);
+		playerMobj->angle.wu = R_PointToAngle2 (playerMobj->x, playerMobj->y, linetarget->x, linetarget->y);
     }
 
 
@@ -530,7 +530,7 @@ A_Saw
 
     damage = 2*(P_Random ()%10+1);
 	// todo use fixed_t_union to reduce shift
-	angle = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
+	angle = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
     angle += ((P_Random()-P_Random())>>(1));
 	angle = MOD_FINE_ANGLE(angle);
     
@@ -545,20 +545,20 @@ A_Saw
 	S_StartSoundFromRef(playerMobj, sfx_sawhit);
 	
     // turn to face target
-    bigangle.w = R_PointToAngle2 (playerMobj->x, playerMobj->y, linetarget->x, linetarget->y);
-    if (bigangle.w - playerMobj->angle.w > ANG180)
+    bigangle.wu = R_PointToAngle2 (playerMobj->x, playerMobj->y, linetarget->x, linetarget->y);
+    if (bigangle.wu - playerMobj->angle.wu > ANG180)
     {
-	if (bigangle.w - playerMobj->angle.w < -ANG90/20)
-		playerMobj->angle.w = bigangle.w + ANG90/21;
+	if (bigangle.wu - playerMobj->angle.wu < -ANG90/20)
+		playerMobj->angle.wu = bigangle.wu + ANG90/21;
 	else
-		playerMobj->angle.w -= ANG90/20;
+		playerMobj->angle.wu -= ANG90/20;
     }
     else
     {
-	if (bigangle.w - playerMobj->angle.w > ANG90/20)
-		playerMobj->angle.w = bigangle.w - ANG90/21;
+	if (bigangle.wu - playerMobj->angle.wu > ANG90/20)
+		playerMobj->angle.wu = bigangle.wu - ANG90/21;
 	else
-		playerMobj->angle.w += ANG90/20; // i dont think this math can be FINEd because 20 doesnt divide evenly??
+		playerMobj->angle.wu += ANG90/20; // i dont think this math can be FINEd because 20 doesnt divide evenly??
     }
 	playerMobj->flags |= MF_JUSTATTACKED;
 }
@@ -625,7 +625,7 @@ void P_BulletSlope ()
 	
     // see which target is to be aimed at
 	// todo use fixed_t_union to reduce shift
-	an = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
+	an = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
     bulletslope = P_AimLineAttack (playerMobj, an, 16*64);
 
     if (!linetarget) {
@@ -657,7 +657,7 @@ P_GunShot
  
     damage = 5*(P_Random ()%3+1);
 	// todo use fixed_t_union to reduce shift
-	angle = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
+	angle = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
 
     if (!accurate)
 		angle = MOD_FINE_ANGLE(angle + ((P_Random()-P_Random())>>(1)));
@@ -745,7 +745,7 @@ A_FireShotgun2
     {
 	damage = 5*(P_Random ()%3+1);
 	// todo use fixed_t_union to reduce shift
-	angle = playerMobj->angle.h.intbits >> SHORTTOFINESHIFT;
+	angle = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
 	angle = MOD_FINE_ANGLE( angle + ((P_Random()-P_Random())<<(19-ANGLETOFINESHIFT)));
 	P_LineAttack (playerMobj,
 		      angle,
@@ -817,7 +817,7 @@ void A_BFGSpray (mobj_t* mo)
 
     // offset angles from its attack angle
     for (i=0 ; i<40 ; i++) {
-		an = MOD_FINE_ANGLE( (mo->angle.h.intbits >> SHORTTOFINESHIFT) - (FINE_ANG90/2) + (FINE_ANG90/40*i));
+		an = MOD_FINE_ANGLE( (mo->angle.hu.intbits >> SHORTTOFINESHIFT) - (FINE_ANG90/2) + (FINE_ANG90/40*i));
 
 		motarget = &thinkerlist[mo->targetRef].data;
 

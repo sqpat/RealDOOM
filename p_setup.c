@@ -437,7 +437,7 @@ void P_SpawnPlayer(mapthing_t* mthing)
 
 	playerMobj->reactiontime = 0;
 
-	playerMobj->angle.w = ANG45 * (mthingangle / 45);
+	playerMobj->angle.wu = ANG45 * (mthingangle / 45);
 	playerMobj->health = player.health;
 
 
@@ -815,7 +815,7 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 		totalitems++;
 
 	//todo does this work? or need to be in fixed_mul? -sq
-	mobj->angle.w = ANG45 * (mthingangle / 45);
+	mobj->angle.wu = ANG45 * (mthingangle / 45);
 
 	if (mthingoptions & MTF_AMBUSH)
 		mobj->flags |= MF_AMBUSH;
