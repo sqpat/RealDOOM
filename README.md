@@ -53,7 +53,7 @@ Current Realtics/FPS for timedemo3 with screenblocks 5 and high quality:
 | Pentium MMX 233  | 1148 | 65.06 |  830  | 89.99 |
 | Pentium 133  | 1695  |44.06 | ||
 | AMD 5x86 P90  | 2637 | 28.32 | | |
-| 486 DX2-66  | 10529 | | | |
+| 486 DX2-66  | 5637| | 13.25 | |
 | 486 SX-33  | 10529 | 7.09| | |
 | 386 DX-40  | 12989  | 5.75| 12534| 5.96|
 | 286-25  | 31821   | 2.35| | |
