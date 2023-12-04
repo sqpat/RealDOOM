@@ -498,8 +498,6 @@ EV_BuildStairs
     int16_t			secnum;
     short_height_t	height;
     uint8_t			i;
-    int16_t			newsecnum;
-	uint8_t			texture;
     int16_t			ok;
     int16_t			rtn;
     
@@ -512,7 +510,6 @@ EV_BuildStairs
 	THINKERREF floorRef;
 	int16_t linebufferOffset;
 	int16_t linenum;
-	short_height_t sectorceilingheight;
 	short_height_t sectorfloorheight;
 	uint8_t sectorfloorpic;
 	int16_t sectorlinesoffset;
@@ -533,7 +530,6 @@ EV_BuildStairs
 		sector = &sectors[secnum];
 		// new floor thinker
 		rtn = 1;
-		sectorceilingheight = sector->ceilingheight;
 		sectorfloorheight = sector->floorheight;
 		sectorfloorpic = sector->floorpic;
 		sectorlinecount = sector->linecount;
@@ -559,13 +555,17 @@ EV_BuildStairs
 		height = sectorfloorheight + stairsize;
 		floor->floordestheight = height;
 		
-		texture = sectorfloorpic;
 	
 		// Find next sector to raise
 		// 1.	Find 2-sided line with same sector side[0]
 		// 2.	Other side is the next sector to raise
 		do {
 			ok = 0;
+			sector = &sectors[secnum];
+			sectorfloorpic = sector->floorpic;
+			sectorlinecount = sector->linecount;
+			sectorlinesoffset = sector->linesoffset;
+
 			for (i = 0;i < sectorlinecount;i++) {
 				linebufferOffset = sectorlinesoffset + i;
 				linenum = linebuffer[linebufferOffset];
@@ -573,15 +573,13 @@ EV_BuildStairs
 					continue;
 				}
 				tsecOffset = (&lines[linenum])->frontsecnum;
-				newsecnum = tsecOffset ;
 		
-				if (secnum != newsecnum)
+				if (secnum != tsecOffset)
 					continue;
 
 				tsecOffset = (&lines[linenum])->backsecnum;
-				newsecnum = tsecOffset;
 
-				if (sectors[tsecOffset].floorpic != texture)
+				if (sectors[tsecOffset].floorpic != sectorfloorpic)
 					continue;
 					
 				height += stairsize;
@@ -590,7 +588,7 @@ EV_BuildStairs
 					continue;
 					
 				//sec = tsecOffset;
-				secnum = newsecnum;
+				secnum = tsecOffset;
 
 
 				floor = (floormove_t*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);

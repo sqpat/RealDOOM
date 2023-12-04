@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/12/03 17:40:19
+Created on:       23/12/03 17:59:44
 Executable Image: doom16.exe
 creating a DOS overlayed executable
 
@@ -34,7 +34,7 @@ m_misc_TEXT            CODE           AUTO           0000:3c80       00000305
 p_ceilng_TEXT          CODE           AUTO           0000:3f90       00000487
 p_doors_TEXT           CODE           AUTO           0000:4420       00000819
 p_enemy_TEXT           CODE           AUTO           0000:4c40       00002c56
-p_floor_TEXT           CODE           AUTO           0000:78a0       00000995
+p_floor_TEXT           CODE           AUTO           0000:78a0       0000099b
 p_inter_TEXT           CODE           AUTO           0000:8240       00000c96
 p_lights_TEXT          CODE           AUTO           0000:8ee0       000005a0
 p_map_TEXT             CODE           AUTO           0000:9480       000021d6
@@ -2092,7 +2092,7 @@ Overlay section 9 address 222e:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-am_map_TEXT            CODE           AUTO           222e:0000       0000209c
+am_map_TEXT            CODE           AUTO           222e:0000       00002097
 
 
                         +----------------+
@@ -2247,4 +2247,4 @@ C:\WATCOM\lib286\dos\wovl.lib
 Stack size:  0bb8 (3000.)
 Memory size:  0009666a (616042.)
 Entry point address: 1afd:6545
-Link time: 00:01.68
+Link time: 00:00.14
