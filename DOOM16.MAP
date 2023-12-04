@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/12/03 18:18:26
+Created on:       23/12/03 19:54:05
 Executable Image: doom16.exe
 creating a DOS overlayed executable
 
@@ -33,7 +33,7 @@ m_menu_TEXT            CODE           AUTO           0000:2290       000019f0
 m_misc_TEXT            CODE           AUTO           0000:3c80       00000305
 p_ceilng_TEXT          CODE           AUTO           0000:3f90       00000487
 p_doors_TEXT           CODE           AUTO           0000:4420       00000819
-p_enemy_TEXT           CODE           AUTO           0000:4c40       00002c56
+p_enemy_TEXT           CODE           AUTO           0000:4c40       00002c5c
 p_floor_TEXT           CODE           AUTO           0000:78a0       0000099b
 p_inter_TEXT           CODE           AUTO           0000:8240       00000c96
 p_lights_TEXT          CODE           AUTO           0000:8ee0       000005a0
@@ -456,59 +456,59 @@ Module: p_enemy.obj(C:\REALDOOM\p_enemy.c)
 0000:547c      A_KeenDie_
 0000:5510      A_Look_
 0000:565a      A_Chase_
-0000:5880      A_FaceTarget_
-0000:5920      A_PosAttack_
-0000:59ba      A_SPosAttack_
-0000:5a6a      A_CPosAttack_
-0000:5b04      A_CPosRefire_
-0000:5b78      A_SpidRefire_
-0000:5bec      A_BspiAttack_
-0000:5c34      A_TroopAttack_
-0000:5ce4      A_SargAttack_
-0000:5d4c      A_HeadAttack_
-0000:5dea      A_CyberAttack_
-0000:5e32      A_BruisAttack_
-0000:5edc      A_SkelMissile_
-0000:5f6e      A_Tracer_
-0000:6226      A_SkelWhoosh_
-0000:624e      A_SkelFist_
-0000:62c6+     PIT_VileCheck_
-0000:63be      A_VileChase_
-0000:65ea      A_VileStart_
-0000:65f6      A_StartFire_
-0000:6612      A_FireCrackle_
-0000:662e      A_Fire_
-0000:6730      A_VileTarget_
-0000:67ce      A_VileAttack_
-0000:6944      A_FatRaise_
-0000:6960      A_FatAttack1_
-0000:6aa8      A_FatAttack2_
-0000:6bf0      A_FatAttack3_
-0000:6d82      A_SkullAttack_
-0000:6eaa+     A_PainShootSkull_
-0000:702a      A_PainAttack_
-0000:7058      A_PainDie_
-0000:70b2      A_Scream_
-0000:716c      A_XScream_
-0000:7178      A_Pain_
-0000:7196      A_Fall_
-0000:71a2      A_Explode_
-0000:71d6      A_BossDeath_
-0000:730a      A_Hoof_
-0000:7326      A_Metal_
-0000:7342      A_BabyMetal_
-0000:735e*     A_OpenShotgun2_
-0000:7372*     A_LoadShotgun2_
-0000:7386*     A_CloseShotgun2_
-0000:73ac      A_BrainAwake_
-0000:742e      A_BrainPain_
-0000:7440      A_BrainScream_
-0000:752a      A_BrainExplode_
-0000:75e6      A_BrainDie_
-0000:75ec      A_BrainSpit_
-0000:76ec      A_SpawnSound_
-0000:7708      A_SpawnFly_
-0000:7868      A_PlayerScream_
+0000:5886      A_FaceTarget_
+0000:5926      A_PosAttack_
+0000:59c0      A_SPosAttack_
+0000:5a70      A_CPosAttack_
+0000:5b0a      A_CPosRefire_
+0000:5b7e      A_SpidRefire_
+0000:5bf2      A_BspiAttack_
+0000:5c3a      A_TroopAttack_
+0000:5cea      A_SargAttack_
+0000:5d52      A_HeadAttack_
+0000:5df0      A_CyberAttack_
+0000:5e38      A_BruisAttack_
+0000:5ee2      A_SkelMissile_
+0000:5f74      A_Tracer_
+0000:622c      A_SkelWhoosh_
+0000:6254      A_SkelFist_
+0000:62cc+     PIT_VileCheck_
+0000:63c4      A_VileChase_
+0000:65f0      A_VileStart_
+0000:65fc      A_StartFire_
+0000:6618      A_FireCrackle_
+0000:6634      A_Fire_
+0000:6736      A_VileTarget_
+0000:67d4      A_VileAttack_
+0000:694a      A_FatRaise_
+0000:6966      A_FatAttack1_
+0000:6aae      A_FatAttack2_
+0000:6bf6      A_FatAttack3_
+0000:6d88      A_SkullAttack_
+0000:6eb0+     A_PainShootSkull_
+0000:7030      A_PainAttack_
+0000:705e      A_PainDie_
+0000:70b8      A_Scream_
+0000:7172      A_XScream_
+0000:717e      A_Pain_
+0000:719c      A_Fall_
+0000:71a8      A_Explode_
+0000:71dc      A_BossDeath_
+0000:7310      A_Hoof_
+0000:732c      A_Metal_
+0000:7348      A_BabyMetal_
+0000:7364*     A_OpenShotgun2_
+0000:7378*     A_LoadShotgun2_
+0000:738c*     A_CloseShotgun2_
+0000:73b2      A_BrainAwake_
+0000:7434      A_BrainPain_
+0000:7446      A_BrainScream_
+0000:7530      A_BrainExplode_
+0000:75ec      A_BrainDie_
+0000:75f2      A_BrainSpit_
+0000:76f2      A_SpawnSound_
+0000:770e      A_SpawnFly_
+0000:786e      A_PlayerScream_
 90d1:08a0+     _opposite
 90d1:08a9+     _diags
 90d1:08b0+     _xspeed
@@ -2247,4 +2247,4 @@ C:\WATCOM\lib286\dos\wovl.lib
 Stack size:  0bb8 (3000.)
 Memory size:  0009666a (616042.)
 Entry point address: 1afd:6545
-Link time: 00:00.14
+Link time: 00:00.69

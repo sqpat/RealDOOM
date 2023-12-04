@@ -745,7 +745,7 @@ void A_Chase (mobj_t*	actor)
 {
 	
 	THINKERREF actortargetRef = actor->targetRef;
-	uint16_t delta;
+	int16_t delta;
 	uint8_t sound;
 	mobj_t*	actorTarget = (mobj_t*)(&thinkerlist[actortargetRef].data);
 
@@ -774,16 +774,13 @@ void A_Chase (mobj_t*	actor)
 		actor->angle.hu.fracbits = 0;
 		delta = actor->angle.hu.intbits - movedirangles[actor->movedir];
 
-
-		
-		if (actor->angle.hu.intbits > movedirangles[actor->movedir])
+		if (delta > 0)
 			actor->angle.hu.intbits -= ANG90_HIGHBITS / 2;
-		else if (actor->angle.hu.intbits < movedirangles[actor->movedir])
+		else if (delta < 0)
 			actor->angle.hu.intbits += ANG90_HIGHBITS / 2;
 		
  
     }
-
 
 
 	
