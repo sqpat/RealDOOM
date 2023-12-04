@@ -169,8 +169,8 @@ void R_GenerateComposite(uint8_t texnum)
 	int16_t				texturewidth;
 	uint8_t				texturepatchcount;
 	int16_t				patchpatch;
-	uint8_t				patchoriginx;
-	uint8_t				patchoriginy;
+	int16_t				patchoriginx;
+	int8_t				patchoriginy;
 	texture_t* texture;
 	int16_t				colofsx;
 
@@ -201,8 +201,8 @@ void R_GenerateComposite(uint8_t texnum)
 
 	for (i = 0; i < texturepatchcount; i++) {
 		patch = &texture->patches[i];
-		patchpatch = patch->patch;
-		patchoriginx = patch->originx;
+		patchpatch = patch->patch & PATCHMASK;
+		patchoriginx = patch->originx *  (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchoriginy = patch->originy;
 
 		W_CacheLumpNumCheck(patchpatch, 10);

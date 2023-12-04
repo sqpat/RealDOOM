@@ -30,7 +30,7 @@
 //
 // ZONE MEMORY
 // PU - purge tags.
-// Tags < PU_PURGELEVEL are not overwritten until freed.
+// Tags < PU_CACHE are not overwritten until freed.
 
 // NOTE: redid a lot of these. I think the values implied that there would be more
 // aggressive freeing, etc of memory based on some of the allocation types. But
@@ -48,7 +48,6 @@
 #define PU_LEVSPEC              2      // a special thinker in a level
 // These essentially are freed when more memory starts to run out
 // Note: codebase never actually allocates anything as PU_PURGE_LEVEL
-#define PU_PURGELEVEL           3 
 #define PU_CACHE                3
 
 #define ALLOC_TYPE_TEXTURE 1

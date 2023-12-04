@@ -365,6 +365,7 @@ static int16_t		cnt_pause;
 // # of commercial levels
 static int8_t		NUMCMAPS; 
 
+boolean unloaded = false;
 
 //
 //	GRAPHICS
@@ -1087,49 +1088,49 @@ void WI_loadData(void)
 			lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
 		}					
     } else {
-	lnamesRef =  Z_MallocEMS (sizeof(patch_t*) * NUMMAPS,
-				       PU_STATIC, 0, ALLOC_TYPE_LNAMES);
-	lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
+		lnamesRef =  Z_MallocEMS (sizeof(patch_t*) * NUMMAPS,
+						   PU_STATIC, 0, ALLOC_TYPE_LNAMES);
+		lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
 
-	for (i=0 ; i<NUMMAPS ; i++)
-	{
-	    sprintf(name, "WILV%d%d", wbs->epsd, i);
-	    lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
-	}
-
-	// you are here
-	yahRef[0] = W_CacheLumpNameEMS("WIURH0", PU_STATIC);
-
-	// you are here (alt.)
-	yahRef[1] = W_CacheLumpNameEMS("WIURH1", PU_STATIC);
-
-	// splat
-	splatRef = W_CacheLumpNameEMS("WISPLAT", PU_STATIC);
-	
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-	if (wbs->epsd < 3)
-#endif
-	{
-	    for (j=0;j<NUMANIMS[wbs->epsd];j++)
-	    {
-		a = &anims[wbs->epsd][j];
-		for (i=0;i<a->nanims;i++)
+		for (i=0 ; i<NUMMAPS ; i++)
 		{
-		    // MONDO HACK!
-		    if (wbs->epsd != 1 || j != 8) 
-		    {
-			// animations
-			sprintf(name, "WIA%d%.2d%.2d", wbs->epsd, j, i);  
-			a->pRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
-		    }
-		    else
-		    {
-			// HACK ALERT!
-			a->pRef[i] = anims[1][4].pRef[i]; 
-		    }
+			sprintf(name, "WILV%d%d", wbs->epsd, i);
+			lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
 		}
-	    }
-	}
+
+		// you are here
+		yahRef[0] = W_CacheLumpNameEMS("WIURH0", PU_STATIC);
+
+		// you are here (alt.)
+		yahRef[1] = W_CacheLumpNameEMS("WIURH1", PU_STATIC);
+
+		// splat
+		splatRef = W_CacheLumpNameEMS("WISPLAT", PU_STATIC);
+	
+	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+		if (wbs->epsd < 3)
+	#endif
+		{
+			for (j=0;j<NUMANIMS[wbs->epsd];j++)
+			{
+			a = &anims[wbs->epsd][j];
+			for (i=0;i<a->nanims;i++)
+			{
+				// MONDO HACK!
+				if (wbs->epsd != 1 || j != 8) 
+				{
+				// animations
+				sprintf(name, "WIA%d%.2d%.2d", wbs->epsd, j, i);  
+				a->pRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
+				}
+				else
+				{
+				// HACK ALERT!
+				a->pRef[i] = anims[1][4].pRef[i]; 
+				}
+			}
+			}
+		}
     }
 
     // More hacks on minus sign.
@@ -1234,11 +1235,22 @@ void WI_unloadData(void)
 	Z_ChangeTagEMS(sucksRef, PU_CACHE);
 	Z_ChangeTagEMS(parRef, PU_CACHE);
 
+	unloaded = true;
     
 }
 
 void WI_Drawer (void)
 {
+
+	// hack alert... wi_drawer gets called sometimes for a frame or two after it goes away,
+	// using unloaded Z_Malloc EMS vars, causing crashes... not sure why it gets called.
+	// TODO: fix whatever causes this. or set the state below to something that doesnt draw?
+
+
+	if (unloaded) {
+		return;
+	}
+
     switch (state)
     {
       case StatCount:
@@ -1275,7 +1287,7 @@ void WI_initVariables(wbstartstruct_t* wbstartstruct)
 
 void WI_Start(wbstartstruct_t* wbstartstruct)
 {
-
+	unloaded = false;
 	WI_initVariables(wbstartstruct);
 	WI_loadData();
 	WI_initStats();

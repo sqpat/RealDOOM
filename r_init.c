@@ -332,8 +332,8 @@ void R_GenerateLookup(uint8_t texnum)
 
 		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textureRef);
 		patch = &texture->patches[i];
-		x1 = patch->originx;
-		patchpatch = patch->patch;
+		x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
+		patchpatch = patch->patch & PATCHMASK;
 		W_CacheLumpNumCheck(patch->patch, 11);
 		realpatchRef = W_CacheLumpNumEMS(patch->patch, PU_CACHE);
 		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
@@ -371,8 +371,10 @@ void R_GenerateLookup(uint8_t texnum)
 	//Z_RefIsActive(texturecolumnlump);
 	for (x = 0; x < texturewidth; x++) {
 
+		// 122 TEKWALL3
+		// 124 TEKWALL5
 		if (!patchcount[x]) {
-			DEBUG_PRINT("R_GenerateLookup: column without a patch (%s)\n", texturename);
+			DEBUG_PRINT("R_GenerateLookup: column without a patch (%s), %i %i %hhu %hhu\n", texturename, x, texturewidth, texnum, patchcount[x]);
 			return;
 		}
 
@@ -534,9 +536,10 @@ void R_InitTextures(void)
 		patch = &texture->patches[0];
 
 		for (j = 0; j < texture->patchcount; j++, mpatch++, patch++) {
-			patch->originx = (mpatch->originx);
+ 
+			patch->originx = abs(mpatch->originx);
 			patch->originy = (mpatch->originy);
-			patch->patch = patchlookup[(mpatch->patch)];
+			patch->patch = patchlookup[(mpatch->patch)] + (mpatch->originx < 0 ? 0x8000 : 0);
  
 
 		}

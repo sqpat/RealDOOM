@@ -42,15 +42,16 @@
 #include "r_things.h"
 #include "r_draw.h"
 
-
+#define PATCHMASK 0x7FFF
+#define ORIGINX_SIGN_FLAG 0x8000
 
 typedef struct
 {
 	// Block origin (allways UL),
 	// which has allready accounted
 	// for the internal origin of the patch.
-	uint8_t         originx;
-	uint8_t         originy;
+	uint8_t         originx; // in practice values range from ~-120 to 240. we use high bit of patch as negative
+	int8_t         originy;  // in practice values range from ~-120 to 120
 	int16_t         patch; // lump num
 } texpatch_t;
 

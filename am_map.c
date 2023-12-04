@@ -1253,6 +1253,10 @@ void AM_drawCrosshair(uint8_t color)
 
 void AM_Drawer (void)
 {
+
+	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
+	//G_ExitLevel();
+
     if (!automapactive) return;
 
     AM_clearFB(BACKGROUND);
