@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/12/05 23:09:21
+Created on:       23/12/05 23:35:31
 Executable Image: doom16.exe
 creating a DOS overlayed executable
 
@@ -2214,4 +2214,4 @@ C:\WATCOM\lib286\dos\wovl.lib
 Stack size:  0bb8 (3000.)
 Memory size:  0008b1ba (569786.)
 Entry point address: 1abe:6545
-Link time: 00:00.59
+Link time: 00:00.04

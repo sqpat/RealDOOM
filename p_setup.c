@@ -1359,23 +1359,26 @@ P_SetupLevel
 
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadSegs");
 	P_LoadSegs(lumpnum + ML_SEGS);
+	
+	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
+	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 
-#ifdef PRECALCULATE_OPENINGS
-	TEXT_MODE_DEBUG_PRINT("\nP_CacheLineOpenings");
-	P_CacheLineOpenings();
-#endif
 
 	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 9);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
 
 	P_GroupLines(); // 49 tics (362 ics total  in 16 bit, 45 tics in 32 bit)
 
+#ifdef PRECALCULATE_OPENINGS
+	TEXT_MODE_DEBUG_PRINT("\nP_CacheLineOpenings");
+	P_CacheLineOpenings();
+#endif
+
 	bodyqueslot = 0;
 
 
 
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
-	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
+
 
 	//     sector    linedef      subsec      seg      linebuffer
 	// side     vertex     seenlines   node     lineopenings   blocklinks
