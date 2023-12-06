@@ -124,9 +124,10 @@ void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 
 #define BACKREF_LUMP_OFFSET EMS_ALLOCATION_LIST_SIZE
-MEMREF Z_MallocEMS(uint32_t size, uint8_t tag, uint8_t user);
-MEMREF Z_MallocEMSWithBackRef(uint32_t size, uint8_t tag, uint8_t user, int16_t backRef);
-MEMREF Z_MallocConventional(uint32_t size, uint8_t tag, int16_t type, uint8_t user);
+MEMREF Z_MallocEMS(uint16_t size, uint8_t tag, uint8_t user);
+MEMREF Z_MallocEMSWithBackRef32(int32_t  size, uint8_t tag, uint8_t user, int16_t backRef);
+MEMREF Z_MallocEMSWithBackRef16(uint16_t  size, uint8_t tag, uint8_t user, int16_t backRef);
+MEMREF Z_MallocConventional(uint16_t  size, uint8_t tag, int16_t type, uint8_t user);
 
 
 void Z_ChangeTagEMS(MEMREF index, int16_t tag);

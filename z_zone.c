@@ -1125,7 +1125,7 @@ void Z_FreeConventionalAllocations() {
 // mostly very easy because we just allocate sequentially and never remove except all at once. no fragmentation
 //  EXCEPT thinkers
 MEMREF Z_MallocConventional( 
-	uint32_t           size,
+	uint16_t           size,
 		uint8_t           tag,
 		int16_t				type,
 		uint8_t user){
@@ -1190,7 +1190,7 @@ MEMREF Z_MallocConventional(
 	*ref = *ref +1;
  
 	if (refcopy == loopamount){
-		I_Error("ran out of refs for conventional allocation  %i", type);
+		I_Error("ran out of refs for conventional allocation  %i %u %u %u", type, size, remainingconventional1, remainingconventional2);
 	}
 
 	//allocations[ref].size = size;	
@@ -1274,15 +1274,34 @@ PAGEREF Z_GetNextFreeArrayIndex() {
 
 
 MEMREF Z_MallocEMS
-(uint32_t           size,
+(uint16_t           size,
 	uint8_t tag,
 	uint8_t user)
 {
-	return Z_MallocEMSWithBackRef(size, tag, user, 0);
+	return Z_MallocEMSWithBackRef16(size, tag, user, 0);
 }
+
+
 MEMREF
-Z_MallocEMSWithBackRef
-(uint32_t           size,
+Z_MallocEMSWithBackRef32
+(int32_t          size,
+	uint8_t           tag,
+	uint8_t user,
+
+	int16_t backRef) {
+
+	if (size > 0xffff) {
+		I_Error("ZMalloc too big! %li", size);
+	}
+	return Z_MallocEMSWithBackRef16(size, tag, user, 0);
+
+
+}
+
+ 
+MEMREF
+Z_MallocEMSWithBackRef16
+(   uint16_t          size,
 	uint8_t           tag,
 	uint8_t user,
 	
@@ -1305,17 +1324,9 @@ Z_MallocEMSWithBackRef
 	// TODO : make use of sourceHint?
 	// ideally alllocations with the same sourceHint try to be in the same block if possible
 	// but even if they cannot be, the engine should not crash or anything
-
-
-#ifdef CHECK_FOR_ERRORS
-
-	if (size > MAX_ZMALLOC_SIZE) {
-	//if (size & 0xffff0000) {
-		I_Error("Z_MallocEMS: allocation too big! size was %i bytes %i %i %i", size, tag, user, sourceHint);
-	}
-#endif
+ 
 	// todo get rid of this? 32 bit relic?
-	size = (size + 2) & ~2;
+	size= (size + 2) & ~2;
 
 
 	// algorithm:
@@ -1464,7 +1475,7 @@ Z_MallocEMSWithBackRef
 
 		allocations[newfreeblockindex].page_and_size =
 			(allocations[base].page_and_size & PAGE_MASK) +
-			(((MAKE_OFFSET(allocations[base]) + size) >> PAGE_FRAME_BITS) << PAGE_AND_SIZE_SHIFT)
+			(((MAKE_OFFSET(allocations[base]) + (int32_t)size) >> PAGE_FRAME_BITS) << PAGE_AND_SIZE_SHIFT)
 			+ (extra);
 
 		// divide by 16k

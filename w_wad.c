@@ -365,7 +365,7 @@ W_CacheLumpNumEMS2
 #endif
 
 	if (!lumpcacheEMS[lump]) {
-		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef(W_LumpLength(lump), tag, 1, lump + BACKREF_LUMP_OFFSET);
+		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef32(W_LumpLength(lump), tag, 1, lump + BACKREF_LUMP_OFFSET);
 
 		W_ReadLumpEMS(lump, lumpcacheEMS[lump], 0, 0);
 	} else {
