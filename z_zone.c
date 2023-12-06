@@ -710,7 +710,7 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, PAGEREF ref) {
 		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
 	}
 	
-	if (numallocatepages >= 4) {
+	if (numallocatepages > 4) {
 		// 5495C000
 		I_Error("ref is %u %i %lu %u %lu", ref, numallocatepages, page_and_size, logicalpage, size);
 	}

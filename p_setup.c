@@ -1377,8 +1377,8 @@ P_SetupLevel
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 
-	//     sector    linedef      subsec      seg   linebuffer
-	// side     vertex     seenlines   node  lineopenings   blocklinks
+	//     sector    linedef      subsec      seg      linebuffer
+	// side     vertex     seenlines   node     lineopenings   blocklinks
 
 	// e1m1
 	// 648    85  467   475	  475   237  236   732    475   642    828			num x
@@ -1410,13 +1410,15 @@ P_SetupLevel
 	//   7   23     4    21  /8+1     5   28    12	    7	  2	     2		size of type
 	// 7371 3289 2984 17325  104   1920 10724 13692   5775 2102   1664
 	//							        43717                  23233
+	//     sector    linedef      subsec      seg      linebuffer
+	// side     vertex     seenlines   node     lineopenings   blocklinks
 
 
 	// biggest shareware e1m6?
-	// 1726 249  1206 1351   1351   605  604    1861   ???   1351
-	//   7   23     4    21  /8+1     5   28    12	    7	  2	     2		size of type
-	// 12082 5727 4824 28371  168 16912 22332           9457
-	//	 					      54202      48701 + linebuffer + blockmap
+	// 1727  250  1207 1352  1352   606  605    1862   1352 1719  1748
+	//   7   23     4    21  /8+1     5   28    12	      7	  2	     2		size of type
+	//12089 5750 4828 28392   170  3030 16940 22344  9464   3438 3496
+	//	 					      54259        48701 
 	
 	// e1m7 timedemo 3
 	//     sector    linedef      node      linebuffer		blocklinks
@@ -1465,6 +1467,7 @@ P_SetupLevel
 		conventionalmemoryblock1, conventionalmemoryblock2
 	);
 	*/
+	
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadThings");
 	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 
 
