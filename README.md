@@ -1,8 +1,6 @@
 # RealDOOM
 
-[![Old Demo Recording](http://img.youtube.com/vi/Hhpkw7wM1vI/0.jpg)](http://www.youtube.com/watch?v=Hhpkw7wM1vI "RealDOOM Timedemo 2 On 286")
-
-Above is a youtube link that takes you to video of an older demo playback showing off the port.
+[![Old Demo Recording](http://img.youtube.com/vi/O613ctZRBuY/0.jpg)](https://www.youtube.com/watch?v=O613ctZRBuY "RealDOOM v 0.1 Timedemo On 4.77 MhZ 8088")
 
 RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
 
@@ -39,7 +37,7 @@ For those interested in the technical details, a quick summary of what has been 
  
 
 ### Long term ideas:
- - Use of UMBs for extra memory
+ - ~~Use of UMBs for extra memory~~ Done
  - Use of EMS 4.0 multitasking features for better, faster memory swapping
  - Assembly code versions of the main math and render functions
 
@@ -58,6 +56,8 @@ Current Realtics/FPS for timedemo3 with screenblocks 5 and high quality:
 | 386 DX-40  | 12989  | 5.75| 12534| 5.96|
 | 286-25  | 31821   | 2.35| ||
 | 286-20  ||| 32377 | 2.31|
-| XT  | || Coming Soon...  | |  
+| v20 9.5 MhZ  | || 162157   | 0.46 |  
+| 8088 4.77 MhZ  | || Coming Soon   |  |  
+
 
 I think we are looking for around 5-10x performance uplift from the current point to reach playability on fast 286es.
