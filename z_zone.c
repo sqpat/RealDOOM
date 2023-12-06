@@ -1128,7 +1128,7 @@ MEMREF Z_MallocConventional(
 	uint16_t           size,
 		uint8_t           tag,
 		int16_t				type,
-		uint8_t user){
+		uint8_t forceblock){
 
 	allocation_static_conventional_t *allocations;
 	boolean useblock2 = false;
@@ -1141,10 +1141,10 @@ MEMREF Z_MallocConventional(
 	//return Z_MallocEMS(size, tag, user, sourceHint);
 
 	if (type == CA_TYPE_LEVELDATA) {
-		if (size > remainingconventional1) {
+		if (forceblock ==2 || (forceblock != 1 && (size > remainingconventional1))) {
 			if (size > remainingconventional2) {
 				//return Z_MallocEMS(size, tag, user, sourceHint);
-				I_Error("out of conventional space %li %hhi %u %u", size, tag, remainingconventional1, remainingconventional2);
+				I_Error("out of conventional space %u %hhi %u %u", size, tag, remainingconventional1, remainingconventional2);
 
 			}
 			useblock2 = true;

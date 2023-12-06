@@ -233,7 +233,7 @@ void P_LoadSubsectors(int16_t lump)
 	MEMREF			dataRef;
 	MEMREF		subsectorsRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
+	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), PU_LEVEL, CA_TYPE_LEVELDATA, 2);
 	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 	W_CacheLumpNumCheck(lump, 2);
@@ -1152,7 +1152,7 @@ void P_LoadBlockMap(int16_t lump)
 	//	blocklinksRef = Z_MallocEMS (count, PU_LEVEL, 0);
 	count = sizeof(THINKERREF) * bmapwidth*bmapheight;
 
-	blocklinksRef = Z_MallocConventional(count, PU_LEVEL, CA_TYPE_LEVELDATA, 0);
+	blocklinksRef = Z_MallocConventional(count, PU_LEVEL, CA_TYPE_LEVELDATA, 1);
 	blocklinks = (THINKERREF*)Z_LoadBytesFromConventional(blocklinksRef);
 	memset(blocklinks, 0, count);
 }
@@ -1215,7 +1215,7 @@ void P_GroupLines(void)
 
 	// build line tables for each sector        
 
-	linebufferRef = Z_MallocConventional (total * 2, PU_LEVEL, CA_TYPE_LEVELDATA,0);
+	linebufferRef = Z_MallocConventional (total * 2, PU_LEVEL, CA_TYPE_LEVELDATA,2);
 	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	linebufferindex = 0;
 

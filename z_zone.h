@@ -127,7 +127,7 @@ void Z_FreeConventionalAllocations();
 MEMREF Z_MallocEMS(uint16_t size, uint8_t tag, uint8_t user);
 MEMREF Z_MallocEMSWithBackRef32(int32_t  size, uint8_t tag, uint8_t user, int16_t backRef);
 MEMREF Z_MallocEMSWithBackRef16(uint16_t  size, uint8_t tag, uint8_t user, int16_t backRef);
-MEMREF Z_MallocConventional(uint16_t  size, uint8_t tag, int16_t type, uint8_t user);
+MEMREF Z_MallocConventional(uint16_t  size, uint8_t tag, int16_t type, uint8_t forceblock);
 
 
 void Z_ChangeTagEMS(MEMREF index, int16_t tag);
