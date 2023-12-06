@@ -133,6 +133,7 @@ void W_AddFile(int8_t *filename)
 		DEBUG_PRINT("\tcouldn't open %s\n", filename);
 		return;
 	}
+	DEBUG_PRINT("\n", filename);
 
 	DEBUG_PRINT("\tadding %s\n", filename);
 	startlump = numlumps;
@@ -167,10 +168,8 @@ void W_AddFile(int8_t *filename)
 		//header.infotableofs = (header.infotableofs);
 		length = header.numlumps * sizeof(filelump_t);
 
-
 		// let's piggyback off conventional memory during game startup
 		fileinfo = (filelump_t*)conventionalmemoryblock1;
-
 		lseek(handle, header.infotableofs, SEEK_SET);
 		read(handle, fileinfo, length);
 		numlumps += header.numlumps;
@@ -206,7 +205,7 @@ void W_AddFile(int8_t *filename)
 
 				diff = lastsize - diff;
 
-				// we need to backtrack and push all 0 length items to the position of the next nonzero length item so size calculatiosn work
+				// we need to backtrack and push all 0 length items to the position of the next nonzero length item so size calculations work
 				if (j != 65535) {
 					for (; j < i; j++) {
 						lumpinfo[j].position = fileinfo->filepos;

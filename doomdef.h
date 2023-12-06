@@ -323,6 +323,8 @@ typedef uint8_t  THINKFUNCTION;
 
 #define DPMI_INT 0x31
 #define EMS_INT 0x67
+#define XMS_INT 0x2F
+#define DOSMM_INT 0x21
 
 #define PAGE_FRAME_SIZE 0x4000L
 

@@ -129,12 +129,15 @@ typedef struct
 
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
-byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
+uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE_1 = 0;
+byte* conventionalmemoryblock1;
+//byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
 byte spritememoryblock[STATIC_CONVENTIONAL_SPRITE_SIZE];
 byte textureinfomemoryblock[STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE];
 
-uint16_t remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
+uint16_t remainingconventional1 = 0;
+//uint16_t remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 uint16_t remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
 uint16_t remainingspriteconventional = STATIC_CONVENTIONAL_SPRITE_SIZE;
 uint16_t remainingtextureinfoconventional = STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE;

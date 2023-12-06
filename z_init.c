@@ -59,15 +59,6 @@ void Z_InitConventional(void) {
 // EMS STUFF
 
 
-//
-// Z_InitEMS
-//
-
-
-
-
-
-
 
 #ifdef _M_I86
 byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
@@ -88,7 +79,7 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 	int16_t errorreg;
 	uint8_t vernum;
 	int16_t j;
-	printf("Checking EMS...");
+	DEBUG_PRINT("  Checking EMS...");
 
 
 
@@ -99,7 +90,6 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 		I_Error("Couldn't init EMS, error %d", errorreg);
 	}
 
-	printf("Checking EMS Version...\n");
 
 	regs.h.ah = 0x46;
 	intx86(EMS_INT, &regs, &regs);
@@ -109,9 +99,9 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 		I_Error("EMS Error 0x46");
 	}
 	//vernum = 10*(vernum >> 4) + (vernum&0xF);
-	printf("EMS Version was %i\n", vernum);
+	DEBUG_PRINT("Version %i", vernum);
 	if (vernum < 32) {
-		printf("Warning! EMS Version too low! Expected 3.2, found %i", vernum);
+		DEBUG_PRINT("Warning! EMS Version too low! Expected 3.2, found %i", vernum);
 
 	}
 
@@ -131,10 +121,10 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 	intx86(EMS_INT, &regs, &regs);
 	pagesavail = regs.w.bx;
 	pagestotal = regs.w.dx;
-	printf("%i pages total, %i pages available\n", pagestotal, pagesavail);
+	DEBUG_PRINT("\n  %i pages total, %i pages available at loc %p", pagestotal, pagesavail, 0, pageframebase);
 
 	if (pagesavail < numPagesToAllocate) {
-		printf("Warning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);
+		DEBUG_PRINT("\nWarning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);
 		numPagesToAllocate = pagesavail;
 	}
 
@@ -215,11 +205,11 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 
 #ifdef DEBUG_PRINTING
 
-	printf(", 0x%x allocated for zone\n", heap);
+	DEBUG_PRINT(", 0x%x allocated for zone\n", heap);
 	if (heap < 0x180000)
 	{
-		printf("\n");
-		printf("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
+		DEBUG_PRINT("\n");
+		DEBUG_PRINT("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
 
 	}
 #endif

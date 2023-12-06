@@ -70,6 +70,7 @@ file dmx.obj
 #file r_init.obj
 #file wi_stuff.obj
 file z_init.obj
+file z_umb.obj
 #file i_quit.obj
 #file st_setup.obj
 #file hu_setup.obj
@@ -100,5 +101,7 @@ section file st_setup.obj, hu_setup.obj, st_init.obj
 section file am_map.obj
 #   fullscreen drawing code
 section file v_extra.obj
+#	umb management
+#section file z_umb.obj
 
 end

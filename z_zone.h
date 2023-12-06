@@ -138,16 +138,26 @@ typedef struct memblock_s
 #define ALLOCATION_LIST_HEAD	0
 #define EMS_ALLOCATION_LIST_SIZE 1200
 
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54208
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 18892   // no lineopenings demo 3
+// all but e1m6
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54208
 #define STATIC_CONVENTIONAL_BLOCK_SIZE_2 30035  
+// e1m7 
+/*
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 51676
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 27327  
+*/
 
-extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
+extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE_1;
+extern uint16_t remainingconventional1;
+extern byte* conventionalmemoryblock1;
+
+//extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 extern byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS();
 void Z_InitConventional(void);
+void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 
 #define BACKREF_LUMP_OFFSET EMS_ALLOCATION_LIST_SIZE

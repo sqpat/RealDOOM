@@ -333,21 +333,8 @@ void IdentifyVersion(void)
 }
 
 
+ 
 
-
-
-
-//void Z_InitConventional(void) {
-	//	DEBUG_PRINT("Initializing conventional allocation blocks...");
-	//	DEBUG_PRINT("\Conventional block sizes %u %u at %lx and %lx\n", totalconventionalfree1, totalconventionalfree2, conventionalmemoryblock1, conventionalmemoryblock2);
-//}
-
-// EMS STUFF
-
-
-//
-// Z_InitEMS
-//
 
 
 //
@@ -694,7 +681,7 @@ void D_DoomMain2(void)
 	intx86(0x10, &regs, &regs);
 	D_DrawTitle(title, FGCOLOR, BGCOLOR);
 
-	printf("\nP_Init: Checking cmd-line parameters...\n");
+	printf("\nP_Init: Checking cmd-line parameters...");
 #endif
 
 
@@ -784,26 +771,29 @@ void D_DoomMain2(void)
 	//DEBUG_PRINT("V_Init: allocate screens.\n");
 	//V_Init();
 
-	DEBUG_PRINT("M_LoadDefaults: Load system defaults.\n");
+	DEBUG_PRINT("\nM_LoadDefaults: Load system defaults.");
 	M_LoadDefaults();              // load before initing other systems
 
-	DEBUG_PRINT("Z_InitEMS: Init EMS memory allocation daemon. \n");
+
+	DEBUG_PRINT("\nZ_InitEMS: Init EMS memory allocation daemon.");
 	Z_InitEMS();
 
+	//DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
+	Z_InitUMB();
 
-	DEBUG_PRINT("W_Init: Init WADfiles.\n");
+	DEBUG_PRINT("\nW_Init: Init WADfiles.");
 	W_InitMultipleFiles(wadfiles);
 
 
 	// init subsystems
-	DEBUG_PRINT("D_InitStrings: loading text.\n");
+	DEBUG_PRINT("\nD_InitStrings: loading text.");
 	D_InitStrings();
 
+
+
+
 	// Check for -file in shareware
-
-
-
-#ifdef DEBUG_PRINTING
+	#ifdef DEBUG_PRINTING
 	if (registered) {
 		getStringByIndex(VERSION_REGISTERED, textbuffer);
 		printf(textbuffer);
@@ -830,7 +820,7 @@ void D_DoomMain2(void)
 	getStringByIndex(M_INIT_TEXT, textbuffer);
 	printf(textbuffer);
 	D_RedrawTitle();
-#endif
+	#endif
 	M_Init();
 
 #ifdef DEBUG_PRINTING
