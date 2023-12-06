@@ -57,11 +57,6 @@
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
 #define SPRITE_ALLOCATION_LIST_SIZE 150
-// SET TO 1 TO DISABLE
-//#define STATIC_CONVENTIONAL_SPRITE_SIZE 1
-//#define SPRITE_ALLOCATION_LIST_SIZE 1
-
-
  
 
 // DOOM SHAREWARE VALUE
@@ -133,7 +128,7 @@ uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE_1 = 0;
 byte* conventionalmemoryblock1;
 //byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
-byte spritememoryblock[STATIC_CONVENTIONAL_SPRITE_SIZE];
+byte* spritememoryblock;
 byte textureinfomemoryblock[STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE];
 
 uint16_t remainingconventional1 = 0;
@@ -1322,7 +1317,7 @@ Z_MallocEMSWithBackRef
 	}
 #endif
 	// todo get rid of this? 32 bit relic?
-	size = (size + 3) & ~3;
+	size = (size + 2) & ~2;
 
 
 	// algorithm:

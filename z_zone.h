@@ -140,7 +140,7 @@ typedef struct memblock_s
 
 // all but e1m6
 //#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54208
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 30035  
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 20160  
 // e1m7 
 /*
 #define STATIC_CONVENTIONAL_BLOCK_SIZE_1 51676
@@ -150,6 +150,8 @@ typedef struct memblock_s
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 extern uint16_t remainingconventional1;
 extern byte* conventionalmemoryblock1;
+extern byte* spritememoryblock;
+
 
 //extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
 extern byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];

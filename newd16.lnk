@@ -69,8 +69,8 @@ file dmx.obj
 #file p_init.obj
 #file r_init.obj
 #file wi_stuff.obj
-file z_init.obj
-file z_umb.obj
+#file z_init.obj
+#file z_umb.obj
 #file i_quit.obj
 #file st_setup.obj
 #file hu_setup.obj
@@ -81,27 +81,21 @@ file z_umb.obj
 # # begin overlay area
 begin
 
-#	postgame
-section file f_finale.obj
-#	shutdown related code
-section file i_quit.obj
-#	saving/menu
-section file p_saveg.obj
-#	intermission
-section file wi_stuff.obj
-#	game init code
-section file r_init.obj, r_setup.obj
+#	postgame and intermission code
+section file f_finale.obj, wi_stuff.obj 
+#	fullscreen drawing code, shutdown code, some game init code
+section file i_quit.obj, v_extra.obj
 #	more game init code
-section file d_init.obj, w_init.obj, i_init.obj, p_init.obj
+section file d_init.obj, z_umb.obj, z_init.obj, i_init.obj, i_main.obj, g_setup.obj
 #	level/game setup
-section file p_setup.obj, f_wipe.obj, i_main.obj, g_setup.obj
-#   more level/game setup
-section file st_setup.obj, hu_setup.obj, st_init.obj
+section file p_setup.obj
+#	level/game setup
+section file p_init.obj
+#	level/game setup
+section file r_init.obj, r_setup.obj, f_wipe.obj
+#	ems and umb initialization, savegames, wad init, level/game setup
+section file w_init.obj, st_setup.obj, hu_setup.obj, st_init.obj, p_saveg.obj
 #	ingame
 section file am_map.obj
-#   fullscreen drawing code
-section file v_extra.obj
-#	umb management
-#section file z_umb.obj
 
 end

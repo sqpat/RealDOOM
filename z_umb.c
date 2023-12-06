@@ -54,6 +54,7 @@ extern union REGS regs;
 
 void(*XMSaddr) (void);		// far pointer to XMS driver
 uint16_t UMBbase, UMBsize;
+uint16_t UMBbase2, UMBsize2;
 
 
 #pragma aux XMS_GET_DRIVER = \
@@ -131,8 +132,13 @@ void Z_InitUMBDirect(void) {
 void Z_InitUMBDOS(void) {
 
 	uint16_t previousstrategy = 0;
-	uint16_t locreg, resultreg, sizereg;
+	uint16_t locreg, resultreg, sizereg, umblinkstate;
 
+
+	// GET UMB LINK STATE
+	regs.w.ax = 0x5802;
+	int86(DOSMM_INT, &regs, &regs);
+	umblinkstate = regs.h.al;
 
 	regs.w.ax = 0x5803;
 	regs.w.bx = 0x0001;
@@ -176,13 +182,77 @@ void Z_InitUMBDOS(void) {
 	}
 	UMBsize = DESIRED_UMB_SIZE << 4;
 
-	DEBUG_PRINT("\n  Allocated %u at location... %p", UMBsize, 0, UMBbase);
-	regs.w.ax = 0x5801;
-	regs.w.bx = previousstrategy;
+	DEBUG_PRINT("\n    Allocated %u at location... %p", UMBsize, 0, UMBbase);
+	
+	regs.w.ax = 0x4800;
+	regs.w.bx = 0xffff;
 	int86(DOSMM_INT, &regs, &regs);
+	UMBsize2 = regs.w.bx;
+
+	//96 dosbox
+	//27440 emm386
+	//16464 286
+
+	DEBUG_PRINT("\n  Remaining %u bytes in UMB... ", UMBsize2 << 4);
+
+	if ((UMBsize2 << 4) >= 7000) {
+		UMBsize2 = 0x01B6; // enought for 0000
+
+		regs.w.ax = 0x4800;
+		regs.w.bx = UMBsize2;
+		int86(DOSMM_INT, &regs, &regs);
+		// todo check carry flag for error
+		UMBbase2 = regs.w.ax;
+		
+		if (UMBbase2 < 0xA000) {
+			I_Error("\nError! Allocated conventional instead of UMB space ");
+		}
+		
+		UMBsize2 <<= 4;
+
+		DEBUG_PRINT("\n    Allocated %u at location... %p", UMBsize2, 0, UMBbase2);
+
+		regs.w.ax = 0x5801;
+		regs.w.bx = previousstrategy;
+		int86(DOSMM_INT, &regs, &regs);
 
 
+	}
+	else {
+		// back to conventional
+		regs.w.ax = 0x5803;
+		regs.w.bx = 0;
+		int86(DOSMM_INT, &regs, &regs);
 
+		regs.w.ax = 0x5801;
+		regs.w.bx = previousstrategy;
+		int86(DOSMM_INT, &regs, &regs);
+
+		regs.w.ax = 0x4800;
+		regs.w.bx = 0xffff;
+		int86(DOSMM_INT, &regs, &regs);
+		UMBsize2 = regs.w.bx;
+		DEBUG_PRINT("Not enough in UMB... \n  Remaining %u bytes in Conventional... ", UMBsize2 << 4);
+
+		if ((UMBsize2 << 4) >= 7000) {
+			UMBsize2 = 0x01B6; // enought for 0000
+			regs.w.ax = 0x4800;
+			regs.w.bx = UMBsize2;
+			int86(DOSMM_INT, &regs, &regs);
+			// todo check carry flag for error
+			UMBbase2 = regs.w.ax; // technically not UMBs but...
+			UMBsize2 <<= 4;
+			DEBUG_PRINT("\n    Allocated %u at location... %p", UMBsize2, 0, UMBbase2);
+
+		}
+		else {
+			I_Error("\nNot enough memory for sprites?! %u", UMBsize2 << 4);
+		}
+	}
+ 
+	regs.w.ax = 0x5803;
+	regs.w.bx = umblinkstate;
+	int86(DOSMM_INT, &regs, &regs);
 }
 #endif
 
@@ -192,20 +262,13 @@ void Z_InitUMB(void) {
 
 	// 4 mb
 	// todo test 3, 2 MB, etc. i know we use less..
-	uint16_t umblinkstate = 0;
-
 
 	DEBUG_PRINT("\n  Checking XMS for UMB...");
 
-	// GET UMB LINK STATE
-	regs.w.ax = 0x5802;
-	int86(DOSMM_INT, &regs, &regs);
-	umblinkstate = regs.h.al;
+
 	Z_InitUMBDOS();
 
-	regs.w.ax = 0x5803;
-	regs.w.bx = umblinkstate;
-	int86(DOSMM_INT, &regs, &regs);
+
 
 	// DOS NOT MANAGING UMBS
 	//Z_InitUMBDirect();
@@ -213,6 +276,8 @@ void Z_InitUMB(void) {
 
 	remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1 = UMBsize;
 	conventionalmemoryblock1 = MK_FP(UMBbase, 0);
+
+	spritememoryblock = MK_FP(UMBbase2, 0);
 
 
 #endif

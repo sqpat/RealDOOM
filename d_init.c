@@ -778,7 +778,7 @@ void D_DoomMain2(void)
 	DEBUG_PRINT("\nZ_InitEMS: Init EMS memory allocation daemon.");
 	Z_InitEMS();
 
-	//DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
+	DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
 	Z_InitUMB();
 
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");

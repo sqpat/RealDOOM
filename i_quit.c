@@ -154,10 +154,38 @@ void I_ShutdownMouse(void)
 #ifdef _M_I86
 
 extern int16_t emshandle;
+extern uint16_t UMBbase, UMBbase2;
+
+#pragma aux FREE_UMB_MEMORY_1 = \
+		"mov    ax, 4900h",     \
+		"mov    es, [UMBbase]", \
+		"int    21h",           \
+parm[] modify exact[ax es];
+
+#pragma aux FREE_UMB_MEMORY_2 = \
+		"mov    ax, 4900h",     \
+		"mov    es, [UMBbase2]",\
+		"int    21h",           \
+parm[] modify exact[ax es];
+
 
 #else
 #endif
 
+
+void Z_ShutdownUMB() {
+
+#ifdef _M_I86
+	if (UMBbase) {
+		FREE_UMB_MEMORY_1();
+	}
+	if (UMBbase2) {
+		FREE_UMB_MEMORY_2();
+}
+
+#endif
+
+}
 
 void Z_ShutdownEMS() {
 
@@ -197,6 +225,7 @@ void I_Shutdown(void)
 	I_ShutdownMouse();
 	I_ShutdownKeyboard();
 	Z_ShutdownEMS();
+	Z_ShutdownUMB();
 }
 
 
@@ -237,6 +266,7 @@ void I_Quit(void)
 	
 	//printf("\n");
 	Z_ShutdownEMS();
+	Z_ShutdownUMB();
 
 
 	exit(1);
