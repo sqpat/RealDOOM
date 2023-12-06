@@ -203,7 +203,7 @@ M_ReadFile
 	if (fstat (handle,&fileinfo) == -1)
 		I_Error ("Couldn't read file %s", name);
     length = fileinfo.st_size;
-    *bufferRef = Z_MallocEMS (length, PU_STATIC, 1, ALLOC_TYPE_READFILE);
+    *bufferRef = Z_MallocEMS (length, PU_STATIC, 1);
 	buf = Z_LoadBytesFromEMS(*bufferRef);
     count = read (handle, buf, length);
     close (handle);

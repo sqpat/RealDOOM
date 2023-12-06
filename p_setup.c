@@ -125,7 +125,7 @@ void P_LoadVertexes(int16_t lump)
 	numvertexes = W_LumpLength(lump) / sizeof(mapvertex_t);
 
 	// Allocate zone memory for buffer.
-	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_VERTEXES);
+	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
 	vertexes = Z_LoadBytesFromConventional(vertexesRef);
 	// Load data into cache.
 	W_CacheLumpNumCheck(lump, 0);
@@ -175,7 +175,7 @@ void P_LoadSegs(int16_t lump)
 
 	temp.h.fracbits = 0;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
-	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_SEGMENTS);
+	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
 	
 	segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 	memset(segs, 0xff, numsegs * sizeof(seg_t));
@@ -233,7 +233,7 @@ void P_LoadSubsectors(int16_t lump)
 	MEMREF			dataRef;
 	MEMREF		subsectorsRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_SUBSECS);
+	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 	W_CacheLumpNumCheck(lump, 2);
@@ -290,7 +290,7 @@ void P_LoadSectors(int16_t lump)
 	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 	//sectors = Z_Malloc (numsectors * sizeof(sector_t), PU_LEVEL, 0);
-	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_SECTORS);
+	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
 	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
 
 
@@ -351,7 +351,7 @@ void P_LoadNodes(int16_t lump)
 	MEMREF	nodesRef;
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
-	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_NODES);
+	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
 	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	W_CacheLumpNumCheck(lump, 4);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
@@ -829,7 +829,7 @@ void P_CacheLineOpenings() {
 	sector_t* front;
 	sector_t* back;
 	
-	MEMREF lineopeningsRef = Z_MallocConventional(numlines * sizeof(lineopening_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_LINEOPENINGS);
+	MEMREF lineopeningsRef = Z_MallocConventional(numlines * sizeof(lineopening_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	lineopenings = (lineopening_t*)Z_LoadBytesFromConventional(lineopeningsRef);
 	memset(lineopenings, 0, numlines * sizeof(lineopening_t));
 
@@ -950,10 +950,10 @@ void P_LoadLineDefs(int16_t lump)
 	MEMREF seenlinesRef;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
-	linesRef = Z_MallocConventional(numlines * sizeof(line_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_LINES);
+	linesRef = Z_MallocConventional(numlines * sizeof(line_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
-	seenlinesRef = Z_MallocConventional(numlines/8+1, PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_LINES);
+	seenlinesRef = Z_MallocConventional(numlines/8+1, PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	seenlines = (uint8_t*)Z_LoadBytesFromConventional(seenlinesRef);
 	memset(lines, 0, numlines * sizeof(line_t));
 	memset(seenlines, 0, numlines / 8 + 1);
@@ -1069,7 +1069,7 @@ void P_LoadSideDefs(int16_t lump)
 	MEMREF sidesRef;
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_SIDES);
+	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 
 
@@ -1149,10 +1149,10 @@ void P_LoadBlockMap(int16_t lump)
 
 	// clear out mobj chains
 
-	//	blocklinksRef = Z_MallocEMS (count, PU_LEVEL, 0, ALLOC_TYPE_BLOCKLINKS);
+	//	blocklinksRef = Z_MallocEMS (count, PU_LEVEL, 0);
 	count = sizeof(THINKERREF) * bmapwidth*bmapheight;
 
-	blocklinksRef = Z_MallocConventional(count, PU_LEVEL, CA_TYPE_LEVELDATA, 0, ALLOC_TYPE_SUBSECS);
+	blocklinksRef = Z_MallocConventional(count, PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	blocklinks = (THINKERREF*)Z_LoadBytesFromConventional(blocklinksRef);
 	memset(blocklinks, 0, count);
 }
@@ -1215,13 +1215,13 @@ void P_GroupLines(void)
 
 	// build line tables for each sector        
 
-	linebufferRef = Z_MallocConventional (total * 2, PU_LEVEL, CA_TYPE_LEVELDATA,0, ALLOC_TYPE_LINEBUFFER);
+	linebufferRef = Z_MallocConventional (total * 2, PU_LEVEL, CA_TYPE_LEVELDATA,0);
 	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
 	linebufferindex = 0;
 
 	tempv1.h.fracbits = 0;
 	tempv2.h.fracbits = 0;
-	sectorBlockBoxesRef = Z_MallocEMS(numsectors * 8, PU_LEVEL, 0, ALLOC_TYPE_SECTORS);
+	sectorBlockBoxesRef = Z_MallocEMS(numsectors * 8, PU_LEVEL, 0);
 	sectorBlockBoxes = (int16_t*)Z_LoadBytesFromEMS(sectorBlockBoxesRef);
 	for (i = 0; i < numsectors; i++) {
 		M_ClearBox16(bbox);

@@ -1069,7 +1069,7 @@ void G_RecordDemo (int8_t* name)
     i = M_CheckParm ("-maxdemo");
     if (i && i<myargc-1) 
             maxsize = atoi(myargv[i+1])*1024;
-    demobufferRef = Z_MallocEMS (maxsize,PU_STATIC,0, ALLOC_TYPE_DEMO_BUFFER); 
+    demobufferRef = Z_MallocEMS (maxsize,PU_STATIC,0); 
     //demoend = demobuffer + maxsize;
         
     demorecording = true; 
@@ -1211,42 +1211,7 @@ boolean G_CheckDemoStatus (void)
 			pagecount[20], pagecount[21], pagecount[22], pagecount[23], pagecount[24], pagecount[25], pagecount[26], pagecount[27], pagecount[28], pagecount[29],
 			pagecount[30], pagecount[31], pagecount[32], pagecount[33], pagecount[34], pagecount[35], pagecount[36], pagecount[37], pagecount[38], pagecount[39]
 
-/*
-
-0 ALLOC_TYPE_CACHE_LUMP 2  (wad stuff) --- needs more detail/drilldown. probably textures.
-0 ALLOC_TYPE_LEVSPEC 3  (thinkers etc)
-x #define ALLOC_TYPE_SPRITEDEFS 12  (spritedfs)
-0 #define ALLOC_TYPE_SEGMENTS 15    (segments)
-
-0 ALLOC_TYPE_SUBSECS 24
-0 ALLOC_TYPE_SIDES 25
-
-n ALLOC_TYPE_STRINGS 30
-
-
-
-0 0 58465 51160 0
-0 0 0 0 0
-0 0 10750 0 0
-50721 0 0 0 0
-0 0 0 0 19653
-17772 0 0 0 0
-27 0 0 0 0
-0 0 0 0 0
-
-
-0 0 60565 50853 0
-0 0 0 0 0
-0 0 0 0 0
-48268 0 0 0 0
-0 0 0 0 18941
-15584 0 0 0 0
-27 0 0 0 0
-0 0 0 0 0
-
-
-
-*/
+ 
 
 		);
 #else

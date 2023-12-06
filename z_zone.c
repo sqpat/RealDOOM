@@ -1128,8 +1128,7 @@ MEMREF Z_MallocConventional(
 	uint32_t           size,
 		uint8_t           tag,
 		int16_t				type,
-		uint8_t user,
-		uint8_t sourceHint){
+		uint8_t user){
 
 	allocation_static_conventional_t *allocations;
 	boolean useblock2 = false;
@@ -1191,7 +1190,7 @@ MEMREF Z_MallocConventional(
 	*ref = *ref +1;
  
 	if (refcopy == loopamount){
-		I_Error("ran out of refs for conventional allocation  %i %i", type, sourceHint);
+		I_Error("ran out of refs for conventional allocation  %i", type);
 	}
 
 	//allocations[ref].size = size;	
@@ -1277,17 +1276,16 @@ PAGEREF Z_GetNextFreeArrayIndex() {
 MEMREF Z_MallocEMS
 (uint32_t           size,
 	uint8_t tag,
-	uint8_t user,
-	uint8_t sourceHint)
+	uint8_t user)
 {
-	return Z_MallocEMSWithBackRef(size, tag, user, sourceHint, 0);
+	return Z_MallocEMSWithBackRef(size, tag, user, 0);
 }
 MEMREF
 Z_MallocEMSWithBackRef
 (uint32_t           size,
 	uint8_t           tag,
 	uint8_t user,
-	uint8_t sourceHint,
+	
 	int16_t backRef)
 {
 	int16_t base;

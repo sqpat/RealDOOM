@@ -1080,7 +1080,7 @@ void WI_loadData(void)
 
     if (commercial) {
 		NUMCMAPS = 32;								
-		lnamesRef = Z_MallocEMS (sizeof(patch_t*) * NUMCMAPS, PU_STATIC, 0, ALLOC_TYPE_LNAMES);
+		lnamesRef = Z_MallocEMS (sizeof(patch_t*) * NUMCMAPS, PU_STATIC, 0);
 		lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
 
 		for (i=0 ; i<NUMCMAPS ; i++) {								
@@ -1089,7 +1089,7 @@ void WI_loadData(void)
 		}					
     } else {
 		lnamesRef =  Z_MallocEMS (sizeof(patch_t*) * NUMMAPS,
-						   PU_STATIC, 0, ALLOC_TYPE_LNAMES);
+						   PU_STATIC, 0);
 		lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
 
 		for (i=0 ; i<NUMMAPS ; i++)

@@ -365,7 +365,7 @@ W_CacheLumpNumEMS2
 #endif
 
 	if (!lumpcacheEMS[lump]) {
-		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef(W_LumpLength(lump), tag, 1, ALLOC_TYPE_CACHE_LUMP, lump + BACKREF_LUMP_OFFSET);
+		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef(W_LumpLength(lump), tag, 1, lump + BACKREF_LUMP_OFFSET);
 
 		W_ReadLumpEMS(lump, lumpcacheEMS[lump], 0, 0);
 	} else {
@@ -400,7 +400,7 @@ W_CacheLumpNameEMSFragment
         Z_FreeEMS(pagedlumpcacheEMS[pagenum]);
     }
 
-    pagedlumpcacheEMS[pagenum] = Z_MallocEMS(16384, tag, 0, ALLOC_TYPE_CACHE_LUMP);
+    pagedlumpcacheEMS[pagenum] = Z_MallocEMS(16384, tag, 0);
     W_ReadLumpEMS(W_GetNumForName(name), pagedlumpcacheEMS[pagenum], offset, 16384);
 
     return pagedlumpcacheEMS[pagenum];

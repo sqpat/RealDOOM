@@ -95,7 +95,7 @@ void R_InitPlanes(void) {
 	int16_t j;
 
 	for (i = 0; i < NUM_VISPLANE_PAGES; i++) {
-		visplanebytesRef[i] = Z_MallocEMS(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0, ALLOC_TYPE_VISPLANE);
+		visplanebytesRef[i] = Z_MallocEMS(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0);
 
 		for (j = 0; j < VISPLANES_PER_EMS_PAGE; j++) {
 			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplanepage = i;
@@ -520,7 +520,7 @@ void R_InitTextures(void)
 
 		textureRef = Z_MallocConventional(sizeof(texture_t)
 			+ sizeof(texpatch_t)*((mtexture->patchcount) - 1),
-			PU_STATIC, CA_TYPE_TEXTURE_INFO, 0, ALLOC_TYPE_TEXTURE + 130);
+			PU_STATIC, CA_TYPE_TEXTURE_INFO, 0);
 
 		textures[i] = textureRef;
 
@@ -546,8 +546,8 @@ void R_InitTextures(void)
 
 
 		//printf("name %s", texture->name);
-		texturecolumnlumpRefs[i] = Z_MallocConventional(texturewidth * 2, PU_STATIC, CA_TYPE_TEXTURE_INFO, 0, ALLOC_TYPE_TEXTURE + 140);
-		texturecolumnofsRefs[i] = Z_MallocConventional(texturewidth * 2, PU_STATIC, CA_TYPE_TEXTURE_INFO, 0, ALLOC_TYPE_TEXTURE + 150);
+		texturecolumnlumpRefs[i] = Z_MallocConventional(texturewidth * 2, PU_STATIC, CA_TYPE_TEXTURE_INFO, 0);
+		texturecolumnofsRefs[i] = Z_MallocConventional(texturewidth * 2, PU_STATIC, CA_TYPE_TEXTURE_INFO, 0);
 
 		j = 1;
 		while (j * 2 <= texturewidth)

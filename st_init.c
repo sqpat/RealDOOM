@@ -246,6 +246,6 @@ void ST_loadData(void)
 void ST_Init(void)
 {
 	ST_loadData();
-	screen4Ref = Z_MallocEMS(ST_WIDTH*ST_HEIGHT, PU_STATIC, 0, ALLOC_TYPE_SCREEN);
+	screen4Ref = Z_MallocEMS(ST_WIDTH*ST_HEIGHT, PU_STATIC, 0);
 
 }

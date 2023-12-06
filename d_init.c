@@ -98,7 +98,7 @@ void D_InitStrings() {
 	while (1) {
 		// break up in pagesize
 
-		stringRefs[page] = Z_MallocEMS(16384, PU_STATIC, 0, ALLOC_TYPE_STRINGS);
+		stringRefs[page] = Z_MallocEMS(16384, PU_STATIC, 0);
 		buffer = Z_LoadBytesFromEMS(stringRefs[page]);
 
 
@@ -480,7 +480,7 @@ void S_Init
   // Allocating the internal channels for mixing
   // (the maximum numer of sounds rendered
   // simultaneously) within zone memory.
-  channelsRef =  Z_MallocEMS (numChannels*sizeof(channel_t), PU_STATIC, 0, ALLOC_TYPE_SOUND_CHANNELS);
+  channelsRef =  Z_MallocEMS (numChannels*sizeof(channel_t), PU_STATIC, 0);
   channels = (channel_t*) Z_LoadBytesFromEMS(channelsRef);
 
   // Free all channels for use
@@ -868,7 +868,7 @@ void D_DoomMain2(void)
 #endif
 	ST_Init();
 
-	nightmareSpawnPointsRef = Z_MallocEMS(16384, PU_STATIC, 0, ALLOC_TYPE_NIGHTMARE_SPAWN_DATA);
+	nightmareSpawnPointsRef = Z_MallocEMS(16384, PU_STATIC, 0);
 
 
 	// start the apropriate game based on parms

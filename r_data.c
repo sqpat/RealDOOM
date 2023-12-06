@@ -186,7 +186,7 @@ void R_GenerateComposite(uint8_t texnum)
 
 	texturecomposite[texnum] = Z_MallocEMSWithBackRef(texturecompositesize,
 		PU_STATIC,
-		0xff, ALLOC_TYPE_TEXTURE + 160, texnum+1);
+		0xff,  texnum+1);
 	texturecompositetexnum = texturecomposite[texnum];
 
 	texture = (texture_t*)Z_LoadTextureInfoFromConventional(texturememref);

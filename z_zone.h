@@ -49,46 +49,7 @@
 // These essentially are freed when more memory starts to run out
 // Note: codebase never actually allocates anything as PU_PURGE_LEVEL
 #define PU_CACHE                3
-
-#define ALLOC_TYPE_TEXTURE 1
-#define ALLOC_TYPE_CACHE_LUMP 2
-#define ALLOC_TYPE_LEVSPEC 3
-#define ALLOC_TYPE_FWIPE 4
-
-#define ALLOC_TYPE_READFILE 5
-#define ALLOC_TYPE_TEXTURE_TRANSLATION 6
-#define ALLOC_TYPE_FLAT_TRANSLATION 7
-#define ALLOC_TYPE_PCX 8
-#define ALLOC_TYPE_SPRITE 9
-
-#define ALLOC_TYPE_COLORMAP 10
-#define ALLOC_TYPE_TRANSLATION_TABLES 11
-#define ALLOC_TYPE_SPRITEDEFS 12
-#define ALLOC_TYPE_SPRITEFRAMES 13
-#define ALLOC_TYPE_VERTEXES 14
-
-#define ALLOC_TYPE_SEGMENTS 15
-#define ALLOC_TYPE_LINEBUFFER 16
-#define ALLOC_TYPE_BLOCKLINKS 17
-#define ALLOC_TYPE_NODES 18
-#define ALLOC_TYPE_SOUND_CHANNELS 19
-
-#define ALLOC_TYPE_DEMO_BUFFER 20
-#define ALLOC_TYPE_LNAMES 21
-#define ALLOC_TYPE_SCREEN 22
-#define ALLOC_TYPE_THINKER 23
-#define ALLOC_TYPE_SUBSECS 24
-
-#define ALLOC_TYPE_SIDES 25
-#define ALLOC_TYPE_LINES 26
-#define ALLOC_TYPE_SECTORS 27
-#define ALLOC_TYPE_VISPLANE 28
-#define ALLOC_TYPE_MOBJ 29
-
-#define ALLOC_TYPE_STRINGS 30
-
-#define ALLOC_TYPE_NIGHTMARE_SPAWN_DATA 31
-#define ALLOC_TYPE_LINEOPENINGS 32
+ 
 
 // most paged in order:
 // as expected, we need to find a way to get lines segs verts sectors nodes into conventional to greatly improve perf.
@@ -163,9 +124,9 @@ void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 
 #define BACKREF_LUMP_OFFSET EMS_ALLOCATION_LIST_SIZE
-MEMREF Z_MallocEMS(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint);
-MEMREF Z_MallocEMSWithBackRef(uint32_t size, uint8_t tag, uint8_t user, uint8_t sourceHint, int16_t backRef);
-MEMREF Z_MallocConventional(uint32_t size, uint8_t tag, int16_t type, uint8_t user, uint8_t sourceHint);
+MEMREF Z_MallocEMS(uint32_t size, uint8_t tag, uint8_t user);
+MEMREF Z_MallocEMSWithBackRef(uint32_t size, uint8_t tag, uint8_t user, int16_t backRef);
+MEMREF Z_MallocConventional(uint32_t size, uint8_t tag, int16_t type, uint8_t user);
 
 
 void Z_ChangeTagEMS(MEMREF index, int16_t tag);
@@ -242,9 +203,6 @@ typedef struct
 	// and wad lumps
 	uint16_t backref_and_user;  //12 bytes per struct, dont think we can do better.
 
-#ifdef PROFILE_PAGE_COUNT
-	int8_t sourcehint;
-#endif
 } allocation_t;
 
 
