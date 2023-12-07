@@ -76,11 +76,13 @@
 
 // high 9 bits
 #define PAGE_MASK 0xFF800000
+#define PAGE_MASK_HIGH 0xFF80
 // low 23 bits
 #define SIZE_MASK 0x007FFFFF
 #define PAGE_AND_SIZE_SHIFT 23
-#define MAKE_SIZE(x) (x & SIZE_MASK)
-#define MAKE_PAGE(x) (x >> PAGE_AND_SIZE_SHIFT)
+#define MAKE_SIZE_32(x) (x.wu & SIZE_MASK)
+#define MAKE_SIZE_16(x) (x.hu.fracbits)
+#define MAKE_PAGE_16(x) (x.hu.intbits >> (PAGE_AND_SIZE_SHIFT-16))
 
 // bit 14-15, need a 2nd flag for weird "user but unowned" case which is for the last big 
 // allocation entry in the list with all the free unallocatedmemory in it.
@@ -201,7 +203,7 @@ int32_t actualpageouts = 0;
 int32_t pagecount[40];
 #endif
 
-void Z_PageOutIfInMemory(uint32_t page_and_size);
+void Z_PageOutIfInMemory(fixed_t_union page_and_size);
 
 void Z_ChangeTagEMS(MEMREF index, int16_t tag) {
 
@@ -280,7 +282,7 @@ void Z_FreeEMS(PAGEREF block) {
 	{
 		// extend other forward OVER block
 		// merge with previous free block
-		allocations[other].page_and_size += MAKE_SIZE(allocations[block].page_and_size);
+		allocations[other].page_and_size.wu += MAKE_SIZE_16(allocations[block].page_and_size); // okay to use 16 bits because it was a freed allocation implying < 64k
 
 		if (block == currentListHead)
 			currentListHead = other;
@@ -302,7 +304,7 @@ void Z_FreeEMS(PAGEREF block) {
 	{
 		// extend block forward OVER other
 		// merge the next free block onto the end
-		allocations[block].page_and_size += MAKE_SIZE(allocations[other].page_and_size);
+		allocations[block].page_and_size.wu += MAKE_SIZE_32(allocations[other].page_and_size);
 
 		if (other == currentListHead)
 			currentListHead = block;
@@ -650,9 +652,9 @@ void Z_DoPageIn(uint16_t logicalpage, uint16_t pageframeindex, uint16_t numalloc
 
 }
 
-void Z_PageOutIfInMemory(uint32_t page_and_size) {
-	uint16_t logicalpage = MAKE_PAGE(page_and_size);
-	uint32_t size = MAKE_SIZE(page_and_size);
+void Z_PageOutIfInMemory(fixed_t_union page_and_size) {
+	uint16_t logicalpage = MAKE_PAGE_16(page_and_size);
+	uint16_t size = MAKE_SIZE_16(page_and_size);
 	uint16_t pageframeindex;
 	uint16_t numallocatepages;
 	uint16_t i;
@@ -689,10 +691,10 @@ void Z_PageOutIfInMemory(uint32_t page_and_size) {
 
 //todo copy this into Z_LoadBytesFromEMS as thats the only place its called
 
-//int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, int8_t* file, int32_t line) {  //todo allocations < 65k? if so size can be an uint16_t?
-int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, PAGEREF ref) {  //todo allocations < 65k? if so size can be an uint16_t?
-	uint16_t logicalpage = MAKE_PAGE(page_and_size);
-	uint32_t size = MAKE_SIZE(page_and_size);
+//int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, int8_t* file, int32_t line) {  
+int16_t Z_GetEMSPageFrame(fixed_t_union page_and_size, boolean locked, PAGEREF ref) {  
+	uint16_t logicalpage = MAKE_PAGE_16(page_and_size);
+	uint16_t size = MAKE_SIZE_16(page_and_size); // no allocations are bigger than 64k - only ever the 'free block'. so we're safe to 16 bit here
 	uint16_t pageframeindex;
 
 	uint16_t numallocatepages;
@@ -933,9 +935,9 @@ int16_t Z_GetEMSPageFrame(uint32_t page_and_size, boolean locked, PAGEREF ref) {
 
 
 
-int16_t Z_GetEMSPageFrameNoUpdate(uint32_t page_and_size, MEMREF ref) {  //todo allocations < 65k? if so size can be an uint16_t?
-	uint16_t logicalpage = MAKE_PAGE(page_and_size);
-	uint32_t size = MAKE_SIZE(page_and_size);
+int16_t Z_GetEMSPageFrameNoUpdate(fixed_t_union page_and_size, MEMREF ref) {  //todo allocations < 65k? if so size can be an uint16_t?
+	uint16_t logicalpage = MAKE_PAGE_16(page_and_size);
+	uint16_t size = MAKE_SIZE_16(page_and_size); // no allocations are bigger than 64k - only ever the 'free block'. so we're safe to 16 bit here
 	uint16_t pageframeindex;
 
 	uint16_t numallocatepages;
@@ -1038,7 +1040,7 @@ void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex) {
 
 
 void Z_SetUnlocked(MEMREF ref) {
-	int16_t pagenumber = MAKE_PAGE(allocations[ref].page_and_size);
+	uint16_t pagenumber = MAKE_PAGE_16(allocations[ref].page_and_size);
 	int16_t pageframeindex;
 	if (ref >= EMS_ALLOCATION_LIST_SIZE) {
 		return; // conventionals dont need to get locked;;
@@ -1311,7 +1313,7 @@ Z_MallocEMSWithBackRef16
 	int16_t start;
 	int16_t newfreeblockindex;
 
-	int32_t         extra;
+	uint32_t         extra;
 	int16_t rover;
 	uint16_t offsetToNextPage = 0;
  
@@ -1394,16 +1396,17 @@ Z_MallocEMSWithBackRef16
 		}
 
 
-	} while (HAS_USER(allocations[base]) || MAKE_SIZE(allocations[base].page_and_size) < size
+		//todo is there a faster way to check high bit and then 16 bit rather than do a 32 bit compare?
+	} while (HAS_USER(allocations[base]) || MAKE_SIZE_32(allocations[base].page_and_size) < size
 		// problem: free block, and size is big enough but not aligned to page frame and we dont want to split page frame
 		// so we must check that the block has enough free space when aligned to next page frame
-		|| (size + (offsetToNextPage) > MAKE_SIZE(allocations[base].page_and_size))
+		|| (size + (offsetToNextPage) > MAKE_SIZE_32(allocations[base].page_and_size))
 		);
 
 
 
 	// found a block big enough
-	extra = MAKE_SIZE(allocations[base].page_and_size) - size;
+	extra = MAKE_SIZE_32(allocations[base].page_and_size) - size;
 
 
 	offsetToNextPage = (PAGE_FRAME_SIZE - (allocations[base].offset_and_tag & 0x3FFF));
@@ -1427,7 +1430,9 @@ Z_MallocEMSWithBackRef16
 		allocations[newfreeblockindex].next = base;
 		allocations[base].prev = newfreeblockindex;
 
-		allocations[newfreeblockindex].page_and_size = (allocations[base].page_and_size & PAGE_MASK) + offsetToNextPage;
+		//never bigger than a page so we can ignore size high bits
+		allocations[newfreeblockindex].page_and_size.hu.intbits = allocations[base].page_and_size.hu.intbits & PAGE_MASK_HIGH;
+		allocations[newfreeblockindex].page_and_size.hu.fracbits = offsetToNextPage;
 
 
 		// using tag NOT_IN_USE
@@ -1436,9 +1441,9 @@ Z_MallocEMSWithBackRef16
 		// implies -1 backref and 0 user
 		allocations[newfreeblockindex].backref_and_user = 0;
 
-		allocations[base].page_and_size -= offsetToNextPage;
+		allocations[base].page_and_size.wu -= offsetToNextPage;
 		// todo are we okay with respect to not wrapping around? should never happen because initial size should be set in a way this doesnt happen?
-		allocations[base].page_and_size += (int32_t)0x800000; // 1 << PAGE_AND_SIZE_SHIFT
+		allocations[base].page_and_size.hu.intbits += (0x80); // 1 << PAGE_AND_SIZE_SHIFT
 		allocations[base].offset_and_tag = 0;
 
 		extra = extra - offsetToNextPage;
@@ -1457,7 +1462,7 @@ Z_MallocEMSWithBackRef16
 
 	if (extra > MINFRAGMENT)
 	{
-
+		uint16_t additionalpages;
 
 		// there will be a free fragment after the allocated block
 		newfreeblockindex = Z_GetNextFreeArrayIndex();
@@ -1473,17 +1478,27 @@ Z_MallocEMSWithBackRef16
 		allocations[newfreeblockindex].backref_and_user = 0;
 
 
-		allocations[newfreeblockindex].page_and_size =
-			(allocations[base].page_and_size & PAGE_MASK) +
+		/*
+		allocations[newfreeblockindex].page_and_size.wu =
+			(allocations[base].page_and_size.wu & PAGE_MASK) +
 			(((MAKE_OFFSET(allocations[base]) + (int32_t)size) >> PAGE_FRAME_BITS) << PAGE_AND_SIZE_SHIFT)
 			+ (extra);
+		*/
 
-		// divide by 16k
+		// 2 high bits are the number of pages of the allocation but it needs to be shifted 7 over to line up with offsets
+
+		additionalpages = ((MAKE_OFFSET(allocations[base]) + size) & 0xC000) >> 7;
+		allocations[newfreeblockindex].page_and_size.hu.intbits =
+			(allocations[base].page_and_size.hu.intbits & PAGE_MASK_HIGH);
+		allocations[newfreeblockindex].page_and_size.hu.intbits+=additionalpages;
+		allocations[newfreeblockindex].page_and_size.wu += extra; // size bits
+		
 
 		allocations[base].next = newfreeblockindex;
-		allocations[base].page_and_size =
-			(allocations[base].page_and_size & PAGE_MASK) +
-			(size);
+		allocations[base].page_and_size.hu.intbits &= PAGE_MASK_HIGH;
+		allocations[base].page_and_size.hu.fracbits = (size);
+
+		
 
 	}
 
@@ -1558,7 +1573,7 @@ void Z_InitEMS(void)
 	allocations[0].next = 1;
 	allocations[0].prev = 1;
 	// Start the allocation list and page (num thinker pages)
-	allocations[0].page_and_size = 0; // NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT;
+	allocations[0].page_and_size.wu = 0; // NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT;
 	allocations[0].backref_and_user = USER_MASK;
 	allocations[0].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 
@@ -1566,7 +1581,7 @@ void Z_InitEMS(void)
 	allocations[1].prev = 0;
 	allocations[1].backref_and_user = 0;
 	// Start the allocation list and page (num thinker pages)
-	allocations[1].page_and_size = size;// +(NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT);
+	allocations[1].page_and_size.wu = size;// +(NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT);
 
 	allocations[1].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 
