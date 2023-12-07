@@ -95,10 +95,7 @@ R_RenderMaskedSegRange
 	uint16_t	index;
 	column_t*	col;
 	int16_t		lightnum;
-	fixed_t_union temp;
 
-
-	
 	sector_t frontsector;
 	sector_t backsector;
 	int16_t temp2;
@@ -131,8 +128,7 @@ R_RenderMaskedSegRange
 	
 	if (v1.y == v2.y) {
 		lightnum--;
-	}
-	else if (v1.x == v2.x) {
+	} else if (v1.x == v2.x) {
 		lightnum++;
 	}
 	if (lightnum < 0){
@@ -162,38 +158,40 @@ R_RenderMaskedSegRange
     }
     dc_texturemid.h.intbits += side.rowoffset;
 			
-    if (fixedcolormap)
-	dc_colormap = fixedcolormap;
-    
-    // draw the columns
-    for (dc_x = x1 ; dc_x <= x2 ; dc_x++)
-    {
-	// calculate lighting
-	if (maskedtexturecol[dc_x] != MAXSHORT) {
-	    if (!fixedcolormap) {
-
-			// prevents a 12 bit shift in many cases. 
-			// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4)
-			if (spryscale.h.intbits >= 3) {
-				index = MAXLIGHTSCALE - 1;
-			}
-			else {
-				index = spryscale.w >> LIGHTSCALESHIFT;
-			}
-
-		dc_colormap = walllights[index];
-	    }
-			
-	    sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
-	    dc_iscale = 0xffffffffu / (uint32_t)spryscale.w;
-	    
-	    // draw the texture
-	    col = (column_t *)((byte *)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
-	    R_DrawMaskedColumn (col);
-		//Z_SetUnlocked(lockedRef);
-		maskedtexturecol[dc_x] = MAXSHORT;
+	if (fixedcolormap) {
+		dc_colormap = fixedcolormap;
 	}
-	spryscale.w += rw_scalestep;
+
+    // draw the columns
+    for (dc_x = x1 ; dc_x <= x2 ; dc_x++){
+		// calculate lighting
+		if (maskedtexturecol[dc_x] != MAXSHORT) {
+			if (!fixedcolormap) {
+
+				// prevents a 12 bit shift in many cases. 
+				// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4)
+				if (spryscale.h.intbits >= 3) {
+					index = MAXLIGHTSCALE - 1;
+				}
+				else {
+					index = spryscale.w >> LIGHTSCALESHIFT;
+				}
+
+			dc_colormap = walllights[index];
+			}
+			
+			sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
+
+			dc_iscale = 0xffffffffu / (uint32_t)spryscale.w;
+			//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
+	    
+			// draw the texture
+			col = (column_t *)((byte *)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
+			R_DrawMaskedColumn (col);
+			//Z_SetUnlocked(lockedRef);
+			maskedtexturecol[dc_x] = MAXSHORT;
+		}
+		spryscale.w += rw_scalestep;
     }
 	
 }
@@ -425,7 +423,6 @@ R_StoreWallRange
 	fixed_t_union temp;
 	angle_t tempangle;
 	int16_t animateoffset = 0;
-	temp.h.fracbits = 0;
 	tempangle.hu.fracbits = 0;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
@@ -441,7 +438,7 @@ R_StoreWallRange
 #endif
 
     // mark the segment as visible for auto map
-
+	// todo might actually be faster on average to check the bit... these shifts may suck
 	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
 
 	lineflags = lines[linedefOffset].flags;
@@ -558,7 +555,6 @@ R_StoreWallRange
 		backsector = sectors[backsecnum];
 		ds_p->sprtopclip = ds_p->sprbottomclip = NULL;
 		ds_p->silhouette = 0;
-		// temp.h.intbits = backsector.floorheight >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsector.floorheight);
 
 		if (frontsector.floorheight > backsector.floorheight) {
@@ -567,20 +563,15 @@ R_StoreWallRange
 		} else if (temp.w > viewz.w) {
 			ds_p->silhouette = SIL_BOTTOM;
 			ds_p->bsilheight = MAXSHORT;
-			// ds_p->sprbottomclip = negonearray;
 		}
 	
-		// temp.h.intbits = backsector.ceilingheight >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsector.ceilingheight);
 		if (frontsector.ceilingheight < backsector.ceilingheight) {
 			ds_p->silhouette |= SIL_TOP;
-			// temp.h.intbits = frontsector.ceilingheight >> SHORTFLOORBITS;
-			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.ceilingheight);
-			ds_p->tsilheight = temp.w;
+			ds_p->tsilheight = frontsector.ceilingheight;
 		} else if (temp.w < viewz.w) {
 			ds_p->silhouette |= SIL_TOP;
 			ds_p->tsilheight = MINSHORT;
-			// ds_p->sprtopclip = screenheightarray;
 		}
 		
 		if (backsector.ceilingheight <= frontsector.floorheight) {
@@ -733,7 +724,6 @@ R_StoreWallRange
     //  of the view plane, it is definitely invisible
     //  and doesn't need to be marked.
     
-	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.floorheight);
     if (temp.w >= viewz.w) {
 		// above view plane
@@ -797,31 +787,25 @@ R_StoreWallRange
 	R_RenderSegLoop ();
     
     // save sprite clipping info
-    if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture)
-	 && !ds_p->sprtopclip)
-    {
-	memcpy (lastopening, ceilingclip+start, 2*(rw_stopx-start));
-	ds_p->sprtopclip = lastopening - start;
-	lastopening += rw_stopx - start;
+    if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture) && !ds_p->sprtopclip) {
+		memcpy (lastopening, ceilingclip+start, 2*(rw_stopx-start));
+		ds_p->sprtopclip = lastopening - start;
+		lastopening += rw_stopx - start;
     }
     
-    if ( ((ds_p->silhouette & SIL_BOTTOM) || maskedtexture)
-	 && !ds_p->sprbottomclip)
-    {
-	memcpy (lastopening, floorclip+start, 2*(rw_stopx-start));
-	ds_p->sprbottomclip = lastopening - start;
-	lastopening += rw_stopx - start;	
+    if ( ((ds_p->silhouette & SIL_BOTTOM) || maskedtexture) && !ds_p->sprbottomclip) {
+		memcpy (lastopening, floorclip+start, 2*(rw_stopx-start));
+		ds_p->sprbottomclip = lastopening - start;
+		lastopening += rw_stopx - start;	
     }
 
-    if (maskedtexture && !(ds_p->silhouette&SIL_TOP))
-    {
-	ds_p->silhouette |= SIL_TOP;
-	ds_p->tsilheight = MINSHORT;
+    if (maskedtexture && !(ds_p->silhouette&SIL_TOP)) {
+		ds_p->silhouette |= SIL_TOP;
+		ds_p->tsilheight = MINSHORT;
     }
-    if (maskedtexture && !(ds_p->silhouette&SIL_BOTTOM))
-    {
-	ds_p->silhouette |= SIL_BOTTOM;
-	ds_p->bsilheight = MAXSHORT;
+    if (maskedtexture && !(ds_p->silhouette&SIL_BOTTOM)) {
+		ds_p->silhouette |= SIL_BOTTOM;
+		ds_p->bsilheight = MAXSHORT;
     }
     ds_p++;
 }

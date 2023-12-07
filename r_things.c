@@ -168,7 +168,6 @@ R_DrawVisSprite
 	int16_t                   x2 )
 {
     column_t*           column;
-	int16_t             texturecolumn;
     fixed_t_union       frac;
     patch_t*            patch;
 	MEMREF				patchRef;
@@ -191,8 +190,7 @@ R_DrawVisSprite
          
 	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, PAGE_LOCKED);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
-		texturecolumn = (frac.h.intbits);
-		column = (column_t *) ((byte *)patch + (patch->columnofs[texturecolumn]));
+		column = (column_t *) ((byte *)patch + (patch->columnofs[frac.h.intbits]));
         R_DrawMaskedColumn (column);
 		Z_RefIsActive(patchRef);
     }
@@ -280,7 +278,7 @@ void R_ProjectSprite (mobj_t* thing)
         // choose a different rotation based on player view
 		ang.wu = R_PointToAngle (thingx, thingy);
 		//todo make this not shift 29
-        rot = (ang.wu-thingangle.wu+ (uint32_t)(ANG45/2)*9)>>29;
+        rot = (ang.hu.intbits -thingangle.hu.intbits + 0x9000u)>>(29-16);
         lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
         flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[rot];
     }
@@ -691,25 +689,25 @@ void R_DrawSprite (vissprite_t* spr)
         r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
         r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 
-        if (ds->scale1 > ds->scale2)
-        {
+        if (ds->scale1 > ds->scale2) {
             lowscale = ds->scale2;
             scale = ds->scale1;
-        }
-        else
-        {
+        } else {
             lowscale = ds->scale1;
             scale = ds->scale2;
         }
                 
+
 		if (scale < spr->scale
             || ( lowscale < spr->scale
-                 && !R_PointOnSegSide (spr->gx, spr->gy, segs[ds->curlinenum].v1Offset, segs[ds->curlinenum].v2Offset&SEG_V2_OFFSET_MASK) ) )
-        {
+                 && !R_PointOnSegSide (spr->gx, spr->gy, segs[ds->curlinenum].v1Offset, segs[ds->curlinenum].v2Offset&SEG_V2_OFFSET_MASK) ) ) {
             // masked mid texture?
-            if (ds->maskedtexturecol)   
-                R_RenderMaskedSegRange (ds, r1, r2);
-            // seg is behind sprite
+
+			if (ds->maskedtexturecol) {
+				R_RenderMaskedSegRange(ds, r1, r2);
+			}
+			
+			// seg is behind sprite
             continue;                   
         }
 
@@ -718,7 +716,6 @@ void R_DrawSprite (vissprite_t* spr)
         silhouette = ds->silhouette;
         
         // todo in the MIN_SHORT case do we have to extend the FFFF?
-        temp.h.fracbits = 0;
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
         if (spr->gz >= temp.w)
             silhouette &= ~SIL_BOTTOM;
@@ -728,22 +725,17 @@ void R_DrawSprite (vissprite_t* spr)
         if (spr->gzt <= temp.w)
             silhouette &= ~SIL_TOP;
                         
-        if (silhouette == 1)
-        {
+        if (silhouette == 1) {
             // bottom sil
             for (x=r1 ; x<=r2 ; x++)
                 if (clipbot[x] == -2)
                     clipbot[x] = ds->sprbottomclip[x];
-        }
-        else if (silhouette == 2)
-        {
+        } else if (silhouette == 2) {
             // top sil
             for (x=r1 ; x<=r2 ; x++)
                 if (cliptop[x] == -2)
                     cliptop[x] = ds->sprtopclip[x];
-        }
-        else if (silhouette == 3)
-        {
+        } else if (silhouette == 3) {
             // both
             for (x=r1 ; x<=r2 ; x++)
             {

@@ -62,7 +62,7 @@ fixed_t_union			projection;
 fixed_t_union			viewx;
 fixed_t_union			viewy;
 fixed_t_union			viewz;
-
+short_height_t			viewz_shortheight;
 angle_t			viewangle;
 
 fixed_t			viewcos;
@@ -200,7 +200,12 @@ R_PointOnSegSide
     ldx = vertexes[linev2Offset].x - lx;
     ldy = vertexes[linev2Offset].y - ly;
 	temp.h.fracbits = 0;
-	
+	// 157, 170
+	// 168, 169
+	// ? 169 170 
+	// thing 278, barrel  coords -1536, 512
+ 
+
     if (!ldx) {
 	    temp.h.intbits = lx;
         if (x <= temp.w)
@@ -628,6 +633,7 @@ void R_SetupFrame ()
     extralight = player.extralight;
 
     viewz.w = player.viewz;
+	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
 
 	tempan = viewangle.hu.intbits >> SHORTTOFINESHIFT;
     viewsin = finesine(tempan);

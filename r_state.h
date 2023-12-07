@@ -113,7 +113,7 @@ extern lineopening_t*	lineopenings;
 extern fixed_t_union		viewx;
 extern fixed_t_union		viewy;
 extern fixed_t_union		viewz;
-
+extern short_height_t		viewz_shortheight;
 extern angle_t		viewangle;
 
 

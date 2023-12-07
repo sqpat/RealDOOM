@@ -328,10 +328,10 @@ typedef struct drawseg_s
     int8_t			silhouette;
 
     // do not clip sprites above this
-    int16_t		bsilheight;
+    short_height_t		bsilheight;
 
     // do not clip sprites below this
-    int16_t		tsilheight;
+	short_height_t		tsilheight;
     
     // Pointers to lists for sprite clipping,
     //  all three adjusted so [x1] is first value.

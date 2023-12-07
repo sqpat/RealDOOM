@@ -50,23 +50,15 @@
 #define MINFRAGMENT         32
 // we dont make many conventional allocations, only a small number of important ones
 #define CONVENTIONAL_ALLOCATION_LIST_SIZE 12
-// todo make this PAGE * PAGE SIZE 
-#define MAX_ZMALLOC_SIZE 0x10000L
-
  
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
 #define SPRITE_ALLOCATION_LIST_SIZE 150
  
-
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+3767u)
-// SET TO 1 TO DISABLE
-//#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE 1
 
-// #define TEXTUREINFO_ALLOCATION_LIST_SIZE 1
 #define TEXTUREINFO_ALLOCATION_LIST_SIZE NUM_TEXTURE_CACHE * 3
-
 
 // 8 MB worth. Letting us set 8 MB as a max lets us get away with 
 // some smaller allocation_t sizes
