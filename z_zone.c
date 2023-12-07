@@ -934,7 +934,7 @@ int16_t Z_GetEMSPageFrame(fixed_t_union page_and_size, boolean locked, PAGEREF r
 }
 
 
-
+/*
 int16_t Z_GetEMSPageFrameNoUpdate(fixed_t_union page_and_size, MEMREF ref) {  //todo allocations < 65k? if so size can be an uint16_t?
 	uint16_t logicalpage = MAKE_PAGE_16(page_and_size);
 	uint16_t size = MAKE_SIZE_16(page_and_size); // no allocations are bigger than 64k - only ever the 'free block'. so we're safe to 16 bit here
@@ -984,7 +984,7 @@ int16_t Z_GetEMSPageFrameNoUpdate(fixed_t_union page_and_size, MEMREF ref) {  //
 	// I_Error("page was not found for set locked! %i %i", ref, tag );
 	return -1;
 }
-
+*/
 
 // assumes the page is already in memory. 
 // todo add this as a Z_Malloc argument so we can avoid calls to Z_GetEMSPageFrame
@@ -1042,9 +1042,6 @@ void Z_SetUnlockedWithPage(MEMREF ref, boolean value, int16_t  pageframeindex) {
 void Z_SetUnlocked(MEMREF ref) {
 	uint16_t pagenumber = MAKE_PAGE_16(allocations[ref].page_and_size);
 	int16_t pageframeindex;
-	if (ref >= EMS_ALLOCATION_LIST_SIZE) {
-		return; // conventionals dont need to get locked;;
-	}
 	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
 		if (activepages[pageframeindex] == pagenumber) {
 			Z_SetUnlockedWithPage(ref, PAGE_NOT_LOCKED, pageframeindex);
@@ -1058,40 +1055,35 @@ void Z_SetUnlocked(MEMREF ref) {
 
 //void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_t type, int8_t* file, int32_t line) {
 void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_t type) {
-	if (ref < EMS_ALLOCATION_LIST_SIZE) {
-		return 0; //error case? dont do anymore?
-	} else {
-		ref -= EMS_ALLOCATION_LIST_SIZE;
-		switch (type){
-			case CA_TYPE_SPRITE:
+	switch (type){
+		case CA_TYPE_SPRITE:
 #ifdef CHECK_FOR_ERRORS
-				if (ref >= SPRITE_ALLOCATION_LIST_SIZE){
-					I_Error ("caught c %u %s %li", ref);
-				}
+			if (ref >= SPRITE_ALLOCATION_LIST_SIZE){
+				I_Error ("caught c %u %s %li", ref);
+			}
 #endif
-				// 0 0 6bce6b20
-				//I_Error("getting thing %i %i %lx", ref, sprite_allocations[ref].offset, spritememoryblock);
-				return spritememoryblock + sprite_allocations[ref].offset;
-			case CA_TYPE_TEXTURE_INFO:
+			// 0 0 6bce6b20
+			//I_Error("getting thing %i %i %lx", ref, sprite_allocations[ref].offset, spritememoryblock);
+			return spritememoryblock + sprite_allocations[ref].offset;
+		case CA_TYPE_TEXTURE_INFO:
 #ifdef CHECK_FOR_ERRORS
-				if (ref >= TEXTUREINFO_ALLOCATION_LIST_SIZE) {
-					I_Error("caught f %u %s %li", ref);
-				}
+			if (ref >= TEXTUREINFO_ALLOCATION_LIST_SIZE) {
+				I_Error("caught f %u %s %li", ref);
+			}
 #endif
-				return textureinfomemoryblock + textureinfo_allocations[ref].offset;
-			default:
+			return textureinfomemoryblock + textureinfo_allocations[ref].offset;
+		default:
 #ifdef CHECK_FOR_ERRORS
-				if (ref >= 2*CONVENTIONAL_ALLOCATION_LIST_SIZE){
-					I_Error ("caught d %u %s %li", ref);
-				}
+			if (ref >= 2*CONVENTIONAL_ALLOCATION_LIST_SIZE){
+				I_Error ("caught d %u %s %li", ref);
+			}
 #endif
-				if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
-					return conventionalmemoryblock1 + conventional_allocations1[ref].offset;
-				else 
-					return conventionalmemoryblock2 + conventional_allocations2[ref- CONVENTIONAL_ALLOCATION_LIST_SIZE].offset;
-		}
-
+			if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
+				return conventionalmemoryblock1 + conventional_allocations1[ref].offset;
+			else 
+				return conventionalmemoryblock2 + conventional_allocations2[ref- CONVENTIONAL_ALLOCATION_LIST_SIZE].offset;
 	}
+
 
 }
 
@@ -1200,10 +1192,8 @@ MEMREF Z_MallocConventional(
 
 	 // ref and blockhead increament up ahead..
 	*blockhead += size; 
-	return (refcopy) + EMS_ALLOCATION_LIST_SIZE + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
+	return (refcopy) + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
 	
-	// the below wasnt working...
-	//return (*ref++) + EMS_ALLOCATION_LIST_SIZE + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
 }
 
 // Unlike other conventional allocations, these are freed and cause fragmentation of the memory block
