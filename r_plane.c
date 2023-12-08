@@ -126,7 +126,7 @@ R_MapPlane
     }
 	
     length = FixedMul (distance,distscale[x1]);
-	angle = MOD_FINE_ANGLE((viewangle.hu.intbits >>SHORTTOFINESHIFT)+ xtoviewangle[x1]);
+	angle = MOD_FINE_ANGLE((viewangle_shiftright3)+ xtoviewangle[x1]);
 
 	ds_xfrac = viewx.w + FixedMulTrig(length, finecosine(angle));
     ds_yfrac = -viewy.w - FixedMulTrig(length, finesine(angle));
@@ -177,7 +177,7 @@ void R_ClearPlanes (void)
     memset (cachedheight, 0, sizeof(cachedheight));
 
     // left to right mapping
-	angle = (viewangle.hu.intbits - ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
+	angle = MOD_FINE_ANGLE(viewangle_shiftright3 - FINE_ANG90) ;
 
     // scale will be unit scale at SCREENWIDTH/2 distance
     basexscale = FixedDivWholeB(finecosine(angle),centerxfrac.w);
@@ -427,8 +427,6 @@ void R_DrawPlanes (void)
 				
 
 				if (dc_yl <= dc_yh) {
-					temp.h.fracbits = 0;
-					temp.h.intbits = (xtoviewangle[x]);
 
 					/*
 					temp.h.intbits <<= 3;
@@ -439,9 +437,9 @@ void R_DrawPlanes (void)
 					// this is much faster than the above. i think there migth be a round issue on the
 					// lowest bit but i can't tell any difference -sq
 
-					temp.hu.intbits += (viewangle.hu.intbits >> 3);
-					temp.h.intbits >>= 3;
-					angle = MOD_FINE_ANGLE(temp.h.intbits);
+
+					//temp.h.intbits >>= 3;
+					angle = MOD_FINE_ANGLE(viewangle_shiftright3 + xtoviewangle[x]);
 					dc_x = x;
 
 					dc_source = R_GetColumn(skytexture, angle);

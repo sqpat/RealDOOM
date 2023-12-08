@@ -139,7 +139,7 @@ R_PointToDist
    int16_t	y );
 
 
-fixed_t R_ScaleFromGlobalAngle (angle_t visangle);
+fixed_t R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
 
 int16_t
 R_PointInSubsector

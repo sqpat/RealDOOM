@@ -44,7 +44,8 @@ uint8_t		midtexture;
 
 fineangle_t	rw_normalangle;
 // angle to line origin
-angle_t		rw_angle1;	
+//fineangle_t		rw_angle1_fine;  // every attempt to do this has led to rendering bugs
+angle_t			rw_angle1;
 
 //
 // regular wall
@@ -428,11 +429,10 @@ R_StoreWallRange
 	line_t* linedef;
 	int16_t animateoffset = 0;
 	int16_t linedefOffset;
-	tempangle.hu.fracbits = 0;
+	uint16_t rw_normalangle_shiftleft3;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
-
 
 	frontsectorfloorheight = frontsector->floorheight;
 	frontsectorceilingheight = frontsector->ceilingheight;
@@ -464,10 +464,11 @@ R_StoreWallRange
     
     // calculate rw_distance for scale calculation
     rw_normalangle = MOD_FINE_ANGLE(curseg->fineangle + FINE_ANG90);
+	rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
 
 
-	offsetangle = abs((rw_normalangle << SHORTTOFINESHIFT) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
-    
+	offsetangle = abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
+
     if (offsetangle > FINE_ANG90)
 		offsetangle = 	FINE_ANG90;
 
@@ -476,29 +477,21 @@ R_StoreWallRange
 	hyp = R_PointToDist (curlinev1.x, curlinev1.y);
     sineval = finesine(distangle);
     rw_distance = FixedMulTrig(hyp, sineval);
-		
 	
     ds_p->x1 = rw_x = start;
     ds_p->x2 = stop;
     ds_p->curseg = curseg;
     rw_stopx = stop+1;
 
-
-	tempangle.hu.intbits = xtoviewangle[start];
-	tempangle.hu.intbits <<= SHORTTOFINESHIFT;
-	tempangle.wu += viewangle.wu;
+ 
 
     // calculate scale at both ends and step
-    ds_p->scale1 = rw_scale.w =  R_ScaleFromGlobalAngle (tempangle);
-	tempangle.hu.fracbits = 0;
+    ds_p->scale1 = rw_scale.w =  R_ScaleFromGlobalAngle (viewangle_shiftright3+xtoviewangle[start]); // internally fineangle modded
 
     if (stop > start ) {
 		fixed_t_union rw_scalestep_extraprecision = { 0L };
-		tempangle.hu.intbits = xtoviewangle[stop];
-		tempangle.hu.intbits <<= SHORTTOFINESHIFT;
-		tempangle.wu += viewangle.wu;
-	
-		ds_p->scale2 = R_ScaleFromGlobalAngle (tempangle);
+
+		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle_shiftright3 + xtoviewangle[stop]);
 
 		// this is jank (using 32 bits for rw_scalestep) but the precision is actually
 		// necessary for rare situations, generally when screen size is greatly lowered
@@ -518,7 +511,6 @@ R_StoreWallRange
 		
 		ds_p->scalestep = rw_scalestep;
 
-		tempangle.hu.fracbits = 0;
 
     } else {
 		ds_p->scale2 = ds_p->scale1;
@@ -528,10 +520,10 @@ R_StoreWallRange
 
     // calculate texture boundaries
     //  and decide if floor / ceiling marks are needed
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight);
-	worldtop.w -= viewz.w;
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldbottom, frontsectorfloorheight);
-    worldbottom.w -= viewz.w;
+ 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight - viewz_shortheight);
+	//worldtop.w; -= viewz.w;
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldbottom, frontsectorfloorheight - viewz_shortheight);
+	//worldbottom.w -= viewz.w;
 	
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
@@ -573,20 +565,20 @@ R_StoreWallRange
 		ds_p->sprtopclip = ds_p->sprbottomclip = NULL;
 		ds_p->silhouette = 0;
 
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsectorfloorheight);
+		//SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsectorfloorheight);
 		if (frontsectorfloorheight > backsectorfloorheight) {
 			ds_p->silhouette = SIL_BOTTOM;
 			ds_p->bsilheight = frontsectorfloorheight;
-		} else if (temp.w > viewz.w) {
+		} else if (backsectorfloorheight > viewz_shortheight) {
 			ds_p->silhouette = SIL_BOTTOM;
 			ds_p->bsilheight = MAXSHORT;
 		}
 	
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsectorceilingheight);
+		//SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsectorceilingheight);
 		if (frontsectorceilingheight < backsectorceilingheight) {
 			ds_p->silhouette |= SIL_TOP;
 			ds_p->tsilheight = frontsectorceilingheight;
-		} else if (temp.w < viewz.w) {
+		} else if (backsectorceilingheight < viewz_shortheight) {
 			ds_p->silhouette |= SIL_TOP;
 			ds_p->tsilheight = MINSHORT;
 		}
@@ -603,11 +595,11 @@ R_StoreWallRange
 			ds_p->silhouette |= SIL_TOP;
 		}
 	
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight);
-		worldhigh.w -= viewz.w;
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight-viewz_shortheight);
+		//worldhigh.w; -= viewz.w;
 		
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldlow, backsectorfloorheight);
-		worldlow.w -= viewz.w;
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldlow, backsectorfloorheight- viewz_shortheight);
+		//worldlow.w -= viewz.w;
 		
 		// hack to allow height changes in outdoor areas
 		if (frontsectorceilingpic == skyflatnum && backsectorceilingpic == skyflatnum) {
@@ -685,7 +677,7 @@ R_StoreWallRange
     if (segtextured) {
  
 		
-		offsetangle = ((rw_normalangle << SHORTTOFINESHIFT) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
+		offsetangle = ((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
 
 
 		if (offsetangle > FINE_ANG180) {
@@ -701,17 +693,16 @@ R_StoreWallRange
 		// todo: we are subtracting then checking vs 0x8000 (or 0x80000000). 
 		// Is this equivalent to a simpler operation?
 
-		tempangle.hu.intbits = rw_normalangle;
-		tempangle.hu.intbits <<= SHORTTOFINESHIFT;
+		tempangle.hu.fracbits = 0;
+		tempangle.hu.intbits = rw_normalangle_shiftleft3;
 		tempangle.wu -= rw_angle1.wu;
 
-		if (tempangle.hu.intbits < ANG180_HIGHBITS) {
-
+		if (tempangle.hu.intbits < ANG180_HIGHBITS) {	
 			rw_offset.w = -rw_offset.w;
 		}
 		rw_offset.h.intbits += (sidetextureoffset + curseg->offset);
 		
-		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle.hu.intbits >> SHORTTOFINESHIFT) - (rw_normalangle));
+		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle_shiftright3) - (rw_normalangle));
 
 		// calculate light table
 		//  use different light tables
@@ -740,13 +731,13 @@ R_StoreWallRange
     //  of the view plane, it is definitely invisible
     //  and doesn't need to be marked.
     
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsectorfloorheight);
-    if (temp.w >= viewz.w) {
+	//SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsectorfloorheight);
+	if (frontsectorfloorheight >= viewz_shortheight) {
 		// above view plane
 		markfloor = false;
     }
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsectorceilingheight);
-    if (temp.w <= viewz.w  && frontsectorceilingpic != skyflatnum) {
+	//SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsectorceilingheight);
+    if (frontsectorceilingheight <= viewz_shortheight  && frontsectorceilingpic != skyflatnum) {
 		// below view plane
 		markceiling = false;
     }

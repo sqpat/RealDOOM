@@ -115,11 +115,12 @@ extern fixed_t_union		viewy;
 extern fixed_t_union		viewz;
 extern short_height_t		viewz_shortheight;
 extern angle_t		viewangle;
+extern fineangle_t		viewangle_shiftright3;
 
 
 // ?
-extern angle_t		clipangle;
-extern angle_t fieldofview;
+extern angle_t		clipangle;	// note: fracbits always 0
+extern angle_t fieldofview;		// note: fracbits always 0
 
 extern int16_t		viewangletox[FINEANGLES/2];
 extern fineangle_t		xtoviewangle[SCREENWIDTH+1];
@@ -131,9 +132,7 @@ extern fineangle_t	rw_normalangle;
 
 
 // angle to line origin
- // i have tried to remove this but the extra precision seems necessary to prevent drawing artifcts - sq
-extern angle_t		rw_angle1;
-
+ extern angle_t			rw_angle1;
 
 
 // 644

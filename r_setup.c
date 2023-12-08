@@ -149,11 +149,8 @@ void R_InitTextureMapping(void)
 			viewangletox[i] = viewwidth;
 	}
 
-	temp.h.fracbits = 0;
-	temp.h.intbits = xtoviewangle[0];
-	temp.h.intbits <<= 3;
-	clipangle.wu = temp.w;
-	fieldofview.wu = 2 * clipangle.wu;
+	clipangle.hu.intbits = xtoviewangle[0] << 3;
+	fieldofview.hu.intbits = 2 * clipangle.hu.intbits;
 }
 
 
@@ -239,11 +236,8 @@ void R_ExecuteSetViewSize(void)
 
 	for (i = 0; i < viewwidth; i++) {
 		an = xtoviewangle[i];
-
-
 		cosadj = labs(finecosine(an));
-
-		distscale[i] = FixedDivWholeA(FRACUNIT, cosadj); // divide by zero in 16 bit mode here.
+		distscale[i] = FixedDivWholeA(FRACUNIT, cosadj); 
 	}
 
 

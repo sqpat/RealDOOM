@@ -64,6 +64,7 @@ fixed_t_union			viewy;
 fixed_t_union			viewz;
 short_height_t			viewz_shortheight;
 angle_t			viewangle;
+fineangle_t			viewangle_shiftright3;
 
 fixed_t			viewcos;
 fixed_t			viewsin;
@@ -74,8 +75,8 @@ int8_t			detailshift;
 //
 // precalculated math tables
 //
-angle_t			clipangle;
-angle_t			fieldofview;
+angle_t			clipangle = { 0 };		// note: fracbits always 0
+angle_t			fieldofview = { 0 };	// note: fracbits always 0
 
 // The viewangletox[viewangle + FINEANGLES/4] lookup
 // maps the visible view angles to screen X coordinates,
@@ -507,7 +508,7 @@ R_PointToDist
 //  at the given angle.
 // rw_distance must be calculated first.
 //
-fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
+fixed_t R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
 {
     fixed_t_union		scale;
     fineangle_t			anglea;
@@ -517,8 +518,8 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     fixed_t_union		    num;
     fixed_t			den;
 
-    anglea = MOD_FINE_ANGLE(FINE_ANG90 + ((visangle.hu.intbits-viewangle.hu.intbits)>> SHORTTOFINESHIFT));
-    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle.hu.intbits >> SHORTTOFINESHIFT) - rw_normalangle);
+    anglea = MOD_FINE_ANGLE(FINE_ANG90 + (visangle_shift3 - viewangle_shiftright3));
+    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle_shift3) - rw_normalangle);
 
 
 
@@ -626,19 +627,18 @@ int16_t
 void R_SetupFrame ()
 {		
     int8_t		i;
-	fineangle_t tempan;
 
     viewx.w = playerMobj->x;
     viewy.w = playerMobj->y;
     viewangle = playerMobj->angle;
+	viewangle_shiftright3 = viewangle.hu.intbits >> 3;
     extralight = player.extralight;
 
     viewz.w = player.viewz;
 	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
 
-	tempan = viewangle.hu.intbits >> SHORTTOFINESHIFT;
-    viewsin = finesine(tempan);
-    viewcos = finecosine(tempan);
+    viewsin = finesine(viewangle_shiftright3);
+    viewcos = finecosine(viewangle_shiftright3);
 	
     if (player.fixedcolormap)
     {

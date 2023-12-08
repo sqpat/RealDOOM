@@ -286,32 +286,31 @@ void R_AddLine (seg_t* curline)
 	}
 
     // Global angle needed by segcalc.
-    rw_angle1 = angle1;
-    angle1.wu -= viewangle.wu;
+	//rw_angle1_fine = angle1.hu.intbits >> SHORTTOFINESHIFT;
+	rw_angle1 = angle1;
+	angle1.wu -= viewangle.wu;
     angle2.wu -= viewangle.wu;
 	
     tspan.wu = angle1.wu + clipangle.wu;
-	if (tspan.wu > fieldofview.wu)
-	{
-	tspan.wu -= fieldofview.wu;
+	if (tspan.hu.intbits > fieldofview.hu.intbits) {
+		tspan.hu.intbits -= fieldofview.hu.intbits;
 
-	// Totally off the left edge?
-	if (tspan.wu >= span.wu) {
-		return;
-	}
-	
-	angle1 = clipangle;
-    }
-    tspan.wu = clipangle.wu - angle2.wu;
-	if (tspan.wu > fieldofview.wu)
-	{
-		tspan.wu -= fieldofview.wu;
-	
-	// Totally off the left edge?
+		// Totally off the left edge?
 		if (tspan.wu >= span.wu) {
 			return;
 		}
-	angle2.wu = -clipangle.wu;
+	
+		angle1 = clipangle;
+    }
+    tspan.wu = clipangle.wu - angle2.wu;
+	if (tspan.hu.intbits > fieldofview.hu.intbits) {
+		tspan.hu.intbits -= fieldofview.hu.intbits;
+	
+		// Totally off the left edge?
+			if (tspan.wu >= span.wu) {
+				return;
+			}
+		angle2.wu = -clipangle.wu;
     }
     
     // The seg is in the view range,
@@ -359,9 +358,9 @@ void R_AddLine (seg_t* curline)
     
 
 	if (backsector->ceilingpic == frontsector->ceilingpic
-	&& backsector->floorpic == frontsector->floorpic
-	&& backsector->lightlevel == frontsector->lightlevel
-	&& curlinesidedef->midtexture == 0) {
+		&& backsector->floorpic == frontsector->floorpic
+		&& backsector->lightlevel == frontsector->lightlevel
+		&& curlinesidedef->midtexture == 0) {
 		return;
     }
     
@@ -479,9 +478,8 @@ boolean R_CheckBBox(int16_t *bspcoord)
 
 	tspan.wu = angle1.wu + clipangle.wu;
 
-	if (tspan.wu > fieldofview.wu)
-	{
-		tspan.wu -= fieldofview.wu;
+	if (tspan.hu.intbits > fieldofview.hu.intbits) {
+		tspan.hu.intbits -= fieldofview.hu.intbits;
 
 		// Totally off the left edge?
 		if (tspan.wu >= span.wu)
@@ -490,9 +488,8 @@ boolean R_CheckBBox(int16_t *bspcoord)
 		angle1 = clipangle;
 	}
 	tspan.wu = clipangle.wu - angle2.wu;
-	if (tspan.wu > fieldofview.wu)
-	{
-		tspan.wu -= fieldofview.wu;
+	if (tspan.hu.intbits > fieldofview.hu.intbits) {
+		tspan.hu.intbits -= fieldofview.hu.intbits;
 
 		// Totally off the left edge?
 		if (tspan.wu >= span.wu)

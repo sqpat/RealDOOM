@@ -954,16 +954,6 @@ void P_SlideMove ()
     // Now continue along the wall.
     // First calculate remainder.
 
-
-
-
-		// negative check
-	if (bestslidefrac.w >= (0xF800)) {
-		I_Error("catch?"); // i think this never happens and can be removed
-		return;
-	}
-
-	
 	if (bestslidefrac.hu.fracbits == 0xF800) {
 		tmxmove = playerMobj->momx;
 		tmymove = playerMobj->momy;
@@ -1027,7 +1017,6 @@ PTR_AimTraverse (intercept_t* in)
 		li = lines[in->d.linenum];
 	
 		if (!(li.flags & ML_TWOSIDED)) {
-			//I_Error("caught a");
 			return false;		// stop
 		}
 		// Crosses a two sided line.
@@ -1040,10 +1029,7 @@ PTR_AimTraverse (intercept_t* in)
 #endif
 
 
-
-
 		if (lineopening.openbottom >= lineopening.opentop) {
-			//I_Error("caught b");
 			return false;		// stop
 		}
 	
@@ -1068,19 +1054,16 @@ PTR_AimTraverse (intercept_t* in)
 			return false;		// stop
 		}
 
-		//I_Error("caught d");
 		return true;			// shot continues
     }
     
     // shoot a thing
 	th = (mobj_t*)&thinkerlist[in->d.thingRef].data;
 	if (th == shootthing) {
-		//I_Error("caught e");
 		return true;			// can't shoot self
 	}
 
 	if (!(th->flags&MF_SHOOTABLE)) {
-		//I_Error("caught f");
 		return true;			// corpse or something
 	}
     // check angles to see if the thing can be aimed at
@@ -1088,13 +1071,11 @@ PTR_AimTraverse (intercept_t* in)
     thingtopslope = FixedDiv (th->z+th->height.w - shootz.w , dist);
 
 	if (thingtopslope < bottomslope) {
-		//I_Error("caught g");
 		return true;			// shot over the thing
 	}
     thingbottomslope = FixedDiv (th->z - shootz.w, dist);
 
 	if (thingbottomslope > topslope) {
-		//I_Error("caught h");
 		return true;			// shot under the thing
 	}
     // this thing can be hit!
