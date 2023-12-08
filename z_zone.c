@@ -429,7 +429,7 @@ int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line) {
 		numallocatepages = 1;
 	}
 	else {
-		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
+		numallocatepages = 1 + (_rotl((size - 1), (16 - PAGE_FRAME_BITS)) & 0x03);
 	}
 
 	for (pageframeindex = 0; pageframeindex < NUM_EMS_PAGES; pageframeindex++) {
@@ -653,7 +653,7 @@ void Z_PageOutIfInMemory(fixed_t_union page_and_size) {
 
 
 	if (size) {
-		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
+		numallocatepages = 1 + (_rotl((size - 1), (16 - PAGE_FRAME_BITS)) & 0x03);
 	} else {
 		numallocatepages = 1;
 	}
@@ -701,16 +701,18 @@ int16_t Z_GetEMSPageFrame(fixed_t_union page_and_size, boolean locked, PAGEREF r
 		numallocatepages = 1;
 	}
 	else {
-		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
+		numallocatepages = 1 + (_rotl((size - 1), (16-PAGE_FRAME_BITS)) & 0x03);
 	}
 	
-	if (numallocatepages > 4) {
+
+	/*
+
+		if (numallocatepages > 4) {
 		// 5495C000
 		I_Error("ref is %u %i %lu %u %lu", ref, numallocatepages, page_and_size, logicalpage, size);
 	}
 
-	/*
-		I_Error("earlyest %i %i %i %i %i %i %i %i %i %i %i %i",
+	I_Error("earlyest %i %i %i %i %i %i %i %i %i %i %i %i",
 			activepages[0], activepages[1], activepages[2], activepages[3],
 			pagesize[0], pagesize[1], pagesize[2], pagesize[3],
 			pageevictorder[0], pageevictorder[1], pageevictorder[2], pageevictorder[3]
@@ -947,7 +949,7 @@ int16_t Z_GetEMSPageFrameNoUpdate(fixed_t_union page_and_size, MEMREF ref) {  //
 		numallocatepages = 1;
 	}
 	else {
-		numallocatepages = 1 + ((size - 1) >> PAGE_FRAME_BITS);
+		numallocatepages = 1 + (_rotl((size - 1), (16-PAGE_FRAME_BITS)) & 0x03);
 	}
 
 

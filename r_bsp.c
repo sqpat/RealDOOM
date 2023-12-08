@@ -104,25 +104,24 @@ R_ClipSolidWallSegment
 
     if (first < start->first)
     {
-	if (last < start->first-1)
-	{
-	    // Post is entirely visible (above start),
-	    //  so insert a new clippost.
-	    R_StoreWallRange (first, last);
-	    next = newend;
-	    newend++;
+		if (last < start->first-1) {
+			// Post is entirely visible (above start),
+			//  so insert a new clippost.
+			R_StoreWallRange (first, last);
+			next = newend;
+			newend++;
 	    
-		// 1/11/98 killough: performance tuning using fast memmove
-		memmove(start + 1, start, (++newend - start) * sizeof(*start));
-		start->first = first;
-		start->last = last;
-		return;
-	}
+			// 1/11/98 killough: performance tuning using fast memmove
+			memmove(start + 1, start, (++newend - start) * sizeof(*start));
+			start->first = first;
+			start->last = last;
+			return;
+		}
 		
-	// There is a fragment above *start.
-	R_StoreWallRange (first, start->first - 1);
-	// Now adjust the clip size.
-	start->first = first;	
+		// There is a fragment above *start.
+		R_StoreWallRange (first, start->first - 1);
+		// Now adjust the clip size.
+		start->first = first;	
     }
 
     // Bottom contained in start?
@@ -130,19 +129,17 @@ R_ClipSolidWallSegment
 	return;			
 		
     next = start;
-    while (last >= (next+1)->first-1)
-    {
-	// There is a fragment between two posts.
-	R_StoreWallRange (next->last + 1, (next+1)->first - 1);
-	next++;
+    while (last >= (next+1)->first-1) {
+		// There is a fragment between two posts.
+		R_StoreWallRange (next->last + 1, (next+1)->first - 1);
+		next++;
 	
-	if (last <= next->last)
-	{
-	    // Bottom is contained in next.
-	    // Adjust the clip size.
-	    start->last = next->last;	
-	    goto crunch;
-	}
+		if (last <= next->last) {
+			// Bottom is contained in next.
+			// Adjust the clip size.
+			start->last = next->last;	
+			goto crunch;
+		}
     }
 	
     // There is a fragment after *next.
@@ -153,15 +150,13 @@ R_ClipSolidWallSegment
     // Remove start+1 to next from the clip list,
     // because start now covers their area.
   crunch:
-    if (next == start)
-    {
-	// Post just extended past the bottom of one post.
-	return;
+    if (next == start) {
+		// Post just extended past the bottom of one post.
+		return;
     }
     
 
-    while (next++ != newend)
-    {
+    while (next++ != newend) {
 	// Remove a post
 		start++;
 		*start = *next;
