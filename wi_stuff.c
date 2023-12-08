@@ -1075,6 +1075,7 @@ void WI_loadData(void)
 
 
     // background
+		W_EraseFullscreenCache();
 	 	V_DrawFullscreenPatch(name);
 
 

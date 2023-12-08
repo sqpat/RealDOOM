@@ -52,7 +52,7 @@ byte	lumpcachebytes[LUMPCACHE_SIZE];
 MEMREF*					lumpcacheEMS;
 
 // we use this explicitly for fullscreen graphics. 
-MEMREF              pagedlumpcacheEMS[2];
+MEMREF              pagedlumpcacheEMS[5];
 
 uint16_t                     reloadlump;
 int8_t*                   reloadname;
@@ -386,6 +386,11 @@ W_CacheLumpNameEMS
 	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
 }
 
+int16_t fullscreencache = 0x00;
+void W_EraseFullscreenCache() {
+	fullscreencache = 0x00; // five bits
+}
+
 // used for stuff > 64k, especially titlepics, to draw one ems frame at a tiem
 MEMREF
 W_CacheLumpNameEMSFragment
@@ -396,11 +401,15 @@ W_CacheLumpNameEMSFragment
  
 
     if (pagedlumpcacheEMS[pagenum]){
-        // erase cache
-        //Z_FreeEMS(pagedlumpcacheEMS[pagenum]);
+         // dont erase. we are just going to overwrite it when we load a new fullscreen patch.
+		if ((fullscreencache & (1 << pagenum))) {
+			return pagedlumpcacheEMS[pagenum];
+		}
 	} else {
 		pagedlumpcacheEMS[pagenum] = Z_MallocEMS(16384, tag, 0);
 	}
+
+	fullscreencache &= (1 << pagenum); // cache on
 
     W_ReadLumpEMS(W_GetNumForName(name), pagedlumpcacheEMS[pagenum], offset, 16384);
 

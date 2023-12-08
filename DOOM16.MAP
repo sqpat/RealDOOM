@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/12/07 20:47:01
+Created on:       23/12/07 21:07:59
 Executable Image: doom16.exe
 creating a DOS overlayed executable
 
@@ -55,9 +55,9 @@ r_main_TEXT            CODE           AUTO           0f69:4410       0000097b
 r_plane_TEXT           CODE           AUTO           0f69:4d90       00000a93
 r_segs_TEXT            CODE           AUTO           0f69:5830       000014d7
 r_things_TEXT          CODE           AUTO           0f69:6d10       0000104b
-w_wad_TEXT             CODE           AUTO           0f69:7d60       000003ad
-v_video_TEXT           CODE           AUTO           0f69:8110       000002fc
-z_zone_TEXT            CODE           AUTO           0f69:8410       00000ffd
+w_wad_TEXT             CODE           AUTO           0f69:7d60       000003cb
+v_video_TEXT           CODE           AUTO           0f69:8130       000002fc
+z_zone_TEXT            CODE           AUTO           0f69:8430       00000fdb
 st_stuff_TEXT          CODE           AUTO           0f69:9410       00000ab7
 st_lib_TEXT            CODE           AUTO           0f69:9ed0       0000020c
 hu_stuff_TEXT          CODE           AUTO           0f69:a0e0       0000023b
@@ -971,23 +971,25 @@ Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 0f69:7fda      W_CacheLumpNumCheck_
 0f69:7fde      W_CacheLumpNumEMS2_
 0f69:8052      W_CacheLumpNameEMS_
-0f69:8068      W_CacheLumpNameEMSFragment_
-0f69:80d6      W_CacheLumpNameEMSAsPatch_
-0f69:80f4      W_EraseLumpCache_
+0f69:8068      W_EraseFullscreenCache_
+0f69:8070      W_CacheLumpNameEMSFragment_
+0f69:80f4      W_CacheLumpNameEMSAsPatch_
+0f69:8112      W_EraseLumpCache_
+8576:0a02+     _fullscreencache
 8576:3e30      _reloadname
-8576:3e34+     _pagedlumpcacheEMS
-8576:3e38      _lumpcacheEMS
-8576:3e3c      _lumpinfo
-8576:3e40      _wadfilehandle
-8576:3e42      _reloadlump
-8576:3e44      _numlumps
+8576:3e34      _lumpcacheEMS
+8576:3e38      _lumpinfo
+8576:3e3c+     _pagedlumpcacheEMS
+8576:3e46      _wadfilehandle
+8576:3e48      _reloadlump
+8576:3e4a      _numlumps
 5469:0000      _lumpcachebytes
 5469:09e0      _lumpbytes
 Module: v_video.obj(C:\REALDOOM\v_video.c)
-0f69:8110      V_MarkRect_
-0f69:814c      V_CopyRect_
-0f69:81e0      V_DrawPatch_
-0f69:831e      V_DrawPatchDirect_
+0f69:8130      V_MarkRect_
+0f69:816c      V_CopyRect_
+0f69:8200      V_DrawPatch_
+0f69:833e      V_DrawPatchDirect_
 8576:3e50      _dirtybox
 8576:3e58*     _screen3
 8576:3e5c*     _screen2
@@ -1024,26 +1026,26 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 8576:0a2c      _numreads
 8576:0a30      _pageins
 8576:0a34      _pageouts
-0f69:8562      Z_ChangeTagEMS_
-0f69:858e      Z_FreeEMS_
-0f69:870a      Z_FreeTagsEMS_
-0f69:8730+     Z_MarkPageLRU_
-0f69:8768+     Z_MarkPageMRU_
-0f69:87a2+     Z_DoPageOut_
-0f69:8870+     Z_DoPageIn_
-0f69:892e+     Z_PageOutIfInMemory_
-0f69:898a+     Z_GetEMSPageFrame_
-0f69:8c18+     Z_SetUnlockedWithPage_
-0f69:8c5c      Z_SetUnlocked_
-0f69:8ca6      Z_LoadBytesFromConventionalWithOptions2_
-0f69:8cf2      Z_FreeConventionalAllocations_
-0f69:8da8      Z_MallocConventional_
-0f69:8f38      Z_LoadBytesFromEMSWithOptions2_
-0f69:8fb6+     Z_GetNextFreeArrayIndex_
-0f69:8ff8      Z_MallocEMS_
-0f69:900c      Z_MallocEMSWithBackRef32_
-0f69:903e      Z_MallocEMSWithBackRef16_
-0f69:9358      Z_InitEMS_
+0f69:8576      Z_ChangeTagEMS_
+0f69:85a2      Z_FreeEMS_
+0f69:871e      Z_FreeTagsEMS_
+0f69:8744+     Z_MarkPageLRU_
+0f69:877c+     Z_MarkPageMRU_
+0f69:87b6+     Z_DoPageOut_
+0f69:8884+     Z_DoPageIn_
+0f69:8942+     Z_PageOutIfInMemory_
+0f69:899e+     Z_GetEMSPageFrame_
+0f69:8c16+     Z_SetUnlockedWithPage_
+0f69:8c5a      Z_SetUnlocked_
+0f69:8ca4      Z_LoadBytesFromConventionalWithOptions2_
+0f69:8cf0      Z_FreeConventionalAllocations_
+0f69:8da6      Z_MallocConventional_
+0f69:8f36      Z_LoadBytesFromEMSWithOptions2_
+0f69:8fb4+     Z_GetNextFreeArrayIndex_
+0f69:8ff6      Z_MallocEMS_
+0f69:900a      Z_MallocEMSWithBackRef32_
+0f69:903c      Z_MallocEMSWithBackRef16_
+0f69:9356      Z_InitEMS_
 8576:0a38+     _actualpageins
 8576:0a3c+     _actualpageouts
 8576:3fec+     _textureinfo_allocations
@@ -1668,7 +1670,7 @@ Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
 f_finale_TEXT          CODE           AUTO           21c3:0000       00000ce4
-wi_stuff_TEXT          CODE           AUTO           21c3:0cf0       00001344
+wi_stuff_TEXT          CODE           AUTO           21c3:0cf0       00001348
 
 
                         +----------------+
@@ -1717,7 +1719,7 @@ Module: f_finale.obj(C:\REALDOOM\f_finale.c)
 8576:46f2+     _castframes
 8576:46f3+     _castnum
 Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
-8576:4734+     _lnamesRef
+8576:4738+     _lnamesRef
 8576:0d60+     _unloaded
 21c3:0dee+     getLnodeX_
 21c3:0ef0+     getLnodeY_
@@ -1741,13 +1743,13 @@ Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
 21c3:19ca*     WI_checkForAccelerate_
 21c3:1a14      WI_Ticker_
 21c3:1a66+     WI_loadData_
-21c3:1d6a+     WI_unloadData_
-21c3:1d6a*     WI_End_
-21c3:1ef6      WI_Drawer_
-21c3:1f18+     WI_initVariables_
-21c3:1f7a      WI_Start_
-21c3:1f88*     WI_initStats_
-21c3:1fba+     WI_initAnimatedBack_
+21c3:1d6e+     WI_unloadData_
+21c3:1d6e*     WI_End_
+21c3:1efa      WI_Drawer_
+21c3:1f1c+     WI_initVariables_
+21c3:1f7e      WI_Start_
+21c3:1f8c*     WI_initStats_
+21c3:1fbe+     WI_initAnimatedBack_
 
 
 Overlay section 2 address 21c3:0000
@@ -1762,7 +1764,7 @@ Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
 i_quit_TEXT            CODE           AUTO           21c3:0000       0000024f
-v_extra_TEXT           CODE           AUTO           21c3:0250       00000169
+v_extra_TEXT           CODE           AUTO           21c3:0250       0000016f
 
 
                         +----------------+
@@ -1876,7 +1878,7 @@ Overlay section 4 address 21c3:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-p_setup_TEXT           CODE           AUTO           21c3:0000       000016cd
+p_setup_TEXT           CODE           AUTO           21c3:0000       000016d2
 
 
                         +----------------+
@@ -1905,14 +1907,14 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 8576:481e      _bmapwidth
 8576:4820      _bmaporgx
 8576:4822      _bmaporgy
-8576:4824      _bmapheight
-8576:4826      _blockmaplumpRef
-8576:4828      _rejectmatrixRef
-8576:482a      _nightmareSpawnPointsRef
-8576:482c      _numsides
-8576:482e      _numvertexes
-8576:4830      _sectorBlockBoxesRef
-8576:4832      _numlines
+8576:4824      _blockmaplumpRef
+8576:4826      _rejectmatrixRef
+8576:4828      _bmapheight
+8576:482a      _numlines
+8576:482c      _nightmareSpawnPointsRef
+8576:482e      _numsides
+8576:4830      _numvertexes
+8576:4832      _sectorBlockBoxesRef
 8576:4834      _numnodes
 8576:4836      _numsectors
 8576:4838+     _numsubsectors
@@ -2214,4 +2216,4 @@ C:\WATCOM\lib286\dos\wovl.lib
 Stack size:  0bb8 (3000.)
 Memory size:  0008b10a (569610.)
 Entry point address: 1a91:6545
-Link time: 00:00.14
+Link time: 00:00.69

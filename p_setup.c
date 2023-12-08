@@ -1303,7 +1303,8 @@ P_SetupLevel
 	// Initial height of PointOfView
 	// will be set by player think.
 	player.viewz = 1;
-
+	
+	W_EraseFullscreenCache();
 	S_Start();
 	Z_FreeTagsEMS();
 	Z_FreeConventionalAllocations();

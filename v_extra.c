@@ -56,8 +56,8 @@ V_DrawFullscreenPatch
 	int32_t    offset = 0;
 	int16_t    pageoffset = 0;
 	byte*       extradata;
-
- 	patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 0, 0);
+	int16_t	pagenum = 0;
+ 	patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, pagenum, 0);
 	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchref, PAGE_LOCKED);
 	extradata = (byte*)patch;
 	w = (patch->width);
@@ -75,7 +75,8 @@ V_DrawFullscreenPatch
 
 		if (pageoffset > 16000) {
 			offset += pageoffset;
-			colref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, 1, offset);
+			pagenum++;
+			colref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, pagenum, offset);
 			extradata = Z_LoadBytesFromEMS(colref);
 			column = (column_t *)((byte *)extradata + patch->columnofs[col] - offset);
 		}
