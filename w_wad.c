@@ -397,10 +397,11 @@ W_CacheLumpNameEMSFragment
 
     if (pagedlumpcacheEMS[pagenum]){
         // erase cache
-        Z_FreeEMS(pagedlumpcacheEMS[pagenum]);
-    }
+        //Z_FreeEMS(pagedlumpcacheEMS[pagenum]);
+	} else {
+		pagedlumpcacheEMS[pagenum] = Z_MallocEMS(16384, tag, 0);
+	}
 
-    pagedlumpcacheEMS[pagenum] = Z_MallocEMS(16384, tag, 0);
     W_ReadLumpEMS(W_GetNumForName(name), pagedlumpcacheEMS[pagenum], offset, 16384);
 
     return pagedlumpcacheEMS[pagenum];
