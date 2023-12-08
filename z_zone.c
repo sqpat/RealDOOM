@@ -91,8 +91,7 @@
 #define OFFSET_BITS 14
 
 #define MAKE_OFFSET(x) (x.offset_and_tag & OFFSET_MASK)
-#define MAKE_TAG(x) (x.offset_and_tag >> OFFSET_BITS)
-#define SET_TAG(x, y) (x.offset_and_tag =  (y << OFFSET_BITS) + MAKE_OFFSET(x) )
+#define SET_TAG(x, y) (x.offset_and_tag = (_rotr(y, (16-OFFSET_BITS)) + MAKE_OFFSET(x)))
 
 // basically we are storing a 14 bit unsigned integer alongside a 2 bit  pair of flags...
 
@@ -1407,8 +1406,6 @@ Z_MallocEMSWithBackRef16
 
 		newfreeblockindex = Z_GetNextFreeArrayIndex();
 
-
-
 		allocations[newfreeblockindex].prev = allocations[base].prev;
 		allocations[allocations[base].prev].next = newfreeblockindex;
 		allocations[newfreeblockindex].next = base;
@@ -1418,13 +1415,9 @@ Z_MallocEMSWithBackRef16
 		allocations[newfreeblockindex].page_and_size.hu.intbits = allocations[base].page_and_size.hu.intbits & PAGE_MASK_HIGH;
 		allocations[newfreeblockindex].page_and_size.hu.fracbits = offsetToNextPage;
 
+		allocations[newfreeblockindex].offset_and_tag = MAKE_OFFSET(allocations[base]); // using tag NOT_IN_USE
 
-		// using tag NOT_IN_USE
-		allocations[newfreeblockindex].offset_and_tag = MAKE_OFFSET(allocations[base]);
-
-		// implies -1 backref and 0 user
-		allocations[newfreeblockindex].backref_and_user = 0;
-
+		allocations[newfreeblockindex].backref_and_user = 0;// implies 0 backref and 0 user
 		allocations[base].page_and_size.wu -= offsetToNextPage;
 		// todo are we okay with respect to not wrapping around? should never happen because initial size should be set in a way this doesnt happen?
 		allocations[base].page_and_size.hu.intbits += (0x80); // 1 << PAGE_AND_SIZE_SHIFT
@@ -1432,10 +1425,7 @@ Z_MallocEMSWithBackRef16
 
 		extra = extra - offsetToNextPage;
 
-
 	}
-
-
 
 	// after this call, newfragment -> next is mainblock
 	// base-> next is newfragment
@@ -1456,18 +1446,9 @@ Z_MallocEMSWithBackRef16
 		allocations[newfreeblockindex].prev = base;
 		allocations[newfreeblockindex].next = allocations[base].next;
 		allocations[allocations[newfreeblockindex].next].prev = newfreeblockindex;
-		// implied tag NOT_IN_USE
-		allocations[newfreeblockindex].offset_and_tag = (allocations[base].offset_and_tag + (size)) & 0x3FFF;
-		// implies -1 backref and 0 user
-		allocations[newfreeblockindex].backref_and_user = 0;
+		allocations[newfreeblockindex].offset_and_tag = (allocations[base].offset_and_tag + (size)) & 0x3FFF; // implied tag NOT_IN_USE
+		allocations[newfreeblockindex].backref_and_user = 0; // implies 0 backref and 0 user
 
-
-		/*
-		allocations[newfreeblockindex].page_and_size.wu =
-			(allocations[base].page_and_size.wu & PAGE_MASK) +
-			(((MAKE_OFFSET(allocations[base]) + (int32_t)size) >> PAGE_FRAME_BITS) << PAGE_AND_SIZE_SHIFT)
-			+ (extra);
-		*/
 
 		// 2 high bits are the number of pages of the allocation but it needs to be shifted 7 over to line up with offsets
 
@@ -1481,8 +1462,6 @@ Z_MallocEMSWithBackRef16
 		allocations[base].next = newfreeblockindex;
 		allocations[base].page_and_size.hu.intbits &= PAGE_MASK_HIGH;
 		allocations[base].page_and_size.hu.fracbits = (size);
-
-		
 
 	}
 
