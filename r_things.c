@@ -114,10 +114,10 @@ void R_DrawMaskedColumn (column_t* column) {
 	
 	fixed_t_union         topscreen;
 	fixed_t_union         bottomscreen;
-	fixed_t     basetexturemid;
+	fixed_t_union     basetexturemid;
 	fixed_t_union     temp;
 	temp.h.fracbits = 0;
-    basetexturemid = dc_texturemid.w;
+    basetexturemid = dc_texturemid;
         
     for ( ; column->topdelta != 0xff ; )  {
         // calculate unclipped screen coordinates
@@ -139,7 +139,7 @@ void R_DrawMaskedColumn (column_t* column) {
 
         if (dc_yl <= dc_yh) {
             dc_source = (byte *)column + 3;
-			dc_texturemid.w = basetexturemid;
+			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
 			// dc_source = (byte *)column + 3 - column->topdelta;
@@ -151,7 +151,7 @@ void R_DrawMaskedColumn (column_t* column) {
         column = (column_t *)(  (byte *)column + column->length + 4);
     }
         
-    dc_texturemid.w = basetexturemid;
+    dc_texturemid = basetexturemid;
 }
 
 
@@ -394,7 +394,7 @@ void R_ProjectSprite (mobj_t* thing)
 // During BSP traversal, this adds sprites by sector.
 //
 
-void R_AddSprites (int16_t secnum)
+void R_AddSprites (sector_t* sec)
 {
     mobj_t*             thing;
 	THINKERREF				thingRef;
@@ -407,12 +407,12 @@ void R_AddSprites (int16_t secnum)
     // Thus we check whether its already added.
     
 
-	if (sectors[secnum].validcount == validcount)
+	if (sec->validcount == validcount)
         return;         
     // Well, now it will be done.
-	(&sectors[secnum])->validcount = validcount;
+	sec->validcount = validcount;
         
-    lightnum = (sectors[secnum].lightlevel >> LIGHTSEGSHIFT)+extralight;
+    lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 	if (lightnum < 0) {
 		spritelights = scalelight[0];
@@ -425,7 +425,7 @@ void R_AddSprites (int16_t secnum)
 
     // Handle all things in sector.
 	// todo, should we quit out early of drawing player sprite? matters for netplay maybe? if its self, shouldnt render and its a lot of extra traversal?
-	for (thingRef = sectors[secnum].thinglistRef; thingRef; thingRef = thing->snextRef) {
+	for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
 		thing = (mobj_t*)&thinkerlist[thingRef].data;
 		R_ProjectSprite(thing);
 		 
@@ -700,7 +700,7 @@ void R_DrawSprite (vissprite_t* spr)
 
 		if (scale < spr->scale
             || ( lowscale < spr->scale
-                 && !R_PointOnSegSide (spr->gx, spr->gy, segs[ds->curlinenum].v1Offset, segs[ds->curlinenum].v2Offset&SEG_V2_OFFSET_MASK) ) ) {
+                 && !R_PointOnSegSide (spr->gx, spr->gy, ds->curseg->v1Offset, ds->curseg->v2Offset&SEG_V2_OFFSET_MASK) ) ) {
             // masked mid texture?
 
 			if (ds->maskedtexturecol) {

@@ -21,13 +21,11 @@
 #define __R_BSP__
 
  
-extern int16_t		curlinenum;
+extern seg_t*		curseg;
 extern side_t*		sidedef;
-//extern line_t*		linedef;
-extern int16_t linedefOffset;
 
-extern int16_t	frontsecnum;
-extern int16_t	backsecnum;
+extern sector_t*	frontsector;
+extern sector_t*	backsector;
 
 extern int16_t		rw_x;
 extern int16_t		rw_stopx;

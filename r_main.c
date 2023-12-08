@@ -517,7 +517,7 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
     fixed_t_union		    num;
     fixed_t			den;
 
-    anglea = MOD_FINE_ANGLE(FINE_ANG90 + ((visangle.wu-viewangle.wu)>> ANGLETOFINESHIFT));
+    anglea = MOD_FINE_ANGLE(FINE_ANG90 + ((visangle.hu.intbits-viewangle.hu.intbits)>> SHORTTOFINESHIFT));
     angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle.hu.intbits >> SHORTTOFINESHIFT) - rw_normalangle);
 
 
@@ -532,15 +532,16 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
         scale.w = FixedDiv (num.w, den);
 
         if (scale.h.intbits > 64){
-            scale.w = 0x400000L;
+            return 0x400000L;
             //scale.h.fracbits = 0;
-        } else if (scale.w < 256)
-            scale.w = 256;
+		} else if (scale.w < 256) {
+			return 256;
+		}
+		return scale.w;
     } else{
-        scale.w = 0x400000L;
+        return 0x400000L;
     }
     
-    return scale.w;
 }
 
 

@@ -46,7 +46,7 @@ void R_DrawMaskedColumn (column_t* column);
 
 void R_SortVisSprites (void);
 
-void R_AddSprites (int16_t secnum);
+void R_AddSprites(sector_t* sec);
 void R_ClearSprites (void);
 void R_DrawMasked (void);
 void R_InitSprites(char** namelist);

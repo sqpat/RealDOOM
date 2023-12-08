@@ -95,37 +95,37 @@ R_RenderMaskedSegRange
 	uint16_t	index;
 	column_t*	col;
 	int16_t		lightnum;
-
-	sector_t frontsector;
-	sector_t backsector;
+	int16_t		frontsecnum, backsecnum;
+ 
 	int16_t temp2;
-	seg_t curline = segs[ds->curlinenum];
-	side_t side = sides[curline.sidedefOffset];
-	int16_t curlineside = curline.v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
-	vertex_t v1 = vertexes[curline.v1Offset];
-	vertex_t v2 = vertexes[curline.v2Offset & SEG_V2_OFFSET_MASK];
-	line_t sideline = lines[curline.linedefOffset];
-	int16_t		texnum = texturetranslation[side.midtexture];
+	side_t* side;
+	int16_t curlineside;
+	vertex_t v1;
+	vertex_t v2;
+	line_t* sideline;
+	int16_t		texnum;
+	curseg = ds->curseg;
+
+	side = &sides[curseg->sidedefOffset];
+	texnum = texturetranslation[side->midtexture];
+	curlineside = curseg->v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
+	v1 = vertexes[curseg->v1Offset];
+	v2 = vertexes[curseg->v2Offset & SEG_V2_OFFSET_MASK];
+	sideline = &lines[curseg->linedefOffset];
 	// Calculate light table.
 	// Use different light tables
 	//   for horizontal / vertical / diagonal. Diagonal?
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
-	curlinenum = ds->curlinenum;
-	
 
 
-	frontsecnum = sides[sideline.sidenum[curlineside]].secnum;
-	backsecnum =
-		sideline.flags & ML_TWOSIDED ?
-		sides[sideline.sidenum[curlineside ^ 1]].secnum
-		: SECNUM_NULL;
+	frontsecnum = side->secnum;
+	backsector =
+		sideline->flags & ML_TWOSIDED ?
+		&sectors[sides[sideline->sidenum[curlineside ^ 1]].secnum]
+		: NULL;
+	frontsector = &sectors[frontsecnum];
+	lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT) + extralight;
 
-
-	frontsector = sectors[frontsecnum];
-	backsector = sectors[backsecnum];
-
-	lightnum = (frontsector.lightlevel >> LIGHTSEGSHIFT) + extralight;
-	
 	if (v1.y == v2.y) {
 		lightnum--;
 	} else if (v1.x == v2.x) {
@@ -146,17 +146,17 @@ R_RenderMaskedSegRange
     mceilingclip = ds->sprtopclip;
     
     // find positioning
-    if (sideline.flags & ML_DONTPEGBOTTOM) {
+    if (sideline->flags & ML_DONTPEGBOTTOM) {
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(dc_texturemid, 
-				frontsector.floorheight > backsector.floorheight ? frontsector.floorheight : backsector.floorheight);
+				frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight);
 		dc_texturemid.h.intbits += textureheights[texnum] + 1;
 		dc_texturemid.w -=  viewz.w;
     } else {
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(dc_texturemid, 
-			(frontsector.ceilingheight < backsector.ceilingheight ? frontsector.ceilingheight : backsector.ceilingheight));
+			(frontsector->ceilingheight < backsector->ceilingheight ? frontsector->ceilingheight : backsector->ceilingheight));
 		dc_texturemid.w -=  viewz.w;
     }
-    dc_texturemid.h.intbits += side.rowoffset;
+    dc_texturemid.h.intbits += side->rowoffset;
 			
 	if (fixedcolormap) {
 		dc_colormap = fixedcolormap;
@@ -172,17 +172,17 @@ R_RenderMaskedSegRange
 				// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4)
 				if (spryscale.h.intbits >= 3) {
 					index = MAXLIGHTSCALE - 1;
-				}
-				else {
+				} else {
 					index = spryscale.w >> LIGHTSCALESHIFT;
 				}
 
-			dc_colormap = walllights[index];
+				dc_colormap = walllights[index];
 			}
 			
 			sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
 
-			dc_iscale = 0xffffffffu / (uint32_t)spryscale.w;
+			dc_iscale = 0xffffffffu / spryscale.w;
+			// the below doesnt work because sometimes < FRACUNIT
 			//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
 	    
 			// draw the texture
@@ -299,7 +299,9 @@ void R_RenderSegLoop (void)
 
 			dc_colormap = walllights[index];
 			dc_x = rw_x;
-			dc_iscale = 0xffffffffu / (uint32_t)rw_scale.w;
+			dc_iscale = 0xffffffffu / rw_scale.w;
+			// the below doesnt work because sometimes < FRACUNIT
+			//dc_iscale = 0xffffu / rw_scale.hu.intbits;  // this might be ok? 
 		}
 
 		// draw the wall tiers
@@ -311,7 +313,6 @@ void R_RenderSegLoop (void)
 
 			dc_source = R_GetColumn(midtexture,texturecolumn);
 			colfunc();
-			//Z_SetUnlocked(lockedRef);
 			ceilingclip[rw_x] = viewheight;
 			floorclip[rw_x] = -1;
 		} else {
@@ -412,24 +413,37 @@ R_StoreWallRange
     int16_t			lightnum;
 
 	// needs to be refreshed...
-	seg_t curline = segs[curlinenum];
-	side_t side = sides[curline.sidedefOffset];
-	vertex_t curlinev1 = vertexes[curline.v1Offset];
-	vertex_t curlinev2 = vertexes[curline.v2Offset&SEG_V2_OFFSET_MASK];
+ 	side_t* side = &sides[curseg->sidedefOffset];
+	vertex_t curlinev1 = vertexes[curseg->v1Offset];
+	vertex_t curlinev2 = vertexes[curseg->v2Offset&SEG_V2_OFFSET_MASK];
 	int16_t sidetextureoffset;
 	int16_t lineflags;
-	sector_t frontsector;
-	sector_t backsector;
-	fixed_t_union temp;
+ 	fixed_t_union temp;
 	angle_t tempangle;
+	short_height_t frontsectorfloorheight;
+	short_height_t frontsectorceilingheight;
+	uint8_t frontsectorceilingpic;
+	uint8_t frontsectorfloorpic;
+	uint8_t frontsectorlightlevel;
+	line_t* linedef;
 	int16_t animateoffset = 0;
+	int16_t linedefOffset;
 	tempangle.hu.fracbits = 0;
 
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 		return;		
-		 
-	linedefOffset = curline.linedefOffset;
 
+
+	frontsectorfloorheight = frontsector->floorheight;
+	frontsectorceilingheight = frontsector->ceilingheight;
+	frontsectorceilingpic = frontsector->ceilingpic;
+	frontsectorfloorpic = frontsector->floorpic;
+	frontsectorlightlevel = frontsector->lightlevel;
+
+		 
+	//linedef = &lines[curseg->linedefOffset];
+	linedefOffset = curseg->linedefOffset;
+	linedef = &lines[linedefOffset];
 
 #ifdef CHECK_FOR_ERRORS
 	if (linedefOffset > numlines) {
@@ -441,18 +455,18 @@ R_StoreWallRange
 	// todo might actually be faster on average to check the bit... these shifts may suck
 	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
 
-	lineflags = lines[linedefOffset].flags;
+	lineflags = linedef->flags;
 
 	// if this is an animated line and offset 0 then set texture offset
-	if (lines[linedefOffset].special == 48 && lines[linedefOffset].sidenum[0] == curline.sidedefOffset){
+	if (linedef->special == 48 && linedef->sidenum[0] == side-sides){
 		animateoffset = leveltime.h.fracbits;
 	}
     
     // calculate rw_distance for scale calculation
-    rw_normalangle = MOD_FINE_ANGLE(curline.fineangle + FINE_ANG90);
+    rw_normalangle = MOD_FINE_ANGLE(curseg->fineangle + FINE_ANG90);
 
 
-	offsetangle = abs((rw_normalangle << 3)- (rw_angle1.hu.intbits)) >> 3;
+	offsetangle = abs((rw_normalangle << SHORTTOFINESHIFT) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
     
     if (offsetangle > FINE_ANG90)
 		offsetangle = 	FINE_ANG90;
@@ -466,12 +480,12 @@ R_StoreWallRange
 	
     ds_p->x1 = rw_x = start;
     ds_p->x2 = stop;
-    ds_p->curlinenum = curlinenum;
+    ds_p->curseg = curseg;
     rw_stopx = stop+1;
 
 
 	tempangle.hu.intbits = xtoviewangle[start];
-	tempangle.hu.intbits <<= 3;
+	tempangle.hu.intbits <<= SHORTTOFINESHIFT;
 	tempangle.wu += viewangle.wu;
 
     // calculate scale at both ends and step
@@ -481,7 +495,7 @@ R_StoreWallRange
     if (stop > start ) {
 		fixed_t_union rw_scalestep_extraprecision = { 0L };
 		tempangle.hu.intbits = xtoviewangle[stop];
-		tempangle.hu.intbits <<= 3;
+		tempangle.hu.intbits <<= SHORTTOFINESHIFT;
 		tempangle.wu += viewangle.wu;
 	
 		ds_p->scale2 = R_ScaleFromGlobalAngle (tempangle);
@@ -510,32 +524,31 @@ R_StoreWallRange
 		ds_p->scale2 = ds_p->scale1;
     }
     
-	frontsector = sectors[frontsecnum];
-
+ 
 
     // calculate texture boundaries
     //  and decide if floor / ceiling marks are needed
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsector.ceilingheight);
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight);
 	worldtop.w -= viewz.w;
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldbottom, frontsector.floorheight);
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldbottom, frontsectorfloorheight);
     worldbottom.w -= viewz.w;
 	
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
     ds_p->maskedtexturecol = NULL;
 	
 
-	sidetextureoffset = side.textureoffset + animateoffset;
+	sidetextureoffset = side->textureoffset + animateoffset;
 	
  
 
-	if (backsecnum == SECNUM_NULL) {
+	if (!backsector) {
 	// single sided line
-		midtexture = texturetranslation[side.midtexture];
+		midtexture = texturetranslation[side->midtexture];
 		// a single sided line is terminal, so it must mark ends
 		markfloor = markceiling = true;
 		if (lineflags & ML_DONTPEGBOTTOM) {
-			SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_midtexturemid, frontsector.floorheight);
-			rw_midtexturemid.h.intbits += (textureheights[side.midtexture] + 1);
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_midtexturemid, frontsectorfloorheight);
+			rw_midtexturemid.h.intbits += (textureheights[side->midtexture] + 1);
 			// bottom of texture at bottom
 			rw_midtexturemid.w -= viewz.w;	
 		} else {
@@ -543,7 +556,7 @@ R_StoreWallRange
 			rw_midtexturemid = worldtop;
 		}
 
-		rw_midtexturemid.h.intbits += side.rowoffset;
+		rw_midtexturemid.h.intbits += side->rowoffset;
 
 		ds_p->silhouette = SIL_BOTH;
 		ds_p->sprtopclip = screenheightarray;
@@ -552,53 +565,57 @@ R_StoreWallRange
 		ds_p->tsilheight = MINSHORT;
     } else {
 		// two sided line
-		backsector = sectors[backsecnum];
+		short_height_t backsectorfloorheight = backsector->floorheight;
+		short_height_t backsectorceilingheight = backsector->ceilingheight;
+		uint8_t backsectorceilingpic = backsector->ceilingpic;
+		uint8_t backsectorfloorpic = backsector->floorpic;
+		uint8_t backsectorlightlevel = backsector->lightlevel;
 		ds_p->sprtopclip = ds_p->sprbottomclip = NULL;
 		ds_p->silhouette = 0;
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsector.floorheight);
 
-		if (frontsector.floorheight > backsector.floorheight) {
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsectorfloorheight);
+		if (frontsectorfloorheight > backsectorfloorheight) {
 			ds_p->silhouette = SIL_BOTTOM;
-			ds_p->bsilheight = frontsector.floorheight;
+			ds_p->bsilheight = frontsectorfloorheight;
 		} else if (temp.w > viewz.w) {
 			ds_p->silhouette = SIL_BOTTOM;
 			ds_p->bsilheight = MAXSHORT;
 		}
 	
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsector.ceilingheight);
-		if (frontsector.ceilingheight < backsector.ceilingheight) {
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsectorceilingheight);
+		if (frontsectorceilingheight < backsectorceilingheight) {
 			ds_p->silhouette |= SIL_TOP;
-			ds_p->tsilheight = frontsector.ceilingheight;
+			ds_p->tsilheight = frontsectorceilingheight;
 		} else if (temp.w < viewz.w) {
 			ds_p->silhouette |= SIL_TOP;
 			ds_p->tsilheight = MINSHORT;
 		}
 		
-		if (backsector.ceilingheight <= frontsector.floorheight) {
+		if (backsectorceilingheight <= frontsectorfloorheight) {
 			ds_p->sprbottomclip = negonearray;
 			ds_p->bsilheight = MAXSHORT;
 			ds_p->silhouette |= SIL_BOTTOM;
 		}
 	
-		if (backsector.floorheight >= frontsector.ceilingheight) {
+		if (backsectorfloorheight >= frontsectorceilingheight) {
 			ds_p->sprtopclip = screenheightarray;
 			ds_p->tsilheight = MINSHORT;
 			ds_p->silhouette |= SIL_TOP;
 		}
 	
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsector.ceilingheight);
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldhigh, backsectorceilingheight);
 		worldhigh.w -= viewz.w;
 		
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldlow, backsector.floorheight);
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldlow, backsectorfloorheight);
 		worldlow.w -= viewz.w;
 		
 		// hack to allow height changes in outdoor areas
-		if (frontsector.ceilingpic == skyflatnum && backsector.ceilingpic == skyflatnum) {
+		if (frontsectorceilingpic == skyflatnum && backsectorceilingpic == skyflatnum) {
 			worldtop = worldhigh;
 		}
 	
 			
-		if (worldlow.w != worldbottom .w || backsector.floorpic != frontsector.floorpic || backsector.lightlevel != frontsector.lightlevel) {
+		if (worldlow.w != worldbottom .w || backsectorfloorpic != frontsectorfloorpic || backsectorlightlevel != frontsectorlightlevel) {
 			markfloor = true;
 		} else {
 			// same plane on both sides
@@ -607,31 +624,30 @@ R_StoreWallRange
 	
 			
 		if (worldhigh.w != worldtop.w
-			|| backsector.ceilingpic != frontsector.ceilingpic
-			|| backsector.lightlevel != frontsector.lightlevel) {
+			|| backsectorceilingpic != frontsectorceilingpic
+			|| backsectorlightlevel != frontsectorlightlevel) {
 			markceiling = true;
 		} else {
 			// same plane on both sides
 			markceiling = false;
 		}
 	
-		if (backsector.ceilingheight <= frontsector.floorheight
-			|| backsector.floorheight >= frontsector.ceilingheight) {
+		if (backsectorceilingheight <= frontsectorfloorheight
+			|| backsectorfloorheight >= frontsectorceilingheight) {
 			// closed door
 			markceiling = markfloor = true;
 		}
 	
 
 		if (worldhigh.w < worldtop.w) {
-			toptexture = texturetranslation[side.toptexture];
+			toptexture = texturetranslation[side->toptexture];
 		
 			if (lineflags & ML_DONTPEGTOP) {
 				// top of texture at top
 				rw_toptexturemid = worldtop;
 			} else {
-				SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_toptexturemid, backsector.ceilingheight);
-				rw_toptexturemid.h.intbits += textureheights[side.toptexture] + 1;
-
+				SET_FIXED_UNION_FROM_SHORT_HEIGHT(rw_toptexturemid, backsectorceilingheight);
+				rw_toptexturemid.h.intbits += textureheights[side->toptexture] + 1;
 		
 				// bottom of texture
 				rw_toptexturemid.w -= viewz.w;	
@@ -639,7 +655,7 @@ R_StoreWallRange
 		}
 		if (worldlow.w > worldbottom.w) {
 			// bottom texture
-			bottomtexture = texturetranslation[side.bottomtexture];
+			bottomtexture = texturetranslation[side->bottomtexture];
 
 			if (lineflags & ML_DONTPEGBOTTOM ) {
 				// bottom of texture at bottom
@@ -651,11 +667,11 @@ R_StoreWallRange
 			}
 		}
 
-		rw_toptexturemid.h.intbits += side.rowoffset;
-		rw_bottomtexturemid.h.intbits += side.rowoffset;
+		rw_toptexturemid.h.intbits += side->rowoffset;
+		rw_bottomtexturemid.h.intbits += side->rowoffset;
 
 		// allocate space for masked texture tables
-		if (side.midtexture) {
+		if (side->midtexture) {
 			// masked midtexture
 			maskedtexture = true;
 			ds_p->maskedtexturecol = maskedtexturecol = lastopening - rw_x;
@@ -669,7 +685,7 @@ R_StoreWallRange
     if (segtextured) {
  
 		
-		offsetangle = ((rw_normalangle << 3) - (rw_angle1.hu.intbits)) >> 3;
+		offsetangle = ((rw_normalangle << SHORTTOFINESHIFT) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
 
 
 		if (offsetangle > FINE_ANG180) {
@@ -686,14 +702,14 @@ R_StoreWallRange
 		// Is this equivalent to a simpler operation?
 
 		tempangle.hu.intbits = rw_normalangle;
-		tempangle.hu.intbits <<= 3;
+		tempangle.hu.intbits <<= SHORTTOFINESHIFT;
 		tempangle.wu -= rw_angle1.wu;
 
 		if (tempangle.hu.intbits < ANG180_HIGHBITS) {
 
 			rw_offset.w = -rw_offset.w;
 		}
-		rw_offset.h.intbits += (sidetextureoffset + curline.offset);
+		rw_offset.h.intbits += (sidetextureoffset + curseg->offset);
 		
 		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle.hu.intbits >> SHORTTOFINESHIFT) - (rw_normalangle));
 
@@ -702,7 +718,7 @@ R_StoreWallRange
 		//  for horizontal / vertical / diagonal
 		// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 		if (!fixedcolormap){
-			lightnum = (frontsector.lightlevel >> LIGHTSEGSHIFT)+extralight;
+			lightnum = (frontsectorlightlevel >> LIGHTSEGSHIFT)+extralight;
 
 			if (curlinev1.y == curlinev2.y) {
 				lightnum--;
@@ -724,13 +740,13 @@ R_StoreWallRange
     //  of the view plane, it is definitely invisible
     //  and doesn't need to be marked.
     
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.floorheight);
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsectorfloorheight);
     if (temp.w >= viewz.w) {
 		// above view plane
 		markfloor = false;
     }
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector.ceilingheight);
-    if (temp.w <= viewz.w  && frontsector.ceilingpic != skyflatnum) {
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsectorceilingheight);
+    if (temp.w <= viewz.w  && frontsectorceilingpic != skyflatnum) {
 		// below view plane
 		markceiling = false;
     }
@@ -751,7 +767,7 @@ R_StoreWallRange
 		bottomstep = -FixedMul(rw_scalestep_extraprecision.w, worldbottom);
 	}*/
 	
-    if (backsecnum != SECNUM_NULL) {	
+    if (backsector) {	
 		worldhigh.w >>= 4;
 		worldlow.w >>= 4;
 		if (worldhigh.w < worldtop.w) {

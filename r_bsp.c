@@ -34,10 +34,9 @@
 //#include "r_local.h"
 
 
-int16_t		curlinenum;
-int16_t linedefOffset;
-int16_t	frontsecnum;
-int16_t	backsecnum;
+seg_t*		curseg;
+sector_t*	frontsector;
+sector_t*	backsector;
 
 drawseg_t	drawsegs[MAXDRAWSEGS];
 drawseg_t*	ds_p;
@@ -187,55 +186,35 @@ R_ClipPassWallSegment
   int16_t	last )
 {
     cliprange_t*	start;
-	#ifdef LOOPCHECK 
-	int16_t i = 0;
-	#endif
     // Find the first range that touches the range
     //  (adjacent pixels are touching).
     start = solidsegs;
 	while (start->last < first - 1) {
 		start++;
-		#ifdef LOOPCHECK 
-			if (i > 1000) {
-				I_Error("too big? q");
-			}
-		#endif	
 
 	}
-    if (first < start->first)
-    {
-	if (last < start->first-1)
-	{
-	    // Post is entirely visible (above start).
-	    R_StoreWallRange (first, last);
-	    return;
-	}
+    if (first < start->first) {
+		if (last < start->first-1) {
+			// Post is entirely visible (above start).
+			R_StoreWallRange (first, last);
+			return;
+		}
 		
-	// There is a fragment above *start.
-	R_StoreWallRange (first, start->first - 1);
+		// There is a fragment above *start.
+		R_StoreWallRange (first, start->first - 1);
     }
 
     // Bottom contained in start?
-    if (last <= start->last)
+	if (last <= start->last) {
 		return;			
-	#ifdef LOOPCHECK 
-		i = 0;
-	#endif
-
-    while (last >= (start+1)->first-1)
-    {
-		#ifdef LOOPCHECK 
-			i++;
-			if (i > 1000) {
-					I_Error("too big?");
-			}
-		#endif	
-	// There is a fragment between two posts.
-	R_StoreWallRange (start->last + 1, (start+1)->first - 1);
-	start++;
-	
-	if (last <= start->last)
-	    return;
+	}
+    while (last >= (start+1)->first-1) {
+		// There is a fragment between two posts.
+		R_StoreWallRange (start->last + 1, (start+1)->first - 1);
+		start++;
+		if (last <= start->last) {
+			return;
+		}
     }
 	
     // There is a fragment after *next.
@@ -261,7 +240,7 @@ void R_ClearClipSegs (void)
 // Clips the given segment
 // and adds any visible pieces to the line list.
 //
-void R_AddLine (int16_t linenum)
+void R_AddLine (seg_t* curline)
 {
     int16_t			x1;
     int16_t			x2;
@@ -269,25 +248,17 @@ void R_AddLine (int16_t linenum)
 	angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
-	seg_t curline = segs[linenum];
-	int16_t curlineside = curline.v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
-	line_t sideline = lines[curline.linedefOffset];
+
+	int16_t curlineside = curline->v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
+	
 	int16_t linebacksecnum;
 
-	int16_t curlinesidedefOffset = curline.sidedefOffset;
-	vertex_t v1 = vertexes[curline.v1Offset];
-	vertex_t v2 = vertexes[curline.v2Offset & SEG_V2_OFFSET_MASK];
-	int16_t sidemidtex;
-	sector_t frontsector;
-	sector_t backsector;
-	angle_t tempx;
-	angle_t tempy;
-    curlinenum = linenum;
+	side_t* curlinesidedef = &sides[curline->sidedefOffset];
+	line_t* curlinelinedef = &lines[curline->linedefOffset];
+	vertex_t v1 = vertexes[curline->v1Offset];
+	vertex_t v2 = vertexes[curline->v2Offset & SEG_V2_OFFSET_MASK];
+     curseg = curline;
 	
-	linebacksecnum =
-		sideline.flags & ML_TWOSIDED ?
-		sides[sideline.sidenum[curlineside ^ 1]].secnum
-		: SECNUM_NULL;
 
 
 #ifdef CHECK_FOR_ERRORS
@@ -296,15 +267,16 @@ void R_AddLine (int16_t linenum)
 	}
 #endif
 
-	tempx.hu.fracbits = 0;
-	tempy.hu.fracbits = 0;
-	tempx.hu.intbits = v1.x;
-	tempy.hu.intbits = v1.y;
+	// using span and angle2 as temporary vars to reduce local var count
+	span.hu.fracbits = 0;
+	angle2.hu.fracbits = 0;
+	span.hu.intbits = v1.x;
+	angle2.hu.intbits = v1.y;
     // OPTIMIZE: quickly reject orthogonal back sides.
-    angle1.wu = R_PointToAngle (tempx.wu, tempy.wu);
-	tempx.hu.intbits = v2.x;
-	tempy.hu.intbits = v2.y;
-    angle2.wu = R_PointToAngle (tempx.wu, tempy.wu);
+    angle1.wu = R_PointToAngle (span.wu, angle2.wu);
+	span.hu.intbits = v2.x;
+	angle2.hu.intbits = v2.y;
+    angle2.wu = R_PointToAngle (span.wu, angle2.wu);
     
 
 
@@ -359,27 +331,29 @@ void R_AddLine (int16_t linenum)
 	if (x1 == x2) {
 		return;
 	}
+ 
+	
+	linebacksecnum =
+		curlinelinedef->flags & ML_TWOSIDED ?
+		sides[curlinelinedef->sidenum[curlineside ^ 1]].secnum
+		: SECNUM_NULL;
 
-	backsecnum = linebacksecnum;
+	backsector = linebacksecnum	== SECNUM_NULL ? NULL : &sectors[linebacksecnum];
 
     // Single sided line?
-	if (backsecnum == SECNUM_NULL) {
+	if (linebacksecnum == SECNUM_NULL) {
 		goto clipsolid;
 	}
 
-	frontsector = sectors[frontsecnum];
-	backsector = sectors[backsecnum];
-
- 
 
     // Closed door.
-	if (backsector.ceilingheight <= frontsector.floorheight
-		|| backsector.floorheight >= frontsector.ceilingheight) {
+	if (backsector->ceilingheight <= frontsector->floorheight
+		|| backsector->floorheight >= frontsector->ceilingheight) {
 		goto clipsolid;
 	}
     // Window.
-    if (backsector.ceilingheight != frontsector.ceilingheight
-	|| backsector.floorheight != frontsector.floorheight)
+    if (backsector->ceilingheight != frontsector->ceilingheight
+	|| backsector->floorheight != frontsector->floorheight)
 		goto clippass;	
 		
     // Reject empty lines used for triggers
@@ -388,12 +362,11 @@ void R_AddLine (int16_t linenum)
     // identical light levels on both sides,
     // and no middle texture.
     
-	sidemidtex = sides[curlinesidedefOffset].midtexture;
 
-	if (backsector.ceilingpic == sectors[frontsecnum].ceilingpic
-	&& backsector.floorpic == sectors[frontsecnum].floorpic
-	&& backsector.lightlevel == sectors[frontsecnum].lightlevel
-	&& sidemidtex == 0) {
+	if (backsector->ceilingpic == frontsector->ceilingpic
+	&& backsector->floorpic == frontsector->floorpic
+	&& backsector->lightlevel == frontsector->lightlevel
+	&& curlinesidedef->midtexture == 0) {
 		return;
     }
     
@@ -570,16 +543,15 @@ boolean R_CheckBBox(int16_t *bspcoord)
 void R_Subsector(int16_t subsecnum)
 {
 	int16_t count;
-	int16_t firstline;
-	sector_t* frontsector;
+	seg_t* firstline;
 	fixed_t_union temp;
+	subsector_t* sub = &subsectors[subsecnum];
 	temp.h.fracbits = 0;
 	
-    frontsecnum = subsectors[subsecnum].secnum;
-    count = subsectors[subsecnum].numlines;
-	firstline = subsectors[subsecnum].firstline;
+    frontsector = &sectors[sub->secnum];
+    count = sub->numlines;
+	firstline = &segs[sub->firstline];
 
-	frontsector = &sectors[frontsecnum];
 
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);
 
@@ -598,7 +570,7 @@ void R_Subsector(int16_t subsecnum)
 		ceilingplaneindex = -1;
 	}
 
-	R_AddSprites(frontsecnum);
+	R_AddSprites(frontsector);
 
 	while (count--)	{
 		R_AddLine(firstline);
