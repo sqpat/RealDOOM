@@ -175,7 +175,7 @@ R_DrawVisSprite
 
     patchRef = W_CacheLumpNumEMS (vis->patch+firstspritelump, PU_CACHE);
 
-    dc_colormap = vis->colormap;
+	dc_colormap = vis->colormap;
     
     if (!dc_colormap) {
         // NULL colormap = shadow draw
@@ -627,7 +627,6 @@ void R_SortVisSprites (void)
     unsorted.prev = vissprite_p-1;
     
     // pull the vissprites out by scale
-    //best = 0;         // shut up the compiler warning
     vsprsortedhead.next = vsprsortedhead.prev = &vsprsortedhead;
     for (i=0 ; i<count ; i++)
     {
@@ -663,53 +662,54 @@ void R_DrawSprite (vissprite_t* spr)
 	int16_t                 x;
 	int16_t                 r1;
 	int16_t                 r2;
-    fixed_t             scale;
-    fixed_t             lowscale;
 	int16_t                 silhouette;
+	boolean				scalecheckpass, lowscalecheckpass;
     fixed_t_union temp;
 
-    for (x = spr->x1 ; x<=spr->x2 ; x++)
-        clipbot[x] = cliptop[x] = -2;
-    
+	for (x = spr->x1; x <= spr->x2; x++) {
+		clipbot[x] = cliptop[x] = -2;
+	}
+
     // Scan drawsegs from end to start for obscuring segs.
     // The first drawseg that has a greater scale
     //  is the clip seg.
     for (ds=ds_p-1 ; ds >= drawsegs ; ds--)
     {
         // determine if the drawseg obscures the sprite
-        if (ds->x1 > spr->x2
-            || ds->x2 < spr->x1
+        if ((ds->x1 > spr->x2)
+            || (ds->x2 < spr->x1)
             || (!ds->silhouette
-                && !ds->maskedtexturecol) )
-        {
+                && !ds->maskedtexturecol) ) {
             // does not cover sprite
             continue;
         }
                         
-        r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
-        r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
-
-        if (ds->scale1 > ds->scale2) {
-            lowscale = ds->scale2;
-            scale = ds->scale1;
+        
+		if (ds->scale1 > ds->scale2) {
+			scalecheckpass = ds->scale1 < spr->scale;
+			lowscalecheckpass = ds->scale2 < spr->scale;
         } else {
-            lowscale = ds->scale1;
-            scale = ds->scale2;
+			scalecheckpass = ds->scale2 < spr->scale;
+			lowscalecheckpass = ds->scale1 < spr->scale;
         }
-                
 
-		if (scale < spr->scale
-            || ( lowscale < spr->scale
-                 && !R_PointOnSegSide (spr->gx, spr->gy, ds->curseg->v1Offset, ds->curseg->v2Offset&SEG_V2_OFFSET_MASK) ) ) {
+		if (scalecheckpass
+            || ( lowscalecheckpass
+                 && !R_PointOnSegSide (spr->gx, spr->gy, &vertexes[ds->curseg->v1Offset], &vertexes[ds->curseg->v2Offset&SEG_V2_OFFSET_MASK]) ) ) {
             // masked mid texture?
 
 			if (ds->maskedtexturecol) {
-				R_RenderMaskedSegRange(ds, r1, r2);
+				r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
+				r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
+
+				R_RenderMaskedSegRange(ds, r1, r2); // draws what is in front of the sprite
 			}
 			
 			// seg is behind sprite
             continue;                   
         }
+		r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
+		r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
 
         
         // clip this piece of the sprite
@@ -717,14 +717,14 @@ void R_DrawSprite (vissprite_t* spr)
         
         // todo in the MIN_SHORT case do we have to extend the FFFF?
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
-        if (spr->gz >= temp.w)
-            silhouette &= ~SIL_BOTTOM;
-
+		if (spr->gz >= temp.w) {
+			silhouette &= ~SIL_BOTTOM;
+		}
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->tsilheight);
         
-        if (spr->gzt <= temp.w)
-            silhouette &= ~SIL_TOP;
-                        
+		if (spr->gzt <= temp.w) {
+			silhouette &= ~SIL_TOP;
+		}
         if (silhouette == 1) {
             // bottom sil
             for (x=r1 ; x<=r2 ; x++)
@@ -751,16 +751,17 @@ void R_DrawSprite (vissprite_t* spr)
     // all clipping has been performed, so draw the sprite
 
     // check for unclipped columns
-    for (x = spr->x1 ; x<=spr->x2 ; x++)
+	for (x = spr->x1 ; x<=spr->x2 ; x++)
     {
-        if (clipbot[x] == -2)           
-            clipbot[x] = viewheight;
-
-        if (cliptop[x] == -2)
-            cliptop[x] = -1;
+		if (clipbot[x] == -2) {
+			clipbot[x] = viewheight;
+		}
+		if (cliptop[x] == -2) {
+			cliptop[x] = -1;
+		}
     }
-                
-    mfloorclip = clipbot;
+    
+	mfloorclip = clipbot;
     mceilingclip = cliptop;
     R_DrawVisSprite (spr, spr->x1, spr->x2);
 }
@@ -779,24 +780,22 @@ void R_DrawMasked (void)
         
     R_SortVisSprites ();
 
-    if (vissprite_p > vissprites)
-    {
+    if (vissprite_p > vissprites) {
         // draw all vissprites back to front
         for (spr = vsprsortedhead.next ;
              spr != &vsprsortedhead ;
-             spr=spr->next)
-        {
-            
+             spr=spr->next) {
             R_DrawSprite (spr);
         }
     }
     
     // render any remaining masked mid textures
 
-	for (ds=ds_p-1 ; ds >= drawsegs ; ds--)
-        if (ds->maskedtexturecol)
-            R_RenderMaskedSegRange (ds, ds->x1, ds->x2);
-    
+	for (ds = ds_p - 1; ds >= drawsegs; ds--) {
+		if (ds->maskedtexturecol) {
+			R_RenderMaskedSegRange(ds, ds->x1, ds->x2);  // draws what is behind the sprites
+		}
+	}
     // draw the psprites on top of everything
     //  but does not draw on side views
     R_DrawPlayerSprites ();

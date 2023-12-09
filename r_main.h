@@ -105,8 +105,8 @@ uint8_t
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,
-	int16_t linev1Offset,
-	int16_t linev2Offset);
+	vertex_t* v1,
+	vertex_t* v2);
 
 
 uint32_t

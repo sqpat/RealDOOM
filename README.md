@@ -57,7 +57,8 @@ Current Realtics/FPS for timedemo3 with screenblocks 5 and high quality:
 | 286-25  | 31821   | 2.35| ||
 | 286-20  ||| 32377 | 2.31|
 | v20 9.5 MhZ  | || 162157   | 0.46 |  
-| 8088 4.77 MhZ  | || 351970   | 0.21 |  
+| 8088 4.77 MhZ (NuXT) | || 351970   | 0.21 |  
+| 8088 4.77 MhZ (5150) | || 384254   | 0.19 |  
 
 
 I think we are looking for around 5-10x performance uplift from the current point to reach playability on fast 286es.

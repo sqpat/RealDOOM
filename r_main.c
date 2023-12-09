@@ -181,8 +181,8 @@ uint8_t
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,
-  int16_t linev1Offset,
-	int16_t linev2Offset)
+  vertex_t* v1,
+	vertex_t* v2)
 {
     int16_t	lx;
     int16_t	ly;
@@ -195,11 +195,11 @@ R_PointOnSegSide
 	
     fixed_t_union temp;
 
-	lx = vertexes[linev1Offset].x;
-    ly = vertexes[linev1Offset].y;
+	lx = v1->x;
+    ly = v1->y;
 	
-    ldx = vertexes[linev2Offset].x - lx;
-    ldy = vertexes[linev2Offset].y - ly;
+    ldx = v2->x - lx;
+    ldy = v2->y - ly;
 	temp.h.fracbits = 0;
 	// 157, 170
 	// 168, 169

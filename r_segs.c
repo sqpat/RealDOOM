@@ -142,7 +142,7 @@ R_RenderMaskedSegRange
     maskedtexturecol = ds->maskedtexturecol;
 
     rw_scalestep = ds->scalestep;		
-    spryscale.w = ds->scale1 + (x1 - ds->x1)*rw_scalestep;
+    spryscale.w = ds->scale1 + (x1 - ds->x1)*(int32_t)rw_scalestep; // this cast is necessary or some masked textures render wrong behind some sprites
     mfloorclip = ds->sprbottomclip;
     mceilingclip = ds->sprtopclip;
     
@@ -150,7 +150,6 @@ R_RenderMaskedSegRange
     if (curlinelinedef->flags & ML_DONTPEGBOTTOM) {
 
 #ifdef USE_SHORTHEIGHT_VIEWZ	
-
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(dc_texturemid, 
 				(frontsector->floorheight > backsector->floorheight ? frontsector->floorheight : backsector->floorheight) - viewz_shortheight);
 		dc_texturemid.h.intbits += (textureheights[texnum] + 1);
