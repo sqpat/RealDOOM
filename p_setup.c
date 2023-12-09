@@ -1076,7 +1076,7 @@ void P_LoadSideDefs(int16_t lump)
 	W_CacheLumpNumCheck(lump, 7);
 	
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	data = (mapsidedef_t *)Z_LoadBytesFromEMSWithOptions(dataRef, PAGE_LOCKED);
+	data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
 
 
 	for (i = 0; i < numsides; i++) {
@@ -1111,7 +1111,6 @@ void P_LoadSideDefs(int16_t lump)
 
 	}
 
-	Z_SetUnlocked(dataRef);
 	Z_FreeEMS(dataRef);
 }
 
@@ -1294,7 +1293,6 @@ P_SetupLevel
 	int8_t        lumpname[9];
 	int16_t         lumpnum;
 
-	uint32_t time;
 
 
 	wminfo.partime = 180;
@@ -1338,7 +1336,6 @@ P_SetupLevel
 
 	leveltime.w = 0;
 
-	time = ticcount;
 
 	
 	// note: most of this ordering is important 
@@ -1360,7 +1357,7 @@ P_SetupLevel
 
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadSegs");
 	P_LoadSegs(lumpnum + ML_SEGS);
-	
+
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 

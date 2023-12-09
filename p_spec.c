@@ -210,7 +210,7 @@ short_height_t	P_FindLowestFloorSurrounding(int16_t secnum)
 short_height_t	P_FindHighestFloorSurrounding(int16_t secnum)
 {
     uint8_t		i;    
-	short_height_t		floor = -500 << SHORTFLOORBITS;
+	short_height_t		floor =  -500 << SHORTFLOORBITS; // - 4000 = 0xE0C0 ?
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];

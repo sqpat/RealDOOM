@@ -103,6 +103,8 @@ musicinfo_t S_music[] =
 // Information about all the sfx
 //
 
+/*
+
 sfxinfo_t S_sfx[] =
 {
   // S_sfx[0] needs to be a dummy for odd reasons.
@@ -218,3 +220,4 @@ sfxinfo_t S_sfx[] =
   { "radio", false, 60, 0} 
 };
 
+*/

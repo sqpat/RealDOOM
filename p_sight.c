@@ -452,16 +452,10 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 	bsp = &nodes[bspnum];
 	 
 	side = P_DivlineSideNode (strace.x.w, strace.y.w, bsp);
-	if (side == 2) {
-		side = 0;	// an "on" should cross both sides
-	}
-	 
-
+	side &= 0x01; // turn 0x02 case to 0x01
 	if (!P_CrossBSPNode(bsp->children[side])) {
 		return false;
 	}
-
-	bsp = &nodes[bspnum];
 
     // the partition plane is crossed here
     if (side == P_DivlineSideNode (cachedt2x, cachedt2y,bsp)) {
@@ -508,7 +502,6 @@ P_CheckSight
 	
     // Check in REJECT table.
 	if (((byte*)Z_LoadBytesFromEMS(rejectmatrixRef))[bytenum] & bitnum) {
-
 		// can't possibly be connected
 		return false;	
     }

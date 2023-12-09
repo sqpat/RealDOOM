@@ -574,7 +574,7 @@ void S_StartSoundAtVolume
 }
 
 void S_StartSoundFromRef(mobj_t* mobj,	sfxenum_t sfx_id)  {
-	
+	/*
 	if (sfx_id == 0) {
 		return;
 	}
@@ -583,9 +583,11 @@ void S_StartSoundFromRef(mobj_t* mobj,	sfxenum_t sfx_id)  {
 	} else {
 		S_StartSoundAtVolume(mobj, 0, 0, sfx_id, snd_SfxVolume);
 	}
+	*/
 }
 
 void S_StartSound(mobj_t*		mobj, sfxenum_t		sfx_id) {
+	/*
 	if (sfx_id == 0) {
 		return;
 	}
@@ -595,19 +597,13 @@ void S_StartSound(mobj_t*		mobj, sfxenum_t		sfx_id) {
 	else {
 		S_StartSoundAtVolume(NULL_MEMREF, -1, -1, sfx_id, snd_SfxVolume);
 	}
+	*/
 
-
-
-
-
-
-
-
- 
+	 
 
 }
 void S_StartSoundWithParams(int16_t x, int16_t y, sfxenum_t sfx_id) {
-	S_StartSoundAtVolume(NULL_MEMREF, x, y, sfx_id, snd_SfxVolume);
+	//S_StartSoundAtVolume(NULL_MEMREF, x, y, sfx_id, snd_SfxVolume);
 }
 
 //
