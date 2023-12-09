@@ -188,13 +188,11 @@ R_DrawVisSprite
     spryscale.w = vis->scale;
     sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
          
-	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchRef, PAGE_LOCKED);
+	patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		column = (column_t *) ((byte *)patch + (patch->columnofs[frac.h.intbits]));
         R_DrawMaskedColumn (column);
-		Z_RefIsActive(patchRef);
     }
-	Z_SetUnlocked(patchRef);
     colfunc = basecolfunc;
 }
 

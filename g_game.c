@@ -643,10 +643,7 @@ void G_PlayerReborn ()
 }
  
  
- 
- 
 
-//todo make int_8 and divide by 5
 
 // DOOM Par Times
 int8_t pars[4][10] =
@@ -1188,40 +1185,20 @@ void G_TimeDemo (int8_t* name)
 =================== 
 */ 
 
-#ifdef PROFILE_PAGE_COUNT
-extern int32_t pagecount[40];
-#endif
 
-extern uint16_t currentListHead;
-
-boolean G_CheckDemoStatus (void) 
-{ 
+boolean G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
 	byte* demobuffer;
 	byte* demo_addr;
  
-	if (timingdemo)
-	{
+	if (timingdemo) {
 		endtime = ticcount;
-#ifdef PROFILE_PAGE_COUNT
-
-		I_Error("\n%i %i %i %i %i\n%i %i %i %i %i\n%i %i %i %i %i\n%i %i %i %i %i\n%i %i %i %i %i\n%i %i %i %i %i\n%i %i %i %i %i\n%i %i %i %i %i",
-			pagecount[0], pagecount[1], pagecount[2], pagecount[3], pagecount[4], pagecount[5], pagecount[6], pagecount[7], pagecount[8], pagecount[9],
-			pagecount[10], pagecount[11], pagecount[12], pagecount[13], pagecount[14], pagecount[15], pagecount[16], pagecount[17], pagecount[18], pagecount[19],
-			pagecount[20], pagecount[21], pagecount[22], pagecount[23], pagecount[24], pagecount[25], pagecount[26], pagecount[27], pagecount[28], pagecount[29],
-			pagecount[30], pagecount[31], pagecount[32], pagecount[33], pagecount[34], pagecount[35], pagecount[36], pagecount[37], pagecount[38], pagecount[39]
-
  
-
-		);
-#else
-        I_Error ("\ntimed %li gametics in %li realtics %li %li %li prnd %i %u",gametic 
-                 , endtime-starttime, numreads, pageins, pageouts, prndindex, currentListHead);
-#endif
+        I_Error ("\ntimed %li gametics in %li realtics %li %li %li prnd %i",gametic 
+                 , endtime-starttime, numreads, pageins, pageouts, prndindex);
     } 
          
-    if (demoplayback) 
-    { 
+    if (demoplayback)  { 
         if (singledemo) 
             I_Quit (); 
                          
@@ -1235,8 +1212,7 @@ boolean G_CheckDemoStatus (void)
         return true; 
     } 
  
-    if (demorecording) 
-    { 
+    if (demorecording)  { 
 		demobuffer = Z_LoadBytesFromEMS(demobufferRef);
 		demo_addr = (byte*)(demo_p + demobuffer);
 

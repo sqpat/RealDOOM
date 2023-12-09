@@ -99,9 +99,6 @@ enum { VERSION =  109 };
 // #define MAX_WAD_FILES 1
 
 
-//Show page count by source hint on timedemo finish
-// #define PROFILE_PAGE_COUNT
-
 //
 // For resize of screen, at start of game.
 // It will not work dynamically, see visplanes.

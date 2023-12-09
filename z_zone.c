@@ -190,10 +190,6 @@ int32_t pageouts = 0;
 int32_t actualpageins = 0;
 int32_t actualpageouts = 0;
 
-#ifdef PROFILE_PAGE_COUNT
-int32_t pagecount[40];
-#endif
-
 void Z_PageOutIfInMemory(fixed_t_union page_and_size);
 
 void Z_ChangeTagEMS(MEMREF index, int16_t tag) {
@@ -916,9 +912,6 @@ int16_t Z_GetEMSPageFrame(fixed_t_union page_and_size, boolean locked, PAGEREF r
 	// can do multiple pages in one go...
 	// swap IN memory
 
-#ifdef PROFILE_PAGE_COUNT
-	pagecount[allocations[ref].sourcehint]++;
-#endif
 	Z_DoPageIn(logicalpage, pageframeindex, numallocatepages);
 	pageins++;
 
@@ -1046,38 +1039,18 @@ void Z_SetUnlocked(MEMREF ref) {
 #endif
 }
 
-//void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_t type, int8_t* file, int32_t line) {
-void* Z_LoadBytesFromConventionalWithOptions2(MEMREF ref, boolean locked, int16_t type) {
-	switch (type){
-		case CA_TYPE_SPRITE:
-#ifdef CHECK_FOR_ERRORS
-			if (ref >= SPRITE_ALLOCATION_LIST_SIZE){
-				I_Error ("caught c %u %s %li", ref);
-			}
-#endif
-			// 0 0 6bce6b20
-			//I_Error("getting thing %i %i %lx", ref, sprite_allocations[ref].offset, spritememoryblock);
-			return spritememoryblock + sprite_allocations[ref].offset;
-		case CA_TYPE_TEXTURE_INFO:
-#ifdef CHECK_FOR_ERRORS
-			if (ref >= TEXTUREINFO_ALLOCATION_LIST_SIZE) {
-				I_Error("caught f %u %s %li", ref);
-			}
-#endif
-			return textureinfomemoryblock + textureinfo_allocations[ref].offset;
-		default:
-#ifdef CHECK_FOR_ERRORS
-			if (ref >= 2*CONVENTIONAL_ALLOCATION_LIST_SIZE){
-				I_Error ("caught d %u %s %li", ref);
-			}
-#endif
-			if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
-				return conventionalmemoryblock1 + conventional_allocations1[ref].offset;
-			else 
-				return conventionalmemoryblock2 + conventional_allocations2[ref- CONVENTIONAL_ALLOCATION_LIST_SIZE].offset;
-	}
+void* Z_LoadSpriteFromConventional(MEMREF ref) {
+		return spritememoryblock + sprite_allocations[ref].offset;
+}
 
-
+void* Z_LoadTextureInfoFromConventional(MEMREF ref) {
+		return textureinfomemoryblock + textureinfo_allocations[ref].offset;
+}
+void* Z_LoadBytesFromConventional(MEMREF ref) {
+		if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
+			return conventionalmemoryblock1 + conventional_allocations1[ref].offset;
+		else
+			return conventionalmemoryblock2 + conventional_allocations2[ref - CONVENTIONAL_ALLOCATION_LIST_SIZE].offset;
 }
 
 
@@ -1483,9 +1456,6 @@ Z_MallocEMSWithBackRef16
 
 	SET_TAG(allocations[base], tag);
 	SET_BACKREF(allocations[base], backRef);
-#ifdef PROFILE_PAGE_COUNT
-	allocations[base].sourcehint = sourceHint;
-#endif
 
 	// next allocation will start looking here
 	//mainzoneEMS->rover = base->next;

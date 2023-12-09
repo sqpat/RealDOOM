@@ -171,9 +171,8 @@ void R_GenerateComposite(uint8_t texnum)
 	int16_t				patchpatch;
 	int16_t				patchoriginx;
 	int8_t				patchoriginy;
-	texture_t* texture;
-	int16_t				colofsx;
-
+	texture_t*			texture;
+	int16_t				lastpatch = -1;
 
 
 	MEMREF texturecolumnlumptexnum = texturecolumnlumpRefs[texnum];
@@ -188,27 +187,28 @@ void R_GenerateComposite(uint8_t texnum)
 		PU_STATIC,
 		0xff,  texnum+1);
 	texturecompositetexnum = texturecomposite[texnum];
-
+	block = (byte*)Z_LoadBytesFromEMSWithOptions(texturecompositetexnum, PAGE_LOCKED);
 	texture = (texture_t*)Z_LoadTextureInfoFromConventional(texturememref);
-
-
 
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 	texturepatchcount = texture->patchcount;
 
 	// Composite the columns together.
+	collump = (int16_t*)Z_LoadTextureInfoFromConventional(texturecolumnlumptexnum);
+	colofs = (uint16_t*)Z_LoadTextureInfoFromConventional(texturecolumnofstexnum);
 
 	for (i = 0; i < texturepatchcount; i++) {
 		patch = &texture->patches[i];
 		patchpatch = patch->patch & PATCHMASK;
+		if (lastpatch != patchpatch) {
+			W_CacheLumpNumCheck(patchpatch, 10);
+			realpatchRef = W_CacheLumpNumEMS(patchpatch, PU_CACHE);
+			lastpatch = patchpatch;
+			realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
+		}
 		patchoriginx = patch->originx *  (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchoriginy = patch->originy;
-
-		W_CacheLumpNumCheck(patchpatch, 10);
-		realpatchRef = W_CacheLumpNumEMS(patchpatch, PU_CACHE);
-
-		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
 
 
 		x1 = patchoriginx;
@@ -223,27 +223,19 @@ void R_GenerateComposite(uint8_t texnum)
 			x2 = texturewidth;
 
 
-		collump = (int16_t*)Z_LoadTextureInfoFromConventional(texturecolumnlumptexnum);
-		colofs = (uint16_t*)Z_LoadTextureInfoFromConventional(texturecolumnofstexnum);
-
 
 		for (; x < x2; x++) {
 			// seems ok. if this ever barks up, we can bring the above Z_LoadBytesFromEMS calls down into one of these loops
 
 			// Column does not have multiple patches?
-			if (collump[x] >= 0)
+			if (collump[x] >= 0) {
 				continue;
-
-			colofsx = colofs[x];
-
-			realpatch = (patch_t*)Z_LoadBytesFromEMSWithOptions(realpatchRef, PAGE_LOCKED);
+			}
 			patchcol = (column_t *)((byte *)realpatch + (realpatch->columnofs[x - x1]));
-			block = (byte*)Z_LoadBytesFromEMS(texturecompositetexnum);
 			R_DrawColumnInCache(patchcol,
-				block + colofsx,
+				block + colofs[x],
 				patchoriginy,
 				textureheight);
-			Z_SetUnlocked(realpatchRef);
 
 		}
 
@@ -251,6 +243,7 @@ void R_GenerateComposite(uint8_t texnum)
 
 
 	}
+	Z_SetUnlocked(texturecompositetexnum);
 
  
 

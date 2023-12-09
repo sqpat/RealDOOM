@@ -140,11 +140,13 @@ void Z_SetUnlocked(MEMREF ref);
 
 
 
-void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type);
-#define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE)
-#define Z_LoadTextureInfoFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_TEXTURE_INFO)
-#define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c)
-#define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA)
+void* Z_LoadBytesFromConventional(MEMREF index);
+void* Z_LoadSpriteFromConventional(MEMREF index);
+void* Z_LoadTextureInfoFromConventional(MEMREF index);
+//#define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE)
+//#define Z_LoadTextureInfoFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_TEXTURE_INFO)
+//#define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c)
+//#define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA)
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
 #define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b)
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED)

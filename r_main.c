@@ -680,11 +680,9 @@ void R_RenderPlayerView ()
 
 
 	// The head node is the last node output.
-	//Z_LoadBytesFromConventionalWithOptions(nodesRef, PAGE_LOCKED);
 	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_RenderBSPNode running...");
 	R_RenderBSPNode ();
 	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_RenderBSPNode done");
-	//Z_SetUnlocked(nodesRef)
 
     // Check for new console commands.
     NetUpdate ();
