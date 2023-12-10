@@ -1250,7 +1250,7 @@ void AM_drawCrosshair(uint8_t color)
     fb[(f_w*(f_h+1))/2] = color; // single point for now
 
 }
-
+extern int setval;
 void AM_Drawer (void)
 {
 
@@ -1258,6 +1258,8 @@ void AM_Drawer (void)
 	//G_ExitLevel();
 
     if (!automapactive) return;
+
+	setval = 1;
 
     AM_clearFB(BACKGROUND);
     if (grid)

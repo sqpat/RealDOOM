@@ -186,9 +186,10 @@ void R_ExecuteSetViewSize(void)
 	centery = viewheight / 2;
 	centerx = viewwidth / 2;
 	temp.h.intbits = centerx;
-	projection = centerxfrac = temp;
+	projection = centerxfrac = temp; // todo: calculate (or fetch) magic number from stored cache, to be used in R_ProjectSprite
 	temp.h.intbits = centery;
 	centeryfrac = temp;
+	centeryfrac_shiftright4.w = temp.w >> 4;
 
 	if (!detailshift) {
 		colfunc = basecolfunc = R_DrawColumn;

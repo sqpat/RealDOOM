@@ -775,8 +775,8 @@ R_StoreWallRange
     worldtop.w >>= 4;
     worldbottom.w >>= 4;
 	
-    topfrac = (centeryfrac.w >>4) - FixedMul (worldtop.w, rw_scale.w);
-    bottomfrac = (centeryfrac.w >>4) - FixedMul (worldbottom.w, rw_scale.w);
+    topfrac = (centeryfrac_shiftright4.w) - FixedMul (worldtop.w, rw_scale.w);
+    bottomfrac = (centeryfrac_shiftright4.w) - FixedMul (worldbottom.w, rw_scale.w);
 //	if (rw_scalestep) {
 		topstep = -FixedMul1632(rw_scalestep, worldtop.w);
 		bottomstep = -FixedMul1632(rw_scalestep, worldbottom.w);
@@ -790,7 +790,7 @@ R_StoreWallRange
 		worldhigh.w >>= 4;
 		worldlow.w >>= 4;
 		if (worldhigh.w < worldtop.w) {
-			pixhigh = (centeryfrac.w >>4) - FixedMul (worldhigh.w, rw_scale.w);
+			pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
 //			if (rw_scalestep) {
 				pixhighstep = -FixedMul1632(rw_scalestep, worldhigh.w);
 //			} else {
@@ -799,7 +799,7 @@ R_StoreWallRange
 		}
 	
 		if (worldlow.w > worldbottom.w) {
-			pixlow = (centeryfrac.w >>4) - FixedMul (worldlow.w, rw_scale.w);
+			pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
 //			if (rw_scalestep) {
 				pixlowstep = -FixedMul1632(rw_scalestep, worldlow.w);
 //			}

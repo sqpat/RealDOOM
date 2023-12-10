@@ -56,6 +56,7 @@ int16_t			centery;
 // these basically equal: (16 low bits are 0, 16 high bits are view size / 2)
 fixed_t_union			centerxfrac;
 fixed_t_union			centeryfrac;
+fixed_t_union			centeryfrac_shiftright4;
 fixed_t_union			projection;
 
 
@@ -177,7 +178,7 @@ R_PointOnSide
 
 
 
-uint8_t
+int16_t
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,
@@ -201,11 +202,6 @@ R_PointOnSegSide
     ldx = v2->x - lx;
     ldy = v2->y - ly;
 	temp.h.fracbits = 0;
-	// 157, 170
-	// 168, 169
-	// ? 169 170 
-	// thing 278, barrel  coords -1536, 512
- 
 
     if (!ldx) {
 	    temp.h.intbits = lx;
@@ -228,9 +224,9 @@ R_PointOnSegSide
     dy.w = (y - temp.w);
 	
     // Try to quickly decide by looking at sign bits.
-    if ( (ldy ^ ldx ^ dx.h.intbits ^ dy.h.intbits)&0x8000 ) 
+    if ( (ldy ^ ldx ^ dx.h.intbits ^ dy.h.intbits)&0x8000 )  // returns 1
 		// (left is negative)
-		return  ((ldy ^ dx.h.intbits) & 0x8000);
+		return  ((ldy ^ dx.h.intbits) & 0x8000);  // returns 1
     
 
     left = FixedMul1632 ( ldy , dx.w );

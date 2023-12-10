@@ -254,7 +254,7 @@ void R_ProjectSprite (mobj_t* thing)
     tz = gxt-gyt; 
 
     // thing is behind view plane?
-    if (tz < MINZ)
+    if (tz < MINZ) // (- sq: where does this come from)
         return;
     
     xscale = FixedDiv(projection.w, tz);
@@ -264,7 +264,7 @@ void R_ProjectSprite (mobj_t* thing)
     tx = -(gyt+gxt); 
 
     // too far off the side?
-    if (labs(tx)>(tz<<2))
+    if (labs(tx)>(tz<<2)) // check just high 16 bits?
         return;
 
     // decide which patch to use for sprite relative to player
@@ -275,8 +275,9 @@ void R_ProjectSprite (mobj_t* thing)
     if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
 		ang.wu = R_PointToAngle (thingx, thingy);
-		//todo make this not shift 29
-        rot = (ang.hu.intbits -thingangle.hu.intbits + 0x9000u)>>(29-16);
+        //rot = (ang.hu.intbits -thingangle.hu.intbits + 0x9000u)>>(29-16);
+		rot = _rotl(ang.hu.intbits - thingangle.hu.intbits + 0x9000u, 3) & 0x07;
+
         lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
         flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[rot];
     }
@@ -336,15 +337,12 @@ void R_ProjectSprite (mobj_t* thing)
 	// todo does a quick  inverse function exist? considering this is fixed point
 	iscale = FixedDiv (FRACUNIT, xscale);
 
-    if (flip)
-    {
+    if (flip) {
         temp.h.fracbits = 0;
         temp.h.intbits = spritewidths[lump];
 		vis->startfrac = temp.w-1;
         vis->xiscale = -iscale;
-    }
-    else
-    {
+    } else {
         vis->startfrac = 0;
         vis->xiscale = iscale;
     }
@@ -354,24 +352,16 @@ void R_ProjectSprite (mobj_t* thing)
     vis->patch = lump;
     
     // get light level
-    if (thingflags & MF_SHADOW)
-    {
+    if (thingflags & MF_SHADOW) {
         // shadow draw
         vis->colormap = NULL;
-    }
-    else if (fixedcolormap)
-    {
+    } else if (fixedcolormap) {
         // fixed map
         vis->colormap = fixedcolormap;
-    }
-    else if (thingframe & FF_FULLBRIGHT)
-    {
+    } else if (thingframe & FF_FULLBRIGHT) {
         // full bright
         vis->colormap = colormaps;
-    }
-    
-    else
-    {
+    } else {
         // diminished light
         index = xscale>>(LIGHTSCALESHIFT-detailshift);
 
@@ -646,7 +636,7 @@ void R_SortVisSprites (void)
     }
 }
 
-
+extern int setval;
 
 //
 // R_DrawSprite
@@ -655,7 +645,7 @@ void R_SortVisSprites (void)
 void R_DrawSprite (vissprite_t* spr)
 {
     drawseg_t*          ds;
-    int16_t               clipbot[SCREENWIDTH];
+    int16_t               clipbot[SCREENWIDTH]; // could be uint8_t, need to change -2 special case
     int16_t               cliptop[SCREENWIDTH];
 	int16_t                 x;
 	int16_t                 r1;
@@ -671,18 +661,24 @@ void R_DrawSprite (vissprite_t* spr)
     // Scan drawsegs from end to start for obscuring segs.
     // The first drawseg that has a greater scale
     //  is the clip seg.
-    for (ds=ds_p-1 ; ds >= drawsegs ; ds--)
-    {
-        // determine if the drawseg obscures the sprite
-        if ((ds->x1 > spr->x2)
+    for (ds=ds_p-1 ; ds >= drawsegs ; ds--) {
+
+
+
+		// determine if the drawseg obscures the sprite
+		if ((ds->x1 > spr->x2)
             || (ds->x2 < spr->x1)
             || (!ds->silhouette
                 && !ds->maskedtexturecol) ) {
-            // does not cover sprite
-            continue;
+			// this drawseg's x vals (cols) dont overlap the sprite at all can't cover
+			continue;
         }
                         
-        
+        // checking relative scales - is this drawseg's wall approaching player as it goes to left or right?
+		// i believe this is a check that can also tell if the wall is in front. 
+		//   - scale is relative to distance to player.
+		//   - if both sides of drawseg are further from to player than sprite (i.e. both wall's edge's scales are smaller than sprite scale)
+		//
 		if (ds->scale1 > ds->scale2) {
 			scalecheckpass = ds->scale1 < spr->scale;
 			lowscalecheckpass = ds->scale2 < spr->scale;
@@ -693,17 +689,19 @@ void R_DrawSprite (vissprite_t* spr)
 
 		if (scalecheckpass
             || ( lowscalecheckpass
+
+				// worst case scenario one side of wall is closer, have to manually check if sprite on the closer side of wall
                  && !R_PointOnSegSide (spr->gx, spr->gy, &vertexes[ds->curseg->v1Offset], &vertexes[ds->curseg->v2Offset&SEG_V2_OFFSET_MASK]) ) ) {
-            // masked mid texture?
+            
+			// if drawseg is that of a masked texture then... 
 
 			if (ds->maskedtexturecol) {
 				r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
 				r2 = ds->x2 > spr->x2 ? spr->x2 : ds->x2;
+				R_RenderMaskedSegRange(ds, r1, r2); // draws what is in front of the sprite (??)
+			} 
 
-				R_RenderMaskedSegRange(ds, r1, r2); // draws what is in front of the sprite
-			}
-			
-			// seg is behind sprite
+			// seg is behind sprite, move on to next drawseg
             continue;                   
         }
 		r1 = ds->x1 < spr->x1 ? spr->x1 : ds->x1;
@@ -713,8 +711,9 @@ void R_DrawSprite (vissprite_t* spr)
         // clip this piece of the sprite
         silhouette = ds->silhouette;
         
-        // todo in the MIN_SHORT case do we have to extend the FFFF?
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
+		if (ds->bsilheight < 0) {
+		}
 		if (spr->gz >= temp.w) {
 			silhouette &= ~SIL_BOTTOM;
 		}
@@ -735,8 +734,7 @@ void R_DrawSprite (vissprite_t* spr)
                     cliptop[x] = ds->sprtopclip[x];
         } else if (silhouette == 3) {
             // both
-            for (x=r1 ; x<=r2 ; x++)
-            {
+            for (x=r1 ; x<=r2 ; x++) {
                 if (clipbot[x] == -2)
                     clipbot[x] = ds->sprbottomclip[x];
                 if (cliptop[x] == -2)

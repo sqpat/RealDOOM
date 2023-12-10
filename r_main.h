@@ -42,6 +42,7 @@ extern int16_t		centery;
 
 extern fixed_t_union		centerxfrac;
 extern fixed_t_union		centeryfrac;
+extern fixed_t_union		centeryfrac_shiftright4;
 extern fixed_t_union		projection;
 
 //extern uint8_t		validcount;
@@ -101,7 +102,7 @@ R_PointOnSide
   fixed_t	y,
   node_t*	node );
 
-uint8_t
+int16_t
 R_PointOnSegSide
 ( fixed_t	x,
   fixed_t	y,

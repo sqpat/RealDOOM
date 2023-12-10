@@ -317,11 +317,16 @@ typedef struct drawseg_s
 {
 	seg_t*		curseg;
 
+	// start pixel x range
     int16_t			x1;
+	// end pixel x range
     int16_t			x2;
 
-    fixed_t		scale1;
-    fixed_t		scale2;
+    // scale at left (based on player distance)
+	fixed_t		scale1;
+    // scale at right (based on player distance)
+	fixed_t		scale2;
+	// scale step per pixel
     int16_t		scalestep;
 
     // 0=none, 1=bottom, 2=top, 3=both

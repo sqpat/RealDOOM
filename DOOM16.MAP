@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       23/12/08 22:51:47
+Created on:       23/12/10 13:52:30
 Executable Image: doom16.exe
 creating a DOS overlayed executable
 
@@ -12,7 +12,7 @@ creating a DOS overlayed executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          84da:0000            000059a8
+DGROUP                          84d7:0000            000059a8
 
 
 
@@ -51,24 +51,24 @@ p_user_TEXT            CODE           AUTO           0f66:27b0       0000072f
 r_bsp_TEXT             CODE           AUTO           0f66:2ee0       000008c1
 r_data_TEXT            CODE           AUTO           0f66:37b0       000002fc
 r_draw_TEXT            CODE           AUTO           0f66:3ab0       00000957
-r_main_TEXT            CODE           AUTO           0f66:4410       00000975
+r_main_TEXT            CODE           AUTO           0f66:4410       0000097b
 r_plane_TEXT           CODE           AUTO           0f66:4d90       00000a93
-r_segs_TEXT            CODE           AUTO           0f66:5830       000014c8
-r_things_TEXT          CODE           AUTO           0f66:6d00       000010e5
-w_wad_TEXT             CODE           AUTO           0f66:7df0       000003cb
-v_video_TEXT           CODE           AUTO           0f66:81c0       000002fc
-z_zone_TEXT            CODE           AUTO           0f66:84c0       00000fdf
-st_stuff_TEXT          CODE           AUTO           0f66:94a0       00000ab7
-st_lib_TEXT            CODE           AUTO           0f66:9f60       0000020c
-hu_stuff_TEXT          CODE           AUTO           0f66:a170       0000023b
-hu_lib_TEXT            CODE           AUTO           0f66:a3b0       000002b5
-s_sound_TEXT           CODE           AUTO           0f66:a670       0000001d
-sounds_TEXT            CODE           AUTO           0f66:a690       00000000
-dutils_TEXT            CODE           AUTO           0f66:a690       000000ab
-info_TEXT              CODE           AUTO           0f66:a740       0000069c
-dmx_TEXT               CODE           AUTO           0f66:ade0       00000249
-_TEXT                  CODE           AUTO           1a69:0000       00006536
-_TEXT                  _OVLCODE       AUTO           1a69:6540       00000bf1
+r_segs_TEXT            CODE           AUTO           0f66:5830       000014a4
+r_things_TEXT          CODE           AUTO           0f66:6ce0       000010d3
+w_wad_TEXT             CODE           AUTO           0f66:7dc0       000003cb
+v_video_TEXT           CODE           AUTO           0f66:8190       000002fc
+z_zone_TEXT            CODE           AUTO           0f66:8490       00000fdf
+st_stuff_TEXT          CODE           AUTO           0f66:9470       00000ab7
+st_lib_TEXT            CODE           AUTO           0f66:9f30       0000020c
+hu_stuff_TEXT          CODE           AUTO           0f66:a140       0000023b
+hu_lib_TEXT            CODE           AUTO           0f66:a380       000002b5
+s_sound_TEXT           CODE           AUTO           0f66:a640       0000001d
+sounds_TEXT            CODE           AUTO           0f66:a660       00000000
+dutils_TEXT            CODE           AUTO           0f66:a660       000000ab
+info_TEXT              CODE           AUTO           0f66:a710       0000069c
+dmx_TEXT               CODE           AUTO           0f66:adb0       00000249
+_TEXT                  CODE           AUTO           1a66:0000       00006536
+_TEXT                  _OVLCODE       AUTO           1a66:6540       00000bf1
 
 
                         +----------------+
@@ -95,36 +95,36 @@ Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
 0000:04d4      I_Error_
 0000:0532      I_EndRead_
 0000:0532      I_BeginRead_
-84da:01b0      _scantokey
-84da:0230      _oldkeyboardisr
-84da:1640+     _olddb
-84da:1650      _keyboardque
-84da:1670*     _segregs
-84da:1678      _currentscreen
-84da:167c      _pcscreen
-84da:1680      _ticcount
-84da:1684      _destscreen
-84da:1688      _destview
-84da:168c+     _out
-84da:169a      _regs
-84da:16a8+     _in
-84da:16b6+     _kbdhead
-84da:16b7+     _kbdtail
-84da:16b8      _grmode
-84da:16b9      _mousepresent
-84da:16ba      _novideo
+84d7:01b0      _scantokey
+84d7:0230      _oldkeyboardisr
+84d7:1640+     _olddb
+84d7:1650      _keyboardque
+84d7:1670*     _segregs
+84d7:1678      _currentscreen
+84d7:167c      _pcscreen
+84d7:1680      _ticcount
+84d7:1684      _destscreen
+84d7:1688      _destview
+84d7:168c+     _out
+84d7:169a      _regs
+84d7:16a8+     _in
+84d7:16b6+     _kbdhead
+84d7:16b7+     _kbdtail
+84d7:16b8      _grmode
+84d7:16b9      _mousepresent
+84d7:16ba      _novideo
 Module: i_sound.obj(C:\REALDOOM\i_sound.c)
-84da:16bc*     _snd_SBport
-84da:16be*     _snd_Mport
-84da:16c0      _snd_SBirq
-84da:16c1+     _snd_MusicVolume
-84da:16c2      _snd_SBport8bit
-84da:16c3+     _snd_SfxVolume
-84da:16c4      _snd_SBdma
-84da:16c5      _snd_Mport8bit
-84da:16c6      _snd_DesiredSfxDevice
-84da:16c7      _snd_DesiredMusicDevice
-84da:16c8*     _snd_MusicDevice
+84d7:16bc*     _snd_SBport
+84d7:16be*     _snd_Mport
+84d7:16c0      _snd_SBirq
+84d7:16c1+     _snd_MusicVolume
+84d7:16c2      _snd_SBport8bit
+84d7:16c3+     _snd_SfxVolume
+84d7:16c4      _snd_SBdma
+84d7:16c5      _snd_Mport8bit
+84d7:16c6      _snd_DesiredSfxDevice
+84d7:16c7      _snd_DesiredMusicDevice
+84d7:16c8*     _snd_MusicDevice
 0000:0558+     _snd_prefixen
 0000:0564*     I_StartupTimer_
 0000:0564      I_StartupSound_
@@ -144,26 +144,26 @@ Module: i_sound.obj(C:\REALDOOM\i_sound.c)
 0000:05fa*     I_SetChannels_
 0000:05fa*     I_sndArbitrateCards_
 0000:05fa*     I_UpdateSoundParams_
-84da:16c9+     _snd_SfxDevice
+84d7:16c9+     _snd_SfxDevice
 Module: tables.obj(C:\REALDOOM\tables.c)
 0000:0600      fixedsine_
-23a5:0000      _finetangentinner
-23a5:2000+     _finesineinner
-23a5:3000      _tantoangle
+23a2:0000      _finetangentinner
+23a2:2000+     _finesineinner
+23a2:3000      _tantoangle
 Module: d_main.obj(C:\REALDOOM\d_main.c)
-84da:16d0      _stringoffsets
-84da:1928      _wadfiles
-84da:1978+     _pagename
-84da:197c      _stringbuffersizes
-84da:1980      _stringRefs
-84da:1984*     _debugfile
-84da:1988+     _pagetic
-84da:198a      _skipdirectdraws
-84da:198b+     _eventtail
-84da:198c      _advancedemo
-84da:198d+     _eventhead
-84da:198e*     _drone
-84da:198f      _demosequence
+84d7:16d0      _stringoffsets
+84d7:1928      _wadfiles
+84d7:1978+     _pagename
+84d7:197c      _stringbuffersizes
+84d7:1980      _stringRefs
+84d7:1984*     _debugfile
+84d7:1988+     _pagetic
+84d7:198a      _skipdirectdraws
+84d7:198b+     _eventtail
+84d7:198c      _advancedemo
+84d7:198d+     _eventhead
+84d7:198e*     _drone
+84d7:198f      _demosequence
 0000:0870      D_PostEvent_
 0000:08ae      D_ProcessEvents_
 0000:0908*     getStringLength_
@@ -182,85 +182,85 @@ Module: d_main.obj(C:\REALDOOM\d_main.c)
 0000:0e7e      D_DoAdvanceDemo_
 0000:0f84      D_DoomMain_
 0000:0f8a*     D_DoomLoop_
-84da:0234      _singletics
-84da:0235      _wipegamestate
-84da:1990      _shareware
-84da:1991      _startmap
-84da:1992      _modifiedgame
-84da:1993      _autostart
-84da:1994      _nomonsters
-84da:1995      _startskill
-84da:1996      _registered
-84da:1997      _fastparm
-84da:1998      _respawnparm
-84da:1999      _commercial
-84da:199a      _startepisode
-23a5:5010*     _wadfile
-23a5:5410+     _events
-23a5:5750      _basedefault
+84d7:0234      _singletics
+84d7:0235      _wipegamestate
+84d7:1990      _shareware
+84d7:1991      _startmap
+84d7:1992      _modifiedgame
+84d7:1993      _autostart
+84d7:1994      _nomonsters
+84d7:1995      _startskill
+84d7:1996      _registered
+84d7:1997      _fastparm
+84d7:1998      _respawnparm
+84d7:1999      _commercial
+84d7:199a      _startepisode
+23a2:5010*     _wadfile
+23a2:5410+     _events
+23a2:5750      _basedefault
 Module: d_net.obj(C:\REALDOOM\d_net.c)
 0000:1010      NetUpdate_
 0000:10f8      TryRunTics_
-84da:19a0+     _gametime
-84da:19a4      _maketic
-84da:19a8*     _nettics
-84da:19ac+     _skiptics
+84d7:19a0+     _gametime
+84d7:19a4      _maketic
+84d7:19a8*     _nettics
+84d7:19ac+     _skiptics
 Module: g_game.obj(C:\REALDOOM\g_game.c)
-84da:19c0+     _savedescription
-84da:19e0*     _bodyque
-84da:1a20+     _localcmds
-84da:1ac0      _gamekeydown
-84da:1bc0+     _demoname
-84da:1be0+     _defdemoname
-84da:1be4+     _dclicks
-84da:1be8+     _dclicktime
-84da:1bec+     _dclickstate
-84da:1bf0+     _dclicktime2
-84da:1bf4+     _mousearray
-84da:1bf8      _mousey
-84da:1bfc      _mousex
-84da:1c00+     _dclickstate2
-84da:1c04+     _dclicks2
-84da:1c08      _starttime
-84da:1c0c      _gametic
-84da:1c10      _playerMobj
-84da:1c14*     _savebufferRef
-84da:1c16+     _demobufferRef
-84da:1c18+     _demo_p
-84da:1c1a      _totalkills
-84da:1c1c      _totalitems
-84da:1c1e      _totalsecret
-84da:1c20      _playerMobjRef
-84da:1c22      _player
-84da:1ca5      _wminfo
-84da:1cbc      _d_episode
-84da:1cbd+     _secretexit
-84da:1cbe      _d_skill
-84da:1cbf      _d_map
-84da:1cc0+     _savegameslot
-84da:1cc1      _mousebforward
-84da:1cc2      _key_speed
-84da:1cc3      _mousebfire
-84da:1cc4      _key_left
-84da:1cc5      _key_fire
-84da:1cc6      _key_strafe
-84da:1cc7+     _turnheld
-84da:1cc8      _key_straferight
-84da:1cc9      _key_up
-84da:1cca      _mousebstrafe
-84da:1ccb      _key_down
-84da:1ccc      _key_use
-84da:1ccd      _key_right
-84da:1cce      _key_strafeleft
-84da:1ccf+     _timingdemo
-84da:1cd0      _sendsave
-84da:1cd1      _netdemo
-84da:1cd2      _sendpause
-84da:1cd3      _bodyqueslot
-84da:1cd4      _gameaction
-84da:1cd5      _demoplayback
-84da:1cd6      _gamestate
-84da:1cd7      _demorecording
+84d7:19c0+     _savedescription
+84d7:19e0*     _bodyque
+84d7:1a20+     _localcmds
+84d7:1ac0      _gamekeydown
+84d7:1bc0+     _demoname
+84d7:1be0+     _defdemoname
+84d7:1be4+     _dclicks
+84d7:1be8+     _dclicktime
+84d7:1bec+     _dclickstate
+84d7:1bf0+     _dclicktime2
+84d7:1bf4+     _mousearray
+84d7:1bf8      _mousey
+84d7:1bfc      _mousex
+84d7:1c00+     _dclickstate2
+84d7:1c04+     _dclicks2
+84d7:1c08      _starttime
+84d7:1c0c      _gametic
+84d7:1c10      _playerMobj
+84d7:1c14*     _savebufferRef
+84d7:1c16+     _demobufferRef
+84d7:1c18+     _demo_p
+84d7:1c1a      _totalkills
+84d7:1c1c      _totalitems
+84d7:1c1e      _totalsecret
+84d7:1c20      _playerMobjRef
+84d7:1c22      _player
+84d7:1ca5      _wminfo
+84d7:1cbc      _d_episode
+84d7:1cbd+     _secretexit
+84d7:1cbe      _d_skill
+84d7:1cbf      _d_map
+84d7:1cc0+     _savegameslot
+84d7:1cc1      _mousebforward
+84d7:1cc2      _key_speed
+84d7:1cc3      _mousebfire
+84d7:1cc4      _key_left
+84d7:1cc5      _key_fire
+84d7:1cc6      _key_strafe
+84d7:1cc7+     _turnheld
+84d7:1cc8      _key_straferight
+84d7:1cc9      _key_up
+84d7:1cca      _mousebstrafe
+84d7:1ccb      _key_down
+84d7:1ccc      _key_use
+84d7:1ccd      _key_right
+84d7:1cce      _key_strafeleft
+84d7:1ccf+     _timingdemo
+84d7:1cd0      _sendsave
+84d7:1cd1      _netdemo
+84d7:1cd2      _sendpause
+84d7:1cd3      _bodyqueslot
+84d7:1cd4      _gameaction
+84d7:1cd5      _demoplayback
+84d7:1cd6      _gamestate
+84d7:1cd7      _demorecording
 0000:127e      G_BuildTiccmd_
 0000:17b0      G_Responder_
 0000:198c      G_Ticker_
@@ -283,64 +283,64 @@ Module: g_game.obj(C:\REALDOOM\g_game.c)
 0000:20a2+     G_DoPlayDemo_
 0000:213c      G_TimeDemo_
 0000:217c      G_CheckDemoStatus_
-84da:0240      _precache
-84da:0244      _forwardmove
-84da:024c      _sidemove
-84da:0254+     _angleturn
-84da:0260      _mousebuttons
-84da:0264+     _pars
-84da:028c+     _cpars
-84da:1cd8      _singledemo
-84da:1cd9      _usergame
-84da:1cda      _paused
-84da:1cdb      _viewactive
-84da:1cdc+     _noblit
-84da:1cdd      _respawnmonsters
-84da:1cde      _nodrawers
-84da:1cdf      _gameskill
-84da:1ce0      _gamemap
-84da:1ce1      _gameepisode
+84d7:0240      _precache
+84d7:0244      _forwardmove
+84d7:024c      _sidemove
+84d7:0254+     _angleturn
+84d7:0260      _mousebuttons
+84d7:0264+     _pars
+84d7:028c+     _cpars
+84d7:1cd8      _singledemo
+84d7:1cd9      _usergame
+84d7:1cda      _paused
+84d7:1cdb      _viewactive
+84d7:1cdc+     _noblit
+84d7:1cdd      _respawnmonsters
+84d7:1cde      _nodrawers
+84d7:1cdf      _gameskill
+84d7:1ce0      _gamemap
+84d7:1ce1      _gameepisode
 Module: m_menu.obj(C:\REALDOOM\m_menu.c)
-84da:1cf0+     _tempstring
-84da:1d40+     _savegamestrings
-84da:1e30+     _endstring
-84da:1ed0+     _saveOldString
-84da:1ee8      _currentMenu
-84da:1eec+     _messageRoutine
-84da:1ef0      _messageString
-84da:1f54      _whichSkull
-84da:1f56      _skullAnimCounter
-84da:1f58+     _saveStringEnter
-84da:1f5a      _itemOn
-84da:1f5c+     _saveCharIndex
-84da:1f5e+     _saveSlot
-84da:1f60      _messageLastMenuActive
-84da:1f62+     _epi
-84da:1f63*     _sound_e
-84da:1f64*     _options_e
-84da:1f65*     _read_e2
-84da:1f66*     _newgame_e
-84da:1f67*     _read_e
-84da:1f68*     _episodes_e
-84da:1f69      _inhelpscreens
-84da:1f6a      _sfxVolume
-84da:1f6b      _showMessages
-84da:1f6c+     _messageNeedsInput
-84da:02ac+     _gammamsg
-84da:02b6+     _endmsg
-84da:02c6+     _endmsg2
-84da:02d6+     _skullName
-84da:02e8      _MainMenu
-84da:0348      _MainDef
-84da:035c+     _EpisodeMenu
-84da:038c+     _EpiDef
-84da:03a0+     _NewGameMenu
-84da:03f0      _NewDef
-84da:0404+     _OptionsMenu
-84da:0484+     _OptionsDef
-84da:0498      _ReadMenu1
-84da:04a8      _ReadDef1
-84da:04bc+     _ReadMenu2
+84d7:1cf0+     _tempstring
+84d7:1d40+     _savegamestrings
+84d7:1e30+     _endstring
+84d7:1ed0+     _saveOldString
+84d7:1ee8      _currentMenu
+84d7:1eec+     _messageRoutine
+84d7:1ef0      _messageString
+84d7:1f54      _whichSkull
+84d7:1f56      _skullAnimCounter
+84d7:1f58+     _saveStringEnter
+84d7:1f5a      _itemOn
+84d7:1f5c+     _saveCharIndex
+84d7:1f5e+     _saveSlot
+84d7:1f60      _messageLastMenuActive
+84d7:1f62+     _epi
+84d7:1f63*     _sound_e
+84d7:1f64*     _options_e
+84d7:1f65*     _read_e2
+84d7:1f66*     _newgame_e
+84d7:1f67*     _read_e
+84d7:1f68*     _episodes_e
+84d7:1f69      _inhelpscreens
+84d7:1f6a      _sfxVolume
+84d7:1f6b      _showMessages
+84d7:1f6c+     _messageNeedsInput
+84d7:02ac+     _gammamsg
+84d7:02b6+     _endmsg
+84d7:02c6+     _endmsg2
+84d7:02d6+     _skullName
+84d7:02e8      _MainMenu
+84d7:0348      _MainDef
+84d7:035c+     _EpisodeMenu
+84d7:038c+     _EpiDef
+84d7:03a0+     _NewGameMenu
+84d7:03f0      _NewDef
+84d7:0404+     _OptionsMenu
+84d7:0484+     _OptionsDef
+84d7:0498      _ReadMenu1
+84d7:04a8      _ReadDef1
+84d7:04bc+     _ReadMenu2
 0000:2346+     M_ReadSaveStrings_
 0000:2442+     M_DrawLoad_
 0000:24b6+     M_DrawSaveLoadBorder_
@@ -392,25 +392,25 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 0000:3c2e*     M_ClearMenus_
 0000:3c36*     M_SetupNextMenu_
 0000:3c4e      M_Ticker_
-84da:04cc+     _ReadDef2
-84da:04e0+     _SoundMenu
-84da:0520+     _SoundDef
-84da:0534+     _LoadMenu
-84da:0594+     _LoadDef
-84da:05a8+     _SaveMenu
-84da:0608+     _SaveDef
-84da:061c+     _detailNames
-84da:062e+     _msgNames
-84da:0640+     _quitsounds
-84da:0648+     _quitsounds2
-84da:1f6d      _screenblocks
-84da:1f6e      _screenSize
-84da:1f6f      _messageToPrint
-84da:1f70      _quickSaveSlot
-84da:1f71      _detailLevel
-84da:1f72      _musicVolume
-84da:1f73      _mouseSensitivity
-84da:1f74      _menuactive
+84d7:04cc+     _ReadDef2
+84d7:04e0+     _SoundMenu
+84d7:0520+     _SoundDef
+84d7:0534+     _LoadMenu
+84d7:0594+     _LoadDef
+84d7:05a8+     _SaveMenu
+84d7:0608+     _SaveDef
+84d7:061c+     _detailNames
+84d7:062e+     _msgNames
+84d7:0640+     _quitsounds
+84d7:0648+     _quitsounds2
+84d7:1f6d      _screenblocks
+84d7:1f6e      _screenSize
+84d7:1f6f      _messageToPrint
+84d7:1f70      _quickSaveSlot
+84d7:1f71      _detailLevel
+84d7:1f72      _musicVolume
+84d7:1f73      _mouseSensitivity
+84d7:1f74      _menuactive
 Module: m_misc.obj(C:\REALDOOM\m_misc.c)
 0000:3dc4      M_CheckParm_
 0000:3e16      P_Random_
@@ -420,14 +420,14 @@ Module: m_misc.obj(C:\REALDOOM\m_misc.c)
 0000:3e7a      M_ClearBox16_
 0000:3e96      M_WriteFile_
 0000:3edc      M_SaveDefaults_
-84da:065a+     _rndtable
-84da:075a+     _rndindex
-84da:075c      _prndindex
-84da:075e      _defaults
-84da:1f80      _defaultfile
-84da:1f84      _myargv
-84da:1f88      _myargc
-84da:1f8a      _usemouse
+84d7:065a+     _rndtable
+84d7:075a+     _rndindex
+84d7:075c      _prndindex
+84d7:075e      _defaults
+84d7:1f80      _defaultfile
+84d7:1f84      _myargv
+84d7:1f88      _myargc
+84d7:1f8a      _usemouse
 Module: p_ceilng.obj(C:\REALDOOM\p_ceilng.c)
 0000:3f8c      T_MoveCeiling_
 0000:4126      EV_DoCeiling_
@@ -435,7 +435,7 @@ Module: p_ceilng.obj(C:\REALDOOM\p_ceilng.c)
 0000:42da+     P_RemoveActiveCeiling_
 0000:4332+     P_ActivateInStasisCeiling_
 0000:4390      EV_CeilingCrushStop_
-84da:1f8c      _activeceilings
+84d7:1f8c      _activeceilings
 Module: p_doors.obj(C:\REALDOOM\p_doors.c)
 0000:4436      T_VerticalDoor_
 0000:4640      EV_DoLockedDoor_
@@ -508,18 +508,18 @@ Module: p_enemy.obj(C:\REALDOOM\p_enemy.c)
 0000:76d4      A_SpawnSound_
 0000:76f0      A_SpawnFly_
 0000:7850      A_PlayerScream_
-84da:08a0+     _opposite
-84da:08a9+     _diags
-84da:08b0+     _xspeed
-84da:08d0+     _yspeed
-84da:08f0+     _movedirangles
-84da:1fd0+     _braintargets
-84da:2010+     _viletryy
-84da:2014+     _viletryx
-84da:2018+     _vileobj
-84da:201c+     _numbraintargets
-84da:201e+     _braintargeton
-84da:2020+     _corpsehitRef
+84d7:08a0+     _opposite
+84d7:08a9+     _diags
+84d7:08b0+     _xspeed
+84d7:08d0+     _yspeed
+84d7:08f0+     _movedirangles
+84d7:1fd0+     _braintargets
+84d7:2010+     _viletryy
+84d7:2014+     _viletryx
+84d7:2018+     _vileobj
+84d7:201c+     _numbraintargets
+84d7:201e+     _braintargeton
+84d7:2020+     _corpsehitRef
 Module: p_floor.obj(C:\REALDOOM\p_floor.c)
 0000:7880      T_MovePlane_
 0000:7b8a      T_MoveFloor_
@@ -535,8 +535,8 @@ Module: p_inter.obj(C:\REALDOOM\p_inter.c)
 0000:84fc      P_TouchSpecialThing_
 0000:89da+     P_KillMobj_
 0000:8b28      P_DamageMobj_
-84da:0902      _maxammo
-84da:090a+     _clipammo
+84d7:0902      _maxammo
+84d7:090a+     _clipammo
 Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0000:8ed0      T_FireFlicker_
 0000:8f4a      P_SpawnFireFlicker_
@@ -550,33 +550,33 @@ Module: p_lights.obj(C:\REALDOOM\p_lights.c)
 0000:9396      T_Glow_
 0000:9412      P_SpawnGlowingLight_
 Module: p_map.obj(C:\REALDOOM\p_map.c)
-84da:2030+     _tmbbox
-84da:2040      _spechit
-84da:2050+     _bombsource
-84da:2054+     _bombspot
-84da:2058      _attackrange
-84da:205c+     _aimslope
-84da:2060+     _shootthing
-84da:2064+     _shootz
-84da:2068+     _bestslidefrac
-84da:206c+     _tmymove
-84da:2070+     _tmxmove
-84da:2074+     _secondslidefrac
-84da:2078+     _tmy
-84da:207c+     _tmx
-84da:2080+     _tmflags
-84da:2084+     _tmthing
-84da:2088      _linetarget
-84da:208c+     _bombdamage
-84da:208e+     _la_damage
-84da:2090+     _bestslidelinenum
-84da:2092+     _secondslidelinenum
-84da:2094+     _lastcalculatedsector
-84da:2096+     _tmdropoffz
-84da:2098      _numspechit
-84da:209a      _ceilinglinenum
-84da:209c      _tmfloorz
-84da:209e+     _tmceilingz
+84d7:2030+     _tmbbox
+84d7:2040      _spechit
+84d7:2050+     _bombsource
+84d7:2054+     _bombspot
+84d7:2058      _attackrange
+84d7:205c+     _aimslope
+84d7:2060+     _shootthing
+84d7:2064+     _shootz
+84d7:2068+     _bestslidefrac
+84d7:206c+     _tmymove
+84d7:2070+     _tmxmove
+84d7:2074+     _secondslidefrac
+84d7:2078+     _tmy
+84d7:207c+     _tmx
+84d7:2080+     _tmflags
+84d7:2084+     _tmthing
+84d7:2088      _linetarget
+84d7:208c+     _bombdamage
+84d7:208e+     _la_damage
+84d7:2090+     _bestslidelinenum
+84d7:2092+     _secondslidelinenum
+84d7:2094+     _lastcalculatedsector
+84d7:2096+     _tmdropoffz
+84d7:2098      _numspechit
+84d7:209a      _ceilinglinenum
+84d7:209c      _tmfloorz
+84d7:209e+     _tmceilingz
 0000:9470+     PIT_StompThing_
 0000:9536      P_TeleportMove_
 0000:971c+     PIT_CheckLine_
@@ -597,9 +597,9 @@ Module: p_map.obj(C:\REALDOOM\p_map.c)
 0000:b2f0      P_RadiusAttack_
 0000:b3ca+     PIT_ChangeSector_
 0000:b4d6      P_ChangeSector_
-84da:20a0+     _crushchange
-84da:20a1+     _nofit
-84da:20a2      _floatok
+84d7:20a0+     _crushchange
+84d7:20a1+     _nofit
+84d7:20a2      _floatok
 Module: p_maputl.obj(C:\REALDOOM\p_maputl.c)
 0000:b5a0      P_AproxDistance_
 0000:b5ec      P_PointOnLineSide_
@@ -616,12 +616,12 @@ Module: p_maputl.obj(C:\REALDOOM\p_maputl.c)
 0000:c15e+     PIT_AddThingIntercepts_
 0000:c256+     P_TraverseIntercepts_
 0000:c2e2      P_PathTraverse_
-84da:20b0      _trace
-84da:20c0*     _ptflags
-84da:20c4+     _intercept_p
-84da:20c8      _lineopening
-84da:20cf+     _earlyout
-23a5:5b50+     _intercepts
+84d7:20b0      _trace
+84d7:20c0*     _ptflags
+84d7:20c4+     _intercept_p
+84d7:20c8      _lineopening
+84d7:20cf+     _earlyout
+23a2:5b50+     _intercepts
 Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0000:c558      T_PlatRaise_
 0000:c6d0      EV_DoPlat_
@@ -629,7 +629,7 @@ Module: p_plats.obj(C:\REALDOOM\p_plats.c)
 0000:c986      EV_StopPlat_
 0000:c9e8+     P_AddActivePlat_
 0000:ca1c+     P_RemoveActivePlat_
-84da:20d0      _activeplats
+84d7:20d0      _activeplats
 Module: p_pspr.obj(C:\REALDOOM\p_pspr.c)
 0000:caa0      P_BringUpWeapon_
 0000:cc0c      P_DropWeapon_
@@ -659,8 +659,8 @@ Module: p_pspr.obj(C:\REALDOOM\p_pspr.c)
 0000:d692*     A_BFGsound_
 0000:d6a6      P_MovePsprites_
 0000:d738+     P_SetPsprite_
-84da:0914      _weaponinfo
-84da:2110+     _bulletslope
+84d7:0914      _weaponinfo
+84d7:2110+     _bulletslope
 Module: p_sight.obj(C:\REALDOOM\p_sight.c)
 0000:d890+     P_DivlineSide_
 0000:d97a+     P_DivlineSide16_
@@ -669,12 +669,12 @@ Module: p_sight.obj(C:\REALDOOM\p_sight.c)
 0000:dc30+     P_CrossSubsector_
 0000:df56+     P_CrossBSPNode_
 0000:e012      P_CheckSight_
-84da:2120+     _strace
-84da:2130      _bottomslope
-84da:2134+     _sightzstart
-84da:2138+     _cachedt2x
-84da:213c+     _cachedt2y
-84da:2140      _topslope
+84d7:2120+     _strace
+84d7:2130      _bottomslope
+84d7:2134+     _sightzstart
+84d7:2138+     _cachedt2x
+84d7:213c+     _cachedt2y
+84d7:2140      _topslope
 Module: p_spec.obj(C:\REALDOOM\p_spec.c)
 0000:e17a      getSideNum_
 0000:e1c8      getSector_
@@ -693,19 +693,19 @@ Module: p_spec.obj(C:\REALDOOM\p_spec.c)
 0000:f130      P_UpdateSpecials_
 0000:f2a6      EV_DoDonut_
 0000:f4e8      P_SpawnSpecials_
-84da:2150      _anims
-84da:21d0+     _linespeciallist
-84da:2250      _lastanim
-84da:2254+     _levelTimeCount
-84da:2258+     _numlinespecials
-84da:225a+     _levelTimer
+84d7:2150      _anims
+84d7:21d0+     _linespeciallist
+84d7:2250      _lastanim
+84d7:2254+     _levelTimeCount
+84d7:2258+     _numlinespecials
+84d7:225a+     _levelTimer
 Module: p_switch.obj(C:\REALDOOM\p_switch.c)
 0f66:0000+     P_StartButton_
 0f66:00a0      P_ChangeSwitchTexture_
 0f66:0362      P_UseSpecialLine_
-84da:225c      _buttonlist
-84da:22fc      _switchlist
-84da:2360      _numswitches
+84d7:225c      _buttonlist
+84d7:22fc      _switchlist
+84d7:2360      _numswitches
 Module: p_mobj.obj(C:\REALDOOM\p_mobj.c)
 0f66:0d10+     P_ExplodeMissile_
 0f66:0da2+     P_XYMovement_
@@ -720,8 +720,8 @@ Module: p_mobj.obj(C:\REALDOOM\p_mobj.c)
 0f66:1b62      P_SpawnMissile_
 0f66:1d62      P_SpawnPlayerMissile_
 0f66:1fb4      P_SetMobjState2_
-84da:2370      _setStateReturn
-84da:2374*     _SAVEDUNIT
+84d7:2370      _setStateReturn
+84d7:2374*     _SAVEDUNIT
 Module: p_telept.obj(C:\REALDOOM\p_telept.c)
 0f66:22b0      EV_Teleport_
 Module: p_tick.obj(C:\REALDOOM\p_tick.c)
@@ -732,18 +732,18 @@ Module: p_tick.obj(C:\REALDOOM\p_tick.c)
 0f66:25ca      P_RemoveThinker_
 0f66:25f0+     P_RunThinkers_
 0f66:275e      P_Ticker_
-84da:0978+     _addCount
-84da:097a*     _setval
-84da:2378      _leveltime
-84da:237c+     _currentThinkerListHead
-2992:0000      _thinkerlist
+84d7:0978+     _addCount
+84d7:097a      _setval
+84d7:2378      _leveltime
+84d7:237c+     _currentThinkerListHead
+298f:0000      _thinkerlist
 Module: p_user.obj(C:\REALDOOM\p_user.c)
 0f66:27b0+     P_Thrust_
 0f66:2828+     P_CalcHeight_
 0f66:2a64+     P_MovePlayer_
 0f66:2b70+     P_DeathThink_
 0f66:2cc8      P_PlayerThink_
-84da:237e+     _onground
+84d7:237e+     _onground
 Module: r_bsp.obj(C:\REALDOOM\r_bsp.c)
 0f66:2ee0      R_ClearDrawSegs_
 0f66:2ef0+     R_ClipSolidWallSegment_
@@ -753,58 +753,58 @@ Module: r_bsp.obj(C:\REALDOOM\r_bsp.c)
 0f66:3316+     R_CheckBBox_
 0f66:3526+     R_Subsector_
 0f66:3664      R_RenderBSPNode_
-84da:2380+     _solidsegs
-84da:2400+     _newend
-84da:2404      _frontsector
-84da:2408      _backsector
-84da:240c      _ds_p
-84da:2410      _curseg
-2992:a1c0      _drawsegs
+84d7:2380+     _solidsegs
+84d7:2400+     _newend
+84d7:2404      _frontsector
+84d7:2408      _backsector
+84d7:240c      _ds_p
+84d7:2410      _curseg
+298f:a1c0      _drawsegs
 Module: r_data.obj(C:\REALDOOM\r_data.c)
-84da:2420      _colormaps
-84da:2424      _texturecompositesizes
-84da:251e      _texturecolumnofsRefs
-84da:2618      _texturecolumnlumpRefs
-84da:2712      _textures
-84da:280c      _texturecomposite
-84da:2906      _lastflat
-84da:2908*     _lastpatch
-84da:290a*     _numpatches
-84da:290c*     _firstpatch
-84da:290e      _numtextures
+84d7:2420      _colormaps
+84d7:2424      _texturecompositesizes
+84d7:251e      _texturecolumnofsRefs
+84d7:2618      _texturecolumnlumpRefs
+84d7:2712      _textures
+84d7:280c      _texturecomposite
+84d7:2906      _lastflat
+84d7:2908*     _lastpatch
+84d7:290a*     _numpatches
+84d7:290c*     _firstpatch
+84d7:290e      _numtextures
 0f66:37b0+     R_DrawColumnInCache_
 0f66:3836+     R_GenerateComposite_
 0f66:3a12      R_GetColumn_
 0f66:3a9c      R_EraseCompositeCache_
-84da:2910      _numflats
-84da:2912*     _lockedRef
-84da:2914      _firstspritelump
-84da:2916      _lastspritelump
-84da:2918      _numspritelumps
-84da:291a      _firstflat
-84da:291c      _texturewidthmasks
-84da:2999      _texturetranslation
-84da:2a16      _flattranslation
-84da:2a93      _textureheights
-2992:c4c0      _spriteoffsets
-2992:c8a8      _spritewidths
-2992:cc90      _spritetopoffsets
-2992:d078      _colormapbytes
+84d7:2910      _numflats
+84d7:2912*     _lockedRef
+84d7:2914      _firstspritelump
+84d7:2916      _lastspritelump
+84d7:2918      _numspritelumps
+84d7:291a      _firstflat
+84d7:291c      _texturewidthmasks
+84d7:2999      _texturetranslation
+84d7:2a16      _flattranslation
+84d7:2a93      _textureheights
+298f:c4c0      _spriteoffsets
+298f:c8a8      _spritewidths
+298f:cc90      _spritetopoffsets
+298f:d078      _colormapbytes
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
-84da:2b10      _columnofs
-84da:2d90*     _viewimage
-84da:2d94      _ds_xstep
-84da:2d98      _ds_ystep
-84da:2d9c      _ds_yfrac
-84da:2da0      _ds_source
-84da:2da4      _ds_colormap
-84da:2da8      _ds_xfrac
-84da:2dac      _dc_texturemid
-84da:2db0      _dc_iscale
-84da:2db4      _dc_source
-84da:2db8      _dc_colormap
-84da:2dbc      _ds_x1
-84da:2dbe      _ds_x2
+84d7:2b10      _columnofs
+84d7:2d90*     _viewimage
+84d7:2d94      _ds_xstep
+84d7:2d98      _ds_ystep
+84d7:2d9c      _ds_yfrac
+84d7:2da0      _ds_source
+84d7:2da4      _ds_colormap
+84d7:2da8      _ds_xfrac
+84d7:2dac      _dc_texturemid
+84d7:2db0      _dc_iscale
+84d7:2db4      _dc_source
+84d7:2db8      _dc_colormap
+84d7:2dbc      _ds_x1
+84d7:2dbe      _ds_x2
 0f66:3aec      R_DrawColumn_
 0f66:3bb6      R_DrawColumnLow_
 0f66:3c80      R_DrawFuzzColumn_
@@ -813,852 +813,853 @@ Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 0f66:4052      R_FillBackScreen_
 0f66:42e0      R_VideoErase_
 0f66:4362      R_DrawViewBorder_
-84da:097c+     _fuzzoffset
-84da:09e0+     _fuzzpos
-84da:2dc0      _ds_y
-84da:2dc2      _ds_sourceRef
-84da:2dc4      _dc_x
-84da:2dc6      _dc_yh
-84da:2dc8      _dc_yl
-84da:2dca      _viewwindowx
-84da:2dcc      _viewwindowy
-84da:2dce      _scaledviewwidth
-84da:2dd0      _viewheight
-84da:2dd2      _viewwidth
+84d7:097c+     _fuzzoffset
+84d7:09e0+     _fuzzpos
+84d7:2dc0      _ds_y
+84d7:2dc2      _ds_sourceRef
+84d7:2dc4      _dc_x
+84d7:2dc6      _dc_yh
+84d7:2dc8      _dc_yl
+84d7:2dca      _viewwindowx
+84d7:2dcc      _viewwindowy
+84d7:2dce      _scaledviewwidth
+84d7:2dd0      _viewheight
+84d7:2dd2      _viewwidth
 Module: r_main.obj(C:\REALDOOM\r_main.c)
-84da:2de0+     _scalelightfixed
-84da:2ea0      _basecolfunc
-84da:2ea4      _spanfunc
-84da:2ea8      _fuzzcolfunc
-84da:2eac      _colfunc
-84da:2eb0      _fixedcolormap
-84da:2eb4      _projection
-84da:2eb8      _centeryfrac
-84da:2ebc      _centerxfrac
-84da:2ec0      _viewsin
-84da:2ec4      _viewcos
-84da:2ec8      _viewangle
-84da:2ecc      _viewz
-84da:2ed0      _viewy
-84da:2ed4      _viewx
-84da:2ed8      _xtoviewangle
-84da:315a      _centerx
-84da:315c      _centery
-84da:315e      _viewz_shortheight
-84da:3160      _viewangle_shiftright3
-84da:3162      _setsizeneeded
-84da:3163      _setdetail
-84da:3164      _setblocks
-84da:3165      _skyflatnum
-84da:3166      _detailshift
-84da:3167      _extralight
+84d7:2de0+     _scalelightfixed
+84d7:2ea0      _basecolfunc
+84d7:2ea4      _spanfunc
+84d7:2ea8      _fuzzcolfunc
+84d7:2eac      _colfunc
+84d7:2eb0      _fixedcolormap
+84d7:2eb4      _projection
+84d7:2eb8      _centeryfrac_shiftright4
+84d7:2ebc      _centeryfrac
+84d7:2ec0      _centerxfrac
+84d7:2ec4      _viewsin
+84d7:2ec8      _viewcos
+84d7:2ecc      _viewangle
+84d7:2ed0      _viewz
+84d7:2ed4      _viewy
+84d7:2ed8      _viewx
+84d7:2edc      _xtoviewangle
+84d7:315e      _centerx
+84d7:3160      _centery
+84d7:3162      _viewz_shortheight
+84d7:3164      _viewangle_shiftright3
+84d7:3166      _setsizeneeded
+84d7:3167      _setdetail
+84d7:3168      _setblocks
+84d7:3169      _skyflatnum
 0f66:4410+     R_PointOnSide_
 0f66:44fa      R_PointOnSegSide_
-0f66:45e6      R_PointToAngle16_
-0f66:45fc      R_PointToAngle_
-0f66:49ec      R_PointToAngle2_
-0f66:4a16      R_PointToAngle2_16_
-0f66:4a3c      R_PointToDist_
-0f66:4ae8      R_ScaleFromGlobalAngle_
-0f66:4ba2      R_SetViewSize_
-0f66:4bb2      R_PointInSubsector_
-0f66:4c14+     R_SetupFrame_
-0f66:4d4a      R_RenderPlayerView_
-84da:09f4      _validcount
-84da:09f6      _clipangle
-84da:09fa      _fieldofview
-84da:3168      _skytexture
-38ba:0000      _scalelight
-38ba:0c00      _zlight
-38ba:2c00      _viewangletox
+0f66:45ec      R_PointToAngle16_
+0f66:4602      R_PointToAngle_
+0f66:49f2      R_PointToAngle2_
+0f66:4a1c      R_PointToAngle2_16_
+0f66:4a42      R_PointToDist_
+0f66:4aee      R_ScaleFromGlobalAngle_
+0f66:4ba8      R_SetViewSize_
+0f66:4bb8      R_PointInSubsector_
+0f66:4c1a+     R_SetupFrame_
+0f66:4d50      R_RenderPlayerView_
+84d7:09f4      _validcount
+84d7:09f6      _clipangle
+84d7:09fa      _fieldofview
+84d7:316a      _detailshift
+84d7:316b      _extralight
+84d7:316c      _skytexture
+38b7:0000      _scalelight
+38b7:0c00      _zlight
+38b7:2c00      _viewangletox
 Module: r_plane.obj(C:\REALDOOM\r_plane.c)
 0f66:4da2+     R_MapPlane_
 0f66:4faa      R_ClearPlanes_
 0f66:5072      R_FindPlane_
 0f66:51cc      R_CheckPlane_
 0f66:5438      R_DrawPlanes_
-84da:3170+     _spanstart
-84da:3300      _floorclip
-84da:3580      _ceilingclip
-84da:3800+     _planeheight
-84da:3804+     _planezlight
-84da:3808+     _baseyscale
-84da:380c+     _basexscale
-84da:3810      _lastopening
-84da:3814      _visplanebytesRef
-84da:381a+     _lastvisplane
-84da:381c      _floorplaneindex
-84da:381e      _ceilingplaneindex
-38ba:4c00+     _cachedxstep
-38ba:4f20+     _cachedystep
-38ba:5240+     _cachedheight
-38ba:5560+     _cacheddistance
-38ba:5880      _yslope
-38ba:5ba0      _distscale
-38ba:60a0      _visplanes
-38ba:f9e8      _visplaneheaders
-4891:0000+     _openings
+84d7:3170+     _spanstart
+84d7:3300      _floorclip
+84d7:3580      _ceilingclip
+84d7:3800+     _planeheight
+84d7:3804+     _planezlight
+84d7:3808+     _baseyscale
+84d7:380c+     _basexscale
+84d7:3810      _lastopening
+84d7:3814      _visplanebytesRef
+84d7:381a+     _lastvisplane
+84d7:381c      _floorplaneindex
+84d7:381e      _ceilingplaneindex
+38b7:4c00+     _cachedxstep
+38b7:4f20+     _cachedystep
+38b7:5240+     _cachedheight
+38b7:5560+     _cacheddistance
+38b7:5880      _yslope
+38b7:5ba0      _distscale
+38b7:60a0      _visplanes
+38b7:f9e8      _visplaneheaders
+488e:0000+     _openings
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
-84da:3820+     _topfrac
-84da:3824+     _bottomstep
-84da:3828+     _bottomfrac
-84da:382c+     _pixhighstep
-84da:3830      _walllights
-84da:3834+     _topstep
-84da:3838+     _pixlowstep
-84da:383c+     _maskedtexturecol
-84da:3840+     _rw_toptexturemid
-84da:3844+     _worldtop
-84da:3848+     _rw_bottomtexturemid
-84da:384c+     _rw_midtexturemid
-84da:3850+     _pixhigh
-84da:3854+     _pixlow
-84da:3858+     _worldbottom
-84da:385c+     _rw_scale
-84da:3860+     _worldlow
-84da:3864+     _worldhigh
-84da:3868+     _rw_offset
-84da:386c      _rw_angle1
-84da:3870      _rw_distance
-84da:3874+     _rw_centerangle
-84da:3876+     _rw_scalestep
-84da:3878+     _rw_stopx
-84da:387a+     _rw_x
-84da:387c      _rw_normalangle
+84d7:3820+     _topfrac
+84d7:3824+     _bottomstep
+84d7:3828+     _bottomfrac
+84d7:382c+     _pixlow
+84d7:3830+     _pixhighstep
+84d7:3834      _walllights
+84d7:3838+     _topstep
+84d7:383c+     _pixlowstep
+84d7:3840+     _maskedtexturecol
+84d7:3844+     _rw_toptexturemid
+84d7:3848+     _worldtop
+84d7:384c+     _rw_bottomtexturemid
+84d7:3850+     _rw_midtexturemid
+84d7:3854+     _pixhigh
+84d7:3858+     _worldbottom
+84d7:385c+     _rw_scale
+84d7:3860+     _worldlow
+84d7:3864+     _worldhigh
+84d7:3868+     _rw_offset
+84d7:386c      _rw_angle1
+84d7:3870      _rw_distance
+84d7:3874+     _rw_centerangle
+84d7:3876+     _rw_scalestep
+84d7:3878+     _rw_stopx
+84d7:387a+     _rw_x
 0f66:5830      R_RenderMaskedSegRange_
 0f66:5ce0+     R_RenderSegLoop_
 0f66:61b8      R_StoreWallRange_
-84da:387e+     _maskedtexture
-84da:387f+     _toptexture
-84da:3880+     _midtexture
-84da:3881+     _bottomtexture
-84da:3882+     _segtextured
-84da:3883+     _markfloor
-84da:3884+     _markceiling
+84d7:387c      _rw_normalangle
+84d7:387e+     _maskedtexture
+84d7:387f+     _toptexture
+84d7:3880+     _midtexture
+84d7:3881+     _bottomtexture
+84d7:3882+     _segtextured
+84d7:3883+     _markfloor
+84d7:3884+     _markceiling
 Module: r_things.obj(C:\REALDOOM\r_things.c)
-84da:3890      _negonearray
-84da:3b10      _screenheightarray
-84da:3d90+     _spritelights
-84da:3d94      _spritename
-84da:3d98      _mfloorclip
-84da:3d9c      _mceilingclip
-84da:3da0      _sprtopscreen
-84da:3da4+     _vissprite_p
-84da:3da8      _pspriteiscale
-84da:3dac      _spryscale
-84da:3db0      _sprites
-84da:3db4*     _overflowsprite
-0f66:6d00      R_ClearSprites_
-0f66:6d10      R_DrawMaskedColumn_
-0f66:6e46+     R_DrawVisSprite_
-0f66:6f74+     R_ProjectSprite_
-0f66:73da      R_AddSprites_
-0f66:747e+     R_DrawPSprite_
-0f66:7748+     R_DrawPlayerSprites_
-0f66:7808+     R_SortVisSprites_
-0f66:7984+     R_DrawSprite_
-0f66:7d58      R_DrawMasked_
-84da:3dea+     _vsprsortedhead
-84da:3e20      _pspritescale
-84da:3e22      _numsprites
-4891:a000+     _vissprites
+84d7:3890      _negonearray
+84d7:3b10      _screenheightarray
+84d7:3d90+     _spritelights
+84d7:3d94      _spritename
+84d7:3d98      _mfloorclip
+84d7:3d9c      _mceilingclip
+84d7:3da0      _sprtopscreen
+84d7:3da4+     _vissprite_p
+84d7:3da8      _pspriteiscale
+84d7:3dac      _spryscale
+84d7:3db0      _sprites
+84d7:3db4*     _overflowsprite
+0f66:6ce0      R_ClearSprites_
+0f66:6cf0      R_DrawMaskedColumn_
+0f66:6e26+     R_DrawVisSprite_
+0f66:6f54+     R_ProjectSprite_
+0f66:73a6      R_AddSprites_
+0f66:744a+     R_DrawPSprite_
+0f66:7714+     R_DrawPlayerSprites_
+0f66:77d4+     R_SortVisSprites_
+0f66:7950+     R_DrawSprite_
+0f66:7d26      R_DrawMasked_
+84d7:3dea+     _vsprsortedhead
+84d7:3e20      _pspritescale
+84d7:3e22      _numsprites
+488e:a000+     _vissprites
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
-0f66:7df0      W_CheckNumForName_
-0f66:7df0      W_GetNumForName_
-0f66:7e9c      W_LumpLength_
-0f66:7ee8+     W_ReadLumpEMS_
-0f66:7faa      W_ReadLumpStatic_
-0f66:806a      W_CacheLumpNumCheck_
-0f66:806e      W_CacheLumpNumEMS2_
-0f66:80e2      W_CacheLumpNameEMS_
-0f66:80f8      W_EraseFullscreenCache_
-0f66:8100      W_CacheLumpNameEMSFragment_
-0f66:8184      W_CacheLumpNameEMSAsPatch_
-0f66:81a2      W_EraseLumpCache_
-84da:0a02+     _fullscreencache
-84da:3e30      _reloadname
-84da:3e34      _lumpcacheEMS
-84da:3e38      _lumpinfo
-84da:3e3c+     _pagedlumpcacheEMS
-84da:3e46      _wadfilehandle
-84da:3e48      _reloadlump
-84da:3e4a      _numlumps
-5441:0000      _lumpcachebytes
-5441:09e0      _lumpbytes
+0f66:7dc0      W_CheckNumForName_
+0f66:7dc0      W_GetNumForName_
+0f66:7e6c      W_LumpLength_
+0f66:7eb8+     W_ReadLumpEMS_
+0f66:7f7a      W_ReadLumpStatic_
+0f66:803a      W_CacheLumpNumCheck_
+0f66:803e      W_CacheLumpNumEMS2_
+0f66:80b2      W_CacheLumpNameEMS_
+0f66:80c8      W_EraseFullscreenCache_
+0f66:80d0      W_CacheLumpNameEMSFragment_
+0f66:8154      W_CacheLumpNameEMSAsPatch_
+0f66:8172      W_EraseLumpCache_
+84d7:0a02+     _fullscreencache
+84d7:3e30      _reloadname
+84d7:3e34      _lumpcacheEMS
+84d7:3e38      _lumpinfo
+84d7:3e3c+     _pagedlumpcacheEMS
+84d7:3e46      _wadfilehandle
+84d7:3e48      _reloadlump
+84d7:3e4a      _numlumps
+543e:0000      _lumpcachebytes
+543e:09e0      _lumpbytes
 Module: v_video.obj(C:\REALDOOM\v_video.c)
-0f66:81c0      V_MarkRect_
-0f66:81fc      V_CopyRect_
-0f66:8290      V_DrawPatch_
-0f66:83ce      V_DrawPatchDirect_
-84da:3e50      _dirtybox
-84da:3e58*     _screen3
-84da:3e5c*     _screen2
-84da:3e60      _screen4
-84da:3e64      _screen4Ref
-84da:3e66      _usegamma
-58e2:0000      _screen0
-58e2:fa00      _gammatable
+0f66:8190      V_MarkRect_
+0f66:81cc      V_CopyRect_
+0f66:8260      V_DrawPatch_
+0f66:839e      V_DrawPatchDirect_
+84d7:3e50      _dirtybox
+84d7:3e58*     _screen3
+84d7:3e5c*     _screen2
+84d7:3e60      _screen4
+84d7:3e64      _screen4Ref
+84d7:3e66      _usegamma
+58df:0000      _screen0
+58df:fa00      _gammatable
 Module: z_zone.obj(C:\REALDOOM\z_zone.c)
-84da:3e70+     _conventional_allocations2
-84da:3e88+     _conventional_allocations1
-84da:3ea0+     _activepages
-84da:3ea8+     _lockedpages
-84da:3eac+     _sprite_allocations
-84da:3fd8+     _pageevictorder
-84da:3fdc+     _pageFrameArea
-84da:3fe0+     _pagesize
-84da:3fe4      _spritememoryblock
-84da:3fe8      _conventionalmemoryblock1
-84da:0a10      _STATIC_CONVENTIONAL_BLOCK_SIZE_1
-84da:0a12      _remainingconventional1
-84da:0a14+     _remainingconventional2
-84da:0a16+     _remainingspriteconventional
-84da:0a18+     _remainingtextureinfoconventional
-84da:0a1a+     _conventional1head
-84da:0a1c+     _conventional2head
-84da:0a1e+     _spritehead
-84da:0a20+     _textureinfohead
-84da:0a22+     _conventional1headindex
-84da:0a24+     _conventional2headindex
-84da:0a26+     _spriteheadindex
-84da:0a28+     _textureinfoheadindex
-84da:0a2a+     _currentListHead
-84da:0a2c      _numreads
-84da:0a30      _pageins
-84da:0a34      _pageouts
-0f66:8606      Z_ChangeTagEMS_
-0f66:8632      Z_FreeEMS_
-0f66:87ae      Z_FreeTagsEMS_
-0f66:87d4+     Z_MarkPageLRU_
-0f66:880c+     Z_MarkPageMRU_
-0f66:8846+     Z_DoPageOut_
-0f66:8914+     Z_DoPageIn_
-0f66:89d2+     Z_PageOutIfInMemory_
-0f66:8a2e+     Z_GetEMSPageFrame_
-0f66:8ca6+     Z_SetUnlockedWithPage_
-0f66:8cea      Z_SetUnlocked_
-0f66:8d34      Z_LoadSpriteFromConventional_
-0f66:8d4a      Z_LoadTextureInfoFromConventional_
-0f66:8d5c      Z_LoadBytesFromConventional_
-0f66:8d84      Z_FreeConventionalAllocations_
-0f66:8e3a      Z_MallocConventional_
-0f66:8fca      Z_LoadBytesFromEMSWithOptions2_
-0f66:9048+     Z_GetNextFreeArrayIndex_
-0f66:908a      Z_MallocEMS_
-0f66:909e      Z_MallocEMSWithBackRef32_
-0f66:90d0      Z_MallocEMSWithBackRef16_
-0f66:93ea      Z_InitEMS_
-84da:0a38+     _actualpageins
-84da:0a3c+     _actualpageouts
-84da:3fec+     _textureinfo_allocations
-84da:42da      _emshandle
-68d2:0000+     _allocations
-68d2:3840+     _conventionalmemoryblock2
-779f:0000+     _textureinfomemoryblock
+84d7:3e70+     _conventional_allocations2
+84d7:3e88+     _conventional_allocations1
+84d7:3ea0+     _activepages
+84d7:3ea8+     _lockedpages
+84d7:3eac+     _sprite_allocations
+84d7:3fd8+     _pageevictorder
+84d7:3fdc+     _pageFrameArea
+84d7:3fe0+     _pagesize
+84d7:3fe4      _spritememoryblock
+84d7:3fe8      _conventionalmemoryblock1
+84d7:0a10      _STATIC_CONVENTIONAL_BLOCK_SIZE_1
+84d7:0a12      _remainingconventional1
+84d7:0a14+     _remainingconventional2
+84d7:0a16+     _remainingspriteconventional
+84d7:0a18+     _remainingtextureinfoconventional
+84d7:0a1a+     _conventional1head
+84d7:0a1c+     _conventional2head
+84d7:0a1e+     _spritehead
+84d7:0a20+     _textureinfohead
+84d7:0a22+     _conventional1headindex
+84d7:0a24+     _conventional2headindex
+84d7:0a26+     _spriteheadindex
+84d7:0a28+     _textureinfoheadindex
+84d7:0a2a+     _currentListHead
+84d7:0a2c      _numreads
+84d7:0a30      _pageins
+84d7:0a34      _pageouts
+0f66:85d6      Z_ChangeTagEMS_
+0f66:8602      Z_FreeEMS_
+0f66:877e      Z_FreeTagsEMS_
+0f66:87a4+     Z_MarkPageLRU_
+0f66:87dc+     Z_MarkPageMRU_
+0f66:8816+     Z_DoPageOut_
+0f66:88e4+     Z_DoPageIn_
+0f66:89a2+     Z_PageOutIfInMemory_
+0f66:89fe+     Z_GetEMSPageFrame_
+0f66:8c76+     Z_SetUnlockedWithPage_
+0f66:8cba      Z_SetUnlocked_
+0f66:8d04      Z_LoadSpriteFromConventional_
+0f66:8d1a      Z_LoadTextureInfoFromConventional_
+0f66:8d2c      Z_LoadBytesFromConventional_
+0f66:8d54      Z_FreeConventionalAllocations_
+0f66:8e0a      Z_MallocConventional_
+0f66:8f9a      Z_LoadBytesFromEMSWithOptions2_
+0f66:9018+     Z_GetNextFreeArrayIndex_
+0f66:905a      Z_MallocEMS_
+0f66:906e      Z_MallocEMSWithBackRef32_
+0f66:90a0      Z_MallocEMSWithBackRef16_
+0f66:93ba      Z_InitEMS_
+84d7:0a38+     _actualpageins
+84d7:0a3c+     _actualpageouts
+84d7:3fec+     _textureinfo_allocations
+84d7:42da      _emshandle
+68cf:0000+     _allocations
+68cf:3840+     _conventionalmemoryblock2
+779c:0000+     _textureinfomemoryblock
 Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
-84da:42dc      _w_ammo
-84da:430c      _armsRef
-84da:4324      _w_maxammo
-84da:4354      _w_ready
-84da:4360      _w_arms
-84da:439c      _facesRef
-84da:43f0      _tallnumRef
-84da:4404      _shortnumRef
-84da:4418      _keysRef
-84da:4424      _w_faces
-84da:442e      _w_health
-84da:443c      _keyboxes
-84da:4442      _w_armor
-84da:4450      _w_keyboxes
-84da:446e      _w_armsbg
-84da:0a40      _st_oldhealth
-84da:0a42+     _st_facecount
-84da:0a44      _st_faceindex
-84da:0a46+     _cheat_mus_seq
-84da:0a4f+     _cheat_choppers_seq
-84da:0a5a+     _cheat_god_seq
-84da:0a60+     _cheat_ammo_seq
-84da:0a66+     _cheat_ammonokey_seq
-84da:0a6b+     _cheat_noclip_seq
-84da:0a76+     _cheat_commercial_noclip_seq
-84da:0a7d+     _cheat_powerup_seq
-84da:0ac3+     _cheat_clev_seq
-84da:0acd+     _cheat_mypos_seq
-84da:0ad5+     _cheat_mus
-84da:0add+     _cheat_god
-84da:0ae5+     _cheat_ammo
-84da:0aed+     _cheat_ammonokey
-84da:0af5+     _cheat_noclip
-84da:0afd+     _cheat_commercial_noclip
-84da:0b05+     _cheat_powerup
-84da:0b3d+     _cheat_choppers
-0f66:94ba+     ST_refreshBackground_
-0f66:94fa      ST_Responder_
-0f66:9920+     ST_calcPainOffset_
-0f66:996e+     ST_updateFaceWidget_
-0f66:9c06+     ST_updateWidgets_
-0f66:9c4e      ST_Ticker_
-0f66:9c64+     ST_doPaletteStuff_
-0f66:9ce6+     ST_drawWidgets_
-0f66:9e3e      ST_Drawer_
-0f66:9eb6*     ST_unloadGraphics_
-84da:0b45+     _cheat_clev
-84da:0b4d+     _cheat_mypos
-84da:0b5a      _st_palette
-84da:4478      _armsbgRef
-84da:447a      _sbarRef
-84da:447c      _tallpercentRef
-84da:447e      _facebackRef
-84da:4480      _palRef
-84da:4482      _oldweaponsowned
-84da:448b+     _st_randomnumber
-84da:448c      _st_statusbaron
-84da:448d      _st_firsttime
-84da:448e      _st_gamestate
+84d7:42dc      _w_ammo
+84d7:430c      _armsRef
+84d7:4324      _w_maxammo
+84d7:4354      _w_ready
+84d7:4360      _w_arms
+84d7:439c      _facesRef
+84d7:43f0      _tallnumRef
+84d7:4404      _shortnumRef
+84d7:4418      _keysRef
+84d7:4424      _w_faces
+84d7:442e      _w_health
+84d7:443c      _keyboxes
+84d7:4442      _w_armor
+84d7:4450      _w_keyboxes
+84d7:446e      _w_armsbg
+84d7:0a40      _st_oldhealth
+84d7:0a42+     _st_facecount
+84d7:0a44      _st_faceindex
+84d7:0a46+     _cheat_mus_seq
+84d7:0a4f+     _cheat_choppers_seq
+84d7:0a5a+     _cheat_god_seq
+84d7:0a60+     _cheat_ammo_seq
+84d7:0a66+     _cheat_ammonokey_seq
+84d7:0a6b+     _cheat_noclip_seq
+84d7:0a76+     _cheat_commercial_noclip_seq
+84d7:0a7d+     _cheat_powerup_seq
+84d7:0ac3+     _cheat_clev_seq
+84d7:0acd+     _cheat_mypos_seq
+84d7:0ad5+     _cheat_mus
+84d7:0add+     _cheat_god
+84d7:0ae5+     _cheat_ammo
+84d7:0aed+     _cheat_ammonokey
+84d7:0af5+     _cheat_noclip
+84d7:0afd+     _cheat_commercial_noclip
+84d7:0b05+     _cheat_powerup
+84d7:0b3d+     _cheat_choppers
+0f66:948a+     ST_refreshBackground_
+0f66:94ca      ST_Responder_
+0f66:98f0+     ST_calcPainOffset_
+0f66:993e+     ST_updateFaceWidget_
+0f66:9bd6+     ST_updateWidgets_
+0f66:9c1e      ST_Ticker_
+0f66:9c34+     ST_doPaletteStuff_
+0f66:9cb6+     ST_drawWidgets_
+0f66:9e0e      ST_Drawer_
+0f66:9e86*     ST_unloadGraphics_
+84d7:0b45+     _cheat_clev
+84d7:0b4d+     _cheat_mypos
+84d7:0b5a      _st_palette
+84d7:4478      _armsbgRef
+84d7:447a      _sbarRef
+84d7:447c      _tallpercentRef
+84d7:447e      _facebackRef
+84d7:4480      _palRef
+84d7:4482      _oldweaponsowned
+84d7:448b+     _st_randomnumber
+84d7:448c      _st_statusbaron
+84d7:448d      _st_firsttime
+84d7:448e      _st_gamestate
 Module: st_lib.obj(C:\REALDOOM\st_lib.c)
-0f66:9f60      STlib_drawNum_
-0f66:a06c      STlib_updatePercent_
-0f66:a0b2      STlib_updateMultIcon_
+0f66:9f30      STlib_drawNum_
+0f66:a03c      STlib_updatePercent_
+0f66:a082      STlib_updateMultIcon_
 Module: hu_stuff.obj(C:\REALDOOM\hu_stuff.c)
-0f66:a170      HU_Drawer_
-0f66:a1d6      HU_Erase_
-0f66:a238      HU_Ticker_
-0f66:a334      HU_Responder_
-84da:44c6      _w_title
-84da:4523      _w_message
-84da:469e      _message_on
-84da:469f      _message_dontfuckwithme
-84da:46a0+     _message_counter
-84da:46a1      _message_nottobefuckedwith
+0f66:a140      HU_Drawer_
+0f66:a1a6      HU_Erase_
+0f66:a208      HU_Ticker_
+0f66:a304      HU_Responder_
+84d7:44c6      _w_title
+84d7:4523      _w_message
+84d7:469e      _message_on
+84d7:469f      _message_dontfuckwithme
+84d7:46a0+     _message_counter
+84d7:46a1      _message_nottobefuckedwith
 Module: hu_lib.obj(C:\REALDOOM\hu_lib.c)
-0f66:a3b0      HUlib_addCharToTextLine_
-0f66:a3e2      HUlib_drawTextLine_
-0f66:a4d6      HUlib_eraseTextLine_
-0f66:a59c      HUlib_addMessageToSText_
+0f66:a380      HUlib_addCharToTextLine_
+0f66:a3b2      HUlib_drawTextLine_
+0f66:a4a6      HUlib_eraseTextLine_
+0f66:a56c      HUlib_addMessageToSText_
 Module: s_sound.obj(C:\REALDOOM\s_sound.c)
-84da:46b4      _numChannels
-0f66:a670*     S_StopChannel_
-0f66:a670      S_StartMusic_
-0f66:a670      S_ChangeMusic_
-0f66:a670*     S_StopMusic_
-0f66:a670      S_SetMusicVolume_
-0f66:a672*     S_AdjustSoundParams_
-0f66:a67c      S_SetSfxVolume_
-0f66:a680      S_StopSound_
-0f66:a680      S_ResumeSound_
-0f66:a680      S_PauseSound_
-0f66:a682*     S_getChannel_
-0f66:a684      S_Start_
-0f66:a684      S_UpdateSounds_
-0f66:a684      S_StartSoundWithParams_
-0f66:a684      S_StartSound_
-0f66:a684      S_StartSoundFromRef_
-0f66:a686*     S_StartSoundAtVolume_
+84d7:46b4      _numChannels
+0f66:a640*     S_StopChannel_
+0f66:a640      S_StartMusic_
+0f66:a640      S_ChangeMusic_
+0f66:a640*     S_StopMusic_
+0f66:a640      S_SetMusicVolume_
+0f66:a642*     S_AdjustSoundParams_
+0f66:a64c      S_SetSfxVolume_
+0f66:a650      S_StopSound_
+0f66:a650      S_ResumeSound_
+0f66:a650      S_PauseSound_
+0f66:a652*     S_getChannel_
+0f66:a654      S_Start_
+0f66:a654      S_UpdateSounds_
+0f66:a654      S_StartSoundWithParams_
+0f66:a654      S_StartSound_
+0f66:a654      S_StartSoundFromRef_
+0f66:a656*     S_StartSoundAtVolume_
 Module: dutils.obj(C:\REALDOOM\dutils.c)
-0f66:a690      cht_CheckCheat_
-0f66:a704      cht_GetParam_
+0f66:a660      cht_CheckCheat_
+0f66:a6d4      cht_GetParam_
 Module: info.obj(C:\REALDOOM\info.c)
-0f66:a774      getPainChance_
-0f66:a7f2      getRaiseState_
-0f66:a84a      getXDeathState_
-0f66:a89a      getMeleeState_
-0f66:a8f8      getMobjMass_
-0f66:a962      getActiveSound_
-0f66:a9c4      getPainSound_
-0f66:a9f8      getAttackSound_
-0f66:aa1a      getDamage_
-0f66:aa90      getSeeState_
-0f66:ab34      getMissileState_
-0f66:abe8      getDeathState_
-0f66:acc6      getPainState_
-0f66:ad7c      getSpawnHealth_
-779f:b720      _states
-779f:cdca      _mobjinfo
+0f66:a744      getPainChance_
+0f66:a7c2      getRaiseState_
+0f66:a81a      getXDeathState_
+0f66:a86a      getMeleeState_
+0f66:a8c8      getMobjMass_
+0f66:a932      getActiveSound_
+0f66:a994      getPainSound_
+0f66:a9c8      getAttackSound_
+0f66:a9ea      getDamage_
+0f66:aa60      getSeeState_
+0f66:ab04      getMissileState_
+0f66:abb8      getDeathState_
+0f66:ac96      getPainState_
+0f66:ad4c      getSpawnHealth_
+779c:b720      _states
+779c:cdca      _mobjinfo
 Module: dmx.obj(C:\REALDOOM\dmx.c)
-0f66:ade0      TS_FreeTaskList_
-0f66:adf0      TS_SetClockSpeed_
-0f66:ae42+     TS_SetTimer_
-0f66:ae7c      TS_SetTimerToMaxTaskRate_
-0f66:ae8c+     TS_ServiceScheduleIntEnabled_
-0f66:af94+     TS_Startup_
-0f66:afea      TS_ScheduleTask_
-0f66:b01e      TS_Dispatch_
-84da:0b60+     _TaskServiceRate
-84da:0b64+     _TaskServiceCount
-84da:0b68      _TS_Installed
-84da:0b6c+     _TS_InInterrupt
-84da:46c0      _OldInt8
-84da:46c4+     _TS_TimesInInterrupt
-84da:46c8      _HeadTask
+0f66:adb0      TS_FreeTaskList_
+0f66:adc0      TS_SetClockSpeed_
+0f66:ae12+     TS_SetTimer_
+0f66:ae4c      TS_SetTimerToMaxTaskRate_
+0f66:ae5c+     TS_ServiceScheduleIntEnabled_
+0f66:af64+     TS_Startup_
+0f66:afba      TS_ScheduleTask_
+0f66:afee      TS_Dispatch_
+84d7:0b60+     _TaskServiceRate
+84d7:0b64+     _TaskServiceCount
+84d7:0b68      _TS_Installed
+84d7:0b6c+     _TS_InInterrupt
+84d7:46c0      _OldInt8
+84d7:46c4+     _TS_TimesInInterrupt
+84d7:46c8      _HeadTask
 Module: C:\WATCOM\lib286\dos\clibl.lib(intx086.c)
-1a69:0000+     int86x_
-1a69:0099      int86_
+1a66:0000+     int86x_
+1a66:0099      int86_
 Module: C:\WATCOM\lib286\dos\clibl.lib(printf.c)
-1a69:00c6      printf_
+1a66:00c6      printf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(vprintf.c)
-1a69:00f5      vprintf_
+1a66:00f5      vprintf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(exit.c)
-1a69:0107+     __null_int23_exit_
-1a69:0108      exit_
-1a69:0139*     _exit_
-84da:13fe+     ___int23_exit
-84da:1402+     ___FPE_handler_exit
+1a66:0107+     __null_int23_exit_
+1a66:0108      exit_
+1a66:0139*     _exit_
+84d7:13fe+     ___int23_exit
+84d7:1402+     ___FPE_handler_exit
 Module: C:\WATCOM\lib286\dos\clibl.lib(cmodel)
-1a69:0152      _big_code_
-1a69:0152*     CodeModelMismatch
+1a66:0152      _big_code_
+1a66:0152*     CodeModelMismatch
 Module: C:\WATCOM\lib286\dos\clibl.lib(sprintf.c)
-1a69:0152      sprintf_
+1a66:0152      sprintf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(i8m086)
-1a69:019d      __I8M
-1a69:019d      __U8M
-1a69:0182*     __I8ME
-1a69:0182*     __U8ME
+1a66:019d      __I8M
+1a66:019d      __U8M
+1a66:0182*     __I8ME
+1a66:0182*     __U8ME
 Module: C:\WATCOM\lib286\dos\clibl.lib(i4m)
-1a69:02e8      __I4M
-1a69:02e8      __U4M
+1a66:02e8      __I4M
+1a66:02e8      __U4M
 Module: C:\WATCOM\lib286\dos\clibl.lib(i8ls086)
-1a69:0300      __I8LS
-1a69:0300*     __U8LS
+1a66:0300      __I8LS
+1a66:0300*     __U8LS
 Module: C:\WATCOM\lib286\dos\clibl.lib(i8d086)
-1a69:061b*     __U8DQ
-1a69:0631*     __U8DR
-1a69:0647      __I8DQ
-1a69:0663*     __I8DR
-1a69:0679*     __U8DQE
-1a69:068f*     __U8DRE
-1a69:06a5*     __I8DQE
-1a69:06bb*     __I8DRE
+1a66:061b*     __U8DQ
+1a66:0631*     __U8DR
+1a66:0647      __I8DQ
+1a66:0663*     __I8DR
+1a66:0679*     __U8DQE
+1a66:068f*     __U8DRE
+1a66:06a5*     __I8DQE
+1a66:06bb*     __I8DRE
 Module: C:\WATCOM\lib286\dos\clibl.lib(i4d)
-1a69:06d2      __I4D
-1a69:0721      __U4D
+1a66:06d2      __I4D
+1a66:0721      __U4D
 Module: C:\WATCOM\lib286\dos\clibl.lib(atoi.c)
-1a69:07a5      atoi_
+1a66:07a5      atoi_
 Module: C:\WATCOM\lib286\dos\clibl.lib(open.c)
-1a69:0a09      open_
-1a69:0a40      sopen_
+1a66:0a09      open_
+1a66:0a40      sopen_
 Module: C:\WATCOM\lib286\dos\clibl.lib(read.c)
-1a69:0a6d      read_
+1a66:0a6d      read_
 Module: C:\WATCOM\lib286\dos\clibl.lib(close.c)
-1a69:0b51      close_
+1a66:0b51      close_
 Module: C:\WATCOM\lib286\dos\clibl.lib(toupper.c)
-1a69:0b56      toupper_
+1a66:0b56      toupper_
 Module: C:\WATCOM\lib286\dos\clibl.lib(strncpy.c)
-1a69:0b64      strncpy_
+1a66:0b64      strncpy_
 Module: C:\WATCOM\lib286\dos\clibl.lib(_istrcc_.asm)
-1a69:0ba0      strcasecmp_
+1a66:0ba0      strcasecmp_
 Module: C:\WATCOM\lib286\dos\clibl.lib(write.c)
-1a69:0cdb      write_
+1a66:0cdb      write_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fopen.c)
-1a69:0ebd+     __open_flags_
-1a69:10bd+     _fsopen_
-1a69:1124      fopen_
-1a69:11ff*     freopen_
+1a66:0ebd+     __open_flags_
+1a66:10bd+     _fsopen_
+1a66:1124      fopen_
+1a66:11ff*     freopen_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fprintf.c)
-1a69:1275      fprintf_
+1a66:1275      fprintf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fclose.c)
-1a69:12a4      __doclose_
-1a69:1355      __shutdown_stream_
-1a69:136f      fclose_
-84da:4cb8+     ___RmTmpFileFn
+1a66:12a4      __doclose_
+1a66:1355      __shutdown_stream_
+1a66:136f      fclose_
+84d7:4cb8+     ___RmTmpFileFn
 Module: C:\WATCOM\lib286\dos\clibl.lib(memmove.c)
-1a69:13ba      memmove_
+1a66:13ba      memmove_
 Module: C:\WATCOM\lib286\dos\clibl.lib(strupr.c)
-1a69:1430      strupr_
+1a66:1430      strupr_
 Module: C:\WATCOM\lib286\dos\clibl.lib(lseek.c)
-1a69:1452      lseek_
+1a66:1452      lseek_
 Module: C:\WATCOM\lib286\dos\clibl.lib(ffree.c)
-1a69:1483      _ffree_
-1a69:1483      free_
+1a66:1483      _ffree_
+1a66:1483      free_
 Module: C:\WATCOM\lib286\dos\clibl.lib(chainint)
-1a69:14ca      _chain_intr_
+1a66:14ca      _chain_intr_
 Module: C:\WATCOM\lib286\dos\clibl.lib(d_getvec.c)
-1a69:14ea      _dos_getvect_
+1a66:14ea      _dos_getvect_
 Module: C:\WATCOM\lib286\dos\clibl.lib(d_setvec.c)
-1a69:14f5      _dos_setvect_
+1a66:14f5      _dos_setvect_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fgetc.c)
-1a69:1502+     __fill_buffer_
-1a69:15f7      fgetc_
+1a66:1502+     __fill_buffer_
+1a66:15f7      fgetc_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fmalloc.c)
-1a69:169c      _fmalloc_
-1a69:169c      malloc_
-84da:1406+     ___fheap
-84da:1408      ___fheapRover
-84da:140a      ___LargestSizeB4Rover
+1a66:169c      _fmalloc_
+1a66:169c      malloc_
+84d7:1406+     ___fheap
+84d7:1408      ___fheapRover
+84d7:140a      ___LargestSizeB4Rover
 Module: C:\WATCOM\lib286\dos\clibl.lib(accss.c)
-1a69:17a9      access_
+1a66:17a9      access_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fscanf.c)
-1a69:1853+     vfscanf_
-1a69:18ae      fscanf_
+1a66:1853+     vfscanf_
+1a66:18ae      fscanf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(sscanf.c)
-1a69:1907+     vsscanf_
-1a69:193d      sscanf_
+1a66:1907+     vsscanf_
+1a66:193d      sscanf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(iob.c)
-84da:140c      ___iob
-84da:1574      __fmode
-84da:4cbc      ___OpenStreams
-84da:4cc0      ___ClosedStreams
+84d7:140c      ___iob
+84d7:1574      __fmode
+84d7:4cbc      ___OpenStreams
+84d7:4cc0      ___ClosedStreams
 Module: C:\WATCOM\lib286\dos\clibl.lib(setbuf.c)
-1a69:196b      setbuf_
+1a66:196b      setbuf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(cstart)
-84da:0000*     __nullarea
-84da:1576*     __ovlflag
-84da:1577*     __intno
-84da:1578*     __ovlvec
-1a69:1988      _cstart_
-1a69:1a5b*     _Not_Enough_Memory_
-1a69:1b8f      __exit_
-1a69:1bae      __do_exit_with_msg__
-1a69:1c0c      __GETDS
+84d7:0000*     __nullarea
+84d7:1576*     __ovlflag
+84d7:1577*     __intno
+84d7:1578*     __ovlvec
+1a66:1988      _cstart_
+1a66:1a5b*     _Not_Enough_Memory_
+1a66:1b8f      __exit_
+1a66:1bae      __do_exit_with_msg__
+1a66:1c0c      __GETDS
 Module: C:\WATCOM\lib286\dos\clibl.lib(argcv.c)
-84da:4cc4      __argv
-84da:4cc8      ___argv
-84da:4ccc      __argc
-84da:4cce      ___argc
+84d7:4cc4      __argv
+84d7:4cc8      ___argv
+84d7:4ccc      __argc
+84d7:4cce      ___argc
 Module: C:\WATCOM\lib286\dos\clibl.lib(_istrncc.asm)
-1a69:1c16      strncasecmp_
+1a66:1c16      strncasecmp_
 Module: C:\WATCOM\lib286\dos\clibl.lib(stack086.c)
-1a69:1c1b      stackavail_
+1a66:1c1b      stackavail_
 Module: C:\WATCOM\lib286\dos\clibl.lib(_istrcmp.asm)
-1a69:1c2a      strcmpi_
+1a66:1c2a      strcmpi_
 Module: C:\WATCOM\lib286\dos\clibl.lib(filelen.c)
-1a69:1c2f      filelength_
+1a66:1c2f      filelength_
 Module: C:\WATCOM\lib286\dos\clibl.lib(strncmp.c)
-1a69:1c8d      strncmp_
+1a66:1c8d      strncmp_
 Module: C:\WATCOM\lib286\dos\wovl.lib(lovlmain)
-1a69:65b0      __LOVLLDR__
-1a69:6545      __LOVLINIT__
-1a69:6549      ___LDBG_HOOK__
+1a66:65b0      __LOVLLDR__
+1a66:6545      __LOVLINIT__
+1a66:6549      ___LDBG_HOOK__
 Module: C:\WATCOM\lib286\dos\clibl.lib(intr.c)
-1a69:1ccc      intr_
+1a66:1ccc      intr_
 Module: C:\WATCOM\lib286\dos\clibl.lib(segread.c)
-1a69:1ce0      segread_
+1a66:1ce0      segread_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fprtf.c)
-1a69:1d1a      __fprtf_
+1a66:1d1a      __fprtf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(initrtns.c)
-1a69:1e20      __InitRtns
-1a69:1e20*     __FInitRtns
-1a69:1e7b      __FiniRtns
-1a69:1e7b*     __FFiniRtns
+1a66:1e20      __InitRtns
+1a66:1e20*     __FInitRtns
+1a66:1e7b      __FiniRtns
+1a66:1e7b*     __FFiniRtns
 Module: C:\WATCOM\lib286\dos\clibl.lib(vsprintf.c)
-1a69:1ef8      vsprintf_
+1a66:1ef8      vsprintf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(istable.c)
-84da:0098      __IsTable
+84d7:0098      __IsTable
 Module: C:\WATCOM\lib286\dos\clibl.lib(opendos.c)
-1a69:1f23      _dos_open_
+1a66:1f23      _dos_open_
 Module: C:\WATCOM\lib286\dos\clibl.lib(iomode.c)
-1a69:1f49      __GetIOMode_
-1a69:1f6e      __SetIOMode_nogrow_
-84da:157c      ___NFiles
-84da:157e      ___init_mode
-84da:15a6      ___io_mode
+1a66:1f49      __GetIOMode_
+1a66:1f6e      __SetIOMode_nogrow_
+84d7:157c      ___NFiles
+84d7:157e      ___init_mode
+84d7:15a6      ___io_mode
 Module: C:\WATCOM\lib286\dos\clibl.lib(isatt.c)
-1a69:1f91      isatty_
+1a66:1f91      isatty_
 Module: C:\WATCOM\lib286\dos\clibl.lib(seterrno.c)
-1a69:1fad      __set_errno_
-1a69:1fc1*     __set_EDOM_
-1a69:1fd3*     __set_ERANGE_
-1a69:1fe5*     __set_EINVAL_
-1a69:1ffa      __set_doserrno_
+1a66:1fad      __set_errno_
+1a66:1fc1*     __set_EDOM_
+1a66:1fd3*     __set_ERANGE_
+1a66:1fe5*     __set_EINVAL_
+1a66:1ffa      __set_doserrno_
 Module: C:\WATCOM\lib286\dos\clibl.lib(dosret.c)
-1a69:2006*     _dosretax_
-1a69:200b*     _dosret0_
-1a69:2012      __set_errno_dos_
-1a69:2070*     __set_errno_dos_reterr_
+1a66:2006*     _dosretax_
+1a66:200b*     _dosret0_
+1a66:2012      __set_errno_dos_
+1a66:2070*     __set_errno_dos_reterr_
 Module: C:\WATCOM\lib286\dos\clibl.lib(errno.c)
-1a69:207b      __get_errno_ptr_
-1a69:2082      __get_doserrno_ptr_
-84da:4cd0+     _errno
-84da:4cd2+     __doserrno
+1a66:207b      __get_errno_ptr_
+1a66:2082      __get_doserrno_ptr_
+84d7:4cd0+     _errno
+84d7:4cd2+     __doserrno
 Module: C:\WATCOM\lib286\dos\clibl.lib(umaskval.c)
-84da:15be      ___umaskval
+84d7:15be      ___umaskval
 Module: C:\WATCOM\lib286\dos\clibl.lib(creatdos.c)
-1a69:2089      _dos_creat_
-1a69:20ad*     _dos_creatnew_
+1a66:2089      _dos_creat_
+1a66:20ad*     _dos_creatnew_
 Module: C:\WATCOM\lib286\dos\clibl.lib(stiomode.c)
-1a69:20cf+     __grow_iomode_
-1a69:2192+     __shrink_iomode_
-1a69:21cd      __SetIOMode_
+1a66:20cf+     __grow_iomode_
+1a66:2192+     __shrink_iomode_
+1a66:21cd      __SetIOMode_
 Module: C:\WATCOM\lib286\dos\clibl.lib(iomodtty.c)
-1a69:2230      __ChkTTYIOMode_
-1a69:226e*     __IOMode_
+1a66:2230      __ChkTTYIOMode_
+1a66:226e*     __IOMode_
 Module: C:\WATCOM\lib286\dos\clibl.lib(__lseek.c)
-1a69:227e      __lseek_
+1a66:227e      __lseek_
 Module: C:\WATCOM\lib286\dos\clibl.lib(_clse.c)
-1a69:22b8      __close_
+1a66:22b8      __close_
 Module: C:\WATCOM\lib286\dos\clibl.lib(stricmp.c)
-1a69:22eb      stricmp_
+1a66:22eb      stricmp_
 Module: C:\WATCOM\lib286\dos\clibl.lib(stk)
-1a69:232d*     __STK
-1a69:234d      __STKOVERFLOW_
+1a66:232d*     __STK
+1a66:234d      __STKOVERFLOW_
 Module: C:\WATCOM\lib286\dos\clibl.lib(comtflag.c)
-1a69:236a*     __set_commode_
-84da:15c2      __commode
+1a66:236a*     __set_commode_
+84d7:15c2      __commode
 Module: C:\WATCOM\lib286\dos\clibl.lib(tolower.c)
-1a69:2376      tolower_
+1a66:2376      tolower_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fseek.c)
-1a69:23ef      fseek_
+1a66:23ef      fseek_
 Module: C:\WATCOM\lib286\dos\clibl.lib(chktty.c)
-1a69:253d      __chktty_
+1a66:253d      __chktty_
 Module: C:\WATCOM\lib286\dos\clibl.lib(freefp.c)
-1a69:2568      __freefp_
-1a69:25e3      __purgefp_
+1a66:2568      __freefp_
+1a66:25e3      __purgefp_
 Module: C:\WATCOM\lib286\dos\clibl.lib(allocfp.c)
-1a69:2624      __allocfp_
+1a66:2624      __allocfp_
 Module: C:\WATCOM\lib286\dos\clibl.lib(flush.c)
-1a69:2746      __flush_
+1a66:2746      __flush_
 Module: C:\WATCOM\lib286\dos\clibl.lib(nmalloc.c)
-1a69:2879      _nmalloc_
-84da:15c4      ___nheapbeg
-84da:15c6      ___MiniHeapRover
-84da:15c8      ___LargestSizeB4MiniHeapRover
+1a66:2879      _nmalloc_
+84d7:15c4      ___nheapbeg
+84d7:15c6      ___MiniHeapRover
+84d7:15c8      ___LargestSizeB4MiniHeapRover
 Module: C:\WATCOM\lib286\dos\clibl.lib(mem.c)
-1a69:2960      __MemAllocator
-1a69:2a2a      __MemFree
+1a66:2960      __MemAllocator
+1a66:2a2a      __MemFree
 Module: C:\WATCOM\lib286\dos\clibl.lib(nfree.c)
-1a69:2b87      _nfree_
-84da:4cd6+     ___MiniHeapFreeRover
+1a66:2b87      _nfree_
+84d7:4cd6+     ___MiniHeapFreeRover
 Module: C:\WATCOM\lib286\dos\clibl.lib(flushall.c)
-1a69:2c82      __flushall_
-1a69:2cdf*     flushall_
+1a66:2c82      __flushall_
+1a66:2cdf*     flushall_
 Module: C:\WATCOM\lib286\dos\clibl.lib(gtche.c)
-1a69:2ce4      getche_
+1a66:2ce4      getche_
 Module: C:\WATCOM\lib286\dos\clibl.lib(ioalloc.c)
-1a69:2cfe      __ioalloc_
+1a66:2cfe      __ioalloc_
 Module: C:\WATCOM\lib286\dos\clibl.lib(qread.c)
-1a69:2d98      __qread_
+1a66:2d98      __qread_
 Module: C:\WATCOM\lib286\dos\clibl.lib(hpgrw086.c)
-1a69:2db8      __CMain_nheapgrow_
+1a66:2db8      __CMain_nheapgrow_
 Module: C:\WATCOM\lib286\dos\clibl.lib(growseg.c)
-1a69:2dbd      __GrowSeg_
+1a66:2dbd      __GrowSeg_
 Module: C:\WATCOM\lib286\dos\clibl.lib(allocseg.c)
-1a69:2eaf      __AllocSeg_
+1a66:2eaf      __AllocSeg_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fmemneed.c)
-1a69:2f46      __fmemneed_
+1a66:2f46      __fmemneed_
 Module: C:\WATCOM\lib286\dos\clibl.lib(gfattdos.c)
-1a69:2f49      _dos_getfileattr_
+1a66:2f49      _dos_getfileattr_
 Module: C:\WATCOM\lib286\dos\clibl.lib(ungetc.c)
-1a69:2f60      ungetc_
+1a66:2f60      ungetc_
 Module: C:\WATCOM\lib286\dos\clibl.lib(scnf.c)
-1a69:3f18      __scnf_
+1a66:3f18      __scnf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(initfile.c)
-1a69:41a6      __InitFiles_
+1a66:41a6      __InitFiles_
 Module: C:\WATCOM\lib286\dos\clibl.lib(ioexit.c)
-1a69:42f4*     fcloseall_
-1a69:42fb      __full_io_exit_
+1a66:42f4*     fcloseall_
+1a66:42fb      __full_io_exit_
 Module: C:\WATCOM\lib286\dos\clibl.lib(setvbuf.c)
-1a69:4305      setvbuf_
+1a66:4305      setvbuf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(xmsg.c)
-1a69:438d*     __exit_with_msg_
-1a69:4392      __fatal_runtime_error_
+1a66:438d*     __exit_with_msg_
+1a66:4392      __fatal_runtime_error_
 Module: C:\WATCOM\lib286\dos\clibl.lib(cmain086.c)
-1a69:43b0      __CMain
+1a66:43b0      __CMain
 Module: C:\WATCOM\lib286\dos\clibl.lib(crwdata)
-84da:15ca      __curbrk
-84da:15d2      __STACKLOW
-84da:15d4      __STACKTOP
-84da:15d6      __cbyte
-84da:15d8      __child
-84da:15da      __no87
-84da:15e8      ___FPE_handler
-84da:15cc      __psp
-84da:15dc      __get_ovl_stack
-84da:15e0      __restore_ovl_stack
-84da:15e4      __close_ovl_file
-84da:15ec      __LpCmdLine
-84da:15f0      __LpPgmName
-84da:15ce      __osmajor
-84da:15cf      __osminor
-84da:15d0      __osmode
-84da:15d1      __HShift
+84d7:15ca      __curbrk
+84d7:15d2      __STACKLOW
+84d7:15d4      __STACKTOP
+84d7:15d6      __cbyte
+84d7:15d8      __child
+84d7:15da      __no87
+84d7:15e8      ___FPE_handler
+84d7:15cc      __psp
+84d7:15dc      __get_ovl_stack
+84d7:15e0      __restore_ovl_stack
+84d7:15e4      __close_ovl_file
+84d7:15ec      __LpCmdLine
+84d7:15f0      __LpPgmName
+84d7:15ce      __osmajor
+84d7:15cf      __osminor
+84d7:15d0      __osmode
+84d7:15d1      __HShift
 Module: C:\WATCOM\lib286\dos\clibl.lib(uselfn.c)
-84da:15f4      ___uselfn
+84d7:15f4      ___uselfn
 Module: C:\WATCOM\lib286\dos\clibl.lib(dosseg)
-1a69:43dc      __DOSseg__
+1a66:43dc      __DOSseg__
 Module: C:\WATCOM\lib286\dos\clibl.lib(initargv.c)
-1a69:43dd      __Init_Argv_
-1a69:4440+     _getargv_
-1a69:463f      __Fini_Argv_
+1a66:43dd      __Init_Argv_
+1a66:4440+     _getargv_
+1a66:463f      __Fini_Argv_
 Module: C:\WATCOM\lib286\dos\clibl.lib(strnicmp.c)
-1a69:4669      strnicmp_
+1a66:4669      strnicmp_
 Module: C:\WATCOM\lib286\dos\wovl.lib(lovlldr)
-1a69:6718      __LLoadOverlay___
-1a69:67be      __LOVLLOAD___
-1a69:67ee      __LOVLTINIT___
+1a66:6718      __LLoadOverlay___
+1a66:67be      __LOVLLOAD___
+1a66:67ee      __LOVLTINIT___
 Module: C:\WATCOM\lib286\dos\wovl.lib(lovlret)
-1a69:6874      __LOVLSETRTN__
-1a69:6854      __LCHPOVLLDR___
-1a69:6928      __LCheckRetAddr___
-1a69:690a      __LOVLPARINIT__
+1a66:6874      __LOVLSETRTN__
+1a66:6854      __LCHPOVLLDR___
+1a66:6928      __LCheckRetAddr___
+1a66:690a      __LOVLPARINIT__
 Module: C:\WATCOM\lib286\dos\wovl.lib(lovldbg)
-1a69:6b16      __LDBG_HANDLER___
+1a66:6b16      __LDBG_HANDLER___
 Module: C:\WATCOM\lib286\dos\wovl.lib(ovldata)
-1a69:6b78      ___OVLCAUSE__
-1a69:6b76      ___OVLPSP__
-1a69:6bfd      ___OVLMSGS__
-1a69:6b80      ___OVLFILEPREV__
-1a69:6b7c      ___OVLHDLPREV__
-1a69:6b82      ___OVLFLAGS__
-1a69:6b84      ___OVLSHARE__
-1a69:6b86      ___OVLNULLSTR__
+1a66:6b78      ___OVLCAUSE__
+1a66:6b76      ___OVLPSP__
+1a66:6bfd      ___OVLMSGS__
+1a66:6b80      ___OVLFILEPREV__
+1a66:6b7c      ___OVLHDLPREV__
+1a66:6b82      ___OVLFLAGS__
+1a66:6b84      ___OVLSHARE__
+1a66:6b86      ___OVLNULLSTR__
 Module: C:\WATCOM\lib286\dos\wovl.lib(ovlstd)
-1a69:6c16      __BankBeg__
-1a69:6c14      ___OVLISRET__
-1a69:6c0e      __SaveRegs__
-1a69:6c15      ___OVLDOPAR__
-1a69:6d16      __TopStack__
-1a69:6d16      ___BankStack__
+1a66:6c16      __BankBeg__
+1a66:6c14      ___OVLISRET__
+1a66:6c0e      __SaveRegs__
+1a66:6c15      ___OVLDOPAR__
+1a66:6d16      __TopStack__
+1a66:6d16      ___BankStack__
 Module: C:\WATCOM\lib286\dos\wovl.lib(ovlboth)
-1a69:6d20+     __OvlMsg___
-1a69:6d4c      __OvlExit___
-1a69:6d56      __OvlCodeLoad___
-1a69:6db6      __OvlRelocLoad___
-1a69:6ee6      __CloseOvl___
-1a69:6efe      __OpenOvl___
+1a66:6d20+     __OvlMsg___
+1a66:6d4c      __OvlExit___
+1a66:6d56      __OvlCodeLoad___
+1a66:6db6      __OvlRelocLoad___
+1a66:6ee6      __CloseOvl___
+1a66:6efe      __OpenOvl___
 Module: C:\WATCOM\lib286\dos\clibl.lib(dointr)
-1a69:46b8      _DoINTR_
+1a66:46b8      _DoINTR_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fputc.c)
-1a69:4a31      fputc_
+1a66:4a31      fputc_
 Module: C:\WATCOM\lib286\dos\clibl.lib(prtf.c)
-1a69:4b01      __prtf_
+1a66:4b01      __prtf_
 Module: C:\WATCOM\lib286\dos\clibl.lib(sgdef086)
-84da:1606      __Start_XI
-84da:1624      __End_XI
-84da:1624      __Start_YI
-84da:1636      __End_YI
+84d7:1606      __Start_XI
+84d7:1624      __End_XI
+84d7:1624      __Start_YI
+84d7:1636      __End_YI
 Module: C:\WATCOM\lib286\dos\clibl.lib(doserror)
-1a69:58d0      __doserror_
+1a66:58d0      __doserror_
 Module: C:\WATCOM\lib286\dos\clibl.lib(frealloc.c)
-1a69:58de*     _frealloc_
-1a69:58de      realloc_
+1a66:58de*     _frealloc_
+1a66:58de      realloc_
 Module: C:\WATCOM\lib286\dos\clibl.lib(tell.c)
-1a69:59ba      tell_
+1a66:59ba      tell_
 Module: C:\WATCOM\lib286\dos\clibl.lib(qwrit.c)
-1a69:59cb      __qwrite_
+1a66:59cb      __qwrite_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fsync.c)
-1a69:5a28      fsync_
+1a66:5a28      fsync_
 Module: C:\WATCOM\lib286\dos\clibl.lib(nmemneed.c)
-1a69:5a2d      __nmemneed_
+1a66:5a2d      __nmemneed_
 Module: C:\WATCOM\lib286\dos\clibl.lib(grownear.c)
-1a69:5ab5      __LastFree_
-1a69:5b2f      __ExpandDGROUP_
+1a66:5ab5      __LastFree_
+1a66:5b2f      __ExpandDGROUP_
 Module: C:\WATCOM\lib286\dos\clibl.lib(heapgrow.c)
-1a69:5c40*     _heapgrow_
-1a69:5c40*     _fheapgrow_
-1a69:5c41      _nheapgrow_
+1a66:5c40*     _heapgrow_
+1a66:5c40*     _fheapgrow_
+1a66:5c41      _nheapgrow_
 Module: C:\WATCOM\lib286\dos\clibl.lib(heapen.c)
-1a69:5cbb*     _heapenable_
-84da:15f6      ___heap_enabled
+1a66:5cbb*     _heapenable_
+84d7:15f6      ___heap_enabled
 Module: C:\WATCOM\lib286\dos\clibl.lib(amblksiz.c)
-84da:15f8      __amblksiz
+84d7:15f8      __amblksiz
 Module: C:\WATCOM\lib286\dos\clibl.lib(mbisdbcs.c)
-84da:4cdc      ___IsDBCS
+84d7:4cdc      ___IsDBCS
 Module: C:\WATCOM\lib286\dos\clibl.lib(mbislead.c)
-1a69:5ccc*     _ismbblead_
-84da:4cde      ___MBCSIsTable
+1a66:5ccc*     _ismbblead_
+84d7:4cde      ___MBCSIsTable
 Module: C:\WATCOM\lib286\dos\clibl.lib(mbtowc.c)
-1a69:5ce8      mbtowc_
+1a66:5ce8      mbtowc_
 Module: C:\WATCOM\lib286\dos\clibl.lib(bits.c)
-84da:019a      __Bits
+84d7:019a      __Bits
 Module: C:\WATCOM\lib286\dos\clibl.lib(fdfs086)
-1a69:5dea      __FDFS
+1a66:5dea      __FDFS
 Module: C:\WATCOM\lib286\dos\clibl.lib(noefgfmt.c)
-84da:15fa      ___EFG_printf
-84da:15fe      ___EFG_scanf
+84d7:15fa      ___EFG_printf
+84d7:15fe      ___EFG_scanf
 Module: C:\WATCOM\lib286\dos\clibl.lib(enterdb.c)
-1a69:5e44      __EnterWVIDEO_
-84da:1602+     ___WD_Present
+1a66:5e44      __EnterWVIDEO_
+84d7:1602+     ___WD_Present
 Module: C:\WATCOM\lib286\dos\clibl.lib(___argc.c)
-84da:4de0      ____Argv
-84da:4de4      ____Argc
+84d7:4de0      ____Argv
+84d7:4de4      ____Argc
 Module: C:\WATCOM\lib286\dos\clibl.lib(histsplt.c)
-84da:4de6      ___historical_splitparms
+84d7:4de6      ___historical_splitparms
 Module: C:\WATCOM\lib286\dos\wovl.lib(ovlio)
-1a69:70c0      __OvlOpen___
-1a69:70e6      __OvlSeek___
-1a69:710e      __OvlRead___
-1a69:7124      __OvlClose___
+1a66:70c0      __OvlOpen___
+1a66:70e6      __OvlSeek___
+1a66:710e      __OvlRead___
+1a66:7124      __OvlClose___
 Module: C:\WATCOM\lib286\dos\clibl.lib(wctomb.c)
-1a69:5e68      wctomb_
+1a66:5e68      wctomb_
 Module: C:\WATCOM\lib286\dos\clibl.lib(itoa.c)
-1a69:5e91+     utoa_
-1a69:5eee      itoa_
+1a66:5e91+     utoa_
+1a66:5eee      itoa_
 Module: C:\WATCOM\lib286\dos\clibl.lib(lltoa.c)
-1a69:5f12      ulltoa_
-1a69:5ff7*     lltoa_
+1a66:5f12      ulltoa_
+1a66:5ff7*     lltoa_
 Module: C:\WATCOM\lib286\dos\clibl.lib(ltoa.c)
-1a69:6059      ultoa_
-1a69:60c8*     ltoa_
+1a66:6059      ultoa_
+1a66:60c8*     ltoa_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fmsize.c)
-1a69:60f7*     _msize_
-1a69:60f7      _fmsize_
+1a66:60f7*     _msize_
+1a66:60f7      _fmsize_
 Module: C:\WATCOM\lib286\dos\clibl.lib(nexpand.c)
-1a69:6108      __HeapManager_expand_
-1a69:627f      _nexpand_
+1a66:6108      __HeapManager_expand_
+1a66:627f      _nexpand_
 Module: C:\WATCOM\lib286\dos\clibl.lib(fexpand.c)
-1a69:62d2      _fexpand_
-1a69:62d2*     _expand_
+1a66:62d2      _fexpand_
+1a66:62d2*     _expand_
 Module: C:\WATCOM\lib286\dos\clibl.lib(filedos.c)
-1a69:6307*     _dos_close_
-1a69:6315      _dos_commit_
+1a66:6307*     _dos_close_
+1a66:6315      _dos_commit_
 Module: C:\WATCOM\lib286\dos\clibl.lib(sbrk.c)
-1a69:6325*     sbrk_
-1a69:6335      __brk_
+1a66:6325*     sbrk_
+1a66:6335      __brk_
 Module: C:\WATCOM\lib286\dos\clibl.lib(mbinit.c)
-1a69:63dd      __mbinit_
-84da:1604+     ___MBCodePage
+1a66:63dd      __mbinit_
+84d7:1604+     ___MBCodePage
 Module: C:\WATCOM\lib286\dos\clibl.lib(alphabet.c)
-84da:0072      ___Alphabet
+84d7:0072      ___Alphabet
 Module: C:\WATCOM\lib286\dos\clibl.lib(bfree.c)
-1a69:64b8      _bfree_
+1a66:64b8      _bfree_
 Module: C:\WATCOM\lib286\dos\clibl.lib(bexpand.c)
-1a69:64dd      _bexpand_
+1a66:64dd      _bexpand_
 
 
-1a69:7134      __OVLTAB__
-1a69:71ce      __OVLTABEND__
-1a69:71db      __OVLSTARTVEC__
-1a69:731b      __OVLENDVEC__
+1a66:7134      __OVLTAB__
+1a66:71ce      __OVLTABEND__
+1a66:71db      __OVLSTARTVEC__
+1a66:731b      __OVLENDVEC__
 
 
                         +---------------------+
                         |   Overlay Vectors   |
                         +---------------------+
 
-1a69:71db section 1 : F_StartFinale_
-1a69:71e5 section 1 : F_Responder_
-1a69:71ef section 1 : F_Ticker_
-1a69:71f9 section 1 : F_Drawer_
-1a69:7203 section 1 : WI_Ticker_
-1a69:720d section 1 : WI_Drawer_
-1a69:7217 section 1 : WI_Start_
-1a69:7221 section 2 : I_Shutdown_
-1a69:722b section 2 : I_Quit_
-1a69:7235 section 2 : V_DrawFullscreenPatch_
-1a69:723f section 3 : D_StartTitle_
-1a69:7249 section 3 : D_DoomMain2_
-1a69:7253 section 3 : I_ZoneBaseEMS_
-1a69:725d section 3 : I_InitGraphics_
-1a69:7267 section 3 : G_InitNew_
-1a69:7271 section 3 : G_DoNewGame_
-1a69:727b section 3 : G_DoWorldDone_
-1a69:7285 section 3 : R_TextureNumForNameB_
-1a69:728f section 4 : P_SetupLevel_
-1a69:7299 section 5 : P_Init_
-1a69:72a3 section 6 : R_Init_
-1a69:72ad section 6 : R_ExecuteSetViewSize_
-1a69:72b7 section 6 : R_PrecacheLevel_
-1a69:72c1 section 7 : W_InitMultipleFiles_
-1a69:72cb section 7 : ST_Start_
-1a69:72d5 section 7 : HU_Start_
-1a69:72df section 7 : ST_Init_
-1a69:72e9 section 8 : AM_Stop_
-1a69:72f3 section 8 : AM_Responder_
-1a69:72fd section 8 : AM_Ticker_
-1a69:7307 section 8 : AM_Drawer_
-1a69:7311 section 3 : main_
+1a66:71db section 1 : F_StartFinale_
+1a66:71e5 section 1 : F_Responder_
+1a66:71ef section 1 : F_Ticker_
+1a66:71f9 section 1 : F_Drawer_
+1a66:7203 section 1 : WI_Ticker_
+1a66:720d section 1 : WI_Drawer_
+1a66:7217 section 1 : WI_Start_
+1a66:7221 section 2 : I_Shutdown_
+1a66:722b section 2 : I_Quit_
+1a66:7235 section 2 : V_DrawFullscreenPatch_
+1a66:723f section 3 : D_StartTitle_
+1a66:7249 section 3 : D_DoomMain2_
+1a66:7253 section 3 : I_ZoneBaseEMS_
+1a66:725d section 3 : I_InitGraphics_
+1a66:7267 section 3 : G_InitNew_
+1a66:7271 section 3 : G_DoNewGame_
+1a66:727b section 3 : G_DoWorldDone_
+1a66:7285 section 3 : R_TextureNumForNameB_
+1a66:728f section 4 : P_SetupLevel_
+1a66:7299 section 5 : P_Init_
+1a66:72a3 section 6 : R_Init_
+1a66:72ad section 6 : R_ExecuteSetViewSize_
+1a66:72b7 section 6 : R_PrecacheLevel_
+1a66:72c1 section 7 : W_InitMultipleFiles_
+1a66:72cb section 7 : ST_Start_
+1a66:72d5 section 7 : HU_Start_
+1a66:72df section 7 : ST_Init_
+1a66:72e9 section 8 : AM_Stop_
+1a66:72f3 section 8 : AM_Responder_
+1a66:72fd section 8 : AM_Ticker_
+1a66:7307 section 8 : AM_Drawer_
+1a66:7311 section 3 : main_
 
 
-Overlay section 1 address 219b:0000
+Overlay section 1 address 2198:0000
 ====================================
 
 
@@ -1669,8 +1670,8 @@ Overlay section 1 address 219b:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-f_finale_TEXT          CODE           AUTO           219b:0000       00000cde
-wi_stuff_TEXT          CODE           AUTO           219b:0ce0       00001348
+f_finale_TEXT          CODE           AUTO           2198:0000       00000cde
+wi_stuff_TEXT          CODE           AUTO           2198:0ce0       00001348
 
 
                         +----------------+
@@ -1684,75 +1685,75 @@ Address        Symbol
 =======        ======
 
 Module: f_finale.obj(C:\REALDOOM\f_finale.c)
-219b:0080+     V_DrawPatchFlipped_
-219b:0166      F_StartFinale_
-219b:027e      F_Responder_
-219b:028a*     F_CastResponder_
-219b:02a0      F_Ticker_
-219b:0352+     F_TextWrite_
-219b:0478+     F_StartCast_
-219b:04e4+     F_CastTicker_
-219b:0904+     F_CastPrint_
-219b:09e4+     F_CastDrawer_
-219b:0ace+     F_DrawPatchCol_
-219b:0b46+     F_BunnyScroll_
-219b:0c78      F_Drawer_
-84da:0b70+     _e1text
-84da:0b72+     _e2text
-84da:0b74+     _e3text
-84da:0b76+     _c1text
-84da:0b78+     _c2text
-84da:0b7a+     _c3text
-84da:0b7c+     _c4text
-84da:0b7e+     _c5text
-84da:0b80+     _c6text
-84da:0b82+     _castorder
-84da:46e0+     _caststate
-84da:46e4+     _finaleflat
-84da:46e8+     _finaletext
-84da:46ea+     _finalecount
-84da:46ec+     _finalestage
-84da:46ee+     _castonmelee
-84da:46ef+     _castdeath
-84da:46f0+     _castframes
-84da:46f1+     _castattacking
-84da:46f2+     _casttics
-84da:46f3+     _castnum
+2198:0080+     V_DrawPatchFlipped_
+2198:0166      F_StartFinale_
+2198:027e      F_Responder_
+2198:028a*     F_CastResponder_
+2198:02a0      F_Ticker_
+2198:0352+     F_TextWrite_
+2198:0478+     F_StartCast_
+2198:04e4+     F_CastTicker_
+2198:0904+     F_CastPrint_
+2198:09e4+     F_CastDrawer_
+2198:0ace+     F_DrawPatchCol_
+2198:0b46+     F_BunnyScroll_
+2198:0c78      F_Drawer_
+84d7:0b70+     _e1text
+84d7:0b72+     _e2text
+84d7:0b74+     _e3text
+84d7:0b76+     _c1text
+84d7:0b78+     _c2text
+84d7:0b7a+     _c3text
+84d7:0b7c+     _c4text
+84d7:0b7e+     _c5text
+84d7:0b80+     _c6text
+84d7:0b82+     _castorder
+84d7:46e0+     _caststate
+84d7:46e4+     _finaleflat
+84d7:46e8+     _finaletext
+84d7:46ea+     _finalecount
+84d7:46ec+     _finalestage
+84d7:46ee+     _castonmelee
+84d7:46ef+     _castdeath
+84d7:46f0+     _castframes
+84d7:46f1+     _castattacking
+84d7:46f2+     _casttics
+84d7:46f3+     _castnum
 Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
-84da:4738+     _lnamesRef
-84da:0d60+     _unloaded
-219b:0dde+     getLnodeX_
-219b:0ee0+     getLnodeY_
-219b:0fa6*     WI_slamBackground_
-219b:0fbc+     WI_drawLF_
-219b:0fe8+     WI_drawEL_
-219b:106e+     WI_drawOnLnode_
-219b:1160+     WI_updateAnimatedBack_
-219b:1270+     WI_drawAnimatedBack_
-219b:12f0+     WI_drawNum_
-219b:13be+     WI_drawPercent_
-219b:1406+     WI_drawTime_
-219b:14b8*     WI_initNoState_
-219b:14cc+     WI_updateNoState_
-219b:14e2*     WI_initShowNextLoc_
-219b:14f8+     WI_updateShowNextLoc_
-219b:1530*     WI_drawNoState_
-219b:1536+     WI_drawShowNextLoc_
-219b:15ca+     WI_updateStats_
-219b:18a4+     WI_drawStats_
-219b:19ba*     WI_checkForAccelerate_
-219b:1a04      WI_Ticker_
-219b:1a56+     WI_loadData_
-219b:1d5e+     WI_unloadData_
-219b:1d5e*     WI_End_
-219b:1eea      WI_Drawer_
-219b:1f0c+     WI_initVariables_
-219b:1f6e      WI_Start_
-219b:1f7c*     WI_initStats_
-219b:1fae+     WI_initAnimatedBack_
+84d7:4738+     _lnamesRef
+84d7:0d60+     _unloaded
+2198:0dde+     getLnodeX_
+2198:0ee0+     getLnodeY_
+2198:0fa6*     WI_slamBackground_
+2198:0fbc+     WI_drawLF_
+2198:0fe8+     WI_drawEL_
+2198:106e+     WI_drawOnLnode_
+2198:1160+     WI_updateAnimatedBack_
+2198:1270+     WI_drawAnimatedBack_
+2198:12f0+     WI_drawNum_
+2198:13be+     WI_drawPercent_
+2198:1406+     WI_drawTime_
+2198:14b8*     WI_initNoState_
+2198:14cc+     WI_updateNoState_
+2198:14e2*     WI_initShowNextLoc_
+2198:14f8+     WI_updateShowNextLoc_
+2198:1530*     WI_drawNoState_
+2198:1536+     WI_drawShowNextLoc_
+2198:15ca+     WI_updateStats_
+2198:18a4+     WI_drawStats_
+2198:19ba*     WI_checkForAccelerate_
+2198:1a04      WI_Ticker_
+2198:1a56+     WI_loadData_
+2198:1d5e+     WI_unloadData_
+2198:1d5e*     WI_End_
+2198:1eea      WI_Drawer_
+2198:1f0c+     WI_initVariables_
+2198:1f6e      WI_Start_
+2198:1f7c*     WI_initStats_
+2198:1fae+     WI_initAnimatedBack_
 
 
-Overlay section 2 address 219b:0000
+Overlay section 2 address 2198:0000
 ====================================
 
 
@@ -1763,8 +1764,8 @@ Overlay section 2 address 219b:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-i_quit_TEXT            CODE           AUTO           219b:0000       0000024f
-v_extra_TEXT           CODE           AUTO           219b:0250       0000016f
+i_quit_TEXT            CODE           AUTO           2198:0000       0000024f
+v_extra_TEXT           CODE           AUTO           2198:0250       0000016f
 
 
                         +----------------+
@@ -1778,22 +1779,22 @@ Address        Symbol
 =======        ======
 
 Module: i_quit.obj(C:\REALDOOM\i_quit.c)
-219b:002c*     I_ShutdownSound_
-219b:002e+     I_ShutdownGraphics_
-219b:0058*     TS_Terminate_
-219b:006e+     TS_Shutdown_
-219b:00a8*     I_ShutdownTimer_
-219b:00c2+     I_ShutdownKeyboard_
-219b:00f4+     I_ShutdownMouse_
-219b:0106*     Z_ShutdownUMB_
-219b:0134+     Z_ShutdownEMS_
-219b:0178      I_Shutdown_
-219b:01a6      I_Quit_
+2198:002c*     I_ShutdownSound_
+2198:002e+     I_ShutdownGraphics_
+2198:0058*     TS_Terminate_
+2198:006e+     TS_Shutdown_
+2198:00a8*     I_ShutdownTimer_
+2198:00c2+     I_ShutdownKeyboard_
+2198:00f4+     I_ShutdownMouse_
+2198:0106*     Z_ShutdownUMB_
+2198:0134+     Z_ShutdownEMS_
+2198:0178      I_Shutdown_
+2198:01a6      I_Quit_
 Module: v_extra.obj(C:\REALDOOM\v_extra.c)
-219b:0250      V_DrawFullscreenPatch_
+2198:0250      V_DrawFullscreenPatch_
 
 
-Overlay section 3 address 219b:0000
+Overlay section 3 address 2198:0000
 ====================================
 
 
@@ -1804,12 +1805,12 @@ Overlay section 3 address 219b:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-d_init_TEXT            CODE           AUTO           219b:0000       0000100e
-z_umb_TEXT             CODE           AUTO           219b:1010       000005a2
-z_init_TEXT            CODE           AUTO           219b:15c0       000002f5
-i_init_TEXT            CODE           AUTO           219b:18c0       00000219
-i_main_TEXT            CODE           AUTO           219b:1ae0       00000018
-g_setup_TEXT           CODE           AUTO           219b:1b00       00000397
+d_init_TEXT            CODE           AUTO           2198:0000       0000100e
+z_umb_TEXT             CODE           AUTO           2198:1010       000005a2
+z_init_TEXT            CODE           AUTO           2198:15c0       000002f5
+i_init_TEXT            CODE           AUTO           2198:18c0       00000219
+i_main_TEXT            CODE           AUTO           2198:1ae0       00000018
+g_setup_TEXT           CODE           AUTO           2198:1b00       00000397
 
 
                         +----------------+
@@ -1823,51 +1824,51 @@ Address        Symbol
 =======        ======
 
 Module: d_init.obj(C:\REALDOOM\d_init.c)
-219b:02b8+     D_InitStrings_
-219b:0418      D_StartTitle_
-219b:042a+     D_GetCursorColumn_
-219b:0454+     D_GetCursorRow_
-219b:047e+     D_SetCursorPosition_
-219b:04ac+     D_DrawTitle_
-219b:0540+     D_RedrawTitle_
-219b:0576+     D_AddFile_
-219b:05f4+     IdentifyVersion_
-219b:069e+     M_LoadDefaults_
-219b:08ae+     HU_Init_
-219b:08f2*     S_Init_
-219b:08f4+     M_Init_
-219b:09a4      D_DoomMain2_
-84da:4758+     _title
+2198:02b8+     D_InitStrings_
+2198:0418      D_StartTitle_
+2198:042a+     D_GetCursorColumn_
+2198:0454+     D_GetCursorRow_
+2198:047e+     D_SetCursorPosition_
+2198:04ac+     D_DrawTitle_
+2198:0540+     D_RedrawTitle_
+2198:0576+     D_AddFile_
+2198:05f4+     IdentifyVersion_
+2198:069e+     M_LoadDefaults_
+2198:08ae+     HU_Init_
+2198:08f2*     S_Init_
+2198:08f4+     M_Init_
+2198:09a4      D_DoomMain2_
+84d7:4758+     _title
 Module: z_umb.obj(C:\REALDOOM\z_umb.c)
-219b:11bc*     Z_InitUMBDirect_
-219b:1278+     Z_InitUMBDOS_
-219b:1576      Z_InitUMB_
-84da:47e0+     _XMSaddr
-84da:47e4      _UMBbase2
-84da:47e6+     _UMBsize2
-84da:47e8+     _UMBsize
-84da:47ea      _UMBbase
+2198:11bc*     Z_InitUMBDirect_
+2198:1278+     Z_InitUMBDOS_
+2198:1576      Z_InitUMB_
+84d7:47e0+     _XMSaddr
+84d7:47e4      _UMBbase2
+84d7:47e6+     _UMBsize2
+84d7:47e8+     _UMBsize
+84d7:47ea      _UMBbase
 Module: z_init.obj(C:\REALDOOM\z_init.c)
-219b:16da*     Z_InitConventional_
-219b:16dc      I_ZoneBaseEMS_
+2198:16da*     Z_InitConventional_
+2198:16dc      I_ZoneBaseEMS_
 Module: i_init.obj(C:\REALDOOM\i_init.c)
-219b:192a*     I_InitDiskFlash_
-219b:192c      I_InitGraphics_
-219b:1a02+     I_StartupMouse_
-219b:1a5a+     I_StartupKeyboard_
-219b:1a94      I_Init_
+2198:192a*     I_InitDiskFlash_
+2198:192c      I_InitGraphics_
+2198:1a02+     I_StartupMouse_
+2198:1a5a+     I_StartupKeyboard_
+2198:1a94      I_Init_
 Module: i_main.obj(C:\REALDOOM\i_main.c)
-219b:1ae0      main_
+2198:1ae0      main_
 Module: g_setup.obj(C:\REALDOOM\g_setup.c)
-219b:1b44+     R_CheckTextureNumForNameB_
-219b:1ba6      R_TextureNumForNameB_
-219b:1bee+     G_DoLoadLevel_
-219b:1ca4      G_InitNew_
-219b:1e36      G_DoNewGame_
-219b:1e76      G_DoWorldDone_
+2198:1b44+     R_CheckTextureNumForNameB_
+2198:1ba6      R_TextureNumForNameB_
+2198:1bee+     G_DoLoadLevel_
+2198:1ca4      G_InitNew_
+2198:1e36      G_DoNewGame_
+2198:1e76      G_DoWorldDone_
 
 
-Overlay section 4 address 219b:0000
+Overlay section 4 address 2198:0000
 ====================================
 
 
@@ -1878,7 +1879,7 @@ Overlay section 4 address 219b:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-p_setup_TEXT           CODE           AUTO           219b:0000       00001686
+p_setup_TEXT           CODE           AUTO           2198:0000       00001686
 
 
                         +----------------+
@@ -1892,53 +1893,53 @@ Address        Symbol
 =======        ======
 
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)
-84da:47f0      _blocklinks
-84da:47f4      _nodes
-84da:47f8      _linebuffer
-84da:47fc      _lineopenings
-84da:4800      _seenlines
-84da:4804      _sides
-84da:4808      _lines
-84da:480c      _subsectors
-84da:4810      _sectors
-84da:4814      _segs
-84da:4818      _vertexes
-84da:481c+     _total
-84da:481e      _bmapwidth
-84da:4820      _bmaporgx
-84da:4822      _bmaporgy
-84da:4824      _blockmaplumpRef
-84da:4826      _rejectmatrixRef
-84da:4828      _bmapheight
-84da:482a      _numlines
-84da:482c      _nightmareSpawnPointsRef
-84da:482e      _numnodes
-84da:4830      _numsides
-84da:4832      _numvertexes
-84da:4834      _sectorBlockBoxesRef
-84da:4836      _numsectors
-84da:4838+     _numsubsectors
-219b:006e+     P_LoadVertexes_
-219b:0116+     P_LoadSegs_
-219b:0260+     P_LoadSubsectors_
-219b:031a*     R_FlatNumForNameC_
-219b:0326+     P_LoadSectors_
-219b:04cc+     P_LoadNodes_
-219b:05fc+     P_SetupPsprites_
-219b:0630+     P_SpawnPlayer_
-219b:07ec+     getDoomEdNum_
-219b:0a52+     P_SpawnMapThing_
-219b:0c1e+     P_CacheLineOpenings_
-219b:0d34+     P_LoadThings_
-219b:0e00+     P_LoadLineDefs_
-219b:10c4+     P_LoadSideDefs_
-219b:123a+     P_LoadBlockMap_
-219b:12c2+     P_GroupLines_
-219b:1542      P_SetupLevel_
-84da:483a+     _numsegs
+84d7:47f0      _blocklinks
+84d7:47f4      _nodes
+84d7:47f8      _linebuffer
+84d7:47fc      _lineopenings
+84d7:4800      _seenlines
+84d7:4804      _sides
+84d7:4808      _lines
+84d7:480c      _subsectors
+84d7:4810      _sectors
+84d7:4814      _segs
+84d7:4818      _vertexes
+84d7:481c+     _total
+84d7:481e      _bmapwidth
+84d7:4820      _bmaporgx
+84d7:4822      _bmaporgy
+84d7:4824      _blockmaplumpRef
+84d7:4826      _rejectmatrixRef
+84d7:4828      _bmapheight
+84d7:482a      _numlines
+84d7:482c      _nightmareSpawnPointsRef
+84d7:482e      _numnodes
+84d7:4830      _numsides
+84d7:4832      _numvertexes
+84d7:4834      _sectorBlockBoxesRef
+84d7:4836      _numsectors
+84d7:4838+     _numsubsectors
+2198:006e+     P_LoadVertexes_
+2198:0116+     P_LoadSegs_
+2198:0260+     P_LoadSubsectors_
+2198:031a*     R_FlatNumForNameC_
+2198:0326+     P_LoadSectors_
+2198:04cc+     P_LoadNodes_
+2198:05fc+     P_SetupPsprites_
+2198:0630+     P_SpawnPlayer_
+2198:07ec+     getDoomEdNum_
+2198:0a52+     P_SpawnMapThing_
+2198:0c1e+     P_CacheLineOpenings_
+2198:0d34+     P_LoadThings_
+2198:0e00+     P_LoadLineDefs_
+2198:10c4+     P_LoadSideDefs_
+2198:123a+     P_LoadBlockMap_
+2198:12c2+     P_GroupLines_
+2198:1542      P_SetupLevel_
+84d7:483a+     _numsegs
 
 
-Overlay section 5 address 219b:0000
+Overlay section 5 address 2198:0000
 ====================================
 
 
@@ -1949,7 +1950,7 @@ Overlay section 5 address 219b:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-p_init_TEXT            CODE           AUTO           219b:0000       00000b1f
+p_init_TEXT            CODE           AUTO           2198:0000       00000b1f
 
 
                         +----------------+
@@ -1963,20 +1964,20 @@ Address        Symbol
 =======        ======
 
 Module: p_init.obj(C:\REALDOOM\p_init.c)
-219b:0616+     R_CheckTextureNumForNameA_
-219b:0678+     R_TextureNumForNameA_
-219b:06c0+     P_InitSwitchList_
-219b:0780*     R_FlatNumForNameA_
-219b:078c+     P_InitPicAnims_
-219b:087c+     R_InstallSpriteLump_
-219b:08f8+     R_InitSpriteDefs_
-219b:0afe      P_Init_
-219b:0b06*     R_InitSprites_
-84da:483c+     _maxframe
-84da:483e+     _sprtemp
+2198:0616+     R_CheckTextureNumForNameA_
+2198:0678+     R_TextureNumForNameA_
+2198:06c0+     P_InitSwitchList_
+2198:0780*     R_FlatNumForNameA_
+2198:078c+     P_InitPicAnims_
+2198:087c+     R_InstallSpriteLump_
+2198:08f8+     R_InitSpriteDefs_
+2198:0afe      P_Init_
+2198:0b06*     R_InitSprites_
+84d7:483c+     _maxframe
+84d7:483e+     _sprtemp
 
 
-Overlay section 6 address 219b:0000
+Overlay section 6 address 2198:0000
 ====================================
 
 
@@ -1987,9 +1988,9 @@ Overlay section 6 address 219b:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-r_init_TEXT            CODE           AUTO           219b:0000       00000a20
-r_setup_TEXT           CODE           AUTO           219b:0a20       00000897
-f_wipe_TEXT            CODE           AUTO           219b:12c0       00000000
+r_init_TEXT            CODE           AUTO           2198:0000       00000a20
+r_setup_TEXT           CODE           AUTO           2198:0a20       000008b1
+f_wipe_TEXT            CODE           AUTO           2198:12e0       00000000
 
 
                         +----------------+
@@ -2003,23 +2004,23 @@ Address        Symbol
 =======        ======
 
 Module: r_init.obj(C:\REALDOOM\r_init.c)
-219b:00a6*     R_FlatNumForNameB_
-219b:00b2+     R_InitSkyMap_
-219b:00c8+     R_InitPlanes_
-219b:0112+     R_InitLightTables_
-219b:01d4+     R_InitSpriteLumps_
-219b:0276+     R_GenerateLookup_
-219b:04fa+     R_InitTextures_
-219b:0928+     R_InitData_
-219b:09c8      R_Init_
+2198:00a6*     R_FlatNumForNameB_
+2198:00b2+     R_InitSkyMap_
+2198:00c8+     R_InitPlanes_
+2198:0112+     R_InitLightTables_
+2198:01d4+     R_InitSpriteLumps_
+2198:0276+     R_GenerateLookup_
+2198:04fa+     R_InitTextures_
+2198:0928+     R_InitData_
+2198:09c8      R_Init_
 Module: r_setup.obj(C:\REALDOOM\r_setup.c)
-219b:0a20+     R_InitBuffer_
-219b:0a6a+     R_InitTextureMapping_
-219b:0c92      R_ExecuteSetViewSize_
-219b:0f8e      R_PrecacheLevel_
+2198:0a20+     R_InitBuffer_
+2198:0a6a+     R_InitTextureMapping_
+2198:0c92      R_ExecuteSetViewSize_
+2198:0fa8      R_PrecacheLevel_
 
 
-Overlay section 7 address 219b:0000
+Overlay section 7 address 2198:0000
 ====================================
 
 
@@ -2030,11 +2031,11 @@ Overlay section 7 address 219b:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-w_init_TEXT            CODE           AUTO           219b:0000       0000047c
-st_setup_TEXT          CODE           AUTO           219b:0480       000002d7
-hu_setup_TEXT          CODE           AUTO           219b:0760       00000174
-st_init_TEXT           CODE           AUTO           219b:08e0       00000374
-p_saveg_TEXT           CODE           AUTO           219b:0c60       00000001
+w_init_TEXT            CODE           AUTO           2198:0000       0000047c
+st_setup_TEXT          CODE           AUTO           2198:0480       000002d7
+hu_setup_TEXT          CODE           AUTO           2198:0760       00000174
+st_init_TEXT           CODE           AUTO           2198:08e0       00000374
+p_saveg_TEXT           CODE           AUTO           2198:0c60       00000001
 
 
                         +----------------+
@@ -2048,38 +2049,38 @@ Address        Symbol
 =======        ======
 
 Module: w_init.obj(C:\REALDOOM\w_init.c)
-219b:002a+     ExtractFileBase_
-219b:00bc+     W_AddFile_
-219b:0406      W_InitMultipleFiles_
+2198:002a+     ExtractFileBase_
+2198:00bc+     W_AddFile_
+2198:0406      W_InitMultipleFiles_
 Module: st_setup.obj(C:\REALDOOM\st_setup.c)
-219b:0480+     STlib_initNum_
-219b:04aa+     STlib_initPercent_
-219b:04d2+     STlib_initMultIcon_
-219b:04f6+     ST_createWidgets_
-219b:06d2+     ST_Stop_
-219b:06ea      ST_Start_
-84da:1150+     _st_stopped
+2198:0480+     STlib_initNum_
+2198:04aa+     STlib_initPercent_
+2198:04d2+     STlib_initMultIcon_
+2198:04f6+     ST_createWidgets_
+2198:06d2+     ST_Stop_
+2198:06ea      ST_Start_
+84d7:1150+     _st_stopped
 Module: hu_setup.obj(C:\REALDOOM\hu_setup.c)
-219b:0760      HU_Start_
-84da:4b14      _hu_fontRef
+2198:0760      HU_Start_
+84d7:4b14      _hu_fontRef
 Module: st_init.obj(C:\REALDOOM\st_init.c)
-219b:0974+     ST_loadGraphics_
-219b:0c1c+     ST_loadData_
-219b:0c3a      ST_Init_
+2198:0974+     ST_loadGraphics_
+2198:0c1c+     ST_loadData_
+2198:0c3a      ST_Init_
 Module: p_saveg.obj(C:\REALDOOM\p_saveg.c)
-219b:0c60*     P_UnArchiveSpecials_
-219b:0c60*     P_ArchiveSpecials_
-219b:0c60*     P_UnArchiveThinkers_
-219b:0c60*     P_ArchiveThinkers_
-219b:0c60*     P_UnArchiveWorld_
-219b:0c60*     P_ArchiveWorld_
-219b:0c60*     P_UnArchivePlayers_
-219b:0c60*     P_ArchivePlayers_
-84da:4ba0*     _save_p
-84da:4ba4*     _specials_e
+2198:0c60*     P_UnArchiveSpecials_
+2198:0c60*     P_ArchiveSpecials_
+2198:0c60*     P_UnArchiveThinkers_
+2198:0c60*     P_ArchiveThinkers_
+2198:0c60*     P_UnArchiveWorld_
+2198:0c60*     P_ArchiveWorld_
+2198:0c60*     P_UnArchivePlayers_
+2198:0c60*     P_ArchivePlayers_
+84d7:4ba0*     _save_p
+84d7:4ba4*     _specials_e
 
 
-Overlay section 8 address 219b:0000
+Overlay section 8 address 2198:0000
 ====================================
 
 
@@ -2090,7 +2091,7 @@ Overlay section 8 address 219b:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-am_map_TEXT            CODE           AUTO           219b:0000       00002097
+am_map_TEXT            CODE           AUTO           2198:0000       0000209e
 
 
                         +----------------+
@@ -2104,46 +2105,46 @@ Address        Symbol
 =======        ======
 
 Module: am_map.obj(C:\REALDOOM\am_map.c)
-84da:11f0+     _player_arrow
-84da:1260+     _cheat_player_arrow
-84da:1360*     _triangle_guy
-84da:1390+     _thintriangle_guy
-84da:13c6      _automapactive
-219b:0010+     AM_activateNewScale_
-219b:00f8*     AM_saveScaleAndLoc_
-219b:0144+     AM_restoreScaleAndLoc_
-219b:0272+     AM_addMark_
-219b:02e8+     AM_findMinMaxBoundaries_
-219b:0478+     AM_changeWindowLoc_
-219b:05fe+     AM_initVariables_
-219b:0740+     AM_unloadPics_
-219b:0764+     AM_clearMarks_
-219b:0790+     AM_LevelInit_
-219b:0818      AM_Stop_
-219b:0836+     AM_Start_
-219b:085e*     AM_loadPics_
-219b:08c2*     AM_minOutWindowScale_
-219b:08f4*     AM_maxOutWindowScale_
-219b:0926      AM_Responder_
-219b:0dd0+     AM_changeWindowScale_
-219b:0e72+     AM_doFollowPlayer_
-219b:0fda      AM_Ticker_
-219b:101e*     AM_clearFB_
-219b:1048+     AM_clipMline_
-219b:1614+     AM_drawFline_
-219b:17da+     AM_drawMline_
-219b:180a+     AM_drawGrid_
-219b:19d6+     AM_drawWalls_
-219b:1bca+     AM_rotate_
-219b:1cbe+     AM_drawLineCharacter_
-219b:1e0a+     AM_drawPlayers_
-219b:1e76+     AM_drawThings_
-219b:1f00+     AM_drawMarks_
-219b:1fe2*     AM_drawCrosshair_
-219b:2006      AM_Drawer_
+84d7:11f0+     _player_arrow
+84d7:1260+     _cheat_player_arrow
+84d7:1360*     _triangle_guy
+84d7:1390+     _thintriangle_guy
+84d7:13c6      _automapactive
+2198:0010+     AM_activateNewScale_
+2198:00f8*     AM_saveScaleAndLoc_
+2198:0144+     AM_restoreScaleAndLoc_
+2198:0272+     AM_addMark_
+2198:02e8+     AM_findMinMaxBoundaries_
+2198:0478+     AM_changeWindowLoc_
+2198:05fe+     AM_initVariables_
+2198:0740+     AM_unloadPics_
+2198:0764+     AM_clearMarks_
+2198:0790+     AM_LevelInit_
+2198:0818      AM_Stop_
+2198:0836+     AM_Start_
+2198:085e*     AM_loadPics_
+2198:08c2*     AM_minOutWindowScale_
+2198:08f4*     AM_maxOutWindowScale_
+2198:0926      AM_Responder_
+2198:0dd0+     AM_changeWindowScale_
+2198:0e72+     AM_doFollowPlayer_
+2198:0fda      AM_Ticker_
+2198:101e*     AM_clearFB_
+2198:1048+     AM_clipMline_
+2198:1614+     AM_drawFline_
+2198:17da+     AM_drawMline_
+2198:180a+     AM_drawGrid_
+2198:19d6+     AM_drawWalls_
+2198:1bca+     AM_rotate_
+2198:1cbe+     AM_drawLineCharacter_
+2198:1e0a+     AM_drawPlayers_
+2198:1e76+     AM_drawThings_
+2198:1f00+     AM_drawMarks_
+2198:1fe2*     AM_drawCrosshair_
+2198:2006      AM_Drawer_
 
 
-Overlay section 9 address 23a5:0000
+Overlay section 9 address 23a2:0000
 ====================================
 
 
@@ -2154,38 +2155,38 @@ Overlay section 9 address 23a5:0000
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-tables13_DATA          FAR_DATA       AUTO           23a5:0000       00005004
-d_main13_DATA          FAR_DATA       AUTO           23a5:5010       00000b40
-p_maputl13_DATA        FAR_DATA       AUTO           23a5:5b50       00000380
-p_tick13_DATA          FAR_DATA       AUTO           2992:0000       0000a1b8
-r_bsp13_DATA           FAR_DATA       AUTO           2992:a1c0       00002300
-r_data13_DATA          FAR_DATA       AUTO           2992:c4c0       00002db7
-r_main13_DATA          FAR_DATA       AUTO           38ba:0000       00004c00
-r_plane13_DATA         FAR_DATA       AUTO           38ba:4c00       0000b16c
-r_plane14_DATA         FAR_DATA       AUTO           4891:0000       0000a000
-r_things13_DATA        FAR_DATA       AUTO           4891:a000       00001b00
-w_wad13_DATA           FAR_DATA       AUTO           5441:0000       00004a10
-v_video13_DATA         FAR_DATA       AUTO           58e2:0000       0000ff00
-z_zone13_DATA          FAR_DATA       AUTO           68d2:0000       0000ecca
-z_zone14_DATA          FAR_DATA       AUTO           779f:0000       0000b717
-info13_DATA            FAR_DATA       AUTO           779f:b720       00001c8d
-FAR_DATA               FAR_DATA       AUTO           84d9:000d       00000000
-_NULL                  BEGDATA        DGROUP         84da:0000       00000020
-_AFTERNULL             BEGDATA        DGROUP         84dc:0000       00000002
-CONST                  DATA           DGROUP         84dc:0002       00000076
-CONST2                 DATA           DGROUP         84e3:0008       0000010a
-_DATA                  DATA           DGROUP         84f5:0000       00001456
-XIB                    DATA           DGROUP         863a:0006       00000000
-XI                     DATA           DGROUP         863a:0006       0000001e
-XIE                    DATA           DGROUP         863c:0004       00000000
-YIB                    DATA           DGROUP         863c:0004       00000000
-YI                     DATA           DGROUP         863c:0004       00000012
-YIE                    DATA           DGROUP         863d:0006       00000000
-STRINGS                DATA           DGROUP         863d:0006       00000000
-DATA                   DATA           DGROUP         863d:0006       00000000
-_BSS                   BSS            DGROUP         863e:0000       000037a8
-c_common               BSS            DGROUP         89b8:0008       00000000
-STACK                  STACK          DGROUP         89b9:0000       00000bb8
+tables13_DATA          FAR_DATA       AUTO           23a2:0000       00005004
+d_main13_DATA          FAR_DATA       AUTO           23a2:5010       00000b40
+p_maputl13_DATA        FAR_DATA       AUTO           23a2:5b50       00000380
+p_tick13_DATA          FAR_DATA       AUTO           298f:0000       0000a1b8
+r_bsp13_DATA           FAR_DATA       AUTO           298f:a1c0       00002300
+r_data13_DATA          FAR_DATA       AUTO           298f:c4c0       00002db7
+r_main13_DATA          FAR_DATA       AUTO           38b7:0000       00004c00
+r_plane13_DATA         FAR_DATA       AUTO           38b7:4c00       0000b16c
+r_plane14_DATA         FAR_DATA       AUTO           488e:0000       0000a000
+r_things13_DATA        FAR_DATA       AUTO           488e:a000       00001b00
+w_wad13_DATA           FAR_DATA       AUTO           543e:0000       00004a10
+v_video13_DATA         FAR_DATA       AUTO           58df:0000       0000ff00
+z_zone13_DATA          FAR_DATA       AUTO           68cf:0000       0000ecca
+z_zone14_DATA          FAR_DATA       AUTO           779c:0000       0000b717
+info13_DATA            FAR_DATA       AUTO           779c:b720       00001c8d
+FAR_DATA               FAR_DATA       AUTO           84d6:000d       00000000
+_NULL                  BEGDATA        DGROUP         84d7:0000       00000020
+_AFTERNULL             BEGDATA        DGROUP         84d9:0000       00000002
+CONST                  DATA           DGROUP         84d9:0002       00000076
+CONST2                 DATA           DGROUP         84e0:0008       0000010a
+_DATA                  DATA           DGROUP         84f2:0000       00001456
+XIB                    DATA           DGROUP         8637:0006       00000000
+XI                     DATA           DGROUP         8637:0006       0000001e
+XIE                    DATA           DGROUP         8639:0004       00000000
+YIB                    DATA           DGROUP         8639:0004       00000000
+YI                     DATA           DGROUP         8639:0004       00000012
+YIE                    DATA           DGROUP         863a:0006       00000000
+STRINGS                DATA           DGROUP         863a:0006       00000000
+DATA                   DATA           DGROUP         863a:0006       00000000
+_BSS                   BSS            DGROUP         863b:0000       000037a8
+c_common               BSS            DGROUP         89b5:0008       00000000
+STACK                  STACK          DGROUP         89b6:0000       00000bb8
 
 
                         +----------------+
@@ -2213,6 +2214,6 @@ C:\WATCOM\lib286\dos\wovl.lib
                         +-----------------------+
 
 Stack size:  0bb8 (3000.)
-Memory size:  0008a74a (567114.)
-Entry point address: 1a69:6545
-Link time: 00:00.40
+Memory size:  0008a71a (567066.)
+Entry point address: 1a66:6545
+Link time: 00:00.94
