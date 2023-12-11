@@ -362,7 +362,6 @@ boolean P_Move (mobj_t* actor)
 		// open any specials
 		if (actor->flags & MF_FLOAT && floatok) {
 			// must adjust height
-			//temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
 
 			if (actor->z < temp.w)
@@ -1353,6 +1352,7 @@ void A_VileChase (mobj_t* actor)
 		viletryx = actor->x + mobjinfo[actor->type].speed*xspeed[actor->movedir];
 		viletryy = actor->y + mobjinfo[actor->type].speed*yspeed[actor->movedir];
 		coord.h.intbits = bmaporgx;
+		// todo optimize when doing doom2 stuff
 		xl = (viletryx - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
 		xh = (viletryx - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
 		coord.h.intbits = bmaporgy;

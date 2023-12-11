@@ -160,13 +160,14 @@ typedef union _fixed_t_union {
 
 
 typedef union _int16_t_union {
+	uint16_t hu;
+	int16_t h;
 
 	struct dual_int8_t {
 		int8_t bytehigh;
 		int8_t bytelow;
 	} b;
 
-	int16_t h;
 } int16_t_union;
 
 #endif

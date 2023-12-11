@@ -183,8 +183,8 @@ void R_ExecuteSetViewSize(void)
 	detailshift = setdetail;
 	viewwidth = scaledviewwidth >> detailshift;
 
-	centery = viewheight / 2;
-	centerx = viewwidth / 2;
+	centery = viewheight >> 1;
+	centerx = viewwidth >> 1;
 	temp.h.intbits = centerx;
 	projection = centerxfrac = temp; // todo: calculate (or fetch) magic number from stored cache, to be used in R_ProjectSprite
 	temp.h.intbits = centery;

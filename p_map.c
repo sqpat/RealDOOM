@@ -466,11 +466,12 @@ P_CheckPosition
     int16_t			yh;
     int16_t			bx;
     int16_t			by;
-	fixed_t_union temp;
+	fixed_t_union	temp;
+	int16_t_union   blocktemp;
+	int16_t xl2, xh2, yl2, yh2;
 	temp.h.fracbits = 0;
     tmthing = thing;
     tmflags = thing->flags;
-	
     tmx = x;
     tmy = y;
  
@@ -519,16 +520,40 @@ P_CheckPosition
     // because mobj_ts are grouped into mapblocks
     // based on their origin point, and can overlap
     // into adjacent blocks by up to MAXRADIUS units.
- 	xl = (tmbbox[BOXLEFT].h.intbits - bmaporgx - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
-	xh = (tmbbox[BOXRIGHT].h.intbits - bmaporgx + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
-	yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
-	yh = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
+
+	// very similar xl, xh, etc values are used in the two following loops.
+	// the only difference is we add or subtract 32 (for radius) before we shift 7 to divide by 128.
+	// we are doing quick checks to determine if the radius plus/minus makes this block different and storing the diff.
+
+
+	blocktemp.h = (tmbbox[BOXLEFT].h.intbits - bmaporgx - MAXRADIUSNONFRAC);
+	xl2 = (blocktemp.h & 0x0060) == 0x0060 ? 1 : 0; // if 64 and 32 bit are set then we subtracted from one 128 aligned block down. add 1 later
+	//xl = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0); // messy math to avoid shift 7
+	xl = blocktemp.h >> MAPBLOCKSHIFT;
+	xl2 += xl;
+	blocktemp.h = (tmbbox[BOXRIGHT].h.intbits - bmaporgx + MAXRADIUSNONFRAC);
+	xh2 = blocktemp.h & 0x0060 ? 0 : -1; // if niether 64 nor 32 bit are set then we added from one 128 aligned block up. sub 1 later
+//	xh = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0);
+	xh = blocktemp.h >> MAPBLOCKSHIFT;
+	xh2 += xh;
+	blocktemp.h = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC);
+	yl2 = (blocktemp.h & 0x0060) == 0x0060 ? 1 : 0;
+	//yl = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0);
+	yl = blocktemp.h >> MAPBLOCKSHIFT;
+	yl2 += yl;
+	blocktemp.h = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC);
+	yh2 = blocktemp.h & 0x0060 ? 0 : -1;
+	//yh = ((int16_t)blocktemp.b.bytelow << 1) + (blocktemp.b.bytehigh & 0x80 ? 1 : 0);
+	yh = blocktemp.h >> MAPBLOCKSHIFT;
+	yh2 += yh;
+
+
 
 	if (xl < 0) xl = 0;
 	if (yl < 0) yl = 0;
 	if (xh >= bmapwidth) xh = bmapwidth - 1;
 	if (yh >= bmapheight) yh = bmapheight - 1;
-
+	 
 	for (bx = xl; bx <= xh; bx++) {
 		for (by = yl; by <= yh; by++) {
 
@@ -540,19 +565,17 @@ P_CheckPosition
 		}
 	}
 	
-	// check lines
-	xl = (tmbbox[BOXLEFT].h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
-	xh = (tmbbox[BOXRIGHT].h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
-	yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
-	yh = (tmbbox[BOXTOP].h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 
-	if (xl < 0) xl = 0;
-	if (yl < 0) yl = 0;
-	if (xh >= bmapwidth) xh = bmapwidth - 1;
-	if (yh >= bmapheight) yh = bmapheight - 1;
 
-	for (bx = xl; bx <= xh; bx++) {
-		for (by = yl; by <= yh; by++) {
+	 
+
+	if (xl2 < 0) xl2 = 0;
+	if (yl2 < 0) yl2 = 0;
+	if (xh2 >= bmapwidth) xh2 = bmapwidth - 1;
+	if (yh2 >= bmapheight) yh2 = bmapheight - 1;
+ 
+	for (bx = xl2; bx <= xh2; bx++) {
+		for (by = yl2; by <= yh2; by++) {
 
 
 			if (!P_BlockLinesIterator(bx, by, PIT_CheckLine)) {

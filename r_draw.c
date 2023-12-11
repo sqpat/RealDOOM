@@ -385,7 +385,7 @@ void R_DrawSpan(void)
 //
 void R_DrawSpanLow(void)
 {
-	fixed_t             xfrac;
+	fixed_t_union             xfrac;
 	fixed_t             yfrac;
 	byte*               dest;
 	uint16_t                 spot;
@@ -409,12 +409,12 @@ void R_DrawSpanLow(void)
 		dsp_x2 = (ds_x2 - i) / 2;
 		countp = dsp_x2 - dsp_x1;
 
-		xfrac = ds_xfrac;
+		xfrac.w = ds_xfrac;
 		yfrac = ds_yfrac;
 
 		prt = dsp_x1 * 2 - ds_x1 + i;
 
-		xfrac += ds_xstep * prt;
+		xfrac.w += ds_xstep * prt;
 		yfrac += ds_ystep * prt;
 		if (countp < 0) {
 			continue;
@@ -422,7 +422,7 @@ void R_DrawSpanLow(void)
 		do
 		{
 			// Current texture index in u,v.
-			spot = ((yfrac >> (16 - 6))&(63 * 64)) + ((xfrac >> 16) & 63);
+			spot = ((yfrac >> (16 - 6))&(63 * 64)) + ((xfrac.h.fracbits) & 63);
 
 			// Lookup pixel from flat texture tile,
 			Z_RefIsActive(ds_sourceRef);
@@ -432,7 +432,7 @@ void R_DrawSpanLow(void)
 			dest++;
 #endif
 			// Next step in u,v.
-			xfrac += ds_xstep * 2;
+			xfrac.w += ds_xstep * 2;
 			yfrac += ds_ystep * 2;
 		} while (countp--);
 	}
