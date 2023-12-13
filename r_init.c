@@ -71,7 +71,7 @@ void R_InitSkyMap(void)
 }
 
 
-extern visplaneheader_t	visplaneheaders[MAXEMSVISPLANES];
+extern visplaneheader_t	*visplaneheaders;// [MAXEMSVISPLANES];
 extern MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES];
 
 
@@ -151,7 +151,7 @@ void R_InitLightTables(void)
 			if (level >= NUMCOLORMAPS)
 				level = NUMCOLORMAPS - 1;
 
-			zlight[i][j] = colormaps + level * 256;
+			zlight[i][j] = colormaps + (level * 256);
 		}
 	}
 }

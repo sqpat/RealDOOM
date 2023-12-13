@@ -54,8 +54,8 @@ lighttable_t**  spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping
-int16_t           negonearray[SCREENWIDTH];
-int16_t           screenheightarray[SCREENWIDTH];
+int16_t           *negonearray;// [SCREENWIDTH];
+int16_t           *screenheightarray;// [SCREENWIDTH];
 
 
 //
@@ -78,7 +78,7 @@ int8_t*           spritename;
 //
 // GAME FUNCTIONS
 //
-vissprite_t     vissprites[MAXVISSPRITES];
+vissprite_t     *vissprites;// [MAXVISSPRITES];
 vissprite_t*    vissprite_p;
 
 

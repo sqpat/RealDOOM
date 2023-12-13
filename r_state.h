@@ -143,7 +143,7 @@ extern fineangle_t	rw_normalangle;
 #define MAXEMSVISPLANES (NUM_VISPLANE_PAGES * VISPLANES_PER_EMS_PAGE)
 
 extern MEMREF visplanebytesRef[NUM_VISPLANE_PAGES]; 
-extern visplaneheader_t	visplaneheaders[MAXEMSVISPLANES];
+extern visplaneheader_t	*visplaneheaders;// [MAXEMSVISPLANES];
 
 #define MAXCONVENTIONALVISPLANES	60
 

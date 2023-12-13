@@ -22,14 +22,14 @@
 
 #define MAXVISSPRITES  	128
 
-extern vissprite_t	vissprites[MAXVISSPRITES];
+extern vissprite_t*	vissprites;// [MAXVISSPRITES];
 extern vissprite_t*	vissprite_p;
 extern vissprite_t	vsprsortedhead;
 
 // Constant arrays used for psprite clipping
 //  and initializing clipping.
-extern int16_t		negonearray[SCREENWIDTH];
-extern int16_t		screenheightarray[SCREENWIDTH];
+extern int16_t		*negonearray;// [SCREENWIDTH];
+extern int16_t		*screenheightarray;// [SCREENWIDTH];
 
 // vars for R_DrawMaskedColumn
 extern int16_t*		mfloorclip;

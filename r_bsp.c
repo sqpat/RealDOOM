@@ -38,7 +38,7 @@ seg_t*		curseg;
 sector_t*	frontsector;
 sector_t*	backsector;
 
-drawseg_t	drawsegs[MAXDRAWSEGS];
+drawseg_t	*drawsegs;// [MAXDRAWSEGS];
 drawseg_t*	ds_p;
 
 

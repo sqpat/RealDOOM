@@ -38,7 +38,7 @@ extern boolean		markceiling;
 
 extern boolean		skymap;
 
-extern drawseg_t	drawsegs[MAXDRAWSEGS];
+extern drawseg_t	*drawsegs;// [MAXDRAWSEGS];
 extern drawseg_t*	ds_p;
 
 

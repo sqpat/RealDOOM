@@ -41,7 +41,7 @@
 
 
 // backup EMS visplanes to use after conventional visplanes
-visplaneheader_t	visplaneheaders[MAXEMSVISPLANES];
+visplaneheader_t	*visplaneheaders; //[MAXEMSVISPLANES];
 MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES]; 
 
 visplane_t			*visplanes;// [MAXCONVENTIONALVISPLANES];
@@ -51,8 +51,7 @@ int16_t				ceilingplaneindex;
 
 
 // ?
-#define MAXOPENINGS	SCREENWIDTH*64
-int16_t			openings[MAXOPENINGS];
+int16_t			*openings;// [MAXOPENINGS];
 int16_t*		lastopening;
 
 

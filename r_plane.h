@@ -22,10 +22,12 @@
 
 
 #include "r_data.h"
+#define MAXOPENINGS	SCREENWIDTH*64
 
 
 // Visplane related.
 extern  int16_t*		lastopening;
+extern int16_t*			openings;// [MAXOPENINGS];
 
 extern int16_t		*floorclip;// [SCREENWIDTH];
 extern int16_t		*ceilingclip;// [SCREENWIDTH];

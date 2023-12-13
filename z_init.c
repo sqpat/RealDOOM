@@ -231,7 +231,7 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 
 extern int16_t pagenum9000;
 extern int16_t pageswapargs_phys[8];
-extern int16_t pageswapargs_rend[8];
+extern int16_t pageswapargs_rend[16];
 extern int16_t pageswapargseg_phys;
 extern int16_t pageswapargoff_phys;
 extern int16_t pageswapargseg_rend;
@@ -271,7 +271,7 @@ void Z_GetEMSPageMap() {
 		}
 	}
 
-	I_Error("\nMappable page for segment 0x9000 NOT FOUND! EMS 4.0 features unsupported?\n");
+	//I_Error("\nMappable page for segment 0x9000 NOT FOUND! EMS 4.0 features unsupported?\n");
 
 found:
 
@@ -298,6 +298,14 @@ found:
 	pageswapargs_rend[5] = pagenum9000 + 2;
 	pageswapargs_rend[6] = 7;
 	pageswapargs_rend[7] = pagenum9000 + 3;
+	pageswapargs_rend[8] = 8;
+	pageswapargs_rend[9] = pagenum9000 - 4;
+	pageswapargs_rend[10] = 9;
+	pageswapargs_rend[11] = pagenum9000 - 3;
+	pageswapargs_rend[12] = 10;
+	pageswapargs_rend[13] = pagenum9000 - 2;
+	pageswapargs_rend[14] = 11;
+	pageswapargs_rend[15] = pagenum9000 - 1;
 
 	// we're an OS now! let's map task memory regions!
 
@@ -307,6 +315,8 @@ found:
 	//render mapping
 	visplanes = MK_FP(0x9000, 0);
 	offset += sizeof(visplane_t) * MAXCONVENTIONALVISPLANES;
+	visplaneheaders = MK_FP(0x9000, 0);
+	offset += sizeof(visplaneheader_t) * MAXEMSVISPLANES;
 	yslope = MK_FP(0x9000, offset);
 	offset += sizeof(fixed_t) * SCREENHEIGHT;
 	distscale = MK_FP(0x9000, offset);
@@ -331,12 +341,35 @@ found:
 	offset += sizeof(int16_t) * (FINEANGLES / 2);
 	xtoviewangle = MK_FP(0x9000, offset);
 	offset += sizeof(fineangle_t) * (SCREENWIDTH + 1);
+	drawsegs = MK_FP(0x9000, offset);
+	offset += sizeof(drawseg_t) * (MAXDRAWSEGS);
+	screenheightarray = MK_FP(0x9000, offset);
+	offset += sizeof(int16_t) * (SCREENWIDTH);
+	// offset is 65534
 
-	//56714 bytes
-	printf("\n Allocated: %u of bytes in taskswitch region", offset);
+	printf("\n Allocated: %u of bytes in taskswitch region 0x9000", offset);
+
+	offset = 0u;
+
+	openings = MK_FP(0x8000, 0);
+	offset += sizeof(int16_t) * MAXOPENINGS;
+	negonearray = MK_FP(0x8000, offset);
+	offset += sizeof(int16_t) * (SCREENWIDTH);
+	vissprites = MK_FP(0x8000, offset);
+	offset += sizeof(vissprite_t) * (MAXVISSPRITES);
+	scalelight = MK_FP(0x8000, offset);
+	offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTSCALE);
+	scalelightfixed = MK_FP(0x8000, offset);
+	offset += sizeof(lighttable_t) * (MAXLIGHTSCALE);
+	zlight = MK_FP(0x8000, offset);
+	offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
 
 
 
+	printf("\n Allocated: %u of bytes in taskswitch region 0x8000", offset);
+
+	// 48512
+	// 59968?
 
 	Z_QuickmapPhysics(); // map default page map
 }
