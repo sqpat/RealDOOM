@@ -128,6 +128,8 @@ void R_InitLightTables(void)
 	fixed_t		scale;
 	fixed_t_union		temp, temp2;
 
+	Z_QuickmapRender();
+	
 	// Calculate the light levels to use
 	//  for each level / distance combination.
 	temp.h.fracbits = 0;
@@ -154,9 +156,11 @@ void R_InitLightTables(void)
 			zlight[i][j] = colormaps + (level * 256);
 		}
 	}
+	Z_QuickmapPhysics();
+
 }
 
-extern byte         	colormapbytes[(33 * 256) + 255];
+extern byte         	*colormapbytes;// [(33 * 256) + 255];
 extern lighttable_t    *colormaps;
 extern int16_t             firstflat;
 extern int16_t             lastflat;
@@ -606,14 +610,16 @@ void R_InitData(void) {
 
 		// Load in the light tables, 
 		//  256 byte align tables.
+
+	Z_QuickmapRender();
+
 	lump = W_GetNumForName("COLORMAP");
 	//length = W_LumpLength(lump) + 255;
-
 	colormaps = (byte*)colormapbytes;
 	colormaps = (byte *)(((int32_t)colormaps + 255)&~0xff);
-
-
 	W_ReadLumpStatic(lump, colormaps);
+
+	Z_QuickmapPhysics();
 
 }
 

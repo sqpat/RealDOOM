@@ -28,6 +28,7 @@
 #include "r_bsp.h"
 #include "r_local.h"
 #include "p_local.h"
+#include "v_video.h"
 
 #include <dos.h>
 #include <stdlib.h>
@@ -230,7 +231,7 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 
 
 extern int16_t pagenum9000;
-extern int16_t pageswapargs_phys[8];
+extern int16_t pageswapargs_phys[16];
 extern int16_t pageswapargs_rend[16];
 extern int16_t pageswapargseg_phys;
 extern int16_t pageswapargoff_phys;
@@ -289,22 +290,30 @@ found:
 	pageswapargs_phys[5] = pagenum9000 + 2;
 	pageswapargs_phys[6] = 3;
 	pageswapargs_phys[7] = pagenum9000 + 3;
+	pageswapargs_phys[8] = 4;
+	pageswapargs_phys[9] = pagenum9000 - 4;
+	pageswapargs_phys[10] = 5;
+	pageswapargs_phys[11] = pagenum9000 - 3;
+	pageswapargs_phys[12] = 6;
+	pageswapargs_phys[13] = pagenum9000 - 2;
+	pageswapargs_phys[14] = 7;
+	pageswapargs_phys[15] = pagenum9000 - 1;
 
-	pageswapargs_rend[0] = 4;
+	pageswapargs_rend[0] = 8;
 	pageswapargs_rend[1] = pagenum9000;
-	pageswapargs_rend[2] = 5;
+	pageswapargs_rend[2] = 9;
 	pageswapargs_rend[3] = pagenum9000 + 1;
-	pageswapargs_rend[4] = 6;
+	pageswapargs_rend[4] = 10;
 	pageswapargs_rend[5] = pagenum9000 + 2;
-	pageswapargs_rend[6] = 7;
+	pageswapargs_rend[6] = 11;
 	pageswapargs_rend[7] = pagenum9000 + 3;
-	pageswapargs_rend[8] = 8;
+	pageswapargs_rend[8] = 12;
 	pageswapargs_rend[9] = pagenum9000 - 4;
-	pageswapargs_rend[10] = 9;
+	pageswapargs_rend[10] = 13;
 	pageswapargs_rend[11] = pagenum9000 - 3;
-	pageswapargs_rend[12] = 10;
+	pageswapargs_rend[12] = 14;
 	pageswapargs_rend[13] = pagenum9000 - 2;
-	pageswapargs_rend[14] = 11;
+	pageswapargs_rend[14] = 15;
 	pageswapargs_rend[15] = pagenum9000 - 1;
 
 	// we're an OS now! let's map task memory regions!
@@ -351,25 +360,30 @@ found:
 
 	offset = 0u;
 
+	screen0 = MK_FP(0x8000, 0);
 	openings = MK_FP(0x8000, 0);
 	offset += sizeof(int16_t) * MAXOPENINGS;
 	negonearray = MK_FP(0x8000, offset);
 	offset += sizeof(int16_t) * (SCREENWIDTH);
 	vissprites = MK_FP(0x8000, offset);
 	offset += sizeof(vissprite_t) * (MAXVISSPRITES);
-	scalelight = MK_FP(0x8000, offset);
-	offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTSCALE);
 	scalelightfixed = MK_FP(0x8000, offset);
 	offset += sizeof(lighttable_t) * (MAXLIGHTSCALE);
+	colormapbytes = MK_FP(0x8000, offset);
+	offset += ((33 * 256) + 255);
+	scalelight = MK_FP(0x8000, offset);
+	offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTSCALE);
 	zlight = MK_FP(0x8000, offset);
 	offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
 
+	// 57263?
 
+	/*
+	*/
+  
 
 	printf("\n Allocated: %u of bytes in taskswitch region 0x8000", offset);
 
-	// 48512
-	// 59968?
 
 	Z_QuickmapPhysics(); // map default page map
 }

@@ -41,7 +41,7 @@
 
 
 #ifdef STATIC_ALLOCATED_SCREENS
-extern byte				screen0[1L*SCREENWIDTH*SCREENHEIGHT];
+extern byte				*screen0;// [1L * SCREENWIDTH*SCREENHEIGHT];
 //extern byte				screen1[1L * SCREENWIDTH*SCREENHEIGHT];
 
 	#ifdef SKIPWIPE

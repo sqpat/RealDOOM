@@ -104,9 +104,9 @@ fineangle_t			*xtoviewangle;// [SCREENWIDTH + 1];
 //fixed_t*		finecosine = &finesine(FINEANGLES/4);
 
 
-lighttable_t*		**scalelight;// [LIGHTLEVELS][MAXLIGHTSCALE];
+lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 lighttable_t*		*scalelightfixed;// [MAXLIGHTSCALE];
-lighttable_t*		**zlight;// [LIGHTLEVELS][MAXLIGHTZ];
+lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
 
 // bumped light from gun blasts
 uint8_t			extralight;			

@@ -413,7 +413,7 @@ void R_AddSprites (sector_t* sec)
 
     // Handle all things in sector.
 	if (sec->thinglistRef) {
-		Z_QuickmapPhysics(); // gross - going to need to pull out the necessary data?
+		Z_QuickmapPhysicsE000(); // gross - going to need to pull out the necessary data?
 		for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
 			thing = (mobj_t*)&thinkerlist[thingRef].data;
 			R_ProjectSprite(thing);
@@ -561,8 +561,8 @@ void R_DrawPlayerSprites (void)
     if (lightnum > 240)          
         spritelights = scalelight[0];
     else if (lightnum >= LIGHTLEVELS)
-        spritelights = scalelight[LIGHTLEVELS-1];
-    else
+		spritelights = scalelight[LIGHTLEVELS-1];
+	else
         spritelights = scalelight[lightnum];
     
     // clip to screen bounds
