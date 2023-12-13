@@ -58,7 +58,7 @@
 #define	BASETHRESHOLD	 	100
 
 
-#define MAX_THINKERS 600
+#define MAX_THINKERS 900
 
 //
 // P_TICK
@@ -112,7 +112,12 @@ typedef struct thinker_s
 
 
 // both the head and tail of the thinker list
-extern	thinker_t	thinkerlist[MAX_THINKERS];	
+
+// 41400 in size
+// 950 would be 65550, too big
+// 949 is 65481
+
+extern	thinker_t	*thinkerlist;// [MAX_THINKERS];
 
 
 void P_InitThinkers ();

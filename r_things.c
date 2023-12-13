@@ -412,12 +412,13 @@ void R_AddSprites (sector_t* sec)
 
 
     // Handle all things in sector.
-	// todo, should we quit out early of drawing player sprite? matters for netplay maybe? if its self, shouldnt render and its a lot of extra traversal?
-	for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
-		thing = (mobj_t*)&thinkerlist[thingRef].data;
-		R_ProjectSprite(thing);
-		 
-	
+	if (sec->thinglistRef) {
+		Z_QuickmapPhysics(); // gross - going to need to pull out the necessary data?
+		for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
+			thing = (mobj_t*)&thinkerlist[thingRef].data;
+			R_ProjectSprite(thing);
+		}
+		Z_QuickmapRender();
 	}
 
 
@@ -541,6 +542,7 @@ void R_DrawPSprite (pspdef_t* psp)
 }
 
 
+extern int16_t r_cachedplayerMobjsecnum;
 
 //
 // R_DrawPlayerSprites
@@ -551,7 +553,7 @@ void R_DrawPlayerSprites (void)
 	uint8_t         lightnum;
     pspdef_t*   psp;
     // get light level
-    lightnum = (sectors[playerMobj->secnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
+    lightnum = (sectors[r_cachedplayerMobjsecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
 
 
 //    if (lightnum < 0)          

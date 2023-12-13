@@ -58,6 +58,7 @@ int16_t		scaledviewwidth;
 int16_t		viewheight;
 int16_t		viewwindowx;
 int16_t		viewwindowy; 
+int16_t		viewwindowoffset;
 int16_t		columnofs[MAXWIDTH]; 
 
 // Color tables for different players,

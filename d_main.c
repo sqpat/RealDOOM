@@ -59,6 +59,7 @@
 #include "r_local.h"
 
 #include "d_main.h"
+#include "p_local.h"
  
 
  
@@ -284,7 +285,6 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 	//return FixedDiv2(a, b, file, line);
 	return FixedDiv2(a, b);
 }
-
 
 //
 // D_Display

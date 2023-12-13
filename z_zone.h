@@ -69,6 +69,7 @@ typedef uint16_t PAGEREF; //used internally for allocations list index
 extern int32_t numreads;
 extern int32_t pageins;
 extern int32_t pageouts;
+extern int32_t taskswitchcount;
 
 typedef struct memblock_s
 {
@@ -181,7 +182,6 @@ void Z_ShutdownEMS();
 
 
 
-
 typedef struct
 {
 	PAGEREF prev;    //2    using 16 bits but need 11 or 12...
@@ -208,6 +208,11 @@ typedef struct
 
 } allocation_t;
 
+
+// EMS 4.0 stuff
+void Z_QuickmapPhysics();
+void Z_QuickmapRender();
+void Z_GetEMSPageMap();
 
 #endif
 

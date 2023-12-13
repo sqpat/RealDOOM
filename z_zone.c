@@ -100,6 +100,7 @@
 #define SET_BACKREF(x, y) (x.backref_and_user = (y & INVERSE_USER_MASK) + (x.backref_and_user & USER_MASK))
 #define SET_BACKREF_ZERO(x) (x.backref_and_user &= USER_MASK)
 
+#define NUM_EMS4_SWAP_PAGES 8L
 
 typedef struct
 {
@@ -174,6 +175,7 @@ int8_t lockedpages[NUM_EMS_PAGES];
 
 	int16_t emshandle;
 	extern union REGS regs;
+	extern struct SREGS segregs;
 
 #else
 	byte*			EMSArea;
@@ -189,6 +191,7 @@ int32_t pageins = 0;
 int32_t pageouts = 0;
 int32_t actualpageins = 0;
 int32_t actualpageouts = 0;
+
 
 void Z_PageOutIfInMemory(fixed_t_union page_and_size);
 
@@ -1060,6 +1063,7 @@ void Z_FreeConventionalAllocations() {
 	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
 	memset(conventional_allocations2, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
 
+	// we should be paged to physics now - should be ok
 	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
 	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
@@ -1491,7 +1495,6 @@ void Z_InitEMS(void)
 #endif
 
 
-
 	//printf("EMS zone location  %p\n", pageFrameArea);
 	//printf("Allocated size in z_initEMS was %li or %p\n", size, size);
 	// mark ems pages unused
@@ -1505,16 +1508,16 @@ void Z_InitEMS(void)
 	// the links wont be in order, but these presets 
 	allocations[0].next = 1;
 	allocations[0].prev = 1;
-	// Start the allocation list and page (num thinker pages)
-	allocations[0].page_and_size.wu = 0; // NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT;
+	// Start the allocation list and page (offset but EMS 4.0 swap reserved pages)
+	allocations[0].page_and_size.wu = NUM_EMS4_SWAP_PAGES << PAGE_AND_SIZE_SHIFT;
 	allocations[0].backref_and_user = USER_MASK;
 	allocations[0].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 
 	allocations[1].next = 0;
 	allocations[1].prev = 0;
 	allocations[1].backref_and_user = 0;
-	// Start the allocation list and page (num thinker pages)
-	allocations[1].page_and_size.wu = size;// +(NUM_THINKER_PAGES << PAGE_AND_SIZE_SHIFT);
+	// Start the allocation list and page (offset but EMS 4.0 swap reserved pages)
+	allocations[1].page_and_size.wu = size +(NUM_EMS4_SWAP_PAGES << PAGE_AND_SIZE_SHIFT);
 
 	allocations[1].offset_and_tag = 0x4000;// PU_STATIC, 0 offset
 
@@ -1525,5 +1528,50 @@ void Z_InitEMS(void)
 	currentListHead = 1;
 }
 
+// EMS 4.0 functionality
+
+// page for 0x9000 block where we will store thinkers in physics code, then visplanes etc in render code
+int16_t pagenum9000; 
+int16_t pageswapargs_phys[8];
+int16_t pageswapargs_rend[8];
+int16_t pageswapargseg_phys;
+int16_t pageswapargoff_phys;
+int16_t pageswapargseg_rend;
+int16_t pageswapargoff_rend;
+int32_t taskswitchcount = 0;
 
 
+void Z_QuickmapPhysics() {
+
+	regs.w.ax = 0x5000;  // physical page
+	regs.w.cx = 0x04;  // physical page
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_phys;
+	regs.w.si = pageswapargoff_phys;
+	intx86(EMS_INT, &regs, &regs);
+	/*
+	errorreg = regs.h.ah;
+	if (errorreg != 0) {
+		I_Error("Call 0x5000 failed with value %i!\n", errorreg);
+	}
+	*/
+	taskswitchcount ++;
+}
+
+void Z_QuickmapRender() {
+
+	regs.w.ax = 0x5000;  // physical page
+	regs.w.cx = 0x04;  // physical page
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend;
+	intx86(EMS_INT, &regs, &regs);
+	/*
+	errorreg = regs.h.ah;
+	if (errorreg != 0) {
+		I_Error("Call 0x5000 failed with value %i!\n", errorreg);
+	}
+	*/
+	taskswitchcount++;
+
+}

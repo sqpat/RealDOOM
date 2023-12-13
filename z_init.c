@@ -26,10 +26,14 @@
 
 #include "doomstat.h"
 #include "r_bsp.h"
+#include "r_local.h"
+#include "p_local.h"
 
 #include <dos.h>
 #include <stdlib.h>
 #include <malloc.h>
+
+
 
 extern byte*			pageFrameArea;
 extern byte*			EMSArea;
@@ -42,7 +46,8 @@ extern int8_t pagesize[NUM_EMS_PAGES];
 
 #ifdef _M_I86
 
- extern union REGS regs;
+extern union REGS regs;
+extern struct SREGS segregs;
 
 #else
 #endif
@@ -100,8 +105,8 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 	}
 	//vernum = 10*(vernum >> 4) + (vernum&0xF);
 	DEBUG_PRINT("Version %i", vernum);
-	if (vernum < 32) {
-		DEBUG_PRINT("Warning! EMS Version too low! Expected 3.2, found %i", vernum);
+	if (vernum < 40) {
+		DEBUG_PRINT("Warning! EMS Version too low! Expected 4.0 , found %x", vernum);
 
 	}
 
@@ -222,3 +227,116 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 
 
 
+
+
+extern int16_t pagenum9000;
+extern int16_t pageswapargs_phys[8];
+extern int16_t pageswapargs_rend[8];
+extern int16_t pageswapargseg_phys;
+extern int16_t pageswapargoff_phys;
+extern int16_t pageswapargseg_rend;
+extern int16_t pageswapargoff_rend;
+
+void Z_GetEMSPageMap() {
+	int16_t pagedata[256]; // i dont think it can get this big...
+	int16_t* far pointervalue = pagedata;
+	int16_t errorreg, i, numentries;
+	uint16_t offset = 0u;
+
+
+
+	regs.w.ax = 0x5801;  // physical page
+	intx86(EMS_INT, &regs, &regs);
+	errorreg = regs.h.ah;
+	numentries = regs.w.cx;
+	if (errorreg != 0) {
+		I_Error("\nCall 5801 failed with value %i!\n", errorreg);
+	}
+	printf("\n Found: %i mappable EMS pages (usually 28 for EMS 4.0 hardware)", numentries);
+
+	regs.w.ax = 0x5800;  // physical page
+	segregs.es = (uint16_t)((uint32_t)pointervalue >> 16);
+	regs.w.di = (uint16_t)(((uint32_t)pointervalue) & 0xffff);
+	intx86(EMS_INT, &regs, &regs);
+	errorreg = regs.h.ah;
+	//pagedata = MK_FP(sregs.es, regs.w.di);
+	if (errorreg != 0) {
+		I_Error("\nCall 25 failed with value %i!\n", errorreg);
+	}
+
+	for (i = 0; i < numentries; i++) {
+		if (pagedata[i * 2] == 0x9000u) {
+			pagenum9000 = pagedata[(i * 2) + 1];
+			goto found;
+		}
+	}
+
+	I_Error("\nMappable page for segment 0x9000 NOT FOUND! EMS 4.0 features unsupported?\n");
+
+found:
+
+	// cache these args
+	pageswapargseg_phys = (uint16_t)((uint32_t)pageswapargs_phys >> 16);
+	pageswapargoff_phys = (uint16_t)(((uint32_t)pageswapargs_phys) & 0xffff);
+	pageswapargseg_rend = (uint16_t)((uint32_t)pageswapargs_rend >> 16);
+	pageswapargoff_rend = (uint16_t)(((uint32_t)pageswapargs_rend) & 0xffff);
+
+	pageswapargs_phys[0] = 0;
+	pageswapargs_phys[1] = pagenum9000;
+	pageswapargs_phys[2] = 1;
+	pageswapargs_phys[3] = pagenum9000 + 1;
+	pageswapargs_phys[4] = 2;
+	pageswapargs_phys[5] = pagenum9000 + 2;
+	pageswapargs_phys[6] = 3;
+	pageswapargs_phys[7] = pagenum9000 + 3;
+
+	pageswapargs_rend[0] = 4;
+	pageswapargs_rend[1] = pagenum9000;
+	pageswapargs_rend[2] = 5;
+	pageswapargs_rend[3] = pagenum9000 + 1;
+	pageswapargs_rend[4] = 6;
+	pageswapargs_rend[5] = pagenum9000 + 2;
+	pageswapargs_rend[6] = 7;
+	pageswapargs_rend[7] = pagenum9000 + 3;
+
+	// we're an OS now! let's map task memory regions!
+
+	//physics mapping
+	thinkerlist = MK_FP(0x9000, 0);
+
+	//render mapping
+	visplanes = MK_FP(0x9000, 0);
+	offset += sizeof(visplane_t) * MAXCONVENTIONALVISPLANES;
+	yslope = MK_FP(0x9000, offset);
+	offset += sizeof(fixed_t) * SCREENHEIGHT;
+	distscale = MK_FP(0x9000, offset);
+	offset += sizeof(fixed_t) * SCREENWIDTH;
+	cachedheight = MK_FP(0x9000, offset);
+	offset += sizeof(fixed_t) * SCREENHEIGHT;
+	cacheddistance = MK_FP(0x9000, offset);
+	offset += sizeof(fixed_t) * SCREENHEIGHT;
+	cachedxstep = MK_FP(0x9000, offset);
+	offset += sizeof(fixed_t) * SCREENHEIGHT;
+	cachedystep = MK_FP(0x9000, offset);
+	offset += sizeof(fixed_t) * SCREENHEIGHT;
+	floorclip = MK_FP(0x9000, offset);
+	offset += sizeof(int16_t) * SCREENWIDTH;
+	ceilingclip = MK_FP(0x9000, offset);
+	offset += sizeof(int16_t) * SCREENWIDTH;
+	spanstart = MK_FP(0x9000, offset);
+	offset += sizeof(int16_t) * SCREENHEIGHT;
+
+
+	viewangletox = MK_FP(0x9000, offset);
+	offset += sizeof(int16_t) * (FINEANGLES / 2);
+	xtoviewangle = MK_FP(0x9000, offset);
+	offset += sizeof(fineangle_t) * (SCREENWIDTH + 1);
+
+	//56714 bytes
+	printf("\n Allocated: %u of bytes in taskswitch region", offset);
+
+
+
+
+	Z_QuickmapPhysics(); // map default page map
+}

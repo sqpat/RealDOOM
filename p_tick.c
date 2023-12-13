@@ -38,7 +38,7 @@ int16_t currentThinkerListHead;
 
 
 // Both the head and tail of the thinker list.
-thinker_t	thinkerlist[MAX_THINKERS];
+thinker_t*	thinkerlist; // [MAX_THINKERS];
 
 
 

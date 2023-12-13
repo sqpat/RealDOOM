@@ -122,8 +122,8 @@ extern fineangle_t		viewangle_shiftright3;
 extern angle_t		clipangle;	// note: fracbits always 0
 extern angle_t fieldofview;		// note: fracbits always 0
 
-extern int16_t		viewangletox[FINEANGLES/2];
-extern fineangle_t		xtoviewangle[SCREENWIDTH+1];
+extern int16_t		*viewangletox; //[FINEANGLES / 2];
+extern fineangle_t		*xtoviewangle;// [SCREENWIDTH + 1];
 //extern fixed_t		finetangent[FINEANGLES/2];
 
 extern fixed_t		rw_distance;
@@ -147,7 +147,13 @@ extern visplaneheader_t	visplaneheaders[MAXEMSVISPLANES];
 
 #define MAXCONVENTIONALVISPLANES	60
 
-extern	visplane_t		visplanes[MAXCONVENTIONALVISPLANES];
+// size for 60 is 39240, or 654 each... hasnt caused trouble yet?
+// 70 is 45780
+// 80 is 52320
+// 90 is 58860
+// 100 is 65400 (fits)
+// start with this then add the view angles as well..
+extern	visplane_t		*visplanes;// [MAXCONVENTIONALVISPLANES];
 extern int16_t	floorplaneindex;
 extern int16_t	ceilingplaneindex;
 

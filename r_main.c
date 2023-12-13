@@ -39,7 +39,11 @@
 // Fineangles in the SCREENWIDTH wide window.
 #define FIELDOFVIEW		2048	
 
-
+// Cached fields to avoid thinker access after page swap
+int16_t r_cachedplayerMobjsecnum;
+fixed_t r_cachedplayerMobjx;
+fixed_t r_cachedplayerMobjy;
+angle_t r_cachedplayerMobjangle;
 
 
 // increment every time a check is made
@@ -83,12 +87,12 @@ angle_t			fieldofview = { 0 };	// note: fracbits always 0
 // maps the visible view angles to screen X coordinates,
 // flattening the arc to a flat projection plane.
 // There will be many angles mapped to the same X. 
-int16_t			viewangletox[FINEANGLES/2];
+int16_t			*viewangletox;// [FINEANGLES / 2];
 
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
 // from clipangle to -clipangle.
-fineangle_t			xtoviewangle[SCREENWIDTH+1];
+fineangle_t			*xtoviewangle;// [SCREENWIDTH + 1];
 
 
 // UNUSED.
@@ -624,9 +628,9 @@ void R_SetupFrame ()
 {		
     int8_t		i;
 
-    viewx.w = playerMobj->x;
-    viewy.w = playerMobj->y;
-    viewangle = playerMobj->angle;
+    viewx.w = r_cachedplayerMobjx;
+    viewy.w = r_cachedplayerMobjy;
+    viewangle = r_cachedplayerMobjangle;
 	viewangle_shiftright3 = viewangle.hu.intbits >> 3;
     extralight = player.extralight;
 
@@ -652,7 +656,8 @@ void R_SetupFrame ()
 		
     validcount++;
 	// i think this sets the view within the border for when screen size is increased/shrunk
-    destview = (byte*)(destscreen.w + (viewwindowy*SCREENWIDTH/4) + (viewwindowx >> 2));
+    
+	destview = (byte*)(destscreen.w + viewwindowoffset);
 }
 
 
@@ -662,8 +667,15 @@ void R_SetupFrame ()
 //
 void R_RenderPlayerView ()
 {	
+	r_cachedplayerMobjsecnum = playerMobj->secnum;
+	r_cachedplayerMobjx = playerMobj->x;
+	r_cachedplayerMobjy = playerMobj->y;
+	r_cachedplayerMobjangle = playerMobj->angle;
 
+	Z_QuickmapRender();
+	
 	R_SetupFrame ();
+
 
     // Clear buffers.
     R_ClearClipSegs ();
@@ -684,6 +696,7 @@ void R_RenderPlayerView ()
     NetUpdate ();
 
     R_DrawPlanes ();
+
 	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_DrawPlanes done");
 
     // Check for new console commands.
@@ -693,5 +706,6 @@ void R_RenderPlayerView ()
 
 	// Check for new console commands.
     NetUpdate ();	
+	Z_QuickmapPhysics();
 
 }

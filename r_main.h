@@ -34,7 +34,7 @@ extern int16_t		viewwidth;
 extern int16_t		viewheight;
 extern int16_t		viewwindowx;
 extern int16_t		viewwindowy;
-
+extern int16_t      viewwindowoffset;
 
 
 extern int16_t		centerx;

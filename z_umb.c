@@ -270,7 +270,7 @@ void Z_InitUMB(void) {
 
 
 
-	// DOS NOT MANAGING UMBS
+	// DOS NOT MANAGING UMBS ??
 	//Z_InitUMBDirect();
 
 

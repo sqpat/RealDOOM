@@ -27,11 +27,17 @@
 // Visplane related.
 extern  int16_t*		lastopening;
 
-extern int16_t		floorclip[SCREENWIDTH];
-extern int16_t		ceilingclip[SCREENWIDTH];
+extern int16_t		*floorclip;// [SCREENWIDTH];
+extern int16_t		*ceilingclip;// [SCREENWIDTH];
+extern int16_t		*spanstart;// [SCREENHEIGHT];
 
-extern fixed_t		yslope[SCREENHEIGHT];
-extern fixed_t		distscale[SCREENWIDTH];
+extern fixed_t		*yslope;// [SCREENHEIGHT];
+extern fixed_t		*distscale;// [SCREENWIDTH];
+
+extern fixed_t			*cachedheight;// [SCREENHEIGHT];
+extern fixed_t			*cacheddistance;// [SCREENHEIGHT];
+extern fixed_t			*cachedxstep;// [SCREENHEIGHT];
+extern fixed_t			*cachedystep;// [SCREENHEIGHT];
 
 void R_InitPlanes (void);
 void R_ClearPlanes (void);

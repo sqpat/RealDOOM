@@ -84,6 +84,7 @@ R_InitBuffer
 	else
 		viewwindowy = (SCREENHEIGHT - SBARHEIGHT - height) >> 1;
 
+	viewwindowoffset = (viewwindowy*SCREENWIDTH / 4) + (viewwindowx >> 2);
 }
 
 
@@ -93,11 +94,17 @@ R_InitBuffer
 //
 void R_InitTextureMapping(void)
 {
-	int16_t			i;
 	int16_t			x;
 	fixed_t_union	t;
 	fixed_t		focallength;
 	fixed_t_union		temp;
+	fixed_t	cosadj;
+	fineangle_t	an;
+	int8_t		level;
+	fixed_t	dy;
+	int16_t		i;
+	int16_t		j;
+	Z_QuickmapRender();
 
 	// Use tangent table to generate viewangletox:
 	//  viewangletox will give the next greatest x
@@ -151,6 +158,68 @@ void R_InitTextureMapping(void)
 
 	clipangle.hu.intbits = xtoviewangle[0] << 3;
 	fieldofview.hu.intbits = 2 * clipangle.hu.intbits;
+
+
+	// psprite scales
+	if (viewwidth == SCREENWIDTH) {
+		// will be specialcased as 1 later;
+		pspritescale = 0;
+		pspriteiscale = FRACUNIT;
+	}
+	else {
+		// max of FRACUNIT, we set it to 0 in that case
+		pspritescale = (FRACUNIT * viewwidth / SCREENWIDTH);
+		pspriteiscale = (FRACUNIT * SCREENWIDTH / viewwidth);
+	}
+
+	// thing clipping
+	for (i = 0; i < viewwidth; i++) {
+		screenheightarray[i] = viewheight;
+	}
+
+	// 168 viewheight
+	// planes
+
+
+	for (i = 0; i < viewheight; i++) {
+		temp.h.intbits = (i - viewheight / 2);
+		dy = (temp.w) + 0x8000u;
+		dy = labs(dy);
+		temp.h.intbits = (viewwidth << detailshift) / 2;
+		yslope[i] = FixedDivWholeA(temp.w, dy);
+
+	}
+	// 320 viewwidth
+
+	for (i = 0; i < viewwidth; i++) {
+		an = xtoviewangle[i];
+		cosadj = labs(finecosine(an));
+		distscale[i] = FixedDivWholeA(FRACUNIT, cosadj);
+	}
+
+
+
+	// Calculate the light levels to use
+	//  for each level / scale combination.
+	for (i = 0; i < LIGHTLEVELS; i++) {
+		startmap = ((LIGHTLEVELS - 1 - i) * 2)*NUMCOLORMAPS / LIGHTLEVELS;
+		for (j = 0; j < MAXLIGHTSCALE; j++) {
+			level = startmap - j * SCREENWIDTH / (viewwidth << detailshift) / DISTMAP;
+
+			if (level < 0) {
+				level = 0;
+			}
+
+			if (level >= NUMCOLORMAPS) {
+				level = NUMCOLORMAPS - 1;
+			}
+
+			scalelight[i][j] = colormaps + level * 256;
+		}
+	}
+
+	Z_QuickmapPhysics();
+
 }
 
 
@@ -160,12 +229,7 @@ void R_InitTextureMapping(void)
 //
 void R_ExecuteSetViewSize(void)
 {
-	fixed_t	cosadj;
-	fineangle_t	an;
-	fixed_t	dy;
-	int16_t		i;
-	int16_t		j;
-	int8_t		level;
+
 	int8_t		startmap;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
@@ -206,61 +270,8 @@ void R_ExecuteSetViewSize(void)
 
 	R_InitTextureMapping();
 
-	// psprite scales
-	if (viewwidth == SCREENWIDTH) {
-		// will be specialcased as 1 later;
-		pspritescale = 0;
-		pspriteiscale = FRACUNIT;
-	}
-	else {
-		// max of FRACUNIT, we set it to 0 in that case
-		pspritescale = (FRACUNIT * viewwidth / SCREENWIDTH);
-		pspriteiscale = (FRACUNIT * SCREENWIDTH / viewwidth);
-	}
 
-	// thing clipping
-	for (i = 0; i < viewwidth; i++) {
-		screenheightarray[i] = viewheight;
-	}
-
-	// 168 viewheight
-	// planes
-	for (i = 0; i < viewheight; i++) {
-		temp.h.intbits = (i - viewheight / 2);
-		dy = (temp.w) + 0x8000u;
-		dy = labs(dy);
-		temp.h.intbits = (viewwidth << detailshift) / 2;
-		yslope[i] = FixedDivWholeA(temp.w, dy);
-
-	}
-	// 320 viewwidth
-
-	for (i = 0; i < viewwidth; i++) {
-		an = xtoviewangle[i];
-		cosadj = labs(finecosine(an));
-		distscale[i] = FixedDivWholeA(FRACUNIT, cosadj); 
-	}
-
-
-
-	// Calculate the light levels to use
-	//  for each level / scale combination.
-	for (i = 0; i < LIGHTLEVELS; i++) {
-		startmap = ((LIGHTLEVELS - 1 - i) * 2)*NUMCOLORMAPS / LIGHTLEVELS;
-		for (j = 0; j < MAXLIGHTSCALE; j++) {
-			level = startmap - j * SCREENWIDTH / (viewwidth << detailshift) / DISTMAP;
-
-			if (level < 0) {
-				level = 0;
-			}
-
-			if (level >= NUMCOLORMAPS) {
-				level = NUMCOLORMAPS - 1;
-			}
-
-			scalelight[i][j] = colormaps + level * 256;
-		}
-	}
+ 
 }
 
 

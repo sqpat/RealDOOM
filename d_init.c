@@ -781,6 +781,9 @@ void D_DoomMain2(void)
 	DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
 	Z_InitUMB();
 
+	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
+	Z_GetEMSPageMap();
+
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");
 	W_InitMultipleFiles(wadfiles);
 
