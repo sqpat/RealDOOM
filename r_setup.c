@@ -365,7 +365,7 @@ void R_PrecacheLevel(void)
 		for (j = 0; j < texture->patchcount; j++)
 		{
 
-			texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]); // todo make locked
+			texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]);
 			lump = texture->patches[j].patch;
 			W_CacheLumpNumEMS(lump, PU_CACHE);
 		}
@@ -382,8 +382,6 @@ void R_PrecacheLevel(void)
 		}
 	}
 
-	//spritememory = 0;
-	//todo does this have to be pulled into the for loop
 
 	for (i = 0; i < numsprites; i++)
 	{

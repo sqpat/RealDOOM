@@ -1560,7 +1560,7 @@ void Z_QuickmapPhysics() {
 
 
 
-void Z_QuickmapPhysicsE000() {
+void Z_QuickmapPhysics9000() {
 
 	regs.w.ax = 0x5000;  // physical page
 	regs.w.cx = 0x04;  // physical page

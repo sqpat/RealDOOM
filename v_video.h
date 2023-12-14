@@ -69,7 +69,7 @@ extern  MEMREF     screen4Ref;
 
 extern  int16_t	dirtybox[4];
 
-extern	byte	gammatable[5][256];
+extern	byte	*gammatable;
 extern	uint8_t	usegamma;
 
 

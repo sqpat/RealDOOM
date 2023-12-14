@@ -24,6 +24,7 @@
 // Needed for action function pointer handling.
 #include "d_think.h"
 
+#define STATENUM_NULL -1
 #define SPR_TROO 0
 #define SPR_SHTG 1
 #define SPR_PUNG 2
@@ -1138,7 +1139,7 @@ typedef uint8_t spriteframenum_t;
 
 typedef uint16_t statenum_t;
 
-
+// 967 * 6? 6kb?
 typedef struct
 {
   spritenum_t	sprite;
@@ -1151,8 +1152,9 @@ typedef struct
   //int32_t			misc1, misc2;
 } state_t;
 
+//extern state_t* states;
 extern state_t	states[NUMSTATES];
- 
+
 #define MT_PLAYER 0
 #define MT_POSSESSED 1
 #define MT_SHOTGUY 2
@@ -1332,7 +1334,7 @@ typedef struct
 
 
 
-extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
+extern mobjinfo_t *mobjinfo;
 
 extern int32_t getMobjMass(uint8_t id);
 extern int16_t getPainChance(uint8_t id);

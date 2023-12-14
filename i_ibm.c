@@ -236,6 +236,7 @@ extern MEMREF               palRef;
 
 void I_SetPalette(int8_t paletteNumber)
 {
+	byte* gammatablelookup;
 	int16_t i;
 //	byte* palette = ((byte*)Z_LoadBytesFromEMS(W_CacheLumpNumEMS(lu_palette, PU_CACHE)) + paletteNumber * 768u);
 	byte* palette = ((byte*)Z_LoadBytesFromEMS(palRef)) + paletteNumber * 768u;
@@ -248,11 +249,13 @@ void I_SetPalette(int8_t paletteNumber)
 #ifndef	SKIP_DRAW
 		_outbyte(PEL_WRITE_ADR, 0);
 #endif
-        for(i = 0; i < 768; i++)
+		gammatablelookup = (gammatable + usegamma*256);
+
+		for(i = 0; i < 768; i++)
         {
 #ifndef	SKIP_DRAW
 //			_outbyte(PEL_DATA, (gammatable[usegamma][*palette++]) >> 2);
-			_outbyte(PEL_DATA, gammatable[usegamma][*palette] >> 2);
+			_outbyte(PEL_DATA, gammatablelookup[*palette] >> 2);
 			palette++;
 
 #endif

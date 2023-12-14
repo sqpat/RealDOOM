@@ -41,6 +41,8 @@
 
 // Cached fields to avoid thinker access after page swap
 int16_t r_cachedplayerMobjsecnum;
+state_t r_cachedstatecopy[2];
+
 fixed_t r_cachedplayerMobjx;
 fixed_t r_cachedplayerMobjy;
 angle_t r_cachedplayerMobjangle;
@@ -671,9 +673,14 @@ void R_RenderPlayerView ()
 	r_cachedplayerMobjx = playerMobj->x;
 	r_cachedplayerMobjy = playerMobj->y;
 	r_cachedplayerMobjangle = playerMobj->angle;
+	if (player.psprites[0].state) {
+		r_cachedstatecopy[0] = *(player.psprites[0].state);
+	}
+	if (player.psprites[1].state) {
+		r_cachedstatecopy[1] = *(player.psprites[1].state);
+	}
 
 	Z_QuickmapRender();
-	
 	R_SetupFrame ();
 
 

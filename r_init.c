@@ -93,6 +93,7 @@ void R_InitPlanes(void) {
 
 	int16_t i;
 	int16_t j;
+	Z_QuickmapRender();
 
 	for (i = 0; i < NUM_VISPLANE_PAGES; i++) {
 		visplanebytesRef[i] = Z_MallocEMS(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0);
@@ -103,7 +104,8 @@ void R_InitPlanes(void) {
 		}
 
 	}
-	// 1136 1138 1140 1142 1144 1146
+
+	Z_QuickmapPhysics();
 
 
 

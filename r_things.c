@@ -413,7 +413,7 @@ void R_AddSprites (sector_t* sec)
 
     // Handle all things in sector.
 	if (sec->thinglistRef) {
-		Z_QuickmapPhysicsE000(); // gross - going to need to pull out the necessary data?
+		Z_QuickmapPhysics9000(); // gross - going to need to pull out the necessary data?
 		for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
 			thing = (mobj_t*)&thinkerlist[thingRef].data;
 			R_ProjectSprite(thing);
@@ -430,7 +430,7 @@ void R_AddSprites (sector_t* sec)
 //
 // R_DrawPSprite
 //
-void R_DrawPSprite (pspdef_t* psp)
+void R_DrawPSprite (pspdef_t* psp, state_t statecopy)
 {
     fixed_t             tx;
 	int16_t                 x1;
@@ -442,13 +442,13 @@ void R_DrawPSprite (pspdef_t* psp)
 	spriteframe_t*		spriteframes;
     fixed_t_union temp;
 
+
 	// decide which patch to use
+	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprites[statecopy.sprite].spriteframesRef);
 
-	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprites[psp->state->sprite].spriteframesRef);
 
-
-    lump = spriteframes[psp->state->frame & FF_FRAMEMASK].lump[0];
-    flip = (boolean)spriteframes[psp->state->frame & FF_FRAMEMASK].flip[0];
+    lump = spriteframes[statecopy.frame & FF_FRAMEMASK].lump[0];
+    flip = (boolean)spriteframes[statecopy.frame & FF_FRAMEMASK].flip[0];
     
     // calculate edges of the shape
     tx = psp->sx-160*FRACUNIT;
@@ -517,32 +517,26 @@ void R_DrawPSprite (pspdef_t* psp)
     vis->patch = lump;
 
     if (player.powers[pw_invisibility] > 4*32
-        || player.powers[pw_invisibility] & 8)
-    {
+        || player.powers[pw_invisibility] & 8) {
         // shadow draw
         vis->colormap = NULL;
-    }
-    else if (fixedcolormap)
-    {
+    } else if (fixedcolormap) {
         // fixed color
         vis->colormap = fixedcolormap;
-    }
-    else if (psp->state->frame & FF_FULLBRIGHT)
-    {
+    } else if (statecopy.frame & FF_FULLBRIGHT) {
         // full bright
         vis->colormap = colormaps;
-    }
-    else
-    {
+    } else {
         // local light
         vis->colormap = spritelights[MAXLIGHTSCALE-1];
     }
 
-    R_DrawVisSprite (vis, vis->x1, vis->x2);
+	R_DrawVisSprite (vis, vis->x1, vis->x2);
 }
 
 
 extern int16_t r_cachedplayerMobjsecnum;
+extern state_t r_cachedstatecopy[2];
 
 //
 // R_DrawPlayerSprites
@@ -568,14 +562,14 @@ void R_DrawPlayerSprites (void)
     // clip to screen bounds
     mfloorclip = screenheightarray;
     mceilingclip = negonearray;
-    
+
     // add all active psprites
     for (i=0, psp= player.psprites;
          i<NUMPSPRITES;
          i++,psp++)
     {
         if (psp->state)
-            R_DrawPSprite (psp);
+            R_DrawPSprite (psp, r_cachedstatecopy[i]);
     }
 }
 

@@ -158,11 +158,12 @@ void P_BringUpWeapon ()
 {
     statenum_t	newstate;
 	
-    if (player.pendingweapon == wp_nochange)
-	player.pendingweapon = player.readyweapon;
-		
-    if (player.pendingweapon == wp_chainsaw)
-	S_StartSoundFromRef (playerMobj, sfx_sawup);
+	if (player.pendingweapon == wp_nochange) {
+		player.pendingweapon = player.readyweapon;
+	}
+	if (player.pendingweapon == wp_chainsaw) {
+		S_StartSoundFromRef(playerMobj, sfx_sawup);
+	}
 		
     newstate = weaponinfo[player.pendingweapon].upstate;
 
@@ -185,68 +186,50 @@ boolean P_CheckAmmo ()
     ammo = weaponinfo[player.readyweapon].ammo;
 
     // Minimal amount for one shot varies.
-    if (player.readyweapon == wp_bfg)
-	count = BFGCELLS;
-    else if (player.readyweapon == wp_supershotgun)
-	count = 2;	// Double barrel.
-    else
-	count = 1;	// Regular.
-
+	if (player.readyweapon == wp_bfg) {
+		count = BFGCELLS;
+	} else if (player.readyweapon == wp_supershotgun) {
+		count = 2;	// Double barrel.
+	} else {
+		count = 1;	// Regular.
+	}
     // Some do not need ammunition anyway.
     // Return if current ammunition sufficient.
-    if (ammo == am_noammo || player.ammo[ammo] >= count)
-	return true;
-		
+	if (ammo == am_noammo || player.ammo[ammo] >= count) {
+		return true;
+	}
     // Out of ammo, pick a weapon to change to.
     // Preferences are set here.
-    do
-    {
-	if (player.weaponowned[wp_plasma]
-	    && player.ammo[am_cell]
-	    && (!shareware) )
-	{
-	    player.pendingweapon = wp_plasma;
-	}
-	else if (player.weaponowned[wp_supershotgun] 
-		 && player.ammo[am_shell]>2
-		 && (commercial) )
-	{
-	    player.pendingweapon = wp_supershotgun;
-	}
-	else if (player.weaponowned[wp_chaingun]
-		 && player.ammo[am_clip])
-	{
-	    player.pendingweapon = wp_chaingun;
-	}
-	else if (player.weaponowned[wp_shotgun]
-		 && player.ammo[am_shell])
-	{
-	    player.pendingweapon = wp_shotgun;
-	}
-	else if (player.ammo[am_clip])
-	{
-	    player.pendingweapon = wp_pistol;
-	}
-	else if (player.weaponowned[wp_chainsaw])
-	{
-	    player.pendingweapon = wp_chainsaw;
-	}
-	else if (player.weaponowned[wp_missile]
-		 && player.ammo[am_misl])
-	{
-	    player.pendingweapon = wp_missile;
-	}
-	else if (player.weaponowned[wp_bfg]
-		 && player.ammo[am_cell]>40
-		 && (!shareware) )
-	{
-	    player.pendingweapon = wp_bfg;
-	}
-	else
-	{
-	    // If everything fails.
-	    player.pendingweapon = wp_fist;
-	}
+    do {
+		if (player.weaponowned[wp_plasma]
+			&& player.ammo[am_cell]
+			&& (!shareware) ) {
+			player.pendingweapon = wp_plasma;
+		} else if (player.weaponowned[wp_supershotgun] 
+			 && player.ammo[am_shell]>2
+			 && (commercial) ) {
+			player.pendingweapon = wp_supershotgun;
+		} else if (player.weaponowned[wp_chaingun]
+			 && player.ammo[am_clip]) {
+			player.pendingweapon = wp_chaingun;
+		} else if (player.weaponowned[wp_shotgun]
+			 && player.ammo[am_shell]) {
+			player.pendingweapon = wp_shotgun;
+		} else if (player.ammo[am_clip]) {
+			player.pendingweapon = wp_pistol;
+		} else if (player.weaponowned[wp_chainsaw]) {
+			player.pendingweapon = wp_chainsaw;
+		} else if (player.weaponowned[wp_missile]
+			 && player.ammo[am_misl]) {
+			player.pendingweapon = wp_missile;
+		} else if (player.weaponowned[wp_bfg]
+			 && player.ammo[am_cell]>40
+			 && (!shareware) ) {
+			player.pendingweapon = wp_bfg;
+		} else {
+			// If everything fails.
+			player.pendingweapon = wp_fist;
+		}
 	
     } while (player.pendingweapon == wp_nochange);
 

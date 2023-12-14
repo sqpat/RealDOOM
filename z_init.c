@@ -243,8 +243,33 @@ void Z_GetEMSPageMap() {
 	int16_t* far pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
 	uint16_t offset = 0u;
+	uint16_t offset2 = 0u;
+	FILE *fp;
+	 
+	/*
+	fp = fopen("d_gammat.bin", "wb"); // clear old file
+	fwrite(gammatable, 5*256, 1, fp);
+	I_Error("done");
+	*/
 
+	//states = MK_FP(0x9000, 0);
+/*
+	fp = fopen("D_MBINFO.BIN", "r");
+	fread(mobjinfo, sizeof(mobjinfo_t) * NUMMOBJTYPES, 1, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+	I_Error("\n%hhx %hhx %hhx %hhx",((byte*)mobjinfo)[20], ((byte*)mobjinfo)[200], ((byte*)mobjinfo)[250], ((byte*)mobjinfo)[520]);
+	*/
+	// 40 0 42 10
 
+	//fp = fopen("D_STATES.BIN", "r");
+	//fread(states, sizeof(state_t), NUMSTATES, fp);
+	//fclose(fp);
+	//DEBUG_PRINT(".");
+	
+ 
+
+	//I_Error("\n%hhx %hhx %hhx %hhx",((byte*)mobjinfo)[20], ((byte*)mobjinfo)[200], ((byte*)mobjinfo)[250], ((byte*)mobjinfo)[520]);
 
 	regs.w.ax = 0x5801;  // physical page
 	intx86(EMS_INT, &regs, &regs);
@@ -320,11 +345,18 @@ found:
 
 	//physics mapping
 	thinkerlist = MK_FP(0x9000, 0);
+	offset2 += sizeof(thinker_t) * MAX_THINKERS;
+	//states = MK_FP(0x9000, offset2);
+	offset2 += sizeof(state_t) * NUMSTATES;
+	mobjinfo = MK_FP(0x9000, offset2);
+	offset2 += sizeof(mobjinfo_t) * NUMMOBJTYPES;
 
-	//render mapping
+	//65269
+
+	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
 	visplanes = MK_FP(0x9000, 0);
 	offset += sizeof(visplane_t) * MAXCONVENTIONALVISPLANES;
-	visplaneheaders = MK_FP(0x9000, 0);
+	visplaneheaders = MK_FP(0x9000, offset);
 	offset += sizeof(visplaneheader_t) * MAXEMSVISPLANES;
 	yslope = MK_FP(0x9000, offset);
 	offset += sizeof(fixed_t) * SCREENHEIGHT;
@@ -356,11 +388,18 @@ found:
 	offset += sizeof(int16_t) * (SCREENWIDTH);
 	// offset is 65534
 
-	printf("\n Allocated: %u of bytes in taskswitch region 0x9000", offset);
+	printf("\n Allocated: %u, %u of bytes in taskswitch region 0x9000", offset2, offset);
 
 	offset = 0u;
+	offset2 = 0u;
 
 	screen0 = MK_FP(0x8000, 0);
+	offset2 += 64000u;
+	gammatable = MK_FP(0x8000, offset2);
+	offset2 += (256 * 5);
+
+	// 65280
+
 	openings = MK_FP(0x8000, 0);
 	offset += sizeof(int16_t) * MAXOPENINGS;
 	negonearray = MK_FP(0x8000, offset);
@@ -368,22 +407,56 @@ found:
 	vissprites = MK_FP(0x8000, offset);
 	offset += sizeof(vissprite_t) * (MAXVISSPRITES);
 	scalelightfixed = MK_FP(0x8000, offset);
-	offset += sizeof(lighttable_t) * (MAXLIGHTSCALE);
+	offset += sizeof(lighttable_t*) * (MAXLIGHTSCALE);
 	colormapbytes = MK_FP(0x8000, offset);
 	offset += ((33 * 256) + 255);
-	scalelight = MK_FP(0x8000, offset);
-	offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTSCALE);
-	zlight = MK_FP(0x8000, offset);
-	offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
 
 	// 57263?
+
+	printf("\n Allocated: %u, %u of bytes in taskswitch region 0x8000", offset2, offset);
+	offset = 0u;
+	offset2 = 0u;
+
+	
+	
+	// todo: scalelight and zlight. Hard because they are 2d arrays of pointers. 
+	//scalelight = MK_FP(0x8000, offset);
+	//offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTSCALE);
+	//zlight = MK_FP(0x8000, offset);
+	//offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
+
 
 	/*
 	*/
   
 
-	printf("\n Allocated: %u of bytes in taskswitch region 0x8000", offset);
 
 
 	Z_QuickmapPhysics(); // map default page map
 }
+
+void Z_LoadBinaries() {
+	FILE* fp;
+
+	// currently in physics region!
+
+	fp = fopen("D_MBINFO.BIN", "rb"); 
+	fread(mobjinfo, 1, sizeof(mobjinfo_t) * NUMMOBJTYPES, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+
+	fp = fopen("D_STATES.BIN", "rb");
+	//fread(states, 1, sizeof(state_t) * NUMSTATES, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+
+	fp = fopen("D_GAMMAT.BIN", "rb");
+	fread(gammatable, 1, 5 * 256, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+
+	//I_Error("\n%lx %lx %hhu %hhu %hhu", gammatable, 0L, gammatable[0], gammatable[128], gammatable[256 * 1 + 128]);
+
+}
+
+

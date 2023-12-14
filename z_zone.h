@@ -211,9 +211,10 @@ typedef struct
 
 // EMS 4.0 stuff
 void Z_QuickmapPhysics();
-void Z_QuickmapPhysicsE000();
+void Z_QuickmapPhysics9000();
 void Z_QuickmapRender();
 void Z_GetEMSPageMap();
+void Z_LoadBinaries();
 
 #endif
 
