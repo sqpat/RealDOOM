@@ -100,7 +100,7 @@
 #define SET_BACKREF(x, y) (x.backref_and_user = (y & INVERSE_USER_MASK) + (x.backref_and_user & USER_MASK))
 #define SET_BACKREF_ZERO(x) (x.backref_and_user &= USER_MASK)
 
-#define NUM_EMS4_SWAP_PAGES 16L
+#define NUM_EMS4_SWAP_PAGES 24L
 
 typedef struct
 {
@@ -1532,23 +1532,33 @@ void Z_InitEMS(void)
 
 // page for 0x9000 block where we will store thinkers in physics code, then visplanes etc in render code
 int16_t pagenum9000; 
-int16_t pageswapargs_phys[16];
-int16_t pageswapargs_rend[16];
+int16_t pageswapargs_phys[24];
+int16_t pageswapargs_rend[24];
 int16_t pageswapargseg_phys;
 int16_t pageswapargoff_phys;
 int16_t pageswapargseg_rend;
 int16_t pageswapargoff_rend;
 int32_t taskswitchcount = 0;
-
+int16_t currenttask = -1;
 
 void Z_QuickmapPhysics() {
+	//int16_t errorreg;
 
-	regs.w.ax = 0x5000;  // physical page
-	regs.w.cx = 0x08;  // physical page
+	regs.w.ax = 0x5000;  
+	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_phys;
 	regs.w.si = pageswapargoff_phys;
 	intx86(EMS_INT, &regs, &regs);
+
+	
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_phys;
+	regs.w.si = pageswapargoff_phys+32;
+	intx86(EMS_INT, &regs, &regs);
+
 	/*
 	errorreg = regs.h.ah;
 	if (errorreg != 0) {
@@ -1556,41 +1566,43 @@ void Z_QuickmapPhysics() {
 	}
 	*/
 	taskswitchcount ++;
+	currenttask = 0;
 }
 
 
-
+// sometimes needed when rendering sprites..
 void Z_QuickmapPhysics9000() {
 
-	regs.w.ax = 0x5000;  // physical page
-	regs.w.cx = 0x04;  // physical page
+	regs.w.ax = 0x5000;  
+	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_phys;
 	regs.w.si = pageswapargoff_phys;
 	intx86(EMS_INT, &regs, &regs);
-	/*
-	errorreg = regs.h.ah;
-	if (errorreg != 0) {
-		I_Error("Call 0x5000 failed with value %i!\n", errorreg);
-	}
-	*/
+
 	taskswitchcount++;
+	currenttask = 1;
 }
 
 void Z_QuickmapRender() {
-
-	regs.w.ax = 0x5000;  // physical page
-	regs.w.cx = 0x08;  // physical page
+	regs.w.ax = 0x5000; 
+	regs.w.cx = 0x08;  // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_rend;
 	regs.w.si = pageswapargoff_rend;
 	intx86(EMS_INT, &regs, &regs);
-	/*
-	errorreg = regs.h.ah;
-	if (errorreg != 0) {
-		I_Error("Call 0x5000 failed with value %i!\n", errorreg);
-	}
-	*/
+
+	// grumble... emm386 fails with 12, but not 8. its a silent failure. was very very annoying to debug
+	// todo: test real ems hardware...
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04;  // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend+32;
+	intx86(EMS_INT, &regs, &regs);
+ 
 	taskswitchcount++;
+	currenttask = 2;
 
 }

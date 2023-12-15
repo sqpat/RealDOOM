@@ -81,9 +81,9 @@ uint8_t			flattranslation[NUM_TEXTURE_CACHE]; // can almost certainly be smaller
 uint8_t			texturetranslation[NUM_TEXTURE_CACHE];
 
 // needed for pre rendering
-int16_t        spritewidths[NUM_SPRITE_LUMPS_CACHE];
-int16_t        spriteoffsets[NUM_SPRITE_LUMPS_CACHE];
-int16_t        spritetopoffsets[NUM_SPRITE_LUMPS_CACHE];
+int16_t		*spritewidths;// [NUM_SPRITE_LUMPS_CACHE];
+int16_t		*spriteoffsets;// [NUM_SPRITE_LUMPS_CACHE];
+int16_t		*spritetopoffsets;// [NUM_SPRITE_LUMPS_CACHE];
 
 byte         	*colormapbytes;// [(33 * 256) + 255];
 lighttable_t    *colormaps;

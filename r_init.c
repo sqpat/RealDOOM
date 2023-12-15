@@ -195,7 +195,7 @@ void R_InitSpriteLumps(void)
 
 	firstspritelump = W_GetNumForName("S_START") + 1;
 	lastspritelump = W_GetNumForName("S_END") - 1;
-
+	
 	numspritelumps = lastspritelump - firstspritelump + 1;
 
 	for (i = 0; i < numspritelumps; i++)
@@ -604,9 +604,6 @@ void R_InitData(void) {
 		flattranslation[i] = i;
 
 
-	DEBUG_PRINT(".");
-	R_InitSpriteLumps();
-	DEBUG_PRINT(".");
 
 	// R_InitColormaps();
 
@@ -614,6 +611,10 @@ void R_InitData(void) {
 		//  256 byte align tables.
 
 	Z_QuickmapRender();
+
+	DEBUG_PRINT(".");
+	R_InitSpriteLumps();
+	DEBUG_PRINT(".");
 
 	lump = W_GetNumForName("COLORMAP");
 	//length = W_LumpLength(lump) + 255;

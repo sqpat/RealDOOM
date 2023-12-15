@@ -31,21 +31,20 @@
 
 // DOOM 1 SHAREWARE VALUE
 #define NUM_TEXTURE_CACHE 125
-// todo i think this might have to increase outside of shareware version?
-#define NUM_SPRITE_LUMPS_CACHE 500
+// DOOM 1 SHAREWARE VALUE
+#define NUM_SPRITE_LUMPS_CACHE 483
 
 //
 // Refresh internal data structures,
 //  for rendering.
 //
 
-// needed for texture pegging
-extern uint8_t		textureheights[NUM_TEXTURE_CACHE];
+
 
 // needed for pre rendering (fracs)
-extern int16_t		spritewidths[NUM_SPRITE_LUMPS_CACHE];
-extern int16_t		spriteoffsets[NUM_SPRITE_LUMPS_CACHE];
-extern int16_t		spritetopoffsets[NUM_SPRITE_LUMPS_CACHE];
+extern int16_t		*spritewidths;// [NUM_SPRITE_LUMPS_CACHE];
+extern int16_t		*spriteoffsets;// [NUM_SPRITE_LUMPS_CACHE];
+extern int16_t		*spritetopoffsets;// [NUM_SPRITE_LUMPS_CACHE];
 
 //extern MEMREF		colormapsRef;
 extern lighttable_t* colormaps;
@@ -56,6 +55,8 @@ extern int16_t		viewheight;
 
 extern int16_t		firstflat;
 
+// needed for texture pegging
+extern uint8_t		textureheights[NUM_TEXTURE_CACHE];
 // for global animation
 extern uint8_t			flattranslation[NUM_TEXTURE_CACHE];
 extern uint8_t			texturetranslation[NUM_TEXTURE_CACHE];

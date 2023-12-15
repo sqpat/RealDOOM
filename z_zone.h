@@ -216,6 +216,8 @@ void Z_QuickmapRender();
 void Z_GetEMSPageMap();
 void Z_LoadBinaries();
 
+extern int16_t currenttask;
+
 #endif
 
 

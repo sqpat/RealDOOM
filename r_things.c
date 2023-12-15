@@ -287,7 +287,7 @@ void R_ProjectSprite (mobj_t* thing)
         lump = spriteframes[thingframe & FF_FRAMEMASK].lump[0];
         flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[0];
     }
-    
+
     // calculate edges of the shape
     temp.h.fracbits = 0;
     temp.h.intbits = spriteoffsets[lump];
@@ -552,24 +552,25 @@ void R_DrawPlayerSprites (void)
 
 //    if (lightnum < 0)          
 // not sure if this hack is necessary.. since its unsigned we loop around if its below 0 
-    if (lightnum > 240)          
-        spritelights = scalelight[0];
-    else if (lightnum >= LIGHTLEVELS)
-		spritelights = scalelight[LIGHTLEVELS-1];
-	else
-        spritelights = scalelight[lightnum];
-    
+	if (lightnum > 240) {
+		spritelights = scalelight[0];
+	} else if (lightnum >= LIGHTLEVELS) {
+		spritelights = scalelight[LIGHTLEVELS - 1];
+	} else {
+		spritelights = scalelight[lightnum];
+	}
     // clip to screen bounds
     mfloorclip = screenheightarray;
     mceilingclip = negonearray;
-
+	
     // add all active psprites
     for (i=0, psp= player.psprites;
          i<NUMPSPRITES;
-         i++,psp++)
-    {
-        if (psp->state)
-            R_DrawPSprite (psp, r_cachedstatecopy[i]);
+         i++,psp++) {
+
+		if (psp->state) {
+			R_DrawPSprite(psp, r_cachedstatecopy[i]);
+		}
     }
 }
 
@@ -637,7 +638,7 @@ extern int setval;
 //
 // R_DrawSprite
 //
-// NO LOCKED PAGES GOING IN
+
 void R_DrawSprite (vissprite_t* spr)
 {
     drawseg_t*          ds;

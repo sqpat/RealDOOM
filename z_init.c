@@ -231,8 +231,8 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 
 
 extern int16_t pagenum9000;
-extern int16_t pageswapargs_phys[16];
-extern int16_t pageswapargs_rend[16];
+extern int16_t pageswapargs_phys[24];
+extern int16_t pageswapargs_rend[24];
 extern int16_t pageswapargseg_phys;
 extern int16_t pageswapargoff_phys;
 extern int16_t pageswapargseg_rend;
@@ -242,8 +242,9 @@ void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
 	int16_t* far pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
-	uint16_t offset = 0u;
-	uint16_t offset2 = 0u;
+	uint16_t segment;
+	uint16_t offset; 
+	uint16_t offset2;
 	FILE *fp;
 	 
 	/*
@@ -289,7 +290,7 @@ void Z_GetEMSPageMap() {
 	if (errorreg != 0) {
 		I_Error("\nCall 25 failed with value %i!\n", errorreg);
 	}
-
+ 
 	for (i = 0; i < numentries; i++) {
 		if (pagedata[i * 2] == 0x9000u) {
 			pagenum9000 = pagedata[(i * 2) + 1];
@@ -307,6 +308,8 @@ found:
 	pageswapargseg_rend = (uint16_t)((uint32_t)pageswapargs_rend >> 16);
 	pageswapargoff_rend = (uint16_t)(((uint32_t)pageswapargs_rend) & 0xffff);
 
+	// todo loopify
+
 	pageswapargs_phys[0] = 0;
 	pageswapargs_phys[1] = pagenum9000;
 	pageswapargs_phys[2] = 1;
@@ -323,108 +326,143 @@ found:
 	pageswapargs_phys[13] = pagenum9000 - 2;
 	pageswapargs_phys[14] = 7;
 	pageswapargs_phys[15] = pagenum9000 - 1;
+	pageswapargs_phys[16] = 8;
+	pageswapargs_phys[17] = pagenum9000 - 8;
+	pageswapargs_phys[18] = 9;
+	pageswapargs_phys[19] = pagenum9000 - 7;
+	pageswapargs_phys[20] = 10;
+	pageswapargs_phys[21] = pagenum9000 - 6;
+	pageswapargs_phys[22] = 11;
+	pageswapargs_phys[23] = pagenum9000 - 5;
 
-	pageswapargs_rend[0] = 8;
+	pageswapargs_rend[0] = 12;
 	pageswapargs_rend[1] = pagenum9000;
-	pageswapargs_rend[2] = 9;
+	pageswapargs_rend[2] = 13;
 	pageswapargs_rend[3] = pagenum9000 + 1;
-	pageswapargs_rend[4] = 10;
+	pageswapargs_rend[4] = 14;
 	pageswapargs_rend[5] = pagenum9000 + 2;
-	pageswapargs_rend[6] = 11;
+	pageswapargs_rend[6] = 15;
 	pageswapargs_rend[7] = pagenum9000 + 3;
-	pageswapargs_rend[8] = 12;
+	pageswapargs_rend[8] = 16;
 	pageswapargs_rend[9] = pagenum9000 - 4;
-	pageswapargs_rend[10] = 13;
+	pageswapargs_rend[10] = 17;
 	pageswapargs_rend[11] = pagenum9000 - 3;
-	pageswapargs_rend[12] = 14;
+	pageswapargs_rend[12] = 18;
 	pageswapargs_rend[13] = pagenum9000 - 2;
-	pageswapargs_rend[14] = 15;
+	pageswapargs_rend[14] = 19;
 	pageswapargs_rend[15] = pagenum9000 - 1;
+	pageswapargs_rend[16] = 20;
+	pageswapargs_rend[17] = pagenum9000 - 8;
+	pageswapargs_rend[18] = 21;
+	pageswapargs_rend[19] = pagenum9000 - 7;
+	pageswapargs_rend[20] = 22;
+	pageswapargs_rend[21] = pagenum9000 - 6;
+	pageswapargs_rend[22] = 23;
+	pageswapargs_rend[23] = pagenum9000 - 5;
 
-	// we're an OS now! let's map task memory regions!
+	// we're an OS now! let's directly allocate memory !
 
+	segment = 0x9000;
+	offset = 0u;
+	offset2 = 0u;
 	//physics mapping
-	thinkerlist = MK_FP(0x9000, 0);
+	thinkerlist = MK_FP(segment, 0);
 	offset2 += sizeof(thinker_t) * MAX_THINKERS;
-	//states = MK_FP(0x9000, offset2);
+	//states = MK_FP(segment, offset2);
 	offset2 += sizeof(state_t) * NUMSTATES;
-	mobjinfo = MK_FP(0x9000, offset2);
+	mobjinfo = MK_FP(segment, offset2);
 	offset2 += sizeof(mobjinfo_t) * NUMMOBJTYPES;
 
 	//65269
 
 	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
-	visplanes = MK_FP(0x9000, 0);
+	visplanes = MK_FP(segment, 0);
 	offset += sizeof(visplane_t) * MAXCONVENTIONALVISPLANES;
-	visplaneheaders = MK_FP(0x9000, offset);
+	visplaneheaders = MK_FP(segment, offset);
 	offset += sizeof(visplaneheader_t) * MAXEMSVISPLANES;
-	yslope = MK_FP(0x9000, offset);
+	yslope = MK_FP(segment, offset);
 	offset += sizeof(fixed_t) * SCREENHEIGHT;
-	distscale = MK_FP(0x9000, offset);
+	distscale = MK_FP(segment, offset);
 	offset += sizeof(fixed_t) * SCREENWIDTH;
-	cachedheight = MK_FP(0x9000, offset);
+	cachedheight = MK_FP(segment, offset);
 	offset += sizeof(fixed_t) * SCREENHEIGHT;
-	cacheddistance = MK_FP(0x9000, offset);
+	cacheddistance = MK_FP(segment, offset);
 	offset += sizeof(fixed_t) * SCREENHEIGHT;
-	cachedxstep = MK_FP(0x9000, offset);
+	cachedxstep = MK_FP(segment, offset);
 	offset += sizeof(fixed_t) * SCREENHEIGHT;
-	cachedystep = MK_FP(0x9000, offset);
-	offset += sizeof(fixed_t) * SCREENHEIGHT;
-	floorclip = MK_FP(0x9000, offset);
-	offset += sizeof(int16_t) * SCREENWIDTH;
-	ceilingclip = MK_FP(0x9000, offset);
-	offset += sizeof(int16_t) * SCREENWIDTH;
-	spanstart = MK_FP(0x9000, offset);
+	cachedystep = MK_FP(segment, offset);
+	offset += sizeof(fixed_t) * SCREENHEIGHT; // up to here r_plane only basically
+	spanstart = MK_FP(segment, offset);
 	offset += sizeof(int16_t) * SCREENHEIGHT;
 
 
-	viewangletox = MK_FP(0x9000, offset);
+	viewangletox = MK_FP(segment, offset);
 	offset += sizeof(int16_t) * (FINEANGLES / 2);
-	xtoviewangle = MK_FP(0x9000, offset);
+	xtoviewangle = MK_FP(segment, offset);
 	offset += sizeof(fineangle_t) * (SCREENWIDTH + 1);
-	drawsegs = MK_FP(0x9000, offset);
+	drawsegs = MK_FP(segment, offset);
 	offset += sizeof(drawseg_t) * (MAXDRAWSEGS);
-	screenheightarray = MK_FP(0x9000, offset);
-	offset += sizeof(int16_t) * (SCREENWIDTH);
+
+	floorclip = MK_FP(segment, offset);
+	offset += sizeof(int16_t) * SCREENWIDTH;
+	ceilingclip = MK_FP(segment, offset);
+	offset += sizeof(int16_t) * SCREENWIDTH;
+
+
 	// offset is 65534
+	// now 64894
 
 	printf("\n Allocated: %u, %u of bytes in taskswitch region 0x9000", offset2, offset);
 
+	segment = 0x8000;
 	offset = 0u;
 	offset2 = 0u;
 
-	screen0 = MK_FP(0x8000, 0);
+	screen0 = MK_FP(segment, 0);
 	offset2 += 64000u;
-	gammatable = MK_FP(0x8000, offset2);
+	gammatable = MK_FP(segment, offset2);
 	offset2 += (256 * 5);
 
 	// 65280
 
-	openings = MK_FP(0x8000, 0);
+	openings = MK_FP(segment, 0);
 	offset += sizeof(int16_t) * MAXOPENINGS;
-	negonearray = MK_FP(0x8000, offset);
+	negonearray = MK_FP(segment, offset);
 	offset += sizeof(int16_t) * (SCREENWIDTH);
-	vissprites = MK_FP(0x8000, offset);
+	screenheightarray = MK_FP(segment, offset);
+	offset += sizeof(int16_t) * (SCREENWIDTH);
+	vissprites = MK_FP(segment, offset);
 	offset += sizeof(vissprite_t) * (MAXVISSPRITES);
-	scalelightfixed = MK_FP(0x8000, offset);
+	scalelightfixed = MK_FP(segment, offset);
 	offset += sizeof(lighttable_t*) * (MAXLIGHTSCALE);
-	colormapbytes = MK_FP(0x8000, offset);
+	colormapbytes = MK_FP(segment, offset);
 	offset += ((33 * 256) + 255);
 
-	// 57263?
+	spritewidths = MK_FP(segment, offset);
+	offset += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
+	spriteoffsets = MK_FP(segment, offset);
+	offset += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
+	spritetopoffsets = MK_FP(segment, offset);
+	offset += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
+	
+ 
+	// 59502
 
 	printf("\n Allocated: %u, %u of bytes in taskswitch region 0x8000", offset2, offset);
 	offset = 0u;
 	offset2 = 0u;
+	segment = 0x7000;
 
+	printf("\n Allocated: %u, %u of bytes in taskswitch region 0x7000", offset2, offset);
+	segment = 0x6000;
+	offset = 0u;
+	offset2 = 0u;
 	
-	
-	// todo: scalelight and zlight. Hard because they are 2d arrays of pointers. 
+	// todo: scalelight and zlight. Hard because they are 2d arrays of pointers?
 	//scalelight = MK_FP(0x8000, offset);
 	//offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTSCALE);
 	//zlight = MK_FP(0x8000, offset);
 	//offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
-
 
 	/*
 	*/
