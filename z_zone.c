@@ -100,7 +100,7 @@
 #define SET_BACKREF(x, y) (x.backref_and_user = (y & INVERSE_USER_MASK) + (x.backref_and_user & USER_MASK))
 #define SET_BACKREF_ZERO(x) (x.backref_and_user &= USER_MASK)
 
-#define NUM_EMS4_SWAP_PAGES 24L
+#define NUM_EMS4_SWAP_PAGES 29L
 
 typedef struct
 {
@@ -1534,10 +1534,13 @@ void Z_InitEMS(void)
 int16_t pagenum9000; 
 int16_t pageswapargs_phys[24];
 int16_t pageswapargs_rend[24];
+int16_t pageswapargs_stat[10];
 int16_t pageswapargseg_phys;
 int16_t pageswapargoff_phys;
 int16_t pageswapargseg_rend;
 int16_t pageswapargoff_rend;
+int16_t pageswapargseg_stat;
+int16_t pageswapargoff_stat;
 int32_t taskswitchcount = 0;
 int16_t currenttask = -1;
 
@@ -1605,4 +1608,17 @@ void Z_QuickmapRender() {
 	taskswitchcount++;
 	currenttask = 2;
 
+}
+// sometimes needed when rendering sprites..
+void Z_QuickmapStatus() {
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x05; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_stat;
+	regs.w.si = pageswapargoff_stat;
+	intx86(EMS_INT, &regs, &regs);
+
+	taskswitchcount++;
+	currenttask = 3;
 }

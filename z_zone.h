@@ -98,7 +98,7 @@ typedef struct memblock_s
 //			   e1m8, m9 small
 
 #define ALLOCATION_LIST_HEAD	0
-#define EMS_ALLOCATION_LIST_SIZE 1200
+#define EMS_ALLOCATION_LIST_SIZE 1125
 
 // all but e1m6
 //#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54208
@@ -213,6 +213,8 @@ typedef struct
 void Z_QuickmapPhysics();
 void Z_QuickmapPhysics9000();
 void Z_QuickmapRender();
+void Z_QuickmapStatus();
+
 void Z_GetEMSPageMap();
 void Z_LoadBinaries();
 

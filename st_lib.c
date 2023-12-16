@@ -30,12 +30,20 @@
 #include "st_lib.h"
 #include "r_local.h"
  
-
+extern boolean updatedthisframe;
 // 
 // A fairly efficient way to draw a number
 //  based on differences from the old number.
 // Note: worth the trouble?
 //
+
+void STlib_updateflag() {
+	if (!updatedthisframe) {
+		Z_QuickmapStatus();
+		updatedthisframe = true;
+	}
+}
+
 void
 STlib_drawNum
 ( st_number_t*	n,
@@ -55,7 +63,9 @@ STlib_drawNum
 		return;
 	}
 	
-	p0 = (patch_t*)Z_LoadBytesFromEMS(n->pRef[0]);
+	STlib_updateflag();
+
+	p0 = (patch_t*)(n->p[0]);
 	w = (p0->width);
 	h = (p0->height);
 
@@ -85,14 +95,14 @@ STlib_drawNum
 
     x = n->x;
 
-    // in the special case of 0, you draw 0
+	// in the special case of 0, you draw 0
 	if (!num) {
-		V_DrawPatch(x - w, n->y, FG, (patch_t*)Z_LoadBytesFromEMS(n->pRef[0]));
+		V_DrawPatch(x - w, n->y, FG, (patch_t*)(n->p[0]));
 	}
     // draw the new number
     while (num && numdigits--) {
 		x -= w;
-		V_DrawPatch(x, n->y, FG, (patch_t*)Z_LoadBytesFromEMS( n->pRef[ num % 10 ]));
+		V_DrawPatch(x, n->y, FG, (patch_t*)( n->p[ num % 10 ]));
 		num /= 10;
     }
  
@@ -108,9 +118,10 @@ STlib_updatePercent
   int16_t			refresh, 
 	int16_t			value)
 {
-    if (refresh)
-		V_DrawPatch(per->n.x, per->n.y, FG, (patch_t*)Z_LoadBytesFromEMS(per->pRef));
-	
+	if (refresh) {
+		STlib_updateflag();
+		V_DrawPatch(per->n.x, per->n.y, FG, (patch_t*)(per->p));
+	}
 	STlib_drawNum(&per->n, refresh, value);
 }
 
@@ -131,8 +142,9 @@ STlib_updateMultIcon
     int16_t			y;
 	patch_t*    old;
 	if ((mi->oldinum != inum || refresh) && (inum != -1)) {
+		STlib_updateflag();
 		if (!is_binicon && mi->oldinum != -1) {
-			old = (patch_t*)Z_LoadBytesFromEMS(mi->pRef[mi->oldinum]);
+			old = (patch_t*)(mi->p[mi->oldinum]);
 			x = mi->x - (old->leftoffset);
 			y = mi->y - (old->topoffset);
 			w = (old->width);
@@ -148,7 +160,7 @@ STlib_updateMultIcon
 			
 		// binicon only has an array length zero and inum is always 1; this inum-is_binicon
 		// to work on the same line of code.
-		V_DrawPatch(mi->x, mi->y, FG, (patch_t*)Z_LoadBytesFromEMS(mi->pRef[inum-is_binicon]));
+		V_DrawPatch(mi->x, mi->y, FG, (patch_t*)(mi->p[inum-is_binicon]));
 
 		mi->oldinum = inum;
 	}

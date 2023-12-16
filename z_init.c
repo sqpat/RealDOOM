@@ -29,6 +29,7 @@
 #include "r_local.h"
 #include "p_local.h"
 #include "v_video.h"
+#include "st_stuff.h"
 
 #include <dos.h>
 #include <stdlib.h>
@@ -233,10 +234,13 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 extern int16_t pagenum9000;
 extern int16_t pageswapargs_phys[24];
 extern int16_t pageswapargs_rend[24];
+extern int16_t pageswapargs_stat[10];
 extern int16_t pageswapargseg_phys;
 extern int16_t pageswapargoff_phys;
 extern int16_t pageswapargseg_rend;
 extern int16_t pageswapargoff_rend;
+extern int16_t pageswapargseg_stat;
+extern int16_t pageswapargoff_stat;
 
 void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
@@ -245,6 +249,8 @@ void Z_GetEMSPageMap() {
 	uint16_t segment;
 	uint16_t offset; 
 	uint16_t offset2;
+	uint16_t offset3;
+
 	FILE *fp;
 	 
 	/*
@@ -307,6 +313,22 @@ found:
 	pageswapargoff_phys = (uint16_t)(((uint32_t)pageswapargs_phys) & 0xffff);
 	pageswapargseg_rend = (uint16_t)((uint32_t)pageswapargs_rend >> 16);
 	pageswapargoff_rend = (uint16_t)(((uint32_t)pageswapargs_rend) & 0xffff);
+	pageswapargseg_stat = (uint16_t)((uint32_t)pageswapargs_stat >> 16);
+	pageswapargoff_stat = (uint16_t)(((uint32_t)pageswapargs_stat) & 0xffff);
+
+	//					PHYSICS			RENDER					ST/HUD
+	// BLOCK
+	// 0x9000 block		thinkers		visplane stuff			screen4 0x9c00
+	//									viewangles, drawsegs
+	// 0x8000 block		screen0			sprite stuff			
+	//					gamma table		visplane openings
+	//									texture memrefs?
+	// 0x7000 block												st graphics
+	//					
+	//					
+	// 0x6000 block
+	// 0x5000 block
+	// 0x4000 block
 
 	// todo loopify
 
@@ -360,11 +382,23 @@ found:
 	pageswapargs_rend[22] = 23;
 	pageswapargs_rend[23] = pagenum9000 - 5;
 
+	pageswapargs_stat[0] = 24;
+	pageswapargs_stat[1] = pagenum9000 + 3;
+	pageswapargs_stat[2] = 25;
+	pageswapargs_stat[3] = pagenum9000 - 8;
+	pageswapargs_stat[4] = 26;
+	pageswapargs_stat[5] = pagenum9000 - 7;
+	pageswapargs_stat[6] = 27;
+	pageswapargs_stat[7] = pagenum9000 - 6;
+	pageswapargs_stat[8] = 28;
+	pageswapargs_stat[9] = pagenum9000 - 5;
+
 	// we're an OS now! let's directly allocate memory !
 
 	segment = 0x9000;
 	offset = 0u;
 	offset2 = 0u;
+	offset3 = 0u;
 	//physics mapping
 	thinkerlist = MK_FP(segment, 0);
 	offset2 += sizeof(thinker_t) * MAX_THINKERS;
@@ -402,21 +436,28 @@ found:
 	offset += sizeof(fineangle_t) * (SCREENWIDTH + 1);
 	drawsegs = MK_FP(segment, offset);
 	offset += sizeof(drawseg_t) * (MAXDRAWSEGS);
-
 	floorclip = MK_FP(segment, offset);
 	offset += sizeof(int16_t) * SCREENWIDTH;
 	ceilingclip = MK_FP(segment, offset);
 	offset += sizeof(int16_t) * SCREENWIDTH;
 
 
+
+
 	// offset is 65534
 	// now 64894
 
-	printf("\n Allocated: %u, %u of bytes in taskswitch region 0x9000", offset2, offset);
+	offset3 -= (ST_WIDTH*ST_HEIGHT);
+	screen4 = MK_FP(segment, offset3);
+
+
+	printf("\n  MEMORY AREA  Physics  Render  Status");
+	printf("\n   0x9000:      %05u   %05u   %05u", offset2, offset, 0-offset3);
 
 	segment = 0x8000;
 	offset = 0u;
 	offset2 = 0u;
+	offset3 = 0u;
 
 	screen0 = MK_FP(segment, 0);
 	offset2 += 64000u;
@@ -445,18 +486,204 @@ found:
 	spritetopoffsets = MK_FP(segment, offset);
 	offset += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
 	
- 
-	// 59502
+	// from the top
 
-	printf("\n Allocated: %u, %u of bytes in taskswitch region 0x8000", offset2, offset);
+
+
+	//   65269  64894  10240
+	//   65280  60945  00000
+	//   00000  00000  56956
+
+
+	printf("\n   0x8000:      %05u   %05u   %05u", offset2, offset, 0-offset3);
 	offset = 0u;
 	offset2 = 0u;
-	segment = 0x7000;
+	offset3 = 0u;
 
-	printf("\n Allocated: %u, %u of bytes in taskswitch region 0x7000", offset2, offset);
+	segment = 0x7000;
+	offset3 = 0u;
+	offset3 -= 320;
+	tallnum[0] = MK_FP(segment, offset3);
+	offset3 -= 244;
+	tallnum[1] = MK_FP(segment, offset3);
+	offset3 -= 336;
+	tallnum[2] = MK_FP(segment, offset3);
+	offset3 -= 336;
+	tallnum[3] = MK_FP(segment, offset3);
+	offset3 -= 316;
+	tallnum[4] = MK_FP(segment, offset3);
+	offset3 -= 348;
+	tallnum[5] = MK_FP(segment, offset3);
+	offset3 -= 340;
+	tallnum[6] = MK_FP(segment, offset3);
+	offset3 -= 276;
+	tallnum[7] = MK_FP(segment, offset3);
+	offset3 -= 348;
+	tallnum[8] = MK_FP(segment, offset3);
+	offset3 -= 336;
+	tallnum[9] = MK_FP(segment, offset3);
+
+	offset3 -= 68;
+	shortnum[0] = MK_FP(segment, offset3);
+	offset3 -= 64;
+	shortnum[1] = MK_FP(segment, offset3);
+	offset3 -= 76;
+	shortnum[2] = MK_FP(segment, offset3);
+	offset3 -= 72;
+	shortnum[3] = MK_FP(segment, offset3);
+	offset3 -= 60;
+	shortnum[4] = MK_FP(segment, offset3);
+	offset3 -= 72;
+	shortnum[5] = MK_FP(segment, offset3);
+	offset3 -= 72;
+	shortnum[6] = MK_FP(segment, offset3);
+	offset3 -= 72;
+	shortnum[7] = MK_FP(segment, offset3);
+	offset3 -= 76;
+	shortnum[8] = MK_FP(segment, offset3);
+	offset3 -= 72;
+	shortnum[9] = MK_FP(segment, offset3);
+
+	offset3 -= 328;
+	tallpercent = MK_FP(segment, offset3);
+
+
+	offset3 -= 104;
+	keys[0] = MK_FP(segment, offset3);
+	offset3 -= 104;
+	keys[1] = MK_FP(segment, offset3);
+	offset3 -= 104;
+	keys[2] = MK_FP(segment, offset3);
+	offset3 -= 120;
+	keys[3] = MK_FP(segment, offset3);
+	offset3 -= 120;
+	keys[4] = MK_FP(segment, offset3);
+	offset3 -= 120;
+	keys[5] = MK_FP(segment, offset3);
+	 
+	offset3 -= 1648;
+	armsbg[0] = MK_FP(segment, offset3);
+
+	offset3 -= 76;
+	arms[0][0] = MK_FP(segment, offset3);
+	offset3 -= 72;
+	arms[1][0] = MK_FP(segment, offset3);
+	offset3 -= 60;
+	arms[2][0] = MK_FP(segment, offset3);
+	offset3 -= 72;
+	arms[3][0] = MK_FP(segment, offset3);
+	offset3 -= 72;
+	arms[4][0] = MK_FP(segment, offset3);
+	offset3 -= 72;
+	arms[5][0] = MK_FP(segment, offset3);
+	 
+	offset3 -= 1408;
+	faceback = MK_FP(segment, offset3);
+
+	offset3 -= 13128;
+	sbar = MK_FP(segment, offset3);
+
+	offset3 -= 808;
+	faces[0] = MK_FP(segment, offset3);
+	offset3 -= 808;
+	faces[1] = MK_FP(segment, offset3);
+	offset3 -= 808;
+	faces[2] = MK_FP(segment, offset3);
+	offset3 -= 880;
+	faces[3] = MK_FP(segment, offset3);
+	offset3 -= 884;
+	faces[4] = MK_FP(segment, offset3);
+	offset3 -= 844;
+	faces[5] = MK_FP(segment, offset3);
+	offset3 -= 816;
+	faces[6] = MK_FP(segment, offset3);
+	offset3 -= 824;
+	faces[7] = MK_FP(segment, offset3);
+
+	offset3 -= 808;
+	faces[8] = MK_FP(segment, offset3);
+	offset3 -= 808;
+	faces[9] = MK_FP(segment, offset3);
+	offset3 -= 800;
+	faces[10] = MK_FP(segment, offset3);
+	offset3 -= 888;
+	faces[11] = MK_FP(segment, offset3);
+	offset3 -= 884;
+	faces[12] = MK_FP(segment, offset3);
+	offset3 -= 844;
+	faces[13] = MK_FP(segment, offset3);
+	offset3 -= 816;
+	faces[14] = MK_FP(segment, offset3);
+	offset3 -= 824;
+	faces[15] = MK_FP(segment, offset3);
+
+
+
+	offset3 -= 824;
+	faces[16] = MK_FP(segment, offset3);
+	offset3 -= 828;
+	faces[17] = MK_FP(segment, offset3);
+	offset3 -= 824;
+	faces[18] = MK_FP(segment, offset3);
+	offset3 -= 896;
+	faces[19] = MK_FP(segment, offset3);
+	offset3 -= 896;
+	faces[20] = MK_FP(segment, offset3);
+	offset3 -= 844;
+	faces[21] = MK_FP(segment, offset3);
+	offset3 -= 816;
+	faces[22] = MK_FP(segment, offset3);
+	offset3 -= 824;
+	faces[23] = MK_FP(segment, offset3);
+
+	offset3 -= 840;
+	faces[24] = MK_FP(segment, offset3);
+	offset3 -= 836;
+	faces[25] = MK_FP(segment, offset3);
+	offset3 -= 832;
+	faces[26] = MK_FP(segment, offset3);
+	offset3 -= 908;
+	faces[27] = MK_FP(segment, offset3);
+	offset3 -= 944;
+	faces[28] = MK_FP(segment, offset3);
+	offset3 -= 844;
+	faces[29] = MK_FP(segment, offset3);
+	offset3 -= 816;
+	faces[30] = MK_FP(segment, offset3);
+	offset3 -= 824;
+	faces[31] = MK_FP(segment, offset3);
+
+	offset3 -= 844;
+	faces[32] = MK_FP(segment, offset3);
+	offset3 -= 836;
+	faces[33] = MK_FP(segment, offset3);
+	offset3 -= 844;
+	faces[34] = MK_FP(segment, offset3);
+	offset3 -= 908;
+	faces[35] = MK_FP(segment, offset3);
+	offset3 -= 944;
+	faces[36] = MK_FP(segment, offset3);
+	offset3 -= 844;
+	faces[37] = MK_FP(segment, offset3);
+	offset3 -= 816;
+	faces[38] = MK_FP(segment, offset3);
+	offset3 -= 824;
+	faces[39] = MK_FP(segment, offset3);
+
+	offset3 -= 808;
+	faces[40] = MK_FP(segment, offset3);
+	offset3 -= 836;
+	faces[41] = MK_FP(segment, offset3);
+
+
+
+	printf("\n   0x7000:      %05u   %05u   %05u", offset2, offset, 0 - offset3);
 	segment = 0x6000;
 	offset = 0u;
 	offset2 = 0u;
+	offset3 = 0u;
+	printf("\n   0x6000:      %05u   %05u   %05u", offset2, offset, 0 - offset3);
+
 	
 	// todo: scalelight and zlight. Hard because they are 2d arrays of pointers?
 	//scalelight = MK_FP(0x8000, offset);
@@ -464,11 +691,7 @@ found:
 	//zlight = MK_FP(0x8000, offset);
 	//offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
 
-	/*
-	*/
-  
-
-
+	//I_Error("done");
 
 	Z_QuickmapPhysics(); // map default page map
 }

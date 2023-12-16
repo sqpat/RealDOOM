@@ -179,15 +179,14 @@ int32_t W_LumpLength (int16_t lump)
 void
 W_ReadLumpEMS
 (int16_t           lump,
-  MEMREF         lumpRef,
+  byte*         dest,
   int32_t           start,
   int32_t           size )
 {
 	filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t* l;
 	filehandle_t         handle;
-	byte		*dest;
-    int32_t sizetoread;
+     int32_t sizetoread;
     int32_t startoffset;
 	filelength_t         lumpsize;
 
@@ -222,20 +221,19 @@ W_ReadLumpEMS
 		handle = wadfilehandle;
 #endif
 	}
-    dest = Z_LoadBytesFromEMS(lumpRef);
+    
     startoffset = l->position + start;
 
-#ifdef _M_I86
-    sizetoread = size ? size : lumpsize;
-#else
-    sizetoread = size ? size : lumpsize;
-#endif
 
     lseek(handle, startoffset, SEEK_SET);
 
 
 
 	c = read(handle, dest, size ? size : lumpsize);
+#ifdef CHECK_FOR_ERRORS
+
+	sizetoread = size ? size : lumpsize;
+
 	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
 #ifdef _M_I86
 	//c = _farread(handle, dest, lumpsize);
@@ -246,11 +244,10 @@ W_ReadLumpEMS
 #endif
 
 {
-#ifdef CHECK_FOR_ERRORS
 		I_Error("\nW_ReadLump: only read %il of %il on lump %i",
 			c, sizetoread, lump);
-#endif
 	}
+#endif
 
 #ifdef	SUPPORT_MULTIWAD
 	   if (filehandles[l->handleindex] == -1)
@@ -315,12 +312,12 @@ W_ReadLumpStatic
 	lseek(handle, l->position, SEEK_SET);
 	c = read(handle, dest, lumpsize);
 
+#ifdef CHECK_FOR_ERRORS
 	// todo make this suck less. 16 bit hack for large reads...
 	if (c < lumpsize && c + 65536l != lumpsize) {
-#ifdef CHECK_FOR_ERRORS
 		I_Error("\nW_ReadLump: only read %il of %il on lump %i", c, lumpsize, lump);
-#endif
 	}
+#endif
 
 #ifdef	SUPPORT_MULTIWAD
 	if (filehandles[l->handleindex] == -1)
@@ -367,7 +364,7 @@ W_CacheLumpNumEMS2
 	if (!lumpcacheEMS[lump]) {
 		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef32(W_LumpLength(lump), tag, 1, lump + BACKREF_LUMP_OFFSET);
 
-		W_ReadLumpEMS(lump, lumpcacheEMS[lump], 0, 0);
+		W_ReadLumpEMS(lump, Z_LoadBytesFromEMS(lumpcacheEMS[lump]), 0, 0);
 	} else {
 		Z_ChangeTagEMS(lumpcacheEMS[lump], tag);
 	}
@@ -385,6 +382,15 @@ W_CacheLumpNameEMS
 		
 	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
 }
+
+void
+W_CacheLumpNameDirect
+(int8_t*         name,
+	byte*			dest
+) {
+	W_ReadLumpEMS(W_GetNumForName(name), dest, 0, 0);
+}
+
 
 int16_t fullscreencache = 0x00;
 void W_EraseFullscreenCache() {
@@ -411,7 +417,7 @@ W_CacheLumpNameEMSFragment
 
 	fullscreencache &= (1 << pagenum); // cache on
 
-    W_ReadLumpEMS(W_GetNumForName(name), pagedlumpcacheEMS[pagenum], offset, 16384);
+    W_ReadLumpEMS(W_GetNumForName(name), Z_LoadBytesFromEMS(pagedlumpcacheEMS[pagenum]), offset, 16384);
 
     return pagedlumpcacheEMS[pagenum];
 }

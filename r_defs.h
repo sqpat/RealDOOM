@@ -116,6 +116,41 @@ typedef	struct
 
 
 
+typedef	struct
+{
+
+	uint8_t	special;	// only a few small numbers
+	uint8_t	tag;
+	int8_t		soundtraversed;
+	int16_t	blockbox[4];
+	int16_t soundorgX;
+	int16_t soundorgY;
+	// thinker_t for reversable actions
+	THINKERREF	specialdataRef;
+	uint8_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
+
+	int16_t linesoffset;
+} sector_physics_t;
+
+ 
+typedef	struct
+{
+	short_height_t	floorheight;
+	short_height_t	ceilingheight;
+	uint8_t	floorpic;
+	uint8_t	ceilingpic;
+	uint8_t	lightlevel; // seems to max at 255
+
+	// if == validcount, already checked
+	//uint8_t validcount;	// [linecount] size
+	int16_t		validcount;
+
+	// list of mobjs in sector
+	THINKERREF	thinglistRef;
+	// [linecount] size
+} sector_common_t;
+
+
 
 //
 // The SideDef.
@@ -140,7 +175,7 @@ typedef struct
     // Sector the SideDef is facing.
     int16_t	secnum;
     
-} side_t;
+} side_t; // ALL RENDER ONLY
 
 
 
@@ -193,6 +228,16 @@ typedef struct line_s
 
 
 } line_t;
+
+
+
+typedef struct 
+{
+	// Vertices, from v1 to v2.
+	int16_t	v1Offset;
+	int16_t	v2Offset;	//high two bits are the slopetype
+} line_physics_t;
+
 
 #define	LO_FLOOR_DIRTY_BIT 0x01
 #define	LO_CEILING_DIRTY_BIT  0x02

@@ -65,8 +65,6 @@ extern byte*				screen3;
 
 extern	byte*		screen4;
 
-extern  MEMREF     screen4Ref;
-
 extern  int16_t	dirtybox[4];
 
 extern	byte	*gammatable;

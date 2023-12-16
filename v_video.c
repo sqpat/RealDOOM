@@ -56,7 +56,7 @@ byte*				screen3;
 #endif
 
 byte*				screen4;
-MEMREF				screen4Ref;
+//MEMREF				screen4Ref;
 int16_t				dirtybox[4]; 
 
 

@@ -83,6 +83,7 @@ MEMREF  W_CacheLumpNumEMS2(int16_t lump, int8_t tag);
 MEMREF  W_CacheLumpNameEMSFragment(int8_t* name, int8_t tag, int16_t pagenum, int32_t offset);
 void W_EraseFullscreenCache();
 
+void W_CacheLumpNameDirect(int8_t* name, byte* dest);
 MEMREF  W_CacheLumpNameEMS(int8_t* name, int8_t tag);
 void	W_EraseLumpCache(int16_t index);
 patch_t* W_CacheLumpNameEMSAsPatch (int8_t*         name, int8_t           tag);

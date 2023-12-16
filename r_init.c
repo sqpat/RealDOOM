@@ -330,11 +330,7 @@ void R_GenerateLookup(uint8_t texnum)
 	memset(patchcount, 0, texture->width + 1);
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
-//	printf("\n%i %hu", texnum, texturepatchcount);
-	// 19 11
-	// 20 24
 	for (i = 0; i < texturepatchcount; i++) {
-//		printf(" %i", i);
 
 		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textureRef);
 		patch = &texture->patches[i];
@@ -373,12 +369,8 @@ void R_GenerateLookup(uint8_t texnum)
 	colofs = (uint16_t*)Z_LoadTextureInfoFromConventional(texturecolumnofs);
 	collump = (int16_t*)Z_LoadTextureInfoFromConventional(texturecolumnlump);
 
-	//Z_RefIsActive(texturecolumnofs);
-	//Z_RefIsActive(texturecolumnlump);
 	for (x = 0; x < texturewidth; x++) {
-
-		// 122 TEKWALL3
-		// 124 TEKWALL5
+ 
 		if (!patchcount[x]) {
 			DEBUG_PRINT("R_GenerateLookup: column without a patch (%s), %i %i %hhu %hhu\n", texturename, x, texturewidth, texnum, patchcount[x]);
 			return;

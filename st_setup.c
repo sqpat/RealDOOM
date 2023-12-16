@@ -65,90 +65,7 @@ extern MEMREF               palRef;
 
 // used for timing
 
-
-// whether in automap or first-person
-extern st_stateenum_t   st_gamestate;
-
-// whether left-side main status bar is active
-extern boolean          st_statusbaron;
-
-// main bar left
-extern MEMREF         sbarRef;
-
-// 0-9, tall numbers
-extern MEMREF         tallnumRef[10];
-
-// tall % sign
-extern MEMREF         tallpercentRef;
-
-// 0-9, short, yellow (,different!) numbers
-extern MEMREF         shortnumRef[10];
-
-// 3 key-cards, 3 skulls
-extern MEMREF         keysRef[NUMCARDS];
-
-// face status patches
-extern MEMREF         facesRef[ST_NUMFACES];
-
-// face background
-extern MEMREF         facebackRef;
-
-// main bar right
-extern MEMREF         armsbgRef[1];
-
-// weapon ownership patches
-extern MEMREF	armsRef[6][2];
-
-// ready-weapon widget
-extern st_number_t      w_ready;
-
-
-// health widget
-extern st_percent_t     w_health;
-
-// arms background
-extern st_multicon_t     w_armsbg;
-
-// weapon ownership widgets
-extern st_multicon_t    w_arms[6];
-
-// face status widget
-extern st_multicon_t    w_faces;
-
-// keycard widgets
-extern st_multicon_t    w_keyboxes[3];
-
-// armor widget
-extern st_percent_t     w_armor;
-
-// ammo widgets
-extern st_number_t      w_ammo[4];
-
-// max ammo widgets
-extern st_number_t      w_maxammo[4];
-
-
-
-
-// used to use appopriately pained face
-extern int16_t      st_oldhealth;
-
-// used for evil grin
-extern boolean  oldweaponsowned[NUMWEAPONS];
-
-// count until face changes
-extern int16_t      st_facecount;
-
-// current face index, used by w_faces
-extern int16_t      st_faceindex;
-
-// holds key-type for each key box on bar
-extern int16_t      keyboxes[3];
-
-// a random number per tick
-extern uint8_t      st_randomnumber;
-
-extern int8_t st_palette;
+ 
 
 
 
@@ -158,14 +75,14 @@ STlib_initNum
 (st_number_t*		n,
 	int16_t			x,
 	int16_t			y,
-	MEMREF*		plRef,
+	byte**		pl,
 	int16_t			width)
 {
 	n->x = x;
 	n->y = y;
 	n->oldnum = 0;
 	n->width = width;
-	n->pRef = plRef;
+	n->p = pl;
 }
 
 
@@ -175,10 +92,10 @@ STlib_initPercent
 (st_percent_t*		p,
 	int16_t			x,
 	int16_t			y,
-	MEMREF*		plRef,
-	MEMREF		percentRef) {
-	STlib_initNum(&p->n, x, y, plRef, 3);
-	p->pRef = percentRef;
+	byte**		pl,
+	byte*		percent) {
+	STlib_initNum(&p->n, x, y, pl, 3);
+	p->p = percent;
 }
 
 
@@ -188,12 +105,12 @@ STlib_initMultIcon
 (st_multicon_t*	i,
 	int16_t			x,
 	int16_t			y,
-	MEMREF*		ilRef)
+	byte**		il)
 {
 	i->x = x;
 	i->y = y;
 	i->oldinum = -1;
-	i->pRef = ilRef;
+	i->p = il;
 
 }
 
@@ -207,7 +124,7 @@ void ST_createWidgets(void)
 	STlib_initNum(&w_ready,
 		ST_AMMOX,
 		ST_AMMOY,
-		tallnumRef,
+		tallnum,
 		ST_AMMOWIDTH);
 
 
@@ -216,14 +133,14 @@ void ST_createWidgets(void)
 	STlib_initPercent(&w_health,
 		ST_HEALTHX,
 		ST_HEALTHY,
-		tallnumRef,
-		tallpercentRef);
+		tallnum,
+		tallpercent);
 
 	// arms background
 	STlib_initMultIcon(&w_armsbg,
 		ST_ARMSBGX,
 		ST_ARMSBGY,
-		armsbgRef);
+		armsbg);
 	w_armsbg.oldinum = 0; // hack to make it work as multicon instead of binicon
 
 	// weapons owned
@@ -232,7 +149,7 @@ void ST_createWidgets(void)
 		STlib_initMultIcon(&w_arms[i],
 			ST_ARMSX + (i % 3)*ST_ARMSXSPACE,
 			ST_ARMSY + (i / 3)*ST_ARMSYSPACE,
-			armsRef[i]);
+			arms[i]);
 
 
 
@@ -245,79 +162,79 @@ void ST_createWidgets(void)
 	STlib_initMultIcon(&w_faces,
 		ST_FACESX,
 		ST_FACESY,
-		facesRef);
+		faces);
 
 	// armor percentage - should be colored later
 	STlib_initPercent(&w_armor,
 		ST_ARMORX,
 		ST_ARMORY,
-		tallnumRef,
-		tallpercentRef);
+		tallnum,
+		tallpercent);
 
 	// keyboxes 0-2
 	STlib_initMultIcon(&w_keyboxes[0],
 		ST_KEY0X,
 		ST_KEY0Y,
-		keysRef);
+		keys);
 
 	STlib_initMultIcon(&w_keyboxes[1],
 		ST_KEY1X,
 		ST_KEY1Y,
-		keysRef);
+		keys);
 
 	STlib_initMultIcon(&w_keyboxes[2],
 		ST_KEY2X,
 		ST_KEY2Y,
-		keysRef);
+		keys);
 
 	// ammo count (all four kinds)
 	STlib_initNum(&w_ammo[0],
 		ST_AMMO0X,
 		ST_AMMO0Y,
-		shortnumRef,
+		shortnum,
 		ST_AMMO0WIDTH);
 
 	STlib_initNum(&w_ammo[1],
 		ST_AMMO1X,
 		ST_AMMO1Y,
-		shortnumRef,
+		shortnum,
 		ST_AMMO1WIDTH);
 
 	STlib_initNum(&w_ammo[2],
 		ST_AMMO2X,
 		ST_AMMO2Y,
-		shortnumRef,
+		shortnum,
 		ST_AMMO2WIDTH);
 
 	STlib_initNum(&w_ammo[3],
 		ST_AMMO3X,
 		ST_AMMO3Y,
-		shortnumRef,
+		shortnum,
 		ST_AMMO3WIDTH);
 
 	// max ammo count (all four kinds)
 	STlib_initNum(&w_maxammo[0],
 		ST_MAXAMMO0X,
 		ST_MAXAMMO0Y,
-		shortnumRef,
+		shortnum,
 		ST_MAXAMMO0WIDTH);
 
 	STlib_initNum(&w_maxammo[1],
 		ST_MAXAMMO1X,
 		ST_MAXAMMO1Y,
-		shortnumRef,
+		shortnum,
 		ST_MAXAMMO1WIDTH);
 
 	STlib_initNum(&w_maxammo[2],
 		ST_MAXAMMO2X,
 		ST_MAXAMMO2Y,
-		shortnumRef,
+		shortnum,
 		ST_MAXAMMO2WIDTH);
 
 	STlib_initNum(&w_maxammo[3],
 		ST_MAXAMMO3X,
 		ST_MAXAMMO3Y,
-		shortnumRef,
+		shortnum,
 		ST_MAXAMMO3WIDTH);
 
 }
@@ -334,6 +251,7 @@ void ST_Stop(void)
 	st_stopped = true;
 }
 
+extern int8_t st_palette;
 
 void ST_Start(void)
 {

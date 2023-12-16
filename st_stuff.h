@@ -258,4 +258,43 @@ boolean ST_Responder(event_t* ev);
 #define ST_MAPHEIGHT            1
 
 
+
+
+extern MEMREF               palRef;
+
+// whether in automap or first-person
+extern st_stateenum_t   st_gamestate;
+
+// whether left-side main status bar is active
+extern boolean          st_statusbaron;
+
+// main bar left
+extern byte*         sbar;
+
+// 0-9, tall numbers
+extern byte*         tallnum[10];
+
+// tall % sign
+extern byte*         tallpercent;
+
+// 0-9, short, yellow (,different!) numbers
+extern byte*         shortnum[10];
+
+// 3 key-cards, 3 skulls
+extern byte*         keys[NUMCARDS];
+
+// face status patches
+extern byte*         faces[ST_NUMFACES];
+
+// face background
+extern byte*         faceback;
+
+// main bar right
+extern byte*         armsbg[1];
+
+// weapon ownership patches
+extern byte*	arms[6][2];
+
+
+
 #endif

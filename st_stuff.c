@@ -55,6 +55,7 @@
             
 // ST_Start() has just been called
 boolean          st_firsttime;
+boolean          updatedthisframe;
 
 // used to execute ST_Init() only once
 
@@ -72,31 +73,31 @@ st_stateenum_t   st_gamestate;
 boolean          st_statusbaron;
 
 // main bar left
-MEMREF         sbarRef;
+byte*         sbar;
 
 // 0-9, tall numbers
-MEMREF         tallnumRef[10];
+byte*         tallnum[10];
 
 // tall % sign
-MEMREF         tallpercentRef;
+byte*         tallpercent;
 
 // 0-9, short, yellow (,different!) numbers
-MEMREF         shortnumRef[10];
+byte*         shortnum[10];
 
 // 3 key-cards, 3 skulls
-MEMREF         keysRef[NUMCARDS];
+byte*         keys[NUMCARDS];
 
 // face status patches
-MEMREF         facesRef[ST_NUMFACES];
+byte*         faces[ST_NUMFACES];
 
 // face background
-MEMREF         facebackRef;
+byte*         faceback;
 
  // main bar right
-MEMREF         armsbgRef[1];
+byte*         armsbg[1];
 
 // weapon ownership patches
-MEMREF	armsRef[6][2]; 
+byte*	arms[6][2];
 
 // ready-weapon widget
 st_number_t      w_ready;
@@ -256,7 +257,7 @@ void ST_refreshBackground(void)
 {
 
     if (st_statusbaron) {
-        V_DrawPatch(ST_X, 0, BG, (patch_t*)Z_LoadBytesFromEMS(sbarRef));
+        V_DrawPatch(ST_X, 0, BG, (patch_t*)sbar);
         V_CopyRect(ST_X, 0, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
     }
 
@@ -797,19 +798,20 @@ void ST_drawWidgets(boolean refresh)
 		}
 	}
 }
-  
+ 
 void ST_Drawer(boolean fullscreen, boolean refresh)
 {
-	screen4 = (byte *)Z_LoadBytesFromEMSWithOptions(screen4Ref, true);
 	st_statusbaron = (!fullscreen) || automapactive;
 	st_firsttime = st_firsttime || refresh;
-
+	updatedthisframe = false;
 	// Do red-/gold-shifts from damage/items
 	ST_doPaletteStuff();
 
 	// If just after ST_Start(), refresh all
 	if (st_firsttime) {
 		st_firsttime = false;
+		updatedthisframe = true;
+		Z_QuickmapStatus();
 
 		// draw status bar background to off-screen buff
 		ST_refreshBackground();
@@ -821,10 +823,9 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 		// Otherwise, update as little as possible
 		ST_drawWidgets(false);
 	}
-	Z_SetUnlocked(screen4Ref);
-
-	screen4 = NULL;
-
+	
+	if (updatedthisframe)
+		Z_QuickmapPhysics();
 }
 
 
@@ -833,37 +834,7 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 
 void ST_unloadGraphics(void)
 {
-
-	int16_t i;
-
-    // unload the numbers, tall and short
-    for (i=0;i<10;i++)
-    {
-        Z_ChangeTagEMS(tallnumRef[i], PU_CACHE);
-		Z_ChangeTagEMS(shortnumRef[i], PU_CACHE);
-    }
-    // unload tall percent
-	Z_ChangeTagEMS(tallpercentRef, PU_CACHE);
-
-    // unload arms background
-    Z_ChangeTagEMS(armsbgRef[0], PU_CACHE); 
-
-    // unload gray #'s
-    for (i=0;i<6;i++)
-		Z_ChangeTagEMS(armsRef[i][0], PU_CACHE);
-    
-    // unload the key cards
-    for (i=0;i<NUMCARDS;i++)
-		Z_ChangeTagEMS(keysRef[i], PU_CACHE);
-
-	Z_ChangeTagEMS(sbarRef, PU_CACHE);
-	Z_ChangeTagEMS(facebackRef, PU_CACHE);
-
-    for (i=0;i<ST_NUMFACES;i++)
-		Z_ChangeTagEMS(facesRef[i], PU_CACHE);
-
-    // Note: nobody ain't seen no unloading
-    //   of stminus yet. Dude.
+	// dont worry about unloading...
 
 }
   

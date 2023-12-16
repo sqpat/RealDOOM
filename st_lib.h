@@ -53,7 +53,7 @@ typedef struct
 
     // list of patches for 0-9
     //patch_t**	p;
-	MEMREF* pRef;
+	byte** p;
 
 } st_number_t;
 
@@ -68,7 +68,7 @@ typedef struct
 
     // percent sign graphic
     //patch_t*		p;
-	MEMREF pRef;
+	byte* p;
     
 } st_percent_t;
 
@@ -91,7 +91,7 @@ typedef struct
 
     // list of icons
     //patch_t**		p;
-	MEMREF*		pRef;
+	byte**		p;
     
 } st_multicon_t;
 
@@ -116,7 +116,7 @@ STlib_initNum
 ( st_number_t*		n,
 	int16_t 		x,
 	int16_t 		y,
-    MEMREF*		plRef,
+	byte**		pl,
 	int16_t 		width );
 
 void
@@ -131,8 +131,8 @@ STlib_initPercent
 ( st_percent_t*		p,
 	int16_t 		x,
 	int16_t 		y,
-    MEMREF*		plRef,
-    MEMREF		percentRef 
+    byte**		pl,
+	byte*		percent
 );
 
 
@@ -149,7 +149,7 @@ STlib_initMultIcon
 ( st_multicon_t*	mi,
 	int16_t 		x,
 	int16_t 		y,
-  MEMREF*		ilRef);
+	byte**		il);
 
 
 void
@@ -159,5 +159,57 @@ STlib_updateMultIcon
 	int16_t			inum,
 	boolean is_binicon);
  
+
+
+// ready-weapon widget
+extern st_number_t      w_ready;
+
+
+// health widget
+extern st_percent_t     w_health;
+
+// arms background
+extern st_multicon_t     w_armsbg;
+//extern st_binicon_t     w_armsbg;
+
+
+// weapon ownership widgets
+extern st_multicon_t    w_arms[6];
+
+// face status widget
+extern st_multicon_t    w_faces;
+
+// keycard widgets
+extern st_multicon_t    w_keyboxes[3];
+
+// armor widget
+extern st_percent_t     w_armor;
+
+// ammo widgets
+extern st_number_t      w_ammo[4];
+
+// max ammo widgets
+extern st_number_t      w_maxammo[4];
+
+
+
+
+// used to use appopriately pained face
+extern int16_t      st_oldhealth;
+
+// used for evil grin
+extern boolean  oldweaponsowned[NUMWEAPONS];
+
+// count until face changes
+extern int16_t      st_facecount;
+
+// current face index, used by w_faces
+extern int16_t      st_faceindex;
+
+// holds key-type for each key box on bar
+extern int16_t      keyboxes[3];
+
+// a random number per tick
+extern uint8_t      st_randomnumber;
 
 #endif
