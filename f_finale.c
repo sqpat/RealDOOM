@@ -387,7 +387,6 @@ void F_Ticker (void)
 //
 
 #include "hu_stuff.h"
-extern	MEMREF hu_fontRef[HU_FONTSIZE];
 
 
 void F_TextWrite (void)
@@ -402,8 +401,7 @@ void F_TextWrite (void)
     int16_t		cx;
     int16_t		cy;
 	MEMREF	srcRef;
-	patch_t* hu_fontC;
-    // erase the entire screen to a tiled background
+     // erase the entire screen to a tiled background
     srcRef = W_CacheLumpNameEMS ( finaleflat , PU_CACHE);
 	src = Z_LoadBytesFromEMS(srcRef);
     dest = screen0;
@@ -442,11 +440,10 @@ void F_TextWrite (void)
 			continue;
 		}
 			
-		hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
-		w =  (hu_fontC->width);
+		w =  (hu_font[c]->width);
 		if (cx+w > SCREENWIDTH)
 			break;
-		V_DrawPatch(cx, cy, 0, hu_fontC);
+		V_DrawPatch(cx, cy, 0, hu_font[c]);
 		cx+=w;
     }
 	
@@ -648,7 +645,6 @@ void F_CastPrint (int8_t* text)
     int16_t		cx;
     int16_t		w;
     int16_t		width;
-	patch_t* hu_fontC;
     
     // find width
     ch = text;
@@ -666,9 +662,8 @@ void F_CastPrint (int8_t* text)
 	    continue;
 	}
 		
-	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
-
-	w = (hu_fontC->width);
+ 
+	w = (hu_font[c]->width);
 	width += w;
     }
     
@@ -687,9 +682,8 @@ void F_CastPrint (int8_t* text)
 	    continue;
 	}
 		
-	hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
-	w =  (hu_fontC->width);
-	V_DrawPatch(cx, 180, 0, hu_fontC);
+	w =  (hu_font[c]->width);
+	V_DrawPatch(cx, 180, 0, hu_font[c]);
 	cx+=w;
     }
 	

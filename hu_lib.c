@@ -67,7 +67,7 @@ HUlib_drawTextLine
     for (i=0;i<l->len;i++) {
 		c = toupper(l->l[i]);
 		if (c != ' ' && c >= l->sc && c <= '_') {
-			currentpatch = (patch_t*)Z_LoadBytesFromEMS(l->fRef[c - l->sc]);
+			currentpatch = (l->f[c - l->sc]);
 			w = (currentpatch->width);
 			if (x + w > SCREENWIDTH) {
 				break;
@@ -82,7 +82,7 @@ HUlib_drawTextLine
 		}
     }
 
-	currentpatch = (patch_t*)Z_LoadBytesFromEMS(l->fRef['_' - l->sc]);
+	currentpatch = (l->f['_' - l->sc]);
     // draw the cursor if requested
     if (drawcursor && x + (currentpatch->width) <= SCREENWIDTH) {
 		V_DrawPatchDirect(x, l->y, currentpatch);
@@ -97,7 +97,7 @@ void HUlib_eraseTextLine(hu_textline_t* l)
     uint16_t			y;
     uint16_t			yoffset;
     static boolean	lastautomapactive = true;
-	patch_t* currentpatch = Z_LoadBytesFromEMS(l->fRef[0]);   // todo can probably cache this
+	patch_t* currentpatch = l->f[0];
 
 
     // Only erases when NOT in automap and the screen is reduced,
@@ -118,7 +118,8 @@ void HUlib_eraseTextLine(hu_textline_t* l)
     }
 
     lastautomapactive = automapactive;
-    if (l->needsupdate) l->needsupdate--;
+    if (l->needsupdate)
+		l->needsupdate--;
 
 }
  

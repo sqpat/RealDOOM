@@ -429,7 +429,7 @@ void M_LoadDefaults(void)
 }
 
 
-extern	MEMREF hu_fontRef[HU_FONTSIZE];
+extern	patch_t* hu_font[HU_FONTSIZE];
 
 
 void HU_Init(void)
@@ -439,15 +439,18 @@ void HU_Init(void)
 	int16_t		j;
 	int8_t	buffer[9];
 
+	Z_QuickmapStatus();
 
 	// load the heads-up font
 	j = HU_FONTSTART;
 	for (i = 0; i < HU_FONTSIZE; i++) {
 		sprintf(buffer, "STCFN%.3d", j++);
-		hu_fontRef[i] = W_CacheLumpNameEMS(buffer, PU_STATIC);
+		//hu_font[i] = W_CacheLumpNameEMS(buffer, PU_STATIC);
+		W_CacheLumpNameDirect(buffer, (byte*)hu_font[i]);
 	}
 
 
+	Z_QuickmapPhysics();
 
 
 }

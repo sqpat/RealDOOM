@@ -53,8 +53,8 @@
 
 
 
-extern MEMREF         hu_fontRef[HU_FONTSIZE];
 extern boolean          message_dontfuckwithme;
+extern patch_t*			hu_font[HU_FONTSIZE];
 
 
 //
@@ -1228,16 +1228,14 @@ int16_t M_StringWidth(int8_t* string)
 	int16_t             i;
 	int16_t             w = 0;
 	int16_t             c;
-	patch_t* hu_fontC;
-
+	
     for (i = 0;i < strlen(string);i++)
     {
         c = toupper(string[i]) - HU_FONTSTART;
         if (c < 0 || c >= HU_FONTSIZE)
             w += 4;
 		else {
-			hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
-			w += (hu_fontC->width);
+			w += (hu_font[c]->width);
 		}
     }
                 
@@ -1253,8 +1251,7 @@ int16_t M_StringHeight(int8_t* string)
 {
 	int8_t             i;
 	int16_t             h;
-	patch_t* hu_font0 = Z_LoadBytesFromEMS(hu_fontRef[0]);
-	int16_t             height = (hu_font0->height);
+	int16_t             height = (hu_font[0]->height);
         
     h = height;
     for (i = 0;i < strlen(string);i++)
@@ -1279,9 +1276,8 @@ M_WriteText
 	int16_t         c;
 	int16_t         cx;
 	int16_t         cy;
-	patch_t* hu_fontC;
-
-    ch = string;
+    
+	ch = string;
     cx = x;
     cy = y;
         
@@ -1304,12 +1300,11 @@ M_WriteText
             cx += 4;
             continue;
         }
-		hu_fontC = Z_LoadBytesFromEMS(hu_fontRef[c]);
 
-        w =  (hu_fontC->width);
+        w =  (hu_font[c]->width);
         if (cx+w > SCREENWIDTH)
             break;
-        V_DrawPatchDirect(cx, cy, hu_fontC);
+        V_DrawPatchDirect(cx, cy, hu_font[c]);
         cx+=w;
     }
 }
@@ -1679,7 +1674,7 @@ void M_Drawer (void)
     int16_t               max;
 	int8_t                string[40];
 	int16_t                 start;
-	patch_t*			hu_font0;
+	
 
     inhelpscreens = false;
 
@@ -1687,6 +1682,8 @@ void M_Drawer (void)
     // Horiz. & Vertically center string and print it.
     if (messageToPrint)
     {
+		Z_QuickmapStatus();
+
         start = 0;
         y = 100 - M_StringHeight(messageString)/2;
         while(*(messageString+start))
@@ -1708,15 +1705,16 @@ void M_Drawer (void)
                                 
             x = 160 - M_StringWidth(string)/2;
             M_WriteText(x,y,string);
-			hu_font0 = Z_LoadBytesFromEMS(hu_fontRef[0]);
 
-            y += (hu_font0->height);
+            y += (hu_font[0]->height);
         }
-        return;
+		Z_QuickmapPhysics();
+		return;
     }
 
     if (!menuactive)
         return;
+	Z_QuickmapStatus();
 
     if (currentMenu->routine)
         currentMenu->routine();         // call Draw routine
@@ -1738,6 +1736,7 @@ void M_Drawer (void)
     // DRAW SKULL
 	V_DrawPatchDirect(x + SKULLXOFF, currentMenu->y - 5 + itemOn * LINEHEIGHT,
 		W_CacheLumpNameEMSAsPatch(skullName[whichSkull], PU_CACHE));
+	Z_QuickmapPhysics();
 
 
 }

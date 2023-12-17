@@ -45,7 +45,7 @@ typedef struct
     int16_t		x;
     int16_t		y;
     
-    MEMREF*	fRef;			// font
+    patch_t**	f;			// font
     uint8_t		sc;			// start character
 	int8_t	l[HU_MAXLINELENGTH+1];	// line of text
     int16_t		len;		      	// current line length

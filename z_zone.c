@@ -1569,7 +1569,7 @@ void Z_QuickmapPhysics() {
 	}
 	*/
 	taskswitchcount ++;
-	currenttask = 0;
+	currenttask = TASK_PHYSICS;
 }
 
 
@@ -1584,7 +1584,7 @@ void Z_QuickmapPhysics9000() {
 	intx86(EMS_INT, &regs, &regs);
 
 	taskswitchcount++;
-	currenttask = 1;
+	currenttask = TASK_PHYSICS9000; // not sure about this
 }
 
 void Z_QuickmapRender() {
@@ -1606,9 +1606,11 @@ void Z_QuickmapRender() {
 	intx86(EMS_INT, &regs, &regs);
  
 	taskswitchcount++;
-	currenttask = 2;
+	currenttask = TASK_RENDER;
 
 }
+
+
 // sometimes needed when rendering sprites..
 void Z_QuickmapStatus() {
 
@@ -1620,5 +1622,5 @@ void Z_QuickmapStatus() {
 	intx86(EMS_INT, &regs, &regs);
 
 	taskswitchcount++;
-	currenttask = 3;
+	currenttask = TASK_STATUS;
 }

@@ -412,8 +412,7 @@ void D_Display (void)
 	}
 
     // see if the border needs to be initially drawn
-    if (gamestate == GS_LEVEL && oldgamestate != GS_LEVEL)
-    {
+    if (gamestate == GS_LEVEL && oldgamestate != GS_LEVEL) {
         viewactivestate = false;        // view was not active
         R_FillBackScreen ();    // draw the pattern into the back screen
     }

@@ -48,13 +48,7 @@
 int16_t		myargc;
 int8_t**		myargv;
 
-//
-// M_DrawText
-// Returns the final X coordinate
-// HU_Init must have been called to init the font
-//
-extern MEMREF		hu_fontRef[HU_FONTSIZE];
-
+ 
  
 
 //

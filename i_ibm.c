@@ -323,11 +323,10 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
 // I_UpdateNoBlit
 //
 int16_t olddb[2][4];
-void I_UpdateNoBlit(void)
-{
+void I_UpdateNoBlit(void) {
 	int16_t realdr[4];
 	int16_t x, y, w, h;
-    // Set current screen
+	// Set current screen
     currentscreen = (byte*) destscreen.w;
 
     // Update dirtybox size
@@ -408,9 +407,9 @@ void I_FinishUpdate(void)
 
 #ifndef	SKIP_DRAW
 	outpw(CRTC_INDEX, (destscreen.h.fracbits & 0xff00L) + 0xc);
-
 #endif
-    //Next plane
+    
+	//Next plane
     destscreen.h.fracbits += 0x4000;
 	if ((uint16_t)destscreen.h.fracbits == 0xc000) {
 		destscreen.h.fracbits = 0x0000;

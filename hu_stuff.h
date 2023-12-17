@@ -19,6 +19,7 @@
 #define __HU_STUFF_H__
 
 #include "d_event.h"
+#include "r_defs.h"
 
 
 //
@@ -53,6 +54,9 @@ void HU_Ticker(void);
 void HU_Drawer(void);
 int8_t HU_dequeueChatChar(void);
 void HU_Erase(void);
+ 
+
+extern	patch_t* hu_font[HU_FONTSIZE];
 
 
 #endif

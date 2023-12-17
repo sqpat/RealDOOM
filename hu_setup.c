@@ -37,7 +37,7 @@
 #include "dstrings.h"
 #include "sounds.h"
 
-MEMREF		hu_fontRef[HU_FONTSIZE];
+patch_t*		hu_font[HU_FONTSIZE];
 
 
 //
@@ -252,15 +252,14 @@ void HU_Start(void)
 	// int32_t		i;
 	int16_t	sindex;
 	int8_t* s;
-	patch_t* hu_font0;
 	int16_t HU_TITLEY;
 	int16_t HU_INPUTY;
 	int16_t i;
-	patch_t* font0;
 	hu_textline_t*	t;
-	hu_font0 = (patch_t*)Z_LoadBytesFromEMS(hu_fontRef[0]);
-	HU_TITLEY = (167 - (hu_font0->height));
-	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * ((hu_font0->height) + 1));
+	
+
+	HU_TITLEY = (167 - (hu_font[0]->height));
+	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * ((hu_font[0]->height) + 1));
 
 	message_on = false;
 	message_dontfuckwithme = false;
@@ -275,12 +274,11 @@ void HU_Start(void)
 	w_message.on = &message_on;
 	w_message.laston = true;
 	w_message.cl = 0;
-	font0 = (patch_t*)Z_LoadBytesFromEMS(hu_fontRef[0]);
 	for (i = 0; i < HU_MSGHEIGHT; i++) {
 		t = &w_message.l[i];
 		t->x = HU_MSGX;
-		t->y = HU_MSGY - i * ((font0->height) + 1);
-		t->fRef = hu_fontRef;
+		t->y = HU_MSGY - i * ((hu_font[0]->height) + 1);
+		t->f = hu_font;
 		t->sc = HU_FONTSTART;
 
 		t->len = 0;
@@ -296,7 +294,7 @@ void HU_Start(void)
 
 	w_title.x = HU_TITLEX;
 	w_title.y = HU_TITLEY;
-	w_title.fRef = hu_fontRef;
+	w_title.f = hu_font;
 	w_title.sc = HU_FONTSTART;
 	w_title.len = 0;
 	w_title.l[0] = 0;

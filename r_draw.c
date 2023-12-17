@@ -597,8 +597,7 @@ R_VideoErase
 #endif
 
     countp = count / 4;
-    while (--countp >= 0)
-    {
+    while (--countp >= 0) {
 #ifndef	SKIP_DRAW
 		dest[countp] = source[countp];
 #endif

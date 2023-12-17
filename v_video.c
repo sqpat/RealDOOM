@@ -56,7 +56,6 @@ byte*				screen3;
 #endif
 
 byte*				screen4;
-//MEMREF				screen4Ref;
 int16_t				dirtybox[4]; 
 
 
@@ -177,6 +176,9 @@ V_DrawPatch
 #endif
 		case 4:
 			desttop = screen4 + offset;
+			if (currenttask != TASK_STATUS) {
+				I_Error("drawpatch bad task"); // todo remove this check
+			}
 			break;
 	}
 

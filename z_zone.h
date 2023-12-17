@@ -90,24 +90,12 @@ typedef struct memblock_s
 // texcols and tex
 #define CA_TYPE_TEXTURE_INFO 5
 
-//			   e1m1 = less
-//			   e1m2 = 54078, 27412
-//			   e1m3-e1m5 probably ok
-//             e1m6 huge
-// timedemo1 = e1m7 = 51556, 27431
-//			   e1m8, m9 small
 
 #define ALLOCATION_LIST_HEAD	0
-#define EMS_ALLOCATION_LIST_SIZE 1125
+#define EMS_ALLOCATION_LIST_SIZE 1050
 
-// all but e1m6
 //#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54208
 #define STATIC_CONVENTIONAL_BLOCK_SIZE_2 46218
-// e1m7 48746
-/*
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 51676
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 27327  
-*/
 
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 extern uint16_t remainingconventional1;
@@ -208,6 +196,10 @@ typedef struct
 
 } allocation_t;
 
+#define TASK_PHYSICS 0
+#define TASK_PHYSICS9000 1
+#define TASK_RENDER 2
+#define TASK_STATUS 3
 
 // EMS 4.0 stuff
 void Z_QuickmapPhysics();

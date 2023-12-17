@@ -30,6 +30,7 @@
 #include "p_local.h"
 #include "v_video.h"
 #include "st_stuff.h"
+#include "hu_stuff.h"
 
 #include <dos.h>
 #include <stdlib.h>
@@ -242,6 +243,23 @@ extern int16_t pageswapargoff_rend;
 extern int16_t pageswapargseg_stat;
 extern int16_t pageswapargoff_stat;
 
+uint8_t fontlen[63] = { 72, 100, 116, 128, 144, 132, 60, 
+					   120, 120, 96, 76, 60, 80, 56, 100, 
+					   132, 84, 140, 132, 116, 124, 132, 120, 
+					   140, 132, 84, 72, 80, 80, 80, 128, 156,
+					   132, 140, 140, 132, 132, 128, 132, 136, 
+						72, 120, 140, 120, 148, 136, 124, 128, 
+					   136, 140, 120, 120, 132, 108, 148, 160, 
+						124, 128, 92, 100, 92, 96, 104 };
+ 
+
+int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824, 
+						808, 808, 800, 888, 884, 844, 816, 824, 
+						824, 828, 824, 896, 896, 844, 816, 824, 
+						840, 836, 832, 908, 944, 844, 816, 824, 
+						844, 836, 844, 908, 944, 844, 816, 824, 
+						808, 836 };
+
 void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
 	int16_t* far pointervalue = pagedata;
@@ -323,12 +341,12 @@ found:
 	// 0x8000 block		screen0			sprite stuff			
 	//					gamma table		visplane openings
 	//									texture memrefs?
-	// 0x7000 block												st graphics
+	// 0x7000 block		physics levdata render levdata			st graphics
 	//					
 	//					
-	// 0x6000 block
-	// 0x5000 block
-	// 0x4000 block
+	// 0x6000 block						textures?
+	// 0x5000 block						textures
+	// 0x4000 block						textures
 
 	// todo loopify
 
@@ -492,7 +510,7 @@ found:
 
 	//   65269  64894  10240
 	//   65280  60945  00000
-	//   00000  00000  56956
+	//   00000  00000  64208
 
 
 	printf("\n   0x8000:      %05u   %05u   %05u", offset2, offset, 0-offset3);
@@ -582,99 +600,16 @@ found:
 
 	offset3 -= 13128;
 	sbar = MK_FP(segment, offset3);
+	 
+	for (i = 0; i < 42; i++) {
+		offset3 -= facelen[i];
+		faces[i] = MK_FP(segment, offset3);
+	}
 
-	offset3 -= 808;
-	faces[0] = MK_FP(segment, offset3);
-	offset3 -= 808;
-	faces[1] = MK_FP(segment, offset3);
-	offset3 -= 808;
-	faces[2] = MK_FP(segment, offset3);
-	offset3 -= 880;
-	faces[3] = MK_FP(segment, offset3);
-	offset3 -= 884;
-	faces[4] = MK_FP(segment, offset3);
-	offset3 -= 844;
-	faces[5] = MK_FP(segment, offset3);
-	offset3 -= 816;
-	faces[6] = MK_FP(segment, offset3);
-	offset3 -= 824;
-	faces[7] = MK_FP(segment, offset3);
-
-	offset3 -= 808;
-	faces[8] = MK_FP(segment, offset3);
-	offset3 -= 808;
-	faces[9] = MK_FP(segment, offset3);
-	offset3 -= 800;
-	faces[10] = MK_FP(segment, offset3);
-	offset3 -= 888;
-	faces[11] = MK_FP(segment, offset3);
-	offset3 -= 884;
-	faces[12] = MK_FP(segment, offset3);
-	offset3 -= 844;
-	faces[13] = MK_FP(segment, offset3);
-	offset3 -= 816;
-	faces[14] = MK_FP(segment, offset3);
-	offset3 -= 824;
-	faces[15] = MK_FP(segment, offset3);
-
-
-
-	offset3 -= 824;
-	faces[16] = MK_FP(segment, offset3);
-	offset3 -= 828;
-	faces[17] = MK_FP(segment, offset3);
-	offset3 -= 824;
-	faces[18] = MK_FP(segment, offset3);
-	offset3 -= 896;
-	faces[19] = MK_FP(segment, offset3);
-	offset3 -= 896;
-	faces[20] = MK_FP(segment, offset3);
-	offset3 -= 844;
-	faces[21] = MK_FP(segment, offset3);
-	offset3 -= 816;
-	faces[22] = MK_FP(segment, offset3);
-	offset3 -= 824;
-	faces[23] = MK_FP(segment, offset3);
-
-	offset3 -= 840;
-	faces[24] = MK_FP(segment, offset3);
-	offset3 -= 836;
-	faces[25] = MK_FP(segment, offset3);
-	offset3 -= 832;
-	faces[26] = MK_FP(segment, offset3);
-	offset3 -= 908;
-	faces[27] = MK_FP(segment, offset3);
-	offset3 -= 944;
-	faces[28] = MK_FP(segment, offset3);
-	offset3 -= 844;
-	faces[29] = MK_FP(segment, offset3);
-	offset3 -= 816;
-	faces[30] = MK_FP(segment, offset3);
-	offset3 -= 824;
-	faces[31] = MK_FP(segment, offset3);
-
-	offset3 -= 844;
-	faces[32] = MK_FP(segment, offset3);
-	offset3 -= 836;
-	faces[33] = MK_FP(segment, offset3);
-	offset3 -= 844;
-	faces[34] = MK_FP(segment, offset3);
-	offset3 -= 908;
-	faces[35] = MK_FP(segment, offset3);
-	offset3 -= 944;
-	faces[36] = MK_FP(segment, offset3);
-	offset3 -= 844;
-	faces[37] = MK_FP(segment, offset3);
-	offset3 -= 816;
-	faces[38] = MK_FP(segment, offset3);
-	offset3 -= 824;
-	faces[39] = MK_FP(segment, offset3);
-
-	offset3 -= 808;
-	faces[40] = MK_FP(segment, offset3);
-	offset3 -= 836;
-	faces[41] = MK_FP(segment, offset3);
-
+	for (i = 0; i < 63; i++) {
+		offset3 -= fontlen[i];
+		hu_font[i] = MK_FP(segment, offset3);
+	}
 
 
 	printf("\n   0x7000:      %05u   %05u   %05u", offset2, offset, 0 - offset3);

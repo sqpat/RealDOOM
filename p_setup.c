@@ -411,6 +411,7 @@ extern mobj_t* setStateReturn;
 void ST_Start(void);
 void G_PlayerReborn();
 void HU_Start(void);
+
 void P_SpawnPlayer(mapthing_t* mthing)
 {
 	fixed_t_union		x;
@@ -453,11 +454,15 @@ void P_SpawnPlayer(mapthing_t* mthing)
 	// setup gun psprite
 	P_SetupPsprites();
 
+	Z_QuickmapStatus();
+
 	// wake up the status bar
 	ST_Start();
 
 	// wake up the heads up text
 	HU_Start();
+
+	Z_QuickmapPhysics();
 
 }
 
