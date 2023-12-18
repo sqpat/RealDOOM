@@ -263,7 +263,7 @@ void P_PlayerThink (void)
     
     P_CalcHeight();
 
-	if (sectors[playerMobj->secnum].special) {
+	if (sectors_physics[playerMobj->secnum].special) {
 		P_PlayerInSpecialSector();
 	}
     // Check for weapon change.

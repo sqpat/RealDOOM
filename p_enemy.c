@@ -102,6 +102,7 @@ P_RecursiveSound
     int16_t	othersecnum;
 	int16_t linecount;
 	sector_t* soundsector = &sectors[secnum];
+	sector_physics_t* soundsector_physics = &sectors_physics[secnum];
 	int16_t linenumber;
 	uint8_t checkflags;
 	int16_t checksidenum0;
@@ -122,12 +123,12 @@ P_RecursiveSound
 #endif
 
 	// wake up all monsters in this sector
-    if (soundsector->validcount == validcount && soundsector->soundtraversed <= soundblocks+1) {
+    if (soundsector->validcount == validcount && soundsector_physics->soundtraversed <= soundblocks+1) {
 		return;		// already flooded
     }
 
 	soundsector->validcount = validcount;
-	soundsector->soundtraversed = soundblocks+1;
+	soundsector_physics->soundtraversed = soundblocks+1;
 	//soundsector->soundtargetRef = 1;
 
 
@@ -651,7 +652,7 @@ void A_Look (mobj_t* actor)
 			actor = (mobj_t*)(&thinkerlist[actorRef].data);
 		}
 	#endif
-    targRef = sectors[actorsecnum].soundtraversed ? playerMobjRef : 0;
+    targRef = sectors_physics[actorsecnum].soundtraversed ? playerMobjRef : 0;
 
 
 	if (targRef) {

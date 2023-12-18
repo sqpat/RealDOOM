@@ -244,7 +244,7 @@ void T_MoveFloor(floormove_t* floor, THINKERREF floorRef)
     res = T_MovePlane(floorsector, floor->speed, floor->floordestheight, floor->crush,0,floor->direction);
 	floorsecnum = floor->secnum;
 	if (!(leveltime.h.fracbits & 7)) {
-		S_StartSoundWithParams(sectors[floorsecnum].soundorgX, sectors[floorsecnum].soundorgY, sfx_stnmov);
+		S_StartSoundWithParams(sectors_physics[floorsecnum].soundorgX, sectors_physics[floorsecnum].soundorgY, sfx_stnmov);
 	}
 
     if (res == floor_pastdest) {
@@ -258,7 +258,7 @@ void T_MoveFloor(floormove_t* floor, THINKERREF floorRef)
 		if (floordirection == 1) {
 			switch(floortype) {
 			  case donutRaise:
-				  (&sectors[floorsecnum])->special = floornewspecial;
+				  (&sectors_physics[floorsecnum])->special = floornewspecial;
 				  (&sectors[floorsecnum])->floorpic = floortexture;
 			  default:
 			break;
@@ -266,7 +266,7 @@ void T_MoveFloor(floormove_t* floor, THINKERREF floorRef)
 		} else if (floordirection == -1) {
 			switch(floortype) {
 			  case lowerAndChange:
-				  (&sectors[floorsecnum])->special = floornewspecial;
+				  (&sectors_physics[floorsecnum])->special = floornewspecial;
 				  (&sectors[floorsecnum])->floorpic = floortexture;
 			  default:
 			break;
@@ -274,7 +274,7 @@ void T_MoveFloor(floormove_t* floor, THINKERREF floorRef)
 		}
 		P_RemoveThinker(floorRef);
 
-		S_StartSoundWithParams(sectors[floorsecnum].soundorgX, sectors[floorsecnum].soundorgY, sfx_pstop);
+		S_StartSoundWithParams(sectors_physics[floorsecnum].soundorgX, sectors_physics[floorsecnum].soundorgY, sfx_pstop);
     }
 
 }
@@ -297,6 +297,7 @@ EV_DoFloor
 	THINKERREF floorRef;
 	int16_t specialheight;
 	sector_t* sector;
+	sector_physics_t* sector_physics;
 
 	int16_t sectorceilingheight;
 	int16_t sectorfloorheight;
@@ -310,6 +311,7 @@ EV_DoFloor
 
 		secnum = secnumlist[j];
 		sector = &sectors[secnum];
+		sector_physics = &sectors_physics[secnum];
 		j++;
 
 		// new floor thinker
@@ -408,7 +410,7 @@ EV_DoFloor
 			floor->floordestheight = sectors[floor->secnum].floorheight + (24 << SHORTFLOORBITS);
 			
 			sector->floorpic = sectors[linefrontsecnum].floorpic;
-			sector->special = sectors[linefrontsecnum].special;
+			sector_physics->special = sectors_physics[linefrontsecnum].special;
 			break;
 
 		  case raiseToTexture: {
@@ -461,7 +463,7 @@ EV_DoFloor
 
 						if (sector->floorheight == floor->floordestheight) {
 							floor->texture = sector->floorpic;
-							floor->newspecial = sector->special;
+							floor->newspecial = sector_physics->special;
 							break;
 						}
 					}
@@ -470,7 +472,7 @@ EV_DoFloor
 
 						if (sector->floorheight == floor->floordestheight) {
 							floor->texture = sector->floorpic;
-							floor->newspecial = sector->special;
+							floor->newspecial = sector_physics->special;
 							break;
 						}
 					}

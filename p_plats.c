@@ -47,9 +47,10 @@ void T_PlatRaise(plat_t* plat, THINKERREF platRef)
     result_e	res;
 	int16_t platsecnum = plat->secnum;
 	sector_t* platsector = &sectors[platsecnum];
+	sector_physics_t* platsector_physics = &sectors_physics[platsecnum];
 
-	int16_t sectorsoundorgX = platsector->soundorgX;
-	int16_t sectorsoundorgY = platsector->soundorgY;
+	int16_t sectorsoundorgX = platsector_physics->soundorgX;
+	int16_t sectorsoundorgY = platsector_physics->soundorgY;
 	short_height_t sectorfloorheight = platsector->floorheight;
 
 
@@ -162,8 +163,8 @@ EV_DoPlat
 		rtn = 1;
 
 
-		sectorsoundorgX = sectors[secnum].soundorgX;
-		sectorsoundorgY = sectors[secnum].soundorgY;
+		sectorsoundorgX = sectors_physics[secnum].soundorgX;
+		sectorsoundorgY = sectors_physics[secnum].soundorgY;
 		sectorfloorheight = sectors[secnum].floorheight;
 
 
@@ -187,7 +188,7 @@ EV_DoPlat
 				plat->wait = 0;
 				plat->status = plat_up;
 				// NO MORE DAMAGE, IF APPLICABLE
-				(&sectors[secnum])->special = 0;
+				(&sectors_physics[secnum])->special = 0;
 
 				S_StartSoundWithParams(sectorsoundorgX, sectorsoundorgY, sfx_stnmov);
 				break;

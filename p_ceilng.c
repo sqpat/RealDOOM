@@ -45,6 +45,7 @@ void T_MoveCeiling(ceiling_t* ceiling, THINKERREF ceilingRef)
 {
     result_e	res;
 	sector_t* ceilingsector = &sectors[ceiling->secnum];
+	sector_physics_t* ceilingsector_physics = &sectors_physics[ceiling->secnum];
 	//int16_t ceilingsecnum;
 
     switch(ceiling->direction) {
@@ -60,7 +61,7 @@ void T_MoveCeiling(ceiling_t* ceiling, THINKERREF ceilingRef)
 					case silentCrushAndRaise:
 						break;
 					default:
-						S_StartSoundWithParams(ceilingsector->soundorgX, ceilingsector->soundorgY, sfx_stnmov);
+						S_StartSoundWithParams(ceilingsector_physics->soundorgX, ceilingsector_physics->soundorgY, sfx_stnmov);
 						// ? 
 						break;
 				}
@@ -74,7 +75,7 @@ void T_MoveCeiling(ceiling_t* ceiling, THINKERREF ceilingRef)
 					break;
 					
 					case silentCrushAndRaise:
-						S_StartSoundWithParams(ceilingsector->soundorgX, ceilingsector->soundorgY, sfx_pstop);
+						S_StartSoundWithParams(ceilingsector_physics->soundorgX, ceilingsector_physics->soundorgY, sfx_pstop);
 					case fastCrushAndRaise:
 					case crushAndRaise:
 						ceiling->direction = -1;
@@ -98,7 +99,7 @@ void T_MoveCeiling(ceiling_t* ceiling, THINKERREF ceilingRef)
 				switch(ceiling->type) {
 					case silentCrushAndRaise: break;
 						default:
-						S_StartSoundWithParams(ceilingsector->soundorgX, ceilingsector->soundorgY, sfx_stnmov);
+						S_StartSoundWithParams(ceilingsector_physics->soundorgX, ceilingsector_physics->soundorgY, sfx_stnmov);
 				}
 			}
 			
@@ -106,7 +107,7 @@ void T_MoveCeiling(ceiling_t* ceiling, THINKERREF ceilingRef)
 			{
 				switch(ceiling->type) {
 					case silentCrushAndRaise:
-						S_StartSoundWithParams(ceilingsector->soundorgX, ceilingsector->soundorgY, sfx_pstop);
+						S_StartSoundWithParams(ceilingsector_physics->soundorgX, ceilingsector_physics->soundorgY, sfx_pstop);
 					case crushAndRaise:
 						ceiling->speed = CEILSPEED;
 					case fastCrushAndRaise:
@@ -152,6 +153,7 @@ EV_DoCeiling
     int16_t		secnum;
     int16_t		rtn;
     sector_t*	sector;
+    sector_physics_t*	sector_physics;
 	int16_t		j = 0;
     ceiling_t*	ceiling;
 	THINKERREF ceilingRef;
@@ -178,6 +180,7 @@ EV_DoCeiling
 			
 
 		sector = &sectors[secnum];
+		sector_physics = &sectors_physics[secnum];
 
 		// new door thinker
 		rtn = 1;
@@ -221,7 +224,7 @@ EV_DoCeiling
 			   }
 		}
 		
-		ceiling->tag = sector->tag;
+		ceiling->tag = sector_physics->tag;
 		ceiling->type = type;
 		P_AddActiveCeiling(ceilingRef);
     }

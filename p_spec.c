@@ -350,7 +350,7 @@ P_FindSectorsFromLineTag
 	int16_t	j = 0;
 
 	for (i = 0; i < numsectors; i++) {
-		if (sectors[i].tag == linetag && (includespecials || !sectors[i].specialdataRef)) {
+		if (sectors_physics[i].tag == linetag && (includespecials || !sectors[i].specialdataRef)) {
 			foundsectors[j] = i;
 			j++;
 		}
@@ -952,7 +952,7 @@ void P_PlayerInSpecialSector () {
 	}
 
     // Has hitten ground.
-    switch (sectors[secnum].special) {
+    switch (sectors_physics[secnum].special) {
 		case 5:
 			// HELLSLIME DAMAGE
 			if (!player.powers[pw_ironfeet])
@@ -980,7 +980,7 @@ void P_PlayerInSpecialSector () {
 		case 9:
 			// SECRET SECTOR
 			player.secretcount++;
-			sectors[secnum].special = 0;
+			sectors_physics[secnum].special = 0;
 			break;
 			
 		case 11:
@@ -1225,10 +1225,10 @@ void P_SpawnSpecials (void)
 
 	for (i=0 ; i<numsectors ; i++) {
 
-		if (!sectors[i].special)
+		if (!sectors_physics[i].special)
 			continue;
 
-		switch (sectors[i].special) {
+		switch (sectors_physics[i].special) {
 		  case 1:
 			// FLICKERING LIGHTS
 			  P_SpawnLightFlash (i);
@@ -1247,7 +1247,7 @@ void P_SpawnSpecials (void)
 		  case 4:
 			// STROBE FAST/DEATH SLIME
 			  P_SpawnStrobeFlash(i,FASTDARK,0);
-			sectors[i].special = 4;
+			sectors_physics[i].special = 4;
 			break;
 	    
 		  case 8:

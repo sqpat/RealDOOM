@@ -519,6 +519,11 @@ found:
 	offset3 = 0u;
 
 	segment = 0x7000;
+
+	sectors_physics = MK_FP(segment, offset2);
+	offset2 += (sizeof(sector_physics_t) * numsectors);
+
+
 	offset3 = 0u;
 	offset3 -= 320;
 	tallnum[0] = MK_FP(segment, offset3);

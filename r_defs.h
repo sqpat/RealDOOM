@@ -81,18 +81,13 @@ typedef	struct
     uint8_t	floorpic;
     uint8_t	ceilingpic;
     uint8_t	lightlevel; // seems to max at 255
-	uint8_t	special;	// only a few small numbers
-	uint8_t	tag;		
+	//uint8_t	special;	// only a few small numbers
+	//uint8_t	tag;		
 
     // 0 = untraversed, 1,2 = sndlines -1
     int8_t		soundtraversed;
 
-    // thing that made a sound (or null)
-	// this is only ever player, and only ever active when soundtraversed is not 0.
-    //MEMREF	soundtargetRef;
 
-    // mapblock bounding box for height changes
-    //int16_t	blockbox[4];
 
     // origin for any sounds played by the sector
     // corresponds to fixed_t, not easy to change

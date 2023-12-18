@@ -69,7 +69,7 @@ void P_SpawnFireFlicker (int16_t secnum)
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
 	uint8_t seclightlevel = sectors[secnum].lightlevel;
-	sectors[secnum].special = 0;
+	sectors_physics[secnum].special = 0;
 
 	
 	flick = (fireflicker_t*)P_CreateThinker(TF_FIREFLICKER_HIGHBITS);
@@ -128,7 +128,7 @@ void P_SpawnLightFlash (int16_t secnum)
 	uint8_t lightamount;
 	// nothing special about it during gameplay
 	int16_t seclightlevel = sectors[secnum].lightlevel;
-	sectors[secnum].special = 0;
+	sectors_physics[secnum].special = 0;
 
 	
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
@@ -195,7 +195,7 @@ P_SpawnStrobeFlash
 	int16_t seclightlevel = sectors[secnum].lightlevel;
 
 	// nothing special about it during gameplay
-	sectors[secnum].special = 0;
+	sectors_physics[secnum].special = 0;
 
 
 
@@ -373,7 +373,7 @@ void P_SpawnGlowingLight(int16_t secnum)
 	// Nothing special about it during gameplay.
 	
 	int16_t seclightlevel = sectors[secnum].lightlevel;
-	sectors[secnum].special = 0;
+	sectors_physics[secnum].special = 0;
 
 
 

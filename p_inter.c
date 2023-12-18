@@ -793,7 +793,7 @@ P_DamageMobj
     if (target->type == MT_PLAYER) {
 
 		// end of game hell hack
-		if (sectors[target->secnum].special == 11 && damage >= target->health) {
+		if (sectors_physics[target->secnum].special == 11 && damage >= target->health) {
 			damage = target->health - 1;
 		}
 

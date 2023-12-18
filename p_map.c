@@ -1617,12 +1617,12 @@ P_ChangeSector
 {
     int16_t		x;
     int16_t		y;
-	int16_t*	sectorBlockBoxes = Z_LoadBytesFromEMS(sectorBlockBoxesRef);
-	uint16_t secnumx4 = 4*(sector - sectors);
-	int16_t xl = sectorBlockBoxes[secnumx4 + BOXLEFT];
-	int16_t xh = sectorBlockBoxes[secnumx4 + BOXRIGHT];
-	int16_t yh = sectorBlockBoxes[secnumx4 + BOXTOP];
-	int16_t yl = sectorBlockBoxes[secnumx4 + BOXBOTTOM];
+	sector_physics_t* sector_physics = sectors_physics[sector - sectors];
+
+	int16_t xl = sector_physics->blockbox [ BOXLEFT];
+	int16_t xh = sector_physics->blockbox[ BOXRIGHT];
+	int16_t yh = sector_physics->blockbox[ BOXTOP];
+	int16_t yl = sector_physics->blockbox[ BOXBOTTOM];
 
 
     nofit = false;

@@ -406,6 +406,7 @@ void D_Display (void)
 		}
 		TEXT_MODE_DEBUG_PRINT("\n D_Display: HU_Drawer done");
 	}
+
     // clean up border stuff
 	if (gamestate != oldgamestate && gamestate != GS_LEVEL) {
 		I_SetPalette(0);
@@ -505,6 +506,7 @@ void D_DoomLoop (void)
 	FILE* fp;
 #endif
 
+	
 	//plat_t* plat;
     if (demorecording)
         G_BeginRecording ();
@@ -529,6 +531,7 @@ void D_DoomLoop (void)
 				TEXT_MODE_DEBUG_PRINT("\n tick %li D_DoAdvanceDemo done", gametic);
 			}
 
+
 			M_Ticker ();
 			TEXT_MODE_DEBUG_PRINT("\n tick %li M_Ticker done", gametic);
 
@@ -551,102 +554,6 @@ void D_DoomLoop (void)
 		D_Display ();
 		TEXT_MODE_DEBUG_PRINT("\n tick %li D_Display done", gametic);
  
-		/*
-		if (gametic >= 500) {
-			FILE* fp;
-			int16_t i;
-			int32_t totalsize = 0;
-			int16_t* blockmaplump;
-
-			fp = fopen("debug-sg.txt", "w"); // clear old file
-			for (i = 0; i < numsegs; i++) {
-				totalsize += fprintf(fp, "%u %u %u %i %i %i\n", segs[i].fineangle, segs[i].v1Offset, segs[i].v2Offset, segs[i].linedefOffset, segs[i].sidedefOffset, segs[i].offset);
-			}
-				
-
-			fclose(fp);
-
-			fp = fopen("debug-li.txt", "w"); // clear old file
-			for (i = 0; i < numlines; i++) {
-				totalsize += fprintf(fp, "%i  %i %i %i %i %i %i - %i %i %i %hhu %hhu  \n", i, lines[i].dx, lines[i].dy, lines[i].frontsecnum, lines[i].backsecnum, lines[i].sidenum[0], lines[i].sidenum[1],
-					lines[i].v1Offset, lines[i].v2Offset, lines[i].validcount, lines[i].special, lines[i].tag
-				);
-			}
-			fclose(fp);
-
-			fp = fopen("debug-no.txt", "w"); // clear old file
-			for (i = 0; i < numnodes; i++) {
-				totalsize += fprintf(fp, "%i  %i %i %i %i %u %u \n %i %i %i %i - %i %i %i %i \n", i, nodes[i].x, nodes[i].y, nodes[i].dx, nodes[i].dy, nodes[i].children[0], nodes[i].children[1]
-					, nodes[i].bbox[0][0], nodes[i].bbox[0][1], nodes[i].bbox[0][2], nodes[i].bbox[0][3],
-					nodes[i].bbox[1][0], nodes[i].bbox[1][1], nodes[i].bbox[1][2], nodes[i].bbox[1][3]);
-			}
-			fclose(fp);
-			fp = fopen("debug-se.txt", "w"); // clear old file
-			for (i = 0; i < numsectors; i++) {
-				totalsize += fprintf(fp, "%i  %i %i %hhu %hhu %hhu %hhu %i \n %hhu %u %hhu %u\n", i,
-					sectors[i].floorheight, sectors[i].ceilingheight, sectors[i].floorpic, sectors[i].ceilingpic,
-					sectors[i].lightlevel, sectors[i].linecount, sectors[i].linesoffset,
-
-					sectors[i].special, sectors[i].specialdataRef, sectors[i].tag,
-					sectors[i].thinglistRef);
-									
-			}
-			fclose(fp);
-			
-			fp = fopen("debug-si.txt", "w"); // clear old file
-			for (i = 0; i < numsides; i++) {
-				
-				totalsize += fprintf(fp, "%hhu %hhu %hhu %hhu %i %hhu\n", i,
-					sides[i].bottomtexture, sides[i].midtexture, sides[i].toptexture,
-					sides[i].rowoffset, sides[i].secnum, sides[i].textureoffset);
-				
-				
-			}
-			fclose(fp);
-			
-			fp = fopen("debug-ve.txt", "w"); // clear old file
-			for (i = 0; i < numvertexes; i++) {
-				totalsize += fprintf(fp, "%u %u \n", i,
-					vertexes[i].x, vertexes[i].y
-
-				);
-			}
-			fclose(fp);
-
-			fp = fopen("debug-ss.txt", "w"); // clear old file
-			for (i = 0; i < numsubsectors; i++) {
-				totalsize += fprintf(fp, "%i %hhu %i \n", i,
-					subsectors[i].firstline, 
-					subsectors[i].numlines,
-					subsectors[i].secnum
-
-				);
-			}
-			fclose(fp);
-
-			fp = fopen("debug-bm.txt", "w"); // clear old file
-			for (i = 0; i < numsubsectors; i++) {
-				totalsize += fprintf(fp, "%i %hhu %i \n", i,
-					subsectors[i].firstline,
-					subsectors[i].numlines,
-					subsectors[i].secnum
-
-				);
-			}
-			fclose(fp);
-
-			blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
-			
-
-			fp = fopen("debug-bm.txt", "w"); // clear old file
-			for (i = 4; i < 4 + bmapwidth * bmapheight; i++) {
-				totalsize += fprintf(fp, "%i",  blockmaplump[i] );
-			}
-
-			I_Error("%li", totalsize);
-		}
-
-		*/
 
 #ifdef DEBUGLOG_TO_FILE
 			

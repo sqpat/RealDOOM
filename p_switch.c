@@ -68,8 +68,8 @@ P_StartButton
 	    buttonlist[i].where = w;
 	    buttonlist[i].btexture = texture;
 	    buttonlist[i].btimer = time;
-		buttonlist[i].soundorgX = sectors[linefrontsecnum].soundorgX;
-		buttonlist[i].soundorgY = sectors[linefrontsecnum].soundorgY;
+		buttonlist[i].soundorgX = sectors_physics[linefrontsecnum].soundorgX;
+		buttonlist[i].soundorgY = sectors_physics[linefrontsecnum].soundorgY;
 		return;
 	}
     }

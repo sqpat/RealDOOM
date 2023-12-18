@@ -53,7 +53,7 @@ seg_t*				segs;
 
 int16_t             numsectors;
 sector_t*		sectors;
-MEMREF			sectorBlockBoxesRef;
+sector_physics_t* sectors_physics;
 
 int16_t             numsubsectors;
 subsector_t*    subsectors;
@@ -283,24 +283,27 @@ void P_LoadSectors(int16_t lump)
 	uint16_t                 i;
 	mapsector_t        ms;
 	sector_t*           ss;
+	sector_physics_t*   sp;
 	MEMREF				dataRef;
 	MEMREF				sectorsRef;
 	// most tags are under 100, a couple are like 666 or 667 or 999 or other such special numbers.
 	// we will special case those and fit it in 8 bits so allocations are smaller
 	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
-	//sectors = Z_Malloc (numsectors * sizeof(sector_t), PU_LEVEL, 0);
+
 	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
 	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
 
-
 	memset(sectors, 0, numsectors * sizeof(sector_t));
+	memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
+
 	W_CacheLumpNumCheck(lump, 3);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 
 
 	ss = sectors;
-	for (i = 0; i < numsectors; i++, ss++) {
+	sp = sectors_physics;
+	for (i = 0; i < numsectors; i++, ss++, sp++) {
 		data = (mapsector_t *)Z_LoadBytesFromEMS(dataRef);
 		ms = data[i];
 		convertedtag = ms.tag;
@@ -323,9 +326,11 @@ void P_LoadSectors(int16_t lump)
 		ss->floorpic = R_FlatNumForNameC(ms.floorpic);
 		ss->ceilingpic = R_FlatNumForNameC(ms.ceilingpic);
 		ss->lightlevel = (ms.lightlevel);
-		ss->special = (ms.special);
-		ss->tag = (convertedtag);
 		ss->thinglistRef = NULL_THINKERREF;
+		
+		sp->tag = (convertedtag);
+		sp->special = (ms.special);
+
 		Z_RefIsActive(dataRef);
 
 
@@ -1189,7 +1194,7 @@ void P_GroupLines(void)
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
 	MEMREF linebufferRef;
-	int16_t* sectorBlockBoxes;
+
 	// look up sector number for each subsector
 	for (i = 0; i < numsubsectors; i++) {
 		firstlinenum = subsectors[i].firstline;
@@ -1225,8 +1230,8 @@ void P_GroupLines(void)
 
 	tempv1.h.fracbits = 0;
 	tempv2.h.fracbits = 0;
-	sectorBlockBoxesRef = Z_MallocEMS(numsectors * 8, PU_LEVEL, 0);
-	sectorBlockBoxes = (int16_t*)Z_LoadBytesFromEMS(sectorBlockBoxesRef);
+
+
 	for (i = 0; i < numsectors; i++) {
 		M_ClearBox16(bbox);
 		
@@ -1256,25 +1261,25 @@ void P_GroupLines(void)
 		// set the degenmobj_t to the middle of the bounding box
 		
 
-		sectors[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
-		sectors[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
+		sectors_physics[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
+		sectors_physics[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
 
 		// adjust bounding box to map blocks
 		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block >= bmapheight ? bmapheight - 1 : block;
-		sectorBlockBoxes[i*4+BOXTOP] = block;
+		sectors_physics[i].blockbox[BOXTOP] = block;
 
 		block = (bbox[BOXBOTTOM] - bmaporgy - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block < 0 ? 0 : block;
-		sectorBlockBoxes[i * 4 + BOXBOTTOM] = block;
+		sectors_physics[i].blockbox[BOXBOTTOM] = block;
 
 		block = (bbox[BOXRIGHT] - bmaporgx + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block >= bmapwidth ? bmapwidth - 1 : block;
-		sectorBlockBoxes[i * 4 + BOXRIGHT] = block;
+		sectors_physics[i].blockbox[BOXRIGHT] = block;
 
 		block = (bbox[BOXLEFT] - bmaporgx - MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;
 		block = block < 0 ? 0 : block;
-		sectorBlockBoxes[i * 4 + BOXLEFT] = block;
+		sectors_physics[i].blockbox[BOXLEFT] = block;
 	}
 
 

@@ -67,7 +67,7 @@ EV_Teleport
     
     for (i = 0; i < numsectors; i++) {
 
-		if (sectors[ i ].tag == linetag ) {
+		if (sectors_physics[ i ].tag == linetag ) {
 			thinkerRef = thinkerlist[0].next;
 			for (thinkerRef = thinkerlist[0].next; thinkerRef != 0; thinkerRef = thinkerlist[thinkerRef].next) {
 				// not a mobj
