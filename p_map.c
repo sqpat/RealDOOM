@@ -1617,7 +1617,7 @@ P_ChangeSector
 {
     int16_t		x;
     int16_t		y;
-	sector_physics_t* sector_physics = sectors_physics[sector - sectors];
+	sector_physics_t* sector_physics = &sectors_physics[sector - sectors];
 
 	int16_t xl = sector_physics->blockbox [ BOXLEFT];
 	int16_t xh = sector_physics->blockbox[ BOXRIGHT];

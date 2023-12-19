@@ -165,7 +165,7 @@ void Z_InitUMBDOS(void) {
 	int86(DOSMM_INT, &regs, &regs);
 	sizereg = regs.w.bx;
 
-	DEBUG_PRINT("Found %u bytes in UMB... ", 16L * sizereg);
+	DEBUG_PRINT("Found %lu bytes in UMB... ", 16L * sizereg);
 
 	if (sizereg < DESIRED_UMB_SIZE) {
 		I_Error("\nError! Need 64k of UMB space! ");

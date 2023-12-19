@@ -206,7 +206,6 @@ void R_InitSpriteLumps(void)
 			printf(".");
 #endif
 
-
 		W_CacheLumpNumCheck(firstspritelump + i, 13);
 		patchRef = W_CacheLumpNumEMS(firstspritelump + i, PU_CACHE);
 		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
