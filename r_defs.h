@@ -147,17 +147,6 @@ typedef	struct
 typedef struct
 {
   
-	// add this to the calculated texture column
-	texsize_t	textureoffset;
-
-	// add this to the calculated texture top
-	texsize_t	rowoffset;
-
-
-
-	// Sector the SideDef is facing.
-	int16_t	secnum;
-
 	// todo remove above
 
     // Texture indices.
@@ -172,19 +161,17 @@ typedef struct
 } side_t; 
 
 
-typedef struct
+typedef struct side_render_s
 {
 	// add this to the calculated texture column
 	texsize_t	textureoffset;
 
 	// add this to the calculated texture top
 	texsize_t	rowoffset;
-	
- 
 
 	// Sector the SideDef is facing.
 	int16_t	secnum;
-} side_t_render; 
+} side_render_t; 
 
 
 //
@@ -337,6 +324,15 @@ typedef struct
     uint16_t children[2];
     
 } node_t; // used in sight and bsp, but bbox is render only?
+
+typedef struct
+{
+	// Bounding box for each child.
+	int16_t	bbox[2][4];
+
+
+} node_render_t; // used in sight and bsp, but bbox is render only?
+
 
 
 

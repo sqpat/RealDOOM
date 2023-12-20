@@ -318,7 +318,7 @@ EV_VerticalDoor
     int16_t		secnum;
     //sector_t*	sec;
     vldoor_t*	door;
-    int16_t		side = 0;
+    //int16_t		side = 0;
 	THINKERREF doorRef;
 	int16_t linespecial = lines[linenum].special;
 	int16_t sidenum;
@@ -374,10 +374,11 @@ EV_VerticalDoor
 
     // if the sector has an active thinker, use it
 	
+	// side always 0 so...
+	//secnum = side ? lines[linenum].backsecnum : lines[linenum].frontsecnum;
+	secnum = lines[linenum].backsecnum;
 
-	sidenum = lines[linenum].sidenum[side ^ 1];
 
-	secnum = sides[sidenum].secnum;
 	doorsector = &sectors[secnum];
 	doorsector_physics = &sectors_physics[secnum];
 

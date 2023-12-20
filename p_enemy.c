@@ -163,11 +163,10 @@ P_RecursiveSound
 			continue;	// closed door
 		}
 
-		if (sides[checksidenum0].secnum == secnum) {
-			othersecnum = sides[checksidenum1].secnum;
-		}
-		else {
-			othersecnum = sides[checksidenum0].secnum;
+		if (check->frontsecnum == secnum) {
+			othersecnum = check->backsecnum;
+		} else {
+			othersecnum = check->frontsecnum;
 		}
 			 
 		if (checkflags & ML_SOUNDBLOCK) {

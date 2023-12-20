@@ -100,6 +100,7 @@ R_RenderMaskedSegRange
  
 	int16_t temp2;
 	side_t* side;
+	side_render_t* side_render;
 	int16_t curlineside;
 	vertex_t v1;
 	vertex_t v2;
@@ -111,6 +112,8 @@ R_RenderMaskedSegRange
 	curseg_render = &segs_render[segnum];
 
 	side = &sides[curseg_render->sidedefOffset];
+	side_render = &sides_render[curseg_render->sidedefOffset];
+
 	texnum = texturetranslation[side->midtexture];
 
 	curlineside = curseg->side;
@@ -124,10 +127,10 @@ R_RenderMaskedSegRange
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
 
 
-	frontsecnum = side->secnum;
+	frontsecnum = side_render->secnum;
 	backsector =
 		curlinelinedef->flags & ML_TWOSIDED ?
-		&sectors[sides[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
+		&sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
 		: NULL;
 	frontsector = &sectors[frontsecnum];
 	lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT) + extralight;
@@ -174,7 +177,7 @@ R_RenderMaskedSegRange
 		dc_texturemid.w -= viewz.w;
 #endif
     }
-    dc_texturemid.h.intbits += side->rowoffset;
+    dc_texturemid.h.intbits += side_render->rowoffset;
 			
 	if (fixedcolormap) {
 		dc_colormap = fixedcolormap;
@@ -431,7 +434,8 @@ R_StoreWallRange
     int16_t			lightnum;
 
 	// needs to be refreshed...
- 	side_t* side = &sides[curseg_render->sidedefOffset];
+	side_t* side = &sides[curseg_render->sidedefOffset];
+	side_render_t* side_render = &sides_render[curseg_render->sidedefOffset];
 	vertex_t curlinev1 = vertexes[curseg_render->v1Offset];
 	vertex_t curlinev2 = vertexes[curseg_render->v2Offset];
 	int16_t sidetextureoffset;
@@ -553,7 +557,7 @@ R_StoreWallRange
     ds_p->maskedtexturecol = NULL;
 	
 
-	sidetextureoffset = side->textureoffset + animateoffset;
+	sidetextureoffset = side_render->textureoffset + animateoffset;
 	
  
 
@@ -572,7 +576,7 @@ R_StoreWallRange
 			rw_midtexturemid = worldtop;
 		}
 
-		rw_midtexturemid.h.intbits += side->rowoffset;
+		rw_midtexturemid.h.intbits += side_render->rowoffset;
 
 		ds_p->silhouette = SIL_BOTH;
 		ds_p->sprtopclip = screenheightarray;
@@ -692,8 +696,8 @@ R_StoreWallRange
 			}
 		}
 
-		rw_toptexturemid.h.intbits += side->rowoffset;
-		rw_bottomtexturemid.h.intbits += side->rowoffset;
+		rw_toptexturemid.h.intbits += side_render->rowoffset;
+		rw_bottomtexturemid.h.intbits += side_render->rowoffset;
 
 		// allocate space for masked texture tables
 		if (side->midtexture) {

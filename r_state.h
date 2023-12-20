@@ -102,6 +102,7 @@ extern uint8_t*		seenlines;
 
 extern int16_t		numsides;
 extern side_t*       sides;
+extern side_render_t*		sides_render;
 
 extern int16_t*          linebuffer;
 

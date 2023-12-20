@@ -446,7 +446,8 @@ EV_DoFloor
 	  
 		  case lowerAndChange:{
 
-			int16_t sidenum;
+			  //int16_t sidenum;
+			  line_t* sideline;
 
 			floor->direction = -1;
 			floor->secnum = secnum;
@@ -457,9 +458,11 @@ EV_DoFloor
 
 			for (i = 0; i < sector->linecount; i++) {
 				if (twoSided(secnum, i)) {
-					sidenum = getSideNum(secnum, i, 0);
-					if (sides[sidenum].secnum == secnum) {
-						secnum = getSector(secnum, i, 1);
+					//sidenum = getSideNum(secnum, i, 0);
+					sideline = &lines[linebuffer[sectors[secnum].linesoffset + i]];
+					
+					if (sideline->frontsecnum == secnum) {
+						secnum = sideline->sidenum[1];
 
 						if (sector->floorheight == floor->floordestheight) {
 							floor->texture = sector->floorpic;
@@ -468,7 +471,7 @@ EV_DoFloor
 						}
 					}
 					else {
-						secnum = getSector(secnum, i, 0);
+						secnum = sideline->sidenum[0];
 
 						if (sector->floorheight == floor->floordestheight) {
 							floor->texture = sector->floorpic;

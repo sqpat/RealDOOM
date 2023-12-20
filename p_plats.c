@@ -124,7 +124,7 @@ void T_PlatRaise(plat_t* plat, THINKERREF platRef)
 int16_t
 EV_DoPlat
 (  uint8_t linetag,
-	int16_t lineside0,
+	int16_t linefrontsecnum,
   plattype_e	type,
   int16_t		amount )
 {
@@ -133,8 +133,7 @@ EV_DoPlat
     int16_t		rtn;
 	int16_t		j = 0;
 	THINKERREF platRef;
-	int16_t side0secnum;
-	short_height_t specialheight;
+ 	short_height_t specialheight;
 	int16_t sectorsoundorgX;
 	int16_t sectorsoundorgY;
 	short_height_t sectorfloorheight;
@@ -153,8 +152,7 @@ EV_DoPlat
 			break;
 	}
 	
-	side0secnum = sides[lineside0].secnum;
-	P_FindSectorsFromLineTag(linetag, secnumlist, false);
+ 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 	while (secnumlist[j] >= 0) {
 		secnum = secnumlist[j];
 		j++;
@@ -182,7 +180,7 @@ EV_DoPlat
 		switch (type) {
 			case raiseToNearestAndChange:
 				plat->speed = PLATSPEED / 2;
-				(&sectors[secnum])->floorpic = sectors[side0secnum].floorpic;
+				(&sectors[secnum])->floorpic = sectors[linefrontsecnum].floorpic;
 				specialheight = P_FindNextHighestFloor(secnum, sectorfloorheight);
 				plat->high = specialheight;
 				plat->wait = 0;
@@ -194,7 +192,7 @@ EV_DoPlat
 				break;
 
 			case raiseAndChange:
-				(&sectors[secnum])->floorpic = sectors[side0secnum].floorpic;
+				(&sectors[secnum])->floorpic = sectors[linefrontsecnum].floorpic;
 
 				plat->speed = PLATSPEED / 2;
 				plat->high = sectorfloorheight + amount << SHORTFLOORBITS; // todo test, this looks wrong

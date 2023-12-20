@@ -329,10 +329,12 @@ void R_AddLine (int16_t curlineNum)
 	}
  
 	
+	//linebacksecnum = curlinelinedef->backsecnum;
 	linebacksecnum =
 		curlinelinedef->flags & ML_TWOSIDED ?
-		sides[curlinelinedef->sidenum[curlineside ^ 1]].secnum
+		sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum
 		: SECNUM_NULL;
+		
 
 	backsector = linebacksecnum	== SECNUM_NULL ? NULL : &sectors[linebacksecnum];
 

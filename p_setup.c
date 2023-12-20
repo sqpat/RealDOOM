@@ -45,7 +45,6 @@ void    P_SpawnMapThing(mapthing_t     mthing, int16_t key);
 // Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
 //
 int16_t             numvertexes;
-//MEMREF       vertexesRef;
 vertex_t*		vertexes;
 
 int16_t             numsegs;
@@ -66,11 +65,10 @@ node_t*          nodes;
 int16_t             numlines;
 line_t*			lines;
 uint8_t*		seenlines;
-//MEMREF			linesRef;
 
 int16_t             numsides;
-side_t*          sides;
-
+side_t*				sides;
+side_render_t*		sides_render;
 int16_t*          linebuffer;
 
 // for things nightmare respawn data
@@ -209,8 +207,8 @@ void P_LoadSegs(int16_t lump)
 		ldefflags = ldef->flags;
 
 
-		sidesecnum = sides[ldefsidenum].secnum;
-		othersidesecnum = sides[ldefothersidenum].secnum;
+		sidesecnum = sides_render[ldefsidenum].secnum;
+		othersidesecnum = sides_render[ldefothersidenum].secnum;
 
 
 		li = &segs[i];
@@ -1021,8 +1019,6 @@ void P_LoadLineDefs(int16_t lump)
 		mldsidenum1 = (mld->sidenum[1]);
 		 
 
-		side0secnum = sides[mldsidenum0].secnum;
-		side1secnum = sides[mldsidenum1].secnum;
 		v1 = &vertexes[mldv1];
 		v2 = &vertexes[mldv2];
 		v1x = v1->x;
@@ -1073,8 +1069,21 @@ void P_LoadLineDefs(int16_t lump)
 		}
 
   
-		//ld->baseX = v1x;
-		//ld->baseY = v1y;
+	}
+
+	Z_QuickmapRender();
+
+	for (i = 0; i < numlines; i++) {
+		mld = &data[i];
+
+		mldflags = (mld->flags);
+		mldsidenum0 = (mld->sidenum[0]);
+		mldsidenum1 = (mld->sidenum[1]);
+
+		side0secnum = sides_render[mldsidenum0].secnum;
+		side1secnum = sides_render[mldsidenum1].secnum;
+
+		ld = &lines[i];
 
 		if (mldsidenum0 != -1) {
 			ld->frontsecnum = side0secnum;
@@ -1086,8 +1095,10 @@ void P_LoadLineDefs(int16_t lump)
 		} else {
 			ld->backsecnum = SECNUM_NULL;
 		}
+
 	}
 
+	Z_QuickmapPhysics();
 	Z_FreeEMS(dataRef);
 }
 
@@ -1103,6 +1114,7 @@ void P_LoadSideDefs(int16_t lump)
 	uint16_t                 i;
 	mapsidedef_t*       msd;
 	side_t*             sd;
+	side_render_t*             sd_render;
 	uint8_t toptex;
 	uint8_t bottex;
 	uint8_t midtex;
@@ -1115,12 +1127,12 @@ void P_LoadSideDefs(int16_t lump)
 	int16_t msdsecnum;
 	MEMREF sidesRef;
 
-	//Z_QuickmapRender();
+	Z_QuickmapRender();
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
-	//sides = (side_t*) Z_GetNextRenderAddress(numsides * sizeof(side_t));
+	sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 
 
 	W_CacheLumpNumCheck(lump, 7);
@@ -1130,7 +1142,6 @@ void P_LoadSideDefs(int16_t lump)
 
 
 	for (i = 0; i < numsides; i++) {
-		//data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
 		msd = &data[i];
 
 		msdtextureoffset = (msd->textureoffset);
@@ -1153,16 +1164,18 @@ void P_LoadSideDefs(int16_t lump)
 		sd->toptexture = toptex;
 		sd->bottomtexture = bottex;
 		sd->midtexture = midtex;
-
-		sd->textureoffset = msdtextureoffset;
-		sd->rowoffset = msdrowoffset;
-		sd->secnum = msdsecnum;
+		
+		sd_render = &sides_render[i];
+		sd_render->textureoffset = msdtextureoffset;
+		sd_render->rowoffset = msdrowoffset;
+		sd_render->secnum = msdsecnum;
 
 
 	}
 
+
 	Z_FreeEMS(dataRef);
-	//Z_QuickmapPhysics();
+	Z_QuickmapPhysics();
 
 }
 
@@ -1243,7 +1256,7 @@ void P_GroupLines(void)
 		firstlinenum = subsectors[i].firstline;
 		
 		sidedefOffset = segs_render[firstlinenum].sidedefOffset;
-		sidesecnum = sides[sidedefOffset].secnum;
+		sidesecnum = sides_render[sidedefOffset].secnum;
 		subsectors[i].secnum = sidesecnum;
 
 	}
@@ -1333,7 +1346,8 @@ void P_GroupLines(void)
 
 extern uint16_t remainingconventional1;
 extern uint16_t remainingconventional2;
-
+extern uint16_t leveldataoffset_phys;
+extern uint16_t leveldataoffset_rend;
 
 //
 // P_SetupLevel
@@ -1436,33 +1450,33 @@ P_SetupLevel
 
 	// e1m1
 	// 648    85  467   475	  475   237  236   732    475   642    828			num x
-	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
 	// 4536 1360 1868  9975    60  1185 6608  2196   3325  1284   1656	 	bytes used
 	//							       35001 					15049
 	//   3    2     1     4    5     6     7     8		load order
 
 	// e1m2
 	// 1323 200  942   1033  1033   448  447   1463 1033  1322    1302
-	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
 	// 9261 3200 3768 21693  130   2240 12516  4389 7231  2644   2604
 	//							        54208                    30035	 
 
 
 		// e1m3
 	// 1326 177  946   1026  1026  461  460  1445	   1026 1318   850
-	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 9282 2832 3784 21546   129  2305 12880 4335   7182 2636  1700
+	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 3978 2832 3784 21546   129  2305 12880 4335   7182 2636  1700
 	//							        53997                  28858
 
 		// e1m4
 	// 1054 139  780   830    830    355  354   1172   830  1051   660
-	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 7378 2224 3120 17430   104   1775 9912 3516  5810  2102  1320
+	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 3162 2224 3120 17430   104   1775 9912 3516  5810  2102  1320
 	//						         	42916                  23296
 	// e1m5
 	// 1053 143  746   825   825    384  383   1141   825  1051    832
-	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 7371 2288 2984 17325  104   1920 10724 3423   5775 2102   1664
+	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 3159 2288 2984 17325  104   1920 10724 3423   5775 2102   1664
 	//							        43717                  23233
 	//     sector    linedef      subsec      seg      linebuffer
 	// side     vertex     seenlines   node     lineopenings   blocklinks
@@ -1470,40 +1484,39 @@ P_SetupLevel
 
 	// biggest shareware e1m6?
 	// 1727  250  1207 1352  1352   606  605    1862   1352 1719  1748
-	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	//12089 4000 4828 28392   170  3030 16940 5586     9464   3438 3496
+	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 5181 4000 4828 28392   170  3030 16940 5586     9464   3438 3496
 	//	 					      54259        48701 
 	
 	// e1m7 timedemo 3
 	//     sector    linedef      subsec      seg      linebuffer
 	// side     vertex     seenlines   node     lineopenings   blocklinks
 	// 1223 170   896   958  958   467  466   1371   958	1220   864				count
-	//   7   16     4    21  /8+1    5   28    3	    7	  2	     2		size of type
-	// 8561 2720 3584 20118  120  2335 13048 4113  6707  2440	1728				bytes used
+	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 3669 2720 3584 20118  120  2335 13048 4113  6707  2440	1728				bytes used
 	//						      	   51676						27327
 	//   3    2     1     4    5     6     7     8		load order
 	
 	// e1m8
 	// 511   74   328   333  333    177  176    586   333   507   2912
-	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 3577 1184 1312  6993   42    885 4928   1758  2331  1014   5824
+	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 1533 1184 1312  6993   42    885 4928   1758  2331  1014   5824
 	//							       19439						 16201
 
 	// e1m9
 	// 902  147  581    653  653    288  287    978   653   898    702
-	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 6314 2352 2324 13713   41   1440 8036  2934  4571  1796   1404
+	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 2706 2352 2324 13713   41   1440 8036  2934  4571  1796   1404
 	//							       35249						19507
 
 	// doom 2 map 14
 	//	2586 347  1428 1680  850  849	2815
-	// 18102 7981 5712 35280 4250 23772 33780  = 128877 too big ... also sides array > 64k, problematic...
+	// 7758 5552  5712 35280 4250 23772 8445  = 90769 too big ... also sides array > 64k, problematic...
 	//                 67075 up to here   61802 
 	
- 
+ /*
 	
-	/*
-	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p %p\n%u %u",
+	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p %p\n%u %u %u %u",
 		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t),
 		sizeof(subsector_t), sizeof(node_t), sizeof(seg_t), sizeof(lineopening_t), 2, sizeof(THINKERREF),
 		
@@ -1518,10 +1531,9 @@ P_SetupLevel
 		subsectors, nodes, vertexes, lineopenings,
 		
 		conventionalmemoryblock1, conventionalmemoryblock2,
-		remainingconventional1, remainingconventional2
+		remainingconventional1, remainingconventional2, 0-leveldataoffset_phys, 0-leveldataoffset_rend
 	);
 	*/
-	
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadThings");
 	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 
 

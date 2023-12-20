@@ -119,9 +119,10 @@ getSector
 	offset = sectors[currentSector].linesoffset + offset;
 
 	offset = linebuffer[offset];
-	offset = lines[offset].sidenum[side];
+	//offset = lines[offset].sidenum[side];
+	return side ? lines[offset].backsecnum : lines[offset].frontsecnum;
 
-	return sides[offset].secnum;
+	//return sides[offset].secnum;
     //return sides[lines[linebuffer[sectors[currentSector].linesoffset + offset]].sidenum[side]].secnum;
 }
 
@@ -416,7 +417,6 @@ P_CrossSpecialLine
 	line_t*	line = &lines[linenum];
 	uint8_t linetag = line->tag;
 	int16_t linefrontsecnum = line->frontsecnum;
-	int16_t lineside0 = line->sidenum[0];
 	int16_t linespecial = line->special;
 	int16_t setlinespecial = -1;
 	mobjtype_t thingtype = thing->type;
@@ -501,7 +501,7 @@ P_CrossSpecialLine
 	
       case 10:
 		// PlatDownWaitUp
-		EV_DoPlat(linetag, lineside0,downWaitUpStay,0);
+		EV_DoPlat(linetag, linefrontsecnum,downWaitUpStay,0);
 		setlinespecial = 0;
 		break;
 	
@@ -537,7 +537,7 @@ P_CrossSpecialLine
 	
       case 22:
 		// Raise floor to nearest height and change texture
-		EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0);
+		EV_DoPlat(linetag, linefrontsecnum, raiseToNearestAndChange,0);
 		setlinespecial = 0;
 		break;
 	
@@ -604,7 +604,7 @@ P_CrossSpecialLine
 	
       case 53:
 		// Perpetual Platform Raise
-		EV_DoPlat(linetag, lineside0, perpetualRaise,0);
+		EV_DoPlat(linetag, linefrontsecnum, perpetualRaise,0);
 		setlinespecial = 0;
 		break;
 	
@@ -676,7 +676,7 @@ P_CrossSpecialLine
 	
       case 121:
 		// Blazing PlatDownWaitUpStay
-		EV_DoPlat(linetag, lineside0, blazeDWUS,0);
+		EV_DoPlat(linetag, linefrontsecnum, blazeDWUS,0);
 		setlinespecial = 0;
 		break;
 	
@@ -773,12 +773,12 @@ P_CrossSpecialLine
 	
       case 87:
 		// Perpetual Platform Raise
-		EV_DoPlat(linetag, lineside0, perpetualRaise,0);
+		EV_DoPlat(linetag, linefrontsecnum, perpetualRaise,0);
 		break;
 	
       case 88:
 		// PlatDownWaitUp
-		EV_DoPlat(linetag, lineside0, downWaitUpStay,0);
+		EV_DoPlat(linetag, linefrontsecnum, downWaitUpStay,0);
 		break;
 	
       case 89:
@@ -814,7 +814,7 @@ P_CrossSpecialLine
       case 95:
 		// Raise floor to nearest height
 		// and change texture.
-		EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0);
+		EV_DoPlat(linetag, linefrontsecnum, raiseToNearestAndChange,0);
 		break;
 	
       case 96:
@@ -850,7 +850,7 @@ P_CrossSpecialLine
 
       case 120:
 		// Blazing PlatDownWaitUpStay.
-		EV_DoPlat(linetag, lineside0, blazeDWUS,0);
+		EV_DoPlat(linetag, linefrontsecnum, blazeDWUS,0);
 		break;
 	
       case 126:
@@ -926,7 +926,7 @@ P_ShootSpecialLine
 	
       case 47:
 		// RAISE FLOOR NEAR AND CHANGE
-		EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0);
+		EV_DoPlat(linetag, linefrontsecnum, raiseToNearestAndChange,0);
 		P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
 		break;
     }
