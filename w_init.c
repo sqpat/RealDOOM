@@ -169,7 +169,7 @@ void W_AddFile(int8_t *filename)
 		length = header.numlumps * sizeof(filelump_t);
 
 		// let's piggyback off conventional memory during game startup
-		fileinfo = (filelump_t*)conventionalmemoryblock1;
+		fileinfo = (filelump_t*)conventionalmemoryblock;
 		lseek(handle, header.infotableofs, SEEK_SET);
 		read(handle, fileinfo, length);
 		numlumps += header.numlumps;
@@ -242,7 +242,7 @@ void W_AddFile(int8_t *filename)
 	if (reloadname)
 		close(handle);
 	//free(fileinfo);
-	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
+	memset(conventionalmemoryblock, 0, STATIC_CONVENTIONAL_BLOCK_SIZE);
 }
 
 

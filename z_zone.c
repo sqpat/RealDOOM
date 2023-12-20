@@ -118,26 +118,22 @@ typedef struct
 
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
-uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE_1 = 0;
-byte* conventionalmemoryblock1;
-//byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
-byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
+uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE = 0;
+byte* conventionalmemoryblock;
+//byte conventionalmemoryblock[STATIC_CONVENTIONAL_BLOCK_SIZE];
 byte* spritememoryblock;
 byte textureinfomemoryblock[STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE];
 
-uint16_t remainingconventional1 = 0;
-//uint16_t remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
-uint16_t remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
+uint16_t remainingconventional = 0;
+//uint16_t remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE;
 uint16_t remainingspriteconventional = STATIC_CONVENTIONAL_SPRITE_SIZE;
 uint16_t remainingtextureinfoconventional = STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE;
 
 uint16_t conventional1head = 	  0;
-uint16_t conventional2head = 	  0;
 uint16_t spritehead = 	  0;
 uint16_t textureinfohead = 	  0;
 
 uint16_t conventional1headindex = 	  0;
-uint16_t conventional2headindex = 	  0;
 uint16_t spriteheadindex = 	  0;
 uint16_t textureinfoheadindex = 	  0;
 
@@ -150,7 +146,6 @@ allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 
 
 allocation_static_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
-allocation_static_conventional_t conventional_allocations2[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 allocation_static_conventional_t textureinfo_allocations[TEXTUREINFO_ALLOCATION_LIST_SIZE];
 // todo turn these into dynamic allocations
 allocation_static_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
@@ -1050,10 +1045,7 @@ void* Z_LoadTextureInfoFromConventional(MEMREF ref) {
 		return textureinfomemoryblock + textureinfo_allocations[ref].offset;
 }
 void* Z_LoadBytesFromConventional(MEMREF ref) {
-		if (ref < CONVENTIONAL_ALLOCATION_LIST_SIZE)
-			return conventionalmemoryblock1 + conventional_allocations1[ref].offset;
-		else
-			return conventionalmemoryblock2 + conventional_allocations2[ref - CONVENTIONAL_ALLOCATION_LIST_SIZE].offset;
+		return conventionalmemoryblock + conventional_allocations1[ref].offset;
 }
 
 
@@ -1064,13 +1056,11 @@ extern uint16_t leveldataoffset_rend;
 void Z_FreeConventionalAllocations() {
 
 	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
-	memset(conventional_allocations2, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
 
 	// we should be paged to physics now - should be ok
 	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
-	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
-	memset(conventionalmemoryblock2, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_2);
+	memset(conventionalmemoryblock, 0, STATIC_CONVENTIONAL_BLOCK_SIZE);
 
 	// todo make this area less jank. We want to free all the ems 4.0 region level data...
 	memset(MK_FP(0x7000, 0-leveldataoffset_phys), 0, leveldataoffset_phys);
@@ -1079,14 +1069,11 @@ void Z_FreeConventionalAllocations() {
 	memset(MK_FP(0x7000, 0 - leveldataoffset_rend), 0, leveldataoffset_rend);
 	leveldataoffset_rend = 0;
 
-	remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
-	remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
+	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE;
 
 	conventional1head = 0;
-	conventional2head = 0;
 
 	conventional1headindex = 0;
-	conventional2headindex = 0;
 
 	memset(Z_LoadBytesFromEMS(nightmareSpawnPointsRef), 0, 16384);
 	
@@ -1098,12 +1085,9 @@ void Z_FreeConventionalAllocations() {
 //  EXCEPT thinkers
 MEMREF Z_MallocConventional( 
 	uint16_t           size,
-		uint8_t           tag,
-		int16_t				type,
-		uint8_t forceblock){
+	int16_t			type){
 
 	allocation_static_conventional_t *allocations;
-	boolean useblock2 = false;
 	int16_t loopamount;
 	uint16_t* ref=0;
 	uint16_t* blockhead;
@@ -1113,33 +1097,21 @@ MEMREF Z_MallocConventional(
 	//return Z_MallocEMS(size, tag, user, sourceHint);
 
 	if (type == CA_TYPE_LEVELDATA) {
-		if (forceblock ==2 || (forceblock != 1 && (size > remainingconventional1))) {
-			if (size > remainingconventional2) {
-				//return Z_MallocEMS(size, tag, user, sourceHint);
-				I_Error("out of conventional space %u %hhi %u %u", size, tag, remainingconventional1, remainingconventional2);
-
-			}
-			useblock2 = true;
+		if (size > remainingconventional) {
+			I_Error("out of conventional space %u %u", size, remainingconventional);
 		}
 	
-		if (useblock2) {
-			allocations = conventional_allocations2;
-			remainingconventional2 -= size;
-			blockhead = &conventional2head;
-			ref = &conventional2headindex;
-		} else {
-			allocations = conventional_allocations1;
-			remainingconventional1 -= size;
-			blockhead = &conventional1head;
-			ref = &conventional1headindex;
-		}
+		allocations = conventional_allocations1;
+		remainingconventional -= size;
+		blockhead = &conventional1head;
+		ref = &conventional1headindex;
 		loopamount = CONVENTIONAL_ALLOCATION_LIST_SIZE;
 	
 	
 	} else if (type == CA_TYPE_SPRITE){
 		if (size > remainingspriteconventional){
 			//return Z_MallocEMS(size, tag, user, sourceHint);
-			I_Error("out of sprite space %li %hhi %u %u", size, tag, remainingconventional1, remainingconventional2);
+			I_Error("out of sprite space %u %u", size, remainingconventional);
 
 		}
 		allocations = sprite_allocations;
@@ -1150,7 +1122,7 @@ MEMREF Z_MallocConventional(
 	} else if (type == CA_TYPE_TEXTURE_INFO){
 		if (size > remainingtextureinfoconventional){
 			//return Z_MallocEMS(size, tag, user, sourceHint);
-			I_Error("out of texture space %li %hhi %u %u", size, tag, remainingconventional1, remainingconventional2);
+			I_Error("out of texture space %u %u", size, remainingconventional);
 		}
 		allocations = textureinfo_allocations;
 		remainingtextureinfoconventional -= size;
@@ -1162,7 +1134,7 @@ MEMREF Z_MallocConventional(
 	*ref = *ref +1;
  
 	if (refcopy == loopamount){
-		I_Error("ran out of refs for conventional allocation  %i %u %u %u", type, size, remainingconventional1, remainingconventional2);
+		I_Error("ran out of refs for conventional allocation  %u %u",  size, remainingconventional);
 	}
 
 	//allocations[ref].size = size;	
@@ -1170,7 +1142,7 @@ MEMREF Z_MallocConventional(
 
 	 // ref and blockhead increament up ahead..
 	*blockhead += size; 
-	return (refcopy) + ( useblock2 ? CONVENTIONAL_ALLOCATION_LIST_SIZE : 0);
+	return refcopy;
 	
 }
 

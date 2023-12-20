@@ -93,6 +93,7 @@ extern subsector_t*	subsectors;
 
 extern int16_t		numnodes;
 extern node_t*      nodes;
+extern node_render_t*      nodes_render;
 
 
 extern int16_t		numlines;

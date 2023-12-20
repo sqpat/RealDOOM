@@ -585,6 +585,7 @@ void R_Subsector(int16_t subsecnum)
 void R_RenderBSPNode()
 {
 	node_t *bsp;
+	node_render_t* bsp_render;
 	fixed_t_union dx, dy;
 	fixed_t left, right;
 	int16_t stack_bsp[MAX_BSP_DEPTH];
@@ -647,11 +648,12 @@ void R_RenderBSPNode()
 		bspnum = stack_bsp[sp];
 		side = stack_side[sp];
 		bsp = &nodes[bspnum];
+		bsp_render = &nodes_render[bspnum];
 
 		// Possibly divide back space.
 		//Walk back up the tree until we find
 		//a node that has a visible backspace.
-		while (!R_CheckBBox(bsp->bbox[side ^ 1]))  // - todo only used once, is it better to inline this? - sq
+		while (!R_CheckBBox(bsp_render->bbox[side ^ 1]))  // - todo only used once, is it better to inline this? - sq
 		{
 			if (sp == 0)
 			{
@@ -667,6 +669,7 @@ void R_RenderBSPNode()
 			side = stack_side[sp];
 
 			bsp = &nodes[bspnum];
+			bsp_render = &nodes_render[bspnum];
 		}
 
 		bspnum = bsp->children[side ^ 1];

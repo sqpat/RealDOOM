@@ -274,8 +274,8 @@ void Z_InitUMB(void) {
 	//Z_InitUMBDirect();
 
 
-	remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1 = UMBsize;
-	conventionalmemoryblock1 = MK_FP(UMBbase, 0);
+	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE = UMBsize;
+	conventionalmemoryblock = MK_FP(UMBbase, 0);
 
 	spritememoryblock = MK_FP(UMBbase2, 0);
 

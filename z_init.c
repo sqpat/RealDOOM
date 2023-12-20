@@ -59,10 +59,7 @@ extern struct SREGS segregs;
 extern PAGEREF currentListHead; // main rover
 extern allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 
-void Z_InitConventional(void) {
-	//	DEBUG_PRINT("Initializing conventional allocation blocks...");
-	//	DEBUG_PRINT("\Conventional block sizes %u %u at %lx and %lx\n", totalconventionalfree1, totalconventionalfree2, conventionalmemoryblock1, conventionalmemoryblock2);
-}
+ 
 
 // EMS STUFF
 

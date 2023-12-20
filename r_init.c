@@ -516,8 +516,7 @@ void R_InitTextures(void)
 		mtexture = (maptexture_t *)((byte *)maptex + offset);
 
 		textureRef = Z_MallocConventional(sizeof(texture_t)
-			+ sizeof(texpatch_t)*((mtexture->patchcount) - 1),
-			PU_STATIC, CA_TYPE_TEXTURE_INFO, 0);
+			+ sizeof(texpatch_t)*((mtexture->patchcount) - 1), CA_TYPE_TEXTURE_INFO);
 
 		textures[i] = textureRef;
 
@@ -543,8 +542,8 @@ void R_InitTextures(void)
 
 
 		//printf("name %s", texture->name);
-		texturecolumnlumpRefs[i] = Z_MallocConventional(texturewidth * 2, PU_STATIC, CA_TYPE_TEXTURE_INFO, 0);
-		texturecolumnofsRefs[i] = Z_MallocConventional(texturewidth * 2, PU_STATIC, CA_TYPE_TEXTURE_INFO, 0);
+		texturecolumnlumpRefs[i] = Z_MallocConventional(texturewidth * 2, CA_TYPE_TEXTURE_INFO);
+		texturecolumnofsRefs[i] = Z_MallocConventional(texturewidth * 2, CA_TYPE_TEXTURE_INFO);
 
 		j = 1;
 		while (j * 2 <= texturewidth)

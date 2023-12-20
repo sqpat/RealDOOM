@@ -205,8 +205,7 @@ void Z_ShutdownEMS() {
 	}
 #endif
 
-	//free(conventionalmemoryblock1);
-	//free(conventionalmemoryblock2);
+	//free(conventionalmemoryblock);
 
 }
 

@@ -94,22 +94,18 @@ typedef struct memblock_s
 #define ALLOCATION_LIST_HEAD	0
 #define EMS_ALLOCATION_LIST_SIZE 1050
 
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54208
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 5586
+//#define STATIC_CONVENTIONAL_BLOCK_SIZE 54208
 // 10343 extra in 1 still
 
-extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE_1;
-extern uint16_t remainingconventional1;
-extern byte* conventionalmemoryblock1;
+extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
+extern uint16_t remainingconventional;
+extern byte* conventionalmemoryblock;
 extern byte* spritememoryblock;
 
 
-//extern byte conventionalmemoryblock1[STATIC_CONVENTIONAL_BLOCK_SIZE_1];
-extern byte conventionalmemoryblock2[STATIC_CONVENTIONAL_BLOCK_SIZE_2];
 
 void Z_InitEMS(void);
 void Z_FreeTagsEMS();
-void Z_InitConventional(void);
 void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 
@@ -117,7 +113,7 @@ void Z_FreeConventionalAllocations();
 MEMREF Z_MallocEMS(uint16_t size, uint8_t tag, uint8_t user);
 MEMREF Z_MallocEMSWithBackRef32(int32_t  size, uint8_t tag, uint8_t user, int16_t backRef);
 MEMREF Z_MallocEMSWithBackRef16(uint16_t  size, uint8_t tag, uint8_t user, int16_t backRef);
-MEMREF Z_MallocConventional(uint16_t  size, uint8_t tag, int16_t type, uint8_t forceblock);
+MEMREF Z_MallocConventional(uint16_t  size, int16_t type);
 
 
 void Z_ChangeTagEMS(MEMREF index, int16_t tag);

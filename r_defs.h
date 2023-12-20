@@ -194,32 +194,32 @@ typedef int16_t slopetype_t;
 typedef struct line_s
 {
     // Vertices, from v1 to v2.
-	int16_t	v1Offset;	
-	int16_t	v2Offset;	//high two bits are the slopetype
+	int16_t	v1Offset;											// physics only
+	int16_t	v2Offset;	//high two bits are the slopetype		// physics only
 
     // Precalculated v2 - v1 for side checking.
-    int16_t	dx;
-    int16_t	dy;
+    int16_t	dx;	// physics only
+    int16_t	dy;	// physics only
 
     // Animation related.
     // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag in seenlines bit array
-	uint8_t	flags;
-    uint8_t	special;
-	uint8_t	tag; // high 2 bits are free... could be used for something
+	uint8_t	flags;	// both
+    uint8_t	special;	// both for texture animation but can be fixed to physics only
+	uint8_t	tag; // physics only
 
     // Visual appearance: SideDefs.
     //  sidenum[1] will be -1 if one sided
-    int16_t	sidenum[2];			
+    int16_t	sidenum[2];	  // both... could/should be worked out		
 
     // Front and back sector.
-	int16_t	frontsecnum;
-	int16_t	backsecnum;
+	int16_t	frontsecnum; // physics only not sure if it can be worked out alongside above
+	int16_t	backsecnum;; // physics only not sure if it can be worked out alongside above
 
     // if == validcount, already checked
 	// todo make this work 8 bit
 	// tricky, collisions do seem to happen with 8 bit. I think 10 or 11 would work. would need to fit those 3 high bits elsewhere.
     //uint8_t		validcount;
-	int16_t		validcount;
+	int16_t		validcount; // physics only
 
 
 } line_t;
@@ -309,7 +309,7 @@ typedef struct seg_render_s {
 //
 // BSP node.
 //
-typedef struct
+typedef struct node_s
 {
     // Partition line.
     int16_t	x;
@@ -318,14 +318,13 @@ typedef struct
     int16_t	dy;
 
     // Bounding box for each child.
-    int16_t	bbox[2][4]; 
 
     // If NF_SUBSECTOR its a subsector.
     uint16_t children[2];
     
 } node_t; // used in sight and bsp, but bbox is render only?
 
-typedef struct
+typedef struct node_render_s
 {
 	// Bounding box for each child.
 	int16_t	bbox[2][4];

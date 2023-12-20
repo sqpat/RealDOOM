@@ -472,7 +472,7 @@ void R_InitSpriteDefs()
 	if (!numsprites)
 		return;
 
-	spritesRef = Z_MallocConventional(numsprites * sizeof(*sprites), PU_STATIC, CA_TYPE_SPRITE, 0x00);
+	spritesRef = Z_MallocConventional(numsprites * sizeof(*sprites), CA_TYPE_SPRITE);
 	sprites = (spritedef_t*)Z_LoadSpriteFromConventional(spritesRef);
 
 	//todo does this have to move into the loop for safety?
@@ -558,7 +558,7 @@ void R_InitSpriteDefs()
 
 		// allocate space for the frames present and copy sprtemp to it
 		sprites[i].numframes = maxframe;
-		sprites[i].spriteframesRef = Z_MallocConventional(maxframe * sizeof(spriteframe_t), PU_STATIC, CA_TYPE_SPRITE, 0x00);
+		sprites[i].spriteframesRef = Z_MallocConventional(maxframe * sizeof(spriteframe_t), CA_TYPE_SPRITE);
 
 
 		spriteframes = Z_LoadSpriteFromConventional(sprites[i].spriteframesRef);

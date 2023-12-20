@@ -60,7 +60,10 @@ int16_t             numsubsectors;
 subsector_t*    subsectors;
 
 int16_t             numnodes;
-node_t*          nodes;
+node_t*				nodes;
+node_render_t*      nodes_render;
+
+
 
 int16_t             numlines;
 line_t*			lines;
@@ -125,7 +128,7 @@ void P_LoadVertexes(int16_t lump)
 	numvertexes = W_LumpLength(lump) / sizeof(mapvertex_t);
 
 	// Allocate zone memory for buffer.
-	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
+	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), CA_TYPE_LEVELDATA);
 	vertexes = Z_LoadBytesFromConventional(vertexesRef);
 	// Load data into cache.
 	W_CacheLumpNumCheck(lump, 0);
@@ -176,7 +179,7 @@ void P_LoadSegs(int16_t lump)
 	Z_QuickmapRender();
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
-	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
+	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), CA_TYPE_LEVELDATA);
 	segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 
 	segs_render = (seg_render_t* far)Z_GetNextRenderAddress(numsegs * sizeof(seg_render_t));
@@ -269,7 +272,7 @@ void P_LoadSubsectors(int16_t lump)
 	MEMREF			dataRef;
 	MEMREF		subsectorsRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
+	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), CA_TYPE_LEVELDATA);
 	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 	W_CacheLumpNumCheck(lump, 2);
@@ -327,7 +330,7 @@ void P_LoadSectors(int16_t lump)
 	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 
-	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
+	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), CA_TYPE_LEVELDATA);
 	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
 
 	sectors_physics  = (sector_physics_t*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
@@ -386,21 +389,28 @@ void P_LoadNodes(int16_t lump)
 	uint16_t         j;
 	uint16_t         k;
 	node_t*     no;
+	node_render_t* no_render;
+
 	MEMREF		dataRef;
 	mapnode_t	currentdata;
 	MEMREF	nodesRef;
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
-	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
+	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), CA_TYPE_LEVELDATA);
 	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
+	nodes_render = (node_render_t* far) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
+
+
 	W_CacheLumpNumCheck(lump, 4);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
+	Z_QuickmapRender();
+	data = (mapnode_t *)Z_LoadBytesFromEMS(dataRef);
 
 
 	for (i = 0; i < numnodes; i++) {
-		data = (mapnode_t *)Z_LoadBytesFromEMS(dataRef);
 		currentdata = data[i];
 		no = &nodes[i];
+		no_render = &nodes_render[i];
 
 		no->x = (currentdata.x);
 		no->y = (currentdata.y);
@@ -409,10 +419,11 @@ void P_LoadNodes(int16_t lump)
 		for (j = 0; j < 2; j++) {
 			no->children[j] = (currentdata.children[j]);
 			for (k = 0; k < 4; k++) {
-				no->bbox[j][k] = (currentdata.bbox[j][k]);
+				no_render->bbox[j][k] = (currentdata.bbox[j][k]);
 			}
 		}
  	}
+	Z_QuickmapPhysics();
 
 	Z_FreeEMS(dataRef);
 }
@@ -872,8 +883,6 @@ void P_CacheLineOpenings() {
 	sector_t* front;
 	sector_t* back;
 	
-	//MEMREF lineopeningsRef = Z_MallocConventional(numlines * sizeof(lineopening_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
-	//lineopenings = (lineopening_t*)Z_LoadBytesFromConventional(lineopeningsRef);
 
 	lineopenings = (lineopening_t* far)Z_GetNextPhysicsAddress(numlines * sizeof(lineopening_t));
 	memset(lineopenings, 0, numlines * sizeof(lineopening_t));
@@ -995,10 +1004,10 @@ void P_LoadLineDefs(int16_t lump)
 	MEMREF seenlinesRef;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
-	linesRef = Z_MallocConventional(numlines * sizeof(line_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
+	linesRef = Z_MallocConventional(numlines * sizeof(line_t), CA_TYPE_LEVELDATA);
 	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
 
-	seenlinesRef = Z_MallocConventional(numlines/8+1, PU_LEVEL, CA_TYPE_LEVELDATA, 0);
+	seenlinesRef = Z_MallocConventional(numlines/8+1, CA_TYPE_LEVELDATA);
 	seenlines = (uint8_t*)Z_LoadBytesFromConventional(seenlinesRef);
 	memset(lines, 0, numlines * sizeof(line_t));
 	memset(seenlines, 0, numlines / 8 + 1);
@@ -1130,7 +1139,7 @@ void P_LoadSideDefs(int16_t lump)
 	Z_QuickmapRender();
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
+	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), CA_TYPE_LEVELDATA);
 	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 
@@ -1192,8 +1201,6 @@ void P_LoadBlockMap(int16_t lump)
 
 
 	W_CacheLumpNumCheck(lump, 8);
-	//blockmaplumpRef = W_CacheLumpNumEMS(lump, PU_LEVEL);
-	//blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
 
 	blockmaplump = (int16_t* far)Z_GetNextPhysicsAddress(W_LumpLength(lump));
 	W_CacheLumpNumDirect(lump, (byte*)blockmaplump);
@@ -1215,8 +1222,6 @@ void P_LoadBlockMap(int16_t lump)
 
 	blocklinks = (THINKERREF*) Z_GetNextPhysicsAddress(count);
 
-	//blocklinksRef = Z_MallocConventional(count, PU_LEVEL, CA_TYPE_LEVELDATA, 1);
-	//blocklinks = (THINKERREF*)Z_LoadBytesFromConventional(blocklinksRef);
 	memset(blocklinks, 0, count);
 }
 
@@ -1345,7 +1350,6 @@ void P_GroupLines(void)
 
 
 extern uint16_t remainingconventional1;
-extern uint16_t remainingconventional2;
 extern uint16_t leveldataoffset_phys;
 extern uint16_t leveldataoffset_rend;
 
@@ -1516,7 +1520,7 @@ P_SetupLevel
 	
  /*
 	
-	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p %p\n%u %u %u %u",
+	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p \n%u %u %u",
 		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t),
 		sizeof(subsector_t), sizeof(node_t), sizeof(seg_t), sizeof(lineopening_t), 2, sizeof(THINKERREF),
 		
@@ -1530,8 +1534,8 @@ P_SetupLevel
 		sides, sectors, vertexes, lines,
 		subsectors, nodes, vertexes, lineopenings,
 		
-		conventionalmemoryblock1, conventionalmemoryblock2,
-		remainingconventional1, remainingconventional2, 0-leveldataoffset_phys, 0-leveldataoffset_rend
+		conventionalmemoryblock, 
+		remainingconventional1, 0-leveldataoffset_phys, 0-leveldataoffset_rend
 	);
 	*/
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadThings");
