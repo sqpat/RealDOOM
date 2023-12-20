@@ -94,14 +94,19 @@ typedef struct memblock_s
 #define ALLOCATION_LIST_HEAD	0
 #define EMS_ALLOCATION_LIST_SIZE 1050
 
-//#define STATIC_CONVENTIONAL_BLOCK_SIZE 54208
-// 10343 extra in 1 still
+
+// DOOM SHAREWARE VALUE
+#define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
+#define SPRITE_ALLOCATION_LIST_SIZE 150
+
+// DOOM SHAREWARE VALUE
+#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+3767u)
 
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
 extern byte* conventionalmemoryblock;
 extern byte* spritememoryblock;
-
+extern byte* textureinfomemoryblock;
 
 
 void Z_InitEMS(void);

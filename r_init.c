@@ -600,7 +600,6 @@ void R_InitData(void) {
 		// Load in the light tables, 
 		//  256 byte align tables.
 
-	Z_QuickmapRender();
 
 	DEBUG_PRINT(".");
 	R_InitSpriteLumps();
@@ -612,8 +611,7 @@ void R_InitData(void) {
 	colormaps = (byte *)(((int32_t)colormaps + 255)&~0xff);
 	W_ReadLumpStatic(lump, colormaps);
 
-	Z_QuickmapPhysics();
-
+ 
 }
 
 
@@ -622,9 +620,11 @@ extern uint8_t                     screenblocks;
 
 void R_Init(void)
 {
+	Z_QuickmapRender();
 	R_InitData();
 	DEBUG_PRINT("..");
 	// viewwidth / viewheight / detailLevel are set by the defaults
+	Z_QuickmapPhysics();
 
 	R_SetViewSize(screenblocks, detailLevel);
 	R_InitPlanes();

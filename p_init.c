@@ -64,16 +64,20 @@ uint8_t     R_CheckTextureNumForNameA(int8_t *name)
 	if (name[0] == '-')
 		return 0;
 
-
+	Z_QuickmapRender();
 	for (i = 0; i < numtextures; i++) {
 		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]);
 
 
 
 		if (!strncasecmp(texture->name, name, 8)) {
+			Z_QuickmapPhysics();
 			return i;
 		}
 	}
+
+	Z_QuickmapPhysics();
+
 	/*
 	I_Error("\n%i %i %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c", i, textures[i],
 		name[0], name[1], name[2], name[3], name[4], name[5], name[6], name[7],
@@ -173,6 +177,8 @@ void P_InitSwitchList(void)
 	else if (commercial)
 		episode = 3;
 
+	Z_QuickmapRender();
+
 	for (index = 0, i = 0; i < MAXSWITCHES; i++) {
 		if (!alphSwitchList[i].episode) {
 			numswitches = index / 2;
@@ -186,6 +192,8 @@ void P_InitSwitchList(void)
 			switchlist[index++] = R_TextureNumForNameA(alphSwitchList[i].name2);
 		}
 	}
+	Z_QuickmapPhysics();
+
 }
 
 //
@@ -298,6 +306,7 @@ void P_InitPicAnims(void)
 	};
 	//	Init animation
 	lastanim = anims;
+	Z_QuickmapRender();
 	for (i = 0; animdefs[i].istexture != -1; i++) {
 		if (animdefs[i].istexture)
 		{
@@ -328,6 +337,7 @@ void P_InitPicAnims(void)
 
 		lastanim++;
 	}
+	Z_QuickmapPhysics();
 
 }
 spriteframe_t   sprtemp[29];

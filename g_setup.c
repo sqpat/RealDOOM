@@ -131,6 +131,8 @@ uint8_t     R_TextureNumForNameB(int8_t* name)
 
 void G_DoLoadLevel(void)
 {
+	Z_QuickmapRender();
+
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
 	// DOOM determines the sky texture to be used
 	// depending on the current episode, and the game version.
@@ -145,6 +147,7 @@ void G_DoLoadLevel(void)
 	}
 #endif
 
+	Z_QuickmapPhysics();
 
 	if (wipegamestate == GS_LEVEL)
 		wipegamestate = -1;             // force a wipe 
@@ -257,6 +260,7 @@ G_InitNew
 	gameskill = skill;
 
 	viewactive = true;
+	Z_QuickmapRender();
 
 
 	// set the sky map for the episode
@@ -286,6 +290,7 @@ G_InitNew
 			break;
 		}
 
+	Z_QuickmapPhysics();
 
 	TEXT_MODE_DEBUG_PRINT("\nloading level");
 	G_DoLoadLevel();

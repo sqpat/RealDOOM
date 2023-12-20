@@ -50,13 +50,7 @@
 #define MINFRAGMENT         32
 // we dont make many conventional allocations, only a small number of important ones
 #define CONVENTIONAL_ALLOCATION_LIST_SIZE 12
- 
-// DOOM SHAREWARE VALUE
-#define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
-#define SPRITE_ALLOCATION_LIST_SIZE 150
- 
-// DOOM SHAREWARE VALUE
-#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+3767u)
+
 
 #define TEXTUREINFO_ALLOCATION_LIST_SIZE NUM_TEXTURE_CACHE * 3
 
@@ -100,7 +94,8 @@
 #define SET_BACKREF(x, y) (x.backref_and_user = (y & INVERSE_USER_MASK) + (x.backref_and_user & USER_MASK))
 #define SET_BACKREF_ZERO(x) (x.backref_and_user &= USER_MASK)
 
-#define NUM_EMS4_SWAP_PAGES 29L
+// actually only using 29 so far but let's plan ahead for texture mem...
+#define NUM_EMS4_SWAP_PAGES 64L
 
 typedef struct
 {
@@ -122,7 +117,8 @@ uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE = 0;
 byte* conventionalmemoryblock;
 //byte conventionalmemoryblock[STATIC_CONVENTIONAL_BLOCK_SIZE];
 byte* spritememoryblock;
-byte textureinfomemoryblock[STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE];
+//byte textureinfomemoryblock[STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE];
+byte* textureinfomemoryblock;
 
 uint16_t remainingconventional = 0;
 //uint16_t remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE;
@@ -1512,8 +1508,8 @@ void Z_InitEMS(void)
 
 // page for 0x9000 block where we will store thinkers in physics code, then visplanes etc in render code
 int16_t pagenum9000; 
-int16_t pageswapargs_phys[24];
-int16_t pageswapargs_rend[24];
+int16_t pageswapargs_phys[32];
+int16_t pageswapargs_rend[32];
 int16_t pageswapargs_stat[10];
 int16_t pageswapargs_rend_temp_7000_to_6000[8];
 
@@ -1538,7 +1534,7 @@ void Z_QuickmapPhysics() {
 
 	
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
+	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_phys;
 	regs.w.si = pageswapargoff_phys+32;
@@ -1598,7 +1594,7 @@ void Z_QuickmapRender() {
 	// todo: test real ems hardware...
 
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04;  // page count
+	regs.w.cx = 0x08;  // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_rend;
 	regs.w.si = pageswapargoff_rend+32;

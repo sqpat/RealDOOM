@@ -230,8 +230,8 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 
 
 extern int16_t pagenum9000;
-extern int16_t pageswapargs_phys[24];
-extern int16_t pageswapargs_rend[24];
+extern int16_t pageswapargs_phys[32];
+extern int16_t pageswapargs_rend[32];
 extern int16_t pageswapargs_stat[10];
 
 extern int16_t pageswapargs_rend_temp_7000_to_6000[8];
@@ -268,9 +268,9 @@ void Z_GetEMSPageMap() {
 	int16_t* far pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
 	uint16_t segment;
-	uint16_t offset;
-	uint16_t offset2;
-	uint16_t offset3;
+	uint16_t offset_render;
+	uint16_t offset_physics;
+	uint16_t offset_status;
 
 	FILE *fp;
 	 
@@ -347,8 +347,9 @@ found:
 	// 0x7000 block		physics levdata render levdata			st graphics
 	//					
 	//					
-	// 0x6000 block						textures?
-	// 0x5000 block						textures
+	// 0x6000 block						texturedata
+	// 0x5000 block		strings			textures
+	//					trig tables
 	// 0x4000 block						textures
 
 	// todo loopify
@@ -377,269 +378,288 @@ found:
 	pageswapargs_phys[21] = pagenum9000 - 6;
 	pageswapargs_phys[22] = 11;
 	pageswapargs_phys[23] = pagenum9000 - 5;
+	pageswapargs_phys[24] = 12;
+	pageswapargs_phys[25] = pagenum9000 - 12;
+	pageswapargs_phys[26] = 13;
+	pageswapargs_phys[27] = pagenum9000 - 11;
+	pageswapargs_phys[28] = 14;
+	pageswapargs_phys[29] = pagenum9000 - 10;
+	pageswapargs_phys[30] = 15;
+	pageswapargs_phys[31] = pagenum9000 - 9;
 
-	pageswapargs_rend[0] = 12;
+
+	pageswapargs_rend[0] = 16;
 	pageswapargs_rend[1] = pagenum9000;
-	pageswapargs_rend[2] = 13;
+	pageswapargs_rend[2] = 17;
 	pageswapargs_rend[3] = pagenum9000 + 1;
-	pageswapargs_rend[4] = 14;
+	pageswapargs_rend[4] = 18;
 	pageswapargs_rend[5] = pagenum9000 + 2;
-	pageswapargs_rend[6] = 15;
+	pageswapargs_rend[6] = 19;
 	pageswapargs_rend[7] = pagenum9000 + 3;
-	pageswapargs_rend[8] = 16;
+	pageswapargs_rend[8] = 20;
 	pageswapargs_rend[9] = pagenum9000 - 4;
-	pageswapargs_rend[10] = 17;
+	pageswapargs_rend[10] = 21;
 	pageswapargs_rend[11] = pagenum9000 - 3;
-	pageswapargs_rend[12] = 18;
+	pageswapargs_rend[12] = 22;
 	pageswapargs_rend[13] = pagenum9000 - 2;
-	pageswapargs_rend[14] = 19;
+	pageswapargs_rend[14] = 23;
 	pageswapargs_rend[15] = pagenum9000 - 1;
-	pageswapargs_rend[16] = 20;
+	pageswapargs_rend[16] = 24;
 	pageswapargs_rend[17] = pagenum9000 - 8;
-	pageswapargs_rend[18] = 21;
+	pageswapargs_rend[18] = 25;
 	pageswapargs_rend[19] = pagenum9000 - 7;
-	pageswapargs_rend[20] = 22;
+	pageswapargs_rend[20] = 26;
 	pageswapargs_rend[21] = pagenum9000 - 6;
-	pageswapargs_rend[22] = 23;
+	pageswapargs_rend[22] = 27;
 	pageswapargs_rend[23] = pagenum9000 - 5;
+	pageswapargs_rend[24] = 28;
+	pageswapargs_rend[25] = pagenum9000 - 12;
+	pageswapargs_rend[26] = 29;
+	pageswapargs_rend[27] = pagenum9000 - 11;
+	pageswapargs_rend[28] = 30;
+	pageswapargs_rend[29] = pagenum9000 - 10;
+	pageswapargs_rend[30] = 31;
+	pageswapargs_rend[31] = pagenum9000 - 9;
 
-	pageswapargs_stat[0] = 24;
+	pageswapargs_stat[0] = 32;
 	pageswapargs_stat[1] = pagenum9000 + 3;
-	pageswapargs_stat[2] = 25;
+	pageswapargs_stat[2] = 33;
 	pageswapargs_stat[3] = pagenum9000 - 8;
-	pageswapargs_stat[4] = 26;
+	pageswapargs_stat[4] = 34;
 	pageswapargs_stat[5] = pagenum9000 - 7;
-	pageswapargs_stat[6] = 27;
+	pageswapargs_stat[6] = 35;
 	pageswapargs_stat[7] = pagenum9000 - 6;
-	pageswapargs_stat[8] = 28;
+	pageswapargs_stat[8] = 36;
 	pageswapargs_stat[9] = pagenum9000 - 5;
 
-	pageswapargs_rend_temp_7000_to_6000[0] = 20;
+	pageswapargs_rend_temp_7000_to_6000[0] = 24;
 	pageswapargs_rend_temp_7000_to_6000[1] = pagenum9000 - 12;
-	pageswapargs_rend_temp_7000_to_6000[2] = 21;
+	pageswapargs_rend_temp_7000_to_6000[2] = 25;
 	pageswapargs_rend_temp_7000_to_6000[3] = pagenum9000 - 11;
-	pageswapargs_rend_temp_7000_to_6000[4] = 22;
+	pageswapargs_rend_temp_7000_to_6000[4] = 26;
 	pageswapargs_rend_temp_7000_to_6000[5] = pagenum9000 - 10;
-	pageswapargs_rend_temp_7000_to_6000[6] = 23;
+	pageswapargs_rend_temp_7000_to_6000[6] = 27;
 	pageswapargs_rend_temp_7000_to_6000[7] = pagenum9000 - 9;
 
 
 	// we're an OS now! let's directly allocate memory !
 
 	segment = 0x9000;
-	offset = 0u;
-	offset2 = 0u;
-	offset3 = 0u;
+	offset_render = 0u;
+	offset_physics = 0u;
+	offset_status = 0u;
 	//physics mapping
 	thinkerlist = MK_FP(segment, 0);
-	offset2 += sizeof(thinker_t) * MAX_THINKERS;
-	//states = MK_FP(segment, offset2);
-	offset2 += sizeof(state_t) * NUMSTATES;
-	mobjinfo = MK_FP(segment, offset2);
-	offset2 += sizeof(mobjinfo_t) * NUMMOBJTYPES;
+	offset_physics += sizeof(thinker_t) * MAX_THINKERS;
+	//states = MK_FP(segment, offset_physics);
+	offset_physics += sizeof(state_t) * NUMSTATES;
+	mobjinfo = MK_FP(segment, offset_physics);
+	offset_physics += sizeof(mobjinfo_t) * NUMMOBJTYPES;
 
 	//65269
 
 	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
 	visplanes = MK_FP(segment, 0);
-	offset += sizeof(visplane_t) * MAXCONVENTIONALVISPLANES;
-	visplaneheaders = MK_FP(segment, offset);
-	offset += sizeof(visplaneheader_t) * MAXEMSVISPLANES;
-	yslope = MK_FP(segment, offset);
-	offset += sizeof(fixed_t) * SCREENHEIGHT;
-	distscale = MK_FP(segment, offset);
-	offset += sizeof(fixed_t) * SCREENWIDTH;
-	cachedheight = MK_FP(segment, offset);
-	offset += sizeof(fixed_t) * SCREENHEIGHT;
-	cacheddistance = MK_FP(segment, offset);
-	offset += sizeof(fixed_t) * SCREENHEIGHT;
-	cachedxstep = MK_FP(segment, offset);
-	offset += sizeof(fixed_t) * SCREENHEIGHT;
-	cachedystep = MK_FP(segment, offset);
-	offset += sizeof(fixed_t) * SCREENHEIGHT; // up to here r_plane only basically
-	spanstart = MK_FP(segment, offset);
-	offset += sizeof(int16_t) * SCREENHEIGHT;
+	offset_render += sizeof(visplane_t) * MAXCONVENTIONALVISPLANES;
+	visplaneheaders = MK_FP(segment, offset_render);
+	offset_render += sizeof(visplaneheader_t) * MAXEMSVISPLANES;
+	yslope = MK_FP(segment, offset_render);
+	offset_render += sizeof(fixed_t) * SCREENHEIGHT;
+	distscale = MK_FP(segment, offset_render);
+	offset_render += sizeof(fixed_t) * SCREENWIDTH;
+	cachedheight = MK_FP(segment, offset_render);
+	offset_render += sizeof(fixed_t) * SCREENHEIGHT;
+	cacheddistance = MK_FP(segment, offset_render);
+	offset_render += sizeof(fixed_t) * SCREENHEIGHT;
+	cachedxstep = MK_FP(segment, offset_render);
+	offset_render += sizeof(fixed_t) * SCREENHEIGHT;
+	cachedystep = MK_FP(segment, offset_render);
+	offset_render += sizeof(fixed_t) * SCREENHEIGHT; // up to here r_plane only basically
+	spanstart = MK_FP(segment, offset_render);
+	offset_render += sizeof(int16_t) * SCREENHEIGHT;
 
 
-	viewangletox = MK_FP(segment, offset);
-	offset += sizeof(int16_t) * (FINEANGLES / 2);
-	xtoviewangle = MK_FP(segment, offset);
-	offset += sizeof(fineangle_t) * (SCREENWIDTH + 1);
-	drawsegs = MK_FP(segment, offset);
-	offset += sizeof(drawseg_t) * (MAXDRAWSEGS);
-	floorclip = MK_FP(segment, offset);
-	offset += sizeof(int16_t) * SCREENWIDTH;
-	ceilingclip = MK_FP(segment, offset);
-	offset += sizeof(int16_t) * SCREENWIDTH;
+	viewangletox = MK_FP(segment, offset_render);
+	offset_render += sizeof(int16_t) * (FINEANGLES / 2);
+	xtoviewangle = MK_FP(segment, offset_render);
+	offset_render += sizeof(fineangle_t) * (SCREENWIDTH + 1);
+	drawsegs = MK_FP(segment, offset_render);
+	offset_render += sizeof(drawseg_t) * (MAXDRAWSEGS);
+	floorclip = MK_FP(segment, offset_render);
+	offset_render += sizeof(int16_t) * SCREENWIDTH;
+	ceilingclip = MK_FP(segment, offset_render);
+	offset_render += sizeof(int16_t) * SCREENWIDTH;
 
 
 
 
-	// offset is 65534
+	// offset_render is 65534
 	// now 64894
 
-	offset3 -= (ST_WIDTH*ST_HEIGHT);
-	screen4 = MK_FP(segment, offset3);
+	offset_status -= (ST_WIDTH*ST_HEIGHT);
+	screen4 = MK_FP(segment, offset_status);
 
 
 	printf("\n  MEMORY AREA  Physics  Render  Status");
-	printf("\n   0x9000:      %05u   %05u   %05u", offset2, offset, 0-offset3);
+	printf("\n   0x9000:      %05u   %05u   %05u", offset_physics, offset_render, 0-offset_status);
 
 	segment = 0x8000;
-	offset = 0u;
-	offset2 = 0u;
-	offset3 = 0u;
+	offset_render = 0u;
+	offset_physics = 0u;
+	offset_status = 0u;
 
 	screen0 = MK_FP(segment, 0);
-	offset2 += 64000u;
-	gammatable = MK_FP(segment, offset2);
-	offset2 += (256 * 5);
+	offset_physics += 64000u;
+	gammatable = MK_FP(segment, offset_physics);
+	offset_physics += (256 * 5);
 
 	// 65280
 
 	openings = MK_FP(segment, 0);
-	offset += sizeof(int16_t) * MAXOPENINGS;
-	negonearray = MK_FP(segment, offset);
-	offset += sizeof(int16_t) * (SCREENWIDTH);
-	screenheightarray = MK_FP(segment, offset);
-	offset += sizeof(int16_t) * (SCREENWIDTH);
-	vissprites = MK_FP(segment, offset);
-	offset += sizeof(vissprite_t) * (MAXVISSPRITES);
-	scalelightfixed = MK_FP(segment, offset);
-	offset += sizeof(lighttable_t*) * (MAXLIGHTSCALE);
-	colormapbytes = MK_FP(segment, offset);
-	offset += ((33 * 256) + 255);
+	offset_render += sizeof(int16_t) * MAXOPENINGS;
+	negonearray = MK_FP(segment, offset_render);
+	offset_render += sizeof(int16_t) * (SCREENWIDTH);
+	screenheightarray = MK_FP(segment, offset_render);
+	offset_render += sizeof(int16_t) * (SCREENWIDTH);
+	vissprites = MK_FP(segment, offset_render);
+	offset_render += sizeof(vissprite_t) * (MAXVISSPRITES);
+	scalelightfixed = MK_FP(segment, offset_render);
+	offset_render += sizeof(lighttable_t*) * (MAXLIGHTSCALE);
+	colormapbytes = MK_FP(segment, offset_render);
+	offset_render += ((33 * 256) + 255);
 
-	spritewidths = MK_FP(segment, offset);
-	offset += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
-	spriteoffsets = MK_FP(segment, offset);
-	offset += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
-	spritetopoffsets = MK_FP(segment, offset);
-	offset += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
+	spritewidths = MK_FP(segment, offset_render);
+	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
+	spriteoffsets = MK_FP(segment, offset_render);
+	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
+	spritetopoffsets = MK_FP(segment, offset_render);
+	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
 	
 	// from the top
-
-
 
 	//   65269  64894  10240
 	//   65280  60945  00000
 	//   00000  00000  64208
 
 
-	printf("\n   0x8000:      %05u   %05u   %05u", offset2, offset, 0-offset3);
-	offset = 0u;
-	offset2 = 0u;
-	offset3 = 0u;
+	printf("\n   0x8000:      %05u   %05u   %05u", offset_physics, offset_render, 0-offset_status);
+	offset_render = 0u;
+	offset_physics = 0u;
+	offset_status = 0u;
 
 	segment = 0x7000;
 
 	
-	offset3 = 0u;
-	offset3 -= 320;
-	tallnum[0] = MK_FP(segment, offset3);
-	offset3 -= 244;
-	tallnum[1] = MK_FP(segment, offset3);
-	offset3 -= 336;
-	tallnum[2] = MK_FP(segment, offset3);
-	offset3 -= 336;
-	tallnum[3] = MK_FP(segment, offset3);
-	offset3 -= 316;
-	tallnum[4] = MK_FP(segment, offset3);
-	offset3 -= 348;
-	tallnum[5] = MK_FP(segment, offset3);
-	offset3 -= 340;
-	tallnum[6] = MK_FP(segment, offset3);
-	offset3 -= 276;
-	tallnum[7] = MK_FP(segment, offset3);
-	offset3 -= 348;
-	tallnum[8] = MK_FP(segment, offset3);
-	offset3 -= 336;
-	tallnum[9] = MK_FP(segment, offset3);
+	offset_status = 0u;
+	offset_status -= 320;
+	tallnum[0] = MK_FP(segment, offset_status);
+	offset_status -= 244;
+	tallnum[1] = MK_FP(segment, offset_status);
+	offset_status -= 336;
+	tallnum[2] = MK_FP(segment, offset_status);
+	offset_status -= 336;
+	tallnum[3] = MK_FP(segment, offset_status);
+	offset_status -= 316;
+	tallnum[4] = MK_FP(segment, offset_status);
+	offset_status -= 348;
+	tallnum[5] = MK_FP(segment, offset_status);
+	offset_status -= 340;
+	tallnum[6] = MK_FP(segment, offset_status);
+	offset_status -= 276;
+	tallnum[7] = MK_FP(segment, offset_status);
+	offset_status -= 348;
+	tallnum[8] = MK_FP(segment, offset_status);
+	offset_status -= 336;
+	tallnum[9] = MK_FP(segment, offset_status);
 
-	offset3 -= 68;
-	shortnum[0] = MK_FP(segment, offset3);
-	offset3 -= 64;
-	shortnum[1] = MK_FP(segment, offset3);
-	offset3 -= 76;
-	shortnum[2] = MK_FP(segment, offset3);
-	offset3 -= 72;
-	shortnum[3] = MK_FP(segment, offset3);
-	offset3 -= 60;
-	shortnum[4] = MK_FP(segment, offset3);
-	offset3 -= 72;
-	shortnum[5] = MK_FP(segment, offset3);
-	offset3 -= 72;
-	shortnum[6] = MK_FP(segment, offset3);
-	offset3 -= 72;
-	shortnum[7] = MK_FP(segment, offset3);
-	offset3 -= 76;
-	shortnum[8] = MK_FP(segment, offset3);
-	offset3 -= 72;
-	shortnum[9] = MK_FP(segment, offset3);
+	offset_status -= 68;
+	shortnum[0] = MK_FP(segment, offset_status);
+	offset_status -= 64;
+	shortnum[1] = MK_FP(segment, offset_status);
+	offset_status -= 76;
+	shortnum[2] = MK_FP(segment, offset_status);
+	offset_status -= 72;
+	shortnum[3] = MK_FP(segment, offset_status);
+	offset_status -= 60;
+	shortnum[4] = MK_FP(segment, offset_status);
+	offset_status -= 72;
+	shortnum[5] = MK_FP(segment, offset_status);
+	offset_status -= 72;
+	shortnum[6] = MK_FP(segment, offset_status);
+	offset_status -= 72;
+	shortnum[7] = MK_FP(segment, offset_status);
+	offset_status -= 76;
+	shortnum[8] = MK_FP(segment, offset_status);
+	offset_status -= 72;
+	shortnum[9] = MK_FP(segment, offset_status);
 
-	offset3 -= 328;
-	tallpercent = MK_FP(segment, offset3);
+	offset_status -= 328;
+	tallpercent = MK_FP(segment, offset_status);
 
 
-	offset3 -= 104;
-	keys[0] = MK_FP(segment, offset3);
-	offset3 -= 104;
-	keys[1] = MK_FP(segment, offset3);
-	offset3 -= 104;
-	keys[2] = MK_FP(segment, offset3);
-	offset3 -= 120;
-	keys[3] = MK_FP(segment, offset3);
-	offset3 -= 120;
-	keys[4] = MK_FP(segment, offset3);
-	offset3 -= 120;
-	keys[5] = MK_FP(segment, offset3);
+	offset_status -= 104;
+	keys[0] = MK_FP(segment, offset_status);
+	offset_status -= 104;
+	keys[1] = MK_FP(segment, offset_status);
+	offset_status -= 104;
+	keys[2] = MK_FP(segment, offset_status);
+	offset_status -= 120;
+	keys[3] = MK_FP(segment, offset_status);
+	offset_status -= 120;
+	keys[4] = MK_FP(segment, offset_status);
+	offset_status -= 120;
+	keys[5] = MK_FP(segment, offset_status);
 	 
-	offset3 -= 1648;
-	armsbg[0] = MK_FP(segment, offset3);
+	offset_status -= 1648;
+	armsbg[0] = MK_FP(segment, offset_status);
 
-	offset3 -= 76;
-	arms[0][0] = MK_FP(segment, offset3);
-	offset3 -= 72;
-	arms[1][0] = MK_FP(segment, offset3);
-	offset3 -= 60;
-	arms[2][0] = MK_FP(segment, offset3);
-	offset3 -= 72;
-	arms[3][0] = MK_FP(segment, offset3);
-	offset3 -= 72;
-	arms[4][0] = MK_FP(segment, offset3);
-	offset3 -= 72;
-	arms[5][0] = MK_FP(segment, offset3);
+	offset_status -= 76;
+	arms[0][0] = MK_FP(segment, offset_status);
+	offset_status -= 72;
+	arms[1][0] = MK_FP(segment, offset_status);
+	offset_status -= 60;
+	arms[2][0] = MK_FP(segment, offset_status);
+	offset_status -= 72;
+	arms[3][0] = MK_FP(segment, offset_status);
+	offset_status -= 72;
+	arms[4][0] = MK_FP(segment, offset_status);
+	offset_status -= 72;
+	arms[5][0] = MK_FP(segment, offset_status);
 	 
-	offset3 -= 1408;
-	faceback = MK_FP(segment, offset3);
+	offset_status -= 1408;
+	faceback = MK_FP(segment, offset_status);
 
-	offset3 -= 13128;
-	sbar = MK_FP(segment, offset3);
+	offset_status -= 13128;
+	sbar = MK_FP(segment, offset_status);
 	 
 	for (i = 0; i < 42; i++) {
-		offset3 -= facelen[i];
-		faces[i] = MK_FP(segment, offset3);
+		offset_status -= facelen[i];
+		faces[i] = MK_FP(segment, offset_status);
 	}
 
 	for (i = 0; i < 63; i++) {
-		offset3 -= fontlen[i];
-		hu_font[i] = MK_FP(segment, offset3);
+		offset_status -= fontlen[i];
+		hu_font[i] = MK_FP(segment, offset_status);
 	}
 
 
-	printf("\n   0x7000:      %05u   %05u   %05u", offset2, offset, 0 - offset3);
+	printf("\n   0x7000:      %05u   %05u   %05u", offset_physics, offset_render, 0 - offset_status);
 	segment = 0x6000;
-	offset = 0u;
-	offset2 = 0u;
-	offset3 = 0u;
-	printf("\n   0x6000:      %05u   %05u   %05u", offset2, offset, 0 - offset3);
+	offset_render = 0u;
+	offset_physics = 0u;
+	offset_status = 0u;
+
+	textureinfomemoryblock = MK_FP(segment, offset_render);
+	offset_render += (STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE);
+
+	printf("\n   0x6000:      %05u   %05u   %05u", offset_physics, offset_render, 0 - offset_status);
 
 	
 	// todo: scalelight and zlight. Hard because they are 2d arrays of pointers?
-	//scalelight = MK_FP(0x8000, offset);
-	//offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTSCALE);
-	//zlight = MK_FP(0x8000, offset);
-	//offset += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
+	//scalelight = MK_FP(0x8000, offset_render);
+	//offset_render += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTSCALE);
+	//zlight = MK_FP(0x8000, offset_render);
+	//offset_render += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
 
 	//I_Error("done");
 
