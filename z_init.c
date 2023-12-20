@@ -236,6 +236,9 @@ extern int16_t pagenum9000;
 extern int16_t pageswapargs_phys[24];
 extern int16_t pageswapargs_rend[24];
 extern int16_t pageswapargs_stat[10];
+
+extern int16_t pageswapargs_rend_temp_7000_to_6000[8];
+
 extern int16_t pageswapargseg_phys;
 extern int16_t pageswapargoff_phys;
 extern int16_t pageswapargseg_rend;
@@ -260,12 +263,15 @@ int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824,
 						844, 836, 844, 908, 944, 844, 816, 824, 
 						808, 836 };
 
+uint16_t leveldataoffset_phys = 0u;
+uint16_t leveldataoffset_rend = 0u;
+
 void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
 	int16_t* far pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
 	uint16_t segment;
-	uint16_t offset; 
+	uint16_t offset;
 	uint16_t offset2;
 	uint16_t offset3;
 
@@ -411,6 +417,16 @@ found:
 	pageswapargs_stat[8] = 28;
 	pageswapargs_stat[9] = pagenum9000 - 5;
 
+	pageswapargs_rend_temp_7000_to_6000[0] = 20;
+	pageswapargs_rend_temp_7000_to_6000[1] = pagenum9000 - 12;
+	pageswapargs_rend_temp_7000_to_6000[2] = 21;
+	pageswapargs_rend_temp_7000_to_6000[3] = pagenum9000 - 11;
+	pageswapargs_rend_temp_7000_to_6000[4] = 22;
+	pageswapargs_rend_temp_7000_to_6000[5] = pagenum9000 - 10;
+	pageswapargs_rend_temp_7000_to_6000[6] = 23;
+	pageswapargs_rend_temp_7000_to_6000[7] = pagenum9000 - 9;
+
+
 	// we're an OS now! let's directly allocate memory !
 
 	segment = 0x9000;
@@ -520,10 +536,7 @@ found:
 
 	segment = 0x7000;
 
-	sectors_physics = MK_FP(segment, offset2);
-	offset2 += (sizeof(sector_physics_t) * numsectors);
-
-
+	
 	offset3 = 0u;
 	offset3 -= 320;
 	tallnum[0] = MK_FP(segment, offset3);
@@ -634,6 +647,47 @@ found:
 	//I_Error("done");
 
 	Z_QuickmapPhysics(); // map default page map
+}
+
+byte* far Z_GetNext0x7000Address(uint16_t size, int8_t pagetype) {
+
+	uint16_t oldoffset;
+	uint16_t *useoffset;
+	byte* far returnvalue;
+	switch (pagetype) {
+		case PAGE_TYPE_PHYSICS:
+			oldoffset = leveldataoffset_phys;
+			useoffset = &leveldataoffset_phys;
+			break;
+		case PAGE_TYPE_RENDER:
+			oldoffset = leveldataoffset_rend;
+			useoffset = &leveldataoffset_rend;
+			break;
+	}
+
+	*useoffset -= size;
+	returnvalue = MK_FP(0x7000, *useoffset);
+
+	if (oldoffset != 0 && (oldoffset < *useoffset)) {
+		// wraparound
+		I_Error("Allocated too much space in Z_GetNextPhysicsAddress (size %u) ", size);
+	}
+	return returnvalue;
+
+}
+
+void Z_Subtract0x7000Address(uint16_t size, int8_t pagetype) {
+
+	switch (pagetype) {
+		case PAGE_TYPE_PHYSICS:
+			leveldataoffset_phys += size; 
+			return;
+		case PAGE_TYPE_RENDER:
+			leveldataoffset_rend += size;
+			return;
+	}
+
+
 }
 
 void Z_LoadBinaries() {

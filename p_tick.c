@@ -130,7 +130,7 @@ void P_RunThinkers (void)
 	int8_t result2[100];
 	int32_t lasttick = 0;
 	FILE* fp;
-	ticcount_t stoptic = 1818;
+	ticcount_t stoptic = 19818;
 #endif
 
 	currentthinker = thinkerlist[0].next;

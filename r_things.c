@@ -688,7 +688,7 @@ void R_DrawSprite (vissprite_t* spr)
             || ( lowscalecheckpass
 
 				// worst case scenario one side of wall is closer, have to manually check if sprite on the closer side of wall
-                 && !R_PointOnSegSide (spr->gx, spr->gy, &vertexes[ds->curseg->v1Offset], &vertexes[ds->curseg->v2Offset&SEG_V2_OFFSET_MASK]) ) ) {
+                 && !R_PointOnSegSide (spr->gx, spr->gy, &vertexes[segs_render[ds->curseg-segs].v1Offset], &vertexes[segs_render[ds->curseg - segs].v2Offset]) ) ) {
             
 			// if drawseg is that of a masked texture then... 
 

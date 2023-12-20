@@ -36,7 +36,7 @@
 #include "s_sound.h"
 
 #include "doomstat.h"
-
+#include <dos.h>	
 
 void    P_SpawnMapThing(mapthing_t     mthing, int16_t key);
 
@@ -50,6 +50,8 @@ vertex_t*		vertexes;
 
 int16_t             numsegs;
 seg_t*				segs;
+seg_physics_t*		segs_physics;
+seg_render_t*		segs_render;
 
 int16_t             numsectors;
 sector_t*		sectors;
@@ -90,7 +92,7 @@ int16_t             bmapwidth;
 int16_t             bmapheight;     // size in mapblocks
 
 								// offsets in blockmap are from here
-MEMREF          blockmaplumpRef;
+int16_t*		blockmaplump;
 
 // origin of block map
 // todo can this be made 16 bit
@@ -158,6 +160,7 @@ void P_LoadSegs(int16_t lump)
 	uint16_t                 i;
 	mapseg_t*           ml;
 	seg_t*              li;
+	seg_render_t*              li_render;
 	line_t*             ldef;
 	uint16_t                 side;
 	int16_t ldefsidenum;
@@ -170,14 +173,20 @@ void P_LoadSegs(int16_t lump)
 	int16_t mlangle;
 	int16_t mloffset;
 	int16_t mllinedef;
-	fixed_t_union temp;
-	MEMREF segsRef; 
+	MEMREF segsRef;
+	int16_t* tempsecnums;
+	Z_QuickmapRender();
 
-	temp.h.fracbits = 0;
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
-	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
-	
+	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
+
+	segs_render = (seg_render_t* far)Z_GetNextRenderAddress(numsegs * sizeof(seg_render_t));
+	segs_physics = (seg_physics_t* far)Z_GetNextPhysicsAddress(numsegs * sizeof(seg_physics_t));
+
+	// ugly, gross, but this memory is free right now...
+	tempsecnums = (int16_t* far)Z_GetNextRenderAddress(numsegs * 2 * sizeof(int16_t));
+
 	memset(segs, 0xff, numsegs * sizeof(seg_t));
 	
 	W_CacheLumpNumCheck(lump, 1);
@@ -205,18 +214,47 @@ void P_LoadSegs(int16_t lump)
 
 
 		li = &segs[i];
-		li->v1Offset = mlv1;
-		li->v2Offset = mlv2 + (side ? SEG_V2_SIDE_1_HIGHBIT : 0);
-	
-		li->fineangle = mlangle >> SHORTTOFINESHIFT;
-		li->offset = mloffset;
+		li->side = side ? 1 : 0;
 		li->linedefOffset = mllinedef;
-		li->sidedefOffset = ldefsidenum;
+	
+		li_render = &segs_render[i];
+		li_render->v1Offset = mlv1;
+		li_render->v2Offset = mlv2;
+	
+		li_render->fineangle = mlangle >> SHORTTOFINESHIFT;
+		li_render->offset = mloffset;
+		li_render->sidedefOffset = ldefsidenum;
+
+		tempsecnums[i * 2] = sidesecnum;
+		if (ldef->flags & ML_TWOSIDED)
+			tempsecnums[i * 2 + 1] = othersidesecnum;
+		else
+			tempsecnums[i * 2 + 1] = SECNUM_NULL;
+
+
+
 
 	}
+	
+	
+	Z_QuickmapPhysics();
+	Z_QuickmapRender7000to6000();
+	
 
-	//Z_SetUnlocked(dataRef);
-	Z_FreeEMS(dataRef);
+	tempsecnums = MK_FP(0x6000u, (uint16_t)((uint32_t)tempsecnums & 0xFFFFu));
+
+
+	for (i = 0; i < numsegs; i++) {
+		segs_physics[i].frontsecnum = tempsecnums[i * 2];
+		segs_physics[i].backsecnum  = tempsecnums[i * 2 + 1];
+	}
+	
+	// and now we put it back..
+
+	Z_SubtractRenderAddress(numsegs * 2 * sizeof(int16_t));
+	Z_QuickmapPhysics();
+
+ 	Z_FreeEMS(dataRef);
 }
 
 
@@ -233,7 +271,7 @@ void P_LoadSubsectors(int16_t lump)
 	MEMREF			dataRef;
 	MEMREF		subsectorsRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), PU_LEVEL, CA_TYPE_LEVELDATA, 2);
+	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 	W_CacheLumpNumCheck(lump, 2);
@@ -294,6 +332,8 @@ void P_LoadSectors(int16_t lump)
 	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), PU_LEVEL, CA_TYPE_LEVELDATA,0);
 	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
 
+	sectors_physics  = (sector_physics_t*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
+
 	memset(sectors, 0, numsectors * sizeof(sector_t));
 	memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
 
@@ -320,7 +360,6 @@ void P_LoadSectors(int16_t lump)
 		} else if (convertedtag >= 58) {
 			I_Error("found (sector) line tag that was too high! %i %i", convertedtag, i);
 		}
-		//sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
 		ss->floorpic = R_FlatNumForNameC(ms.floorpic);
@@ -331,9 +370,7 @@ void P_LoadSectors(int16_t lump)
 		sp->tag = (convertedtag);
 		sp->special = (ms.special);
 
-		Z_RefIsActive(dataRef);
-
-
+ 
 
 	}
 
@@ -377,9 +414,7 @@ void P_LoadNodes(int16_t lump)
 				no->bbox[j][k] = (currentdata.bbox[j][k]);
 			}
 		}
-		//Z_RefIsActive(nodesRef);
-		//Z_RefIsActive(dataRef);
-	}
+ 	}
 
 	Z_FreeEMS(dataRef);
 }
@@ -839,8 +874,10 @@ void P_CacheLineOpenings() {
 	sector_t* front;
 	sector_t* back;
 	
-	MEMREF lineopeningsRef = Z_MallocConventional(numlines * sizeof(lineopening_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
-	lineopenings = (lineopening_t*)Z_LoadBytesFromConventional(lineopeningsRef);
+	//MEMREF lineopeningsRef = Z_MallocConventional(numlines * sizeof(lineopening_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
+	//lineopenings = (lineopening_t*)Z_LoadBytesFromConventional(lineopeningsRef);
+
+	lineopenings = (lineopening_t* far)Z_GetNextPhysicsAddress(numlines * sizeof(lineopening_t));
 	memset(lineopenings, 0, numlines * sizeof(lineopening_t));
 
 	for (linenum = 0; linenum < numlines; linenum++) {
@@ -889,11 +926,11 @@ void P_LoadThings(int16_t lump)
 	MEMREF				dataRef;
 	W_CacheLumpNumCheck(lump, 5);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
+	data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);
 
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
 
 	for (i = 0; i < numthings; i++) {
-		data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);
 		mt = data[i];
 		spawn = true;
 
@@ -969,10 +1006,10 @@ void P_LoadLineDefs(int16_t lump)
 	memset(seenlines, 0, numlines / 8 + 1);
 	W_CacheLumpNumCheck(lump, 6);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
+	data = (maplinedef_t *)Z_LoadBytesFromEMS(dataRef);
 
 
 	for (i = 0; i < numlines; i++) {
-		data = (maplinedef_t *)  Z_LoadBytesFromEMS(dataRef);
 		mld = &data[i];
 
 		mldflags = (mld->flags);
@@ -1078,13 +1115,16 @@ void P_LoadSideDefs(int16_t lump)
 	int16_t msdsecnum;
 	MEMREF sidesRef;
 
+	//Z_QuickmapRender();
+
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), PU_LEVEL, CA_TYPE_LEVELDATA, 0);
 	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
+	//sides = (side_t*) Z_GetNextRenderAddress(numsides * sizeof(side_t));
 
 
 	W_CacheLumpNumCheck(lump, 7);
-	
+
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
 
@@ -1106,7 +1146,7 @@ void P_LoadSideDefs(int16_t lump)
 		toptex = R_TextureNumForNameB(texnametop);
 		bottex = R_TextureNumForNameB(texnamebot);
 		midtex = R_TextureNumForNameB(texnamemid);
-		
+
 		// sides gets unloaded by the above calls, and theres not enough room in ems to 
 		// hold it in memory in the worst case alongside data
 		sd = &sides[i];
@@ -1122,6 +1162,8 @@ void P_LoadSideDefs(int16_t lump)
 	}
 
 	Z_FreeEMS(dataRef);
+	//Z_QuickmapPhysics();
+
 }
 
 
@@ -1130,22 +1172,20 @@ void P_LoadSideDefs(int16_t lump)
 //
 void P_LoadBlockMap(int16_t lump)
 {
-	uint16_t         i;
 	uint16_t         count;
-	int16_t*		blockmaplump;
-	fixed_t_union temp;
+
 	MEMREF			blocklinksRef;
-	temp.h.fracbits = 0;
+
+
 
 	W_CacheLumpNumCheck(lump, 8);
-	
-	blockmaplumpRef = W_CacheLumpNumEMS(lump, PU_LEVEL);
-	blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
-	//blockmapOffset = 4;  // only ever 4? deleted..
-	count = W_LumpLength(lump) / 2;
+	//blockmaplumpRef = W_CacheLumpNumEMS(lump, PU_LEVEL);
+	//blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
 
-	//for (i = 0; i < count; i++)
-	//	blockmaplump[i] = (blockmaplump[i]);
+	blockmaplump = (int16_t* far)Z_GetNextPhysicsAddress(W_LumpLength(lump));
+	W_CacheLumpNumDirect(lump, (byte*)blockmaplump);
+
+
 	
 	bmaporgx = blockmaplump[0];
 	bmaporgy = blockmaplump[1];
@@ -1158,11 +1198,12 @@ void P_LoadBlockMap(int16_t lump)
 
 	// clear out mobj chains
 
-	//	blocklinksRef = Z_MallocEMS (count, PU_LEVEL, 0);
 	count = sizeof(THINKERREF) * bmapwidth*bmapheight;
 
-	blocklinksRef = Z_MallocConventional(count, PU_LEVEL, CA_TYPE_LEVELDATA, 1);
-	blocklinks = (THINKERREF*)Z_LoadBytesFromConventional(blocklinksRef);
+	blocklinks = (THINKERREF*) Z_GetNextPhysicsAddress(count);
+
+	//blocklinksRef = Z_MallocConventional(count, PU_LEVEL, CA_TYPE_LEVELDATA, 1);
+	//blocklinks = (THINKERREF*)Z_LoadBytesFromConventional(blocklinksRef);
 	memset(blocklinks, 0, count);
 }
 
@@ -1195,17 +1236,19 @@ void P_GroupLines(void)
 	fixed_t_union		tempv2;
 	MEMREF linebufferRef;
 
+	Z_QuickmapRender();
+
 	// look up sector number for each subsector
 	for (i = 0; i < numsubsectors; i++) {
 		firstlinenum = subsectors[i].firstline;
 		
-		sidedefOffset = segs[firstlinenum].sidedefOffset;
+		sidedefOffset = segs_render[firstlinenum].sidedefOffset;
 		sidesecnum = sides[sidedefOffset].secnum;
-
 		subsectors[i].secnum = sidesecnum;
 
 	}
 
+	Z_QuickmapPhysics();
 
 	// count number of lines in each sector
 	total = 0;
@@ -1224,8 +1267,7 @@ void P_GroupLines(void)
 
 	// build line tables for each sector        
 
-	linebufferRef = Z_MallocConventional (total * 2, PU_LEVEL, CA_TYPE_LEVELDATA,2);
-	linebuffer = (int16_t*)Z_LoadBytesFromConventional(linebufferRef);
+	linebuffer = (int16_t* far)Z_GetNextPhysicsAddress(total * sizeof(int16_t));
 	linebufferindex = 0;
 
 	tempv1.h.fracbits = 0;
@@ -1289,6 +1331,8 @@ void P_GroupLines(void)
 
 
 
+extern uint16_t remainingconventional1;
+extern uint16_t remainingconventional2;
 
 
 //
@@ -1346,7 +1390,6 @@ P_SetupLevel
 
 	leveltime.w = 0;
 
-
 	
 	// note: most of this ordering is important 
 
@@ -1393,33 +1436,33 @@ P_SetupLevel
 
 	// e1m1
 	// 648    85  467   475	  475   237  236   732    475   642    828			num x
-	//   7   23     4    21  /8+1     5   28    12	    7	  2	     2		size of type
-	// 4536 1995 1868  9975    60  1185 6608  8784   3325  1284   1656	 	bytes used
+	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 4536 1360 1868  9975    60  1185 6608  2196   3325  1284   1656	 	bytes used
 	//							       35001 					15049
 	//   3    2     1     4    5     6     7     8		load order
 
 	// e1m2
 	// 1323 200  942   1033  1033   448  447   1463 1033  1322    1302
-	//   7   23     4    21  /8+1     5   28    12	    7	  2	     2		size of type
-	// 9261 4600 3768 21693  130   2240 12516  17556 7231  2644   2604
+	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 9261 3200 3768 21693  130   2240 12516  4389 7231  2644   2604
 	//							        54208                    30035	 
 
 
 		// e1m3
 	// 1326 177  946   1026  1026  461  460  1445	   1026 1318   850
-	//   7   23     4    21  /8+1    5   28    12	    7	  2	     2		size of type
-	// 9282 4071 3784 21546   129  2305 12880 17340   7182 2636  1700
+	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 9282 2832 3784 21546   129  2305 12880 4335   7182 2636  1700
 	//							        53997                  28858
 
 		// e1m4
 	// 1054 139  780   830    830    355  354   1172   830  1051   660
-	//   7   23     4    21  /8+1      5   28    12	    7	  2	     2		size of type
-	// 7378 3197 3120 17430   104   1775 9912 14064  5810  2102  1320
+	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 7378 2224 3120 17430   104   1775 9912 3516  5810  2102  1320
 	//						         	42916                  23296
 	// e1m5
 	// 1053 143  746   825   825    384  383   1141   825  1051    832
-	//   7   23     4    21  /8+1     5   28    12	    7	  2	     2		size of type
-	// 7371 3289 2984 17325  104   1920 10724 13692   5775 2102   1664
+	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 7371 2288 2984 17325  104   1920 10724 3423   5775 2102   1664
 	//							        43717                  23233
 	//     sector    linedef      subsec      seg      linebuffer
 	// side     vertex     seenlines   node     lineopenings   blocklinks
@@ -1427,29 +1470,29 @@ P_SetupLevel
 
 	// biggest shareware e1m6?
 	// 1727  250  1207 1352  1352   606  605    1862   1352 1719  1748
-	//   7   23     4    21  /8+1     5   28    12	      7	  2	     2		size of type
-	//12089 5750 4828 28392   170  3030 16940 22344  9464   3438 3496
+	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	//12089 4000 4828 28392   170  3030 16940 5586     9464   3438 3496
 	//	 					      54259        48701 
 	
 	// e1m7 timedemo 3
-	//     sector    linedef      node      linebuffer		blocklinks
-	// side     vertex     subsec       seg		   lineopenings
+	//     sector    linedef      subsec      seg      linebuffer
+	// side     vertex     seenlines   node     lineopenings   blocklinks
 	// 1223 170   896   958  958   467  466   1371   958	1220   864				count
-	//   7   23     4    21  /8+1    5   28    12	    7	  2	     2		size of type
-	// 8561 3910 3584 20118  120  2335 13048 16452  6707  2440	1728				bytes used
+	//   7   16     4    21  /8+1    5   28    3	    7	  2	     2		size of type
+	// 8561 2720 3584 20118  120  2335 13048 4113  6707  2440	1728				bytes used
 	//						      	   51676						27327
 	//   3    2     1     4    5     6     7     8		load order
 	
 	// e1m8
 	// 511   74   328   333  333    177  176    586   333   507   2912
-	//   7   23     4    21  /8+1     5   28    12	    7	  2	     2		size of type
-	// 3577 1702 1312  6993   42    885 4928   7032  2331  1014   5824
+	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 3577 1184 1312  6993   42    885 4928   1758  2331  1014   5824
 	//							       19439						 16201
 
 	// e1m9
 	// 902  147  581    653  653    288  287    978   653   898    702
-	//   7   23     4    21  /8+1     5   28    12	    7	  2	     2		size of type
-	// 6314 3381 2324 13713   41   1440 8036  11736  4571  1796   1404
+	//   7   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
+	// 6314 2352 2324 13713   41   1440 8036  2934  4571  1796   1404
 	//							       35249						19507
 
 	// doom 2 map 14
@@ -1458,10 +1501,9 @@ P_SetupLevel
 	//                 67075 up to here   61802 
 	
  
-
-
+	
 	/*
-	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p %p",
+	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p %p\n%u %u",
 		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t),
 		sizeof(subsector_t), sizeof(node_t), sizeof(seg_t), sizeof(lineopening_t), 2, sizeof(THINKERREF),
 		
@@ -1475,7 +1517,8 @@ P_SetupLevel
 		sides, sectors, vertexes, lines,
 		subsectors, nodes, vertexes, lineopenings,
 		
-		conventionalmemoryblock1, conventionalmemoryblock2
+		conventionalmemoryblock1, conventionalmemoryblock2,
+		remainingconventional1, remainingconventional2
 	);
 	*/
 	

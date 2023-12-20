@@ -1057,6 +1057,9 @@ void* Z_LoadBytesFromConventional(MEMREF ref) {
 }
 
 
+extern uint16_t leveldataoffset_phys;
+extern uint16_t leveldataoffset_rend;
+
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
 void Z_FreeConventionalAllocations() {
 
@@ -1068,8 +1071,13 @@ void Z_FreeConventionalAllocations() {
 
 	memset(conventionalmemoryblock1, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_1);
 	memset(conventionalmemoryblock2, 0, STATIC_CONVENTIONAL_BLOCK_SIZE_2);
-	
 
+	// todo make this area less jank. We want to free all the ems 4.0 region level data...
+	memset(MK_FP(0x7000, 0-leveldataoffset_phys), 0, leveldataoffset_phys);
+	leveldataoffset_phys = 0;
+	
+	memset(MK_FP(0x7000, 0 - leveldataoffset_rend), 0, leveldataoffset_rend);
+	leveldataoffset_rend = 0;
 
 	remainingconventional1 = STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 	remainingconventional2 = STATIC_CONVENTIONAL_BLOCK_SIZE_2;
@@ -1535,6 +1543,8 @@ int16_t pagenum9000;
 int16_t pageswapargs_phys[24];
 int16_t pageswapargs_rend[24];
 int16_t pageswapargs_stat[10];
+int16_t pageswapargs_rend_temp_7000_to_6000[8];
+
 int16_t pageswapargseg_phys;
 int16_t pageswapargoff_phys;
 int16_t pageswapargseg_rend;
@@ -1585,6 +1595,23 @@ void Z_QuickmapPhysics9000() {
 
 	taskswitchcount++;
 	currenttask = TASK_PHYSICS9000; // not sure about this
+}
+
+// sometimes needed when rendering sprites..
+void Z_QuickmapRender7000to6000() {
+
+	uint16_t seg = (uint16_t)((uint32_t)pageswapargs_rend_temp_7000_to_6000 >> 16);
+	uint16_t off = (uint16_t)(((uint32_t)pageswapargs_rend_temp_7000_to_6000) & 0xffff);
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = seg;
+	regs.w.si = off;
+	intx86(EMS_INT, &regs, &regs);
+
+	taskswitchcount++;
+	currenttask = TASK_RENDER7000TO6000; // not sure about this
 }
 
 void Z_QuickmapRender() {

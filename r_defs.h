@@ -81,18 +81,8 @@ typedef	struct
     uint8_t	floorpic;
     uint8_t	ceilingpic;
     uint8_t	lightlevel; // seems to max at 255
-	//uint8_t	special;	// only a few small numbers
-	//uint8_t	tag;		
-
-    // 0 = untraversed, 1,2 = sndlines -1
-    int8_t		soundtraversed;
 
 
-
-    // origin for any sounds played by the sector
-    // corresponds to fixed_t, not easy to change
-	int16_t soundorgX;
-	int16_t soundorgY;
 
     // if == validcount, already checked
 	//uint8_t validcount;	// [linecount] size
@@ -116,15 +106,18 @@ typedef	struct
 
 	uint8_t	special;	// only a few small numbers
 	uint8_t	tag;
+	// 0 = untraversed, 1,2 = sndlines -1
 	int8_t		soundtraversed;
 	int16_t	blockbox[4];
+	// origin for any sounds played by the sector
+	// corresponds to fixed_t, not easy to change
 	int16_t soundorgX;
 	int16_t soundorgY;
 	// thinker_t for reversable actions
 	THINKERREF	specialdataRef;
 	uint8_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
 
-	int16_t linesoffset;
+	int16_t linesoffset;	// [linecount] size
 } sector_physics_t;
 
  
@@ -153,11 +146,19 @@ typedef	struct
 
 typedef struct
 {
-    // add this to the calculated texture column
+  
+	// add this to the calculated texture column
 	texsize_t	textureoffset;
-    
-    // add this to the calculated texture top
+
+	// add this to the calculated texture top
 	texsize_t	rowoffset;
+
+
+
+	// Sector the SideDef is facing.
+	int16_t	secnum;
+
+	// todo remove above
 
     // Texture indices.
     // We do not maintain names here. 
@@ -167,11 +168,23 @@ typedef struct
     uint8_t	bottomtexture;
     uint8_t	midtexture;
 
-    // Sector the SideDef is facing.
-    int16_t	secnum;
     
-} side_t; // ALL RENDER ONLY
+} side_t; 
 
+
+typedef struct
+{
+	// add this to the calculated texture column
+	texsize_t	textureoffset;
+
+	// add this to the calculated texture top
+	texsize_t	rowoffset;
+	
+ 
+
+	// Sector the SideDef is facing.
+	int16_t	secnum;
+} side_t_render; 
 
 
 //
@@ -259,41 +272,53 @@ typedef struct lineopening_s
 //
 typedef struct subsector_s
 {
-    int16_t	secnum;
-    uint8_t	numlines;
+    int16_t	secnum;   
+    uint8_t	numlines; 
     int16_t	firstline;
     
-} subsector_t;
+} subsector_t; // used in sight and bsp
 
 
-#define SEG_V2_SIDE_1_HIGHBIT 0x8000u
-#define SEG_V2_OFFSET_MASK 0x7FFFu
-//
+ //
 // The LineSeg.
 //
-typedef struct
+typedef struct seg_s
 {
+
+ 
+
+	 
+ 
+	uint8_t side;
+    int16_t	linedefOffset;
+
+    
+} seg_t;
+
+typedef struct seg_physics_s {
+
+	// Sector references.
+	// Could be retrieved from linedef, too.
+	// backsector is NULL for one sided lines
+	int16_t	frontsecnum;
+	int16_t	backsecnum;
+} seg_physics_t;
+
+
+typedef struct seg_render_s {
 
 	uint16_t	v1Offset;
 	uint16_t	v2Offset; // high bit contains side, necessary to determine frontsecnum/backsecnum dynamically
 
 	int16_t	offset;
 
-    fineangle_t	fineangle;
+	fineangle_t	fineangle;
 
-    int16_t	sidedefOffset;
-    int16_t	linedefOffset;
+	int16_t	sidedefOffset;
+} seg_render_t;
 
-    // Sector references.
-    // Could be retrieved from linedef, too.
-    // backsector is NULL for one sided lines
-    //int16_t	frontsecnum;
-    //int16_t	backsecnum;
-    
-} seg_t;
-
-
-
+//#define seg_render_t seg_t
+//#define segs_render segs
 //
 // BSP node.
 //
@@ -306,12 +331,12 @@ typedef struct
     int16_t	dy;
 
     // Bounding box for each child.
-    int16_t	bbox[2][4];
+    int16_t	bbox[2][4]; 
 
     // If NF_SUBSECTOR its a subsector.
     uint16_t children[2];
     
-} node_t;
+} node_t; // used in sight and bsp, but bbox is render only?
 
 
 

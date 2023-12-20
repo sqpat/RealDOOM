@@ -35,6 +35,7 @@
 
 
 seg_t*		curseg;
+seg_render_t* curseg_render;
 sector_t*	frontsector;
 sector_t*	backsector;
 
@@ -235,7 +236,7 @@ void R_ClearClipSegs (void)
 // Clips the given segment
 // and adds any visible pieces to the line list.
 //
-void R_AddLine (seg_t* curline)
+void R_AddLine (int16_t curlineNum)
 {
     int16_t			x1;
     int16_t			x2;
@@ -243,17 +244,18 @@ void R_AddLine (seg_t* curline)
 	angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
-
-	int16_t curlineside = curline->v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
+	seg_t*		curline = &segs[curlineNum];
+	seg_render_t*		curline_render = &segs_render[curlineNum];
+	int16_t curlineside = curline->side;
 	
 	int16_t linebacksecnum;
 
-	side_t* curlinesidedef = &sides[curline->sidedefOffset];
+	side_t* curlinesidedef = &sides[curline_render->sidedefOffset];
 	line_t* curlinelinedef = &lines[curline->linedefOffset];
-	vertex_t v1 = vertexes[curline->v1Offset];
-	vertex_t v2 = vertexes[curline->v2Offset & SEG_V2_OFFSET_MASK];
+	vertex_t v1 = vertexes[curline_render->v1Offset];
+	vertex_t v2 = vertexes[curline_render->v2Offset];
      curseg = curline;
-	
+	 curseg_render = curline_render;
 
 
 #ifdef CHECK_FOR_ERRORS
@@ -535,14 +537,14 @@ boolean R_CheckBBox(int16_t *bspcoord)
 void R_Subsector(int16_t subsecnum)
 {
 	int16_t count;
-	seg_t* firstline;
+	int16_t firstline;
 	fixed_t_union temp;
 	subsector_t* sub = &subsectors[subsecnum];
 	temp.h.fracbits = 0;
 	
     frontsector = &sectors[sub->secnum];
     count = sub->numlines;
-	firstline = &segs[sub->firstline];
+	firstline = sub->firstline;
 
 
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);

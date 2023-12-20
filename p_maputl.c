@@ -686,7 +686,6 @@ P_BlockLinesIterator
 	int16_t			index;
     int16_t		list;
     line_t*		ld;
-	int16_t *blockmaplump;
     if (x<0
 	|| y<0
 	|| x>=bmapwidth
@@ -696,7 +695,6 @@ P_BlockLinesIterator
     }
     
     offset = y*bmapwidth+x;
-	blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
 	offset = *(blockmaplump+4 + offset);
 	
     for ( index = offset ; blockmaplump[index] != -1 ; index++) {
@@ -715,7 +713,6 @@ P_BlockLinesIterator
 		if (!func(ld, list)) {
 			return false;
 		}
-		blockmaplump = (int16_t*)Z_LoadBytesFromEMS(blockmaplumpRef);
     }
 
 

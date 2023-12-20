@@ -80,6 +80,9 @@ extern vertex_t*	vertexes;
 
 extern int16_t		numsegs;
 extern seg_t*		segs;
+extern seg_physics_t*		segs_physics;
+extern seg_render_t*		segs_render;
+
 
 extern int16_t		numsectors;
 extern sector_t* sectors;

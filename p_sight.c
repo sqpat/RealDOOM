@@ -366,12 +366,18 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 
 		// no wall to block sight with?
 
-		curlineside = segs[segnum].v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
+		curlineside = segs[segnum].side;
+		frontsecnum = segs_physics[segnum].frontsecnum;
+		backsecnum = segs_physics[segnum].backsecnum;
+
+		/*
+		curlineside = segs[segnum].side;
 		frontsecnum = sides[line->sidenum[curlineside]].secnum;
 		backsecnum =
 			line->flags & ML_TWOSIDED ?
 			sides[line->sidenum[curlineside ^ 1]].secnum
 			: SECNUM_NULL;
+			*/
 		frontsector = &sectors[frontsecnum];
 		backsector = &sectors[backsecnum];
 
@@ -522,7 +528,7 @@ P_CheckSight
     strace.dy.w = t2->y - t1->y;
 
     // the head node is the last node output
-    return P_CrossBSPNode (numnodes-1);	
+	return P_CrossBSPNode (numnodes-1);
 }
 
 

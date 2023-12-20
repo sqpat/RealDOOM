@@ -71,12 +71,12 @@ file r_init.obj
 #file wi_stuff.obj
 file z_init.obj
 file z_umb.obj
-#file i_quit.obj
+file i_quit.obj
 file st_setup.obj
 file hu_setup.obj
 file g_setup.obj
 file r_setup.obj
-#file v_extra.obj
+file v_extra.obj
 
 # # begin overlay area
 begin
@@ -84,7 +84,7 @@ begin
 #	postgame and intermission code
 section file f_finale.obj, wi_stuff.obj 
 #	fullscreen drawing code, shutdown code, some game init code
-section file i_quit.obj, v_extra.obj
+#section file i_quit.obj, v_extra.obj
 #	more game init code
 #section file d_init.obj, z_umb.obj, i_init.obj, i_main.obj, g_setup.obj, z_init.obj
 # section file  i_init.obj, g_setup.obj, z_init.obj

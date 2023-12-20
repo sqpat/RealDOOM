@@ -22,6 +22,7 @@
 
  
 extern seg_t*		curseg;
+extern seg_render_t* curseg_render;
 extern side_t*		sidedef;
 
 extern sector_t*	frontsector;

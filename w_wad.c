@@ -362,6 +362,9 @@ W_CacheLumpNumEMS2
 #endif
 
 	if (!lumpcacheEMS[lump]) {
+		if (W_LumpLength(lump) > 65535) {
+			I_Error("lump too big %i %lu", lump, W_LumpLength(lump));
+		}
 		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef32(W_LumpLength(lump), tag, 1, lump + BACKREF_LUMP_OFFSET);
 
 		W_ReadLumpEMS(lump, Z_LoadBytesFromEMS(lumpcacheEMS[lump]), 0, 0);
@@ -391,6 +394,14 @@ W_CacheLumpNameDirect
 	W_ReadLumpEMS(W_GetNumForName(name), dest, 0, 0);
 }
 
+
+void
+W_CacheLumpNumDirect
+(int16_t lump,
+	byte*			dest
+) {
+	W_ReadLumpEMS(lump, dest, 0, 0);
+}
 
 int16_t fullscreencache = 0x00;
 void W_EraseFullscreenCache() {

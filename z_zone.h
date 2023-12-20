@@ -95,7 +95,8 @@ typedef struct memblock_s
 #define EMS_ALLOCATION_LIST_SIZE 1050
 
 //#define STATIC_CONVENTIONAL_BLOCK_SIZE_1 54208
-#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 46218
+#define STATIC_CONVENTIONAL_BLOCK_SIZE_2 16940
+// 10343 extra in 1 still
 
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE_1;
 extern uint16_t remainingconventional1;
@@ -200,16 +201,26 @@ typedef struct
 #define TASK_PHYSICS9000 1
 #define TASK_RENDER 2
 #define TASK_STATUS 3
+#define TASK_RENDER7000TO6000 4
+
 
 // EMS 4.0 stuff
 void Z_QuickmapPhysics();
 void Z_QuickmapPhysics9000();
 void Z_QuickmapRender();
 void Z_QuickmapStatus();
-
+void Z_QuickmapRender7000to6000();
 void Z_GetEMSPageMap();
 void Z_LoadBinaries();
 
+#define PAGE_TYPE_PHYSICS 0
+#define PAGE_TYPE_RENDER 1
+
+byte* far Z_GetNext0x7000Address(uint16_t size, int8_t pagetype);
+void Z_Subtract0x7000Address(uint16_t size, int8_t pagetype);
+#define Z_GetNextPhysicsAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_PHYSICS)
+#define Z_GetNextRenderAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_RENDER)
+#define Z_SubtractRenderAddress(A) Z_Subtract0x7000Address(A, PAGE_TYPE_RENDER)
 extern int16_t currenttask;
 
 #endif

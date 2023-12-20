@@ -554,7 +554,12 @@ void D_DoomLoop (void)
 		D_Display ();
 		TEXT_MODE_DEBUG_PRINT("\n tick %li D_Display done", gametic);
  
-
+		/*
+		if (gametic >= 5)
+		{
+			I_Error("%i", prndindex);
+		}
+		*/
 #ifdef DEBUGLOG_TO_FILE
 			
 //		if (gametic != lasttick) {

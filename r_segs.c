@@ -105,13 +105,18 @@ R_RenderMaskedSegRange
 	vertex_t v2;
 	line_t* curlinelinedef;
 	int16_t		texnum;
+	int16_t segnum;
 	curseg = ds->curseg;
+	segnum = curseg - segs;
+	curseg_render = &segs_render[segnum];
 
-	side = &sides[curseg->sidedefOffset];
+	side = &sides[curseg_render->sidedefOffset];
 	texnum = texturetranslation[side->midtexture];
-	curlineside = curseg->v2Offset & SEG_V2_SIDE_1_HIGHBIT ? 1 : 0;
-	v1 = vertexes[curseg->v1Offset];
-	v2 = vertexes[curseg->v2Offset & SEG_V2_OFFSET_MASK];
+
+	curlineside = curseg->side;
+
+	v1 = vertexes[curseg_render->v1Offset];
+	v2 = vertexes[curseg_render->v2Offset];
 	curlinelinedef = &lines[curseg->linedefOffset];
 	// Calculate light table.
 	// Use different light tables
@@ -426,9 +431,9 @@ R_StoreWallRange
     int16_t			lightnum;
 
 	// needs to be refreshed...
- 	side_t* side = &sides[curseg->sidedefOffset];
-	vertex_t curlinev1 = vertexes[curseg->v1Offset];
-	vertex_t curlinev2 = vertexes[curseg->v2Offset&SEG_V2_OFFSET_MASK];
+ 	side_t* side = &sides[curseg_render->sidedefOffset];
+	vertex_t curlinev1 = vertexes[curseg_render->v1Offset];
+	vertex_t curlinev2 = vertexes[curseg_render->v2Offset];
 	int16_t sidetextureoffset;
 	int16_t lineflags;
  	fixed_t_union temp;
@@ -475,7 +480,7 @@ R_StoreWallRange
 	}
     
     // calculate rw_distance for scale calculation
-    rw_normalangle = MOD_FINE_ANGLE(curseg->fineangle + FINE_ANG90);
+    rw_normalangle = MOD_FINE_ANGLE(curseg_render->fineangle + FINE_ANG90);
 	rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
 
 
@@ -728,7 +733,7 @@ R_StoreWallRange
 		if (tempangle.hu.intbits < ANG180_HIGHBITS) {	
 			rw_offset.w = -rw_offset.w;
 		}
-		rw_offset.h.intbits += (sidetextureoffset + curseg->offset);
+		rw_offset.h.intbits += (sidetextureoffset + curseg_render->offset);
 		
 		rw_centerangle = MOD_FINE_ANGLE(FINE_ANG90 + (viewangle_shiftright3) - (rw_normalangle));
 
