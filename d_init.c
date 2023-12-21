@@ -66,26 +66,21 @@
 #define MAX_STRINGS 300
 
 extern uint16_t stringoffsets[MAX_STRINGS];
-extern uint16_t stringbuffersizes[2];
-extern MEMREF		stringRefs[2];
+extern uint16_t stringbuffersize;
 extern uint8_t     sfxVolume;
 extern uint8_t     musicVolume;
 extern int8_t      demosequence;
-
+extern byte*		stringdata;
 
 void D_InitStrings() {
 
 	// load file
 	FILE* handle;
 	//filelength_t length;
-	int8_t* buffer;
-	int8_t* lastbuffer;
+	//int8_t* lastbuffer;
 	int16_t i;
 	int16_t j = 0;;
-	int16_t page = 0;
 	int8_t letter;
-	int16_t carryover = 0;
-	//handle = open("dstrings.txt", O_RDONLY | O_TEXT);
 	handle = fopen("dstrings.txt", "r");
 	if (handle == NULL) {
 		I_Error("strings.txt missing?\n");
@@ -94,31 +89,30 @@ void D_InitStrings() {
 
 	//length = filelength(handle);
 	stringoffsets[0] = 0;
+	
 
 	while (1) {
 		// break up in pagesize
-
-		stringRefs[page] = Z_MallocEMS(16384, PU_STATIC, 0);
-		buffer = Z_LoadBytesFromEMS(stringRefs[page]);
+ 
 
 
-		if (carryover) {
-			memcpy(buffer, &lastbuffer[stringoffsets[j]], carryover);
-		}
+		//if (carryover) {
+			//memcpy(stringdata, &lastbuffer[stringoffsets[j]], carryover);
+		//}
 
-		for (i = 0; i < 16384 - carryover; i++) {
+		for (i = 0; i < 16384 ; i++) {
 			letter = fgetc(handle);
-			buffer[i + carryover] = letter;
+			stringdata[i ] = letter;
 			if (letter == 'n') {
-				if (buffer[i + carryover - 1] == '\\') {
+				if (stringdata[i  - 1] == '\\') {
 					// hacky, but oh well.
-					buffer[i + carryover - 1] = '\r';
-					buffer[i + carryover] = '\n';
+					stringdata[i  - 1] = '\r';
+					stringdata[i  ] = '\n';
 				}
 			}
 			if (letter == '\n') {
 				j++;
-				stringoffsets[j] = i + (page * 16384);
+				stringoffsets[j] = i;// +(page * 16384);
 
 			};
 
@@ -126,15 +120,16 @@ void D_InitStrings() {
 				break;
 			}
 		}
-		stringbuffersizes[page] = stringoffsets[j];
+		stringbuffersize = stringoffsets[j];
 		if (feof(handle)) {
 			break;
 		}
 
-		page++;
-		lastbuffer = buffer;
+		I_Error("Strings too big. Need to implement 2nd page?");
+		//page++;
+		//lastbuffer = buffer;
 
-		carryover = i - stringoffsets[j];
+		//carryover = i - stringoffsets[j];
 
 	}
 

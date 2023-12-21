@@ -1510,7 +1510,7 @@ void Z_InitEMS(void)
 int16_t pagenum9000; 
 int16_t pageswapargs_phys[32];
 int16_t pageswapargs_rend[32];
-int16_t pageswapargs_stat[10];
+int16_t pageswapargs_stat[12];
 int16_t pageswapargs_rend_temp_7000_to_6000[8];
 
 int16_t pageswapargseg_phys;
@@ -1610,7 +1610,7 @@ void Z_QuickmapRender() {
 void Z_QuickmapStatus() {
 
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x05; // page count
+	regs.w.cx = 0x06; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_stat;
 	regs.w.si = pageswapargoff_stat;

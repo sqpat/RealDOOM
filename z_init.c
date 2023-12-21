@@ -232,7 +232,7 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 extern int16_t pagenum9000;
 extern int16_t pageswapargs_phys[32];
 extern int16_t pageswapargs_rend[32];
-extern int16_t pageswapargs_stat[10];
+extern int16_t pageswapargs_stat[12];
 
 extern int16_t pageswapargs_rend_temp_7000_to_6000[8];
 
@@ -242,6 +242,8 @@ extern int16_t pageswapargseg_rend;
 extern int16_t pageswapargoff_rend;
 extern int16_t pageswapargseg_stat;
 extern int16_t pageswapargoff_stat;
+
+extern byte* stringdata;
 
 uint8_t fontlen[63] = { 72, 100, 116, 128, 144, 132, 60, 
 					   120, 120, 96, 76, 60, 80, 56, 100, 
@@ -347,8 +349,8 @@ found:
 	// 0x7000 block		physics levdata render levdata			st graphics
 	//					
 	//					
-	// 0x6000 block						texturedata
-	// 0x5000 block		strings			textures
+	// 0x6000 block		strings				texturedata			strings
+	// 0x5000 block						textures
 	//					trig tables
 	// 0x4000 block						textures
 
@@ -379,13 +381,13 @@ found:
 	pageswapargs_phys[22] = 11;
 	pageswapargs_phys[23] = pagenum9000 - 5;
 	pageswapargs_phys[24] = 12;
-	pageswapargs_phys[25] = pagenum9000 - 12;
+	pageswapargs_phys[25] = pagenum9000 - 12;// strings;
 	pageswapargs_phys[26] = 13;
-	pageswapargs_phys[27] = pagenum9000 - 11;
+	pageswapargs_phys[27] = pagenum9000 - 11;//empty
 	pageswapargs_phys[28] = 14;
-	pageswapargs_phys[29] = pagenum9000 - 10;
+	pageswapargs_phys[29] = pagenum9000 - 10;//empty;
 	pageswapargs_phys[30] = 15;
-	pageswapargs_phys[31] = pagenum9000 - 9;
+	pageswapargs_phys[31] = pagenum9000 - 9;;//empty
 
 
 	pageswapargs_rend[0] = 16;
@@ -431,6 +433,8 @@ found:
 	pageswapargs_stat[7] = pagenum9000 - 6;
 	pageswapargs_stat[8] = 36;
 	pageswapargs_stat[9] = pagenum9000 - 5;
+	pageswapargs_stat[10] = 15;
+	pageswapargs_stat[11] = pagenum9000 - 12; // strings;
 
 	pageswapargs_rend_temp_7000_to_6000[0] = 24;
 	pageswapargs_rend_temp_7000_to_6000[1] = pagenum9000 - 12;
@@ -648,6 +652,9 @@ found:
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
+
+	stringdata = MK_FP(segment, offset_physics);
+	offset_physics += 16384;
 
 	textureinfomemoryblock = MK_FP(segment, offset_render);
 	offset_render += (STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE);

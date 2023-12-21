@@ -168,8 +168,8 @@ void D_ProcessEvents (void)
 #define MAX_STRINGS 300
 
 uint16_t stringoffsets[MAX_STRINGS];
-uint16_t stringbuffersizes[2];
-MEMREF		stringRefs[2];
+uint16_t stringbuffersize;
+byte* stringdata;
 
 int16_t getStringLength(int16_t stringindex) {
 	return  stringoffsets[stringindex + 1] - stringoffsets[stringindex];
@@ -180,18 +180,20 @@ int8_t* getStringByIndex(int16_t stringindex, int8_t* returndata) {
 	uint16_t stringoffset = stringoffsets[stringindex];
 	uint16_t length = getStringLength(stringindex);
 	int16_t index;
-	byte* stringdata;
+	/*
+
 	if (stringoffset < stringbuffersizes[0]) {
 		index = 0;
+	
 	} else {
 		// todo havent actually tested this..
 		index = 1;
 		stringoffset -= stringbuffersizes[0];
 	}
+		*/
 
 
-	stringdata = Z_LoadBytesFromEMS(stringRefs[index]);
-
+ 
 		// string ends at the start of the next string...
 
 	memcpy(returndata, &(stringdata[stringoffset]), length);
