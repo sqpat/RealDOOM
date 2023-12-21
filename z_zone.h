@@ -81,6 +81,13 @@ typedef struct memblock_s
 	struct memblock_s*  prev;
 } memblock_t;
 
+typedef struct allocation_static_conventional_s
+{
+	uint16_t	offset;
+
+} allocation_static_conventional_t;
+
+
 // these get cleared per level
 #define CA_TYPE_LEVELDATA 1
 // these are static
@@ -97,16 +104,24 @@ typedef struct memblock_s
 
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
-#define SPRITE_ALLOCATION_LIST_SIZE 150
 
 // DOOM SHAREWARE VALUE
-#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+3767u)
+#define NUM_TEXTURE_CACHE 125
 
+#define TEXTUREINFO_ALLOCATION_LIST_SIZE NUM_TEXTURE_CACHE * 3
+#define SPRITE_ALLOCATION_LIST_SIZE 150
+
+#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+3767u)
+#define UMB2_SIZE (STATIC_CONVENTIONAL_SPRITE_SIZE + (SPRITE_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t)) + (TEXTUREINFO_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t)) )
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
 extern byte* conventionalmemoryblock;
 extern byte* spritememoryblock;
 extern byte* textureinfomemoryblock;
+
+
+extern allocation_static_conventional_t* textureinfo_allocations;
+extern allocation_static_conventional_t* sprite_allocations;
 
 
 void Z_InitEMS(void);

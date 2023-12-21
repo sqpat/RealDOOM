@@ -52,7 +52,6 @@
 #define CONVENTIONAL_ALLOCATION_LIST_SIZE 12
 
 
-#define TEXTUREINFO_ALLOCATION_LIST_SIZE NUM_TEXTURE_CACHE * 3
 
 // 8 MB worth. Letting us set 8 MB as a max lets us get away with 
 // some smaller allocation_t sizes
@@ -96,19 +95,6 @@
 
 // actually only using 29 so far but let's plan ahead for texture mem...
 #define NUM_EMS4_SWAP_PAGES 64L
-
-typedef struct
-{
-	uint16_t	offset;
-
-} allocation_static_conventional_t;
-
-typedef struct
-{
-	uint8_t		active;
-
-} allocation_thinker_conventional_t;
-
  
 
 
@@ -139,12 +125,17 @@ PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
-
-
 allocation_static_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
+
+/*
 allocation_static_conventional_t textureinfo_allocations[TEXTUREINFO_ALLOCATION_LIST_SIZE];
-// todo turn these into dynamic allocations
 allocation_static_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
+*/
+
+allocation_static_conventional_t* textureinfo_allocations;
+allocation_static_conventional_t* sprite_allocations;
+
+// todo turn these into dynamic allocations
 
 
 int16_t activepages[NUM_EMS_PAGES];

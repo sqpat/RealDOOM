@@ -195,8 +195,8 @@ void Z_InitUMBDOS(void) {
 
 	DEBUG_PRINT("\n  Remaining %u bytes in UMB... ", UMBsize2 << 4);
 
-	if ((UMBsize2 << 4) >= 7000) {
-		UMBsize2 = 0x01B6; // enought for 0000
+	if ((UMBsize2 << 4) >= UMB2_SIZE) {
+		UMBsize2 = UMB2_SIZE>>4 + 1; // enough for umb2 size
 
 		regs.w.ax = 0x4800;
 		regs.w.bx = UMBsize2;
@@ -278,7 +278,9 @@ void Z_InitUMB(void) {
 	conventionalmemoryblock = MK_FP(UMBbase, 0);
 
 	spritememoryblock = MK_FP(UMBbase2, 0);
-
+	sprite_allocations = MK_FP(UMBbase2, STATIC_CONVENTIONAL_SPRITE_SIZE);
+	textureinfo_allocations = MK_FP(UMBbase2, STATIC_CONVENTIONAL_SPRITE_SIZE + SPRITE_ALLOCATION_LIST_SIZE + sizeof(allocation_static_conventional_t));
+	
 
 #endif
 
