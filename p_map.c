@@ -251,11 +251,11 @@ boolean PIT_CheckLine (line_physics_t* ld_physics, int16_t linenum)
     // NOTE: specials are NOT sorted by order,
     // so two special lines that are only 8 pixels apart
     // could be crossed in either order.
-	ld = &lines[linenum];
 
-	if (ld->backsecnum == SECNUM_NULL) {
+	if (ld_physics->backsecnum == SECNUM_NULL) {
 		return false;		// one sided line
 	}
+	ld = &lines[linenum];
 
 
     if (!(tmthing->flags & MF_MISSILE) ) {
@@ -1026,7 +1026,8 @@ extern fixed_t	bottomslope;
 boolean
 PTR_AimTraverse (intercept_t* in)
 {
-    line_t*		li;
+	line_t*		li;
+	line_physics_t*		li_physics;
     mobj_t*		th;
     fixed_t		slope;
     fixed_t		thingtopslope;
@@ -1036,17 +1037,17 @@ PTR_AimTraverse (intercept_t* in)
 
     if (in->isaline) {
 		li = &lines[in->d.linenum];
-	
 		if (!(li->flags & ML_TWOSIDED)) {
 			return false;		// stop
 		}
 		// Crosses a two sided line.
 		// A two sided line will restrict
 		// the possible target ranges.
+		li_physics = &lines_physics[in->d.linenum];
 #ifdef	PRECALCULATE_OPENINGS
 		P_LoadLineOpening(in->d.linenum);
 #else
-		P_LineOpening(li->sidenum[1], li->frontsecnum, li->backsecnum);
+		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
 #endif
 
 
@@ -1057,14 +1058,14 @@ PTR_AimTraverse (intercept_t* in)
 		dist = FixedMul (attackrange.w, in->frac);
 
 		temp.h.fracbits = 0;
-		if (sectors[li->frontsecnum].floorheight != sectors[li->backsecnum].floorheight) {
+		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
 			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
 		
-		if (sectors[li->frontsecnum].ceilingheight != sectors[li->backsecnum].ceilingheight) {
+		if (sectors[li_physics->frontsecnum].ceilingheight != sectors[li_physics->backsecnum].ceilingheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
 			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope < topslope)
@@ -1149,19 +1150,19 @@ boolean PTR_ShootTraverse (intercept_t* in)
 #ifdef	PRECALCULATE_OPENINGS
 		P_LoadLineOpening(in->d.linenum);
 #else
-		P_LineOpening(li->sidenum[1], li->frontsecnum, li->backsecnum);
+		P_LineOpening(li_physics->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
 #endif
 
 		dist = FixedMul (attackrange.w, in->frac);
 
-		if (sectors[li->frontsecnum].floorheight != sectors[li->backsecnum].floorheight) {
+		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
 			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope > aimslope)
 				goto hitline;
 		}
 		
-		if (sectors[li->frontsecnum].ceilingheight != sectors[li->backsecnum].ceilingheight) {
+		if (sectors[li_physics->frontsecnum].ceilingheight != sectors[li_physics->backsecnum].ceilingheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
 			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope < aimslope)
@@ -1182,14 +1183,14 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
 
 
-		if (sectors[li->frontsecnum].ceilingpic == skyflatnum) {
+		if (sectors[li_physics->frontsecnum].ceilingpic == skyflatnum) {
 			// don't shoot the sky!
-			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[li->frontsecnum].ceilingheight);
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[li_physics->frontsecnum].ceilingheight);
 			if (z > temp.w) {
 				return false;
 			}
 			// it's a sky hack wall
-			if (li->backsecnum != SECNUM_NULL && sectors[li->backsecnum].ceilingpic == skyflatnum) {
+			if (li_physics->backsecnum != SECNUM_NULL && sectors[li_physics->backsecnum].ceilingpic == skyflatnum) {
 				return false;
 			}
 		}
@@ -1375,7 +1376,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 #ifdef	PRECALCULATE_OPENINGS
 		P_LoadLineOpening(in->d.linenum);
 #else
-		P_LineOpening(line->sidenum[1], line->frontsecnum, line->backsecnum);
+		P_LineOpening(line->sidenum[1], line_physics->frontsecnum, line_physics->backsecnum);
 #endif
 
  		if (lineopening.opentop < lineopening.openbottom)

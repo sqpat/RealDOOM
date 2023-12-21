@@ -115,6 +115,25 @@ MEMREF           rejectmatrixRef;
 
 uint16_t leveldataoffset_phys = 0u;
 uint16_t leveldataoffset_rend = 0u;
+uint16_t leveldataoffset_6000_phys = 0u;
+
+
+byte* far Z_GetNext0x6000Address(uint16_t size) {
+
+	uint16_t oldoffset = leveldataoffset_6000_phys;
+	byte* far returnvalue;
+	
+
+	leveldataoffset_6000_phys -= size;
+	returnvalue = MK_FP(0x6000, leveldataoffset_6000_phys);
+
+	if (leveldataoffset_6000_phys < 32768u) {
+		// wraparound
+		I_Error("Allocated too much space in Z_GetNext0x6000Address (size %u) ", size);
+	}
+	return returnvalue;
+
+}
 
 byte* far Z_GetNext0x7000Address(uint16_t size, int8_t pagetype) {
 
@@ -137,7 +156,12 @@ byte* far Z_GetNext0x7000Address(uint16_t size, int8_t pagetype) {
 
 	if (oldoffset != 0 && (oldoffset < *useoffset)) {
 		// wraparound
-		I_Error("Allocated too much space in Z_GetNextPhysicsAddress (size %u) ", size);
+		if (pagetype == PAGE_TYPE_PHYSICS) {
+			*useoffset += size;
+			return Z_GetNext0x6000Address(size);
+		}
+
+		I_Error("Allocated too much space in Z_GetNext0x7000Address (size %u type %hhu) ", size, pagetype);
 	}
 	return returnvalue;
 
@@ -938,8 +962,8 @@ void P_CacheLineOpenings() {
 			// single sided line
 			continue;
 		}
-		linefrontsecnum = lines[linenum].frontsecnum;
-		linebacksecnum = lines[linenum].backsecnum;
+		linefrontsecnum = lines_physics[linenum].frontsecnum;
+		linebacksecnum = lines_physics[linenum].backsecnum;
 
 		front = &sectors[linefrontsecnum];
 		back = &sectors[linebacksecnum];
@@ -1049,6 +1073,7 @@ void P_LoadLineDefs(int16_t lump)
 	MEMREF linesRef;
 	int16_t convertedtag;
 	MEMREF seenlinesRef;
+	side_render_t* tempsides_render;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
 	linesRef = Z_MallocConventional(numlines * sizeof(line_t), CA_TYPE_LEVELDATA);
@@ -1065,6 +1090,8 @@ void P_LoadLineDefs(int16_t lump)
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (maplinedef_t *)Z_LoadBytesFromEMS(dataRef);
 
+	Z_QuickmapRender7000to6000();
+	tempsides_render = MK_FP(0x6000u, (uint16_t)((uint32_t)sides_render & 0xFFFFu));
 
 	for (i = 0; i < numlines; i++) {
 		mld = &data[i];
@@ -1128,35 +1155,24 @@ void P_LoadLineDefs(int16_t lump)
 			}
 		}
 
-  
-	}
-
-	Z_QuickmapRender();
-
-	for (i = 0; i < numlines; i++) {
-		mld = &data[i];
-
-		mldflags = (mld->flags);
-		mldsidenum0 = (mld->sidenum[0]);
-		mldsidenum1 = (mld->sidenum[1]);
-
-		side0secnum = sides_render[mldsidenum0].secnum;
-		side1secnum = sides_render[mldsidenum1].secnum;
-
-		ld = &lines[i];
+		side0secnum = tempsides_render[mldsidenum0].secnum;
+		side1secnum = tempsides_render[mldsidenum1].secnum;
 
 		if (mldsidenum0 != -1) {
-			ld->frontsecnum = side0secnum;
-		} else {
-			ld->frontsecnum = SECNUM_NULL;
+			ld_physics->frontsecnum = side0secnum;
 		}
-		if (mldsidenum1 != -1){
-			ld->backsecnum = side1secnum;
-		} else {
-			ld->backsecnum = SECNUM_NULL;
+		else {
+			ld_physics->frontsecnum = SECNUM_NULL;
 		}
-
+		if (mldsidenum1 != -1) {
+			ld_physics->backsecnum = side1secnum;
+		}
+		else {
+			ld_physics->backsecnum = SECNUM_NULL;
+		}
 	}
+
+	 
 
 	Z_QuickmapPhysics();
 	Z_FreeEMS(dataRef);
@@ -1288,7 +1304,6 @@ void P_GroupLines(void)
 {
 	uint16_t                 i;
 	uint16_t                 j;
-	line_t*             li;
 	line_physics_t*     li_physics;
 	int16_t             bbox[4];
 	int16_t             block;
@@ -1323,9 +1338,9 @@ void P_GroupLines(void)
 	// count number of lines in each sector
 	total = 0;
 	for (i = 0; i < numlines; i++) {
-		li = &lines[i];
-		linebacksecnum = li->backsecnum;
-		linefrontsecnum = li->frontsecnum;
+		li_physics = &lines_physics[i];
+		linebacksecnum = li_physics->backsecnum;
+		linefrontsecnum = li_physics->frontsecnum;
 		total++;
 		sectors[linefrontsecnum].linecount++;
 
@@ -1353,12 +1368,11 @@ void P_GroupLines(void)
 		previouslinebufferindex = linebufferindex;
 	 
 		for (j = 0; j < numlines; j++) {
-			li = &lines[j];
 			li_physics = &lines_physics[j];
 			linev1Offset = li_physics->v1Offset;
 			linev2Offset = li_physics->v2Offset & VERTEX_OFFSET_MASK;
 
-			if (li->frontsecnum == i || li->backsecnum == i) {
+			if (li_physics->frontsecnum == i || li_physics->backsecnum == i) {
 				linebuffer[linebufferindex] = j;
 				linebufferindex++;
 				M_AddToBox16(bbox, vertexes[linev1Offset].x, vertexes[linev1Offset].y);
@@ -1572,10 +1586,10 @@ P_SetupLevel
 	//  side sect vert line	 subsec node   seg
 	//	2587 348  1429 1681   851  850	  2815  
 	// 10344 5568 5716 15129 4255 10200   8445
-	//                                     59657 up to here.
+	//                                     59657 up to here. Static UMB probably free but will probably go way over in physics task memory - but there should be free memory in the 4000 or 5000 region
 	
 
-	
+	/*
 	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p \n%u %u %u",
 		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t),
 		sizeof(subsector_t), sizeof(node_t), sizeof(seg_t), sizeof(lineopening_t), 2, sizeof(THINKERREF),
@@ -1593,6 +1607,7 @@ P_SetupLevel
 		conventionalmemoryblock, 
 		remainingconventional, leveldataoffset_phys, leveldataoffset_rend
 	);
+	*/
 	
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadThings");
 	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 

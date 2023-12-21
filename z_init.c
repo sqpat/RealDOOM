@@ -347,9 +347,9 @@ found:
 	//									texture memrefs?
 	// 0x7000 block		physics levdata render levdata			st graphics
 	//					
-	//					
-	// 0x6000 block		strings				texturedata			strings
-	//					nightnmarespawns
+	// 0x6000 block	more physics levdata 			
+	// 					nightnmarespawns  texturedata			
+	//					strings									strings
 	// 0x5000 block						textures
 	//					trig tables
 	// 0x4000 block						textures

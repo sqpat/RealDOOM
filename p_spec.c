@@ -120,7 +120,7 @@ getSector
 
 	offset = linebuffer[offset];
 	//offset = lines[offset].sidenum[side];
-	return side ? lines[offset].backsecnum : lines[offset].frontsecnum;
+	return side ? lines_physics[offset].backsecnum : lines_physics[offset].frontsecnum;
 
 	//return sides[offset].secnum;
     //return sides[lines[linebuffer[sectors[currentSector].linesoffset + offset]].sidenum[side]].secnum;
@@ -156,19 +156,22 @@ getNextSectorList
 	
 	int16_t i = 0;
 	int16_t skipped = 0;
+	line_t* line; 
+	line_physics_t* line_physics;
 
 	for (i = 0; i < linecount; i++) {
-		line_t line  = lines[linenums[i]];
-		if (!(line.flags & ML_TWOSIDED)) {
+		line  = &lines[linenums[i]];
+		if (!(line->flags & ML_TWOSIDED)) {
 			skipped++;
 			continue;
 		}
+		line_physics = &lines_physics[linenums[i]];
 
 
-		if (line.frontsecnum == sec)
-			secnums[i-skipped] = line.backsecnum;
+		if (line_physics->frontsecnum == sec)
+			secnums[i-skipped] = line_physics->backsecnum;
 		else if (!onlybacksecnums)
-			secnums[i-skipped] = line.frontsecnum;
+			secnums[i-skipped] = line_physics->frontsecnum;
 
 	}
 	return linecount - skipped;
@@ -417,7 +420,7 @@ P_CrossSpecialLine
 	line_t*	line = &lines[linenum];
 	line_physics_t*	line_physics = &lines_physics[linenum];
 	uint8_t linetag = line_physics->tag;
-	int16_t linefrontsecnum = line->frontsecnum;
+	int16_t linefrontsecnum = lines_physics->frontsecnum;
 	int16_t linespecial = line_physics->special;
 	int16_t setlinespecial = -1;
 	mobjtype_t thingtype = thing->type;
@@ -894,7 +897,7 @@ P_ShootSpecialLine
 	line_physics_t* line_physics = &lines_physics[innerlinenum];
 	int16_t linespecial = line_physics->special;
 	uint8_t linetag = line_physics->tag;
-	int16_t linefrontsecnum = line->frontsecnum;
+	int16_t linefrontsecnum = lines_physics->frontsecnum;
 	int16_t lineside0 = line->sidenum[0];
 
 	
@@ -1106,6 +1109,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 	int16_t sectors3floorpic;
 	short_height_t sectors3floorheight;
 	line_t* line;
+	line_physics_t* line_physics;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	int16_t innersecnumlist[MAX_ADJOINING_SECTORS];
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
@@ -1142,16 +1146,16 @@ int16_t EV_DoDonut(uint8_t linetag)
 	while (linebufferoffsets[j] >= 0) {
 
 		line = &lines[linebufferoffsets[j]];
-
+		line_physics = &lines_physics[linebufferoffsets[j]];
 		if (!(line->flags & ML_TWOSIDED)) {
 			skipped++;
 			j++;
 			continue;
 		}
-		else if (line->frontsecnum == s1Offset)
-			secnumlist[j-skipped] = line->backsecnum;
+		else if (line_physics->frontsecnum == s1Offset)
+			secnumlist[j-skipped] = line_physics->backsecnum;
 		else
-			secnumlist[j-skipped] = line->frontsecnum;
+			secnumlist[j-skipped] = line_physics->frontsecnum;
 		j++;
 	}
 

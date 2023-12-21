@@ -195,7 +195,7 @@ void P_XYMovement (mobj_t* mo)
 				P_SlideMove ();
 			} else if (mo->flags & MF_MISSILE) {
 				// explode a missile
-				ceilinglinebacksecnum=lines[ceilinglinenum].backsecnum;
+				ceilinglinebacksecnum= lines_physics[ceilinglinenum].backsecnum;
 
 				if (ceilinglinenum != SECNUM_NULL && ceilinglinebacksecnum != SECNUM_NULL && sectors[ceilinglinebacksecnum].ceilingpic == skyflatnum) {
 					// Hack to prevent missiles exploding

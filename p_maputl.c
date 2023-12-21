@@ -361,8 +361,8 @@ void P_LoadLineOpening(int16_t linenum) {
 	if (lineopenings[linenum].cachebits) {
 
 		// we do the backsecnum check when setting bit dirty, so backsecnum always good
-		int16_t linefrontsecnum = lines[linenum].frontsecnum;
-		int16_t linebacksecnum = lines[linenum].backsecnum;
+		int16_t linefrontsecnum = lines_physics[linenum].frontsecnum;
+		int16_t linebacksecnum = lines_physics[linenum].backsecnum;
 
 		sector_t* front = &sectors[linefrontsecnum];
 		sector_t* back = &sectors[linebacksecnum];
@@ -779,8 +779,7 @@ int32_t		ptflags;
 boolean
 PIT_AddLineIntercepts (line_physics_t* ld_physics, int16_t linenum)
 {
-	line_t*		ld;
-    int16_t			s1;
+     int16_t			s1;
     int16_t			s2;
     fixed_t		frac;
     divline_t		dl;
@@ -834,9 +833,8 @@ PIT_AddLineIntercepts (line_physics_t* ld_physics, int16_t linenum)
 	if (frac < 0) {
 		return true;	// behind source
 	}
-	ld = &lines[linenum];
     // try to early out the check
-    if (earlyout && frac < FRACUNIT && ld->backsecnum == SECNUM_NULL) {
+    if (earlyout && frac < FRACUNIT && ld_physics->backsecnum == SECNUM_NULL) {
 		return false;	// stop checking
     }
     

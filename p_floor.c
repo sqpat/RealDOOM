@@ -448,6 +448,7 @@ EV_DoFloor
 
 			  //int16_t sidenum;
 			  line_t* sideline;
+			  line_physics_t* sideline_physics;
 
 			floor->direction = -1;
 			floor->secnum = secnum;
@@ -460,8 +461,8 @@ EV_DoFloor
 				if (twoSided(secnum, i)) {
 					//sidenum = getSideNum(secnum, i, 0);
 					sideline = &lines[linebuffer[sectors[secnum].linesoffset + i]];
-					
-					if (sideline->frontsecnum == secnum) {
+					sideline_physics = &lines_physics[linebuffer[sectors[secnum].linesoffset + i]];
+					if (sideline_physics->frontsecnum == secnum) {
 						secnum = sideline->sidenum[1];
 
 						if (sector->floorheight == floor->floordestheight) {
@@ -574,15 +575,15 @@ EV_BuildStairs
 			for (i = 0;i < sectorlinecount;i++) {
 				linebufferOffset = sectorlinesoffset + i;
 				linenum = linebuffer[linebufferOffset];
-				if (!((&lines[linenum])->flags & ML_TWOSIDED)) {
+				if (!(lines[linenum].flags & ML_TWOSIDED)) {
 					continue;
 				}
-				tsecOffset = (&lines[linenum])->frontsecnum;
+				tsecOffset = lines_physics[linenum].frontsecnum;
 		
 				if (secnum != tsecOffset)
 					continue;
 
-				tsecOffset = (&lines[linenum])->backsecnum;
+				tsecOffset = lines_physics[linenum].backsecnum;
 
 				if (sectors[tsecOffset].floorpic != sectorfloorpic)
 					continue;

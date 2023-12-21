@@ -376,7 +376,7 @@ EV_VerticalDoor
 	
 	// side always 0 so...
 	//secnum = side ? lines[linenum].backsecnum : lines[linenum].frontsecnum;
-	secnum = lines[linenum].backsecnum;
+	secnum = lines_physics[linenum].backsecnum;
 
 
 	doorsector = &sectors[secnum];

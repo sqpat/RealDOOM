@@ -175,7 +175,7 @@ P_UseSpecialLine
 	uint8_t linetag = line_physics->tag;
 	uint8_t linespecial = line_physics->special;
 	uint8_t lineflags = line->flags;
-	int16_t linefrontsecnum = line->frontsecnum;
+	int16_t linefrontsecnum = line_physics->frontsecnum;
 	int16_t lineside0 = line->sidenum[0];
  
     // Err...

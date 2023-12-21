@@ -199,16 +199,12 @@ typedef struct line_s
 
     // Visual appearance: SideDefs.
     //  sidenum[1] will be -1 if one sided
-    int16_t	sidenum[2];	  // both... could/should be worked out		
+    int16_t	sidenum[2];	  // needed to figure out the other side of a line to get its sector...
 
-    // Front and back sector.
-	int16_t	frontsecnum; // physics only not sure if it can be worked out alongside above
-	int16_t	backsecnum;; // physics only not sure if it can be worked out alongside above
 
     // if == validcount, already checked
 	// todo make this work 8 bit
-	// tricky, collisions do seem to happen with 8 bit. I think 10 or 11 would work. would need to fit those 3 high bits elsewhere.
-    //uint8_t		validcount;
+
 
 
 } line_t;
@@ -218,17 +214,25 @@ typedef struct line_s
 typedef struct 
 {
 	// Vertices, from v1 to v2.
-	int16_t	v1Offset;											// physics only
-	int16_t	v2Offset;	//high two bits are the slopetype		// physics only
+	int16_t	v1Offset;										
+	int16_t	v2Offset;	//high two bits are the slopetype	
 
 	// Precalculated v2 - v1 for side checking.
-	int16_t	dx;	// physics only
-	int16_t	dy;	// physics only
+	int16_t	dx;
+	int16_t	dy;
 
-	uint8_t	tag; // physics only
+	uint8_t	tag;
 
-	int16_t		validcount; // physics only
+	// tricky, collisions do seem to happen with 8 bit. I think 10 or 11 would work. would need to fit those 3 high bits elsewhere.
+	//uint8_t		validcount;
+	int16_t		validcount;
 	uint8_t	special;	// both for texture animation but can be fixed to physics only
+
+		// Front and back sector.
+	int16_t	frontsecnum;
+	int16_t	backsecnum; 
+
+
 
 
 } line_physics_t;
@@ -271,10 +275,6 @@ typedef struct subsector_s
 //
 typedef struct seg_s
 {
-
- 
-
-	 
  
 	uint8_t side;
     int16_t	linedefOffset;

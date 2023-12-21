@@ -99,6 +99,7 @@ P_RecursiveSound
 {
     int16_t		i;
 	line_t*	check;
+	line_physics_t* check_physics;
     int16_t	othersecnum;
 	int16_t linecount;
 	sector_t* soundsector = &sectors[secnum];
@@ -139,13 +140,14 @@ P_RecursiveSound
 		lineoffset = soundsector->linesoffset + i;
 		linenumber = linebuffer[lineoffset];
 		check = &lines[linenumber];
+		check_physics = &lines_physics[linenumber];
 		checkflags = check->flags;
 		checksidenum0 = check->sidenum[0];
 		checksidenum1 = check->sidenum[1];
 
 #ifndef		PRECALCULATE_OPENINGS
-		checkfrontsecnum = check->frontsecnum;
-		checkbacksecnum = check->backsecnum;
+		checkfrontsecnum = check_physics->frontsecnum;
+		checkbacksecnum = check_physics->backsecnum;
 #endif
 
 
@@ -163,10 +165,10 @@ P_RecursiveSound
 			continue;	// closed door
 		}
 
-		if (check->frontsecnum == secnum) {
-			othersecnum = check->backsecnum;
+		if (check_physics->frontsecnum == secnum) {
+			othersecnum = check_physics->backsecnum;
 		} else {
-			othersecnum = check->frontsecnum;
+			othersecnum = check_physics->frontsecnum;
 		}
 			 
 		if (checkflags & ML_SOUNDBLOCK) {
