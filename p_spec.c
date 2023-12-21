@@ -415,9 +415,10 @@ P_CrossSpecialLine
 {
     int16_t		ok;
 	line_t*	line = &lines[linenum];
-	uint8_t linetag = line->tag;
+	line_physics_t*	line_physics = &lines_physics[linenum];
+	uint8_t linetag = line_physics->tag;
 	int16_t linefrontsecnum = line->frontsecnum;
-	int16_t linespecial = line->special;
+	int16_t linespecial = line_physics->special;
 	int16_t setlinespecial = -1;
 	mobjtype_t thingtype = thing->type;
 
@@ -622,7 +623,7 @@ P_CrossSpecialLine
 
       case 57:
 		// Ceiling Crush Stop
-		EV_CeilingCrushStop(line->tag);
+		EV_CeilingCrushStop(linetag);
 		setlinespecial = 0;
 		break;
 	
@@ -871,7 +872,7 @@ P_CrossSpecialLine
     }
 
 	if (setlinespecial != -1) {
-		lines[linenum].special = setlinespecial;
+		line_physics[linenum].special = setlinespecial;
 	}
 
 }
@@ -890,8 +891,9 @@ P_ShootSpecialLine
     int16_t		ok;
 	int16_t innerlinenum = linebuffer[linenum];
 	line_t* line = &lines[innerlinenum];
-	int16_t linespecial = line->special;
-	uint8_t linetag = line->tag;
+	line_physics_t* line_physics = &lines_physics[innerlinenum];
+	int16_t linespecial = line_physics->special;
+	uint8_t linetag = line_physics->tag;
 	int16_t linefrontsecnum = line->frontsecnum;
 	int16_t lineside0 = line->sidenum[0];
 
@@ -1038,6 +1040,18 @@ void P_UpdateSpecials(void)
 			else {
 				flattranslation[i] = pic;
 			}
+		}
+	}
+
+
+	//	ANIMATE LINE SPECIALS
+	for (i = 0; i < numlinespecials; i++) {
+		switch (lines_physics[linespeciallist[i]].special)
+		{
+		case 48:
+			// EFFECT FIRSTCOL SCROLL +
+			sides[lines[linespeciallist[i]].sidenum[0]].textureoffset += 1; // todo mod by tex width?
+			break;
 		}
 	}
 
@@ -1290,7 +1304,7 @@ void P_SpawnSpecials (void)
     numlinespecials = 0;
 
 	for (i = 0;i < numlines; i++) {
-		switch(lines[i].special) {
+		switch(lines_physics[i].special) {
 		  case 48:
 			// EFFECT FIRSTCOL SCROLL+
 			linespeciallist[numlinespecials] = i;

@@ -448,7 +448,6 @@ R_StoreWallRange
 	uint8_t frontsectorfloorpic;
 	uint8_t frontsectorlightlevel;
 	line_t* linedef;
-	int16_t animateoffset = 0;
 	int16_t linedefOffset;
 	uint16_t rw_normalangle_shiftleft3;
 
@@ -478,11 +477,6 @@ R_StoreWallRange
 
 	lineflags = linedef->flags;
 
-	// if this is an animated line and offset 0 then set texture offset
-	if (linedef->special == 48 && linedef->sidenum[0] == side-sides){
-		animateoffset = leveltime.h.fracbits;
-	}
-    
     // calculate rw_distance for scale calculation
     rw_normalangle = MOD_FINE_ANGLE(curseg_render->fineangle + FINE_ANG90);
 	rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
@@ -557,7 +551,7 @@ R_StoreWallRange
     ds_p->maskedtexturecol = NULL;
 	
 
-	sidetextureoffset = side_render->textureoffset + animateoffset;
+	sidetextureoffset = side->textureoffset;
 	
  
 

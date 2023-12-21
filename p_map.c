@@ -195,15 +195,13 @@ P_TeleportMove
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-boolean PIT_CheckLine (line_t* ld, int16_t linenum)
+boolean PIT_CheckLine (line_physics_t* ld_physics, int16_t linenum)
 {
-	//int16_t linespecial;
-	//fixed_t linedx; , fixed_t linedy, int16_t linev1Offset, int16_t linev2Offset, int16_t linefrontsecnum, int16_t linebacksecnum, int16_t lineside1, slopetype_t lineslopetype
-	
-	slopetype_t lineslopetype = ld->v2Offset & LINE_VERTEX_SLOPETYPE;
-	int16_t linedx = ld->dx;
-	int16_t linedy = ld->dy;
-	vertex_t v1 = vertexes[ld->v1Offset];
+	line_t* ld;
+	slopetype_t lineslopetype = ld_physics->v2Offset & LINE_VERTEX_SLOPETYPE;
+	int16_t linedx = ld_physics->dx;
+	int16_t linedy = ld_physics->dy;
+	vertex_t v1 = vertexes[ld_physics->v1Offset];
 	int16_t v1x = v1.x;
 	int16_t v1y = v1.y;
 	int16_t lineright = v1x;
@@ -253,7 +251,8 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
     // NOTE: specials are NOT sorted by order,
     // so two special lines that are only 8 pixels apart
     // could be crossed in either order.
-    
+	ld = &lines[linenum];
+
 	if (ld->backsecnum == SECNUM_NULL) {
 		return false;		// one sided line
 	}
@@ -290,7 +289,7 @@ boolean PIT_CheckLine (line_t* ld, int16_t linenum)
 	}
 
     // if contacted a special line, add it to the list
-    if (ld->special) {
+    if (ld_physics->special) {
 		spechit[numspechit] = linenum;
 		numspechit++;
     }
@@ -607,7 +606,6 @@ P_TryMove
 	fixed_t	newx;
 	fixed_t	newy;
 
-    line_t*	ld;
 
 	fixed_t_union temp;
 	int16_t temp2;
@@ -676,16 +674,16 @@ P_TryMove
 		int16_t ldv1Offset;
 		int16_t	side;
 		int16_t	oldside;
-		
+		line_physics_t* ld_physics;
 		while (numspechit--) {
 			// see if the line was crossed
-			ld = &lines[spechit[numspechit]];
-			lddx = ld->dx;
-			lddy = ld->dy;
-			ldv1Offset = ld->v1Offset;
+			ld_physics = &lines_physics[spechit[numspechit]];
+			lddx = ld_physics->dx;
+			lddy = ld_physics->dy;
+			ldv1Offset = ld_physics->v1Offset;
 			v1x = vertexes[ldv1Offset].x;
 			v1y = vertexes[ldv1Offset].y;
-			ldspecial = ld->special;
+			ldspecial = ld_physics->special;
 
 			side = P_PointOnLineSide (newx, newy, lddx, lddy, v1x, v1y);
 			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, v1x, v1y);
@@ -781,20 +779,20 @@ void P_HitSlideLine (int16_t linenum)
     fixed_t		movelen;
     fixed_t		newlen;
 
-	line_t ld = lines[linenum];
-	
-    if ((ld.v2Offset&LINE_VERTEX_SLOPETYPE) == ST_HORIZONTAL_HIGH) {
+	line_physics_t* ld_physics = &lines_physics[linenum];
+
+    if ((ld_physics->v2Offset&LINE_VERTEX_SLOPETYPE) == ST_HORIZONTAL_HIGH) {
 		tmymove = 0;
 		return;
     }
     
-    if ((ld.v2Offset&LINE_VERTEX_SLOPETYPE) == ST_VERTICAL_HIGH) {
+    if ((ld_physics->v2Offset&LINE_VERTEX_SLOPETYPE) == ST_VERTICAL_HIGH) {
 		tmxmove = 0;
 		return;
     }
 	
-    side = P_PointOnLineSide (playerMobj->x, playerMobj->y, ld.dx, ld.dy, vertexes[ld.v1Offset].x, vertexes[ld.v1Offset].y);
-    lineangle.wu = R_PointToAngle2_16 ( ld.dx, ld.dy);
+    side = P_PointOnLineSide (playerMobj->x, playerMobj->y, ld_physics->dx, ld_physics->dy, vertexes[ld_physics->v1Offset].x, vertexes[ld_physics->v1Offset].y);
+    lineangle.wu = R_PointToAngle2_16 (ld_physics->dx, ld_physics->dy);
 
     if (side == 1)
 		lineangle.hu.intbits += ANG180_HIGHBITS;
@@ -822,14 +820,14 @@ void P_HitSlideLine (int16_t linenum)
 //
 boolean PTR_SlideTraverse (intercept_t* in)
 {
-	line_t li;
+	line_t* li = &lines[in->d.linenum];
 	fixed_t_union temp;
+	line_physics_t* li_physics = &lines_physics[in->d.linenum];
 
-	li = lines[in->d.linenum];
 
     
-    if ( ! (li.flags & ML_TWOSIDED) ) {
- 		if (P_PointOnLineSide (playerMobj->x, playerMobj->y, li.dx, li.dy, vertexes[li.v1Offset].x, vertexes[li.v1Offset].y)) {
+    if ( ! (li->flags & ML_TWOSIDED) ) {
+ 		if (P_PointOnLineSide (playerMobj->x, playerMobj->y, li_physics->dx, li_physics->dy, vertexes[li_physics->v1Offset].x, vertexes[li_physics->v1Offset].y)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -841,7 +839,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
 #ifdef	PRECALCULATE_OPENINGS
 	P_LoadLineOpening(in ->d.linenum);
 #else
-	P_LineOpening (li.sidenum[1], li.frontsecnum, li.backsecnum);
+	P_LineOpening (li->sidenum[1], li->frontsecnum, li->backsecnum);
 #endif
 	
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, (lineopening.opentop - lineopening.openbottom));
@@ -1028,7 +1026,7 @@ extern fixed_t	bottomslope;
 boolean
 PTR_AimTraverse (intercept_t* in)
 {
-    line_t		li;
+    line_t*		li;
     mobj_t*		th;
     fixed_t		slope;
     fixed_t		thingtopslope;
@@ -1037,9 +1035,9 @@ PTR_AimTraverse (intercept_t* in)
 	fixed_t_union temp;
 
     if (in->isaline) {
-		li = lines[in->d.linenum];
+		li = &lines[in->d.linenum];
 	
-		if (!(li.flags & ML_TWOSIDED)) {
+		if (!(li->flags & ML_TWOSIDED)) {
 			return false;		// stop
 		}
 		// Crosses a two sided line.
@@ -1048,7 +1046,7 @@ PTR_AimTraverse (intercept_t* in)
 #ifdef	PRECALCULATE_OPENINGS
 		P_LoadLineOpening(in->d.linenum);
 #else
-		P_LineOpening(li.sidenum[1], li.frontsecnum, li.backsecnum);
+		P_LineOpening(li->sidenum[1], li->frontsecnum, li->backsecnum);
 #endif
 
 
@@ -1059,14 +1057,14 @@ PTR_AimTraverse (intercept_t* in)
 		dist = FixedMul (attackrange.w, in->frac);
 
 		temp.h.fracbits = 0;
-		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
+		if (sectors[li->frontsecnum].floorheight != sectors[li->backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
 			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
 		
-		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
+		if (sectors[li->frontsecnum].ceilingheight != sectors[li->backsecnum].ceilingheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
 			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope < topslope)
@@ -1125,7 +1123,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
     fixed_t		z;
     fixed_t		frac;
     
-    line_t		li;
+	line_t		* li;
+	line_physics_t*		li_physics;
     
     mobj_t*		th;
 
@@ -1138,31 +1137,31 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	temp.h.fracbits = 0;
 
     if (in->isaline) {
-		li = lines[in->d.linenum];
-		
-		if (li.special)
+		li = &lines[in->d.linenum];
+		li_physics = &lines_physics[in->d.linenum];
+		if (li_physics->special)
 			P_ShootSpecialLine (shootthing, in->d.linenum);
 
-		if ( !(li.flags & ML_TWOSIDED) )
+		if ( !(li->flags & ML_TWOSIDED) )
 			goto hitline;
 	
 		// crosses a two sided line
 #ifdef	PRECALCULATE_OPENINGS
 		P_LoadLineOpening(in->d.linenum);
 #else
-		P_LineOpening(li.sidenum[1], li.frontsecnum, li.backsecnum);
+		P_LineOpening(li->sidenum[1], li->frontsecnum, li->backsecnum);
 #endif
 
 		dist = FixedMul (attackrange.w, in->frac);
 
-		if (sectors[li.frontsecnum].floorheight != sectors[li.backsecnum].floorheight) {
+		if (sectors[li->frontsecnum].floorheight != sectors[li->backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
 			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope > aimslope)
 				goto hitline;
 		}
 		
-		if (sectors[li.frontsecnum].ceilingheight != sectors[li.backsecnum].ceilingheight) {
+		if (sectors[li->frontsecnum].ceilingheight != sectors[li->backsecnum].ceilingheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
 			slope = FixedDiv (temp.w - shootz.w , dist);
 			if (slope < aimslope)
@@ -1183,15 +1182,14 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
 
 
-		if (sectors[li.frontsecnum].ceilingpic == skyflatnum) {
+		if (sectors[li->frontsecnum].ceilingpic == skyflatnum) {
 			// don't shoot the sky!
-			// temp.h.intbits = sectors[li.frontsecnum].ceilingheight >> SHORTFLOORBITS;
-			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[li.frontsecnum].ceilingheight);
+			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[li->frontsecnum].ceilingheight);
 			if (z > temp.w) {
 				return false;
 			}
 			// it's a sky hack wall
-			if (li.backsecnum != SECNUM_NULL && sectors[li.backsecnum].ceilingpic == skyflatnum) {
+			if (li->backsecnum != SECNUM_NULL && sectors[li->backsecnum].ceilingpic == skyflatnum) {
 				return false;
 			}
 		}
@@ -1370,12 +1368,14 @@ boolean	PTR_UseTraverse (intercept_t* in)
 {
     int16_t		side;
 
-	line_t line = lines[in->d.linenum];
-	if (!line.special) {
+	line_t* line = &lines[in->d.linenum];
+	line_physics_t* line_physics = &lines_physics[in->d.linenum];
+
+	if (!line_physics->special) {
 #ifdef	PRECALCULATE_OPENINGS
 		P_LoadLineOpening(in->d.linenum);
 #else
-		P_LineOpening(line.sidenum[1], line.frontsecnum, line.backsecnum);
+		P_LineOpening(line->sidenum[1], line->frontsecnum, line->backsecnum);
 #endif
 
  		if (lineopening.opentop < lineopening.openbottom)
@@ -1391,7 +1391,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 	
     side = 0;
 
-	if (P_PointOnLineSide(playerMobj->x, playerMobj->y, line.dx, line.dy, vertexes[line.v1Offset].x, vertexes[line.v1Offset].y) == 1) {
+	if (P_PointOnLineSide(playerMobj->x, playerMobj->y, line_physics->dx, line_physics->dy, vertexes[line_physics->v1Offset].x, vertexes[line_physics->v1Offset].y) == 1) {
 		side = 1;
 	}
 

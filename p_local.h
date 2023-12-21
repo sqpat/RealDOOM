@@ -229,7 +229,7 @@ void 	P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 #endif
 
 
-boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_t* ld, int16_t ) );
+boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_physics_t* ld, int16_t ) );
 boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(THINKERREF, mobj_t*));
 
 #define PT_ADDLINES		1

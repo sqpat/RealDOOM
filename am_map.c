@@ -1072,13 +1072,13 @@ void AM_drawWalls(void)
 	temp.h.fracbits = 0;
 
     for (i=0;i<numlines;i++) {
-		linev1Offset = lines[i].v1Offset;
-		linev2Offset = lines[i].v2Offset & VERTEX_OFFSET_MASK;
+		linev1Offset = lines_physics[i].v1Offset;
+		linev2Offset = lines_physics[i].v2Offset & VERTEX_OFFSET_MASK;
 		mappedflag = seenlines[i / 8] & (0x01 << (i%8));  // todo this seems wasteful? just add up during the loop to avoid all these shifts?
 		lineflags = lines[i].flags;
 		linebacksecnum = lines[i].backsecnum;
 		linefrontsecnum = lines[i].frontsecnum;
-		linespecial = lines[i].special;
+		linespecial = lines_physics[i].special;
 
 		temp.h.intbits = vertexes[linev1Offset].x;
 		l.a.x = temp.w;

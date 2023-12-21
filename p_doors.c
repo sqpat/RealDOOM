@@ -320,7 +320,7 @@ EV_VerticalDoor
     vldoor_t*	door;
     //int16_t		side = 0;
 	THINKERREF doorRef;
-	int16_t linespecial = lines[linenum].special;
+	int16_t linespecial = lines_physics[linenum].special;
 	int16_t sidenum;
 	int16_t doortopheight;
 	sector_t *doorsector;
@@ -452,8 +452,7 @@ EV_VerticalDoor
 		case 33:
 		case 34:
 			door->type = open;
-			(&lines[linenum])->special = 0;
-			linespecial = lines[linenum].special;
+			lines_physics[linenum].special = 0;
 			break;
 	
 		case 117:	// blazing door raise
@@ -463,8 +462,7 @@ EV_VerticalDoor
 		case 118:	// blazing door open
 			door->type = blazeOpen;
 			door->speed = VDOORSPEED*4;
-			(&lines[linenum])->special = 0;
-			linespecial = lines[linenum].special;
+			lines_physics[linenum].special = 0;
 			break;
     }
     

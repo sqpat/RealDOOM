@@ -280,7 +280,8 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 {
     int16_t		segnum;
 	int16_t linedefOffset;
-    line_t*		line;
+	line_t*		line;
+	line_physics_t*		line_physics;
 	int16_t			s1;
 	int16_t			s2;
     int16_t			count;
@@ -308,21 +309,22 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 
     for ( ; count ; segnum++, count--) {
 		linedefOffset = segs[segnum].linedefOffset;
-		line = &lines[linedefOffset];
+		line_physics = &lines_physics[linedefOffset];
 
 
 		// allready checked other side?
 		// if (line->validcount == (validcount & 0xFF)) {
 		
 
-		if (line->validcount == validcount ) {
+		if (line_physics->validcount == validcount ) {
 			continue;
 		}
+		line = &lines[linedefOffset];
 
 		//line->validcount = (validcount & 0xFF);
-		line->validcount = validcount;
-		linev1Offset = line->v1Offset;
-		linev2Offset = line->v2Offset & VERTEX_OFFSET_MASK;
+		line_physics->validcount = validcount;
+		linev1Offset = line_physics->v1Offset;
+		linev2Offset = line_physics->v2Offset & VERTEX_OFFSET_MASK;
 		lineflags = line->flags;
 
 		v1 = vertexes[linev1Offset];

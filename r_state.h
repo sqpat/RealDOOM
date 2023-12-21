@@ -98,6 +98,8 @@ extern node_render_t*      nodes_render;
 extern int16_t		numlines;
 extern line_t*   lines;
 extern uint8_t*		seenlines;
+extern line_physics_t*	lines_physics;
+
 
 
 extern int16_t		numsides;

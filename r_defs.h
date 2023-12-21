@@ -157,14 +157,14 @@ typedef struct
     uint8_t	bottomtexture;
     uint8_t	midtexture;
 
-    
+	texsize_t	textureoffset;
+
 } side_t; 
 
 
 typedef struct side_render_s
 {
 	// add this to the calculated texture column
-	texsize_t	textureoffset;
 
 	// add this to the calculated texture top
 	texsize_t	rowoffset;
@@ -193,19 +193,9 @@ typedef int16_t slopetype_t;
 
 typedef struct line_s
 {
-    // Vertices, from v1 to v2.
-	int16_t	v1Offset;											// physics only
-	int16_t	v2Offset;	//high two bits are the slopetype		// physics only
-
-    // Precalculated v2 - v1 for side checking.
-    int16_t	dx;	// physics only
-    int16_t	dy;	// physics only
-
     // Animation related.
     // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag in seenlines bit array
 	uint8_t	flags;	// both
-    uint8_t	special;	// both for texture animation but can be fixed to physics only
-	uint8_t	tag; // physics only
 
     // Visual appearance: SideDefs.
     //  sidenum[1] will be -1 if one sided
@@ -219,7 +209,6 @@ typedef struct line_s
 	// todo make this work 8 bit
 	// tricky, collisions do seem to happen with 8 bit. I think 10 or 11 would work. would need to fit those 3 high bits elsewhere.
     //uint8_t		validcount;
-	int16_t		validcount; // physics only
 
 
 } line_t;
@@ -229,8 +218,19 @@ typedef struct line_s
 typedef struct 
 {
 	// Vertices, from v1 to v2.
-	int16_t	v1Offset;
-	int16_t	v2Offset;	//high two bits are the slopetype
+	int16_t	v1Offset;											// physics only
+	int16_t	v2Offset;	//high two bits are the slopetype		// physics only
+
+	// Precalculated v2 - v1 for side checking.
+	int16_t	dx;	// physics only
+	int16_t	dy;	// physics only
+
+	uint8_t	tag; // physics only
+
+	int16_t		validcount; // physics only
+	uint8_t	special;	// both for texture animation but can be fixed to physics only
+
+
 } line_physics_t;
 
 

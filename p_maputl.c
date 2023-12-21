@@ -680,12 +680,12 @@ boolean
 P_BlockLinesIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(line_t*, int16_t) )
+  boolean(*func)(line_physics_t*, int16_t) )
 {
     int16_t			offset;
 	int16_t			index;
     int16_t		list;
-    line_t*		ld;
+	line_physics_t*		ld_physics;
     if (x<0
 	|| y<0
 	|| x>=bmapwidth
@@ -701,16 +701,16 @@ P_BlockLinesIterator
 
 		list = blockmaplump[index];
 
-		ld = &lines[list];
+		ld_physics = &lines_physics[list];
 
 		//if (ld->validcount == (validcount & 0xFF)) {
-		if (ld->validcount == validcount) {
+		if (ld_physics->validcount == validcount) {
 			continue; 	// line has already been checked
 		}
-		ld->validcount = validcount;
+		ld_physics->validcount = validcount;
 		//ld->validcount = (validcount & 0xFF);
 			
-		if (!func(ld, list)) {
+		if (!func(ld_physics, list)) {
 			return false;
 		}
     }
@@ -777,16 +777,16 @@ int32_t		ptflags;
 // Returns true if earlyout and a solid line hit.
 //
 boolean
-PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
+PIT_AddLineIntercepts (line_physics_t* ld_physics, int16_t linenum)
 {
+	line_t*		ld;
     int16_t			s1;
     int16_t			s2;
     fixed_t		frac;
     divline_t		dl;
-	
-	int16_t linedx = ld->dx;
-	int16_t linedy = ld->dy;
-	int16_t linev1Offset = ld->v1Offset;
+	int16_t linedx = ld_physics->dx;
+	int16_t linedy = ld_physics->dy;
+	int16_t linev1Offset = ld_physics->v1Offset;
 	int16_t v1x = vertexes[linev1Offset].x;
 	int16_t v1y = vertexes[linev1Offset].y;
 	fixed_t_union tempx;
@@ -799,7 +799,7 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
     // avoid precision problems with two routines
 	if ( trace.dx.h.intbits > 16 || trace.dy.h.intbits > 16 || trace.dx.h.intbits < -16 || trace.dy.h.intbits < -16) {
 		// we actually know the vertex fields to be 16 bit, but trace has 32 bit fields
-		int16_t linev2Offset = ld->v2Offset & VERTEX_OFFSET_MASK;
+		int16_t linev2Offset = ld_physics->v2Offset & VERTEX_OFFSET_MASK;
 		tempx.h.intbits = v1x;
 		tempy.h.intbits = v1y;
 		s1 = P_PointOnDivlineSide16(tempx.w, tempy.w);
@@ -834,7 +834,7 @@ PIT_AddLineIntercepts (line_t* ld, int16_t linenum)
 	if (frac < 0) {
 		return true;	// behind source
 	}
-
+	ld = &lines[linenum];
     // try to early out the check
     if (earlyout && frac < FRACUNIT && ld->backsecnum == SECNUM_NULL) {
 		return false;	// stop checking

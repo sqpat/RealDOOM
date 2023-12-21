@@ -68,6 +68,7 @@ node_render_t*      nodes_render;
 int16_t             numlines;
 line_t*			lines;
 uint8_t*		seenlines;
+line_physics_t*	lines_physics;
 
 int16_t             numsides;
 side_t*				sides;
@@ -1028,6 +1029,7 @@ void P_LoadLineDefs(int16_t lump)
 	uint16_t                 i;
 	maplinedef_t*       mld;
 	line_t*             ld;
+	line_physics_t*             ld_physics;
 	vertex_t*           v1;
 	vertex_t*           v2;
 	int16_t side0secnum;
@@ -1050,11 +1052,14 @@ void P_LoadLineDefs(int16_t lump)
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
 	linesRef = Z_MallocConventional(numlines * sizeof(line_t), CA_TYPE_LEVELDATA);
-	lines = (line_t*)Z_LoadBytesFromConventional(linesRef);
+	lines = (line_t* far)Z_LoadBytesFromConventional(linesRef);
+
+	lines_physics = (line_physics_t* far)Z_GetNextPhysicsAddress(numlines * sizeof(line_physics_t));
 
 	seenlinesRef = Z_MallocConventional(numlines/8+1, CA_TYPE_LEVELDATA);
 	seenlines = (uint8_t*)Z_LoadBytesFromConventional(seenlinesRef);
 	memset(lines, 0, numlines * sizeof(line_t));
+	memset(lines_physics, 0, numlines * sizeof(line_physics_t));
 	memset(seenlines, 0, numlines / 8 + 1);
 	W_CacheLumpNumCheck(lump, 6);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
@@ -1081,12 +1086,12 @@ void P_LoadLineDefs(int16_t lump)
 		v2y = v2->y;
 
 		ld = &lines[i];
+		ld_physics = &lines_physics[i];
 
 		ld->sidenum[0] = mldsidenum0;
 		ld->sidenum[1] = mldsidenum1;
 
 		ld->flags = mldflags&0xff;
-		ld->special = mldspecial;
 
 		convertedtag = mldtag;
 		if (convertedtag == 666) {
@@ -1103,22 +1108,23 @@ void P_LoadLineDefs(int16_t lump)
 			I_Error("found (line) line tag that was too high! %i %i", convertedtag, i);
 		}
 
-		ld->tag = convertedtag;
-		ld->v1Offset = mldv1;
-		ld->v2Offset = mldv2;
-		ld->dx = v2x - v1x;
-		ld->dy = v2y - v1y;
-		
+		ld_physics->tag = convertedtag;
+		ld_physics->v1Offset = mldv1;
+		ld_physics->v2Offset = mldv2;
+		ld_physics->dx = v2x - v1x;
+		ld_physics->dy = v2y - v1y;
+		ld_physics->special = mldspecial;
+
 		// setting the slopetype in the high bits of v2Offset
-		if (!ld->dx) {
-			ld->v2Offset |= (ST_VERTICAL_HIGH);
-		} else if (!ld->dy) {
-			ld->v2Offset |= (ST_HORIZONTAL_HIGH);
+		if (!ld_physics->dx) {
+			ld_physics->v2Offset |= (ST_VERTICAL_HIGH);
+		} else if (!ld_physics->dy) {
+			ld_physics->v2Offset |= (ST_HORIZONTAL_HIGH);
 		} else {
-			if (FixedDiv(ld->dy, ld->dx) > 0) {
-				ld->v2Offset |= (ST_POSITIVE_HIGH);
+			if (FixedDiv(ld_physics->dy, ld_physics->dx) > 0) {
+				ld_physics->v2Offset |= (ST_POSITIVE_HIGH);
 			} else {
-				ld->v2Offset |= (ST_NEGATIVE_HIGH);
+				ld_physics->v2Offset |= (ST_NEGATIVE_HIGH);
 			}
 		}
 
@@ -1218,9 +1224,9 @@ void P_LoadSideDefs(int16_t lump)
 		sd->toptexture = toptex;
 		sd->bottomtexture = bottex;
 		sd->midtexture = midtex;
-		
+		sd->textureoffset = msdtextureoffset;
+
 		sd_render = &sides_render[i];
-		sd_render->textureoffset = msdtextureoffset;
 		sd_render->rowoffset = msdrowoffset;
 		sd_render->secnum = msdsecnum;
 
@@ -1283,6 +1289,7 @@ void P_GroupLines(void)
 	uint16_t                 i;
 	uint16_t                 j;
 	line_t*             li;
+	line_physics_t*     li_physics;
 	int16_t             bbox[4];
 	int16_t             block;
 	int16_t				previouslinebufferindex;
@@ -1347,8 +1354,9 @@ void P_GroupLines(void)
 	 
 		for (j = 0; j < numlines; j++) {
 			li = &lines[j];
-			linev1Offset = li->v1Offset;
-			linev2Offset = li->v2Offset & VERTEX_OFFSET_MASK;
+			li_physics = &lines_physics[j];
+			linev1Offset = li_physics->v1Offset;
+			linev2Offset = li_physics->v2Offset & VERTEX_OFFSET_MASK;
 
 			if (li->frontsecnum == i || li->backsecnum == i) {
 				linebuffer[linebufferindex] = j;
@@ -1499,71 +1507,74 @@ P_SetupLevel
 
 	// e1m1
 	// 648    85  467   475	  475   237  236   732    475   642    828			num x
-	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 4536 1360 1868  9975    60  1185 6608  2196   3325  1284   1656	 	bytes used
-	//							       35001 					15049
+	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
+	//  2592 1360 1868 4275    60  1185 2832  2196   3325  1284   1656	 	bytes used
+	//	49040 42021 52496
 	//   3    2     1     4    5     6     7     8		load order
 
 	// e1m2
 	// 1323 200  942   1033  1033   448  447   1463 1033  1322    1302
-	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 9261 3200 3768 21693  130   2240 12516  4389 7231  2644   2604
-	//							        54208                    30035	 
+	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
+	// 5292 3200 3768  9297  130  2240  5364  4389 7231  2644   2604
+	// 31728 18939 39785
 
 
-		// e1m3
+	// e1m3
 	// 1326 177  946   1026  1026  461  460  1445	   1026 1318   850
-	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 3978 2832 3784 21546   129  2305 12880 4335   7182 2636  1700
-	//							        53997                  28858
+	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
+	// 5304 2832 3784 9234   129  2305 5520 4335   7182 2636  1700
+	//  31965 23492 39748
 
 		// e1m4
 	// 1054 139  780   830    830    355  354   1172   830  1051   660
-	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 3162 2224 3120 17430   104   1775 9912 3516  5810  2102  1320
-	//						         	42916                  23296
+	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
+	// 4216 2224 3120 7470   104   1775 4248 3516  5810  2102  1320
+	// 38735 31658 44990 
+
 	// e1m5
 	// 1053 143  746   825   825    384  383   1141   825  1051    832
-	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 3159 2288 2984 17325  104   1920 10724 3423   5775 2102   1664
-	//							        43717                  23233
+	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
+	// 4212 2288 2984 7425  104   1920 4596    3423   5775 2102   1664
+	//	38456 30639 44839
 	//     sector    linedef      subsec      seg      linebuffer
 	// side     vertex     seenlines   node     lineopenings   blocklinks
 
 
 	// biggest shareware e1m6?
-	// 1727  250  1207 1352  1352   606  605    1862   1352 1719  1748
-	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 5181 4000 4828 28392   170  3030 16940 5586     9464   3438 3496
-	//	 					      54259        48701 
+	// 1727  250  1207 1352  1352   606  605  1862     1352 1719  1748
+	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
+	// 6908 4000 4828 12168   170  3030  7260 5586     9464   3438 3496
+	//	21458  4662 32055
 	
 	// e1m7 timedemo 3
 	//     sector    linedef      subsec      seg      linebuffer
 	// side     vertex     seenlines   node     lineopenings   blocklinks
 	// 1223 170   896   958  958   467  466   1371   958	1220   864				count
-	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 3669 2720 3584 20118  120  2335 13048 4113  6707  2440	1728				bytes used
-	//						      	   51676						27327
+	//   4   16     4    9  /8+1     5   12    3	   7	  2	     2		size of type
+	// 4892 2720 3584  8622  120  2335 5592  4113  6707  2440	1728				bytes used
+	// 33430 25436 40701
+	
 	//   3    2     1     4    5     6     7     8		load order
 	
 	// e1m8
 	// 511   74   328   333  333    177  176    586   333   507   2912
-	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 1533 1184 1312  6993   42    885 4928   1758  2331  1014   5824
-	//							       19439						 16201
+	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
+	// 2044 1184 1312  2997   42    885 2112   1758  2331  1014   5824
+	// 53074 29147 55327
 
 	// e1m9
 	// 902  147  581    653  653    288  287    978   653   898    702
-	//   3   16     4    21  /8+1     5   28    3	      7	  2	     2		size of type
-	// 2706 2352 2324 13713   41   1440 8036  2934  4571  1796   1404
-	//							       35249						19507
+	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
+	// 3608 2352 2324  5877   41   1440 3444  2934  4571  1796   1404
+	// 43347 36297 48458
 
 	// doom 2 map 14
-	//	2586 347  1428 1680  850  849	2815
-	// 7758 5552  5712 35280 4250 23772 8445  = 90769 too big ... also sides array > 64k, problematic...
-	//                 67075 up to here   61802 
+	//  side sect vert line	 subsec node   seg
+	//	2587 348  1429 1681   851  850	  2815  
+	// 10344 5568 5716 15129 4255 10200   8445
+	//                                     59657 up to here.
 	
- /*
+
 	
 	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p \n%u %u %u",
 		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t),
@@ -1580,9 +1591,9 @@ P_SetupLevel
 		subsectors, nodes, vertexes, lineopenings,
 		
 		conventionalmemoryblock, 
-		remainingconventional1, 0-leveldataoffset_phys, 0-leveldataoffset_rend
+		remainingconventional, leveldataoffset_phys, leveldataoffset_rend
 	);
-	*/
+	
 	TEXT_MODE_DEBUG_PRINT("\n P_LoadThings");
 	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 
 
