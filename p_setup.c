@@ -75,7 +75,7 @@ side_render_t*		sides_render;
 int16_t*          linebuffer;
 
 // for things nightmare respawn data
-MEMREF			nightmareSpawnPointsRef;
+mapthing_t*			nightmarespawns;
 
 #ifdef PRECALCULATE_OPENINGS
 lineopening_t*	lineopenings;
@@ -111,6 +111,50 @@ THINKERREF*		blocklinks;
 //  used as a PVS lookup as well.
 //
 MEMREF           rejectmatrixRef;
+
+uint16_t leveldataoffset_phys = 0u;
+uint16_t leveldataoffset_rend = 0u;
+
+byte* far Z_GetNext0x7000Address(uint16_t size, int8_t pagetype) {
+
+	uint16_t oldoffset;
+	uint16_t *useoffset;
+	byte* far returnvalue;
+	switch (pagetype) {
+	case PAGE_TYPE_PHYSICS:
+		oldoffset = leveldataoffset_phys;
+		useoffset = &leveldataoffset_phys;
+		break;
+	case PAGE_TYPE_RENDER:
+		oldoffset = leveldataoffset_rend;
+		useoffset = &leveldataoffset_rend;
+		break;
+	}
+
+	*useoffset -= size;
+	returnvalue = MK_FP(0x7000, *useoffset);
+
+	if (oldoffset != 0 && (oldoffset < *useoffset)) {
+		// wraparound
+		I_Error("Allocated too much space in Z_GetNextPhysicsAddress (size %u) ", size);
+	}
+	return returnvalue;
+
+}
+
+void Z_Subtract0x7000Address(uint16_t size, int8_t pagetype) {
+
+	switch (pagetype) {
+	case PAGE_TYPE_PHYSICS:
+		leveldataoffset_phys += size;
+		return;
+	case PAGE_TYPE_RENDER:
+		leveldataoffset_rend += size;
+		return;
+	}
+
+
+}
 
  
 //
@@ -859,8 +903,8 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 	mobjRef = P_SpawnMobj(x.w, y.w, z.w, i, -1);
 
 	mobj = setStateReturn;
-	((mapthing_t*)Z_LoadBytesFromEMS(nightmareSpawnPointsRef))[mobjRef]= mthing;
-	
+	nightmarespawns[mobjRef] = mthing;
+
 	if (mobj->tics > 0 && mobj->tics < 240)
 		mobj->tics = 1 + (P_Random() % mobj->tics);
 	if (mobj->flags & MF_COUNTKILL)
@@ -931,12 +975,13 @@ void P_LoadThings(int16_t lump)
 	uint16_t                 numthings;
 	boolean             spawn;
 	MEMREF				dataRef;
+	
+	memset(nightmarespawns, 0, 16384);
 	W_CacheLumpNumCheck(lump, 5);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);
 
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
-
 	for (i = 0; i < numthings; i++) {
 		mt = data[i];
 		spawn = true;

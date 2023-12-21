@@ -406,13 +406,13 @@ P_NightmareRespawn(mobj_t* mobj)
 	fixed_t mobjy;
 	fixed_t_union temp;
 	mapthing_t mobjspawnpoint;
-	THINKERREF mobjRef = GETTHINKERREF(mobjRef);
+	THINKERREF mobjRef = GETTHINKERREF(mobj);
 
 	temp.h.fracbits = 0;
 	x.h.fracbits = 0;
 	y.h.fracbits = 0;
 	
-	mobjspawnpoint = ((mapthing_t*)(Z_LoadBytesFromEMS(nightmareSpawnPointsRef)))[mobjRef];
+	mobjspawnpoint = nightmarespawns[mobjRef];
 
 	x.h.intbits = mobjspawnpoint.x;
 	y.h.intbits = mobjspawnpoint.y;
@@ -457,8 +457,8 @@ P_NightmareRespawn(mobj_t* mobj)
     moRef = P_SpawnMobj (x.w,y.w,z.w, mobjtype, -1);
 	
 	// update nightmare respawn data for this new moref..
-	((mapthing_t*)Z_LoadBytesFromEMS(nightmareSpawnPointsRef))[moRef] = mobjspawnpoint;
-
+	nightmarespawns[moRef] = mobjspawnpoint;
+	
 
 	mo = setStateReturn;
 	//mo->spawnpoint = mobjspawnpoint;

@@ -1070,8 +1070,8 @@ void Z_FreeConventionalAllocations() {
 	conventional1head = 0;
 
 	conventional1headindex = 0;
-
-	memset(Z_LoadBytesFromEMS(nightmareSpawnPointsRef), 0, 16384);
+	
+	memset(nightmarespawns, 0, 16384);
 	
 }
 
@@ -1618,4 +1618,29 @@ void Z_QuickmapStatus() {
 
 	taskswitchcount++;
 	currenttask = TASK_STATUS;
+}
+
+void Z_QuickmapByTaskNum(uint8_t tasknum) {
+	switch (tasknum) {
+		case TASK_PHYSICS:
+			Z_QuickmapPhysics();
+			break;
+		case TASK_RENDER:
+			Z_QuickmapRender();
+			break;
+		case TASK_STATUS:
+			Z_QuickmapStatus();
+			break;
+/*
+		case Z_QuickmapRender7000to6000:
+			TASK_RENDER7000TO6000(); // technically probably buggy but probably unused
+			break;
+
+		case TASK_PHYSICS9000:
+			Z_QuickmapPhysics9000(); // technically probably buggy but probably unused
+			break;
+			*/
+		default:
+			I_Error("bad tasknum %hhi", tasknum);
+	}
 }

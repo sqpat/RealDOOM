@@ -211,6 +211,7 @@ void Z_QuickmapPhysics9000();
 void Z_QuickmapRender();
 void Z_QuickmapStatus();
 void Z_QuickmapRender7000to6000();
+void Z_QuickmapByTaskNum();
 void Z_GetEMSPageMap();
 void Z_LoadBinaries();
 

@@ -873,9 +873,6 @@ void D_DoomMain2(void)
 #endif
 	ST_Init();
 
-	nightmareSpawnPointsRef = Z_MallocEMS(16384, PU_STATIC, 0);
-
-
 	// start the apropriate game based on parms
 	p = M_CheckParm("-record");
 

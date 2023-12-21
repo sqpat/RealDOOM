@@ -1083,10 +1083,11 @@ void M_QuitDOOM(int16_t choice)
   //  or one at random, between 1 and maximum number.
 	int8_t temp[256];
 	int8_t temp2[256];
+ 	int8_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
 	getStringByIndex(DOSY, temp2);
 	if (commercial)
     {
-		getStringByIndex(endmsg2[(gametic >> 2) % NUM_QUITMESSAGES], temp);
+		getStringByIndex(endmsg2[chosenendmsg], temp);
             sprintf(endstring, "%s%s",
 				temp,
 				temp2
@@ -1094,7 +1095,7 @@ void M_QuitDOOM(int16_t choice)
     }
     else
     {
-		getStringByIndex(endmsg[(gametic >> 2) % NUM_QUITMESSAGES], temp);
+		getStringByIndex(endmsg[chosenendmsg], temp);
 		sprintf(endstring, "%s%s",
 			temp,
 			temp2
@@ -1102,8 +1103,9 @@ void M_QuitDOOM(int16_t choice)
 		    
     }
   
-  M_StartMessage(endstring,M_QuitResponse,true);
+    M_StartMessage(endstring,M_QuitResponse,true);
 }
+
 
 
 
@@ -1372,24 +1374,21 @@ boolean M_Responder (event_t*  ev)
             mousewait = ticcount + 15;
         }
     }
-    else
-        if (ev->type == ev_keydown)
-        {
-            ch = ev->data1;
-        }
+	else {
+		if (ev->type == ev_keydown) {
+			ch = ev->data1;
+		}
+	}
 
-    if (ch == -1)
-        return false;
-
+	if (ch == -1) {
+		return false;
+	}
     
     // Save Game string input
-    if (saveStringEnter)
-    {
-        switch(ch)
-        {
+    if (saveStringEnter) {
+        switch(ch) {
           case KEY_BACKSPACE:
-            if (saveCharIndex > 0)
-            {
+            if (saveCharIndex > 0) {
                 saveCharIndex--;
                 savegamestrings[saveSlot][saveCharIndex] = 0;
             }
@@ -1414,8 +1413,7 @@ boolean M_Responder (event_t*  ev)
             if (ch >= 32 && ch <= 127 &&
                 saveCharIndex < SAVESTRINGSIZE-1 &&
                 M_StringWidth(savegamestrings[saveSlot]) <
-                (SAVESTRINGSIZE-2)*8)
-            {
+                (SAVESTRINGSIZE-2)*8) {
                 savegamestrings[saveSlot][saveCharIndex++] = ch;
                 savegamestrings[saveSlot][saveCharIndex] = 0;
             }
@@ -1425,8 +1423,7 @@ boolean M_Responder (event_t*  ev)
     }
     
     // Take care of any messages that need input
-    if (messageToPrint)
-    {
+    if (messageToPrint) {
         if (messageNeedsInput == true &&
             !(ch == ' ' || ch == 'n' || ch == 'y' || ch == KEY_ESCAPE))
             return false;
@@ -1445,8 +1442,7 @@ boolean M_Responder (event_t*  ev)
     
     // F-Keys
     if (!menuactive)
-        switch(ch)
-        {
+        switch(ch) {
           case KEY_MINUS:         // Screen size down
             if (automapactive )
                 return false;
@@ -1535,10 +1531,8 @@ boolean M_Responder (event_t*  ev)
 
     
     // Pop-up menu?
-    if (!menuactive)
-    {
-        if (ch == KEY_ESCAPE)
-        {
+    if (!menuactive) {
+        if (ch == KEY_ESCAPE) {
             M_StartControlPanel ();
             S_StartSound(NULL,sfx_swtchn);
             return true;
@@ -1548,11 +1542,9 @@ boolean M_Responder (event_t*  ev)
 
     
     // Keys usable within menu
-    switch (ch)
-    {
+    switch (ch) {
       case KEY_DOWNARROW:
-        do
-        {
+        do {
             if (itemOn+1 > currentMenu->numitems-1)
                 itemOn = 0;
             else itemOn++;
@@ -1561,8 +1553,7 @@ boolean M_Responder (event_t*  ev)
         return true;
                 
       case KEY_UPARROW:
-        do
-        {
+        do {
             if (!itemOn)
                 itemOn = currentMenu->numitems-1;
             else itemOn--;
@@ -1572,8 +1563,7 @@ boolean M_Responder (event_t*  ev)
 
       case KEY_LEFTARROW:
         if (currentMenu->menuitems[itemOn].routine &&
-            currentMenu->menuitems[itemOn].status == 2)
-        {
+            currentMenu->menuitems[itemOn].status == 2) {
             S_StartSound(NULL,sfx_stnmov);
             currentMenu->menuitems[itemOn].routine(0);
         }
@@ -1581,8 +1571,7 @@ boolean M_Responder (event_t*  ev)
                 
       case KEY_RIGHTARROW:
         if (currentMenu->menuitems[itemOn].routine &&
-            currentMenu->menuitems[itemOn].status == 2)
-        {
+            currentMenu->menuitems[itemOn].status == 2) {
             S_StartSound(NULL,sfx_stnmov);
             currentMenu->menuitems[itemOn].routine(1);
         }
@@ -1590,19 +1579,28 @@ boolean M_Responder (event_t*  ev)
 
       case KEY_ENTER:
         if (currentMenu->menuitems[itemOn].routine &&
-            currentMenu->menuitems[itemOn].status)
-        {
-            currentMenu->lastOn = itemOn;
-            if (currentMenu->menuitems[itemOn].status == 2)
-            {
+            currentMenu->menuitems[itemOn].status) {
+
+			int8_t oldtask = currenttask;
+			if (currenttask != TASK_STATUS) {
+				// might get called by m_responder. Investigate if this can be dropped in there instead.
+				Z_QuickmapStatus();
+			}
+
+			currentMenu->lastOn = itemOn;
+			
+			if (currentMenu->menuitems[itemOn].status == 2) {
                 currentMenu->menuitems[itemOn].routine(1);      // right arrow
                 S_StartSound(NULL,sfx_stnmov);
-            }
-            else
-            {
+            } else {
                 currentMenu->menuitems[itemOn].routine(itemOn);
                 S_StartSound(NULL,sfx_pistol);
             }
+			if (oldtask != TASK_STATUS) {
+				Z_QuickmapByTaskNum(oldtask);
+			}
+
+
         }
         return true;
                 
@@ -1614,8 +1612,7 @@ boolean M_Responder (event_t*  ev)
                 
       case KEY_BACKSPACE:
         currentMenu->lastOn = itemOn;
-        if (currentMenu->prevMenu)
-        {
+        if (currentMenu->prevMenu) {
             currentMenu = currentMenu->prevMenu;
             itemOn = currentMenu->lastOn;
             S_StartSound(NULL,sfx_swtchn);
@@ -1623,20 +1620,20 @@ boolean M_Responder (event_t*  ev)
         return true;
         
       default:
-        for (i = itemOn+1;i < currentMenu->numitems;i++)
-            if (currentMenu->menuitems[i].alphaKey == ch)
-            {
-                itemOn = i;
-                S_StartSound(NULL,sfx_pstop);
-                return true;
-            }
-        for (i = 0;i <= itemOn;i++)
-            if (currentMenu->menuitems[i].alphaKey == ch)
-            {
-                itemOn = i;
-                S_StartSound(NULL,sfx_pstop);
-                return true;
-            }
+		  for (i = itemOn + 1; i < currentMenu->numitems; i++) {
+			  if (currentMenu->menuitems[i].alphaKey == ch) {
+				  itemOn = i;
+				  S_StartSound(NULL, sfx_pstop);
+				  return true;
+			  }
+		  }
+		for (i = 0; i <= itemOn; i++) {
+			if (currentMenu->menuitems[i].alphaKey == ch) {
+				itemOn = i;
+				S_StartSound(NULL, sfx_pstop);
+				return true;
+			}
+		}
         break;
         
     }
@@ -1652,9 +1649,9 @@ boolean M_Responder (event_t*  ev)
 void M_StartControlPanel (void)
 {
     // intro might call this repeatedly
-    if (menuactive)
-        return;
-    
+	if (menuactive) {
+		return;
+	}
     menuactive = 1;
     currentMenu = &MainDef;         // JDC
     itemOn = currentMenu->lastOn;   // JDC
@@ -1680,25 +1677,22 @@ void M_Drawer (void)
 
     
     // Horiz. & Vertically center string and print it.
-    if (messageToPrint)
-    {
+    if (messageToPrint) {
 		Z_QuickmapStatus();
 
         start = 0;
         y = 100 - M_StringHeight(messageString)/2;
-        while(*(messageString+start))
-        {
-            for (i = 0;i < strlen(messageString+start);i++)
-                if (*(messageString+start+i) == '\n')
-                {
-                    memset(string,0,40);
-                    strncpy(string,messageString+start,i);
-                    start += i+1;
-                    break;
-                }
-                                
-            if (i == strlen(messageString+start))
-            {
+        while(*(messageString+start)) {
+			for (i = 0; i < strlen(messageString + start); i++) {
+				if (*(messageString + start + i) == '\n') {
+					memset(string, 0, 40);
+					strncpy(string, messageString + start, i);
+					start += i + 1;
+					break;
+				}
+			}
+
+            if (i == strlen(messageString+start)) {
                 strcpy(string,messageString+start);
                 start += i;
             }
@@ -1709,26 +1703,29 @@ void M_Drawer (void)
             y += (hu_font[0]->height);
         }
 		Z_QuickmapPhysics();
+
 		return;
     }
 
-    if (!menuactive)
-        return;
+	if (!menuactive) {
+		return;
+	}
 	Z_QuickmapStatus();
 
-    if (currentMenu->routine)
-        currentMenu->routine();         // call Draw routine
-    
+	if (currentMenu->routine) {
+		currentMenu->routine();         // call Draw routine
+	}
+
     // DRAW MENU
     x = currentMenu->x;
     y = currentMenu->y;
     max = currentMenu->numitems;
 
-    for (i=0;i<max;i++)
-    {
-        if (currentMenu->menuitems[i].name[0])
-            V_DrawPatchDirect (x,y,
-				W_CacheLumpNameEMSAsPatch(currentMenu->menuitems[i].name, PU_CACHE)) ;
+    for (i=0;i<max;i++) {
+		if (currentMenu->menuitems[i].name[0]) {
+			V_DrawPatchDirect(x, y,
+				W_CacheLumpNameEMSAsPatch(currentMenu->menuitems[i].name, PU_CACHE));
+		}
         y += LINEHEIGHT;
     }
 
@@ -1736,8 +1733,8 @@ void M_Drawer (void)
     // DRAW SKULL
 	V_DrawPatchDirect(x + SKULLXOFF, currentMenu->y - 5 + itemOn * LINEHEIGHT,
 		W_CacheLumpNameEMSAsPatch(skullName[whichSkull], PU_CACHE));
-	Z_QuickmapPhysics();
 
+	Z_QuickmapPhysics();
 
 }
 

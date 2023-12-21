@@ -107,7 +107,7 @@ extern side_render_t*		sides_render;
 
 extern int16_t*          linebuffer;
 
-extern MEMREF		nightmareSpawnPointsRef;
+extern mapthing_t*			nightmarespawns;
 
 #ifdef PRECALCULATE_OPENINGS
 extern lineopening_t*	lineopenings;

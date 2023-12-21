@@ -262,8 +262,7 @@ int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824,
 						844, 836, 844, 908, 944, 844, 816, 824, 
 						808, 836 };
 
-uint16_t leveldataoffset_phys = 0u;
-uint16_t leveldataoffset_rend = 0u;
+
 
 void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
@@ -350,6 +349,7 @@ found:
 	//					
 	//					
 	// 0x6000 block		strings				texturedata			strings
+	//					nightnmarespawns
 	// 0x5000 block						textures
 	//					trig tables
 	// 0x4000 block						textures
@@ -433,7 +433,7 @@ found:
 	pageswapargs_stat[7] = pagenum9000 - 6;
 	pageswapargs_stat[8] = 36;
 	pageswapargs_stat[9] = pagenum9000 - 5;
-	pageswapargs_stat[10] = 15;
+	pageswapargs_stat[10] = 12;
 	pageswapargs_stat[11] = pagenum9000 - 12; // strings;
 
 	pageswapargs_rend_temp_7000_to_6000[0] = 24;
@@ -655,6 +655,8 @@ found:
 
 	stringdata = MK_FP(segment, offset_physics);
 	offset_physics += 16384;
+	nightmarespawns = MK_FP(segment, offset_physics);
+	offset_physics += 16384;
 
 	textureinfomemoryblock = MK_FP(segment, offset_render);
 	offset_render += (STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE);
@@ -673,46 +675,6 @@ found:
 	Z_QuickmapPhysics(); // map default page map
 }
 
-byte* far Z_GetNext0x7000Address(uint16_t size, int8_t pagetype) {
-
-	uint16_t oldoffset;
-	uint16_t *useoffset;
-	byte* far returnvalue;
-	switch (pagetype) {
-		case PAGE_TYPE_PHYSICS:
-			oldoffset = leveldataoffset_phys;
-			useoffset = &leveldataoffset_phys;
-			break;
-		case PAGE_TYPE_RENDER:
-			oldoffset = leveldataoffset_rend;
-			useoffset = &leveldataoffset_rend;
-			break;
-	}
-
-	*useoffset -= size;
-	returnvalue = MK_FP(0x7000, *useoffset);
-
-	if (oldoffset != 0 && (oldoffset < *useoffset)) {
-		// wraparound
-		I_Error("Allocated too much space in Z_GetNextPhysicsAddress (size %u) ", size);
-	}
-	return returnvalue;
-
-}
-
-void Z_Subtract0x7000Address(uint16_t size, int8_t pagetype) {
-
-	switch (pagetype) {
-		case PAGE_TYPE_PHYSICS:
-			leveldataoffset_phys += size; 
-			return;
-		case PAGE_TYPE_RENDER:
-			leveldataoffset_rend += size;
-			return;
-	}
-
-
-}
 
 void Z_LoadBinaries() {
 	FILE* fp;
