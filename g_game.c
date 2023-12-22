@@ -56,7 +56,7 @@
 #include "r_data.h"
 
 
-
+#include <dos.h>
 #include "g_game.h"
 
 
@@ -64,7 +64,7 @@
 #define SAVESTRINGSIZE  24
 // lets keep this comfortably 16 bit. otherwise how do we fit in ems without big rewrite?
 #define DEMO_MAX_SIZE 0xF800
-
+#define DEMO_SEGMENT 0x6000u
 
 boolean G_CheckDemoStatus (void); 
 void    G_ReadDemoTiccmd (ticcmd_t* cmd); 
@@ -112,7 +112,7 @@ int8_t            demoname[32];
 boolean         demorecording; 
 boolean         demoplayback; 
 boolean         netdemo; 
-MEMREF           demobufferRef;
+byte*           demobuffer;
 
 uint16_t           demo_p;				// buffer
 //byte*           demoend; 
@@ -994,7 +994,6 @@ void G_InitNew(skill_t       skill, int8_t           episode, int8_t           m
 
 
 
- 
 
 //
 // DEMO RECORDING 
@@ -1005,9 +1004,9 @@ void G_InitNew(skill_t       skill, int8_t           episode, int8_t           m
 void G_ReadDemoTiccmd (ticcmd_t* cmd) 
 { 
     // this is just used as an offset so lets just store as int;
-	int32_t demobuffer = (int32_t) Z_LoadBytesFromEMS(demobufferRef);
-	byte* demo_addr = (byte*)(demo_p + demobuffer);
-	
+	byte* demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
+	Z_QuickmapDemo();
+
 	if (*demo_addr == DEMOMARKER)  {
         // end of demo data stream 
         G_CheckDemoStatus (); 
@@ -1020,14 +1019,16 @@ void G_ReadDemoTiccmd (ticcmd_t* cmd)
     cmd->angleturn = ((uint8_t)*demo_addr++)<<8;
     cmd->buttons = (uint8_t)*demo_addr++;
 	demo_p = (uint16_t)(demo_addr - demobuffer);
+	Z_QuickmapPhysics();
+
 }
 
 
 void G_WriteDemoTiccmd (ticcmd_t* cmd) 
 { 
-	int32_t demobuffer = (int32_t) Z_LoadBytesFromEMS(demobufferRef);
-	byte* demo_addr = (byte*)(demo_p + demobuffer);
- 	if (gamekeydown['q'])           // press q to end demo recording 
+	byte* demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
+	Z_QuickmapDemo();
+	if (gamekeydown['q'])           // press q to end demo recording 
         G_CheckDemoStatus (); 
 
 	
@@ -1047,6 +1048,7 @@ void G_WriteDemoTiccmd (ticcmd_t* cmd)
         
     G_ReadDemoTiccmd (cmd);         // make SURE it is exactly the same 
 	demo_p = (uint16_t)(demo_addr - demobuffer);
+	Z_QuickmapPhysics();
 
 } 
  
@@ -1066,7 +1068,6 @@ void G_RecordDemo (int8_t* name)
     i = M_CheckParm ("-maxdemo");
     if (i && i<myargc-1) 
             maxsize = atoi(myargv[i+1])*1024;
-    demobufferRef = Z_MallocEMS (maxsize,PU_STATIC,0); 
     //demoend = demobuffer + maxsize;
         
     demorecording = true; 
@@ -1075,8 +1076,8 @@ void G_RecordDemo (int8_t* name)
  
 void G_BeginRecording (void) 
 { 
-	byte* demobuffer = Z_LoadBytesFromEMS(demobufferRef);
-	byte* demo_addr = (byte*)(demobuffer);
+	byte* demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
+	Z_QuickmapDemo();
 
     demo_p = 0;
         
@@ -1096,6 +1097,7 @@ void G_BeginRecording (void)
 	*demo_addr++ = false;
 	
 	demo_p = (demo_addr - demobuffer);
+	Z_QuickmapPhysics();
 
 } 
  
@@ -1116,12 +1118,11 @@ void G_DoPlayDemo (void)
 { 
     skill_t skill; 
 	int8_t             episode, map;
-	byte* demobuffer;
 	byte* demo_addr;
+	Z_QuickmapDemo();
 
 	gameaction = ga_nothing;
-    demobufferRef = W_CacheLumpNameEMS (defdemoname, PU_STATIC); 
-	demobuffer = (byte*) Z_LoadBytesFromEMS(demobufferRef);
+	W_CacheLumpNameDirect(defdemoname, demobuffer);
 	demo_addr = (byte*)(demobuffer);
 	demo_p = 0;
 
@@ -1157,6 +1158,7 @@ void G_DoPlayDemo (void)
     demoplayback = true; 
 
 	demo_p = (demo_addr - demobuffer);
+	Z_QuickmapPhysics();
 
 } 
 
@@ -1188,9 +1190,8 @@ void G_TimeDemo (int8_t* name)
 
 boolean G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
-	byte* demobuffer;
+	//byte* demobuffer;
 	byte* demo_addr;
- 
 	if (timingdemo) {
 		endtime = ticcount;
  
@@ -1202,7 +1203,6 @@ boolean G_CheckDemoStatus (void)  {
         if (singledemo) 
             I_Quit (); 
                          
-        Z_ChangeTagEMS (demobufferRef, PU_CACHE); 
         demoplayback = false; 
         netdemo = false;
         respawnparm = false;
@@ -1213,13 +1213,11 @@ boolean G_CheckDemoStatus (void)  {
     } 
  
     if (demorecording)  { 
-		demobuffer = Z_LoadBytesFromEMS(demobufferRef);
-		demo_addr = (byte*)(demo_p + demobuffer);
-
+		Z_QuickmapDemo();
+		demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
 		*demo_addr++ = DEMOMARKER;
 		demo_p++;
         M_WriteFile (demoname, demobuffer, demo_p);
-        Z_FreeEMS (demobufferRef); 
         demorecording = false; 
         I_Error ("Demo %s recorded",demoname); 
     } 

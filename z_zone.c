@@ -1502,6 +1502,7 @@ int16_t pagenum9000;
 int16_t pageswapargs_phys[32];
 int16_t pageswapargs_rend[32];
 int16_t pageswapargs_stat[12];
+int16_t pageswapargs_demo[8];
 int16_t pageswapargs_rend_temp_7000_to_6000[8];
 
 int16_t pageswapargseg_phys;
@@ -1510,6 +1511,8 @@ int16_t pageswapargseg_rend;
 int16_t pageswapargoff_rend;
 int16_t pageswapargseg_stat;
 int16_t pageswapargoff_stat;
+int16_t pageswapargseg_demo;
+int16_t pageswapargoff_demo;
 int32_t taskswitchcount = 0;
 int16_t currenttask = -1;
 
@@ -1555,6 +1558,20 @@ void Z_QuickmapPhysics9000() {
 	taskswitchcount++;
 	currenttask = TASK_PHYSICS9000; // not sure about this
 }
+
+void Z_QuickmapDemo() {
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_demo;
+	regs.w.si = pageswapargoff_demo;
+	intx86(EMS_INT, &regs, &regs);
+
+	taskswitchcount++;
+	currenttask = TASK_PHYSICS9000; // not sure about this
+
+}
+
 
 // sometimes needed when rendering sprites..
 void Z_QuickmapRender7000to6000() {

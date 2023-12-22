@@ -233,6 +233,7 @@ extern int16_t pagenum9000;
 extern int16_t pageswapargs_phys[32];
 extern int16_t pageswapargs_rend[32];
 extern int16_t pageswapargs_stat[12];
+extern int16_t pageswapargs_demo[8];
 
 extern int16_t pageswapargs_rend_temp_7000_to_6000[8];
 
@@ -242,8 +243,11 @@ extern int16_t pageswapargseg_rend;
 extern int16_t pageswapargoff_rend;
 extern int16_t pageswapargseg_stat;
 extern int16_t pageswapargoff_stat;
+extern int16_t pageswapargseg_demo;
+extern int16_t pageswapargoff_demo;
 
 extern byte* stringdata;
+extern byte* demobuffer;
 
 uint8_t fontlen[63] = { 72, 100, 116, 128, 144, 132, 60, 
 					   120, 120, 96, 76, 60, 80, 56, 100, 
@@ -262,6 +266,38 @@ int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824,
 						844, 836, 844, 908, 944, 844, 816, 824, 
 						808, 836 };
 
+
+#define PAGE_9000 pagenum9000
+#define PAGE_9400 pagenum9000 + 1
+#define PAGE_9800 pagenum9000 + 2
+#define PAGE_9C00 pagenum9000 + 3
+
+#define PAGE_8000 pagenum9000 - 4
+#define PAGE_8400 pagenum9000 - 3
+#define PAGE_8800 pagenum9000 - 2
+#define PAGE_8C00 pagenum9000 - 1
+
+#define PAGE_7000 pagenum9000 - 8
+#define PAGE_7400 pagenum9000 - 7
+#define PAGE_7800 pagenum9000 - 6
+#define PAGE_7C00 pagenum9000 - 5
+
+#define PAGE_6000 pagenum9000 - 12
+#define PAGE_6400 pagenum9000 - 11
+#define PAGE_6800 pagenum9000 - 10
+#define PAGE_6C00 pagenum9000 - 9
+
+#define PAGE_5000 pagenum9000 - 16
+#define PAGE_5400 pagenum9000 - 15
+#define PAGE_5800 pagenum9000 - 14
+#define PAGE_5C00 pagenum9000 - 13
+
+#define PAGE_4000 pagenum9000 - 20
+#define PAGE_4400 pagenum9000 - 19
+#define PAGE_4800 pagenum9000 - 18
+#define PAGE_4C00 pagenum9000 - 17
+
+extern  uint16_t		finesineinner[2048];
 
 
 void Z_GetEMSPageMap() {
@@ -337,6 +373,8 @@ found:
 	pageswapargoff_rend = (uint16_t)(((uint32_t)pageswapargs_rend) & 0xffff);
 	pageswapargseg_stat = (uint16_t)((uint32_t)pageswapargs_stat >> 16);
 	pageswapargoff_stat = (uint16_t)(((uint32_t)pageswapargs_stat) & 0xffff);
+	pageswapargseg_demo = (uint16_t)((uint32_t)pageswapargs_demo >> 16);
+	pageswapargoff_demo = (uint16_t)(((uint32_t)pageswapargs_demo) & 0xffff);
 
 	//					PHYSICS			RENDER					ST/HUD
 	// BLOCK
@@ -357,93 +395,105 @@ found:
 	// todo loopify
 
 	pageswapargs_phys[0] = 0;
-	pageswapargs_phys[1] = pagenum9000;
+	pageswapargs_phys[1] = PAGE_9000;
 	pageswapargs_phys[2] = 1;
-	pageswapargs_phys[3] = pagenum9000 + 1;
+	pageswapargs_phys[3] = PAGE_9400;
 	pageswapargs_phys[4] = 2;
-	pageswapargs_phys[5] = pagenum9000 + 2;
+	pageswapargs_phys[5] = PAGE_9800;
 	pageswapargs_phys[6] = 3;
-	pageswapargs_phys[7] = pagenum9000 + 3;
+	pageswapargs_phys[7] = PAGE_9C00;
 	pageswapargs_phys[8] = 4;
-	pageswapargs_phys[9] = pagenum9000 - 4;
+	pageswapargs_phys[9] = PAGE_8000;
 	pageswapargs_phys[10] = 5;
-	pageswapargs_phys[11] = pagenum9000 - 3;
+	pageswapargs_phys[11] = PAGE_8400;
 	pageswapargs_phys[12] = 6;
-	pageswapargs_phys[13] = pagenum9000 - 2;
+	pageswapargs_phys[13] = PAGE_8800;
 	pageswapargs_phys[14] = 7;
-	pageswapargs_phys[15] = pagenum9000 - 1;
+	pageswapargs_phys[15] = PAGE_8C00;
 	pageswapargs_phys[16] = 8;
-	pageswapargs_phys[17] = pagenum9000 - 8;
+	pageswapargs_phys[17] = PAGE_7000;
 	pageswapargs_phys[18] = 9;
-	pageswapargs_phys[19] = pagenum9000 - 7;
+	pageswapargs_phys[19] = PAGE_7400;
 	pageswapargs_phys[20] = 10;
-	pageswapargs_phys[21] = pagenum9000 - 6;
+	pageswapargs_phys[21] = PAGE_7800;
 	pageswapargs_phys[22] = 11;
-	pageswapargs_phys[23] = pagenum9000 - 5;
+	pageswapargs_phys[23] = PAGE_7C00;
 	pageswapargs_phys[24] = 12;
-	pageswapargs_phys[25] = pagenum9000 - 12;// strings;
+	pageswapargs_phys[25] = PAGE_6000;// strings;
 	pageswapargs_phys[26] = 13;
-	pageswapargs_phys[27] = pagenum9000 - 11;//empty
+	pageswapargs_phys[27] = PAGE_6400;//empty
 	pageswapargs_phys[28] = 14;
-	pageswapargs_phys[29] = pagenum9000 - 10;//empty;
+	pageswapargs_phys[29] = PAGE_6800;//empty;
 	pageswapargs_phys[30] = 15;
-	pageswapargs_phys[31] = pagenum9000 - 9;;//empty
+	pageswapargs_phys[31] = PAGE_6C00;//empty
 
 
 	pageswapargs_rend[0] = 16;
-	pageswapargs_rend[1] = pagenum9000;
+	pageswapargs_rend[1] = PAGE_9000;
 	pageswapargs_rend[2] = 17;
-	pageswapargs_rend[3] = pagenum9000 + 1;
+	pageswapargs_rend[3] = PAGE_9400;
 	pageswapargs_rend[4] = 18;
-	pageswapargs_rend[5] = pagenum9000 + 2;
+	pageswapargs_rend[5] = PAGE_9800;
 	pageswapargs_rend[6] = 19;
-	pageswapargs_rend[7] = pagenum9000 + 3;
+	pageswapargs_rend[7] = PAGE_9C00;
 	pageswapargs_rend[8] = 20;
-	pageswapargs_rend[9] = pagenum9000 - 4;
+	pageswapargs_rend[9] = PAGE_8000;
 	pageswapargs_rend[10] = 21;
-	pageswapargs_rend[11] = pagenum9000 - 3;
+	pageswapargs_rend[11] = PAGE_8400;
 	pageswapargs_rend[12] = 22;
-	pageswapargs_rend[13] = pagenum9000 - 2;
+	pageswapargs_rend[13] = PAGE_8800;
 	pageswapargs_rend[14] = 23;
-	pageswapargs_rend[15] = pagenum9000 - 1;
+	pageswapargs_rend[15] = PAGE_8C00;
 	pageswapargs_rend[16] = 24;
-	pageswapargs_rend[17] = pagenum9000 - 8;
+	pageswapargs_rend[17] = PAGE_7000;
 	pageswapargs_rend[18] = 25;
-	pageswapargs_rend[19] = pagenum9000 - 7;
+	pageswapargs_rend[19] = PAGE_7400;
 	pageswapargs_rend[20] = 26;
-	pageswapargs_rend[21] = pagenum9000 - 6;
+	pageswapargs_rend[21] = PAGE_7800;
 	pageswapargs_rend[22] = 27;
-	pageswapargs_rend[23] = pagenum9000 - 5;
+	pageswapargs_rend[23] = PAGE_7C00;
 	pageswapargs_rend[24] = 28;
-	pageswapargs_rend[25] = pagenum9000 - 12;
+	pageswapargs_rend[25] = PAGE_6000;
 	pageswapargs_rend[26] = 29;
-	pageswapargs_rend[27] = pagenum9000 - 11;
+	pageswapargs_rend[27] = PAGE_6400;
 	pageswapargs_rend[28] = 30;
-	pageswapargs_rend[29] = pagenum9000 - 10;
+	pageswapargs_rend[29] = PAGE_6800;
 	pageswapargs_rend[30] = 31;
-	pageswapargs_rend[31] = pagenum9000 - 9;
+	pageswapargs_rend[31] = PAGE_6C00;
 
 	pageswapargs_stat[0] = 32;
-	pageswapargs_stat[1] = pagenum9000 + 3;
+	pageswapargs_stat[1] = PAGE_9C00;
 	pageswapargs_stat[2] = 33;
-	pageswapargs_stat[3] = pagenum9000 - 8;
+	pageswapargs_stat[3] = PAGE_7000;
 	pageswapargs_stat[4] = 34;
-	pageswapargs_stat[5] = pagenum9000 - 7;
+	pageswapargs_stat[5] = PAGE_7400;
 	pageswapargs_stat[6] = 35;
-	pageswapargs_stat[7] = pagenum9000 - 6;
+	pageswapargs_stat[7] = PAGE_7800;
 	pageswapargs_stat[8] = 36;
-	pageswapargs_stat[9] = pagenum9000 - 5;
+	pageswapargs_stat[9] = PAGE_7C00;
 	pageswapargs_stat[10] = 12;
-	pageswapargs_stat[11] = pagenum9000 - 12; // strings;
+	pageswapargs_stat[11] = PAGE_6000; // strings;
+
+
+	//todo maybe move these into 0x4000 when free?
+	pageswapargs_demo[0] = 37;
+	pageswapargs_demo[1] = PAGE_5000;
+	pageswapargs_demo[2] = 38;
+	pageswapargs_demo[3] = PAGE_5400;
+	pageswapargs_demo[4] = 39;
+	pageswapargs_demo[5] = PAGE_5800;
+	pageswapargs_demo[6] = 40;
+	pageswapargs_demo[7] = PAGE_5C00;
+
 
 	pageswapargs_rend_temp_7000_to_6000[0] = 24;
-	pageswapargs_rend_temp_7000_to_6000[1] = pagenum9000 - 12;
+	pageswapargs_rend_temp_7000_to_6000[1] = PAGE_6000;
 	pageswapargs_rend_temp_7000_to_6000[2] = 25;
-	pageswapargs_rend_temp_7000_to_6000[3] = pagenum9000 - 11;
+	pageswapargs_rend_temp_7000_to_6000[3] = PAGE_6400;
 	pageswapargs_rend_temp_7000_to_6000[4] = 26;
-	pageswapargs_rend_temp_7000_to_6000[5] = pagenum9000 - 10;
+	pageswapargs_rend_temp_7000_to_6000[5] = PAGE_6800;
 	pageswapargs_rend_temp_7000_to_6000[6] = 27;
-	pageswapargs_rend_temp_7000_to_6000[7] = pagenum9000 - 9;
+	pageswapargs_rend_temp_7000_to_6000[7] = PAGE_6C00;
 
 
 	// we're an OS now! let's directly allocate memory !
@@ -657,6 +707,8 @@ found:
 	offset_physics += 16384;
 	nightmarespawns = MK_FP(segment, offset_physics);
 	offset_physics += 16384;
+
+	demobuffer = MK_FP(segment, 0);
 
 	textureinfomemoryblock = MK_FP(segment, offset_render);
 	offset_render += (STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE);

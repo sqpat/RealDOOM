@@ -214,17 +214,18 @@ typedef struct
 } allocation_t;
 
 #define TASK_PHYSICS 0
-#define TASK_PHYSICS9000 1
-#define TASK_RENDER 2
-#define TASK_STATUS 3
-#define TASK_RENDER7000TO6000 4
-
+#define TASK_RENDER 1
+#define TASK_STATUS 2
+#define TASK_DEMO 3
+#define TASK_PHYSICS9000 4
+#define TASK_RENDER7000TO6000 5
 
 // EMS 4.0 stuff
 void Z_QuickmapPhysics();
 void Z_QuickmapPhysics9000();
 void Z_QuickmapRender();
 void Z_QuickmapStatus();
+void Z_QuickmapDemo();
 void Z_QuickmapRender7000to6000();
 void Z_QuickmapByTaskNum();
 void Z_GetEMSPageMap();
