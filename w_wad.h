@@ -74,11 +74,11 @@ int32_t	W_LumpLength (int16_t lump);
 void    W_ReadLumpStatic (int16_t lump, void *dest);
 
 int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error);
-//MEMREF  W_CacheLumpNumEMS2(int16_t lump, int8_t tag, int8_t* file, int32_t line);
-MEMREF  W_CacheLumpNumEMS2(int16_t lump, int8_t tag);
+MEMREF  W_CacheLumpNumEMS2(int16_t lump, int8_t tag, int8_t* file, int32_t line);
+//MEMREF  W_CacheLumpNumEMS2(int16_t lump, int8_t tag);
 
-#define W_CacheLumpNumEMS(a, b) W_CacheLumpNumEMS2(a, b)
-//#define W_CacheLumpNumEMS(a, b) W_CacheLumpNumEMS2(a, b, __FILE__, __LINE__)
+//#define W_CacheLumpNumEMS(a, b) W_CacheLumpNumEMS2(a, b)
+#define W_CacheLumpNumEMS(a, b) W_CacheLumpNumEMS2(a, b, __FILE__, __LINE__)
 
 MEMREF  W_CacheLumpNameEMSFragment(int8_t* name, int8_t tag, int16_t pagenum, int32_t offset);
 void W_EraseFullscreenCache();

@@ -349,8 +349,8 @@ int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
 W_CacheLumpNumEMS2
 (	int16_t           lump,
 	int8_t			tag
-	//,int8_t* file,
-	 //int32_t line
+	,int8_t* file,
+	 int32_t line
 	
 	
 	)
@@ -363,7 +363,7 @@ W_CacheLumpNumEMS2
 
 	if (!lumpcacheEMS[lump]) {
 		if (W_LumpLength(lump) > 65535) {
-			I_Error("lump too big %i %lu", lump, W_LumpLength(lump));
+			I_Error("lump too big %i %lu %s %li", lump, W_LumpLength(lump), file, line);
 		}
 		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef32(W_LumpLength(lump), tag, 1, lump + BACKREF_LUMP_OFFSET);
 

@@ -127,7 +127,9 @@ void Z_InitUMBDirect(void) {
 
 
 // some dos setups end up with only ffe, ffd, etc... 
-#define DESIRED_UMB_SIZE 0x0ff8
+//#define DESIRED_UMB_SIZE 0x0ff8
+// lets do only 60k.. .seems to be enough
+#define DESIRED_UMB_SIZE 0x0EA6
 
 void Z_InitUMBDOS(void) {
 
@@ -256,13 +258,17 @@ void Z_InitUMBDOS(void) {
 }
 #endif
 
+
+extern mobj_pos_t* mobjposlist;
+extern mobj_pos_t* mobjposlist_render;
+
 void Z_InitUMB(void) {
 
 #ifdef _M_I86
 
 	// 4 mb
 	// todo test 3, 2 MB, etc. i know we use less..
-
+	uint16_t offset = 0;
 	DEBUG_PRINT("\n  Checking XMS for UMB...");
 
 
@@ -277,9 +283,15 @@ void Z_InitUMB(void) {
 	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE = UMBsize;
 	conventionalmemoryblock = MK_FP(UMBbase, 0);
 
-	spritememoryblock = MK_FP(UMBbase2, 0);
-	sprite_allocations = MK_FP(UMBbase2, STATIC_CONVENTIONAL_SPRITE_SIZE);
-	textureinfo_allocations = MK_FP(UMBbase2, STATIC_CONVENTIONAL_SPRITE_SIZE + SPRITE_ALLOCATION_LIST_SIZE + sizeof(allocation_static_conventional_t));
+	spritememoryblock = MK_FP(UMBbase2, offset);
+	offset += STATIC_CONVENTIONAL_SPRITE_SIZE;
+	sprite_allocations = MK_FP(UMBbase2, offset);
+	offset += (SPRITE_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
+	textureinfo_allocations = MK_FP(UMBbase2, offset);
+	offset += (TEXTUREINFO_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
+	mobjposlist = MK_FP(UMBbase2, offset);
+	offset += (MAX_THINKERS * sizeof(mobj_pos_t));
+
 	
 
 #endif

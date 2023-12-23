@@ -37,6 +37,7 @@
 
 fixed_t_union		tmbbox[4];
 mobj_t*		tmthing;
+mobj_pos_t*		tmthing_pos;
 int32_t		tmflags;
 fixed_t		tmx;
 fixed_t		tmy;
@@ -70,18 +71,18 @@ int16_t		numspechit;
 //
 // PIT_StompThing
 //
-boolean PIT_StompThing (THINKERREF thingRef, mobj_t*	thing)
+boolean PIT_StompThing (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_pos)
 {
     fixed_t_union	blockdist;
 
-    if (!(thing->flags & MF_SHOOTABLE) )
+    if (!(thing_pos->flags & MF_SHOOTABLE) )
 		return true;
 		
     blockdist.h.intbits = thing->radius + tmthing->radius;
 	blockdist.h.fracbits = 0;
     
-    if ( labs(thing->x - tmx) >= blockdist.w
-	 || labs(thing->y - tmy) >= blockdist.w )
+    if ( labs(thing_pos->x - tmx) >= blockdist.w
+	 || labs(thing_pos->y - tmy) >= blockdist.w )
     {
 	// didn't hit it
 	return true;
@@ -108,6 +109,7 @@ boolean PIT_StompThing (THINKERREF thingRef, mobj_t*	thing)
 boolean
 P_TeleportMove
 (mobj_t* thing,
+	mobj_pos_t* thing_pos,
   fixed_t	x,
   fixed_t	y,
 	int16_t oldsecnum)
@@ -125,7 +127,8 @@ P_TeleportMove
 	temp.h.fracbits = 0;
     // kill anything occupying the position
 	tmthing = thing;
-	tmflags = thing->flags;
+	tmthing_pos = thing_pos;
+	tmflags = thing_pos->flags;
 
     tmx = x;
     tmy = y;
@@ -173,14 +176,14 @@ P_TeleportMove
     
     // the move is ok,
     // so link the thing into its new position
-	P_UnsetThingPosition (thing);
+	P_UnsetThingPosition (thing, thing_pos);
 
     thing->floorz = tmfloorz;
     thing->ceilingz = tmceilingz;	
-    thing->x = x;
-    thing->y = y;
+	thing_pos->x = x;
+	thing_pos->y = y;
 
-    P_SetThingPosition (thing, oldsecnum);
+    P_SetThingPosition (thing, thing_pos, oldsecnum);
 	
     return true;
 }
@@ -258,7 +261,7 @@ boolean PIT_CheckLine (line_physics_t* ld_physics, int16_t linenum)
 	ld = &lines[linenum];
 
 
-    if (!(tmthing->flags & MF_MISSILE) ) {
+    if (!(tmthing_pos->flags & MF_MISSILE) ) {
 		if (ld->flags & ML_BLOCKING) {
 			return false;	// explicitly blocking everything
 		}
@@ -300,7 +303,7 @@ boolean PIT_CheckLine (line_physics_t* ld_physics, int16_t linenum)
 //
 // PIT_CheckThing
 //
-boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing)
+boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_pos)
 {
     fixed_t		blockdist;
     boolean		solid;
@@ -321,18 +324,18 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing)
 
 
 	if (thing == tmthing) {
-			return true;
+		return true;
 	}
 
-	thingflags = thing->flags;
+	thingflags = thing_pos->flags;
 
 	if (!(thingflags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
 			return true;
 	}
 	thingtype = thing->type;
-	thingx = thing->x;
-	thingy = thing->y;
-	thingz = thing->z;
+	thingx = thing_pos->x;
+	thingy = thing_pos->y;
+	thingz = thing_pos->z;
 	thingheight = thing->height;
 	thingradius.h.intbits = thing->radius;
 	thingradius.h.fracbits = 0;
@@ -347,15 +350,15 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing)
 			return true;
     }
 	tmthingheight = tmthing->height;
-	tmthingz = tmthing->z;
+	tmthingz = tmthing_pos->z;
 	tmthingtargetRef = tmthing->targetRef;
 
 
     // check for skulls slamming into things
-    if (tmthing->flags & MF_SKULLFLY) {
+    if (tmthing_pos->flags & MF_SKULLFLY) {
 		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 		P_DamageMobj (thing, tmthing, tmthing, damage);
-		tmthing->flags &= ~MF_SKULLFLY;
+		tmthing_pos->flags &= ~MF_SKULLFLY;
 		tmthing->momx = tmthing->momy = tmthing->momz = 0;
 	
 		P_SetMobjState (tmthing, mobjinfo[tmthing->type].spawnstate);
@@ -364,7 +367,7 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing)
     }
 	
     // missiles can hit other things
-    if (tmthing->flags & MF_MISSILE) {
+    if (tmthing_pos->flags & MF_MISSILE) {
 		// see if it went over / under
 		if (tmthingz > thingz + thingheight.w) {
 			return true;		// overhead
@@ -405,16 +408,14 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing)
     }
     
     // check for special pickup
-    if (thingflags & MF_SPECIAL)
-    {
-	solid = thingflags &MF_SOLID;
-	if (tmflags&MF_PICKUP)
-	{
-		//I_Error("%i %i %i", players.moRef, tmthingRef, thingRef);
-	    // can remove thing
-	    P_TouchSpecialThing (thing, tmthing);
-	}
-	return !solid;
+    if (thingflags & MF_SPECIAL) {
+		solid = thingflags &MF_SOLID;
+		if (tmflags&MF_PICKUP) {
+			//I_Error("%i %i %i", players.moRef, tmthingRef, thingRef);
+			// can remove thing
+			P_TouchSpecialThing (thing, tmthing, thing_pos, tmthing_pos);
+		}
+		return !solid;
     }
 
     return !(thingflags & MF_SOLID);
@@ -470,7 +471,8 @@ P_CheckPosition
 	int16_t xl2, xh2, yl2, yh2;
 	temp.h.fracbits = 0;
     tmthing = thing;
-    tmflags = thing->flags;
+	tmthing_pos = GET_MOBJPOS_FROM_MOBJ(tmthing);
+	tmflags = tmthing_pos->flags;
     tmx = x;
     tmy = y;
  
@@ -597,6 +599,7 @@ P_CheckPosition
 boolean
 P_TryMove
 (mobj_t* thing,
+	mobj_pos_t* thing_pos,
   fixed_t	x,
   fixed_t	y 
 	)
@@ -616,8 +619,7 @@ P_TryMove
 	if (!P_CheckPosition(thing, x, y, -1)) {
 		return false;		// solid wall or thing
 	}
-
-    if ( !(thing->flags & MF_NOCLIP) ) {
+    if ( !(thing_pos->flags & MF_NOCLIP) ) {
 		temp2 = (tmceilingz - tmfloorz);
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 //		if (temp.w < thing->height.w) { 
@@ -629,16 +631,16 @@ P_TryMove
 		
 		// temp.h.intbits = tmceilingz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmceilingz);
-		if (!(thing->flags&MF_TELEPORT) && temp.w - thing->z < thing->height.w) {
+		if (!(thing_pos->flags&MF_TELEPORT) && temp.w - thing_pos->z < thing->height.w) {
 			return false;	// mobj must lower itself to fit
 		}
 		// temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
-		if (!(thing->flags&MF_TELEPORT) && (temp.w - thing->z) > 24 * FRACUNIT) {
+		if (!(thing_pos->flags&MF_TELEPORT) && (temp.w - thing_pos->z) > 24 * FRACUNIT) {
 			return false;	// too big a step up
 		}
 
-		if (!(thing->flags&(MF_DROPOFF | MF_FLOAT)) && (tmfloorz - tmdropoffz) > (24<<SHORTFLOORBITS) ) {
+		if (!(thing_pos->flags&(MF_DROPOFF | MF_FLOAT)) && (tmfloorz - tmdropoffz) > (24<<SHORTFLOORBITS) ) {
 			return false;	// don't stand over a dropoff
 		}
 		
@@ -647,25 +649,25 @@ P_TryMove
 
     // the move is ok,
     // so link the thing into its new position
-	P_UnsetThingPosition (thing);
+	P_UnsetThingPosition (thing, thing_pos);
 
-    oldx = thing->x;
-    oldy = thing->y;
+    oldx = thing_pos->x;
+    oldy = thing_pos->y;
     thing->floorz = tmfloorz;
     thing->ceilingz = tmceilingz;	
-    thing->x = x;
-    thing->y = y;
+	thing_pos->x = x;
+	thing_pos->y = y;
 
 
 	// we calculated the sector above in checkposition, now it's cached.
-	P_SetThingPosition (thing, lastcalculatedsector);
+	P_SetThingPosition (thing, thing_pos, lastcalculatedsector);
 
 
-	newx = thing->x;
-	newy = thing->y;
+	newx = thing_pos->x;
+	newy = thing_pos->y;
     
 	// if any special lines were hit, do the effect
-    if (! (thing->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
+    if (! (thing_pos->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
 		int16_t v1x;
 		int16_t v1y;
 		int16_t lddx;
@@ -689,7 +691,7 @@ P_TryMove
 			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, v1x, v1y);
 			if (side != oldside) {
 				if (ldspecial) {
-					P_CrossSpecialLine(spechit[numspechit], oldside, thing);
+					P_CrossSpecialLine(spechit[numspechit], oldside, thing, thing_pos);
 				}
 			}
 		}
@@ -709,17 +711,17 @@ P_TryMove
 // the z will be set to the lowest value
 // and false will be returned.
 //
-boolean P_ThingHeightClip (mobj_t* thing)
+boolean P_ThingHeightClip (mobj_t* thing, mobj_pos_t* thing_pos)
 {
     boolean		onfloor;
 	fixed_t_union temp;
 	int16_t temp2;
 	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
-    onfloor = (thing->z == temp.w);
+    onfloor = (thing_pos->z == temp.w);
 
 
-    P_CheckPosition (thing, thing->x, thing->y, thing->secnum);	
+    P_CheckPosition (thing, thing_pos->x, thing_pos->y, thing->secnum);
     // what about stranding a monster partially off an edge?
 
     thing->floorz = tmfloorz;
@@ -728,13 +730,13 @@ boolean P_ThingHeightClip (mobj_t* thing)
     if (onfloor) {
 		// walking monsters rise and fall with the floor
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
-		thing->z = temp.w;
+		thing_pos->z = temp.w;
 
     } else {
 	// don't adjust a floating monster unless forced to
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->ceilingz);
-		if (thing->z+ thing->height.w > temp.w)
-			thing->z = temp.w - thing->height.w;
+		if (thing_pos->z+ thing->height.w > temp.w)
+			thing_pos->z = temp.w - thing->height.w;
 	}
 
 	temp2 = (thing->ceilingz - thing->floorz);
@@ -791,7 +793,7 @@ void P_HitSlideLine (int16_t linenum)
 		return;
     }
 	
-    side = P_PointOnLineSide (playerMobj->x, playerMobj->y, ld_physics->dx, ld_physics->dy, vertexes[ld_physics->v1Offset].x, vertexes[ld_physics->v1Offset].y);
+    side = P_PointOnLineSide (playerMobj_pos->x, playerMobj_pos->y, ld_physics->dx, ld_physics->dy, vertexes[ld_physics->v1Offset].x, vertexes[ld_physics->v1Offset].y);
     lineangle.wu = R_PointToAngle2_16 (ld_physics->dx, ld_physics->dy);
 
     if (side == 1)
@@ -827,7 +829,7 @@ boolean PTR_SlideTraverse (intercept_t* in)
 
     
     if ( ! (li->flags & ML_TWOSIDED) ) {
- 		if (P_PointOnLineSide (playerMobj->x, playerMobj->y, li_physics->dx, li_physics->dy, vertexes[li_physics->v1Offset].x, vertexes[li_physics->v1Offset].y)) {
+ 		if (P_PointOnLineSide (playerMobj_pos->x, playerMobj_pos->y, li_physics->dx, li_physics->dy, vertexes[li_physics->v1Offset].x, vertexes[li_physics->v1Offset].y)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -848,11 +850,11 @@ boolean PTR_SlideTraverse (intercept_t* in)
 		goto isblocking;		// doesn't fit
 		
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
-    if (temp.w - playerMobj->z < playerMobj->height.w)
+    if (temp.w - playerMobj_pos->z < playerMobj->height.w)
 		goto isblocking;		// mobj is too high
 
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
-    if (temp.w - playerMobj->z > 24*FRACUNIT )
+    if (temp.w - playerMobj_pos->z > 24*FRACUNIT )
 		goto isblocking;		// too big a step up
 
     // this line doesn't block movement
@@ -905,10 +907,10 @@ void P_SlideMove ()
 	// todo improve the minus cases
 	temp.h.fracbits = 0;
 	temp.h.intbits = playerMobj->radius;
-	leadx.w = playerMobj->x;
-	trailx.w = playerMobj->x;
-	leady.w = playerMobj->y;
-	traily.w = playerMobj->y;
+	leadx.w = playerMobj_pos->x;
+	trailx.w = playerMobj_pos->x;
+	leady.w = playerMobj_pos->y;
+	traily.w = playerMobj_pos->y;
 	if (playerMobj->momx > 0) {
 		leadx.h.intbits += temp.h.intbits;
 		trailx.w -= temp.w;
@@ -952,8 +954,8 @@ void P_SlideMove ()
 	// the move most have hit the middle, so stairstep
       stairstep:
  
-		if (!P_TryMove(playerMobj, playerMobj->x, playerMobj->y + playerMobj->momy)) {
-			P_TryMove(playerMobj, playerMobj->x + playerMobj->momx, playerMobj->y);
+		if (!P_TryMove(playerMobj, playerMobj_pos, playerMobj_pos->x, playerMobj_pos->y + playerMobj->momy)) {
+			P_TryMove(playerMobj, playerMobj_pos, playerMobj_pos->x + playerMobj->momx, playerMobj_pos->y);
 		}
 
 		return;
@@ -965,7 +967,7 @@ void P_SlideMove ()
 		newx = FixedMul (playerMobj->momx, bestslidefrac.w);
 		newy = FixedMul (playerMobj->momy, bestslidefrac.w);
 	
-		if (!P_TryMove(playerMobj, playerMobj->x + newx, playerMobj->y + newy)) {
+		if (!P_TryMove(playerMobj, playerMobj_pos, playerMobj_pos->x + newx, playerMobj_pos->y + newy)) {
 			goto stairstep;
 		}
     }
@@ -993,7 +995,7 @@ void P_SlideMove ()
 	playerMobj->momx = tmxmove;
 	playerMobj->momy = tmymove;
 		
-    if (!P_TryMove (playerMobj, playerMobj->x+tmxmove, playerMobj->y+tmymove)) {
+    if (!P_TryMove (playerMobj, playerMobj_pos, playerMobj_pos->x+tmxmove, playerMobj_pos->y+tmymove)) {
 		goto retry;
     }
 }
@@ -1003,6 +1005,7 @@ void P_SlideMove ()
 // P_LineAttack
 //
 mobj_t*		linetarget;	// who got hit (or NULL)
+mobj_pos_t*		linetarget_pos;	// who got hit (or NULL)
 mobj_t*		shootthing;
 
 // Height if not aiming up or down
@@ -1029,6 +1032,7 @@ PTR_AimTraverse (intercept_t* in)
 	line_t*		li;
 	line_physics_t*		li_physics;
     mobj_t*		th;
+	mobj_pos_t* th_pos;
     fixed_t		slope;
     fixed_t		thingtopslope;
     fixed_t		thingbottomslope;
@@ -1084,18 +1088,19 @@ PTR_AimTraverse (intercept_t* in)
 	if (th == shootthing) {
 		return true;			// can't shoot self
 	}
+	th_pos = &mobjposlist[in->d.thingRef];
 
-	if (!(th->flags&MF_SHOOTABLE)) {
+	if (!(th_pos->flags&MF_SHOOTABLE)) {
 		return true;			// corpse or something
 	}
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange.w, in->frac);
-    thingtopslope = FixedDiv (th->z+th->height.w - shootz.w , dist);
+    thingtopslope = FixedDiv (th_pos->z+th->height.w - shootz.w , dist);
 
 	if (thingtopslope < bottomslope) {
 		return true;			// shot over the thing
 	}
-    thingbottomslope = FixedDiv (th->z - shootz.w, dist);
+    thingbottomslope = FixedDiv (th_pos->z - shootz.w, dist);
 
 	if (thingbottomslope > topslope) {
 		return true;			// shot under the thing
@@ -1109,7 +1114,7 @@ PTR_AimTraverse (intercept_t* in)
  
 	aimslope = (thingtopslope+thingbottomslope)/2;
 	linetarget = th;
-	
+	linetarget_pos = th_pos;
     return false;			// don't go any farther
 }
 
@@ -1127,7 +1132,8 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	line_t		* li;
 	line_physics_t*		li_physics;
     
-    mobj_t*		th;
+	mobj_t*		th;
+	mobj_pos_t*		th_pos;
 
     fixed_t		slope;
     fixed_t		dist;
@@ -1208,23 +1214,23 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	if (th == shootthing) {
 		return true;		// can't shoot self
 	}
+	th_pos = &mobjposlist[thRef];
 
 
-
-	if (!(th->flags&MF_SHOOTABLE)) {
+	if (!(th_pos->flags&MF_SHOOTABLE)) {
 		return true;		// corpse or something
 	}
 
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange.w, in->frac);
-    thingtopslope = FixedDiv (th->z+th->height.w - shootz.w , dist);
+    thingtopslope = FixedDiv (th_pos->z+th->height.w - shootz.w , dist);
 
 
 
     if (thingtopslope < aimslope)
 		return true;		// shot over the thing
 
-    thingbottomslope = FixedDiv (th->z - shootz.w, dist);
+    thingbottomslope = FixedDiv (th_pos->z - shootz.w, dist);
 
     if (thingbottomslope > aimslope)
 		return true;		// shot under the thing
@@ -1240,7 +1246,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 
     // Spawn bullet puffs or blod spots,
     // depending on target type.
-	if (th->flags & MF_NOBLOOD) {
+	if (th_pos->flags & MF_NOBLOOD) {
 		P_SpawnPuff(x, y, z);
 	}
 	else {
@@ -1270,12 +1276,13 @@ P_AimLineAttack
 	fixed_t_union	y;
 	fixed_t_union distance;
 	boolean ischainsaw = distance16 & CHAINSAW_FLAG;
+	mobj_pos_t* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
 	
     shootthing = t1;
 	distance16 &= (CHAINSAW_FLAG-1);
 
-	x.w = t1->x;
-	y.w = t1->y;
+	x.w = t1_pos->x;
+	y.w = t1_pos->y;
     
 	//todo re-enable? oh, but cosine and sine are 17 bit...
     //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
@@ -1284,7 +1291,7 @@ P_AimLineAttack
 	x2.w = x.w + FixedMulBig1632(distance16,finecosine(angle));
 	y2.w = y.w + FixedMulBig1632(distance16,finesine(angle));
 
-	shootz.w = t1->z;
+	shootz.w = t1_pos->z;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
 
     // can't shoot outside view angles
@@ -1295,7 +1302,7 @@ P_AimLineAttack
 	distance.h.intbits = distance16;
     attackrange = distance;
     linetarget = NULL;
-	
+	linetarget_pos = NULL;
 
     P_PathTraverse ( x, y,
 		     x2, y2,
@@ -1333,8 +1340,9 @@ P_LineAttack
 	fixed_t_union	y;
 	fixed_t_union	distance;
 	boolean ischainsaw = distance16 & CHAINSAW_FLAG; //sigh... look into why this needs to be here, remove if at all possible - sq
-	x.w = t1->x;
-	y.w = t1->y;
+	mobj_pos_t* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
+	x.w = t1_pos->x;
+	y.w = t1_pos->y;
 	distance16 &= (CHAINSAW_FLAG-1);
 	shootthing = t1;
     la_damage = damage;
@@ -1343,7 +1351,7 @@ P_LineAttack
 	x2.w = x.w + FixedMulBig1632(distance16,finecosine(angle));
 	y2.w = y.w + FixedMulBig1632(distance16,finesine(angle));
 
-	shootz.w = t1->z;
+	shootz.w = t1_pos->z;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
 
 	distance.h.intbits = distance16;
@@ -1392,7 +1400,7 @@ boolean	PTR_UseTraverse (intercept_t* in)
 	
     side = 0;
 
-	if (P_PointOnLineSide(playerMobj->x, playerMobj->y, line_physics->dx, line_physics->dy, vertexes[line_physics->v1Offset].x, vertexes[line_physics->v1Offset].y) == 1) {
+	if (P_PointOnLineSide(playerMobj_pos->x, playerMobj_pos->y, line_physics->dx, line_physics->dy, vertexes[line_physics->v1Offset].x, vertexes[line_physics->v1Offset].y) == 1) {
 		side = 1;
 	}
 
@@ -1416,10 +1424,10 @@ void P_UseLines ()
 	fixed_t_union	x2;
 	fixed_t_union	y2;
 		
-    angle = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
+    angle = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 
-    x1.w = playerMobj->x;
-    y1.w = playerMobj->y;
+    x1.w = playerMobj_pos->x;
+    y1.w = playerMobj_pos->y;
     // todo replace with bit shift? - sq
 	x2.w = x1.w + (USERANGE)*finecosine(angle);
 	y2.w = y1.w + (USERANGE)*finesine(angle);
@@ -1432,6 +1440,7 @@ void P_UseLines ()
 //
 mobj_t*		bombsource;
 mobj_t*		bombspot;
+mobj_pos_t*		bombspot_pos;
 int16_t		bombdamage;
 
 
@@ -1440,14 +1449,14 @@ int16_t		bombdamage;
 // "bombsource" is the creature
 // that caused the explosion at "bombspot".
 //
-boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t*	thing)
+boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_pos)
 {
     fixed_t	dx;
     fixed_t	dy;
     fixed_t_union	dist;
 
 	
-	if (!(thing->flags & MF_SHOOTABLE)) {
+	if (!(thing_pos->flags & MF_SHOOTABLE)) {
 		return true;
 	}
     // Boss spider and cyborg
@@ -1457,8 +1466,8 @@ boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t*	thing)
 	}
 
 
-    dx = labs(thing->x - bombspot->x);
-    dy = labs(thing->y - bombspot->y);
+    dx = labs(thing_pos->x - bombspot_pos->x);
+    dy = labs(thing_pos->y - bombspot_pos->y);
     
     dist.w = dx>dy ? dx : dy;
     dist.h.intbits = (dist.h.intbits - thing->radius ) ;
@@ -1471,7 +1480,7 @@ boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t*	thing)
 		return true;	// out of range
 	}
 
-    if ( P_CheckSight (thing, bombspot) ) {
+    if ( P_CheckSight (thing, bombspot, thing_pos, bombspot_pos) ) {
 		// must be in direct path
 
 //		if (thing == 0) {
@@ -1492,6 +1501,7 @@ boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t*	thing)
 void
 P_RadiusAttack
 (mobj_t* spot,
+	mobj_pos_t* spot_pos,
 	mobj_t* source,
 	int16_t		damage)
 {
@@ -1504,13 +1514,14 @@ P_RadiusAttack
 	int16_t		yh;
 	fixed_t_union pos;
 	
-	pos.w = spot->y;
+	pos.w = spot_pos->y;
 	yh = (pos.h.intbits + damage - bmaporgy) >> MAPBLOCKSHIFT;
 	yl = (pos.h.intbits - damage - bmaporgy) >> MAPBLOCKSHIFT;
-	pos.w = spot->x;
+	pos.w = spot_pos->x;
 	xh = (pos.h.intbits + damage - bmaporgx) >> MAPBLOCKSHIFT;
 	xl = (pos.h.intbits - damage - bmaporgx) >> MAPBLOCKSHIFT;
 	bombspot = spot;
+	bombspot_pos = spot_pos;
 	bombsource = source;
 	bombdamage = damage;
 
@@ -1552,11 +1563,11 @@ extern mobj_t* setStateReturn;
 //
 // PIT_ChangeSector
 //
-boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing)
+boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_pos)
 {
 
 
-    if (P_ThingHeightClip (thing)) {
+    if (P_ThingHeightClip (thing, thing_pos)) {
 		// keep checking
 		return true;
     }
@@ -1566,7 +1577,7 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing)
     if (thing->health <= 0) {
 		P_SetMobjState (thing, S_GIBS);
 		thing = setStateReturn;
-		thing->flags &= ~MF_SOLID;
+		thing_pos->flags &= ~MF_SOLID;
 		thing->height.w = 0;
 		thing->radius = 0;
 
@@ -1575,14 +1586,14 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing)
     }
 
     // crunch dropped items
-    if (thing->flags & MF_DROPPED) {
+    if (thing_pos->flags & MF_DROPPED) {
 		P_RemoveMobj (thing);
 	
 		// keep checking
 		return true;		
     }
 
-    if (! (thing->flags & MF_SHOOTABLE) ) {
+    if (! (thing_pos->flags & MF_SHOOTABLE) ) {
 	// assume it is bloody gibs or something
 		return true;			
     }
@@ -1595,7 +1606,7 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing)
 		P_DamageMobj(thing,NULL_THINKERREF,NULL_THINKERREF,10);
 
 		// spray blood in a random direction
-		moRef = P_SpawnMobj (thing->x, thing->y, thing->z + thing->height.w/2, MT_BLOOD, thing->secnum);
+		moRef = P_SpawnMobj (thing_pos->x, thing_pos->y, thing_pos->z + thing->height.w/2, MT_BLOOD, thing->secnum);
 		
 		mo = setStateReturn;
 		mo->momx = (P_Random() - P_Random ())<<12;

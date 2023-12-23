@@ -1080,9 +1080,6 @@ MEMREF Z_MallocConventional(
 	uint16_t* blockhead;
 	uint16_t refcopy;
 
-
-	//return Z_MallocEMS(size, tag, user, sourceHint);
-
 	if (type == CA_TYPE_LEVELDATA) {
 		if (size > remainingconventional) {
 			I_Error("out of conventional space %u %u", size, remainingconventional);
@@ -1097,7 +1094,6 @@ MEMREF Z_MallocConventional(
 	
 	} else if (type == CA_TYPE_SPRITE){
 		if (size > remainingspriteconventional){
-			//return Z_MallocEMS(size, tag, user, sourceHint);
 			I_Error("out of sprite space %u %u", size, remainingconventional);
 
 		}
@@ -1108,7 +1104,6 @@ MEMREF Z_MallocConventional(
 		ref = &spriteheadindex;
 	} else if (type == CA_TYPE_TEXTURE_INFO){
 		if (size > remainingtextureinfoconventional){
-			//return Z_MallocEMS(size, tag, user, sourceHint);
 			I_Error("out of texture space %u %u", size, remainingconventional);
 		}
 		allocations = textureinfo_allocations;
@@ -1499,8 +1494,8 @@ void Z_InitEMS(void)
 
 // page for 0x9000 block where we will store thinkers in physics code, then visplanes etc in render code
 int16_t pagenum9000; 
-int16_t pageswapargs_phys[32];
-int16_t pageswapargs_rend[32];
+int16_t pageswapargs_phys[36];
+int16_t pageswapargs_rend[36];
 int16_t pageswapargs_stat[12];
 int16_t pageswapargs_demo[8];
 int16_t pageswapargs_rend_temp_7000_to_6000[8];
@@ -1526,7 +1521,7 @@ void Z_QuickmapPhysics() {
 	regs.w.si = pageswapargoff_phys;
 	intx86(EMS_INT, &regs, &regs);
 
-	
+
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
@@ -1534,6 +1529,15 @@ void Z_QuickmapPhysics() {
 	regs.w.si = pageswapargoff_phys+32;
 	intx86(EMS_INT, &regs, &regs);
 
+	/*
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x02; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_phys;
+	regs.w.si = pageswapargoff_phys + 64;
+	intx86(EMS_INT, &regs, &regs);
+	*/
 	/*
 	errorreg = regs.h.ah;
 	if (errorreg != 0) {
@@ -1543,21 +1547,7 @@ void Z_QuickmapPhysics() {
 	taskswitchcount ++;
 	currenttask = TASK_PHYSICS;
 }
-
-
-// sometimes needed when rendering sprites..
-void Z_QuickmapPhysics9000() {
-
-	regs.w.ax = 0x5000;  
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_phys;
-	regs.w.si = pageswapargoff_phys;
-	intx86(EMS_INT, &regs, &regs);
-
-	taskswitchcount++;
-	currenttask = TASK_PHYSICS9000; // not sure about this
-}
+ 
 
 void Z_QuickmapDemo() {
 	regs.w.ax = 0x5000;
@@ -1568,7 +1558,7 @@ void Z_QuickmapDemo() {
 	intx86(EMS_INT, &regs, &regs);
 
 	taskswitchcount++;
-	currenttask = TASK_PHYSICS9000; // not sure about this
+	currenttask = TASK_DEMO; // not sure about this
 
 }
 
@@ -1608,6 +1598,14 @@ void Z_QuickmapRender() {
 	regs.w.si = pageswapargoff_rend+32;
 	intx86(EMS_INT, &regs, &regs);
  
+	/*
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x02; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend + 64;
+	intx86(EMS_INT, &regs, &regs);
+	*/
 	taskswitchcount++;
 	currenttask = TASK_RENDER;
 
@@ -1644,9 +1642,6 @@ void Z_QuickmapByTaskNum(uint8_t tasknum) {
 			TASK_RENDER7000TO6000(); // technically probably buggy but probably unused
 			break;
 
-		case TASK_PHYSICS9000:
-			Z_QuickmapPhysics9000(); // technically probably buggy but probably unused
-			break;
 			*/
 		default:
 			I_Error("bad tasknum %hhi", tasknum);

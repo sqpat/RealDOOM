@@ -58,7 +58,6 @@
 #define	BASETHRESHOLD	 	100
 
 
-#define MAX_THINKERS 840
 
 //
 // P_TICK
@@ -118,6 +117,7 @@ typedef struct thinker_s
 // 949 is 65481
 
 extern	thinker_t	*thinkerlist;// [MAX_THINKERS];
+extern mobj_pos_t*	mobjposlist; // [MAX_THINKERS];
 
 
 void P_InitThinkers ();
@@ -126,8 +126,9 @@ void* P_CreateThinker(uint16_t thinkfunc);
 void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
 void P_RemoveThinker(THINKERREF thinkerRef);
 
-#define THINKER_SIZE 69
+#define THINKER_SIZE sizeof(thinker_t)
 #define GETTHINKERREF(a) ((((uint16_t)((byte*)a - (byte*)thinkerlist))-4)/THINKER_SIZE)
+#define GET_MOBJPOS_FROM_MOBJ(a) &mobjposlist[GETTHINKERREF(a)]
 //#define GETTHINKERREF(a) ((((byte*)a - (byte*)thinkerlist)-4)/THINKER_SIZE)
 //#define GETTHINKERREF(a) ((((byte*)a-4u) - thinkerlist) / THINKER_SIZE)
 
@@ -163,15 +164,15 @@ P_SpawnMobj
 	int16_t knownsecnum );
 
 void 	P_RemoveMobj (mobj_t* mobj);
-//boolean	P_SetMobjState2(THINKERREF mobj, statenum_t state, int8_t* file, int32_t line);
+//boolean	P_SetMobjState2(mobj_t* mobj, statenum_t state, int8_t* file, int32_t line);
 //#define	P_SetMobjState(a, b) P_SetMobjState2(a, b, __FILE__, __LINE__)
 boolean	P_SetMobjState2(mobj_t* mobj, statenum_t state);
 #define	P_SetMobjState(a, b) P_SetMobjState2(a, b)
-void P_MobjThinker(mobj_t* mobj, THINKERREF mobjRef);
+void P_MobjThinker(mobj_t* mobj, mobj_pos_t* mobj_pos, THINKERREF mobjRef);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
-THINKERREF P_SpawnMissile (mobj_t* source, mobj_t* dest, mobjtype_t type);
+THINKERREF P_SpawnMissile (mobj_t* source, mobj_pos_t* source_pos, mobj_t* dest,  mobjtype_t type);
 void	P_SpawnPlayerMissile (mobjtype_t type);
 
 
@@ -230,7 +231,7 @@ void 	P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 
 
 boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_physics_t* ld, int16_t ) );
-boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(THINKERREF, mobj_t*));
+boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(THINKERREF, mobj_t*, mobj_pos_t*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -247,8 +248,8 @@ P_PathTraverse
   uint8_t		flags,
   boolean	(*trav) (intercept_t *));
 
-void P_UnsetThingPosition (mobj_t* thing);
-void P_SetThingPosition (mobj_t* thing, int16_t knownsecnum);
+void P_UnsetThingPosition (mobj_t* thing, mobj_pos_t* mobj_pos);
+void P_SetThingPosition (mobj_t* thing, mobj_pos_t* mobj_pos, int16_t knownsecnum);
 
 
 //
@@ -265,10 +266,10 @@ extern short_height_t		tmceilingz;
 extern	int16_t		ceilinglinenum;
 
 boolean P_CheckPosition (mobj_t* thing, fixed_t x, fixed_t y, int16_t oldsecnum);
-boolean P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
-boolean P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y, int16_t oldsecnum);
+boolean P_TryMove (mobj_t* thing, mobj_pos_t* thing_pos, fixed_t x, fixed_t y);
+boolean P_TeleportMove (mobj_t* thing, mobj_pos_t* thing_pos, fixed_t x, fixed_t y, int16_t oldsecnum);
 void	P_SlideMove ();
-boolean P_CheckSight (mobj_t* t1,mobj_t* t2);
+boolean P_CheckSight (mobj_t* t1,mobj_t* t2,mobj_pos_t* t1_pos,mobj_pos_t* t2_pos);
 
 
 void 	P_UseLines ();
@@ -276,6 +277,8 @@ void 	P_UseLines ();
 boolean P_ChangeSector (sector_t* sector, boolean crunch);
 
 extern mobj_t*	linetarget;	// who got hit (or NULL)
+extern mobj_pos_t*	linetarget_pos;	// who got hit (or NULL)
+
 
 #define CHAINSAW_FLAG 0x4000
 
@@ -296,6 +299,7 @@ P_LineAttack
 void
 P_RadiusAttack
 (mobj_t*	spot,
+	mobj_pos_t* spot_pos,
 	mobj_t*	source,
   int16_t		damage );
 
@@ -322,7 +326,10 @@ extern int8_t		clipammo[NUMAMMO];
 void
 P_TouchSpecialThing
 (mobj_t*	special,
-	mobj_t*	toucher );
+	mobj_t*	toucher,
+	mobj_pos_t *special_pos,
+	mobj_pos_t *toucher_pos
+);
 
 void
 P_DamageMobj

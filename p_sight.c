@@ -487,7 +487,9 @@ P_CheckSight
 ( 
   
 	mobj_t* t1,
-	mobj_t* t2
+	mobj_t* t2,
+	mobj_pos_t* t1_pos,
+	mobj_pos_t* t2_pos
 )
 {
 
@@ -518,16 +520,16 @@ P_CheckSight
     // Now look from eyes of t1 to any part of t2.
     validcount++;
 	
-    sightzstart = t1->z + t1->height.w - (t1->height.w>>2);
-    topslope = (t2->z+t2->height.w) - sightzstart;
-    bottomslope = (t2->z) - sightzstart;
+    sightzstart = t1_pos->z + t1->height.w - (t1->height.w>>2);
+    topslope = (t2_pos->z+t2->height.w) - sightzstart;
+    bottomslope = (t2_pos->z) - sightzstart;
 	
-    strace.x.w = t1->x;
-    strace.y.w = t1->y;
-    cachedt2x = t2->x;
-	cachedt2y = t2->y;
-    strace.dx.w = t2->x - t1->x;
-    strace.dy.w = t2->y - t1->y;
+    strace.x.w = t1_pos->x;
+    strace.y.w = t1_pos->y;
+    cachedt2x = t2_pos->x;
+	cachedt2y = t2_pos->y;
+    strace.dx.w = t2_pos->x - t1_pos->x;
+    strace.dy.w = t2_pos->y - t1_pos->y;
 
     // the head node is the last node output
 	return P_CrossBSPNode (numnodes-1);

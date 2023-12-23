@@ -203,7 +203,7 @@ R_DrawVisSprite
 // Generates a vissprite for a thing
 //  if it might be visible.
 //
-void R_ProjectSprite (mobj_t* thing)
+void R_ProjectSprite (mobj_pos_t* thing)
 {
     fixed_t             tr_x;
     fixed_t             tr_y;
@@ -384,7 +384,6 @@ void R_ProjectSprite (mobj_t* thing)
 
 void R_AddSprites (sector_t* sec)
 {
-    mobj_t*             thing;
 	THINKERREF				thingRef;
 	int32_t                 lightnum;
  
@@ -413,12 +412,13 @@ void R_AddSprites (sector_t* sec)
 
     // Handle all things in sector.
 	if (sec->thinglistRef) {
-		Z_QuickmapPhysics9000(); // gross - going to need to pull out the necessary data?
+		mobj_pos_t*             thing;
+
 		for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
-			thing = (mobj_t*)&thinkerlist[thingRef].data;
+			thing = (mobj_pos_t*)&mobjposlist[thingRef];
 			R_ProjectSprite(thing);
 		}
-		Z_QuickmapRender();
+
 	}
 
 

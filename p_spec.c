@@ -414,7 +414,8 @@ void
 P_CrossSpecialLine
 ( int16_t		linenum,
   int16_t		side,
-	mobj_t*	thing)
+	mobj_t*	thing,
+	mobj_pos_t* thing_pos)
 {
     int16_t		ok;
 	line_t*	line = &lines[linenum];
@@ -584,7 +585,7 @@ P_CrossSpecialLine
 	
       case 39:
 		// TELEPORT!
-		EV_Teleport( linetag, side, thing );
+		EV_Teleport( linetag, side, thing, thing_pos );
 		setlinespecial = 0;
 		break;
 
@@ -692,7 +693,7 @@ P_CrossSpecialLine
       case 125:
 		// TELEPORT MonsterONLY
 		if (thingtype != MT_PLAYER) {
-			EV_Teleport( linetag, side, thing );
+			EV_Teleport( linetag, side, thing, thing_pos);
 			setlinespecial = 0;
 		}
 		break;
@@ -829,7 +830,7 @@ P_CrossSpecialLine
 	
 	  case 97:
 		// TELEPORT!
-		EV_Teleport( linetag, side, thing );
+		EV_Teleport( linetag, side, thing, thing_pos);
 		break;
 	
       case 98:
@@ -860,7 +861,7 @@ P_CrossSpecialLine
       case 126:
 	// TELEPORT MonsterONLY.
 		if (thingtype != MT_PLAYER)
-	    EV_Teleport( linetag, side, thing );
+	    EV_Teleport( linetag, side, thing, thing_pos);
 		break;
 	
       case 128:
@@ -952,7 +953,7 @@ void P_PlayerInSpecialSector () {
 	// temp.h.intbits = (sectors[secnum].floorheight >> SHORTFLOORBITS);
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[secnum].floorheight);
     // Falling, not all the way down yet?
-	if (playerMobj->z != temp.w) {
+	if (playerMobj_pos->z != temp.w) {
 		return;
 	}
 

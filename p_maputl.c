@@ -465,18 +465,19 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void P_UnsetThingPosition (mobj_t* thing)
+void P_UnsetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos)
 {
     int16_t		blockx;
     int16_t		blocky;
 	mobj_t* changeThing;
+	mobj_pos_t* changeThing_pos;
 
 	THINKERREF nextRef;
 	THINKERREF thingsprevRef = thing->sprevRef;
 
-	THINKERREF thingsnextRef = thing->snextRef;
+	THINKERREF thingsnextRef = thing_pos->snextRef;
 	THINKERREF thingbnextRef = thing->bnextRef;
-	int32_t thingflags = thing->flags;
+	int32_t thingflags = thing_pos->flags;
 	//int16_t thingsubsecnum = thing->subsecnum;
 	int16_t thingsecnum = thing->secnum;
 	THINKERREF thisRef = GETTHINKERREF(thing);
@@ -490,8 +491,8 @@ void P_UnsetThingPosition (mobj_t* thing)
 		}
 
 		if (thingsprevRef) {
-			changeThing = (mobj_t*)&thinkerlist[thingsprevRef].data;
-			changeThing->snextRef = thingsnextRef;
+			changeThing_pos = &mobjposlist[thingsprevRef];
+			changeThing_pos->snextRef = thingsnextRef;
 		}
 		else {
 			sectors[thingsecnum].thinglistRef = thingsnextRef;
@@ -528,8 +529,8 @@ void P_UnsetThingPosition (mobj_t* thing)
 	// unlink from block map
 		fixed_t_union thingx;
 		fixed_t_union thingy;
-		thingx.w = thing->x;
-		thingy.w = thing->y;
+		thingx.w = thing_pos->x;
+		thingy.w = thing_pos->y;
 
 
 		//todo how can this trip the < 0 check anyway?
@@ -575,7 +576,7 @@ void P_UnsetThingPosition (mobj_t* thing)
 // Sets thing->subsector properly
 //
 void
-P_SetThingPosition (mobj_t* thing, int16_t knownsecnum)
+P_SetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos, int16_t knownsecnum)
 {
 
 
@@ -596,13 +597,13 @@ P_SetThingPosition (mobj_t* thing, int16_t knownsecnum)
 
 	}
 	else {
-		int16_t	subsecnum = R_PointInSubsector(thing->x, thing->y);;
+		int16_t	subsecnum = R_PointInSubsector(thing_pos->x, thing_pos->y);;
 		int16_t subsectorsecnum = subsectors[subsecnum].secnum;
 		thing->secnum = subsectorsecnum;
 	}
 
 
-	if (!(thing->flags & MF_NOSECTOR)) {
+	if (!(thing_pos->flags & MF_NOSECTOR)) {
 		// invisible things don't go into the sector links
 
 		oldsectorthinglist = sectors[thing->secnum].thinglistRef;
@@ -610,13 +611,13 @@ P_SetThingPosition (mobj_t* thing, int16_t knownsecnum)
 
 
 		thing = (mobj_t*)&thinkerlist[thingRef].data;
-
+		thing_pos = &mobjposlist[thingRef];
 
 		thing->sprevRef = NULL_THINKERREF;
-		thing->snextRef = oldsectorthinglist;
+		thing_pos->snextRef = oldsectorthinglist;
 
-		if (thing->snextRef) {
-			thingList = (mobj_t*)&thinkerlist[thing->snextRef].data; ;
+		if (thing_pos->snextRef) {
+			thingList = (mobj_t*)&thinkerlist[thing_pos->snextRef].data; 
 			thingList->sprevRef = thingRef;
 		}
 
@@ -636,11 +637,11 @@ P_SetThingPosition (mobj_t* thing, int16_t knownsecnum)
 
 
     // link into blockmap
-    if ( ! (thing->flags & MF_NOBLOCKMAP) ) {
+    if ( ! (thing_pos->flags & MF_NOBLOCKMAP) ) {
 		// inert things don't need to be in blockmap		
-		temp.w = thing->x;
+		temp.w = thing_pos->x;
 		blockx = (temp.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
-		temp.w = thing->y;
+		temp.w = thing_pos->y;
 		blocky = (temp.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 		
 		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
@@ -727,7 +728,7 @@ boolean
 P_BlockThingsIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(THINKERREF, mobj_t*) )
+  boolean(*func)(THINKERREF, mobj_t*, mobj_pos_t*) )
 {
 	THINKERREF mobjRef;
     mobj_t*		mobj;
@@ -742,8 +743,8 @@ P_BlockThingsIterator
 
 
 		mobj = (mobj_t*)&thinkerlist[mobjRef].data;  
-
-		if (!func(mobjRef, mobj)) {
+		
+		if (!func(mobjRef, mobj, &mobjposlist[mobjRef])) {
 
 			return false;
 		}
@@ -852,7 +853,7 @@ PIT_AddLineIntercepts (line_physics_t* ld_physics, int16_t linenum)
 //
 // PIT_AddThingIntercepts
 //
-boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t* thing)
+boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t* thing, mobj_pos_t* thing_pos)
 {
     fixed_t_union		x1;
 	fixed_t_union		y1;
@@ -871,8 +872,8 @@ boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t* thing)
  
 	tracepositive = (trace.dx.h.intbits ^ trace.dy.h.intbits) > 0;
 
-	x1.w = x2.w = thing->x;
-	y1.w = y2.w = thing->y;
+	x1.w = x2.w = thing_pos->x;
+	y1.w = y2.w = thing_pos->y;
 	x1.h.intbits -= thing->radius;
 	x2.h.intbits += thing->radius;
 	

@@ -193,19 +193,9 @@ typedef enum
 // Map Object definition.
 typedef struct mobj_s
 {
-    // List: thinker links.
-
-    // Info for drawing: position.
-    fixed_t		x;
-    fixed_t		y;
-    fixed_t		z;
-
     // More list: links in sector (if needed)
-	THINKERREF	snextRef;
 	THINKERREF	sprevRef;
 
-    //More drawing info: to determine current sprite.
-    angle_t		angle;	// orientation
     //spritenum_t		sprite;	// used to find patch_t and flip value
 	//spriteframenum_t frame;	// might be ORed with FF_FULLBRIGHT
 
@@ -232,8 +222,6 @@ typedef struct mobj_s
     mobjtype_t		type;
     
     uint8_t			tics;	// state tic counter
-    statenum_t		stateNum;
-    int32_t			flags;
     int16_t			health;
 
     // Movement direction, movement generation (zig-zagging).
@@ -261,6 +249,31 @@ typedef struct mobj_s
 	THINKERREF	tracerRef;
     
 } mobj_t;
+
+
+
+// Kind of gross. This is a minimal set of fields needed in render task code
+// which allows us to not have to allocate the whole 9000 block to thinkers, 
+// and reduces some task switching in the sprite code 
+typedef struct mobj_pos_s
+{
+	// List: thinker links.
+
+	// Info for drawing: position.
+	fixed_t		x;
+	fixed_t		y;
+	fixed_t		z;
+
+	// More list: links in sector (if needed)
+	THINKERREF	snextRef;
+
+	angle_t		angle;	// orientation
+	
+ 	statenum_t		stateNum;
+	int32_t			flags;
+
+
+} mobj_pos_t;
 
 
 #define GET_PLAYER(a) a->type == MT_PLAYER ? player : NULL

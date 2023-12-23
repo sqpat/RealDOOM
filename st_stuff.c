@@ -429,9 +429,9 @@ ST_Responder (event_t* ev)
         static int8_t     buf[ST_MSGWIDTH];
 		
 		sprintf(buf, "ang=0x%x;x,y=(0x%x,0x%x)",
-                playerMobj->angle,
-			playerMobj->x,
-			playerMobj->y);
+                playerMobj_pos->angle,
+			playerMobj_pos->x,
+			playerMobj_pos->y);
 		player.messagestring = buf;
       }
     }
@@ -512,7 +512,7 @@ void ST_updateFaceWidget(void)
     static int8_t  lastattackdown = -1;
     static int8_t  priority = 0;
     boolean     doevilgrin;
-	mobj_t* plyrattacker;
+	mobj_pos_t* plyrattacker_pos;
 
     if (priority < 10)
     {
@@ -568,22 +568,22 @@ void ST_updateFaceWidget(void)
             else
             {
 				 
-				plyrattacker = (mobj_t*)(&thinkerlist[player.attackerRef].data);
-				badguyangle.wu = R_PointToAngle2(playerMobj->x,
-                                              playerMobj->y,
-                                              plyrattacker->x,
-                                              plyrattacker->y);
+				plyrattacker_pos = &mobjposlist[player.attackerRef];
+				badguyangle.wu = R_PointToAngle2(playerMobj_pos->x,
+											    playerMobj_pos->y,
+                                              plyrattacker_pos->x,
+                                              plyrattacker_pos->y);
                 
-                if (badguyangle.wu > playerMobj->angle.wu)
+                if (badguyangle.wu > playerMobj_pos->angle.wu)
                 {
 					//TODO optimize. Shouldnt need to do a 32 bit subtract to figure this out?
 
                     // whether right or left
-                    diffang.wu = badguyangle.wu - playerMobj->angle.wu;
+                    diffang.wu = badguyangle.wu - playerMobj_pos->angle.wu;
                     i = diffang.wu > ANG180; 
                 } else {
                     // whether left or right
-                    diffang.wu = playerMobj->angle.wu - badguyangle.wu;
+                    diffang.wu = playerMobj_pos->angle.wu - badguyangle.wu;
                     i = diffang.wu <= ANG180; 
                 } // confusing, aint it?
 

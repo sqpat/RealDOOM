@@ -228,10 +228,9 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 
 
 
-
 extern int16_t pagenum9000;
-extern int16_t pageswapargs_phys[32];
-extern int16_t pageswapargs_rend[32];
+extern int16_t pageswapargs_phys[36];
+extern int16_t pageswapargs_rend[36];
 extern int16_t pageswapargs_stat[12];
 extern int16_t pageswapargs_demo[8];
 
@@ -267,7 +266,7 @@ int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824,
 						808, 836 };
 
 
-#define PAGE_9000 pagenum9000
+#define PAGE_9000 pagenum9000 + 0
 #define PAGE_9400 pagenum9000 + 1
 #define PAGE_9800 pagenum9000 + 2
 #define PAGE_9C00 pagenum9000 + 3
@@ -309,9 +308,9 @@ void Z_GetEMSPageMap() {
 	uint16_t offset_physics;
 	uint16_t offset_status;
 
+	/*
 	FILE *fp;
 	 
-	/*
 	fp = fopen("d_gammat.bin", "wb"); // clear old file
 	fwrite(gammatable, 5*256, 1, fp);
 	I_Error("done");
@@ -378,17 +377,17 @@ found:
 
 	//					PHYSICS			RENDER					ST/HUD
 	// BLOCK
-	// 0x9000 block		thinkers		visplane stuff			screen4 0x9c00
-	//									viewangles, drawsegs
-	// 0x8000 block		screen0			sprite stuff			
+	//            						visplane stuff			screen4 0x9c00
+	// 0x9000 block		thinkers		viewangles, drawsegs
+	// 					screen0			sprite stuff			
 	//					gamma table		visplane openings
-	//									texture memrefs?
+	//0x8000 block						texture memrefs?
 	// 0x7000 block		physics levdata render levdata			st graphics
 	//					
 	// 0x6000 block	more physics levdata 			
 	// 					nightnmarespawns  texturedata			
 	//					strings									strings
-	// 0x5000 block						textures
+	// 0x5000 block		mobj_pos   		 textures
 	//					trig tables
 	// 0x4000 block						textures
 
@@ -427,6 +426,18 @@ found:
 	pageswapargs_phys[30] = 15;
 	pageswapargs_phys[31] = PAGE_6C00;//empty
 
+	/*pageswapargs_phys[32] = 41;
+	pageswapargs_phys[33] = PAGE_5000;
+	pageswapargs_phys[34] = 42;
+	pageswapargs_phys[35] = PAGE_5400;
+	pageswapargs_phys[36] = 43;//mobjposlist
+	pageswapargs_phys[37] = PAGE_5800; 
+	pageswapargs_phys[38] = 44;//mobjposlist
+	pageswapargs_phys[39] = PAGE_5C00; 
+
+ 
+	*/
+
 
 	pageswapargs_rend[0] = 16;
 	pageswapargs_rend[1] = PAGE_9000;
@@ -450,9 +461,9 @@ found:
 	pageswapargs_rend[19] = PAGE_7400;
 	pageswapargs_rend[20] = 26;
 	pageswapargs_rend[21] = PAGE_7800;
-	pageswapargs_rend[22] = 27;
+	pageswapargs_rend[22] = 27;	
 	pageswapargs_rend[23] = PAGE_7C00;
-	pageswapargs_rend[24] = 28;
+	pageswapargs_rend[24] = 28;	
 	pageswapargs_rend[25] = PAGE_6000;
 	pageswapargs_rend[26] = 29;
 	pageswapargs_rend[27] = PAGE_6400;
@@ -460,6 +471,18 @@ found:
 	pageswapargs_rend[29] = PAGE_6800;
 	pageswapargs_rend[30] = 31;
 	pageswapargs_rend[31] = PAGE_6C00;
+/*
+	pageswapargs_rend[32] = 41;
+	pageswapargs_rend[33] = PAGE_5000;
+	pageswapargs_rend[34] = 42;
+	pageswapargs_rend[35] = PAGE_5400;
+	pageswapargs_rend[32] = 43;//mobjposlist
+	pageswapargs_rend[33] = PAGE_5800;
+	pageswapargs_rend[34] = 44;//mobjposlist
+	pageswapargs_rend[35] = PAGE_5C00;
+	*/
+
+	// 27 and 28 not used?
 
 	pageswapargs_stat[0] = 32;
 	pageswapargs_stat[1] = PAGE_9C00;
@@ -503,7 +526,7 @@ found:
 	offset_physics = 0u;
 	offset_status = 0u;
 	//physics mapping
-	thinkerlist = MK_FP(segment, 0);
+	thinkerlist = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(thinker_t) * MAX_THINKERS;
 	//states = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(state_t) * NUMSTATES;
@@ -697,7 +720,7 @@ found:
 	}
 
 
-	printf("\n   0x7000:      %05u   %05u   %05u", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x7000:      XXXXX   XXXXX   %05u", offset_physics, offset_render, 0 - offset_status);
 	segment = 0x6000;
 	offset_render = 0u;
 	offset_physics = 0u;
@@ -723,6 +746,22 @@ found:
 	//offset_render += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
 
 	//I_Error("done");
+
+	segment = 0x5000;
+	offset_render = 0u;
+	offset_physics = 0u;
+	offset_status = 0u;
+
+ 
+	printf("\n   0x5000:      %05u   %05u   %05u", offset_physics, offset_render, 0 - offset_status);
+	
+	segment = 0x4000;
+	offset_render = 0u;
+	offset_physics = 0u;
+	offset_status = 0u;
+
+	printf("\n   0x4000:      %05u   %05u   %05u", offset_physics, offset_render, 0 - offset_status);
+
 
 	Z_QuickmapPhysics(); // map default page map
 }

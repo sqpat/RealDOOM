@@ -65,7 +65,8 @@ void
 P_CrossSpecialLine
 ( int16_t		linenum,
   int16_t		side,
-	mobj_t* thing);
+	mobj_t* thing,
+	mobj_pos_t* thing_pos);
 
 void    P_PlayerInSpecialSector ();
 
@@ -542,6 +543,7 @@ int16_t
 EV_Teleport
 (uint8_t linetag,
   int16_t		side,
-	mobj_t*	thing);
+	mobj_t*	thing,
+	mobj_pos_t* thing_pos);
 
 #endif

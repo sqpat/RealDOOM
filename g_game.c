@@ -103,6 +103,7 @@ boolean         viewactive;
  
 player_t        player;
 mobj_t*			playerMobj;
+mobj_pos_t*			playerMobj_pos;
 THINKERREF		playerMobjRef;
 
 ticcount_t          gametic;
@@ -560,6 +561,7 @@ void G_Ticker (void)
 		TEXT_MODE_DEBUG_PRINT("\n GS_LEVEL");
 		P_Ticker();
 		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: P_Ticker done");
+
 		ST_Ticker();
 		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: ST_Ticker done");
 		AM_Ticker ();
@@ -599,7 +601,7 @@ void G_PlayerFinishLevel ()
           
     memset (player.powers, 0, sizeof (player.powers));
     memset (player.cards, 0, sizeof (player.cards));
-    playerMobj->flags &= ~MF_SHADOW;         // cancel invisibility 
+    playerMobj_pos->flags &= ~MF_SHADOW;         // cancel invisibility 
 	player.extralight = 0;                  // cancel gun flashes 
 	player.fixedcolormap = 0;               // cancel ir gogles 
 	player.damagecount = 0;                 // no palette changes 

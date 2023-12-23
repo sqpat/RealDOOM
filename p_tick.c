@@ -39,28 +39,11 @@ int16_t currentThinkerListHead;
 
 // Both the head and tail of the thinker list.
 thinker_t*	thinkerlist; // [MAX_THINKERS];
+mobj_pos_t*	mobjposlist; // [MAX_THINKERS];
 
 
 
-//
-// P_InitThinkers
-//
-void P_InitThinkers (void)
-{
-	int16_t i;
-	thinkerlist[0].next = 1;
-	thinkerlist[0].prevFunctype = 1;
-
-	
-	for (i = 0; i < MAX_THINKERS; i++) {
-		thinkerlist[i].prevFunctype = MAX_THINKERS;
-	}
-
-	currentThinkerListHead = 0;
-
-}
-
-
+//todo merge this below as its only used there
 THINKERREF P_GetNextThinkerRef(void) {
 
 	int16_t i;
@@ -125,6 +108,7 @@ void P_RunThinkers (void)
 	THINKERREF	currentthinker;
 	uint16_t	currentthinkerFunc;
 	int16_t i = 0;
+	mobj_t* mobj;
 #ifdef DEBUGLOG_TO_FILE
 
 	int8_t result2[100];
@@ -154,47 +138,44 @@ void P_RunThinkers (void)
 			thinkerlist[prevRef].next = nextRef;;
 
 			memset(&thinkerlist[currentthinker].data, 0, sizeof(mobj_t));
+			memset(&mobjposlist[currentthinker],	  0, sizeof(mobj_pos_t));
 			thinkerlist[currentthinker].prevFunctype = MAX_THINKERS;
 		} else {
-		
+			mobj = &thinkerlist[currentthinker].data;
+ 
 
-			
-		
+
+
 			if (currentthinkerFunc) {
 				switch (currentthinkerFunc) {
 					case TF_MOBJTHINKER_HIGHBITS:
-						P_MobjThinker(&thinkerlist[currentthinker].data, currentthinker);
+						P_MobjThinker(mobj, &mobjposlist[currentthinker], currentthinker);
 						break;
 					case TF_PLATRAISE_HIGHBITS:
-						T_PlatRaise((plat_t*)&thinkerlist[currentthinker].data, currentthinker);
+						T_PlatRaise((plat_t*)mobj, currentthinker);
 						break;
 					case TF_MOVECEILING_HIGHBITS:
-						T_MoveCeiling((ceiling_t*)&thinkerlist[currentthinker].data, currentthinker);
+						T_MoveCeiling((ceiling_t*)mobj, currentthinker);
 						break;
 					case TF_VERTICALDOOR_HIGHBITS:
-						T_VerticalDoor((vldoor_t*)&thinkerlist[currentthinker].data, currentthinker);
+						T_VerticalDoor((vldoor_t*)mobj, currentthinker);
 						break;
 					case TF_MOVEFLOOR_HIGHBITS:
-						T_MoveFloor((floormove_t*)&thinkerlist[currentthinker].data, currentthinker);
+						T_MoveFloor((floormove_t*)mobj, currentthinker);
 						break;
 					case TF_FIREFLICKER_HIGHBITS:
-						T_FireFlicker((fireflicker_t*)&thinkerlist[currentthinker].data, currentthinker);
+						T_FireFlicker((fireflicker_t*)mobj, currentthinker);
 						break;
 					case TF_LIGHTFLASH_HIGHBITS:
-						T_LightFlash((lightflash_t*)&thinkerlist[currentthinker].data, currentthinker);
+						T_LightFlash((lightflash_t*)mobj, currentthinker);
 						break;
 					case TF_STROBEFLASH_HIGHBITS:
-						T_StrobeFlash((strobe_t*)&thinkerlist[currentthinker].data, currentthinker);
+						T_StrobeFlash((strobe_t*)mobj, currentthinker);
 						break;
 					case TF_GLOW_HIGHBITS:
-						T_Glow((glow_t*)&thinkerlist[currentthinker].data, currentthinker);
+						T_Glow((glow_t*)mobj, currentthinker);
 						break;
-#ifdef CHECK_FOR_ERRORS
-//					default:
-						//I_Error("Bad thinker func! %i %i", currentthinker, thinkerlist[currentthinker].functionType);
-//						break;
-#endif				
-			
+ 					
 
 				}
 #ifdef DEBUGLOG_TO_FILE
@@ -226,7 +207,7 @@ void P_RunThinkers (void)
 				 
 
 				*/
-				 
+ 
 
 				i++;
 			}
@@ -255,8 +236,8 @@ void P_Ticker (void)
 		return;
     }
 	P_PlayerThink();
-	
-	P_RunThinkers ();
+
+ 	P_RunThinkers ();
 
 	P_UpdateSpecials ();
 

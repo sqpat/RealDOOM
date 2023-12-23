@@ -108,11 +108,12 @@ typedef struct allocation_static_conventional_s
 // DOOM SHAREWARE VALUE
 #define NUM_TEXTURE_CACHE 125
 
+#define MAX_THINKERS 840
 #define TEXTUREINFO_ALLOCATION_LIST_SIZE NUM_TEXTURE_CACHE * 3
 #define SPRITE_ALLOCATION_LIST_SIZE 150
 
 #define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+3767u)
-#define UMB2_SIZE (STATIC_CONVENTIONAL_SPRITE_SIZE + (SPRITE_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t)) + (TEXTUREINFO_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t)) )
+#define UMB2_SIZE (STATIC_CONVENTIONAL_SPRITE_SIZE + (SPRITE_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t)) + (TEXTUREINFO_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t)) + (MAX_THINKERS * sizeof(mobj_pos_t)))
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
 extern byte* conventionalmemoryblock;

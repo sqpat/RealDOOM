@@ -114,7 +114,7 @@ THINKERREF*		blocklinks;
 MEMREF           rejectmatrixRef;
 
 uint16_t leveldataoffset_phys = 0u;
-uint16_t leveldataoffset_rend = 0u;
+uint16_t leveldataoffset_rend = 0 - (MAX_THINKERS * sizeof(mobj_pos_t));
 uint16_t leveldataoffset_6000_phys = 0u;
 
 
@@ -525,6 +525,7 @@ void P_SetupPsprites()
 //  between levels.
 //
 extern mobj_t* setStateReturn;
+extern mobj_pos_t* setStateReturn_pos;
 
 void ST_Start(void);
 void G_PlayerReborn();
@@ -553,10 +554,10 @@ void P_SpawnPlayer(mapthing_t* mthing)
 
 	playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
 	playerMobj = setStateReturn;
-
+	playerMobj_pos = setStateReturn_pos;
 	playerMobj->reactiontime = 0;
 
-	playerMobj->angle.wu = ANG45 * (mthingangle / 45);
+	playerMobj_pos->angle.wu = ANG45 * (mthingangle / 45);
 	playerMobj->health = player.health;
 
 
@@ -846,6 +847,7 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 	int16_t			i;
 	int16_t			bit;
 	mobj_t*		mobj;
+	mobj_pos_t* mobj_pos;
 	fixed_t_union		x;
 	fixed_t_union		y;
 	fixed_t_union		z;
@@ -928,21 +930,23 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 	mobjRef = P_SpawnMobj(x.w, y.w, z.w, i, -1);
 
 	mobj = setStateReturn;
+	mobj_pos = setStateReturn_pos;
 	nightmarespawns[mobjRef] = mthing;
 
 	if (mobj->tics > 0 && mobj->tics < 240)
 		mobj->tics = 1 + (P_Random() % mobj->tics);
-	if (mobj->flags & MF_COUNTKILL)
+	if (mobj_pos->flags & MF_COUNTKILL)
 		totalkills++;
-	if (mobj->flags & MF_COUNTITEM)
+	if (mobj_pos->flags & MF_COUNTITEM)
 		totalitems++;
 
 	//todo does this work? or need to be in fixed_mul? -sq
-	mobj->angle.wu = ANG45 * (mthingangle / 45);
+	mobj_pos->angle.wu = ANG45 * (mthingangle / 45);
 
 	if (mthingoptions & MTF_AMBUSH)
-		mobj->flags |= MF_AMBUSH;
+		mobj_pos->flags |= MF_AMBUSH;
 
+ 
 
 }
 #ifdef PRECALCULATE_OPENINGS
@@ -1413,7 +1417,25 @@ void P_GroupLines(void)
 
 }
 
+extern int16_t currentThinkerListHead;
 
+//
+// P_InitThinkers
+//
+void P_InitThinkers(void)
+{
+	int16_t i;
+	thinkerlist[0].next = 1;
+	thinkerlist[0].prevFunctype = 1;
+
+
+	for (i = 0; i < MAX_THINKERS; i++) {
+		thinkerlist[i].prevFunctype = MAX_THINKERS;
+	}
+
+	currentThinkerListHead = 0;
+
+}
 
 
 extern uint16_t remainingconventional1;

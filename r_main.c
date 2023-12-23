@@ -670,9 +670,9 @@ void R_SetupFrame ()
 void R_RenderPlayerView ()
 {	
 	r_cachedplayerMobjsecnum = playerMobj->secnum;
-	r_cachedplayerMobjx = playerMobj->x;
-	r_cachedplayerMobjy = playerMobj->y;
-	r_cachedplayerMobjangle = playerMobj->angle;
+	r_cachedplayerMobjx = playerMobj_pos->x;
+	r_cachedplayerMobjy = playerMobj_pos->y;
+	r_cachedplayerMobjangle = playerMobj_pos->angle;
 	if (player.psprites[0].state) {
 		r_cachedstatecopy[0] = *(player.psprites[0].state);
 	}

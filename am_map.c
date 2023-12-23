@@ -334,8 +334,8 @@ void AM_restoreScaleAndLoc(void)
 		m_x = old_m_x;
 		m_y = old_m_y;
     } else {
-		m_x = playerMobj->x - m_w/2;
-		m_y = playerMobj->y - m_h/2;
+		m_x = playerMobj_pos->x - m_w/2;
+		m_y = playerMobj_pos->y - m_h/2;
     }
     m_x2 = m_x + m_w;
     m_y2 = m_y + m_h;
@@ -453,8 +453,8 @@ void AM_initVariables(void)
     m_h = FTOM16(f_h);
 
   
-	m_x = playerMobj->x - m_w/2;
-    m_y = playerMobj->y - m_h/2;
+	m_x = playerMobj_pos->x - m_w/2;
+    m_y = playerMobj_pos->y - m_h/2;
     AM_changeWindowLoc();
 
     // for saving & restoring
@@ -733,14 +733,14 @@ void AM_changeWindowScale(void)
 void AM_doFollowPlayer(void) {
 
 
-    if (f_oldloc.x != playerMobj->x || f_oldloc.y != playerMobj->y)
+    if (f_oldloc.x != playerMobj_pos->x || f_oldloc.y != playerMobj_pos->y)
     {
-	m_x = FTOM(MTOF(playerMobj->x)) - m_w/2;
-	m_y = FTOM(MTOF(playerMobj->y)) - m_h/2;
+	m_x = FTOM(MTOF(playerMobj_pos->x)) - m_w/2;
+	m_y = FTOM(MTOF(playerMobj_pos->y)) - m_h/2;
 	m_x2 = m_x + m_w;
 	m_y2 = m_y + m_h;
-	f_oldloc.x = playerMobj->x;
-	f_oldloc.y = playerMobj->y;
+	f_oldloc.x = playerMobj_pos->x;
+	f_oldloc.y = playerMobj_pos->y;
 
 
     }
@@ -1195,9 +1195,9 @@ void AM_drawPlayers(void)
 {
 	
 	if (cheating)
-		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj->angle.hu.intbits>>SHORTTOFINESHIFT, WHITE, playerMobj->x, playerMobj->y);
+		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj_pos->angle.hu.intbits>>SHORTTOFINESHIFT, WHITE, playerMobj_pos->x, playerMobj_pos->y);
 	else
-		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT, WHITE, playerMobj->x, playerMobj->y);
+		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT, WHITE, playerMobj_pos->x, playerMobj_pos->y);
 
 
 
@@ -1208,12 +1208,12 @@ AM_drawThings
 ( uint8_t	colors)
 {
     uint16_t		i;
-    mobj_t*	t;
+    mobj_pos_t*	t;
 	THINKERREF tRef;
 	for (i=0;i<numsectors;i++) {
 		tRef = sectors[i].thinglistRef;
 		while (tRef) {
-			t = (mobj_t*)(&thinkerlist[tRef].data);
+			t = (mobj_pos_t*)(&mobjposlist[tRef]);
 			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
 			 0x100000L, t->angle.hu.intbits >> SHORTTOFINESHIFT, colors, t->x, t->y);

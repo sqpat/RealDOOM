@@ -355,6 +355,7 @@ void R_PrecacheLevel(void)
 	//  name.
 	texturepresent[skytexture] = 1;
 
+	Z_QuickmapRender();
 	// texturememory = 0;
 	for (i = 0; i < numtextures; i++)
 	{
@@ -378,9 +379,10 @@ void R_PrecacheLevel(void)
 	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)
 	{
 		if ((thinkerlist[th].prevFunctype & TF_FUNCBITS) == TF_MOBJTHINKER_HIGHBITS) {
-			spritepresent[ states[((mobj_t *)&thinkerlist[th].data)->stateNum].sprite ] = 1;
+			spritepresent[ states[mobjposlist[th].stateNum].sprite ] = 1;
 		}
 	}
+	Z_QuickmapPhysics();
 
 
 	for (i = 0; i < numsprites; i++)

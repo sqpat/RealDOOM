@@ -38,61 +38,61 @@ void G_PlayerReborn ();
 void P_SpawnMapThing (mapthing_t*	mthing, int16_t key);
 
 
-void A_Explode(mobj_t* mobjmoRef);
+void A_Explode(mobj_t* mobjmoRef, mobj_pos_t* thingy_pos);
 void A_Pain(mobj_t* mobj);
 void A_PlayerScream();
-void A_Fall(mobj_t* mobj);
+void A_Fall(mobj_t* mobj, mobj_pos_t* mobj_pos);
 void A_XScream(mobj_t* mobj);
-void A_Look(mobj_t* mobj);
-void A_Chase(mobj_t* mobj);
+void A_Look(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_Chase(mobj_t* mobj, mobj_pos_t* mobj_pos);
 void A_FaceTarget(mobj_t* mobj);
 void A_PosAttack(mobj_t* mobj);
 void A_Scream(mobj_t* mobj);
 void A_SPosAttack(mobj_t* mobj);
-void A_VileChase(mobj_t* mobj);
+void A_VileChase(mobj_t* mobj, mobj_pos_t* mobj_pos);
 void A_VileStart(mobj_t* mobj);
 void A_VileTarget(mobj_t* mobj);
 void A_VileAttack(mobj_t* mobj);
-void A_StartFire(mobj_t* mobj);
-void A_Fire(mobj_t* mobj);
-void A_FireCrackle(mobj_t* mobj);
-void A_Tracer(mobj_t* mobj);
+void A_StartFire(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_Fire(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_FireCrackle(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_Tracer(mobj_t* mobj, mobj_pos_t* actor_pos);
 void A_SkelWhoosh(mobj_t* mobj);
 void A_SkelFist(mobj_t* mobj);
-void A_SkelMissile(mobj_t* mobj);
+void A_SkelMissile(mobj_t* mobj, mobj_pos_t* mobj_pos);
 void A_FatRaise(mobj_t* mobj);
-void A_FatAttack1(mobj_t* mobj);
-void A_FatAttack2(mobj_t* mobj);
-void A_FatAttack3(mobj_t* mobj);
+void A_FatAttack1(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_FatAttack2(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_FatAttack3(mobj_t* mobj, mobj_pos_t* actor_pos);
 void A_BossDeath(mobj_t* mobj);
 void A_CPosAttack(mobj_t* mobj);
-void A_CPosRefire(mobj_t* mobj);
-void A_TroopAttack(mobj_t* mobj);
+void A_CPosRefire(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_TroopAttack(mobj_t* mobj, mobj_pos_t* mobj_pos);
 void A_SargAttack(mobj_t* mobj);
-void A_HeadAttack(mobj_t* mobj);
-void A_BruisAttack(mobj_t* mobj);
-void A_SkullAttack(mobj_t* mobj);
-void A_Metal(mobj_t* mobj);
-void A_SpidRefire(mobj_t* mobj);
-void A_BabyMetal(mobj_t* mobj);
-void A_BspiAttack(mobj_t* mobj);
-void A_Hoof(mobj_t* mobj);
-void A_CyberAttack(mobj_t* mobj);
-void A_PainAttack(mobj_t* mobj);
-void A_PainDie(mobj_t* mobj);
-void A_KeenDie(mobj_t* mobj);
+void A_HeadAttack(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_BruisAttack(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_SkullAttack(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_Metal(mobj_t* mobj, mobj_pos_t* actor_pos);
+void A_SpidRefire(mobj_t* actor, mobj_pos_t* actor_pos);
+void A_BabyMetal(mobj_t* mobj, mobj_pos_t* actor_pos);
+void A_BspiAttack(mobj_t* mobj, mobj_pos_t* actor_pos);
+void A_Hoof(mobj_t* mobj, mobj_pos_t* actor_pos);
+void A_CyberAttack(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_PainAttack(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_PainDie(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_KeenDie(mobj_t* mobj, mobj_pos_t* mobj_pos);
 void A_BrainPain();
-void A_BrainScream(mobj_t* mobj);
+void A_BrainScream(mobj_t* mobj, mobj_pos_t* mobj_pos);
 void A_BrainDie();
 void A_BrainAwake();
-void A_BrainSpit(mobj_t* mobj);
-void A_SpawnSound(mobj_t* mobj);
-void A_SpawnFly(mobj_t* mobj);
-void A_BrainExplode(mobj_t* mobj);
+void A_BrainSpit(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_SpawnSound(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_SpawnFly(mobj_t* mobj, mobj_pos_t* mobj_pos);
+void A_BrainExplode(mobj_t* mobj, mobj_pos_t* mobj_pos);
 
 mobj_t* SAVEDUNIT;
 mobj_t* setStateReturn;
-
+mobj_pos_t* setStateReturn_pos;
 //
 // P_SetMobjState
 // Returns true if the mobj is still present.
@@ -101,7 +101,7 @@ mobj_t* setStateReturn;
 //
 // P_ExplodeMissile  
 //
-void P_ExplodeMissile(mobj_t* mo){
+void P_ExplodeMissile(mobj_t* mo, mobj_pos_t* mo_pos){
 
     mo->momx = mo->momy = mo->momz = 0;
     P_SetMobjState (mo,getDeathState(mo->type));
@@ -113,7 +113,7 @@ void P_ExplodeMissile(mobj_t* mo){
 		mo->tics = 1;
 	}
 
-    mo->flags &= ~MF_MISSILE;
+	mo_pos->flags &= ~MF_MISSILE;
 	
 	if (mobjinfo[mo->type].deathsound) {
 		S_StartSound(mo, mobjinfo[mo->type].deathsound);
@@ -127,7 +127,7 @@ void P_ExplodeMissile(mobj_t* mo){
 #define STOPSPEED		0x1000
 #define FRICTION		0xe800
 
-void P_XYMovement (mobj_t* mo)
+void P_XYMovement (mobj_t* mo, mobj_pos_t* mo_pos)
 { 	
     fixed_t 	ptryx;
     fixed_t	ptryy;
@@ -146,9 +146,9 @@ void P_XYMovement (mobj_t* mo)
 
 	if (!mo->momx && !mo->momy) {
 
-		if (mo->flags & MF_SKULLFLY) {
+		if (mo_pos->flags & MF_SKULLFLY) {
 			// the skull slammed into something
-			mo->flags &= ~MF_SKULLFLY;
+			mo_pos->flags &= ~MF_SKULLFLY;
 			mo->momx = mo->momy = mo->momz = 0;
 
 			P_SetMobjState (mo,mobjinfo[mo->type].spawnstate);
@@ -176,24 +176,24 @@ void P_XYMovement (mobj_t* mo)
 	do {
 
 		if (xmove > MAXMOVE/2 || ymove > MAXMOVE/2) {
-			ptryx = mo->x + xmove/2;
-			ptryy = mo->y + ymove/2;
+			ptryx = mo_pos->x + xmove/2;
+			ptryy = mo_pos->y + ymove/2;
 			xmove >>= 1;
 			ymove >>= 1;
 		} else {
-			ptryx = mo->x + xmove;
-			ptryy = mo->y + ymove;
+			ptryx = mo_pos->x + xmove;
+			ptryy = mo_pos->y + ymove;
 			xmove = ymove = 0;
 		}
 		
 
 
-		if (!P_TryMove (mo, ptryx, ptryy)) {
+		if (!P_TryMove (mo, mo_pos, ptryx, ptryy)) {
 
 			// blocked move
 			if (motype == MT_PLAYER) {	// try to slide along it
 				P_SlideMove ();
-			} else if (mo->flags & MF_MISSILE) {
+			} else if (mo_pos->flags & MF_MISSILE) {
 				// explode a missile
 				ceilinglinebacksecnum= lines_physics[ceilinglinenum].backsecnum;
 
@@ -207,7 +207,7 @@ void P_XYMovement (mobj_t* mo)
 				}
 			
 
-				P_ExplodeMissile (mo);
+				P_ExplodeMissile (mo, mo_pos);
 			} else {
 				mo->momx = mo->momy = 0;
 			}
@@ -226,18 +226,18 @@ void P_XYMovement (mobj_t* mo)
 		return;
     }
 
-	if (mo->flags & (MF_MISSILE | MF_SKULLFLY)) {
+	if (mo_pos->flags & (MF_MISSILE | MF_SKULLFLY)) {
 
 	 
 		return; 	// no friction for missiles ever
 	}
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
-	if (mo->z > temp.w) {
+	if (mo_pos->z > temp.w) {
 
 		return;		// no friction when airborne
 	}
     
-	if (mo->flags & MF_CORPSE) {
+	if (mo_pos->flags & MF_CORPSE) {
 		// do not stop sliding
 		//  if halfway off a step with some momentum
 		sectorfloorheight = sectors[mosecnum].floorheight;
@@ -256,7 +256,7 @@ void P_XYMovement (mobj_t* mo)
 			(motype != MT_PLAYER || (player.cmd.forwardmove== 0 && player.cmd.sidemove == 0 ) )
 		) {
 	// if in a walking frame, stop moving
-		if (motype == MT_PLAYER && (uint32_t)((playerMobj->stateNum) - S_PLAY_RUN1) < 4) {
+		if (motype == MT_PLAYER && (uint32_t)((playerMobj_pos->stateNum) - S_PLAY_RUN1) < 4) {
 			P_SetMobjState(playerMobj,S_PLAY);
 			//mo = setStateReturn;
 		}
@@ -275,52 +275,53 @@ void P_XYMovement (mobj_t* mo)
 //
 // P_ZMovement
 //
-void P_ZMovement (mobj_t* mo)
+void P_ZMovement (mobj_t* mo, mobj_pos_t* mo_pos)
 {
     fixed_t	dist;
 	fixed_t	delta;
 	mobj_t* moTarget;
-	
+	mobj_pos_t* moTarget_pos;
 	fixed_t_union temp;
 	int16_t motype = mo->type;
 	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
     // check for smooth step up
-    if (motype == MT_PLAYER && mo->z < temp.w) {
-		player.viewheight -= temp.w-mo->z;
+    if (motype == MT_PLAYER && mo_pos->z < temp.w) {
+		player.viewheight -= temp.w-mo_pos->z;
 
 		player.deltaviewheight = (VIEWHEIGHT - player.viewheight)>>3;
     }
     
     // adjust height
-    mo->z += mo->momz;
+	mo_pos->z += mo->momz;
 	
-    if ( mo->flags & MF_FLOAT && mo->targetRef) {
+    if (mo_pos->flags & MF_FLOAT && mo->targetRef) {
 		// float down towards target if too close
-		if ( !(mo->flags & MF_SKULLFLY) && !(mo->flags & MF_INFLOAT) ) {
+		if ( !(mo_pos->flags & MF_SKULLFLY) && !(mo_pos->flags & MF_INFLOAT) ) {
 			moTarget = (mobj_t*)&thinkerlist[mo->targetRef].data;
-			dist = P_AproxDistance (mo->x - moTarget->x,
-						mo->y - moTarget->y);
+			moTarget_pos = &mobjposlist[mo->targetRef];
+			dist = P_AproxDistance (mo_pos->x - moTarget_pos->x,
+				mo_pos->y - moTarget_pos->y);
 	    
-			delta =(moTarget->z + (mo->height.w>>1)) - mo->z;
+			delta =(moTarget_pos->z + (mo->height.w>>1)) - mo_pos->z;
 
 			if (delta<0 && dist < -(delta*3) )
-				mo->z -= FLOATSPEED;
+				mo_pos->z -= FLOATSPEED;
 			else if (delta>0 && dist < (delta*3) )
-				mo->z += FLOATSPEED;			
+				mo_pos->z += FLOATSPEED;
 		}
 	
     }
     
     // clip movement
-    if (mo->z <= temp.w) {
+    if (mo_pos->z <= temp.w) {
 		// hit the floor
 
 	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 		// Note (id):
 		//  somebody left this after the setting momz to 0,
 		//  kinda useless there.
-		if (mo->flags & MF_SKULLFLY)
+		if (mo_pos->flags & MF_SKULLFLY)
 		{
 			// the skull slammed into something
 			mo->momz = -mo->momz;
@@ -341,20 +342,20 @@ void P_ZMovement (mobj_t* mo)
 
 
 
-		mo->z = temp.w;
+		mo_pos->z = temp.w;
 
 	#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-		if (mo->flags & MF_SKULLFLY) {
+		if (mo_pos->flags & MF_SKULLFLY) {
 			// the skull slammed into something
 			mo->momz = -mo->momz;
 		}
 	#endif
 
-		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
-			P_ExplodeMissile (mo);
+		if ( (mo_pos->flags & MF_MISSILE) && !(mo_pos->flags & MF_NOCLIP) ) {
+			P_ExplodeMissile (mo, mo_pos);
 			return;
 		}
-	} else if (! (mo->flags & MF_NOGRAVITY) ) {
+	} else if (! (mo_pos->flags & MF_NOGRAVITY) ) {
 		if (mo->momz == 0) {
 			mo->momz = -GRAVITY * 2;
 		} else {
@@ -362,19 +363,19 @@ void P_ZMovement (mobj_t* mo)
 		}
 	}
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
-    if (mo->z + mo->height.w > temp.w) {
+    if (mo_pos->z + mo->height.w > temp.w) {
 		// hit the ceiling
 		if (mo->momz > 0) {
 			mo->momz = 0;
 		}
-		mo->z = temp.w - mo->height.w;
+		mo_pos->z = temp.w - mo->height.w;
 
-		if (mo->flags & MF_SKULLFLY) {	// the skull slammed into something
+		if (mo_pos->flags & MF_SKULLFLY) {	// the skull slammed into something
 			mo->momz = -mo->momz;
 		}
 	
-		if ( (mo->flags & MF_MISSILE) && !(mo->flags & MF_NOCLIP) ) {
-			P_ExplodeMissile (mo);
+		if ( (mo_pos->flags & MF_MISSILE) && !(mo_pos->flags & MF_NOCLIP) ) {
+			P_ExplodeMissile (mo, mo_pos);
 			return;
 		}
     }
@@ -389,7 +390,7 @@ void P_ZMovement (mobj_t* mo)
 // P_NightmareRespawn
 //
 void
-P_NightmareRespawn(mobj_t* mobj)
+P_NightmareRespawn(mobj_t* mobj, mobj_pos_t* mobj_pos)
 {
 
 	
@@ -407,6 +408,7 @@ P_NightmareRespawn(mobj_t* mobj)
 	fixed_t_union temp;
 	mapthing_t mobjspawnpoint;
 	THINKERREF mobjRef = GETTHINKERREF(mobj);
+	mobj_pos_t* mo_pos;
 
 	temp.h.fracbits = 0;
 	x.h.fracbits = 0;
@@ -423,8 +425,8 @@ P_NightmareRespawn(mobj_t* mobj)
 		return;	// no respwan
 	}
 	mobjsecnum = mobj->secnum;
-	mobjx = mobj->x;
-	mobjy = mobj->y;
+	mobjx = mobj_pos->x;
+	mobjy = mobj_pos->y;
 
 	// spawn a teleport fog at old spot
 	// because of removal of the body?
@@ -461,12 +463,13 @@ P_NightmareRespawn(mobj_t* mobj)
 	
 
 	mo = setStateReturn;
+	mo_pos = setStateReturn_pos;
 	//mo->spawnpoint = mobjspawnpoint;
     //todo does this work? or need to be in fixed_mul? -sq
-	mo->angle.wu = ANG45 * (mobjspawnpoint.angle/45);
+	mo_pos->angle.wu = ANG45 * (mobjspawnpoint.angle/45);
 
 	if (mobjspawnpoint.options & MTF_AMBUSH) {
-		mo->flags |= MF_AMBUSH;
+		mo_pos->flags |= MF_AMBUSH;
 	}
 
     mo->reactiontime = 18;
@@ -479,14 +482,13 @@ P_NightmareRespawn(mobj_t* mobj)
 //
 // P_MobjThinker
 //
-void P_MobjThinker (mobj_t* mobj, THINKERREF mobjRef) {
+void P_MobjThinker (mobj_t* mobj, mobj_pos_t* mobj_pos, THINKERREF mobjRef) {
 
 	// momentum movement
     fixed_t_union temp;
 
-	if (mobj->momx || mobj->momy || (mobj->flags&MF_SKULLFLY) ) {
-
-		P_XYMovement (mobj);
+	if (mobj->momx || mobj->momy || (mobj_pos->flags&MF_SKULLFLY) ) {
+		P_XYMovement (mobj, mobj_pos);
 
 		if ((thinkerlist[mobjRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
@@ -496,15 +498,15 @@ void P_MobjThinker (mobj_t* mobj, THINKERREF mobjRef) {
 
 	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
-		if ( (mobj->z != temp.w) || mobj->momz ) {
-		P_ZMovement (mobj);
+	if ( (mobj_pos->z != temp.w) || mobj->momz ) {
+		P_ZMovement (mobj, mobj_pos);
 
  		// FIXME: decent NOP/NULL/Nil function pointer please.
 		if ((thinkerlist[mobjRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
 			return;		// mobj was removed
 		}
     }
- 
+
 
     // cycle through states,
     // calling action functions at transitions
@@ -514,18 +516,23 @@ void P_MobjThinker (mobj_t* mobj, THINKERREF mobjRef) {
 		// you can cycle through multiple states in a tic
 		if (!mobj->tics) {
 
-			if (!P_SetMobjState(mobj, states[mobj->stateNum].nextstate)) {
+			if (!P_SetMobjState(mobj, states[mobj_pos->stateNum].nextstate)) {
+				if (setval == 1) {
+					I_Error("a %hhu %i", prndindex, mobjRef);
+				}
 
 				return;		// freed itself
+			}
+			if (setval == 1) {
+				I_Error("b %hhu %u %i", prndindex, mobjRef, states[mobj_pos->stateNum].nextstate);
 			}
 
 			
 
 		}
 	} else {
-
 		// check for nightmare respawn
-		if (!(mobj->flags & MF_COUNTKILL)) {
+		if (!(mobj_pos->flags & MF_COUNTKILL)) {
 			return;
 		}
 		if (!respawnmonsters) {
@@ -543,10 +550,8 @@ void P_MobjThinker (mobj_t* mobj, THINKERREF mobjRef) {
 		if (P_Random() > 4) {
 			return;
 		}
-		P_NightmareRespawn (mobj);
+		P_NightmareRespawn (mobj, mobj_pos);
     }
-
-
 
 }
 
@@ -556,7 +561,8 @@ void P_MobjThinker (mobj_t* mobj, THINKERREF mobjRef) {
 //
 THINKERREF
 P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
-    mobj_t*	mobj;
+	mobj_t*	mobj;
+	mobj_pos_t*	mobj_pos;
     state_t*	st;
     mobjinfo_t*	info;
 	THINKERREF mobjRef;
@@ -566,20 +572,22 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsec
 
 	mobj = (mobj_t*)P_CreateThinker(TF_MOBJTHINKER_HIGHBITS);
 	mobjRef = GETTHINKERREF(mobj);
+	mobj_pos = &mobjposlist[mobjRef];
 
-	memset (mobj, 0, sizeof (*mobj));
+	memset(mobj, 0, sizeof(mobj_t));
+	memset(mobj_pos, 0, sizeof (mobj_pos_t));
 
 
 	info = &mobjinfo[type];
 
     mobj->type = type;
     //mobj->info = info;
-    mobj->x = x;
-    mobj->y = y;
+	mobj_pos->x = x;
+	mobj_pos->y = y;
 	mobj->radius = info->radius;// *FRACUNIT;
 	mobj->height.h.intbits = info->height;// *FRACUNIT;
 	mobj->height.h.fracbits = 0;
-    mobj->flags = info->flags;
+	mobj_pos->flags = info->flags;
     mobj->health = getSpawnHealth(type);
 
 
@@ -593,14 +601,14 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsec
     // do not set the state with P_SetMobjState,
     // because action routines can not be called yet
     st = &states[info->spawnstate];
-	mobj->stateNum = info->spawnstate;
+	mobj_pos->stateNum = info->spawnstate;
     mobj->tics = st->tics;
     //mobj->sprite = st->sprite;
     //mobj->frame = st->frame;
 
 
     // set subsector and/or block links
-    P_SetThingPosition (mobj, knownsecnum);
+    P_SetThingPosition (mobj, mobj_pos, knownsecnum);
  
 
 	mobjsecnum = mobj->secnum;
@@ -609,18 +617,16 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsec
 
     if (z == ONFLOORZ){
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
-		mobj->z = temp.w;
+		mobj_pos->z = temp.w;
 	} else if (z == ONCEILINGZ){
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->ceilingz);
-		mobj->z = temp.w - mobjinfo[mobj->type].height * FRACUNIT;
+		mobj_pos->z = temp.w - mobjinfo[mobj->type].height * FRACUNIT;
+	} else {
+		mobj_pos->z = z;
 	}
-    else 
-		mobj->z = z;
-
-	 
 
 	setStateReturn = mobj;
-
+	setStateReturn_pos = mobj_pos;
     return mobjRef;
 }
 
@@ -632,8 +638,9 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsec
 
 void P_RemoveMobj (mobj_t* mobj)
 {
+	THINKERREF mobjRef = GETTHINKERREF(mobj);
     // unlink from sector and block lists
-    P_UnsetThingPosition (mobj);
+    P_UnsetThingPosition (mobj, &mobjposlist[mobjRef]);
     
     // stop any playing sound
     S_StopSound (mobj);
@@ -664,7 +671,7 @@ P_SpawnPuff
   fixed_t	y,
   fixed_t	z )
 {
-    mobj_t*	th;
+	mobj_t*	th;
 	THINKERREF thRef;
 	
     z += ((P_Random()-P_Random())<<10);
@@ -719,7 +726,7 @@ P_SpawnBlood
 // Moves the missile forward a bit
 //  and possibly explodes it right there.
 //
-void P_CheckMissileSpawn (mobj_t* th)
+void P_CheckMissileSpawn (mobj_t* th, mobj_pos_t* th_pos)
 {
 
     th->tics -= P_Random()&3;
@@ -728,13 +735,13 @@ void P_CheckMissileSpawn (mobj_t* th)
 	}
     // move a little forward so an angle can
     // be computed if it immediately explodes
-    th->x += (th->momx>>1);
-    th->y += (th->momy>>1);
-    th->z += (th->momz>>1);
+	th_pos->x += (th->momx>>1);
+	th_pos->y += (th->momy>>1);
+	th_pos->z += (th->momz>>1);
 
-	if (!P_TryMove(th, th->x, th->y)) {
+	if (!P_TryMove(th, th_pos, th_pos->x, th_pos->y)) {
 
-		P_ExplodeMissile(th);
+		P_ExplodeMissile(th, th_pos);
 	}
 }
 
@@ -745,20 +752,23 @@ void P_CheckMissileSpawn (mobj_t* th)
 THINKERREF
 P_SpawnMissile
 (mobj_t* source,
+	mobj_pos_t* source_pos,
   mobj_t*	dest,
   mobjtype_t	type
 	)
 {
-    mobj_t*	th;
+	mobj_t*	th;
+	mobj_pos_t*	th_pos;
     angle_t	an;
     fixed_t	dist;
 	fixed_t destz;
 	fixed_t momz;
 	int32_t thspeed;
-	THINKERREF thRef = P_SpawnMobj (source->x, source->y, source->z + 4*8*FRACUNIT, type, source->secnum);
 	uint16_t temp;
-
+	mobj_pos_t*	dest_pos = GET_MOBJPOS_FROM_MOBJ(dest);
+	THINKERREF thRef = P_SpawnMobj (source_pos->x, source_pos->y, source_pos->z + 4*8*FRACUNIT, type, source->secnum);
 	th = setStateReturn;
+	th_pos = setStateReturn_pos;
 	if (mobjinfo[type].seesound) {
 		S_StartSound(th, mobjinfo[type].seesound);
 
@@ -768,33 +778,36 @@ P_SpawnMissile
     th->targetRef = GETTHINKERREF(source);	// where it came from
 	thspeed = MAKESPEED(mobjinfo[type].speed);
 
-	destz = dest->z;
-	an.wu = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);
+	destz = dest_pos->z;
+	an.wu = R_PointToAngle2 (source_pos->x, source_pos->y, dest_pos->x, dest_pos->y);
 
     // fuzzy player
-	if (dest->flags & MF_SHADOW) {
+	if (dest_pos->flags & MF_SHADOW) {
 		temp = (P_Random() - P_Random());
 		temp  <<= 4;
 		an.hu.intbits += temp;
 	}
 
-	dist = P_AproxDistance(dest->x - source->x, dest->y - source->y);
+	dist = P_AproxDistance(dest_pos->x - source_pos->x, dest_pos->y - source_pos->y);
 	dist = dist / thspeed;
-	momz = (destz - source->z) / dist;
+	momz = (destz - source_pos->z) / dist;
 
 	if (dist < 1)
 		dist = 1;
 
 
-    th->angle = an;
+	th_pos->angle = an;
     an.hu.intbits >>= SHORTTOFINESHIFT;
     th->momx = FixedMulTrig (thspeed, finecosine(an.hu.intbits));
     th->momy = FixedMulTrig(thspeed, finesine(an.hu.intbits));
 	th->momz = momz;
 
 
-	P_CheckMissileSpawn (th);
+	P_CheckMissileSpawn (th, th_pos);
 	
+	setStateReturn = th;
+	setStateReturn_pos = th_pos;
+
     return thRef;
 }
 
@@ -808,7 +821,8 @@ P_SpawnPlayerMissile
 ( 
   mobjtype_t	type )
 {
-    mobj_t*	th;
+	mobj_t*	th;
+	mobj_pos_t*	th_pos;
 	THINKERREF thRef;
     fineangle_t	an;
     
@@ -818,7 +832,7 @@ P_SpawnPlayerMissile
 
     // see which target is to be aimed at
     // todo use fixed_t_union
-	an = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
+	an = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 	slope = P_AimLineAttack (playerMobj, an, 16*64);
     
     if (!linetarget) {
@@ -831,25 +845,25 @@ P_SpawnPlayerMissile
 			slope = P_AimLineAttack (playerMobj, an, 16*64);
 		}
 		if (!linetarget) {
-			an = playerMobj->angle.hu.intbits >> SHORTTOFINESHIFT;
+			an = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 			slope = 0;
 		}
     }
 
 	
-	z.w = playerMobj->z;
+	z.w = playerMobj_pos->z;
 	z.h.intbits += 4 * 8;
 	
-    thRef = P_SpawnMobj (playerMobj->x, playerMobj->y,z.w, type, playerMobj->secnum);
+    thRef = P_SpawnMobj (playerMobj_pos->x, playerMobj_pos->y,z.w, type, playerMobj->secnum);
 	th = setStateReturn;
-
+	th_pos = setStateReturn_pos;
     if (mobjinfo[type].seesound)
 		S_StartSound (th, mobjinfo[type].seesound);
 
     th->targetRef = playerMobjRef;
-	th->angle.hu.intbits = an;
-	th->angle.hu.intbits <<= 3;
-	th->angle.hu.fracbits = 0;
+	th_pos->angle.hu.intbits = an;
+	th_pos->angle.hu.intbits <<= 3;
+	th_pos->angle.hu.fracbits = 0;
 
 	speed = MAKESPEED(mobjinfo[type].speed);
 
@@ -857,17 +871,17 @@ P_SpawnPlayerMissile
     th->momy = FixedMulTrig( speed, finesine(an));
     th->momz = FixedMul( speed, slope);
 
-    P_CheckMissileSpawn (th);
+    P_CheckMissileSpawn (th, th_pos);
 }
 
 
 boolean
 P_SetMobjState2
 (mobj_t* mobj, statenum_t state)
-//(THINKERREF mobjRef, statenum_t state, int8_t* file, int32_t line)
+//(mobj_t* mobj, statenum_t state, int8_t* file, int32_t line)
 {
 	state_t*	st;
-	
+	mobj_pos_t* mobj_pos;
 #ifdef CHECK_FOR_ERRORS
 //	if (mobjRef > 10000 && mobjRef != playerMobjRef) {
 //		I_Error("caught bad ref? %u %u %s %li", mobjRef, state, file, line);
@@ -875,17 +889,20 @@ P_SetMobjState2
 #endif
 
 	setStateReturn = mobj;
+	mobj_pos = setStateReturn_pos = GET_MOBJPOS_FROM_MOBJ(mobj);
+	
 	do {
 		if (state == S_NULL) {
-			mobj->stateNum = S_NULL;
+			mobj_pos->stateNum = S_NULL;
 			P_RemoveMobj(mobj);
 			setStateReturn = mobj;
+			setStateReturn_pos = GET_MOBJPOS_FROM_MOBJ(mobj);
 			return false;
 		}
 
 
 		st = &states[state];
-		mobj->stateNum = state;
+		mobj_pos->stateNum = state;
 		mobj->tics = st->tics;
 
 		//mobj->sprite = st->sprite;
@@ -899,51 +916,51 @@ P_SetMobjState2
 
 		switch (st->action) {
 
-			case ETF_A_Explode: A_Explode(mobj); break;
+			case ETF_A_Explode: A_Explode(mobj, mobj_pos); break;
 			case ETF_A_Pain: A_Pain(mobj); break;
 			case ETF_A_PlayerScream: A_PlayerScream(); break;
-			case ETF_A_Fall: A_Fall(mobj); break;
+			case ETF_A_Fall: A_Fall(mobj, mobj_pos); break;
 			case ETF_A_XScream: A_XScream(mobj); break;
-			case ETF_A_Look: A_Look(mobj); break;
-			case ETF_A_Chase: A_Chase(mobj); break;
+			case ETF_A_Look: A_Look(mobj, mobj_pos); break;
+			case ETF_A_Chase: A_Chase(mobj, mobj_pos); break;
 			case ETF_A_FaceTarget: A_FaceTarget(mobj); break;
 			case ETF_A_PosAttack: A_PosAttack(mobj); break;
 			case ETF_A_Scream: A_Scream(mobj); break;
 			case ETF_A_SPosAttack: A_SPosAttack(mobj); break;
-			case ETF_A_VileChase: A_VileChase(mobj); break;
+			case ETF_A_VileChase: A_VileChase(mobj, mobj_pos); break;
 			case ETF_A_VileStart: A_VileStart(mobj); break;
 			case ETF_A_VileTarget: A_VileTarget(mobj); break;
 			case ETF_A_VileAttack: A_VileAttack(mobj); break;
-			case ETF_A_StartFire: A_StartFire(mobj); break;
-			case ETF_A_Fire: A_Fire(mobj); break;
-			case ETF_A_FireCrackle: A_FireCrackle(mobj); break;
-			case ETF_A_Tracer: A_Tracer(mobj); break;
+			case ETF_A_StartFire: A_StartFire(mobj, mobj_pos); break;
+			case ETF_A_Fire: A_Fire(mobj, mobj_pos); break;
+			case ETF_A_FireCrackle: A_FireCrackle(mobj, mobj_pos); break;
+			case ETF_A_Tracer: A_Tracer(mobj, mobj_pos); break;
 			case ETF_A_SkelWhoosh: A_SkelWhoosh(mobj); break;
 			case ETF_A_SkelFist: A_SkelFist(mobj); break;
-			case ETF_A_SkelMissile: A_SkelMissile(mobj); break;
+			case ETF_A_SkelMissile: A_SkelMissile(mobj, mobj_pos); break;
 			case ETF_A_FatRaise: A_FatRaise(mobj); break;
-			case ETF_A_FatAttack1: A_FatAttack1(mobj); break;
-			case ETF_A_FatAttack2: A_FatAttack2(mobj); break;
-			case ETF_A_FatAttack3: A_FatAttack3(mobj); break;
+			case ETF_A_FatAttack1: A_FatAttack1(mobj, mobj_pos); break;
+			case ETF_A_FatAttack2: A_FatAttack2(mobj, mobj_pos); break;
+			case ETF_A_FatAttack3: A_FatAttack3(mobj, mobj_pos); break;
 			case ETF_A_BossDeath: A_BossDeath(mobj); break;
 			case ETF_A_CPosAttack: A_CPosAttack(mobj); break;
-			case ETF_A_CPosRefire: A_CPosRefire(mobj); break;
-			case ETF_A_TroopAttack: A_TroopAttack(mobj); break;
+			case ETF_A_CPosRefire: A_CPosRefire(mobj, mobj_pos); break;
+			case ETF_A_TroopAttack: A_TroopAttack(mobj, mobj_pos); break;
 			case ETF_A_SargAttack: A_SargAttack(mobj); break;
-			case ETF_A_HeadAttack: A_HeadAttack(mobj); break;
-			case ETF_A_BruisAttack: A_BruisAttack(mobj); break;
-			case ETF_A_SkullAttack: A_SkullAttack(mobj); break;
-			case ETF_A_Metal: A_Metal(mobj); break;
-			case ETF_A_SpidRefire: A_SpidRefire(mobj); break;
-			case ETF_A_BabyMetal: A_BabyMetal(mobj); break;
-			case ETF_A_BspiAttack: A_BspiAttack(mobj); break;
-			case ETF_A_Hoof: A_Hoof(mobj); break;
-			case ETF_A_CyberAttack: A_CyberAttack(mobj); break;
-			case ETF_A_PainAttack: A_PainAttack(mobj); break;
-			case ETF_A_PainDie: A_PainDie(mobj); break;
-			case ETF_A_KeenDie: A_KeenDie(mobj); break;
+			case ETF_A_HeadAttack: A_HeadAttack(mobj, mobj_pos); break;
+			case ETF_A_BruisAttack: A_BruisAttack(mobj, mobj_pos); break;
+			case ETF_A_SkullAttack: A_SkullAttack(mobj, mobj_pos); break;
+			case ETF_A_Metal: A_Metal(mobj, mobj_pos); break;
+			case ETF_A_SpidRefire: A_SpidRefire(mobj, mobj_pos); break;
+			case ETF_A_BabyMetal: A_BabyMetal(mobj, mobj_pos); break;
+			case ETF_A_BspiAttack: A_BspiAttack(mobj, mobj_pos); break;
+			case ETF_A_Hoof: A_Hoof(mobj, mobj_pos); break;
+			case ETF_A_CyberAttack: A_CyberAttack(mobj, mobj_pos); break;
+			case ETF_A_PainAttack: A_PainAttack(mobj, mobj_pos); break;
+			case ETF_A_PainDie: A_PainDie(mobj, mobj_pos); break;
+			case ETF_A_KeenDie: A_KeenDie(mobj, mobj_pos); break;
 			case ETF_A_BrainPain: A_BrainPain(); break;
-			case ETF_A_BrainScream: A_BrainScream(mobj); break;
+			case ETF_A_BrainScream: A_BrainScream(mobj, mobj_pos); break;
 			case ETF_A_BrainDie: A_BrainDie(); break;
 				// ugly hacks because these values didnt fit in the char datatype, so we do this to avoid making that field a int16_t in a 1000 element struct array. 
 				// easily saving extra 1-2kb of binary size is worth this hack imo - sq
@@ -952,18 +969,17 @@ P_SetMobjState2
 				A_BrainAwake(); break;
 			case ETF_A_BrainSpit: 
 				mobj->tics = 150;
-				A_BrainSpit(mobj); break;
-			case ETF_A_SpawnSound: A_SpawnSound(mobj); break;
-			case ETF_A_SpawnFly: A_SpawnFly(mobj); break;
-			case ETF_A_BrainExplode: A_BrainExplode(mobj); break;
+				A_BrainSpit(mobj, mobj_pos); break;
+			case ETF_A_SpawnSound: A_SpawnSound(mobj, mobj_pos); break;
+			case ETF_A_SpawnFly: A_SpawnFly(mobj, mobj_pos); break;
+			case ETF_A_BrainExplode: A_BrainExplode(mobj, mobj_pos); break;
 			//default:
 		}
 
 
 
 		setStateReturn = mobj;
-
-
+		mobj_pos = setStateReturn_pos = GET_MOBJPOS_FROM_MOBJ(mobj);
 		state = st->nextstate;
 	} while (!mobj->tics);
 
