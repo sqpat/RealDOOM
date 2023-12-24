@@ -96,16 +96,6 @@ int16_t			*viewangletox;// [FINEANGLES / 2];
 // from clipangle to -clipangle.
 fineangle_t			*xtoviewangle;// [SCREENWIDTH + 1];
 
-
-// UNUSED.
-// The finetangentgent[angle+FINEANGLES/4] table
-// holds the fixed_t tangent values for view angles,
-// ranging from MININT to 0 to MAXINT.
-// fixed_t		finetangent[FINEANGLES/2];
-// fixed_t		finesine(5*FINEANGLES/4);
-//fixed_t*		finecosine = &finesine(FINEANGLES/4);
-
-
 lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
 lighttable_t*		*scalelightfixed;// [MAXLIGHTSCALE];
 lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
@@ -495,7 +485,7 @@ R_PointToDist
 	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
 
     // use as cosine
-    dist = FixedDiv (dx, finesine(angle) );	
+    dist = FixedDiv (dx, finesine[angle] );	
 	
     return dist;
 }
@@ -526,8 +516,8 @@ fixed_t R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
 
 
     // both sines are allways positive
-    sinea = finesine(anglea);	
-    sineb = finesine(angleb);
+    sinea = finesine[anglea];	
+    sineb = finesine[angleb];
     num.w = FixedMulTrig(projection.w,sineb)<<detailshift;
     den = FixedMulTrig(rw_distance,sinea);
 
@@ -639,8 +629,8 @@ void R_SetupFrame ()
     viewz.w = player.viewz;
 	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
 
-    viewsin = finesine(viewangle_shiftright3);
-    viewcos = finecosine(viewangle_shiftright3);
+    viewsin = finesine[viewangle_shiftright3];
+    viewcos = finecosine[viewangle_shiftright3];
 	
     if (player.fixedcolormap)
     {

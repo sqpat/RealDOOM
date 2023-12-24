@@ -755,10 +755,10 @@ boolean P_ThingHeightClip (mobj_t* thing, mobj_pos_t* thing_pos)
 // Allows the player to slide along any angled walls.
 //
 fixed_t_union		bestslidefrac;
-fixed_t_union		secondslidefrac;
+//fixed_t_union		secondslidefrac;
 
 int16_t		bestslidelinenum;
-int16_t		secondslidelinenum;
+//int16_t		secondslidelinenum;
 
 fixed_t		tmxmove;
 fixed_t		tmymove;
@@ -810,10 +810,10 @@ void P_HitSlideLine (int16_t linenum)
     deltaangle.hu.fracbits = deltaangle.hu.intbits >>= SHORTTOFINESHIFT;
 	
     movelen = P_AproxDistance (tmxmove, tmymove);
-    newlen = FixedMulTrig(movelen, finecosine(deltaangle.hu.fracbits));
+    newlen = FixedMulTrig(movelen, finecosine[deltaangle.hu.fracbits]);
 
-    tmxmove = FixedMulTrig(newlen, finecosine(lineangle.hu.fracbits));
-    tmymove = FixedMulTrig(newlen, finesine(lineangle.hu.fracbits));
+    tmxmove = FixedMulTrig(newlen, finecosine[lineangle.hu.fracbits]);
+    tmymove = FixedMulTrig(newlen, finesine[lineangle.hu.fracbits]);
 }
 
 
@@ -864,8 +864,8 @@ boolean PTR_SlideTraverse (intercept_t* in)
     // see if it is closer than best so far
   isblocking:		
     if (in->frac < bestslidefrac.w) {
-		secondslidefrac = bestslidefrac;
-		secondslidelinenum = bestslidelinenum;
+		//secondslidefrac = bestslidefrac;
+		//secondslidelinenum = bestslidelinenum;
 		bestslidefrac.w = in->frac;
 		bestslidelinenum = in->d.linenum;
     }
@@ -1285,11 +1285,11 @@ P_AimLineAttack
 	y.w = t1_pos->y;
     
 	//todo re-enable? oh, but cosine and sine are 17 bit...
-    //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
-    //y2.w = y.w + FixedMul1616(distance16,finesine(angle));
+    //x2.w = x.w + FixedMul1616(distance16,finecosine[angle]);
+    //y2.w = y.w + FixedMul1616(distance16,finesine[angle]);
 
-	x2.w = x.w + FixedMulBig1632(distance16,finecosine(angle));
-	y2.w = y.w + FixedMulBig1632(distance16,finesine(angle));
+	x2.w = x.w + FixedMulBig1632(distance16,finecosine[angle]);
+	y2.w = y.w + FixedMulBig1632(distance16,finesine[angle]);
 
 	shootz.w = t1_pos->z;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
@@ -1346,10 +1346,10 @@ P_LineAttack
 	distance16 &= (CHAINSAW_FLAG-1);
 	shootthing = t1;
     la_damage = damage;
-    //x2.w = x.w + FixedMul1616(distance16,finecosine(angle));
-    //y2.w = y.w + FixedMul1616(distance16,finesine(angle));
-	x2.w = x.w + FixedMulBig1632(distance16,finecosine(angle));
-	y2.w = y.w + FixedMulBig1632(distance16,finesine(angle));
+    //x2.w = x.w + FixedMul1616(distance16,finecosine[angle]);
+    //y2.w = y.w + FixedMul1616(distance16,finesine[angle]);
+	x2.w = x.w + FixedMulBig1632(distance16,finecosine[angle]);
+	y2.w = y.w + FixedMulBig1632(distance16,finesine[angle]);
 
 	shootz.w = t1_pos->z;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
@@ -1429,8 +1429,8 @@ void P_UseLines ()
     x1.w = playerMobj_pos->x;
     y1.w = playerMobj_pos->y;
     // todo replace with bit shift? - sq
-	x2.w = x1.w + (USERANGE)*finecosine(angle);
-	y2.w = y1.w + (USERANGE)*finesine(angle);
+	x2.w = x1.w + (USERANGE)*finecosine[angle];
+	y2.w = y1.w + (USERANGE)*finesine[angle];
     P_PathTraverse ( x1, y1, x2, y2, PT_ADDLINES, PTR_UseTraverse );
 }
 

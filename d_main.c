@@ -487,8 +487,23 @@ void D_Display (void)
     } while (!done);
 #endif
 }
+/*
 
+void checkstuff(int16_t src) {
+	int32_t checksummer = 0;
+	int16_t i = 0;
+	Z_QuickmapRender();
+	//tick1 tantoangle diff
+	for (i = 0; i < 2049; i++) {
+		checksummer += tantoangle[i].w;
+	}
+	Z_QuickmapPhysics();
+	if (checksummer != 416909542) {
+		I_Error("\n  blah %i %li %lu, %li %li", src,  gametic, checksummer, finesine[0], finesine[1]);
+	}
 
+}
+*/
 
 //
 //  D_DoomLoop
@@ -508,7 +523,7 @@ void D_DoomLoop (void)
 	FILE* fp;
 #endif
 
-	
+
 	//plat_t* plat;
     if (demorecording)
         G_BeginRecording ();
@@ -552,14 +567,26 @@ void D_DoomLoop (void)
 		TEXT_MODE_DEBUG_PRINT("\n tick %li S_UpdateSounds done", gametic);
 		// Update display, next frame, with current state.
 
-	 
+
 		D_Display ();
 		TEXT_MODE_DEBUG_PRINT("\n tick %li D_Display done", gametic);
  
 		/*
-		if (gametic >= 5)
-		{
-			I_Error("%i", prndindex);
+
+		if (gametic >= 150){
+			Z_QuickmapRender();
+		I_Error("\n\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li",
+			finesine[0], finesine[1], finecosine[0], finecosine[1],
+			finesine[2048], finesine[2049], finecosine[2048], finecosine[2049],
+			finesine[2048], finesine[2049], finecosine[2048], finecosine[2049],
+			finesine[4096], finesine[4097], finecosine[4096], finecosine[4097],
+			finesine[6144], finesine[6145], finecosine[6144], finecosine[6145],
+			finetangent(0), finetangent(1), finetangent(2048), finetangent(2049),
+			finetangent(1024), finetangent(1024), finetangent(3072), finetangent(3073),
+			tantoangle[0], tantoangle[1], tantoangle[512], tantoangle[513],
+			tantoangle[256], tantoangle[257], tantoangle[768], tantoangle[769]
+
+		);
 		}
 		*/
 #ifdef DEBUGLOG_TO_FILE

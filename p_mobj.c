@@ -105,7 +105,6 @@ void P_ExplodeMissile(mobj_t* mo, mobj_pos_t* mo_pos){
 
     mo->momx = mo->momy = mo->momz = 0;
     P_SetMobjState (mo,getDeathState(mo->type));
-	//mo = setStateReturn;
 
     mo->tics -= P_Random()&3;
 
@@ -793,8 +792,8 @@ P_SpawnMissile
 
 	th_pos->angle = an;
     an.hu.intbits >>= SHORTTOFINESHIFT;
-    th->momx = FixedMulTrig (thspeed, finecosine(an.hu.intbits));
-    th->momy = FixedMulTrig(thspeed, finesine(an.hu.intbits));
+    th->momx = FixedMulTrig (thspeed, finecosine[an.hu.intbits]);
+    th->momy = FixedMulTrig(thspeed, finesine[an.hu.intbits]);
 	th->momz = momz;
 
 
@@ -862,8 +861,8 @@ P_SpawnPlayerMissile
 
 	speed = MAKESPEED(mobjinfo[type].speed);
 
-    th->momx = FixedMulTrig( speed, finecosine(an));
-    th->momy = FixedMulTrig( speed, finesine(an));
+    th->momx = FixedMulTrig( speed, finecosine[an]);
+    th->momy = FixedMulTrig( speed, finesine[an]);
     th->momz = FixedMul( speed, slope);
 
     P_CheckMissileSpawn (th, th_pos);

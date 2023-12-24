@@ -490,7 +490,7 @@ R_StoreWallRange
     distangle = FINE_ANG90 - offsetangle;
 
 	hyp = R_PointToDist (curlinev1.x, curlinev1.y);
-    sineval = finesine(distangle);
+    sineval = finesine[distangle];
     rw_distance = FixedMulTrig(hyp, sineval);
 	
     ds_p->x1 = rw_x = start;
@@ -718,7 +718,7 @@ R_StoreWallRange
 		if (offsetangle > FINE_ANG90) {
 			offsetangle = FINE_ANG90;
 		}
-		sineval = finesine(offsetangle);
+		sineval = finesine[offsetangle];
 		rw_offset.w = FixedMulTrig(hyp, sineval);
 
 		// todo: we are subtracting then checking vs 0x8000 (or 0x80000000). 

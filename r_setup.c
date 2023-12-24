@@ -193,7 +193,7 @@ void R_InitTextureMapping(void)
 
 	for (i = 0; i < viewwidth; i++) {
 		an = xtoviewangle[i];
-		cosadj = labs(finecosine(an));
+		cosadj = labs(finecosine[an]);
 		distscale[i] = FixedDivWholeA(FRACUNIT, cosadj);
 	}
 

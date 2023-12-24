@@ -299,7 +299,6 @@ int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824,
 
 int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17};
 
-extern  uint16_t		finesineinner[2048];
 extern  uint16_t		DEMO_SEGMENT;
 
 
@@ -388,32 +387,32 @@ found:
 	// 0x8000 block		gamma table		texture memrefs?
 	// 0x7000 block		physics levdata render levdata			st graphics
 	//					more physics levdata  
-	// 0x6000 block		nightnmarespawns textureinfo			
-	//					strings			 emptyish				strings
+	// 					nightnmarespawns textureinfo			
+	//	0x6000 block	strings			 emptyish				strings
 	// 0x5000 block		trig tables   	 trig tables
 	//					
 	// 0x4000 block						textures
 
-	// todo loopify
 	 
 	
 	for (i = 0; i < 20; i++) {
 		pageswapargs_phys[i * 2] = i;
-		pageswapargs_phys[i * 2+1] = pagenum9000 + ems_backfill_page_order[i];
-	}
-
-
-	for (i = 0; i < 20; i++) {
-		pageswapargs_rend[i * 2] = 20+i;
+		pageswapargs_rend[i * 2] = 20 + i;
+		pageswapargs_phys[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
 		pageswapargs_rend[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
 	}
 
+ 
+
 	// overwrite some fields
 
-	pageswapargs_rend[32] = 16;;// trig stuff shared with physics (finesine/cos)
-	pageswapargs_rend[34] = 17;// trig stuff shared with physics (finesine/cos)
-	pageswapargs_rend[36] = 36;// trig stuff copy (some duplicated with physics page, but tan fields are render only)
-	pageswapargs_rend[38] = 37;
+	pageswapargs_rend[32] = 16;// 0x5000 trig stuff shared with physics (finesine/cos)
+	pageswapargs_rend[34] = 17;// 0x5400 trig stuff shared with physics (finesine/cos)
+	pageswapargs_rend[36] = 18;// 0x5800 trig stuff shared with physics (finesine/cos, finetan)
+	pageswapargs_rend[38] = 19;// 0x5c00 trig stuff shared with physics (tantoangle) 
+				//- note, 8188 high bytes of 0x5c00 unused, could dupe page so each task gets to use it
+
+	 
 
 	for (i = 1; i < 5; i++) {
 		pageswapargs_stat[i * 2] = 38 + i;
@@ -422,8 +421,8 @@ found:
 
 	pageswapargs_stat[0] = 38;
 	pageswapargs_stat[1] = PAGE_9C00;
-	pageswapargs_stat[10] = 19;
-	pageswapargs_stat[11] = PAGE_5C00; // strings;
+	pageswapargs_stat[10] = 12;
+	pageswapargs_stat[11] = PAGE_6000; // strings;
 
 /*
 	pageswapargs_stat[2] = 39;
@@ -571,8 +570,8 @@ found:
 	// 0x9000  45109  64894  10240
 	// 0x8000  65280  60945  00000
 	// 0x7000  XXXXX  XXXXX  64208
-	// 0x6000  24784  46871  00000  
-	// 0x5000  65536  49156  16380  XXXXX 
+	// 0x6000  24784  46871  16384  
+	// 0x5000  57348  57348  00000  XXXXX 
 	// 0x4000  00000  00000  00000
 
 	printf("\n   0x8000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0-offset_status);
@@ -676,12 +675,15 @@ found:
 	}
 
 
-	printf("\n   0x7000:      XXXXX   XXXXX   %05u   00000", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x7000:      XXXXX   XXXXX   %05u   00000", 0 - offset_status);
 	segment = 0x6000;
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
 
+	stringdata = MK_FP(segment, offset_physics);
+	offset_physics += 16384;
+	offset_status += 16384;
 	nightmarespawns = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(mapthing_t) * MAX_THINKERS;
 
@@ -689,7 +691,7 @@ found:
 	textureinfomemoryblock = MK_FP(segment, offset_render);
 	offset_render += (STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE);
 
-	printf("\n   0x6000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x6000:      %05u   %05u   %05u   00000", offset_physics, offset_render, offset_status);
 
 	
 	// todo: scalelight and zlight. Hard because they are 2d arrays of pointers?
@@ -705,13 +707,21 @@ found:
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	offset_physics -= 16380; //4 bytes less so tan to angle[2048] fits
-	stringdata = MK_FP(segment, offset_physics);
-	
+	// this and tantoangle overlap by 4 bytes (the 2049th element of tantoangle
+	// but tantoangle is render only and strings is physics and hu/st
+
+	finesine = MK_FP(segment, offset_physics);
+	finecosine = MK_FP(segment, 8192u);
+	offset_physics += 10240 * sizeof(int32_t);
+	finetangentinner = MK_FP(segment, 40960u);
+	offset_physics += 2048 * sizeof(int32_t);
+	tantoangle = MK_FP(segment, 49152u);
+	offset_physics += 2049 * sizeof(int32_t);
+
 	demobuffer = MK_FP(segment, 0);
 
  
-	printf("\n   0x5000:      65536   %05u   %05u   XXXXX", 49156u, 16380u);
+	printf("\n   0x5000:      %05u   %05u   XXXXX   XXXXX", offset_physics, offset_physics);
 	
 	segment = 0x4000;
 	offset_render = 0u;
@@ -727,9 +737,9 @@ found:
 
 void Z_LoadBinaries() {
 	FILE* fp;
-
+	int32_t checksummer = 0;
+	int16_t i = 0;
 	// currently in physics region!
-
 	fp = fopen("D_MBINFO.BIN", "rb"); 
 	fread(mobjinfo, 1, sizeof(mobjinfo_t) * NUMMOBJTYPES, fp);
 	fclose(fp);
@@ -745,6 +755,51 @@ void Z_LoadBinaries() {
 	fclose(fp);
 	DEBUG_PRINT(".");
 
+	fp = fopen("D_FINES2.BIN", "rb");
+	fread(finesine, 4, 10240, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+
+	fp = fopen("D_FINET4.BIN", "rb");
+	fread(finetangentinner, 4, 2048, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+
+	Z_QuickmapRender();
+
+	fp = fopen("D_FINES2.BIN", "rb");
+	fread(finesine, 4, 10240, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+	// reload this so it dupes into the render version of the block...
+	fp = fopen("D_FINET4.BIN", "rb");
+	fread(finetangentinner, 4, 2048, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+
+	fp = fopen("D_TANTOA.BIN", "rb");
+	fread(tantoangle, 4, 2049, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+	Z_QuickmapPhysics();
+
+	// 256000
+	// tangent 0
+	// tantoangle 416909542
+	/*
+	I_Error("\n\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li",
+		finesine[0], finesine[1], finecosine[0], finecosine[1],
+		finesine[2048], finesine[2049], finecosine[2048], finecosine[2049],
+		finesine[2048], finesine[2049], finecosine[2048], finecosine[2049],
+		finesine[4096], finesine[4097], finecosine[4096], finecosine[4097],
+		finesine[6144], finesine[6145], finecosine[6144], finecosine[6145],
+		finetangent(0), finetangent(1), finetangent(2048), finetangent(2049),
+		finetangent(1024), finetangent(1024), finetangent(3072), finetangent(3073),
+		tantoangle[0], tantoangle[1], tantoangle[512], tantoangle[513],
+		tantoangle[256], tantoangle[257], tantoangle[768], tantoangle[769]
+
+		);
+		*/
 	//I_Error("\n%lx %lx %hhu %hhu %hhu", gammatable, 0L, gammatable[0], gammatable[128], gammatable[256 * 1 + 128]);
 
 }

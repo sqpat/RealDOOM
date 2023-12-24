@@ -1528,13 +1528,12 @@ void Z_QuickmapPhysics() {
 	segregs.ds = pageswapargseg_phys;
 	regs.w.si = pageswapargoff_phys+32;
 	intx86(EMS_INT, &regs, &regs);
-
-
+	
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x01; // page count
+	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_phys;
-	regs.w.si = pageswapargoff_phys + 64 + 12;
+	regs.w.si = pageswapargoff_phys + 64;
 	intx86(EMS_INT, &regs, &regs);
 
 	/*
@@ -1594,14 +1593,14 @@ void Z_QuickmapRender() {
 	regs.w.cx = 0x08;  // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend+32;
+	regs.w.si = pageswapargoff_rend + 32;
 	intx86(EMS_INT, &regs, &regs);
  
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x01; // page count
+	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend + 64 + 12;
+	regs.w.si = pageswapargoff_rend + 64;
 	intx86(EMS_INT, &regs, &regs);
 	taskswitchcount++;
 	currenttask = TASK_RENDER;

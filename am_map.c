@@ -1135,12 +1135,12 @@ AM_rotate
 {
     fixed_t tmpx;
     tmpx =
-		FixedMulTrig(*x,finecosine(a))
-	- FixedMulTrig(*y,finesine(a));
+		FixedMulTrig(*x,finecosine[a])
+	- FixedMulTrig(*y,finesine[a]);
     
     *y   =
-		FixedMulTrig(*x,finesine(a))
-	+ FixedMulTrig(*y,finecosine(a));
+		FixedMulTrig(*x,finesine[a])
+	+ FixedMulTrig(*y,finecosine[a]);
 
     *x = tmpx;
 }
