@@ -861,9 +861,6 @@ void A_Chase (mobj_t*	actor, mobj_pos_t* actor_pos)
   nomissile:
     // possibly choose another target
 
-	if (setval == 1) {
-		I_Error("gg %hhu", prndindex);
-	}
 
 
 

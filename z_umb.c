@@ -191,14 +191,10 @@ void Z_InitUMBDOS(void) {
 	int86(DOSMM_INT, &regs, &regs);
 	UMBsize2 = regs.w.bx;
 
-	//96 dosbox
-	//27440 emm386
-	//16464 286
-
 	DEBUG_PRINT("\n  Remaining %u bytes in UMB... ", UMBsize2 << 4);
-
-	if ((UMBsize2 << 4) >= UMB2_SIZE) {
-		UMBsize2 = UMB2_SIZE>>4 + 1; // enough for umb2 size
+	// 28210
+	if ((UMBsize2) >= ((UMB2_SIZE >> 4) + 1)) {
+		UMBsize2 = (UMB2_SIZE>>4) + 1; // enough for umb2 size
 
 		regs.w.ax = 0x4800;
 		regs.w.bx = UMBsize2;

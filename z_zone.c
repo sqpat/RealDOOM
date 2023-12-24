@@ -1062,7 +1062,7 @@ void Z_FreeConventionalAllocations() {
 
 	conventional1headindex = 0;
 	
-	memset(nightmarespawns, 0, 16384);
+	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
 	
 }
 
@@ -1494,8 +1494,8 @@ void Z_InitEMS(void)
 
 // page for 0x9000 block where we will store thinkers in physics code, then visplanes etc in render code
 int16_t pagenum9000; 
-int16_t pageswapargs_phys[36];
-int16_t pageswapargs_rend[36];
+int16_t pageswapargs_phys[40];
+int16_t pageswapargs_rend[40];
 int16_t pageswapargs_stat[12];
 int16_t pageswapargs_demo[8];
 int16_t pageswapargs_rend_temp_7000_to_6000[8];
@@ -1529,15 +1529,14 @@ void Z_QuickmapPhysics() {
 	regs.w.si = pageswapargoff_phys+32;
 	intx86(EMS_INT, &regs, &regs);
 
-	/*
 
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x02; // page count
+	regs.w.cx = 0x01; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_phys;
-	regs.w.si = pageswapargoff_phys + 64;
+	regs.w.si = pageswapargoff_phys + 64 + 12;
 	intx86(EMS_INT, &regs, &regs);
-	*/
+
 	/*
 	errorreg = regs.h.ah;
 	if (errorreg != 0) {
@@ -1598,14 +1597,12 @@ void Z_QuickmapRender() {
 	regs.w.si = pageswapargoff_rend+32;
 	intx86(EMS_INT, &regs, &regs);
  
-	/*
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x02; // page count
+	regs.w.cx = 0x01; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend + 64;
+	regs.w.si = pageswapargoff_rend + 64 + 12;
 	intx86(EMS_INT, &regs, &regs);
-	*/
 	taskswitchcount++;
 	currenttask = TASK_RENDER;
 

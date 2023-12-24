@@ -517,15 +517,10 @@ void P_MobjThinker (mobj_t* mobj, mobj_pos_t* mobj_pos, THINKERREF mobjRef) {
 		if (!mobj->tics) {
 
 			if (!P_SetMobjState(mobj, states[mobj_pos->stateNum].nextstate)) {
-				if (setval == 1) {
-					I_Error("a %hhu %i", prndindex, mobjRef);
-				}
 
 				return;		// freed itself
 			}
-			if (setval == 1) {
-				I_Error("b %hhu %u %i", prndindex, mobjRef, states[mobj_pos->stateNum].nextstate);
-			}
+ 
 
 			
 

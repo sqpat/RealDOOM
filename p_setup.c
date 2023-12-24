@@ -1005,7 +1005,7 @@ void P_LoadThings(int16_t lump)
 	boolean             spawn;
 	MEMREF				dataRef;
 	
-	memset(nightmarespawns, 0, 16384);
+	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
 	W_CacheLumpNumCheck(lump, 5);
 	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);

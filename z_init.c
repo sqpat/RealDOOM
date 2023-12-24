@@ -229,8 +229,8 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 
 
 extern int16_t pagenum9000;
-extern int16_t pageswapargs_phys[36];
-extern int16_t pageswapargs_rend[36];
+extern int16_t pageswapargs_phys[40];
+extern int16_t pageswapargs_rend[40];
 extern int16_t pageswapargs_stat[12];
 extern int16_t pageswapargs_demo[8];
 
@@ -296,7 +296,11 @@ int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824,
 #define PAGE_4800 pagenum9000 - 18
 #define PAGE_4C00 pagenum9000 - 17
 
+
+int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17};
+
 extern  uint16_t		finesineinner[2048];
+extern  uint16_t		DEMO_SEGMENT;
 
 
 void Z_GetEMSPageMap() {
@@ -310,7 +314,7 @@ void Z_GetEMSPageMap() {
 
 	/*
 	FILE *fp;
-	 
+
 	fp = fopen("d_gammat.bin", "wb"); // clear old file
 	fwrite(gammatable, 5*256, 1, fp);
 	I_Error("done");
@@ -377,147 +381,97 @@ found:
 
 	//					PHYSICS			RENDER					ST/HUD
 	// BLOCK
-	//            						visplane stuff			screen4 0x9c00
+	//            		emptyish		visplane stuff			screen4 0x9c00
 	// 0x9000 block		thinkers		viewangles, drawsegs
-	// 					screen0			sprite stuff			
-	//					gamma table		visplane openings
-	//0x8000 block						texture memrefs?
+	// 									sprite stuff			
+	//					screen0			visplane openings
+	// 0x8000 block		gamma table		texture memrefs?
 	// 0x7000 block		physics levdata render levdata			st graphics
+	//					more physics levdata  
+	// 0x6000 block		nightnmarespawns textureinfo			
+	//					strings			 emptyish				strings
+	// 0x5000 block		trig tables   	 trig tables
 	//					
-	// 0x6000 block	more physics levdata 			
-	// 					nightnmarespawns  texturedata			
-	//					strings									strings
-	// 0x5000 block		mobj_pos   		 textures
-	//					trig tables
 	// 0x4000 block						textures
 
 	// todo loopify
-
-	pageswapargs_phys[0] = 0;
-	pageswapargs_phys[1] = PAGE_9000;
-	pageswapargs_phys[2] = 1;
-	pageswapargs_phys[3] = PAGE_9400;
-	pageswapargs_phys[4] = 2;
-	pageswapargs_phys[5] = PAGE_9800;
-	pageswapargs_phys[6] = 3;
-	pageswapargs_phys[7] = PAGE_9C00;
-	pageswapargs_phys[8] = 4;
-	pageswapargs_phys[9] = PAGE_8000;
-	pageswapargs_phys[10] = 5;
-	pageswapargs_phys[11] = PAGE_8400;
-	pageswapargs_phys[12] = 6;
-	pageswapargs_phys[13] = PAGE_8800;
-	pageswapargs_phys[14] = 7;
-	pageswapargs_phys[15] = PAGE_8C00;
-	pageswapargs_phys[16] = 8;
-	pageswapargs_phys[17] = PAGE_7000;
-	pageswapargs_phys[18] = 9;
-	pageswapargs_phys[19] = PAGE_7400;
-	pageswapargs_phys[20] = 10;
-	pageswapargs_phys[21] = PAGE_7800;
-	pageswapargs_phys[22] = 11;
-	pageswapargs_phys[23] = PAGE_7C00;
-	pageswapargs_phys[24] = 12;
-	pageswapargs_phys[25] = PAGE_6000;// strings;
-	pageswapargs_phys[26] = 13;
-	pageswapargs_phys[27] = PAGE_6400;//empty
-	pageswapargs_phys[28] = 14;
-	pageswapargs_phys[29] = PAGE_6800;//empty;
-	pageswapargs_phys[30] = 15;
-	pageswapargs_phys[31] = PAGE_6C00;//empty
-
-	/*pageswapargs_phys[32] = 41;
-	pageswapargs_phys[33] = PAGE_5000;
-	pageswapargs_phys[34] = 42;
-	pageswapargs_phys[35] = PAGE_5400;
-	pageswapargs_phys[36] = 43;//mobjposlist
-	pageswapargs_phys[37] = PAGE_5800; 
-	pageswapargs_phys[38] = 44;//mobjposlist
-	pageswapargs_phys[39] = PAGE_5C00; 
-
- 
-	*/
+	 
+	
+	for (i = 0; i < 20; i++) {
+		pageswapargs_phys[i * 2] = i;
+		pageswapargs_phys[i * 2+1] = pagenum9000 + ems_backfill_page_order[i];
+	}
 
 
-	pageswapargs_rend[0] = 16;
-	pageswapargs_rend[1] = PAGE_9000;
-	pageswapargs_rend[2] = 17;
-	pageswapargs_rend[3] = PAGE_9400;
-	pageswapargs_rend[4] = 18;
-	pageswapargs_rend[5] = PAGE_9800;
-	pageswapargs_rend[6] = 19;
-	pageswapargs_rend[7] = PAGE_9C00;
-	pageswapargs_rend[8] = 20;
-	pageswapargs_rend[9] = PAGE_8000;
-	pageswapargs_rend[10] = 21;
-	pageswapargs_rend[11] = PAGE_8400;
-	pageswapargs_rend[12] = 22;
-	pageswapargs_rend[13] = PAGE_8800;
-	pageswapargs_rend[14] = 23;
-	pageswapargs_rend[15] = PAGE_8C00;
-	pageswapargs_rend[16] = 24;
-	pageswapargs_rend[17] = PAGE_7000;
-	pageswapargs_rend[18] = 25;
-	pageswapargs_rend[19] = PAGE_7400;
-	pageswapargs_rend[20] = 26;
-	pageswapargs_rend[21] = PAGE_7800;
-	pageswapargs_rend[22] = 27;	
-	pageswapargs_rend[23] = PAGE_7C00;
-	pageswapargs_rend[24] = 28;	
-	pageswapargs_rend[25] = PAGE_6000;
-	pageswapargs_rend[26] = 29;
-	pageswapargs_rend[27] = PAGE_6400;
-	pageswapargs_rend[28] = 30;
-	pageswapargs_rend[29] = PAGE_6800;
-	pageswapargs_rend[30] = 31;
-	pageswapargs_rend[31] = PAGE_6C00;
-/*
-	pageswapargs_rend[32] = 41;
-	pageswapargs_rend[33] = PAGE_5000;
-	pageswapargs_rend[34] = 42;
-	pageswapargs_rend[35] = PAGE_5400;
-	pageswapargs_rend[32] = 43;//mobjposlist
-	pageswapargs_rend[33] = PAGE_5800;
-	pageswapargs_rend[34] = 44;//mobjposlist
-	pageswapargs_rend[35] = PAGE_5C00;
-	*/
+	for (i = 0; i < 20; i++) {
+		pageswapargs_rend[i * 2] = 20+i;
+		pageswapargs_rend[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
+	}
 
-	// 27 and 28 not used?
+	// overwrite some fields
 
-	pageswapargs_stat[0] = 32;
+	pageswapargs_rend[32] = 16;;// trig stuff shared with physics (finesine/cos)
+	pageswapargs_rend[34] = 17;// trig stuff shared with physics (finesine/cos)
+	pageswapargs_rend[36] = 36;// trig stuff copy (some duplicated with physics page, but tan fields are render only)
+	pageswapargs_rend[38] = 37;
+
+	for (i = 1; i < 5; i++) {
+		pageswapargs_stat[i * 2] = 38 + i;
+		pageswapargs_stat[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i+7];
+	}
+
+	pageswapargs_stat[0] = 38;
 	pageswapargs_stat[1] = PAGE_9C00;
-	pageswapargs_stat[2] = 33;
+	pageswapargs_stat[10] = 19;
+	pageswapargs_stat[11] = PAGE_5C00; // strings;
+
+/*
+	pageswapargs_stat[2] = 39;
 	pageswapargs_stat[3] = PAGE_7000;
-	pageswapargs_stat[4] = 34;
+	pageswapargs_stat[4] = 40;
 	pageswapargs_stat[5] = PAGE_7400;
-	pageswapargs_stat[6] = 35;
+	pageswapargs_stat[6] = 41;
 	pageswapargs_stat[7] = PAGE_7800;
-	pageswapargs_stat[8] = 36;
+	pageswapargs_stat[8] = 42;
 	pageswapargs_stat[9] = PAGE_7C00;
-	pageswapargs_stat[10] = 12;
-	pageswapargs_stat[11] = PAGE_6000; // strings;
+	*/
 
+	/*
+	   0 4 8 12 16
+	   9 8 7 6  5
+	*/
 
+	for (i = 0; i < 4; i++) {
+		pageswapargs_demo[i * 2] = 43 + i;
+		pageswapargs_demo[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i + 16];
+	}
 	//todo maybe move these into 0x4000 when free?
-	pageswapargs_demo[0] = 37;
+	/*
+	pageswapargs_demo[0] = 43;
 	pageswapargs_demo[1] = PAGE_5000;
-	pageswapargs_demo[2] = 38;
+	pageswapargs_demo[2] = 44;
 	pageswapargs_demo[3] = PAGE_5400;
-	pageswapargs_demo[4] = 39;
+	pageswapargs_demo[4] = 45;
 	pageswapargs_demo[5] = PAGE_5800;
-	pageswapargs_demo[6] = 40;
+	pageswapargs_demo[6] = 47;
 	pageswapargs_demo[7] = PAGE_5C00;
+	*/
+	DEMO_SEGMENT = 0x5000u;
 
-
-	pageswapargs_rend_temp_7000_to_6000[0] = 24;
+	for (i = 0; i < 4; i++) {
+		pageswapargs_rend_temp_7000_to_6000[i * 2] = 28 + i;
+		pageswapargs_rend_temp_7000_to_6000[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i + 12];
+	}
+/*
+	pageswapargs_rend_temp_7000_to_6000[0] = 28;
 	pageswapargs_rend_temp_7000_to_6000[1] = PAGE_6000;
-	pageswapargs_rend_temp_7000_to_6000[2] = 25;
+	pageswapargs_rend_temp_7000_to_6000[2] = 29;
 	pageswapargs_rend_temp_7000_to_6000[3] = PAGE_6400;
-	pageswapargs_rend_temp_7000_to_6000[4] = 26;
+	pageswapargs_rend_temp_7000_to_6000[4] = 30;
 	pageswapargs_rend_temp_7000_to_6000[5] = PAGE_6800;
-	pageswapargs_rend_temp_7000_to_6000[6] = 27;
+	pageswapargs_rend_temp_7000_to_6000[6] = 31;
 	pageswapargs_rend_temp_7000_to_6000[7] = PAGE_6C00;
-
+	*/
 
 	// we're an OS now! let's directly allocate memory !
 
@@ -577,8 +531,8 @@ found:
 	screen4 = MK_FP(segment, offset_status);
 
 
-	printf("\n  MEMORY AREA  Physics  Render  Status");
-	printf("\n   0x9000:      %05u   %05u   %05u", offset_physics, offset_render, 0-offset_status);
+	printf("\n  MEMORY AREA  Physics  Render  HU/ST    Demo");
+	printf("\n   0x9000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0-offset_status);
 
 	segment = 0x8000;
 	offset_render = 0u;
@@ -614,12 +568,14 @@ found:
 	
 	// from the top
 
-	//   65269  64894  10240
-	//   65280  60945  00000
-	//   00000  00000  64208
+	// 0x9000  45109  64894  10240
+	// 0x8000  65280  60945  00000
+	// 0x7000  XXXXX  XXXXX  64208
+	// 0x6000  24784  46871  00000  
+	// 0x5000  65536  49156  16380  XXXXX 
+	// 0x4000  00000  00000  00000
 
-
-	printf("\n   0x8000:      %05u   %05u   %05u", offset_physics, offset_render, 0-offset_status);
+	printf("\n   0x8000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0-offset_status);
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
@@ -720,23 +676,20 @@ found:
 	}
 
 
-	printf("\n   0x7000:      XXXXX   XXXXX   %05u", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x7000:      XXXXX   XXXXX   %05u   00000", offset_physics, offset_render, 0 - offset_status);
 	segment = 0x6000;
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	stringdata = MK_FP(segment, offset_physics);
-	offset_physics += 16384;
 	nightmarespawns = MK_FP(segment, offset_physics);
-	offset_physics += 16384;
+	offset_physics += sizeof(mapthing_t) * MAX_THINKERS;
 
-	demobuffer = MK_FP(segment, 0);
 
 	textureinfomemoryblock = MK_FP(segment, offset_render);
 	offset_render += (STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE);
 
-	printf("\n   0x6000:      %05u   %05u   %05u", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x6000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0 - offset_status);
 
 	
 	// todo: scalelight and zlight. Hard because they are 2d arrays of pointers?
@@ -752,15 +705,20 @@ found:
 	offset_physics = 0u;
 	offset_status = 0u;
 
+	offset_physics -= 16380; //4 bytes less so tan to angle[2048] fits
+	stringdata = MK_FP(segment, offset_physics);
+	
+	demobuffer = MK_FP(segment, 0);
+
  
-	printf("\n   0x5000:      %05u   %05u   %05u", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x5000:      65536   %05u   %05u   XXXXX", 49156u, 16380u);
 	
 	segment = 0x4000;
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	printf("\n   0x4000:      %05u   %05u   %05u", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x4000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0 - offset_status);
 
 
 	Z_QuickmapPhysics(); // map default page map

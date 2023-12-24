@@ -1259,7 +1259,6 @@ void AM_Drawer (void)
 
     if (!automapactive) return;
 
-	setval = 1;
 
     AM_clearFB(BACKGROUND);
     if (grid)

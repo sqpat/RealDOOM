@@ -64,7 +64,7 @@
 #define SAVESTRINGSIZE  24
 // lets keep this comfortably 16 bit. otherwise how do we fit in ems without big rewrite?
 #define DEMO_MAX_SIZE 0xF800
-#define DEMO_SEGMENT 0x6000u
+uint16_t DEMO_SEGMENT;
 
 boolean G_CheckDemoStatus (void); 
 void    G_ReadDemoTiccmd (ticcmd_t* cmd); 
@@ -1045,7 +1045,8 @@ void G_WriteDemoTiccmd (ticcmd_t* cmd)
     {
         // no more space 
         G_CheckDemoStatus (); 
-        return; 
+		Z_QuickmapPhysics();
+		return;
     } 
         
     G_ReadDemoTiccmd (cmd);         // make SURE it is exactly the same 
@@ -1222,7 +1223,8 @@ boolean G_CheckDemoStatus (void)  {
         M_WriteFile (demoname, demobuffer, demo_p);
         demorecording = false; 
         I_Error ("Demo %s recorded",demoname); 
-    } 
+		Z_QuickmapPhysics();
+	}
          
     return false; 
 } 
