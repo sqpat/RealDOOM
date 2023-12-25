@@ -1139,8 +1139,7 @@ typedef uint8_t spriteframenum_t;
 
 typedef uint16_t statenum_t;
 
-// 967 * 6? 6kb?
-typedef struct
+typedef struct state_s
 {
   spritenum_t	sprite;
   spriteframenum_t	frame;
@@ -1152,8 +1151,7 @@ typedef struct
   //int32_t			misc1, misc2;
 } state_t;
 
-//extern state_t* states;
-extern state_t	states[NUMSTATES];
+extern state_t* states;
 
 #define MT_PLAYER 0
 #define MT_POSSESSED 1

@@ -378,19 +378,25 @@ found:
 	pageswapargseg_demo = (uint16_t)((uint32_t)pageswapargs_demo >> 16);
 	pageswapargoff_demo = (uint16_t)(((uint32_t)pageswapargs_demo) & 0xffff);
 
-	//					PHYSICS			RENDER					ST/HUD
+	//					PHYSICS			RENDER					ST/HUD			DEMO		FWIPE
 	// BLOCK
-	//            		emptyish		visplane stuff			screen4 0x9c00
+	// -------------------------------------------------------------------------------------------------------
+	//            						visplane stuff			screen4 0x9c00
 	// 0x9000 block		thinkers		viewangles, drawsegs
+	// -------------------------------------------------------------------------------------------------------
 	// 									sprite stuff			
 	//					screen0			visplane openings
 	// 0x8000 block		gamma table		texture memrefs?
+	// -------------------------------------------------------------------------------------------------------
 	// 0x7000 block		physics levdata render levdata			st graphics
-	//					more physics levdata  
+	// -------------------------------------------------------------------------------------------------------
+	//				more physics levdata zlight 
 	// 					nightnmarespawns textureinfo			
-	//	0x6000 block	strings			 emptyish				strings
-	// 0x5000 block		trig tables   	 trig tables
-	//					
+	//	0x6000 block	strings									strings
+	// -------------------------------------------------------------------------------------------------------
+	//                  states          states
+	// 0x5000 block		trig tables   	trig tables								demobuffer	
+	// -------------------------------------------------------------------------------------------------------
 	// 0x4000 block						textures
 
 	 
@@ -410,28 +416,27 @@ found:
 	pageswapargs_rend[34] = 17;// 0x5400 trig stuff shared with physics (finesine/cos)
 	pageswapargs_rend[36] = 18;// 0x5800 trig stuff shared with physics (finesine/cos, finetan)
 	pageswapargs_rend[38] = 19;// 0x5c00 trig stuff shared with physics (tantoangle) 
-				//- note, 8188 high bytes of 0x5c00 unused, could dupe page so each task gets to use it
-
-	 
+	
+							   
 
 	for (i = 1; i < 5; i++) {
-		pageswapargs_stat[i * 2] = 38 + i;
+		pageswapargs_stat[i * 2] = 36 + i;
 		pageswapargs_stat[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i+7];
 	}
 
-	pageswapargs_stat[0] = 38;
+	pageswapargs_stat[0] = 36;
 	pageswapargs_stat[1] = PAGE_9C00;
 	pageswapargs_stat[10] = 12;
 	pageswapargs_stat[11] = PAGE_6000; // strings;
 
 /*
-	pageswapargs_stat[2] = 39;
+	pageswapargs_stat[2] = 37;
 	pageswapargs_stat[3] = PAGE_7000;
-	pageswapargs_stat[4] = 40;
+	pageswapargs_stat[4] = 38;
 	pageswapargs_stat[5] = PAGE_7400;
-	pageswapargs_stat[6] = 41;
+	pageswapargs_stat[6] = 39;
 	pageswapargs_stat[7] = PAGE_7800;
-	pageswapargs_stat[8] = 42;
+	pageswapargs_stat[8] = 40;
 	pageswapargs_stat[9] = PAGE_7C00;
 	*/
 
@@ -441,18 +446,18 @@ found:
 	*/
 
 	for (i = 0; i < 4; i++) {
-		pageswapargs_demo[i * 2] = 43 + i;
+		pageswapargs_demo[i * 2] = 41 + i;
 		pageswapargs_demo[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i + 16];
 	}
 	//todo maybe move these into 0x4000 when free?
 	/*
-	pageswapargs_demo[0] = 43;
+	pageswapargs_demo[0] = 41;
 	pageswapargs_demo[1] = PAGE_5000;
-	pageswapargs_demo[2] = 44;
+	pageswapargs_demo[2] = 42;
 	pageswapargs_demo[3] = PAGE_5400;
-	pageswapargs_demo[4] = 45;
+	pageswapargs_demo[4] = 43;
 	pageswapargs_demo[5] = PAGE_5800;
-	pageswapargs_demo[6] = 47;
+	pageswapargs_demo[6] = 44;
 	pageswapargs_demo[7] = PAGE_5C00;
 	*/
 	DEMO_SEGMENT = 0x5000u;
@@ -481,8 +486,6 @@ found:
 	//physics mapping
 	thinkerlist = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(thinker_t) * MAX_THINKERS;
-	//states = MK_FP(segment, offset_physics);
-	offset_physics += sizeof(state_t) * NUMSTATES;
 	mobjinfo = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(mobjinfo_t) * NUMMOBJTYPES;
 
@@ -577,11 +580,11 @@ found:
 
 	// from the top
 
-	// 0x9000  45109  64894  10240
+	// 0x9000  40203  64894  10240
 	// 0x8000  65280  64017  00000
 	// 0x7000  XXXXX  XXXXX  64208
 	// 0x6000  24784  55063  16384  
-	// 0x5000  57348  57348  00000  XXXXX 
+	// 0x5000  63150  63150  00000  XXXXX 
 	// 0x4000  00000  00000  00000
 
 	printf("\n   0x8000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0-offset_status);
@@ -717,16 +720,16 @@ found:
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	// this and tantoangle overlap by 4 bytes (the 2049th element of tantoangle
-	// but tantoangle is render only and strings is physics and hu/st
 
 	finesine = MK_FP(segment, offset_physics);
 	finecosine = MK_FP(segment, 8192u);
 	offset_physics += 10240 * sizeof(int32_t);
-	finetangentinner = MK_FP(segment, 40960u);
+	finetangentinner = MK_FP(segment, offset_physics);
 	offset_physics += 2048 * sizeof(int32_t);
-	tantoangle = MK_FP(segment, 49152u);
-	offset_physics += 2049 * sizeof(int32_t);
+	tantoangle = MK_FP(segment, offset_physics);
+	offset_physics += 2049 * sizeof(uint32_t);
+	states = MK_FP(segment, offset_physics);
+	offset_physics += sizeof(state_t) * NUMSTATES;
 
 	demobuffer = MK_FP(segment, 0);
 
@@ -751,12 +754,12 @@ void Z_LoadBinaries() {
 	int16_t i = 0;
 	// currently in physics region!
 	fp = fopen("D_MBINFO.BIN", "rb"); 
-	fread(mobjinfo, 1, sizeof(mobjinfo_t) * NUMMOBJTYPES, fp);
+	fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
 	fclose(fp);
 	DEBUG_PRINT(".");
 
 	fp = fopen("D_STATES.BIN", "rb");
-	//fread(states, 1, sizeof(state_t) * NUMSTATES, fp);
+	fread(states, sizeof(state_t), NUMSTATES, fp);
 	fclose(fp);
 	DEBUG_PRINT(".");
 
@@ -775,43 +778,12 @@ void Z_LoadBinaries() {
 	fclose(fp);
 	DEBUG_PRINT(".");
 
-	Z_QuickmapRender();
-
-	fp = fopen("D_FINES2.BIN", "rb");
-	fread(finesine, 4, 10240, fp);
-	fclose(fp);
-	DEBUG_PRINT(".");
-	// reload this so it dupes into the render version of the block...
-	fp = fopen("D_FINET4.BIN", "rb");
-	fread(finetangentinner, 4, 2048, fp);
-	fclose(fp);
-	DEBUG_PRINT(".");
 
 	fp = fopen("D_TANTOA.BIN", "rb");
 	fread(tantoangle, 4, 2049, fp);
 	fclose(fp);
 	DEBUG_PRINT(".");
-	Z_QuickmapPhysics();
-
-	// 256000
-	// tangent 0
-	// tantoangle 416909542
-	/*
-	I_Error("\n\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li",
-		finesine[0], finesine[1], finecosine[0], finecosine[1],
-		finesine[2048], finesine[2049], finecosine[2048], finecosine[2049],
-		finesine[2048], finesine[2049], finecosine[2048], finecosine[2049],
-		finesine[4096], finesine[4097], finecosine[4096], finecosine[4097],
-		finesine[6144], finesine[6145], finecosine[6144], finecosine[6145],
-		finetangent(0), finetangent(1), finetangent(2048), finetangent(2049),
-		finetangent(1024), finetangent(1024), finetangent(3072), finetangent(3073),
-		tantoangle[0], tantoangle[1], tantoangle[512], tantoangle[513],
-		tantoangle[256], tantoangle[257], tantoangle[768], tantoangle[769]
-
-		);
-		*/
-	//I_Error("\n%lx %lx %hhu %hhu %hhu", gammatable, 0L, gammatable[0], gammatable[128], gammatable[256 * 1 + 128]);
-
+	 
 }
 
 
