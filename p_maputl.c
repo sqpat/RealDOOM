@@ -760,7 +760,7 @@ P_BlockThingsIterator
 //
 // INTERCEPT ROUTINES
 //
-intercept_t	intercepts[MAXINTERCEPTS];
+intercept_t*	intercepts;// [MAXINTERCEPTS];
 intercept_t*	intercept_p;
 
 divline_t 	trace;

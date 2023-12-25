@@ -486,8 +486,11 @@ found:
 	mobjinfo = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(mobjinfo_t) * NUMMOBJTYPES;
 
-	//65269
 
+	intercepts = MK_FP(segment, offset_physics);
+	offset_physics += sizeof(intercept_t) * MAXINTERCEPTS;
+
+ 
 	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
 	visplanes = MK_FP(segment, 0);
 	offset_render += sizeof(visplane_t) * MAXCONVENTIONALVISPLANES;
