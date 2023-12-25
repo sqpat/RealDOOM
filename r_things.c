@@ -402,11 +402,11 @@ void R_AddSprites (sector_t* sec)
     lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 	if (lightnum < 0) {
-		spritelights = scalelight[0];
+		spritelights = &scalelight[0];
 	} else if (lightnum >= LIGHTLEVELS) {
-		spritelights = scalelight[LIGHTLEVELS - 1];
+		spritelights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
 	} else {
-		spritelights = scalelight[lightnum];
+		spritelights = &scalelight[lightmult48lookup[lightnum]];
 	}
 
 
@@ -537,7 +537,6 @@ void R_DrawPSprite (pspdef_t* psp, state_t statecopy)
 
 extern int16_t r_cachedplayerMobjsecnum;
 extern state_t r_cachedstatecopy[2];
-
 //
 // R_DrawPlayerSprites
 //
@@ -553,11 +552,11 @@ void R_DrawPlayerSprites (void)
 //    if (lightnum < 0)          
 // not sure if this hack is necessary.. since its unsigned we loop around if its below 0 
 	if (lightnum > 240) {
-		spritelights = scalelight[0];
+		spritelights = &scalelight[0];
 	} else if (lightnum >= LIGHTLEVELS) {
-		spritelights = scalelight[LIGHTLEVELS - 1];
+		spritelights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
 	} else {
-		spritelights = scalelight[lightnum];
+		spritelights = &scalelight[lightmult48lookup[lightnum]];
 	}
     // clip to screen bounds
     mfloorclip = screenheightarray;

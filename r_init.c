@@ -155,7 +155,11 @@ void R_InitLightTables(void)
 			if (level >= NUMCOLORMAPS)
 				level = NUMCOLORMAPS - 1;
 
-			zlight[i][j] = colormaps + (level * 256);
+			// << 7 is same as * MAXLIGHTZ
+			zlight[i *MAXLIGHTZ + j] = (colormaps + (level * 256));
+			//zlight[i * MAXLIGHTZ + j] = (uint16_t)((uint32_t)(colormaps + (level * 256)) & 0xFFFFu);
+
+			
 		}
 	}
 	Z_QuickmapPhysics();

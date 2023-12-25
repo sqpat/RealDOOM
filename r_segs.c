@@ -83,7 +83,6 @@ lighttable_t**	walllights;
 int16_t*		maskedtexturecol;
 
 
-
 //
 // R_RenderMaskedSegRange
 //
@@ -141,11 +140,11 @@ R_RenderMaskedSegRange
 		lightnum++;
 	}
 	if (lightnum < 0){
-		walllights = scalelight[0];
+		walllights = &scalelight[0];
 	} else if (lightnum >= LIGHTLEVELS) {
-		walllights = scalelight[LIGHTLEVELS - 1];
+		walllights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
 	} else {
-		walllights = scalelight[lightnum];
+		walllights = &scalelight[lightmult48lookup[lightnum]];
 	}
     maskedtexturecol = ds->maskedtexturecol;
 
@@ -749,11 +748,11 @@ R_StoreWallRange
 			}
 
 			if (lightnum < 0) {
-				walllights = scalelight[0];
+				walllights = &scalelight[0];
 			} else if (lightnum >= LIGHTLEVELS) {
-				walllights = scalelight[LIGHTLEVELS - 1];
+				walllights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
 			} else {
-				walllights = scalelight[lightnum];
+				walllights = &scalelight[lightmult48lookup[lightnum]];
 			}
 		}
     }

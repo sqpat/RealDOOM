@@ -53,6 +53,7 @@ angle_t r_cachedplayerMobjangle;
 int16_t			validcount = 1;
 
 
+//uint16_t*		fixedcolormap;
 lighttable_t*		fixedcolormap;
 extern lighttable_t**	walllights;
 
@@ -96,9 +97,11 @@ int16_t			*viewangletox;// [FINEANGLES / 2];
 // from clipangle to -clipangle.
 fineangle_t			*xtoviewangle;// [SCREENWIDTH + 1];
 
-lighttable_t*		scalelight[LIGHTLEVELS][MAXLIGHTSCALE];
+lighttable_t**		scalelight;// [LIGHTLEVELS][MAXLIGHTSCALE];
+//uint16_t*			scalelight;// [LIGHTLEVELS][MAXLIGHTSCALE];
 lighttable_t*		*scalelightfixed;// [MAXLIGHTSCALE];
-lighttable_t*		zlight[LIGHTLEVELS][MAXLIGHTZ];
+//uint16_t*			zlight;// [LIGHTLEVELS][MAXLIGHTZ];
+lighttable_t**		zlight;// [LIGHTLEVELS][MAXLIGHTZ];
 
 // bumped light from gun blasts
 uint8_t			extralight;			

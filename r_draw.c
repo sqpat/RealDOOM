@@ -308,6 +308,7 @@ int16_t                     ds_x1;
 int16_t                     ds_x2;
 
 lighttable_t*           ds_colormap;
+//uint16_t*           ds_colormap;
 
 fixed_t                 ds_xfrac;
 fixed_t                 ds_yfrac;
@@ -324,6 +325,7 @@ byte*                   ds_source;
 // Draws the actual span.
 void R_DrawSpan(void)
 {
+	//fixed_t_union             src = 0x80000000;
 	fixed_t_union             xfrac;
 	fixed_t             yfrac;
 	byte*               dest;
@@ -366,9 +368,9 @@ void R_DrawSpan(void)
 
 			// Lookup pixel from flat texture tile,
 			//  re-index using light/colormap.
-
-			Z_RefIsActive(ds_sourceRef);
-#ifndef	SKIP_DRAW
+			//src.h.fracbits = ds_colormap[ds_source[spot]];
+ #ifndef	SKIP_DRAW
+			//*dest = (lighttable_t*) src.w;
 			*dest = ds_colormap[ds_source[spot]];
 			dest++;
 #endif

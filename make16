@@ -105,6 +105,7 @@ GLOBOBJS = &
  dutils.obj &
  f_wipe.obj &
  info.obj &
+ d_math.obj &
  dmx.obj 
 
 doom16.exe : $(GLOBOBJS) i_ibm.obj

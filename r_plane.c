@@ -463,7 +463,9 @@ void R_DrawPlanes (void)
 			light = LIGHTLEVELS-1;
 		}
 
-		planezlight = zlight[light];
+		// quicker shift 7..
+		planezlight = &zlight[lightshift7lookup[light]];
+		//planezlight = (uint16_t*)MK_FP(0x8000u, zlight[light*MAXLIGHTZ]);
 
 		if (plbytes){
 			plbytes->top[pl->maxx+1] = 0xff;

@@ -54,6 +54,8 @@ file sounds.obj
 file dutils.obj
 file info.obj
 file dmx.obj
+file d_math.obj
+
 
 #these files put in overlay 
 file i_main.obj

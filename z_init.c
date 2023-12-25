@@ -565,12 +565,19 @@ found:
 	spritetopoffsets = MK_FP(segment, offset_render);
 	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
 	
+	// todo change all this to 16 bit pointers/lookups based on fixed 0x8000 colormapbytes segment.
+	// then bring offset_render back up
+	scalelight = MK_FP(segment, offset_render);
+	offset_render += sizeof(lighttable_t* far) * (LIGHTLEVELS * MAXLIGHTSCALE);
+	//zlight = MK_FP(segment, offset_render);
+	//offset_render += sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ);
+
 	// from the top
 
 	// 0x9000  45109  64894  10240
-	// 0x8000  65280  60945  00000
+	// 0x8000  65280  64017  00000
 	// 0x7000  XXXXX  XXXXX  64208
-	// 0x6000  24784  46871  16384  
+	// 0x6000  24784  55063  16384  
 	// 0x5000  57348  57348  00000  XXXXX 
 	// 0x4000  00000  00000  00000
 
@@ -691,14 +698,14 @@ found:
 	textureinfomemoryblock = MK_FP(segment, offset_render);
 	offset_render += (STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE);
 
+	zlight = MK_FP(segment, offset_render);
+	offset_render += sizeof(lighttable_t* far) * (LIGHTLEVELS * MAXLIGHTZ);
+
+
 	printf("\n   0x6000:      %05u   %05u   %05u   00000", offset_physics, offset_render, offset_status);
 
 	
-	// todo: scalelight and zlight. Hard because they are 2d arrays of pointers?
-	//scalelight = MK_FP(0x8000, offset_render);
-	//offset_render += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTSCALE);
-	//zlight = MK_FP(0x8000, offset_render);
-	//offset_render += sizeof(lighttable_t) * (LIGHTLEVELS * MAXLIGHTZ);
+
 
 	//I_Error("done");
 
