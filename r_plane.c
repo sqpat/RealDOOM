@@ -28,6 +28,7 @@
 #include "doomstat.h"
 
 #include "r_local.h"
+#include <dos.h>
 
 
 
@@ -361,7 +362,12 @@ R_CheckPlane
 	return lastvisplane++;
 }
 
+int tempcounter = 0;
 
+extern int16_t pageswapargs_textcache[8];
+extern uint8_t flatindex[NUM_FLATS];
+extern uint8_t firstunusedflat;
+extern int16_t activetexturepages[4];
 //
 // R_DrawPlanes
 // At the end of each frame.
@@ -381,6 +387,16 @@ void R_DrawPlanes (void)
 	visplanebytes_t*		plbytes = NULL;
 	int16_t currentplanebyteRef = -1; // visplaneheaders->visplanepage is always 0;
 	visplanebytes_t* base;
+
+	
+
+	int16_t oldtexargs[4];
+	int8_t effectivepagenumber = 0;
+	uint8_t usedflatindex;
+	boolean flatunloaded = false;
+	byte* far src;
+	uint8_t startpagenumber = 0;
+	int16_t currentflatpage = -1;
 
     for (i = 0; i < lastvisplane ; i++) {
 		if (i < MAXCONVENTIONALVISPLANES){
@@ -450,11 +466,61 @@ void R_DrawPlanes (void)
 			continue;
 		}
 		
+		usedflatindex = flatindex[pl->picnum];
+		if (usedflatindex == 0xFF) {
+			// load if not loaded
+			usedflatindex =  flatindex[pl->picnum] = firstunusedflat;
+			firstunusedflat++;
+			if (firstunusedflat > MAX_FLATS_LOADED) {
+				I_Error("Too many flats!");
+			}
+			flatunloaded = true;
+		}
+		//flatunloaded = true;
+		/*
+		// remap if necessary
+		if (usedflatindex > 15) {
+			// have to remap
+			startpagenumber = (usedflatindex >> 2) - 3;
+			effectivepagenumber = 3;
+
+		} else {
+			effectivepagenumber = usedflatindex >> 2;
+		}*/
+		effectivepagenumber = (usedflatindex >> 2) + FIRST_FLAT_CACHE_LOGICAL_PAGE;
+ 
+		if (currentflatpage != effectivepagenumber) {
+			currentflatpage = effectivepagenumber;
+			Z_QuickMapFlatPage(currentflatpage);
+		}
+
+		src = MK_FP(0x5C00, MULT_4096[usedflatindex & 0x03]);
+		
+		// load if necessary
+		if (flatunloaded){
+			int16_t lump = firstflat + flattranslation[pl->picnum];
+			if (lump < firstflat || lump > firstflat + NUM_FLATS) {
+				I_Error("bad flat? %i", lump);
+			}
+		 
+			W_CacheLumpNumDirect(firstflat + flattranslation[pl->picnum], src);
+		}
+		
 		// regular flat
+		ds_source = src;
+
+
+		// regular flat
+/*
 		ds_sourceRef = W_CacheLumpNumEMS(firstflat +
 			flattranslation[pl->picnum],
 			PU_STATIC);
 		ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
+		*/
+		
+		
+		// works but slow?
+		//ds_source = R_GetFlat(firstflat + flattranslation[pl->picnum]);
 		
 		planeheight = labs(pl->height - viewz.w);
 		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
@@ -509,10 +575,17 @@ void R_DrawPlanes (void)
 
 		}
 		
-		Z_ChangeTagEMS (ds_sourceRef, PU_CACHE);
     }
 
+	//Z_ChangeTagEMS(ds_sourceRef, PU_CACHE);
 
+	/*
+	for (i = 0; i <= 4; i++) {
+		 pageswapargs_textcache[2 * i] = oldtexargs[i];
+	}
+
+	Z_QuickmapRenderTexture();
+	*/
 	if (plbytes)
 		Z_SetUnlocked(visplanebytesRef[currentplanebyteRef]);
 

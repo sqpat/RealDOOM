@@ -257,7 +257,7 @@ void Z_InitUMBDOS(void) {
 
 extern mobj_pos_t* mobjposlist;
 extern mobj_pos_t* mobjposlist_render;
-
+extern byte*	   spritedefs_bytes;
 void Z_InitUMB(void) {
 
 #ifdef _M_I86
@@ -279,12 +279,8 @@ void Z_InitUMB(void) {
 	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE = UMBsize;
 	conventionalmemoryblock = MK_FP(UMBbase, 0);
 
-	spritememoryblock = MK_FP(UMBbase2, offset);
+	spritedefs_bytes = MK_FP(UMBbase2, offset);
 	offset += STATIC_CONVENTIONAL_SPRITE_SIZE;
-	sprite_allocations = MK_FP(UMBbase2, offset);
-	offset += (SPRITE_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
-	textureinfo_allocations = MK_FP(UMBbase2, offset);
-	offset += (TEXTUREINFO_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
 	mobjposlist = MK_FP(UMBbase2, offset);
 	offset += (MAX_THINKERS * sizeof(mobj_pos_t));
 

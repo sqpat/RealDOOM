@@ -117,6 +117,11 @@ uint16_t leveldataoffset_phys = 0u;
 uint16_t leveldataoffset_rend = 0 - (MAX_THINKERS * sizeof(mobj_pos_t));
 uint16_t leveldataoffset_6000_phys = 0u;
 
+byte* far	SCRATCH_ADDRESS = (byte* far)0x40000000;
+
+#define Z_GetNextPhysicsAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_PHYSICS)
+#define Z_GetNextRenderAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_RENDER)
+#define Z_SubtractRenderAddress(A) Z_Subtract0x7000Address(A, PAGE_TYPE_RENDER)
 
 byte* far Z_GetNext0x6000Address(uint16_t size) {
 
@@ -187,7 +192,6 @@ void Z_Subtract0x7000Address(uint16_t size, int8_t pagetype) {
 //
 void P_LoadVertexes(int16_t lump)
 {
-	MEMREF				dataRef;
 	mapvertex_t*			data;
 	uint16_t                 i;
 	mapvertex_t			ml;
@@ -200,10 +204,9 @@ void P_LoadVertexes(int16_t lump)
 	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), CA_TYPE_LEVELDATA);
 	vertexes = Z_LoadBytesFromConventional(vertexesRef);
 	// Load data into cache.
-	W_CacheLumpNumCheck(lump, 0);
-	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
 	
-	data = (mapvertex_t*)Z_LoadBytesFromEMS(dataRef);
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
+	data = (mapvertex_t*)SCRATCH_ADDRESS;
 
 	// Copy and convert vertex coordinates,
 	// internal representation as fixed.
@@ -215,8 +218,7 @@ void P_LoadVertexes(int16_t lump)
 	}
 
 	// Free buffer memory.
-	Z_FreeEMS(dataRef);
-}
+ }
 
 
 
@@ -225,8 +227,7 @@ void P_LoadVertexes(int16_t lump)
 //
 void P_LoadSegs(int16_t lump)
 {
-	MEMREF				dataRef;
-	mapseg_t *          data;
+ 	mapseg_t *          data;
 	uint16_t                 i;
 	mapseg_t*           ml;
 	seg_t*              li;
@@ -245,7 +246,7 @@ void P_LoadSegs(int16_t lump)
 	int16_t mllinedef;
 	MEMREF segsRef;
 	int16_t* tempsecnums;
-	Z_QuickmapRender();
+	Z_QuickmapRender_NoTex();
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), CA_TYPE_LEVELDATA);
@@ -259,9 +260,8 @@ void P_LoadSegs(int16_t lump)
 
 	memset(segs, 0xff, numsegs * sizeof(seg_t));
 	
-	W_CacheLumpNumCheck(lump, 1);
-	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	data = (mapseg_t *)Z_LoadBytesFromEMS(dataRef);
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
+	data = (mapseg_t*)SCRATCH_ADDRESS;
 
 	for (i = 0; i < numsegs; i++) {
 		ml = &data[i];
@@ -324,7 +324,6 @@ void P_LoadSegs(int16_t lump)
 	Z_SubtractRenderAddress(numsegs * 2 * sizeof(int16_t));
 	Z_QuickmapPhysics();
 
- 	Z_FreeEMS(dataRef);
 }
 
 
@@ -338,18 +337,14 @@ void P_LoadSubsectors(int16_t lump)
 	uint16_t                 i;
 	mapsubsector_t*     ms;
 	subsector_t*        ss;
-	MEMREF			dataRef;
 	MEMREF		subsectorsRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
 	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), CA_TYPE_LEVELDATA);
 	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
-	W_CacheLumpNumCheck(lump, 2);
 
-	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	data = (mapsubsector_t *) Z_LoadBytesFromEMS(dataRef);
-
-
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
+	data = (mapsubsector_t*)SCRATCH_ADDRESS;
 
 	for (i = 0; i < numsubsectors; i++)
 	{
@@ -360,7 +355,6 @@ void P_LoadSubsectors(int16_t lump)
 
 	}
 
-	Z_FreeEMS(dataRef);
 }
 
 
@@ -392,7 +386,6 @@ void P_LoadSectors(int16_t lump)
 	mapsector_t        ms;
 	sector_t*           ss;
 	sector_physics_t*   sp;
-	MEMREF				dataRef;
 	MEMREF				sectorsRef;
 	// most tags are under 100, a couple are like 666 or 667 or 999 or other such special numbers.
 	// we will special case those and fit it in 8 bits so allocations are smaller
@@ -407,14 +400,12 @@ void P_LoadSectors(int16_t lump)
 	memset(sectors, 0, numsectors * sizeof(sector_t));
 	memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
 
-	W_CacheLumpNumCheck(lump, 3);
-	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
+	data = (mapsector_t*)SCRATCH_ADDRESS;
 
 	ss = sectors;
 	sp = sectors_physics;
 	for (i = 0; i < numsectors; i++, ss++, sp++) {
-		data = (mapsector_t *)Z_LoadBytesFromEMS(dataRef);
 		ms = data[i];
 		convertedtag = ms.tag;
 		if (convertedtag == 666) {
@@ -444,7 +435,6 @@ void P_LoadSectors(int16_t lump)
 
 	}
 
-	Z_FreeEMS(dataRef);
 }
 
 
@@ -460,7 +450,6 @@ void P_LoadNodes(int16_t lump)
 	node_t*     no;
 	node_render_t* no_render;
 
-	MEMREF		dataRef;
 	mapnode_t	currentdata;
 	MEMREF	nodesRef;
 
@@ -470,10 +459,9 @@ void P_LoadNodes(int16_t lump)
 	nodes_render = (node_render_t* far) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
 
 
-	W_CacheLumpNumCheck(lump, 4);
-	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	Z_QuickmapRender();
-	data = (mapnode_t *)Z_LoadBytesFromEMS(dataRef);
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
+	data = (mapnode_t*)SCRATCH_ADDRESS;
+	Z_QuickmapRender_NoTex();
 
 
 	for (i = 0; i < numnodes; i++) {
@@ -494,7 +482,6 @@ void P_LoadNodes(int16_t lump)
  	}
 	Z_QuickmapPhysics();
 
-	Z_FreeEMS(dataRef);
 }
 
 
@@ -1003,12 +990,11 @@ void P_LoadThings(int16_t lump)
 	mapthing_t         mt;
 	uint16_t                 numthings;
 	boolean             spawn;
-	MEMREF				dataRef;
 	
 	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
-	W_CacheLumpNumCheck(lump, 5);
-	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	data = (mapthing_t *)Z_LoadBytesFromEMS(dataRef);
+ 
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
+	data = (mapthing_t*)SCRATCH_ADDRESS;
 
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
 	for (i = 0; i < numthings; i++) {
@@ -1043,7 +1029,6 @@ void P_LoadThings(int16_t lump)
 
 	}
 
-	Z_FreeEMS(dataRef);
 }
 
 
@@ -1066,7 +1051,6 @@ void P_LoadLineDefs(int16_t lump)
 	int16_t v1y;
 	int16_t v2x;
 	int16_t v2y;
-	MEMREF dataRef;
 	int16_t mldflags;
 	uint8_t mldspecial;
 	uint8_t mldtag;
@@ -1090,9 +1074,9 @@ void P_LoadLineDefs(int16_t lump)
 	memset(lines, 0, numlines * sizeof(line_t));
 	memset(lines_physics, 0, numlines * sizeof(line_physics_t));
 	memset(seenlines, 0, numlines / 8 + 1);
-	W_CacheLumpNumCheck(lump, 6);
-	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	data = (maplinedef_t *)Z_LoadBytesFromEMS(dataRef);
+
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
+	data = (maplinedef_t*)SCRATCH_ADDRESS;
 
 	Z_QuickmapRender7000to6000();
 	tempsides_render = MK_FP(0x6000u, (uint16_t)((uint32_t)sides_render & 0xFFFFu));
@@ -1179,7 +1163,6 @@ void P_LoadLineDefs(int16_t lump)
 	 
 
 	Z_QuickmapPhysics();
-	Z_FreeEMS(dataRef);
 }
 
 uint8_t     R_TextureNumForNameB(int8_t* name);
@@ -1198,7 +1181,6 @@ void P_LoadSideDefs(int16_t lump)
 	uint8_t toptex;
 	uint8_t bottex;
 	uint8_t midtex;
-	MEMREF dataRef;
 	int8_t texnametop[8];
 	int8_t texnamemid[8];
 	int8_t texnamebot[8];
@@ -1207,7 +1189,8 @@ void P_LoadSideDefs(int16_t lump)
 	int16_t msdsecnum;
 	MEMREF sidesRef;
 
-	Z_QuickmapRender();
+	Z_QuickmapRender_NoTex();
+	//Z_QuickmapTextureInfoPage();
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), CA_TYPE_LEVELDATA);
@@ -1215,11 +1198,8 @@ void P_LoadSideDefs(int16_t lump)
 	sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 
 
-	W_CacheLumpNumCheck(lump, 7);
-
-	dataRef = W_CacheLumpNumEMS(lump, PU_STATIC);
-	data = (mapsidedef_t *)Z_LoadBytesFromEMS(dataRef);
-
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
+	data = (mapsidedef_t*)SCRATCH_ADDRESS;
 
 	for (i = 0; i < numsides; i++) {
 		msd = &data[i];
@@ -1254,7 +1234,6 @@ void P_LoadSideDefs(int16_t lump)
 	}
 
 
-	Z_FreeEMS(dataRef);
 	Z_QuickmapPhysics();
 
 }
@@ -1271,7 +1250,7 @@ void P_LoadBlockMap(int16_t lump)
 
 
 
-	W_CacheLumpNumCheck(lump, 8);
+	W_CacheLumpNumCheck(lump);
 
 	blockmaplump = (int16_t* far)Z_GetNextPhysicsAddress(W_LumpLength(lump));
 	W_CacheLumpNumDirect(lump, (byte*)blockmaplump);
@@ -1325,7 +1304,7 @@ void P_GroupLines(void)
 	fixed_t_union		tempv2;
 	MEMREF linebufferRef;
 
-	Z_QuickmapRender();
+	Z_QuickmapRender_NoTex();
 
 	// look up sector number for each subsector
 	for (i = 0; i < numsubsectors; i++) {
@@ -1467,10 +1446,10 @@ P_SetupLevel
 	S_Start();
 	Z_FreeTagsEMS();
 	Z_FreeConventionalAllocations();
-	
+
 	// TODO reset 32 bit counters to start values here..
 	validcount = 1;
-	
+
 	TEXT_MODE_DEBUG_PRINT("\n P_InitThinkers");
 	P_InitThinkers();
 
@@ -1497,6 +1476,7 @@ P_SetupLevel
 
 	leveltime.w = 0;
 
+	Z_QuickmapScratch_4000();
 	
 	// note: most of this ordering is important 
 
@@ -1522,7 +1502,7 @@ P_SetupLevel
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 
 
-	W_CacheLumpNumCheck(lumpnum + ML_REJECT, 9);
+	W_CacheLumpNumCheck(lumpnum + ML_REJECT);
 	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
 
 	P_GroupLines(); // 49 tics (362 ics total  in 16 bit, 45 tics in 32 bit)

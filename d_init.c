@@ -607,7 +607,7 @@ void D_DoomMain2(void)
 	int16_t             p;
 	int8_t                    file[256];
 	union REGS regs;
-	int8_t*          textbuffer;
+	int8_t          textbuffer[256];
 
 	// Removed
 	//FindResponseFile ();
@@ -789,13 +789,9 @@ void D_DoomMain2(void)
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");
 	W_InitMultipleFiles(wadfiles);
 
-
 	// init subsystems
 	DEBUG_PRINT("\nD_InitStrings: loading text.");
 	D_InitStrings();
-
-
-
 
 	// Check for -file in shareware
 	#ifdef DEBUG_PRINTING

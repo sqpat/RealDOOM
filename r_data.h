@@ -34,6 +34,7 @@ R_GetColumn
 ( int16_t		tex,
   int16_t		col );
 
+byte* getspritetexture(int16_t spritelump);
 
 #define BAD_TEXTURE 255
 
@@ -42,10 +43,13 @@ void R_InitData (void);
 void R_PrecacheLevel (void);
 
  
+byte* R_GetFlat
+(int16_t flatlump);
 
+#define TEXTURE_TYPE_LUMP 0
+#define TEXTURE_TYPE_COMPOSITE 1
 
-
-void R_EraseCompositeCache(uint8_t texnum);
+byte* gettexture(int16_t lump_or_tex_index, int16_t indextype);
 
 
 #endif

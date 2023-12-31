@@ -60,13 +60,13 @@ extern PAGEREF currentListHead; // main rover
 extern allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 
  
-
+uint16_t EMS_PAGE;
 // EMS STUFF
 
 
 
 #ifdef _M_I86
-byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
+byte* far I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 {
 
 	// 4 mb
@@ -165,7 +165,8 @@ byte* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 	*size = numPagesToAllocate * PAGE_FRAME_SIZE;
 
 	// EMS Handle
-	return MK_FP(pageframebase, 0);
+	EMS_PAGE = pageframebase;
+	return  MK_FP(pageframebase, 0);
 
 
 
@@ -226,15 +227,23 @@ byte* I_ZoneBaseEMS(int32_t *size) {
 #endif
 
 
-
+extern byte* texturecolumnlumps_bytes;
+extern byte* texturecolumnofs_bytes;
+extern byte* texturedefs_bytes;
+extern byte* spritedefs_bytes;
 
 extern int16_t pagenum9000;
 extern int16_t pageswapargs_phys[40];
-extern int16_t pageswapargs_rend[40];
+extern int16_t pageswapargs_rend[48];
 extern int16_t pageswapargs_stat[12];
 extern int16_t pageswapargs_demo[8];
-
+extern int16_t pageswapargs_textcache[8];
+extern int16_t pageswapargs_textinfo[8];
+extern int16_t pageswapargs_scratch_4000[8];
+extern int16_t pageswapargs_scratch_5000[8];
+extern int16_t pageswapargs_scratch_stack[16];
 extern int16_t pageswapargs_rend_temp_7000_to_6000[8];
+extern int16_t pageswapargs_flat[8];
 
 extern int16_t pageswapargseg_phys;
 extern int16_t pageswapargoff_phys;
@@ -244,6 +253,18 @@ extern int16_t pageswapargseg_stat;
 extern int16_t pageswapargoff_stat;
 extern int16_t pageswapargseg_demo;
 extern int16_t pageswapargoff_demo;
+extern int16_t pageswapargseg_textcache;
+extern int16_t pageswapargoff_textcache;
+extern int16_t pageswapargseg_textinfo;
+extern int16_t pageswapargoff_textinfo;
+extern int16_t pageswapargseg_scratch_4000;
+extern int16_t pageswapargoff_scratch_4000;
+extern int16_t pageswapargseg_scratch_5000;
+extern int16_t pageswapargoff_scratch_5000;
+extern int16_t pageswapargseg_scratch_stack;
+extern int16_t pageswapargoff_scratch_stack;
+extern int16_t pageswapargseg_flat;
+extern int16_t pageswapargoff_flat;
 
 extern byte* stringdata;
 extern byte* demobuffer;
@@ -377,8 +398,23 @@ found:
 	pageswapargoff_stat = (uint16_t)(((uint32_t)pageswapargs_stat) & 0xffff);
 	pageswapargseg_demo = (uint16_t)((uint32_t)pageswapargs_demo >> 16);
 	pageswapargoff_demo = (uint16_t)(((uint32_t)pageswapargs_demo) & 0xffff);
+	pageswapargseg_textcache = (uint16_t)((uint32_t)pageswapargs_textcache >> 16);
+	pageswapargoff_textcache = (uint16_t)(((uint32_t)pageswapargs_textcache) & 0xffff);
+	pageswapargseg_textinfo = (uint16_t)((uint32_t)pageswapargs_textinfo >> 16);
+	pageswapargoff_textinfo = (uint16_t)(((uint32_t)pageswapargs_textinfo) & 0xffff);
+	pageswapargseg_flat = (uint16_t)((uint32_t)pageswapargs_flat >> 16);
+	pageswapargoff_flat = (uint16_t)(((uint32_t)pageswapargs_flat) & 0xffff);
 
-	//					PHYSICS			RENDER					ST/HUD			DEMO		FWIPE
+	pageswapargseg_scratch_stack = (uint16_t)((uint32_t)pageswapargs_scratch_stack >> 16);
+	pageswapargoff_scratch_stack = (uint16_t)(((uint32_t)pageswapargs_scratch_stack) & 0xffff);
+	pageswapargseg_scratch_5000 = (uint16_t)((uint32_t)pageswapargs_scratch_5000 >> 16);
+	pageswapargoff_scratch_5000 = (uint16_t)(((uint32_t)pageswapargs_scratch_5000) & 0xffff);
+	pageswapargseg_scratch_4000 = (uint16_t)((uint32_t)pageswapargs_scratch_4000 >> 16);
+	pageswapargoff_scratch_4000 = (uint16_t)(((uint32_t)pageswapargs_scratch_4000) & 0xffff);
+
+	
+
+	//					PHYSICS			RENDER					ST/HUD			DEMO		COMPOSITE   FWIPE
 	// BLOCK
 	// -------------------------------------------------------------------------------------------------------
 	//            						visplane stuff			screen4 0x9c00
@@ -390,11 +426,11 @@ found:
 	// -------------------------------------------------------------------------------------------------------
 	// 0x7000 block		physics levdata render levdata			st graphics
 	// -------------------------------------------------------------------------------------------------------
-	//				more physics levdata zlight 
-	// 					nightnmarespawns textureinfo			
-	//	0x6000 block	strings									strings
+	//				more physics levdata zlight											
+	// 					nightnmarespawns 			
+	//	0x6000 block	strings			flat cache				strings						textureinfo
 	// -------------------------------------------------------------------------------------------------------
-	//                  states          states
+	//                  states          states 
 	// 0x5000 block		trig tables   	trig tables								demobuffer	
 	// -------------------------------------------------------------------------------------------------------
 	// 0x4000 block						textures
@@ -411,71 +447,71 @@ found:
  
 
 	// overwrite some fields
+	pageswapargs_rend[32] = FIRST_TRIG_TABLE_LOGICAL_PAGE;    // 0x5000 trig stuff shared with physics (finesine/cos)
+	pageswapargs_rend[34] = FIRST_TRIG_TABLE_LOGICAL_PAGE + 1;// 0x5400 trig stuff shared with physics (finesine/cos)
+	pageswapargs_rend[36] = FIRST_TRIG_TABLE_LOGICAL_PAGE + 2;// 0x5800 trig stuff shared with physics (finesine/cos, finetan)
+	pageswapargs_rend[38] = FIRST_TRIG_TABLE_LOGICAL_PAGE + 3;// 0x5c00 trig stuff shared with physics (tantoangle) 
 
-	pageswapargs_rend[32] = 16;// 0x5000 trig stuff shared with physics (finesine/cos)
-	pageswapargs_rend[34] = 17;// 0x5400 trig stuff shared with physics (finesine/cos)
-	pageswapargs_rend[36] = 18;// 0x5800 trig stuff shared with physics (finesine/cos, finetan)
-	pageswapargs_rend[38] = 19;// 0x5c00 trig stuff shared with physics (tantoangle) 
-	
-							   
+	// overwrite some more fields (todo move to the for loop below)
+	//pageswapargs_rend[24] = TEXTURE_INFO_LOGICAL_PAGE;    // 0x6000 texture info stuff
+	//pageswapargs_rend[26] = TEXTURE_INFO_LOGICAL_PAGE + 1;// 0x6400 texture info stuff
+	//pageswapargs_rend[28] = TEXTURE_INFO_LOGICAL_PAGE + 2;// 0x6800 texture info stuff
+	//pageswapargs_rend[30] = TEXTURE_INFO_LOGICAL_PAGE + 3;// 0x6c00 texture info stuff also zlight table
+
+
+
+	for (i = 20; i < 24; i++) {
+		pageswapargs_rend[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + (i - 20);
+		pageswapargs_rend[i * 2 + 1] = PAGE_4000 + (i - 20);
+	}
 
 	for (i = 1; i < 5; i++) {
-		pageswapargs_stat[i * 2] = 36 + i;
-		pageswapargs_stat[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i+7];
+		pageswapargs_stat[i * 2] = FIRST_STATUS_LOGICAL_PAGE + (i-1);
+		pageswapargs_stat[i * 2 + 1] = PAGE_7000 + (i-1);
 	}
 
-	pageswapargs_stat[0] = 36;
+	pageswapargs_stat[0] = SCREEN4_LOGICAL_PAGE;
 	pageswapargs_stat[1] = PAGE_9C00;
-	pageswapargs_stat[10] = 12;
+	pageswapargs_stat[10] = STRINGS_LOGICAL_PAGE;
 	pageswapargs_stat[11] = PAGE_6000; // strings;
+	 
 
-/*
-	pageswapargs_stat[2] = 37;
-	pageswapargs_stat[3] = PAGE_7000;
-	pageswapargs_stat[4] = 38;
-	pageswapargs_stat[5] = PAGE_7400;
-	pageswapargs_stat[6] = 39;
-	pageswapargs_stat[7] = PAGE_7800;
-	pageswapargs_stat[8] = 40;
-	pageswapargs_stat[9] = PAGE_7C00;
-	*/
-
-	/*
-	   0 4 8 12 16
-	   9 8 7 6  5
-	*/
+ 
 
 	for (i = 0; i < 4; i++) {
-		pageswapargs_demo[i * 2] = 41 + i;
-		pageswapargs_demo[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i + 16];
+		pageswapargs_demo[i * 2] = FIRST_DEMO_LOGICAL_PAGE + i;
+		pageswapargs_demo[i * 2 + 1] = PAGE_5000 + i;
+
+		pageswapargs_textcache[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		pageswapargs_textcache[i * 2 + 1] = PAGE_4000 + i;
+		
+		pageswapargs_textinfo[i * 2] = TEXTURE_INFO_LOGICAL_PAGE + i;
+		pageswapargs_textinfo[i * 2 + 1] = PAGE_6000 + i;
+
+		pageswapargs_scratch_5000[i * 2] = SCRATCH_LOGICAL_PAGE + i;
+		pageswapargs_scratch_5000[i * 2 + 1] = PAGE_5000 + i;
+
+		pageswapargs_scratch_4000[i * 2] = SCRATCH_LOGICAL_PAGE + i;
+		pageswapargs_scratch_4000[i * 2 + 1] = PAGE_4000 + i;
+
+		pageswapargs_scratch_stack[i * 2] = SCRATCH_LOGICAL_PAGE + i;
+		pageswapargs_scratch_stack[i * 2 + 1] = PAGE_5000 + i; // 0x5000 area
+		
+		pageswapargs_scratch_stack[8 + i * 2] = FIRST_TRIG_TABLE_LOGICAL_PAGE + i;		// stack on scratch frame will always be trig pages etc..
+		pageswapargs_scratch_stack[8 + i * 2 + 1] = PAGE_5000 + i; // 0x5000 area
+
+		pageswapargs_flat[i * 2] = FIRST_FLAT_CACHE_LOGICAL_PAGE + i;
+		pageswapargs_flat[i * 2 + 1] = PAGE_5C00 + i;
+
 	}
-	//todo maybe move these into 0x4000 when free?
-	/*
-	pageswapargs_demo[0] = 41;
-	pageswapargs_demo[1] = PAGE_5000;
-	pageswapargs_demo[2] = 42;
-	pageswapargs_demo[3] = PAGE_5400;
-	pageswapargs_demo[4] = 43;
-	pageswapargs_demo[5] = PAGE_5800;
-	pageswapargs_demo[6] = 44;
-	pageswapargs_demo[7] = PAGE_5C00;
-	*/
+
 	DEMO_SEGMENT = 0x5000u;
 
 	for (i = 0; i < 4; i++) {
 		pageswapargs_rend_temp_7000_to_6000[i * 2] = 28 + i;
-		pageswapargs_rend_temp_7000_to_6000[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i + 12];
+		pageswapargs_rend_temp_7000_to_6000[i * 2 + 1] = PAGE_6000 + i;
+		//pageswapargs_rend_temp_7000_to_6000[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i + 12];
 	}
-/*
-	pageswapargs_rend_temp_7000_to_6000[0] = 28;
-	pageswapargs_rend_temp_7000_to_6000[1] = PAGE_6000;
-	pageswapargs_rend_temp_7000_to_6000[2] = 29;
-	pageswapargs_rend_temp_7000_to_6000[3] = PAGE_6400;
-	pageswapargs_rend_temp_7000_to_6000[4] = 30;
-	pageswapargs_rend_temp_7000_to_6000[5] = PAGE_6800;
-	pageswapargs_rend_temp_7000_to_6000[6] = 31;
-	pageswapargs_rend_temp_7000_to_6000[7] = PAGE_6C00;
-	*/
 
 	// we're an OS now! let's directly allocate memory !
 
@@ -701,8 +737,12 @@ found:
 	offset_physics += sizeof(mapthing_t) * MAX_THINKERS;
 
 
-	textureinfomemoryblock = MK_FP(segment, offset_render);
-	offset_render += (STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE);
+	texturecolumnlumps_bytes = MK_FP(segment, 0);
+	texturecolumnofs_bytes   = MK_FP(segment, 21552u);
+	texturedefs_bytes        = MK_FP(segment, 21552u + 21552u);
+	offset_render += (21552u + 21552u + 3767u);
+	
+
 
 	zlight = MK_FP(segment, offset_render);
 	offset_render += sizeof(lighttable_t* far) * (LIGHTLEVELS * MAXLIGHTZ);
@@ -741,7 +781,7 @@ found:
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	printf("\n   0x4000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x4000:      %05u   XXXXX   %05u   00000", offset_physics, offset_render, 0 - offset_status);
 
 
 	Z_QuickmapPhysics(); // map default page map

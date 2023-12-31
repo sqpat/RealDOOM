@@ -93,31 +93,16 @@
 #define SET_BACKREF(x, y) (x.backref_and_user = (y & INVERSE_USER_MASK) + (x.backref_and_user & USER_MASK))
 #define SET_BACKREF_ZERO(x) (x.backref_and_user &= USER_MASK)
 
-// actually only using 29 so far but let's plan ahead for texture mem...
-#define NUM_EMS4_SWAP_PAGES 64L
- 
-
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
 uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE = 0;
 byte* conventionalmemoryblock;
-//byte conventionalmemoryblock[STATIC_CONVENTIONAL_BLOCK_SIZE];
-byte* spritememoryblock;
-//byte textureinfomemoryblock[STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE];
-byte* textureinfomemoryblock;
 
 uint16_t remainingconventional = 0;
-//uint16_t remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE;
-uint16_t remainingspriteconventional = STATIC_CONVENTIONAL_SPRITE_SIZE;
-uint16_t remainingtextureinfoconventional = STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE;
 
 uint16_t conventional1head = 	  0;
-uint16_t spritehead = 	  0;
-uint16_t textureinfohead = 	  0;
 
 uint16_t conventional1headindex = 	  0;
-uint16_t spriteheadindex = 	  0;
-uint16_t textureinfoheadindex = 	  0;
 
 
 PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
@@ -126,14 +111,6 @@ PAGEREF currentListHead = ALLOCATION_LIST_HEAD; // main rover
 
 allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 allocation_static_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
-
-/*
-allocation_static_conventional_t textureinfo_allocations[TEXTUREINFO_ALLOCATION_LIST_SIZE];
-allocation_static_conventional_t sprite_allocations[SPRITE_ALLOCATION_LIST_SIZE];
-*/
-
-allocation_static_conventional_t* textureinfo_allocations;
-allocation_static_conventional_t* sprite_allocations;
 
 // todo turn these into dynamic allocations
 
@@ -228,8 +205,9 @@ void Z_FreeEMS(PAGEREF block) {
 			W_EraseLumpCache(other - BACKREF_LUMP_OFFSET);
 		}
 		else {
-			// in compositeTextures
-			R_EraseCompositeCache(other - 1); // 0 means no backref..
+			// no longer doing this with texture cache. just erase at end of level
+
+			//R_EraseCompositeCache(other - 1); // 0 means no backref..
 		}
 	}
 
@@ -1024,13 +1002,7 @@ void Z_SetUnlocked(MEMREF ref) {
 #endif
 }
 
-void* Z_LoadSpriteFromConventional(MEMREF ref) {
-		return spritememoryblock + sprite_allocations[ref].offset;
-}
-
-void* Z_LoadTextureInfoFromConventional(MEMREF ref) {
-		return textureinfomemoryblock + textureinfo_allocations[ref].offset;
-}
+ 
 void* Z_LoadBytesFromConventional(MEMREF ref) {
 		return conventionalmemoryblock + conventional_allocations1[ref].offset;
 }
@@ -1038,9 +1010,33 @@ void* Z_LoadBytesFromConventional(MEMREF ref) {
 
 extern uint16_t leveldataoffset_phys;
 extern uint16_t leveldataoffset_rend;
+extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
+extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
+extern uint8_t compositetextureoffset[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+extern uint8_t compositetexturepage[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high byte's low 6 bits are offset (256 byte aligned) within 16 kb page. Top 2 bits of high byte are (page count-1). top 8 bits are page number. 0xFFFF means unallocated.
+//extern uint8_t compositetexturepagecount[NUM_COMPOSITE_TEXTURES]; //  defaults 00. number of pages of the allocation
+
+extern uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES]; // defaults 00
+extern uint8_t patchoffset[NUM_PATCH_LUMPS]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+extern uint8_t patchpage[NUM_PATCH_LUMPS]; //  defaults FF. high byte's low 6 bits are offset (256 byte aligned) within 16 kb page. Top 2 bits of high byte are (page count-1). top 8 bits are page number. 0xFFFF means unallocated.
+//extern uint8_t patchcount[NUM_PATCH_LUMPS]; //  defaults 00. number of pages of the allocation
+
+extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
+extern uint8_t spritepage[NUM_SPRITE_LUMPS];
+extern uint8_t spriteoffset[NUM_SPRITE_LUMPS];
+
+extern uint8_t flatindex[NUM_FLATS];
+extern uint8_t firstunusedflat; // they are always 4k sized, can figure out page and offset from that. 
+extern int32_t totalpatchsize;
+
+
+extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
+extern int16_t textureLRU[4];
+extern int16_t pageswapargs_textcache[8];
 
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
 void Z_FreeConventionalAllocations() {
+	int16_t i;
 
 	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
 
@@ -1063,7 +1059,35 @@ void Z_FreeConventionalAllocations() {
 	conventional1headindex = 0;
 	
 	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
+
+
+	//reset texturee cache
+	memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (NUM_COMPOSITE_TEXTURES));
+	memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (NUM_COMPOSITE_TEXTURES));
+	memset(usedcompositetexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
 	
+	//	memset(compositetexturepagecount, 0xFF, sizeof(uint8_t) * (NUM_COMPOSITE_TEXTURES));
+	//  memset(patchpagecount, 0x0, sizeof(uint8_t) * (NUM_PATCH_LUMPS));
+
+	memset(patchpage, 0xFF, sizeof(uint8_t) * (NUM_PATCH_LUMPS));
+	memset(patchoffset, 0xFF, sizeof(uint8_t) * (NUM_PATCH_LUMPS));
+	memset(usedpatchpagemem, 00, sizeof(uint8_t) * NUM_PATCH_CACHE_PAGES);
+
+	memset(spritepage, 0xFF, sizeof(uint8_t) * (NUM_SPRITE_LUMPS));
+	memset(spriteoffset, 0xFF, sizeof(uint8_t) * (NUM_SPRITE_LUMPS));
+	memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
+
+	memset(flatindex, 0xFF, sizeof(uint8_t) * NUM_FLATS);
+	firstunusedflat = 0;
+	
+	totalpatchsize = 0;
+
+	for (i = 0; i < 4; i++) {
+		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		textureLRU[i] = i;
+		pageswapargs_textcache[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+	}
+
 }
 
 
@@ -1092,25 +1116,8 @@ MEMREF Z_MallocConventional(
 		loopamount = CONVENTIONAL_ALLOCATION_LIST_SIZE;
 	
 	
-	} else if (type == CA_TYPE_SPRITE){
-		if (size > remainingspriteconventional){
-			I_Error("out of sprite space %u %u", size, remainingconventional);
-
-		}
-		allocations = sprite_allocations;
-		remainingspriteconventional -= size;
-		loopamount = SPRITE_ALLOCATION_LIST_SIZE;		
-		blockhead = &spritehead;
-		ref = &spriteheadindex;
-	} else if (type == CA_TYPE_TEXTURE_INFO){
-		if (size > remainingtextureinfoconventional){
-			I_Error("out of texture space %u %u", size, remainingconventional);
-		}
-		allocations = textureinfo_allocations;
-		remainingtextureinfoconventional -= size;
-		loopamount = TEXTUREINFO_ALLOCATION_LIST_SIZE;		
-		blockhead = &textureinfohead;
-		ref = &textureinfoheadindex;
+	 
+	 
 	}
 	refcopy = *ref;
 	*ref = *ref +1;
@@ -1495,10 +1502,16 @@ void Z_InitEMS(void)
 // page for 0x9000 block where we will store thinkers in physics code, then visplanes etc in render code
 int16_t pagenum9000; 
 int16_t pageswapargs_phys[40];
-int16_t pageswapargs_rend[40];
+int16_t pageswapargs_rend[48];
 int16_t pageswapargs_stat[12];
 int16_t pageswapargs_demo[8];
+int16_t pageswapargs_textcache[8];
+int16_t pageswapargs_textinfo[8];
+int16_t pageswapargs_scratch_4000[8]; // we use 0x5000 as a  'scratch' page frame for certain things
+int16_t pageswapargs_scratch_5000[8]; // we use 0x5000 as a  'scratch' page frame for certain things
+int16_t pageswapargs_scratch_stack[16]; // we use 0x5000 as a  'scratch' page frame for certain things
 int16_t pageswapargs_rend_temp_7000_to_6000[8];
+int16_t pageswapargs_flat[8];
 
 int16_t pageswapargseg_phys;
 int16_t pageswapargoff_phys;
@@ -1508,8 +1521,21 @@ int16_t pageswapargseg_stat;
 int16_t pageswapargoff_stat;
 int16_t pageswapargseg_demo;
 int16_t pageswapargoff_demo;
+int16_t pageswapargseg_textcache;
+int16_t pageswapargoff_textcache;
+int16_t pageswapargseg_textinfo;
+int16_t pageswapargoff_textinfo;
+int16_t pageswapargseg_scratch_4000;
+int16_t pageswapargoff_scratch_4000;
+int16_t pageswapargseg_scratch_5000;
+int16_t pageswapargoff_scratch_5000;
+int16_t pageswapargseg_scratch_stack;
+int16_t pageswapargoff_scratch_stack;
+int16_t pageswapargseg_flat;
+int16_t pageswapargoff_flat;
 int32_t taskswitchcount = 0;
 int16_t currenttask = -1;
+int16_t oldtask = -1;
 
 void Z_QuickmapPhysics() {
 	//int16_t errorreg;
@@ -1597,6 +1623,33 @@ void Z_QuickmapRender() {
 	intx86(EMS_INT, &regs, &regs);
  
 	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend + 64;
+	intx86(EMS_INT, &regs, &regs);
+	taskswitchcount++;
+	currenttask = TASK_RENDER;
+
+}
+
+// leave off 0x4000 region. Usually used in p_setup...
+void Z_QuickmapRender_NoTex() {
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08;  // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend;
+	intx86(EMS_INT, &regs, &regs);
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08;  // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend + 32;
+	intx86(EMS_INT, &regs, &regs);
+
+	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg_rend;
@@ -1605,6 +1658,35 @@ void Z_QuickmapRender() {
 	taskswitchcount++;
 	currenttask = TASK_RENDER;
 
+}
+
+
+
+// sometimes needed when rendering sprites..
+void Z_QuickmapRenderTexture() {
+//void Z_QuickmapRenderTexture(uint8_t offset, uint8_t count) {
+
+	//pageswapargs_textcache[2];
+
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_textcache;
+	regs.w.si = pageswapargoff_textcache;
+	intx86(EMS_INT, &regs, &regs);
+	/*
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = count; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_textcache;
+	regs.w.si = pageswapargoff_textcache + (offset << 2);
+	intx86(EMS_INT, &regs, &regs);
+	*/
+
+	taskswitchcount++;
+	currenttask = TASK_RENDER_TEXT; // not sure about this
 }
 
 
@@ -1622,6 +1704,110 @@ void Z_QuickmapStatus() {
 	currenttask = TASK_STATUS;
 }
 
+void Z_QuickmapScratch_5000() {
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_scratch_5000;
+	regs.w.si = pageswapargoff_scratch_5000;
+	intx86(EMS_INT, &regs, &regs);
+	taskswitchcount++;
+}
+void Z_QuickmapScratch_4000() {
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_scratch_4000;
+	regs.w.si = pageswapargoff_scratch_4000;
+	intx86(EMS_INT, &regs, &regs);
+	taskswitchcount++;
+}
+
+int8_t scratchstacklevel = 0;
+
+void Z_PushScratchFrame() {
+
+	scratchstacklevel++;
+	if (scratchstacklevel == 1){
+		regs.w.ax = 0x5000;
+		regs.w.cx = 0x04; // page count
+		regs.w.dx = emshandle; // handle
+		segregs.ds = pageswapargseg_scratch_stack;
+		regs.w.si = pageswapargoff_scratch_stack;
+		intx86(EMS_INT, &regs, &regs);
+		taskswitchcount++;
+		oldtask = currenttask;
+		currenttask = TASK_SCRATCH_STACK;
+	}
+	else {
+		I_Error("double stack");
+	}
+}
+ 
+
+void Z_PopScratchFrame() {
+
+	scratchstacklevel--;
+	if (scratchstacklevel == 0) {
+		regs.w.ax = 0x5000;
+		regs.w.cx = 0x04; // page count
+		regs.w.dx = emshandle; // handle
+		segregs.ds = pageswapargseg_scratch_stack;
+		regs.w.si = pageswapargoff_scratch_stack + 16;
+		intx86(EMS_INT, &regs, &regs);
+
+		taskswitchcount++;
+		currenttask = oldtask;
+	}
+	else {
+		I_Error("didnt clear - double stack");
+	}
+}
+
+void Z_QuickMapFlatPage(int16_t page) {
+
+	pageswapargs_flat[0] = page;
+
+	// only use 3 pages? or what? dont want to clobber zlight..
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x01; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_flat;
+	regs.w.si = pageswapargoff_flat;
+	intx86(EMS_INT, &regs, &regs);
+	taskswitchcount++;
+}
+
+
+void Z_QuickMapTextureInfoPage() {
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_textinfo;
+	regs.w.si = pageswapargoff_textinfo;
+	intx86(EMS_INT, &regs, &regs);
+	taskswitchcount++;
+}
+
+void Z_RemapScratchFrame(uint8_t startpage) {
+	pageswapargs_scratch_5000[0] = startpage;
+	pageswapargs_scratch_5000[2] = startpage+1;
+	pageswapargs_scratch_5000[4] = startpage+2;
+	pageswapargs_scratch_5000[6] = startpage+3;
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_scratch_5000;
+	regs.w.si = pageswapargoff_scratch_5000;
+	intx86(EMS_INT, &regs, &regs);
+	taskswitchcount++;
+}
+
 void Z_QuickmapByTaskNum(uint8_t tasknum) {
 	switch (tasknum) {
 		case TASK_PHYSICS:
@@ -1633,6 +1819,13 @@ void Z_QuickmapByTaskNum(uint8_t tasknum) {
 		case TASK_STATUS:
 			Z_QuickmapStatus();
 			break;
+		case TASK_RENDER_TEXT:
+			Z_QuickmapRender();
+			Z_QuickmapRenderTexture(); // should be okay this way
+			break;
+
+			
+
 /*
 		case Z_QuickmapRender7000to6000:
 			TASK_RENDER7000TO6000(); // technically probably buggy but probably unused

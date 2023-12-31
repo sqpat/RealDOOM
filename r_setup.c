@@ -38,6 +38,7 @@
 #include "tables.h"
 #include "w_wad.h"
 #include <alloca.h>
+#include <dos.h>
 
 #define DISTMAP		2
 #define FIELDOFVIEW		2048	
@@ -282,7 +283,7 @@ extern int16_t             numflats;
 extern int16_t             numtextures;
 extern int16_t             numtextures;
 
-extern MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
+extern MEMREF textures[NUM_COMPOSITE_TEXTURES];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
 
 //
 // R_PrecacheLevel
@@ -291,6 +292,20 @@ extern MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, th
 //int32_t             flatmemory;
 //int32_t             texturememory;
 //int32_t             spritememory;
+
+
+extern uint8_t flatindex[NUM_FLATS];
+extern uint8_t firstunusedflat;
+extern int32_t totalpatchsize;
+
+extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
+extern uint8_t compositetextureoffset[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+extern uint8_t compositetexturepage[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high byte's low 6 bits are offset (256 byte aligned) within 16 kb page. Top 2 bits of high byte are (page count-1). top 8 bits are page number. 0xFFFF means unallocated.
+
+extern int8_t textureLRU[4];
+extern int16_t activetexturepages[4];
+extern byte*	 spritedefs_bytes;
+
 
 void R_PrecacheLevel(void)
 {
@@ -307,10 +322,22 @@ void R_PrecacheLevel(void)
 	THINKERREF          th;
 	spriteframe_t*      sf;
 	spriteframe_t*		spriteframes;
-
+	int32_t flatsize = 0;
+	int32_t spritesize = 0;
+	uint16_t size;
+	uint8_t currentpageoffset = 0;
+	int16_t lumpnum;
+	int16_t currentpatchpage = 0;
+	uint8_t newpage = 0;
+	uint8_t oldpage = 0;
+	int16_t index;
 
 	if (demoplayback)
 		return;
+	return;
+	Z_QuickmapRender();
+	
+
 
 	// Precache flats.
 	flatpresent = alloca(numflats);
@@ -324,17 +351,38 @@ void R_PrecacheLevel(void)
 	}
 
 	//flatmemory = 0;
+	Z_PushScratchFrame();
 
-	for (i = 0; i < numflats; i++)
+
+	Z_RemapScratchFrame(FIRST_FLAT_CACHE_LOGICAL_PAGE);
+	
+  	for (i = 0; i < numflats; i++)
 	{
-		if (flatpresent[i])
-		{
+ 
+		if (flatpresent[i]) {
 			lump = firstflat + i;
-			//flatmemory += lumpinfo[lump].size;
-			W_CacheLumpNumCheck(lump, 14);
-			W_CacheLumpNumEMS(lump, PU_CACHE);
+			//size = 4096; // W_LumpLength(lump);
+
+			flatindex[i] = firstunusedflat;
+			//totalsize += size;
+
+			if (firstunusedflat && (firstunusedflat % 16) == 0) {
+				// remap page
+				Z_RemapScratchFrame(FIRST_FLAT_CACHE_LOGICAL_PAGE + firstunusedflat / 16);
+			}
+
+			W_CacheLumpNumDirect(lump, MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[(firstunusedflat % 16) >> 2] + MULT_4096[firstunusedflat & 0x03]));
+			firstunusedflat++;
+			if (firstunusedflat > MAX_FLATS_LOADED) {
+				I_Error("Too many flats!");
+			}
+
 		}
 	}
+	Z_PopScratchFrame();
+
+	flatsize = 4096 * firstunusedflat;
+	oldpage = newpage = 0;
 
 	// Precache textures.
 	texturepresent = alloca(numtextures);
@@ -355,22 +403,55 @@ void R_PrecacheLevel(void)
 	//  name.
 	texturepresent[skytexture] = 1;
 
-	Z_QuickmapRender();
 	// texturememory = 0;
-	for (i = 0; i < numtextures; i++)
-	{
+ 
+	// this caches all used patches but not textures
+	for (i = 0; i < numtextures; i++) {
+
 		if (!texturepresent[i])
 			continue;
 
-
-		for (j = 0; j < texture->patchcount; j++)
-		{
-
-			texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]);
+		gettexture(i, TEXTURE_TYPE_COMPOSITE);
+		for (j = 0; j < texture->patchcount; j++) {
 			lump = texture->patches[j].patch;
-			W_CacheLumpNumEMS(lump, PU_CACHE);
+			gettexture(lump, TEXTURE_TYPE_LUMP);
 		}
+
+		/*
+		// todo does this have to be done here?
+		//R_GenerateComposite();
+
+		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]);
+		for (j = 0; j < texture->patchcount; j++) {
+
+			lump = texture->patches[j].patch;
+			index = lump - FIRST_PATCH;
+
+			// check for lump presence...
+			if (patchpage[index] == 0xFF) {
+				size = W_LumpLength(lump);
+				totalsize += size;
+
+				patchpage[index] = oldpage = newpage;
+				patchoffset[index] = totalsize & 16383;
+				newpage = totalsize >> 14;
+
+
+				// do we need to re-set the offset?
+				if (newpage - oldpage > 3) {
+					// re-base on oldpage
+					Z_RemapScratchFrame(FIRST_PATCH_CACHE_LOGICAL_PAGE + oldpage);
+					currentpatchpage = oldpage;
+				}
+				W_CacheLumpNumDirect(lump, MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[oldpage] + patchoffset[index]));
+
+			}
+
+
+		}
+		*/
 	}
+
 
 	// Precache sprites.
 	spritepresent = alloca(numsprites);
@@ -390,7 +471,7 @@ void R_PrecacheLevel(void)
 		if (!spritepresent[i])
 			continue;
 
-		spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprites[i].spriteframesRef);
+ 		spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
 
 		for (j = 0; j < sprites[i].numframes; j++)
 		{
@@ -398,12 +479,43 @@ void R_PrecacheLevel(void)
 			for (k = 0; k < 8; k++)
 			{
 				lump = firstspritelump + sf->lump[k];
-				//spritememory += lumpinfo[lump].size;
-				W_CacheLumpNumCheck(lump, 16);
-				W_CacheLumpNumEMS(lump, PU_CACHE);
+				//spritesize += W_LumpLength(lump);
+				getspritetexture(lump);
 			}
 		}
 	}
+
+	/*
+	for (i = 0; i < NUM_TEXTURE_PAGES; i++) 
+		if (usedcompositetexturepagemem[i] == 0)
+			break;
+	I_Error("\ntotal tex size %li\n flat size %li \nspritesize %li", i * 16384L, flatsize, spritesize);
+		*/
+	
+	
+
+
+
+	//       TEX    FLAT    SPRITE
+	// E1M1 492064  86016
+	//      163840
+	// E1M2 869332 110592
+	//      229376 
+	// E1M3			90112
+	//      294912
+	// E1M4 
+	//      229376  106496
+	// E1M5         114688
+	//      245760  
+	// E1M6 587136 110592
+	//      180224
+	// E1M7 545544 86016
+	//      163840
+	// E1M8		   81920
+	//      262144
+	// E1M9 245392 57344
+
+
 
 }
 

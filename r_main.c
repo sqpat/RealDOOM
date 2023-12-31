@@ -576,6 +576,9 @@ R_SetViewSize
 extern uint8_t	detailLevel;
 extern uint8_t	screenblocks;
 
+extern int8_t textureLRU[4];
+extern int16_t activetexturepages[4];
+extern int16_t pageswapargs_textcache[8];
 
 
 
@@ -653,6 +656,15 @@ void R_SetupFrame ()
 	// i think this sets the view within the border for when screen size is increased/shrunk
     
 	destview = (byte*)(destscreen.w + viewwindowoffset);
+
+	for (i = 0; i < 4; i++) {
+		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		textureLRU[i] = i;
+		pageswapargs_textcache[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+	}
+	Z_QuickmapRenderTexture();
+
+
 }
 
 
@@ -674,6 +686,7 @@ void R_RenderPlayerView ()
 	}
 
 	Z_QuickmapRender();
+	//Z_QuickmapRenderTexture();
 	R_SetupFrame ();
 
 

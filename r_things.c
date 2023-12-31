@@ -71,6 +71,7 @@ int16_t             numsprites;
 int8_t*           spritename;
 
 
+extern byte*	 spritedefs_bytes;
 
 
 
@@ -170,10 +171,8 @@ R_DrawVisSprite
     column_t*           column;
     fixed_t_union       frac;
     patch_t*            patch;
-	MEMREF				patchRef;
         
 
-    patchRef = W_CacheLumpNumEMS (vis->patch+firstspritelump, PU_CACHE);
 
 	dc_colormap = vis->colormap;
     
@@ -188,7 +187,7 @@ R_DrawVisSprite
     spryscale.w = vis->scale;
     sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
          
-	patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
+	patch = (patch_t*)getspritetexture(vis->patch + firstspritelump);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		column = (column_t *) ((byte *)patch + (patch->columnofs[frac.h.intbits]));
         R_DrawMaskedColumn (column);
@@ -240,8 +239,6 @@ void R_ProjectSprite (mobj_pos_t* thing)
 	fixed_t thingz = thing->z;
 	int32_t thingflags = thing->flags;
 	angle_t thingangle = thing->angle;
-	MEMREF spritespriteframeRef;
-	int8_t spritenumframes;
     fixed_t_union temp;
 		
 	// transform the origin point
@@ -268,9 +265,7 @@ void R_ProjectSprite (mobj_pos_t* thing)
         return;
 
     // decide which patch to use for sprite relative to player
-	spritespriteframeRef = sprites[thingsprite].spriteframesRef;
-	spritenumframes = sprites[thingsprite].numframes;
-	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(spritespriteframeRef);
+	spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[thingsprite].spriteframesOffset]);
 
     if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
@@ -444,7 +439,7 @@ void R_DrawPSprite (pspdef_t* psp, state_t statecopy)
 
 
 	// decide which patch to use
-	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprites[statecopy.sprite].spriteframesRef);
+	spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[statecopy.sprite].spriteframesOffset]);
 
 
     lump = spriteframes[statecopy.frame & FF_FRAMEMASK].lump[0];

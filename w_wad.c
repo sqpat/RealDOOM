@@ -197,7 +197,8 @@ W_ReadLumpEMS
         I_Error ("W_ReadLump: %i >= numlumps",lump);
 #endif
     l = lumpinfo+lump;
-	lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
+	//lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
+	lumpsize = W_LumpLength(lump);
 
     I_BeginRead ();
         
@@ -332,7 +333,7 @@ W_ReadLumpStatic
 }
 
 
-int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
+int16_t W_CacheLumpNumCheck(int16_t lump) {
 
 #ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps) {
@@ -346,11 +347,11 @@ int16_t W_CacheLumpNumCheck(int16_t lump, int16_t error) {
 
 
  MEMREF
-W_CacheLumpNumEMS2
+W_CacheLumpNumEMS
 (	int16_t           lump,
 	int8_t			tag
-	,int8_t* file,
-	 int32_t line
+	//,int8_t* file,
+	 //int32_t line
 	
 	
 	)
@@ -360,11 +361,15 @@ W_CacheLumpNumEMS2
 	if (lump >= numlumps)
 		I_Error("W_CacheLumpNumEMS: %i >= numlumps %s %li", lump);
 #endif
-
+	//if (lump > 1035) {
+		//I_Error("bad lump %i %lu %s %li", lump, W_LumpLength(lump), file, line);
+	//}
 	if (!lumpcacheEMS[lump]) {
+		/*
 		if (W_LumpLength(lump) > 65535) {
 			I_Error("lump too big %i %lu %s %li", lump, W_LumpLength(lump), file, line);
 		}
+		*/
 		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef32(W_LumpLength(lump), tag, 1, lump + BACKREF_LUMP_OFFSET);
 
 		W_ReadLumpEMS(lump, Z_LoadBytesFromEMS(lumpcacheEMS[lump]), 0, 0);
@@ -381,8 +386,16 @@ W_CacheLumpNumEMS2
 MEMREF
 W_CacheLumpNameEMS
 (int8_t*         name,
-	int8_t           tag) {
-		
+	int8_t           tag
+	//, int8_t* file,
+	//int32_t line
+
+) {
+		/*
+		if (W_GetNumForName(name) > 1035) {
+			I_Error("B bad lump %s %li", file, line);
+		}
+		*/
 	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
 }
 

@@ -33,6 +33,7 @@
 
 // State.
 #include "doomstat.h"
+#include <dos.h>
 
 
 // ?
@@ -117,6 +118,7 @@ void R_DrawColumn (void)
 
     count = dc_yh - dc_yl; 
 
+	// todo move this out
     // Zero length, column does not exceed a pixel.
 	if (count < 0) {
 		return;
@@ -450,13 +452,13 @@ void R_DrawSpanLow(void)
 //
 void R_FillBackScreen (void) 
 { 
-    byte*	src;
+ 
+
+    byte*	src; // could be src[104] if nto for name1/name2 flat texture. then we could avoid scratch altogether.
     byte*	dest; 
     int16_t		x;
     int16_t		y; 
-    patch_t*	patch;
 	int16_t i;
-	MEMREF srcRef;
 
     // DOOM border patch.
 	int8_t	name1[] = "FLOOR7_2";
@@ -473,70 +475,65 @@ void R_FillBackScreen (void)
 		name = name2;
     else
 		name = name1;
-    
-    srcRef = W_CacheLumpNameEMS (name, PU_CACHE); 
-	src = Z_LoadBytesFromEMS(srcRef);
+	Z_PushScratchFrame();
+
+	src = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
+	W_CacheLumpNameDirect(name, src);
 	dest = screen0; 
 	 
-    for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++) 
-    { 
-	for (x=0 ; x<SCREENWIDTH/64 ; x++) 
-	{ 
-	    memcpy (dest, src+((y&63)<<6), 64); 
-	    dest += 64; 
-	} 
-	/*
-	// always 0 with screenwidth 320... 
-	if (SCREENWIDTH&63) 
-	{ 
-	    memcpy (dest, src+((y&63)<<6), SCREENWIDTH&63); 
-	    dest += (SCREENWIDTH&63); 
-	} 
-	*/
+    for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++)  { 
+		for (x=0 ; x<SCREENWIDTH/64 ; x++)  { 
+			memcpy (dest, src+((y&63)<<6), 64); 
+			dest += 64; 
+		} 
+		 
 
     } 
-	
-    patch = W_CacheLumpNameEMSAsPatch ("brdr_t",PU_CACHE);
+	W_CacheLumpNameDirect("brdr_t", src);
 
 	for (x = 0; x < scaledviewwidth; x += 8) {
-		V_DrawPatch(viewwindowx + x, viewwindowy - 8, 0, patch);
+		V_DrawPatch(viewwindowx + x, viewwindowy - 8, 0, (patch_t*)src);
 	}
-	patch = W_CacheLumpNameEMSAsPatch("brdr_b",PU_CACHE);
+	W_CacheLumpNameDirect("brdr_b", src);
 
 	for (x = 0; x < scaledviewwidth; x += 8) {
-		V_DrawPatch(viewwindowx + x, viewwindowy + viewheight, 0, patch);
-	}
-	patch = W_CacheLumpNameEMSAsPatch("brdr_l",PU_CACHE);
-	for (y = 0; y < viewheight; y += 8) {
-		V_DrawPatch(viewwindowx - 8, viewwindowy + y, 0, patch);
-	}
-    patch = W_CacheLumpNameEMSAsPatch("brdr_r",PU_CACHE);
-
-	for (y = 0; y < viewheight; y += 8) {
-		V_DrawPatch(viewwindowx + scaledviewwidth, viewwindowy + y, 0, patch);
+		V_DrawPatch(viewwindowx + x, viewwindowy + viewheight, 0, (patch_t*)src);
 	}
 
+	W_CacheLumpNameDirect("brdr_l", src);
+	for (y = 0; y < viewheight; y += 8) {
+		V_DrawPatch(viewwindowx - 8, viewwindowy + y, 0, (patch_t*)src);
+	}
+	W_CacheLumpNameDirect("brdr_r", src);
+
+	for (y = 0; y < viewheight; y += 8) {
+		V_DrawPatch(viewwindowx + scaledviewwidth, viewwindowy + y, 0, (patch_t*)src);
+	}
 
     // Draw beveled edge. 
-    V_DrawPatch (viewwindowx-8,
+	W_CacheLumpNameDirect("brdr_tl", src);
+		V_DrawPatch (viewwindowx-8,
 		 viewwindowy-8,
 		 0,
-		W_CacheLumpNameEMSAsPatch("brdr_tl",PU_CACHE));
-    
+		(patch_t*)src);
+
+	W_CacheLumpNameDirect("brdr_tr", src);
     V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy-8,
 		 0,
-		W_CacheLumpNameEMSAsPatch("brdr_tr",PU_CACHE));
-    
+		(patch_t*)src);
+
+	W_CacheLumpNameDirect("brdr_bl", src);
     V_DrawPatch (viewwindowx-8,
 		 viewwindowy+viewheight,
 		 0,
-		W_CacheLumpNameEMSAsPatch("brdr_bl",PU_CACHE));
-    
-    V_DrawPatch (viewwindowx+scaledviewwidth,
+		(patch_t*)src);
+	
+	W_CacheLumpNameDirect("brdr_br", src);
+	V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy+viewheight,
 		 0,
-		W_CacheLumpNameEMSAsPatch("brdr_br",PU_CACHE));
+		(patch_t*)src);
 
     for (i = 0; i < 4; i++)
     {
@@ -571,6 +568,9 @@ void R_FillBackScreen (void)
 #endif
 
     }
+
+	Z_PopScratchFrame();
+
 } 
  
 

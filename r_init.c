@@ -36,6 +36,7 @@
 #include "i_system.h"
 #include "doomstat.h"
 #include  <alloca.h>
+#include  <dos.h>
 
 
 
@@ -210,7 +211,7 @@ void R_InitSpriteLumps(void)
 			printf(".");
 #endif
 
-		W_CacheLumpNumCheck(firstspritelump + i, 13);
+		W_CacheLumpNumCheck(firstspritelump + i);
 		patchRef = W_CacheLumpNumEMS(firstspritelump + i, PU_CACHE);
 		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
 		patchwidth = (patch->width);
@@ -266,28 +267,35 @@ typedef struct
 
 extern int16_t             numtextures;
 
-extern MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
-extern MEMREF texturecomposite[NUM_TEXTURE_CACHE];  // see above
+extern MEMREF textures[NUM_COMPOSITE_TEXTURES];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
 
 
-extern MEMREF texturecolumnlumpRefs[NUM_TEXTURE_CACHE];
-extern MEMREF texturecolumnofsRefs[NUM_TEXTURE_CACHE];
+extern uint16_t texturecolumn_offset[NUM_COMPOSITE_TEXTURES];
+extern uint16_t texturedefs_offset[NUM_COMPOSITE_TEXTURES];
+extern byte* texturecolumnlumps_bytes;
+extern byte* texturecolumnofs_bytes;
+extern byte* texturedefs_bytes;
 
 
-
-extern uint8_t  texturewidthmasks[NUM_TEXTURE_CACHE];
+extern uint8_t  texturewidthmasks[NUM_COMPOSITE_TEXTURES];
 // needed for texture pegging
-extern uint8_t  textureheights[NUM_TEXTURE_CACHE];		    // uint8_t must be converted by fracbits when used*
-extern uint16_t  texturecompositesizes[NUM_TEXTURE_CACHE];	// uint16_t*
+extern uint8_t  textureheights[NUM_COMPOSITE_TEXTURES];		    // uint8_t must be converted by fracbits when used*
+extern uint16_t  texturecompositesizes[NUM_COMPOSITE_TEXTURES];	// uint16_t*
 
 
+extern uint8_t	 patchpage[NUM_PATCH_LUMPS];
+extern uint16_t patchoffset[NUM_PATCH_LUMPS];
 
+ extern uint8_t	 flatindex[NUM_FLATS];
 
 //
 // R_GenerateLookup
 //
+//todo pull down below?
 void R_GenerateLookup(uint8_t texnum)
 {
+ 
+
 	texture_t*          texture;
 	byte*               patchcount;     // patchcount[texture->width]
 	texpatch_t*         patch;
@@ -296,30 +304,29 @@ void R_GenerateLookup(uint8_t texnum)
 	int16_t                 x1;
 	int16_t                 x2;
 	int16_t                 i;
+	int16_t                 j;
 	int16_t					patchpatch;
-	int16_t*              collump;
-	uint16_t*     		colofs;
-	MEMREF				realpatchRef;
+	int16_t					lastpatch = -1;
 	uint8_t				texturepatchcount;
 	int16_t				texturewidth;
 	int16_t				textureheight;
 	int8_t				texturename[8];
-	int16_t				temp;
+	int16_t				index;
+	byte*				patchaddr = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
+	uint16_t			size;
+	uint8_t				pagenum;
+	
+ 
+	int16_t*  collump = (int16_t*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum]]);
+	uint16_t* colofs = (uint16_t*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum]]);
 
-	MEMREF textureRef = textures[texnum];
-
-	MEMREF texturecolumnlump = texturecolumnlumpRefs[texnum];
-	MEMREF texturecolumnofs = texturecolumnofsRefs[texnum];
-
-	texturecomposite[texnum] = NULL_MEMREF;
+	uint8_t currentpatchpage = 0;
+	
 	texturecompositesizes[texnum] = 0;
-
-
-
 
 	// Composited texture not created yet.
 
-	texture = (texture_t*)Z_LoadTextureInfoFromConventional(textureRef);
+	texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 	memcpy(texturename, texture->name, 8);
@@ -333,22 +340,39 @@ void R_GenerateLookup(uint8_t texnum)
 	memset(patchcount, 0, texture->width + 1);
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
+	realpatch = (patch_t*)patchaddr;
 	for (i = 0; i < texturepatchcount; i++) {
 
-		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textureRef);
+		texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
+
 		patch = &texture->patches[i];
 		x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchpatch = patch->patch & PATCHMASK;
-		W_CacheLumpNumCheck(patch->patch, 11);
-		realpatchRef = W_CacheLumpNumEMS(patch->patch, PU_CACHE);
-		realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
+		//index = patch->patch - FIRST_PATCH;
+		//pagenum = patchpage[index];
+		//size = W_LumpLength(patch->patch);
+		//numpages = 0;
+		//if (patchpage[index + 1] - currentpatchpage > 3) {
+		/*
+		if (true){
+			for (j = 0; j < 4; j++) {
+				pageswapargs_scratch_stack[j * 2] = FIRST_PATCH_CACHE_LOGICAL_PAGE + pagenum + j;
+			}
+			Z_RemapScratchFrame();
+			currentpatchpage = pagenum;
+		}
+		*/
+		//realpatch = (patch_t*)MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[pagenum - currentpatchpage] + patchoffset[index]);
+		if (lastpatch != patchpatch)
+			W_CacheLumpNumDirect(patchpatch, patchaddr);
+
+		lastpatch = patchpatch;
 
 		x2 = x1 + (realpatch->width);
 
 		if (x1 < 0) {
 			x = 0;
-		}
-		else {
+		} else {
 			x = x1;
 		}
 
@@ -359,18 +383,12 @@ void R_GenerateLookup(uint8_t texnum)
 
 		for (; x < x2; x++) {
 			patchcount[x]++;
-			collump = (int16_t*)Z_LoadTextureInfoFromConventional(texturecolumnlump);
 			collump[x] = patchpatch;
-			realpatch = (patch_t*)Z_LoadBytesFromEMS(realpatchRef);
-			temp = (realpatch->columnofs[x - x1]) + 3;
-			colofs = (uint16_t*)Z_LoadTextureInfoFromConventional(texturecolumnofs);
-			colofs[x] = temp;
+			colofs[x] = (realpatch->columnofs[x - x1]) + 3;
 		}
 	}
 
 
-	colofs = (uint16_t*)Z_LoadTextureInfoFromConventional(texturecolumnofs);
-	collump = (int16_t*)Z_LoadTextureInfoFromConventional(texturecolumnlump);
 
 	for (x = 0; x < texturewidth; x++) {
  
@@ -399,7 +417,6 @@ void R_GenerateLookup(uint8_t texnum)
 void R_InitTextures(void)
 {
 	maptexture_t*       mtexture;
-	int16_t				textureRef;
 	texture_t*          texture;
 	mappatch_t*         mpatch;
 	texpatch_t*         patch;
@@ -438,6 +455,9 @@ void R_InitTextures(void)
 	MEMREF				maptex2Ref;
 	int16_t				texturewidth;
 	uint8_t				textureheightval;
+
+	texturecolumn_offset[0] = 0;
+ 	texturedefs_offset[0] = 0;
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
@@ -519,17 +539,17 @@ void R_InitTextures(void)
 
 		mtexture = (maptexture_t *)((byte *)maptex + offset);
 
-		textureRef = Z_MallocConventional(sizeof(texture_t)
-			+ sizeof(texpatch_t)*((mtexture->patchcount) - 1), CA_TYPE_TEXTURE_INFO);
+		if ((i + 1) < numtextures) {
+			texturedefs_offset[i + 1] = texturedefs_offset[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
+		}
 
-		textures[i] = textureRef;
 
-		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textureRef);
+		texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[i]]);
 		texture->width = (mtexture->width) - 1;
 		texture->height = (mtexture->height) - 1;
 		texture->patchcount = (mtexture->patchcount);
 		texturewidth = texture->width + 1;
-		textureheightval = texture->height;
+		textureheightval = texture->height; 
 
 		memcpy(texture->name, mtexture->name, sizeof(texture->name));
 		mpatch = &mtexture->patches[0];
@@ -546,8 +566,11 @@ void R_InitTextures(void)
 
 
 		//printf("name %s", texture->name);
-		texturecolumnlumpRefs[i] = Z_MallocConventional(texturewidth * 2, CA_TYPE_TEXTURE_INFO);
-		texturecolumnofsRefs[i] = Z_MallocConventional(texturewidth * 2, CA_TYPE_TEXTURE_INFO);
+		
+		if ((i + 1) < numtextures) {
+			texturecolumn_offset[i + 1] = texturecolumn_offset[i] + texturewidth * sizeof(int16_t);
+ 		}
+
 
 		j = 1;
 		while (j * 2 <= texturewidth)
@@ -564,9 +587,13 @@ void R_InitTextures(void)
 	if (maptex2) {
 		Z_FreeEMS(maptex2Ref);
 	}
+
 	// Precalculate whatever possible.  
-	for (i = 0; i < numtextures; i++)
+	Z_PushScratchFrame();
+	for (i = 0; i < numtextures; i++){
 		R_GenerateLookup(i);
+	}
+	Z_PopScratchFrame();
 
 	// Create translation table for global animation.
 	
@@ -576,12 +603,59 @@ void R_InitTextures(void)
 
 }
 
+/*
+// Preload all patches - i dont think we actually need this...
+void R_InitPatches() {
 
 
+	int16_t temp1 = W_GetNumForName("P1_START");  // P_???????
+	int16_t temp2 = W_GetNumForName("P_END") - 1;
+	int16_t i, j;
+		
+	int16_t currentpatchpage = 0;
+	uint16_t size;
+	uint8_t newpage = 0;
+	uint8_t oldpage = 0;
+	fixed_t_union totalsize;
+	totalsize.wu = 0;
+	// todo set dynamically..
+	//NUM_PATCH_LUMPS = temp2 - temp1;
+
+
+	Z_PushScratchFrame();
+
+	for (i = 0; i < NUM_PATCH_LUMPS; i++) {
+		int16_t lumpnum = i + FIRST_PATCH;
+		size = W_LumpLength(lumpnum);
+
+		patchpage[i] = oldpage = newpage;
+		patchoffset[i] = totalsize.hu.intbits & 16383;
+		totalsize.wu += size;
+		newpage = totalsize.wu >> 14;
+		// do we need to re-set the offset?
+		if (newpage - oldpage > 3 ) {
+			// re-base on oldpage
+
+			Z_RemapScratchFrame(FIRST_PATCH_CACHE_LOGICAL_PAGE + oldpage)
+			currentpatchpage = oldpage;
+		}
+		
+		W_CacheLumpNumDirect(lumpnum, MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[oldpage] + patchoffset[i] ));
+		// todo bounds check?
+	}
+
+	Z_PopScratchFrame();
+
+
+
+}
+*/
 
 void R_InitData(void) {
 	uint8_t         i;
 	int16_t lump;
+
+	//R_InitPatches();
 
 	R_InitTextures();
 	DEBUG_PRINT(".");
@@ -625,6 +699,7 @@ extern uint8_t                     screenblocks;
 void R_Init(void)
 {
 	Z_QuickmapRender();
+	//Z_QuickmapTextureInfoPage();
 	R_InitData();
 	DEBUG_PRINT("..");
 	// viewwidth / viewheight / detailLevel are set by the defaults

@@ -36,6 +36,7 @@
 #include "s_sound.h"
 
 #include "doomstat.h"
+#include <alloca.h>
 
 
 extern uint8_t		switchlist[MAXSWITCHES * 2];
@@ -48,7 +49,8 @@ extern int8_t*           spritename;
 
 
 
-extern MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
+extern uint16_t texturedefs_offset[NUM_COMPOSITE_TEXTURES];
+extern byte* texturedefs_bytes; 
 extern int16_t             numtextures;
  
 
@@ -65,8 +67,10 @@ uint8_t     R_CheckTextureNumForNameA(int8_t *name)
 		return 0;
 
 	Z_QuickmapRender();
+	//Z_QuickmapTextureInfoPage();
+
 	for (i = 0; i < numtextures; i++) {
-		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]);
+		texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[i]]);
 
 
 
@@ -340,7 +344,7 @@ void P_InitPicAnims(void)
 	Z_QuickmapPhysics();
 
 }
-spriteframe_t   sprtemp[29];
+spriteframe_t* sprtemp;
 int16_t             maxframe;
 
 //
@@ -415,8 +419,8 @@ extern spritedef_t* sprites;
 
 extern int16_t             numsprites;
 
-extern spriteframe_t   sprtemp[29];
 extern int16_t             maxframe;
+extern byte*	 spritedefs_bytes;
 
 //
 // R_InitSpriteDefs
@@ -445,7 +449,8 @@ void R_InitSpriteDefs()
 	int16_t         end;
 	int16_t         patched;
 	spriteframe_t* spriteframes;
-	MEMREF spritesRef;
+	uint16_t		currentspritememoryoffset;
+	//int32_t totalsize = 0;
 
 	int8_t *namelist[NUMSPRITES] = {
 		"TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
@@ -464,7 +469,7 @@ void R_InitSpriteDefs()
 		"HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2"
 	};
 
-
+	sprtemp = alloca(29 * sizeof(spriteframe_t));
 	// count the number of sprite names
 	check = namelist;
 
@@ -482,10 +487,12 @@ void R_InitSpriteDefs()
 	if (!numsprites)
 		return;
 
-	spritesRef = Z_MallocConventional(numsprites * sizeof(*sprites), CA_TYPE_SPRITE);
-	sprites = (spritedef_t*)Z_LoadSpriteFromConventional(spritesRef);
+	
+	sprites = (spritedef_t*)spritedefs_bytes;
+	currentspritememoryoffset = sprites[0].spriteframesOffset = numsprites * sizeof(spritedef_t);
+	//sprites[0].spriteframesOffset = numsprites * sizeof(*sprites);
+	//totalsize = numsprites * sizeof(spritedef_t);
 
-	//todo does this have to move into the loop for safety?
 	start = firstspritelump - 1;
 	end = lastspritelump + 1;
 
@@ -567,16 +574,13 @@ void R_InitSpriteDefs()
 		}
 
 		// allocate space for the frames present and copy sprtemp to it
-		sprites[i].numframes = maxframe;
-		sprites[i].spriteframesRef = Z_MallocConventional(maxframe * sizeof(spriteframe_t), CA_TYPE_SPRITE);
+		sprites[i].numframes = maxframe; // this  isnever used outside of here and r_setup...
+		sprites[i].spriteframesOffset = currentspritememoryoffset;
+		currentspritememoryoffset += (maxframe * sizeof(spriteframe_t));
 
 
-		spriteframes = Z_LoadSpriteFromConventional(sprites[i].spriteframesRef);
-
-
-
+		spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
 		memcpy(spriteframes, sprtemp, maxframe * sizeof(spriteframe_t));
-
 
 	}
 

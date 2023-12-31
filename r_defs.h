@@ -520,7 +520,7 @@ typedef struct
 typedef struct
 {
     int8_t			numframes;
-    MEMREF		spriteframesRef;
+    uint16_t		spriteframesOffset;
 
 } spritedef_t;
 

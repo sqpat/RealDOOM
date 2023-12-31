@@ -688,6 +688,7 @@ void F_CastPrint (int8_t* text)
     }
 	
 }
+extern byte*	 spritedefs_bytes;
 
 
 //
@@ -714,7 +715,7 @@ void F_CastDrawer (void)
     // draw the current frame in the middle of the screen
 		
 	sprite = &sprites[caststate->sprite];
-	spriteframes = (spriteframe_t*)Z_LoadSpriteFromConventional(sprite->spriteframesRef);
+	spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprite->spriteframesOffset]);
 
 	sprframe = &spriteframes[caststate->frame & FF_FRAMEMASK];
 
@@ -722,7 +723,7 @@ void F_CastDrawer (void)
 	lump = sprframe->lump[0];
     flip = (boolean)sprframe->flip[0];
 			
-	W_CacheLumpNumCheck(lump + firstspritelump, -1);
+	W_CacheLumpNumCheck(lump + firstspritelump);
 	patchRef = W_CacheLumpNumEMS (lump+firstspritelump, PU_CACHE);
 	patch = Z_LoadBytesFromEMS(patchRef);
 	

@@ -83,8 +83,9 @@ extern boolean         mousearray[4];
 extern  uint8_t     skytexture;
  
 extern int16_t             numtextures;
-extern MEMREF textures[NUM_TEXTURE_CACHE];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
 
+extern uint16_t texturedefs_offset[NUM_COMPOSITE_TEXTURES];
+extern byte* texturedefs_bytes;
 
 // R_CheckTextureNumForName
 // Check whether texture is available.
@@ -100,7 +101,8 @@ uint8_t     R_CheckTextureNumForNameB(int8_t *name)
 
 
 	for (i = 0; i < numtextures; i++) {
-		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]);
+		texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[i]]);
+		
 
 
 
@@ -132,6 +134,7 @@ uint8_t     R_TextureNumForNameB(int8_t* name)
 void G_DoLoadLevel(void)
 {
 	Z_QuickmapRender();
+	//Z_QuickmapTextureInfoPage();
 
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
 	// DOOM determines the sky texture to be used
@@ -261,6 +264,7 @@ G_InitNew
 
 	viewactive = true;
 	Z_QuickmapRender();
+	//Z_QuickmapTextureInfoPage();
 
 
 	// set the sky map for the episode

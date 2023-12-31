@@ -238,7 +238,8 @@ void I_SetPalette(int8_t paletteNumber)
 {
 	byte* gammatablelookup;
 	int16_t i;
-//	byte* palette = ((byte*)Z_LoadBytesFromEMS(W_CacheLumpNumEMS(lu_palette, PU_CACHE)) + paletteNumber * 768u);
+	//byte* palette = alloca(768);
+
 	byte* palette = ((byte*)Z_LoadBytesFromEMS(palRef)) + paletteNumber * 768u;
 
         if(novideo)

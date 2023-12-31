@@ -402,10 +402,12 @@ void P_UpdateLineOpening(int16_t secnum, boolean changedFloor) {
 	sector_t* front;
 	sector_t* back;
 
-//	if (secnum > numsectors || secnum < 0) {
-//		I_Error("bad secnum %i", secnum);
-//	}
-	//lineopening_t* lineopenings = Z_LoadBytesFromEMS(lineopeningsRef);
+#ifdef CHECK_FOR_ERRORS
+	if (secnum > numsectors || secnum < 0) {
+		I_Error("bad secnum %i", secnum);
+	}
+#endif
+ 
 	
 	for (i = 0; i < max; i++) {
 		int16_t linenum = linebuffer[sectors[secnum].linesoffset + i];

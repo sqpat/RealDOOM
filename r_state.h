@@ -55,10 +55,10 @@ extern int16_t		viewheight;
 extern int16_t		firstflat;
 
 // needed for texture pegging
-extern uint8_t		textureheights[NUM_TEXTURE_CACHE];
+extern uint8_t		textureheights[NUM_COMPOSITE_TEXTURES];
 // for global animation
-extern uint8_t			flattranslation[NUM_TEXTURE_CACHE];
-extern uint8_t			texturetranslation[NUM_TEXTURE_CACHE];
+extern uint8_t			flattranslation[NUM_COMPOSITE_TEXTURES];
+extern uint8_t			texturetranslation[NUM_COMPOSITE_TEXTURES];
 
 
 

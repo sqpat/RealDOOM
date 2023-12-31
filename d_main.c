@@ -179,8 +179,8 @@ int8_t* getStringByIndex(int16_t stringindex, int8_t* returndata) {
 
 	uint16_t stringoffset = stringoffsets[stringindex];
 	uint16_t length = getStringLength(stringindex);
-	int16_t index;
 	/*
+	int16_t index;
 
 	if (stringoffset < stringbuffersizes[0]) {
 		index = 0;
@@ -195,7 +195,6 @@ int8_t* getStringByIndex(int16_t stringindex, int8_t* returndata) {
 
  
 		// string ends at the start of the next string...
-
 	memcpy(returndata, &(stringdata[stringoffset]), length);
 	// add null terminator?
 	returndata[length] = '\0';

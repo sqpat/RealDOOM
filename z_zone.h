@@ -90,38 +90,31 @@ typedef struct allocation_static_conventional_s
 
 // these get cleared per level
 #define CA_TYPE_LEVELDATA 1
-// these are static
-#define CA_TYPE_SPRITE 3
-// mobjs and thinkers
-#define CA_TYPE_THINKER 4
-// texcols and tex
-#define CA_TYPE_TEXTURE_INFO 5
-
 
 #define ALLOCATION_LIST_HEAD	0
-#define EMS_ALLOCATION_LIST_SIZE 1050
+#define EMS_ALLOCATION_LIST_SIZE 600
 
 
 // DOOM SHAREWARE VALUE
-#define STATIC_CONVENTIONAL_SPRITE_SIZE 7000u
+#define STATIC_CONVENTIONAL_SPRITE_SIZE 6939u
 
 // DOOM SHAREWARE VALUE
-#define NUM_TEXTURE_CACHE 125
+#define NUM_COMPOSITE_TEXTURES 125
+
+// DOOM SHAREWARE VALUE
+#define NUM_SPRITE_DEFS 138
 
 #define MAX_THINKERS 840
-#define TEXTUREINFO_ALLOCATION_LIST_SIZE NUM_TEXTURE_CACHE * 3
 #define SPRITE_ALLOCATION_LIST_SIZE 150
 
-#define STATIC_CONVENTIONAL_TEXTURE_INFO_SIZE (21552u+21552u+3767u)
-#define UMB2_SIZE (STATIC_CONVENTIONAL_SPRITE_SIZE + (SPRITE_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t)) + (TEXTUREINFO_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t)) + (MAX_THINKERS * sizeof(mobj_pos_t)))
+#define UMB2_SIZE STATIC_CONVENTIONAL_SPRITE_SIZE + (MAX_THINKERS * sizeof(mobj_pos_t))
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
 extern byte* conventionalmemoryblock;
 extern byte* spritememoryblock;
-extern byte* textureinfomemoryblock;
 
+extern uint16_t EMS_PAGE;
 
-extern allocation_static_conventional_t* textureinfo_allocations;
 extern allocation_static_conventional_t* sprite_allocations;
 
 
@@ -148,10 +141,7 @@ void Z_SetUnlocked(MEMREF ref);
 
 
 void* Z_LoadBytesFromConventional(MEMREF index);
-void* Z_LoadSpriteFromConventional(MEMREF index);
 void* Z_LoadTextureInfoFromConventional(MEMREF index);
-//#define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE)
-//#define Z_LoadTextureInfoFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_TEXTURE_INFO)
 //#define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c)
 //#define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA)
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
@@ -159,8 +149,6 @@ void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
 #define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED)
 /*
 void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type, int8_t* file, int32_t line);
-#define Z_LoadSpriteFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_SPRITE, __FILE__, __LINE__)
-#define Z_LoadTextureInfoFromConventional(a) Z_LoadBytesFromConventionalWithOptions2 (a, PAGE_NOT_LOCKED, CA_TYPE_TEXTURE_INFO, __FILE__, __LINE__)
 #define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c, __FILE__, __LINE__)
 #define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA, __FILE__, __LINE__)
 void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked, int8_t* file, int32_t line);
@@ -214,32 +202,84 @@ typedef struct
 
 } allocation_t;
 
+
+#define STRINGS_LOGICAL_PAGE 12
+#define TEXTURE_INFO_LOGICAL_PAGE 32
+#define FIRST_TRIG_TABLE_LOGICAL_PAGE 16
+#define SCREEN4_LOGICAL_PAGE 36
+#define FIRST_STATUS_LOGICAL_PAGE 37
+#define FIRST_DEMO_LOGICAL_PAGE 41
+#define SCRATCH_LOGICAL_PAGE FIRST_DEMO_LOGICAL_PAGE + 4
+#define FIRST_PATCH_CACHE_LOGICAL_PAGE SCRATCH_LOGICAL_PAGE + 4
+#define NUM_PATCH_CACHE_PAGES 20
+#define FIRST_FLAT_CACHE_LOGICAL_PAGE FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
+#define NUM_FLAT_CACHE_PAGES 8
+#define MAX_FLATS_LOADED NUM_FLAT_CACHE_PAGES * 4
+#define FIRST_TEXTURE_LOGICAL_PAGE FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
+#define NUM_TEXTURE_PAGES 24
+#define FIRST_SPRITE_CACHE_LOGICAL_PAGE FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
+#define NUM_SPRITE_CACHE_PAGES 24
+#define NUM_EMS4_SWAP_PAGES (int32_t)(FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
+// DOOM SHAREWARE VALUES
+
+#define FIRST_LUMP_TEXTURE 1039
+// this includes flats... eventually remove
+#define LAST_LUMP_TEXTURE 1262
+// 223
+#define NUM_TEXTURE_LUMPS LAST_LUMP_TEXTURE - FIRST_LUMP_TEXTURE
+
+
+// DOOM SHAREWARE VALUE
+// P1_END - P1_START
+#define FIRST_PATCH 1039
+#define LAST_PATCH 1204
+#define NUM_PATCH_LUMPS LAST_PATCH - FIRST_PATCH
+
+#define FIRST_SPRITE_LUMP 553
+#define LAST_SPRITE_LUMP 1036
+#define NUM_SPRITE_LUMPS LAST_SPRITE_LUMP - FIRST_SPRITE_LUMP
+
+#define FIRST_LUMP_FLAT 1208
+#define LAST_LUMP_FLAT 1262
+#define NUM_FLATS LAST_LUMP_FLAT - FIRST_LUMP_FLAT
+
 #define TASK_PHYSICS 0
 #define TASK_RENDER 1
 #define TASK_STATUS 2
 #define TASK_DEMO 3
 #define TASK_PHYSICS9000 4
 #define TASK_RENDER7000TO6000 5
+#define TASK_RENDER_TEXT 6
+#define TASK_SCRATCH_STACK 7
+
+#define SCRATCH_PAGE_SEGMENT 0x5000u
 
 // EMS 4.0 stuff
 void Z_QuickmapPhysics();
 void Z_QuickmapPhysics9000();
 void Z_QuickmapRender();
+void Z_QuickmapRender_NoTex();
 void Z_QuickmapStatus();
 void Z_QuickmapDemo();
 void Z_QuickmapRender7000to6000();
 void Z_QuickmapByTaskNum();
+void Z_QuickmapRenderTexture();
+//void Z_QuickmapRenderTexture(uint8_t offset, uint8_t count);
+void Z_QuickmapScratch_5000();
+void Z_QuickmapScratch_4000();
+void Z_PushScratchFrame();
+void Z_PopScratchFrame();
+void Z_RemapScratchFrame(uint8_t startpage);
+void Z_QuickMapFlatPage(int16_t page);
+void Z_QuickMapTextureInfoPage();
+
 void Z_GetEMSPageMap();
 void Z_LoadBinaries();
 
 #define PAGE_TYPE_PHYSICS 0
 #define PAGE_TYPE_RENDER 1
 
-byte* far Z_GetNext0x7000Address(uint16_t size, int8_t pagetype);
-void Z_Subtract0x7000Address(uint16_t size, int8_t pagetype);
-#define Z_GetNextPhysicsAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_PHYSICS)
-#define Z_GetNextRenderAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_RENDER)
-#define Z_SubtractRenderAddress(A) Z_Subtract0x7000Address(A, PAGE_TYPE_RENDER)
+
 extern int16_t currenttask;
 
 #endif
