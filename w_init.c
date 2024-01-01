@@ -119,7 +119,6 @@ void W_AddFile(int8_t *filename)
 	int32_t lastsize = 0;
 	int32_t diff;
 
-	Z_QuickmapScratch_5000();
 
 	// open the file and add to directory
 
@@ -246,7 +245,6 @@ void W_AddFile(int8_t *filename)
 		close(handle);
 	
 
-	Z_QuickmapPhysics();
 }
 
 
@@ -268,6 +266,8 @@ void W_InitMultipleFiles(int8_t** filenames)
 {
 	filelength_t         size;
 	//printf("\n\nsize is %u \n\n", _memmax());
+	Z_QuickmapPhysics();
+	Z_QuickmapScratch_5000();
 
 	// open all the files, load headers, and count lumps
 	numlumps = 0;
@@ -296,5 +296,7 @@ void W_InitMultipleFiles(int8_t** filenames)
 		I_Error("Couldn't allocate lumpcacheEMS");
 #endif
 	memset(lumpcacheEMS, 0, size);
+
+	Z_QuickmapPhysics();
 
 }

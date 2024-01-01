@@ -197,10 +197,6 @@ void R_InitSpriteLumps(void)
 	int16_t		patchleftoffset;
 	int16_t		patchtopoffset;
 
-	firstspritelump = W_GetNumForName("S_START") + 1;
-	lastspritelump = W_GetNumForName("S_END") - 1;
-	numspritelumps = lastspritelump - firstspritelump + 1;
-
 	for (i = 0; i < numspritelumps; i++)
 	{
 
@@ -480,7 +476,7 @@ void R_InitTextures(void)
 	}
 	
 	// set in dmain 
-	numtextures = numtextures1 + numtextures2;
+	//numtextures = numtextures1 + numtextures2;
 	
 	// 125
 
@@ -643,17 +639,6 @@ void R_InitData(void) {
 
 	R_InitTextures();
 	DEBUG_PRINT(".");
-
-	// R_InitFlats();
-
-	firstpatch = W_GetNumForName("P_START") + 1;
-	lastpatch = W_GetNumForName("P_END") - 1;
-	numpatches = lastpatch - firstpatch + 1;
-
-
-	firstflat = W_GetNumForName("F_START") + 1;
-	lastflat = W_GetNumForName("F_END") - 1;
-	numflats = lastflat - firstflat + 1;
 
 
 	// Create translation table for global animation.

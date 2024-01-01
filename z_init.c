@@ -608,18 +608,17 @@ void Z_LinkEMSVariables() {
 	offset_render += sizeof(lighttable_t*) * (MAXLIGHTSCALE);
 
 	spritewidths = MK_FP(segment, offset_render);
-	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
+	offset_render += (sizeof(int16_t) * numspritelumps);
 	spriteoffsets = MK_FP(segment, offset_render);
-	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
+	offset_render += (sizeof(int16_t) * numspritelumps);
 	spritetopoffsets = MK_FP(segment, offset_render);
-	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
+	offset_render += (sizeof(int16_t) * numspritelumps);
 
 	// todo change all this to 16 bit pointers/lookups based on fixed 0x8000 colormapbytes segment.
 	// then bring offset_render back up
 	scalelight = MK_FP(segment, offset_render);
 	offset_render += sizeof(lighttable_t* far) * (LIGHTLEVELS * MAXLIGHTSCALE);
 
-	/*
 	usedcompositetexturepagemem = MK_FP(segment, offset_render);
 	offset_render += NUM_TEXTURE_PAGES * sizeof(uint8_t);
 	compositetextureoffset = MK_FP(segment, offset_render);
@@ -643,6 +642,7 @@ void Z_LinkEMSVariables() {
 
 	flatindex = MK_FP(segment, offset_render);
 	offset_render += numflats * sizeof(uint8_t);
+	/*
 	*/
 
 

@@ -1049,8 +1049,8 @@ void Z_FreeConventionalAllocations() {
 	Z_QuickmapRender();
 
 	//reset texturee cache
-	memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (NUM_COMPOSITE_TEXTURES));
-	memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (NUM_COMPOSITE_TEXTURES));
+	memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (numtextures));
+	memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (numtextures));
 	memset(usedcompositetexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
 	
 	memset(patchpage, 0xFF, sizeof(uint8_t) * (numpatches));

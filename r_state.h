@@ -31,7 +31,7 @@
 
 // DOOM 1 SHAREWARE VALUE
 // DOOM 1 SHAREWARE VALUE
-#define NUM_SPRITE_LUMPS_CACHE 483
+
 
 //
 // Refresh internal data structures,
@@ -41,9 +41,9 @@
 
 
 // needed for pre rendering (fracs)
-extern int16_t		*spritewidths;// [NUM_SPRITE_LUMPS_CACHE];
-extern int16_t		*spriteoffsets;// [NUM_SPRITE_LUMPS_CACHE];
-extern int16_t		*spritetopoffsets;// [NUM_SPRITE_LUMPS_CACHE];
+extern int16_t		*spritewidths;
+extern int16_t		*spriteoffsets;
+extern int16_t		*spritetopoffsets;
 
 //extern MEMREF		colormapsRef;
 extern lighttable_t* colormaps;
@@ -60,7 +60,6 @@ extern uint8_t		textureheights[NUM_COMPOSITE_TEXTURES];
 extern uint8_t			flattranslation[NUM_COMPOSITE_TEXTURES];
 extern uint8_t			texturetranslation[NUM_COMPOSITE_TEXTURES];
 
-/*
 extern uint8_t* usedcompositetexturepagemem;
 extern uint8_t* compositetextureoffset;
 extern uint8_t* compositetexturepage;
@@ -71,8 +70,8 @@ extern uint8_t* usedspritepagemem;
 extern uint8_t* spritepage;
 extern uint8_t* spriteoffset;
 extern uint8_t* flatindex;
+/*
 
-*/
 
 extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
 extern uint8_t compositetextureoffset[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
@@ -87,6 +86,7 @@ extern uint8_t	spritepage[NUM_SPRITE_LUMPS];
 extern uint8_t spriteoffset[NUM_SPRITE_LUMPS];
 
 extern uint8_t flatindex[NUM_FLATS];
+*/
 
 extern uint8_t firstunusedflat;
 extern int32_t totalpatchsize;

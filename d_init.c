@@ -826,6 +826,10 @@ void D_DoomMain2(void)
 
 	DEBUG_PRINT("\nZ_InitEMS: Init EMS memory allocation daemon.");
 	Z_InitEMS();
+	
+	DEBUG_PRINT("\nW_Init: Init WADfiles.");
+	W_InitMultipleFiles(wadfiles);
+	D_InitGraphicCounts(); // gross
 
 	DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
 	Z_InitUMB();
@@ -842,9 +846,6 @@ void D_DoomMain2(void)
 	DEBUG_PRINT("\nZ_LoadBinaries: Load game data into memory");
 	Z_LoadBinaries();
 
-	DEBUG_PRINT("\nW_Init: Init WADfiles.");
-	W_InitMultipleFiles(wadfiles);
-	//D_InitGraphicCounts(); // gross
 
 	// init subsystems
 	DEBUG_PRINT("\nD_InitStrings: loading text.");

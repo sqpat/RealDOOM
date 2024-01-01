@@ -81,9 +81,9 @@ uint8_t			flattranslation[NUM_COMPOSITE_TEXTURES]; // can almost certainly be sm
 uint8_t			texturetranslation[NUM_COMPOSITE_TEXTURES];
 
 // needed for pre rendering
-int16_t		*spritewidths;// [NUM_SPRITE_LUMPS_CACHE];
-int16_t		*spriteoffsets;// [NUM_SPRITE_LUMPS_CACHE];
-int16_t		*spritetopoffsets;// [NUM_SPRITE_LUMPS_CACHE];
+int16_t		*spritewidths;
+int16_t		*spriteoffsets;
+int16_t		*spritetopoffsets;
 
 byte         	*colormapbytes;// [(33 * 256) + 255];
 lighttable_t    *colormaps;
@@ -94,7 +94,6 @@ extern int16_t pageswapargs_textcache[8];
 int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
 int16_t textureLRU[4];
 
-/*
 uint8_t* usedcompositetexturepagemem;// [NUM_TEXTURE_PAGES]; // defaults 00
 uint8_t* compositetextureoffset;// [NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
 uint8_t* compositetexturepage;// [NUM_COMPOSITE_TEXTURES]; //  page index of the allocatiion
@@ -104,12 +103,12 @@ uint8_t* patchpage;// [NUM_PATCH_LUMPS]; //  defaults FF. page index of the allo
 uint8_t* patchoffset;// [NUM_PATCH_LUMPS]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
 
 uint8_t* usedspritepagemem;// [NUM_SPRITE_CACHE_PAGES]; // defaults 00
-uint8_t* spritepage;// [NUM_SPRITE_LUMPS];
-uint8_t* spriteoffset;// [NUM_SPRITE_LUMPS];
+uint8_t* spritepage;
+uint8_t* spriteoffset;
 
 uint8_t* flatindex;
 
-*/
+/*
 
 
 uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
@@ -125,6 +124,7 @@ uint8_t	spritepage[NUM_SPRITE_LUMPS];
 uint8_t spriteoffset[NUM_SPRITE_LUMPS];
 
 uint8_t	 flatindex[NUM_FLATS]; // they are always 4k sized, can figure out page and offset from that. 
+*/
 
 uint8_t	 firstunusedflat = 0; // they are always 4k sized, can figure out page and offset from that. 
 int32_t totalpatchsize = 0;
@@ -346,8 +346,8 @@ void R_GetNextPatchBlock(int16_t lump) {
  	
 	}
 
-	patchpage  [lump - FIRST_PATCH] = texpage;
-	patchoffset[lump - FIRST_PATCH] = texoffset;
+	patchpage  [lump - firstpatch] = texpage;
+	patchoffset[lump - firstpatch] = texoffset;
 
 }
 
@@ -478,7 +478,7 @@ void R_GenerateComposite(uint8_t texnum, byte* block)
 		patch = &texture->patches[i];
 		lastusedpatch = patchpatch;
 		patchpatch = patch->patch & PATCHMASK;
-		index = patch->patch - FIRST_PATCH;
+		index = patch->patch - firstpatch;
 		pagenum = patchpage[index];
 		/*
 		if (patchpage[index] == 0xFF) {
@@ -690,7 +690,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 // get 0x4000 offset for texture
 byte* getpatchtexture(int16_t lump) {
 
-	int16_t index = lump - FIRST_PATCH;
+	int16_t index = lump - firstpatch;
 	uint8_t texpage = patchpage[index];
 	uint8_t texoffset = patchoffset[index];
 	byte* addr;
