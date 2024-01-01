@@ -365,7 +365,6 @@ R_CheckPlane
 int tempcounter = 0;
 
 extern int16_t pageswapargs_textcache[8];
-extern uint8_t flatindex[NUM_FLATS];
 extern uint8_t firstunusedflat;
 extern int16_t activetexturepages[4];
 //
@@ -499,7 +498,7 @@ void R_DrawPlanes (void)
 		// load if necessary
 		if (flatunloaded){
 			int16_t lump = firstflat + flattranslation[pl->picnum];
-			if (lump < firstflat || lump > firstflat + NUM_FLATS) {
+			if (lump < firstflat || lump > firstflat + numflats) {
 				I_Error("bad flat? %i", lump);
 			}
 		 
@@ -509,16 +508,6 @@ void R_DrawPlanes (void)
 		// regular flat
 		ds_source = src;
 
-
-		// regular flat
-/*
-		ds_sourceRef = W_CacheLumpNumEMS(firstflat +
-			flattranslation[pl->picnum],
-			PU_STATIC);
-		ds_source = Z_LoadBytesFromEMS(ds_sourceRef);
-		*/
-		
-		
 		// works but slow?
 		//ds_source = R_GetFlat(firstflat + flattranslation[pl->picnum]);
 		

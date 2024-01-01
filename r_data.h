@@ -43,8 +43,7 @@ void R_InitData (void);
 void R_PrecacheLevel (void);
 
  
-byte* R_GetFlat
-(int16_t flatlump);
+//byte* R_GetFlat (int16_t flatlump);
 
 #define TEXTURE_TYPE_LUMP 0
 #define TEXTURE_TYPE_COMPOSITE 1

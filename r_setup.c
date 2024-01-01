@@ -275,15 +275,8 @@ void R_ExecuteSetViewSize(void)
  
 }
 
+ 
 
-
-
-
-extern int16_t             numflats;
-extern int16_t             numtextures;
-extern int16_t             numtextures;
-
-extern MEMREF textures[NUM_COMPOSITE_TEXTURES];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
 
 //
 // R_PrecacheLevel
@@ -294,14 +287,9 @@ extern MEMREF textures[NUM_COMPOSITE_TEXTURES];  // lists of MEMREFs kind of suc
 //int32_t             spritememory;
 
 
-extern uint8_t flatindex[NUM_FLATS];
 extern uint8_t firstunusedflat;
 extern int32_t totalpatchsize;
-
-extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
-extern uint8_t compositetextureoffset[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-extern uint8_t compositetexturepage[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high byte's low 6 bits are offset (256 byte aligned) within 16 kb page. Top 2 bits of high byte are (page count-1). top 8 bits are page number. 0xFFFF means unallocated.
-
+ 
 extern int8_t textureLRU[4];
 extern int16_t activetexturepages[4];
 extern byte*	 spritedefs_bytes;
@@ -466,18 +454,15 @@ void R_PrecacheLevel(void)
 	Z_QuickmapPhysics();
 
 
-	for (i = 0; i < numsprites; i++)
-	{
+	for (i = 0; i < numsprites; i++) {
 		if (!spritepresent[i])
 			continue;
 
  		spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
 
-		for (j = 0; j < sprites[i].numframes; j++)
-		{
+		for (j = 0; j < sprites[i].numframes; j++) {
 			sf = &spriteframes[j];
-			for (k = 0; k < 8; k++)
-			{
+			for (k = 0; k < 8; k++) {
 				lump = firstspritelump + sf->lump[k];
 				//spritesize += W_LumpLength(lump);
 				getspritetexture(lump);

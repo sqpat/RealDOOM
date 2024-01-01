@@ -1011,21 +1011,7 @@ void* Z_LoadBytesFromConventional(MEMREF ref) {
 extern uint16_t leveldataoffset_phys;
 extern uint16_t leveldataoffset_rend;
 extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
-extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
-extern uint8_t compositetextureoffset[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-extern uint8_t compositetexturepage[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high byte's low 6 bits are offset (256 byte aligned) within 16 kb page. Top 2 bits of high byte are (page count-1). top 8 bits are page number. 0xFFFF means unallocated.
-//extern uint8_t compositetexturepagecount[NUM_COMPOSITE_TEXTURES]; //  defaults 00. number of pages of the allocation
-
-extern uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES]; // defaults 00
-extern uint8_t patchoffset[NUM_PATCH_LUMPS]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-extern uint8_t patchpage[NUM_PATCH_LUMPS]; //  defaults FF. high byte's low 6 bits are offset (256 byte aligned) within 16 kb page. Top 2 bits of high byte are (page count-1). top 8 bits are page number. 0xFFFF means unallocated.
-//extern uint8_t patchcount[NUM_PATCH_LUMPS]; //  defaults 00. number of pages of the allocation
-
-extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
-extern uint8_t spritepage[NUM_SPRITE_LUMPS];
-extern uint8_t spriteoffset[NUM_SPRITE_LUMPS];
-
-extern uint8_t flatindex[NUM_FLATS];
+ 
 extern uint8_t firstunusedflat; // they are always 4k sized, can figure out page and offset from that. 
 extern int32_t totalpatchsize;
 
@@ -1060,26 +1046,26 @@ void Z_FreeConventionalAllocations() {
 	
 	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
 
+	Z_QuickmapRender();
 
 	//reset texturee cache
 	memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (NUM_COMPOSITE_TEXTURES));
 	memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (NUM_COMPOSITE_TEXTURES));
 	memset(usedcompositetexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
 	
-	//	memset(compositetexturepagecount, 0xFF, sizeof(uint8_t) * (NUM_COMPOSITE_TEXTURES));
-	//  memset(patchpagecount, 0x0, sizeof(uint8_t) * (NUM_PATCH_LUMPS));
-
-	memset(patchpage, 0xFF, sizeof(uint8_t) * (NUM_PATCH_LUMPS));
-	memset(patchoffset, 0xFF, sizeof(uint8_t) * (NUM_PATCH_LUMPS));
+	memset(patchpage, 0xFF, sizeof(uint8_t) * (numpatches));
+	memset(patchoffset, 0xFF, sizeof(uint8_t) * (numpatches));
 	memset(usedpatchpagemem, 00, sizeof(uint8_t) * NUM_PATCH_CACHE_PAGES);
 
-	memset(spritepage, 0xFF, sizeof(uint8_t) * (NUM_SPRITE_LUMPS));
-	memset(spriteoffset, 0xFF, sizeof(uint8_t) * (NUM_SPRITE_LUMPS));
+	memset(spritepage, 0xFF, sizeof(uint8_t) * (numspritelumps));
+	memset(spriteoffset, 0xFF, sizeof(uint8_t) * (numspritelumps));
 	memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
 
-	memset(flatindex, 0xFF, sizeof(uint8_t) * NUM_FLATS);
+	memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);
 	firstunusedflat = 0;
 	
+	Z_QuickmapPhysics();
+
 	totalpatchsize = 0;
 
 	for (i = 0; i < 4; i++) {

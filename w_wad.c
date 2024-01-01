@@ -174,6 +174,7 @@ int32_t W_LumpLength (int16_t lump)
 //
 
 
+extern byte* colormaps;
 
 
 void
@@ -199,6 +200,10 @@ W_ReadLumpEMS
     l = lumpinfo+lump;
 	//lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
 	lumpsize = W_LumpLength(lump);
+
+	if (dest == colormaps) {
+		lumpsize = 33 * 256; // hack to override lumpsize of colormaps
+	}
 
     I_BeginRead ();
         
@@ -265,73 +270,7 @@ W_ReadLumpEMS
 
 
 
-extern byte* colormaps;
-
-void
-W_ReadLumpStatic
-(int16_t           lump,
-	void*         dest)
-{
-	filelength_t         c;
-	lumpinfo_t* l;
-	filehandle_t		handle;
-	filelength_t		lumpsize;
-
-#ifdef CHECK_FOR_ERRORS
-	if (lump >= numlumps)
-		I_Error("W_ReadLump: %i >= numlumps", lump);
-#endif
-
-	l = lumpinfo + lump;
-	lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
-	if (dest == colormaps){
-		lumpsize = 33 * 256; // hack to override lumpsize of colormaps
-	}
-
-	I_BeginRead();
-
-#ifdef	SUPPORT_MULTIWAD
-	if (filehandles[l->handleindex] == -1)
-#else
-	if (wadfilehandle == -1)
-#endif
-	{
-		// reloadable file, so use open / read / close
-		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1) {
-#ifdef CHECK_FOR_ERRORS
-			I_Error("W_ReadLump: couldn't open %s", reloadname);
-#endif
-		}
-	}
-	else {
-#ifdef	SUPPORT_MULTIWAD
-		handle = filehandles[l->handleindex];
-#else
-		handle = wadfilehandle;
-#endif
-	}
-	lseek(handle, l->position, SEEK_SET);
-	c = read(handle, dest, lumpsize);
-
-#ifdef CHECK_FOR_ERRORS
-	// todo make this suck less. 16 bit hack for large reads...
-	if (c < lumpsize && c + 65536l != lumpsize) {
-		I_Error("\nW_ReadLump: only read %il of %il on lump %i", c, lumpsize, lump);
-	}
-#endif
-
-#ifdef	SUPPORT_MULTIWAD
-	if (filehandles[l->handleindex] == -1)
-#else
-	if (wadfilehandle == -1)
-#endif
-		close(handle);
-
-	I_EndRead();
-	 
-
-}
-
+ 
 
 int16_t W_CacheLumpNumCheck(int16_t lump) {
 

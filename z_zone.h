@@ -107,7 +107,14 @@ typedef struct allocation_static_conventional_s
 #define MAX_THINKERS 840
 #define SPRITE_ALLOCATION_LIST_SIZE 150
 
-#define UMB2_SIZE STATIC_CONVENTIONAL_SPRITE_SIZE + (MAX_THINKERS * sizeof(mobj_pos_t))
+#define TEXTURE_CACHE_OVERHEAD_SIZE NUM_TEXTURE_PAGES + (numtextures * 2)
+#define SPRITE_CACHE_OVERHEAD_SIZE NUM_SPRITE_CACHE_PAGES + (numspritelumps * 2)
+#define PATCH_CACHE_OVERHEAD_SIZE NUM_PATCH_CACHE_PAGES + (numpatches * 2)
+#define FLAT_CACHE_OVERHEAD_SIZE numflats
+#define CACHE_OVERHEAD_SIZE (TEXTURE_CACHE_OVERHEAD_SIZE + SPRITE_CACHE_OVERHEAD_SIZE + PATCH_CACHE_OVERHEAD_SIZE + FLAT_CACHE_OVERHEAD_SIZE)
+
+
+#define UMB2_SIZE STATIC_CONVENTIONAL_SPRITE_SIZE + (MAX_THINKERS * sizeof(mobj_pos_t)) 
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
 extern byte* conventionalmemoryblock;
@@ -222,13 +229,6 @@ typedef struct
 #define NUM_EMS4_SWAP_PAGES (int32_t)(FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
 // DOOM SHAREWARE VALUES
 
-#define FIRST_LUMP_TEXTURE 1039
-// this includes flats... eventually remove
-#define LAST_LUMP_TEXTURE 1262
-// 223
-#define NUM_TEXTURE_LUMPS LAST_LUMP_TEXTURE - FIRST_LUMP_TEXTURE
-
-
 // DOOM SHAREWARE VALUE
 // P1_END - P1_START
 #define FIRST_PATCH 1039
@@ -242,6 +242,7 @@ typedef struct
 #define FIRST_LUMP_FLAT 1208
 #define LAST_LUMP_FLAT 1262
 #define NUM_FLATS LAST_LUMP_FLAT - FIRST_LUMP_FLAT
+ 
 
 #define TASK_PHYSICS 0
 #define TASK_RENDER 1
@@ -256,7 +257,6 @@ typedef struct
 
 // EMS 4.0 stuff
 void Z_QuickmapPhysics();
-void Z_QuickmapPhysics9000();
 void Z_QuickmapRender();
 void Z_QuickmapRender_NoTex();
 void Z_QuickmapStatus();
@@ -274,6 +274,8 @@ void Z_QuickMapFlatPage(int16_t page);
 void Z_QuickMapTextureInfoPage();
 
 void Z_GetEMSPageMap();
+void Z_LinkEMSVariables();
+void Z_LinkConventionalVariables();
 void Z_LoadBinaries();
 
 #define PAGE_TYPE_PHYSICS 0

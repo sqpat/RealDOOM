@@ -327,10 +327,6 @@ void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
 	int16_t* far pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
-	uint16_t segment;
-	uint16_t offset_render;
-	uint16_t offset_physics;
-	uint16_t offset_status;
 
 	/*
 	FILE *fp;
@@ -414,12 +410,13 @@ found:
 
 	
 
-	//					PHYSICS			RENDER					ST/HUD			DEMO		COMPOSITE   FWIPE
+	//					PHYSICS			RENDER					ST/HUD			DEMO		   FWIPE
 	// BLOCK
 	// -------------------------------------------------------------------------------------------------------
 	//            						visplane stuff			screen4 0x9c00
 	// 0x9000 block		thinkers		viewangles, drawsegs
 	// -------------------------------------------------------------------------------------------------------
+	//									tex cache arrays
 	// 									sprite stuff			
 	//					screen0			visplane openings
 	// 0x8000 block		gamma table		texture memrefs?
@@ -427,8 +424,8 @@ found:
 	// 0x7000 block		physics levdata render levdata			st graphics
 	// -------------------------------------------------------------------------------------------------------
 	//				more physics levdata zlight											
-	// 					nightnmarespawns 			
-	//	0x6000 block	strings			flat cache				strings						textureinfo
+	// 					nightnmarespawns textureinfo			
+	//	0x6000 block	strings			flat cache				strings						 
 	// -------------------------------------------------------------------------------------------------------
 	//                  states          states 
 	// 0x5000 block		trig tables   	trig tables								demobuffer	
@@ -513,6 +510,17 @@ found:
 		//pageswapargs_rend_temp_7000_to_6000[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i + 12];
 	}
 
+
+	Z_QuickmapPhysics(); // map default page map
+}
+
+void Z_LinkEMSVariables() {
+	uint16_t segment;
+	uint16_t offset_render;
+	uint16_t offset_physics;
+	uint16_t offset_status;
+	int16_t i;
+
 	// we're an OS now! let's directly allocate memory !
 
 	segment = 0x9000;
@@ -529,7 +537,7 @@ found:
 	intercepts = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(intercept_t) * MAXINTERCEPTS;
 
- 
+
 	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
 	visplanes = MK_FP(segment, 0);
 	offset_render += sizeof(visplane_t) * MAXCONVENTIONALVISPLANES;
@@ -573,7 +581,7 @@ found:
 
 
 	printf("\n  MEMORY AREA  Physics  Render  HU/ST    Demo");
-	printf("\n   0x9000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0-offset_status);
+	printf("\n   0x9000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0 - offset_status);
 
 	segment = 0x8000;
 	offset_render = 0u;
@@ -585,9 +593,10 @@ found:
 	gammatable = MK_FP(segment, offset_physics);
 	offset_physics += (256 * 5);
 
-	// 65280
 
-	openings = MK_FP(segment, 0);
+	colormapbytes = MK_FP(segment, offset_render);
+	offset_render += ((33 * 256));
+	openings = MK_FP(segment, offset_render);
 	offset_render += sizeof(int16_t) * MAXOPENINGS;
 	negonearray = MK_FP(segment, offset_render);
 	offset_render += sizeof(int16_t) * (SCREENWIDTH);
@@ -597,8 +606,6 @@ found:
 	offset_render += sizeof(vissprite_t) * (MAXVISSPRITES);
 	scalelightfixed = MK_FP(segment, offset_render);
 	offset_render += sizeof(lighttable_t*) * (MAXLIGHTSCALE);
-	colormapbytes = MK_FP(segment, offset_render);
-	offset_render += ((33 * 256) + 255);
 
 	spritewidths = MK_FP(segment, offset_render);
 	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
@@ -606,31 +613,56 @@ found:
 	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
 	spritetopoffsets = MK_FP(segment, offset_render);
 	offset_render += (sizeof(int16_t) * NUM_SPRITE_LUMPS_CACHE);
-	
+
 	// todo change all this to 16 bit pointers/lookups based on fixed 0x8000 colormapbytes segment.
 	// then bring offset_render back up
 	scalelight = MK_FP(segment, offset_render);
 	offset_render += sizeof(lighttable_t* far) * (LIGHTLEVELS * MAXLIGHTSCALE);
-	//zlight = MK_FP(segment, offset_render);
-	//offset_render += sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ);
+
+	/*
+	usedcompositetexturepagemem = MK_FP(segment, offset_render);
+	offset_render += NUM_TEXTURE_PAGES * sizeof(uint8_t);
+	compositetextureoffset = MK_FP(segment, offset_render);
+	offset_render += numtextures * sizeof(uint8_t);
+	compositetexturepage = MK_FP(segment, offset_render);
+	offset_render += numtextures * sizeof(uint8_t);
+
+	usedspritepagemem = MK_FP(segment, offset_render);
+	offset_render += NUM_SPRITE_CACHE_PAGES * sizeof(uint8_t);
+	spritepage = MK_FP(segment, offset_render);
+	offset_render += numspritelumps * sizeof(uint8_t);
+	spriteoffset = MK_FP(segment, offset_render);
+	offset_render += numspritelumps * sizeof(uint8_t);
+
+	usedpatchpagemem = MK_FP(segment, offset_render);
+	offset_render += NUM_PATCH_CACHE_PAGES * sizeof(uint8_t);
+	patchpage = MK_FP(segment, offset_render);
+	offset_render += numpatches * sizeof(uint8_t);
+	patchoffset = MK_FP(segment, offset_render);
+	offset_render += numpatches * sizeof(uint8_t);
+
+	flatindex = MK_FP(segment, offset_render);
+	offset_render += numflats * sizeof(uint8_t);
+	*/
+
 
 	// from the top
 
 	// 0x9000  40203  64894  10240
-	// 0x8000  65280  64017  00000
+	// 0x8000  65280  64772  00000
 	// 0x7000  XXXXX  XXXXX  64208
 	// 0x6000  24784  55063  16384  
 	// 0x5000  63150  63150  00000  XXXXX 
 	// 0x4000  00000  00000  00000
 
-	printf("\n   0x8000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0-offset_status);
+	printf("\n   0x8000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0 - offset_status);
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
 
 	segment = 0x7000;
 
-	
+
 	offset_status = 0u;
 	offset_status -= 320;
 	tallnum[0] = MK_FP(segment, offset_status);
@@ -690,7 +722,7 @@ found:
 	keys[4] = MK_FP(segment, offset_status);
 	offset_status -= 120;
 	keys[5] = MK_FP(segment, offset_status);
-	 
+
 	offset_status -= 1648;
 	armsbg[0] = MK_FP(segment, offset_status);
 
@@ -706,13 +738,13 @@ found:
 	arms[4][0] = MK_FP(segment, offset_status);
 	offset_status -= 72;
 	arms[5][0] = MK_FP(segment, offset_status);
-	 
+
 	offset_status -= 1408;
 	faceback = MK_FP(segment, offset_status);
 
 	offset_status -= 13128;
 	sbar = MK_FP(segment, offset_status);
-	 
+
 	for (i = 0; i < 42; i++) {
 		offset_status -= facelen[i];
 		faces[i] = MK_FP(segment, offset_status);
@@ -739,9 +771,9 @@ found:
 
 	texturecolumnlumps_bytes = MK_FP(segment, 0);
 	texturecolumnofs_bytes   = MK_FP(segment, 21552u);
-	texturedefs_bytes        = MK_FP(segment, 21552u + 21552u);
+	texturedefs_bytes	     = MK_FP(segment, 21552u + 21552u);
 	offset_render += (21552u + 21552u + 3767u);
-	
+
 
 
 	zlight = MK_FP(segment, offset_render);
@@ -750,7 +782,7 @@ found:
 
 	printf("\n   0x6000:      %05u   %05u   %05u   00000", offset_physics, offset_render, offset_status);
 
-	
+
 
 
 	//I_Error("done");
@@ -773,9 +805,9 @@ found:
 
 	demobuffer = MK_FP(segment, 0);
 
- 
+
 	printf("\n   0x5000:      %05u   %05u   XXXXX   XXXXX", offset_physics, offset_physics);
-	
+
 	segment = 0x4000;
 	offset_render = 0u;
 	offset_physics = 0u;
@@ -784,7 +816,7 @@ found:
 	printf("\n   0x4000:      %05u   XXXXX   %05u   00000", offset_physics, offset_render, 0 - offset_status);
 
 
-	Z_QuickmapPhysics(); // map default page map
+
 }
 
 
@@ -826,4 +858,39 @@ void Z_LoadBinaries() {
 	 
 }
 
+byte* conventionallowerblock;
 
+void Z_LinkConventionalVariables() {
+	byte* offset;
+	uint16_t size = CACHE_OVERHEAD_SIZE;
+
+	/*
+	conventionallowerblock = offset = malloc(size);
+	I_Error("\n%lx", offset);
+
+	usedcompositetexturepagemem = offset;
+	offset += NUM_TEXTURE_PAGES * sizeof(uint8_t);
+	compositetextureoffset = offset;
+	offset += numtextures * sizeof(uint8_t);
+	compositetexturepage = offset;
+	offset += numtextures * sizeof(uint8_t);
+
+	usedspritepagemem = offset;
+	offset += NUM_SPRITE_CACHE_PAGES * sizeof(uint8_t);
+	spritepage = offset;
+	offset += numspritelumps * sizeof(uint8_t);
+	spriteoffset = offset;
+	offset += numspritelumps * sizeof(uint8_t);
+
+	usedpatchpagemem = offset;
+	offset += NUM_PATCH_CACHE_PAGES * sizeof(uint8_t);
+	patchpage = offset;
+	offset += numpatches * sizeof(uint8_t);
+	patchoffset = offset;
+	offset += numpatches * sizeof(uint8_t);
+
+	flatindex = offset;
+	offset += numflats * sizeof(uint8_t);
+	*/
+
+}

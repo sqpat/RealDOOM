@@ -61,11 +61,12 @@ byte* texturecolumnlumps_bytes;
 byte* texturecolumnofs_bytes;
 byte* texturedefs_bytes;
 
+byte*	 spritedefs_bytes;
+
 
 uint16_t texturecolumn_offset[NUM_COMPOSITE_TEXTURES];
 uint16_t texturedefs_offset[NUM_COMPOSITE_TEXTURES];
 
-byte*	 spritedefs_bytes;
 
 uint8_t  texturewidthmasks[NUM_COMPOSITE_TEXTURES];
 // needed for texture pegging
@@ -74,9 +75,6 @@ uint16_t  texturecompositesizes[NUM_COMPOSITE_TEXTURES];	// uint16_t*
 
 
 
-uint8_t	 flatindex[NUM_FLATS]; // they are always 4k sized, can figure out page and offset from that. 
-uint8_t	 firstunusedflat = 0; // they are always 4k sized, can figure out page and offset from that. 
-int32_t totalpatchsize = 0;
 
 // for global animation
 uint8_t			flattranslation[NUM_COMPOSITE_TEXTURES]; // can almost certainly be smaller
@@ -89,6 +87,48 @@ int16_t		*spritetopoffsets;// [NUM_SPRITE_LUMPS_CACHE];
 
 byte         	*colormapbytes;// [(33 * 256) + 255];
 lighttable_t    *colormaps;
+
+
+extern int16_t pageswapargs_textcache[8];
+
+int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
+int16_t textureLRU[4];
+
+/*
+uint8_t* usedcompositetexturepagemem;// [NUM_TEXTURE_PAGES]; // defaults 00
+uint8_t* compositetextureoffset;// [NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+uint8_t* compositetexturepage;// [NUM_COMPOSITE_TEXTURES]; //  page index of the allocatiion
+
+uint8_t* usedpatchpagemem;// [NUM_PATCH_CACHE_PAGES]; // defaults 00
+uint8_t* patchpage;// [NUM_PATCH_LUMPS]; //  defaults FF. page index of the allocatiion
+uint8_t* patchoffset;// [NUM_PATCH_LUMPS]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+
+uint8_t* usedspritepagemem;// [NUM_SPRITE_CACHE_PAGES]; // defaults 00
+uint8_t* spritepage;// [NUM_SPRITE_LUMPS];
+uint8_t* spriteoffset;// [NUM_SPRITE_LUMPS];
+
+uint8_t* flatindex;
+
+*/
+
+
+uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
+uint8_t compositetextureoffset[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+uint8_t compositetexturepage[NUM_COMPOSITE_TEXTURES]; //  page index of the allocatiion
+
+uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES]; // defaults 00
+uint8_t patchpage[NUM_PATCH_LUMPS]; //  defaults FF. page index of the allocatiion
+uint8_t patchoffset[NUM_PATCH_LUMPS]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+
+uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES]; // defaults 00
+uint8_t	spritepage[NUM_SPRITE_LUMPS];
+uint8_t spriteoffset[NUM_SPRITE_LUMPS];
+
+uint8_t	 flatindex[NUM_FLATS]; // they are always 4k sized, can figure out page and offset from that. 
+
+uint8_t	 firstunusedflat = 0; // they are always 4k sized, can figure out page and offset from that. 
+int32_t totalpatchsize = 0;
+
 
 
 //
@@ -148,22 +188,7 @@ R_DrawColumnInCache
 }
 
 
-extern int16_t pageswapargs_textcache[8];
 
-int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
-int16_t textureLRU[4];
-
-uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
-uint8_t compositetextureoffset[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-uint8_t compositetexturepage[NUM_COMPOSITE_TEXTURES]; //  page index of the allocatiion
-
-uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES]; // defaults 00
-uint8_t patchpage[NUM_PATCH_LUMPS]; //  defaults FF. page index of the allocatiion
-uint8_t patchoffset[NUM_PATCH_LUMPS]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-
-uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES]; // defaults 00
-uint8_t	spritepage[NUM_SPRITE_LUMPS];
-uint8_t spriteoffset[NUM_SPRITE_LUMPS];
 
  
 
@@ -321,7 +346,7 @@ void R_GetNextPatchBlock(int16_t lump) {
  	
 	}
 
-	patchpage[lump-FIRST_PATCH] = texpage;
+	patchpage  [lump - FIRST_PATCH] = texpage;
 	patchoffset[lump - FIRST_PATCH] = texoffset;
 
 }
@@ -431,7 +456,7 @@ void R_GenerateComposite(uint8_t texnum, byte* block)
 	int16_t				patchoriginx;
 	int8_t				patchoriginy;
 	texture_t*			texture;
-	int16_t				lastpatch = -1;
+	int16_t				lastusedpatch = -1;
 	int16_t				index;
 	uint8_t				currentpatchpage = 0;
 	uint8_t pagenum;
@@ -451,7 +476,7 @@ void R_GenerateComposite(uint8_t texnum, byte* block)
 	Z_PushScratchFrame();
 	for (i = 0; i < texturepatchcount; i++) {
 		patch = &texture->patches[i];
-		lastpatch = patchpatch;
+		lastusedpatch = patchpatch;
 		patchpatch = patch->patch & PATCHMASK;
 		index = patch->patch - FIRST_PATCH;
 		pagenum = patchpage[index];
@@ -488,7 +513,7 @@ void R_GenerateComposite(uint8_t texnum, byte* block)
 		// todo use cache lookup?
 		// can one page be mapped twice?
 
-		if (lastpatch != patchpatch) {
+		if (lastusedpatch != patchpatch) {
 			realpatch = (patch_t*)MK_FP(SCRATCH_PAGE_SEGMENT, 0);
 			W_CacheLumpNumDirect(patchpatch, (byte*)realpatch);
 		}
@@ -756,7 +781,7 @@ byte* getspritetexture(int16_t lump) {
 
 }
 
-
+/*
 byte*
 R_GetFlat
 (int16_t flatlump) {
@@ -774,25 +799,6 @@ R_GetFlat
 		}
 		flatunloaded = true;
 	}
-	//flatunloaded = true;
-
-	// remap if necessary
-	/*
-	if (usedflatindex > 15) {
-		// have to remap
-		startpagenumber = (usedflatindex >> 2) - 3;
-		effectivepagenumber = 3;
-
-	}
-	else {
-		effectivepagenumber = usedflatindex >> 2;
-	}
-	for (i = 0; i < 4; i++) {
-		oldtexargs[i] = pageswapargs_textcache[i * 2];
-		pageswapargs_textcache[i * 2] = FIRST_FLAT_CACHE_LOGICAL_PAGE + startpagenumber + i;
-	}
-	Z_QuickmapRenderTexture();
-	*/
 
 	// flats 4k each in size. get texture takes in a size shifted 2 and num pages (0) in the bottom 2 bits
 	flatpageindex = (usedflatindex & 0xFC) << 2;
@@ -803,9 +809,8 @@ R_GetFlat
 
 	// load if necessary
 	if (flatunloaded) {
-		//int16_t lump = firstflat + flattranslation[pl->picnum];
 		
-		if (flatlump < firstflat || flatlump > firstflat + NUM_FLATS) {
+		if (flatlump < firstflat || flatlump > firstflat + numflats) {
 			I_Error("bad flat? %i", flatlump);
 		}
 
@@ -814,8 +819,7 @@ R_GetFlat
 	return addr;
 }
 
-
- 
+*/
 
 
  

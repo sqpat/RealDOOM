@@ -60,12 +60,73 @@ extern uint8_t		textureheights[NUM_COMPOSITE_TEXTURES];
 extern uint8_t			flattranslation[NUM_COMPOSITE_TEXTURES];
 extern uint8_t			texturetranslation[NUM_COMPOSITE_TEXTURES];
 
+/*
+extern uint8_t* usedcompositetexturepagemem;
+extern uint8_t* compositetextureoffset;
+extern uint8_t* compositetexturepage;
+extern uint8_t* usedpatchpagemem;
+extern uint8_t* patchpage;
+extern uint8_t* patchoffset;
+extern uint8_t* usedspritepagemem;
+extern uint8_t* spritepage;
+extern uint8_t* spriteoffset;
+extern uint8_t* flatindex;
+
+*/
+
+extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
+extern uint8_t compositetextureoffset[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+extern uint8_t compositetexturepage[NUM_COMPOSITE_TEXTURES]; //  page index of the allocatiion
+
+extern uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES]; // defaults 00
+extern uint8_t patchpage[NUM_PATCH_LUMPS]; //  defaults FF. page index of the allocatiion
+extern uint8_t patchoffset[NUM_PATCH_LUMPS]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+
+extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES]; // defaults 00
+extern uint8_t	spritepage[NUM_SPRITE_LUMPS];
+extern uint8_t spriteoffset[NUM_SPRITE_LUMPS];
+
+extern uint8_t flatindex[NUM_FLATS];
+
+extern uint8_t firstunusedflat;
+extern int32_t totalpatchsize;
+
+
+extern uint16_t texturecolumn_offset[NUM_COMPOSITE_TEXTURES];
+extern uint16_t texturedefs_offset[NUM_COMPOSITE_TEXTURES];
+extern byte*	 spritedefs_bytes;
+
+extern uint8_t  texturewidthmasks[NUM_COMPOSITE_TEXTURES];
+// needed for texture pegging
+extern uint8_t  textureheights[NUM_COMPOSITE_TEXTURES];		    // uint8_t must be + 1 and then shifted to fracbits when used
+extern uint16_t  texturecompositesizes[NUM_COMPOSITE_TEXTURES];	// uint16_t*
+
+// for global animation
+extern uint8_t			flattranslation[NUM_COMPOSITE_TEXTURES]; // can almost certainly be smaller
+extern uint8_t			texturetranslation[NUM_COMPOSITE_TEXTURES];
+
+
+
+
+
 
 
 // Sprite....
+
+
 extern int16_t		firstspritelump;
 extern int16_t		lastspritelump;
 extern int16_t		numspritelumps;
+
+extern int16_t             firstflat;
+extern int16_t             lastflat;
+extern int16_t             numflats;
+
+extern int16_t             firstpatch;
+extern int16_t             lastpatch;
+extern int16_t             numpatches;
+extern int16_t             numtextures;
+
 
 //
 // Lookup tables for map data.

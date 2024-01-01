@@ -71,7 +71,6 @@ int16_t	W_GetNumForName(int8_t* name);
 //#define W_GetNumForName(a) W_GetNumForName2(a, __FILE__, __LINE__)
 
 int32_t	W_LumpLength (int16_t lump);
-void    W_ReadLumpStatic (int16_t lump, void *dest);
 
 int16_t W_CacheLumpNumCheck(int16_t lump);
 //MEMREF  W_CacheLumpNumEMS2(int16_t lump, int8_t tag, int8_t* file, int32_t line);

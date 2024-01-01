@@ -440,7 +440,6 @@ void HU_Init(void)
 	j = HU_FONTSTART;
 	for (i = 0; i < HU_FONTSIZE; i++) {
 		sprintf(buffer, "STCFN%.3d", j++);
-		//hu_font[i] = W_CacheLumpNameEMS(buffer, PU_STATIC);
 		W_CacheLumpNameDirect(buffer, (byte*)hu_font[i]);
 	}
 
@@ -596,7 +595,59 @@ void M_Init(void)
 	}
 }
 
+// ugly and gross, but we need to know the sizes of fields early 
+// to be able to allocate the right amount of memory for them
+void D_InitGraphicCounts() {
 
+ 
+
+	// memory addresses, must stay int_32...
+	int32_t*                maptex;
+	int32_t*                maptex2;
+	int32_t*                directory;
+ 
+	int16_t                 numtextures1;
+	int16_t                 numtextures2;
+ 
+	MEMREF				maptexRef;
+	MEMREF				maptex2Ref;
+ 
+	 
+	// Load the map texture definitions from textures.lmp.
+	// The data is contained in one or two lumps,
+	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
+	maptexRef = W_CacheLumpNameEMS("TEXTURE1", PU_STATIC);
+	maptex = Z_LoadBytesFromEMS(maptexRef);
+	numtextures1 = (*maptex);
+ 
+	if (W_CheckNumForName("TEXTURE2") != -1)
+	{
+		maptex2Ref = W_CacheLumpNameEMS("TEXTURE2", PU_STATIC);
+		maptex2 = Z_LoadBytesFromEMS(maptex2Ref);
+		numtextures2 = (*maptex2);
+	}
+	else
+	{
+		numtextures2 = 0;
+	}
+	numtextures = numtextures1 + numtextures2;
+
+
+
+	firstflat = W_GetNumForName("F_START") + 1;
+	lastflat = W_GetNumForName("F_END") - 1;
+	numflats = lastflat - firstflat + 1;
+
+	firstpatch = W_GetNumForName("P_START") + 1;
+	lastpatch = W_GetNumForName("P_END") - 1;
+	numpatches = lastpatch - firstpatch + 1;
+
+	firstspritelump = W_GetNumForName("S_START") + 1;
+	lastspritelump = W_GetNumForName("S_END") - 1;
+	numspritelumps = lastspritelump - firstspritelump + 1;
+
+	
+}
 
 
 //
@@ -766,12 +817,12 @@ void D_DoomMain2(void)
 
 	// init subsystems
 
+
 	//DEBUG_PRINT("V_Init: allocate screens.\n");
 	//V_Init();
 
 	DEBUG_PRINT("\nM_LoadDefaults: Load system defaults.");
 	M_LoadDefaults();              // load before initing other systems
-
 
 	DEBUG_PRINT("\nZ_InitEMS: Init EMS memory allocation daemon.");
 	Z_InitEMS();
@@ -782,12 +833,18 @@ void D_DoomMain2(void)
 	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
 	Z_GetEMSPageMap();
 
+
+
+	DEBUG_PRINT("\nZ_LinkEMSVariables: Place variables in specified memory addresses");
+	Z_LinkEMSVariables();
+	Z_LinkConventionalVariables();
+
 	DEBUG_PRINT("\nZ_LoadBinaries: Load game data into memory");
 	Z_LoadBinaries();
 
-
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");
 	W_InitMultipleFiles(wadfiles);
+	//D_InitGraphicCounts(); // gross
 
 	// init subsystems
 	DEBUG_PRINT("\nD_InitStrings: loading text.");

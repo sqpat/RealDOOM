@@ -31,6 +31,7 @@
 #include "m_misc.h"
 
 #include "r_local.h"
+#include "r_state.h"
 
 
 #include "i_system.h"
@@ -169,9 +170,7 @@ void R_InitLightTables(void)
 
 extern byte         	*colormapbytes;// [(33 * 256) + 255];
 extern lighttable_t    *colormaps;
-extern int16_t             firstflat;
-extern int16_t             lastflat;
-extern int16_t             numflats;
+
 //
 // R_InitData
 // Locates all the lumps
@@ -200,7 +199,6 @@ void R_InitSpriteLumps(void)
 
 	firstspritelump = W_GetNumForName("S_START") + 1;
 	lastspritelump = W_GetNumForName("S_END") - 1;
-	
 	numspritelumps = lastspritelump - firstspritelump + 1;
 
 	for (i = 0; i < numspritelumps; i++)
@@ -264,30 +262,13 @@ typedef struct
 
 
 
-
-extern int16_t             numtextures;
-
-extern MEMREF textures[NUM_COMPOSITE_TEXTURES];  // lists of MEMREFs kind of suck, this takes up relatively little memory and prevents lots of allocations;
-
-
-extern uint16_t texturecolumn_offset[NUM_COMPOSITE_TEXTURES];
-extern uint16_t texturedefs_offset[NUM_COMPOSITE_TEXTURES];
+ 
 extern byte* texturecolumnlumps_bytes;
 extern byte* texturecolumnofs_bytes;
 extern byte* texturedefs_bytes;
-
-
-extern uint8_t  texturewidthmasks[NUM_COMPOSITE_TEXTURES];
-// needed for texture pegging
-extern uint8_t  textureheights[NUM_COMPOSITE_TEXTURES];		    // uint8_t must be converted by fracbits when used*
-extern uint16_t  texturecompositesizes[NUM_COMPOSITE_TEXTURES];	// uint16_t*
-
-
-extern uint8_t	 patchpage[NUM_PATCH_LUMPS];
-extern uint16_t patchoffset[NUM_PATCH_LUMPS];
-
- extern uint8_t	 flatindex[NUM_FLATS];
-
+ 
+ 
+ 
 //
 // R_GenerateLookup
 //
@@ -306,7 +287,7 @@ void R_GenerateLookup(uint8_t texnum)
 	int16_t                 i;
 	int16_t                 j;
 	int16_t					patchpatch;
-	int16_t					lastpatch = -1;
+	int16_t					lastusedpatch = -1;
 	uint8_t				texturepatchcount;
 	int16_t				texturewidth;
 	int16_t				textureheight;
@@ -363,10 +344,10 @@ void R_GenerateLookup(uint8_t texnum)
 		}
 		*/
 		//realpatch = (patch_t*)MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[pagenum - currentpatchpage] + patchoffset[index]);
-		if (lastpatch != patchpatch)
+		if (lastusedpatch != patchpatch)
 			W_CacheLumpNumDirect(patchpatch, patchaddr);
 
-		lastpatch = patchpatch;
+		lastusedpatch = patchpatch;
 
 		x2 = x1 + (realpatch->width);
 
@@ -497,7 +478,10 @@ void R_InitTextures(void)
 		numtextures2 = 0;
 		maxoff2 = 0;
 	}
+	
+	// set in dmain 
 	numtextures = numtextures1 + numtextures2;
+	
 	// 125
 
 	// these are all the very first allocations that occur on level setup and they end up in the same page, 
@@ -662,9 +646,15 @@ void R_InitData(void) {
 
 	// R_InitFlats();
 
+	firstpatch = W_GetNumForName("P_START") + 1;
+	lastpatch = W_GetNumForName("P_END") - 1;
+	numpatches = lastpatch - firstpatch + 1;
+
+
 	firstflat = W_GetNumForName("F_START") + 1;
 	lastflat = W_GetNumForName("F_END") - 1;
 	numflats = lastflat - firstflat + 1;
+
 
 	// Create translation table for global animation.
 
@@ -687,7 +677,7 @@ void R_InitData(void) {
 	//length = W_LumpLength(lump) + 255;
 	colormaps = (byte*)colormapbytes;
 	colormaps = (byte *)(((int32_t)colormaps + 255)&~0xff);
-	W_ReadLumpStatic(lump, colormaps);
+	W_CacheLumpNumDirect(lump, colormaps);
 
  
 }

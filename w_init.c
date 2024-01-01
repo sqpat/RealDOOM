@@ -31,6 +31,7 @@
 
 #include "w_wad.h"
 #include "r_defs.h"
+#include <dos.h>
 
 extern filehandle_t				wadfilehandle;
 extern lumpinfo_t*             lumpinfo;
@@ -118,6 +119,8 @@ void W_AddFile(int8_t *filename)
 	int32_t lastsize = 0;
 	int32_t diff;
 
+	Z_QuickmapScratch_5000();
+
 	// open the file and add to directory
 
 	// handle reload indicator.
@@ -168,8 +171,8 @@ void W_AddFile(int8_t *filename)
 		//header.infotableofs = (header.infotableofs);
 		length = header.numlumps * sizeof(filelump_t);
 
-		// let's piggyback off conventional memory during game startup
-		fileinfo = (filelump_t*)conventionalmemoryblock;
+		// let's piggyback off scratch EMS block
+		fileinfo = (filelump_t*)MK_FP(0x5000, 0);
 		lseek(handle, header.infotableofs, SEEK_SET);
 		read(handle, fileinfo, length);
 		numlumps += header.numlumps;
@@ -241,8 +244,9 @@ void W_AddFile(int8_t *filename)
 
 	if (reloadname)
 		close(handle);
-	//free(fileinfo);
-	memset(conventionalmemoryblock, 0, STATIC_CONVENTIONAL_BLOCK_SIZE);
+	
+
+	Z_QuickmapPhysics();
 }
 
 

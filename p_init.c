@@ -476,12 +476,11 @@ void R_InitSpriteDefs()
 
 	// I don't know why but the earlier null loop check stopped working.
 	// is there any reason we cant just set it to numsprites...?
-	/*while (*check != NULL)
+	/*
+	while (*check != NULL)
 		check++;
-
-
-	numsprites = check-namelist;
 		*/
+
 	numsprites = NUMSPRITES;
 
 	if (!numsprites)

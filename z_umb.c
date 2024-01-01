@@ -167,7 +167,10 @@ void Z_InitUMBDOS(void) {
 	int86(DOSMM_INT, &regs, &regs);
 	sizereg = regs.w.bx;
 
-	DEBUG_PRINT("Found %lu bytes in UMB... ", 16L * sizereg);
+	UMBsize = DESIRED_UMB_SIZE << 4;
+
+
+	DEBUG_PRINT("Found %lu bytes in UMB... looking for %u bytes", (16L * sizereg), UMBsize);
 
 	if (sizereg < DESIRED_UMB_SIZE) {
 		I_Error("\nError! Need 64k of UMB space! ");
@@ -182,8 +185,7 @@ void Z_InitUMBDOS(void) {
 	if (UMBbase < 0xA000) {
 		I_Error("\nError! Allocated conventional instead of UMB space ");
 	}
-	UMBsize = DESIRED_UMB_SIZE << 4;
-
+	
 	DEBUG_PRINT("\n    Allocated %u at location... %p", UMBsize, 0, UMBbase);
 	
 	regs.w.ax = 0x4800;
@@ -191,8 +193,8 @@ void Z_InitUMBDOS(void) {
 	int86(DOSMM_INT, &regs, &regs);
 	UMBsize2 = regs.w.bx;
 
-	DEBUG_PRINT("\n  Remaining %u bytes in UMB... ", UMBsize2 << 4);
-	// 28210
+	DEBUG_PRINT("\n  Remaining %lu bytes in UMB... looking for %u more bytes", (16L * UMBsize2), UMB2_SIZE);
+	
 	if ((UMBsize2) >= ((UMB2_SIZE >> 4) + 1)) {
 		UMBsize2 = (UMB2_SIZE>>4) + 1; // enough for umb2 size
 
@@ -259,11 +261,11 @@ extern mobj_pos_t* mobjposlist;
 extern mobj_pos_t* mobjposlist_render;
 extern byte*	   spritedefs_bytes;
 void Z_InitUMB(void) {
-
+	
 #ifdef _M_I86
 
-	// 4 mb
-	// todo test 3, 2 MB, etc. i know we use less..
+
+
 	uint16_t offset = 0;
 	DEBUG_PRINT("\n  Checking XMS for UMB...");
 
