@@ -425,7 +425,7 @@ found:
 	// -------------------------------------------------------------------------------------------------------
 	//				more physics levdata zlight											
 	// 					nightnmarespawns textureinfo			
-	//	0x6000 block	strings			flat cache				strings						 
+	//0x6000 block		strings			flat cache				strings						 
 	// -------------------------------------------------------------------------------------------------------
 	//                  states          states 
 	// 0x5000 block		trig tables   	trig tables								demobuffer	
@@ -858,39 +858,33 @@ void Z_LoadBinaries() {
 	 
 }
 
-byte* conventionallowerblock;
+byte conventionallowerblock[1250];
 
 void Z_LinkConventionalVariables() {
 	byte* offset;
-	uint16_t size = CACHE_OVERHEAD_SIZE;
+	//1250 now
+	uint16_t size = numtextures * (sizeof(uint16_t) * 3 + 4 * sizeof(uint8_t));
 
-	/*
-	conventionallowerblock = offset = malloc(size);
-	I_Error("\n%lx", offset);
+	//conventionallowerblock = offset = malloc(size);
+	//I_Error("\n%lx %u", conventionallowerblock, size);
 
-	usedcompositetexturepagemem = offset;
-	offset += NUM_TEXTURE_PAGES * sizeof(uint8_t);
-	compositetextureoffset = offset;
+
+	texturecolumn_offset = (uint16_t*)offset;
+	offset += numtextures * sizeof(uint16_t);
+	texturedefs_offset = (uint16_t*)offset;
+	offset += numtextures * sizeof(uint16_t);
+	texturewidthmasks = offset;
 	offset += numtextures * sizeof(uint8_t);
-	compositetexturepage = offset;
+	textureheights = offset;
 	offset += numtextures * sizeof(uint8_t);
+	texturecompositesizes = (uint16_t*)offset;
+	offset += numtextures * sizeof(uint16_t);
+	flattranslation = offset;
+	offset += numtextures * sizeof(uint8_t);
+	texturetranslation = offset;
+	offset += numtextures * sizeof(uint8_t);
+	//I_Error("\n%lx %lx %lx %u", conventionallowerblock, offset, texturetranslation, size);
 
-	usedspritepagemem = offset;
-	offset += NUM_SPRITE_CACHE_PAGES * sizeof(uint8_t);
-	spritepage = offset;
-	offset += numspritelumps * sizeof(uint8_t);
-	spriteoffset = offset;
-	offset += numspritelumps * sizeof(uint8_t);
-
-	usedpatchpagemem = offset;
-	offset += NUM_PATCH_CACHE_PAGES * sizeof(uint8_t);
-	patchpage = offset;
-	offset += numpatches * sizeof(uint8_t);
-	patchoffset = offset;
-	offset += numpatches * sizeof(uint8_t);
-
-	flatindex = offset;
-	offset += numflats * sizeof(uint8_t);
-	*/
+	 
 
 }

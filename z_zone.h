@@ -98,8 +98,6 @@ typedef struct allocation_static_conventional_s
 // DOOM SHAREWARE VALUE
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 6939u
 
-// DOOM SHAREWARE VALUE
-#define NUM_COMPOSITE_TEXTURES 125
 
 
 #define MAX_THINKERS 840

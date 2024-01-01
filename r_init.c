@@ -544,7 +544,6 @@ void R_InitTextures(void)
 
 		}
 
-
 		//printf("name %s", texture->name);
 		
 		if ((i + 1) < numtextures) {

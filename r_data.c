@@ -63,22 +63,17 @@ byte* texturedefs_bytes;
 
 byte*	 spritedefs_bytes;
 
+ 
 
-uint16_t texturecolumn_offset[NUM_COMPOSITE_TEXTURES];
-uint16_t texturedefs_offset[NUM_COMPOSITE_TEXTURES];
-
-
-uint8_t  texturewidthmasks[NUM_COMPOSITE_TEXTURES];
-// needed for texture pegging
-uint8_t  textureheights[NUM_COMPOSITE_TEXTURES];		    // uint8_t must be + 1 and then shifted to fracbits when used
-uint16_t  texturecompositesizes[NUM_COMPOSITE_TEXTURES];	// uint16_t*
-
-
-
-
+uint16_t *texturecolumn_offset;
+uint16_t *texturedefs_offset;
+uint8_t  *texturewidthmasks;
+uint8_t  *textureheights;		    // uint8_t must be + 1 and then shifted to fracbits when used
+uint16_t *texturecompositesizes;	// uint16_t*
 // for global animation
-uint8_t			flattranslation[NUM_COMPOSITE_TEXTURES]; // can almost certainly be smaller
-uint8_t			texturetranslation[NUM_COMPOSITE_TEXTURES];
+uint8_t	*flattranslation; // can almost certainly be smaller
+uint8_t	*texturetranslation;
+
 
 // needed for pre rendering
 int16_t		*spritewidths;
@@ -94,37 +89,23 @@ extern int16_t pageswapargs_textcache[8];
 int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
 int16_t textureLRU[4];
 
-uint8_t* usedcompositetexturepagemem;// [NUM_TEXTURE_PAGES]; // defaults 00
-uint8_t* compositetextureoffset;// [NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-uint8_t* compositetexturepage;// [NUM_COMPOSITE_TEXTURES]; //  page index of the allocatiion
+uint8_t* usedcompositetexturepagemem; // defaults 00
+uint8_t* compositetextureoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+uint8_t* compositetexturepage; //  page index of the allocatiion
 
-uint8_t* usedpatchpagemem;// [NUM_PATCH_CACHE_PAGES]; // defaults 00
-uint8_t* patchpage;// [NUM_PATCH_LUMPS]; //  defaults FF. page index of the allocatiion
-uint8_t* patchoffset;// [NUM_PATCH_LUMPS]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+uint8_t* usedpatchpagemem; // defaults 00
+uint8_t* patchpage; //  defaults FF. page index of the allocatiion
+uint8_t* patchoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
 
-uint8_t* usedspritepagemem;// [NUM_SPRITE_CACHE_PAGES]; // defaults 00
+uint8_t* usedspritepagemem; // defaults 00
 uint8_t* spritepage;
 uint8_t* spriteoffset;
 
 uint8_t* flatindex;
 
-/*
 
 
-uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES]; // defaults 00
-uint8_t compositetextureoffset[NUM_COMPOSITE_TEXTURES]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-uint8_t compositetexturepage[NUM_COMPOSITE_TEXTURES]; //  page index of the allocatiion
 
-uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES]; // defaults 00
-uint8_t patchpage[NUM_PATCH_LUMPS]; //  defaults FF. page index of the allocatiion
-uint8_t patchoffset[NUM_PATCH_LUMPS]; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-
-uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES]; // defaults 00
-uint8_t	spritepage[NUM_SPRITE_LUMPS];
-uint8_t spriteoffset[NUM_SPRITE_LUMPS];
-
-uint8_t	 flatindex[NUM_FLATS]; // they are always 4k sized, can figure out page and offset from that. 
-*/
 
 uint8_t	 firstunusedflat = 0; // they are always 4k sized, can figure out page and offset from that. 
 int32_t totalpatchsize = 0;

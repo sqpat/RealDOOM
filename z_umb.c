@@ -97,37 +97,7 @@ parm [  ] modify exact [ ax dx bx ];
 parm [  ] modify exact [ ax dx bx ];
 
 #ifdef _M_I86
-
-void Z_InitUMBDirect(void) {
-
-	int16_t pagestotal, pagesavail;
-	int16_t errorreg, resultreg, sizereg;
-
-	regs.w.ax = 0x4300;
-	int86(XMS_INT, &regs, &regs);
-	resultreg = regs.h.al;
-	if (resultreg == 0x80) {
-		XMS_GET_DRIVER();
-		DEBUG_PRINT(" XMS Manager addr was %p", XMSaddr);
-		UMB_GET_BLOCK();
-		if (UMBbase && UMBsize) {
-			DEBUG_PRINT("\n UMB Blocks found at seg %p length %u ", 0, UMBbase, UMBsize << 4);
-		}
-		else {
-			I_Error("\nCould not find UMBs ", resultreg);
-		}
-
-	}
-	else {
-		I_Error("\nNo XMS manager present, AL %hhu ", resultreg);
-	}
-
-
-}
-
-
-// some dos setups end up with only ffe, ffd, etc... 
-//#define DESIRED_UMB_SIZE 0x0ff8
+ 
 // lets do only 60k.. .seems to be enough
 #define DESIRED_UMB_SIZE 0x0EA6
 
@@ -274,8 +244,6 @@ void Z_InitUMB(void) {
 
 
 
-	// DOS NOT MANAGING UMBS ??
-	//Z_InitUMBDirect();
 
 
 	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE = UMBsize;

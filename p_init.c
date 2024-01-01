@@ -49,7 +49,7 @@ extern int8_t*           spritename;
 
 
 
-extern uint16_t texturedefs_offset[NUM_COMPOSITE_TEXTURES];
+extern uint16_t *texturedefs_offset;
 extern byte* texturedefs_bytes; 
 extern int16_t             numtextures;
  
@@ -102,7 +102,6 @@ uint8_t     R_TextureNumForNameA(int8_t* name) {
 
 	if (i == BAD_TEXTURE) {
 		I_Error("\nR_TextureNumForName: %s not found %li %li %li", name, numreads, pageins, pageouts);
-		//I_Error("\nR_TextureNumForName: %s not found %li %li %li %s %i", name, numreads, pageins, pageouts, file, line);
 	}
 	return i;
 }

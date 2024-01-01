@@ -84,7 +84,7 @@ extern  uint8_t     skytexture;
  
 extern int16_t             numtextures;
 
-extern uint16_t texturedefs_offset[NUM_COMPOSITE_TEXTURES];
+extern uint16_t* texturedefs_offset;
 extern byte* texturedefs_bytes;
 
 // R_CheckTextureNumForName
@@ -123,9 +123,10 @@ uint8_t     R_CheckTextureNumForNameB(int8_t *name)
 uint8_t     R_TextureNumForNameB(int8_t* name)
 {
 	uint8_t         i = R_CheckTextureNumForNameB(name);
+ 
 
 	if (i == BAD_TEXTURE) {
-		I_Error("\nR_TextureNumForName: %s not found %li %li %li", name, numreads, pageins, pageouts);
+		I_Error("\nR_TextureNumForName: %s not found B", name);
 	}
 	return i;
 }

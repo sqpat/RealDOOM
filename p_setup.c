@@ -1212,8 +1212,7 @@ void P_LoadSideDefs(int16_t lump)
 		memcpy(texnamebot, msd->bottomtexture, 8);
 		memcpy(texnamemid, msd->midtexture, 8);
 
-		// side i = 225 textop "bigdoor4-" not found??
-
+  
 		toptex = R_TextureNumForNameB(texnametop);
 		bottex = R_TextureNumForNameB(texnamebot);
 		midtex = R_TextureNumForNameB(texnamemid);

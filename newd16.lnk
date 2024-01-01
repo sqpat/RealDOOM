@@ -91,7 +91,7 @@ section file w_init.obj, wi_stuff.obj
 section file d_init.obj, i_init.obj, i_main.obj, f_wipe.obj
 #   zone stuff
 section file z_umb.obj, z_init.obj
-#	level/game setup
+#	level/game setup. KEEP THESE TWO TOGETHER to reduce thrashing
 section file p_setup.obj, g_setup.obj
 #	level/game setup
 section file r_init.obj, r_setup.obj
