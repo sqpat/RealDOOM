@@ -227,40 +227,41 @@ void I_WaitVBL(int16_t vbls)
     }
 }
 
-extern MEMREF               palRef;
-
+extern byte* far palettebytes;
 //
 // I_SetPalette
 // Palette source must use 8 bit RGB elements.
 //
 
-void I_SetPalette(int8_t paletteNumber)
-{
+void I_SetPalette(int8_t paletteNumber) {
 	byte* gammatablelookup;
 	int16_t i;
 	//byte* palette = alloca(768);
 
-	byte* palette = ((byte*)Z_LoadBytesFromEMS(palRef)) + paletteNumber * 768u;
 
-        if(novideo)
-        {
-                return;
-        }
-        I_WaitVBL(1);
-#ifndef	SKIP_DRAW
+	byte* palette = palettebytes + paletteNumber * 768u;
+	int16_t savedtask = currenttask;
+	Z_QuickmapPalette();
+	
+
+    if(novideo) {
+            return;
+    }
+    I_WaitVBL(1);
+	#ifndef	SKIP_DRAW
 		_outbyte(PEL_WRITE_ADR, 0);
-#endif
-		gammatablelookup = (gammatable + usegamma*256);
+	#endif
+	gammatablelookup = (gammatable + usegamma*256);
 
-		for(i = 0; i < 768; i++)
-        {
-#ifndef	SKIP_DRAW
-//			_outbyte(PEL_DATA, (gammatable[usegamma][*palette++]) >> 2);
-			_outbyte(PEL_DATA, gammatablelookup[*palette] >> 2);
+	for(i = 0; i < 768; i++) {
+		#ifndef	SKIP_DRAW
+ 			_outbyte(PEL_DATA, gammatablelookup[*palette] >> 2);
 			palette++;
+		#endif
+    }
 
-#endif
-        }
+	Z_QuickmapByTaskNum(savedtask);
+
 }
 
 //

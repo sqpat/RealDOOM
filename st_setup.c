@@ -61,8 +61,7 @@ extern boolean          st_firsttime;
 
 // lump number for PLAYPAL
 //int16_t              lu_palette;
-extern MEMREF               palRef;
-
+ 
 // used for timing
 
  

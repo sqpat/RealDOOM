@@ -237,6 +237,7 @@ extern int16_t pageswapargs_phys[40];
 extern int16_t pageswapargs_rend[48];
 extern int16_t pageswapargs_stat[12];
 extern int16_t pageswapargs_demo[8];
+extern int16_t pageswapargs_palette[10];
 extern int16_t pageswapargs_textcache[8];
 extern int16_t pageswapargs_textinfo[8];
 extern int16_t pageswapargs_scratch_4000[8];
@@ -253,6 +254,8 @@ extern int16_t pageswapargseg_stat;
 extern int16_t pageswapargoff_stat;
 extern int16_t pageswapargseg_demo;
 extern int16_t pageswapargoff_demo;
+extern int16_t pageswapargseg_palette;
+extern int16_t pageswapargoff_palette;
 extern int16_t pageswapargseg_textcache;
 extern int16_t pageswapargoff_textcache;
 extern int16_t pageswapargseg_textinfo;
@@ -266,8 +269,10 @@ extern int16_t pageswapargoff_scratch_stack;
 extern int16_t pageswapargseg_flat;
 extern int16_t pageswapargoff_flat;
 
-extern byte* stringdata;
-extern byte* demobuffer;
+extern byte* far stringdata;
+extern byte* far demobuffer;
+extern byte* far palettebytes;
+
 
 uint8_t fontlen[63] = { 72, 100, 116, 128, 144, 132, 60, 
 					   120, 120, 96, 76, 60, 80, 56, 100, 
@@ -400,6 +405,8 @@ found:
 	pageswapargoff_textinfo = (uint16_t)(((uint32_t)pageswapargs_textinfo) & 0xffff);
 	pageswapargseg_flat = (uint16_t)((uint32_t)pageswapargs_flat >> 16);
 	pageswapargoff_flat = (uint16_t)(((uint32_t)pageswapargs_flat) & 0xffff);
+	pageswapargseg_palette = (uint16_t)((uint32_t)pageswapargs_palette >> 16);
+	pageswapargoff_palette = (uint16_t)(((uint32_t)pageswapargs_palette) & 0xffff);
 
 	pageswapargseg_scratch_stack = (uint16_t)((uint32_t)pageswapargs_scratch_stack >> 16);
 	pageswapargoff_scratch_stack = (uint16_t)(((uint32_t)pageswapargs_scratch_stack) & 0xffff);
@@ -410,20 +417,21 @@ found:
 
 	
 
-	//					PHYSICS			RENDER					ST/HUD			DEMO		   FWIPE
+	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE  FWIPE
 	// BLOCK
 	// -------------------------------------------------------------------------------------------------------
 	//            						visplane stuff			screen4 0x9c00
-	// 0x9000 block		thinkers		viewangles, drawsegs
+	// 0x9000 block		thinkers		viewangles, drawsegs								palettebytes
 	// -------------------------------------------------------------------------------------------------------
 	//									tex cache arrays
 	// 									sprite stuff			
-	//					screen0			visplane openings
-	// 0x8000 block		gamma table		texture memrefs?
+	//					screen0			visplane openings									screen0
+	// 0x8000 block		gamma table		texture memrefs?									gamma table
 	// -------------------------------------------------------------------------------------------------------
 	// 0x7000 block		physics levdata render levdata			st graphics
 	// -------------------------------------------------------------------------------------------------------
 	//				more physics levdata zlight											
+	//                  rejectmatrix
 	// 					nightnmarespawns textureinfo			
 	//0x6000 block		strings			flat cache				strings						 
 	// -------------------------------------------------------------------------------------------------------
@@ -500,7 +508,12 @@ found:
 		pageswapargs_flat[i * 2] = FIRST_FLAT_CACHE_LOGICAL_PAGE + i;
 		pageswapargs_flat[i * 2 + 1] = PAGE_5C00 + i;
 
+		pageswapargs_palette[i * 2] = SCREEN0_LOGICAL_PAGE + i;
+		pageswapargs_palette[i * 2 + 1] = PAGE_8000 + i;
+
 	}
+	pageswapargs_palette[8] = PALETTE_LOGICAL_PAGE + i;
+	pageswapargs_palette[9] = PAGE_9000;
 
 	DEMO_SEGMENT = 0x5000u;
 
@@ -569,6 +582,8 @@ void Z_LinkEMSVariables() {
 	offset_render += sizeof(int16_t) * SCREENWIDTH;
 	ceilingclip = MK_FP(segment, offset_render);
 	offset_render += sizeof(int16_t) * SCREENWIDTH;
+	
+	palettebytes = MK_FP(segment, 0);
 
 
 
@@ -613,6 +628,7 @@ void Z_LinkEMSVariables() {
 	offset_render += (sizeof(int16_t) * numspritelumps);
 	spritetopoffsets = MK_FP(segment, offset_render);
 	offset_render += (sizeof(int16_t) * numspritelumps);
+
 
 	// todo change all this to 16 bit pointers/lookups based on fixed 0x8000 colormapbytes segment.
 	// then bring offset_render back up

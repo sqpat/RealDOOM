@@ -1491,6 +1491,7 @@ int16_t pageswapargs_phys[40];
 int16_t pageswapargs_rend[48];
 int16_t pageswapargs_stat[12];
 int16_t pageswapargs_demo[8];
+int16_t pageswapargs_palette[10];
 int16_t pageswapargs_textcache[8];
 int16_t pageswapargs_textinfo[8];
 int16_t pageswapargs_scratch_4000[8]; // we use 0x5000 as a  'scratch' page frame for certain things
@@ -1507,6 +1508,8 @@ int16_t pageswapargseg_stat;
 int16_t pageswapargoff_stat;
 int16_t pageswapargseg_demo;
 int16_t pageswapargoff_demo;
+int16_t pageswapargseg_palette;
+int16_t pageswapargoff_palette;
 int16_t pageswapargseg_textcache;
 int16_t pageswapargoff_textcache;
 int16_t pageswapargseg_textinfo;
@@ -1794,6 +1797,16 @@ void Z_RemapScratchFrame(uint8_t startpage) {
 	taskswitchcount++;
 }
 
+void Z_QuickmapPalette() {
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x05; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_palette;
+	regs.w.si = pageswapargoff_palette;
+	intx86(EMS_INT, &regs, &regs);
+	taskswitchcount++;
+}
+
 void Z_QuickmapByTaskNum(uint8_t tasknum) {
 	switch (tasknum) {
 		case TASK_PHYSICS:
@@ -1809,7 +1822,6 @@ void Z_QuickmapByTaskNum(uint8_t tasknum) {
 			Z_QuickmapRender();
 			Z_QuickmapRenderTexture(); // should be okay this way
 			break;
-
 			
 
 /*

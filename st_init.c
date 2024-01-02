@@ -204,14 +204,14 @@ void ST_loadData(void)
 {
 	//todo move this too
 	int16_t lu_palette = W_GetNumForName("PLAYPAL");
-	palRef = W_CacheLumpNumEMS(lu_palette, PU_STATIC);
-
+	Z_QuickmapPalette();
+	W_CacheLumpNumDirect(lu_palette, palettebytes);
+	Z_QuickmapStatus();
 	ST_loadGraphics();
 }
 
 void ST_Init(void)
 {
-	Z_QuickmapStatus();
 	ST_loadData();
 	Z_QuickmapPhysics();
 
