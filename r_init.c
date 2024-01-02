@@ -386,7 +386,7 @@ void R_GenerateLookup(uint8_t texnum)
 	}
 }
 
-
+ 
 
 //
 // R_InitTextures
@@ -417,8 +417,6 @@ void R_InitTextures(void)
 
 	int16_t                 nummappatches;
 	int16_t                 offset;
-	int16_t                 maxoff;
-	int16_t                 maxoff2;
 	int16_t                 numtextures1;
 	int16_t                 numtextures2;
 
@@ -429,19 +427,17 @@ void R_InitTextures(void)
 
 	// needed for texture pegging
 	//uint8_t*            textureheight;
-	MEMREF				namesRef;
 	MEMREF				maptexRef;
-	MEMREF				maptex2Ref;
 	int16_t				texturewidth;
 	uint8_t				textureheightval;
+	byte* far			tempaddress = MK_FP(0x7000, 0);
 
-	texturecolumn_offset[0] = 0;
  	texturedefs_offset[0] = 0;
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
-	namesRef = W_CacheLumpNameEMS("PNAMES", PU_STATIC);
-	names = Z_LoadBytesFromEMS(namesRef);
+	names = (int8_t*)tempaddress;
+	W_CacheLumpNameDirect("PNAMES", (byte*)names);
 	nummappatches = (*((int32_t *)names));
 	name_p = names + 4;
 	patchlookup = alloca(nummappatches * sizeof(*patchlookup));
@@ -450,40 +446,31 @@ void R_InitTextures(void)
 		strncpy(name, name_p + i * 8, 8);
 		patchlookup[i] = W_CheckNumForName(name);
 	}
-	Z_FreeEMS(namesRef);
 
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
-	maptexRef = W_CacheLumpNameEMS("TEXTURE1", PU_STATIC);
-	maptex = maptex1 = Z_LoadBytesFromEMS(maptexRef);
-	numtextures1 = (*maptex);
+	maptex = maptex1 = (int32_t*)tempaddress;
+    W_CacheLumpNameDirect("TEXTURE1", (byte*)maptex);
+	//maptexRef = W_CacheLumpNameEMS("TEXTURE1", PU_STATIC);
+	//maptex = maptex1 = Z_LoadBytesFromEMS(maptexRef);
 
-	maxoff = W_LumpLength(W_GetNumForName("TEXTURE1"));
+	numtextures1 = (*maptex);
 	directory = maptex + 1;
 
 
 	if (W_CheckNumForName("TEXTURE2") != -1)
 	{
-		maptex2Ref = W_CacheLumpNameEMS("TEXTURE2", PU_STATIC);
-		maptex2 = Z_LoadBytesFromEMS(maptex2Ref);
+		maptex2 = ((int32_t*)tempaddress) + 0x8000u;
+		W_CacheLumpNameDirect("TEXTURE2", (byte*)maptex2);
 		numtextures2 = (*maptex2);
-		maxoff2 = W_LumpLength(W_GetNumForName("TEXTURE2"));
 	}
 	else
 	{
 		maptex2 = NULL;
 		numtextures2 = 0;
-		maxoff2 = 0;
 	}
 	
-	// set in dmain 
-	//numtextures = numtextures1 + numtextures2;
-	
-	// 125
-
-	// these are all the very first allocations that occur on level setup and they end up in the same page, 
-	// so there is data locality with EMS paging which is nice.
 
 
 
@@ -491,7 +478,6 @@ void R_InitTextures(void)
 	temp1 = W_GetNumForName("S_START");  // P_???????
 	temp2 = W_GetNumForName("S_END") - 1;
 	temp3 = ((temp2 - temp1 + 63) / 64) + ((numtextures + 63) / 64);
-#ifdef DEBUG_PRINTING
 	printf("[");
 	for (i = 0; i < temp3; i++)
 		printf(" ");
@@ -499,20 +485,14 @@ void R_InitTextures(void)
 	for (i = 0; i < temp3; i++)
 		printf("\x8");
 	printf("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
-#endif
 
-	for (i = 0; i < numtextures; i++, directory++)
-	{
-#ifdef DEBUG_PRINTING
+	for (i = 0; i < numtextures; i++, directory++) {
 		if (!(i & 63))
 			printf(".");
-#endif
 
-		if (i == numtextures1)
-		{
+		if (i == numtextures1) {
 			// Start looking in second texture file.
 			maptex = maptex2;
-			maxoff = maxoff2;
 			directory = maptex + 1;
 		}
 
@@ -564,11 +544,7 @@ void R_InitTextures(void)
 	}
 
 
-	Z_FreeEMS(maptexRef);
-	if (maptex2) {
-		Z_FreeEMS(maptex2Ref);
-	}
-
+	 
 	// Precalculate whatever possible.  
 	Z_PushScratchFrame();
 	for (i = 0; i < numtextures; i++){
