@@ -92,7 +92,7 @@ typedef struct allocation_static_conventional_s
 #define CA_TYPE_LEVELDATA 1
 
 #define ALLOCATION_LIST_HEAD	0
-#define EMS_ALLOCATION_LIST_SIZE 600
+#define EMS_ALLOCATION_LIST_SIZE 200
 
 
 // DOOM SHAREWARE VALUE

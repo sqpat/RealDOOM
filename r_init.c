@@ -180,6 +180,7 @@ extern lighttable_t    *colormaps;
 
 
 
+extern byte* far	SCRATCH_ADDRESS;
 
 //
 // R_InitSpriteLumps
@@ -204,10 +205,11 @@ void R_InitSpriteLumps(void)
 		if (!(i & 63))
 			printf(".");
 #endif
+		Z_QuickmapScratch_4000();
 
-		W_CacheLumpNumCheck(firstspritelump + i);
-		patchRef = W_CacheLumpNumEMS(firstspritelump + i, PU_CACHE);
-		patch = (patch_t*)Z_LoadBytesFromEMS(patchRef);
+		W_CacheLumpNumDirect(firstspritelump + i, SCRATCH_ADDRESS);
+		
+		patch = (patch_t*)SCRATCH_ADDRESS;
 		patchwidth = (patch->width);
 		patchleftoffset = (patch->leftoffset);
 		patchtopoffset = (patch->topoffset);
