@@ -30,6 +30,8 @@
 #include "m_misc.h"
 
 #include "v_video.h"
+#include "w_wad.h"
+#include <dos.h>
 
 
 MEMREF  W_CacheLumpNameEMSFragment(int8_t* name, int8_t tag, int16_t pagenum, int32_t offset);
@@ -51,14 +53,23 @@ V_DrawFullscreenPatch
 	byte*	source;
 	int16_t		w;
 	patch_t*	patch;
+	byte*	patch2;
 	MEMREF patchref;
 	MEMREF colref;
 	int32_t    offset = 0;
 	int16_t    pageoffset = 0;
 	byte*       extradata;
 	int16_t	pagenum = 0;
- 	patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, pagenum, 0);
-	patch = (patch_t*)Z_LoadBytesFromEMSWithOptions(patchref, PAGE_LOCKED);
+	int16_t oldtask = currenttask;
+	int16_t lump = W_GetNumForName(pagename);
+	Z_QuickmapScratch_5000();
+
+	//patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, pagenum, 0);
+	patch = (patch_t*)MK_FP(0x5000, 0x0000);
+	patch2 =  MK_FP(0x5000, 0x8000);
+	W_CacheLumpNumDirectFragment(lump, (byte*)patch, pagenum, 0);
+
+
 	extradata = (byte*)patch;
 	w = (patch->width);
 
@@ -76,8 +87,8 @@ V_DrawFullscreenPatch
 		if (pageoffset > 16000) {
 			offset += pageoffset;
 			pagenum++;
-			colref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, pagenum, offset);
-			extradata = Z_LoadBytesFromEMS(colref);
+			W_CacheLumpNumDirectFragment(lump, patch2, pagenum, offset);
+			extradata = patch2;
 			column = (column_t *)((byte *)extradata + patch->columnofs[col] - offset);
 		}
 
@@ -116,6 +127,7 @@ V_DrawFullscreenPatch
 		}
 	}
 
-	Z_SetUnlocked(patchref);
+
+	Z_QuickmapByTaskNum(oldtask);
 
 }

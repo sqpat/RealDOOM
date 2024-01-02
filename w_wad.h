@@ -79,7 +79,7 @@ MEMREF  W_CacheLumpNumEMS(int16_t lump, int8_t tag);
 //#define W_CacheLumpNumEMS(a, b) W_CacheLumpNumEMS2(a, b)
 //#define W_CacheLumpNumEMS(a, b) W_CacheLumpNumEMS2(a, b, __FILE__, __LINE__)
 
-MEMREF  W_CacheLumpNameEMSFragment(int8_t* name, int8_t tag, int16_t pagenum, int32_t offset);
+void W_CacheLumpNumDirectFragment(int16_t lump, byte* far dest, int16_t pagenum, int32_t offset);
 void W_EraseFullscreenCache();
 
 void W_CacheLumpNameDirect(int8_t* name, byte* dest);

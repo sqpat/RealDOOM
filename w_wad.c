@@ -361,29 +361,22 @@ void W_EraseFullscreenCache() {
 }
 
 // used for stuff > 64k, especially titlepics, to draw one ems frame at a tiem
-MEMREF
-W_CacheLumpNameEMSFragment
-(int8_t*         name,
-	int8_t           tag,
+void
+W_CacheLumpNumDirectFragment
+(int16_t lump,
+	byte* far			dest,
     int16_t         pagenum,
     int32_t offset){
  
 
-    if (pagedlumpcacheEMS[pagenum]){
-         // dont erase. we are just going to overwrite it when we load a new fullscreen patch.
-		if ((fullscreencache & (1 << pagenum))) {
-			return pagedlumpcacheEMS[pagenum];
-		}
-	} else {
-		pagedlumpcacheEMS[pagenum] = Z_MallocEMS(16384, tag, 0);
-	}
+    //W_ReadLumpEMS(W_GetNumForName(name), Z_LoadBytesFromEMS(pagedlumpcacheEMS[pagenum]), offset, 16384);
 
-	fullscreencache &= (1 << pagenum); // cache on
-
-    W_ReadLumpEMS(W_GetNumForName(name), Z_LoadBytesFromEMS(pagedlumpcacheEMS[pagenum]), offset, 16384);
-
-    return pagedlumpcacheEMS[pagenum];
+	W_ReadLumpEMS(lump, dest, offset, 16384);
+    
 }
+
+ 
+
 // W_CacheLumpName
 //
 patch_t*

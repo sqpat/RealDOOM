@@ -1838,7 +1838,9 @@ void Z_QuickmapByTaskNum(int8_t tasknum) {
 			Z_QuickmapRender();
 			Z_QuickmapRenderTexture(); // should be okay this way
 			break;
-			
+		case TASK_MENU:
+			Z_QuickmapMenu();
+			break;
 
 /*
 		case Z_QuickmapRender7000to6000:
