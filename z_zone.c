@@ -1805,6 +1805,8 @@ void Z_QuickmapPalette() {
 	regs.w.si = pageswapargoff_palette;
 	intx86(EMS_INT, &regs, &regs);
 	taskswitchcount++;
+
+	currenttask = TASK_PALETTE;
 }
 
 void Z_QuickmapByTaskNum(uint8_t tasknum) {

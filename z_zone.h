@@ -236,6 +236,7 @@ typedef struct
 #define TASK_RENDER7000TO6000 5
 #define TASK_RENDER_TEXT 6
 #define TASK_SCRATCH_STACK 7
+#define TASK_PALETTE 8
 
 #define SCRATCH_PAGE_SEGMENT 0x5000u
 

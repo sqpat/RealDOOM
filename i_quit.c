@@ -236,8 +236,7 @@ void I_Shutdown(void)
 //
 void I_Quit(void)
 {
-	byte *scr;
-	MEMREF scrRef;
+
 	if (demorecording)
 	{
 		G_CheckDemoStatus();
@@ -250,13 +249,11 @@ void I_Quit(void)
 	I_ShutdownMouse();
 	I_ShutdownKeyboard();
 	
-	scrRef = W_CacheLumpNameEMS("ENDOOM", PU_CACHE);
-	scr = Z_LoadBytesFromEMS(scrRef);
-#ifdef _M_I86
-	memcpy((char far *)0xb8000000, scr, 4000);
-#else
-	memcpy((void *)0xb8000, scr, 4000 / 4);
-#endif
+
+
+	W_CacheLumpNameDirect("ENDOOM", (byte far *)0xb8000000);
+	
+
 	regs.w.ax = 0x0200;
 	regs.h.bh = 0;
 	regs.h.dl = 0;
