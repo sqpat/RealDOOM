@@ -608,22 +608,21 @@ void D_InitGraphicCounts() {
  
 	int16_t                 numtextures1;
 	int16_t                 numtextures2;
- 
-	MEMREF				maptexRef;
-	MEMREF				maptex2Ref;
+	byte* far				tempaddress = MK_FP(0x7000, 0);
+
  
 	 
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
-	maptexRef = W_CacheLumpNameEMS("TEXTURE1", PU_STATIC);
-	maptex = Z_LoadBytesFromEMS(maptexRef);
+	W_CacheLumpNameDirect("TEXTURE1", tempaddress);
+	maptex = (int32_t*)tempaddress;
 	numtextures1 = (*maptex);
  
 	if (W_CheckNumForName("TEXTURE2") != -1)
 	{
-		maptex2Ref = W_CacheLumpNameEMS("TEXTURE2", PU_STATIC);
-		maptex2 = Z_LoadBytesFromEMS(maptex2Ref);
+		W_CacheLumpNameDirect("TEXTURE2", tempaddress);
+		maptex2 = (int32_t*)tempaddress;
 		numtextures2 = (*maptex2);
 	}
 	else

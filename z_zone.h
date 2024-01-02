@@ -257,6 +257,7 @@ void Z_PopScratchFrame();
 void Z_RemapScratchFrame(uint8_t startpage);
 void Z_QuickMapFlatPage(int16_t page);
 void Z_QuickMapTextureInfoPage();
+void Z_QuickmapPalette();
 
 void Z_GetEMSPageMap();
 void Z_LinkEMSVariables();
