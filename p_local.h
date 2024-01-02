@@ -308,7 +308,7 @@ P_RadiusAttack
 //
 // P_SETUP
 //
-extern MEMREF		rejectmatrixRef;	// for fast sight rejection
+extern byte* far	rejectmatrix;	// for fast sight rejection
 extern int16_t*		blockmaplump;
 extern int16_t		bmapwidth;
 extern int16_t		bmapheight;	// in mapblocks

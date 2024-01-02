@@ -764,6 +764,8 @@ void Z_LinkEMSVariables() {
 
 	stringdata = MK_FP(segment, offset_physics);
 	offset_physics += 16384;
+	rejectmatrix = MK_FP(segment, offset_physics);
+	offset_physics += 16384;
 	offset_status += 16384;
 	nightmarespawns = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(mapthing_t) * MAX_THINKERS;

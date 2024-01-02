@@ -111,7 +111,7 @@ THINKERREF*		blocklinks;
 // Without special effect, this could be
 //  used as a PVS lookup as well.
 //
-MEMREF           rejectmatrixRef;
+byte* far           rejectmatrix;
 
 uint16_t leveldataoffset_phys = 0u;
 uint16_t leveldataoffset_rend = 0 - (MAX_THINKERS * sizeof(mobj_pos_t));
@@ -1501,8 +1501,7 @@ P_SetupLevel
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 
 
-	W_CacheLumpNumCheck(lumpnum + ML_REJECT);
-	rejectmatrixRef = W_CacheLumpNumEMS(lumpnum + ML_REJECT, PU_LEVEL);
+	W_CacheLumpNumDirect(lumpnum + ML_REJECT, rejectmatrix);
 
 	P_GroupLines(); // 49 tics (362 ics total  in 16 bit, 45 tics in 32 bit)
 

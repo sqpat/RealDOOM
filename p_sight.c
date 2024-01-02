@@ -511,7 +511,7 @@ P_CheckSight
 
 	
     // Check in REJECT table.
-	if (((byte*)Z_LoadBytesFromEMS(rejectmatrixRef))[bytenum] & bitnum) {
+	if (rejectmatrix[bytenum] & bitnum) {
 		// can't possibly be connected
 		return false;	
     }
