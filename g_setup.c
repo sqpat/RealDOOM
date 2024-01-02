@@ -299,6 +299,11 @@ G_InitNew
 
 	TEXT_MODE_DEBUG_PRINT("\nloading level");
 	G_DoLoadLevel();
+
+	if (flattranslation[32] != 32) {
+		I_Error("\nerror d %hhu", flattranslation[32]);
+	}
+
 }
 
 extern boolean         netdemo;
@@ -330,4 +335,9 @@ void G_DoWorldDone(void)
 	G_DoLoadLevel();
 	gameaction = ga_nothing;
 	viewactive = true;
+
+	if (flattranslation[32] != 32) {
+		I_Error("\nerror e %hhu", flattranslation[32]);
+	}
+
 }

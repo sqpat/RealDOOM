@@ -452,8 +452,6 @@ void R_InitTextures(void)
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
 	maptex = maptex1 = (int32_t*)tempaddress;
     W_CacheLumpNameDirect("TEXTURE1", (byte*)maptex);
-	//maptexRef = W_CacheLumpNameEMS("TEXTURE1", PU_STATIC);
-	//maptex = maptex1 = Z_LoadBytesFromEMS(maptexRef);
 
 	numtextures1 = (*maptex);
 	directory = maptex + 1;

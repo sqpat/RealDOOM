@@ -1491,6 +1491,7 @@ int16_t pageswapargs_phys[40];
 int16_t pageswapargs_rend[48];
 int16_t pageswapargs_stat[12];
 int16_t pageswapargs_demo[8];
+int16_t pageswapargs_menu[16];
 int16_t pageswapargs_palette[10];
 int16_t pageswapargs_textcache[8];
 int16_t pageswapargs_textinfo[8];
@@ -1508,6 +1509,8 @@ int16_t pageswapargseg_stat;
 int16_t pageswapargoff_stat;
 int16_t pageswapargseg_demo;
 int16_t pageswapargoff_demo;
+int16_t pageswapargseg_menu;
+int16_t pageswapargoff_menu;
 int16_t pageswapargseg_palette;
 int16_t pageswapargoff_palette;
 int16_t pageswapargseg_textcache;
@@ -1808,8 +1811,19 @@ void Z_QuickmapPalette() {
 
 	currenttask = TASK_PALETTE;
 }
+void Z_QuickmapMenu() {
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_menu;
+	regs.w.si  = pageswapargoff_menu;
+	intx86(EMS_INT, &regs, &regs);
+	taskswitchcount++;
 
-void Z_QuickmapByTaskNum(uint8_t tasknum) {
+	currenttask = TASK_MENU;
+}
+
+void Z_QuickmapByTaskNum(int8_t tasknum) {
 	switch (tasknum) {
 		case TASK_PHYSICS:
 			Z_QuickmapPhysics();

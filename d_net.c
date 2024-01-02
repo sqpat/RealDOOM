@@ -90,8 +90,9 @@ void NetUpdate(void)
 		maketic++;
 	}
 
-	if (singletics)
-		return; // singletic update is syncronous
+	// is this supposed to be in the above loop?
+	//if (singletics)
+	//	return; // singletic update is syncronous
 }
 
 extern byte advancedemo;

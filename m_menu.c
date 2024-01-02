@@ -56,6 +56,10 @@
 extern boolean          message_dontfuckwithme;
 extern patch_t*			hu_font[HU_FONTSIZE];
 
+byte* far menugraphicspage0 = (byte* far)0x70000000;
+byte* far menugraphicspage4 = (byte* far)0x64000000;
+uint16_t menuoffsets[45];
+
 
 //
 // defaulted values
@@ -156,7 +160,7 @@ typedef struct
     // 0 = no cursor here, 1 = ok, 2 = arrows ok
     int8_t       status;
     
-	int8_t        name[10];
+	int8_t        name;
     
     // choice = menu item #.
     // if status = 2,
@@ -186,7 +190,7 @@ int16_t           whichSkull;             // which skull to draw
 
 // graphic name of skulls
 // warning: initializer-string for array of chars is too long
-int8_t    skullName[2][/*8*/9] = {"M_SKULL1","M_SKULL2"};
+int8_t    skullName[2] = {5, 6};
 
 // current menudef
 menu_t* currentMenu;                          
@@ -259,17 +263,17 @@ typedef enum main_e
 
 menuitem_t MainMenu[]=
 {
-    {1,"M_NGAME",M_NewGame,'n'},
-    {1,"M_OPTION",M_Options,'o'},
-    {1,"M_LOADG",M_LoadGame,'l'},
-    {1,"M_SAVEG",M_SaveGame,'s'},
+    {1,4,M_NewGame,'n'},
+    {1,2,M_Options,'o'},
+    {1,30,M_LoadGame,'l'},
+    {1,29,M_SaveGame,'s'},
     // Another hickup with Special edition.
 #if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-    {1,"M_RDTHIS",M_ReadThis,'r'},
+    {1,1,M_ReadThis,'r'},
 #else
-    {1,"M_RDTHIS",M_ReadThis2,'r'},
+    {1,1,M_ReadThis2,'r'},
 #endif
-    {1,"M_QUITG",M_QuitDOOM,'q'}
+    {1,3,M_QuitDOOM,'q'}
 };
 
 menu_t  MainDef =
@@ -299,11 +303,11 @@ enum
 
 menuitem_t EpisodeMenu[]=
 {
-    {1,"M_EPI1", M_Episode,'k'},
-    {1,"M_EPI2", M_Episode,'t'},
-    {1,"M_EPI3", M_Episode,'i'},
+    {1,17, M_Episode,'k'},
+    {1,18, M_Episode,'t'},
+    {1,19, M_Episode,'i'},
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-    {1,"M_EPI4", M_Episode,'t'}
+    {1,46, M_Episode,'t'}
 #endif
 };
 
@@ -332,11 +336,11 @@ enum
 
 menuitem_t NewGameMenu[]=
 {
-    {1,"M_JKILL",       M_ChooseSkill, 'i'},
-    {1,"M_ROUGH",       M_ChooseSkill, 'h'},
-    {1,"M_HURT",        M_ChooseSkill, 'h'},
-    {1,"M_ULTRA",       M_ChooseSkill, 'u'},
-    {1,"M_NMARE",       M_ChooseSkill, 'n'}
+    {1,21,       M_ChooseSkill, 'i'},
+    {1,22,       M_ChooseSkill, 'h'},
+    {1,20,        M_ChooseSkill, 'h'},
+    {1,25,       M_ChooseSkill, 'u'},
+    {1,26,       M_ChooseSkill, 'n'}
 };
 
 menu_t  NewDef =
@@ -369,14 +373,14 @@ enum
 
 menuitem_t OptionsMenu[]=
 {
-    {1,"M_ENDGAM",      M_EndGame,'e'},
-    {1,"M_MESSG",       M_ChangeMessages,'m'},
-    {1,"M_DETAIL",      M_ChangeDetail,'g'},
-    {2,"M_SCRNSZ",      M_SizeDisplay,'s'},
-    {-1,"",0},
-    {2,"M_MSENS",       M_ChangeSensitivity,'m'},
-    {-1,"",0},
-    {1,"M_SVOL",        M_Sound,'s'}
+    {1,11,      M_EndGame,'e'},
+    {1,13,       M_ChangeMessages,'m'},
+    {1,35,      M_ChangeDetail,'g'},
+    {2,37,      M_SizeDisplay,'s'},
+    {-1,-1,0},
+    {2,32,       M_ChangeSensitivity,'m'},
+    {-1,-1,0},
+    {1,27,        M_Sound,'s'}
 };
 
 menu_t  OptionsDef =
@@ -400,7 +404,7 @@ enum
 
 menuitem_t ReadMenu1[] =
 {
-    {1,"",M_ReadThis2,0}
+    {1,-1,M_ReadThis2,0}
 };
 
 menu_t  ReadDef1 =
@@ -421,7 +425,7 @@ enum
 
 menuitem_t ReadMenu2[]=
 {
-    {1,"",M_FinishReadThis,0}
+    {1,-1,M_FinishReadThis,0}
 };
 
 menu_t  ReadDef2 =
@@ -456,10 +460,10 @@ enum
 
 menuitem_t SoundMenu[]=
 {
-    {2,"M_SFXVOL",M_SfxVol,'s'},
-    {-1,"",0},
-    {2,"M_MUSVOL",M_MusicVol,'m'},
-    {-1,"",0}
+    {2,40,M_SfxVol,'s'},
+    {-1,-1,0},
+    {2,41,M_MusicVol,'m'},
+    {-1,-1,0}
 };
 
 menu_t  SoundDef =
@@ -479,12 +483,12 @@ menu_t  SoundDef =
 
 menuitem_t LoadMenu[]=
 {
-    {1,"", M_LoadSelect,'1'},
-    {1,"", M_LoadSelect,'2'},
-    {1,"", M_LoadSelect,'3'},
-    {1,"", M_LoadSelect,'4'},
-    {1,"", M_LoadSelect,'5'},
-    {1,"", M_LoadSelect,'6'}
+    {1,-1, M_LoadSelect,'1'},
+    {1,-1, M_LoadSelect,'2'},
+    {1,-1, M_LoadSelect,'3'},
+    {1,-1, M_LoadSelect,'4'},
+    {1,-1, M_LoadSelect,'5'},
+    {1,-1, M_LoadSelect,'6'}
 };
 
 menu_t  LoadDef =
@@ -502,12 +506,12 @@ menu_t  LoadDef =
 //
 menuitem_t SaveMenu[]=
 {
-    {1,"", M_SaveSelect,'1'},
-    {1,"", M_SaveSelect,'2'},
-    {1,"", M_SaveSelect,'3'},
-    {1,"", M_SaveSelect,'4'},
-    {1,"", M_SaveSelect,'5'},
-    {1,"", M_SaveSelect,'6'}
+    {1,-1, M_SaveSelect,'1'},
+    {1,-1, M_SaveSelect,'2'},
+    {1,-1, M_SaveSelect,'3'},
+    {1,-1, M_SaveSelect,'4'},
+    {1,-1, M_SaveSelect,'5'},
+    {1,-1, M_SaveSelect,'6'}
 };
 
 menu_t  SaveDef =
@@ -520,6 +524,14 @@ menu_t  SaveDef =
     0
 };
 
+
+patch_t* far M_GetMenuPatch(int16_t i) {
+	if (i >= 27){
+		return (patch_t* far)(menugraphicspage4 + menuoffsets[i]);
+	}
+	return (patch_t* far)(menugraphicspage0 + menuoffsets[i]);
+
+}
 
 //
 // M_ReadSaveStrings
@@ -562,7 +574,7 @@ void M_DrawLoad(void)
 {
 	int8_t             i;
         
-    V_DrawPatchDirect (72,28, W_CacheLumpNameEMSAsPatch("M_LOADG",PU_CACHE));
+    V_DrawPatchDirect (72,28, M_GetMenuPatch(30));
     for (i = 0;i < load_end; i++)
     {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
@@ -579,15 +591,15 @@ void M_DrawSaveLoadBorder(int16_t x, int16_t y)
 {
 	int8_t             i;
         
-    V_DrawPatchDirect (x-8,y+7, W_CacheLumpNameEMSAsPatch("M_LSLEFT", PU_CACHE));
+    V_DrawPatchDirect (x-8,y+7, M_GetMenuPatch(42));
         
     for (i = 0;i < 24;i++)
     {
-        V_DrawPatchDirect (x,y+7, W_CacheLumpNameEMSAsPatch("M_LSCNTR", PU_CACHE)) ;
+        V_DrawPatchDirect (x,y+7, M_GetMenuPatch(43)) ;
         x += 8;
     }
 
-    V_DrawPatchDirect (x,y+7, W_CacheLumpNameEMSAsPatch("M_LSRGHT", PU_CACHE)) ;
+    V_DrawPatchDirect (x,y+7, M_GetMenuPatch(44)) ;
 }
 
 
@@ -625,7 +637,7 @@ void M_DrawSave(void)
 {
 	int8_t             i;
         
-    V_DrawPatchDirect (72,28, W_CacheLumpNameEMSAsPatch("M_SAVEG", PU_CACHE));
+    V_DrawPatchDirect (72,28, M_GetMenuPatch(29));
     for (i = 0;i < load_end; i++)
     {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
@@ -798,7 +810,7 @@ void M_DrawReadThisRetail(void)
 //
 void M_DrawSound(void)
 {
-    V_DrawPatchDirect (60,38, W_CacheLumpNameEMSAsPatch("M_SVOL", PU_CACHE));
+    V_DrawPatchDirect (60,38, M_GetMenuPatch(27));
 
     M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(sfx_vol+1),
                  16,sfxVolume);
@@ -854,7 +866,7 @@ void M_MusicVol(int16_t choice)
 //
 void M_DrawMainMenu(void)
 {
-    V_DrawPatchDirect (94,2, W_CacheLumpNameEMSAsPatch("M_DOOM", PU_CACHE));
+    V_DrawPatchDirect (94,2, M_GetMenuPatch(0));
 }
 
 
@@ -865,8 +877,8 @@ void M_DrawMainMenu(void)
 //
 void M_DrawNewGame(void)
 {
-    V_DrawPatchDirect (96,14, W_CacheLumpNameEMSAsPatch("M_NEWG", PU_CACHE));
-    V_DrawPatchDirect (54,38, W_CacheLumpNameEMSAsPatch("M_SKILL", PU_CACHE));
+    V_DrawPatchDirect (96,14, M_GetMenuPatch(24));
+    V_DrawPatchDirect (54,38, M_GetMenuPatch(23));
 }
 
 void M_NewGame(int16_t choice)
@@ -885,7 +897,7 @@ int8_t     epi;
 
 void M_DrawEpisode(void)
 {
-    V_DrawPatchDirect (54,38, W_CacheLumpNameEMSAsPatch("M_EPISOD", PU_CACHE));
+    V_DrawPatchDirect (54,38, M_GetMenuPatch(16));
 }
 
 void M_VerifyNightmare(int16_t ch)
@@ -903,7 +915,7 @@ void M_ChooseSkill(int16_t choice)
     if (choice == nightmare)
     {
 		getStringByIndex(NIGHTMARE, temp);
-        M_StartMessage(temp,M_VerifyNightmare,true);
+		M_StartMessage(temp,M_VerifyNightmare,true);
         return;
     }
         
@@ -932,19 +944,21 @@ void M_Episode(int16_t choice)
 //
 // M_Options
 //
-int8_t    detailNames[2][9]       = {"M_GDHIGH","M_GDLOW"};
-int8_t    msgNames[2][9]          = {"M_MSGOFF","M_MSGON"};
+int8_t    detailNames[2]       = {33, 34};
+int8_t    msgNames[2]          = {16, 14};
 
 
 void M_DrawOptions(void)
 {
-    V_DrawPatchDirect (108,15, W_CacheLumpNameEMSAsPatch("M_OPTTTL", PU_CACHE));
+	
+
+    V_DrawPatchDirect (108,15, M_GetMenuPatch(28));
         
     V_DrawPatchDirect (OptionsDef.x + 175,OptionsDef.y+LINEHEIGHT*detail,
-		W_CacheLumpNameEMSAsPatch(detailNames[detailLevel], PU_CACHE))   ;
+		M_GetMenuPatch(detailNames[detailLevel]));
 
     V_DrawPatchDirect (OptionsDef.x + 120,OptionsDef.y+LINEHEIGHT*messages,
-		W_CacheLumpNameEMSAsPatch(msgNames[showMessages], PU_CACHE)) ;
+		M_GetMenuPatch(msgNames[showMessages])) ;
 
     M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(mousesens+1),
                  10,mouseSensitivity);
@@ -1185,17 +1199,17 @@ M_DrawThermo
 	int16_t         i;
 
     xx = x;
-    V_DrawPatchDirect (xx,y, W_CacheLumpNameEMSAsPatch("M_THERML", PU_CACHE));
+
+
+    V_DrawPatchDirect (xx,y, M_GetMenuPatch(10));
     xx += 8;
-    for (i=0;i<thermWidth;i++)
-    {
-        V_DrawPatchDirect (xx,y, W_CacheLumpNameEMSAsPatch("M_THERMM", PU_CACHE));
+    for (i=0;i<thermWidth;i++) {
+        V_DrawPatchDirect (xx,y, M_GetMenuPatch(9));
         xx += 8;
     }
-    V_DrawPatchDirect (xx,y, W_CacheLumpNameEMSAsPatch("M_THERMR", PU_CACHE));
+    V_DrawPatchDirect (xx,y, M_GetMenuPatch(8));
 
-    V_DrawPatchDirect ((x+8) + thermDot*8,y,
-                        W_CacheLumpNameEMSAsPatch("M_THERMO", PU_CACHE));
+    V_DrawPatchDirect ((x+8) + thermDot*8,y, M_GetMenuPatch(7));
 }
 
  
@@ -1329,7 +1343,8 @@ boolean M_Responder (event_t*  ev)
     static  int16_t     lasty = 0;
     static  int16_t     mousex = 0;
     static  int16_t     lastx = 0;
-	
+	int8_t oldtask;
+
     ch = -1;
     
     if (ev->type == ev_mouse && mousewait < ticcount)
@@ -1563,17 +1578,32 @@ boolean M_Responder (event_t*  ev)
 
       case KEY_LEFTARROW:
         if (currentMenu->menuitems[itemOn].routine &&
-            currentMenu->menuitems[itemOn].status == 2) {
+			currentMenu->menuitems[itemOn].status == 2) {
+
+			oldtask = currenttask;
+			Z_QuickmapMenu();
+
+
             S_StartSound(NULL,sfx_stnmov);
             currentMenu->menuitems[itemOn].routine(0);
+
+			Z_QuickmapByTaskNum(oldtask);
+
         }
         return true;
                 
       case KEY_RIGHTARROW:
         if (currentMenu->menuitems[itemOn].routine &&
-            currentMenu->menuitems[itemOn].status == 2) {
+			currentMenu->menuitems[itemOn].status == 2) {
+
+			oldtask = currenttask;
+			Z_QuickmapMenu();
+
             S_StartSound(NULL,sfx_stnmov);
             currentMenu->menuitems[itemOn].routine(1);
+			
+			Z_QuickmapByTaskNum(oldtask);
+
         }
         return true;
 
@@ -1581,11 +1611,8 @@ boolean M_Responder (event_t*  ev)
         if (currentMenu->menuitems[itemOn].routine &&
             currentMenu->menuitems[itemOn].status) {
 
-			int8_t oldtask = currenttask;
-			if (currenttask != TASK_STATUS) {
-				// might get called by m_responder. Investigate if this can be dropped in there instead.
-				Z_QuickmapStatus();
-			}
+			oldtask = currenttask;
+			Z_QuickmapMenu();
 
 			currentMenu->lastOn = itemOn;
 			
@@ -1596,10 +1623,7 @@ boolean M_Responder (event_t*  ev)
                 currentMenu->menuitems[itemOn].routine(itemOn);
                 S_StartSound(NULL,sfx_pistol);
             }
-			if (oldtask != TASK_STATUS) {
-				Z_QuickmapByTaskNum(oldtask);
-			}
-
+			Z_QuickmapByTaskNum(oldtask);
 
         }
         return true;
@@ -1678,6 +1702,7 @@ void M_Drawer (void)
     
     // Horiz. & Vertically center string and print it.
     if (messageToPrint) {
+		// Not menu - because status has the graphics for letter!
 		Z_QuickmapStatus();
 
         start = 0;
@@ -1710,7 +1735,7 @@ void M_Drawer (void)
 	if (!menuactive) {
 		return;
 	}
-	Z_QuickmapStatus();
+	Z_QuickmapMenu();
 
 	if (currentMenu->routine) {
 		currentMenu->routine();         // call Draw routine
@@ -1722,9 +1747,9 @@ void M_Drawer (void)
     max = currentMenu->numitems;
 
     for (i=0;i<max;i++) {
-		if (currentMenu->menuitems[i].name[0]) {
+		if (currentMenu->menuitems[i].name != -1) {
 			V_DrawPatchDirect(x, y,
-				W_CacheLumpNameEMSAsPatch(currentMenu->menuitems[i].name, PU_CACHE));
+				M_GetMenuPatch(currentMenu->menuitems[i].name)) ;
 		}
         y += LINEHEIGHT;
     }
@@ -1732,7 +1757,7 @@ void M_Drawer (void)
     
     // DRAW SKULL
 	V_DrawPatchDirect(x + SKULLXOFF, currentMenu->y - 5 + itemOn * LINEHEIGHT,
-		W_CacheLumpNameEMSAsPatch(skullName[whichSkull], PU_CACHE));
+		M_GetMenuPatch(skullName[whichSkull])) ;
 
 	Z_QuickmapPhysics();
 

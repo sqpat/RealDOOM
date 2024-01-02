@@ -237,6 +237,7 @@ extern int16_t pageswapargs_phys[40];
 extern int16_t pageswapargs_rend[48];
 extern int16_t pageswapargs_stat[12];
 extern int16_t pageswapargs_demo[8];
+extern int16_t pageswapargs_menu[16];
 extern int16_t pageswapargs_palette[10];
 extern int16_t pageswapargs_textcache[8];
 extern int16_t pageswapargs_textinfo[8];
@@ -254,6 +255,8 @@ extern int16_t pageswapargseg_stat;
 extern int16_t pageswapargoff_stat;
 extern int16_t pageswapargseg_demo;
 extern int16_t pageswapargoff_demo;
+extern int16_t pageswapargseg_menu;
+extern int16_t pageswapargoff_menu;
 extern int16_t pageswapargseg_palette;
 extern int16_t pageswapargoff_palette;
 extern int16_t pageswapargseg_textcache;
@@ -399,6 +402,9 @@ found:
 	pageswapargoff_stat = (uint16_t)(((uint32_t)pageswapargs_stat) & 0xffff);
 	pageswapargseg_demo = (uint16_t)((uint32_t)pageswapargs_demo >> 16);
 	pageswapargoff_demo = (uint16_t)(((uint32_t)pageswapargs_demo) & 0xffff);
+	pageswapargseg_menu = (uint16_t)((uint32_t)pageswapargs_menu >> 16);
+	pageswapargoff_menu = (uint16_t)(((uint32_t)pageswapargs_menu) & 0xffff);
+
 	pageswapargseg_textcache = (uint16_t)((uint32_t)pageswapargs_textcache >> 16);
 	pageswapargoff_textcache = (uint16_t)(((uint32_t)pageswapargs_textcache) & 0xffff);
 	pageswapargseg_textinfo = (uint16_t)((uint32_t)pageswapargs_textinfo >> 16);
@@ -417,27 +423,27 @@ found:
 
 	
 
-	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE  FWIPE
+	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE			MENU		FWIPE
 	// BLOCK
-	// -------------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------------------------
 	//            						visplane stuff			screen4 0x9c00
 	// 0x9000 block		thinkers		viewangles, drawsegs								palettebytes
-	// -------------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------------------------
 	//									tex cache arrays
 	// 									sprite stuff			
 	//					screen0			visplane openings									screen0
 	// 0x8000 block		gamma table		texture memrefs?									gamma table
-	// -------------------------------------------------------------------------------------------------------
-	// 0x7000 block		physics levdata render levdata			st graphics
-	// -------------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------------------------
+	// 0x7000 block		physics levdata render levdata			st graphics								menugraphics
+	// ----------------------------------------------------------------------------------------------------------------------
 	//				more physics levdata zlight											
 	//                  rejectmatrix
-	// 					nightnmarespawns textureinfo			
-	//0x6000 block		strings			flat cache				strings						 
-	// -------------------------------------------------------------------------------------------------------
+	// 					nightnmarespawns textureinfo													menugraphics2
+	//0x6000 block		strings			flat cache				strings									  strings
+	// ----------------------------------------------------------------------------------------------------------------------
 	//                  states          states 
 	// 0x5000 block		trig tables   	trig tables								demobuffer	
-	// -------------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------------------------
 	// 0x4000 block						textures
 
 	 
@@ -493,13 +499,13 @@ found:
 		pageswapargs_textinfo[i * 2] = TEXTURE_INFO_LOGICAL_PAGE + i;
 		pageswapargs_textinfo[i * 2 + 1] = PAGE_6000 + i;
 
-		pageswapargs_scratch_5000[i * 2] = SCRATCH_LOGICAL_PAGE + i;
+		pageswapargs_scratch_5000[i * 2] = FIRST_SCRATCH_LOGICAL_PAGE + i;
 		pageswapargs_scratch_5000[i * 2 + 1] = PAGE_5000 + i;
 
-		pageswapargs_scratch_4000[i * 2] = SCRATCH_LOGICAL_PAGE + i;
+		pageswapargs_scratch_4000[i * 2] = FIRST_SCRATCH_LOGICAL_PAGE + i;
 		pageswapargs_scratch_4000[i * 2 + 1] = PAGE_4000 + i;
 
-		pageswapargs_scratch_stack[i * 2] = SCRATCH_LOGICAL_PAGE + i;
+		pageswapargs_scratch_stack[i * 2] = FIRST_SCRATCH_LOGICAL_PAGE + i;
 		pageswapargs_scratch_stack[i * 2 + 1] = PAGE_5000 + i; // 0x5000 area
 		
 		pageswapargs_scratch_stack[8 + i * 2] = FIRST_TRIG_TABLE_LOGICAL_PAGE + i;		// stack on scratch frame will always be trig pages etc..
@@ -520,9 +526,18 @@ found:
 	for (i = 0; i < 4; i++) {
 		pageswapargs_rend_temp_7000_to_6000[i * 2] = 28 + i;
 		pageswapargs_rend_temp_7000_to_6000[i * 2 + 1] = PAGE_6000 + i;
-		//pageswapargs_rend_temp_7000_to_6000[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i + 12];
-	}
+ 	}
 
+	for (i = 0; i < 8; i++) {
+		pageswapargs_menu[i * 2]     = FIRST_MENU_GRAPHICS_LOGICAL_PAGE + i - (i > 4 ? 1 : 0);
+		pageswapargs_menu[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i+8];
+ 	}
+
+	pageswapargs_menu[8]  = STRINGS_LOGICAL_PAGE;
+//	pageswapargs_menu[9] = PAGE_6000; // strings;
+	//pageswapargs_menu[10] = FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 4;
+	//pageswapargs_menu[12] = FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 5;
+	//pageswapargs_menu[14] = FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6;
 
 	Z_QuickmapPhysics(); // map default page map
 }
@@ -595,8 +610,8 @@ void Z_LinkEMSVariables() {
 	screen4 = MK_FP(segment, offset_status);
 
 
-	printf("\n  MEMORY AREA  Physics  Render  HU/ST    Demo");
-	printf("\n   0x9000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0 - offset_status);
+	printf("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
+	printf("\n   0x9000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
 
 	segment = 0x8000;
 	offset_render = 0u;
@@ -664,14 +679,14 @@ void Z_LinkEMSVariables() {
 
 	// from the top
 
-	// 0x9000  40203  64894  10240
-	// 0x8000  65280  64772  00000
-	// 0x7000  XXXXX  XXXXX  64208
-	// 0x6000  24784  55063  16384  
-	// 0x5000  63150  63150  00000  XXXXX 
-	// 0x4000  00000  00000  00000
+	// 0x9000  40203  64894  10240  00000  00000
+	// 0x8000  65280  64772  00000  00000  00000
+	// 0x7000  XXXXX  XXXXX  64208  00000  XXXXX
+	// 0x6000  24784  55063  16384  00000  XXXXX
+	// 0x5000  63150  63150  00000  XXXXX  00000
+	// 0x4000  00000  00000  00000  00000  00000
 
-	printf("\n   0x8000:      %05u   %05u   %05u   00000", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x8000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
@@ -772,7 +787,7 @@ void Z_LinkEMSVariables() {
 	}
 
 
-	printf("\n   0x7000:      XXXXX   XXXXX   %05u   00000", 0 - offset_status);
+	printf("\n   0x7000:      XXXXX   XXXXX   %05u   00000   XXXXX", 0 - offset_status);
 	segment = 0x6000;
 	offset_render = 0u;
 	offset_physics = 0u;
@@ -798,7 +813,7 @@ void Z_LinkEMSVariables() {
 	offset_render += sizeof(lighttable_t* far) * (LIGHTLEVELS * MAXLIGHTZ);
 
 
-	printf("\n   0x6000:      %05u   %05u   %05u   00000", offset_physics, offset_render, offset_status);
+	printf("\n   0x6000:      %05u   %05u   %05u   00000  XXXXX", offset_physics, offset_render, offset_status);
 
 
 
@@ -824,14 +839,14 @@ void Z_LinkEMSVariables() {
 	demobuffer = MK_FP(segment, 0);
 
 
-	printf("\n   0x5000:      %05u   %05u   XXXXX   XXXXX", offset_physics, offset_physics);
+	printf("\n   0x5000:      %05u   %05u   XXXXX   XXXXX   00000", offset_physics, offset_physics);
 
 	segment = 0x4000;
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	printf("\n   0x4000:      %05u   XXXXX   %05u   00000", offset_physics, offset_render, 0 - offset_status);
+	printf("\n   0x4000:      %05u   XXXXX   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
 
 
 
@@ -879,13 +894,13 @@ void Z_LoadBinaries() {
 byte conventionallowerblock[1250];
 
 void Z_LinkConventionalVariables() {
-	byte* offset;
+	byte* offset = conventionallowerblock;
 	//1250 now
 	uint16_t size = numtextures * (sizeof(uint16_t) * 3 + 4 * sizeof(uint8_t));
 
 	//conventionallowerblock = offset = malloc(size);
 	//I_Error("\n%lx %u", conventionallowerblock, size);
-
+	
 
 	texturecolumn_offset = (uint16_t*)offset;
 	offset += numtextures * sizeof(uint16_t);
@@ -903,6 +918,6 @@ void Z_LinkConventionalVariables() {
 	offset += numtextures * sizeof(uint8_t);
 	//I_Error("\n%lx %lx %lx %u", conventionallowerblock, offset, texturetranslation, size);
 
-	 
+	//memset(conventionallowerblock, 0x00, 1250);
 
 }
