@@ -89,7 +89,6 @@
 #define NG_SPACINGX    		64
 
 
- 
 
 
 
@@ -310,6 +309,18 @@ static anim_t *anims[NUMEPISODES] =
     epsd2animinfo
 };
 
+byte* far wigraphicspage0		= (byte* far)0x70000000;
+byte* far wigraphicslevelname	= (byte* far)0x78000000;
+byte* far wigraphicsfullscreen	= (byte* far)0x7C000000;
+#define NEXT_OFFSET 8192
+#define NUM_WI_ITEMS 58
+uint16_t wioffsets[NUM_WI_ITEMS];
+
+
+patch_t* far WI_GetPatch(int16_t i) {
+	return (patch_t* far)(wigraphicspage0 + wioffsets[i]);
+
+}
 
 //
 // GENERAL DATA
@@ -373,46 +384,19 @@ boolean unloaded = false;
 
 
 // You Are Here graphic
-static MEMREF		yahRef[2];
+static uint8_t		yahRef[2];
 
 // splat
-static MEMREF		splatRef;
+static uint8_t		splatRef;
 
-// %, : graphics
-static MEMREF		percentRef;
-static MEMREF		colonRef;
 
 // 0-9 graphic
-static MEMREF		numRef[10];
-
-// minus sign
-static MEMREF		wiminusRef;
-
-// "Finished!" graphics
-static MEMREF		finishedRef;
-
-// "Entering" graphic
-static MEMREF		enteringRef;
-
-// "secret"
-static MEMREF		sp_secretRef;
-
- // "Kills", "Scrt", "Items"
-static MEMREF		killsRef;
-static MEMREF		secretRef;
-static MEMREF		itemsRef;
-
-// Time sucks.
-static MEMREF		timeRef;
-static MEMREF		parRef;
-static MEMREF		sucksRef;
-
-
+static uint8_t		numRef[10];
+ 
 // "Total", your face, your dead face
 
 
  // Name graphics of each level (centered)
-MEMREF				lnamesRef;
 
 //
 // CODE
@@ -434,8 +418,6 @@ void WI_drawLF(void)
 {
 	patch_t* lname;
 	int16_t y = WI_TITLEY;
-	MEMREF* lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
-	lname = (patch_t*)Z_LoadBytesFromEMS(lnames[wbs->last]);
 	// draw <LevelName> 
 
 //    V_DrawPatch((SCREENWIDTH - (lnames[wbs->last]->width))/2, y, FB, lnames[wbs->last]);
@@ -453,28 +435,25 @@ void WI_drawEL(void)
 {
 	patch_t* lname;
 	int16_t y = WI_TITLEY;
-	MEMREF* lnames;
-	patch_t* entering = (patch_t*)Z_LoadBytesFromEMS(enteringRef);
+	patch_t* entering = WI_GetPatch(57);
     // draw "Entering"
     V_DrawPatch((SCREENWIDTH - (entering->width))/2, y, FB, entering);
 
 
-	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
-	lname = (patch_t*)Z_LoadBytesFromEMS(lnames[wbs->next]);
+	lname = (patch_t*)(wigraphicslevelname + NEXT_OFFSET);
 
     // draw level
     y += (5*(lname->height))/4;
 
 
-    V_DrawPatch((SCREENWIDTH - (lname->width))/2,
-		y, FB, lname);
+    V_DrawPatch((SCREENWIDTH - (lname->width))/2, y, FB, lname);
 
 }
 
 void
 WI_drawOnLnode
 ( int16_t		n,
-  MEMREF*	cRef )
+  uint8_t*	cRef )
 {
 
     int16_t		i;
@@ -488,7 +467,7 @@ WI_drawOnLnode
 	int16_t lnodeY = getLnodeY(wbs->epsd, n);
     i = 0;
     do {
-		ci = (patch_t*)Z_LoadBytesFromEMS(cRef[i]);
+		ci = WI_GetPatch(cRef[i]);
 		left = lnodeX - (ci->leftoffset);
 		top = lnodeY - (ci->topoffset);
 		right = left + (ci->width);
@@ -505,7 +484,7 @@ WI_drawOnLnode
     } while (!fits && i!=2);
 
     if (fits && i<2) {
-		V_DrawPatch(lnodeX, lnodeY, FB, ((patch_t*)Z_LoadBytesFromEMS(cRef[i])));
+		V_DrawPatch(lnodeX, lnodeY, FB, (WI_GetPatch(cRef[i])));
     } else {
 		// DEBUG
 		printf("Could not place patch on level %d", n+1); 
@@ -617,7 +596,7 @@ void WI_drawAnimatedBack(void)
 		a = &anims[wbs->epsd][i];
 
 		if (a->ctr >= 0)
-			V_DrawPatch(a->loc.x, a->loc.y, FB, (patch_t*)Z_LoadBytesFromEMS(a->pRef[a->ctr]));
+			V_DrawPatch(a->loc.x, a->loc.y, FB, WI_GetPatch(a->pRef[a->ctr]));
 	}
 
 }
@@ -637,7 +616,7 @@ WI_drawNum
   int16_t		digits )
 {
 
-    int16_t		fontwidth = (((patch_t*)Z_LoadBytesFromEMS(numRef[0])) ->width);
+    int16_t		fontwidth = (WI_GetPatch(numRef[0]) ->width);
     int16_t		neg;
     int16_t		temp;
 
@@ -674,13 +653,13 @@ WI_drawNum
     while (digits--)
     {
 	x -= fontwidth;
-	V_DrawPatch(x, y, FB, (patch_t*) Z_LoadBytesFromEMS(numRef[ n % 10 ]));
+	V_DrawPatch(x, y, FB, WI_GetPatch(numRef[ n % 10 ]));
 	n /= 10;
     }
 
     // draw a minus sign if necessary
     if (neg)
-	V_DrawPatch(x-=8, y, FB, (patch_t*)Z_LoadBytesFromEMS(wiminusRef));
+	V_DrawPatch(x-=8, y, FB, WI_GetPatch(42));
 
     return x;
 
@@ -695,7 +674,7 @@ WI_drawPercent
     if (p < 0)
 	return;
 
-    V_DrawPatch(x, y, FB, (patch_t*)Z_LoadBytesFromEMS(percentRef));
+    V_DrawPatch(x, y, FB, WI_GetPatch(43));
     WI_drawNum(x, y, p, -1);
 }
 
@@ -721,7 +700,7 @@ WI_drawTime
 	return;
 
     if (t <= 61*59) {
-		colon = (patch_t*)Z_LoadBytesFromEMS(colonRef);
+		colon = WI_GetPatch(54);
 		div = 1;
 		do {
 			n = (t / div) % 60;
@@ -735,7 +714,7 @@ WI_drawTime
 		} while (t / div);
     } else {
 		// "sucks"
-		sucks = (patch_t*)Z_LoadBytesFromEMS(sucksRef);
+		sucks = WI_GetPatch(55);
 		V_DrawPatch(x - sucks->width, y, FB, sucks);
     }
 }
@@ -965,7 +944,7 @@ void WI_drawStats(void)
     // line height
 	int16_t lh;
 
-	patch_t* num0 = (patch_t*) Z_LoadBytesFromEMS(numRef[0]);
+	patch_t* num0 = WI_GetPatch(numRef[0]);
 
     lh = (3*(num0->height))/2;
 
@@ -976,23 +955,23 @@ void WI_drawStats(void)
     
     WI_drawLF();
 
-    V_DrawPatch(SP_STATSX, SP_STATSY, FB, (patch_t*)Z_LoadBytesFromEMS(killsRef));
+    V_DrawPatch(SP_STATSX, SP_STATSY, FB, WI_GetPatch(33));
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY, cnt_kills);
 
-    V_DrawPatch(SP_STATSX, SP_STATSY+lh, FB, (patch_t*)Z_LoadBytesFromEMS(itemsRef));
+    V_DrawPatch(SP_STATSX, SP_STATSY+lh, FB, WI_GetPatch(34));
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+lh, cnt_items);
 
-    V_DrawPatch(SP_STATSX, SP_STATSY+2*lh, FB, (patch_t*)Z_LoadBytesFromEMS(sp_secretRef));
+    V_DrawPatch(SP_STATSX, SP_STATSY+2*lh, FB, WI_GetPatch(56));
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+2*lh, cnt_secret);
 
-    V_DrawPatch(SP_TIMEX, SP_TIMEY, FB, (patch_t*)Z_LoadBytesFromEMS(timeRef));
+    V_DrawPatch(SP_TIMEX, SP_TIMEY, FB, WI_GetPatch(39));
     WI_drawTime(SCREENWIDTH/2 - SP_TIMEX, SP_TIMEY, cnt_time);
 
 	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 		if (wbs->epsd < 3)
 	#endif
     {
-		V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, FB, (patch_t*)Z_LoadBytesFromEMS(parRef));
+		V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, FB, WI_GetPatch(40));
 		WI_drawTime(SCREENWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);
     }
 
@@ -1061,7 +1040,6 @@ void WI_loadData(void)
     int16_t		j;
 	int8_t	name[9];
     anim_t*	a;
-	MEMREF* lnames;
 
     if (commercial)
 	strcpy(name, "INTERPIC");
@@ -1081,163 +1059,154 @@ void WI_loadData(void)
 
     if (commercial) {
 		NUMCMAPS = 32;								
-		lnamesRef = Z_MallocEMS (sizeof(patch_t*) * NUMCMAPS, PU_STATIC, 0);
-		lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
+		 			
+	}
+	else {
 
-		for (i=0 ; i<NUMCMAPS ; i++) {								
-			sprintf(name, "CWILV%2.2d", i);
-			lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
-		}					
-    } else {
-		lnamesRef =  Z_MallocEMS (sizeof(patch_t*) * NUMMAPS,
-						   PU_STATIC, 0);
-		lnames = (MEMREF *)Z_LoadBytesFromEMS(lnamesRef);
-
-		for (i=0 ; i<NUMMAPS ; i++)
-		{
-			sprintf(name, "WILV%d%d", wbs->epsd, i);
-			lnames[i] = W_CacheLumpNameEMS(name, PU_STATIC);
-		}
 
 		// you are here
-		yahRef[0] = W_CacheLumpNameEMS("WIURH0", PU_STATIC);
+		yahRef[0] = 30;
 
 		// you are here (alt.)
-		yahRef[1] = W_CacheLumpNameEMS("WIURH1", PU_STATIC);
+		yahRef[1] = 31;
 
 		// splat
-		splatRef = W_CacheLumpNameEMS("WISPLAT", PU_STATIC);
-	
-	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-		if (wbs->epsd < 3)
-	#endif
-		{
-			for (j=0;j<NUMANIMS[wbs->epsd];j++)
+		splatRef = 32;
+		/*
+		#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+			if (wbs->epsd < 3)
+		#endif
 			{
-			a = &anims[wbs->epsd][j];
-			for (i=0;i<a->nanims;i++)
-			{
-				// MONDO HACK!
-				if (wbs->epsd != 1 || j != 8) 
+				for (j=0;j<NUMANIMS[wbs->epsd];j++)
 				{
-				// animations
-				sprintf(name, "WIA%d%.2d%.2d", wbs->epsd, j, i);  
-				a->pRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
-				}
-				else
+				a = &anims[wbs->epsd][j];
+				for (i=0;i<a->nanims;i++)
 				{
-				// HACK ALERT!
-				a->pRef[i] = anims[1][4].pRef[i]; 
+					// MONDO HACK!
+					if (wbs->epsd != 1 || j != 8)
+					{
+					// animations
+					sprintf(name, "WIA%d%.2d%.2d", wbs->epsd, j, i);
+					a->pRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
+					}
+					else
+					{
+					// HACK ALERT!
+					a->pRef[i] = anims[1][4].pRef[i];
+					}
 				}
-			}
+				}
 			}
 		}
-    }
+		*/
 
-    // More hacks on minus sign.
-    wiminusRef = W_CacheLumpNameEMS("WIMINUS", PU_STATIC);
 
-    for (i=0;i<10;i++)
-    {
-	 // numbers 0-9
-	sprintf(name, "WINUM%d", i);     
-	numRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
-    }
-
-    // percent sign
-    percentRef = W_CacheLumpNameEMS("WIPCNT", PU_STATIC);
-
-    // "finished"
-    finishedRef = W_CacheLumpNameEMS("WIF", PU_STATIC);
-
-    // "entering"
-    enteringRef = W_CacheLumpNameEMS("WIENTER", PU_STATIC);
-
-    // "kills"
-    killsRef = W_CacheLumpNameEMS("WIOSTK", PU_STATIC);
-
-    // "scrt"
-    secretRef = W_CacheLumpNameEMS("WIOSTS", PU_STATIC);
-
-     // "secret"
-    sp_secretRef = W_CacheLumpNameEMS("WISCRT2", PU_STATIC);
-
-    
-	itemsRef = W_CacheLumpNameEMS("WIOSTI", PU_STATIC);
-
-    // ":"
-    colonRef = W_CacheLumpNameEMS("WICOLON", PU_STATIC);
-
-    // "time"
-    timeRef = W_CacheLumpNameEMS("WITIME", PU_STATIC);
-
-    // "sucks"
-    sucksRef = W_CacheLumpNameEMS("WISUCKS", PU_STATIC);
-
-    // "par"
-    parRef = W_CacheLumpNameEMS("WIPAR", PU_STATIC);
-
+		for (i = 0; i < 10; i++) {
+			numRef[i] = 44 + i;
+		}
+	}
+        				    
  
 
 }
 
+#define NUM_MENU_ITEMS 45
+
+extern int8_t menugraphics[NUM_MENU_ITEMS][9];
+extern byte* far menugraphicspage0;
+extern uint16_t menuoffsets[NUM_MENU_ITEMS];
+
+
+void M_Reload(void) {
+	// reload menu graphics
+	int8_t menugraphics[NUM_MENU_ITEMS][9] = {
+	"M_DOOM",
+	"M_RDTHIS",
+	"M_OPTION",
+	"M_QUITG",
+	"M_NGAME",
+
+	"M_SKULL1`",//5
+	"M_SKULL2",
+	"M_THERMO",
+	"M_THERMR",
+	"M_THERMM",
+
+	"M_THERML",//10
+	"M_ENDGAM",
+	"M_PAUSE",
+	"M_MESSG",
+	"M_MSGON",
+
+	"M_MSGOFF", // 15
+	"M_EPISOD",
+	"M_EPI1",
+	"M_EPI2",
+	"M_EPI3",
+
+	"M_HURT", //20
+	"M_JKILL",
+	"M_ROUGH",
+	"M_SKILL",
+	"M_NEWG",
+
+	"M_ULTRA", //25
+	"M_NMARE",
+/*
+	"M_SVOL"
+	"M_OPTTTL",
+	"M_SAVEG",
+
+	"M_LOADG", //30
+	"M_DISP",
+	"M_MSENS",
+	"M_GDHIGH",
+	"M_GDLOW",
+
+	"M_DETAIL", // 35
+	"M_DISOPT",
+	"M_SCRNSZ",
+	"M_SGTTL",
+	"M_LGTTL",
+
+	"M_SFXVOL",//40
+	"M_MUSVOL",
+	"M_LSLEFT",
+	"M_LSCNTR",
+	"M_LSRGHT"
+	*/
+
+	//todo extend for commercial?
+	// "M_EPI4"
+
+
+	};
+
+	int16_t i = 0;
+	uint32_t size = 0;
+	byte* far dst = menugraphicspage0;
+	uint8_t pageoffset = 0;
+
+	for (i = 0; i < 27; i++) {
+		int16_t lump = W_GetNumForName(menugraphics[i]);
+		uint16_t lumpsize = W_LumpLength(lump);
+
+		W_CacheLumpNumDirect(lump, dst);
+		dst += lumpsize;
+
+	}
+
+
+
+}
+
+
 void WI_unloadData(void)
 {
-    int16_t		i;
-    int16_t		j;
-	MEMREF*	lnames;
-	lnames = (MEMREF*)Z_LoadBytesFromEMS(lnamesRef);
-
-    Z_ChangeTagEMS(wiminusRef, PU_CACHE);
-
-    for (i=0 ; i<10 ; i++)
-		Z_ChangeTagEMS(numRef[i], PU_CACHE);
-    
-    if (commercial)
-    {
-		for (i = 0; i < NUMCMAPS; i++) {
-			//Z_ChangeTagEMS(lnames[i], PU_CACHE);
-		}
-    }
-    else
-    {
-		Z_ChangeTagEMS(yahRef[0], PU_CACHE);
-		Z_ChangeTagEMS(yahRef[1], PU_CACHE);
-
-		Z_ChangeTagEMS(splatRef, PU_CACHE);
-
-	for (i = 0; i < NUMMAPS; i++) {
-		//Z_ChangeTagEMS(lnames[i], PU_CACHE);
-	}
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-	if (wbs->epsd < 3)
-#endif
-	{
-	    for (j=0;j<NUMANIMS[wbs->epsd];j++)
-	    {
-		if (wbs->epsd != 1 || j != 8)
-		    for (i=0;i<anims[wbs->epsd][j].nanims;i++)
-				Z_ChangeTagEMS(anims[wbs->epsd][j].pRef[i], PU_CACHE);
-	    }
-	}
-    }
-    
-    Z_FreeEMS(lnamesRef);
-
-	Z_ChangeTagEMS(percentRef, PU_CACHE);
-	Z_ChangeTagEMS(colonRef, PU_CACHE);
-	Z_ChangeTagEMS(finishedRef, PU_CACHE);
-	Z_ChangeTagEMS(enteringRef, PU_CACHE);
-	Z_ChangeTagEMS(killsRef, PU_CACHE);
-	Z_ChangeTagEMS(secretRef, PU_CACHE);
-	Z_ChangeTagEMS(sp_secretRef, PU_CACHE);
-	Z_ChangeTagEMS(itemsRef, PU_CACHE);
-	Z_ChangeTagEMS(timeRef, PU_CACHE);
-	Z_ChangeTagEMS(sucksRef, PU_CACHE);
-	Z_ChangeTagEMS(parRef, PU_CACHE);
-
+	Z_QuickmapMenu();
 	unloaded = true;
-    
+	M_Reload();
+	Z_QuickmapPhysics();
 }
 
 void WI_Drawer (void)
@@ -1251,6 +1220,7 @@ void WI_Drawer (void)
 	if (unloaded) {
 		return;
 	}
+	Z_QuickmapMenu();
 
     switch (state)
     {
@@ -1266,6 +1236,8 @@ void WI_Drawer (void)
 		WI_drawNoState();
 		break;
     }
+	Z_QuickmapPhysics();
+
 }
  
 
@@ -1286,10 +1258,134 @@ void WI_initVariables(wbstartstruct_t* wbstartstruct)
 		wbs->maxsecret = 1;
 }
 
+
+void WI_Init(void)
+{
+	char* wigraphics[NUM_WI_ITEMS] = {
+		"WIA00900",
+		"WIA00901",
+		"WIA00902",
+		"WIA00800",
+		"WIA00801",
+
+		"WIA00802`",//5
+		"WIA00700",
+		"WIA00701",
+		"WIA00702",
+		"WIA00600",
+
+		"WIA00601",//10
+		"WIA00602",
+		"WIA00500",
+		"WIA00501",
+		"WIA00502",
+	
+		"WIA00400",//15
+		"WIA00401",
+		"WIA00402",
+		"WIA00300",
+		"WIA00301",
+
+		"WIA00302",//20
+		"WIA00200",
+		"WIA00201",
+		"WIA00202",
+		"WIA00100",
+
+		"WIA00101",//25
+		"WIA00102",
+		"WIA00000",
+		"WIA00001",
+		"WIA00002",
+
+		"WIURH0", //30
+		"WIURH1",
+		"WISPLAT",
+		"WIOSTK",
+		"WIOSTI",
+
+		"WIF", // 35
+		"WIMSTT",
+		"WIOSTS",
+		"WIOSTF",
+		"WITIME",
+
+		"WIPAR",//40
+		"WIMSTAR",
+		"WIMINUS",
+		"WIPCNT",
+		"WINUM0",
+
+		"WINUM1",//45
+		"WINUM2",
+		"WINUM3",
+		"WINUM4",
+		"WINUM5",
+
+		"WINUM6",//50
+		"WINUM7",
+		"WINUM8",
+		"WINUM9",
+		"WICOLON",
+
+		"WISUCKS",//55
+		"WISCRT2",
+		"WIENTER"
+
+
+	};
+
+	int16_t i = 0;
+	uint32_t size = 0;
+	byte* far dst = wigraphicspage0;
+	uint8_t pageoffset = 0;
+	int8_t	name[9];
+
+	for (i = 0; i < NUM_WI_ITEMS; i++) {
+		int16_t lump = W_GetNumForName(wigraphics[i]);
+		uint16_t lumpsize = W_LumpLength(lump);
+		
+		W_CacheLumpNumDirect(lump, dst);
+		wioffsets[i] = size;
+		size += lumpsize;
+		dst += lumpsize;
+
+	}
+
+
+	if (commercial) {
+		dst = wigraphicslevelname;
+		sprintf(name, "CWILV%2.2d", wbs->last);
+		W_CacheLumpNameDirect(name, dst);
+
+		dst = wigraphicslevelname + NEXT_OFFSET;
+		sprintf(name, "CWILV%2.2d", wbs->next);
+		W_CacheLumpNameDirect(name, dst);
+
+	}
+	else {
+		dst = wigraphicslevelname;
+		sprintf(name, "WILV%d%d", wbs->epsd, wbs->last);
+		W_CacheLumpNameDirect(name, dst);
+
+		dst = wigraphicslevelname + NEXT_OFFSET;
+		sprintf(name, "WILV%d%d", wbs->epsd, wbs->next);
+		W_CacheLumpNameDirect(name, dst);
+	}
+}
+
 void WI_Start(wbstartstruct_t* wbstartstruct)
 {
 	unloaded = false;
+	Z_QuickmapMenu();
+	
 	WI_initVariables(wbstartstruct);
+	WI_Init();
 	WI_loadData();
 	WI_initStats();
+	
+	Z_QuickmapPhysics();
+
 }
+
+
