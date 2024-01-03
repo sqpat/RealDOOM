@@ -97,7 +97,7 @@ uint8_t     R_TextureNumForNameA(int8_t* name) {
 	uint8_t         i = R_CheckTextureNumForNameA(name);
 
 	if (i == BAD_TEXTURE) {
-		I_Error("\nR_TextureNumForName: %s not found %li %li %li", name, numreads, pageins, pageouts);
+		I_Error("\nR_TextureNumForName: %s not found", name);
 	}
 	return i;
 }

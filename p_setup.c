@@ -201,7 +201,7 @@ void P_LoadVertexes(int16_t lump)
 	numvertexes = W_LumpLength(lump) / sizeof(mapvertex_t);
 
 	// Allocate zone memory for buffer.
-	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t), CA_TYPE_LEVELDATA);
+	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t));
 	vertexes = Z_LoadBytesFromConventional(vertexesRef);
 	// Load data into cache.
 	
@@ -249,7 +249,7 @@ void P_LoadSegs(int16_t lump)
 	Z_QuickmapRender_NoTex();
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
-	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t), CA_TYPE_LEVELDATA);
+	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t));
 	segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
 
 	segs_render = (seg_render_t* far)Z_GetNextRenderAddress(numsegs * sizeof(seg_render_t));
@@ -339,7 +339,7 @@ void P_LoadSubsectors(int16_t lump)
 	subsector_t*        ss;
 	MEMREF		subsectorsRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t), CA_TYPE_LEVELDATA);
+	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t));
 	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 
@@ -392,7 +392,7 @@ void P_LoadSectors(int16_t lump)
 	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 
-	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t), CA_TYPE_LEVELDATA);
+	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t));
 	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
 
 	sectors_physics  = (sector_physics_t*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
@@ -454,7 +454,7 @@ void P_LoadNodes(int16_t lump)
 	MEMREF	nodesRef;
 
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
-	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t), CA_TYPE_LEVELDATA);
+	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t));
 	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
 	nodes_render = (node_render_t* far) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
 
@@ -1064,12 +1064,12 @@ void P_LoadLineDefs(int16_t lump)
 	side_render_t* tempsides_render;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
-	linesRef = Z_MallocConventional(numlines * sizeof(line_t), CA_TYPE_LEVELDATA);
+	linesRef = Z_MallocConventional(numlines * sizeof(line_t));
 	lines = (line_t* far)Z_LoadBytesFromConventional(linesRef);
 
 	lines_physics = (line_physics_t* far)Z_GetNextPhysicsAddress(numlines * sizeof(line_physics_t));
 
-	seenlinesRef = Z_MallocConventional(numlines/8+1, CA_TYPE_LEVELDATA);
+	seenlinesRef = Z_MallocConventional(numlines/8+1);
 	seenlines = (uint8_t*)Z_LoadBytesFromConventional(seenlinesRef);
 	memset(lines, 0, numlines * sizeof(line_t));
 	memset(lines_physics, 0, numlines * sizeof(line_physics_t));
@@ -1193,7 +1193,7 @@ void P_LoadSideDefs(int16_t lump)
 	//Z_QuickmapTextureInfoPage();
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	sidesRef = Z_MallocConventional (numsides * sizeof(side_t), CA_TYPE_LEVELDATA);
+	sidesRef = Z_MallocConventional (numsides * sizeof(side_t));
 	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
 	sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 
@@ -1442,7 +1442,6 @@ P_SetupLevel
 	
 	W_EraseFullscreenCache();
 	S_Start();
-	Z_FreeTagsEMS();
 	Z_FreeConventionalAllocations();
 
 	// TODO reset 32 bit counters to start values here..

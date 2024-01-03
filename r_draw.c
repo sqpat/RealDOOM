@@ -430,7 +430,6 @@ void R_DrawSpanLow(void)
 			spot = ((yfrac >> (16 - 6))&(63 * 64)) + ((xfrac.h.fracbits) & 63);
 
 			// Lookup pixel from flat texture tile,
-			Z_RefIsActive(ds_sourceRef);
 			//  re-index using light/colormap.
 #ifndef	SKIP_DRAW
 			*dest = ds_colormap[ds_source[spot]];

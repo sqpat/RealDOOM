@@ -98,12 +98,14 @@ void R_InitPlanes(void) {
 	Z_QuickmapRender();
 
 	for (i = 0; i < NUM_VISPLANE_PAGES; i++) {
+		/*
 		visplanebytesRef[i] = Z_MallocEMS(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0);
 
 		for (j = 0; j < VISPLANES_PER_EMS_PAGE; j++) {
 			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplanepage = i;
 			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplaneoffset = j;
 		}
+		*/
 
 	}
 

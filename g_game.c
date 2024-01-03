@@ -1200,8 +1200,8 @@ boolean G_CheckDemoStatus (void)  {
 	if (timingdemo) {
 		endtime = ticcount;
  
-        I_Error ("\ntimed %li gametics in %li realtics\n Reads from pageframe: %li\n Page Ins: %li \n Page Outs: %li\n Task Switches: %li\n prnd index %i ",gametic 
-                 , endtime-starttime, numreads, pageins, pageouts, taskswitchcount, prndindex);
+        I_Error ("\ntimed %li gametics in %li realtics\n Task Switches: %li\n prnd index %i ",gametic 
+                 , endtime-starttime, taskswitchcount, prndindex);
     } 
          
     if (demoplayback)  { 

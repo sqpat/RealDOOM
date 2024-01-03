@@ -66,9 +66,7 @@ typedef uint16_t PAGEREF; //used internally for allocations list index
 // as a 'null' or unused memref.
 #define NULL_MEMREF 0
 
-extern int32_t numreads;
-extern int32_t pageins;
-extern int32_t pageouts;
+ 
 extern int32_t taskswitchcount;
 
 typedef struct memblock_s
@@ -88,11 +86,8 @@ typedef struct allocation_static_conventional_s
 } allocation_static_conventional_t;
 
 
-// these get cleared per level
-#define CA_TYPE_LEVELDATA 1
 
 #define ALLOCATION_LIST_HEAD	0
-#define EMS_ALLOCATION_LIST_SIZE 200
 
 
 // DOOM SHAREWARE VALUE
@@ -122,89 +117,26 @@ extern allocation_static_conventional_t* sprite_allocations;
 
 
 void Z_InitEMS(void);
-void Z_FreeTagsEMS();
 void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 
 #define BACKREF_LUMP_OFFSET EMS_ALLOCATION_LIST_SIZE
-MEMREF Z_MallocEMS(uint16_t size, uint8_t tag, uint8_t user);
-MEMREF Z_MallocEMSWithBackRef32(int32_t  size, uint8_t tag, uint8_t user, int16_t backRef);
-MEMREF Z_MallocEMSWithBackRef16(uint16_t  size, uint8_t tag, uint8_t user, int16_t backRef);
-MEMREF Z_MallocConventional(uint16_t  size, int16_t type);
+ 
+MEMREF Z_MallocConventional(uint16_t  size);
 
-
-void Z_ChangeTagEMS(MEMREF index, int16_t tag);
-void Z_FreeEMS(PAGEREF block);
-
-
-void Z_SetUnlocked(MEMREF ref);
+ 
 //void* Z_LoadBytesFromEMS2(MEMREF index);
 
 
 
 
 void* Z_LoadBytesFromConventional(MEMREF index);
-void* Z_LoadTextureInfoFromConventional(MEMREF index);
-//#define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c)
-//#define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA)
-void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked);
-#define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b)
-#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED)
-/*
-void* Z_LoadBytesFromConventionalWithOptions2(MEMREF index, boolean locked, int16_t type, int8_t* file, int32_t line);
-#define Z_LoadBytesFromConventionalWithOptions(a, b, c) Z_LoadBytesFromConventionalWithOptions2 (a, b, c, __FILE__, __LINE__)
-#define Z_LoadBytesFromConventional(a) Z_LoadBytesFromConventionalWithOptions2(a, PAGE_NOT_LOCKED, CA_TYPE_LEVELDATA, __FILE__, __LINE__)
-void* Z_LoadBytesFromEMSWithOptions2(MEMREF index, boolean locked, int8_t* file, int32_t line);
-#define Z_LoadBytesFromEMSWithOptions(a,b) Z_LoadBytesFromEMSWithOptions2(a, b, __FILE__, __LINE__)
-#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMSWithOptions2(a, PAGE_NOT_LOCKED, __FILE__, __LINE__)
-*/
+ 
 
-#ifdef CHECKREFS
-int16_t Z_RefIsActive2(MEMREF memref, int8_t* file, int32_t line);
-#define Z_RefIsActive(a) Z_RefIsActive2(a, __FILE__, __LINE__)
-#else
-#define Z_RefIsActive(a) 
-#endif
-/*
-void* Z_LoadBytesFromEMS2 (MEMREF index, int8_t* file, int32_t line);
-#define Z_LoadBytesFromEMS(a) Z_LoadBytesFromEMS2(a, __FILE__, __LINE__)
-
-
-	int16_t Z_RefIsActive2(MEMREF memref);
-	#define Z_RefIsActive(a) Z_RefIsActive2(a)
-
-*/
+ 
 
 void Z_ShutdownEMS();
-
-
-
-typedef struct
-{
-	PAGEREF prev;    //2    using 16 bits but need 11 or 12...
-	PAGEREF next;    //4    using 16 bits but need 11 or 12...         these 3 could fit in 32 bits?
-
-	// page and offset refer to internal EMS page and offset - in other words the keys
-	// to find the real location in memory for this allocation
-
-	// page;       using 9 bits... implies page max count of 512 (8 MB worth)
-	// size;        use 23 bits implying max of 8MB-1 or 0x007FFFFF max free size,
-	fixed_t_union page_and_size; // page is 9 high bits, size is 23 low bits
-	// todo: optimize uses of the page 9 bits to use int_16t arithmetic instead of int_32t. Maybe using unions?
-
-	// offset is the location within the page frame. 16kb page frame size means
-	// 14 bits needed. Tag is a 2 bit field stored in the two high bits. Used to
-	// managecaching behavior
-	uint16_t offset_and_tag;  //10
-	// user is sort of a standby of the old code but implies the block has an
-	// "owner". it combines with the tag field to determine a couple behaviors. 
-	// backref is an index passed to external caches when the allocation is
-	// deleted so the caches can also be cleared. Used in compositeTextures
-	// and wad lumps
-	uint16_t backref_and_user;  //12 bytes per struct, dont think we can do better.
-
-} allocation_t;
-
+ 
 
 #define SCREEN0_LOGICAL_PAGE				4
 #define STRINGS_LOGICAL_PAGE				12

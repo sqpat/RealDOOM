@@ -213,7 +213,7 @@ R_FindPlane
 		if (i < MAXCONVENTIONALVISPLANES) {
 			check = &visplanes[i];
 		} else {
-			check  = (visplane_t*)(&visplaneheaders[i-MAXCONVENTIONALVISPLANES]);
+			//check  = (visplane_t*)(&visplaneheaders[i-MAXCONVENTIONALVISPLANES]);
 		}
 		// we do this to avoid having to re-set check below, which is extra code.
 		if (i == lastvisplane){
@@ -234,7 +234,7 @@ R_FindPlane
 		return i;
 	}
 
-	if (lastvisplane == MAXCONVENTIONALVISPLANES + MAXEMSVISPLANES){
+	if (lastvisplane == MAXCONVENTIONALVISPLANES ){
 		// swap out to EMS
 		I_Error("out of visplanes");
 	}
@@ -255,10 +255,12 @@ R_FindPlane
 	if (i < MAXCONVENTIONALVISPLANES) {
 	    memset (check->top,0xff,sizeof(check->top));
 	} else {
+
+		/*
 		checkheader = (visplaneheader_t*) check;
 		checkbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[checkheader->visplanepage]))[checkheader->visplaneoffset]);
 		memset(checkbytes->top, 0xff, sizeof(checkbytes->top));
-
+		*/
 	}
 
     return i;
@@ -288,9 +290,11 @@ R_CheckPlane
 	if (index < MAXCONVENTIONALVISPLANES) {
 		pl = &visplanes[index];
 	} else {
+		/*
 		pl = (visplane_t*) &visplaneheaders[index-MAXCONVENTIONALVISPLANES];
 		plheader = (visplaneheader_t*) pl;
 		plbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[plheader->visplanepage]))[plheader->visplaneoffset]);
+		*/
 	}
 
 	
@@ -316,10 +320,11 @@ R_CheckPlane
 			if (pl->top[x] != 0xff)
 				break;
 	} else {
+		/*
 		for (x=intrl ; x<= intrh ; x++)
 			if (plbytes->top[x] != 0xff)
 				break;
-
+				*/
 	}
 
     if (x > intrh) {
@@ -340,6 +345,7 @@ R_CheckPlane
 		pl->minx = start;
 		pl->maxx = stop;
 	}  else {
+		/*
 		lastvisplaneheader = lastvisplane - MAXCONVENTIONALVISPLANES;
 		visplaneheaders[lastvisplaneheader].height = pl->height;
 		visplaneheaders[lastvisplaneheader].picnum = pl->picnum;
@@ -349,6 +355,7 @@ R_CheckPlane
 		pl->minx = start;
 		pl->maxx = stop;
 		plheader = (visplaneheader_t*) pl;
+		*/
 	}
 
 	if (index < MAXCONVENTIONALVISPLANES) {
@@ -356,8 +363,11 @@ R_CheckPlane
 
 	} else {
 		//todo dont z_load if same page frame?
+		/*
 		plbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[plheader->visplanepage]))[plheader->visplaneoffset]);
 		memset (plbytes->top,0xff,sizeof(plbytes->top));
+		*/
+
 	}
 	return lastvisplane++;
 }
@@ -401,14 +411,18 @@ void R_DrawPlanes (void)
 		if (i < MAXCONVENTIONALVISPLANES){
 			pl = &visplanes[i];
 		} else {
+			/*
 			pl = (visplane_t*) &visplaneheaders[i-MAXCONVENTIONALVISPLANES];
 			plheader = (visplaneheader_t*) pl;
+			*/
 		}
 
 		if (pl->minx > pl->maxx)
 			continue;
 
 		if (i >= MAXCONVENTIONALVISPLANES){
+
+			/*
 			if (currentplanebyteRef != plheader->visplanepage) { // new page to set locked..
 				if (plbytes)
 					Z_SetUnlocked(visplanebytesRef[currentplanebyteRef]);
@@ -416,6 +430,7 @@ void R_DrawPlanes (void)
 				base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], PAGE_LOCKED))[0]); // load into locked page
 			}
 			plbytes = &(base[plheader->visplaneoffset]);
+			*/
 		}
 	
 		// sky flat
@@ -575,9 +590,10 @@ void R_DrawPlanes (void)
 
 	Z_QuickmapRenderTexture();
 	*/
+	/*
 	if (plbytes)
 		Z_SetUnlocked(visplanebytesRef[currentplanebyteRef]);
-
+		*/
 
 }
 

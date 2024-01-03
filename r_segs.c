@@ -208,7 +208,6 @@ R_RenderMaskedSegRange
 			// draw the texture
 			col = (column_t *)((byte *)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
 			R_DrawMaskedColumn (col);
-			//Z_SetUnlocked(lockedRef);
 			maskedtexturecol[dc_x] = MAXSHORT;
 		}
 		spryscale.w += rw_scalestep;
@@ -264,9 +263,11 @@ void R_RenderSegLoop (void)
 					visplanes[ceilingplaneindex].top[rw_x] = top;
 					visplanes[ceilingplaneindex].bottom[rw_x] = bottom;
 				} else {
+					/*
 					visplanebytes_t* ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[ceilingplaneindex-MAXCONVENTIONALVISPLANES].visplanepage]))[visplaneheaders[ceilingplaneindex-MAXCONVENTIONALVISPLANES].visplaneoffset]);
 					ceilingplanebytes->top[rw_x] = top;
 					ceilingplanebytes->bottom[rw_x] = bottom;
+					*/
 				}
 			}
 		}
@@ -289,9 +290,11 @@ void R_RenderSegLoop (void)
 					visplanes[floorplaneindex].top[rw_x] = top;
 					visplanes[floorplaneindex].bottom[rw_x] = bottom;
 				} else {
+					/*
 					visplanebytes_t* floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[floorplaneindex-MAXCONVENTIONALVISPLANES].visplanepage]))[visplaneheaders[floorplaneindex-MAXCONVENTIONALVISPLANES].visplaneoffset]);
 					floorplanebytes->top[rw_x] = top;
 					floorplanebytes->bottom[rw_x] = bottom;
+					*/
 				}
 			}
 		}
@@ -354,7 +357,6 @@ void R_RenderSegLoop (void)
 
 					dc_source = R_GetColumn(toptexture,texturecolumn);
 					colfunc();
-					//Z_SetUnlocked(lockedRef);
 					ceilingclip[rw_x] = mid;
 				} else {
 					ceilingclip[rw_x] = yl - 1;
@@ -382,7 +384,6 @@ void R_RenderSegLoop (void)
 
 					dc_source = R_GetColumn(bottomtexture, texturecolumn);
 					colfunc();
-					//Z_SetUnlocked(lockedRef);
 					floorclip[rw_x] = mid;
 				}
 				else {

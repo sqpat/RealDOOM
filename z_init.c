@@ -56,8 +56,6 @@ extern struct SREGS segregs;
 #endif
 
  
-extern PAGEREF currentListHead; // main rover
-extern allocation_t allocations[EMS_ALLOCATION_LIST_SIZE];
 
  
 uint16_t EMS_PAGE;
