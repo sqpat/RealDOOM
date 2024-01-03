@@ -1717,6 +1717,15 @@ void Z_QuickmapScratch_4000() {
 	taskswitchcount++;
 }
 
+void Z_QuickmapScreen0() {
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_phys;
+	regs.w.si = pageswapargoff_phys+16;
+	intx86(EMS_INT, &regs, &regs);
+}
+
 int8_t scratchstacklevel = 0;
 
 void Z_PushScratchFrame() {

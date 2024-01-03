@@ -31,6 +31,7 @@
 
 #include "doomstat.h"
 #include "r_state.h"
+#include <dos.h>
 
 
 // Stage of animation:
@@ -341,43 +342,42 @@ boolean F_Responder (event_t *event)
 //
 void F_Ticker (void)
 {
-	int8_t* text;
+	// big enough for any string here
+	int8_t text[666];
+	
     // check for skipping
-    if ( (commercial)
-      && ( finalecount > 50) )
-    {
+    if ( (commercial) && ( finalecount > 50) ) {
       // go on to the next level
-				
-		if (player.cmd.buttons)
-		{
-	if (gamemap == 30)
-	  F_StartCast ();
-	else
-	  gameaction = ga_worlddone;
-      }
+		if (player.cmd.buttons) {
+			if (gamemap == 30) {
+				F_StartCast();
+			} else {
+				gameaction = ga_worlddone;
+			}
+		}
     }
     
     // advance animation
     finalecount++;
 	
-    if (finalestage == 2)
-    {
-	F_CastTicker ();
-	return;
+    if (finalestage == 2) {
+		F_CastTicker ();
+		return;
     }
 	
-    if (commercial)
-	return;
-	
+	if (commercial) {
+		return;
+	}
 	getStringByIndex(finaletext, text);
-    if (!finalestage && finalecount>strlen (text)*TEXTSPEED + TEXTWAIT)
-    {
-	finalecount = 0;
-	finalestage = 1;
-	wipegamestate = -1;		// force a wipe
-	if (gameepisode == 3)
-	    S_StartMusic (mus_bunny);
+    if (!finalestage && finalecount>strlen (text)*TEXTSPEED + TEXTWAIT) {
+		finalecount = 0;
+		finalestage = 1;
+		wipegamestate = -1;		// force a wipe
+		if (gameepisode == 3) {
+			S_StartMusic(mus_bunny);
+		}
     }
+
 }
 
 
@@ -391,8 +391,7 @@ void F_Ticker (void)
 
 void F_TextWrite (void)
 {
-    byte*	src;
-    byte*	dest;
+	byte*	dest = screen0;
     
     int16_t		x,y,w;
     int16_t		count;
@@ -400,11 +399,12 @@ void F_TextWrite (void)
     int16_t		c;
     int16_t		cx;
     int16_t		cy;
-	MEMREF	srcRef;
      // erase the entire screen to a tiled background
-    srcRef = W_CacheLumpNameEMS ( finaleflat , PU_CACHE);
-	src = Z_LoadBytesFromEMS(srcRef);
-    dest = screen0;
+	byte* src = MK_FP(0x5000, 0);
+
+	Z_QuickmapScratch_5000();
+	Z_QuickmapScreen0();
+	W_CacheLumpNameDirect(finaleflat, src);
 	
     for (y=0 ; y<SCREENHEIGHT ; y++) {
 		for (x=0 ; x<SCREENWIDTH/64 ; x++) {
@@ -413,6 +413,7 @@ void F_TextWrite (void)
 		}
 	 
     }
+	Z_QuickmapStatus();
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
     
@@ -703,12 +704,12 @@ void F_CastDrawer (void)
     int16_t			lump;
     boolean		flip;
 	MEMREF			patchRef;
-	patch_t*		patch;
 	spriteframe_t*  spriteframes;
 	int8_t			text[100];
+	patch_t*		patch = MK_FP(0x5000, 0);
 
     // erase the entire screen to a background
-    V_DrawPatch (0,0,0, W_CacheLumpNameEMSAsPatch("BOSSBACK", PU_CACHE));
+    V_DrawFullscreenPatch("BOSSBACK");
 	getStringByIndex(castorder[castnum].nameindex, text);
     F_CastPrint (text);
     
@@ -722,17 +723,19 @@ void F_CastDrawer (void)
 	
 	lump = sprframe->lump[0];
     flip = (boolean)sprframe->flip[0];
-			
-	W_CacheLumpNumCheck(lump + firstspritelump);
-	patchRef = W_CacheLumpNumEMS (lump+firstspritelump, PU_CACHE);
-	patch = Z_LoadBytesFromEMS(patchRef);
 	
+	Z_QuickmapScratch_5000();
+
+	W_CacheLumpNumDirect(lump + firstspritelump, (byte*)patch);
+
 	if (flip) {
 		V_DrawPatchFlipped(160, 170, patch);
 	}
 	else {
 		V_DrawPatch(160, 170, 0, patch);
 	}
+	Z_QuickmapStatus();
+
 }
 
 
@@ -781,46 +784,53 @@ void F_BunnyScroll (void)
 	int8_t	name[10];
     int16_t		stage;
     static int16_t	laststage;
-		
-
+	
+	patch_t* patch = MK_FP(0x5000, 0);
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 	
     scrolled = 320 - (finalecount-230)/2;
     if (scrolled > 320)
-	scrolled = 320;
+		scrolled = 320;
     if (scrolled < 0)
-	scrolled = 0;
+		scrolled = 0;
 		
-    for ( x=0 ; x<SCREENWIDTH ; x++)
-    {
-	if (x+scrolled < 320)
-	    F_DrawPatchCol (x, W_CacheLumpNameEMSAsPatch("PFUB2", PU_LEVEL), x+scrolled);
-	else
-	    F_DrawPatchCol (x, W_CacheLumpNameEMSAsPatch("PFUB1", PU_LEVEL), x+scrolled - 320);
+	/*
+	// TODO impl for doom 1 commercial. V_DrawFullscreenPatch?
+	for ( x=0 ; x<SCREENWIDTH ; x++) {
+		if (x+scrolled < 320)
+			F_DrawPatchCol (x, V_DrawFullscreenPatch("PFUB2", PU_LEVEL), x+scrolled);
+		else
+			F_DrawPatchCol (x, V_DrawFullscreenPatch("PFUB1", PU_LEVEL), x+scrolled - 320);
     }
-	
+	*/
     if (finalecount < 1130)
-	return;
-    if (finalecount < 1180)
-    {
-	V_DrawPatch ((SCREENWIDTH-13*8)/2,
-		     (SCREENHEIGHT-8*8)/2,0, W_CacheLumpNameEMSAsPatch ("END0",PU_CACHE));
-	laststage = 0;
-	return;
+		return;
+    
+	if (finalecount < 1180) {
+		Z_QuickmapScratch_5000();
+		W_CacheLumpNameDirect("END0", (byte*)patch);
+		V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
+		laststage = 0;
+		Z_QuickmapStatus();
+		return;
     }
 	
     stage = (finalecount-1180) / 5;
     if (stage > 6)
-	stage = 6;
-    if (stage > laststage)
-    {
-	S_StartSound (NULL, sfx_pistol);
-	laststage = stage;
+		stage = 6;
+    if (stage > laststage) {
+		S_StartSound (NULL, sfx_pistol);
+		laststage = stage;
     }
-	
+
+	Z_QuickmapScratch_5000();
+
     sprintf (name,"END%i",stage);
-    V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, W_CacheLumpNameEMSAsPatch(name, PU_CACHE));
+	W_CacheLumpNameDirect(name, (byte*)patch);
+	V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
+	Z_QuickmapStatus();
+
 }
 
 
@@ -837,30 +847,25 @@ void F_Drawer (void)
 	if (!finalestage) {
 		F_TextWrite();
 	} else {
-	switch (gameepisode)
-	{
-	  case 1:
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-	    V_DrawPatch(0,0,0,
-			W_CacheLumpNameEMSAsPatch("HELP2", PU_CACHE));
-	    break;
-#else
-		  //V_DrawPatch(0, 0, 0, W_CacheLumpNameEMSAsPatch("CREDIT", PU_CACHE));
-		   V_DrawFullscreenPatch("CREDIT");
-	    break;
-#endif
-	  case 2:
-	    V_DrawPatch(0,0,0,
-			W_CacheLumpNameEMSAsPatch("VICTORY2", PU_CACHE));
-	    break;
-	  case 3:
-	    F_BunnyScroll ();
-	    break;
-	  case 4:
-	    V_DrawPatch (0,0,0,
-			W_CacheLumpNameEMSAsPatch("ENDPIC", PU_CACHE));
-	    break;
-	}
+		switch (gameepisode) {
+		  case 1:
+			#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
+				V_DrawFullscreenPatch("HELP2");
+				break;
+			#else
+			    V_DrawFullscreenPatch("CREDIT");
+				break;
+			#endif
+		  case 2:
+				V_DrawFullscreenPatch("VICTORY2");
+				break;
+		  case 3:
+				F_BunnyScroll ();
+				break;
+		  case 4:
+				V_DrawFullscreenPatch("ENDPIC");
+				break;
+		}
     }
 			
 }

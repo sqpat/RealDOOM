@@ -382,7 +382,9 @@ void D_Display (void)
 		break;
 
       case GS_FINALE:
+		Z_QuickmapStatus();
         F_Drawer ();
+		Z_QuickmapPhysics();
         break;
 
       case GS_DEMOSCREEN:

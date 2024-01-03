@@ -576,8 +576,10 @@ void G_Ticker (void)
 		break;
                          
       case GS_FINALE: 
-        F_Ticker (); 
-		TEXT_MODE_DEBUG_PRINT("\n GS_FINALE: F_Ticker done");
+		  Z_QuickmapStatus();
+		  F_Ticker();
+		  Z_QuickmapPhysics();		
+		  TEXT_MODE_DEBUG_PRINT("\n GS_FINALE: F_Ticker done");
 		break;
  
       case GS_DEMOSCREEN: 
