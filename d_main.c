@@ -292,6 +292,9 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 //  draw current display, possibly wiping it from the previous
 //
 
+extern patch_t* far M_GetMenuPatch(int16_t i);
+
+
 boolean skipdirectdraws;
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t     wipegamestate = GS_DEMOSCREEN;
@@ -444,7 +447,12 @@ void D_Display (void)
             y = 4;
         else
             y = viewwindowy+4;
-        V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2, y,W_CacheLumpNameEMSAsPatch("M_PAUSE", PU_CACHE));
+		Z_QuickmapMenu();
+		
+        V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2, y, M_GetMenuPatch(12));
+
+		Z_QuickmapPhysics();
+
     }
 
     // menus go directly to the screen

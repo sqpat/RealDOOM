@@ -829,16 +829,14 @@ void F_BunnyScroll (void)
 //
 void F_Drawer (void)
 {
-    if (finalestage == 2)
-    {
-	F_CastDrawer ();
-	return;
+    if (finalestage == 2) {
+		F_CastDrawer ();
+		return;
     }
 
-    if (!finalestage)
-	F_TextWrite ();
-    else
-    {
+	if (!finalestage) {
+		F_TextWrite();
+	} else {
 	switch (gameepisode)
 	{
 	  case 1:

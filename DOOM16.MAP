@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/01/02 16:19:06
+Created on:       24/01/03 09:50:09
 Executable Image: doom16.exe
 creating a DOS overlayed executable
 
@@ -26,7 +26,7 @@ Segment                Class          Group          Address         Size
 i_ibm_TEXT             CODE           AUTO           0000:0000       00000559
 i_sound_TEXT           CODE           AUTO           0000:0560       000000bb
 tables_TEXT            CODE           AUTO           0000:0620       00000000
-d_main_TEXT            CODE           AUTO           0000:0620       0000079f
+d_main_TEXT            CODE           AUTO           0000:0620       0000079b
 d_net_TEXT             CODE           AUTO           0000:0dc0       000001f8
 g_game_TEXT            CODE           AUTO           0000:0fc0       0000108e
 m_menu_TEXT            CODE           AUTO           0000:2050       0000195e
@@ -165,24 +165,24 @@ Module: d_main.obj(C:\REALDOOM\d_main.c)
 2c08:1d0b+     _eventhead
 2c08:1d0c*     _drone
 2c08:1d0d      _demosequence
-0000:0650      D_PostEvent_
-0000:068e      D_ProcessEvents_
-0000:06e8*     getStringLength_
-0000:06fa      getStringByIndex_
-0000:0738      FixedMul_
-0000:077e      FixedMul1632_
-0000:07c8      FixedMul16u32_
-0000:0806      FixedMulBig1632_
-0000:084a      FixedMul1616_
-0000:086e*     FixedDiv2_
-0000:08be      FixedDiv_
-0000:096e+     D_Display_
-0000:0bf2      D_PageTicker_
-0000:0c00      D_AdvanceDemo_
-0000:0c08+     D_PageDrawer_
-0000:0c30      D_DoAdvanceDemo_
-0000:0d36      D_DoomMain_
-0000:0d3c*     D_DoomLoop_
+0000:0648      D_PostEvent_
+0000:0686      D_ProcessEvents_
+0000:06e0*     getStringLength_
+0000:06f2      getStringByIndex_
+0000:0730      FixedMul_
+0000:0776      FixedMul1632_
+0000:07c0      FixedMul16u32_
+0000:07fe      FixedMulBig1632_
+0000:0842      FixedMul1616_
+0000:0866*     FixedDiv2_
+0000:08b6      FixedDiv_
+0000:0966+     D_Display_
+0000:0bee      D_PageTicker_
+0000:0bfc      D_AdvanceDemo_
+0000:0c04+     D_PageDrawer_
+0000:0c2c      D_DoAdvanceDemo_
+0000:0d32      D_DoomMain_
+0000:0d38*     D_DoomLoop_
 2c08:0234      _singletics
 2c08:0235      _wipegamestate
 2c08:1d0e      _shareware
@@ -343,7 +343,7 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 2c08:050c+     _OptionsMenu
 2c08:0544+     _OptionsDef
 2c08:0558      _ReadMenu1
-0000:2098+     M_GetMenuPatch_
+0000:2098      M_GetMenuPatch_
 0000:210a+     M_DrawLoad_
 0000:2178+     M_DrawSaveLoadBorder_
 0000:21e6+     M_LoadSelect_
@@ -2330,4 +2330,4 @@ C:\WATCOM\lib286\dos\wovl.lib
 Stack size:  0bb8 (3000.)
 Memory size:  000305aa (198058.)
 Entry point address: 1c6c:6735
-Link time: 00:00.69
+Link time: 00:05.32

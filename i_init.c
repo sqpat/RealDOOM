@@ -115,6 +115,9 @@ extern struct SREGS segregs;
 void I_InitDiskFlash(void)
 {
 	/*
+	//todo: when re-implementing, pull this out
+	byte diskgraphicbtyes[392];// cdrom is 328 and can fit in here too.
+
 	void *pic;
 	fixed_t_union temp;
 
