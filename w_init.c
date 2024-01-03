@@ -37,8 +37,6 @@ extern filehandle_t				wadfilehandle;
 extern lumpinfo_t*             lumpinfo;
 extern uint16_t                     numlumps;
 extern byte	lumpbytes[LUMPINFO_SIZE];
-extern byte	lumpcachebytes[LUMPCACHE_SIZE];
-extern MEMREF*					lumpcacheEMS;
 
 
 void
@@ -284,19 +282,10 @@ void W_InitMultipleFiles(int8_t** filenames)
 		I_Error("W_InitFiles: no files found");
 #endif
 
-	size = numlumps * sizeof(*lumpcacheEMS);
-	//I_Error("size %li", size);
+ 	//I_Error("size %li", size);
 
-	//2528
-	lumpcacheEMS = (MEMREF*)lumpcachebytes;
-
-#ifdef CHECK_FOR_ERRORS
-
-	if (!lumpcacheEMS)
-		I_Error("Couldn't allocate lumpcacheEMS");
-#endif
-	memset(lumpcacheEMS, 0, size);
-
+	 
+ 
 	Z_QuickmapPhysics();
 
 }

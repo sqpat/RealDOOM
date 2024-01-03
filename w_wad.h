@@ -67,30 +67,16 @@ void    W_InitMultipleFiles (int8_t** filenames);
 
 int16_t	W_CheckNumForName (int8_t* name);
 int16_t	W_GetNumForName(int8_t* name);
-//int16_t W_GetNumForName2(int8_t* name, int8_t*file, int line);
-//#define W_GetNumForName(a) W_GetNumForName2(a, __FILE__, __LINE__)
 
 int32_t	W_LumpLength (int16_t lump);
 
-int16_t W_CacheLumpNumCheck(int16_t lump);
-//MEMREF  W_CacheLumpNumEMS2(int16_t lump, int8_t tag, int8_t* file, int32_t line);
-MEMREF  W_CacheLumpNumEMS(int16_t lump, int8_t tag);
-
-//#define W_CacheLumpNumEMS(a, b) W_CacheLumpNumEMS2(a, b)
-//#define W_CacheLumpNumEMS(a, b) W_CacheLumpNumEMS2(a, b, __FILE__, __LINE__)
 
 void W_CacheLumpNumDirectFragment(int16_t lump, byte* far dest, int16_t pagenum, int32_t offset);
 void W_EraseFullscreenCache();
 
 void W_CacheLumpNameDirect(int8_t* name, byte* dest);
 void W_CacheLumpNumDirect(int16_t lump, byte* dest);
-MEMREF  W_CacheLumpNameEMS(int8_t* name, int8_t tag);
-//MEMREF  W_CacheLumpNameEMS2(int8_t* name, int8_t tag	, int8_t* file, int32_t line );
-//#define W_CacheLumpNameEMS(a, b) W_CacheLumpNameEMS2(a, b, __FILE__, __LINE__)
 
-
-void	W_EraseLumpCache(int16_t index);
-patch_t* W_CacheLumpNameEMSAsPatch (int8_t*         name, int8_t           tag);
 
 // correct value for DOOM Sharware
 #define LUMPINFO_SIZE 16432 

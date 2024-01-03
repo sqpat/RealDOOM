@@ -48,8 +48,6 @@
 lumpinfo_t*             lumpinfo;
 uint16_t                     numlumps;
 byte	lumpbytes[LUMPINFO_SIZE];
-byte	lumpcachebytes[LUMPCACHE_SIZE];
-MEMREF*					lumpcacheEMS;
 
 // we use this explicitly for fullscreen graphics. 
 MEMREF              pagedlumpcacheEMS[5];
@@ -178,7 +176,7 @@ extern byte* colormaps;
 
 
 void
-W_ReadLumpEMS
+W_ReadLump
 (int16_t           lump,
   byte*         dest,
   int32_t           start,
@@ -283,67 +281,15 @@ int16_t W_CacheLumpNumCheck(int16_t lump) {
 	return false;
 }
 
-
-
- MEMREF
-W_CacheLumpNumEMS
-(	int16_t           lump,
-	int8_t			tag
-	//,int8_t* file,
-	 //int32_t line
-	
-	
-	)
-{
-
-#ifdef CHECK_FOR_ERRORS
-	if (lump >= numlumps)
-		I_Error("W_CacheLumpNumEMS: %i >= numlumps %s %li", lump);
-#endif
-	//if (lump > 1035) {
-		//I_Error("bad lump %i %lu %s %li", lump, W_LumpLength(lump), file, line);
-	//}
-	if (!lumpcacheEMS[lump]) {
-		/*
-		if (W_LumpLength(lump) > 65535) {
-			I_Error("lump too big %i %lu %s %li", lump, W_LumpLength(lump), file, line);
-		}
-		*/
-		lumpcacheEMS[lump] = Z_MallocEMSWithBackRef32(W_LumpLength(lump), tag, 1, lump + BACKREF_LUMP_OFFSET);
-
-		W_ReadLumpEMS(lump, Z_LoadBytesFromEMS(lumpcacheEMS[lump]), 0, 0);
-	} else {
-		Z_ChangeTagEMS(lumpcacheEMS[lump], tag);
-	}
-
-	return lumpcacheEMS[lump];
-} 
-
-//
-// W_CacheLumpName
-//
-MEMREF
-W_CacheLumpNameEMS
-(int8_t*         name,
-	int8_t           tag
-	//, int8_t* file,
-	//int32_t line
-
-) {
-		/*
-		if (W_GetNumForName(name) > 1035) {
-			I_Error("B bad lump %s %li", file, line);
-		}
-		*/
-	return W_CacheLumpNumEMS(W_GetNumForName(name), tag);
-}
+ 
+ 
 
 void
 W_CacheLumpNameDirect
 (int8_t*         name,
 	byte*			dest
 ) {
-	W_ReadLumpEMS(W_GetNumForName(name), dest, 0, 0);
+	W_ReadLump(W_GetNumForName(name), dest, 0, 0);
 }
 
 
@@ -352,7 +298,7 @@ W_CacheLumpNumDirect
 (int16_t lump,
 	byte*			dest
 ) {
-	W_ReadLumpEMS(lump, dest, 0, 0);
+	W_ReadLump(lump, dest, 0, 0);
 }
 
 int16_t fullscreencache = 0x00;
@@ -369,26 +315,9 @@ W_CacheLumpNumDirectFragment
     int32_t offset){
  
 
-    //W_ReadLumpEMS(W_GetNumForName(name), Z_LoadBytesFromEMS(pagedlumpcacheEMS[pagenum]), offset, 16384);
-
-	W_ReadLumpEMS(lump, dest, offset, 16384);
+ 
+	W_ReadLump(lump, dest, offset, 16384);
     
 }
 
  
-
-// W_CacheLumpName
-//
-patch_t*
-W_CacheLumpNameEMSAsPatch
-(int8_t*         name,
-	int8_t           tag)
-{
-	return (patch_t*) Z_LoadBytesFromEMS(W_CacheLumpNumEMS(W_GetNumForName(name), tag));
-}
- 
-
-void W_EraseLumpCache(int16_t index) {
-	//I_Error("eraselumpcache %i", index);
-	lumpcacheEMS[index] = 0;
-}

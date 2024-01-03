@@ -1249,7 +1249,6 @@ void P_LoadBlockMap(int16_t lump)
 
 
 
-	W_CacheLumpNumCheck(lump);
 
 	blockmaplump = (int16_t* far)Z_GetNextPhysicsAddress(W_LumpLength(lump));
 	W_CacheLumpNumDirect(lump, (byte*)blockmaplump);

@@ -270,7 +270,6 @@ static fixed_t scale_mtof = INITSCALEMTOF;
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
 static fixed_t scale_ftom;
 
-static MEMREF marknums[10]; // numbers used for marking by the automap
 static mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
 static int8_t markpointnum = 0; // next point to be assigned
 
@@ -471,24 +470,32 @@ void AM_initVariables(void)
 //
 // 
 //
+// ehh.. gross but it's not worth setting up its own EMS page for.
+byte ammnumpatchbytes[524];
+uint16_t ammnumpatchoffsets[10];
+
+
 void AM_loadPics(void)
 {
 	int8_t i;
+	int16_t lump;
 	int8_t namebuf[9];
+	uint16_t offset = 0;
   
     for (i=0;i<10;i++) {
 		sprintf(namebuf, "AMMNUM%d", i);
-		marknums[i] = W_CacheLumpNameEMS(namebuf, PU_STATIC);
+		ammnumpatchoffsets[i] = offset;
+		lump = W_GetNumForName(namebuf);
+		W_CacheLumpNumDirect(lump, &ammnumpatchbytes[offset]);
+		offset += W_LumpLength(lump);
     }
 
 }
 
 void AM_unloadPics(void)
 {
-	int8_t i;
   
-    for (i=0;i<10;i++)
-	Z_ChangeTagEMS(marknums[i], PU_CACHE);
+   
 
 }
 
@@ -1238,7 +1245,11 @@ void AM_drawMarks(void)
 	    fx = CXMTOF(markpoints[i].x);
 	    fy = CYMTOF(markpoints[i].y);
 		if (fx >= f_x && fx <= f_w - w && fy >= f_y && fy <= f_h - h) {
-			V_DrawPatch(fx, fy, FB, (patch_t*)Z_LoadBytesFromEMS(marknums[i]));
+			V_DrawPatch(fx, fy, FB, ((patch_t*)&ammnumpatchbytes[ammnumpatchoffsets[i]]));
+
+			
+			
+
 		}
 	}
     }

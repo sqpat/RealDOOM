@@ -64,7 +64,6 @@ V_DrawFullscreenPatch
 	int16_t lump = W_GetNumForName(pagename);
 	Z_QuickmapScratch_5000();
 
-	//patchref = W_CacheLumpNameEMSFragment(pagename, PU_LEVSPEC, pagenum, 0);
 	patch = (patch_t*)MK_FP(0x5000, 0x0000);
 	patch2 =  MK_FP(0x5000, 0x8000);
 	W_CacheLumpNumDirectFragment(lump, (byte*)patch, pagenum, 0);

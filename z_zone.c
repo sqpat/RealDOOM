@@ -202,7 +202,8 @@ void Z_FreeEMS(PAGEREF block) {
 	if (other) {
 		if (other >= BACKREF_LUMP_OFFSET) {
 			// in lumpcache
-			W_EraseLumpCache(other - BACKREF_LUMP_OFFSET);
+			
+
 		}
 		else {
 			// no longer doing this with texture cache. just erase at end of level
