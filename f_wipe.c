@@ -27,9 +27,8 @@
 #include "doomdef.h"
 
 #include "f_wipe.h"
+#include <dos.h>
 
-#ifdef SKIPWIPE
-#else
 
 //
 //                       SCREEN WIPE PACKAGE
@@ -38,138 +37,72 @@
 // when zero, stop the wipe
 static boolean	go = 0;
 
+// screen 2
 static byte*	wipe_scr_start;
+// screen 3
 static byte*	wipe_scr_end;
+// screen 0, in 0x8000 region
 static byte*	wipe_scr;
 
 
 void
 wipe_shittyColMajorXform
-( int16_t*	array,
-  int16_t		width,
-  int16_t		height )
+( int16_t*	array )
 {
-    int16_t		x;
-    int16_t		y;
-	MEMREF destRef;
-    int16_t*	dest;
-    uint16_t size = width * height * 2;
+    uint16_t		x;
+    uint16_t		y;
+    int16_t*	dest = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
+	
+	Z_QuickmapScratch_5000();
 
-	destRef = Z_MallocEMS(size, PU_STATIC, 0);
-	dest = (int16_t*)Z_LoadBytesFromEMS(destRef);
+    for(y=0;y<SCREENHEIGHT;y++)
+		for (x = 0; x < SCREENWIDTHOVER2; x++) {
+			uint16_t result = SCREENHEIGHT;
+			uint16_t result2 = SCREENWIDTHOVER2;
+			result *= x;
+			result += y;
+			result2 *= y;
+			result2 += x;
+			
+			dest[result] = array[result2];
+		}
 
-    for(y=0;y<height;y++)
-	for(x=0;x<width;x++)
-	    dest[x*height+y] = array[y*width+x];
+	memcpy(array, dest, 64000u);
+	
 
-    memcpy(array, dest, width*height*2);
+} 
 
-    Z_FreeEMS(destRef);
+ 
 
-}
-
-int16_t
-wipe_initColorXForm
-( int16_t	width,
-  int16_t	height,
-  int16_t	ticks )
-{
-    memcpy(wipe_scr, wipe_scr_start, (((uint16_t) width)*((uint16_t)height)));
-    return 0;
-}
-
-int16_t
-wipe_doColorXForm
-( int16_t	width,
-  int16_t	height,
-  int16_t	ticks )
-{
-    boolean	changed;
-    byte*	w;
-    byte*	e;
-    int16_t		newval;
-
-    changed = false;
-    w = wipe_scr;
-    e = wipe_scr_end;
-    
-    while (w!=wipe_scr+ ((uint16_t)width* (uint16_t)height) )
-    {
-	if (*w != *e)
-	{
-	    if (*w > *e)
-	    {
-		newval = *w - ticks;
-		if (newval < *e)
-		    *w = *e;
-		else
-		    *w = newval;
-		changed = true;
-	    }
-	    else if (*w < *e)
-	    {
-		newval = *w + ticks;
-		if (newval > *e)
-		    *w = *e;
-		else
-		    *w = newval;
-		changed = true;
-	    }
-	}
-	w++;
-	e++;
-    }
-
-    return !changed;
-
-}
-
-int16_t
-wipe_exitColorXForm
-( int16_t	width,
-  int16_t	height,
-  int16_t	ticks )
-{
-    return 0;
-}
-
-
-static MEMREF yRef;
 
 int16_t
 wipe_initMelt
-( int16_t	width,
-  int16_t	height,
+( 
   int16_t	ticks )
 {
 	int16_t i, r;
-	int16_t* y;
+	int16_t* y = MK_FP(0x9000, 0);
 
     // copy start screen to main screen
-    memcpy(wipe_scr, wipe_scr_start, (((uint16_t) width)*((uint16_t)height)));
-    
+    memcpy(wipe_scr, wipe_scr_start, 64000u);
+
     // makes this wipe faster (in theory)
     // to have stuff in column-major format
-    wipe_shittyColMajorXform((int16_t*)wipe_scr_start, width/2, height);
-    wipe_shittyColMajorXform((int16_t*)wipe_scr_end, width/2, height);
+    wipe_shittyColMajorXform((int16_t*)wipe_scr_start);
+    wipe_shittyColMajorXform((int16_t*)wipe_scr_end);
     
     // setup initial column positions
     // (y<0 => not ready to scroll yet)
 
-	
-
-	yRef = Z_MallocEMS(width*sizeof(int16_t), PU_STATIC, 0);
-	y = (int16_t*)Z_LoadBytesFromEMS(yRef);
-
-
-
     y[0] = -(M_Random()%16);
-    for (i=1;i<width;i++)
-    {
-	r = (M_Random()%3) - 1;
-	y[i] = y[i-1] + r;
-	if (y[i] > 0) y[i] = 0;
-	else if (y[i] == -16) y[i] = -15;
+    for (i=1;i<SCREENWIDTH;i++) {
+		r = (M_Random()%3) - 1;
+		y[i] = y[i-1] + r;
+		if (y[i] > 0) {
+			y[i] = 0;
+		} else if (y[i] == -16) {
+			y[i] = -15;
+		}
     }
 
 
@@ -179,81 +112,68 @@ wipe_initMelt
 
 int16_t
 wipe_doMelt
-( int16_t	width,
-  int16_t	height,
+(
   int16_t	ticks )
 {
     int16_t		i;
     int16_t		j;
     int16_t		dy;
-    int16_t		idx;
+    uint16_t		idx;
     
-	int16_t* y;
-    int16_t*	s;
-    int16_t*	d;
+	int16_t* y = MK_FP(0x9000, 0);
+    int16_t*	far s;
+    int16_t*	far d;
     boolean	done = true;
 
-    width/=2;
-
-	y = (int16_t*)Z_LoadBytesFromEMS(yRef);
-	while (ticks--)
-    {
-	for (i=0;i<width;i++)
-	{
-	    if (y[i]<0)
-	    {
-		y[i]++; done = false;
-	    }
-	    else if (y[i] < height)
-	    {
-		dy = (y[i] < 16) ? y[i]+1 : 8;
-		if (y[i]+dy >= height) dy = height - y[i];
-		s = &((int16_t *)wipe_scr_end)[i*height+y[i]];
-		d = &((int16_t *)wipe_scr)[y[i]*width+i];
-		idx = 0;
-		for (j=dy;j;j--)
-		{
-		    d[idx] = *(s++);
-		    idx += width;
+    
+	 
+	while (ticks--) {
+		for (i=0;i< SCREENWIDTHOVER2;i++) {
+			if (y[i]<0) {
+				y[i]++; 
+				done = false;
+			} else if (y[i] < SCREENHEIGHT) {
+				dy = (y[i] < 16) ? y[i]+1 : 8;
+				if (y[i] + dy >= SCREENHEIGHT) {
+					dy = SCREENHEIGHT - y[i];
+				}
+				s = &((int16_t *)wipe_scr_end)	[(uint16_t)i*(uint16_t)SCREENHEIGHT+(uint16_t)y[i]];
+				d = &((int16_t *)wipe_scr)		[(uint16_t)y[i]* (uint16_t)SCREENWIDTHOVER2 + (uint16_t)i];
+				idx = 0;
+				for (j=dy;j;j--) {
+					d[idx] = *(s++);
+					idx += SCREENWIDTHOVER2;
+				}
+				y[i] += dy;
+				s = &((int16_t *)wipe_scr_start)	[(uint16_t)i*(uint16_t)SCREENHEIGHT];
+				d = &((int16_t *)wipe_scr)			[(uint16_t)y[i]* (uint16_t)SCREENWIDTHOVER2 + (uint16_t)i];
+				idx = 0;
+				for (j= SCREENHEIGHT -y[i];j;j--) {
+					d[idx] = *(s++);
+					idx += SCREENWIDTHOVER2;
+				}
+				done = false;
+			}
 		}
-		y[i] += dy;
-		s = &((int16_t *)wipe_scr_start)[i*height];
-		d = &((int16_t *)wipe_scr)[y[i]*width+i];
-		idx = 0;
-		for (j=height-y[i];j;j--)
-		{
-		    d[idx] = *(s++);
-		    idx += width;
-		}
-		done = false;
-	    }
-	}
     }
 
     return done;
 
 }
 
-int16_t
-wipe_exitMelt
-( int16_t	width,
-  int16_t	height,
-  int16_t	ticks )
-{
-	Z_FreeEMS(yRef);
-
-    return 0;
-}
 
 int16_t
-wipe_StartScreen
-( int16_t	x,
-  int16_t	y,
-  int16_t	width,
-  int16_t	height )
+wipe_StartScreen( )
 {
-    wipe_scr_start = screen2;
+	Z_QuickmapWipe();
+
+	wipe_scr_start = screen2;
     I_ReadScreen(wipe_scr_start);
+
+
+
+	Z_QuickmapPhysics();
+
     return 0;
 }
 
@@ -290,57 +210,53 @@ V_DrawBlock
 
 
 int16_t
-wipe_EndScreen
-( int16_t	x,
-  int16_t	y,
-  int16_t	width,
-  int16_t	height )
+wipe_EndScreen ()
 {
-    wipe_scr_end = screen3;
+	Z_QuickmapWipe();
+
+	wipe_scr_end = screen3;
     I_ReadScreen(wipe_scr_end);
-    V_DrawBlock(x, y,  width, height, wipe_scr_start); // restore start scr.
+    
+	V_DrawBlock(0, 0,  SCREENWIDTH, SCREENHEIGHT, wipe_scr_start); // restore start scr.
+	/*
+	I_Error("%hhu %hhu %hhu %hhu %hhu\n%hhu %hhu %hhu %hhu %hhu\n%hhu %hhu %hhu %hhu %hhu"
+		, screen0[0], screen0[1], screen0[2], screen0[3], screen0[4]
+		, screen2[0], screen2[1], screen2[2], screen2[3], screen2[4]
+		, screen3[0], screen3[1], screen3[2], screen3[3], screen3[4]
+	);
+	*/
+	Z_QuickmapPhysics();
+
     return 0;
 }
 
 int16_t
-wipe_ScreenWipe
-( int16_t	wipeno,
-  int16_t	x,
-  int16_t	y,
-  int16_t	width,
-  int16_t	height,
-  int16_t	ticks )
-{
+wipe_ScreenWipe(int16_t	ticks ) {
 	int16_t rc;
-    static int16_t(*wipes[])(int16_t, int16_t, int16_t) =
-    {
-	wipe_initColorXForm, wipe_doColorXForm, wipe_exitColorXForm,
-	wipe_initMelt, wipe_doMelt, wipe_exitMelt
-    };
 
-    void V_MarkRect(int16_t, int16_t, int16_t, int16_t);
+	
+	Z_QuickmapWipe();
 
     // initial stuff
-    if (!go)
-    {
-	go = 1;
-	
-	wipe_scr = screen0;
-	(*wipes[wipeno*3])(width, height, ticks);
-    }
+    if (!go) {
+		go = 1;
+		wipe_scr = screen0;
+		wipe_initMelt(ticks);
+	}
+
 
     // do a piece of wipe-in
-    V_MarkRect(0, 0, width, height);
-    rc = (*wipes[wipeno*3+1])(width, height, ticks);
+    V_MarkRect(0, 0, SCREENWIDTH, SCREENHEIGHT);
+    rc = wipe_doMelt(ticks);
 
     // final stuff
-    if (rc)
-    {
-	go = 0;
-	(*wipes[wipeno*3+2])(width, height, ticks);
+    if (rc) {
+		go = 0;
+		
     }
+
+	Z_QuickmapPhysics();
 
     return !go;
 
 }
-#endif

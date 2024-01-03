@@ -34,12 +34,8 @@
 
 
 
-#ifdef _M_I86
 
 extern union REGS regs;
-
-#else
-#endif
 
 
 //
@@ -96,7 +92,6 @@ parm [  ] modify exact [ ax dx bx ];
 	"done:",\
 parm [  ] modify exact [ ax dx bx ];
 
-#ifdef _M_I86
  
 // lets do only 60k.. .seems to be enough
 #define DESIRED_UMB_SIZE 0x0EA6
@@ -224,7 +219,6 @@ void Z_InitUMBDOS(void) {
 	regs.w.bx = umblinkstate;
 	int86(DOSMM_INT, &regs, &regs);
 }
-#endif
 
 
 extern mobj_pos_t* mobjposlist;
@@ -232,7 +226,6 @@ extern mobj_pos_t* mobjposlist_render;
 extern byte*	   spritedefs_bytes;
 void Z_InitUMB(void) {
 	
-#ifdef _M_I86
 
 
 
@@ -256,7 +249,6 @@ void Z_InitUMB(void) {
 
 	
 
-#endif
 
 }
 

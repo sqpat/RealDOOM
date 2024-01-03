@@ -77,14 +77,10 @@ allocation_static_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATI
 // todo turn these into dynamic allocations
   
 
-#ifdef _M_I86
 
 	int16_t emshandle;
 	extern union REGS regs;
 	extern struct SREGS segregs;
-
-#else
-#endif
 
 
 byte*			pageFrameArea;
@@ -218,11 +214,7 @@ MEMREF Z_MallocConventional(
 
   
 
-#ifdef _M_I86
 byte *I_ZoneBaseEMS(int32_t *size, int16_t *emshandle);
-#else
-byte *I_ZoneBaseEMS(int32_t *size);
-#endif
 
 
 void Z_InitEMS(void)
@@ -233,15 +225,8 @@ void Z_InitEMS(void)
 	//todo figure this out based on settings, hardware, etc
 	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
 
-#ifdef _M_I86
 	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
 	
-#else
-	pageFrameArea = I_ZoneBaseEMS(&size);
-#endif
-
-
- 
 }
 
 // EMS 4.0 functionality
@@ -253,6 +238,7 @@ int16_t pageswapargs_rend[48];
 int16_t pageswapargs_stat[12];
 int16_t pageswapargs_demo[8];
 int16_t pageswapargs_menu[16];
+int16_t pageswapargs_wipe[26];
 int16_t pageswapargs_palette[10];
 int16_t pageswapargs_textcache[8];
 int16_t pageswapargs_textinfo[8];
@@ -272,6 +258,8 @@ int16_t pageswapargseg_demo;
 int16_t pageswapargoff_demo;
 int16_t pageswapargseg_menu;
 int16_t pageswapargoff_menu;
+int16_t pageswapargseg_wipe;
+int16_t pageswapargoff_wipe;
 int16_t pageswapargseg_palette;
 int16_t pageswapargoff_palette;
 int16_t pageswapargseg_textcache;
@@ -591,6 +579,25 @@ void Z_QuickmapMenu() {
 	taskswitchcount++;
 
 	currenttask = TASK_MENU;
+}
+
+void Z_QuickmapWipe() {
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_wipe;
+	regs.w.si = pageswapargoff_wipe;
+	intx86(EMS_INT, &regs, &regs);
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x05; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_wipe;
+	regs.w.si = pageswapargoff_wipe + 32;
+	intx86(EMS_INT, &regs, &regs);
+	taskswitchcount++;
+
+	currenttask = TASK_WIPE;
 }
 
 void Z_QuickmapByTaskNum(int8_t tasknum) {

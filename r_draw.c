@@ -124,9 +124,7 @@ void R_DrawColumn (void)
 		return;
 	}
 
-#ifndef	SKIP_DRAW
 	outp (SC_INDEX+1,1<<(dc_x&3));
-#endif
 
     dest = destview + dc_yl*80 + (dc_x>>2); 
 
@@ -142,9 +140,7 @@ void R_DrawColumn (void)
         // Re-map color indices from wall texture column
         //  using a lighting/special effects LUT.
 
-#ifndef	SKIP_DRAW
 		*dest = dc_colormap[dc_source[frac.h.intbits & 127]];
-#endif  
         dest += SCREENWIDTH/4;
         frac.w += fracstep;
         
@@ -168,12 +164,10 @@ void R_DrawColumnLow (void)
 	if (count < 0)
 		return;
 
-#ifndef	SKIP_DRAW
 	if (dc_x & 1)
 		outp(SC_INDEX + 1, 12);
 	else
 		outp(SC_INDEX + 1, 3);
-#endif
 	dest = destview + dc_yl * 80 + (dc_x >> 1);
 
 	fracstep = dc_iscale;
@@ -181,9 +175,7 @@ void R_DrawColumnLow (void)
 
 	do
 	{
-#ifndef	SKIP_DRAW
 		*dest = dc_colormap[dc_source[(frac.h.intbits) & 127]];
-#endif
 
 
 		dest += SCREENWIDTH / 4;
@@ -247,23 +239,17 @@ void R_DrawFuzzColumn (void)
 
     if (detailshift) {
 		if (dc_x & 1) {
-#ifndef	SKIP_DRAW
 		outpw (GC_INDEX,GC_READMAP+(2<<8) );
 	    outp (SC_INDEX+1,12); 
-#endif
 	} else {
-#ifndef	SKIP_DRAW
 		outpw (GC_INDEX,GC_READMAP);
 	    outp (SC_INDEX+1,3); 
-#endif
 		}
 		dest = destview + dc_yl*80 + (dc_x>>1); 
     }
     else {
-#ifndef	SKIP_DRAW
 		outpw (GC_INDEX,GC_READMAP+((dc_x&3)<<8) );
 		outp (SC_INDEX+1,1<<(dc_x&3)); 
-#endif
 	dest = destview + dc_yl*80 + (dc_x>>2);
     }
 
@@ -279,9 +265,7 @@ void R_DrawFuzzColumn (void)
 		//  a pixel that is either one column
 		//  left or right of the current one.
 		// Add index from colormap to index.
-#ifndef	SKIP_DRAW
 		*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]];
-#endif
 
 		// Clamp table lookup index.
 		if (++fuzzpos == FUZZTABLE) 
@@ -342,9 +326,7 @@ void R_DrawSpan(void)
 
 	for (i = 0; i < 4; i++)
 	{
-#ifndef	SKIP_DRAW
 		outp(SC_INDEX + 1, 1 << i);
-#endif
 		dsp_x1 = (ds_x1 - i) / 4;
 		if (dsp_x1 * 4 + i < ds_x1)
 			dsp_x1++;
@@ -371,12 +353,10 @@ void R_DrawSpan(void)
 			// Lookup pixel from flat texture tile,
 			//  re-index using light/colormap.
 			//src.h.fracbits = ds_colormap[ds_source[spot]];
- #ifndef	SKIP_DRAW
-			//*dest = (lighttable_t*) src.w;
+ 			//*dest = (lighttable_t*) src.w;
 			*dest = ds_colormap[ds_source[spot]];
 			dest++;
-#endif
-			// Next step in u,v.
+#			// Next step in u,v.
 			xfrac.w += ds_xstep * 4;
 			yfrac += ds_ystep * 4;
 		} while (countp--);
@@ -404,9 +384,7 @@ void R_DrawSpanLow(void)
 
 	for (i = 0; i < 2; i++)
 	{
-#ifndef	SKIP_DRAW
 		outp(SC_INDEX + 1, 3 << (i * 2));
-#endif
 		dsp_x1 = (ds_x1 - i) / 2;
 		if (dsp_x1 * 2 + i < ds_x1)
 			dsp_x1++;
@@ -431,10 +409,8 @@ void R_DrawSpanLow(void)
 
 			// Lookup pixel from flat texture tile,
 			//  re-index using light/colormap.
-#ifndef	SKIP_DRAW
 			*dest = ds_colormap[ds_source[spot]];
 			dest++;
-#endif
 			// Next step in u,v.
 			xfrac.w += ds_xstep * 2;
 			yfrac += ds_ystep * 2;
@@ -536,35 +512,21 @@ void R_FillBackScreen (void)
 
     for (i = 0; i < 4; i++)
     {
-#ifndef	SKIP_DRAW
 		outp(SC_INDEX, SC_MAPMASK);
         outp(SC_INDEX + 1, 1 << i);
-#endif
 
-#ifdef _M_I86
 		dest = (byte*)0xac000000;
-#else
-		dest = (byte*)0xac000;
-#endif
 
         src = screen0 + i;
         do
         {
-#ifndef	SKIP_DRAW
 			*dest = *src;
 			dest++;
-#endif
             src += 4;
         } 
 
-#ifdef _M_I86
 		// todo can we just check the lower 16 bits?
 		while (dest != (byte*)(0xac003480));
-
-#else
-		while (dest != (byte*)(0xac000 + (SCREENHEIGHT - SBARHEIGHT)*SCREENWIDTH / 4));
-
-#endif
 
     }
 
@@ -584,30 +546,20 @@ R_VideoErase
     byte* dest;
     byte* source;
 	int16_t countp;
-#ifndef	SKIP_DRAW
 	outp(SC_INDEX, SC_MAPMASK);
     outp(SC_INDEX + 1, 15);
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
-#endif
     dest = (byte*)(destscreen.w + (ofs >> 2));
-#ifdef _M_I86
 	source = (byte*)0xac000000 + (ofs >> 2);
-#else
-	source = (byte*)0xac000 + (ofs >> 2);
-#endif
 
     countp = count / 4;
     while (--countp >= 0) {
-#ifndef	SKIP_DRAW
 		dest[countp] = source[countp];
-#endif
     }
 
-#ifndef	SKIP_DRAW
 	outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
-#endif
 } 
 
 

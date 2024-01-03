@@ -36,7 +36,23 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
- 
+#define SC_INDEX                0x3C4
+#define SC_RESET                0
+#define SC_CLOCK                1
+#define SC_MAPMASK              2
+#define SC_CHARMAP              3
+#define SC_MEMMODE              4
+
+#define GC_INDEX                0x3CE
+#define GC_SETRESET             0
+#define GC_ENABLESETRESET 1
+#define GC_COLORCOMPARE 2
+#define GC_DATAROTATE   3
+#define GC_READMAP              4
+#define GC_MODE                 5
+#define GC_MISCELLANEOUS 6
+#define GC_COLORDONTCARE 7
+#define GC_BITMASK              8
 
 
 //#define NOKBD
@@ -186,10 +202,7 @@ byte scantokey[128] =
 };
 
 
-#ifdef _M_I86
 union REGS in, out;
-#else
-#endif
 
 //
 // User input
@@ -248,16 +261,12 @@ void I_SetPalette(int8_t paletteNumber) {
             return;
     }
     I_WaitVBL(1);
-	#ifndef	SKIP_DRAW
-		_outbyte(PEL_WRITE_ADR, 0);
-	#endif
+	_outbyte(PEL_WRITE_ADR, 0);
 	gammatablelookup = (gammatable + usegamma*256);
 
 	for(i = 0; i < 768; i++) {
-		#ifndef	SKIP_DRAW
- 			_outbyte(PEL_DATA, gammatablelookup[*palette] >> 2);
-			palette++;
-		#endif
+ 		_outbyte(PEL_DATA, gammatablelookup[*palette] >> 2);
+		palette++;
     }
 
 	Z_QuickmapByTaskNum(savedtask);
@@ -291,26 +300,18 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
     step = SCREENWIDTH - count * 8;
     poffset = offset / 4;
     pstep = step / 4;
-#ifndef	SKIP_DRAW
 	outp(SC_INDEX, SC_MAPMASK);
-#endif
     for (i = 0; i < 4; i++)
     {
-#ifndef	SKIP_DRAW
 		outp(SC_INDEX + 1, 1 << i);
-#endif
         source = &screen0[offset + i];
         dest = (byte*) (destscreen.w + poffset);
 		TEXT_MODE_DEBUG_PRINT("I_UpdateBox to dest %lx", dest);
 
-        for (j = 0; j < h; j++)
-        {
+        for (j = 0; j < h; j++) {
             k = count;
-            while (k--)
-            {
-#ifndef	SKIP_DRAW
+            while (k--) {
 				*(uint16_t *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
-#endif
                 dest += 2;
                 source += 8;
             }
@@ -407,9 +408,7 @@ void I_UpdateNoBlit(void) {
 void I_FinishUpdate(void)
 {
 
-#ifndef	SKIP_DRAW
 	outpw(CRTC_INDEX, (destscreen.h.fracbits & 0xff00L) + 0xc);
-#endif
     
 	//Next plane
     destscreen.h.fracbits += 0x4000;
@@ -420,7 +419,6 @@ void I_FinishUpdate(void)
 }
 
 
-#ifndef SKIPWIPE
 
 //
 // I_ReadScreen
@@ -431,23 +429,17 @@ void I_ReadScreen(byte *scr)
 	uint16_t i;
 	uint16_t j;
 
-#ifndef	SKIP_DRAW
+	//I_Error("\n screen %lx %lx %i", scr, currentscreen, currenttask);
+
 	outp(GC_INDEX, GC_READMAP);
-#endif
-        for (i = 0; i < 4; i++)
-        {
-#ifndef	SKIP_DRAW
-			outp(GC_INDEX+1, i);
-#endif
-                for (j = 0; j < SCREENWIDTH*SCREENHEIGHT/4; j++)
-                {
-#ifndef	SKIP_DRAW
-					scr[i+j*4] = currentscreen[j];
-#endif
-                }
+    for (i = 0; i < 4; i++) {
+		outp(GC_INDEX+1, i);
+        for (j = 0; j < (uint16_t)SCREENWIDTH*(uint16_t)SCREENHEIGHT/4u; j++) {
+			scr[i+j*4u] = currentscreen[j];
         }
+    }
+
 }
-#endif
 
 
 //
@@ -591,118 +583,8 @@ int32_t I_ResetMouse(void)
 
 
 
-
-
-
-#ifdef _M_I86
-
-#else
-
-uint32_t realstackseg;
-
-typedef struct
-{
-	uint32_t        edi, esi, ebp, reserved, ebx, edx, ecx, eax;
-	uint16_t  flags, es, ds, fs, gs, ip, cs, sp, ss;
-} dpmiregs_t;
-
-dpmiregs_t dpmiregs;
-#define REALSTACKSIZE 1024
-
-void DPMIInt(int32_t i)
-{
-	dpmiregs.ss = realstackseg;
-	dpmiregs.sp = REALSTACKSIZE - 4;
-
-	segread(&segregs);
-	regs.w.ax = 0x300;
-	regs.w.bx = i;
-	regs.w.cx = 0;
-	regs.x.edi = (uint32_t)&dpmiregs;
-	segregs.es = segregs.ds;
-	intx86x(DPMI_INT, &regs, &regs, &segregs);
-}
-
-
-
-//
-// DPMIInt
-//
-
-
-
-
-//
-// I_AllocLow
-//
-byte *I_AllocLow(int32_t length)
-{
-	byte *mem;
-
-	// DPMI call 100h allocates DOS memory
-	segread(&segregs);
-	regs.w.ax = 0x0100; // DPMI allocate DOS memory
-	regs.w.bx = (length + 15) / 16;
-	intx86(DPMI_INT, &regs, &regs);
-	//segment = regs.w.ax;
-	//selector = regs.w.dx;
-	if (regs.w.cflag != 0)
-	{
-		I_Error("I_AllocLow: DOS alloc of %i failed, %i free",
-			length, regs.w.bx * 16);
-	}
-
-	mem = (void *)((regs.x.eax & 0xFFFF) << 4);
-
-	memset(mem, 0, length);
-	return mem;
-}
-
-
  
-byte *I_AllocLow(filelength_t length);
-
-//
-// I_StartupDPMI
-//
-
-void I_StartupDPMI(void)
-{
-	extern int8_t __begtext;
-	extern int8_t ___Argc;
-
-	//
-	// allocate a decent stack for real mode ISRs
-	//
-	realstackseg = (int32_t)I_AllocLow(1024) >> 4;
-
-}
-
-
-#endif
-
-
-
-#ifndef STATIC_ALLOCATED_SCREENS
-
-#ifdef _M_I86
-//
-// I_AllocLow
-//
-byte *I_AllocLow(filelength_t length)
-{
-	byte *mem;
-	mem = _fmalloc(length);
-	if (mem == NULL) {
-		I_Error("Error: Couldn't malloc length %li", length);
-	}
-	memset(mem, 0, length);
-	return mem;
-}
-
-#else
-#endif
-#endif
+ 
  
 //
 // I_ReadMouse
@@ -722,7 +604,6 @@ void I_ReadMouse(void)
     ev.type = ev_mouse;
 
 
-#ifdef _M_I86
 
 	// 16 bit version
 	in.x.ax = 3;  // read buttons / position
@@ -733,20 +614,6 @@ void I_ReadMouse(void)
 	in.x.ax = 11;  // read counters
 	ev.data2 = out.x.cx;
 	ev.data3 = -out.x.dx;
-#else
-	//32 bit version
-	memset(&dpmiregs, 0, sizeof(dpmiregs));
-	dpmiregs.eax = 3;   // read buttons / position
-	DPMIInt(0x33);
-	ev.data1 = dpmiregs.ebx;
-
-	dpmiregs.eax = 11;  // read counters
-	DPMIInt(0x33);
-	ev.data2 = (int16_t)dpmiregs.ecx;
-	ev.data3 = -(int16_t)dpmiregs.edx;
-
-
-#endif
 
 
 
@@ -802,11 +669,7 @@ void I_BeginRead(void)
 #endif
     // copy to backup
     src = currentscreen + 184 * 80 + 304 / 4;
-#ifdef _M_I86
 	dest = 0xac000000 + 184 * 80 + 288 / 4;
-#else
-	dest = (byte *)0xac000 + 184 * 80 + 288 / 4;
-#endif
     for (y = 0; y<16; y++)
     {
 #ifndef	SKIP_DRAW
@@ -821,11 +684,7 @@ void I_BeginRead(void)
 
     // copy disk over
     dest = currentscreen + 184 * 80 + 304 / 4;
-#ifdef _M_I86
 	src = 0xac000000 + 184 * 80 + 304 / 4;
-#else
-	src = (byte *)0xac000 + 184 * 80 + 304 / 4;
-#endif
     for (y = 0; y<16; y++)
     {
 #ifndef	SKIP_DRAW
@@ -872,11 +731,7 @@ void I_EndRead(void)
 
     // copy disk over
     dest = currentscreen + 184 * 80 + 304 / 4;
-#ifdef _M_I86
 	src = 0xac000000 + 184 * 80 + 288 / 4;
-#else
-	src = (byte *)0xac000 + 184 * 80 + 288 / 4;
-#endif
     for (y = 0; y<16; y++)
     {
 #ifndef	SKIP_DRAW

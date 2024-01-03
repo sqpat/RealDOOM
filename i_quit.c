@@ -40,15 +40,12 @@ void I_ShutdownSound(void)
 //
 // I_ShutdownGraphics
 //
-void I_ShutdownGraphics(void)
-{
-#ifndef	SKIP_DRAW
+void I_ShutdownGraphics(void) {
 	if (*(byte *)0x449 == 0x13) // don't reset mode if it didn't get set
 	{
 		regs.w.ax = 3;
 		intx86(0x10, &regs, &regs); // back to text mode
 	}
-#endif
 }
 
 extern void(__interrupt __far *OldInt8)(void);
@@ -151,7 +148,6 @@ void I_ShutdownMouse(void)
 
 
 
-#ifdef _M_I86
 
 extern int16_t emshandle;
 extern uint16_t UMBbase, UMBbase2;
@@ -169,13 +165,9 @@ parm[] modify exact[ax es];
 parm[] modify exact[ax es];
 
 
-#else
-#endif
-
 
 void Z_ShutdownUMB() {
 
-#ifdef _M_I86
 	if (UMBbase) {
 		FREE_UMB_MEMORY_1();
 	}
@@ -183,14 +175,12 @@ void Z_ShutdownUMB() {
 		FREE_UMB_MEMORY_2();
 }
 
-#endif
 
 }
 
 void Z_ShutdownEMS() {
 
 
-#ifdef _M_I86
 	int16_t result;
 
 	if (emshandle) {
@@ -203,7 +193,7 @@ void Z_ShutdownEMS() {
 			printf("Failed deallocating EMS memory! %i!\n", result);
 		}
 	}
-#endif
+
 
 	//free(conventionalmemoryblock);
 

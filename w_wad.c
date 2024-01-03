@@ -239,13 +239,9 @@ W_ReadLump
 	sizetoread = size ? size : lumpsize;
 
 	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
-#ifdef _M_I86
 	//c = _farread(handle, dest, lumpsize);
 
        if (c < sizetoread && c + 65536l != sizetoread ) // error check
-#else
-       if (c < (sizetoread)) 
-#endif
 
 {
 		I_Error("\nW_ReadLump: only read %il of %il on lump %i",

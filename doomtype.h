@@ -29,24 +29,14 @@ typedef signed char				int8_t;
 typedef unsigned char			uint8_t;
 typedef short					int16_t;
 typedef unsigned short			uint16_t;
-#ifdef _M_I86
 typedef long					int32_t;
 typedef unsigned long			uint32_t;
-#else
-typedef int						int32_t;
-typedef unsigned int			uint32_t;
-#endif
 typedef long long				int64_t;
 typedef unsigned long long		uint64_t;
 #endif
 
-#ifdef _M_I86
 typedef int16_t filehandle_t;
 typedef uint16_t filelength_t;
-#else
-typedef int32_t filehandle_t;
-typedef int32_t filelength_t;
-#endif
 typedef int32_t ticcount_t;
 typedef uint8_t texsize_t;
 

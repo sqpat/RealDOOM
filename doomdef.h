@@ -44,15 +44,6 @@ enum { VERSION =  109 };
 
 // MAIN FEATURE FLAGS
 
-// Allocates backbuffers statically
-#define STATIC_ALLOCATED_SCREENS
-
-// The below flag skips wipes. They just aren't going to work well unless you dedicate 128k of conventional memory to them, so it's probably best to not use for this project. If we can do it with EMS then great, but low priority. We also get to cut out f_wipe.c code from memory usage.
-#define SKIPWIPE
-
-// like nodraw, but actually runs d_display and only skips the actual video memory writes
-//#define SKIP_DRAW
-
 // line opening caching. Unfortunately seems to be 0.5% slower or so - also uses extra memory. 
 #define PRECALCULATE_OPENINGS
 
@@ -117,6 +108,7 @@ enum { VERSION =  109 };
 // C++ might sucks for OOP, but it sure is a better C.
 // So there.
 #define SCREENWIDTH  320
+#define SCREENWIDTHOVER2  160
 //SCREEN_MUL*BASE_WIDTH //320
 #define SCREENHEIGHT 200
 //(int32_t)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
@@ -312,13 +304,8 @@ typedef uint8_t  THINKFUNCTION;
 #define NULL_THINKERREF 0
 
 
-#ifdef _M_I86
 #define intx86(a, b, c) int86(a, b, c)
 #define intx86x(a, b, c, d) int86x(a, b, c, d)
-#else
-#define intx86(a, b, c) int386(a, b, c)
-#define intx86x(a, b, c, d) int386x(a, b, c, d)
-#endif
 
 
 #define DPMI_INT 0x31

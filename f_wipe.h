@@ -24,40 +24,19 @@
 //                       SCREEN WIPE PACKAGE
 //
 
-enum
-{
-    // simple gradual pixel change for 8-bit only
-    wipe_ColorXForm,
-    
-    // weird screen melt
-    wipe_Melt,	
-
-    wipe_NUMWIPES
-};
+ 
 
 int16_t
-wipe_StartScreen
-( int16_t		x,
-  int16_t		y,
-  int16_t		width,
-  int16_t		height );
+wipe_StartScreen ();
 
 
 int16_t
-wipe_EndScreen
-( int16_t		x,
-  int16_t		y,
-  int16_t		width,
-  int16_t		height );
+wipe_EndScreen ();
 
 
 int16_t
 wipe_ScreenWipe
-( int16_t		wipeno,
-  int16_t		x,
-  int16_t		y,
-  int16_t		width,
-  int16_t		height,
+( 
   int16_t		ticks );
 
 #endif

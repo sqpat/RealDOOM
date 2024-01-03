@@ -32,28 +32,12 @@
 
 
 // Each screen is [SCREENWIDTH*SCREENHEIGHT]; 
-
-
-#ifdef STATIC_ALLOCATED_SCREENS
-byte				*screen0;// [1L * SCREENWIDTH*SCREENHEIGHT];
-//byte				screen1[1L*SCREENWIDTH*SCREENHEIGHT];
-
-	#ifdef SKIPWIPE
-	byte* screen2;
-	byte* screen3;
-	#else
-	byte				screen2[SCREENWIDTH*SCREENHEIGHT];
-	byte				screen3[SCREENWIDTH*SCREENHEIGHT];
-	#endif
-
-
-#else
+ 
 byte*				screen0;
 //byte*				screen1;
 byte*				screen2;
 byte*				screen3;
 
-#endif
 
 byte*				screen4;
 int16_t				dirtybox[4]; 
@@ -166,14 +150,12 @@ V_DrawPatch
 			desttop = screen0 + offset;
 			break;
 
-#ifndef SKIPWIPE
 		case 2:
 			desttop = screen2 + offset;
 			break;
 		case 3:
 			desttop = screen3 + offset;
 			break;
-#endif
 		case 4:
 			desttop = screen4 + offset;
 			if (currenttask != TASK_STATUS) {
@@ -270,10 +252,8 @@ V_DrawPatchDirect
 		dest = desttop + column->topdelta * (SCREENWIDTH / 4);
 	    count = column->length; 
 	    while (count--)  { 
-#ifndef	SKIP_DRAW
 			*dest = *source;
 			source++;
-#endif
 			dest +=  (SCREENWIDTH / 4);
 	    } 
 	    column = (column_t *)(  (byte *)column + column->length + 4 ); 

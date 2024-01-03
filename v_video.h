@@ -39,27 +39,12 @@
 // Screen 0 is the screen updated by I_Update screen.
 // Screen 1 is an extra buffer.
 
-
-#ifdef STATIC_ALLOCATED_SCREENS
-extern byte				*screen0;// [1L * SCREENWIDTH*SCREENHEIGHT];
-//extern byte				screen1[1L * SCREENWIDTH*SCREENHEIGHT];
-
-	#ifdef SKIPWIPE
-	extern byte* screen2;
-	extern byte* screen3;
-	#else
-	extern byte				screen2[SCREENWIDTH*SCREENHEIGHT];
-	extern byte				screen3[SCREENWIDTH*SCREENHEIGHT];
-	#endif
-
-
-#else
+ 
 extern byte*				screen0;
 //extern byte*				screen1;
 extern byte*				screen2;
 extern byte*				screen3;
 
-#endif
  
  
 

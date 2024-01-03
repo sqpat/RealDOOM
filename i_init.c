@@ -130,11 +130,7 @@ void I_InitDiskFlash(void)
 		pic = W_CacheLumpNameEMSAsPatch("STDISK", PU_CACHE);
 	}
 	temp = destscreen;
-#ifdef _M_I86
 	destscreen.w = 0xac000000;
-#else
-	destscreen.w = 0xac000;
-#endif
 	V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, pic);
 	destscreen = temp;
 	*/
@@ -152,19 +148,10 @@ void I_InitGraphics(void)
 	}
 	grmode = true;
 	regs.w.ax = 0x13;
-#ifndef	SKIP_DRAW
 	intx86(0x10, (union REGS *)&regs, &regs);
-#endif
-#ifdef _M_I86
 	pcscreen = currentscreen = 0xA0000000L;
 	destscreen.w = 0xA0004000;
-#else
-	pcscreen = currentscreen = (byte *)0xA0000l;
-	destscreen.w = 0xa4000l;
-#endif
 
-
-#ifndef	SKIP_DRAW
 	outp(SC_INDEX, SC_MEMMODE);
 	outp(SC_INDEX + 1, (inp(SC_INDEX + 1)&~8) | 4);
 	outp(GC_INDEX, GC_MODE);
@@ -178,7 +165,6 @@ void I_InitGraphics(void)
 	outp(CRTC_INDEX, CRTC_MODE);
 	outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1) | 0x40);
 	outp(GC_INDEX, GC_READMAP);
-#endif
 	I_SetPalette(0);
 	I_InitDiskFlash();
 }
@@ -227,11 +213,7 @@ void I_StartupKeyboard(void) {
 	}
 
 	oldkeyboardisr = _dos_getvect(KEYBOARDINT);
-#ifdef _M_I86
 	_dos_setvect(KEYBOARDINT, I_KeyboardISR);
-#else
-	_dos_setvect(0x8000 | KEYBOARDINT, I_KeyboardISR);
-#endif
 }
 
 
@@ -245,15 +227,7 @@ void I_Init(void)
 {
 	novideo = M_CheckParm("novideo");
 
-
-#ifdef _M_I86
-
-#else
-
-	printf("I_StartupDPMI\n");
-	I_StartupDPMI();
-
-#endif
+ 
 
 	printf("I_StartupMouse\n");
 	I_StartupMouse();

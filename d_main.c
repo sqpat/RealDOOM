@@ -310,13 +310,12 @@ void D_Display (void)
     static  boolean             fullscreen = false;
     static  gamestate_t         oldgamestate = -1;
     static  uint8_t                 borderdrawcount;
-#ifndef SKIPWIPE
 	ticcount_t                         nowtime, wipestart;
 	int16_t                         tics;
-#endif
 	int16_t                         y;
     boolean                     wipe;
     boolean                     redrawsbar;
+	boolean						done = false;
 
     if (nodrawers)
         return;                    // for comparative timing / profiling
@@ -334,18 +333,14 @@ void D_Display (void)
         borderdrawcount = 3;
     }
 
-#ifdef SKIPWIPE
-	wipe = false;
-#else
     // save the current screen if about to wipe
     if (gamestate != wipegamestate)
     {
         wipe = true;
-        wipe_StartScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
+        wipe_StartScreen();
     } else{
         wipe = false;
     }
-#endif
 
 	
 	if (gamestate == GS_LEVEL && gametic) {
@@ -472,11 +467,10 @@ void D_Display (void)
 		return;
     }
 
-#ifndef SKIPWIPE
 
     
     // wipe update
-    wipe_EndScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
+    wipe_EndScreen();
 
     wipestart = ticcount - 1;
 
@@ -488,13 +482,11 @@ void D_Display (void)
             tics = nowtime - wipestart;
         } while (!tics);
         wipestart = nowtime;
-        done = wipe_ScreenWipe(wipe_Melt
-                               , 0, 0, SCREENWIDTH, SCREENHEIGHT, tics);
+        done = wipe_ScreenWipe(tics);
         I_UpdateNoBlit ();
  		M_Drawer ();                            // menu is drawn even on top of wipes
  		I_FinishUpdate();                      // page flip or blit buffer
     } while (!done);
-#endif
 }
 /*
 

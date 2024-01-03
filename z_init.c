@@ -47,13 +47,9 @@ extern int8_t pagesize[NUM_EMS_PAGES];
 
 
 
-#ifdef _M_I86
 
 extern union REGS regs;
 extern struct SREGS segregs;
-
-#else
-#endif
 
  
 
@@ -63,7 +59,6 @@ uint16_t EMS_PAGE;
 
 
 
-#ifdef _M_I86
 byte* far I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 {
 
@@ -171,58 +166,7 @@ byte* far I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 
 }
 
-#else
-
-extern union REGS regs;
-extern struct SREGS segregs;
-
-
-byte* I_ZoneBaseEMS(int32_t *size) {
-
-	// in 32 bit its ems fakery and emulation 
-
-	int32_t meminfo[32];
-	int32_t heap;
-	byte *ptr;
-
-	memset(meminfo, 0, sizeof(meminfo));
-	segread(&segregs);
-	segregs.es = segregs.ds;
-	regs.w.ax = 0x500; // get memory info
-	regs.x.edi = (int32_t)&meminfo;
-	intx86x(0x31, &regs, &regs, &segregs);
-
-	heap = meminfo[0];
-	DEBUG_PRINT("DPMI memory: 0x%x", heap);
-
-	do
-	{
-		heap -= 0x20000; // leave 128k alone
-		// cap at 8M - 16384. 8 MB-1, or 0x7FFFFF at 23 bits is max addressable single region size in allocation_t. 
-			// But subtract by a whole page frame worth of size to not have any weird situations.
-		if (heap > 0x7FC000)
-		{
-			heap = 0x7FC000;
-		}
-		ptr = malloc(heap);
-	} while (!ptr);
-
-#ifdef DEBUG_PRINTING
-
-	DEBUG_PRINT(", 0x%x allocated for zone\n", heap);
-	if (heap < 0x180000)
-	{
-		DEBUG_PRINT("\n");
-		DEBUG_PRINT("Insufficient memory!  You need to have at least 3.7 megabytes of total\n");
-
-	}
-#endif
-
-	*size = heap;
-	return ptr;
-}
-
-#endif
+ 
 
 
 extern byte* texturecolumnlumps_bytes;
@@ -236,6 +180,7 @@ extern int16_t pageswapargs_rend[48];
 extern int16_t pageswapargs_stat[12];
 extern int16_t pageswapargs_demo[8];
 extern int16_t pageswapargs_menu[16];
+extern int16_t pageswapargs_wipe[26];
 extern int16_t pageswapargs_palette[10];
 extern int16_t pageswapargs_textcache[8];
 extern int16_t pageswapargs_textinfo[8];
@@ -255,6 +200,8 @@ extern int16_t pageswapargseg_demo;
 extern int16_t pageswapargoff_demo;
 extern int16_t pageswapargseg_menu;
 extern int16_t pageswapargoff_menu;
+extern int16_t pageswapargseg_wipe;
+extern int16_t pageswapargoff_wipe;
 extern int16_t pageswapargseg_palette;
 extern int16_t pageswapargoff_palette;
 extern int16_t pageswapargseg_textcache;
@@ -402,6 +349,8 @@ found:
 	pageswapargoff_demo = (uint16_t)(((uint32_t)pageswapargs_demo) & 0xffff);
 	pageswapargseg_menu = (uint16_t)((uint32_t)pageswapargs_menu >> 16);
 	pageswapargoff_menu = (uint16_t)(((uint32_t)pageswapargs_menu) & 0xffff);
+	pageswapargseg_wipe = (uint16_t)((uint32_t)pageswapargs_wipe >> 16);
+	pageswapargoff_wipe = (uint16_t)(((uint32_t)pageswapargs_wipe) & 0xffff);
 
 	pageswapargseg_textcache = (uint16_t)((uint32_t)pageswapargs_textcache >> 16);
 	pageswapargoff_textcache = (uint16_t)(((uint32_t)pageswapargs_textcache) & 0xffff);
@@ -421,27 +370,27 @@ found:
 
 	
 
-	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE  FWIPE
+	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE			FWIPE
 	// BLOCK
-	// -------------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------------------------------------------------
 	//            						visplane stuff			screen4 0x9c00
-	// 0x9000 block		thinkers		viewangles, drawsegs								palettebytes
-	// -------------------------------------------------------------------------------------------------------
+	// 0x9000 block		thinkers		viewangles, drawsegs								palettebytes	fwipe temp data
+	// -------------------------------------------------------------------------------------------------------------------
 	//									tex cache arrays
 	// 									sprite stuff			
-	//					screen0			visplane openings									screen0
-	// 0x8000 block		gamma table		texture memrefs?									gamma table
-	// -------------------------------------------------------------------------------------------------------
-	// 0x7000 block		physics levdata render levdata			st graphics
-	// -------------------------------------------------------------------------------------------------------
-	//				more physics levdata zlight											
+	//					screen0			visplane openings									screen0			screen 0
+	// 0x8000 block		gamma table		texture memrefs?									gamma table		gamma table
+	// -------------------------------------------------------------------------------------------------------------------
+	// 0x7000 block		physics levdata render levdata			st graphics									screen 2
+	// -------------------------------------------------------------------------------------------------------------------
+	//				more physics levdata zlight																screen 3
 	//                  rejectmatrix
 	// 					nightnmarespawns textureinfo			
-	//0x6000 block		strings			flat cache				strings						 
-	// -------------------------------------------------------------------------------------------------------
-	//                  states          states 
+	// 0x6000 block		strings			flat cache				strings						 
+	// -------------------------------------------------------------------------------------------------------------------
+	//                  states          states																[scratch buffer]
 	// 0x5000 block		trig tables   	trig tables								demobuffer	
-	// -------------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------------------------------------------------
 	// 0x4000 block						textures
 
 
@@ -532,10 +481,21 @@ found:
  	}
 
 	pageswapargs_menu[8]  = STRINGS_LOGICAL_PAGE;
-//	pageswapargs_menu[9] = PAGE_6000; // strings;
-	//pageswapargs_menu[10] = FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 4;
-	//pageswapargs_menu[12] = FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 5;
-	//pageswapargs_menu[14] = FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6;
+
+	pageswapargs_wipe[0] = FIRST_WIPE_LOGICAL_PAGE;
+	pageswapargs_wipe[1] = PAGE_9000;
+
+	for (i = 0; i < 4; i++) {
+		pageswapargs_wipe[2 + (i * 2)] = SCREEN0_LOGICAL_PAGE + i;
+		pageswapargs_wipe[2 + (i * 2 + 1)] = PAGE_8000 + i;
+		pageswapargs_wipe[10 + (i * 2)] = SCREEN2_LOGICAL_PAGE + i;
+		pageswapargs_wipe[10 + (i * 2 + 1)] = PAGE_7000 + i;
+		pageswapargs_wipe[18 + (i * 2)] = SCREEN3_LOGICAL_PAGE + i;
+		pageswapargs_wipe[18 + (i * 2 + 1)] = PAGE_6000 + i;
+
+	}
+
+
 
 	Z_QuickmapPhysics(); // map default page map
 }
@@ -690,6 +650,7 @@ void Z_LinkEMSVariables() {
 	offset_status = 0u;
 
 	segment = 0x7000;
+	screen2 = MK_FP(segment, 0);
 
 
 	offset_status = 0u;
@@ -790,6 +751,8 @@ void Z_LinkEMSVariables() {
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
+
+	screen3 = MK_FP(segment, 0);
 
 	stringdata = MK_FP(segment, offset_physics);
 	offset_physics += 16384;
