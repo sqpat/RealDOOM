@@ -34,7 +34,7 @@
 #include "sounds.h"
 
 
-MEMREF		activeplats[MAXPLATS];
+THINKERREF		activeplats[MAXPLATS];
 
 
 

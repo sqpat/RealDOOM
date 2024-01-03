@@ -209,17 +209,6 @@ void G_BuildTiccmd (int8_t index)
     //ticcmd_t*   base;
 	ticcmd_t* cmd = &localcmds[index];
 
-	//base = &emptycmd;
-	//memcpy(cmd, base, sizeof(*cmd));
-
-
-	// 2e276460 (2c7e:6460) gamekeydown
-	// 75414af2 (7398:36a0) mousebuttons
-	// 75414af0 (7398:4af0) mousearray
-	// 1aa25a0  (0000:25a0) G_BuildTiccmd
-
-
-
 	memset(cmd, 0, sizeof(ticcmd_t));
 
 	strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe]  ;

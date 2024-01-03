@@ -480,10 +480,10 @@ void R_DrawPlanes (void)
 			continue;
 		}
 		
-		usedflatindex = flatindex[pl->picnum];
+		usedflatindex = flatindex[flattranslation[pl->picnum]];
 		if (usedflatindex == 0xFF) {
 			// load if not loaded
-			usedflatindex =  flatindex[pl->picnum] = firstunusedflat;
+			usedflatindex =  flatindex[flattranslation[pl->picnum]] = firstunusedflat;
 			firstunusedflat++;
 			if (firstunusedflat > MAX_FLATS_LOADED) {
 				I_Error("Too many flats!");
