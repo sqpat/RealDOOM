@@ -315,7 +315,7 @@ void Z_GetEMSPageMap() {
 	if (errorreg != 0) {
 		I_Error("\nCall 5801 failed with value %i!\n", errorreg);
 	}
-	printf("\n Found: %i mappable EMS pages (usually 28 for EMS 4.0 hardware)", numentries);
+	printf("\n Found: %i mappable EMS pages (28+ required)", numentries);
 
 	regs.w.ax = 0x5800;  // physical page
 	segregs.es = (uint16_t)((uint32_t)pointervalue >> 16);
@@ -774,7 +774,7 @@ void Z_LinkEMSVariables() {
 	offset_render += sizeof(lighttable_t* far) * (LIGHTLEVELS * MAXLIGHTZ);
 
 
-	printf("\n   0x6000:      %05u   %05u   %05u   00000  XXXXX", offset_physics, offset_render, offset_status);
+	printf("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", offset_physics, offset_render, offset_status);
 
 
 

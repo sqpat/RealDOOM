@@ -20,6 +20,7 @@
 
 
 extern union REGS regs;
+extern struct SREGS segregs;
 
 //
 // I_ShutdownSound
@@ -155,28 +156,77 @@ extern uint16_t UMBbase, UMBbase2;
 #pragma aux FREE_UMB_MEMORY_1 = \
 		"mov    ax, 4900h",     \
 		"mov    es, [UMBbase]", \
+		"mov    bx, 0000h",		\
 		"int    21h",           \
-parm[] modify exact[ax es];
+parm[] modify exact[ax bx es];
 
 #pragma aux FREE_UMB_MEMORY_2 = \
 		"mov    ax, 4900h",     \
 		"mov    es, [UMBbase2]",\
+		"mov    bx, 0000h",		\
 		"int    21h",           \
-parm[] modify exact[ax es];
+parm[] modify exact[ax bx es];
 
 
 
 void Z_ShutdownUMB() {
-
+ 
+ 
 	if (UMBbase) {
-		FREE_UMB_MEMORY_1();
+		regs.w.ax = 0x4900;
+		segregs.es = UMBbase;
+		intx86x(DOSMM_INT, &regs, &regs, &segregs);
+		if (regs.x.cflag){
+			printf("Failed deallocating UMB 1 memory! %i!\n", regs.w.ax);
+		}
 	}
 	if (UMBbase2) {
-		FREE_UMB_MEMORY_2();
-}
+		regs.w.ax = 0x4900;
+		segregs.es = UMBbase2;
+		intx86x(DOSMM_INT, &regs, &regs, &segregs);
+		if (regs.x.cflag){
+			printf("Failed deallocating UMB 1 memory! %i!\n", regs.w.ax);
+		}
+	}
 
 
 }
+
+
+
+extern int8_t ems_backfill_page_order[24];
+extern int16_t pagenum9000;
+extern int16_t pageswapargseg_rend;
+extern int16_t pageswapargoff_rend;
+extern int16_t pageswapargs_rend[48];
+
+void Z_QuickmapUnmapAll() {
+	int16_t i;
+	for (i = 0; i < 24; i++) {
+		pageswapargs_rend[i * 2 + 0] = -1;
+		pageswapargs_rend[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
+	}
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend;
+	intx86(EMS_INT, &regs, &regs);
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend+32;
+	intx86(EMS_INT, &regs, &regs);
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend+64;
+	intx86(EMS_INT, &regs, &regs);
+}
+
 
 void Z_ShutdownEMS() {
 
@@ -184,7 +234,7 @@ void Z_ShutdownEMS() {
 	int16_t result;
 
 	if (emshandle) {
-
+		Z_QuickmapUnmapAll();
 		regs.w.dx = emshandle; // handle
 		regs.h.ah = 0x45;
 		intx86(EMS_INT, &regs, &regs);
@@ -194,8 +244,6 @@ void Z_ShutdownEMS() {
 		}
 	}
 
-
-	//free(conventionalmemoryblock);
 
 }
 

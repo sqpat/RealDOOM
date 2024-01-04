@@ -532,25 +532,7 @@ void D_DoomLoop (void)
 
 		D_Display ();
 
-  
-		/*
-
-		if (gametic >= 150){
-			Z_QuickmapRender();
-		I_Error("\n\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li\n%li %li %li %li",
-			finesine[0], finesine[1], finecosine[0], finecosine[1],
-			finesine[2048], finesine[2049], finecosine[2048], finecosine[2049],
-			finesine[2048], finesine[2049], finecosine[2048], finecosine[2049],
-			finesine[4096], finesine[4097], finecosine[4096], finecosine[4097],
-			finesine[6144], finesine[6145], finecosine[6144], finecosine[6145],
-			finetangent(0), finetangent(1), finetangent(2048), finetangent(2049),
-			finetangent(1024), finetangent(1024), finetangent(3072), finetangent(3073),
-			tantoangle[0], tantoangle[1], tantoangle[512], tantoangle[513],
-			tantoangle[256], tantoangle[257], tantoangle[768], tantoangle[769]
-
-		);
-		}
-		*/
+   
 #ifdef DEBUGLOG_TO_FILE
 			
 //		if (gametic != lasttick) {

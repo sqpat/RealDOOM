@@ -49,8 +49,10 @@ extern union REGS regs;
 // based a bit off wolf3d and catacomb source code
 
 void(*XMSaddr) (void);		// far pointer to XMS driver
-uint16_t UMBbase, UMBsize;
-uint16_t UMBbase2, UMBsize2;
+uint16_t UMBbase = 0;
+uint16_t UMBsize = 0;
+uint16_t UMBbase2 = 0;
+uint16_t UMBsize2 = 0;
 
 
 #pragma aux XMS_GET_DRIVER = \
@@ -230,14 +232,9 @@ void Z_InitUMB(void) {
 
 
 	uint16_t offset = 0;
-	DEBUG_PRINT("\n  Checking XMS for UMB...");
-
+	DEBUG_PRINT("\n  Checking for UMB...");
 
 	Z_InitUMBDOS();
-
-
-
-
 
 	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE = UMBsize;
 	conventionalmemoryblock = MK_FP(UMBbase, 0);

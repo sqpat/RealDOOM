@@ -242,7 +242,7 @@ void W_AddFile(int8_t *filename)
 	if (reloadname)
 		close(handle);
 	
-
+	memset(MK_FP(0x5000, 0), 0, 65535);
 }
 
 
@@ -264,8 +264,6 @@ void W_InitMultipleFiles(int8_t** filenames)
 {
 	filelength_t         size;
 	//printf("\n\nsize is %u \n\n", _memmax());
-	Z_QuickmapPhysics();
-	Z_QuickmapScratch_5000();
 
 	// open all the files, load headers, and count lumps
 	numlumps = 0;
@@ -286,6 +284,5 @@ void W_InitMultipleFiles(int8_t** filenames)
 
 	 
  
-	Z_QuickmapPhysics();
 
 }
