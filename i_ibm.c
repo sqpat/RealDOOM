@@ -254,13 +254,14 @@ void I_SetPalette(int8_t paletteNumber) {
 
 	byte* palette = palettebytes + paletteNumber * 768u;
 	int16_t savedtask = currenttask;
-	Z_QuickmapPalette();
 	
-
     if(novideo) {
-            return;
+        return;
     }
-    I_WaitVBL(1);
+	
+	Z_QuickmapPalette();
+	I_WaitVBL(1);
+	
 	_outbyte(PEL_WRITE_ADR, 0);
 	gammatablelookup = (gammatable + usegamma*256);
 
@@ -306,7 +307,6 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
 		outp(SC_INDEX + 1, 1 << i);
         source = &screen0[offset + i];
         dest = (byte*) (destscreen.w + poffset);
-		TEXT_MODE_DEBUG_PRINT("I_UpdateBox to dest %lx", dest);
 
         for (j = 0; j < h; j++) {
             k = count;

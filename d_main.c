@@ -155,7 +155,6 @@ void D_ProcessEvents (void)
 {
     event_t*     ev;
 	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
-		//TEXT_MODE_DEBUG_PRINT("\neventhead %i %i", eventtail, eventhead);
 		ev = &events[eventtail];
 		if (M_Responder(ev)) {  
 			continue;           
@@ -341,12 +340,12 @@ void D_Display (void)
     } else{
         wipe = false;
     }
+	//wipe = false;
 
 	
 	if (gamestate == GS_LEVEL && gametic) {
 		HU_Erase();
-		TEXT_MODE_DEBUG_PRINT("\n D_Display: HU_Erase done");
-	}
+ 	}
 
     // do buffered drawing
     switch (gamestate)
@@ -368,8 +367,7 @@ void D_Display (void)
         ST_Drawer (viewheight == 200, redrawsbar);
 		skipdirectdraws = false;
 
-		TEXT_MODE_DEBUG_PRINT("\n D_Display: ST_Drawer done");
-		fullscreen = viewheight == 200;
+ 		fullscreen = viewheight == 200;
         break;
 
       case GS_INTERMISSION:
@@ -384,29 +382,27 @@ void D_Display (void)
 
       case GS_DEMOSCREEN:
         D_PageDrawer ();
-		TEXT_MODE_DEBUG_PRINT("\n D_Display: GS_DEMOSCREEN done");
-		break;
+ 		break;
     }
 
 
 	    // draw buffered stuff to screen
     I_UpdateNoBlit ();
-	TEXT_MODE_DEBUG_PRINT("\n D_Display: I_UpdateNoBlit done");
-	// draw the view directly
+ 	// draw the view directly
 	if (gamestate == GS_LEVEL && !automapactive && gametic) {
 		if (!inhelpscreens) {
-			TEXT_MODE_DEBUG_PRINT("\n D_Display: R_RenderPlayerView start");
 			R_RenderPlayerView();
-			TEXT_MODE_DEBUG_PRINT("\n D_Display: R_RenderPlayerView done");
-		}
+			if (stringdata[0] != 68 || stringdata[1] != 101) {
+				I_Error("bad data cd %li", gametic);
+			}
+ 		}
 	}
 
 	if (gamestate == GS_LEVEL && gametic) {
 		if (!inhelpscreens) {
 			HU_Drawer();
 		}
-		TEXT_MODE_DEBUG_PRINT("\n D_Display: HU_Drawer done");
-	}
+ 	}
 
     // clean up border stuff
 	if (gamestate != oldgamestate && gamestate != GS_LEVEL) {
@@ -438,32 +434,26 @@ void D_Display (void)
     oldgamestate = wipegamestate = gamestate;
 
     // draw pause pic
-    if (paused)
-    {
+    if (paused) {
         if (automapactive)
             y = 4;
         else
             y = viewwindowy+4;
-		Z_QuickmapMenu();
-		
+		Z_QuickmapMenu();		
         V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2, y, M_GetMenuPatch(12));
-
 		Z_QuickmapPhysics();
 
     }
 
     // menus go directly to the screen
 	M_Drawer ();          // menu is drawn even on top of everything
-	TEXT_MODE_DEBUG_PRINT("\n D_Display: M_Drawer done");
-	NetUpdate ();         // send out any new accumulation
-	TEXT_MODE_DEBUG_PRINT("\n D_Display: NetUpdate done");
 
+	NetUpdate ();         // send out any new accumulation
 
 	// normal update
     if (!wipe)
     {
         I_FinishUpdate ();              // page flip or blit buffer
-		TEXT_MODE_DEBUG_PRINT("\n D_Display: I_FinishUpdate done");
 		return;
     }
 
@@ -474,10 +464,8 @@ void D_Display (void)
 
     wipestart = ticcount - 1;
 
-    do
-    {
-        do
-        {
+    do {
+        do {
             nowtime = ticcount;
             tics = nowtime - wipestart;
         } while (!tics);
@@ -488,23 +476,7 @@ void D_Display (void)
  		I_FinishUpdate();                      // page flip or blit buffer
     } while (!done);
 }
-/*
-
-void checkstuff(int16_t src) {
-	int32_t checksummer = 0;
-	int16_t i = 0;
-	Z_QuickmapRender();
-	//tick1 tantoangle diff
-	for (i = 0; i < 2049; i++) {
-		checksummer += tantoangle[i].w;
-	}
-	Z_QuickmapPhysics();
-	if (checksummer != 416909542) {
-		I_Error("\n  blah %i %li %lu, %li %li", src,  gametic, checksummer, finesine[0], finesine[1]);
-	}
-
-}
-*/
+ 
 
 //
 //  D_DoomLoop
@@ -537,25 +509,16 @@ void D_DoomLoop (void)
     {
         // process one or more tics
         if (singletics) {
-			TEXT_MODE_DEBUG_PRINT("\n tick %li start", gametic);
-			I_StartTic ();
-			TEXT_MODE_DEBUG_PRINT("\n tick %li I_StartTic done", gametic);
-			D_ProcessEvents ();
-			TEXT_MODE_DEBUG_PRINT("\n tick %li D_ProcessEvents done", gametic);
-			G_BuildTiccmd(maketic % BACKUPTICS);
-			TEXT_MODE_DEBUG_PRINT("\n tick %li G_BuildTiccmd done", gametic);
-			if (advancedemo) {
+ 			I_StartTic ();
+ 			D_ProcessEvents ();
+ 			G_BuildTiccmd(maketic % BACKUPTICS);
+ 			if (advancedemo) {
 				D_DoAdvanceDemo();
-				TEXT_MODE_DEBUG_PRINT("\n tick %li D_DoAdvanceDemo done", gametic);
-			}
-
+ 			}
 
 			M_Ticker ();
-			TEXT_MODE_DEBUG_PRINT("\n tick %li M_Ticker done", gametic);
-
+ 
 			G_Ticker ();
-			TEXT_MODE_DEBUG_PRINT("\n tick %li G_Ticker done", gametic);
-
 			gametic++;
             maketic++;
 
@@ -565,13 +528,11 @@ void D_DoomLoop (void)
             TryRunTics (); // will run at least one tic
         }
 		S_UpdateSounds (playerMobjRef);// move positional sounds
-		TEXT_MODE_DEBUG_PRINT("\n tick %li S_UpdateSounds done", gametic);
-		// Update display, next frame, with current state.
-
+ 		// Update display, next frame, with current state.
 
 		D_Display ();
-		TEXT_MODE_DEBUG_PRINT("\n tick %li D_Display done", gametic);
- 
+
+  
 		/*
 
 		if (gametic >= 150){

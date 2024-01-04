@@ -1447,7 +1447,6 @@ P_SetupLevel
 	// TODO reset 32 bit counters to start values here..
 	validcount = 1;
 
-	TEXT_MODE_DEBUG_PRINT("\n P_InitThinkers");
 	P_InitThinkers();
 
 	// if working with a devlopment map, reload it
@@ -1477,25 +1476,17 @@ P_SetupLevel
 	
 	// note: most of this ordering is important 
 
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadVertexes");
 	P_LoadVertexes(lumpnum + ML_VERTEXES);
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadSectors");
 	P_LoadSectors(lumpnum + ML_SECTORS);
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadSideDefs");
 	P_LoadSideDefs(lumpnum + ML_SIDEDEFS);
 
 
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadLineDefs");
 	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadSubsectors");
 	P_LoadSubsectors(lumpnum + ML_SSECTORS);
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadNodes");
 	P_LoadNodes(lumpnum + ML_NODES);
 
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadSegs");
 	P_LoadSegs(lumpnum + ML_SEGS);
 
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadBlockMap");
 	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
 
 
@@ -1504,7 +1495,6 @@ P_SetupLevel
 	P_GroupLines(); // 49 tics (362 ics total  in 16 bit, 45 tics in 32 bit)
 
 #ifdef PRECALCULATE_OPENINGS
-	TEXT_MODE_DEBUG_PRINT("\nP_CacheLineOpenings");
 	P_CacheLineOpenings();
 #endif
 
@@ -1607,12 +1597,10 @@ P_SetupLevel
 	);
 	*/
 	
-	TEXT_MODE_DEBUG_PRINT("\n P_LoadThings");
 	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 
 
 
 	// set up world state
-	TEXT_MODE_DEBUG_PRINT("\n P_SpawnSpecials");
 	P_SpawnSpecials();  // 3 tics
 
 	// preload graphics

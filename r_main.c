@@ -701,16 +701,13 @@ void R_RenderPlayerView ()
 
 
 	// The head node is the last node output.
-	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_RenderBSPNode running...");
 	R_RenderBSPNode ();
-	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_RenderBSPNode done");
 
     // Check for new console commands.
     NetUpdate ();
 
     R_DrawPlanes ();
 
-	TEXT_MODE_DEBUG_PRINT("\n       R_RenderPlayerView: R_DrawPlanes done");
 
     // Check for new console commands.
     NetUpdate ();

@@ -464,7 +464,6 @@ void G_Ticker (void)
     // do things to change the game state
     while (gameaction != ga_nothing) 
     { 
-		TEXT_MODE_DEBUG_PRINT("\n carrying out gameaction %i", gameaction);
         switch (gameaction) 
         { 
           /* Seemingly never used.
@@ -509,7 +508,6 @@ void G_Ticker (void)
 
 	if (demoplayback) {
 		G_ReadDemoTiccmd(cmd);
-		TEXT_MODE_DEBUG_PRINT("\ndemo command demo_p %i ANG %i BUTN %x FWD %i SIDE %i ", demo_p, cmd->angleturn, cmd->buttons, cmd->forwardmove, cmd->sidemove);
 		 
 
 	}
@@ -540,40 +538,32 @@ void G_Ticker (void)
 		}
 	}
 
-	TEXT_MODE_DEBUG_PRINT("\n checking gamestate %i", gamestate);
 
     // do main actions
     switch (gamestate) 
     { 
 	case GS_LEVEL:
 
-		TEXT_MODE_DEBUG_PRINT("\n GS_LEVEL");
 		P_Ticker();
-		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: P_Ticker done");
 
 		ST_Ticker();
-		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: ST_Ticker done");
 		AM_Ticker ();
-		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: AM_Ticker done");
 		HU_Ticker ();
-		TEXT_MODE_DEBUG_PRINT("\n  GS_LEVEL: HU_Ticker done");
 		break;
          
       case GS_INTERMISSION: 
         WI_Ticker (); 
-		TEXT_MODE_DEBUG_PRINT("\n GS_INTERMISSION: WI_Ticker done");
 		break;
                          
       case GS_FINALE: 
 		  Z_QuickmapStatus();
 		  F_Ticker();
 		  Z_QuickmapPhysics();		
-		  TEXT_MODE_DEBUG_PRINT("\n GS_FINALE: F_Ticker done");
+		  
 		break;
  
       case GS_DEMOSCREEN: 
         D_PageTicker (); 
-		TEXT_MODE_DEBUG_PRINT("\n GS_DEMOSCREEN: D_PageTicker done");
 		break;
     }        
 
@@ -1144,7 +1134,6 @@ void G_DoPlayDemo (void)
 	
     // don't spend a lot of time in loadlevel 
     precache = false;
-	TEXT_MODE_DEBUG_PRINT("\ndemo loaded, initializing game/world");
 	G_InitNew (skill, episode, map);
 	precache = true;
 

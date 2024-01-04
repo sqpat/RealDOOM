@@ -162,7 +162,6 @@ void G_DoLoadLevel(void)
 	if (player.playerstate == PST_DEAD)
 		player.playerstate = PST_REBORN;
 
-	TEXT_MODE_DEBUG_PRINT("\ncalling P_SetupLevel");
 	P_SetupLevel(gameepisode, gamemap, gameskill);
 	starttime = ticcount;
 	gameaction = ga_nothing;
@@ -297,7 +296,6 @@ G_InitNew
 
 	Z_QuickmapPhysics();
 
-	TEXT_MODE_DEBUG_PRINT("\nloading level");
 	G_DoLoadLevel();
 
 }

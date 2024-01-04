@@ -72,15 +72,6 @@ enum { VERSION =  109 };
 //#define LOOPCHECK
 
 
-// run a timedemo with -nodraw novideo and prints out progress of the engine by tic
-//#define TEXT_MODE_DEBUG
-#ifdef TEXT_MODE_DEBUG
-	#define TEXT_MODE_DEBUG_PRINT(...) printf(__VA_ARGS__)
-#else
-	#define TEXT_MODE_DEBUG_PRINT(...) 
-#endif
-
-
 // Sets some viewpoitn calculations to 16 bit and less precision than 32 bit. not super obvious, but if you run against a wall up close the wall texture pixels will move less smoothly with the player bob for example
 #define USE_SHORTHEIGHT_VIEWZ	
 
