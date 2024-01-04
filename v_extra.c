@@ -34,8 +34,7 @@
 #include <dos.h>
 
 
-MEMREF  W_CacheLumpNameEMSFragment(int8_t* name, int8_t tag, int16_t pagenum, int32_t offset);
-
+ 
 // Specially handles titlepic and other ~68k textures that exceed the 64k 4x page frames limit.
 // Requires loading data in one page frame at a time
 // It's okay if this is kind of slow... its only used in menus.
@@ -54,8 +53,7 @@ V_DrawFullscreenPatch
 	int16_t		w;
 	patch_t*	patch;
 	byte*	patch2;
-	MEMREF patchref;
-	MEMREF colref;
+ 
 	int32_t    offset = 0;
 	int16_t    pageoffset = 0;
 	byte*       extradata;

@@ -74,9 +74,9 @@ void P_UnArchivePlayers (void)
 	save_p += sizeof(player_t);
 	
 	// will be set when unarc thinker
-	players.moRef = NULL_MEMREF;	
+	players.moRef = NULL_THINKERREF;	
 	players.message = -1;
-	players.attackerRef = NULL_MEMREF;
+	players.attackerRef = NULL_THINKERREF;
 
 	for (j=0 ; j<NUMPSPRITES ; j++)
 	{
@@ -175,8 +175,8 @@ void P_UnArchiveWorld (void)
 	sec->lightlevel = *get++;
 	sec->special = *get++;		// needed?
 	sec->tag = *get++;		// needed?
-	sec->specialdataRef = NULL_MEMREF;
-	sec->soundtargetRef = NULL_MEMREF;
+	sec->specialdataRef = NULL_THINKERREF;
+	sec->soundtargetRef = NULL_THINKERREF;
     }
     
     // do lines
@@ -267,7 +267,7 @@ void P_UnArchiveThinkers (void)
     byte		tclass;
     THINKERREF		currentthinker;
 	THINKERREF		next;
-	MEMREF thinkerRef;
+	THINKERREF thinkerRef;
 	mobj_t* mobj;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
 	
@@ -305,7 +305,7 @@ void P_UnArchiveThinkers (void)
 	    memcpy (mobj, save_p, sizeof(*mobj));
 	    save_p += sizeof(*mobj);
 	    mobj->state = &states[(int16_t)mobj->state];
-	    mobj->targetRef = NULL_MEMREF;
+	    mobj->targetRef = NULL_THINKERREF;
 	    if (mobj->player) {
 			mobj->player = &players;
 			mobj->player->moRef = thinkerRef;
@@ -482,7 +482,7 @@ void P_UnArchiveSpecials (void) {
     lightflash_t*	flash;
     strobe_t*		strobe;
     glow_t*		glow;
-	MEMREF thinkerRef;
+	THINKERREF thinkerRef;
 	
     // read in saved thinkers
     /*

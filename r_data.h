@@ -27,8 +27,7 @@
 
 extern uint8_t		skytexture;
 
-extern MEMREF lockedRef;
-
+ 
 byte*
 R_GetColumn
 ( int16_t		tex,

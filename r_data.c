@@ -39,8 +39,7 @@
 // 
 
 
-MEMREF lockedRef;
-
+ 
 int16_t             firstflat;
 int16_t             lastflat;
 int16_t             numflats;
@@ -429,8 +428,7 @@ void R_GenerateComposite(uint8_t texnum, byte* block)
 	column_t*           patchcol;
 	int16_t*            collump;
 	uint16_t*			colofs;
-	MEMREF				realpatchRef;
-	int16_t				textureheight;
+ 	int16_t				textureheight;
 	int16_t				texturewidth;
 	uint8_t				texturepatchcount;
 	int16_t				patchpatch = -1;

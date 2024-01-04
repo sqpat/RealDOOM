@@ -406,8 +406,7 @@ R_InstallSpriteLump
 
 
 
-//extern MEMREF			spritesRef;
-extern spritedef_t* sprites;
+ extern spritedef_t* sprites;
 
 extern int16_t             numsprites;
 

@@ -195,14 +195,12 @@ void P_LoadVertexes(int16_t lump)
 	mapvertex_t*			data;
 	uint16_t                 i;
 	mapvertex_t			ml;
-	MEMREF vertexesRef;
 	// Determine number of lumps:
 	//  total lump length / vertex record length.
 	numvertexes = W_LumpLength(lump) / sizeof(mapvertex_t);
 
 	// Allocate zone memory for buffer.
-	vertexesRef = Z_MallocConventional(numvertexes * sizeof(vertex_t));
-	vertexes = Z_LoadBytesFromConventional(vertexesRef);
+	vertexes = Z_MallocConventional(numvertexes * sizeof(vertex_t));
 	// Load data into cache.
 	
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
@@ -244,13 +242,11 @@ void P_LoadSegs(int16_t lump)
 	int16_t mlangle;
 	int16_t mloffset;
 	int16_t mllinedef;
-	MEMREF segsRef;
 	int16_t* tempsecnums;
 	Z_QuickmapRender_NoTex();
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
-	segsRef = Z_MallocConventional(numsegs * sizeof(seg_t));
-	segs = (seg_t*)Z_LoadBytesFromConventional(segsRef);
+	segs = (seg_t*)Z_MallocConventional(numsegs * sizeof(seg_t));
 
 	segs_render = (seg_render_t* far)Z_GetNextRenderAddress(numsegs * sizeof(seg_render_t));
 	segs_physics = (seg_physics_t* far)Z_GetNextPhysicsAddress(numsegs * sizeof(seg_physics_t));
@@ -337,10 +333,8 @@ void P_LoadSubsectors(int16_t lump)
 	uint16_t                 i;
 	mapsubsector_t*     ms;
 	subsector_t*        ss;
-	MEMREF		subsectorsRef;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectorsRef = Z_MallocConventional (numsubsectors * sizeof(subsector_t));
-	subsectors = (subsector_t*)Z_LoadBytesFromConventional(subsectorsRef);
+	subsectors = (subsector_t*)Z_MallocConventional (numsubsectors * sizeof(subsector_t));
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
@@ -386,14 +380,12 @@ void P_LoadSectors(int16_t lump)
 	mapsector_t        ms;
 	sector_t*           ss;
 	sector_physics_t*   sp;
-	MEMREF				sectorsRef;
 	// most tags are under 100, a couple are like 666 or 667 or 999 or other such special numbers.
 	// we will special case those and fit it in 8 bits so allocations are smaller
 	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 
-	sectorsRef = Z_MallocConventional (numsectors * sizeof(sector_t));
-	sectors = (sector_t*) Z_LoadBytesFromConventional(sectorsRef);
+	sectors = (sector_t*)Z_MallocConventional (numsectors * sizeof(sector_t));
 
 	sectors_physics  = (sector_physics_t*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
 
@@ -451,11 +443,9 @@ void P_LoadNodes(int16_t lump)
 	node_render_t* no_render;
 
 	mapnode_t	currentdata;
-	MEMREF	nodesRef;
-
+	
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
-	nodesRef = Z_MallocConventional(numnodes * sizeof(node_t));
-	nodes = (node_t*)Z_LoadBytesFromConventional(nodesRef);
+	nodes = (node_t*)Z_MallocConventional(numnodes * sizeof(node_t));
 	nodes_render = (node_render_t* far) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
 
 
@@ -1058,19 +1048,15 @@ void P_LoadLineDefs(int16_t lump)
 	int16_t mldv2;
 	int16_t mldsidenum0;
 	int16_t mldsidenum1;
-	MEMREF linesRef;
 	int16_t convertedtag;
-	MEMREF seenlinesRef;
 	side_render_t* tempsides_render;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
-	linesRef = Z_MallocConventional(numlines * sizeof(line_t));
-	lines = (line_t* far)Z_LoadBytesFromConventional(linesRef);
+	lines = (line_t * far)Z_MallocConventional(numlines * sizeof(line_t));
 
 	lines_physics = (line_physics_t* far)Z_GetNextPhysicsAddress(numlines * sizeof(line_physics_t));
 
-	seenlinesRef = Z_MallocConventional(numlines/8+1);
-	seenlines = (uint8_t*)Z_LoadBytesFromConventional(seenlinesRef);
+	seenlines = (uint8_t*)Z_MallocConventional(numlines/8+1);
 	memset(lines, 0, numlines * sizeof(line_t));
 	memset(lines_physics, 0, numlines * sizeof(line_physics_t));
 	memset(seenlines, 0, numlines / 8 + 1);
@@ -1187,14 +1173,12 @@ void P_LoadSideDefs(int16_t lump)
 	texsize_t msdtextureoffset;
 	texsize_t msdrowoffset;
 	int16_t msdsecnum;
-	MEMREF sidesRef;
-
+	
 	Z_QuickmapRender_NoTex();
 	//Z_QuickmapTextureInfoPage();
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	sidesRef = Z_MallocConventional (numsides * sizeof(side_t));
-	sides = (side_t*)Z_LoadBytesFromConventional(sidesRef);
+	sides = (side_t*)Z_MallocConventional (numsides * sizeof(side_t));
 	sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 
 
@@ -1244,12 +1228,7 @@ void P_LoadSideDefs(int16_t lump)
 void P_LoadBlockMap(int16_t lump)
 {
 	uint16_t         count;
-
-	MEMREF			blocklinksRef;
-
-
-
-
+		
 	blockmaplump = (int16_t* far)Z_GetNextPhysicsAddress(W_LumpLength(lump));
 	W_CacheLumpNumDirect(lump, (byte*)blockmaplump);
 
@@ -1300,8 +1279,7 @@ void P_GroupLines(void)
 	uint8_t				sectorlinecount;
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
-	MEMREF linebufferRef;
-
+	
 	Z_QuickmapRender_NoTex();
 
 	// look up sector number for each subsector

@@ -703,7 +703,7 @@ void F_CastDrawer (void)
     spriteframe_t*	sprframe;
     int16_t			lump;
     boolean		flip;
-	MEMREF			patchRef;
+	THINKERREF			patchRef;
 	spriteframe_t*  spriteframes;
 	int8_t			text[100];
 	patch_t*		patch = MK_FP(0x5000, 0);

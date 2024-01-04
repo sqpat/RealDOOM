@@ -31,29 +31,10 @@
 
 #include <dos.h>
 #include <stdlib.h>
+ 
 
 
-//
-// ZONE MEMORY ALLOCATION
-//
-// There is never any space between memblocks,
-//  and there will never be two contiguous free memblocks.
-// The rover can be left pointing at a non-empty block.
-//
-// It is of no value to free a cachable block,
-//  because it will get overwritten automatically if needed.
-// 
-
-
-
-
-// we dont make many conventional allocations, only a small number of important ones
-#define CONVENTIONAL_ALLOCATION_LIST_SIZE 12
-
-
-
-// 8 MB worth. Letting us set 8 MB as a max lets us get away with 
-// some smaller allocation_t sizes
+// 8 MB worth. 
 #define MAX_PAGE_FRAMES 512
  
 
@@ -63,24 +44,20 @@ uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE = 0;
 byte* conventionalmemoryblock;
 
 uint16_t remainingconventional = 0;
-
 uint16_t conventional1head = 	  0;
 
-uint16_t conventional1headindex = 	  0;
 
 
 
 
-
-allocation_static_conventional_t conventional_allocations1[CONVENTIONAL_ALLOCATION_LIST_SIZE];
 
 // todo turn these into dynamic allocations
   
 
 
-	int16_t emshandle;
-	extern union REGS regs;
-	extern struct SREGS segregs;
+int16_t emshandle;
+extern union REGS regs;
+extern struct SREGS segregs;
 
 
 byte*			pageFrameArea;
@@ -88,14 +65,7 @@ byte*			pageFrameArea;
 // count allocations etc, can be used for benchmarking purposes.
 
  
-
  
-           
- 
-void* Z_LoadBytesFromConventional(MEMREF ref) {
-		return conventionalmemoryblock + conventional_allocations1[ref].offset;
-}
-
 
 extern uint16_t leveldataoffset_phys;
 extern uint16_t leveldataoffset_rend;
@@ -113,8 +83,6 @@ extern int16_t pageswapargs_textcache[8];
 void Z_FreeConventionalAllocations() {
 	int16_t i;
 
-	memset(conventional_allocations1, 0, CONVENTIONAL_ALLOCATION_LIST_SIZE * sizeof(allocation_static_conventional_t));
-
 	// we should be paged to physics now - should be ok
 	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
@@ -128,10 +96,8 @@ void Z_FreeConventionalAllocations() {
 	leveldataoffset_rend = 0;
 
 	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE;
-
 	conventional1head = 0;
 
-	conventional1headindex = 0;
 	
 	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
 
@@ -169,41 +135,21 @@ void Z_FreeConventionalAllocations() {
 
 // mostly very easy because we just allocate sequentially and never remove except all at once. no fragmentation
 //  EXCEPT thinkers
-MEMREF Z_MallocConventional( 
+void* far Z_MallocConventional( 
 	uint16_t           size){
-
-	allocation_static_conventional_t *allocations;
-	int16_t loopamount;
-	uint16_t* ref=0;
-	uint16_t* blockhead;
-	uint16_t refcopy;
+	byte* far returnvalue = conventionalmemoryblock + conventional1head;
 
 	if (size > remainingconventional) {
 		I_Error("out of conventional space %u %u", size, remainingconventional);
 	}
-	
-	allocations = conventional_allocations1;
+	conventional1head += size;
 	remainingconventional -= size;
-	blockhead = &conventional1head;
-	ref = &conventional1headindex;
-	loopamount = CONVENTIONAL_ALLOCATION_LIST_SIZE;
+	return returnvalue;
+	
 	
 	
 	 
 	 
-	refcopy = *ref;
-	*ref = *ref +1;
- 
-	if (refcopy == loopamount){
-		I_Error("ran out of refs for conventional allocation  %u %u",  size, remainingconventional);
-	}
-
-	//allocations[ref].size = size;	
-	allocations[refcopy].offset = *blockhead;
-
-	 // ref and blockhead increament up ahead..
-	*blockhead += size; 
-	return refcopy;
 	
 }
 

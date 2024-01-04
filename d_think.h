@@ -23,30 +23,7 @@
 
 #include "z_zone.h"
 
-//
-// Experimental stuff.
-// To compile this as "ANSI C with classes"
-//  we will need to handle the various
-//  action functions cleanly.
-//
-
-/*
-
-typedef  void (*actionf_v)();
-typedef  void (*actionf_p1)( MEMREF );
-typedef  void (*actionf_p2)( void*, void* );
-
-typedef union
-{
-  actionf_p1	acp1;
-  actionf_v	acv;
-  actionf_p2	acp2;
-
-} actionf_t;
-
-
-*/
-
+ 
 
 // Historically, "think_t" is yet another
 //  function pointer to a routine to handle

@@ -135,7 +135,7 @@ typedef struct
     // LEVEL: n/a
 
     // actual graphics for frames of animations
-    MEMREF	pRef[3]; 
+	int16_t	pRef[3];
 
     // following must be initialized to zero before use!
 

@@ -128,7 +128,7 @@ typedef struct player_s
     int8_t			bonuscount;
 
     // Who did damage (NULL for floors/ceilings).
-    MEMREF		attackerRef;
+    THINKERREF		attackerRef;
     
     // So gun flashes light up areas.
     int8_t			extralight;

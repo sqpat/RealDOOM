@@ -45,8 +45,7 @@ extern int16_t		*spritewidths;
 extern int16_t		*spriteoffsets;
 extern int16_t		*spritetopoffsets;
 
-//extern MEMREF		colormapsRef;
-extern lighttable_t* colormaps;
+ extern lighttable_t* colormaps;
 
 extern int16_t		viewwidth;
 extern int16_t		scaledviewwidth;
@@ -106,8 +105,7 @@ extern int16_t             numtextures;
 // Lookup tables for map data.
 //
 extern int16_t		numsprites;
-//extern MEMREF	spritesRef;
-extern spritedef_t*	sprites;
+ extern spritedef_t*	sprites;
 
 extern int16_t		numvertexes;
 extern vertex_t*	vertexes;
@@ -184,8 +182,7 @@ extern fineangle_t	rw_normalangle;
 #define NUM_VISPLANE_PAGES 3
 #define MAXEMSVISPLANES (NUM_VISPLANE_PAGES * VISPLANES_PER_EMS_PAGE)
 
-extern MEMREF visplanebytesRef[NUM_VISPLANE_PAGES]; 
-extern visplaneheader_t	*visplaneheaders;// [MAXEMSVISPLANES];
+ extern visplaneheader_t	*visplaneheaders;// [MAXEMSVISPLANES];
 
 #define MAXCONVENTIONALVISPLANES	60
 

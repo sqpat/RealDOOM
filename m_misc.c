@@ -181,7 +181,7 @@ M_WriteFile
 filelength_t
 M_ReadFile
 (int8_t const*	name,
-  MEMREF*	bufferRef )
+  byte*	bufferRef )
 {
     filelength_t count, length;
 	filehandle_t handle;

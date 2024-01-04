@@ -266,7 +266,7 @@ void P_ActivateInStasis(int8_t tag) {
     int8_t		j;
 	plat_t* plat;
 	for (j = 0; j < MAXPLATS; j++)
-		if (activeplats[j] != NULL_MEMREF) {
+		if (activeplats[j] != NULL_THINKERREF) {
 			plat = (plat_t*)&thinkerlist[activeplats[j]].data;
 
 			if ((plat->status == plat_in_stasis) && (plat->tag == tag)) {
@@ -283,7 +283,7 @@ void EV_StopPlat(uint8_t linetag) {
 	plat_t* plat;
 
 	for (j = 0; j < MAXPLATS; j++) {
-		if (activeplats[j] != NULL_MEMREF) {
+		if (activeplats[j] != NULL_THINKERREF) {
 			plat = (plat_t*)&thinkerlist[activeplats[j]].data;
 			if ((plat->status != plat_in_stasis) && (plat->tag == linetag)) {
 				plat->oldstatus = plat->status;
@@ -299,13 +299,13 @@ static int16_t platraisecount = 0;
 static int16_t addedplatraisecount = 0;
 static int16_t platindex = 0;
 
-void P_AddActivePlat(MEMREF memref) {
+void P_AddActivePlat(THINKERREF thinkerref) {
     int8_t		i;
 	addedplatraisecount++;
     for (i = 0;i < MAXPLATS;i++)
-	if (activeplats[i] == NULL_MEMREF) {
-	    activeplats[i] = memref;
-		platindex = memref;
+	if (activeplats[i] == NULL_THINKERREF) {
+	    activeplats[i] = thinkerref;
+		platindex = thinkerref;
 	    return;
 	}
 }
@@ -323,9 +323,9 @@ void P_RemoveActivePlat(THINKERREF platRef)
 			plat = (plat_t*)&thinkerlist[platRef].data;
 			platsecnum = plat->secnum;
 			P_RemoveThinker(platRef);
-			(&sectors[platsecnum])->specialdataRef = NULL_MEMREF;
+			(&sectors[platsecnum])->specialdataRef = NULL_THINKERREF;
 
-			activeplats[i] = NULL_MEMREF;
+			activeplats[i] = NULL_THINKERREF;
 
 			return;
 		}

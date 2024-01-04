@@ -49,9 +49,7 @@ lumpinfo_t*             lumpinfo;
 uint16_t                     numlumps;
 byte	lumpbytes[LUMPINFO_SIZE];
 
-// we use this explicitly for fullscreen graphics. 
-MEMREF              pagedlumpcacheEMS[5];
-
+  
 uint16_t                     reloadlump;
 int8_t*                   reloadname;
 

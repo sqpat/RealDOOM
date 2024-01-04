@@ -82,7 +82,7 @@ typedef struct
     sfxinfo_t*	sfxinfo;
 
     // origin of sound
-    MEMREF	originRef;
+	THINKERREF	originRef;
 
     // handle of the sound being played
     int16_t		handle;
@@ -91,7 +91,7 @@ typedef struct
 
 
 // the set of channels available
-//static MEMREF	channelsRef;
+//static THINKERREF1	channelsRef;
 
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.
@@ -120,7 +120,7 @@ static ticcount_t		nextcleanup;
 //
 int8_t
 S_getChannel
-( MEMREF originRef,
+(THINKERREF originRef,
   sfxinfo_t*	sfxinfo );
 
 
@@ -411,7 +411,7 @@ void S_StopSound(mobj_t* origin)
 //   If none available, return -1.  Otherwise channel #.
 //
 int8_t
-S_getChannel ( MEMREF originRef, sfxinfo_t*	sfxinfo ) {
+S_getChannel (THINKERREF originRef, sfxinfo_t*	sfxinfo ) {
     // channel number to use
 
 	return 0;
@@ -592,10 +592,10 @@ void S_StartSound(mobj_t*		mobj, sfxenum_t		sfx_id) {
 		return;
 	}
 	if (mobj) {
-		S_StartSoundAtVolume(NULL_MEMREF, mobj->x, mobj->y, sfx_id, snd_SfxVolume);
+		S_StartSoundAtVolume(NULL_THINKERREF, mobj->x, mobj->y, sfx_id, snd_SfxVolume);
 	}
 	else {
-		S_StartSoundAtVolume(NULL_MEMREF, -1, -1, sfx_id, snd_SfxVolume);
+		S_StartSoundAtVolume(NULL_THINKERREF, -1, -1, sfx_id, snd_SfxVolume);
 	}
 	*/
 
@@ -603,13 +603,13 @@ void S_StartSound(mobj_t*		mobj, sfxenum_t		sfx_id) {
 
 }
 void S_StartSoundWithParams(int16_t x, int16_t y, sfxenum_t sfx_id) {
-	//S_StartSoundAtVolume(NULL_MEMREF, x, y, sfx_id, snd_SfxVolume);
+	//S_StartSoundAtVolume(NULL_THINKERREF, x, y, sfx_id, snd_SfxVolume);
 }
 
 //
 // Updates music & sounds
 //
-void S_UpdateSounds(MEMREF listenerRef)
+void S_UpdateSounds(THINKERREF listenerRef)
 {
 	/*
 

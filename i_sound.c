@@ -223,8 +223,7 @@ void I_sndArbitrateCards(void)
     boolean gus, adlib, sb, midi, codec, ensoniq;
     int16_t i, wait, dmxlump;
 
-	MEMREF gf1memref;
-
+ 
     snd_SfxVolume = 127;
     snd_SfxDevice = snd_DesiredSfxDevice;
     snd_MusicDevice = snd_DesiredMusicDevice;

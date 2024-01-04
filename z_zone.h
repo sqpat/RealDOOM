@@ -58,32 +58,18 @@
 #define PAGE_LOCKED true
 #define PAGE_NOT_LOCKED false
 
-typedef uint16_t MEMREF;  //used externally for allocations list index
-typedef uint16_t PAGEREF; //used internally for allocations list index
-
+ 
 // Note: a memref of 0 refers to the empty (size = 0) 'head' of doubly linked list
 // managing the pages, and this index can never be handed out, so it's safe to use
 // as a 'null' or unused memref.
-#define NULL_MEMREF 0
+#define NULL_THINKERREF 0
 
  
 extern int32_t taskswitchcount;
 
-typedef struct memblock_s
-{
-	int32_t                 size;   // including the header and possibly tiny fragments
-	void**              user;   // NULL if a free block
-	int32_t                 tag;    // purgelevel
-	int32_t                 id;     // should be ZONEID
-	struct memblock_s*  next;
-	struct memblock_s*  prev;
-} memblock_t;
+ 
 
-typedef struct allocation_static_conventional_s
-{
-	uint16_t	offset;
-
-} allocation_static_conventional_t;
+ 
 
 
 
@@ -109,11 +95,9 @@ typedef struct allocation_static_conventional_s
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
 extern byte* conventionalmemoryblock;
-extern byte* spritememoryblock;
 
 extern uint16_t EMS_PAGE;
 
-extern allocation_static_conventional_t* sprite_allocations;
 
 
 void Z_InitEMS(void);
@@ -122,17 +106,7 @@ void Z_FreeConventionalAllocations();
 
 #define BACKREF_LUMP_OFFSET EMS_ALLOCATION_LIST_SIZE
  
-MEMREF Z_MallocConventional(uint16_t  size);
-
- 
-//void* Z_LoadBytesFromEMS2(MEMREF index);
-
-
-
-
-void* Z_LoadBytesFromConventional(MEMREF index);
- 
-
+void* far Z_MallocConventional(uint16_t  size);
  
 
 void Z_ShutdownEMS();

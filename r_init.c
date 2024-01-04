@@ -74,7 +74,7 @@ void R_InitSkyMap(void)
 
 
 extern visplaneheader_t	*visplaneheaders;// [MAXEMSVISPLANES];
-extern MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES];
+//extern MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES];
 
 
 //
@@ -195,8 +195,7 @@ void R_InitSpriteLumps(void)
 	int16_t         i;
 
 	patch_t     *patch;
-	MEMREF		patchRef;
-	int16_t		patchwidth;
+ 	int16_t		patchwidth;
 	int16_t		patchleftoffset;
 	int16_t		patchtopoffset;
 
@@ -429,8 +428,7 @@ void R_InitTextures(void)
 
 	// needed for texture pegging
 	//uint8_t*            textureheight;
-	MEMREF				maptexRef;
-	int16_t				texturewidth;
+ 	int16_t				texturewidth;
 	uint8_t				textureheightval;
 	byte* far			tempaddress = MK_FP(0x7000, 0);
 

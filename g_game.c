@@ -123,8 +123,7 @@ boolean         precache = true;        // if true, load all graphics at start
  
 wbstartstruct_t wminfo;                 // parms for world map / intermission 
  
-MEMREF           savebufferRef;
- 
+  
  
 // 
 // controls (have defaults) 
@@ -184,7 +183,7 @@ int8_t            savedescription[32];
  
 #define BODYQUESIZE     32
 
-MEMREF          bodyque[BODYQUESIZE]; 
+THINKERREF          bodyque[BODYQUESIZE];
 int8_t             bodyqueslot;
 ticcmd_t localcmds[BACKUPTICS];
 

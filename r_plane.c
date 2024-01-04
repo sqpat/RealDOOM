@@ -43,7 +43,7 @@
 
 // backup EMS visplanes to use after conventional visplanes
 visplaneheader_t	*visplaneheaders; //[MAXEMSVISPLANES];
-MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES]; 
+//MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES]; 
 
 visplane_t			*visplanes;// [MAXCONVENTIONALVISPLANES];
 int16_t				lastvisplane;

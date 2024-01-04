@@ -81,7 +81,6 @@ void W_CacheLumpNumDirect(int16_t lump, byte* dest);
 // correct value for DOOM Sharware
 #define LUMPINFO_SIZE 16432 
 #define LUMPCACHE_SIZE 2528 
-//#define LUMPCACHE_SIZE sizeof(MEMREF) * 1036
-
+ 
 
 #endif
