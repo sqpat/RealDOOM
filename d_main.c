@@ -391,8 +391,11 @@ void D_Display (void)
  	// draw the view directly
 	if (gamestate == GS_LEVEL && !automapactive && gametic) {
 		if (!inhelpscreens) {
+			if (stringdata[0x304] != 116) {
+				I_Error("bad data ab %li", gametic);
+			}
 			R_RenderPlayerView();
-			if (stringdata[0] != 68 || stringdata[1] != 101) {
+			if (stringdata[0x304] != 116) {
 				I_Error("bad data cd %li", gametic);
 			}
  		}

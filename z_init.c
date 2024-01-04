@@ -582,7 +582,7 @@ void Z_LinkEMSVariables() {
 	offset_physics += (256 * 5);
 
 
-	colormapbytes = MK_FP(segment, offset_render);
+	colormapbytes = MK_FP(segment, offset_render); // needs to be 256-byte aligned so leave it at 0!!
 	offset_render += ((33 * 256));
 	openings = MK_FP(segment, offset_render);
 	offset_render += sizeof(int16_t) * MAXOPENINGS;

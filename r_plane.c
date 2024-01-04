@@ -457,18 +457,9 @@ void R_DrawPlanes (void)
 
 				if (dc_yl <= dc_yh) {
 
-					/*
-					temp.h.intbits <<= 3;
-					temp.w += viewangle.wu;
-					temp.h.intbits >>= 6;
-					*/
-
-					// this is much faster than the above. i think there migth be a round issue on the
-					// lowest bit but i can't tell any difference -sq
-
-
-					//temp.h.intbits >>= 3;
-					angle = MOD_FINE_ANGLE(viewangle_shiftright3 + xtoviewangle[x]);
+				 
+					angle = MOD_FINE_ANGLE(viewangle_shiftright3 + xtoviewangle[x]) >> 3;
+					
 					dc_x = x;
 
 					dc_source = R_GetColumn(skytexture, angle);
