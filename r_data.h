@@ -48,7 +48,6 @@ void R_PrecacheLevel (void);
 #define TEXTURE_TYPE_LUMP 0
 #define TEXTURE_TYPE_COMPOSITE 1
 
-byte* gettexture(int16_t lump_or_tex_index, int16_t indextype);
-
+ 
 
 #endif

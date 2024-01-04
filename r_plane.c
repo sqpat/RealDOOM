@@ -481,17 +481,7 @@ void R_DrawPlanes (void)
 			}
 			flatunloaded = true;
 		}
-		//flatunloaded = true;
-		/*
-		// remap if necessary
-		if (usedflatindex > 15) {
-			// have to remap
-			startpagenumber = (usedflatindex >> 2) - 3;
-			effectivepagenumber = 3;
 
-		} else {
-			effectivepagenumber = usedflatindex >> 2;
-		}*/
 		effectivepagenumber = (usedflatindex >> 2) + FIRST_FLAT_CACHE_LOGICAL_PAGE;
  
 		if (currentflatpage != effectivepagenumber) {

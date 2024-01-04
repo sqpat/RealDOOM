@@ -1203,7 +1203,6 @@ boolean G_CheckDemoStatus (void)  {
         M_WriteFile (demoname, demobuffer, demo_p);
         demorecording = false; 
         I_Error ("Demo %s recorded",demoname); 
-		Z_QuickmapPhysics();
 	}
          
     return false; 

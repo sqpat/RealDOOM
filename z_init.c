@@ -289,7 +289,6 @@ void Z_GetEMSPageMap() {
 	I_Error("done");
 	*/
 
-	//states = MK_FP(0x9000, 0);
 /*
 	fp = fopen("D_MBINFO.BIN", "r");
 	fread(mobjinfo, sizeof(mobjinfo_t) * NUMMOBJTYPES, 1, fp);

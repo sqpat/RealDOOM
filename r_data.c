@@ -705,9 +705,6 @@ byte* getcompositetexture(int16_t tex_index) {
 	uint8_t texoffset = compositetextureoffset[tex_index];
 	byte* addr;
 
-	if (tex_index == 2) {
-		I_Error("\n inner %hhu %u", tex_index, texturecompositesizes[tex_index]);
-	}
 	//addr = MK_FP(0x4000, 0);
 	//R_GenerateComposite(tex_index, addr);
 	//return addr;

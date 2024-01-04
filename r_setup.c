@@ -294,6 +294,11 @@ extern int8_t textureLRU[4];
 extern int16_t activetexturepages[4];
 extern byte*	 spritedefs_bytes;
 
+extern byte* getcompositetexture(int16_t tex_index);
+extern byte* getpatchtexture(int16_t lump);
+extern byte* texturedefs_bytes;
+extern uint16_t *texturedefs_offset;
+
 
 void R_PrecacheLevel(void)
 {
@@ -311,7 +316,6 @@ void R_PrecacheLevel(void)
 	spriteframe_t*      sf;
 	spriteframe_t*		spriteframes;
 	int32_t flatsize = 0;
-	int32_t spritesize = 0;
 	uint16_t size;
 	uint8_t currentpageoffset = 0;
 	int16_t lumpnum;
@@ -322,7 +326,7 @@ void R_PrecacheLevel(void)
 
 	if (demoplayback)
 		return;
-	return;
+
 	Z_QuickmapRender();
 	
 
@@ -341,27 +345,25 @@ void R_PrecacheLevel(void)
 	//flatmemory = 0;
 	Z_PushScratchFrame();
 
-
 	Z_RemapScratchFrame(FIRST_FLAT_CACHE_LOGICAL_PAGE);
-	
   	for (i = 0; i < numflats; i++)
 	{
  
 		if (flatpresent[i]) {
 			lump = firstflat + i;
 			//size = 4096; // W_LumpLength(lump);
-
+		
 			flatindex[i] = firstunusedflat;
 			//totalsize += size;
 
-			if (firstunusedflat && (firstunusedflat % 16) == 0) {
+			if (firstunusedflat && ((firstunusedflat % 16) == 0)) {
 				// remap page
-				Z_RemapScratchFrame(FIRST_FLAT_CACHE_LOGICAL_PAGE + firstunusedflat / 16);
+				Z_RemapScratchFrame(FIRST_FLAT_CACHE_LOGICAL_PAGE + (firstunusedflat / 4));
 			}
 
 			W_CacheLumpNumDirect(lump, MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[(firstunusedflat % 16) >> 2] + MULT_4096[firstunusedflat & 0x03]));
 			firstunusedflat++;
-			if (firstunusedflat > MAX_FLATS_LOADED) {
+			if (firstunusedflat >= MAX_FLATS_LOADED) {
 				I_Error("Too many flats!");
 			}
 
@@ -369,7 +371,7 @@ void R_PrecacheLevel(void)
 	}
 	Z_PopScratchFrame();
 
-	flatsize = 4096 * firstunusedflat;
+	flatsize = 4096L * firstunusedflat;
 	oldpage = newpage = 0;
 
 	// Precache textures.
@@ -399,51 +401,21 @@ void R_PrecacheLevel(void)
 		if (!texturepresent[i])
 			continue;
 
-		gettexture(i, TEXTURE_TYPE_COMPOSITE);
+		getcompositetexture(i);
+		texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[i]]);
+
 		for (j = 0; j < texture->patchcount; j++) {
 			lump = texture->patches[j].patch;
-			gettexture(lump, TEXTURE_TYPE_LUMP);
+			getpatchtexture(lump);
 		}
-
-		/*
-		// todo does this have to be done here?
-		//R_GenerateComposite();
-
-		texture = (texture_t*)Z_LoadTextureInfoFromConventional(textures[i]);
-		for (j = 0; j < texture->patchcount; j++) {
-
-			lump = texture->patches[j].patch;
-			index = lump - FIRST_PATCH;
-
-			// check for lump presence...
-			if (patchpage[index] == 0xFF) {
-				size = W_LumpLength(lump);
-				totalsize += size;
-
-				patchpage[index] = oldpage = newpage;
-				patchoffset[index] = totalsize & 16383;
-				newpage = totalsize >> 14;
-
-
-				// do we need to re-set the offset?
-				if (newpage - oldpage > 3) {
-					// re-base on oldpage
-					Z_RemapScratchFrame(FIRST_PATCH_CACHE_LOGICAL_PAGE + oldpage);
-					currentpatchpage = oldpage;
-				}
-				W_CacheLumpNumDirect(lump, MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[oldpage] + patchoffset[index]));
-
-			}
-
-
-		}
-		*/
+ 
 	}
 
 
 	// Precache sprites.
 	spritepresent = alloca(numsprites);
 	memset(spritepresent, 0, numsprites);
+	Z_QuickmapPhysics();
 
 	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)
 	{
@@ -451,56 +423,61 @@ void R_PrecacheLevel(void)
 			spritepresent[ states[mobjposlist[th].stateNum].sprite ] = 1;
 		}
 	}
-	Z_QuickmapPhysics();
+	Z_QuickmapRender();
 
 
 	for (i = 0; i < numsprites; i++) {
 		if (!spritepresent[i])
 			continue;
-
  		spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
 
 		for (j = 0; j < sprites[i].numframes; j++) {
 			sf = &spriteframes[j];
 			for (k = 0; k < 8; k++) {
 				lump = firstspritelump + sf->lump[k];
-				//spritesize += W_LumpLength(lump);
 				getspritetexture(lump);
 			}
 		}
 	}
 
 	/*
-	for (i = 0; i < NUM_TEXTURE_PAGES; i++) 
+	printf("\nTexpagemem:\n");
+	for (i = 0; i < NUM_TEXTURE_PAGES; i++) {
+		printf("%i", i);
 		if (usedcompositetexturepagemem[i] == 0)
 			break;
-	I_Error("\ntotal tex size %li\n flat size %li \nspritesize %li", i * 16384L, flatsize, spritesize);
-		*/
-	
-	
+	}
+	printf("\nPatchpagemem:\n");
+	for (j = 0; j < NUM_PATCH_CACHE_PAGES; j++) {
+		printf("%i", j);
+		if (usedpatchpagemem[j] == 0)
+			break;
+	}
+
+	printf("\nSpritepagemem:\n");
+	for (k = 0; k < NUM_SPRITE_CACHE_PAGES; k++) {
+		printf("%i", k);
+
+		if (usedspritepagemem[k] == 0)
+			break;
+	}
+
+	I_Error("\ntotal tex size %li\n patch size %li\n flat size %li \nspritesize %li", i * 16384L, j * 16384L, flatsize, k * 16384L);
+	*/
 
 
+	//         TEX  PATCH   FLAT    SPRITE
+	// E1M1 131072 425984  90112	278528
+	// E1M2 311296 638976 114688    278528
+	// E1M3	344064 524288  94208    491520
+	// E1M4 262144 540672 110592    475136
+	// E1M5 212992 425984 118784    491520
+	// E1M6 180224 458752 114688    491520
+	// E1M7 163840 425984  90112    491520
+	// E1M8	131072 163840  86016    557056
+	// E1M9  65536 180224  61440    491520
 
-	//       TEX    FLAT    SPRITE
-	// E1M1 492064  86016
-	//      163840
-	// E1M2 869332 110592
-	//      229376 
-	// E1M3			90112
-	//      294912
-	// E1M4 
-	//      229376  106496
-	// E1M5         114688
-	//      245760  
-	// E1M6 587136 110592
-	//      180224
-	// E1M7 545544 86016
-	//      163840
-	// E1M8		   81920
-	//      262144
-	// E1M9 245392 57344
-
-
+	Z_QuickmapPhysics();
 
 }
 

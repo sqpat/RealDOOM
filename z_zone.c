@@ -510,6 +510,12 @@ void Z_PopScratchFrame() {
 
 		taskswitchcount++;
 		currenttask = oldtask;
+		
+		pageswapargs_scratch_5000[0] = FIRST_SCRATCH_LOGICAL_PAGE;
+		pageswapargs_scratch_5000[2] = FIRST_SCRATCH_LOGICAL_PAGE + 1;
+		pageswapargs_scratch_5000[4] = FIRST_SCRATCH_LOGICAL_PAGE + 2;
+		pageswapargs_scratch_5000[6] = FIRST_SCRATCH_LOGICAL_PAGE + 3;
+
 	}
 	else {
 		I_Error("didnt clear - double stack");
