@@ -181,6 +181,7 @@ EV_DoPlat
 			case raiseToNearestAndChange:
 				plat->speed = PLATSPEED / 2;
 				(&sectors[secnum])->floorpic = sectors[linefrontsecnum].floorpic;
+
 				specialheight = P_FindNextHighestFloor(secnum, sectorfloorheight);
 				plat->high = specialheight;
 				plat->wait = 0;

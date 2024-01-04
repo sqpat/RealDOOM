@@ -259,14 +259,14 @@ P_UseSpecialLine
 	
 		case 14:
 			// Raise Floor 32 and change texture
-			if (EV_DoPlat(linetag, lineside0, raiseAndChange, 32)) {
+			if (EV_DoPlat(linetag, linefrontsecnum, raiseAndChange, 32)) {
 				P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
 			}
 			break;
 	
       case 15:
 	// Raise Floor 24 and change texture
-		  if (EV_DoPlat(linetag, lineside0, raiseAndChange,24))
+		  if (EV_DoPlat(linetag, linefrontsecnum, raiseAndChange,24))
 			  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
 	break;
 	
@@ -278,13 +278,13 @@ P_UseSpecialLine
 	
       case 20:
 	// Raise Plat next highest floor and change texture
-	if (EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0))
+	if (EV_DoPlat(linetag, linefrontsecnum, raiseToNearestAndChange,0))
 		P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
 	break;
 	
       case 21:
 	// PlatDownWaitUpStay
-		  if (EV_DoPlat(linetag, lineside0, downWaitUpStay,0))
+		  if (EV_DoPlat(linetag, linefrontsecnum, downWaitUpStay,0))
 			  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
 	break;
 	
@@ -374,7 +374,7 @@ P_UseSpecialLine
 	
       case 122:
 	// Blazing PlatDownWaitUpStay
-		  if (EV_DoPlat(linetag, lineside0, blazeDWUS,0))
+		  if (EV_DoPlat(linetag, linefrontsecnum, blazeDWUS,0))
 			  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 0);
 	break;
 	
@@ -439,7 +439,7 @@ P_UseSpecialLine
 	
       case 62:
 	// PlatDownWaitUpStay
-		  if (EV_DoPlat(linetag, lineside0, downWaitUpStay,1))
+		  if (EV_DoPlat(linetag, linefrontsecnum, downWaitUpStay,1))
 			  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
 	break;
 	
@@ -457,13 +457,13 @@ P_UseSpecialLine
 	
       case 66:
 	// Raise Floor 24 and change texture
-		  if (EV_DoPlat(linetag, lineside0, raiseAndChange,24))
+		  if (EV_DoPlat(linetag, linefrontsecnum, raiseAndChange,24))
 			  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
 	break;
 	
       case 67:
 	// Raise Floor 32 and change texture
-		  if (EV_DoPlat(linetag, lineside0, raiseAndChange,32))
+		  if (EV_DoPlat(linetag, linefrontsecnum, raiseAndChange,32))
 			  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
 	break;
 	
@@ -475,7 +475,7 @@ P_UseSpecialLine
 	
       case 68:
 	// Raise Plat to next highest floor and change texture
-		  if (EV_DoPlat(linetag, lineside0, raiseToNearestAndChange,0))
+		  if (EV_DoPlat(linetag, linefrontsecnum, raiseToNearestAndChange,0))
 			  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
 	break;
 	
@@ -511,7 +511,7 @@ P_UseSpecialLine
 	
       case 123:
 	// Blazing PlatDownWaitUpStay
-		  if (EV_DoPlat(linetag, lineside0, blazeDWUS,0))
+		  if (EV_DoPlat(linetag, linefrontsecnum, blazeDWUS,0))
 			  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
 	break;
 	
