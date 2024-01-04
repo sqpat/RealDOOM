@@ -1170,7 +1170,7 @@ void G_TimeDemo (int8_t* name)
 =================== 
 */ 
 
-
+extern int16_t wipeduration;
 boolean G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
 	//byte* demobuffer;
@@ -1178,8 +1178,8 @@ boolean G_CheckDemoStatus (void)  {
 	if (timingdemo) {
 		endtime = ticcount;
  
-        I_Error ("\ntimed %li gametics in %li realtics\n Task Switches: %li\n prnd index %i ",gametic 
-                 , endtime-starttime, taskswitchcount, prndindex);
+        I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe) \n Task Switches: %li\n prnd index %i ",gametic 
+                 , endtime-starttime , endtime-starttime- wipeduration, wipeduration, taskswitchcount, prndindex);
     } 
          
     if (demoplayback)  { 

@@ -301,6 +301,7 @@ extern  boolean setsizeneeded;
 extern  uint8_t             showMessages;
 void R_ExecuteSetViewSize (void);
 
+uint16_t                         wipeduration = 0;
 void D_Display (void)
 {
     static  boolean             viewactivestate = false;
@@ -310,6 +311,7 @@ void D_Display (void)
     static  gamestate_t         oldgamestate = -1;
     static  uint8_t                 borderdrawcount;
 	ticcount_t                         nowtime, wipestart;
+	ticcount_t                         wiperealstart;
 	int16_t                         tics;
 	int16_t                         y;
     boolean                     wipe;
@@ -478,6 +480,7 @@ void D_Display (void)
  		M_Drawer ();                            // menu is drawn even on top of wipes
  		I_FinishUpdate();                      // page flip or blit buffer
     } while (!done);
+	wipeduration = ticcount - wiperealstart;
 }
  
 
