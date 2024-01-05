@@ -43,9 +43,6 @@
 int16_t r_cachedplayerMobjsecnum;
 state_t r_cachedstatecopy[2];
 
-fixed_t r_cachedplayerMobjx;
-fixed_t r_cachedplayerMobjy;
-angle_t r_cachedplayerMobjangle;
 
 
 // increment every time a check is made
@@ -626,10 +623,6 @@ void R_SetupFrame ()
 {		
     int8_t		i;
 
-    viewx.w = r_cachedplayerMobjx;
-    viewy.w = r_cachedplayerMobjy;
-    viewangle = r_cachedplayerMobjangle;
-	viewangle_shiftright3 = viewangle.hu.intbits >> 3;
     extralight = player.extralight;
 
     viewz.w = player.viewz;
@@ -675,9 +668,11 @@ void R_SetupFrame ()
 void R_RenderPlayerView ()
 {	
 	r_cachedplayerMobjsecnum = playerMobj->secnum;
-	r_cachedplayerMobjx = playerMobj_pos->x;
-	r_cachedplayerMobjy = playerMobj_pos->y;
-	r_cachedplayerMobjangle = playerMobj_pos->angle;
+	viewx.w = playerMobj_pos->x;
+	viewy.w = playerMobj_pos->y;
+	viewangle = playerMobj_pos->angle;
+	viewangle_shiftright3 = viewangle.hu.intbits >> 3;
+
 	if (player.psprites[0].state) {
 		r_cachedstatecopy[0] = *(player.psprites[0].state);
 	}
@@ -686,7 +681,6 @@ void R_RenderPlayerView ()
 	}
 
 	Z_QuickmapRender();
-	//Z_QuickmapRenderTexture();
 	R_SetupFrame ();
 
 
