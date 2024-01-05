@@ -126,10 +126,10 @@ R_MapPlane
     }
 	
     length = FixedMul (distance,distscale[x1]);
-	angle = MOD_FINE_ANGLE((viewangle_shiftright3)+ xtoviewangle[x1]);
+	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
 
-	ds_xfrac = viewx.w + FixedMulTrig(length, finecosine[angle]);
-    ds_yfrac = -viewy.w - FixedMulTrig(length, finesine[angle]);
+	ds_xfrac = viewx.w + FixedMulTrig(finecosine[angle], length );
+    ds_yfrac = -viewy.w - FixedMulTrig(finesine[angle], length );
 
 if (fixedcolormap) {
 	ds_colormap = fixedcolormap;
@@ -174,7 +174,7 @@ void R_ClearPlanes (void)
     lastopening = openings;
 
     // texture calculation
-    memset (cachedheight, 0, sizeof(cachedheight));
+    memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
 
     // left to right mapping
 	angle = MOD_FINE_ANGLE(viewangle_shiftright3 - FINE_ANG90) ;

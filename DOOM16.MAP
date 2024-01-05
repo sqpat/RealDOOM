@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/01/05 12:36:44
+Created on:       24/01/05 12:48:19
 Executable Image: doom16.exe
 creating a DOS overlayed executable
 
@@ -52,7 +52,7 @@ r_bsp_TEXT             CODE           AUTO           0ec6:4830       00000905
 r_data_TEXT            CODE           AUTO           0ec6:5140       00000aa4
 r_draw_TEXT            CODE           AUTO           0ec6:5bf0       0000097d
 r_main_TEXT            CODE           AUTO           0ec6:6570       00000a3a
-r_plane_TEXT           CODE           AUTO           0ec6:6fb0       0000090e
+r_plane_TEXT           CODE           AUTO           0ec6:6fb0       0000090a
 r_segs_TEXT            CODE           AUTO           0ec6:78c0       00001578
 r_things_TEXT          CODE           AUTO           0ec6:8e40       00001127
 w_wad_TEXT             CODE           AUTO           0ec6:9f70       000001fe
@@ -922,10 +922,10 @@ Module: r_plane.obj(C:\REALDOOM\r_plane.c)
 29d4:2c0c      _distscale
 29d4:2c10      _cachedheight
 0ec6:6fde+     R_MapPlane_
-0ec6:7224      R_ClearPlanes_
-0ec6:7328      R_FindPlane_
-0ec6:73f4      R_CheckPlane_
-0ec6:7522      R_DrawPlanes_
+0ec6:7220      R_ClearPlanes_
+0ec6:7324      R_FindPlane_
+0ec6:73f0      R_CheckPlane_
+0ec6:751e      R_DrawPlanes_
 29d4:09fa*     _tempcounter
 29d4:2c14      _openings
 29d4:2c18      _cacheddistance
@@ -2306,4 +2306,4 @@ C:\WATCOM\lib286\dos\wovl.lib
 Stack size:  0bb8 (3000.)
 Memory size:  0002e46a (189546.)
 Entry point address: 1b6b:6735
-Link time: 00:06.36
+Link time: 00:11.34
