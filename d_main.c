@@ -467,7 +467,7 @@ void D_Display (void)
     // wipe update
     wipe_EndScreen();
 
-    wipestart = ticcount - 1;
+	wiperealstart = wipestart = ticcount - 1;
 
     do {
         do {
