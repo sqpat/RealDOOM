@@ -83,16 +83,14 @@ void NetUpdate(void)
 	{
 		I_StartTic();
 		D_ProcessEvents();
-		if (maketic - gametic >= BACKUPTICS / 2 - 1)
+		if (maketic - gametic >= BACKUPTICS / 2 - 1) {
 			break; // can't hold any more
+		}
 
 		G_BuildTiccmd(maketic & (BACKUPTICS - 1));
 		maketic++;
 	}
 
-	// is this supposed to be in the above loop?
-	//if (singletics)
-	//	return; // singletic update is syncronous
 }
 
 extern byte advancedemo;

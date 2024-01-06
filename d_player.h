@@ -121,6 +121,7 @@ typedef struct player_s
 
     // Hint messages.
     int16_t		message;
+	//int8_t		messagestring[40];
 	int8_t*		messagestring;
 
     // For screen flashing (red or bright).

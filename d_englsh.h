@@ -21,7 +21,7 @@
 #define __D_ENGLSH__
 
 
-int8_t* getStringByIndex(int16_t stringindex, int8_t* returndata);
+void getStringByIndex(int16_t stringindex, int8_t* returndata);
 int16_t getStringLength(int16_t stringindex);
 //#define getStringByIndex(a) getStringByIndex(a, (char*) alloca(getStringLength(a)+1))
 #define getStringByIndexWithBuffer(a, b) getStringByIndex(a, (char*) alloca(b))

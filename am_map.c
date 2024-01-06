@@ -726,11 +726,11 @@ void AM_changeWindowScale(void)
     scale_ftom = FixedDivWholeA(FRACUNIT, scale_mtof);
 
     if (scale_mtof < min_scale_mtof)
-	AM_minOutWindowScale();
+		AM_minOutWindowScale();
     else if (scale_mtof > max_scale_mtof)
-	AM_maxOutWindowScale();
+		AM_maxOutWindowScale();
     else
-	AM_activateNewScale();
+		AM_activateNewScale();
 }
 
 
@@ -740,15 +740,13 @@ void AM_changeWindowScale(void)
 void AM_doFollowPlayer(void) {
 
 
-    if (f_oldloc.x != playerMobj_pos->x || f_oldloc.y != playerMobj_pos->y)
-    {
-	m_x = FTOM(MTOF(playerMobj_pos->x)) - m_w/2;
-	m_y = FTOM(MTOF(playerMobj_pos->y)) - m_h/2;
-	m_x2 = m_x + m_w;
-	m_y2 = m_y + m_h;
-	f_oldloc.x = playerMobj_pos->x;
-	f_oldloc.y = playerMobj_pos->y;
-
+    if (f_oldloc.x != playerMobj_pos->x || f_oldloc.y != playerMobj_pos->y) {
+		m_x = FTOM(MTOF(playerMobj_pos->x)) - m_w/2;
+		m_y = FTOM(MTOF(playerMobj_pos->y)) - m_h/2;
+		m_x2 = m_x + m_w;
+		m_y2 = m_y + m_h;
+		f_oldloc.x = playerMobj_pos->x;
+		f_oldloc.y = playerMobj_pos->y;
 
     }
 
@@ -762,21 +760,22 @@ void AM_doFollowPlayer(void) {
 void AM_Ticker (void)
 {
 
-    if (!automapactive)
-	return;
-
+	if (!automapactive) {
+		return;
+	}
     
-    if (followplayer)
-	AM_doFollowPlayer();
-
-    // Change the zoom if necessary
-    if (ftom_zoommul != FRACUNIT)
-	AM_changeWindowScale();
-
+	if (followplayer) {
+		AM_doFollowPlayer();
+	}
+    
+	// Change the zoom if necessary
+	if (ftom_zoommul != FRACUNIT) {
+		AM_changeWindowScale();
+	}
     // Change x,y location
-    if (m_paninc.x || m_paninc.y)
-	AM_changeWindowLoc();
-
+	if (m_paninc.x || m_paninc.y) {
+		AM_changeWindowLoc();
+	}
     // Update light level
     // AM_updateLightLev();
 

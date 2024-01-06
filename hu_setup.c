@@ -256,10 +256,12 @@ void HU_Start(void)
 	int16_t HU_INPUTY;
 	int16_t i;
 	hu_textline_t*	t;
-	
+	uint16_t			fontheight = 7;// might not work with custom wad?
+	uint16_t			lineheight = 8;//might not work with custom wad?
 
-	HU_TITLEY = (167 - (hu_font[0]->height));
-	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * ((hu_font[0]->height) + 1));
+
+	HU_TITLEY = (167 - fontheight);
+	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * lineheight);
 
 	message_on = false;
 	message_dontfuckwithme = false;
@@ -270,19 +272,18 @@ void HU_Start(void)
 
 
 
-	w_message.h = HU_MSGHEIGHT;
+	w_message.height = HU_MSGHEIGHT;
 	w_message.on = &message_on;
 	w_message.laston = true;
-	w_message.cl = 0;
+	w_message.currentline = 0;
 	for (i = 0; i < HU_MSGHEIGHT; i++) {
-		t = &w_message.l[i];
+		t = &w_message.textlines[i];
 		t->x = HU_MSGX;
-		t->y = HU_MSGY - i * ((hu_font[0]->height) + 1);
-		t->f = hu_font;
+		t->y = HU_MSGY - i * (lineheight);
 		t->sc = HU_FONTSTART;
 
 		t->len = 0;
-		t->l[0] = 0;
+		t->characters[0] = 0;
 		t->needsupdate = true;
 
 
@@ -294,34 +295,25 @@ void HU_Start(void)
 
 	w_title.x = HU_TITLEX;
 	w_title.y = HU_TITLEY;
-	w_title.f = hu_font;
 	w_title.sc = HU_FONTSTART;
 	w_title.len = 0;
-	w_title.l[0] = 0;
+	w_title.characters[0] = 0;
 	w_title.needsupdate = true;
 
 
-	if (commercial)
-	{
+	if (commercial) {
 #if (EXE_VERSION < EXE_VERSION_FINAL)
 		sindex = HU_TITLE2;
 #else
-		if (plutonia)
-		{
+		if (plutonia) {
 			sindex = HU_TITLEP;
-		}
-		else if (tnt)
-		{
+		} else if (tnt) {
 			sindex = HU_TITLET;
-		}
-		else
-		{
+		} else {
 			sindex = HU_TITLE2;
 		}
 #endif
-	}
-	else
-	{
+	} else {
 		sindex = HU_TITLE;
 	}
 
@@ -329,9 +321,9 @@ void HU_Start(void)
 
 	getStringByIndex(sindex, s);
 
-	while (*s)
+	while (*s) {
 		HUlib_addCharToTextLine(&w_title, *(s++));
-
+	}
 
 
 

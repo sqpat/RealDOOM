@@ -412,26 +412,22 @@ ST_Responder (event_t* ev)
       }
       
       // 'behold' power-up menu
-      if (cht_CheckCheat(&cheat_powerup[6], ev->data1))
-      {
+      if (cht_CheckCheat(&cheat_powerup[6], ev->data1)) {
 		  player.message = STSTR_BEHOLD;
-      }
-      // 'choppers' invulnerability & chainsaw
-      else if (cht_CheckCheat(&cheat_choppers, ev->data1))
-      {
+      } else if (cht_CheckCheat(&cheat_choppers, ev->data1)) {
+		  // 'choppers' invulnerability & chainsaw
 		  player.weaponowned[wp_chainsaw] = true;
 		  player.powers[pw_invulnerability] = true;
 		  player.message = STSTR_CHOPPERS;
-      }
-      // 'mypos' for player position
-      else if (cht_CheckCheat(&cheat_mypos, ev->data1))
-      {
-        static int8_t     buf[ST_MSGWIDTH];
+      } else if (cht_CheckCheat(&cheat_mypos, ev->data1)) {
+		  // 'mypos' for player position
+		  static int8_t     buf[ST_MSGWIDTH];
 		
 		sprintf(buf, "ang=0x%x;x,y=(0x%x,0x%x)",
                 playerMobj_pos->angle,
-			playerMobj_pos->x,
-			playerMobj_pos->y);
+				playerMobj_pos->x,
+				playerMobj_pos->y);
+		//memcpy(player.messagestring, buf, 40);
 		player.messagestring = buf;
       }
     }
@@ -514,34 +510,27 @@ void ST_updateFaceWidget(void)
     boolean     doevilgrin;
 	mobj_pos_t* plyrattacker_pos;
 
-    if (priority < 10)
-    {
+    if (priority < 10) {
         // dead
-        if (!player.health)
-        {
+        if (!player.health) {
             priority = 9;
             st_faceindex = ST_DEADFACE;
             st_facecount = 1;
         }
     }
 
-    if (priority < 9)
-    {
-        if (player.bonuscount)
-        {
+    if (priority < 9) {
+        if (player.bonuscount) {
             // picking up bonus
             doevilgrin = false;
 
-            for (i=0;i<NUMWEAPONS;i++)
-            {
-                if (oldweaponsowned[i] != player.weaponowned[i])
-                {
+            for (i=0;i<NUMWEAPONS;i++) {
+                if (oldweaponsowned[i] != player.weaponowned[i]) {
                     doevilgrin = true;
                     oldweaponsowned[i] = player.weaponowned[i];
                 }
             }
-            if (doevilgrin) 
-            {
+            if (doevilgrin)  {
                 // evil grin if just picked up weapon
                 priority = 8;
                 st_facecount = ST_EVILGRINCOUNT;
@@ -551,22 +540,17 @@ void ST_updateFaceWidget(void)
 
     }
   
-    if (priority < 8)
-    {
+    if (priority < 8) {
         if (player.damagecount
             && player.attackerRef
-            && player.attackerRef != playerMobjRef)
-        {
+            && player.attackerRef != playerMobjRef) {
             // being attacked
             priority = 7;
             
-            if (player.health - st_oldhealth > ST_MUCHPAIN)
-            {
+            if (player.health - st_oldhealth > ST_MUCHPAIN) {
                 st_facecount = ST_TURNCOUNT;
                 st_faceindex = ST_calcPainOffset() + ST_OUCHOFFSET;
-            }
-            else
-            {
+            } else {
 				 
 				plyrattacker_pos = &mobjposlist[player.attackerRef];
 				badguyangle.wu = R_PointToAngle2(playerMobj_pos->x,
@@ -574,8 +558,7 @@ void ST_updateFaceWidget(void)
                                               plyrattacker_pos->x,
                                               plyrattacker_pos->y);
                 
-                if (badguyangle.wu > playerMobj_pos->angle.wu)
-                {
+                if (badguyangle.wu > playerMobj_pos->angle.wu) {
 					//TODO optimize. Shouldnt need to do a 32 bit subtract to figure this out?
 
                     // whether right or left
@@ -591,18 +574,13 @@ void ST_updateFaceWidget(void)
                 st_facecount = ST_TURNCOUNT;
                 st_faceindex = ST_calcPainOffset();
                 
-                if (diffang.hu.intbits < ANG45_HIGHBITS)
-                {
+                if (diffang.hu.intbits < ANG45_HIGHBITS) {
                     // head-on    
                     st_faceindex += ST_RAMPAGEOFFSET;
-                }
-                else if (i)
-                {
+                } else if (i) {
                     // turn face right
                     st_faceindex += ST_TURNOFFSET;
-                }
-                else
-                {
+                } else {
                     // turn face left
                     st_faceindex += ST_TURNOFFSET+1;
                 }
@@ -610,19 +588,14 @@ void ST_updateFaceWidget(void)
         }
     }
   
-    if (priority < 7)
-    {
+    if (priority < 7) {
         // getting hurt because of your own damn stupidity
-        if (player.damagecount)
-        {
-            if (player.health - st_oldhealth > ST_MUCHPAIN)
-            {
+        if (player.damagecount) {
+            if (player.health - st_oldhealth > ST_MUCHPAIN) {
                 priority = 7;
                 st_facecount = ST_TURNCOUNT;
                 st_faceindex = ST_calcPainOffset() + ST_OUCHOFFSET;
-            }
-            else
-            {
+            } else {
                 priority = 6;
                 st_facecount = ST_TURNCOUNT;
                 st_faceindex = ST_calcPainOffset() + ST_RAMPAGEOFFSET;
@@ -632,32 +605,26 @@ void ST_updateFaceWidget(void)
 
     }
   
-    if (priority < 6)
-    {
+    if (priority < 6) {
         // rapid firing
-        if (player.attackdown)
-        {
-            if (lastattackdown==-1)
-                lastattackdown = ST_RAMPAGEDELAY;
-            else if (!--lastattackdown)
-            {
+        if (player.attackdown) {
+			if (lastattackdown == -1) {
+				lastattackdown = ST_RAMPAGEDELAY;
+			} else if (!--lastattackdown) {
                 priority = 5;
                 st_faceindex = ST_calcPainOffset() + ST_RAMPAGEOFFSET;
                 st_facecount = 1;
                 lastattackdown = 1;
             }
-        }
-        else
-            lastattackdown = -1;
-
+		} else {
+			lastattackdown = -1;
+		}
     }
   
-    if (priority < 5)
-    {
+    if (priority < 5) {
         // invulnerability
         if ((player.cheats & CF_GODMODE)
-            || player.powers[pw_invulnerability])
-        {
+            || player.powers[pw_invulnerability]) {
             priority = 4;
 
             st_faceindex = ST_GODFACE;
@@ -668,8 +635,7 @@ void ST_updateFaceWidget(void)
     }
 
     // look left or look right if the facecount has timed out
-    if (!st_facecount)
-    {
+    if (!st_facecount) {
         st_faceindex = ST_calcPainOffset() + (st_randomnumber % 3);
         st_facecount = ST_STRAIGHTFACECOUNT;
         priority = 0;

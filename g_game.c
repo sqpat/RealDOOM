@@ -449,7 +449,6 @@ boolean G_Responder (event_t* ev)
 } 
  
  
- 
 //
 // G_Ticker
 // Make ticcmd_ts for the players.
@@ -459,12 +458,10 @@ void G_Ticker (void)
 	int8_t         buf;
     ticcmd_t*   cmd;
     // do player reborns if needed
- 
-    // do things to change the game state
-    while (gameaction != ga_nothing) 
-    { 
-        switch (gameaction) 
-        { 
+
+	// do things to change the game state
+    while (gameaction != ga_nothing)  { 
+		switch (gameaction) { 
           /* Seemingly never used.
 		  case ga_loadlevel: 
             G_DoLoadLevel (); 
@@ -507,7 +504,7 @@ void G_Ticker (void)
 
 	if (demoplayback) {
 		G_ReadDemoTiccmd(cmd);
-		 
+
 
 	}
 	if (demorecording) {
@@ -515,55 +512,50 @@ void G_Ticker (void)
 	}
 
     // check for special buttons
-	if (player.cmd.buttons & BT_SPECIAL)
-	{
-		switch (player.cmd.buttons & BT_SPECIALMASK)
-		{
-		case BTS_PAUSE:
-			paused ^= 1;
-			if (paused)
-				S_PauseSound();
-			else
-				S_ResumeSound();
-			break;
+	if (player.cmd.buttons & BT_SPECIAL) {
+		switch (player.cmd.buttons & BT_SPECIALMASK) {
+			case BTS_PAUSE:
+				paused ^= 1;
+				if (paused) {
+					S_PauseSound();
+				} else {
+					S_ResumeSound();
+				}
+				break;
 
-		case BTS_SAVEGAME:
-//			if (!savedescription[0])
-//				strcpy(savedescription, "NET GAME");
-			savegameslot =
-				(player.cmd.buttons & BTS_SAVEMASK) >> BTS_SAVESHIFT;
-			gameaction = ga_savegame;
-			break;
+			case BTS_SAVEGAME:
+				savegameslot = (player.cmd.buttons & BTS_SAVEMASK) >> BTS_SAVESHIFT;
+				gameaction = ga_savegame;
+				break;
 		}
 	}
 
 
     // do main actions
-    switch (gamestate) 
-    { 
-	case GS_LEVEL:
+    switch (gamestate)  { 
+		case GS_LEVEL:
 
-		P_Ticker();
+			P_Ticker();
 
-		ST_Ticker();
-		AM_Ticker ();
-		HU_Ticker ();
-		break;
+			ST_Ticker();
+			AM_Ticker ();
+			HU_Ticker ();
+			break;
          
-      case GS_INTERMISSION: 
-        WI_Ticker (); 
-		break;
+		  case GS_INTERMISSION: 
+			WI_Ticker (); 
+			break;
                          
-      case GS_FINALE: 
-		  Z_QuickmapStatus();
-		  F_Ticker();
-		  Z_QuickmapPhysics();		
+		  case GS_FINALE: 
+			  Z_QuickmapStatus();
+			  F_Ticker();
+			  Z_QuickmapPhysics();		
 		  
-		break;
+			break;
  
-      case GS_DEMOSCREEN: 
-        D_PageTicker (); 
-		break;
+		  case GS_DEMOSCREEN: 
+			D_PageTicker (); 
+			break;
     }        
 
 } 
@@ -1170,15 +1162,24 @@ void G_TimeDemo (int8_t* name)
 */ 
 
 extern int16_t wipeduration;
+extern uint16_t physicstics, rendertics, othertics, rendersetuptics, renderplayerviewtics, renderpostplayerviewtics;
+extern uint16_t renderplayersetuptics, renderplayerbsptics, renderplayerplanetics, renderplayermaskedtics, cachedrenderplayertics;
+
 boolean G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
 	//byte* demobuffer;
 	byte* demo_addr;
 	if (timingdemo) {
 		endtime = ticcount;
- 
-        I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe) \n Task Switches: %li\n prnd index %i ",gametic 
-                 , endtime-starttime , endtime-starttime- wipeduration, wipeduration, taskswitchcount, prndindex);
+
+        I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe)\n Physics Tics %u\n Render Tics %u\n   Render Setup Tics %u\n   Render PlayerView Tics %u\n    Render InPlayerView Setup Tics %u\n    Render InPlayerView BSP Tics %u\n    Render InPlayerView Plane Tics %u\n    Render InPlayerView Masked Tics %u\n   Render Post PlayerView Tics %u\n Other Tics %u \n Task Switches: %li\n prnd index %i ",gametic 
+                 , endtime-starttime , endtime-starttime- wipeduration, wipeduration, 
+			physicstics, rendertics, rendersetuptics, renderplayerviewtics, 
+			renderplayersetuptics, renderplayerbsptics, renderplayerplanetics, renderplayermaskedtics,
+			
+			renderpostplayerviewtics, 
+			
+			othertics, taskswitchcount, prndindex);
     } 
          
     if (demoplayback)  { 

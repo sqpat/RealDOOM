@@ -174,7 +174,7 @@ int16_t getStringLength(int16_t stringindex) {
 	return  stringoffsets[stringindex + 1] - stringoffsets[stringindex];
 }
 
-int8_t* getStringByIndex(int16_t stringindex, int8_t* returndata) {
+void getStringByIndex(int16_t stringindex, int8_t* returndata) {
 
 	uint16_t stringoffset = stringoffsets[stringindex];
 	uint16_t length = getStringLength(stringindex);
@@ -198,7 +198,7 @@ int8_t* getStringByIndex(int16_t stringindex, int8_t* returndata) {
 	// add null terminator?
 	returndata[length] = '\0';
 
-	return returndata;
+	//return length;
 }
 
 
@@ -286,10 +286,6 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 	return FixedDiv2(a, b);
 }
 
-//
-// D_Display
-//  draw current display, possibly wiping it from the previous
-//
 
 extern patch_t* far M_GetMenuPatch(int16_t i);
 
@@ -302,6 +298,29 @@ extern  uint8_t             showMessages;
 void R_ExecuteSetViewSize (void);
 
 uint16_t                         wipeduration = 0;
+
+
+
+uint16_t rendertics = 0;
+uint16_t physicstics = 0;
+uint16_t othertics = 0;
+uint16_t cachedtics = 0;
+uint16_t cachedrendertics = 0;
+uint16_t rendersetuptics = 0;
+uint16_t renderplayerviewtics = 0;
+uint16_t renderpostplayerviewtics = 0;
+
+uint16_t renderplayersetuptics = 0;
+uint16_t renderplayerbsptics = 0;
+uint16_t renderplayerplanetics = 0;
+uint16_t renderplayermaskedtics = 0;
+uint16_t cachedrenderplayertics = 0;
+
+
+//
+// D_Display
+//  draw current display, possibly wiping it from the previous
+//
 void D_Display (void)
 {
     static  boolean             viewactivestate = false;
@@ -321,10 +340,9 @@ void D_Display (void)
     if (nodrawers)
         return;                    // for comparative timing / profiling
  
-
+	cachedrendertics = ticcount;
     redrawsbar = false;
     
-
 
     // change the view size if needed
     if (setsizeneeded)
@@ -342,7 +360,7 @@ void D_Display (void)
     } else{
         wipe = false;
     }
-	//wipe = false;
+	//wipe = false;  // uncomment to turn wipes off
 
 	
 	if (gamestate == GS_LEVEL && gametic) {
@@ -389,19 +407,19 @@ void D_Display (void)
 
 
 	    // draw buffered stuff to screen
-    I_UpdateNoBlit ();
- 	// draw the view directly
+    
+	
+	I_UpdateNoBlit (); // note: this accesses screen0 so it needs physics...
+	rendersetuptics += ticcount - cachedrendertics;
+	cachedrendertics = ticcount;
+	// draw the view directly
 	if (gamestate == GS_LEVEL && !automapactive && gametic) {
 		if (!inhelpscreens) {
-			if (stringdata[0x304] != 116) {
-				I_Error("bad data ab %li", gametic);
-			}
 			R_RenderPlayerView();
-			if (stringdata[0x304] != 116) {
-				I_Error("bad data cd %li", gametic);
-			}
- 		}
+		}
 	}
+	renderplayerviewtics += ticcount - cachedrendertics;
+	cachedrendertics = ticcount;
 
 	if (gamestate == GS_LEVEL && gametic) {
 		if (!inhelpscreens) {
@@ -459,6 +477,7 @@ void D_Display (void)
     if (!wipe)
     {
         I_FinishUpdate ();              // page flip or blit buffer
+		renderpostplayerviewtics += ticcount - cachedrendertics;
 		return;
     }
 
@@ -483,6 +502,31 @@ void D_Display (void)
 	wipeduration = ticcount - wiperealstart;
 }
  
+void logpos(int16_t j) {
+	//FILE *fp = fopen("debuglog.txt", "a");
+	//fprintf(fp, "%i\n", j);
+	//fclose(fp);
+}
+
+void checkstrings(int16_t j) {
+	//logpos(j);
+	
+	int16_t i = 0;
+	uint32_t adder = 0;
+
+	if (currenttask != TASK_PHYSICS) {
+		I_Error("Bad task here %i %i", currenttask, j);
+
+	}
+	for (i = 0; i < 16384; i++) {
+		adder += stringdata[i];
+	}
+	//I_Error("\n%lu", adder);
+	if (adder != 1279414) {
+		I_Error("Error here %li %i", gametic, j);
+	}
+
+}
 
 //
 //  D_DoomLoop
@@ -515,16 +559,19 @@ void D_DoomLoop (void)
     {
         // process one or more tics
         if (singletics) {
- 			I_StartTic ();
- 			D_ProcessEvents ();
- 			G_BuildTiccmd(maketic % BACKUPTICS);
- 			if (advancedemo) {
+			othertics += ticcount - cachedtics;
+			cachedtics = ticcount;
+			I_StartTic ();
+			D_ProcessEvents ();
+			G_BuildTiccmd(maketic % BACKUPTICS);
+			if (advancedemo) {
 				D_DoAdvanceDemo();
- 			}
+			}
 
 			M_Ticker ();
- 
+
 			G_Ticker ();
+			physicstics += ticcount - cachedtics;
 			gametic++;
             maketic++;
 
@@ -536,7 +583,10 @@ void D_DoomLoop (void)
 		S_UpdateSounds (playerMobjRef);// move positional sounds
  		// Update display, next frame, with current state.
 
+		cachedtics = ticcount;
 		D_Display ();
+		rendertics += ticcount - cachedtics;
+		cachedtics = ticcount;
 
    
 #ifdef DEBUGLOG_TO_FILE
@@ -692,5 +742,6 @@ void D_AdvanceDemo (void)
 
  void D_DoomMain(void) {
 	 D_DoomMain2();
+	 cachedtics = ticcount;
 	 D_DoomLoop();  // never returns
  }

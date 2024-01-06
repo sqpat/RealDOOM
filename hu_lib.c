@@ -22,39 +22,32 @@
 #include "v_video.h"
 
 #include "hu_lib.h"
+#include "hu_stuff.h"
 #include "r_local.h"
 #include "r_draw.h"
+#include "i_system.h"
 
 // boolean : whether the screen is always erased
 #define noterased viewwindowx
 
 extern boolean	automapactive;	// in AM_map.c
+extern patch_t*		hu_font[HU_FONTSIZE];
 
- 
 
-boolean
-HUlib_addCharToTextLine
-( hu_textline_t*	t,
-	int8_t			ch )
-{
+boolean HUlib_addCharToTextLine ( hu_textline_t* textline, int8_t ch ) {
 
-    if (t->len == HU_MAXLINELENGTH)
-	return false;
-    else
-    {
-	t->l[t->len++] = ch;
-	t->l[t->len] = 0;
-	t->needsupdate = 4;
-	return true;
+	if (textline->len == HU_MAXLINELENGTH) {
+		return false;
+	} else {
+		textline->characters[textline->len++] = ch;
+		textline->characters[textline->len] = 0;
+		textline->needsupdate = 4;
+		return true;
     }
 
 }
   
-void
-HUlib_drawTextLine
-( hu_textline_t*	l,
-  boolean		drawcursor )
-{
+void HUlib_drawTextLine ( hu_textline_t* textline) {
 
     int16_t			i;
     int16_t			w;
@@ -63,16 +56,16 @@ HUlib_drawTextLine
 	patch_t* currentpatch;
 
     // draw the new stuff
-    x = l->x;
-    for (i=0;i<l->len;i++) {
-		c = toupper(l->l[i]);
-		if (c != ' ' && c >= l->sc && c <= '_') {
-			currentpatch = (l->f[c - l->sc]);
+    x = textline->x;
+    for (i=0;i<textline->len;i++) {
+		c = toupper(textline->characters[i]);
+		if (c != ' ' && c >= textline->sc && c <= '_') {
+			currentpatch = (hu_font[c - textline->sc]);
 			w = (currentpatch->width);
 			if (x + w > SCREENWIDTH) {
 				break;
 			}
-			V_DrawPatchDirect(x, l->y,  currentpatch);
+			V_DrawPatchDirect(x, textline->y,  currentpatch);
 			x += w;
 		} else {
 			x += 4;
@@ -81,32 +74,23 @@ HUlib_drawTextLine
 			}
 		}
     }
-
-	currentpatch = (l->f['_' - l->sc]);
-    // draw the cursor if requested
-    if (drawcursor && x + (currentpatch->width) <= SCREENWIDTH) {
-		V_DrawPatchDirect(x, l->y, currentpatch);
-    }
+ 
 }
 
 
 // sorta called by HU_Erase and just better darn get things straight
-void HUlib_eraseTextLine(hu_textline_t* l)
-{
-    uint16_t			lh;
+void HUlib_eraseTextLine(hu_textline_t* textline) {
+    uint16_t			lineheight = 8; // hacked to reduce page swaps so it might not work with custom wad?
     uint16_t			y;
     uint16_t			yoffset;
     static boolean	lastautomapactive = true;
-	patch_t* currentpatch = l->f[0];
-
 
     // Only erases when NOT in automap and the screen is reduced,
     // and the text must either need updating or refreshing
     // (because of a recent change back from the automap)
 
-    if (!automapactive && viewwindowx && l->needsupdate) {
-		lh = (currentpatch->height) + 1;
-		for (y=l->y,yoffset=y*SCREENWIDTH ; y<l->y+lh ; y++,yoffset+=SCREENWIDTH) {
+    if (!automapactive && viewwindowx && textline->needsupdate) {
+		for (y=textline->y,yoffset=y*SCREENWIDTH ; y<textline->y+lineheight ; y++,yoffset+=SCREENWIDTH) {
 			if (y < viewwindowy || y >= viewwindowy + viewheight) {
 				R_VideoErase(yoffset, SCREENWIDTH); // erase entire line
 			}  else {
@@ -118,40 +102,37 @@ void HUlib_eraseTextLine(hu_textline_t* l)
     }
 
     lastautomapactive = automapactive;
-    if (l->needsupdate)
-		l->needsupdate--;
+	if (textline->needsupdate) {
+		textline->needsupdate--;
+	}
 
 }
- 
+extern hu_stext_t	w_message;
 
-void
-HUlib_addMessageToSText
-( hu_stext_t*	s,
-  int8_t*		prefix,
-  int8_t*		msg )
-{
 
+void HUlib_addMessageToSText (int8_t* msg ) {
+	hu_stext_t*	stext = &w_message;
 	int16_t i;
-	hu_textline_t* t;
+	hu_textline_t* textline;
 	// add a clear line
-	if (++s->cl == s->h)
-		s->cl = 0;
 
-	t = &s->l[s->cl];
-	t->len = 0;
-	t->l[0] = 0;
-	t->needsupdate = true;
+	if (++stext->currentline == stext->height) {
+		stext->currentline = 0;
+	}
+
+	textline = &stext->textlines[stext->currentline];
+	textline->len = 0;
+	textline->characters[0] = 0;
+	textline->needsupdate = true;
 
 	// everything needs updating
-	for (i = 0; i < s->h; i++)
-		s->l[i].needsupdate = 4;
-	
-	if (prefix)
-	while (*prefix)
-	    HUlib_addCharToTextLine(&s->l[s->cl], *(prefix++));
-
-    while (*msg)
-	HUlib_addCharToTextLine(&s->l[s->cl], *(msg++));
+	for (i = 0; i < stext->height; i++) {
+		stext->textlines[i].needsupdate = 4;
+	}
+	 
+	while (*msg) {
+		HUlib_addCharToTextLine(&stext->textlines[stext->currentline], *(msg++));
+	}
 }
 
  

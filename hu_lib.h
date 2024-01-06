@@ -45,9 +45,8 @@ typedef struct
     int16_t		x;
     int16_t		y;
     
-    patch_t**	f;			// font
     uint8_t		sc;			// start character
-	int8_t	l[HU_MAXLINELENGTH+1];	// line of text
+	int8_t		characters[HU_MAXLINELENGTH+1];	// line of text
     int16_t		len;		      	// current line length
 
     // whether this line needs to be udpated
@@ -61,9 +60,9 @@ typedef struct
 //  (child of Text Line widget)
 typedef struct
 {
-    hu_textline_t	l[HU_MAXLINES];	// text lines to draw
-    int8_t			h;		// height in lines
-    int8_t			cl;		// current line number
+    hu_textline_t	textlines[HU_MAXLINES];	// text lines to draw
+    int8_t			height;		// height in lines
+    int8_t			currentline;		// current line number
 
     // pointer to boolean stating whether to update window
     boolean*		on;
@@ -102,7 +101,7 @@ typedef struct
 boolean HUlib_addCharToTextLine(hu_textline_t *t, int8_t ch);
 
 // draws tline
-void	HUlib_drawTextLine(hu_textline_t *l, boolean drawcursor);
+void	HUlib_drawTextLine(hu_textline_t *l);
 
 // erases text line
 void	HUlib_eraseTextLine(hu_textline_t *l); 
@@ -114,11 +113,7 @@ void	HUlib_eraseTextLine(hu_textline_t *l);
 
  
 
-void
-HUlib_addMessageToSText
-( hu_stext_t*	s,
-  int8_t*		prefix,
-  int8_t*		msg );
+void HUlib_addMessageToSText( int8_t*		msg );
  
 
 // Input Text Line widget routines

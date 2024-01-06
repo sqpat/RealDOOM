@@ -58,33 +58,36 @@ extern boolean		automapactive;
 void HU_Drawer(void) {
 
 
-	hu_stext_t* s = &w_message;
-	int16_t i, idx;
-	hu_textline_t *l;
+	hu_stext_t* stext = &w_message;
+	int16_t i, index;
+	hu_textline_t *line;
 	boolean	mapped = false;
-	if (!*s->on)
+	
+	if (!*stext->on) {
 		return; // if not on, don't draw
+	}
 	
 	// draw everything
-	for (i = 0; i < s->h; i++) {
+	for (i = 0; i < stext->height; i++) {
 		if (!mapped) {
 			Z_QuickmapStatus();
 			mapped = true;
 		}
-		idx = s->cl - i;
-		if (idx < 0)
-			idx += s->h; // handle queue of lines
+		index = stext->currentline - i;
+		if (index < 0) {
+			index += stext->height; // handle queue of lines
+		}
 
-		l = &s->l[idx];
+		line = &stext->textlines[index];
 
 		// need a decision made here on whether to skip the draw
-		HUlib_drawTextLine(l, false); // no cursor, please
+		HUlib_drawTextLine(line); // no cursor, please
 	}
 
 	if (automapactive) {
 		Z_QuickmapStatus();
 		mapped = true;
-		HUlib_drawTextLine(&w_title, false);
+		HUlib_drawTextLine(&w_title);
 	}
 	
 	if (mapped) {
@@ -95,22 +98,19 @@ void HU_Drawer(void) {
 void HU_Erase(void)
 {
 	int16_t i;
-	Z_QuickmapStatus();
-
-	for (i = 0; i < w_message.h; i++) {
-		if (w_message.laston && !*w_message.on)
-			w_message.l[i].needsupdate = 4;
-		HUlib_eraseTextLine(&w_message.l[i]);
+	for (i = 0; i < w_message.height; i++) {
+		if (w_message.laston && !*w_message.on) {
+			w_message.textlines[i].needsupdate = 4;
+		}
+		HUlib_eraseTextLine(&(w_message.textlines[i]));
 	}
 	w_message.laston = *w_message.on;
 
     HUlib_eraseTextLine(&w_title);
-	Z_QuickmapPhysics();
 
 }
 
-void HU_Ticker(void)
-{
+void HU_Ticker(void) {
 
 	// tick down message counter if message is up
 	if (message_counter && !--message_counter) {
@@ -122,23 +122,24 @@ void HU_Ticker(void)
 
 		// display message if necessary
 		if (((player.messagestring || player.message != -1) && !message_nottobefuckedwith) || (player.message && message_dontfuckwithme)) {
-			int8_t temp[256];
-			Z_QuickmapStatus();
 
 			if (player.message != -1) {
-				 getStringByIndex(player.message, temp);
-				HUlib_addMessageToSText(&w_message, 0, temp);
+				int8_t tempstring[256];// = "TEST 123 TEST 456 TEST 789 TEST 000";
+				getStringByIndex(player.message, tempstring);
+				HUlib_addMessageToSText(tempstring);
 				player.message = -1;
 			} else {
-				HUlib_addMessageToSText(&w_message, 0, player.messagestring);
+				I_Error("dumb");
+				//todo i dont think we are actually handling this...
+				HUlib_addMessageToSText(player.messagestring);
 				player.messagestring = NULL;
+
 
 			}
 			message_on = true;
 			message_counter = HU_MSGTIMEOUT;
 			message_nottobefuckedwith = message_dontfuckwithme;
 			message_dontfuckwithme = 0;
-			Z_QuickmapPhysics();
 		}
 
 	} // else message_on = false;
