@@ -68,9 +68,11 @@ enum { VERSION =  109 };
 // Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off for performance, on for development
 //#define CHECKREFS
 
-// Probably going to remove this eventually, checks for some infinite loops in a few places. I used this when tracking down freezing bugs when there were many memory leaks early in development.
-//#define LOOPCHECK
+// skips fwipe (screen wipe)
+//#define SKIPWIPE
 
+// more detailed timedemo numbers
+//#define DETAILED_BENCH_STATS
 
 // Sets some viewpoitn calculations to 16 bit and less precision than 32 bit. not super obvious, but if you run against a wall up close the wall texture pixels will move less smoothly with the player bob for example
 #define USE_SHORTHEIGHT_VIEWZ	

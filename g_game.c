@@ -1162,8 +1162,11 @@ void G_TimeDemo (int8_t* name)
 */ 
 
 extern int16_t wipeduration;
+#ifdef DETAILED_BENCH_STATS
+
 extern uint16_t physicstics, rendertics, othertics, rendersetuptics, renderplayerviewtics, renderpostplayerviewtics;
 extern uint16_t renderplayersetuptics, renderplayerbsptics, renderplayerplanetics, renderplayermaskedtics, cachedrenderplayertics;
+#endif
 
 boolean G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
@@ -1171,6 +1174,8 @@ boolean G_CheckDemoStatus (void)  {
 	byte* demo_addr;
 	if (timingdemo) {
 		endtime = ticcount;
+
+#ifdef DETAILED_BENCH_STATS
 
         I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe)\n Physics Tics %u\n Render Tics %u\n   Render Setup Tics %u\n   Render PlayerView Tics %u\n    Render InPlayerView Setup Tics %u\n    Render InPlayerView BSP Tics %u\n    Render InPlayerView Plane Tics %u\n    Render InPlayerView Masked Tics %u\n   Render Post PlayerView Tics %u\n Other Tics %u \n Task Switches: %li\n prnd index %i ",gametic 
                  , endtime-starttime , endtime-starttime- wipeduration, wipeduration, 
@@ -1180,7 +1185,13 @@ boolean G_CheckDemoStatus (void)  {
 			renderpostplayerviewtics, 
 			
 			othertics, taskswitchcount, prndindex);
-    } 
+#else
+		I_Error("\ntimed %li gametics in %li realtics \n Task Switches: %li\n prnd index %i ", gametic
+			, endtime - starttime, taskswitchcount, prndindex);
+
+#endif
+
+	} 
          
     if (demoplayback)  { 
         if (singledemo) 

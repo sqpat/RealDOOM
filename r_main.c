@@ -659,12 +659,14 @@ void R_SetupFrame ()
 
 
 }
+#ifdef DETAILED_BENCH_STATS
 
 extern uint16_t renderplayersetuptics;
 extern uint16_t renderplayerbsptics;
 extern uint16_t renderplayerplanetics;
 extern uint16_t renderplayermaskedtics;
 extern uint16_t cachedrenderplayertics;
+#endif
 
 //
 // R_RenderView
@@ -672,7 +674,9 @@ extern uint16_t cachedrenderplayertics;
 void R_RenderPlayerView ()
 {	
 
+#ifdef DETAILED_BENCH_STATS
 	cachedrenderplayertics = ticcount;
+#endif
 
 	r_cachedplayerMobjsecnum = playerMobj->secnum;
 	viewx.w = playerMobj_pos->x;
@@ -700,28 +704,36 @@ void R_RenderPlayerView ()
     // check for new console commands.
 	NetUpdate ();
 
+#ifdef DETAILED_BENCH_STATS
 	renderplayersetuptics += ticcount - cachedrenderplayertics;
 	cachedrenderplayertics = ticcount;
+#endif
 
 	// The head node is the last node output.
 	R_RenderBSPNode ();
 
+#ifdef DETAILED_BENCH_STATS
 	renderplayerbsptics += ticcount - cachedrenderplayertics;
 	cachedrenderplayertics = ticcount;
+#endif
 
     // Check for new console commands.
     NetUpdate ();
 
     R_DrawPlanes ();
+#ifdef DETAILED_BENCH_STATS
 	renderplayerplanetics += ticcount - cachedrenderplayertics;
 	cachedrenderplayertics = ticcount;
+#endif
 
     // Check for new console commands.
     NetUpdate ();
 
     R_DrawMasked ();
+#ifdef DETAILED_BENCH_STATS
 	renderplayermaskedtics += ticcount - cachedrenderplayertics;
-	
+#endif
+
 	// Check for new console commands.
     NetUpdate ();	
 	Z_QuickmapPhysics();

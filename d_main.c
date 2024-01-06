@@ -300,7 +300,7 @@ void R_ExecuteSetViewSize (void);
 uint16_t                         wipeduration = 0;
 
 
-
+#ifdef DETAILED_BENCH_STATS
 uint16_t rendertics = 0;
 uint16_t physicstics = 0;
 uint16_t othertics = 0;
@@ -315,7 +315,7 @@ uint16_t renderplayerbsptics = 0;
 uint16_t renderplayerplanetics = 0;
 uint16_t renderplayermaskedtics = 0;
 uint16_t cachedrenderplayertics = 0;
-
+#endif
 
 //
 // D_Display
@@ -340,7 +340,9 @@ void D_Display (void)
     if (nodrawers)
         return;                    // for comparative timing / profiling
  
+#ifdef DETAILED_BENCH_STATS
 	cachedrendertics = ticcount;
+#endif
     redrawsbar = false;
     
 
@@ -352,6 +354,8 @@ void D_Display (void)
         borderdrawcount = 3;
     }
 
+#ifndef SKIPWIPE
+
     // save the current screen if about to wipe
     if (gamestate != wipegamestate)
     {
@@ -360,9 +364,11 @@ void D_Display (void)
     } else{
         wipe = false;
     }
-	//wipe = false;  // uncomment to turn wipes off
 
-	
+#else
+	wipe = false;  // turn wipes off
+#endif
+
 	if (gamestate == GS_LEVEL && gametic) {
 		HU_Erase();
  	}
@@ -410,16 +416,21 @@ void D_Display (void)
     
 	
 	I_UpdateNoBlit (); // note: this accesses screen0 so it needs physics...
+#ifdef DETAILED_BENCH_STATS
 	rendersetuptics += ticcount - cachedrendertics;
 	cachedrendertics = ticcount;
+#endif
+
 	// draw the view directly
 	if (gamestate == GS_LEVEL && !automapactive && gametic) {
 		if (!inhelpscreens) {
 			R_RenderPlayerView();
 		}
 	}
+#ifdef DETAILED_BENCH_STATS
 	renderplayerviewtics += ticcount - cachedrendertics;
 	cachedrendertics = ticcount;
+#endif
 
 	if (gamestate == GS_LEVEL && gametic) {
 		if (!inhelpscreens) {
@@ -477,7 +488,9 @@ void D_Display (void)
     if (!wipe)
     {
         I_FinishUpdate ();              // page flip or blit buffer
+#ifdef DETAILED_BENCH_STATS
 		renderpostplayerviewtics += ticcount - cachedrendertics;
+#endif
 		return;
     }
 
@@ -559,8 +572,10 @@ void D_DoomLoop (void)
     {
         // process one or more tics
         if (singletics) {
+#ifdef DETAILED_BENCH_STATS
 			othertics += ticcount - cachedtics;
 			cachedtics = ticcount;
+#endif
 			I_StartTic ();
 			D_ProcessEvents ();
 			G_BuildTiccmd(maketic % BACKUPTICS);
@@ -571,7 +586,9 @@ void D_DoomLoop (void)
 			M_Ticker ();
 
 			G_Ticker ();
+#ifdef DETAILED_BENCH_STATS
 			physicstics += ticcount - cachedtics;
+#endif
 			gametic++;
             maketic++;
 
@@ -583,10 +600,14 @@ void D_DoomLoop (void)
 		S_UpdateSounds (playerMobjRef);// move positional sounds
  		// Update display, next frame, with current state.
 
+#ifdef DETAILED_BENCH_STATS
 		cachedtics = ticcount;
+#endif
 		D_Display ();
+#ifdef DETAILED_BENCH_STATS
 		rendertics += ticcount - cachedtics;
 		cachedtics = ticcount;
+#endif
 
    
 #ifdef DEBUGLOG_TO_FILE
@@ -742,6 +763,8 @@ void D_AdvanceDemo (void)
 
  void D_DoomMain(void) {
 	 D_DoomMain2();
+#ifdef DETAILED_BENCH_STATS
 	 cachedtics = ticcount;
+#endif
 	 D_DoomLoop();  // never returns
  }
