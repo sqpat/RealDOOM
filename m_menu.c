@@ -1007,7 +1007,7 @@ void M_Episode(int16_t choice)
 // M_Options
 //
 int8_t    detailNames[2]       = {33, 34};
-int8_t    msgNames[2]          = {16, 14};
+int8_t    msgNames[2]          = {15, 14};
 
 
 void M_DrawOptions(void)

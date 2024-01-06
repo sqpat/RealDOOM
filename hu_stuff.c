@@ -129,12 +129,8 @@ void HU_Ticker(void) {
 				HUlib_addMessageToSText(tempstring);
 				player.message = -1;
 			} else {
-				I_Error("dumb");
-				//todo i dont think we are actually handling this...
 				HUlib_addMessageToSText(player.messagestring);
 				player.messagestring = NULL;
-
-
 			}
 			message_on = true;
 			message_counter = HU_MSGTIMEOUT;
