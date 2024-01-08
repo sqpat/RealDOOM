@@ -570,13 +570,6 @@ void Z_QuickmapByTaskNum(int8_t tasknum) {
 		case TASK_MENU:
 			Z_QuickmapMenu();
 			break;
-
-/*
-		case Z_QuickmapRender7000to6000:
-			TASK_RENDER7000TO6000(); // technically probably buggy but probably unused
-			break;
-
-			*/
 		default:
 			I_Error("bad tasknum %hhi", tasknum);
 	}

@@ -647,16 +647,9 @@ void ST_updateFaceWidget(void)
 
 void ST_updateWidgets(void)
 {
-	//static int16_t largeammo = 1994; // means "n/a"
 	int8_t i;
 
-	/*
-	if (weaponinfo[player.readyweapon].ammo == am_noammo)
-		w_ready.num = &largeammo;
-	else
-		w_ready.num = &player.ammo[weaponinfo[player.readyweapon].ammo];
-		*/
-
+ 
 	// update keycard multiple widgets
 	for (i = 0; i < 3; i++)
 	{
@@ -729,8 +722,8 @@ void ST_doPaletteStuff(void)
 
     if (palette != st_palette)
     {
-        st_palette = palette;
-        I_SetPalette (palette);
+		st_palette = palette;
+		I_SetPalette (palette);
     }
 
 }
@@ -746,7 +739,7 @@ void ST_drawWidgets(boolean refresh)
 			STlib_drawNum(&w_ammo[i], refresh, player.ammo[i]);
 			STlib_drawNum(&w_maxammo[i], refresh, player.maxammo[i]);
 		}
-		
+
 		STlib_drawNum(&w_ready, refresh, player.ammo[weaponinfo[player.readyweapon].ammo]);
 
 		STlib_updatePercent(&w_health, refresh, player.health);
@@ -764,7 +757,7 @@ void ST_drawWidgets(boolean refresh)
 		}
 	}
 }
- 
+
 void ST_Drawer(boolean fullscreen, boolean refresh)
 {
 	st_statusbaron = (!fullscreen) || automapactive;
@@ -784,14 +777,14 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 
 		// and refresh all widgets
 		ST_drawWidgets(true);
-	}
-	else {
+	} else {
 		// Otherwise, update as little as possible
 		ST_drawWidgets(false);
 	}
-	
-	if (updatedthisframe)
+
+	if (updatedthisframe) {
 		Z_QuickmapPhysics();
+	}
 }
 
 

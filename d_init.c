@@ -63,7 +63,7 @@
 
 
 
-#define MAX_STRINGS 300
+#define MAX_STRINGS 306
 
 extern uint16_t stringoffsets[MAX_STRINGS];
 extern uint16_t stringbuffersize;

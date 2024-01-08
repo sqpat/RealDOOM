@@ -258,10 +258,10 @@ void I_SetPalette(int8_t paletteNumber) {
     if(novideo) {
         return;
     }
-	
-	Z_QuickmapPalette();
+
 	I_WaitVBL(1);
-	
+	Z_QuickmapPalette();
+
 	_outbyte(PEL_WRITE_ADR, 0);
 	gammatablelookup = (gammatable + usegamma*256);
 
