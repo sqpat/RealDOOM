@@ -58,46 +58,46 @@ file d_math.obj
 
 
 #these files put in overlay 
-#file i_main.obj
-#file f_finale.obj
-#file p_saveg.obj
-#file p_setup.obj
-#file f_wipe.obj
-#file am_map.obj
-#file d_init.obj
-#file w_init.obj
-#file i_init.obj
-#file st_init.obj
-#file p_init.obj
-#file r_init.obj
-#file wi_stuff.obj
-#file z_init.obj
-#file z_umb.obj
-#file i_quit.obj
-#file st_setup.obj
-#file hu_setup.obj
-#file g_setup.obj
-#file r_setup.obj
-#file v_extra.obj
+file i_main.obj
+file f_finale.obj
+file p_saveg.obj
+file p_setup.obj
+file f_wipe.obj
+file am_map.obj
+file d_init.obj
+file w_init.obj
+file i_init.obj
+file st_init.obj
+file p_init.obj
+file r_init.obj
+file wi_stuff.obj
+file z_init.obj
+file z_umb.obj
+file i_quit.obj
+file st_setup.obj
+file hu_setup.obj
+file g_setup.obj
+file r_setup.obj
+file v_extra.obj
 
 # # begin overlay area
-begin
+#begin
 
 #	postgame and intermission code
-section file f_finale.obj, i_quit.obj, v_extra.obj
+#section file f_finale.obj, i_quit.obj, v_extra.obj
 #	intermission code
-section file w_init.obj, wi_stuff.obj
+#section file w_init.obj, wi_stuff.obj
 #	more game init code
-section file d_init.obj, i_init.obj, i_main.obj, f_wipe.obj
+#section file d_init.obj, i_init.obj, i_main.obj, f_wipe.obj
 #   zone stuff
-section file z_umb.obj, z_init.obj
+#section file z_umb.obj, z_init.obj
 #	level/game setup. KEEP THESE TWO TOGETHER to reduce thrashing
-section file p_setup.obj, g_setup.obj
+#section file p_setup.obj, g_setup.obj
 #	level/game setup
-section file r_init.obj, r_setup.obj
+#section file r_init.obj, r_setup.obj
 #	ems and umb initialization, savegames, wad init, level/game setup
-section file st_setup.obj, hu_setup.obj, st_init.obj, p_saveg.obj, p_init.obj
+#section file st_setup.obj, hu_setup.obj, st_init.obj, p_saveg.obj, p_init.obj
 #	ingame
-section file am_map.obj
+#section file am_map.obj
 
-end
+#end

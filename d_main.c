@@ -97,7 +97,6 @@ int8_t             startepisode;
 int8_t             startmap;
 boolean         autostart;
 
-FILE*           debugfile;
 
 boolean         advancedemo;
 
@@ -156,12 +155,12 @@ void D_ProcessEvents (void)
     event_t*     ev;
 	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
 		ev = &events[eventtail];
-		if (M_Responder(ev)) {  
-			continue;           
+		if (M_Responder(ev)) {
+			continue;
 		}
 
 		G_Responder (ev);
-    }
+	}
 }
 
 #define MAX_STRINGS 306
@@ -326,7 +325,6 @@ uint16_t cachedrenderplayertics = 0;
 // D_Display
 //  draw current display, possibly wiping it from the previous
 //
-extern void logpos(int16_t j);
 
 void D_Display (void)
 {
@@ -344,14 +342,14 @@ void D_Display (void)
     boolean                     redrawsbar;
 	boolean						done = false;
 
-    if (nodrawers)
+	if (nodrawers)
         return;                    // for comparative timing / profiling
  
 #ifdef DETAILED_BENCH_STATS
 	cachedrendertics = ticcount;
 #endif
     redrawsbar = false;
-    
+
 
     // change the view size if needed
     if (setsizeneeded)
@@ -375,11 +373,9 @@ void D_Display (void)
 #else
 	wipe = false;  // turn wipes off
 #endif
-	//logpos(1);
 	if (gamestate == GS_LEVEL && gametic) {
 		HU_Erase();
  	}
-	//logpos(2);
 
     // do buffered drawing
     switch (gamestate)
@@ -418,7 +414,6 @@ void D_Display (void)
         D_PageDrawer ();
  		break;
     }
-	//logpos(3);
 
 
 	    // draw buffered stuff to screen
@@ -436,7 +431,6 @@ void D_Display (void)
 			R_RenderPlayerView();
 		}
 	}
-	//logpos(4);
 
 #ifdef DETAILED_BENCH_STATS
 	renderplayerviewtics += ticcount - cachedrendertics;
@@ -448,13 +442,11 @@ void D_Display (void)
 			HU_Drawer();
 		}
  	}
-	//logpos(5);
 
     // clean up border stuff
 	if (gamestate != oldgamestate && gamestate != GS_LEVEL) {
 		I_SetPalette(0);
 	}
-	//logpos(6);
 
     // see if the border needs to be initially drawn
     if (gamestate == GS_LEVEL && oldgamestate != GS_LEVEL) {
@@ -494,7 +486,6 @@ void D_Display (void)
 
     // menus go directly to the screen
 	M_Drawer ();          // menu is drawn even on top of everything
-	//logpos(7);
 
 	NetUpdate ();         // send out any new accumulation
 
@@ -528,9 +519,7 @@ void D_Display (void)
     } while (!done);
 	wipeduration = ticcount - wiperealstart;
 }
-/*
 void checkstrings(int16_t j) {
-	//logpos(j);
 
 	int16_t i = 0;
 	uint32_t adder = 0;
@@ -556,28 +545,7 @@ void checkstrings(int16_t j) {
 		I_Error("bad stringoffsets! %li %i %li", gametic, j, adder);
 	}
 }
-void logpos(int16_t j){
-	
-	FILE *fp;
-	if ((gametic % 500) == 0) {
-		fp = fopen("debuglog.txt", "w");
-		fprintf(fp, "%li %i\n", gametic, j);
-		fclose(fp);
-	} else {
-		fp = fopen("debuglog.txt", "a");
-		fprintf(fp, "%li %i\n", gametic, j);
-		fclose(fp);
-	}
-	if (gametic == 3775 && j == 777) {
-		//setval = 1;
-	}
-	if (gametic == 3775 && j == 888) {
-		//I_Error("blah");
-	}
-	//checkstrings(j);
-	
-}
-*/
+ 
 
 //
 //  D_DoomLoop
@@ -608,7 +576,7 @@ void D_DoomLoop (void)
 
     while (1)
     {
-        // process one or more tics
+		// process one or more tics
         if (singletics) {
 #ifdef DETAILED_BENCH_STATS
 			othertics += ticcount - cachedtics;
@@ -622,18 +590,16 @@ void D_DoomLoop (void)
 			}
 			
 			M_Ticker ();
-			
+
 			G_Ticker ();
-			
+
 #ifdef DETAILED_BENCH_STATS
 			physicstics += ticcount - cachedtics;
 #endif
 			gametic++;
             maketic++;
 
-		}
-        else
-        {
+		} else {
             TryRunTics (); // will run at least one tic
         }
 		S_UpdateSounds (playerMobjRef);// move positional sounds
@@ -642,9 +608,7 @@ void D_DoomLoop (void)
 #ifdef DETAILED_BENCH_STATS
 		cachedtics = ticcount;
 #endif
-		//logpos(0);
 		D_Display ();
-		//logpos(9);
 #ifdef DETAILED_BENCH_STATS
 		rendertics += ticcount - cachedtics;
 		cachedtics = ticcount;
