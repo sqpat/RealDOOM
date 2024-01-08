@@ -376,8 +376,7 @@ int tempcounter = 0;
 
 extern int16_t pageswapargs_textcache[8];
 extern uint8_t firstunusedflat;
-extern int16_t activetexturepages[4];
-//
+ //
 // R_DrawPlanes
 // At the end of each frame.
 //

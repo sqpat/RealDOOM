@@ -651,6 +651,7 @@ void R_SetupFrame ()
 	destview = (byte*)(destscreen.w + viewwindowoffset);
 
 	for (i = 0; i < 4; i++) {
+		//todo dont reset this per frame? keep last frame's cache?
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		textureLRU[i] = i;
 		pageswapargs_textcache[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;

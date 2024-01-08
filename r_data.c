@@ -86,6 +86,7 @@ lighttable_t    *colormaps;
 extern int16_t pageswapargs_textcache[8];
 
 int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
+uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
 int16_t textureLRU[4];
 
 uint8_t* usedcompositetexturepagemem; // defaults 00
@@ -533,7 +534,6 @@ void R_GenerateComposite(uint8_t texnum, byte* block)
 
 }
 uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
-//int8_t gettexturepage(uint8_t pagenum, uint8_t numpages) {
 	uint8_t pagenum = pageoffset + (texpage >> 2);
 	uint8_t numpages = (texpage& 0x03);
  	int16_t bestpage = -1;
@@ -580,9 +580,22 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 		textureLRU[2]++;
 		textureLRU[3]++;
 		textureLRU[startpage] = 0;
-		
+
+		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
+		if (activenumpages[startpage]) {
+			for (i = 1; i <= activenumpages[startpage]; i++) {
+				activetexturepages[startpage+i] = pageswapargs_textcache[2 * (startpage+i)] = -1; // unpaged
+				activenumpages[startpage+i] = 0;
+			}
+		}
+		activenumpages[startpage] = 0;
+
 
 		activetexturepages[startpage] = pageswapargs_textcache[2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
+		
+
+
+
 		Z_QuickmapRenderTexture();
 
 		//Z_QuickmapRenderTexture(startpage, 1);
@@ -651,9 +664,23 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 		// startpage is the ems page withing the 0x4000 block
 		// pagenum is the EMS page offset within EMS texture pages
 
+
+
+		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
+		if (activenumpages[startpage] > numpages) {
+			for (i = 1; i <= activenumpages[startpage]; i++) {
+				activetexturepages[startpage + i] = pageswapargs_textcache[2 * (startpage + i)] = -1; // unpaged
+				activenumpages[startpage + i] = 0;
+			}
+		}
+
+
+
 		for (i = 0; i <= numpages; i++) {
 			textureLRU[startpage + i] = 0;
 			activetexturepages[startpage + i] =  pageswapargs_textcache[2 * (startpage + i)] = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;
+			activenumpages[startpage + i] = numpages-i;
+
 		}
 
 		Z_QuickmapRenderTexture();

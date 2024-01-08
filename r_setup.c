@@ -291,8 +291,7 @@ extern uint8_t firstunusedflat;
 extern int32_t totalpatchsize;
  
 extern int8_t textureLRU[4];
-extern int16_t activetexturepages[4];
-extern byte*	 spritedefs_bytes;
+ extern byte*	 spritedefs_bytes;
 
 extern byte* getcompositetexture(int16_t tex_index);
 extern byte* getpatchtexture(int16_t lump);

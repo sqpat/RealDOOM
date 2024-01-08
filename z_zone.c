@@ -78,6 +78,7 @@ extern int32_t totalpatchsize;
 extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
 extern int16_t textureLRU[4];
 extern int16_t pageswapargs_textcache[8];
+extern uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
 
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
 void Z_FreeConventionalAllocations() {
@@ -127,6 +128,7 @@ void Z_FreeConventionalAllocations() {
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		textureLRU[i] = i;
 		pageswapargs_textcache[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		activenumpages[i] = 0;
 	}
 
 }
