@@ -1377,7 +1377,6 @@ boolean	PTR_UseTraverse (intercept_t* in)
 {
     int16_t		side;
 
-	line_t* line = &lines[in->d.linenum];
 	line_physics_t* line_physics = &lines_physics[in->d.linenum];
 
 	if (!line_physics->special) {

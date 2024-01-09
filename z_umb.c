@@ -101,7 +101,8 @@ parm [  ] modify exact [ ax dx bx ];
 void Z_InitUMBDOS(void) {
 
 	uint16_t previousstrategy = 0;
-	uint16_t locreg, resultreg, sizereg, umblinkstate;
+	//uint16_t resultreg;
+	uint16_t sizereg, umblinkstate;
 
 
 	// GET UMB LINK STATE

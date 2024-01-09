@@ -399,8 +399,6 @@ void P_LoadLineOpening(int16_t linenum) {
 void P_UpdateLineOpening(int16_t secnum, boolean changedFloor) {
 	int16_t max = sectors[secnum].linecount;
 	int16_t i;
-	sector_t* front;
-	sector_t* back;
 
 #ifdef CHECK_FOR_ERRORS
 	if (secnum > numsectors || secnum < 0) {

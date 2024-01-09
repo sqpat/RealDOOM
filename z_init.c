@@ -239,39 +239,8 @@ int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824,
 						844, 836, 844, 908, 984, 844, 816, 824, 
 						808, 836 };
 
+ 
 
-#define PAGE_9000 pagenum9000 + 0
-#define PAGE_9400 pagenum9000 + 1
-#define PAGE_9800 pagenum9000 + 2
-#define PAGE_9C00 pagenum9000 + 3
-
-#define PAGE_8000 pagenum9000 - 4
-#define PAGE_8400 pagenum9000 - 3
-#define PAGE_8800 pagenum9000 - 2
-#define PAGE_8C00 pagenum9000 - 1
-
-#define PAGE_7000 pagenum9000 - 8
-#define PAGE_7400 pagenum9000 - 7
-#define PAGE_7800 pagenum9000 - 6
-#define PAGE_7C00 pagenum9000 - 5
-
-#define PAGE_6000 pagenum9000 - 12
-#define PAGE_6400 pagenum9000 - 11
-#define PAGE_6800 pagenum9000 - 10
-#define PAGE_6C00 pagenum9000 - 9
-
-#define PAGE_5000 pagenum9000 - 16
-#define PAGE_5400 pagenum9000 - 15
-#define PAGE_5800 pagenum9000 - 14
-#define PAGE_5C00 pagenum9000 - 13
-
-#define PAGE_4000 pagenum9000 - 20
-#define PAGE_4400 pagenum9000 - 19
-#define PAGE_4800 pagenum9000 - 18
-#define PAGE_4C00 pagenum9000 - 17
-
-
-int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17};
 
 extern  uint16_t		DEMO_SEGMENT;
 
@@ -280,6 +249,7 @@ void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
 	int16_t* far pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
+	int16_t index;
 
 	/*
 	FILE *fp;
@@ -393,107 +363,54 @@ found:
 	// 0x4000 block						textures
 
 
-	
-	for (i = 0; i < 20; i++) {
-		pageswapargs_phys[i * 2] = i;
-		pageswapargs_rend[i * 2] = 20 + i;
-		pageswapargs_phys[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
-		pageswapargs_rend[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
-	}
-
- 
-
-	// overwrite some fields
-	pageswapargs_rend[32] = FIRST_TRIG_TABLE_LOGICAL_PAGE;    // 0x5000 trig stuff shared with physics (finesine/cos)
-	pageswapargs_rend[34] = FIRST_TRIG_TABLE_LOGICAL_PAGE + 1;// 0x5400 trig stuff shared with physics (finesine/cos)
-	pageswapargs_rend[36] = FIRST_TRIG_TABLE_LOGICAL_PAGE + 2;// 0x5800 trig stuff shared with physics (finesine/cos, finetan)
-	pageswapargs_rend[38] = FIRST_TRIG_TABLE_LOGICAL_PAGE + 3;// 0x5c00 trig stuff shared with physics (tantoangle) 
-
-	// overwrite some more fields (todo move to the for loop below)
-	//pageswapargs_rend[24] = TEXTURE_INFO_LOGICAL_PAGE;    // 0x6000 texture info stuff
-	//pageswapargs_rend[26] = TEXTURE_INFO_LOGICAL_PAGE + 1;// 0x6400 texture info stuff
-	//pageswapargs_rend[28] = TEXTURE_INFO_LOGICAL_PAGE + 2;// 0x6800 texture info stuff
-	//pageswapargs_rend[30] = TEXTURE_INFO_LOGICAL_PAGE + 3;// 0x6c00 texture info stuff also zlight table
-
-
-
-	for (i = 20; i < 24; i++) {
-		pageswapargs_rend[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + (i - 20);
-		pageswapargs_rend[i * 2 + 1] = PAGE_4000 + (i - 20);
-	}
-
-	for (i = 1; i < 5; i++) {
-		pageswapargs_stat[i * 2] = FIRST_STATUS_LOGICAL_PAGE + (i-1);
-		pageswapargs_stat[i * 2 + 1] = PAGE_7000 + (i-1);
-	}
-
-	pageswapargs_stat[0] = SCREEN4_LOGICAL_PAGE;
-	pageswapargs_stat[1] = PAGE_9C00;
-	pageswapargs_stat[10] = STRINGS_LOGICAL_PAGE;
-	pageswapargs_stat[11] = PAGE_6000; // strings;
-	 
-
  
 
 	for (i = 0; i < 4; i++) {
-		pageswapargs_demo[i * 2] = FIRST_DEMO_LOGICAL_PAGE + i;
-		pageswapargs_demo[i * 2 + 1] = PAGE_5000 + i;
+		index = i * 2 + 1;
+		pageswapargs_phys[0 + index] += pagenum9000;
+		pageswapargs_phys[8 + index] += pagenum9000;
+		pageswapargs_phys[16+ index] += pagenum9000;
+		pageswapargs_phys[24+ index] += pagenum9000;
+		pageswapargs_phys[32+ index] += pagenum9000;
 
-		pageswapargs_textcache[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
-		pageswapargs_textcache[i * 2 + 1] = PAGE_4000 + i;
+		pageswapargs_rend[0+ index]  += pagenum9000;
+		pageswapargs_rend[8+ index]  += pagenum9000;
+		pageswapargs_rend[16+ index] += pagenum9000;
+		pageswapargs_rend[24+ index] += pagenum9000;
+		pageswapargs_rend[32+ index] += pagenum9000;
+		pageswapargs_rend[40+ index] += pagenum9000;
 		
-		pageswapargs_textinfo[i * 2] = TEXTURE_INFO_LOGICAL_PAGE + i;
-		pageswapargs_textinfo[i * 2 + 1] = PAGE_6000 + i;
+		pageswapargs_stat[index]	 += pagenum9000;
+		pageswapargs_demo[index]	 += pagenum9000;
 
-		pageswapargs_scratch_5000[i * 2] = FIRST_SCRATCH_LOGICAL_PAGE + i;
-		pageswapargs_scratch_5000[i * 2 + 1] = PAGE_5000 + i;
+		pageswapargs_textcache[index]+= pagenum9000;
+		pageswapargs_textinfo[index] += pagenum9000;
 
-		pageswapargs_scratch_4000[i * 2] = FIRST_SCRATCH_LOGICAL_PAGE + i;
-		pageswapargs_scratch_4000[i * 2 + 1] = PAGE_4000 + i;
+		pageswapargs_scratch_5000[index] += pagenum9000;
+		pageswapargs_scratch_4000[index] += pagenum9000;
 
-		pageswapargs_scratch_stack[i * 2] = FIRST_SCRATCH_LOGICAL_PAGE + i;
-		pageswapargs_scratch_stack[i * 2 + 1] = PAGE_5000 + i; // 0x5000 area
-		
-		pageswapargs_scratch_stack[8 + i * 2] = FIRST_TRIG_TABLE_LOGICAL_PAGE + i;		// stack on scratch frame will always be trig pages etc..
-		pageswapargs_scratch_stack[8 + i * 2 + 1] = PAGE_5000 + i; // 0x5000 area
+		pageswapargs_scratch_stack[index] += pagenum9000;
+		pageswapargs_scratch_stack[8 + index] += pagenum9000;
 
-		pageswapargs_flat[i * 2] = FIRST_FLAT_CACHE_LOGICAL_PAGE + i;
-		pageswapargs_flat[i * 2 + 1] = PAGE_5C00 + i;
+		pageswapargs_flat[index] += pagenum9000;
+		pageswapargs_palette[index] += pagenum9000;
 
-		pageswapargs_palette[i * 2] = SCREEN0_LOGICAL_PAGE + i;
-		pageswapargs_palette[i * 2 + 1] = PAGE_8000 + i;
+		pageswapargs_rend_temp_7000_to_6000[index] += pagenum9000;
+		pageswapargs_menu[index] += pagenum9000;
+		pageswapargs_menu[8 + index] += pagenum9000;
+		pageswapargs_wipe[0 + (index)] += pagenum9000;
+		pageswapargs_wipe[8 + (index)] += pagenum9000;
+		pageswapargs_wipe[16 + (index)] += pagenum9000;
+
 
 	}
-	pageswapargs_palette[8] = PALETTE_LOGICAL_PAGE + i;
-	pageswapargs_palette[9] = PAGE_9000;
-
+	pageswapargs_wipe[25] += pagenum9000;
+	pageswapargs_stat[9] += pagenum9000;
+	pageswapargs_stat[11] += pagenum9000;
+	pageswapargs_palette[9] += pagenum9000;
 	DEMO_SEGMENT = 0x5000u;
 
-	for (i = 0; i < 4; i++) {
-		pageswapargs_rend_temp_7000_to_6000[i * 2] = 28 + i;
-		pageswapargs_rend_temp_7000_to_6000[i * 2 + 1] = PAGE_6000 + i;
- 	}
-
-	for (i = 0; i < 8; i++) {
-		pageswapargs_menu[i * 2]     = FIRST_MENU_GRAPHICS_LOGICAL_PAGE + i - (i > 4 ? 1 : 0);
-		pageswapargs_menu[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i+8];
- 	}
-
-	pageswapargs_menu[8]  = STRINGS_LOGICAL_PAGE;
-
-	pageswapargs_wipe[0] = FIRST_WIPE_LOGICAL_PAGE;
-	pageswapargs_wipe[1] = PAGE_9000;
-
-	for (i = 0; i < 4; i++) {
-		pageswapargs_wipe[2 + (i * 2)] = SCREEN0_LOGICAL_PAGE + i;
-		pageswapargs_wipe[2 + (i * 2 + 1)] = PAGE_8000 + i;
-		pageswapargs_wipe[10 + (i * 2)] = SCREEN2_LOGICAL_PAGE + i;
-		pageswapargs_wipe[10 + (i * 2 + 1)] = PAGE_7000 + i;
-		pageswapargs_wipe[18 + (i * 2)] = SCREEN3_LOGICAL_PAGE + i;
-		pageswapargs_wipe[18 + (i * 2 + 1)] = PAGE_6000 + i;
-
-	}
-
+	 
 
 
 	Z_QuickmapPhysics(); // map default page map
@@ -815,8 +732,6 @@ void Z_LinkEMSVariables() {
 
 void Z_LoadBinaries() {
 	FILE* fp;
-	int32_t checksummer = 0;
-	int16_t i = 0;
 	// currently in physics region!
 	fp = fopen("D_MBINFO.BIN", "rb"); 
 	fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
@@ -856,7 +771,7 @@ byte conventionallowerblock[1250];
 void Z_LinkConventionalVariables() {
 	byte* offset = conventionallowerblock;
 	//1250 now
-	uint16_t size = numtextures * (sizeof(uint16_t) * 3 + 4 * sizeof(uint8_t));
+	//uint16_t size = numtextures * (sizeof(uint16_t) * 3 + 4 * sizeof(uint8_t));
 
 	//conventionallowerblock = offset = malloc(size);
 	//I_Error("\n%lx %u", conventionallowerblock, size);

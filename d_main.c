@@ -545,7 +545,10 @@ void checkstrings(int16_t j) {
 		I_Error("bad stringoffsets! %li %i %li", gametic, j, adder);
 	}
 }
- 
+  
+
+
+
 
 //
 //  D_DoomLoop

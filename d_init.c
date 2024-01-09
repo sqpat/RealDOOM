@@ -643,7 +643,7 @@ void D_InitGraphicCounts() {
 	// memory addresses, must stay int_32...
 	int32_t*                maptex;
 	int32_t*                maptex2;
-	int32_t*                directory;
+	//int32_t*                directory;
  
 	int16_t                 numtextures1;
 	int16_t                 numtextures2;

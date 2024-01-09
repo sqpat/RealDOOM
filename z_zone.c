@@ -169,7 +169,6 @@ void Z_InitEMS(void)
 {
 
 	int32_t size;
-	int16_t i = 0;
 	//todo figure this out based on settings, hardware, etc
 	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
 
@@ -180,21 +179,177 @@ void Z_InitEMS(void)
 // EMS 4.0 functionality
 
 // page for 0x9000 block where we will store thinkers in physics code, then visplanes etc in render code
+
+//these offsets at runtime must have pagenum9000 added to them
+
+#define PAGE_9000_OFFSET + 0
+#define PAGE_9400_OFFSET + 1
+#define PAGE_9800_OFFSET + 2
+#define PAGE_9C00_OFFSET + 3
+
+#define PAGE_8000_OFFSET - 4
+#define PAGE_8400_OFFSET - 3
+#define PAGE_8800_OFFSET - 2
+#define PAGE_8C00_OFFSET - 1
+
+#define PAGE_7000_OFFSET - 8
+#define PAGE_7400_OFFSET - 7
+#define PAGE_7800_OFFSET - 6
+#define PAGE_7C00_OFFSET - 5
+
+#define PAGE_6000_OFFSET - 12
+#define PAGE_6400_OFFSET - 11
+#define PAGE_6800_OFFSET - 10
+#define PAGE_6C00_OFFSET - 9
+
+#define PAGE_5000_OFFSET - 16
+#define PAGE_5400_OFFSET - 15
+#define PAGE_5800_OFFSET - 14
+#define PAGE_5C00_OFFSET - 13
+
+#define PAGE_4000_OFFSET - 20
+#define PAGE_4400_OFFSET - 19
+#define PAGE_4800_OFFSET - 18
+#define PAGE_4C00_OFFSET - 17
+
+
+
+
+
 int16_t pagenum9000; 
-int16_t pageswapargs_phys[40];
-int16_t pageswapargs_rend[48];
-int16_t pageswapargs_stat[12];
-int16_t pageswapargs_demo[8];
-int16_t pageswapargs_menu[16];
-int16_t pageswapargs_wipe[26];
-int16_t pageswapargs_palette[10];
-int16_t pageswapargs_textcache[8];
-int16_t pageswapargs_textinfo[8];
-int16_t pageswapargs_scratch_4000[8]; // we use 0x5000 as a  'scratch' page frame for certain things
-int16_t pageswapargs_scratch_5000[8]; // we use 0x5000 as a  'scratch' page frame for certain things
-int16_t pageswapargs_scratch_stack[16]; // we use 0x5000 as a  'scratch' page frame for certain things
-int16_t pageswapargs_rend_temp_7000_to_6000[8];
-int16_t pageswapargs_flat[8];
+int16_t pageswapargs_phys[40] = {
+	0,	PAGE_9000_OFFSET, 1,	PAGE_9400_OFFSET, 2,	PAGE_9800_OFFSET, 3,	PAGE_9C00_OFFSET,
+	4,	PAGE_8000_OFFSET, 5,	PAGE_8400_OFFSET, 6,	PAGE_8800_OFFSET, 7,	PAGE_8C00_OFFSET,
+	8,	PAGE_7000_OFFSET, 9,	PAGE_7400_OFFSET, 10,	PAGE_7800_OFFSET, 11,	PAGE_7C00_OFFSET,
+	12, PAGE_6000_OFFSET, 13,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,
+	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET
+};
+int16_t pageswapargs_rend[48] = {
+	20,	PAGE_9000_OFFSET, 21,	PAGE_9400_OFFSET, 22,	PAGE_9800_OFFSET, 23,	PAGE_9C00_OFFSET,
+	24,	PAGE_8000_OFFSET, 25,	PAGE_8400_OFFSET, 26,	PAGE_8800_OFFSET, 27,	PAGE_8C00_OFFSET,
+	28,	PAGE_7000_OFFSET, 29,	PAGE_7400_OFFSET, 30,	PAGE_7800_OFFSET, 31,	PAGE_7C00_OFFSET,
+	32, PAGE_6000_OFFSET, 33,	PAGE_6400_OFFSET, 34,	PAGE_6800_OFFSET, 35,	PAGE_6C00_OFFSET,
+	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET,  // repeated trig tables
+
+	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_4000_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 1,	PAGE_4400_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 2,	PAGE_4800_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_4C00_OFFSET  // texture cache area
+
+
+};
+int16_t pageswapargs_stat[12] = {
+	SCREEN4_LOGICAL_PAGE, PAGE_9C00_OFFSET,
+	FIRST_STATUS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
+	FIRST_STATUS_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
+	FIRST_STATUS_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
+	FIRST_STATUS_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
+	STRINGS_LOGICAL_PAGE, PAGE_6000_OFFSET
+};
+
+
+
+
+
+int16_t pageswapargs_demo[8] = {
+	FIRST_DEMO_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
+	FIRST_DEMO_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
+	FIRST_DEMO_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
+	FIRST_DEMO_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET
+};
+
+// todo combine with render[40-48] ??
+int16_t pageswapargs_textcache[8] = {
+	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_4000_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 1,	PAGE_4400_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 2,	PAGE_4800_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_4C00_OFFSET  // texture cache area
+};
+
+
+int16_t pageswapargs_textinfo[8] = {
+	TEXTURE_INFO_LOGICAL_PAGE + 0, PAGE_6000_OFFSET,
+	TEXTURE_INFO_LOGICAL_PAGE + 1, PAGE_6400_OFFSET,
+	TEXTURE_INFO_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
+	TEXTURE_INFO_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET
+};
+int16_t pageswapargs_scratch_5000[8] = { // we use 0x5000 as a  'scratch' page frame for certain things
+	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET
+};
+
+int16_t pageswapargs_scratch_4000[8] = { // but sometimes we need that in the 0x4000 segment..
+	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_4000_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_4400_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_4800_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_4C00_OFFSET
+};
+int16_t pageswapargs_scratch_stack[16] = { 
+	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
+	FIRST_TRIG_TABLE_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
+	FIRST_TRIG_TABLE_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
+	FIRST_TRIG_TABLE_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
+	FIRST_TRIG_TABLE_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET
+};
+
+// todo - we are only using one page at 0x5C00 currently
+int16_t pageswapargs_flat[8] = {
+	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_5C00_OFFSET,
+	FIRST_FLAT_CACHE_LOGICAL_PAGE + 1, PAGE_5C00_OFFSET,
+	FIRST_FLAT_CACHE_LOGICAL_PAGE + 2, PAGE_5C00_OFFSET,
+	FIRST_FLAT_CACHE_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET
+};
+
+int16_t pageswapargs_palette[10] = {
+
+	SCREEN0_LOGICAL_PAGE + 0, PAGE_8000_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 1, PAGE_8400_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 2, PAGE_8800_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 3, PAGE_8C00_OFFSET,
+	PALETTE_LOGICAL_PAGE, PAGE_9000_OFFSET
+};
+#define RENDER_7000_LOGICAL_PAGE  28
+int16_t pageswapargs_rend_temp_7000_to_6000[8] = {
+	RENDER_7000_LOGICAL_PAGE + 0, PAGE_6000_OFFSET,
+	RENDER_7000_LOGICAL_PAGE + 1, PAGE_6400_OFFSET,
+	RENDER_7000_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
+	RENDER_7000_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET
+};
+
+int16_t pageswapargs_menu[16] = {
+	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
+	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
+	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
+	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
+	STRINGS_LOGICAL_PAGE ,	PAGE_6000_OFFSET,
+	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 4, PAGE_6400_OFFSET,
+	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 5, PAGE_6800_OFFSET,
+	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6, PAGE_6C00_OFFSET
+
+
+};
+
+
+int16_t pageswapargs_wipe[26] = {
+	FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 0, PAGE_8000_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 1, PAGE_8400_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 2, PAGE_8800_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 3, PAGE_8C00_OFFSET,
+	SCREEN2_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
+	SCREEN2_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
+	SCREEN2_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
+	SCREEN2_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
+	SCREEN3_LOGICAL_PAGE + 0, PAGE_6000_OFFSET,
+	SCREEN3_LOGICAL_PAGE + 1, PAGE_6400_OFFSET,
+	SCREEN3_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
+	SCREEN3_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET
+};
 
 int16_t pageswapargseg_phys;
 int16_t pageswapargoff_phys;
@@ -222,7 +377,17 @@ int16_t pageswapargseg_scratch_stack;
 int16_t pageswapargoff_scratch_stack;
 int16_t pageswapargseg_flat;
 int16_t pageswapargoff_flat;
+
+#ifdef DETAILED_BENCH_STATS
 int32_t taskswitchcount = 0;
+int32_t texturepageswitchcount = 0;
+int32_t flatpageswitchcount = 0;
+int32_t scratchpageswitchcount = 0;
+int32_t scratchpoppageswitchcount = 0;
+int32_t scratchpushpageswitchcount = 0;
+int32_t scratchremapswitchcount = 0;
+
+#endif
 int16_t currenttask = -1;
 int16_t oldtask = -1;
 
@@ -270,7 +435,9 @@ void Z_QuickmapDemo() {
 	regs.w.si = pageswapargoff_demo;
 	intx86(EMS_INT, &regs, &regs);
 
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+#endif
 	currenttask = TASK_DEMO; // not sure about this
 
 }
@@ -289,7 +456,9 @@ void Z_QuickmapRender7000to6000() {
 	regs.w.si = off;
 	intx86(EMS_INT, &regs, &regs);
 
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+#endif
 	currenttask = TASK_RENDER7000TO6000; // not sure about this
 }
 
@@ -317,7 +486,9 @@ void Z_QuickmapRender() {
 	segregs.ds = pageswapargseg_rend;
 	regs.w.si = pageswapargoff_rend + 64;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+#endif
 	currenttask = TASK_RENDER;
 
 }
@@ -344,7 +515,9 @@ void Z_QuickmapRender_NoTex() {
 	segregs.ds = pageswapargseg_rend;
 	regs.w.si = pageswapargoff_rend + 64;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+#endif
 	currenttask = TASK_RENDER;
 
 }
@@ -374,7 +547,10 @@ void Z_QuickmapRenderTexture() {
 	intx86(EMS_INT, &regs, &regs);
 	*/
 
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+	texturepageswitchcount++;
+#endif
 	currenttask = TASK_RENDER_TEXT; // not sure about this
 }
 
@@ -389,7 +565,9 @@ void Z_QuickmapStatus() {
 	regs.w.si = pageswapargoff_stat;
 	intx86(EMS_INT, &regs, &regs);
 
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+#endif
 	currenttask = TASK_STATUS;
 }
 
@@ -401,7 +579,10 @@ void Z_QuickmapScratch_5000() {
 	segregs.ds = pageswapargseg_scratch_5000;
 	regs.w.si = pageswapargoff_scratch_5000;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+	scratchpageswitchcount++;
+#endif
 }
 void Z_QuickmapScratch_4000() {
 
@@ -411,7 +592,11 @@ void Z_QuickmapScratch_4000() {
 	segregs.ds = pageswapargseg_scratch_4000;
 	regs.w.si = pageswapargoff_scratch_4000;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+	scratchpageswitchcount++;
+
+#endif
 }
 
 void Z_QuickmapScreen0() {
@@ -435,7 +620,11 @@ void Z_PushScratchFrame() {
 		segregs.ds = pageswapargseg_scratch_stack;
 		regs.w.si = pageswapargoff_scratch_stack;
 		intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;
+		scratchpushpageswitchcount++;
+
+#endif
 		oldtask = currenttask;
 		currenttask = TASK_SCRATCH_STACK;
 	}
@@ -456,7 +645,11 @@ void Z_PopScratchFrame() {
 		regs.w.si = pageswapargoff_scratch_stack + 16;
 		intx86(EMS_INT, &regs, &regs);
 
+#ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;
+		scratchpoppageswitchcount++;
+
+#endif
 		currenttask = oldtask;
 		
 		pageswapargs_scratch_5000[0] = FIRST_SCRATCH_LOGICAL_PAGE;
@@ -482,7 +675,11 @@ void Z_QuickMapFlatPage(int16_t page) {
 	segregs.ds = pageswapargseg_flat;
 	regs.w.si = pageswapargoff_flat;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+	flatpageswitchcount++;
+
+#endif
 }
 
 
@@ -494,7 +691,9 @@ void Z_QuickMapTextureInfoPage() {
 	segregs.ds = pageswapargseg_textinfo;
 	regs.w.si = pageswapargoff_textinfo;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+#endif
 }
 
 void Z_RemapScratchFrame(uint8_t startpage) {
@@ -509,7 +708,10 @@ void Z_RemapScratchFrame(uint8_t startpage) {
 	segregs.ds = pageswapargseg_scratch_5000;
 	regs.w.si = pageswapargoff_scratch_5000;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+	scratchremapswitchcount++;
+#endif
 }
 
 void Z_QuickmapPalette() {
@@ -519,7 +721,9 @@ void Z_QuickmapPalette() {
 	segregs.ds = pageswapargseg_palette;
 	regs.w.si = pageswapargoff_palette;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+#endif
 
 	currenttask = TASK_PALETTE;
 }
@@ -530,7 +734,9 @@ void Z_QuickmapMenu() {
 	segregs.ds = pageswapargseg_menu;
 	regs.w.si  = pageswapargoff_menu;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+#endif
 
 	currenttask = TASK_MENU;
 }
@@ -549,7 +755,9 @@ void Z_QuickmapWipe() {
 	segregs.ds = pageswapargseg_wipe;
 	regs.w.si = pageswapargoff_wipe + 32;
 	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
+#endif
 
 	currenttask = TASK_WIPE;
 }

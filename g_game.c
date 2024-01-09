@@ -383,66 +383,65 @@ void G_BuildTiccmd (int8_t index)
 // G_Responder  
 // Get info needed to make ticcmd_ts for the players.
 // 
-boolean G_Responder (event_t* ev) 
-{   // any other key pops up menu if in demos
+boolean G_Responder (event_t* ev)  {   // any other key pops up menu if in demos
 	if (gameaction == ga_nothing && !singledemo &&
-		(demoplayback || gamestate == GS_DEMOSCREEN))
-	{
+		(demoplayback || gamestate == GS_DEMOSCREEN)) {
 		if (ev->type == ev_keydown ||
 			(ev->type == ev_mouse && ev->data1)
-			)
-		{
+			) {
 			M_StartControlPanel();
 			return true;
 		}
 		return false;
 	}
 
-	if (gamestate == GS_LEVEL)
-	{
-		if (HU_Responder(ev))
+	if (gamestate == GS_LEVEL) {
+		if (HU_Responder(ev)) {
 			return true; // chat ate the event
-		if (ST_Responder(ev))
-			return true; // status window ate it
-		if (AM_Responder(ev))
-			return true; // automap ate it
-	}
-
-	if (gamestate == GS_FINALE)
-	{
-		if (F_Responder(ev))
-			return true; // finale ate the event
-	}
-
-	switch (ev->type)
-	{
-	case ev_keydown:
-		if (ev->data1 == KEY_PAUSE)
-		{
-			sendpause = true;
-			return true;
 		}
-		if (ev->data1 < NUMKEYS)
-			gamekeydown[ev->data1] = true;
-		return true; // eat key down events
+		if (ST_Responder(ev)) {
+			return true; // status window ate it
+		}
+		if (AM_Responder(ev)) {
+			return true; // automap ate it
+		}
+	}
 
-	case ev_keyup:
-		if (ev->data1 < NUMKEYS)
-			gamekeydown[ev->data1] = false;
-		return false; // always let key up events filter down
+	if (gamestate == GS_FINALE) {
+		if (F_Responder(ev)) {
+			return true; // finale ate the event
+		}
+	}
 
-	case ev_mouse:
-		mousearray[0] = ev->data1 & 1;
-		mousearray[1] = ev->data1 & 2;
-		mousearray[2] = ev->data1 & 4;
-		mousex = ev->data2 * (mouseSensitivity + 5) / 10;
-		mousey = ev->data3 * (mouseSensitivity + 5) / 10;
-		return true; // eat events
+	switch (ev->type) {
+		case ev_keydown:
+			if (ev->data1 == KEY_PAUSE) {
+				sendpause = true;
+				return true;
+			}
+			if (ev->data1 < NUMKEYS) {
+				gamekeydown[ev->data1] = true;
+			}
+			return true; // eat key down events
+
+		case ev_keyup:
+			if (ev->data1 < NUMKEYS) {
+				gamekeydown[ev->data1] = false;
+			}
+			return false; // always let key up events filter down
+
+		case ev_mouse:
+			mousearray[0] = ev->data1 & 1;
+			mousearray[1] = ev->data1 & 2;
+			mousearray[2] = ev->data1 & 4;
+			mousex = ev->data2 * (mouseSensitivity + 5) / 10;
+			mousey = ev->data3 * (mouseSensitivity + 5) / 10;
+			return true; // eat events
 
  
 
-	default:
-		break;
+		default:
+			break;
 	}
 
 	return false;
@@ -538,7 +537,9 @@ void G_Ticker (void)
 			P_Ticker();
 
 			ST_Ticker();
-			AM_Ticker ();
+			if (automapactive) {
+				AM_Ticker();
+			}
 			HU_Ticker ();
 			break;
          
@@ -547,10 +548,9 @@ void G_Ticker (void)
 			break;
                          
 		  case GS_FINALE: 
-			  Z_QuickmapStatus();
-			  F_Ticker();
-			  Z_QuickmapPhysics();		
-		  
+			Z_QuickmapStatus();
+			F_Ticker();
+			Z_QuickmapPhysics();		
 			break;
  
 		  case GS_DEMOSCREEN: 
@@ -586,8 +586,7 @@ void G_PlayerFinishLevel ()
 // Called after a player dies 
 // almost everything is cleared and initialized 
 //
-void G_PlayerReborn () 
-{ 
+void G_PlayerReborn () { 
  	int8_t         i;
 	int16_t         killcount;
 	int16_t         itemcount;
@@ -662,8 +661,7 @@ void G_SecretExitLevel (void)
     gameaction = ga_completed; 
 } 
  
-void G_DoCompleted (void) 
-{ 
+void G_DoCompleted (void)  { 
          
     gameaction = ga_nothing; 
  
@@ -1112,7 +1110,7 @@ void G_DoPlayDemo (void)
     skill = *demo_addr++;
     episode = *demo_addr++;
     map = *demo_addr++;
-     *demo_addr++; // deathmatch
+    *demo_addr++; // deathmatch
     respawnparm = *demo_addr++;
     fastparm = *demo_addr++;
     nomonsters = *demo_addr++;
@@ -1170,24 +1168,32 @@ extern uint16_t renderplayersetuptics, renderplayerbsptics, renderplayerplanetic
 
 boolean G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
+#ifdef DETAILED_BENCH_STATS
+	uint32_t fps, fps2;
+#endif
 	//byte* demobuffer;
 	byte* demo_addr;
 	if (timingdemo) {
 		endtime = ticcount;
 
 #ifdef DETAILED_BENCH_STATS
+		fps = (35000u * (uint32_t)(gametic) / (uint32_t)(endtime - starttime));
+		fps2 = (35000u * (uint32_t)(gametic) / (uint32_t)(endtime - starttime - wipeduration));
 
-        I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe)\n Physics Tics %u\n Render Tics %u\n   Render Setup Tics %u\n   Render PlayerView Tics %u\n    Render InPlayerView Setup Tics %u\n    Render InPlayerView BSP Tics %u\n    Render InPlayerView Plane Tics %u\n    Render InPlayerView Masked Tics %u\n   Render Post PlayerView Tics %u\n Other Tics %u \n Task Switches: %li\n prnd index %i ",gametic 
-                 , endtime-starttime , endtime-starttime- wipeduration, wipeduration, 
+        I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe)\n FPS: %lu.%.3lu fps, %lu.%.3lu fps without fwipe \nPhysics Tics %u\n Render Tics %u\n   Render Setup Tics %u\n   Render PlayerView Tics %u\n    Render InPlayerView Setup Tics %u\n    Render InPlayerView BSP Tics %u\n    Render InPlayerView Plane Tics %u\n    Render InPlayerView Masked Tics %u\n   Render Post PlayerView Tics %u\n Other Tics %u \n Task Switches: %li\n  Texture Cache Switches: %li\n  Flat Cache Switches: %li\n  Scratch Cache Switches: %li\n  Scratch Cache Pushes: %li\n  Scratch Cache Pops: %li\n  Scratch Cache Remaps: %li \n prnd index %i ",
+			gametic  , endtime-starttime , endtime-starttime- wipeduration, wipeduration, 
+			fps / 1000, fps % 1000, fps2 / 1000, fps2%1000,
 			physicstics, rendertics, rendersetuptics, renderplayerviewtics, 
 			renderplayersetuptics, renderplayerbsptics, renderplayerplanetics, renderplayermaskedtics,
-			
 			renderpostplayerviewtics, 
-			
-			othertics, taskswitchcount, prndindex);
+			othertics, 
+			taskswitchcount, texturepageswitchcount , flatpageswitchcount, scratchpageswitchcount , scratchpoppageswitchcount, scratchpushpageswitchcount, scratchremapswitchcount,
+			prndindex);
+
+ 
 #else
-		I_Error("\ntimed %li gametics in %li realtics \n Task Switches: %li\n prnd index %i ", gametic
-			, endtime - starttime, taskswitchcount, prndindex);
+		I_Error("\ntimed %li gametics in %li realtics \n prnd index %i ", gametic
+			, endtime - starttime,  prndindex);
 
 #endif
 

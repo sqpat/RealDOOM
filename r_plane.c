@@ -199,8 +199,8 @@ R_FindPlane
   uint8_t		lightlevel )
 {
     visplane_t*	check;
-    visplaneheader_t*	checkheader;
-	visplanebytes_t* checkbytes;
+    //visplaneheader_t*	checkheader;
+	//visplanebytes_t* checkbytes;
 	int i;
 		
     if (picnum == skyflatnum) {
@@ -282,10 +282,10 @@ R_CheckPlane
     int16_t		unionl;
     int16_t		unionh;
     int16_t		x;
-	int16_t		lastvisplaneheader;
-	visplanebytes_t* plbytes;
+	//int16_t		lastvisplaneheader;
+	//visplanebytes_t* plbytes;
 	visplane_t*	pl;
-	visplaneheader_t* plheader;
+	//visplaneheader_t* plheader;
 
 	if (index < MAXCONVENTIONALVISPLANES) {
 		pl = &visplanes[index];
@@ -389,21 +389,19 @@ void R_DrawPlanes (void)
     fineangle_t			angle;
 	byte t1, b1, t2, b2;
 	int16_t			i;
-	fixed_t_union	temp;
 
-    visplaneheader_t*		plheader;
+    //visplaneheader_t*		plheader;
 	visplanebytes_t*		plbytes = NULL;
-	int16_t currentplanebyteRef = -1; // visplaneheaders->visplanepage is always 0;
-	visplanebytes_t* base;
+	//int16_t currentplanebyteRef = -1; // visplaneheaders->visplanepage is always 0;
+	//visplanebytes_t* base;
 
 	
 
-	int16_t oldtexargs[4];
+	//int16_t oldtexargs[4];
 	int8_t effectivepagenumber = 0;
 	uint8_t usedflatindex;
 	boolean flatunloaded = false;
 	byte* far src;
-	uint8_t startpagenumber = 0;
 	int16_t currentflatpage = -1;
 
     for (i = 0; i < lastvisplane ; i++) {

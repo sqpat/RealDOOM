@@ -183,7 +183,9 @@ W_ReadLump
 	filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t* l;
 	filehandle_t         handle;
-     int32_t sizetoread;
+#ifdef CHECK_FOR_ERRORS
+	int32_t sizetoread;
+#endif
     int32_t startoffset;
 	filelength_t         lumpsize;
 

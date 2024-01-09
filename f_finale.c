@@ -703,7 +703,6 @@ void F_CastDrawer (void)
     spriteframe_t*	sprframe;
     int16_t			lump;
     boolean		flip;
-	THINKERREF			patchRef;
 	spriteframe_t*  spriteframes;
 	int8_t			text[100];
 	patch_t*		patch = MK_FP(0x5000, 0);
@@ -780,7 +779,6 @@ F_DrawPatchCol
 void F_BunnyScroll (void)
 {
     int16_t		scrolled;
-    int16_t		x;
 	int8_t	name[10];
     int16_t		stage;
     static int16_t	laststage;

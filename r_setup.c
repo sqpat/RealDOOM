@@ -231,7 +231,6 @@ void R_InitTextureMapping(void)
 void R_ExecuteSetViewSize(void)
 {
 
-	int8_t		startmap;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	setsizeneeded = false;
@@ -314,14 +313,8 @@ void R_PrecacheLevel(void)
 	THINKERREF          th;
 	spriteframe_t*      sf;
 	spriteframe_t*		spriteframes;
-	int32_t flatsize = 0;
-	uint16_t size;
-	uint8_t currentpageoffset = 0;
-	int16_t lumpnum;
-	int16_t currentpatchpage = 0;
-	uint8_t newpage = 0;
-	uint8_t oldpage = 0;
-	int16_t index;
+	//int32_t flatsize = 0;
+	//uint16_t size;
 
 	if (demoplayback)
 		return;
@@ -370,8 +363,8 @@ void R_PrecacheLevel(void)
 	}
 	Z_PopScratchFrame();
 
-	flatsize = 4096L * firstunusedflat;
-	oldpage = newpage = 0;
+	//flatsize = 4096L * firstunusedflat;
+	//oldpage =  0;
 
 	// Precache textures.
 	texturepresent = alloca(numtextures);

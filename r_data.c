@@ -425,7 +425,7 @@ void R_GenerateComposite(uint8_t texnum, byte* block)
 	int16_t             x;
 	int16_t             x1;
 	int16_t             x2;
-	int16_t             i, j;
+	int16_t             i;
 	column_t*           patchcol;
 	int16_t*            collump;
 	uint16_t*			colofs;
@@ -438,7 +438,7 @@ void R_GenerateComposite(uint8_t texnum, byte* block)
 	texture_t*			texture;
 	int16_t				lastusedpatch = -1;
 	int16_t				index;
-	uint8_t				currentpatchpage = 0;
+	//uint8_t				currentpatchpage = 0;
 	uint8_t pagenum;
 
 	//Z_QuickMapTextureInfoPage();
@@ -834,7 +834,6 @@ R_GetColumn
 (int16_t           tex,
 	int16_t           col)
 {
-	int16_t		i;
 	int16_t         lump; 
 	uint16_t         ofs; 
 	int16_t* texturecolumnlump; 

@@ -65,7 +65,16 @@
 #define NULL_THINKERREF 0
 
  
+#ifdef DETAILED_BENCH_STATS
 extern int32_t taskswitchcount;
+extern int32_t texturepageswitchcount;
+extern int32_t flatpageswitchcount;
+extern int32_t scratchpageswitchcount;
+extern int32_t scratchpoppageswitchcount;
+extern int32_t scratchpushpageswitchcount;
+extern int32_t scratchremapswitchcount;
+
+#endif
 
  
 

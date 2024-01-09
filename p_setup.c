@@ -125,7 +125,6 @@ byte* far	SCRATCH_ADDRESS = (byte* far)0x40000000;
 
 byte* far Z_GetNext0x6000Address(uint16_t size) {
 
-	uint16_t oldoffset = leveldataoffset_6000_phys;
 	byte* far returnvalue;
 	
 

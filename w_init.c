@@ -262,7 +262,7 @@ void W_AddFile(int8_t *filename)
 //
 void W_InitMultipleFiles(int8_t** filenames)
 {
-	filelength_t         size;
+	//filelength_t         size;
 	//printf("\n\nsize is %u \n\n", _memmax());
 
 	// open all the files, load headers, and count lumps

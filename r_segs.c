@@ -95,9 +95,8 @@ R_RenderMaskedSegRange
 	uint16_t	index;
 	column_t*	col;
 	int16_t		lightnum;
-	int16_t		frontsecnum, backsecnum;
- 
-	int16_t temp2;
+	int16_t		frontsecnum;
+
 	side_t* side;
 	side_render_t* side_render;
 	int16_t curlineside;
@@ -440,7 +439,6 @@ R_StoreWallRange
 	vertex_t curlinev2 = vertexes[curseg_render->v2Offset];
 	int16_t sidetextureoffset;
 	int16_t lineflags;
- 	fixed_t_union temp;
 	angle_t tempangle;
 	short_height_t frontsectorfloorheight;
 	short_height_t frontsectorceilingheight;
@@ -587,7 +585,6 @@ R_StoreWallRange
 		ds_p->sprtopclip = ds_p->sprbottomclip = NULL;
 		ds_p->silhouette = 0;
 
-		//SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsectorfloorheight);
 		if (frontsectorfloorheight > backsectorfloorheight) {
 			ds_p->silhouette = SIL_BOTTOM;
 			ds_p->bsilheight = frontsectorfloorheight;
@@ -596,7 +593,6 @@ R_StoreWallRange
 			ds_p->bsilheight = MAXSHORT;
 		}
 	
-		//SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, backsectorceilingheight);
 		if (frontsectorceilingheight < backsectorceilingheight) {
 			ds_p->silhouette |= SIL_TOP;
 			ds_p->tsilheight = frontsectorceilingheight;

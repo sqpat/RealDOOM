@@ -28,15 +28,15 @@
 #	   zq operate quietly
 #	  zp1 pack structure members with alignment 1
 #     zt# set far data threshold (i.e., larger objects go in far memory)
+#      wx set maximum compiler warning level (helps find unused vars)
 # --------------------------------------------------------------------------
 
 # CCOPTS = $(EXTERNOPT) -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc
 # zt1024 too much. 512 ok. 255 ok
 
 # time optimized seems a LOT faster... ?
-CCOPTS = -zp1 -oaxet -oi -zq -j -ml -zt768 -zc -2
-# CCOPTS = -zp1 -oaxes -oi -zq -j -ml -zt768 -zc
-
+CCOPTS = -zp1 -oaxet -oi -zq -j -ml -zt768 -zc -2 -s
+ 
 #doom8088 build opts for comparison
 #CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99
 

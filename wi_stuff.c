@@ -416,16 +416,17 @@ void WI_slamBackground(void)
 // Draws "<Levelname> Finished!"
 void WI_drawLF(void)
 {
-	patch_t* lname;
 	int16_t y = WI_TITLEY;
+	patch_t* finished = WI_GetPatch(35);
 	// draw <LevelName> 
+	patch_t* lname = (patch_t*)(wigraphicslevelname + NEXT_OFFSET);
 
-//    V_DrawPatch((SCREENWIDTH - (lnames[wbs->last]->width))/2, y, FB, lnames[wbs->last]);
+    V_DrawPatch((SCREENWIDTH - (lname->width))/2, y, FB, lname);
 
     // draw "Finished!"
-	y += (5 * (lname ->height)) / 4;
+	y += (5 * (lname->height)) / 4;
     
-//    V_DrawPatch((SCREENWIDTH - (finished->width))/2, y, FB, finished);
+    V_DrawPatch((SCREENWIDTH - (finished->width))/2, y, FB, finished);
 }
 
 
@@ -1037,9 +1038,7 @@ void WI_Ticker(void)
 void WI_loadData(void)
 {
     int16_t		i;
-    int16_t		j;
 	int8_t	name[9];
-    anim_t*	a;
 
     if (commercial)
 	strcpy(name, "INTERPIC");
@@ -1183,9 +1182,7 @@ void M_Reload(void) {
 	};
 
 	int16_t i = 0;
-	uint32_t size = 0;
 	byte* far dst = menugraphicspage0;
-	uint8_t pageoffset = 0;
 
 	for (i = 0; i < 27; i++) {
 		int16_t lump = W_GetNumForName(menugraphics[i]);
@@ -1338,7 +1335,6 @@ void WI_Init(void)
 	int16_t i = 0;
 	uint32_t size = 0;
 	byte* far dst = wigraphicspage0;
-	uint8_t pageoffset = 0;
 	int8_t	name[9];
 
 	for (i = 0; i < NUM_WI_ITEMS; i++) {

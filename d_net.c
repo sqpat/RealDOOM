@@ -97,7 +97,6 @@ extern byte advancedemo;
 
 void TryRunTics(void)
 {
-	int32_t i;
 	int32_t entertic;
 	static int32_t oldentertics;
 	int32_t realtics;

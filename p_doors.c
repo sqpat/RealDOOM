@@ -321,7 +321,6 @@ EV_VerticalDoor
     //int16_t		side = 0;
 	THINKERREF doorRef;
 	int16_t linespecial = lines_physics[linenum].special;
-	int16_t sidenum;
 	int16_t doortopheight;
 	sector_t *doorsector;
 	sector_physics_t *doorsector_physics;

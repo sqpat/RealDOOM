@@ -108,8 +108,10 @@ P_RecursiveSound
 	uint8_t checkflags;
 	int16_t checksidenum0;
 	int16_t checksidenum1;
+#ifndef		PRECALCULATE_OPENINGS
 	int16_t checkfrontsecnum;
 	int16_t checkbacksecnum;
+#endif
 	uint16_t lineoffset;
 
 #ifdef CHECK_FOR_ERRORS
@@ -1194,7 +1196,7 @@ void A_Tracer (mobj_t* actor, mobj_pos_t* actor_pos)
 	fixed_t actorspeed;
 	
 	mobj_pos_t*	dest_pos;
-	mobj_pos_t*	th_pos;
+
 	if (gametic & 3)
 		return;
 	

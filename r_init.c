@@ -92,22 +92,22 @@ void R_InitPlanes(void) {
 	  // byte fields per visplane is 644, we can fit 25 of those per 16k page. we can, instead of one big fat allocation 
 	  // do those in individual 16k allocations and use the individual memref we need based on index. that should greatly
 	  // reduce the paging involved?
-
+	/*
 	int16_t i;
 	int16_t j;
 	Z_QuickmapRender();
 
 	for (i = 0; i < NUM_VISPLANE_PAGES; i++) {
-		/*
 		visplanebytesRef[i] = Z_MallocEMS(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0);
 
 		for (j = 0; j < VISPLANES_PER_EMS_PAGE; j++) {
 			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplanepage = i;
 			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplaneoffset = j;
 		}
-		*/
 
 	}
+*/
+
 
 	Z_QuickmapPhysics();
 
@@ -284,23 +284,23 @@ void R_GenerateLookup(uint8_t texnum)
 	int16_t                 x1;
 	int16_t                 x2;
 	int16_t                 i;
-	int16_t                 j;
+	//int16_t                 j;
 	int16_t					patchpatch;
 	int16_t					lastusedpatch = -1;
 	uint8_t				texturepatchcount;
 	int16_t				texturewidth;
 	int16_t				textureheight;
 	int8_t				texturename[8];
-	int16_t				index;
+	//int16_t				index;
 	byte*				patchaddr = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
-	uint16_t			size;
-	uint8_t				pagenum;
+	//uint16_t			size;
+	//uint8_t				pagenum;
 	
  
 	int16_t*  collump = (int16_t*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum]]);
 	uint16_t* colofs = (uint16_t*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum]]);
 
-	uint8_t currentpatchpage = 0;
+	//uint8_t currentpatchpage = 0;
 	
 	texturecompositesizes[texnum] = 0;
 

@@ -418,7 +418,6 @@ P_CrossSpecialLine
 	mobj_pos_t* thing_pos)
 {
     int16_t		ok;
-	line_t*	line = &lines[linenum];
 	line_physics_t*	line_physics = &lines_physics[linenum];
 	uint8_t linetag = line_physics->tag;
 	int16_t linefrontsecnum = lines_physics->frontsecnum;

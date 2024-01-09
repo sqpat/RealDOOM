@@ -113,7 +113,7 @@ extern int8_t musicVolume;
 // number of channels available
 int8_t			numChannels;	
 
-static ticcount_t		nextcleanup;
+//static ticcount_t		nextcleanup;
 
 //
 // Internals.

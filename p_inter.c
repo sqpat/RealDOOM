@@ -633,7 +633,6 @@ P_KillMobj
 {
     mobjtype_t	item;
     mobj_t*	mo;
-	THINKERREF moRef;
 	
 	
 	target_pos->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
