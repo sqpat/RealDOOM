@@ -70,7 +70,8 @@ extern uint16_t stringbuffersize;
 extern uint8_t     sfxVolume;
 extern uint8_t     musicVolume;
 extern int8_t      demosequence;
-extern byte*		stringdata;
+//extern byte*		stringdata;
+#define stringdata ((byte far*)0x60000000)
 
 void D_InitStrings() {
 

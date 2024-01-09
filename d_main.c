@@ -167,7 +167,9 @@ void D_ProcessEvents (void)
 
 uint16_t stringoffsets[MAX_STRINGS];
 uint16_t stringbuffersize;
-byte* stringdata;
+//byte* stringdata;
+
+#define stringdata ((byte far*)0x60000000)
 
 int16_t getStringLength(int16_t stringindex) {
 	return  stringoffsets[stringindex + 1] - stringoffsets[stringindex];

@@ -209,7 +209,6 @@ extern int16_t pageswapargoff_scratch_stack;
 extern int16_t pageswapargseg_flat;
 extern int16_t pageswapargoff_flat;
 
-extern byte far* stringdata;
 extern byte far* demobuffer;
 extern byte far* palettebytes;
 
@@ -670,7 +669,7 @@ void Z_LinkEMSVariables() {
 
 	screen3 = MK_FP(segment, 0);
 
-	stringdata = MK_FP(segment, offset_physics);
+	//stringdata = MK_FP(segment, offset_physics);
 	offset_physics += 16384;
 	rejectmatrix = MK_FP(segment, offset_physics);
 	offset_physics += 16384;
