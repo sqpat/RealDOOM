@@ -137,9 +137,9 @@ void Z_FreeConventionalAllocations() {
 
 // mostly very easy because we just allocate sequentially and never remove except all at once. no fragmentation
 //  EXCEPT thinkers
-void* far Z_MallocConventional( 
+void far* Z_MallocConventional( 
 	uint16_t           size){
-	byte* far returnvalue = conventionalmemoryblock + conventional1head;
+	byte far* returnvalue = conventionalmemoryblock + conventional1head;
 
 	if (size > remainingconventional) {
 		I_Error("out of conventional space %u %u", size, remainingconventional);
@@ -147,11 +147,6 @@ void* far Z_MallocConventional(
 	conventional1head += size;
 	remainingconventional -= size;
 	return returnvalue;
-	
-	
-	
-	 
-	 
 	
 }
 
@@ -179,6 +174,7 @@ void Z_InitEMS(void)
 // EMS 4.0 functionality
 
 // page for 0x9000 block where we will store thinkers in physics code, then visplanes etc in render code
+int16_t pagenum9000;
 
 //these offsets at runtime must have pagenum9000 added to them
 
@@ -216,7 +212,6 @@ void Z_InitEMS(void)
 
 
 
-int16_t pagenum9000; 
 int16_t pageswapargs_phys[40] = {
 	0,	PAGE_9000_OFFSET, 1,	PAGE_9400_OFFSET, 2,	PAGE_9800_OFFSET, 3,	PAGE_9C00_OFFSET,
 	4,	PAGE_8000_OFFSET, 5,	PAGE_8400_OFFSET, 6,	PAGE_8800_OFFSET, 7,	PAGE_8C00_OFFSET,

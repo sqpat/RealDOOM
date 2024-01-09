@@ -121,8 +121,8 @@ wipe_doMelt
     uint16_t		idx;
     
 	int16_t* y = MK_FP(0x9000, 0);
-    int16_t*	far s;
-    int16_t*	far d;
+    int16_t	far* s;
+    int16_t	far* d;
     boolean	done = true;
 
     

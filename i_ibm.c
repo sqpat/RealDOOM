@@ -240,7 +240,7 @@ void I_WaitVBL(int16_t vbls)
     }
 }
 
-extern byte* far palettebytes;
+extern byte far* palettebytes;
 //
 // I_SetPalette
 // Palette source must use 8 bit RGB elements.

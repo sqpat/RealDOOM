@@ -38,15 +38,7 @@
 
 
 
-extern byte*			pageFrameArea;
-extern byte*			EMSArea;
-extern int16_t activepages[NUM_EMS_PAGES];
-extern int8_t pageevictorder[NUM_EMS_PAGES];
-extern int8_t pagesize[NUM_EMS_PAGES];
 #define USER_MASK 0x8000
-
-
-
 
 extern union REGS regs;
 extern struct SREGS segregs;
@@ -59,7 +51,7 @@ uint16_t EMS_PAGE;
 
 
 
-byte* far I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
+byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 {
 
 	// 4 mb
@@ -217,9 +209,9 @@ extern int16_t pageswapargoff_scratch_stack;
 extern int16_t pageswapargseg_flat;
 extern int16_t pageswapargoff_flat;
 
-extern byte* far stringdata;
-extern byte* far demobuffer;
-extern byte* far palettebytes;
+extern byte far* stringdata;
+extern byte far* demobuffer;
+extern byte far* palettebytes;
 
 
 uint8_t fontlen[63] = { 72, 100, 116, 128, 144, 132, 60, 
@@ -231,13 +223,21 @@ uint8_t fontlen[63] = { 72, 100, 116, 128, 144, 132, 60,
 					   136, 140, 120, 120, 132, 108, 148, 160, 
 						124, 128, 92, 100, 92, 96, 104 };
  
-
+/*
 int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824, 
 						808, 808, 800, 888, 884, 844, 816, 824, 
 						824, 828, 824, 896, 896, 844, 816, 824, 
 						840, 836, 832, 908, 944, 844, 816, 824, 
 						844, 836, 844, 908, 984, 844, 816, 824, 
 						808, 836 };
+						*/
+
+uint8_t facelen[42] = { 8, 8, 8, 80, 84, 44, 16, 24,
+						8, 8, 0, 88, 84, 44, 16, 24,
+						24, 28, 24, 96, 96, 44, 16, 24,
+						40, 36, 32, 108, 144, 44, 16, 24,
+						44, 36, 44, 108, 184, 44, 16, 24,
+						8, 36 };
 
  
 
@@ -247,7 +247,7 @@ extern  uint16_t		DEMO_SEGMENT;
 
 void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
-	int16_t* far pointervalue = pagedata;
+	int16_t far* pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
 	int16_t index;
 
@@ -522,7 +522,7 @@ void Z_LinkEMSVariables() {
 	// todo change all this to 16 bit pointers/lookups based on fixed 0x8000 colormapbytes segment.
 	// then bring offset_render back up
 	scalelight = MK_FP(segment, offset_render);
-	offset_render += sizeof(lighttable_t* far) * (LIGHTLEVELS * MAXLIGHTSCALE);
+	offset_render += sizeof(lighttable_t far*) * (LIGHTLEVELS * MAXLIGHTSCALE);
 
 	usedcompositetexturepagemem = MK_FP(segment, offset_render);
 	offset_render += NUM_TEXTURE_PAGES * sizeof(uint8_t);
@@ -652,7 +652,7 @@ void Z_LinkEMSVariables() {
 	sbar = MK_FP(segment, offset_status);
 
 	for (i = 0; i < 42; i++) {
-		offset_status -= facelen[i];
+		offset_status -= (800+facelen[i]);
 		faces[i] = MK_FP(segment, offset_status);
 	}
 
@@ -687,7 +687,7 @@ void Z_LinkEMSVariables() {
 
 
 	zlight = MK_FP(segment, offset_render);
-	offset_render += sizeof(lighttable_t* far) * (LIGHTLEVELS * MAXLIGHTZ);
+	offset_render += sizeof(lighttable_t far*) * (LIGHTLEVELS * MAXLIGHTZ);
 
 
 	printf("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", offset_physics, offset_render, offset_status);
@@ -766,7 +766,7 @@ void Z_LoadBinaries() {
 	 
 }
 
-byte conventionallowerblock[1250];
+byte near conventionallowerblock[1250];
 
 void Z_LinkConventionalVariables() {
 	byte* offset = conventionallowerblock;

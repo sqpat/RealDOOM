@@ -115,7 +115,7 @@ void Z_FreeConventionalAllocations();
 
 #define BACKREF_LUMP_OFFSET EMS_ALLOCATION_LIST_SIZE
  
-void* far Z_MallocConventional(uint16_t  size);
+void far* Z_MallocConventional(uint16_t  size);
  
 
 void Z_ShutdownEMS();

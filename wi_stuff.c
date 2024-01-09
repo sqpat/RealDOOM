@@ -309,16 +309,16 @@ static anim_t *anims[NUMEPISODES] =
     epsd2animinfo
 };
 
-byte* far wigraphicspage0		= (byte* far)0x70000000;
-byte* far wigraphicslevelname	= (byte* far)0x78000000;
-byte* far wigraphicsfullscreen	= (byte* far)0x7C000000;
+byte far*  wigraphicspage0		= (byte far* )0x70000000;
+byte far*  wigraphicslevelname	= (byte far* )0x78000000;
+byte far*  wigraphicsfullscreen	= (byte far* )0x7C000000;
 #define NEXT_OFFSET 8192
 #define NUM_WI_ITEMS 58
 uint16_t wioffsets[NUM_WI_ITEMS];
 
 
-patch_t* far WI_GetPatch(int16_t i) {
-	return (patch_t* far)(wigraphicspage0 + wioffsets[i]);
+patch_t far* WI_GetPatch(int16_t i) {
+	return (patch_t far*)(wigraphicspage0 + wioffsets[i]);
 
 }
 
@@ -1112,7 +1112,7 @@ void WI_loadData(void)
 #define NUM_MENU_ITEMS 45
 
 extern int8_t menugraphics[NUM_MENU_ITEMS][9];
-extern byte* far menugraphicspage0;
+extern byte far* menugraphicspage0;
 extern uint16_t menuoffsets[NUM_MENU_ITEMS];
 
 
@@ -1182,7 +1182,7 @@ void M_Reload(void) {
 	};
 
 	int16_t i = 0;
-	byte* far dst = menugraphicspage0;
+	byte far* dst = menugraphicspage0;
 
 	for (i = 0; i < 27; i++) {
 		int16_t lump = W_GetNumForName(menugraphics[i]);
@@ -1334,7 +1334,7 @@ void WI_Init(void)
 
 	int16_t i = 0;
 	uint32_t size = 0;
-	byte* far dst = wigraphicspage0;
+	byte far* dst = wigraphicspage0;
 	int8_t	name[9];
 
 	for (i = 0; i < NUM_WI_ITEMS; i++) {

@@ -182,7 +182,7 @@ extern lighttable_t    *colormaps;
 
 
 
-extern byte* far	SCRATCH_ADDRESS;
+extern byte far*	SCRATCH_ADDRESS;
 
 //
 // R_InitSpriteLumps
@@ -430,7 +430,7 @@ void R_InitTextures(void)
 	//uint8_t*            textureheight;
  	int16_t				texturewidth;
 	uint8_t				textureheightval;
-	byte* far			tempaddress = MK_FP(0x7000, 0);
+	byte far*			tempaddress = MK_FP(0x7000, 0);
 
  	texturedefs_offset[0] = 0;
 

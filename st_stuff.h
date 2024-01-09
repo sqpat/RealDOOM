@@ -260,7 +260,7 @@ boolean ST_Responder(event_t* ev);
 
 
 
-extern byte* far palettebytes;
+extern byte far* palettebytes;
 // whether in automap or first-person
 extern st_stateenum_t   st_gamestate;
 

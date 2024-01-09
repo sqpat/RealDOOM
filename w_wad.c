@@ -47,7 +47,7 @@
 
 lumpinfo_t*             lumpinfo;
 uint16_t                     numlumps;
-byte	lumpbytes[LUMPINFO_SIZE];
+byte near	lumpbytes[LUMPINFO_SIZE];
 
   
 uint16_t                     reloadlump;
@@ -306,7 +306,7 @@ void W_EraseFullscreenCache() {
 void
 W_CacheLumpNumDirectFragment
 (int16_t lump,
-	byte* far			dest,
+	byte far*			dest,
     int16_t         pagenum,
     int32_t offset){
  

@@ -573,8 +573,8 @@ void M_FinishReadThis(int16_t choice);
 //
 #define NUM_MENU_ITEMS 45
 
-extern byte* far menugraphicspage0;
-extern byte* far menugraphicspage4;
+extern byte far* menugraphicspage0;
+extern byte far* menugraphicspage4;
 extern uint16_t menuoffsets[NUM_MENU_ITEMS];
 
 extern int8_t menugraphics[NUM_MENU_ITEMS][9];
@@ -586,7 +586,7 @@ void M_Init(void)
 
 	int16_t i = 0;
 	uint32_t size = 0;
-	byte* far dst = menugraphicspage0;
+	byte far* dst = menugraphicspage0;
 	uint8_t pageoffset = 0;
 	Z_QuickmapMenu();
 
@@ -647,7 +647,7 @@ void D_InitGraphicCounts() {
  
 	int16_t                 numtextures1;
 	int16_t                 numtextures2;
-	byte* far				tempaddress = MK_FP(0x7000, 0);
+	byte far*				tempaddress = MK_FP(0x7000, 0);
 
  
 	 

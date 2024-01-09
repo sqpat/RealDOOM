@@ -111,21 +111,21 @@ THINKERREF*		blocklinks;
 // Without special effect, this could be
 //  used as a PVS lookup as well.
 //
-byte* far           rejectmatrix;
+byte far*            rejectmatrix;
 
 uint16_t leveldataoffset_phys = 0u;
 uint16_t leveldataoffset_rend = 0 - (MAX_THINKERS * sizeof(mobj_pos_t));
 uint16_t leveldataoffset_6000_phys = 0u;
 
-byte* far	SCRATCH_ADDRESS = (byte* far)0x40000000;
+byte far* 	SCRATCH_ADDRESS = (byte far* )0x40000000;
 
 #define Z_GetNextPhysicsAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_PHYSICS)
 #define Z_GetNextRenderAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_RENDER)
 #define Z_SubtractRenderAddress(A) Z_Subtract0x7000Address(A, PAGE_TYPE_RENDER)
 
-byte* far Z_GetNext0x6000Address(uint16_t size) {
+byte far*  Z_GetNext0x6000Address(uint16_t size) {
 
-	byte* far returnvalue;
+	byte far*  returnvalue;
 	
 
 	leveldataoffset_6000_phys -= size;
@@ -139,11 +139,11 @@ byte* far Z_GetNext0x6000Address(uint16_t size) {
 
 }
 
-byte* far Z_GetNext0x7000Address(uint16_t size, int8_t pagetype) {
+byte far*  Z_GetNext0x7000Address(uint16_t size, int8_t pagetype) {
 
 	uint16_t oldoffset;
 	uint16_t *useoffset;
-	byte* far returnvalue;
+	byte far*  returnvalue;
 	switch (pagetype) {
 	case PAGE_TYPE_PHYSICS:
 		oldoffset = leveldataoffset_phys;
@@ -247,11 +247,11 @@ void P_LoadSegs(int16_t lump)
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segs = (seg_t*)Z_MallocConventional(numsegs * sizeof(seg_t));
 
-	segs_render = (seg_render_t* far)Z_GetNextRenderAddress(numsegs * sizeof(seg_render_t));
-	segs_physics = (seg_physics_t* far)Z_GetNextPhysicsAddress(numsegs * sizeof(seg_physics_t));
+	segs_render = (seg_render_t far* )Z_GetNextRenderAddress(numsegs * sizeof(seg_render_t));
+	segs_physics = (seg_physics_t far* )Z_GetNextPhysicsAddress(numsegs * sizeof(seg_physics_t));
 
 	// ugly, gross, but this memory is free right now...
-	tempsecnums = (int16_t* far)Z_GetNextRenderAddress(numsegs * 2 * sizeof(int16_t));
+	tempsecnums = (int16_t far* )Z_GetNextRenderAddress(numsegs * 2 * sizeof(int16_t));
 
 	memset(segs, 0xff, numsegs * sizeof(seg_t));
 	
@@ -445,7 +445,7 @@ void P_LoadNodes(int16_t lump)
 	
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 	nodes = (node_t*)Z_MallocConventional(numnodes * sizeof(node_t));
-	nodes_render = (node_render_t* far) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
+	nodes_render = (node_render_t far* ) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
 
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
@@ -933,7 +933,7 @@ void P_CacheLineOpenings() {
 	sector_t* back;
 	
 
-	lineopenings = (lineopening_t* far)Z_GetNextPhysicsAddress(numlines * sizeof(lineopening_t));
+	lineopenings = (lineopening_t far* )Z_GetNextPhysicsAddress(numlines * sizeof(lineopening_t));
 	memset(lineopenings, 0, numlines * sizeof(lineopening_t));
 
 	for (linenum = 0; linenum < numlines; linenum++) {
@@ -1051,9 +1051,9 @@ void P_LoadLineDefs(int16_t lump)
 	side_render_t* tempsides_render;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
-	lines = (line_t * far)Z_MallocConventional(numlines * sizeof(line_t));
+	lines = (line_t far* )Z_MallocConventional(numlines * sizeof(line_t));
 
-	lines_physics = (line_physics_t* far)Z_GetNextPhysicsAddress(numlines * sizeof(line_physics_t));
+	lines_physics = (line_physics_t far* )Z_GetNextPhysicsAddress(numlines * sizeof(line_physics_t));
 
 	seenlines = (uint8_t*)Z_MallocConventional(numlines/8+1);
 	memset(lines, 0, numlines * sizeof(line_t));
@@ -1228,7 +1228,7 @@ void P_LoadBlockMap(int16_t lump)
 {
 	uint16_t         count;
 		
-	blockmaplump = (int16_t* far)Z_GetNextPhysicsAddress(W_LumpLength(lump));
+	blockmaplump = (int16_t far* )Z_GetNextPhysicsAddress(W_LumpLength(lump));
 	W_CacheLumpNumDirect(lump, (byte*)blockmaplump);
 
 
@@ -1310,7 +1310,7 @@ void P_GroupLines(void)
 
 	// build line tables for each sector        
 
-	linebuffer = (int16_t* far)Z_GetNextPhysicsAddress(total * sizeof(int16_t));
+	linebuffer = (int16_t far* )Z_GetNextPhysicsAddress(total * sizeof(int16_t));
 	linebufferindex = 0;
 
 	tempv1.h.fracbits = 0;

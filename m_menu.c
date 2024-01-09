@@ -57,8 +57,8 @@
 extern boolean          message_dontfuckwithme;
 extern patch_t*			hu_font[HU_FONTSIZE];
 
-byte* far menugraphicspage0 = (byte* far)0x70000000;
-byte* far menugraphicspage4 = (byte* far)0x64000000;
+byte far* menugraphicspage0 = (byte far*)0x70000000;
+byte far* menugraphicspage4 = (byte far* )0x64000000;
 uint16_t menuoffsets[NUM_MENU_ITEMS];
 
 
@@ -587,11 +587,11 @@ menu_t  SaveDef =
 };
 
 
-patch_t* far M_GetMenuPatch(int16_t i) {
+patch_t far* M_GetMenuPatch(int16_t i) {
 	if (i >= 27){
-		return (patch_t* far)(menugraphicspage4 + menuoffsets[i]);
+		return (patch_t far*)(menugraphicspage4 + menuoffsets[i]);
 	}
-	return (patch_t* far)(menugraphicspage0 + menuoffsets[i]);
+	return (patch_t far*)(menugraphicspage0 + menuoffsets[i]);
 
 }
 

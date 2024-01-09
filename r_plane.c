@@ -401,7 +401,7 @@ void R_DrawPlanes (void)
 	int8_t effectivepagenumber = 0;
 	uint8_t usedflatindex;
 	boolean flatunloaded = false;
-	byte* far src;
+	byte far* src;
 	int16_t currentflatpage = -1;
 
     for (i = 0; i < lastvisplane ; i++) {

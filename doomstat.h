@@ -198,7 +198,7 @@ extern  int16_t		maxammo[NUMAMMO];
 //
 
 // File handling stuff.
-extern	int8_t		basedefault[1024];
+extern	int8_t*		basedefault;
 
 // if true, load all graphics at level load
 extern  boolean         precache;
