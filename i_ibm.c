@@ -429,7 +429,6 @@ void I_ReadScreen(byte *scr)
 	uint16_t i;
 	uint16_t j;
 
-	//I_Error("\n screen %lx %lx %i", scr, currentscreen, currenttask);
 
 	outp(GC_INDEX, GC_READMAP);
     for (i = 0; i < 4; i++) {

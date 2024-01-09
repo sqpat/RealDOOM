@@ -120,7 +120,6 @@ P_RecursiveSound
 	}
 
 	if (secnum < 0 || secnum >= numsectors) {
-		// TODO remove
 		I_Error("bad sectors in P_RecursiveSound %i %i", secnum);
 	}
 #endif

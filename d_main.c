@@ -519,6 +519,8 @@ void D_Display (void)
     } while (!done);
 	wipeduration = ticcount - wiperealstart;
 }
+
+/*
 void checkstrings(int16_t j) {
 
 	int16_t i = 0;
@@ -546,7 +548,7 @@ void checkstrings(int16_t j) {
 	}
 }
   
-
+  */
 
 
 

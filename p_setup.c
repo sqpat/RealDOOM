@@ -164,8 +164,8 @@ byte far*  Z_GetNext0x7000Address(uint16_t size, int8_t pagetype) {
 			*useoffset += size;
 			return Z_GetNext0x6000Address(size);
 		}
-
-		I_Error("Allocated too much space in Z_GetNext0x7000Address (size %u type %hhu) ", size, pagetype);
+		
+		I_Error("95"); // Allocated too much space in Z_GetNext0x7000Address (size %u type %hhu) ", size, pagetype);
 	}
 	return returnvalue;
 
@@ -410,7 +410,7 @@ void P_LoadSectors(int16_t lump)
 		} else if (convertedtag == 77) {
 			convertedtag = TAG_77;
 		} else if (convertedtag >= 58) {
-			I_Error("found (sector) line tag that was too high! %i %i", convertedtag, i);
+			I_Error("94 %i %i", convertedtag, i); // found (sector) line tag that was too high! %i %i
 		}
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
@@ -1105,7 +1105,7 @@ void P_LoadLineDefs(int16_t lump)
 		} else if (convertedtag == 77) {
 			convertedtag = TAG_77;
 		} else if (convertedtag >= 58) {
-			I_Error("found (line) line tag that was too high! %i %i", convertedtag, i);
+			I_Error("93 %i %i", convertedtag, i);// found (line) line tag that was too high! %i %i
 		}
 
 		ld_physics->tag = convertedtag;

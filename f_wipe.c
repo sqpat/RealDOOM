@@ -218,13 +218,7 @@ wipe_EndScreen ()
     I_ReadScreen(wipe_scr_end);
     
 	V_DrawBlock(0, 0,  SCREENWIDTH, SCREENHEIGHT, wipe_scr_start); // restore start scr.
-	/*
-	I_Error("%hhu %hhu %hhu %hhu %hhu\n%hhu %hhu %hhu %hhu %hhu\n%hhu %hhu %hhu %hhu %hhu"
-		, screen0[0], screen0[1], screen0[2], screen0[3], screen0[4]
-		, screen2[0], screen2[1], screen2[2], screen2[3], screen2[4]
-		, screen3[0], screen3[1], screen3[2], screen3[3], screen3[4]
-	);
-	*/
+ 
 	Z_QuickmapPhysics();
 
     return 0;

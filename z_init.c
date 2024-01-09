@@ -77,7 +77,7 @@ byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 	int86(EMS_INT, &regs, &regs);
 	errorreg = regs.h.ah;
 	if (errorreg) {
-		I_Error("Couldn't init EMS, error %d", errorreg);
+		I_Error("91 %d", errorreg); // Couldn't init EMS, error %d
 	}
 
 
@@ -86,7 +86,7 @@ byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 	vernum = regs.h.al;
 	errorreg = regs.h.ah;
 	if (errorreg != 0) {
-		I_Error("EMS Error 0x46");
+		I_Error("90"); // EMS Error 0x46
 	}
 	//vernum = 10*(vernum >> 4) + (vernum&0xF);
 	DEBUG_PRINT("Version %i", vernum);
@@ -101,7 +101,7 @@ byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 	pageframebase = regs.w.bx;
 	errorreg = regs.h.ah;
 	if (errorreg != 0) {
-		I_Error("EMS Error 0x41");
+		I_Error("89");/// EMS Error 0x41
 	}
 
 
@@ -128,7 +128,7 @@ byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 		// Error 0 = 0x00 = no error
 		// Error 137 = 0x89 = zero pages
 		// Error 136 = 0x88 = OUT_OF_LOG
-		I_Error("EMS Error 0x43 %i", errorreg);
+		I_Error("88 %i", errorreg);// EMS Error 0x43
 	}
 
 
@@ -142,7 +142,7 @@ byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 		regs.h.ah = 0x44;
 		intx86(EMS_INT, &regs, &regs);
 		if (regs.h.ah != 0) {
-			I_Error("EMS Error 0x44");
+			I_Error("87"); // EMS Error 0x44
 		}
 	}
 
@@ -282,9 +282,9 @@ void Z_GetEMSPageMap() {
 	errorreg = regs.h.ah;
 	numentries = regs.w.cx;
 	if (errorreg != 0) {
-		I_Error("\nCall 5801 failed with value %i!\n", errorreg);
+		I_Error("84 %i", errorreg);// \nCall 5801 failed with value %i!\n
 	}
-	printf("\n Found: %i mappable EMS pages (28+ required)", numentries);
+	DEBUG_PRINT("\n Found: %i mappable EMS pages (28+ required)", numentries);
 
 	regs.w.ax = 0x5800;  // physical page
 	segregs.es = (uint16_t)((uint32_t)pointervalue >> 16);
@@ -293,7 +293,7 @@ void Z_GetEMSPageMap() {
 	errorreg = regs.h.ah;
 	//pagedata = MK_FP(sregs.es, regs.w.di);
 	if (errorreg != 0) {
-		I_Error("\nCall 25 failed with value %i!\n", errorreg);
+		I_Error("83 %i", errorreg);// \nCall 25 failed with value %i!\n
 	}
  
 	for (i = 0; i < numentries; i++) {

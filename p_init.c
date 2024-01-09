@@ -77,12 +77,7 @@ uint8_t     R_CheckTextureNumForNameA(int8_t *name)
 		}
 	}
 
-
-	/*
-	I_Error("\n%i %i %c%c%c%c%c%c%c%c %c%c%c%c%c%c%c%c", i, textures[i],
-		name[0], name[1], name[2], name[3], name[4], name[5], name[6], name[7],
-		texture->name[0], texture->name[1], texture->name[2], texture->name[3], texture->name[4], texture->name[5], texture->name[6], texture->name[7]);
-		*/
+	 
 	return BAD_TEXTURE;
 }
 
@@ -97,7 +92,7 @@ uint8_t     R_TextureNumForNameA(int8_t* name) {
 	uint8_t         i = R_CheckTextureNumForNameA(name);
 
 	if (i == BAD_TEXTURE) {
-		I_Error("\nR_TextureNumForName: %s not found", name);
+		I_Error("96 %s", name); // \nR_TextureNumForName: %s not found
 	}
 	return i;
 }

@@ -158,9 +158,7 @@ V_DrawPatch
 			break;
 		case 4:
 			desttop = screen4 + offset;
-			if (currenttask != TASK_STATUS) {
-				I_Error("drawpatch bad task"); // todo remove this check
-			}
+		 
 			break;
 	}
 

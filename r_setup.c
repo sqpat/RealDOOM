@@ -355,9 +355,11 @@ void R_PrecacheLevel(void)
 
 			W_CacheLumpNumDirect(lump, MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[(firstunusedflat % 16) >> 2] + MULT_4096[firstunusedflat & 0x03]));
 			firstunusedflat++;
+#ifdef CHECK_FOR_ERRORS
 			if (firstunusedflat >= MAX_FLATS_LOADED) {
 				I_Error("Too many flats!");
 			}
+#endif
 
 		}
 	}

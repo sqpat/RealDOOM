@@ -203,11 +203,11 @@ void R_GetNextCompositeBlock(int16_t tex_index) {
 				break;
 			}
 		}
-//#ifdef CHECK_FOR_ERRORS
+#ifdef CHECK_FOR_ERRORS
 		if (i == NUM_TEXTURE_PAGES) {
 			I_Error("Couldn't find composite page a");
 		}
-//#endif
+#endif
 	}
 	else {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
@@ -237,17 +237,15 @@ void R_GetNextCompositeBlock(int16_t tex_index) {
 			}
 		}
 
-		//#ifdef CHECK_FOR_ERRORS
+		#ifdef CHECK_FOR_ERRORS
 		if (i == NUM_TEXTURE_PAGES - numpagesminus1) {
 			I_Error("Couldn't find composite page b");
 		}
-		//#endif		
+		#endif		
 
 
 	}
-	if (tex_index == 24) {
-		//I_Error("values %u %hhu %hhi %hhu %hhu %i", size, blocksize, numpages, texpage, texoffset, i);
-	}
+
 
 	compositetexturepage[tex_index] = texpage;
 	compositetextureoffset[tex_index] = texoffset;
@@ -284,11 +282,11 @@ void R_GetNextPatchBlock(int16_t lump) {
 				break;
 			}
 		}
-//#ifdef CHECK_FOR_ERRORS
+#ifdef CHECK_FOR_ERRORS
 		if (i == NUM_PATCH_CACHE_PAGES) {
 			I_Error("Couldn't find patch page a");
 		}
-//#endif
+#endif
 	} else {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
 		uint8_t numpagesminus1 = numpages - 1;
@@ -319,11 +317,11 @@ void R_GetNextPatchBlock(int16_t lump) {
 
 		}
 
-		//#ifdef CHECK_FOR_ERRORS
+		#ifdef CHECK_FOR_ERRORS
 		if (i == NUM_PATCH_CACHE_PAGES - numpagesminus1) {
 			I_Error("Couldn't find patch page b");
 		}
-		//#endif
+		#endif
  	
 	}
 
@@ -362,11 +360,11 @@ void R_GetNextSpriteBlock(int16_t lump) {
 				break;
 			}
 		}
-		//#ifdef CHECK_FOR_ERRORS
+		#ifdef CHECK_FOR_ERRORS
 		if (i == NUM_SPRITE_CACHE_PAGES) {
 			I_Error("Couldn't find sprite page a");
 		}
-		//#endif
+		#endif
 	}
 	else {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
@@ -398,11 +396,11 @@ void R_GetNextSpriteBlock(int16_t lump) {
 
 		}
 
-		//#ifdef CHECK_FOR_ERRORS
+		#ifdef CHECK_FOR_ERRORS
 		if (i == NUM_SPRITE_CACHE_PAGES - numpagesminus1) {
 			I_Error("Couldn't find sprite page b");
 		}
-		//#endif
+		#endif
 	}
 
 	spritepage[lump - firstspritelump] = texpage;
@@ -598,8 +596,6 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 
 		Z_QuickmapRenderTexture();
 
-		//Z_QuickmapRenderTexture(startpage, 1);
-		// paged in
 
 		return startpage;
 

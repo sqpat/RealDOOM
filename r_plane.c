@@ -236,7 +236,7 @@ R_FindPlane
 
 	if (lastvisplane == MAXCONVENTIONALVISPLANES ){
 		// swap out to EMS
-		I_Error("out of visplanes");
+		I_Error("92"); // out of visplanes
 	}
 
 	// didnt find it, make a new visplane
@@ -474,7 +474,7 @@ void R_DrawPlanes (void)
 			usedflatindex =  flatindex[flattranslation[pl->picnum]] = firstunusedflat;
 			firstunusedflat++;
 			if (firstunusedflat > MAX_FLATS_LOADED) {
-				I_Error("Too many flats!");
+				I_Error("93"); // too many flats
 			}
 			flatunloaded = true;
 		}
@@ -491,9 +491,11 @@ void R_DrawPlanes (void)
 		// load if necessary
 		if (flatunloaded){
 			int16_t lump = firstflat + flattranslation[pl->picnum];
+#ifdef CHECK_FOR_ERRORS
 			if (lump < firstflat || lump > firstflat + numflats) {
 				I_Error("bad flat? %i", lump);
 			}
+#endif
 		 
 			W_CacheLumpNumDirect(firstflat + flattranslation[pl->picnum], src);
 		}

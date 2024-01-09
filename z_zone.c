@@ -142,7 +142,7 @@ void far* Z_MallocConventional(
 	byte far* returnvalue = conventionalmemoryblock + conventional1head;
 
 	if (size > remainingconventional) {
-		I_Error("out of conventional space %u %u", size, remainingconventional);
+		I_Error("79 %u %u", size, remainingconventional);// out of conventional space %u %u
 	}
 	conventional1head += size;
 	remainingconventional -= size;
@@ -623,9 +623,12 @@ void Z_PushScratchFrame() {
 		oldtask = currenttask;
 		currenttask = TASK_SCRATCH_STACK;
 	}
+	// doesnt come up
+	/*
 	else {
 		I_Error("double stack");
 	}
+	*/
 }
  
 
@@ -653,9 +656,10 @@ void Z_PopScratchFrame() {
 		pageswapargs_scratch_5000[6] = FIRST_SCRATCH_LOGICAL_PAGE + 3;
 
 	}
-	else {
+// doesnt come up
+/*	else {
 		I_Error("didnt clear - double stack");
-	}
+	}*/
 }
 
 void Z_QuickMapFlatPage(int16_t page) {
@@ -776,6 +780,6 @@ void Z_QuickmapByTaskNum(int8_t tasknum) {
 			Z_QuickmapMenu();
 			break;
 		default:
-			I_Error("bad tasknum %hhi", tasknum);
+			I_Error("78 %hhi", tasknum); // bad tasknum
 	}
 }
