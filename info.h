@@ -1330,10 +1330,10 @@ typedef struct
 
 } mobjinfo_t;
 
+ 
+#define mobjinfo ((mobjinfo_t far *) (0x90000000 + sizeof(thinker_t) * MAX_THINKERS))
 
-
-extern mobjinfo_t *mobjinfo;
-
+ 
 extern int32_t getMobjMass(uint8_t id);
 extern int16_t getPainChance(uint8_t id);
 extern int16_t getRaiseState(uint8_t id);

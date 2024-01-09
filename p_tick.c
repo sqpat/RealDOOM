@@ -38,14 +38,14 @@ int16_t currentThinkerListHead;
 
 
 // Both the head and tail of the thinker list.
-thinker_t*	thinkerlist; // [MAX_THINKERS];
+//thinker_t*	thinkerlist; // [MAX_THINKERS];
 mobj_pos_t*	mobjposlist; // [MAX_THINKERS];
 
 
 
 //todo merge this below as its only used there
 THINKERREF P_GetNextThinkerRef(void) {
-
+	
 	int16_t i;
     
     for (i = currentThinkerListHead + 1; i != currentThinkerListHead; i++){

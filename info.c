@@ -593,4 +593,4 @@ int16_t getSpawnHealth(uint8_t id) {
 // that should mean less paging and better performance. these fields are generally accessed infrequently
 // anyway. conventional memory should be used on things being accessed all the time.
 
-mobjinfo_t *mobjinfo;
+//mobjinfo_t *mobjinfo;

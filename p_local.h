@@ -93,10 +93,7 @@
 #define TF_FUNCBITS					0xF800u
 #define TF_PREVBITS					0x07FFu
 
-// Doubly linked list of actors.
 
-
-// 69 bytes, 65 of which is mobj_t currently
 typedef struct thinker_s
 {
 	// functiontype is the five high bits
@@ -110,13 +107,9 @@ typedef struct thinker_s
 } thinker_t;
 
 
-// both the head and tail of the thinker list
 
-// 41400 in size
-// 950 would be 65550, too big
-// 949 is 65481
+#define thinkerlist ((thinker_t far*)0x90000000)
 
-extern	thinker_t	*thinkerlist;// [MAX_THINKERS];
 extern mobj_pos_t*	mobjposlist; // [MAX_THINKERS];
 
 

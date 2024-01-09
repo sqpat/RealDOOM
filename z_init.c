@@ -429,9 +429,9 @@ void Z_LinkEMSVariables() {
 	offset_physics = 0u;
 	offset_status = 0u;
 	//physics mapping
-	thinkerlist = MK_FP(segment, offset_physics);
+	//thinkerlist = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(thinker_t) * MAX_THINKERS;
-	mobjinfo = MK_FP(segment, offset_physics);
+	//mobjinfo = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(mobjinfo_t) * NUMMOBJTYPES;
 
 
