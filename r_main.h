@@ -64,8 +64,8 @@ extern int16_t		validcount;
 #define MAXLIGHTZ	       128
 #define LIGHTZSHIFT		20
 
-extern lighttable_t**		scalelight;// [LIGHTLEVELS][MAXLIGHTSCALE];
-extern lighttable_t**		scalelightfixed;// [MAXLIGHTSCALE];
+//extern lighttable_t**		scalelight;// [LIGHTLEVELS][MAXLIGHTSCALE];
+//extern lighttable_t**		scalelightfixed;// [MAXLIGHTSCALE];
 extern lighttable_t**		zlight;// [LIGHTLEVELS][MAXLIGHTZ];
 //extern uint16_t	*			zlight;// [LIGHTLEVELS][MAXLIGHTZ];
 

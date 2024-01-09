@@ -41,7 +41,7 @@
 
 
 // needed for pre rendering (fracs)
-extern int16_t		*spritewidths;
+//extern int16_t		*spritewidths;
 extern int16_t		*spriteoffsets;
 extern int16_t		*spritetopoffsets;
 
@@ -54,13 +54,13 @@ extern int16_t		viewheight;
 extern int16_t		firstflat;
 
 
-extern uint8_t* usedcompositetexturepagemem;
+//extern uint8_t* usedcompositetexturepagemem;
 extern uint8_t* compositetextureoffset;
 extern uint8_t* compositetexturepage;
-extern uint8_t* usedpatchpagemem;
+//extern uint8_t* usedpatchpagemem;
 extern uint8_t* patchpage;
 extern uint8_t* patchoffset;
-extern uint8_t* usedspritepagemem;
+//extern uint8_t* usedspritepagemem;
 extern uint8_t* spritepage;
 extern uint8_t* spriteoffset;
 extern uint8_t* flatindex;

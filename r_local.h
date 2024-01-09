@@ -70,6 +70,6 @@ typedef struct
 
 } texture_t;
 
-extern byte *colormapbytes;
+
 
 #endif		// __R_LOCAL__

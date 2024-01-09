@@ -170,7 +170,7 @@ void R_InitLightTables(void)
 
 }
 
-extern byte         	*colormapbytes;// [(33 * 256) + 255];
+//extern byte         	*colormapbytes;// [(33 * 256) + 255];
 extern lighttable_t    *colormaps;
 
 //

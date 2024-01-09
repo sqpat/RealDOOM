@@ -28,6 +28,7 @@
 
 // Needed because we are refering to patches.
 #include "r_data.h"
+#include "st_stuff.h"
 
 //
 // VIDEO
@@ -39,20 +40,21 @@
 // Screen 0 is the screen updated by I_Update screen.
 // Screen 1 is an extra buffer.
 
+#define screen0 ((byte far*) 0x80000000)
+#define screen2 ((byte far*) 0x70000000)
+#define screen3 ((byte far*) 0x60000000)
+#define screen4 ((byte far*) 0x90000000 + (65536u - ST_WIDTH * ST_HEIGHT))
+
  
-extern byte*				screen0;
-//extern byte*				screen1;
-extern byte*				screen2;
-extern byte*				screen3;
 
  
  
 
-extern	byte*		screen4;
+//extern	byte*		screen4;
 
 extern  int16_t	dirtybox[4];
 
-extern	byte	*gammatable;
+#define gammatable ((byte far*) 0x80000000 + 64000u)
 extern	uint8_t	usegamma;
 
 

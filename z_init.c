@@ -480,8 +480,8 @@ void Z_LinkEMSVariables() {
 	// now 64894
 
 	offset_status -= (ST_WIDTH*ST_HEIGHT);
-	screen4 = MK_FP(segment, offset_status);
 
+	//screen4 = MK_FP(segment, offset_status);
 
 	printf("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
 	printf("\n   0x9000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
@@ -491,26 +491,37 @@ void Z_LinkEMSVariables() {
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	screen0 = MK_FP(segment, 0);
+	//screen0 = MK_FP(segment, 0);
 	offset_physics += 64000u;
-	gammatable = MK_FP(segment, offset_physics);
+	//gammatable = MK_FP(segment, offset_physics);
 	offset_physics += (256 * 5);
+ 
 
-
-	colormapbytes = MK_FP(segment, offset_render); // needs to be 256-byte aligned so leave it at 0!!
+	//colormapbytes = MK_FP(segment, offset_render); // needs to be 256-byte aligned so leave it at 0!!
 	offset_render += ((33 * 256));
-	openings = MK_FP(segment, offset_render);
+	//openings = MK_FP(segment, offset_render);
 	offset_render += sizeof(int16_t) * MAXOPENINGS;
-	negonearray = MK_FP(segment, offset_render);
+	//negonearray = MK_FP(segment, offset_render);
 	offset_render += sizeof(int16_t) * (SCREENWIDTH);
-	screenheightarray = MK_FP(segment, offset_render);
+	//screenheightarray = MK_FP(segment, offset_render);
 	offset_render += sizeof(int16_t) * (SCREENWIDTH);
-	vissprites = MK_FP(segment, offset_render);
+	//vissprites = MK_FP(segment, offset_render);
 	offset_render += sizeof(vissprite_t) * (MAXVISSPRITES);
-	scalelightfixed = MK_FP(segment, offset_render);
+	//scalelightfixed = MK_FP(segment, offset_render);
+
 	offset_render += sizeof(lighttable_t*) * (MAXLIGHTSCALE);
 
-	spritewidths = MK_FP(segment, offset_render);
+	// todo change all this to 16 bit pointers/lookups based on fixed 0x8000 colormapbytes segment.
+	// then bring offset_render back up	//scalelight = MK_FP(segment, offset_render);
+	offset_render += sizeof(lighttable_t far*) * (LIGHTLEVELS * MAXLIGHTSCALE);
+	//usedcompositetexturepagemem = MK_FP(segment, offset_render);
+	offset_render += NUM_TEXTURE_PAGES * sizeof(uint8_t);
+	//usedspritepagemem = MK_FP(segment, offset_render);
+	offset_render += NUM_SPRITE_CACHE_PAGES * sizeof(uint8_t);
+	//usedpatchpagemem = MK_FP(segment, offset_render);
+	offset_render += NUM_PATCH_CACHE_PAGES * sizeof(uint8_t);
+
+	//spritewidths = MK_FP(segment, offset_render);
 	offset_render += (sizeof(int16_t) * numspritelumps);
 	spriteoffsets = MK_FP(segment, offset_render);
 	offset_render += (sizeof(int16_t) * numspritelumps);
@@ -518,27 +529,19 @@ void Z_LinkEMSVariables() {
 	offset_render += (sizeof(int16_t) * numspritelumps);
 
 
-	// todo change all this to 16 bit pointers/lookups based on fixed 0x8000 colormapbytes segment.
-	// then bring offset_render back up
-	scalelight = MK_FP(segment, offset_render);
-	offset_render += sizeof(lighttable_t far*) * (LIGHTLEVELS * MAXLIGHTSCALE);
 
-	usedcompositetexturepagemem = MK_FP(segment, offset_render);
-	offset_render += NUM_TEXTURE_PAGES * sizeof(uint8_t);
+
+
 	compositetextureoffset = MK_FP(segment, offset_render);
 	offset_render += numtextures * sizeof(uint8_t);
 	compositetexturepage = MK_FP(segment, offset_render);
 	offset_render += numtextures * sizeof(uint8_t);
 
-	usedspritepagemem = MK_FP(segment, offset_render);
-	offset_render += NUM_SPRITE_CACHE_PAGES * sizeof(uint8_t);
 	spritepage = MK_FP(segment, offset_render);
 	offset_render += numspritelumps * sizeof(uint8_t);
 	spriteoffset = MK_FP(segment, offset_render);
 	offset_render += numspritelumps * sizeof(uint8_t);
 
-	usedpatchpagemem = MK_FP(segment, offset_render);
-	offset_render += NUM_PATCH_CACHE_PAGES * sizeof(uint8_t);
 	patchpage = MK_FP(segment, offset_render);
 	offset_render += numpatches * sizeof(uint8_t);
 	patchoffset = MK_FP(segment, offset_render);
@@ -565,7 +568,7 @@ void Z_LinkEMSVariables() {
 	offset_status = 0u;
 
 	segment = 0x7000;
-	screen2 = MK_FP(segment, 0);
+	//screen2 = MK_FP(segment, 0);
 
 
 	offset_status = 0u;
@@ -667,7 +670,7 @@ void Z_LinkEMSVariables() {
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	screen3 = MK_FP(segment, 0);
+	//screen3 = MK_FP(segment, 0);
 
 	//stringdata = MK_FP(segment, offset_physics);
 	offset_physics += 16384;
@@ -702,14 +705,14 @@ void Z_LinkEMSVariables() {
 	offset_status = 0u;
 
 
-	finesine = MK_FP(segment, offset_physics);
-	finecosine = MK_FP(segment, 8192u);
+	//finesine = MK_FP(segment, offset_physics);
+	//finecosine = MK_FP(segment, 8192u);
 	offset_physics += 10240 * sizeof(int32_t);
-	finetangentinner = MK_FP(segment, offset_physics);
+	//finetangentinner = MK_FP(segment, offset_physics);
 	offset_physics += 2048 * sizeof(int32_t);
-	tantoangle = MK_FP(segment, offset_physics);
+	//tantoangle = MK_FP(segment, offset_physics);
 	offset_physics += 2049 * sizeof(uint32_t);
-	states = MK_FP(segment, offset_physics);
+	//states = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(state_t) * NUMSTATES;
 
 	//demobuffer = MK_FP(segment, 0);

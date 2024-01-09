@@ -393,7 +393,7 @@ void F_Ticker (void)
 
 void F_TextWrite (void)
 {
-	byte*	dest = screen0;
+	byte far*	dest = screen0;
     
     int16_t		x,y,w;
     int16_t		count;
@@ -402,7 +402,7 @@ void F_TextWrite (void)
     int16_t		cx;
     int16_t		cy;
      // erase the entire screen to a tiled background
-	byte* src = MK_FP(0x5000, 0);
+	byte far* src = MK_FP(0x5000, 0);
 
 	Z_QuickmapScratch_5000();
 	Z_QuickmapScreen0();

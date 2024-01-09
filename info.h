@@ -1151,7 +1151,10 @@ typedef struct state_s
   //int32_t			misc1, misc2;
 } state_t;
 
-extern state_t* states;
+//extern state_t* states;
+
+#define states ((state_t*) (0x50000000 + size_tantoangle))
+
 
 #define MT_PLAYER 0
 #define MT_POSSESSED 1

@@ -75,11 +75,12 @@ uint8_t	*texturetranslation;
 
 
 // needed for pre rendering
-int16_t		*spritewidths;
+//int16_t		*spritewidths;
 int16_t		*spriteoffsets;
 int16_t		*spritetopoffsets;
 
-byte         	*colormapbytes;// [(33 * 256) + 255];
+//byte         	*colormapbytes;// [(33 * 256) + 255];
+
 lighttable_t    *colormaps;
 
 
@@ -89,15 +90,15 @@ int16_t activetexturepages[4]; // always gets reset to defaults at start of fram
 uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
 int16_t textureLRU[4];
 
-uint8_t* usedcompositetexturepagemem; // defaults 00
+//uint8_t* usedcompositetexturepagemem; // defaults 00
 uint8_t* compositetextureoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
 uint8_t* compositetexturepage; //  page index of the allocatiion
 
-uint8_t* usedpatchpagemem; // defaults 00
+//uint8_t* usedpatchpagemem; // defaults 00
 uint8_t* patchpage; //  defaults FF. page index of the allocatiion
 uint8_t* patchoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
 
-uint8_t* usedspritepagemem; // defaults 00
+//uint8_t* usedspritepagemem; // defaults 00
 uint8_t* spritepage;
 uint8_t* spriteoffset;
 

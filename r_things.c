@@ -54,8 +54,8 @@ lighttable_t**  spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping
-int16_t           *negonearray;// [SCREENWIDTH];
-int16_t           *screenheightarray;// [SCREENWIDTH];
+//int16_t           *negonearray;// [SCREENWIDTH];
+//int16_t           *screenheightarray;// [SCREENWIDTH];
 
 
 //
@@ -79,7 +79,7 @@ extern byte*	 spritedefs_bytes;
 //
 // GAME FUNCTIONS
 //
-vissprite_t     *vissprites;// [MAXVISSPRITES];
+//vissprite_t     *vissprites;// [MAXVISSPRITES];
 vissprite_t*    vissprite_p;
 
 
@@ -581,8 +581,8 @@ void R_SortVisSprites (void)
 {
 	int16_t                 i;
 	int16_t                 count;
-    vissprite_t*        ds;
-    vissprite_t*        best;
+    vissprite_t far*        ds;
+    vissprite_t far*        best;
     vissprite_t         unsorted;
     fixed_t             bestscale;
 
@@ -762,8 +762,8 @@ void R_DrawSprite (vissprite_t* spr)
 // NO LOCKED PAGES GOING IN
 void R_DrawMasked (void)
 {
-    vissprite_t*        spr;
-    drawseg_t*          ds;
+    vissprite_t far*        spr;
+    drawseg_t far*          ds;
         
     R_SortVisSprites ();
 

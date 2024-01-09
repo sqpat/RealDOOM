@@ -28,7 +28,6 @@
 
 
 
-state_t	*states; 
 
 
 
@@ -588,9 +587,3 @@ int16_t getSpawnHealth(uint8_t id) {
 	}
 }
 
-
-// we have cut a lot of data out of here in various hacky ways. as long as it saves conventional memory,
-// that should mean less paging and better performance. these fields are generally accessed infrequently
-// anyway. conventional memory should be used on things being accessed all the time.
-
-//mobjinfo_t *mobjinfo;

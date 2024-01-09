@@ -32,11 +32,7 @@
 
 
 #include "tables.h"
-
-int32_t		*finesine;	// 10240
-int32_t		*finecosine;
-int32_t		*finetangentinner; // [2048]
-angle_t		*tantoangle;//[SLOPERANGE + 1];
+ 
 extern int16_t currenttask;
 extern int32_t gametic;
 

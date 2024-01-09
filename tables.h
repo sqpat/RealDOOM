@@ -80,16 +80,18 @@ typedef uint16_t fineangle_t;
 
 // Effective size is 10240.
 
-extern  int32_t		*finesine;	// 10240
-extern  int32_t		*finecosine;
+#define size_finesine		10240u * sizeof(int32_t)
+#define size_finetangent	size_finesine +  2048u * sizeof(int32_t)
+#define size_tantoangle		size_finetangent +  2049u * sizeof(int32_t)
+
+#define finesine			((int32_t*) 0x50000000)	// 10240
+#define finecosine			((int32_t*) 0x50002000)	// 10240
+#define finetangentinner	((int32_t*) (0x50000000 + size_finesine ))
+#define tantoangle			((angle_t*) (0x50000000 + size_finetangent))
+
 
 // this one has no issues with mirroring 2nd half of values!
-extern int32_t		*finetangentinner; // [2048]
 
-// Effective size is 2049;
-// The +1 size is to handle the case when x==y
-//  without additional checking.
-extern angle_t		*tantoangle;//[SLOPERANGE + 1];
 #define finetangent(x) (x < 2048 ? finetangentinner[x] : -(finetangentinner[(2047-(x-2048))]) )
 
 
