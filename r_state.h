@@ -192,8 +192,9 @@ extern fineangle_t	rw_normalangle;
 // 90 is 58860
 // 100 is 65400 (fits)
 // start with this then add the view angles as well..
-extern	visplane_t		*visplanes;// [MAXCONVENTIONALVISPLANES];
-extern int16_t	floorplaneindex;
+#define visplanes ((visplane_t far*) 0x90000000)
+
+ extern int16_t	floorplaneindex;
 extern int16_t	ceilingplaneindex;
 
 

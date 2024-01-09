@@ -113,7 +113,7 @@ int8_t            demoname[32];
 boolean         demorecording; 
 boolean         demoplayback; 
 boolean         netdemo; 
-byte*           demobuffer;
+#define           demobuffer ((byte far*) 0x50000000)
 
 uint16_t           demo_p;				// buffer
 //byte*           demoend; 
@@ -976,7 +976,7 @@ void G_InitNew(skill_t       skill, int8_t           episode, int8_t           m
 void G_ReadDemoTiccmd (ticcmd_t* cmd) 
 { 
     // this is just used as an offset so lets just store as int;
-	byte* demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
+	byte far* demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickmapDemo();
 
 	if (*demo_addr == DEMOMARKER)  {
@@ -998,7 +998,7 @@ void G_ReadDemoTiccmd (ticcmd_t* cmd)
 
 void G_WriteDemoTiccmd (ticcmd_t* cmd) 
 { 
-	byte* demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
+	byte far* demo_addr = (byte far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickmapDemo();
 	if (gamekeydown['q'])           // press q to end demo recording 
         G_CheckDemoStatus (); 
@@ -1049,7 +1049,7 @@ void G_RecordDemo (int8_t* name)
  
 void G_BeginRecording (void) 
 { 
-	byte* demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
+	byte far* demo_addr = (byte far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickmapDemo();
 
     demo_p = 0;
@@ -1091,12 +1091,12 @@ void G_DoPlayDemo (void)
 { 
     skill_t skill; 
 	int8_t             episode, map;
-	byte* demo_addr;
+	byte far* demo_addr;
 	Z_QuickmapDemo();
 
 	gameaction = ga_nothing;
 	W_CacheLumpNameDirect(defdemoname, demobuffer);
-	demo_addr = (byte*)(demobuffer);
+	demo_addr = (byte far*)(demobuffer);
 	demo_p = 0;
 
 
@@ -1172,7 +1172,7 @@ boolean G_CheckDemoStatus (void)  {
 	uint32_t fps, fps2;
 #endif
 	//byte* demobuffer;
-	byte* demo_addr;
+	byte far* demo_addr;
 	if (timingdemo) {
 		endtime = ticcount;
 
@@ -1214,7 +1214,7 @@ boolean G_CheckDemoStatus (void)  {
  
     if (demorecording)  { 
 		Z_QuickmapDemo();
-		demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
+		demo_addr = (byte far*)MK_FP(DEMO_SEGMENT, demo_p);
 		*demo_addr++ = DEMOMARKER;
 		demo_p++;
         M_WriteFile (demoname, demobuffer, demo_p);

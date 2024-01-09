@@ -209,8 +209,8 @@ extern int16_t pageswapargoff_scratch_stack;
 extern int16_t pageswapargseg_flat;
 extern int16_t pageswapargoff_flat;
 
-extern byte far* demobuffer;
-extern byte far* palettebytes;
+//extern byte far* demobuffer;
+//extern byte far* palettebytes;
 
 
 uint8_t fontlen[63] = { 72, 100, 116, 128, 144, 132, 60, 
@@ -435,12 +435,12 @@ void Z_LinkEMSVariables() {
 	offset_physics += sizeof(mobjinfo_t) * NUMMOBJTYPES;
 
 
-	intercepts = MK_FP(segment, offset_physics);
+	//intercepts = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(intercept_t) * MAXINTERCEPTS;
 
 
 	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
-	visplanes = MK_FP(segment, 0);
+	//visplanes = MK_FP(segment, 0);
 	offset_render += sizeof(visplane_t) * MAXCONVENTIONALVISPLANES;
 	visplaneheaders = MK_FP(segment, offset_render);
 	offset_render += sizeof(visplaneheader_t) * MAXEMSVISPLANES;
@@ -471,7 +471,7 @@ void Z_LinkEMSVariables() {
 	ceilingclip = MK_FP(segment, offset_render);
 	offset_render += sizeof(int16_t) * SCREENWIDTH;
 	
-	palettebytes = MK_FP(segment, 0);
+	//palettebytes = MK_FP(segment, 0);
 
 
 
@@ -712,7 +712,7 @@ void Z_LinkEMSVariables() {
 	states = MK_FP(segment, offset_physics);
 	offset_physics += sizeof(state_t) * NUMSTATES;
 
-	demobuffer = MK_FP(segment, 0);
+	//demobuffer = MK_FP(segment, 0);
 
 
 	printf("\n   0x5000:      %05u   %05u   XXXXX   XXXXX   00000", offset_physics, offset_physics);

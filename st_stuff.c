@@ -61,7 +61,7 @@ boolean          updatedthisframe;
 
 // lump number for PLAYPAL
 //int16_t              lu_palette;
-byte far*  palettebytes;
+//byte far*  palettebytes;
 
 // used for timing
 

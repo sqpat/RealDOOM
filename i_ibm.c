@@ -35,6 +35,7 @@
 #include "v_video.h"
 #include "w_wad.h"
 #include "z_zone.h"
+#include "st_stuff.h"
 
 #define SC_INDEX                0x3C4
 #define SC_RESET                0
@@ -240,19 +241,18 @@ void I_WaitVBL(int16_t vbls)
     }
 }
 
-extern byte far* palettebytes;
 //
 // I_SetPalette
 // Palette source must use 8 bit RGB elements.
 //
 
 void I_SetPalette(int8_t paletteNumber) {
-	byte* gammatablelookup;
+	byte far* gammatablelookup;
 	int16_t i;
 	//byte* palette = alloca(768);
 
 
-	byte* palette = palettebytes + paletteNumber * 768u;
+	byte far* palette = palettebytes + paletteNumber * 768u;
 	int16_t savedtask = currenttask;
 	
     if(novideo) {
@@ -278,7 +278,7 @@ void I_SetPalette(int8_t paletteNumber) {
 // Graphics mode
 //
 
-byte *pcscreen, *currentscreen, *destview;
+byte far *pcscreen, *currentscreen, *destview;
 fixed_t_union destscreen;
 
 //
@@ -292,7 +292,7 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
 	uint16_t offset;
 	int16_t pstep;
 	int16_t step;
-    byte *dest, *source;
+    byte far *dest, *source;
  
     sp_x1 = x / 8;
     sp_x2 = (x + w) / 8;
@@ -330,7 +330,7 @@ void I_UpdateNoBlit(void) {
 	int16_t realdr[4];
 	int16_t x, y, w, h;
 	// Set current screen
-    currentscreen = (byte*) destscreen.w;
+    currentscreen = (byte far*) destscreen.w;
 
     // Update dirtybox size
     realdr[BOXTOP] = dirtybox[BOXTOP];
@@ -424,7 +424,7 @@ void I_FinishUpdate(void)
 // I_ReadScreen
 // Reads the screen currently displayed into a linear buffer.
 //
-void I_ReadScreen(byte *scr)
+void I_ReadScreen(byte far *scr)
 {
 	uint16_t i;
 	uint16_t j;

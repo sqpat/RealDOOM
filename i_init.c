@@ -39,7 +39,7 @@
 extern boolean novideo; 
 extern boolean grmode;
 
-extern byte *pcscreen, *currentscreen, *destview;
+extern byte far *pcscreen, *currentscreen, *destview;
 extern fixed_t_union destscreen;
 extern void (__interrupt __far *oldkeyboardisr) ();
 

@@ -141,7 +141,7 @@ void I_WaitVBL(int16_t count);
 void I_BeginRead(void);
 void I_EndRead(void);
 
-void I_ReadScreen(byte* scr);
+void I_ReadScreen(byte far* scr);
 
 
 #endif

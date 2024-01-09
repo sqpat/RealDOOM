@@ -760,7 +760,8 @@ P_BlockThingsIterator
 //
 // INTERCEPT ROUTINES
 //
-intercept_t*	intercepts;// [MAXINTERCEPTS];
+//intercept_t*	intercepts;// [MAXINTERCEPTS];
+#define intercepts ((intercept_t far*) (0x90000000 + (sizeof(mobjinfo_t) * NUMMOBJTYPES) + (sizeof(thinker_t) * MAX_THINKERS) ))
 intercept_t*	intercept_p;
 
 divline_t 	trace;

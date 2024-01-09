@@ -45,7 +45,7 @@
 visplaneheader_t	*visplaneheaders; //[MAXEMSVISPLANES];
 //MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES]; 
 
-visplane_t			*visplanes;// [MAXCONVENTIONALVISPLANES];
+//visplane_t			*visplanes;// [MAXCONVENTIONALVISPLANES];
 int16_t				lastvisplane;
 int16_t				floorplaneindex;
 int16_t				ceilingplaneindex;
