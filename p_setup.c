@@ -75,8 +75,6 @@ side_t*				sides;
 side_render_t*		sides_render;
 int16_t*          linebuffer;
 
-// for things nightmare respawn data
-mapthing_t*			nightmarespawns;
 
 #ifdef PRECALCULATE_OPENINGS
 lineopening_t*	lineopenings;
@@ -111,7 +109,7 @@ THINKERREF*		blocklinks;
 // Without special effect, this could be
 //  used as a PVS lookup as well.
 //
-byte far*            rejectmatrix;
+//byte far*            rejectmatrix;
 
 uint16_t leveldataoffset_phys = 0u;
 uint16_t leveldataoffset_rend = 0 - (MAX_THINKERS * sizeof(mobj_pos_t));

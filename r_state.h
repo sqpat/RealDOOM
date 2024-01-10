@@ -28,9 +28,7 @@
 
 #define SECNUM_NULL -1
 #define LINENUM_NULL -1
-
-// DOOM 1 SHAREWARE VALUE
-// DOOM 1 SHAREWARE VALUE
+ 
 
 
 //
@@ -71,14 +69,14 @@ extern int32_t totalpatchsize;
 extern byte*	 spritedefs_bytes;
 
  
-extern uint16_t *texturecolumn_offset;
-extern uint16_t *texturedefs_offset;
-extern uint8_t  *texturewidthmasks;
-extern uint8_t  *textureheights;		    // uint8_t must be + 1 and then shifted to fracbits when used
-extern uint16_t *texturecompositesizes;	// uint16_t*
+extern uint16_t	near*texturecolumn_offset;
+extern uint16_t	near*texturedefs_offset;
+extern uint8_t	near*texturewidthmasks;
+extern uint8_t	near*textureheights;		    // uint8_t must be + 1 and then shifted to fracbits when used
+extern uint16_t	near*texturecompositesizes;	// uint16_t*
 // for global animation
-extern uint8_t	*flattranslation; // can almost certainly be smaller
-extern uint8_t	*texturetranslation;
+extern uint8_t	near*flattranslation; // can almost certainly be smaller
+extern uint8_t	near*texturetranslation;
 
 
 
@@ -141,7 +139,8 @@ extern side_render_t*		sides_render;
 
 extern int16_t*          linebuffer;
 
-extern mapthing_t*			nightmarespawns;
+// for things nightmare respawn data
+#define nightmarespawns		((mapthing_t far *			) 0x60008000)
 
 #ifdef PRECALCULATE_OPENINGS
 extern lineopening_t*	lineopenings;
@@ -162,8 +161,6 @@ extern fineangle_t		viewangle_shiftright3;
 extern angle_t		clipangle;	// note: fracbits always 0
 extern angle_t fieldofview;		// note: fracbits always 0
 
-extern int16_t		*viewangletox; //[FINEANGLES / 2];
-extern fineangle_t		*xtoviewangle;// [SCREENWIDTH + 1];
 //extern fixed_t		finetangent[FINEANGLES/2];
 
 extern fixed_t		rw_distance;
@@ -185,16 +182,11 @@ extern fineangle_t	rw_normalangle;
  extern visplaneheader_t	*visplaneheaders;// [MAXEMSVISPLANES];
 
 #define MAXCONVENTIONALVISPLANES	60
+  
 
-// size for 60 is 39240, or 654 each... hasnt caused trouble yet?
-// 70 is 45780
-// 80 is 52320
-// 90 is 58860
-// 100 is 65400 (fits)
-// start with this then add the view angles as well..
-#define visplanes ((visplane_t far*) 0x90000000)
 
- extern int16_t	floorplaneindex;
+
+extern int16_t	floorplaneindex;
 extern int16_t	ceilingplaneindex;
 
 

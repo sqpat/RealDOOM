@@ -53,25 +53,20 @@ int16_t             lastspritelump;
 int16_t             numspritelumps;
 
 int16_t             numtextures;
-
-
-
-byte* texturecolumnlumps_bytes;
-byte* texturecolumnofs_bytes;
-byte* texturedefs_bytes;
+ 
 
 byte*	 spritedefs_bytes;
 
  
 
-uint16_t *texturecolumn_offset;
-uint16_t *texturedefs_offset;
-uint8_t  *texturewidthmasks;
-uint8_t  *textureheights;		    // uint8_t must be + 1 and then shifted to fracbits when used
-uint16_t *texturecompositesizes;	// uint16_t*
+uint16_t  near *texturecolumn_offset;
+uint16_t  near *texturedefs_offset;
+uint8_t   near *texturewidthmasks;
+uint8_t   near *textureheights;		    // uint8_t must be + 1 and then shifted to fracbits when used
+uint16_t  near *texturecompositesizes;	// uint16_t*
 // for global animation
-uint8_t	*flattranslation; // can almost certainly be smaller
-uint8_t	*texturetranslation;
+uint8_t	  near *flattranslation; // can almost certainly be smaller
+uint8_t	  near *texturetranslation;
 
 
 // needed for pre rendering

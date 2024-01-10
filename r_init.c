@@ -73,7 +73,6 @@ void R_InitSkyMap(void)
 }
 
 
-extern visplaneheader_t	*visplaneheaders;// [MAXEMSVISPLANES];
 //extern MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES];
 
 
@@ -261,10 +260,6 @@ typedef struct
 
 
 
- 
-extern byte* texturecolumnlumps_bytes;
-extern byte* texturecolumnofs_bytes;
-extern byte* texturedefs_bytes;
  
  
  

@@ -87,18 +87,11 @@ angle_t			fieldofview = { 0 };	// note: fracbits always 0
 // maps the visible view angles to screen X coordinates,
 // flattening the arc to a flat projection plane.
 // There will be many angles mapped to the same X. 
-int16_t			*viewangletox;// [FINEANGLES / 2];
 
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
 // from clipangle to -clipangle.
-fineangle_t			*xtoviewangle;// [SCREENWIDTH + 1];
-
-//lighttable_t**		scalelight;// [LIGHTLEVELS][MAXLIGHTSCALE];
-//uint16_t*			scalelight;// [LIGHTLEVELS][MAXLIGHTSCALE];
-//lighttable_t*		*scalelightfixed;// [MAXLIGHTSCALE];
-//uint16_t*			zlight;// [LIGHTLEVELS][MAXLIGHTZ];
-lighttable_t**		zlight;// [LIGHTLEVELS][MAXLIGHTZ];
+ 
 
 // bumped light from gun blasts
 uint8_t			extralight;			

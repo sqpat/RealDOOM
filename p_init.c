@@ -49,8 +49,7 @@ extern int8_t*           spritename;
 
 
 
-extern uint16_t *texturedefs_offset;
-extern byte* texturedefs_bytes; 
+//extern byte* texturedefs_bytes; 
 extern int16_t             numtextures;
  
 

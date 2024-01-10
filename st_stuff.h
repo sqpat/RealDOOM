@@ -269,31 +269,31 @@ extern st_stateenum_t   st_gamestate;
 extern boolean          st_statusbaron;
 
 // main bar left
-extern byte*         sbar;
+extern byte far*         sbar;
 
 // 0-9, tall numbers
-extern byte*         tallnum[10];
+extern byte far*         tallnum[10];
 
 // tall % sign
-extern byte*         tallpercent;
+extern byte far*         tallpercent;
 
 // 0-9, short, yellow (,different!) numbers
-extern byte*         shortnum[10];
+extern byte far*         shortnum[10];
 
 // 3 key-cards, 3 skulls
-extern byte*         keys[NUMCARDS];
+extern byte far*         keys[NUMCARDS];
 
 // face status patches
-extern byte*         faces[ST_NUMFACES];
+extern byte far*         faces[ST_NUMFACES];
 
 // face background
-extern byte*         faceback;
+extern byte far*         faceback;
 
 // main bar right
-extern byte*         armsbg[1];
+extern byte far*         armsbg[1];
 
 // weapon ownership patches
-extern byte*	arms[6][2];
+extern byte far*	arms[6][2];
 
 
 

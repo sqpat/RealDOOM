@@ -53,21 +53,40 @@
 #define spritewidths		((int16_t *			far) (0x80000000 + size_usedpatchpagemem))
 
 
+#define size_visplanes										sizeof(visplane_t) * MAXCONVENTIONALVISPLANES
+#define size_visplaneheaders		size_visplanes			+ sizeof(visplaneheader_t) * MAXEMSVISPLANES
+#define size_yslope					size_visplaneheaders	+ (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_distscale				size_yslope				+ (sizeof(fixed_t) * SCREENWIDTH)
+#define size_cachedheight			size_distscale			+ (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cacheddistance			size_cachedheight		+ (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cachedxstep			size_cacheddistance		+ (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cachedystep			size_cachedxstep		+ (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_spanstart				size_cachedystep		+ (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_viewangletox			size_spanstart			+ (sizeof(int16_t) * (FINEANGLES / 2))
+#define size_xtoviewangle			size_viewangletox		+ (sizeof(fineangle_t) * (SCREENWIDTH + 1))
+#define size_drawsegs				size_xtoviewangle		+ (sizeof(drawseg_t) * (MAXDRAWSEGS))
+#define size_floorclip				size_drawsegs			+ (sizeof(int16_t) * SCREENWIDTH)
+#define size_ceilingclip			size_floorclip			+ (sizeof(int16_t) * SCREENWIDTH)
+
+#define visplanes				((visplane_t far*)			0x90000000)
+#define visplaneheaders			((visplaneheader_t far*)	(0x90000000 + size_visplanes))
+#define yslope					((fixed_t far*)				(0x90000000 + size_visplaneheaders))
+#define distscale				((fixed_t far*)				(0x90000000 + size_yslope))
+#define cachedheight			((fixed_t far*)				(0x90000000 + size_distscale))
+#define cacheddistance			((fixed_t far*)				(0x90000000 + size_cachedheight))
+#define cachedxstep				((fixed_t far*)				(0x90000000 + size_cacheddistance))
+#define cachedystep				((fixed_t far*)				(0x90000000 + size_cachedxstep))
+#define spanstart				((int16_t far*)				(0x90000000 + size_cachedystep))
+#define viewangletox			((int16_t far*)				(0x90000000 + size_spanstart))
+#define xtoviewangle			((fineangle_t far*)			(0x90000000 + size_viewangletox))
+#define drawsegs				((drawseg_t far*)			(0x90000000 + size_xtoviewangle))
+#define floorclip				((int16_t far*)				(0x90000000 + size_drawsegs))
+#define ceilingclip				((int16_t far*)				(0x90000000 + size_floorclip))
+
+
 // Visplane related.
-extern  int16_t*		lastopening;
-//extern int16_t*			openings;// [MAXOPENINGS];
-
-extern int16_t		*floorclip;// [SCREENWIDTH];
-extern int16_t		*ceilingclip;// [SCREENWIDTH];
-extern int16_t		*spanstart;// [SCREENHEIGHT];
-
-extern fixed_t		*yslope;// [SCREENHEIGHT];
-extern fixed_t		*distscale;// [SCREENWIDTH];
-
-extern fixed_t			*cachedheight;// [SCREENHEIGHT];
-extern fixed_t			*cacheddistance;// [SCREENHEIGHT];
-extern fixed_t			*cachedxstep;// [SCREENHEIGHT];
-extern fixed_t			*cachedystep;// [SCREENHEIGHT];
+extern  int16_t far*		lastopening;
+ 
 
 void R_InitPlanes (void);
 void R_ClearPlanes (void);

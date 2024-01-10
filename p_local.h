@@ -199,7 +199,12 @@ typedef struct
     }			d;
 } intercept_t;
 
+
+
+
 #define MAXINTERCEPTS	128
+#define size_intercepts size_mobjinfo + sizeof(intercept_t) * MAXINTERCEPTS
+#define intercepts ((intercept_t far*) (0x90000000 + size_intercepts ))
 
 //extern intercept_t	*intercepts;// [MAXINTERCEPTS];
 extern intercept_t*	intercept_p;
@@ -301,7 +306,8 @@ P_RadiusAttack
 //
 // P_SETUP
 //
-extern byte far*	rejectmatrix;	// for fast sight rejection
+//extern byte far*	rejectmatrix;	// for fast sight rejection
+#define rejectmatrix		((byte *			far) 0x60004000)
 extern int16_t*		blockmaplump;
 extern int16_t		bmapwidth;
 extern int16_t		bmapheight;	// in mapblocks

@@ -73,31 +73,31 @@ st_stateenum_t   st_gamestate;
 boolean          st_statusbaron;
 
 // main bar left
-byte*         sbar;
+byte far*         sbar;
 
 // 0-9, tall numbers
-byte*         tallnum[10];
+byte far*         tallnum[10];
 
 // tall % sign
-byte*         tallpercent;
+byte far*         tallpercent;
 
 // 0-9, short, yellow (,different!) numbers
-byte*         shortnum[10];
+byte far*         shortnum[10];
 
 // 3 key-cards, 3 skulls
-byte*         keys[NUMCARDS];
+byte far*         keys[NUMCARDS];
 
 // face status patches
-byte*         faces[ST_NUMFACES];
+byte far*         faces[ST_NUMFACES];
 
 // face background
-byte*         faceback;
+byte far*         faceback;
 
  // main bar right
-byte*         armsbg[1];
+byte far*         armsbg[1];
 
 // weapon ownership patches
-byte*	arms[6][2];
+byte far*	arms[6][2];
 
 // ready-weapon widget
 st_number_t      w_ready;

@@ -26,38 +26,8 @@
 #include <stdio.h>
 #include "doomtype.h"
 #include "doomdef.h"
-
-//
-// ZONE MEMORY
-// PU - purge tags.
-// Tags < PU_CACHE are not overwritten until freed.
-
-// NOTE: redid a lot of these. I think the values implied that there would be more
-// aggressive freeing, etc of memory based on some of the allocation types. But
-// in practice, PU_SOUND/PU_MUSIC are never handled differently in the code, LEVSPEC
-// is never handled differently than LEVEL, PURGELEVEL is never used... etc
-
-// the block is unused
-#define PU_NOT_IN_USE           0       // static entire execution time
-// these are never freed in practice
-#define PU_STATIC               1       // static entire execution time
-#define PU_SOUND                1       // static while playing
-#define PU_MUSIC                1
-// these are sometimes free in practice
-#define PU_LEVEL                2      // static until level exited
-#define PU_LEVSPEC              2      // a special thinker in a level
-// These essentially are freed when more memory starts to run out
-// Note: codebase never actually allocates anything as PU_PURGE_LEVEL
-#define PU_CACHE                3
  
-
-// most paged in order:
-// as expected, we need to find a way to get lines segs verts sectors nodes into conventional to greatly improve perf.
-//  lines, segments vertexes Sectors, nodes, cachelump(wad),  levspec (mobj)  ,  sprite, spritedefs
-
-#define PAGE_LOCKED true
-#define PAGE_NOT_LOCKED false
-
+  
  
 // Note: a memref of 0 refers to the empty (size = 0) 'head' of doubly linked list
 // managing the pages, and this index can never be handed out, so it's safe to use
@@ -76,16 +46,9 @@ extern int32_t scratchremapswitchcount;
 
 #endif
 
- 
-
- 
 
 
-
-#define ALLOCATION_LIST_HEAD	0
-
-
-// DOOM SHAREWARE VALUE
+// FIXME_COMMERCIAL these values will have to change upward.
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 6939u
 
 
@@ -104,7 +67,6 @@ extern int32_t scratchremapswitchcount;
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
 extern byte* conventionalmemoryblock;
-
 extern uint16_t EMS_PAGE;
 
 
@@ -113,11 +75,8 @@ void Z_InitEMS(void);
 void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 
-#define BACKREF_LUMP_OFFSET EMS_ALLOCATION_LIST_SIZE
- 
 void far* Z_MallocConventional(uint16_t  size);
  
-
 void Z_ShutdownEMS();
  
 
@@ -191,7 +150,6 @@ void Z_LoadBinaries();
 
 #define PAGE_TYPE_PHYSICS 0
 #define PAGE_TYPE_RENDER 1
-
 
 extern int16_t currenttask;
 

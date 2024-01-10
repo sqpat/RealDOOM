@@ -294,8 +294,7 @@ extern int8_t textureLRU[4];
 
 extern byte* getcompositetexture(int16_t tex_index);
 extern byte* getpatchtexture(int16_t lump);
-extern byte* texturedefs_bytes;
-extern uint16_t *texturedefs_offset;
+//extern byte* texturedefs_bytes;
 
 
 void R_PrecacheLevel(void)

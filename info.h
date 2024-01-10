@@ -1152,6 +1152,7 @@ typedef struct state_s
 } state_t;
 
 //extern state_t* states;
+#define size_states size_tantoangle + sizeof(state_t) * NUMSTATES
 
 #define states ((state_t*) (0x50000000 + size_tantoangle))
 
@@ -1333,8 +1334,10 @@ typedef struct
 
 } mobjinfo_t;
 
- 
-#define mobjinfo ((mobjinfo_t far *) (0x90000000 + sizeof(thinker_t) * MAX_THINKERS))
+#define size_thinkerlist				(sizeof(thinker_t) * MAX_THINKERS)
+#define size_mobjinfo size_thinkerlist + sizeof(mobjinfo_t) * NUMMOBJTYPES
+
+#define mobjinfo ((mobjinfo_t far *) (0x90000000 + size_thinkerlist))
 
  
 extern int32_t getMobjMass(uint8_t id);

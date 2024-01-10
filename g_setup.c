@@ -84,8 +84,6 @@ extern  uint8_t     skytexture;
  
 extern int16_t             numtextures;
 
-extern uint16_t* texturedefs_offset;
-extern byte* texturedefs_bytes;
 
 // R_CheckTextureNumForName
 // Check whether texture is available.

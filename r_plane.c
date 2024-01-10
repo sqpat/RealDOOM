@@ -42,7 +42,7 @@
 
 
 // backup EMS visplanes to use after conventional visplanes
-visplaneheader_t	*visplaneheaders; //[MAXEMSVISPLANES];
+//visplaneheader_t	*visplaneheaders; //[MAXEMSVISPLANES];
 //MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES]; 
 
 //visplane_t			*visplanes;// [MAXCONVENTIONALVISPLANES];
@@ -61,14 +61,14 @@ int16_t*		lastopening;
 //  floorclip starts out SCREENHEIGHT
 //  ceilingclip starts out -1
 //
-int16_t			*floorclip;// [SCREENWIDTH];
-int16_t			*ceilingclip;// [SCREENWIDTH];
+//int16_t			*floorclip;// [SCREENWIDTH];
+//int16_t			*ceilingclip;// [SCREENWIDTH];
 
 //
 // spanstart holds the start of a plane span
 // initialized to 0 at start
 //
-int16_t			*spanstart;// [SCREENHEIGHT];
+//int16_t			*spanstart;// [SCREENHEIGHT];
 //int32_t			spanstop[SCREENHEIGHT];
 
 //
@@ -77,15 +77,15 @@ int16_t			*spanstart;// [SCREENHEIGHT];
 lighttable_t**		planezlight;
 fixed_t			planeheight;
 
-fixed_t			*yslope;// [SCREENHEIGHT];
-fixed_t			*distscale;// [SCREENWIDTH];
+//fixed_t			*yslope;// [SCREENHEIGHT];
+//fixed_t			*distscale;// [SCREENWIDTH];
 fixed_t			basexscale;
 fixed_t			baseyscale;
 
-fixed_t			*cachedheight;// [SCREENHEIGHT];
-fixed_t			*cacheddistance;// [SCREENHEIGHT];
-fixed_t			*cachedxstep;// [SCREENHEIGHT];
-fixed_t			*cachedystep;// [SCREENHEIGHT];
+//fixed_t			*cachedheight;// [SCREENHEIGHT];
+//fixed_t			*cacheddistance;// [SCREENHEIGHT];
+//fixed_t			*cachedxstep;// [SCREENHEIGHT];
+//fixed_t			*cachedystep;// [SCREENHEIGHT];
 
 
 

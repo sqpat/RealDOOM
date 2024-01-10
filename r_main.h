@@ -66,7 +66,19 @@ extern int16_t		validcount;
 
 //extern lighttable_t**		scalelight;// [LIGHTLEVELS][MAXLIGHTSCALE];
 //extern lighttable_t**		scalelightfixed;// [MAXLIGHTSCALE];
-extern lighttable_t**		zlight;// [LIGHTLEVELS][MAXLIGHTZ];
+//extern lighttable_t**		zlight;// [LIGHTLEVELS][MAXLIGHTZ];
+
+#define size_zlight						sizeof(lighttable_t far*) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_texturecolumnlumps_bytes	size_zlight + 21552u
+#define size_texturecolumnofs_bytes		size_texturecolumnlumps_bytes + 21552u
+#define size_texturedefs_bytes			size_texturecolumnofs_bytes + 3767u
+
+
+#define zlight						((lighttable_t* far *	) 0x60000000)
+#define texturecolumnlumps_bytes	((byte	*			far) (0x60000000 + size_zlight))
+#define texturecolumnofs_bytes		((byte*				far) (0x60000000 + size_texturecolumnlumps_bytes))
+#define texturedefs_bytes			((byte*				far) (0x60000000 + size_texturecolumnofs_bytes))
+
 //extern uint16_t	*			zlight;// [LIGHTLEVELS][MAXLIGHTZ];
 
 extern uint8_t		extralight;
