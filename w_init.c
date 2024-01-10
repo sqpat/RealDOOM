@@ -36,7 +36,7 @@
 extern filehandle_t				wadfilehandle;
 extern lumpinfo_t*             lumpinfo;
 extern uint16_t                     numlumps;
-extern byte	lumpbytes[LUMPINFO_SIZE];
+extern byte near	lumpbytes[LUMPINFO_SIZE];
 
 
 void

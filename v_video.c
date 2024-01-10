@@ -29,6 +29,7 @@
 #include "m_misc.h"
 
 #include "v_video.h"
+#include <dos.h>
 
 
  
@@ -95,8 +96,10 @@ V_CopyRect
     V_MarkRect (destx, desty, width, height); 
 	 
 
-    src = screen4+((uint16_t)SCREENWIDTH*srcy+srcx); 
-    dest = screen0 +((uint16_t)SCREENWIDTH*desty+destx);
+	src =  screen4 + ((uint16_t)SCREENWIDTH*srcy + srcx);
+	dest = screen0 + ((uint16_t)SCREENWIDTH*desty + destx);
+	//src = MK_FP(0x9000, ((uint16_t)SCREENWIDTH*srcy + srcx));
+	//dest = MK_FP(0x8000, ((uint16_t)SCREENWIDTH*desty+destx));
 
     for ( ; height>0 ; height--) { 
         memcpy (dest, src, width); 
@@ -157,43 +160,42 @@ V_DrawPatch
 	 
     w = (patch->width); 
 
-    for ( ; col<w ; x++, col++, desttop++)
-    { 
-	column = (column_t far *)((byte far*)patch + (patch->columnofs[col])); 
+    for ( ; col<w ; x++, col++, desttop++) { 
+		column = (column_t far *)((byte far*)patch + (patch->columnofs[col])); 
  
-	// step through the posts in a column 
-	while (column->topdelta != 0xff ) 
-	{ 
+		// step through the posts in a column 
+		while (column->topdelta != 0xff )  { 
 
-		register const byte far*source = (byte far*)column + 3;
-		register byte far*dest = desttop + column->topdelta * SCREENWIDTH;
-		register int16_t count = column->length;
+			register const byte far*source = (byte far*)column + 3;
+			register byte far*dest = desttop + column->topdelta * SCREENWIDTH;
+			register int16_t count = column->length;
 
-		if ((count -= 4) >= 0)
-			do
-			{
-				register byte s0, s1;
-				s0 = source[0];
-				s1 = source[1];
-				dest[0] = s0;
-				dest[SCREENWIDTH] = s1;
-				dest += SCREENWIDTH * 2;
-				s0 = source[2];
-				s1 = source[3];
-				source += 4;
-				dest[0] = s0;
-				dest[SCREENWIDTH] = s1;
-				dest += SCREENWIDTH * 2;
-			} while ((count -= 4) >= 0);
-			if (count += 4)
-				do
-				{
+			if ((count -= 4) >= 0){
+				do {
+					register byte s0, s1;
+					s0 = source[0];
+					s1 = source[1];
+					dest[0] = s0;
+					dest[SCREENWIDTH] = s1;
+					dest += SCREENWIDTH * 2;
+					s0 = source[2];
+					s1 = source[3];
+					source += 4;
+					dest[0] = s0;
+					dest[SCREENWIDTH] = s1;
+					dest += SCREENWIDTH * 2;
+				} while ((count -= 4) >= 0);
+			}
+
+			if (count += 4) {
+				do {
 					*dest = *source;
 					source++;
 					dest += SCREENWIDTH;
 				} while (--count);
-				column = (column_t far*)(source + 1);
-	} 
+			}
+			column = (column_t far*)(source + 1);
+		} 
     }			 
 } 
  

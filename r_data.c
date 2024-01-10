@@ -76,7 +76,7 @@ int16_t		*spritetopoffsets;
 
 //byte         	*colormapbytes;// [(33 * 256) + 255];
 
-lighttable_t    *colormaps;
+//lighttable_t    *colormaps;
 
 
 extern int16_t pageswapargs_textcache[8];

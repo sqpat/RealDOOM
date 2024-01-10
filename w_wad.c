@@ -32,6 +32,7 @@
 
 #include "w_wad.h"
 #include "r_defs.h"
+#include "r_state.h"
 
 
 
@@ -170,7 +171,6 @@ int32_t W_LumpLength (int16_t lump)
 //
 
 
-extern byte* colormaps;
 
 
 void

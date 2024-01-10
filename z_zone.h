@@ -79,6 +79,7 @@ void far* Z_MallocConventional(uint16_t  size);
  
 void Z_ShutdownEMS();
  
+#define SCRATCH_ADDRESS (byte far* )0x40000000
 
 #define SCREEN0_LOGICAL_PAGE				4
 #define STRINGS_LOGICAL_PAGE				12

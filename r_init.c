@@ -169,19 +169,7 @@ void R_InitLightTables(void)
 
 }
 
-//extern byte         	*colormapbytes;// [(33 * 256) + 255];
-extern lighttable_t    *colormaps;
 
-//
-// R_InitData
-// Locates all the lumps
-//  that will be used by all views
-// Must be called after W_Init.
-//
-
-
-
-extern byte far*	SCRATCH_ADDRESS;
 
 //
 // R_InitSpriteLumps
@@ -630,8 +618,8 @@ void R_InitData(void) {
 
 	lump = W_GetNumForName("COLORMAP");
 	//length = W_LumpLength(lump) + 255;
-	colormaps = (byte*)colormapbytes;
-	colormaps = (byte *)(((int32_t)colormaps + 255)&~0xff);
+	//colormaps = (byte*)colormapbytes;
+	//colormaps = (byte *)(((int32_t)colormaps + 255)&~0xff);
 	W_CacheLumpNumDirect(lump, colormaps);
 
  

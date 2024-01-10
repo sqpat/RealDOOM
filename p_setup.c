@@ -115,7 +115,6 @@ uint16_t leveldataoffset_phys = 0u;
 uint16_t leveldataoffset_rend = 0 - (MAX_THINKERS * sizeof(mobj_pos_t));
 uint16_t leveldataoffset_6000_phys = 0u;
 
-byte far* 	SCRATCH_ADDRESS = (byte far* )0x40000000;
 
 #define Z_GetNextPhysicsAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_PHYSICS)
 #define Z_GetNextRenderAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_RENDER)
