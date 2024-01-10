@@ -196,34 +196,34 @@ void Z_ShutdownUMB() {
 
 int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17 };
 extern int16_t pagenum9000;
-extern int16_t pageswapargseg_rend;
-extern int16_t pageswapargoff_rend;
-extern int16_t pageswapargs_rend[48];
+extern int16_t pageswapargseg;
+extern int16_t pageswapargoff;
+extern int16_t pageswapargs[total_pages];
 
 void Z_QuickmapUnmapAll() {
 	int16_t i;
 	for (i = 0; i < 24; i++) {
-		pageswapargs_rend[i * 2 + 0] = -1;
-		pageswapargs_rend[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
+		pageswapargs[i * 2 + 0] = -1;
+		pageswapargs[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
 	}
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargoff;
 	intx86(EMS_INT, &regs, &regs);
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend+32;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargoff+32;
 	intx86(EMS_INT, &regs, &regs);
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend+64;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargoff+64;
 	intx86(EMS_INT, &regs, &regs);
 }
 

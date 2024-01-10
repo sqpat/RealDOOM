@@ -121,7 +121,54 @@ void Z_ShutdownEMS();
 
 #define SCRATCH_PAGE_SEGMENT 0x5000u
 
-extern int16_t pageswapargs_rend[48];
+// actually twice the number of pages, 2 params needed per page swap
+#define num_phys_params 40
+#define num_rend_params 48
+#define num_stat_params 12
+#define num_demo_params 8
+#define num_textinfo_params 8
+#define num_scratch5000_params 8
+#define num_scratch4000_params 8
+#define num_scratchstack_params 16
+#define num_flatcache_params 2
+#define num_palette_params 10
+#define num_7000to6000_params 8
+#define num_menu_params 16
+#define num_wipe_params 26
+
+//#define pageswapargoff_demo pageswapargseg +
+
+// used for segment offset for params
+#define pageswapargs_rend_offset_size			pageswapargoff + 2*num_phys_params
+#define pageswapargs_stat_offset_size			(pageswapargs_rend_offset_size			+ 2*num_rend_params)
+#define pageswapargs_demo_offset_size			(pageswapargs_stat_offset_size			+ 2*num_stat_params)
+#define pageswapargs_textinfo_offset_size		(pageswapargs_demo_offset_size			+ 2*num_demo_params)
+#define pageswapargs_scratch5000_offset_size	(pageswapargs_textinfo_offset_size		+ 2*num_textinfo_params)
+#define pageswapargs_scratch4000_offset_size	(pageswapargs_scratch5000_offset_size	+ 2*num_scratch5000_params)
+#define pageswapargs_scratchstack_offset_size	(pageswapargs_scratch4000_offset_size	+ 2*num_scratch4000_params)
+#define pageswapargs_flatcache_offset_size		(pageswapargs_scratchstack_offset_size	+ 2*num_scratchstack_params)
+#define pageswapargs_palette_offset_size		(pageswapargs_flatcache_offset_size		+ 2*num_flatcache_params)
+#define pageswapargs_7000to6000_offset_size		(pageswapargs_palette_offset_size		+ 2*num_palette_params)
+#define pageswapargs_menu_offset_size			(pageswapargs_7000to6000_offset_size	+ 2*num_7000to6000_params)
+#define pageswapargs_wipe_offset_size			(pageswapargs_menu_offset_size			+ 2*num_menu_params)
+#define total_pages_size						(pageswapargs_wipe_offset_size			+ 2*num_wipe_params)
+
+// used for array indices
+#define pageswapargs_rend_offset			num_phys_params
+#define pageswapargs_stat_offset			(pageswapargs_rend_offset			+ num_rend_params)
+#define pageswapargs_demo_offset			(pageswapargs_stat_offset			+ num_stat_params)
+#define pageswapargs_textinfo_offset		(pageswapargs_demo_offset			+ num_demo_params)
+#define pageswapargs_scratch5000_offset		(pageswapargs_textinfo_offset		+ num_textinfo_params)
+#define pageswapargs_scratch4000_offset		(pageswapargs_scratch5000_offset	+ num_scratch5000_params)
+#define pageswapargs_scratchstack_offset	(pageswapargs_scratch4000_offset	+ num_scratch4000_params)
+#define pageswapargs_flatcache_offset		(pageswapargs_scratchstack_offset	+ num_scratchstack_params)
+#define pageswapargs_palette_offset			(pageswapargs_flatcache_offset		+ num_flatcache_params)
+#define pageswapargs_7000to6000_offset		(pageswapargs_palette_offset		+ num_palette_params)
+#define pageswapargs_menu_offset			(pageswapargs_7000to6000_offset		+ num_7000to6000_params)
+#define pageswapargs_wipe_offset			(pageswapargs_menu_offset			+ num_menu_params)
+#define total_pages							(pageswapargs_wipe_offset			+ num_wipe_params)
+
+extern int16_t pageswapargs[total_pages];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 
 // EMS 4.0 stuff

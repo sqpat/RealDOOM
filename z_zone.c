@@ -126,7 +126,7 @@ void Z_FreeConventionalAllocations() {
 	for (i = 0; i < 4; i++) {
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		textureLRU[i] = i;
-		pageswapargs_rend[40 + i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		pageswapargs[pageswapargs_rend_offset + 40 + i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		activenumpages[i] = 0;
 	}
 
@@ -207,18 +207,21 @@ int16_t pagenum9000;
 #define PAGE_4800_OFFSET - 18
 #define PAGE_4C00_OFFSET - 17
 
+#define RENDER_7000_LOGICAL_PAGE  28
+
+
+//#define pageswapargs_scratch5000_offset pageswapargs_textinfo_offset + num_textinfo_params
 
 
 
-
-int16_t pageswapargs_phys[40] = {
+int16_t pageswapargs[total_pages] = {
 	0,	PAGE_9000_OFFSET, 1,	PAGE_9400_OFFSET, 2,	PAGE_9800_OFFSET, 3,	PAGE_9C00_OFFSET,
 	4,	PAGE_8000_OFFSET, 5,	PAGE_8400_OFFSET, 6,	PAGE_8800_OFFSET, 7,	PAGE_8C00_OFFSET,
 	8,	PAGE_7000_OFFSET, 9,	PAGE_7400_OFFSET, 10,	PAGE_7800_OFFSET, 11,	PAGE_7C00_OFFSET,
 	12, PAGE_6000_OFFSET, 13,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,
-	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET
-};
-int16_t pageswapargs_rend[48] = {
+	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET,
+
+	// render
 	20,	PAGE_9000_OFFSET, 21,	PAGE_9400_OFFSET, 22,	PAGE_9800_OFFSET, 23,	PAGE_9C00_OFFSET,
 	24,	PAGE_8000_OFFSET, 25,	PAGE_8400_OFFSET, 26,	PAGE_8800_OFFSET, 27,	PAGE_8C00_OFFSET,
 	28,	PAGE_7000_OFFSET, 29,	PAGE_7400_OFFSET, 30,	PAGE_7800_OFFSET, 31,	PAGE_7C00_OFFSET,
@@ -228,61 +231,42 @@ int16_t pageswapargs_rend[48] = {
 	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_4000_OFFSET,
 	FIRST_TEXTURE_LOGICAL_PAGE + 1,	PAGE_4400_OFFSET,
 	FIRST_TEXTURE_LOGICAL_PAGE + 2,	PAGE_4800_OFFSET,
-	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_4C00_OFFSET  // texture cache area
+	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_4C00_OFFSET,  // texture cache area
 
-
-};
-int16_t pageswapargs_stat[12] = {
+	// status/hud
 	SCREEN4_LOGICAL_PAGE, PAGE_9C00_OFFSET,
 	FIRST_STATUS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
 	FIRST_STATUS_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
 	FIRST_STATUS_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
 	FIRST_STATUS_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
-	STRINGS_LOGICAL_PAGE, PAGE_6000_OFFSET
-};
-
-
-
-
-
-int16_t pageswapargs_demo[8] = {
+	STRINGS_LOGICAL_PAGE, PAGE_6000_OFFSET,
+	// demo
 	FIRST_DEMO_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
 	FIRST_DEMO_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
 	FIRST_DEMO_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
-	FIRST_DEMO_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET
-};
+	FIRST_DEMO_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
 
-/*
-// todo combine with render[40-48] ??
-int16_t pageswapargs_textcache[8] = {
-	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_4000_OFFSET,
-	FIRST_TEXTURE_LOGICAL_PAGE + 1,	PAGE_4400_OFFSET,
-	FIRST_TEXTURE_LOGICAL_PAGE + 2,	PAGE_4800_OFFSET,
-	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_4C00_OFFSET  // texture cache area
-};
-*/
+ // textinfo
 
-
-int16_t pageswapargs_textinfo[8] = {
 	TEXTURE_INFO_LOGICAL_PAGE + 0, PAGE_6000_OFFSET,
 	TEXTURE_INFO_LOGICAL_PAGE + 1, PAGE_6400_OFFSET,
 	TEXTURE_INFO_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
-	TEXTURE_INFO_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET
-};
-int16_t pageswapargs_scratch_5000[8] = { // we use 0x5000 as a  'scratch' page frame for certain things
+	TEXTURE_INFO_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET,
+// we use 0x5000 as a  'scratch' page frame for certain things
+// scratch 5000
 	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
-	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET
-};
+	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
 
-int16_t pageswapargs_scratch_4000[8] = { // but sometimes we need that in the 0x4000 segment..
+// but sometimes we need that in the 0x4000 segment..
+// scratch 4000
 	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_4000_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_4400_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_4800_OFFSET,
-	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_4C00_OFFSET
-};
-int16_t pageswapargs_scratch_stack[16] = { 
+	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_4C00_OFFSET,
+
+	// scratch stack 
 	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
@@ -290,34 +274,24 @@ int16_t pageswapargs_scratch_stack[16] = {
 	FIRST_TRIG_TABLE_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
 	FIRST_TRIG_TABLE_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
 	FIRST_TRIG_TABLE_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
-	FIRST_TRIG_TABLE_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET
-};
+	FIRST_TRIG_TABLE_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
 
 // todo - we are only using one page at 0x5C00 currently
-int16_t pageswapargs_flat[8] = {
+// flat cache
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_5C00_OFFSET,
-	FIRST_FLAT_CACHE_LOGICAL_PAGE + 1, PAGE_5C00_OFFSET,
-	FIRST_FLAT_CACHE_LOGICAL_PAGE + 2, PAGE_5C00_OFFSET,
-	FIRST_FLAT_CACHE_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET
-};
-
-int16_t pageswapargs_palette[10] = {
-
+	// palette
 	SCREEN0_LOGICAL_PAGE + 0, PAGE_8000_OFFSET,
 	SCREEN0_LOGICAL_PAGE + 1, PAGE_8400_OFFSET,
 	SCREEN0_LOGICAL_PAGE + 2, PAGE_8800_OFFSET,
 	SCREEN0_LOGICAL_PAGE + 3, PAGE_8C00_OFFSET,
-	PALETTE_LOGICAL_PAGE, PAGE_9000_OFFSET
-};
-#define RENDER_7000_LOGICAL_PAGE  28
-int16_t pageswapargs_rend_temp_7000_to_6000[8] = {
+	PALETTE_LOGICAL_PAGE, PAGE_9000_OFFSET,
+
+	// 7000 to 6000
 	RENDER_7000_LOGICAL_PAGE + 0, PAGE_6000_OFFSET,
 	RENDER_7000_LOGICAL_PAGE + 1, PAGE_6400_OFFSET,
 	RENDER_7000_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
-	RENDER_7000_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET
-};
-
-int16_t pageswapargs_menu[16] = {
+	RENDER_7000_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET,
+// menu 
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
@@ -325,13 +299,11 @@ int16_t pageswapargs_menu[16] = {
 	STRINGS_LOGICAL_PAGE ,	PAGE_6000_OFFSET,
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 4, PAGE_6400_OFFSET,
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 5, PAGE_6800_OFFSET,
-	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6, PAGE_6C00_OFFSET
+	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6, PAGE_6C00_OFFSET,
 
 
-};
+	// wipe
 
-
-int16_t pageswapargs_wipe[26] = {
 	FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
 	SCREEN0_LOGICAL_PAGE + 0, PAGE_8000_OFFSET,
 	SCREEN0_LOGICAL_PAGE + 1, PAGE_8400_OFFSET,
@@ -347,30 +319,9 @@ int16_t pageswapargs_wipe[26] = {
 	SCREEN3_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET
 };
 
-int16_t pageswapargseg_phys;
-int16_t pageswapargoff_phys;
-int16_t pageswapargseg_rend;
-int16_t pageswapargoff_rend;
-int16_t pageswapargseg_stat;
-int16_t pageswapargoff_stat;
-int16_t pageswapargseg_demo;
-int16_t pageswapargoff_demo;
-int16_t pageswapargseg_menu;
-int16_t pageswapargoff_menu;
-int16_t pageswapargseg_wipe;
-int16_t pageswapargoff_wipe;
-int16_t pageswapargseg_palette;
-int16_t pageswapargoff_palette;
-int16_t pageswapargseg_textinfo;
-int16_t pageswapargoff_textinfo;
-int16_t pageswapargseg_scratch_4000;
-int16_t pageswapargoff_scratch_4000;
-int16_t pageswapargseg_scratch_5000;
-int16_t pageswapargoff_scratch_5000;
-int16_t pageswapargseg_scratch_stack;
-int16_t pageswapargoff_scratch_stack;
-int16_t pageswapargseg_flat;
-int16_t pageswapargoff_flat;
+int16_t pageswapargseg;
+int16_t pageswapargoff;
+ 
 
 #ifdef DETAILED_BENCH_STATS
 int32_t taskswitchcount = 0;
@@ -391,23 +342,23 @@ void Z_QuickmapPhysics() {
 	regs.w.ax = 0x5000;  
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_phys;
-	regs.w.si = pageswapargoff_phys;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargoff;
 	intx86(EMS_INT, &regs, &regs);
 
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_phys;
-	regs.w.si = pageswapargoff_phys+32;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargoff+32;
 	intx86(EMS_INT, &regs, &regs);
 	
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_phys;
-	regs.w.si = pageswapargoff_phys + 64;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargoff + 64;
 	intx86(EMS_INT, &regs, &regs);
 
 	/*
@@ -425,8 +376,8 @@ void Z_QuickmapDemo() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_demo;
-	regs.w.si = pageswapargoff_demo;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_demo_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 
 #ifdef DETAILED_BENCH_STATS
@@ -440,14 +391,12 @@ void Z_QuickmapDemo() {
 // sometimes needed when rendering sprites..
 void Z_QuickmapRender7000to6000() {
 
-	uint16_t seg = (uint16_t)((uint32_t)pageswapargs_rend_temp_7000_to_6000 >> 16);
-	uint16_t off = (uint16_t)(((uint32_t)pageswapargs_rend_temp_7000_to_6000) & 0xffff);
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = seg;
-	regs.w.si = off;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_7000to6000_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 
 #ifdef DETAILED_BENCH_STATS
@@ -460,8 +409,8 @@ void Z_QuickmapRender() {
 	regs.w.ax = 0x5000; 
 	regs.w.cx = 0x08;  // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 
 	// grumble... emm386 fails with 12, but not 8. its a silent failure. was very very annoying to debug
@@ -470,15 +419,15 @@ void Z_QuickmapRender() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08;  // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend + 32;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size + 32;
 	intx86(EMS_INT, &regs, &regs);
  
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend + 64;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size + 64;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -492,22 +441,22 @@ void Z_QuickmapRender_NoTex() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08;  // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08;  // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend + 32;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size + 32;
 	intx86(EMS_INT, &regs, &regs);
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend + 64;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size + 64;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -528,7 +477,7 @@ void Z_QuickmapRenderTexture() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_textcache;
+	segregs.ds = pageswapargseg;
 	regs.w.si = pageswapargoff_textcache;
 	intx86(EMS_INT, &regs, &regs);
 	*/
@@ -536,8 +485,8 @@ void Z_QuickmapRenderTexture() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_rend;
-	regs.w.si = pageswapargoff_rend + 80;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size + 80;
 	intx86(EMS_INT, &regs, &regs);
  
 	/*
@@ -545,7 +494,7 @@ void Z_QuickmapRenderTexture() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = count; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_textcache;
+	segregs.ds = pageswapargseg;
 	regs.w.si = pageswapargoff_textcache + (offset << 2);
 	intx86(EMS_INT, &regs, &regs);
 	*/
@@ -564,8 +513,8 @@ void Z_QuickmapStatus() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x06; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_stat;
-	regs.w.si = pageswapargoff_stat;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_stat_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 
 #ifdef DETAILED_BENCH_STATS
@@ -579,8 +528,8 @@ void Z_QuickmapScratch_5000() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_scratch_5000;
-	regs.w.si = pageswapargoff_scratch_5000;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_scratch5000_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -592,8 +541,8 @@ void Z_QuickmapScratch_4000() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_scratch_4000;
-	regs.w.si = pageswapargoff_scratch_4000;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_scratch4000_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -606,8 +555,8 @@ void Z_QuickmapScreen0() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_phys;
-	regs.w.si = pageswapargoff_phys+16;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargoff+16;
 	intx86(EMS_INT, &regs, &regs);
 }
 
@@ -620,8 +569,8 @@ void Z_PushScratchFrame() {
 		regs.w.ax = 0x5000;
 		regs.w.cx = 0x04; // page count
 		regs.w.dx = emshandle; // handle
-		segregs.ds = pageswapargseg_scratch_stack;
-		regs.w.si = pageswapargoff_scratch_stack;
+		segregs.ds = pageswapargseg;
+		regs.w.si = pageswapargs_scratchstack_offset_size;
 		intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;
@@ -647,8 +596,8 @@ void Z_PopScratchFrame() {
 		regs.w.ax = 0x5000;
 		regs.w.cx = 0x04; // page count
 		regs.w.dx = emshandle; // handle
-		segregs.ds = pageswapargseg_scratch_stack;
-		regs.w.si = pageswapargoff_scratch_stack + 16;
+		segregs.ds = pageswapargseg;
+		regs.w.si = pageswapargs_scratchstack_offset_size + 16;
 		intx86(EMS_INT, &regs, &regs);
 
 #ifdef DETAILED_BENCH_STATS
@@ -658,10 +607,11 @@ void Z_PopScratchFrame() {
 #endif
 		currenttask = oldtask;
 		
-		pageswapargs_scratch_5000[0] = FIRST_SCRATCH_LOGICAL_PAGE;
-		pageswapargs_scratch_5000[2] = FIRST_SCRATCH_LOGICAL_PAGE + 1;
-		pageswapargs_scratch_5000[4] = FIRST_SCRATCH_LOGICAL_PAGE + 2;
-		pageswapargs_scratch_5000[6] = FIRST_SCRATCH_LOGICAL_PAGE + 3;
+		pageswapargs[pageswapargs_scratch5000_offset + 0] = FIRST_SCRATCH_LOGICAL_PAGE;
+		pageswapargs[pageswapargs_scratch5000_offset + 2] = FIRST_SCRATCH_LOGICAL_PAGE + 1;
+		pageswapargs[pageswapargs_scratch5000_offset + 4] = FIRST_SCRATCH_LOGICAL_PAGE + 2;
+		pageswapargs[pageswapargs_scratch5000_offset + 6] = FIRST_SCRATCH_LOGICAL_PAGE + 3;
+
 
 	}
 // doesnt come up
@@ -671,16 +621,15 @@ void Z_PopScratchFrame() {
 }
 
 void Z_QuickMapFlatPage(int16_t page) {
-
-	pageswapargs_flat[0] = page;
+	pageswapargs[pageswapargs_flatcache_offset] = page;
 
 	// only use 3 pages? or what? dont want to clobber zlight..
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x01; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_flat;
-	regs.w.si = pageswapargoff_flat;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_flatcache_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -695,8 +644,8 @@ void Z_QuickMapTextureInfoPage() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_textinfo;
-	regs.w.si = pageswapargoff_textinfo;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_textinfo_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -704,16 +653,16 @@ void Z_QuickMapTextureInfoPage() {
 }
 
 void Z_RemapScratchFrame(uint8_t startpage) {
-	pageswapargs_scratch_5000[0] = startpage;
-	pageswapargs_scratch_5000[2] = startpage+1;
-	pageswapargs_scratch_5000[4] = startpage+2;
-	pageswapargs_scratch_5000[6] = startpage+3;
+	pageswapargs[pageswapargs_scratch5000_offset + 0] = startpage;
+	pageswapargs[pageswapargs_scratch5000_offset + 2] = startpage+1;
+	pageswapargs[pageswapargs_scratch5000_offset + 4] = startpage+2;
+	pageswapargs[pageswapargs_scratch5000_offset + 6] = startpage+3;
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_scratch_5000;
-	regs.w.si = pageswapargoff_scratch_5000;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_scratch5000_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -725,8 +674,8 @@ void Z_QuickmapPalette() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x05; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_palette;
-	regs.w.si = pageswapargoff_palette;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_palette_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -738,8 +687,8 @@ void Z_QuickmapMenu() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_menu;
-	regs.w.si  = pageswapargoff_menu;
+	segregs.ds = pageswapargseg;
+	regs.w.si  = pageswapargs_menu_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -752,15 +701,15 @@ void Z_QuickmapWipe() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_wipe;
-	regs.w.si = pageswapargoff_wipe;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_wipe_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x05; // page count
 	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg_wipe;
-	regs.w.si = pageswapargoff_wipe + 32;
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_wipe_offset_size + 32;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;

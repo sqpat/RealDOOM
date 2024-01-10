@@ -163,46 +163,11 @@ byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 extern byte* spritedefs_bytes;
 
 extern int16_t pagenum9000;
-extern int16_t pageswapargs_phys[40];
-extern int16_t pageswapargs_rend[48];
-extern int16_t pageswapargs_stat[12];
-extern int16_t pageswapargs_demo[8];
-extern int16_t pageswapargs_menu[16];
-extern int16_t pageswapargs_wipe[26];
-extern int16_t pageswapargs_palette[10];
-extern int16_t pageswapargs_textinfo[8];
-extern int16_t pageswapargs_scratch_4000[8];
-extern int16_t pageswapargs_scratch_5000[8];
-extern int16_t pageswapargs_scratch_stack[16];
-extern int16_t pageswapargs_rend_temp_7000_to_6000[8];
-extern int16_t pageswapargs_flat[8];
+extern int16_t pageswapargs[total_pages];
+extern int16_t pageswapargseg;
+extern int16_t pageswapargoff;
 
-extern int16_t pageswapargseg_phys;
-extern int16_t pageswapargoff_phys;
-extern int16_t pageswapargseg_rend;
-extern int16_t pageswapargoff_rend;
-extern int16_t pageswapargseg_stat;
-extern int16_t pageswapargoff_stat;
-extern int16_t pageswapargseg_demo;
-extern int16_t pageswapargoff_demo;
-extern int16_t pageswapargseg_menu;
-extern int16_t pageswapargoff_menu;
-extern int16_t pageswapargseg_wipe;
-extern int16_t pageswapargoff_wipe;
-extern int16_t pageswapargseg_palette;
-extern int16_t pageswapargoff_palette;
-extern int16_t pageswapargseg_textcache;
-extern int16_t pageswapargoff_textcache;
-extern int16_t pageswapargseg_textinfo;
-extern int16_t pageswapargoff_textinfo;
-extern int16_t pageswapargseg_scratch_4000;
-extern int16_t pageswapargoff_scratch_4000;
-extern int16_t pageswapargseg_scratch_5000;
-extern int16_t pageswapargoff_scratch_5000;
-extern int16_t pageswapargseg_scratch_stack;
-extern int16_t pageswapargoff_scratch_stack;
-extern int16_t pageswapargseg_flat;
-extern int16_t pageswapargoff_flat;
+  
 
 //extern byte far* demobuffer;
 //extern byte far* palettebytes;
@@ -302,32 +267,9 @@ void Z_GetEMSPageMap() {
 found:
 
 	// cache these args
-	pageswapargseg_phys = (uint16_t)((uint32_t)pageswapargs_phys >> 16);
-	pageswapargoff_phys = (uint16_t)(((uint32_t)pageswapargs_phys) & 0xffff);
-	pageswapargseg_rend = (uint16_t)((uint32_t)pageswapargs_rend >> 16);
-	pageswapargoff_rend = (uint16_t)(((uint32_t)pageswapargs_rend) & 0xffff);
-	pageswapargseg_stat = (uint16_t)((uint32_t)pageswapargs_stat >> 16);
-	pageswapargoff_stat = (uint16_t)(((uint32_t)pageswapargs_stat) & 0xffff);
-	pageswapargseg_demo = (uint16_t)((uint32_t)pageswapargs_demo >> 16);
-	pageswapargoff_demo = (uint16_t)(((uint32_t)pageswapargs_demo) & 0xffff);
-	pageswapargseg_menu = (uint16_t)((uint32_t)pageswapargs_menu >> 16);
-	pageswapargoff_menu = (uint16_t)(((uint32_t)pageswapargs_menu) & 0xffff);
-	pageswapargseg_wipe = (uint16_t)((uint32_t)pageswapargs_wipe >> 16);
-	pageswapargoff_wipe = (uint16_t)(((uint32_t)pageswapargs_wipe) & 0xffff);
-
-	pageswapargseg_textinfo = (uint16_t)((uint32_t)pageswapargs_textinfo >> 16);
-	pageswapargoff_textinfo = (uint16_t)(((uint32_t)pageswapargs_textinfo) & 0xffff);
-	pageswapargseg_flat = (uint16_t)((uint32_t)pageswapargs_flat >> 16);
-	pageswapargoff_flat = (uint16_t)(((uint32_t)pageswapargs_flat) & 0xffff);
-	pageswapargseg_palette = (uint16_t)((uint32_t)pageswapargs_palette >> 16);
-	pageswapargoff_palette = (uint16_t)(((uint32_t)pageswapargs_palette) & 0xffff);
-
-	pageswapargseg_scratch_stack = (uint16_t)((uint32_t)pageswapargs_scratch_stack >> 16);
-	pageswapargoff_scratch_stack = (uint16_t)(((uint32_t)pageswapargs_scratch_stack) & 0xffff);
-	pageswapargseg_scratch_5000 = (uint16_t)((uint32_t)pageswapargs_scratch_5000 >> 16);
-	pageswapargoff_scratch_5000 = (uint16_t)(((uint32_t)pageswapargs_scratch_5000) & 0xffff);
-	pageswapargseg_scratch_4000 = (uint16_t)((uint32_t)pageswapargs_scratch_4000 >> 16);
-	pageswapargoff_scratch_4000 = (uint16_t)(((uint32_t)pageswapargs_scratch_4000) & 0xffff);
+	pageswapargseg = (uint16_t)((uint32_t)pageswapargs >> 16);
+	pageswapargoff = (uint16_t)(((uint32_t)pageswapargs) & 0xffff);
+	 
 
 	
 
@@ -355,50 +297,10 @@ found:
 	// 0x4000 block						textures
 
 
- 
-
-	for (i = 0; i < 4; i++) {
-		index = i * 2 + 1;
-		pageswapargs_phys[0 + index] += pagenum9000;
-		pageswapargs_phys[8 + index] += pagenum9000;
-		pageswapargs_phys[16+ index] += pagenum9000;
-		pageswapargs_phys[24+ index] += pagenum9000;
-		pageswapargs_phys[32+ index] += pagenum9000;
-
-		pageswapargs_rend[0+ index]  += pagenum9000;
-		pageswapargs_rend[8+ index]  += pagenum9000;
-		pageswapargs_rend[16+ index] += pagenum9000;
-		pageswapargs_rend[24+ index] += pagenum9000;
-		pageswapargs_rend[32+ index] += pagenum9000;
-		pageswapargs_rend[40+ index] += pagenum9000;
-		
-		pageswapargs_stat[index]	 += pagenum9000;
-		pageswapargs_demo[index]	 += pagenum9000;
-
-		pageswapargs_textinfo[index] += pagenum9000;
-
-		pageswapargs_scratch_5000[index] += pagenum9000;
-		pageswapargs_scratch_4000[index] += pagenum9000;
-
-		pageswapargs_scratch_stack[index] += pagenum9000;
-		pageswapargs_scratch_stack[8 + index] += pagenum9000;
-
-		pageswapargs_flat[index] += pagenum9000;
-		pageswapargs_palette[index] += pagenum9000;
-
-		pageswapargs_rend_temp_7000_to_6000[index] += pagenum9000;
-		pageswapargs_menu[index] += pagenum9000;
-		pageswapargs_menu[8 + index] += pagenum9000;
-		pageswapargs_wipe[0 + (index)] += pagenum9000;
-		pageswapargs_wipe[8 + (index)] += pagenum9000;
-		pageswapargs_wipe[16 + (index)] += pagenum9000;
-
-
+	for (i = 1; i < total_pages; i+= 2) {
+		pageswapargs[i] += pagenum9000;
 	}
-	pageswapargs_wipe[25] += pagenum9000;
-	pageswapargs_stat[9] += pagenum9000;
-	pageswapargs_stat[11] += pagenum9000;
-	pageswapargs_palette[9] += pagenum9000;
+	 
 	DEMO_SEGMENT = 0x5000u;
 
 	 
