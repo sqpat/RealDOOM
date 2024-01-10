@@ -77,7 +77,6 @@ extern int32_t totalpatchsize;
 
 extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
 extern int16_t textureLRU[4];
-extern int16_t pageswapargs_textcache[8];
 extern uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
 
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
@@ -127,7 +126,7 @@ void Z_FreeConventionalAllocations() {
 	for (i = 0; i < 4; i++) {
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		textureLRU[i] = i;
-		pageswapargs_textcache[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		pageswapargs_rend[40 + i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		activenumpages[i] = 0;
 	}
 
@@ -253,6 +252,7 @@ int16_t pageswapargs_demo[8] = {
 	FIRST_DEMO_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET
 };
 
+/*
 // todo combine with render[40-48] ??
 int16_t pageswapargs_textcache[8] = {
 	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_4000_OFFSET,
@@ -260,6 +260,7 @@ int16_t pageswapargs_textcache[8] = {
 	FIRST_TEXTURE_LOGICAL_PAGE + 2,	PAGE_4800_OFFSET,
 	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_4C00_OFFSET  // texture cache area
 };
+*/
 
 
 int16_t pageswapargs_textinfo[8] = {
@@ -360,8 +361,6 @@ int16_t pageswapargseg_wipe;
 int16_t pageswapargoff_wipe;
 int16_t pageswapargseg_palette;
 int16_t pageswapargoff_palette;
-int16_t pageswapargseg_textcache;
-int16_t pageswapargoff_textcache;
 int16_t pageswapargseg_textinfo;
 int16_t pageswapargoff_textinfo;
 int16_t pageswapargseg_scratch_4000;
@@ -524,7 +523,7 @@ void Z_QuickmapRenderTexture() {
 //void Z_QuickmapRenderTexture(uint8_t offset, uint8_t count) {
 
 	//pageswapargs_textcache[2];
-
+	/*
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
@@ -532,6 +531,15 @@ void Z_QuickmapRenderTexture() {
 	segregs.ds = pageswapargseg_textcache;
 	regs.w.si = pageswapargoff_textcache;
 	intx86(EMS_INT, &regs, &regs);
+	*/
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg_rend;
+	regs.w.si = pageswapargoff_rend + 80;
+	intx86(EMS_INT, &regs, &regs);
+ 
 	/*
 
 	regs.w.ax = 0x5000;

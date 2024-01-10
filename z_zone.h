@@ -121,6 +121,9 @@ void Z_ShutdownEMS();
 
 #define SCRATCH_PAGE_SEGMENT 0x5000u
 
+extern int16_t pageswapargs_rend[48];
+//#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
+
 // EMS 4.0 stuff
 void Z_QuickmapPhysics();
 void Z_QuickmapRender();

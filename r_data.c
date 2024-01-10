@@ -79,8 +79,6 @@ int16_t		*spritetopoffsets;
 //lighttable_t    *colormaps;
 
 
-extern int16_t pageswapargs_textcache[8];
-
 int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
 uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
 int16_t textureLRU[4];
@@ -578,14 +576,14 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage]) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
-				activetexturepages[startpage+i] = pageswapargs_textcache[2 * (startpage+i)] = -1; // unpaged
+				activetexturepages[startpage+i] = pageswapargs_rend[40+2 * (startpage+i)] = -1; // unpaged
 				activenumpages[startpage+i] = 0;
 			}
 		}
 		activenumpages[startpage] = 0;
 
 
-		activetexturepages[startpage] = pageswapargs_textcache[2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
+		activetexturepages[startpage] = pageswapargs_rend[40 + 2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 		
 
 
@@ -661,7 +659,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage] > numpages) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
-				activetexturepages[startpage + i] = pageswapargs_textcache[2 * (startpage + i)] = -1; // unpaged
+				activetexturepages[startpage + i] = pageswapargs_rend[40 + 2 * (startpage + i)] = -1; // unpaged
 				activenumpages[startpage + i] = 0;
 			}
 		}
@@ -670,7 +668,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 
 		for (i = 0; i <= numpages; i++) {
 			textureLRU[startpage + i] = 0;
-			activetexturepages[startpage + i] =  pageswapargs_textcache[2 * (startpage + i)] = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;
+			activetexturepages[startpage + i] = pageswapargs_rend[40 + 2 * (startpage + i)] = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;
 			activenumpages[startpage + i] = numpages-i;
 
 		}

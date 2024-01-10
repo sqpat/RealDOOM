@@ -568,7 +568,6 @@ extern uint8_t	screenblocks;
 
 extern int8_t textureLRU[4];
 extern int16_t activetexturepages[4];
-extern int16_t pageswapargs_textcache[8];
 
 
 
@@ -643,13 +642,18 @@ void R_SetupFrame ()
     
 	destview = (byte*)(destscreen.w + viewwindowoffset);
 
+	/*
 	for (i = 0; i < 4; i++) {
 		//todo dont reset this per frame? keep last frame's cache?
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		textureLRU[i] = i;
-		pageswapargs_textcache[i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
-	}
-	Z_QuickmapRenderTexture();
+		pageswapargs_rend[40 + i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		
+		
+		//#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
+	}	 
+	*/
+	//Z_QuickmapRenderTexture();
 
 
 }

@@ -170,7 +170,6 @@ extern int16_t pageswapargs_demo[8];
 extern int16_t pageswapargs_menu[16];
 extern int16_t pageswapargs_wipe[26];
 extern int16_t pageswapargs_palette[10];
-extern int16_t pageswapargs_textcache[8];
 extern int16_t pageswapargs_textinfo[8];
 extern int16_t pageswapargs_scratch_4000[8];
 extern int16_t pageswapargs_scratch_5000[8];
@@ -316,8 +315,6 @@ found:
 	pageswapargseg_wipe = (uint16_t)((uint32_t)pageswapargs_wipe >> 16);
 	pageswapargoff_wipe = (uint16_t)(((uint32_t)pageswapargs_wipe) & 0xffff);
 
-	pageswapargseg_textcache = (uint16_t)((uint32_t)pageswapargs_textcache >> 16);
-	pageswapargoff_textcache = (uint16_t)(((uint32_t)pageswapargs_textcache) & 0xffff);
 	pageswapargseg_textinfo = (uint16_t)((uint32_t)pageswapargs_textinfo >> 16);
 	pageswapargoff_textinfo = (uint16_t)(((uint32_t)pageswapargs_textinfo) & 0xffff);
 	pageswapargseg_flat = (uint16_t)((uint32_t)pageswapargs_flat >> 16);
@@ -378,7 +375,6 @@ found:
 		pageswapargs_stat[index]	 += pagenum9000;
 		pageswapargs_demo[index]	 += pagenum9000;
 
-		pageswapargs_textcache[index]+= pagenum9000;
 		pageswapargs_textinfo[index] += pagenum9000;
 
 		pageswapargs_scratch_5000[index] += pagenum9000;

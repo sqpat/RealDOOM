@@ -374,7 +374,6 @@ R_CheckPlane
 
 int tempcounter = 0;
 
-extern int16_t pageswapargs_textcache[8];
 extern uint8_t firstunusedflat;
  //
 // R_DrawPlanes
@@ -565,7 +564,7 @@ void R_DrawPlanes (void)
 
 	/*
 	for (i = 0; i <= 4; i++) {
-		 pageswapargs_textcache[2 * i] = oldtexargs[i];
+		 pageswapargs_rend[40+2 * i] = oldtexargs[i];
 	}
 
 	Z_QuickmapRenderTexture();
