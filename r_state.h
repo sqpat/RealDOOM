@@ -117,7 +117,8 @@ extern seg_render_t*		segs_render;
 
 extern int16_t		numsectors;
 extern sector_t* sectors;
-extern sector_physics_t* sectors_physics;
+//extern sector_physics_t* sectors_physics;
+#define sectors_physics ((sector_physics_t far* ) 0x70000000)
 
 extern int16_t		numsubsectors;
 extern subsector_t*	subsectors;
@@ -136,7 +137,8 @@ extern line_physics_t*	lines_physics;
 
 extern int16_t		numsides;
 extern side_t*       sides;
-extern side_render_t*		sides_render;
+//extern side_render_t*		sides_render;
+#define sides_render ((side_render_t far* ) 0x70000000)
 
 extern int16_t*          linebuffer;
 

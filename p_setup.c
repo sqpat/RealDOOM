@@ -54,7 +54,7 @@ seg_render_t*		segs_render;
 
 int16_t             numsectors;
 sector_t*		sectors;
-sector_physics_t* sectors_physics;
+//sector_physics_t* sectors_physics;
 
 int16_t             numsubsectors;
 subsector_t*    subsectors;
@@ -72,7 +72,7 @@ line_physics_t*	lines_physics;
 
 int16_t             numsides;
 side_t*				sides;
-side_render_t*		sides_render;
+//side_render_t*		sides_render;
 int16_t*          linebuffer;
 
 
@@ -123,14 +123,12 @@ uint16_t leveldataoffset_6000_phys = 0u;
 byte far*  Z_GetNext0x6000Address(uint16_t size) {
 
 	byte far*  returnvalue;
-	
-
 	leveldataoffset_6000_phys -= size;
 	returnvalue = MK_FP(0x6000, leveldataoffset_6000_phys);
 
 	if (leveldataoffset_6000_phys < 32768u) {
 		// wraparound
-		I_Error("Allocated too much space in Z_GetNext0x6000Address (size %u) ", size);
+		I_Error("65"); // Allocated too much space in Z_GetNext0x6000Address (size %u) 
 	}
 	return returnvalue;
 
@@ -383,7 +381,8 @@ void P_LoadSectors(int16_t lump)
 
 	sectors = (sector_t*)Z_MallocConventional (numsectors * sizeof(sector_t));
 
-	sectors_physics  = (sector_physics_t*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
+	//sectors_physics = (sector_physics_t*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
+	Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
 
 	memset(sectors, 0, numsectors * sizeof(sector_t));
 	memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
@@ -1061,7 +1060,7 @@ void P_LoadLineDefs(int16_t lump)
 	data = (maplinedef_t*)SCRATCH_ADDRESS;
 
 	Z_QuickmapRender7000to6000();
-	tempsides_render = MK_FP(0x6000u, (uint16_t)((uint32_t)sides_render & 0xFFFFu));
+	tempsides_render = MK_FP(0x6000u, 0x0000u); // this is always at addr 7000
 
 	for (i = 0; i < numlines; i++) {
 		mld = &data[i];
@@ -1175,7 +1174,8 @@ void P_LoadSideDefs(int16_t lump)
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sides = (side_t*)Z_MallocConventional (numsides * sizeof(side_t));
-	sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
+	//sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
+	Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
