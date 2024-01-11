@@ -326,6 +326,10 @@ int16_t pageswapargoff;
 #ifdef DETAILED_BENCH_STATS
 int32_t taskswitchcount = 0;
 int32_t texturepageswitchcount = 0;
+int32_t patchpageswitchcount = 0;
+int32_t compositepageswitchcount = 0;
+int32_t spritepageswitchcount = 0;
+int16_t benchtexturetype = 0;
 int32_t flatpageswitchcount = 0;
 int32_t scratchpageswitchcount = 0;
 int32_t scratchpoppageswitchcount = 0;
@@ -502,6 +506,16 @@ void Z_QuickmapRenderTexture() {
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	texturepageswitchcount++;
+
+	if (benchtexturetype == TEXTURE_TYPE_PATCH) {
+		patchpageswitchcount++;
+	} else if (benchtexturetype == TEXTURE_TYPE_COMPOSITE) {
+		compositepageswitchcount++;
+	} else if (benchtexturetype == TEXTURE_TYPE_SPRITE) {
+		spritepageswitchcount++;
+	}
+
+
 #endif
 	currenttask = TASK_RENDER_TEXT; // not sure about this
 }

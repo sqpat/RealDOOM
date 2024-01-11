@@ -43,6 +43,9 @@ extern int32_t scratchpageswitchcount;
 extern int32_t scratchpoppageswitchcount;
 extern int32_t scratchpushpageswitchcount;
 extern int32_t scratchremapswitchcount;
+extern int32_t patchpageswitchcount;
+extern int32_t compositepageswitchcount;
+extern int32_t spritepageswitchcount;
 
 #endif
 

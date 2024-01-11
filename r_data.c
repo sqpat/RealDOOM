@@ -682,6 +682,10 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 	}
 
 }
+#ifdef DETAILED_BENCH_STATS
+extern int16_t benchtexturetype;
+#endif
+
 // TODO - try different algos instead of first free block for populating cache pages
 // get 0x4000 offset for texture
 byte* getpatchtexture(int16_t lump) {
@@ -690,7 +694,9 @@ byte* getpatchtexture(int16_t lump) {
 	uint8_t texpage = patchpage[index];
 	uint8_t texoffset = patchoffset[index];
 	byte* addr;
-
+#ifdef DETAILED_BENCH_STATS
+	benchtexturetype = TEXTURE_TYPE_PATCH;
+#endif
 
 	if (texpage == 0xFF) { // texture not loaded -  0xFFu is initial state (and impossible anyway)
 		R_GetNextPatchBlock(lump);
@@ -719,6 +725,9 @@ byte* getcompositetexture(int16_t tex_index) {
 	uint8_t texpage = compositetexturepage[tex_index];
 	uint8_t texoffset = compositetextureoffset[tex_index];
 	byte* addr;
+#ifdef DETAILED_BENCH_STATS
+	benchtexturetype = TEXTURE_TYPE_COMPOSITE;
+#endif
 
 	//addr = MK_FP(0x4000, 0);
 	//R_GenerateComposite(tex_index, addr);
@@ -751,6 +760,9 @@ byte* getspritetexture(int16_t lump) {
 	uint8_t texpage = spritepage[index];
 	uint8_t texoffset = spriteoffset[index];
 	byte* addr;
+#ifdef DETAILED_BENCH_STATS
+	benchtexturetype = TEXTURE_TYPE_SPRITE;
+#endif
 
 
 	if (texpage == 0xFF) { // texture not loaded -  0xFFu is initial state (and impossible anyway)

@@ -1164,6 +1164,7 @@ extern int16_t wipeduration;
 
 extern uint16_t physicstics, rendertics, othertics, rendersetuptics, renderplayerviewtics, renderpostplayerviewtics;
 extern uint16_t renderplayersetuptics, renderplayerbsptics, renderplayerplanetics, renderplayermaskedtics, cachedrenderplayertics;
+
 #endif
 
 boolean G_CheckDemoStatus (void)  { 
@@ -1180,14 +1181,14 @@ boolean G_CheckDemoStatus (void)  {
 		fps = (35000u * (uint32_t)(gametic) / (uint32_t)(endtime - starttime));
 		fps2 = (35000u * (uint32_t)(gametic) / (uint32_t)(endtime - starttime - wipeduration));
 
-        I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe)\n FPS: %lu.%.3lu fps, %lu.%.3lu fps without fwipe \nPhysics Tics %u\n Render Tics %u\n   Render Setup Tics %u\n   Render PlayerView Tics %u\n    Render InPlayerView Setup Tics %u\n    Render InPlayerView BSP Tics %u\n    Render InPlayerView Plane Tics %u\n    Render InPlayerView Masked Tics %u\n   Render Post PlayerView Tics %u\n Other Tics %u \n Task Switches: %li\n  Texture Cache Switches: %li\n  Flat Cache Switches: %li\n  Scratch Cache Switches: %li\n  Scratch Cache Pushes: %li\n  Scratch Cache Pops: %li\n  Scratch Cache Remaps: %li \n prnd index %i ",
+        I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe)\n FPS: %lu.%.3lu fps, %lu.%.3lu fps without fwipe \nPhysics Tics %u\n Render Tics %u\n   Render Setup Tics %u\n   Render PlayerView Tics %u\n    Render InPlayerView Setup Tics %u\n    Render InPlayerView BSP Tics %u\n    Render InPlayerView Plane Tics %u\n    Render InPlayerView Masked Tics %u\n   Render Post PlayerView Tics %u\n Other Tics %u \n Task Switches: %li\n  Texture Cache Switches: %li (%li, %li, %li Patch/Composite/Sprite)\n  Flat Cache Switches: %li\n  Scratch Cache Switches: %li\n  Scratch Cache Pushes: %li\n  Scratch Cache Pops: %li\n  Scratch Cache Remaps: %li \n prnd index %i ",
 			gametic  , endtime-starttime , endtime-starttime- wipeduration, wipeduration, 
 			fps / 1000, fps % 1000, fps2 / 1000, fps2%1000,
 			physicstics, rendertics, rendersetuptics, renderplayerviewtics, 
 			renderplayersetuptics, renderplayerbsptics, renderplayerplanetics, renderplayermaskedtics,
 			renderpostplayerviewtics, 
 			othertics, 
-			taskswitchcount, texturepageswitchcount , flatpageswitchcount, scratchpageswitchcount , scratchpoppageswitchcount, scratchpushpageswitchcount, scratchremapswitchcount,
+			taskswitchcount, texturepageswitchcount , patchpageswitchcount, compositepageswitchcount, spritepageswitchcount,flatpageswitchcount, scratchpageswitchcount , scratchpoppageswitchcount, scratchpushpageswitchcount, scratchremapswitchcount,
 			prndindex);
 
  
