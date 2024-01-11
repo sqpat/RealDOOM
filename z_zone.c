@@ -301,7 +301,23 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 5, PAGE_6800_OFFSET,
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6, PAGE_6C00_OFFSET,
 
-
+// task 
+	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
+	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
+	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
+	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
+	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4, PAGE_6000_OFFSET,
+	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5, PAGE_6400_OFFSET,
+	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 6, PAGE_6800_OFFSET,
+	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 7, PAGE_6C00_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 0, PAGE_8000_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 1, PAGE_8400_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 2, PAGE_8800_OFFSET,
+	SCREEN0_LOGICAL_PAGE + 3, PAGE_8C00_OFFSET,
+	SCREEN1_LOGICAL_PAGE + 0, PAGE_9000_OFFSET,
+	SCREEN1_LOGICAL_PAGE + 1, PAGE_9400_OFFSET,
+	SCREEN1_LOGICAL_PAGE + 2, PAGE_9800_OFFSET,
+	SCREEN1_LOGICAL_PAGE + 3, PAGE_9C00_OFFSET,
 	// wipe
 
 	FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
@@ -711,6 +727,37 @@ void Z_QuickmapMenu() {
 	currenttask = TASK_MENU;
 }
 
+void Z_QuickmapIntermission() {
+	/*
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_menu_offset_size;
+	intx86(EMS_INT, &regs, &regs);
+	*/
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_intermission_offset_size;
+	intx86(EMS_INT, &regs, &regs);
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x08; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_intermission_offset_size + 32;
+	intx86(EMS_INT, &regs, &regs);
+ 
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount++;
+#endif
+
+	currenttask = TASK_INTERMISSION;
+}
+
 void Z_QuickmapWipe() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
@@ -749,6 +796,9 @@ void Z_QuickmapByTaskNum(int8_t tasknum) {
 			break;
 		case TASK_MENU:
 			Z_QuickmapMenu();
+			break;
+		case TASK_INTERMISSION:
+			Z_QuickmapIntermission();
 			break;
 		default:
 			I_Error("78 %hhi", tasknum); // bad tasknum

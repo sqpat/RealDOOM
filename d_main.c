@@ -682,7 +682,7 @@ void D_PageDrawer (void)
 		return;
 	}
 
-	 V_DrawFullscreenPatch(pagename);
+	 V_DrawFullscreenPatch(pagename, 0);
 }
 
 

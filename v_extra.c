@@ -42,7 +42,8 @@
 void
 V_DrawFullscreenPatch
 (
-	int8_t*       pagename)
+	int8_t*       pagename,
+	int16_t screen)
 {
 	int16_t		count;
 	int16_t		col;
@@ -72,8 +73,12 @@ V_DrawFullscreenPatch
 
 
 	V_MarkRect(0, 0, w, (patch->height));
-	desttop = screen0;
-	
+	if (screen == 1) {
+		desttop = screen1;
+	}
+	else {
+		desttop = screen0;
+	}
 
 	for (col = 0; col < w; col++, desttop++) {
 

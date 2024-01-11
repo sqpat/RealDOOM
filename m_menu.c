@@ -57,8 +57,6 @@
 extern boolean          message_dontfuckwithme;
 extern patch_t*			hu_font[HU_FONTSIZE];
 
-byte far* menugraphicspage0 = (byte far*)0x70000000;
-byte far* menugraphicspage4 = (byte far* )0x64000000;
 uint16_t menuoffsets[NUM_MENU_ITEMS];
 
 
@@ -844,7 +842,7 @@ void M_QuickLoad(void)
 void M_DrawReadThis1(void)
 {
     inhelpscreens = true;
-    V_DrawFullscreenPatch("HELP2");
+    V_DrawFullscreenPatch("HELP2", 0);
 }
 
 
@@ -856,14 +854,14 @@ void M_DrawReadThis1(void)
 void M_DrawReadThis2(void)
 {
     inhelpscreens = true;
-    V_DrawFullscreenPatch("HELP1");
+    V_DrawFullscreenPatch("HELP1", 0);
 }
 #endif
 
 void M_DrawReadThisRetail(void)
 {
     inhelpscreens = true;
-    V_DrawFullscreenPatch("HELP");
+    V_DrawFullscreenPatch("HELP", 0);
 }
 
 
@@ -1857,5 +1855,34 @@ void M_Ticker (void)
         whichSkull ^= 1;
         skullAnimCounter = 8;
     }
+}
+
+
+
+
+void M_Reload(void) {
+	// reload menu graphics
+	int16_t i = 0;
+	uint32_t size = 0;
+	byte far* dst = menugraphicspage0;
+	uint8_t pageoffset = 0;
+	for (i = 0; i < NUM_MENU_ITEMS; i++) {
+		int16_t lump = W_GetNumForName(menugraphics[i]);
+		uint16_t lumpsize = W_LumpLength(lump);
+		if (i == 27) { // (size + lumpsize) > 65535u) {
+			// repage
+			size = 0;
+			pageoffset += 4;
+			dst = menugraphicspage4;
+		}
+		W_CacheLumpNumDirect(lump, dst);
+		menuoffsets[i] = size;
+		size += lumpsize;
+		dst += lumpsize;
+
+	}
+
+
+
 }
 

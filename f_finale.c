@@ -710,7 +710,7 @@ void F_CastDrawer (void)
 	patch_t*		patch = MK_FP(0x5000, 0);
 
     // erase the entire screen to a background
-    V_DrawFullscreenPatch("BOSSBACK");
+    V_DrawFullscreenPatch("BOSSBACK", 0);
 	getStringByIndex(castorder[castnum].nameindex, text);
     F_CastPrint (text);
     
@@ -850,20 +850,20 @@ void F_Drawer (void)
 		switch (gameepisode) {
 		  case 1:
 			#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-				V_DrawFullscreenPatch("HELP2");
+				V_DrawFullscreenPatch("HELP2", 0);
 				break;
 			#else
-			    V_DrawFullscreenPatch("CREDIT");
+			    V_DrawFullscreenPatch("CREDIT", 0);
 				break;
 			#endif
 		  case 2:
-				V_DrawFullscreenPatch("VICTORY2");
+				V_DrawFullscreenPatch("VICTORY2", 0);
 				break;
 		  case 3:
 				F_BunnyScroll ();
 				break;
 		  case 4:
-				V_DrawFullscreenPatch("ENDPIC");
+				V_DrawFullscreenPatch("ENDPIC", 0);
 				break;
 		}
     }

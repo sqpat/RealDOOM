@@ -41,6 +41,7 @@
 // Screen 1 is an extra buffer.
 
 #define screen0 ((byte far*) 0x80000000)
+#define screen1 ((byte far*) 0x90000000)
 #define screen2 ((byte far*) 0x70000000)
 #define screen3 ((byte far*) 0x60000000)
 #define screen4 ((byte far*) 0x90000000 + (65536u - ST_WIDTH * ST_HEIGHT))
@@ -75,7 +76,8 @@ V_CopyRect
 void 
 V_DrawFullscreenPatch
 ( 
-  int8_t*       texname ) ;
+  int8_t*       texname,
+	int16_t		screen) ;
 
 void
 V_DrawPatch

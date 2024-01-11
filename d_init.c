@@ -572,39 +572,19 @@ void M_FinishReadThis(int16_t choice);
 // M_Init
 //
 #define NUM_MENU_ITEMS 45
-
-extern byte far* menugraphicspage0;
-extern byte far* menugraphicspage4;
+ 
 extern uint16_t menuoffsets[NUM_MENU_ITEMS];
-
 extern int8_t menugraphics[NUM_MENU_ITEMS][9];
 
+extern void M_Reload(void);
 
 void M_Init(void)
 {
 	
 
-	int16_t i = 0;
-	uint32_t size = 0;
-	byte far* dst = menugraphicspage0;
-	uint8_t pageoffset = 0;
 	Z_QuickmapMenu();
 
-	for (i = 0; i < NUM_MENU_ITEMS; i++) {
-		int16_t lump = W_GetNumForName(menugraphics[i]);
-		uint16_t lumpsize = W_LumpLength(lump);
-		if (i == 27){ // (size + lumpsize) > 65535u) {
-			// repage
-			size = 0;
-			pageoffset += 4;
-			dst = menugraphicspage4;
-		}
-		W_CacheLumpNumDirect(lump, dst);
-		menuoffsets[i] = size;
-		size += lumpsize;
-		dst += lumpsize;
-
-	}
+	M_Reload();
 	
 
 	currentMenu = &MainDef;

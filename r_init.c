@@ -195,9 +195,9 @@ void R_InitSpriteLumps(void)
 #endif
 		Z_QuickmapScratch_4000();
 
-		W_CacheLumpNumDirect(firstspritelump + i, SCRATCH_ADDRESS);
+		W_CacheLumpNumDirect(firstspritelump + i, SCRATCH_ADDRESS_4000);
 		
-		patch = (patch_t*)SCRATCH_ADDRESS;
+		patch = (patch_t*)SCRATCH_ADDRESS_4000;
 		patchwidth = (patch->width);
 		patchleftoffset = (patch->leftoffset);
 		patchtopoffset = (patch->topoffset);

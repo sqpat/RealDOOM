@@ -309,18 +309,60 @@ static anim_t *anims[NUMEPISODES] =
     epsd2animinfo
 };
 
-byte far*  wigraphicspage0		= (byte far* )0x70000000;
-byte far*  wigraphicslevelname	= (byte far* )0x78000000;
-byte far*  wigraphicsfullscreen	= (byte far* )0x7C000000;
 #define NEXT_OFFSET 8192
-#define NUM_WI_ITEMS 58
+#define NUM_WI_ITEMS 28
+#define NUM_WI_ANIM_ITEMS 30
 uint16_t wioffsets[NUM_WI_ITEMS];
+uint16_t wianimoffsets[NUM_WI_ANIM_ITEMS];
 
 
 patch_t far* WI_GetPatch(int16_t i) {
 	return (patch_t far*)(wigraphicspage0 + wioffsets[i]);
-
 }
+
+patch_t far* WI_GetAnimPatch(int16_t i) {
+	return (patch_t far*)(wianimspage + wianimoffsets[i]);
+}
+
+char* wigraphics[NUM_WI_ITEMS] = {
+	 
+		"WIURH0", //0
+		"WIURH1",
+		"WISPLAT",
+		"WIOSTK",
+		"WIOSTI",
+
+		"WIF", // 5
+		"WIMSTT",
+		"WIOSTS",
+		"WIOSTF",
+		"WITIME",
+
+		"WIPAR",//10
+		"WIMSTAR",
+		"WIMINUS",
+		"WIPCNT",
+		"WINUM0",
+
+		"WINUM1",//15
+		"WINUM2",
+		"WINUM3",
+		"WINUM4",
+		"WINUM5",
+
+		"WINUM6",//20
+		"WINUM7",
+		"WINUM8",
+		"WINUM9",
+		"WICOLON",
+
+		"WISUCKS",//25
+		"WISCRT2",
+		"WIENTER"
+
+
+};
+
 
 //
 // GENERAL DATA
@@ -407,7 +449,7 @@ static uint8_t		numRef[10];
 
 void WI_slamBackground(void)
 {
-    //memcpy(screen0, screen1, SCREENWIDTH * SCREENHEIGHT);
+    memcpy(screen0, screen1, SCREENWIDTH * SCREENHEIGHT);
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 }
 
@@ -417,7 +459,7 @@ void WI_slamBackground(void)
 void WI_drawLF(void)
 {
 	int16_t y = WI_TITLEY;
-	patch_t* finished = WI_GetPatch(35);
+	patch_t* finished = WI_GetPatch(5);
 	// draw <LevelName> 
 	patch_t* lname = (patch_t*)(wigraphicslevelname + NEXT_OFFSET);
 
@@ -436,7 +478,7 @@ void WI_drawEL(void)
 {
 	patch_t* lname;
 	int16_t y = WI_TITLEY;
-	patch_t* entering = WI_GetPatch(57);
+	patch_t* entering = WI_GetPatch(27);
     // draw "Entering"
     V_DrawPatch((SCREENWIDTH - (entering->width))/2, y, FB, entering);
 
@@ -582,7 +624,7 @@ void WI_drawAnimatedBack(void)
 {
    
 	int16_t i;
-	anim_t *a;
+	anim_t *anim;
 
 	if (commercial)
 		return;
@@ -594,10 +636,10 @@ void WI_drawAnimatedBack(void)
 
 	for (i = 0; i < NUMANIMS[wbs->epsd]; i++)
 	{
-		a = &anims[wbs->epsd][i];
+		anim = &anims[wbs->epsd][i];
 
-		if (a->ctr >= 0)
-			V_DrawPatch(a->loc.x, a->loc.y, FB, WI_GetPatch(a->pRef[a->ctr]));
+		if (anim->ctr >= 0)
+			V_DrawPatch(anim->loc.x, anim->loc.y, FB, WI_GetAnimPatch(anim->pRef[anim->ctr]));
 	}
 
 }
@@ -660,7 +702,7 @@ WI_drawNum
 
     // draw a minus sign if necessary
     if (neg)
-	V_DrawPatch(x-=8, y, FB, WI_GetPatch(42));
+	V_DrawPatch(x-=8, y, FB, WI_GetPatch(12));
 
     return x;
 
@@ -673,9 +715,9 @@ WI_drawPercent
   int16_t		p )
 {
     if (p < 0)
-	return;
+		return;
 
-    V_DrawPatch(x, y, FB, WI_GetPatch(43));
+    V_DrawPatch(x, y, FB, WI_GetPatch(13));
     WI_drawNum(x, y, p, -1);
 }
 
@@ -701,7 +743,7 @@ WI_drawTime
 	return;
 
     if (t <= 61*59) {
-		colon = WI_GetPatch(54);
+		colon = WI_GetPatch(24);
 		div = 1;
 		do {
 			n = (t / div) % 60;
@@ -715,7 +757,7 @@ WI_drawTime
 		} while (t / div);
     } else {
 		// "sucks"
-		sucks = WI_GetPatch(55);
+		sucks = WI_GetPatch(25);
 		V_DrawPatch(x - sucks->width, y, FB, sucks);
     }
 }
@@ -758,14 +800,14 @@ void WI_initShowNextLoc(void)
     WI_initAnimatedBack();
 }
 
-void WI_updateShowNextLoc(void)
-{
+void WI_updateShowNextLoc(void) {
     WI_updateAnimatedBack();
 
-    if (!--cnt || acceleratestage)
-	WI_initNoState();
-    else
-	snl_pointeron = (cnt & 31) < 20;
+	if (!--cnt || acceleratestage) {
+		WI_initNoState();
+	} else {
+		snl_pointeron = (cnt & 31) < 20;
+	}
 }
 
 void WI_drawShowNextLoc(void)
@@ -923,10 +965,11 @@ void WI_updateStats(void)
 	{
 	    S_StartSound(0, sfx_sgcock);
 
-	    if (commercial)
-		WI_initNoState();
-	    else
-		WI_initShowNextLoc();
+		if (commercial) {
+			WI_initNoState();
+		} else {
+			WI_initShowNextLoc();
+		}
 	}
     }
     else if (sp_state & 1)
@@ -956,23 +999,23 @@ void WI_drawStats(void)
     
     WI_drawLF();
 
-    V_DrawPatch(SP_STATSX, SP_STATSY, FB, WI_GetPatch(33));
+    V_DrawPatch(SP_STATSX, SP_STATSY, FB, WI_GetPatch(3));
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY, cnt_kills);
 
-    V_DrawPatch(SP_STATSX, SP_STATSY+lh, FB, WI_GetPatch(34));
+    V_DrawPatch(SP_STATSX, SP_STATSY+lh, FB, WI_GetPatch(4));
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+lh, cnt_items);
 
-    V_DrawPatch(SP_STATSX, SP_STATSY+2*lh, FB, WI_GetPatch(56));
+    V_DrawPatch(SP_STATSX, SP_STATSY+2*lh, FB, WI_GetPatch(26));
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+2*lh, cnt_secret);
 
-    V_DrawPatch(SP_TIMEX, SP_TIMEY, FB, WI_GetPatch(39));
+    V_DrawPatch(SP_TIMEX, SP_TIMEY, FB, WI_GetPatch(9));
     WI_drawTime(SCREENWIDTH/2 - SP_TIMEX, SP_TIMEY, cnt_time);
 
 	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 		if (wbs->epsd < 3)
 	#endif
     {
-		V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, FB, WI_GetPatch(40));
+		V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, FB, WI_GetPatch(10));
 		WI_drawTime(SCREENWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);
     }
 
@@ -1052,9 +1095,10 @@ void WI_loadData(void)
 
 
     // background
-		W_EraseFullscreenCache();
-	 	V_DrawFullscreenPatch(name);
+	W_EraseFullscreenCache();
+	V_DrawFullscreenPatch(name, 1); // scratch also used here
 
+	Z_QuickmapScratch_5000();
 
     if (commercial) {
 		NUMCMAPS = 32;								
@@ -1064,44 +1108,50 @@ void WI_loadData(void)
 
 
 		// you are here
-		yahRef[0] = 30;
+		yahRef[0] = 0;
 
 		// you are here (alt.)
-		yahRef[1] = 31;
+		yahRef[1] = 1;
 
 		// splat
-		splatRef = 32;
-		/*
-		#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-			if (wbs->epsd < 3)
-		#endif
-			{
-				for (j=0;j<NUMANIMS[wbs->epsd];j++)
-				{
-				a = &anims[wbs->epsd][j];
-				for (i=0;i<a->nanims;i++)
-				{
+		splatRef = 2;
+		
+		if (wbs->epsd < 3) {
+			anim_t*	anim;
+			int16_t j = 0;
+			int16_t k = 0;
+			uint16_t size = 0;
+			uint16_t lumpsize = 0;
+			int16_t lump;
+			byte far* dst = wianimspage;
+			for (j=0;j<NUMANIMS[wbs->epsd];j++) {
+				anim = &anims[wbs->epsd][j];
+				for (i=0;i<anim->nanims;i++) {
 					// MONDO HACK!
-					if (wbs->epsd != 1 || j != 8)
-					{
-					// animations
-					sprintf(name, "WIA%d%.2d%.2d", wbs->epsd, j, i);
-					a->pRef[i] = W_CacheLumpNameEMS(name, PU_STATIC);
+					if (wbs->epsd != 1 || j != 8) {
+						// animations
+						sprintf(name, "WIA%d%.2d%.2d", wbs->epsd, j, i);
+						lump = W_GetNumForName(name);
+						lumpsize = W_LumpLength(lump);
+						W_CacheLumpNumDirect(lump, dst);
+						wianimoffsets[k] = size;
+						size += lumpsize;
+						dst += lumpsize;
+ 
+						anim->pRef[i] = k;
+						k++;
+
+					} else {
+						// HACK ALERT!
+						anim->pRef[i] = anims[1][4].pRef[i];
 					}
-					else
-					{
-					// HACK ALERT!
-					a->pRef[i] = anims[1][4].pRef[i];
-					}
-				}
 				}
 			}
 		}
-		*/
 
 
 		for (i = 0; i < 10; i++) {
-			numRef[i] = 44 + i;
+			numRef[i] = 14 + i;
 		}
 	}
         				    
@@ -1109,100 +1159,14 @@ void WI_loadData(void)
 
 }
 
-#define NUM_MENU_ITEMS 45
+ 
 
-extern int8_t menugraphics[NUM_MENU_ITEMS][9];
-extern byte far* menugraphicspage0;
-extern uint16_t menuoffsets[NUM_MENU_ITEMS];
-
-
-void M_Reload(void) {
-	// reload menu graphics
-	int8_t menugraphics[NUM_MENU_ITEMS][9] = {
-	"M_DOOM",
-	"M_RDTHIS",
-	"M_OPTION",
-	"M_QUITG",
-	"M_NGAME",
-
-	"M_SKULL1`",//5
-	"M_SKULL2",
-	"M_THERMO",
-	"M_THERMR",
-	"M_THERMM",
-
-	"M_THERML",//10
-	"M_ENDGAM",
-	"M_PAUSE",
-	"M_MESSG",
-	"M_MSGON",
-
-	"M_MSGOFF", // 15
-	"M_EPISOD",
-	"M_EPI1",
-	"M_EPI2",
-	"M_EPI3",
-
-	"M_HURT", //20
-	"M_JKILL",
-	"M_ROUGH",
-	"M_SKILL",
-	"M_NEWG",
-
-	"M_ULTRA", //25
-	"M_NMARE",
-/*
-	"M_SVOL"
-	"M_OPTTTL",
-	"M_SAVEG",
-
-	"M_LOADG", //30
-	"M_DISP",
-	"M_MSENS",
-	"M_GDHIGH",
-	"M_GDLOW",
-
-	"M_DETAIL", // 35
-	"M_DISOPT",
-	"M_SCRNSZ",
-	"M_SGTTL",
-	"M_LGTTL",
-
-	"M_SFXVOL",//40
-	"M_MUSVOL",
-	"M_LSLEFT",
-	"M_LSCNTR",
-	"M_LSRGHT"
-	*/
-
-	//todo extend for commercial?
-	// "M_EPI4"
-
-
-	};
-
-	int16_t i = 0;
-	byte far* dst = menugraphicspage0;
-
-	for (i = 0; i < 27; i++) {
-		int16_t lump = W_GetNumForName(menugraphics[i]);
-		uint16_t lumpsize = W_LumpLength(lump);
-
-		W_CacheLumpNumDirect(lump, dst);
-		dst += lumpsize;
-
-	}
-
-
-
-}
 
 
 void WI_unloadData(void)
 {
-	Z_QuickmapMenu();
+	Z_QuickmapIntermission();
 	unloaded = true;
-	M_Reload();
 	Z_QuickmapPhysics();
 }
 
@@ -1217,7 +1181,7 @@ void WI_Drawer (void)
 	if (unloaded) {
 		return;
 	}
-	Z_QuickmapMenu();
+	Z_QuickmapIntermission();
 
     switch (state)
     {
@@ -1258,79 +1222,7 @@ void WI_initVariables(wbstartstruct_t* wbstartstruct)
 
 void WI_Init(void)
 {
-	char* wigraphics[NUM_WI_ITEMS] = {
-		"WIA00900",
-		"WIA00901",
-		"WIA00902",
-		"WIA00800",
-		"WIA00801",
-
-		"WIA00802`",//5
-		"WIA00700",
-		"WIA00701",
-		"WIA00702",
-		"WIA00600",
-
-		"WIA00601",//10
-		"WIA00602",
-		"WIA00500",
-		"WIA00501",
-		"WIA00502",
 	
-		"WIA00400",//15
-		"WIA00401",
-		"WIA00402",
-		"WIA00300",
-		"WIA00301",
-
-		"WIA00302",//20
-		"WIA00200",
-		"WIA00201",
-		"WIA00202",
-		"WIA00100",
-
-		"WIA00101",//25
-		"WIA00102",
-		"WIA00000",
-		"WIA00001",
-		"WIA00002",
-
-		"WIURH0", //30
-		"WIURH1",
-		"WISPLAT",
-		"WIOSTK",
-		"WIOSTI",
-
-		"WIF", // 35
-		"WIMSTT",
-		"WIOSTS",
-		"WIOSTF",
-		"WITIME",
-
-		"WIPAR",//40
-		"WIMSTAR",
-		"WIMINUS",
-		"WIPCNT",
-		"WINUM0",
-
-		"WINUM1",//45
-		"WINUM2",
-		"WINUM3",
-		"WINUM4",
-		"WINUM5",
-
-		"WINUM6",//50
-		"WINUM7",
-		"WINUM8",
-		"WINUM9",
-		"WICOLON",
-
-		"WISUCKS",//55
-		"WISCRT2",
-		"WIENTER"
-
-
-	};
 
 	int16_t i = 0;
 	uint32_t size = 0;
@@ -1373,8 +1265,8 @@ void WI_Init(void)
 void WI_Start(wbstartstruct_t* wbstartstruct)
 {
 	unloaded = false;
-	Z_QuickmapMenu();
-	
+	Z_QuickmapIntermission();
+
 	WI_initVariables(wbstartstruct);
 	WI_Init();
 	WI_loadData();

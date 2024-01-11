@@ -82,33 +82,35 @@ void far* Z_MallocConventional(uint16_t  size);
  
 void Z_ShutdownEMS();
  
-#define SCRATCH_ADDRESS (byte far* )0x40000000
+#define SCRATCH_ADDRESS_4000 (byte far* )0x40000000
 
-#define SCREEN0_LOGICAL_PAGE				4
-#define STRINGS_LOGICAL_PAGE				12
-#define FIRST_TRIG_TABLE_LOGICAL_PAGE		16
-#define FIRST_RENDER_LOGICAL_PAGE			20
-#define TEXTURE_INFO_LOGICAL_PAGE			FIRST_RENDER_LOGICAL_PAGE + 12
-#define SCREEN4_LOGICAL_PAGE				TEXTURE_INFO_LOGICAL_PAGE + 4
-#define FIRST_STATUS_LOGICAL_PAGE			SCREEN4_LOGICAL_PAGE + 1
-#define PALETTE_LOGICAL_PAGE				FIRST_STATUS_LOGICAL_PAGE + 4
-#define FIRST_DEMO_LOGICAL_PAGE				PALETTE_LOGICAL_PAGE + 1
-#define	FIRST_MENU_GRAPHICS_LOGICAL_PAGE	FIRST_DEMO_LOGICAL_PAGE + 4
-#define SCREEN2_LOGICAL_PAGE				FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
-#define SCREEN3_LOGICAL_PAGE				SCREEN2_LOGICAL_PAGE + 4
-#define FIRST_WIPE_LOGICAL_PAGE				SCREEN3_LOGICAL_PAGE + 4
-#define FIRST_SCRATCH_LOGICAL_PAGE			FIRST_WIPE_LOGICAL_PAGE + 1
-#define FIRST_PATCH_CACHE_LOGICAL_PAGE		FIRST_SCRATCH_LOGICAL_PAGE + 4
-#define NUM_PATCH_CACHE_PAGES				40
-#define FIRST_FLAT_CACHE_LOGICAL_PAGE		FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
-#define NUM_FLAT_CACHE_PAGES				8
-#define MAX_FLATS_LOADED					NUM_FLAT_CACHE_PAGES * 4
-#define FIRST_TEXTURE_LOGICAL_PAGE			FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-#define NUM_TEXTURE_PAGES					24
-#define FIRST_SPRITE_CACHE_LOGICAL_PAGE		FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
-#define NUM_SPRITE_CACHE_PAGES				36
-#define NUM_EMS4_SWAP_PAGES					(int32_t)(FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 174 currently
+#define SCREEN0_LOGICAL_PAGE						4
+#define STRINGS_LOGICAL_PAGE						12
+#define FIRST_TRIG_TABLE_LOGICAL_PAGE				16
+#define FIRST_RENDER_LOGICAL_PAGE					20
+#define TEXTURE_INFO_LOGICAL_PAGE					FIRST_RENDER_LOGICAL_PAGE + 12
+#define SCREEN4_LOGICAL_PAGE						TEXTURE_INFO_LOGICAL_PAGE + 4
+#define FIRST_STATUS_LOGICAL_PAGE					SCREEN4_LOGICAL_PAGE + 1
+#define PALETTE_LOGICAL_PAGE						FIRST_STATUS_LOGICAL_PAGE + 4
+#define FIRST_DEMO_LOGICAL_PAGE						PALETTE_LOGICAL_PAGE + 1
+#define	FIRST_MENU_GRAPHICS_LOGICAL_PAGE			FIRST_DEMO_LOGICAL_PAGE + 4
+#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
+#define SCREEN1_LOGICAL_PAGE						FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
+#define SCREEN2_LOGICAL_PAGE						SCREEN1_LOGICAL_PAGE + 4
+#define SCREEN3_LOGICAL_PAGE						SCREEN2_LOGICAL_PAGE + 4
+#define FIRST_WIPE_LOGICAL_PAGE						SCREEN3_LOGICAL_PAGE + 4
+#define FIRST_SCRATCH_LOGICAL_PAGE					FIRST_WIPE_LOGICAL_PAGE + 1
+#define FIRST_PATCH_CACHE_LOGICAL_PAGE				FIRST_SCRATCH_LOGICAL_PAGE + 4
+#define NUM_PATCH_CACHE_PAGES						40
+#define FIRST_FLAT_CACHE_LOGICAL_PAGE				FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
+#define NUM_FLAT_CACHE_PAGES						8
+#define MAX_FLATS_LOADED							NUM_FLAT_CACHE_PAGES * 4
+#define FIRST_TEXTURE_LOGICAL_PAGE					FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
+#define NUM_TEXTURE_PAGES							24
+#define FIRST_SPRITE_CACHE_LOGICAL_PAGE				FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
+#define NUM_SPRITE_CACHE_PAGES						36
+#define NUM_EMS4_SWAP_PAGES							(int32_t)(FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
+// 186 currently?
 
 #define TASK_PHYSICS 0
 #define TASK_RENDER 1
@@ -121,6 +123,7 @@ void Z_ShutdownEMS();
 #define TASK_PALETTE 8
 #define TASK_MENU 9
 #define TASK_WIPE 10
+#define TASK_INTERMISSION 11
 
 #define SCRATCH_PAGE_SEGMENT 0x5000u
 
@@ -137,6 +140,7 @@ void Z_ShutdownEMS();
 #define num_palette_params 10
 #define num_7000to6000_params 8
 #define num_menu_params 16
+#define num_intermission_params 32
 #define num_wipe_params 26
 
 //#define pageswapargoff_demo pageswapargseg +
@@ -153,7 +157,8 @@ void Z_ShutdownEMS();
 #define pageswapargs_palette_offset_size		(pageswapargs_flatcache_offset_size		+ 2*num_flatcache_params)
 #define pageswapargs_7000to6000_offset_size		(pageswapargs_palette_offset_size		+ 2*num_palette_params)
 #define pageswapargs_menu_offset_size			(pageswapargs_7000to6000_offset_size	+ 2*num_7000to6000_params)
-#define pageswapargs_wipe_offset_size			(pageswapargs_menu_offset_size			+ 2*num_menu_params)
+#define pageswapargs_intermission_offset_size	(pageswapargs_menu_offset_size			+ 2*num_menu_params)
+#define pageswapargs_wipe_offset_size			(pageswapargs_intermission_offset_size	+ 2*num_intermission_params)
 #define total_pages_size						(pageswapargs_wipe_offset_size			+ 2*num_wipe_params)
 
 // used for array indices
@@ -168,7 +173,8 @@ void Z_ShutdownEMS();
 #define pageswapargs_palette_offset			(pageswapargs_flatcache_offset		+ num_flatcache_params)
 #define pageswapargs_7000to6000_offset		(pageswapargs_palette_offset		+ num_palette_params)
 #define pageswapargs_menu_offset			(pageswapargs_7000to6000_offset		+ num_7000to6000_params)
-#define pageswapargs_wipe_offset			(pageswapargs_menu_offset			+ num_menu_params)
+#define pageswapargs_intermission_offset	(pageswapargs_menu_offset			+ num_menu_params)
+#define pageswapargs_wipe_offset			(pageswapargs_intermission_offset	+ num_intermission_params)
 #define total_pages							(pageswapargs_wipe_offset			+ num_wipe_params)
 
 extern int16_t pageswapargs[total_pages];
@@ -193,6 +199,7 @@ void Z_QuickMapFlatPage(int16_t page);
 void Z_QuickMapTextureInfoPage();
 void Z_QuickmapPalette();
 void Z_QuickmapMenu();
+void Z_QuickmapIntermission();
 void Z_QuickmapScreen0();
 void Z_QuickmapWipe();
 
@@ -204,6 +211,14 @@ void Z_LoadBinaries();
 
 #define PAGE_TYPE_PHYSICS 0
 #define PAGE_TYPE_RENDER 1
+
+#define menugraphicspage0		(byte far* )0x70000000
+#define menugraphicspage4		(byte far* )0x64000000
+
+#define	 wigraphicspage0		(byte far* )0x70000000
+#define  wigraphicslevelname	(byte far* )0x78000000
+#define  wigraphicsfullscreen	(byte far* )0x7C000000
+#define	 wianimspage			(byte far* )0x60000000
 
 extern int16_t currenttask;
 

@@ -197,8 +197,8 @@ void P_LoadVertexes(int16_t lump)
 	vertexes = Z_MallocConventional(numvertexes * sizeof(vertex_t));
 	// Load data into cache.
 	
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
-	data = (mapvertex_t*)SCRATCH_ADDRESS;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
+	data = (mapvertex_t*)SCRATCH_ADDRESS_4000;
 
 	// Copy and convert vertex coordinates,
 	// internal representation as fixed.
@@ -250,8 +250,8 @@ void P_LoadSegs(int16_t lump)
 
 	memset(segs, 0xff, numsegs * sizeof(seg_t));
 	
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
-	data = (mapseg_t*)SCRATCH_ADDRESS;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
+	data = (mapseg_t*)SCRATCH_ADDRESS_4000;
 
 	for (i = 0; i < numsegs; i++) {
 		ml = &data[i];
@@ -331,8 +331,8 @@ void P_LoadSubsectors(int16_t lump)
 	subsectors = (subsector_t*)Z_MallocConventional (numsubsectors * sizeof(subsector_t));
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
-	data = (mapsubsector_t*)SCRATCH_ADDRESS;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
+	data = (mapsubsector_t*)SCRATCH_ADDRESS_4000;
 
 	for (i = 0; i < numsubsectors; i++)
 	{
@@ -387,8 +387,8 @@ void P_LoadSectors(int16_t lump)
 	memset(sectors, 0, numsectors * sizeof(sector_t));
 	memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
-	data = (mapsector_t*)SCRATCH_ADDRESS;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
+	data = (mapsector_t*)SCRATCH_ADDRESS_4000;
 
 	ss = sectors;
 	sp = sectors_physics;
@@ -444,8 +444,8 @@ void P_LoadNodes(int16_t lump)
 	nodes_render = (node_render_t far* ) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
 
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
-	data = (mapnode_t*)SCRATCH_ADDRESS;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
+	data = (mapnode_t*)SCRATCH_ADDRESS_4000;
 	Z_QuickmapRender_NoTex();
 
 
@@ -978,8 +978,8 @@ void P_LoadThings(int16_t lump)
 	
 	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
  
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
-	data = (mapthing_t*)SCRATCH_ADDRESS;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
+	data = (mapthing_t*)SCRATCH_ADDRESS_4000;
 
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
 	for (i = 0; i < numthings; i++) {
@@ -1056,8 +1056,8 @@ void P_LoadLineDefs(int16_t lump)
 	memset(lines_physics, 0, numlines * sizeof(line_physics_t));
 	memset(seenlines, 0, numlines / 8 + 1);
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
-	data = (maplinedef_t*)SCRATCH_ADDRESS;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
+	data = (maplinedef_t*)SCRATCH_ADDRESS_4000;
 
 	Z_QuickmapRender7000to6000();
 	tempsides_render = MK_FP(0x6000u, 0x0000u); // this is always at addr 7000
@@ -1178,8 +1178,8 @@ void P_LoadSideDefs(int16_t lump)
 	Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS);
-	data = (mapsidedef_t*)SCRATCH_ADDRESS;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
+	data = (mapsidedef_t*)SCRATCH_ADDRESS_4000;
 
 	for (i = 0; i < numsides; i++) {
 		msd = &data[i];
