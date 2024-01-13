@@ -84,13 +84,13 @@ V_DrawPatch
 ( int16_t		x,
   int16_t		y,
   int16_t		scrn,
-  patch_t*	patch);
+  patch_t far*	patch);
 
 void
 V_DrawPatchDirect
 ( int16_t		x,
   int16_t		y,
-  patch_t*	patch );
+  patch_t far*	patch );
 
  
 

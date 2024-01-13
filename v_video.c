@@ -118,13 +118,13 @@ V_DrawPatch
 ( int16_t		x,
   int16_t		y,
   int16_t		scrn,
-  patch_t*	patch ) 
+  patch_t far*	patch )
 { 
 
     int16_t		col; 
-    column_t far*	column; 
+    column_t far far*	column;
 	uint16_t offset;
-	byte far* desttop;
+	byte far far* desttop;
     int16_t		w; 
 	 
 	if (skipdirectdraws) {

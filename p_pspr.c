@@ -284,7 +284,7 @@ void P_DropWeapon ()
 void
 A_WeaponReady
 ( 
-  pspdef_t*	psp )
+  pspdef_t near*	psp )
 {	
     statenum_t	newstate;
     int16_t		angle;
@@ -345,7 +345,7 @@ A_WeaponReady
 //
 void A_ReFire
 ( 
-  pspdef_t*	psp )
+	pspdef_t near*	psp )
 {
     
     // check for fire
@@ -368,7 +368,7 @@ void A_ReFire
 void
 A_CheckReload
 (
-  pspdef_t*	psp )
+	pspdef_t near*	psp )
 {
     P_CheckAmmo ();
  
@@ -384,7 +384,7 @@ A_CheckReload
 void
 A_Lower
 ( 
-  pspdef_t*	psp )
+	pspdef_t near*	psp )
 {	
     psp->sy += LOWERSPEED;
 
@@ -422,7 +422,7 @@ A_Lower
 void
 A_Raise
 ( 
-  pspdef_t*	psp )
+	pspdef_t near*	psp )
 {
     statenum_t	newstate;
 	
@@ -448,7 +448,7 @@ A_Raise
 void
 A_GunFlash
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
     P_SetMobjState (playerMobj, S_PLAY_ATK2);
     P_SetPsprite (ps_flash,weaponinfo[player.readyweapon].flashstate);
@@ -467,7 +467,7 @@ A_GunFlash
 void
 A_Punch
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
     fineangle_t	angle;
     int16_t		damage;
@@ -504,7 +504,7 @@ A_Punch
 void
 A_Saw
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
 	angle_t bigangle;
     fineangle_t	angle;
@@ -554,7 +554,7 @@ A_Saw
 void
 A_FireMissile
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
     player.ammo[weaponinfo[player.readyweapon].ammo]--;
     P_SpawnPlayerMissile (MT_ROCKET);
@@ -567,7 +567,7 @@ A_FireMissile
 void
 A_FireBFG
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
     player.ammo[weaponinfo[player.readyweapon].ammo] -= BFGCELLS;
     P_SpawnPlayerMissile (MT_BFG);
@@ -581,7 +581,7 @@ A_FireBFG
 void
 A_FirePlasma
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
     player.ammo[weaponinfo[player.readyweapon].ammo]--;
 
@@ -655,7 +655,7 @@ P_GunShot
 void
 A_FirePistol
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
 	
 	S_StartSoundFromRef(playerMobj, sfx_pistol);
@@ -679,7 +679,7 @@ A_FirePistol
 void
 A_FireShotgun
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
     int8_t		i;
 
@@ -707,7 +707,7 @@ A_FireShotgun
 void
 A_FireShotgun2
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
     int8_t		i;
     fineangle_t	angle;
@@ -744,7 +744,7 @@ A_FireShotgun2
 void
 A_FireCGun
 ( 
-  pspdef_t*	psp ) 
+	pspdef_t near*	psp )
 {
     S_StartSoundFromRef (playerMobj, sfx_pistol);
 
@@ -790,13 +790,13 @@ void A_Light2 (pspdef_t *psp)
 // A_BFGSpray
 // Spawn a BFG explosion on every monster in view
 //
-void A_BFGSpray (mobj_t* mo, mobj_pos_t* mo_pos)
+void A_BFGSpray (mobj_t far* mo, mobj_pos_t far* mo_pos)
 {
     int8_t			i;
     int8_t			j;
     int16_t			damage;
     fineangle_t		an;
-	mobj_t*			motarget; // not sure if this can be set here? does targetref get reset over and over?
+	mobj_t far*			motarget; // not sure if this can be set here? does targetref get reset over and over?
 
     // offset angles from its attack angle
     for (i=0 ; i<40 ; i++) {
@@ -832,7 +832,7 @@ void A_BFGSpray (mobj_t* mo, mobj_pos_t* mo_pos)
 void
 A_BFGsound
 ( 
-  pspdef_t*	psp )
+	pspdef_t near*	psp )
 {
 	S_StartSoundFromRef(playerMobj, sfx_bfg);
 }
@@ -849,8 +849,8 @@ A_BFGsound
 void P_MovePsprites () 
 {
     int8_t		i;
-    pspdef_t*	psp;
-    state_t*	state;
+	pspdef_t near*	psp;
+    state_t far*	state;
 	
     psp = &player.psprites[0];
     for (i=0 ; i<NUMPSPRITES ; i++, psp++) {
@@ -884,8 +884,8 @@ P_SetPsprite
 	int8_t		position,
 	statenum_t	stnum)
 {
-	pspdef_t*	psp;
-	state_t*	state;
+	pspdef_t near*	psp;
+	state_t far*	state;
 	boolean found;
 
 	psp = &player.psprites[position];

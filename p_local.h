@@ -110,20 +110,19 @@ typedef struct thinker_s
 
 #define thinkerlist ((thinker_t far*)0x90000000)
 
-extern mobj_pos_t*	mobjposlist; // [MAX_THINKERS];
+extern mobj_pos_t far*	mobjposlist; // [MAX_THINKERS];
 
 
 void P_InitThinkers ();
-void* P_CreateThinker(uint16_t thinkfunc);
+void far* P_CreateThinker(uint16_t thinkfunc);
 
 void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
 void P_RemoveThinker(THINKERREF thinkerRef);
 
 #define THINKER_SIZE sizeof(thinker_t)
-#define GETTHINKERREF(a) ((((uint16_t)((byte*)a - (byte*)thinkerlist))-4)/THINKER_SIZE)
+#define GETTHINKERREF(a) ((((uint16_t)((byte far*)a - (byte far*)thinkerlist))-4)/THINKER_SIZE)
 #define GET_MOBJPOS_FROM_MOBJ(a) &mobjposlist[GETTHINKERREF(a)]
-//#define GETTHINKERREF(a) ((((byte*)a - (byte*)thinkerlist)-4)/THINKER_SIZE)
-//#define GETTHINKERREF(a) ((((byte*)a-4u) - thinkerlist) / THINKER_SIZE)
+
 
 
 //
@@ -156,16 +155,15 @@ P_SpawnMobj
   mobjtype_t	type, 
 	int16_t knownsecnum );
 
-void 	P_RemoveMobj (mobj_t* mobj);
-//boolean	P_SetMobjState2(mobj_t* mobj, statenum_t state, int8_t* file, int32_t line);
-//#define	P_SetMobjState(a, b) P_SetMobjState2(a, b, __FILE__, __LINE__)
-boolean	P_SetMobjState2(mobj_t* mobj, statenum_t state);
+void 	P_RemoveMobj (mobj_t far* mobj);
+
+boolean	P_SetMobjState2(mobj_t far* mobj, statenum_t state);
 #define	P_SetMobjState(a, b) P_SetMobjState2(a, b)
-void P_MobjThinker(mobj_t* mobj, mobj_pos_t* mobj_pos, THINKERREF mobjRef);
+void P_MobjThinker(mobj_t far* mobj, mobj_pos_t far* mobj_pos, THINKERREF mobjRef);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
 void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
-THINKERREF P_SpawnMissile (mobj_t* source, mobj_pos_t* source_pos, mobj_t* dest,  mobjtype_t type);
+THINKERREF P_SpawnMissile (mobj_t far* source, mobj_pos_t far* source_pos, mobj_t far* dest,  mobjtype_t type);
 void	P_SpawnPlayerMissile (mobjtype_t type);
 
 
@@ -207,14 +205,14 @@ typedef struct
 #define intercepts ((intercept_t far*) (0x90000000 + size_intercepts ))
 
 //extern intercept_t	*intercepts;// [MAXINTERCEPTS];
-extern intercept_t*	intercept_p;
+extern intercept_t far*	intercept_p;
 
 typedef boolean (*traverser_t) (intercept_t *in);
 
 fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
 boolean 	P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 void 	P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
-//fixed_t P_InterceptVector (divline_t* v2, divline_t* v1);
+
 boolean 	P_BoxOnLineSide (fixed_t_union* tmbox, slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 
 
@@ -228,8 +226,8 @@ void 	P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 #endif
 
 
-boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_physics_t* ld, int16_t ) );
-boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(THINKERREF, mobj_t*, mobj_pos_t*));
+boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_physics_t far* ld, int16_t ) );
+boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(THINKERREF, mobj_t far*, mobj_pos_t far*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -244,10 +242,10 @@ P_PathTraverse
 	fixed_t_union	x2,
 	fixed_t_union	y2,
   uint8_t		flags,
-  boolean	(*trav) (intercept_t *));
+  boolean	(*trav) (intercept_t  far*));
 
-void P_UnsetThingPosition (mobj_t* thing, mobj_pos_t* mobj_pos);
-void P_SetThingPosition (mobj_t* thing, mobj_pos_t* mobj_pos, int16_t knownsecnum);
+void P_UnsetThingPosition (mobj_t far* thing, mobj_pos_t far* mobj_pos);
+void P_SetThingPosition (mobj_t far* thing, mobj_pos_t far* mobj_pos, int16_t knownsecnum);
 
 
 //
@@ -263,32 +261,32 @@ extern short_height_t		tmceilingz;
 
 extern	int16_t		ceilinglinenum;
 
-boolean P_CheckPosition (mobj_t* thing, fixed_t x, fixed_t y, int16_t oldsecnum);
-boolean P_TryMove (mobj_t* thing, mobj_pos_t* thing_pos, fixed_t x, fixed_t y);
-boolean P_TeleportMove (mobj_t* thing, mobj_pos_t* thing_pos, fixed_t x, fixed_t y, int16_t oldsecnum);
+boolean P_CheckPosition (mobj_t far* thing, fixed_t x, fixed_t y, int16_t oldsecnum);
+boolean P_TryMove (mobj_t far* thing, mobj_pos_t far* thing_pos, fixed_t x, fixed_t y);
+boolean P_TeleportMove (mobj_t far* thing, mobj_pos_t far* thing_pos, fixed_t x, fixed_t y, int16_t oldsecnum);
 void	P_SlideMove ();
-boolean P_CheckSight (mobj_t* t1,mobj_t* t2,mobj_pos_t* t1_pos,mobj_pos_t* t2_pos);
+boolean P_CheckSight (mobj_t far* t1,mobj_t far* t2,mobj_pos_t far* t1_pos,mobj_pos_t far* t2_pos);
 
 
 void 	P_UseLines ();
 
-boolean P_ChangeSector (sector_t* sector, boolean crunch);
+boolean P_ChangeSector (sector_t far* sector, boolean crunch);
 
-extern mobj_t*	linetarget;	// who got hit (or NULL)
-extern mobj_pos_t*	linetarget_pos;	// who got hit (or NULL)
+extern mobj_t far*	linetarget;	// who got hit (or NULL)
+extern mobj_pos_t far*	linetarget_pos;	// who got hit (or NULL)
 
 
 #define CHAINSAW_FLAG 0x4000
 
 fixed_t
 P_AimLineAttack
-(mobj_t*	t1,
+(mobj_t far*	t1,
   fineangle_t	angle,
   int16_t	distance);
 
 void
 P_LineAttack
-(mobj_t*	t1,
+(mobj_t far*	t1,
   fineangle_t	angle,
 	int16_t	distance,
   fixed_t	slope,
@@ -296,9 +294,9 @@ P_LineAttack
 
 void
 P_RadiusAttack
-(mobj_t*	spot,
-	mobj_pos_t* spot_pos,
-	mobj_t*	source,
+(mobj_t far*	spot,
+	mobj_pos_t far* spot_pos,
+	mobj_t far*	source,
   int16_t		damage );
 
 
@@ -306,9 +304,9 @@ P_RadiusAttack
 //
 // P_SETUP
 //
-//extern byte far*	rejectmatrix;	// for fast sight rejection
+//extern byte far far*	rejectmatrix;	// for fast sight rejection
 #define rejectmatrix		((byte far *			) 0x60004000)
-extern int16_t*		blockmaplump;
+extern int16_t far*		blockmaplump;
 extern int16_t		bmapwidth;
 extern int16_t		bmapheight;	// in mapblocks
 extern int16_t		bmaporgx;
@@ -324,17 +322,17 @@ extern int8_t		clipammo[NUMAMMO];
 
 void
 P_TouchSpecialThing
-(mobj_t*	special,
-	mobj_t*	toucher,
-	mobj_pos_t *special_pos,
-	mobj_pos_t *toucher_pos
+(mobj_t far*	special,
+	mobj_t far*	toucher,
+	mobj_pos_t  far*special_pos,
+	mobj_pos_t  far*toucher_pos
 );
 
 void
 P_DamageMobj
-(mobj_t*	target,
-	mobj_t*	inflictor,
-	mobj_t*	source,
+(mobj_t far*	target,
+	mobj_t far*	inflictor,
+	mobj_t far*	source,
   int16_t		damage );
 
 

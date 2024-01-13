@@ -21,7 +21,7 @@
 #define __R_DRAW__
 
 
-extern lighttable_t*	dc_colormap;
+extern lighttable_t far*	dc_colormap;
 extern int16_t		dc_x;
 extern int16_t		dc_yl;
 extern int16_t		dc_yh;
@@ -29,7 +29,7 @@ extern fixed_t		dc_iscale;
 extern fixed_t_union		dc_texturemid;
 
 // first pixel in a column
-extern byte*		dc_source;		
+extern byte far*		dc_source;
 
 
 // The span blitting interface.
@@ -57,7 +57,7 @@ extern int16_t		ds_y;
 extern int16_t		ds_x1;
 extern int16_t		ds_x2;
 
-extern lighttable_t*	ds_colormap;
+extern lighttable_t far*	ds_colormap;
 
 extern fixed_t		ds_xfrac;
 extern fixed_t		ds_yfrac;
@@ -65,7 +65,7 @@ extern fixed_t		ds_xstep;
 extern fixed_t		ds_ystep;
 
 // start of a 64*64 tile image
- extern byte*		ds_source;		
+ extern byte far*		ds_source;
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.

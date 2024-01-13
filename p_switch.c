@@ -98,7 +98,7 @@ P_ChangeSwitchTexture
 	int8_t     i;
 	int16_t     sound;
 
-	line_physics_t* line_physics;
+	line_physics_t far* line_physics;
 
 	if (!useAgain) {
 		line_physics = &lines_physics[linenum];
@@ -163,14 +163,14 @@ P_ChangeSwitchTexture
 //
 boolean
 P_UseSpecialLine
-( mobj_t*	thing,
+( mobj_t far*	thing,
   int16_t linenum,
   int16_t		side,
 	THINKERREF thingRef)
 {               
 
-	line_t* line = &lines[linenum];
-	line_physics_t* line_physics = &lines_physics[linenum];
+	line_t far* line = &lines[linenum];
+	line_physics_t far* line_physics = &lines_physics[linenum];
 
 	uint8_t linetag = line_physics->tag;
 	uint8_t linespecial = line_physics->special;

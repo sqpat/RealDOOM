@@ -21,12 +21,12 @@
 #define __R_BSP__
 
  
-extern seg_t*		curseg;
-extern seg_render_t* curseg_render;
-extern side_t*		sidedef;
+extern seg_t far*		curseg;
+extern seg_render_t far* curseg_render;
+extern side_t far*		sidedef;
 
-extern sector_t*	frontsector;
-extern sector_t*	backsector;
+extern sector_t far*	frontsector;
+extern sector_t far*	backsector;
 
 extern int16_t		rw_x;
 extern int16_t		rw_stopx;
@@ -39,7 +39,7 @@ extern boolean		markceiling;
 
 extern boolean		skymap;
 
-extern drawseg_t*	ds_p;
+extern drawseg_t far*	ds_p;
 
 
 //typedef void (*drawfunc_t) (int16_t start, int16_t stop);

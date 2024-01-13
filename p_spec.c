@@ -64,11 +64,9 @@ typedef struct
 
 #define MAXANIMS                32
 
-extern anim_t	anims[MAXANIMS];
-extern anim_t*	lastanim;
 
 anim_t		anims[MAXANIMS];
-anim_t*		lastanim;
+anim_t near*		lastanim;
 
 
 //
@@ -156,8 +154,8 @@ getNextSectorList
 	
 	int16_t i = 0;
 	int16_t skipped = 0;
-	line_t* line; 
-	line_physics_t* line_physics;
+	line_t far* line;
+	line_physics_t far* line_physics;
 
 	for (i = 0; i < linecount; i++) {
 		line  = &lines[linenums[i]];
@@ -414,11 +412,11 @@ void
 P_CrossSpecialLine
 ( int16_t		linenum,
   int16_t		side,
-	mobj_t*	thing,
-	mobj_pos_t* thing_pos)
+	mobj_t far*	thing,
+	mobj_pos_t far* thing_pos)
 {
     int16_t		ok;
-	line_physics_t*	line_physics = &lines_physics[linenum];
+	line_physics_t far*	line_physics = &lines_physics[linenum];
 	uint8_t linetag = line_physics->tag;
 	int16_t linefrontsecnum = lines_physics->frontsecnum;
 	int16_t linespecial = line_physics->special;
@@ -888,13 +886,13 @@ P_CrossSpecialLine
 //
 void
 P_ShootSpecialLine
-( mobj_t* thing,
+( mobj_t far* thing,
   int16_t linenum )
 {
     int16_t		ok;
 	int16_t innerlinenum = linebuffer[linenum];
-	line_t* line = &lines[innerlinenum];
-	line_physics_t* line_physics = &lines_physics[innerlinenum];
+	line_t far* line = &lines[innerlinenum];
+	line_physics_t far* line_physics = &lines_physics[innerlinenum];
 	int16_t linespecial = line_physics->special;
 	uint8_t linetag = line_physics->tag;
 	int16_t linefrontsecnum = lines_physics->frontsecnum;
@@ -1020,7 +1018,7 @@ ticcount_t		levelTimeCount;
 
 void P_UpdateSpecials(void)
 {
-	anim_t*	anim;
+	anim_t near*	anim;
 	uint8_t		pic;
 	int16_t		i;
 	int16_t sidenum;
@@ -1103,13 +1101,13 @@ int16_t EV_DoDonut(uint8_t linetag)
 	int16_t			i;
 	int16_t			j = 0;
 	uint8_t			linecount;
-    floormove_t*	floor;
+    floormove_t far*	floor;
 	THINKERREF floorRef;
 	int16_t offset;
 	int16_t sectors3floorpic;
 	short_height_t sectors3floorheight;
-	line_t* line;
-	line_physics_t* line_physics;
+	line_t far* line;
+	line_physics_t far* line_physics;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	int16_t innersecnumlist[MAX_ADJOINING_SECTORS];
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
@@ -1180,7 +1178,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 			sectors3floorheight = sectors[s3Offset].floorheight;
 
 
-			floor = (floormove_t*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+			floor = (floormove_t far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 			floorRef = GETTHINKERREF(floor);
 			sectors[s2Offset].specialdataRef = floorRef;
 
@@ -1194,7 +1192,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 			floor->floordestheight = sectors3floorheight;
 	    
 			//	Spawn lowering donut-hole
-			floor = (floormove_t*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+			floor = (floormove_t far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 			floorRef = GETTHINKERREF(floor);
 			sectors[s1Offset].specialdataRef = floorRef;
 			floor->type = lowerFloor;

@@ -57,7 +57,7 @@ typedef struct
 } lumpinfo_t;
 
 
-extern	lumpinfo_t*	lumpinfo;
+extern	lumpinfo_t far*	lumpinfo;
 extern	uint16_t		numlumps;
 
 void    W_InitMultipleFiles (int8_t** filenames);

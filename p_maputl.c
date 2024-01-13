@@ -364,8 +364,8 @@ void P_LoadLineOpening(int16_t linenum) {
 		int16_t linefrontsecnum = lines_physics[linenum].frontsecnum;
 		int16_t linebacksecnum = lines_physics[linenum].backsecnum;
 
-		sector_t* front = &sectors[linefrontsecnum];
-		sector_t* back = &sectors[linebacksecnum];
+		sector_t far* front = &sectors[linefrontsecnum];
+		sector_t far* back = &sectors[linebacksecnum];
 	 
 
 
@@ -425,8 +425,8 @@ void P_UpdateLineOpening(int16_t secnum, boolean changedFloor) {
 #else
 
 void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {
-	sector_t*	front;
-    sector_t*	back;
+	sector_t far*	front;
+    sector_t far*	back;
     if (lineside1 == -1) {
 		// single sided line
  		return;
@@ -465,12 +465,12 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void P_UnsetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos)
+void P_UnsetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos)
 {
     int16_t		blockx;
     int16_t		blocky;
-	mobj_t* changeThing;
-	mobj_pos_t* changeThing_pos;
+	mobj_t far* changeThing;
+	mobj_pos_t far* changeThing_pos;
 
 	THINKERREF nextRef;
 	THINKERREF thingsprevRef = thing->sprevRef;
@@ -486,7 +486,7 @@ void P_UnsetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos)
 		// inert things don't need to be in blockmap?
 		// unlink from subsector
 		if (thingsnextRef) {
-			changeThing = (mobj_t*)&thinkerlist[thingsnextRef].data;
+			changeThing = (mobj_t far*)&thinkerlist[thingsnextRef].data;
 			changeThing->sprevRef = thingsprevRef;
 		}
 
@@ -507,7 +507,7 @@ void P_UnsetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos)
 		nextRef = sectors[thingsecnum].thinglistRef;
 		// if nextref check here?
 		while (nextRef) {
-			mobj_t* innerthing = &thinkerlist[nextRef].data;
+			mobj_t far* innerthing = &thinkerlist[nextRef].data;
 			if (innerthing->snextRef == thisRef) {
 				innerthing->snextRef = thingsnextRef;
 				break;
@@ -552,7 +552,7 @@ void P_UnsetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos)
 			nextRef = blocklinks[bindex];
 			// if nextref check here?
 			while (nextRef) {
-				mobj_t* innerthing = &thinkerlist[nextRef].data;
+				mobj_t far* innerthing = &thinkerlist[nextRef].data;
 				if (innerthing->bnextRef == thisRef) {
 					innerthing->bnextRef = thingbnextRef;
 					break;
@@ -576,7 +576,7 @@ void P_UnsetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos)
 // Sets thing->subsector properly
 //
 void
-P_SetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos, int16_t knownsecnum)
+P_SetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos, int16_t knownsecnum)
 {
 
 
@@ -586,7 +586,7 @@ P_SetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos, int16_t knownsecnum)
     int16_t			blocky;
 	THINKERREF		linkRef;
 	
-	mobj_t* thingList;
+	mobj_t far* thingList;
 	THINKERREF oldsectorthinglist;
 	fixed_t_union temp;
 	THINKERREF thingRef = GETTHINKERREF(thing);
@@ -610,14 +610,14 @@ P_SetThingPosition (mobj_t* thing, mobj_pos_t* thing_pos, int16_t knownsecnum)
 		sectors[thing->secnum].thinglistRef = thingRef;
 
 
-		thing = (mobj_t*)&thinkerlist[thingRef].data;
+		thing = (mobj_t far*)&thinkerlist[thingRef].data;
 		thing_pos = &mobjposlist[thingRef];
 
 		thing->sprevRef = NULL_THINKERREF;
 		thing_pos->snextRef = oldsectorthinglist;
 
 		if (thing_pos->snextRef) {
-			thingList = (mobj_t*)&thinkerlist[thing_pos->snextRef].data; 
+			thingList = (mobj_t far*)&thinkerlist[thing_pos->snextRef].data;
 			thingList->sprevRef = thingRef;
 		}
 
@@ -681,12 +681,12 @@ boolean
 P_BlockLinesIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(line_physics_t*, int16_t) )
+  boolean(*func)(line_physics_t far*, int16_t) )
 {
     int16_t			offset;
 	int16_t			index;
     int16_t		list;
-	line_physics_t*		ld_physics;
+	line_physics_t far*		ld_physics;
     if (x<0
 	|| y<0
 	|| x>=bmapwidth
@@ -728,10 +728,10 @@ boolean
 P_BlockThingsIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(THINKERREF, mobj_t*, mobj_pos_t*) )
+  boolean(*func)(THINKERREF, mobj_t far*, mobj_pos_t far*) )
 {
 	THINKERREF mobjRef;
-    mobj_t*		mobj;
+    mobj_t far*		mobj;
 
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
@@ -742,7 +742,7 @@ P_BlockThingsIterator
 		// will this cause stuff to lose scope...?
 
 
-		mobj = (mobj_t*)&thinkerlist[mobjRef].data;  
+		mobj = (mobj_t far*)&thinkerlist[mobjRef].data;
 		
 		if (!func(mobjRef, mobj, &mobjposlist[mobjRef])) {
 
@@ -760,7 +760,7 @@ P_BlockThingsIterator
 //
 // INTERCEPT ROUTINES
 //
- intercept_t*	intercept_p;
+ intercept_t far*	intercept_p;
 
 divline_t 	trace;
 boolean 	earlyout;
@@ -777,7 +777,7 @@ int32_t		ptflags;
 // Returns true if earlyout and a solid line hit.
 //
 boolean
-PIT_AddLineIntercepts (line_physics_t* ld_physics, int16_t linenum)
+PIT_AddLineIntercepts (line_physics_t far* ld_physics, int16_t linenum)
 {
      int16_t			s1;
     int16_t			s2;
@@ -852,7 +852,7 @@ PIT_AddLineIntercepts (line_physics_t* ld_physics, int16_t linenum)
 //
 // PIT_AddThingIntercepts
 //
-boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t* thing, mobj_pos_t* thing_pos)
+boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t far* thing, mobj_pos_t far* thing_pos)
 {
     fixed_t_union		x1;
 	fixed_t_union		y1;
@@ -924,8 +924,8 @@ P_TraverseIntercepts
 {
     int16_t			count;
     fixed_t_union		dist;
-    intercept_t*	scan;
-    intercept_t*	in = NULL;
+    intercept_t far*	scan;
+    intercept_t far*	in = NULL;
 	int16_t i = 0;
 	count = intercept_p - intercepts;
  
@@ -978,7 +978,7 @@ P_PathTraverse
 	fixed_t_union		x2,
 	fixed_t_union		y2,
   uint8_t			flags,
-  boolean (*trav) (intercept_t *))
+  boolean (*trav) (intercept_t  far*))
 {
     int16_t	xt1;
     int16_t	yt1;

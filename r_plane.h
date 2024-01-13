@@ -40,17 +40,17 @@
 //#define spriteoffsets		spritewidths + (sizeof(int16_t) * numspritelumps)
 //#define spritetopoffsets	spriteoffsets + (sizeof(int16_t) * numspritelumps)
 
-#define colormapbytes		((byte *			far) 0x80000000)
-#define openings			((int16_t *			far) (0x80000000 + size_colormapbytes))
-#define negonearray			((int16_t *			far) (0x80000000 + size_openings))
-#define screenheightarray	((int16_t *			far) (0x80000000 + size_negonearray))
-#define vissprites			((vissprite_t *		far) (0x80000000 + size_screenheightarray))
-#define scalelightfixed		((lighttable_t**	far) (0x80000000 + size_vissprites))
-#define scalelight			((lighttable_t**    far) (0x80000000 + size_scalelightfixed))
-#define usedcompositetexturepagemem ((uint8_t*  far) (0x80000000 + size_scalelight))
-#define usedspritepagemem	((uint8_t*			far) (0x80000000 + size_usedcompositetexturepagemem))
-#define usedpatchpagemem	((uint8_t*			far) (0x80000000 + size_usedspritepagemem))
-#define spritewidths		((int16_t *			far) (0x80000000 + size_usedpatchpagemem))
+#define colormapbytes		((byte far*				) 0x80000000)
+#define openings			((int16_t far*			) (0x80000000 + size_colormapbytes))
+#define negonearray			((int16_t far*			) (0x80000000 + size_openings))
+#define screenheightarray	((int16_t far*			) (0x80000000 + size_negonearray))
+#define vissprites			((vissprite_t far*		) (0x80000000 + size_screenheightarray))
+#define scalelightfixed		((lighttable_t far**	) (0x80000000 + size_vissprites))
+#define scalelight			((lighttable_t far**    ) (0x80000000 + size_scalelightfixed))
+#define usedcompositetexturepagemem ((uint8_t far*  ) (0x80000000 + size_scalelight))
+#define usedspritepagemem	((uint8_t far*			) (0x80000000 + size_usedcompositetexturepagemem))
+#define usedpatchpagemem	((uint8_t far*			) (0x80000000 + size_usedspritepagemem))
+#define spritewidths		((int16_t far*			) (0x80000000 + size_usedpatchpagemem))
 
 
 #define size_visplanes										sizeof(visplane_t) * MAXCONVENTIONALVISPLANES

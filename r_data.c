@@ -412,22 +412,22 @@ void R_GetNextSpriteBlock(int16_t lump) {
 
 void R_GenerateComposite(uint8_t texnum, byte far* block)
 {
-	texpatch_t*         patch;
-	patch_t*            realpatch;
+	texpatch_t far*         patch;
+	patch_t far*            realpatch;
 	int16_t             x;
 	int16_t             x1;
 	int16_t             x2;
 	int16_t             i;
-	column_t*           patchcol;
-	int16_t*            collump;
-	uint16_t*			colofs;
+	column_t far*           patchcol;
+	int16_t far*            collump;
+	uint16_t far*			colofs;
  	int16_t				textureheight;
 	int16_t				texturewidth;
 	uint8_t				texturepatchcount;
 	int16_t				patchpatch = -1;
 	int16_t				patchoriginx;
 	int8_t				patchoriginy;
-	texture_t*			texture;
+	texture_t far*			texture;
 	int16_t				lastusedpatch = -1;
 	int16_t				index;
 	//uint8_t				currentpatchpage = 0;
@@ -435,15 +435,15 @@ void R_GenerateComposite(uint8_t texnum, byte far* block)
 
 	//Z_QuickMapTextureInfoPage();
 
-	texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
+	texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 	texturepatchcount = texture->patchcount;
 
 	// Composite the columns together.
-	collump = (int16_t*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum]]);
-	colofs = (uint16_t*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum]]);
+	collump = (int16_t far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum]]);
+	colofs = (uint16_t far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum]]);
 
 	Z_PushScratchFrame();
 	for (i = 0; i < texturepatchcount; i++) {
@@ -486,8 +486,8 @@ void R_GenerateComposite(uint8_t texnum, byte far* block)
 		// can one page be mapped twice?
 
 		if (lastusedpatch != patchpatch) {
-			realpatch = (patch_t*)MK_FP(SCRATCH_PAGE_SEGMENT, 0);
-			W_CacheLumpNumDirect(patchpatch, (byte*)realpatch);
+			realpatch = (patch_t far*)MK_FP(SCRATCH_PAGE_SEGMENT, 0);
+			W_CacheLumpNumDirect(patchpatch, (byte far*)realpatch);
 		}
 		patchoriginx = patch->originx *  (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchoriginy = patch->originy;
@@ -512,7 +512,7 @@ void R_GenerateComposite(uint8_t texnum, byte far* block)
 			if (collump[x] >= 0) {
 				continue;
 			}
-			patchcol = (column_t *)((byte *)realpatch + (realpatch->columnofs[x - x1]));
+			patchcol = (column_t  far*)((byte  far*)realpatch + (realpatch->columnofs[x - x1]));
 			R_DrawColumnInCache(patchcol,
 				block + colofs[x],
 				patchoriginy,
@@ -688,12 +688,12 @@ extern int16_t benchtexturetype;
 
 // TODO - try different algos instead of first free block for populating cache pages
 // get 0x4000 offset for texture
-byte* getpatchtexture(int16_t lump) {
+byte far* getpatchtexture(int16_t lump) {
 
 	int16_t index = lump - firstpatch;
 	uint8_t texpage = patchpage[index];
 	uint8_t texoffset = patchoffset[index];
-	byte* addr;
+	byte far* addr;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_PATCH;
 #endif
@@ -705,14 +705,14 @@ byte* getpatchtexture(int16_t lump) {
 		texoffset = patchoffset[index];
 
 		//gettexturepage ensures the page is active
-		addr = (byte*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+		addr = (byte far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 		 
 		W_CacheLumpNumDirect(lump, addr);
 		// return
 		return addr;
 	} else {
 		// has been allocated before. find and return
-		addr = (byte*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+		addr = (byte far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 
 		return addr;
 	}
@@ -720,11 +720,11 @@ byte* getpatchtexture(int16_t lump) {
 }
 
 
-byte* getcompositetexture(int16_t tex_index) {
+byte far* getcompositetexture(int16_t tex_index) {
 	
 	uint8_t texpage = compositetexturepage[tex_index];
 	uint8_t texoffset = compositetextureoffset[tex_index];
-	byte* addr;
+	byte far* addr;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_COMPOSITE;
 #endif
@@ -739,7 +739,7 @@ byte* getcompositetexture(int16_t tex_index) {
 		texoffset = compositetextureoffset[tex_index];
 		
 		//gettexturepage ensures the page is active
-		addr = (byte*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 8));
+		addr = (byte far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 8));
 		// load it in
 
 		R_GenerateComposite(tex_index, addr);
@@ -748,18 +748,18 @@ byte* getcompositetexture(int16_t tex_index) {
 	} else {
 		// has been allocated before. find and return
 		
-		addr = (byte*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 8));
+		addr = (byte far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 8));
 		
 		return addr;
 	}
 }
 
-byte* getspritetexture(int16_t lump) {
+byte far* getspritetexture(int16_t lump) {
 
 	int16_t index = lump - firstspritelump;
 	uint8_t texpage = spritepage[index];
 	uint8_t texoffset = spriteoffset[index];
-	byte* addr;
+	byte far* addr;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_SPRITE;
 #endif
@@ -771,7 +771,7 @@ byte* getspritetexture(int16_t lump) {
 		texoffset = spriteoffset[index];
 
 		//gettexturepage ensures the page is active
-		addr = (byte*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+		addr = (byte far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 
 		W_CacheLumpNumDirect(lump, addr);
 		// return
@@ -779,7 +779,7 @@ byte* getspritetexture(int16_t lump) {
 	}
 	else {
 		// has been allocated before. find and return
-		addr = (byte*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+		addr = (byte far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 
 		return addr;
 	}
@@ -787,12 +787,12 @@ byte* getspritetexture(int16_t lump) {
 }
 
 /*
-byte*
+byte far*
 R_GetFlat
 (int16_t flatlump) {
 	int16_t index = flatlump - FIRST_LUMP_FLAT;
 	boolean flatunloaded = true;
-	byte far* addr;
+	byte far far* addr;
 	uint16_t usedflatindex = flatindex[index];
 	uint16_t flatpageindex;
 	if (usedflatindex == 0xFF) {
@@ -831,22 +831,22 @@ R_GetFlat
 //
 // R_GetColumn
 //
-byte*
+byte far*
 R_GetColumn
 (int16_t           tex,
 	int16_t           col)
 {
 	int16_t         lump; 
 	uint16_t         ofs; 
-	int16_t* texturecolumnlump; 
-	uint16_t* texturecolumnofs;
+	int16_t far* texturecolumnlump;
+	uint16_t far* texturecolumnofs;
 
 	col &= texturewidthmasks[tex];
 
-	texturecolumnofs = (uint16_t*)&(texturecolumnofs_bytes[texturecolumn_offset[tex]]);
+	texturecolumnofs = (uint16_t far*)&(texturecolumnofs_bytes[texturecolumn_offset[tex]]);
 	ofs = texturecolumnofs[col];
 
-	texturecolumnlump = (int16_t*)&(texturecolumnlumps_bytes[texturecolumn_offset[tex]]);
+	texturecolumnlump = (int16_t far*)&(texturecolumnlumps_bytes[texturecolumn_offset[tex]]);
 	lump = texturecolumnlump[col];
 
 

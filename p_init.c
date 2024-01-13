@@ -43,13 +43,13 @@ extern uint8_t		switchlist[MAXSWITCHES * 2];
 extern int16_t		numswitches;
 extern button_t        buttonlist[MAXBUTTONS];
 
-extern int8_t*           spritename;
+extern int8_t far*           spritename;
 
 //todo move this data into functions so it's pulled into overlay space and paged out to free memory
 
 
 
-//extern byte* texturedefs_bytes; 
+//extern byte far* texturedefs_bytes; 
 extern int16_t             numtextures;
  
 
@@ -60,14 +60,14 @@ extern int16_t             numtextures;
 uint8_t     R_CheckTextureNumForNameA(int8_t *name)
 {
 	uint8_t         i;
-	texture_t* texture;
+	texture_t far* texture;
 	// "NoTexture" marker.
 	if (name[0] == '-')
 		return 0;
 
 
 	for (i = 0; i < numtextures; i++) {
-		texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[i]]);
+		texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[i]]);
 
 
 
@@ -202,7 +202,7 @@ typedef struct
 #define MAXANIMS                32
 
 extern anim_t		anims[MAXANIMS];
-extern anim_t*		lastanim;
+extern anim_t near*		lastanim;
 
 typedef struct
 {
@@ -330,7 +330,7 @@ void P_InitPicAnims(void)
 
 }
 
-spriteframe_t* sprtemp;
+spriteframe_t far* sprtemp;
 int16_t             maxframe;
 
 //
@@ -400,12 +400,12 @@ R_InstallSpriteLump
 
 
 
- extern spritedef_t* sprites;
+ extern spritedef_t far* sprites;
 
 extern int16_t             numsprites;
 
 extern int16_t             maxframe;
-extern byte*	 spritedefs_bytes;
+extern byte far*	 spritedefs_bytes;
 
 //
 // R_InitSpriteDefs
@@ -472,7 +472,7 @@ void R_InitSpriteDefs()
 		return;
 
 	
-	sprites = (spritedef_t*)spritedefs_bytes;
+	sprites = (spritedef_t far*)spritedefs_bytes;
 	currentspritememoryoffset = sprites[0].spriteframesOffset = numsprites * sizeof(spritedef_t);
 	//sprites[0].spriteframesOffset = numsprites * sizeof(*sprites);
 	//totalsize = numsprites * sizeof(spritedef_t);
@@ -495,7 +495,7 @@ void R_InitSpriteDefs()
 		//  filling in the frames for whatever is found
 		for (l = start + 1; l < end; l++)
 		{
-			if (*(int32_t *)lumpinfo[l].name == intname)
+			if (*(int32_t  far*)lumpinfo[l].name == intname)
 			{
 				frame = lumpinfo[l].name[4] - 'A';
 				rotation = lumpinfo[l].name[5] - '0';
@@ -563,7 +563,7 @@ void R_InitSpriteDefs()
 		currentspritememoryoffset += (maxframe * sizeof(spriteframe_t));
 
 
-		spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
+		spriteframes = (spriteframe_t far*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
 		memcpy(spriteframes, sprtemp, maxframe * sizeof(spriteframe_t));
 
 	}

@@ -278,6 +278,6 @@ typedef struct mobj_pos_s
 
 #define GET_PLAYER(a) a->type == MT_PLAYER ? player : NULL
 
-extern mobj_t* SAVEDUNIT;
+extern mobj_t far* SAVEDUNIT;
 
 #endif

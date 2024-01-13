@@ -459,9 +459,9 @@ void WI_slamBackground(void)
 void WI_drawLF(void)
 {
 	int16_t y = WI_TITLEY;
-	patch_t* finished = WI_GetPatch(5);
+	patch_t far* finished = WI_GetPatch(5);
 	// draw <LevelName> 
-	patch_t* lname = (patch_t*)(wigraphicslevelname + NEXT_OFFSET);
+	patch_t far* lname = (patch_t far*)(wigraphicslevelname + NEXT_OFFSET);
 
     V_DrawPatch((SCREENWIDTH - (lname->width))/2, y, FB, lname);
 
@@ -476,14 +476,14 @@ void WI_drawLF(void)
 // Draws "Entering <LevelName>"
 void WI_drawEL(void)
 {
-	patch_t* lname;
+	patch_t far* lname;
 	int16_t y = WI_TITLEY;
-	patch_t* entering = WI_GetPatch(27);
+	patch_t far* entering = WI_GetPatch(27);
     // draw "Entering"
     V_DrawPatch((SCREENWIDTH - (entering->width))/2, y, FB, entering);
 
 
-	lname = (patch_t*)(wigraphicslevelname + NEXT_OFFSET);
+	lname = (patch_t far*)(wigraphicslevelname + NEXT_OFFSET);
 
     // draw level
     y += (5*(lname->height))/4;
@@ -505,7 +505,7 @@ WI_drawOnLnode
     int16_t		right;
     int16_t		bottom;
     boolean	fits = false;
-	patch_t* ci;
+	patch_t far* ci;
 	int16_t lnodeX = getLnodeX(wbs->epsd, n);
 	int16_t lnodeY = getLnodeY(wbs->epsd, n);
     i = 0;
@@ -539,7 +539,7 @@ WI_drawOnLnode
 void WI_initAnimatedBack(void)
 {
     int16_t		i;
-    anim_t*	a;
+    anim_t near*	a;
 
     if (commercial)
 	return;
@@ -570,7 +570,7 @@ void WI_initAnimatedBack(void)
 void WI_updateAnimatedBack(void)
 {
     int16_t		i;
-    anim_t*	a;
+    anim_t near*	a;
 
     if (commercial)
 	return;
@@ -624,7 +624,7 @@ void WI_drawAnimatedBack(void)
 {
    
 	int16_t i;
-	anim_t *anim;
+	anim_t near*anim;
 
 	if (commercial)
 		return;
@@ -736,8 +736,8 @@ WI_drawTime
 
     int16_t		div;
     int16_t		n;
-	patch_t* colon;
-	patch_t* sucks;
+	patch_t far* colon;
+	patch_t far* sucks;
 
     if (t<0)
 	return;
@@ -988,7 +988,7 @@ void WI_drawStats(void)
     // line height
 	int16_t lh;
 
-	patch_t* num0 = WI_GetPatch(numRef[0]);
+	patch_t far* num0 = WI_GetPatch(numRef[0]);
 
     lh = (3*(num0->height))/2;
 
@@ -1117,7 +1117,7 @@ void WI_loadData(void)
 		splatRef = 2;
 		
 		if (wbs->epsd < 3) {
-			anim_t*	anim;
+			anim_t near*	anim;
 			int16_t j = 0;
 			int16_t k = 0;
 			uint16_t size = 0;

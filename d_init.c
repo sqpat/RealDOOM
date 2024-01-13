@@ -424,7 +424,7 @@ void M_LoadDefaults(void)
 }
 
 
-extern	patch_t* hu_font[HU_FONTSIZE];
+extern	patch_t far* hu_font[HU_FONTSIZE];
 
 
 void HU_Init(void)
@@ -440,7 +440,7 @@ void HU_Init(void)
 	j = HU_FONTSTART;
 	for (i = 0; i < HU_FONTSIZE; i++) {
 		sprintf(buffer, "STCFN%.3d", j++);
-		W_CacheLumpNameDirect(buffer, (byte*)hu_font[i]);
+		W_CacheLumpNameDirect(buffer, (byte far*)hu_font[i]);
 	}
 
 

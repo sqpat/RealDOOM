@@ -53,7 +53,7 @@
 //
 
 
-byte*		viewimage; 
+byte far*		viewimage;
 int16_t		viewwidth;
 int16_t		scaledviewwidth;
 int16_t		viewheight;
@@ -90,7 +90,7 @@ int16_t		columnofs[MAXWIDTH];
 // R_DrawColumn
 // Source is the top of the column to scale.
 //
-lighttable_t*		dc_colormap; 
+lighttable_t far*		dc_colormap;
 int16_t			dc_x; 
 int16_t			dc_yl; 
 int16_t			dc_yh; 
@@ -98,7 +98,7 @@ fixed_t			dc_iscale;
 fixed_t_union	dc_texturemid;
 
 // first pixel in a column (possibly virtual) 
-byte*			dc_source;		
+byte far*			dc_source;
 
 
 //
@@ -112,7 +112,7 @@ byte*			dc_source;
 void R_DrawColumn (void) 
 { 
     int16_t			count; 
-    byte*		dest; 
+    byte far*		dest;
     fixed_t_union		frac;
     fixed_t		fracstep;	 
 
@@ -154,7 +154,7 @@ void R_DrawColumnLow (void)
 { 
 
 	int16_t                 count;
-	byte*               dest;
+	byte far*               dest;
 	fixed_t_union             frac;
 	fixed_t             fracstep;
 
@@ -218,7 +218,7 @@ int16_t	fuzzpos = 0;
 void R_DrawFuzzColumn (void) 
 { 
     int16_t			count; 
-    byte*		dest; 
+    byte far*		dest;
     fixed_t		frac;
     fixed_t		fracstep;	 
 
@@ -293,7 +293,7 @@ int16_t                     ds_y;
 int16_t                     ds_x1;
 int16_t                     ds_x2;
 
-lighttable_t*           ds_colormap;
+lighttable_t far*           ds_colormap;
 //uint16_t*           ds_colormap;
 
 fixed_t                 ds_xfrac;
@@ -302,7 +302,7 @@ fixed_t                 ds_xstep;
 fixed_t                 ds_ystep;
 
 // start of a 64*64 tile image 
- byte*                   ds_source;
+ byte far*                   ds_source;
 
 
 
@@ -313,7 +313,7 @@ void R_DrawSpan(void)
 	//fixed_t_union             src = 0x80000000;
 	fixed_t_union             xfrac;
 	fixed_t             yfrac;
-	byte*               dest;
+	byte far*               dest;
 	uint16_t                 spot;
 	int16_t                     i;
 	int16_t                     prt;
@@ -371,7 +371,7 @@ void R_DrawSpanLow(void)
 {
 	fixed_t_union             xfrac;
 	fixed_t             yfrac;
-	byte*               dest;
+	byte far*               dest;
 	uint16_t                 spot;
 	int16_t                     i;
 	int16_t                     prt;
@@ -428,8 +428,8 @@ void R_FillBackScreen (void)
 { 
  
 
-    byte*	src; // could be src[104] if nto for name1/name2 flat texture. then we could avoid scratch altogether.
-    byte*	dest; 
+    byte far*	src; // could be src[104] if nto for name1/name2 flat texture. then we could avoid scratch altogether.
+    byte far*	dest;
     int16_t		x;
     int16_t		y; 
 	int16_t i;
@@ -466,22 +466,22 @@ void R_FillBackScreen (void)
 	W_CacheLumpNameDirect("brdr_t", src);
 
 	for (x = 0; x < scaledviewwidth; x += 8) {
-		V_DrawPatch(viewwindowx + x, viewwindowy - 8, 0, (patch_t*)src);
+		V_DrawPatch(viewwindowx + x, viewwindowy - 8, 0, (patch_t far*)src);
 	}
 	W_CacheLumpNameDirect("brdr_b", src);
 
 	for (x = 0; x < scaledviewwidth; x += 8) {
-		V_DrawPatch(viewwindowx + x, viewwindowy + viewheight, 0, (patch_t*)src);
+		V_DrawPatch(viewwindowx + x, viewwindowy + viewheight, 0, (patch_t far*)src);
 	}
 
 	W_CacheLumpNameDirect("brdr_l", src);
 	for (y = 0; y < viewheight; y += 8) {
-		V_DrawPatch(viewwindowx - 8, viewwindowy + y, 0, (patch_t*)src);
+		V_DrawPatch(viewwindowx - 8, viewwindowy + y, 0, (patch_t far*)src);
 	}
 	W_CacheLumpNameDirect("brdr_r", src);
 
 	for (y = 0; y < viewheight; y += 8) {
-		V_DrawPatch(viewwindowx + scaledviewwidth, viewwindowy + y, 0, (patch_t*)src);
+		V_DrawPatch(viewwindowx + scaledviewwidth, viewwindowy + y, 0, (patch_t far*)src);
 	}
 
     // Draw beveled edge. 
@@ -489,32 +489,32 @@ void R_FillBackScreen (void)
 		V_DrawPatch (viewwindowx-8,
 		 viewwindowy-8,
 		 0,
-		(patch_t*)src);
+		(patch_t far*)src);
 
 	W_CacheLumpNameDirect("brdr_tr", src);
     V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy-8,
 		 0,
-		(patch_t*)src);
+		(patch_t far*)src);
 
 	W_CacheLumpNameDirect("brdr_bl", src);
     V_DrawPatch (viewwindowx-8,
 		 viewwindowy+viewheight,
 		 0,
-		(patch_t*)src);
+		(patch_t far*)src);
 	
 	W_CacheLumpNameDirect("brdr_br", src);
 	V_DrawPatch (viewwindowx+scaledviewwidth,
 		 viewwindowy+viewheight,
 		 0,
-		(patch_t*)src);
+		(patch_t far*)src);
 
     for (i = 0; i < 4; i++)
     {
 		outp(SC_INDEX, SC_MAPMASK);
         outp(SC_INDEX + 1, 1 << i);
 
-		dest = (byte*)0xac000000;
+		dest = (byte far*)0xac000000;
 
         src = screen0 + i;
         do
@@ -525,7 +525,7 @@ void R_FillBackScreen (void)
         } 
 
 		// todo can we just check the lower 16 bits?
-		while (dest != (byte*)(0xac003480));
+		while (dest != (byte far*)(0xac003480));
 
     }
 
@@ -542,15 +542,15 @@ R_VideoErase
 (uint16_t	ofs,
   int16_t		count ) 
 {
-    byte* dest;
-    byte* source;
+    byte far* dest;
+    byte far* source;
 	int16_t countp;
 	outp(SC_INDEX, SC_MAPMASK);
     outp(SC_INDEX + 1, 15);
     outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
-    dest = (byte*)(destscreen.w + (ofs >> 2));
-	source = (byte*)0xac000000 + (ofs >> 2);
+    dest = (byte far*)(destscreen.w + (ofs >> 2));
+	source = (byte far*)0xac000000 + (ofs >> 2);
 
     countp = count / 4;
     while (--countp >= 0) {

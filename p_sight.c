@@ -146,7 +146,7 @@ int16_t  P_DivlineSide16
 int16_t  P_DivlineSideNode
 ( fixed_t	x,
   fixed_t	y,
-  node_t*	node )
+  node_t far*	node )
 {
 
 	// NOTE: these nodes have proper 16 bit integer fields.
@@ -280,8 +280,8 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 {
     int16_t		segnum;
 	int16_t linedefOffset;
-	line_t*		line;
-	line_physics_t*		line_physics;
+	line_t far*		line;
+	line_physics_t far*		line_physics;
 	int16_t			s1;
 	int16_t			s2;
     int16_t			count;
@@ -298,8 +298,8 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 	int16_t linev2Offset;
 	uint8_t lineflags;
 	fixed_t_union temp;
-	sector_t* frontsector;
-	sector_t* backsector;
+	sector_t far* frontsector;
+	sector_t far* backsector;
 	int16_t curlineside;
  	temp.h.fracbits = 0;
     // check lines
@@ -445,7 +445,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 //
 boolean P_CrossBSPNode (uint16_t bspnum)
 {
-    node_t*	bsp;
+    node_t far*	bsp;
     int8_t		side;
 
 	if (bspnum & NF_SUBSECTOR) {
@@ -486,10 +486,10 @@ boolean
 P_CheckSight
 ( 
   
-	mobj_t* t1,
-	mobj_t* t2,
-	mobj_pos_t* t1_pos,
-	mobj_pos_t* t2_pos
+	mobj_t far* t1,
+	mobj_t far* t2,
+	mobj_pos_t far* t1_pos,
+	mobj_pos_t far* t2_pos
 )
 {
 

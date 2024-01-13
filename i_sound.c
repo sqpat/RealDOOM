@@ -178,7 +178,7 @@ int16_t I_GetSfxLumpNum(sfxinfo_t* sfx)
     return W_GetNumForName(namebuf);
 }
 
-int16_t I_StartSound(int16_t id, void *data, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority)
+int16_t I_StartSound(int16_t id, void  far*data, uint8_t vol, uint8_t sep, uint8_t pitch, uint8_t priority)
 {
 	/*
     // hacks out certain PC sounds

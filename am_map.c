@@ -228,7 +228,7 @@ static int16_t	f_y;
 static int16_t 	f_w;
 static int16_t	f_h;
 
-static byte*	fb; 			// pseudo-frame buffer
+static byte far*	fb; 			// pseudo-frame buffer
 
 static mpoint_t m_paninc; // how far the window pans each tic (map coords)
 static fixed_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
@@ -803,8 +803,8 @@ void AM_clearFB(int16_t color)
 
 boolean
 AM_clipMline
-( mline_t*	ml,
-  fline_t*	fl )
+( mline_t near*	ml,
+  fline_t near*	fl )
 {
     
     register	int16_t outcode1 = 0;
@@ -927,7 +927,7 @@ AM_clipMline
 //
 void
 AM_drawFline
-( fline_t*	fl,
+( fline_t near*	fl,
   uint8_t		color )
 {
     register int32_t x;
@@ -989,22 +989,23 @@ AM_drawFline
     }
 }
 
+static fline_t fl;
 
 //
 // Clip lines, draw visible part sof lines.
 //
 void
 AM_drawMline
-( mline_t*	ml,
+( mline_t near*	ml,
   uint8_t		color )
 {
-    static fline_t fl;
 
     if (AM_clipMline(ml, &fl))
 		AM_drawFline(&fl, color); // draws it on frame buffer using fb coords
 }
 
 
+static mline_t ml;
 
 //
 // Draws flat (floor/ceiling tile) aligned grid lines.
@@ -1013,7 +1014,6 @@ void AM_drawGrid(uint8_t color)
 {
     fixed_t x, y;
     fixed_t start, end;
-    mline_t ml;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	temp.h.intbits = bmaporgx;
@@ -1053,6 +1053,7 @@ void AM_drawGrid(uint8_t color)
     }
 
 }
+static mline_t l;
 
 //
 // Determines visible lines, draws them.
@@ -1061,7 +1062,6 @@ void AM_drawGrid(uint8_t color)
 void AM_drawWalls(void)
 {
 	uint16_t i;
-    static mline_t l;
 	int16_t linev1Offset;
 	int16_t linev2Offset;
 	int16_t lineflags;
@@ -1147,10 +1147,11 @@ AM_rotate
 
     *x = tmpx;
 }
+static mline_t	lc;
 
 void
 AM_drawLineCharacter
-( mline_t*	lineguy,
+( mline_t near*	lineguy,
   int16_t		lineguylines,
   fixed_t	scale,
   fineangle_t	angle,
@@ -1159,38 +1160,37 @@ AM_drawLineCharacter
   fixed_t	y )
 {
     int16_t		i;
-    mline_t	l;
 
     for (i=0;i<lineguylines;i++) {
-		l.a.x = lineguy[i].a.x;
-		l.a.y = lineguy[i].a.y;
+		lc.a.x = lineguy[i].a.x;
+		lc.a.y = lineguy[i].a.y;
 
 		if (scale) {
-			l.a.x = FixedMul(scale, l.a.x);
-			l.a.y = FixedMul(scale, l.a.y);
+			lc.a.x = FixedMul(scale, lc.a.x);
+			lc.a.y = FixedMul(scale, lc.a.y);
 		}
 
 		if (angle)
-			AM_rotate(&l.a.x, &l.a.y, angle);
+			AM_rotate(&lc.a.x, &lc.a.y, angle);
 
-		l.a.x += x;
-		l.a.y += y;
+		lc.a.x += x;
+		lc.a.y += y;
 
-		l.b.x = lineguy[i].b.x;
-		l.b.y = lineguy[i].b.y;
+		lc.b.x = lineguy[i].b.x;
+		lc.b.y = lineguy[i].b.y;
 
 		if (scale) {
-			l.b.x = FixedMul(scale, l.b.x);
-			l.b.y = FixedMul(scale, l.b.y);
+			lc.b.x = FixedMul(scale, lc.b.x);
+			lc.b.y = FixedMul(scale, lc.b.y);
 		}
 
 		if (angle)
-			AM_rotate(&l.b.x, &l.b.y, angle);
+			AM_rotate(&lc.b.x, &lc.b.y, angle);
 	
-		l.b.x += x;
-		l.b.y += y;
+		lc.b.x += x;
+		lc.b.y += y;
 
-		AM_drawMline(&l, color);
+		AM_drawMline(&lc, color);
     }
 }
 
@@ -1211,12 +1211,12 @@ AM_drawThings
 ( uint8_t	colors)
 {
     uint16_t		i;
-    mobj_pos_t*	t;
+    mobj_pos_t far*	t;
 	THINKERREF tRef;
 	for (i=0;i<numsectors;i++) {
 		tRef = sectors[i].thinglistRef;
 		while (tRef) {
-			t = (mobj_pos_t*)(&mobjposlist[tRef]);
+			t = (mobj_pos_t far*)(&mobjposlist[tRef]);
 			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
 			 0x100000L, t->angle.hu.intbits >> SHORTTOFINESHIFT, colors, t->x, t->y);
@@ -1241,7 +1241,7 @@ void AM_drawMarks(void)
 	    fx = CXMTOF(markpoints[i].x);
 	    fy = CYMTOF(markpoints[i].y);
 		if (fx >= f_x && fx <= f_w - w && fy >= f_y && fy <= f_h - h) {
-			V_DrawPatch(fx, fy, FB, ((patch_t*)&ammnumpatchbytes[ammnumpatchoffsets[i]]));
+			V_DrawPatch(fx, fy, FB, ((patch_t far*)&ammnumpatchbytes[ammnumpatchoffsets[i]]));
 
 			
 			

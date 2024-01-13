@@ -126,8 +126,8 @@ S_getChannel
 
 int16_t
 S_AdjustSoundParams
-( mobj_t*	listener,
-	mobj_t*	source,
+( mobj_t far*	listener,
+	mobj_t far*	source,
   uint8_t*		vol,
   uint8_t*		sep,
   uint8_t*		pitch );

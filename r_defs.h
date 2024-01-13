@@ -375,7 +375,7 @@ typedef byte	lighttable_t;
 //
 typedef struct drawseg_s
 {
-	seg_t*		curseg;
+	seg_t far*		curseg;
 
 	// start pixel x range
     int16_t			x1;
@@ -400,9 +400,9 @@ typedef struct drawseg_s
     
     // Pointers to lists for sprite clipping,
     //  all three adjusted so [x1] is first value.
-    int16_t*		sprtopclip;		
-    int16_t*		sprbottomclip;	
-    int16_t*		maskedtexturecol;
+    int16_t far*		sprtopclip;
+    int16_t far*		sprbottomclip;
+    int16_t far*		maskedtexturecol;
     
 } drawseg_t;
 

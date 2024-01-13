@@ -64,14 +64,14 @@ lighttable_t**  spritelights;
 
 // variables used to look up
 //  and range check thing_t sprites patches
-spritedef_t*	sprites;
+spritedef_t far*	sprites;
 int16_t             numsprites;
 
 
 int8_t*           spritename;
 
 
-extern byte*	 spritedefs_bytes;
+extern byte far*	 spritedefs_bytes;
 
 
 
@@ -79,8 +79,8 @@ extern byte*	 spritedefs_bytes;
 //
 // GAME FUNCTIONS
 //
-//vissprite_t     *vissprites;// [MAXVISSPRITES];
-vissprite_t*    vissprite_p;
+//vissprite_t      far*vissprites;// [MAXVISSPRITES];
+vissprite_t far*    vissprite_p;
 
 
  
@@ -105,13 +105,13 @@ vissprite_t     overflowsprite;
 // Masked means: partly transparent, i.e. stored
 //  in posts/runs of opaque pixels.
 //
-int16_t*          mfloorclip;
-int16_t*          mceilingclip;
+int16_t far*          mfloorclip;
+int16_t far*          mceilingclip;
 
 fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
 
-void R_DrawMaskedColumn (column_t* column) {
+void R_DrawMaskedColumn (column_t far* column) {
 	
 	fixed_t_union         topscreen;
 	fixed_t_union         bottomscreen;
@@ -139,7 +139,7 @@ void R_DrawMaskedColumn (column_t* column) {
             dc_yl = mceilingclip[dc_x]+1;
 
         if (dc_yl <= dc_yh) {
-            dc_source = (byte *)column + 3;
+            dc_source = (byte  far*)column + 3;
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
@@ -149,7 +149,7 @@ void R_DrawMaskedColumn (column_t* column) {
             //  or (SHADOW) R_DrawFuzzColumn.
 			colfunc();
         }
-        column = (column_t *)(  (byte *)column + column->length + 4);
+        column = (column_t  far*)(  (byte  far*)column + column->length + 4);
     }
         
     dc_texturemid = basetexturemid;
@@ -164,13 +164,13 @@ void R_DrawMaskedColumn (column_t* column) {
 // NO LOCKED PAGES GOING IN
 void
 R_DrawVisSprite
-( vissprite_t*          vis,
+( vissprite_t far*          vis,
 	int16_t                   x1,
 	int16_t                   x2 )
 {
-    column_t*           column;
+    column_t far*           column;
     fixed_t_union       frac;
-    patch_t*            patch;
+    patch_t far*            patch;
         
 
 
@@ -187,9 +187,9 @@ R_DrawVisSprite
     spryscale.w = vis->scale;
     sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
          
-	patch = (patch_t*)getspritetexture(vis->patch + firstspritelump);
+	patch = (patch_t far*)getspritetexture(vis->patch + firstspritelump);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
-		column = (column_t *) ((byte *)patch + (patch->columnofs[frac.h.intbits]));
+		column = (column_t  far*) ((byte  far*)patch + (patch->columnofs[frac.h.intbits]));
         R_DrawMaskedColumn (column);
     }
     colfunc = basecolfunc;
@@ -202,7 +202,7 @@ R_DrawVisSprite
 // Generates a vissprite for a thing
 //  if it might be visible.
 //
-void R_ProjectSprite (mobj_pos_t* thing)
+void R_ProjectSprite (mobj_pos_t far* thing)
 {
     fixed_t             tr_x;
     fixed_t             tr_y;
@@ -225,11 +225,11 @@ void R_ProjectSprite (mobj_pos_t* thing)
     
 	int16_t                 index;
 
-    vissprite_t*        vis;
+    vissprite_t far*        vis;
     
     angle_t             ang;
     fixed_t             iscale;
-	spriteframe_t*		spriteframes;
+	spriteframe_t far*		spriteframes;
 	
 	spritenum_t thingsprite = states[thing->stateNum].sprite;
 	spriteframenum_t thingframe = states[thing->stateNum].frame;
@@ -265,7 +265,7 @@ void R_ProjectSprite (mobj_pos_t* thing)
         return;
 
     // decide which patch to use for sprite relative to player
-	spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[thingsprite].spriteframesOffset]);
+	spriteframes = (spriteframe_t far*)&(spritedefs_bytes[sprites[thingsprite].spriteframesOffset]);
 
     if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
@@ -377,7 +377,7 @@ void R_ProjectSprite (mobj_pos_t* thing)
 // During BSP traversal, this adds sprites by sector.
 //
 
-void R_AddSprites (sector_t* sec)
+void R_AddSprites (sector_t far* sec)
 {
 	THINKERREF				thingRef;
 	int32_t                 lightnum;
@@ -407,10 +407,10 @@ void R_AddSprites (sector_t* sec)
 
     // Handle all things in sector.
 	if (sec->thinglistRef) {
-		mobj_pos_t*             thing;
+		mobj_pos_t far*             thing;
 
 		for (thingRef = sec->thinglistRef; thingRef; thingRef = thing->snextRef) {
-			thing = (mobj_pos_t*)&mobjposlist[thingRef];
+			thing = (mobj_pos_t far*)&mobjposlist[thingRef];
 			R_ProjectSprite(thing);
 		}
 
@@ -425,21 +425,21 @@ void R_AddSprites (sector_t* sec)
 //
 // R_DrawPSprite
 //
-void R_DrawPSprite (pspdef_t* psp, state_t statecopy)
+void R_DrawPSprite (pspdef_t near* psp, state_t statecopy)
 {
     fixed_t             tx;
 	int16_t                 x1;
 	int16_t                 x2;
 	int16_t                 lump;
     boolean             flip;
-    vissprite_t*        vis;
+    vissprite_t far*        vis;
     vissprite_t         avis;
-	spriteframe_t*		spriteframes;
+	spriteframe_t far*		spriteframes;
     fixed_t_union temp;
 
 
 	// decide which patch to use
-	spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[statecopy.sprite].spriteframesOffset]);
+	spriteframes = (spriteframe_t far*)&(spritedefs_bytes[sprites[statecopy.sprite].spriteframesOffset]);
 
 
     lump = spriteframes[statecopy.frame & FF_FRAMEMASK].lump[0];
@@ -539,7 +539,7 @@ void R_DrawPlayerSprites (void)
 {
 	uint8_t         i;
 	uint8_t         lightnum;
-    pspdef_t*   psp;
+	pspdef_t near*   psp;
     // get light level
     lightnum = (sectors[r_cachedplayerMobjsecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
 
@@ -633,9 +633,9 @@ extern int setval;
 // R_DrawSprite
 //
 
-void R_DrawSprite (vissprite_t* spr)
+void R_DrawSprite (vissprite_t far* spr)
 {
-    drawseg_t*          ds;
+    drawseg_t far*          ds;
     int16_t               clipbot[SCREENWIDTH]; // could be uint8_t, need to change -2 special case
     int16_t               cliptop[SCREENWIDTH];
 	int16_t                 x;

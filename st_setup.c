@@ -71,10 +71,10 @@ extern boolean          st_firsttime;
 // ?
 void
 STlib_initNum
-(st_number_t*		n,
+(st_number_t far*		n,
 	int16_t			x,
 	int16_t			y,
-	byte**		pl,
+	byte far**		pl,
 	int16_t			width)
 {
 	n->x = x;
@@ -88,11 +88,11 @@ STlib_initNum
 //
 void
 STlib_initPercent
-(st_percent_t*		p,
+(st_percent_t far*		p,
 	int16_t			x,
 	int16_t			y,
-	byte**		pl,
-	byte*		percent) {
+	byte far**		pl,
+	byte far*		percent) {
 	STlib_initNum(&p->n, x, y, pl, 3);
 	p->p = percent;
 }
@@ -101,10 +101,10 @@ STlib_initPercent
 
 void
 STlib_initMultIcon
-(st_multicon_t*	i,
+(st_multicon_t far*	i,
 	int16_t			x,
 	int16_t			y,
-	byte**		il)
+	byte far**		il)
 {
 	i->x = x;
 	i->y = y;

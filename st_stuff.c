@@ -257,7 +257,7 @@ void ST_refreshBackground(void)
 {
 
     if (st_statusbaron) {
-        V_DrawPatch(ST_X, 0, BG, (patch_t*)sbar);
+        V_DrawPatch(ST_X, 0, BG, (patch_t far*)sbar);
         V_CopyRect(ST_X, 0, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
     }
 
@@ -508,7 +508,7 @@ void ST_updateFaceWidget(void)
     static int8_t  lastattackdown = -1;
     static int8_t  priority = 0;
     boolean     doevilgrin;
-	mobj_pos_t* plyrattacker_pos;
+	mobj_pos_t far* plyrattacker_pos;
 
     if (priority < 10) {
         // dead

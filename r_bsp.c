@@ -34,12 +34,12 @@
 //#include "r_local.h"
 
 
-seg_t*		curseg;
-seg_render_t* curseg_render;
-sector_t*	frontsector;
-sector_t*	backsector;
+seg_t far*		curseg;
+seg_render_t far* curseg_render;
+sector_t far*	frontsector;
+sector_t far*	backsector;
 
-drawseg_t*	ds_p;
+drawseg_t far*	ds_p;
 
 
 void
@@ -76,7 +76,7 @@ typedef	struct
 #define MAXSEGS		32
 
 // newend is one past the last valid seg
-cliprange_t*	newend;
+cliprange_t near*	newend;
 cliprange_t	solidsegs[MAXSEGS];
 
 
@@ -93,8 +93,8 @@ R_ClipSolidWallSegment
 ( int16_t			first,
   int16_t			last )
 {
-    cliprange_t*	next;
-    cliprange_t*	start;
+    cliprange_t near*	next;
+    cliprange_t near*	start;
 
     // Find the first range that touches the range
     //  (adjacent pixels are touching).
@@ -180,7 +180,7 @@ R_ClipPassWallSegment
 ( int16_t	first,
   int16_t	last )
 {
-    cliprange_t*	start;
+    cliprange_t near*	start;
     // Find the first range that touches the range
     //  (adjacent pixels are touching).
     start = solidsegs;
@@ -243,14 +243,14 @@ void R_AddLine (int16_t curlineNum)
 	angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
-	seg_t*		curline = &segs[curlineNum];
-	seg_render_t*		curline_render = &segs_render[curlineNum];
+	seg_t far*		curline = &segs[curlineNum];
+	seg_render_t far*		curline_render = &segs_render[curlineNum];
 	int16_t curlineside = curline->side;
 	
 	int16_t linebacksecnum;
 
-	side_t* curlinesidedef = &sides[curline_render->sidedefOffset];
-	line_t* curlinelinedef = &lines[curline->linedefOffset];
+	side_t far* curlinesidedef = &sides[curline_render->sidedefOffset];
+	line_t far* curlinelinedef = &lines[curline->linedefOffset];
 	vertex_t v1 = vertexes[curline_render->v1Offset];
 	vertex_t v2 = vertexes[curline_render->v2Offset];
      curseg = curline;
@@ -402,7 +402,7 @@ boolean R_CheckBBox(int16_t *bspcoord)
 	angle_t span;
 	angle_t tspan;
 
-	cliprange_t *start;
+	cliprange_t near*start;
 
 	int16_t sx1;
 	int16_t sx2;
@@ -540,7 +540,7 @@ void R_Subsector(int16_t subsecnum)
 	int16_t count;
 	int16_t firstline;
 	fixed_t_union temp;
-	subsector_t* sub = &subsectors[subsecnum];
+	subsector_t far* sub = &subsectors[subsecnum];
 	temp.h.fracbits = 0;
 	
     frontsector = &sectors[sub->secnum];
@@ -583,8 +583,8 @@ void R_Subsector(int16_t subsecnum)
 
 void R_RenderBSPNode()
 {
-	node_t *bsp;
-	node_render_t* bsp_render;
+	node_t  far*bsp;
+	node_render_t far* bsp_render;
 	fixed_t_union dx, dy;
 	fixed_t left, right;
 	int16_t stack_bsp[MAX_BSP_DEPTH];

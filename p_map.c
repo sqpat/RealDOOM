@@ -36,8 +36,8 @@
 
 
 fixed_t_union		tmbbox[4];
-mobj_t*		tmthing;
-mobj_pos_t*		tmthing_pos;
+mobj_t far*		tmthing;
+mobj_pos_t far*		tmthing_pos;
 int32_t		tmflags;
 fixed_t		tmx;
 fixed_t		tmy;
@@ -71,7 +71,7 @@ int16_t		numspechit;
 //
 // PIT_StompThing
 //
-boolean PIT_StompThing (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_pos)
+boolean PIT_StompThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* thing_pos)
 {
     fixed_t_union	blockdist;
 
@@ -108,8 +108,8 @@ boolean PIT_StompThing (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_po
 //
 boolean
 P_TeleportMove
-(mobj_t* thing,
-	mobj_pos_t* thing_pos,
+(mobj_t far* thing,
+	mobj_pos_t far* thing_pos,
   fixed_t	x,
   fixed_t	y,
 	int16_t oldsecnum)
@@ -198,9 +198,9 @@ P_TeleportMove
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-boolean PIT_CheckLine (line_physics_t* ld_physics, int16_t linenum)
+boolean PIT_CheckLine (line_physics_t far* ld_physics, int16_t linenum)
 {
-	line_t* ld;
+	line_t far* ld;
 	slopetype_t lineslopetype = ld_physics->v2Offset & LINE_VERTEX_SLOPETYPE;
 	int16_t linedx = ld_physics->dx;
 	int16_t linedy = ld_physics->dy;
@@ -303,12 +303,12 @@ boolean PIT_CheckLine (line_physics_t* ld_physics, int16_t linenum)
 //
 // PIT_CheckThing
 //
-boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_pos)
+boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* thing_pos)
 {
     fixed_t		blockdist;
     boolean		solid;
     int16_t			damage;
-	mobj_t* tmthingTarget;
+	mobj_t far* tmthingTarget;
 	mobjtype_t tmthingTargettype;
 	mobjtype_t thingtype;
 	THINKERREF tmthingtargetRef;
@@ -375,7 +375,7 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_po
 		if (tmthingz + tmthingheight.w < thingz) {
 			return true;		// underneath
 		}
-		tmthingTarget = (mobj_t*)&thinkerlist[tmthingtargetRef].data;
+		tmthingTarget = (mobj_t far*)&thinkerlist[tmthingtargetRef].data;
 		if (tmthingTarget) {
 			tmthingTargettype = tmthingTarget->type;
 			if (tmthingTargettype == thingtype || (tmthingTargettype == MT_KNIGHT && thingtype == MT_BRUISER)|| (tmthingTargettype == MT_BRUISER && thingtype == MT_KNIGHT) ) {
@@ -454,7 +454,7 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_po
 int16_t lastcalculatedsector;
 boolean
 P_CheckPosition
-(mobj_t* thing,
+(mobj_t far* thing,
 	fixed_t	x,
 	fixed_t	y,
 	int16_t oldsecnum
@@ -598,8 +598,8 @@ P_CheckPosition
 //
 boolean
 P_TryMove
-(mobj_t* thing,
-	mobj_pos_t* thing_pos,
+(mobj_t far* thing,
+	mobj_pos_t far* thing_pos,
   fixed_t	x,
   fixed_t	y 
 	)
@@ -676,7 +676,7 @@ P_TryMove
 		int16_t ldv1Offset;
 		int16_t	side;
 		int16_t	oldside;
-		line_physics_t* ld_physics;
+		line_physics_t far* ld_physics;
 		while (numspechit--) {
 			// see if the line was crossed
 			ld_physics = &lines_physics[spechit[numspechit]];
@@ -711,7 +711,7 @@ P_TryMove
 // the z will be set to the lowest value
 // and false will be returned.
 //
-boolean P_ThingHeightClip (mobj_t* thing, mobj_pos_t* thing_pos)
+boolean P_ThingHeightClip (mobj_t far* thing, mobj_pos_t far* thing_pos)
 {
     boolean		onfloor;
 	fixed_t_union temp;
@@ -781,7 +781,7 @@ void P_HitSlideLine (int16_t linenum)
     fixed_t		movelen;
     fixed_t		newlen;
 
-	line_physics_t* ld_physics = &lines_physics[linenum];
+	line_physics_t far* ld_physics = &lines_physics[linenum];
 
     if ((ld_physics->v2Offset&LINE_VERTEX_SLOPETYPE) == ST_HORIZONTAL_HIGH) {
 		tmymove = 0;
@@ -820,11 +820,11 @@ void P_HitSlideLine (int16_t linenum)
 //
 // PTR_SlideTraverse
 //
-boolean PTR_SlideTraverse (intercept_t* in)
+boolean PTR_SlideTraverse (intercept_t far* in)
 {
-	line_t* li = &lines[in->d.linenum];
+	line_t far* li = &lines[in->d.linenum];
 	fixed_t_union temp;
-	line_physics_t* li_physics = &lines_physics[in->d.linenum];
+	line_physics_t far* li_physics = &lines_physics[in->d.linenum];
 
 
     
@@ -1004,9 +1004,9 @@ void P_SlideMove ()
 //
 // P_LineAttack
 //
-mobj_t*		linetarget;	// who got hit (or NULL)
-mobj_pos_t*		linetarget_pos;	// who got hit (or NULL)
-mobj_t*		shootthing;
+mobj_t far*		linetarget;	// who got hit (or NULL)
+mobj_pos_t far*		linetarget_pos;	// who got hit (or NULL)
+mobj_t far*		shootthing;
 
 // Height if not aiming up or down
 // ???: use slope for monsters?
@@ -1027,12 +1027,12 @@ extern fixed_t	bottomslope;
 // Sets linetaget and aimslope when a target is aimed at.
 //
 boolean
-PTR_AimTraverse (intercept_t* in)
+PTR_AimTraverse (intercept_t far* in)
 {
-	line_t*		li;
-	line_physics_t*		li_physics;
-    mobj_t*		th;
-	mobj_pos_t* th_pos;
+	line_t far*		li;
+	line_physics_t far*		li_physics;
+    mobj_t far*		th;
+	mobj_pos_t far* th_pos;
     fixed_t		slope;
     fixed_t		thingtopslope;
     fixed_t		thingbottomslope;
@@ -1084,7 +1084,7 @@ PTR_AimTraverse (intercept_t* in)
     }
     
     // shoot a thing
-	th = (mobj_t*)&thinkerlist[in->d.thingRef].data;
+	th = (mobj_t far*)&thinkerlist[in->d.thingRef].data;
 	if (th == shootthing) {
 		return true;			// can't shoot self
 	}
@@ -1122,18 +1122,18 @@ PTR_AimTraverse (intercept_t* in)
 //
 // PTR_ShootTraverse
 //
-boolean PTR_ShootTraverse (intercept_t* in)
+boolean PTR_ShootTraverse (intercept_t far* in)
 {
     fixed_t		x;
     fixed_t		y;
     fixed_t		z;
     fixed_t		frac;
     
-	line_t		* li;
-	line_physics_t*		li_physics;
+	line_t		 far* li;
+	line_physics_t far*		li_physics;
     
-	mobj_t*		th;
-	mobj_pos_t*		th_pos;
+	mobj_t far*		th;
+	mobj_pos_t far*		th_pos;
 
     fixed_t		slope;
     fixed_t		dist;
@@ -1210,7 +1210,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	 
     // shoot a thing
     thRef = in->d.thingRef;
-	th = (mobj_t*)&thinkerlist[thRef].data;
+	th = (mobj_t far*)&thinkerlist[thRef].data;
 	if (th == shootthing) {
 		return true;		// can't shoot self
 	}
@@ -1265,7 +1265,7 @@ boolean PTR_ShootTraverse (intercept_t* in)
 //
 fixed_t
 P_AimLineAttack
-( mobj_t*	t1,
+( mobj_t far*	t1,
   fineangle_t	angle,
   int16_t	distance16
 	)
@@ -1276,7 +1276,7 @@ P_AimLineAttack
 	fixed_t_union	y;
 	fixed_t_union distance;
 	boolean ischainsaw = distance16 & CHAINSAW_FLAG;
-	mobj_pos_t* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
+	mobj_pos_t far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
 	
     shootthing = t1;
 	distance16 &= (CHAINSAW_FLAG-1);
@@ -1327,7 +1327,7 @@ P_AimLineAttack
 //
 void
 P_LineAttack
-(mobj_t* t1,
+(mobj_t far* t1,
   fineangle_t	angle,
 	int16_t	distance16,
   fixed_t	slope,
@@ -1340,7 +1340,7 @@ P_LineAttack
 	fixed_t_union	y;
 	fixed_t_union	distance;
 	boolean ischainsaw = distance16 & CHAINSAW_FLAG; //sigh... look into why this needs to be here, remove if at all possible - sq
-	mobj_pos_t* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
+	mobj_pos_t far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
 	x.w = t1_pos->x;
 	y.w = t1_pos->y;
 	distance16 &= (CHAINSAW_FLAG-1);
@@ -1373,11 +1373,11 @@ P_LineAttack
 // USE LINES
 //
 
-boolean	PTR_UseTraverse (intercept_t* in)
+boolean	PTR_UseTraverse (intercept_t far* in)
 {
     int16_t		side;
 
-	line_physics_t* line_physics = &lines_physics[in->d.linenum];
+	line_physics_t far* line_physics = &lines_physics[in->d.linenum];
 
 	if (!line_physics->special) {
 #ifdef	PRECALCULATE_OPENINGS
@@ -1437,9 +1437,9 @@ void P_UseLines ()
 //
 // RADIUS ATTACK
 //
-mobj_t*		bombsource;
-mobj_t*		bombspot;
-mobj_pos_t*		bombspot_pos;
+mobj_t far*		bombsource;
+mobj_t far*		bombspot;
+mobj_pos_t far*		bombspot_pos;
 int16_t		bombdamage;
 
 
@@ -1448,7 +1448,7 @@ int16_t		bombdamage;
 // "bombsource" is the creature
 // that caused the explosion at "bombspot".
 //
-boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_pos)
+boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* thing_pos)
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -1499,9 +1499,9 @@ boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_
 //
 void
 P_RadiusAttack
-(mobj_t* spot,
-	mobj_pos_t* spot_pos,
-	mobj_t* source,
+(mobj_t far* spot,
+	mobj_pos_t far* spot_pos,
+	mobj_t far* source,
 	int16_t		damage)
 {
 	int16_t		x;
@@ -1557,12 +1557,12 @@ P_RadiusAttack
 boolean		crushchange;
 boolean		nofit;
 
-extern mobj_t* setStateReturn;
+extern mobj_t far* setStateReturn;
 
 //
 // PIT_ChangeSector
 //
-boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_pos)
+boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* thing_pos)
 {
 
 
@@ -1600,7 +1600,7 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_
     nofit = true;
 	
     if (crushchange && !(leveltime.w &3) ) {
-		mobj_t*	mo;
+		mobj_t far*	mo;
 		THINKERREF moRef;
 		P_DamageMobj(thing,NULL_THINKERREF,NULL_THINKERREF,10);
 
@@ -1623,12 +1623,12 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t*	thing, mobj_pos_t* thing_
 //
 boolean
 P_ChangeSector
-( sector_t*	sector,
+( sector_t far*	sector,
   boolean	crunch )
 {
     int16_t		x;
     int16_t		y;
-	sector_physics_t* sector_physics = &sectors_physics[sector - sectors];
+	sector_physics_t far* sector_physics = &sectors_physics[sector - sectors];
 
 	int16_t xl = sector_physics->blockbox [ BOXLEFT];
 	int16_t xh = sector_physics->blockbox[ BOXRIGHT];

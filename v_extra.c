@@ -47,28 +47,28 @@ V_DrawFullscreenPatch
 {
 	int16_t		count;
 	int16_t		col;
-	column_t*	column;
-	byte* desttop;
-	byte*	dest;
-	byte*	source;
+	column_t far*	column;
+	byte far* desttop;
+	byte far*	dest;
+	byte far*	source;
 	int16_t		w;
-	patch_t*	patch;
-	byte*	patch2;
+	patch_t far*	patch;
+	byte far*	patch2;
  
 	int32_t    offset = 0;
 	int16_t    pageoffset = 0;
-	byte*       extradata;
+	byte far*       extradata;
 	int16_t	pagenum = 0;
 	int16_t oldtask = currenttask;
 	int16_t lump = W_GetNumForName(pagename);
 	Z_QuickmapScratch_5000();
 
-	patch = (patch_t*)MK_FP(0x5000, 0x0000);
+	patch = (patch_t far*)MK_FP(0x5000, 0x0000);
 	patch2 =  MK_FP(0x5000, 0x8000);
-	W_CacheLumpNumDirectFragment(lump, (byte*)patch, pagenum, 0);
+	W_CacheLumpNumDirectFragment(lump, (byte far*)patch, pagenum, 0);
 
 
-	extradata = (byte*)patch;
+	extradata = (byte far*)patch;
 	w = (patch->width);
 
 
@@ -83,22 +83,22 @@ V_DrawFullscreenPatch
 	for (col = 0; col < w; col++, desttop++) {
 
 		// todo dynamically calculate the offsets
-		column = (column_t *)((byte *)extradata + ((patch->columnofs[col]) - offset));
-		pageoffset = (byte *)column - extradata;
+		column = (column_t  far*)((byte  far*)extradata + ((patch->columnofs[col]) - offset));
+		pageoffset = (byte  far*)column - extradata;
 
 		if (pageoffset > 16000) {
 			offset += pageoffset;
 			pagenum++;
 			W_CacheLumpNumDirectFragment(lump, patch2, pagenum, offset);
 			extradata = patch2;
-			column = (column_t *)((byte *)extradata + patch->columnofs[col] - offset);
+			column = (column_t  far*)((byte  far*)extradata + patch->columnofs[col] - offset);
 		}
 
 
 		// step through the posts in a column 
 		while (column->topdelta != 0xff) {
 
-			source = (byte *)column + 3;
+			source = (byte  far*)column + 3;
 			dest = desttop + column->topdelta * SCREENWIDTH;
 			count = column->length;
 
@@ -125,7 +125,7 @@ V_DrawFullscreenPatch
 						source++;
 						dest += SCREENWIDTH;
 					} while (--count);
-					column = (column_t *)(source + 1);
+					column = (column_t  far*)(source + 1);
 		}
 	}
 
