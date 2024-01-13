@@ -248,7 +248,7 @@ void P_LoadSegs(int16_t lump)
 	// ugly, gross, but this memory is free right now...
 	tempsecnums = (int16_t far* )Z_GetNextRenderAddress(numsegs * 2 * sizeof(int16_t));
 
-	memset(segs, 0xff, numsegs * sizeof(seg_t));
+	FAR_memset(segs, 0xff, numsegs * sizeof(seg_t));
 	
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
 	data = (mapseg_t far*)SCRATCH_ADDRESS_4000;
@@ -329,7 +329,7 @@ void P_LoadSubsectors(int16_t lump)
 	subsector_t far*        ss;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
 	subsectors = (subsector_t far*)Z_MallocConventional (numsubsectors * sizeof(subsector_t));
-	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
+	FAR_memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
 	data = (mapsubsector_t far*)SCRATCH_ADDRESS_4000;
@@ -384,8 +384,8 @@ void P_LoadSectors(int16_t lump)
 	//sectors_physics = (sector_physics_t far*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
 	Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
 
-	memset(sectors, 0, numsectors * sizeof(sector_t));
-	memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
+	FAR_memset(sectors, 0, numsectors * sizeof(sector_t));
+	FAR_memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
 	data = (mapsector_t far*)SCRATCH_ADDRESS_4000;
@@ -930,7 +930,7 @@ void P_CacheLineOpenings() {
 	
 
 	lineopenings = (lineopening_t far* )Z_GetNextPhysicsAddress(numlines * sizeof(lineopening_t));
-	memset(lineopenings, 0, numlines * sizeof(lineopening_t));
+	FAR_memset(lineopenings, 0, numlines * sizeof(lineopening_t));
 
 	for (linenum = 0; linenum < numlines; linenum++) {
 		int16_t lineside1 = lines[linenum].sidenum[1];
@@ -976,7 +976,7 @@ void P_LoadThings(int16_t lump)
 	uint16_t                 numthings;
 	boolean             spawn;
 	
-	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
+	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
  
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
 	data = (mapthing_t far*)SCRATCH_ADDRESS_4000;
@@ -1052,9 +1052,9 @@ void P_LoadLineDefs(int16_t lump)
 	lines_physics = (line_physics_t far* )Z_GetNextPhysicsAddress(numlines * sizeof(line_physics_t));
 
 	seenlines = (uint8_t far*)Z_MallocConventional(numlines/8+1);
-	memset(lines, 0, numlines * sizeof(line_t));
-	memset(lines_physics, 0, numlines * sizeof(line_physics_t));
-	memset(seenlines, 0, numlines / 8 + 1);
+	FAR_memset(lines, 0, numlines * sizeof(line_t));
+	FAR_memset(lines_physics, 0, numlines * sizeof(line_physics_t));
+	FAR_memset(seenlines, 0, numlines / 8 + 1);
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
 	data = (maplinedef_t far*)SCRATCH_ADDRESS_4000;
@@ -1245,7 +1245,7 @@ void P_LoadBlockMap(int16_t lump)
 
 	blocklinks = (THINKERREF far*) Z_GetNextPhysicsAddress(count);
 
-	memset(blocklinks, 0, count);
+	FAR_memset(blocklinks, 0, count);
 }
 
 

@@ -38,7 +38,7 @@ int16_t M_CheckParm (int8_t* check);
 boolean
 M_WriteFile
 (int8_t const*	name,
-  void*		source,
+  void far*		source,
   filelength_t		length );
 
 filelength_t

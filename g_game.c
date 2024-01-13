@@ -67,8 +67,8 @@
 uint16_t DEMO_SEGMENT;
 
 boolean G_CheckDemoStatus (void); 
-void    G_ReadDemoTiccmd (ticcmd_t* cmd); 
-void    G_WriteDemoTiccmd (ticcmd_t* cmd); 
+void    G_ReadDemoTiccmd (ticcmd_t near* cmd); 
+void    G_WriteDemoTiccmd (ticcmd_t near* cmd); 
 void    G_PlayerReborn (); 
 void    G_InitNew (skill_t skill, int8_t episode, int8_t map);
  
@@ -102,8 +102,8 @@ ticcount_t             starttime;              // for comparative timing purpose
 boolean         viewactive; 
  
 player_t        player;
-mobj_t*			playerMobj;
-mobj_pos_t*			playerMobj_pos;
+mobj_t far*			playerMobj;
+mobj_pos_t far*			playerMobj_pos;
 THINKERREF		playerMobjRef;
 
 ticcount_t          gametic;
@@ -116,7 +116,7 @@ boolean         netdemo;
 #define           demobuffer ((byte far*) 0x50000000)
 
 uint16_t           demo_p;				// buffer
-//byte*           demoend; 
+//byte far*           demoend; 
 boolean         singledemo;             // quit after playing a demo from cmdline 
  
 boolean         precache = true;        // if true, load all graphics at start 
@@ -205,8 +205,7 @@ void G_BuildTiccmd (int8_t index)
 	fixed_t         forward;
 	fixed_t         side;
     
-    //ticcmd_t*   base;
-	ticcmd_t* cmd = &localcmds[index];
+	ticcmd_t near* cmd = &localcmds[index];
 
 	memset(cmd, 0, sizeof(ticcmd_t));
 
@@ -455,7 +454,7 @@ boolean G_Responder (event_t* ev)  {   // any other key pops up menu if in demos
 void G_Ticker (void) 
 { 
 	int8_t         buf;
-    ticcmd_t*   cmd;
+    ticcmd_t near*   cmd;
     // do player reborns if needed
 
 	// do things to change the game state
@@ -973,7 +972,7 @@ void G_InitNew(skill_t       skill, int8_t           episode, int8_t           m
 #define DEMOMARKER              0x80
 
 
-void G_ReadDemoTiccmd (ticcmd_t* cmd) 
+void G_ReadDemoTiccmd (ticcmd_t near* cmd) 
 { 
     // this is just used as an offset so lets just store as int;
 	byte far* demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
@@ -996,7 +995,7 @@ void G_ReadDemoTiccmd (ticcmd_t* cmd)
 }
 
 
-void G_WriteDemoTiccmd (ticcmd_t* cmd) 
+void G_WriteDemoTiccmd (ticcmd_t near* cmd) 
 { 
 	byte far* demo_addr = (byte far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickmapDemo();

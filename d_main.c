@@ -121,7 +121,6 @@ int8_t *    basedefault = "default.cfg";
 
 
 void G_BuildTiccmd(int8_t index);
-//void G_BuildTiccmd (ticcmd_t* cmd);
 void D_DoAdvanceDemo (void);
 
 

@@ -449,7 +449,7 @@ static uint8_t		numRef[10];
 
 void WI_slamBackground(void)
 {
-    memcpy(screen0, screen1, SCREENWIDTH * SCREENHEIGHT);
+    FAR_memcpy(screen0, screen1, SCREENWIDTH * SCREENHEIGHT);
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 }
 

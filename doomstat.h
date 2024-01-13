@@ -175,8 +175,8 @@ extern	ticcount_t		gametic;
 
 // Bookkeeping on players - state.
 extern	player_t	player;
-extern mobj_t*		playerMobj;
-extern mobj_pos_t*			playerMobj_pos;
+extern mobj_t far*		playerMobj;
+extern mobj_pos_t far*			playerMobj_pos;
 extern	THINKERREF  playerMobjRef;
  
 

@@ -446,8 +446,8 @@ typedef struct
 typedef struct vissprite_s
 {
     // Doubly linked list.
-    struct vissprite_s*	prev;
-    struct vissprite_s*	next;
+    struct vissprite_s far*	prev;
+    struct vissprite_s far*	next;
     
 
 	int16_t x1;
@@ -474,7 +474,7 @@ typedef struct vissprite_s
 
     // for color translation and shadow draw,
     //  maxbright frames as well
-    lighttable_t*	colormap;
+    lighttable_t far*	colormap;
    
     int32_t			mobjflags;
     

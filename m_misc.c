@@ -152,7 +152,7 @@ void M_ClearBox16(int16_t *box)
 boolean
 M_WriteFile
 (int8_t const*	name,
-  void*		source,
+  void far*		source,
   filelength_t		length )
 {
     filehandle_t		handle;

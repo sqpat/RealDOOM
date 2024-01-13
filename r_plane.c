@@ -53,7 +53,7 @@ int16_t				ceilingplaneindex;
 
 // ?
 //int16_t			*openings;// [MAXOPENINGS];
-int16_t*		lastopening;
+int16_t far*		lastopening;
 
 
 //
@@ -74,7 +74,7 @@ int16_t*		lastopening;
 //
 // texture mapping
 //
-lighttable_t**		planezlight;
+lighttable_t far**		planezlight;
 fixed_t			planeheight;
 
 //fixed_t			*yslope;// [SCREENHEIGHT];
@@ -174,7 +174,7 @@ void R_ClearPlanes (void)
     lastopening = openings;
 
     // texture calculation
-    memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
+    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
 
     // left to right mapping
 	angle = MOD_FINE_ANGLE(viewangle_shiftright3 - FINE_ANG90) ;
@@ -198,7 +198,7 @@ R_FindPlane
   uint8_t		picnum,
   uint8_t		lightlevel )
 {
-    visplane_t*	check;
+    visplane_t far*	check;
     //visplaneheader_t*	checkheader;
 	//visplanebytes_t* checkbytes;
 	int i;
@@ -284,7 +284,7 @@ R_CheckPlane
     int16_t		x;
 	//int16_t		lastvisplaneheader;
 	//visplanebytes_t* plbytes;
-	visplane_t*	pl;
+	visplane_t far*	pl;
 	//visplaneheader_t* plheader;
 
 	if (index < MAXCONVENTIONALVISPLANES) {
@@ -381,7 +381,7 @@ extern uint8_t firstunusedflat;
 //
 void R_DrawPlanes (void)
 {
-    visplane_t*		pl;
+    visplane_t far*		pl;
     uint8_t			light;
     int16_t			x;
     int16_t			stop;
@@ -390,7 +390,7 @@ void R_DrawPlanes (void)
 	int16_t			i;
 
     //visplaneheader_t*		plheader;
-	visplanebytes_t*		plbytes = NULL;
+	visplanebytes_t far*		plbytes = NULL;
 	//int16_t currentplanebyteRef = -1; // visplaneheaders->visplanepage is always 0;
 	//visplanebytes_t* base;
 

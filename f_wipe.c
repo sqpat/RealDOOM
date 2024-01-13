@@ -67,7 +67,7 @@ wipe_shittyColMajorXform
 			dest[result] = array[result2];
 		}
 
-	memcpy(array, dest, 64000u);
+	FAR_memcpy(array, dest, 64000u);
 	
 
 } 
@@ -84,7 +84,7 @@ wipe_initMelt
 	int16_t far* y = MK_FP(0x9000, 0);
 
     // copy start screen to main screen
-    memcpy(wipe_scr, wipe_scr_start, 64000u);
+    FAR_memcpy(wipe_scr, wipe_scr_start, 64000u);
 
     // makes this wipe faster (in theory)
     // to have stuff in column-major format
@@ -201,7 +201,7 @@ V_DrawBlock
 
 	while (height--)
 	{
-		memcpy(dest, src, width);
+		FAR_memcpy(dest, src, width);
 		src += width;
 		dest += SCREENWIDTH;
 	}

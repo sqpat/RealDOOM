@@ -300,7 +300,7 @@ void R_GenerateLookup(uint8_t texnum)
 
 	// todo examine alloca use...
 	patchcount = (byte  far*)alloca(texture->width + 1);
-	memset(patchcount, 0, texture->width + 1);
+	FAR_memset(patchcount, 0, texture->width + 1);
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
 	realpatch = (patch_t far*)patchaddr;
@@ -394,8 +394,8 @@ void R_InitTextures(void)
 	int32_t far*                directory;
 
 	int8_t                name[9];
-	int8_t*               names;
-	int8_t*               name_p;
+	int8_t far*               names;
+	int8_t far*               name_p;
 
 	int16_t far*                patchlookup;
 
@@ -426,7 +426,7 @@ void R_InitTextures(void)
 	patchlookup = alloca(nummappatches * sizeof(*patchlookup));
 	for (i = 0; i < nummappatches; i++)
 	{
-		strncpy(name, name_p + i * 8, 8);
+		FAR_strncpy(name, name_p + i * 8, 8);
 		patchlookup[i] = W_CheckNumForName(name);
 	}
 

@@ -160,7 +160,7 @@ byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 
  
  
-extern byte* spritedefs_bytes;
+extern byte far* spritedefs_bytes;
 
 extern int16_t pagenum9000;
 extern int16_t pageswapargs[total_pages];

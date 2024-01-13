@@ -433,7 +433,7 @@ void R_InitSpriteDefs()
 	int16_t         start;
 	int16_t         end;
 	int16_t         patched;
-	spriteframe_t* spriteframes;
+	spriteframe_t far* spriteframes;
 	uint16_t		currentspritememoryoffset;
 	//int32_t totalsize = 0;
 
@@ -486,7 +486,7 @@ void R_InitSpriteDefs()
 	for (i = 0; i < numsprites; i++)
 	{
 		spritename = namelist[i];
-		memset(sprtemp, -1, sizeof(sprtemp));
+		FAR_memset(sprtemp, -1, sizeof(sprtemp));
 
 		maxframe = -1;
 		intname = *(int32_t *)namelist[i];
@@ -564,7 +564,7 @@ void R_InitSpriteDefs()
 
 
 		spriteframes = (spriteframe_t far*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
-		memcpy(spriteframes, sprtemp, maxframe * sizeof(spriteframe_t));
+		FAR_memcpy(spriteframes, sprtemp, maxframe * sizeof(spriteframe_t));
 
 	}
 

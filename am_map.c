@@ -784,7 +784,7 @@ void AM_Ticker (void)
 //
 void AM_clearFB(int16_t color)
 {
-    memset(fb, color, f_w*f_h);
+    FAR_memset(fb, color, f_w*f_h);
 }
 
 

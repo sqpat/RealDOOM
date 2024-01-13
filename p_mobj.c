@@ -568,8 +568,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsec
 	mobjRef = GETTHINKERREF(mobj);
 	mobj_pos = &mobjposlist[mobjRef];
 
-	memset(mobj, 0, sizeof(mobj_t));
-	memset(mobj_pos, 0, sizeof (mobj_pos_t));
+	FAR_memset(mobj, 0, sizeof(mobj_t));
+	FAR_memset(mobj_pos, 0, sizeof (mobj_pos_t));
 
 
 	info = &mobjinfo[type];

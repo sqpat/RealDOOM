@@ -76,7 +76,7 @@ int16_t	t6text = T6TEXT;
 #endif
 
 int16_t	finaletext;
-int8_t*	finaleflat;
+int8_t *	finaleflat;
 
 void	F_StartCast (void);
 void	F_CastTicker (void);
@@ -96,15 +96,15 @@ void
 V_DrawPatchFlipped
 (int16_t		x,
 	int16_t		y,
-	patch_t*	patch)
+	patch_t far*	patch)
 {
 
 	int16_t		count;
 	int16_t		col;
-	column_t*	column;
-	byte*	desttop;
-	byte*	dest;
-	byte*	source;
+	column_t far*	column;
+	byte far*	desttop;
+	byte far*	dest;
+	byte far*	source;
 	int16_t		w;
 
 	y -= (patch->topoffset);
@@ -121,12 +121,12 @@ V_DrawPatchFlipped
 
 	for (; col < w; x++, col++, desttop++)
 	{
-		column = (column_t *)((byte *)patch + (patch->columnofs[w - 1 - col]));
+		column = (column_t  far*)((byte  far*)patch + (patch->columnofs[w - 1 - col]));
 
 		// step through the posts in a column 
 		while (column->topdelta != 0xff)
 		{
-			source = (byte *)column + 3;
+			source = (byte  far*)column + 3;
 			dest = desttop + column->topdelta*SCREENWIDTH;
 			count = column->length;
 
@@ -136,7 +136,7 @@ V_DrawPatchFlipped
 				source++;
 				dest += SCREENWIDTH;
 			}
-			column = (column_t *)((byte *)column + column->length
+			column = (column_t  far*)((byte  far*)column + column->length
 				+ 4);
 		}
 	}
@@ -410,7 +410,7 @@ void F_TextWrite (void)
 	
     for (y=0 ; y<SCREENHEIGHT ; y++) {
 		for (x=0 ; x<SCREENWIDTH/64 ; x++) {
-			memcpy (dest, src+((y&63)<<6), 64);
+			FAR_memcpy (dest, src+((y&63)<<6), 64);
 			dest += 64;
 		}
 	 
@@ -487,7 +487,7 @@ castinfo_t	castorder[] = {
 
 int8_t		castnum;
 int8_t		casttics;
-state_t*	caststate;
+state_t far*	caststate;
 boolean		castdeath;
 int8_t		castframes;
 int8_t		castonmelee;
@@ -691,23 +691,23 @@ void F_CastPrint (int8_t* text)
     }
 	
 }
-extern byte*	 spritedefs_bytes;
+extern byte far*	 spritedefs_bytes;
 
 
 //
 // F_CastDrawer
 //
-void V_DrawPatchFlipped (int16_t x, int16_t y,  patch_t *patch);
+void V_DrawPatchFlipped (int16_t x, int16_t y,  patch_t  far*patch);
 
 void F_CastDrawer (void)
 {
-    spritedef_t*	sprite;
-    spriteframe_t*	sprframe;
+    spritedef_t far*	sprite;
+    spriteframe_t far*	sprframe;
     int16_t			lump;
     boolean		flip;
-	spriteframe_t*  spriteframes;
+	spriteframe_t far*  spriteframes;
 	int8_t			text[100];
-	patch_t*		patch = MK_FP(0x5000, 0);
+	patch_t far*		patch = MK_FP(0x5000, 0);
 
     // erase the entire screen to a background
     V_DrawFullscreenPatch("BOSSBACK", 0);
@@ -717,7 +717,7 @@ void F_CastDrawer (void)
     // draw the current frame in the middle of the screen
 		
 	sprite = &sprites[caststate->sprite];
-	spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprite->spriteframesOffset]);
+	spriteframes = (spriteframe_t far*)&(spritedefs_bytes[sprite->spriteframesOffset]);
 
 	sprframe = &spriteframes[caststate->frame & FF_FRAMEMASK];
 
@@ -727,7 +727,7 @@ void F_CastDrawer (void)
 	
 	Z_QuickmapScratch_5000();
 
-	W_CacheLumpNumDirect(lump + firstspritelump, (byte*)patch);
+	W_CacheLumpNumDirect(lump + firstspritelump, (byte far*)patch);
 
 	if (flip) {
 		V_DrawPatchFlipped(160, 170, patch);
@@ -746,22 +746,22 @@ void F_CastDrawer (void)
 void
 F_DrawPatchCol
 ( int16_t		x,
-  patch_t*	patch,
+  patch_t far*	patch,
   int16_t		col )
 {
-    column_t*	column;
-    byte*	source;
-    byte*	dest;
-    byte*	desttop;
+    column_t far*	column;
+    byte far*	source;
+    byte far*	dest;
+    byte far*	desttop;
     int16_t		count;
 	
-    column = (column_t *)((byte *)patch + (patch->columnofs[col]));
+    column = (column_t  far*)((byte  far*)patch + (patch->columnofs[col]));
     desttop = screen0+x;
 
     // step through the posts in a column
     while (column->topdelta != 0xff )
     {
-	source = (byte *)column + 3;
+	source = (byte  far*)column + 3;
 	dest = desttop + column->topdelta*SCREENWIDTH;
 	count = column->length;
 		
@@ -770,7 +770,7 @@ F_DrawPatchCol
 	    *dest = *source++;
 	    dest += SCREENWIDTH;
 	}
-	column = (column_t *)(  (byte *)column + column->length + 4 );
+	column = (column_t  far*)(  (byte  far*)column + column->length + 4 );
     }
 }
 
@@ -785,7 +785,7 @@ void F_BunnyScroll (void)
     int16_t		stage;
     static int16_t	laststage;
 	
-	patch_t* patch = MK_FP(0x5000, 0);
+	patch_t far* patch = MK_FP(0x5000, 0);
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 	
@@ -809,7 +809,7 @@ void F_BunnyScroll (void)
     
 	if (finalecount < 1180) {
 		Z_QuickmapScratch_5000();
-		W_CacheLumpNameDirect("END0", (byte*)patch);
+		W_CacheLumpNameDirect("END0", (byte far*)patch);
 		V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
 		laststage = 0;
 		Z_QuickmapStatus();
@@ -827,7 +827,7 @@ void F_BunnyScroll (void)
 	Z_QuickmapScratch_5000();
 
     sprintf (name,"END%i",stage);
-	W_CacheLumpNameDirect(name, (byte*)patch);
+	W_CacheLumpNameDirect(name, (byte far*)patch);
 	V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
 	Z_QuickmapStatus();
 

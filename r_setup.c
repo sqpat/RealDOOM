@@ -290,11 +290,11 @@ extern uint8_t firstunusedflat;
 extern int32_t totalpatchsize;
  
 extern int8_t textureLRU[4];
- extern byte*	 spritedefs_bytes;
+ extern byte far*	 spritedefs_bytes;
 
-extern byte* getcompositetexture(int16_t tex_index);
-extern byte* getpatchtexture(int16_t lump);
-//extern byte* texturedefs_bytes;
+extern byte far* getcompositetexture(int16_t tex_index);
+extern byte far* getpatchtexture(int16_t lump);
+//extern byte far* texturedefs_bytes;
 
 
 void R_PrecacheLevel(void)
@@ -308,10 +308,10 @@ void R_PrecacheLevel(void)
 	int16_t                 k;
 	int16_t                 lump;
 
-	texture_t*          texture;
+	texture_t far*          texture;
 	THINKERREF          th;
-	spriteframe_t*      sf;
-	spriteframe_t*		spriteframes;
+	spriteframe_t far*      sf;
+	spriteframe_t far*		spriteframes;
 	//int32_t flatsize = 0;
 	//uint16_t size;
 
@@ -395,7 +395,7 @@ void R_PrecacheLevel(void)
 			continue;
 
 		getcompositetexture(i);
-		texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[i]]);
+		texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[i]]);
 
 		for (j = 0; j < texture->patchcount; j++) {
 			lump = texture->patches[j].patch;
@@ -422,7 +422,7 @@ void R_PrecacheLevel(void)
 	for (i = 0; i < numsprites; i++) {
 		if (!spritepresent[i])
 			continue;
- 		spriteframes = (spriteframe_t*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
+ 		spriteframes = (spriteframe_t far*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
 
 		for (j = 0; j < sprites[i].numframes; j++) {
 			sf = &spriteframes[j];

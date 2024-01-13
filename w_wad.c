@@ -78,13 +78,10 @@ void  _far_fread(void far* dest, uint16_t elementsize, uint16_t elementcount, FI
 		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
 		//DEBUG_PRINT("%u %u", totalsize, copysize);
 		fread(stackbuffer, copysize, 1, fp);
-		//DEBUG_PRINT(" .");
 		FAR_memcpy(destloc, stackbufferfar, copysize);
-		//DEBUG_PRINT(".");
 
 		destloc += copysize;
 		totalreadsize += copysize;
-		//DEBUG_PRINT(".");
 	}
 
 }
@@ -92,26 +89,26 @@ void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize) {
 
 	// cheating with size/element count
 	uint16_t totalreadsize = 0;
-	uint16_t copysize;
+	int16_t copysize;
 	uint16_t remaining;
+	//uint16_t start = _tell(filehandle);
 	byte* stackbuffer = alloca(FREAD_BUFFER_SIZE);
 	byte far* stackbufferfar = (byte far *)stackbuffer;
 	byte far* destloc = dest;
 	while (totalreadsize < totalsize) {
 
-		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
+		DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
 		remaining = totalsize - totalreadsize;
 		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
-		//DEBUG_PRINT("%u %u", totalsize, copysize);
+		DEBUG_PRINT("%u %u", totalsize, copysize);
 		read(filehandle, stackbuffer, copysize);
+		lseek(filehandle, copysize, SEEK_CUR);
 
-		//DEBUG_PRINT(" .");
 		FAR_memcpy(destloc, stackbufferfar, copysize);
-		//DEBUG_PRINT(".");
-
+ 
 		destloc += copysize;
 		totalreadsize += copysize;
-		//DEBUG_PRINT(".");
+		//lseek(filehandle, totalreadsize+start, SEEK_SET);
 	}
 
 }
@@ -273,21 +270,8 @@ W_ReadLump
     startoffset = l->position + start;
     lseek(handle, startoffset, SEEK_SET);
 
-	c = FAR_read(handle, dest, size ? size : lumpsize);
-#ifdef CHECK_FOR_ERRORS
-
-	sizetoread = size ? size : lumpsize;
-
-	// todo: make this work properly instead of using this hack to handle 32-64k filesize case
-	//c = _farread(handle, dest, lumpsize);
-
-       if (c < sizetoread && c + 65536l != sizetoread ) // error check
-
-{
-		I_Error("\nW_ReadLump: only read %il of %il on lump %i",
-			c, sizetoread, lump);
-	}
-#endif
+	FAR_read(handle, dest, size ? size : lumpsize);
+ 
 
 	   if (wadfilehandle == -1)
         close (handle);

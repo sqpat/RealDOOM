@@ -78,7 +78,7 @@ fixed_t		bottomfrac;
 fixed_t		bottomstep;
 
 
-lighttable_t**	walllights;
+lighttable_t far**	walllights;
 
 int16_t far*		maskedtexturecol;
 
@@ -822,13 +822,13 @@ R_StoreWallRange
     
     // save sprite clipping info
     if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture) && !ds_p->sprtopclip) {
-		memcpy (lastopening, ceilingclip+start, 2*(rw_stopx-start));
+		FAR_memcpy(lastopening, ceilingclip+start, 2*(rw_stopx-start));
 		ds_p->sprtopclip = lastopening - start;
 		lastopening += rw_stopx - start;
     }
     
     if ( ((ds_p->silhouette & SIL_BOTTOM) || maskedtexture) && !ds_p->sprbottomclip) {
-		memcpy (lastopening, floorclip+start, 2*(rw_stopx-start));
+		FAR_memcpy (lastopening, floorclip+start, 2*(rw_stopx-start));
 		ds_p->sprbottomclip = lastopening - start;
 		lastopening += rw_stopx - start;	
     }

@@ -50,7 +50,7 @@
 uint16_t         pspritescale;
 fixed_t         pspriteiscale;
 
-lighttable_t**  spritelights;
+lighttable_t far**  spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping

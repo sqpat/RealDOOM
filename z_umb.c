@@ -224,9 +224,9 @@ void Z_InitUMBDOS(void) {
 }
 
 
-extern mobj_pos_t* mobjposlist;
-extern mobj_pos_t* mobjposlist_render;
-extern byte*	   spritedefs_bytes;
+extern mobj_pos_t far* mobjposlist;
+extern mobj_pos_t far* mobjposlist_render;
+extern byte far*	   spritedefs_bytes;
 void Z_InitUMB(void) {
 	
 

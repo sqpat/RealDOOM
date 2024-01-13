@@ -102,7 +102,7 @@ V_CopyRect
 	//dest = MK_FP(0x8000, ((uint16_t)SCREENWIDTH*desty+destx));
 
     for ( ; height>0 ; height--) { 
-        memcpy (dest, src, width); 
+        FAR_memcpy (dest, src, width); 
         src += SCREENWIDTH; 
         dest += SCREENWIDTH; 
     } 

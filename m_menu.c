@@ -55,7 +55,7 @@
 #define NUM_MENU_ITEMS 45
 
 extern boolean          message_dontfuckwithme;
-extern patch_t*			hu_font[HU_FONTSIZE];
+extern patch_t far*			hu_font[HU_FONTSIZE];
 
 uint16_t menuoffsets[NUM_MENU_ITEMS];
 

@@ -156,7 +156,7 @@ R_DrawColumnInCache
 			count = cacheheight - position;
 
 		if (count > 0)
-			memcpy(cache + position, source, count);
+			FAR_memcpy(cache + position, source, count);
 
 		patch = (column_t far*)((byte  far*)patch + patch->length + 4);
 	}

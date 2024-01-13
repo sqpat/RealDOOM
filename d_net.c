@@ -41,7 +41,6 @@ ticcount_t maketic;
 ticcount_t skiptics;
 
 void D_ProcessEvents(void);
-//void G_BuildTiccmd(ticcmd_t *cmd);
 void G_BuildTiccmd(int8_t index);
 
 void D_DoAdvanceDemo(void);
