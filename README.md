@@ -4,13 +4,15 @@
 
 RealDOOM is an in progress port of the DOS version of DOOM (based on PCDOOMv2) to Real Mode, to support 16-bit processors (namely the 8088 and 286). It is meant to be accurate to the original game and id software WADs first and foremost. So it should work with timedemos, and have the support for the same level of graphical detail as the original game.
 
-As of release 0.1, the game is mostly playable with the shareware DOOM1.WAD file. 
+As of release 0.11, the game is fully playable with the shareware DOOM1.WAD file. 
 
 The current development focus is on stability and architecture rather than speed improvements, which will come after the engine is in a more realmode-friendly state.
 
-The port also builds to 32-bit mode (for development and testing purposes) and runs with many of the 16 bit constraints in mind such as using an EMS simulator. To build this build, run make.bat. The 16-bit build uses make16.bat
+To build an optimized 80286 build, run make286.bat. Otherwise, run make16.bat for 8088 support.
 
-86box is  recommended over DOSBox for the 16 bit version, as it is quite faster. If running on real hardware, a pentium or fast 486 is current recommended.
+As of version 0.15, the game is no longer compatible with DOSBox because DOSBox lacks support from EMS 4.0 multitasking features.
+
+If running on real hardware, a pentium or fast 486 is current recommended.
 
 ### Removed features (not planned to be re-added)
  - multiplayer and netplay
@@ -20,22 +22,13 @@ The port also builds to 32-bit mode (for development and testing purposes) and r
 ###  Broken/unimplemented features (planned to be fixed)
  - sound (will require a 16 bit library)
  - savegames (will require a rewrite of the archive/unarchive code)
- - screen wipe
- - finale/credits screen
 
 There are also a lot of hard caps on things like texture size and count, node count, etc, which will probably make many custom WADs unplayable. oh well.
 
-For those interested in the technical details, a quick summary of what has been done is:
- - Moved all Z_Malloc allocations to an EMS based version and new Zone Memory manager that supports 16k memory blocks
- - Rewrote much of the game code to prevent pulling too many heap variables at once, as they will get paged out and dereferenced
- - Changed many 32 bit variables internally to 16 and 8 bit when those extra bits weren't being used.
-
 
 ### Known bugs:
- - content outside of doom1 shareware has not been tested at all and may be very broken.
+ - content outside of doom1 shareware has not been tested at all and wont work
  - there is a particular render bug with fuzz draws, it comes up twice in demo3 early on where you see a vertical fuzzy line drawn around the first spectre towards when its killed. not sure the cause of this yet.
- - some issues with fullscreen drawing/backbuffer, especially in intermissions
- - memory (or memory refs) eventually run out during a long term session
  
 
 ### High-Level Roadmap:
@@ -43,38 +36,35 @@ For those interested in the technical details, a quick summary of what has been 
 
  ~~**v0.10 release**: mostly stable shareware demo~~
  
- **v0.11 release**: UMB usage and all shareware demos playable. Last EMS 3.2 compatible version?
+ ~~**v0.11 release**: UMB usage and all shareware demos playable. Last EMS 3.2 compatible version?~~
    - render bugfixes
    - use UMBs if available - e1m6 now playable
      
- **v0.12 release**: EMS 4.0 multitasking features
-  - basic ems 4.0 multitasking (save 64-128 KBish conventional)
-    - implement multi-page pagination for multi page page outs/ins
-    - break level data allocations (sector, line, etc) into render only memory, physics only memory, or common memory 
-       - put them in ems 4.0 regions along with visplanes and thinkers, xtoview tables, etc etc.
-        
- **v0.13** : Additional EMS 4.0 multitasking support
-  - screens EMS swapped when necessary to free more memory..
-    - fix bugs that can be fixed via multiple screen buffers...
-      - fix intermission rendering bugs
-      - fix/implement fwipe
-      - fix finale
       
- **v0.14** : Additional EMS 4.0 multitasking support
-  - st_drawer ems support
-     - support for loading wad patches into conventional memory rather than thru zone
-     - screen4 in st_drawer memory region
-  
- **v0.20** : Finalized EMS 4.0 work: Runtime loading and linking
-  - more or less "final" ems 4.0 feature support
-    - additional ems 4.0 switch regions (wi_stuff, maybe trig table lookups)
-    - dedicated fast-cache texture lookup tables and code
+~~**v0.15** :  EMS 4.0 multitasking features~~
+  - EMS 4.0 multitasking
+     - dynamic allocations in the 256-640KB memory range
+     - level data and things broken into physics/render regions    
+     - texture cache added for more textures in memory during render
+     - using full sine tables again
+     - visplane cap only 60 for now, to be fixed in 0.16
+     - removed use of page frame
+  - Some fixes and additions:  
+     - fixed fwipe (screen wipe)
+     - fixed intermission animations
+     - fixed finale
+     - added 286 build option
 
- **v0.21** : Commercial game/feature support
+ **v0.16** :  EMS 4.0 multitasking features
+  - medium memory model
+  - re-implement dynamic visplane allocation
+  - texture cache improvements
+ 
+ **v0.20** : Commercial game/feature support
   - doom 1 wad support?
   - fix save/load game?
     
- **v0.22** : Commercial game/feature support
+ **v0.21** : Commercial game/feature support
   - doom 2 wad support?
     
  **v0.23** : ASM improvements
