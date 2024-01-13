@@ -55,7 +55,7 @@ int16_t             numspritelumps;
 int16_t             numtextures;
  
 
-byte*	 spritedefs_bytes;
+byte far*	 spritedefs_bytes;
 
  
 
@@ -71,8 +71,8 @@ uint8_t	  near *texturetranslation;
 
 // needed for pre rendering
 //int16_t		*spritewidths;
-int16_t		*spriteoffsets;
-int16_t		*spritetopoffsets;
+int16_t		 far*spriteoffsets;
+int16_t		 far*spritetopoffsets;
 
 //byte         	*colormapbytes;// [(33 * 256) + 255];
 
@@ -84,18 +84,18 @@ uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
 int16_t textureLRU[4];
 
 //uint8_t* usedcompositetexturepagemem; // defaults 00
-uint8_t* compositetextureoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-uint8_t* compositetexturepage; //  page index of the allocatiion
+uint8_t far* compositetextureoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+uint8_t far* compositetexturepage; //  page index of the allocatiion
 
 //uint8_t* usedpatchpagemem; // defaults 00
-uint8_t* patchpage; //  defaults FF. page index of the allocatiion
-uint8_t* patchoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+uint8_t far* patchpage; //  defaults FF. page index of the allocatiion
+uint8_t far* patchoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
 
 //uint8_t* usedspritepagemem; // defaults 00
-uint8_t* spritepage;
-uint8_t* spriteoffset;
+uint8_t far* spritepage;
+uint8_t far* spriteoffset;
 
-uint8_t* flatindex;
+uint8_t far* flatindex;
 
 
 
@@ -128,21 +128,21 @@ int32_t totalpatchsize = 0;
 // todo merge below
 void
 R_DrawColumnInCache
-(column_t*     patch,
-	byte*       cache,
+(column_t far*     patch,
+	byte far*       cache,
 	int16_t     originy,
 	int16_t     cacheheight)
 {
 	int16_t     count;
 	int16_t     position;
-	byte*       source;
-	byte*       dest;
-	dest = (byte *)cache + 3;
+	byte far*       source;
+	byte far*       dest;
+	dest = (byte far*)cache + 3;
 
 	while (patch->topdelta != 0xff)
 	{ 
 
-		source = (byte *)patch + 3;
+		source = (byte far *)patch + 3;
 		count = patch->length;
 		position = originy + patch->topdelta;
 
@@ -158,7 +158,7 @@ R_DrawColumnInCache
 		if (count > 0)
 			memcpy(cache + position, source, count);
 
-		patch = (column_t *)((byte *)patch + patch->length + 4);
+		patch = (column_t far*)((byte  far*)patch + patch->length + 4);
 	}
 }
 
@@ -410,7 +410,7 @@ void R_GetNextSpriteBlock(int16_t lump) {
 
 
 
-void R_GenerateComposite(uint8_t texnum, byte* block)
+void R_GenerateComposite(uint8_t texnum, byte far* block)
 {
 	texpatch_t*         patch;
 	patch_t*            realpatch;

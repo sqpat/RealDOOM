@@ -58,9 +58,9 @@ extern boolean		automapactive;
 void HU_Drawer(void) {
 
 
-	hu_stext_t* stext = &w_message;
+	hu_stext_t near* stext = &w_message;
 	int16_t i, index;
-	hu_textline_t *line;
+	hu_textline_t near*line;
 	boolean	mapped = false;
 	
 	if (!*stext->on) {

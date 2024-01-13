@@ -46,9 +46,8 @@
 
 
 
-lumpinfo_t*             lumpinfo;
+lumpinfo_t far*             lumpinfo;
 uint16_t                     numlumps;
-byte near	lumpbytes[LUMPINFO_SIZE];
 
   
 uint16_t                     reloadlump;
@@ -56,13 +55,66 @@ int8_t*                   reloadname;
 
 
 // rather than storing a billion duplicate file handles, we'll store a couple
-#ifdef	SUPPORT_MULTIWAD
-filehandle_t				filehandles[MAX_WAD_FILES];
-int8_t						currentfilehandle = 0;
-#else
 filehandle_t				wadfilehandle;
-#endif
 
+
+
+
+#define FREAD_BUFFER_SIZE 2048
+
+void  _far_fread(void far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+	// cheating with size/element count
+	uint16_t totalsize = elementsize * elementcount;
+	uint16_t totalreadsize = 0;
+	uint16_t copysize;
+	uint16_t remaining;
+	byte* stackbuffer = alloca(FREAD_BUFFER_SIZE);
+	byte far* stackbufferfar = (byte far *)stackbuffer;
+	byte far* destloc = dest;
+	while (totalreadsize < totalsize) {
+
+		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
+		remaining = totalsize - totalreadsize;
+		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
+		//DEBUG_PRINT("%u %u", totalsize, copysize);
+		fread(stackbuffer, copysize, 1, fp);
+		//DEBUG_PRINT(" .");
+		FAR_memcpy(destloc, stackbufferfar, copysize);
+		//DEBUG_PRINT(".");
+
+		destloc += copysize;
+		totalreadsize += copysize;
+		//DEBUG_PRINT(".");
+	}
+
+}
+void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize) {
+
+	// cheating with size/element count
+	uint16_t totalreadsize = 0;
+	uint16_t copysize;
+	uint16_t remaining;
+	byte* stackbuffer = alloca(FREAD_BUFFER_SIZE);
+	byte far* stackbufferfar = (byte far *)stackbuffer;
+	byte far* destloc = dest;
+	while (totalreadsize < totalsize) {
+
+		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
+		remaining = totalsize - totalreadsize;
+		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
+		//DEBUG_PRINT("%u %u", totalsize, copysize);
+		read(filehandle, stackbuffer, copysize);
+
+		//DEBUG_PRINT(" .");
+		FAR_memcpy(destloc, stackbufferfar, copysize);
+		//DEBUG_PRINT(".");
+
+		destloc += copysize;
+		totalreadsize += copysize;
+		//DEBUG_PRINT(".");
+	}
+
+}
 
 
 
@@ -86,7 +138,7 @@ int16_t W_CheckNumForName (int8_t* name)
 	int16_t         v2;
 	int16_t         v3;
 	int16_t         v4;
-    lumpinfo_t* lump_p;
+    lumpinfo_t far* lump_p;
 
     // make the name into two integers for easy compares
     strncpy (name8.s,name,8);
@@ -176,12 +228,12 @@ int32_t W_LumpLength (int16_t lump)
 void
 W_ReadLump
 (int16_t           lump,
-  byte*         dest,
+  byte far*         dest,
   int32_t           start,
   int32_t           size )
 {
 	filelength_t         c;  // size, leave as 32 bit
-    lumpinfo_t* l;
+    lumpinfo_t far* l;
 	filehandle_t         handle;
 #ifdef CHECK_FOR_ERRORS
 	int32_t sizetoread;
@@ -205,11 +257,7 @@ W_ReadLump
 
     I_BeginRead ();
         
-#ifdef	SUPPORT_MULTIWAD
-	if (filehandles[l->handleindex] == -1)
-#else
 	if (wadfilehandle == -1)
-#endif
 	{
 		// reloadable file, so use open / read / close
 		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1) {
@@ -219,21 +267,13 @@ W_ReadLump
 		}
 	}
 	else {
-#ifdef	SUPPORT_MULTIWAD
-		handle = filehandles[l->handleindex];
-#else
 		handle = wadfilehandle;
-#endif
 	}
     
     startoffset = l->position + start;
-
-
     lseek(handle, startoffset, SEEK_SET);
 
-
-
-	c = read(handle, dest, size ? size : lumpsize);
+	c = FAR_read(handle, dest, size ? size : lumpsize);
 #ifdef CHECK_FOR_ERRORS
 
 	sizetoread = size ? size : lumpsize;
@@ -249,12 +289,7 @@ W_ReadLump
 	}
 #endif
 
-#ifdef	SUPPORT_MULTIWAD
-	   if (filehandles[l->handleindex] == -1)
-#else
 	   if (wadfilehandle == -1)
-#endif
-	   
         close (handle);
  
 
@@ -283,7 +318,7 @@ int16_t W_CacheLumpNumCheck(int16_t lump) {
 void
 W_CacheLumpNameDirect
 (int8_t*         name,
-	byte*			dest
+	byte far*			dest
 ) {
 	W_ReadLump(W_GetNumForName(name), dest, 0, 0);
 }
@@ -292,7 +327,7 @@ W_CacheLumpNameDirect
 void
 W_CacheLumpNumDirect
 (int16_t lump,
-	byte*			dest
+	byte far*			dest
 ) {
 	W_ReadLump(lump, dest, 0, 0);
 }

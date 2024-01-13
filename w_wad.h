@@ -49,9 +49,6 @@ typedef struct
 typedef struct
 {
 	int8_t	name[8];
-#ifdef	SUPPORT_MULTIWAD
-	int8_t	handleindex;
-#endif
 	// (probably could cap at 16 bit and use high bit as sizediff)
     int32_t		position; 
 	// dont know if this might have to change to int16_t at some point, but basically this is the diff between declared lump size and diff of adjacent positions. I think the wad is (annoyingly) made with some overlapping items. saves us 3 bytes per lump still.
@@ -74,13 +71,13 @@ int32_t	W_LumpLength (int16_t lump);
 void W_CacheLumpNumDirectFragment(int16_t lump, byte far* dest, int16_t pagenum, int32_t offset);
 void W_EraseFullscreenCache();
 
-void W_CacheLumpNameDirect(int8_t* name, byte* dest);
-void W_CacheLumpNumDirect(int16_t lump, byte* dest);
+void W_CacheLumpNameDirect(int8_t* name, byte far* dest);
+void W_CacheLumpNumDirect(int16_t lump, byte far* dest);
 
 
 // correct value for DOOM Sharware
 #define LUMPINFO_SIZE 16432 
-#define LUMPCACHE_SIZE 2528 
+//#define LUMPCACHE_SIZE 2528 
  
 
 #endif

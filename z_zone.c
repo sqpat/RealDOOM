@@ -41,7 +41,7 @@
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
 uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE = 0;
-byte* conventionalmemoryblock;
+byte far* conventionalmemoryblock;
 
 uint16_t remainingconventional = 0;
 uint16_t conventional1head = 	  0;
@@ -84,39 +84,39 @@ void Z_FreeConventionalAllocations() {
 	int16_t i;
 
 	// we should be paged to physics now - should be ok
-	memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
+	FAR_memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
-	memset(conventionalmemoryblock, 0, STATIC_CONVENTIONAL_BLOCK_SIZE);
+	FAR_memset(conventionalmemoryblock, 0, STATIC_CONVENTIONAL_BLOCK_SIZE);
 
 	// todo make this area less jank. We want to free all the ems 4.0 region level data...
-	memset(MK_FP(0x7000, 0-leveldataoffset_phys), 0, leveldataoffset_phys);
+	FAR_memset(MK_FP(0x7000, 0-leveldataoffset_phys), 0, leveldataoffset_phys);
 	leveldataoffset_phys = 0;
 	
-	memset(MK_FP(0x7000, 0 - leveldataoffset_rend), 0, leveldataoffset_rend);
+	FAR_memset(MK_FP(0x7000, 0 - leveldataoffset_rend), 0, leveldataoffset_rend);
 	leveldataoffset_rend = 0;
 
 	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE;
 	conventional1head = 0;
 
 	
-	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
+	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
 
 	Z_QuickmapRender();
 
 	//reset texturee cache
-	memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (numtextures));
-	memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (numtextures));
-	memset(usedcompositetexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
+	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (numtextures));
+	FAR_memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (numtextures));
+	FAR_memset(usedcompositetexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
 	
-	memset(patchpage, 0xFF, sizeof(uint8_t) * (numpatches));
-	memset(patchoffset, 0xFF, sizeof(uint8_t) * (numpatches));
-	memset(usedpatchpagemem, 00, sizeof(uint8_t) * NUM_PATCH_CACHE_PAGES);
+	FAR_memset(patchpage, 0xFF, sizeof(uint8_t) * (numpatches));
+	FAR_memset(patchoffset, 0xFF, sizeof(uint8_t) * (numpatches));
+	FAR_memset(usedpatchpagemem, 00, sizeof(uint8_t) * NUM_PATCH_CACHE_PAGES);
 
-	memset(spritepage, 0xFF, sizeof(uint8_t) * (numspritelumps));
-	memset(spriteoffset, 0xFF, sizeof(uint8_t) * (numspritelumps));
-	memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
+	FAR_memset(spritepage, 0xFF, sizeof(uint8_t) * (numspritelumps));
+	FAR_memset(spriteoffset, 0xFF, sizeof(uint8_t) * (numspritelumps));
+	FAR_memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
 
-	memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);
+	FAR_memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);
 	firstunusedflat = 0;
 	
 	Z_QuickmapPhysics();

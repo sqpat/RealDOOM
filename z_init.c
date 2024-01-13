@@ -536,33 +536,33 @@ void Z_LoadBinaries() {
 	FILE* fp;
 	// currently in physics region!
 	fp = fopen("D_MBINFO.BIN", "rb"); 
-	fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
+	FAR_fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
 	fclose(fp);
 	DEBUG_PRINT(".");
 
 	fp = fopen("D_STATES.BIN", "rb");
-	fread(states, sizeof(state_t), NUMSTATES, fp);
+	FAR_fread(states, sizeof(state_t), NUMSTATES, fp);
 	fclose(fp);
 	DEBUG_PRINT(".");
 
 	fp = fopen("D_GAMMAT.BIN", "rb");
-	fread(gammatable, 1, 5 * 256, fp);
+	FAR_fread(gammatable, 1, 5 * 256, fp);
 	fclose(fp);
 	DEBUG_PRINT(".");
 
 	fp = fopen("D_FINES2.BIN", "rb");
-	fread(finesine, 4, 10240, fp);
+	FAR_fread(finesine, 4, 10240, fp);
 	fclose(fp);
 	DEBUG_PRINT(".");
 
 	fp = fopen("D_FINET4.BIN", "rb");
-	fread(finetangentinner, 4, 2048, fp);
+	FAR_fread(finetangentinner, 4, 2048, fp);
 	fclose(fp);
 	DEBUG_PRINT(".");
 
 
 	fp = fopen("D_TANTOA.BIN", "rb");
-	fread(tantoangle, 4, 2049, fp);
+	FAR_fread(tantoangle, 4, 2049, fp);
 	fclose(fp);
 	DEBUG_PRINT(".");
 	 

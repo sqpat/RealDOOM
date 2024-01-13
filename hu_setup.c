@@ -37,7 +37,7 @@
 #include "dstrings.h"
 #include "sounds.h"
 
-patch_t*		hu_font[HU_FONTSIZE];
+patch_t far*		hu_font[HU_FONTSIZE];
 
 
 //
@@ -255,7 +255,7 @@ void HU_Start(void)
 	int16_t HU_TITLEY;
 	int16_t HU_INPUTY;
 	int16_t i;
-	hu_textline_t*	t;
+	hu_textline_t near*	t;
 	uint16_t			fontheight = 7;// might not work with custom wad?
 	uint16_t			lineheight = 8;//might not work with custom wad?
 

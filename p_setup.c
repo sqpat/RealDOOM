@@ -45,39 +45,39 @@ void    P_SpawnMapThing(mapthing_t     mthing, int16_t key);
 // Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
 //
 int16_t             numvertexes;
-vertex_t*		vertexes;
+vertex_t far*		vertexes;
 
 int16_t             numsegs;
-seg_t*				segs;
-seg_physics_t*		segs_physics;
-seg_render_t*		segs_render;
+seg_t far*				segs;
+seg_physics_t far*		segs_physics;
+seg_render_t far*		segs_render;
 
 int16_t             numsectors;
-sector_t*		sectors;
-//sector_physics_t* sectors_physics;
+sector_t far*		sectors;
+//sector_physics_t far* sectors_physics;
 
 int16_t             numsubsectors;
-subsector_t*    subsectors;
+subsector_t far*    subsectors;
 
 int16_t             numnodes;
-node_t*				nodes;
-node_render_t*      nodes_render;
+node_t far*				nodes;
+node_render_t far*      nodes_render;
 
 
 
 int16_t             numlines;
-line_t*			lines;
-uint8_t*		seenlines;
-line_physics_t*	lines_physics;
+line_t far*			lines;
+uint8_t far*		seenlines;
+line_physics_t far*	lines_physics;
 
 int16_t             numsides;
-side_t*				sides;
-//side_render_t*		sides_render;
-int16_t*          linebuffer;
+side_t far*				sides;
+//side_render_t far*		sides_render;
+int16_t far*          linebuffer;
 
 
 #ifdef PRECALCULATE_OPENINGS
-lineopening_t*	lineopenings;
+lineopening_t far*	lineopenings;
 #endif
 
 // BLOCKMAP
@@ -92,7 +92,7 @@ int16_t             bmapwidth;
 int16_t             bmapheight;     // size in mapblocks
 
 								// offsets in blockmap are from here
-int16_t*		blockmaplump;
+int16_t far*		blockmaplump;
 
 // origin of block map
 // todo can this be made 16 bit
@@ -100,7 +100,7 @@ int16_t         bmaporgx;
 int16_t         bmaporgy;
 
 // for thing chains
-THINKERREF*		blocklinks;
+THINKERREF far*		blocklinks;
 
 // REJECT
 // For fast sight rejection.
@@ -186,7 +186,7 @@ void Z_Subtract0x7000Address(uint16_t size, int8_t pagetype) {
 //
 void P_LoadVertexes(int16_t lump)
 {
-	mapvertex_t*			data;
+	mapvertex_t far*			data;
 	uint16_t                 i;
 	mapvertex_t			ml;
 	// Determine number of lumps:
@@ -198,7 +198,7 @@ void P_LoadVertexes(int16_t lump)
 	// Load data into cache.
 	
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapvertex_t*)SCRATCH_ADDRESS_4000;
+	data = (mapvertex_t far*)SCRATCH_ADDRESS_4000;
 
 	// Copy and convert vertex coordinates,
 	// internal representation as fixed.
@@ -219,12 +219,12 @@ void P_LoadVertexes(int16_t lump)
 //
 void P_LoadSegs(int16_t lump)
 {
- 	mapseg_t *          data;
+ 	mapseg_t  far*          data;
 	uint16_t                 i;
-	mapseg_t*           ml;
-	seg_t*              li;
-	seg_render_t*              li_render;
-	line_t*             ldef;
+	mapseg_t far*           ml;
+	seg_t far*              li;
+	seg_render_t far*              li_render;
+	line_t far*             ldef;
 	uint16_t                 side;
 	int16_t ldefsidenum;
 	int16_t ldefothersidenum;
@@ -236,11 +236,11 @@ void P_LoadSegs(int16_t lump)
 	int16_t mlangle;
 	int16_t mloffset;
 	int16_t mllinedef;
-	int16_t* tempsecnums;
+	int16_t far* tempsecnums;
 	Z_QuickmapRender_NoTex();
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
-	segs = (seg_t*)Z_MallocConventional(numsegs * sizeof(seg_t));
+	segs = (seg_t far*)Z_MallocConventional(numsegs * sizeof(seg_t));
 
 	segs_render = (seg_render_t far* )Z_GetNextRenderAddress(numsegs * sizeof(seg_render_t));
 	segs_physics = (seg_physics_t far* )Z_GetNextPhysicsAddress(numsegs * sizeof(seg_physics_t));
@@ -251,7 +251,7 @@ void P_LoadSegs(int16_t lump)
 	memset(segs, 0xff, numsegs * sizeof(seg_t));
 	
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapseg_t*)SCRATCH_ADDRESS_4000;
+	data = (mapseg_t far*)SCRATCH_ADDRESS_4000;
 
 	for (i = 0; i < numsegs; i++) {
 		ml = &data[i];
@@ -323,16 +323,16 @@ void P_LoadSegs(int16_t lump)
 //
 void P_LoadSubsectors(int16_t lump)
 {
-	mapsubsector_t *               data;
+	mapsubsector_t  far*               data;
 	uint16_t                 i;
-	mapsubsector_t*     ms;
-	subsector_t*        ss;
+	mapsubsector_t far*     ms;
+	subsector_t far*        ss;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectors = (subsector_t*)Z_MallocConventional (numsubsectors * sizeof(subsector_t));
+	subsectors = (subsector_t far*)Z_MallocConventional (numsubsectors * sizeof(subsector_t));
 	memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapsubsector_t*)SCRATCH_ADDRESS_4000;
+	data = (mapsubsector_t far*)SCRATCH_ADDRESS_4000;
 
 	for (i = 0; i < numsubsectors; i++)
 	{
@@ -369,26 +369,26 @@ uint8_t R_FlatNumForNameC(int8_t* name)
 //
 void P_LoadSectors(int16_t lump)
 {
-	mapsector_t*        data;
+	mapsector_t far*        data;
 	uint16_t                 i;
 	mapsector_t        ms;
-	sector_t*           ss;
-	sector_physics_t*   sp;
+	sector_t far*           ss;
+	sector_physics_t far*   sp;
 	// most tags are under 100, a couple are like 666 or 667 or 999 or other such special numbers.
 	// we will special case those and fit it in 8 bits so allocations are smaller
 	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 
-	sectors = (sector_t*)Z_MallocConventional (numsectors * sizeof(sector_t));
+	sectors = (sector_t far*)Z_MallocConventional (numsectors * sizeof(sector_t));
 
-	//sectors_physics = (sector_physics_t*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
+	//sectors_physics = (sector_physics_t far*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
 	Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
 
 	memset(sectors, 0, numsectors * sizeof(sector_t));
 	memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapsector_t*)SCRATCH_ADDRESS_4000;
+	data = (mapsector_t far*)SCRATCH_ADDRESS_4000;
 
 	ss = sectors;
 	sp = sectors_physics;
@@ -430,22 +430,22 @@ void P_LoadSectors(int16_t lump)
 //
 void P_LoadNodes(int16_t lump)
 {
-	mapnode_t *       data;
+	mapnode_t  far*       data;
 	uint16_t         i;
 	uint16_t         j;
 	uint16_t         k;
-	node_t*     no;
-	node_render_t* no_render;
+	node_t far*     no;
+	node_render_t far* no_render;
 
 	mapnode_t	currentdata;
 	
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
-	nodes = (node_t*)Z_MallocConventional(numnodes * sizeof(node_t));
+	nodes = (node_t far*)Z_MallocConventional(numnodes * sizeof(node_t));
 	nodes_render = (node_render_t far* ) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
 
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapnode_t*)SCRATCH_ADDRESS_4000;
+	data = (mapnode_t far*)SCRATCH_ADDRESS_4000;
 	Z_QuickmapRender_NoTex();
 
 
@@ -496,14 +496,14 @@ void P_SetupPsprites()
 // Most of the player structure stays unchanged
 //  between levels.
 //
-extern mobj_t* setStateReturn;
-extern mobj_pos_t* setStateReturn_pos;
+extern mobj_t far* setStateReturn;
+extern mobj_pos_t far* setStateReturn_pos;
 
 void ST_Start(void);
 void G_PlayerReborn();
 void HU_Start(void);
 
-void P_SpawnPlayer(mapthing_t* mthing)
+void P_SpawnPlayer(mapthing_t far* mthing)
 {
 	fixed_t_union		x;
 	fixed_t_union		y;
@@ -804,7 +804,7 @@ int16_t getDoomEdNum(uint8_t id) {
 }
 
 
-extern mobj_t* setStateReturn;
+extern mobj_t far* setStateReturn;
 
 //
 // P_SpawnMapThing
@@ -818,8 +818,8 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 
 	int16_t			i;
 	int16_t			bit;
-	mobj_t*		mobj;
-	mobj_pos_t* mobj_pos;
+	mobj_t far*		mobj;
+	mobj_pos_t far* mobj_pos;
 	fixed_t_union		x;
 	fixed_t_union		y;
 	fixed_t_union		z;
@@ -925,8 +925,8 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 
 void P_CacheLineOpenings() {
 	int16_t linenum, linefrontsecnum, linebacksecnum;
-	sector_t* front;
-	sector_t* back;
+	sector_t far* front;
+	sector_t far* back;
 	
 
 	lineopenings = (lineopening_t far* )Z_GetNextPhysicsAddress(numlines * sizeof(lineopening_t));
@@ -970,7 +970,7 @@ void P_CacheLineOpenings() {
 //
 void P_LoadThings(int16_t lump)
 {
-	mapthing_t *		data;
+	mapthing_t  far*		data;
 	uint16_t                 i;
 	mapthing_t         mt;
 	uint16_t                 numthings;
@@ -979,7 +979,7 @@ void P_LoadThings(int16_t lump)
 	memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
  
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapthing_t*)SCRATCH_ADDRESS_4000;
+	data = (mapthing_t far*)SCRATCH_ADDRESS_4000;
 
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
 	for (i = 0; i < numthings; i++) {
@@ -1023,13 +1023,13 @@ void P_LoadThings(int16_t lump)
 //
 void P_LoadLineDefs(int16_t lump)
 {
-	maplinedef_t *		data;
+	maplinedef_t  far*		data;
 	uint16_t                 i;
-	maplinedef_t*       mld;
-	line_t*             ld;
-	line_physics_t*             ld_physics;
-	vertex_t*           v1;
-	vertex_t*           v2;
+	maplinedef_t far*       mld;
+	line_t far*             ld;
+	line_physics_t far*             ld_physics;
+	vertex_t far*           v1;
+	vertex_t far*           v2;
 	int16_t side0secnum;
 	int16_t side1secnum;
 	int16_t v1x;
@@ -1044,20 +1044,20 @@ void P_LoadLineDefs(int16_t lump)
 	int16_t mldsidenum0;
 	int16_t mldsidenum1;
 	int16_t convertedtag;
-	side_render_t* tempsides_render;
+	side_render_t far* tempsides_render;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
 	lines = (line_t far* )Z_MallocConventional(numlines * sizeof(line_t));
 
 	lines_physics = (line_physics_t far* )Z_GetNextPhysicsAddress(numlines * sizeof(line_physics_t));
 
-	seenlines = (uint8_t*)Z_MallocConventional(numlines/8+1);
+	seenlines = (uint8_t far*)Z_MallocConventional(numlines/8+1);
 	memset(lines, 0, numlines * sizeof(line_t));
 	memset(lines_physics, 0, numlines * sizeof(line_physics_t));
 	memset(seenlines, 0, numlines / 8 + 1);
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (maplinedef_t*)SCRATCH_ADDRESS_4000;
+	data = (maplinedef_t far*)SCRATCH_ADDRESS_4000;
 
 	Z_QuickmapRender7000to6000();
 	tempsides_render = MK_FP(0x6000u, 0x0000u); // this is always at addr 7000
@@ -1154,11 +1154,11 @@ uint8_t     R_TextureNumForNameB(int8_t* name);
 //
 void P_LoadSideDefs(int16_t lump)
 {
-	mapsidedef_t*               data;
+	mapsidedef_t far*               data;
 	uint16_t                 i;
-	mapsidedef_t*       msd;
-	side_t*             sd;
-	side_render_t*             sd_render;
+	mapsidedef_t far*       msd;
+	side_t far*             sd;
+	side_render_t far*             sd_render;
 	uint8_t toptex;
 	uint8_t bottex;
 	uint8_t midtex;
@@ -1173,13 +1173,13 @@ void P_LoadSideDefs(int16_t lump)
 	//Z_QuickmapTextureInfoPage();
 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	sides = (side_t*)Z_MallocConventional (numsides * sizeof(side_t));
+	sides = (side_t far*)Z_MallocConventional (numsides * sizeof(side_t));
 	//sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 	Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapsidedef_t*)SCRATCH_ADDRESS_4000;
+	data = (mapsidedef_t far*)SCRATCH_ADDRESS_4000;
 
 	for (i = 0; i < numsides; i++) {
 		msd = &data[i];
@@ -1226,7 +1226,7 @@ void P_LoadBlockMap(int16_t lump)
 	uint16_t         count;
 		
 	blockmaplump = (int16_t far* )Z_GetNextPhysicsAddress(W_LumpLength(lump));
-	W_CacheLumpNumDirect(lump, (byte*)blockmaplump);
+	W_CacheLumpNumDirect(lump, (byte far*)blockmaplump);
 
 
 	
@@ -1243,7 +1243,7 @@ void P_LoadBlockMap(int16_t lump)
 
 	count = sizeof(THINKERREF) * bmapwidth*bmapheight;
 
-	blocklinks = (THINKERREF*) Z_GetNextPhysicsAddress(count);
+	blocklinks = (THINKERREF far*) Z_GetNextPhysicsAddress(count);
 
 	memset(blocklinks, 0, count);
 }
@@ -1260,7 +1260,7 @@ void P_GroupLines(void)
 {
 	uint16_t                 i;
 	uint16_t                 j;
-	line_physics_t*     li_physics;
+	line_physics_t far*     li_physics;
 	int16_t             bbox[4];
 	int16_t             block;
 	int16_t				previouslinebufferindex;

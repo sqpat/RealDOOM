@@ -31,10 +31,10 @@
 #define noterased viewwindowx
 
 extern boolean	automapactive;	// in AM_map.c
-extern patch_t*		hu_font[HU_FONTSIZE];
+extern patch_t far*		hu_font[HU_FONTSIZE];
 
 
-boolean HUlib_addCharToTextLine ( hu_textline_t* textline, int8_t ch ) {
+boolean HUlib_addCharToTextLine ( hu_textline_t near* textline, int8_t ch ) {
 
 	if (textline->len == HU_MAXLINELENGTH) {
 		return false;
@@ -47,13 +47,13 @@ boolean HUlib_addCharToTextLine ( hu_textline_t* textline, int8_t ch ) {
 
 }
   
-void HUlib_drawTextLine ( hu_textline_t* textline) {
+void HUlib_drawTextLine ( hu_textline_t near* textline) {
 
     int16_t			i;
     int16_t			w;
     int16_t			x;
     uint8_t	c;
-	patch_t* currentpatch;
+	patch_t far* currentpatch;
 
     // draw the new stuff
     x = textline->x;
@@ -79,7 +79,7 @@ void HUlib_drawTextLine ( hu_textline_t* textline) {
 
 
 // sorta called by HU_Erase and just better darn get things straight
-void HUlib_eraseTextLine(hu_textline_t* textline) {
+void HUlib_eraseTextLine(hu_textline_t near* textline) {
     uint16_t			lineheight = 8; // hacked to reduce page swaps so it might not work with custom wad?
     uint16_t			y;
     uint16_t			yoffset;
@@ -111,9 +111,9 @@ extern hu_stext_t	w_message;
 
 
 void HUlib_addMessageToSText (int8_t* msg ) {
-	hu_stext_t*	stext = &w_message;
+	hu_stext_t near* 	stext = &w_message;
 	int16_t i;
-	hu_textline_t* textline;
+	hu_textline_t near* textline;
 	// add a clear line
 
 	if (++stext->currentline == stext->height) {

@@ -40,10 +40,10 @@
 
 // needed for pre rendering (fracs)
 //extern int16_t		*spritewidths;
-extern int16_t		*spriteoffsets;
-extern int16_t		*spritetopoffsets;
+extern int16_t		 far*spriteoffsets;
+extern int16_t		 far*spritetopoffsets;
 
-#define colormaps		((lighttable_t *			far) 0x80000000)
+#define colormaps		((lighttable_t  far*			far) 0x80000000)
 
 
 extern int16_t		viewwidth;
@@ -53,21 +53,21 @@ extern int16_t		viewheight;
 extern int16_t		firstflat;
 
 
-//extern uint8_t* usedcompositetexturepagemem;
-extern uint8_t* compositetextureoffset;
-extern uint8_t* compositetexturepage;
-//extern uint8_t* usedpatchpagemem;
-extern uint8_t* patchpage;
-extern uint8_t* patchoffset;
-//extern uint8_t* usedspritepagemem;
-extern uint8_t* spritepage;
-extern uint8_t* spriteoffset;
-extern uint8_t* flatindex;
+//extern uint8_t far* usedcompositetexturepagemem;
+extern uint8_t far* compositetextureoffset;
+extern uint8_t far* compositetexturepage;
+//extern uint8_t far* usedpatchpagemem;
+extern uint8_t far* patchpage;
+extern uint8_t far* patchoffset;
+//extern uint8_t far* usedspritepagemem;
+extern uint8_t far* spritepage;
+extern uint8_t far* spriteoffset;
+extern uint8_t far* flatindex;
  
 
 extern uint8_t firstunusedflat;
 extern int32_t totalpatchsize;
-extern byte*	 spritedefs_bytes;
+extern byte far*	 spritedefs_bytes;
 
  
 extern uint16_t	near*texturecolumn_offset;
@@ -104,49 +104,49 @@ extern int16_t             numtextures;
 // Lookup tables for map data.
 //
 extern int16_t		numsprites;
- extern spritedef_t*	sprites;
+ extern spritedef_t far*	sprites;
 
 extern int16_t		numvertexes;
-extern vertex_t*	vertexes;
+extern vertex_t far*	vertexes;
 
 extern int16_t		numsegs;
-extern seg_t*		segs;
-extern seg_physics_t*		segs_physics;
-extern seg_render_t*		segs_render;
+extern seg_t far*		segs;
+extern seg_physics_t far*		segs_physics;
+extern seg_render_t far*		segs_render;
 
 
 extern int16_t		numsectors;
-extern sector_t* sectors;
+extern sector_t far* sectors;
 //extern sector_physics_t* sectors_physics;
 #define sectors_physics ((sector_physics_t far* ) 0x70000000)
 
 extern int16_t		numsubsectors;
-extern subsector_t*	subsectors;
+extern subsector_t far*	subsectors;
 
 extern int16_t		numnodes;
-extern node_t*      nodes;
-extern node_render_t*      nodes_render;
+extern node_t far*      nodes;
+extern node_render_t far*      nodes_render;
 
 
 extern int16_t		numlines;
-extern line_t*   lines;
-extern uint8_t*		seenlines;
-extern line_physics_t*	lines_physics;
+extern line_t far*   lines;
+extern uint8_t far*		seenlines;
+extern line_physics_t far*	lines_physics;
 
 
 
 extern int16_t		numsides;
-extern side_t*       sides;
+extern side_t far*       sides;
 //extern side_render_t*		sides_render;
 #define sides_render ((side_render_t far* ) 0x70000000)
 
-extern int16_t*          linebuffer;
+extern int16_t far*          linebuffer;
 
 // for things nightmare respawn data
 #define nightmarespawns		((mapthing_t far *			) 0x60008000)
 
 #ifdef PRECALCULATE_OPENINGS
-extern lineopening_t*	lineopenings;
+extern lineopening_t far*	lineopenings;
 #endif
 
 //

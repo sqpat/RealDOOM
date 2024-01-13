@@ -69,7 +69,7 @@ extern int32_t spritepageswitchcount;
 #define UMB2_SIZE STATIC_CONVENTIONAL_SPRITE_SIZE + (MAX_THINKERS * sizeof(mobj_pos_t)) 
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
-extern byte* conventionalmemoryblock;
+extern byte far* conventionalmemoryblock;
 extern uint16_t EMS_PAGE;
 
 

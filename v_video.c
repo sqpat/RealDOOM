@@ -87,8 +87,8 @@ V_CopyRect
   int16_t		destx,
   int16_t		desty ) 
 { 
-    byte*	src;
-    byte*	dest; 
+    byte far*	src;
+    byte far*	dest;
 	if (skipdirectdraws) {
 		return;
 	}
@@ -209,7 +209,7 @@ void
 V_DrawPatchDirect
 ( int16_t		x,
   int16_t		y,
-  patch_t*	patch ) 
+  patch_t far*	patch )
 {
     int16_t		count;
     int16_t		col; 

@@ -79,10 +79,6 @@ enum { VERSION =  109 };
 
 
 
-// Maximum number of wad files openable at once. Are we really ever using more than 1 in RealDOOM? if so, be my guest... increases memory usage in a few ways
-// #define SUPPORT_MULTIWAD
-// #define MAX_WAD_FILES 1
-
 
 //
 // For resize of screen, at start of game.
@@ -307,6 +303,24 @@ typedef uint8_t  THINKFUNCTION;
 #define DOSMM_INT 0x21
 
 #define PAGE_FRAME_SIZE 0x4000L
+
+
+
+#define FAR_memset _fmemset
+#define FAR_memcpy _fmemcpy
+#define FAR_strncpy _fstrncpy
+
+void  _far_fread(void far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
+void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize);
+
+
+//#define FAR_fread _far_fread
+//#define FAR_read _far_read
+
+
+#define FAR_fread fread
+#define FAR_read read
+
 
 
 #endif          // __DOOMDEF__

@@ -278,7 +278,9 @@ void I_SetPalette(int8_t paletteNumber) {
 // Graphics mode
 //
 
-byte far *pcscreen, *currentscreen, *destview;
+byte far *pcscreen;
+byte far *currentscreen;
+byte far *destview;
 fixed_t_union destscreen;
 
 //
@@ -292,7 +294,8 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
 	uint16_t offset;
 	int16_t pstep;
 	int16_t step;
-    byte far *dest, *source;
+	byte far *dest;
+	byte far *source;
  
     sp_x1 = x / 8;
     sp_x2 = (x + w) / 8;
@@ -650,7 +653,7 @@ void I_BeginRead(void)
 {
 	/*
 
-    byte *src, *dest;
+    byte far *src, far *dest;
 	int32_t y;
 
     if (!grmode)
@@ -709,7 +712,7 @@ void I_BeginRead(void)
 void I_EndRead(void)
 {
 	/*
-    byte *src, *dest;
+    byte far *src, far *dest;
 	int32_t y;
 
     if (!grmode)

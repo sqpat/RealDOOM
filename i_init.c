@@ -39,7 +39,10 @@
 extern boolean novideo; 
 extern boolean grmode;
 
-extern byte far *pcscreen, *currentscreen, *destview;
+
+extern byte far *pcscreen;
+extern byte far *currentscreen;
+extern byte far *destview; 
 extern fixed_t_union destscreen;
 extern void (__interrupt __far *oldkeyboardisr) ();
 
@@ -149,7 +152,7 @@ void I_InitGraphics(void)
 	grmode = true;
 	regs.w.ax = 0x13;
 	intx86(0x10, (union REGS *)&regs, &regs);
-	pcscreen = currentscreen = 0xA0000000L;
+	pcscreen = currentscreen = (byte far*) 0xA0000000L;
 	destscreen.w = 0xA0004000;
 
 	outp(SC_INDEX, SC_MEMMODE);

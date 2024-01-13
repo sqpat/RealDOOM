@@ -34,46 +34,12 @@
 #include <dos.h>
 
 extern filehandle_t				wadfilehandle;
-extern lumpinfo_t*             lumpinfo;
+extern lumpinfo_t far*             lumpinfo;
 extern uint16_t                     numlumps;
-extern byte near	lumpbytes[LUMPINFO_SIZE];
+byte near	lumpbytes[LUMPINFO_SIZE];
 
 
-void
-ExtractFileBase
-(int8_t*         path,
-	int8_t*         dest)
-{
-	int8_t*       src;
-	int16_t         length;
-
-	src = path + strlen(path) - 1;
-
-	// back up until a \ or the start
-	while (src != path
-		&& *(src - 1) != '\\'
-		&& *(src - 1) != '/')
-	{
-		src--;
-	}
-
-	// copy up to eight characters
-	memset(dest, 0, 8);
-	length = 0;
-
-	while (*src && *src != '.')
-	{
-		if (++length == 9) {
-#ifdef CHECK_FOR_ERRORS
-			I_Error("Filename base of %s >8 chars", path);
-#endif
-		}
-
-		*dest = toupper(*src);
-		dest++;
-		src++;
-	}
-}
+ 
 
 
 
@@ -98,7 +64,7 @@ ExtractFileBase
 
 extern uint16_t                     reloadlump;
 extern int8_t*                   reloadname;
-
+#define SCRATCH_FILE_LOAD_LOCATION  (filelump_t*)MK_FP(0x5000, 0)
 
 void W_AddFile(int8_t *filename)
 {
@@ -137,43 +103,32 @@ void W_AddFile(int8_t *filename)
 
 	DEBUG_PRINT("\tadding %s\n", filename);
 	startlump = numlumps;
-
-	if (strcmpi(filename + strlen(filename) - 3, "wad"))
+ 
+	// WAD file
+	FAR_read(handle, &header, sizeof(header));
+	if (strncmp(header.identification, "IWAD", 4))
 	{
-		// single lump file
-		fileinfo = &singleinfo;
-		singleinfo.filepos = 0;
-		singleinfo.size = (filelength(handle));
-		ExtractFileBase(filename, singleinfo.name);
-		numlumps++;
-	}
-	else
-	{
-		// WAD file
-		read(handle, &header, sizeof(header));
-		if (strncmp(header.identification, "IWAD", 4))
-		{
 #ifdef CHECK_FOR_ERRORS
-			// Homebrew levels?
-			if (strncmp(header.identification, "PWAD", 4))
-			{
-				I_Error("Wad file %s doesn't have IWAD "
-					"or PWAD id\n", filename);
-			}
+		// Homebrew levels?
+		if (strncmp(header.identification, "PWAD", 4))
+		{
+			I_Error("Wad file %s doesn't have IWAD "
+				"or PWAD id\n", filename);
+		}
 #endif
 
-			modifiedgame = true;
-		}
-		//header.numlumps = (header.numlumps);
-		//header.infotableofs = (header.infotableofs);
-		length = header.numlumps * sizeof(filelump_t);
-
-		// let's piggyback off scratch EMS block
-		fileinfo = (filelump_t*)MK_FP(0x5000, 0);
-		lseek(handle, header.infotableofs, SEEK_SET);
-		read(handle, fileinfo, length);
-		numlumps += header.numlumps;
+		modifiedgame = true;
 	}
+	//header.numlumps = (header.numlumps);
+	//header.infotableofs = (header.infotableofs);
+	length = header.numlumps * sizeof(filelump_t);
+
+	// let's piggyback off scratch EMS block
+	fileinfo = SCRATCH_FILE_LOAD_LOCATION;
+	lseek(handle, header.infotableofs, SEEK_SET);
+	FAR_read(handle, fileinfo, length);
+	numlumps += header.numlumps;
+	
 	// numlumps 1264
 
 	 
@@ -182,20 +137,10 @@ void W_AddFile(int8_t *filename)
 
 	storehandle = reloadname ? -1 : handle;
 
-#ifdef	SUPPORT_MULTIWAD
-	if (currentfilehandle >= MAX_WAD_FILES) {
-		I_Error("Too many wad handles!");
-	}
-	filehandles[currentfilehandle] = storehandle;
-#else
 	wadfilehandle = storehandle;
-#endif
 	for (i = startlump; i < numlumps; i++, lump_p++, fileinfo++)
 	{
 
-#ifdef	SUPPORT_MULTIWAD
-		lump_p->handleindex = currentfilehandle;
-#endif
 		lump_p->position = (fileinfo->filepos);
 
 		// set up the diff
@@ -235,14 +180,11 @@ void W_AddFile(int8_t *filename)
 		strncpy(lump_p->name, fileinfo->name, 8);
 	}
 	lumpinfo[i - 1].sizediff = 0;
-#ifdef	SUPPORT_MULTIWAD
-	currentfilehandle++;
-#endif
 
 	if (reloadname)
 		close(handle);
 	
-	memset(MK_FP(0x5000, 0), 0, 65535);
+	FAR_memset(SCRATCH_FILE_LOAD_LOCATION, 0, 65535);
 }
 
 

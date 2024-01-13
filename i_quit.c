@@ -66,7 +66,6 @@ uint16_t TS_SetTimer(int32_t TickBase);
 void TS_SetTimerToMaxTaskRate(void);
 void __interrupt __far TS_ServiceSchedule(void);
 void __interrupt __far TS_ServiceScheduleIntEnabled(void);
-void TS_AddTask(task *ptr);
 void TS_Startup(void);
 void RestoreRealTimeClock(void);
 
