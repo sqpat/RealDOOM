@@ -65,7 +65,6 @@
 
 #define MAX_STRINGS 306
 
-extern uint16_t stringbuffersize;
 extern uint8_t     sfxVolume;
 extern uint8_t     musicVolume;
 extern int8_t      demosequence;
@@ -81,6 +80,7 @@ void D_InitStrings() {
 	int16_t i;
 	int16_t j = 0;;
 	int8_t letter;
+	uint16_t stringbuffersize;
 	handle = fopen("dstrings.txt", "r");
 	if (handle == NULL) {
 		I_Error("strings.txt missing?\n");

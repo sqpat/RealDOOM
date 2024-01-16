@@ -162,16 +162,12 @@ void D_ProcessEvents (void)
 }
 
 
-uint16_t stringbuffersize;
 
-int16_t getStringLength(int16_t stringindex) {
-	return  stringoffsets[stringindex + 1] - stringoffsets[stringindex];
-}
 
 void getStringByIndex(int16_t stringindex, int8_t* returndata) {
 
 	uint16_t stringoffset = stringoffsets[stringindex];
-	uint16_t length = getStringLength(stringindex);
+	uint16_t length = stringoffsets[stringindex + 1] - stringoffset;
 	/*
 	if (stringindex > MAX_STRINGS) {
 		I_Error("bad string index! %li %i", gametic, stringindex);
@@ -196,8 +192,6 @@ void getStringByIndex(int16_t stringindex, int8_t* returndata) {
 	memcpy(returndata, &(stringdata[stringoffset]), length);
 	// add null terminator?
 	returndata[length] = '\0';
-
-	//return length;
 }
 
 

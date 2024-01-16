@@ -59,7 +59,7 @@ filehandle_t				wadfilehandle;
 
 
 
-#define FREAD_BUFFER_SIZE 2048
+#define FREAD_BUFFER_SIZE 1024
 
 void  _far_fread(void far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count

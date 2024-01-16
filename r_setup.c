@@ -299,9 +299,7 @@ extern byte far* getpatchtexture(int16_t lump);
 
 void R_PrecacheLevel(void)
 {
-	int8_t*               flatpresent;
-	int8_t*               texturepresent;
-	int8_t*               spritepresent;
+	int8_t*               graphicpresent;
 
 	int16_t                 i;
 	int16_t                 j;
@@ -321,15 +319,23 @@ void R_PrecacheLevel(void)
 	Z_QuickmapRender();
 	Z_QuickmapLumpInfo();
 
+	
+	i = numflats;
+	if (numtextures > numflats) {
+		i = numtextures;
+	}
+	if (numsprites > i) {
+		i = numsprites;
+	}
 	// Precache flats.
-	flatpresent = alloca(numflats);
-	memset(flatpresent, 0, numflats);
+	graphicpresent = alloca(i);
+	memset(graphicpresent, 0, numflats);
 	// numflats 56	
 
 	for (i = 0; i < numsectors; i++)
 	{
-		flatpresent[sectors[i].floorpic] = 1;
-		flatpresent[sectors[i].ceilingpic] = 1;
+		graphicpresent[sectors[i].floorpic] = 1;
+		graphicpresent[sectors[i].ceilingpic] = 1;
 	}
 
 	//flatmemory = 0;
@@ -339,7 +345,7 @@ void R_PrecacheLevel(void)
 	for (i = 0; i < numflats; i++)
 	{
  
-		if (flatpresent[i]) {
+		if (graphicpresent[i]) {
 			lump = firstflat + i;
 			//size = 4096; // W_LumpLength(lump);
 		
@@ -367,14 +373,13 @@ void R_PrecacheLevel(void)
 	//oldpage =  0;
 
 	// Precache textures.
-	texturepresent = alloca(numtextures);
-	memset(texturepresent, 0, numtextures);
+	memset(graphicpresent, 0, numtextures);
 	for (i = 0; i < numsides; i++)
 	{
 
-		texturepresent[sides[i].toptexture] = 1;
-		texturepresent[sides[i].midtexture] = 1;
-		texturepresent[sides[i].bottomtexture] = 1;
+		graphicpresent[sides[i].toptexture] = 1;
+		graphicpresent[sides[i].midtexture] = 1;
+		graphicpresent[sides[i].bottomtexture] = 1;
 	}
 
 	// Sky texture is always present.
@@ -383,14 +388,14 @@ void R_PrecacheLevel(void)
 	//  while the sky texture is stored like
 	//  a wall texture, with an episode dependend
 	//  name.
-	texturepresent[skytexture] = 1;
+	graphicpresent[skytexture] = 1;
 
 	// texturememory = 0;
  
 	// this caches all used patches but not textures
 	for (i = 0; i < numtextures; i++) {
 
-		if (!texturepresent[i])
+		if (!graphicpresent[i])
 			continue;
 
 		getcompositetexture(i);
@@ -405,21 +410,20 @@ void R_PrecacheLevel(void)
 
 
 	// Precache sprites.
-	spritepresent = alloca(numsprites);
-	memset(spritepresent, 0, numsprites);
+	memset(graphicpresent, 0, numsprites);
 	Z_QuickmapPhysics();
 
 	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)
 	{
 		if ((thinkerlist[th].prevFunctype & TF_FUNCBITS) == TF_MOBJTHINKER_HIGHBITS) {
-			spritepresent[ states[mobjposlist[th].stateNum].sprite ] = 1;
+			graphicpresent[ states[mobjposlist[th].stateNum].sprite ] = 1;
 		}
 	}
 	Z_QuickmapRender();
 
 
 	for (i = 0; i < numsprites; i++) {
-		if (!spritepresent[i])
+		if (!graphicpresent[i])
 			continue;
  		spriteframes = (spriteframe_t far*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
 

@@ -967,7 +967,7 @@ void Z_QuickmapByTaskNum(int8_t tasknum) {
 extern void D_InitStrings();
 extern void P_Init();
 
-
+// clears dead initialization code.
 void Z_ClearDeadCode() {
 	byte far *startaddr =	(byte far*)D_InitStrings;
 	byte far *endaddr =		(byte far*)P_Init;

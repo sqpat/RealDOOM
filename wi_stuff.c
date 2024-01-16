@@ -153,6 +153,7 @@ typedef struct
 } anim_t;
 
 
+// consider loading at startup...
 
 // these are taking up 864 bytes. can probably halve it by shrinking to 8 bit. 
 // subtract the minimum value from coord 1, 2 indepdentdently. add back in the accessor.
@@ -258,6 +259,9 @@ int16_t getLnodeY(int16_t episode, int16_t map) {
 // Using patches saves a lot of space,
 //  as they replace 320x200 full screen frames.
 //
+
+// 16 bytes each, around 200-300 total.
+
 static anim_t epsd0animinfo[] =
 {
     { ANIM_ALWAYS, TICRATE/3, 3, { 224, 104 } },
