@@ -220,6 +220,9 @@ int16_t pageswapargs[total_pages] = {
 	8,	PAGE_7000_OFFSET, 9,	PAGE_7400_OFFSET, 10,	PAGE_7800_OFFSET, 11,	PAGE_7C00_OFFSET,
 	12, PAGE_6000_OFFSET, 13,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,
 	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_4400_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_4800_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_4C00_OFFSET,
 
 	// render
 	20,	PAGE_9000_OFFSET, 21,	PAGE_9400_OFFSET, 22,	PAGE_9800_OFFSET, 23,	PAGE_9C00_OFFSET,
@@ -332,12 +335,31 @@ int16_t pageswapargs[total_pages] = {
 	SCREEN3_LOGICAL_PAGE + 0, PAGE_6000_OFFSET,
 	SCREEN3_LOGICAL_PAGE + 1, PAGE_6400_OFFSET,
 	SCREEN3_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
-	SCREEN3_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET
+	SCREEN3_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET,
+
+	FIRST_LUMPINFO_LOGICAL_PAGE,	PAGE_4400_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE +1, PAGE_4800_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE +2, PAGE_4C00_OFFSET,
+
+	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_5400_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_5800_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_5C00_OFFSET
+
+
+
 };
 
 int16_t pageswapargseg;
 int16_t pageswapargoff;
- 
+
+int8_t current5000flatpage = -1;
+uint8_t current5000RemappedScratchPage = 0;
+
+int8_t current4000State = PAGE_4000_UNMAPPED;
+int8_t last4000State = PAGE_4000_UNMAPPED;
+int8_t current5000State = PAGE_5000_UNMAPPED;
+int8_t last5000State = PAGE_5000_UNMAPPED;
+
 
 #ifdef DETAILED_BENCH_STATS
 int32_t taskswitchcount = 0;
@@ -351,6 +373,8 @@ int32_t scratchpageswitchcount = 0;
 int32_t scratchpoppageswitchcount = 0;
 int32_t scratchpushpageswitchcount = 0;
 int32_t scratchremapswitchcount = 0;
+int32_t lumpinfo4000switchcount = 0;
+int32_t lumpinfo5000switchcount = 0;
 
 #endif
 int16_t currenttask = -1;
@@ -375,7 +399,7 @@ void Z_QuickmapPhysics() {
 	intx86(EMS_INT, &regs, &regs);
 	
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
+	regs.w.cx = 0x07; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
 	regs.w.si = pageswapargoff + 64;
@@ -389,6 +413,8 @@ void Z_QuickmapPhysics() {
 	*/
 	taskswitchcount ++;
 	currenttask = TASK_PHYSICS;
+	current4000State = PAGE_4000_LUMPINFO;
+	current5000State = PAGE_5000_TRIG;
 }
  
 
@@ -404,6 +430,7 @@ void Z_QuickmapDemo() {
 	taskswitchcount++;
 #endif
 	currenttask = TASK_DEMO; // not sure about this
+	current5000State = PAGE_5000_DEMOBUFFER;
 
 }
 
@@ -454,6 +481,9 @@ void Z_QuickmapRender() {
 #endif
 	currenttask = TASK_RENDER;
 
+
+	current5000State = PAGE_5000_TRIG;
+	current4000State = PAGE_4000_TEXTURE;
 }
 
 // leave off 0x4000 region. Usually used in p_setup...
@@ -482,6 +512,8 @@ void Z_QuickmapRender_NoTex() {
 	taskswitchcount++;
 #endif
 	currenttask = TASK_RENDER;
+
+	current5000State = PAGE_5000_TRIG;
 
 }
 
@@ -518,6 +550,8 @@ void Z_QuickmapRenderTexture() {
 	regs.w.si = pageswapargoff_textcache + (offset << 2);
 	intx86(EMS_INT, &regs, &regs);
 	*/
+	current4000State = PAGE_4000_TEXTURE;
+
 
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -565,20 +599,28 @@ void Z_QuickmapScratch_5000() {
 	taskswitchcount++;
 	scratchpageswitchcount++;
 #endif
+
+	current5000State = PAGE_5000_SCRATCH;
+
 }
 void Z_QuickmapScratch_4000() {
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_scratch4000_offset_size;
-	intx86(EMS_INT, &regs, &regs);
-#ifdef DETAILED_BENCH_STATS
-	taskswitchcount++;
-	scratchpageswitchcount++;
+	if (current4000State != PAGE_4000_SCRATCH){
+		regs.w.ax = 0x5000;
+		regs.w.cx = 0x04; // page count
+		regs.w.dx = emshandle; // handle
+		segregs.ds = pageswapargseg;
+		regs.w.si = pageswapargs_scratch4000_offset_size;
+		intx86(EMS_INT, &regs, &regs);
 
-#endif
+		current4000State = PAGE_4000_SCRATCH;
+
+	#ifdef DETAILED_BENCH_STATS
+		taskswitchcount++;
+		scratchpageswitchcount++;
+
+	#endif
+	}
 }
 
 void Z_QuickmapScreen0() {
@@ -609,6 +651,7 @@ void Z_PushScratchFrame() {
 #endif
 		oldtask = currenttask;
 		currenttask = TASK_SCRATCH_STACK;
+		current5000State = PAGE_5000_SCRATCH;
 	}
 	// doesnt come up
 	/*
@@ -635,6 +678,8 @@ void Z_PopScratchFrame() {
 		scratchpoppageswitchcount++;
 
 #endif
+		// todo not doing 5000 page?
+
 		currenttask = oldtask;
 		
 		pageswapargs[pageswapargs_scratch5000_offset + 0] = FIRST_SCRATCH_LOGICAL_PAGE;
@@ -642,12 +687,7 @@ void Z_PopScratchFrame() {
 		pageswapargs[pageswapargs_scratch5000_offset + 4] = FIRST_SCRATCH_LOGICAL_PAGE + 2;
 		pageswapargs[pageswapargs_scratch5000_offset + 6] = FIRST_SCRATCH_LOGICAL_PAGE + 3;
 
-
 	}
-// doesnt come up
-/*	else {
-		I_Error("didnt clear - double stack");
-	}*/
 }
 
 void Z_QuickMapFlatPage(int16_t page) {
@@ -666,6 +706,8 @@ void Z_QuickMapFlatPage(int16_t page) {
 	flatpageswitchcount++;
 
 #endif
+	current5000State = PAGE_5000_TRIG_TEXTURE;
+	current5000flatpage = page;
 }
 
 
@@ -698,6 +740,138 @@ void Z_RemapScratchFrame(uint8_t startpage) {
 	taskswitchcount++;
 	scratchremapswitchcount++;
 #endif
+	current5000State = PAGE_5000_SCRATCH_REMAP;
+	current5000RemappedScratchPage = startpage;
+}
+
+void Z_QuickmapTrig() {
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size + 64;
+	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount++;
+#endif
+
+	current5000State = PAGE_5000_TRIG;
+}
+
+void Z_QuickmapLumpInfo() {
+	
+	switch (current4000State) {
+
+		case PAGE_4000_UNMAPPED:
+			// use conventional memory until set up...
+			return;
+	 
+		case PAGE_4000_SCRATCH:
+		case PAGE_4000_TEXTURE:
+			regs.w.ax = 0x5000;
+			regs.w.cx = 0x03; // page count
+			regs.w.dx = emshandle; // handle
+			segregs.ds = pageswapargseg;
+			regs.w.si = pageswapargs_lumpinfo_offset_size;
+
+			intx86(EMS_INT, &regs, &regs);
+	#ifdef DETAILED_BENCH_STATS
+			taskswitchcount++;
+			lumpinfo4000switchcount++;
+#endif
+		
+			last4000State = current4000State;
+			current4000State = PAGE_4000_LUMPINFO;
+ 
+			return;
+		case PAGE_4000_LUMPINFO:
+			last4000State = PAGE_4000_LUMPINFO;
+			return;
+		default:
+			I_Error("bad state %i", current4000State);
+
+	}
+}
+
+void Z_UnmapLumpInfo() {
+
+
+	switch (last4000State) {
+		case PAGE_4000_SCRATCH:
+			Z_QuickmapScratch_4000();
+			break;
+		case PAGE_4000_TEXTURE:
+			Z_QuickmapRenderTexture();
+			break;
+		default:
+			break;
+	}
+	// doesn't really need cleanup - this isnt dual-called
+
+}
+
+
+
+void Z_QuickmapLumpInfo5000() {
+
+	switch (current5000State) {
+
+		case PAGE_5000_TRIG_TEXTURE:
+		case PAGE_5000_SCRATCH:
+		case PAGE_5000_TRIG:
+		case PAGE_5000_UNMAPPED:
+		case PAGE_5000_DEMOBUFFER:
+		case PAGE_5000_SCRATCH_REMAP:
+			regs.w.ax = 0x5000;
+			regs.w.cx = 0x03; // page count
+			regs.w.dx = emshandle; // handle
+			segregs.ds = pageswapargseg;
+			regs.w.si = pageswapargs_lumpinfo_5400_offset_size;
+
+			intx86(EMS_INT, &regs, &regs);
+	#ifdef DETAILED_BENCH_STATS
+			taskswitchcount++;
+			lumpinfo5000switchcount++;
+	#endif
+
+			last5000State = current5000State;
+			current5000State = PAGE_5000_LUMPINFO;
+			return;
+		case PAGE_5000_LUMPINFO:
+			last5000State = PAGE_5000_LUMPINFO;
+			return;
+		default:
+			I_Error("bad state %i", current5000State);
+
+	}
+}
+
+void Z_UnmapLumpInfo5000() {
+
+	switch (last5000State) {
+		case PAGE_5000_SCRATCH_REMAP:
+			Z_RemapScratchFrame(current5000RemappedScratchPage);
+			break;
+		case PAGE_5000_SCRATCH:
+			Z_QuickmapScratch_5000();
+			break;
+		case PAGE_5000_TRIG:
+			Z_QuickmapTrig();
+			break;
+		case PAGE_5000_TRIG_TEXTURE:
+			Z_QuickmapTrig();
+			Z_QuickMapFlatPage(current5000flatpage);
+			break;
+		case PAGE_5000_DEMOBUFFER:
+			Z_QuickmapDemo();
+			break;
+		case PAGE_5000_UNMAPPED:
+		case PAGE_5000_LUMPINFO:
+			default:
+				break;
+	}
+	// doesn't really need cleanup - this isnt dual-called
+
 }
 
 void Z_QuickmapPalette() {

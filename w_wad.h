@@ -50,14 +50,16 @@ typedef struct
 {
 	int8_t	name[8];
 	// (probably could cap at 16 bit and use high bit as sizediff)
-    int32_t		position; 
+    int32_t		position; //todo make 48 bit
 	// dont know if this might have to change to int16_t at some point, but basically this is the diff between declared lump size and diff of adjacent positions. I think the wad is (annoyingly) made with some overlapping items. saves us 3 bytes per lump still.
 	int8_t	sizediff; 
 	//int32_t		size;  // calculate size from next position minus your own plus diff.
 } lumpinfo_t;
 
 
-extern	lumpinfo_t far*	lumpinfo;
+
+#define lumpinfo4000 ((lumpinfo_t far*) 0x44000000)
+#define lumpinfo5000 ((lumpinfo_t far*) 0x54000000)
 extern	uint16_t		numlumps;
 
 void    W_InitMultipleFiles (int8_t** filenames);

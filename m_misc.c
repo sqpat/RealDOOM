@@ -181,12 +181,12 @@ M_WriteFile
 filelength_t
 M_ReadFile
 (int8_t const*	name,
-  byte*	bufferRef )
+  byte far*	bufferRef )
 {
     filelength_t count, length;
 	filehandle_t handle;
     struct stat	fileinfo;
-    byte		*buf;
+    byte		far *buf;
 	
     handle = open (name, O_RDONLY | O_BINARY, 0666);
 #ifdef CHECK_FOR_ERRORS

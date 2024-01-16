@@ -133,6 +133,12 @@ void R_DrawColumn (void)
     fracstep = dc_iscale; 
     frac.w = dc_texturemid.w + (dc_yl-centery)*fracstep; 
 
+
+	// ASM NOTES
+	// quicker loop if fracstep < 1 - dont do 32 bit adds? just use
+	// carry bit?
+	// colormap to near var?
+
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
     // This is as fast as it gets.

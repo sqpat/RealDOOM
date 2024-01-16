@@ -876,11 +876,6 @@ P_SetMobjState2
 {
 	state_t far*	st;
 	mobj_pos_t far* mobj_pos;
-#ifdef CHECK_FOR_ERRORS
-//	if (mobjRef > 10000 && mobjRef != playerMobjRef) {
-//		I_Error("caught bad ref? %u %u %s %li", mobjRef, state, file, line);
-//	}
-#endif
 
 	setStateReturn = mobj;
 	mobj_pos = setStateReturn_pos = GET_MOBJPOS_FROM_MOBJ(mobj);

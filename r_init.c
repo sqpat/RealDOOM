@@ -43,33 +43,17 @@
 
 extern uint8_t			skyflatnum;
 
-
-
-//
-// R_FlatNumForName
-// Retrieval, get a flat number for a flat name.
-//
-// note this function got duped across different overlays, but this ends up reducing overall conventional memory use
-uint8_t R_FlatNumForNameB(int8_t* name)
-{
-	int16_t         i;
- 
-	i = W_CheckNumForName(name);
-
  
 
-	return (uint8_t)(i - firstflat);
-}
 
-
-
+extern uint8_t R_FlatNumForName(int8_t* name);
 //
 // R_InitSkyMap
 // Called whenever the view size changes.
 //
 void R_InitSkyMap(void)
 {
-	skyflatnum = R_FlatNumForNameB("F_SKY1");
+	skyflatnum = R_FlatNumForName("F_SKY1");
 }
 
 
@@ -134,7 +118,8 @@ void R_InitLightTables(void)
 	fixed_t_union		temp, temp2;
 
 	Z_QuickmapRender();
-	
+	Z_QuickmapLumpInfo();
+
 	// Calculate the light levels to use
 	//  for each level / distance combination.
 	temp.h.fracbits = 0;
@@ -188,16 +173,16 @@ void R_InitSpriteLumps(void)
 
 	for (i = 0; i < numspritelumps; i++)
 	{
-
+		
 #ifdef DEBUG_PRINTING
 		if (!(i & 63))
 			printf(".");
 #endif
-		Z_QuickmapScratch_4000();
+		Z_QuickmapScratch_5000();
 
-		W_CacheLumpNumDirect(firstspritelump + i, SCRATCH_ADDRESS_4000);
+		W_CacheLumpNumDirect(firstspritelump + i, SCRATCH_ADDRESS_5000);
 		
-		patch = (patch_t far*)SCRATCH_ADDRESS_4000;
+		patch = (patch_t far*)SCRATCH_ADDRESS_5000;
 		patchwidth = (patch->width);
 		patchleftoffset = (patch->leftoffset);
 		patchtopoffset = (patch->topoffset);
@@ -371,6 +356,7 @@ void R_GenerateLookup(uint8_t texnum)
 }
 
  
+#define TEX_LOAD_ADDRESS (byte far*) (0x70000000)
 
 //
 // R_InitTextures
@@ -397,7 +383,7 @@ void R_InitTextures(void)
 	int8_t far*               names;
 	int8_t far*               name_p;
 
-	int16_t far*                patchlookup;
+	int16_t*                patchlookup;
 
 	int16_t                 nummappatches;
 	int16_t                 offset;
@@ -413,17 +399,17 @@ void R_InitTextures(void)
 	//uint8_t*            textureheight;
  	int16_t				texturewidth;
 	uint8_t				textureheightval;
-	byte far*			tempaddress = MK_FP(0x7000, 0);
 
  	texturedefs_offset[0] = 0;
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
-	names = (int8_t far*)tempaddress;
+	names = (int8_t far*)TEX_LOAD_ADDRESS;
+
 	W_CacheLumpNameDirect("PNAMES", (byte far*)names);
 	nummappatches = (*((int32_t  far*)names));
 	name_p = names + 4;
-	patchlookup = alloca(nummappatches * sizeof(*patchlookup));
+	patchlookup = alloca(nummappatches * sizeof(int16_t));
 	for (i = 0; i < nummappatches; i++)
 	{
 		FAR_strncpy(name, name_p + i * 8, 8);
@@ -433,8 +419,8 @@ void R_InitTextures(void)
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
-	maptex = maptex1 = (int32_t far*)tempaddress;
-    W_CacheLumpNameDirect("TEXTURE1", (byte far*)maptex);
+	maptex = maptex1 = (int32_t far*)TEX_LOAD_ADDRESS;
+	W_CacheLumpNameDirect("TEXTURE1", (byte far*)maptex);
 
 	numtextures1 = (*maptex);
 	directory = maptex + 1;
@@ -442,7 +428,7 @@ void R_InitTextures(void)
 
 	if (W_CheckNumForName("TEXTURE2") != -1)
 	{
-		maptex2 = ((int32_t far*)tempaddress) + 0x8000u;
+		maptex2 = ((int32_t far*)TEX_LOAD_ADDRESS) + 0x8000u;
 		W_CacheLumpNameDirect("TEXTURE2", (byte far*)maptex2);
 		numtextures2 = (*maptex2);
 	}
@@ -451,7 +437,7 @@ void R_InitTextures(void)
 		maptex2 = NULL;
 		numtextures2 = 0;
 	}
-	
+
 
 
 
@@ -632,6 +618,7 @@ extern uint8_t                     screenblocks;
 void R_Init(void)
 {
 	Z_QuickmapRender();
+	Z_QuickmapLumpInfo();
 	//Z_QuickmapTextureInfoPage();
 	R_InitData();
 	DEBUG_PRINT("..");

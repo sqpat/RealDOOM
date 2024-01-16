@@ -319,8 +319,7 @@ void R_PrecacheLevel(void)
 		return;
 
 	Z_QuickmapRender();
-	
-
+	Z_QuickmapLumpInfo();
 
 	// Precache flats.
 	flatpresent = alloca(numflats);
@@ -337,7 +336,7 @@ void R_PrecacheLevel(void)
 	Z_PushScratchFrame();
 
 	Z_RemapScratchFrame(FIRST_FLAT_CACHE_LOGICAL_PAGE);
-  	for (i = 0; i < numflats; i++)
+	for (i = 0; i < numflats; i++)
 	{
  
 		if (flatpresent[i]) {

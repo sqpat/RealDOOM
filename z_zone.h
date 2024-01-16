@@ -46,6 +46,8 @@ extern int32_t scratchremapswitchcount;
 extern int32_t patchpageswitchcount;
 extern int32_t compositepageswitchcount;
 extern int32_t spritepageswitchcount;
+extern int32_t lumpinfo4000switchcount;
+extern int32_t lumpinfo5000switchcount;
 
 #endif
 
@@ -83,6 +85,7 @@ void far* Z_MallocConventional(uint16_t  size);
 void Z_ShutdownEMS();
  
 #define SCRATCH_ADDRESS_4000 (byte far* )0x40000000
+#define SCRATCH_ADDRESS_5000 (byte far* )0x50000000
 
 #define SCREEN0_LOGICAL_PAGE						4
 #define STRINGS_LOGICAL_PAGE						12
@@ -100,7 +103,8 @@ void Z_ShutdownEMS();
 #define SCREEN3_LOGICAL_PAGE						SCREEN2_LOGICAL_PAGE + 4
 #define FIRST_WIPE_LOGICAL_PAGE						SCREEN3_LOGICAL_PAGE + 4
 #define FIRST_SCRATCH_LOGICAL_PAGE					FIRST_WIPE_LOGICAL_PAGE + 1
-#define FIRST_PATCH_CACHE_LOGICAL_PAGE				FIRST_SCRATCH_LOGICAL_PAGE + 4
+#define FIRST_LUMPINFO_LOGICAL_PAGE					FIRST_SCRATCH_LOGICAL_PAGE + 4
+#define FIRST_PATCH_CACHE_LOGICAL_PAGE				FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_PATCH_CACHE_PAGES						40
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE				FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES						8
@@ -110,7 +114,7 @@ void Z_ShutdownEMS();
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE				FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 #define NUM_SPRITE_CACHE_PAGES						36
 #define NUM_EMS4_SWAP_PAGES							(int32_t)(FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 186 currently?
+// 189 currently?
 
 #define TASK_PHYSICS 0
 #define TASK_RENDER 1
@@ -128,7 +132,7 @@ void Z_ShutdownEMS();
 #define SCRATCH_PAGE_SEGMENT 0x5000u
 
 // actually twice the number of pages, 2 params needed per page swap
-#define num_phys_params 40
+#define num_phys_params 46
 #define num_rend_params 48
 #define num_stat_params 12
 #define num_demo_params 8
@@ -142,6 +146,8 @@ void Z_ShutdownEMS();
 #define num_menu_params 16
 #define num_intermission_params 32
 #define num_wipe_params 26
+#define num_lumpinfo_params 6
+#define num_lumpinfo_5400_params 6
 
 //#define pageswapargoff_demo pageswapargseg +
 
@@ -159,7 +165,9 @@ void Z_ShutdownEMS();
 #define pageswapargs_menu_offset_size			(pageswapargs_7000to6000_offset_size	+ 2*num_7000to6000_params)
 #define pageswapargs_intermission_offset_size	(pageswapargs_menu_offset_size			+ 2*num_menu_params)
 #define pageswapargs_wipe_offset_size			(pageswapargs_intermission_offset_size	+ 2*num_intermission_params)
-#define total_pages_size						(pageswapargs_wipe_offset_size			+ 2*num_wipe_params)
+#define pageswapargs_lumpinfo_offset_size		(pageswapargs_wipe_offset_size			+ 2*num_wipe_params)
+#define pageswapargs_lumpinfo_5400_offset_size	(pageswapargs_lumpinfo_offset_size		+ 2*num_lumpinfo_params)
+#define total_pages_size						(pageswapargs_lumpinfo_5400_offset_size	+ 2*num_lumpinfo_5400_params)
 
 // used for array indices
 #define pageswapargs_rend_offset			num_phys_params
@@ -175,7 +183,9 @@ void Z_ShutdownEMS();
 #define pageswapargs_menu_offset			(pageswapargs_7000to6000_offset		+ num_7000to6000_params)
 #define pageswapargs_intermission_offset	(pageswapargs_menu_offset			+ num_menu_params)
 #define pageswapargs_wipe_offset			(pageswapargs_intermission_offset	+ num_intermission_params)
-#define total_pages							(pageswapargs_wipe_offset			+ num_wipe_params)
+#define pageswapargs_lumpinfo_offset		(pageswapargs_wipe_offset			+ num_wipe_params)
+#define pageswapargs_lumpinfo_5400_offset	(pageswapargs_lumpinfo_offset		+ num_lumpinfo_params)
+#define total_pages							(pageswapargs_lumpinfo_5400_offset	+ num_lumpinfo_5400_params)
 
 extern int16_t pageswapargs[total_pages];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
@@ -202,6 +212,10 @@ void Z_QuickmapMenu();
 void Z_QuickmapIntermission();
 void Z_QuickmapScreen0();
 void Z_QuickmapWipe();
+void Z_QuickmapLumpInfo();
+void Z_UnmapLumpInfo();
+void Z_QuickmapLumpInfo5000();
+void Z_UnmapLumpInfo5000();
 
 
 void Z_GetEMSPageMap();
@@ -219,6 +233,24 @@ void Z_LoadBinaries();
 #define  wigraphicslevelname	(byte far* )0x78000000
 #define  wigraphicsfullscreen	(byte far* )0x7C000000
 #define	 wianimspage			(byte far* )0x60000000
+
+#define PAGE_4000_UNMAPPED -1
+#define PAGE_4000_LUMPINFO 1
+#define PAGE_4000_TEXTURE 2
+#define PAGE_4000_SCRATCH 3
+//#define PAGE_4000_READY_TO_INIT 4
+
+#define PAGE_5000_UNMAPPED -1
+#define PAGE_5000_LUMPINFO 1
+#define PAGE_5000_DEMOBUFFER 2
+#define PAGE_5000_SCRATCH 3
+#define PAGE_5000_TRIG 4
+#define PAGE_5000_TRIG_TEXTURE 5
+
+
+#define PAGE_5000_SCRATCH_REMAP 6
+
+
 
 extern int16_t currenttask;
 

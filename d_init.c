@@ -571,10 +571,7 @@ void M_FinishReadThis(int16_t choice);
 //
 // M_Init
 //
-#define NUM_MENU_ITEMS 45
  
-extern uint16_t menuoffsets[NUM_MENU_ITEMS];
-extern int8_t menugraphics[NUM_MENU_ITEMS][9];
 
 extern void M_Reload(void);
 
@@ -629,7 +626,7 @@ void D_InitGraphicCounts() {
 	int16_t                 numtextures2;
 	byte far*				tempaddress = MK_FP(0x7000, 0);
 
- 
+
 	 
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,

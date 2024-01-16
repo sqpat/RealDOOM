@@ -223,8 +223,7 @@ typedef struct
 // R_FlatNumForName
 // Retrieval, get a flat number for a flat name.
 //
-// note this function got duped across different overlays, but this ends up reducing overall conventional memory use
-uint8_t R_FlatNumForNameA(int8_t* name)
+uint8_t R_FlatNumForName(int8_t* name)
 {
 	int16_t         i;
 #ifdef CHECK_FOR_ERRORS
@@ -312,8 +311,8 @@ void P_InitPicAnims(void)
 			if (W_CheckNumForName(animdefs[i].startname) == -1)
 				continue;
 
-			lastanim->picnum = R_FlatNumForNameA(animdefs[i].endname);
-			lastanim->basepic = R_FlatNumForNameA(animdefs[i].startname);
+			lastanim->picnum = R_FlatNumForName(animdefs[i].endname);
+			lastanim->basepic = R_FlatNumForName(animdefs[i].startname);
 		}
 
 		lastanim->istexture = animdefs[i].istexture;
@@ -422,6 +421,9 @@ extern byte far*	 spritedefs_bytes;
 //  letter/number appended.
 // The rotation character can be 0 to signify no rotations.
 //
+
+extern int8_t current4000State, last4000State;
+
 void R_InitSpriteDefs()
 {
 	int8_t**      check;
@@ -453,7 +455,7 @@ void R_InitSpriteDefs()
 		"COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
 		"HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2"
 	};
-
+	
 	sprtemp = alloca(29 * sizeof(spriteframe_t));
 	// count the number of sprite names
 	check = namelist;
@@ -495,22 +497,22 @@ void R_InitSpriteDefs()
 		//  filling in the frames for whatever is found
 		for (l = start + 1; l < end; l++)
 		{
-			if (*(int32_t  far*)lumpinfo[l].name == intname)
+			if (*(int32_t  far*)lumpinfo4000[l].name == intname)
 			{
-				frame = lumpinfo[l].name[4] - 'A';
-				rotation = lumpinfo[l].name[5] - '0';
+				frame = lumpinfo4000[l].name[4] - 'A';
+				rotation = lumpinfo4000[l].name[5] - '0';
 
 				if (modifiedgame)
-					patched = W_GetNumForName(lumpinfo[l].name);
+					patched = W_GetNumForName(lumpinfo4000[l].name);
 				else
 					patched = l;
 
 				R_InstallSpriteLump(patched, frame, rotation, false);
 
-				if (lumpinfo[l].name[6])
+				if (lumpinfo4000[l].name[6])
 				{
-					frame = lumpinfo[l].name[6] - 'A';
-					rotation = lumpinfo[l].name[7] - '0';
+					frame = lumpinfo4000[l].name[6] - 'A';
+					rotation = lumpinfo4000[l].name[7] - '0';
 					R_InstallSpriteLump(l, frame, rotation, true);
 				}
 			}
@@ -595,7 +597,7 @@ void R_InitSprites()
 void P_Init(void)
 {
 	Z_QuickmapRender();
-	
+	Z_QuickmapLumpInfo();
 	P_InitSwitchList();
 	P_InitPicAnims();
 	R_InitSprites();

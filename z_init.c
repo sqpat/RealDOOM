@@ -294,7 +294,7 @@ found:
 	//                  states          states																[scratch buffer]				[scratch used
 	// 0x5000 block		trig tables   	trig tables								demobuffer													for anims]
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
-	// 0x4000 block						textures
+	// 0x4000 block		lumpinfo		textures
 
 
 	for (i = 1; i < total_pages; i+= 2) {
@@ -303,8 +303,11 @@ found:
 	 
 	DEMO_SEGMENT = 0x5000u;
 
-	 
 
+	Z_QuickmapLumpInfo5000();
+
+	FAR_memcpy((byte far *) 0x54000000, (byte far *) 0x44000000, 49152u); // copy the wad lump stuff over. gross
+	FAR_memset((byte far *) 0x44000000, 0, 49152u);
 
 	Z_QuickmapPhysics(); // map default page map
 }

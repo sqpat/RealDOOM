@@ -44,7 +44,7 @@ M_WriteFile
 filelength_t
 M_ReadFile
 (int8_t const*	name,
-  byte*	bufferRef );
+  byte far*	bufferRef );
 
 // Returns a number from 0 to 255,
 // from a lookup table.

@@ -196,9 +196,10 @@ void P_LoadVertexes(int16_t lump)
 	// Allocate zone memory for buffer.
 	vertexes = Z_MallocConventional(numvertexes * sizeof(vertex_t));
 	// Load data into cache.
-	
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapvertex_t far*)SCRATCH_ADDRESS_4000;
+	Z_QuickmapScratch_5000();
+
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	data = (mapvertex_t far*)SCRATCH_ADDRESS_5000;
 
 	// Copy and convert vertex coordinates,
 	// internal representation as fixed.
@@ -211,7 +212,6 @@ void P_LoadVertexes(int16_t lump)
 
 	// Free buffer memory.
  }
-
 
 
 //
@@ -249,9 +249,10 @@ void P_LoadSegs(int16_t lump)
 	tempsecnums = (int16_t far* )Z_GetNextRenderAddress(numsegs * 2 * sizeof(int16_t));
 
 	FAR_memset(segs, 0xff, numsegs * sizeof(seg_t));
-	
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapseg_t far*)SCRATCH_ADDRESS_4000;
+	Z_QuickmapScratch_5000();
+
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	data = (mapseg_t far*)SCRATCH_ADDRESS_5000;
 
 	for (i = 0; i < numsegs; i++) {
 		ml = &data[i];
@@ -312,7 +313,6 @@ void P_LoadSegs(int16_t lump)
 	// and now we put it back..
 
 	Z_SubtractRenderAddress(numsegs * 2 * sizeof(int16_t));
-	Z_QuickmapPhysics();
 
 }
 
@@ -331,8 +331,10 @@ void P_LoadSubsectors(int16_t lump)
 	subsectors = (subsector_t far*)Z_MallocConventional (numsubsectors * sizeof(subsector_t));
 	FAR_memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapsubsector_t far*)SCRATCH_ADDRESS_4000;
+	Z_QuickmapScratch_5000();
+
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	data = (mapsubsector_t far*)SCRATCH_ADDRESS_5000;
 
 	for (i = 0; i < numsubsectors; i++)
 	{
@@ -345,24 +347,10 @@ void P_LoadSubsectors(int16_t lump)
 
 }
 
+ 
 
 
-//
-// R_FlatNumForName
-// Retrieval, get a flat number for a flat name.
-//
-// note this function got duped across different overlays, but this ends up reducing overall conventional memory use
-uint8_t R_FlatNumForNameC(int8_t* name)
-{
-	int16_t         i;
-
-	i = W_CheckNumForName(name);
-
-
-	return (uint8_t)(i - firstflat);
-}
-
-
+extern uint8_t R_FlatNumForName(int8_t* name);
 
 //
 // P_LoadSectors
@@ -386,9 +374,10 @@ void P_LoadSectors(int16_t lump)
 
 	FAR_memset(sectors, 0, numsectors * sizeof(sector_t));
 	FAR_memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
+	Z_QuickmapScratch_5000();
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapsector_t far*)SCRATCH_ADDRESS_4000;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	data = (mapsector_t far*)SCRATCH_ADDRESS_5000;
 
 	ss = sectors;
 	sp = sectors_physics;
@@ -410,8 +399,8 @@ void P_LoadSectors(int16_t lump)
 		}
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
-		ss->floorpic = R_FlatNumForNameC(ms.floorpic);
-		ss->ceilingpic = R_FlatNumForNameC(ms.ceilingpic);
+		ss->floorpic = R_FlatNumForName(ms.floorpic);
+		ss->ceilingpic = R_FlatNumForName(ms.ceilingpic);
 		ss->lightlevel = (ms.lightlevel);
 		ss->thinglistRef = NULL_THINKERREF;
 		
@@ -444,10 +433,10 @@ void P_LoadNodes(int16_t lump)
 	nodes_render = (node_render_t far* ) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
 
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapnode_t far*)SCRATCH_ADDRESS_4000;
 	Z_QuickmapRender_NoTex();
-
+	Z_QuickmapScratch_5000();
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	data = (mapnode_t far*)SCRATCH_ADDRESS_5000;
 
 	for (i = 0; i < numnodes; i++) {
 		currentdata = data[i];
@@ -965,6 +954,118 @@ void P_CacheLineOpenings() {
 }
 
 #endif
+ 
+
+
+// Parses command line parameters.
+void P_SpawnSpecials(void)
+{
+	int16_t		i;
+	int8_t		episode;
+
+	episode = 1;
+	if (W_CheckNumForName("TEXTURE2") >= 0)
+		episode = 2;
+
+
+	// See if -TIMER needs to be used.
+	levelTimer = false;
+
+	//	Init special SECTORs.
+	//sector = sectors;
+
+	for (i = 0; i < numsectors; i++) {
+
+		if (!sectors_physics[i].special)
+			continue;
+
+		switch (sectors_physics[i].special) {
+		case 1:
+			// FLICKERING LIGHTS
+			P_SpawnLightFlash(i);
+			break;
+
+		case 2:
+			// STROBE FAST
+			P_SpawnStrobeFlash(i, FASTDARK, 0);
+			break;
+
+		case 3:
+			// STROBE SLOW
+			P_SpawnStrobeFlash(i, SLOWDARK, 0);
+			break;
+
+		case 4:
+			// STROBE FAST/DEATH SLIME
+			P_SpawnStrobeFlash(i, FASTDARK, 0);
+			sectors_physics[i].special = 4;
+			break;
+
+		case 8:
+			// GLOWING LIGHT
+			P_SpawnGlowingLight(i);
+			break;
+		case 9:
+			// SECRET SECTOR
+			totalsecret++;
+			break;
+
+		case 10:
+			// DOOR CLOSE IN 30 SECONDS
+			P_SpawnDoorCloseIn30(i);
+			break;
+
+		case 12:
+			// SYNC STROBE SLOW
+			P_SpawnStrobeFlash(i, SLOWDARK, 1);
+			break;
+
+		case 13:
+			// SYNC STROBE FAST
+			P_SpawnStrobeFlash(i, FASTDARK, 1);
+			break;
+
+		case 14:
+			// DOOR RAISE IN 5 MINUTES
+			P_SpawnDoorRaiseIn5Mins(i);
+			break;
+
+		case 17:
+			P_SpawnFireFlicker(i);
+			break;
+		}
+	}
+
+
+	//	Init line EFFECTs
+	numlinespecials = 0;
+
+	for (i = 0; i < numlines; i++) {
+		switch (lines_physics[i].special) {
+		case 48:
+			// EFFECT FIRSTCOL SCROLL+
+			linespeciallist[numlinespecials] = i;
+			numlinespecials++;
+			break;
+		}
+	}
+
+
+	//	Init other misc stuff
+	for (i = 0; i < MAXCEILINGS; i++)
+		activeceilings[i] = NULL_THINKERREF;
+
+	for (i = 0; i < MAXPLATS; i++)
+		activeplats[i] = NULL_THINKERREF;
+
+	for (i = 0; i < MAXBUTTONS; i++)
+		memset(&buttonlist[i], 0, sizeof(button_t));
+
+
+}
+
+
+
 //
 // P_LoadThings
 //
@@ -977,7 +1078,8 @@ void P_LoadThings(int16_t lump)
 	boolean             spawn;
 	
 	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
- 
+	Z_QuickmapScratch_4000();
+
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
 	data = (mapthing_t far*)SCRATCH_ADDRESS_4000;
 
@@ -1055,9 +1157,10 @@ void P_LoadLineDefs(int16_t lump)
 	FAR_memset(lines, 0, numlines * sizeof(line_t));
 	FAR_memset(lines_physics, 0, numlines * sizeof(line_physics_t));
 	FAR_memset(seenlines, 0, numlines / 8 + 1);
+	Z_QuickmapScratch_5000();
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (maplinedef_t far*)SCRATCH_ADDRESS_4000;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	data = (maplinedef_t far*)SCRATCH_ADDRESS_5000;
 
 	Z_QuickmapRender7000to6000();
 	tempsides_render = MK_FP(0x6000u, 0x0000u); // this is always at addr 7000
@@ -1170,16 +1273,15 @@ void P_LoadSideDefs(int16_t lump)
 	int16_t msdsecnum;
 	
 	Z_QuickmapRender_NoTex();
-	//Z_QuickmapTextureInfoPage();
-
+ 
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sides = (side_t far*)Z_MallocConventional (numsides * sizeof(side_t));
 	//sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 	Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
+	Z_QuickmapScratch_5000();
 
-
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapsidedef_t far*)SCRATCH_ADDRESS_4000;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	data = (mapsidedef_t far*)SCRATCH_ADDRESS_5000;
 
 	for (i = 0; i < numsides; i++) {
 		msd = &data[i];
@@ -1224,7 +1326,8 @@ void P_LoadSideDefs(int16_t lump)
 void P_LoadBlockMap(int16_t lump)
 {
 	uint16_t         count;
-		
+	Z_QuickmapPhysics();
+
 	blockmaplump = (int16_t far* )Z_GetNextPhysicsAddress(W_LumpLength(lump));
 	W_CacheLumpNumDirect(lump, (byte far*)blockmaplump);
 
@@ -1289,7 +1392,6 @@ void P_GroupLines(void)
 	}
 
 	Z_QuickmapPhysics();
-
 	// count number of lines in each sector
 	total = 0;
 	for (i = 0; i < numlines; i++) {
@@ -1445,8 +1547,6 @@ P_SetupLevel
 	lumpnum = W_GetNumForName(lumpname);
 
 	leveltime.w = 0;
-
-	Z_QuickmapScratch_4000();
 	
 	// note: most of this ordering is important 
 

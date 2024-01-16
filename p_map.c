@@ -1481,11 +1481,6 @@ boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far
 
     if ( P_CheckSight (thing, bombspot, thing_pos, bombspot_pos) ) {
 		// must be in direct path
-
-//		if (thing == 0) {
-//			I_Error("bad thing caught d");
-//		}
-
 		P_DamageMobj (thing, bombspot, bombsource, bombdamage - dist.h.intbits);
     }
     

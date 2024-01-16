@@ -34,11 +34,7 @@
 #include <dos.h>
 
 extern filehandle_t				wadfilehandle;
-extern lumpinfo_t far*             lumpinfo;
 extern uint16_t                     numlumps;
-byte near	lumpbytes[LUMPINFO_SIZE];
-
-
  
 
 
@@ -69,13 +65,13 @@ extern int8_t*                   reloadname;
 void W_AddFile(int8_t *filename)
 {
 	wadinfo_t			header;
-	lumpinfo_t*			lump_p;
+	lumpinfo_t far*		lump_p;
 	uint16_t			i;
 	uint16_t			j = 65535;
 	filehandle_t		handle;
 	int32_t				length;
 	uint16_t			startlump;
-	filelump_t*			fileinfo;
+	filelump_t far*		fileinfo;
 	filelump_t			singleinfo;
 	filehandle_t		storehandle;
 
@@ -130,10 +126,9 @@ void W_AddFile(int8_t *filename)
 	numlumps += header.numlumps;
 	
 	// numlumps 1264
+ 
 
-	 
-
-	lump_p = &lumpinfo[startlump];
+	lump_p = &lumpinfo4000[startlump];
 
 	storehandle = reloadname ? -1 : handle;
 
@@ -153,7 +148,7 @@ void W_AddFile(int8_t *filename)
 				// we need to backtrack and push all 0 length items to the position of the next nonzero length item so size calculations work
 				if (j != 65535) {
 					for (; j < i; j++) {
-						lumpinfo[j].position = fileinfo->filepos;
+						lumpinfo4000[j].position = fileinfo->filepos;
 					}
 					j = 65535;
 				}
@@ -171,7 +166,7 @@ void W_AddFile(int8_t *filename)
 				diff = 0;
 				lump_p->position = lastpos;
 			}
-			lumpinfo[i - 1].sizediff = diff;
+			lumpinfo4000[i - 1].sizediff = diff;
 
 		}
 		else {
@@ -179,7 +174,7 @@ void W_AddFile(int8_t *filename)
 		}
 		strncpy(lump_p->name, fileinfo->name, 8);
 	}
-	lumpinfo[i - 1].sizediff = 0;
+	lumpinfo4000[i - 1].sizediff = 0;
 
 	if (reloadname)
 		close(handle);
@@ -207,12 +202,16 @@ void W_InitMultipleFiles(int8_t** filenames)
 	//filelength_t         size;
 	//printf("\n\nsize is %u \n\n", _memmax());
 
+
+	// we dont map during init. We actually use conventional default memory and copy and remap this later.
+	//Z_QuickmapLumpInfo();
+
+
 	// open all the files, load headers, and count lumps
 	numlumps = 0;
 
 	// will be realloced as lumps are added
-	lumpinfo = (lumpinfo_t*)lumpbytes;
-
+ 
 	for (; *filenames; filenames++)
 		W_AddFile(*filenames);
 	//printf("\n\nsize is %u \n\n", _memmax());
@@ -221,6 +220,10 @@ void W_InitMultipleFiles(int8_t** filenames)
 	if (!numlumps)
 		I_Error("W_InitFiles: no files found");
 #endif
+
+
+	// not done, see above
+	//Z_UnmapLumpInfo();
 
  	//I_Error("size %li", size);
 

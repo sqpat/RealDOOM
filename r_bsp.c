@@ -125,9 +125,10 @@ R_ClipSolidWallSegment
     }
 
     // Bottom contained in start?
-    if (last <= start->last)
-	return;			
-		
+	if (last <= start->last) {
+		return;
+	}
+
     next = start;
     while (last >= (next+1)->first-1) {
 		// There is a fragment between two posts.

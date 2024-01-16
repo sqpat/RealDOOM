@@ -46,7 +46,6 @@
 
 
 
-lumpinfo_t far*             lumpinfo;
 uint16_t                     numlumps;
 
   
@@ -113,9 +112,7 @@ void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize) {
 
 }
 
-
-
-  
+ 
 
 
 //
@@ -135,8 +132,9 @@ int16_t W_CheckNumForName (int8_t* name)
 	int16_t         v2;
 	int16_t         v3;
 	int16_t         v4;
-    lumpinfo_t far* lump_p;
-
+	int16_t         returnval = -1;
+	lumpinfo_t far* lump_p;
+	lumpinfo_t far* lumpinfo = lumpinfo4000;
     // make the name into two integers for easy compares
     strncpy (name8.s,name,8);
 
@@ -152,24 +150,29 @@ int16_t W_CheckNumForName (int8_t* name)
     v4 = name8.x[3];
 
 
-    // scan backwards so patch lump files take precedence
-    lump_p = lumpinfo + numlumps;
+	Z_QuickmapLumpInfo();
+	// scan backwards so patch lump files take precedence
+    lump_p = lumpinfo4000 + numlumps;
 
-    while (lump_p-- != lumpinfo)
-    {
-        if ( *(int16_t *)lump_p->name == v1
-             && *(int16_t *)&lump_p->name[2] == v2
-             && *(int16_t *)&lump_p->name[4] == v3
-             && *(int16_t *)&lump_p->name[6] == v4
-             
-             )
-        {
-            return lump_p - lumpinfo;
+    while (true) {
+		if ( *(int16_t far *)lump_p->name == v1
+             && *(int16_t far *)&lump_p->name[2] == v2
+             && *(int16_t far *)&lump_p->name[4] == v3
+             && *(int16_t far *)&lump_p->name[6] == v4 ) {
+				returnval = lump_p - lumpinfo4000;
+				break;
         }
+		if (lump_p == lumpinfo4000) {
+			break;
+		}
+
+		lump_p--;
+
     }
 
+	Z_UnmapLumpInfo();
     // TFB. Not found.
-    return -1;
+    return returnval;
 }
 
 //
@@ -196,6 +199,15 @@ int16_t W_GetNumForName(int8_t* name)
 // W_LumpLength
 // Returns the buffer size needed to load the given lump.
 //
+
+int32_t W_LumpLength5000(int16_t lump) {
+	return (lumpinfo5000[lump + 1].position - lumpinfo5000[lump].position) + lumpinfo5000[lump].sizediff;
+}
+
+int32_t W_LumpLength4000(int16_t lump) {
+	return (lumpinfo4000[lump + 1].position - lumpinfo4000[lump].position) + lumpinfo4000[lump].sizediff;
+}
+
 int32_t W_LumpLength (int16_t lump)
 {
 	int32_t size;
@@ -203,12 +215,12 @@ int32_t W_LumpLength (int16_t lump)
 	if (lump >= numlumps)
         I_Error ("W_LumpLength: %i >= numlumps",lump);
 #endif
-    size = (lumpinfo[lump+1].position - lumpinfo[lump].position) + lumpinfo[lump].sizediff;
-#ifdef CHECK_FOR_ERRORS
-	if (size < 0) {
-		I_Error("\nfound it %i %i %i", lump, size, lumpinfo[lump].sizediff, lumpinfo[lump + 1].position, lumpinfo[lump].position);
-	}
-#endif
+
+
+	 
+	Z_QuickmapLumpInfo();
+	size = W_LumpLength4000(lump);
+	Z_UnmapLumpInfo();
 	return size;
 }
 
@@ -220,7 +232,8 @@ int32_t W_LumpLength (int16_t lump)
 //
 
 
-
+extern int8_t current4000State, last4000State, current5000State, last5000State;
+extern int setval;
 
 void
 W_ReadLump
@@ -238,7 +251,17 @@ W_ReadLump
     int32_t startoffset;
 	filelength_t         lumpsize;
 
- 
+	// use 5000 page if we are trying to write to 4000 page
+	boolean is5000Page = ((int32_t) dest >= 0x40000000) && ((int32_t)dest < 0x50000000);
+	lumpinfo_t far* lumpinfo = lumpinfo4000;
+
+	if (is5000Page) {
+		Z_QuickmapLumpInfo5000();
+		lumpinfo = lumpinfo5000;
+	} else { 
+		Z_QuickmapLumpInfo();
+	}
+
 
 #ifdef CHECK_FOR_ERRORS
 	if (lump >= numlumps)
@@ -246,7 +269,7 @@ W_ReadLump
 #endif
     l = lumpinfo+lump;
 	//lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
-	lumpsize = W_LumpLength(lump);
+	lumpsize = is5000Page ? W_LumpLength5000(lump) : W_LumpLength4000(lump);
 
 	if (dest == colormaps) {
 		lumpsize = 33 * 256; // hack to override lumpsize of colormaps
@@ -254,8 +277,7 @@ W_ReadLump
 
     I_BeginRead ();
         
-	if (wadfilehandle == -1)
-	{
+	if (wadfilehandle == -1){
 		// reloadable file, so use open / read / close
 		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1) {
 #ifdef CHECK_FOR_ERRORS
@@ -273,29 +295,23 @@ W_ReadLump
 	FAR_read(handle, dest, size ? size : lumpsize);
  
 
-	   if (wadfilehandle == -1)
-        close (handle);
+	if (wadfilehandle == -1) {
+		close(handle);
+	}
  
 
+	if (is5000Page) {
+		Z_UnmapLumpInfo5000();
+	} else {
+		Z_UnmapLumpInfo();
+	}
 
     I_EndRead ();
 }
 
 
 
- 
-
-int16_t W_CacheLumpNumCheck(int16_t lump) {
-
-#ifdef CHECK_FOR_ERRORS
-	if (lump >= numlumps) {
-		I_Error("W_CacheLumpNumCheck out of bounds: %i %i",  lump, error);
-		return true;
-	}
-#endif
-	return false;
-}
-
+  
  
  
 
@@ -328,8 +344,6 @@ W_CacheLumpNumDirectFragment
 	byte far*			dest,
     int16_t         pagenum,
     int32_t offset){
- 
-
  
 	W_ReadLump(lump, dest, offset, 16384);
     
