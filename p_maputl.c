@@ -149,9 +149,12 @@ P_PointOnLineSide16
 // Considers the line to be infinite
 // Returns side 0 or 1, -1 if box crosses the line.
 //
+
+extern fixed_t_union		tmbbox[4];
+
 boolean
 P_BoxOnLineSide
-( fixed_t_union*	tmbox,
+( 
 	slopetype_t	lineslopetype,
 	int16_t linedx,
 	int16_t linedy,
@@ -168,8 +171,8 @@ P_BoxOnLineSide
     switch (lineslopetype) {
       case ST_HORIZONTAL_HIGH:
 	  	temp.h.intbits = v1y;
-		p1 = tmbox[BOXTOP].w > temp.w;
-		p2 = tmbox[BOXBOTTOM].w > temp.w;
+		p1 = tmbbox[BOXTOP].w > temp.w;
+		p2 = tmbbox[BOXBOTTOM].w > temp.w;
 		if (linedx < 0) {
 			p1 ^= 1;
 			p2 ^= 1;
@@ -178,8 +181,8 @@ P_BoxOnLineSide
 	
       case ST_VERTICAL_HIGH:
 	  	temp.h.intbits = v1x;
-		p1 = tmbox[BOXRIGHT].w < temp.w;
-		p2 = tmbox[BOXLEFT].w < temp.w;
+		p1 = tmbbox[BOXRIGHT].w < temp.w;
+		p2 = tmbbox[BOXLEFT].w < temp.w;
 		if (linedy < 0)
 		{
 			p1 ^= 1;
@@ -188,13 +191,13 @@ P_BoxOnLineSide
 		break;
 	
       case ST_POSITIVE_HIGH:
-		p1 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXTOP].w, linedx, linedy, v1x, v1y);
-		p2 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXBOTTOM].w, linedx, linedy, v1x, v1y);
+		p1 = P_PointOnLineSide (tmbbox[BOXLEFT].w, tmbbox[BOXTOP].w, linedx, linedy, v1x, v1y);
+		p2 = P_PointOnLineSide (tmbbox[BOXRIGHT].w, tmbbox[BOXBOTTOM].w, linedx, linedy, v1x, v1y);
 		break;
 	
       case ST_NEGATIVE_HIGH:
-		p1 = P_PointOnLineSide (tmbox[BOXRIGHT].w, tmbox[BOXTOP].w, linedx, linedy, v1x, v1y);
-		p2 = P_PointOnLineSide (tmbox[BOXLEFT].w, tmbox[BOXBOTTOM].w, linedx, linedy, v1x, v1y);
+		p1 = P_PointOnLineSide (tmbbox[BOXRIGHT].w, tmbbox[BOXTOP].w, linedx, linedy, v1x, v1y);
+		p2 = P_PointOnLineSide (tmbbox[BOXLEFT].w, tmbbox[BOXBOTTOM].w, linedx, linedy, v1x, v1y);
 		break;
     }
 

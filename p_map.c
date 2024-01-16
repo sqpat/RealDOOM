@@ -240,7 +240,7 @@ boolean PIT_CheckLine (line_physics_t far* ld_physics, int16_t linenum)
 	}
 
 
-	if (P_BoxOnLineSide(tmbbox, lineslopetype, linedx, linedy, v1x, v1y) != -1) {
+	if (P_BoxOnLineSide(lineslopetype, linedx, linedy, v1x, v1y) != -1) {
 		return true;
 	}
 

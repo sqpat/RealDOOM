@@ -222,7 +222,7 @@ fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
 boolean 	P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 void 	P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
 
-boolean 	P_BoxOnLineSide (fixed_t_union* tmbox, slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
+boolean 	P_BoxOnLineSide (slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 
 
 extern lineopening_t lineopening;
