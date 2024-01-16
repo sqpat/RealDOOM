@@ -350,7 +350,35 @@ void P_LoadSubsectors(int16_t lump)
  
 
 
-extern uint8_t R_FlatNumForName(int8_t* name);
+
+//
+// R_FlatNumForName
+// Retrieval, get a flat number for a flat name.
+//
+uint8_t R_FlatNumForName(int8_t* name)
+{
+	int16_t         i;
+#ifdef CHECK_FOR_ERRORS
+	int8_t        namet[9];
+#endif
+
+	i = W_CheckNumForName(name);
+
+#ifdef CHECK_FOR_ERRORS
+	if (i == -1)
+	{
+		namet[8] = 0;
+		memcpy(namet, name, 8);
+		I_Error("\nR_FlatNumForName: %s not found", namet);
+	}
+
+	if (i - firstflat > 255) {
+		I_Error("Flat too big %i %i", i, firstflat);
+	}
+#endif
+
+	return (uint8_t)(i - firstflat);
+}
 
 //
 // P_LoadSectors
@@ -1052,14 +1080,9 @@ void P_SpawnSpecials(void)
 
 
 	//	Init other misc stuff
-	for (i = 0; i < MAXCEILINGS; i++)
-		activeceilings[i] = NULL_THINKERREF;
-
-	for (i = 0; i < MAXPLATS; i++)
-		activeplats[i] = NULL_THINKERREF;
-
-	for (i = 0; i < MAXBUTTONS; i++)
-		memset(&buttonlist[i], 0, sizeof(button_t));
+	memset(activeceilings, 0, MAXCEILINGS * sizeof(THINKERREF));
+	memset(activeplats, 0, MAXPLATS * sizeof(THINKERREF));
+	memset(buttonlist, 0, MAXBUTTONS* sizeof(button_t));
 
 
 }
@@ -1248,8 +1271,21 @@ void P_LoadLineDefs(int16_t lump)
 
 	Z_QuickmapPhysics();
 }
+extern uint8_t     R_CheckTextureNumForName(int8_t *name);
 
-uint8_t     R_TextureNumForNameB(int8_t* name);
+//
+// R_TextureNumForName
+// Calls R_CheckTextureNumForName,
+//  aborts with error message.
+//
+uint8_t     R_TextureNumForName(int8_t* name) {
+	uint8_t         i = R_CheckTextureNumForName(name);
+
+	if (i == BAD_TEXTURE) {
+		I_Error("96 %s", name); // \nR_TextureNumForName: %s not found
+	}
+	return i;
+}
 
 
 //
@@ -1295,9 +1331,9 @@ void P_LoadSideDefs(int16_t lump)
 		memcpy(texnamemid, msd->midtexture, 8);
 
   
-		toptex = R_TextureNumForNameB(texnametop);
-		bottex = R_TextureNumForNameB(texnamebot);
-		midtex = R_TextureNumForNameB(texnamemid);
+		toptex = R_TextureNumForName(texnametop);
+		bottex = R_TextureNumForName(texnamebot);
+		midtex = R_TextureNumForName(texnamemid);
 
 		// sides gets unloaded by the above calls, and theres not enough room in ems to 
 		// hold it in memory in the worst case alongside data

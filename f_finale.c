@@ -80,7 +80,7 @@ int8_t *	finaleflat;
 
 void	F_StartCast (void);
 void	F_CastTicker (void);
-boolean F_CastResponder (event_t *ev);
+boolean F_CastResponder (event_t far *ev);
 void	F_CastDrawer (void);
 
 
@@ -330,7 +330,7 @@ void F_StartFinale (void)
 
 
 
-boolean F_Responder (event_t *event)
+boolean F_Responder (event_t  far*event)
 {
     if (finalestage == 2)
 	return F_CastResponder (event);

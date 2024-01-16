@@ -36,7 +36,7 @@
 //
 
 // Called by main loop.
-boolean ST_Responder (event_t* ev);
+boolean ST_Responder (event_t far* ev);
 
 // Called by main loop.
 void ST_Ticker (void);
@@ -60,7 +60,6 @@ typedef enum
 
 
  
-boolean ST_Responder(event_t* ev);
 
 
 //

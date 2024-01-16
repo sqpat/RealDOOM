@@ -34,7 +34,7 @@
 
 
 // Called by main loop.
-boolean AM_Responder (event_t* ev);
+boolean AM_Responder (event_t far* ev);
 
 // Called by main loop.
 void AM_Ticker (void);

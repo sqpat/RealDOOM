@@ -471,8 +471,8 @@ void AM_initVariables(void)
 // 
 //
 // ehh.. gross but it's not worth setting up its own EMS page for.
-byte ammnumpatchbytes[524];
-uint16_t ammnumpatchoffsets[10];
+//byte ammnumpatchbytes[524];
+//uint16_t ammnumpatchoffsets[10];
 
 
 void AM_loadPics(void)
@@ -592,7 +592,7 @@ void AM_maxOutWindowScale(void)
 //
 boolean
 AM_Responder
-( event_t*	ev )
+( event_t far*	ev )
 {
 
 	boolean rc;

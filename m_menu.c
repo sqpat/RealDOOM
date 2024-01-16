@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <alloca.h>
 
 
 #include "doomdef.h"
@@ -96,66 +97,7 @@ void    (*messageRoutine)(int16_t response);
 
 #define SAVESTRINGSIZE  24
 
-int8_t menugraphics[NUM_MENU_ITEMS][9] = {
-		"M_DOOM",
-		"M_RDTHIS",
-		"M_OPTION",
-		"M_QUITG",
-		"M_NGAME",
-
-		"M_SKULL1`",//5
-		"M_SKULL2",
-		"M_THERMO",
-		"M_THERMR",
-		"M_THERMM",
-
-		"M_THERML",//10
-		"M_ENDGAM",
-		"M_PAUSE",
-		"M_MESSG",
-		"M_MSGON",
-
-		"M_MSGOFF", // 15
-		"M_EPISOD",
-		"M_EPI1",
-		"M_EPI2",
-		"M_EPI3",
-
-		"M_HURT", //20
-		"M_JKILL",
-		"M_ROUGH",
-		"M_SKILL",
-		"M_NEWG",
-
-		"M_ULTRA", //25
-		"M_NMARE",
-		"M_SVOL",
-		"M_OPTTTL",
-		"M_SAVEG",
-
-		"M_LOADG", //30
-		"M_DISP",
-		"M_MSENS",
-		"M_GDHIGH",
-		"M_GDLOW",
-
-		"M_DETAIL", // 35
-		"M_DISOPT",
-		"M_SCRNSZ",
-		"M_SGTTL",
-		"M_LGTTL",
-
-		"M_SFXVOL",//40
-		"M_MUSVOL",
-		"M_LSLEFT",
-		"M_LSCNTR",
-		"M_LSRGHT"
-
-		//todo extend for commercial?
-		// "M_EPI4"
-
-
-};
+ 
 
 int16_t gammamsg[5] =
 {
@@ -1394,7 +1336,7 @@ M_WriteText
 //
 // M_Responder
 //
-boolean M_Responder (event_t*  ev)
+boolean M_Responder (event_t far*  ev)
 {
 	int16_t             ch;
 	int16_t             i;
@@ -1866,8 +1808,15 @@ void M_Reload(void) {
 	uint32_t size = 0;
 	byte far* dst = menugraphicspage0;
 	uint8_t pageoffset = 0;
+
+	int8_t* menugraphics = alloca(NUM_MENU_ITEMS * 9);
+
+	FILE *fp = fopen("D_MENUG.BIN", "rb"); // clear old file
+	fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
+	fclose(fp);
+
 	for (i = 0; i < NUM_MENU_ITEMS; i++) {
-		int16_t lump = W_GetNumForName(menugraphics[i]);
+		int16_t lump = W_GetNumForName(&menugraphics[i*9]);
 		uint16_t lumpsize = W_LumpLength(lump);
 		if (i == 27) { // (size + lumpsize) > 65535u) {
 			// repage

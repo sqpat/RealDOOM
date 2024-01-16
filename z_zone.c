@@ -153,22 +153,7 @@ void far* Z_MallocConventional(
 
 
 
-
-  
-
-byte *I_ZoneBaseEMS(int32_t *size, int16_t *emshandle);
-
-
-void Z_InitEMS(void)
-{
-
-	int32_t size;
-	//todo figure this out based on settings, hardware, etc
-	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
-
-	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
-	
-}
+ 
 
 // EMS 4.0 functionality
 
@@ -977,4 +962,17 @@ void Z_QuickmapByTaskNum(int8_t tasknum) {
 		default:
 			I_Error("78 %hhi", tasknum); // bad tasknum
 	}
+}
+
+extern void D_InitStrings();
+extern void P_Init();
+
+
+void Z_ClearDeadCode() {
+	byte far *startaddr =	(byte far*)D_InitStrings;
+	byte far *endaddr =		(byte far*)P_Init;
+	uint16_t size = endaddr - startaddr;
+	FAR_memset(startaddr, 0, size);
+	//13500 or so
+	//DEBUG_PRINT("\nClearing out %u bytes of initialization code", size);
 }

@@ -753,3 +753,64 @@ void I_EndRead(void)
 #endif
 	*/
 }
+
+
+//
+// Disk icon flashing
+//
+
+void I_InitDiskFlash(void)
+{
+	/*
+	//todo: when re-implementing, pull this out
+	byte diskgraphicbtyes[392];// cdrom is 328 and can fit in here too.
+
+	void *pic;
+	fixed_t_union temp;
+
+	if (M_CheckParm("-cdrom"))
+	{
+		pic = W_CacheLumpNameEMSAsPatch("STCDDISK", PU_CACHE);
+	}
+	else
+	{
+		pic = W_CacheLumpNameEMSAsPatch("STDISK", PU_CACHE);
+	}
+	temp = destscreen;
+	destscreen.w = 0xac000000;
+	V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, pic);
+	destscreen = temp;
+	*/
+}
+
+//
+// I_InitGraphics
+//
+void I_InitGraphics(void)
+{
+	if (novideo)
+	{
+		return;
+	}
+	grmode = true;
+	regs.w.ax = 0x13;
+	intx86(0x10, (union REGS *)&regs, &regs);
+	pcscreen = currentscreen = (byte far*) 0xA0000000L;
+	destscreen.w = 0xA0004000;
+
+	outp(SC_INDEX, SC_MEMMODE);
+	outp(SC_INDEX + 1, (inp(SC_INDEX + 1)&~8) | 4);
+	outp(GC_INDEX, GC_MODE);
+	outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~0x13);
+	outp(GC_INDEX, GC_MISCELLANEOUS);
+	outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~2);
+	outpw(SC_INDEX, 0xf02);
+	FAR_memset(pcscreen, 0, 0xFFFF);
+	outp(CRTC_INDEX, CRTC_UNDERLINE);
+	outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1)&~0x40);
+	outp(CRTC_INDEX, CRTC_MODE);
+	outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1) | 0x40);
+	outp(GC_INDEX, GC_READMAP);
+	I_SetPalette(0);
+	I_InitDiskFlash();
+}

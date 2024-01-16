@@ -61,11 +61,10 @@
 #include "d_main.h"
 #include "p_local.h"
 
-
+#include <malloc.h>
 
 #define MAX_STRINGS 306
 
-extern uint16_t stringoffsets[MAX_STRINGS];
 extern uint16_t stringbuffersize;
 extern uint8_t     sfxVolume;
 extern uint8_t     musicVolume;
@@ -675,8 +674,12 @@ void D_DoomMain2(void)
 	union REGS regs;
 	int8_t          textbuffer[256];
 
+	//byte far* someptr = _fmalloc(1);
+	//I_Error("\npointer is %Fp", someptr);
+
 	// Removed
 	//FindResponseFile ();
+	//P_Init();
 
 	IdentifyVersion();
 

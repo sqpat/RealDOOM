@@ -1334,10 +1334,6 @@ typedef struct
 
 } mobjinfo_t;
 
-#define size_thinkerlist				(sizeof(thinker_t) * MAX_THINKERS)
-#define size_mobjinfo size_thinkerlist + sizeof(mobjinfo_t) * NUMMOBJTYPES
-
-#define mobjinfo ((mobjinfo_t far *) (0x90000000 + size_thinkerlist))
 
  
 extern int32_t getMobjMass(uint8_t id);

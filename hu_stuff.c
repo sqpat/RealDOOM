@@ -145,7 +145,7 @@ void HU_Ticker(void) {
 #define QUEUESIZE		128
 
  
-boolean HU_Responder(event_t *ev)
+boolean HU_Responder(event_t far *ev)
 {
 
 	boolean eatkey = false;

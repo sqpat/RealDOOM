@@ -27,7 +27,7 @@ extern int8_t*		wadfiles[MAXWADFILES];
 void D_DoomMain (void);
 
 // Called by IO functions when input is detected.
-void D_PostEvent (event_t* ev);
+void D_PostEvent (event_t far* ev);
 
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 	#define BGCOLOR         7

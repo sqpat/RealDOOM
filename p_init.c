@@ -19,7 +19,6 @@
 
 
 #include <math.h>
-
 #include "z_zone.h"
 
 #include "m_misc.h"
@@ -57,45 +56,15 @@ extern int16_t             numtextures;
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
-uint8_t     R_CheckTextureNumForNameA(int8_t *name)
-{
-	uint8_t         i;
-	texture_t far* texture;
-	// "NoTexture" marker.
-	if (name[0] == '-')
-		return 0;
+extern uint8_t     R_TextureNumForName(int8_t* name);
 
-
-	for (i = 0; i < numtextures; i++) {
-		texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[i]]);
+extern uint8_t     R_CheckTextureNumForName(int8_t *name);
+  
 
 
 
-		if (!strncasecmp(texture->name, name, 8)) {
-			return i;
-		}
-	}
 
-	 
-	return BAD_TEXTURE;
-}
-
-
-
-//
-// R_TextureNumForName
-// Calls R_CheckTextureNumForName,
-//  aborts with error message.
-//
-uint8_t     R_TextureNumForNameA(int8_t* name) {
-	uint8_t         i = R_CheckTextureNumForNameA(name);
-
-	if (i == BAD_TEXTURE) {
-		I_Error("96 %s", name); // \nR_TextureNumForName: %s not found
-	}
-	return i;
-}
-
+#define NUMSWITCHDEFS 41
 
 //
 // P_InitSwitchList
@@ -109,6 +78,14 @@ void P_InitSwitchList(void)
 	//
 // CHANGE THE TEXTURE OF A WALL SWITCH TO ITS OPPOSITE
 //
+	/*
+	switchlist_t *alphSwitchList = alloca(sizeof(switchlist_t)* NUMSWITCHDEFS);
+
+	FILE *fp = fopen("D_SWITCH.BIN", "rb"); // clear old file
+	fread(alphSwitchList, sizeof(switchlist_t), NUMSWITCHDEFS, fp);
+	fclose(fp);
+	*/
+
 	switchlist_t alphSwitchList[] =
 	{
 		// Doom shareware episode 1 switches
@@ -161,8 +138,6 @@ void P_InitSwitchList(void)
 	};
 
 
-
-
 	episode = 1;
 
 	if (registered)
@@ -180,8 +155,8 @@ void P_InitSwitchList(void)
 
 		if (alphSwitchList[i].episode <= episode) {
 
-			switchlist[index++] = R_TextureNumForNameA(alphSwitchList[i].name1);
-			switchlist[index++] = R_TextureNumForNameA(alphSwitchList[i].name2);
+			switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name1);
+			switchlist[index++] = R_TextureNumForName(alphSwitchList[i].name2);
 		}
 	}
 
@@ -216,40 +191,12 @@ typedef struct
 
 
 
+extern uint8_t R_FlatNumForName(int8_t* name);
 
 
 
-//
-// R_FlatNumForName
-// Retrieval, get a flat number for a flat name.
-//
-uint8_t R_FlatNumForName(int8_t* name)
-{
-	int16_t         i;
-#ifdef CHECK_FOR_ERRORS
-	int8_t        namet[9];
-#endif
 
-	i = W_CheckNumForName(name);
-
-#ifdef CHECK_FOR_ERRORS
-	if (i == -1)
-	{
-		namet[8] = 0;
-		memcpy(namet, name, 8);
-		I_Error("\nR_FlatNumForName: %s not found", namet);
-	}
-
-	if (i - firstflat > 255) {
-		I_Error("Flat too big %i %i", i, firstflat);
-	}
-#endif
-
-	return (uint8_t)(i - firstflat);
-}
-
-
-
+#define NUMANIMDEFS 23
 void P_InitPicAnims(void)
 {
 	int16_t		i;
@@ -262,6 +209,14 @@ void P_InitPicAnims(void)
 //  and end entry, in the order found in
 //  the WAD file.
 //
+	/*
+	animdef_t* animdefs = alloca(sizeof(animdef_t)* NUMANIMDEFS);
+	FILE *fp = fopen("D_ANIMS.BIN", "rb"); // clear old file
+	fread(animdefs, sizeof(animdef_t), NUMANIMDEFS, fp);
+	fclose(fp);
+	DEBUG_PRINT("\n1");
+	*/
+
 	animdef_t		animdefs[] =
 	{
 		{false,	"NUKAGE3",	"NUKAGE1"},
@@ -300,11 +255,11 @@ void P_InitPicAnims(void)
 		if (animdefs[i].istexture)
 		{
 			// different episode ?
-			if (R_CheckTextureNumForNameA(animdefs[i].startname) == BAD_TEXTURE)
+			if (R_CheckTextureNumForName(animdefs[i].startname) == BAD_TEXTURE)
 				continue;
 
-			lastanim->picnum = R_TextureNumForNameA(animdefs[i].endname);
-			lastanim->basepic = R_TextureNumForNameA(animdefs[i].startname);
+			lastanim->picnum = R_TextureNumForName(animdefs[i].endname);
+			lastanim->basepic = R_TextureNumForName(animdefs[i].startname);
 		}
 		else
 		{
@@ -396,7 +351,7 @@ R_InstallSpriteLump
 	sprtemp[frame].flip[rotation] = (byte)flipped;
 }
 
-
+ 
 
 
  extern spritedef_t far* sprites;
@@ -426,7 +381,6 @@ extern int8_t current4000State, last4000State;
 
 void R_InitSpriteDefs()
 {
-	int8_t**      check;
 	int16_t         i;
 	int16_t         l;
 	int32_t         intname;
@@ -438,7 +392,6 @@ void R_InitSpriteDefs()
 	spriteframe_t far* spriteframes;
 	uint16_t		currentspritememoryoffset;
 	//int32_t totalsize = 0;
-
 	int8_t *namelist[NUMSPRITES] = {
 		"TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
 		"MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
@@ -455,19 +408,19 @@ void R_InitSpriteDefs()
 		"COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
 		"HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2"
 	};
+	/*
+	int8_t* namelist = alloca(5 * NUMSPRITES);
+	FILE * fp = fopen("D_SPLIST.BIN", "rb"); // clear old file
+	fread(namelist,  5, NUMSPRITES, fp);
+	fclose(fp);
+	*/
+
 	
 	sprtemp = alloca(29 * sizeof(spriteframe_t));
 	// count the number of sprite names
-	check = namelist;
 
 
-	// I don't know why but the earlier null loop check stopped working.
-	// is there any reason we cant just set it to numsprites...?
-	/*
-	while (*check != NULL)
-		check++;
-		*/
-
+ 
 	numsprites = NUMSPRITES;
 
 	if (!numsprites)
@@ -488,10 +441,12 @@ void R_InitSpriteDefs()
 	for (i = 0; i < numsprites; i++)
 	{
 		spritename = namelist[i];
+		//spritename = &namelist[i*5];
 		FAR_memset(sprtemp, -1, sizeof(sprtemp));
 
 		maxframe = -1;
 		intname = *(int32_t *)namelist[i];
+		//intname = *(int32_t *)namelist[i*5];
 
 		// scan the lumps,
 		//  filling in the frames for whatever is found
@@ -596,12 +551,18 @@ void R_InitSprites()
 //
 void P_Init(void)
 {
+	/*
+	FILE *fp = fopen("D_MENUG.BIN", "wb"); // clear old file
+	fwrite(menugraphics, 9, NUM_MENU_ITEMS, fp);
+	fclose(fp);
+	I_Error("done");
+	*/
+
 	Z_QuickmapRender();
 	Z_QuickmapLumpInfo();
 	P_InitSwitchList();
 	P_InitPicAnims();
-	R_InitSprites();
-	
+	R_InitSprites();	
 	Z_QuickmapPhysics();
 
 

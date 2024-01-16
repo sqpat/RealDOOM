@@ -223,6 +223,8 @@ void Z_LinkEMSVariables();
 void Z_LinkConventionalVariables();
 void Z_LoadBinaries();
 
+void Z_ClearDeadCode();
+
 #define PAGE_TYPE_PHYSICS 0
 #define PAGE_TYPE_RENDER 1
 

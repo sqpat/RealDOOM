@@ -382,7 +382,7 @@ void G_BuildTiccmd (int8_t index)
 // G_Responder  
 // Get info needed to make ticcmd_ts for the players.
 // 
-boolean G_Responder (event_t* ev)  {   // any other key pops up menu if in demos
+boolean G_Responder (event_t far* ev)  {   // any other key pops up menu if in demos
 	if (gameaction == ga_nothing && !singledemo &&
 		(demoplayback || gamestate == GS_DEMOSCREEN)) {
 		if (ev->type == ev_keydown ||

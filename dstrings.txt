@@ -289,7 +289,7 @@ look, bud. you leave now\nand you forfeit your body count!
 just leave. when you come\nback, i'll be waiting with a bat.
 you're lucky i don't smack\nyou for thinking about leaving.
 NEWLEVEL
-===========================================================================\nATTENTION:  This version of DOOM has been modified.  If you would like to\nget a copy of the original game, call 1-800-IDGAMES or see the readme file.\n        You will not receive technical support for modified games.\n                      press enter to continue\n===========================================================================\n
+
 ===========================================================================\n              This version is NOT SHAREWARE, do not distribute!\n         Please report software piracy to the SPA: 1-800-388-PIR8\n===========================================================================\n
 ===========================================================================\n                            Do not distribute!\n         Please report software piracy to the SPA: 1-800-388-PIR8\n===========================================================================\n
 	registered version.\n

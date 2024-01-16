@@ -276,7 +276,7 @@ found:
 	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE			FWIPE				MENU		INTERMISSION
 	// BLOCK
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
-	//            						visplane stuff			screen4 0x9c00
+	//   events and common vars			visplane stuff			screen4 0x9c00
 	// 0x9000 block		thinkers		viewangles, drawsegs								palettebytes	fwipe temp data					screen1
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
 	//									tex cache arrays
@@ -327,7 +327,7 @@ void Z_LinkEMSVariables() {
 	offset_status = 0u;
 	//physics mapping
  
-	offset_physics = size_intercepts;
+	offset_physics = size_ammnumpatchoffsets;
 
 	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
 	offset_render = size_ceilingclip;
@@ -344,8 +344,8 @@ void Z_LinkEMSVariables() {
 
 	//screen4 = MK_FP(segment, offset_status);
 
-	printf("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
-	printf("\n   0x9000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
+	DEBUG_PRINT("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
+	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
 
 	segment = 0x8000;
 	offset_render = 0u;
@@ -396,7 +396,7 @@ void Z_LinkEMSVariables() {
 	// 0x5000  63150  63150  00000  XXXXX  00000
 	// 0x4000  00000  00000  00000  00000  00000
 
-	printf("\n   0x8000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
+	DEBUG_PRINT("\n   0x8000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
@@ -498,7 +498,7 @@ void Z_LinkEMSVariables() {
 	}
 
 
-	printf("\n   0x7000:      XXXXX   XXXXX   %05u   00000   XXXXX", 0 - offset_status);
+	DEBUG_PRINT("\n   0x7000:      XXXXX   XXXXX   %05u   00000   XXXXX", 0 - offset_status);
 	segment = 0x6000;
 
 
@@ -509,7 +509,7 @@ void Z_LinkEMSVariables() {
 
 	offset_render = size_texturedefs_bytes;
 
-	printf("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", offset_physics, offset_render, offset_status);
+	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", offset_physics, offset_render, offset_status);
 
 	segment = 0x5000;
 	offset_render = 0u;
@@ -521,19 +521,28 @@ void Z_LinkEMSVariables() {
 	//demobuffer = MK_FP(segment, 0);
 
 
-	printf("\n   0x5000:      %05u   %05u   XXXXX   XXXXX   00000", offset_physics, offset_physics);
+	DEBUG_PRINT("\n   0x5000:      %05u   %05u   XXXXX   XXXXX   00000", offset_physics, offset_physics);
 
 	segment = 0x4000;
 	offset_render = 0u;
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	printf("\n   0x4000:      %05u   XXXXX   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
+	DEBUG_PRINT("\n   0x4000:      %05u   XXXXX   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
 
 
 
 }
 
+extern byte* pageFrameArea;
+extern int16_t emshandle;
+
+void Z_InitEMS(void) {
+	int32_t size;
+	//todo figure this out based on settings, hardware, etc
+	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
+	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
+}
 
 void Z_LoadBinaries() {
 	FILE* fp;

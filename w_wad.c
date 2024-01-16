@@ -96,10 +96,10 @@ void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize) {
 	byte far* destloc = dest;
 	while (totalreadsize < totalsize) {
 
-		DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
+		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
 		remaining = totalsize - totalreadsize;
 		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
-		DEBUG_PRINT("%u %u", totalsize, copysize);
+		//DEBUG_PRINT("%u %u", totalsize, copysize);
 		read(filehandle, stackbuffer, copysize);
 		lseek(filehandle, copysize, SEEK_CUR);
 

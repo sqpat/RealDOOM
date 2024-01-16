@@ -318,7 +318,7 @@ int16_t getStringLength(int16_t stringindex);
 #define QUITMSGD26			288
 #define QUITMSGD27			289
 #define NEWLEVELMSG			290
-#define MODIFIED_GAME		291
+//#define MODIFIED_GAME		291
 #define NOT_SHAREWARE		292
 #define DO_NOT_DISTRIBUTE	293
 #define VERSION_REGISTERED	294

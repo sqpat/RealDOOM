@@ -89,7 +89,7 @@ extern int16_t             numtextures;
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
-uint8_t     R_CheckTextureNumForNameB(int8_t *name)
+uint8_t     R_CheckTextureNumForName(int8_t *name)
 {
 	uint8_t         i;
 	texture_t* texture;
@@ -114,20 +114,7 @@ uint8_t     R_CheckTextureNumForNameB(int8_t *name)
 
 
 //
-// R_TextureNumForName
-// Calls R_CheckTextureNumForName,
-//  aborts with error message.
-// 
-uint8_t     R_TextureNumForNameB(int8_t* name)
-{
-	uint8_t         i = R_CheckTextureNumForNameB(name);
  
-
-	if (i == BAD_TEXTURE) {
-		I_Error("97 %s ", name); // R_TextureNumForName: %s not found B
-	}
-	return i;
-}
 
 
 void G_DoLoadLevel(void)
@@ -140,12 +127,12 @@ void G_DoLoadLevel(void)
 	// depending on the current episode, and the game version.
 	if (commercial)
 	{
-		skytexture = R_TextureNumForNameB("SKY3");
+		skytexture = R_TextureNumForName("SKY3");
 		if (gamemap < 12)
-			skytexture = R_TextureNumForNameB("SKY1");
+			skytexture = R_TextureNumForName("SKY1");
 		else
 			if (gamemap < 21)
-				skytexture = R_TextureNumForNameB("SKY2");
+				skytexture = R_TextureNumForName("SKY2");
 	}
 #endif
 
@@ -268,27 +255,27 @@ G_InitNew
 	// set the sky map for the episode
 	if (commercial)
 	{
-		skytexture = R_TextureNumForNameB("SKY3");
+		skytexture = R_TextureNumForName("SKY3");
 		if (gamemap < 12)
-			skytexture = R_TextureNumForNameB("SKY1");
+			skytexture = R_TextureNumForName("SKY1");
 		else
 			if (gamemap < 21)
-				skytexture = R_TextureNumForNameB("SKY2");
+				skytexture = R_TextureNumForName("SKY2");
 	}
 	else
 		switch (episode)
 		{
 		case 1:
-			skytexture = R_TextureNumForNameB("SKY1");
+			skytexture = R_TextureNumForName("SKY1");
 			break;
 		case 2:
-			skytexture = R_TextureNumForNameB("SKY2");
+			skytexture = R_TextureNumForName("SKY2");
 			break;
 		case 3:
-			skytexture = R_TextureNumForNameB("SKY3");
+			skytexture = R_TextureNumForName("SKY3");
 			break;
 		case 4:       // Special Edition sky
-			skytexture = R_TextureNumForNameB("SKY4");
+			skytexture = R_TextureNumForName("SKY4");
 			break;
 		}
 
