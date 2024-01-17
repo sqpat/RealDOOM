@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/01/16 15:39:00
+Created on:       24/01/17 10:50:08
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -51,7 +51,7 @@ p_user_TEXT            CODE           AUTO           0fe9:1c00       00000711
 r_bsp_TEXT             CODE           AUTO           0fe9:2320       00000893
 r_data_TEXT            CODE           AUTO           0fe9:2bc0       000009dc
 r_draw_TEXT            CODE           AUTO           0fe9:35a0       000008e9
-r_main_TEXT            CODE           AUTO           0fe9:3e90       000009d0
+r_main_TEXT            CODE           AUTO           0fe9:3e90       000009cb
 r_plane_TEXT           CODE           AUTO           0fe9:4860       0000080b
 r_segs_TEXT            CODE           AUTO           0fe9:5070       0000143e
 r_things_TEXT          CODE           AUTO           0fe9:64b0       00001059
@@ -887,11 +887,11 @@ Module: r_main.obj(C:\REALDOOM\r_main.c)
 2b1f:2a8c      _fixedcolormap
 2b1f:2a90      _projection
 2b1f:2a94      _centeryfrac_shiftright4
-2b1f:2a98      _basecolfunc
-2b1f:2a9c      _spanfunc
-2b1f:2aa0      _fuzzcolfunc
-2b1f:2aa4      _colfunc
-2b1f:2aa8      _centeryfrac
+2b1f:2a98      _centeryfrac
+2b1f:2a9c      _basecolfunc
+2b1f:2aa0      _spanfunc
+2b1f:2aa4      _fuzzcolfunc
+2b1f:2aa8      _colfunc
 2b1f:2aac      _centerxfrac
 2b1f:2ab0      _viewsin
 2b1f:2ab4      _viewcos
@@ -1085,9 +1085,9 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 2b1f:2c30      _pageFrameArea
 2b1f:2c34      _conventionalmemoryblock
 2b1f:2c38      _pageswapargseg
-2b1f:2c3a      _pagenum9000
-2b1f:2c3c      _pageswapargoff
-2b1f:2c3e      _emshandle
+2b1f:2c3a      _emshandle
+2b1f:2c3c      _pagenum9000
+2b1f:2c3e      _pageswapargoff
 Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
 2b1f:2c40      _w_health
 2b1f:2c50      _w_ammo
@@ -1911,4 +1911,4 @@ C:\WATCOM\lib286\dos\clibl.lib
 Stack size:  0800 (2048.)
 Memory size:  0002f4d0 (193744.)
 Entry point address: 2121:4fe4
-Link time: 00:00.84
+Link time: 00:00.95

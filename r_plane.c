@@ -560,6 +560,10 @@ void R_DrawPlanes (void)
 		
     }
 
+	// puts 0x5C00 back for now
+	//Z_QuickmapTrig();
+
+
 	//Z_ChangeTagEMS(ds_sourceRef, PU_CACHE);
 
 	/*

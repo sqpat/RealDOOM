@@ -725,7 +725,10 @@ void R_RenderPlayerView ()
 #endif
 
     // Check for new console commands.
-    NetUpdate ();
+    // 0x5c00 currently used in R_DrawPlanes as flat cache, but also needed in netupdate for events
+	// either one extra page swap per frame or comment this out
+	
+	//NetUpdate ();
 
     R_DrawMasked ();
 #ifdef DETAILED_BENCH_STATS
@@ -733,7 +736,7 @@ void R_RenderPlayerView ()
 #endif
 
 	// Check for new console commands.
-    NetUpdate ();	
 	Z_QuickmapPhysics();
+	NetUpdate ();
 
 }

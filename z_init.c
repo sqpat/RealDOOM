@@ -516,7 +516,7 @@ void Z_LinkEMSVariables() {
 	offset_physics = 0u;
 	offset_status = 0u;
 
-	offset_physics += size_states;
+	offset_physics += size_events;
 
 	//demobuffer = MK_FP(segment, 0);
 

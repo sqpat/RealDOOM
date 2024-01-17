@@ -203,14 +203,13 @@ typedef struct
 #define size_thinkerlist		(sizeof(thinker_t) * MAX_THINKERS)
 #define size_mobjinfo			size_thinkerlist + sizeof(mobjinfo_t) * NUMMOBJTYPES
 #define size_intercepts			size_mobjinfo + sizeof(intercept_t) * MAXINTERCEPTS
-#define size_events				size_intercepts + sizeof(event_t) * MAXEVENTS
-#define size_ammnumpatchbytes	size_events + 524
+#define size_ammnumpatchbytes	size_intercepts + 524
 #define size_ammnumpatchoffsets	size_ammnumpatchbytes + (sizeof(uint16_t) * 10)
 #define thinkerlist			((thinker_t far*)	0x90000000)
 #define mobjinfo			((mobjinfo_t far *) (0x90000000 + size_thinkerlist))
 #define intercepts			((intercept_t far*) (0x90000000 + size_mobjinfo ))
-#define events				((event_t far *)	(0x90000000 + size_intercepts ))
-#define ammnumpatchbytes	((byte far *)		(0x90000000 + size_events ))
+//#define events				((event_t far *)	(0x90000000 + size_intercepts ))
+#define ammnumpatchbytes	((byte far *)		(0x90000000 + size_intercepts ))
 #define ammnumpatchoffsets	((uint16_t far*)	(0x90000000 + size_ammnumpatchbytes ))
 
 //extern intercept_t	*intercepts;// [MAXINTERCEPTS];

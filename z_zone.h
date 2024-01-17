@@ -216,6 +216,7 @@ void Z_QuickmapLumpInfo();
 void Z_UnmapLumpInfo();
 void Z_QuickmapLumpInfo5000();
 void Z_UnmapLumpInfo5000();
+void Z_QuickmapTrig();
 
 
 void Z_GetEMSPageMap();

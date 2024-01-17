@@ -1153,8 +1153,10 @@ typedef struct state_s
 
 //extern state_t* states;
 #define size_states size_tantoangle + sizeof(state_t) * NUMSTATES
+#define size_events	size_states + sizeof(event_t) * MAXEVENTS
 
 #define states ((state_t far*) (0x50000000 + size_tantoangle))
+#define events ((event_t far*) (0x50000000 + size_states ))
 
 
 #define MT_PLAYER 0
