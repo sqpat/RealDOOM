@@ -10,14 +10,40 @@ libpath %WATCOM%\lib286\dos
 format dos
 name doom16
 
+file i_main.obj
+file i_quit.obj
 file i_ibm.obj
 file i_sound.obj
 file tables.obj
 file d_main.obj
 file d_net.obj
 file g_game.obj
-file m_menu.obj
 file m_misc.obj
+file am_map.obj
+file st_stuff.obj
+file st_lib.obj
+file hu_stuff.obj
+file hu_lib.obj
+file m_menu.obj
+file s_sound.obj
+file sounds.obj
+file f_wipe.obj
+file dmx.obj
+file dutils.obj
+file v_extra.obj
+file wi_stuff.obj
+
+#these files put in overlay 
+file f_finale.obj
+file p_setup.obj
+file g_setup.obj
+file r_setup.obj
+file st_setup.obj
+file hu_setup.obj
+file p_saveg.obj
+
+
+NEWSEGMENT
 file p_ceilng.obj
 file p_doors.obj
 file p_enemy.obj
@@ -35,6 +61,9 @@ file p_mobj.obj
 file p_telept.obj
 file p_tick.obj
 file p_user.obj
+
+
+NEWSEGMENT
 file r_bsp.obj
 file r_data.obj
 file r_draw.obj
@@ -45,38 +74,9 @@ file r_things.obj
 file w_wad.obj
 file v_video.obj
 file z_zone.obj
-file st_stuff.obj
-file st_lib.obj
-file hu_stuff.obj
-file hu_lib.obj
-file s_sound.obj
-file sounds.obj
-file dutils.obj
 file info.obj
-file dmx.obj
 file d_math.obj
-file am_map.obj
 
-
-#these files put in overlay 
-file f_finale.obj
-file i_quit.obj
-file v_extra.obj
-
-file wi_stuff.obj
-
-file i_main.obj
-file f_wipe.obj
-
-
-file p_setup.obj
-file g_setup.obj
-
-file r_setup.obj
-
-file st_setup.obj
-file hu_setup.obj
-file p_saveg.obj
 
 NEWSEGMENT
 
