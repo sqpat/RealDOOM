@@ -104,7 +104,7 @@ extern int16_t             numtextures;
 // Lookup tables for map data.
 //
 extern int16_t		numsprites;
- extern spritedef_t far*	sprites;
+extern spritedef_t far*	sprites;
 
 extern int16_t		numvertexes;
 extern vertex_t far*	vertexes;
@@ -182,7 +182,7 @@ extern fineangle_t	rw_normalangle;
 #define NUM_VISPLANE_PAGES 3
 #define MAXEMSVISPLANES (NUM_VISPLANE_PAGES * VISPLANES_PER_EMS_PAGE)
 
- extern visplaneheader_t	*visplaneheaders;// [MAXEMSVISPLANES];
+ extern visplaneheader_t far	*visplaneheaders;// [MAXEMSVISPLANES];
 
 #define MAXCONVENTIONALVISPLANES	60
   

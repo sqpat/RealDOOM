@@ -148,7 +148,7 @@ boolean                 menuactive;
 
 #define SKULLXOFF               -32
 #define LINEHEIGHT              16
-
+#define HU_FONT_SIZE			8
 extern boolean          sendpause;
 int8_t                    savegamestrings[10][SAVESTRINGSIZE];
 
@@ -178,8 +178,8 @@ typedef struct
 typedef struct menu_s
 {
     int16_t               numitems;       // # of menu items
-    struct menu_s*      prevMenu;       // previous menu
-    menuitem_t*         menuitems;      // menu items
+    struct menu_s near*      prevMenu;       // previous menu
+    menuitem_t near*         menuitems;      // menu items
     void                (*routine)();   // draw routine
     int16_t               x;
     int16_t               y;              // x,y of menu
@@ -195,7 +195,7 @@ int16_t           whichSkull;             // which skull to draw
 int8_t    skullName[2] = {5, 6};
 
 // current menudef
-menu_t* currentMenu;                          
+menu_t near* currentMenu;                          
 
 //
 // PROTOTYPES
@@ -238,7 +238,7 @@ void M_DrawLoad(void);
 void M_DrawSave(void);
 
 void M_DrawSaveLoadBorder(int16_t x, int16_t y);
-void M_SetupNextMenu(menu_t *menudef);
+void M_SetupNextMenu(menu_t near*menudef);
 void M_DrawThermo(int16_t x, int16_t y, int16_t thermWidth, int16_t thermDot);
 void M_WriteText(int16_t x, int16_t y, int8_t *string);
 int16_t  M_StringWidth(int8_t *string);
@@ -1269,12 +1269,12 @@ int16_t M_StringWidth(int8_t* string)
 int16_t M_StringHeight(int8_t* string)
 {
 	int8_t             i;
-	int16_t             h = HU_MSGHEIGHT;
+	int16_t             h = HU_FONT_SIZE;
 	 
         
      for (i = 0;i < strlen(string);i++)
         if (string[i] == '\n')
-            h += HU_MSGHEIGHT;
+            h += HU_FONT_SIZE;
                 
     return h;
 }
@@ -1728,7 +1728,7 @@ void M_Drawer (void)
             x = 160 - M_StringWidth(string)/2;
             M_WriteText(x,y,string);
 
-			y += HU_MSGHEIGHT;
+			y += HU_FONT_SIZE;
         }
 		Z_QuickmapPhysics();
 
@@ -1781,7 +1781,7 @@ void M_ClearMenus (void)
 //
 // M_SetupNextMenu
 //
-void M_SetupNextMenu(menu_t *menudef)
+void M_SetupNextMenu(menu_t near *menudef)
 {
     currentMenu = menudef;
     itemOn = currentMenu->lastOn;

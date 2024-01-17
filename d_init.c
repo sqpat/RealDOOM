@@ -232,12 +232,11 @@ void D_DrawTitle(int8_t *string, uint8_t fc, uint8_t bc)
 
 
 //      print title for every printed line
-int8_t            title[128];
 
 //
 // D_RedrawTitle
 //
-void D_RedrawTitle(void)
+void D_RedrawTitle(int8_t *title)
 {
 	int16_t column;
 	int16_t row;
@@ -531,15 +530,15 @@ typedef struct
 typedef struct menu_s
 {
 	int16_t               numitems;       // # of menu items
-	struct menu_s*      prevMenu;       // previous menu
-	menuitem_t*         menuitems;      // menu items
+	struct menu_s near*      prevMenu;       // previous menu
+	menuitem_t near*         menuitems;      // menu items
 	void(*routine)();   // draw routine
 	int16_t               x;
 	int16_t               y;              // x,y of menu
 	int16_t               lastOn;         // last item user was on in menu
 } menu_t;
 
-extern menu_t* currentMenu;
+extern menu_t near* currentMenu;
 extern menu_t  MainDef;
 extern int16_t           itemOn;                 // menu item skull is on
 extern int16_t           skullAnimCounter;       // skull animation counter
@@ -673,6 +672,7 @@ void D_DoomMain2(void)
 	int8_t                    file[256];
 	union REGS regs;
 	int8_t          textbuffer[256];
+	int8_t            title[128];
 
 	//byte far* someptr = _fmalloc(1);
 	//I_Error("\npointer is %Fp", someptr);
@@ -874,36 +874,36 @@ void D_DoomMain2(void)
 	if (registered) {
 		getStringByIndex(VERSION_REGISTERED, textbuffer);
 		printf(textbuffer);
-		D_RedrawTitle();
+		D_RedrawTitle(title);
 		getStringByIndex(NOT_SHAREWARE, textbuffer);
 		printf(textbuffer);
-		D_RedrawTitle();
+		D_RedrawTitle(title);
 	}
 	if (shareware) {
 		getStringByIndex(VERSION_SHAREWARE, textbuffer);
 		printf(textbuffer);
-		D_RedrawTitle();
+		D_RedrawTitle(title);
 	}
 	if (commercial) {
 		getStringByIndex(VERSION_COMMERCIAL, textbuffer);
 		printf(textbuffer);
-		D_RedrawTitle();
+		D_RedrawTitle(title);
 
 		getStringByIndex(DO_NOT_DISTRIBUTE, textbuffer);
 		printf(textbuffer);
-		D_RedrawTitle();
+		D_RedrawTitle(title);
 	}
 
 	getStringByIndex(M_INIT_TEXT, textbuffer);
 	printf(textbuffer);
-	D_RedrawTitle();
+	D_RedrawTitle(title);
 	#endif
 	M_Init();
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(R_INIT_TEXT, textbuffer);
 	printf(textbuffer);
-	D_RedrawTitle();
+	D_RedrawTitle(title);
 #endif
 	R_Init();
 
@@ -911,7 +911,7 @@ void D_DoomMain2(void)
 #ifdef DEBUG_PRINTING
 	getStringByIndex(P_INIT_TEXT, textbuffer);
 	printf(textbuffer);
-	D_RedrawTitle();
+	D_RedrawTitle(title);
 #endif
 	P_Init();
 
@@ -919,7 +919,7 @@ void D_DoomMain2(void)
 #ifdef DEBUG_PRINTING
 	getStringByIndex(I_INIT_TEXT, textbuffer);
 	printf(textbuffer);
-	D_RedrawTitle();
+	D_RedrawTitle(title);
 #endif
 	I_Init();
 	maketic = 0;
@@ -927,21 +927,21 @@ void D_DoomMain2(void)
 #ifdef DEBUG_PRINTING
 	getStringByIndex(S_INIT_TEXT, textbuffer);
 	printf(textbuffer);
-	D_RedrawTitle();
+	D_RedrawTitle(title);
 #endif
 	S_Init(sfxVolume * 8, musicVolume * 8);
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT, textbuffer);
 	printf(textbuffer);
-	D_RedrawTitle();
+	D_RedrawTitle(title);
 #endif
 	HU_Init();
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(ST_INIT_TEXT, textbuffer);
 	printf(textbuffer);
-	D_RedrawTitle();
+	D_RedrawTitle(title);
 #endif
 	ST_Init();
 

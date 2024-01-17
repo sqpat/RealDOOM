@@ -280,7 +280,7 @@ void HU_Start(void)
 
 
 	HU_TITLEY = (167 - fontheight);
-	HU_INPUTY = (HU_MSGY + HU_MSGHEIGHT * lineheight);
+	HU_INPUTY = (HU_MSGY + lineheight);
 
 	message_on = false;
 	message_dontfuckwithme = false;
@@ -291,22 +291,22 @@ void HU_Start(void)
 
 
 
-	w_message.height = HU_MSGHEIGHT;
+	w_message.height = 1;
 	w_message.on = &message_on;
 	w_message.laston = true;
 	w_message.currentline = 0;
-	for (i = 0; i < HU_MSGHEIGHT; i++) {
-		t = &w_message.textlines[i];
-		t->x = HU_MSGX;
-		t->y = HU_MSGY - i * (lineheight);
-		t->sc = HU_FONTSTART;
+	
+	t = &w_message.textlines[0];
+	t->x = HU_MSGX;
+	t->y = HU_MSGY;
+	t->sc = HU_FONTSTART;
 
-		t->len = 0;
-		t->characters[0] = 0;
-		t->needsupdate = true;
+	t->len = 0;
+	t->characters[0] = 0;
+	t->needsupdate = true;
 
 
-	}
+	
 
 
 
