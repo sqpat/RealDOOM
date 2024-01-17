@@ -56,7 +56,7 @@ int8_t HU_dequeueChatChar(void);
 void HU_Erase(void);
  
 
-extern	patch_t far* hu_font[HU_FONTSIZE];
+extern	uint16_t hu_font[HU_FONTSIZE];
 
 
 #endif

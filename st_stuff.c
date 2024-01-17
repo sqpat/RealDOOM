@@ -51,6 +51,8 @@
 // Data.
 #include "dstrings.h"
 #include "sounds.h"
+#include "st_stuff.h"
+#include <dos.h>
 
             
 // ST_Start() has just been called
@@ -73,31 +75,37 @@ st_stateenum_t   st_gamestate;
 boolean          st_statusbaron;
 
 // main bar left
-byte far*         sbar;
+//uint16_t         sbar;
 
 // 0-9, tall numbers
-byte far*         tallnum[10];
+uint16_t         tallnum[10] = { 65216u, 64972u, 64636u, 64300u, 63984u, 63636u, 63296u, 63020u, 62672u, 62336u };
 
-// tall % sign
-byte far*         tallpercent;
 
 // 0-9, short, yellow (,different!) numbers
-byte far*         shortnum[10];
+uint16_t         shortnum[10] = { 62268u, 62204u, 62128u, 62056u, 61996u, 61924u, 61852u, 61780u, 61704u, 61632u};
+
 
 // 3 key-cards, 3 skulls
-byte far*         keys[NUMCARDS];
+uint16_t         keys[NUMCARDS] = { 61200u, 61096u, 60992u, 60872u, 60752u, 60632u };
+
 
 // face status patches
-byte far*         faces[ST_NUMFACES];
+uint16_t         faces[ST_NUMFACES] = { 43216u,
+		42408u, 41600u, 40720u, 39836u, 38992u,
+		38176u, 37352u, 36544u, 35736u, 34936u,
+		34048u, 33164u, 32320u, 31504u, 30680u,
+		29856u, 29028u, 28204u, 27308u, 26412u,
+		25568u, 24752u, 23928u, 23088u, 22252u,
+		21420u, 20512u, 19568u, 18724u, 17908u,
+		17084u, 16240u, 15404u, 14560u, 13652u,
+		12668u, 11824u, 11008u, 10184u, 9376u,
+		8540u
 
-// face background
-byte far*         faceback;
-
- // main bar right
-byte far*         armsbg[1];
+};
 
 // weapon ownership patches
-byte far*	arms[6][2];
+uint16_t arms[6][2] = { {58908u, 0}, {58836u, 0}, {58776u, 0}, {58704u, 0}, {58632u, 0}, {58560u, 0} };
+
 
 // ready-weapon widget
 st_number_t      w_ready;
@@ -257,7 +265,7 @@ void ST_refreshBackground(void)
 {
 
     if (st_statusbaron) {
-        V_DrawPatch(ST_X, 0, BG, (patch_t far*)sbar);
+        V_DrawPatch(ST_X, 0, BG, (patch_t far*)sbar_patch);
         V_CopyRect(ST_X, 0, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
     }
 
@@ -745,8 +753,7 @@ void ST_drawWidgets(boolean refresh)
 		STlib_updatePercent(&w_health, refresh, player.health);
 		STlib_updatePercent(&w_armor, refresh, player.armorpoints);
 		STlib_updateMultIcon(&w_armsbg, refresh, true, true);
-		//STlib_updateBinIcon(&w_armsbg, refresh);
-
+ 
 		for (i = 0; i < 6; i++) {
 			STlib_updateMultIcon(&w_arms[i], refresh, player.weaponowned[i + 1], false);
 		}

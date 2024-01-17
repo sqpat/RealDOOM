@@ -158,7 +158,7 @@ fixed_t         angleturn[3] = {640, 1280, 320};        // + slow turn
  
 #define NUMKEYS         256 
 
-boolean			gamekeydown[NUMKEYS];
+boolean				gamekeydown[NUMKEYS];
 int8_t             turnheld;                               // for accelerative turning 
  
 boolean         mousearray[4]; 
@@ -194,7 +194,6 @@ ticcmd_t localcmds[BACKUPTICS];
 // or reads it from the demo buffer. 
 // If recording a demo, write it out 
 // 
-//ticcmd_t emptycmd;
 void G_BuildTiccmd (int8_t index)
 { 
 	int8_t         i;

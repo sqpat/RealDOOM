@@ -51,6 +51,7 @@
 // Data.
 #include "dstrings.h"
 #include "sounds.h"
+#include <dos.h>
 
 //
 // STATUS BAR DATA
@@ -69,7 +70,7 @@
 #define ST_NUMFACES \
           (ST_FACESTRIDE*ST_NUMPAINFACES+ST_NUMEXTRAFACES)
 
-
+ 
 
 
 void ST_loadGraphics(void)
@@ -84,10 +85,10 @@ void ST_loadGraphics(void)
 	// Load the numbers, tall and short
 	for (i = 0; i < 10; i++) {
 		sprintf(namebuf, "STTNUM%d", i);
-		W_CacheLumpNameDirect(namebuf, tallnum[i]);
+		W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, tallnum[i]));
 
 		sprintf(namebuf, "STYSNUM%d", i);
-		W_CacheLumpNameDirect(namebuf, shortnum[i]);
+		W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, shortnum[i]));
 	}
 
 	// 44608 total... fits with screen4
@@ -108,13 +109,13 @@ void ST_loadGraphics(void)
 
 	// Load percent key.
 	//Note: why not load STMINUS here, too?
-	 W_CacheLumpNameDirect("STTPRCNT", tallpercent);
+	 W_CacheLumpNameDirect("STTPRCNT", tallpercent_patch);
 
 	// key cards
 	for (i = 0; i < NUMCARDS; i++)
 	{
 		sprintf(namebuf, "STKEYS%d", i);
-		W_CacheLumpNameDirect(namebuf, keys[i]);
+		W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, keys[i]));
 	}
 
 	//keysref
@@ -126,7 +127,7 @@ void ST_loadGraphics(void)
 	// 120
 
 	// arms background
-	W_CacheLumpNameDirect("STARMS", armsbg[0]);
+	W_CacheLumpNameDirect("STARMS", armsbg_patch);
 
 	// 1648 armsbgref
 
@@ -136,7 +137,7 @@ void ST_loadGraphics(void)
 		sprintf(namebuf, "STGNUM%d", i + 2);
 
 		// gray #
-		 W_CacheLumpNameDirect(namebuf, arms[i][0]);
+		 W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, arms[i][0]));
 
 
 
@@ -155,11 +156,11 @@ void ST_loadGraphics(void)
 
 	// face backgrounds for different color players
 	sprintf(namebuf, "STFB0");
-	W_CacheLumpNameDirect(namebuf, faceback);
+	W_CacheLumpNameDirect(namebuf, faceback_patch);
 	// 1408 facebakref
 
 	// status bar background bits
-	W_CacheLumpNameDirect("STBAR", sbar);
+	W_CacheLumpNameDirect("STBAR", sbar_patch);
 	// 13128 sbarref
 
 	// face states
@@ -169,23 +170,21 @@ void ST_loadGraphics(void)
 		for (j = 0; j < ST_NUMSTRAIGHTFACES; j++)
 		{
 			sprintf(namebuf, "STFST%d%d", i, j);
-			// todo this
-
-			W_CacheLumpNameDirect(namebuf, faces[facenum++]);
+			W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 		}
 		sprintf(namebuf, "STFTR%d0", i);        // turn right
-		W_CacheLumpNameDirect(namebuf, faces[facenum++]);
+		W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 		sprintf(namebuf, "STFTL%d0", i);        // turn left
-		W_CacheLumpNameDirect(namebuf, faces[facenum++]);
+		W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 		sprintf(namebuf, "STFOUCH%d", i);       // ouch!
-		W_CacheLumpNameDirect(namebuf, faces[facenum++]);
+		W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 		sprintf(namebuf, "STFEVL%d", i);        // evil grin ;)
-		W_CacheLumpNameDirect(namebuf, faces[facenum++]);
+		W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 		sprintf(namebuf, "STFKILL%d", i);       // pissed off
-		W_CacheLumpNameDirect(namebuf, faces[facenum++]);
+		W_CacheLumpNameDirect(namebuf, (byte far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 	}
-	W_CacheLumpNameDirect("STFGOD0", faces[facenum++]);
-	W_CacheLumpNameDirect("STFDEAD0", faces[facenum++]);
+	W_CacheLumpNameDirect("STFGOD0", (byte far *) MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+	W_CacheLumpNameDirect("STFDEAD0", (byte far *) MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 	// 808 808 808
 	// 880 884 844 816 824
 	// 808 808 800

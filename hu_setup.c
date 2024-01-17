@@ -37,7 +37,23 @@
 #include "dstrings.h"
 #include "sounds.h"
 
-patch_t far*		hu_font[HU_FONTSIZE];
+// offsets within segment stored
+uint16_t hu_font[HU_FONTSIZE]  ={ 8468,
+	8368, 8252, 8124, 7980, 7848,
+	7788, 7668, 7548, 7452, 7376,
+	7316, 7236, 7180, 7080, 6948,
+	6864, 6724, 6592, 6476, 6352,
+	6220, 6100, 5960, 5828, 5744,
+	5672, 5592, 5512, 5432, 5304,
+	5148, 5016, 4876, 4736, 4604,
+	4472, 4344, 4212, 4076, 4004,
+	3884, 3744, 3624, 3476, 3340,
+	3216, 3088, 2952, 2812, 2692,
+	2572, 2440, 2332, 2184, 2024,
+	1900, 1772, 1680, 1580, 1488,
+	1392, 1288
+};
+
 
 
 //
@@ -55,6 +71,180 @@ patch_t far*		hu_font[HU_FONTSIZE];
 #define HU_INPUTWIDTH	64
 #define HU_INPUTHEIGHT	1
 
+// todo change to 8 bit + offset
+
+#define title_string_offset HUSTR_E1M1
+
+uint8_t	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
+{
+
+	HUSTR_E1M1 - title_string_offset,
+	HUSTR_E1M2 - title_string_offset,
+	HUSTR_E1M3 - title_string_offset,
+	HUSTR_E1M4 - title_string_offset,
+	HUSTR_E1M5 - title_string_offset,
+	HUSTR_E1M6 - title_string_offset,
+	HUSTR_E1M7 - title_string_offset,
+	HUSTR_E1M8 - title_string_offset,
+	HUSTR_E1M9 - title_string_offset,
+
+	HUSTR_E2M1 - title_string_offset,
+	HUSTR_E2M2 - title_string_offset,
+	HUSTR_E2M3 - title_string_offset,
+	HUSTR_E2M4 - title_string_offset,
+	HUSTR_E2M5 - title_string_offset,
+	HUSTR_E2M6 - title_string_offset,
+	HUSTR_E2M7 - title_string_offset,
+	HUSTR_E2M8 - title_string_offset,
+	HUSTR_E2M9 - title_string_offset,
+
+	HUSTR_E3M1 - title_string_offset,
+	HUSTR_E3M2 - title_string_offset,
+	HUSTR_E3M3 - title_string_offset,
+	HUSTR_E3M4 - title_string_offset,
+	HUSTR_E3M5 - title_string_offset,
+	HUSTR_E3M6 - title_string_offset,
+	HUSTR_E3M7 - title_string_offset,
+	HUSTR_E3M8 - title_string_offset,
+	HUSTR_E3M9 - title_string_offset,
+
+	HUSTR_E4M1 - title_string_offset,
+	HUSTR_E4M2 - title_string_offset,
+	HUSTR_E4M3 - title_string_offset,
+	HUSTR_E4M4 - title_string_offset,
+	HUSTR_E4M5 - title_string_offset,
+	HUSTR_E4M6 - title_string_offset,
+	HUSTR_E4M7 - title_string_offset,
+	HUSTR_E4M8 - title_string_offset,
+	HUSTR_E4M9 - title_string_offset,
+
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset
+};
+
+int16_t	mapnames2[] =	// DOOM 2 map names.
+{
+	HUSTR_1 - title_string_offset,
+	HUSTR_2 - title_string_offset,
+	HUSTR_3 - title_string_offset,
+	HUSTR_4 - title_string_offset,
+	HUSTR_5 - title_string_offset,
+	HUSTR_6 - title_string_offset,
+	HUSTR_7 - title_string_offset,
+	HUSTR_8 - title_string_offset,
+	HUSTR_9 - title_string_offset,
+	HUSTR_10 - title_string_offset,
+	HUSTR_11 - title_string_offset,
+
+	HUSTR_12 - title_string_offset,
+	HUSTR_13 - title_string_offset,
+	HUSTR_14 - title_string_offset,
+	HUSTR_15 - title_string_offset,
+	HUSTR_16 - title_string_offset,
+	HUSTR_17 - title_string_offset,
+	HUSTR_18 - title_string_offset,
+	HUSTR_19 - title_string_offset,
+	HUSTR_20 - title_string_offset,
+
+	HUSTR_21 - title_string_offset,
+	HUSTR_22 - title_string_offset,
+	HUSTR_23 - title_string_offset,
+	HUSTR_24 - title_string_offset,
+	HUSTR_25 - title_string_offset,
+	HUSTR_26 - title_string_offset,
+	HUSTR_27 - title_string_offset,
+	HUSTR_28 - title_string_offset,
+	HUSTR_29 - title_string_offset,
+	HUSTR_30 - title_string_offset,
+	HUSTR_31 - title_string_offset,
+	HUSTR_32 - title_string_offset
+};
+
+#if (EXE_VERSION >= EXE_VERSION_FINAL)
+int16_t	mapnamesp[] =	// Plutonia WAD map names.
+{
+	PHUSTR_1 - title_string_offset,
+	PHUSTR_2 - title_string_offset,
+	PHUSTR_3 - title_string_offset,
+	PHUSTR_4 - title_string_offset,
+	PHUSTR_5 - title_string_offset,
+	PHUSTR_6 - title_string_offset,
+	PHUSTR_7 - title_string_offset,
+	PHUSTR_8 - title_string_offset,
+	PHUSTR_9 - title_string_offset,
+	PHUSTR_10 - title_string_offset,
+	PHUSTR_11 - title_string_offset,
+
+	PHUSTR_12 - title_string_offset,
+	PHUSTR_13 - title_string_offset,
+	PHUSTR_14 - title_string_offset,
+	PHUSTR_15 - title_string_offset,
+	PHUSTR_16 - title_string_offset,
+	PHUSTR_17 - title_string_offset,
+	PHUSTR_18 - title_string_offset,
+	PHUSTR_19 - title_string_offset,
+	PHUSTR_20 - title_string_offset,
+
+	PHUSTR_21 - title_string_offset,
+	PHUSTR_22 - title_string_offset,
+	PHUSTR_23 - title_string_offset,
+	PHUSTR_24 - title_string_offset,
+	PHUSTR_25 - title_string_offset,
+	PHUSTR_26 - title_string_offset,
+	PHUSTR_27 - title_string_offset,
+	PHUSTR_28 - title_string_offset,
+	PHUSTR_29 - title_string_offset,
+	PHUSTR_30 - title_string_offset,
+	PHUSTR_31 - title_string_offset,
+	PHUSTR_32 - title_string_offset
+};
+
+
+int16_t mapnamest[] =	// TNT WAD map names.
+{
+	THUSTR_1 - title_string_offset,
+	THUSTR_2 - title_string_offset,
+	THUSTR_3 - title_string_offset,
+	THUSTR_4 - title_string_offset,
+	THUSTR_5 - title_string_offset,
+	THUSTR_6 - title_string_offset,
+	THUSTR_7 - title_string_offset,
+	THUSTR_8 - title_string_offset,
+	THUSTR_9 - title_string_offset,
+	THUSTR_10 - title_string_offset,
+	THUSTR_11 - title_string_offset,
+
+	THUSTR_12 - title_string_offset,
+	THUSTR_13 - title_string_offset,
+	THUSTR_14 - title_string_offset,
+	THUSTR_15 - title_string_offset,
+	THUSTR_16 - title_string_offset,
+	THUSTR_17 - title_string_offset,
+	THUSTR_18 - title_string_offset,
+	THUSTR_19 - title_string_offset,
+	THUSTR_20 - title_string_offset,
+
+	THUSTR_21 - title_string_offset,
+	THUSTR_22 - title_string_offset,
+	THUSTR_23 - title_string_offset,
+	THUSTR_24 - title_string_offset,
+	THUSTR_25 - title_string_offset,
+	THUSTR_26 - title_string_offset,
+	THUSTR_27 - title_string_offset,
+	THUSTR_28v
+	THUSTR_29 - title_string_offset,
+	THUSTR_30 - title_string_offset,
+	THUSTR_31 - title_string_offset,
+	THUSTR_32 - title_string_offset
+};
+#endif
 
 
 
@@ -76,178 +266,7 @@ void HU_Start(void)
 	// The actual names can be found in DStrings.h.
 	//
 
-	int16_t	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
-	{
-
-		HUSTR_E1M1,
-		HUSTR_E1M2,
-		HUSTR_E1M3,
-		HUSTR_E1M4,
-		HUSTR_E1M5,
-		HUSTR_E1M6,
-		HUSTR_E1M7,
-		HUSTR_E1M8,
-		HUSTR_E1M9,
-
-		HUSTR_E2M1,
-		HUSTR_E2M2,
-		HUSTR_E2M3,
-		HUSTR_E2M4,
-		HUSTR_E2M5,
-		HUSTR_E2M6,
-		HUSTR_E2M7,
-		HUSTR_E2M8,
-		HUSTR_E2M9,
-
-		HUSTR_E3M1,
-		HUSTR_E3M2,
-		HUSTR_E3M3,
-		HUSTR_E3M4,
-		HUSTR_E3M5,
-		HUSTR_E3M6,
-		HUSTR_E3M7,
-		HUSTR_E3M8,
-		HUSTR_E3M9,
-
-		HUSTR_E4M1,
-		HUSTR_E4M2,
-		HUSTR_E4M3,
-		HUSTR_E4M4,
-		HUSTR_E4M5,
-		HUSTR_E4M6,
-		HUSTR_E4M7,
-		HUSTR_E4M8,
-		HUSTR_E4M9,
-
-		NEWLEVELMSG,
-		NEWLEVELMSG,
-		NEWLEVELMSG,
-		NEWLEVELMSG,
-		NEWLEVELMSG,
-		NEWLEVELMSG,
-		NEWLEVELMSG,
-		NEWLEVELMSG,
-		NEWLEVELMSG
-	};
-
-	int16_t	mapnames2[] =	// DOOM 2 map names.
-	{
-		HUSTR_1,
-		HUSTR_2,
-		HUSTR_3,
-		HUSTR_4,
-		HUSTR_5,
-		HUSTR_6,
-		HUSTR_7,
-		HUSTR_8,
-		HUSTR_9,
-		HUSTR_10,
-		HUSTR_11,
-
-		HUSTR_12,
-		HUSTR_13,
-		HUSTR_14,
-		HUSTR_15,
-		HUSTR_16,
-		HUSTR_17,
-		HUSTR_18,
-		HUSTR_19,
-		HUSTR_20,
-
-		HUSTR_21,
-		HUSTR_22,
-		HUSTR_23,
-		HUSTR_24,
-		HUSTR_25,
-		HUSTR_26,
-		HUSTR_27,
-		HUSTR_28,
-		HUSTR_29,
-		HUSTR_30,
-		HUSTR_31,
-		HUSTR_32
-	};
-
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-	int16_t	mapnamesp[] =	// Plutonia WAD map names.
-	{
-		PHUSTR_1,
-		PHUSTR_2,
-		PHUSTR_3,
-		PHUSTR_4,
-		PHUSTR_5,
-		PHUSTR_6,
-		PHUSTR_7,
-		PHUSTR_8,
-		PHUSTR_9,
-		PHUSTR_10,
-		PHUSTR_11,
-
-		PHUSTR_12,
-		PHUSTR_13,
-		PHUSTR_14,
-		PHUSTR_15,
-		PHUSTR_16,
-		PHUSTR_17,
-		PHUSTR_18,
-		PHUSTR_19,
-		PHUSTR_20,
-
-		PHUSTR_21,
-		PHUSTR_22,
-		PHUSTR_23,
-		PHUSTR_24,
-		PHUSTR_25,
-		PHUSTR_26,
-		PHUSTR_27,
-		PHUSTR_28,
-		PHUSTR_29,
-		PHUSTR_30,
-		PHUSTR_31,
-		PHUSTR_32
-	};
-
-
-	int16_t mapnamest[] =	// TNT WAD map names.
-	{
-		THUSTR_1,
-		THUSTR_2,
-		THUSTR_3,
-		THUSTR_4,
-		THUSTR_5,
-		THUSTR_6,
-		THUSTR_7,
-		THUSTR_8,
-		THUSTR_9,
-		THUSTR_10,
-		THUSTR_11,
-
-		THUSTR_12,
-		THUSTR_13,
-		THUSTR_14,
-		THUSTR_15,
-		THUSTR_16,
-		THUSTR_17,
-		THUSTR_18,
-		THUSTR_19,
-		THUSTR_20,
-
-		THUSTR_21,
-		THUSTR_22,
-		THUSTR_23,
-		THUSTR_24,
-		THUSTR_25,
-		THUSTR_26,
-		THUSTR_27,
-		THUSTR_28,
-		THUSTR_29,
-		THUSTR_30,
-		THUSTR_31,
-		THUSTR_32
-	};
-#endif
-
-
+ 
 
 	// int32_t		i;
 	int16_t	sindex;
@@ -316,6 +335,7 @@ void HU_Start(void)
 	} else {
 		sindex = HU_TITLE;
 	}
+	sindex += title_string_offset;
 
 	s = alloca(256);
 

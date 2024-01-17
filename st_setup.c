@@ -51,9 +51,10 @@
 // Data.
 #include "dstrings.h"
 #include "sounds.h"
+#include "st_stuff.h"
 
 boolean  st_stopped = true;
-
+uint16_t armsbgarray[1] = { armsbg };
 // ST_Start() has just been called
 extern boolean          st_firsttime;
 
@@ -71,45 +72,45 @@ extern boolean          st_firsttime;
 // ?
 void
 STlib_initNum
-(st_number_t far*		n,
+(st_number_t near*		n,
 	int16_t			x,
 	int16_t			y,
-	byte far**		pl,
+	uint16_t near*		pl,
 	int16_t			width)
 {
 	n->x = x;
 	n->y = y;
 	n->oldnum = 0;
 	n->width = width;
-	n->p = pl;
+	n->patchoffset = pl;
 }
 
 
 //
 void
 STlib_initPercent
-(st_percent_t far*		p,
+(st_percent_t near*		p,
 	int16_t			x,
 	int16_t			y,
-	byte far**		pl,
-	byte far*		percent) {
-	STlib_initNum(&p->n, x, y, pl, 3);
-	p->p = percent;
+	uint16_t near*		pl,
+	uint16_t		percent) {
+	STlib_initNum(&p->num, x, y, pl, 3);
+	p->patchoffset = percent;
 }
 
 
 
 void
 STlib_initMultIcon
-(st_multicon_t far*	i,
+(st_multicon_t near*	i,
 	int16_t			x,
 	int16_t			y,
-	byte far**		il)
+	uint16_t near*		il)
 {
 	i->x = x;
 	i->y = y;
 	i->oldinum = -1;
-	i->p = il;
+	i->patchoffset = il;
 
 }
 
@@ -139,7 +140,7 @@ void ST_createWidgets(void)
 	STlib_initMultIcon(&w_armsbg,
 		ST_ARMSBGX,
 		ST_ARMSBGY,
-		armsbg);
+		armsbgarray);
 	w_armsbg.oldinum = 0; // hack to make it work as multicon instead of binicon
 
 	// weapons owned

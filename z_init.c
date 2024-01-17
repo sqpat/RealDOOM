@@ -34,21 +34,16 @@
 
 #include <dos.h>
 #include <stdlib.h>
-#include <malloc.h>
+//#include <malloc.h>
 
 
 
-#define USER_MASK 0x8000
 
 extern union REGS regs;
 extern struct SREGS segregs;
-
- 
-
  
 uint16_t EMS_PAGE;
 // EMS STUFF
-
 
 
 byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
@@ -169,38 +164,6 @@ extern int16_t pageswapargoff;
 
   
 
-//extern byte far* demobuffer;
-//extern byte far* palettebytes;
-
-
-uint8_t fontlen[63] = { 72, 100, 116, 128, 144, 132, 60, 
-					   120, 120, 96, 76, 60, 80, 56, 100, 
-					   132, 84, 140, 132, 116, 124, 132, 120, 
-					   140, 132, 84, 72, 80, 80, 80, 128, 156,
-					   132, 140, 140, 132, 132, 128, 132, 136, 
-						72, 120, 140, 120, 148, 136, 124, 128, 
-					   136, 140, 120, 120, 132, 108, 148, 160, 
-						124, 128, 92, 100, 92, 96, 104 };
- 
-/*
-int16_t facelen[42] = { 808, 808, 808, 880, 884, 844, 816, 824, 
-						808, 808, 800, 888, 884, 844, 816, 824, 
-						824, 828, 824, 896, 896, 844, 816, 824, 
-						840, 836, 832, 908, 944, 844, 816, 824, 
-						844, 836, 844, 908, 984, 844, 816, 824, 
-						808, 836 };
-						*/
-
-uint8_t facelen[42] = { 8, 8, 8, 80, 84, 44, 16, 24,
-						8, 8, 0, 88, 84, 44, 16, 24,
-						24, 28, 24, 96, 96, 44, 16, 24,
-						40, 36, 32, 108, 144, 44, 16, 24,
-						44, 36, 44, 108, 184, 44, 16, 24,
-						8, 36 };
-
- 
-
-
 extern  uint16_t		DEMO_SEGMENT;
 
 
@@ -209,32 +172,7 @@ void Z_GetEMSPageMap() {
 	int16_t far* pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
 	int16_t index;
-
-	/*
-	FILE *fp;
-
-	fp = fopen("d_gammat.bin", "wb"); // clear old file
-	fwrite(gammatable, 5*256, 1, fp);
-	I_Error("done");
-	*/
-
-/*
-	fp = fopen("D_MBINFO.BIN", "r");
-	fread(mobjinfo, sizeof(mobjinfo_t) * NUMMOBJTYPES, 1, fp);
-	fclose(fp);
-	DEBUG_PRINT(".");
-	I_Error("\n%hhx %hhx %hhx %hhx",((byte*)mobjinfo)[20], ((byte*)mobjinfo)[200], ((byte*)mobjinfo)[250], ((byte*)mobjinfo)[520]);
-	*/
-	// 40 0 42 10
-
-	//fp = fopen("D_STATES.BIN", "r");
-	//fread(states, sizeof(state_t), NUMSTATES, fp);
-	//fclose(fp);
-	//DEBUG_PRINT(".");
-	
  
-
-	//I_Error("\n%hhx %hhx %hhx %hhx",((byte*)mobjinfo)[20], ((byte*)mobjinfo)[200], ((byte*)mobjinfo)[250], ((byte*)mobjinfo)[520]);
 
 	regs.w.ax = 0x5801;  // physical page
 	intx86(EMS_INT, &regs, &regs);
@@ -276,7 +214,7 @@ found:
 	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE			FWIPE				MENU		INTERMISSION
 	// BLOCK
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
-	//   events and common vars			visplane stuff			screen4 0x9c00
+	//				some common vars	visplane stuff			screen4 0x9c00
 	// 0x9000 block		thinkers		viewangles, drawsegs								palettebytes	fwipe temp data					screen1
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
 	//									tex cache arrays
@@ -291,9 +229,11 @@ found:
 	// 					nightnmarespawns textureinfo																		menu graphics	menu graphics
 	// 0x6000 block		strings			flat cache				strings															strings			strings
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
+	//					events			events
 	//                  states          states																[scratch buffer]				[scratch used
 	// 0x5000 block		trig tables   	trig tables								demobuffer													for anims]
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
+	//                  empty
 	// 0x4000 block		lumpinfo		textures
 
 
@@ -317,7 +257,6 @@ void Z_LinkEMSVariables() {
 	uint16_t offset_render;
 	uint16_t offset_physics;
 	uint16_t offset_status;
-	int16_t i;
 
 	// we're an OS now! let's directly allocate memory !
 
@@ -332,11 +271,6 @@ void Z_LinkEMSVariables() {
 	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
 	offset_render = size_ceilingclip;
 	
-	//palettebytes = MK_FP(segment, 0);
-
-
-
-
 	// offset_render is 65534
 	// now 64894
 
@@ -348,14 +282,9 @@ void Z_LinkEMSVariables() {
 	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
 
 	segment = 0x8000;
-	offset_render = 0u;
-	offset_physics = 0u;
 	offset_status = 0u;
-
 	offset_physics = 64000u + (256 * 5);
- 
-
- 	offset_render += size_usedpatchpagemem;
+ 	offset_render = size_usedpatchpagemem;
 
 	// dynamic sizes from here on out - hard to configure these as #define at runtime unless we set upward bounds that also cover doom1/2 commercial bounds.
 	//spritewidths = MK_FP(segment, offset_render);
@@ -383,120 +312,24 @@ void Z_LinkEMSVariables() {
 
 	flatindex = MK_FP(segment, offset_render);
 	offset_render += numflats * sizeof(uint8_t);
-	/*
-	*/
 
 
-	// from the top
 
 	// 0x9000  40203  64894  10240  00000  00000
 	// 0x8000  65280  64772  00000  00000  00000
 	// 0x7000  XXXXX  XXXXX  64208  00000  XXXXX
 	// 0x6000  24784  55063  16384  00000  XXXXX
-	// 0x5000  63150  63150  00000  XXXXX  00000
+	// 0x5000  63982  63982  00000  XXXXX  00000
 	// 0x4000  00000  00000  00000  00000  00000
 
 	DEBUG_PRINT("\n   0x8000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
 	offset_render = 0u;
 	offset_physics = 0u;
-	offset_status = 0u;
 
 	segment = 0x7000;
 	//screen2 = MK_FP(segment, 0);
 
-
-	offset_status = 0u;
-	offset_status -= 320;
-	tallnum[0] = MK_FP(segment, offset_status);
-	offset_status -= 244;
-	tallnum[1] = MK_FP(segment, offset_status);
-	offset_status -= 336;
-	tallnum[2] = MK_FP(segment, offset_status);
-	offset_status -= 336;
-	tallnum[3] = MK_FP(segment, offset_status);
-	offset_status -= 316;
-	tallnum[4] = MK_FP(segment, offset_status);
-	offset_status -= 348;
-	tallnum[5] = MK_FP(segment, offset_status);
-	offset_status -= 340;
-	tallnum[6] = MK_FP(segment, offset_status);
-	offset_status -= 276;
-	tallnum[7] = MK_FP(segment, offset_status);
-	offset_status -= 348;
-	tallnum[8] = MK_FP(segment, offset_status);
-	offset_status -= 336;
-	tallnum[9] = MK_FP(segment, offset_status);
-
-	offset_status -= 68;
-	shortnum[0] = MK_FP(segment, offset_status);
-	offset_status -= 64;
-	shortnum[1] = MK_FP(segment, offset_status);
-	offset_status -= 76;
-	shortnum[2] = MK_FP(segment, offset_status);
-	offset_status -= 72;
-	shortnum[3] = MK_FP(segment, offset_status);
-	offset_status -= 60;
-	shortnum[4] = MK_FP(segment, offset_status);
-	offset_status -= 72;
-	shortnum[5] = MK_FP(segment, offset_status);
-	offset_status -= 72;
-	shortnum[6] = MK_FP(segment, offset_status);
-	offset_status -= 72;
-	shortnum[7] = MK_FP(segment, offset_status);
-	offset_status -= 76;
-	shortnum[8] = MK_FP(segment, offset_status);
-	offset_status -= 72;
-	shortnum[9] = MK_FP(segment, offset_status);
-
-	offset_status -= 328;
-	tallpercent = MK_FP(segment, offset_status);
-
-
-	offset_status -= 104;
-	keys[0] = MK_FP(segment, offset_status);
-	offset_status -= 104;
-	keys[1] = MK_FP(segment, offset_status);
-	offset_status -= 104;
-	keys[2] = MK_FP(segment, offset_status);
-	offset_status -= 120;
-	keys[3] = MK_FP(segment, offset_status);
-	offset_status -= 120;
-	keys[4] = MK_FP(segment, offset_status);
-	offset_status -= 120;
-	keys[5] = MK_FP(segment, offset_status);
-
-	offset_status -= 1648;
-	armsbg[0] = MK_FP(segment, offset_status);
-
-	offset_status -= 76;
-	arms[0][0] = MK_FP(segment, offset_status);
-	offset_status -= 72;
-	arms[1][0] = MK_FP(segment, offset_status);
-	offset_status -= 60;
-	arms[2][0] = MK_FP(segment, offset_status);
-	offset_status -= 72;
-	arms[3][0] = MK_FP(segment, offset_status);
-	offset_status -= 72;
-	arms[4][0] = MK_FP(segment, offset_status);
-	offset_status -= 72;
-	arms[5][0] = MK_FP(segment, offset_status);
-
-	offset_status -= 1408;
-	faceback = MK_FP(segment, offset_status);
-
-	offset_status -= 13128;
-	sbar = MK_FP(segment, offset_status);
-
-	for (i = 0; i < 42; i++) {
-		offset_status -= (800+facelen[i]);
-		faces[i] = MK_FP(segment, offset_status);
-	}
-
-	for (i = 0; i < 63; i++) {
-		offset_status -= fontlen[i];
-		hu_font[i] = MK_FP(segment, offset_status);
-	}
-
+	offset_status = 1288;
 
 	DEBUG_PRINT("\n   0x7000:      XXXXX   XXXXX   %05u   00000   XXXXX", 0 - offset_status);
 	segment = 0x6000;
@@ -504,8 +337,6 @@ void Z_LinkEMSVariables() {
 
 	offset_physics = 32768u + sizeof(mapthing_t) * MAX_THINKERS;
 	offset_status = 16384;
-
-
 
 	offset_render = size_texturedefs_bytes;
 
@@ -517,8 +348,6 @@ void Z_LinkEMSVariables() {
 	offset_status = 0u;
 
 	offset_physics += size_events;
-
-	//demobuffer = MK_FP(segment, 0);
 
 
 	DEBUG_PRINT("\n   0x5000:      %05u   %05u   XXXXX   XXXXX   00000", offset_physics, offset_physics);

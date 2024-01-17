@@ -423,7 +423,7 @@ void M_LoadDefaults(void)
 }
 
 
-extern	patch_t far* hu_font[HU_FONTSIZE];
+extern uint16_t	hu_font[HU_FONTSIZE];
 
 
 void HU_Init(void)
@@ -439,7 +439,7 @@ void HU_Init(void)
 	j = HU_FONTSTART;
 	for (i = 0; i < HU_FONTSIZE; i++) {
 		sprintf(buffer, "STCFN%.3d", j++);
-		W_CacheLumpNameDirect(buffer, (byte far*)hu_font[i]);
+		W_CacheLumpNameDirect(buffer, (byte far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
 	}
 
 
@@ -844,12 +844,12 @@ void D_DoomMain2(void)
 
 	DEBUG_PRINT("\nZ_InitEMS: Init EMS memory allocation daemon.");
 	Z_InitEMS();
-	
+
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");
 	W_InitMultipleFiles(wadfiles);
 	D_InitGraphicCounts(); // gross
 
-	DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
+		DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
 	Z_InitUMB();
 
 	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");

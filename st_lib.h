@@ -52,8 +52,7 @@ typedef struct
 	int16_t 	oldnum;
 
     // list of patches for 0-9
-    //patch_t far**	p;
-	byte far** p;
+	uint16_t near* patchoffset;
 
 } st_number_t;
 
@@ -64,11 +63,11 @@ typedef struct
 typedef struct
 {
     // number information
-    st_number_t		n;
+    st_number_t		num;
 
     // percent sign graphic
     //patch_t*		p;
-	byte far* p;
+	uint16_t  patchoffset;
     
 } st_percent_t;
 
@@ -91,7 +90,7 @@ typedef struct
 
     // list of icons
     //patch_t**		p;
-	byte far**		p;
+	uint16_t near*		patchoffset;
     
 } st_multicon_t;
 
@@ -113,32 +112,32 @@ typedef struct
 // Number widget routines
 void
 STlib_initNum
-( st_number_t far*		n,
+( st_number_t near*		num,
 	int16_t 		x,
 	int16_t 		y,
-	byte far**		pl,
+	uint16_t near*		pl,
 	int16_t 		width );
 
 void
 STlib_drawNum
-(st_number_t far*	n,
+(st_number_t near*	n,
 	boolean	refresh,
 	int16_t num);
 
 // Percent widget routines
 void
 STlib_initPercent
-( st_percent_t far*		p,
+( st_percent_t near*		per,
 	int16_t 		x,
 	int16_t 		y,
-    byte far**		pl,
-	byte far*		percent
+	uint16_t near*		pl,
+	uint16_t 		percent
 );
 
 
 void
 STlib_updatePercent
-( st_percent_t far*		per,
+( st_percent_t near*		per,
 	int16_t 		refresh,
 	int16_t			num);
 
@@ -146,15 +145,15 @@ STlib_updatePercent
 // Multiple Icon widget routines
 void
 STlib_initMultIcon
-( st_multicon_t far*	mi,
+( st_multicon_t near*	mi,
 	int16_t 		x,
 	int16_t 		y,
-	byte far**		il);
+	uint16_t near*		il);
 
 
 void
 STlib_updateMultIcon
-( st_multicon_t far*	mi,
+( st_multicon_t near*	mi,
   boolean		refresh,
 	int16_t			inum,
 	boolean is_binicon);
@@ -170,7 +169,6 @@ extern st_percent_t     w_health;
 
 // arms background
 extern st_multicon_t     w_armsbg;
-//extern st_binicon_t     w_armsbg;
 
 
 // weapon ownership widgets

@@ -63,20 +63,19 @@ V_DrawFullscreenPatch
 	int16_t lump = W_GetNumForName(pagename);
 	Z_QuickmapScratch_5000();
 
-	patch = (patch_t far*)MK_FP(0x5000, 0x0000);
-	patch2 =  MK_FP(0x5000, 0x8000);
-	W_CacheLumpNumDirectFragment(lump, (byte far*)patch, pagenum, 0);
+	patch = (patch_t far *) (0x50000000);
+	patch2 = (byte far *) (0x50008000);
+	W_CacheLumpNumDirectFragment(lump, (byte far *)patch, pagenum, 0);
 
 
-	extradata = (byte far*)patch;
+	extradata = (byte far *)patch;
 	w = (patch->width);
 
 
 	V_MarkRect(0, 0, w, (patch->height));
 	if (screen == 1) {
 		desttop = screen1;
-	}
-	else {
+	} else {
 		desttop = screen0;
 	}
 

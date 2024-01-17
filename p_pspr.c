@@ -294,39 +294,33 @@ A_WeaponReady
 		P_SetMobjState (playerMobj, S_PLAY);
     }
     
-    if (player.readyweapon == wp_chainsaw
-	&& psp->state == &states[S_SAW])
-    {
-	S_StartSoundFromRef (playerMobj, sfx_sawidl);
+    if (player.readyweapon == wp_chainsaw && psp->state == &states[S_SAW]) {
+		S_StartSoundFromRef (playerMobj, sfx_sawidl);
     }
     
     // check for change
     //  if player is dead, put the weapon away
-    if (player.pendingweapon != wp_nochange || !player.health)
-    {
-	// change weapon
-	//  (pending weapon should allready be validated)
-	newstate = weaponinfo[player.readyweapon].downstate;
-	P_SetPsprite (ps_weapon, newstate);
-	return;	
+    if (player.pendingweapon != wp_nochange || !player.health) {
+		// change weapon
+		//  (pending weapon should allready be validated)
+		newstate = weaponinfo[player.readyweapon].downstate;
+		P_SetPsprite (ps_weapon, newstate);
+		return;	
     }
     
     // check for fire
     //  the missile launcher and bfg do not auto fire
-    if (player.cmd.buttons & BT_ATTACK)
-    {
-	if ( !player.attackdown
-	     || (player.readyweapon != wp_missile
-		 && player.readyweapon != wp_bfg) )
-	{
-	    player.attackdown = true;
-	    P_FireWeapon ();		
-	    return;
+    if (player.cmd.buttons & BT_ATTACK) {
+		if ( !player.attackdown
+			 || (player.readyweapon != wp_missile
+			 && player.readyweapon != wp_bfg) ) {
+			player.attackdown = true;
+			P_FireWeapon ();		
+			return;
+		}
+	} else {
+		player.attackdown = false;
 	}
-    }
-    else
-	player.attackdown = false;
-    
     // bob the weapon based on movement speed
 	angle = (128*(leveltime.b.fracbytehigh&63))&FINEMASK;
 	//angle = (128 * leveltime.w)&FINEMASK;

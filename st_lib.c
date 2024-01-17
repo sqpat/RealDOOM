@@ -29,6 +29,7 @@
 #include "st_stuff.h"
 #include "st_lib.h"
 #include "r_local.h"
+#include <dos.h>
  
 extern boolean updatedthisframe;
 // 
@@ -46,31 +47,31 @@ void STlib_updateflag() {
 
 void
 STlib_drawNum
-( st_number_t far*	n,
+( st_number_t near*	number,
   boolean	refresh,
 	int16_t num)
 {
-    int16_t		numdigits = n->width;
+    int16_t	numdigits = number->width;
 	patch_t far* p0;
 	int16_t w;
 	int16_t h;
-	int16_t x = n->x;
+	int16_t x = number->x;
     
-    int16_t		neg;
+    int16_t	neg;
 
 	// [crispy] redraw only if necessary
-	if (n->oldnum == num && !refresh) {
+	if (number->oldnum == num && !refresh) {
 		return;
 	}
 	
 	STlib_updateflag();
 
-	p0 = (patch_t far*)(n->p[0]);
+	p0 = (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[0]));
 	w = (p0->width);
 	h = (p0->height);
 
 
-    n->oldnum = num;
+	number->oldnum = num;
 
     neg = num < 0;
 
@@ -85,24 +86,24 @@ STlib_drawNum
     }
 
     // clear the area
-    x = n->x - numdigits*w;
+    x = number->x - numdigits*w;
 
-    V_CopyRect(x, n->y - ST_Y, w*numdigits, h, x, n->y);
+    V_CopyRect(x, number->y - ST_Y, w*numdigits, h, x, number->y);
 
     // if non-number, do not draw it
     if (num == 1994)
 		return;
 
-    x = n->x;
+    x = number->x;
 
 	// in the special case of 0, you draw 0
 	if (!num) {
-		V_DrawPatch(x - w, n->y, FG, (patch_t far*)(n->p[0]));
+		V_DrawPatch(x - w, number->y, FG, (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[0])));
 	}
     // draw the new number
     while (num && numdigits--) {
 		x -= w;
-		V_DrawPatch(x, n->y, FG, (patch_t far*)( n->p[ num % 10 ]));
+		V_DrawPatch(x, number->y, FG, (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[ num % 10 ])));
 		num /= 10;
     }
  
@@ -114,15 +115,15 @@ STlib_drawNum
 
 void
 STlib_updatePercent
-( st_percent_t far*		per,
+( st_percent_t near*		per,
   int16_t			refresh, 
 	int16_t			value)
 {
 	if (refresh) {
 		STlib_updateflag();
-		V_DrawPatch(per->n.x, per->n.y, FG, (patch_t far*)(per->p));
+		V_DrawPatch(per->num.x, per->num.y, FG, (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, per->patchoffset)));
 	}
-	STlib_drawNum(&per->n, refresh, value);
+	STlib_drawNum(&per->num, refresh, value);
 }
 
 
@@ -131,7 +132,7 @@ STlib_updatePercent
 
 void
 STlib_updateMultIcon
-( st_multicon_t far*	mi,
+( st_multicon_t near*	mi,
   boolean		refresh,
 	int16_t		inum,
 	boolean		is_binicon)
@@ -144,7 +145,7 @@ STlib_updateMultIcon
 	if ((mi->oldinum != inum || refresh) && (inum != -1)) {
 		STlib_updateflag();
 		if (!is_binicon && mi->oldinum != -1) {
-			old = (patch_t far*)(mi->p[mi->oldinum]);
+			old = (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patchoffset[mi->oldinum]));
 			x = mi->x - (old->leftoffset);
 			y = mi->y - (old->topoffset);
 			w = (old->width);
@@ -160,7 +161,7 @@ STlib_updateMultIcon
 			
 		// binicon only has an array length zero and inum is always 1; this inum-is_binicon
 		// to work on the same line of code.
-		V_DrawPatch(mi->x, mi->y, FG, (patch_t far*)(mi->p[inum-is_binicon]));
+		V_DrawPatch(mi->x, mi->y, FG, (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patchoffset[inum-is_binicon])));
 
 		mi->oldinum = inum;
 	}

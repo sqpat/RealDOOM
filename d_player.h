@@ -78,19 +78,19 @@ typedef struct player_s
     // Base height above floor for viewz.
     fixed_t		viewheight;
     // Bob/squat speed.
-    fixed_t         	deltaviewheight;
+    fixed_t     deltaviewheight;
     // bounded/scaled total momentum.
-    fixed_t         	bob;	
+    fixed_t     bob;	
 
     // This is only used between levels,
     // mo->health is used during levels.
-    int16_t			health;	
-    int16_t			armorpoints;
+    int16_t		health;	
+    int16_t		armorpoints;
     // Armor type is 0-2.
     int8_t			armortype;	
 
     // Power ups. invinc and invis are tic counters.
-    int16_t			powers[NUMPOWERS];
+    int16_t		powers[NUMPOWERS];
     boolean		cards[NUMCARDS];
     boolean		backpack;
     
@@ -99,7 +99,7 @@ typedef struct player_s
     // Is wp_nochange if not changing.
     weapontype_t	pendingweapon;
 
-    boolean		weaponowned[NUMWEAPONS];
+    boolean			weaponowned[NUMWEAPONS];
     int16_t			ammo[NUMAMMO];
     int16_t			maxammo[NUMAMMO];
 

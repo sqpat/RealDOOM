@@ -51,12 +51,13 @@
 #include "sounds.h"
 
 #include "m_menu.h"
+#include <dos.h>
 
 
 #define NUM_MENU_ITEMS 45
 
 extern boolean          message_dontfuckwithme;
-extern patch_t far*			hu_font[HU_FONTSIZE];
+extern uint16_t			hu_font[HU_FONTSIZE];
 
 uint16_t menuoffsets[NUM_MENU_ITEMS];
 
@@ -151,7 +152,6 @@ boolean                 menuactive;
 extern boolean          sendpause;
 int8_t                    savegamestrings[10][SAVESTRINGSIZE];
 
-int8_t    endstring[160];
 
 
 //
@@ -1099,7 +1099,8 @@ void M_QuitDOOM(int16_t choice)
   //  or one at random, between 1 and maximum number.
 	int8_t temp[256];
 	int8_t temp2[256];
- 	int8_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
+	int8_t endstring[160];
+	int8_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
 	getStringByIndex(DOSY, temp2);
 	if (commercial)
     {
@@ -1253,7 +1254,7 @@ int16_t M_StringWidth(int8_t* string)
         if (c < 0 || c >= HU_FONTSIZE)
             w += 4;
 		else {
-			w += (hu_font[c]->width);
+			w += (((patch_t far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
 		}
     }
                 
@@ -1268,13 +1269,12 @@ int16_t M_StringWidth(int8_t* string)
 int16_t M_StringHeight(int8_t* string)
 {
 	int8_t             i;
-	int16_t             h;
-	int16_t             height = (hu_font[0]->height);
+	int16_t             h = HU_MSGHEIGHT;
+	 
         
-    h = height;
-    for (i = 0;i < strlen(string);i++)
+     for (i = 0;i < strlen(string);i++)
         if (string[i] == '\n')
-            h += height;
+            h += HU_MSGHEIGHT;
                 
     return h;
 }
@@ -1319,10 +1319,11 @@ M_WriteText
             continue;
         }
 
-        w =  (hu_font[c]->width);
+		w = (((patch_t far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+
         if (cx+w > SCREENWIDTH)
             break;
-        V_DrawPatchDirect(cx, cy, hu_font[c]);
+        V_DrawPatchDirect(cx, cy, (patch_t far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
         cx+=w;
     }
 }
@@ -1727,7 +1728,7 @@ void M_Drawer (void)
             x = 160 - M_StringWidth(string)/2;
             M_WriteText(x,y,string);
 
-            y += (hu_font[0]->height);
+			y += HU_MSGHEIGHT;
         }
 		Z_QuickmapPhysics();
 

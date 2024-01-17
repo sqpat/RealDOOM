@@ -26,12 +26,13 @@
 #include "r_local.h"
 #include "r_draw.h"
 #include "i_system.h"
+#include <dos.h>
 
 // boolean : whether the screen is always erased
 #define noterased viewwindowx
 
 extern boolean	automapactive;	// in AM_map.c
-extern patch_t far*		hu_font[HU_FONTSIZE];
+extern uint16_t		hu_font[HU_FONTSIZE];
 
 
 boolean HUlib_addCharToTextLine ( hu_textline_t near* textline, int8_t ch ) {
@@ -60,7 +61,9 @@ void HUlib_drawTextLine ( hu_textline_t near* textline) {
     for (i=0;i<textline->len;i++) {
 		c = toupper(textline->characters[i]);
 		if (c != ' ' && c >= textline->sc && c <= '_') {
-			currentpatch = (hu_font[c - textline->sc]);
+			currentpatch = (((patch_t far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c - textline->sc])));
+
+
 			w = (currentpatch->width);
 			if (x + w > SCREENWIDTH) {
 				break;
