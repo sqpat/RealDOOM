@@ -60,7 +60,7 @@ extern union REGS regs;
 extern struct SREGS segregs;
 
 
-byte*			pageFrameArea;
+byte far*			pageFrameArea;
 
 // count allocations etc, can be used for benchmarking purposes.
 

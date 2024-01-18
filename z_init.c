@@ -363,7 +363,7 @@ void Z_LinkEMSVariables() {
 
 }
 
-extern byte* pageFrameArea;
+extern byte far* pageFrameArea;
 extern int16_t emshandle;
 
 void Z_InitEMS(void) {

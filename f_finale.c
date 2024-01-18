@@ -621,7 +621,7 @@ void F_CastTicker (void)
 // F_CastResponder
 //
 
-boolean F_CastResponder (event_t* ev)
+boolean F_CastResponder (event_t far* ev)
 {
     if (ev->type != ev_keydown)
 	return false;

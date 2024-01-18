@@ -59,7 +59,7 @@
 
 #include "g_game.h"
 #define NUMKEYS         256 
-
+extern uint8_t     R_TextureNumForName(int8_t* name);
 //
 // G_DoLoadLevel 
 //

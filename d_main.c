@@ -164,7 +164,7 @@ void D_ProcessEvents (void)
 
 
 
-void getStringByIndex(int16_t stringindex, int8_t* returndata) {
+void getStringByIndex(int16_t stringindex, int8_t far* returndata) {
 
 	uint16_t stringoffset = stringoffsets[stringindex];
 	uint16_t length = stringoffsets[stringindex + 1] - stringoffset;
@@ -189,7 +189,7 @@ void getStringByIndex(int16_t stringindex, int8_t* returndata) {
 
  
 		// string ends at the start of the next string...
-	memcpy(returndata, &(stringdata[stringoffset]), length);
+	FAR_memcpy(returndata, &(stringdata[stringoffset]), length);
 	// add null terminator?
 	returndata[length] = '\0';
 }
