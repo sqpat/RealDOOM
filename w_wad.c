@@ -67,7 +67,7 @@ void  _far_fread(void far* dest, uint16_t elementsize, uint16_t elementcount, FI
 	uint16_t totalreadsize = 0;
 	uint16_t copysize;
 	uint16_t remaining;
-	byte* stackbuffer = alloca(FREAD_BUFFER_SIZE);
+	byte stackbuffer[FREAD_BUFFER_SIZE];
 	byte far* stackbufferfar = (byte far *)stackbuffer;
 	byte far* destloc = dest;
 	while (totalreadsize < totalsize) {
@@ -91,7 +91,7 @@ void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize) {
 	int16_t copysize;
 	uint16_t remaining;
 	//uint16_t start = _tell(filehandle);
-	byte* stackbuffer = alloca(FREAD_BUFFER_SIZE);
+	byte stackbuffer[FREAD_BUFFER_SIZE];
 	byte far* stackbufferfar = (byte far *)stackbuffer;
 	byte far* destloc = dest;
 	while (totalreadsize < totalsize) {
