@@ -60,7 +60,7 @@ extern uint16_t                     numlumps;
 
 extern uint16_t                     reloadlump;
 extern int8_t*                   reloadname;
-#define SCRATCH_FILE_LOAD_LOCATION  (filelump_t*)MK_FP(0x5000, 0)
+#define SCRATCH_FILE_LOAD_LOCATION  (filelump_t far*)(0x50000000)
 
 void W_AddFile(int8_t *filename)
 {
@@ -172,7 +172,7 @@ void W_AddFile(int8_t *filename)
 		else {
 			lastsize = fileinfo->size;
 		}
-		strncpy(lump_p->name, fileinfo->name, 8);
+		FAR_strncpy(lump_p->name, fileinfo->name, 8);
 	}
 	lumpinfo4000[i - 1].sizediff = 0;
 

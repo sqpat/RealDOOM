@@ -74,10 +74,6 @@ uint8_t	  near *texturetranslation;
 int16_t		 far*spriteoffsets;
 int16_t		 far*spritetopoffsets;
 
-//byte         	*colormapbytes;// [(33 * 256) + 255];
-
-//lighttable_t    *colormaps;
-
 
 int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
 uint8_t activenumpages[4]; // always gets reset to defaults at start of frame

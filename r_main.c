@@ -52,7 +52,7 @@ int16_t			validcount = 1;
 
 //uint16_t far*		fixedcolormap;
 lighttable_t far*		fixedcolormap;
-extern lighttable_t far**	walllights;
+extern lighttable_t far*far*	walllights;
 
 int16_t			centerx;
 int16_t			centery;

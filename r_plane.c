@@ -74,7 +74,7 @@ int16_t far*		lastopening;
 //
 // texture mapping
 //
-lighttable_t far**		planezlight;
+lighttable_t far*far*		planezlight;
 fixed_t			planeheight;
 
 //fixed_t			*yslope;// [SCREENHEIGHT];
@@ -514,8 +514,7 @@ void R_DrawPlanes (void)
 
 		// quicker shift 7..
 		planezlight = &zlight[lightshift7lookup[light]];
-		//planezlight = (uint16_t*)MK_FP(0x8000u, zlight[light*MAXLIGHTZ]);
-
+ 
 		if (plbytes){
 			plbytes->top[pl->maxx+1] = 0xff;
 			plbytes->top[pl->minx-1] = 0xff;

@@ -187,7 +187,7 @@ short_height_t	P_FindLowestFloorSurrounding(int16_t secnum)
  	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
-	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+	FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
     for (i=0 ;i < linecount ; i++) {
@@ -215,7 +215,7 @@ short_height_t	P_FindHighestFloorSurrounding(int16_t secnum)
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
-	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+	FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -253,7 +253,7 @@ P_FindNextHighestFloor
     
     short_height_t		heightlist[MAX_ADJOINING_SECTORS];		
 
-	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+	FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -293,7 +293,7 @@ P_FindLowestCeilingSurrounding(int16_t	secnum)
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
-	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+	FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -320,7 +320,7 @@ short_height_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
-	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+	FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -375,7 +375,7 @@ P_FindMinSurroundingLight
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
-	memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+	FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
@@ -1159,7 +1159,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 		
 		linecount = sectors[s2Offset].linecount;
 		offset = sectors[s2Offset].linesoffset;
-		memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+		FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 		linecount = getNextSectorList(linebufferlines, secnum, innersecnumlist, linecount, true);
 
 		for (i = 0;i < linecount;i++) {

@@ -117,7 +117,6 @@ boolean         tnt;
 
 
 //int8_t            wadfile[64];          // primary wad file
-int8_t *    basedefault = "default.cfg";
 
 
 void G_BuildTiccmd(int8_t index);

@@ -89,8 +89,7 @@ typedef struct
     //  whether to update icon
 
     // list of icons
-    //patch_t**		p;
-	uint16_t near*		patchoffset;
+ 	uint16_t near*		patchoffset;
     
 } st_multicon_t;
 

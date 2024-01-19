@@ -125,29 +125,33 @@ void R_InitLightTables(void)
 	temp.h.fracbits = 0;
 	temp2.h.fracbits = 0;
 	temp2.h.intbits = SCREENWIDTH / 2;
-	for (i = 0; i < LIGHTLEVELS; i++)
-	{
+	for (i = 0; i < LIGHTLEVELS; i++) {
+		//DEBUG_PRINT("\n%i ", i);
 		startmap = ((LIGHTLEVELS - 1 - i) * 2) * 2; // *NUMCOLORMAPS/LIGHTLEVELS;
 		temp.h.intbits = 1;
-		for (j = 0; j < MAXLIGHTZ; j++)
-		{
+		for (j = 0; j < MAXLIGHTZ; j++) {
+			//DEBUG_PRINT("\n a ");
 			temp.h.intbits += 16;
 
 			scale = FixedDivWholeAB(temp2.w, temp.w);
 			scale >>= LIGHTSCALESHIFT;
-			level = startmap - scale / DISTMAP;
+			level = startmap - (scale / DISTMAP);
 
-			if (level < 0)
+			if (level < 0) {
 				level = 0;
+			}
 
-			if (level >= NUMCOLORMAPS)
+			if (level >= NUMCOLORMAPS) {
 				level = NUMCOLORMAPS - 1;
+			}
+
+			//DEBUG_PRINT("%i %i %Fp %Fp", i, j, zlight[i *MAXLIGHTZ + j], (colormaps + (level * 256)));
 
 			// << 7 is same as * MAXLIGHTZ
 			zlight[i *MAXLIGHTZ + j] = (colormaps + (level * 256));
 			//zlight[i * MAXLIGHTZ + j] = (uint16_t)((uint32_t)(colormaps + (level * 256)) & 0xFFFFu);
 
-			
+
 		}
 	}
 	Z_QuickmapPhysics();
@@ -277,7 +281,7 @@ void R_GenerateLookup(uint8_t texnum)
 	texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
-	memcpy(texturename, texture->name, 8);
+	FAR_memcpy(texturename, texture->name, 8);
 	// Now count the number of columns
 	//  that are covered by more than one patch.
 	// Fill in the lump / offset, so columns
@@ -380,8 +384,7 @@ void R_InitTextures(void)
 	int32_t far*                directory;
 
 	int8_t                name[9];
-	int8_t far*               names;
-	int8_t far*               name_p;
+ 	int8_t far*               name_p;
 
 	int16_t*                patchlookup;
 
@@ -404,11 +407,9 @@ void R_InitTextures(void)
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
-	names = (int8_t far*)TEX_LOAD_ADDRESS;
-
-	W_CacheLumpNameDirect("PNAMES", (byte far*)names);
-	nummappatches = (*((int32_t  far*)names));
-	name_p = names + 4;
+ 	W_CacheLumpNameDirect("PNAMES", (byte far*)TEX_LOAD_ADDRESS);
+	nummappatches = (*((int32_t  far*)TEX_LOAD_ADDRESS));
+	name_p = (int8_t far*)(TEX_LOAD_ADDRESS + 4);
 	patchlookup = alloca(nummappatches * sizeof(int16_t));
 	for (i = 0; i < nummappatches; i++)
 	{
@@ -480,12 +481,12 @@ void R_InitTextures(void)
 		texturewidth = texture->width + 1;
 		textureheightval = texture->height; 
 
-		memcpy(texture->name, mtexture->name, sizeof(texture->name));
+		FAR_memcpy(texture->name, mtexture->name, sizeof(texture->name));
 		mpatch = &mtexture->patches[0];
 		patch = &texture->patches[0];
 
 		for (j = 0; j < texture->patchcount; j++, mpatch++, patch++) {
- 
+
 			patch->originx = abs(mpatch->originx);
 			patch->originy = (mpatch->originy);
 			patch->patch = patchlookup[(mpatch->patch)] + (mpatch->originx < 0 ? 0x8000 : 0);

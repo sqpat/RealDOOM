@@ -280,8 +280,7 @@ void D_AddFile(int8_t *file)
 //
 void IdentifyVersion(void)
 {
-	strcpy(basedefault, "default.cfg");
-
+	
 	if (!access("doom2.wad", R_OK))
 	{
 		commercial = true;
@@ -337,17 +336,6 @@ extern byte	scantokey[128];
 extern int8_t*	defaultfile;
 
 
-typedef struct
-{
-	int8_t*	name;
-	uint8_t*	location;
-	uint8_t		defaultvalue;
-	uint8_t		scantranslate;		// PC scan code hack
-	uint8_t		untranslated;		// lousy hack
-} default_t;
-
-
-extern default_t	defaults[NUM_DEFAULTS];
 
 
 void M_LoadDefaults(void)
@@ -372,7 +360,7 @@ void M_LoadDefaults(void)
 		printf("	default file: %s\n", defaultfile);
 	}
 	else {
-		defaultfile = basedefault;
+		defaultfile = "default.cfg";
 	}
 	// read the file in, overriding any set defaults
 	f = fopen(defaultfile, "r");
@@ -616,13 +604,13 @@ void D_InitGraphicCounts() {
  
 
 	// memory addresses, must stay int_32...
-	int32_t*                maptex;
-	int32_t*                maptex2;
+	int32_t far*                maptex;
+	int32_t far*                maptex2;
 	//int32_t*                directory;
  
 	int16_t                 numtextures1;
 	int16_t                 numtextures2;
-	byte far*				tempaddress = MK_FP(0x7000, 0);
+	byte far*				tempaddress = (byte far*)0x70000000;
 
 
 	 
@@ -630,13 +618,13 @@ void D_InitGraphicCounts() {
 	// The data is contained in one or two lumps,
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
 	W_CacheLumpNameDirect("TEXTURE1", tempaddress);
-	maptex = (int32_t*)tempaddress;
+	maptex = (int32_t far*)tempaddress;
 	numtextures1 = (*maptex);
  
 	if (W_CheckNumForName("TEXTURE2") != -1)
 	{
 		W_CacheLumpNameDirect("TEXTURE2", tempaddress);
-		maptex2 = (int32_t*)tempaddress;
+		maptex2 = (int32_t far*)tempaddress;
 		numtextures2 = (*maptex2);
 	}
 	else

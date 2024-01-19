@@ -43,7 +43,7 @@
 extern int16_t		 far*spriteoffsets;
 extern int16_t		 far*spritetopoffsets;
 
-#define colormaps		((lighttable_t  far*			far) 0x80000000)
+#define colormaps		((lighttable_t  far*			) 0x80000000)
 
 
 extern int16_t		viewwidth;

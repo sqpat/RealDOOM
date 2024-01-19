@@ -315,11 +315,11 @@ void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize);
 
 
 #define FAR_fread _far_fread
-#define FAR_read _far_read
+//#define FAR_read _far_read
 
 
 //#define FAR_fread fread
-//#define FAR_read read
+#define FAR_read read
 
 
 

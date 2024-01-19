@@ -402,7 +402,7 @@ void F_TextWrite (void)
     int16_t		cx;
     int16_t		cy;
      // erase the entire screen to a tiled background
-	byte far* src = MK_FP(0x5000, 0);
+	byte far* src = (byte far*)0x50000000;
 
 	Z_QuickmapScratch_5000();
 	Z_QuickmapScreen0();
@@ -707,7 +707,7 @@ void F_CastDrawer (void)
     boolean		flip;
 	spriteframe_t far*  spriteframes;
 	int8_t			text[100];
-	patch_t far*		patch = MK_FP(0x5000, 0);
+	patch_t far*		patch = (patch_t far*)0x50000000;
 
     // erase the entire screen to a background
     V_DrawFullscreenPatch("BOSSBACK", 0);
@@ -785,7 +785,7 @@ void F_BunnyScroll (void)
     int16_t		stage;
     static int16_t	laststage;
 	
-	patch_t far* patch = MK_FP(0x5000, 0);
+	patch_t far* patch = (patch_t far*)0x50000000;
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 	

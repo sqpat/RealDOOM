@@ -1186,7 +1186,7 @@ void P_LoadLineDefs(int16_t lump)
 	data = (maplinedef_t far*)SCRATCH_ADDRESS_5000;
 
 	Z_QuickmapRender7000to6000();
-	tempsides_render = MK_FP(0x6000u, 0x0000u); // this is always at addr 7000
+	tempsides_render = (side_render_t far*)0x60000000;
 
 	for (i = 0; i < numlines; i++) {
 		mld = &data[i];

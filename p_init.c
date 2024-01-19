@@ -42,8 +42,7 @@ extern uint8_t		switchlist[MAXSWITCHES * 2];
 extern int16_t		numswitches;
 extern button_t        buttonlist[MAXBUTTONS];
 
-extern int8_t far*           spritename;
-
+ 
 //todo move this data into functions so it's pulled into overlay space and paged out to free memory
 
 
@@ -440,12 +439,13 @@ void R_InitSpriteDefs()
 	// Just compare 4 characters as ints
 	for (i = 0; i < numsprites; i++)
 	{
+#ifdef CHECK_FOR_ERRORS
 		spritename = namelist[i];
-		//spritename = &namelist[i*5];
+#endif
 		FAR_memset(sprtemp, -1, sizeof(sprtemp));
 
 		maxframe = -1;
-		intname = *(int32_t *)namelist[i];
+		intname = *(int32_t far *)namelist[i];
 		//intname = *(int32_t *)namelist[i*5];
 
 		// scan the lumps,
@@ -562,7 +562,7 @@ void P_Init(void)
 	Z_QuickmapLumpInfo();
 	P_InitSwitchList();
 	P_InitPicAnims();
-	R_InitSprites();	
+	R_InitSprites();
 	Z_QuickmapPhysics();
 
 

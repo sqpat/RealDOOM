@@ -78,7 +78,7 @@ fixed_t		bottomfrac;
 fixed_t		bottomstep;
 
 
-lighttable_t far**	walllights;
+lighttable_t far*far*	walllights;
 
 int16_t far*		maskedtexturecol;
 

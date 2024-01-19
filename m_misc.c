@@ -249,15 +249,7 @@ extern uint8_t snd_SBport8bit, snd_SBirq, snd_SBdma;
 extern uint8_t snd_Mport8bit;
 
 
-
-typedef struct
-{
-    int8_t*	name;
-    uint8_t*	location;
-    uint8_t		defaultvalue;
-    uint8_t		scantranslate;		// PC scan code hack
-    uint8_t		untranslated;		// lousy hack
-} default_t;
+ 
 
 #define SC_UPARROW              0x48
 #define SC_DOWNARROW            0x50

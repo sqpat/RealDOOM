@@ -78,5 +78,16 @@ void M_SaveDefaults (void);
 #define NUM_DEFAULTS 28
 
 
+typedef struct
+{
+	int8_t *name;
+	uint8_t *	location;
+	uint8_t		defaultvalue;
+	uint8_t		scantranslate;		// PC scan code hack
+	uint8_t		untranslated;		// lousy hack
+} default_t;
+
+
+extern default_t	defaults[NUM_DEFAULTS];
 
 #endif

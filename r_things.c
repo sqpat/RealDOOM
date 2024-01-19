@@ -50,7 +50,7 @@
 uint16_t         pspritescale;
 fixed_t         pspriteiscale;
 
-lighttable_t far**  spritelights;
+lighttable_t far*far*  spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping
@@ -68,7 +68,6 @@ spritedef_t far*	sprites;
 int16_t             numsprites;
 
 
-int8_t*           spritename;
 
 
 extern byte far*	 spritedefs_bytes;
@@ -93,7 +92,6 @@ void R_ClearSprites (void)
     vissprite_p = vissprites;
 }
  
-vissprite_t     overflowsprite;
 
  
 
@@ -233,6 +231,7 @@ void R_ProjectSprite (mobj_pos_t far* thing)
 	
 	spritenum_t thingsprite = states[thing->stateNum].sprite;
 	spriteframenum_t thingframe = states[thing->stateNum].frame;
+	vissprite_t     overflowsprite;
 
 	fixed_t thingx = thing->x;
 	fixed_t thingy = thing->y;

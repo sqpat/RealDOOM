@@ -273,7 +273,7 @@ void EV_TurnTagLightsOff(uint8_t linetag)
 		
 		min = sectors[secnum].lightlevel;
 
-		memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+		FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 		linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
 
@@ -315,7 +315,7 @@ EV_LightTurnOn
 		if (!bright) {
 			linecount = sectors[secnum].linecount;
 			offset = sectors[secnum].linesoffset;
-			memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+			FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
 			linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
 
 
