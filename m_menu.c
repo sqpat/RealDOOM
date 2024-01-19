@@ -22,7 +22,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <alloca.h>
 
 
 #include "doomdef.h"
@@ -1810,7 +1809,7 @@ void M_Reload(void) {
 	byte far* dst = menugraphicspage0;
 	uint8_t pageoffset = 0;
 
-	int8_t* menugraphics = alloca(NUM_MENU_ITEMS * 9);
+ 	int8_t menugraphics[NUM_MENU_ITEMS * 9];
 
 	FILE *fp = fopen("D_MENUG.BIN", "rb"); // clear old file
 	fread(menugraphics, 9, NUM_MENU_ITEMS, fp);

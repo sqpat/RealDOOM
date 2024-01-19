@@ -16,7 +16,6 @@
 //
 
 #include <ctype.h>
-#include <alloca.h>
 
 #include "doomdef.h"
 
@@ -270,7 +269,8 @@ void HU_Start(void)
 
 	// int32_t		i;
 	int16_t	sindex;
-	int8_t* s;
+	int8_t s[256];
+	int16_t s_index = 0;
 	int16_t HU_TITLEY;
 	int16_t HU_INPUTY;
 	int16_t i;
@@ -337,12 +337,11 @@ void HU_Start(void)
 	}
 	sindex += title_string_offset;
 
-	s = alloca(256);
 
 	getStringByIndex(sindex, s);
 
-	while (*s) {
-		HUlib_addCharToTextLine(&w_title, *(s++));
+	while (s[s_index]) {
+		HUlib_addCharToTextLine(&w_title, (s[s_index++]));
 	}
 
 

@@ -37,7 +37,6 @@
 #include "doomstat.h"
 #include "tables.h"
 #include "w_wad.h"
-#include <alloca.h>
 #include <dos.h>
 
 #define DISTMAP		2
@@ -299,7 +298,8 @@ extern byte far* getpatchtexture(int16_t lump);
 
 void R_PrecacheLevel(void)
 {
-	int8_t*               graphicpresent;
+	int8_t               graphicpresent[512]; // enough for doom 2?
+	//int8_t*               graphicpresent;
 
 	int16_t                 i;
 	int16_t                 j;
@@ -328,7 +328,6 @@ void R_PrecacheLevel(void)
 		i = numsprites;
 	}
 	// Precache flats.
-	graphicpresent = alloca(i);
 	memset(graphicpresent, 0, numflats);
 	// numflats 56	
 

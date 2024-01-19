@@ -25,7 +25,6 @@
 #include <direct.h>
 #include <io.h>
 #include <fcntl.h>
-#include <alloca.h>
 
 #include "doomdef.h"
 #include "doomstat.h"

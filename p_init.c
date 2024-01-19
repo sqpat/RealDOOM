@@ -35,7 +35,6 @@
 #include "s_sound.h"
 
 #include "doomstat.h"
-#include <alloca.h>
 
 
 extern uint8_t		switchlist[MAXSWITCHES * 2];
@@ -391,6 +390,7 @@ void R_InitSpriteDefs()
 	spriteframe_t far* spriteframes;
 	uint16_t		currentspritememoryoffset;
 	//int32_t totalsize = 0;
+	byte sprtempbytes[29 * sizeof(spriteframe_t)];
 	int8_t *namelist[NUMSPRITES] = {
 		"TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
 		"MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
@@ -415,11 +415,11 @@ void R_InitSpriteDefs()
 	*/
 
 	
-	sprtemp = alloca(29 * sizeof(spriteframe_t));
 	// count the number of sprite names
 
 
  
+	sprtemp = (spriteframe_t far *) &sprtempbytes;
 	numsprites = NUMSPRITES;
 
 	if (!numsprites)

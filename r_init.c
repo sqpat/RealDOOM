@@ -239,7 +239,7 @@ typedef struct
 
  
  
- 
+static int maxer = 0;
 //
 // R_GenerateLookup
 //
@@ -249,26 +249,29 @@ void R_GenerateLookup(uint8_t texnum)
  
 
 	texture_t far*          texture;
-	byte far*               patchcount;     // patchcount[texture->width]
 	texpatch_t far*         patch;
 	patch_t far*            realpatch;
 	int16_t                 x;
 	int16_t                 x1;
 	int16_t                 x2;
 	int16_t                 i;
-	//int16_t                 j;
 	int16_t					patchpatch;
 	int16_t					lastusedpatch = -1;
 	uint8_t				texturepatchcount;
 	int16_t				texturewidth;
 	int16_t				textureheight;
 	int8_t				texturename[8];
-	//int16_t				index;
 	byte far*				patchaddr = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
-	//uint16_t			size;
-	//uint8_t				pagenum;
 	
- 
+	//byte patchcountbytes[256];	// 256 enough for doom shareware. maybe 512 for doom ii
+	//byte near *patchcount = patchcountbytes;
+
+	//byte patchcount[256];	// 256 enough for doom shareware. maybe 512 for doom ii
+
+
+	//byte patchcount[256];
+	byte near*               patchcount;     // patchcount[texture->width]
+
 	int16_t far*  collump = (int16_t far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum]]);
 	uint16_t far* colofs = (uint16_t far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum]]);
 
@@ -287,9 +290,8 @@ void R_GenerateLookup(uint8_t texnum)
 	// Fill in the lump / offset, so columns
 	//  with only a single patch are all done.
 
-	// todo examine alloca use...
-	patchcount = (byte  far*)alloca(texture->width + 1);
-	FAR_memset(patchcount, 0, texture->width + 1);
+	patchcount = (byte near*)alloca(texture->width + 1);
+	memset(patchcount, 0, texture->width + 1);
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
 	realpatch = (patch_t far*)patchaddr;
@@ -386,8 +388,6 @@ void R_InitTextures(void)
 	int8_t                name[9];
  	int8_t far*               name_p;
 
-	int16_t*                patchlookup;
-
 	int16_t                 nummappatches;
 	int16_t                 offset;
 	int16_t                 numtextures1;
@@ -402,6 +402,7 @@ void R_InitTextures(void)
 	//uint8_t*            textureheight;
  	int16_t				texturewidth;
 	uint8_t				textureheightval;
+	int16_t                patchlookup[512]; // 350 for doom shareware
 
  	texturedefs_offset[0] = 0;
 
@@ -410,7 +411,6 @@ void R_InitTextures(void)
  	W_CacheLumpNameDirect("PNAMES", (byte far*)TEX_LOAD_ADDRESS);
 	nummappatches = (*((int32_t  far*)TEX_LOAD_ADDRESS));
 	name_p = (int8_t far*)(TEX_LOAD_ADDRESS + 4);
-	patchlookup = alloca(nummappatches * sizeof(int16_t));
 	for (i = 0; i < nummappatches; i++)
 	{
 		FAR_strncpy(name, name_p + i * 8, 8);

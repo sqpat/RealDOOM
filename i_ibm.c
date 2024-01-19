@@ -249,8 +249,6 @@ void I_WaitVBL(int16_t vbls)
 void I_SetPalette(int8_t paletteNumber) {
 	byte far* gammatablelookup;
 	int16_t i;
-	//byte* palette = alloca(768);
-
 
 	byte far* palette = palettebytes + paletteNumber * 768u;
 	int16_t savedtask = currenttask;

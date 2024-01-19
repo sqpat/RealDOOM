@@ -194,7 +194,7 @@ void D_SetCursorPosition(int16_t column, int16_t row)
 //
 // D_DrawTitle
 //
-void D_DrawTitle(int8_t *string, uint8_t fc, uint8_t bc)
+void D_DrawTitle(int8_t near *string, uint8_t fc, uint8_t bc)
 {
 	union REGS regs;
 	byte color;
@@ -236,7 +236,7 @@ void D_DrawTitle(int8_t *string, uint8_t fc, uint8_t bc)
 //
 // D_RedrawTitle
 //
-void D_RedrawTitle(int8_t *title)
+void D_RedrawTitle(int8_t near *title)
 {
 	int16_t column;
 	int16_t row;
@@ -258,7 +258,7 @@ void D_RedrawTitle(int8_t *title)
 //
 // D_AddFile
 //
-void D_AddFile(int8_t *file)
+void D_AddFile(int8_t*file)
 {
 	int8_t     numwadfiles;
 	int8_t    *newfile;
@@ -769,8 +769,9 @@ void D_DoomMain2(void)
 		// the parms after p are wadfile/lump names,
 		// until end of parms or another - preceded parm
 		modifiedgame = true;            // homebrew levels
-		while (++p != myargc && myargv[p][0] != '-')
+		while (++p != myargc && myargv[p][0] != '-') {
 			D_AddFile(myargv[p]);
+		}
 	}
 
 	p = M_CheckParm("-playdemo");

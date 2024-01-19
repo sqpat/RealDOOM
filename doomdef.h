@@ -309,6 +309,7 @@ typedef uint8_t  THINKFUNCTION;
 #define FAR_memset _fmemset
 #define FAR_memcpy _fmemcpy
 #define FAR_strncpy _fstrncpy
+#define FAR_strcpy _fstrcpy
 
 void  _far_fread(void far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
 void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize);

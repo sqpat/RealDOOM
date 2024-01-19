@@ -16,7 +16,6 @@
 //
 
 #include <ctype.h>
-#include <alloca.h>
 
 #include "doomdef.h"
 

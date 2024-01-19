@@ -23,7 +23,6 @@
 //#include <malloc.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <alloca.h>
 
 #include "doomtype.h"
 #include "doomstat.h"
