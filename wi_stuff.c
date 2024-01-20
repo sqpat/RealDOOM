@@ -534,7 +534,7 @@ WI_drawOnLnode
 		V_DrawPatch(lnodeX, lnodeY, FB, (WI_GetPatch(cRef[i])));
     } else {
 		// DEBUG
-		printf("Could not place patch on level %d", n+1); 
+		DEBUG_PRINT("Could not place patch on level %d", n+1);
     }
 }
 

@@ -540,10 +540,14 @@ void P_SpawnPlayer(mapthing_t far* mthing)
 	x.h.intbits = mthingx;
 	y.h.intbits = mthingy;
 	z.w = ONFLOORZ;
+	
+	P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
+	// always index 1 for player
+	//playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
+	//playerMobj = setStateReturn;
+	///playerMobj_pos = setStateReturn_pos;
 
-	playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
-	playerMobj = setStateReturn;
-	playerMobj_pos = setStateReturn_pos;
+
 	playerMobj->reactiontime = 0;
 
 	playerMobj_pos->angle.wu = ANG45 * (mthingangle / 45);

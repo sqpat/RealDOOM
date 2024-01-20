@@ -156,8 +156,7 @@ P_SpawnMobj
 
 void 	P_RemoveMobj (mobj_t far* mobj);
 
-boolean	P_SetMobjState2(mobj_t far* mobj, statenum_t state);
-#define	P_SetMobjState(a, b) P_SetMobjState2(a, b)
+boolean	P_SetMobjState(mobj_t far* mobj, statenum_t state);
 void P_MobjThinker(mobj_t far* mobj, mobj_pos_t far* mobj_pos, THINKERREF mobjRef);
 
 void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
@@ -211,6 +210,12 @@ typedef struct
 //#define events				((event_t far *)	(0x90000000 + size_intercepts ))
 #define ammnumpatchbytes	((byte far *)		(0x90000000 + size_intercepts ))
 #define ammnumpatchoffsets	((uint16_t far*)	(0x90000000 + size_ammnumpatchbytes ))
+
+
+#define playerMobjRef	((THINKERREF)1)
+#define playerMobj_pos	((&mobjposlist[playerMobjRef]))
+#define playerMobj		((mobj_t far *) (((byte far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
+//#define playerMobj		((mobj_t far *)0x90000000)
 
 //extern intercept_t	*intercepts;// [MAXINTERCEPTS];
 extern intercept_t far*	intercept_p;

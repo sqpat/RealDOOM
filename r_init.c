@@ -180,7 +180,7 @@ void R_InitSpriteLumps(void)
 		
 #ifdef DEBUG_PRINTING
 		if (!(i & 63))
-			printf(".");
+			DEBUG_PRINT(".");
 #endif
 		Z_QuickmapScratch_5000();
 
@@ -446,17 +446,17 @@ void R_InitTextures(void)
 	temp1 = W_GetNumForName("S_START");  // P_???????
 	temp2 = W_GetNumForName("S_END") - 1;
 	temp3 = ((temp2 - temp1 + 63) / 64) + ((numtextures + 63) / 64);
-	printf("[");
+	DEBUG_PRINT("[");
 	for (i = 0; i < temp3; i++)
-		printf(" ");
-	printf("         ]");
+		DEBUG_PRINT(" ");
+	DEBUG_PRINT("         ]");
 	for (i = 0; i < temp3; i++)
-		printf("\x8");
-	printf("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
+		DEBUG_PRINT("\x8");
+	DEBUG_PRINT("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
 
 	for (i = 0; i < numtextures; i++, directory++) {
 		if (!(i & 63))
-			printf(".");
+			DEBUG_PRINT(".");
 
 		if (i == numtextures1) {
 			// Start looking in second texture file.
@@ -494,7 +494,7 @@ void R_InitTextures(void)
 
 		}
 
-		//printf("name %s", texture->name);
+		//DEBUG_PRINT("name %s", texture->name);
 		
 		if ((i + 1) < numtextures) {
 			texturecolumn_offset[i + 1] = texturecolumn_offset[i] + texturewidth * sizeof(int16_t);

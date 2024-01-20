@@ -295,17 +295,12 @@ void EV_StopPlat(uint8_t linetag) {
 	}
 }
 
-static int16_t platraisecount = 0;
-static int16_t addedplatraisecount = 0;
-static int16_t platindex = 0;
 
 void P_AddActivePlat(THINKERREF thinkerref) {
     int8_t		i;
-	addedplatraisecount++;
     for (i = 0;i < MAXPLATS;i++)
 	if (activeplats[i] == NULL_THINKERREF) {
 	    activeplats[i] = thinkerref;
-		platindex = thinkerref;
 	    return;
 	}
 }
@@ -317,7 +312,6 @@ void P_RemoveActivePlat(THINKERREF platRef)
     int8_t		i;
 	plat_t far* plat;
 	int16_t platsecnum;
-	platraisecount++;
 	for (i = 0; i < MAXPLATS; i++) {
 		if (platRef == activeplats[i]) {
 			plat = (plat_t far*)&thinkerlist[platRef].data;

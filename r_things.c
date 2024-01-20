@@ -426,7 +426,7 @@ void R_AddSprites (sector_t far* sec)
 //
 void R_DrawPSprite (pspdef_t near* psp, state_t statecopy)
 {
-    fixed_t             tx;
+    fixed_t_union           tx;
 	int16_t                 x1;
 	int16_t                 x2;
 	int16_t                 lump;
@@ -445,17 +445,18 @@ void R_DrawPSprite (pspdef_t near* psp, state_t statecopy)
     flip = (boolean)spriteframes[statecopy.frame & FF_FRAMEMASK].flip[0];
     
     // calculate edges of the shape
-    tx = psp->sx-160*FRACUNIT;
-        
-    temp.h.fracbits = 0;
-    temp.h.intbits = spriteoffsets[lump];
-	tx -= temp.w;
+	tx.w = psp->sx;// -160 * FRACUNIT;
+
+	tx.h.intbits -= spriteoffsets[lump];
+	tx.h.intbits -= 160;
+
+	temp.h.fracbits = 0;
 	temp.h.intbits = centerxfrac.h.intbits;
 	if (pspritescale) {
-		temp.w += FixedMul16u32(pspritescale, tx);
+		temp.w += FixedMul16u32(pspritescale, tx.wu);
 	}
 	else {
-		temp.w += tx;
+		temp.w += tx.w;
 	}
 
     x1 = temp.h.intbits;
@@ -464,14 +465,15 @@ void R_DrawPSprite (pspdef_t near* psp, state_t statecopy)
     if (x1 > viewwidth)
         return;         
 
-    temp.h.fracbits = 0;
-    temp.h.intbits = spritewidths[lump];
-	tx +=  temp.w;
+ 	temp.h.fracbits = 0;
+	//temp.h.intbits = spritewidths[lump];
+	tx.h.intbits += spritewidths[lump];
+
 	temp.h.intbits = centerxfrac.h.intbits;
 	if (pspritescale) {
-		temp.w += FixedMul16u32(pspritescale, tx);
+		temp.w += FixedMul16u32(pspritescale, tx.wu);
 	} else {
-		temp.w += tx;
+		temp.w += tx.w;
 	}
     x2 = temp.h.intbits - 1;
 

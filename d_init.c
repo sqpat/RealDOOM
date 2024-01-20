@@ -318,7 +318,7 @@ void IdentifyVersion(void)
 		return;
 	}
 
-	printf("Game mode indeterminate.\n");
+	DEBUG_PRINT("Game mode indeterminate.\n");
 	exit(1);
 }
 
@@ -355,7 +355,7 @@ void M_LoadDefaults(void)
 	i = M_CheckParm("-config");
 	if (i && i < myargc - 1) {
 		defaultfile = myargv[i + 1];
-		printf("	default file: %s\n", defaultfile);
+		DEBUG_PRINT("	default file: %s\n", defaultfile);
 	}
 	else {
 		defaultfile = "default.cfg";
@@ -690,7 +690,7 @@ void D_DoomMain2(void)
 	intx86(0x10, &regs, &regs);
 	D_DrawTitle(title);
 
-	printf("\nP_Init: Checking cmd-line parameters...");
+	DEBUG_PRINT("\nP_Init: Checking cmd-line parameters...");
 #endif
 
 
@@ -816,36 +816,36 @@ void D_DoomMain2(void)
 	#ifdef DEBUG_PRINTING
 	if (registered) {
 		getStringByIndex(VERSION_REGISTERED, textbuffer);
-		printf(textbuffer);
+		DEBUG_PRINT(textbuffer);
 		D_RedrawTitle(title);
 		getStringByIndex(NOT_SHAREWARE, textbuffer);
-		printf(textbuffer);
+		DEBUG_PRINT(textbuffer);
 		D_RedrawTitle(title);
 	}
 	if (shareware) {
 		getStringByIndex(VERSION_SHAREWARE, textbuffer);
-		printf(textbuffer);
+		DEBUG_PRINT(textbuffer);
 		D_RedrawTitle(title);
 	}
 	if (commercial) {
 		getStringByIndex(VERSION_COMMERCIAL, textbuffer);
-		printf(textbuffer);
+		DEBUG_PRINT(textbuffer);
 		D_RedrawTitle(title);
 
 		getStringByIndex(DO_NOT_DISTRIBUTE, textbuffer);
-		printf(textbuffer);
+		DEBUG_PRINT(textbuffer);
 		D_RedrawTitle(title);
 	}
 
 	getStringByIndex(M_INIT_TEXT, textbuffer);
-	printf(textbuffer);
+	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 	#endif
 	M_Init();
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(R_INIT_TEXT, textbuffer);
-	printf(textbuffer);
+	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
 	R_Init();
@@ -853,7 +853,7 @@ void D_DoomMain2(void)
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(P_INIT_TEXT, textbuffer);
-	printf(textbuffer);
+	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
 	P_Init();
@@ -861,7 +861,7 @@ void D_DoomMain2(void)
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(I_INIT_TEXT, textbuffer);
-	printf(textbuffer);
+	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
 	I_Init();
@@ -869,21 +869,21 @@ void D_DoomMain2(void)
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(S_INIT_TEXT, textbuffer);
-	printf(textbuffer);
+	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
 	S_Init(sfxVolume * 8, musicVolume * 8);
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT, textbuffer);
-	printf(textbuffer);
+	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
 	HU_Init();
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(ST_INIT_TEXT, textbuffer);
-	printf(textbuffer);
+	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
 	ST_Init();

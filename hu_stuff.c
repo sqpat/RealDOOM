@@ -123,7 +123,7 @@ void HU_Ticker(void) {
 		if (((player.messagestring || player.message != -1) && !message_nottobefuckedwith) || (player.message && message_dontfuckwithme)) {
 
 			if (player.message != -1) {
-				int8_t tempstring[256];// = "TEST 123 TEST 456 TEST 789 TEST 000";
+				int8_t tempstring[256];
 				getStringByIndex(player.message, tempstring);
 				HUlib_addMessageToSText(tempstring);
 				player.message = -1;

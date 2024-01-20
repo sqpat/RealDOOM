@@ -25,6 +25,7 @@
 
 
 #include "doomdef.h"
+#include "p_local.h"
 #include "d_net.h"
 
 #include "m_misc.h"

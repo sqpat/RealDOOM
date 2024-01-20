@@ -102,10 +102,7 @@ ticcount_t             starttime;              // for comparative timing purpose
 boolean         viewactive; 
  
 player_t        player;
-mobj_t far*			playerMobj;
-mobj_pos_t far*			playerMobj_pos;
-THINKERREF		playerMobjRef;
-
+ 
 ticcount_t          gametic;
 int16_t             totalkills, totalitems, totalsecret;    // for intermission 
  

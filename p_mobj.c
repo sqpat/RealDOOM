@@ -870,7 +870,7 @@ P_SpawnPlayerMissile
 
 
 boolean
-P_SetMobjState2
+P_SetMobjState
 (mobj_t far* mobj, statenum_t state)
 //(mobj_t* mobj, statenum_t state, int8_t* file, int32_t line)
 {

@@ -133,10 +133,10 @@ void I_StartupMouse(void)
 
 	if (I_ResetMouse() != 0xffffu)
 	{
-		printf("Mouse: not present\n", 0);
+		DEBUG_PRINT("Mouse: not present\n", 0);
 		return;
 	}
-	printf("Mouse: detected\n", 0);
+	DEBUG_PRINT("Mouse: detected\n", 0);
 
 	mousepresent = 1;
 
@@ -170,13 +170,10 @@ void I_StartupDPMI(void);
 void I_Init(void)
 {
 	novideo = M_CheckParm("novideo");
-
- 
-
-	printf("I_StartupMouse\n");
+	DEBUG_PRINT("I_StartupMouse\n");
 	I_StartupMouse();
-	printf("I_StartupKeyboard\n");
+	DEBUG_PRINT("I_StartupKeyboard\n");
 	I_StartupKeyboard();
-	printf("I_StartupSound\n");
+	DEBUG_PRINT("I_StartupSound\n");
 	I_StartupSound();
 }
