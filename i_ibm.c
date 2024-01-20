@@ -61,15 +61,12 @@
 //
 // Code
 //
-
-void I_StartupNet(void);
-void I_ShutdownNet(void);
-
+ 
 
 
 void I_ReadMouse(void);
 
-extern int32_t usemouse;
+extern uint8_t usemouse;
 
 
 
@@ -574,7 +571,7 @@ void __interrupt I_KeyboardISR(void)
 // Mouse
 //
 
-int32_t I_ResetMouse(void)
+int16_t I_ResetMouse(void)
 {
         regs.w.ax = 0; // reset
         intx86 (0x33, &regs, &regs);

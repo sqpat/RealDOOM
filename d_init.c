@@ -194,16 +194,14 @@ void D_SetCursorPosition(int16_t column, int16_t row)
 //
 // D_DrawTitle
 //
-void D_DrawTitle(int8_t near *string, uint8_t fc, uint8_t bc)
+void D_DrawTitle(int8_t near *string)
 {
 	union REGS regs;
-	byte color;
 	int16_t column;
 	int16_t row;
 	int16_t i;
 
 	//Calculate text color
-	color = (bc << 4) | fc;
 
 	//Get column position
 	column = D_GetCursorColumn();
@@ -217,7 +215,7 @@ void D_DrawTitle(int8_t near *string, uint8_t fc, uint8_t bc)
 		regs.h.ah = 9;
 		regs.h.al = string[i];
 		regs.w.cx = 1;
-		regs.h.bl = color;
+		regs.h.bl = (BGCOLOR << 4) | FGCOLOR; 
 		regs.h.bh = 0;
 		intx86(0x10, &regs, &regs);
 
@@ -249,7 +247,7 @@ void D_RedrawTitle(int8_t near *title)
 	D_SetCursorPosition(0, 0);
 
 	//Draw title
-	D_DrawTitle(title, FGCOLOR, BGCOLOR);
+	D_DrawTitle(title);
 
 	//Restore old cursor pos
 	D_SetCursorPosition(column, row);
@@ -484,47 +482,7 @@ void S_Init
 //
 // DOOM MENU
 //
-typedef enum main_e
-{
-	newgame = 0,
-	options,
-	loadgame,
-	savegame,
-	readthis,
-	quitdoom,
-	main_end
-} main_e;
-
-//
-// MENU TYPEDEFS
-//
-typedef struct
-{
-	// 0 = no cursor here, 1 = ok, 2 = arrows ok
-	int8_t       status;
-
-	int8_t        name[10];
-
-	// choice = menu item #.
-	// if status = 2,
-	//   choice=0:leftarrow,1:rightarrow
-	void(*routine)(int16_t choice);
-
-	// hotkey in menu
-	int8_t        alphaKey;
-} menuitem_t;
-
-
-typedef struct menu_s
-{
-	int16_t               numitems;       // # of menu items
-	struct menu_s near*      prevMenu;       // previous menu
-	menuitem_t near*         menuitems;      // menu items
-	void(*routine)();   // draw routine
-	int16_t               x;
-	int16_t               y;              // x,y of menu
-	int16_t               lastOn;         // last item user was on in menu
-} menu_t;
+ 
 
 extern menu_t near* currentMenu;
 extern menu_t  MainDef;
@@ -579,7 +537,7 @@ void M_Init(void)
 	messageToPrint = 0;
 	messageString = NULL;
 	messageLastMenuActive = menuactive;
-	quickSaveSlot = 255;  // means to pick a slot now
+	quickSaveSlot = -1;  // means to pick a slot now
 
 	if (commercial)
 	{
@@ -604,27 +562,23 @@ void D_InitGraphicCounts() {
  
 
 	// memory addresses, must stay int_32...
-	int32_t far*                maptex;
-	int32_t far*                maptex2;
+	int16_t far*                maptex;
+	int16_t far*                maptex2;
 	//int32_t*                directory;
  
 	int16_t                 numtextures1;
 	int16_t                 numtextures2;
-	byte far*				tempaddress = (byte far*)0x70000000;
-
-
-	 
+		 
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
-	W_CacheLumpNameDirect("TEXTURE1", tempaddress);
-	maptex = (int32_t far*)tempaddress;
+	W_CacheLumpNameDirect("TEXTURE1", (byte far*)0x70000000);
+	maptex = (int16_t far*) 0x70000000;
 	numtextures1 = (*maptex);
  
-	if (W_CheckNumForName("TEXTURE2") != -1)
-	{
-		W_CacheLumpNameDirect("TEXTURE2", tempaddress);
-		maptex2 = (int32_t far*)tempaddress;
+	if (W_CheckNumForName("TEXTURE2") != -1) {
+		W_CacheLumpNameDirect("TEXTURE2", (byte far*)0x70000000);
+		maptex2 = (int16_t far*) 0x70000000;
 		numtextures2 = (*maptex2);
 	}
 	else
@@ -734,7 +688,7 @@ void D_DoomMain2(void)
 
 	regs.w.ax = 3;
 	intx86(0x10, &regs, &regs);
-	D_DrawTitle(title, FGCOLOR, BGCOLOR);
+	D_DrawTitle(title);
 
 	printf("\nP_Init: Checking cmd-line parameters...");
 #endif
@@ -838,7 +792,7 @@ void D_DoomMain2(void)
 	W_InitMultipleFiles(wadfiles);
 	D_InitGraphicCounts(); // gross
 
-		DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
+	DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
 	Z_InitUMB();
 
 	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");

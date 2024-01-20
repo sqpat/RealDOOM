@@ -46,7 +46,7 @@ uint16_t EMS_PAGE;
 // EMS STUFF
 
 
-byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
+byte far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 {
 
 	// 4 mb
@@ -142,7 +142,7 @@ byte far* I_ZoneBaseEMS(int32_t *size, int16_t *emshandle)
 	}
 
 
-	*size = numPagesToAllocate * PAGE_FRAME_SIZE;
+	//*size = numPagesToAllocate * PAGE_FRAME_SIZE;
 
 	// EMS Handle
 	EMS_PAGE = pageframebase;
@@ -367,10 +367,11 @@ extern byte far* pageFrameArea;
 extern int16_t emshandle;
 
 void Z_InitEMS(void) {
-	int32_t size;
+	//int32_t size;
 	//todo figure this out based on settings, hardware, etc
-	int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
-	pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
+	//int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
+	pageFrameArea = I_ZoneBaseEMS(&emshandle);
+	//pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
 }
 
 void Z_LoadBinaries() {

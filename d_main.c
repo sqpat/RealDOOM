@@ -506,38 +506,7 @@ void D_Display (void)
     } while (!done);
 	wipeduration = ticcount - wiperealstart;
 }
-
-/*
-void checkstrings(int16_t j) {
-
-	int16_t i = 0;
-	uint32_t adder = 0;
-
-	if (currenttask != TASK_PHYSICS) {
-		I_Error("Bad task here %i %i", currenttask, j);
-
-	}
-	for (i = 0; i < 16384; i++) {
-		adder += stringdata[i];
-	}
-	//I_Error("\n%lu", adder);
-	if (adder != 1279414) {
-		I_Error("Error here %li %i", gametic, j);
-	}
-	adder = 0;
-
-	for (i = 0; i < MAX_STRINGS; i++) {
-		adder += stringoffsets[i];
-	}
-
-	if (adder != 1583059) {
-		I_Error("bad stringoffsets! %li %i %li", gametic, j, adder);
-	}
-}
-  
-  */
-
-
+ 
 
 //
 //  D_DoomLoop
@@ -557,12 +526,10 @@ void D_DoomLoop (void)
 	FILE* fp;
 #endif
 
-	DEBUG_PRINT("a");
 	//plat_t* plat;
     if (demorecording)
         G_BeginRecording ();
                 
-	DEBUG_PRINT("b");
 
 
     I_InitGraphics ();

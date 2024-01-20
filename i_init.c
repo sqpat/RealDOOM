@@ -50,7 +50,7 @@ extern boolean mousepresent;
 extern boolean usemouse;
 
 extern void __interrupt I_KeyboardISR(void);
-extern int32_t I_ResetMouse(void);
+extern int16_t I_ResetMouse(void);
 extern void I_StartupSound(void);
 
 
@@ -131,7 +131,7 @@ void I_StartupMouse(void)
 		return;
 	}
 
-	if (I_ResetMouse() != 0xffff)
+	if (I_ResetMouse() != 0xffffu)
 	{
 		printf("Mouse: not present\n", 0);
 		return;

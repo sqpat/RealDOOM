@@ -80,7 +80,7 @@ uint8_t                     screenblocks;           // has default
 uint8_t                     screenSize;
 
 // -1/255 = no quicksave slot picked!
-uint8_t                     quickSaveSlot;
+int8_t                     quickSaveSlot;
 
  // 1 = message to be printed
 uint8_t                     messageToPrint;
@@ -99,7 +99,7 @@ void    (*messageRoutine)(int16_t response);
 
  
 
-int16_t gammamsg[5] =
+int8_t gammamsg[5] =
 {
     GAMMALVL0,
     GAMMALVL1,
@@ -152,46 +152,13 @@ extern boolean          sendpause;
 int8_t                    savegamestrings[10][SAVESTRINGSIZE];
 
 
-
-//
-// MENU TYPEDEFS
-//
-typedef struct
-{
-    // 0 = no cursor here, 1 = ok, 2 = arrows ok
-    int8_t       status;
-    
-	int8_t        name;
-    
-    // choice = menu item #.
-    // if status = 2,
-    //   choice=0:leftarrow,1:rightarrow
-    void        (*routine)(int16_t choice);
-    
-    // hotkey in menu
-	int8_t        alphaKey;
-} menuitem_t;
-
-
-
-typedef struct menu_s
-{
-    int16_t               numitems;       // # of menu items
-    struct menu_s near*      prevMenu;       // previous menu
-    menuitem_t near*         menuitems;      // menu items
-    void                (*routine)();   // draw routine
-    int16_t               x;
-    int16_t               y;              // x,y of menu
-    int16_t               lastOn;         // last item user was on in menu
-} menu_t;
-
 int16_t           itemOn;                 // menu item skull is on
 int16_t           skullAnimCounter;       // skull animation counter
 int16_t           whichSkull;             // which skull to draw
 
 // graphic name of skulls
 // warning: initializer-string for array of chars is too long
-int8_t    skullName[2] = {5, 6};
+int16_t    skullName[2] = {5, 6};
 
 // current menudef
 menu_t near* currentMenu;                          
@@ -247,19 +214,6 @@ void M_StartMessage(int8_t *string,void *routine,boolean input);
 void M_ClearMenus (void);
 
 
-//
-// DOOM MENU
-//
-typedef enum main_e
-{
-	newgame = 0,
-	options,
-	loadgame,
-	savegame,
-	readthis,
-	quitdoom,
-	main_end
-} main_e;
 
 
 menuitem_t MainMenu[]=
@@ -661,7 +615,7 @@ void M_DoSave(int16_t slot)
     M_ClearMenus ();
 
     // PICK QUICKSAVE SLOT YET?
-    if (quickSaveSlot == 254)  // means to pick a slot now
+    if (quickSaveSlot == -2)  // means to pick a slot now
         quickSaveSlot = slot;
 }
 
@@ -730,12 +684,12 @@ void M_QuickSave(void)
     if (gamestate != GS_LEVEL)
         return;
         
-    if (quickSaveSlot > 250) // hack for -1 on a uint_8
+    if (quickSaveSlot < 0) // hack for -1 on a uint_8
     {
         M_StartControlPanel();
         M_ReadSaveStrings();
         M_SetupNextMenu(&SaveDef);
-        quickSaveSlot = 254;     // means to pick a slot now
+        quickSaveSlot = -2;     // means to pick a slot now
         return;
     }
 	getStringByIndex(QSPROMPT, temp);
@@ -762,7 +716,7 @@ void M_QuickLoad(void)
 {
     
 	int8_t temp[256];
-	if (quickSaveSlot > 250) // means to pick a slot now
+	if (quickSaveSlot < 0) // means to pick a slot now
     {
 		getStringByIndex(QSAVESPOT, temp);
 		M_StartMessage(temp,NULL,false);

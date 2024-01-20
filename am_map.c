@@ -211,10 +211,9 @@ mline_t thintriangle_guy[] = {
 
 
 
-static int16_t 	cheating = 0;
-static int16_t 	grid = 0;
-
-static int16_t 	leveljuststarted = 1; 	// kluge until AM_LevelInit() is called
+static int8_t 	cheating = 0;
+static int8_t 	grid = 0;
+static int8_t 	leveljuststarted = 1; 	// kluge until AM_LevelInit() is called
 
 boolean    	automapactive = false;
 static int16_t 	finit_width = SCREENWIDTH;
@@ -490,14 +489,7 @@ void AM_loadPics(void)
 		offset += W_LumpLength(lump);
     }
 
-}
-
-void AM_unloadPics(void)
-{
-  
-   
-
-}
+} 
 
 void AM_clearMarks(void)
 {
@@ -541,7 +533,6 @@ void AM_Stop (void)
 {
     static event_t st_notify = { 0, ev_keyup, AM_MSGEXITED };
 
-    AM_unloadPics();
     automapactive = false;
     ST_Responder(&st_notify);
     stopped = true;

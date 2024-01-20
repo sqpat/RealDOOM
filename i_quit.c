@@ -73,7 +73,7 @@ void RestoreRealTimeClock(void);
 
 extern boolean mousepresent;
 extern boolean usemouse;
-int32_t I_ResetMouse(void);
+int16_t I_ResetMouse(void);
 
 
 /*---------------------------------------------------------------------

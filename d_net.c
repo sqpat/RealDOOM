@@ -38,7 +38,7 @@
 ticcount_t nettics;
 
 ticcount_t maketic;
-ticcount_t skiptics;
+int16_t skiptics;
 
 void D_ProcessEvents(void);
 void G_BuildTiccmd(int8_t index);
@@ -55,8 +55,8 @@ ticcount_t gametime;
 void NetUpdate(void)
 {
 	uint32_t nowtime;
-	int32_t newtics;
-	int32_t i;
+	int16_t newtics;
+	int16_t i;
 
 	// check time
 	nowtime = ticcount;
@@ -98,9 +98,9 @@ void TryRunTics(void)
 {
 	int32_t entertic;
 	static int32_t oldentertics;
-	int32_t realtics;
-	int32_t availabletics;
-	int32_t counts;
+	int16_t realtics;
+	int16_t availabletics;
+	int16_t counts;
 
 	// get real tics
 	entertic = ticcount;

@@ -47,9 +47,55 @@ void M_Drawer (void);
 // does nothing if menu is already up.
 void M_StartControlPanel (void);
 
+//
+// DOOM MENU
+//
+typedef enum main_e
+{
+	newgame = 0,
+	options,
+	loadgame,
+	savegame,
+	readthis,
+	quitdoom,
+	main_end
+} main_e;
 
 
 
+
+
+//
+// MENU TYPEDEFS
+//
+typedef struct
+{
+	// 0 = no cursor here, 1 = ok, 2 = arrows ok
+	int8_t       status;
+
+	int8_t        name;
+
+	// choice = menu item #.
+	// if status = 2,
+	//   choice=0:leftarrow,1:rightarrow
+	void(*routine)(int16_t choice);
+
+	// hotkey in menu
+	int8_t        alphaKey;
+} menuitem_t;
+
+
+
+typedef struct menu_s
+{
+	int8_t               numitems;       // # of menu items
+	struct menu_s near*      prevMenu;       // previous menu
+	menuitem_t near*         menuitems;      // menu items
+	void(*routine)();   // draw routine
+	int16_t               x;
+	uint8_t               y;              // x,y of menu
+	int16_t               lastOn;         // last item user was on in menu
+} menu_t;
 
 
 

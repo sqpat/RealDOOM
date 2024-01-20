@@ -52,23 +52,19 @@ V_DrawFullscreenPatch
 	byte far*	dest;
 	byte far*	source;
 	int16_t		w;
-	patch_t far*	patch;
-	byte far*	patch2;
+	patch_t far*	patch = (patch_t far *) (0x50000000);
+	byte far*	patch2 = (byte far *) (0x50008000);
  
 	int32_t    offset = 0;
 	int16_t    pageoffset = 0;
-	byte far*       extradata;
+	byte far*       extradata = (byte far *)patch;
 	int16_t	pagenum = 0;
 	int16_t oldtask = currenttask;
 	int16_t lump = W_GetNumForName(pagename);
 	Z_QuickmapScratch_5000();
 
-	patch = (patch_t far *) (0x50000000);
-	patch2 = (byte far *) (0x50008000);
-	W_CacheLumpNumDirectFragment(lump, (byte far *)patch, pagenum, 0);
+	W_CacheLumpNumDirectFragment(lump, (byte far *)(0x50000000), pagenum, 0);
 
-
-	extradata = (byte far *)patch;
 	w = (patch->width);
 
 
