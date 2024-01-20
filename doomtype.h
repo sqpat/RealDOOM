@@ -102,6 +102,9 @@ typedef int16_t short_height_t;
  
 
 typedef int32_t fixed_t;
+typedef int16_t fixed_16_t;
+#define FIXED_16_T_FRAC_BITS 4
+#define	FRAC_16_UNIT		1 << (16 - FIXED_16_T_FRAC_BITS)
 
 typedef union _longlong_union {
 	int16_t h[4];
@@ -142,6 +145,12 @@ typedef union _fixed_t_union {
 		uint8_t intbytehigh;
 		uint8_t intbytelow;
 	} bu;
+
+	struct productresult_mid_t {
+		int8_t throwawayhigh;
+		int16_t usemid;
+		int8_t throwawaylow;
+	} productresult_mid;
 
 } fixed_t_union;
 
