@@ -44,8 +44,10 @@ THINKERREF	activeceilings[MAXCEILINGS];
 void T_MoveCeiling(ceiling_t far* ceiling, THINKERREF ceilingRef)
 {
     result_e	res;
-	sector_t far* ceilingsector = &sectors[ceiling->secnum];
-	sector_physics_t far* ceilingsector_physics = &sectors_physics[ceiling->secnum];
+	int16_t secnum = ceiling->secnum;
+	sector_t far* ceilingsector = &sectors[secnum];
+	int16_t soundorgX = sectors_physics[secnum].soundorgX;
+	int16_t soundorgY = sectors_physics[secnum].soundorgY;
 	//int16_t ceilingsecnum;
 
     switch(ceiling->direction) {
@@ -61,7 +63,7 @@ void T_MoveCeiling(ceiling_t far* ceiling, THINKERREF ceilingRef)
 					case silentCrushAndRaise:
 						break;
 					default:
-						S_StartSoundWithParams(ceilingsector_physics->soundorgX, ceilingsector_physics->soundorgY, sfx_stnmov);
+						S_StartSoundWithParams(soundorgX, soundorgY, sfx_stnmov);
 						// ? 
 						break;
 				}
@@ -71,11 +73,11 @@ void T_MoveCeiling(ceiling_t far* ceiling, THINKERREF ceilingRef)
 			{
 				switch(ceiling->type) {
 					case raiseToHighest:
-						P_RemoveActiveCeiling(ceiling, ceilingRef);
+						P_RemoveActiveCeiling(ceilingsector, ceilingRef);
 					break;
 					
 					case silentCrushAndRaise:
-						S_StartSoundWithParams(ceilingsector_physics->soundorgX, ceilingsector_physics->soundorgY, sfx_pstop);
+						S_StartSoundWithParams(soundorgX, soundorgY, sfx_pstop);
 					case fastCrushAndRaise:
 					case crushAndRaise:
 						ceiling->direction = -1;
@@ -99,7 +101,7 @@ void T_MoveCeiling(ceiling_t far* ceiling, THINKERREF ceilingRef)
 				switch(ceiling->type) {
 					case silentCrushAndRaise: break;
 						default:
-						S_StartSoundWithParams(ceilingsector_physics->soundorgX, ceilingsector_physics->soundorgY, sfx_stnmov);
+						S_StartSoundWithParams(soundorgX, soundorgY, sfx_stnmov);
 				}
 			}
 			
@@ -107,7 +109,7 @@ void T_MoveCeiling(ceiling_t far* ceiling, THINKERREF ceilingRef)
 			{
 				switch(ceiling->type) {
 					case silentCrushAndRaise:
-						S_StartSoundWithParams(ceilingsector_physics->soundorgX, ceilingsector_physics->soundorgY, sfx_pstop);
+						S_StartSoundWithParams(soundorgX, soundorgY, sfx_pstop);
 					case crushAndRaise:
 						ceiling->speed = CEILSPEED;
 					case fastCrushAndRaise:
@@ -116,7 +118,7 @@ void T_MoveCeiling(ceiling_t far* ceiling, THINKERREF ceilingRef)
 
 					case lowerAndCrush:
 					case lowerToFloor:
-						P_RemoveActiveCeiling(ceiling, ceilingRef);
+						P_RemoveActiveCeiling(ceilingsector, ceilingRef);
 						break;
 
 					default:
@@ -150,8 +152,8 @@ EV_DoCeiling
 ( uint8_t linetag,
   ceiling_e	type )
 {
-    int16_t		secnum;
-    int16_t		rtn;
+	int16_t		secnum = -1;
+	int16_t		rtn = 0;
     sector_t far*	sector;
     sector_physics_t far*	sector_physics;
 	int16_t		j = 0;
@@ -159,8 +161,6 @@ EV_DoCeiling
 	THINKERREF ceilingRef;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
-    secnum = -1;
-    rtn = 0;
     
     //	Reactivate in-stasis ceilings...for certain types.
     switch(type) {
@@ -251,13 +251,13 @@ void P_AddActiveCeiling(THINKERREF ceilingRef) {
 //
 // Remove a ceiling's thinker
 //
-void P_RemoveActiveCeiling(ceiling_t far* c, THINKERREF ceilingRef)
+void P_RemoveActiveCeiling(sector_t far* ceilingsector, THINKERREF ceilingRef)
 {
     int8_t		i;
 
     for (i = 0;i < MAXCEILINGS;i++) {
 		if (activeceilings[i] == ceilingRef) {
-			sectors[c->secnum].specialdataRef = NULL_THINKERREF;
+			ceilingsector->specialdataRef = NULL_THINKERREF;
 			P_RemoveThinker (ceilingRef);
 			activeceilings[i] = NULL_THINKERREF;
 			break;

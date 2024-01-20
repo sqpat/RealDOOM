@@ -437,7 +437,7 @@ EV_DoCeiling
 
 void T_MoveCeiling(ceiling_t far* ceiling, THINKERREF ceilingRef);
 void    P_AddActiveCeiling(THINKERREF ceilingRef);
-void    P_RemoveActiveCeiling(ceiling_t far* ceiling, THINKERREF ceilingRef);
+void    P_RemoveActiveCeiling(sector_t far*, THINKERREF ceilingRef);
 int16_t	EV_CeilingCrushStop(uint8_t linetag);
 void    P_ActivateInStasisCeiling(uint8_t linetag);
 

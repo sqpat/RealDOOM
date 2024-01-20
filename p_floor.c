@@ -234,15 +234,14 @@ T_MovePlane
 void T_MoveFloor(floormove_t far* floor, THINKERREF floorRef)
 {
     result_e	res;
-	
-	sector_t far* floorsector = &sectors[floor->secnum];
-	int16_t floorsecnum;
+	int16_t floorsecnum = floor->secnum;
+
+	sector_t far* floorsector = &sectors[floorsecnum];
 	uint8_t floornewspecial;
 	floor_e floortype;
 	int16_t floordirection;
 	uint8_t floortexture;
     res = T_MovePlane(floorsector, floor->speed, floor->floordestheight, floor->crush,0,floor->direction);
-	floorsecnum = floor->secnum;
 	if (!(leveltime.h.fracbits & 7)) {
 		S_StartSoundWithParams(sectors_physics[floorsecnum].soundorgX, sectors_physics[floorsecnum].soundorgY, sfx_stnmov);
 	}
@@ -289,8 +288,8 @@ EV_DoFloor
 	int16_t linefrontsecnum,
   floor_e	floortype )
 {
-    int16_t			secnum;
-    int16_t			rtn;
+    int16_t			secnum = -1;
+    int16_t			rtn = 0;
     int16_t			i;
 	int16_t		j = 0;
     floormove_t far*	floor;
@@ -303,8 +302,6 @@ EV_DoFloor
 	int16_t sectorfloorheight;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
-    secnum = -1;
-    rtn = 0;
 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 	while (secnumlist[j] >= 0) {
 		//sec = &sectors[secnum];
@@ -501,11 +498,11 @@ EV_BuildStairs
 ( uint8_t	linetag,
   stair_e	type )
 {
-    int16_t			secnum;
+    int16_t			secnum = -1;
     short_height_t	height;
     uint8_t			i;
     int16_t			ok;
-    int16_t			rtn;
+	int16_t			rtn = 0;
     
     int16_t		tsecOffset;
 
@@ -523,8 +520,7 @@ EV_BuildStairs
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	int16_t		j = 0;
 	sector_t far* sector;
-	secnum = -1;
-    rtn = 0;
+	
 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 	while (secnumlist[j] >= 0) {
 		//sec = &sectors[secnum];
