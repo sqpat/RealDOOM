@@ -126,7 +126,7 @@
 
 typedef struct
 {
-	fixed_t x, y;
+	int16_t x, y;
 } fpoint_t;
 
 typedef struct
@@ -144,11 +144,7 @@ typedef struct
     mpoint_t a, b;
 } mline_t;
 
-typedef struct
-{
-    fixed_t slp, islp;
-} islope_t;
-
+ 
 
 
 //
@@ -227,7 +223,6 @@ static int16_t	f_y;
 static int16_t 	f_w;
 static int16_t	f_h;
 
-static byte far*	fb; 			// pseudo-frame buffer
 
 static mpoint_t m_paninc; // how far the window pans each tic (map coords)
 static fixed_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
@@ -248,8 +243,6 @@ static fixed_t	min_y;
 static fixed_t 	max_x;
 static fixed_t  max_y;
 
-static fixed_t 	max_w; // max_x-min_x,
-static fixed_t  max_h; // max_y-min_y
 
 // based on player size
 static fixed_t 	min_scale_mtof; // used to tell when to stop zooming out
@@ -366,6 +359,8 @@ void AM_findMinMaxBoundaries(void)
     fixed_t a;
     fixed_t b;
 	fixed_t_union temp;
+	fixed_t max_w; // max_x-min_x,
+	fixed_t  max_h; // max_y-min_y
 	min_x = min_y =  MAXLONG;
     max_x = max_y = -MAXLONG;
 	temp.h.fracbits = 0;
@@ -439,7 +434,6 @@ void AM_initVariables(void)
     static event_t st_notify = { ev_keyup, AM_MSGENTERED };
 
     automapactive = true;
-    fb = screen0;
 
     f_oldloc.x = MAXLONG;
 
@@ -775,7 +769,7 @@ void AM_Ticker (void)
 //
 void AM_clearFB(int16_t color)
 {
-    FAR_memset(fb, color, f_w*f_h);
+    FAR_memset(screen0, color, f_w*f_h);
 }
 
 
@@ -803,8 +797,8 @@ AM_clipMline
     register	int16_t outside;
     
     fpoint_t	tmp;
-    fixed_t		dx;
-    fixed_t		dy;
+    int16_t		dx;
+	int16_t		dy;
 
     
 #define DOOUTCODE(oc, mx, my) \
@@ -817,30 +811,30 @@ AM_clipMline
     
     // do trivial rejects and outcodes
     if (ml->a.y > m_y2)
-	outcode1 = TOP;
+		outcode1 = TOP;
     else if (ml->a.y < m_y)
-	outcode1 = BOTTOM;
+		outcode1 = BOTTOM;
 
     if (ml->b.y > m_y2)
-	outcode2 = TOP;
+		outcode2 = TOP;
     else if (ml->b.y < m_y)
-	outcode2 = BOTTOM;
+		outcode2 = BOTTOM;
     
     if (outcode1 & outcode2)
-	return false; // trivially outside
+		return false; // trivially outside
 
     if (ml->a.x < m_x)
-	outcode1 |= LEFT;
+		outcode1 |= LEFT;
     else if (ml->a.x > m_x2)
-	outcode1 |= RIGHT;
+		outcode1 |= RIGHT;
     
     if (ml->b.x < m_x)
-	outcode2 |= LEFT;
+		outcode2 |= LEFT;
     else if (ml->b.x > m_x2)
-	outcode2 |= RIGHT;
+		outcode2 |= RIGHT;
     
     if (outcode1 & outcode2)
-	return false; // trivially outside
+		return false; // trivially outside
 
     // transform to frame-buffer coordinates.
     fl->a.x = CXMTOF(ml->a.x);
@@ -852,63 +846,62 @@ AM_clipMline
     DOOUTCODE(outcode2, fl->b.x, fl->b.y);
 
     if (outcode1 & outcode2)
-	return false;
+		return false;
 
-    while (outcode1 | outcode2)
-    {
-	// may be partially inside box
-	// find an outside point
-	if (outcode1)
-	    outside = outcode1;
-	else
-	    outside = outcode2;
+    while (outcode1 | outcode2) {
+		// may be partially inside box
+		// find an outside point
+		if (outcode1)
+			outside = outcode1;
+		else
+			outside = outcode2;
 	
-	// clip to each side
-	if (outside & TOP)
-	{
-	    dy = fl->a.y - fl->b.y;
-	    dx = fl->b.x - fl->a.x;
-	    tmp.x = fl->a.x + (dx*(fl->a.y))/dy;
-	    tmp.y = 0;
-	}
-	else if (outside & BOTTOM)
-	{
-	    dy = fl->a.y - fl->b.y;
-	    dx = fl->b.x - fl->a.x;
-	    tmp.x = fl->a.x + (dx*(fl->a.y-f_h))/dy;
-	    tmp.y = f_h-1;
-	}
-	else if (outside & RIGHT)
-	{
-	    dy = fl->b.y - fl->a.y;
-	    dx = fl->b.x - fl->a.x;
-	    tmp.y = fl->a.y + (dy*(f_w-1 - fl->a.x))/dx;
-	    tmp.x = f_w-1;
-	}
-	else if (outside & LEFT)
-	{
-	    dy = fl->b.y - fl->a.y;
-	    dx = fl->b.x - fl->a.x;
-	    tmp.y = fl->a.y + (dy*(-fl->a.x))/dx;
-	    tmp.x = 0;
-	}
+		// clip to each side
+		if (outside & TOP)
+		{
+			dy = fl->a.y - fl->b.y;
+			dx = fl->b.x - fl->a.x;
+			tmp.x = fl->a.x + (dx*(fl->a.y))/dy;
+			tmp.y = 0;
+		}
+		else if (outside & BOTTOM)
+		{
+			dy = fl->a.y - fl->b.y;
+			dx = fl->b.x - fl->a.x;
+			tmp.x = fl->a.x + (dx*(fl->a.y-f_h))/dy;
+			tmp.y = f_h-1;
+		}
+		else if (outside & RIGHT)
+		{
+			dy = fl->b.y - fl->a.y;
+			dx = fl->b.x - fl->a.x;
+			tmp.y = fl->a.y + (dy*(f_w-1 - fl->a.x))/dx;
+			tmp.x = f_w-1;
+		}
+		else if (outside & LEFT)
+		{
+			dy = fl->b.y - fl->a.y;
+			dx = fl->b.x - fl->a.x;
+			tmp.y = fl->a.y + (dy*(-fl->a.x))/dx;
+			tmp.x = 0;
+		}
 
-	if (outside == outcode1)
-	{
-	    fl->a = tmp;
-	    DOOUTCODE(outcode1, fl->a.x, fl->a.y);
-	}
-	else
-	{
-	    fl->b = tmp;
-	    DOOUTCODE(outcode2, fl->b.x, fl->b.y);
-	}
+		if (outside == outcode1)
+		{
+			fl->a = tmp;
+			DOOUTCODE(outcode1, fl->a.x, fl->a.y);
+		}
+		else
+		{
+			fl->b = tmp;
+			DOOUTCODE(outcode2, fl->b.x, fl->b.y);
+		}
 	
-	if (outcode1 & outcode2)
-	    return false; // trivially outside
-    }
+		if (outcode1 & outcode2)
+			return false; // trivially outside
+		}
 
-    return true;
+	return true;
 }
 #undef DOOUTCODE
 
@@ -921,19 +914,19 @@ AM_drawFline
 ( fline_t near*	fl,
   uint8_t		color )
 {
-    register int32_t x;
-    register int32_t y;
-    register int32_t dx;
-    register int32_t dy;
-    register int32_t sx;
-    register int32_t sy;
-    register int32_t ax;
-    register int32_t ay;
-    register int32_t d;
+    register int16_t x;
+	register int16_t y;
+	register int16_t dx;
+	register int16_t dy;
+	register int16_t sx;
+	register int16_t sy;
+	register int16_t ax;
+	register int16_t ay;
+    register int16_t d;
     
 	 
 
-#define PUTDOT(xx,yy,cc) fb[(yy)*f_w+(xx)]=(cc)
+#define PUTDOT(xx,yy,cc) screen0[(yy)*f_w+(xx)]=(cc)
 
     dx = fl->b.x - fl->a.x;
     ax = 2 * (dx<0 ? -dx : dx);
@@ -946,38 +939,36 @@ AM_drawFline
     x = fl->a.x;
     y = fl->a.y;
 
-    if (ax > ay)
-    {
-	d = ay - ax/2;
-	while (1)
-	{
-	    PUTDOT(x,y,color);
-	    if (x == fl->b.x) return;
-	    if (d>=0)
-	    {
-		y += sy;
-		d -= ax;
-	    }
-	    x += sx;
-	    d += ay;
-	}
+    if (ax > ay) {
+		d = ay - ax/2;
+		while (1) {
+			PUTDOT(x,y,color);
+			if (x == fl->b.x) return;
+			if (d>=0)
+			{
+			y += sy;
+			d -= ax;
+			}
+			x += sx;
+			d += ay;
+		}
+	} else {
+		d = ax - ay/2;
+		while (1) {
+			PUTDOT(x, y, color);
+			if (y == fl->b.y) return;
+			if (d >= 0)
+			{
+			x += sx;
+			d -= ay;
+			}
+			y += sy;
+			d += ax;
+		}
     }
-    else
-    {
-	d = ax - ay/2;
-	while (1)
-	{
-	    PUTDOT(x, y, color);
-	    if (y == fl->b.y) return;
-	    if (d >= 0)
-	    {
-		x += sx;
-		d -= ay;
-	    }
-	    y += sy;
-	    d += ax;
-	}
-    }
+
+
+
 }
 
 static fline_t fl;
@@ -1201,7 +1192,7 @@ void
 AM_drawThings
 ( uint8_t	colors)
 {
-    uint16_t		i;
+    int16_t		i;
     mobj_pos_t far*	t;
 	THINKERREF tRef;
 	for (i=0;i<numsectors;i++) {
@@ -1245,7 +1236,7 @@ void AM_drawMarks(void)
 
 void AM_drawCrosshair(uint8_t color)
 {
-    fb[(f_w*(f_h+1))/2] = color; // single point for now
+    screen0[(f_w*(f_h+1))/2] = color; // single point for now
 
 }
 extern int setval;
