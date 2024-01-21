@@ -95,7 +95,10 @@
 #define AM_NUMMARKPOINTS 10
 
 // scale on entry
-
+//66846.72
+//64250.98039215686
+// 12 integer bits 4 frac bits
+#define FRAC_SCALE_UNIT 1 << 12
 
 #define INITSCALEMTOF (.2*FRACUNIT)
 
@@ -105,10 +108,14 @@
 #define SCREEN_PAN_INC	4L
 // how much zoom-in per tic
 // goes to 2x in 1 second
-#define M_ZOOMIN        ((int32_t) (1.02*FRACUNIT))
+
+// FRAC_SCALE_UNIT * 1.02
+#define M_ZOOMIN        4177
 // how much zoom-out per tic
 // pulls out to 0.5x in 1 second
-#define M_ZOOMOUT       ((int32_t) (FRACUNIT/1.02))
+
+// FRAC_SCALE_UNIT / 1.02
+#define M_ZOOMOUT       4015
 
 // translates between frame-buffer and map distances
 
@@ -142,14 +149,15 @@ typedef struct
 } mline_t;
 
  
-#define LINE_PLAYERRADIUS 16<<4
+//#define LINE_PLAYERRADIUS 16<<4
 
 //
 // The vector graphics for the automap.
 //  A line drawing of the player pointing right,
 //   starting from the middle.
 //
-#define R ((8*LINE_PLAYERRADIUS)/7)
+//#define R ((8*LINE_PLAYERRADIUS)/7)
+#define R 292
 mline_t player_arrow[] = {
     { { -R+R/8, 0 }, { R, 0 } }, // -----
     { { R, 0 }, { R-R/2, R/4 } },  // ----->
@@ -162,7 +170,8 @@ mline_t player_arrow[] = {
 #undef R
 #define NUMPLYRLINES (sizeof(player_arrow)/sizeof(mline_t))
 
-#define R ((8*LINE_PLAYERRADIUS)/7)
+//#define R ((8*LINE_PLAYERRADIUS)/7)
+#define R 292
 mline_t cheat_player_arrow[] = {
     { { -R+R/8, 0 }, { R, 0 } }, // -----
     { { R, 0 }, { R-R/2, R/6 } },  // ----->
@@ -216,8 +225,8 @@ boolean    	automapactive = false;
 
 
 static mpoint_t m_paninc; // how far the window pans each tic (map coords)
-static fixed_t_union 	mtof_zoommul; // how far the window zooms in each tic (map coords)
-static fixed_t_union 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
+static int16_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
+static int16_t 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
 
 static fixed_t_union 	screen_botleft_x, screen_botleft_y;   // LL x,y where the window is on the map (map coords)
 static fixed_t_union 	screen_topright_x, screen_topright_y; // UR x,y where the window is on the map (map coords)
@@ -310,16 +319,6 @@ void AM_activateNewScale(void)
 
 }
 
-//
-//
-//
-void AM_saveScaleAndLoc(void)
-{
-    old_screen_botleft_x.w = screen_botleft_x.w;
-    old_screen_botleft_y.w = screen_botleft_y.w;
-    old_screen_viewport_width.w = screen_viewport_width.w;
-    old_screen_viewport_height.w = screen_viewport_height.w;
-}
 
 void AM_restoreScaleAndLoc(void)
 {
@@ -446,8 +445,8 @@ void AM_initVariables(void)
     screen_oldloc.x = MAXSHORT;
 
     m_paninc.x = m_paninc.y = 0;
-    ftom_zoommul.w = FRACUNIT;
-    mtof_zoommul.w = FRACUNIT;
+    ftom_zoommul = FRAC_SCALE_UNIT;
+    mtof_zoommul = FRAC_SCALE_UNIT;
 
     screen_viewport_width.w = FTOM16(automap_screenwidth);
     screen_viewport_height.w = FTOM16(automap_screenheight);
@@ -623,12 +622,12 @@ AM_Responder
 	    else rc = false;
 	    break;
 	  case AM_ZOOMOUTKEY: // zoom out
-	    mtof_zoommul.w = M_ZOOMOUT;
-	    ftom_zoommul.w = M_ZOOMIN;
+	    mtof_zoommul = M_ZOOMOUT;
+	    ftom_zoommul = M_ZOOMIN;
 	    break;
 	  case AM_ZOOMINKEY: // zoom in
-	    mtof_zoommul.w = M_ZOOMIN;
-	    ftom_zoommul.w = M_ZOOMOUT;
+	    mtof_zoommul = M_ZOOMIN;
+	    ftom_zoommul = M_ZOOMOUT;
 	    break;
 	  case AM_ENDKEY:
 	    bigstate = 0;
@@ -637,12 +636,17 @@ AM_Responder
 	    break;
 	  case AM_GOBIGKEY:
 	    bigstate = !bigstate;
-	    if (bigstate)
-	    {
-		AM_saveScaleAndLoc();
-		AM_minOutWindowScale();
-	    }
-	    else AM_restoreScaleAndLoc();
+	    if (bigstate) {
+			//AM_saveScaleAndLoc();
+			old_screen_botleft_x.w = screen_botleft_x.w;
+			old_screen_botleft_y.w = screen_botleft_y.w;
+			old_screen_viewport_width.w = screen_viewport_width.w;
+			old_screen_viewport_height.w = screen_viewport_height.w;
+
+			AM_minOutWindowScale();
+		} else {
+			AM_restoreScaleAndLoc();
+		}
 	    break;
 	  case AM_FOLLOWKEY:
 	    followplayer = !followplayer;
@@ -692,8 +696,8 @@ AM_Responder
 	    break;
 	  case AM_ZOOMOUTKEY:
 	  case AM_ZOOMINKEY:
-	    mtof_zoommul.w = FRACUNIT;
-	    ftom_zoommul.w = FRACUNIT;
+	    mtof_zoommul = FRAC_SCALE_UNIT;
+	    ftom_zoommul = FRAC_SCALE_UNIT;
 	    break;
 	}
     }
@@ -710,7 +714,7 @@ void AM_changeWindowScale(void)
 {
 
     // Change the scaling multipliers
-    scale_mtof.w = FixedMul(scale_mtof.w, mtof_zoommul.w);
+    scale_mtof.w = FixedMul(scale_mtof.w, mtof_zoommul)<<4;
     scale_ftom.w = FixedDivWholeA(FRACUNIT, scale_mtof.w);
 
     if (scale_mtof.w < min_scale_mtof.w)
@@ -754,7 +758,7 @@ void AM_Ticker (void)
 	}
     
 	// Change the zoom if necessary
-	if (ftom_zoommul.w != FRACUNIT) {
+	if (ftom_zoommul != FRAC_SCALE_UNIT) {
 		AM_changeWindowScale();
 	}
     // Change x,y location
@@ -1115,12 +1119,10 @@ AM_rotate
   fineangle_t	a )
 {
 	fixed_t_union tmpx;
-	fixed_t_union tmpy;
     tmpx.w = ((int32_t)(*x * finecosine[a]))
 	- ((int32_t)(*y * finesine[a]));
     
-	tmpy.w = ((int32_t)(*x*finesine[a])) + ((int32_t)(*y*finecosine[a])) >> 16;
-	*y = tmpy.h.intbits;
+	*y = ((int32_t)(*x*finesine[a])) + ((int32_t)(*y*finecosine[a])) >> 16;
 	*x = tmpx.h.intbits;
 
 }
