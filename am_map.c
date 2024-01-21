@@ -133,7 +133,7 @@ typedef struct
 
 typedef struct
 {
-    fixed_t_union		x,y;
+    int16_t		x,y;
 } mpoint_t;
 
 typedef struct
@@ -142,14 +142,14 @@ typedef struct
 } mline_t;
 
  
-
+#define LINE_PLAYERRADIUS 16<<4
 
 //
 // The vector graphics for the automap.
 //  A line drawing of the player pointing right,
 //   starting from the middle.
 //
-#define R ((8*PLAYERRADIUS)/7)
+#define R ((8*LINE_PLAYERRADIUS)/7)
 mline_t player_arrow[] = {
     { { -R+R/8, 0 }, { R, 0 } }, // -----
     { { R, 0 }, { R-R/2, R/4 } },  // ----->
@@ -162,7 +162,7 @@ mline_t player_arrow[] = {
 #undef R
 #define NUMPLYRLINES (sizeof(player_arrow)/sizeof(mline_t))
 
-#define R ((8*PLAYERRADIUS)/7)
+#define R ((8*LINE_PLAYERRADIUS)/7)
 mline_t cheat_player_arrow[] = {
     { { -R+R/8, 0 }, { R, 0 } }, // -----
     { { R, 0 }, { R-R/2, R/6 } },  // ----->
@@ -184,7 +184,7 @@ mline_t cheat_player_arrow[] = {
 #undef R
 #define NUMCHEATPLYRLINES (sizeof(cheat_player_arrow)/sizeof(mline_t))
 
-#define R (FRACUNIT)
+#define R (1 << 4)
 mline_t triangle_guy[] = {
     { { -.867*R, -.5*R }, { .867*R, -.5*R } },
     { { .867*R, -.5*R } , { 0, R } },
@@ -192,7 +192,7 @@ mline_t triangle_guy[] = {
 };
 #undef R
 
-#define R (FRACUNIT)
+#define R (1 << 4)
 mline_t thintriangle_guy[] = {
     { { -.5*R, -.7*R }, { R, 0 } },
     { { R, 0 }, { -.5*R, .7*R } },
@@ -350,8 +350,8 @@ void AM_restoreScaleAndLoc(void)
 //
 void AM_addMark(void)
 {
-    markpoints[markpointnum].x.h.intbits = screen_botleft_x.h.intbits + screen_viewport_width.h.intbits /2;
-    markpoints[markpointnum].y.h.intbits = screen_botleft_y.h.intbits + screen_viewport_height.h.intbits /2;
+    markpoints[markpointnum].x = screen_botleft_x.h.intbits + screen_viewport_width.h.intbits /2;
+    markpoints[markpointnum].y = screen_botleft_y.h.intbits + screen_viewport_height.h.intbits /2;
 	 
 	markpointnum = (markpointnum + 1) % AM_NUMMARKPOINTS;
 
@@ -410,14 +410,14 @@ void AM_findMinMaxBoundaries(void)
 //
 void AM_changeWindowLoc(void)
 {
-    if (m_paninc.x.w || m_paninc.y.w)
+    if (m_paninc.x || m_paninc.y)
     {
 	followplayer = 0;
-	screen_oldloc.x.w = MAXLONG;
+	screen_oldloc.x = MAXSHORT;
     }
 
-    screen_botleft_x.w += m_paninc.x.w;
-    screen_botleft_y.w += m_paninc.y.w;
+    screen_botleft_x.h.intbits += m_paninc.x;
+    screen_botleft_y.h.intbits += m_paninc.y;
 
     if (screen_botleft_x.w + screen_viewport_width.w /2 > max_level_x.w)
 		screen_botleft_x.w = max_level_x.w - screen_viewport_width.w /2;
@@ -443,9 +443,9 @@ void AM_initVariables(void)
 
     automapactive = true;
 
-    screen_oldloc.x.w = MAXLONG;
+    screen_oldloc.x = MAXSHORT;
 
-    m_paninc.x.w = m_paninc.y.w = 0;
+    m_paninc.x = m_paninc.y = 0;
     ftom_zoommul.w = FRACUNIT;
     mtof_zoommul.w = FRACUNIT;
 
@@ -498,7 +498,7 @@ void AM_clearMarks(void)
 	int8_t i;
 
     for (i=0;i<AM_NUMMARKPOINTS;i++)
-		markpoints[i].x.h.intbits = -1; // means empty
+		markpoints[i].x = -1; // means empty
     markpointnum = 0;
 }
 
@@ -607,19 +607,19 @@ AM_Responder
 	switch(ev->data1)
 	{
 	  case AM_PANRIGHTKEY: // pan right
-	    if (!followplayer) m_paninc.x.w = FTOM(SCREEN_PAN_INC);
+	    if (!followplayer) m_paninc.x = FTOM16(SCREEN_PAN_INC);
 	    else rc = false;
 	    break;
 	  case AM_PANLEFTKEY: // pan left
-	    if (!followplayer) m_paninc.x.w = -FTOM(SCREEN_PAN_INC);
+	    if (!followplayer) m_paninc.x = -FTOM16(SCREEN_PAN_INC);
 	    else rc = false;
 	    break;
 	  case AM_PANUPKEY: // pan up
-	    if (!followplayer) m_paninc.y.w = FTOM(SCREEN_PAN_INC);
+	    if (!followplayer) m_paninc.y = FTOM16(SCREEN_PAN_INC);
 	    else rc = false;
 	    break;
 	  case AM_PANDOWNKEY: // pan down
-	    if (!followplayer) m_paninc.y.w = -FTOM(SCREEN_PAN_INC);
+	    if (!followplayer) m_paninc.y = -FTOM16(SCREEN_PAN_INC);
 	    else rc = false;
 	    break;
 	  case AM_ZOOMOUTKEY: // zoom out
@@ -646,7 +646,7 @@ AM_Responder
 	    break;
 	  case AM_FOLLOWKEY:
 	    followplayer = !followplayer;
-	    screen_oldloc.x.w = MAXLONG;
+	    screen_oldloc.x = MAXSHORT;
 		player.message = followplayer ? AMSTR_FOLLOWON : AMSTR_FOLLOWOFF;
 	    break;
 	  case AM_GRIDKEY:
@@ -679,16 +679,16 @@ AM_Responder
 	switch (ev->data1)
 	{
 	  case AM_PANRIGHTKEY:
-	    if (!followplayer) m_paninc.x.w = 0;
+	    if (!followplayer) m_paninc.x = 0;
 	    break;
 	  case AM_PANLEFTKEY:
-	    if (!followplayer) m_paninc.x.w = 0;
+	    if (!followplayer) m_paninc.x = 0;
 	    break;
 	  case AM_PANUPKEY:
-	    if (!followplayer) m_paninc.y.w = 0;
+	    if (!followplayer) m_paninc.y = 0;
 	    break;
 	  case AM_PANDOWNKEY:
-	    if (!followplayer) m_paninc.y.w = 0;
+	    if (!followplayer) m_paninc.y = 0;
 	    break;
 	  case AM_ZOOMOUTKEY:
 	  case AM_ZOOMINKEY:
@@ -728,13 +728,13 @@ void AM_changeWindowScale(void)
 void AM_doFollowPlayer(void) {
 
 
-    if (screen_oldloc.x.w != playerMobj_pos->x || screen_oldloc.y.w != playerMobj_pos->y) {
+    if (screen_oldloc.x != playerMobj_pos->x>>16 || screen_oldloc.y != playerMobj_pos->y>>16) {
 		screen_botleft_x.w = FTOM(MTOF(playerMobj_pos->x)) - screen_viewport_width.w /2;
 		screen_botleft_y.w = FTOM(MTOF(playerMobj_pos->y)) - screen_viewport_height.w /2;
 		screen_topright_x.w = screen_botleft_x.w + screen_viewport_width.w;
 		screen_topright_y.w = screen_botleft_y.w + screen_viewport_height.w;
-		screen_oldloc.x.w = playerMobj_pos->x;
-		screen_oldloc.y.w = playerMobj_pos->y;
+		screen_oldloc.x = playerMobj_pos->x>>16;
+		screen_oldloc.y = playerMobj_pos->y>>16;
 
     }
 
@@ -758,7 +758,7 @@ void AM_Ticker (void)
 		AM_changeWindowScale();
 	}
     // Change x,y location
-	if (m_paninc.x.w || m_paninc.y.w) {
+	if (m_paninc.x || m_paninc.y) {
 		AM_changeWindowLoc();
 	}
     // Update light level
@@ -816,37 +816,37 @@ AM_clipMline
     
 
     // do trivial rejects and outcodes
-    if (ml->a.y.h.intbits > screen_topright_y.h.intbits)
+    if (ml->a.y > screen_topright_y.h.intbits)
 		outcode1 = TOP;
-    else if (ml->a.y.h.intbits < screen_botleft_y.h.intbits)
+    else if (ml->a.y < screen_botleft_y.h.intbits)
 		outcode1 = BOTTOM;
 
-    if (ml->b.y.h.intbits > screen_topright_y.h.intbits)
+    if (ml->b.y > screen_topright_y.h.intbits)
 		outcode2 = TOP;
-    else if (ml->b.y.h.intbits < screen_botleft_y.h.intbits)
+    else if (ml->b.y < screen_botleft_y.h.intbits)
 		outcode2 = BOTTOM;
     
     if (outcode1 & outcode2)
 		return false; // trivially outside
 
-    if (ml->a.x.h.intbits < screen_botleft_x.h.intbits)
+    if (ml->a.x < screen_botleft_x.h.intbits)
 		outcode1 |= LEFT;
-    else if (ml->a.x.h.intbits > screen_topright_x.h.intbits)
+    else if (ml->a.x > screen_topright_x.h.intbits)
 		outcode1 |= RIGHT;
     
-    if (ml->b.x.h.intbits < screen_botleft_x.h.intbits)
+    if (ml->b.x < screen_botleft_x.h.intbits)
 		outcode2 |= LEFT;
-    else if (ml->b.x.h.intbits > screen_topright_x.h.intbits)
+    else if (ml->b.x > screen_topright_x.h.intbits)
 		outcode2 |= RIGHT;
     
     if (outcode1 & outcode2)
 		return false; // trivially outside
 
     // transform to frame-buffer coordinates.
-    fl->a.x = CXMTOF16(ml->a.x.h.intbits);
-    fl->a.y = CYMTOF16(ml->a.y.h.intbits);
-    fl->b.x = CXMTOF16(ml->b.x.h.intbits);
-    fl->b.y = CYMTOF16(ml->b.y.h.intbits);
+    fl->a.x = CXMTOF16(ml->a.x);
+    fl->a.y = CYMTOF16(ml->a.y);
+    fl->b.x = CXMTOF16(ml->b.x);
+    fl->b.y = CYMTOF16(ml->b.y);
 
 	outcode1 = DOOUTCODE(outcode1, fl->a.x, fl->a.y);
 	outcode2 = DOOUTCODE(outcode2, fl->b.x, fl->b.y);
@@ -1002,10 +1002,6 @@ void AM_drawGrid()
     int16_t x, y;
 	int16_t start, end;
 	int16_t temp = bmaporgx;
-	ml.a.x.w = 0;
-	ml.b.x.w = 0;
-	ml.a.y.w = 0;
-	ml.b.y.w = 0;
 
     // Figure out start of vertical gridlines
 	start = screen_botleft_x.h.intbits;
@@ -1016,11 +1012,11 @@ void AM_drawGrid()
     end = (screen_botleft_x.h.intbits) + (screen_viewport_width.h.intbits);
 
     // draw vertical gridlines
-	ml.a.y.w = screen_botleft_y.w;
-	ml.b.y.w = screen_botleft_y.w+screen_viewport_height.w;
+	ml.a.y = screen_botleft_y.h.intbits;
+	ml.b.y = screen_botleft_y.h.intbits +screen_viewport_height.h.intbits;
     for (x=start; x<end; x+=(0x80)) {
-		ml.a.x.h.intbits = x;
-		ml.b.x.h.intbits = x;
+		ml.a.x = x;
+		ml.b.x = x;
 		AM_drawMline(&ml, GRIDCOLORS);
     }
 
@@ -1032,11 +1028,11 @@ void AM_drawGrid()
     end = (screen_botleft_y.h.intbits )+ (screen_viewport_height.h.intbits);
 
     // draw horizontal gridlines
-    ml.a.x.w = screen_botleft_x.w;
-    ml.b.x.w = screen_botleft_x.w + screen_viewport_width.w;
+    ml.a.x = screen_botleft_x.h.intbits;
+    ml.b.x = screen_botleft_x.h.intbits + screen_viewport_width.h.intbits;
     for (y=start; y<end; y+=(0x80)) {
-		ml.a.y.h.intbits = y;
-		ml.b.y.h.intbits = y;
+		ml.a.y = y;
+		ml.b.y = y;
 		AM_drawMline(&ml, GRIDCOLORS);
     }
 
@@ -1069,14 +1065,10 @@ void AM_drawWalls()
 		linefrontsecnum = lines_physics[i].frontsecnum;
 		linespecial = lines_physics[i].special;
 
-		l.a.x.h.intbits = vertexes[linev1Offset].x;
-		l.a.y.h.intbits = vertexes[linev1Offset].y;
-		l.b.x.h.intbits = vertexes[linev2Offset].x;
-		l.b.y.h.intbits = vertexes[linev2Offset].y;
-		l.a.x.h.fracbits = 0;
-		l.a.y.h.fracbits = 0;
-		l.b.x.h.fracbits = 0;
-		l.b.y.h.fracbits = 0;
+		l.a.x = vertexes[linev1Offset].x;
+		l.a.y = vertexes[linev1Offset].y;
+		l.b.x = vertexes[linev2Offset].x;
+		l.b.y = vertexes[linev2Offset].y;
 
 		if (cheating || mappedflag) {
 			if ((lineflags & LINE_NEVERSEE) && !cheating) {
@@ -1118,20 +1110,19 @@ void AM_drawWalls()
 //
 void
 AM_rotate
-( fixed_t*	x,
-  fixed_t*	y,
+( int16_t*	x,
+	int16_t*	y,
   fineangle_t	a )
 {
-    fixed_t tmpx;
-    tmpx =
-		FixedMulTrig(*x,finecosine[a])
-	- FixedMulTrig(*y,finesine[a]);
+	fixed_t_union tmpx;
+	fixed_t_union tmpy;
+    tmpx.w = ((int32_t)(*x * finecosine[a]))
+	- ((int32_t)(*y * finesine[a]));
     
-    *y   =
-		FixedMulTrig(*x,finesine[a])
-	+ FixedMulTrig(*y,finecosine[a]);
+	tmpy.w = ((int32_t)(*x*finesine[a])) + ((int32_t)(*y*finecosine[a])) >> 16;
+	*y = tmpy.h.intbits;
+	*x = tmpx.h.intbits;
 
-    *x = tmpx;
 }
 static mline_t	lc;
 
@@ -1148,35 +1139,41 @@ AM_drawLineCharacter
     uint16_t		i;
 
     for (i=0;i<lineguylines;i++) {
-		lc.a.x.h.intbits = lineguy[i].a.x.h.intbits;
-		lc.a.y.h.intbits = lineguy[i].a.y.h.intbits;
+		lc.a.x = lineguy[i].a.x;
+		lc.a.y = lineguy[i].a.y;
 
 		if (scale) {
 			// scale is only ever 16 or 0
-			lc.a.x.h.intbits <<= 4;
-			lc.a.y.h.intbits <<= 4;
+			lc.a.x <<= 4;
+			lc.a.y <<= 4;
 		}
 
 		if (angle)
-			AM_rotate(&lc.a.x.w, &lc.a.y.w, angle);
+			AM_rotate(&lc.a.x, &lc.a.y, angle);
 
-		lc.a.x.h.intbits += x;
-		lc.a.y.h.intbits += y;
+		lc.a.x >>= 4;
+		lc.a.y >>= 4;
 
-		lc.b.x.h.intbits = lineguy[i].b.x.h.intbits;
-		lc.b.y.h.intbits = lineguy[i].b.y.h.intbits;
+		lc.a.x += x;
+		lc.a.y += y;
+
+		lc.b.x = lineguy[i].b.x;
+		lc.b.y = lineguy[i].b.y;
 
 		if (scale) {
 			// scale is only ever 16 or 0
-			lc.b.x.h.intbits <<= 4;
-			lc.b.y.h.intbits <<= 4;
+			lc.b.x <<= 4;
+			lc.b.y <<= 4;
 		}
 
 		if (angle)
-			AM_rotate(&lc.b.x.w, &lc.b.y.w, angle);
+			AM_rotate(&lc.b.x, &lc.b.y, angle);
 	
-		lc.b.x.h.intbits += x;
-		lc.b.y.h.intbits += y;
+		lc.b.x >>= 4;
+		lc.b.y >>= 4;
+
+		lc.b.x += x;
+		lc.b.y += y;
 
 		AM_drawMline(&lc, color);
     }
@@ -1219,12 +1216,12 @@ void AM_drawMarks(void)
 	int16_t fx, fy;
 
     for (i=0;i<AM_NUMMARKPOINTS;i++) {
-		if (markpoints[i].x.h.intbits != -1) {
+		if (markpoints[i].x != -1) {
 			//      w = 5 = (marknums[i]->width);
 			//      h = 6 = (marknums[i]->height);
 	    
-			fx = CXMTOF16(markpoints[i].x.h.intbits);
-			fy = CYMTOF16(markpoints[i].y.h.intbits);
+			fx = CXMTOF16(markpoints[i].x);
+			fy = CYMTOF16(markpoints[i].y);
  
 			if (fx >= 0 && fx <= automap_screenwidth - 5 && 
 				fy >= 0 && fy <= automap_screenheight - 6) {
