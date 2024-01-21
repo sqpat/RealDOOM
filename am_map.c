@@ -117,8 +117,6 @@
 
 // translates between frame-buffer and map coordinates
 #define MTOF(x) (FixedMul((x),scale_mtof.w)>>16)
-#define CXMTOF(x)  (MTOF((x)-screen_botleft_x.w))
-#define CYMTOF(y)  ((automap_screenheight - MTOF((y)-screen_botleft_y.w)))
  
 // the following is crap
 #define LINE_NEVERSEE ML_DONTDRAW
@@ -784,64 +782,74 @@ void AM_Ticker (void)
 #define  BOTTOM	4
 #define  TOP	8
 
+
+int16_t DOOUTCODE(int16_t oc, int16_t mx, int16_t my) {
+	oc = 0; 
+	if ((my) < 0) {
+		oc |= TOP;
+	} else if ((my) >= automap_screenheight) {
+		oc |= BOTTOM;
+	}
+	if ((mx) < 0) {
+		oc |= LEFT;
+	} else if ((mx) >= automap_screenwidth) {
+		oc |= RIGHT;
+	}
+	return oc;
+}
+
+
 boolean
 AM_clipMline
 ( mline_t near*	ml,
   fline_t near*	fl )
 {
     
-    register	int16_t outcode1 = 0;
-    register	int16_t outcode2 = 0;
-    register	int16_t outside;
+    int16_t outcode1 = 0;
+    int16_t outcode2 = 0;
+    int16_t outside;
     
     fpoint_t	tmp;
     int16_t		dx;
 	int16_t		dy;
 
     
-#define DOOUTCODE(oc, mx, my) \
-    (oc) = 0; \
-    if ((my) < 0) (oc) |= TOP; \
-    else if ((my) >= automap_screenheight) (oc) |= BOTTOM; \
-    if ((mx) < 0) (oc) |= LEFT; \
-    else if ((mx) >= automap_screenwidth) (oc) |= RIGHT;
 
-    
     // do trivial rejects and outcodes
-    if (ml->a.y.w > screen_topright_y.w)
+    if (ml->a.y.h.intbits > screen_topright_y.h.intbits)
 		outcode1 = TOP;
-    else if (ml->a.y.w < screen_botleft_y.w)
+    else if (ml->a.y.h.intbits < screen_botleft_y.h.intbits)
 		outcode1 = BOTTOM;
 
-    if (ml->b.y.w > screen_topright_y.w)
+    if (ml->b.y.h.intbits > screen_topright_y.h.intbits)
 		outcode2 = TOP;
-    else if (ml->b.y.w < screen_botleft_y.w)
+    else if (ml->b.y.h.intbits < screen_botleft_y.h.intbits)
 		outcode2 = BOTTOM;
     
     if (outcode1 & outcode2)
 		return false; // trivially outside
 
-    if (ml->a.x.w < screen_botleft_x.w)
+    if (ml->a.x.h.intbits < screen_botleft_x.h.intbits)
 		outcode1 |= LEFT;
-    else if (ml->a.x.w > screen_topright_x.w)
+    else if (ml->a.x.h.intbits > screen_topright_x.h.intbits)
 		outcode1 |= RIGHT;
     
-    if (ml->b.x.w < screen_botleft_x.w)
+    if (ml->b.x.h.intbits < screen_botleft_x.h.intbits)
 		outcode2 |= LEFT;
-    else if (ml->b.x.w > screen_topright_x.w)
+    else if (ml->b.x.h.intbits > screen_topright_x.h.intbits)
 		outcode2 |= RIGHT;
     
     if (outcode1 & outcode2)
 		return false; // trivially outside
 
     // transform to frame-buffer coordinates.
-    fl->a.x = CXMTOF(ml->a.x.w);
-    fl->a.y = CYMTOF(ml->a.y.w);
-    fl->b.x = CXMTOF(ml->b.x.w);
-    fl->b.y = CYMTOF(ml->b.y.w);
+    fl->a.x = CXMTOF16(ml->a.x.h.intbits);
+    fl->a.y = CYMTOF16(ml->a.y.h.intbits);
+    fl->b.x = CXMTOF16(ml->b.x.h.intbits);
+    fl->b.y = CYMTOF16(ml->b.y.h.intbits);
 
-    DOOUTCODE(outcode1, fl->a.x, fl->a.y);
-    DOOUTCODE(outcode2, fl->b.x, fl->b.y);
+	outcode1 = DOOUTCODE(outcode1, fl->a.x, fl->a.y);
+	outcode2 = DOOUTCODE(outcode2, fl->b.x, fl->b.y);
 
     if (outcode1 & outcode2)
 		return false;
@@ -887,12 +895,12 @@ AM_clipMline
 		if (outside == outcode1)
 		{
 			fl->a = tmp;
-			DOOUTCODE(outcode1, fl->a.x, fl->a.y);
+			outcode1 = DOOUTCODE(outcode1, fl->a.x, fl->a.y);
 		}
 		else
 		{
 			fl->b = tmp;
-			DOOUTCODE(outcode2, fl->b.x, fl->b.y);
+			outcode2 = DOOUTCODE(outcode2, fl->b.x, fl->b.y);
 		}
 	
 		if (outcode1 & outcode2)
@@ -901,7 +909,6 @@ AM_clipMline
 
 	return true;
 }
-#undef DOOUTCODE
 
 
 //
@@ -1218,67 +1225,7 @@ void AM_drawMarks(void)
 	    
 			fx = CXMTOF16(markpoints[i].x.h.intbits);
 			fy = CYMTOF16(markpoints[i].y.h.intbits);
-
-			//fx = CXMTOF(markpoints[i].x.w);
-			//fy = CYMTOF(markpoints[i].y.w);
-
-			// 0 1043 0 -3628 -834 -4513 
-			
-			// 168 << 32
-			//11010048 159 85 0
-
-
-
-
-			/*
-			
-			0 5584
-			88 0 0 0 -54655981
-
-			
-
-			16384 256180229
-
-			*/
-			
-			/*
-			I_Error("\n%li %li \n%i %i %i %i\n%li %li %li %li %i %i %li %li", 
-
-				max_scale_mtof.w,
-				min_scale_mtof.w,
-				fx,
-				fy,
-				markpoints[i].x.h.intbits,
-				markpoints[i].y.h.intbits,
-
-
-				markpoints[i].x.w,
-				markpoints[i].y.w,
-				screen_botleft_x.w,
-				screen_botleft_y.w,
-				screen_botleft_x.h.intbits,
-				screen_botleft_y.h.intbits,
-				scale_mtof.w,
-				scale_ftom.w
-				*/
-				/*
-				screen_botleft_x.h.intbits,
-				screen_botleft_x.w
-				*/
-				/*
-
-				markpoints[i].x, markpoints[i].y,
-				screen_botleft_x.h.intbits,
-				screen_botleft_y.h.intbits,
-				fx, 
-				fy,
-				CXMTOF(markpoints[i].x.w),
-				CYMTOF(markpoints[i].y.w),
-				MTOF(markpoints[i].x.h.intbits),
-				MTOF(markpoints[i].y.h.intbits)
-				);
-				*/
-
+ 
 			if (fx >= 0 && fx <= automap_screenwidth - 5 && 
 				fy >= 0 && fy <= automap_screenheight - 6) {
 				V_DrawPatch(fx, fy, FB, ((patch_t far*)&ammnumpatchbytes[ammnumpatchoffsets[i]]));
