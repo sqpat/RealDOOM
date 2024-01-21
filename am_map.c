@@ -1059,8 +1059,6 @@ void AM_drawWalls()
 	boolean floorheightnonequal;
 	boolean ceilingheightnonequal;
 	uint8_t mappedflag;
-	fixed_t_union temp;
-	temp.h.fracbits = 0;
 
     for (i=0;i<numlines;i++) {
 		linev1Offset = lines_physics[i].v1Offset;
@@ -1141,42 +1139,44 @@ void
 AM_drawLineCharacter
 ( mline_t near*	lineguy,
   int16_t		lineguylines,
-  fixed_t	scale,
+  int16_t	scale,
   fineangle_t	angle,
   uint8_t		color,
-  fixed_t	x,
-  fixed_t	y )
+  int16_t	x,
+	int16_t	y )
 {
     uint16_t		i;
 
     for (i=0;i<lineguylines;i++) {
-		lc.a.x.w = lineguy[i].a.x.w;
-		lc.a.y.w = lineguy[i].a.y.w;
+		lc.a.x.h.intbits = lineguy[i].a.x.h.intbits;
+		lc.a.y.h.intbits = lineguy[i].a.y.h.intbits;
 
 		if (scale) {
-			lc.a.x.w = FixedMul(scale, lc.a.x.w);
-			lc.a.y.w = FixedMul(scale, lc.a.y.w);
+			// scale is only ever 16 or 0
+			lc.a.x.h.intbits <<= 4;
+			lc.a.y.h.intbits <<= 4;
 		}
 
 		if (angle)
 			AM_rotate(&lc.a.x.w, &lc.a.y.w, angle);
 
-		lc.a.x.w += x;
-		lc.a.y.w += y;
+		lc.a.x.h.intbits += x;
+		lc.a.y.h.intbits += y;
 
-		lc.b.x.w = lineguy[i].b.x.w;
-		lc.b.y.w = lineguy[i].b.y.w;
+		lc.b.x.h.intbits = lineguy[i].b.x.h.intbits;
+		lc.b.y.h.intbits = lineguy[i].b.y.h.intbits;
 
 		if (scale) {
-			lc.b.x.w = FixedMul(scale, lc.b.x.w);
-			lc.b.y.w = FixedMul(scale, lc.b.y.w);
+			// scale is only ever 16 or 0
+			lc.b.x.h.intbits <<= 4;
+			lc.b.y.h.intbits <<= 4;
 		}
 
 		if (angle)
 			AM_rotate(&lc.b.x.w, &lc.b.y.w, angle);
 	
-		lc.b.x.w += x;
-		lc.b.y.w += y;
+		lc.b.x.h.intbits += x;
+		lc.b.y.h.intbits += y;
 
 		AM_drawMline(&lc, color);
     }
@@ -1186,9 +1186,9 @@ void AM_drawPlayers(void)
 {
 	
 	if (cheating)
-		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj_pos->angle.hu.intbits>>SHORTTOFINESHIFT, WHITE, playerMobj_pos->x, playerMobj_pos->y);
+		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj_pos->angle.hu.intbits>>SHORTTOFINESHIFT, WHITE, playerMobj_pos->x>>16, playerMobj_pos->y >> 16);
 	else
-		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT, WHITE, playerMobj_pos->x, playerMobj_pos->y);
+		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT, WHITE, playerMobj_pos->x >> 16, playerMobj_pos->y >> 16);
 
 
 
@@ -1207,7 +1207,7 @@ AM_drawThings
 			t = (mobj_pos_t far*)(&mobjposlist[tRef]);
 			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
-			 0x100000L, t->angle.hu.intbits >> SHORTTOFINESHIFT, THINGCOLORS, t->x, t->y);
+			 0x10L, t->angle.hu.intbits >> SHORTTOFINESHIFT, THINGCOLORS, t->x >> 16, t->y >> 16);
 			tRef = t->snextRef;
 		}
     }
