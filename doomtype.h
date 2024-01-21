@@ -115,6 +115,14 @@ typedef union _longlong_union {
 		int16_t throwawaylow;
 	} productresult;
 
+
+	struct productresult_small_t {
+		int16_t throwawayhigh;
+		int8_t throwawaymid;
+		int32_t usemid;
+		int8_t throwawaylow;
+	} productresult_small;
+
 	int64_t l;
 } longlong_union;
 
