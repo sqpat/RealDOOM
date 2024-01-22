@@ -616,6 +616,7 @@ void D_DoomMain2(void)
 	int8_t          textbuffer[256];
 	int8_t            title[128];
 
+	//2dbf dosbox
 	//byte far* someptr = _fmalloc(1);
 	//I_Error("\npointer is %Fp", someptr);
 

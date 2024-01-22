@@ -947,7 +947,7 @@ void P_PlayerInSpecialSector () {
 	// temp.h.intbits = (sectors[secnum].floorheight >> SHORTFLOORBITS);
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[secnum].floorheight);
     // Falling, not all the way down yet?
-	if (playerMobj_pos->z != temp.w) {
+	if (playerMobj_pos->z.w != temp.w) {
 		return;
 	}
 

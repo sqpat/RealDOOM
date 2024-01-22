@@ -335,7 +335,7 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* 
 	thingtype = thing->type;
 	thingx = thing_pos->x;
 	thingy = thing_pos->y;
-	thingz = thing_pos->z;
+	thingz = thing_pos->z.w;
 	thingheight = thing->height;
 	thingradius.h.intbits = thing->radius;
 	thingradius.h.fracbits = 0;
@@ -350,7 +350,7 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* 
 			return true;
     }
 	tmthingheight = tmthing->height;
-	tmthingz = tmthing_pos->z;
+	tmthingz = tmthing_pos->z.w;
 	tmthingtargetRef = tmthing->targetRef;
 
 
@@ -359,7 +359,7 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* 
 		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 		P_DamageMobj (thing, tmthing, tmthing, damage);
 		tmthing_pos->flags &= ~MF_SKULLFLY;
-		tmthing->momx = tmthing->momy = tmthing->momz = 0;
+		tmthing->momx = tmthing->momy = tmthing->momz.w = 0;
 	
 		P_SetMobjState (tmthing, mobjinfo[tmthing->type].spawnstate);
 
@@ -631,12 +631,12 @@ P_TryMove
 		
 		// temp.h.intbits = tmceilingz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmceilingz);
-		if (!(thing_pos->flags&MF_TELEPORT) && temp.w - thing_pos->z < thing->height.w) {
+		if (!(thing_pos->flags&MF_TELEPORT) && temp.w - thing_pos->z.w < thing->height.w) {
 			return false;	// mobj must lower itself to fit
 		}
 		// temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
-		if (!(thing_pos->flags&MF_TELEPORT) && (temp.w - thing_pos->z) > 24 * FRACUNIT) {
+		if (!(thing_pos->flags&MF_TELEPORT) && (temp.w - thing_pos->z.w) > 24 * FRACUNIT) {
 			return false;	// too big a step up
 		}
 
@@ -718,7 +718,7 @@ boolean P_ThingHeightClip (mobj_t far* thing, mobj_pos_t far* thing_pos)
 	int16_t temp2;
 	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
-    onfloor = (thing_pos->z == temp.w);
+    onfloor = (thing_pos->z.w == temp.w);
 
 
     P_CheckPosition (thing, thing_pos->x, thing_pos->y, thing->secnum);
@@ -730,13 +730,13 @@ boolean P_ThingHeightClip (mobj_t far* thing, mobj_pos_t far* thing_pos)
     if (onfloor) {
 		// walking monsters rise and fall with the floor
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
-		thing_pos->z = temp.w;
+		thing_pos->z.w = temp.w;
 
     } else {
 	// don't adjust a floating monster unless forced to
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->ceilingz);
-		if (thing_pos->z+ thing->height.w > temp.w)
-			thing_pos->z = temp.w - thing->height.w;
+		if (thing_pos->z.w+ thing->height.w > temp.w)
+			thing_pos->z.w = temp.w - thing->height.w;
 	}
 
 	temp2 = (thing->ceilingz - thing->floorz);
@@ -850,11 +850,11 @@ boolean PTR_SlideTraverse (intercept_t far* in)
 		goto isblocking;		// doesn't fit
 		
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.opentop);
-    if (temp.w - playerMobj_pos->z < playerMobj->height.w)
+    if (temp.w - playerMobj_pos->z.w < playerMobj->height.w)
 		goto isblocking;		// mobj is too high
 
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
-    if (temp.w - playerMobj_pos->z > 24*FRACUNIT )
+    if (temp.w - playerMobj_pos->z.w > 24*FRACUNIT )
 		goto isblocking;		// too big a step up
 
     // this line doesn't block movement
@@ -1095,12 +1095,12 @@ PTR_AimTraverse (intercept_t far* in)
 	}
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange.w, in->frac);
-    thingtopslope = FixedDiv (th_pos->z+th->height.w - shootz.w , dist);
+    thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
 	if (thingtopslope < bottomslope) {
 		return true;			// shot over the thing
 	}
-    thingbottomslope = FixedDiv (th_pos->z - shootz.w, dist);
+    thingbottomslope = FixedDiv (th_pos->z.w - shootz.w, dist);
 
 	if (thingbottomslope > topslope) {
 		return true;			// shot under the thing
@@ -1223,14 +1223,14 @@ boolean PTR_ShootTraverse (intercept_t far* in)
 
     // check angles to see if the thing can be aimed at
     dist = FixedMul (attackrange.w, in->frac);
-    thingtopslope = FixedDiv (th_pos->z+th->height.w - shootz.w , dist);
+    thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
 
 
     if (thingtopslope < aimslope)
 		return true;		// shot over the thing
 
-    thingbottomslope = FixedDiv (th_pos->z - shootz.w, dist);
+    thingbottomslope = FixedDiv (th_pos->z.w - shootz.w, dist);
 
     if (thingbottomslope > aimslope)
 		return true;		// shot under the thing
@@ -1291,7 +1291,7 @@ P_AimLineAttack
 	x2.w = x.w + FixedMulBig1632(distance16,finecosine[angle]);
 	y2.w = y.w + FixedMulBig1632(distance16,finesine[angle]);
 
-	shootz.w = t1_pos->z;
+	shootz.w = t1_pos->z.w;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
 
     // can't shoot outside view angles
@@ -1351,7 +1351,7 @@ P_LineAttack
 	x2.w = x.w + FixedMulBig1632(distance16,finecosine[angle]);
 	y2.w = y.w + FixedMulBig1632(distance16,finesine[angle]);
 
-	shootz.w = t1_pos->z;
+	shootz.w = t1_pos->z.w;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
 
 	distance.h.intbits = distance16;
@@ -1600,7 +1600,7 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far
 		P_DamageMobj(thing,NULL_THINKERREF,NULL_THINKERREF,10);
 
 		// spray blood in a random direction
-		moRef = P_SpawnMobj (thing_pos->x, thing_pos->y, thing_pos->z + thing->height.w/2, MT_BLOOD, thing->secnum);
+		moRef = P_SpawnMobj (thing_pos->x, thing_pos->y, thing_pos->z.w + thing->height.w/2, MT_BLOOD, thing->secnum);
 		
 		mo = setStateReturn;
 		mo->momx = (P_Random() - P_Random ())<<12;

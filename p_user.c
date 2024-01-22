@@ -86,14 +86,14 @@ void P_CalcHeight ()
     if (player.bob>MAXBOB)
 		player.bob = MAXBOB;
     if ((player.cheats & CF_NOMOMENTUM) || !onground) {
-		player.viewz = playerMobj_pos->z + VIEWHEIGHT;
+		player.viewz = playerMobj_pos->z.w + VIEWHEIGHT;
 		temp2 = (playerMobj->ceilingz - (4 << SHORTFLOORBITS));
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
 		if (player.viewz > temp.w)
 			player.viewz = temp.w;
 
-		player.viewz = playerMobj_pos->z + player.viewheight;
+		player.viewz = playerMobj_pos->z.w + player.viewheight;
 		return;
     }
 		
@@ -122,7 +122,7 @@ void P_CalcHeight ()
 				player.deltaviewheight = 1;
 		}
     }
-	player.viewz = playerMobj_pos->z + player.viewheight + bob;
+	player.viewz = playerMobj_pos->z.w + player.viewheight + bob;
 
 	temp2 = (playerMobj->ceilingz - (4 << SHORTFLOORBITS));
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
@@ -148,7 +148,7 @@ void P_MovePlayer ()
 
     // Do not let the player control movement
     //  if not onground.
-    onground = (playerMobj_pos->z <= temp.w);
+    onground = (playerMobj_pos->z.w <= temp.w);
 
 	if (cmd->forwardmove && onground) {
 		P_Thrust(playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT, cmd->forwardmove * 2048L);
@@ -193,7 +193,7 @@ void P_DeathThink ()
 	
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj->floorz);
 
-    onground = (playerMobj_pos->z <= temp.w);
+    onground = (playerMobj_pos->z.w <= temp.w);
     P_CalcHeight();
 	
 	if (player.attackerRef && player.attackerRef != playerMobjRef) {

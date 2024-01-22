@@ -520,9 +520,9 @@ P_CheckSight
     // Now look from eyes of t1 to any part of t2.
     validcount++;
 	
-    sightzstart = t1_pos->z + t1->height.w - (t1->height.w>>2);
-    topslope = (t2_pos->z+t2->height.w) - sightzstart;
-    bottomslope = (t2_pos->z) - sightzstart;
+    sightzstart = t1_pos->z.w + t1->height.w - (t1->height.w>>2);
+    topslope = (t2_pos->z.w+t2->height.w) - sightzstart;
+    bottomslope = (t2_pos->z.w) - sightzstart;
 	
     strace.x.w = t1_pos->x;
     strace.y.w = t1_pos->y;

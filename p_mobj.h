@@ -217,7 +217,7 @@ typedef struct mobj_s
     // Momentums, used to update position.
     fixed_t		momx;
     fixed_t		momy;
-    fixed_t		momz;
+    fixed_t_union		momz;
 
     mobjtype_t		type;
     
@@ -262,7 +262,7 @@ typedef struct mobj_pos_s
 	// Info for drawing: position.
 	fixed_t		x;
 	fixed_t		y;
-	fixed_t		z;
+	fixed_t_union		z;
 
 	// More list: links in sector (if needed)
 	THINKERREF	snextRef;

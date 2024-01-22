@@ -375,10 +375,10 @@ boolean P_Move (mobj_t far* actor, mobj_pos_t far*	actor_pos)
 			// must adjust height
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
 
-			if (actor_pos->z < temp.w)
-				actor_pos->z += FLOATSPEED;
+			if (actor_pos->z.w < temp.w)
+				actor_pos->z.h.intbits += FLOATSPEED_HIGHBITS;
 			else
-				actor_pos->z -= FLOATSPEED;
+				actor_pos->z.h.intbits -= FLOATSPEED_HIGHBITS;
 
 			actor_pos->flags |= MF_INFLOAT;
 
@@ -409,8 +409,7 @@ boolean P_Move (mobj_t far* actor, mobj_pos_t far*	actor_pos)
 
 	
 	if (!(actor_pos->flags & MF_FLOAT)) {
-    	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, actor->floorz);
-		actor_pos->z = temp.w;
+    	SET_FIXED_UNION_FROM_SHORT_HEIGHT(actor_pos->z, actor->floorz);
 	}
 
 
@@ -1168,11 +1167,11 @@ void A_SkelMissile (mobj_t far* actor, mobj_pos_t far* actor_pos)
 		
     A_FaceTarget (actor);
  
-	actor_pos->z += 16*FRACUNIT;	// so missile spawns higher
+	actor_pos->z.h.intbits += 16;	// so missile spawns higher
     moRef = P_SpawnMissile (actor, actor_pos, (&thinkerlist[actor->targetRef].data), MT_TRACER);
 	mo = setStateReturn;
 	mo_pos = setStateReturn_pos;
-	actor_pos->z -= 16*FRACUNIT;	// back to normal
+	actor_pos->z.h.intbits -= 16;	// back to normal
 	actortargetRef = actor->targetRef;
 	
 	mo_pos->x += mo->momx;
@@ -1201,16 +1200,16 @@ void A_Tracer (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	
     
     // spawn a puff of smoke behind the rocket		
-    P_SpawnPuff (actor_pos->x, actor_pos->y, actor_pos->z);
+    P_SpawnPuff (actor_pos->x, actor_pos->y, actor_pos->z.w);
 
 
 	thRef = P_SpawnMobj (actor_pos->x-actor->momx,
 		actor_pos->y-actor->momy,
-		actor_pos->z, MT_SMOKE, -1);
+		actor_pos->z.w, MT_SMOKE, -1);
     
 	th = setStateReturn;
 
-    th->momz = FRACUNIT;
+    th->momz.h.intbits = 1;
     th->tics -= P_Random()&3;
     if (th->tics < 1 || th->tics > 240)
 		th->tics = 1;
@@ -1252,7 +1251,7 @@ void A_Tracer (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	
 	dest = (mobj_t far*)(&thinkerlist[actor->tracerRef].data);
 	dest_pos = &mobjposlist[actor->tracerRef];
-	destz = dest_pos->z;
+	destz = dest_pos->z.w;
 
 	// change slope
     dist = P_AproxDistance (dest_pos->x - actor_pos->x,
@@ -1265,12 +1264,12 @@ void A_Tracer (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	if (dist < 1) {
 		dist = 1;
 	}
-    slope = (destz+40*FRACUNIT - actor_pos->z) / dist;
+    slope = (destz+40*FRACUNIT - actor_pos->z.w) / dist;
 
-    if (slope < actor->momz)
-		actor->momz -= FRACUNIT/8;
+    if (slope < actor->momz.w)
+		actor->momz.w -= FRACUNIT/8;
     else
-		actor->momz += FRACUNIT/8;
+		actor->momz.w += FRACUNIT/8;
 }
 
 
@@ -1481,7 +1480,7 @@ void A_Fire (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	//todo isnt this just multiplied by 24?
 	actor_pos->x = dest_pos->x + FixedMulTrig(24*FRACUNIT, finecosine[an]);
 	actor_pos->y = dest_pos->y + FixedMulTrig(24*FRACUNIT, finesine[an]);
-	actor_pos->z = dest_pos->z;
+	actor_pos->z.w = dest_pos->z.w;
     P_SetThingPosition (actor, actor_pos, -1);
 }
 
@@ -1508,7 +1507,7 @@ void A_VileTarget (mobj_t far* actor)
 	actorTarget_pos = &mobjposlist[actor->targetRef];
     fogRef = P_SpawnMobj (actorTarget_pos->x,
 		actorTarget_pos->y,
-		actorTarget_pos->z, MT_FIRE, actorTarget->secnum);
+		actorTarget_pos->z.w, MT_FIRE, actorTarget->secnum);
 	fog = setStateReturn;
 	fog->targetRef = GETTHINKERREF(actor);
 	fog->tracerRef = actortargetRef;
@@ -1546,7 +1545,7 @@ void A_VileAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	fireRef = actor->tracerRef;
 
 
-	actorTarget->momz = 1000*FRACUNIT/ getMobjMass(actorTarget->type);
+	actorTarget->momz.w = 1000*FRACUNIT/ getMobjMass(actorTarget->type);
 
 
     if (!fireRef)
@@ -1692,7 +1691,7 @@ void A_SkullAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	if (dist < 1) {
 		dist = 1;
 	}
-    actor->momz = (dest_pos->z+(dest->height.w>>1) - actor_pos->z) / dist;
+    actor->momz.w = (dest_pos->z.w+(dest->height.w>>1) - actor_pos->z.w) / dist;
 }
 
 
@@ -1707,7 +1706,7 @@ A_PainShootSkull
 {
     fixed_t	x;
     fixed_t	y;
-    fixed_t	z;
+    fixed_t_union	z;
     
     mobj_t far*	newmobj;
     fineangle_t	an;
@@ -1759,9 +1758,10 @@ A_PainShootSkull
     
     x = actor_pos->x + FixedMulTrig(prestep.w, finecosine[an]);
     y = actor_pos->y + FixedMulTrig(prestep.w, finesine[an]);
-    z = actor_pos->z + 8*FRACUNIT;
+	z.w = actor_pos->z.w;
+	z.h.intbits += 8;
 		
-    newmobjRef = P_SpawnMobj (x , y, z, MT_SKULL, -1);
+    newmobjRef = P_SpawnMobj (x , y, z.w, MT_SKULL, -1);
 	newmobj = setStateReturn;
 	newmobj_pos = setStateReturn_pos;
     // Check for movements.
@@ -2134,7 +2134,7 @@ void A_BrainScream (mobj_t far* mo, mobj_pos_t far* mo_pos)
 	z = 128 + P_Random()*2*FRACUNIT;
 	thRef = P_SpawnMobj (x,y,z, MT_ROCKET, -1);
 	th = setStateReturn;
-	th->momz = P_Random()*512;
+	th->momz.w = P_Random()*512;
 
 	P_SetMobjState (th, S_BRAINEXPLODE1);
 	//th = setStateReturn;
@@ -2165,7 +2165,7 @@ void A_BrainExplode (mobj_t far*mo, mobj_pos_t far* mo_pos)
     z = 128 + P_Random()*2*FRACUNIT;
     thRef = P_SpawnMobj (x,y,z, MT_ROCKET, -1);
 	th = setStateReturn;
-    th->momz = P_Random()*512;
+    th->momz.w = P_Random()*512;
 
     P_SetMobjState (th, S_BRAINEXPLODE1);
 	//th = setStateReturn;
@@ -2253,7 +2253,7 @@ void A_SpawnFly (mobj_t far* mo, mobj_pos_t far* mo_pos)
 	targ = (mobj_t far*)&thinkerlist[targRef].data;
 	targ_pos = &mobjposlist[targRef];
     // First spawn teleport fog.
-    fogRef = P_SpawnMobj (targ_pos->x, targ_pos->y, targ_pos->z, MT_SPAWNFIRE, targ->secnum);
+    fogRef = P_SpawnMobj (targ_pos->x, targ_pos->y, targ_pos->z.w, MT_SPAWNFIRE, targ->secnum);
     S_StartSoundFromRef (setStateReturn, sfx_telept);
 
     // Randomly select monster to spawn.
@@ -2285,7 +2285,7 @@ void A_SpawnFly (mobj_t far* mo, mobj_pos_t far* mo_pos)
 	type = MT_BRUISER;		
 
 
-    newmobjRef	= P_SpawnMobj (targ_pos->x, targ_pos->y, targ_pos->z, type, targ->secnum);
+    newmobjRef	= P_SpawnMobj (targ_pos->x, targ_pos->y, targ_pos->z.w, type, targ->secnum);
 	newmobj = (mobj_t far*)&thinkerlist[newmobjRef].data;
 	newmobj_pos = &mobjposlist[newmobjRef];
 	if (P_LookForPlayers(newmobj, true)) {

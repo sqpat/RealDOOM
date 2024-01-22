@@ -807,7 +807,7 @@ void A_BFGSpray (mobj_t far* mo, mobj_pos_t far* mo_pos)
 
 		P_SpawnMobj (linetarget_pos->x,
 			linetarget_pos->y,
-			linetarget_pos->z + (linetarget->height.w>>2),
+			linetarget_pos->z.w + (linetarget->height.w>>2),
 				MT_EXTRABFG, linetarget->secnum);
 		
 		damage = 0;

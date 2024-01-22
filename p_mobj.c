@@ -103,7 +103,7 @@ mobj_pos_t far* setStateReturn_pos;
 //
 void P_ExplodeMissile(mobj_t far* mo, mobj_pos_t far* mo_pos){
 
-    mo->momx = mo->momy = mo->momz = 0;
+    mo->momx = mo->momy = mo->momz.w = 0;
     P_SetMobjState (mo,getDeathState(mo->type));
 
     mo->tics -= P_Random()&3;
@@ -148,7 +148,7 @@ void P_XYMovement (mobj_t far* mo, mobj_pos_t far* mo_pos)
 		if (mo_pos->flags & MF_SKULLFLY) {
 			// the skull slammed into something
 			mo_pos->flags &= ~MF_SKULLFLY;
-			mo->momx = mo->momy = mo->momz = 0;
+			mo->momx = mo->momy = mo->momz.w = 0;
 
 			P_SetMobjState (mo,mobjinfo[mo->type].spawnstate);
 		}
@@ -231,7 +231,7 @@ void P_XYMovement (mobj_t far* mo, mobj_pos_t far* mo_pos)
 		return; 	// no friction for missiles ever
 	}
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
-	if (mo_pos->z > temp.w) {
+	if (mo_pos->z.w > temp.w) {
 
 		return;		// no friction when airborne
 	}
@@ -285,14 +285,14 @@ void P_ZMovement (mobj_t far* mo, mobj_pos_t far* mo_pos)
 	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->floorz);
     // check for smooth step up
-    if (motype == MT_PLAYER && mo_pos->z < temp.w) {
-		player.viewheight -= temp.w-mo_pos->z;
+    if (motype == MT_PLAYER && mo_pos->z.w < temp.w) {
+		player.viewheight -= temp.w-mo_pos->z.w;
 
 		player.deltaviewheight = (VIEWHEIGHT - player.viewheight)>>3;
     }
     
     // adjust height
-	mo_pos->z += mo->momz;
+	mo_pos->z.w += mo->momz.w;
 	
     if (mo_pos->flags & MF_FLOAT && mo->targetRef) {
 		// float down towards target if too close
@@ -302,18 +302,18 @@ void P_ZMovement (mobj_t far* mo, mobj_pos_t far* mo_pos)
 			dist = P_AproxDistance (mo_pos->x - moTarget_pos->x,
 				mo_pos->y - moTarget_pos->y);
 	    
-			delta =(moTarget_pos->z + (mo->height.w>>1)) - mo_pos->z;
+			delta =(moTarget_pos->z.w + (mo->height.w>>1)) - mo_pos->z.w;
 
 			if (delta<0 && dist < -(delta*3) )
-				mo_pos->z -= FLOATSPEED;
+				mo_pos->z.h.intbits -= FLOATSPEED_HIGHBITS;
 			else if (delta>0 && dist < (delta*3) )
-				mo_pos->z += FLOATSPEED;
+				mo_pos->z.h.intbits += FLOATSPEED_HIGHBITS;
 		}
 	
     }
     
     // clip movement
-    if (mo_pos->z <= temp.w) {
+    if (mo_pos->z.w <= temp.w) {
 		// hit the floor
 
 	#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
@@ -327,26 +327,26 @@ void P_ZMovement (mobj_t far* mo, mobj_pos_t far* mo_pos)
 		}
 	#endif
 	
-		if (mo->momz < 0) {
-			if (motype == MT_PLAYER && mo->momz < -GRAVITY*8)	 {
+		if (mo->momz.h.intbits < 0) {
+			if (motype == MT_PLAYER && mo->momz.w < -GRAVITY*8)	 {
 				// Squat down.
 				// Decrease viewheight for a moment
 				// after hitting the ground (hard),
 				// and utter appropriate sound.
-				player.deltaviewheight = mo->momz>>3;
+				player.deltaviewheight = mo->momz.w>>3;
 				S_StartSound (mo, sfx_oof);
 			}
-			mo->momz = 0;
+			mo->momz.w = 0;
 		}
 
 
 
-		mo_pos->z = temp.w;
+		mo_pos->z.w = temp.w;
 
 	#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
 		if (mo_pos->flags & MF_SKULLFLY) {
 			// the skull slammed into something
-			mo->momz = -mo->momz;
+			mo->momz.w = -mo->momz.w;
 		}
 	#endif
 
@@ -355,22 +355,22 @@ void P_ZMovement (mobj_t far* mo, mobj_pos_t far* mo_pos)
 			return;
 		}
 	} else if (! (mo_pos->flags & MF_NOGRAVITY) ) {
-		if (mo->momz == 0) {
-			mo->momz = -GRAVITY * 2;
+		if (mo->momz.w == 0) {
+			mo->momz.h.intbits = -GRAVITY_HIGHBITS * 2;
 		} else {
-			mo->momz -= GRAVITY;
+			mo->momz.h.intbits -= GRAVITY_HIGHBITS;
 		}
 	}
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, mo->ceilingz);
-    if (mo_pos->z + mo->height.w > temp.w) {
+    if (mo_pos->z.w + mo->height.w > temp.w) {
 		// hit the ceiling
-		if (mo->momz > 0) {
-			mo->momz = 0;
+		if (mo->momz.w > 0) {
+			mo->momz.w = 0;
 		}
-		mo_pos->z = temp.w - mo->height.w;
+		mo_pos->z.w = temp.w - mo->height.w;
 
 		if (mo_pos->flags & MF_SKULLFLY) {	// the skull slammed into something
-			mo->momz = -mo->momz;
+			mo->momz.w = -mo->momz.w;
 		}
 	
 		if ( (mo_pos->flags & MF_MISSILE) && !(mo_pos->flags & MF_NOCLIP) ) {
@@ -497,7 +497,7 @@ void P_MobjThinker (mobj_t far* mobj, mobj_pos_t far* mobj_pos, THINKERREF mobjR
 
 	temp.h.fracbits = 0;
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
-	if ( (mobj_pos->z != temp.w) || mobj->momz ) {
+	if ( (mobj_pos->z.w != temp.w) || mobj->momz.w ) {
 		P_ZMovement (mobj, mobj_pos);
 
  		// FIXME: decent NOP/NULL/Nil function pointer please.
@@ -610,13 +610,13 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsec
 	mobj->ceilingz = sectors[mobjsecnum].ceilingheight;
 
     if (z == ONFLOORZ){
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->floorz);
-		mobj_pos->z = temp.w;
+		SET_FIXED_UNION_FROM_SHORT_HEIGHT(mobj_pos->z,  mobj->floorz);
 	} else if (z == ONCEILINGZ){
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  mobj->ceilingz);
-		mobj_pos->z = temp.w - mobjinfo[mobj->type].height * FRACUNIT;
+		temp.h.intbits -= mobjinfo[mobj->type].height;
+		mobj_pos->z.w = temp.w;
 	} else {
-		mobj_pos->z = z;
+		mobj_pos->z.w = z;
 	}
 
 	setStateReturn = mobj;
@@ -672,7 +672,7 @@ P_SpawnPuff
 
     thRef = P_SpawnMobj (x,y,z, MT_PUFF, -1);
 	th = setStateReturn;
-    th->momz = FRACUNIT;
+    th->momz.h.intbits = 1;
     th->tics -= P_Random()&3;
 
     if (th->tics < 1 || th->tics > 240)
@@ -701,7 +701,7 @@ P_SpawnBlood
     z += ((P_Random()-P_Random())<<10);
 	thRef  = P_SpawnMobj (x,y,z, MT_BLOOD, -1);
 	th = setStateReturn;
-    th->momz = FRACUNIT*2;
+    th->momz.h.intbits = 2;
     th->tics -= P_Random()&3;
 
     if (th->tics < 1 || th->tics > 240)
@@ -731,7 +731,7 @@ void P_CheckMissileSpawn (mobj_t far* th, mobj_pos_t far* th_pos)
     // be computed if it immediately explodes
 	th_pos->x += (th->momx>>1);
 	th_pos->y += (th->momy>>1);
-	th_pos->z += (th->momz>>1);
+	th_pos->z.w += (th->momz.w>>1);
 
 	if (!P_TryMove(th, th_pos, th_pos->x, th_pos->y)) {
 
@@ -760,7 +760,7 @@ P_SpawnMissile
 	int32_t thspeed;
 	uint16_t temp;
 	mobj_pos_t far*	dest_pos = GET_MOBJPOS_FROM_MOBJ(dest);
-	THINKERREF thRef = P_SpawnMobj (source_pos->x, source_pos->y, source_pos->z + 4*8*FRACUNIT, type, source->secnum);
+	THINKERREF thRef = P_SpawnMobj (source_pos->x, source_pos->y, source_pos->z.w + 4*8*FRACUNIT, type, source->secnum);
 	th = setStateReturn;
 	th_pos = setStateReturn_pos;
 	if (mobjinfo[type].seesound) {
@@ -772,7 +772,7 @@ P_SpawnMissile
     th->targetRef = GETTHINKERREF(source);	// where it came from
 	thspeed = MAKESPEED(mobjinfo[type].speed);
 
-	destz = dest_pos->z;
+	destz = dest_pos->z.w;
 	an.wu = R_PointToAngle2 (source_pos->x, source_pos->y, dest_pos->x, dest_pos->y);
 
     // fuzzy player
@@ -784,7 +784,7 @@ P_SpawnMissile
 
 	dist = P_AproxDistance(dest_pos->x - source_pos->x, dest_pos->y - source_pos->y);
 	dist = dist / thspeed;
-	momz = (destz - source_pos->z) / dist;
+	momz = (destz - source_pos->z.w) / dist;
 
 	if (dist < 1)
 		dist = 1;
@@ -794,7 +794,7 @@ P_SpawnMissile
     an.hu.intbits >>= SHORTTOFINESHIFT;
     th->momx = FixedMulTrig (thspeed, finecosine[an.hu.intbits]);
     th->momy = FixedMulTrig(thspeed, finesine[an.hu.intbits]);
-	th->momz = momz;
+	th->momz.w = momz;
 
 
 	P_CheckMissileSpawn (th, th_pos);
@@ -845,7 +845,7 @@ P_SpawnPlayerMissile
     }
 
 	
-	z.w = playerMobj_pos->z;
+	z.w = playerMobj_pos->z.w;
 	z.h.intbits += 4 * 8;
 	
     thRef = P_SpawnMobj (playerMobj_pos->x, playerMobj_pos->y,z.w, type, playerMobj->secnum);
@@ -863,7 +863,7 @@ P_SpawnPlayerMissile
 
     th->momx = FixedMulTrig( speed, finecosine[an]);
     th->momy = FixedMulTrig( speed, finesine[an]);
-    th->momz = FixedMul( speed, slope);
+    th->momz.w = FixedMul( speed, slope);
 
     P_CheckMissileSpawn (th, th_pos);
 }

@@ -235,7 +235,7 @@ void R_ProjectSprite (mobj_pos_t far* thing)
 
 	fixed_t thingx = thing->x;
 	fixed_t thingy = thing->y;
-	fixed_t thingz = thing->z;
+	fixed_t thingz = thing->z.w;
 	int32_t thingflags = thing->flags;
 	angle_t thingangle = thing->angle;
     fixed_t_union temp;

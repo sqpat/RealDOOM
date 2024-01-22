@@ -312,12 +312,12 @@ P_TouchSpecialThing
      int8_t		i;
     fixed_t	delta;
     int16_t		sound;
-	fixed_t specialz = special_pos->z;
+	fixed_t specialz = special_pos->z.w;
 	spritenum_t specialsprite = states[special_pos->stateNum].sprite;
 	boolean specialflagsdropped =special_pos->flags&MF_DROPPED ? 1 : 0;
 	boolean specialflagscountitem =  special_pos->flags&MF_COUNTITEM ? 1 : 0;
 		
-    delta = specialz - toucher_pos->z;
+    delta = specialz - toucher_pos->z.w;
 
     if (delta > toucher->height.w
 	|| delta < -8*FRACUNIT)
@@ -749,7 +749,7 @@ P_DamageMobj
 		return;
 	}
     if (target_pos->flags & MF_SKULLFLY ) {
-		target->momx = target->momy = target->momz = 0;
+		target->momx = target->momy = target->momz.w = 0;
     }
 	
     
@@ -768,7 +768,7 @@ P_DamageMobj
 			mobj_pos_t far* inflictor_pos = GET_MOBJPOS_FROM_MOBJ(inflictor);
 			inflictorx = inflictor_pos->x;
 			inflictory = inflictor_pos->y;
-			inflictorz = inflictor_pos->z;
+			inflictorz = inflictor_pos->z.w;
 
 			ang.wu = R_PointToAngle2(inflictorx,
 				inflictory,
@@ -781,7 +781,7 @@ P_DamageMobj
 			// make fall forwards sometimes
 			if (damage < 40
 				&& damage > target->health
-				&& target_pos->z - inflictorz > 64 * FRACUNIT
+				&& (target_pos->z.w - inflictorz) > 64 * FRACUNIT
 				&& (P_Random() & 1))
 			{
 				ang.wu += ANG180;
