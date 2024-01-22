@@ -119,11 +119,8 @@
 
 // translates between frame-buffer and map distances
 
-#define FTOM(x) FixedMul(((x)<<16),scale_ftom.w)
-#define FTOM16(x) FixedMulBig1632(x,scale_ftom.w)
+#define FTOM16(x) FixedMul1632(x,scale_ftom.w)
 
-// translates between frame-buffer and map coordinates
-#define MTOF(x) (FixedMul((x),scale_mtof.w)>>16)
  
 // the following is crap
 #define LINE_NEVERSEE ML_DONTDRAW
@@ -310,8 +307,8 @@ void AM_activateNewScale(void)
 
     screen_botleft_x += screen_viewport_width/2;
     screen_botleft_y += screen_viewport_height/2;
-    screen_viewport_width = FTOM16(automap_screenwidth) >> 16;
-    screen_viewport_height = FTOM16(automap_screenheight) >> 16;
+    screen_viewport_width = FTOM16(automap_screenwidth);
+    screen_viewport_height = FTOM16(automap_screenheight);
     screen_botleft_x -= screen_viewport_width /2;
     screen_botleft_y -= screen_viewport_height /2;
     screen_topright_x = screen_botleft_x + screen_viewport_width;
@@ -445,8 +442,8 @@ void AM_initVariables(void)
     ftom_zoommul = FRAC_SCALE_UNIT;
     mtof_zoommul = FRAC_SCALE_UNIT;
 
-    screen_viewport_width = FTOM16(automap_screenwidth) >> 16;
-    screen_viewport_height = FTOM16(automap_screenheight) >> 16;
+    screen_viewport_width = FTOM16(automap_screenwidth);
+    screen_viewport_height = FTOM16(automap_screenheight);
 
   
 	screen_botleft_x = (playerMobj_pos->x>>16) - screen_viewport_width /2;
@@ -730,8 +727,8 @@ void AM_doFollowPlayer(void) {
 
 
     if (screen_oldloc.x != playerMobj_pos->x>>16 || screen_oldloc.y != playerMobj_pos->y>>16) {
-		screen_botleft_x = (FTOM((MTOF(playerMobj_pos->x))) >> 16) - screen_viewport_width /2;
-		screen_botleft_y = (FTOM((MTOF(playerMobj_pos->y))) >> 16) - screen_viewport_height /2;
+		screen_botleft_x = (playerMobj_pos->x >> 16) - screen_viewport_width /2;
+		screen_botleft_y = (playerMobj_pos->y >> 16) - screen_viewport_height /2;
 		screen_topright_x = screen_botleft_x + screen_viewport_width;
 		screen_topright_y= screen_botleft_y + screen_viewport_height;
 		screen_oldloc.x = playerMobj_pos->x>>16;
