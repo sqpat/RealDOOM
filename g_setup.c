@@ -70,8 +70,8 @@ extern boolean			gamekeydown[NUMKEYS];
 
 
 // mouse values are used once 
-extern int32_t             mousex;
-extern int32_t             mousey;
+extern int8_t             mousex;
+extern int8_t             mousey;
 
 extern boolean         sendpause;              // send a pause event next tic 
 extern boolean         sendsave;               // send a save event next tic 

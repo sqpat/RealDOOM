@@ -30,6 +30,7 @@
 
 #define MAXHEALTH		100
 #define VIEWHEIGHT		(41*FRACUNIT)
+#define VIEWHEIGHT_HIGHBITS	41
 
 // mapblocks are used to check movement
 // against lines and things
@@ -276,9 +277,9 @@ extern short_height_t		tmceilingz;
 
 extern	int16_t		ceilinglinenum;
 
-boolean P_CheckPosition (mobj_t far* thing, fixed_t x, fixed_t y, int16_t oldsecnum);
-boolean P_TryMove (mobj_t far* thing, mobj_pos_t far* thing_pos, fixed_t x, fixed_t y);
-boolean P_TeleportMove (mobj_t far* thing, mobj_pos_t far* thing_pos, fixed_t x, fixed_t y, int16_t oldsecnum);
+boolean P_CheckPosition (mobj_t far* thing, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
+boolean P_TryMove (mobj_t far* thing, mobj_pos_t far* thing_pos, fixed_t_union x, fixed_t_union y);
+boolean P_TeleportMove (mobj_t far* thing, mobj_pos_t far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 void	P_SlideMove ();
 boolean P_CheckSight (mobj_t far* t1,mobj_t far* t2,mobj_pos_t far* t1_pos,mobj_pos_t far* t2_pos);
 

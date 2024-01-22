@@ -561,7 +561,7 @@ void P_SpawnPlayer(mapthing_t far* mthing)
 	player.bonuscount = 0;
 	player.extralight = 0;
 	player.fixedcolormap = 0;
-	player.viewheight = VIEWHEIGHT;
+	player.viewheight.w = VIEWHEIGHT;
 
 	// setup gun psprite
 	P_SetupPsprites();
@@ -1554,7 +1554,7 @@ P_SetupLevel
 
 	// Initial height of PointOfView
 	// will be set by player think.
-	player.viewz = 1;
+	player.viewz.w = 1;
 	
 	W_EraseFullscreenCache();
 	S_Start();

@@ -328,8 +328,8 @@ void AM_restoreScaleAndLoc(void)
 		screen_botleft_x = old_screen_botleft_x;
 		screen_botleft_y = old_screen_botleft_y;
     } else {
-		screen_botleft_x = (playerMobj_pos->x>>16) - screen_viewport_width /2;
-		screen_botleft_y = (playerMobj_pos->y>>16) - screen_viewport_height /2;
+		screen_botleft_x = (playerMobj_pos->x.h.intbits) - screen_viewport_width /2;
+		screen_botleft_y = (playerMobj_pos->y.h.intbits) - screen_viewport_height /2;
     }
     screen_topright_x = screen_botleft_x + screen_viewport_width;
     screen_topright_y = screen_botleft_y + screen_viewport_height;
@@ -446,8 +446,8 @@ void AM_initVariables(void)
     screen_viewport_height = FTOM16(automap_screenheight);
 
   
-	screen_botleft_x = (playerMobj_pos->x>>16) - screen_viewport_width /2;
-    screen_botleft_y = (playerMobj_pos->y>>16) - screen_viewport_height /2;
+	screen_botleft_x = (playerMobj_pos->x.h.intbits) - screen_viewport_width /2;
+    screen_botleft_y = (playerMobj_pos->y.h.intbits) - screen_viewport_height /2;
     AM_changeWindowLoc();
 
     // for saving & restoring
@@ -726,13 +726,13 @@ void AM_changeWindowScale(void)
 void AM_doFollowPlayer(void) {
 
 
-    if (screen_oldloc.x != playerMobj_pos->x>>16 || screen_oldloc.y != playerMobj_pos->y>>16) {
-		screen_botleft_x = (playerMobj_pos->x >> 16) - screen_viewport_width /2;
-		screen_botleft_y = (playerMobj_pos->y >> 16) - screen_viewport_height /2;
+    if (screen_oldloc.x != playerMobj_pos->x.h.intbits || screen_oldloc.y != playerMobj_pos->y.h.intbits) {
+		screen_botleft_x = (playerMobj_pos->x.h.intbits) - screen_viewport_width /2;
+		screen_botleft_y = (playerMobj_pos->y.h.intbits) - screen_viewport_height /2;
 		screen_topright_x = screen_botleft_x + screen_viewport_width;
 		screen_topright_y= screen_botleft_y + screen_viewport_height;
-		screen_oldloc.x = playerMobj_pos->x>>16;
-		screen_oldloc.y = playerMobj_pos->y>>16;
+		screen_oldloc.x = playerMobj_pos->x.h.intbits;
+		screen_oldloc.y = playerMobj_pos->y.h.intbits;
 
     }
 
@@ -1179,9 +1179,9 @@ void AM_drawPlayers(void)
 {
 	
 	if (cheating)
-		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj_pos->angle.hu.intbits>>SHORTTOFINESHIFT, WHITE, playerMobj_pos->x>>16, playerMobj_pos->y >> 16);
+		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj_pos->angle.hu.intbits>>SHORTTOFINESHIFT, WHITE, playerMobj_pos->x.h.intbits, playerMobj_pos->y.h.intbits);
 	else
-		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT, WHITE, playerMobj_pos->x >> 16, playerMobj_pos->y >> 16);
+		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT, WHITE, playerMobj_pos->x.h.intbits, playerMobj_pos->y.h.intbits);
 
 
 
@@ -1200,7 +1200,7 @@ AM_drawThings
 			t = (mobj_pos_t far*)(&mobjposlist[tRef]);
 			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
-			 0x10L, t->angle.hu.intbits >> SHORTTOFINESHIFT, THINGCOLORS, t->x >> 16, t->y >> 16);
+			 0x10L, t->angle.hu.intbits >> SHORTTOFINESHIFT, THINGCOLORS, t->x.h.intbits, t->y.h.intbits);
 			tRef = t->snextRef;
 		}
     }

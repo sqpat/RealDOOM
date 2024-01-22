@@ -270,10 +270,10 @@ void R_AddLine (int16_t curlineNum)
 	span.hu.intbits = v1.x;
 	angle2.hu.intbits = v1.y;
     // OPTIMIZE: quickly reject orthogonal back sides.
-    angle1.wu = R_PointToAngle (span.wu, angle2.wu);
+    angle1.wu = R_PointToAngle (span, angle2);
 	span.hu.intbits = v2.x;
 	angle2.hu.intbits = v2.y;
-    angle2.wu = R_PointToAngle (span.wu, angle2.wu);
+    angle2.wu = R_PointToAngle (span, angle2);
     
 
 

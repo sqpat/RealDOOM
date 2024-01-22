@@ -39,8 +39,8 @@ fixed_t_union		tmbbox[4];
 mobj_t far*		tmthing;
 mobj_pos_t far*		tmthing_pos;
 int32_t		tmflags;
-fixed_t		tmx;
-fixed_t		tmy;
+fixed_t_union		tmx;
+fixed_t_union		tmy;
 
 
 // If "floatok" true, move would be ok
@@ -81,8 +81,8 @@ boolean PIT_StompThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* 
     blockdist.h.intbits = thing->radius + tmthing->radius;
 	blockdist.h.fracbits = 0;
     
-    if ( labs(thing_pos->x - tmx) >= blockdist.w
-	 || labs(thing_pos->y - tmy) >= blockdist.w )
+    if ( labs(thing_pos->x.w - tmx.w) >= blockdist.w
+	 || labs(thing_pos->y.w - tmy.w) >= blockdist.w )
     {
 	// didn't hit it
 	return true;
@@ -110,8 +110,8 @@ boolean
 P_TeleportMove
 (mobj_t far* thing,
 	mobj_pos_t far* thing_pos,
-  fixed_t	x,
-  fixed_t	y,
+  fixed_t_union	x,
+  fixed_t_union	y,
 	int16_t oldsecnum)
 {
     int16_t			xl;
@@ -133,13 +133,13 @@ P_TeleportMove
     tmx = x;
     tmy = y;
 	// todo imrpove how to do the minus cases? can underflow happen?
-	tmbbox[BOXTOP].w = y; 
+	tmbbox[BOXTOP] = y; 
 	tmbbox[BOXTOP].h.intbits += tmthing->radius;
 	temp.h.intbits = tmthing->radius;
-	tmbbox[BOXBOTTOM].w = y - temp.w;
-	tmbbox[BOXRIGHT].w = x; 
+	tmbbox[BOXBOTTOM].w = y.w - temp.w;
+	tmbbox[BOXRIGHT] = x; 
 	tmbbox[BOXRIGHT].h.intbits += tmthing->radius;
-	tmbbox[BOXLEFT].w = x - temp.w;
+	tmbbox[BOXLEFT].w = x.w - temp.w;
 //	newsubsecnum = R_PointInSubsector (x,y);
 //	newsubsecsecnum = oldsecnum;  subsectors[newsubsecnum].secnum;
     ceilinglinenum = -1;
@@ -305,7 +305,7 @@ boolean PIT_CheckLine (line_physics_t far* ld_physics, int16_t linenum)
 //
 boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* thing_pos)
 {
-    fixed_t		blockdist;
+    fixed_t_union blockdist;
     boolean		solid;
     int16_t			damage;
 	mobj_t far* tmthingTarget;
@@ -313,10 +313,10 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* 
 	mobjtype_t thingtype;
 	THINKERREF tmthingtargetRef;
 	int32_t thingflags;
-	fixed_t thingx;
-	fixed_t thingy;
-	fixed_t thingz;
-	fixed_t tmthingz;
+	fixed_t_union thingx;
+	fixed_t_union thingy;
+	fixed_t_union thingz;
+	fixed_t_union tmthingz;
 	fixed_t_union tmthingheight;
 	fixed_t_union thingheight;
 	fixed_t_union thingradius;
@@ -335,7 +335,7 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* 
 	thingtype = thing->type;
 	thingx = thing_pos->x;
 	thingy = thing_pos->y;
-	thingz = thing_pos->z.w;
+	thingz = thing_pos->z;
 	thingheight = thing->height;
 	thingradius.h.intbits = thing->radius;
 	thingradius.h.fracbits = 0;
@@ -343,14 +343,14 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* 
 
 	
 	thingradius.h.intbits += tmthing->radius;
-	blockdist = thingradius.w;
+	blockdist = thingradius;
 
-    if ( labs(thingx - tmx) >= blockdist || labs(thingy - tmy) >= blockdist ) {
+    if ( labs(thingx.w - tmx.w) >= blockdist.w || labs(thingy.w - tmy.w) >= blockdist.w ) {
 		// didn't hit it
 			return true;
     }
 	tmthingheight = tmthing->height;
-	tmthingz = tmthing_pos->z.w;
+	tmthingz = tmthing_pos->z;
 	tmthingtargetRef = tmthing->targetRef;
 
 
@@ -359,7 +359,7 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* 
 		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 		P_DamageMobj (thing, tmthing, tmthing, damage);
 		tmthing_pos->flags &= ~MF_SKULLFLY;
-		tmthing->momx = tmthing->momy = tmthing->momz.w = 0;
+		tmthing->momx.w = tmthing->momy.w = tmthing->momz.w = 0;
 	
 		P_SetMobjState (tmthing, mobjinfo[tmthing->type].spawnstate);
 
@@ -369,10 +369,10 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* 
     // missiles can hit other things
     if (tmthing_pos->flags & MF_MISSILE) {
 		// see if it went over / under
-		if (tmthingz > thingz + thingheight.w) {
+		if (tmthingz.w > thingz.w + thingheight.w) {
 			return true;		// overhead
 		}
-		if (tmthingz + tmthingheight.w < thingz) {
+		if (tmthingz.w + tmthingheight.w < thingz.w) {
 			return true;		// underneath
 		}
 		tmthingTarget = (mobj_t far*)&thinkerlist[tmthingtargetRef].data;
@@ -455,8 +455,8 @@ int16_t lastcalculatedsector;
 boolean
 P_CheckPosition
 (mobj_t far* thing,
-	fixed_t	x,
-	fixed_t	y,
+	fixed_t_union	x,
+	fixed_t_union	y,
 	int16_t oldsecnum
 	)
 {
@@ -480,13 +480,13 @@ P_CheckPosition
 	
 	// todo imrpove how to do the minus cases? can underflow happen?
 	// todo can this move down
-	tmbbox[BOXTOP].w = y;
+	tmbbox[BOXTOP] = y;
 	tmbbox[BOXTOP].h.intbits += thing->radius;
 	temp.h.intbits = thing->radius;
-	tmbbox[BOXBOTTOM].w = y - temp.w;
-	tmbbox[BOXRIGHT].w = x;
+	tmbbox[BOXBOTTOM].w = y.w - temp.w;
+	tmbbox[BOXRIGHT] = x;
 	tmbbox[BOXRIGHT].h.intbits += thing->radius;
-	tmbbox[BOXLEFT].w = x - temp.w;
+	tmbbox[BOXLEFT].w = x.w - temp.w;
 
 
 	if (oldsecnum != -1) {
@@ -600,14 +600,14 @@ boolean
 P_TryMove
 (mobj_t far* thing,
 	mobj_pos_t far* thing_pos,
-  fixed_t	x,
-  fixed_t	y 
+  fixed_t_union	x,
+  fixed_t_union	y
 	)
 {
-    fixed_t	oldx;
-    fixed_t	oldy;
-	fixed_t	newx;
-	fixed_t	newy;
+    fixed_t_union	oldx;
+    fixed_t_union	oldy;
+	fixed_t_union	newx;
+	fixed_t_union	newy;
 
 
 	fixed_t_union temp;
@@ -687,8 +687,8 @@ P_TryMove
 			v1y = vertexes[ldv1Offset].y;
 			ldspecial = ld_physics->special;
 
-			side = P_PointOnLineSide (newx, newy, lddx, lddy, v1x, v1y);
-			oldside = P_PointOnLineSide (oldx, oldy, lddx, lddy, v1x, v1y);
+			side = P_PointOnLineSide (newx.w, newy.w, lddx, lddy, v1x, v1y);
+			oldside = P_PointOnLineSide (oldx.w, oldy.w, lddx, lddy, v1x, v1y);
 			if (side != oldside) {
 				if (ldspecial) {
 					P_CrossSpecialLine(spechit[numspechit], oldside, thing, thing_pos);
@@ -760,8 +760,8 @@ fixed_t_union		bestslidefrac;
 int16_t		bestslidelinenum;
 //int16_t		secondslidelinenum;
 
-fixed_t		tmxmove;
-fixed_t		tmymove;
+fixed_t_union		tmxmove;
+fixed_t_union		tmymove;
 
 
 
@@ -780,26 +780,27 @@ void P_HitSlideLine (int16_t linenum)
     
     fixed_t		movelen;
     fixed_t		newlen;
-
+	fixed_t_union zero;
 	line_physics_t far* ld_physics = &lines_physics[linenum];
+	zero.w = 0;
 
     if ((ld_physics->v2Offset&LINE_VERTEX_SLOPETYPE) == ST_HORIZONTAL_HIGH) {
-		tmymove = 0;
+		tmymove.w = 0;
 		return;
     }
     
     if ((ld_physics->v2Offset&LINE_VERTEX_SLOPETYPE) == ST_VERTICAL_HIGH) {
-		tmxmove = 0;
+		tmxmove.w = 0;
 		return;
     }
 	
-    side = P_PointOnLineSide (playerMobj_pos->x, playerMobj_pos->y, ld_physics->dx, ld_physics->dy, vertexes[ld_physics->v1Offset].x, vertexes[ld_physics->v1Offset].y);
+    side = P_PointOnLineSide (playerMobj_pos->x.w, playerMobj_pos->y.w, ld_physics->dx, ld_physics->dy, vertexes[ld_physics->v1Offset].x, vertexes[ld_physics->v1Offset].y);
     lineangle.wu = R_PointToAngle2_16 (ld_physics->dx, ld_physics->dy);
 
     if (side == 1)
 		lineangle.hu.intbits += ANG180_HIGHBITS;
 
-    moveangle.wu = R_PointToAngle2 (0,0, tmxmove, tmymove);
+    moveangle.wu = R_PointToAngle2 (zero,zero, tmxmove, tmymove);
     deltaangle.wu = moveangle.wu-lineangle.wu;
 
     if (deltaangle.wu > ANG180)
@@ -809,11 +810,11 @@ void P_HitSlideLine (int16_t linenum)
     lineangle.hu.fracbits = lineangle.hu.intbits >>= SHORTTOFINESHIFT;
     deltaangle.hu.fracbits = deltaangle.hu.intbits >>= SHORTTOFINESHIFT;
 	
-    movelen = P_AproxDistance (tmxmove, tmymove);
+    movelen = P_AproxDistance (tmxmove.w, tmymove.w);
     newlen = FixedMulTrig(movelen, finecosine[deltaangle.hu.fracbits]);
 
-    tmxmove = FixedMulTrig(newlen, finecosine[lineangle.hu.fracbits]);
-    tmymove = FixedMulTrig(newlen, finesine[lineangle.hu.fracbits]);
+    tmxmove.w = FixedMulTrig(newlen, finecosine[lineangle.hu.fracbits]);
+    tmymove.w = FixedMulTrig(newlen, finesine[lineangle.hu.fracbits]);
 }
 
 
@@ -829,7 +830,7 @@ boolean PTR_SlideTraverse (intercept_t far* in)
 
     
     if ( ! (li->flags & ML_TWOSIDED) ) {
- 		if (P_PointOnLineSide (playerMobj_pos->x, playerMobj_pos->y, li_physics->dx, li_physics->dy, vertexes[li_physics->v1Offset].x, vertexes[li_physics->v1Offset].y)) {
+ 		if (P_PointOnLineSide (playerMobj_pos->x.w, playerMobj_pos->y.w, li_physics->dx, li_physics->dy, vertexes[li_physics->v1Offset].x, vertexes[li_physics->v1Offset].y)) {
 	    // don't hit the back side
 			return true;		
 		}
@@ -889,8 +890,8 @@ void P_SlideMove ()
 	fixed_t_union		leady;
 	fixed_t_union		trailx;
 	fixed_t_union		traily;
-	fixed_t		newx;
-	fixed_t		newy;
+	fixed_t_union		newx;
+	fixed_t_union		newy;
     int16_t			hitcount;
 	fixed_t_union   temp;
 	fixed_t_union   temp2;
@@ -907,11 +908,11 @@ void P_SlideMove ()
 	// todo improve the minus cases
 	temp.h.fracbits = 0;
 	temp.h.intbits = playerMobj->radius;
-	leadx.w = playerMobj_pos->x;
-	trailx.w = playerMobj_pos->x;
-	leady.w = playerMobj_pos->y;
-	traily.w = playerMobj_pos->y;
-	if (playerMobj->momx > 0) {
+	leadx = playerMobj_pos->x;
+	trailx = playerMobj_pos->x;
+	leady = playerMobj_pos->y;
+	traily = playerMobj_pos->y;
+	if (playerMobj->momx.w > 0) {
 		leadx.h.intbits += temp.h.intbits;
 		trailx.w -= temp.w;
     } else {
@@ -919,7 +920,7 @@ void P_SlideMove ()
 		trailx.h.intbits += temp.h.intbits;
     }
 	
-    if (playerMobj->momy > 0) {
+    if (playerMobj->momy.w > 0) {
 		leady.h.intbits += temp.h.intbits;
 		traily.w -= temp.w;
     } else {
@@ -932,17 +933,17 @@ void P_SlideMove ()
 
 	
  
-	temp.w = leadx.w + playerMobj->momx;
-	temp2.w = leady.w + playerMobj->momy;
+	temp.w = leadx.w + playerMobj->momx.w;
+	temp2.w = leady.w + playerMobj->momy.w;
 	P_PathTraverse(leadx, leady, temp, temp2, PT_ADDLINES, PTR_SlideTraverse);
 	
 	//todo do these mo fields change? if not then pull out momx/momy into locals to avoid extra loads
-	temp2.w = leady.w + playerMobj->momy;
-	temp3.w = trailx.w + playerMobj->momx;
+	temp2.w = leady.w + playerMobj->momy.w;
+	temp3.w = trailx.w + playerMobj->momx.w;
 	P_PathTraverse(trailx, leady, temp3, temp2, PT_ADDLINES, PTR_SlideTraverse);
 
-	temp.w = leadx.w + playerMobj->momx;
-	temp4.w = traily.w + playerMobj->momy;
+	temp.w = leadx.w + playerMobj->momx.w;
+	temp4.w = traily.w + playerMobj->momy.w;
 
 	P_PathTraverse(leadx, traily, temp, temp4, PT_ADDLINES, PTR_SlideTraverse);
 
@@ -953,9 +954,13 @@ void P_SlideMove ()
 	if (bestslidefrac.w == FRACUNIT+1) {
 	// the move most have hit the middle, so stairstep
       stairstep:
- 
-		if (!P_TryMove(playerMobj, playerMobj_pos, playerMobj_pos->x, playerMobj_pos->y + playerMobj->momy)) {
-			P_TryMove(playerMobj, playerMobj_pos, playerMobj_pos->x + playerMobj->momx, playerMobj_pos->y);
+		newy = playerMobj_pos->y;
+		newy.w += playerMobj->momy.w;
+		if (!P_TryMove(playerMobj, playerMobj_pos, playerMobj_pos->x, newy)) {
+			newx = playerMobj_pos->x;
+			newx.w += playerMobj->momx.w;
+
+			P_TryMove(playerMobj, playerMobj_pos, newx, playerMobj_pos->y);
 		}
 
 		return;
@@ -964,10 +969,11 @@ void P_SlideMove ()
     // fudge a bit to make sure it doesn't hit
     bestslidefrac.w -= 0x800;	
     if (bestslidefrac.w > 0) {
-		newx = FixedMul (playerMobj->momx, bestslidefrac.w);
-		newy = FixedMul (playerMobj->momy, bestslidefrac.w);
-	
-		if (!P_TryMove(playerMobj, playerMobj_pos, playerMobj_pos->x + newx, playerMobj_pos->y + newy)) {
+		newx.w = FixedMul (playerMobj->momx.w, bestslidefrac.w);
+		newx.w += playerMobj_pos->x.w;
+		newy.w = FixedMul (playerMobj->momy.w, bestslidefrac.w);
+		newy.w += playerMobj_pos->y.w;
+		if (!P_TryMove(playerMobj, playerMobj_pos,  newx, newy)) {
 			goto stairstep;
 		}
     }
@@ -985,8 +991,8 @@ void P_SlideMove ()
 		bestslidefrac.hu.fracbits += 0x7FF; 
 		bestslidefrac.hu.fracbits ^= 0xFFFF;
 
-		tmxmove = FixedMul16u32(bestslidefrac.hu.fracbits, playerMobj->momx);
-		tmymove = FixedMul16u32(bestslidefrac.hu.fracbits, playerMobj->momy);
+		tmxmove.w = FixedMul16u32(bestslidefrac.hu.fracbits, playerMobj->momx.w);
+		tmymove.w = FixedMul16u32(bestslidefrac.hu.fracbits, playerMobj->momy.w);
 	}
 
     P_HitSlideLine (bestslidelinenum);	// clip the moves
@@ -994,8 +1000,12 @@ void P_SlideMove ()
  
 	playerMobj->momx = tmxmove;
 	playerMobj->momy = tmymove;
-		
-    if (!P_TryMove (playerMobj, playerMobj_pos, playerMobj_pos->x+tmxmove, playerMobj_pos->y+tmymove)) {
+	newx = playerMobj_pos->x;
+	newx.w += tmxmove.w;
+	newy = playerMobj_pos->y;
+	newy.w += tmymove.w;
+
+    if (!P_TryMove (playerMobj, playerMobj_pos, newx, newy)) {
 		goto retry;
     }
 }
@@ -1281,8 +1291,8 @@ P_AimLineAttack
     shootthing = t1;
 	distance16 &= (CHAINSAW_FLAG-1);
 
-	x.w = t1_pos->x;
-	y.w = t1_pos->y;
+	x = t1_pos->x;
+	y = t1_pos->y;
     
 	//todo re-enable? oh, but cosine and sine are 17 bit...
     //x2.w = x.w + FixedMul1616(distance16,finecosine[angle]);
@@ -1341,8 +1351,8 @@ P_LineAttack
 	fixed_t_union	distance;
 	boolean ischainsaw = distance16 & CHAINSAW_FLAG; //sigh... look into why this needs to be here, remove if at all possible - sq
 	mobj_pos_t far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
-	x.w = t1_pos->x;
-	y.w = t1_pos->y;
+	x = t1_pos->x;
+	y = t1_pos->y;
 	distance16 &= (CHAINSAW_FLAG-1);
 	shootthing = t1;
     la_damage = damage;
@@ -1399,7 +1409,7 @@ boolean	PTR_UseTraverse (intercept_t far* in)
 	
     side = 0;
 
-	if (P_PointOnLineSide(playerMobj_pos->x, playerMobj_pos->y, line_physics->dx, line_physics->dy, vertexes[line_physics->v1Offset].x, vertexes[line_physics->v1Offset].y) == 1) {
+	if (P_PointOnLineSide(playerMobj_pos->x.w, playerMobj_pos->y.w, line_physics->dx, line_physics->dy, vertexes[line_physics->v1Offset].x, vertexes[line_physics->v1Offset].y) == 1) {
 		side = 1;
 	}
 
@@ -1425,8 +1435,8 @@ void P_UseLines ()
 		
     angle = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 
-    x1.w = playerMobj_pos->x;
-    y1.w = playerMobj_pos->y;
+    x1 = playerMobj_pos->x;
+    y1 = playerMobj_pos->y;
     // todo replace with bit shift? - sq
 	x2.w = x1.w + (USERANGE)*finecosine[angle];
 	y2.w = y1.w + (USERANGE)*finesine[angle];
@@ -1465,8 +1475,8 @@ boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far
 	}
 
 
-    dx = labs(thing_pos->x - bombspot_pos->x);
-    dy = labs(thing_pos->y - bombspot_pos->y);
+    dx = labs(thing_pos->x.w - bombspot_pos->x.w);
+    dy = labs(thing_pos->y.w - bombspot_pos->y.w);
     
     dist.w = dx>dy ? dx : dy;
     dist.h.intbits = (dist.h.intbits - thing->radius ) ;
@@ -1508,10 +1518,10 @@ P_RadiusAttack
 	int16_t		yh;
 	fixed_t_union pos;
 	
-	pos.w = spot_pos->y;
+	pos = spot_pos->y;
 	yh = (pos.h.intbits + damage - bmaporgy) >> MAPBLOCKSHIFT;
 	yl = (pos.h.intbits - damage - bmaporgy) >> MAPBLOCKSHIFT;
-	pos.w = spot_pos->x;
+	pos = spot_pos->x;
 	xh = (pos.h.intbits + damage - bmaporgx) >> MAPBLOCKSHIFT;
 	xl = (pos.h.intbits - damage - bmaporgx) >> MAPBLOCKSHIFT;
 	bombspot = spot;
@@ -1600,11 +1610,11 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far
 		P_DamageMobj(thing,NULL_THINKERREF,NULL_THINKERREF,10);
 
 		// spray blood in a random direction
-		moRef = P_SpawnMobj (thing_pos->x, thing_pos->y, thing_pos->z.w + thing->height.w/2, MT_BLOOD, thing->secnum);
+		moRef = P_SpawnMobj (thing_pos->x.w, thing_pos->y.w, thing_pos->z.w + thing->height.w/2, MT_BLOOD, thing->secnum);
 		
 		mo = setStateReturn;
-		mo->momx = (P_Random() - P_Random ())<<12;
-		mo->momy = (P_Random() - P_Random ())<<12;
+		mo->momx.w = (P_Random() - P_Random ())<<12;
+		mo->momy.w = (P_Random() - P_Random ())<<12;
     }
 
     // keep checking (crush other things)	

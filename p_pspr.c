@@ -324,9 +324,9 @@ A_WeaponReady
     // bob the weapon based on movement speed
 	angle = (128*(leveltime.b.fracbytehigh&63))&FINEMASK;
 	//angle = (128 * leveltime.w)&FINEMASK;
-	psp->sx = FRACUNIT + FixedMulTrig(player.bob, finecosine[angle]);
+	psp->sx = FRACUNIT + FixedMulTrig(player.bob.w, finecosine[angle]);
     angle &= FINEANGLES/2-1;
-    psp->sy = WEAPONTOP + FixedMulTrig(player.bob, finesine[angle]);
+    psp->sy = WEAPONTOP + FixedMulTrig(player.bob.w, finesine[angle]);
 
 }
 
@@ -805,10 +805,10 @@ void A_BFGSpray (mobj_t far* mo, mobj_pos_t far* mo_pos)
 		if (!linetarget)
 			continue;
 
-		P_SpawnMobj (linetarget_pos->x,
-			linetarget_pos->y,
-			linetarget_pos->z.w + (linetarget->height.w>>2),
-				MT_EXTRABFG, linetarget->secnum);
+		P_SpawnMobj(linetarget_pos->x.w,
+			linetarget_pos->y.w,
+			linetarget_pos->z.w + (linetarget->height.w >> 2),
+			MT_EXTRABFG, linetarget->secnum);
 		
 		damage = 0;
 		for (j=0;j<15;j++)

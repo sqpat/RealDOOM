@@ -147,9 +147,9 @@ uint8_t             mousebforward;
  
 #define TURBOTHRESHOLD  0x32
 
-fixed_t         forwardmove[2] = {0x19, 0x32}; 
-fixed_t         sidemove[2] = {0x18, 0x28}; 
-fixed_t         angleturn[3] = {640, 1280, 320};        // + slow turn 
+int8_t         forwardmove[2] = {0x19, 0x32}; 
+int8_t         sidemove[2] = {0x18, 0x28};
+int16_t         angleturn[3] = {640, 1280, 320};        // + slow turn 
 
 #define SLOWTURNTICS    6 
  
@@ -163,8 +163,8 @@ boolean         mousearray[4];
 boolean*        mousebuttons = &mousearray[1];          // allow [-1]
 
 // mouse values are used once 
-int32_t             mousex;
-int32_t             mousey;
+int16_t             mousex;
+int16_t             mousey;
 
 int32_t             dclicktime;
 int32_t             dclickstate;
@@ -198,8 +198,8 @@ void G_BuildTiccmd (int8_t index)
     boolean     bstrafe; 
 	int8_t         speed;
 	int8_t         tspeed;
-	fixed_t         forward;
-	fixed_t         side;
+	int16_t         forward;
+	int16_t         side;
     
 	ticcmd_t near* cmd = &localcmds[index];
 
@@ -339,7 +339,7 @@ void G_BuildTiccmd (int8_t index)
  
     forward += mousey; 
     if (strafe) 
-        side += mousex*2; 
+        side += mousex*2;
     else 
         cmd->angleturn -= mousex*0x8; 
 

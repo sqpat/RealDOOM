@@ -114,14 +114,14 @@ void (*spanfunc) (void);
 //
 int16_t
 R_PointOnSide
-( fixed_t	x,
-  fixed_t	y,
+( fixed_t_union	x,
+  fixed_t_union	y,
   node_t far*	node )
 {
     fixed_t_union	dx;
     fixed_t_union	dy;
-    fixed_t	left;
-    fixed_t	right;
+    fixed_t_union	left;
+    fixed_t_union	right;
     fixed_t_union temp;
 
     
@@ -129,22 +129,22 @@ R_PointOnSide
 	
     if (!node->dx) {
         temp.h.intbits = node->x;
-        if (x <= temp.w)
+        if (x.w <= temp.w)
             return node->dy > 0;
         
         return node->dy < 0;
     }
     if (!node->dy) {
         temp.h.intbits = node->y;
-        if (y <= temp.w)
+        if (y.w <= temp.w)
             return node->dx < 0;
         
         return node->dx > 0;
     }
     temp.h.intbits = node->x;
-    dx.w = (x - temp.w);
+    dx.w = (x.w - temp.w);
     temp.h.intbits = node->y;
-    dy.w = (y - temp.w);
+    dy.w = (y.w - temp.w);
 	
     // Try to quickly decide by looking at sign bits.
     if ( (node->dy ^ node->dx ^ dx.h.intbits ^ dy.h.intbits)&(int16_t)0x8000 ) {
@@ -155,10 +155,10 @@ R_PointOnSide
 	    return 0;
     }
 
-    left = FixedMul1632 ( node->dy , dx.w );
-    right = FixedMul1632 (node->dx, dy.w );
+    left.w = FixedMul1632 ( node->dy , dx.w );
+    right.w = FixedMul1632 (node->dx, dy.w );
 	
-    if (right < left) {
+    if (right.w < left.w) {
 	    // front side
 	    return 0;
     }
@@ -170,8 +170,8 @@ R_PointOnSide
 
 int16_t
 R_PointOnSegSide
-( fixed_t	x,
-  fixed_t	y,
+( fixed_t_union	x,
+  fixed_t_union	y,
   vertex_t far* v1,
 	vertex_t far* v2)
 {
@@ -181,8 +181,8 @@ R_PointOnSegSide
     int16_t	ldy;
     fixed_t_union	dx;
     fixed_t_union	dy;
-    fixed_t	left;
-    fixed_t	right;
+    fixed_t_union	left;
+    fixed_t_union	right;
 	
     fixed_t_union temp;
 
@@ -195,23 +195,23 @@ R_PointOnSegSide
 
     if (!ldx) {
 	    temp.h.intbits = lx;
-        if (x <= temp.w)
+        if (x.w <= temp.w)
             return ldy > 0;
         
         return ldy < 0;
     }
     if (!ldy) {
 	    temp.h.intbits = ly;
-        if (y <= temp.w)
+        if (y.w <= temp.w)
             return ldx < 0;
         
         return ldx > 0;
     }
 
 	temp.h.intbits = lx;
-    dx.w = (x - temp.w);
+    dx.w = (x.w - temp.w);
 	temp.h.intbits = ly;
-    dy.w = (y - temp.w);
+    dy.w = (y.w - temp.w);
 	
     // Try to quickly decide by looking at sign bits.
     if ( (ldy ^ ldx ^ dx.h.intbits ^ dy.h.intbits)&0x8000 )  // returns 1
@@ -219,11 +219,11 @@ R_PointOnSegSide
 		return  ((ldy ^ dx.h.intbits) & 0x8000);  // returns 1
     
 
-    left = FixedMul1632 ( ldy , dx.w );
-    right = FixedMul1632 (ldx, dy.w );
+    left.w = FixedMul1632 ( ldy , dx.w );
+    right.w = FixedMul1632 (ldx, dy.w );
 	
 	// front side if true, back side if false
-	return right >= left;
+	return right.w >= left.w;
 
 } 
 
@@ -251,39 +251,39 @@ R_PointToAngle16
 	xfp.h.fracbits = 0;
 	yfp.h.fracbits = 0;
 
-	return R_PointToAngle(xfp.w, yfp.w);
+	return R_PointToAngle(xfp, yfp);
 }
 
 
 uint32_t
 R_PointToAngle
-( fixed_t	x,
-  fixed_t	y )
+( fixed_t_union	x,
+  fixed_t_union	y )
 {	
-	fixed_t tempDivision;
+	fixed_t_union tempDivision;
 
-	x -= viewx.w;
-	y -= viewy.w;
+	x.w -= viewx.w;
+	y.w -= viewy.w;
 
-	if ((!x) && (!y))
+	if ((!x.w) && (!y.w))
 		return 0;
 
-	if (x >= 0)
+	if (x.w >= 0)
 	{
 		// x >=0
-		if (y >= 0)
+		if (y.w >= 0)
 		{
 			// y>= 0
-			if (x > y)
+			if (x.w > y.w)
 			{
 				// octant 0
-				if (x < 512)
+				if (x.w < 512)
 					return 536870912L;
 				else
 				{
-					tempDivision = (y << 3) / (x >> 8);
-					if (tempDivision < SLOPERANGE)
-						return tantoangle[tempDivision].wu;
+					tempDivision.w = (y.w << 3) / (x.w >> 8);
+					if (tempDivision.w < SLOPERANGE)
+						return tantoangle[tempDivision.h.fracbits].wu;
 					else
 						return 536870912L;
 				}
@@ -291,13 +291,13 @@ R_PointToAngle
 			else
 			{
 				// octant 1
-				if (y < 512)
+				if (y.w < 512)
 					return ANG90 - 1 - 536870912L;
 				else
 				{
-					tempDivision = (x << 3) / (y >> 8);
-					if (tempDivision < SLOPERANGE)
-						return ANG90 - 1 - tantoangle[tempDivision].wu;
+					tempDivision.w = (x.w << 3) / (y.w >> 8);
+					if (tempDivision.w < SLOPERANGE)
+						return ANG90 - 1 - tantoangle[tempDivision.h.fracbits].wu;
 					else
 						return ANG90 - 1 - 536870912L;
 				}
@@ -306,18 +306,18 @@ R_PointToAngle
 		else
 		{
 			// y<0
-			y = -y;
+			y.w = -y.w;
 
-			if (x > y)
+			if (x.w > y.w)
 			{
 				// octant 8
-				if (x < 512)
+				if (x.w < 512)
 					return -536870912L;
 				else
 				{
-					tempDivision = (y << 3) / (x >> 8);
-					if (tempDivision < SLOPERANGE)
-						return -(tantoangle[tempDivision].wu);
+					tempDivision.w = (y.w << 3) / (x.w >> 8);
+					if (tempDivision.w < SLOPERANGE)
+						return -(tantoangle[tempDivision.h.fracbits].wu);
 					else
 						return -536870912L;
 				}
@@ -325,13 +325,13 @@ R_PointToAngle
 			else
 			{
 				// octant 7
-				if (y < 512)
+				if (y.w < 512)
 					return ANG270 + 536870912L;
 				else
 				{
-					tempDivision = (x << 3) / (y >> 8);
-					if (tempDivision < SLOPERANGE)
-						return ANG270 + tantoangle[tempDivision].wu;
+					tempDivision.w = (x.w << 3) / (y.w >> 8);
+					if (tempDivision.w < SLOPERANGE)
+						return ANG270 + tantoangle[tempDivision.h.fracbits].wu;
 					else
 						return ANG270 + 536870912L;
 				}
@@ -341,21 +341,21 @@ R_PointToAngle
 	else
 	{
 		// x<0
-		x = -x;
+		x.w = -x.w;
 
-		if (y >= 0)
+		if (y.w >= 0)
 		{
 			// y>= 0
-			if (x > y)
+			if (x.w > y.w)
 			{
 				// octant 3
-				if (x < 512)
+				if (x.w < 512)
 					return ANG180 - 1 - 536870912L;
 				else
 				{
-					tempDivision = (y << 3) / (x >> 8);
-					if (tempDivision < SLOPERANGE)
-						return ANG180 - 1 - tantoangle[tempDivision].wu;
+					tempDivision.w = (y.w << 3) / (x.w >> 8);
+					if (tempDivision.w < SLOPERANGE)
+						return ANG180 - 1 - tantoangle[tempDivision.h.fracbits].wu;
 					else
 						return ANG180 - 1 - 536870912L;
 				}
@@ -363,13 +363,13 @@ R_PointToAngle
 			else
 			{
 				// octant 2
-				if (y < 512)
+				if (y.w < 512)
 					return ANG90 + 536870912L;
 				else
 				{
-					tempDivision = (x << 3) / (y >> 8);
-					if (tempDivision < SLOPERANGE)
-						return ANG90 + tantoangle[tempDivision].wu;
+					tempDivision.w = (x.w << 3) / (y.w >> 8);
+					if (tempDivision.w < SLOPERANGE)
+						return ANG90 + tantoangle[tempDivision.h.fracbits].wu;
 					else
 						return ANG90 + 536870912L;
 				};
@@ -378,18 +378,18 @@ R_PointToAngle
 		else
 		{
 			// y<0
-			y = -y;
+			y.w = -y.w;
 
-			if (x > y)
+			if (x.w > y.w)
 			{
 				// octant 4
-				if (x < 512)
+				if (x.w < 512)
 					return ANG180 + 536870912L;
 				else
 				{
-					tempDivision = (y << 3) / (x >> 8);
-					if (tempDivision < SLOPERANGE)
-						return ANG180 + tantoangle[tempDivision].wu;
+					tempDivision.w = (y.w << 3) / (x.w >> 8);
+					if (tempDivision.w < SLOPERANGE)
+						return ANG180 + tantoangle[tempDivision.h.fracbits].wu;
 					else
 						return ANG180 + 536870912L;
 				}
@@ -397,13 +397,13 @@ R_PointToAngle
 			else
 			{
 				// octant 5
-				if (y < 512)
+				if (y.w < 512)
 					return ANG270 - 1 - 536870912L;
 				else
 				{
-					tempDivision = (x << 3) / (y >> 8);
-					if (tempDivision < SLOPERANGE)
-						return ANG270 - 1 - tantoangle[tempDivision].wu;
+					tempDivision.w = (x.w << 3) / (y.w >> 8);
+					if (tempDivision.w < SLOPERANGE)
+						return ANG270 - 1 - tantoangle[tempDivision.h.fracbits].wu;
 					else
 						return ANG270 - 1 - 536870912L;
 				}
@@ -416,13 +416,13 @@ R_PointToAngle
 
 uint32_t
 R_PointToAngle2
-( fixed_t	x1,
-  fixed_t	y1,
-  fixed_t	x2,
-  fixed_t	y2 )
+( fixed_t_union	x1,
+  fixed_t_union	y1,
+  fixed_t_union	x2,
+  fixed_t_union	y2 )
 {	
-    viewx.w = x1;
-    viewy.w = y1;
+    viewx.w = x1.w;
+    viewy.w = y1.w;
     
     return R_PointToAngle (x2, y2);
 }
@@ -444,7 +444,7 @@ R_PointToAngle2_16
 	x2fp.h.fracbits = 0;
 	y2fp.h.fracbits = 0;
 
-    return R_PointToAngle (x2fp.w, y2fp.w);
+    return R_PointToAngle (x2fp, y2fp);
 }
 
 
@@ -586,8 +586,8 @@ uint8_t			skytexture;
 //
 int16_t
  R_PointInSubsector
-( fixed_t	x,
-  fixed_t	y )
+( fixed_t_union	x,
+  fixed_t_union	y )
 {
     node_t far*	node;
     int16_t		side;
@@ -618,7 +618,7 @@ void R_SetupFrame ()
 
     extralight = player.extralight;
 
-    viewz.w = player.viewz;
+    viewz = player.viewz;
 	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
 
     viewsin = finesine[viewangle_shiftright3];
@@ -678,8 +678,8 @@ void R_RenderPlayerView ()
 #endif
 
 	r_cachedplayerMobjsecnum = playerMobj->secnum;
-	viewx.w = playerMobj_pos->x;
-	viewy.w = playerMobj_pos->y;
+	viewx = playerMobj_pos->x;
+	viewy = playerMobj_pos->y;
 	viewangle = playerMobj_pos->angle;
 	viewangle_shiftright3 = viewangle.hu.intbits >> 3;
 

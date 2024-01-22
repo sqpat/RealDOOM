@@ -215,8 +215,8 @@ typedef struct mobj_s
     fixed_t_union		height;	
 
     // Momentums, used to update position.
-    fixed_t		momx;
-    fixed_t		momy;
+	fixed_t_union		momx;
+	fixed_t_union		momy;
     fixed_t_union		momz;
 
     mobjtype_t		type;
@@ -260,8 +260,8 @@ typedef struct mobj_pos_s
 	// List: thinker links.
 
 	// Info for drawing: position.
-	fixed_t		x;
-	fixed_t		y;
+	fixed_t_union		x;
+	fixed_t_union		y;
 	fixed_t_union		z;
 
 	// More list: links in sector (if needed)

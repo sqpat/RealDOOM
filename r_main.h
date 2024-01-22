@@ -108,14 +108,14 @@ extern void		(*spanfunc) (void);
 // Utility functions.
 int16_t
 R_PointOnSide
-( fixed_t	x,
-  fixed_t	y,
+( fixed_t_union	x,
+  fixed_t_union	y,
   node_t far*	node );
 
 int16_t
 R_PointOnSegSide
-( fixed_t	x,
-  fixed_t	y,
+( fixed_t_union	x,
+  fixed_t_union	y,
 	vertex_t far* v1,
 	vertex_t far* v2);
 
@@ -127,15 +127,15 @@ R_PointToAngle16
 
 uint32_t
 R_PointToAngle
-( fixed_t	x,
-  fixed_t	y );
+( fixed_t_union	x,
+  fixed_t_union	y );
 
 uint32_t
 R_PointToAngle2
-( fixed_t	x1,
-  fixed_t	y1,
-  fixed_t	x2,
-  fixed_t	y2 );
+( fixed_t_union	x1,
+  fixed_t_union	y1,
+  fixed_t_union	x2,
+  fixed_t_union	y2 );
 
 uint32_t
 R_PointToAngle2_16
@@ -154,8 +154,8 @@ fixed_t R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
 
 int16_t
 R_PointInSubsector
-( fixed_t	x,
-  fixed_t	y );
+( fixed_t_union	x,
+  fixed_t_union	y );
 
  
 

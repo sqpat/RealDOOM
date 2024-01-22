@@ -53,8 +53,8 @@ P_Thrust
   fineangle_t	angle,
   fixed_t	move )  {
 
-	playerMobj->momx += FixedMulTrig(move,finecosine[angle]);
-	playerMobj->momy += FixedMulTrig(move,finesine[angle]);
+	playerMobj->momx.w += FixedMulTrig(move,finecosine[angle]);
+	playerMobj->momy.w += FixedMulTrig(move,finesine[angle]);
 }
 
 
@@ -70,7 +70,6 @@ void P_CalcHeight ()
     fixed_t	bob;
 	fixed_t_union temp;
 	int16_t temp2;
-    temp.h.fracbits = 0;
 	// Regular movement bobbing
     // (needs to be calculated for gun swing
     // even if not on ground)
@@ -78,57 +77,58 @@ void P_CalcHeight ()
     // Note: a LUT allows for effects
     //  like a ramp with low health.
     // todo <- yea lets actually optimize with LUT? - sq
-	player.bob =
-	FixedMul (playerMobj->momx, playerMobj->momx) + FixedMul (playerMobj->momy, playerMobj->momy);
+	player.bob.w =
+	FixedMul (playerMobj->momx.w, playerMobj->momx.w) + FixedMul (playerMobj->momy.w, playerMobj->momy.w);
     
-	player.bob >>= 2;
+	player.bob.w >>= 2;
 
-    if (player.bob>MAXBOB)
-		player.bob = MAXBOB;
+    if (player.bob.w>MAXBOB)
+		player.bob.w = MAXBOB;
     if ((player.cheats & CF_NOMOMENTUM) || !onground) {
-		player.viewz = playerMobj_pos->z.w + VIEWHEIGHT;
+		player.viewz = playerMobj_pos->z;
+		player.viewz.h.intbits += VIEWHEIGHT_HIGHBITS;
 		temp2 = (playerMobj->ceilingz - (4 << SHORTFLOORBITS));
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
-		if (player.viewz > temp.w)
-			player.viewz = temp.w;
+		if (player.viewz.w > temp.w)
+			player.viewz = temp;
 
-		player.viewz = playerMobj_pos->z.w + player.viewheight;
+		player.viewz.w = playerMobj_pos->z.w + player.viewheight.w;
 		return;
     }
 		
     angle = (FINEANGLES/20*leveltime.w)&FINEMASK;
-    bob = FixedMul (player.bob/2, finesine[angle]);
+    bob = FixedMul (player.bob.w/2, finesine[angle]);
 
     
     // move viewheight
     if (player.playerstate == PST_LIVE) {
-		player.viewheight += player.deltaviewheight;
+		player.viewheight.w += player.deltaviewheight.w;
 
-		if (player.viewheight > VIEWHEIGHT) {
-			player.viewheight = VIEWHEIGHT;
-			player.deltaviewheight = 0;
+		if (player.viewheight.w > VIEWHEIGHT) {
+			player.viewheight.w = VIEWHEIGHT;
+			player.deltaviewheight.w = 0;
 		}
 
-		if (player.viewheight < VIEWHEIGHT/2) {
-			player.viewheight = VIEWHEIGHT/2;
-			if (player.deltaviewheight <= 0)
-				player.deltaviewheight = 1;
+		if (player.viewheight.w < VIEWHEIGHT/2) {
+			player.viewheight.w = VIEWHEIGHT/2;
+			if (player.deltaviewheight.w <= 0)
+				player.deltaviewheight.w = 1;
 		}
 		
-		if (player.deltaviewheight)	 {
-			player.deltaviewheight += FRACUNIT/4;
-			if (!player.deltaviewheight)
-				player.deltaviewheight = 1;
+		if (player.deltaviewheight.w)	 {
+			player.deltaviewheight.w += FRACUNIT/4;
+			if (!player.deltaviewheight.w)
+				player.deltaviewheight.w = 1;
 		}
     }
-	player.viewz = playerMobj_pos->z.w + player.viewheight + bob;
+	player.viewz.w = playerMobj_pos->z.w + player.viewheight.w + bob;
 
 	temp2 = (playerMobj->ceilingz - (4 << SHORTFLOORBITS));
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
-    if (player.viewz > temp.w)
-		player.viewz = temp.w;
+    if (player.viewz.w > temp.w)
+		player.viewz = temp;
 }
 
 
@@ -183,13 +183,13 @@ void P_DeathThink ()
     P_MovePsprites();
 	
     // fall to the ground
-    if (player.viewheight > 6*FRACUNIT)
-		player.viewheight -= FRACUNIT;
+    if (player.viewheight.w > 6*FRACUNIT)
+		player.viewheight.h.intbits -= 1;
 
-    if (player.viewheight < 6*FRACUNIT)
-		player.viewheight = 6*FRACUNIT;
+    if (player.viewheight.w < 6*FRACUNIT)
+		player.viewheight.w = 6*FRACUNIT;
 
-	player.deltaviewheight = 0;
+	player.deltaviewheight.w = 0;
 	
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, playerMobj->floorz);
 

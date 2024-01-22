@@ -87,7 +87,8 @@ R_InitBuffer
 	viewwindowoffset = (viewwindowy*SCREENWIDTH / 4) + (viewwindowx >> 2);
 }
 
-
+// finetangent(FINEANGLES / 4 + FIELDOFVIEW / 2)
+#define FIXED_FINE_TAN 0x10032L
 
 //
 // R_InitTextureMapping
@@ -104,6 +105,7 @@ void R_InitTextureMapping(void)
 	fixed_t	dy;
 	int16_t		i;
 	int16_t		j;
+	fixed_t_union finetan_i;
 	Z_QuickmapRender();
 
 	// Use tangent table to generate viewangletox:
@@ -112,16 +114,17 @@ void R_InitTextureMapping(void)
 	//
 	// Calc focallength
 	//  so FIELDOFVIEW angles covers SCREENWIDTH.
-	focallength = FixedDivWholeA(centerxfrac.w,
-		finetangent(FINEANGLES / 4 + FIELDOFVIEW / 2));
+	focallength = FixedDivWholeA(centerxfrac.w, FIXED_FINE_TAN);
+
 
 	for (i = 0; i < FINEANGLES / 2; i++) {
-		if (finetangent(i) > FRACUNIT * 2)
+		finetan_i.w = finetangent(i);
+		if (finetan_i.w > FRACUNIT * 2)
 			t.h.intbits = -1;
-		else if (finetangent(i) < -FRACUNIT * 2)
+		else if (finetan_i.w < -FRACUNIT * 2)
 			t.h.intbits = viewwidth + 1;
 		else {
-			t.w = FixedMul(finetangent(i), focallength);
+			t.w = FixedMul(finetan_i.w, focallength);
 			//todo optimize given centerxfrac low bits are 0
 			t.w = (centerxfrac.w - t.w + 0xFFFFu);
 

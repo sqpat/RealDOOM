@@ -222,14 +222,14 @@ boolean P_CheckMeleeRange (mobj_t far* actor)
 		return false;
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 		
-	actorX = actor_pos->x;
-	actorY = actor_pos->y;
+	actorX = actor_pos->x.w;
+	actorY = actor_pos->y.w;
 
 	plRef = actor->targetRef;
 	pl = (mobj_t far*)(&thinkerlist[plRef].data);
 	pl_pos = &mobjposlist[plRef];
-	plx = pl_pos->x;
-	ply = pl_pos->y;
+	plx = pl_pos->x.w;
+	ply = pl_pos->y.w;
 	plradius.h.intbits = mobjinfo[pl->type].radius;
 	plradius.h.fracbits = 0;
 
@@ -252,8 +252,8 @@ boolean P_CheckMissileRange (mobj_t far* actor)
 	int16_t dist;
 	mobj_t far* actorTarget;
 	mobj_pos_t far* actorTarget_pos;
-	fixed_t actorTargetx;
-	fixed_t actorTargety;
+	fixed_t_union actorTargetx;
+	fixed_t_union actorTargety;
 	mobj_pos_t far*	actor_pos;
 	actorTarget = (mobj_t far*)(&thinkerlist[actor->targetRef].data);
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
@@ -280,8 +280,8 @@ boolean P_CheckMissileRange (mobj_t far* actor)
 	actorTargetx = actorTarget_pos->x;
 	actorTargety = actorTarget_pos->y;    // OPTIMIZE: get this from a global checksight
 
-	disttemp.w = P_AproxDistance(actor_pos->x - actorTargetx,
-		actor_pos->y - actorTargety);
+	disttemp.w = P_AproxDistance(actor_pos->x.w - actorTargetx.w,
+		actor_pos->y.w - actorTargety.w);
 	
 	dist = disttemp.h.intbits;
 	dist -= 64;
@@ -340,8 +340,8 @@ extern	int16_t	numspechit;
 
 boolean P_Move (mobj_t far* actor, mobj_pos_t far*	actor_pos)
 {
-    fixed_t	tryx;
-    fixed_t	tryy;
+    fixed_t_union	tryx;
+    fixed_t_union	tryy;
     
 	int16_t linenum;
     
@@ -363,8 +363,8 @@ boolean P_Move (mobj_t far* actor, mobj_pos_t far*	actor_pos)
 	}
 #endif
 
-    tryx = actor_pos->x + mobjinfo[actor->type].speed*xspeed[actor->movedir];
-    tryy = actor_pos->y + mobjinfo[actor->type].speed*yspeed[actor->movedir];
+    tryx.w = actor_pos->x.w + mobjinfo[actor->type].speed*xspeed[actor->movedir];
+    tryy.w = actor_pos->y.w + mobjinfo[actor->type].speed*yspeed[actor->movedir];
 
 	try_ok = P_TryMove (actor, actor_pos, tryx, tryy);
 
@@ -443,8 +443,8 @@ boolean P_TryWalk (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 
 void P_NewChaseDir (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 {
-    fixed_t	deltax;
-    fixed_t	deltay;
+    fixed_t_union	deltax;
+    fixed_t_union	deltay;
     
     dirtype_t	d[3];
     
@@ -453,8 +453,8 @@ void P_NewChaseDir (mobj_t far*	actor, mobj_pos_t far* actor_pos)
     
     dirtype_t	turnaround;
 	
-	fixed_t actorx = actor_pos->x;
-	fixed_t actory = actor_pos->y;
+	fixed_t_union actorx = actor_pos->x;
+	fixed_t_union actory = actor_pos->y;
 
 	mobj_t far* actorTarget;
 	mobj_pos_t far* actorTarget_pos;
@@ -468,33 +468,33 @@ void P_NewChaseDir (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 	actorTarget_pos = GET_MOBJPOS_FROM_MOBJ(actorTarget);
     turnaround=opposite[olddir];
 
-    deltax = actorTarget_pos->x - actorx;
-    deltay = actorTarget_pos->y - actory;
+    deltax.w = actorTarget_pos->x.w - actorx.w;
+    deltay.w = actorTarget_pos->y.w - actory.w;
 
-    if (deltax>10*FRACUNIT)
+    if (deltax.w>10*FRACUNIT)
 		d[1]= DI_EAST;
-    else if (deltax<-10*FRACUNIT)
+    else if (deltax.w<-10*FRACUNIT)
 		d[1]= DI_WEST;
     else
 		d[1]=DI_NODIR;
 
-    if (deltay<-10*FRACUNIT)
+    if (deltay.w<-10*FRACUNIT)
 		d[2]= DI_SOUTH;
-    else if (deltay>10*FRACUNIT)
+    else if (deltay.w>10*FRACUNIT)
 		d[2]= DI_NORTH;
     else
 		d[2]=DI_NODIR;
 
 	// try direct route
     if (d[1] != DI_NODIR && d[2] != DI_NODIR) {
-		actor->movedir = diags[((deltay<0)<<1)+(deltax>0)];
+		actor->movedir = diags[((deltay.h.intbits<0)<<1)+(deltax.w>0)];
 		if (actor->movedir != turnaround && P_TryWalk(actor, actor_pos)) {
 			return;
 		}
     }
 
     // try other directions
-    if (P_Random() > 200 ||  labs(deltay)>labs(deltax)) {
+    if (P_Random() > 200 ||  labs(deltay.w)>labs(deltax.w)) {
 		tdir=d[1];
 		d[1]=d[2];
 		d[2]=tdir;
@@ -582,7 +582,7 @@ P_LookForPlayers
   boolean	allaround )
 {
     angle_t	an;
-    fixed_t	dist;
+    fixed_t_union	dist;
 	mobj_pos_t far* actor_pos;
 
  	if (player.health <= 0)
@@ -597,9 +597,9 @@ P_LookForPlayers
 	if (!allaround) {
 		an.wu = R_PointToAngle2(actor_pos->x, actor_pos->y, playerMobj_pos->x, playerMobj_pos->y) - actor_pos->angle.wu;
 		if (an.wu > ANG90 && an.wu < ANG270) {
-			dist = P_AproxDistance(playerMobj_pos->x - actor_pos->x, playerMobj_pos->y - actor_pos->y);
+			dist.w = P_AproxDistance(playerMobj_pos->x.w - actor_pos->x.w, playerMobj_pos->y.w - actor_pos->y.w);
 			// if real close, react anyway
-			if (dist > MELEERANGE * FRACUNIT) {
+			if (dist.w > MELEERANGE * FRACUNIT) {
 				return false;	// behind back
 			}
 		}
@@ -1174,8 +1174,8 @@ void A_SkelMissile (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	actor_pos->z.h.intbits -= 16;	// back to normal
 	actortargetRef = actor->targetRef;
 	
-	mo_pos->x += mo->momx;
-	mo_pos->y += mo->momy;
+	mo_pos->x.w += mo->momx.w;
+	mo_pos->y.w += mo->momy.w;
     mo->tracerRef = actortargetRef;
 }
 
@@ -1200,11 +1200,11 @@ void A_Tracer (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	
     
     // spawn a puff of smoke behind the rocket		
-    P_SpawnPuff (actor_pos->x, actor_pos->y, actor_pos->z.w);
+    P_SpawnPuff (actor_pos->x.w, actor_pos->y.w, actor_pos->z.w);
 
 
-	thRef = P_SpawnMobj (actor_pos->x-actor->momx,
-		actor_pos->y-actor->momy,
+	thRef = P_SpawnMobj (actor_pos->x.w-actor->momx.w,
+		actor_pos->y.w-actor->momy.w,
 		actor_pos->z.w, MT_SMOKE, -1);
     
 	th = setStateReturn;
@@ -1246,16 +1246,16 @@ void A_Tracer (mobj_t far* actor, mobj_pos_t far* actor_pos)
     }
 	actorspeed = MAKESPEED(mobjinfo[actor->type].speed);
     fineexact = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    actor->momx = FixedMulTrig(actorspeed, finecosine[fineexact]);
-    actor->momy = FixedMulTrig(actorspeed, finesine[fineexact]);
+    actor->momx.w = FixedMulTrig(actorspeed, finecosine[fineexact]);
+    actor->momy.w = FixedMulTrig(actorspeed, finesine[fineexact]);
 	
 	dest = (mobj_t far*)(&thinkerlist[actor->tracerRef].data);
 	dest_pos = &mobjposlist[actor->tracerRef];
 	destz = dest_pos->z.w;
 
 	// change slope
-    dist = P_AproxDistance (dest_pos->x - actor_pos->x,
-			    dest_pos->y - actor_pos->y);
+    dist = P_AproxDistance (dest_pos->x.w - actor_pos->x.w,
+			    dest_pos->y.w - actor_pos->y.w);
     
 
 
@@ -1309,8 +1309,8 @@ void A_SkelFist (mobj_t far* actor)
 //
 THINKERREF		corpsehitRef;
 mobj_t far*		vileobj;
-fixed_t		viletryx;
-fixed_t		viletryy;
+fixed_t_union		viletryx;
+fixed_t_union		viletryy;
 
 boolean PIT_VileCheck (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* thing_pos)
 {
@@ -1334,15 +1334,15 @@ boolean PIT_VileCheck (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* t
 	maxdist.h.fracbits = 0;
 
 	
-	if (labs(thing_pos->x - viletryx) > maxdist.w || labs(thing_pos->y - viletryy) > maxdist.w) {
+	if (labs(thing_pos->x.w - viletryx.w) > maxdist.w || labs(thing_pos->y.w - viletryy.w) > maxdist.w) {
 		return true;		// not actually touching
 	}
 		
 	corpsehitRef = thingRef;
-    thing->momx = thing->momy = 0;
-	thing->height.h.intbits <<= 2;
+    thing->momx.w = thing->momy.w = 0;
+	thing->height.w <<= 2;
     check = P_CheckPosition (thing, thing_pos->x, thing_pos->y, thing->secnum);
-	thing->height.h.intbits >>= 2;
+	thing->height.w >>= 2;
 
 	if (!check) {
 		return true;		// doesn't fit here
@@ -1374,15 +1374,15 @@ void A_VileChase (mobj_t far* actor, mobj_pos_t far* actor_pos)
     if (actor->movedir != DI_NODIR) {
 		mobj_pos_t far* corpsehit_pos;
 		// check for corpses to raise
-		viletryx = actor_pos->x + mobjinfo[actor->type].speed*xspeed[actor->movedir];
-		viletryy = actor_pos->y + mobjinfo[actor->type].speed*yspeed[actor->movedir];
+		viletryx.w = actor_pos->x.w + mobjinfo[actor->type].speed*xspeed[actor->movedir];
+		viletryy.w = actor_pos->y.w + mobjinfo[actor->type].speed*yspeed[actor->movedir];
 		coord.h.intbits = bmaporgx;
 		// todo optimize when doing doom2 stuff
-		xl = (viletryx - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-		xh = (viletryx - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		xl = (viletryx.w - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		xh = (viletryx.w - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
 		coord.h.intbits = bmaporgy;
-		yl = (viletryy - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-		yh = (viletryy - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		yl = (viletryy.w - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
+		yh = (viletryy.w - coord.w + MAXRADIUS*2)>>MAPBLOCKSHIFT;
 	
 		vileobj = actor;
 		for (bx=xl ; bx<=xh ; bx++)
@@ -1478,8 +1478,8 @@ void A_Fire (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	P_UnsetThingPosition (actor, actor_pos);
 
 	//todo isnt this just multiplied by 24?
-	actor_pos->x = dest_pos->x + FixedMulTrig(24*FRACUNIT, finecosine[an]);
-	actor_pos->y = dest_pos->y + FixedMulTrig(24*FRACUNIT, finesine[an]);
+	actor_pos->x.w = dest_pos->x.w + FixedMulTrig(24*FRACUNIT, finecosine[an]);
+	actor_pos->y.w = dest_pos->y.w + FixedMulTrig(24*FRACUNIT, finesine[an]);
 	actor_pos->z.w = dest_pos->z.w;
     P_SetThingPosition (actor, actor_pos, -1);
 }
@@ -1505,8 +1505,8 @@ void A_VileTarget (mobj_t far* actor)
 	actortargetRef = actor->targetRef;
 	actorTarget = (mobj_t far*)(&thinkerlist[actor->targetRef].data);
 	actorTarget_pos = &mobjposlist[actor->targetRef];
-    fogRef = P_SpawnMobj (actorTarget_pos->x,
-		actorTarget_pos->y,
+    fogRef = P_SpawnMobj (actorTarget_pos->x.w,
+		actorTarget_pos->y.w,
 		actorTarget_pos->z.w, MT_FIRE, actorTarget->secnum);
 	fog = setStateReturn;
 	fog->targetRef = GETTHINKERREF(actor);
@@ -1556,8 +1556,8 @@ void A_VileAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	fire_pos = &mobjposlist[fireRef];
 	// move the fire between the vile and the player
 	//todo isnt this just multiplied by 24?
-	fire_pos->x = actorTarget_pos->x - FixedMulTrig(24*FRACUNIT, finecosine[an]);
-	fire_pos->y = actorTarget_pos->y - FixedMulTrig(24*FRACUNIT, finesine[an]);
+	fire_pos->x.w = actorTarget_pos->x.w - FixedMulTrig(24*FRACUNIT, finecosine[an]);
+	fire_pos->y.w = actorTarget_pos->y.w - FixedMulTrig(24*FRACUNIT, finesine[an]);
     P_RadiusAttack (fire, fire_pos, actor, 70 );
 }
 
@@ -1596,8 +1596,8 @@ void A_FatAttack1 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 	mo_pos = &mobjposlist[moRef];
 	mo_pos->angle.wu += FATSPREAD;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finecosine[an]);
-    mo->momy = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine[an]);
+    mo->momx.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finecosine[an]);
+    mo->momy.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine[an]);
 }
 
 void A_FatAttack2 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
@@ -1619,8 +1619,8 @@ void A_FatAttack2 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 	mo_pos = setStateReturn_pos;
 	mo_pos->angle.wu -= FATSPREAD*2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finecosine[an]);
-    mo->momy = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine[an]);
+    mo->momx.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finecosine[an]);
+    mo->momy.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine[an]);
 }
 
 void A_FatAttack3 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
@@ -1642,16 +1642,16 @@ void A_FatAttack3 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 	mospeed = MAKESPEED(mobjinfo[mo->type].speed);
 	mo_pos->angle.wu -= FATSPREAD/2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx = FixedMulTrig(mospeed, finecosine[an]);
-    mo->momy = FixedMulTrig(mospeed, finesine[an]);
+    mo->momx.w = FixedMulTrig(mospeed, finecosine[an]);
+    mo->momy.w = FixedMulTrig(mospeed, finesine[an]);
 
 	moRef = P_SpawnMissile (actor, actor_pos, (&thinkerlist[actortargetRef].data), MT_FATSHOT);
 	mo = setStateReturn;
 	mo_pos = setStateReturn_pos;
 	mo_pos->angle.wu += FATSPREAD/2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx = FixedMulTrig(mospeed, finecosine[an]);
-    mo->momy = FixedMulTrig(mospeed, finesine[an]);
+    mo->momx.w = FixedMulTrig(mospeed, finecosine[an]);
+    mo->momy.w = FixedMulTrig(mospeed, finesine[an]);
 }
 
 
@@ -1683,9 +1683,9 @@ void A_SkullAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	dest = (mobj_t far*)(&thinkerlist[destRef].data);
 	dest_pos = &mobjposlist[destRef];
     an = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    actor->momx = FixedMulTrig(SKULLSPEED, finecosine[an]);
-    actor->momy = FixedMulTrig(SKULLSPEED, finesine[an]);
-    dist = P_AproxDistance (dest_pos->x - actor_pos->x, dest_pos->y - actor_pos->y);
+    actor->momx.w = FixedMulTrig(SKULLSPEED, finecosine[an]);
+    actor->momy.w = FixedMulTrig(SKULLSPEED, finesine[an]);
+    dist = P_AproxDistance (dest_pos->x.w - actor_pos->x.w, dest_pos->y.w - actor_pos->y.w);
     dist = dist / SKULLSPEED;
     
 	if (dist < 1) {
@@ -1756,8 +1756,8 @@ A_PainShootSkull
 
 
     
-    x = actor_pos->x + FixedMulTrig(prestep.w, finecosine[an]);
-    y = actor_pos->y + FixedMulTrig(prestep.w, finesine[an]);
+    x = actor_pos->x.w + FixedMulTrig(prestep.w, finecosine[an]);
+    y = actor_pos->y.w + FixedMulTrig(prestep.w, finesine[an]);
 	z.w = actor_pos->z.w;
 	z.h.intbits += 8;
 		
@@ -2122,26 +2122,29 @@ void A_BrainPain ()
 
 void A_BrainScream (mobj_t far* mo, mobj_pos_t far* mo_pos)
 {
-    fixed_t		x;
-    fixed_t		y;
-    fixed_t		z;
+    fixed_t_union		x = mo_pos->x;
+	fixed_t_union		y;
+	fixed_t_union		z;
     mobj_t far*	th;
 	THINKERREF thRef;
-	
-    for (x= mo_pos->x - 196*FRACUNIT ; x< mo_pos->x + 320*FRACUNIT ; x+= FRACUNIT*8)
+	z.h.fracbits = 0;
+	x.h.intbits -= 196;
+    for (; x.h.intbits < mo_pos->x.h.intbits + 320; x.h.intbits += 8)
     {
-	y = mo_pos->y - 320*FRACUNIT;
-	z = 128 + P_Random()*2*FRACUNIT;
-	thRef = P_SpawnMobj (x,y,z, MT_ROCKET, -1);
-	th = setStateReturn;
-	th->momz.w = P_Random()*512;
+		y = mo_pos->y;
+		y.h.intbits -= 320;
+		z.h.intbits = 128 + P_Random()*2;
+		thRef = P_SpawnMobj (x.w,y.w,z.w, MT_ROCKET, -1);
+		th = setStateReturn;
+		th->momz.w = P_Random()*512;
 
-	P_SetMobjState (th, S_BRAINEXPLODE1);
-	//th = setStateReturn;
+		P_SetMobjState (th, S_BRAINEXPLODE1);
+		//th = setStateReturn;
 
-	th->tics -= P_Random()&7;
-	if (th->tics < 1 || th->tics > 240)
-	    th->tics = 1;
+		th->tics -= P_Random()&7;
+		if (th->tics < 1 || th->tics > 240) {
+			th->tics = 1;
+		}
     }
 	
 	S_StartSoundFromRef(NULL,sfx_bosdth);
@@ -2154,16 +2157,17 @@ void A_BrainExplode (mobj_t far*mo, mobj_pos_t far* mo_pos)
 {
     fixed_t		x;
     fixed_t		y;
-    fixed_t		z;
+    fixed_t_union		z;
     mobj_t far*	th;
 	THINKERREF thRef;
 	
 
 
-    x = mo_pos->x + (P_Random () - P_Random ())*2048;
-    y = mo_pos->y;
-    z = 128 + P_Random()*2*FRACUNIT;
-    thRef = P_SpawnMobj (x,y,z, MT_ROCKET, -1);
+    x = mo_pos->x.w + (P_Random () - P_Random ())*2048;
+    y = mo_pos->y.w;
+    z.h.intbits = 128 + P_Random()*2;
+	z.h.fracbits = 0;
+    thRef = P_SpawnMobj (x, y, z.w, MT_ROCKET, -1);
 	th = setStateReturn;
     th->momz.w = P_Random()*512;
 
@@ -2207,15 +2211,15 @@ void A_BrainSpit (mobj_t far* mo, mobj_pos_t far* mo_pos)
 
 	targ = (mobj_t far*)&thinkerlist[targRef].data;
 	targ_pos = &mobjposlist[targRef];
-	targy = targ_pos->y;
-	moy = mo_pos->y;
+	targy = targ_pos->y.w;
+	moy = mo_pos->y.w;
 
     // spawn brain missile
     newmobjRef = P_SpawnMissile (mo, mo_pos, targ, MT_SPAWNSHOT);
 	newmobj = setStateReturn;
 	newmobj_pos = setStateReturn_pos;
 	newmobj->targetRef = targRef;
-    newmobj->reactiontime = ((targy - moy)/newmobj->momy) / states[newmobj_pos->stateNum].tics;
+    newmobj->reactiontime = ((targy - moy)/newmobj->momy.w) / states[newmobj_pos->stateNum].tics;
 
 	S_StartSoundFromRef(NULL, sfx_bospit);
 }
@@ -2253,7 +2257,7 @@ void A_SpawnFly (mobj_t far* mo, mobj_pos_t far* mo_pos)
 	targ = (mobj_t far*)&thinkerlist[targRef].data;
 	targ_pos = &mobjposlist[targRef];
     // First spawn teleport fog.
-    fogRef = P_SpawnMobj (targ_pos->x, targ_pos->y, targ_pos->z.w, MT_SPAWNFIRE, targ->secnum);
+    fogRef = P_SpawnMobj (targ_pos->x.w, targ_pos->y.w, targ_pos->z.w, MT_SPAWNFIRE, targ->secnum);
     S_StartSoundFromRef (setStateReturn, sfx_telept);
 
     // Randomly select monster to spawn.
@@ -2285,7 +2289,7 @@ void A_SpawnFly (mobj_t far* mo, mobj_pos_t far* mo_pos)
 	type = MT_BRUISER;		
 
 
-    newmobjRef	= P_SpawnMobj (targ_pos->x, targ_pos->y, targ_pos->z.w, type, targ->secnum);
+    newmobjRef	= P_SpawnMobj (targ_pos->x.w, targ_pos->y.w, targ_pos->z.w, type, targ->secnum);
 	newmobj = (mobj_t far*)&thinkerlist[newmobjRef].data;
 	newmobj_pos = &mobjposlist[newmobjRef];
 	if (P_LookForPlayers(newmobj, true)) {

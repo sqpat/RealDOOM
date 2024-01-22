@@ -50,9 +50,9 @@ EV_Teleport
 	uint16_t	an;
     THINKERREF	thinkerRef;
 	int16_t secnum;
-    fixed_t	oldx;
-    fixed_t	oldy;
-    fixed_t	oldz;
+	fixed_t_union	oldx;
+	fixed_t_union	oldy;
+	fixed_t_union	oldz;
 	int16_t		oldsecnum;
 
 	THINKERREF fogRef;
@@ -90,7 +90,7 @@ EV_Teleport
 				m_pos = &mobjposlist[thinkerRef];
 				oldx = thing_pos->x;
 				oldy = thing_pos->y;
-				oldz = thing_pos->z.w;
+				oldz = thing_pos->z;
 				oldsecnum = thing->secnum;
 				
 				if (!P_TeleportMove (thing, thing_pos, m_pos->x, m_pos->y, m->secnum))
@@ -99,13 +99,13 @@ EV_Teleport
 				thing_pos->z.w = thing->floorz;  //fixme: not needed?
 		#endif
 				if (thing->type == MT_PLAYER) {
-					player.viewz = thing_pos->z.w + player.viewheight;
+					player.viewz.w = thing_pos->z.w + player.viewheight.w;
 				}
 				// spawn teleport fog at source and destination
-				fogRef = P_SpawnMobj (oldx, oldy, oldz, MT_TFOG, oldsecnum);
+				fogRef = P_SpawnMobj (oldx.w, oldy.w, oldz.w, MT_TFOG, oldsecnum);
 				S_StartSoundFromRef (setStateReturn, sfx_telept);
 				an = m_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-				fogRef = P_SpawnMobj (m_pos->x+20*finecosine[an], m_pos->y+20*finesine[an]
+				fogRef = P_SpawnMobj (m_pos->x.w+20*finecosine[an], m_pos->y.w+20*finesine[an]
 						   , thing_pos->z.w, MT_TFOG, -1);
 
 				// emit sound, where?
@@ -116,7 +116,7 @@ EV_Teleport
 					playerMobj->reactiontime = 18;
 				}
 				thing_pos->angle = m_pos->angle;
-				thing->momx = thing->momy = thing->momz.w = 0;
+				thing->momx.w = thing->momy.w = thing->momz.w = 0;
 				return 1;
 			}	
 		}

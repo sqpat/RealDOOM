@@ -34,8 +34,8 @@ fixed_t		topslope;
 fixed_t		bottomslope;		// slopes to top and bottom of target
 
 divline_t	strace;			// from t1 to t2
-fixed_t		cachedt2x;
-fixed_t		cachedt2y;
+fixed_t_union		cachedt2x;
+fixed_t_union		cachedt2y;
 
 
 //
@@ -44,8 +44,8 @@ fixed_t		cachedt2y;
 //
 
 int16_t P_DivlineSide
-( fixed_t	x,
-  fixed_t	y,
+( fixed_t_union	x,
+  fixed_t_union	y,
   divline_t*	node )
 {
     fixed_t_union	dx;
@@ -55,10 +55,10 @@ int16_t P_DivlineSide
 
     if (!node->dx.w)
     {
-	if (x==node->x.w)
+	if (x.w==node->x.w)
 	    return 2;
 	
-	if (x <= node->x.w)
+	if (x.w <= node->x.w)
 	    return node->dy.w > 0;
 
 	return node->dy.w < 0;
@@ -66,17 +66,17 @@ int16_t P_DivlineSide
     
     if (!node->dy.w)
     {
-	if (x==node->y.w)
+	if (x.w==node->y.w)
 	    return 2;
 
-	if (y <= node->y.w)
+	if (y.w <= node->y.w)
 	    return node->dx.w < 0;
 
 	return node->dx.w > 0;
     }
 	
-    dx.w = (x - node->x.w);
-    dy.w = (y - node->y.w);
+    dx.w = (x.w - node->x.w);
+    dy.w = (y.w - node->y.w);
 	
     left = FixedMul1616(node->dy.h.intbits,dx.h.intbits);
     right = FixedMul1616(dy.h.intbits,node->dx.h.intbits);
@@ -144,8 +144,8 @@ int16_t  P_DivlineSide16
 }
 
 int16_t  P_DivlineSideNode
-( fixed_t	x,
-  fixed_t	y,
+( fixed_t_union	x,
+  fixed_t_union	y,
   node_t far*	node )
 {
 
@@ -161,10 +161,10 @@ int16_t  P_DivlineSideNode
 		temp.h.intbits = node->x;
 		temp.h.fracbits = 0;
 
-		if (x==temp.w)
+		if (x.w==temp.w)
 			return 2;
 		
-		if (x <= temp.w)
+		if (x.w <= temp.w)
 			return node->dy > 0;
 
 		return node->dy < 0;
@@ -174,9 +174,9 @@ int16_t  P_DivlineSideNode
 		temp.h.intbits = node->y;
 		temp.h.fracbits = 0;
 
-		if (x==temp.w)
+		if (x.w==temp.w)
 			return 2;
-		if (y <= temp.w)
+		if (y.w <= temp.w)
 			return node->dx < 0;
 
 		return node->dx > 0;
@@ -185,9 +185,9 @@ int16_t  P_DivlineSideNode
 	temp.h.intbits = node->x;
 	temp.h.fracbits = 0;
 
-    dx.w = (x - temp.w);
+    dx.w = (x.w - temp.w);
 	temp.h.intbits = node->y;
-    dy.w = (y - temp.w);
+    dy.w = (y.w - temp.w);
 
     left =  FixedMul1616(node->dy, dx.h.intbits);
     right = FixedMul1616(dy.h.intbits, node->dx);
@@ -346,7 +346,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 		divl.dx.h.intbits = v2.x - v1.x;
 		divl.dy.h.intbits = v2.y - v1.y;
 
-		s1 = P_DivlineSide(strace.x.w, strace.y.w, &divl);
+		s1 = P_DivlineSide(strace.x, strace.y, &divl);
 		s2 = P_DivlineSide(cachedt2x, cachedt2y, &divl);
 
 		 
@@ -459,7 +459,7 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 
 	bsp = &nodes[bspnum];
 	 
-	side = P_DivlineSideNode (strace.x.w, strace.y.w, bsp);
+	side = P_DivlineSideNode (strace.x, strace.y, bsp);
 	side &= 0x01; // turn 0x02 case to 0x01
 	if (!P_CrossBSPNode(bsp->children[side])) {
 		return false;
@@ -524,12 +524,12 @@ P_CheckSight
     topslope = (t2_pos->z.w+t2->height.w) - sightzstart;
     bottomslope = (t2_pos->z.w) - sightzstart;
 	
-    strace.x.w = t1_pos->x;
-    strace.y.w = t1_pos->y;
+    strace.x = t1_pos->x;
+    strace.y = t1_pos->y;
     cachedt2x = t2_pos->x;
 	cachedt2y = t2_pos->y;
-    strace.dx.w = t2_pos->x - t1_pos->x;
-    strace.dy.w = t2_pos->y - t1_pos->y;
+    strace.dx.w = t2_pos->x.w - t1_pos->x.w;
+    strace.dy.w = t2_pos->y.w - t1_pos->y.w;
 
     // the head node is the last node output
 	return P_CrossBSPNode (numnodes-1);

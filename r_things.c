@@ -35,7 +35,7 @@
 
 
 
-#define MINZ                            (FRACUNIT*4)
+#define MINZ_HIGHBITS					4
 #define BASEYCENTER                     100L
 
 
@@ -202,16 +202,16 @@ R_DrawVisSprite
 //
 void R_ProjectSprite (mobj_pos_t far* thing)
 {
-    fixed_t             tr_x;
-    fixed_t             tr_y;
+    fixed_t_union             tr_x;
+    fixed_t_union             tr_y;
     
-    fixed_t             gxt;
-    fixed_t             gyt;
+    fixed_t_union             gxt;
+    fixed_t_union             gyt;
     
-    fixed_t             tx;
-    fixed_t             tz;
+    fixed_t_union             tx;
+    fixed_t_union             tz;
 
-    fixed_t             xscale;
+    fixed_t_union             xscale;
     
 	int16_t                 x1;
 	int16_t                 x2;
@@ -233,34 +233,34 @@ void R_ProjectSprite (mobj_pos_t far* thing)
 	spriteframenum_t thingframe = states[thing->stateNum].frame;
 	vissprite_t     overflowsprite;
 
-	fixed_t thingx = thing->x;
-	fixed_t thingy = thing->y;
-	fixed_t thingz = thing->z.w;
+	fixed_t_union thingx = thing->x;
+	fixed_t_union thingy = thing->y;
+	fixed_t_union thingz = thing->z;
 	int32_t thingflags = thing->flags;
 	angle_t thingangle = thing->angle;
     fixed_t_union temp;
 		
 	// transform the origin point
-    tr_x = thingx - viewx.w;
-    tr_y = thingy - viewy.w;
+    tr_x.w = thingx.w - viewx.w;
+    tr_y.w = thingy.w - viewy.w;
         
-    gxt = FixedMulTrig(tr_x,viewcos);
-    gyt = -FixedMulTrig(tr_y,viewsin);
+    gxt.w = FixedMulTrig(tr_x.w,viewcos);
+    gyt.w = -FixedMulTrig(tr_y.w,viewsin);
     
-    tz = gxt-gyt; 
+    tz.w = gxt.w-gyt.w; 
 
     // thing is behind view plane?
-    if (tz < MINZ) // (- sq: where does this come from)
+    if (tz.h.intbits < MINZ_HIGHBITS) // (- sq: where does this come from)
         return;
     
-    xscale = FixedDiv(projection.w, tz);
+    xscale.w = FixedDiv(projection.w, tz.w);
         
-    gxt = -FixedMulTrig(tr_x,viewsin);
-    gyt = FixedMulTrig(tr_y,viewcos);
-    tx = -(gyt+gxt); 
+    gxt.w = -FixedMulTrig(tr_x.w,viewsin);
+    gyt.w = FixedMulTrig(tr_y.w,viewcos);
+    tx.w = -(gyt.w+gxt.w); 
 
     // too far off the side?
-    if (labs(tx)>(tz<<2)) // check just high 16 bits?
+    if (labs(tx.w)>(tz.w<<2)) // check just high 16 bits?
         return;
 
     // decide which patch to use for sprite relative to player
@@ -285,9 +285,9 @@ void R_ProjectSprite (mobj_pos_t far* thing)
     // calculate edges of the shape
     temp.h.fracbits = 0;
     temp.h.intbits = spriteoffsets[lump];
-	tx -= temp.w;
+	tx.w -= temp.w;
 	temp.h.intbits = centerxfrac.h.intbits;
-    temp.w +=  FixedMul (tx,xscale);
+    temp.w +=  FixedMul (tx.w,xscale.w);
     x1 = temp.h.intbits;
 
     // off the right side?
@@ -297,9 +297,9 @@ void R_ProjectSprite (mobj_pos_t far* thing)
     temp.h.fracbits = 0;
     temp.h.intbits = spritewidths[lump];
 
-    tx +=  temp.w;
+    tx.w +=  temp.w;
 	temp.h.intbits = centerxfrac.h.intbits;
-	temp.w += FixedMul (tx,xscale);
+	temp.w += FixedMul (tx.w,xscale.w);
     x2 = temp.h.intbits - 1;
 
 	
@@ -316,20 +316,20 @@ void R_ProjectSprite (mobj_pos_t far* thing)
 	vis = vissprite_p - 1;
 
 	vis->mobjflags = thingflags;
-    vis->scale = xscale<<detailshift;
+    vis->scale = xscale.w<<detailshift;
     vis->gx = thingx;
     vis->gy = thingy;
     vis->gz = thingz;
     temp.h.fracbits = 0;
     temp.h.intbits = spritetopoffsets[lump];
-	vis->gzt = vis->gz + temp.w;
+	vis->gzt.w = vis->gz.w + temp.w;
 //	vis->gzt = thing->z + spritetopoffset[lump];
-    vis->texturemid = vis->gzt - viewz.w;
+    vis->texturemid = vis->gzt.w - viewz.w;
     vis->x1 = x1 < 0 ? 0 : x1;
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
     
 	// todo does a quick  inverse function exist? considering this is fixed point
-	iscale = FixedDiv (FRACUNIT, xscale);
+	iscale = FixedDiv (FRACUNIT, xscale.w);
 
     if (flip) {
         temp.h.fracbits = 0;
@@ -357,7 +357,7 @@ void R_ProjectSprite (mobj_pos_t far* thing)
         vis->colormap = colormaps;
     } else {
         // diminished light
-        index = xscale>>(LIGHTSCALESHIFT-detailshift);
+        index = xscale.w>>(LIGHTSCALESHIFT-detailshift);
 
         if (index >= MAXLIGHTSCALE) 
             index = MAXLIGHTSCALE-1;
@@ -706,12 +706,12 @@ void R_DrawSprite (vissprite_t far* spr)
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->bsilheight);
 		if (ds->bsilheight < 0) {
 		}
-		if (spr->gz >= temp.w) {
+		if (spr->gz.w >= temp.w) {
 			silhouette &= ~SIL_BOTTOM;
 		}
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, ds->tsilheight);
         
-		if (spr->gzt <= temp.w) {
+		if (spr->gzt.w <= temp.w) {
 			silhouette &= ~SIL_TOP;
 		}
         if (silhouette == 1) {

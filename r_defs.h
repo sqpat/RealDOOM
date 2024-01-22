@@ -454,12 +454,12 @@ typedef struct vissprite_s
 	int16_t x2;
 
     // for line side calculation
-    fixed_t		gx;
-    fixed_t		gy;		
+    fixed_t_union		gx;
+    fixed_t_union		gy;
 
     // global bottom / top for silhouette clipping
-    fixed_t		gz;
-    fixed_t		gzt;
+    fixed_t_union		gz;
+    fixed_t_union		gzt;
 
     // horizontal position of x1
     fixed_t		startfrac;

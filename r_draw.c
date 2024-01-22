@@ -114,7 +114,7 @@ void R_DrawColumn (void)
     int16_t			count; 
     byte far*		dest;
     fixed_t_union		frac;
-    fixed_t		fracstep;	 
+    fixed_t_union		fracstep;	 
 
     count = dc_yh - dc_yl; 
 
@@ -130,8 +130,8 @@ void R_DrawColumn (void)
 
     // Determine scaling,
     //  which is the only mapping to be done.
-    fracstep = dc_iscale; 
-    frac.w = dc_texturemid.w + (dc_yl-centery)*fracstep; 
+    fracstep.w = dc_iscale; 
+    frac.w = dc_texturemid.w + (dc_yl-centery)*fracstep.w; 
 
 
 	// ASM NOTES
@@ -148,7 +148,7 @@ void R_DrawColumn (void)
 
 		*dest = dc_colormap[dc_source[frac.h.intbits & 127]];
         dest += SCREENWIDTH/4;
-        frac.w += fracstep;
+        frac.w += fracstep.h.fracbits;
         
 
     } while (count--); 

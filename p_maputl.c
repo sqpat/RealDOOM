@@ -530,10 +530,8 @@ void P_UnsetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos)
     if (! (thingflags & MF_NOBLOCKMAP) ) {
 	// insert things don't need to be in blockmap
 	// unlink from block map
-		fixed_t_union thingx;
-		fixed_t_union thingy;
-		thingx.w = thing_pos->x;
-		thingy.w = thing_pos->y;
+		fixed_t_union thingx = thing_pos->x;
+		fixed_t_union thingy = thing_pos->y;
 
 
 		//todo how can this trip the < 0 check anyway?
@@ -642,9 +640,9 @@ P_SetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos, int16_t knowns
     // link into blockmap
     if ( ! (thing_pos->flags & MF_NOBLOCKMAP) ) {
 		// inert things don't need to be in blockmap		
-		temp.w = thing_pos->x;
+		temp = thing_pos->x;
 		blockx = (temp.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;
-		temp.w = thing_pos->y;
+		temp = thing_pos->y;
 		blocky = (temp.h.intbits - bmaporgy) >> MAPBLOCKSHIFT;
 		
 		if (blockx>=0 && blockx < bmapwidth && blocky>=0 && blocky < bmapheight) {
@@ -874,8 +872,8 @@ boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t far* thing, mobj_pos
  
 	tracepositive = (trace.dx.h.intbits ^ trace.dy.h.intbits) > 0;
 
-	x1.w = x2.w = thing_pos->x;
-	y1.w = y2.w = thing_pos->y;
+	x1 = x2 = thing_pos->x;
+	y1 = y2 = thing_pos->y;
 	x1.h.intbits -= thing->radius;
 	x2.h.intbits += thing->radius;
 	

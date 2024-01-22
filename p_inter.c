@@ -709,7 +709,7 @@ P_KillMobj
 	return;
     }
 
-    P_SpawnMobj (target_pos->x, target_pos->y,ONFLOORZ, item, target->secnum);
+    P_SpawnMobj (target_pos->x.w, target_pos->y.w,ONFLOORZ, item, target->secnum);
 	mo = setStateReturn;
 	setStateReturn_pos->flags |= MF_DROPPED;	// special versions of items
 }
@@ -736,9 +736,9 @@ P_DamageMobj
 	angle_t	ang;
     int16_t		saved;
     fixed_t	thrust;
-	fixed_t inflictorx;
-	fixed_t inflictory;
-	fixed_t inflictorz;
+	fixed_t_union inflictorx;
+	fixed_t_union inflictory;
+	fixed_t_union inflictorz;
 	mobj_pos_t far* target_pos = GET_MOBJPOS_FROM_MOBJ(target);
  
 	if (!(target_pos->flags & MF_SHOOTABLE)) {
@@ -749,7 +749,7 @@ P_DamageMobj
 		return;
 	}
     if (target_pos->flags & MF_SKULLFLY ) {
-		target->momx = target->momy = target->momz.w = 0;
+		target->momx.w = target->momy.w = target->momz.w = 0;
     }
 	
     
@@ -768,7 +768,7 @@ P_DamageMobj
 			mobj_pos_t far* inflictor_pos = GET_MOBJPOS_FROM_MOBJ(inflictor);
 			inflictorx = inflictor_pos->x;
 			inflictory = inflictor_pos->y;
-			inflictorz = inflictor_pos->z.w;
+			inflictorz = inflictor_pos->z;
 
 			ang.wu = R_PointToAngle2(inflictorx,
 				inflictory,
@@ -781,7 +781,7 @@ P_DamageMobj
 			// make fall forwards sometimes
 			if (damage < 40
 				&& damage > target->health
-				&& (target_pos->z.w - inflictorz) > 64 * FRACUNIT
+				&& (target_pos->z.w - inflictorz.w) > 64 * FRACUNIT
 				&& (P_Random() & 1))
 			{
 				ang.wu += ANG180;
@@ -789,8 +789,8 @@ P_DamageMobj
 			}
 
 			ang.hu.fracbits = ang.hu.intbits >> SHORTTOFINESHIFT;
-			target->momx += FixedMulTrig(thrust, finecosine[ang.hu.fracbits]);
-			target->momy += FixedMulTrig(thrust, finesine[ang.hu.fracbits]);
+			target->momx.w += FixedMulTrig(thrust, finecosine[ang.hu.fracbits]);
+			target->momy.w += FixedMulTrig(thrust, finesine[ang.hu.fracbits]);
 		}
 	}
     // player specific
