@@ -20,13 +20,67 @@
 #include "doomdef.h"
 
 //#include "m_misc.h"
-//#include "d_main.h"
+#include "i_system.h"
+#include <malloc.h>
+#include <dos.h>
 
 extern void D_DoomMain();
 
 extern int16_t		myargc;
 extern int8_t**		myargv;
+/*
+// REGS stuff used for int calls
+extern union REGS regs;
+extern struct SREGS segregs;
 
+#define USED_DS 0x3A80
+// size of dgroup, about?
+#define SIZE_TO_COPY 0x5200
+
+void modify_ds_ss(int a, int b);
+#pragma aux modify_ds_ss = \
+	"mov ax, 3A80h", \
+	"mov ds, ax", \
+	"mov ss, ax", \
+parm[] modify exact[ax];
+
+void hackDS() {
+	struct SREGS        sregs;
+	int16_t ds;
+	int16_t ss;
+	int16_t ds_diff;
+	
+
+	
+	segread(&sregs);
+	ds = sregs.ds; // 2a56 2e06 c7a
+	ss = sregs.ss; // 2a56 2e06 c7a
+	FAR_memcpy(MK_FP(USED_DS, 0), MK_FP(ds, 0), SIZE_TO_COPY);
+
+	modify_ds_ss(USED_DS, USED_DS);
+
+
+}
+
+
+
+void checkDS() {
+	struct SREGS        sregs;
+	int16_t ds;
+	int16_t ss;
+	int16_t ds_diff;
+	//byte far* someptr = malloc(1);
+
+	segread(&sregs);
+	ds = sregs.ds; // 2a56 2e06 c7a
+	ss = sregs.ss; // 2a56 2e06 c7a
+	ds_diff = USED_DS - ds; // 102a
+
+
+	//I_Error("\npointer is %Fp %x %x %x", someptr, ds, ss, ds_diff);
+	I_Error("\nvalues are %x %x %x", ds, ss, ds_diff);
+}
+*/
 int32_t
 main
 ( int32_t		argc,
@@ -35,6 +89,8 @@ main
     myargc = argc; 
     myargv = argv; 
  
+	//hackDS();
+	//checkDS();
     D_DoomMain (); 
 
     return 0;

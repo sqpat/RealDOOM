@@ -47,9 +47,6 @@ enum { VERSION =  109 };
 // line opening caching. Unfortunately seems to be 0.5% slower or so - also uses extra memory. 
 #define PRECALCULATE_OPENINGS
 
-// Reasonable values include 4 (minimum), 8, and maybe even 10 or 12 which on an incredibly optimal machine might be possible. Of course in 32 bit mode with simulated EMS you can set it to like 32 or 64 but at that point it's not representative of real world performance.
-#define NUM_EMS_PAGES 4
-
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
 #define DEBUG_PRINTING
 
@@ -76,8 +73,6 @@ enum { VERSION =  109 };
 
 // Sets some viewpoitn calculations to 16 bit and less precision than 32 bit. not super obvious, but if you run against a wall up close the wall texture pixels will move less smoothly with the player bob for example
 #define USE_SHORTHEIGHT_VIEWZ	
-
-
 
 
 //

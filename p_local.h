@@ -199,6 +199,7 @@ typedef struct
 
 #define MAXEVENTS				64
 #define MAXINTERCEPTS			128
+// 37800
 #define size_thinkerlist		(sizeof(thinker_t) * MAX_THINKERS)
 #define size_mobjinfo			size_thinkerlist + sizeof(mobjinfo_t) * NUMMOBJTYPES
 #define size_intercepts			size_mobjinfo + sizeof(intercept_t) * MAXINTERCEPTS

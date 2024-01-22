@@ -369,7 +369,6 @@ extern int16_t emshandle;
 void Z_InitEMS(void) {
 	//int32_t size;
 	//todo figure this out based on settings, hardware, etc
-	//int32_t pageframeareasize = NUM_EMS_PAGES * PAGE_FRAME_SIZE;
 	pageFrameArea = I_ZoneBaseEMS(&emshandle);
 	//pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
 }
