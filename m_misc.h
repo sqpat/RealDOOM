@@ -79,8 +79,8 @@ void M_SaveDefaults (void);
 
 typedef struct
 {
-	int8_t *name;
-	uint8_t *	location;
+	int8_t  near*	name;
+	uint8_t near*	location;
 	uint8_t		defaultvalue;
 	uint8_t		scantranslate;		// PC scan code hack
 	uint8_t		untranslated;		// lousy hack

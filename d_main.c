@@ -148,7 +148,7 @@ void D_PostEvent (event_t far* ev)
 //
 void D_ProcessEvents (void)
 {
-    event_t*     ev;
+    event_t far*     ev;
 	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
 		ev = &events[eventtail];
 		if (M_Responder(ev)) {
@@ -524,7 +524,6 @@ void D_DoomLoop (void)
 	FILE* fp;
 #endif
 
-	//plat_t* plat;
     if (demorecording)
         G_BeginRecording ();
                 

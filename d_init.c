@@ -76,7 +76,6 @@ void D_InitStrings() {
 	// load file
 	FILE* handle;
 	//filelength_t length;
-	//int8_t* lastbuffer;
 	int16_t i;
 	int16_t j = 0;;
 	int8_t letter;
@@ -564,7 +563,6 @@ void D_InitGraphicCounts() {
 	// memory addresses, must stay int_32...
 	int16_t far*                maptex;
 	int16_t far*                maptex2;
-	//int32_t*                directory;
  
 	int16_t                 numtextures1;
 	int16_t                 numtextures2;

@@ -223,7 +223,7 @@ P_PointOnDivlineSide
     fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
-	divline_t*	line = &trace;
+	divline_t near*	line = &trace;
 	
     if (!line->dx.w)
     {
@@ -274,7 +274,7 @@ P_PointOnDivlineSide16
 	fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
-	divline_t*	line = &trace;
+	divline_t near*	line = &trace;
 	fixed_t_union temp;
 	
     if (!line->dx.w) {
@@ -323,13 +323,12 @@ P_PointOnDivlineSide16
 //
 fixed_t
 P_InterceptVector
-( 
-  divline_t*	v1 )
+( divline_t near*	v1 )
 {
     fixed_t	frac;
     fixed_t	num;
     fixed_t	den;
-	divline_t*	v2 = &trace;
+	divline_t near*	v2 = &trace;
 	
     den = FixedMul2432 (v1->dy.w>>8,v2->dx.w) - 
 		FixedMul2432(v1->dx.w >>8,v2->dy.w);
@@ -777,13 +776,13 @@ int32_t		ptflags;
 // are on opposite sides of the trace.
 // Returns true if earlyout and a solid line hit.
 //
+divline_t		dl;
 boolean
 PIT_AddLineIntercepts (line_physics_t far* ld_physics, int16_t linenum)
 {
      int16_t			s1;
     int16_t			s2;
     fixed_t		frac;
-    divline_t		dl;
 	int16_t linedx = ld_physics->dx;
 	int16_t linedy = ld_physics->dy;
 	int16_t linev1Offset = ld_physics->v1Offset;
@@ -865,7 +864,6 @@ boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t far* thing, mobj_pos
     
     boolean		tracepositive;
 
-    divline_t		dl;
     
     fixed_t		frac;
 	

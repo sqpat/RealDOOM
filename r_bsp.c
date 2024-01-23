@@ -387,7 +387,7 @@ void R_AddLine (int16_t curlineNum)
 //  if some part of the bbox might be visible.
 //
 
-boolean R_CheckBBox(int16_t *bspcoord)
+boolean R_CheckBBox(int16_t far *bspcoord)
 {
 	byte boxx;
 	byte boxy;

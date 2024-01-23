@@ -971,7 +971,7 @@ void G_InitNew(skill_t       skill, int8_t           episode, int8_t           m
 void G_ReadDemoTiccmd (ticcmd_t near* cmd) 
 { 
     // this is just used as an offset so lets just store as int;
-	byte far* demo_addr = (byte*)MK_FP(DEMO_SEGMENT, demo_p);
+	byte far* demo_addr = (byte far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickmapDemo();
 
 	if (*demo_addr == DEMOMARKER)  {

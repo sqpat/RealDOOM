@@ -46,7 +46,7 @@ fixed_t_union		cachedt2y;
 int16_t P_DivlineSide
 ( fixed_t_union	x,
   fixed_t_union	y,
-  divline_t*	node )
+  divline_t near*	node )
 {
     fixed_t_union	dx;
 	fixed_t_union	dy;
@@ -92,7 +92,7 @@ int16_t P_DivlineSide
 int16_t  P_DivlineSide16
 ( int16_t	x,
   int16_t	y,
-  divline_t*	node )
+  divline_t near*	node )
 {
     fixed_t_union	dx;
     fixed_t_union	dy;
@@ -211,7 +211,7 @@ int16_t  P_DivlineSideNode
 /*
 fixed_t
 P_InterceptVector2
-( divline_t*	v2,
+( divline_t near*	v2,
   node_t*	v1 )
 {
     fixed_t	frac;
@@ -250,8 +250,8 @@ P_InterceptVector2
 */
 fixed_t
 P_InterceptVector2
-( divline_t*	v2,
-  divline_t*	v1 )
+(divline_t near*	v2,
+	divline_t near*	v1 )
 {
     fixed_t	frac;
     fixed_t	num;

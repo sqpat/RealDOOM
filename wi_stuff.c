@@ -400,7 +400,7 @@ static int16_t		acceleratestage;
 static stateenum_t	state;
 
 // contains information passed into intermission
-static wbstartstruct_t*	wbs;
+static wbstartstruct_t near*	wbs;
 
 static wbplayerstruct_t plrs;  // wbs->plyr[]
 
@@ -1205,7 +1205,7 @@ void WI_Drawer (void)
 }
  
 
-void WI_initVariables(wbstartstruct_t* wbstartstruct)
+void WI_initVariables(wbstartstruct_t near* wbstartstruct)
 {
 	wbs = wbstartstruct;
 	acceleratestage = 0;
@@ -1265,7 +1265,7 @@ void WI_Init(void)
 	}
 }
 
-void WI_Start(wbstartstruct_t* wbstartstruct)
+void WI_Start(wbstartstruct_t near* wbstartstruct)
 {
 	unloaded = false;
 	Z_QuickmapIntermission();

@@ -1108,8 +1108,8 @@ void AM_drawWalls()
 //
 void
 AM_rotate
-( int16_t*	x,
-	int16_t*	y,
+( int16_t near*	x,
+	int16_t near*	y,
   fineangle_t	a )
 {
 	fixed_t_union tmpx;
