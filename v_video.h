@@ -44,7 +44,7 @@
 #define screen1 ((byte far*) 0x90000000)
 #define screen2 ((byte far*) 0x70000000)
 #define screen3 ((byte far*) 0x60000000)
-#define screen4 ((byte far*) 0x90000000 + (65536u - ST_WIDTH * ST_HEIGHT))
+#define screen4 ((byte far*) (0x90000000 + (65536u - ST_WIDTH * ST_HEIGHT)))
 
  
 
@@ -55,7 +55,7 @@
 
 extern  int16_t	dirtybox[4];
 
-#define gammatable ((byte far*) 0x80000000 + 64000u)
+#define gammatable ((byte far*) (0x80000000 + 64000u))
 extern	uint8_t	usegamma;
 
 
