@@ -254,6 +254,7 @@ void Z_ClearDeadCode();
 #define PAGE_5000_SCRATCH_REMAP 6
 
 
+void DUMP_MEMORY_TO_FILE();
 
 extern int16_t currenttask;
 

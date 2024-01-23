@@ -110,7 +110,27 @@ void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize) {
 
 }
 
- 
+
+void  _far_fwrite(void far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+	// cheating with size/element count
+	uint16_t totalsize = elementsize * elementcount;
+	uint16_t totalreadsize = 0;
+	uint16_t copysize;
+	uint16_t remaining;
+	byte stackbuffer[FREAD_BUFFER_SIZE];
+	byte far* stackbufferfar = (byte far *)stackbuffer;
+	byte far* srcloc = src;
+	while (totalreadsize < totalsize) {
+		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
+		remaining = totalsize - totalreadsize;
+		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
+		//DEBUG_PRINT("%u %u", totalsize, copysize);
+		FAR_memcpy(stackbufferfar, srcloc, copysize);
+		fwrite(stackbuffer, copysize, 1, fp);
+		srcloc += copysize;
+		totalreadsize += copysize;
+	}
+}
 
 
 //

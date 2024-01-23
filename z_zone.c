@@ -976,3 +976,16 @@ void Z_ClearDeadCode() {
 	//13500 or so
 	//DEBUG_PRINT("\nClearing out %u bytes of initialization code", size);
 }
+
+
+void DUMP_MEMORY_TO_FILE() {
+	int16_t segment = 0x4000;
+	FILE*fp = fopen("MEM_DUMP.BIN", "wb");
+	while (segment < 0xA000) {
+		byte far * dest = MK_FP(segment, 0);
+		FAR_fwrite(dest, 32768, 1, fp);
+		segment += 0x0800;
+	}
+	fclose(fp);
+	I_Error("\ndumped");
+}
