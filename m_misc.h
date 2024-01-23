@@ -67,8 +67,7 @@ void M_ClearRandom(void);
 	// bbox coordinates
 
 // Bounding box functions.
-void M_ClearBox16 (int16_t*	box);
-void M_AddToBox16( int16_t*	box,int16_t	x,  int16_t	y );
+void M_AddToBox16( int16_t near*	box,int16_t	x,  int16_t	y );
 
 
 void M_LoadDefaults (void);

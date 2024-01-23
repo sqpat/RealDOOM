@@ -482,6 +482,7 @@ void R_InitTextures(void)
 		textureheightval = texture->height; 
 
 		FAR_memcpy(texture->name, mtexture->name, sizeof(texture->name));
+		//DEBUG_PRINT("\n %.8Fs %.8Fs %i %Fp %Fp", texture->name, mtexture->name, sizeof(texture->name), texture->name, mtexture->name);
 		mpatch = &mtexture->patches[0];
 		patch = &texture->patches[0];
 

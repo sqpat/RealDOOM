@@ -148,7 +148,7 @@ void R_DrawColumn (void)
 
 		*dest = dc_colormap[dc_source[frac.h.intbits & 127]];
         dest += SCREENWIDTH/4;
-        frac.w += fracstep.h.fracbits;
+        frac.w += fracstep.w;
         
 
     } while (count--); 

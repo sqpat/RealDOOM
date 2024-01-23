@@ -1329,10 +1329,10 @@ void P_LoadSideDefs(int16_t lump)
 		msdtextureoffset = (msd->textureoffset);
 		msdrowoffset = (msd->rowoffset);
 		msdsecnum = (msd->sector);
-
-		memcpy(texnametop, msd->toptexture, 8);
-		memcpy(texnamebot, msd->bottomtexture, 8);
-		memcpy(texnamemid, msd->midtexture, 8);
+		
+		FAR_memcpy(texnametop, msd->toptexture, 8);
+		FAR_memcpy(texnamebot, msd->bottomtexture, 8);
+		FAR_memcpy(texnamemid, msd->midtexture, 8);
 
   
 		toptex = R_TextureNumForName(texnametop);
@@ -1457,8 +1457,10 @@ void P_GroupLines(void)
 
 
 	for (i = 0; i < numsectors; i++) {
-		M_ClearBox16(bbox);
-		
+		//M_ClearBox16
+		bbox[BOXTOP] = bbox[BOXRIGHT] = MINSHORT;
+		bbox[BOXBOTTOM] = bbox[BOXLEFT] = MAXSHORT;
+
 		sectorlinecount = sectors[i].linecount;
 
 		sectors[i].linesoffset = linebufferindex;
@@ -1556,7 +1558,6 @@ P_SetupLevel
 	// will be set by player think.
 	player.viewz.w = 1;
 	
-	W_EraseFullscreenCache();
 	S_Start();
 	Z_FreeConventionalAllocations();
 
@@ -1589,7 +1590,6 @@ P_SetupLevel
 	leveltime.w = 0;
 	
 	// note: most of this ordering is important 
-
 	P_LoadVertexes(lumpnum + ML_VERTEXES);
 	P_LoadSectors(lumpnum + ML_SECTORS);
 	P_LoadSideDefs(lumpnum + ML_SIDEDEFS);

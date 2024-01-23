@@ -81,14 +81,14 @@ void checkDS() {
 	I_Error("\nvalues are %x %x %x", ds, ss, ds_diff);
 }
 */
-int32_t
+int16_t
 main
-( int32_t		argc,
+( int16_t		argc,
   int8_t**	argv ) 
 { 
     myargc = argc; 
     myargv = argv; 
- 
+
 	//hackDS();
 	//checkDS();
     D_DoomMain (); 

@@ -75,7 +75,6 @@ extern int16_t		validcount;
 #define texturecolumnofs_bytes		((byte far*				) (0x60000000 + size_texturecolumnlumps_bytes))
 #define texturedefs_bytes			((byte far*				) (0x60000000 + size_texturecolumnofs_bytes))
 
-//extern uint16_t	*			zlight;// [LIGHTLEVELS][MAXLIGHTZ];
 
 extern uint8_t		extralight;
 extern lighttable_t far*	fixedcolormap;

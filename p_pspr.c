@@ -764,17 +764,17 @@ A_FireCGun
 //
 // ?
 //
-void A_Light0 (pspdef_t *psp)
+void A_Light0 (pspdef_t near *psp)
 {
     player.extralight = 0;
 }
 
-void A_Light1 (pspdef_t *psp)
+void A_Light1 (pspdef_t near *psp)
 {
     player.extralight = 1;
 }
 
-void A_Light2 (pspdef_t *psp)
+void A_Light2 (pspdef_t near *psp)
 {
     player.extralight = 2;
 }

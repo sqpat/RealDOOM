@@ -122,7 +122,7 @@ void M_ClearRandom (void)
 
 void
 M_AddToBox16
-( int16_t*	box,
+( int16_t near*	box,
   int16_t	x,
   int16_t	y )
 {
@@ -136,11 +136,6 @@ M_AddToBox16
 		box[BOXTOP] = y;
 }
  
-void M_ClearBox16(int16_t *box)
-{
-	box[BOXTOP] = box[BOXRIGHT] = MINSHORT;
-	box[BOXBOTTOM] = box[BOXLEFT] = MAXSHORT;
-}
  
 //
 // M_WriteFile

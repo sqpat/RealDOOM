@@ -143,7 +143,6 @@ void P_InitSwitchList(void)
 	else if (commercial)
 		episode = 3;
 
-
 	for (index = 0, i = 0; i < MAXSWITCHES; i++) {
 		if (!alphSwitchList[i].episode) {
 			numswitches = index / 2;
@@ -446,7 +445,7 @@ void R_InitSpriteDefs()
 
 		maxframe = -1;
 		intname = *(int32_t far *)namelist[i];
-		//intname = *(int32_t *)namelist[i*5];
+		//intname = *(int32_t far*)namelist[i*5];
 
 		// scan the lumps,
 		//  filling in the frames for whatever is found

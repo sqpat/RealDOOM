@@ -42,7 +42,7 @@ void I_ShutdownSound(void)
 // I_ShutdownGraphics
 //
 void I_ShutdownGraphics(void) {
-	if (*(byte *)0x449 == 0x13) // don't reset mode if it didn't get set
+	if (*(byte far*)0x449 == 0x13) // don't reset mode if it didn't get set
 	{
 		regs.w.ax = 3;
 		intx86(0x10, &regs, &regs); // back to text mode
@@ -64,10 +64,10 @@ void TS_FreeTaskList(void);
 void TS_SetClockSpeed(int32_t speed);
 uint16_t TS_SetTimer(int32_t TickBase);
 void TS_SetTimerToMaxTaskRate(void);
-void __interrupt __far TS_ServiceSchedule(void);
+//void __interrupt __far TS_ServiceSchedule(void);
 void __interrupt __far TS_ServiceScheduleIntEnabled(void);
 void TS_Startup(void);
-void RestoreRealTimeClock(void);
+//void RestoreRealTimeClock(void);
 
 
 
@@ -129,7 +129,7 @@ void I_ShutdownKeyboard(void)
 {
 	if (oldkeyboardisr)
 		_dos_setvect(KEYBOARDINT, oldkeyboardisr);
-	*(int16_t *)0x41c = *(int16_t *)0x41a;      // clear bios key buffer
+	*(int16_t far*)0x41c = *(int16_t far*)0x41a;      // clear bios key buffer
 }
  
 

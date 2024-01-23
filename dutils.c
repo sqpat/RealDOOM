@@ -26,7 +26,7 @@
 //
 int8_t
 cht_CheckCheat
-( cheatseq_t*	cht,
+( cheatseq_t near*	cht,
 	int8_t		key )
 {
 	int8_t rc = 0;
@@ -54,8 +54,8 @@ cht_CheckCheat
 
 void
 cht_GetParam
-( cheatseq_t*	cht,
-  int8_t*		buffer )
+( cheatseq_t near*	cht,
+  int8_t near*		buffer )
 {
 
     uint8_t *p, c;

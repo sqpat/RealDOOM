@@ -328,7 +328,6 @@ void D_Display (void)
     boolean                     wipe;
     boolean                     redrawsbar;
 	boolean						done = false;
-
 	if (nodrawers)
         return;                    // for comparative timing / profiling
  
@@ -363,7 +362,6 @@ void D_Display (void)
 	if (gamestate == GS_LEVEL && gametic) {
 		HU_Erase();
  	}
-
     // do buffered drawing
     switch (gamestate)
     {
@@ -403,9 +401,9 @@ void D_Display (void)
     }
 
 
-	    // draw buffered stuff to screen
-    
-	
+	// draw buffered stuff to screen
+
+
 	I_UpdateNoBlit (); // note: this accesses screen0 so it needs physics...
 #ifdef DETAILED_BENCH_STATS
 	rendersetuptics += ticcount - cachedrendertics;
@@ -537,7 +535,7 @@ void D_DoomLoop (void)
     while (1)
     {
 		// process one or more tics
-        if (singletics) {
+		if (singletics) {
 #ifdef DETAILED_BENCH_STATS
 			othertics += ticcount - cachedtics;
 			cachedtics = ticcount;
@@ -548,7 +546,7 @@ void D_DoomLoop (void)
 			if (advancedemo) {
 				D_DoAdvanceDemo();
 			}
-			
+
 			M_Ticker ();
 
 			G_Ticker ();
@@ -731,7 +729,7 @@ void D_AdvanceDemo (void)
 #ifdef DETAILED_BENCH_STATS
 	 cachedtics = ticcount;
 #endif
-	 Z_ClearDeadCode();
+	 //Z_ClearDeadCode();
 
 	 D_DoomLoop();  // never returns
  }

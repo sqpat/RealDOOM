@@ -71,7 +71,6 @@ int32_t	W_LumpLength (int16_t lump);
 
 
 void W_CacheLumpNumDirectFragment(int16_t lump, byte far* dest, int16_t pagenum, int32_t offset);
-void W_EraseFullscreenCache();
 
 void W_CacheLumpNameDirect(int8_t* name, byte far* dest);
 void W_CacheLumpNumDirect(int16_t lump, byte far* dest);

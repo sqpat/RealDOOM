@@ -34,10 +34,8 @@ void TS_FreeTaskList(void);
 void TS_SetClockSpeed(int32_t speed);
 uint16_t TS_SetTimer(int32_t TickBase);
 void TS_SetTimerToMaxTaskRate(void);
-void __interrupt __far TS_ServiceSchedule(void);
 void __interrupt __far TS_ServiceScheduleIntEnabled(void);
 void TS_Startup(void);
-void RestoreRealTimeClock(void);
 
 
 void TS_FreeTaskList(void)

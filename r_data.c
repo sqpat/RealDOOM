@@ -788,7 +788,7 @@ R_GetFlat
 (int16_t flatlump) {
 	int16_t index = flatlump - FIRST_LUMP_FLAT;
 	boolean flatunloaded = true;
-	byte far far* addr;
+	byte   far* addr;
 	uint16_t usedflatindex = flatindex[index];
 	uint16_t flatpageindex;
 	if (usedflatindex == 0xFF) {

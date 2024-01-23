@@ -92,19 +92,20 @@ extern int16_t             numtextures;
 uint8_t     R_CheckTextureNumForName(int8_t *name)
 {
 	uint8_t         i;
-	texture_t* texture;
+	texture_t far* texture;
+	int8_t texturename[8];
 	// "NoTexture" marker.
 	if (name[0] == '-')
 		return 0;
 
 
 	for (i = 0; i < numtextures; i++) {
-		texture = (texture_t*)&(texturedefs_bytes[texturedefs_offset[i]]);
-		
+		texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[i]]);
+			
+		FAR_strncpy(texturename, texture->name, 8);
+		//DEBUG_PRINT("\n %.8Fs %8s %8s %i %Fp", texture->name, texturename, name, texture->name);
 
-
-
-		if (!strncasecmp(texture->name, name, 8)) {
+		if (!strncasecmp(texturename, name, 8)) {
 			return i;
 		}
 	}

@@ -1099,7 +1099,6 @@ void WI_loadData(void)
 
 
     // background
-	W_EraseFullscreenCache();
 	V_DrawFullscreenPatch(name, 1); // scratch also used here
 
 	Z_QuickmapScratch_5000();

@@ -300,16 +300,15 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
     poffset = offset / 4;
     pstep = step / 4;
 	outp(SC_INDEX, SC_MAPMASK);
-    for (i = 0; i < 4; i++)
-    {
+    for (i = 0; i < 4; i++) {
 		outp(SC_INDEX + 1, 1 << i);
         source = &screen0[offset + i];
-        dest = (byte*) (destscreen.w + poffset);
+        dest = (byte far*) (destscreen.w + poffset);
 
         for (j = 0; j < h; j++) {
             k = count;
             while (k--) {
-				*(uint16_t *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
+				*(uint16_t far *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
                 dest += 2;
                 source += 8;
             }
@@ -783,8 +782,7 @@ void I_InitDiskFlash(void)
 //
 void I_InitGraphics(void)
 {
-	if (novideo)
-	{
+	if (novideo) {
 		return;
 	}
 	grmode = true;
@@ -800,7 +798,7 @@ void I_InitGraphics(void)
 	outp(GC_INDEX, GC_MISCELLANEOUS);
 	outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~2);
 	outpw(SC_INDEX, 0xf02);
-	FAR_memset(pcscreen, 0, 0xFFFF);
+	FAR_memset(pcscreen, 0, 0xFFFFu);
 	outp(CRTC_INDEX, CRTC_UNDERLINE);
 	outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1)&~0x40);
 	outp(CRTC_INDEX, CRTC_MODE);

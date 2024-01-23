@@ -124,7 +124,6 @@ V_DrawFullscreenPatch
 		}
 	}
 
-
 	Z_QuickmapByTaskNum(oldtask);
 
 }

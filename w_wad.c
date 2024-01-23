@@ -330,11 +330,7 @@ W_CacheLumpNumDirect
 	W_ReadLump(lump, dest, 0, 0);
 }
 
-int16_t fullscreencache = 0x00;
-void W_EraseFullscreenCache() {
-	fullscreencache = 0x00; // five bits
-}
-
+ 
 // used for stuff > 64k, especially titlepics, to draw one ems frame at a tiem
 void
 W_CacheLumpNumDirectFragment
