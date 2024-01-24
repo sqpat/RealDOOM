@@ -106,7 +106,7 @@ byte far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 	intx86(EMS_INT, &regs, &regs);
 	pagesavail = regs.w.bx;
 	pagestotal = regs.w.dx;
-	DEBUG_PRINT("\n  %i pages total, %i pages available at loc %p", pagestotal, pagesavail, 0, pageframebase);
+	DEBUG_PRINT("\n  %i pages total, %i pages available at page frame %p", pagestotal, pagesavail, pageframebase);
 
 	if (pagesavail < numPagesToAllocate) {
 		DEBUG_PRINT("\nWarning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);
