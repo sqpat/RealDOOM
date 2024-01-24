@@ -1,5 +1,8 @@
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
 #include <conio.h>
+#endif
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <graph.h>
@@ -42,7 +45,7 @@ void I_ShutdownSound(void)
 // I_ShutdownGraphics
 //
 void I_ShutdownGraphics(void) {
-	if (*(byte far*)0x449 == 0x13) // don't reset mode if it didn't get set
+	if (*(byte __far*)0x449 == 0x13) // don't reset mode if it didn't get set
 	{
 		regs.w.ax = 3;
 		intx86(0x10, &regs, &regs); // back to text mode
@@ -129,7 +132,7 @@ void I_ShutdownKeyboard(void)
 {
 	if (oldkeyboardisr)
 		_dos_setvect(KEYBOARDINT, oldkeyboardisr);
-	*(int16_t far*)0x41c = *(int16_t far*)0x41a;      // clear bios key buffer
+	*(int16_t __far*)0x41c = *(int16_t __far*)0x41a;      // clear bios key buffer
 }
  
 
@@ -151,7 +154,7 @@ void I_ShutdownMouse(void)
 
 extern int16_t emshandle;
 extern uint16_t UMBbase;
-extern byte far* conventional_far_bytes = NULL;
+extern byte __far* conventional_far_bytes;
 /*
 
 
@@ -289,7 +292,7 @@ void I_Quit(void)
 	
 
 
-	W_CacheLumpNameDirect("ENDOOM", (byte far *)0xb8000000);
+	W_CacheLumpNameDirect("ENDOOM", (byte __far *)0xb8000000);
 	
 
 	regs.w.ax = 0x0200;

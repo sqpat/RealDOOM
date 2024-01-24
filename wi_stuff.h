@@ -39,6 +39,6 @@ void WI_Ticker (void);
 void WI_Drawer (void);
 
 // Setup for an intermission screen.
-void WI_Start(wbstartstruct_t near*	 wbstartstruct);
+void WI_Start(wbstartstruct_t __near*	 wbstartstruct);
 
 #endif

@@ -51,9 +51,9 @@ state_t r_cachedstatecopy[2];
 int16_t			validcount = 1;
 
 
-//uint16_t far*		fixedcolormap;
-lighttable_t far*		fixedcolormap;
-extern lighttable_t far*far*	walllights;
+//uint16_t __far*		fixedcolormap;
+lighttable_t __far*		fixedcolormap;
+extern lighttable_t __far*__far*	walllights;
 
 int16_t			centerx;
 int16_t			centery;
@@ -116,7 +116,7 @@ int16_t
 R_PointOnSide
 ( fixed_t_union	x,
   fixed_t_union	y,
-  node_t far*	node )
+  node_t __far*	node )
 {
     fixed_t_union	dx;
     fixed_t_union	dy;
@@ -172,8 +172,8 @@ int16_t
 R_PointOnSegSide
 ( fixed_t_union	x,
   fixed_t_union	y,
-  vertex_t far* v1,
-	vertex_t far* v2)
+  vertex_t __far* v1,
+	vertex_t __far* v2)
 {
     int16_t	lx;
     int16_t	ly;
@@ -589,7 +589,7 @@ int16_t
 ( fixed_t_union	x,
   fixed_t_union	y )
 {
-    node_t far*	node;
+    node_t __far*	node;
     int16_t		side;
     int16_t		nodenum;
     // single subsector is a special case
@@ -641,7 +641,7 @@ void R_SetupFrame ()
     validcount++;
 	// i think this sets the view within the border for when screen size is increased/shrunk
     
-	destview = (byte far*)(destscreen.w + viewwindowoffset);
+	destview = (byte __far*)(destscreen.w + viewwindowoffset);
 
 	/*
 	for (i = 0; i < 4; i++) {

@@ -28,12 +28,12 @@
 extern uint8_t		skytexture;
 
  
-byte far*
+byte __far*
 R_GetColumn
 ( int16_t		tex,
   int16_t		col );
 
-byte far* getspritetexture(int16_t spritelump);
+byte __far* getspritetexture(int16_t spritelump);
 
 #define BAD_TEXTURE 255
 
@@ -42,7 +42,7 @@ void R_InitData (void);
 void R_PrecacheLevel (void);
 
  
-//byte far* R_GetFlat (int16_t flatlump);
+//byte __far* R_GetFlat (int16_t flatlump);
 
 #define TEXTURE_TYPE_PATCH 1
 #define TEXTURE_TYPE_COMPOSITE 2

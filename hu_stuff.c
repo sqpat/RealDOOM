@@ -57,9 +57,9 @@ extern boolean		automapactive;
 void HU_Drawer(void) {
 
 
-	hu_stext_t near* stext = &w_message;
+	hu_stext_t __near* stext = &w_message;
 	int16_t i, index;
-	hu_textline_t near*line;
+	hu_textline_t __near*line;
 	boolean	mapped = false;
 	
 	if (!*stext->on) {
@@ -144,7 +144,7 @@ void HU_Ticker(void) {
 #define QUEUESIZE		128
 
  
-boolean HU_Responder(event_t far *ev)
+boolean HU_Responder(event_t __far *ev)
 {
 
 	boolean eatkey = false;

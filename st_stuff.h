@@ -36,7 +36,7 @@
 //
 
 // Called by main loop.
-boolean ST_Responder (event_t far* ev);
+boolean ST_Responder (event_t __far* ev);
 
 // Called by main loop.
 void ST_Ticker (void);
@@ -261,10 +261,10 @@ typedef enum
 
 // tall % sign
 #define tallpercent  61304u
-#define tallpercent_patch  ((byte far *) 0x7000EF78)
+#define tallpercent_patch  ((byte __far *) 0x7000EF78)
 
-//extern byte far* palettebytes;
-#define palettebytes ((byte far*) 0x90000000)
+//extern byte __far* palettebytes;
+#define palettebytes ((byte __far*) 0x90000000)
 // whether in automap or first-person
 extern st_stateenum_t   st_gamestate;
 
@@ -273,7 +273,7 @@ extern boolean          st_statusbaron;
 
 // main bar left
 #define sbar  44024u
-#define sbar_patch   ((byte far *) 0x7000ABF8)
+#define sbar_patch   ((byte __far *) 0x7000ABF8)
 
 // 0-9, tall numbers
 extern uint16_t         tallnum[10];
@@ -291,7 +291,7 @@ extern uint16_t         faces[ST_NUMFACES];
 // face background
 extern uint16_t         faceback;
 #define  faceback  57152u
-#define  faceback_patch  ((byte far *) 0x7000DF40)
+#define  faceback_patch  ((byte __far *) 0x7000DF40)
 
 
 // main bar right
@@ -300,7 +300,7 @@ extern uint16_t         faceback;
 // weapon ownership patches
 extern uint16_t	arms[6][2];
 
-#define armsbg_patch ((byte far *)0x7000E668u)
+#define armsbg_patch ((byte __far *)0x7000E668u)
 #define armsbg	58984u
 
 

@@ -92,7 +92,7 @@ extern int16_t             numtextures;
 uint8_t     R_CheckTextureNumForName(int8_t *name)
 {
 	uint8_t         i;
-	texture_t far* texture;
+	texture_t __far* texture;
 	int8_t texturename[8];
 	// "NoTexture" marker.
 	if (name[0] == '-')
@@ -100,7 +100,7 @@ uint8_t     R_CheckTextureNumForName(int8_t *name)
 
 
 	for (i = 0; i < numtextures; i++) {
-		texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[i]]);
+		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
 			
 		FAR_strncpy(texturename, texture->name, 8);
 		//DEBUG_PRINT("\n %.8Fs %8s %8s %i %Fp", texture->name, texturename, name, texture->name);

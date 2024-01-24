@@ -52,8 +52,8 @@
 #define    NUMDIRS 9
     
 typedef int8_t dirtype_t;
-extern mobj_t far* setStateReturn;
-extern mobj_pos_t far* setStateReturn_pos;
+extern mobj_t __far* setStateReturn;
+extern mobj_pos_t __far* setStateReturn_pos;
 
 //
 // P_NewChaseDir related LUT.
@@ -73,7 +73,7 @@ dirtype_t diags[] =
 
 
 
-void A_Fall (mobj_t far* mobj, mobj_pos_t far* actor_pos);
+void A_Fall (mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
 
 
 //
@@ -98,12 +98,12 @@ P_RecursiveSound
 	int8_t		soundblocks)
 {
     int16_t		i;
-	line_t far*	check;
-	line_physics_t far* check_physics;
+	line_t __far*	check;
+	line_physics_t __far* check_physics;
     int16_t	othersecnum;
 	int16_t linecount;
-	sector_t far* soundsector = &sectors[secnum];
-	sector_physics_t far* soundsector_physics = &sectors_physics[secnum];
+	sector_t __far* soundsector = &sectors[secnum];
+	sector_physics_t __far* soundsector_physics = &sectors_physics[secnum];
 	int16_t linenumber;
 	uint8_t checkflags;
 	int16_t checksidenum0;
@@ -205,11 +205,11 @@ P_NoiseAlert
 //
 // P_CheckMeleeRange
 //
-boolean P_CheckMeleeRange (mobj_t far* actor)
+boolean P_CheckMeleeRange (mobj_t __far* actor)
 {
-	mobj_t far*	pl;
-	mobj_pos_t far*	pl_pos;
-	mobj_pos_t far*	actor_pos;
+	mobj_t __far*	pl;
+	mobj_pos_t __far*	pl_pos;
+	mobj_pos_t __far*	actor_pos;
 	THINKERREF plRef;
     fixed_t	dist;
 	fixed_t plx;
@@ -226,7 +226,7 @@ boolean P_CheckMeleeRange (mobj_t far* actor)
 	actorY = actor_pos->y.w;
 
 	plRef = actor->targetRef;
-	pl = (mobj_t far*)(&thinkerlist[plRef].data);
+	pl = (mobj_t __far*)(&thinkerlist[plRef].data);
 	pl_pos = &mobjposlist[plRef];
 	plx = pl_pos->x.w;
 	ply = pl_pos->y.w;
@@ -246,16 +246,16 @@ boolean P_CheckMeleeRange (mobj_t far* actor)
 //
 // P_CheckMissileRange
 //
-boolean P_CheckMissileRange (mobj_t far* actor)
+boolean P_CheckMissileRange (mobj_t __far* actor)
 {
     fixed_t_union	disttemp;
 	int16_t dist;
-	mobj_t far* actorTarget;
-	mobj_pos_t far* actorTarget_pos;
+	mobj_t __far* actorTarget;
+	mobj_pos_t __far* actorTarget_pos;
 	fixed_t_union actorTargetx;
 	fixed_t_union actorTargety;
-	mobj_pos_t far*	actor_pos;
-	actorTarget = (mobj_t far*)(&thinkerlist[actor->targetRef].data);
+	mobj_pos_t __far*	actor_pos;
+	actorTarget = (mobj_t __far*)(&thinkerlist[actor->targetRef].data);
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 	actorTarget_pos = GET_MOBJPOS_FROM_MOBJ(actorTarget);
 
@@ -338,7 +338,7 @@ fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
 extern	int16_t	spechit[MAXSPECIALCROSS];
 extern	int16_t	numspechit;
 
-boolean P_Move (mobj_t far* actor, mobj_pos_t far*	actor_pos)
+boolean P_Move (mobj_t __far* actor, mobj_pos_t __far*	actor_pos)
 {
     fixed_t_union	tryx;
     fixed_t_union	tryy;
@@ -428,7 +428,7 @@ boolean P_Move (mobj_t far* actor, mobj_pos_t far*	actor_pos)
 // If a door is in the way,
 // an OpenDoor call is made to start it opening.
 //
-boolean P_TryWalk (mobj_t far*	actor, mobj_pos_t far* actor_pos)
+boolean P_TryWalk (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 {	
     if (!P_Move (actor, actor_pos)) {
 		return false;
@@ -441,7 +441,7 @@ boolean P_TryWalk (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 
 
 
-void P_NewChaseDir (mobj_t far*	actor, mobj_pos_t far* actor_pos)
+void P_NewChaseDir (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 {
     fixed_t_union	deltax;
     fixed_t_union	deltay;
@@ -456,15 +456,15 @@ void P_NewChaseDir (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 	fixed_t_union actorx = actor_pos->x;
 	fixed_t_union actory = actor_pos->y;
 
-	mobj_t far* actorTarget;
-	mobj_pos_t far* actorTarget_pos;
+	mobj_t __far* actorTarget;
+	mobj_pos_t __far* actorTarget_pos;
 
 #ifdef CHECK_FOR_ERRORS
 	if (!actor->targetRef)
 		I_Error ("P_NewChaseDir: called with no target");
 #endif
 	olddir = actor->movedir;
-	actorTarget = (mobj_t far*)(&thinkerlist[actor->targetRef].data);
+	actorTarget = (mobj_t __far*)(&thinkerlist[actor->targetRef].data);
 	actorTarget_pos = GET_MOBJPOS_FROM_MOBJ(actorTarget);
     turnaround=opposite[olddir];
 
@@ -578,12 +578,12 @@ void P_NewChaseDir (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 //
 boolean
 P_LookForPlayers
-(mobj_t far*	actor,
+(mobj_t __far*	actor,
   boolean	allaround )
 {
     angle_t	an;
     fixed_t_union	dist;
-	mobj_pos_t far* actor_pos;
+	mobj_pos_t __far* actor_pos;
 
  	if (player.health <= 0)
 		return false;		// dead
@@ -615,10 +615,10 @@ P_LookForPlayers
 // DOOM II special, map 32.
 // Uses special tag 666.
 //
-void A_KeenDie (mobj_t far* mo, mobj_pos_t far* mo_pos)
+void A_KeenDie (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 {
     THINKERREF	th;
-    mobj_t far*	mo2;
+    mobj_t __far*	mo2;
 	mobjtype_t motype = mo->type;
 	THINKERREF moRef = GETTHINKERREF(mo);
     A_Fall (mo, mo_pos);
@@ -630,7 +630,7 @@ void A_KeenDie (mobj_t far* mo, mobj_pos_t far* mo_pos)
 			continue;
 		}
 
-		mo2 = (mobj_t  far*)&thinkerlist[th].data;
+		mo2 = (mobj_t  __far*)&thinkerlist[th].data;
 		if (th != moRef && mo2->type == motype && mo2->health > 0) {
 			// other Keen not dead
 			return;		
@@ -649,9 +649,9 @@ void A_KeenDie (mobj_t far* mo, mobj_pos_t far* mo_pos)
 // A_Look
 // Stay in state until a player is sighted.
 //
-void A_Look (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_Look (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
-    mobj_t far*	targ;
+    mobj_t __far*	targ;
 	THINKERREF targRef;
 	int16_t actorsecnum = actor->secnum;
 	actor->threshold = 0;	// any shot will wake up
@@ -659,7 +659,7 @@ void A_Look (mobj_t far* actor, mobj_pos_t far* actor_pos)
 
 	#ifdef RANGECHECK
 		if (actorsecnum > numsectors) {
-			actor = (mobj_t far*)(&thinkerlist[actorRef].data);
+			actor = (mobj_t __far*)(&thinkerlist[actorRef].data);
 		}
 	#endif
     targRef = sectors_physics[actorsecnum].soundtraversed ? playerMobjRef : 0;
@@ -667,9 +667,9 @@ void A_Look (mobj_t far* actor, mobj_pos_t far* actor_pos)
 
 	if (targRef) {
 
-		mobj_pos_t far* targ_pos = &mobjposlist[targRef];
+		mobj_pos_t __far* targ_pos = &mobjposlist[targRef];
 
-		targ = (mobj_t far*)(&thinkerlist[targRef].data);
+		targ = (mobj_t __far*)(&thinkerlist[targRef].data);
 		if (targ_pos->flags & MF_SHOOTABLE) {
 
 			actor->targetRef = targRef;
@@ -752,14 +752,14 @@ uint16_t movedirangles[8] = {
 // Actor has a melee attack,
 // so it tries to close as fast as possible
 //
-void A_Chase (mobj_t far*	actor, mobj_pos_t far* actor_pos)
+void A_Chase (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 {
 	
 	THINKERREF actortargetRef = actor->targetRef;
 	int16_t delta;
 	uint8_t sound;
-	mobj_t far*	actorTarget = (mobj_t far*)(&thinkerlist[actortargetRef].data);
-	mobj_pos_t far*	actorTarget_pos = &mobjposlist[actortargetRef];
+	mobj_t __far*	actorTarget = (mobj_t __far*)(&thinkerlist[actortargetRef].data);
+	mobj_pos_t __far*	actorTarget_pos = &mobjposlist[actortargetRef];
 	
     if (actor->reactiontime)
 		actor->reactiontime--;
@@ -886,10 +886,10 @@ void A_Chase (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 //
 // A_FaceTarget
 //
-void A_FaceTarget (mobj_t far* actor)
+void A_FaceTarget (mobj_t __far* actor)
 {	
-	mobj_pos_t far* actorTarget_pos;
-	mobj_pos_t far* actor_pos;
+	mobj_pos_t __far* actorTarget_pos;
+	mobj_pos_t __far* actor_pos;
 	int8_t actorTargetShadow;
 	uint16_t temp;
     if (!actor->targetRef)
@@ -921,12 +921,12 @@ void A_FaceTarget (mobj_t far* actor)
 //
 // A_PosAttack
 //
-void A_PosAttack (mobj_t far* actor)
+void A_PosAttack (mobj_t __far* actor)
 {
     fineangle_t		angle;
     int16_t		damage;
     fixed_t		slope;
-	mobj_pos_t far* actor_pos;
+	mobj_pos_t __far* actor_pos;
 
     if (!actor->targetRef)
 		return;
@@ -943,14 +943,14 @@ void A_PosAttack (mobj_t far* actor)
 	P_LineAttack (actor, angle, MISSILERANGE, slope, damage);
 }
 
-void A_SPosAttack (mobj_t far*	actor)
+void A_SPosAttack (mobj_t __far*	actor)
 {
     int8_t		i;
     fineangle_t		angle;
     fineangle_t		bangle;
     int8_t		damage;
     fixed_t		slope;
-	mobj_pos_t far* actor_pos;
+	mobj_pos_t __far* actor_pos;
 
     if (!actor->targetRef)
 		return;
@@ -969,13 +969,13 @@ void A_SPosAttack (mobj_t far*	actor)
     }
 }
 
-void A_CPosAttack (mobj_t far*	actor)
+void A_CPosAttack (mobj_t __far*	actor)
 {
     fineangle_t		angle;
     fineangle_t		bangle;
     int8_t		damage;
     fixed_t		slope;
-	mobj_pos_t far* actor_pos;
+	mobj_pos_t __far* actor_pos;
 
     if (!actor->targetRef)
 		return;
@@ -992,10 +992,10 @@ void A_CPosAttack (mobj_t far*	actor)
     P_LineAttack (actor, angle, MISSILERANGE, slope, damage);
 }
 
-void A_CPosRefire (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_CPosRefire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {	
     // keep firing unless target got out of sight
-	mobj_t far* actorTarget;
+	mobj_t __far* actorTarget;
 	THINKERREF actortargetRef;
 	A_FaceTarget (actor);
 	
@@ -1006,7 +1006,7 @@ void A_CPosRefire (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	if (!actortargetRef)
 		return;
 
-	actorTarget = (mobj_t far*)(&thinkerlist[actortargetRef].data);
+	actorTarget = (mobj_t __far*)(&thinkerlist[actortargetRef].data);
     if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actor, actorTarget, actor_pos, GET_MOBJPOS_FROM_MOBJ(actorTarget))) {
 
 		P_SetMobjState (actor, getSeeState(actor->type));
@@ -1014,10 +1014,10 @@ void A_CPosRefire (mobj_t far* actor, mobj_pos_t far* actor_pos)
 }
 
 
-void A_SpidRefire (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_SpidRefire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {	
     // keep firing unless target got out of sight
-	mobj_t far* actorTarget;
+	mobj_t __far* actorTarget;
 	THINKERREF 	actortargetRef;
 	A_FaceTarget (actor);
 
@@ -1031,14 +1031,14 @@ void A_SpidRefire (mobj_t far* actor, mobj_pos_t far* actor_pos)
 		return;
 	}
 
-	actorTarget = (mobj_t far*)(&thinkerlist[actortargetRef].data);
+	actorTarget = (mobj_t __far*)(&thinkerlist[actortargetRef].data);
 
     if (!actortargetRef || actorTarget->health <= 0 || !P_CheckSight(actor, actorTarget, actor_pos, GET_MOBJPOS_FROM_MOBJ(actorTarget))) {
 		P_SetMobjState (actor, getSeeState(actor->type));
     }
 }
 
-void A_BspiAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_BspiAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {	
 	if (!actor->targetRef) {
 		return;
@@ -1055,7 +1055,7 @@ void A_BspiAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 //
 // A_TroopAttack
 //
-void A_TroopAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_TroopAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
     int16_t		damage;
 
@@ -1079,7 +1079,7 @@ void A_TroopAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 }
 
 
-void A_SargAttack (mobj_t far* actor)
+void A_SargAttack (mobj_t __far* actor)
 {
     int16_t		damage;
 	
@@ -1097,7 +1097,7 @@ void A_SargAttack (mobj_t far* actor)
     }
 }
 
-void A_HeadAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_HeadAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
     int16_t		damage;
 
@@ -1118,7 +1118,7 @@ void A_HeadAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
     P_SpawnMissile (actor, actor_pos, (&thinkerlist[actor->targetRef].data), MT_HEADSHOT);
 }
 
-void A_CyberAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_CyberAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {	
 
     if (!actor->targetRef)
@@ -1130,7 +1130,7 @@ void A_CyberAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 }
 
 
-void A_BruisAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_BruisAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
     int16_t		damage;
 
@@ -1154,10 +1154,10 @@ void A_BruisAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 //
 // A_SkelMissile
 //
-void A_SkelMissile (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_SkelMissile (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {	
-	mobj_t far*	mo;
-	mobj_pos_t far*	mo_pos;
+	mobj_t __far*	mo;
+	mobj_pos_t __far*	mo_pos;
 	THINKERREF moRef;
 	THINKERREF actortargetRef;
  
@@ -1181,19 +1181,19 @@ void A_SkelMissile (mobj_t far* actor, mobj_pos_t far* actor_pos)
 
 #define	TRACEANGLE 0xc000000
 
-void A_Tracer (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
     angle_t	exact;
 	fineangle_t fineexact;
 	fixed_t	dist;
     fixed_t	slope;
-    mobj_t far*	dest;
-    mobj_t far*	th;
+    mobj_t __far*	dest;
+    mobj_t __far*	th;
 	THINKERREF thRef;
 	fixed_t destz;
 	fixed_t actorspeed;
 	
-	mobj_pos_t far*	dest_pos;
+	mobj_pos_t __far*	dest_pos;
 
 	if (gametic & 3)
 		return;
@@ -1221,7 +1221,7 @@ void A_Tracer (mobj_t far* actor, mobj_pos_t far* actor_pos)
 	}
 
     // adjust direction
-    dest = (mobj_t far*)(&thinkerlist[actor->tracerRef].data);
+    dest = (mobj_t __far*)(&thinkerlist[actor->tracerRef].data);
  
     if (!dest || dest->health <= 0)
 		return;
@@ -1249,7 +1249,7 @@ void A_Tracer (mobj_t far* actor, mobj_pos_t far* actor_pos)
     actor->momx.w = FixedMulTrig(actorspeed, finecosine[fineexact]);
     actor->momy.w = FixedMulTrig(actorspeed, finesine[fineexact]);
 	
-	dest = (mobj_t far*)(&thinkerlist[actor->tracerRef].data);
+	dest = (mobj_t __far*)(&thinkerlist[actor->tracerRef].data);
 	dest_pos = &mobjposlist[actor->tracerRef];
 	destz = dest_pos->z.w;
 
@@ -1273,7 +1273,7 @@ void A_Tracer (mobj_t far* actor, mobj_pos_t far* actor_pos)
 }
 
 
-void A_SkelWhoosh (mobj_t far* actor)
+void A_SkelWhoosh (mobj_t __far* actor)
 {
     if (!actor->targetRef)
 		return;
@@ -1283,7 +1283,7 @@ void A_SkelWhoosh (mobj_t far* actor)
 	S_StartSoundFromRef(actor,sfx_skeswg);
 }
 
-void A_SkelFist (mobj_t far* actor)
+void A_SkelFist (mobj_t __far* actor)
 {
     int16_t		damage;
     if (!actor->targetRef)
@@ -1308,11 +1308,11 @@ void A_SkelFist (mobj_t far* actor)
 // Detect a corpse that could be raised.
 //
 THINKERREF		corpsehitRef;
-mobj_t far*		vileobj;
+mobj_t __far*		vileobj;
 fixed_t_union		viletryx;
 fixed_t_union		viletryy;
 
-boolean PIT_VileCheck (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* thing_pos)
+boolean PIT_VileCheck (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
 	fixed_t_union				maxdist;
     boolean	check;
@@ -1356,7 +1356,7 @@ boolean PIT_VileCheck (THINKERREF thingRef, mobj_t far*	thing, mobj_pos_t far* t
 // A_VileChase
 // Check for ressurecting a body
 //
-void A_VileChase (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_VileChase (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
     int16_t			xl;
     int16_t			xh;
@@ -1366,13 +1366,13 @@ void A_VileChase (mobj_t far* actor, mobj_pos_t far* actor_pos)
     int16_t			bx;
     int16_t			by;
 
-    mobjinfo_t far*		info;
+    mobjinfo_t __far*		info;
 	fixed_t_union   coord;
 	THINKERREF		temp;
-	mobj_t far*	corpsehit;
+	mobj_t __far*	corpsehit;
 	coord.h.fracbits = 0;
     if (actor->movedir != DI_NODIR) {
-		mobj_pos_t far* corpsehit_pos;
+		mobj_pos_t __far* corpsehit_pos;
 		// check for corpses to raise
 		viletryx.w = actor_pos->x.w + mobjinfo[actor->type].speed*xspeed[actor->movedir];
 		viletryy.w = actor_pos->y.w + mobjinfo[actor->type].speed*yspeed[actor->movedir];
@@ -1404,7 +1404,7 @@ void A_VileChase (mobj_t far* actor, mobj_pos_t far* actor_pos)
 				P_SetMobjState (actor, S_VILE_HEAL1);
 				//actor = setStateReturn;
 
-				corpsehit = (mobj_t far*)(&thinkerlist[corpsehitRef].data);
+				corpsehit = (mobj_t __far*)(&thinkerlist[corpsehitRef].data);
 				corpsehit_pos = &mobjposlist[corpsehitRef];
 				S_StartSoundFromRef(corpsehit, sfx_slop);
 				info = &mobjinfo[corpsehit->type];
@@ -1430,7 +1430,7 @@ void A_VileChase (mobj_t far* actor, mobj_pos_t far* actor_pos)
 //
 // A_VileStart
 //
-void A_VileStart (mobj_t far* actor)
+void A_VileStart (mobj_t __far* actor)
 {
 	S_StartSoundFromRef(actor, sfx_vilatk);
 }
@@ -1440,26 +1440,26 @@ void A_VileStart (mobj_t far* actor)
 // A_Fire
 // Keep fire in front of player unless out of sight
 //
-void A_Fire (mobj_t far* actor, mobj_pos_t far* actor_pos);
+void A_Fire (mobj_t __far* actor, mobj_pos_t __far* actor_pos);
 
-void A_StartFire (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_StartFire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
 	S_StartSoundFromRef(actor,sfx_flamst);
     A_Fire( actor, actor_pos);
 }
 
-void A_FireCrackle (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_FireCrackle (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
 	S_StartSoundFromRef(actor,sfx_flame);
     A_Fire( actor, actor_pos);
 }
 
-void A_Fire (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_Fire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
 	THINKERREF	destRef;
 	fineangle_t	an;
-	mobj_t far* dest;
-	mobj_pos_t far* dest_pos;
+	mobj_t __far* dest;
+	mobj_pos_t __far* dest_pos;
 	
 
     destRef = actor->tracerRef;
@@ -1467,7 +1467,7 @@ void A_Fire (mobj_t far* actor, mobj_pos_t far* actor_pos)
 		return;
 		
     // don't move it if the vile lost sight
-	dest = (mobj_t far*)(&thinkerlist[destRef].data);
+	dest = (mobj_t __far*)(&thinkerlist[destRef].data);
 	dest_pos = &mobjposlist[destRef];
 	if (!P_CheckSight ((&thinkerlist[actor->targetRef].data), dest, &mobjposlist[actor->targetRef], dest_pos) )
 		return;
@@ -1490,11 +1490,11 @@ void A_Fire (mobj_t far* actor, mobj_pos_t far* actor_pos)
 // A_VileTarget
 // Spawn the hellfire
 //
-void A_VileTarget (mobj_t far* actor)
+void A_VileTarget (mobj_t __far* actor)
 {
-	mobj_t far* actorTarget;
-	mobj_t far* fog;
-	mobj_pos_t far* actorTarget_pos;
+	mobj_t __far* actorTarget;
+	mobj_t __far* fog;
+	mobj_pos_t __far* actorTarget_pos;
 	THINKERREF fogRef;
 	THINKERREF actortargetRef;
 	if (!actor->targetRef)
@@ -1503,7 +1503,7 @@ void A_VileTarget (mobj_t far* actor)
     A_FaceTarget (actor);
 
 	actortargetRef = actor->targetRef;
-	actorTarget = (mobj_t far*)(&thinkerlist[actor->targetRef].data);
+	actorTarget = (mobj_t __far*)(&thinkerlist[actor->targetRef].data);
 	actorTarget_pos = &mobjposlist[actor->targetRef];
     fogRef = P_SpawnMobj (actorTarget_pos->x.w,
 		actorTarget_pos->y.w,
@@ -1523,20 +1523,20 @@ void A_VileTarget (mobj_t far* actor)
 //
 // A_VileAttack
 //
-void A_VileAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {	
 	THINKERREF	fireRef;
     uint16_t		an;
-	mobj_t far* actorTarget;
-	mobj_t far* fire;
-	mobj_pos_t far* actorTarget_pos;
-	mobj_pos_t far* fire_pos;
+	mobj_t __far* actorTarget;
+	mobj_t __far* fire;
+	mobj_pos_t __far* actorTarget_pos;
+	mobj_pos_t __far* fire_pos;
 	if (!actor->targetRef)
 		return;
 	actorTarget_pos = &mobjposlist[actor->targetRef];
 
     A_FaceTarget (actor);
-	actorTarget = (mobj_t far*)(&thinkerlist[actor->targetRef].data);
+	actorTarget = (mobj_t __far*)(&thinkerlist[actor->targetRef].data);
 	if (!P_CheckSight(actor, actorTarget, actor_pos, actorTarget_pos))
 		return;
 	S_StartSoundFromRef (actor, sfx_barexp);
@@ -1552,7 +1552,7 @@ void A_VileAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 		return;
 		
 
-	fire = (mobj_t far*)(&thinkerlist[fireRef].data);
+	fire = (mobj_t __far*)(&thinkerlist[fireRef].data);
 	fire_pos = &mobjposlist[fireRef];
 	// move the fire between the vile and the player
 	//todo isnt this just multiplied by 24?
@@ -1572,17 +1572,17 @@ void A_VileAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 //
 #define	FATSPREAD	(ANG90/8)
 
-void A_FatRaise (mobj_t far*	actor)
+void A_FatRaise (mobj_t __far*	actor)
 {
     A_FaceTarget (actor);
 	S_StartSoundFromRef (actor, sfx_manatk);
 }
 
 
-void A_FatAttack1 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
+void A_FatAttack1 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 {
-	mobj_t far*	mo;
-	mobj_pos_t far*	mo_pos;
+	mobj_t __far*	mo;
+	mobj_pos_t __far*	mo_pos;
     uint16_t		an;
 	THINKERREF moRef;
 
@@ -1592,7 +1592,7 @@ void A_FatAttack1 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
     P_SpawnMissile (actor, actor_pos, (&thinkerlist[actor->targetRef].data), MT_FATSHOT);
 
     moRef = P_SpawnMissile (actor, actor_pos, (&thinkerlist[actor->targetRef].data), MT_FATSHOT);
-	mo = (mobj_t far*)(&thinkerlist[moRef].data);
+	mo = (mobj_t __far*)(&thinkerlist[moRef].data);
 	mo_pos = &mobjposlist[moRef];
 	mo_pos->angle.wu += FATSPREAD;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
@@ -1600,13 +1600,13 @@ void A_FatAttack1 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
     mo->momy.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine[an]);
 }
 
-void A_FatAttack2 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
+void A_FatAttack2 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 {
-    mobj_t far*	mo;
+    mobj_t __far*	mo;
     fineangle_t		an;
 	THINKERREF moRef;
 	THINKERREF actortargetRef;
-	mobj_pos_t far*	mo_pos;
+	mobj_pos_t __far*	mo_pos;
 
 	A_FaceTarget (actor);
 	// Now here choose opposite deviation.
@@ -1623,14 +1623,14 @@ void A_FatAttack2 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
     mo->momy.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine[an]);
 }
 
-void A_FatAttack3 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
+void A_FatAttack3 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 {
-    mobj_t far*	mo;
+    mobj_t __far*	mo;
     fineangle_t		an;
 	THINKERREF moRef;
 	THINKERREF actortargetRef;
 	fixed_t mospeed;
-	mobj_pos_t far*	mo_pos;
+	mobj_pos_t __far*	mo_pos;
 	A_FaceTarget(actor);
 	actortargetRef = actor->targetRef;
 
@@ -1661,13 +1661,13 @@ void A_FatAttack3 (mobj_t far*	actor, mobj_pos_t far* actor_pos)
 //
 #define	SKULLSPEED		(20*FRACUNIT)
 
-void A_SkullAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_SkullAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
-    mobj_t far*		dest;
+    mobj_t __far*		dest;
 	THINKERREF		destRef;
     fineangle_t		an;
     fixed_t			dist;
-	mobj_pos_t far* dest_pos;
+	mobj_pos_t __far* dest_pos;
 	
 
 	if (!actor->targetRef) {
@@ -1680,7 +1680,7 @@ void A_SkullAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 
 	S_StartSoundFromRef(actor, getAttackSound(actor->type));
 	A_FaceTarget(actor);
-	dest = (mobj_t far*)(&thinkerlist[destRef].data);
+	dest = (mobj_t __far*)(&thinkerlist[destRef].data);
 	dest_pos = &mobjposlist[destRef];
     an = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
     actor->momx.w = FixedMulTrig(SKULLSPEED, finecosine[an]);
@@ -1701,14 +1701,14 @@ void A_SkullAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 //
 void
 A_PainShootSkull
-(mobj_t far* actor,
+(mobj_t __far* actor,
   angle_t	angle )
 {
     fixed_t	x;
     fixed_t	y;
     fixed_t_union	z;
     
-    mobj_t far*	newmobj;
+    mobj_t __far*	newmobj;
     fineangle_t	an;
     fixed_t_union	prestep;
     int16_t		count;
@@ -1716,8 +1716,8 @@ A_PainShootSkull
 	THINKERREF newmobjRef;
 	THINKERREF actortargetRef;
 	int16_t radii;
-	mobj_pos_t far* actor_pos;
-	mobj_pos_t far* newmobj_pos;
+	mobj_pos_t __far* actor_pos;
+	mobj_pos_t __far* newmobj_pos;
 
 	
 	// count total number of skull currently on the level
@@ -1726,7 +1726,7 @@ A_PainShootSkull
     currentthinker = thinkerlist[0].next;
     while (currentthinker != 0) {
 		if (((thinkerlist[currentthinker].prevFunctype & TF_FUNCBITS) == TF_MOBJTHINKER_HIGHBITS)
-			&& ((mobj_t  far*)&thinkerlist[currentthinker])->type == MT_SKULL) {
+			&& ((mobj_t  __far*)&thinkerlist[currentthinker])->type == MT_SKULL) {
 			count++;
 		}
 		if (count > 20) {
@@ -1781,7 +1781,7 @@ A_PainShootSkull
 // A_PainAttack
 // Spawn a lost soul and launch it at the target
 // 
-void A_PainAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_PainAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
     if (!actor->targetRef)
 		return;
@@ -1791,7 +1791,7 @@ void A_PainAttack (mobj_t far* actor, mobj_pos_t far* actor_pos)
 }
 
 
-void A_PainDie (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_PainDie (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
 	angle_t actorangle = actor_pos->angle;
     A_Fall (actor, actor_pos);
@@ -1804,7 +1804,7 @@ void A_PainDie (mobj_t far* actor, mobj_pos_t far* actor_pos)
 
 }
 
-void A_Scream (mobj_t far* actor)
+void A_Scream (mobj_t __far* actor)
 {
     uint8_t		sound;
 	
@@ -1839,20 +1839,20 @@ void A_Scream (mobj_t far* actor)
 }
 
 
-void A_XScream (mobj_t far* actor)
+void A_XScream (mobj_t __far* actor)
 {
 
 	S_StartSoundFromRef(actor, sfx_slop);
 }
 
-void A_Pain (mobj_t far* actor)
+void A_Pain (mobj_t __far* actor)
 {
 	S_StartSoundFromRef(actor, getPainSound(actor->type));
 }
 
 
 
-void A_Fall (mobj_t far* actor, mobj_pos_t far* actor_pos)
+void A_Fall (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
 	// actor is on ground, it can be walked over
     actor_pos->flags &= ~MF_SOLID;
@@ -1865,10 +1865,10 @@ void A_Fall (mobj_t far* actor, mobj_pos_t far* actor_pos)
 //
 // A_Explode
 //
-void A_Explode (mobj_t far* thingy, mobj_pos_t far* thingy_pos)
+void A_Explode (mobj_t __far* thingy, mobj_pos_t __far* thingy_pos)
 {
 	
-    P_RadiusAttack ( thingy, thingy_pos, (mobj_t far*)&thinkerlist[ thingy->targetRef].data, 128 );
+    P_RadiusAttack ( thingy, thingy_pos, (mobj_t __far*)&thinkerlist[ thingy->targetRef].data, 128 );
 
 }
 
@@ -1878,10 +1878,10 @@ void A_Explode (mobj_t far* thingy, mobj_pos_t far* thingy_pos)
 // Possibly trigger special effects
 // if on first boss level
 //
-void A_BossDeath (mobj_t far* mo)
+void A_BossDeath (mobj_t __far* mo)
 {
     THINKERREF	th;
-    mobj_t far*	mo2;
+    mobj_t __far*	mo2;
 	THINKERREF moRef;
 	
 	mobjtype_t motype = mo->type;
@@ -1972,7 +1972,7 @@ void A_BossDeath (mobj_t far* mo)
 	if ((thinkerlist[th].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS)
 	    continue;
 	
-	mo2 = (mobj_t  far*)&thinkerlist[th].data;
+	mo2 = (mobj_t  __far*)&thinkerlist[th].data;
 	if (th != moRef
 	    && mo2->type == motype
 	    && mo2->health > 0)
@@ -2029,19 +2029,19 @@ void A_BossDeath (mobj_t far* mo)
 }
 
 
-void A_Hoof(mobj_t far* mobj, mobj_pos_t far* mobj_pos)
+void A_Hoof(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
 {
 	S_StartSoundFromRef(mobj, sfx_hoof);
     A_Chase (mobj, mobj_pos);
 }
 
-void A_Metal (mobj_t far* mobj, mobj_pos_t far* mobj_pos)
+void A_Metal (mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
 {
 	S_StartSoundFromRef(mobj, sfx_metal);
 	A_Chase(mobj, mobj_pos);
 }
 
-void A_BabyMetal (mobj_t far* mobj, mobj_pos_t far* mobj_pos)
+void A_BabyMetal (mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
 {
 	S_StartSoundFromRef(mobj, sfx_bspwlk);
 	A_Chase(mobj, mobj_pos);
@@ -2050,7 +2050,7 @@ void A_BabyMetal (mobj_t far* mobj, mobj_pos_t far* mobj_pos)
 void
 A_OpenShotgun2
 ( 
-  pspdef_t near*	psp )
+  pspdef_t __near*	psp )
 {
 	S_StartSoundFromRef(playerMobj, sfx_dbopn);
 }
@@ -2058,7 +2058,7 @@ A_OpenShotgun2
 void
 A_LoadShotgun2
 ( 
-  pspdef_t near*	psp )
+  pspdef_t __near*	psp )
 {
 	S_StartSoundFromRef(playerMobj, sfx_dbload);
 }
@@ -2066,12 +2066,12 @@ A_LoadShotgun2
 void
 A_ReFire
 ( 
-  pspdef_t near*	psp );
+  pspdef_t __near*	psp );
 
 void
 A_CloseShotgun2
 ( 
-  pspdef_t near*	psp )
+  pspdef_t __near*	psp )
 {
     S_StartSoundFromRef (playerMobj, sfx_dbcls);
     A_ReFire(psp);
@@ -2086,7 +2086,7 @@ int16_t		braintargeton;
 void A_BrainAwake ()
 {
     THINKERREF	thinkerRef;
-	mobj_t far* m;
+	mobj_t __far* m;
     // find all the target spots
     numbraintargets = 0;
     braintargeton = 0;
@@ -2100,7 +2100,7 @@ void A_BrainAwake ()
 	if ((thinkerlist[thinkerRef].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS)
 	    continue;	// not a mobj
 
-	m = (mobj_t far*)&thinkerlist[thinkerRef].data;
+	m = (mobj_t __far*)&thinkerlist[thinkerRef].data;
 
 
 	if (m->type == MT_BOSSTARGET )
@@ -2120,12 +2120,12 @@ void A_BrainPain ()
 }
 
 
-void A_BrainScream (mobj_t far* mo, mobj_pos_t far* mo_pos)
+void A_BrainScream (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 {
     fixed_t_union		x = mo_pos->x;
 	fixed_t_union		y;
 	fixed_t_union		z;
-    mobj_t far*	th;
+    mobj_t __far*	th;
 	THINKERREF thRef;
 	z.h.fracbits = 0;
 	x.h.intbits -= 196;
@@ -2153,12 +2153,12 @@ void A_BrainScream (mobj_t far* mo, mobj_pos_t far* mo_pos)
 
 
 
-void A_BrainExplode (mobj_t far*mo, mobj_pos_t far* mo_pos)
+void A_BrainExplode (mobj_t __far*mo, mobj_pos_t __far* mo_pos)
 {
     fixed_t		x;
     fixed_t		y;
     fixed_t_union		z;
-    mobj_t far*	th;
+    mobj_t __far*	th;
 	THINKERREF thRef;
 	
 
@@ -2185,17 +2185,17 @@ void A_BrainDie ()
     G_ExitLevel ();
 }
 
-void A_BrainSpit (mobj_t far* mo, mobj_pos_t far* mo_pos)
+void A_BrainSpit (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 {
 	THINKERREF targRef;
 	THINKERREF newmobjRef;
-    mobj_t far*	newmobj;
+    mobj_t __far*	newmobj;
 	
-	mobj_t far* targ;
+	mobj_t __far* targ;
 	fixed_t moy;
 	fixed_t targy;
-	mobj_pos_t far* targ_pos;
-	mobj_pos_t far* newmobj_pos;
+	mobj_pos_t __far* targ_pos;
+	mobj_pos_t __far* newmobj_pos;
 
     static int16_t	easy = 0;
 	
@@ -2209,7 +2209,7 @@ void A_BrainSpit (mobj_t far* mo, mobj_pos_t far* mo_pos)
 
 
 
-	targ = (mobj_t far*)&thinkerlist[targRef].data;
+	targ = (mobj_t __far*)&thinkerlist[targRef].data;
 	targ_pos = &mobjposlist[targRef];
 	targy = targ_pos->y.w;
 	moy = mo_pos->y.w;
@@ -2226,26 +2226,26 @@ void A_BrainSpit (mobj_t far* mo, mobj_pos_t far* mo_pos)
 
 
 
-void A_SpawnFly (mobj_t far* mo, mobj_pos_t far* mo_pos);
+void A_SpawnFly (mobj_t __far* mo, mobj_pos_t __far* mo_pos);
 
 // travelling cube sound
-void A_SpawnSound (mobj_t far* mobj, mobj_pos_t far* mo_pos)
+void A_SpawnSound (mobj_t __far* mobj, mobj_pos_t __far* mo_pos)
 {
 	S_StartSoundFromRef(mobj,sfx_boscub);
     A_SpawnFly(mobj, mo_pos);
 }
 
-void A_SpawnFly (mobj_t far* mo, mobj_pos_t far* mo_pos)
+void A_SpawnFly (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 {
-    mobj_t far*	newmobj;
-    mobj_t far*	targ;
+    mobj_t __far*	newmobj;
+    mobj_t __far*	targ;
     uint8_t		r;
     mobjtype_t	type;
 	THINKERREF targRef;
 	THINKERREF newmobjRef;
 	THINKERREF fogRef;
-	mobj_pos_t far* newmobj_pos;
-	mobj_pos_t far* targ_pos;
+	mobj_pos_t __far* newmobj_pos;
+	mobj_pos_t __far* targ_pos;
 
 	
 
@@ -2254,7 +2254,7 @@ void A_SpawnFly (mobj_t far* mo, mobj_pos_t far* mo_pos)
 		return;	// still flying
 	
     targRef = mo->targetRef;
-	targ = (mobj_t far*)&thinkerlist[targRef].data;
+	targ = (mobj_t __far*)&thinkerlist[targRef].data;
 	targ_pos = &mobjposlist[targRef];
     // First spawn teleport fog.
     fogRef = P_SpawnMobj (targ_pos->x.w, targ_pos->y.w, targ_pos->z.w, MT_SPAWNFIRE, targ->secnum);
@@ -2290,7 +2290,7 @@ void A_SpawnFly (mobj_t far* mo, mobj_pos_t far* mo_pos)
 
 
     newmobjRef	= P_SpawnMobj (targ_pos->x.w, targ_pos->y.w, targ_pos->z.w, type, targ->secnum);
-	newmobj = (mobj_t far*)&thinkerlist[newmobjRef].data;
+	newmobj = (mobj_t __far*)&thinkerlist[newmobjRef].data;
 	newmobj_pos = &mobjposlist[newmobjRef];
 	if (P_LookForPlayers(newmobj, true)) {
 		P_SetMobjState(newmobj, getSeeState(newmobj->type));
@@ -2306,7 +2306,7 @@ void A_SpawnFly (mobj_t far* mo, mobj_pos_t far* mo_pos)
 
 
 void A_PlayerScream () {
-	// mobj_t far* mo = (mobj_t far*)(&thinkerlist[moRef].data);
+	// mobj_t __far* mo = (mobj_t __far*)(&thinkerlist[moRef].data);
     // Default death sound.
     uint8_t		sound = sfx_pldeth;
 	

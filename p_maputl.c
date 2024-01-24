@@ -223,7 +223,7 @@ P_PointOnDivlineSide
     fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
-	divline_t near*	line = &trace;
+	divline_t __near*	line = &trace;
 	
     if (!line->dx.w)
     {
@@ -274,7 +274,7 @@ P_PointOnDivlineSide16
 	fixed_t_union	dy;
     fixed_t	left;
     fixed_t	right;
-	divline_t near*	line = &trace;
+	divline_t __near*	line = &trace;
 	fixed_t_union temp;
 	
     if (!line->dx.w) {
@@ -323,12 +323,12 @@ P_PointOnDivlineSide16
 //
 fixed_t
 P_InterceptVector
-( divline_t near*	v1 )
+( divline_t __near*	v1 )
 {
     fixed_t	frac;
     fixed_t	num;
     fixed_t	den;
-	divline_t near*	v2 = &trace;
+	divline_t __near*	v2 = &trace;
 	
     den = FixedMul2432 (v1->dy.w>>8,v2->dx.w) - 
 		FixedMul2432(v1->dx.w >>8,v2->dy.w);
@@ -366,8 +366,8 @@ void P_LoadLineOpening(int16_t linenum) {
 		int16_t linefrontsecnum = lines_physics[linenum].frontsecnum;
 		int16_t linebacksecnum = lines_physics[linenum].backsecnum;
 
-		sector_t far* front = &sectors[linefrontsecnum];
-		sector_t far* back = &sectors[linebacksecnum];
+		sector_t __far* front = &sectors[linefrontsecnum];
+		sector_t __far* back = &sectors[linebacksecnum];
 	 
 
 
@@ -427,8 +427,8 @@ void P_UpdateLineOpening(int16_t secnum, boolean changedFloor) {
 #else
 
 void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {
-	sector_t far*	front;
-    sector_t far*	back;
+	sector_t __far*	front;
+    sector_t __far*	back;
     if (lineside1 == -1) {
 		// single sided line
  		return;
@@ -467,12 +467,12 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void P_UnsetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos)
+void P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos)
 {
     int16_t		blockx;
     int16_t		blocky;
-	mobj_t far* changeThing;
-	mobj_pos_t far* changeThing_pos;
+	mobj_t __far* changeThing;
+	mobj_pos_t __far* changeThing_pos;
 
 	THINKERREF nextRef;
 	THINKERREF thingsprevRef = thing->sprevRef;
@@ -488,7 +488,7 @@ void P_UnsetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos)
 		// inert things don't need to be in blockmap?
 		// unlink from subsector
 		if (thingsnextRef) {
-			changeThing = (mobj_t far*)&thinkerlist[thingsnextRef].data;
+			changeThing = (mobj_t __far*)&thinkerlist[thingsnextRef].data;
 			changeThing->sprevRef = thingsprevRef;
 		}
 
@@ -509,7 +509,7 @@ void P_UnsetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos)
 		nextRef = sectors[thingsecnum].thinglistRef;
 		// if nextref check here?
 		while (nextRef) {
-			mobj_t far* innerthing = &thinkerlist[nextRef].data;
+			mobj_t __far* innerthing = &thinkerlist[nextRef].data;
 			if (innerthing->snextRef == thisRef) {
 				innerthing->snextRef = thingsnextRef;
 				break;
@@ -552,7 +552,7 @@ void P_UnsetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos)
 			nextRef = blocklinks[bindex];
 			// if nextref check here?
 			while (nextRef) {
-				mobj_t far* innerthing = &thinkerlist[nextRef].data;
+				mobj_t __far* innerthing = &thinkerlist[nextRef].data;
 				if (innerthing->bnextRef == thisRef) {
 					innerthing->bnextRef = thingbnextRef;
 					break;
@@ -576,7 +576,7 @@ void P_UnsetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos)
 // Sets thing->subsector properly
 //
 void
-P_SetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos, int16_t knownsecnum)
+P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum)
 {
 
 
@@ -586,7 +586,7 @@ P_SetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos, int16_t knowns
     int16_t			blocky;
 	THINKERREF		linkRef;
 	
-	mobj_t far* thingList;
+	mobj_t __far* thingList;
 	THINKERREF oldsectorthinglist;
 	fixed_t_union temp;
 	THINKERREF thingRef = GETTHINKERREF(thing);
@@ -610,14 +610,14 @@ P_SetThingPosition (mobj_t far* thing, mobj_pos_t far* thing_pos, int16_t knowns
 		sectors[thing->secnum].thinglistRef = thingRef;
 
 
-		thing = (mobj_t far*)&thinkerlist[thingRef].data;
+		thing = (mobj_t __far*)&thinkerlist[thingRef].data;
 		thing_pos = &mobjposlist[thingRef];
 
 		thing->sprevRef = NULL_THINKERREF;
 		thing_pos->snextRef = oldsectorthinglist;
 
 		if (thing_pos->snextRef) {
-			thingList = (mobj_t far*)&thinkerlist[thing_pos->snextRef].data;
+			thingList = (mobj_t __far*)&thinkerlist[thing_pos->snextRef].data;
 			thingList->sprevRef = thingRef;
 		}
 
@@ -681,12 +681,12 @@ boolean
 P_BlockLinesIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(line_physics_t far*, int16_t) )
+  boolean(*func)(line_physics_t __far*, int16_t) )
 {
     int16_t			offset;
 	int16_t			index;
     int16_t		list;
-	line_physics_t far*		ld_physics;
+	line_physics_t __far*		ld_physics;
     if (x<0
 	|| y<0
 	|| x>=bmapwidth
@@ -728,10 +728,10 @@ boolean
 P_BlockThingsIterator
 ( int16_t			x,
   int16_t			y,
-  boolean(*func)(THINKERREF, mobj_t far*, mobj_pos_t far*) )
+  boolean(*func)(THINKERREF, mobj_t __far*, mobj_pos_t __far*) )
 {
 	THINKERREF mobjRef;
-    mobj_t far*		mobj;
+    mobj_t __far*		mobj;
 
     if ( x<0 || y<0 || x>=bmapwidth || y>=bmapheight) {
 		return true;
@@ -742,7 +742,7 @@ P_BlockThingsIterator
 		// will this cause stuff to lose scope...?
 
 
-		mobj = (mobj_t far*)&thinkerlist[mobjRef].data;
+		mobj = (mobj_t __far*)&thinkerlist[mobjRef].data;
 		
 		if (!func(mobjRef, mobj, &mobjposlist[mobjRef])) {
 
@@ -760,7 +760,7 @@ P_BlockThingsIterator
 //
 // INTERCEPT ROUTINES
 //
- intercept_t far*	intercept_p;
+ intercept_t __far*	intercept_p;
 
 divline_t 	trace;
 boolean 	earlyout;
@@ -778,7 +778,7 @@ int32_t		ptflags;
 //
 divline_t		dl;
 boolean
-PIT_AddLineIntercepts (line_physics_t far* ld_physics, int16_t linenum)
+PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum)
 {
      int16_t			s1;
     int16_t			s2;
@@ -852,7 +852,7 @@ PIT_AddLineIntercepts (line_physics_t far* ld_physics, int16_t linenum)
 //
 // PIT_AddThingIntercepts
 //
-boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t far* thing, mobj_pos_t far* thing_pos)
+boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __far* thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union		x1;
 	fixed_t_union		y1;
@@ -923,8 +923,8 @@ P_TraverseIntercepts
 {
     int16_t			count;
     fixed_t_union		dist;
-    intercept_t far*	scan;
-    intercept_t far*	in = NULL;
+    intercept_t __far*	scan;
+    intercept_t __far*	in = NULL;
 	int16_t i = 0;
 	count = intercept_p - intercepts;
  
@@ -977,7 +977,7 @@ P_PathTraverse
 	fixed_t_union		x2,
 	fixed_t_union		y2,
   uint8_t			flags,
-  boolean (*trav) (intercept_t  far*))
+  boolean (*trav) (intercept_t  __far*))
 {
     int16_t	xt1;
     int16_t	yt1;

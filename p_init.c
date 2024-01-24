@@ -46,7 +46,7 @@ extern button_t        buttonlist[MAXBUTTONS];
 
 
 
-//extern byte far* texturedefs_bytes; 
+//extern byte __far* texturedefs_bytes; 
 extern int16_t             numtextures;
  
 
@@ -174,7 +174,7 @@ typedef struct
 #define MAXANIMS                32
 
 extern anim_t		anims[MAXANIMS];
-extern anim_t near*		lastanim;
+extern anim_t __near*		lastanim;
 
 typedef struct
 {
@@ -281,7 +281,7 @@ void P_InitPicAnims(void)
 
 }
 
-spriteframe_t far* sprtemp;
+spriteframe_t __far* sprtemp;
 int16_t             maxframe;
 
 //
@@ -351,12 +351,12 @@ R_InstallSpriteLump
  
 
 
- extern spritedef_t far* sprites;
+ extern spritedef_t __far* sprites;
 
 extern int16_t             numsprites;
 
 extern int16_t             maxframe;
-extern byte far*	 spritedefs_bytes;
+extern byte __far*	 spritedefs_bytes;
 
 //
 // R_InitSpriteDefs
@@ -386,7 +386,7 @@ void R_InitSpriteDefs()
 	int16_t         start;
 	int16_t         end;
 	int16_t         patched;
-	spriteframe_t far* spriteframes;
+	spriteframe_t __far* spriteframes;
 	uint16_t		currentspritememoryoffset;
 	//int32_t totalsize = 0;
 	byte sprtempbytes[29 * sizeof(spriteframe_t)];
@@ -418,14 +418,14 @@ void R_InitSpriteDefs()
 
 
  
-	sprtemp = (spriteframe_t far *) &sprtempbytes;
+	sprtemp = (spriteframe_t __far *) &sprtempbytes;
 	numsprites = NUMSPRITES;
 
 	if (!numsprites)
 		return;
 
 	
-	sprites = (spritedef_t far*)spritedefs_bytes;
+	sprites = (spritedef_t __far*)spritedefs_bytes;
 	currentspritememoryoffset = sprites[0].spriteframesOffset = numsprites * sizeof(spritedef_t);
 	//sprites[0].spriteframesOffset = numsprites * sizeof(*sprites);
 	//totalsize = numsprites * sizeof(spritedef_t);
@@ -444,14 +444,14 @@ void R_InitSpriteDefs()
 		FAR_memset(sprtemp, -1, sizeof(sprtemp));
 
 		maxframe = -1;
-		intname = *(int32_t far *)namelist[i];
-		//intname = *(int32_t far*)namelist[i*5];
+		intname = *(int32_t __far *)namelist[i];
+		//intname = *(int32_t __far*)namelist[i*5];
 
 		// scan the lumps,
 		//  filling in the frames for whatever is found
 		for (l = start + 1; l < end; l++)
 		{
-			if (*(int32_t  far*)lumpinfo4000[l].name == intname)
+			if (*(int32_t  __far*)lumpinfo4000[l].name == intname)
 			{
 				frame = lumpinfo4000[l].name[4] - 'A';
 				rotation = lumpinfo4000[l].name[5] - '0';
@@ -519,7 +519,7 @@ void R_InitSpriteDefs()
 		currentspritememoryoffset += (maxframe * sizeof(spriteframe_t));
 
 
-		spriteframes = (spriteframe_t far*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
+		spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
 		FAR_memcpy(spriteframes, sprtemp, maxframe * sizeof(spriteframe_t));
 
 	}

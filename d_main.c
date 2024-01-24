@@ -20,7 +20,6 @@
 //
 
 #include <stdlib.h>
-#include <dos.h>
 //#include <graph.h>
 #include <direct.h>
 #include <io.h>
@@ -60,6 +59,9 @@
 #include "d_main.h"
 #include "p_local.h"
  
+#ifdef __COMPILER_WATCOM
+#include <dos.h>
+#endif
 
  
  
@@ -136,7 +138,7 @@ int8_t		eventtail;
 // D_PostEvent
 // Called by the I/O functions when input is detected
 //
-void D_PostEvent (event_t far* ev)
+void D_PostEvent (event_t __far* ev)
 {
     events[eventhead] = *ev;
     eventhead = (++eventhead)&(MAXEVENTS-1);
@@ -148,7 +150,7 @@ void D_PostEvent (event_t far* ev)
 //
 void D_ProcessEvents (void)
 {
-    event_t far*     ev;
+    event_t __far*     ev;
 	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
 		ev = &events[eventtail];
 		if (M_Responder(ev)) {
@@ -162,7 +164,7 @@ void D_ProcessEvents (void)
 
 
 
-void getStringByIndex(int16_t stringindex, int8_t far* returndata) {
+void getStringByIndex(int16_t stringindex, int8_t __far* returndata) {
 
 	uint16_t stringoffset = stringoffsets[stringindex];
 	uint16_t length = stringoffsets[stringindex + 1] - stringoffset;
@@ -278,7 +280,7 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 }
 
 
-extern patch_t far* M_GetMenuPatch(int16_t i);
+extern patch_t __far* M_GetMenuPatch(int16_t i);
 
 
 boolean skipdirectdraws;

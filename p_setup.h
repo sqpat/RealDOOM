@@ -28,6 +28,6 @@ P_SetupLevel
 
 // Called by startup code.
 void P_Init (void);
-extern THINKERREF far*		blocklinks;	// for thing chains
+extern THINKERREF __far*		blocklinks;	// for thing chains
 
 #endif

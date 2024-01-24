@@ -138,7 +138,7 @@ void P_CalcHeight ()
 //
 void P_MovePlayer ()
 {
-    ticcmd_t near*		cmd = &player.cmd;
+    ticcmd_t __near*		cmd = &player.cmd;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	temp.h.intbits = cmd->angleturn;
@@ -176,7 +176,7 @@ void P_DeathThink ()
 {
     angle_t		angle;
     angle_t		delta;
-	mobj_pos_t far* playerattacker_pos;
+	mobj_pos_t __far* playerattacker_pos;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 
@@ -229,7 +229,7 @@ void P_DeathThink ()
 //
 void P_PlayerThink (void)
 {
-    ticcmd_t near*		cmd;
+    ticcmd_t __near*		cmd;
     weapontype_t	newweapon;
 
     // fixme: do this in the cheat code

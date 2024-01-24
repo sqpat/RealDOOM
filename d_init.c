@@ -21,7 +21,6 @@
 
 
 #include <stdlib.h>
-#include <dos.h>
 //#include <graph.h>
 #include <direct.h>
 #include <io.h>
@@ -62,6 +61,9 @@
 #include "p_local.h"
 
 #include <malloc.h>
+#ifdef __COMPILER_WATCOM
+#include <dos.h>
+#endif
 
 #define MAX_STRINGS 306
 
@@ -69,7 +71,7 @@ extern uint8_t     sfxVolume;
 extern uint8_t     musicVolume;
 extern int8_t      demosequence;
 //extern byte*		stringdata;
-#define stringdata ((byte far*)0x60000000)
+#define stringdata ((byte __far*)0x60000000)
 
 void D_InitStrings() {
 
@@ -193,7 +195,7 @@ void D_SetCursorPosition(int16_t column, int16_t row)
 //
 // D_DrawTitle
 //
-void D_DrawTitle(int8_t near *string)
+void D_DrawTitle(int8_t __near *string)
 {
 	union REGS regs;
 	int16_t column;
@@ -233,7 +235,7 @@ void D_DrawTitle(int8_t near *string)
 //
 // D_RedrawTitle
 //
-void D_RedrawTitle(int8_t near *title)
+void D_RedrawTitle(int8_t __near *title)
 {
 	int16_t column;
 	int16_t row;
@@ -423,7 +425,7 @@ void HU_Init(void)
 	j = HU_FONTSTART;
 	for (i = 0; i < HU_FONTSIZE; i++) {
 		sprintf(buffer, "STCFN%.3d", j++);
-		W_CacheLumpNameDirect(buffer, (byte far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
+		W_CacheLumpNameDirect(buffer, (byte __far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
 	}
 
 
@@ -483,7 +485,7 @@ void S_Init
 //
  
 
-extern menu_t near* currentMenu;
+extern menu_t __near* currentMenu;
 extern menu_t  MainDef;
 extern int16_t           itemOn;                 // menu item skull is on
 extern int16_t           skullAnimCounter;       // skull animation counter
@@ -561,8 +563,8 @@ void D_InitGraphicCounts() {
  
 
 	// memory addresses, must stay int_32...
-	int16_t far*                maptex;
-	int16_t far*                maptex2;
+	int16_t __far*                maptex;
+	int16_t __far*                maptex2;
  
 	int16_t                 numtextures1;
 	int16_t                 numtextures2;
@@ -570,13 +572,13 @@ void D_InitGraphicCounts() {
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
-	W_CacheLumpNameDirect("TEXTURE1", (byte far*)0x70000000);
-	maptex = (int16_t far*) 0x70000000;
+	W_CacheLumpNameDirect("TEXTURE1", (byte __far*)0x70000000);
+	maptex = (int16_t __far*) 0x70000000;
 	numtextures1 = (*maptex);
  
 	if (W_CheckNumForName("TEXTURE2") != -1) {
-		W_CacheLumpNameDirect("TEXTURE2", (byte far*)0x70000000);
-		maptex2 = (int16_t far*) 0x70000000;
+		W_CacheLumpNameDirect("TEXTURE2", (byte __far*)0x70000000);
+		maptex2 = (int16_t __far*) 0x70000000;
 		numtextures2 = (*maptex2);
 	}
 	else
@@ -615,7 +617,7 @@ void D_DoomMain2(void)
 	int8_t            title[128];
 
 	//2dbf dosbox 316f 86box
-	//byte far* someptr = _fmalloc(1);
+	//byte __far* someptr = _fmalloc(1);
 	//I_Error("\npointer is %Fp", someptr);
 
 	// Removed

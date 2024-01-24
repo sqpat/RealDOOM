@@ -32,7 +32,10 @@
 #include "st_stuff.h"
 #include "hu_stuff.h"
 
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 #include <stdlib.h>
 //#include <malloc.h>
 
@@ -46,7 +49,7 @@ uint16_t EMS_PAGE;
 // EMS STUFF
 
 
-byte far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
+byte __far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 {
 
 	// 4 mb
@@ -155,7 +158,7 @@ byte far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 
  
  
-extern byte far* spritedefs_bytes;
+extern byte __far* spritedefs_bytes;
 
 extern int16_t pagenum9000;
 extern int16_t pageswapargs[total_pages];
@@ -169,7 +172,7 @@ extern  uint16_t		DEMO_SEGMENT;
 
 void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
-	int16_t far* pointervalue = pagedata;
+	int16_t __far* pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
 	int16_t index;
  
@@ -246,8 +249,8 @@ found:
 
 	Z_QuickmapLumpInfo5000();
 
-	FAR_memcpy((byte far *) 0x54000000, (byte far *) 0x44000000, 49152u); // copy the wad lump stuff over. gross
-	FAR_memset((byte far *) 0x44000000, 0, 49152u);
+	FAR_memcpy((byte __far *) 0x54000000, (byte __far *) 0x44000000, 49152u); // copy the wad lump stuff over. gross
+	FAR_memset((byte __far *) 0x44000000, 0, 49152u);
 
 	Z_QuickmapPhysics(); // map default page map
 }
@@ -363,7 +366,7 @@ void Z_LinkEMSVariables() {
 
 }
 
-extern byte far* pageFrameArea;
+extern byte __far* pageFrameArea;
 extern int16_t emshandle;
 
 void Z_InitEMS(void) {
@@ -412,7 +415,7 @@ void Z_LoadBinaries() {
 byte near conventionallowerblock[1250];
 
 void Z_LinkConventionalVariables() {
-	byte near* offset = conventionallowerblock;
+	byte __near* offset = conventionallowerblock;
 	//1250 now
 	//uint16_t size = numtextures * (sizeof(uint16_t) * 3 + 4 * sizeof(uint8_t));
 
@@ -420,15 +423,15 @@ void Z_LinkConventionalVariables() {
 	//I_Error("\n%lx %u", conventionallowerblock, size);
 	
 
-	texturecolumn_offset = (uint16_t near*)offset;
+	texturecolumn_offset = (uint16_t __near*)offset;
 	offset += numtextures * sizeof(uint16_t);
-	texturedefs_offset = (uint16_t near*)offset;
+	texturedefs_offset = (uint16_t __near*)offset;
 	offset += numtextures * sizeof(uint16_t);
 	texturewidthmasks = offset;
 	offset += numtextures * sizeof(uint8_t);
 	textureheights = offset;
 	offset += numtextures * sizeof(uint8_t);
-	texturecompositesizes = (uint16_t near*)offset;
+	texturecompositesizes = (uint16_t __near*)offset;
 	offset += numtextures * sizeof(uint16_t);
 	flattranslation = offset;
 	offset += numtextures * sizeof(uint8_t);

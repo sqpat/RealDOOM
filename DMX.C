@@ -6,8 +6,11 @@
 //#define USE_USRHOOKS
 
 #include "dmx.h"
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
 #include <conio.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "doomdef.h"

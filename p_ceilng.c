@@ -41,11 +41,11 @@ THINKERREF	activeceilings[MAXCEILINGS];
 // T_MoveCeiling
 //
 
-void T_MoveCeiling(ceiling_t far* ceiling, THINKERREF ceilingRef)
+void T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef)
 {
     result_e	res;
 	int16_t secnum = ceiling->secnum;
-	sector_t far* ceilingsector = &sectors[secnum];
+	sector_t __far* ceilingsector = &sectors[secnum];
 	int16_t soundorgX = sectors_physics[secnum].soundorgX;
 	int16_t soundorgY = sectors_physics[secnum].soundorgY;
 	//int16_t ceilingsecnum;
@@ -154,10 +154,10 @@ EV_DoCeiling
 {
 	int16_t		secnum = -1;
 	int16_t		rtn = 0;
-    sector_t far*	sector;
-    sector_physics_t far*	sector_physics;
+    sector_t __far*	sector;
+    sector_physics_t __far*	sector_physics;
 	int16_t		j = 0;
-    ceiling_t far*	ceiling;
+    ceiling_t __far*	ceiling;
 	THINKERREF ceilingRef;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
@@ -185,7 +185,7 @@ EV_DoCeiling
 		// new door thinker
 		rtn = 1;
 
-		ceiling = (ceiling_t far*) P_CreateThinker (TF_MOVECEILING_HIGHBITS);
+		ceiling = (ceiling_t __far*) P_CreateThinker (TF_MOVECEILING_HIGHBITS);
 		ceiling->secnum = secnum;
 		ceiling->crush = false;
 		ceilingRef = GETTHINKERREF(ceiling);
@@ -251,7 +251,7 @@ void P_AddActiveCeiling(THINKERREF ceilingRef) {
 //
 // Remove a ceiling's thinker
 //
-void P_RemoveActiveCeiling(sector_t far* ceilingsector, THINKERREF ceilingRef)
+void P_RemoveActiveCeiling(sector_t __far* ceilingsector, THINKERREF ceilingRef)
 {
     int8_t		i;
 
@@ -273,11 +273,11 @@ void P_RemoveActiveCeiling(sector_t far* ceilingsector, THINKERREF ceilingRef)
 void P_ActivateInStasisCeiling(uint8_t linetag)
 {
     int8_t		i;
-	ceiling_t far* c;
+	ceiling_t __far* c;
 
 	for (i = 0; i < MAXCEILINGS; i++) {
 		if (activeceilings[i] != NULL_THINKERREF) {
-			c = (ceiling_t far*)&thinkerlist[activeceilings[i]].data;
+			c = (ceiling_t __far*)&thinkerlist[activeceilings[i]].data;
 			if ((c->tag == linetag) && (c->direction == 0)) {
 				c->direction = c->olddirection;
 
@@ -297,11 +297,11 @@ int16_t	EV_CeilingCrushStop(uint8_t linetag)
 {
     int8_t		i;
     int16_t		rtn;
-	ceiling_t far* c;
+	ceiling_t __far* c;
 	rtn = 0;
 	for (i = 0; i < MAXCEILINGS; i++) {
 		if (activeceilings[i] != NULL_THINKERREF) {
-			c = (ceiling_t far*)&thinkerlist[activeceilings[i]].data;
+			c = (ceiling_t __far*)&thinkerlist[activeceilings[i]].data;
 			if ((c->tag == linetag) && (c->direction != 0)) {
 				c->olddirection = c->direction;
 				P_UpdateThinkerFunc(activeceilings[i], TF_NULL);

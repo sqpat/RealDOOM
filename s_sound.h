@@ -47,7 +47,7 @@ S_Init
 //
 void S_Start(void);
 
-void S_StartSoundFromRef(mobj_t far* mobj, sfxenum_t	sfx_id);
+void S_StartSoundFromRef(mobj_t __far* mobj, sfxenum_t	sfx_id);
 
 
 //
@@ -56,7 +56,7 @@ void S_StartSoundFromRef(mobj_t far* mobj, sfxenum_t	sfx_id);
 //
 void
 S_StartSound
-(mobj_t far*		origin,
+(mobj_t __far*		origin,
   sfxenum_t		sound_id );
 
 void
@@ -67,7 +67,7 @@ S_StartSoundWithParams(int16_t x, int16_t y, sfxenum_t sound_id);
 // Will start a sound at a given volume.
 void
 S_StartSoundAtVolume
-( mobj_t far*		origin,
+( mobj_t __far*		origin,
 	int16_t x,
 	int16_t y,
   sfxenum_t		sound_id,
@@ -75,7 +75,7 @@ S_StartSoundAtVolume
 
 
 // Stop sound for thing at <origin>
-void S_StopSound(mobj_t far* origin);
+void S_StopSound(mobj_t __far* origin);
 
 
 // Start music using <music_id> from sounds.h

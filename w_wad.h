@@ -58,8 +58,8 @@ typedef struct
 
 
 
-#define lumpinfo4000 ((lumpinfo_t far*) 0x44000000)
-#define lumpinfo5000 ((lumpinfo_t far*) 0x54000000)
+#define lumpinfo4000 ((lumpinfo_t __far*) 0x44000000)
+#define lumpinfo5000 ((lumpinfo_t __far*) 0x54000000)
 extern	uint16_t		numlumps;
 
 void    W_InitMultipleFiles (int8_t** filenames);
@@ -70,10 +70,10 @@ int16_t	W_GetNumForName(int8_t* name);
 int32_t	W_LumpLength (int16_t lump);
 
 
-void W_CacheLumpNumDirectFragment(int16_t lump, byte far* dest, int16_t pagenum, int32_t offset);
+void W_CacheLumpNumDirectFragment(int16_t lump, byte __far* dest, int16_t pagenum, int32_t offset);
 
-void W_CacheLumpNameDirect(int8_t* name, byte far* dest);
-void W_CacheLumpNumDirect(int16_t lump, byte far* dest);
+void W_CacheLumpNameDirect(int8_t* name, byte __far* dest);
+void W_CacheLumpNumDirect(int16_t lump, byte __far* dest);
 
 
 // correct value for DOOM Sharware

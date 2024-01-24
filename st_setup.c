@@ -72,10 +72,10 @@ extern boolean          st_firsttime;
 // ?
 void
 STlib_initNum
-(st_number_t near*		n,
+(st_number_t __near*		n,
 	int16_t			x,
 	int16_t			y,
-	uint16_t near*		pl,
+	uint16_t __near*		pl,
 	int16_t			width)
 {
 	n->x = x;
@@ -89,10 +89,10 @@ STlib_initNum
 //
 void
 STlib_initPercent
-(st_percent_t near*		p,
+(st_percent_t __near*		p,
 	int16_t			x,
 	int16_t			y,
-	uint16_t near*		pl,
+	uint16_t __near*		pl,
 	uint16_t		percent) {
 	STlib_initNum(&p->num, x, y, pl, 3);
 	p->patchoffset = percent;
@@ -102,10 +102,10 @@ STlib_initPercent
 
 void
 STlib_initMultIcon
-(st_multicon_t near*	i,
+(st_multicon_t __near*	i,
 	int16_t			x,
 	int16_t			y,
-	uint16_t near*		il)
+	uint16_t __near*		il)
 {
 	i->x = x;
 	i->y = y;

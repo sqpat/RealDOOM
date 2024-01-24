@@ -22,6 +22,7 @@
 
 
 #include "d_event.h"
+#include "doomdef.h"
 
 //
 // MENUS
@@ -31,7 +32,7 @@
 // Even when the menu is not displayed,
 // this can resize the view and change game parameters.
 // Does all the real work of the menu interaction.
-boolean M_Responder (event_t far* ev);
+boolean M_Responder (event_t __far* ev);
 
 
 // Called by main loop,
@@ -89,8 +90,8 @@ typedef struct
 typedef struct menu_s
 {
 	int8_t               numitems;       // # of menu items
-	struct menu_s near*      prevMenu;       // previous menu
-	menuitem_t near*         menuitems;      // menu items
+	struct menu_s __near*      prevMenu;       // previous menu
+	menuitem_t __near*         menuitems;      // menu items
 	void(*routine)();   // draw routine
 	int16_t               x;
 	uint8_t               y;              // x,y of menu

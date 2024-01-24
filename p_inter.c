@@ -303,10 +303,10 @@ P_GivePower
 //
 void
 P_TouchSpecialThing
-( mobj_t far*	special,
-  mobj_t far*	toucher,
-	mobj_pos_t  far*special_pos,
-	mobj_pos_t  far*toucher_pos
+( mobj_t __far*	special,
+  mobj_t __far*	toucher,
+	mobj_pos_t  __far*special_pos,
+	mobj_pos_t  __far*toucher_pos
 	)
 {
      int8_t		i;
@@ -618,8 +618,8 @@ P_TouchSpecialThing
 	S_StartSound (NULL, sound);
 }
 
-extern mobj_t far* setStateReturn;
-extern mobj_pos_t far* setStateReturn_pos;
+extern mobj_t __far* setStateReturn;
+extern mobj_pos_t __far* setStateReturn_pos;
 
 
 //
@@ -627,12 +627,12 @@ extern mobj_pos_t far* setStateReturn_pos;
 //
 void
 P_KillMobj
-(	mobj_t far* source,
-	mobj_t far*	target,
-	mobj_pos_t far*	target_pos)
+(	mobj_t __far* source,
+	mobj_t __far*	target,
+	mobj_pos_t __far*	target_pos)
 {
     mobjtype_t	item;
-    mobj_t far*	mo;
+    mobj_t __far*	mo;
 	
 	
 	target_pos->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
@@ -728,9 +728,9 @@ P_KillMobj
 //
 void
 P_DamageMobj
-(mobj_t far*	target,
-	mobj_t far*	inflictor,
-	mobj_t far*	source,
+(mobj_t __far*	target,
+	mobj_t __far*	inflictor,
+	mobj_t __far*	source,
 	int16_t 		damage )
 {
 	angle_t	ang;
@@ -739,7 +739,7 @@ P_DamageMobj
 	fixed_t_union inflictorx;
 	fixed_t_union inflictory;
 	fixed_t_union inflictorz;
-	mobj_pos_t far* target_pos = GET_MOBJPOS_FROM_MOBJ(target);
+	mobj_pos_t __far* target_pos = GET_MOBJPOS_FROM_MOBJ(target);
  
 	if (!(target_pos->flags & MF_SHOOTABLE)) {
 		return;	// shouldn't happen...
@@ -765,7 +765,7 @@ P_DamageMobj
 		if (source) {
 		}
 		if ((!source || source->type == MT_PLAYER || player.readyweapon != wp_chainsaw)) {
-			mobj_pos_t far* inflictor_pos = GET_MOBJPOS_FROM_MOBJ(inflictor);
+			mobj_pos_t __far* inflictor_pos = GET_MOBJPOS_FROM_MOBJ(inflictor);
 			inflictorx = inflictor_pos->x;
 			inflictory = inflictor_pos->y;
 			inflictorz = inflictor_pos->z;

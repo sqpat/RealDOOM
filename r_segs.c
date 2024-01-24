@@ -78,9 +78,9 @@ fixed_t		bottomfrac;
 fixed_t		bottomstep;
 
 
-lighttable_t far*far*	walllights;
+lighttable_t __far*__far*	walllights;
 
-int16_t far*		maskedtexturecol;
+int16_t __far*		maskedtexturecol;
 
 
 //
@@ -88,21 +88,21 @@ int16_t far*		maskedtexturecol;
 //
 void
 R_RenderMaskedSegRange
-(drawseg_t far*	ds,
+(drawseg_t __far*	ds,
 	int16_t		x1,
 	int16_t		x2)
 {
 	uint16_t	index;
-	column_t far*	col;
+	column_t __far*	col;
 	int16_t		lightnum;
 	int16_t		frontsecnum;
 
-	side_t far* side;
-	side_render_t far* side_render;
+	side_t __far* side;
+	side_render_t __far* side_render;
 	int16_t curlineside;
 	vertex_t v1;
 	vertex_t v2;
-	line_t far* curlinelinedef;
+	line_t __far* curlinelinedef;
 	int16_t		texnum;
 	int16_t segnum;
 	curseg = ds->curseg;
@@ -205,7 +205,7 @@ R_RenderMaskedSegRange
 			//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
 	    
 			// draw the texture
-			col = (column_t  far*)((byte  far*)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
+			col = (column_t  __far*)((byte  __far*)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
 			R_DrawMaskedColumn (col);
 			maskedtexturecol[dc_x] = MAXSHORT;
 		}
@@ -433,8 +433,8 @@ R_StoreWallRange
     int16_t			lightnum;
 
 	// needs to be refreshed...
-	side_t far* side = &sides[curseg_render->sidedefOffset];
-	side_render_t far* side_render = &sides_render[curseg_render->sidedefOffset];
+	side_t __far* side = &sides[curseg_render->sidedefOffset];
+	side_render_t __far* side_render = &sides_render[curseg_render->sidedefOffset];
 	vertex_t curlinev1 = vertexes[curseg_render->v1Offset];
 	vertex_t curlinev2 = vertexes[curseg_render->v2Offset];
 	int16_t sidetextureoffset;
@@ -445,7 +445,7 @@ R_StoreWallRange
 	uint8_t frontsectorceilingpic;
 	uint8_t frontsectorfloorpic;
 	uint8_t frontsectorlightlevel;
-	line_t far* linedef;
+	line_t __far* linedef;
 	int16_t linedefOffset;
 	uint16_t rw_normalangle_shiftleft3;
 

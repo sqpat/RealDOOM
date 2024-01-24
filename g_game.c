@@ -56,7 +56,10 @@
 #include "r_data.h"
 
 
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 #include "g_game.h"
 
 
@@ -67,8 +70,8 @@
 uint16_t DEMO_SEGMENT;
 
 boolean G_CheckDemoStatus (void); 
-void    G_ReadDemoTiccmd (ticcmd_t near* cmd); 
-void    G_WriteDemoTiccmd (ticcmd_t near* cmd); 
+void    G_ReadDemoTiccmd (ticcmd_t __near* cmd); 
+void    G_WriteDemoTiccmd (ticcmd_t __near* cmd); 
 void    G_PlayerReborn (); 
 void    G_InitNew (skill_t skill, int8_t episode, int8_t map);
  
@@ -110,10 +113,10 @@ int8_t            demoname[32];
 boolean         demorecording; 
 boolean         demoplayback; 
 boolean         netdemo; 
-#define           demobuffer ((byte far*) 0x50000000)
+#define           demobuffer ((byte __far*) 0x50000000)
 
 uint16_t           demo_p;				// buffer
-//byte far*           demoend; 
+//byte __far*           demoend; 
 boolean         singledemo;             // quit after playing a demo from cmdline 
  
 boolean         precache = true;        // if true, load all graphics at start 
@@ -201,7 +204,7 @@ void G_BuildTiccmd (int8_t index)
 	int16_t         forward;
 	int16_t         side;
     
-	ticcmd_t near* cmd = &localcmds[index];
+	ticcmd_t __near* cmd = &localcmds[index];
 
 	memset(cmd, 0, sizeof(ticcmd_t));
 
@@ -378,7 +381,7 @@ void G_BuildTiccmd (int8_t index)
 // G_Responder  
 // Get info needed to make ticcmd_ts for the players.
 // 
-boolean G_Responder (event_t far* ev)  {   // any other key pops up menu if in demos
+boolean G_Responder (event_t __far* ev)  {   // any other key pops up menu if in demos
 	if (gameaction == ga_nothing && !singledemo &&
 		(demoplayback || gamestate == GS_DEMOSCREEN)) {
 		if (ev->type == ev_keydown ||
@@ -450,7 +453,7 @@ boolean G_Responder (event_t far* ev)  {   // any other key pops up menu if in d
 void G_Ticker (void) 
 { 
 	int8_t         buf;
-    ticcmd_t near*   cmd;
+    ticcmd_t __near*   cmd;
     // do player reborns if needed
 
 	// do things to change the game state
@@ -968,10 +971,10 @@ void G_InitNew(skill_t       skill, int8_t           episode, int8_t           m
 #define DEMOMARKER              0x80
 
 
-void G_ReadDemoTiccmd (ticcmd_t near* cmd) 
+void G_ReadDemoTiccmd (ticcmd_t __near* cmd) 
 { 
     // this is just used as an offset so lets just store as int;
-	byte far* demo_addr = (byte far*)MK_FP(DEMO_SEGMENT, demo_p);
+	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickmapDemo();
 
 	if (*demo_addr == DEMOMARKER)  {
@@ -991,9 +994,9 @@ void G_ReadDemoTiccmd (ticcmd_t near* cmd)
 }
 
 
-void G_WriteDemoTiccmd (ticcmd_t near* cmd) 
+void G_WriteDemoTiccmd (ticcmd_t __near* cmd) 
 { 
-	byte far* demo_addr = (byte far*)MK_FP(DEMO_SEGMENT, demo_p);
+	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickmapDemo();
 	if (gamekeydown['q'])           // press q to end demo recording 
         G_CheckDemoStatus (); 
@@ -1044,7 +1047,7 @@ void G_RecordDemo (int8_t* name)
  
 void G_BeginRecording (void) 
 { 
-	byte far* demo_addr = (byte far*)MK_FP(DEMO_SEGMENT, demo_p);
+	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickmapDemo();
 
     demo_p = 0;
@@ -1086,12 +1089,12 @@ void G_DoPlayDemo (void)
 { 
     skill_t skill; 
 	int8_t             episode, map;
-	byte far* demo_addr;
+	byte __far* demo_addr;
 	Z_QuickmapDemo();
 
 	gameaction = ga_nothing;
 	W_CacheLumpNameDirect(defdemoname, demobuffer);
-	demo_addr = (byte far*)(demobuffer);
+	demo_addr = (byte __far*)(demobuffer);
 	demo_p = 0;
 
 
@@ -1168,7 +1171,7 @@ boolean G_CheckDemoStatus (void)  {
 	uint32_t fps, fps2;
 #endif
 	//byte* demobuffer;
-	byte far* demo_addr;
+	byte __far* demo_addr;
 	if (timingdemo) {
 		endtime = ticcount;
 
@@ -1211,7 +1214,7 @@ boolean G_CheckDemoStatus (void)  {
  
     if (demorecording)  { 
 		Z_QuickmapDemo();
-		demo_addr = (byte far*)MK_FP(DEMO_SEGMENT, demo_p);
+		demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 		*demo_addr++ = DEMOMARKER;
 		demo_p++;
         M_WriteFile (demoname, demobuffer, demo_p);

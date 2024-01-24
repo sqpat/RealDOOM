@@ -37,7 +37,7 @@
 //
 // T_FireFlicker
 //
-void T_FireFlicker (fireflicker_t far* flick, THINKERREF flickRef)
+void T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
 
 {
     uint8_t	amount;
@@ -64,7 +64,7 @@ void T_FireFlicker (fireflicker_t far* flick, THINKERREF flickRef)
 //
 void P_SpawnFireFlicker (int16_t secnum)
 {
-    fireflicker_t far*	flick;
+    fireflicker_t __far*	flick;
 	uint8_t lightamount;
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
@@ -72,7 +72,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 	sectors_physics[secnum].special = 0;
 
 	
-	flick = (fireflicker_t far*)P_CreateThinker(TF_FIREFLICKER_HIGHBITS);
+	flick = (fireflicker_t __far*)P_CreateThinker(TF_FIREFLICKER_HIGHBITS);
 
     flick->secnum = secnum;
     flick->maxlight = seclightlevel;
@@ -92,7 +92,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 // T_LightFlash
 // Do flashing lights.
 //
-void T_LightFlash (lightflash_t far* flash, THINKERREF flashRef)
+void T_LightFlash (lightflash_t __far* flash, THINKERREF flashRef)
 {
 	int16_t flashsecnum = flash->secnum;
 	uint8_t flashminlight = flash->minlight;
@@ -124,7 +124,7 @@ void T_LightFlash (lightflash_t far* flash, THINKERREF flashRef)
 //
 void P_SpawnLightFlash (int16_t secnum)
 {
-    lightflash_t far*	flash;
+    lightflash_t __far*	flash;
 	uint8_t lightamount;
 	// nothing special about it during gameplay
 	int16_t seclightlevel = sectors[secnum].lightlevel;
@@ -133,7 +133,7 @@ void P_SpawnLightFlash (int16_t secnum)
 	
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
 
-	flash = (lightflash_t far*)P_CreateThinker(TF_LIGHTFLASH_HIGHBITS);
+	flash = (lightflash_t __far*)P_CreateThinker(TF_LIGHTFLASH_HIGHBITS);
 
 
 	flash->secnum = secnum;
@@ -156,7 +156,7 @@ void P_SpawnLightFlash (int16_t secnum)
 //
 // T_StrobeFlash
 //
-void T_StrobeFlash (strobe_t far* flash, THINKERREF flashRef)
+void T_StrobeFlash (strobe_t __far* flash, THINKERREF flashRef)
 {
 	int16_t flashsecnum = flash->secnum;
 	int16_t flashminlight = flash->minlight;
@@ -190,7 +190,7 @@ P_SpawnStrobeFlash
   int16_t		fastOrSlow,
   int16_t		inSync )
 {
-    strobe_t far*	flash;
+    strobe_t __far*	flash;
 	uint8_t lightamount;
 	int16_t seclightlevel = sectors[secnum].lightlevel;
 
@@ -199,7 +199,7 @@ P_SpawnStrobeFlash
 
 
 
-	flash = (strobe_t far*)P_CreateThinker(TF_STROBEFLASH_HIGHBITS);
+	flash = (strobe_t __far*)P_CreateThinker(TF_STROBEFLASH_HIGHBITS);
 
     flash->secnum = secnum;
     flash->darktime = fastOrSlow;
@@ -337,7 +337,7 @@ EV_LightTurnOn
 // Spawn glowing light
 //
 
-void T_Glow(glow_t far* glow, THINKERREF glowRef)
+void T_Glow(glow_t __far* glow, THINKERREF glowRef)
 {
 	int16_t gsecnum = glow->secnum;
 	uint8_t gminlight = glow->minlight;
@@ -367,7 +367,7 @@ void T_Glow(glow_t far* glow, THINKERREF glowRef)
 
 void P_SpawnGlowingLight(int16_t secnum)
 {
-    glow_t far*	g;
+    glow_t __far*	g;
 	uint8_t lightamount;
 	// Note that we are resetting sector attributes.
 	// Nothing special about it during gameplay.
@@ -377,7 +377,7 @@ void P_SpawnGlowingLight(int16_t secnum)
 
 
 
-	g = (glow_t far*)P_CreateThinker(TF_GLOW_HIGHBITS);
+	g = (glow_t __far*)P_CreateThinker(TF_GLOW_HIGHBITS);
 
 
     g->secnum = secnum;

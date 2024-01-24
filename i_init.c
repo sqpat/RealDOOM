@@ -17,8 +17,11 @@
 //  IBM DOS VGA graphics and key/mouse.
 //
 
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
 #include <conio.h>
+#endif
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <graph.h>
@@ -40,9 +43,9 @@ extern boolean novideo;
 extern boolean grmode;
 
 
-extern byte far *pcscreen;
-extern byte far *currentscreen;
-extern byte far *destview; 
+extern byte __far *pcscreen;
+extern byte __far *currentscreen;
+extern byte __far *destview; 
 extern fixed_t_union destscreen;
 extern void (__interrupt __far *oldkeyboardisr) ();
 

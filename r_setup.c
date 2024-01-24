@@ -37,7 +37,10 @@
 #include "doomstat.h"
 #include "tables.h"
 #include "w_wad.h"
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 
 #define DISTMAP		2
 #define FIELDOFVIEW		2048	
@@ -292,11 +295,11 @@ extern uint8_t firstunusedflat;
 extern int32_t totalpatchsize;
  
 extern int8_t textureLRU[4];
- extern byte far*	 spritedefs_bytes;
+ extern byte __far*	 spritedefs_bytes;
 
-extern byte far* getcompositetexture(int16_t tex_index);
-extern byte far* getpatchtexture(int16_t lump);
-//extern byte far* texturedefs_bytes;
+extern byte __far* getcompositetexture(int16_t tex_index);
+extern byte __far* getpatchtexture(int16_t lump);
+//extern byte __far* texturedefs_bytes;
 
 
 void R_PrecacheLevel(void)
@@ -309,10 +312,10 @@ void R_PrecacheLevel(void)
 	int16_t                 k;
 	int16_t                 lump;
 
-	texture_t far*          texture;
+	texture_t __far*          texture;
 	THINKERREF          th;
-	spriteframe_t far*      sf;
-	spriteframe_t far*		spriteframes;
+	spriteframe_t __far*      sf;
+	spriteframe_t __far*		spriteframes;
 	//int32_t flatsize = 0;
 	//uint16_t size;
 
@@ -401,7 +404,7 @@ void R_PrecacheLevel(void)
 			continue;
 
 		getcompositetexture(i);
-		texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[i]]);
+		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
 
 		for (j = 0; j < texture->patchcount; j++) {
 			lump = texture->patches[j].patch;
@@ -427,7 +430,7 @@ void R_PrecacheLevel(void)
 	for (i = 0; i < numsprites; i++) {
 		if (!graphicpresent[i])
 			continue;
- 		spriteframes = (spriteframe_t far*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
+ 		spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
 
 		for (j = 0; j < sprites[i].numframes; j++) {
 			sf = &spriteframes[j];

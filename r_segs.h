@@ -23,7 +23,7 @@
 
 void
 R_RenderMaskedSegRange
-( drawseg_t far*	ds,
+( drawseg_t __far*	ds,
   int16_t		x1,
   int16_t		x2 );
 

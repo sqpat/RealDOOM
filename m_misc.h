@@ -38,13 +38,13 @@ int16_t M_CheckParm (int8_t* check);
 boolean
 M_WriteFile
 (int8_t const*	name,
-  void far*		source,
+  void __far*		source,
   filelength_t		length );
 
 filelength_t
 M_ReadFile
 (int8_t const*	name,
-  byte far*	bufferRef );
+  byte __far*	bufferRef );
 
 // Returns a number from 0 to 255,
 // from a lookup table.
@@ -67,7 +67,7 @@ void M_ClearRandom(void);
 	// bbox coordinates
 
 // Bounding box functions.
-void M_AddToBox16( int16_t near*	box,int16_t	x,  int16_t	y );
+void M_AddToBox16( int16_t __near*	box,int16_t	x,  int16_t	y );
 
 
 void M_LoadDefaults (void);
@@ -79,8 +79,8 @@ void M_SaveDefaults (void);
 
 typedef struct
 {
-	int8_t  near*	name;
-	uint8_t near*	location;
+	int8_t  __near*	name;
+	uint8_t __near*	location;
 	uint8_t		defaultvalue;
 	uint8_t		scantranslate;		// PC scan code hack
 	uint8_t		untranslated;		// lousy hack

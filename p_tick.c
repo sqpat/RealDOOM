@@ -38,8 +38,8 @@ int16_t currentThinkerListHead;
 
 
 // Both the head and tail of the thinker list.
-//thinker_t far*	thinkerlist; // [MAX_THINKERS];
-mobj_pos_t far*	mobjposlist; // [MAX_THINKERS];
+//thinker_t __far*	thinkerlist; // [MAX_THINKERS];
+mobj_pos_t __far*	mobjposlist; // [MAX_THINKERS];
 
 
 
@@ -71,7 +71,7 @@ THINKERREF P_GetNextThinkerRef(void) {
 }
 
 int16_t addCount = 0;
-void far* P_CreateThinker(uint16_t thinkfunc) {
+void __far* P_CreateThinker(uint16_t thinkfunc) {
 	int16_t index = P_GetNextThinkerRef();
 	THINKERREF temp = thinkerlist[0].prevFunctype;// &0x7FF;
 	thinkerlist[index].next = 0;
@@ -108,7 +108,7 @@ void P_RunThinkers (void)
 	THINKERREF	currentthinker;
 	uint16_t	currentthinkerFunc;
 	int16_t i = 0;
-	mobj_t far* mobj;
+	mobj_t __far* mobj;
 #ifdef DEBUGLOG_TO_FILE
 
 	int8_t result2[100];
@@ -152,28 +152,28 @@ void P_RunThinkers (void)
 						P_MobjThinker(mobj, &mobjposlist[currentthinker], currentthinker);
 						break;
 					case TF_PLATRAISE_HIGHBITS:
-						T_PlatRaise((plat_t far*)mobj, currentthinker);
+						T_PlatRaise((plat_t __far*)mobj, currentthinker);
 						break;
 					case TF_MOVECEILING_HIGHBITS:
-						T_MoveCeiling((ceiling_t far*)mobj, currentthinker);
+						T_MoveCeiling((ceiling_t __far*)mobj, currentthinker);
 						break;
 					case TF_VERTICALDOOR_HIGHBITS:
-						T_VerticalDoor((vldoor_t far*)mobj, currentthinker);
+						T_VerticalDoor((vldoor_t __far*)mobj, currentthinker);
 						break;
 					case TF_MOVEFLOOR_HIGHBITS:
-						T_MoveFloor((floormove_t far*)mobj, currentthinker);
+						T_MoveFloor((floormove_t __far*)mobj, currentthinker);
 						break;
 					case TF_FIREFLICKER_HIGHBITS:
-						T_FireFlicker((fireflicker_t far*)mobj, currentthinker);
+						T_FireFlicker((fireflicker_t __far*)mobj, currentthinker);
 						break;
 					case TF_LIGHTFLASH_HIGHBITS:
-						T_LightFlash((lightflash_t far*)mobj, currentthinker);
+						T_LightFlash((lightflash_t __far*)mobj, currentthinker);
 						break;
 					case TF_STROBEFLASH_HIGHBITS:
-						T_StrobeFlash((strobe_t far*)mobj, currentthinker);
+						T_StrobeFlash((strobe_t __far*)mobj, currentthinker);
 						break;
 					case TF_GLOW_HIGHBITS:
-						T_Glow((glow_t far*)mobj, currentthinker);
+						T_Glow((glow_t __far*)mobj, currentthinker);
 						break;
  					
 
@@ -198,7 +198,7 @@ void P_RunThinkers (void)
 // i will need this later to help me debug inevitible doom 2 content memleaks
 /*
 				if (gametic == 619 && i == 0) {
-					//SAVEDUNIT = (mobj_t far*)Z_LoadThinkerBytesFromEMS(players.moRef);
+					//SAVEDUNIT = (mobj_t __far*)Z_LoadThinkerBytesFromEMS(players.moRef);
 					//I_Error("error %i %i %i %i %i %i %i", gametic, i, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->momx, SAVEDUNIT->momy);
 					// 454 122 157
 

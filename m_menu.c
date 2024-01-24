@@ -50,7 +50,10 @@
 #include "sounds.h"
 
 #include "m_menu.h"
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 
 
 #define NUM_MENU_ITEMS 45
@@ -161,7 +164,7 @@ int16_t           whichSkull;             // which skull to draw
 int16_t    skullName[2] = {5, 6};
 
 // current menudef
-menu_t near* currentMenu;                          
+menu_t __near* currentMenu;                          
 
 //
 // PROTOTYPES
@@ -204,7 +207,7 @@ void M_DrawLoad(void);
 void M_DrawSave(void);
 
 void M_DrawSaveLoadBorder(int16_t x, int16_t y);
-void M_SetupNextMenu(menu_t near*menudef);
+void M_SetupNextMenu(menu_t __near*menudef);
 void M_DrawThermo(int16_t x, int16_t y, int16_t thermWidth, int16_t thermDot);
 void M_WriteText(int16_t x, int16_t y, int8_t *string);
 int16_t  M_StringWidth(int8_t *string);
@@ -480,11 +483,11 @@ menu_t  SaveDef =
 };
 
 
-patch_t far* M_GetMenuPatch(int16_t i) {
+patch_t __far* M_GetMenuPatch(int16_t i) {
 	if (i >= 27){
-		return (patch_t far*)(menugraphicspage4 + menuoffsets[i]);
+		return (patch_t __far*)(menugraphicspage4 + menuoffsets[i]);
 	}
-	return (patch_t far*)(menugraphicspage0 + menuoffsets[i]);
+	return (patch_t __far*)(menugraphicspage0 + menuoffsets[i]);
 
 }
 
@@ -1207,7 +1210,7 @@ int16_t M_StringWidth(int8_t* string)
         if (c < 0 || c >= HU_FONTSIZE)
             w += 4;
 		else {
-			w += (((patch_t far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+			w += (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
 		}
     }
                 
@@ -1272,11 +1275,11 @@ M_WriteText
             continue;
         }
 
-		w = (((patch_t far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
+		w = (((patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]))->width);
 
         if (cx+w > SCREENWIDTH)
             break;
-        V_DrawPatchDirect(cx, cy, (patch_t far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
+        V_DrawPatchDirect(cx, cy, (patch_t __far *)MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c]));
         cx+=w;
     }
 }
@@ -1290,7 +1293,7 @@ M_WriteText
 //
 // M_Responder
 //
-boolean M_Responder (event_t far*  ev)
+boolean M_Responder (event_t __far*  ev)
 {
 	int16_t             ch;
 	int16_t             i;
@@ -1734,7 +1737,7 @@ void M_ClearMenus (void)
 //
 // M_SetupNextMenu
 //
-void M_SetupNextMenu(menu_t near *menudef)
+void M_SetupNextMenu(menu_t __near *menudef)
 {
     currentMenu = menudef;
     itemOn = currentMenu->lastOn;
@@ -1760,7 +1763,7 @@ void M_Reload(void) {
 	// reload menu graphics
 	int16_t i = 0;
 	uint32_t size = 0;
-	byte far* dst = menugraphicspage0;
+	byte __far* dst = menugraphicspage0;
 	uint8_t pageoffset = 0;
 
  	int8_t menugraphics[NUM_MENU_ITEMS * 9];

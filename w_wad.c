@@ -60,15 +60,15 @@ filehandle_t				wadfilehandle;
 
 #define FREAD_BUFFER_SIZE 512
 
-void  _far_fread(void far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+void  _far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count
 	uint16_t totalsize = elementsize * elementcount;
 	uint16_t totalreadsize = 0;
 	uint16_t copysize;
 	uint16_t remaining;
 	byte stackbuffer[FREAD_BUFFER_SIZE];
-	byte far* stackbufferfar = (byte far *)stackbuffer;
-	byte far* destloc = dest;
+	byte __far* stackbufferfar = (byte __far *)stackbuffer;
+	byte __far* destloc = dest;
 	while (totalreadsize < totalsize) {
 
 		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
@@ -83,7 +83,7 @@ void  _far_fread(void far* dest, uint16_t elementsize, uint16_t elementcount, FI
 	}
 
 }
-void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize) {
+void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
 
 	// cheating with size/element count
 	uint16_t totalreadsize = 0;
@@ -91,8 +91,8 @@ void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize) {
 	uint16_t remaining;
 	//uint16_t start = _tell(filehandle);
 	byte stackbuffer[FREAD_BUFFER_SIZE];
-	byte far* stackbufferfar = (byte far *)stackbuffer;
-	byte far* destloc = dest;
+	byte __far* stackbufferfar = (byte __far *)stackbuffer;
+	byte __far* destloc = dest;
 	while (totalreadsize < totalsize) {
 
 		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
@@ -111,15 +111,15 @@ void  _far_read(int16_t filehandle, void far* dest, uint16_t totalsize) {
 }
 
 
-void  _far_fwrite(void far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+void  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count
 	uint16_t totalsize = elementsize * elementcount;
 	uint16_t totalreadsize = 0;
 	uint16_t copysize;
 	uint16_t remaining;
 	byte stackbuffer[FREAD_BUFFER_SIZE];
-	byte far* stackbufferfar = (byte far *)stackbuffer;
-	byte far* srcloc = src;
+	byte __far* stackbufferfar = (byte __far *)stackbuffer;
+	byte __far* srcloc = src;
 	while (totalreadsize < totalsize) {
 		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
 		remaining = totalsize - totalreadsize;
@@ -151,8 +151,8 @@ int16_t W_CheckNumForName (int8_t* name)
 	int16_t         v3;
 	int16_t         v4;
 	int16_t         returnval = -1;
-	lumpinfo_t far* lump_p;
-	lumpinfo_t far* lumpinfo = lumpinfo4000;
+	lumpinfo_t __far* lump_p;
+	lumpinfo_t __far* lumpinfo = lumpinfo4000;
     // make the name into two integers for easy compares
     strncpy (name8.s,name,8);
 
@@ -173,10 +173,10 @@ int16_t W_CheckNumForName (int8_t* name)
     lump_p = lumpinfo4000 + numlumps;
 
     while (true) {
-		if ( *(int16_t far *)lump_p->name == v1
-             && *(int16_t far *)&lump_p->name[2] == v2
-             && *(int16_t far *)&lump_p->name[4] == v3
-             && *(int16_t far *)&lump_p->name[6] == v4 ) {
+		if ( *(int16_t __far *)lump_p->name == v1
+             && *(int16_t __far *)&lump_p->name[2] == v2
+             && *(int16_t __far *)&lump_p->name[4] == v3
+             && *(int16_t __far *)&lump_p->name[6] == v4 ) {
 				returnval = lump_p - lumpinfo4000;
 				break;
         }
@@ -256,12 +256,12 @@ extern int setval;
 void
 W_ReadLump
 (int16_t           lump,
-  byte far*         dest,
+  byte __far*         dest,
   int32_t           start,
   int32_t           size )
 {
 	filelength_t         c;  // size, leave as 32 bit
-    lumpinfo_t far* l;
+    lumpinfo_t __far* l;
 	filehandle_t         handle;
 #ifdef CHECK_FOR_ERRORS
 	int32_t sizetoread;
@@ -271,7 +271,7 @@ W_ReadLump
 
 	// use 5000 page if we are trying to write to 4000 page
 	boolean is5000Page = ((int32_t) dest >= 0x40000000) && ((int32_t)dest < 0x50000000);
-	lumpinfo_t far* lumpinfo = lumpinfo4000;
+	lumpinfo_t __far* lumpinfo = lumpinfo4000;
 
 	if (is5000Page) {
 		Z_QuickmapLumpInfo5000();
@@ -336,7 +336,7 @@ W_ReadLump
 void
 W_CacheLumpNameDirect
 (int8_t*         name,
-	byte far*			dest
+	byte __far*			dest
 ) {
 	W_ReadLump(W_GetNumForName(name), dest, 0, 0);
 }
@@ -345,7 +345,7 @@ W_CacheLumpNameDirect
 void
 W_CacheLumpNumDirect
 (int16_t lump,
-	byte far*			dest
+	byte __far*			dest
 ) {
 	W_ReadLump(lump, dest, 0, 0);
 }
@@ -355,7 +355,7 @@ W_CacheLumpNumDirect
 void
 W_CacheLumpNumDirectFragment
 (int16_t lump,
-	byte far*			dest,
+	byte __far*			dest,
     int16_t         pagenum,
     int32_t offset){
  

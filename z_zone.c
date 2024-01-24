@@ -29,7 +29,10 @@
 
 #include "p_local.h"
 
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 #include <stdlib.h>
  
 
@@ -41,7 +44,7 @@
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
 uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE = 0;
-byte far* conventionalmemoryblock;
+byte __far* conventionalmemoryblock;
 
 uint16_t remainingconventional = 0;
 uint16_t conventional1head = 	  0;
@@ -60,7 +63,7 @@ extern union REGS regs;
 extern struct SREGS segregs;
 
 
-byte far*			pageFrameArea;
+byte __far*			pageFrameArea;
 
 // count allocations etc, can be used for benchmarking purposes.
 
@@ -136,9 +139,9 @@ void Z_FreeConventionalAllocations() {
 
 // mostly very easy because we just allocate sequentially and never remove except all at once. no fragmentation
 //  EXCEPT thinkers
-void far* Z_MallocConventional( 
+void __far* Z_MallocConventional( 
 	uint16_t           size){
-	byte far* returnvalue = conventionalmemoryblock + conventional1head;
+	byte __far* returnvalue = conventionalmemoryblock + conventional1head;
 
 	if (size > remainingconventional) {
 		I_Error("79 %u %u", size, remainingconventional);// out of conventional space %u %u
@@ -971,8 +974,8 @@ extern void P_Init();
 
 // clears dead initialization code.
 void Z_ClearDeadCode() {
-	byte far *startaddr =	(byte far*)D_InitStrings;
-	byte far *endaddr =		(byte far*)P_Init;
+	byte __far *startaddr =	(byte __far*)D_InitStrings;
+	byte __far *endaddr =		(byte __far*)P_Init;
 	uint16_t size = endaddr - startaddr;
 	FAR_memset(startaddr, 0, size);
 	//13500 or so
@@ -984,7 +987,7 @@ void DUMP_MEMORY_TO_FILE() {
 	int16_t segment = 0x4000;
 	FILE*fp = fopen("MEM_DUMP.BIN", "wb");
 	while (segment < 0xA000) {
-		byte far * dest = MK_FP(segment, 0);
+		byte __far * dest = MK_FP(segment, 0);
 		FAR_fwrite(dest, 32768, 1, fp);
 		segment += 0x0800;
 	}

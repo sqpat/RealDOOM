@@ -320,12 +320,12 @@ uint16_t wioffsets[NUM_WI_ITEMS];
 uint16_t wianimoffsets[NUM_WI_ANIM_ITEMS];
 
 
-patch_t far* WI_GetPatch(int16_t i) {
-	return (patch_t far*)(wigraphicspage0 + wioffsets[i]);
+patch_t __far* WI_GetPatch(int16_t i) {
+	return (patch_t __far*)(wigraphicspage0 + wioffsets[i]);
 }
 
-patch_t far* WI_GetAnimPatch(int16_t i) {
-	return (patch_t far*)(wianimspage + wianimoffsets[i]);
+patch_t __far* WI_GetAnimPatch(int16_t i) {
+	return (patch_t __far*)(wianimspage + wianimoffsets[i]);
 }
 
 char* wigraphics[NUM_WI_ITEMS] = {
@@ -400,7 +400,7 @@ static int16_t		acceleratestage;
 static stateenum_t	state;
 
 // contains information passed into intermission
-static wbstartstruct_t near*	wbs;
+static wbstartstruct_t __near*	wbs;
 
 static wbplayerstruct_t plrs;  // wbs->plyr[]
 
@@ -463,9 +463,9 @@ void WI_slamBackground(void)
 void WI_drawLF(void)
 {
 	int16_t y = WI_TITLEY;
-	patch_t far* finished = WI_GetPatch(5);
+	patch_t __far* finished = WI_GetPatch(5);
 	// draw <LevelName> 
-	patch_t far* lname = (patch_t far*)(wigraphicslevelname + NEXT_OFFSET);
+	patch_t __far* lname = (patch_t __far*)(wigraphicslevelname + NEXT_OFFSET);
 
     V_DrawPatch((SCREENWIDTH - (lname->width))/2, y, FB, lname);
 
@@ -480,14 +480,14 @@ void WI_drawLF(void)
 // Draws "Entering <LevelName>"
 void WI_drawEL(void)
 {
-	patch_t far* lname;
+	patch_t __far* lname;
 	int16_t y = WI_TITLEY;
-	patch_t far* entering = WI_GetPatch(27);
+	patch_t __far* entering = WI_GetPatch(27);
     // draw "Entering"
     V_DrawPatch((SCREENWIDTH - (entering->width))/2, y, FB, entering);
 
 
-	lname = (patch_t far*)(wigraphicslevelname + NEXT_OFFSET);
+	lname = (patch_t __far*)(wigraphicslevelname + NEXT_OFFSET);
 
     // draw level
     y += (5*(lname->height))/4;
@@ -509,7 +509,7 @@ WI_drawOnLnode
     int16_t		right;
     int16_t		bottom;
     boolean	fits = false;
-	patch_t far* ci;
+	patch_t __far* ci;
 	int16_t lnodeX = getLnodeX(wbs->epsd, n);
 	int16_t lnodeY = getLnodeY(wbs->epsd, n);
     i = 0;
@@ -543,7 +543,7 @@ WI_drawOnLnode
 void WI_initAnimatedBack(void)
 {
     int16_t		i;
-    anim_t near*	a;
+    anim_t __near*	a;
 
     if (commercial)
 	return;
@@ -574,7 +574,7 @@ void WI_initAnimatedBack(void)
 void WI_updateAnimatedBack(void)
 {
     int16_t		i;
-    anim_t near*	a;
+    anim_t __near*	a;
 
     if (commercial)
 	return;
@@ -628,7 +628,7 @@ void WI_drawAnimatedBack(void)
 {
    
 	int16_t i;
-	anim_t near*anim;
+	anim_t __near*anim;
 
 	if (commercial)
 		return;
@@ -740,8 +740,8 @@ WI_drawTime
 
     int16_t		div;
     int16_t		n;
-	patch_t far* colon;
-	patch_t far* sucks;
+	patch_t __far* colon;
+	patch_t __far* sucks;
 
     if (t<0)
 	return;
@@ -992,7 +992,7 @@ void WI_drawStats(void)
     // line height
 	int16_t lh;
 
-	patch_t far* num0 = WI_GetPatch(numRef[0]);
+	patch_t __far* num0 = WI_GetPatch(numRef[0]);
 
     lh = (3*(num0->height))/2;
 
@@ -1120,13 +1120,13 @@ void WI_loadData(void)
 		splatRef = 2;
 		
 		if (wbs->epsd < 3) {
-			anim_t near*	anim;
+			anim_t __near*	anim;
 			int16_t j = 0;
 			int16_t k = 0;
 			uint16_t size = 0;
 			uint16_t lumpsize = 0;
 			int16_t lump;
-			byte far* dst = wianimspage;
+			byte __far* dst = wianimspage;
 			for (j=0;j<NUMANIMS[wbs->epsd];j++) {
 				anim = &anims[wbs->epsd][j];
 				for (i=0;i<anim->nanims;i++) {
@@ -1205,7 +1205,7 @@ void WI_Drawer (void)
 }
  
 
-void WI_initVariables(wbstartstruct_t near* wbstartstruct)
+void WI_initVariables(wbstartstruct_t __near* wbstartstruct)
 {
 	wbs = wbstartstruct;
 	acceleratestage = 0;
@@ -1229,7 +1229,7 @@ void WI_Init(void)
 
 	int16_t i = 0;
 	uint32_t size = 0;
-	byte far* dst = wigraphicspage0;
+	byte __far* dst = wigraphicspage0;
 	int8_t	name[9];
 
 	for (i = 0; i < NUM_WI_ITEMS; i++) {
@@ -1265,7 +1265,7 @@ void WI_Init(void)
 	}
 }
 
-void WI_Start(wbstartstruct_t near* wbstartstruct)
+void WI_Start(wbstartstruct_t __near* wbstartstruct)
 {
 	unloaded = false;
 	Z_QuickmapIntermission();

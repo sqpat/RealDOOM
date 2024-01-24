@@ -84,10 +84,10 @@ typedef uint16_t fineangle_t;
 #define size_finetangent	size_finesine +  2048u * sizeof(int32_t)
 #define size_tantoangle		size_finetangent +  2049u * sizeof(int32_t)
 
-#define finesine			((int32_t far*) 0x50000000)	// 10240
-#define finecosine			((int32_t far*) 0x50002000)	// 10240
-#define finetangentinner	((int32_t far*) (0x50000000 + size_finesine ))
-#define tantoangle			((angle_t far*) (0x50000000 + size_finetangent))
+#define finesine			((int32_t __far*) 0x50000000)	// 10240
+#define finecosine			((int32_t __far*) 0x50002000)	// 10240
+#define finetangentinner	((int32_t __far*) (0x50000000 + size_finesine ))
+#define tantoangle			((angle_t __far*) (0x50000000 + size_finetangent))
 
 
 // this one has no issues with mirroring 2nd half of values!

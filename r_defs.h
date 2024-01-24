@@ -349,7 +349,7 @@ typedef post_t	column_t;
 
 
 // PC direct to screen pointers
-extern byte far*	destview;
+extern byte __far*	destview;
 extern fixed_t_union	destscreen;
 
 
@@ -375,7 +375,7 @@ typedef byte	lighttable_t;
 //
 typedef struct drawseg_s
 {
-	seg_t far*		curseg;
+	seg_t __far*		curseg;
 
 	// start pixel x range
     int16_t			x1;
@@ -400,9 +400,9 @@ typedef struct drawseg_s
     
     // Pointers to lists for sprite clipping,
     //  all three adjusted so [x1] is first value.
-    int16_t far*		sprtopclip;
-    int16_t far*		sprbottomclip;
-    int16_t far*		maskedtexturecol;
+    int16_t __far*		sprtopclip;
+    int16_t __far*		sprbottomclip;
+    int16_t __far*		maskedtexturecol;
     
 } drawseg_t;
 
@@ -446,8 +446,8 @@ typedef struct
 typedef struct vissprite_s
 {
     // Doubly linked list.
-    struct vissprite_s far*	prev;
-    struct vissprite_s far*	next;
+    struct vissprite_s __far*	prev;
+    struct vissprite_s __far*	next;
     
 
 	int16_t x1;
@@ -474,7 +474,7 @@ typedef struct vissprite_s
 
     // for color translation and shadow draw,
     //  maxbright frames as well
-    lighttable_t far*	colormap;
+    lighttable_t __far*	colormap;
    
     int32_t			mobjflags;
     

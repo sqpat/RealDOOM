@@ -46,7 +46,7 @@ void P_ArchivePlayers (void)
 	
 	PADSAVEP();
 
-	dest = (player_t far*)save_p;
+	dest = (player_t __far*)save_p;
 	FAR_memcpy (dest,&players,sizeof(player_t));
 	save_p += sizeof(player_t);
 	for (j=0 ; j<NUMPSPRITES ; j++) {
@@ -105,7 +105,7 @@ void P_ArchiveWorld (void)
 	side_t* sides;
 	line_t* lines;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-	put = (int16_t far*)save_p;
+	put = (int16_t __far*)save_p;
     
     // do sectors
     for (i=0, sec = sectors ; i<numsectors ; i++,sec++)
@@ -163,7 +163,7 @@ void P_UnArchiveWorld (void)
 	side_t* sides;
 	line_t* lines;
 	sector_t* sectors = (sector_t*)Z_LoadBytesFromConventional(sectorsRef);
-	get = (int16_t far*)save_p;
+	get = (int16_t __far*)save_p;
 
     // do sectors
     for (i=0, sec = sectors ; i<numsectors ; i++,sec++)

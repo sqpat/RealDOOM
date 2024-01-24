@@ -29,7 +29,10 @@
 #include "st_stuff.h"
 #include "st_lib.h"
 #include "r_local.h"
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
  
 extern boolean updatedthisframe;
 // 
@@ -47,12 +50,12 @@ void STlib_updateflag() {
 
 void
 STlib_drawNum
-( st_number_t near*	number,
+( st_number_t __near*	number,
   boolean	refresh,
 	int16_t num)
 {
     int16_t	numdigits = number->width;
-	patch_t far* p0;
+	patch_t __far* p0;
 	int16_t w;
 	int16_t h;
 	int16_t x = number->x;
@@ -66,7 +69,7 @@ STlib_drawNum
 	
 	STlib_updateflag();
 
-	p0 = (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[0]));
+	p0 = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[0]));
 	w = (p0->width);
 	h = (p0->height);
 
@@ -98,12 +101,12 @@ STlib_drawNum
 
 	// in the special case of 0, you draw 0
 	if (!num) {
-		V_DrawPatch(x - w, number->y, FG, (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[0])));
+		V_DrawPatch(x - w, number->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[0])));
 	}
     // draw the new number
     while (num && numdigits--) {
 		x -= w;
-		V_DrawPatch(x, number->y, FG, (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[ num % 10 ])));
+		V_DrawPatch(x, number->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[ num % 10 ])));
 		num /= 10;
     }
  
@@ -115,13 +118,13 @@ STlib_drawNum
 
 void
 STlib_updatePercent
-( st_percent_t near*		per,
+( st_percent_t __near*		per,
   int16_t			refresh, 
 	int16_t			value)
 {
 	if (refresh) {
 		STlib_updateflag();
-		V_DrawPatch(per->num.x, per->num.y, FG, (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, per->patchoffset)));
+		V_DrawPatch(per->num.x, per->num.y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, per->patchoffset)));
 	}
 	STlib_drawNum(&per->num, refresh, value);
 }
@@ -132,7 +135,7 @@ STlib_updatePercent
 
 void
 STlib_updateMultIcon
-( st_multicon_t near*	mi,
+( st_multicon_t __near*	mi,
   boolean		refresh,
 	int16_t		inum,
 	boolean		is_binicon)
@@ -141,11 +144,11 @@ STlib_updateMultIcon
     int16_t			h;
     int16_t			x;
     int16_t			y;
-	patch_t far*    old;
+	patch_t __far*    old;
 	if ((mi->oldinum != inum || refresh) && (inum != -1)) {
 		STlib_updateflag();
 		if (!is_binicon && mi->oldinum != -1) {
-			old = (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patchoffset[mi->oldinum]));
+			old = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patchoffset[mi->oldinum]));
 			x = mi->x - (old->leftoffset);
 			y = mi->y - (old->topoffset);
 			w = (old->width);
@@ -161,7 +164,7 @@ STlib_updateMultIcon
 			
 		// binicon only has an array length zero and inum is always 1; this inum-is_binicon
 		// to work on the same line of code.
-		V_DrawPatch(mi->x, mi->y, FG, (patch_t far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patchoffset[inum-is_binicon])));
+		V_DrawPatch(mi->x, mi->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patchoffset[inum-is_binicon])));
 
 		mi->oldinum = inum;
 	}

@@ -64,22 +64,22 @@ extern int16_t		validcount;
 #define MAXLIGHTZ	       128
 #define LIGHTZSHIFT		20
 
-#define size_zlight						sizeof(lighttable_t far*) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_zlight						sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTZ)
 #define size_texturecolumnlumps_bytes	size_zlight + 21552u
 #define size_texturecolumnofs_bytes		size_texturecolumnlumps_bytes + 21552u
 #define size_texturedefs_bytes			size_texturecolumnofs_bytes + 3767u
 
 
-#define zlight						((lighttable_t far* far*) 0x60000000)
-#define texturecolumnlumps_bytes	((byte far*				) (0x60000000 + size_zlight))
-#define texturecolumnofs_bytes		((byte far*				) (0x60000000 + size_texturecolumnlumps_bytes))
-#define texturedefs_bytes			((byte far*				) (0x60000000 + size_texturecolumnofs_bytes))
+#define zlight						((lighttable_t __far* __far*) 0x60000000)
+#define texturecolumnlumps_bytes	((byte __far*				) (0x60000000 + size_zlight))
+#define texturecolumnofs_bytes		((byte __far*				) (0x60000000 + size_texturecolumnlumps_bytes))
+#define texturedefs_bytes			((byte __far*				) (0x60000000 + size_texturecolumnofs_bytes))
 
 
 extern uint8_t		extralight;
-extern lighttable_t far*	fixedcolormap;
+extern lighttable_t __far*	fixedcolormap;
 
-extern byte far*			texturecache;
+extern byte __far*			texturecache;
 
 // Number of diminishing brightness levels.
 // There a 0-31, i.e. 32 LUT in the COLORMAP lump.
@@ -109,14 +109,14 @@ int16_t
 R_PointOnSide
 ( fixed_t_union	x,
   fixed_t_union	y,
-  node_t far*	node );
+  node_t __far*	node );
 
 int16_t
 R_PointOnSegSide
 ( fixed_t_union	x,
   fixed_t_union	y,
-	vertex_t far* v1,
-	vertex_t far* v2);
+	vertex_t __far* v1,
+	vertex_t __far* v2);
 
 
 uint32_t

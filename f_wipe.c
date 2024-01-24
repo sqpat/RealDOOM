@@ -27,7 +27,10 @@
 #include "doomdef.h"
 
 #include "f_wipe.h"
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 
 
 //
@@ -38,20 +41,20 @@
 static boolean	go = 0;
 
 // screen 2
-static byte far*	wipe_scr_start;
+static byte __far*	wipe_scr_start;
 // screen 3
-static byte far*	wipe_scr_end;
+static byte __far*	wipe_scr_end;
 // screen 0, in 0x8000 region
-static byte far*	wipe_scr;
+static byte __far*	wipe_scr;
 
 
 void
 wipe_shittyColMajorXform
-( int16_t far*	array )
+( int16_t __far*	array )
 {
     uint16_t		x;
     uint16_t		y;
-    int16_t far*	dest = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
+    int16_t __far*	dest = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
 	
 	Z_QuickmapScratch_5000();
 
@@ -81,15 +84,15 @@ wipe_initMelt
   int16_t	ticks )
 {
 	int16_t i, r;
-	int16_t far* y = (int16_t far*)0x90000000;
+	int16_t __far* y = (int16_t __far*)0x90000000;
 
     // copy start screen to main screen
     FAR_memcpy(wipe_scr, wipe_scr_start, 64000u);
 
     // makes this wipe faster (in theory)
     // to have stuff in column-major format
-    wipe_shittyColMajorXform((int16_t far*)wipe_scr_start);
-    wipe_shittyColMajorXform((int16_t far*)wipe_scr_end);
+    wipe_shittyColMajorXform((int16_t __far*)wipe_scr_start);
+    wipe_shittyColMajorXform((int16_t __far*)wipe_scr_end);
     
     // setup initial column positions
     // (y<0 => not ready to scroll yet)
@@ -120,9 +123,9 @@ wipe_doMelt
     int16_t		dy;
     uint16_t		idx;
     
-	int16_t far* y = (int16_t far*)0x90000000;
-    int16_t	far* s;
-    int16_t	far* d;
+	int16_t __far* y = (int16_t __far*)0x90000000;
+    int16_t	__far* s;
+    int16_t	__far* d;
     boolean	done = true;
 
     
@@ -137,16 +140,16 @@ wipe_doMelt
 				if (y[i] + dy >= SCREENHEIGHT) {
 					dy = SCREENHEIGHT - y[i];
 				}
-				s = &((int16_t far*)wipe_scr_end)	[(uint16_t)i*(uint16_t)SCREENHEIGHT+(uint16_t)y[i]];
-				d = &((int16_t far*)wipe_scr)		[(uint16_t)y[i]* (uint16_t)SCREENWIDTHOVER2 + (uint16_t)i];
+				s = &((int16_t __far*)wipe_scr_end)	[(uint16_t)i*(uint16_t)SCREENHEIGHT+(uint16_t)y[i]];
+				d = &((int16_t __far*)wipe_scr)		[(uint16_t)y[i]* (uint16_t)SCREENWIDTHOVER2 + (uint16_t)i];
 				idx = 0;
 				for (j=dy;j;j--) {
 					d[idx] = *(s++);
 					idx += SCREENWIDTHOVER2;
 				}
 				y[i] += dy;
-				s = &((int16_t far*)wipe_scr_start)	[(uint16_t)i*(uint16_t)SCREENHEIGHT];
-				d = &((int16_t far*)wipe_scr)			[(uint16_t)y[i]* (uint16_t)SCREENWIDTHOVER2 + (uint16_t)i];
+				s = &((int16_t __far*)wipe_scr_start)	[(uint16_t)i*(uint16_t)SCREENHEIGHT];
+				d = &((int16_t __far*)wipe_scr)			[(uint16_t)y[i]* (uint16_t)SCREENWIDTHOVER2 + (uint16_t)i];
 				idx = 0;
 				for (j= SCREENHEIGHT -y[i];j;j--) {
 					d[idx] = *(s++);
@@ -190,9 +193,9 @@ V_DrawBlock
 	int16_t		y,
 	int16_t		width,
 	int16_t		height,
-	byte far*		src)
+	byte __far*		src)
 {
-	byte far*	dest;
+	byte __far*	dest;
 
 
 	V_MarkRect(x, y, width, height);

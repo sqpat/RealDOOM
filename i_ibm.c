@@ -17,8 +17,11 @@
 //  IBM DOS VGA graphics and key/mouse.
 //
 
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
 #include <conio.h>
+#endif
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <graph.h>
@@ -244,10 +247,10 @@ void I_WaitVBL(int16_t vbls)
 //
 
 void I_SetPalette(int8_t paletteNumber) {
-	byte far* gammatablelookup;
+	byte __far* gammatablelookup;
 	int16_t i;
 
-	byte far* palette = palettebytes + paletteNumber * 768u;
+	byte __far* palette = palettebytes + paletteNumber * 768u;
 	int16_t savedtask = currenttask;
 	
     if(novideo) {
@@ -273,9 +276,9 @@ void I_SetPalette(int8_t paletteNumber) {
 // Graphics mode
 //
 
-byte far *pcscreen;
-byte far *currentscreen;
-byte far *destview;
+byte __far *pcscreen;
+byte __far *currentscreen;
+byte __far *destview;
 fixed_t_union destscreen;
 
 //
@@ -289,8 +292,8 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
 	uint16_t offset;
 	int16_t pstep;
 	int16_t step;
-	byte far *dest;
-	byte far *source;
+	byte __far *dest;
+	byte __far *source;
  
     sp_x1 = x / 8;
     sp_x2 = (x + w) / 8;
@@ -303,12 +306,12 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
     for (i = 0; i < 4; i++) {
 		outp(SC_INDEX + 1, 1 << i);
         source = &screen0[offset + i];
-        dest = (byte far*) (destscreen.w + poffset);
+        dest = (byte __far*) (destscreen.w + poffset);
 
         for (j = 0; j < h; j++) {
             k = count;
             while (k--) {
-				*(uint16_t far *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
+				*(uint16_t __far *)dest = (uint16_t)(((*(source + 4)) << 8) + (*source));
                 dest += 2;
                 source += 8;
             }
@@ -327,7 +330,7 @@ void I_UpdateNoBlit(void) {
 	int16_t realdr[4];
 	int16_t x, y, w, h;
 	// Set current screen
-    currentscreen = (byte far*) destscreen.w;
+    currentscreen = (byte __far*) destscreen.w;
 
     // Update dirtybox size
     realdr[BOXTOP] = dirtybox[BOXTOP];
@@ -421,7 +424,7 @@ void I_FinishUpdate(void)
 // I_ReadScreen
 // Reads the screen currently displayed into a linear buffer.
 //
-void I_ReadScreen(byte far *scr)
+void I_ReadScreen(byte __far *scr)
 {
 	uint16_t i;
 	uint16_t j;
@@ -647,7 +650,7 @@ void I_BeginRead(void)
 {
 	/*
 
-    byte far *src, far *dest;
+    byte __far *src, __far *dest;
 	int32_t y;
 
     if (!grmode)
@@ -706,7 +709,7 @@ void I_BeginRead(void)
 void I_EndRead(void)
 {
 	/*
-    byte far *src, far *dest;
+    byte __far *src, __far *dest;
 	int32_t y;
 
     if (!grmode)
@@ -788,7 +791,7 @@ void I_InitGraphics(void)
 	grmode = true;
 	regs.w.ax = 0x13;
 	intx86(0x10, (union REGS *)&regs, &regs);
-	pcscreen = currentscreen = (byte far*) 0xA0000000L;
+	pcscreen = currentscreen = (byte __far*) 0xA0000000L;
 	destscreen.w = 0xA0004000;
 
 	outp(SC_INDEX, SC_MEMMODE);

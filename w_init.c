@@ -31,7 +31,10 @@
 
 #include "w_wad.h"
 #include "r_defs.h"
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 
 extern filehandle_t				wadfilehandle;
 extern uint16_t                     numlumps;
@@ -60,18 +63,18 @@ extern uint16_t                     numlumps;
 
 extern uint16_t                     reloadlump;
 extern int8_t*                   reloadname;
-#define SCRATCH_FILE_LOAD_LOCATION  (filelump_t far*)(0x50000000)
+#define SCRATCH_FILE_LOAD_LOCATION  (filelump_t __far*)(0x50000000)
 
 void W_AddFile(int8_t *filename)
 {
 	wadinfo_t			header;
-	lumpinfo_t far*		lump_p;
+	lumpinfo_t __far*		lump_p;
 	uint16_t			i;
 	uint16_t			j = 65535;
 	filehandle_t		handle;
 	int32_t				length;
 	uint16_t			startlump;
-	filelump_t far*		fileinfo;
+	filelump_t __far*		fileinfo;
 	filelump_t			singleinfo;
 	filehandle_t		storehandle;
 

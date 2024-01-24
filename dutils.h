@@ -33,21 +33,21 @@
 
 typedef struct
 {
-    uint8_t near*	sequence;
-    uint8_t near*	p;
+    uint8_t __near*	sequence;
+    uint8_t __near*	p;
     
 } cheatseq_t;
 
 int8_t
 cht_CheckCheat
-( cheatseq_t near*		cht,
+( cheatseq_t __near*		cht,
 	int8_t			key );
 
 
 void
 cht_GetParam
-( cheatseq_t near*		cht,
-  int8_t near*			buffer );
+( cheatseq_t __near*		cht,
+  int8_t __near*			buffer );
 
 
 #endif

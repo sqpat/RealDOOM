@@ -20,7 +20,6 @@
 //
 
 
-#include <conio.h>
 #include "i_system.h"
 #include "r_local.h"
 
@@ -31,7 +30,11 @@
 
 #include "v_video.h"
 #include "w_wad.h"
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#include <conio.h>
+#endif
+
 
 
  
@@ -47,23 +50,23 @@ V_DrawFullscreenPatch
 {
 	int16_t		count;
 	int16_t		col;
-	column_t far*	column;
-	byte far* desttop;
-	byte far*	dest;
-	byte far*	source;
+	column_t __far*	column;
+	byte __far* desttop;
+	byte __far*	dest;
+	byte __far*	source;
 	int16_t		w;
-	patch_t far*	patch = (patch_t far *) (0x50000000);
-	byte far*	patch2 = (byte far *) (0x50008000);
+	patch_t __far*	patch = (patch_t __far *) (0x50000000);
+	byte __far*	patch2 = (byte __far *) (0x50008000);
  
 	int32_t    offset = 0;
 	int16_t    pageoffset = 0;
-	byte far*       extradata = (byte far *)patch;
+	byte __far*       extradata = (byte __far *)patch;
 	int16_t	pagenum = 0;
 	int16_t oldtask = currenttask;
 	int16_t lump = W_GetNumForName(pagename);
 	Z_QuickmapScratch_5000();
 
-	W_CacheLumpNumDirectFragment(lump, (byte far *)(0x50000000), pagenum, 0);
+	W_CacheLumpNumDirectFragment(lump, (byte __far *)(0x50000000), pagenum, 0);
 
 	w = (patch->width);
 
@@ -78,22 +81,22 @@ V_DrawFullscreenPatch
 	for (col = 0; col < w; col++, desttop++) {
 
 		// todo dynamically calculate the offsets
-		column = (column_t  far*)((byte  far*)extradata + ((patch->columnofs[col]) - offset));
-		pageoffset = (byte  far*)column - extradata;
+		column = (column_t  __far*)((byte  __far*)extradata + ((patch->columnofs[col]) - offset));
+		pageoffset = (byte  __far*)column - extradata;
 
 		if (pageoffset > 16000) {
 			offset += pageoffset;
 			pagenum++;
 			W_CacheLumpNumDirectFragment(lump, patch2, pagenum, offset);
 			extradata = patch2;
-			column = (column_t  far*)((byte  far*)extradata + patch->columnofs[col] - offset);
+			column = (column_t  __far*)((byte  __far*)extradata + patch->columnofs[col] - offset);
 		}
 
 
 		// step through the posts in a column 
 		while (column->topdelta != 0xff) {
 
-			source = (byte  far*)column + 3;
+			source = (byte  __far*)column + 3;
 			dest = desttop + column->topdelta * SCREENWIDTH;
 			count = column->length;
 
@@ -120,7 +123,7 @@ V_DrawFullscreenPatch
 						source++;
 						dest += SCREENWIDTH;
 					} while (--count);
-					column = (column_t  far*)(source + 1);
+					column = (column_t  __far*)(source + 1);
 		}
 	}
 

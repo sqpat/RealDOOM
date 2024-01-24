@@ -32,7 +32,7 @@
 // State.
 #include "r_state.h"
 
-extern mobj_t far* setStateReturn;
+extern mobj_t __far* setStateReturn;
 
 //
 // TELEPORTATION
@@ -41,12 +41,12 @@ int16_t
 EV_Teleport
 (uint8_t linetag,
   int16_t		side,
-	mobj_t far*	thing,
-	mobj_pos_t far* thing_pos)
+	mobj_t __far*	thing,
+	mobj_pos_t __far* thing_pos)
 {
     int16_t		i;
-    mobj_t far*	m;
-	mobj_pos_t far* m_pos;
+    mobj_t __far*	m;
+	mobj_pos_t __far* m_pos;
 	uint16_t	an;
     THINKERREF	thinkerRef;
 	int16_t secnum;
@@ -76,7 +76,7 @@ EV_Teleport
 				if ((thinkerlist[thinkerRef].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS) {
 					continue;
 				}
-				m = (mobj_t  far*)(&thinkerlist[thinkerRef].data);
+				m = (mobj_t  __far*)(&thinkerlist[thinkerRef].data);
 		
 				// not a teleportman
 				if (m->type != MT_TELEPORTMAN )

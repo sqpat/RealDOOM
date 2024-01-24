@@ -27,7 +27,10 @@
 #include "doomstat.h"
 #include "r_bsp.h"
 
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 #include <stdlib.h>
 #include <malloc.h>
 
@@ -51,7 +54,7 @@ extern union REGS regs;
 void(*XMSaddr) (void);		// far pointer to XMS driver
 uint16_t UMBbase = 0;
 uint16_t UMBsize = 0;
-byte far* conventional_far_bytes;
+byte __far* conventional_far_bytes = NULL;
 
 
 #pragma aux XMS_GET_DRIVER = \
@@ -210,8 +213,8 @@ void Z_InitUMBDOS(void) {
 }
 
 
-extern mobj_pos_t far* mobjposlist;
-extern byte far*	   spritedefs_bytes;
+extern mobj_pos_t __far* mobjposlist;
+extern byte __far*	   spritedefs_bytes;
 void Z_InitUMB(void) {
 	
 
@@ -227,7 +230,7 @@ void Z_InitUMB(void) {
 
 	spritedefs_bytes = conventional_far_bytes;
 	offset += STATIC_CONVENTIONAL_SPRITE_SIZE;
-	mobjposlist = (mobj_pos_t far*)(conventional_far_bytes + offset);
+	mobjposlist = (mobj_pos_t __far*)(conventional_far_bytes + offset);
 	offset += (MAX_THINKERS * sizeof(mobj_pos_t));
 
 	

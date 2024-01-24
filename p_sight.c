@@ -46,7 +46,7 @@ fixed_t_union		cachedt2y;
 int16_t P_DivlineSide
 ( fixed_t_union	x,
   fixed_t_union	y,
-  divline_t near*	node )
+  divline_t __near*	node )
 {
     fixed_t_union	dx;
 	fixed_t_union	dy;
@@ -92,7 +92,7 @@ int16_t P_DivlineSide
 int16_t  P_DivlineSide16
 ( int16_t	x,
   int16_t	y,
-  divline_t near*	node )
+  divline_t __near*	node )
 {
     fixed_t_union	dx;
     fixed_t_union	dy;
@@ -146,7 +146,7 @@ int16_t  P_DivlineSide16
 int16_t  P_DivlineSideNode
 ( fixed_t_union	x,
   fixed_t_union	y,
-  node_t far*	node )
+  node_t __far*	node )
 {
 
 	// NOTE: these nodes have proper 16 bit integer fields.
@@ -211,7 +211,7 @@ int16_t  P_DivlineSideNode
 /*
 fixed_t
 P_InterceptVector2
-( divline_t near*	v2,
+( divline_t __near*	v2,
   node_t*	v1 )
 {
     fixed_t	frac;
@@ -250,8 +250,8 @@ P_InterceptVector2
 */
 fixed_t
 P_InterceptVector2
-(divline_t near*	v2,
-	divline_t near*	v1 )
+(divline_t __near*	v2,
+	divline_t __near*	v1 )
 {
     fixed_t	frac;
     fixed_t	num;
@@ -280,8 +280,8 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 {
     int16_t		segnum;
 	int16_t linedefOffset;
-	line_t far*		line;
-	line_physics_t far*		line_physics;
+	line_t __far*		line;
+	line_physics_t __far*		line_physics;
 	int16_t			s1;
 	int16_t			s2;
     int16_t			count;
@@ -298,8 +298,8 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 	int16_t linev2Offset;
 	uint8_t lineflags;
 	fixed_t_union temp;
-	sector_t far* frontsector;
-	sector_t far* backsector;
+	sector_t __far* frontsector;
+	sector_t __far* backsector;
 	int16_t curlineside;
  	temp.h.fracbits = 0;
     // check lines
@@ -445,7 +445,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 //
 boolean P_CrossBSPNode (uint16_t bspnum)
 {
-    node_t far*	bsp;
+    node_t __far*	bsp;
     int8_t		side;
 
 	if (bspnum & NF_SUBSECTOR) {
@@ -486,10 +486,10 @@ boolean
 P_CheckSight
 ( 
   
-	mobj_t far* t1,
-	mobj_t far* t2,
-	mobj_pos_t far* t1_pos,
-	mobj_pos_t far* t2_pos
+	mobj_t __far* t1,
+	mobj_t __far* t2,
+	mobj_pos_t __far* t1_pos,
+	mobj_pos_t __far* t2_pos
 )
 {
 

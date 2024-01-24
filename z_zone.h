@@ -71,7 +71,7 @@ extern int32_t lumpinfo5000switchcount;
 #define CONVENTIONAL2_SIZE STATIC_CONVENTIONAL_SPRITE_SIZE + (MAX_THINKERS * sizeof(mobj_pos_t)) 
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
-extern byte far* conventionalmemoryblock;
+extern byte __far* conventionalmemoryblock;
 extern uint16_t EMS_PAGE;
 
 
@@ -80,12 +80,12 @@ void Z_InitEMS(void);
 void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 
-void far* Z_MallocConventional(uint16_t  size);
+void __far* Z_MallocConventional(uint16_t  size);
  
 void Z_ShutdownEMS();
  
-#define SCRATCH_ADDRESS_4000 (byte far* )0x40000000
-#define SCRATCH_ADDRESS_5000 (byte far* )0x50000000
+#define SCRATCH_ADDRESS_4000 (byte __far* )0x40000000
+#define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
 
 #define SCREEN0_LOGICAL_PAGE						4
 #define STRINGS_LOGICAL_PAGE						12
@@ -229,13 +229,13 @@ void Z_ClearDeadCode();
 #define PAGE_TYPE_PHYSICS 0
 #define PAGE_TYPE_RENDER 1
 
-#define menugraphicspage0		(byte far* )0x70000000
-#define menugraphicspage4		(byte far* )0x64000000
+#define menugraphicspage0		(byte __far* )0x70000000
+#define menugraphicspage4		(byte __far* )0x64000000
 
-#define	 wigraphicspage0		(byte far* )0x70000000
-#define  wigraphicslevelname	(byte far* )0x78000000
-#define  wigraphicsfullscreen	(byte far* )0x7C000000
-#define	 wianimspage			(byte far* )0x60000000
+#define	 wigraphicspage0		(byte __far* )0x70000000
+#define  wigraphicslevelname	(byte __far* )0x78000000
+#define  wigraphicsfullscreen	(byte __far* )0x7C000000
+#define	 wianimspage			(byte __far* )0x60000000
 
 #define PAGE_4000_UNMAPPED -1
 #define PAGE_4000_LUMPINFO 1

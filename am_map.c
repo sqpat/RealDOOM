@@ -573,7 +573,7 @@ void AM_maxOutWindowScale(void)
 //
 boolean
 AM_Responder
-( event_t far*	ev )
+( event_t __far*	ev )
 {
 
 	boolean rc;
@@ -799,8 +799,8 @@ int16_t DOOUTCODE(int16_t oc, int16_t mx, int16_t my) {
 
 boolean
 AM_clipMline
-( mline_t near*	ml,
-  fline_t near*	fl )
+( mline_t __near*	ml,
+  fline_t __near*	fl )
 {
     
     int16_t outcode1 = 0;
@@ -914,7 +914,7 @@ AM_clipMline
 //
 void
 AM_drawFline
-( fline_t near*	fl,
+( fline_t __near*	fl,
   uint8_t		color )
 {
     register int16_t x;
@@ -981,7 +981,7 @@ static fline_t fl;
 //
 void
 AM_drawMline
-( mline_t near*	ml,
+( mline_t __near*	ml,
   uint8_t		color )
 {
 
@@ -1108,8 +1108,8 @@ void AM_drawWalls()
 //
 void
 AM_rotate
-( int16_t near*	x,
-	int16_t near*	y,
+( int16_t __near*	x,
+	int16_t __near*	y,
   fineangle_t	a )
 {
 	fixed_t_union tmpx;
@@ -1124,7 +1124,7 @@ static mline_t	lc;
 
 void
 AM_drawLineCharacter
-( mline_t near*	lineguy,
+( mline_t __near*	lineguy,
   int16_t		lineguylines,
   int16_t	scale,
   fineangle_t	angle,
@@ -1192,12 +1192,12 @@ AM_drawThings
 ()
 {
     uint16_t		i;
-    mobj_pos_t far*	t;
+    mobj_pos_t __far*	t;
 	THINKERREF tRef;
 	for (i=0;i<numsectors;i++) {
 		tRef = sectors[i].thinglistRef;
 		while (tRef) {
-			t = (mobj_pos_t far*)(&mobjposlist[tRef]);
+			t = (mobj_pos_t __far*)(&mobjposlist[tRef]);
 			
 			AM_drawLineCharacter (thintriangle_guy, NUMTHINTRIANGLEGUYLINES,
 			 0x10L, t->angle.hu.intbits >> SHORTTOFINESHIFT, THINGCOLORS, t->x.h.intbits, t->y.h.intbits);
@@ -1221,7 +1221,7 @@ void AM_drawMarks(void)
  
 			if (fx >= 0 && fx <= automap_screenwidth - 5 && 
 				fy >= 0 && fy <= automap_screenheight - 6) {
-				V_DrawPatch(fx, fy, FB, ((patch_t far*)&ammnumpatchbytes[ammnumpatchoffsets[i]]));
+				V_DrawPatch(fx, fy, FB, ((patch_t __far*)&ammnumpatchbytes[ammnumpatchoffsets[i]]));
 
 			
 			

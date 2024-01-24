@@ -37,7 +37,10 @@
 #include "i_system.h"
 #include "doomstat.h"
 #include  <alloca.h>
-#include  <dos.h>
+#ifdef __COMPILER_WATCOM
+#include <dos.h>
+#endif
+
 
 
 
@@ -170,7 +173,7 @@ void R_InitSpriteLumps(void)
 {
 	int16_t         i;
 
-	patch_t      far*patch;
+	patch_t      __far*patch;
  	int16_t		patchwidth;
 	int16_t		patchleftoffset;
 	int16_t		patchtopoffset;
@@ -186,7 +189,7 @@ void R_InitSpriteLumps(void)
 
 		W_CacheLumpNumDirect(firstspritelump + i, SCRATCH_ADDRESS_5000);
 		
-		patch = (patch_t far*)SCRATCH_ADDRESS_5000;
+		patch = (patch_t __far*)SCRATCH_ADDRESS_5000;
 		patchwidth = (patch->width);
 		patchleftoffset = (patch->leftoffset);
 		patchtopoffset = (patch->topoffset);
@@ -248,9 +251,9 @@ void R_GenerateLookup(uint8_t texnum)
 {
  
 
-	texture_t far*          texture;
-	texpatch_t far*         patch;
-	patch_t far*            realpatch;
+	texture_t __far*          texture;
+	texpatch_t __far*         patch;
+	patch_t __far*            realpatch;
 	int16_t                 x;
 	int16_t                 x1;
 	int16_t                 x2;
@@ -261,19 +264,19 @@ void R_GenerateLookup(uint8_t texnum)
 	int16_t				texturewidth;
 	int16_t				textureheight;
 	int8_t				texturename[8];
-	byte far*				patchaddr = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
+	byte __far*				patchaddr = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
 	
 	//byte patchcountbytes[256];	// 256 enough for doom shareware. maybe 512 for doom ii
-	//byte near *patchcount = patchcountbytes;
+	//byte __near *patchcount = patchcountbytes;
 
 	//byte patchcount[256];	// 256 enough for doom shareware. maybe 512 for doom ii
 
 
 	//byte patchcount[256];
-	byte near*               patchcount;     // patchcount[texture->width]
+	byte __near*               patchcount;     // patchcount[texture->width]
 
-	int16_t far*  collump = (int16_t far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum]]);
-	uint16_t far* colofs = (uint16_t far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum]]);
+	int16_t __far*  collump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum]]);
+	uint16_t __far* colofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum]]);
 
 	//uint8_t currentpatchpage = 0;
 	
@@ -281,7 +284,7 @@ void R_GenerateLookup(uint8_t texnum)
 
 	// Composited texture not created yet.
 
-	texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
+	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 	FAR_memcpy(texturename, texture->name, 8);
@@ -290,14 +293,14 @@ void R_GenerateLookup(uint8_t texnum)
 	// Fill in the lump / offset, so columns
 	//  with only a single patch are all done.
 
-	patchcount = (byte near*)alloca(texture->width + 1);
+	patchcount = (byte __near*)alloca(texture->width + 1);
 	memset(patchcount, 0, texture->width + 1);
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
-	realpatch = (patch_t far*)patchaddr;
+	realpatch = (patch_t __far*)patchaddr;
 	for (i = 0; i < texturepatchcount; i++) {
 
-		texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
+		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 
 		patch = &texture->patches[i];
 		x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
@@ -316,7 +319,7 @@ void R_GenerateLookup(uint8_t texnum)
 			currentpatchpage = pagenum;
 		}
 		*/
-		//realpatch = (patch_t far*)MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[pagenum - currentpatchpage] + patchoffset[index]);
+		//realpatch = (patch_t __far*)MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[pagenum - currentpatchpage] + patchoffset[index]);
 		if (lastusedpatch != patchpatch)
 			W_CacheLumpNumDirect(patchpatch, patchaddr);
 
@@ -362,7 +365,7 @@ void R_GenerateLookup(uint8_t texnum)
 }
 
  
-#define TEX_LOAD_ADDRESS (byte far*) (0x70000000)
+#define TEX_LOAD_ADDRESS (byte __far*) (0x70000000)
 
 //
 // R_InitTextures
@@ -371,22 +374,22 @@ void R_GenerateLookup(uint8_t texnum)
 //
 void R_InitTextures(void)
 {
-	maptexture_t far*       mtexture;
-	texture_t far*          texture;
-	mappatch_t far*         mpatch;
-	texpatch_t far*         patch;
+	maptexture_t __far*       mtexture;
+	texture_t __far*          texture;
+	mappatch_t __far*         mpatch;
+	texpatch_t __far*         patch;
 
 	int16_t                 i;
 	int16_t                 j;
 
 	// memory addresses, must stay int_32...
-	int32_t far*                maptex;
-	int32_t far*                maptex2;
-	int32_t far*                maptex1;
-	int32_t far*                directory;
+	int32_t __far*                maptex;
+	int32_t __far*                maptex2;
+	int32_t __far*                maptex1;
+	int32_t __far*                directory;
 
 	int8_t                name[9];
- 	int8_t far*               name_p;
+ 	int8_t __far*               name_p;
 
 	int16_t                 nummappatches;
 	int16_t                 offset;
@@ -408,9 +411,9 @@ void R_InitTextures(void)
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
- 	W_CacheLumpNameDirect("PNAMES", (byte far*)TEX_LOAD_ADDRESS);
-	nummappatches = (*((int32_t  far*)TEX_LOAD_ADDRESS));
-	name_p = (int8_t far*)(TEX_LOAD_ADDRESS + 4);
+ 	W_CacheLumpNameDirect("PNAMES", (byte __far*)TEX_LOAD_ADDRESS);
+	nummappatches = (*((int32_t  __far*)TEX_LOAD_ADDRESS));
+	name_p = (int8_t __far*)(TEX_LOAD_ADDRESS + 4);
 	for (i = 0; i < nummappatches; i++)
 	{
 		FAR_strncpy(name, name_p + i * 8, 8);
@@ -420,8 +423,8 @@ void R_InitTextures(void)
 	// Load the map texture definitions from textures.lmp.
 	// The data is contained in one or two lumps,
 	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
-	maptex = maptex1 = (int32_t far*)TEX_LOAD_ADDRESS;
-	W_CacheLumpNameDirect("TEXTURE1", (byte far*)maptex);
+	maptex = maptex1 = (int32_t __far*)TEX_LOAD_ADDRESS;
+	W_CacheLumpNameDirect("TEXTURE1", (byte __far*)maptex);
 
 	numtextures1 = (*maptex);
 	directory = maptex + 1;
@@ -429,8 +432,8 @@ void R_InitTextures(void)
 
 	if (W_CheckNumForName("TEXTURE2") != -1)
 	{
-		maptex2 = ((int32_t far*)TEX_LOAD_ADDRESS) + 0x8000u;
-		W_CacheLumpNameDirect("TEXTURE2", (byte far*)maptex2);
+		maptex2 = ((int32_t __far*)TEX_LOAD_ADDRESS) + 0x8000u;
+		W_CacheLumpNameDirect("TEXTURE2", (byte __far*)maptex2);
 		numtextures2 = (*maptex2);
 	}
 	else
@@ -467,14 +470,14 @@ void R_InitTextures(void)
 		offset = (*directory);
 
 
-		mtexture = (maptexture_t  far*)((byte  far*)maptex + offset);
+		mtexture = (maptexture_t  __far*)((byte  __far*)maptex + offset);
 
 		if ((i + 1) < numtextures) {
 			texturedefs_offset[i + 1] = texturedefs_offset[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
 		}
 
 
-		texture = (texture_t far*)&(texturedefs_bytes[texturedefs_offset[i]]);
+		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
 		texture->width = (mtexture->width) - 1;
 		texture->height = (mtexture->height) - 1;
 		texture->patchcount = (mtexture->patchcount);
@@ -606,8 +609,8 @@ void R_InitData(void) {
 
 	lump = W_GetNumForName("COLORMAP");
 	//length = W_LumpLength(lump) + 255;
-	//colormaps = (byte far*)colormapbytes;
-	//colormaps = (byte  far*)(((int32_t)colormaps + 255)&~0xff);
+	//colormaps = (byte __far*)colormapbytes;
+	//colormaps = (byte  __far*)(((int32_t)colormaps + 255)&~0xff);
 	W_CacheLumpNumDirect(lump, colormaps);
 
  

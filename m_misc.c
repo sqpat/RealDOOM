@@ -122,7 +122,7 @@ void M_ClearRandom (void)
 
 void
 M_AddToBox16
-( int16_t near*	box,
+( int16_t __near*	box,
   int16_t	x,
   int16_t	y )
 {
@@ -147,7 +147,7 @@ M_AddToBox16
 boolean
 M_WriteFile
 (int8_t const*	name,
-  void far*		source,
+  void __far*		source,
   filelength_t		length )
 {
     filehandle_t		handle;
@@ -176,12 +176,12 @@ M_WriteFile
 filelength_t
 M_ReadFile
 (int8_t const*	name,
-  byte far*	bufferRef )
+  byte __far*	bufferRef )
 {
     filelength_t count, length;
 	filehandle_t handle;
     struct stat	fileinfo;
-    byte		far *buf;
+    byte		__far *buf;
 	
     handle = open (name, O_RDONLY | O_BINARY, 0666);
 #ifdef CHECK_FOR_ERRORS

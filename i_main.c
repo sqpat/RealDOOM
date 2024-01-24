@@ -22,7 +22,10 @@
 //#include "m_misc.h"
 #include "i_system.h"
 #include <malloc.h>
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 
 extern void D_DoomMain();
 
@@ -69,7 +72,7 @@ void checkDS() {
 	int16_t ds;
 	int16_t ss;
 	int16_t ds_diff;
-	//byte far* someptr = malloc(1);
+	//byte __far* someptr = malloc(1);
 
 	segread(&sregs);
 	ds = sregs.ds; // 2a56 2e06 c7a

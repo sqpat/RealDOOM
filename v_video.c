@@ -19,7 +19,6 @@
 //
 
 
-#include <conio.h>
 #include "i_system.h"
 #include "r_local.h"
 
@@ -29,7 +28,11 @@
 #include "m_misc.h"
 
 #include "v_video.h"
+#ifdef __COMPILER_WATCOM
+#include <conio.h>
 #include <dos.h>
+#endif
+
 
 
  
@@ -87,8 +90,8 @@ V_CopyRect
   int16_t		destx,
   int16_t		desty ) 
 { 
-    byte far*	src;
-    byte far*	dest;
+    byte __far*	src;
+    byte __far*	dest;
 	if (skipdirectdraws) {
 		return;
 	}
@@ -118,13 +121,13 @@ V_DrawPatch
 ( int16_t		x,
   int16_t		y,
   int16_t		scrn,
-  patch_t far*	patch )
+  patch_t __far*	patch )
 { 
 
     int16_t		col; 
-    column_t far*	column;
+    column_t __far*	column;
 	uint16_t offset;
-	byte  far* desttop;
+	byte  __far* desttop;
     int16_t		w; 
 	 
 	if (skipdirectdraws) {
@@ -161,13 +164,13 @@ V_DrawPatch
     w = (patch->width); 
 
     for ( ; col<w ; x++, col++, desttop++) { 
-		column = (column_t far *)((byte far*)patch + (patch->columnofs[col])); 
+		column = (column_t __far *)((byte __far*)patch + (patch->columnofs[col])); 
  
 		// step through the posts in a column 
 		while (column->topdelta != 0xff )  { 
 
-			register const byte far*source = (byte far*)column + 3;
-			register byte far*dest = desttop + column->topdelta * SCREENWIDTH;
+			register const byte __far*source = (byte __far*)column + 3;
+			register byte __far*dest = desttop + column->topdelta * SCREENWIDTH;
 			register int16_t count = column->length;
 
 			if ((count -= 4) >= 0){
@@ -194,7 +197,7 @@ V_DrawPatch
 					dest += SCREENWIDTH;
 				} while (--count);
 			}
-			column = (column_t far*)(source + 1);
+			column = (column_t __far*)(source + 1);
 		} 
     }			 
 } 
@@ -209,20 +212,20 @@ void
 V_DrawPatchDirect
 ( int16_t		x,
   int16_t		y,
-  patch_t far*	patch )
+  patch_t __far*	patch )
 {
     int16_t		count;
     int16_t		col; 
-    column_t far*	column;
-    byte far*	desttop;
-    byte far*	dest;
-    byte far*	source;
+    column_t __far*	column;
+    byte __far*	desttop;
+    byte __far*	dest;
+    byte __far*	source;
     int16_t		w; 
 	 
     y -= (patch->topoffset); 
     x -= (patch->leftoffset); 
  
-	desttop = (byte far*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
+	desttop = (byte __far*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
 	 
     w = (patch->width); 
     for ( col = 0 ; col<w ; col++) 
@@ -230,13 +233,13 @@ V_DrawPatchDirect
 #ifndef	SKIP_DRAW
 		outp (SC_INDEX+1,1<<(x&3));
 #endif
-	column = (column_t  far*)((byte  far*)patch + (patch->columnofs[col]));
+	column = (column_t  __far*)((byte  __far*)patch + (patch->columnofs[col]));
  
 	// step through the posts in a column 
 	 
 	while (column->topdelta != 0xff ) 
 	{ 
-	    source = (byte  far*)column + 3;
+	    source = (byte  __far*)column + 3;
 		dest = desttop + column->topdelta * (SCREENWIDTH / 4);
 	    count = column->length; 
 	    while (count--)  { 
@@ -244,7 +247,7 @@ V_DrawPatchDirect
 			source++;
 			dest +=  (SCREENWIDTH / 4);
 	    } 
-	    column = (column_t far *)(  (byte  far*)column + column->length + 4 );
+	    column = (column_t __far *)(  (byte  __far*)column + column->length + 4 );
 	} 
 	if ( ((++x)&3) == 0 ) 
 	    desttop++;	// go to next byte, not next plane 

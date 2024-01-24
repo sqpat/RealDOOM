@@ -41,13 +41,13 @@ THINKERREF		activeplats[MAXPLATS];
 //
 // Move a plat up and down
 //
-void T_PlatRaise(plat_t far* plat, THINKERREF platRef)
+void T_PlatRaise(plat_t __far* plat, THINKERREF platRef)
 {
 
     result_e	res;
 	int16_t platsecnum = plat->secnum;
-	sector_t far* platsector = &sectors[platsecnum];
-	sector_physics_t far* platsector_physics = &sectors_physics[platsecnum];
+	sector_t __far* platsector = &sectors[platsecnum];
+	sector_physics_t __far* platsector_physics = &sectors_physics[platsecnum];
 
 	int16_t sectorsoundorgX = platsector_physics->soundorgX;
 	int16_t sectorsoundorgY = platsector_physics->soundorgY;
@@ -128,7 +128,7 @@ EV_DoPlat
   plattype_e	type,
   int16_t		amount )
 {
-    plat_t far*	plat;
+    plat_t __far*	plat;
     int16_t		secnum;
     int16_t		rtn;
 	int16_t		j = 0;
@@ -166,7 +166,7 @@ EV_DoPlat
 		sectorfloorheight = sectors[secnum].floorheight;
 
 
-		plat = (plat_t far*)P_CreateThinker(TF_PLATRAISE_HIGHBITS);
+		plat = (plat_t __far*)P_CreateThinker(TF_PLATRAISE_HIGHBITS);
 		platRef = GETTHINKERREF(plat);
 		sectors[secnum].specialdataRef = platRef;
 
@@ -264,10 +264,10 @@ EV_DoPlat
 
 void P_ActivateInStasis(int8_t tag) {
     int8_t		j;
-	plat_t far* plat;
+	plat_t __far* plat;
 	for (j = 0; j < MAXPLATS; j++)
 		if (activeplats[j] != NULL_THINKERREF) {
-			plat = (plat_t far*)&thinkerlist[activeplats[j]].data;
+			plat = (plat_t __far*)&thinkerlist[activeplats[j]].data;
 
 			if ((plat->status == plat_in_stasis) && (plat->tag == tag)) {
 				plat->oldstatus = plat->status;
@@ -280,11 +280,11 @@ void P_ActivateInStasis(int8_t tag) {
 
 void EV_StopPlat(uint8_t linetag) {
 	int8_t		j;
-	plat_t far* plat;
+	plat_t __far* plat;
 
 	for (j = 0; j < MAXPLATS; j++) {
 		if (activeplats[j] != NULL_THINKERREF) {
-			plat = (plat_t far*)&thinkerlist[activeplats[j]].data;
+			plat = (plat_t __far*)&thinkerlist[activeplats[j]].data;
 			if ((plat->status != plat_in_stasis) && (plat->tag == linetag)) {
 				plat->oldstatus = plat->status;
 				plat->status = plat_in_stasis;
@@ -310,11 +310,11 @@ void P_AddActivePlat(THINKERREF thinkerref) {
 void P_RemoveActivePlat(THINKERREF platRef)
 {
     int8_t		i;
-	plat_t far* plat;
+	plat_t __far* plat;
 	int16_t platsecnum;
 	for (i = 0; i < MAXPLATS; i++) {
 		if (platRef == activeplats[i]) {
-			plat = (plat_t far*)&thinkerlist[platRef].data;
+			plat = (plat_t __far*)&thinkerlist[platRef].data;
 			platsecnum = plat->secnum;
 			P_RemoveThinker(platRef);
 			(&sectors[platsecnum])->specialdataRef = NULL_THINKERREF;

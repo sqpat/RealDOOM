@@ -39,7 +39,7 @@
 //
 result_e
 T_MovePlane
-( sector_t far*	sector,
+( sector_t __far*	sector,
   short_height_t	speed,
   short_height_t	dest,
   boolean	crush,
@@ -231,12 +231,12 @@ T_MovePlane
 //
 // MOVE A FLOOR TO IT'S DESTINATION (UP OR DOWN)
 //
-void T_MoveFloor(floormove_t far* floor, THINKERREF floorRef)
+void T_MoveFloor(floormove_t __far* floor, THINKERREF floorRef)
 {
     result_e	res;
 	int16_t floorsecnum = floor->secnum;
 
-	sector_t far* floorsector = &sectors[floorsecnum];
+	sector_t __far* floorsector = &sectors[floorsecnum];
 	uint8_t floornewspecial;
 	floor_e floortype;
 	int16_t floordirection;
@@ -292,11 +292,11 @@ EV_DoFloor
     int16_t			rtn = 0;
     int16_t			i;
 	int16_t		j = 0;
-    floormove_t far*	floor;
+    floormove_t __far*	floor;
 	THINKERREF floorRef;
 	int16_t specialheight;
-	sector_t far* sector;
-	sector_physics_t far* sector_physics;
+	sector_t __far* sector;
+	sector_physics_t __far* sector_physics;
 
 	int16_t sectorceilingheight;
 	int16_t sectorfloorheight;
@@ -317,7 +317,7 @@ EV_DoFloor
 		sectorfloorheight = sector->floorheight;
 
 
-		floor = (floormove_t far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+		floor = (floormove_t __far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 		floorRef = GETTHINKERREF(floor);
 		sector->specialdataRef = floorRef;
 
@@ -444,8 +444,8 @@ EV_DoFloor
 		  case lowerAndChange:{
 
 			  //int16_t sidenum;
-			  line_t far* sideline;
-			  line_physics_t far* sideline_physics;
+			  line_t __far* sideline;
+			  line_physics_t __far* sideline_physics;
 
 			floor->direction = -1;
 			floor->secnum = secnum;
@@ -506,7 +506,7 @@ EV_BuildStairs
     
     int16_t		tsecOffset;
 
-    floormove_t far*	floor;
+    floormove_t __far*	floor;
     
     int16_t		stairsize;
     int16_t		speed;
@@ -519,7 +519,7 @@ EV_BuildStairs
 	uint8_t sectorlinecount;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	int16_t		j = 0;
-	sector_t far* sector;
+	sector_t __far* sector;
 	
 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 	while (secnumlist[j] >= 0) {
@@ -537,7 +537,7 @@ EV_BuildStairs
 		sectorlinecount = sector->linecount;
 		sectorlinesoffset = sector->linesoffset;
 
-		floor = (floormove_t far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+		floor = (floormove_t __far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 		floorRef = GETTHINKERREF(floor);		
 		floor->direction = 1;
 		floor->secnum = secnum;
@@ -593,7 +593,7 @@ EV_BuildStairs
 				secnum = tsecOffset;
 
 
-				floor = (floormove_t far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
+				floor = (floormove_t __far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 				floorRef = GETTHINKERREF(floor);		
 
 				floor->floordestheight = height;

@@ -52,7 +52,10 @@
 #include "dstrings.h"
 #include "sounds.h"
 #include "st_stuff.h"
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 
             
 // ST_Start() has just been called
@@ -63,7 +66,7 @@ boolean          updatedthisframe;
 
 // lump number for PLAYPAL
 //int16_t              lu_palette;
-//byte far*  palettebytes;
+//byte __far*  palettebytes;
 
 // used for timing
 
@@ -265,7 +268,7 @@ void ST_refreshBackground(void)
 {
 
     if (st_statusbaron) {
-        V_DrawPatch(ST_X, 0, BG, (patch_t far*)sbar_patch);
+        V_DrawPatch(ST_X, 0, BG, (patch_t __far*)sbar_patch);
         V_CopyRect(ST_X, 0, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
     }
 
@@ -275,7 +278,7 @@ void ST_refreshBackground(void)
 // Respond to keyboard input events,
 //  intercept cheats.
 boolean
-ST_Responder (event_t far* ev)
+ST_Responder (event_t __far* ev)
 {
 	int8_t           i;
     
@@ -516,7 +519,7 @@ void ST_updateFaceWidget(void)
     static int8_t  lastattackdown = -1;
     static int8_t  priority = 0;
     boolean     doevilgrin;
-	mobj_pos_t far* plyrattacker_pos;
+	mobj_pos_t __far* plyrattacker_pos;
 
     if (priority < 10) {
         // dead

@@ -38,11 +38,11 @@
 //
 // T_VerticalDoor
 //
-void T_VerticalDoor (vldoor_t far* door, THINKERREF doorRef)
+void T_VerticalDoor (vldoor_t __far* door, THINKERREF doorRef)
 {
     result_e	res;
-	sector_t far* doorsector = &sectors[door->secnum];
-	sector_physics_t far* doorsector_physics = &sectors_physics[door->secnum];
+	sector_t __far* doorsector = &sectors[door->secnum];
+	sector_physics_t __far* doorsector_physics = &sectors_physics[door->secnum];
 
 	switch(door->direction) {
 		  case 0:
@@ -222,11 +222,11 @@ EV_DoDoor
   vldoor_e	type )
 {
     int16_t		secnum,rtn;
-    vldoor_t far*	door;
+    vldoor_t __far*	door;
 	THINKERREF doorRef;
 	int16_t doortopheight;
-	sector_t  far*doorsector;
-	sector_physics_t far* doorsector_physics;
+	sector_t  __far*doorsector;
+	sector_physics_t __far* doorsector_physics;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	int16_t		j = 0;
 
@@ -246,7 +246,7 @@ EV_DoDoor
 
 		doorsector = &sectors[secnum];
 		doorsector_physics = &sectors_physics[secnum];
-		door  = (vldoor_t far*)P_CreateThinker (TF_VERTICALDOOR_HIGHBITS);
+		door  = (vldoor_t __far*)P_CreateThinker (TF_VERTICALDOOR_HIGHBITS);
 		doorRef = GETTHINKERREF(door);
 		sectors[secnum].specialdataRef = doorRef;
 
@@ -316,14 +316,14 @@ EV_VerticalDoor
 	THINKERREF thingRef )
 {
     int16_t		secnum;
-    //sector_t far*	sec;
-    vldoor_t far*	door;
+    //sector_t __far*	sec;
+    vldoor_t __far*	door;
     //int16_t		side = 0;
 	THINKERREF doorRef;
 	int16_t linespecial = lines_physics[linenum].special;
 	int16_t doortopheight;
-	sector_t  far*doorsector;
-	sector_physics_t  far*doorsector_physics;
+	sector_t  __far*doorsector;
+	sector_physics_t  __far*doorsector_physics;
 
 
 		
@@ -384,7 +384,7 @@ EV_VerticalDoor
     if (doorsector->specialdataRef) {
 		
 		doorRef = doorsector->specialdataRef;
-		door = (vldoor_t far*)&thinkerlist[doorRef].data;
+		door = (vldoor_t __far*)&thinkerlist[doorRef].data;
 
 
 		switch(linespecial) {
@@ -429,7 +429,7 @@ EV_VerticalDoor
     // new door thinker
 
 	
-	door = (vldoor_t far*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+	door = (vldoor_t __far*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
 	doorRef = GETTHINKERREF(door);
 	door->secnum = secnum;
 	door->direction = 1;
@@ -476,10 +476,10 @@ EV_VerticalDoor
 //
 void P_SpawnDoorCloseIn30 (int16_t secnum)
 {
-    vldoor_t far*	door;
+    vldoor_t __far*	door;
 	THINKERREF doorRef;
 
-	door = (vldoor_t far*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+	door = (vldoor_t __far*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
 	doorRef = GETTHINKERREF(door);
 	door->secnum = secnum;
 	door->direction = 0;
@@ -500,11 +500,11 @@ void
 P_SpawnDoorRaiseIn5Mins
 ( int16_t secnum)
 {
-	vldoor_t far*	door;
+	vldoor_t __far*	door;
 	THINKERREF doorRef;
 	int16_t doortopheight;
 
-	door = (vldoor_t far*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
+	door = (vldoor_t __far*)P_CreateThinker(TF_VERTICALDOOR_HIGHBITS);
 	doorRef = GETTHINKERREF(door);
 
 	

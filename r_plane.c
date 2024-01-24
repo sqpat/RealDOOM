@@ -28,7 +28,10 @@
 #include "doomstat.h"
 
 #include "r_local.h"
+#ifdef __COMPILER_WATCOM
 #include <dos.h>
+#endif
+
 
 
 
@@ -53,7 +56,7 @@ int16_t				ceilingplaneindex;
 
 // ?
 //int16_t			*openings;// [MAXOPENINGS];
-int16_t far*		lastopening;
+int16_t __far*		lastopening;
 
 
 //
@@ -74,7 +77,7 @@ int16_t far*		lastopening;
 //
 // texture mapping
 //
-lighttable_t far*far*		planezlight;
+lighttable_t __far*__far*		planezlight;
 fixed_t			planeheight;
 
 fixed_t			basexscale;
@@ -192,7 +195,7 @@ R_FindPlane
   uint8_t		picnum,
   uint8_t		lightlevel )
 {
-    visplane_t far*	check;
+    visplane_t __far*	check;
     //visplaneheader_t*	checkheader;
 	//visplanebytes_t* checkbytes;
 	int i;
@@ -278,7 +281,7 @@ R_CheckPlane
     int16_t		x;
 	//int16_t		lastvisplaneheader;
 	//visplanebytes_t* plbytes;
-	visplane_t far*	pl;
+	visplane_t __far*	pl;
 	//visplaneheader_t* plheader;
 
 	if (index < MAXCONVENTIONALVISPLANES) {
@@ -375,7 +378,7 @@ extern uint8_t firstunusedflat;
 //
 void R_DrawPlanes (void)
 {
-    visplane_t far*		pl;
+    visplane_t __far*		pl;
     uint8_t			light;
     int16_t			x;
     int16_t			stop;
@@ -384,7 +387,7 @@ void R_DrawPlanes (void)
 	int16_t			i;
 
     //visplaneheader_t*		plheader;
-	visplanebytes_t far*		plbytes = NULL;
+	visplanebytes_t __far*		plbytes = NULL;
 	//int16_t currentplanebyteRef = -1; // visplaneheaders->visplanepage is always 0;
 	//visplanebytes_t* base;
 
@@ -394,7 +397,7 @@ void R_DrawPlanes (void)
 	int8_t effectivepagenumber = 0;
 	uint8_t usedflatindex;
 	boolean flatunloaded = false;
-	byte far* src;
+	byte __far* src;
 	int16_t currentflatpage = -1;
 
     for (i = 0; i < lastvisplane ; i++) {

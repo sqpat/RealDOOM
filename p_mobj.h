@@ -276,6 +276,6 @@ typedef struct mobj_pos_s
 } mobj_pos_t;
 
 
-extern mobj_t far* SAVEDUNIT;
+extern mobj_t __far* SAVEDUNIT;
 
 #endif
