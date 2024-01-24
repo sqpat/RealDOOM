@@ -396,7 +396,9 @@ void Z_QuickmapPhysics() {
 		I_Error("Call 0x5000 failed with value %i!\n", errorreg);
 	}
 	*/
+#ifdef DETAILED_BENCH_STATS
 	taskswitchcount ++;
+#endif
 	currenttask = TASK_PHYSICS;
 	current4000State = PAGE_4000_LUMPINFO;
 	current5000State = PAGE_5000_TRIG;
@@ -977,7 +979,7 @@ void Z_ClearDeadCode() {
 	//DEBUG_PRINT("\nClearing out %u bytes of initialization code", size);
 }
 
-
+/*
 void DUMP_MEMORY_TO_FILE() {
 	int16_t segment = 0x4000;
 	FILE*fp = fopen("MEM_DUMP.BIN", "wb");
@@ -989,3 +991,4 @@ void DUMP_MEMORY_TO_FILE() {
 	fclose(fp);
 	I_Error("\ndumped");
 }
+*/

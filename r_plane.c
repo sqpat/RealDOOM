@@ -247,7 +247,7 @@ R_FindPlane
     check->maxx = -1;
     
 	if (i < MAXCONVENTIONALVISPLANES) {
-	    memset (check->top,0xff,sizeof(check->top));
+	    FAR_memset (check->top,0xff,sizeof(check->top));
 	} else {
 
 		/*
@@ -353,13 +353,13 @@ R_CheckPlane
 	}
 
 	if (index < MAXCONVENTIONALVISPLANES) {
-	    memset (pl->top,0xff,sizeof(pl->top));
+		FAR_memset (pl->top,0xff,sizeof(pl->top));
 
 	} else {
 		//todo dont z_load if same page frame?
 		/*
 		plbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[plheader->visplanepage]))[plheader->visplaneoffset]);
-		memset (plbytes->top,0xff,sizeof(plbytes->top));
+		FAR_memset (plbytes->top,0xff,sizeof(plbytes->top));
 		*/
 
 	}

@@ -137,8 +137,8 @@ void P_RunThinkers (void)
 			
 			thinkerlist[prevRef].next = nextRef;;
 
-			memset(&thinkerlist[currentthinker].data, 0, sizeof(mobj_t));
-			memset(&mobjposlist[currentthinker],	  0, sizeof(mobj_pos_t));
+			FAR_memset(&thinkerlist[currentthinker].data, 0, sizeof(mobj_t));
+			FAR_memset(&mobjposlist[currentthinker],	  0, sizeof(mobj_pos_t));
 			thinkerlist[currentthinker].prevFunctype = MAX_THINKERS;
 		} else {
 			mobj = &thinkerlist[currentthinker].data;
