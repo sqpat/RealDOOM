@@ -208,7 +208,7 @@ S_ChangeMusic
     }
 
     // load & register it
-    //music->data = (void far*) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
+    //music->data = (void __far*) W_CacheLumpNum(music->lumpnum, PU_MUSIC);
     music->handle = I_RegisterSong(music->data);
     //_dpmi_lockregion(music->data, lumpinfo[music->lumpnum].size);
 
@@ -547,7 +547,7 @@ void S_StartSoundAtVolume
 
 	// cache data if necessary
 	if (!sfx->data) {
-		//sfx->data = (void far *) W_CacheLumpNum(sfx->lumpnum, PU_MUSIC);
+		//sfx->data = (void __far *) W_CacheLumpNum(sfx->lumpnum, PU_MUSIC);
 
 		//_dpmi_lockregion(sfx->data, lumpinfo[sfx->lumpnum].size);
 		// fprintf( stderr,

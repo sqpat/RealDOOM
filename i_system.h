@@ -73,7 +73,7 @@ void I_EndRead(void);
 //  MUSIC I/O
 //
 
-int16_t I_RegisterSong(void far*data);
+int16_t I_RegisterSong(void __far*data);
 // called by anything that wants to register a song lump with the sound lib
 // calls Paul's function of the similar name to register music only.
 // note that the song data is the same for any sound card and is paul's

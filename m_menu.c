@@ -213,7 +213,7 @@ void M_WriteText(int16_t x, int16_t y, int8_t *string);
 int16_t  M_StringWidth(int8_t *string);
 int16_t  M_StringHeight(int8_t *string);
 void M_StartControlPanel(void);
-void M_StartMessage(int8_t near*string,void far * routine,boolean input);
+void M_StartMessage(int8_t near*string,void __far * routine,boolean input);
 void M_ClearMenus (void);
 
 
@@ -1177,7 +1177,7 @@ M_DrawThermo
 void
 M_StartMessage
 ( int8_t near*         string,
-  void far*         routine,
+  void __far*         routine,
   boolean       input )
 {
     messageLastMenuActive = menuactive;

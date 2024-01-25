@@ -94,7 +94,7 @@ void I_SetSfxVolume(uint8_t volume)
 // Song API
 //
 
-int16_t I_RegisterSong(void far*data)
+int16_t I_RegisterSong(void __far*data)
 {
 	/*
     int16_t rc = MUS_RegisterSong(data);
