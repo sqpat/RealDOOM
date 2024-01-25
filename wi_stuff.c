@@ -1249,7 +1249,7 @@ void WI_Init(void)
 		sprintf(name, "CWILV%2.2d", wbs->last);
 		W_CacheLumpNameDirect(name, dst);
 
-		dst = (byte far *)(wigraphicslevelname + NEXT_OFFSET);
+		dst = (byte __far *)(wigraphicslevelname + NEXT_OFFSET);
 		sprintf(name, "CWILV%2.2d", wbs->next);
 		W_CacheLumpNameDirect(name, dst);
 
@@ -1259,7 +1259,7 @@ void WI_Init(void)
 		sprintf(name, "WILV%d%d", wbs->epsd, wbs->last);
 		W_CacheLumpNameDirect(name, dst);
 
-		dst = (byte far *)(wigraphicslevelname + NEXT_OFFSET);
+		dst = (byte __far *)(wigraphicslevelname + NEXT_OFFSET);
 		sprintf(name, "WILV%d%d", wbs->epsd, wbs->next);
 		W_CacheLumpNameDirect(name, dst);
 	}
