@@ -20,11 +20,11 @@
 #ifdef __COMPILER_WATCOM
 #include <dos.h>
 #include <conio.h>
+#include <graph.h>
 #endif
 
 #include <stdlib.h>
 #include <stdarg.h>
-#include <graph.h>
 #include <malloc.h>
 #include "d_main.h"
 #include "doomstat.h"
