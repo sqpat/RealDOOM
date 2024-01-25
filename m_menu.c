@@ -96,7 +96,7 @@ int16_t                     messageLastMenuActive;
 // timed message = no input from user
 boolean                 messageNeedsInput;     
 
-void    (*messageRoutine)(int16_t response);
+void    (far *messageRoutine)(int16_t response);
 
 #define SAVESTRINGSIZE  24
 
@@ -213,7 +213,7 @@ void M_WriteText(int16_t x, int16_t y, int8_t *string);
 int16_t  M_StringWidth(int8_t *string);
 int16_t  M_StringHeight(int8_t *string);
 void M_StartControlPanel(void);
-void M_StartMessage(int8_t *string,void *routine,boolean input);
+void M_StartMessage(int8_t near*string,void far * routine,boolean input);
 void M_ClearMenus (void);
 
 
@@ -1053,9 +1053,9 @@ void M_QuitDOOM(int16_t choice)
 {
   // We pick index 0 which is language sensitive,
   //  or one at random, between 1 and maximum number.
-	int8_t temp[256];
-	int8_t temp2[256];
-	int8_t endstring[160];
+	int8_t temp[100];
+	int8_t temp2[100];
+	int8_t endstring[100];
 	int8_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
 	getStringByIndex(DOSY, temp2);
 	if (commercial)
@@ -1075,7 +1075,7 @@ void M_QuitDOOM(int16_t choice)
 		);
 		    
     }
-  
+
     M_StartMessage(endstring,M_QuitResponse,true);
 }
 
@@ -1176,8 +1176,8 @@ M_DrawThermo
 
 void
 M_StartMessage
-( int8_t*         string,
-  void*         routine,
+( int8_t near*         string,
+  void far*         routine,
   boolean       input )
 {
     messageLastMenuActive = menuactive;
@@ -1404,8 +1404,9 @@ boolean M_Responder (event_t __far*  ev)
                 
         menuactive = messageLastMenuActive;
         messageToPrint = 0;
-        if (messageRoutine)
-            messageRoutine(ch);
+		if (messageRoutine) {
+			messageRoutine(ch);
+		}
                         
         menuactive = false;
         S_StartSound(NULL,sfx_swtchx);

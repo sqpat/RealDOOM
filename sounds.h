@@ -50,7 +50,7 @@ struct sfxinfo_struct
     // int8_t		volume;
 
     // sound data
-    void*	data;
+    void far*	data;
 
     // this is checked every second to see if sound
     // can be thrown out (if 0, then decrement, if -1,
@@ -76,7 +76,7 @@ typedef struct
     int16_t		lumpnum;
     
     // music data
-    void*	data;
+    void far*	data;
 
     // music handle once registered
 	int16_t handle;
