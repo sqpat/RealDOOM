@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/01/25 17:19:13
+Created on:       24/01/25 17:37:47
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -44,7 +44,7 @@ f_wipe_TEXT            CODE           AUTO           0000:59e0       0000038b
 dmx_TEXT               CODE           AUTO           0000:5d70       00000208
 dutils_TEXT            CODE           AUTO           0000:5f80       0000008b
 v_extra_TEXT           CODE           AUTO           0000:6010       000001af
-wi_stuff_TEXT          CODE           AUTO           0000:61c0       00000f46
+wi_stuff_TEXT          CODE           AUTO           0000:61c0       00000f48
 f_finale_TEXT          CODE           AUTO           0000:7110       00000ac8
 p_setup_TEXT           CODE           AUTO           0000:7be0       00001903
 g_setup_TEXT           CODE           AUTO           0000:94f0       000002f0
@@ -683,7 +683,7 @@ Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
 0000:6f5e      WI_Drawer_
 0000:6f92+     WI_initVariables_
 0000:6fee+     WI_Init_
-0000:70e0      WI_Start_
+0000:70e2      WI_Start_
 Module: f_finale.obj(C:\REALDOOM\f_finale.c)
 0000:7110+     V_DrawPatchFlipped_
 0000:71f6      F_StartFinale_
