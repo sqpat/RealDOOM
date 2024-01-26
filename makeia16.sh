@@ -9,7 +9,10 @@ unset EXTRA_FLAGS
 export EXTRA_FLAGS="-D__COMPILER_GCCIA16"
 export CCOPTS_OPTIMIZED="-march=i286 -mcmodel=medium -Ofast -fomit-frame-pointer -fgcse-sm -fgcse-las -fipa-pta -mregparmcall -flto -fwhole-program -funroll-loops"
 export CCOPTS_REGULAR="-mcmodel=medium -Ofast -fomit-frame-pointer -fgcse-sm -fgcse-las -fipa-pta -mregparmcall -flto -fwhole-program -funroll-loops"
-export CCOPTS_286="-march=i286 -mcmodel=medium -li86 -Os -fomit-frame-pointer -fgcse-sm -fgcse-las -fipa-pta -mregparmcall -flto -fwhole-program -funroll-loops"
+export CCOPTS_286_OLD="-march=i286 -mcmodel=medium -li86 -Os -fomit-frame-pointer -fgcse-sm -fgcse-las -fipa-pta -mregparmcall -flto -fwhole-program -funroll-loops"
+# -flto causes crash
+#  -fwhole-program  needs work
+export CCOPTS_286="-march=i286 -mcmodel=medium -li86 -Os -fomit-frame-pointer -fgcse-sm -fgcse-las -fipa-pta -mregparmcall -funroll-loops"
  
 
 
@@ -80,4 +83,4 @@ export GLOBOBJS+="  info.c"
 export GLOBOBJS+="  d_math.c"
 export GLOBOBJS+="  dmx.c"
 
-ia16-elf-gcc $GLOBOBJS $CCOPTS_286 $EXTRA_FLAGS -o GCCIA16/REALDOOM.EXE
+ia16-elf-gcc $GLOBOBJS $CCOPTS_286 $EXTRA_FLAGS -o GCCIA16/REALDOOM.EXE -Xlinker -Map=GCCIA16/output.map 

@@ -22,9 +22,7 @@
 //#include "m_misc.h"
 #include "i_system.h"
 #include <malloc.h>
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 extern void D_DoomMain();

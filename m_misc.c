@@ -158,7 +158,8 @@ M_WriteFile
     if (handle == -1)
 	return false;
 
-    count = write (handle, source, length);
+	//todo 
+    //count = write (handle, source, length);
     close (handle);
 	
     if (count < length)

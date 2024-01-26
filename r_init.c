@@ -37,9 +37,7 @@
 #include "i_system.h"
 #include "doomstat.h"
 #include  <alloca.h>
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 

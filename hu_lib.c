@@ -26,9 +26,7 @@
 #include "r_local.h"
 #include "r_draw.h"
 #include "i_system.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 // boolean : whether the screen is always erased

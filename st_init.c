@@ -51,9 +51,7 @@
 // Data.
 #include "dstrings.h"
 #include "sounds.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 //

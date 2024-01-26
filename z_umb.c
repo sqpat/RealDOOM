@@ -27,9 +27,7 @@
 #include "doomstat.h"
 #include "r_bsp.h"
 
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 #include <stdlib.h>
 #include <malloc.h>

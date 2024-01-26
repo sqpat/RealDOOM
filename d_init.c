@@ -61,9 +61,7 @@
 #include "p_local.h"
 
 #include <malloc.h>
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 #define MAX_STRINGS 306
 
@@ -699,7 +697,7 @@ void D_DoomMain2(void)
 	if ((p = M_CheckParm("-turbo")))
 	{
 		int16_t     scale = 200;
-		extern int16_t forwardmove[2];
+		extern int8_t forwardmove[2];
 		extern int16_t sidemove[2];
 
 		if (p < myargc - 1)

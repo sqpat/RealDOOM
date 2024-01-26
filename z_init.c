@@ -32,9 +32,7 @@
 #include "st_stuff.h"
 #include "hu_stuff.h"
 
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 #include <stdlib.h>
 //#include <malloc.h>
@@ -412,7 +410,7 @@ void Z_LoadBinaries() {
 	 
 }
 
-byte near conventionallowerblock[1250];
+byte __near conventionallowerblock[1250];
 
 void Z_LinkConventionalVariables() {
 	byte __near* offset = conventionallowerblock;

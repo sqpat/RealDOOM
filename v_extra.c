@@ -30,10 +30,8 @@
 
 #include "v_video.h"
 #include "w_wad.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
 #include <conio.h>
-#endif
 
 
 

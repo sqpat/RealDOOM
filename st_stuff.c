@@ -52,9 +52,7 @@
 #include "dstrings.h"
 #include "sounds.h"
 #include "st_stuff.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
             

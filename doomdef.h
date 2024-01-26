@@ -300,12 +300,40 @@ typedef uint8_t  THINKFUNCTION;
 #define PAGE_FRAME_SIZE 0x4000L
 
 
-
 #define FAR_memset _fmemset
 #define FAR_memcpy _fmemcpy
 #define FAR_strncpy _fstrncpy
 #define FAR_strcpy _fstrcpy
 #define FAR_memmove _fmemmove
+#ifdef __COMPILER_WATCOM
+// open watcom defines
+#define __far_func __far
+#else
+// gccia16 defines
+
+#define __far_func  
+
+#ifndef __near
+#define __near
+#endif
+#ifndef __interrupt
+#define __interrupt 
+#endif
+#ifndef O_BINARY
+#define O_BINARY 0 
+
+
+#define _chain_intr(func) func()
+
+// only used in practice for b = 3...
+#define _rotl(a, b) (((a&0x07) << 5) + a>>3)
+
+#endif
+
+char __far  _fstrncpy(char __far *dst, const char __far *src, size_t n);
+
+
+#endif
 
 void  _far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
 void _far_fwrite(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
@@ -314,10 +342,6 @@ void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize);
 #define FAR_fwrite _far_fwrite
 #define FAR_fread _far_fread
 #define FAR_read _far_read
-
-#ifndef __near
-	#define __near
-#endif
 
 
 //#define FAR_fread fread

@@ -32,10 +32,8 @@
 
 // State.
 #include "doomstat.h"
-#ifdef __COMPILER_WATCOM
 #include <conio.h>
 #include <dos.h>
-#endif
 
 
 

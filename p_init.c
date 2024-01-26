@@ -390,6 +390,7 @@ void R_InitSpriteDefs()
 	uint16_t		currentspritememoryoffset;
 	//int32_t totalsize = 0;
 	byte sprtempbytes[29 * sizeof(spriteframe_t)];
+	int8_t localname[8];
 	int8_t *namelist[NUMSPRITES] = {
 		"TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
 		"MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
@@ -456,8 +457,10 @@ void R_InitSpriteDefs()
 				frame = lumpinfo4000[l].name[4] - 'A';
 				rotation = lumpinfo4000[l].name[5] - '0';
 
-				if (modifiedgame)
-					patched = W_GetNumForName(lumpinfo4000[l].name);
+				if (modifiedgame) {
+					FAR_strncpy(localname, lumpinfo4000[l].name, 8);
+					patched = W_GetNumForName(localname);
+				}
 				else
 					patched = l;
 

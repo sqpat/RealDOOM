@@ -27,9 +27,7 @@
 #include "doomdef.h"
 
 #include "f_wipe.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 

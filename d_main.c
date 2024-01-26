@@ -59,9 +59,7 @@
 #include "d_main.h"
 #include "p_local.h"
  
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
  
  

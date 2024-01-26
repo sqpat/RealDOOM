@@ -29,9 +29,7 @@
 #include "st_stuff.h"
 #include "st_lib.h"
 #include "r_local.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
  
 extern boolean updatedthisframe;

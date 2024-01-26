@@ -132,6 +132,32 @@ void  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, 
 	}
 }
 
+#ifdef __COMPILER_WATCOM
+
+#else
+char __far  _fstrncpy(char __far *dst, const char __far *src, size_t totalsize) {
+
+	// very jank. only used for size 8 or 9 or so 
+
+	/*
+	byte stackbuffer[FREAD_BUFFER_SIZE];
+	byte __far* stackbufferfar = (byte __far *)stackbuffer;
+	byte __far* destloc = dest;
+	*/
+
+	_fmemcpy(dst, src, totalsize);
+	return dst;
+}
+
+/*
+void  _fmemset(void __far* dest, int16_t value, size_t size);
+void _fmemcpy(void __far* dest, void __far* src, size_t size);
+void  _fstrncpy(char __far *dest, const char __far *src, size_t size);
+void _fstrcpy(char __far *dest, const char __far *src);
+void _fmemmove(char __far *dest, const void __far *src, size_t size);
+*/
+#endif
+
 
 //
 // W_CheckNumForName

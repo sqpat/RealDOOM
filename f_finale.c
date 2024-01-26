@@ -31,9 +31,7 @@
 
 #include "doomstat.h"
 #include "r_state.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 #include "p_local.h"

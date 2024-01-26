@@ -28,9 +28,7 @@
 #include "doomstat.h"
 
 #include "r_local.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 

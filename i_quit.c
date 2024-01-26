@@ -1,8 +1,7 @@
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
 #include <conio.h>
 #include <graph.h>
-#endif
+#include <stdint.h>
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -52,8 +51,8 @@ void I_ShutdownGraphics(void) {
 	}
 }
 
-extern void(__interrupt __far *OldInt8)(void);
-extern void (__interrupt __far *oldkeyboardisr) ();
+extern void( __interrupt __far_func *OldInt8)(void);
+extern void  (__interrupt __far_func *oldkeyboardisr) (void);
 #define KEYBOARDINT 9
 
 extern task HeadTask;
@@ -67,8 +66,8 @@ void TS_FreeTaskList(void);
 void TS_SetClockSpeed(int32_t speed);
 uint16_t TS_SetTimer(int32_t TickBase);
 void TS_SetTimerToMaxTaskRate(void);
-//void __interrupt __far TS_ServiceSchedule(void);
-void __interrupt __far TS_ServiceScheduleIntEnabled(void);
+//void __interrupt __far_func TS_ServiceSchedule(void);
+void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
 void TS_Startup(void);
 //void RestoreRealTimeClock(void);
 
@@ -88,10 +87,10 @@ int16_t I_ResetMouse(void);
 void TS_Terminate()
 
 {
-	_disable();
-	free(&HeadTask);
+	//_disable();
+	//free(&HeadTask);
 	TS_SetTimerToMaxTaskRate();
-	_enable();
+	//_enable();
 
 
 }

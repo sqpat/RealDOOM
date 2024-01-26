@@ -29,9 +29,7 @@
 
 #include "p_local.h"
 
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 #include <stdlib.h>
  
@@ -459,7 +457,7 @@ void Z_QuickmapRender() {
 	segregs.ds = pageswapargseg;
 	regs.w.si = pageswapargs_rend_offset_size + 32;
 	intx86(EMS_INT, &regs, &regs);
- 
+
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle

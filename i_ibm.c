@@ -17,11 +17,9 @@
 //  IBM DOS VGA graphics and key/mouse.
 //
 
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
 #include <conio.h>
 #include <graph.h>
-#endif
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -546,7 +544,7 @@ void I_TimerISR(void)
 // Keyboard
 //
 
-void (__interrupt __far *oldkeyboardisr) () = NULL;
+void (__interrupt __far_func *oldkeyboardisr) (void) = NULL;
 
 
 //

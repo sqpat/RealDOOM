@@ -6,10 +6,8 @@
 //#define USE_USRHOOKS
 
 #include "dmx.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
 #include <conio.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +19,7 @@
 ---------------------------------------------------------------------*/
 
 task HeadTask;
-void(__interrupt __far *OldInt8)(void);
+void( __interrupt __far_func *OldInt8)(void);
 volatile int32_t TaskServiceRate = 0x10000L;
 volatile int32_t TaskServiceCount = 0;
 
@@ -37,15 +35,15 @@ void TS_FreeTaskList(void);
 void TS_SetClockSpeed(int32_t speed);
 uint16_t TS_SetTimer(int32_t TickBase);
 void TS_SetTimerToMaxTaskRate(void);
-void __interrupt __far TS_ServiceScheduleIntEnabled(void);
+void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
 void TS_Startup(void);
 
 
 void TS_FreeTaskList(void)
 {
-	_disable();
-	free(&HeadTask);
-	_enable();
+	//_disable();
+	//free(&HeadTask);
+	//_enable();
 }
 
 void TS_SetClockSpeed(int32_t speed)
@@ -83,7 +81,7 @@ void TS_SetTimerToMaxTaskRate(void)
 	_enable();
 }
 
-void __interrupt __far TS_ServiceScheduleIntEnabled(void)
+void __interrupt __far_func TS_ServiceScheduleIntEnabled(void)
 {
 
 	TS_TimesInInterrupt++;

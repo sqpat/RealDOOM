@@ -37,9 +37,7 @@
 #include "doomstat.h"
 #include "tables.h"
 #include "w_wad.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 #define DISTMAP		2

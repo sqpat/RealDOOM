@@ -28,10 +28,8 @@
 #include "m_misc.h"
 
 #include "v_video.h"
-#ifdef __COMPILER_WATCOM
 #include <conio.h>
 #include <dos.h>
-#endif
 
 
 

@@ -31,9 +31,7 @@
 
 #include "w_wad.h"
 #include "r_defs.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 extern filehandle_t				wadfilehandle;

@@ -36,9 +36,7 @@
 #include "s_sound.h"
 
 #include "doomstat.h"
-#ifdef __COMPILER_WATCOM
 #include <dos.h>
-#endif
 
 
 void    P_SpawnMapThing(mapthing_t     mthing, int16_t key);
