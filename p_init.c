@@ -76,13 +76,14 @@ void P_InitSwitchList(void)
 	//
 // CHANGE THE TEXTURE OF A WALL SWITCH TO ITS OPPOSITE
 //
-	/*
-	switchlist_t *alphSwitchList = alloca(sizeof(switchlist_t)* NUMSWITCHDEFS);
+	switchlist_t alphSwitchList[NUMSWITCHDEFS];
 
 	FILE *fp = fopen("D_SWITCH.BIN", "rb"); // clear old file
 	fread(alphSwitchList, sizeof(switchlist_t), NUMSWITCHDEFS, fp);
 	fclose(fp);
-	*/
+
+
+	/*
 
 	switchlist_t alphSwitchList[] =
 	{
@@ -135,6 +136,7 @@ void P_InitSwitchList(void)
 		{"\0",		"\0",		0}
 	};
 
+	*/
 
 	episode = 1;
 
@@ -206,13 +208,12 @@ void P_InitPicAnims(void)
 //  and end entry, in the order found in
 //  the WAD file.
 //
-	/*
-	animdef_t* animdefs = alloca(sizeof(animdef_t)* NUMANIMDEFS);
+	animdef_t animdefs[NUMANIMDEFS];
 	FILE *fp = fopen("D_ANIMS.BIN", "rb"); // clear old file
 	fread(animdefs, sizeof(animdef_t), NUMANIMDEFS, fp);
 	fclose(fp);
-	DEBUG_PRINT("\n1");
-	*/
+	
+	/*
 
 	animdef_t		animdefs[] =
 	{
@@ -246,6 +247,8 @@ void P_InitPicAnims(void)
 
 		{-1}
 	};
+	*/
+
 	//	Init animation
 	lastanim = anims;
 	for (i = 0; animdefs[i].istexture != -1; i++) {
@@ -391,6 +394,8 @@ void R_InitSpriteDefs()
 	//int32_t totalsize = 0;
 	byte sprtempbytes[29 * sizeof(spriteframe_t)];
 	int8_t localname[8];
+	/*
+
 	int8_t *namelist[NUMSPRITES] = {
 		"TROO","SHTG","PUNG","PISG","PISF","SHTF","SHT2","CHGG","CHGF","MISG",
 		"MISF","SAWG","PLSG","PLSF","BFGG","BFGF","BLUD","PUFF","BAL1","BAL2",
@@ -407,13 +412,11 @@ void R_InitSpriteDefs()
 		"COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
 		"HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2"
 	};
-	/*
-	int8_t* namelist = alloca(5 * NUMSPRITES);
+	*/
+	int8_t namelist[NUMSPRITES][5];
 	FILE * fp = fopen("D_SPLIST.BIN", "rb"); // clear old file
 	fread(namelist,  5, NUMSPRITES, fp);
 	fclose(fp);
-	*/
-
 	
 	// count the number of sprite names
 
@@ -446,7 +449,6 @@ void R_InitSpriteDefs()
 
 		maxframe = -1;
 		intname = *(int32_t __far *)namelist[i];
-		//intname = *(int32_t __far*)namelist[i*5];
 
 		// scan the lumps,
 		//  filling in the frames for whatever is found

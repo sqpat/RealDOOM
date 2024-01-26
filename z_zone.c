@@ -981,6 +981,20 @@ void Z_ClearDeadCode() {
 }
 
 /*
+
+void DUMP_4000_TO_FILE() {
+	int16_t segment = 0x4000;
+	FILE*fp = fopen("DUMP4000.BIN", "wb");
+	while (segment < 0x5000) {
+		byte __far * dest = MK_FP(segment, 0);
+		FAR_fwrite(dest, 32768, 1, fp);
+		segment += 0x0800;
+	}
+	fclose(fp);
+	I_Error("\ndumped");
+}
+
+
 void DUMP_MEMORY_TO_FILE() {
 	int16_t segment = 0x4000;
 	FILE*fp = fopen("MEM_DUMP.BIN", "wb");
