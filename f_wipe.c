@@ -30,6 +30,8 @@
 #include <dos.h>
 
 
+#ifdef SKIPWIPE
+#else
 
 //
 //                       SCREEN WIPE PACKAGE
@@ -255,3 +257,4 @@ wipe_ScreenWipe(int16_t	ticks ) {
     return !go;
 
 }
+#endif

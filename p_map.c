@@ -213,7 +213,9 @@ boolean PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 	int16_t linebot = v1y;
 
 #ifndef	PRECALCULATE_OPENINGS
-	int16_t linefrontsecnum = ld->frontsecnum;
+	int16_t linefrontsecnum = ld_physics->frontsecnum;
+	int16_t linebacksecnum = ld_physics->backsecnum;
+	
 	int16_t lineside1 = ld->sidenum[1];
 #endif
 	if (linedx > 0) {
@@ -842,7 +844,7 @@ boolean PTR_SlideTraverse (intercept_t __far* in)
 #ifdef	PRECALCULATE_OPENINGS
 	P_LoadLineOpening(in ->d.linenum);
 #else
-	P_LineOpening (li->sidenum[1], li->frontsecnum, li->backsecnum);
+	P_LineOpening (li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
 #endif
 	
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, (lineopening.opentop - lineopening.openbottom));
@@ -1166,7 +1168,7 @@ boolean PTR_ShootTraverse (intercept_t __far* in)
 #ifdef	PRECALCULATE_OPENINGS
 		P_LoadLineOpening(in->d.linenum);
 #else
-		P_LineOpening(li_physics->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
+		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
 #endif
 
 		dist = FixedMul (attackrange.w, in->frac);
@@ -1393,6 +1395,7 @@ boolean	PTR_UseTraverse (intercept_t __far* in)
 #ifdef	PRECALCULATE_OPENINGS
 		P_LoadLineOpening(in->d.linenum);
 #else
+		line_t __far* line = &lines[in->d.linenum];
 		P_LineOpening(line->sidenum[1], line_physics->frontsecnum, line_physics->backsecnum);
 #endif
 

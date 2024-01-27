@@ -120,8 +120,9 @@ void  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, 
 	byte stackbuffer[FREAD_BUFFER_SIZE];
 	byte __far* stackbufferfar = (byte __far *)stackbuffer;
 	byte __far* srcloc = src;
+	//DEBUG_PRINT("\n new %Fp %Fp ", src, srcloc);
 	while (totalreadsize < totalsize) {
-		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
+		//DEBUG_PRINT("_ %Fp %Fp ", src, srcloc);
 		remaining = totalsize - totalreadsize;
 		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
 		//DEBUG_PRINT("%u %u", totalsize, copysize);
@@ -364,7 +365,11 @@ W_CacheLumpNameDirect
 (int8_t*         name,
 	byte __far*			dest
 ) {
+	//printf("\nA %s %i %lx", name, W_GetNumForName(name), dest);
+	//printf("\nB %s %i %i %lx", name, *(int16_t __far*)dest, *((int16_t __far*)(dest + 1)), dest);
 	W_ReadLump(W_GetNumForName(name), dest, 0, 0);
+	//printf("\nC %s %i %i %lx", name, *(int16_t __far*)dest, *((int16_t __far*)(dest+1)),dest);
+
 }
 
 

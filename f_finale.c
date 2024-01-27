@@ -37,6 +37,23 @@
 #include "p_local.h"
 
 
+#ifdef __DEMO_ONLY_BINARY
+
+void F_Drawer(void) {
+}
+void F_Ticker(void) {
+}
+boolean F_Responder(event_t  __far*event) {
+
+}
+void F_StartFinale(void) {
+
+}
+
+
+#else
+
+
 // Stage of animation:
 //  0 = text, 1 = art screen, 2 = character cast
 int16_t		finalestage;
@@ -872,3 +889,4 @@ void F_Drawer (void)
 }
 
 
+#endif

@@ -145,6 +145,26 @@ typedef struct
     mpoint_t a, b;
 } mline_t;
 
+
+boolean    	automapactive = false;
+
+
+#ifdef __DEMO_ONLY_BINARY
+void AM_Drawer(void) {
+}
+
+void AM_Ticker(void) {
+}
+
+boolean AM_Responder(event_t __far* ev){
+}
+
+void AM_Stop(void) {
+}
+
+#else
+
+
  
 //#define LINE_PLAYERRADIUS 16<<4
 
@@ -213,7 +233,6 @@ mline_t thintriangle_guy[] = {
 static int8_t 	cheating = 0;
 static int8_t 	grid = 0;
 
-boolean    	automapactive = false;
 
 
 // size of window on screen
@@ -1262,3 +1281,4 @@ void AM_Drawer (void)
     V_MarkRect(0, 0, automap_screenwidth, automap_screenheight);
 
 }
+#endif

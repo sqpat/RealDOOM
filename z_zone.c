@@ -457,8 +457,8 @@ void Z_QuickmapRender() {
 	segregs.ds = pageswapargseg;
 	regs.w.si = pageswapargs_rend_offset_size + 32;
 	intx86(EMS_INT, &regs, &regs);
-
-	regs.w.ax = 0x5000;
+	
+		regs.w.ax = 0x5000;
 	regs.w.cx = 0x08; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
@@ -980,7 +980,6 @@ void Z_ClearDeadCode() {
 	//DEBUG_PRINT("\nClearing out %u bytes of initialization code", size);
 }
 
-/*
 
 void DUMP_4000_TO_FILE() {
 	int16_t segment = 0x4000;
@@ -996,14 +995,16 @@ void DUMP_4000_TO_FILE() {
 
 
 void DUMP_MEMORY_TO_FILE() {
-	int16_t segment = 0x4000;
+	uint16_t segment = 0x4000;
 	FILE*fp = fopen("MEM_DUMP.BIN", "wb");
 	while (segment < 0xA000) {
 		byte __far * dest = MK_FP(segment, 0);
+		//DEBUG_PRINT("\nloop %u", segment);
 		FAR_fwrite(dest, 32768, 1, fp);
 		segment += 0x0800;
 	}
 	fclose(fp);
 	I_Error("\ndumped");
 }
+/*
 */

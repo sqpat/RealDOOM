@@ -468,6 +468,7 @@ void R_InitTextures(void)
 		offset = (*directory);
 
 
+		//mtexture = (maptexture_t  __far*)((byte  __far*)(maptex + offset));
 		mtexture = (maptexture_t  __far*)((byte  __far*)maptex + offset);
 
 		if ((i + 1) < numtextures) {
@@ -483,6 +484,11 @@ void R_InitTextures(void)
 		textureheightval = texture->height; 
 
 		FAR_memcpy(texture->name, mtexture->name, sizeof(texture->name));
+		//FAR_strncpy(name, mtexture->name, 8);
+
+		//if ((i % 4) == 0)DEBUG_PRINT("\n");
+		//DEBUG_PRINT(" %i %lx", i, texture, mtexture);
+
 		//DEBUG_PRINT("\n %.8Fs %.8Fs %i %Fp %Fp", texture->name, mtexture->name, sizeof(texture->name), texture->name, mtexture->name);
 		mpatch = &mtexture->patches[0];
 		patch = &texture->patches[0];
@@ -496,7 +502,7 @@ void R_InitTextures(void)
 
 		}
 
-		//DEBUG_PRINT("name %s", texture->name);
+		//DEBUG_PRINT("name %Fs", texture->name);
 		
 		if ((i + 1) < numtextures) {
 			texturecolumn_offset[i + 1] = texturecolumn_offset[i] + texturewidth * sizeof(int16_t);
@@ -512,7 +518,7 @@ void R_InitTextures(void)
 
 
 	}
-
+	//DUMP_MEMORY_TO_FILE();
 
 	 
 	// Precalculate whatever possible.  

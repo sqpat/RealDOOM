@@ -44,8 +44,8 @@ enum { VERSION =  109 };
 
 // MAIN FEATURE FLAGS
 
-// line opening caching. Unfortunately seems to be 0.5% slower or so - also uses extra memory. 
-#define PRECALCULATE_OPENINGS
+// line opening caching. Doesn't measurably affect runtime performance. Uses extra memory and code so i guess lets keep it off.
+//#define PRECALCULATE_OPENINGS
 
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
 #define DEBUG_PRINTING
@@ -69,7 +69,7 @@ enum { VERSION =  109 };
 //#define SKIPWIPE
 
 // more detailed timedemo numbers
-#define DETAILED_BENCH_STATS
+//#define DETAILED_BENCH_STATS
 
 // Sets some viewpoitn calculations to 16 bit and less precision than 32 bit. not super obvious, but if you run against a wall up close the wall texture pixels will move less smoothly with the player bob for example
 #define USE_SHORTHEIGHT_VIEWZ	
@@ -312,7 +312,8 @@ typedef uint8_t  THINKFUNCTION;
 // gccia16 defines
 
 #define __far_func  
-
+#define __DEMO_ONLY_BINARY
+#define SKIPWIPE
 #ifndef __near
 #define __near
 #endif

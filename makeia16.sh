@@ -12,8 +12,12 @@ export CCOPTS_REGULAR="-mcmodel=medium -Ofast -fomit-frame-pointer -fgcse-sm -fg
 export CCOPTS_286_OLD="-march=i286 -mcmodel=medium -li86 -Os -fomit-frame-pointer -fgcse-sm -fgcse-las -fipa-pta -mregparmcall -flto -fwhole-program -funroll-loops"
 # -flto causes crash
 #  -fwhole-program  needs work
-export CCOPTS_286="-march=i286 -mcmodel=medium -li86 -Os -fomit-frame-pointer -fgcse-sm -fgcse-las -fipa-pta -mregparmcall -funroll-loops"
- 
+export CCOPTS_286_WORKS="-march=i286 -mcmodel=medium -li86 -Os -fomit-frame-pointer -fgcse-sm -fgcse-las -fipa-pta -mregparmcall -funroll-loops"
+# currently smallest?
+export CCOPTS_286="-march=i286 -mcmodel=medium -li86 -Os -fomit-frame-pointer -fgcse-sm -fgcse-las -fipa-pta -mregparmcall -fpack-struct=1"
+export CCOPTS_286_LONG="-march=i286 -mcmodel=medium -li86 -Os -fcaller-saves -fcrossjumping -fcse-follow-jumps  -fcse-skip-blocks -fdelete-null-pointer-checks -fdevirtualize  -fdevirtualize-speculatively -fexpensive-optimizations  -fgcse  -fgcse-lm   -finline-functions -finline-small-functions -findirect-inlining -fipa-cp  -fipa-icf -fipa-ra  -fipa-sra   -fisolate-erroneous-paths-dereference -flra-remat -foptimize-sibling-calls -foptimize-strlen -fpartial-inlining -fpeephole2 -freorder-blocks-algorithm=stc -freorder-blocks-and-partition  -freorder-functions -frerun-cse-after-loop -fsched-interblock  -fsched-spec -fstrict-aliasing -fthread-jumps -ftree-builtin-call-dce -ftree-loop-vectorize -ftree-pre -ftree-slp-vectorize -ftree-switch-conversion  -ftree-tail-merge "
+
+
 
 
 export GLOBOBJS="i_init.c"

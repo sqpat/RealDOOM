@@ -106,9 +106,18 @@ uint8_t     R_CheckTextureNumForName(int8_t *name)
 		//DEBUG_PRINT("\n %.8Fs %8s %8s %i %Fp", texture->name, texturename, name, texture->name);
 
 		if (!strncasecmp(texturename, name, 8)) {
+			//DEBUG_PRINT("\n FOUND %i %s %s %s", i, texture->name, texturename, name);
 			return i;
 		}
 	}
+	/*
+	for (i = 0; i < 5; i++) {
+		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
+		FAR_strncpy(texturename, texture->name, 8);
+		DEBUG_PRINT("\n %i %s %s", i, texture->name, texturename);
+	}
+	I_Error("\n%s", name);
+	*/
 	return BAD_TEXTURE;
 }
 

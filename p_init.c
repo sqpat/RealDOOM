@@ -81,6 +81,7 @@ void P_InitSwitchList(void)
 	FILE *fp = fopen("D_SWITCH.BIN", "rb"); // clear old file
 	fread(alphSwitchList, sizeof(switchlist_t), NUMSWITCHDEFS, fp);
 	fclose(fp);
+	//I_Error("\nval %s %s %s", alphSwitchList[0].name1, alphSwitchList[1].name1, alphSwitchList[2].name1);
 
 
 	/*
@@ -212,7 +213,8 @@ void P_InitPicAnims(void)
 	FILE *fp = fopen("D_ANIMS.BIN", "rb"); // clear old file
 	fread(animdefs, sizeof(animdef_t), NUMANIMDEFS, fp);
 	fclose(fp);
-	
+	//I_Error("\nvalanim %s %s %s", animdefs[0].startname, animdefs[1].startname, animdefs[2].startname);
+
 	/*
 
 	animdef_t		animdefs[] =
@@ -252,6 +254,7 @@ void P_InitPicAnims(void)
 	//	Init animation
 	lastanim = anims;
 	for (i = 0; animdefs[i].istexture != -1; i++) {
+		printf("\n %i %s %s", i, animdefs[i].startname, animdefs[i].endname);
 		if (animdefs[i].istexture)
 		{
 			// different episode ?
@@ -417,7 +420,8 @@ void R_InitSpriteDefs()
 	FILE * fp = fopen("D_SPLIST.BIN", "rb"); // clear old file
 	fread(namelist,  5, NUMSPRITES, fp);
 	fclose(fp);
-	
+	//I_Error("\nvalanim %s %s %s", namelist[0], namelist[1], namelist[2]);
+
 	// count the number of sprite names
 
 
@@ -564,9 +568,14 @@ void P_Init(void)
 
 	Z_QuickmapRender();
 	Z_QuickmapLumpInfo();
+	DEBUG_PRINT("\n1");
 	P_InitSwitchList();
+	DEBUG_PRINT("\n2");
 	P_InitPicAnims();
+	DEBUG_PRINT("\n3");
 	R_InitSprites();
+	DEBUG_PRINT("\n4");
+
 	Z_QuickmapPhysics();
 
 

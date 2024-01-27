@@ -77,10 +77,10 @@ void D_InitStrings() {
 	FILE* handle;
 	//filelength_t length;
 	int16_t i;
-	int16_t j = 0;;
+	int16_t j = 0;
 	int8_t letter;
 	uint16_t stringbuffersize;
-	handle = fopen("dstrings.txt", "r");
+	handle = fopen("dstrings.txt", "rb");
 	if (handle == NULL) {
 		I_Error("strings.txt missing?\n");
 		return;
@@ -105,14 +105,17 @@ void D_InitStrings() {
 			if (letter == 'n') {
 				if (stringdata[i  - 1] == '\\') {
 					// hacky, but oh well.
-					stringdata[i  - 1] = '\r';
-					stringdata[i  ] = '\n';
+					stringdata[i  - 1] = '\n';
+					//stringdata[i  ] = '\n';
+					i--;
 				}
 			}
+			if (letter == '\r') {
+				i--; // undo \r
+			};
 			if (letter == '\n') {
 				j++;
 				stringoffsets[j] = i;// +(page * 16384);
-
 			};
 
 			if (feof(handle)) {
@@ -615,8 +618,8 @@ void D_DoomMain2(void)
 	int8_t            title[128];
 
 	//2dbf dosbox 316f 86box
-	//byte __far* someptr = _fmalloc(1);
-	//I_Error("\npointer is %Fp", someptr);
+	//byte __far* someptr = _fmalloc(1024);
+	//I_Error("\npointer is %lx", someptr);
 
 	// Removed
 	//FindResponseFile ();
@@ -847,6 +850,7 @@ void D_DoomMain2(void)
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
+	//DUMP_MEMORY_TO_FILE();
 	R_Init();
 
 

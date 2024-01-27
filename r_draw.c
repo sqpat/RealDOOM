@@ -129,6 +129,8 @@ void R_DrawColumn (void)
 
     dest = destview + dc_yl*80 + (dc_x>>2); 
 
+	// dest is always A000 something...
+
     // Determine scaling,
     //  which is the only mapping to be done.
     fracstep.w = dc_iscale; 
@@ -136,9 +138,14 @@ void R_DrawColumn (void)
 
 
 	// ASM NOTES
-	// quicker loop if fracstep < 1 - dont do 32 bit adds? just use
+	// call diff function based off size of dc_iscale and significant bits/position. we can probably do 16 bit precision fracstep just fine, if it's sufficiently shifted.
+	// if its sufficienetly shifted then the & 127 may even be able to be dropped.
+	// when this func is in EMS memory, use CS for xlat on dc_colormap
+
 	// carry bit?
-	// colormap to near var?
+	// colormap in code segment
+	// texture in DS
+	// dest as ES
 
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
