@@ -157,6 +157,7 @@ void AM_Ticker(void) {
 }
 
 boolean AM_Responder(event_t __far* ev){
+	return false;
 }
 
 void AM_Stop(void) {

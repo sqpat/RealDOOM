@@ -249,6 +249,7 @@ void G_BuildTiccmd (int8_t index)
 
     if (gamekeydown[key_up]) 
     {
+		//I_Error("keydown");
         // fprintf(stderr, "up\n");
         forward += forwardmove[speed]; 
     }
@@ -411,6 +412,7 @@ boolean G_Responder (event_t __far* ev)  {   // any other key pops up menu if in
 
 	switch (ev->type) {
 		case ev_keydown:
+			//I_Error("keydown: %li %hhi", ev->data1, ev->type);
 			if (ev->data1 == KEY_PAUSE) {
 				sendpause = true;
 				return true;
