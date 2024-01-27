@@ -454,7 +454,7 @@ void R_InitTextures(void)
 	for (i = 0; i < temp3; i++)
 		DEBUG_PRINT("\x8");
 	DEBUG_PRINT("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");
-
+	
 	for (i = 0; i < numtextures; i++, directory++) {
 		if (!(i & 63))
 			DEBUG_PRINT(".");
@@ -487,7 +487,7 @@ void R_InitTextures(void)
 		//FAR_strncpy(name, mtexture->name, 8);
 
 		//if ((i % 4) == 0)DEBUG_PRINT("\n");
-		//DEBUG_PRINT(" %i %lx", i, texture, mtexture);
+		//DEBUG_PRINT(" %i %lx %lx", i, texture, mtexture);
 
 		//DEBUG_PRINT("\n %.8Fs %.8Fs %i %Fp %Fp", texture->name, mtexture->name, sizeof(texture->name), texture->name, mtexture->name);
 		mpatch = &mtexture->patches[0];

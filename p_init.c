@@ -253,8 +253,9 @@ void P_InitPicAnims(void)
 
 	//	Init animation
 	lastanim = anims;
-	for (i = 0; animdefs[i].istexture != -1; i++) {
-		printf("\n %i %s %s", i, animdefs[i].startname, animdefs[i].endname);
+	//for (i = 0; animdefs[i].istexture != -1; i++) {
+	for (i = 0; i < NUMANIMDEFS; i++) {
+		
 		if (animdefs[i].istexture)
 		{
 			// different episode ?
@@ -284,6 +285,7 @@ void P_InitPicAnims(void)
 
 		lastanim++;
 	}
+	//DUMP_MEMORY_TO_FILE();
 
 }
 
@@ -568,13 +570,9 @@ void P_Init(void)
 
 	Z_QuickmapRender();
 	Z_QuickmapLumpInfo();
-	DEBUG_PRINT("\n1");
 	P_InitSwitchList();
-	DEBUG_PRINT("\n2");
 	P_InitPicAnims();
-	DEBUG_PRINT("\n3");
 	R_InitSprites();
-	DEBUG_PRINT("\n4");
 
 	Z_QuickmapPhysics();
 

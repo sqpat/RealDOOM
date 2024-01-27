@@ -1287,7 +1287,7 @@ P_AimLineAttack
 	fixed_t_union	x;
 	fixed_t_union	y;
 	fixed_t_union distance;
-	boolean ischainsaw = distance16 & CHAINSAW_FLAG;
+	int16_t ischainsaw = distance16 & CHAINSAW_FLAG;
 	mobj_pos_t __far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
 	
     shootthing = t1;
@@ -1351,7 +1351,7 @@ P_LineAttack
 	fixed_t_union	x;
 	fixed_t_union	y;
 	fixed_t_union	distance;
-	boolean ischainsaw = distance16 & CHAINSAW_FLAG; //sigh... look into why this needs to be here, remove if at all possible - sq
+	int16_t ischainsaw = distance16 & CHAINSAW_FLAG; //sigh... look into why this needs to be here, remove if at all possible - sq
 	mobj_pos_t __far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
 	x = t1_pos->x;
 	y = t1_pos->y;

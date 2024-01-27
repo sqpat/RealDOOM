@@ -136,7 +136,7 @@ void  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, 
 #ifdef __COMPILER_WATCOM
 
 #else
-char __far  _fstrncpy(char __far *dst, const char __far *src, size_t totalsize) {
+void __far  _fstrncpy(char __far *dst, const char __far *src, size_t totalsize) {
 
 	// very jank. only used for size 8 or 9 or so 
 
@@ -147,7 +147,7 @@ char __far  _fstrncpy(char __far *dst, const char __far *src, size_t totalsize) 
 	*/
 
 	_fmemcpy(dst, src, totalsize);
-	return dst;
+	//return dst;
 }
 
 /*

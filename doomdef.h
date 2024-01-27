@@ -331,7 +331,7 @@ typedef uint8_t  THINKFUNCTION;
 
 #endif
 
-char __far  _fstrncpy(char __far *dst, const char __far *src, size_t n);
+void __far  _fstrncpy(char __far *dst, const char __far *src, size_t n);
 
 
 #endif
