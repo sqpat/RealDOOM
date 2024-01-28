@@ -269,7 +269,6 @@ void R_ProjectSprite (mobj_pos_t __far* thing)
     if (spriteframes[thingframe & FF_FRAMEMASK].rotate) {
         // choose a different rotation based on player view
 		ang.wu = R_PointToAngle (thingx, thingy);
-        //rot = (ang.hu.intbits -thingangle.hu.intbits + 0x9000u)>>(29-16);
 		rot = _rotl(ang.hu.intbits - thingangle.hu.intbits + 0x9000u, 3) & 0x07;
 
         lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];

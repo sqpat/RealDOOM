@@ -81,7 +81,8 @@ void    G_DoPlayDemo (void);
 void    G_DoCompleted (void); 
 void    G_DoWorldDone (void); 
 void    G_DoSaveGame (void); 
- 
+
+//default_t	defaults[NUM_DEFAULTS];
  
 gameaction_t    gameaction; 
 gamestate_t     gamestate; 

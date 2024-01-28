@@ -341,13 +341,11 @@ extern int8_t*	defaultfile;
 void M_LoadDefaults(void)
 {
 	int16_t		i;
-	filelength_t		len;
 	FILE*	f;
+	int8_t	line[100];
+	int8_t	strparm[80];
 	int8_t	def[80];
-	int8_t	strparm[100];
-	int8_t*	newstring;
 	uint8_t		parm;
-	boolean	isstring;
 
 	// set everything to base values
 	for (i = 0; i < NUM_DEFAULTS; i++)
@@ -366,30 +364,11 @@ void M_LoadDefaults(void)
 	f = fopen(defaultfile, "r");
 	if (f) {
 		while (!feof(f)) {
-			isstring = false;
-			if (fscanf(f, "%79s %[^\n]\n", def, strparm) == 2) {
-				if (strparm[0] == '"') {
-					// get a string default
-					isstring = true;
-					len = strlen(strparm);
-					newstring = (int8_t *)malloc(len);
-					strparm[len - 1] = 0;
-					strcpy(newstring, strparm + 1);
-				}
-				else if (strparm[0] == '0' && strparm[1] == 'x') {
-					sscanf(strparm + 2, "%x", &parm);
-				}
-				else {
-					sscanf(strparm, "%i", &parm);
-				}
+			if (fscanf(f, "%s %[^\n]\n", def, strparm) == 2) {
+				sscanf(strparm, "%i", &parm);
 				for (i = 0; i < NUM_DEFAULTS; i++) {
 					if (!strcmp(def, defaults[i].name)) {
-						if (!isstring) {
-							*defaults[i].location = parm;
-						}
-						else {
-							*defaults[i].location = (uint8_t)newstring;
-						}
+						*(defaults[i].location) = parm;
 						break;
 					}
 				}

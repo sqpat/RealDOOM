@@ -69,7 +69,7 @@ enum { VERSION =  109 };
 //#define SKIPWIPE
 
 // more detailed timedemo numbers
-//#define DETAILED_BENCH_STATS
+#define DETAILED_BENCH_STATS
 
 // Sets some viewpoitn calculations to 16 bit and less precision than 32 bit. not super obvious, but if you run against a wall up close the wall texture pixels will move less smoothly with the player bob for example
 #define USE_SHORTHEIGHT_VIEWZ	
@@ -313,7 +313,6 @@ typedef uint8_t  THINKFUNCTION;
 
 #define __far_func  
 #define __DEMO_ONLY_BINARY
-#define SKIPWIPE
 #ifndef __near
 #define __near
 #endif
@@ -326,8 +325,8 @@ typedef uint8_t  THINKFUNCTION;
 
 #define _chain_intr(func) func()
 
-// only used in practice for b = 3...
-#define _rotl(a, b) (((a&0x07) << 5) + a>>3)
+// only used in practice for b = 3, then & 0x07...
+#define _rotl(a, b) (a>>13)
 
 #endif
 
