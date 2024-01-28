@@ -152,7 +152,7 @@ P_PointOnLineSide16
 
 extern fixed_t_union		tmbbox[4];
 
-boolean
+int8_t
 P_BoxOnLineSide
 ( 
 	slopetype_t	lineslopetype,

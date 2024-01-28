@@ -468,7 +468,7 @@ void D_Display (void)
 		Z_QuickmapPhysics();
 
     }
-
+	
     // menus go directly to the screen
 	M_Drawer ();          // menu is drawn even on top of everything
 
@@ -586,7 +586,7 @@ void D_DoomLoop (void)
 				fp = fopen("debuglog.txt", "a");
 			}
 			//sprintf(result2, "%li %hhu %li %li %li %li %li %l %l %i \n", gametic, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->z, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->floorz, SAVEDUNIT->ceilingz, SAVEDUNIT->secnum);
-			fprintf(fp, "%li %hhu %li %li %li %li %li %i %li %i \n", gametic, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->z, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->health, SAVEDUNIT->angle, SAVEDUNIT->secnum);
+			fprintf(fp, "%li %hhu  %li %i %li %i \n", gametic, prndindex,   SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->health, SAVEDUNIT->secnum);
 			//fprintf(result2, fp);
 			fclose(fp);
 				
