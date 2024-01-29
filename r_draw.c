@@ -61,7 +61,6 @@ int16_t		viewheight;
 int16_t		viewwindowx;
 int16_t		viewwindowy; 
 int16_t		viewwindowoffset;
-int16_t		columnofs[MAXWIDTH]; 
 
 // Color tables for different players,
 //  translate a limited part to another
@@ -139,6 +138,7 @@ void R_DrawColumn (void)
 
 	// ASM NOTES
 	// call diff function based off size of dc_iscale and significant bits/position. we can probably do 16 bit precision fracstep just fine, if it's sufficiently shifted.
+	//   note - just use mid 8 bits. 8 bits int 8 bits frac precision should be sufficient? Then use high byte for lookup..
 	// if its sufficienetly shifted then the & 127 may even be able to be dropped.
 	// when this func is in EMS memory, use CS for xlat on dc_colormap
 

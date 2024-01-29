@@ -51,7 +51,6 @@
 // status bar height at bottom of screen
 #define SBARHEIGHT		32
 
-extern int16_t		columnofs[MAXWIDTH];
 extern boolean setsizeneeded;
 extern uint8_t		setblocks;
 extern uint8_t		setdetail;
@@ -75,9 +74,6 @@ R_InitBuffer
 	//  with border and/or status bar.
 	viewwindowx = (SCREENWIDTH - width) >> 1;
 
-	// Column offset. For windows.
-	for (i = 0; i < width; i++)
-		columnofs[i] = viewwindowx + i;
 
 	// Samw with base row offset.
 	if (width == SCREENWIDTH)
