@@ -40,7 +40,24 @@
 //#define spriteoffsets		spritewidths + (sizeof(int16_t) * numspritelumps)
 //#define spritetopoffsets	spriteoffsets + (sizeof(int16_t) * numspritelumps)
 
-#define colormapbytes		((byte __far*				) 0x80000000)
+/*
+
+#define colormapbytes				8000:0000
+#define openings					8000:2100
+#define negonearray					8000:c100
+#define screenheightarray			8000:c380
+#define vissprites					8000:c600
+#define scalelightfixed				8000:e100
+#define scalelight					8000:e1c0
+#define usedcompositetexturepagemem 8000:edc0
+#define usedspritepagemem			8000:edd8
+#define usedpatchpagemem			8000:edfc
+#define spritewidths				8000:ee24
+
+
+*/
+
+#define colormapbytes		((byte __far*				) 0x80000000)										
 #define openings			((int16_t __far*			) (0x80000000 + size_colormapbytes))
 #define negonearray			((int16_t __far*			) (0x80000000 + size_openings))
 #define screenheightarray	((int16_t __far*			) (0x80000000 + size_negonearray))
@@ -67,6 +84,26 @@
 #define size_drawsegs				size_xtoviewangle		+ (sizeof(drawseg_t) * (MAXDRAWSEGS))
 #define size_floorclip				size_drawsegs			+ (sizeof(int16_t) * SCREENWIDTH)
 #define size_ceilingclip			size_floorclip			+ (sizeof(int16_t) * SCREENWIDTH)
+
+/*
+#define visplanes				9000:0000
+#define visplaneheaders			9000:9948
+#define yslope					9000:9ccc
+#define distscale				9000:9fec
+#define cachedheight			9000:a4ec
+#define cacheddistance			9000:a80c
+#define cachedxstep				9000:ab2c
+#define cachedystep				9000:ae4c  
+#define spanstart				9000:b16c
+#define viewangletox			9000:b48c
+#define xtoviewangle			9000:d48c
+#define drawsegs				9000:d70e
+#define floorclip				9000:fa0e
+#define ceilingclip				9000:fc8e
+
+*/
+
+
 
 #define visplanes				((visplane_t __far*)			0x90000000)
 #define visplaneheaders			((visplaneheader_t __far*)	(0x90000000 + size_visplanes))

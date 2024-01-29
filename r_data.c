@@ -123,6 +123,7 @@ int32_t totalpatchsize = 0;
 //  from a patch into a cached post.
 //
 // todo merge below
+//int16_t
 void
 R_DrawColumnInCache
 (column_t __far*     patch,
@@ -134,8 +135,8 @@ R_DrawColumnInCache
 	int16_t     position;
 	byte __far*       source;
 	byte __far*       dest;
+	//int16_t totalsize = 0;
 	dest = (byte __far*)cache + 3;
-
 	while (patch->topdelta != 0xff)
 	{ 
 
@@ -151,12 +152,13 @@ R_DrawColumnInCache
 
 		if (position + count > cacheheight)
 			count = cacheheight - position;
-
 		if (count > 0)
 			FAR_memcpy(cache + position, source, count);
+		//totalsize += count;
 
 		patch = (column_t __far*)((byte  __far*)patch + patch->length + 4);
 	}
+	//return totalsize;
 }
 
 
@@ -418,7 +420,7 @@ void R_GenerateComposite(uint8_t texnum, byte __far* block)
 	column_t __far*           patchcol;
 	int16_t __far*            collump;
 	uint16_t __far*			colofs;
- 	int16_t				textureheight;
+	int16_t				textureheight;
 	int16_t				texturewidth;
 	uint8_t				texturepatchcount;
 	int16_t				patchpatch = -1;
@@ -429,7 +431,11 @@ void R_GenerateComposite(uint8_t texnum, byte __far* block)
 	int16_t				index;
 	//uint8_t				currentpatchpage = 0;
 	uint8_t pagenum;
-
+/*
+	FILE*fp;
+	int8_t fname[15];
+	uint16_t totalsize = 0;
+	*/
 	//Z_QuickMapTextureInfoPage();
 
 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
@@ -510,6 +516,7 @@ void R_GenerateComposite(uint8_t texnum, byte __far* block)
 				continue;
 			}
 			patchcol = (column_t  __far*)((byte  __far*)realpatch + (realpatch->columnofs[x - x1]));
+			//totalsize+= 
 			R_DrawColumnInCache(patchcol,
 				block + colofs[x],
 				patchoriginy,
@@ -517,6 +524,17 @@ void R_GenerateComposite(uint8_t texnum, byte __far* block)
 
 		}
 	}
+
+	/*
+#ifdef __COMPILER_WATCOM
+	sprintf(fname, "wtex%i.bin", texnum);
+#else
+	sprintf(fname, "gtex%i.bin", texnum);
+#endif
+	fp = fopen(fname, "wb");
+	FAR_fwrite(block, totalsize, 1, fp);
+	fclose(fp);
+	*/
 
 	Z_PopScratchFrame();
 	//Z_QuickMapFlatPage();

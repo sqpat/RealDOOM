@@ -497,6 +497,7 @@ void M_FinishReadThis(int16_t choice);
 // M_Init
 //
  
+#ifndef __DEMO_ONLY_BINARY
 
 extern void M_Reload(void);
 
@@ -533,8 +534,10 @@ void M_Init(void)
 	}
 
 	Z_QuickmapPhysics();
+
 	
 }
+#endif
 
 // ugly and gross, but we need to know the sizes of fields early 
 // to be able to allocate the right amount of memory for them
@@ -599,6 +602,22 @@ void D_DoomMain2(void)
 	//2dbf dosbox 316f 86box
 	//byte __far* someptr = _fmalloc(1024);
 	//I_Error("\npointer is %lx", someptr);
+
+	 
+	/*
+		I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp",
+		colormapbytes, openings, negonearray, screenheightarray,
+		vissprites, scalelightfixed, scalelight, usedcompositetexturepagemem,
+		usedspritepagemem, usedpatchpagemem, spritewidths, 0L);
+
+	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp",
+		visplanes, visplaneheaders, yslope, distscale,
+		cachedheight, cacheddistance, cachedxstep, cachedystep,
+		spanstart, viewangletox, xtoviewangle, drawsegs,
+		floorclip, ceilingclip, 0L, 0L);
+	*/
+
+
 
 	// Removed
 	//FindResponseFile ();

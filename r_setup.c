@@ -104,6 +104,7 @@ void R_InitTextureMapping(void)
 	int16_t		j;
 	fixed_t_union finetan_i;
 	Z_QuickmapRender();
+	temp.h.fracbits = 0;
 
 	// Use tangent table to generate viewangletox:
 	//  viewangletox will give the next greatest x

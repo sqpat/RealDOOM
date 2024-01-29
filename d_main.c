@@ -463,10 +463,12 @@ void D_Display (void)
             y = 4;
         else
             y = viewwindowy+4;
+#ifndef __DEMO_ONLY_BINARY
+
 		Z_QuickmapMenu();		
         V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2, y, M_GetMenuPatch(12));
 		Z_QuickmapPhysics();
-
+#endif
     }
 	
     // menus go directly to the screen
@@ -487,7 +489,8 @@ void D_Display (void)
 
     
     // wipe update
-    wipe_EndScreen();
+#ifndef SKIPWIPE
+	wipe_EndScreen();
 
 	wiperealstart = wipestart = ticcount - 1;
 
@@ -503,6 +506,7 @@ void D_Display (void)
  		I_FinishUpdate();                      // page flip or blit buffer
     } while (!done);
 	wipeduration = ticcount - wiperealstart;
+#endif
 }
  
 

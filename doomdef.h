@@ -321,6 +321,8 @@ typedef uint8_t  THINKFUNCTION;
 #endif
 #ifndef O_BINARY
 #define O_BINARY 0 
+#define SKIPWIPE
+//#define PRECALCULATE_OPENINGS
 
 
 #define _chain_intr(func) func()

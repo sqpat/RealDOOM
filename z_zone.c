@@ -979,6 +979,7 @@ void Z_ClearDeadCode() {
 	//13500 or so
 	//DEBUG_PRINT("\nClearing out %u bytes of initialization code", size);
 }
+/*
 
 
 void DUMP_4000_TO_FILE() {
@@ -996,7 +997,11 @@ void DUMP_4000_TO_FILE() {
 
 void DUMP_MEMORY_TO_FILE() {
 	uint16_t segment = 0x4000;
+#ifdef __COMPILER_WATCOM
 	FILE*fp = fopen("MEM_DUMP.BIN", "wb");
+#else
+	FILE*fp = fopen("MEMDUMP2.BIN", "wb");
+#endif
 	while (segment < 0xA000) {
 		byte __far * dest = MK_FP(segment, 0);
 		//DEBUG_PRINT("\nloop %u", segment);
@@ -1006,5 +1011,4 @@ void DUMP_MEMORY_TO_FILE() {
 	fclose(fp);
 	I_Error("\ndumped");
 }
-/*
 */

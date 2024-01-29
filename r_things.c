@@ -159,7 +159,6 @@ void R_DrawMaskedColumn (column_t __far* column) {
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
 //
-// NO LOCKED PAGES GOING IN
 void
 R_DrawVisSprite
 ( vissprite_t __far*          vis,
@@ -585,6 +584,7 @@ void R_SortVisSprites (void)
     vissprite_t __far*        best;
     vissprite_t         unsorted;
     fixed_t             bestscale;
+	memset(&unsorted, 0, sizeof(vissprite_t));
 
     count = vissprite_p - vissprites;
         
@@ -775,7 +775,7 @@ void R_DrawMasked (void)
             R_DrawSprite (spr);
         }
     }
-    
+
     // render any remaining masked mid textures
 
 	for (ds = ds_p - 1; ds >= drawsegs; ds--) {

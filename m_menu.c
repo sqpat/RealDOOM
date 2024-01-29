@@ -56,10 +56,8 @@
 
 #define NUM_MENU_ITEMS 45
 
-extern boolean          message_dontfuckwithme;
-extern uint16_t			hu_font[HU_FONTSIZE];
 
-uint16_t menuoffsets[NUM_MENU_ITEMS];
+#define SAVESTRINGSIZE  24
 
 
 //
@@ -69,7 +67,7 @@ uint8_t                     mouseSensitivity;       // has default
 
 // Show messages has default, 0 = off, 1 = on
 uint8_t                     showMessages;
-        
+
 uint8_t         sfxVolume;
 uint8_t         musicVolume;
 
@@ -83,22 +81,49 @@ uint8_t                     screenSize;
 // -1/255 = no quicksave slot picked!
 int8_t                     quickSaveSlot;
 
- // 1 = message to be printed
+boolean                 inhelpscreens;
+boolean                 menuactive;
+
+
+#ifdef __DEMO_ONLY_BINARY
+void M_Ticker(void) {
+
+}
+boolean M_Responder(event_t __far*  ev) {
+	return false;
+}
+
+void M_Drawer(void) {
+}
+void M_Init(void) {
+
+}
+void M_StartControlPanel(void) {
+
+}
+
+patch_t __far* M_GetMenuPatch(int16_t i);
+
+#else
+
+extern boolean          message_dontfuckwithme;
+extern uint16_t			hu_font[HU_FONTSIZE];
+
+uint16_t menuoffsets[NUM_MENU_ITEMS];
+
+// 1 = message to be printed
 uint8_t                     messageToPrint;
 // ...and here is the message string!
-int8_t                   messageString[100];          
+int8_t                   messageString[100];
 
 // message x & y
 int16_t                     messageLastMenuActive;
 
 // timed message = no input from user
-boolean                 messageNeedsInput;     
+boolean                 messageNeedsInput;
 
 void    (__far_func *messageRoutine)(int16_t response);
 
-#define SAVESTRINGSIZE  24
-
- 
 
 int8_t gammamsg[5] =
 {
@@ -143,8 +168,7 @@ int16_t                     saveCharIndex;  // which char we're editing
 // old save description before edit
 int8_t                    saveOldString[SAVESTRINGSIZE];
 
-boolean                 inhelpscreens;
-boolean                 menuactive;
+
 
 #define SKULLXOFF               -32
 #define LINEHEIGHT              16
@@ -1790,4 +1814,6 @@ void M_Reload(void) {
 
 
 }
+
+#endif
 
