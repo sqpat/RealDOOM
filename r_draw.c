@@ -147,6 +147,34 @@ void R_DrawColumn (void)
 	// texture in DS
 	// dest as ES
 
+
+	/*
+	CX = mid 16 bits of fracstep
+	DX = mid 16 bits of frac
+
+	CS prefix pointing to colormap
+	ES contains DEST
+	DS contains dc_source
+
+	MOV AL DH
+	AND AL 127
+	; note DS/cs should be pre-"hacked" to the right amount to use same BX for both segments.
+	xlat    ; DS segment prefix pointed at dc_source
+	db 2Eh  ; CS segment prefix
+	xlat
+	stosb   ; MOV ES:[DI] AL
+
+	ADD DI, 79; SCREENWIDTH/4
+	ADD DX CX
+	
+	
+	
+	
+	*/
+
+
+
+
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
     // This is as fast as it gets.
