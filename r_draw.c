@@ -149,27 +149,132 @@ void R_DrawColumn (void)
 
 
 	/*
+	within the loop:
 	CX = mid 16 bits of fracstep
 	DX = mid 16 bits of frac
+	
+	we know top 8 bits get ignored
+	we are accepting that droping bits 9-16 of the fraction will be lost, which may cause some infrequent off-by-one texel coordinates.
+		this shouldnt be noticeable
 
-	CS prefix pointing to colormap
-	ES contains DEST
-	DS contains dc_source
+	
+
+	BX = precalculated offset to colormap and dc_source
+	CS prefix pointing to colormap (easy, use EMS to put it in the right segment)
+	DS is 'hacked' pre loop to point to where it needs to for segment + BX to be equal to dc_source[0]
+	ES contains DEST (screen 0, 0x8000 or whatever)
+
+	AH probably contains count. I dont think count can be over 256.
+	SI is contains 80 (for add 80 - add from register is one tick faster and one byte less
+
+	unroll loop 8 or 12 or 16 or something,. benchmark what gives best results on average.
+	big switch case post loop to handle the extra cases/
+
+
 
 	MOV AL DH
 	AND AL 127
 	; note DS/cs should be pre-"hacked" to the right amount to use same BX for both segments.
+	
+	; bus usage here - these instructions take up 4 bytes total
 	xlat    ; DS segment prefix pointed at dc_source
 	db 2Eh  ; CS segment prefix
 	xlat
-	stosb   ; MOV ES:[DI] AL
+	stosb   ; MOV ES:[DI] AL, INC DI
+
+	;; now we begin to refill the prefetch queue again...
 
 	ADD DI, 79; SCREENWIDTH/4
 	ADD DX CX
 	
-	
-	
-	
+																	286		stall cycles 
+																	cycles  cold  warm
+	0:  88 f0                   mov    al,dh						2		2		0
+	2:  24 7f                   and    al,0x7f						3		2		0
+	4:  d7                      xlat   BYTE PTR ds:[ebx]			5		1		1
+	5:  2e d7                   xlat   BYTE PTR cs:[ebx]			5		0		0
+	7:  aa                      stos   BYTE PTR es:[edi],al			3		0		0
+	8:  66 83 c7 4f             add    di,0x4f						3		4		4
+	c:  66 01 ca                add    dx,cx						2		1		1
+	total:															23		10		6
+																	  INSTRUCTION				 PRE-	BUS
+																  EU  REMAINING	BYTES IN  BUS   FETCH? REMAINING
+	CYCLE	EXECUTING INSTRUCTION								 BUSY	CYCLES	PREFETCH  BUSY			CYCLES
+	1																0		0		0		1		1	2
+	2																0		0		0		1		1	1
+	3	88 f0                   mov    al,dh						1		2		0+2-2	1		1	2
+	4																1		1		0		1		1	1
+	5	24 7f                   and    al,0x7f						1		3		0+2-2	1		1	2
+	6																1		2		0		1		1	1
+	7																1		1		0+2		0		0	0	
+	8	d7                      xlat   BYTE PTR ds:[ebx]			1		5		2-1		1		0	1	;xlat read cycle
+	9																1		4		1		1		0	2
+	10																1		3		1		1		0	1
+	11																1		2		1+2		1		1	2
+	12																1		1		3		0		0	0	;xlat read cycle
+	13	2e d7                   xlat   BYTE PTR cs:[ebx]			1		5		3-2		1		0	2
+	14																1		4		1		1		0	2
+	15																1		3		1		1		0	1
+	16																1		2		1+2		1		1	2
+	17																1		1		3		0		0	0
+	18  aa                      stos   BYTE PTR es:[edi],al			1		3		3-1		1		1	2
+	19																1		2		2		1		1	1
+	20																1		1		2+2		0		0	0
+	21	66 01 ca                add    di,si						1		2		4-3		1		0	2	; write bus cycle for stos
+	22																1		1		1		1		0	1
+	23																0		0		1		1		1	2	; prefetch queue stalled
+	24																0		0		1		1		1	1
+	25  66 01 ca                add    dx,cx						1		2		1+2-3	1		1	2
+	26																1		1		0		1		1	1
+	FIRST  LOOP
+	27	88 f0                   mov    al,dh						1		2		0+2-2	1		1	2
+	28																1		1		0		1		1	1
+	29	24 7f                   and    al,0x7f						1		3		0+2-2	1		1	2
+	30																1		2		0		1		1	1
+	31																1		1		0+2		1		0	0
+	32	d7                      xlat   BYTE PTR ds:[ebx]			1		5		2-1		1		0	1	;xlat read cycle
+	33																1		4		1		1		0	2
+	34																1		3		1		1		0	1
+	35																1		2		1+2		1		1	2
+	36																1		1		3		0		0	0	;xlat read cycle
+	37	2e d7                   xlat   BYTE PTR cs:[ebx]			1		5		3-2		1		0	2
+	38																1		4		1		1		0	2
+	39																1		3		1		1		0	1
+	40																1		2		1+2		1		1	2
+	41																1		1		3		0		0	0
+	42  aa                      stos   BYTE PTR es:[edi],al			1		3		3-1		1		1	2
+	43																1		2		2		1		1	1
+	44																1		1		2+2		0		0	0
+	45	66 01 ca                add    di,si						1		2		4-3		1		0	2	; write bus cycle for stos
+	46																1		1		1		1		0	1
+	47																0		0		1		1		1	2
+	48  66 01 ca                add    dx,cx						1		2		1+2-3	1		1	2
+	49																1		1		0		1		1	1
+	SECOND LOOP
+
+																	286		stall cycles
+																	cycles  cold  warm
+	0:  88 f0                   mov    al,dh						2		2		0		
+	2:  24 7f                   and    al,0x7f						3		2		0	2
+	4:  d7                      xlat   BYTE PTR ds:[ebx]			5		1		1	4
+	5:  2e d7                   xlat   BYTE PTR cs:[ebx]			5		0		0
+	7:  aa                      stos   BYTE PTR es:[edi],al			3		0		0
+	b:  66 01 f7                add    di,si						2		2
+	c:  66 01 ca                add    dx,cx						2		1		1
+	total:															22		10		6
+
+
+	0:  88 f0                   mov    al,dh						2		2		1
+	2:  24 7f                   and    al,0x7f						3		2		0
+	4:  d7                      xlat   BYTE PTR ds:[ebx]			5		1		1
+	5:  2e d7                   xlat   BYTE PTR cs:[ebx]			5		0		0
+	7:  aa                      stos   BYTE PTR es:[edi],al			3		0		0
+	8:  66 01 ca                add    dx,cx						2		4		2
+	b:  66 83 c7 4f             add    di,0x4f						3		2		2
+	b:  66 01 f7                add    di,si						2		
+
+	total:															22		10		6
+
 	*/
 
 
