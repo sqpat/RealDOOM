@@ -141,17 +141,17 @@ typedef union _fixed_t_union {
 	} hu;
 
 	struct quad_int8_t {
-		int8_t fracbytehigh;
 		int8_t fracbytelow;
-		int8_t intbytehigh;
+		int8_t fracbytehigh;
 		int8_t intbytelow;
+		int8_t intbytehigh;
 	} b;
 
 	struct quad_uint8_t {
-		uint8_t fracbytehigh;
 		uint8_t fracbytelow;
-		uint8_t intbytehigh;
+		uint8_t fracbytehigh;
 		uint8_t intbytelow;
+		uint8_t intbytehigh;
 	} bu;
 
 	struct productresult_mid_t {
@@ -171,8 +171,8 @@ typedef union _int16_t_union {
 	int16_t h;
 
 	struct dual_int8_t {
-		int8_t bytehigh;
 		int8_t bytelow;
+		int8_t bytehigh;
 	} b;
 
 } int16_t_union;
