@@ -472,10 +472,10 @@ void R_DrawSpan(void)
 	int16_t_union             yfrac16;
 	//fixed_t x32step = ds_xstep << 6;// (32L * ds_xstep);
 	//fixed_t y32step = ds_ystep << 6;// (32L * ds_ystep);
-	//fixed_t x32step = (ds_xstep << 6);
-	//fixed_t y32step = (ds_ystep << 6);
-	fixed_t x32step = (ds_xstep << 5);
-	fixed_t y32step = (ds_ystep << 5);
+	fixed_t x32step = (ds_xstep << 6);
+	fixed_t y32step = (ds_ystep << 6);
+	//fixed_t x32step = (ds_xstep << 5);
+	//fixed_t y32step = (ds_ystep << 5);
 
 	for (i = 0; i < 4; i++)
 	{
@@ -496,10 +496,10 @@ void R_DrawSpan(void)
 		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
 		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
 		xfrac16.hu = xfrac.wu >> 8;
-		yfrac16.hu = yfrac.wu >> 8;
+		yfrac16.hu = yfrac.wu >> 10;
 
 		xadder = ds_xstep >> 6; // >> 8, *4... lop off top 8 bits, but multing by 4. bottom 6 bits lopped off.
-		yadder = ds_ystep >> 6; // lopping off bottom 16 , but multing by 4.
+		yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 		while (countp >= 16) {
 
 			/*
@@ -509,7 +509,7 @@ void R_DrawSpan(void)
 			1111 1111 1111 1111 1111 1111 1111 1111
 			*/
 
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			//spot = ((yfrac.w >> (16 - 6))&(4032)) + ((xfrac.h.intbits) & 63);
 			dest[0] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
@@ -520,82 +520,79 @@ void R_DrawSpan(void)
 			//xfrac16.hu = xfrac.wu >> 8;
 			//yfrac16.hu = yfrac.wu >> 8;
 
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[1] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[2] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[3] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
 			
 
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[4] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[5] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[6] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[7] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
 
-			/*
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[8] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[9] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[10] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[11] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
 
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[12] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[13] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[14] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[15] = ds_colormap[ds_source[spot]];
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
-			*/
-			countp -= 8;
-			dest+=8;
 
-			//xfrac.w = basex + (counter * ds_xstep);
-			//yfrac.w = basey + (counter * ds_ystep);
+			countp -= 16;
+			dest+=16;
+
 			xfrac.w += x32step;
 			yfrac.w += y32step;
 
 			xfrac16.hu = xfrac.wu >> 8;
-			yfrac16.hu = yfrac.wu >> 8;
+			yfrac16.hu = yfrac.wu >> 10;
 
 		}
 		// i have no idea why final unrolled loop does not work (artifacts). im going to blame compiler. in handwritten asm this is closer to what we will do.
@@ -604,121 +601,118 @@ void R_DrawSpan(void)
 
 		if (countp == 0)
 			continue;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[0] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 1)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[1] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 2)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[2] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 3)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[3] = ds_colormap[ds_source[spot]];
 
 		if (countp == 4)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[4] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 5)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[5] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 6)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[6] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 7)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[7] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 8)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[8] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 9)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[9] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 10)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[10] = ds_colormap[ds_source[spot]];
 		
 		if (countp == 11)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[11] = ds_colormap[ds_source[spot]];
 
 		if (countp == 12)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[12] = ds_colormap[ds_source[spot]];
 
 		if (countp == 13)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[13] = ds_colormap[ds_source[spot]];
 
 		if (countp == 14)
 			continue;
 		xfrac16.hu += xadder;
 		yfrac16.hu += yadder;
-		spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+		spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 		dest[14] = ds_colormap[ds_source[spot]];
  	
 
 		*/
 		do
 		{
-			spot = ((yfrac16.h >> 2)&(4032)) + (xfrac16.b.bytehigh & 63);
+			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			dest[0] = ds_colormap[ds_source[spot]];
 			dest++;
 			xfrac16.hu += xadder;
 			yfrac16.hu += yadder;
  
 		} while (countp--);
-
-		 
-
 	}
 }
 
