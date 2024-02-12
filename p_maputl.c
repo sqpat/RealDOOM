@@ -696,7 +696,7 @@ P_BlockLinesIterator
     }
     
     offset = y*bmapwidth+x;
-	offset = *(blockmaplump+4 + offset);
+	offset = *(blockmaplump_plus4 + offset);
 	
     for ( index = offset ; blockmaplump[index] != -1 ; index++) {
 

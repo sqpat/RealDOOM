@@ -616,6 +616,48 @@ void D_DoomMain2(void)
 		spanstart, viewangletox, xtoviewangle, drawsegs,
 		floorclip, ceilingclip, 0L, 0L);
 	*/
+	/*
+
+	 
+	I_Error("\n%Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp",
+		sectors_physics, 
+		segs_physics, 
+		lines_physics, 
+		blocklinks,
+		blockmaplump,
+		linebuffer,
+
+		nodes_render, 
+		sides_render, 
+		segs_render, 
+		RENDER_SCRATCH
+	
+	);
+
+
+
+	I_Error("\n%u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u",
+		MAX_SIDES_SIZE,		
+		MAX_SECTORS_SIZE,
+		MAX_VERTEXES_SIZE,
+		MAX_LINES_SIZE,
+		MAX_SUBSECTORS_SIZE,
+		MAX_NODES_SIZE,
+		
+		MAX_SEGS_SIZE,
+		MAX_SEGS_PHYSICS_SIZE,
+		MAX_SECTORS_PHYSICS_SIZE,
+		
+		MAX_LINES_PHYSICS_SIZE,
+		MAX_SIDES_RENDER_SIZE,
+		MAX_NODES_RENDER_SIZE,
+		MAX_SEGS_RENDER_SIZE,
+
+		MAX_LINEBUFFER_SIZE,
+		MAX_BLOCKMAP_LUMPSIZE,
+		MAX_BLOCKLINKS_SIZE,123
+	);
+	*/
 
 
 

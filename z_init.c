@@ -224,6 +224,7 @@ found:
 	// 0x8000 block		gamma table		texture memrefs?									gamma table		gamma table		
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
 	// 0x7000 block		physics levdata render levdata			st graphics									screen 2		menu graphics	 
+	//                                  flat cache?
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
 	//				more physics levdata zlight																screen 3
 	//                  rejectmatrix

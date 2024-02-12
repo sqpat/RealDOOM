@@ -68,8 +68,6 @@ byte __far*			pageFrameArea;
  
  
 
-extern uint16_t leveldataoffset_phys;
-extern uint16_t leveldataoffset_rend;
 extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
  
 extern uint8_t firstunusedflat; // they are always 4k sized, can figure out page and offset from that. 
@@ -90,11 +88,8 @@ void Z_FreeConventionalAllocations() {
 	FAR_memset(conventionalmemoryblock, 0, STATIC_CONVENTIONAL_BLOCK_SIZE);
 
 	// todo make this area less jank. We want to free all the ems 4.0 region level data...
-	FAR_memset(MK_FP(0x7000, 0-leveldataoffset_phys), 0, leveldataoffset_phys);
-	leveldataoffset_phys = 0;
+	FAR_memset(MK_FP(0x7000, 0), 0, 65535);
 	
-	FAR_memset(MK_FP(0x7000, 0 - leveldataoffset_rend), 0, leveldataoffset_rend);
-	leveldataoffset_rend = 0;
 
 	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE;
 	conventional1head = 0;
@@ -103,6 +98,7 @@ void Z_FreeConventionalAllocations() {
 	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
 
 	Z_QuickmapRender();
+	FAR_memset(MK_FP(0x7000, 0), 0, 65535);
 
 	//reset texturee cache
 	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (numtextures));

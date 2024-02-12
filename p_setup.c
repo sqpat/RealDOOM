@@ -49,32 +49,25 @@ int16_t             numvertexes;
 vertex_t __far*		vertexes;
 
 int16_t             numsegs;
-seg_t __far*				segs;
-seg_physics_t __far*		segs_physics;
-seg_render_t __far*		segs_render;
+seg_t __far*		segs;
 
 int16_t             numsectors;
 sector_t __far*		sectors;
-//sector_physics_t __far* sectors_physics;
 
 int16_t             numsubsectors;
-subsector_t __far*    subsectors;
+subsector_t __far*   subsectors;
 
 int16_t             numnodes;
-node_t __far*				nodes;
-node_render_t __far*      nodes_render;
+node_t __far*		nodes;
 
 
 
 int16_t             numlines;
-line_t __far*			lines;
+line_t __far*		lines;
 uint8_t __far*		seenlines;
-line_physics_t __far*	lines_physics;
 
 int16_t             numsides;
-side_t __far*				sides;
-//side_render_t __far*		sides_render;
-int16_t __far*          linebuffer;
+side_t __far*		sides;
 
 
 #ifdef PRECALCULATE_OPENINGS
@@ -93,7 +86,6 @@ int16_t             bmapwidth;
 int16_t             bmapheight;     // size in mapblocks
 
 								// offsets in blockmap are from here
-int16_t __far*		blockmaplump;
 
 // origin of block map
 // todo can this be made 16 bit
@@ -101,7 +93,6 @@ int16_t         bmaporgx;
 int16_t         bmaporgy;
 
 // for thing chains
-THINKERREF __far*		blocklinks;
 
 // REJECT
 // For fast sight rejection.
@@ -110,77 +101,6 @@ THINKERREF __far*		blocklinks;
 // Without special effect, this could be
 //  used as a PVS lookup as well.
 //
-//byte __far*            rejectmatrix;
-
-uint16_t leveldataoffset_phys = 0u;
-uint16_t leveldataoffset_rend = 0 - (MAX_THINKERS * sizeof(mobj_pos_t));
-uint16_t leveldataoffset_6000_phys = 0u;
-
-
-#define Z_GetNextPhysicsAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_PHYSICS)
-#define Z_GetNextRenderAddress(A) Z_GetNext0x7000Address(A, PAGE_TYPE_RENDER)
-#define Z_SubtractRenderAddress(A) Z_Subtract0x7000Address(A, PAGE_TYPE_RENDER)
-
-byte __far*  Z_GetNext0x6000Address(uint16_t size) {
-
-	byte __far*  returnvalue;
-	leveldataoffset_6000_phys -= size;
-	returnvalue = MK_FP(0x6000, leveldataoffset_6000_phys);
-
-	if (leveldataoffset_6000_phys < 32768u) {
-		// wraparound
-		I_Error("65"); // Allocated too much space in Z_GetNext0x6000Address (size %u) 
-	}
-	return returnvalue;
-
-}
-
-byte __far*  Z_GetNext0x7000Address(uint16_t size, int8_t pagetype) {
-
-	uint16_t oldoffset;
-	uint16_t *useoffset;
-	byte __far*  returnvalue;
-	switch (pagetype) {
-	case PAGE_TYPE_PHYSICS:
-		oldoffset = leveldataoffset_phys;
-		useoffset = &leveldataoffset_phys;
-		break;
-	case PAGE_TYPE_RENDER:
-		oldoffset = leveldataoffset_rend;
-		useoffset = &leveldataoffset_rend;
-		break;
-	}
-
-	*useoffset -= size;
-	returnvalue = MK_FP(0x7000, *useoffset);
-
-	if (oldoffset != 0 && (oldoffset < *useoffset)) {
-		// wraparound
-		if (pagetype == PAGE_TYPE_PHYSICS) {
-			*useoffset += size;
-			return Z_GetNext0x6000Address(size);
-		}
-		
-		I_Error("95"); // Allocated too much space in Z_GetNext0x7000Address (size %u type %hhu) ", size, pagetype);
-	}
-	return returnvalue;
-
-}
-
-void Z_Subtract0x7000Address(uint16_t size, int8_t pagetype) {
-
-	switch (pagetype) {
-	case PAGE_TYPE_PHYSICS:
-		leveldataoffset_phys += size;
-		return;
-	case PAGE_TYPE_RENDER:
-		leveldataoffset_rend += size;
-		return;
-	}
-
-
-}
-
  
 //
 // P_LoadVertexes
@@ -237,17 +157,14 @@ void P_LoadSegs(int16_t lump)
 	int16_t mlangle;
 	int16_t mloffset;
 	int16_t mllinedef;
-	int16_t __far* tempsecnums;
+	// max segs doom1/2 like 2800. need 5600ish bytes
+	int16_t __far* tempsecnums = MK_FP(0x5000, 0xc000);
 	Z_QuickmapRender_NoTex();
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 	segs = (seg_t __far*)Z_MallocConventional(numsegs * sizeof(seg_t));
 
-	segs_render = (seg_render_t __far* )Z_GetNextRenderAddress(numsegs * sizeof(seg_render_t));
-	segs_physics = (seg_physics_t __far* )Z_GetNextPhysicsAddress(numsegs * sizeof(seg_physics_t));
 
-	// ugly, gross, but this memory is free right now...
-	tempsecnums = (int16_t __far* )Z_GetNextRenderAddress(numsegs * 2 * sizeof(int16_t));
 
 	FAR_memset(segs, 0xff, numsegs * sizeof(seg_t));
 	Z_QuickmapScratch_5000();
@@ -293,27 +210,21 @@ void P_LoadSegs(int16_t lump)
 		else
 			tempsecnums[i * 2 + 1] = SECNUM_NULL;
 
-
-
-
 	}
 	
 	
 	Z_QuickmapPhysics();
-	Z_QuickmapRender7000to6000();
+	Z_QuickmapScratch_5000();
+
+
 	
-
-	tempsecnums = MK_FP(0x6000u, (uint16_t)((uint32_t)tempsecnums & 0xFFFFu));
-
 
 	for (i = 0; i < numsegs; i++) {
 		segs_physics[i].frontsecnum = tempsecnums[i * 2];
 		segs_physics[i].backsecnum  = tempsecnums[i * 2 + 1];
 	}
 	
-	// and now we put it back..
 
-	Z_SubtractRenderAddress(numsegs * 2 * sizeof(int16_t));
 
 }
 
@@ -398,8 +309,6 @@ void P_LoadSectors(int16_t lump)
 
 	sectors = (sector_t __far*)Z_MallocConventional (numsectors * sizeof(sector_t));
 
-	//sectors_physics = (sector_physics_t __far*)Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
-	Z_GetNextPhysicsAddress(numsectors * sizeof(sector_physics_t));
 
 	FAR_memset(sectors, 0, numsectors * sizeof(sector_t));
 	FAR_memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
@@ -459,7 +368,6 @@ void P_LoadNodes(int16_t lump)
 	
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 	nodes = (node_t __far*)Z_MallocConventional(numnodes * sizeof(node_t));
-	nodes_render = (node_render_t __far* ) Z_GetNextRenderAddress(numnodes * sizeof(node_render_t));
 
 
 	Z_QuickmapRender_NoTex();
@@ -1174,12 +1082,12 @@ void P_LoadLineDefs(int16_t lump)
 	int16_t mldsidenum0;
 	int16_t mldsidenum1;
 	int16_t convertedtag;
-	side_render_t __far* tempsides_render;
+	//sides_render is 70008000, remap to 6000
+	side_render_t __far* tempsides_render = (side_render_t __far*)0x60008000;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
 	lines = (line_t __far* )Z_MallocConventional(numlines * sizeof(line_t));
 
-	lines_physics = (line_physics_t __far* )Z_GetNextPhysicsAddress(numlines * sizeof(line_physics_t));
 
 	seenlines = (uint8_t __far*)Z_MallocConventional(numlines/8+1);
 	FAR_memset(lines, 0, numlines * sizeof(line_t));
@@ -1190,9 +1098,10 @@ void P_LoadLineDefs(int16_t lump)
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 	data = (maplinedef_t __far*)SCRATCH_ADDRESS_5000;
 
+	// put side_render in 6000
 	Z_QuickmapRender7000to6000();
-	tempsides_render = (side_render_t __far*)0x60000000;
-
+	
+	
 	for (i = 0; i < numlines; i++) {
 		mld = &data[i];
 
@@ -1317,8 +1226,6 @@ void P_LoadSideDefs(int16_t lump)
  
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	sides = (side_t __far*)Z_MallocConventional (numsides * sizeof(side_t));
-	//sides_render = (side_render_t*) Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
-	Z_GetNextRenderAddress(numsides * sizeof(side_render_t));
 	Z_QuickmapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
@@ -1369,7 +1276,6 @@ void P_LoadBlockMap(int16_t lump)
 	uint16_t         count;
 	Z_QuickmapPhysics();
 
-	blockmaplump = (int16_t __far* )Z_GetNextPhysicsAddress(W_LumpLength(lump));
 	W_CacheLumpNumDirect(lump, (byte __far*)blockmaplump);
 
 
@@ -1379,16 +1285,12 @@ void P_LoadBlockMap(int16_t lump)
 	bmapwidth = blockmaplump[2];
 	bmapheight = blockmaplump[3];
 
-	// 9700 52 56     2 * 52 * 56 too big?  5824 
-	// 4423 32 27 
-
 
 	// clear out mobj chains
 
 	count = sizeof(THINKERREF) * bmapwidth*bmapheight;
 
-	blocklinks = (THINKERREF __far*) Z_GetNextPhysicsAddress(count);
-
+	
 	FAR_memset(blocklinks, 0, count);
 }
 
@@ -1450,7 +1352,6 @@ void P_GroupLines(void)
 
 	// build line tables for each sector        
 
-	linebuffer = (int16_t __far* )Z_GetNextPhysicsAddress(total * sizeof(int16_t));
 	linebufferindex = 0;
 
 	tempv1.h.fracbits = 0;
@@ -1532,11 +1433,7 @@ void P_InitThinkers(void)
 	currentThinkerListHead = 0;
 
 }
-
-
-extern uint16_t remainingconventional1;
-extern uint16_t leveldataoffset_phys;
-extern uint16_t leveldataoffset_rend;
+ 
 
 //
 // P_SetupLevel
@@ -1549,7 +1446,7 @@ P_SetupLevel
 {
 	int8_t        lumpname[9];
 	int16_t         lumpnum;
-
+	//FILE* fp;
 
 
 	wminfo.partime = 180;
@@ -1607,7 +1504,7 @@ P_SetupLevel
 
 	W_CacheLumpNumDirect(lumpnum + ML_REJECT, rejectmatrix);
 
-	P_GroupLines(); // 49 tics (362 ics total  in 16 bit, 45 tics in 32 bit)
+	P_GroupLines();
 
 #ifdef PRECALCULATE_OPENINGS
 	P_CacheLineOpenings();
@@ -1616,80 +1513,6 @@ P_SetupLevel
 	bodyqueslot = 0;
 
 
-
-
-
-	//     sector    linedef      subsec      seg      linebuffer
-	// side     vertex     seenlines   node     lineopenings   blocklinks
-
-	// e1m1
-	// 648    85  467   475	  475   237  236   732    475   642    828			num x
-	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
-	//  2592 1360 1868 4275    60  1185 2832  2196   3325  1284   1656	 	bytes used
-	//	49040 42021 52496
-	//   3    2     1     4    5     6     7     8		load order
-
-	// e1m2
-	// 1323 200  942   1033  1033   448  447   1463 1033  1322    1302
-	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
-	// 5292 3200 3768  9297  130  2240  5364  4389 7231  2644   2604
-	// 31728 18939 39785
-
-
-	// e1m3
-	// 1326 177  946   1026  1026  461  460  1445	   1026 1318   850
-	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
-	// 5304 2832 3784 9234   129  2305 5520 4335   7182 2636  1700
-	//  31965 23492 39748
-
-		// e1m4
-	// 1054 139  780   830    830    355  354   1172   830  1051   660
-	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
-	// 4216 2224 3120 7470   104   1775 4248 3516  5810  2102  1320
-	// 38735 31658 44990 
-
-	// e1m5
-	// 1053 143  746   825   825    384  383   1141   825  1051    832
-	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
-	// 4212 2288 2984 7425  104   1920 4596    3423   5775 2102   1664
-	//	38456 30639 44839
-	//     sector    linedef      subsec      seg      linebuffer
-	// side     vertex     seenlines   node     lineopenings   blocklinks
-
-
-	// biggest shareware e1m6?
-	// 1727  250  1207 1352  1352   606  605  1862     1352 1719  1748
-	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
-	// 6908 4000 4828 12168   170  3030  7260 5586     9464   3438 3496
-	//	21458  4662 32055
-	
-	// e1m7 timedemo 3
-	//     sector    linedef      subsec      seg      linebuffer
-	// side     vertex     seenlines   node     lineopenings   blocklinks
-	// 1223 170   896   958  958   467  466   1371   958	1220   864				count
-	//   4   16     4    9  /8+1     5   12    3	   7	  2	     2		size of type
-	// 4892 2720 3584  8622  120  2335 5592  4113  6707  2440	1728				bytes used
-	// 33430 25436 40701
-	
-	//   3    2     1     4    5     6     7     8		load order
-	
-	// e1m8
-	// 511   74   328   333  333    177  176    586   333   507   2912
-	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
-	// 2044 1184 1312  2997   42    885 2112   1758  2331  1014   5824
-	// 53074 29147 55327
-
-	// e1m9
-	// 902  147  581    653  653    288  287    978   653   898    702
-	//   4   16     4    9  /8+1     5   12    3	      7	  2	     2		size of type
-	// 3608 2352 2324  5877   41   1440 3444  2934  4571  1796   1404
-	// 43347 36297 48458
-
-	// doom 2 map 14
-	//  side sect vert line	 subsec node   seg
-	//	2587 348  1429 1681   851  850	  2815  
-	// 10344 5568 5716 15129 4255 10200   8445
-	//                                     59657 up to here. Static UMB probably free but will probably go way over in physics task memory - but there should be free memory in the 4000 or 5000 region
 	
 
 	/*
@@ -1712,11 +1535,52 @@ P_SetupLevel
 	);
 	*/
 	
-	P_LoadThings(lumpnum + ML_THINGS);// 15 tics 
-
+	P_LoadThings(lumpnum + ML_THINGS);
+	/*
+	//Z_QuickmapRender();
+	fp = fopen("blockmap.bin", "wb");
+	FAR_fwrite(blockmaplump, 0x7fff, 1, fp);
+	fclose(fp);
+	fp = fopen("seg_phy.bin", "wb");
+	FAR_fwrite(segs_physics, 0x7fff, 1, fp);
+	fclose(fp);
+	fp = fopen("blockl.bin", "wb");
+	FAR_fwrite(blocklinks, 0x7fff, 1, fp);
+	fclose(fp);
+	fp = fopen("nightmar.bin", "wb");
+	FAR_fwrite(nightmarespawns, 0x7fff, 1, fp);
+	fclose(fp);
+	fp = fopen("reject.bin", "wb");
+	FAR_fwrite(rejectmatrix, 0x7fff, 1, fp);
+	fclose(fp);
+	I_Error("done");
+	 
+	 */
 
 	// set up world state
-	P_SpawnSpecials();  // 3 tics
+	P_SpawnSpecials();
+	/*
+	I_Error("\n%Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp",
+		sectors_physics,
+		segs_physics,
+		lines_physics,
+		blocklinks,
+		// 6000
+		blockmaplump,
+		linebuffer,
+		nightmarespawns,
+		rejectmatrix,
+
+		nodes_render,
+		sides_render,
+		segs_render,
+		RENDER_SCRATCH, 0
+
+	);
+	*/
+
+
+	
 
 	// preload graphics
 	if (precache)

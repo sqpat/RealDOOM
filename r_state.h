@@ -29,7 +29,80 @@
 #define SECNUM_NULL -1
 #define LINENUM_NULL -1
  
+// max values in doom 1 and doom2 combined
+#define MAX_SIDES				2587u
+#define MAX_SECTORS				348u
+#define MAX_VERTEXES			1626u
+#define MAX_LINES				1764u
+#define MAX_SUBSECTORS			875u
+#define MAX_NODES				874u
+#define MAX_SEGS				2815u
+#define MAX_LINEBUFFER_COUNT	2542u
 
+#define MAX_SIDES_SIZE				(MAX_SIDES *		sizeof(side_t))
+#define MAX_SECTORS_SIZE			(MAX_SECTORS *		sizeof(sector_t))
+#define MAX_VERTEXES_SIZE			(MAX_VERTEXES *		sizeof(vertex_t))
+#define MAX_LINES_SIZE				(MAX_LINES *		sizeof(line_t))
+#define MAX_SUBSECTORS_SIZE			(MAX_SUBSECTORS *	sizeof(subsector_t))
+#define MAX_NODES_SIZE				(MAX_NODES *		sizeof(node_t))
+#define MAX_SEGS_SIZE				(MAX_SEGS *			sizeof(seg_t))
+
+#define MAX_SEGS_PHYSICS_SIZE		(MAX_SIDES *		sizeof(seg_physics_t))
+#define MAX_SECTORS_PHYSICS_SIZE	(MAX_SECTORS *		sizeof(sector_physics_t))
+#define MAX_LINES_PHYSICS_SIZE		(MAX_LINES *		sizeof(line_physics_t))
+
+#define MAX_SIDES_RENDER_SIZE		(MAX_SIDES *		sizeof(side_render_t))
+#define MAX_NODES_RENDER_SIZE		(MAX_NODES *		sizeof(node_render_t))
+#define MAX_SEGS_RENDER_SIZE		(MAX_SEGS *			sizeof(seg_render_t))
+
+#define MAX_LINEBUFFER_SIZE			(MAX_LINEBUFFER_COUNT * sizeof(int16_t))
+#define MAX_BLOCKMAP_LUMPSIZE		26870u
+#define MAX_BLOCKLINKS_SIZE			7866u
+#define MAX_REJECT_SIZE				15138u
+#define NIGHTMARE_SPAWN_SIZE		(MAX_THINKERS *  sizeof(mapthing_t))
+
+
+#define MAX_LEVEL_THINKERS			509u
+
+/*
+
+MAX_SIDES_SIZE				10348
+MAX_SECTORS_SIZE			5568
+MAX_VERTEXES_SIZE			6504
+MAX_LINES_SIZE				8820
+MAX_SUBSECTORS_SIZE			4375
+MAX_NODES_SIZE				10488
+MAX_SEGS_SIZE				8445
+
+12138
+
+
+//65442
+MAX_SEGS_PHYSICS_SIZE		10348
+MAX_LINES_PHYSICS_SIZE		28224
+MAX_BLOCKMAP_LUMPSIZE		26870u
+
+//43448
+MAX_SECTORS_PHYSICS_SIZE	6960
+MAX_LINEBUFFER_SIZE			5084
+MAX_BLOCKLINKS_SIZE			7866u
+NIGHTMARE_SPAWN_SIZE		8400u
+MAX_REJECT_SIZE				15138u
+// 6960
+// 10348
+// 28224
+// 5084
+// 26870u
+// 7866u
+
+
+
+MAX_SIDES_RENDER_SIZE		7761
+MAX_NODES_RENDER_SIZE		13984
+MAX_SEGS_RENDER_SIZE		28150
+
+
+*/
 
 //
 // Refresh internal data structures,
@@ -111,39 +184,87 @@ extern vertex_t __far*	vertexes;
 
 extern int16_t		numsegs;
 extern seg_t __far*		segs;
-extern seg_physics_t __far*		segs_physics;
-extern seg_render_t __far*		segs_render;
 
 
 extern int16_t		numsectors;
 extern sector_t __far* sectors;
-//extern sector_physics_t* sectors_physics;
-#define sectors_physics ((sector_physics_t __far* ) 0x70000000)
 
+// PHYSICS 0x6000 - 0x7FFF DATA
+// note: strings in 0x6000-6400 region
+
+ 
+//0x7000
+#define size_segs_physics		(MAX_SEGS_PHYSICS_SIZE)
+#define size_lines_physics		(size_segs_physics		+ MAX_LINES_PHYSICS_SIZE)
+#define size_blockmaplump		(size_lines_physics		+ MAX_BLOCKMAP_LUMPSIZE)
+
+//0x6400
+#define size_sectors_physics	MAX_SECTORS_PHYSICS_SIZE
+#define size_linebuffer			(size_sectors_physics	+ MAX_LINEBUFFER_SIZE)
+#define size_blocklinks			(size_linebuffer		+ MAX_BLOCKLINKS_SIZE)
+#define size_nightmarespawns	(size_blocklinks		+ NIGHTMARE_SPAWN_SIZE)
+#define size_rejectmatrix		(size_nightmarespawns	+ MAX_REJECT_SIZE)
+
+#define segs_physics		((seg_physics_t __far*)		(0x70000000))
+#define lines_physics		((line_physics_t __far*)	(0x70000000 + size_segs_physics))
+#define blockmaplump		((int16_t __far*)			(0x70000000 + size_lines_physics))
+#define blockmaplump_plus4	((int16_t __far*)			(0x70000008 + size_lines_physics))
+
+#define sectors_physics		((sector_physics_t __far* ) (0x60004000))
+#define linebuffer			((int16_t __far*)			(0x60004000 + size_sectors_physics))
+#define blocklinks			((THINKERREF __far*)		(0x60004000 + size_linebuffer))
+#define nightmarespawns		((mapthing_t __far *)		(0x60004000 + size_blocklinks))
+#define rejectmatrix		((byte __far *)				(0x60004000 + size_nightmarespawns))
+
+
+#define size_nodes_render		MAX_NODES_RENDER_SIZE
+#define size_sides_render		(MAX_SIDES_RENDER_SIZE)
+#define size_segs_render		(size_sides_render		+ MAX_SEGS_RENDER_SIZE)
+//#define size_RENDER_SCRATCH		(size_segs_render		+ MAX_SEGS_RENDER_SIZE)
+
+// RENDER 0x7000 - 0x7FFF DATA
+
+#define nodes_render	((node_render_t __far*)		0x70000000)
+//#define sides_render	((side_render_t __far*)		(nodes_render + MAX_NODES_RENDER_SIZE))
+#define sides_render	((side_render_t __far*)		0x70008000)
+#define segs_render		((seg_render_t	__far*)		(0x70008000 + size_sides_render))
+#define RENDER_SCRATCH  ((int16_t		__far*)		(0x70008000 + size_segs_render))
+
+
+/*
+TODO: update
+sectors_physics		7000:0000
+segs_physics		7000:1b30
+lines_physics		7000:439c
+blockmaplump		7000:b1dc
+
+blocklinks			6000:8000
+linebuffer			6000:e8f6
+
+nodes_render		7000:0000
+sides_render		7000:8000
+segs_render			7000:9e51
+... remaining		7000:bca2
+
+
+*/
 extern int16_t		numsubsectors;
 extern subsector_t __far*	subsectors;
 
 extern int16_t		numnodes;
 extern node_t __far*      nodes;
-extern node_render_t __far*      nodes_render;
-
 
 extern int16_t		numlines;
 extern line_t __far*   lines;
 extern uint8_t __far*		seenlines;
-extern line_physics_t __far*	lines_physics;
 
 
 
 extern int16_t		numsides;
 extern side_t __far*       sides;
-//extern side_render_t*		sides_render;
-#define sides_render ((side_render_t __far* ) 0x70000000)
 
-extern int16_t __far*          linebuffer;
 
-// for things nightmare respawn data
-#define nightmarespawns		((mapthing_t __far *			) 0x60008000)
+
 
 #ifdef PRECALCULATE_OPENINGS
 extern lineopening_t __far*	lineopenings;
