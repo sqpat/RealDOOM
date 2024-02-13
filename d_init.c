@@ -616,16 +616,18 @@ void D_DoomMain2(void)
 		spanstart, viewangletox, xtoviewangle, drawsegs,
 		floorclip, ceilingclip, 0L, 0L);
 	*/
+
 	/*
 
-	 
-	I_Error("\n%Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp",
+	I_Error("\nsectors_physics: %Fp\nsegs_physics: %Fp\nlines_physics: %Fp\nblocklinks: %Fp\nblockmaplump: %Fp\nlinebuffer: %Fp\nnightmarespawns: %Fp\nrejectmatrix: %Fp\nnodes_render: %Fp\nsides_render: %Fp\nsegs_render: %Fp\nRENDER_SCRATCH: %Fp",
 		sectors_physics, 
 		segs_physics, 
 		lines_physics, 
 		blocklinks,
 		blockmaplump,
 		linebuffer,
+		nightmarespawns,
+		rejectmatrix,
 
 		nodes_render, 
 		sides_render, 

@@ -233,18 +233,19 @@ extern sector_t __far* sectors;
 
 /*
 TODO: update
-sectors_physics		7000:0000
-segs_physics		7000:1b30
-lines_physics		7000:439c
-blockmaplump		7000:b1dc
-
-blocklinks			6000:8000
-linebuffer			6000:e8f6
+segs_physics		7000:0000
+lines_physics		7000:286c
+blockmaplump		7000:96ac
+sectors_physics		6000:4000
+linebuffer			6000:5b30
+blocklinks			6000:6f0c
+nightmarespawns		6000:8dc6
+rejectmatrix		6000:ae96
 
 nodes_render		7000:0000
 sides_render		7000:8000
 segs_render			7000:9e51
-... remaining		7000:bca2
+... remaining		7000:0c47
 
 
 */
