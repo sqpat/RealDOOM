@@ -140,7 +140,7 @@ void Z_ShutdownEMS();
 #define num_scratch5000_params 8
 #define num_scratch4000_params 8
 #define num_scratchstack_params 16
-#define num_flatcache_params 2
+#define num_flatcache_params 6
 #define num_palette_params 10
 #define num_7000to6000_params 8
 #define num_menu_params 16
@@ -205,7 +205,7 @@ void Z_QuickmapScratch_4000();
 void Z_PushScratchFrame();
 void Z_PopScratchFrame();
 void Z_RemapScratchFrame(uint8_t startpage);
-void Z_QuickMapFlatPage(int16_t page);
+void Z_QuickMapFlatPage(int16_t page, int16_t offset);
 void Z_QuickMapTextureInfoPage();
 void Z_QuickmapPalette();
 void Z_QuickmapMenu();

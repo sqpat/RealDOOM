@@ -368,6 +368,7 @@ R_CheckPlane
 }
 
 int tempcounter = 0;
+int16_t currentflatpage[3] = { -1, -1, -1 };
 
 extern uint8_t firstunusedflat;
  //
@@ -396,7 +397,8 @@ void R_DrawPlanes (void)
 	uint8_t usedflatindex;
 	boolean flatunloaded = false;
 	byte __far* src;
-	int16_t currentflatpage = -1;
+	int16_t flatcacheindex = 0;
+	int16_t lastflatcacheindicesused[2] = {2, 1}; // initialized so that allocation order is 0 1 2
 
     for (i = 0; i < lastvisplane ; i++) {
 		if (i < MAXCONVENTIONALVISPLANES){
@@ -475,12 +477,35 @@ void R_DrawPlanes (void)
 
 		effectivepagenumber = (usedflatindex >> 2) + FIRST_FLAT_CACHE_LOGICAL_PAGE;
  
-		if (currentflatpage != effectivepagenumber) {
-			currentflatpage = effectivepagenumber;
-			Z_QuickMapFlatPage(currentflatpage);
+		if (currentflatpage[0] == effectivepagenumber) {
+			flatcacheindex = 0;
+		} else if (currentflatpage[1] == effectivepagenumber) {
+			flatcacheindex = 1;
+		} else if (currentflatpage[2] == effectivepagenumber) {
+			flatcacheindex = 2;
+		} else {
+
+			// LRU on evicition.. not doing this above as we should though
+
+			if (lastflatcacheindicesused[0] != 0 && lastflatcacheindicesused[1] != 0) {
+				flatcacheindex = 0;
+			} else if (lastflatcacheindicesused[0] != 1 && lastflatcacheindicesused[1] != 1) {
+				flatcacheindex = 1;
+			} else if (lastflatcacheindicesused[0] != 2 && lastflatcacheindicesused[1] != 2) {
+				flatcacheindex = 2;
+			}
+
+			currentflatpage[flatcacheindex] = effectivepagenumber;
+			Z_QuickMapFlatPage(effectivepagenumber, flatcacheindex);
 		}
 
-		src = MK_FP(0x5C00, MULT_4096[usedflatindex & 0x03]);
+		if (lastflatcacheindicesused[0] != flatcacheindex) {
+			lastflatcacheindicesused[1] = lastflatcacheindicesused[0];
+			lastflatcacheindicesused[0] = flatcacheindex;
+		}
+
+
+		src = MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]);
 		
 		// load if necessary
 		if (flatunloaded){

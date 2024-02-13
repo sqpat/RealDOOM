@@ -719,6 +719,8 @@ void R_RenderPlayerView ()
     // Check for new console commands.
     NetUpdate ();
 
+	Z_QuickMapFlatPage(0, 3);
+
     R_DrawPlanes ();
 #ifdef DETAILED_BENCH_STATS
 	renderplayerplanetics += ticcount - cachedrenderplayertics;

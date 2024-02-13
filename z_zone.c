@@ -77,6 +77,7 @@ extern int32_t totalpatchsize;
 extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
 extern int16_t textureLRU[4];
 extern uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
+extern int16_t currentflatpage[3];
 
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
 void Z_FreeConventionalAllocations() {
@@ -115,7 +116,10 @@ void Z_FreeConventionalAllocations() {
 
 	FAR_memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);
 	firstunusedflat = 0;
-	
+	currentflatpage[0] = -1;
+	currentflatpage[1] = -1;
+	currentflatpage[2] = -1;
+
 	Z_QuickmapPhysics();
 
 	totalpatchsize = 0;
@@ -264,6 +268,8 @@ int16_t pageswapargs[total_pages] = {
 // todo - we are only using one page at 0x5C00 currently
 // flat cache
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_5C00_OFFSET,
+	FIRST_FLAT_CACHE_LOGICAL_PAGE + 1, PAGE_7000_OFFSET,
+	FIRST_FLAT_CACHE_LOGICAL_PAGE + 2, PAGE_7400_OFFSET,
 	// palette
 	SCREEN0_LOGICAL_PAGE + 0, PAGE_8000_OFFSET,
 	SCREEN0_LOGICAL_PAGE + 1, PAGE_8400_OFFSET,
@@ -674,13 +680,17 @@ void Z_PopScratchFrame() {
 	}
 }
 
-void Z_QuickMapFlatPage(int16_t page) {
-	pageswapargs[pageswapargs_flatcache_offset] = page;
-
-	// only use 3 pages? or what? dont want to clobber zlight..
+void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
+	// offset 3 means set defaults.
+	if (offset != 3) {
+		pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = page;
+		if (offset == 0) {
+			current5000flatpage = page;
+		}
+	}
 
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x01; // page count
+	regs.w.cx = 0x03; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
 	regs.w.si = pageswapargs_flatcache_offset_size;
@@ -691,7 +701,6 @@ void Z_QuickMapFlatPage(int16_t page) {
 
 #endif
 	current5000State = PAGE_5000_TRIG_TEXTURE;
-	current5000flatpage = page;
 }
 
 
@@ -844,7 +853,7 @@ void Z_UnmapLumpInfo5000() {
 			break;
 		case PAGE_5000_TRIG_TEXTURE:
 			Z_QuickmapTrig();
-			Z_QuickMapFlatPage(current5000flatpage);
+			Z_QuickMapFlatPage(current5000flatpage, 0);
 			break;
 		case PAGE_5000_DEMOBUFFER:
 			Z_QuickmapDemo();
