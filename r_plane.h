@@ -106,7 +106,7 @@
 
 
 #define visplanes				((visplane_t __far*)			0x90000000)
-#define visplaneheaders			((visplaneheader_t __far*)	(0x90000000 + size_visplanes))
+#define visplaneheaders			((visplaneheader_t __far*)		(0x90000000 + size_visplanes))
 #define yslope					((fixed_t __far*)				(0x90000000 + size_visplaneheaders))
 #define distscale				((fixed_t __far*)				(0x90000000 + size_yslope))
 #define cachedheight			((fixed_t __far*)				(0x90000000 + size_distscale))
@@ -116,7 +116,7 @@
 #define spanstart				((int16_t __far*)				(0x90000000 + size_cachedystep))
 #define viewangletox			((int16_t __far*)				(0x90000000 + size_spanstart))
 #define xtoviewangle			((fineangle_t __far*)			(0x90000000 + size_viewangletox))
-#define drawsegs				((drawseg_t __far*)			(0x90000000 + size_xtoviewangle))
+#define drawsegs				((drawseg_t __far*)				(0x90000000 + size_xtoviewangle))
 #define floorclip				((int16_t __far*)				(0x90000000 + size_drawsegs))
 #define ceilingclip				((int16_t __far*)				(0x90000000 + size_floorclip))
 

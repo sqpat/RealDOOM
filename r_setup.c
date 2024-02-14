@@ -54,35 +54,7 @@
 extern boolean setsizeneeded;
 extern uint8_t		setblocks;
 extern uint8_t		setdetail;
-
-//
-// R_InitBuffer 
-// Creats lookup tables that avoid
-//  multiplies and other hazzles
-//  for getting the framebuffer address
-//  of a pixel to draw.
-//
-void
-R_InitBuffer
-(int16_t		width,
-	int16_t		height)
-{
-	int16_t		i;
-
-	// Handle resize,
-	//  e.g. smaller view windows
-	//  with border and/or status bar.
-	viewwindowx = (SCREENWIDTH - width) >> 1;
-
-
-	// Samw with base row offset.
-	if (width == SCREENWIDTH)
-		viewwindowy = 0;
-	else
-		viewwindowy = (SCREENHEIGHT - SBARHEIGHT - height) >> 1;
-
-	viewwindowoffset = (viewwindowy*SCREENWIDTH / 4) + (viewwindowx >> 2);
-}
+ 
 
 // finetangent(FINEANGLES / 4 + FIELDOFVIEW / 2)
 #define FIXED_FINE_TAN 0x10032L
@@ -198,8 +170,6 @@ void R_InitTextureMapping(void)
 		distscale[i] = FixedDivWholeA(FRACUNIT, cosadj);
 	}
 
-
-
 	// Calculate the light levels to use
 	//  for each level / scale combination.
 	for (i = 0; i < LIGHTLEVELS; i++) {
@@ -266,7 +236,22 @@ void R_ExecuteSetViewSize(void)
 		spanfunc = R_DrawSpanLow;
 	}
 
-	R_InitBuffer(scaledviewwidth, viewheight);
+
+
+	// Handle resize,
+	//  e.g. smaller view windows
+	//  with border and/or status bar.
+	viewwindowx = (SCREENWIDTH - scaledviewwidth) >> 1;
+
+
+	// Samw with base row offset.
+	if (scaledviewwidth == SCREENWIDTH)
+		viewwindowy = 0;
+	else
+		viewwindowy = (SCREENHEIGHT - SBARHEIGHT - viewheight) >> 1;
+
+	viewwindowoffset = (viewwindowy*SCREENWIDTH / 4) + (viewwindowx >> 2);
+
 
 	R_InitTextureMapping();
 
@@ -460,7 +445,6 @@ void R_PrecacheLevel(void)
 
 	I_Error("\ntotal tex size %li\n patch size %li\n flat size %li \nspritesize %li", i * 16384L, j * 16384L, flatsize, k * 16384L);
 	*/
-
 
 	//         TEX  PATCH   FLAT    SPRITE
 	// E1M1 131072 425984  90112	278528

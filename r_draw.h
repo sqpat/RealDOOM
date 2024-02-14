@@ -74,11 +74,7 @@ void 	R_DrawSpan (void);
 // Low resolution mode, 160x200?
 void 	R_DrawSpanLow (void);
 
-
-void
-R_InitBuffer
-( int16_t		width,
-  int16_t		height );
+ 
 
 // Rendering function.
 void R_FillBackScreen (void);

@@ -588,6 +588,24 @@ void D_InitGraphicCounts() {
 }
 
 
+void AM_loadPics(void)
+{
+	int8_t i;
+	int16_t lump;
+	int8_t namebuf[9];
+	uint16_t offset = 0;
+
+
+	for (i = 0; i < 10; i++) {
+		sprintf(namebuf, "AMMNUM%d", i);
+		ammnumpatchoffsets[i] = offset;
+		lump = W_GetNumForName(namebuf);
+		W_CacheLumpNumDirect(lump, &ammnumpatchbytes[offset]);
+		offset += W_LumpLength(lump);
+	}
+
+}
+
 //
 // D_DoomMain
 //
@@ -932,6 +950,10 @@ void D_DoomMain2(void)
 	D_RedrawTitle(title);
 #endif
 	ST_Init();
+
+	// moving this here. We want to load automap related wad lumps into physics ems pages now rather than lazily load it where pages are in a dynamic state.
+	AM_loadPics();
+
 
 	// start the apropriate game based on parms
 	p = M_CheckParm("-record");

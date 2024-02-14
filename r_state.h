@@ -232,7 +232,6 @@ extern sector_t __far* sectors;
 
 
 /*
-TODO: update
 segs_physics		7000:0000
 lines_physics		7000:286c
 blockmaplump		7000:96ac
@@ -242,7 +241,7 @@ blocklinks			6000:6f0c
 nightmarespawns		6000:8dc6
 rejectmatrix		6000:ae96
 
-nodes_render		7000:0000
+nodes_render		7000:0000  // this is paged out for two flat cache pages after render_bspnode
 sides_render		7000:8000
 segs_render			7000:9e51
 ... remaining		7000:0c47

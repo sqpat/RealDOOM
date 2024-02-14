@@ -489,22 +489,6 @@ void AM_initVariables(void)
 //uint16_t ammnumpatchoffsets[10];
 
 
-void AM_loadPics(void)
-{
-	int8_t i;
-	int16_t lump;
-	int8_t namebuf[9];
-	uint16_t offset = 0;
-  
-    for (i=0;i<10;i++) {
-		sprintf(namebuf, "AMMNUM%d", i);
-		ammnumpatchoffsets[i] = offset;
-		lump = W_GetNumForName(namebuf);
-		W_CacheLumpNumDirect(lump, &ammnumpatchbytes[offset]);
-		offset += W_LumpLength(lump);
-    }
-
-} 
 
 void AM_clearMarks(void)
 {
@@ -555,16 +539,18 @@ void AM_Start (void)
 {
     static int8_t lastlevel = -1, lastepisode = -1;
 
-    if (!stopped) AM_Stop();
+    if (!stopped) 
+		AM_Stop();
     stopped = false;
-    if (lastlevel != gamemap || lastepisode != gameepisode)
-    {
-	AM_LevelInit();
-	lastlevel = gamemap;
-	lastepisode = gameepisode;
+	
+	if (lastlevel != gamemap || lastepisode != gameepisode) {
+		AM_LevelInit();
+		lastlevel = gamemap;
+		lastepisode = gameepisode;
     }
-    AM_initVariables();
-    AM_loadPics();
+
+	AM_initVariables();
+	//AM_loadPics();
 }
 
 //
@@ -587,7 +573,7 @@ void AM_maxOutWindowScale(void)
     AM_activateNewScale();
 }
 
-
+ 
 //
 // Handle events (user inputs) in automap mode
 //
@@ -603,118 +589,107 @@ AM_Responder
 
     rc = false;
 
-    if (!automapactive)
-    {
-	if (ev->type == ev_keydown && ev->data1 == AM_STARTKEY)
-	{
-	    AM_Start ();
-	    viewactive = false;
-	    rc = true;
-	}
-    }
-
-    else if (ev->type == ev_keydown)
-    {
-
-	rc = true;
-	switch(ev->data1)
-	{
-	  case AM_PANRIGHTKEY: // pan right
-	    if (!followplayer) m_paninc.x = FTOM16(SCREEN_PAN_INC);
-	    else rc = false;
-	    break;
-	  case AM_PANLEFTKEY: // pan left
-	    if (!followplayer) m_paninc.x = -FTOM16(SCREEN_PAN_INC);
-	    else rc = false;
-	    break;
-	  case AM_PANUPKEY: // pan up
-	    if (!followplayer) m_paninc.y = FTOM16(SCREEN_PAN_INC);
-	    else rc = false;
-	    break;
-	  case AM_PANDOWNKEY: // pan down
-	    if (!followplayer) m_paninc.y = -FTOM16(SCREEN_PAN_INC);
-	    else rc = false;
-	    break;
-	  case AM_ZOOMOUTKEY: // zoom out
-	    mtof_zoommul = M_ZOOMOUT;
-	    ftom_zoommul = M_ZOOMIN;
-	    break;
-	  case AM_ZOOMINKEY: // zoom in
-	    mtof_zoommul = M_ZOOMIN;
-	    ftom_zoommul = M_ZOOMOUT;
-	    break;
-	  case AM_ENDKEY:
-	    bigstate = 0;
-	    viewactive = true;
-	    AM_Stop ();
-	    break;
-	  case AM_GOBIGKEY:
-	    bigstate = !bigstate;
-	    if (bigstate) {
-			//AM_saveScaleAndLoc();
-			old_screen_botleft_x = screen_botleft_x;
-			old_screen_botleft_y = screen_botleft_y;
-			old_screen_viewport_width = screen_viewport_width;
-			old_screen_viewport_height = screen_viewport_height;
-
-			AM_minOutWindowScale();
-		} else {
-			AM_restoreScaleAndLoc();
+    if (!automapactive) {
+		if (ev->type == ev_keydown && ev->data1 == AM_STARTKEY) {
+			AM_Start ();
+			viewactive = false;
+			rc = true;
 		}
-	    break;
-	  case AM_FOLLOWKEY:
-	    followplayer = !followplayer;
-	    screen_oldloc.x = MAXSHORT;
-		player.message = followplayer ? AMSTR_FOLLOWON : AMSTR_FOLLOWOFF;
-	    break;
-	  case AM_GRIDKEY:
-	    grid = !grid;
-		player.message = grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
-	    break;
-	  case AM_MARKKEY:
-		getStringByIndex(AMSTR_MARKEDSPOT, text);
-	    sprintf(buffer, "%s %d", text, markpointnum);
-		player.messagestring = buffer;
-	    AM_addMark();
-	    break;
-	  case AM_CLEARMARKKEY:
-	    AM_clearMarks();
-		player.message = AMSTR_MARKSCLEARED;
-	    break;
-	  default:
-	    rc = false;
-	}
-	if ( cht_CheckCheat(&cheat_amap, ev->data1))
-	{
-	    rc = false;
-	    cheating = (cheating+1) % 3;
-	}
-    }
+	} else if (ev->type == ev_keydown) {
 
-    else if (ev->type == ev_keyup)
-    {
-	rc = false;
-	switch (ev->data1)
-	{
-	  case AM_PANRIGHTKEY:
-	    if (!followplayer) m_paninc.x = 0;
-	    break;
-	  case AM_PANLEFTKEY:
-	    if (!followplayer) m_paninc.x = 0;
-	    break;
-	  case AM_PANUPKEY:
-	    if (!followplayer) m_paninc.y = 0;
-	    break;
-	  case AM_PANDOWNKEY:
-	    if (!followplayer) m_paninc.y = 0;
-	    break;
-	  case AM_ZOOMOUTKEY:
-	  case AM_ZOOMINKEY:
-	    mtof_zoommul = FRAC_SCALE_UNIT;
-	    ftom_zoommul = FRAC_SCALE_UNIT;
-	    break;
+		rc = true;
+		switch(ev->data1) {
+		  case AM_PANRIGHTKEY: // pan right
+			if (!followplayer) m_paninc.x = FTOM16(SCREEN_PAN_INC);
+			else rc = false;
+			break;
+		  case AM_PANLEFTKEY: // pan left
+			if (!followplayer) m_paninc.x = -FTOM16(SCREEN_PAN_INC);
+			else rc = false;
+			break;
+		  case AM_PANUPKEY: // pan up
+			if (!followplayer) m_paninc.y = FTOM16(SCREEN_PAN_INC);
+			else rc = false;
+			break;
+		  case AM_PANDOWNKEY: // pan down
+			if (!followplayer) m_paninc.y = -FTOM16(SCREEN_PAN_INC);
+			else rc = false;
+			break;
+		  case AM_ZOOMOUTKEY: // zoom out
+			mtof_zoommul = M_ZOOMOUT;
+			ftom_zoommul = M_ZOOMIN;
+			break;
+		  case AM_ZOOMINKEY: // zoom in
+			mtof_zoommul = M_ZOOMIN;
+			ftom_zoommul = M_ZOOMOUT;
+			break;
+		  case AM_ENDKEY:
+			bigstate = 0;
+			viewactive = true;
+			AM_Stop ();
+			break;
+		  case AM_GOBIGKEY:
+			bigstate = !bigstate;
+			if (bigstate) {
+				//AM_saveScaleAndLoc();
+				old_screen_botleft_x = screen_botleft_x;
+				old_screen_botleft_y = screen_botleft_y;
+				old_screen_viewport_width = screen_viewport_width;
+				old_screen_viewport_height = screen_viewport_height;
+
+				AM_minOutWindowScale();
+			} else {
+				AM_restoreScaleAndLoc();
+			}
+			break;
+		  case AM_FOLLOWKEY:
+			followplayer = !followplayer;
+			screen_oldloc.x = MAXSHORT;
+			player.message = followplayer ? AMSTR_FOLLOWON : AMSTR_FOLLOWOFF;
+			break;
+		  case AM_GRIDKEY:
+			grid = !grid;
+			player.message = grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
+			break;
+		  case AM_MARKKEY:
+			getStringByIndex(AMSTR_MARKEDSPOT, text);
+			sprintf(buffer, "%s %d", text, markpointnum);
+			player.messagestring = buffer;
+			AM_addMark();
+			break;
+		  case AM_CLEARMARKKEY:
+			AM_clearMarks();
+			player.message = AMSTR_MARKSCLEARED;
+			break;
+		  default:
+			rc = false;
+		}
+		if ( cht_CheckCheat(&cheat_amap, ev->data1)) {
+			rc = false;
+			cheating = (cheating+1) % 3;
+		}
+	} else if (ev->type == ev_keyup) {
+		rc = false;
+		switch (ev->data1) {
+		  case AM_PANRIGHTKEY:
+			if (!followplayer) m_paninc.x = 0;
+			break;
+		  case AM_PANLEFTKEY:
+			if (!followplayer) m_paninc.x = 0;
+			break;
+		  case AM_PANUPKEY:
+			if (!followplayer) m_paninc.y = 0;
+			break;
+		  case AM_PANDOWNKEY:
+			if (!followplayer) m_paninc.y = 0;
+			break;
+		  case AM_ZOOMOUTKEY:
+		  case AM_ZOOMINKEY:
+			mtof_zoommul = FRAC_SCALE_UNIT;
+			ftom_zoommul = FRAC_SCALE_UNIT;
+			break;
+		}
 	}
-    }
 
     return rc;
 
@@ -766,16 +741,16 @@ void AM_doFollowPlayer(void) {
 void AM_Ticker (void)
 {
 
-    
+
 	if (followplayer) {
 		AM_doFollowPlayer();
 	}
-    
+
 	// Change the zoom if necessary
 	if (ftom_zoommul != FRAC_SCALE_UNIT) {
 		AM_changeWindowScale();
 	}
-    // Change x,y location
+	// Change x,y location
 	if (m_paninc.x || m_paninc.y) {
 		AM_changeWindowLoc();
 	}
@@ -1271,11 +1246,11 @@ void AM_Drawer (void)
 
 	if (grid)
 		AM_drawGrid();
-    AM_drawWalls();
-    AM_drawPlayers();
-    if (cheating==2)
+	AM_drawWalls();
+	AM_drawPlayers();
+	if (cheating==2)
 		AM_drawThings();
-    AM_drawCrosshair();
+	AM_drawCrosshair();
 
     AM_drawMarks();
 

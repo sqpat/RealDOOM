@@ -305,6 +305,9 @@ typedef uint8_t  THINKFUNCTION;
 #define FAR_strncpy _fstrncpy
 #define FAR_strcpy _fstrcpy
 #define FAR_memmove _fmemmove
+
+#define __COMPILER_WATCOM 1
+
 #ifdef __COMPILER_WATCOM
 // open watcom defines
 #define __far_func __far
