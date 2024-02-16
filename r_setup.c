@@ -284,8 +284,7 @@ extern byte __far* getpatchtexture(int16_t lump);
 
 void R_PrecacheLevel(void)
 {
-	int8_t               graphicpresent[512]; // enough for doom 2?
-	//int8_t*               graphicpresent;
+	int8_t               graphicpresent[MAX_SPRITE_LUMPS]; //
 
 	int16_t                 i;
 	int16_t                 j;
@@ -306,16 +305,9 @@ void R_PrecacheLevel(void)
 	Z_QuickmapLumpInfo();
 
 	
-	i = numflats;
-	if (numtextures > numflats) {
-		i = numtextures;
-	}
-	if (numsprites > i) {
-		i = numsprites;
-	}
+ 
 	// Precache flats.
-	memset(graphicpresent, 0, numflats);
-	// numflats 56	
+	memset(graphicpresent, 0, MAX_SPRITE_LUMPS);
 
 	for (i = 0; i < numsectors; i++)
 	{
@@ -358,7 +350,7 @@ void R_PrecacheLevel(void)
 	//oldpage =  0;
 
 	// Precache textures.
-	memset(graphicpresent, 0, numtextures);
+	memset(graphicpresent, 0, MAX_SPRITE_LUMPS);
 	for (i = 0; i < numsides; i++)
 	{
 
@@ -395,7 +387,7 @@ void R_PrecacheLevel(void)
 
 
 	// Precache sprites.
-	memset(graphicpresent, 0, numsprites);
+	memset(graphicpresent, 0, MAX_SPRITE_LUMPS);
 	Z_QuickmapPhysics();
 
 	for (th = thinkerlist[0].next; th != 0; th = thinkerlist[th].next)

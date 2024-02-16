@@ -37,9 +37,9 @@ boolean		markfloor;
 boolean		markceiling;
 
 boolean		maskedtexture;
-uint8_t		toptexture;
-uint8_t		bottomtexture;
-uint8_t		midtexture;
+uint16_t		toptexture;
+uint16_t		bottomtexture;
+uint16_t		midtexture;
 
 
 fineangle_t	rw_normalangle;
@@ -442,8 +442,8 @@ R_StoreWallRange
 	angle_t tempangle;
 	short_height_t frontsectorfloorheight;
 	short_height_t frontsectorceilingheight;
-	uint8_t frontsectorceilingpic;
-	uint8_t frontsectorfloorpic;
+	uint16_t frontsectorceilingpic;
+	uint16_t frontsectorfloorpic;
 	uint8_t frontsectorlightlevel;
 	line_t __far* linedef;
 	int16_t linedefOffset;

@@ -59,12 +59,12 @@
 
 #include "g_game.h"
 #define NUMKEYS         256 
-extern uint8_t     R_TextureNumForName(int8_t* name);
+extern uint16_t     R_TextureNumForName(int8_t* name);
 //
 // G_DoLoadLevel 
 //
 extern  gamestate_t     wipegamestate;
-extern uint8_t		skytexture;
+extern uint16_t		skytexture;
 extern ticcount_t             starttime;              // for comparative timing purposes       
 extern boolean			gamekeydown[NUMKEYS];
 
@@ -79,9 +79,7 @@ extern boolean         sendsave;               // send a save event next tic
 extern boolean*        mousebuttons;
 extern boolean         mousearray[4];
 
-// The sky texture to be used instead of the F_SKY1 dummy.
-extern  uint8_t     skytexture;
- 
+   
 extern int16_t             numtextures;
 
 
@@ -89,7 +87,7 @@ extern int16_t             numtextures;
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
-uint8_t     R_CheckTextureNumForName(int8_t *name)
+uint16_t     R_CheckTextureNumForName(int8_t *name)
 {
 	uint8_t         i;
 	texture_t __far* texture;

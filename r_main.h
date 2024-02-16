@@ -64,16 +64,6 @@ extern int16_t		validcount;
 #define MAXLIGHTZ	       128
 #define LIGHTZSHIFT		20
 
-#define size_zlight						sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTZ)
-#define size_texturecolumnlumps_bytes	size_zlight + 21552u
-#define size_texturecolumnofs_bytes		size_texturecolumnlumps_bytes + 21552u
-#define size_texturedefs_bytes			size_texturecolumnofs_bytes + 3767u
-
-
-#define zlight						((lighttable_t __far* __far*) 0x60000000)
-#define texturecolumnlumps_bytes	((byte __far*				) (0x60000000 + size_zlight))
-#define texturecolumnofs_bytes		((byte __far*				) (0x60000000 + size_texturecolumnlumps_bytes))
-#define texturedefs_bytes			((byte __far*				) (0x60000000 + size_texturecolumnofs_bytes))
 
 
 extern uint8_t		extralight;

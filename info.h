@@ -1157,7 +1157,9 @@ typedef struct state_s
 
 #define states ((state_t __far*) (0x50000000 + size_tantoangle))
 #define events ((event_t __far*) (0x50000000 + size_states ))
-
+//#define states	5000:E004
+//#define events	5000:f6ae
+//					5000:F9EE
 
 #define MT_PLAYER 0
 #define MT_POSSESSED 1

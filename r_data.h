@@ -25,7 +25,7 @@
 
 // Retrieve column data for span blitting.
 
-extern uint8_t		skytexture;
+extern uint16_t		skytexture;
 
  
 byte __far*
@@ -35,7 +35,7 @@ R_GetColumn
 
 byte __far* getspritetexture(int16_t spritelump);
 
-#define BAD_TEXTURE 255
+#define BAD_TEXTURE 65535
 
 // I/O, setting up the stuff.
 void R_InitData (void);

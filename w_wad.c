@@ -102,7 +102,7 @@ void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
 		read(filehandle, stackbuffer, copysize);
 
 		FAR_memcpy(destloc, stackbufferfar, copysize);
- 
+
 		destloc += copysize;
 		totalreadsize += copysize;
 		//lseek(filehandle, totalreadsize+start, SEEK_SET);
@@ -177,6 +177,7 @@ int16_t W_CheckNumForName (int8_t* name)
 	int16_t         v2;
 	int16_t         v3;
 	int16_t         v4;
+	int16_t         counter = numlumps;
 	int16_t         returnval = -1;
 	lumpinfo_t __far* lump_p;
 	lumpinfo_t __far* lumpinfo = lumpinfo4000;
@@ -199,22 +200,25 @@ int16_t W_CheckNumForName (int8_t* name)
 	// scan backwards so patch lump files take precedence
     lump_p = lumpinfo4000 + numlumps;
 
+
     while (true) {
 		if ( *(int16_t __far *)lump_p->name == v1
              && *(int16_t __far *)&lump_p->name[2] == v2
              && *(int16_t __far *)&lump_p->name[4] == v3
              && *(int16_t __far *)&lump_p->name[6] == v4 ) {
-				returnval = lump_p - lumpinfo4000;
+				returnval = counter;
 				break;
         }
 		if (lump_p == lumpinfo4000) {
 			break;
 		}
-
+		counter--;
 		lump_p--;
 
     }
-
+	if (returnval < -1) {
+		I_Error("what? %s %i %Fp %Fp ", name, returnval, lump_p, lumpinfo4000);
+	}
 	Z_UnmapLumpInfo();
     // TFB. Not found.
     return returnval;
@@ -230,7 +234,7 @@ int16_t W_GetNumForName(int8_t* name)
 	int16_t i;
 
     i = W_CheckNumForName (name);
-    
+
 #ifdef CHECK_FOR_ERRORS
 	if (i == -1)
 		I_Error("\nW_GetNumForName: %s not found!", name);
@@ -334,7 +338,7 @@ W_ReadLump
 		handle = wadfilehandle;
 	}
     
-    startoffset = l->position + start;
+	startoffset = l->position + start;
     lseek(handle, startoffset, SEEK_SET);
 
 	FAR_read(handle, dest, size ? size : lumpsize);

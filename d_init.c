@@ -584,7 +584,19 @@ void D_InitGraphicCounts() {
 	lastspritelump = W_GetNumForName("S_END") - 1;
 	numspritelumps = lastspritelump - firstspritelump + 1;
 
-	
+	//         NUMTEX TEX1 TEX2 FLATS PATCHES SPRITELUMPS
+	// SHARWR:  125   125  0     56    167    483
+	// DOOM 1:  286   121  161   111   356    764
+	// DOOM 2:  428   428  0     153   476    1381
+	/*
+	I_Error("\nHere: %i %i %i %i %i %i",
+		
+		numtextures,numtextures1,numtextures2,
+		numflats, numpatches, numspritelumps
+
+		);
+		*/
+
 }
 
 
@@ -620,20 +632,35 @@ void D_DoomMain2(void)
 	//2dbf dosbox 316f 86box
 	//byte __far* someptr = _fmalloc(1024);
 	//I_Error("\npointer is %lx", someptr);
+		/*
 
-	 
-	/*
-		I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp",
+		I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
 		colormapbytes, openings, negonearray, screenheightarray,
 		vissprites, scalelightfixed, scalelight, usedcompositetexturepagemem,
-		usedspritepagemem, usedpatchpagemem, spritewidths, 0L);
+		usedspritepagemem, usedpatchpagemem, compositetextureoffset, compositetexturepage,
+			spritepage, spriteoffset, patchpage, patchoffset,
+			
+			size_patchoffset);
 
-	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp",
+	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %p",
 		visplanes, visplaneheaders, yslope, distscale,
 		cachedheight, cacheddistance, cachedxstep, cachedystep,
 		spanstart, viewangletox, xtoviewangle, drawsegs,
-		floorclip, ceilingclip, 0L, 0L);
+		floorclip, ceilingclip, flatindex, size_flatindex);
+ 
+	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n",
+		nodes_render, sides_render, segs_render, spritewidths,
+		spriteoffsets, spritetopoffsets, RENDER_SCRATCH, 0L
+		);
+  	I_Error("\n\n%Fp %Fp %Fp %Fp\n%p %p %p %p\n",
+		zlight, texturecolumnlumps_bytes, texturecolumnofs_bytes, texturedefs_bytes,
+		size_texturedefs_bytes, 0, 0, 0
+	);
+	I_Error("\n%Fp %Fp %Fp %p", spritewidths, spriteoffsets, spritetopoffsets, size_spritetopoffsets);
+
 	*/
+
+
 
 	/*
 
@@ -655,6 +682,12 @@ void D_DoomMain2(void)
 	);
 
 
+
+
+
+	I_Error("\ncolormapbytes: %Fp\nopenings: %Fp\nnegonearray: %Fp\nscreenheightarray: %Fp\nvissprites: %Fp\nscalelightfixed: %Fp\nscalelightfixed: %Fp\nscalelight: %Fp\nusedcompositetexturepagemem: %Fp\nusedspritepagemem: %Fp\nusedpatchpagemem: %Fp\nspritewidths: %Fp",
+	colormapbytes,openings,negonearray,screenheightarray,vissprites,scalelightfixed,scalelight,usedcompositetexturepagemem,usedspritepagemem,usedpatchpagemem,spritewidths
+	); 
 
 	I_Error("\n%u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u",
 		MAX_SIDES_SIZE,		

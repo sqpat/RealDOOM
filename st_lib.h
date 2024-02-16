@@ -52,7 +52,7 @@ typedef struct
 	int16_t 	oldnum;
 
     // list of patches for 0-9
-	uint16_t __near* patchoffset;
+	uint16_t __near* patch_offset;
 
 } st_number_t;
 
@@ -67,7 +67,7 @@ typedef struct
 
     // percent sign graphic
     //patch_t*		p;
-	uint16_t  patchoffset;
+	uint16_t  patch_offset;
     
 } st_percent_t;
 
@@ -89,7 +89,7 @@ typedef struct
     //  whether to update icon
 
     // list of icons
- 	uint16_t __near*		patchoffset;
+ 	uint16_t __near*		patch_offset;
     
 } st_multicon_t;
 

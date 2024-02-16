@@ -37,7 +37,7 @@
 #include "doomstat.h"
 
 
-extern uint8_t		switchlist[MAXSWITCHES * 2];
+extern uint16_t		switchlist[MAXSWITCHES * 2];
 extern int16_t		numswitches;
 extern button_t        buttonlist[MAXBUTTONS];
 
@@ -54,9 +54,9 @@ extern int16_t             numtextures;
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
-extern uint8_t     R_TextureNumForName(int8_t* name);
+extern uint16_t     R_TextureNumForName(int8_t* name);
 
-extern uint8_t     R_CheckTextureNumForName(int8_t *name);
+extern uint16_t     R_CheckTextureNumForName(int8_t *name);
   
 
 
@@ -169,8 +169,8 @@ void P_InitSwitchList(void)
 typedef struct
 {
 	boolean	istexture;
-	uint8_t		picnum;
-	uint8_t		basepic;
+	uint16_t		picnum;
+	uint16_t		basepic;
 	uint8_t		numpics;
 
 } anim_t;

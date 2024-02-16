@@ -26,19 +26,24 @@
 #define MAXVISSPRITES  	128
 
 #define size_colormapbytes					(33 * 256)
-#define size_openings						size_colormapbytes + sizeof(int16_t) * MAXOPENINGS
-#define size_negonearray					size_openings + sizeof(int16_t) * (SCREENWIDTH)
-#define size_screenheightarray				size_negonearray + sizeof(int16_t) * (SCREENWIDTH)
-#define size_vissprites						size_screenheightarray + sizeof(vissprite_t) * (MAXVISSPRITES)
-#define size_scalelightfixed				size_vissprites + sizeof(lighttable_t __far* ) * (MAXLIGHTSCALE)
-#define size_scalelight						size_scalelightfixed + sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTSCALE)
-#define size_usedcompositetexturepagemem	size_scalelight + NUM_TEXTURE_PAGES * sizeof(uint8_t)
-#define size_usedspritepagemem				size_usedcompositetexturepagemem + NUM_SPRITE_CACHE_PAGES * sizeof(uint8_t)
-#define size_usedpatchpagemem				size_usedspritepagemem + NUM_PATCH_CACHE_PAGES * sizeof(uint8_t)
+#define size_openings						size_colormapbytes					+ sizeof(int16_t) * MAXOPENINGS
+#define size_negonearray					size_openings						+ sizeof(int16_t) * (SCREENWIDTH)
+#define size_screenheightarray				size_negonearray					+ sizeof(int16_t) * (SCREENWIDTH)
+#define size_vissprites						size_screenheightarray				+ sizeof(vissprite_t) * (MAXVISSPRITES)
+#define size_scalelightfixed				size_vissprites						+ sizeof(lighttable_t __far* ) * (MAXLIGHTSCALE)
+#define size_scalelight						size_scalelightfixed				+ sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTSCALE)
+#define size_usedcompositetexturepagemem	size_scalelight						+ NUM_TEXTURE_PAGES * sizeof(uint8_t)
+#define size_usedspritepagemem				size_usedcompositetexturepagemem	+ NUM_SPRITE_CACHE_PAGES * sizeof(uint8_t)
+#define size_usedpatchpagemem				size_usedspritepagemem				+ NUM_PATCH_CACHE_PAGES * sizeof(uint8_t)
 
-//#define size_spritewidths	size_usedpatchpagemem + (sizeof(int16_t) * numspritelumps)
-//#define spriteoffsets		spritewidths + (sizeof(int16_t) * numspritelumps)
-//#define spritetopoffsets	spriteoffsets + (sizeof(int16_t) * numspritelumps)
+
+#define size_compositetextureoffset			size_usedpatchpagemem				+ MAX_TEXTURES * sizeof(uint8_t)
+#define size_compositetexturepage			size_compositetextureoffset			+ MAX_TEXTURES * sizeof(uint8_t)
+#define size_spritepage						size_compositetexturepage			+ MAX_SPRITE_LUMPS * sizeof(uint8_t)
+#define size_spriteoffset					size_spritepage						+ MAX_SPRITE_LUMPS * sizeof(uint8_t)
+#define size_patchpage						size_spriteoffset					+ MAX_PATCHES * sizeof(uint8_t)
+#define size_patchoffset					size_patchpage						+ MAX_PATCHES * sizeof(uint8_t)
+ 
 
 /*
 
@@ -52,9 +57,14 @@
 #define usedcompositetexturepagemem 8000:edc0
 #define usedspritepagemem			8000:edd8
 #define usedpatchpagemem			8000:edfc
-#define spritewidths				8000:ee24
 
-
+#define compositetextureoffset		8000:ee24
+#define compositetexturepage		8000:efd0
+#define spritepage					8000:f17c
+#define spriteoffset				8000:f6e1
+#define patchpage					8000:fc46
+#define patchoffset					8000:fe22
+									8000:fffe
 */
 
 #define colormapbytes		((byte __far*				) 0x80000000)										
@@ -67,7 +77,17 @@
 #define usedcompositetexturepagemem ((uint8_t __far*  ) (0x80000000 + size_scalelight))
 #define usedspritepagemem	((uint8_t __far*			) (0x80000000 + size_usedcompositetexturepagemem))
 #define usedpatchpagemem	((uint8_t __far*			) (0x80000000 + size_usedspritepagemem))
-#define spritewidths		((int16_t __far*			) (0x80000000 + size_usedpatchpagemem))
+//#define spritewidths		((int16_t __far*			) (0x80000000 + size_usedpatchpagemem))
+
+#define compositetextureoffset	((uint8_t __far*			) (0x80000000 + size_usedpatchpagemem))
+#define compositetexturepage	((uint8_t __far*			) (0x80000000 + size_compositetextureoffset))
+#define spritepage				((uint8_t __far*			) (0x80000000 + size_compositetexturepage))
+#define spriteoffset			((uint8_t __far*			) (0x80000000 + size_spritepage))
+#define patchpage				((uint8_t __far*			) (0x80000000 + size_spriteoffset))
+#define patchoffset				((uint8_t __far*			) (0x80000000 + size_patchpage))
+
+
+ 
 
 
 #define size_visplanes										sizeof(visplane_t) * MAXCONVENTIONALVISPLANES
@@ -84,23 +104,25 @@
 #define size_drawsegs				size_xtoviewangle		+ (sizeof(drawseg_t) * (MAXDRAWSEGS))
 #define size_floorclip				size_drawsegs			+ (sizeof(int16_t) * SCREENWIDTH)
 #define size_ceilingclip			size_floorclip			+ (sizeof(int16_t) * SCREENWIDTH)
+#define size_flatindex				size_ceilingclip		+ (sizeof(uint8_t) * MAX_FLATS)
 
 /*
 #define visplanes				9000:0000
 #define visplaneheaders			9000:9948
-#define yslope					9000:9ccc
-#define distscale				9000:9fec
-#define cachedheight			9000:a4ec
-#define cacheddistance			9000:a80c
-#define cachedxstep				9000:ab2c
-#define cachedystep				9000:ae4c  
-#define spanstart				9000:b16c
-#define viewangletox			9000:b48c
-#define xtoviewangle			9000:d48c
-#define drawsegs				9000:d70e
-#define floorclip				9000:fa0e
-#define ceilingclip				9000:fc8e
-
+#define yslope					9000:9d17
+#define distscale				9000:a037
+#define cachedheight			9000:a537
+#define cacheddistance			9000:a857
+#define cachedxstep				9000:ab77
+#define cachedystep				9000:ae97  
+#define spanstart				9000:b1b7
+#define viewangletox			9000:b4d7
+#define xtoviewangle			9000:d4d7
+#define drawsegs				9000:d759
+#define floorclip				9000:fa59
+#define ceilingclip				9000:fcd9
+#define flatindex				9000:ff59
+								9000:fff0
 */
 
 
@@ -119,7 +141,7 @@
 #define drawsegs				((drawseg_t __far*)				(0x90000000 + size_xtoviewangle))
 #define floorclip				((int16_t __far*)				(0x90000000 + size_drawsegs))
 #define ceilingclip				((int16_t __far*)				(0x90000000 + size_floorclip))
-
+#define flatindex				((uint8_t __far*)				(0x90000000 + size_ceilingclip))
 
 // Visplane related.
 extern  int16_t __far*		lastopening;

@@ -113,8 +113,8 @@ MAX_SEGS_RENDER_SIZE		28150
 
 // needed for pre rendering (fracs)
 //extern int16_t		*spritewidths;
-extern int16_t		 __far*spriteoffsets;
-extern int16_t		 __far*spritetopoffsets;
+//extern int16_t		 __far*spriteoffsets;
+//extern int16_t		 __far*spritetopoffsets;
 
 #define colormaps		((lighttable_t  __far*			) 0x80000000)
 
@@ -125,18 +125,6 @@ extern int16_t		viewheight;
 
 extern int16_t		firstflat;
 
-
-//extern uint8_t __far* usedcompositetexturepagemem;
-extern uint8_t __far* compositetextureoffset;
-extern uint8_t __far* compositetexturepage;
-//extern uint8_t __far* usedpatchpagemem;
-extern uint8_t __far* patchpage;
-extern uint8_t __far* patchoffset;
-//extern uint8_t __far* usedspritepagemem;
-extern uint8_t __far* spritepage;
-extern uint8_t __far* spriteoffset;
-extern uint8_t __far* flatindex;
- 
 
 extern uint8_t firstunusedflat;
 extern int32_t totalpatchsize;
@@ -150,7 +138,7 @@ extern uint8_t	__near*textureheights;		    // uint8_t must be + 1 and then shift
 extern uint16_t	__near*texturecompositesizes;	// uint16_t*
 // for global animation
 extern uint8_t	__near*flattranslation; // can almost certainly be smaller
-extern uint8_t	__near*texturetranslation;
+extern uint16_t	__near*texturetranslation;
 
 
 
@@ -218,18 +206,32 @@ extern sector_t __far* sectors;
 
 
 #define size_nodes_render		MAX_NODES_RENDER_SIZE
+//#define size_sides_render		(size_nodes_render		+ MAX_SIDES_RENDER_SIZE)
 #define size_sides_render		(MAX_SIDES_RENDER_SIZE)
 #define size_segs_render		(size_sides_render		+ MAX_SEGS_RENDER_SIZE)
+/*
+#define size_spritewidths		(size_segs_render		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
+#define size_spriteoffsets		(size_spritewidths		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
+#define size_spritetopoffsets	(size_spriteoffsets		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
+*/
 //#define size_RENDER_SCRATCH		(size_segs_render		+ MAX_SEGS_RENDER_SIZE)
 
 // RENDER 0x7000 - 0x7FFF DATA
 
 #define nodes_render	((node_render_t __far*)		0x70000000)
-//#define sides_render	((side_render_t __far*)		(nodes_render + MAX_NODES_RENDER_SIZE))
-#define sides_render	((side_render_t __far*)		0x70008000)
+//#define sides_render	((side_render_t __far*)		(0x70000000 + size_nodes_render))
+//#define segs_render		((seg_render_t	__far*)		(0x70000000 + size_sides_render))
+#define sides_render	((side_render_t __far*)		(0x70008000 ))
 #define segs_render		((seg_render_t	__far*)		(0x70008000 + size_sides_render))
-#define RENDER_SCRATCH  ((int16_t		__far*)		(0x70008000 + size_segs_render))
-
+#define RENDER_SCRATCH  ((int16_t		__far*)		(0x70000000 + size_segs_render))
+//#define SIZE_RENDER_7000  (32768u + MAX_SIDES_RENDER_SIZE + MAX_SEGS_RENDER_SIZE)
+/*
+#define spritewidths		((int16_t		__far*)		(0x70000000 + size_segs_render))
+#define spriteoffsets		((int16_t		__far*)		(0x70000000 + size_spritewidths))
+#define spritetopoffsets	((int16_t		__far*)		(0x70000000 + size_spriteoffsets))
+*/
+//#define RENDER_SCRATCH  ((int16_t		__far*)		(0x70000000 + size_spritetopoffsets))
+ 
 
 /*
 segs_physics		7000:0000
@@ -244,10 +246,61 @@ rejectmatrix		6000:ae96
 nodes_render		7000:0000  // this is paged out for two flat cache pages after render_bspnode
 sides_render		7000:8000
 segs_render			7000:9e51
-... remaining		7000:0c47
+... remaining		7000:0c47  !!! overflow
 
 
+
+#define nodes_render		7000:0000
+#define sides_render		7000:36a0
+#define segs_render			7000:54f1
+#define spritewidths		7000:c2e7
+#define spriteoffsets		7000:cdb1
+#define spritetopoffsets	7000:d87b
+
+#define RENDER_SCRATCH		7000:e345
+
+
+#define zlight						6000:0000
+#define texturecolumnlumps_bytes	6000:2000
+#define texturecolumnofs_bytes		6000:7430
+#define texturedefs_bytes			6000:c860
+#define spritewidths				6000:d717
+#define spriteoffsets				6000:e1e1
+#define spritetopoffsets			6000:ecab
+									6000:f775
 */
+
+
+
+// 21552u shareware
+// 80480  doom2 
+
+// 3767u shareware
+// 8756u doom2
+
+// these offsets are always mults of 16 so lets shift when storing indices
+
+// 0x2000
+#define size_zlight						sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_texturecolumnlumps_bytes	size_zlight + 21552u
+#define size_texturecolumnofs_bytes		size_texturecolumnlumps_bytes + 21552u
+#define size_texturedefs_bytes			size_texturecolumnofs_bytes + 3767u
+
+#define size_spritewidths		(size_texturedefs_bytes	+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
+#define size_spriteoffsets		(size_spritewidths		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
+#define size_spritetopoffsets	(size_spriteoffsets		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
+
+
+#define zlight						((lighttable_t __far* __far*) 0x60000000)
+#define texturecolumnlumps_bytes	((byte __far*				) (0x60000000 + size_zlight))
+#define texturecolumnofs_bytes		((byte __far*				) (0x60000000 + size_texturecolumnlumps_bytes))
+#define texturedefs_bytes			((byte __far*				) (0x60000000 + size_texturecolumnofs_bytes))
+
+#define spritewidths		((int16_t		__far*)		(0x60000000 + size_texturedefs_bytes))
+#define spriteoffsets		((int16_t		__far*)		(0x60000000 + size_spritewidths))
+#define spritetopoffsets	((int16_t		__far*)		(0x60000000 + size_spriteoffsets))
+
+
 extern int16_t		numsubsectors;
 extern subsector_t __far*	subsectors;
 

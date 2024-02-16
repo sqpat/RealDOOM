@@ -229,8 +229,9 @@ found:
 	//				more physics levdata zlight																screen 3
 	//                  rejectmatrix
 	// 					nightnmarespawns textureinfo																		menu graphics	menu graphics
-	// 0x6000 block		strings			flat cache				strings															strings			strings
+	// 0x6000 block		strings									strings															strings			strings
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
+	//									flat cache
 	//					events			events
 	//                  states          states																[scratch buffer]				[scratch used
 	// 0x5000 block		trig tables   	trig tables								demobuffer													for anims]
@@ -271,7 +272,7 @@ void Z_LinkEMSVariables() {
 	offset_physics = size_ammnumpatchoffsets;
 
 	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
-	offset_render = size_ceilingclip;
+	offset_render = size_flatindex;
 	
 	// offset_render is 65534
 	// now 64894
@@ -286,41 +287,20 @@ void Z_LinkEMSVariables() {
 	segment = 0x8000;
 	offset_status = 0u;
 	offset_physics = 64000u + (256 * 5);
- 	offset_render = size_usedpatchpagemem;
+ 	offset_render = size_patchoffset;
 
 	// dynamic sizes from here on out - hard to configure these as #define at runtime unless we set upward bounds that also cover doom1/2 commercial bounds.
-	//spritewidths = MK_FP(segment, offset_render);
-	offset_render += (sizeof(int16_t) * numspritelumps);
-	spriteoffsets = MK_FP(segment, offset_render);
-	offset_render += (sizeof(int16_t) * numspritelumps);
-	spritetopoffsets = MK_FP(segment, offset_render);
-	offset_render += (sizeof(int16_t) * numspritelumps);
 
 
-	compositetextureoffset = MK_FP(segment, offset_render);
-	offset_render += numtextures * sizeof(uint8_t);
-	compositetexturepage = MK_FP(segment, offset_render);
-	offset_render += numtextures * sizeof(uint8_t);
-
-	spritepage = MK_FP(segment, offset_render);
-	offset_render += numspritelumps * sizeof(uint8_t);
-	spriteoffset = MK_FP(segment, offset_render);
-	offset_render += numspritelumps * sizeof(uint8_t);
-
-	patchpage = MK_FP(segment, offset_render);
-	offset_render += numpatches * sizeof(uint8_t);
-	patchoffset = MK_FP(segment, offset_render);
-	offset_render += numpatches * sizeof(uint8_t);
-
-	flatindex = MK_FP(segment, offset_render);
-	offset_render += numflats * sizeof(uint8_t);
+	 
+	 
 
 
 
-	// 0x9000  40203  64894  10240  00000  00000
-	// 0x8000  65280  64772  00000  00000  00000
-	// 0x7000  XXXXX  XXXXX  64208  00000  XXXXX
-	// 0x6000  24784  55063  16384  00000  XXXXX
+	// 0x9000  40747  65520  10240  00000  00000
+	// 0x8000  65280  65534  00000  00000  00000
+	// 0x7000  65442  58181  64248  00000  XXXXX
+	// 0x6000  41168  55063  16384  00000  XXXXX
 	// 0x5000  63982  63982  00000  XXXXX  00000
 	// 0x4000  00000  00000  00000  00000  00000
 
@@ -328,19 +308,18 @@ void Z_LinkEMSVariables() {
 	offset_render = 0u;
 	offset_physics = 0u;
 
-	segment = 0x7000;
+	//segment = 0x7000;
 	//screen2 = MK_FP(segment, 0);
 
 	offset_status = 1288;
 
-	DEBUG_PRINT("\n   0x7000:      XXXXX   XXXXX   %05u   00000   XXXXX", 0 - offset_status);
+	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_segs_render, 0 - offset_status);
 	segment = 0x6000;
-
 
 	offset_physics = 32768u + sizeof(mapthing_t) * MAX_THINKERS;
 	offset_status = 16384;
 
-	offset_render = size_texturedefs_bytes;
+	offset_render = size_spritetopoffsets;
 
 	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", offset_physics, offset_render, offset_status);
 
@@ -360,7 +339,6 @@ void Z_LinkEMSVariables() {
 	offset_status = 0u;
 
 	DEBUG_PRINT("\n   0x4000:      %05u   XXXXX   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
-
 
 
 }
@@ -411,31 +389,37 @@ void Z_LoadBinaries() {
 	 
 }
 
-byte __near conventionallowerblock[1250];
 
+
+
+//byte __near conventionallowerblock[1250];
+byte __near conventionallowerblock[4708];
+
+// 428 worst case (doom 2)
+// 428 * (4 * 2) + (3 * 1)
 void Z_LinkConventionalVariables() {
 	byte __near* offset = conventionallowerblock;
-	//1250 now
-	//uint16_t size = numtextures * (sizeof(uint16_t) * 3 + 4 * sizeof(uint8_t));
+
+	//uint16_t size = MAX_TEXTURES * (sizeof(uint16_t) * 4 + 3 * sizeof(uint8_t));
 
 	//conventionallowerblock = offset = malloc(size);
 	//I_Error("\n%lx %u", conventionallowerblock, size);
 	
 
 	texturecolumn_offset = (uint16_t __near*)offset;
-	offset += numtextures * sizeof(uint16_t);
+	offset += MAX_TEXTURES * sizeof(uint16_t);
 	texturedefs_offset = (uint16_t __near*)offset;
-	offset += numtextures * sizeof(uint16_t);
+	offset += MAX_TEXTURES * sizeof(uint16_t);
 	texturewidthmasks = offset;
-	offset += numtextures * sizeof(uint8_t);
+	offset += MAX_TEXTURES * sizeof(uint8_t);
 	textureheights = offset;
-	offset += numtextures * sizeof(uint8_t);
+	offset += MAX_TEXTURES * sizeof(uint8_t);
 	texturecompositesizes = (uint16_t __near*)offset;
-	offset += numtextures * sizeof(uint16_t);
+	offset += MAX_TEXTURES * sizeof(uint16_t);
 	flattranslation = offset;
-	offset += numtextures * sizeof(uint8_t);
-	texturetranslation = offset;
-	offset += numtextures * sizeof(uint8_t);
+	offset += MAX_TEXTURES * sizeof(uint8_t);
+	texturetranslation = (uint16_t __near*)offset;
+	offset += MAX_TEXTURES * sizeof(uint16_t);
 	//I_Error("\n%lx %lx %lx %u", conventionallowerblock, offset, texturetranslation, size);
 
 	//memset(conventionallowerblock, 0x00, 1250);

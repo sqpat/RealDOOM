@@ -576,7 +576,7 @@ extern int16_t activetexturepages[4];
 // sky mapping
 //
 uint8_t			skyflatnum;
-uint8_t			skytexture;
+uint16_t			skytexture;
 
 
 
@@ -719,9 +719,13 @@ void R_RenderPlayerView ()
     // Check for new console commands.
     NetUpdate ();
 
+	// replace render level data with flat cache
 	Z_QuickMapFlatPage(0, 3);
 
     R_DrawPlanes ();
+	// put away flat cache, put back level data
+	//Z_QuickMapUndoFlatCache();
+	//Z_QuickmapRender();
 #ifdef DETAILED_BENCH_STATS
 	renderplayerplanetics += ticcount - cachedrenderplayertics;
 	cachedrenderplayertics = ticcount;

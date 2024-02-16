@@ -413,7 +413,7 @@ EV_DoFloor
 		  case raiseToTexture: {
 			  short_height_t minsize = MAXSHORT;
 			  int16_t sidenum;
-			  uint8_t sidebottomtexture;
+			  uint16_t sidebottomtexture;
 				
 			  floor->direction = 1;
 			  floor->secnum = secnum;

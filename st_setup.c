@@ -82,7 +82,7 @@ STlib_initNum
 	n->y = y;
 	n->oldnum = 0;
 	n->width = width;
-	n->patchoffset = pl;
+	n->patch_offset = pl;
 }
 
 
@@ -95,7 +95,7 @@ STlib_initPercent
 	uint16_t __near*		pl,
 	uint16_t		percent) {
 	STlib_initNum(&p->num, x, y, pl, 3);
-	p->patchoffset = percent;
+	p->patch_offset = percent;
 }
 
 
@@ -110,7 +110,7 @@ STlib_initMultIcon
 	i->x = x;
 	i->y = y;
 	i->oldinum = -1;
-	i->patchoffset = il;
+	i->patch_offset = il;
 
 }
 

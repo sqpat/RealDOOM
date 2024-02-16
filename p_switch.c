@@ -32,7 +32,7 @@
 #include "doomstat.h"
 #include "r_state.h"
 
-uint8_t		switchlist[MAXSWITCHES * 2];
+uint16_t		switchlist[MAXSWITCHES * 2];
 int16_t		numswitches;
 button_t        buttonlist[MAXBUTTONS];
 
@@ -92,9 +92,9 @@ P_ChangeSwitchTexture
 ( int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum,
 	int16_t 		useAgain )
 {
-	uint8_t     texTop;
-	uint8_t     texMid;
-	uint8_t     texBot;
+	uint16_t     texTop;
+	uint16_t     texMid;
+	uint16_t     texBot;
 	int8_t     i;
 	int16_t     sound;
 

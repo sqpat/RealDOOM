@@ -265,7 +265,7 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_TRIG_TABLE_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
 	FIRST_TRIG_TABLE_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
 
-// todo - we are only using one page at 0x5C00 currently
+// todo - we could use 0x5c00 for a 4th, 5th page..
 // flat cache
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_5C00_OFFSET,
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 1, PAGE_7000_OFFSET,
@@ -701,6 +701,20 @@ void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 
 #endif
 	current5000State = PAGE_5000_TRIG_TEXTURE;
+}
+
+void Z_QuickMapUndoFlatCache() {
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_7000_offset_size;
+	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount++;
+	flatpageswitchcount++;
+
+#endif
 }
 
 

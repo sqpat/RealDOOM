@@ -245,7 +245,7 @@ static int maxer = 0;
 // R_GenerateLookup
 //
 //todo pull down below?
-void R_GenerateLookup(uint8_t texnum)
+void R_GenerateLookup(uint16_t texnum)
 {
  
 
@@ -273,8 +273,8 @@ void R_GenerateLookup(uint8_t texnum)
 	//byte patchcount[256];
 	byte __near*               patchcount;     // patchcount[texture->width]
 
-	int16_t __far*  collump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum]]);
-	uint16_t __far* colofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum]]);
+	int16_t __far*  collump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum] << 4]);
+	uint16_t __far* colofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum] << 4]);
 
 	//uint8_t currentpatchpage = 0;
 	
@@ -442,7 +442,6 @@ void R_InitTextures(void)
 
 
 
-
 	//  Really complex printing shit...
 	temp1 = W_GetNumForName("S_START");  // P_???????
 	temp2 = W_GetNumForName("S_END") - 1;
@@ -505,9 +504,8 @@ void R_InitTextures(void)
 		//DEBUG_PRINT("name %Fs", texture->name);
 		
 		if ((i + 1) < numtextures) {
-			texturecolumn_offset[i + 1] = texturecolumn_offset[i] + texturewidth * sizeof(int16_t);
+			texturecolumn_offset[i + 1] = texturecolumn_offset[i] + ((texturewidth * sizeof(int16_t)) >> 4 ) ;
  		}
-
 
 		j = 1;
 		while (j * 2 <= texturewidth)

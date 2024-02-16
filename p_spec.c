@@ -51,8 +51,8 @@
 typedef struct
 {
     boolean	istexture;
-    uint8_t		picnum;
-    uint8_t		basepic;
+	uint16_t		picnum;
+	uint16_t		basepic;
     uint8_t		numpics;
     
 } anim_t;
@@ -1016,7 +1016,7 @@ ticcount_t		levelTimeCount;
 void P_UpdateSpecials(void)
 {
 	anim_t __near*	anim;
-	uint8_t		pic;
+	uint16_t		pic;
 	int16_t		i;
 	int16_t sidenum;
 

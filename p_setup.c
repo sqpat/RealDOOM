@@ -1185,15 +1185,15 @@ void P_LoadLineDefs(int16_t lump)
 
 	Z_QuickmapPhysics();
 }
-extern uint8_t     R_CheckTextureNumForName(int8_t *name);
+extern uint16_t     R_CheckTextureNumForName(int8_t *name);
 
 //
 // R_TextureNumForName
 // Calls R_CheckTextureNumForName,
 //  aborts with error message.
 //
-uint8_t     R_TextureNumForName(int8_t* name) {
-	uint8_t         i = R_CheckTextureNumForName(name);
+uint16_t     R_TextureNumForName(int8_t* name) {
+	uint16_t         i = R_CheckTextureNumForName(name);
 
 	if (i == BAD_TEXTURE) {
 		I_Error("96 %s", name); // \nR_TextureNumForName: %s not found
@@ -1212,9 +1212,9 @@ void P_LoadSideDefs(int16_t lump)
 	mapsidedef_t __far*       msd;
 	side_t __far*             sd;
 	side_render_t __far*             sd_render;
-	uint8_t toptex;
-	uint8_t bottex;
-	uint8_t midtex;
+	uint16_t toptex;
+	uint16_t bottex;
+	uint16_t midtex;
 	int8_t texnametop[8];
 	int8_t texnamemid[8];
 	int8_t texnamebot[8];

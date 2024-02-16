@@ -78,8 +78,8 @@ typedef	struct
 
     short_height_t	floorheight;
     short_height_t	ceilingheight;
-    uint8_t	floorpic;
-    uint8_t	ceilingpic;
+	uint8_t	floorpic;
+	uint8_t	ceilingpic;
     uint8_t	lightlevel; // seems to max at 255
 
 
@@ -153,9 +153,9 @@ typedef struct
     // We do not maintain names here. 
 
 	// idea - store unique texturetrios, and then single (or dual byte) references here to save space. im sure it might save a couple thousand bytes per level.
-    uint8_t	toptexture;
-    uint8_t	bottomtexture;
-    uint8_t	midtexture;
+	uint16_t	toptexture;
+	uint16_t	bottomtexture;
+	uint16_t	midtexture;
 
 	texsize_t	textureoffset;
 
@@ -529,7 +529,7 @@ typedef struct
 typedef struct
 {
   fixed_t height;
-  uint8_t picnum;
+  uint16_t picnum;
   uint8_t lightlevel;
   int16_t minx;
   int16_t maxx;

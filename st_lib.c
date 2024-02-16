@@ -67,7 +67,7 @@ STlib_drawNum
 	
 	STlib_updateflag();
 
-	p0 = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[0]));
+	p0 = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patch_offset[0]));
 	w = (p0->width);
 	h = (p0->height);
 
@@ -99,12 +99,12 @@ STlib_drawNum
 
 	// in the special case of 0, you draw 0
 	if (!num) {
-		V_DrawPatch(x - w, number->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[0])));
+		V_DrawPatch(x - w, number->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patch_offset[0])));
 	}
     // draw the new number
     while (num && numdigits--) {
 		x -= w;
-		V_DrawPatch(x, number->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patchoffset[ num % 10 ])));
+		V_DrawPatch(x, number->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patch_offset[ num % 10 ])));
 		num /= 10;
     }
  
@@ -122,7 +122,7 @@ STlib_updatePercent
 {
 	if (refresh) {
 		STlib_updateflag();
-		V_DrawPatch(per->num.x, per->num.y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, per->patchoffset)));
+		V_DrawPatch(per->num.x, per->num.y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, per->patch_offset)));
 	}
 	STlib_drawNum(&per->num, refresh, value);
 }
@@ -146,7 +146,7 @@ STlib_updateMultIcon
 	if ((mi->oldinum != inum || refresh) && (inum != -1)) {
 		STlib_updateflag();
 		if (!is_binicon && mi->oldinum != -1) {
-			old = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patchoffset[mi->oldinum]));
+			old = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patch_offset[mi->oldinum]));
 			x = mi->x - (old->leftoffset);
 			y = mi->y - (old->topoffset);
 			w = (old->width);
@@ -162,7 +162,7 @@ STlib_updateMultIcon
 			
 		// binicon only has an array length zero and inum is always 1; this inum-is_binicon
 		// to work on the same line of code.
-		V_DrawPatch(mi->x, mi->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patchoffset[inum-is_binicon])));
+		V_DrawPatch(mi->x, mi->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patch_offset[inum-is_binicon])));
 
 		mi->oldinum = inum;
 	}

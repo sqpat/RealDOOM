@@ -57,6 +57,10 @@ extern int32_t lumpinfo5000switchcount;
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 6939u
 
 
+#define MAX_TEXTURES 428
+#define MAX_PATCHES 476
+#define MAX_FLATS 151
+#define MAX_SPRITE_LUMPS 1381
 
 #define MAX_THINKERS 840
 #define SPRITE_ALLOCATION_LIST_SIZE 150
@@ -153,6 +157,7 @@ void Z_ShutdownEMS();
 
 // used for segment offset for params
 #define pageswapargs_rend_offset_size			pageswapargoff + 2*num_phys_params
+#define pageswapargs_rend_7000_offset_size		(pageswapargs_rend_offset_size + (2*8))
 #define pageswapargs_stat_offset_size			(pageswapargs_rend_offset_size			+ 2*num_rend_params)
 #define pageswapargs_demo_offset_size			(pageswapargs_stat_offset_size			+ 2*num_stat_params)
 #define pageswapargs_textinfo_offset_size		(pageswapargs_demo_offset_size			+ 2*num_demo_params)
@@ -206,6 +211,7 @@ void Z_PushScratchFrame();
 void Z_PopScratchFrame();
 void Z_RemapScratchFrame(uint8_t startpage);
 void Z_QuickMapFlatPage(int16_t page, int16_t offset);
+void Z_QuickMapUndoFlatCache();
 void Z_QuickMapTextureInfoPage();
 void Z_QuickmapPalette();
 void Z_QuickmapMenu();

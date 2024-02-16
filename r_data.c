@@ -67,13 +67,13 @@ uint8_t   __near *textureheights;		    // uint8_t must be + 1 and then shifted t
 uint16_t  __near *texturecompositesizes;	// uint16_t*
 // for global animation
 uint8_t	  __near *flattranslation; // can almost certainly be smaller
-uint8_t	  __near *texturetranslation;
+uint16_t  __near *texturetranslation;
 
 
 // needed for pre rendering
 //int16_t		*spritewidths;
-int16_t		 __far*spriteoffsets;
-int16_t		 __far*spritetopoffsets;
+//int16_t		 __far*spriteoffsets;
+//int16_t		 __far*spritetopoffsets;
 
 
 int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
@@ -81,18 +81,18 @@ uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
 int16_t textureLRU[4];
 
 //uint8_t* usedcompositetexturepagemem; // defaults 00
-uint8_t __far* compositetextureoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-uint8_t __far* compositetexturepage; //  page index of the allocatiion
+//uint8_t __far* compositetextureoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+//uint8_t __far* compositetexturepage; //  page index of the allocatiion
 
 //uint8_t* usedpatchpagemem; // defaults 00
-uint8_t __far* patchpage; //  defaults FF. page index of the allocatiion
-uint8_t __far* patchoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
+//uint8_t __far* patchpage; //  defaults FF. page index of the allocatiion
+//uint8_t __far* patchoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
 
 //uint8_t* usedspritepagemem; // defaults 00
-uint8_t __far* spritepage;
-uint8_t __far* spriteoffset;
+//uint8_t __far* spritepage;
+//uint8_t __far* spriteoffset;
 
-uint8_t __far* flatindex;
+//uint8_t __far* flatindex;
 
 
 
@@ -409,7 +409,7 @@ void R_GetNextSpriteBlock(int16_t lump) {
 
 
 
-void R_GenerateComposite(uint8_t texnum, byte __far* block)
+void R_GenerateComposite(uint16_t texnum, byte __far* block)
 {
 	texpatch_t __far*         patch;
 	patch_t __far*            realpatch;
@@ -445,8 +445,8 @@ void R_GenerateComposite(uint8_t texnum, byte __far* block)
 	texturepatchcount = texture->patchcount;
 
 	// Composite the columns together.
-	collump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum]]);
-	colofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum]]);
+	collump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum] << 4]);
+	colofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum] << 4]);
 
 	Z_PushScratchFrame();
 	for (i = 0; i < texturepatchcount; i++) {
@@ -858,10 +858,10 @@ R_GetColumn
 
 	col &= texturewidthmasks[tex];
 
-	texturecolumnofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[tex]]);
+	texturecolumnofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[tex] << 4]);
 	ofs = texturecolumnofs[col];
 
-	texturecolumnlump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[tex]]);
+	texturecolumnlump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[tex] << 4]);
 	lump = texturecolumnlump[col];
 
 
