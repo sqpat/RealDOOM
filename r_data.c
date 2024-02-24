@@ -60,6 +60,7 @@ byte __far*	 spritedefs_bytes;
 
  
 
+uint16_t  __near *texturepatchlump_offset;
 uint16_t  __near *texturecolumn_offset;
 uint16_t  __near *texturedefs_offset;
 uint8_t   __near *texturewidthmasks;
@@ -431,6 +432,9 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 	int16_t				index;
 	//uint8_t				currentpatchpage = 0;
 	uint8_t pagenum;
+	int16_t currentlump;
+	int16_t currentRLEIndex = 0;
+	int16_t nextcollumpRLE = 0;
 /*
 	FILE*fp;
 	int8_t fname[15];
@@ -445,7 +449,7 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 	texturepatchcount = texture->patchcount;
 
 	// Composite the columns together.
-	collump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum] << 4]);
+	collump = &(texturecolumnlumps_bytes[texturepatchlump_offset[texnum]]);
 	colofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum] << 4]);
 
 	Z_PushScratchFrame();
@@ -455,6 +459,7 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 		patchpatch = patch->patch & PATCHMASK;
 		index = patch->patch - firstpatch;
 		pagenum = patchpage[index];
+		currentRLEIndex = 0;
 		/*
 		if (patchpage[index] == 0xFF) {
 			size = W_LumpLength(lump);
@@ -507,12 +512,20 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 		if (x2 > texturewidth)
 			x2 = texturewidth;
 
-
+		currentlump = collump[currentRLEIndex];
+		nextcollumpRLE = collump[currentRLEIndex + 1];
+		
 
 		for (; x < x2; x++) {
+			// TODO PATCH
+			while (x >= nextcollumpRLE) {
+				currentRLEIndex += 2;
+				currentlump = collump[currentRLEIndex];
+				nextcollumpRLE += collump[currentRLEIndex + 1];
+			}
 
-			// Column does not have multiple patches?
-			if (collump[x] >= 0) {
+			// if there is a defined lump, then there are not multiple patches for the column
+			if (currentlump >= 0) {
 				continue;
 			}
 			patchcol = (column_t  __far*)((byte  __far*)realpatch + (realpatch->columnofs[x - x1]));
@@ -840,8 +853,6 @@ R_GetFlat
 }
 
 */
-
-
  
 //
 // R_GetColumn
@@ -851,20 +862,27 @@ R_GetColumn
 (int16_t           tex,
 	int16_t           col)
 {
-	int16_t         lump; 
+	int16_t         lump;
 	uint16_t         ofs; 
 	int16_t __far* texturecolumnlump;
 	uint16_t __far* texturecolumnofs;
-
+	int16_t n = 0;
 	col &= texturewidthmasks[tex];
 
 	texturecolumnofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[tex] << 4]);
 	ofs = texturecolumnofs[col];
 
-	texturecolumnlump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[tex] << 4]);
-	lump = texturecolumnlump[col];
+	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
+	
+	// RLE stuff to figure out actual lump for column
+	while (col >= 0) {
+		lump = texturecolumnlump[n];
+		col -= texturecolumnlump[n+1];
+		n += 2;
+	}
 
 
+ 
 	if (lump > 0) {
 		return getpatchtexture(lump) + ofs;
 	} else {

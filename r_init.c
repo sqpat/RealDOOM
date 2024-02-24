@@ -36,7 +36,6 @@
 
 #include "i_system.h"
 #include "doomstat.h"
-#include  <alloca.h>
 #include <dos.h>
 
 
@@ -93,7 +92,7 @@ void R_InitPlanes(void) {
 */
 
 
-	Z_QuickmapPhysics();
+	//Z_QuickmapPhysics();
 
 
 
@@ -238,9 +237,8 @@ typedef struct
 
 
 
- 
- 
-static int maxer = 0;
+static int16_t                 currentlumpindex = 0;
+//int16_t texcollump[256];
 //
 // R_GenerateLookup
 //
@@ -261,9 +259,10 @@ void R_GenerateLookup(uint16_t texnum)
 	uint8_t				texturepatchcount;
 	int16_t				texturewidth;
 	int16_t				textureheight;
-	int8_t				texturename[8];
-	byte __far*				patchaddr = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
 	
+	int16_t				currentcollump;
+	int16_t				currentcollumpRLEStart;
+	uint16_t __far* addr1;
 	//byte patchcountbytes[256];	// 256 enough for doom shareware. maybe 512 for doom ii
 	//byte __near *patchcount = patchcountbytes;
 
@@ -271,13 +270,18 @@ void R_GenerateLookup(uint16_t texnum)
 
 
 	//byte patchcount[256];
-	byte __near*               patchcount;     // patchcount[texture->width]
 
-	int16_t __far*  collump = (int16_t __far*)&(texturecolumnlumps_bytes[texturecolumn_offset[texnum] << 4]);
+	// rather than alloca or whatever, lets use the scratch page since its already allocated for us...
+	// this is startup code so who cares if its slow
+	byte __far*					 columnpatchcount = MK_FP(SCRATCH_PAGE_SEGMENT, 0xFB00);
+	int16_t __far*               texcollump = MK_FP(SCRATCH_PAGE_SEGMENT, 0xF000);
+	// piggyback these local arrays off scratch data...
+	int16_t __far*  collump = texturecolumnlumps_bytes;
 	uint16_t __far* colofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum] << 4]);
+	texturepatchlump_offset[texnum] = currentlumpindex;
 
 	//uint8_t currentpatchpage = 0;
-	
+
 	texturecompositesizes[texnum] = 0;
 
 	// Composited texture not created yet.
@@ -285,17 +289,23 @@ void R_GenerateLookup(uint16_t texnum)
 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
-	FAR_memcpy(texturename, texture->name, 8);
 	// Now count the number of columns
 	//  that are covered by more than one patch.
 	// Fill in the lump / offset, so columns
 	//  with only a single patch are all done.
 
-	patchcount = (byte __near*)alloca(texture->width + 1);
-	memset(patchcount, 0, texture->width + 1);
+
+	// far memset seems to be unreliable... let's just do this
+	for (i = 0; i <= texture->width + 1; i++) {
+		columnpatchcount[i] = 0;
+		texcollump[i] = 0;
+	}
+
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
-	realpatch = (patch_t __far*)patchaddr;
+	realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT, 0);
+ 
+
 	for (i = 0; i < texturepatchcount; i++) {
 
 		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
@@ -319,7 +329,7 @@ void R_GenerateLookup(uint16_t texnum)
 		*/
 		//realpatch = (patch_t __far*)MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[pagenum - currentpatchpage] + patchoffset[index]);
 		if (lastusedpatch != patchpatch)
-			W_CacheLumpNumDirect(patchpatch, patchaddr);
+			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch);
 
 		lastusedpatch = patchpatch;
 
@@ -335,34 +345,65 @@ void R_GenerateLookup(uint16_t texnum)
 			x2 = texturewidth;
 		}
 
-
 		for (; x < x2; x++) {
-			patchcount[x]++;
-			collump[x] = patchpatch;
-			colofs[x] = (realpatch->columnofs[x - x1]) + 3;
+			columnpatchcount[x]++;
+			texcollump[x] = patchpatch;
+			
+			// might be an optimization bug? I cant just get the int32_t directly, something gets mangled and suddenly
+			// the pointer looks write but the array lookup evaluates wrong. previously working code,  couldn't figure 
+			// it out, but broke it down to an explicit pointer calculation and fetched the data and all was good
+
+			addr1 = (uint16_t __far*)&(realpatch->columnofs[x - x1]);
+			colofs[x] = *addr1 + 3;
+			
 		}
+
+
 	}
-
-
 
 	for (x = 0; x < texturewidth; x++) {
  
-		if (!patchcount[x]) {
-			DEBUG_PRINT("R_GenerateLookup: column without a patch (%s), %i %i %hhu %hhu\n", texturename, x, texturewidth, texnum, patchcount[x]);
+		if (!columnpatchcount[x]) {
+			I_Error("R_GenerateLookup: column without a patch (%Fs), %i %i %hhu %hhu %Fp\n", texture->name, x, texturewidth, texnum, columnpatchcount[x], columnpatchcount);
 			return;
 		}
 
-		if (patchcount[x] > 1) {
-			// Use the cached block.
-			collump[x] = -1;
+		//todo start/stop 
+		if (columnpatchcount[x] > 1) {
+			// two patches in this column!
+
+			texcollump[x] = -1;
 			colofs[x] = texturecompositesizes[texnum];
 
 			texturecompositesizes[texnum] += textureheight;
 		}
 	}
+ 
+
+	// Now we generate collump RLE runs
+
+	currentcollump = texcollump[0];
+	currentcollumpRLEStart = 0;
+
+	// write collumps data. Needs to be done here, so that we've accounted for two-patch cases with patchcount[x] > 1
+	for (x = 1; x < texturewidth; x++) {
+		if (currentcollump != texcollump[x]) {
+			collump[currentlumpindex] = currentcollump;
+			collump[currentlumpindex + 1] = x - currentcollumpRLEStart;
+
+			currentcollumpRLEStart = x;
+			currentcollump = texcollump[x];
+			currentlumpindex += 2;
+				
+
+		}
+	}
+	collump[currentlumpindex] = currentcollump;
+	collump[currentlumpindex + 1] = texturewidth - currentcollumpRLEStart;
+	currentlumpindex += 2;
+
 }
 
- 
 #define TEX_LOAD_ADDRESS (byte __far*) (0x70000000)
 
 //
@@ -406,6 +447,7 @@ void R_InitTextures(void)
 	int16_t                patchlookup[512]; // 350 for doom shareware
 
  	texturedefs_offset[0] = 0;
+	texturecolumn_offset[0] = 0;
 
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
@@ -502,8 +544,13 @@ void R_InitTextures(void)
 		}
 
 		//DEBUG_PRINT("name %Fs", texture->name);
-		
+
 		if ((i + 1) < numtextures) {
+			// we store by words to fit this in 2 bytes per entry for doom2 
+			// (which goes into 80kish size for this struct) and because all 
+			// the offsets are multiples of a word in size anyway due to texturewidth
+			// being multiples of 8 and multiplied by sizeof(int16_t) which is 2
+ 
 			texturecolumn_offset[i + 1] = texturecolumn_offset[i] + ((texturewidth * sizeof(int16_t)) >> 4 ) ;
  		}
 
@@ -630,7 +677,6 @@ void R_Init(void)
 	R_InitData();
 	DEBUG_PRINT("..");
 	// viewwidth / viewheight / detailLevel are set by the defaults
-	Z_QuickmapPhysics();
 
 	R_SetViewSize(screenblocks, detailLevel);
 	R_InitPlanes();

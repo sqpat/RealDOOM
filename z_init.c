@@ -238,6 +238,13 @@ found:
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
 	//                  empty
 	// 0x4000 block		lumpinfo		textures
+	// --------------------------------------------------------------------------------------------------------------------------------------------------
+	// NON EMS STUFF BELOW - ALWAYS MAPPED - eventually?
+	// --------------------------------------------------------------------------------------------------------------------------------------------------
+	// 0x3c00           (eventually) DS
+	// 0x3200           sine/cosine tables
+	// 0x3000 block		
+	// --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 	for (i = 1; i < total_pages; i+= 2) {
@@ -392,11 +399,9 @@ void Z_LoadBinaries() {
 
 
 
-//byte __near conventionallowerblock[1250];
-byte __near conventionallowerblock[4708];
+byte __near conventionallowerblock[13 * MAX_TEXTURES];  // 5564 bytes
 
-// 428 worst case (doom 2)
-// 428 * (4 * 2) + (3 * 1)
+// maybe move this into umb?
 void Z_LinkConventionalVariables() {
 	byte __near* offset = conventionallowerblock;
 
@@ -420,6 +425,9 @@ void Z_LinkConventionalVariables() {
 	offset += MAX_TEXTURES * sizeof(uint8_t);
 	texturetranslation = (uint16_t __near*)offset;
 	offset += MAX_TEXTURES * sizeof(uint16_t);
+	texturepatchlump_offset = (uint16_t __near*)offset;
+	offset += MAX_TEXTURES * sizeof(uint16_t);
+
 	//I_Error("\n%lx %lx %lx %u", conventionallowerblock, offset, texturetranslation, size);
 
 	//memset(conventionallowerblock, 0x00, 1250);

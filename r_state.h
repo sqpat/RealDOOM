@@ -131,6 +131,7 @@ extern int32_t totalpatchsize;
 extern byte __far*	 spritedefs_bytes;
 
  
+extern uint16_t	__near*texturepatchlump_offset;
 extern uint16_t	__near*texturecolumn_offset;
 extern uint16_t	__near*texturedefs_offset;
 extern uint8_t	__near*texturewidthmasks;
@@ -207,7 +208,8 @@ extern sector_t __far* sectors;
 
 #define size_nodes_render		MAX_NODES_RENDER_SIZE
 //#define size_sides_render		(size_nodes_render		+ MAX_SIDES_RENDER_SIZE)
-#define size_sides_render		(MAX_SIDES_RENDER_SIZE)
+#define size_base_7800_render 0x8000u
+#define size_sides_render		(size_base_7800_render + MAX_SIDES_RENDER_SIZE)
 #define size_segs_render		(size_sides_render		+ MAX_SEGS_RENDER_SIZE)
 /*
 #define size_spritewidths		(size_segs_render		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
@@ -221,8 +223,8 @@ extern sector_t __far* sectors;
 #define nodes_render	((node_render_t __far*)		0x70000000)
 //#define sides_render	((side_render_t __far*)		(0x70000000 + size_nodes_render))
 //#define segs_render		((seg_render_t	__far*)		(0x70000000 + size_sides_render))
-#define sides_render	((side_render_t __far*)		(0x70008000 ))
-#define segs_render		((seg_render_t	__far*)		(0x70008000 + size_sides_render))
+#define sides_render	((side_render_t __far*)		(0x70000000 + size_base_7800_render))
+#define segs_render		((seg_render_t	__far*)		(0x70000000 + size_sides_render))
 #define RENDER_SCRATCH  ((int16_t		__far*)		(0x70000000 + size_segs_render))
 //#define SIZE_RENDER_7000  (32768u + MAX_SIDES_RENDER_SIZE + MAX_SEGS_RENDER_SIZE)
 /*
@@ -270,11 +272,16 @@ segs_render			7000:9e51
 									6000:f775
 */
 
+// size_texturecolumnlumps_bytes
 
+// 4048 doom2
+// 804 shareware
 
+// size_texturecolumnofs_bytes
 // 21552u shareware
 // 80480  doom2 
 
+// size_texturedefs_bytes
 // 3767u shareware
 // 8756u doom2
 
@@ -282,9 +289,10 @@ segs_render			7000:9e51
 
 // 0x2000
 #define size_zlight						sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTZ)
-#define size_texturecolumnlumps_bytes	size_zlight + 21552u
+#define size_texturecolumnlumps_bytes	size_zlight + (4048u + 856)
+
 #define size_texturecolumnofs_bytes		size_texturecolumnlumps_bytes + 21552u
-#define size_texturedefs_bytes			size_texturecolumnofs_bytes + 3767u
+#define size_texturedefs_bytes			size_texturecolumnofs_bytes + 8756u
 
 #define size_spritewidths		(size_texturedefs_bytes	+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
 #define size_spriteoffsets		(size_spritewidths		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
@@ -292,7 +300,7 @@ segs_render			7000:9e51
 
 
 #define zlight						((lighttable_t __far* __far*) 0x60000000)
-#define texturecolumnlumps_bytes	((byte __far*				) (0x60000000 + size_zlight))
+#define texturecolumnlumps_bytes	((int16_t __far*			) (0x60000000 + size_zlight))
 #define texturecolumnofs_bytes		((byte __far*				) (0x60000000 + size_texturecolumnlumps_bytes))
 #define texturedefs_bytes			((byte __far*				) (0x60000000 + size_texturecolumnofs_bytes))
 

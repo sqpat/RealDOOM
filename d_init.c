@@ -628,10 +628,23 @@ void D_DoomMain2(void)
 	union REGS regs;
 	int8_t          textbuffer[256];
 	int8_t            title[128];
+	
+	//2d7e dosbox 3128 86box
+	/*
+	int16_t mallocsize = 8192;
+	byte __far* someptr1 = _fmalloc(mallocsize);
+	byte __far* someptr2 = _fmalloc(mallocsize);
+	byte __far* someptr3 = _fmalloc(mallocsize);
+	byte __far* someptr4 = _fmalloc(mallocsize);
+	byte __far* someptr5 = _fmalloc(mallocsize);
+	byte __far* someptr6 = _fmalloc(mallocsize);
+	byte __far* someptr7 = _fmalloc(mallocsize);
+	byte __far* someptr8 = _fmalloc(mallocsize);
+	I_Error("\npointer is \n%Fp\n%Fp\n%Fp\n%Fp\n%Fp\n%Fp\n%Fp\n%Fp", 
+		someptr1, someptr2, someptr3, someptr4, 
+		someptr5, someptr6, someptr7, someptr8);
+*/
 
-	//2dbf dosbox 316f 86box
-	//byte __far* someptr = _fmalloc(1024);
-	//I_Error("\npointer is %lx", someptr);
 		/*
 
 		I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
@@ -987,6 +1000,8 @@ void D_DoomMain2(void)
 	// moving this here. We want to load automap related wad lumps into physics ems pages now rather than lazily load it where pages are in a dynamic state.
 	AM_loadPics();
 
+	//byte __far* someptr = ;
+	//I_Error("\npointer is %Fp %Fp %Fp %Fp", _fmalloc(1024), _fmalloc(1024), _fmalloc(1024), _fmalloc(1024));
 
 	// start the apropriate game based on parms
 	p = M_CheckParm("-record");

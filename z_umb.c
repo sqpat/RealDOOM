@@ -95,8 +95,9 @@ parm [  ] modify exact [ ax dx bx ];
 parm [  ] modify exact [ ax dx bx ];
 
  
-// lets do only 60k.. .seems to be enough
-#define DESIRED_UMB_SIZE 0x0EA6
+// 54769 is how much we need currently for doom2
+// size in paragraphs
+#define DESIRED_UMB_SIZE 0x0D60
 //#define DESIRED_UMB_SIZE 0x0A80
 
 void Z_InitUMBDOS(void) {
