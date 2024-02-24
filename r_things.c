@@ -70,7 +70,6 @@ int16_t             numsprites;
 
 
 
-extern byte __far*	 spritedefs_bytes;
 
 
 

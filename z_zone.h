@@ -71,11 +71,11 @@ extern int32_t lumpinfo5000switchcount;
 #define FLAT_CACHE_OVERHEAD_SIZE numflats
 #define CACHE_OVERHEAD_SIZE (TEXTURE_CACHE_OVERHEAD_SIZE + SPRITE_CACHE_OVERHEAD_SIZE + PATCH_CACHE_OVERHEAD_SIZE + FLAT_CACHE_OVERHEAD_SIZE)
 
-
+// 27099 - should go to c802
 #define CONVENTIONAL2_SIZE STATIC_CONVENTIONAL_SPRITE_SIZE + (MAX_THINKERS * sizeof(mobj_pos_t)) 
 extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
-extern byte __far* conventionalmemoryblock;
+
 extern uint16_t EMS_PAGE;
 
 
@@ -84,8 +84,6 @@ void Z_InitEMS(void);
 void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 
-void __far* Z_MallocConventional(uint16_t  size);
- 
 void Z_ShutdownEMS();
  
 #define SCRATCH_ADDRESS_4000 (byte __far* )0x40000000

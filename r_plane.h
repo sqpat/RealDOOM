@@ -77,7 +77,6 @@
 #define usedcompositetexturepagemem ((uint8_t __far*  ) (0x80000000 + size_scalelight))
 #define usedspritepagemem	((uint8_t __far*			) (0x80000000 + size_usedcompositetexturepagemem))
 #define usedpatchpagemem	((uint8_t __far*			) (0x80000000 + size_usedspritepagemem))
-//#define spritewidths		((int16_t __far*			) (0x80000000 + size_usedpatchpagemem))
 
 #define compositetextureoffset	((uint8_t __far*			) (0x80000000 + size_usedpatchpagemem))
 #define compositetexturepage	((uint8_t __far*			) (0x80000000 + size_compositetextureoffset))

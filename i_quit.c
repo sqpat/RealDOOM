@@ -171,7 +171,7 @@ parm[] modify exact[ax bx es];
 parm[] modify exact[ax bx es];
 */
 
-
+/*
 void Z_ShutdownUMB() {
  
  
@@ -187,13 +187,10 @@ void Z_ShutdownUMB() {
 		printf("Failed deallocating UMB 1 memory! %i!\n", regs.w.ax);
 	}
 
-	if (conventional_far_bytes) {
-		_ffree(conventional_far_bytes);
-	}
 
-
+	
 }
-
+*/
 
 
 int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17 };
@@ -264,7 +261,7 @@ void I_Shutdown(void)
 	I_ShutdownMouse();
 	I_ShutdownKeyboard();
 	Z_ShutdownEMS();
-	Z_ShutdownUMB();
+	//Z_ShutdownUMB();
 }
 
 
@@ -302,7 +299,7 @@ void I_Quit(void)
 	
 	//printf("\n");
 	Z_ShutdownEMS();
-	Z_ShutdownUMB();
+	//Z_ShutdownUMB();
 
 
 	exit(1);

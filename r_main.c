@@ -238,7 +238,7 @@ R_PointOnSegSide
 //  tantoangle[] table.
 
 //
-
+angle_t __far* tantoangle;
 
 uint32_t
 R_PointToAngle16

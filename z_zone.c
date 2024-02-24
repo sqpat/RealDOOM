@@ -41,11 +41,10 @@
 
 
 // ugly... but it does work. I don't think we can ever make use of more than 2 so no need to listify
-uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE = 0;
-byte __far* conventionalmemoryblock;
+//uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE = 0;
 
-uint16_t remainingconventional = 0;
-uint16_t conventional1head = 	  0;
+//uint16_t remainingconventional = 0;
+//uint16_t conventional1head = 	  0;
 
 
 
@@ -79,6 +78,8 @@ extern int16_t textureLRU[4];
 extern uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
 extern int16_t currentflatpage[3];
 
+#define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4
+
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
 void Z_FreeConventionalAllocations() {
 	int16_t i;
@@ -86,15 +87,11 @@ void Z_FreeConventionalAllocations() {
 	// we should be paged to physics now - should be ok
 	FAR_memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
-	FAR_memset(conventionalmemoryblock, 0, STATIC_CONVENTIONAL_BLOCK_SIZE);
+	//erase the level data region
+	FAR_memset(((byte __far*) uppermemoryblock), 0, size_segs);
 
 	// todo make this area less jank. We want to free all the ems 4.0 region level data...
 	FAR_memset(MK_FP(0x7000, 0), 0, 65535);
-	
-
-	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE;
-	conventional1head = 0;
-
 	
 	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
 
@@ -133,26 +130,7 @@ void Z_FreeConventionalAllocations() {
 
 }
 
-
-
-// mostly very easy because we just allocate sequentially and never remove except all at once. no fragmentation
-//  EXCEPT thinkers
-void __far* Z_MallocConventional( 
-	uint16_t           size){
-	byte __far* returnvalue = conventionalmemoryblock + conventional1head;
-
-	if (size > remainingconventional) {
-		I_Error("79 %u %u", size, remainingconventional);// out of conventional space %u %u
-	}
-	conventional1head += size;
-	remainingconventional -= size;
-	return returnvalue;
-	
-}
-
-// Unlike other conventional allocations, these are freed and cause fragmentation of the memory block
-
-
+ 
 
  
 
@@ -989,14 +967,25 @@ void Z_QuickmapByTaskNum(int8_t tasknum) {
 extern void D_InitStrings();
 extern void P_Init();
 
+extern angle_t __far* tantoangle;
+
 // clears dead initialization code.
 void Z_ClearDeadCode() {
 	byte __far *startaddr =	(byte __far*)D_InitStrings;
 	byte __far *endaddr =		(byte __far*)P_Init;
+	
+	//8830 bytes or so
 	uint16_t size = endaddr - startaddr;
+	FILE* fp;
+
 	FAR_memset(startaddr, 0, size);
-	//13500 or so
-	//DEBUG_PRINT("\nClearing out %u bytes of initialization code", size);
+	
+	tantoangle = (angle_t __far* )startaddr;
+	
+	fp = fopen("D_TANTOA.BIN", "rb");
+	FAR_fread(tantoangle, 4, 2049, fp);
+	fclose(fp);
+
 }
 /*
 

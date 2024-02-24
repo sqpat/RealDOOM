@@ -709,7 +709,6 @@ void F_CastPrint (int8_t* text)
     }
 	
 }
-extern byte __far*	 spritedefs_bytes;
 
 
 //

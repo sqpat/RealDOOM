@@ -50,10 +50,13 @@ extern union REGS regs;
 // based a bit off wolf3d and catacomb source code
 
 void(*XMSaddr) (void);		// far pointer to XMS driver
-uint16_t UMBbase = 0;
+//uint16_t UMBbase = 0;
 uint16_t UMBsize = 0;
-byte __far* conventional_far_bytes = NULL;
+//byte __far* conventional_far_bytes = NULL;
+#define conventional_far_bytes ((byte __far*) 0xC8000000)
 
+
+/*
 
 #pragma aux XMS_GET_DRIVER = \
 	"mov	ax, 0x4310",\
@@ -93,12 +96,15 @@ parm [  ] modify exact [ ax dx bx ];
 		"mov[UMBsize],dx", \
 	"done:",\
 parm [  ] modify exact [ ax dx bx ];
-
+*/
  
 // 54769 is how much we need currently for doom2
 // size in paragraphs
-#define DESIRED_UMB_SIZE 0x0D60
-//#define DESIRED_UMB_SIZE 0x0A80
+//#define DESIRED_UMB_SIZE 0x0D60
+
+//#define DESIRED_UMB_SIZE 0x0FFE
+
+/*
 
 void Z_InitUMBDOS(void) {
 
@@ -116,12 +122,12 @@ void Z_InitUMBDOS(void) {
 	regs.w.ax = 0x5803;
 	regs.w.bx = 0x0001;
 	int86(DOSMM_INT, &regs, &regs);
-	/* todo check carry flag for error
-	resultreg = regs.w.ax;
-	if (resultreg ) {
-			I_Error("\n5803 error %p", 0, resultreg);
-	}
-	*/
+	
+	//resultreg = regs.w.ax;
+	//if (resultreg ) {
+	//		I_Error("\n5803 error %p", 0, resultreg);
+	//}
+	
 
 	regs.w.ax = 0x5800;
 	int86(DOSMM_INT, &regs, &regs);
@@ -171,49 +177,18 @@ void Z_InitUMBDOS(void) {
 	DEBUG_PRINT("\n  Remaining %lu bytes in UMB... looking for %u more bytes in conventional", (16L * UMBsize2), CONVENTIONAL2_SIZE);
 	
 	 
-	conventional_far_bytes = _fmalloc(CONVENTIONAL2_SIZE);
+	//conventional_far_bytes = (byte __far*) 0xc8000000; //_fmalloc(CONVENTIONAL2_SIZE);
 	DEBUG_PRINT("\n    Allocated %u at location... %Fp", CONVENTIONAL2_SIZE, conventional_far_bytes);
 
 	// back to conventional
-		
-	/*
-	regs.w.ax = 0x5803;
-	regs.w.bx = 0;
-	int86(DOSMM_INT, &regs, &regs);
-
-	regs.w.ax = 0x5801;
-	regs.w.bx = previousstrategy;
-	int86(DOSMM_INT, &regs, &regs);
-
-	regs.w.ax = 0x4800;
-	regs.w.bx = 0xffff;
-	int86(DOSMM_INT, &regs, &regs);
-	UMBsize2 = regs.w.bx;
-	DEBUG_PRINT("Not enough in UMB... \n  Remaining %u bytes in Conventional... ", UMBsize2 << 4);
-
-	if ((UMBsize2 << 4) >= 7000) {
-		UMBsize2 = 0x01B6; // enought for 0000
-		regs.w.ax = 0x4800;
-		regs.w.bx = UMBsize2;
-		int86(DOSMM_INT, &regs, &regs);
-		// todo check carry flag for error
-		conventional_far_bytes = regs.w.ax; // technically not UMBs but...
-		UMBsize2 <<= 4;
-		DEBUG_PRINT("\n    Allocated %u at location... %p", UMBsize2, 0, conventional_far_bytes);
-
-	}
-	else {
-		I_Error("\nNot enough memory for sprites?! %u", UMBsize2 << 4);
-	}
-	*/
+		 
 
  
 
 }
+*/
 
 
-extern mobj_pos_t __far* mobjposlist;
-extern byte __far*	   spritedefs_bytes;
 void Z_InitUMB(void) {
 	
 
@@ -222,15 +197,15 @@ void Z_InitUMB(void) {
 	uint16_t offset = 0;
 	DEBUG_PRINT("\n  Checking for UMB...");
 
-	Z_InitUMBDOS();
+	//Z_InitUMBDOS();
+	//UMBbase = 0xE000;
+	//UMBsize = DESIRED_UMB_SIZE << 4;
 
-	remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE = UMBsize;
-	conventionalmemoryblock = MK_FP(UMBbase, 0);
+	//conventional_far_bytes = _fmalloc(CONVENTIONAL2_SIZE);
+	//conventional_far_bytes = (byte __far*) 0xc8000000; //_fmalloc(CONVENTIONAL2_SIZE);
 
-	spritedefs_bytes = conventional_far_bytes;
-	offset += STATIC_CONVENTIONAL_SPRITE_SIZE;
-	mobjposlist = (mobj_pos_t __far*)(conventional_far_bytes + offset);
-	offset += (MAX_THINKERS * sizeof(mobj_pos_t));
+	//remainingconventional = STATIC_CONVENTIONAL_BLOCK_SIZE = UMBsize;
+	//conventionalmemoryblock = MK_FP(UMBbase, 0);
 
 	
 

@@ -39,7 +39,7 @@ int16_t currentThinkerListHead;
 
 // Both the head and tail of the thinker list.
 //thinker_t __far*	thinkerlist; // [MAX_THINKERS];
-mobj_pos_t __far*	mobjposlist; // [MAX_THINKERS];
+//mobj_pos_t __far*	mobjposlist; // [MAX_THINKERS];
 
 
 

@@ -629,8 +629,29 @@ void D_DoomMain2(void)
 	int8_t          textbuffer[256];
 	int8_t            title[128];
 	
+
+
+
 	//2d7e dosbox 3128 86box
 	/*
+
+
+	I_Error("\n\n%x %x %x %x\n%x %x %x %x\n%x %x %x %x\n%x ",
+		size_vertexes,
+		size_sectors,
+		size_sides,
+		size_lines,
+		size_seenlines,
+		size_subsectors,
+		size_nodes,
+		size_segs,
+		size_flattranslation,
+		size_texturetranslation,
+		size_texturedefs_offset,
+		size_texturewidthmasks,
+		size_textureheights
+	);
+
 	int16_t mallocsize = 8192;
 	byte __far* someptr1 = _fmalloc(mallocsize);
 	byte __far* someptr2 = _fmalloc(mallocsize);
@@ -1002,6 +1023,9 @@ void D_DoomMain2(void)
 
 	//byte __far* someptr = ;
 	//I_Error("\npointer is %Fp %Fp %Fp %Fp", _fmalloc(1024), _fmalloc(1024), _fmalloc(1024), _fmalloc(1024));
+
+
+	// todo - move this below code in between doommain2 and doomloop?
 
 	// start the apropriate game based on parms
 	p = M_CheckParm("-record");

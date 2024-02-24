@@ -58,8 +58,8 @@
 #define ANG180			0x80000000u
 #define ANG270			0xc0000000u
 
-#define ANG45_HIGHBITS			0x2000u
-#define ANG90_HIGHBITS			0x4000u
+#define ANG45_HIGHBITS		0x2000u
+#define ANG90_HIGHBITS		0x4000u
 #define ANG180_HIGHBITS		0x8000u
 #define ANG270_HIGHBITS		0xc000u
 
@@ -88,10 +88,10 @@ typedef uint16_t fineangle_t;
 //#define finesine			((int32_t __far*) 0x31FF0000)	// 10240
 //#define finecosine			((int32_t __far*) 0x31FF2000)	// 10240 should end at 3BFF + 4 bytes, leaving 12 till 3C00 for DS
 
-#define finesine			((int32_t __far*) 0x50000000)	// 10240
-#define finecosine			((int32_t __far*) 0x50002000)	// 10240
-#define finetangentinner	((int32_t __far*) (0x50000000 + size_finesine ))
-#define tantoangle			((angle_t __far*) (0x50000000 + size_finetangent))
+#define finesine			((int32_t __far*) 0x33FF0000)	// 10240
+#define finecosine			((int32_t __far*) 0x33FF2000)	// 10240
+#define finetangentinner	((int32_t __far*) (0x33FF0000 + size_finesine ))
+//#define tantoangle			((angle_t __far*) (0x50000000 + size_finetangent))
 
 
 // this one has no issues with mirroring 2nd half of values!

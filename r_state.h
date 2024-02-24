@@ -43,6 +43,7 @@
 #define MAX_SECTORS_SIZE			(MAX_SECTORS *		sizeof(sector_t))
 #define MAX_VERTEXES_SIZE			(MAX_VERTEXES *		sizeof(vertex_t))
 #define MAX_LINES_SIZE				(MAX_LINES *		sizeof(line_t))
+#define MAX_SEENLINES_SIZE			((MAX_LINES / 8) + 1)
 #define MAX_SUBSECTORS_SIZE			(MAX_SUBSECTORS *	sizeof(subsector_t))
 #define MAX_NODES_SIZE				(MAX_NODES *		sizeof(node_t))
 #define MAX_SEGS_SIZE				(MAX_SEGS *			sizeof(seg_t))
@@ -88,12 +89,7 @@ MAX_LINEBUFFER_SIZE			5084
 MAX_BLOCKLINKS_SIZE			7866u
 NIGHTMARE_SPAWN_SIZE		8400u
 MAX_REJECT_SIZE				15138u
-// 6960
-// 10348
-// 28224
-// 5084
-// 26870u
-// 7866u
+ 
 
 
 
@@ -128,18 +124,11 @@ extern int16_t		firstflat;
 
 extern uint8_t firstunusedflat;
 extern int32_t totalpatchsize;
-extern byte __far*	 spritedefs_bytes;
 
- 
+
 extern uint16_t	__near*texturepatchlump_offset;
 extern uint16_t	__near*texturecolumn_offset;
-extern uint16_t	__near*texturedefs_offset;
-extern uint8_t	__near*texturewidthmasks;
-extern uint8_t	__near*textureheights;		    // uint8_t must be + 1 and then shifted to fracbits when used
 extern uint16_t	__near*texturecompositesizes;	// uint16_t*
-// for global animation
-extern uint8_t	__near*flattranslation; // can almost certainly be smaller
-extern uint16_t	__near*texturetranslation;
 
 
 
@@ -178,10 +167,70 @@ extern seg_t __far*		segs;
 extern int16_t		numsectors;
 extern sector_t __far* sectors;
 
+
+
+//0xE000
+/*
+size_vertexes			E000:0000
+size_sectors			E000:1968
+size_sides				E000:2f28
+size_lines				E000:75e5
+size_seenlines			E000:9859
+size_subsectors			E000:9936
+size_nodes				E000:aa4d
+size_segs				E000:d345
+size_flattranslation	E000:f442
+size_texturetranslation	E000:f5ee
+size_texturedefs_offset	E000:f946
+size_texturewidthmasks	E000:fc93
+size_textureheights		E000:fe41
+						E000:fff6  9 bytes free
+//	
+*/
+
+// may swap with EMS/0xD000 ?
+#define uppermemoryblock		0xE0000000
+
+#define size_vertexes			(MAX_VERTEXES_SIZE)
+#define size_sectors			(size_vertexes				+ MAX_SECTORS_SIZE)
+#define size_sides				(size_sectors				+ MAX_SIDES_SIZE)
+#define size_lines				(size_sides					+ MAX_LINES_SIZE)
+#define size_seenlines			(size_lines					+ MAX_SEENLINES_SIZE)
+#define size_subsectors			(size_seenlines				+ MAX_SUBSECTORS_SIZE)
+#define size_nodes				(size_subsectors			+ MAX_NODES_SIZE)
+#define size_segs				(size_nodes					+ MAX_SEGS_SIZE)
+#define size_flattranslation	(size_segs					+ MAX_TEXTURES * sizeof(uint8_t))
+#define size_texturetranslation	(size_flattranslation		+ MAX_TEXTURES * sizeof(uint16_t))
+#define size_texturedefs_offset	(size_texturetranslation	+ MAX_TEXTURES * sizeof(uint16_t))
+#define size_texturewidthmasks	(size_texturedefs_offset	+ MAX_TEXTURES * sizeof(uint8_t))
+#define size_textureheights		(size_texturewidthmasks		+ MAX_TEXTURES * sizeof(uint8_t))
+
+
+#define vertexes				((vertex_t __far*)		(uppermemoryblock))
+#define sectors					((sector_t __far*)		(uppermemoryblock + size_vertexes))
+#define sides					((side_t __far*)		(uppermemoryblock + size_sectors))
+#define lines					((line_t __far*)		(uppermemoryblock + size_sides))
+#define seenlines				((uint8_t __far*)		(uppermemoryblock + size_lines))
+#define subsectors				((subsector_t __far*)	(uppermemoryblock + size_seenlines))
+#define nodes					((node_t __far*)		(uppermemoryblock + size_subsectors))
+#define segs					((seg_t __far*)			(uppermemoryblock + size_nodes))
+#define	flattranslation			((uint8_t	__far*)		(uppermemoryblock + size_segs))
+#define	texturetranslation		((uint16_t	__far*)		(uppermemoryblock + size_flattranslation))
+#define texturedefs_offset		((uint16_t	__far*)		(uppermemoryblock + size_texturetranslation))
+#define texturewidthmasks		((uint8_t	__far*)		(uppermemoryblock + size_texturedefs_offset))
+#define textureheights			((uint8_t	__far*)		(uppermemoryblock + size_texturewidthmasks))
+
+//0xc800
+#define size_spritedefs		6939u
+#define size_mobjposlist	(size_spritedefs + (MAX_THINKERS * sizeof(mobj_pos_t))
+
+#define spritedefs_bytes	((byte __far*)		(0xc8000000))
+#define mobjposlist			((mobj_pos_t __far*) (0xc8000000 + size_spritedefs))
+
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region
 
- 
+
 //0x7000
 #define size_segs_physics		(MAX_SEGS_PHYSICS_SIZE)
 #define size_lines_physics		(size_segs_physics		+ MAX_LINES_PHYSICS_SIZE)
@@ -208,7 +257,8 @@ extern sector_t __far* sectors;
 
 #define size_nodes_render		MAX_NODES_RENDER_SIZE
 //#define size_sides_render		(size_nodes_render		+ MAX_SIDES_RENDER_SIZE)
-#define size_base_7800_render 0x8000u
+#define size_base_7800_render	0x8000u
+//#define size_segs_render		(size_base_7800_render		+ MAX_SEGS_RENDER_SIZE)
 #define size_sides_render		(size_base_7800_render + MAX_SIDES_RENDER_SIZE)
 #define size_segs_render		(size_sides_render		+ MAX_SEGS_RENDER_SIZE)
 /*
@@ -219,10 +269,11 @@ extern sector_t __far* sectors;
 //#define size_RENDER_SCRATCH		(size_segs_render		+ MAX_SEGS_RENDER_SIZE)
 
 // RENDER 0x7000 - 0x7FFF DATA
+// NOTE: 0x7000, 0x7400 pages are swapped out during DrawPlanes so they can only use stuff 
+// not used during then. nodes are r_bsp only and sprites are r_things only.
 
-#define nodes_render	((node_render_t __far*)		0x70000000)
-//#define sides_render	((side_render_t __far*)		(0x70000000 + size_nodes_render))
-//#define segs_render		((seg_render_t	__far*)		(0x70000000 + size_sides_render))
+#define nodes_render	((node_render_t __far*)		 0x70000000)
+//#define segs_render		((seg_render_t	__far*)		(0x70000000 + size_base_7800_render))
 #define sides_render	((side_render_t __far*)		(0x70000000 + size_base_7800_render))
 #define segs_render		((seg_render_t	__far*)		(0x70000000 + size_sides_render))
 #define RENDER_SCRATCH  ((int16_t		__far*)		(0x70000000 + size_segs_render))
@@ -244,21 +295,23 @@ linebuffer			6000:5b30
 blocklinks			6000:6f0c
 nightmarespawns		6000:8dc6
 rejectmatrix		6000:ae96
+[empty]				6000:E9B8
 
 nodes_render		7000:0000  // this is paged out for two flat cache pages after render_bspnode
 sides_render		7000:8000
 segs_render			7000:9e51
 ... remaining		7000:0c47  !!! overflow
 
+nodes_render		7000:0000  // this is paged out for two flat cache pages after render_bspnode
+segs_render			7000:8000
+					7000:EDF6
 
 
-#define nodes_render		7000:0000
-#define sides_render		7000:36a0
-#define segs_render			7000:54f1
-#define spritewidths		7000:c2e7
-#define spriteoffsets		7000:cdb1
-#define spritetopoffsets	7000:d87b
 
+ 
+
+
+ 
 #define RENDER_SCRATCH		7000:e345
 
 
@@ -287,7 +340,8 @@ segs_render			7000:9e51
 
 // these offsets are always mults of 16 so lets shift when storing indices
 
-// 0x2000
+
+
 #define size_zlight						sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTZ)
 #define size_texturecolumnlumps_bytes	size_zlight + (4048u + 856)
 
@@ -297,6 +351,7 @@ segs_render			7000:9e51
 #define size_spritewidths		(size_texturedefs_bytes	+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
 #define size_spriteoffsets		(size_spritewidths		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
 #define size_spritetopoffsets	(size_spriteoffsets		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
+//#define size_sides_render		(size_spritetopoffsets	+ MAX_SIDES_RENDER_SIZE)
 
 
 #define zlight						((lighttable_t __far* __far*) 0x60000000)
@@ -307,22 +362,18 @@ segs_render			7000:9e51
 #define spritewidths		((int16_t		__far*)		(0x60000000 + size_texturedefs_bytes))
 #define spriteoffsets		((int16_t		__far*)		(0x60000000 + size_spritewidths))
 #define spritetopoffsets	((int16_t		__far*)		(0x60000000 + size_spriteoffsets))
+//#define sides_render		((side_render_t __far*)		(0x60000000 + spritetopoffsets))
 
 
 extern int16_t		numsubsectors;
-extern subsector_t __far*	subsectors;
 
 extern int16_t		numnodes;
-extern node_t __far*      nodes;
 
 extern int16_t		numlines;
-extern line_t __far*   lines;
-extern uint8_t __far*		seenlines;
 
 
 
 extern int16_t		numsides;
-extern side_t __far*       sides;
 
 
 

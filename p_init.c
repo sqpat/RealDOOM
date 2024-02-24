@@ -364,7 +364,6 @@ R_InstallSpriteLump
 extern int16_t             numsprites;
 
 extern int16_t             maxframe;
-extern byte __far*	 spritedefs_bytes;
 
 //
 // R_InitSpriteDefs

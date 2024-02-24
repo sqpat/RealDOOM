@@ -46,28 +46,12 @@ void    P_SpawnMapThing(mapthing_t     mthing, int16_t key);
 // Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
 //
 int16_t             numvertexes;
-vertex_t __far*		vertexes;
-
 int16_t             numsegs;
-seg_t __far*		segs;
-
 int16_t             numsectors;
-sector_t __far*		sectors;
-
 int16_t             numsubsectors;
-subsector_t __far*   subsectors;
-
 int16_t             numnodes;
-node_t __far*		nodes;
-
-
-
 int16_t             numlines;
-line_t __far*		lines;
-uint8_t __far*		seenlines;
-
 int16_t             numsides;
-side_t __far*		sides;
 
 
 #ifdef PRECALCULATE_OPENINGS
@@ -88,7 +72,6 @@ int16_t             bmapheight;     // size in mapblocks
 								// offsets in blockmap are from here
 
 // origin of block map
-// todo can this be made 16 bit
 int16_t         bmaporgx;
 int16_t         bmaporgy;
 
@@ -114,8 +97,6 @@ void P_LoadVertexes(int16_t lump)
 	//  total lump length / vertex record length.
 	numvertexes = W_LumpLength(lump) / sizeof(mapvertex_t);
 
-	// Allocate zone memory for buffer.
-	vertexes = Z_MallocConventional(numvertexes * sizeof(vertex_t));
 	// Load data into cache.
 	Z_QuickmapScratch_5000();
 
@@ -162,11 +143,8 @@ void P_LoadSegs(int16_t lump)
 	Z_QuickmapRender_NoTex();
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
-	segs = (seg_t __far*)Z_MallocConventional(numsegs * sizeof(seg_t));
 
-
-
-	FAR_memset(segs, 0xff, numsegs * sizeof(seg_t));
+	FAR_memset(segs, 0xff, MAX_SEGS_SIZE);
 	Z_QuickmapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
@@ -240,8 +218,7 @@ void P_LoadSubsectors(int16_t lump)
 	mapsubsector_t __far*     ms;
 	subsector_t __far*        ss;
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
-	subsectors = (subsector_t __far*)Z_MallocConventional (numsubsectors * sizeof(subsector_t));
-	FAR_memset(subsectors, 0, numsubsectors * sizeof(subsector_t));
+	FAR_memset(subsectors, 0, MAX_SUBSECTORS_SIZE);
 
 	Z_QuickmapScratch_5000();
 
@@ -307,11 +284,9 @@ void P_LoadSectors(int16_t lump)
 	int16_t convertedtag;
 	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
 
-	sectors = (sector_t __far*)Z_MallocConventional (numsectors * sizeof(sector_t));
 
-
-	FAR_memset(sectors, 0, numsectors * sizeof(sector_t));
-	FAR_memset(sectors_physics, 0, numsectors * sizeof(sector_physics_t));
+	FAR_memset(sectors, 0, MAX_SECTORS_SIZE);
+	FAR_memset(sectors_physics, 0, MAX_SECTORS_PHYSICS_SIZE);
 	Z_QuickmapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
@@ -367,7 +342,6 @@ void P_LoadNodes(int16_t lump)
 	mapnode_t	currentdata;
 	
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
-	nodes = (node_t __far*)Z_MallocConventional(numnodes * sizeof(node_t));
 
 
 	Z_QuickmapRender_NoTex();
@@ -1086,13 +1060,10 @@ void P_LoadLineDefs(int16_t lump)
 	side_render_t __far* tempsides_render = (side_render_t __far*)0x60008000;
 
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
-	lines = (line_t __far* )Z_MallocConventional(numlines * sizeof(line_t));
 
-
-	seenlines = (uint8_t __far*)Z_MallocConventional(numlines/8+1);
-	FAR_memset(lines, 0, numlines * sizeof(line_t));
-	FAR_memset(lines_physics, 0, numlines * sizeof(line_physics_t));
-	FAR_memset(seenlines, 0, numlines / 8 + 1);
+	FAR_memset(lines, 0, MAX_LINES_SIZE);
+	FAR_memset(lines_physics, 0, MAX_LINES_PHYSICS_SIZE);
+	FAR_memset(seenlines, 0, MAX_SEENLINES_SIZE);
 	Z_QuickmapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
@@ -1225,7 +1196,6 @@ void P_LoadSideDefs(int16_t lump)
 	Z_QuickmapRender_NoTex();
  
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	sides = (side_t __far*)Z_MallocConventional (numsides * sizeof(side_t));
 	Z_QuickmapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);

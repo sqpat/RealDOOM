@@ -111,7 +111,6 @@ typedef struct thinker_s
 
 
 
-extern mobj_pos_t __far*	mobjposlist; // [MAX_THINKERS];
 
 
 void P_InitThinkers ();

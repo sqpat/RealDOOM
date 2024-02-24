@@ -732,7 +732,7 @@ void D_AdvanceDemo (void)
 #ifdef DETAILED_BENCH_STATS
 	 cachedtics = ticcount;
 #endif
-	 //Z_ClearDeadCode();
+	 Z_ClearDeadCode();
 
 	 D_DoomLoop();  // never returns
  }
