@@ -268,42 +268,12 @@ found:
 }
 
 void Z_LinkEMSVariables() {
-	uint16_t segment;
-	uint16_t offset_render;
-	uint16_t offset_physics;
-	uint16_t offset_status;
-
-	// we're an OS now! let's directly allocate memory !
-
-	segment = 0x9000;
-	offset_render = 0u;
-	offset_physics = 0u;
-	offset_status = 0u;
-	//physics mapping
- 
-	offset_physics = size_ammnumpatchoffsets;
-
-	//render mapping, mostly visplane stuff... can be swapped out for thinker, mobj data stuff for certain sprite render functions
-	offset_render = size_flatindex;
 	
-	// offset_render is 65534
-	// now 64894
-
-	offset_status -= (ST_WIDTH*ST_HEIGHT);
-
-	//screen4 = MK_FP(segment, offset_status);
-
 	DEBUG_PRINT("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
-	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", offset_physics, offset_render, 0 - offset_status);
+	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_ammnumpatchoffsets, size_flatindex, (ST_WIDTH*ST_HEIGHT));
 
-	segment = 0x8000;
  
-
-	// dynamic sizes from here on out - hard to configure these as #define at runtime unless we set upward bounds that also cover doom1/2 commercial bounds.
-
-
-	 
-	 
+ 	 
 
 
 
@@ -315,26 +285,9 @@ void Z_LinkEMSVariables() {
 	// 0x4000  00000  XXXXX  00000  00000  00000
 
 	DEBUG_PRINT("\n   0x8000:      %05u   %05u   %05u   00000   00000", 64000u + (256 * 5), size_patchoffset, 0 );
-	offset_render = 0u;
-	offset_physics = 0u;
-	 
-
 	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_segs_render, 0 - 1288);
-	segment = 0x6000;
- 
-
-
 	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", size_rejectmatrix, size_spritetopoffsets, 16384);
-
-	segment = 0x5000;
- 
-
-
 	DEBUG_PRINT("\n   0x5000:      %05u   %05u   XXXXX   XXXXX   00000", size_events, size_events);
-
-	segment = 0x4000;
-	 
-
 	DEBUG_PRINT("\n   0x4000:      %05u   XXXXX   %05u   00000   00000", 0, 0, 0);
 
 

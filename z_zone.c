@@ -978,6 +978,8 @@ void Z_ClearDeadCode() {
 	uint16_t size = endaddr - startaddr;
 	FILE* fp;
 
+	//I_Error("size: %u", size);
+
 	FAR_memset(startaddr, 0, size);
 	
 	tantoangle = (angle_t __far* )startaddr;

@@ -1150,16 +1150,7 @@ typedef struct state_s
   statenum_t			nextstate; // todo i think this can be a int8_t diff that adds to current state.
   //int32_t			misc1, misc2;
 } state_t;
-
-//extern state_t* states;
-#define size_states size_tantoangle + sizeof(state_t) * NUMSTATES
-#define size_events	size_states + sizeof(event_t) * MAXEVENTS
-
-#define states ((state_t __far*) (0x50000000 + size_tantoangle))
-#define events ((event_t __far*) (0x50000000 + size_states ))
-//#define states	5000:E004
-//#define events	5000:f6ae
-//					5000:F9EE
+ 
 
 #define MT_PLAYER 0
 #define MT_POSSESSED 1

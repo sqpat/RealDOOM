@@ -189,6 +189,7 @@ void Z_InitUMBDOS(void) {
 */
 
 
+/*
 void Z_InitUMB(void) {
 	
 
@@ -211,4 +212,4 @@ void Z_InitUMB(void) {
 
 
 }
-
+*/

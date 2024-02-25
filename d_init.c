@@ -629,7 +629,7 @@ void D_DoomMain2(void)
 	int8_t          textbuffer[256];
 	int8_t            title[128];
 	
-
+	
 
 
 	//2d7e dosbox 3128 86box
@@ -921,8 +921,8 @@ void D_DoomMain2(void)
 	W_InitMultipleFiles(wadfiles);
 	D_InitGraphicCounts(); // gross
 
-	DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
-	Z_InitUMB();
+	//DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
+//	Z_InitUMB();
 
 	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
 	Z_GetEMSPageMap();

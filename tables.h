@@ -80,18 +80,6 @@ typedef uint16_t fineangle_t;
 
 // Effective size is 10240.
 
-#define size_finesine		10240u * sizeof(int32_t)
-#define size_finetangent	size_finesine +  2048u * sizeof(int32_t)
-#define size_tantoangle		size_finetangent +  2049u * sizeof(int32_t)
-
-//todo eventually move these tables down here...
-//#define finesine			((int32_t __far*) 0x31FF0000)	// 10240
-//#define finecosine			((int32_t __far*) 0x31FF2000)	// 10240 should end at 3BFF + 4 bytes, leaving 12 till 3C00 for DS
-
-#define finesine			((int32_t __far*) 0x33FF0000)	// 10240
-#define finecosine			((int32_t __far*) 0x33FF2000)	// 10240
-#define finetangentinner	((int32_t __far*) (0x33FF0000 + size_finesine ))
-//#define tantoangle			((angle_t __far*) (0x50000000 + size_finetangent))
 
 
 // this one has no issues with mirroring 2nd half of values!

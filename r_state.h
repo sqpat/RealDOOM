@@ -222,10 +222,12 @@ size_textureheights		E000:fe41
 
 //0xc800
 #define size_spritedefs		6939u
-#define size_mobjposlist	(size_spritedefs + (MAX_THINKERS * sizeof(mobj_pos_t))
+#define size_mobjposlist	(size_spritedefs + (MAX_THINKERS * sizeof(mobj_pos_t)))
+//69db // 27099  5669 bytes left
 
 #define spritedefs_bytes	((byte __far*)		(0xc8000000))
 #define mobjposlist			((mobj_pos_t __far*) (0xc8000000 + size_spritedefs))
+
 
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region
@@ -340,8 +342,38 @@ segs_render			7000:8000
 
 // these offsets are always mults of 16 so lets shift when storing indices
 
+/*
+#define size_states size_tantoangle + sizeof(state_t) * NUMSTATES
+#define size_events	size_states + sizeof(event_t) * MAXEVENTS
+
+#define states ((state_t __far*) (0x50000000 + size_tantoangle))
+#define events ((event_t __far*) (0x50000000 + size_states ))
+*/
+#define size_finesine		10240u * sizeof(int32_t)
+#define size_finetangent	size_finesine		+  2048u * sizeof(int32_t)
+#define size_states			size_finetangent	+ sizeof(state_t) * NUMSTATES
+#define size_events			size_states			+ sizeof(event_t) * MAXEVENTS
 
 
+
+#define size_tantoangle		size_finetangent +  2049u * sizeof(int32_t)
+
+//todo eventually move these tables down here...
+//#define finesine			((int32_t __far*) 0x31FF0000)	// 10240
+//#define finecosine			((int32_t __far*) 0x31FF2000)	// 10240 should end at 3BFF + 4 bytes, leaving 12 till 3C00 for DS
+
+//#define baselowermemoryaddress 0x33FF0000
+#define baselowermemoryaddress 0x32610000
+
+#define finesine			((int32_t __far*) baselowermemoryaddress)	// 10240
+#define finecosine			((int32_t __far*) (baselowermemoryaddress+0x2000))	// 10240
+#define finetangentinner	((int32_t __far*) (baselowermemoryaddress + size_finesine ))
+#define states				((state_t __far*) (baselowermemoryaddress + size_finetangent))
+#define events				((event_t __far*) (baselowermemoryaddress + size_states ))
+
+
+// technically 80480. Takes up whole 0x5000 region, 14944 left over...
+//#define size_texturecolumnofs_bytes		14944
 #define size_zlight						sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTZ)
 #define size_texturecolumnlumps_bytes	size_zlight + (4048u + 856)
 
