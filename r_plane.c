@@ -393,7 +393,7 @@ void R_DrawPlanes (void)
 	
 
 	//int16_t oldtexargs[4];
-	int8_t effectivepagenumber = 0;
+	int16_t effectivepagenumber = 0;
 	uint8_t usedflatindex;
 	boolean flatunloaded = false;
 	byte __far* src;
@@ -504,9 +504,9 @@ void R_DrawPlanes (void)
 			lastflatcacheindicesused[0] = flatcacheindex;
 		}
 
-
-		src = MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]);
 		
+		src = MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]);
+
 		// load if necessary
 		if (flatunloaded){
 			int16_t lump = firstflat + flattranslation[pl->picnum];

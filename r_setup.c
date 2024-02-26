@@ -367,7 +367,8 @@ void R_PrecacheLevel(void)
 	graphicpresent[skytexture] = 1;
 
 	// texturememory = 0;
- 
+	Z_QuickmapRender();
+
 	// this caches all used patches but not textures
 	for (i = 0; i < numtextures; i++) {
 

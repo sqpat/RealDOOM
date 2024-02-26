@@ -88,13 +88,14 @@ void Z_ShutdownEMS();
  
 #define SCRATCH_ADDRESS_4000 (byte __far* )0x40000000
 #define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
+#define SCRATCH_ADDRESS_7000 (byte __far* )0x70000000
 
 #define SCREEN0_LOGICAL_PAGE						4
 #define STRINGS_LOGICAL_PAGE						12
-#define FIRST_TRIG_TABLE_LOGICAL_PAGE				16
+#define FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE		16
 #define FIRST_RENDER_LOGICAL_PAGE					20
-#define TEXTURE_INFO_LOGICAL_PAGE					FIRST_RENDER_LOGICAL_PAGE + 12
-#define SCREEN4_LOGICAL_PAGE						TEXTURE_INFO_LOGICAL_PAGE + 4
+#define TEXTURE_INFO_LOGICAL_PAGE					FIRST_RENDER_LOGICAL_PAGE + 12			//unused...?
+#define SCREEN4_LOGICAL_PAGE						FIRST_RENDER_LOGICAL_PAGE + 16
 #define FIRST_STATUS_LOGICAL_PAGE					SCREEN4_LOGICAL_PAGE + 1
 #define PALETTE_LOGICAL_PAGE						FIRST_STATUS_LOGICAL_PAGE + 4
 #define FIRST_DEMO_LOGICAL_PAGE						PALETTE_LOGICAL_PAGE + 1
@@ -132,6 +133,7 @@ void Z_ShutdownEMS();
 #define TASK_INTERMISSION 11
 
 #define SCRATCH_PAGE_SEGMENT 0x5000u
+#define SCRATCH_PAGE_SEGMENT_7000 0x7000u
 
 // actually twice the number of pages, 2 params needed per page swap
 #define num_phys_params 46
@@ -141,6 +143,7 @@ void Z_ShutdownEMS();
 #define num_textinfo_params 8
 #define num_scratch5000_params 8
 #define num_scratch4000_params 8
+#define num_scratch7000_params 8
 #define num_scratchstack_params 16
 #define num_flatcache_params 6
 #define num_palette_params 10
@@ -161,7 +164,8 @@ void Z_ShutdownEMS();
 #define pageswapargs_textinfo_offset_size		(pageswapargs_demo_offset_size			+ 2*num_demo_params)
 #define pageswapargs_scratch5000_offset_size	(pageswapargs_textinfo_offset_size		+ 2*num_textinfo_params)
 #define pageswapargs_scratch4000_offset_size	(pageswapargs_scratch5000_offset_size	+ 2*num_scratch5000_params)
-#define pageswapargs_scratchstack_offset_size	(pageswapargs_scratch4000_offset_size	+ 2*num_scratch4000_params)
+#define pageswapargs_scratch7000_offset_size	(pageswapargs_scratch4000_offset_size	+ 2*num_scratch4000_params)
+#define pageswapargs_scratchstack_offset_size	(pageswapargs_scratch7000_offset_size	+ 2*num_scratch7000_params)
 #define pageswapargs_flatcache_offset_size		(pageswapargs_scratchstack_offset_size	+ 2*num_scratchstack_params)
 #define pageswapargs_palette_offset_size		(pageswapargs_flatcache_offset_size		+ 2*num_flatcache_params)
 #define pageswapargs_7000to6000_offset_size		(pageswapargs_palette_offset_size		+ 2*num_palette_params)
@@ -179,7 +183,8 @@ void Z_ShutdownEMS();
 #define pageswapargs_textinfo_offset		(pageswapargs_demo_offset			+ num_demo_params)
 #define pageswapargs_scratch5000_offset		(pageswapargs_textinfo_offset		+ num_textinfo_params)
 #define pageswapargs_scratch4000_offset		(pageswapargs_scratch5000_offset	+ num_scratch5000_params)
-#define pageswapargs_scratchstack_offset	(pageswapargs_scratch4000_offset	+ num_scratch4000_params)
+#define pageswapargs_scratch7000_offset		(pageswapargs_scratch4000_offset	+ num_scratch4000_params)
+#define pageswapargs_scratchstack_offset	(pageswapargs_scratch7000_offset	+ num_scratch7000_params)
 #define pageswapargs_flatcache_offset		(pageswapargs_scratchstack_offset	+ num_scratchstack_params)
 #define pageswapargs_palette_offset			(pageswapargs_flatcache_offset		+ num_flatcache_params)
 #define pageswapargs_7000to6000_offset		(pageswapargs_palette_offset		+ num_palette_params)
@@ -205,12 +210,13 @@ void Z_QuickmapRenderTexture();
 //void Z_QuickmapRenderTexture(uint8_t offset, uint8_t count);
 void Z_QuickmapScratch_5000();
 void Z_QuickmapScratch_4000();
+void Z_QuickmapScratch_7000();
 void Z_PushScratchFrame();
 void Z_PopScratchFrame();
 void Z_RemapScratchFrame(uint8_t startpage);
 void Z_QuickMapFlatPage(int16_t page, int16_t offset);
 void Z_QuickMapUndoFlatCache();
-void Z_QuickMapTextureInfoPage();
+//void Z_QuickMapTextureInfoPage();
 void Z_QuickmapPalette();
 void Z_QuickmapMenu();
 void Z_QuickmapIntermission();
@@ -220,8 +226,8 @@ void Z_QuickmapLumpInfo();
 void Z_UnmapLumpInfo();
 void Z_QuickmapLumpInfo5000();
 void Z_UnmapLumpInfo5000();
-void Z_QuickmapTrig();
-
+void Z_QuickmapColumnOffsets5000();
+void Z_QuickMapRender7000();
 
 void Z_GetEMSPageMap();
 void Z_LinkEMSVariables();
@@ -251,8 +257,7 @@ void Z_ClearDeadCode();
 #define PAGE_5000_LUMPINFO 1
 #define PAGE_5000_DEMOBUFFER 2
 #define PAGE_5000_SCRATCH 3
-#define PAGE_5000_TRIG 4
-#define PAGE_5000_TRIG_TEXTURE 5
+#define PAGE_5000_COLUMN_OFFSETS 4
 
 
 #define PAGE_5000_SCRATCH_REMAP 6

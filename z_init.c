@@ -287,7 +287,7 @@ void Z_LinkEMSVariables() {
 	DEBUG_PRINT("\n   0x8000:      %05u   %05u   %05u   00000   00000", 64000u + (256 * 5), size_patchoffset, 0 );
 	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_segs_render, 0 - 1288);
 	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", size_rejectmatrix, size_spritetopoffsets, 16384);
-	DEBUG_PRINT("\n   0x5000:      %05u   %05u   XXXXX   XXXXX   00000", size_events, size_events);
+	DEBUG_PRINT("\n   0x5000:      00000   65535   XXXXX   XXXXX   00000", 65535, 65535);
 	DEBUG_PRINT("\n   0x4000:      %05u   XXXXX   %05u   00000   00000", 0, 0, 0);
 
 

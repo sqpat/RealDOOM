@@ -243,6 +243,11 @@ static int16_t                 currentlumpindex = 0;
 // R_GenerateLookup
 //
 //todo pull down below?
+
+
+// complicated memory situation... creating render data at 0x5000-0x6000... lump info will be in 0x4000 range...
+// use scratch at 0x7000 which is usually level data. level data is not used during init, only during setup,
+// so its technically a free area here. (init is game init, setup is level setup)
 void R_GenerateLookup(uint16_t texnum)
 {
  
@@ -273,11 +278,21 @@ void R_GenerateLookup(uint16_t texnum)
 
 	// rather than alloca or whatever, lets use the scratch page since its already allocated for us...
 	// this is startup code so who cares if its slow
-	byte __far*					 columnpatchcount = MK_FP(SCRATCH_PAGE_SEGMENT, 0xFB00);
-	int16_t __far*               texcollump = MK_FP(SCRATCH_PAGE_SEGMENT, 0xF000);
+	byte __far*					 columnpatchcount = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFB00);
+	int16_t __far*               texcollump = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF000);
 	// piggyback these local arrays off scratch data...
 	int16_t __far*  collump = texturecolumnlumps_bytes;
-	uint16_t __far* colofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum] << 4]);
+	uint16_t __far* colofs;
+	
+	// check which 64k page this lives in
+	if (texturecolumn_offset[texnum] >= 0x0800) {
+		colofs = (uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[texnum]-0x0800) << 4]);
+	}
+	else {
+		colofs = (uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[texnum] << 4]);
+	}
+	
+	
 	texturepatchlump_offset[texnum] = currentlumpindex;
 
 	//uint8_t currentpatchpage = 0;
@@ -303,31 +318,14 @@ void R_GenerateLookup(uint16_t texnum)
 
 	patch = texture->patches;
 	texturepatchcount = texture->patchcount;
-	realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT, 0);
+	realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
  
 
 	for (i = 0; i < texturepatchcount; i++) {
 
-		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
-
 		patch = &texture->patches[i];
 		x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchpatch = patch->patch & PATCHMASK;
-		//index = patch->patch - FIRST_PATCH;
-		//pagenum = patchpage[index];
-		//size = W_LumpLength(patch->patch);
-		//numpages = 0;
-		//if (patchpage[index + 1] - currentpatchpage > 3) {
-		/*
-		if (true){
-			for (j = 0; j < 4; j++) {
-				pageswapargs_scratch_stack[j * 2] = FIRST_PATCH_CACHE_LOGICAL_PAGE + pagenum + j;
-			}
-			Z_RemapScratchFrame();
-			currentpatchpage = pagenum;
-		}
-		*/
-		//realpatch = (patch_t __far*)MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[pagenum - currentpatchpage] + patchoffset[index]);
 		if (lastusedpatch != patchpatch)
 			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch);
 
@@ -385,7 +383,7 @@ void R_GenerateLookup(uint16_t texnum)
 	currentcollump = texcollump[0];
 	currentcollumpRLEStart = 0;
 
-	// write collumps data. Needs to be done here, so that we've accounted for two-patch cases with patchcount[x] > 1
+	// write collumps data. Needs to be done here, so that we've accounted for multiple-patch cases with patchcount[x] > 1
 	for (x = 1; x < texturewidth; x++) {
 		if (currentcollump != texcollump[x]) {
 			collump[currentlumpindex] = currentcollump;
@@ -444,7 +442,7 @@ void R_InitTextures(void)
 	//uint8_t*            textureheight;
  	int16_t				texturewidth;
 	uint8_t				textureheightval;
-	int16_t                patchlookup[512]; // 350 for doom shareware
+	int16_t                patchlookup[470]; // 350 for doom shareware/doom1. 459 for doom2
 
  	texturedefs_offset[0] = 0;
 	texturecolumn_offset[0] = 0;
@@ -546,7 +544,7 @@ void R_InitTextures(void)
 		//DEBUG_PRINT("name %Fs", texture->name);
 
 		if ((i + 1) < numtextures) {
-			// we store by words to fit this in 2 bytes per entry for doom2 
+			// we store by paragraphs to fit this in 2 bytes per entry for doom2 
 			// (which goes into 80kish size for this struct) and because all 
 			// the offsets are multiples of a word in size anyway due to texturewidth
 			// being multiples of 8 and multiplied by sizeof(int16_t) which is 2
@@ -565,19 +563,21 @@ void R_InitTextures(void)
 	}
 	//DUMP_MEMORY_TO_FILE();
 
+	// Create translation table for global animation.
+	for (i = 0; i < numtextures; i++)
+		texturetranslation[i] = i;
 	 
 	// Precalculate whatever possible.  
-	Z_PushScratchFrame();
+	// done using 7000 above ?
+	Z_QuickmapScratch_7000();
 	for (i = 0; i < numtextures; i++){
 		R_GenerateLookup(i);
 	}
-	Z_PopScratchFrame();
 
-	// Create translation table for global animation.
-	
+	// Reset this since 0x7000 scratch page is active
+	Z_QuickmapRender();
 
-	for (i = 0; i < numtextures; i++)
-		texturetranslation[i] = i;
+	//I_Error("final size: %i", currentlumpindex);
 
 }
 
@@ -657,6 +657,7 @@ void R_InitData(void) {
 	DEBUG_PRINT(".");
 
 	lump = W_GetNumForName("COLORMAP");
+	
 	//length = W_LumpLength(lump) + 255;
 	//colormaps = (byte __far*)colormapbytes;
 	//colormaps = (byte  __far*)(((int32_t)colormaps + 255)&~0xff);

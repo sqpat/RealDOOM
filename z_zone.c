@@ -193,13 +193,13 @@ int16_t pageswapargs[total_pages] = {
 	24,	PAGE_8000_OFFSET, 25,	PAGE_8400_OFFSET, 26,	PAGE_8800_OFFSET, 27,	PAGE_8C00_OFFSET,
 	28,	PAGE_7000_OFFSET, 29,	PAGE_7400_OFFSET, 30,	PAGE_7800_OFFSET, 31,	PAGE_7C00_OFFSET,
 	32, PAGE_6000_OFFSET, 33,	PAGE_6400_OFFSET, 34,	PAGE_6800_OFFSET, 35,	PAGE_6C00_OFFSET,
-	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET,  // repeated trig tables
+	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET,  // same as physics as its unused for physics..
 
 	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_4000_OFFSET,
 	FIRST_TEXTURE_LOGICAL_PAGE + 1,	PAGE_4400_OFFSET,
 	FIRST_TEXTURE_LOGICAL_PAGE + 2,	PAGE_4800_OFFSET,
 	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_4C00_OFFSET,  // texture cache area
-
+	
 	// status/hud
 	SCREEN4_LOGICAL_PAGE, PAGE_9C00_OFFSET,
 	FIRST_STATUS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
@@ -232,20 +232,24 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_4400_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_4800_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_4C00_OFFSET,
-
+	// and sometimes we need that in the 0x7000 segment..
+	// scratch 7000
+	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
 	// scratch stack 
 	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
-	FIRST_TRIG_TABLE_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
-	FIRST_TRIG_TABLE_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
-	FIRST_TRIG_TABLE_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
-	FIRST_TRIG_TABLE_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
+	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
+	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
+	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
+	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
 
-// todo - we could use 0x5c00 for a 4th, 5th page..
 // flat cache
-	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_5C00_OFFSET,
+	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_6C00_OFFSET,
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 1, PAGE_7000_OFFSET,
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 2, PAGE_7400_OFFSET,
 	// palette
@@ -318,7 +322,6 @@ int16_t pageswapargs[total_pages] = {
 int16_t pageswapargseg;
 int16_t pageswapargoff;
 
-int8_t current5000flatpage = -1;
 uint8_t current5000RemappedScratchPage = 0;
 
 int8_t current4000State = PAGE_4000_UNMAPPED;
@@ -382,7 +385,7 @@ void Z_QuickmapPhysics() {
 #endif
 	currenttask = TASK_PHYSICS;
 	current4000State = PAGE_4000_LUMPINFO;
-	current5000State = PAGE_5000_TRIG;
+	current5000State = PAGE_5000_COLUMN_OFFSETS;
 }
  
 
@@ -419,6 +422,19 @@ void Z_QuickmapRender7000to6000() {
 #endif
 	currenttask = TASK_RENDER7000TO6000; // not sure about this
 }
+void Z_QuickMapRender7000() {
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04;  // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size + 32;
+	intx86(EMS_INT, &regs, &regs);
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount++;
+#endif
+
+}
 
 void Z_QuickmapRender() {
 	regs.w.ax = 0x5000; 
@@ -450,7 +466,7 @@ void Z_QuickmapRender() {
 	currenttask = TASK_RENDER;
 
 
-	current5000State = PAGE_5000_TRIG;
+	current5000State = PAGE_5000_COLUMN_OFFSETS;
 	current4000State = PAGE_4000_TEXTURE;
 }
 
@@ -481,7 +497,7 @@ void Z_QuickmapRender_NoTex() {
 #endif
 	currenttask = TASK_RENDER;
 
-	current5000State = PAGE_5000_TRIG;
+	current5000State = PAGE_5000_COLUMN_OFFSETS;
 
 }
 
@@ -591,6 +607,22 @@ void Z_QuickmapScratch_4000() {
 	}
 }
 
+void Z_QuickmapScratch_7000() {
+
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_scratch7000_offset_size;
+	intx86(EMS_INT, &regs, &regs);
+
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount++;
+	scratchpageswitchcount++;
+
+#endif
+}
+
 void Z_QuickmapScreen0() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
@@ -659,12 +691,9 @@ void Z_PopScratchFrame() {
 }
 
 void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
-	// offset 3 means set defaults.
+	// offset 3 means reset defaults/current values.
 	if (offset != 3) {
 		pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = page;
-		if (offset == 0) {
-			current5000flatpage = page;
-		}
 	}
 
 	regs.w.ax = 0x5000;
@@ -678,7 +707,6 @@ void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	flatpageswitchcount++;
 
 #endif
-	current5000State = PAGE_5000_TRIG_TEXTURE;
 }
 
 void Z_QuickMapUndoFlatCache() {
@@ -695,7 +723,7 @@ void Z_QuickMapUndoFlatCache() {
 #endif
 }
 
-
+/*
 void Z_QuickMapTextureInfoPage() {
 
 	regs.w.ax = 0x5000;
@@ -707,7 +735,7 @@ void Z_QuickMapTextureInfoPage() {
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
-}
+}*/
 
 void Z_RemapScratchFrame(uint8_t startpage) {
 	pageswapargs[pageswapargs_scratch5000_offset + 0] = startpage;
@@ -729,7 +757,7 @@ void Z_RemapScratchFrame(uint8_t startpage) {
 	current5000RemappedScratchPage = startpage;
 }
 
-void Z_QuickmapTrig() {
+void Z_QuickmapColumnOffsets5000() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
@@ -740,7 +768,7 @@ void Z_QuickmapTrig() {
 	taskswitchcount++;
 #endif
 
-	current5000State = PAGE_5000_TRIG;
+	current5000State = PAGE_5000_COLUMN_OFFSETS;
 }
 
 void Z_QuickmapLumpInfo() {
@@ -796,14 +824,11 @@ void Z_UnmapLumpInfo() {
 }
 
 
-
 void Z_QuickmapLumpInfo5000() {
-
 	switch (current5000State) {
 
-		case PAGE_5000_TRIG_TEXTURE:
 		case PAGE_5000_SCRATCH:
-		case PAGE_5000_TRIG:
+		case PAGE_5000_COLUMN_OFFSETS:
 		case PAGE_5000_UNMAPPED:
 		case PAGE_5000_DEMOBUFFER:
 		case PAGE_5000_SCRATCH_REMAP:
@@ -840,12 +865,8 @@ void Z_UnmapLumpInfo5000() {
 		case PAGE_5000_SCRATCH:
 			Z_QuickmapScratch_5000();
 			break;
-		case PAGE_5000_TRIG:
-			Z_QuickmapTrig();
-			break;
-		case PAGE_5000_TRIG_TEXTURE:
-			Z_QuickmapTrig();
-			Z_QuickMapFlatPage(current5000flatpage, 0);
+		case PAGE_5000_COLUMN_OFFSETS:
+			Z_QuickmapColumnOffsets5000();
 			break;
 		case PAGE_5000_DEMOBUFFER:
 			Z_QuickmapDemo();

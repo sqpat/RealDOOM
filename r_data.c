@@ -128,10 +128,8 @@ R_DrawColumnInCache
 	int16_t     count;
 	int16_t     position;
 	byte __far*       source;
-	byte __far*       dest;
-	//int16_t totalsize = 0;
-	dest = (byte __far*)cache + 3;
-	while (patch->topdelta != 0xff)
+ 	//int16_t totalsize = 0;
+ 	while (patch->topdelta != 0xff)
 	{ 
 
 		source = (byte __far *)patch + 3;
@@ -401,7 +399,7 @@ void R_GetNextSpriteBlock(int16_t lump) {
 //  and each column is cached.
 //
 
-
+extern int8_t current5000State;
 
 void R_GenerateComposite(uint16_t texnum, byte __far* block)
 {
@@ -424,7 +422,6 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 	int16_t				lastusedpatch = -1;
 	int16_t				index;
 	//uint8_t				currentpatchpage = 0;
-	uint8_t pagenum;
 	int16_t currentlump;
 	int16_t currentRLEIndex = 0;
 	int16_t nextcollumpRLE = 0;
@@ -433,8 +430,6 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 	int8_t fname[15];
 	uint16_t totalsize = 0;
 	*/
-	//Z_QuickMapTextureInfoPage();
-
 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 
 	texturewidth = texture->width + 1;
@@ -443,51 +438,30 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 
 	// Composite the columns together.
 	collump = &(texturecolumnlumps_bytes[texturepatchlump_offset[texnum]]);
-	colofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[texnum] << 4]);
 
-	Z_PushScratchFrame();
+	// check which 64k page this lives in
+	if (texturecolumn_offset[texnum] >= 0x0800) {
+		colofs = (uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[texnum] - 0x0800) << 4]);
+	}
+	else {
+		colofs = (uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[texnum] << 4]);
+	}
+
+	Z_QuickmapScratch_7000();
+
+
+
 	for (i = 0; i < texturepatchcount; i++) {
 		patch = &texture->patches[i];
 		lastusedpatch = patchpatch;
 		patchpatch = patch->patch & PATCHMASK;
 		index = patch->patch - firstpatch;
-		pagenum = patchpage[index];
 		currentRLEIndex = 0;
-		/*
-		if (patchpage[index] == 0xFF) {
-			size = W_LumpLength(lump);
-			totalsize += size;
+		 
 
-			patchpage[index] = oldpage = newpage;
-			patchoffset[index] = totalsize & 16383;
-			newpage = totalsize >> 14;
-
-
-			// do we need to re-set the offset?
-			if (newpage - oldpage > 3) {
-				// re-base on oldpage
-				Z_RemapScratchFrame(FIRST_PATCH_CACHE_LOGICAL_PAGE + oldpage);
-				currentpatchpage = oldpage;
-			}
-			W_CacheLumpNumDirect(lump, MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[oldpage] + patchoffset[index]));
-
-		}
-
-		// change the below to if calculated last page is greater than currentpatchpage + 3
-		
-		if (true) {
-			Z_RemapScratchFrame(FIRST_PATCH_CACHE_LOGICAL_PAGE+pagenum);
-			currentpatchpage = pagenum;
-		}
-
-		realpatch = (patch_t*)MK_FP(SCRATCH_PAGE_SEGMENT, pageoffsets[pagenum- currentpatchpages] + patchoffset[index]);
-		*/
-
-		// todo use cache lookup?
-		// can one page be mapped twice?
 
 		if (lastusedpatch != patchpatch) {
-			realpatch = (patch_t __far*)MK_FP(SCRATCH_PAGE_SEGMENT, 0);
+			realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
 			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch);
 		}
 		patchoriginx = patch->originx *  (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
@@ -507,10 +481,9 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 
 		currentlump = collump[currentRLEIndex];
 		nextcollumpRLE = collump[currentRLEIndex + 1];
-		
+
 
 		for (; x < x2; x++) {
-			// TODO PATCH
 			while (x >= nextcollumpRLE) {
 				currentRLEIndex += 2;
 				currentlump = collump[currentRLEIndex];
@@ -522,7 +495,6 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 				continue;
 			}
 			patchcol = (column_t  __far*)((byte  __far*)realpatch + (realpatch->columnofs[x - x1]));
-			//totalsize+= 
 			R_DrawColumnInCache(patchcol,
 				block + colofs[x],
 				patchoriginy,
@@ -542,7 +514,7 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 	fclose(fp);
 	*/
 
-	Z_PopScratchFrame();
+	Z_QuickMapRender7000();
 	//Z_QuickMapFlatPage();
 
 }
@@ -750,9 +722,6 @@ byte __far* getcompositetexture(int16_t tex_index) {
 	benchtexturetype = TEXTURE_TYPE_COMPOSITE;
 #endif
 
-	//addr = MK_FP(0x4000, 0);
-	//R_GenerateComposite(tex_index, addr);
-	//return addr;
 
 	if (texpage == 0xFF) { // texture not loaded -  0xFFu is initial state (and impossible anyway)
 		R_GetNextCompositeBlock(tex_index);
@@ -762,9 +731,9 @@ byte __far* getcompositetexture(int16_t tex_index) {
 		//gettexturepage ensures the page is active
 		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 8));
 		// load it in
-
 		R_GenerateComposite(tex_index, addr);
 		
+
 		return addr;
 	} else {
 		// has been allocated before. find and return
@@ -862,7 +831,14 @@ R_GetColumn
 	int16_t n = 0;
 	col &= texturewidthmasks[tex];
 
-	texturecolumnofs = (uint16_t __far*)&(texturecolumnofs_bytes[texturecolumn_offset[tex] << 4]);
+	// check which 64k page this lives in
+	if (texturecolumn_offset[tex] >= 0x0800) {
+		texturecolumnofs = (uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[tex] - 0x0800) << 4]);
+	}
+	else {
+		texturecolumnofs = (uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[tex] << 4]);
+	}
+
 	ofs = texturecolumnofs[col];
 
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
