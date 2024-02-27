@@ -447,6 +447,21 @@ void R_InitTextures(void)
  	texturedefs_offset[0] = 0;
 	texturecolumn_offset[0] = 0;
 
+
+	firstpatch = W_GetNumForName("P_START") + 1;
+	lastpatch = W_GetNumForName("P_END") - 1;
+	numpatches = lastpatch - firstpatch + 1;
+
+	firstflat = W_GetNumForName("F_START") + 1;
+	lastflat = W_GetNumForName("F_END") - 1;
+	numflats = lastflat - firstflat + 1;
+
+	firstspritelump = W_GetNumForName("S_START") + 1;
+	lastspritelump = W_GetNumForName("S_END") - 1;
+	numspritelumps = lastspritelump - firstspritelump + 1;
+
+
+
 	// Load the patch names from pnames.lmp.
 	name[8] = 0;
  	W_CacheLumpNameDirect("PNAMES", (byte __far*)TEX_LOAD_ADDRESS);
@@ -479,6 +494,7 @@ void R_InitTextures(void)
 		maptex2 = NULL;
 		numtextures2 = 0;
 	}
+	numtextures = numtextures1 + numtextures2;
 
 
 
@@ -657,7 +673,6 @@ void R_InitData(void) {
 	DEBUG_PRINT(".");
 
 	lump = W_GetNumForName("COLORMAP");
-	
 	//length = W_LumpLength(lump) + 255;
 	//colormaps = (byte __far*)colormapbytes;
 	//colormaps = (byte  __far*)(((int32_t)colormaps + 255)&~0xff);

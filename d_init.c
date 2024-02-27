@@ -539,65 +539,6 @@ void M_Init(void)
 }
 #endif
 
-// ugly and gross, but we need to know the sizes of fields early 
-// to be able to allocate the right amount of memory for them
-void D_InitGraphicCounts() {
-
- 
-
-	// memory addresses, must stay int_32...
-	int16_t __far*                maptex;
-	int16_t __far*                maptex2;
- 
-	int16_t                 numtextures1;
-	int16_t                 numtextures2;
-		 
-	// Load the map texture definitions from textures.lmp.
-	// The data is contained in one or two lumps,
-	//  TEXTURE1 for shareware, plus TEXTURE2 for commercial.
-	W_CacheLumpNameDirect("TEXTURE1", (byte __far*)0x70000000);
-	maptex = (int16_t __far*) 0x70000000;
-	numtextures1 = (*maptex);
- 
-	if (W_CheckNumForName("TEXTURE2") != -1) {
-		W_CacheLumpNameDirect("TEXTURE2", (byte __far*)0x70000000);
-		maptex2 = (int16_t __far*) 0x70000000;
-		numtextures2 = (*maptex2);
-	}
-	else
-	{
-		numtextures2 = 0;
-	}
-	numtextures = numtextures1 + numtextures2;
-
-
-
-	firstflat = W_GetNumForName("F_START") + 1;
-	lastflat = W_GetNumForName("F_END") - 1;
-	numflats = lastflat - firstflat + 1;
-
-	firstpatch = W_GetNumForName("P_START") + 1;
-	lastpatch = W_GetNumForName("P_END") - 1;
-	numpatches = lastpatch - firstpatch + 1;
-
-	firstspritelump = W_GetNumForName("S_START") + 1;
-	lastspritelump = W_GetNumForName("S_END") - 1;
-	numspritelumps = lastspritelump - firstspritelump + 1;
-
-	//         NUMTEX TEX1 TEX2 FLATS PATCHES SPRITELUMPS
-	// SHARWR:  125   125  0     56    167    483
-	// DOOM 1:  286   121  161   111   356    764
-	// DOOM 2:  428   428  0     153   476    1381
-	/*
-	I_Error("\nHere: %i %i %i %i %i %i",
-		
-		numtextures,numtextures1,numtextures2,
-		numflats, numpatches, numspritelumps
-
-		);
-		*/
-
-}
 
 
 void AM_loadPics(void)
@@ -919,7 +860,6 @@ void D_DoomMain2(void)
 
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");
 	W_InitMultipleFiles(wadfiles);
-	D_InitGraphicCounts(); // gross
 
 	//DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
 //	Z_InitUMB();
