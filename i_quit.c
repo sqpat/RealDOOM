@@ -101,10 +101,7 @@ void TS_Terminate()
    Ends processing of all tasks.
 ---------------------------------------------------------------------*/
 
-void TS_Shutdown(
-	void)
-
-{
+void TS_Shutdown(void) {
 	if (TS_Installed)
 	{
 		TS_FreeTaskList();

@@ -461,16 +461,19 @@ segs_render			7000:8000
 // 3767u shareware
 // 8756u doom2
 
-#define size_finesine		10240u * sizeof(int32_t)
-#define size_finetangent	size_finesine		+  2048u * sizeof(int32_t)
-#define size_states			size_finetangent	+ sizeof(state_t) * NUMSTATES
-#define size_events			size_states			+ sizeof(event_t) * MAXEVENTS
+#define baselowermemoryaddressStartingOffset 0x2600
+
+#define size_finesine		(10240u * sizeof(int32_t))
+#define size_finetangent	(size_finesine		+  2048u * sizeof(int32_t))
+#define size_states			(size_finetangent	+ sizeof(state_t) * NUMSTATES)
+#define size_events			(size_states			+ sizeof(event_t) * MAXEVENTS)
 
 
 
 #define size_tantoangle		size_finetangent +  2049u * sizeof(int32_t)
 
-#define baselowermemoryaddress 0x32610000
+#define baselowermemoryaddress (0x32600000)
+
 
 #define finesine			((int32_t __far*) baselowermemoryaddress)	// 10240
 #define finecosine			((int32_t __far*) (baselowermemoryaddress+0x2000))	// 10240

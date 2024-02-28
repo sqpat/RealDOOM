@@ -74,9 +74,9 @@ P_GiveAmmo
 	return false;
 		
     if (num)
-	num *= clipammo[ammo];
+		num *= clipammo[ammo];
     else
-	num = clipammo[ammo]/2;
+		num = clipammo[ammo]/2;
     
     if (gameskill == sk_baby
 	|| gameskill == sk_nightmare)
@@ -97,50 +97,49 @@ P_GiveAmmo
     // don't change up weapons,
     // player was lower on purpose.
     if (oldammo)
-	return true;	
+		return true;	
 
     // We were down to zero,
     // so select a new weapon.
     // Preferences are not user selectable.
-    switch (ammo)
-    {
-      case am_clip:
-	if (player.readyweapon == wp_fist)
-	{
-	    if (player.weaponowned[wp_chaingun])
-			player.pendingweapon = wp_chaingun;
-	    else
-			player.pendingweapon = wp_pistol;
-	}
-	break;
+    switch (ammo) {
+		  case am_clip:
+		if (player.readyweapon == wp_fist)
+		{
+			if (player.weaponowned[wp_chaingun])
+				player.pendingweapon = wp_chaingun;
+			else
+				player.pendingweapon = wp_pistol;
+		}
+		break;
 	
-      case am_shell:
-	if (player.readyweapon == wp_fist
-	    || player.readyweapon == wp_pistol)
-	{
-	    if (player.weaponowned[wp_shotgun])
-			player.pendingweapon = wp_shotgun;
-	}
-	break;
+		  case am_shell:
+		if (player.readyweapon == wp_fist
+			|| player.readyweapon == wp_pistol)
+		{
+			if (player.weaponowned[wp_shotgun])
+				player.pendingweapon = wp_shotgun;
+		}
+		break;
 	
-      case am_cell:
-	if (player.readyweapon == wp_fist
-	    || player.readyweapon == wp_pistol)
-	{
-	    if (player.weaponowned[wp_plasma])
-			player.pendingweapon = wp_plasma;
-	}
-	break;
+		  case am_cell:
+		if (player.readyweapon == wp_fist
+			|| player.readyweapon == wp_pistol)
+		{
+			if (player.weaponowned[wp_plasma])
+				player.pendingweapon = wp_plasma;
+		}
+		break;
 	
-      case am_misl:
-	if (player.readyweapon == wp_fist)
-	{
-	    if (player.weaponowned[wp_missile])
-			player.pendingweapon = wp_missile;
-	}
-      default:
-	break;
-    }
+		  case am_misl:
+		if (player.readyweapon == wp_fist)
+		{
+			if (player.weaponowned[wp_missile])
+				player.pendingweapon = wp_missile;
+		}
+		  default:
+		break;
+		}
 	
     return true;
 }
@@ -194,7 +193,7 @@ P_GiveBody
   int16_t		num )
 {
     if (player.health >= MAXHEALTH)
-	return false;
+		return false;
 		
 	player.health += num;
     if (player.health > MAXHEALTH)
@@ -710,7 +709,7 @@ P_KillMobj
     }
 
     P_SpawnMobj (target_pos->x.w, target_pos->y.w,ONFLOORZ, item, target->secnum);
-	mo = setStateReturn;
+	//mo = setStateReturn;
 	setStateReturn_pos->flags |= MF_DROPPED;	// special versions of items
 }
 

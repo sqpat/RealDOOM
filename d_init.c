@@ -558,7 +558,25 @@ void AM_loadPics(void)
 	}
 
 }
+/*
 
+void DUMP_MEMORY_TO_FILE() {
+	uint16_t segment = 0x4000;
+#ifdef __COMPILER_WATCOM
+	FILE*fp = fopen("MEM_DUMP.BIN", "wb");
+#else
+	FILE*fp = fopen("MEMDUMP2.BIN", "wb");
+#endif
+	while (segment < 0xA000) {
+		byte __far * dest = MK_FP(segment, 0);
+		//DEBUG_PRINT("\nloop %u", segment);
+		FAR_fwrite(dest, 32768, 1, fp);
+		segment += 0x0800;
+	}
+	fclose(fp);
+	I_Error("\ndumped");
+}
+*/
 //
 // D_DoomMain
 //
@@ -570,8 +588,11 @@ void D_DoomMain2(void)
 	int8_t          textbuffer[256];
 	int8_t            title[128];
 	
-	
-
+	/*
+	struct SREGS sregs;
+	segread(&sregs);
+	I_Error("\npointer is %Fp %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, &EMS_PAGE), MK_FP(sregs.ds, &p), MK_FP(sregs.ss, &title), _fmalloc(1024), malloc(1024));
+	*/
 
 	//2d7e dosbox 3128 86box
 	/*
@@ -962,7 +983,7 @@ void D_DoomMain2(void)
 	AM_loadPics();
 
 	//byte __far* someptr = ;
-	//I_Error("\npointer is %Fp %Fp %Fp %Fp", _fmalloc(1024), _fmalloc(1024), _fmalloc(1024), _fmalloc(1024));
+	//I_Error("\npointer is %Fp %Fp %Fp %Fp %Fp", _fmalloc(16), _fmalloc(256), _fmalloc(1024), _fmalloc(1024), malloc(1024));
 
 
 	// todo - move this below code in between doommain2 and doomloop?

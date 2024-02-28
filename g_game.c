@@ -65,7 +65,7 @@
 #define SAVESTRINGSIZE  24
 // lets keep this comfortably 16 bit. otherwise how do we fit in ems without big rewrite?
 #define DEMO_MAX_SIZE 0xF800
-uint16_t DEMO_SEGMENT;
+
 
 boolean G_CheckDemoStatus (void); 
 void    G_ReadDemoTiccmd (ticcmd_t __near* cmd); 
@@ -970,7 +970,7 @@ void G_InitNew(skill_t       skill, int8_t           episode, int8_t           m
 // DEMO RECORDING 
 // 
 #define DEMOMARKER              0x80
-
+#define DEMO_SEGMENT 0x5000
 
 void G_ReadDemoTiccmd (ticcmd_t __near* cmd) 
 { 

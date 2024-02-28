@@ -164,7 +164,6 @@ extern int16_t pageswapargoff;
 
   
 
-extern  uint16_t		DEMO_SEGMENT;
 
 
 void Z_GetEMSPageMap() {
@@ -256,7 +255,6 @@ found:
 		pageswapargs[i] += pagenum9000;
 	}
 	 
-	DEMO_SEGMENT = 0x5000u;
 
 
 	Z_QuickmapLumpInfo5000();
@@ -269,6 +267,9 @@ found:
 
 void Z_LinkEMSVariables() {
 	
+	// no longer linking dynamically, everything is statically allocated/defined...
+	/*
+
 	DEBUG_PRINT("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
 	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_ammnumpatchoffsets, size_flatindex, (ST_WIDTH*ST_HEIGHT));
 
@@ -280,16 +281,18 @@ void Z_LinkEMSVariables() {
 	// 0x9000  40747  65520  10240  00000  00000
 	// 0x8000  65280  65534  00000  00000  00000
 	// 0x7000  65442  03143  64248  00000  XXXXX
-	// 0x6000  41168  51690  16384  00000  XXXXX
-	// 0x5000  63982  63982  00000  XXXXX  00000
-	// 0x4000  00000  XXXXX  00000  00000  00000
-
-	DEBUG_PRINT("\n   0x8000:      %05u   %05u   %05u   00000   00000", 64000u + (256 * 5), size_patchoffset, 0 );
+	// 0x6000  43348  41442  16384  00000  XXXXX
+	// 0x5000  63982  65535  00000  XXXXX  00000
+	// 0x4000  00000  65535  00000  00000  00000
+	// 0x3000  65514  
+	
+	DEBUG_PRINT("\n   0x8000:      %05u   %05u   00000   00000   00000", 64000u + (256 * 5), size_patchoffset);
 	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_segs_render, 0 - 1288);
 	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", size_rejectmatrix, size_spritetopoffsets, 16384);
-	DEBUG_PRINT("\n   0x5000:      00000   65535   XXXXX   XXXXX   00000", 65535, 65535);
-	DEBUG_PRINT("\n   0x4000:      %05u   XXXXX   %05u   00000   00000", 0, 0, 0);
-
+	DEBUG_PRINT("\n   0x5000:      00000   65535   XXXXX   XXXXX   00000");
+	DEBUG_PRINT("\n   0x4000:      00000  XXXXX");
+	DEBUG_PRINT("\n   0x3000:      %05u", size_events + baselowermemoryaddressStartingOffset, 0, 0);
+	*/
 
 }
 

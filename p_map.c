@@ -85,17 +85,17 @@ boolean PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __f
 	 || labs(thing_pos->y.w - tmy.w) >= blockdist.w )
     {
 	// didn't hit it
-	return true;
+		return true;
     }
     
     // don't clip against self
     if (thing == tmthing)
-	return true;
+		return true;
     
 	
     // monsters don't stomp things except on boss level
     if ( !tmthing->type == MT_PLAYER && gamemap != 30)
-	return false;	
+		return false;	
 		
     P_DamageMobj (thing, tmthing, tmthing, 10000);
 	
@@ -118,7 +118,7 @@ P_TeleportMove
     int16_t			xh;
     int16_t			yl;
     int16_t			yh;
-    int16_t			bx;
+    //int16_t			bx;
     int16_t			by;
     
 	 
@@ -166,9 +166,9 @@ P_TeleportMove
 	if (xh >= bmapwidth) xh = bmapwidth - 1;
 	if (yh >= bmapheight) yh = bmapheight - 1;
 
-	for (bx = xl; bx <= xh; bx++) {
+	for (; xl <= xh; xl++) {
 		for (by = yl; by <= yh; by++) {
-			if (!P_BlockThingsIterator(bx, by, PIT_StompThing)) {
+			if (!P_BlockThingsIterator(xl, by, PIT_StompThing)) {
 				return false;
 			}
 		}
@@ -466,8 +466,7 @@ P_CheckPosition
     int16_t			xh;
     int16_t			yl;
     int16_t			yh;
-    int16_t			bx;
-    int16_t			by;
+	int16_t			by;
 	fixed_t_union	temp;
 	int16_t_union   blocktemp;
 	int16_t xl2, xh2, yl2, yh2;
@@ -557,11 +556,11 @@ P_CheckPosition
 	if (xh >= bmapwidth) xh = bmapwidth - 1;
 	if (yh >= bmapheight) yh = bmapheight - 1;
 	 
-	for (bx = xl; bx <= xh; bx++) {
+	for (; xl <= xh; xl++) {
 		for (by = yl; by <= yh; by++) {
 
 	
-			if (!P_BlockThingsIterator(bx, by, PIT_CheckThing)) {
+			if (!P_BlockThingsIterator(xl, by, PIT_CheckThing)) {
 
 				return false;
 			}
@@ -577,11 +576,11 @@ P_CheckPosition
 	if (xh2 >= bmapwidth) xh2 = bmapwidth - 1;
 	if (yh2 >= bmapheight) yh2 = bmapheight - 1;
  
-	for (bx = xl2; bx <= xh2; bx++) {
+	for (; xl2 <= xh2; xl2++) {
 		for (by = yl2; by <= yh2; by++) {
 
 
-			if (!P_BlockLinesIterator(bx, by, PIT_CheckLine)) {
+			if (!P_BlockLinesIterator(xl2, by, PIT_CheckLine)) {
 
 				return false;
 			}
@@ -1365,7 +1364,7 @@ P_LineAttack
 
 	shootz.w = t1_pos->z.w;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
-
+	
 	distance.h.intbits = distance16;
 	distance.h.fracbits = ischainsaw ? 1 : 0;
 	attackrange = distance;
@@ -1513,7 +1512,7 @@ P_RadiusAttack
 	int16_t		damage)
 {
 	int16_t		x;
-	int16_t		y;
+	//int16_t		y;
 
 	int16_t		xl;
 	int16_t		xh;
@@ -1537,9 +1536,9 @@ P_RadiusAttack
 	if (yl < 0) yl = 0;
 	if (xh >= bmapwidth) xh = bmapwidth - 1;
 	if (yh >= bmapheight) yh = bmapheight - 1;
-	for (y = yl; y <= yh; y++) {
+	for (; yl <= yh; yl++) {
 		for (x = xl; x <= xh; x++) {
-			P_BlockThingsIterator(x, y, PIT_RadiusAttack);
+			P_BlockThingsIterator(x, yl, PIT_RadiusAttack);
 		}
 	}
 
@@ -1634,14 +1633,14 @@ P_ChangeSector
 ( sector_t __far*	sector,
   boolean	crunch )
 {
-    int16_t		x;
-    int16_t		y;
+    //int16_t		x;
+	int16_t		y;
 	sector_physics_t __far* sector_physics = &sectors_physics[sector - sectors];
 
-	int16_t xl = sector_physics->blockbox [ BOXLEFT];
-	int16_t xh = sector_physics->blockbox[ BOXRIGHT];
-	int16_t yh = sector_physics->blockbox[ BOXTOP];
-	int16_t yl = sector_physics->blockbox[ BOXBOTTOM];
+	int16_t xl = sector_physics->blockbox[BOXLEFT];
+	int16_t xh = sector_physics->blockbox[BOXRIGHT];
+	int16_t yh = sector_physics->blockbox[BOXTOP];
+	int16_t yl = sector_physics->blockbox[BOXBOTTOM];
 
 
     nofit = false;
@@ -1653,9 +1652,9 @@ P_ChangeSector
 	if (xh >= bmapwidth) xh = bmapwidth - 1;
 	if (yh >= bmapheight) yh = bmapheight - 1;
     // re-check heights for all things near the moving sector
-	for (x = xl; x <= xh; x++) {
+	for (; xl <= xh; xl++) {
 		for (y = yl; y <= yh; y++) {
-				P_BlockThingsIterator(x, y, PIT_ChangeSector); {
+			P_BlockThingsIterator(xl, y, PIT_ChangeSector); {
 			}
 		}
 	}

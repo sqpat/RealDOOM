@@ -40,19 +40,19 @@
 void T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
 
 {
-    uint8_t	amount;
+	uint8_t	amount;
 	int16_t flicksecnum = flick->secnum;
 	uint8_t flickmaxlight = flick->maxlight;
-	uint8_t flickminlight= flick->minlight;
+	uint8_t flickminlight = flick->minlight;
 
-    if (--flick->count)
+	if (--flick->count)
 		return;
-	
+
 	flick->count = 4;
-	amount = (P_Random()&3)*16;
-    if (sectors[flicksecnum].lightlevel - amount < flickminlight)
+	amount = (P_Random() & 3) * 16;
+	if (sectors[flicksecnum].lightlevel - amount < flickminlight)
 		sectors[flicksecnum].lightlevel = flickminlight;
-    else
+	else
 		sectors[flicksecnum].lightlevel = flickmaxlight - amount;
 
 }
@@ -65,10 +65,10 @@ void T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
 void P_SpawnFireFlicker (int16_t secnum)
 {
     fireflicker_t __far*	flick;
-	uint8_t lightamount;
+	uint8_t seclightlevel = sectors[secnum].lightlevel;
+
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
-	uint8_t seclightlevel = sectors[secnum].lightlevel;
 	sectors_physics[secnum].special = 0;
 
 	
@@ -76,8 +76,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 
     flick->secnum = secnum;
     flick->maxlight = seclightlevel;
-	lightamount = P_FindMinSurroundingLight(secnum,seclightlevel)+16;
-	flick->minlight = lightamount;
+	flick->minlight = P_FindMinSurroundingLight(secnum, seclightlevel) + 16;
     flick->count = 4;
 }
 
@@ -97,20 +96,20 @@ void T_LightFlash (lightflash_t __far* flash, THINKERREF flashRef)
 	int16_t flashsecnum = flash->secnum;
 	uint8_t flashminlight = flash->minlight;
 	uint8_t flashmaxlight = flash->maxlight;
- 
 
-    if (--flash->count)
+
+	if (--flash->count)
 		return;
 
-    if (sectors[flashsecnum].lightlevel == flashmaxlight) {
+	if (sectors[flashsecnum].lightlevel == flashmaxlight) {
 		sectors[flashsecnum].lightlevel = flashminlight;
-		flash->count = (P_Random()&flash->mintime)+1;
-    }
-    else {
+		flash->count = (P_Random()&flash->mintime) + 1;
+	}
+	else {
 		sectors[flashsecnum].lightlevel = flashmaxlight;
-		flash->count = (P_Random()&flash->maxtime)+1;
-    }
-	
+		flash->count = (P_Random()&flash->maxtime) + 1;
+	}
+
 
 }
 
@@ -158,20 +157,18 @@ void P_SpawnLightFlash (int16_t secnum)
 //
 void T_StrobeFlash (strobe_t __far* flash, THINKERREF flashRef)
 {
-	int16_t flashsecnum = flash->secnum;
-	int16_t flashminlight = flash->minlight;
-	int16_t flashmaxlight = flash->maxlight;
+	int16_t flashsecnum;
 
 	if (--flash->count)
 		return;
-
+	flashsecnum = flash->secnum;
 
 	
-    if (sectors[flashsecnum].lightlevel == flashminlight) {
-		sectors[flashsecnum].lightlevel = flashmaxlight;
+    if (sectors[flashsecnum].lightlevel == flash->minlight) {
+		sectors[flashsecnum].lightlevel = flash->maxlight;
 		flash->count = flash->brighttime;
     } else {
-		sectors[flashsecnum].lightlevel = flashminlight;
+		sectors[flashsecnum].lightlevel = flash->minlight;
 		flash->count =flash->darktime;
     }
 
@@ -190,7 +187,7 @@ P_SpawnStrobeFlash
   int16_t		fastOrSlow,
   int16_t		inSync )
 {
-    strobe_t __far*	flash;
+	strobe_t __far*	flash;
 	uint8_t lightamount;
 	int16_t seclightlevel = sectors[secnum].lightlevel;
 
@@ -201,24 +198,24 @@ P_SpawnStrobeFlash
 
 	flash = (strobe_t __far*)P_CreateThinker(TF_STROBEFLASH_HIGHBITS);
 
-    flash->secnum = secnum;
-    flash->darktime = fastOrSlow;
-    flash->brighttime = STROBEBRIGHT;
-    flash->maxlight = seclightlevel;
+	flash->secnum = secnum;
+	flash->darktime = fastOrSlow;
+	flash->brighttime = STROBEBRIGHT;
+	flash->maxlight = seclightlevel;
 
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
 	flash->minlight = lightamount;
 
-	
 
-    if (flash->minlight == flash->maxlight)
+
+	if (flash->minlight == flash->maxlight)
 		flash->minlight = 0;
 
- 
 
-    if (!inSync)
-		flash->count = (P_Random()&7)+1;
-    else
+
+	if (!inSync)
+		flash->count = (P_Random() & 7) + 1;
+	else
 		flash->count = 1;
 }
 
@@ -378,8 +375,6 @@ void P_SpawnGlowingLight(int16_t secnum)
 
 
 	g = (glow_t __far*)P_CreateThinker(TF_GLOW_HIGHBITS);
-
-
     g->secnum = secnum;
 
 	
