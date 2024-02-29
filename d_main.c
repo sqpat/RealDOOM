@@ -338,9 +338,8 @@ void D_Display (void)
 
 
     // change the view size if needed
-    if (setsizeneeded)
-    {
-        R_ExecuteSetViewSize ();
+    if (setsizeneeded) {
+		R_ExecuteSetViewSize ();
         oldgamestate = -1;                      // force background redraw
         borderdrawcount = 3;
     }
@@ -348,11 +347,10 @@ void D_Display (void)
 #ifndef SKIPWIPE
 
     // save the current screen if about to wipe
-    if (gamestate != wipegamestate)
-    {
+    if (gamestate != wipegamestate) {
         wipe = true;
         wipe_StartScreen();
-    } else{
+    } else {
         wipe = false;
     }
 
@@ -363,8 +361,7 @@ void D_Display (void)
 		HU_Erase();
  	}
     // do buffered drawing
-    switch (gamestate)
-    {
+    switch (gamestate) {
       case GS_LEVEL:
         if (!gametic)
             break;
@@ -399,6 +396,7 @@ void D_Display (void)
         D_PageDrawer ();
  		break;
     }
+
 
 
 	// draw buffered stuff to screen

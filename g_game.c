@@ -791,7 +791,6 @@ void G_WorldDone (void)
 // Can be called by the startup code or the menu task. 
 //
 extern boolean setsizeneeded;
-void R_ExecuteSetViewSize (void);
 
 //int8_t    savename[256];
 

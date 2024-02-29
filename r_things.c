@@ -463,7 +463,6 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy)
         return;         
 
  	temp.h.fracbits = 0;
-	//temp.h.intbits = spritewidths[lump];
 	tx.h.intbits += spritewidths[lump];
 
 	temp.h.intbits = centerxfrac.h.intbits;
@@ -628,6 +627,9 @@ void R_SortVisSprites (void)
 
 extern int setval;
 
+
+
+
 //
 // R_DrawSprite
 //
@@ -758,7 +760,6 @@ void R_DrawSprite (vissprite_t __far* spr)
 //
 // R_DrawMasked
 //
-// NO LOCKED PAGES GOING IN
 void R_DrawMasked (void)
 {
     vissprite_t __far*        spr;

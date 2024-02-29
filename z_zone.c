@@ -76,7 +76,7 @@ extern int32_t totalpatchsize;
 extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
 extern int16_t textureLRU[4];
 extern uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
-extern int16_t currentflatpage[3];
+extern int16_t currentflatpage[4];
 
 #define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4
 
@@ -96,7 +96,7 @@ void Z_FreeConventionalAllocations() {
 	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
 
 	Z_QuickmapRender();
-	FAR_memset(MK_FP(0x7000, 0), 0, 65535);
+	//FAR_memset(MK_FP(0x7000, 0), 0, 65535);
 
 	//reset texturee cache
 	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (numtextures));
@@ -116,6 +116,7 @@ void Z_FreeConventionalAllocations() {
 	currentflatpage[0] = -1;
 	currentflatpage[1] = -1;
 	currentflatpage[2] = -1;
+	currentflatpage[3] = -1;
 
 	Z_QuickmapPhysics();
 
@@ -252,10 +253,12 @@ int16_t pageswapargs[total_pages] = {
 	RENDER_7000_PAGE, PAGE_7000_OFFSET,
 	RENDER_7400_PAGE, PAGE_7400_OFFSET,
 	RENDER_7800_PAGE, PAGE_7800_OFFSET,
+	RENDER_7C00_PAGE, PAGE_7C00_OFFSET,
 	// flat cache
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
+	FIRST_FLAT_CACHE_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
 	// palette
 	SCREEN0_LOGICAL_PAGE + 0, PAGE_8000_OFFSET,
 	SCREEN0_LOGICAL_PAGE + 1, PAGE_8400_OFFSET,
@@ -690,13 +693,13 @@ void Z_PopScratchFrame() {
 }
 
 void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
-	// offset 3 means reset defaults/current values.
-	if (offset != 3) {
+	// offset 4 means reset defaults/current values.
+	if (offset != 4) {
 		pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = page;
 	}
 
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x03; // page count
+	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
 	regs.w.si = pageswapargs_flatcache_offset_size;
@@ -710,7 +713,7 @@ void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 
 void Z_QuickMapUndoFlatCache() {
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x03; // page count... we want 7000 and 6000 actually to get 0x6c00... make less jank
+	regs.w.cx = 0x04; // page count... 
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
 	regs.w.si = pageswapargs_flatcache_undo_offset_size;
@@ -721,20 +724,7 @@ void Z_QuickMapUndoFlatCache() {
 
 #endif
 }
-
-/*
-void Z_QuickMapTextureInfoPage() {
-
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_textinfo_offset_size;
-	intx86(EMS_INT, &regs, &regs);
-#ifdef DETAILED_BENCH_STATS
-	taskswitchcount++;
-#endif
-}*/
+ 
 
 void Z_RemapScratchFrame(uint8_t startpage) {
 	pageswapargs[pageswapargs_scratch5000_offset + 0] = startpage;

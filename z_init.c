@@ -266,37 +266,33 @@ found:
 }
 
 void Z_LinkEMSVariables() {
-	
+	/*
 	// no longer linking dynamically, everything is statically allocated/defined...
-/*
 	DEBUG_PRINT("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
-	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_ammnumpatchoffsets, size_sides_render, (ST_WIDTH*ST_HEIGHT));
+	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_ammnumpatchoffsets, size_xtoviewangle, (ST_WIDTH*ST_HEIGHT));
 
  
  	 
-
-
-
-	// 0x9000  40747  65089  10240  00000  00000
-	// 0x8000  65280  65428  00000  00000  00000
-	
-	// render 7800 and up somewhat empty
-
-	// 0x7000  65442  28150  64248  00000  XXXXX
+	// 0xE000
+	// 0xcc00
+	// 0xb000
+	// 0x9000  40747  43751  10240  00000  00000
+	// 0x8000  65280  52494  00000  00000  00000
+	// 0x7000  65442  54944  64248  00000  XXXXX
 	// render 6c00-77ff completely full
 
-	// 0x6000  43348  42722  16384  00000  XXXXX
+	// 0x6000  43348  65484  16384  00000  XXXXX
 	// 0x5000  63982  65535  00000  XXXXX  00000
 	// 0x4000  00000  65535  00000  00000  00000
 	// 0x3000  65514  
 	
-	DEBUG_PRINT("\n   0x8000:      %05u   %05u   00000   00000   00000", 64000u + (256 * 5), size_patchoffset);
-	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_segs_render, 0 - 1288);
-	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", size_rejectmatrix, size_spritetopoffsets, 16384);
-	DEBUG_PRINT("\n   0x5000:      00000   65535   XXXXX   XXXXX   00000");
+	DEBUG_PRINT("\n   0x8000:      %05u   %05u   00000   00000   00000", 64000u + (256 * 5), size_texturecompositesizes);
+	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_viewangletox+32768u, 0 - 1288);
+	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", size_rejectmatrix, size_negonearray, 16384);
+	DEBUG_PRINT("\n   0x5000:      00000   65535");
 	DEBUG_PRINT("\n   0x4000:      00000   XXXXX");
 	DEBUG_PRINT("\n   0x3000:      %05u", size_events + baselowermemoryaddressStartingOffset, 0, 0);
-	//I_Error("done");
+	I_Error("done");
 	*/
 }
 
@@ -349,7 +345,7 @@ void Z_LoadBinaries() {
 
 
 
-byte __near conventionallowerblock[6 * MAX_TEXTURES];  // 5564 bytes
+/*
 
 // maybe move this into umb?
 void Z_LinkConventionalVariables() {
@@ -382,3 +378,4 @@ void Z_LinkConventionalVariables() {
 
 
 }
+*/

@@ -368,7 +368,7 @@ R_CheckPlane
 }
 
 int tempcounter = 0;
-int16_t currentflatpage[3] = { -1, -1, -1 };
+int16_t currentflatpage[4] = { -1, -1, -1, -1 };
 
 extern uint8_t firstunusedflat;
  //
@@ -392,13 +392,12 @@ void R_DrawPlanes (void)
 
 	
 
-	//int16_t oldtexargs[4];
 	int16_t effectivepagenumber = 0;
 	uint8_t usedflatindex;
 	boolean flatunloaded = false;
 	byte __far* src;
 	int16_t flatcacheindex = 0;
-	int16_t lastflatcacheindicesused[2] = {2, 1}; // initialized so that allocation order is 0 1 2
+	int16_t lastflatcacheindicesused[3] = {3, 2, 1}; // initialized so that allocation order is 0 1 2
 
     for (i = 0; i < lastvisplane ; i++) {
 		if (i < MAXCONVENTIONALVISPLANES){
@@ -483,9 +482,20 @@ void R_DrawPlanes (void)
 			flatcacheindex = 1;
 		} else if (currentflatpage[2] == effectivepagenumber) {
 			flatcacheindex = 2;
+		} else if (currentflatpage[3] == effectivepagenumber) {
+			flatcacheindex = 3;
 		} else {
-
+			/*
 			// LRU on evicition.. not doing this above as we should though
+			for (i = 0; i < 3; i++) {
+				if (lastflatcacheindicesused[0] != i && lastflatcacheindicesused[1] != i) {
+				//if (lastflatcacheindicesused[0] != i && lastflatcacheindicesused[1] != i && lastflatcacheindicesused[2] != i) {
+					flatcacheindex = i;
+					break;
+				}
+			}
+			*/
+
 
 			if (lastflatcacheindicesused[0] != 0 && lastflatcacheindicesused[1] != 0) {
 				flatcacheindex = 0;
@@ -493,6 +503,8 @@ void R_DrawPlanes (void)
 				flatcacheindex = 1;
 			} else if (lastflatcacheindicesused[0] != 2 && lastflatcacheindicesused[1] != 2) {
 				flatcacheindex = 2;
+			} else {
+				flatcacheindex = 3;
 			}
 
 			currentflatpage[flatcacheindex] = effectivepagenumber;
@@ -500,6 +512,9 @@ void R_DrawPlanes (void)
 		}
 
 		if (lastflatcacheindicesused[0] != flatcacheindex) {
+			if (lastflatcacheindicesused[1] != flatcacheindex) {
+				lastflatcacheindicesused[2] = lastflatcacheindicesused[1];
+			}
 			lastflatcacheindicesused[1] = lastflatcacheindicesused[0];
 			lastflatcacheindicesused[0] = flatcacheindex;
 		}

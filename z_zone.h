@@ -97,6 +97,7 @@ void Z_ShutdownEMS();
 #define RENDER_7000_PAGE							20 + 8
 #define RENDER_7400_PAGE							20 + 9
 #define RENDER_7800_PAGE							20 + 10
+#define RENDER_7C00_PAGE							20 + 11
 #define TEXTURE_INFO_LOGICAL_PAGE					FIRST_RENDER_LOGICAL_PAGE + 12			//unused...?
 #define SCREEN4_LOGICAL_PAGE						FIRST_RENDER_LOGICAL_PAGE + 16
 #define FIRST_STATUS_LOGICAL_PAGE					SCREEN4_LOGICAL_PAGE + 1
@@ -114,7 +115,6 @@ void Z_ShutdownEMS();
 #define NUM_PATCH_CACHE_PAGES						40
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE				FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES						8
-#define MAX_FLATS_LOADED							NUM_FLAT_CACHE_PAGES * 4
 #define FIRST_TEXTURE_LOGICAL_PAGE					FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
 #define NUM_TEXTURE_PAGES							24
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE				FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
@@ -147,8 +147,8 @@ void Z_ShutdownEMS();
 #define num_scratch4000_params 8
 #define num_scratch7000_params 8
 #define num_scratchstack_params 16
-#define num_flatcache_undo_params 6
-#define num_flatcache_params 6
+#define num_flatcache_undo_params 8
+#define num_flatcache_params 8
 #define num_palette_params 10
 #define num_7000to6000_params 8
 #define num_menu_params 16
@@ -234,7 +234,7 @@ void Z_QuickMapRender7000();
 
 void Z_GetEMSPageMap();
 void Z_LinkEMSVariables();
-void Z_LinkConventionalVariables();
+//void Z_LinkConventionalVariables();
 void Z_LoadBinaries();
 
 void Z_ClearDeadCode();
@@ -264,6 +264,9 @@ void Z_ClearDeadCode();
 
 
 #define PAGE_5000_SCRATCH_REMAP 6
+
+#define MAX_FLATS_LOADED							NUM_FLAT_CACHE_PAGES * 4
+
 
 //void DUMP_4000_TO_FILE();
 //void DUMP_MEMORY_TO_FILE();

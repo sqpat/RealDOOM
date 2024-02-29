@@ -297,7 +297,6 @@ extern int8_t     d_episode;
 extern int8_t     d_map;
 
 
-extern boolean setsizeneeded;
 
 
 void G_DoNewGame(void)
@@ -308,7 +307,6 @@ void G_DoNewGame(void)
 	respawnparm = false;
 	fastparm = false;
 	nomonsters = false;
-	setsizeneeded = true;
 	G_InitNew(d_skill, d_episode, d_map);
 	gameaction = ga_nothing;
 }

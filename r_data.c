@@ -59,9 +59,9 @@ int16_t             numtextures;
 
  
 
-uint16_t  __near *texturepatchlump_offset;
-uint16_t  __near *texturecolumn_offset;
-uint16_t  __near *texturecompositesizes;	// uint16_t*
+//uint16_t  __near *texturepatchlump_offset;
+//uint16_t  __near *texturecolumn_offset;
+//uint16_t  __near *texturecompositesizes;	// uint16_t*
 
 
 // needed for pre rendering

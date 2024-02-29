@@ -594,8 +594,12 @@ void D_DoomMain2(void)
 	I_Error("\npointer is %Fp %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, &EMS_PAGE), MK_FP(sregs.ds, &p), MK_FP(sregs.ss, &title), _fmalloc(1024), malloc(1024));
 	*/
 
+	// 6a30
+	//I_Error("\n 7000: %x", size_xtoviewangle);
+
 	//2d7e dosbox 3128 86box
 	/*
+
 
 
 	I_Error("\n\n%x %x %x %x\n%x %x %x %x\n%x %x %x %x\n%x ",
@@ -892,7 +896,7 @@ void D_DoomMain2(void)
 
 	DEBUG_PRINT("\nZ_LinkEMSVariables: Place variables in specified memory addresses");
 	Z_LinkEMSVariables();
-	Z_LinkConventionalVariables();
+//	Z_LinkConventionalVariables();
 
 	DEBUG_PRINT("\nZ_LoadBinaries: Load game data into memory");
 	Z_LoadBinaries();
@@ -981,6 +985,7 @@ void D_DoomMain2(void)
 
 	// moving this here. We want to load automap related wad lumps into physics ems pages now rather than lazily load it where pages are in a dynamic state.
 	AM_loadPics();
+
 
 	//byte __far* someptr = ;
 	//I_Error("\npointer is %Fp %Fp %Fp %Fp %Fp", _fmalloc(16), _fmalloc(256), _fmalloc(1024), _fmalloc(1024), malloc(1024));

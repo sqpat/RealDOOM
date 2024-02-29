@@ -713,7 +713,7 @@ void R_RenderPlayerView ()
     NetUpdate ();
 
 	// replace render level data with flat cache
-	Z_QuickMapFlatPage(0, 3);
+	Z_QuickMapFlatPage(0, 4);
 
     R_DrawPlanes ();
 	// put away flat cache, put back level data
