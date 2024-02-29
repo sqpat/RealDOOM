@@ -399,47 +399,18 @@ size_textureheights		E000:fe41
 #define rejectmatrix		((byte __far *)				(0x60004000 + size_nightmarespawns))
 
 
-/*
-#define size_nodes_render		MAX_NODES_RENDER_SIZE
-#define size_scalelightfixed	size_nodes_render			+ sizeof(lighttable_t __far* ) * (MAXLIGHTSCALE)
-#define size_scalelight			size_scalelightfixed		+ sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTSCALE)
-#define size_vissprites			size_scalelight				+ sizeof(vissprite_t) * (MAXVISSPRITES)
-#define size_negonearray		size_vissprites				+ sizeof(int16_t) * (SCREENWIDTH)
-#define size_screenheightarray	size_negonearray			+ sizeof(int16_t) * (SCREENWIDTH)
-*/
 
-// 0x8360, too big for two pages, lots of space left for extra...
-
-//#define size_sides_render		(size_nodes_render		+ MAX_SIDES_RENDER_SIZE)
-//#define size_segs_render		(size_base_7800_render		+ MAX_SEGS_RENDER_SIZE)
-
-/*
-#define size_spritewidths		(size_segs_render		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
-#define size_spriteoffsets		(size_spritewidths		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
-#define size_spritetopoffsets	(size_spriteoffsets		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
-*/
-//#define size_RENDER_SCRATCH		(size_segs_render		+ MAX_SEGS_RENDER_SIZE)
-
-// RENDER 0x6C00 - 0x77FF DATA
+// RENDER 0x7000 - 0x7BFF DATA
 // These pages are swapped out during DrawPlanes so this area has to not be used during R_DrawPlanes!
 // lots of sprite stuff works here, as well as nodes, viewangletox, which only is used in r_bsp
 #define size_openings			sizeof(int16_t) * MAXOPENINGS
 #define size_viewangletox		(size_screenheightarray		+ (sizeof(int16_t) * (FINEANGLES / 2)))
 
 
-#define openings			((int16_t __far*			) (0x6C000000))
-#define viewangletox		((int16_t __far*			) (0x6C000000 + size_openings))
+#define openings			((int16_t __far*			) (0x70000000))
+#define viewangletox		((int16_t __far*			) (0x70000000 + size_openings))
 
 
-
-
-//#define SIZE_RENDER_7000  (32768u + MAX_SIDES_RENDER_SIZE + MAX_SEGS_RENDER_SIZE)
-/*
-#define spritewidths		((int16_t		__far*)		(0x70000000 + size_segs_render))
-#define spriteoffsets		((int16_t		__far*)		(0x70000000 + size_spritewidths))
-#define spritetopoffsets	((int16_t		__far*)		(0x70000000 + size_spriteoffsets))
-*/
-//#define RENDER_SCRATCH  ((int16_t		__far*)		(0x70000000 + size_spritetopoffsets))
  
 
 /*
