@@ -1056,9 +1056,7 @@ void P_LoadLineDefs(int16_t lump)
 	int16_t mldsidenum0;
 	int16_t mldsidenum1;
 	int16_t convertedtag;
-	//sides_render is 70008000, remap to 6000
-	side_render_t __far* tempsides_render = (side_render_t __far*)0x60008000;
-
+	
 	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
 
 	FAR_memset(lines, 0, MAX_LINES_SIZE);
@@ -1069,8 +1067,8 @@ void P_LoadLineDefs(int16_t lump)
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 	data = (maplinedef_t __far*)SCRATCH_ADDRESS_5000;
 
-	// put side_render in 6000
-	Z_QuickmapRender7000to6000();
+	// put side_render active
+	Z_QuickmapRender9000();
 	
 	
 	for (i = 0; i < numlines; i++) {
@@ -1135,8 +1133,8 @@ void P_LoadLineDefs(int16_t lump)
 			}
 		}
 
-		side0secnum = tempsides_render[mldsidenum0].secnum;
-		side1secnum = tempsides_render[mldsidenum1].secnum;
+		side0secnum = sides_render[mldsidenum0].secnum;
+		side1secnum = sides_render[mldsidenum1].secnum;
 
 		if (mldsidenum0 != -1) {
 			ld_physics->frontsecnum = side0secnum;
@@ -1434,7 +1432,6 @@ P_SetupLevel
 
 	P_InitThinkers();
 
-	// if working with a devlopment map, reload it
 
 	// find map name
 	if (commercial)

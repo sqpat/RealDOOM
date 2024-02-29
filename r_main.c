@@ -84,14 +84,7 @@ int8_t			detailshift;
 angle_t			clipangle = { 0 };		// note: fracbits always 0
 angle_t			fieldofview = { 0 };	// note: fracbits always 0
 
-// The viewangletox[viewangle + FINEANGLES/4] lookup
-// maps the visible view angles to screen X coordinates,
-// flattening the arc to a flat projection plane.
-// There will be many angles mapped to the same X. 
-
-// The xtoviewangleangle[] table maps a screen pixel
-// to the lowest viewangle that maps back to x ranges
-// from clipangle to -clipangle.
+ 
  
 
 // bumped light from gun blasts
@@ -724,8 +717,8 @@ void R_RenderPlayerView ()
 
     R_DrawPlanes ();
 	// put away flat cache, put back level data
-	//Z_QuickMapUndoFlatCache();
-	//Z_QuickmapRender();
+	Z_QuickMapUndoFlatCache();
+
 #ifdef DETAILED_BENCH_STATS
 	renderplayerplanetics += ticcount - cachedrenderplayertics;
 	cachedrenderplayertics = ticcount;

@@ -126,10 +126,9 @@ uint16_t     R_CheckTextureNumForName(int8_t *name)
 
 void G_DoLoadLevel(void)
 {
-	Z_QuickmapRender();
-	//Z_QuickmapTextureInfoPage();
-
+	
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
+	Z_QuickmapRender();
 	// DOOM determines the sky texture to be used
 	// depending on the current episode, and the game version.
 	if (commercial)
@@ -298,6 +297,7 @@ extern int8_t     d_episode;
 extern int8_t     d_map;
 
 
+extern boolean setsizeneeded;
 
 
 void G_DoNewGame(void)
@@ -308,6 +308,7 @@ void G_DoNewGame(void)
 	respawnparm = false;
 	fastparm = false;
 	nomonsters = false;
+	setsizeneeded = true;
 	G_InitNew(d_skill, d_episode, d_map);
 	gameaction = ga_nothing;
 }

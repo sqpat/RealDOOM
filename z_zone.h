@@ -56,7 +56,7 @@ extern int32_t lumpinfo5000switchcount;
 // FIXME_COMMERCIAL these values will have to change upward.
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 6939u
 
-
+// These are WAD maxes and corresponds to doom2 values
 #define MAX_TEXTURES 428
 #define MAX_PATCHES 476
 #define MAX_FLATS 151
@@ -81,7 +81,7 @@ extern uint16_t EMS_PAGE;
 
 
 void Z_InitEMS(void);
-void Z_InitUMB(void);
+//void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 
 void Z_ShutdownEMS();
@@ -94,6 +94,9 @@ void Z_ShutdownEMS();
 #define STRINGS_LOGICAL_PAGE						12
 #define FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE		16
 #define FIRST_RENDER_LOGICAL_PAGE					20
+#define RENDER_7000_PAGE							20 + 8
+#define RENDER_7400_PAGE							20 + 9
+#define RENDER_6C00_PAGE							20 + 15
 #define TEXTURE_INFO_LOGICAL_PAGE					FIRST_RENDER_LOGICAL_PAGE + 12			//unused...?
 #define SCREEN4_LOGICAL_PAGE						FIRST_RENDER_LOGICAL_PAGE + 16
 #define FIRST_STATUS_LOGICAL_PAGE					SCREEN4_LOGICAL_PAGE + 1
@@ -124,7 +127,6 @@ void Z_ShutdownEMS();
 #define TASK_STATUS 2
 #define TASK_DEMO 3
 #define TASK_PHYSICS9000 4
-#define TASK_RENDER7000TO6000 5
 #define TASK_RENDER_TEXT 6
 #define TASK_SCRATCH_STACK 7
 #define TASK_PALETTE 8
@@ -145,6 +147,7 @@ void Z_ShutdownEMS();
 #define num_scratch4000_params 8
 #define num_scratch7000_params 8
 #define num_scratchstack_params 16
+#define num_flatcache_undo_params 6
 #define num_flatcache_params 6
 #define num_palette_params 10
 #define num_7000to6000_params 8
@@ -166,10 +169,10 @@ void Z_ShutdownEMS();
 #define pageswapargs_scratch4000_offset_size	(pageswapargs_scratch5000_offset_size	+ 2*num_scratch5000_params)
 #define pageswapargs_scratch7000_offset_size	(pageswapargs_scratch4000_offset_size	+ 2*num_scratch4000_params)
 #define pageswapargs_scratchstack_offset_size	(pageswapargs_scratch7000_offset_size	+ 2*num_scratch7000_params)
-#define pageswapargs_flatcache_offset_size		(pageswapargs_scratchstack_offset_size	+ 2*num_scratchstack_params)
+#define pageswapargs_flatcache_undo_offset_size	(pageswapargs_scratchstack_offset_size	+ 2*num_scratchstack_params)
+#define pageswapargs_flatcache_offset_size		(pageswapargs_flatcache_undo_offset_size+ 2*num_flatcache_undo_params)
 #define pageswapargs_palette_offset_size		(pageswapargs_flatcache_offset_size		+ 2*num_flatcache_params)
-#define pageswapargs_7000to6000_offset_size		(pageswapargs_palette_offset_size		+ 2*num_palette_params)
-#define pageswapargs_menu_offset_size			(pageswapargs_7000to6000_offset_size	+ 2*num_7000to6000_params)
+#define pageswapargs_menu_offset_size			(pageswapargs_palette_offset_size		+ 2*num_palette_params)
 #define pageswapargs_intermission_offset_size	(pageswapargs_menu_offset_size			+ 2*num_menu_params)
 #define pageswapargs_wipe_offset_size			(pageswapargs_intermission_offset_size	+ 2*num_intermission_params)
 #define pageswapargs_lumpinfo_offset_size		(pageswapargs_wipe_offset_size			+ 2*num_wipe_params)
@@ -178,22 +181,22 @@ void Z_ShutdownEMS();
 
 // used for array indices
 #define pageswapargs_rend_offset			num_phys_params
-#define pageswapargs_stat_offset			(pageswapargs_rend_offset			+ num_rend_params)
-#define pageswapargs_demo_offset			(pageswapargs_stat_offset			+ num_stat_params)
-#define pageswapargs_textinfo_offset		(pageswapargs_demo_offset			+ num_demo_params)
-#define pageswapargs_scratch5000_offset		(pageswapargs_textinfo_offset		+ num_textinfo_params)
-#define pageswapargs_scratch4000_offset		(pageswapargs_scratch5000_offset	+ num_scratch5000_params)
-#define pageswapargs_scratch7000_offset		(pageswapargs_scratch4000_offset	+ num_scratch4000_params)
-#define pageswapargs_scratchstack_offset	(pageswapargs_scratch7000_offset	+ num_scratch7000_params)
-#define pageswapargs_flatcache_offset		(pageswapargs_scratchstack_offset	+ num_scratchstack_params)
-#define pageswapargs_palette_offset			(pageswapargs_flatcache_offset		+ num_flatcache_params)
-#define pageswapargs_7000to6000_offset		(pageswapargs_palette_offset		+ num_palette_params)
-#define pageswapargs_menu_offset			(pageswapargs_7000to6000_offset		+ num_7000to6000_params)
-#define pageswapargs_intermission_offset	(pageswapargs_menu_offset			+ num_menu_params)
-#define pageswapargs_wipe_offset			(pageswapargs_intermission_offset	+ num_intermission_params)
-#define pageswapargs_lumpinfo_offset		(pageswapargs_wipe_offset			+ num_wipe_params)
-#define pageswapargs_lumpinfo_5400_offset	(pageswapargs_lumpinfo_offset		+ num_lumpinfo_params)
-#define total_pages							(pageswapargs_lumpinfo_5400_offset	+ num_lumpinfo_5400_params)
+#define pageswapargs_stat_offset			(pageswapargs_rend_offset				+ num_rend_params)
+#define pageswapargs_demo_offset			(pageswapargs_stat_offset				+ num_stat_params)
+#define pageswapargs_textinfo_offset		(pageswapargs_demo_offset				+ num_demo_params)
+#define pageswapargs_scratch5000_offset		(pageswapargs_textinfo_offset			+ num_textinfo_params)
+#define pageswapargs_scratch4000_offset		(pageswapargs_scratch5000_offset		+ num_scratch5000_params)
+#define pageswapargs_scratch7000_offset		(pageswapargs_scratch4000_offset		+ num_scratch4000_params)
+#define pageswapargs_scratchstack_offset	(pageswapargs_scratch7000_offset		+ num_scratch7000_params)
+#define pageswapargs_flatcache_undo_offset	(pageswapargs_scratchstack_offset		+ num_scratchstack_params)
+#define pageswapargs_flatcache_offset		(pageswapargs_flatcache_undo_offset		+ num_flatcache_undo_params)
+#define pageswapargs_palette_offset			(pageswapargs_flatcache_offset			+ num_flatcache_params)
+#define pageswapargs_menu_offset			(pageswapargs_palette_offset			+ num_palette_params)
+#define pageswapargs_intermission_offset	(pageswapargs_menu_offset				+ num_menu_params)
+#define pageswapargs_wipe_offset			(pageswapargs_intermission_offset		+ num_intermission_params)
+#define pageswapargs_lumpinfo_offset		(pageswapargs_wipe_offset				+ num_wipe_params)
+#define pageswapargs_lumpinfo_5400_offset	(pageswapargs_lumpinfo_offset			+ num_lumpinfo_params)
+#define total_pages							(pageswapargs_lumpinfo_5400_offset		+ num_lumpinfo_5400_params)
 
 extern int16_t pageswapargs[total_pages];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
@@ -204,7 +207,7 @@ void Z_QuickmapRender();
 void Z_QuickmapRender_NoTex();
 void Z_QuickmapStatus();
 void Z_QuickmapDemo();
-void Z_QuickmapRender7000to6000();
+void Z_QuickmapRender9000();
 void Z_QuickmapByTaskNum(int8_t task);
 void Z_QuickmapRenderTexture();
 //void Z_QuickmapRenderTexture(uint8_t offset, uint8_t count);

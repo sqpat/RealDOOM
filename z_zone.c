@@ -248,7 +248,11 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
 	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
 
-// flat cache
+	// flat cache undo
+	RENDER_6C00_PAGE, PAGE_6C00_OFFSET,
+	RENDER_7000_PAGE, PAGE_7000_OFFSET,
+	RENDER_7400_PAGE, PAGE_7400_OFFSET,
+	// flat cache
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_6C00_OFFSET,
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 1, PAGE_7000_OFFSET,
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 2, PAGE_7400_OFFSET,
@@ -259,11 +263,7 @@ int16_t pageswapargs[total_pages] = {
 	SCREEN0_LOGICAL_PAGE + 3, PAGE_8C00_OFFSET,
 	PALETTE_LOGICAL_PAGE, PAGE_9000_OFFSET,
 
-	// 7000 to 6000
-	RENDER_7000_LOGICAL_PAGE + 0, PAGE_6000_OFFSET,
-	RENDER_7000_LOGICAL_PAGE + 1, PAGE_6400_OFFSET,
-	RENDER_7000_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
-	RENDER_7000_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET,
+ 
 // menu 
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
@@ -407,20 +407,19 @@ void Z_QuickmapDemo() {
 
 
 // sometimes needed when rendering sprites..
-void Z_QuickmapRender7000to6000() {
+void Z_QuickmapRender9000() {
 
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_7000to6000_offset_size;
+	regs.w.si = pageswapargs_rend_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
-	currenttask = TASK_RENDER7000TO6000; // not sure about this
 }
 void Z_QuickMapRender7000() {
 
@@ -711,10 +710,10 @@ void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 
 void Z_QuickMapUndoFlatCache() {
 	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
+	regs.w.cx = 0x03; // page count... we want 7000 and 6000 actually to get 0x6c00... make less jank
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_7000_offset_size;
+	regs.w.si = pageswapargs_flatcache_undo_offset_size;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
