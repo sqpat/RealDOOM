@@ -533,7 +533,7 @@ void R_InitSpriteDefs()
 		FAR_memcpy(spriteframes, sprtemp, maxframe * sizeof(spriteframe_t));
 
 	}
-
+	//I_Error("\n%u %x", currentspritememoryoffset, currentspritememoryoffset)
 }
 
 

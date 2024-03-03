@@ -410,17 +410,16 @@ size_textureheights		E000:fe41
 #define B000BlockOffset 0x14B0
 #define B000Block 0xB0000000
 
-#define size_spritedefs		6939u
-#define size_zlight					size_spritedefs		+ sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTZ)
-// 3b1b still a lot left
-
-
-
-#define spritedefs_bytes	((byte __far*)					(B000Block + B000BlockOffset))
-#define zlight				((lighttable_t __far* __far*)	(spritedefs_bytes + size_spritedefs))
+// a lot unused here...
+#define size_zlight					0		+ sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTZ)
+#define zlight				((lighttable_t __far* __far*)	(B000Block + B000BlockOffset))
 
 #define CC00Block 0xCC000000
 
+// shareware: 6939u
+// commercial doom2: 16114u 
+#define size_spritedefs		16114u
+#define spritedefs_bytes	((byte __far*)					(CC00Block + 0))
 
 
 
