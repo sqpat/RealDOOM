@@ -430,6 +430,29 @@ size_textureheights		E000:fe41
 // going to leave c800 free for xt-ide, etc bios
 // 0xcc00
 
+
+
+
+
+#define MAXEVENTS				64
+#define MAXINTERCEPTS			128
+#define size_thinkerlist		(sizeof(thinker_t) * MAX_THINKERS)
+#define size_mobjinfo			size_thinkerlist + sizeof(mobjinfo_t) * NUMMOBJTYPES
+#define size_intercepts			size_mobjinfo + sizeof(intercept_t) * MAXINTERCEPTS
+#define size_ammnumpatchbytes	size_intercepts + 524
+#define size_ammnumpatchoffsets	size_ammnumpatchbytes + (sizeof(uint16_t) * 10)
+#define size_linebuffer			(size_ammnumpatchoffsets	+ MAX_LINEBUFFER_SIZE)
+#define size_sectors_physics	(size_linebuffer	+ MAX_SECTORS_PHYSICS_SIZE)
+
+
+#define thinkerlist			((thinker_t __far*)			0x90000000)
+#define mobjinfo			((mobjinfo_t __far *)		(0x90000000 + size_thinkerlist))
+#define intercepts			((intercept_t __far*)		(0x90000000 + size_mobjinfo ))
+#define ammnumpatchbytes	((byte __far *)				(0x90000000 + size_intercepts ))
+#define ammnumpatchoffsets	((uint16_t __far*)			(0x90000000 + size_ammnumpatchbytes ))
+#define linebuffer			((int16_t __far*)			(0x90000000 + size_ammnumpatchoffsets))
+#define sectors_physics		((sector_physics_t __far* ) (0x90000000 + size_linebuffer))
+
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region
 
@@ -458,9 +481,12 @@ size_textureheights		E000:fe41
 //#define sectors_physics		((sector_physics_t __far* ) (0x5000C000))
 #define CC00Block 0xCC000000
 
+#define size_rejectmatrix		(MAX_REJECT_SIZE)
+#define rejectmatrix		((byte __far *)				(0x5000C000))
+
  
-#define size_sectors_physics	(MAX_SECTORS_PHYSICS_SIZE)
-#define sectors_physics		((sector_physics_t __far* ) (CC00Block))
+
+
 
 
 

@@ -595,7 +595,7 @@ void D_DoomMain2(void)
 	*/
 
 	// 6a30
-	//I_Error("\n 7000: %x", size_sectors_physics);
+	//I_Error("\n 7000: %u", size_sectors_physics);
 
 	//2d7e dosbox 3128 86box
 	/*

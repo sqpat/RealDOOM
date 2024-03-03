@@ -269,20 +269,20 @@ void Z_LinkEMSVariables() {
 	/*
 	// no longer linking dynamically, everything is statically allocated/defined...
 	DEBUG_PRINT("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
-	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_rejectmatrix, size_spritetopoffsets, (ST_WIDTH*ST_HEIGHT));
+	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_sectors_physics, size_spritetopoffsets, (ST_WIDTH*ST_HEIGHT));
 
  
  	 
 	// 0xE000
 	// 0xcc00
 	// 0xb000
-	// 0x9000  60969  65373  10240  00000  00000
+	// 0x9000  52791  65373  10240  00000  00000
 	// 0x8000  65280  64764  00000  00000  00000
 	// 0x7000  65442  63136  64248  00000  XXXXX
 	// render 6c00-77ff completely full
 
 	// 0x6000  65418  51846  16384  00000  XXXXX
-	// 0x5000  06960  65535  00000  XXXXX  00000
+	// 0x5000  15138  65535  00000  XXXXX  00000
 	// 0x4000  00000  65535  00000  00000  00000
 	// 0x3000  65514  
 	

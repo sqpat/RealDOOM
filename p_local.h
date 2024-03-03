@@ -196,27 +196,7 @@ typedef struct
     }			d;
 } intercept_t;
 
-
-
-#define MAXEVENTS				64
-#define MAXINTERCEPTS			128
-// 37800
-#define size_thinkerlist		(sizeof(thinker_t) * MAX_THINKERS)
-#define size_mobjinfo			size_thinkerlist + sizeof(mobjinfo_t) * NUMMOBJTYPES
-#define size_intercepts			size_mobjinfo + sizeof(intercept_t) * MAXINTERCEPTS
-#define size_ammnumpatchbytes	size_intercepts + 524
-#define size_ammnumpatchoffsets	size_ammnumpatchbytes + (sizeof(uint16_t) * 10)
-#define size_linebuffer			(size_ammnumpatchoffsets	+ MAX_LINEBUFFER_SIZE)
-#define size_rejectmatrix		(size_linebuffer	+ MAX_REJECT_SIZE)
-
-#define thinkerlist			((thinker_t __far*)	0x90000000)
-#define mobjinfo			((mobjinfo_t __far *) (0x90000000 + size_thinkerlist))
-#define intercepts			((intercept_t __far*) (0x90000000 + size_mobjinfo ))
-//#define events				((event_t __far *)	(0x90000000 + size_intercepts ))
-#define ammnumpatchbytes	((byte __far *)		(0x90000000 + size_intercepts ))
-#define ammnumpatchoffsets	((uint16_t __far*)	(0x90000000 + size_ammnumpatchbytes ))
-#define linebuffer			((int16_t __far*)			(0x90000000 + size_ammnumpatchoffsets))
-#define rejectmatrix		((byte __far *)				(0x90000000 + size_linebuffer))
+ 
 
 
 #define playerMobjRef	((THINKERREF)1)
