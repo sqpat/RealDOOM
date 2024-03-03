@@ -322,7 +322,7 @@ A_WeaponReady
 		player.attackdown = false;
 	}
     // bob the weapon based on movement speed
-	angle = (128*(leveltime.b.fracbytehigh&63))&FINEMASK;
+	angle = (128*(leveltime.h.fracbits))&FINEMASK;
 	//angle = (128 * leveltime.w)&FINEMASK;
 	psp->sx = FRACUNIT + FixedMulTrig(player.bob.w, finecosine[angle]);
     angle &= FINEANGLES/2-1;

@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/03/03 00:00:43
+Created on:       24/03/03 12:20:27
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -61,7 +61,7 @@ p_lights_TEXT          CODE           AUTO           09ee:4f40       0000058e
 p_map_TEXT             CODE           AUTO           09ee:54d0       000022a1
 p_maputl_TEXT          CODE           AUTO           09ee:7780       00000d4e
 p_plats_TEXT           CODE           AUTO           09ee:84d0       0000053e
-p_pspr_TEXT            CODE           AUTO           09ee:8a10       00000c0e
+p_pspr_TEXT            CODE           AUTO           09ee:8a10       00000c0a
 p_sight_TEXT           CODE           AUTO           09ee:9620       00000823
 p_spec_TEXT            CODE           AUTO           09ee:9e50       00001316
 p_switch_TEXT          CODE           AUTO           09ee:b170       00000c03
@@ -989,31 +989,31 @@ Module: p_pspr.obj(C:\REALDOOM\p_pspr.c)
 09ee:8a10      P_BringUpWeapon_
 09ee:8b3a      P_DropWeapon_
 09ee:8b52+     A_WeaponReady_
-09ee:8c72      A_ReFire_
-09ee:8c8c+     P_FireWeapon_
-09ee:8ca2+     P_CheckAmmo_
-09ee:8ca2*     A_CheckReload_
-09ee:8d02+     A_Lower_
-09ee:8d4a+     A_Raise_
-09ee:8d8a+     A_GunFlash_
-09ee:8db0+     A_Punch_
-09ee:8e8a+     A_Saw_
-09ee:8ff0+     A_FireMissile_
-09ee:9010+     A_FireBFG_
-09ee:9032+     A_FirePlasma_
-09ee:9076+     P_BulletSlope_
-09ee:9106+     P_GunShot_
-09ee:916a+     A_FirePistol_
-09ee:91cc+     A_FireShotgun_
-09ee:922a+     A_FireShotgun2_
-09ee:92f2+     A_FireCGun_
-09ee:938c*     A_Light0_
-09ee:9392*     A_Light1_
-09ee:9398*     A_Light2_
-09ee:939e*     A_BFGSpray_
-09ee:9476*     A_BFGsound_
-09ee:948a      P_MovePsprites_
-09ee:9510+     P_SetPsprite_
+09ee:8c6e      A_ReFire_
+09ee:8c88+     P_FireWeapon_
+09ee:8c9e+     P_CheckAmmo_
+09ee:8c9e*     A_CheckReload_
+09ee:8cfe+     A_Lower_
+09ee:8d46+     A_Raise_
+09ee:8d86+     A_GunFlash_
+09ee:8dac+     A_Punch_
+09ee:8e86+     A_Saw_
+09ee:8fec+     A_FireMissile_
+09ee:900c+     A_FireBFG_
+09ee:902e+     A_FirePlasma_
+09ee:9072+     P_BulletSlope_
+09ee:9102+     P_GunShot_
+09ee:9166+     A_FirePistol_
+09ee:91c8+     A_FireShotgun_
+09ee:9226+     A_FireShotgun2_
+09ee:92ee+     A_FireCGun_
+09ee:9388*     A_Light0_
+09ee:938e*     A_Light1_
+09ee:9394*     A_Light2_
+09ee:939a*     A_BFGSpray_
+09ee:9472*     A_BFGsound_
+09ee:9486      P_MovePsprites_
+09ee:950c+     P_SetPsprite_
 2656:1a7e      _weaponinfo
 2656:2c40+     _bulletslope
 Module: p_sight.obj(C:\REALDOOM\p_sight.c)
@@ -1823,4 +1823,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  0002a4a0 (173216.)
 Entry point address: 1f28:2210
-Link time: 00:00.74
+Link time: 00:00.84
