@@ -158,15 +158,11 @@ void R_DrawMaskedColumn (column_t __far* column) {
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
 //
-void
-R_DrawVisSprite
-( vissprite_t __far*          vis,
-	int16_t                   x1,
-	int16_t                   x2 )
-{
-    column_t __far*           column;
+void R_DrawVisSprite ( vissprite_t __far* vis ) {
+    
+	column_t __far*     column;
     fixed_t_union       frac;
-    patch_t __far*            patch;
+    patch_t __far*      patch;
         
 
 
@@ -198,8 +194,7 @@ R_DrawVisSprite
 // Generates a vissprite for a thing
 //  if it might be visible.
 //
-void R_ProjectSprite (mobj_pos_t __far* thing)
-{
+void R_ProjectSprite (mobj_pos_t __far* thing){
     fixed_t_union             tr_x;
     fixed_t_union             tr_y;
     
@@ -421,15 +416,12 @@ void R_AddSprites (sector_t __far* sec)
 //
 // R_DrawPSprite
 //
-void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy)
-{
+void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* vis){
     fixed_t_union           tx;
 	int16_t                 x1;
 	int16_t                 x2;
 	int16_t                 lump;
     boolean             flip;
-    vissprite_t __far*        vis;
-    vissprite_t         avis;
 	spriteframe_t __far*		spriteframes;
     fixed_t_union temp;
 
@@ -458,9 +450,6 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy)
 
     x1 = temp.h.intbits;
 
-    // off the right side
-    if (x1 > viewwidth)
-        return;         
 
  	temp.h.fracbits = 0;
 	tx.h.intbits += spritewidths[lump];
@@ -473,12 +462,8 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy)
 	}
     x2 = temp.h.intbits - 1;
 
-    // off the left side
-    if (x2 < 0)
-        return;
     
     // store information in a vissprite
-    vis = &avis;
     vis->mobjflags = 0;
     temp.h.fracbits = 0;
     temp.h.intbits = spritetopoffsets[lump];
@@ -491,14 +476,11 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy)
 		vis->scale = FRACUNIT << detailshift;
 	}
     
-    if (flip)
-    {
+    if (flip) {
         vis->xiscale = -pspriteiscale;
         temp.h.intbits = spritewidths[lump];
 		vis->startfrac = temp.w - 1;
-    }
-    else
-    {
+    } else {
         vis->xiscale = pspriteiscale;
         vis->startfrac = 0;
     }
@@ -523,26 +505,41 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy)
         vis->colormap = spritelights[MAXLIGHTSCALE-1];
     }
 
-	R_DrawVisSprite (vis, vis->x1, vis->x2);
 }
-
 
 extern int16_t r_cachedplayerMobjsecnum;
 extern state_t r_cachedstatecopy[2];
 //
 // R_DrawPlayerSprites
 //
-void R_DrawPlayerSprites (void)
-{
+void R_DrawPlayerSprites (void){
+	uint8_t i;
+	pspdef_t __near*   psp;
+	// clip to screen bounds
+	mfloorclip = screenheightarray;
+	mceilingclip = negonearray;
+
+	//R_DrawVisSprite(&player_vissprites[0]);
+	//R_DrawVisSprite(&player_vissprites[1]);
+	for (i = 0, psp = player.psprites;
+		i < NUMPSPRITES;
+		i++, psp++) {
+
+		if (psp->state) {
+			R_DrawVisSprite(&player_vissprites[i]);
+		}
+	}
+}
+
+void R_PrepareMaskedPSprites(void) {
 	uint8_t         i;
 	uint8_t         lightnum;
 	pspdef_t __near*   psp;
-    // get light level
-    lightnum = (sectors[r_cachedplayerMobjsecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
-
-
-//    if (lightnum < 0)          
-// not sure if this hack is necessary.. since its unsigned we loop around if its below 0 
+	// get light level
+	lightnum = (sectors[r_cachedplayerMobjsecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
+	
+	//    if (lightnum < 0)          
+	// not sure if this hack is necessary.. since its unsigned we loop around if its below 0 
 	if (lightnum > 240) {
 		spritelights = &scalelight[0];
 	} else if (lightnum >= LIGHTLEVELS) {
@@ -550,23 +547,17 @@ void R_DrawPlayerSprites (void)
 	} else {
 		spritelights = &scalelight[lightmult48lookup[lightnum]];
 	}
-    // clip to screen bounds
-    mfloorclip = screenheightarray;
-    mceilingclip = negonearray;
-	
-    // add all active psprites
-    for (i=0, psp= player.psprites;
-         i<NUMPSPRITES;
-         i++,psp++) {
+
+	// add all active psprites
+	for (i = 0, psp = player.psprites;
+		i < NUMPSPRITES;
+		i++, psp++) {
 
 		if (psp->state) {
-			R_DrawPSprite(psp, r_cachedstatecopy[i]);
+			R_DrawPSprite(psp, r_cachedstatecopy[i], &player_vissprites[i]);
 		}
-    }
+	}
 }
-
-
-
 
 //
 // R_SortVisSprites
@@ -605,13 +596,10 @@ void R_SortVisSprites (void)
     
     // pull the vissprites out by scale
     vsprsortedhead.next = vsprsortedhead.prev = &vsprsortedhead;
-    for (i=0 ; i<count ; i++)
-    {
+    for (i=0 ; i<count ; i++) {
         bestscale = MAXLONG;
-        for (ds=unsorted.next ; ds!= &unsorted ; ds=ds->next)
-        {
-            if (ds->scale < bestscale)
-            {
+        for (ds=unsorted.next ; ds!= &unsorted ; ds=ds->next) {
+            if (ds->scale < bestscale) {
                 bestscale = ds->scale;
                 best = ds;
             }
@@ -751,7 +739,7 @@ void R_DrawSprite (vissprite_t __far* spr)
     
 	mfloorclip = clipbot;
     mceilingclip = cliptop;
-    R_DrawVisSprite (spr, spr->x1, spr->x2);
+    R_DrawVisSprite (spr);
 }
 
 
@@ -765,7 +753,7 @@ void R_DrawMasked (void)
     vissprite_t __far*        spr;
     drawseg_t __far*          ds;
         
-    R_SortVisSprites ();
+	R_SortVisSprites ();
 
     if (vissprite_p > vissprites) {
         // draw all vissprites back to front
@@ -785,7 +773,7 @@ void R_DrawMasked (void)
 	}
     // draw the psprites on top of everything
     //  but does not draw on side views
-    R_DrawPlayerSprites ();
+	R_DrawPlayerSprites ();
 }
 
 

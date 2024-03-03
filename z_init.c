@@ -269,16 +269,16 @@ void Z_LinkEMSVariables() {
 	/*
 	// no longer linking dynamically, everything is statically allocated/defined...
 	DEBUG_PRINT("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
-	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_sectors_physics, size_spritetopoffsets, (ST_WIDTH*ST_HEIGHT));
+	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_sectors_physics, size_texturewidthmasks, (ST_WIDTH*ST_HEIGHT));
 
  
  	 
 	// 0xE000
 	// 0xcc00
 	// 0xb000
-	// 0x9000  52791  65373  10240  00000  00000
+	// 0x9000  52791  59782  10240  00000  00000
 	// 0x8000  65280  64764  00000  00000  00000
-	// 0x7000  65442  63136  64248  00000  XXXXX
+	// 0x7000  65442  63230  64248  00000  XXXXX
 	// render 6c00-77ff completely full
 
 	// 0x6000  65418  51846  16384  00000  XXXXX
@@ -287,7 +287,7 @@ void Z_LinkEMSVariables() {
 	// 0x3000  65514  
 	
 	DEBUG_PRINT("\n   0x8000:      %05u   %05u   00000   00000   00000", 64000u + (256 * 5), size_negonearray);
-	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_viewangletox +size_openings, 0 - 1288);
+	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_spritetopoffsets + 32768u, 0 - 1288);
 	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", size_nightmarespawns+ 49152u, size_spanstart+ size_texturedefs_bytes, 16384);
 	DEBUG_PRINT("\n   0x5000:      %05u   65535", size_sectors_physics);
 	DEBUG_PRINT("\n   0x4000:      00000   XXXXX");
@@ -295,7 +295,6 @@ void Z_LinkEMSVariables() {
 
 	I_Error("done");
 	*/
-
 }
 
 extern byte __far* pageFrameArea;

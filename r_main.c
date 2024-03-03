@@ -710,6 +710,9 @@ void R_RenderPlayerView ()
     // Check for new console commands.
     NetUpdate ();
 
+	// We add this here to prepare the vissprites for psprites while certain variables are in memory and not paged-out yet
+	R_PrepareMaskedPSprites();
+
 	// replace render level data with flat cache
 	Z_QuickMapFlatPage(0, 4);
 
@@ -731,7 +734,7 @@ void R_RenderPlayerView ()
 	
 	//NetUpdate ();
 
-    R_DrawMasked ();
+	R_DrawMasked ();
 #ifdef DETAILED_BENCH_STATS
 	renderplayermaskedtics += ticcount - cachedrenderplayertics;
 #endif

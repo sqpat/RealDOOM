@@ -46,6 +46,6 @@ void R_AddSprites(sector_t __far* sec);
 void R_ClearSprites (void);
 void R_DrawMasked (void);
 
-
+void R_PrepareMaskedPSprites(void);
 
 #endif

@@ -38,7 +38,7 @@ typedef unsigned long long		uint64_t;
 typedef int16_t filehandle_t;
 typedef uint16_t filelength_t;
 typedef int32_t ticcount_t;
-typedef uint8_t texsize_t;
+typedef uint16_t texsize_t;
 
 
 #ifndef __BYTEBOOL__

@@ -162,14 +162,14 @@ MAX_SEGS_RENDER_SIZE		28150
 
 // RENDER 0x9000
 
-#define size_visplanes				(0						+sizeof(visplane_t) * MAXCONVENTIONALVISPLANES)
+#define size_visplanes				(0						+ sizeof(visplane_t) * MAXCONVENTIONALVISPLANES)
 #define size_visplaneheaders		size_visplanes			+ sizeof(visplaneheader_t) * MAXEMSVISPLANES
 #define size_drawsegs				size_visplaneheaders	+ (sizeof(drawseg_t) * (MAXDRAWSEGS))
 #define size_flatindex				size_drawsegs			+ (sizeof(uint8_t) * MAX_FLATS)
 #define size_sides_render			size_flatindex			+ MAX_SIDES_RENDER_SIZE
-#define size_spritewidths			(size_sides_render		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
-#define size_spriteoffsets			(size_spritewidths		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
-#define size_spritetopoffsets		(size_spriteoffsets		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS))
+#define size_player_vissprites		size_sides_render		+ (sizeof(vissprite_t) * 2)
+#define size_texturedefs_offset		size_player_vissprites	+ MAX_TEXTURES * sizeof(uint16_t)
+#define size_texturewidthmasks		size_texturedefs_offset	+ MAX_TEXTURES * sizeof(uint8_t)
 
 
 
@@ -178,10 +178,9 @@ MAX_SEGS_RENDER_SIZE		28150
 #define drawsegs				((drawseg_t __far*)				(0x90000000 + size_visplaneheaders))
 #define flatindex				((uint8_t __far*)				(0x90000000 + size_drawsegs))
 #define sides_render			((side_render_t __far*)			(0x90000000 + size_flatindex))
-
-#define spritewidths			((int16_t		__far*)			(0x90000000 + size_sides_render))
-#define spriteoffsets			((int16_t		__far*)			(0x90000000 + size_spritewidths))
-#define spritetopoffsets		((int16_t		__far*)			(0x90000000 + size_spriteoffsets))
+#define player_vissprites		((vissprite_t __far*)			(0x90000000 + size_sides_render))
+#define texturedefs_offset		((uint16_t	__far*)				(0x90000000 + size_player_vissprites))
+#define texturewidthmasks		((uint8_t	__far*)				(0x90000000 + size_texturedefs_offset))
 
 // deff
 
@@ -256,8 +255,16 @@ MAX_SEGS_RENDER_SIZE		28150
 // RENDER 0x7000-0x77FF DATA - USED ONLY IN BSP ... 13k + 8k ... 10592 free
 #define size_nodes_render			0						+ MAX_NODES_RENDER_SIZE
 #define size_viewangletox			size_nodes_render		+ (sizeof(int16_t) * (FINEANGLES / 2))
+#define size_spritewidths			size_viewangletox		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS)
+#define size_spriteoffsets			size_spritewidths		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS)
+#define size_spritetopoffsets		size_spriteoffsets		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS)
+//30462
+
 #define nodes_render				((node_render_t __far*)			(0x70000000 + 0))
 #define viewangletox				((int16_t __far*)				(0x70000000 + size_nodes_render))
+#define spritewidths				((int16_t __far*)				(0x70000000 + size_viewangletox))
+#define spriteoffsets				((int16_t __far*)				(0x70000000 + size_spritewidths))
+#define spritetopoffsets			((int16_t __far*)				(0x70000000 + size_spriteoffsets))
 
 
 
@@ -388,11 +395,7 @@ size_textureheights		E000:fe41
 #define size_subsectors			(size_seenlines				+ MAX_SUBSECTORS_SIZE)
 #define size_nodes				(size_subsectors			+ MAX_NODES_SIZE)
 #define size_segs				(size_nodes					+ MAX_SEGS_SIZE)
-#define size_flattranslation	(size_segs					+ MAX_TEXTURES * sizeof(uint8_t))
-#define size_texturetranslation	(size_flattranslation		+ MAX_TEXTURES * sizeof(uint16_t))
-#define size_texturedefs_offset	(size_texturetranslation	+ MAX_TEXTURES * sizeof(uint16_t))
-#define size_texturewidthmasks	(size_texturedefs_offset	+ MAX_TEXTURES * sizeof(uint8_t))
-#define size_textureheights		(size_texturewidthmasks		+ MAX_TEXTURES * sizeof(uint8_t))
+//65117
 
 
 #define vertexes				((vertex_t __far*)		(uppermemoryblock))
@@ -403,11 +406,6 @@ size_textureheights		E000:fe41
 #define subsectors				((subsector_t __far*)	(uppermemoryblock + size_seenlines))
 #define nodes					((node_t __far*)		(uppermemoryblock + size_subsectors))
 #define segs					((seg_t __far*)			(uppermemoryblock + size_nodes))
-#define	flattranslation			((uint8_t	__far*)		(uppermemoryblock + size_segs))
-#define	texturetranslation		((uint16_t	__far*)		(uppermemoryblock + size_flattranslation))
-#define texturedefs_offset		((uint16_t	__far*)		(uppermemoryblock + size_texturetranslation))
-#define texturewidthmasks		((uint8_t	__far*)		(uppermemoryblock + size_texturedefs_offset))
-#define textureheights			((uint8_t	__far*)		(uppermemoryblock + size_texturewidthmasks))
 
 #define B000BlockOffset 0x14B0
 #define B000Block 0xB0000000
@@ -484,6 +482,7 @@ size_textureheights		E000:fe41
 #define size_rejectmatrix		(MAX_REJECT_SIZE)
 #define rejectmatrix		((byte __far *)				(0x5000C000))
 
+
  
 
 
@@ -549,24 +548,30 @@ segs_render			7000:8000
 
 #define baselowermemoryaddressStartingOffset 0x2600
 
-#define size_finesine		(10240u * sizeof(int32_t))
-#define size_finetangent	(size_finesine		+  2048u * sizeof(int32_t))
-#define size_states			(size_finetangent	+ sizeof(state_t) * NUMSTATES)
-#define size_events			(size_states			+ sizeof(event_t) * MAXEVENTS)
+#define size_finesine			(10240u * sizeof(int32_t))
+#define size_finetangent		(size_finesine				+  2048u * sizeof(int32_t))
+#define size_states				(size_finetangent			+ sizeof(state_t) * NUMSTATES)
+#define size_events				(size_states				+ sizeof(event_t) * MAXEVENTS)
+#define size_flattranslation	(size_events				+ MAX_TEXTURES * sizeof(uint8_t))
+#define size_texturetranslation	(size_flattranslation		+ MAX_TEXTURES * sizeof(uint16_t))
+#define size_textureheights		(size_texturetranslation	+ MAX_TEXTURES * sizeof(uint8_t))
 
 
 
 #define size_tantoangle		size_finetangent +  2049u * sizeof(int32_t)
 
-#define baselowermemoryaddress (0x32600000)
+#define baselowermemoryaddress (0x31F00000)
 
 
-#define finesine			((int32_t __far*) baselowermemoryaddress)	// 10240
-#define finecosine			((int32_t __far*) (baselowermemoryaddress+0x2000))	// 10240
-#define finetangentinner	((int32_t __far*) (baselowermemoryaddress + size_finesine ))
-#define states				((state_t __far*) (baselowermemoryaddress + size_finetangent))
-#define events				((event_t __far*) (baselowermemoryaddress + size_states ))
+#define finesine			((int32_t __far*)	baselowermemoryaddress)	// 10240
+#define finecosine			((int32_t __far*)	(baselowermemoryaddress+0x2000))	// 10240
+#define finetangentinner	((int32_t __far*)	(baselowermemoryaddress + size_finesine ))
+#define states				((state_t __far*)	(baselowermemoryaddress + size_finetangent))
+#define events				((event_t __far*)	(baselowermemoryaddress + size_states ))
 
+#define	flattranslation		((uint8_t __far*)	(baselowermemoryaddress + size_events))
+#define	texturetranslation	((uint16_t __far*)	(baselowermemoryaddress + size_flattranslation))
+#define textureheights		((uint8_t __far*)	(baselowermemoryaddress + size_texturetranslation))
 
 
 
