@@ -395,7 +395,7 @@ void R_PrecacheLevel(void)
 		}
 	}
 	Z_QuickmapRender();
-
+	Z_QuickMapUndoFlatCache();
 
 	for (i = 0; i < numsprites; i++) {
 		if (!graphicpresent[i])

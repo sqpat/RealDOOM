@@ -1550,8 +1550,8 @@ P_SetupLevel
 	
 
 	// preload graphics
-	//if (precache)
-		//R_PrecacheLevel();
+	if (precache)
+		R_PrecacheLevel();
 
 
 
