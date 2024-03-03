@@ -269,31 +269,33 @@ void Z_LinkEMSVariables() {
 	/*
 	// no longer linking dynamically, everything is statically allocated/defined...
 	DEBUG_PRINT("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
-	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_ammnumpatchoffsets, size_xtoviewangle, (ST_WIDTH*ST_HEIGHT));
+	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_rejectmatrix, size_spritetopoffsets, (ST_WIDTH*ST_HEIGHT));
 
  
  	 
 	// 0xE000
 	// 0xcc00
 	// 0xb000
-	// 0x9000  40747  43751  10240  00000  00000
-	// 0x8000  65280  52494  00000  00000  00000
-	// 0x7000  65442  54944  64248  00000  XXXXX
+	// 0x9000  60969  65373  10240  00000  00000
+	// 0x8000  65280  64764  00000  00000  00000
+	// 0x7000  65442  63136  64248  00000  XXXXX
 	// render 6c00-77ff completely full
 
-	// 0x6000  43348  65484  16384  00000  XXXXX
-	// 0x5000  63982  65535  00000  XXXXX  00000
+	// 0x6000  65418  51846  16384  00000  XXXXX
+	// 0x5000  06960  65535  00000  XXXXX  00000
 	// 0x4000  00000  65535  00000  00000  00000
 	// 0x3000  65514  
 	
-	DEBUG_PRINT("\n   0x8000:      %05u   %05u   00000   00000   00000", 64000u + (256 * 5), size_texturecompositesizes);
-	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_viewangletox+32768u, 0 - 1288);
-	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", size_rejectmatrix, size_negonearray, 16384);
-	DEBUG_PRINT("\n   0x5000:      00000   65535");
+	DEBUG_PRINT("\n   0x8000:      %05u   %05u   00000   00000   00000", 64000u + (256 * 5), size_negonearray);
+	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_viewangletox +size_openings, 0 - 1288);
+	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", size_nightmarespawns+ 49152u, size_spanstart+ size_texturedefs_bytes, 16384);
+	DEBUG_PRINT("\n   0x5000:      %05u   65535", size_sectors_physics);
 	DEBUG_PRINT("\n   0x4000:      00000   XXXXX");
 	DEBUG_PRINT("\n   0x3000:      %05u", size_events + baselowermemoryaddressStartingOffset, 0, 0);
+
 	I_Error("done");
 	*/
+
 }
 
 extern byte __far* pageFrameArea;

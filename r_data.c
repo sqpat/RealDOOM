@@ -74,6 +74,12 @@ int16_t activetexturepages[4]; // always gets reset to defaults at start of fram
 uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
 int16_t textureLRU[4];
 
+
+int16_t activespritepages[4]; // always gets reset to defaults at start of frame
+uint8_t activespritenumpages[4]; // always gets reset to defaults at start of frame
+int16_t spriteLRU[4];
+
+
 //uint8_t* usedcompositetexturepagemem; // defaults 00
 //uint8_t __far* compositetextureoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
 //uint8_t __far* compositetexturepage; //  page index of the allocatiion
@@ -675,6 +681,163 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 	}
 
 }
+
+
+uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
+	uint8_t pagenum = pageoffset + (texpage >> 2);
+	uint8_t numpages = (texpage & 0x03);
+	int16_t bestpage = -1;
+	int16_t bestpageindex = -1;
+	uint8_t startpage = 0;
+	int16_t i;
+
+	if (!numpages) {
+		// one page, most common case - lets write faster code here...
+
+		for (i = 0; i < 4; i++) {
+
+
+			if (activespritepages[i] == pagenum) {
+				// todo faster, better lru? add to all can be just one op right?
+				// cast to int16_t and add 0x0101?
+				spriteLRU[0]++;
+				spriteLRU[1]++;
+				spriteLRU[2]++;
+				spriteLRU[3]++;
+				spriteLRU[i] = 0;
+
+				return i;
+			}
+
+		}
+		// cache miss, find highest LRU cache index
+		for (i = 0; i < 4; i++) {
+			if (bestpage < spriteLRU[i]) {
+				bestpage = spriteLRU[i];
+				bestpageindex = i;
+			}
+		}
+
+		// figure out startpage based on LRU
+
+		startpage = bestpageindex;
+
+		spriteLRU[0]++;
+		spriteLRU[1]++;
+		spriteLRU[2]++;
+		spriteLRU[3]++;
+		spriteLRU[startpage] = 0;
+
+		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
+		if (activespritenumpages[startpage]) {
+			for (i = 1; i <= activespritenumpages[startpage]; i++) {
+				activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset + 2 * (startpage + i)] = -1; // unpaged
+
+				activespritenumpages[startpage + i] = 0;
+			}
+		}
+		activespritenumpages[startpage] = 0;
+
+
+		activespritepages[startpage] = pageswapargs[pageswapargs_spritecache_offset + 2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
+
+		Z_QuickMapSpritePage();
+
+
+		return startpage;
+
+	}
+	else {
+		int16_t j = 0;
+
+		startpage = 0;
+
+		for (i = 0; i < 4 - numpages; i++) {
+
+			int8_t currentpage = 0;
+			while (currentpage <= numpages) {
+				if (activespritepages[i + currentpage] != pagenum + currentpage) {
+					break;
+				}
+				currentpage++;
+
+			}
+
+			if (currentpage <= numpages) {
+				continue;
+			}
+
+
+			// all pages were good
+
+			// todo faster, better lru?
+			spriteLRU[0]++;
+			spriteLRU[1]++;
+			spriteLRU[2]++;
+			spriteLRU[3]++;
+			// (can we do two int16_t adds of 0x0101)
+			for (j = 0; j <= numpages; j++) {
+				spriteLRU[i + j] = 0;
+			}
+
+			return i;
+		}
+
+		// need to page it in
+
+		for (i = 0; i < 4 - numpages; i++) {
+			if (bestpage < spriteLRU[i]) {
+				bestpage = spriteLRU[i];
+				bestpageindex = i;
+			}
+		}
+
+
+		// figure out startpage based on LRU
+
+		startpage = bestpageindex;
+
+		// (can we do two int16_t adds of 0x0101)
+		spriteLRU[0]++;
+		spriteLRU[1]++;
+		spriteLRU[2]++;
+		spriteLRU[3]++;
+
+		// prep args for quickmap;
+
+		// startpage is the ems page withing the 0x4000 block
+		// pagenum is the EMS page offset within EMS texture pages
+
+
+
+		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
+		if (activespritenumpages[startpage] > numpages) {
+			for (i = 1; i <= activespritenumpages[startpage]; i++) {
+				activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset + 2 * (startpage + i)] = -1; // unpaged
+				activespritenumpages[startpage + i] = 0;
+			}
+		}
+
+
+
+		for (i = 0; i <= numpages; i++) {
+			spriteLRU[startpage + i] = 0;
+			activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset + 2 * (startpage + i)] = pagenum + i;
+			activespritenumpages[startpage + i] = numpages - i;
+
+		}
+
+		Z_QuickMapSpritePage();
+		//Z_QuickmapRenderTexture();
+		//Z_QuickmapRenderTexture(startpage, numpages + 1);
+		// paged in
+
+		return startpage;
+
+	}
+
+}
+
 #ifdef DETAILED_BENCH_STATS
 extern int16_t benchtexturetype;
 #endif
@@ -761,16 +924,17 @@ byte __far* getspritetexture(int16_t lump) {
 		texoffset = spriteoffset[index];
 
 		//gettexturepage ensures the page is active
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
-
+		addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+		//addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 		W_CacheLumpNumDirect(lump, addr);
 		// return
 		return addr;
 	}
 	else {
 		// has been allocated before. find and return
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
-
+		addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+		//I_Error("\nb %Fp  %hhu %hhu %u", addr, texpage, texoffset, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)]);
+		//addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 		return addr;
 	}
 
@@ -827,19 +991,16 @@ R_GetColumn
 	int16_t         lump;
 	uint16_t         ofs; 
 	int16_t __far* texturecolumnlump;
-	uint16_t __far* texturecolumnofs;
 	int16_t n = 0;
 	col &= texturewidthmasks[tex];
 
 	// check which 64k page this lives in
 	if (texturecolumn_offset[tex] >= 0x0800) {
-		texturecolumnofs = (uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[tex] - 0x0800) << 4]);
+		ofs = ((uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[tex] - 0x0800) << 4]))[col];
 	}
 	else {
-		texturecolumnofs = (uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[tex] << 4]);
+		ofs = ((uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[tex] << 4]))[col];
 	}
-
-	ofs = texturecolumnofs[col];
 
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
 	

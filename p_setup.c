@@ -287,10 +287,10 @@ void P_LoadSectors(int16_t lump)
 
 	FAR_memset(sectors, 0, MAX_SECTORS_SIZE);
 	FAR_memset(sectors_physics, 0, MAX_SECTORS_PHYSICS_SIZE);
-	Z_QuickmapScratch_5000();
+	Z_QuickmapScratch_4000();
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
-	data = (mapsector_t __far*)SCRATCH_ADDRESS_5000;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
+	data = (mapsector_t __far*)SCRATCH_ADDRESS_4000;
 
 	ss = sectors;
 	sp = sectors_physics;
@@ -1550,8 +1550,8 @@ P_SetupLevel
 	
 
 	// preload graphics
-	if (precache)
-		R_PrecacheLevel();
+	//if (precache)
+		//R_PrecacheLevel();
 
 
 

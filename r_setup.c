@@ -274,7 +274,6 @@ void R_ExecuteSetViewSize(void)
 extern uint8_t firstunusedflat;
 extern int32_t totalpatchsize;
  
-extern int8_t textureLRU[4];
 
 extern byte __far* getcompositetexture(int16_t tex_index);
 extern byte __far* getpatchtexture(int16_t lump);
@@ -384,7 +383,6 @@ void R_PrecacheLevel(void)
 		}
  
 	}
-
 
 	// Precache sprites.
 	memset(graphicpresent, 0, MAX_SPRITE_LUMPS);

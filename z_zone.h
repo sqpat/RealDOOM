@@ -99,7 +99,7 @@ void Z_ShutdownEMS();
 #define RENDER_7800_PAGE							20 + 10
 #define RENDER_7C00_PAGE							20 + 11
 #define TEXTURE_INFO_LOGICAL_PAGE					FIRST_RENDER_LOGICAL_PAGE + 12			//unused...?
-#define SCREEN4_LOGICAL_PAGE						FIRST_RENDER_LOGICAL_PAGE + 16
+#define SCREEN4_LOGICAL_PAGE						FIRST_RENDER_LOGICAL_PAGE + 15
 #define FIRST_STATUS_LOGICAL_PAGE					SCREEN4_LOGICAL_PAGE + 1
 #define PALETTE_LOGICAL_PAGE						FIRST_STATUS_LOGICAL_PAGE + 4
 #define FIRST_DEMO_LOGICAL_PAGE						PALETTE_LOGICAL_PAGE + 1
@@ -147,8 +147,9 @@ void Z_ShutdownEMS();
 #define num_scratch4000_params 8
 #define num_scratch7000_params 8
 #define num_scratchstack_params 16
-#define num_flatcache_undo_params 8
 #define num_flatcache_params 8
+#define num_flatcache_undo_params 4
+#define num_spritecache_params 8
 #define num_palette_params 10
 #define num_7000to6000_params 8
 #define num_menu_params 16
@@ -169,9 +170,10 @@ void Z_ShutdownEMS();
 #define pageswapargs_scratch4000_offset_size	(pageswapargs_scratch5000_offset_size	+ 2*num_scratch5000_params)
 #define pageswapargs_scratch7000_offset_size	(pageswapargs_scratch4000_offset_size	+ 2*num_scratch4000_params)
 #define pageswapargs_scratchstack_offset_size	(pageswapargs_scratch7000_offset_size	+ 2*num_scratch7000_params)
-#define pageswapargs_flatcache_undo_offset_size	(pageswapargs_scratchstack_offset_size	+ 2*num_scratchstack_params)
-#define pageswapargs_flatcache_offset_size		(pageswapargs_flatcache_undo_offset_size+ 2*num_flatcache_undo_params)
-#define pageswapargs_palette_offset_size		(pageswapargs_flatcache_offset_size		+ 2*num_flatcache_params)
+#define pageswapargs_flatcache_offset_size		(pageswapargs_scratchstack_offset_size	+ 2*num_scratchstack_params)
+#define pageswapargs_flatcache_undo_offset_size	(pageswapargs_flatcache_offset_size		+ 2*num_flatcache_params)
+#define pageswapargs_spritecache_offset_size	(pageswapargs_flatcache_undo_offset_size+ 2*num_flatcache_undo_params)
+#define pageswapargs_palette_offset_size		(pageswapargs_spritecache_offset_size	+ 2*num_spritecache_params)
 #define pageswapargs_menu_offset_size			(pageswapargs_palette_offset_size		+ 2*num_palette_params)
 #define pageswapargs_intermission_offset_size	(pageswapargs_menu_offset_size			+ 2*num_menu_params)
 #define pageswapargs_wipe_offset_size			(pageswapargs_intermission_offset_size	+ 2*num_intermission_params)
@@ -188,9 +190,10 @@ void Z_ShutdownEMS();
 #define pageswapargs_scratch4000_offset		(pageswapargs_scratch5000_offset		+ num_scratch5000_params)
 #define pageswapargs_scratch7000_offset		(pageswapargs_scratch4000_offset		+ num_scratch4000_params)
 #define pageswapargs_scratchstack_offset	(pageswapargs_scratch7000_offset		+ num_scratch7000_params)
-#define pageswapargs_flatcache_undo_offset	(pageswapargs_scratchstack_offset		+ num_scratchstack_params)
-#define pageswapargs_flatcache_offset		(pageswapargs_flatcache_undo_offset		+ num_flatcache_undo_params)
-#define pageswapargs_palette_offset			(pageswapargs_flatcache_offset			+ num_flatcache_params)
+#define pageswapargs_flatcache_offset		(pageswapargs_scratchstack_offset		+ num_scratchstack_params)
+#define pageswapargs_flatcache_undo_offset	(pageswapargs_flatcache_offset			+ num_flatcache_params)
+#define pageswapargs_spritecache_offset		(pageswapargs_flatcache_undo_offset		+ num_flatcache_undo_params)
+#define pageswapargs_palette_offset			(pageswapargs_spritecache_offset		+ num_spritecache_params)
 #define pageswapargs_menu_offset			(pageswapargs_palette_offset			+ num_palette_params)
 #define pageswapargs_intermission_offset	(pageswapargs_menu_offset				+ num_menu_params)
 #define pageswapargs_wipe_offset			(pageswapargs_intermission_offset		+ num_intermission_params)
@@ -219,7 +222,9 @@ void Z_PopScratchFrame();
 void Z_RemapScratchFrame(uint8_t startpage);
 void Z_QuickMapFlatPage(int16_t page, int16_t offset);
 void Z_QuickMapUndoFlatCache();
-//void Z_QuickMapTextureInfoPage();
+void Z_QuickMapSpritePage();
+
+	//void Z_QuickMapTextureInfoPage();
 void Z_QuickmapPalette();
 void Z_QuickmapMenu();
 void Z_QuickmapIntermission();

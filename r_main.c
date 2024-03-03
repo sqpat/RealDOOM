@@ -560,8 +560,6 @@ R_SetViewSize
 extern uint8_t	detailLevel;
 extern uint8_t	screenblocks;
 
-extern int8_t textureLRU[4];
-extern int16_t activetexturepages[4];
 
 
 
@@ -717,7 +715,10 @@ void R_RenderPlayerView ()
 
     R_DrawPlanes ();
 	// put away flat cache, put back level data
+	//Z_QuickmapRender();
 	Z_QuickMapUndoFlatCache();
+	//Z_QuickMapSpritePage(); //todo combine somehow with above?
+
 
 #ifdef DETAILED_BENCH_STATS
 	renderplayerplanetics += ticcount - cachedrenderplayertics;
