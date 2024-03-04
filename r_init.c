@@ -403,6 +403,7 @@ void R_GenerateLookup(uint16_t texnum)
 }
 
 #define TEX_LOAD_ADDRESS (byte __far*) (0x70000000)
+#define TEX_LOAD_ADDRESS_2 (byte __far*) (0x70008000)
 
 //
 // R_InitTextures
@@ -443,7 +444,6 @@ void R_InitTextures(void)
  	int16_t				texturewidth;
 	uint8_t				textureheightval;
 	int16_t                patchlookup[470]; // 350 for doom shareware/doom1. 459 for doom2
-
  	texturedefs_offset[0] = 0;
 	texturecolumn_offset[0] = 0;
 
@@ -459,7 +459,6 @@ void R_InitTextures(void)
 	firstspritelump = W_GetNumForName("S_START") + 1;
 	lastspritelump = W_GetNumForName("S_END") - 1;
 	numspritelumps = lastspritelump - firstspritelump + 1;
-
 
 
 	// Load the patch names from pnames.lmp.
@@ -482,10 +481,9 @@ void R_InitTextures(void)
 	numtextures1 = (*maptex);
 	directory = maptex + 1;
 
-
 	if (W_CheckNumForName("TEXTURE2") != -1)
 	{
-		maptex2 = ((int32_t __far*)TEX_LOAD_ADDRESS) + 0x8000u;
+		maptex2 = ((int32_t __far*)TEX_LOAD_ADDRESS_2);
 		W_CacheLumpNameDirect("TEXTURE2", (byte __far*)maptex2);
 		numtextures2 = (*maptex2);
 	}
