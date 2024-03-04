@@ -297,6 +297,7 @@ void P_LoadSectors(int16_t lump)
 	for (i = 0; i < numsectors; i++, ss++, sp++) {
 		ms = data[i];
 		convertedtag = ms.tag;
+		// switch case compiles into bigger code...else if (convertedtag == 667) {
 		if (convertedtag == 666) {
 			convertedtag = TAG_666;
 		} else if (convertedtag == 667) {
@@ -307,7 +308,13 @@ void P_LoadSectors(int16_t lump)
 			convertedtag = TAG_99;
 		} else if (convertedtag == 77) {
 			convertedtag = TAG_77;
-		} else if (convertedtag >= 58) {
+		} else if (convertedtag == 1323) {
+			convertedtag = TAG_1323;
+		} else if (convertedtag == 1044) {
+			convertedtag = TAG_1044;
+		} else if (convertedtag == 86) {
+			convertedtag = TAG_86;
+		} else if (convertedtag >= 55) {
 			I_Error("94 %i %i", convertedtag, i); // found (sector) line tag that was too high! %i %i
 		}
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
@@ -1109,7 +1116,13 @@ void P_LoadLineDefs(int16_t lump)
 			convertedtag = TAG_99;
 		} else if (convertedtag == 77) {
 			convertedtag = TAG_77;
-		} else if (convertedtag >= 58) {
+		} else if (convertedtag == 1323) {
+			convertedtag = TAG_1323;
+		} else if (convertedtag == 1044) {
+			convertedtag = TAG_1044;
+		} else if (convertedtag == 86) {
+			convertedtag = TAG_86;
+		} else if (convertedtag >= 55) {
 			I_Error("93 %i %i", convertedtag, i);// found (line) line tag that was too high! %i %i
 		}
 
@@ -1415,7 +1428,6 @@ P_SetupLevel
 	int8_t        lumpname[9];
 	int16_t         lumpnum;
 	//FILE* fp;
-
 
 	wminfo.partime = 180;
 	player.killcount = player.secretcount = player.itemcount = 0;

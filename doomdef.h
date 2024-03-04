@@ -100,6 +100,9 @@ enum { VERSION =  109 };
 #define	FRACBITS		16
 #define	FRACUNIT		0x10000L
 
+#define TAG_1323		56
+#define TAG_1044		57
+#define TAG_86			58
 #define TAG_77			59
 #define TAG_99			60
 #define TAG_666			61
