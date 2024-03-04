@@ -805,6 +805,7 @@ P_SpawnMissile
     return thRef;
 }
 
+void A_BFGSpray(mobj_t __far* mo, mobj_pos_t __far* mo_pos);
 
 //
 // P_SpawnPlayerMissile
@@ -905,6 +906,7 @@ P_SetMobjState
 
 		switch (st->action) {
 
+			case ETF_A_BFGSpray: A_BFGSpray(mobj, mobj_pos); break;
 			case ETF_A_Explode: A_Explode(mobj, mobj_pos); break;
 			case ETF_A_Pain: A_Pain(mobj); break;
 			case ETF_A_PlayerScream: A_PlayerScream(); break;
