@@ -276,8 +276,9 @@ MAX_SEGS_RENDER_SIZE		28150
 
 // size_texturecolumnofs_bytes is technically 80480. Takes up whole 0x5000 region, 14944 left over in 0x6000...
 #define size_texturecolumnofs_bytes		14944u
-#define size_texturecolumnlumps_bytes	(size_texturecolumnofs_bytes + (1264u))
+#define size_texturecolumnlumps_bytes	(size_texturecolumnofs_bytes + (1264u * sizeof(int16_t)))
 #define size_texturedefs_bytes			(size_texturecolumnlumps_bytes + 8756u)
+// size_texturedefs_bytes 0x6184
 
 #define texturecolumnofs_bytes_1	((byte __far*)					(0x50000000 ))
 #define texturecolumnofs_bytes_2	((byte __far*)					(0x58000000 ))
