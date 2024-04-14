@@ -116,6 +116,265 @@ int32_t totalpatchsize = 0;
 //
 
 
+ 
+
+
+
+
+int8_t spritecache_head = -1;
+int8_t spritecache_tail = -1;
+cache_node_t spritecache_nodes[NUM_SPRITE_CACHE_PAGES]; // Pool to store node information (key, value, prev, next)
+ 
+/*
+int8_t get_node_index() {
+  // Find an unused slot in the node pool
+  int8_t i;
+  for (i = 0; i < MAX_SPRITE_CACHE_SIZE; ++i) {
+    if (spritecache_nodes[i].key == -1) {
+      return i;
+    }
+  }
+  return -1; // No free slots available
+}
+*/
+
+// numpages is 0-3 not 1-4
+void mark_sprite_lru(int8_t index, int8_t numpages) {
+	int8_t prev;
+	int8_t next;
+	int8_t pagecount;
+
+
+	if (index == spritecache_head) {
+		return;
+	}
+
+	pagecount = spritecache_nodes[index].pagecount;
+	if (pagecount == 1){
+		// special case: 
+		//updating element sharing the same page as the last page of a
+		//multi-page allocation. to avoid eviction complications 
+		//(from cases where one is in conventional memory and others
+		// arent, and their lru statuses are different)
+		//we are going to update the entire multi-page block as LRU
+		
+		while (spritecache_nodes[index].pagecount){
+			//todo head or tail or -1? want to avoid going out of bounds
+			if (index == spritecache_tail){
+				break;
+			}
+
+			index = spritecache_nodes[index].prev;
+			if (index == -1){
+				I_Error("qq");
+			}
+
+		}
+		// index now equal to the beginning of the multipage allocation
+		pagecount = spritecache_nodes[index].pagecount;
+		numpages = pagecount - 1;
+	}
+
+	if (numpages){
+		pagecount = numpages + 1;
+	}
+
+
+
+	while (true){
+		prev = spritecache_nodes[index].prev;
+		next = spritecache_nodes[index].next;
+
+		if (prev != -1) {
+			spritecache_nodes[prev].next = next;
+		} else {
+			// no prev; may be a new allocation.
+			if (spritecache_tail == -1){
+				// first allocation. being set to 0
+				spritecache_tail = index;
+			} else {
+				// it has a next, which means its allocated. tail becomes next
+				if (next != -1){
+					spritecache_tail = next;
+				}
+			}
+		}
+
+		if (next != -1) {
+			spritecache_nodes[next].prev = prev;
+		}
+
+		// this says head has no prev!
+		spritecache_nodes[index].prev = spritecache_head;
+		spritecache_nodes[index].next = -1;
+		if (spritecache_head != -1) {
+			spritecache_nodes[spritecache_head].next = index;
+		}
+		spritecache_head = index;
+
+		spritecache_nodes[index].pagecount = pagecount;
+
+		if (numpages == 0)
+			break; // done
+
+		// continue to the next one
+		numpages--;
+		pagecount--;
+		
+		index++; // multipage are always consecutive pages...
+
+	}
+
+	 
+
+
+	 
+}
+ 
+
+void printout(){ 
+	int8_t i;
+	int8_t j;
+	int8_t index = spritecache_tail;
+	FILE* fp = fopen("printout.txt", "w"); // clear old file
+
+	fprintf(fp, "%i  %i  \n", spritecache_tail, spritecache_head);
+
+	for (j = 0; j < 4; j++){
+		for (i = 0; i < 9; i++){
+			fprintf(fp, "%i\t", index);
+			index = spritecache_nodes[index].next;
+		}
+		index = spritecache_tail;
+		fprintf(fp, "\n");
+
+		for (i = 0; i < 9; i++){
+			fprintf(fp, "%i\t", spritecache_nodes[index].pagecount);
+			index = spritecache_nodes[index].next;
+		}
+		index = spritecache_tail;
+		fprintf(fp, "\n");
+		for (i = 0; i < 9; i++){
+			fprintf(fp, "%i\t", spritecache_nodes[index].prev);
+			index = spritecache_nodes[index].next;
+		}
+		index = spritecache_tail;
+		fprintf(fp, "\n");
+		for (i = 0; i < 9; i++){
+			fprintf(fp, "%i\t", spritecache_nodes[index].next);
+			index = spritecache_nodes[index].next;
+		}
+		spritecache_tail = index;
+		fprintf(fp, "\n\n");
+		
+	}
+	index = spritecache_head;
+	for (j = 0; j < 4; j++){
+		for (i = 0; i < 9; i++){
+			fprintf(fp, "%i\t", index);
+			index = spritecache_nodes[index].prev;
+		}
+		index = spritecache_head;
+		fprintf(fp, "\n");
+
+		for (i = 0; i < 9; i++){
+			fprintf(fp, "%i\t", spritecache_nodes[index].pagecount);
+			index = spritecache_nodes[index].prev;
+		}
+		index = spritecache_head;
+		fprintf(fp, "\n");
+		for (i = 0; i < 9; i++){
+			fprintf(fp, "%i\t", spritecache_nodes[index].prev);
+			index = spritecache_nodes[index].prev;
+		}
+		index = spritecache_head;
+		fprintf(fp, "\n");
+		for (i = 0; i < 9; i++){
+			fprintf(fp, "%i\t", spritecache_nodes[index].next);
+			index = spritecache_nodes[index].prev;
+		}
+		spritecache_head = index;
+		fprintf(fp, "\n\n");
+		
+	}
+
+	I_Error("done");
+
+
+}
+
+
+// in this case numpages is 1-4, not 0-3
+int8_t R_EvictSpriteEMSPage(int8_t numpages){
+	int8_t evictedpage = spritecache_tail;
+	int8_t j;
+	uint8_t currentpage;
+	int16_t k;
+	int8_t offset;
+	int8_t remainingpages;
+	int8_t next, prev;
+
+	//I_Error("out of sprite");
+	// need to evict at least numpages pages
+	// we'll remove the tail, up to numpages...
+	// if thats part of a multipage allocations, we'll remove that until the end
+	// this can potentially remove something in an active page. 
+
+	//printout();
+
+
+	// todo update cache list including numpages situation
+ 
+	for (j = 0; j < numpages+remainingpages; j++){
+		currentpage = evictedpage+j;
+		remainingpages = spritecache_nodes[currentpage].pagecount;
+		
+		if (remainingpages)
+			remainingpages--;
+
+		next = spritecache_nodes[currentpage].next;
+		prev = spritecache_nodes[currentpage].prev;
+
+		if (next != -1){
+			spritecache_nodes[next].prev = prev;
+		}
+
+		if (prev != -1){
+			spritecache_nodes[prev].next = next;
+		}
+
+		spritecache_nodes[currentpage].prev = -1;
+		spritecache_nodes[currentpage].next = -1;
+		spritecache_nodes[currentpage].pagecount = 0;
+
+		if (currentpage == spritecache_tail){
+			spritecache_tail = next;
+		}
+
+
+
+		// if its an active page... do we have to do anything? 
+	}
+
+	// handles the remainingpages thing - resets numpages
+	numpages = j;
+
+	for (offset = 0; offset < numpages; offset++){
+		currentpage = evictedpage + offset;
+		for (k = 0; k < MAX_SPRITE_LUMPS; k++){
+			if ((spritepage[k] >> 2) == currentpage){
+				spritepage[k] = 0xFF;
+				spriteoffset[k] = 0xFF;
+				//I_Error("deleted a page");
+			}
+		}
+		usedspritepagemem[currentpage] = 0;
+
+	}
+
+	return evictedpage;
+}
+
 
 //
 // R_DrawColumnInCache
@@ -345,53 +604,58 @@ void R_GetNextSpriteBlock(int16_t lump) {
 		uint8_t freethreshold = 64 - blocksize;
 		for (i = 0; i < NUM_SPRITE_CACHE_PAGES; i++) {
 			if (freethreshold >= usedspritepagemem[i]) {
-				texpage = i << 2;
-				texoffset = usedspritepagemem[i];
-				usedspritepagemem[i] += blocksize;
-				break;
+				goto foundonepage;
 			}
 		}
-		#ifdef CHECK_FOR_ERRORS
-		if (i == NUM_SPRITE_CACHE_PAGES) {
-			I_Error("Couldn't find sprite page a");
-		}
-		#endif
+
+		// nothing found, evict cache
+		i = R_EvictSpriteEMSPage(numpages);
+		
+		foundonepage:
+		
+		texpage = i << 2;
+		texoffset = usedspritepagemem[i];
+		usedspritepagemem[i] += blocksize;
 	}
 	else {
-		// theres no deallocation so any page with 0 allocated will be followed by another 
-		uint8_t numpagesminus1 = numpages - 1;
 
+		uint8_t numpagesminus1 = numpages - 1;
 		for (i = 0; i < NUM_SPRITE_CACHE_PAGES-numpagesminus1; i++) {
 			if (!usedspritepagemem[i]) {
-				// empty page, we can assume the following pages are empty too
-				usedspritepagemem[i] = 64;
-				if (numpages >= 3) {
-					usedspritepagemem[i + 1] = 64;
+				// need to check following pages for emptiness, or else after evictions weird stuff can happen
+				if (!usedspritepagemem[i+1]) {
+					if (numpagesminus1 < 2 || (!usedspritepagemem[i+2])) {
+						if (numpagesminus1 < 3 || (!usedspritepagemem[i+3])) {					
+							goto foundmultipage;
+						}
+					}
 				}
-				if (numpages == 4) {
-					usedspritepagemem[i + 2] = 64;
-				}
-
-
-				if (blocksize & 0x3F) {
-					usedspritepagemem[i + numpagesminus1] = blocksize & 0x3F;
-				}
-				else {
-					usedspritepagemem[i + numpagesminus1] = 64;
-				}
-
-				texpage = (i << 2) + (numpagesminus1);
-				texoffset = 0; // if multipage then its always aligned to start of its block
-				break;
 			}
-
 		}
 
-		#ifdef CHECK_FOR_ERRORS
-		if (i == NUM_SPRITE_CACHE_PAGES - numpagesminus1) {
-			I_Error("Couldn't find sprite page b");
+		// nothing found, evict cache
+		i = R_EvictSpriteEMSPage(numpages);
+		foundmultipage:
+
+		usedspritepagemem[i] = 64;
+		if (numpages >= 3) {
+			usedspritepagemem[i + 1] = 64;
 		}
-		#endif
+		if (numpages == 4) {
+			usedspritepagemem[i + 2] = 64;
+		}
+
+
+		if (blocksize & 0x3F) {
+			usedspritepagemem[i + numpagesminus1] = blocksize & 0x3F;
+		}
+		else {
+			usedspritepagemem[i + numpagesminus1] = 64;
+		}
+
+		texpage = (i << 2) + (numpagesminus1);
+		texoffset = 0; // if multipage then its always aligned to start of its block
+
 	}
 
 	spritepage[lump - firstspritelump] = texpage;
@@ -684,7 +948,8 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 
 
 uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
-	uint8_t pagenum = pageoffset + (texpage >> 2);
+	uint8_t realtexpage = texpage >> 2;
+	uint8_t pagenum = pageoffset + realtexpage;
 	uint8_t numpages = (texpage & 0x03);
 	int16_t bestpage = -1;
 	int16_t bestpageindex = -1;
@@ -705,6 +970,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 				spriteLRU[2]++;
 				spriteLRU[3]++;
 				spriteLRU[i] = 0;
+				mark_sprite_lru(realtexpage, 0);
 
 				return i;
 			}
@@ -742,6 +1008,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		activespritepages[startpage] = pageswapargs[pageswapargs_spritecache_offset + 2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 
 		Z_QuickMapSpritePage();
+		mark_sprite_lru(realtexpage, 0);
 
 
 		return startpage;
@@ -779,6 +1046,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 			for (j = 0; j <= numpages; j++) {
 				spriteLRU[i + j] = 0;
 			}
+			mark_sprite_lru(realtexpage, numpages);
 
 			return i;
 		}
@@ -831,6 +1099,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		//Z_QuickmapRenderTexture();
 		//Z_QuickmapRenderTexture(startpage, numpages + 1);
 		// paged in
+		mark_sprite_lru(realtexpage, numpages);
 
 		return startpage;
 

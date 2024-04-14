@@ -79,6 +79,11 @@ extern uint8_t activenumpages[4]; // always gets reset to defaults at start of f
 extern int16_t currentflatpage[4];
 extern uint8_t activespritenumpages[4];
 
+
+extern int8_t spritecache_head;
+extern int8_t spritecache_tail;
+extern cache_node_t spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
+
 #define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4
 
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
@@ -111,6 +116,16 @@ void Z_FreeConventionalAllocations() {
 	FAR_memset(spritepage, 0xFF, sizeof(uint8_t) * (numspritelumps));
 	FAR_memset(spriteoffset, 0xFF, sizeof(uint8_t) * (numspritelumps));
 	FAR_memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
+
+
+	spritecache_head = -1;
+	spritecache_tail = -1;
+
+	for ( i = 0; i < NUM_SPRITE_CACHE_PAGES; i++) {
+		spritecache_nodes[i].prev = -1; // Mark unused entries
+		spritecache_nodes[i].next = -1; // Mark unused entries
+		spritecache_nodes[i].pagecount = 0;
+	}  
 
 	FAR_memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);
 	firstunusedflat = 0;

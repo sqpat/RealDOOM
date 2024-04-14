@@ -27,7 +27,15 @@
 
 extern uint16_t		skytexture;
 
- 
+typedef struct {
+  int8_t prev;
+  int8_t next;
+  // 0 for single page allocations. for multipage, 1 is the the last page of multipage
+  // allocation and count up prev from there. this way when 
+  int8_t pagecount; 
+  //uint8_t value; // lump, value, etc
+} cache_node_t;
+
 byte __far*
 R_GetColumn
 ( int16_t		tex,
