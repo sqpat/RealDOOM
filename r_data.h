@@ -27,6 +27,12 @@
 
 extern uint16_t		skytexture;
 
+#define CACHETYPE_SPRITE	0
+#define CACHETYPE_FLAT		1
+#define CACHETYPE_PATCH		2
+#define CACHETYPE_COMPOSITE	3
+
+
 typedef struct {
   int8_t prev;
   int8_t next;
@@ -35,6 +41,9 @@ typedef struct {
   int8_t pagecount; 
   //uint8_t value; // lump, value, etc
 } cache_node_t;
+
+int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype);
+void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype);
 
 byte __far*
 R_GetColumn

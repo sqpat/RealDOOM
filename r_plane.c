@@ -470,6 +470,8 @@ void R_DrawPlanes (void)
 			firstunusedflat++;
 			if (firstunusedflat > MAX_FLATS_LOADED) {
 				I_Error("93"); // too many flats
+				usedflatindex = R_EvictCacheEMSPage(0, CACHETYPE_FLAT);
+
 			}
 			flatunloaded = true;
 		}
@@ -518,7 +520,7 @@ void R_DrawPlanes (void)
 			lastflatcacheindicesused[1] = lastflatcacheindicesused[0];
 			lastflatcacheindicesused[0] = flatcacheindex;
 		}
-
+		R_MarkCacheLRU(flatcacheindex, 0, CACHETYPE_FLAT);
 		
 		src = MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]);
 

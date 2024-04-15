@@ -84,6 +84,19 @@ extern int8_t spritecache_head;
 extern int8_t spritecache_tail;
 extern cache_node_t spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 
+extern int8_t flatcache_head;
+extern int8_t flatcache_tail;
+extern cache_node_t flatcache_nodes[NUM_FLAT_CACHE_PAGES];
+
+extern int8_t patchcache_head;
+extern int8_t patchcache_tail;
+extern cache_node_t patchcache_nodes[NUM_PATCH_CACHE_PAGES];
+
+extern int8_t texturecache_head;
+extern int8_t texturecache_tail;
+extern cache_node_t texturecache_nodes[NUM_TEXTURE_PAGES]; 
+
+
 #define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4
 
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
@@ -125,6 +138,22 @@ void Z_FreeConventionalAllocations() {
 		spritecache_nodes[i].prev = -1; // Mark unused entries
 		spritecache_nodes[i].next = -1; // Mark unused entries
 		spritecache_nodes[i].pagecount = 0;
+	}  
+
+	for ( i = 0; i < NUM_FLAT_CACHE_PAGES; i++) {
+		flatcache_nodes[i].prev = -1; // Mark unused entries
+		flatcache_nodes[i].next = -1; // Mark unused entries
+		flatcache_nodes[i].pagecount = 0;
+	}  
+	for ( i = 0; i < NUM_PATCH_CACHE_PAGES; i++) {
+		patchcache_nodes[i].prev = -1; // Mark unused entries
+		patchcache_nodes[i].next = -1; // Mark unused entries
+		patchcache_nodes[i].pagecount = 0;
+	}  
+	for ( i = 0; i < NUM_TEXTURE_PAGES; i++) {
+		texturecache_nodes[i].prev = -1; // Mark unused entries
+		texturecache_nodes[i].next = -1; // Mark unused entries
+		texturecache_nodes[i].pagecount = 0;
 	}  
 
 	FAR_memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);

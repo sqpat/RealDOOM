@@ -123,8 +123,20 @@ int32_t totalpatchsize = 0;
 
 int8_t spritecache_head = -1;
 int8_t spritecache_tail = -1;
-cache_node_t spritecache_nodes[NUM_SPRITE_CACHE_PAGES]; // Pool to store node information (key, value, prev, next)
- 
+cache_node_t spritecache_nodes[NUM_SPRITE_CACHE_PAGES]; 
+
+int8_t flatcache_head = -1;
+int8_t flatcache_tail = -1;
+cache_node_t flatcache_nodes[NUM_FLAT_CACHE_PAGES];
+
+int8_t patchcache_head = -1;
+int8_t patchcache_tail = -1;
+cache_node_t patchcache_nodes[NUM_PATCH_CACHE_PAGES]; 
+
+int8_t texturecache_head = -1;
+int8_t texturecache_tail = -1;
+cache_node_t texturecache_nodes[NUM_TEXTURE_PAGES];
+
 /*
 int8_t get_node_index() {
   // Find an unused slot in the node pool
@@ -139,17 +151,45 @@ int8_t get_node_index() {
 */
 
 // numpages is 0-3 not 1-4
-void mark_sprite_lru(int8_t index, int8_t numpages) {
+void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 	int8_t prev;
 	int8_t next;
 	int8_t pagecount;
 
+	cache_node_t* nodelist;
+	int8_t* nodetail;
+	int8_t* nodehead;
 
-	if (index == spritecache_head) {
+	switch (cachetype){
+		case CACHETYPE_SPRITE:
+			nodetail = &spritecache_tail;
+			nodehead = &spritecache_head;
+			nodelist = spritecache_nodes;
+			break;
+		case CACHETYPE_FLAT:
+			nodetail = &flatcache_tail;
+			nodehead = &flatcache_head;
+			nodelist = flatcache_nodes;
+			break;
+		case CACHETYPE_PATCH:
+ 			nodetail = &patchcache_tail;
+			nodehead = &patchcache_head;
+			nodelist = patchcache_nodes;
+			break;
+		case CACHETYPE_COMPOSITE:
+ 			nodetail = &texturecache_tail;
+			nodehead = &texturecache_head;
+			nodelist = texturecache_nodes;
+			break;
+			
+	}
+
+
+	if (index == *nodehead) {
 		return;
 	}
 
-	pagecount = spritecache_nodes[index].pagecount;
+	pagecount = nodelist[index].pagecount;
 	if (pagecount == 1){
 		// special case: 
 		//updating element sharing the same page as the last page of a
@@ -158,20 +198,21 @@ void mark_sprite_lru(int8_t index, int8_t numpages) {
 		// arent, and their lru statuses are different)
 		//we are going to update the entire multi-page block as LRU
 		
-		while (spritecache_nodes[index].pagecount){
+		while (nodelist[index].pagecount){
 			//todo head or tail or -1? want to avoid going out of bounds
-			if (index == spritecache_tail){
+			if (index == *nodetail){
 				break;
 			}
 
-			index = spritecache_nodes[index].prev;
+			index = nodelist[index].prev;
+			// shouldnt happen? todo remove later
 			if (index == -1){
 				I_Error("qq");
 			}
 
 		}
 		// index now equal to the beginning of the multipage allocation
-		pagecount = spritecache_nodes[index].pagecount;
+		pagecount = nodelist[index].pagecount;
 		numpages = pagecount - 1;
 	}
 
@@ -182,37 +223,37 @@ void mark_sprite_lru(int8_t index, int8_t numpages) {
 
 
 	while (true){
-		prev = spritecache_nodes[index].prev;
-		next = spritecache_nodes[index].next;
+		prev = nodelist[index].prev;
+		next = nodelist[index].next;
 
 		if (prev != -1) {
-			spritecache_nodes[prev].next = next;
+			nodelist[prev].next = next;
 		} else {
 			// no prev; may be a new allocation.
-			if (spritecache_tail == -1){
+			if (*nodetail == -1){
 				// first allocation. being set to 0
-				spritecache_tail = index;
+				*nodetail = index;
 			} else {
 				// it has a next, which means its allocated. tail becomes next
 				if (next != -1){
-					spritecache_tail = next;
+					*nodetail = next;
 				}
 			}
 		}
 
 		if (next != -1) {
-			spritecache_nodes[next].prev = prev;
+			nodelist[next].prev = prev;
 		}
 
 		// this says head has no prev!
-		spritecache_nodes[index].prev = spritecache_head;
-		spritecache_nodes[index].next = -1;
-		if (spritecache_head != -1) {
-			spritecache_nodes[spritecache_head].next = index;
+		nodelist[index].prev = *nodehead;
+		nodelist[index].next = -1;
+		if (*nodehead != -1) {
+			nodelist[*nodehead].next = index;
 		}
-		spritecache_head = index;
+		*nodehead = index;
 
-		spritecache_nodes[index].pagecount = pagecount;
+		nodelist[index].pagecount = pagecount;
 
 		if (numpages == 0)
 			break; // done
@@ -231,7 +272,7 @@ void mark_sprite_lru(int8_t index, int8_t numpages) {
 	 
 }
  
-
+/*
 void printout(){ 
 	int8_t i;
 	int8_t j;
@@ -302,17 +343,46 @@ void printout(){
 
 
 }
+*/
 
 
 // in this case numpages is 1-4, not 0-3
-int8_t R_EvictSpriteEMSPage(int8_t numpages){
-	int8_t evictedpage = spritecache_tail;
+int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
+	int8_t evictedpage;
 	int8_t j;
 	uint8_t currentpage;
 	int16_t k;
 	int8_t offset;
 	int8_t remainingpages;
 	int8_t next, prev;
+	cache_node_t* nodelist;
+	int8_t* nodetail;
+	int8_t* nodehead;
+
+	switch (cachetype){
+		case CACHETYPE_SPRITE:
+			nodetail = &spritecache_tail;
+			nodehead = &spritecache_head;
+			nodelist = spritecache_nodes;
+			break;
+		case CACHETYPE_FLAT:
+			nodetail = &flatcache_tail;
+			nodehead = &flatcache_head;
+			nodelist = flatcache_nodes;
+			break;
+		case CACHETYPE_PATCH:
+ 			nodetail = &patchcache_tail;
+			nodehead = &patchcache_head;
+			nodelist = patchcache_nodes;
+			break;
+		case CACHETYPE_COMPOSITE:
+ 			nodetail = &texturecache_tail;
+			nodehead = &texturecache_head;
+			nodelist = texturecache_nodes;
+			break;
+	}
+	 
+	evictedpage = spritecache_tail;
 
 	//I_Error("out of sprite");
 	// need to evict at least numpages pages
@@ -327,28 +397,28 @@ int8_t R_EvictSpriteEMSPage(int8_t numpages){
  
 	for (j = 0; j < numpages+remainingpages; j++){
 		currentpage = evictedpage+j;
-		remainingpages = spritecache_nodes[currentpage].pagecount;
+		remainingpages = nodelist[currentpage].pagecount;
 		
 		if (remainingpages)
 			remainingpages--;
 
-		next = spritecache_nodes[currentpage].next;
-		prev = spritecache_nodes[currentpage].prev;
+		next = nodelist[currentpage].next;
+		prev = nodelist[currentpage].prev;
 
 		if (next != -1){
-			spritecache_nodes[next].prev = prev;
+			nodelist[next].prev = prev;
 		}
 
 		if (prev != -1){
-			spritecache_nodes[prev].next = next;
+			nodelist[prev].next = next;
 		}
 
-		spritecache_nodes[currentpage].prev = -1;
-		spritecache_nodes[currentpage].next = -1;
-		spritecache_nodes[currentpage].pagecount = 0;
+		nodelist[currentpage].prev = -1;
+		nodelist[currentpage].next = -1;
+		nodelist[currentpage].pagecount = 0;
 
-		if (currentpage == spritecache_tail){
-			spritecache_tail = next;
+		if (currentpage == *nodetail){
+			*nodetail = next;
 		}
 
 
@@ -429,6 +499,9 @@ void R_GetNextCompositeBlock(int16_t tex_index) {
 	int8_t numpages;
 	uint8_t texpage, texoffset;
 	int16_t i;
+	if (size == 0)
+		return; // why does this happen...
+
 	if (size & 0xFF) {
 		blocksize++;
 	}
@@ -453,11 +526,11 @@ void R_GetNextCompositeBlock(int16_t tex_index) {
 				break;
 			}
 		}
-#ifdef CHECK_FOR_ERRORS
-		if (i == NUM_TEXTURE_PAGES) {
+//#ifdef CHECK_FOR_ERRORS
+		if (i >= NUM_TEXTURE_PAGES) {
 			I_Error("Couldn't find composite page a");
 		}
-#endif
+//#endif
 	}
 	else {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
@@ -487,11 +560,11 @@ void R_GetNextCompositeBlock(int16_t tex_index) {
 			}
 		}
 
-		#ifdef CHECK_FOR_ERRORS
-		if (i == NUM_TEXTURE_PAGES - numpagesminus1) {
-			I_Error("Couldn't find composite page b");
+		//#ifdef CHECK_FOR_ERRORS
+		if (i >= NUM_TEXTURE_PAGES - numpagesminus1) {
+			I_Error("Couldn't find composite page b %i %i %i %i %u %i", tex_index, i, numpagesminus1, blocksize, size,numpages);
 		}
-		#endif		
+		//#endif		
 
 
 	}
@@ -532,11 +605,11 @@ void R_GetNextPatchBlock(int16_t lump) {
 				break;
 			}
 		}
-#ifdef CHECK_FOR_ERRORS
-		if (i == NUM_PATCH_CACHE_PAGES) {
+//#ifdef CHECK_FOR_ERRORS
+		if (i >= NUM_PATCH_CACHE_PAGES) {
 			I_Error("Couldn't find patch page a");
 		}
-#endif
+//#endif
 	} else {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
 		uint8_t numpagesminus1 = numpages - 1;
@@ -567,11 +640,11 @@ void R_GetNextPatchBlock(int16_t lump) {
 
 		}
 
-		#ifdef CHECK_FOR_ERRORS
-		if (i == NUM_PATCH_CACHE_PAGES - numpagesminus1) {
+		//#ifdef CHECK_FOR_ERRORS
+		if (i >= NUM_PATCH_CACHE_PAGES - numpagesminus1) {
 			I_Error("Couldn't find patch page b");
 		}
-		#endif
+		//#endif
  	
 	}
 
@@ -609,7 +682,7 @@ void R_GetNextSpriteBlock(int16_t lump) {
 		}
 
 		// nothing found, evict cache
-		i = R_EvictSpriteEMSPage(numpages);
+		i = R_EvictCacheEMSPage(numpages, CACHETYPE_SPRITE);
 		
 		foundonepage:
 		
@@ -634,7 +707,7 @@ void R_GetNextSpriteBlock(int16_t lump) {
 		}
 
 		// nothing found, evict cache
-		i = R_EvictSpriteEMSPage(numpages);
+		i = R_EvictCacheEMSPage(numpages, CACHETYPE_SPRITE);
 		foundmultipage:
 
 		usedspritepagemem[i] = 64;
@@ -970,7 +1043,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 				spriteLRU[2]++;
 				spriteLRU[3]++;
 				spriteLRU[i] = 0;
-				mark_sprite_lru(realtexpage, 0);
+				R_MarkCacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
 
 				return i;
 			}
@@ -1008,7 +1081,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		activespritepages[startpage] = pageswapargs[pageswapargs_spritecache_offset + 2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 
 		Z_QuickMapSpritePage();
-		mark_sprite_lru(realtexpage, 0);
+		R_MarkCacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
 
 
 		return startpage;
@@ -1046,7 +1119,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 			for (j = 0; j <= numpages; j++) {
 				spriteLRU[i + j] = 0;
 			}
-			mark_sprite_lru(realtexpage, numpages);
+			R_MarkCacheLRU(realtexpage, numpages, CACHETYPE_SPRITE);
 
 			return i;
 		}
@@ -1099,7 +1172,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		//Z_QuickmapRenderTexture();
 		//Z_QuickmapRenderTexture(startpage, numpages + 1);
 		// paged in
-		mark_sprite_lru(realtexpage, numpages);
+		R_MarkCacheLRU(realtexpage, numpages, CACHETYPE_SPRITE);
 
 		return startpage;
 
