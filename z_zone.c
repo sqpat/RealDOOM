@@ -69,7 +69,6 @@ byte __far*			pageFrameArea;
 extern int16_t spriteLRU[4];
 extern int16_t activespritepages[4];
  
-extern uint8_t firstunusedflat; // they are always 4k sized, can figure out page and offset from that. 
 extern int32_t totalpatchsize;
 
 
@@ -87,6 +86,7 @@ extern cache_node_t spritecache_nodes[NUM_SPRITE_CACHE_PAGES];
 extern int8_t flatcache_head;
 extern int8_t flatcache_tail;
 extern cache_node_t flatcache_nodes[NUM_FLAT_CACHE_PAGES];
+extern int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
 
 extern int8_t patchcache_head;
 extern int8_t patchcache_tail;
@@ -144,6 +144,7 @@ void Z_FreeConventionalAllocations() {
 		flatcache_nodes[i].prev = -1; // Mark unused entries
 		flatcache_nodes[i].next = -1; // Mark unused entries
 		flatcache_nodes[i].pagecount = 0;
+		allocatedflatsperpage[i] = 0;
 	}  
 	for ( i = 0; i < NUM_PATCH_CACHE_PAGES; i++) {
 		patchcache_nodes[i].prev = -1; // Mark unused entries
@@ -157,7 +158,7 @@ void Z_FreeConventionalAllocations() {
 	}  
 
 	FAR_memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);
-	firstunusedflat = 0;
+	
 	currentflatpage[0] = -1;
 	currentflatpage[1] = -1;
 	currentflatpage[2] = -1;

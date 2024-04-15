@@ -271,7 +271,7 @@ void R_ExecuteSetViewSize(void)
 //int32_t             spritememory;
 
 
-extern uint8_t firstunusedflat;
+uint8_t firstunusedflat;
 extern int32_t totalpatchsize;
  
 

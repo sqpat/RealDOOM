@@ -369,8 +369,8 @@ R_CheckPlane
 
 int tempcounter = 0;
 int16_t currentflatpage[4] = { -1, -1, -1, -1 };
-
-extern uint8_t firstunusedflat;
+// there can be 4 flats (4k each) per ems page (16k each). Keep track of how many are allocated here.
+int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
  //
 // R_DrawPlanes
 // At the end of each frame.
@@ -384,6 +384,7 @@ void R_DrawPlanes (void)
     fineangle_t			angle;
 	byte t1, b1, t2, b2;
 	int16_t			i;
+	int8_t			j;
 
     //visplaneheader_t*		plheader;
 	visplanebytes_t __far*		plbytes = NULL;
@@ -466,13 +467,23 @@ void R_DrawPlanes (void)
 		usedflatindex = flatindex[flattranslation[pl->picnum]];
 		if (usedflatindex == 0xFF) {
 			// load if not loaded
-			usedflatindex =  flatindex[flattranslation[pl->picnum]] = firstunusedflat;
-			firstunusedflat++;
-			if (firstunusedflat > MAX_FLATS_LOADED) {
-				I_Error("93"); // too many flats
-				usedflatindex = R_EvictCacheEMSPage(0, CACHETYPE_FLAT);
 
+			for (j=0; j < (NUM_FLAT_CACHE_PAGES);j++){
+				if (allocatedflatsperpage[j]<4){
+					usedflatindex = 4*j + allocatedflatsperpage[j];
+					allocatedflatsperpage[j]++;
+					goto foundflat;
+				}
 			}
+			//I_Error("93"); // too many flats
+			// todo figure out what to do with firstunused flat etc
+			usedflatindex = R_EvictCacheEMSPage(0, CACHETYPE_FLAT);
+			// mult by 4, going from flat index to page index first index of the flat in the evicted page.
+			usedflatindex = usedflatindex << 2;
+
+			foundflat:
+
+			flatindex[flattranslation[pl->picnum]] = usedflatindex;
 			flatunloaded = true;
 		}
 
@@ -520,7 +531,8 @@ void R_DrawPlanes (void)
 			lastflatcacheindicesused[1] = lastflatcacheindicesused[0];
 			lastflatcacheindicesused[0] = flatcacheindex;
 		}
-		R_MarkCacheLRU(flatcacheindex, 0, CACHETYPE_FLAT);
+
+		R_MarkCacheLRU(usedflatindex >> 2, 0, CACHETYPE_FLAT);
 		
 		src = MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]);
 

@@ -98,7 +98,6 @@ int16_t spriteLRU[4];
 
 
 
-uint8_t	 firstunusedflat = 0; // they are always 4k sized, can figure out page and offset from that. 
 int32_t totalpatchsize = 0;
 
 
@@ -345,6 +344,7 @@ void printout(){
 }
 */
 
+extern int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
 
 // in this case numpages is 1-4, not 0-3
 int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
@@ -382,7 +382,7 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 			break;
 	}
 	 
-	evictedpage = spritecache_tail;
+	evictedpage = *nodetail;
 
 	//I_Error("out of sprite");
 	// need to evict at least numpages pages
@@ -429,18 +429,44 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	// handles the remainingpages thing - resets numpages
 	numpages = j;
 
-	for (offset = 0; offset < numpages; offset++){
-		currentpage = evictedpage + offset;
-		for (k = 0; k < MAX_SPRITE_LUMPS; k++){
-			if ((spritepage[k] >> 2) == currentpage){
-				spritepage[k] = 0xFF;
-				spriteoffset[k] = 0xFF;
-				//I_Error("deleted a page");
-			}
-		}
-		usedspritepagemem[currentpage] = 0;
+//todo clear cache data per type
+	switch (cachetype){
+		case CACHETYPE_SPRITE:
 
+			for (offset = 0; offset < numpages; offset++){
+				currentpage = evictedpage + offset;
+				for (k = 0; k < MAX_SPRITE_LUMPS; k++){
+					if ((spritepage[k] >> 2) == currentpage){
+						spritepage[k] = 0xFF;
+						spriteoffset[k] = 0xFF;
+						//I_Error("deleted a page");
+					}
+				}
+				usedspritepagemem[currentpage] = 0;
+
+			}	
+			break;
+		case CACHETYPE_FLAT:
+
+			allocatedflatsperpage[evictedpage] = 1;
+			for (k = 0; k < MAX_FLATS; k++){
+				
+				if ((flatindex[k] >> 2) == evictedpage){
+					flatindex[k] = 0xFF;
+				}
+
+ 
+			}
+
+			break;
+		case CACHETYPE_PATCH:
+ 		 
+			break;
+		case CACHETYPE_COMPOSITE:
+ 			 
+			break;
 	}
+
 
 	return evictedpage;
 }
@@ -1280,47 +1306,7 @@ byte __far* getspritetexture(int16_t lump) {
 		return addr;
 	}
 
-}
-
-/*
-byte __far*
-R_GetFlat
-(int16_t flatlump) {
-	int16_t index = flatlump - FIRST_LUMP_FLAT;
-	boolean flatunloaded = true;
-	byte   __far* addr;
-	uint16_t usedflatindex = flatindex[index];
-	uint16_t flatpageindex;
-	if (usedflatindex == 0xFF) {
-		// load if not loaded
-		usedflatindex = flatindex[index] = firstunusedflat;
-		firstunusedflat++;
-		if (firstunusedflat > MAX_FLATS_LOADED) {
-			I_Error("Too many flats!");
-		}
-		flatunloaded = true;
-	}
-
-	// flats 4k each in size. get texture takes in a size shifted 2 and num pages (0) in the bottom 2 bits
-	flatpageindex = (usedflatindex & 0xFC) << 2;
-
-	addr = MK_FP(0x4000, 
-		pageoffsets[gettexturepage(flatpageindex, FIRST_FLAT_CACHE_LOGICAL_PAGE)] +
-		MULT_4096[usedflatindex & 0x03]);
-
-	// load if necessary
-	if (flatunloaded) {
-		
-		if (flatlump < firstflat || flatlump > firstflat + numflats) {
-			I_Error("bad flat? %i", flatlump);
-		}
-
-		W_CacheLumpNumDirect(flatlump, addr);
-	}
-	return addr;
-}
-
-*/
+} 
  
 //
 // R_GetColumn
