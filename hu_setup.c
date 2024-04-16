@@ -273,7 +273,6 @@ void HU_Start(void)
 	int16_t s_index = 0;
 	int16_t HU_TITLEY;
 	int16_t HU_INPUTY;
-	int16_t i;
 	hu_textline_t __near*	t;
 	uint16_t			fontheight = 7;// might not work with custom wad?
 	uint16_t			lineheight = 8;//might not work with custom wad?

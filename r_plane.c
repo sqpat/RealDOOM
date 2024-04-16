@@ -538,8 +538,8 @@ void R_DrawPlanes (void)
 
 		// load if necessary
 		if (flatunloaded){
-			int16_t lump = firstflat + flattranslation[pl->picnum];
 #ifdef CHECK_FOR_ERRORS
+			int16_t lump = firstflat + flattranslation[pl->picnum];
 			if (lump < firstflat || lump > firstflat + numflats) {
 				I_Error("bad flat? %i", lump);
 			}

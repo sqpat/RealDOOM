@@ -170,7 +170,6 @@ void Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
 	int16_t __far* pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
-	int16_t index;
  
 
 	regs.w.ax = 0x5801;  // physical page

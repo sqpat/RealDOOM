@@ -73,7 +73,7 @@ void W_AddFile(int8_t *filename)
 	int32_t				length;
 	uint16_t			startlump;
 	filelump_t __far*		fileinfo;
-	filelump_t			singleinfo;
+
 	filehandle_t		storehandle;
 
 	int32_t lastpos = 0;

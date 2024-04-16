@@ -200,7 +200,7 @@ P_TeleportMove
 //
 boolean PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 {
-	line_t __far* ld;
+	line_t __far* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld_physics->v2Offset & LINE_VERTEX_SLOPETYPE;
 	int16_t linedx = ld_physics->dx;
 	int16_t linedy = ld_physics->dy;

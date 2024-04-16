@@ -631,7 +631,6 @@ P_KillMobj
 	mobj_pos_t __far*	target_pos)
 {
     mobjtype_t	item;
-    mobj_t __far*	mo;
 	
 	
 	target_pos->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);

@@ -180,7 +180,7 @@ int16_t W_CheckNumForName (int8_t* name)
 	int16_t         counter = numlumps;
 	int16_t         returnval = -1;
 	lumpinfo_t __far* lump_p;
-	lumpinfo_t __far* lumpinfo = lumpinfo4000;
+	//lumpinfo_t __far* lumpinfo = lumpinfo4000;
     // make the name into two integers for easy compares
     strncpy (name8.s,name,8);
 
@@ -291,7 +291,7 @@ W_ReadLump
   int32_t           start,
   int32_t           size )
 {
-	filelength_t         c;  // size, leave as 32 bit
+	//filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t __far* l;
 	filehandle_t         handle;
 #ifdef CHECK_FOR_ERRORS
@@ -302,13 +302,13 @@ W_ReadLump
 
 	// use 5000 page if we are trying to write to 4000 page
 	boolean is5000Page = ((int32_t) dest >= 0x40000000) && ((int32_t)dest < 0x50000000);
-	lumpinfo_t __far* lumpinfo = lumpinfo4000;
 
 	if (is5000Page) {
 		Z_QuickmapLumpInfo5000();
-		lumpinfo = lumpinfo5000;
+		l = lumpinfo5000+lump;
 	} else { 
 		Z_QuickmapLumpInfo();
+		l = lumpinfo4000+lump;
 	}
 
 
@@ -316,7 +316,7 @@ W_ReadLump
 	if (lump >= numlumps)
         I_Error ("W_ReadLump: %i >= numlumps",lump);
 #endif
-    l = lumpinfo+lump;
+    //l = lumpinfo+lump;
 	//lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
 	lumpsize = is5000Page ? W_LumpLength5000(lump) : W_LumpLength4000(lump);
 

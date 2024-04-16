@@ -383,7 +383,6 @@ void AM_findMinMaxBoundaries(void)
     fixed_t a;
     fixed_t b;
 	int16_t temp;
-	fixed_t_union temp2;
 	int16_t max_w; // max_level_x-min_level_x,
 	int16_t max_h; // max_level_y-min_level_y
 	min_level_x = min_level_y =  MAXSHORT;
@@ -994,7 +993,6 @@ void AM_drawGrid()
 {
     int16_t x, y;
 	int16_t start, end;
-	int16_t temp = bmaporgx;
 
     // Figure out start of vertical gridlines
 	start = screen_botleft_x;

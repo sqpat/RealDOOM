@@ -35,13 +35,11 @@
 #     zdf allows ds register to point to other things. default for other modes
 # --------------------------------------------------------------------------
 
-# CCOPTS = $(EXTERNOPT) -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc
-# zt1024 too much. 512 ok. 255 ok
 
 # time optimized seems a LOT faster... ?
+# size optimized saves around 10k
 CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__COMPILER_WATCOM
-#CCOPTS = -zp1 -oaxet -oi -zq -j -ml -zc -2 -s -zt100
-#CCOPTS = -zp1 -oaxet -oi -zq -j -mm -zc -2 -s
+#CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -wx -d__COMPILER_WATCOM
  
 #doom8088 build opts for comparison
 #CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99

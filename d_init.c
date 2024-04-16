@@ -342,7 +342,6 @@ void M_LoadDefaults(void)
 {
 	int16_t		i;
 	FILE*	f;
-	int8_t	line[100];
 	int8_t	strparm[80];
 	int8_t	def[80];
 	uint8_t		parm;
