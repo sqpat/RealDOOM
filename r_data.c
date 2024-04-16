@@ -56,18 +56,15 @@ int16_t             numspritelumps;
 int16_t             numtextures;
  
 
+#ifdef DETAILED_BENCH_STATS
+extern int16_t benchtexturetype;
+extern int16_t spritecacheevictcount;
+extern int16_t flatcacheevictcount;
+extern int16_t patchcacheevictcount;
+extern int16_t compositecacheevictcount ;
 
+#endif
  
-
-//uint16_t  __near *texturepatchlump_offset;
-//uint16_t  __near *texturecolumn_offset;
-//uint16_t  __near *texturecompositesizes;	// uint16_t*
-
-
-// needed for pre rendering
-//int16_t		*spritewidths;
-//int16_t		 __far*spriteoffsets;
-//int16_t		 __far*spritetopoffsets;
 
 
 int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
@@ -158,6 +155,10 @@ void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 	cache_node_t* nodelist;
 	int8_t* nodetail;
 	int8_t* nodehead;
+	int8_t lastpagecount;
+	int8_t lastindex;
+
+	// cachetype 2
 
 	switch (cachetype){
 		case CACHETYPE_SPRITE:
@@ -187,7 +188,7 @@ void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 	if (index == *nodehead) {
 		return;
 	}
-
+	
 	pagecount = nodelist[index].pagecount;
 	if (pagecount == 1){
 		// special case: 
@@ -196,23 +197,31 @@ void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 		//(from cases where one is in conventional memory and others
 		// arent, and their lru statuses are different)
 		//we are going to update the entire multi-page block as LRU
+		lastpagecount = 0;
 		
-		while (nodelist[index].pagecount){
-			//todo head or tail or -1? want to avoid going out of bounds
-			if (index == *nodetail){
-				break;
-			}
+		while (nodelist[index].pagecount > lastpagecount){
+		//todo head or tail or -1? want to avoid going out of bounds
+			lastpagecount = nodelist[index].pagecount;
 
-			index = nodelist[index].prev;
+			//if (index == *nodetail){
+			//	break;
+			//}
+
 			// shouldnt happen? todo remove later
-			if (index == -1){
-				I_Error("qq");
+			if (nodelist[index].prev == -1){
+				// hit the end i guess?
+				goto foundstartpage;
 			}
-
+			lastindex = index;			
+			index = nodelist[index].prev;
 		}
+		index = lastindex;
+		
+		foundstartpage:
 		// index now equal to the beginning of the multipage allocation
 		pagecount = nodelist[index].pagecount;
 		numpages = pagecount - 1;
+		
 	}
 
 	if (numpages){
@@ -265,7 +274,7 @@ void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 
 	}
 
-	 
+
 
 
 	 
@@ -358,31 +367,76 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	cache_node_t* nodelist;
 	int8_t* nodetail;
 	int8_t* nodehead;
+	int8_t maxcachesize;
+	int16_t maxitersize;
+	uint8_t far* cacherefpage;
+	uint8_t far* cacherefoffset;
+	uint8_t far* usedcacherefpage;
+
+	//I_Error("evicting %i", cachetype);
 
 	switch (cachetype){
 		case CACHETYPE_SPRITE:
 			nodetail = &spritecache_tail;
 			nodehead = &spritecache_head;
 			nodelist = spritecache_nodes;
-			break;
+			maxcachesize = NUM_SPRITE_CACHE_PAGES;
+			maxitersize = MAX_SPRITE_LUMPS;
+			cacherefpage = spritepage;
+			cacherefoffset = spriteoffset;
+			usedcacherefpage = usedspritepagemem;
+			#ifdef DETAILED_BENCH_STATS
+			spritecacheevictcount++;
+			#endif
+	break;
 		case CACHETYPE_FLAT:
 			nodetail = &flatcache_tail;
 			nodehead = &flatcache_head;
 			nodelist = flatcache_nodes;
+			maxcachesize = NUM_FLAT_CACHE_PAGES;
+			maxitersize = MAX_FLATS;
+			#ifdef DETAILED_BENCH_STATS
+			flatcacheevictcount++;
+			#endif
 			break;
 		case CACHETYPE_PATCH:
  			nodetail = &patchcache_tail;
 			nodehead = &patchcache_head;
 			nodelist = patchcache_nodes;
+			maxcachesize = NUM_PATCH_CACHE_PAGES;
+			maxitersize = MAX_PATCHES;
+			cacherefpage = patchpage;
+			cacherefoffset = patchoffset;
+			usedcacherefpage = usedpatchpagemem;
+			#ifdef DETAILED_BENCH_STATS
+			patchcacheevictcount++;
+			#endif
 			break;
 		case CACHETYPE_COMPOSITE:
  			nodetail = &texturecache_tail;
 			nodehead = &texturecache_head;
 			nodelist = texturecache_nodes;
+			maxcachesize = NUM_TEXTURE_PAGES;
+			maxitersize = MAX_TEXTURES;
+			cacherefpage = compositetexturepage;
+			cacherefoffset = compositetextureoffset;
+			usedcacherefpage = usedcompositetexturepagemem;
+			#ifdef DETAILED_BENCH_STATS
+			compositecacheevictcount++;
+			#endif
+
+//			I_Error("confirm a");
 			break;
 	}
 	 
 	evictedpage = *nodetail;
+
+	// for multipage evictions, need to make sure we are not trying to 
+	// evict from the end of the cache, without enough room
+	while ((maxcachesize-evictedpage) < numpages){
+		evictedpage = nodelist[evictedpage].next;
+ 	}
+
 
 	//I_Error("out of sprite");
 	// need to evict at least numpages pages
@@ -394,7 +448,7 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 
 
 	// todo update cache list including numpages situation
- 
+
 	for (j = 0; j < numpages+remainingpages; j++){
 		currentpage = evictedpage+j;
 		remainingpages = nodelist[currentpage].pagecount;
@@ -420,6 +474,14 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 		if (currentpage == *nodetail){
 			*nodetail = next;
 		}
+		if (currentpage == *nodehead){
+			*nodehead = prev;
+			 
+			 // ok this happens... its gross, but basically when we need to evict to allocate multiple consecutive
+			 // pages and it turns out that the least recently used and most recently used end up in the same
+			 // contiguous block. Im not sure this is actually going to break anything, it's just a rare bad luck case
+			 // of eviciting a recently used item. Just need to make sure to handle the node head right
+		}
 
 
 
@@ -432,24 +494,26 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 //todo clear cache data per type
 	switch (cachetype){
 		case CACHETYPE_SPRITE:
+		case CACHETYPE_PATCH:
+		case CACHETYPE_COMPOSITE:
 
 			for (offset = 0; offset < numpages; offset++){
 				currentpage = evictedpage + offset;
-				for (k = 0; k < MAX_SPRITE_LUMPS; k++){
-					if ((spritepage[k] >> 2) == currentpage){
-						spritepage[k] = 0xFF;
-						spriteoffset[k] = 0xFF;
+				for (k = 0; k < maxitersize; k++){
+					if ((cacherefpage[k] >> 2) == currentpage){
+						cacherefpage[k] = 0xFF;
+						cacherefoffset[k] = 0xFF;
 						//I_Error("deleted a page");
 					}
 				}
-				usedspritepagemem[currentpage] = 0;
+				usedcacherefpage[currentpage] = 0;
 
 			}	
 			break;
 		case CACHETYPE_FLAT:
 
 			allocatedflatsperpage[evictedpage] = 1;
-			for (k = 0; k < MAX_FLATS; k++){
+			for (k = 0; k < maxitersize; k++){
 				
 				if ((flatindex[k] >> 2) == evictedpage){
 					flatindex[k] = 0xFF;
@@ -457,16 +521,9 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 
  
 			}
-
-			break;
-		case CACHETYPE_PATCH:
- 		 
-			break;
-		case CACHETYPE_COMPOSITE:
- 			 
+ 
 			break;
 	}
-
 
 	return evictedpage;
 }
@@ -546,17 +603,17 @@ void R_GetNextCompositeBlock(int16_t tex_index) {
 		uint8_t freethreshold = 64 - blocksize;
 		for (i = 0; i < NUM_TEXTURE_PAGES; i++) {
 			if (freethreshold >= usedcompositetexturepagemem[i]) {
-				texpage = i << 2; // num pages 0
-				texoffset = usedcompositetexturepagemem[i];
-				usedcompositetexturepagemem[i] += blocksize;
-				break;
+				goto foundonepage;
 			}
 		}
-//#ifdef CHECK_FOR_ERRORS
-		if (i >= NUM_TEXTURE_PAGES) {
-			I_Error("Couldn't find composite page a");
-		}
-//#endif
+		
+		i = R_EvictCacheEMSPage(numpages, CACHETYPE_COMPOSITE);
+
+		foundonepage:
+		texpage = i << 2; // num pages 0
+		texoffset = usedcompositetexturepagemem[i];
+		usedcompositetexturepagemem[i] += blocksize;
+
 	}
 	else {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
@@ -564,33 +621,39 @@ void R_GetNextCompositeBlock(int16_t tex_index) {
 
 		for (i = 0; i < NUM_TEXTURE_PAGES-numpagesminus1; i++) {
 			if (!usedcompositetexturepagemem[i]) {
-				// empty page, we can assume the following pages are empty too
-				usedcompositetexturepagemem[i] = 64;
-				if (numpages >= 3) {
-					usedcompositetexturepagemem[i + 1] = 64;
+				// need to check following pages for emptiness, or else after evictions weird stuff can happen
+				if (!usedcompositetexturepagemem[i+1]) {
+					if (numpagesminus1 < 2 || (!usedcompositetexturepagemem[i+2])) {
+						if (numpagesminus1 < 3 || (!usedcompositetexturepagemem[i+3])) {					
+							goto foundmultipage;
+						}
+					}
 				}
-				if (numpages == 4) {
-					usedcompositetexturepagemem[i + 2] = 64;
-				}
-				if (blocksize & 0x3F) {
-					usedcompositetexturepagemem[i + numpagesminus1] = blocksize & 0x3F;
-				} else {
-					usedcompositetexturepagemem[i + numpagesminus1] = 64;
-				}
-				texpage = (i << 2) + (numpagesminus1);
-				texoffset = 0; // if multipage then its always aligned to start of its block
-				
-
-
-				break;
 			}
 		}
 
-		//#ifdef CHECK_FOR_ERRORS
-		if (i >= NUM_TEXTURE_PAGES - numpagesminus1) {
-			I_Error("Couldn't find composite page b %i %i %i %i %u %i", tex_index, i, numpagesminus1, blocksize, size,numpages);
+		i = R_EvictCacheEMSPage(numpages, CACHETYPE_COMPOSITE);
+
+		foundmultipage:
+
+		usedcompositetexturepagemem[i] = 64;
+		if (numpages >= 3) {
+			usedcompositetexturepagemem[i + 1] = 64;
 		}
-		//#endif		
+		if (numpages == 4) {
+			usedcompositetexturepagemem[i + 2] = 64;
+		}
+		if (blocksize & 0x3F) {
+			usedcompositetexturepagemem[i + numpagesminus1] = blocksize & 0x3F;
+		} else {
+			usedcompositetexturepagemem[i + numpagesminus1] = 64;
+		}
+		texpage = (i << 2) + (numpagesminus1);
+		texoffset = 0; // if multipage then its always aligned to start of its block
+		
+
+
+	
 
 
 	}
@@ -625,52 +688,53 @@ void R_GetNextPatchBlock(int16_t lump) {
 		uint8_t freethreshold = 64 - blocksize;
 		for (i = 0; i < NUM_PATCH_CACHE_PAGES; i++) {
 			if (freethreshold >= usedpatchpagemem[i]) {
-				texpage = i << 2;
-				texoffset = usedpatchpagemem[i];
-				usedpatchpagemem[i] += blocksize;
-				break;
+				goto foundonepage;
+
+
 			}
 		}
-//#ifdef CHECK_FOR_ERRORS
-		if (i >= NUM_PATCH_CACHE_PAGES) {
-			I_Error("Couldn't find patch page a");
-		}
-//#endif
+
+		i = R_EvictCacheEMSPage(numpages, CACHETYPE_PATCH);
+
+		foundonepage:
+		texpage = i << 2;
+		texoffset = usedpatchpagemem[i];
+		usedpatchpagemem[i] += blocksize;
 	} else {
 		// theres no deallocation so any page with 0 allocated will be followed by another 
 		uint8_t numpagesminus1 = numpages - 1;
 
-		for (i = 0; i < NUM_PATCH_CACHE_PAGES-(numpagesminus1) ; i++) {
+		for (i = 0; i < NUM_PATCH_CACHE_PAGES-numpagesminus1; i++) {
 			if (!usedpatchpagemem[i]) {
-				// empty page, we can assume the following pages are empty too
-				usedpatchpagemem[i] = 64;
-				if (numpages >= 3) {
-					usedpatchpagemem[i + 1] = 64;
+				// need to check following pages for emptiness, or else after evictions weird stuff can happen
+				if (!usedpatchpagemem[i+1]) {
+					if (numpagesminus1 < 2 || (!usedpatchpagemem[i+2])) {
+						if (numpagesminus1 < 3 || (!usedpatchpagemem[i+3])) {					
+							goto foundmultipage;
+						}
+					}
 				}
-				if (numpages == 4) {
-					usedpatchpagemem[i + 2] = 64;
-				}
-
-
-				if (blocksize & 0x3F) {
-					usedpatchpagemem[i + numpagesminus1] = blocksize & 0x3F;
-				} else {
-					usedpatchpagemem[i + numpagesminus1] = 64;
-				}
-
-				texpage = (i << 2) + (numpagesminus1);
-				texoffset = 0; // if multipage then its always aligned to start of its block
-
-				break;
 			}
-
 		}
 
-		//#ifdef CHECK_FOR_ERRORS
-		if (i >= NUM_PATCH_CACHE_PAGES - numpagesminus1) {
-			I_Error("Couldn't find patch page b");
+		i = R_EvictCacheEMSPage(numpages, CACHETYPE_PATCH);
+
+		foundmultipage:
+		
+		usedpatchpagemem[i] = 64;
+		if (numpages >= 3) {
+			usedpatchpagemem[i + 1] = 64;
 		}
-		//#endif
+		if (numpages == 4) {
+			usedpatchpagemem[i + 2] = 64;
+		}
+		if (blocksize & 0x3F) {
+			usedpatchpagemem[i + numpagesminus1] = blocksize & 0x3F;
+		} else {
+			usedpatchpagemem[i + numpagesminus1] = 64;
+		}
+		texpage = (i << 2) + (numpagesminus1);
+		texoffset = 0; // if multipage then its always aligned to start of its block
  	
 	}
 
@@ -887,8 +951,9 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 	//Z_QuickMapFlatPage();
 
 }
-uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
-	uint8_t pagenum = pageoffset + (texpage >> 2);
+uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
+	uint8_t realtexpage = texpage >> 2;
+	uint8_t pagenum = pageoffset + realtexpage;
 	uint8_t numpages = (texpage& 0x03);
  	int16_t bestpage = -1;
 	int16_t bestpageindex = -1;
@@ -913,6 +978,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 				textureLRU[3]++;
 				textureLRU[i] = 0;
 
+				R_MarkCacheLRU(realtexpage, 0, cachetype);
 				return i;
 			}
 
@@ -949,6 +1015,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 		
 
 
+		R_MarkCacheLRU(realtexpage, 0, cachetype);
 
 		Z_QuickmapRenderTexture();
 
@@ -988,6 +1055,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 				textureLRU[i + j] = 0;
 			}
 
+			R_MarkCacheLRU(realtexpage, numpages, cachetype);
 			return i;
 		}
 
@@ -1035,6 +1103,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset){
 
 		}
 
+		R_MarkCacheLRU(realtexpage, numpages, cachetype);
 		Z_QuickmapRenderTexture();
 		//Z_QuickmapRenderTexture(startpage, numpages + 1);
 		// paged in
@@ -1206,9 +1275,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 }
 
-#ifdef DETAILED_BENCH_STATS
-extern int16_t benchtexturetype;
-#endif
+
 
 // TODO - try different algos instead of first free block for populating cache pages
 // get 0x4000 offset for texture
@@ -1229,14 +1296,14 @@ byte __far* getpatchtexture(int16_t lump) {
 		texoffset = patchoffset[index];
 
 		//gettexturepage ensures the page is active
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
-		 
+		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
+ 
 		W_CacheLumpNumDirect(lump, addr);
 		// return
 		return addr;
 	} else {
 		// has been allocated before. find and return
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
 
 		return addr;
 	}
@@ -1260,7 +1327,7 @@ byte __far* getcompositetexture(int16_t tex_index) {
 		texoffset = compositetextureoffset[tex_index];
 		
 		//gettexturepage ensures the page is active
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 8));
+		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 8));
 		// load it in
 		R_GenerateComposite(tex_index, addr);
 		
@@ -1269,7 +1336,7 @@ byte __far* getcompositetexture(int16_t tex_index) {
 	} else {
 		// has been allocated before. find and return
 		
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE)] + (texoffset << 8));
+		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 8));
 		
 		return addr;
 	}

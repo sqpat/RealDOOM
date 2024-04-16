@@ -56,7 +56,7 @@ extern int32_t lumpinfo5000switchcount;
 // FIXME_COMMERCIAL these values will have to change upward.
 #define STATIC_CONVENTIONAL_SPRITE_SIZE 6939u
 
-// These are WAD maxes and corresponds to doom2 values
+// These are WAD maxes and corresponds to doom2 max values
 #define MAX_TEXTURES 428
 #define MAX_PATCHES 476
 #define MAX_FLATS 151
@@ -125,19 +125,19 @@ void Z_ShutdownEMS();
 #define FIRST_LUMPINFO_LOGICAL_PAGE					FIRST_SCRATCH_LOGICAL_PAGE + 4
 // 80
 #define FIRST_PATCH_CACHE_LOGICAL_PAGE				FIRST_LUMPINFO_LOGICAL_PAGE + 3
-#define NUM_PATCH_CACHE_PAGES						40
-// 120
+#define NUM_PATCH_CACHE_PAGES						16
+// 96
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE				FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES						6
-// 128
+// 102
 #define FIRST_TEXTURE_LOGICAL_PAGE					FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 152
-#define NUM_TEXTURE_PAGES							24
+// 110
+#define NUM_TEXTURE_PAGES							8
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE				FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
-// 188
-#define NUM_SPRITE_CACHE_PAGES						28
+// 126
+#define NUM_SPRITE_CACHE_PAGES						16
 #define NUM_EMS4_SWAP_PAGES							(int32_t)(FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 189 in use currently (including 0)
+// 139 in use currently (including 0)
 
 // 192 for 3 mb...
 

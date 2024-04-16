@@ -402,8 +402,13 @@ int32_t scratchpushpageswitchcount = 0;
 int32_t scratchremapswitchcount = 0;
 int32_t lumpinfo4000switchcount = 0;
 int32_t lumpinfo5000switchcount = 0;
+int16_t spritecacheevictcount = 0;
+int16_t flatcacheevictcount = 0;
+int16_t patchcacheevictcount = 0;
+int16_t compositecacheevictcount = 0;
 
 #endif
+
 int16_t currenttask = -1;
 int16_t oldtask = -1;
 
