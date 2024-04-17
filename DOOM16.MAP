@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/04/17 17:09:49
+Created on:       24/04/18 11:30:24
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -46,7 +46,7 @@ dutils_TEXT            CODE           AUTO           0000:5ec0       0000008b
 v_extra_TEXT           CODE           AUTO           0000:5f50       000001af
 wi_stuff_TEXT          CODE           AUTO           0000:6100       00000f48
 f_finale_TEXT          CODE           AUTO           0000:7050       00000ac2
-p_setup_TEXT           CODE           AUTO           0000:7b20       00001662
+p_setup_TEXT           CODE           AUTO           0000:7b20       00001670
 g_setup_TEXT           CODE           AUTO           0000:9190       000002f4
 r_setup_TEXT           CODE           AUTO           0000:9490       000004cb
 st_setup_TEXT          CODE           AUTO           0000:9960       0000022c
@@ -729,13 +729,13 @@ Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 0000:84f8+     P_SpawnMapThing_
 0000:86c6+     P_SpawnSpecials_
 0000:8828+     P_LoadThings_
-0000:8944+     P_LoadLineDefs_
-0000:8bd4      R_TextureNumForName_
-0000:8bfa+     P_LoadSideDefs_
-0000:8d5c+     P_LoadBlockMap_
-0000:8dc0+     P_GroupLines_
-0000:9048+     P_InitThinkers_
-0000:9080      P_SetupLevel_
+0000:8952+     P_LoadLineDefs_
+0000:8be2      R_TextureNumForName_
+0000:8c08+     P_LoadSideDefs_
+0000:8d6a+     P_LoadBlockMap_
+0000:8dce+     P_GroupLines_
+0000:9056+     P_InitThinkers_
+0000:908e      P_SetupLevel_
 26a0:2ae4+     _total
 26a0:2ae6      _bmapwidth
 26a0:2ae8      _bmaporgx
@@ -1840,4 +1840,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  0002aa10 (174608.)
 Entry point address: 1f73:2200
-Link time: 00:00.15
+Link time: 00:00.59

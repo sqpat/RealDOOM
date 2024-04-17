@@ -1004,7 +1004,8 @@ void P_LoadThings(int16_t lump)
 
 	// first do a run to search for the player1 object as we want to force it to be thing 1 in memory.
 	for (i = 0; i < numthings; i++) {
-		
+		mt = data[i];
+
 		// do player1
 		if (mt.type == 1) {
 			P_SpawnMapThing(data[i], i);
