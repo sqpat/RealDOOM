@@ -686,7 +686,6 @@ void M_SaveGame (int16_t choice)
 //
 //      M_QuickSave
 //
-int8_t    tempstring[80];
 
 void M_QuickSaveResponse(int16_t ch)
 {
@@ -700,6 +699,7 @@ void M_QuickSaveResponse(int16_t ch)
 void M_QuickSave(void)
 {
 	int8_t temp[256];
+    int8_t    tempstring[80];
     if (!usergame)
     {
         S_StartSound(NULL,sfx_oof);
@@ -741,7 +741,8 @@ void M_QuickLoad(void)
 {
     
 	int8_t temp[256];
-	if (quickSaveSlot < 0) // means to pick a slot now
+	int8_t    tempstring[80];
+if (quickSaveSlot < 0) // means to pick a slot now
     {
 		getStringByIndex(QSAVESPOT, temp);
 		M_StartMessage(temp,NULL,false);
