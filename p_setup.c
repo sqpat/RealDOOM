@@ -35,6 +35,8 @@
 
 #include "s_sound.h"
 
+#include "v_video.h"
+
 #include "doomstat.h"
 #include <dos.h>
 

@@ -39,6 +39,7 @@
 
 // State.
 #include "r_state.h"
+#include "v_video.h"
 
 // Data.
 #include "sounds.h"
@@ -1216,5 +1217,5 @@ int16_t EV_DoDonut(uint8_t linetag)
 //  that spawn thinkers
 //
 int16_t		numlinespecials;
-int16_t		linespeciallist[MAXLINEANIMS];
+//int16_t		linespeciallist[MAXLINEANIMS];
 

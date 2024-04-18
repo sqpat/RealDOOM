@@ -54,13 +54,19 @@
 //extern	byte*		screen4;
 
 extern  int16_t	dirtybox[4];
-#define NUM_MENU_ITEMS 45
+#define NUM_MENU_ITEMS  45
+#define MAXLINEANIMS    64
 
 #define size_screen0          (64000u)
-#define size_gammatable       (size_screen0 + 256 * 5)
-#define size_menuoffsets      (size gammatable + (sizeof(uint16_t) * NUM_MENU_ITEMS))
-#define gammatable            ((byte __far*) (0x80000000 + size_screen0))
-#define menuoffsets           ((uint16_t __far*) (0x80000000 + size_gammatable))
+#define size_gammatable       (size_screen0     + 256 * 5)
+#define size_menuoffsets      (size_gammatable  + (sizeof(uint16_t) * NUM_MENU_ITEMS))
+#define size_linespeciallist  (size_menuoffsets + (sizeof(int16_t) * MAXLINEANIMS))
+
+
+#define gammatable            ((byte __far*)      (0x80000000 + size_screen0))
+#define menuoffsets           ((uint16_t __far*)  (0x80000000 + size_gammatable))
+#define linespeciallist       ((int16_t __far*)   (0x80000000 + size_menuoffsets))
+
 extern	uint8_t	usegamma;
 
 /*
@@ -69,8 +75,11 @@ extern	uint8_t	usegamma;
   8000:0000 screen0
   8000:FA00 gammatable
   8000:FF00 menuoffsets
-  8000:FF5A [empty]
-  
+  8000:FF5A linespeciallist
+  8000:FFDA [empty]
+
+
+
 */
 
 

@@ -310,10 +310,8 @@ extern int16_t		bmapheight;	// in mapblocks
 extern int16_t		bmaporgx;
 extern int16_t		bmaporgy;	// origin of block map
 
-#define MAXLINEANIMS            64
-
 extern  int16_t	numlinespecials;
-extern  int16_t	linespeciallist[MAXLINEANIMS];
+
 
 //
 // P_INTER
