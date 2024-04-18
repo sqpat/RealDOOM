@@ -498,7 +498,41 @@ void M_FinishReadThis(int16_t choice);
  
 #ifndef __DEMO_ONLY_BINARY
 
-extern void M_Reload(void);
+
+// this is only done in init... pull into there?
+
+void M_Reload(void) {
+	// reload menu graphics
+	int16_t i = 0;
+	uint32_t size = 0;
+	byte __far* dst = menugraphicspage0;
+	uint8_t pageoffset = 0;
+
+ 	int8_t menugraphics[NUM_MENU_ITEMS * 9];
+
+	FILE *fp = fopen("D_MENUG.BIN", "rb"); // clear old file
+	fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
+	fclose(fp);
+
+	for (i = 0; i < NUM_MENU_ITEMS; i++) {
+		int16_t lump = W_GetNumForName(&menugraphics[i*9]);
+		uint16_t lumpsize = W_LumpLength(lump);
+		if (i == 27) { // (size + lumpsize) > 65535u) {
+			// repage
+			size = 0;
+			pageoffset += 4;
+			dst = menugraphicspage4;
+		}
+		W_CacheLumpNumDirect(lump, dst);
+		menuoffsets[i] = size;
+		size += lumpsize;
+		dst += lumpsize;
+
+	}
+
+
+
+}
 
 void M_Init(void)
 {

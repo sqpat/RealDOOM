@@ -54,11 +54,10 @@
 
 
 
-#define NUM_MENU_ITEMS 45
 
 
-#define SAVESTRINGSIZE  24
 
+ 
 
 //
 // defaulted values
@@ -109,7 +108,7 @@ patch_t __far* M_GetMenuPatch(int16_t i);
 extern boolean          message_dontfuckwithme;
 extern uint16_t			hu_font[HU_FONTSIZE];
 
-uint16_t menuoffsets[NUM_MENU_ITEMS];
+//uint16_t menuoffsets[NUM_MENU_ITEMS];
 
 // 1 = message to be printed
 uint8_t                     messageToPrint;
@@ -1782,40 +1781,6 @@ void M_Ticker (void)
 }
 
 
-
-
-void M_Reload(void) {
-	// reload menu graphics
-	int16_t i = 0;
-	uint32_t size = 0;
-	byte __far* dst = menugraphicspage0;
-	uint8_t pageoffset = 0;
-
- 	int8_t menugraphics[NUM_MENU_ITEMS * 9];
-
-	FILE *fp = fopen("D_MENUG.BIN", "rb"); // clear old file
-	fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
-	fclose(fp);
-
-	for (i = 0; i < NUM_MENU_ITEMS; i++) {
-		int16_t lump = W_GetNumForName(&menugraphics[i*9]);
-		uint16_t lumpsize = W_LumpLength(lump);
-		if (i == 27) { // (size + lumpsize) > 65535u) {
-			// repage
-			size = 0;
-			pageoffset += 4;
-			dst = menugraphicspage4;
-		}
-		W_CacheLumpNumDirect(lump, dst);
-		menuoffsets[i] = size;
-		size += lumpsize;
-		dst += lumpsize;
-
-	}
-
-
-
-}
 
 #endif
 

@@ -735,6 +735,16 @@ void A_Look (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 }
 
 
+uint16_t movedirangles[8] = {
+	0x0000,
+	0x2000,
+	0x4000,
+	0x6000,
+	0x8000,
+	0xA000,
+	0xC000,
+	0xE000
+};
 
 //
 // A_Chase
@@ -773,8 +783,8 @@ void A_Chase (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 		
 		actor_pos->angle.hu.intbits &= 0xE000;
 		actor_pos->angle.hu.fracbits = 0;
-		delta = actor_pos->angle.hu.intbits - (actor->movedir << 14);
-
+		delta = actor_pos->angle.hu.intbits - movedirangles[actor->movedir];
+		
 		if (delta > 0)
 			actor_pos->angle.hu.intbits -= ANG90_HIGHBITS / 2;
 		else if (delta < 0)

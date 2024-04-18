@@ -54,10 +54,24 @@
 //extern	byte*		screen4;
 
 extern  int16_t	dirtybox[4];
+#define NUM_MENU_ITEMS 45
 
-#define gammatable ((byte __far*) (0x80000000 + 64000u))
+#define size_screen0          (64000u)
+#define size_gammatable       (size_screen0 + 256 * 5)
+#define size_menuoffsets      (size gammatable + (sizeof(uint16_t) * NUM_MENU_ITEMS))
+#define gammatable            ((byte __far*) (0x80000000 + size_screen0))
+#define menuoffsets           ((uint16_t __far*) (0x80000000 + size_gammatable))
 extern	uint8_t	usegamma;
 
+/*
+
+
+  8000:0000 screen0
+  8000:FA00 gammatable
+  8000:FF00 menuoffsets
+  8000:FF5A [empty]
+  
+*/
 
 
 // Allocates buffer screens, call before R_Init.
