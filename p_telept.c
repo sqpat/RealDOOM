@@ -22,6 +22,7 @@
 #include "doomstat.h"
 
 #include "s_sound.h"
+#include "i_system.h"
 
 #include "p_local.h"
 
@@ -54,7 +55,6 @@ EV_Teleport
 	fixed_t_union	oldy;
 	fixed_t_union	oldz;
 	int16_t		oldsecnum;
-
 	THINKERREF fogRef;
     // don't teleport missiles
     if (thing_pos->flags & MF_MISSILE)
@@ -64,24 +64,36 @@ EV_Teleport
     //  so you can get out of teleporter.
     if (side == 1)		
 		return 0;	
-
-    
     
     for (i = 0; i < numsectors; i++) {
 
 		if (sectors_physics[ i ].tag == linetag ) {
-			thinkerRef = thinkerlist[0].next;
-			for (thinkerRef = thinkerlist[0].next; thinkerRef != 0; thinkerRef = thinkerlist[thinkerRef].next) {
+			//I_Error("looking for thinker thinker %i %i %u", linetag, i, thinkerRef);
+			thinkerRef = 0;
+			while (true) {
+				
+				// dumb hack.. i think a compiler optimization bug is making something fuck up this loop
+				// and teleporters never trigger. Some error catching code made the bug away. I wanted to
+				// switch from for loop to while but the initial case and end case are the same (thinkerRef 0)
+				// so i did this... whatever.
+
+				thinkerRef = thinkerlist[thinkerRef].next;
+				if (thinkerRef == 0){
+					break;
+				}
 				// not a mobj
 				if ((thinkerlist[thinkerRef].prevFunctype & TF_FUNCBITS) != TF_MOBJTHINKER_HIGHBITS) {
 					continue;
 				}
+
 				m = (mobj_t  __far*)(&thinkerlist[thinkerRef].data);
 		
 				// not a teleportman
 				if (m->type != MT_TELEPORTMAN )
 					continue;		
 				
+
+
 				secnum = m->secnum;
 				// wrong sector
 				if (secnum != i )

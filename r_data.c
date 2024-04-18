@@ -76,22 +76,7 @@ int16_t activespritepages[4]; // always gets reset to defaults at start of frame
 uint8_t activespritenumpages[4]; // always gets reset to defaults at start of frame
 int16_t spriteLRU[4];
 
-
-//uint8_t* usedcompositetexturepagemem; // defaults 00
-//uint8_t __far* compositetextureoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-//uint8_t __far* compositetexturepage; //  page index of the allocatiion
-
-//uint8_t* usedpatchpagemem; // defaults 00
-//uint8_t __far* patchpage; //  defaults FF. page index of the allocatiion
-//uint8_t __far* patchoffset; //  defaults FF. high 6 bits are offset (256 byte aligned) within 16 kb page. low 2 bits are (page count-1)
-
-//uint8_t* usedspritepagemem; // defaults 00
-//uint8_t __far* spritepage;
-//uint8_t __far* spriteoffset;
-
-//uint8_t __far* flatindex;
-
-
+ 
 
 
 
@@ -130,18 +115,7 @@ int8_t texturecache_head = -1;
 int8_t texturecache_tail = -1;
 
 
-/*
-int8_t get_node_index() {
-  // Find an unused slot in the node pool
-  int8_t i;
-  for (i = 0; i < MAX_SPRITE_CACHE_SIZE; ++i) {
-    if (spritecache_nodes[i].key == -1) {
-      return i;
-    }
-  }
-  return -1; // No free slots available
-}
-*/
+ 
 
 // numpages is 0-3 not 1-4
 void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {

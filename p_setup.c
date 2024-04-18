@@ -1449,6 +1449,8 @@ P_SetupLevel
 	int16_t         lumpnum;
 	//FILE* fp;
 
+	//I_Error("level is %i %i", episode, map);
+
 	wminfo.partime = 180;
 	player.killcount = player.secretcount = player.itemcount = 0;
 
