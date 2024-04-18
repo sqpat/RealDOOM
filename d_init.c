@@ -613,6 +613,8 @@ void DUMP_MEMORY_TO_FILE() {
 //
 // D_DoomMain
 //
+
+
 void D_DoomMain2(void)
 {
 	int16_t             p;
@@ -621,7 +623,21 @@ void D_DoomMain2(void)
 	int8_t          textbuffer[256];
 	int8_t            title[128];
 	
+	//I_Error("\n%x", size_sectors_physics);
+	/*
+	int16_t i;
+	int16_t j;
 	
+	FILE* fp = fopen("data.bin", "wb");
+
+	for (i = 0; i < 136; i++){
+		j = getDoomEdNum(i);
+		fwrite(&j, 2, 1, fp);
+	}
+	fclose(fp);
+	I_Error("done");
+	*/
+
 	/*
 	struct SREGS sregs;
 	segread(&sregs);

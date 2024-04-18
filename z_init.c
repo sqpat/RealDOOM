@@ -336,6 +336,11 @@ void Z_LoadBinaries() {
 	fclose(fp);
 	DEBUG_PRINT(".");
 
+	fp = fopen("DATA.BIN", "rb");
+	FAR_fread(doomednum, 2, NUMMOBJTYPES, fp);
+	fclose(fp);
+	DEBUG_PRINT(".");
+
 
 	//fp = fopen("D_TANTOA.BIN", "rb");
 	//FAR_fread(tantoangle, 4, 2049, fp);

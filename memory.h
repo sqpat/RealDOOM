@@ -299,6 +299,7 @@ size_textureheights		E000:fe41
 
 
 
+#define NUMMOBJTYPES 137
 
 
 #define MAXEVENTS				64
@@ -310,7 +311,7 @@ size_textureheights		E000:fe41
 #define size_ammnumpatchoffsets	size_ammnumpatchbytes + (sizeof(uint16_t) * 10)
 #define size_linebuffer			(size_ammnumpatchoffsets	+ MAX_LINEBUFFER_SIZE)
 #define size_sectors_physics	(size_linebuffer	+ MAX_SECTORS_PHYSICS_SIZE)
-
+#define size_doomednum			(size_sectors_physics + sizeof(int16_t) * NUMMOBJTYPES))
 
 #define thinkerlist			((thinker_t __far*)			0x90000000)
 #define mobjinfo			((mobjinfo_t __far *)		(0x90000000 + size_thinkerlist))
@@ -319,6 +320,8 @@ size_textureheights		E000:fe41
 #define ammnumpatchoffsets	((uint16_t __far*)			(0x90000000 + size_ammnumpatchbytes ))
 #define linebuffer			((int16_t __far*)			(0x90000000 + size_ammnumpatchoffsets))
 #define sectors_physics		((sector_physics_t __far* ) (0x90000000 + size_linebuffer))
+#define doomednum			((int16_t __far*)			(0x90000000 + size_sectors_physics))
+// ce37  
 
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region
