@@ -622,22 +622,30 @@ void D_DoomMain2(void)
 	union REGS regs;
 	int8_t          textbuffer[256];
 	int8_t            title[128];
-	
-	//I_Error("\n%x", size_sectors_physics);
 	/*
-	int16_t i;
+	//I_Error("\n%x", size_sectors_physics);
+	int16_t i, i2;
 	int16_t j;
 	
-	FILE* fp = fopen("data.bin", "wb");
+	FILE* fp = fopen("data2.bin", "wb");
 
-	for (i = 0; i < 136; i++){
-		j = getDoomEdNum(i);
-		fwrite(&j, 2, 1, fp);
+	for (i = 0; i < 9; i++){
+		for (i2 = 0; i2 < 3; i2++){
+			j = getLnodeX(i, i2);
+			fwrite(&j, 2, 1, fp);
+		}
+	}
+
+	for (i = 0; i < 9; i++){
+		for (i2 = 0; i2 < 3; i2++){
+			j = getLnodeY(i, i2);
+			fwrite(&j, 2, 1, fp);
+		}
 	}
 	fclose(fp);
 	I_Error("done");
-	*/
-
+	
+*/
 	/*
 	struct SREGS sregs;
 	segread(&sregs);

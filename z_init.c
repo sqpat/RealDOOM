@@ -338,7 +338,14 @@ void Z_LoadBinaries() {
 
 	fp = fopen("DATA.BIN", "rb");
 	FAR_fread(doomednum, 2, NUMMOBJTYPES, fp);
+
+	FAR_fread(lnodex, 2, 9 * 3, fp);
+	FAR_fread(lnodey, 2, 9 * 3, fp);
+
 	fclose(fp);
+
+	//I_Error("\n%x %x %x %x", lnodex[0], lnodex[1], lnodex[2], lnodex[3]);
+
 	DEBUG_PRINT(".");
 
 

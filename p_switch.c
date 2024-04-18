@@ -122,7 +122,7 @@ P_ChangeSwitchTexture
 			sides[lineside0].toptexture = switchlist[i^1];
 
 			if (useAgain) {
-				P_StartButton(linenum, linefrontsecnum, top, switchlist[i], BUTTONTIME);
+				P_StartButton(linenum, linefrontsecnum, BUTTONTOP, switchlist[i], BUTTONTIME);
 			}
 			return;
 		}
@@ -132,7 +132,7 @@ P_ChangeSwitchTexture
 				sides[lineside0].midtexture = switchlist[i^1];
 
 				if (useAgain) {
-					P_StartButton(linenum, linefrontsecnum, middle, switchlist[i], BUTTONTIME);
+					P_StartButton(linenum, linefrontsecnum, BUTTONMIDDLE, switchlist[i], BUTTONTIME);
 				}
 
 			return;
@@ -143,7 +143,7 @@ P_ChangeSwitchTexture
 					sides[lineside0].bottomtexture = switchlist[i^1];
 
 					if (useAgain) {
-						P_StartButton(linenum, linefrontsecnum, bottom, switchlist[i], BUTTONTIME);
+						P_StartButton(linenum, linefrontsecnum, BUTTONBOTTOM, switchlist[i], BUTTONTIME);
 					}
 					return;
 				}

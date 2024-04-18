@@ -32,7 +32,7 @@
 #include "s_sound.h"
 
 #include "doomstat.h"
-
+#include "p_local.h"
 // Data.
 #include "sounds.h"
 
@@ -173,104 +173,6 @@ void WI_Ticker(void) {
 #else
 
 // consider loading at startup...
-
-// these are taking up 864 bytes. can probably halve it by shrinking to 8 bit. 
-// subtract the minimum value from coord 1, 2 indepdentdently. add back in the accessor.
- 
-int16_t getLnodeX(int16_t episode, int16_t map) {
-	if (episode == 0) {
-		// Episode 0 World Map
-		switch (map) {
-			case 0: return 185;
-			case 1: return 148;	// location of level 1 (CJ)
-			case 2: return 69;	// location of level 2 (CJ)
-			case 3: return 209;	// location of level 3 (CJ)
-			case 4: return 116;	// location of level 4 (CJ)
-			case 5: return 166;	// location of level 5 (CJ)
-			case 6: return 71;	// location of level 6 (CJ)
-			case 7: return 135;	// location of level 7 (CJ)
-			case 8: return 71;	// location of level 8 (CJ)
-		}
-	} else if (episode == 1) {
-		// Episode 1 World Map
-		switch (map) {
-			case 0: return 254;
-			case 1: return 97;	// location of level 1 (CJ)
-			case 2: return 188;	// location of level 2 (CJ)
-			case 3: return 128;	// location of level 3 (CJ)
-			case 4: return 214;	// location of level 4 (CJ)
-			case 5: return 133;	// location of level 5 (CJ)
-			case 6: return 208;	// location of level 6 (CJ)
-			case 7: return 148;	// location of level 7 (CJ)
-			case 8: return 235;	// location of level 8 (CJ)
-		}
-	} else {
-		// Episode 2 World Map
-		switch (map) {
-			case 0: return 156;
-			case 1: return 48;	// location of level 1 (CJ)
-			case 2: return 174;	// location of level 2 (CJ)
-			case 3: return 265;	// location of level 3 (CJ)
-			case 4: return 130;	// location of level 4 (CJ)
-			case 5: return 279;	// location of level 5 (CJ)
-			case 6: return 198;	// location of level 6 (CJ)
-			case 7: return 140;	// location of level 7 (CJ)
-			case 8: return 281;	// location of level 8 (CJ)
-		}
-	}
-	return 0;
- 
-}
-
-int16_t getLnodeY(int16_t episode, int16_t map) {
-	if (episode == 0) {
-
-		// Episode 0 World Map
-		switch (map) {
-			case 0: return 164;
-			case 1: return 143;	// location of level 1 (CJ)
-			case 2: return 122;	// location of level 2 (CJ)
-			case 3: return 102;	// location of level 3 (CJ)
-			case 4: return 89;	// location of level 4 (CJ)
-			case 5: return 55;	// location of level 5 (CJ)
-			case 6: return 56;	// location of level 6 (CJ)
-			case 7: return 29;	// location of level 7 (CJ)
-			case 8: return 24;	// location of level 8 (CJ)
-		}
-	}
-	else if (episode == 1) {
-		// Episode 1 World Map
-		switch (map) {
-			case 0: return 25;
-			case 1: return 50;	// location of level 1 (CJ)
-			case 2: return 64;	// location of level 2 (CJ)
-			case 3: return 78;	// location of level 3 (CJ)
-			case 4: return 92;	// location of level 4 (CJ)
-			case 5: return 130;	// location of level 5 (CJ)
-			case 6: return 136;	// location of level 6 (CJ)
-			case 7: return 140;	// location of level 7 (CJ)
-			case 8: return 158;	// location of level 8 (CJ)
-		}
-	}
-	else {
-		// Episode 2 World Map
-		switch (map) {
-			case 0: return 168;
-			case 1: return 154;	// location of level 1 (CJ)
-			case 2: return 95;	// location of level 2 (CJ)
-			case 3: return 75;	// location of level 3 (CJ)
-			case 4: return 48;	// location of level 4 (CJ)
-			case 5: return 23;	// location of level 5 (CJ)
-			case 6: return 48;	// location of level 6 (CJ)
-			case 7: return 25;	// location of level 7 (CJ)
-			case 8: return 136;	// location of level 8 (CJ)
-		}
-	}
-	return 0;
-
-}
- 
-
 
 
 //
@@ -528,8 +430,12 @@ WI_drawOnLnode
     int16_t		bottom;
     boolean	fits = false;
 	patch_t __far* ci;
-	int16_t lnodeX = getLnodeX(wbs->epsd, n);
-	int16_t lnodeY = getLnodeY(wbs->epsd, n);
+	int16_t index = wbs->epsd*3+ n;
+	int16_t lnodeX = lnodex[index];
+	int16_t lnodeY = lnodey[index];
+
+	//I_Error("values %hhi %i %i %i %i %lx %lx", wbs->epsd, n, index, lnodeX, lnodeY, lnodex, lnodey);
+
     i = 0;
     do {
 		ci = WI_GetPatch(cRef[i]);

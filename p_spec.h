@@ -221,9 +221,10 @@ typedef struct
 } switchlist_t;
 
 
-#define top 0
-#define middle 1
-#define bottom 2
+#define BUTTONTOP 0
+#define BUTTONMIDDLE 1
+#define BUTTONBOTTOM 2
+
 
 typedef uint8_t bwhere_e;
 

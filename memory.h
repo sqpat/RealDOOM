@@ -308,10 +308,11 @@ size_textureheights		E000:fe41
 #define size_mobjinfo			size_thinkerlist + sizeof(mobjinfo_t) * NUMMOBJTYPES
 #define size_intercepts			size_mobjinfo + sizeof(intercept_t) * MAXINTERCEPTS
 #define size_ammnumpatchbytes	size_intercepts + 524
-#define size_ammnumpatchoffsets	size_ammnumpatchbytes + (sizeof(uint16_t) * 10)
+#define size_ammnumpatchoffsets	size_ammnumpatchbytes 		+ (sizeof(uint16_t) * 10)
 #define size_linebuffer			(size_ammnumpatchoffsets	+ MAX_LINEBUFFER_SIZE)
-#define size_sectors_physics	(size_linebuffer	+ MAX_SECTORS_PHYSICS_SIZE)
-#define size_doomednum			(size_sectors_physics + sizeof(int16_t) * NUMMOBJTYPES))
+#define size_sectors_physics	(size_linebuffer			+ MAX_SECTORS_PHYSICS_SIZE)
+#define size_doomednum			(size_sectors_physics 		+ (sizeof(int16_t) * NUMMOBJTYPES))
+#define size_linespeciallist  	(size_doomednum 			+ (sizeof(int16_t) * MAXLINEANIMS))
 
 #define thinkerlist			((thinker_t __far*)			0x90000000)
 #define mobjinfo			((mobjinfo_t __far *)		(0x90000000 + size_thinkerlist))
@@ -321,7 +322,14 @@ size_textureheights		E000:fe41
 #define linebuffer			((int16_t __far*)			(0x90000000 + size_ammnumpatchoffsets))
 #define sectors_physics		((sector_physics_t __far* ) (0x90000000 + size_linebuffer))
 #define doomednum			((int16_t __far*)			(0x90000000 + size_sectors_physics))
-// ce37  
+#define linespeciallist     ((int16_t __far*)   		(0x90000000 + size_doomednum))
+
+
+
+// 9000: ... 
+// 9000:ce37  	doomednum
+// 9000:cf49	linespeciallist
+// 9000:D011	[empty]
 
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region
@@ -474,17 +482,26 @@ segs_render			7000:8000
  
 
  
-#define size_screen0          (64000u)
-#define size_gammatable       (size_screen0     + 256 * 5)
-#define size_menuoffsets      (size_gammatable  + (sizeof(uint16_t) * NUM_MENU_ITEMS))
-#define size_linespeciallist  (size_menuoffsets + (sizeof(int16_t) * MAXLINEANIMS))
+#define size_screen0        (64000u)
+#define size_gammatable     (size_screen0     + 256 * 5)
+#define size_menuoffsets    (size_gammatable  + (sizeof(uint16_t) * NUM_MENU_ITEMS))
+#define size_lnodex			(size_menuoffsets 		+ (sizeof(int16_t) * (9*3)))
+#define size_lnodey			(size_lnodex 			+ (sizeof(int16_t) * (9*3)))
 
 
-#define gammatable            ((byte __far*)      (0x80000000 + size_screen0))
-#define menuoffsets           ((uint16_t __far*)  (0x80000000 + size_gammatable))
-#define linespeciallist       ((int16_t __far*)   (0x80000000 + size_menuoffsets))
+#define gammatable          ((byte __far*)      (0x80000000 + size_screen0))
+#define menuoffsets         ((uint16_t __far*)  (0x80000000 + size_gammatable))
+#define lnodex				((int16_t __far*)	(0x80000000 + size_menuoffsets))
+#define lnodey				((int16_t __far*)	(0x80000000 + size_lnodex))
 
+/*
+8000:0000	screen0
+8000:FA00	gammatable
+8000:FF00	lnodex
+8000:FF36	lnodey
+8000:FF6C	[empty]
 
+*/
 
 #define conventional_far_bytes ((byte __far*) 0xC8000000)
 
@@ -535,9 +552,8 @@ segs_render			7000:8000
 #define size_wioffsets 					(size_level_finished_graphic + sizeof(uint16_t) * NUM_WI_ITEMS)
 #define size_wianimoffsets 				(size_wioffsets + sizeof(uint16_t) * NUM_WI_ANIM_ITEMS)
 
-#define wioffsets 						((uint16_t __far*) 0x78000000 + size_level_finished_graphic)
-#define wianimoffsets 					((uint16_t __far*) 0x78000000 + size_wioffsets)
-
+#define wioffsets 						((uint16_t __far*) 	0x78000000 + size_level_finished_graphic)
+#define wianimoffsets 					((uint16_t __far*) 	0x78000000 + size_wioffsets)
 
 
 #define size_blocklinks			(0 + MAX_BLOCKLINKS_SIZE)

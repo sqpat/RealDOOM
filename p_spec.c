@@ -1066,15 +1066,15 @@ void P_UpdateSpecials(void)
 				sidenum = lines[buttonlist[i].linenum].sidenum[0];
 
 				switch (buttonlist[i].where) {
-				case top:
+				case BUTTONTOP:
 					sides[sidenum].toptexture = buttonlist[i].btexture;
 					break;
 
-				case middle:
+				case BUTTONMIDDLE:
 					sides[sidenum].midtexture = buttonlist[i].btexture;
 					break;
 
-				case bottom:
+				case BUTTONBOTTOM:
 					sides[sidenum].bottomtexture = buttonlist[i].btexture;
 					break;
 				}
