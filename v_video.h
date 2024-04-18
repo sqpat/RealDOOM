@@ -37,18 +37,6 @@
 #define CENTERY			(SCREENHEIGHT/2)
 
 
-// Screen 0 is the screen updated by I_Update screen.
-// Screen 1 is an extra buffer.
-
-#define screen0 ((byte __far*) 0x80000000)
-#define screen1 ((byte __far*) 0x90000000)
-#define screen2 ((byte __far*) 0x70000000)
-#define screen3 ((byte __far*) 0x60000000)
-#define screen4 ((byte __far*) (0x90000000 + (65536u - ST_WIDTH * ST_HEIGHT)))
-
- 
-
- 
  
 
 //extern	byte*		screen4;
@@ -56,16 +44,6 @@
 extern  int16_t	dirtybox[4];
 #define NUM_MENU_ITEMS  45
 #define MAXLINEANIMS    64
-
-#define size_screen0          (64000u)
-#define size_gammatable       (size_screen0     + 256 * 5)
-#define size_menuoffsets      (size_gammatable  + (sizeof(uint16_t) * NUM_MENU_ITEMS))
-#define size_linespeciallist  (size_menuoffsets + (sizeof(int16_t) * MAXLINEANIMS))
-
-
-#define gammatable            ((byte __far*)      (0x80000000 + size_screen0))
-#define menuoffsets           ((uint16_t __far*)  (0x80000000 + size_gammatable))
-#define linespeciallist       ((int16_t __far*)   (0x80000000 + size_menuoffsets))
 
 extern	uint8_t	usegamma;
 

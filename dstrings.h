@@ -32,9 +32,6 @@
  
 
 #define MAX_STRINGS 306
-#define stringdata ((byte __far*)0x60000000)
-// 60003C40
-#define stringoffsets ((uint16_t __far*)0x63C40000)
 
 // Not done in french?
 

@@ -28,6 +28,7 @@
 
 #include "f_wipe.h"
 #include <dos.h>
+#include "memory.h"
 
 
 #ifdef SKIPWIPE

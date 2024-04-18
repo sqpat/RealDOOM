@@ -52,6 +52,7 @@
 #include "m_menu.h"
 #include <dos.h>
 
+#include "memory.h"
 
 
 

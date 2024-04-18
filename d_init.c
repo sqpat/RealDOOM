@@ -59,6 +59,7 @@
 
 #include "d_main.h"
 #include "p_local.h"
+#include "memory.h"
 
 #include <malloc.h>
 #include <dos.h>
@@ -69,7 +70,6 @@ extern uint8_t     sfxVolume;
 extern uint8_t     musicVolume;
 extern int8_t      demosequence;
 //extern byte*		stringdata;
-#define stringdata ((byte __far*)0x60000000)
 
 void D_InitStrings() {
 

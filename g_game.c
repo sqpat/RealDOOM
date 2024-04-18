@@ -55,6 +55,7 @@
 // SKY handling - still the wrong place.
 #include "r_data.h"
 
+#include "memory.h"
 
 #include <dos.h>
 
@@ -111,7 +112,6 @@ int8_t            demoname[32];
 boolean         demorecording; 
 boolean         demoplayback; 
 boolean         netdemo; 
-#define           demobuffer ((byte __far*) 0x50000000)
 
 uint16_t           demo_p;				// buffer
 //byte __far*           demoend; 

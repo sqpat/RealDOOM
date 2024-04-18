@@ -40,6 +40,7 @@
 #include "v_video.h"
 
 #include "wi_stuff.h"
+#include "memory.h"
 
 //
 // Data needed to add patches to full screen intermission pics.

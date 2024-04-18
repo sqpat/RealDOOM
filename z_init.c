@@ -35,6 +35,8 @@
 #include <dos.h>
 
 #include <stdlib.h>
+#include "memory.h"
+
 //#include <malloc.h>
 
 

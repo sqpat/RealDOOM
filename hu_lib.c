@@ -27,6 +27,7 @@
 #include "r_draw.h"
 #include "i_system.h"
 #include <dos.h>
+#include "memory.h"
 
 
 // boolean : whether the screen is always erased

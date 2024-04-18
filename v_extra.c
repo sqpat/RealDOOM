@@ -32,6 +32,7 @@
 #include "w_wad.h"
 #include <dos.h>
 #include <conio.h>
+#include "memory.h"
 
 
 

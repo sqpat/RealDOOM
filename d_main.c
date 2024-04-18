@@ -60,6 +60,7 @@
 #include "p_local.h"
  
 #include <dos.h>
+#include "memory.h"
 
  
  

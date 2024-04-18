@@ -30,6 +30,7 @@
 #include "v_video.h"
 #include <conio.h>
 #include <dos.h>
+#include "memory.h"
 
 
 

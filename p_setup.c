@@ -39,6 +39,7 @@
 
 #include "doomstat.h"
 #include <dos.h>
+#include "memory.h"
 
 
 void    P_SpawnMapThing(mapthing_t     mthing, int16_t key);

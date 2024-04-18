@@ -257,23 +257,13 @@ typedef enum
 #define ST_MAPHEIGHT            1
 
 
-#define ST_GRAPHICS_SEGMENT 0x7000u
 
-// tall % sign
-#define tallpercent  61304u
-#define tallpercent_patch  ((byte __far *) 0x7000EF78)
-
-//extern byte __far* palettebytes;
-#define palettebytes ((byte __far*) 0x90000000)
 // whether in automap or first-person
 extern st_stateenum_t   st_gamestate;
 
 // whether left-side main status bar is active
 extern boolean          st_statusbaron;
 
-// main bar left
-#define sbar  44024u
-#define sbar_patch   ((byte __far *) 0x7000ABF8)
 
 // 0-9, tall numbers
 extern uint16_t         tallnum[10];
@@ -290,8 +280,7 @@ extern uint16_t         faces[ST_NUMFACES];
 
 // face background
 extern uint16_t         faceback;
-#define  faceback  57152u
-#define  faceback_patch  ((byte __far *) 0x7000DF40)
+
 
 
 // main bar right
@@ -300,8 +289,7 @@ extern uint16_t         faceback;
 // weapon ownership patches
 extern uint16_t	arms[6][2];
 
-#define armsbg_patch ((byte __far *)0x7000E668u)
-#define armsbg	58984u
+
 
 
 #endif

@@ -34,7 +34,7 @@
 #include "doomstat.h"
 #include <conio.h>
 #include <dos.h>
-
+#include "memory.h"
 
 
 // ?

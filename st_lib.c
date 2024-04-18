@@ -30,6 +30,7 @@
 #include "st_lib.h"
 #include "r_local.h"
 #include <dos.h>
+#include "memory.h"
 
  
 extern boolean updatedthisframe;

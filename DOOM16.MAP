@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/04/18 17:04:21
+Created on:       24/04/18 21:24:47
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -271,9 +271,9 @@ Module: g_game.obj(C:\REALDOOM\g_game.c)
 26ab:2344+     _dclicktime
 26ab:2348+     _dclickstate
 26ab:234c+     _dclicktime2
-26ab:2350+     _mousearray
-26ab:2354+     _dclickstate2
-26ab:2358+     _dclicks2
+26ab:2350+     _dclickstate2
+26ab:2354+     _dclicks2
+26ab:2358+     _mousearray
 26ab:235c      _starttime
 26ab:2360      _gametic
 26ab:2364+     _defdemoname
@@ -1020,10 +1020,10 @@ Module: p_sight.obj(C:\REALDOOM\p_sight.c)
 09c3:9ce4      P_CheckSight_
 26ab:2af0+     _strace
 26ab:2b00      _bottomslope
-26ab:2b04+     _sightzstart
-26ab:2b08+     _cachedt2x
-26ab:2b0c+     _cachedt2y
-26ab:2b10      _topslope
+26ab:2b04+     _cachedt2x
+26ab:2b08+     _cachedt2y
+26ab:2b0c      _topslope
+26ab:2b10+     _sightzstart
 Module: p_spec.obj(C:\REALDOOM\p_spec.c)
 09c3:9e60      getSideNum_
 09c3:9e9e*     getSector_
