@@ -35,7 +35,7 @@
 #include "s_sound.h"
 
 #include "doomstat.h"
-
+#include "memory.h"
 
 extern uint16_t		switchlist[MAXSWITCHES * 2];
 extern int16_t		numswitches;

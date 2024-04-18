@@ -29,6 +29,7 @@
 #include "doomstat.h"
 #include "r_data.h"
 #include <dos.h>
+#include "memory.h"
 
 
 //

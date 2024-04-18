@@ -332,11 +332,10 @@ static anim_t *anims[NUMEPISODES] =
     epsd2animinfo
 };
 
-#define NEXT_OFFSET 8192
-#define NUM_WI_ITEMS 28
-#define NUM_WI_ANIM_ITEMS 30
-uint16_t wioffsets[NUM_WI_ITEMS];
-uint16_t wianimoffsets[NUM_WI_ANIM_ITEMS];
+#define NEXT_OFFSET 		MAX_LEVEL_COMPLETE_GRAPHIC_SIZE
+#define NUM_WI_ITEMS 		28
+#define NUM_WI_ANIM_ITEMS 	30
+
 
 
 patch_t __far* WI_GetPatch(int16_t i) {

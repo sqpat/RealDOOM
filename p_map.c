@@ -33,6 +33,7 @@
 #include "r_state.h"
 // Data.
 #include "sounds.h"
+#include "memory.h"
 
 
 fixed_t_union		tmbbox[4];

@@ -31,6 +31,7 @@
 // State.
 #include "doomstat.h"
 #include "r_state.h"
+#include "memory.h"
 
 uint16_t		switchlist[MAXSWITCHES * 2];
 int16_t		numswitches;

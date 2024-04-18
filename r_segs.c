@@ -26,6 +26,7 @@
 
 #include "r_local.h"
 #include "z_zone.h"
+#include "memory.h"
 
 // OPTIMIZE: closed two sided lines as single sided
 

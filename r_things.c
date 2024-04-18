@@ -32,6 +32,7 @@
 #include "doomstat.h"
 #include "m_misc.h"
 #include "p_local.h"
+#include "memory.h"
 
 
 

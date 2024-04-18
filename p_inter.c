@@ -34,6 +34,7 @@
 #include "s_sound.h"
 
 #include "p_inter.h"
+#include "memory.h"
 
 
 #define BONUSADD	6

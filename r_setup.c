@@ -38,6 +38,7 @@
 #include "tables.h"
 #include "w_wad.h"
 #include <dos.h>
+#include "memory.h"
 
 
 #define DISTMAP		2

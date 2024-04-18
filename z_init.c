@@ -89,7 +89,7 @@ byte __far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 	//vernum = 10*(vernum >> 4) + (vernum&0xF);
 	DEBUG_PRINT("Version %i", vernum);
 	if (vernum < 40) {
-		DEBUG_PRINT("Warning! EMS Version too low! Expected 4.0 , found %x", vernum);
+		DEBUG_PRINT("Expected EMS 4.0, found %x", vernum);
 
 	}
 
@@ -109,7 +109,7 @@ byte __far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 	intx86(EMS_INT, &regs, &regs);
 	pagesavail = regs.w.bx;
 	pagestotal = regs.w.dx;
-	DEBUG_PRINT("\n  %i pages total, %i pages available at page frame %p", pagestotal, pagesavail, pageframebase);
+	DEBUG_PRINT("\n  %i pages total, %i pages available at frame %p", pagestotal, pagesavail, pageframebase);
 
 	if (pagesavail < numPagesToAllocate) {
 		DEBUG_PRINT("\nWarning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);

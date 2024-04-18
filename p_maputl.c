@@ -33,6 +33,7 @@
 // State.
 #include "r_state.h"
 #include "p_setup.h"
+#include "memory.h"
 
 //
 // P_AproxDistance

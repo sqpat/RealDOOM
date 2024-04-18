@@ -24,6 +24,7 @@
 #include "i_system.h"
 #include "m_misc.h"
 #include "p_setup.h"
+#include "memory.h"
 
 fixed_t_union	leveltime;
 int16_t currentThinkerListHead;

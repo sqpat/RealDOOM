@@ -32,7 +32,8 @@
 #include <dos.h>
 
 #include <stdlib.h>
- 
+#include "memory.h"
+
 
 
 // 8 MB worth. 

@@ -32,6 +32,7 @@
 
 // Data.
 #include "sounds.h"
+#include "memory.h"
 
 
 THINKERREF		activeplats[MAXPLATS];

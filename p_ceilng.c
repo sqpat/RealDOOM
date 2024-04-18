@@ -28,6 +28,7 @@
 
 // Data.
 #include "sounds.h"
+#include "memory.h"
 
 //
 // CEILINGS

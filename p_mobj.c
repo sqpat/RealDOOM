@@ -32,6 +32,7 @@
 #include "doomstat.h"
 #include "p_setup.h"
 
+#include "memory.h"
 
 
 void G_PlayerReborn ();

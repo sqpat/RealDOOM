@@ -37,6 +37,7 @@
 #include "i_system.h"
 #include "doomstat.h"
 #include <dos.h>
+#include "memory.h"
 
 
 

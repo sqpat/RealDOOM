@@ -29,6 +29,7 @@
 
 #include "r_local.h"
 #include <dos.h>
+#include "memory.h"
 
 
 

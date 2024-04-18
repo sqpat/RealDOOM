@@ -508,6 +508,39 @@ segs_render			7000:8000
 #define  faceback_patch  ((byte __far *) 0x7000DF40)
 
 #define armsbg_patch ((byte __far *)0x7000E668u)
+
 #define armsbg	58984u
+
+
+
+
+#define menugraphicspage0		(byte __far* )0x70000000
+#define menugraphicspage4		(byte __far* )0x64000000
+
+#define	 wigraphicspage0		(byte __far* )0x70000000
+#define  wigraphicslevelname	(byte __far* )0x78000000
+#define  wigraphicsfullscreen	(byte __far* )0x7C000000
+#define	 wianimspage			(byte __far* )0x60000000
+
+
+#define NUM_WI_ITEMS 28
+#define NUM_WI_ANIM_ITEMS 30
+
+// maximum size for level complete graphic, times two
+#define MAX_LEVEL_COMPLETE_GRAPHIC_SIZE 0x1240
+#define size_level_finished_graphic		(MAX_LEVEL_COMPLETE_GRAPHIC_SIZE * 2)
+#define size_wioffsets 					(size_level_finished_graphic + sizeof(uint16_t) * NUM_WI_ITEMS)
+#define size_wianimoffsets 				(size_wioffsets + sizeof(uint16_t) * NUM_WI_ANIM_ITEMS)
+
+#define wioffsets 						((uint16_t __far*) 0x78000000 + size_level_finished_graphic)
+#define wianimoffsets 					((uint16_t __far*) 0x78000000 + size_wioffsets)
+
+
+
+#define size_blocklinks			(0 + MAX_BLOCKLINKS_SIZE)
+#define size_nightmarespawns	(size_blocklinks		+ NIGHTMARE_SPAWN_SIZE)
+//3f8a, runs up close to 6800 which has mobjposlist, etc
+
+ 
 
 #endif

@@ -53,9 +53,6 @@ extern int32_t lumpinfo5000switchcount;
 
 
 
-// FIXME_COMMERCIAL these values will have to change upward.
-#define STATIC_CONVENTIONAL_SPRITE_SIZE 6939u
-
 // These are WAD maxes and corresponds to doom2 max values
 #define MAX_TEXTURES 428
 #define MAX_PATCHES 476
@@ -72,8 +69,7 @@ extern int32_t lumpinfo5000switchcount;
 #define CACHE_OVERHEAD_SIZE (TEXTURE_CACHE_OVERHEAD_SIZE + SPRITE_CACHE_OVERHEAD_SIZE + PATCH_CACHE_OVERHEAD_SIZE + FLAT_CACHE_OVERHEAD_SIZE)
 
 // 27099 - should go to c802
-#define CONVENTIONAL2_SIZE STATIC_CONVENTIONAL_SPRITE_SIZE + (MAX_THINKERS * sizeof(mobj_pos_t)) 
-extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
+ extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
 extern uint16_t remainingconventional;
 
 extern uint16_t EMS_PAGE;
@@ -267,13 +263,6 @@ void Z_ClearDeadCode();
 #define PAGE_TYPE_PHYSICS 0
 #define PAGE_TYPE_RENDER 1
 
-#define menugraphicspage0		(byte __far* )0x70000000
-#define menugraphicspage4		(byte __far* )0x64000000
-
-#define	 wigraphicspage0		(byte __far* )0x70000000
-#define  wigraphicslevelname	(byte __far* )0x78000000
-#define  wigraphicsfullscreen	(byte __far* )0x7C000000
-#define	 wianimspage			(byte __far* )0x60000000
 
 #define PAGE_4000_UNMAPPED -1
 #define PAGE_4000_LUMPINFO 1

@@ -49,11 +49,10 @@ extern union REGS regs;
 
 // based a bit off wolf3d and catacomb source code
 
-void(*XMSaddr) (void);		// far pointer to XMS driver
+//void(*XMSaddr) (void);		// far pointer to XMS driver
 //uint16_t UMBbase = 0;
-uint16_t UMBsize = 0;
+//uint16_t UMBsize = 0;
 //byte __far* conventional_far_bytes = NULL;
-#define conventional_far_bytes ((byte __far*) 0xC8000000)
 
 
 /*

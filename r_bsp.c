@@ -30,6 +30,7 @@
 // State.
 #include "doomstat.h"
 #include "r_state.h"
+#include "memory.h"
 
 //#include "r_local.h"
 

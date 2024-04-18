@@ -35,6 +35,7 @@
 
 #include "i_system.h"
 #include "doomstat.h"
+#include "memory.h"
 
 
 // Fineangles in the SCREENWIDTH wide window.
