@@ -621,6 +621,7 @@ void D_DoomMain2(void)
 	int8_t          textbuffer[256];
 	int8_t            title[128];
 	
+	
 	/*
 	struct SREGS sregs;
 	segread(&sregs);

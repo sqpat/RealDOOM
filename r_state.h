@@ -209,8 +209,14 @@ MAX_SEGS_RENDER_SIZE		28150
 #define size_segs_render					size_ceilingclip		+ ( MAX_SEGS_RENDER_SIZE)
 #define size_screenheightarray				size_segs_render		+ sizeof(int16_t) * (SCREENWIDTH)
 #define size_negonearray					size_screenheightarray	+ sizeof(int16_t) * (SCREENWIDTH)
+#define size_spritecache_nodes				size_negonearray		+ sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
+#define size_flatcache_nodes				size_spritecache_nodes	+ sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
+#define size_patchcache_nodes				size_flatcache_nodes	+ sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
+#define size_texturecache_nodes				size_patchcache_nodes	+ sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
 
-//c448
+
+
+//fd4a
 
 
 
@@ -237,6 +243,12 @@ MAX_SEGS_RENDER_SIZE		28150
 #define segs_render					((seg_render_t	__far*		)	(0x80000000 + size_ceilingclip))
 #define screenheightarray			((int16_t __far*)				(0x80000000 + size_segs_render))
 #define negonearray					((int16_t __far*)				(0x80000000 + size_screenheightarray))
+#define spritecache_nodes			((cache_node_t __far*)			(0x80000000 + size_negonearray))
+#define flatcache_nodes				((cache_node_t __far*)			(0x80000000 + size_spritecache_nodes))
+#define patchcache_nodes			((cache_node_t __far*)			(0x80000000 + size_flatcache_nodes))
+#define texturecache_nodes			((cache_node_t __far*)			(0x80000000 + size_patchcache_nodes))
+
+
 
 
 // RENDER 0x7800 - 0x7FFF DATA NOT USED IN PLANES

@@ -119,19 +119,16 @@ int32_t totalpatchsize = 0;
 
 int8_t spritecache_head = -1;
 int8_t spritecache_tail = -1;
-cache_node_t spritecache_nodes[NUM_SPRITE_CACHE_PAGES]; 
 
 int8_t flatcache_head = -1;
 int8_t flatcache_tail = -1;
-cache_node_t flatcache_nodes[NUM_FLAT_CACHE_PAGES];
 
 int8_t patchcache_head = -1;
 int8_t patchcache_tail = -1;
-cache_node_t patchcache_nodes[NUM_PATCH_CACHE_PAGES]; 
 
 int8_t texturecache_head = -1;
 int8_t texturecache_tail = -1;
-cache_node_t texturecache_nodes[NUM_TEXTURE_PAGES];
+
 
 /*
 int8_t get_node_index() {
@@ -152,7 +149,7 @@ void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 	int8_t next;
 	int8_t pagecount;
 
-	cache_node_t* nodelist;
+	cache_node_t far* nodelist;
 	int8_t* nodetail;
 	int8_t* nodehead;
 	int8_t lastpagecount;
@@ -364,7 +361,7 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	int8_t offset;
 	int8_t remainingpages;
 	int8_t next, prev;
-	cache_node_t* nodelist;
+	cache_node_t far* nodelist;
 	int8_t* nodetail;
 	int8_t* nodehead;
 	int8_t maxcachesize;
