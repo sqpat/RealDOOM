@@ -166,7 +166,7 @@ int16_t                     saveStringEnter;
 int16_t                     saveSlot;       // which slot to save in
 int16_t                     saveCharIndex;  // which char we're editing
 // old save description before edit
-int8_t                    saveOldString[SAVESTRINGSIZE];
+//int8_t                    saveOldString[SAVESTRINGSIZE];
 
 
 
@@ -174,7 +174,7 @@ int8_t                    saveOldString[SAVESTRINGSIZE];
 #define LINEHEIGHT              16
 #define HU_FONT_SIZE			8
 extern boolean          sendpause;
-int8_t                    savegamestrings[10][SAVESTRINGSIZE];
+//int8_t                    savegamestrings[10*SAVESTRINGSIZE];
 
 
 int16_t           itemOn;                 // menu item skull is on
@@ -536,11 +536,11 @@ void M_ReadSaveStrings(void)
         if (handle == -1)
         {
 			getStringByIndex(EMPTYSTRING, temp);
-            strcpy(&savegamestrings[i][0],temp);
+            strcpy(&savegamestrings[i*SAVESTRINGSIZE],temp);
             LoadMenu[i].status = 0;
             continue;
         }
-        count = read (handle, &savegamestrings[i], SAVESTRINGSIZE);
+        count = read (handle, &savegamestrings[i*SAVESTRINGSIZE], SAVESTRINGSIZE);
         close (handle);
         LoadMenu[i].status = 1;
     }
@@ -558,7 +558,7 @@ void M_DrawLoad(void)
     for (i = 0;i < load_end; i++)
     {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
-        M_WriteText(LoadDef.x,LoadDef.y+LINEHEIGHT*i,savegamestrings[i]);
+        M_WriteText(LoadDef.x,LoadDef.y+LINEHEIGHT*i,&savegamestrings[i*SAVESTRINGSIZE]);
     }
 }
 
@@ -621,12 +621,12 @@ void M_DrawSave(void)
     for (i = 0;i < load_end; i++)
     {
         M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
-        M_WriteText(LoadDef.x,LoadDef.y+LINEHEIGHT*i,savegamestrings[i]);
+        M_WriteText(LoadDef.x,LoadDef.y+LINEHEIGHT*i,&savegamestrings[i*SAVESTRINGSIZE]);
     }
         
     if (saveStringEnter)
     {
-        i = M_StringWidth(savegamestrings[saveSlot]);
+        i = M_StringWidth(&savegamestrings[saveSlot*SAVESTRINGSIZE]);
         M_WriteText(LoadDef.x + i,LoadDef.y+LINEHEIGHT*saveSlot,"_");
     }
 }
@@ -636,7 +636,7 @@ void M_DrawSave(void)
 //
 void M_DoSave(int16_t slot)
 {
-    G_SaveGame (slot,savegamestrings[slot]);
+    G_SaveGame (slot,&savegamestrings[slot*SAVESTRINGSIZE]);
     M_ClearMenus ();
 
     // PICK QUICKSAVE SLOT YET?
@@ -654,11 +654,12 @@ void M_SaveSelect(int16_t choice)
     saveStringEnter = 1;
     
     saveSlot = choice;
-    strcpy(saveOldString,savegamestrings[choice]);
+    
+    FAR_strcpy(saveOldString,&savegamestrings[choice*SAVESTRINGSIZE]);
 	getStringByIndex(EMPTYSTRING, temp);
-    if (!strcmp(savegamestrings[choice], temp))
-        savegamestrings[choice][0] = 0;
-    saveCharIndex = strlen(savegamestrings[choice]);
+    if (!strcmp(&savegamestrings[choice*SAVESTRINGSIZE], temp))
+        savegamestrings[choice*SAVESTRINGSIZE] = 0;
+    saveCharIndex = strlen(&savegamestrings[choice*SAVESTRINGSIZE]);
 }
 
 //
@@ -718,7 +719,7 @@ void M_QuickSave(void)
         return;
     }
 	getStringByIndex(QSPROMPT, temp);
-    sprintf(tempstring, temp,savegamestrings[quickSaveSlot]);
+    sprintf(tempstring, temp,&savegamestrings[quickSaveSlot*SAVESTRINGSIZE]);
     M_StartMessage(tempstring,M_QuickSaveResponse,true);
 }
 
@@ -749,7 +750,7 @@ if (quickSaveSlot < 0) // means to pick a slot now
         return;
     }
 	getStringByIndex(QLPROMPT, temp);
-	sprintf(tempstring, temp,savegamestrings[quickSaveSlot]);
+	sprintf(tempstring, temp,&savegamestrings[quickSaveSlot*SAVESTRINGSIZE]);
     M_StartMessage(tempstring,M_QuickLoadResponse,true);
 }
 
@@ -1387,18 +1388,18 @@ boolean M_Responder (event_t __far*  ev)
           case KEY_BACKSPACE:
             if (saveCharIndex > 0) {
                 saveCharIndex--;
-                savegamestrings[saveSlot][saveCharIndex] = 0;
+                savegamestrings[saveSlot*SAVESTRINGSIZE+saveCharIndex] = 0;
             }
             break;
                                 
           case KEY_ESCAPE:
             saveStringEnter = 0;
-            strcpy(&savegamestrings[saveSlot][0],saveOldString);
+            FAR_strcpy(&savegamestrings[saveSlot*SAVESTRINGSIZE],saveOldString);
             break;
                                 
           case KEY_ENTER:
             saveStringEnter = 0;
-            if (savegamestrings[saveSlot][0])
+            if (savegamestrings[saveSlot*SAVESTRINGSIZE])
                 M_DoSave(saveSlot);
             break;
                                 
@@ -1409,10 +1410,10 @@ boolean M_Responder (event_t __far*  ev)
                     break;
             if (ch >= 32 && ch <= 127 &&
                 saveCharIndex < SAVESTRINGSIZE-1 &&
-                M_StringWidth(savegamestrings[saveSlot]) <
+                M_StringWidth(&savegamestrings[saveSlot*SAVESTRINGSIZE]) <
                 (SAVESTRINGSIZE-2)*8) {
-                savegamestrings[saveSlot][saveCharIndex++] = ch;
-                savegamestrings[saveSlot][saveCharIndex] = 0;
+                savegamestrings[saveSlot*SAVESTRINGSIZE+saveCharIndex++] = ch;
+                savegamestrings[saveSlot*SAVESTRINGSIZE+saveCharIndex] = 0;
             }
             break;
         }

@@ -478,9 +478,16 @@ size_textureheights		E000:fe41
 //#define sectors_physics		((sector_physics_t __far* ) (0x5000C000))
 #define CC00Block 0xCC000000
 
-#define size_rejectmatrix		(MAX_REJECT_SIZE)
-#define rejectmatrix		((byte __far *)				(0x5000C000))
+#define SAVESTRINGSIZE  24
 
+#define size_rejectmatrix		(MAX_REJECT_SIZE)
+#define size_savegamestrings	(10 * SAVESTRINGSIZE)
+#define size_saveOldString		(SAVESTRINGSIZE)
+
+#define rejectmatrix			((byte __far *)				(0x5000C000))
+#define savegamestrings			((int8_t __far *) 			(0x5000C000) + size_rejectmatrix)
+#define saveOldString			((int8_t __far *) 			(0x5000C000) + size_savegamestrings)
+//int8_t                    savegamestrings[10*SAVESTRINGSIZE];
 
  
 

@@ -62,7 +62,6 @@
 
 
 #define SAVEGAMESIZE    0x2c000
-#define SAVESTRINGSIZE  24
 // lets keep this comfortably 16 bit. otherwise how do we fit in ems without big rewrite?
 #define DEMO_MAX_SIZE 0xF800
 
