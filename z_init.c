@@ -316,36 +316,35 @@ void Z_LoadBinaries() {
 	int i;
 	FILE* fp;
 	// currently in physics region!
-	fp = fopen("D_MBINFO.BIN", "rb"); 
+	
+	// all data now in this file instead of spread out across files
+	fp = fopen("DOOMDATA.BIN", "rb"); 
+	//1507
 	FAR_fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
-	fclose(fp);
 	DEBUG_PRINT(".");
 
-	fp = fopen("D_STATES.BIN", "rb");
+	//5802
 	FAR_fread(states, sizeof(state_t), NUMSTATES, fp);
-	fclose(fp);
 	DEBUG_PRINT(".");
 
-	fp = fopen("D_GAMMAT.BIN", "rb");
+	//1280
 	FAR_fread(gammatable, 1, 5 * 256, fp);
-	fclose(fp);
 	DEBUG_PRINT(".");
 
-	fp = fopen("D_FINES2.BIN", "rb");
+	//40960
 	FAR_fread(finesine, 4, 10240, fp);
-	fclose(fp);
 	DEBUG_PRINT(".");
 
-	fp = fopen("D_FINET4.BIN", "rb");
+	//8192
 	FAR_fread(finetangentinner, 4, 2048, fp);
-	fclose(fp);
 	DEBUG_PRINT(".");
 
-	fp = fopen("DATA.BIN", "rb");
+	//274
 	FAR_fread(doomednum, 2, NUMMOBJTYPES, fp);
 
 	// just load them all here in one call instead of 5 like below
 	Z_QuickmapIntermission();
+	//760
 	FAR_fread(lnodex, 1, 760, fp);
 
 	/*
@@ -371,7 +370,6 @@ void Z_LoadBinaries() {
 	DEBUG_PRINT(".");
 
 
-	//fp = fopen("D_TANTOA.BIN", "rb");
 	//FAR_fread(tantoangle, 4, 2049, fp);
 	//fclose(fp);
 	DEBUG_PRINT(".");

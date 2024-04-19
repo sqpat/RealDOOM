@@ -278,6 +278,7 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 	return FixedDiv2(a, b);
 }
 
+// basically our own little custom version of far fstrncpy. we were only ever using it with size 8
 void copystr8(int8_t __far* dst, int8_t __far* src){
 	int8_t j;
 	for (j = 0; j < 8; j++){
