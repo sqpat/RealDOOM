@@ -114,7 +114,7 @@ extern uint16_t			hu_font[HU_FONTSIZE];
 // 1 = message to be printed
 uint8_t                     messageToPrint;
 // ...and here is the message string!
-int8_t                   messageString[100];
+int8_t                   messageString[105];
 
 // message x & y
 int16_t                     messageLastMenuActive;
@@ -1085,7 +1085,7 @@ void M_QuitDOOM(int16_t choice)
   //  or one at random, between 1 and maximum number.
 	int8_t temp[100];
 	int8_t temp2[100];
-	int8_t endstring[100];
+	int8_t endstring[140];
 	int8_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
 	getStringByIndex(DOSY, temp2);
 	if (commercial)
