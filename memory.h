@@ -479,20 +479,44 @@ segs_render			7000:8000
 #define screen3 ((byte __far*) 0x60000000)
 #define screen4 ((byte __far*) (0x90000000 + (65536u - ST_WIDTH * ST_HEIGHT)))
 
- 
+// screen1 is used during wi_stuff/intermission code, we can stick this anim data there
+#define size_screen1    	    (64000u)
+#define size_lnodex				(size_screen1 		+ (sizeof(int16_t) * (9*3)))
+#define size_lnodey				(size_lnodex 		+ (sizeof(int16_t) * (9*3)))
+#define size_epsd0animinfo		(size_lnodey 		+ (16 * 10))
+#define size_epsd1animinfo		(size_epsd0animinfo + (16 * 9))
+#define size_epsd2animinfo		(size_epsd1animinfo + (16 * 6))
+
+#define screen1 			((byte __far*) 		0x90000000)
+#define lnodex				((int16_t __far*)	(0x90000000 + size_screen1))
+#define lnodey				((int16_t __far*)	(0x90000000 + size_lnodex))
+#define epsd0animinfo		((wianim_t __far*)	(0x90000000 + size_lnodey))
+#define epsd1animinfo		((wianim_t __far*)	(0x90000000 + size_epsd0animinfo))
+#define epsd2animinfo		((wianim_t __far*)	(0x90000000 + size_epsd1animinfo))
+
+
+
+/*
+9000:0000	screen1
+9000:FA00	lnodex
+9000:FA36	lnodey
+9000:FB0C	epsd0animinfo
+9000:FAA0	epsd1animinfo
+9000:FB9C	epsd2animinfo
+9000:FBFC	[empty]
+
+
+*/
 
  
 #define size_screen0        (64000u)
 #define size_gammatable     (size_screen0     + 256 * 5)
 #define size_menuoffsets    (size_gammatable  + (sizeof(uint16_t) * NUM_MENU_ITEMS))
-#define size_lnodex			(size_menuoffsets 		+ (sizeof(int16_t) * (9*3)))
-#define size_lnodey			(size_lnodex 			+ (sizeof(int16_t) * (9*3)))
 
 
 #define gammatable          ((byte __far*)      (0x80000000 + size_screen0))
 #define menuoffsets         ((uint16_t __far*)  (0x80000000 + size_gammatable))
-#define lnodex				((int16_t __far*)	(0x80000000 + size_menuoffsets))
-#define lnodey				((int16_t __far*)	(0x80000000 + size_lnodex))
+
 
 /*
 8000:0000	screen0

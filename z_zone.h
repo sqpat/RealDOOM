@@ -133,7 +133,7 @@ void Z_ShutdownEMS();
 // 126
 #define NUM_SPRITE_CACHE_PAGES						16
 #define NUM_EMS4_SWAP_PAGES							(int32_t)(FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 139 in use currently (including 0)
+// 127 in use currently (including 0)
 
 // 192 for 3 mb...
 

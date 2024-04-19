@@ -110,7 +110,6 @@ typedef struct
 // 20 bytes each .. 10, 9, 6 of them so 25 * 20 = 500 bytes total.
 //
 // Animation.
-// There is another anim_t used in p_spec.
 //
 typedef struct
 {
@@ -151,7 +150,7 @@ typedef struct
     // used by RANDOM and LEVEL when animating
     uint8_t		state;  
 
-} anim_t;
+} wianim_t;
 
 #ifdef __DEMO_ONLY_BINARY
 void WI_Start(wbstartstruct_t __near* wbstartstruct) {
@@ -182,52 +181,16 @@ void WI_Ticker(void) {
 //
 
 // 16 bytes each, around 200-300 total.
-
-static anim_t epsd0animinfo[] =
-{
-    { ANIM_ALWAYS, TICRATE/3, 3, { 224, 104 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 184, 160 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 112, 136 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 72, 112 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 88, 96 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 64, 48 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 192, 40 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 136, 16 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 80, 16 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 64, 24 } }
-};
-
-static anim_t epsd1animinfo[] =
-{
-    { ANIM_LEVEL, TICRATE/3, 1, { 128, 136 }, 1 },
-    { ANIM_LEVEL, TICRATE/3, 1, { 128, 136 }, 2 },
-    { ANIM_LEVEL, TICRATE/3, 1, { 128, 136 }, 3 },
-    { ANIM_LEVEL, TICRATE/3, 1, { 128, 136 }, 4 },
-    { ANIM_LEVEL, TICRATE/3, 1, { 128, 136 }, 5 },
-    { ANIM_LEVEL, TICRATE/3, 1, { 128, 136 }, 6 },
-    { ANIM_LEVEL, TICRATE/3, 1, { 128, 136 }, 7 },
-    { ANIM_LEVEL, TICRATE/3, 3, { 192, 144 }, 8 },
-    { ANIM_LEVEL, TICRATE/3, 1, { 128, 136 }, 8 }
-};
-
-static anim_t epsd2animinfo[] =
-{
-    { ANIM_ALWAYS, TICRATE/3, 3, { 104, 168 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 40, 136 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 160, 96 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 104, 80 } },
-    { ANIM_ALWAYS, TICRATE/3, 3, { 120, 32 } },
-    { ANIM_ALWAYS, TICRATE/4, 3, { 40, 0 } }
-};
+ 
 
 static int8_t NUMANIMS[NUMEPISODES] =
 {
-    sizeof(epsd0animinfo)/sizeof(anim_t),
-    sizeof(epsd1animinfo)/sizeof(anim_t),
-    sizeof(epsd2animinfo)/sizeof(anim_t)
+    10,
+    9,
+    6
 };
 
-static anim_t *anims[NUMEPISODES] =
+wianim_t __far*wianims[NUMEPISODES] =
 {
     epsd0animinfo,
     epsd1animinfo,
@@ -339,8 +302,6 @@ static int16_t		cnt_time;
 static int16_t		cnt_par;
 static int16_t		cnt_pause;
 
-// # of commercial levels
-static int8_t		NUMCMAPS; 
 
 boolean unloaded = false;
 
@@ -358,11 +319,7 @@ static uint8_t		splatRef;
 
 // 0-9 graphic
 static uint8_t		numRef[10];
- 
-// "Total", your face, your dead face
-
-
- // Name graphics of each level (centered)
+  
 
 //
 // CODE
@@ -467,7 +424,7 @@ WI_drawOnLnode
 void WI_initAnimatedBack(void)
 {
     int16_t		i;
-    anim_t __near*	a;
+    wianim_t __far*	a;
 
     if (commercial)
 	return;
@@ -477,20 +434,19 @@ void WI_initAnimatedBack(void)
 	return;
 #endif
 
-    for (i=0;i<NUMANIMS[wbs->epsd];i++)
-    {
-	a = &anims[wbs->epsd][i];
+    for (i=0;i<NUMANIMS[wbs->epsd];i++) {
+		a = &wianims[wbs->epsd][i];
 
-	// init variables
-	a->ctr = -1;
+		// init variables
+		a->ctr = -1;
 
-	// specify the next time to draw it
-	if (a->type == ANIM_ALWAYS)
-	    a->nexttic = bcnt + 1 + (M_Random()%a->period);
-	else if (a->type == ANIM_RANDOM)
-	    a->nexttic = bcnt + 1 + 0+(M_Random()%a->data1);
-	else if (a->type == ANIM_LEVEL)
-	    a->nexttic = bcnt + 1;
+		// specify the next time to draw it
+		if (a->type == ANIM_ALWAYS)
+			a->nexttic = bcnt + 1 + (M_Random()%a->period);
+		else if (a->type == ANIM_RANDOM)
+			a->nexttic = bcnt + 1 + 0+(M_Random()%a->data1);
+		else if (a->type == ANIM_LEVEL)
+			a->nexttic = bcnt + 1;
     }
 
 }
@@ -498,7 +454,7 @@ void WI_initAnimatedBack(void)
 void WI_updateAnimatedBack(void)
 {
     int16_t		i;
-    anim_t __near*	a;
+    wianim_t __far*	a;
 
     if (commercial)
 	return;
@@ -508,41 +464,40 @@ void WI_updateAnimatedBack(void)
 	return;
 #endif
 
-    for (i=0;i<NUMANIMS[wbs->epsd];i++)
-    {
-	a = &anims[wbs->epsd][i];
+    for (i=0;i<NUMANIMS[wbs->epsd];i++) {
+		a = &wianims[wbs->epsd][i];
 
-	if (bcnt == a->nexttic)
-	{
-	    switch (a->type)
-	    {
-	      case ANIM_ALWAYS:
-		if (++a->ctr >= a->nanims) a->ctr = 0;
-		a->nexttic = bcnt + a->period;
-		break;
+		if (bcnt == a->nexttic) {
+			switch (a->type) {
+				case ANIM_ALWAYS:
+					a->ctr++;
+					if (a->ctr >= a->nanims) {
+						a->ctr = 0;
+					}
+					a->nexttic = bcnt + a->period;
+					break;
 
-	      case ANIM_RANDOM:
-		a->ctr++;
-		if (a->ctr == a->nanims)
-		{
-		    a->ctr = -1;
-		    a->nexttic = bcnt+0+(M_Random()%a->data1);
+				case ANIM_RANDOM:
+					a->ctr++;
+					if (a->ctr == a->nanims) {
+						a->ctr = -1;
+						a->nexttic = bcnt+0+(M_Random()%a->data1);
+					}
+					else a->nexttic = bcnt + a->period;
+					break;
+				
+				case ANIM_LEVEL:
+					// gawd-awful hack for level anims
+					if (!(state == StatCount && i == 7) && wbs->next == a->data1) {
+						a->ctr++;
+						if (a->ctr == a->nanims)  {
+							a->ctr--;
+						}
+						a->nexttic = bcnt + a->period;
+					}
+					break;
+			}
 		}
-		else a->nexttic = bcnt + a->period;
-		break;
-		
-	      case ANIM_LEVEL:
-		// gawd-awful hack for level anims
-		if (!(state == StatCount && i == 7)
-		    && wbs->next == a->data1)
-		{
-		    a->ctr++;
-		    if (a->ctr == a->nanims) a->ctr--;
-		    a->nexttic = bcnt + a->period;
-		}
-		break;
-	    }
-	}
 
     }
 
@@ -552,7 +507,7 @@ void WI_drawAnimatedBack(void)
 {
    
 	int16_t i;
-	anim_t __near*anim;
+	wianim_t __far*anim;
 
 	if (commercial)
 		return;
@@ -562,9 +517,8 @@ void WI_drawAnimatedBack(void)
 		return;
 #endif
 
-	for (i = 0; i < NUMANIMS[wbs->epsd]; i++)
-	{
-		anim = &anims[wbs->epsd][i];
+	for (i = 0; i < NUMANIMS[wbs->epsd]; i++) {
+		anim = &wianims[wbs->epsd][i];
 
 		if (anim->ctr >= 0)
 			V_DrawPatch(anim->loc.x, anim->loc.y, FB, WI_GetAnimPatch(anim->pRef[anim->ctr]));
@@ -977,7 +931,6 @@ void WI_Ticker(void)
 {
 	// counter for general background animation
 	bcnt++;
-
 	if (bcnt == 1)
 	{
 		// intermission music
@@ -988,6 +941,7 @@ void WI_Ticker(void)
 	}
 
 	WI_checkForAccelerate();
+	Z_QuickmapIntermission();
 
 	switch (state)
 	{
@@ -1003,6 +957,7 @@ void WI_Ticker(void)
 		WI_updateNoState();
 		break;
 	}
+	Z_QuickmapPhysics();
 
 }
 
@@ -1027,12 +982,9 @@ void WI_loadData(void)
 
 	Z_QuickmapScratch_5000();
 
-    if (commercial) {
-		NUMCMAPS = 32;								
+    if (!commercial) {
+		
 		 			
-	}
-	else {
-
 
 		// you are here
 		yahRef[0] = 0;
@@ -1044,7 +996,7 @@ void WI_loadData(void)
 		splatRef = 2;
 		
 		if (wbs->epsd < 3) {
-			anim_t __near*	anim;
+			wianim_t __far*	anim;
 			int16_t j = 0;
 			int16_t k = 0;
 			uint16_t size = 0;
@@ -1052,7 +1004,7 @@ void WI_loadData(void)
 			int16_t lump;
 			byte __far* dst = wianimspage;
 			for (j=0;j<NUMANIMS[wbs->epsd];j++) {
-				anim = &anims[wbs->epsd][j];
+				anim = &wianims[wbs->epsd][j];
 				for (i=0;i<anim->nanims;i++) {
 					// MONDO HACK!
 					if (wbs->epsd != 1 || j != 8) {
@@ -1070,7 +1022,7 @@ void WI_loadData(void)
 
 					} else {
 						// HACK ALERT!
-						anim->pRef[i] = anims[1][4].pRef[i];
+						anim->pRef[i] = epsd1animinfo[4].pRef[i];
 					}
 				}
 			}
@@ -1099,7 +1051,7 @@ void WI_unloadData(void)
 
 void WI_Drawer (void)
 {
-
+	
 	// hack alert... wi_drawer gets called sometimes for a frame or two after it goes away,
 	// using unloaded Z_Malloc EMS vars, causing crashes... not sure why it gets called.
 	// TODO: fix whatever causes this. or set the state below to something that doesnt draw?
@@ -1193,7 +1145,7 @@ void WI_Start(wbstartstruct_t __near* wbstartstruct)
 {
 	unloaded = false;
 	Z_QuickmapIntermission();
-
+	
 	WI_initVariables(wbstartstruct);
 	WI_Init();
 	WI_loadData();

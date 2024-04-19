@@ -1232,6 +1232,7 @@ void AM_drawCrosshair()
 
 }
 extern int setval;
+//extern void G_ExitLevel();
 void AM_Drawer (void)
 {
 

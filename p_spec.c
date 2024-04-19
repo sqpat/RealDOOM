@@ -67,7 +67,7 @@ typedef struct
 #define MAXANIMS                32
 
 
-anim_t		anims[MAXANIMS];
+anim_t	anims[MAXANIMS];
 anim_t __near*		lastanim;
 
 
