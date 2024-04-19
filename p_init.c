@@ -465,7 +465,7 @@ void R_InitSpriteDefs()
 				rotation = lumpinfo4000[l].name[5] - '0';
 
 				if (modifiedgame) {
-					FAR_strncpy(localname, lumpinfo4000[l].name, 8);
+					copystr8(localname, lumpinfo4000[l].name);
 					patched = W_GetNumForName(localname);
 				}
 				else

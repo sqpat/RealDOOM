@@ -100,7 +100,7 @@ uint16_t     R_CheckTextureNumForName(int8_t *name)
 	for (i = 0; i < numtextures; i++) {
 		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
 
-		FAR_strncpy(texturename, texture->name, 8);
+		copystr8(texturename, texture->name);
 		//DEBUG_PRINT("\n %.8Fs %8s %8s %i %Fp", texture->name, texturename, name, texture->name);
 
 		if (!strncasecmp(texturename, name, 8)) {
@@ -108,14 +108,8 @@ uint16_t     R_CheckTextureNumForName(int8_t *name)
 			return i;
 		}
 	}
-	/*
-	for (i = 0; i < 5; i++) {
-		texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[i]]);
-		FAR_strncpy(texturename, texture->name, 8);
-		DEBUG_PRINT("\n %i %s %s", i, texture->name, texturename);
-	}
-	I_Error("\n%s", name);
-	*/
+
+
 	return BAD_TEXTURE;
 }
 

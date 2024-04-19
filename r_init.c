@@ -469,7 +469,7 @@ void R_InitTextures(void)
 	name_p = (int8_t __far*)(TEX_LOAD_ADDRESS + 4);
 	for (i = 0; i < nummappatches; i++)
 	{
-		FAR_strncpy(name, name_p + i * 8, 8);
+		copystr8(name, name_p + i * 8);
 		patchlookup[i] = W_CheckNumForName(name);
 	}
 

@@ -278,6 +278,16 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 	return FixedDiv2(a, b);
 }
 
+void copystr8(int8_t __far* dst, int8_t __far* src){
+	int8_t j;
+	for (j = 0; j < 8; j++){
+		dst[j] = src[j];
+		if (dst[j] == '\0'){
+			return;
+		}
+	}
+}
+
 
 extern patch_t __far* M_GetMenuPatch(int16_t i);
 

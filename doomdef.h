@@ -275,6 +275,9 @@ fixed_t32	FixedMul1616(int16_t a, int16_t b);
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
 
 
+void copystr8(int8_t __far* dst, int8_t __far* src);
+
+
 // A or (and) B is a whole number (0 in the low 16 bits). should be optimizable?
 #define	FixedDivWholeA(a,b) FixedDiv(a, b)
 #define	FixedDivWholeB(a,b) FixedDiv(a, b)

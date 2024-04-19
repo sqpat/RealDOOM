@@ -173,7 +173,7 @@ void W_AddFile(int8_t *filename)
 		else {
 			lastsize = fileinfo->size;
 		}
-		FAR_strncpy(lump_p->name, fileinfo->name, 8);
+		copystr8(lump_p->name, fileinfo->name);
 	}
 	lumpinfo4000[i - 1].sizediff = 0;
 
