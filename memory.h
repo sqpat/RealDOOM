@@ -486,6 +486,7 @@ segs_render			7000:8000
 #define size_epsd0animinfo		(size_lnodey 		+ (16 * 10))
 #define size_epsd1animinfo		(size_epsd0animinfo + (16 * 9))
 #define size_epsd2animinfo		(size_epsd1animinfo + (16 * 6))
+#define size_wigraphics			(size_epsd2animinfo + (NUM_WI_ITEMS * 9))
 
 #define screen1 			((byte __far*) 		0x90000000)
 #define lnodex				((int16_t __far*)	(0x90000000 + size_screen1))
@@ -493,6 +494,7 @@ segs_render			7000:8000
 #define epsd0animinfo		((wianim_t __far*)	(0x90000000 + size_lnodey))
 #define epsd1animinfo		((wianim_t __far*)	(0x90000000 + size_epsd0animinfo))
 #define epsd2animinfo		((wianim_t __far*)	(0x90000000 + size_epsd1animinfo))
+#define wigraphics			((int8_t   __far*)	(0x90000000 + size_epsd2animinfo))
 
 
 
@@ -503,8 +505,8 @@ segs_render			7000:8000
 9000:FB0C	epsd0animinfo
 9000:FAA0	epsd1animinfo
 9000:FB9C	epsd2animinfo
-9000:FBFC	[empty]
-
+9000:FBFC	wigraphics
+9000:FCF8	[empty]
 
 */
 

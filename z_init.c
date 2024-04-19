@@ -346,15 +346,18 @@ void Z_LoadBinaries() {
 
 	// just load them all here in one call instead of 5 like below
 	Z_QuickmapIntermission();
-	FAR_fread(lnodex, 1, 508, fp);
+	FAR_fread(lnodex, 1, 760, fp);
 
-/*
+	/*
 	FAR_fread(lnodex, 2, 9 * 3, fp);
 	FAR_fread(lnodey, 2, 9 * 3, fp);
 	FAR_fread(epsd0animinfo, 16, 10, fp);
 	FAR_fread(epsd1animinfo, 16, 9, fp);
 	FAR_fread(epsd2animinfo, 16, 6, fp);
+	FAR_fread(wigraphics, 1, 28 * 9, fp);
 	*/
+
+	
 
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);
  

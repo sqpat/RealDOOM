@@ -211,46 +211,6 @@ patch_t __far* WI_GetAnimPatch(int16_t i) {
 	return (patch_t __far*)(wianimspage + wianimoffsets[i]);
 }
 
-char* wigraphics[NUM_WI_ITEMS] = {
-	 
-		"WIURH0", //0
-		"WIURH1",
-		"WISPLAT",
-		"WIOSTK",
-		"WIOSTI",
-
-		"WIF", // 5
-		"WIMSTT",
-		"WIOSTS",
-		"WIOSTF",
-		"WITIME",
-
-		"WIPAR",//10
-		"WIMSTAR",
-		"WIMINUS",
-		"WIPCNT",
-		"WINUM0",
-
-		"WINUM1",//15
-		"WINUM2",
-		"WINUM3",
-		"WINUM4",
-		"WINUM5",
-
-		"WINUM6",//20
-		"WINUM7",
-		"WINUM8",
-		"WINUM9",
-		"WICOLON",
-
-		"WISUCKS",//25
-		"WISCRT2",
-		"WIENTER"
-
-
-};
-
-
 //
 // GENERAL DATA
 //
@@ -380,7 +340,7 @@ WI_drawOnLnode
   uint8_t*	cRef )
 {
 
-    int16_t		i;
+    int16_t		i = 0;
     int16_t		left;
     int16_t		top;
     int16_t		right;
@@ -391,9 +351,6 @@ WI_drawOnLnode
 	int16_t lnodeX = lnodex[index];
 	int16_t lnodeY = lnodey[index];
 
-	//I_Error("values %hhi %i %i %i %i %lx %lx", wbs->epsd, n, index, lnodeX, lnodeY, lnodex, lnodey);
-
-    i = 0;
     do {
 		ci = WI_GetPatch(cRef[i]);
 		left = lnodeX - (ci->leftoffset);
@@ -415,7 +372,7 @@ WI_drawOnLnode
 		V_DrawPatch(lnodeX, lnodeY, FB, (WI_GetPatch(cRef[i])));
     } else {
 		// DEBUG
-		DEBUG_PRINT("Could not place patch on level %d", n+1);
+		//DEBUG_PRINT("Could not place patch on level %d", n+1);
     }
 }
 
@@ -1104,13 +1061,24 @@ void WI_Init(void)
 	
 
 	int16_t i = 0;
+	int8_t j = 0;
 	uint32_t size = 0;
 	byte __far* dst = wigraphicspage0;
 	int8_t	name[9];
+	int16_t k = 0;
+	int16_t lump;
+	uint16_t lumpsize;
 
-	for (i = 0; i < NUM_WI_ITEMS; i++) {
-		int16_t lump = W_GetNumForName(wigraphics[i]);
-		uint16_t lumpsize = W_LumpLength(lump);
+
+	for (i = 0; i < NUM_WI_ITEMS; i++, k+=9) {
+		// this produces smaller code than the far strcpy call...
+		for (j = 0; j < 9; j++){
+			name[j]=wigraphics[k+j];
+		}
+
+		lump = W_GetNumForName(name);
+
+		lumpsize = W_LumpLength(lump);
 		
 		W_CacheLumpNumDirect(lump, dst);
 		wioffsets[i] = size;
