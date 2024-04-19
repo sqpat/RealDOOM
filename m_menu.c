@@ -650,12 +650,18 @@ void M_DoSave(int16_t slot)
 void M_SaveSelect(int16_t choice)
 {
 	int8_t temp[256];
-	// we are going to be intercepting all chars
+	int8_t i;
+    int16_t offset = choice*SAVESTRINGSIZE;
+    // we are going to be intercepting all chars
     saveStringEnter = 1;
     
     saveSlot = choice;
     
-    FAR_strcpy(saveOldString,&savegamestrings[choice*SAVESTRINGSIZE]);
+    for (i = 0; i < SAVESTRINGSIZE; i++){
+        saveOldString[i] = savegamestrings[offset+i];    
+    }
+    //FAR_strcpy(saveOldString,&savegamestrings[choice*SAVESTRINGSIZE]);
+
 	getStringByIndex(EMPTYSTRING, temp);
     if (!strcmp(&savegamestrings[choice*SAVESTRINGSIZE], temp))
         savegamestrings[choice*SAVESTRINGSIZE] = 0;
@@ -1321,12 +1327,14 @@ boolean M_Responder (event_t __far*  ev)
 {
 	int16_t             ch;
 	int16_t             i;
+    int16_t             offset;
     static  int16_t     mousewait = 0;
     static  int16_t     mousey = 0;
     static  int16_t     lasty = 0;
     static  int16_t     mousex = 0;
     static  int16_t     lastx = 0;
 	int8_t oldtask;
+    int8_t j;
 
     ch = -1;
     
@@ -1394,7 +1402,13 @@ boolean M_Responder (event_t __far*  ev)
                                 
           case KEY_ESCAPE:
             saveStringEnter = 0;
-            FAR_strcpy(&savegamestrings[saveSlot*SAVESTRINGSIZE],saveOldString);
+            offset = saveSlot*SAVESTRINGSIZE;
+            // skip FAR_strcpy, it includes a big unecessary nonportable function into the build
+            for (j = 0; j < SAVESTRINGSIZE; j++){
+                savegamestrings[offset+j] = saveOldString[j];
+            }
+            //FAR_strcpy(&savegamestrings[saveSlot*SAVESTRINGSIZE],saveOldString);
+
             break;
                                 
           case KEY_ENTER:
