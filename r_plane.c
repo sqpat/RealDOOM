@@ -54,8 +54,7 @@ int16_t				ceilingplaneindex;
 
 
 // ?
-//int16_t			*openings;// [MAXOPENINGS];
-int16_t __far*		lastopening;
+ int16_t __far*		lastopening;
 
 
 //

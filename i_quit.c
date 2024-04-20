@@ -150,7 +150,7 @@ void I_ShutdownMouse(void)
 
 extern int16_t emshandle;
 extern uint16_t UMBbase;
-extern byte __far* conventional_far_bytes;
+//extern byte __far* conventional_far_bytes;
 /*
 
 
