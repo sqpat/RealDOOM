@@ -198,16 +198,16 @@ spritedefs		CC00:0000
 
 
 // 9000:0000	thinkerlist
-// 9000:93a8	mobjinfo
-// 9000:998b	intercepts
-// 9000:9d0b	ammnumpatchbytes
-// 9000:b0e7	ammnumpatchoffsets
-// 9000:cc17	linebuffer
-// 9000:ce23	sectors_physics
+// 9000:93A8	linebuffer
+// 9000:A784	sectors_physics
+// 9000:C2B4	mobjinfo
+// 9000:C897	intercepts
+// 9000:CC17	ammnumpatchbytes
+// 9000:CE23	ammnumpatchoffsets
 
-// 9000:ce37  	doomednum
-// 9000:cf49	linespeciallist
-// 9000:D011	[empty]
+// 9000:CE37  	doomednum
+// 9000:CF49	linespeciallist
+// 9000:CFC9	[empty]
 
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region
@@ -303,7 +303,7 @@ spanstart		6800:65e2
 #define size_blocklinks			(0 + MAX_BLOCKLINKS_SIZE)
 #define size_nightmarespawns	(size_blocklinks		+ NIGHTMARE_SPAWN_SIZE)
 
-#define blocklinks				((THINKERREF __far*)		(0x60004000))
+#define blocklinks				  ((THINKERREF __far*)		(0x60004000))
 #define nightmarespawns			((mapthing_t __far *)		(0x60004000 + size_blocklinks))
 
 //blocklinks		6000:4000
@@ -459,22 +459,6 @@ wianimoffsets		7000:A4b8
 
 
 
-/*
-
-visplanes				9000:0000
-visplaneheaders			9000:9948
-drawsegs				9000:9d17
-flatindex				9000:c017
-sides_render			9000:c0ae
-player_vissprites		9000:e91a
-texturedefs_offset		9000:e986
-texturewidthmasks		9000:ecde
-[done]					9000:ee8a
-
-4470 bytes free
-
-*/
-
 
 /*
 
@@ -512,25 +496,8 @@ texturecache_nodes			8000:FD32
 
 // RENDER 0x9000
 
-#define size_visplanes				(0						+ sizeof(visplane_t) * MAXCONVENTIONALVISPLANES)
-#define size_visplaneheaders		size_visplanes			+ sizeof(visplaneheader_t) * MAXEMSVISPLANES
-#define size_drawsegs				size_visplaneheaders	+ (sizeof(drawseg_t) * (MAXDRAWSEGS))
-#define size_flatindex				size_drawsegs			+ (sizeof(uint8_t) * MAX_FLATS)
-#define size_sides_render			size_flatindex			+ MAX_SIDES_RENDER_SIZE
-#define size_player_vissprites		size_sides_render		+ (sizeof(vissprite_t) * 2)
-#define size_texturedefs_offset		size_player_vissprites	+ MAX_TEXTURES * sizeof(uint16_t)
-#define size_texturewidthmasks		size_texturedefs_offset	+ MAX_TEXTURES * sizeof(uint8_t)
 
-
-
-#define visplanes				((visplane_t __far*)			(0x90000000 + 0))
-#define visplaneheaders			((visplaneheader_t __far*)		(0x90000000 + size_visplanes))
-#define drawsegs				((drawseg_t __far*)				(0x90000000 + size_visplaneheaders))
-#define flatindex				((uint8_t __far*)				(0x90000000 + size_drawsegs))
-#define sides_render			((side_render_t __far*)			(0x90000000 + size_flatindex))
-#define player_vissprites		((vissprite_t __far*)			(0x90000000 + size_sides_render))
-#define texturedefs_offset		((uint16_t	__far*)				(0x90000000 + size_player_vissprites))
-#define texturewidthmasks		((uint8_t	__far*)				(0x90000000 + size_texturedefs_offset))
+// textures
 
 // deff
 
@@ -558,11 +525,8 @@ texturecache_nodes			8000:FD32
 #define size_ceilingclip					size_floorclip			+ (sizeof(int16_t) * SCREENWIDTH)
 #define size_segs_render					size_ceilingclip		+ ( MAX_SEGS_RENDER_SIZE)
 #define size_screenheightarray				size_segs_render		+ sizeof(int16_t) * (SCREENWIDTH)
-#define size_negonearray					size_screenheightarray	+ sizeof(int16_t) * (SCREENWIDTH)
-#define size_spritecache_nodes				size_negonearray		+ sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
-#define size_flatcache_nodes				size_spritecache_nodes	+ sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
-#define size_patchcache_nodes				size_flatcache_nodes	+ sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
-#define size_texturecache_nodes				size_patchcache_nodes	+ sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
+#define size_texturedefs_offset		size_screenheightarray	+ MAX_TEXTURES * sizeof(uint16_t)
+#define size_texturewidthmasks		size_texturedefs_offset	+ MAX_TEXTURES * sizeof(uint8_t)
 
 
 
@@ -593,12 +557,9 @@ texturecache_nodes			8000:FD32
 #define ceilingclip					((int16_t __far*)				(0x80000000 + size_floorclip))
 #define segs_render					((seg_render_t	__far*		)	(0x80000000 + size_ceilingclip))
 #define screenheightarray			((int16_t __far*)				(0x80000000 + size_segs_render))
-#define negonearray					((int16_t __far*)				(0x80000000 + size_screenheightarray))
-#define spritecache_nodes			((cache_node_t __far*)			(0x80000000 + size_negonearray))
-#define flatcache_nodes				((cache_node_t __far*)			(0x80000000 + size_spritecache_nodes))
-#define patchcache_nodes			((cache_node_t __far*)			(0x80000000 + size_flatcache_nodes))
-#define texturecache_nodes			((cache_node_t __far*)			(0x80000000 + size_patchcache_nodes))
 
+#define texturedefs_offset	((uint16_t	__far*)	  			(0x80000000 + size_screenheightarray))
+#define texturewidthmasks		((uint8_t	__far*)	    			(0x80000000 + size_texturedefs_offset))
 
 
 
@@ -640,8 +601,8 @@ nodes_render				7000:0000
 viewangletox				7000:36A0
 spritewidths				7000:56A0
 spriteoffsets				7000:616A
-spritetopoffsets			7000:6C34
-[empty]						7000:76FE
+spritetopoffsets		7000:6C34
+[empty]						  7000:76FE
 
 2306 bytes free
 */
@@ -674,11 +635,55 @@ spritetopoffsets			7000:6C34
 // 6540 bytes free till 6000:8000 ?
 // lots of empty render space above!
 
+// 0x4000 BLOCK RENDER
+
+
+#define size_visplanes				(0						+ sizeof(visplane_t) * MAXCONVENTIONALVISPLANES)
+#define size_visplaneheaders		size_visplanes			+ sizeof(visplaneheader_t) * MAXEMSVISPLANES
+#define size_drawsegs				size_visplaneheaders	+ (sizeof(drawseg_t) * (MAXDRAWSEGS))
+#define size_flatindex				size_drawsegs			+ (sizeof(uint8_t) * MAX_FLATS)
+#define size_sides_render			size_flatindex			+ MAX_SIDES_RENDER_SIZE
+#define size_player_vissprites		size_sides_render		+ (sizeof(vissprite_t) * 2)
+#define size_spritecache_nodes				size_player_vissprites		+ sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
+#define size_flatcache_nodes				size_spritecache_nodes	+ sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
+#define size_patchcache_nodes				size_flatcache_nodes	+ sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
+#define size_texturecache_nodes				size_patchcache_nodes	+ sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
+#define size_negonearray					size_texturecache_nodes	+ sizeof(int16_t) * (SCREENWIDTH)
+
+
+#define visplanes			    	((visplane_t __far*)			  (0x40000000 + 0))
+#define visplaneheaders			((visplaneheader_t __far*) 	(0x40000000 + size_visplanes))
+#define drawsegs				    ((drawseg_t __far*)				  (0x40000000 + size_visplaneheaders))
+#define flatindex				    ((uint8_t __far*)				    (0x40000000 + size_drawsegs))
+#define sides_render			  ((side_render_t __far*)	  	(0x40000000 + size_flatindex))
+#define player_vissprites		((vissprite_t __far*)	  		(0x40000000 + size_sides_render))
+#define spritecache_nodes			((cache_node_t __far*)			(0x40000000 + size_player_vissprites))
+#define flatcache_nodes				((cache_node_t __far*)			(0x40000000 + size_spritecache_nodes))
+#define patchcache_nodes			((cache_node_t __far*)			(0x40000000 + size_flatcache_nodes))
+#define texturecache_nodes		((cache_node_t __far*)			(0x40000000 + size_patchcache_nodes))
+#define negonearray					((int16_t __far*)				(0x40000000 + size_texturecache_nodes))
+
+// used during p_setup
+#define sides_render_9000			  ((side_render_t __far*)	  	(0x90000000 + size_flatindex))
 
 
 
 
+/*
 
+visplanes				    4000:0000
+visplaneheaders			4000:9948
+drawsegs				    4000:9d17
+flatindex				    4000:c017
+sides_render			  4000:c0ae
+player_vissprites		4000:e91a
+texturedefs_offset	4000:e986
+texturewidthmasks		4000:ecde
+[done]					    4000:ee8a
+
+4470 bytes free
+
+*/
 
 
 

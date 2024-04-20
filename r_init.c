@@ -327,9 +327,9 @@ void R_GenerateLookup(uint16_t texnum)
 		patch = &texture->patches[i];
 		x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchpatch = patch->patch & PATCHMASK;
-		if (lastusedpatch != patchpatch)
+		if (lastusedpatch != patchpatch){
 			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch);
-
+		}
 		lastusedpatch = patchpatch;
 
 		x2 = x1 + (realpatch->width);
@@ -349,7 +349,7 @@ void R_GenerateLookup(uint16_t texnum)
 			texcollump[x] = patchpatch;
 			
 			// might be an optimization bug? I cant just get the int32_t directly, something gets mangled and suddenly
-			// the pointer looks write but the array lookup evaluates wrong. previously working code,  couldn't figure 
+			// the pointer looks right but the array lookup evaluates wrong. previously working code,  couldn't figure 
 			// it out, but broke it down to an explicit pointer calculation and fetched the data and all was good
 
 			addr1 = (uint16_t __far*)&(realpatch->columnofs[x - x1]);

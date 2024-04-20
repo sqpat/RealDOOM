@@ -252,78 +252,6 @@ void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 	 
 }
  
-/*
-void printout(){ 
-	int8_t i;
-	int8_t j;
-	int8_t index = spritecache_tail;
-	FILE* fp = fopen("printout.txt", "w"); // clear old file
-
-	fprintf(fp, "%i  %i  \n", spritecache_tail, spritecache_head);
-
-	for (j = 0; j < 4; j++){
-		for (i = 0; i < 9; i++){
-			fprintf(fp, "%i\t", index);
-			index = spritecache_nodes[index].next;
-		}
-		index = spritecache_tail;
-		fprintf(fp, "\n");
-
-		for (i = 0; i < 9; i++){
-			fprintf(fp, "%i\t", spritecache_nodes[index].pagecount);
-			index = spritecache_nodes[index].next;
-		}
-		index = spritecache_tail;
-		fprintf(fp, "\n");
-		for (i = 0; i < 9; i++){
-			fprintf(fp, "%i\t", spritecache_nodes[index].prev);
-			index = spritecache_nodes[index].next;
-		}
-		index = spritecache_tail;
-		fprintf(fp, "\n");
-		for (i = 0; i < 9; i++){
-			fprintf(fp, "%i\t", spritecache_nodes[index].next);
-			index = spritecache_nodes[index].next;
-		}
-		spritecache_tail = index;
-		fprintf(fp, "\n\n");
-		
-	}
-	index = spritecache_head;
-	for (j = 0; j < 4; j++){
-		for (i = 0; i < 9; i++){
-			fprintf(fp, "%i\t", index);
-			index = spritecache_nodes[index].prev;
-		}
-		index = spritecache_head;
-		fprintf(fp, "\n");
-
-		for (i = 0; i < 9; i++){
-			fprintf(fp, "%i\t", spritecache_nodes[index].pagecount);
-			index = spritecache_nodes[index].prev;
-		}
-		index = spritecache_head;
-		fprintf(fp, "\n");
-		for (i = 0; i < 9; i++){
-			fprintf(fp, "%i\t", spritecache_nodes[index].prev);
-			index = spritecache_nodes[index].prev;
-		}
-		index = spritecache_head;
-		fprintf(fp, "\n");
-		for (i = 0; i < 9; i++){
-			fprintf(fp, "%i\t", spritecache_nodes[index].next);
-			index = spritecache_nodes[index].prev;
-		}
-		spritecache_head = index;
-		fprintf(fp, "\n\n");
-		
-	}
-
-	I_Error("done");
-
-
-}
-*/
 
 extern int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
 
@@ -976,14 +904,14 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage]) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
-				activetexturepages[startpage+i] = pageswapargs[pageswapargs_rend_offset + 40+2 * (startpage+i)] = -1; // unpaged
+				activetexturepages[startpage+i] = pageswapargs[pageswapargs_rend_offset +2 * (startpage+i)] = -1; // unpaged
 				activenumpages[startpage+i] = 0;
 			}
 		}
 		activenumpages[startpage] = 0;
 
 
-		activetexturepages[startpage] = pageswapargs[pageswapargs_rend_offset + 40 + 2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
+		activetexturepages[startpage] = pageswapargs[pageswapargs_rend_offset  + 2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 		
 
 
@@ -1053,7 +981,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 
 		// prep args for quickmap;
 
-		// startpage is the ems page withing the 0x4000 block
+		// startpage is the ems page withing the 0x9000 block
 		// pagenum is the EMS page offset within EMS texture pages
 
 
@@ -1061,7 +989,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage] > numpages) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
-				activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset + 40 + 2 * (startpage + i)] = -1; // unpaged
+				activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset +  2 * (startpage + i)] = -1; // unpaged
 				activenumpages[startpage + i] = 0;
 			}
 		}
@@ -1070,14 +998,14 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 
 		for (i = 0; i <= numpages; i++) {
 			textureLRU[startpage + i] = 0;
-			activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset + 40 + 2 * (startpage + i)] = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;
+			activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset +  2 * (startpage + i)] = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;
 			activenumpages[startpage + i] = numpages-i;
 
 		}
 
 		R_MarkCacheLRU(realtexpage, numpages, cachetype);
 		Z_QuickmapRenderTexture();
-		//Z_QuickmapRenderTexture(startpage, numpages + 1);
+
 		// paged in
 
 		return startpage;
@@ -1213,7 +1141,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 		// prep args for quickmap;
 
-		// startpage is the ems page withing the 0x4000 block
+		// startpage is the ems page withing the 0x9000 block
 		// pagenum is the EMS page offset within EMS texture pages
 
 
@@ -1236,8 +1164,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		}
 
 		Z_QuickMapSpritePage();
-		//Z_QuickmapRenderTexture();
-		//Z_QuickmapRenderTexture(startpage, numpages + 1);
+
 		// paged in
 		R_MarkCacheLRU(realtexpage, numpages, CACHETYPE_SPRITE);
 
@@ -1250,7 +1177,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 
 // TODO - try different algos instead of first free block for populating cache pages
-// get 0x4000 offset for texture
+// get 0x9000 offset for texture
 byte __far* getpatchtexture(int16_t lump) {
 
 	int16_t index = lump - firstpatch;
@@ -1268,14 +1195,14 @@ byte __far* getpatchtexture(int16_t lump) {
 		texoffset = patchoffset[index];
 
 		//gettexturepage ensures the page is active
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
+		addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
  
 		W_CacheLumpNumDirect(lump, addr);
 		// return
 		return addr;
 	} else {
 		// has been allocated before. find and return
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
+		addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
 
 		return addr;
 	}
@@ -1299,7 +1226,7 @@ byte __far* getcompositetexture(int16_t tex_index) {
 		texoffset = compositetextureoffset[tex_index];
 		
 		//gettexturepage ensures the page is active
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 8));
+		addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 8));
 		// load it in
 		R_GenerateComposite(tex_index, addr);
 		
@@ -1308,7 +1235,7 @@ byte __far* getcompositetexture(int16_t tex_index) {
 	} else {
 		// has been allocated before. find and return
 		
-		addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 8));
+		addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 8));
 		
 		return addr;
 	}
@@ -1332,7 +1259,6 @@ byte __far* getspritetexture(int16_t lump) {
 
 		//gettexturepage ensures the page is active
 		addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
-		//addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 		W_CacheLumpNumDirect(lump, addr);
 		// return
 		return addr;
@@ -1341,7 +1267,6 @@ byte __far* getspritetexture(int16_t lump) {
 		// has been allocated before. find and return
 		addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 		//I_Error("\nb %Fp  %hhu %hhu %u", addr, texpage, texoffset, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)]);
-		//addr = (byte __far*)MK_FP(0x4000, pageoffsets[gettexturepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 		return addr;
 	}
 

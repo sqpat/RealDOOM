@@ -608,23 +608,7 @@ void R_DrawPlanes (void)
 		
     }
 
-	// puts 0x5C00 back for now
-	//Z_QuickmapTrig();
-
-
-	//Z_ChangeTagEMS(ds_sourceRef, PU_CACHE);
-
-	/*
-	for (i = 0; i <= 4; i++) {
-		 pageswapargs_rend[40+2 * i] = oldtexargs[i];
-	}
-
-	Z_QuickmapRenderTexture();
-	*/
-	/*
-	if (plbytes)
-		Z_SetUnlocked(visplanebytesRef[currentplanebyteRef]);
-		*/
+	
 
 }
 

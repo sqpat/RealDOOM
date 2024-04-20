@@ -172,7 +172,7 @@ void Z_FreeConventionalAllocations() {
 		activespritepages[i] = FIRST_SPRITE_CACHE_LOGICAL_PAGE + i;
 		spriteLRU[i] = i;
 
-		pageswapargs[pageswapargs_rend_offset + 40 + i * 2]	  = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		pageswapargs[pageswapargs_rend_offset + i * 2]	  = FIRST_TEXTURE_LOGICAL_PAGE + i;
 		pageswapargs[pageswapargs_spritecache_offset + i * 2] = FIRST_SPRITE_CACHE_LOGICAL_PAGE + i;
 
 		activenumpages[i] = 0;
@@ -240,16 +240,18 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_4C00_OFFSET,
 
 	// render
-	20,	PAGE_9000_OFFSET, 21,	PAGE_9400_OFFSET, 22,	PAGE_9800_OFFSET, 23,	PAGE_9C00_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_9000_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 1,	PAGE_9400_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 2,	PAGE_9800_OFFSET,
+	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_9C00_OFFSET,  // texture cache area
+
 	24,	PAGE_8000_OFFSET, 25,	PAGE_8400_OFFSET, 26,	PAGE_8800_OFFSET, 27,	PAGE_8C00_OFFSET,
 	28,	PAGE_7000_OFFSET, 29,	PAGE_7400_OFFSET, 30,	PAGE_7800_OFFSET, 31,	PAGE_7C00_OFFSET,
 	32, PAGE_6000_OFFSET, 33,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,  // map the same 6800, 6C00? 
 	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET,  // same as physics as its unused for physics..
+	20,	PAGE_4000_OFFSET, 21,	PAGE_4400_OFFSET, 22,	PAGE_4800_OFFSET, 23,	PAGE_4C00_OFFSET,
+	20,	PAGE_9000_OFFSET, 21,	PAGE_9400_OFFSET, 22,	PAGE_9800_OFFSET, 23,	PAGE_9C00_OFFSET,
 
-	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_4000_OFFSET,
-	FIRST_TEXTURE_LOGICAL_PAGE + 1,	PAGE_4400_OFFSET,
-	FIRST_TEXTURE_LOGICAL_PAGE + 2,	PAGE_4800_OFFSET,
-	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_4C00_OFFSET,  // texture cache area
 	
 	// status/hud
 	SCREEN4_LOGICAL_PAGE, PAGE_9C00_OFFSET,
@@ -467,21 +469,6 @@ void Z_QuickmapDemo() {
 }
 
 
-// sometimes needed when rendering sprites..
-void Z_QuickmapRender9000() {
-
-
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size;
-	intx86(EMS_INT, &regs, &regs);
-
-#ifdef DETAILED_BENCH_STATS
-	taskswitchcount++;
-#endif
-}
 void Z_QuickMapRender7000() {
 
 	regs.w.ax = 0x5000;
@@ -527,30 +514,30 @@ void Z_QuickmapRender() {
 
 
 	current5000State = PAGE_5000_COLUMN_OFFSETS;
-	current4000State = PAGE_4000_TEXTURE;
+	current4000State = PAGE_4000_RENDER;
 }
 
-// leave off 0x4000 region. Usually used in p_setup...
-void Z_QuickmapRender_NoTex() {
+// leave off text and do 4000 in 9000 region. Used in p_setup...
+void Z_QuickmapRender_4000To9000() {
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08;  // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size;
+	regs.w.si = pageswapargs_rend_offset_size + 16;
 	intx86(EMS_INT, &regs, &regs);
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x08;  // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 32;
+	regs.w.si = pageswapargs_rend_offset_size + 48;
 	intx86(EMS_INT, &regs, &regs);
 
 	regs.w.ax = 0x5000;
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 64;
+	regs.w.si = pageswapargs_rend_offset_size + 96;
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -562,6 +549,16 @@ void Z_QuickmapRender_NoTex() {
 }
 
 
+void Z_QuickmapRender4000() {
+	regs.w.ax = 0x5000;
+	regs.w.cx = 0x04; // page count
+	regs.w.dx = emshandle; // handle
+	segregs.ds = pageswapargseg;
+	regs.w.si = pageswapargs_rend_offset_size + 80;
+	intx86(EMS_INT, &regs, &regs);
+	current4000State = PAGE_4000_RENDER;
+
+}
 
 // sometimes needed when rendering sprites..
 void Z_QuickmapRenderTexture() {
@@ -582,7 +579,7 @@ void Z_QuickmapRenderTexture() {
 	regs.w.cx = 0x04; // page count
 	regs.w.dx = emshandle; // handle
 	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 80;
+	regs.w.si = pageswapargs_rend_offset_size;
 	intx86(EMS_INT, &regs, &regs);
  
 	/*
@@ -594,7 +591,6 @@ void Z_QuickmapRenderTexture() {
 	regs.w.si = pageswapargoff_textcache + (offset << 2);
 	intx86(EMS_INT, &regs, &regs);
 	*/
-	current4000State = PAGE_4000_TEXTURE;
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -842,7 +838,7 @@ void Z_QuickmapLumpInfo() {
 			return;
 	 
 		case PAGE_4000_SCRATCH:
-		case PAGE_4000_TEXTURE:
+		case PAGE_4000_RENDER:
 			regs.w.ax = 0x5000;
 			regs.w.cx = 0x03; // page count
 			regs.w.dx = emshandle; // handle
@@ -853,7 +849,7 @@ void Z_QuickmapLumpInfo() {
 	#ifdef DETAILED_BENCH_STATS
 			taskswitchcount++;
 			lumpinfo4000switchcount++;
-#endif
+	#endif
 		
 			last4000State = current4000State;
 			current4000State = PAGE_4000_LUMPINFO;
@@ -875,8 +871,8 @@ void Z_UnmapLumpInfo() {
 		case PAGE_4000_SCRATCH:
 			Z_QuickmapScratch_4000();
 			break;
-		case PAGE_4000_TEXTURE:
-			Z_QuickmapRenderTexture();
+		case PAGE_4000_RENDER:
+			Z_QuickmapRender4000();
 			break;
 		default:
 			break;

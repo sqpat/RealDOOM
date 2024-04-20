@@ -646,7 +646,6 @@ void R_SetupFrame ()
 		//#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 	}	 
 	*/
-	//Z_QuickmapRenderTexture();
 
 
 }

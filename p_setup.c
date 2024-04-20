@@ -143,7 +143,7 @@ void P_LoadSegs(int16_t lump)
 	int16_t mllinedef;
 	// max segs doom1/2 like 2800. need 5600ish bytes
 	int16_t __far* tempsecnums = MK_FP(0x5000, 0xc000);
-	Z_QuickmapRender_NoTex();
+	Z_QuickmapRender_4000To9000();
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 
@@ -169,8 +169,8 @@ void P_LoadSegs(int16_t lump)
 		ldefflags = ldef->flags;
 
 
-		sidesecnum = sides_render[ldefsidenum].secnum;
-		othersidesecnum = sides_render[ldefothersidenum].secnum;
+		sidesecnum = sides_render_9000[ldefsidenum].secnum;
+		othersidesecnum = sides_render_9000[ldefothersidenum].secnum;
 
 
 		li = &segs[i];
@@ -354,7 +354,7 @@ void P_LoadNodes(int16_t lump)
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 
 
-	Z_QuickmapRender_NoTex();
+	Z_QuickmapRender_4000To9000();
 	Z_QuickmapScratch_5000();
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 	data = (mapnode_t __far*)SCRATCH_ADDRESS_5000;
@@ -424,7 +424,6 @@ void P_SpawnPlayer(mapthing_t __far* mthing)
 	int16_t mthingy = mthing->y;
 	int16_t mthingangle = mthing->angle;
 
-
 	if (player.playerstate == PST_REBORN) {
 		G_PlayerReborn();
 	}
@@ -435,6 +434,7 @@ void P_SpawnPlayer(mapthing_t __far* mthing)
 	z.w = ONFLOORZ;
 	
 	P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
+
 	// always index 1 for player
 	//playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
 	//playerMobj = setStateReturn;
@@ -769,7 +769,6 @@ void P_LoadThings(int16_t lump)
 		}
 
 	}
-
 	for (i = 0; i < numthings; i++) {
 		mt = data[i];
 		spawn = true;
@@ -849,7 +848,7 @@ void P_LoadLineDefs(int16_t lump)
 	data = (maplinedef_t __far*)SCRATCH_ADDRESS_5000;
 
 	// put side_render active
-	Z_QuickmapRender9000();
+	Z_QuickmapRender4000();
 	
 	
 	for (i = 0; i < numlines; i++) {
@@ -952,7 +951,7 @@ uint16_t     R_TextureNumForName(int8_t* name) {
 	uint16_t         i = R_CheckTextureNumForName(name);
 
 	if (i == BAD_TEXTURE) {
-		I_Error("96 %s", name); // \nR_TextureNumForName: %s not found
+		I_Error("\n96 %s", name); // \nR_TextureNumForName: %s not found
 	}
 	return i;
 }
@@ -978,7 +977,7 @@ void P_LoadSideDefs(int16_t lump)
 	texsize_t msdrowoffset;
 	int16_t msdsecnum;
 	
-	Z_QuickmapRender_NoTex();
+	Z_QuickmapRender_4000To9000();
  
 	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
 	Z_QuickmapScratch_5000();
@@ -1010,7 +1009,7 @@ void P_LoadSideDefs(int16_t lump)
 		sd->midtexture = midtex;
 		sd->textureoffset = msdtextureoffset;
 
-		sd_render = &sides_render[i];
+		sd_render = &sides_render_9000[i];
 		sd_render->rowoffset = msdrowoffset;
 		sd_render->secnum = msdsecnum;
 
@@ -1077,14 +1076,14 @@ void P_GroupLines(void)
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
 	
-	Z_QuickmapRender_NoTex();
+	Z_QuickmapRender_4000To9000();
 
 	// look up sector number for each subsector
 	for (i = 0; i < numsubsectors; i++) {
 		firstlinenum = subsectors[i].firstline;
 		
 		sidedefOffset = segs_render[firstlinenum].sidedefOffset;
-		sidesecnum = sides_render[sidedefOffset].secnum;
+		sidesecnum = sides_render_9000[sidedefOffset].secnum;
 		subsectors[i].secnum = sidesecnum;
 
 	}
@@ -1267,7 +1266,6 @@ P_SetupLevel
 
 	bodyqueslot = 0;
 
-
 	
 
 	/*
@@ -1335,7 +1333,7 @@ P_SetupLevel
 	*/
 
 
-	
+
 
 	// preload graphics
 	
