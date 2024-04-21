@@ -51,7 +51,9 @@
 #define size_subsectors			(size_seenlines				+ MAX_SUBSECTORS_SIZE)
 #define size_nodes				(size_subsectors			+ MAX_NODES_SIZE)
 #define size_segs				(size_nodes					+ MAX_SEGS_SIZE)
- 
+#define size_scantokey      (size_segs + 128)
+#define size_rndtable      (size_scantokey + 256)
+
 
 #define vertexes				((vertex_t __far*)		(uppermemoryblock))
 #define sectors					((sector_t __far*)		(uppermemoryblock + size_vertexes))
@@ -61,7 +63,8 @@
 #define subsectors				((subsector_t __far*)	(uppermemoryblock + size_seenlines))
 #define nodes					((node_t __far*)		(uppermemoryblock + size_subsectors))
 #define segs					((seg_t __far*)			(uppermemoryblock + size_nodes))
-
+#define scantokey           ((byte __far*)      (uppermemoryblock + size_segs))
+#define rndtable             ((uint8_t __far*)      (uppermemoryblock + size_scantokey))
 //0xE000
 /*
 size_vertexes			E000:0000
@@ -72,8 +75,10 @@ size_seenlines			E000:a274
 size_subsectors			E000:a351
 size_nodes				E000:b468
 size_segs				E000:dd60
-[empty]					E000:fe5d
-// 419 bytes free?
+size_scantokey				E000:fe5d
+size_rndtable				E000:fedd
+[empty]					E000:ffdd
+// 35 bytes free?
 						
 //	
 */
@@ -134,7 +139,6 @@ spritedefs		CC00:0000
 // 3767u shareware
 // 8756u doom2
 
-#define baselowermemoryaddressStartingOffset 0x2600
 
 #define size_finesine			(10240u * sizeof(int32_t))
 #define size_finetangent		(size_finesine				+  2048u * sizeof(int32_t))
@@ -220,10 +224,8 @@ spritedefs		CC00:0000
 #define size_gammatable     (size_screen0     + 256 * 5)
 #define size_menuoffsets    (size_gammatable  + (sizeof(uint16_t) * NUM_MENU_ITEMS))
 
-
 #define gammatable          ((byte __far*)      (0x80000000 + size_screen0))
 #define menuoffsets         ((uint16_t __far*)  (0x80000000 + size_gammatable))
-
 
 /*
 

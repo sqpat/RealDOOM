@@ -332,7 +332,6 @@ void IdentifyVersion(void)
 //
 // M_LoadDefaults
 //
-extern byte	scantokey[128];
 extern int8_t*	defaultfile;
 
 

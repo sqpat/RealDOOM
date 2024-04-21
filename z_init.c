@@ -319,6 +319,12 @@ void Z_LoadBinaries() {
 	
 	// all data now in this file instead of spread out a
 	fp = fopen("DOOMDATA.BIN", "rb"); 
+	
+	//256
+	FAR_fread(rndtable, 1, 256, fp);
+	//128
+	FAR_fread(scantokey, 1, 128, fp);
+	
 	//1507
 	FAR_fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
 	DEBUG_PRINT(".");
