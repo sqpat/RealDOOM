@@ -61,7 +61,7 @@ extern union REGS regs;
 extern struct SREGS segregs;
 
 
-byte __far*			pageFrameArea;
+//byte __far*			pageFrameArea;
 
 // count allocations etc, can be used for benchmarking purposes.
 
@@ -238,6 +238,19 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_4400_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_4800_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_4C00_OFFSET,
+	0,	PAGE_9000_OFFSET, 1,	PAGE_9400_OFFSET, 2,	PAGE_9800_OFFSET, 3,	PAGE_9C00_OFFSET,
+
+/*
+0,	PAGE_4000_OFFSET, 1,	PAGE_4400_OFFSET, 2,	PAGE_4800_OFFSET, 3,	PAGE_4C00_OFFSET,
+	4,	PAGE_8000_OFFSET, 5,	PAGE_8400_OFFSET, 6,	PAGE_8800_OFFSET, 7,	PAGE_8C00_OFFSET,
+	8,	PAGE_7000_OFFSET, 9,	PAGE_7400_OFFSET, 10,	PAGE_7800_OFFSET, 11,	PAGE_7C00_OFFSET,
+	12, PAGE_6000_OFFSET, 13,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,
+	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 34,	PAGE_5C00_OFFSET, //todo make this its own and bring sectors_physics here
+	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_9400_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_9800_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_9C00_OFFSET,
+	0,	
+*/
 
 	// render
 	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_9000_OFFSET,
@@ -412,30 +425,33 @@ int16_t compositecacheevictcount = 0;
 int16_t currenttask = -1;
 int16_t oldtask = -1;
 
+void Z_Quickmap(int16_t offset, int8_t count){
+	
+	int8_t min;
+	offset += pageswapargoff;
+	// test if some of these fields can be pulled out
+	while (count > 0){
+		min = count > 8 ? 8 : count;
+		regs.w.ax = 0x5000;  
+		regs.w.cx = min; // page count
+		regs.w.dx = emshandle; // handle
+		//This is a near var. and  DS should be near by default.
+		//segregs.ds = pageswapargseg;
+		regs.w.si = offset;
+		intx86(EMS_INT, &regs, &regs);
+
+		count -= 8;
+		offset+= 32;
+	}
+
+
+}
+
 void Z_QuickmapPhysics() {
 	//int16_t errorreg;
 
-	regs.w.ax = 0x5000;  
-	regs.w.cx = 0x08; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargoff;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_phys_offset_size, 23);
 
-
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x08; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargoff+32;
-	intx86(EMS_INT, &regs, &regs);
-	
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x07; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargoff + 64;
-	intx86(EMS_INT, &regs, &regs);
 
 	/*
 	errorreg = regs.h.ah;
@@ -451,14 +467,30 @@ void Z_QuickmapPhysics() {
 	current5000State = PAGE_5000_COLUMN_OFFSETS;
 }
  
+// leave off text and do 4000 in 9000 region. Used in p_setup...
+void Z_QuickmapPhysics_4000To9000() {
+	
+	Z_Quickmap(pageswapargs_phys_offset_size+8, 23);
+
+	/*
+	errorreg = regs.h.ah;
+	if (errorreg != 0) {
+		I_Error("Call 0x5000 failed with value %i!\n", errorreg);
+	}
+	*/
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount ++;
+#endif
+	currenttask = TASK_PHYSICS;
+	current4000State = PAGE_4000_LUMPINFO;
+	current5000State = PAGE_5000_COLUMN_OFFSETS;
+
+}
+
 
 void Z_QuickmapDemo() {
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_demo_offset_size;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_demo_offset_size, 4);
+
 
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -471,12 +503,10 @@ void Z_QuickmapDemo() {
 
 void Z_QuickMapRender7000() {
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04;  // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 32;
-	intx86(EMS_INT, &regs, &regs);
+
+	Z_Quickmap(pageswapargs_rend_offset_size + 32, 4);
+
+
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -484,29 +514,12 @@ void Z_QuickMapRender7000() {
 }
 
 void Z_QuickmapRender() {
-	regs.w.ax = 0x5000; 
-	regs.w.cx = 0x08;  // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size;
-	intx86(EMS_INT, &regs, &regs);
-
-	// grumble... emm386 fails with 12, but not 8. its a silent failure. was very very annoying to debug
-	// todo: test real ems hardware...
-
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x08;  // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 32;
-	intx86(EMS_INT, &regs, &regs);
 	
-		regs.w.ax = 0x5000;
-	regs.w.cx = 0x08; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 64;
-	intx86(EMS_INT, &regs, &regs);
+	
+	Z_Quickmap(pageswapargs_rend_offset_size, 24);
+
+
+
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -519,26 +532,14 @@ void Z_QuickmapRender() {
 
 // leave off text and do 4000 in 9000 region. Used in p_setup...
 void Z_QuickmapRender_4000To9000() {
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x08;  // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 16;
-	intx86(EMS_INT, &regs, &regs);
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x08;  // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 48;
-	intx86(EMS_INT, &regs, &regs);
+	//todo
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 96;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_rend_offset_size+16, 16);
+	Z_Quickmap(pageswapargs_rend_offset_size+96, 4);
+
+
+
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -550,12 +551,11 @@ void Z_QuickmapRender_4000To9000() {
 
 
 void Z_QuickmapRender4000() {
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 80;
-	intx86(EMS_INT, &regs, &regs);
+
+	Z_Quickmap(pageswapargs_rend_offset_size+80, 4);
+
+	
+	
 	current4000State = PAGE_4000_RENDER;
 
 }
@@ -565,32 +565,12 @@ void Z_QuickmapRenderTexture() {
 //void Z_QuickmapRenderTexture(uint8_t offset, uint8_t count) {
 
 	//pageswapargs_textcache[2];
-	/*
+	
+	
+	Z_Quickmap(pageswapargs_rend_offset_size, 4);
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargoff_textcache;
-	intx86(EMS_INT, &regs, &regs);
-	*/
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size;
-	intx86(EMS_INT, &regs, &regs);
- 
-	/*
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = count; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargoff_textcache + (offset << 2);
-	intx86(EMS_INT, &regs, &regs);
-	*/
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -614,12 +594,10 @@ void Z_QuickmapRenderTexture() {
 // sometimes needed when rendering sprites..
 void Z_QuickmapStatus() {
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x06; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_stat_offset_size;
-	intx86(EMS_INT, &regs, &regs);
+
+	Z_Quickmap(pageswapargs_stat_offset_size, 6);
+
+
 
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -629,12 +607,7 @@ void Z_QuickmapStatus() {
 
 void Z_QuickmapScratch_5000() {
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_scratch5000_offset_size;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_scratch5000_offset_size, 4);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	scratchpageswitchcount++;
@@ -646,13 +619,8 @@ void Z_QuickmapScratch_5000() {
 void Z_QuickmapScratch_4000() {
 
 	if (current4000State != PAGE_4000_SCRATCH){
-		regs.w.ax = 0x5000;
-		regs.w.cx = 0x04; // page count
-		regs.w.dx = emshandle; // handle
-		segregs.ds = pageswapargseg;
-		regs.w.si = pageswapargs_scratch4000_offset_size;
-		intx86(EMS_INT, &regs, &regs);
-
+		Z_Quickmap(pageswapargs_scratch4000_offset_size, 4);
+	 
 		current4000State = PAGE_4000_SCRATCH;
 
 	#ifdef DETAILED_BENCH_STATS
@@ -665,12 +633,7 @@ void Z_QuickmapScratch_4000() {
 
 void Z_QuickmapScratch_7000() {
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_scratch7000_offset_size;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_scratch7000_offset_size, 4);
 
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -680,11 +643,7 @@ void Z_QuickmapScratch_7000() {
 }
 
 void Z_QuickmapScreen0() {
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargoff+16;
+	Z_Quickmap(pageswapargs_screen0_offset_size, 4);
 	intx86(EMS_INT, &regs, &regs);
 }
 
@@ -694,12 +653,7 @@ void Z_PushScratchFrame() {
 
 	scratchstacklevel++;
 	if (scratchstacklevel == 1){
-		regs.w.ax = 0x5000;
-		regs.w.cx = 0x04; // page count
-		regs.w.dx = emshandle; // handle
-		segregs.ds = pageswapargseg;
-		regs.w.si = pageswapargs_scratchstack_offset_size;
-		intx86(EMS_INT, &regs, &regs);
+		Z_Quickmap(pageswapargs_scratchstack_offset_size, 4);
 #ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;
 		scratchpushpageswitchcount++;
@@ -722,12 +676,8 @@ void Z_PopScratchFrame() {
 
 	scratchstacklevel--;
 	if (scratchstacklevel == 0) {
-		regs.w.ax = 0x5000;
-		regs.w.cx = 0x04; // page count
-		regs.w.dx = emshandle; // handle
-		segregs.ds = pageswapargseg;
-		regs.w.si = pageswapargs_scratchstack_offset_size + 16;
-		intx86(EMS_INT, &regs, &regs);
+		Z_Quickmap(pageswapargs_scratchstack_offset_size + 16, 4);
+  
 
 #ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;
@@ -752,11 +702,7 @@ void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 		pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = page;
 	}
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_flatcache_offset_size;
+	Z_Quickmap(pageswapargs_flatcache_offset_size, 4);
 	intx86(EMS_INT, &regs, &regs);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -766,12 +712,7 @@ void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 }
 
 void Z_QuickMapUndoFlatCache() {
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x06; // page count... 
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_flatcache_undo_offset_size;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_flatcache_undo_offset_size, 6);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	flatpageswitchcount++;
@@ -780,12 +721,7 @@ void Z_QuickMapUndoFlatCache() {
 }
 void Z_QuickMapSpritePage() {
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_spritecache_offset_size;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_spritecache_offset_size, 4);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	spritepageswitchcount++;
@@ -801,12 +737,7 @@ void Z_RemapScratchFrame(uint8_t startpage) {
 	pageswapargs[pageswapargs_scratch5000_offset + 4] = startpage+2;
 	pageswapargs[pageswapargs_scratch5000_offset + 6] = startpage+3;
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_scratch5000_offset_size;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_scratch5000_offset_size, 4);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	scratchremapswitchcount++;
@@ -816,12 +747,8 @@ void Z_RemapScratchFrame(uint8_t startpage) {
 }
 
 void Z_QuickmapColumnOffsets5000() {
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x04; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_rend_offset_size + 64;
-	intx86(EMS_INT, &regs, &regs);
+
+	Z_Quickmap(pageswapargs_rend_offset_size + 64, 4);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -839,13 +766,8 @@ void Z_QuickmapLumpInfo() {
 	 
 		case PAGE_4000_SCRATCH:
 		case PAGE_4000_RENDER:
-			regs.w.ax = 0x5000;
-			regs.w.cx = 0x03; // page count
-			regs.w.dx = emshandle; // handle
-			segregs.ds = pageswapargseg;
-			regs.w.si = pageswapargs_lumpinfo_offset_size;
 
-			intx86(EMS_INT, &regs, &regs);
+			Z_Quickmap(pageswapargs_lumpinfo_offset_size, 3);
 	#ifdef DETAILED_BENCH_STATS
 			taskswitchcount++;
 			lumpinfo4000switchcount++;
@@ -890,13 +812,8 @@ void Z_QuickmapLumpInfo5000() {
 		case PAGE_5000_UNMAPPED:
 		case PAGE_5000_DEMOBUFFER:
 		case PAGE_5000_SCRATCH_REMAP:
-			regs.w.ax = 0x5000;
-			regs.w.cx = 0x03; // page count
-			regs.w.dx = emshandle; // handle
-			segregs.ds = pageswapargseg;
-			regs.w.si = pageswapargs_lumpinfo_5400_offset_size;
 
-			intx86(EMS_INT, &regs, &regs);
+			Z_Quickmap(pageswapargs_lumpinfo_5400_offset_size, 3);
 	#ifdef DETAILED_BENCH_STATS
 			taskswitchcount++;
 			lumpinfo5000switchcount++;
@@ -939,12 +856,8 @@ void Z_UnmapLumpInfo5000() {
 }
 
 void Z_QuickmapPalette() {
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x05; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_palette_offset_size;
-	intx86(EMS_INT, &regs, &regs);
+
+	Z_Quickmap(pageswapargs_palette_offset_size, 5);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -952,12 +865,7 @@ void Z_QuickmapPalette() {
 	currenttask = TASK_PALETTE;
 }
 void Z_QuickmapMenu() {
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x08; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si  = pageswapargs_menu_offset_size;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_menu_offset_size, 8);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -975,19 +883,7 @@ void Z_QuickmapIntermission() {
 	intx86(EMS_INT, &regs, &regs);
 	*/
 
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x08; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_intermission_offset_size;
-	intx86(EMS_INT, &regs, &regs);
-
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x08; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_intermission_offset_size + 32;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_intermission_offset_size, 16);
  
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -997,19 +893,8 @@ void Z_QuickmapIntermission() {
 }
 
 void Z_QuickmapWipe() {
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x08; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_wipe_offset_size;
-	intx86(EMS_INT, &regs, &regs);
-
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x05; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_wipe_offset_size + 32;
-	intx86(EMS_INT, &regs, &regs);
+	Z_Quickmap(pageswapargs_wipe_offset_size, 13);
+	
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif

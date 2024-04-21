@@ -154,7 +154,8 @@ void Z_ShutdownEMS();
 #define SCRATCH_PAGE_SEGMENT_7000 0x7000u
 
 // actually twice the number of pages, 2 params needed per page swap
-#define num_phys_params 46
+// extra 4 for the remapping for page 4000 to 9000 
+#define num_phys_params 54
 // extra 4 for the remapping for page 4000 to 9000 
 #define num_rend_params 56
 #define num_stat_params 12
@@ -178,7 +179,10 @@ void Z_ShutdownEMS();
 //#define pageswapargoff_demo pageswapargseg +
 
 // used for segment offset for params
-#define pageswapargs_rend_offset_size			pageswapargoff + 2*num_phys_params
+// needs to be added to pageswapargoff
+#define pageswapargs_phys_offset_size			0
+#define pageswapargs_screen0_offset_size		16
+#define pageswapargs_rend_offset_size			2*num_phys_params
 #define pageswapargs_rend_7000_offset_size		(pageswapargs_rend_offset_size + (2*8))
 #define pageswapargs_stat_offset_size			(pageswapargs_rend_offset_size			+ 2*num_rend_params)
 #define pageswapargs_demo_offset_size			(pageswapargs_stat_offset_size			+ 2*num_stat_params)
@@ -225,6 +229,7 @@ extern int16_t pageswapargs[total_pages];
 void Z_QuickmapPhysics();
 void Z_QuickmapRender();
 void Z_QuickmapRender_4000To9000();
+void Z_QuickmapPhysics_4000To9000();
 void Z_QuickmapStatus();
 void Z_QuickmapDemo();
 void Z_QuickmapRender4000();
@@ -269,6 +274,7 @@ void Z_ClearDeadCode();
 #define PAGE_4000_LUMPINFO 1
 #define PAGE_4000_RENDER 2
 #define PAGE_4000_SCRATCH 3
+#define PAGE_4000_PHYSICS 4
 //#define PAGE_4000_READY_TO_INIT 4
 
 #define PAGE_5000_UNMAPPED -1

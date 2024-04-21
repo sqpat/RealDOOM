@@ -718,7 +718,7 @@ void R_RenderPlayerView ()
 
     R_DrawPlanes ();
 	// put away flat cache, put back level data
-	//Z_QuickmapRender();
+
 	Z_QuickMapUndoFlatCache();
 	//Z_QuickMapSpritePage(); //todo combine somehow with above?
 

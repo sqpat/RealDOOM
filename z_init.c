@@ -161,7 +161,6 @@ byte __far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 
 extern int16_t pagenum9000;
 extern int16_t pageswapargs[total_pages];
-extern int16_t pageswapargseg;
 extern int16_t pageswapargoff;
 
   
@@ -205,7 +204,7 @@ void Z_GetEMSPageMap() {
 found:
 
 	// cache these args
-	pageswapargseg = (uint16_t)((uint32_t)pageswapargs >> 16);
+	//pageswapargseg = (uint16_t)((uint32_t)pageswapargs >> 16);
 	pageswapargoff = (uint16_t)(((uint32_t)pageswapargs) & 0xffff);
 	 
 
@@ -298,13 +297,14 @@ void Z_LinkEMSVariables() {
 	*/
 }
 
-extern byte __far* pageFrameArea;
+//extern byte __far* pageFrameArea;
 extern int16_t emshandle;
 
 void Z_InitEMS(void) {
 	//int32_t size;
 	//todo figure this out based on settings, hardware, etc
-	pageFrameArea = I_ZoneBaseEMS(&emshandle);
+	//pageFrameArea = 
+	I_ZoneBaseEMS(&emshandle);
 	//pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
 }
 
@@ -317,7 +317,7 @@ void Z_LoadBinaries() {
 	FILE* fp;
 	// currently in physics region!
 	
-	// all data now in this file instead of spread out across files
+	// all data now in this file instead of spread out a
 	fp = fopen("DOOMDATA.BIN", "rb"); 
 	//1507
 	FAR_fread(mobjinfo, sizeof(mobjinfo_t), NUMMOBJTYPES, fp);
@@ -370,6 +370,7 @@ void Z_LoadBinaries() {
 	DEBUG_PRINT(".");
 
 
+	//fp = fopen("D_TANTOA.BIN", "rb");
 	//FAR_fread(tantoangle, 4, 2049, fp);
 	//fclose(fp);
 	DEBUG_PRINT(".");
