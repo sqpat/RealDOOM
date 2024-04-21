@@ -1264,7 +1264,6 @@ P_SetupLevel
 	P_CacheLineOpenings();
 #endif
 
-	bodyqueslot = 0;
 
 	
 

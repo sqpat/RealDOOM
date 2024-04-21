@@ -179,10 +179,7 @@ int8_t             savegameslot;
 int8_t            savedescription[32];
  
  
-#define BODYQUESIZE     32
 
-THINKERREF          bodyque[BODYQUESIZE];
-int8_t             bodyqueslot;
 ticcmd_t localcmds[BACKUPTICS];
 
 
