@@ -1180,7 +1180,7 @@ boolean G_CheckDemoStatus (void)  {
 		fps = (35000u * (uint32_t)(gametic) / (uint32_t)(endtime - starttime));
 		fps2 = (35000u * (uint32_t)(gametic) / (uint32_t)(endtime - starttime - wipeduration));
 
-        I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe)\n FPS: %lu.%.3lu fps, %lu.%.3lu fps without fwipe \nCache Evictions: Sprites: %i, Flats: %i, Patches: %i, Composites: %i \nPhysics Tics %u\n Render Tics %u\n   Render Setup Tics %u\n   Render PlayerView Tics %u\n    Render InPlayerView Setup Tics %u\n    Render InPlayerView BSP Tics %u\n    Render InPlayerView Plane Tics %u\n    Render InPlayerView Masked Tics %u\n   Render Post PlayerView Tics %u\n Other Tics %u \n Task Switches: %li\n  Texture Cache Switches: %li (%li, %li, %li Patch/Composite/Sprite)\n  Flat Cache Switches: %li\n  Scratch Cache Switches: %li Pushes: %li  Pops: %li Remaps: %li \n Lump info Pushes to 0x9000: %li  To 0x5000: %li\n prnd index %i ",
+        I_Error ("\ntimed %li gametics in %li realtics (%li without %i fwipe)\n FPS: %lu.%.3lu fps, %lu.%.3lu fps without fwipe \nCache Evictions: Sprites: %i, Flats: %i, Patches: %i, Composites: %i \nPhysics Tics %u\n Render Tics %u\n   Render Setup Tics %u\n   Render PlayerView Tics %u\n    Render InPlayerView Setup Tics %u\n    Render InPlayerView BSP Tics %u\n    Render InPlayerView Plane Tics %u\n    Render InPlayerView Masked Tics %u\n   Render Post PlayerView Tics %u\n Other Tics %u \n Task Switches: %li\n  Texture Cache Switches: %li (%li, %li, %li Patch/Composite/Sprite)\n  Flat Cache Switches: %li\n  Scratch Cache Switches: %li  \n Lump info Pushes to 0x9000: %li  To 0x5000: %li\n prnd index %i ",
 			gametic  , endtime-starttime , endtime-starttime- wipeduration, wipeduration, 
 			fps / 1000, fps % 1000, fps2 / 1000, fps2%1000,
             spritecacheevictcount, flatcacheevictcount, patchcacheevictcount, compositecacheevictcount,
@@ -1188,7 +1188,7 @@ boolean G_CheckDemoStatus (void)  {
 			renderplayersetuptics, renderplayerbsptics, renderplayerplanetics, renderplayermaskedtics,
 			renderpostplayerviewtics, 
 			othertics, 
-			taskswitchcount, texturepageswitchcount , patchpageswitchcount, compositepageswitchcount, spritepageswitchcount,flatpageswitchcount, scratchpageswitchcount , scratchpoppageswitchcount, scratchpushpageswitchcount, scratchremapswitchcount,
+			taskswitchcount, texturepageswitchcount , patchpageswitchcount, compositepageswitchcount, spritepageswitchcount,flatpageswitchcount, scratchpageswitchcount ,
 			lumpinfo9000switchcount, lumpinfo5000switchcount,
 			prndindex);
 

@@ -216,9 +216,13 @@ int16_t W_CheckNumForName (int8_t* name)
 		lump_p--;
 
     }
+
+#ifdef CHECK_FOR_ERRORS
 	if (returnval < -1) {
 		I_Error("what? %s %i %Fp %Fp ", name, returnval, lump_p, lumpinfo9000);
 	}
+#endif
+
 	Z_UnmapLumpInfo();
     // TFB. Not found.
     return returnval;

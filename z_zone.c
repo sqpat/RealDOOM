@@ -293,15 +293,7 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
-	// scratch stack 
-	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
-	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
-	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
-	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
-	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
-	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 1, PAGE_5400_OFFSET,
-	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
-	FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
+ 
 
 	// flat cache
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
@@ -399,9 +391,6 @@ int32_t spritepageswitchcount = 0;
 int16_t benchtexturetype = 0;
 int32_t flatpageswitchcount = 0;
 int32_t scratchpageswitchcount = 0;
-int32_t scratchpoppageswitchcount = 0;
-int32_t scratchpushpageswitchcount = 0;
-int32_t scratchremapswitchcount = 0;
 int32_t lumpinfo5000switchcount = 0;
 int32_t lumpinfo9000switchcount = 0;
 int16_t spritecacheevictcount = 0;
@@ -635,54 +624,7 @@ void Z_QuickmapScreen0() {
 	intx86(EMS_INT, &regs, &regs);
 }
 
-int8_t scratchstacklevel = 0;
 
-void Z_PushScratchFrame() {
-
-	scratchstacklevel++;
-	if (scratchstacklevel == 1){
-		Z_Quickmap(pageswapargs_scratchstack_offset_size, 4);
-#ifdef DETAILED_BENCH_STATS
-		taskswitchcount++;
-		scratchpushpageswitchcount++;
-
-#endif
-		oldtask = currenttask;
-		currenttask = TASK_SCRATCH_STACK;
-		current5000State = PAGE_5000_SCRATCH;
-	}
-	// doesnt come up
-	/*
-	else {
-		I_Error("double stack");
-	}
-	*/
-}
- 
-
-void Z_PopScratchFrame() {
-
-	scratchstacklevel--;
-	if (scratchstacklevel == 0) {
-		Z_Quickmap(pageswapargs_scratchstack_offset_size + 16, 4);
-  
-
-#ifdef DETAILED_BENCH_STATS
-		taskswitchcount++;
-		scratchpoppageswitchcount++;
-
-#endif
-		// todo not doing 5000 page?
-
-		currenttask = oldtask;
-		
-		pageswapargs[pageswapargs_scratch5000_offset + 0] = FIRST_SCRATCH_LOGICAL_PAGE;
-		pageswapargs[pageswapargs_scratch5000_offset + 2] = FIRST_SCRATCH_LOGICAL_PAGE + 1;
-		pageswapargs[pageswapargs_scratch5000_offset + 4] = FIRST_SCRATCH_LOGICAL_PAGE + 2;
-		pageswapargs[pageswapargs_scratch5000_offset + 6] = FIRST_SCRATCH_LOGICAL_PAGE + 3;
-
-	}
-}
 
 void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	// offset 4 means reset defaults/current values.
@@ -719,20 +661,7 @@ void Z_QuickMapSpritePage() {
 }
  
 
-void Z_RemapScratchFrame(uint8_t startpage) {
-	pageswapargs[pageswapargs_scratch5000_offset + 0] = startpage;
-	pageswapargs[pageswapargs_scratch5000_offset + 2] = startpage+1;
-	pageswapargs[pageswapargs_scratch5000_offset + 4] = startpage+2;
-	pageswapargs[pageswapargs_scratch5000_offset + 6] = startpage+3;
-
-	Z_Quickmap(pageswapargs_scratch5000_offset_size, 4);
-#ifdef DETAILED_BENCH_STATS
-	taskswitchcount++;
-	scratchremapswitchcount++;
-#endif
-	current5000State = PAGE_5000_SCRATCH_REMAP;
-	current5000RemappedScratchPage = startpage;
-}
+ 
 
 void Z_QuickmapColumnOffsets5000() {
 
@@ -812,7 +741,6 @@ void Z_QuickmapLumpInfo5000() {
 		case PAGE_5000_COLUMN_OFFSETS:
 		case PAGE_5000_UNMAPPED:
 		case PAGE_5000_DEMOBUFFER:
-		case PAGE_5000_SCRATCH_REMAP:
 
 			Z_Quickmap(pageswapargs_lumpinfo_5400_offset_size, 3);
 	#ifdef DETAILED_BENCH_STATS
@@ -835,9 +763,6 @@ void Z_QuickmapLumpInfo5000() {
 void Z_UnmapLumpInfo5000() {
 
 	switch (last5000State) {
-		case PAGE_5000_SCRATCH_REMAP:
-			Z_RemapScratchFrame(current5000RemappedScratchPage);
-			break;
 		case PAGE_5000_SCRATCH:
 			Z_QuickmapScratch_5000();
 			break;

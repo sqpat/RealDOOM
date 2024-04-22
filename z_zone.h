@@ -164,7 +164,6 @@ void Z_ShutdownEMS();
 #define num_scratch5000_params 8
 #define num_scratch8000_params 8
 #define num_scratch7000_params 8
-#define num_scratchstack_params 16
 #define num_flatcache_params 8
 #define num_flatcache_undo_params 4
 #define num_spritecache_params 8
@@ -190,8 +189,7 @@ void Z_ShutdownEMS();
 #define pageswapargs_scratch5000_offset_size	(pageswapargs_textinfo_offset_size		+ 2*num_textinfo_params)
 #define pageswapargs_scratch8000_offset_size	(pageswapargs_scratch5000_offset_size	+ 2*num_scratch5000_params)
 #define pageswapargs_scratch7000_offset_size	(pageswapargs_scratch8000_offset_size	+ 2*num_scratch8000_params)
-#define pageswapargs_scratchstack_offset_size	(pageswapargs_scratch7000_offset_size	+ 2*num_scratch7000_params)
-#define pageswapargs_flatcache_offset_size		(pageswapargs_scratchstack_offset_size	+ 2*num_scratchstack_params)
+#define pageswapargs_flatcache_offset_size		(pageswapargs_scratch7000_offset_size	+ 2*num_scratch7000_params)
 #define pageswapargs_flatcache_undo_offset_size	(pageswapargs_flatcache_offset_size		+ 2*num_flatcache_params)
 #define pageswapargs_spritecache_offset_size	(pageswapargs_flatcache_undo_offset_size+ 2*num_flatcache_undo_params)
 #define pageswapargs_palette_offset_size		(pageswapargs_spritecache_offset_size	+ 2*num_spritecache_params)
@@ -210,8 +208,7 @@ void Z_ShutdownEMS();
 #define pageswapargs_scratch5000_offset		(pageswapargs_textinfo_offset			+ num_textinfo_params)
 #define pageswapargs_scratch8000_offset		(pageswapargs_scratch5000_offset		+ num_scratch5000_params)
 #define pageswapargs_scratch7000_offset		(pageswapargs_scratch8000_offset		+ num_scratch8000_params)
-#define pageswapargs_scratchstack_offset	(pageswapargs_scratch7000_offset		+ num_scratch7000_params)
-#define pageswapargs_flatcache_offset		(pageswapargs_scratchstack_offset		+ num_scratchstack_params)
+#define pageswapargs_flatcache_offset		(pageswapargs_scratch7000_offset		+ num_scratch7000_params)
 #define pageswapargs_flatcache_undo_offset	(pageswapargs_flatcache_offset			+ num_flatcache_params)
 #define pageswapargs_spritecache_offset		(pageswapargs_flatcache_undo_offset		+ num_flatcache_undo_params)
 #define pageswapargs_palette_offset			(pageswapargs_spritecache_offset		+ num_spritecache_params)
@@ -240,7 +237,6 @@ void Z_QuickmapScratch_8000();
 void Z_QuickmapScratch_7000();
 void Z_PushScratchFrame();
 void Z_PopScratchFrame();
-void Z_RemapScratchFrame(uint8_t startpage);
 void Z_QuickMapFlatPage(int16_t page, int16_t offset);
 void Z_QuickMapUndoFlatCache();
 void Z_QuickMapSpritePage();

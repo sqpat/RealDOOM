@@ -803,7 +803,7 @@ void R_FillBackScreen (void)
 		name = name2;
     else
 		name = name1;
-	Z_PushScratchFrame();
+	Z_QuickmapScratch_5000();
 
 	src = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
 	W_CacheLumpNameDirect(name, src);
@@ -883,7 +883,6 @@ void R_FillBackScreen (void)
 
     }
 
-	Z_PopScratchFrame();
 
 } 
  
