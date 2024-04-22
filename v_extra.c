@@ -60,12 +60,11 @@ V_DrawFullscreenPatch
 	int32_t    offset = 0;
 	int16_t    pageoffset = 0;
 	byte __far*       extradata = (byte __far *)patch;
-	int16_t	pagenum = 0;
 	int16_t oldtask = currenttask;
 	int16_t lump = W_GetNumForName(pagename);
 	Z_QuickmapScratch_5000();
 
-	W_CacheLumpNumDirectFragment(lump, (byte __far *)(0x50000000), pagenum, 0);
+	W_CacheLumpNumDirectFragment(lump, (byte __far *)(0x50000000), 0);
 
 	w = (patch->width);
 
@@ -85,8 +84,7 @@ V_DrawFullscreenPatch
 
 		if (pageoffset > 16000) {
 			offset += pageoffset;
-			pagenum++;
-			W_CacheLumpNumDirectFragment(lump, patch2, pagenum, offset);
+			W_CacheLumpNumDirectFragment(lump, patch2,  offset);
 			extradata = patch2;
 			column = (column_t  __far*)((byte  __far*)extradata + patch->columnofs[col] - offset);
 		}

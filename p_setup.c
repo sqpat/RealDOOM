@@ -974,17 +974,30 @@ void P_LoadSideDefs(int16_t lump)
 	texsize_t msdtextureoffset;
 	texsize_t msdrowoffset;
 	int16_t msdsecnum;
-	
+	int32_t lumpsize;
+	int32_t offset = 0;
+	int16_t indexoffset = 0;
 	Z_QuickmapRender_4000To9000();
  
-	numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
-	Z_QuickmapScratch_5000();
+	lumpsize = W_LumpLength(lump);
+	numsides = lumpsize / sizeof(mapsidedef_t);
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	Z_QuickmapScratch_5000();
+	// this will be a little different. ths can be over 64k so lets load one page at a time (like with titlepics)
+	W_CacheLumpNumDirectFragment(lump, SCRATCH_ADDRESS_5000, 0);
+	
 	data = (mapsidedef_t __far*)SCRATCH_ADDRESS_5000;
 
 	for (i = 0; i < numsides; i++) {
-		msd = &data[i];
+		
+		if ((i-indexoffset) == 546){
+			// reload...
+			offset += 16380;
+			indexoffset = i;
+			W_CacheLumpNumDirectFragment(lump, SCRATCH_ADDRESS_5000, offset);
+		}
+
+		msd = &data[i-indexoffset];
 
 		msdtextureoffset = (msd->textureoffset);
 		msdrowoffset = (msd->rowoffset);
@@ -999,8 +1012,6 @@ void P_LoadSideDefs(int16_t lump)
 		bottex = R_TextureNumForName(texnamebot);
 		midtex = R_TextureNumForName(texnamemid);
 
-		// sides gets unloaded by the above calls, and theres not enough room in ems to 
-		// hold it in memory in the worst case alongside data
 		sd = &sides[i];
 		sd->toptexture = toptex;
 		sd->bottomtexture = bottex;
@@ -1029,9 +1040,9 @@ void P_LoadBlockMap(int16_t lump)
 	Z_QuickmapPhysics();
 
 	W_CacheLumpNumDirect(lump, (byte __far*)blockmaplump);
-
-
 	
+
+
 	bmaporgx = blockmaplump[0];
 	bmaporgy = blockmaplump[1];
 	bmapwidth = blockmaplump[2];
@@ -1041,8 +1052,8 @@ void P_LoadBlockMap(int16_t lump)
 	// clear out mobj chains
 
 	count = sizeof(THINKERREF) * bmapwidth*bmapheight;
-
 	
+
 	FAR_memset(blocklinks, 0, count);
 }
 
@@ -1198,8 +1209,8 @@ P_SetupLevel
 {
 	int8_t        lumpname[9];
 	int16_t         lumpnum;
-	//FILE* fp;
-
+	
+	
 	//I_Error("level is %i %i", episode, map);
 
 	wminfo.partime = 180;
@@ -1309,6 +1320,12 @@ P_SetupLevel
 
 	// set up world state
 	P_SpawnSpecials();
+
+
+	Z_QuickmapRender_4000To9000();
+	Z_QuickmapScratch_5000();
+	
+
 	/*
 	I_Error("\n%Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp",
 		sectors_physics,

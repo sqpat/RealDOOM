@@ -396,7 +396,6 @@ void
 W_CacheLumpNumDirectFragment
 (int16_t lump,
 	byte __far*			dest,
-    int16_t         pagenum,
     int32_t offset){
  
 	W_ReadLump(lump, dest, offset, 16384);
