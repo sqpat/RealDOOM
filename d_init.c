@@ -933,8 +933,6 @@ void D_DoomMain2(void)
 	//DEBUG_PRINT("V_Init: allocate screens.\n");
 	//V_Init();
 
-	DEBUG_PRINT("\nM_LoadDefaults: Load system defaults.");
-	M_LoadDefaults();              // load before initing other systems
 
 	DEBUG_PRINT("\nZ_InitEMS: Init EMS memory allocation daemon.");
 	Z_InitEMS();
@@ -951,6 +949,8 @@ void D_DoomMain2(void)
 	DEBUG_PRINT("\nZ_LoadBinaries: Load game data into memory");
 	Z_LoadBinaries();
 
+	DEBUG_PRINT("\nM_LoadDefaults	: Load system defaults.");
+	M_LoadDefaults();              // load before initing other systems
 
 	// init subsystems
 	DEBUG_PRINT("\nD_InitStrings: loading text.");
