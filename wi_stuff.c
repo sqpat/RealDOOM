@@ -391,6 +391,7 @@ void WI_initAnimatedBack(void)
 	return;
 #endif
 
+
     for (i=0;i<NUMANIMS[wbs->epsd];i++) {
 		a = &wianims[wbs->epsd][i];
 
@@ -997,11 +998,8 @@ void WI_loadData(void)
 
 
 
-void WI_unloadData(void)
-{
-	Z_QuickmapIntermission();
+void WI_unloadData(void){
 	unloaded = true;
-	Z_QuickmapPhysics();
 }
 
 void WI_Drawer (void)
@@ -1015,6 +1013,7 @@ void WI_Drawer (void)
 	if (unloaded) {
 		return;
 	}
+
 	Z_QuickmapIntermission();
 
     switch (state)
