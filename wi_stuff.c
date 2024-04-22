@@ -937,8 +937,6 @@ void WI_loadData(void)
     // background
 	V_DrawFullscreenPatch(name, 1); // scratch also used here
 
-	Z_QuickmapScratch_5000();
-
     if (!commercial) {
 		
 		 			
@@ -1118,7 +1116,7 @@ void WI_Start(wbstartstruct_t __near* wbstartstruct)
 	WI_Init();
 	WI_loadData();
 	WI_initStats();
-	
+
 	Z_QuickmapPhysics();
 
 }

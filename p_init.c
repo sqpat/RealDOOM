@@ -381,7 +381,6 @@ extern int16_t             maxframe;
 // The rotation character can be 0 to signify no rotations.
 //
 
-extern int8_t current4000State, last4000State;
 
 void R_InitSpriteDefs()
 {
@@ -459,13 +458,13 @@ void R_InitSpriteDefs()
 		//  filling in the frames for whatever is found
 		for (l = start + 1; l < end; l++)
 		{
-			if (*(int32_t  __far*)lumpinfo4000[l].name == intname)
+			if (*(int32_t  __far*)lumpinfo9000[l].name == intname)
 			{
-				frame = lumpinfo4000[l].name[4] - 'A';
-				rotation = lumpinfo4000[l].name[5] - '0';
+				frame = lumpinfo9000[l].name[4] - 'A';
+				rotation = lumpinfo9000[l].name[5] - '0';
 
 				if (modifiedgame) {
-					copystr8(localname, lumpinfo4000[l].name);
+					copystr8(localname, lumpinfo9000[l].name);
 					patched = W_GetNumForName(localname);
 				}
 				else
@@ -473,10 +472,10 @@ void R_InitSpriteDefs()
 
 				R_InstallSpriteLump(patched, frame, rotation, false);
 
-				if (lumpinfo4000[l].name[6])
+				if (lumpinfo9000[l].name[6])
 				{
-					frame = lumpinfo4000[l].name[6] - 'A';
-					rotation = lumpinfo4000[l].name[7] - '0';
+					frame = lumpinfo9000[l].name[6] - 'A';
+					rotation = lumpinfo9000[l].name[7] - '0';
 					R_InstallSpriteLump(l, frame, rotation, true);
 				}
 			}

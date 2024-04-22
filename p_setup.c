@@ -290,10 +290,10 @@ void P_LoadSectors(int16_t lump)
 
 	FAR_memset(sectors, 0, MAX_SECTORS_SIZE);
 	FAR_memset(sectors_physics, 0, MAX_SECTORS_PHYSICS_SIZE);
-	Z_QuickmapScratch_4000();
+	Z_QuickmapScratch_8000();
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapsector_t __far*)SCRATCH_ADDRESS_4000;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_8000);
+	data = (mapsector_t __far*)SCRATCH_ADDRESS_8000;
 
 	ss = sectors;
 	sp = sectors_physics;
@@ -468,7 +468,7 @@ void P_SpawnPlayer(mapthing_t __far* mthing)
 	HU_Start();
 
 	Z_QuickmapPhysics();
-
+	Z_QuickmapScratch_8000();
 } 
 
 extern mobj_t __far* setStateReturn;
@@ -497,9 +497,6 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 	int16_t mthingy = mthing.y;
 	int16_t mthingangle = mthing.angle;
 
-
-
-
 	if (mthing.type == 11 || mthing.type == 2 || mthing.type == 3 || mthing.type == 4) {
 		return;
 	}
@@ -510,7 +507,6 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 		P_SpawnPlayer(&mthing);
 		return;
 	}
-
 
 	// check for apropriate skill level
 	if ((mthingoptions & 16)) {
@@ -641,6 +637,7 @@ void P_SpawnSpecials(void)
 	int16_t		i;
 	int8_t		episode;
 
+
 	episode = 1;
 	if (W_CheckNumForName("TEXTURE2") >= 0)
 		episode = 2;
@@ -751,10 +748,10 @@ void P_LoadThings(int16_t lump)
 	boolean             spawn;
 	
 	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
-	Z_QuickmapScratch_4000();
+	Z_QuickmapScratch_8000();
 
-	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_4000);
-	data = (mapthing_t __far*)SCRATCH_ADDRESS_4000;
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_8000);
+	data = (mapthing_t __far*)SCRATCH_ADDRESS_8000;
 
 	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
 
@@ -769,6 +766,7 @@ void P_LoadThings(int16_t lump)
 		}
 
 	}
+
 	for (i = 0; i < numthings; i++) {
 		mt = data[i];
 		spawn = true;

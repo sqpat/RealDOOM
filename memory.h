@@ -189,15 +189,15 @@ spritedefs		CC00:0000
 #define size_doomednum			(size_ammnumpatchoffsets 		+ (sizeof(int16_t) * NUMMOBJTYPES))
 #define size_linespeciallist  	(size_doomednum 			+ (sizeof(int16_t) * MAXLINEANIMS))
 
-#define thinkerlist			((thinker_t __far*)			0x90000000)
-#define linebuffer			((int16_t __far*)			(0x90000000 + size_thinkerlist))
-#define sectors_physics		((sector_physics_t __far* ) (0x90000000 + size_linebuffer))
-#define mobjinfo			((mobjinfo_t __far *)		(0x90000000 + size_sectors_physics))
-#define intercepts			((intercept_t __far*)		(0x90000000 + size_mobjinfo ))
-#define ammnumpatchbytes	((byte __far *)				(0x90000000 + size_intercepts ))
-#define ammnumpatchoffsets	((uint16_t __far*)			(0x90000000 + size_ammnumpatchbytes ))
-#define doomednum			((int16_t __far*)			(0x90000000 + size_ammnumpatchoffsets))
-#define linespeciallist     ((int16_t __far*)   		(0x90000000 + size_doomednum))
+#define thinkerlist			((thinker_t __far*)			0x40000000)
+#define linebuffer			((int16_t __far*)			(0x40000000 + size_thinkerlist))
+#define sectors_physics		((sector_physics_t __far* ) (0x40000000 + size_linebuffer))
+#define mobjinfo			((mobjinfo_t __far *)		(0x40000000 + size_sectors_physics))
+#define intercepts			((intercept_t __far*)		(0x40000000 + size_mobjinfo ))
+#define ammnumpatchbytes	((byte __far *)				(0x40000000 + size_intercepts ))
+#define ammnumpatchoffsets	((uint16_t __far*)			(0x40000000 + size_ammnumpatchbytes ))
+#define doomednum			((int16_t __far*)			(0x40000000 + size_ammnumpatchoffsets))
+#define linespeciallist     ((int16_t __far*)   		(0x40000000 + size_doomednum))
 
 
 
@@ -351,7 +351,7 @@ saveOldString		5000:FC12
 #define screen1 ((byte __far*) 0x90000000)
 #define screen2 ((byte __far*) 0x70000000)
 #define screen3 ((byte __far*) 0x60000000)
-#define screen4 ((byte __far*) (0x90000000 + (65536u - ST_WIDTH * ST_HEIGHT)))
+#define screen4 ((byte __far*) 0x90000000)
 
 // screen1 is used during wi_stuff/intermission code, we can stick this anim data there
 #define size_screen1    	    (64000u)

@@ -128,8 +128,7 @@ void W_AddFile(int8_t *filename)
 	
 	// numlumps 1264
  
-
-	lump_p = &lumpinfo4000[startlump];
+	lump_p = &lumpinfo9000[startlump];
 
 	storehandle = reloadname ? -1 : handle;
 
@@ -149,7 +148,7 @@ void W_AddFile(int8_t *filename)
 				// we need to backtrack and push all 0 length items to the position of the next nonzero length item so size calculations work
 				if (j != 65535) {
 					for (; j < i; j++) {
-						lumpinfo4000[j].position = fileinfo->filepos;
+						lumpinfo9000[j].position = fileinfo->filepos;
 					}
 					j = 65535;
 				}
@@ -167,15 +166,17 @@ void W_AddFile(int8_t *filename)
 				diff = 0;
 				lump_p->position = lastpos;
 			}
-			lumpinfo4000[i - 1].sizediff = diff;
+			lumpinfo9000[i - 1].sizediff = diff;
 
 		}
 		else {
 			lastsize = fileinfo->size;
 		}
+		FAR_memset(lump_p->name, 0, 8);
 		copystr8(lump_p->name, fileinfo->name);
+
 	}
-	lumpinfo4000[i - 1].sizediff = 0;
+	lumpinfo9000[i - 1].sizediff = 0;
 
 	if (reloadname)
 		close(handle);

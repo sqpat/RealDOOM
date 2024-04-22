@@ -181,13 +181,12 @@ int16_t W_CheckNumForName (int8_t* name)
 	int16_t         counter = numlumps;
 	int16_t         returnval = -1;
 	lumpinfo_t __far* lump_p;
-	//lumpinfo_t __far* lumpinfo = lumpinfo4000;
+	//lumpinfo_t __far* lumpinfo = lumpinfo9000;
     // make the name into two integers for easy compares
-    strncpy (name8.s,name,8);
+    memset (name8.s, 0, 9);
+	strncpy (name8.s,name,8);
 
-    // in case the name was a fill 8 chars
-    name8.s[8] = 0;
-
+    
     // case insensitive
     strupr (name8.s);           
 
@@ -199,10 +198,10 @@ int16_t W_CheckNumForName (int8_t* name)
 
 	Z_QuickmapLumpInfo();
 	// scan backwards so patch lump files take precedence
-    lump_p = lumpinfo4000 + numlumps;
-
+    lump_p = lumpinfo9000 + numlumps;
 
     while (true) {
+
 		if ( *(int16_t __far *)lump_p->name == v1
              && *(int16_t __far *)&lump_p->name[2] == v2
              && *(int16_t __far *)&lump_p->name[4] == v3
@@ -210,7 +209,7 @@ int16_t W_CheckNumForName (int8_t* name)
 				returnval = counter;
 				break;
         }
-		if (lump_p == lumpinfo4000) {
+		if (lump_p == lumpinfo9000) {
 			break;
 		}
 		counter--;
@@ -218,7 +217,7 @@ int16_t W_CheckNumForName (int8_t* name)
 
     }
 	if (returnval < -1) {
-		I_Error("what? %s %i %Fp %Fp ", name, returnval, lump_p, lumpinfo4000);
+		I_Error("what? %s %i %Fp %Fp ", name, returnval, lump_p, lumpinfo9000);
 	}
 	Z_UnmapLumpInfo();
     // TFB. Not found.
@@ -254,8 +253,9 @@ int32_t W_LumpLength5000(int16_t lump) {
 	return (lumpinfo5000[lump + 1].position - lumpinfo5000[lump].position) + lumpinfo5000[lump].sizediff;
 }
 
-int32_t W_LumpLength4000(int16_t lump) {
-	return (lumpinfo4000[lump + 1].position - lumpinfo4000[lump].position) + lumpinfo4000[lump].sizediff;
+
+int32_t W_LumpLength9000(int16_t lump) {
+	return (lumpinfo9000[lump + 1].position - lumpinfo9000[lump].position) + lumpinfo9000[lump].sizediff;
 }
 
 int32_t W_LumpLength (int16_t lump)
@@ -269,7 +269,7 @@ int32_t W_LumpLength (int16_t lump)
 
 	 
 	Z_QuickmapLumpInfo();
-	size = W_LumpLength4000(lump);
+	size = W_LumpLength9000(lump);
 	Z_UnmapLumpInfo();
 	return size;
 }
@@ -282,7 +282,6 @@ int32_t W_LumpLength (int16_t lump)
 //
 
 
-extern int8_t current4000State, last4000State, current5000State, last5000State;
 extern int setval;
 
 void
@@ -301,15 +300,15 @@ W_ReadLump
     int32_t startoffset;
 	filelength_t         lumpsize;
 
-	// use 5000 page if we are trying to write to 4000 page
-	boolean is5000Page = ((int32_t) dest >= 0x40000000) && ((int32_t)dest < 0x50000000);
+	// use 5000 page if we are trying to write to 9000 page
+	boolean is5000Page = ((int32_t) dest >= 0x90000000) && ((int32_t)dest < 0xA0000000);
 
 	if (is5000Page) {
 		Z_QuickmapLumpInfo5000();
 		l = lumpinfo5000+lump;
 	} else { 
 		Z_QuickmapLumpInfo();
-		l = lumpinfo4000+lump;
+		l = lumpinfo9000+lump;
 	}
 
 
@@ -319,7 +318,7 @@ W_ReadLump
 #endif
     //l = lumpinfo+lump;
 	//lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
-	lumpsize = is5000Page ? W_LumpLength5000(lump) : W_LumpLength4000(lump);
+	lumpsize = is5000Page ? W_LumpLength5000(lump) : W_LumpLength9000(lump);
 
 	
 	if (dest == colormaps) {//todo unhack this...

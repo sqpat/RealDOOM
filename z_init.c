@@ -219,8 +219,8 @@ found:
 	// UMB HALF-BLOCK
 	// 0xc800			sprite data
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
-	//				some common vars	visplane stuff			screen4 0x9c00
-	// 0x9000 block		thinkers		viewangles, drawsegs								palettebytes	fwipe temp data					screen1
+	//					lumpinfo		textures			screen4 0x9c00
+	// 0x9000 block		empty											palettebytes	fwipe temp data					screen1
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
 	//									tex cache arrays
 	// 									sprite stuff			
@@ -230,7 +230,7 @@ found:
 	// 0x7000 block		physics levdata render levdata			st graphics									screen 2		menu graphics	 
 	//                                  flat cache?
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
-	//				more physics levdata zlight																screen 3
+	//					more physics levdata zlight																screen 3
 	//                  rejectmatrix
 	// 					nightnmarespawns textureinfo																		menu graphics	menu graphics
 	// 0x6000 block		strings									strings															strings			strings
@@ -240,8 +240,8 @@ found:
 	//                  states          states																[scratch buffer]				[scratch used
 	// 0x5000 block		trig tables   	trig tables								demobuffer													for anims]
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
-	//                  empty
-	// 0x4000 block		lumpinfo		textures
+	//                  some common vars visplane stuff
+	// 0x4000 block		thinkers		viewangles, drawsegs
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
 	// NON EMS STUFF BELOW - ALWAYS MAPPED 
 	// --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -256,46 +256,14 @@ found:
 	}
 	 
 
-
 	Z_QuickmapLumpInfo5000();
 
-	FAR_memcpy((byte __far *) 0x54000000, (byte __far *) 0x44000000, 49152u); // copy the wad lump stuff over. gross
-	FAR_memset((byte __far *) 0x44000000, 0, 49152u);
+	FAR_memcpy((byte __far *) 0x54000000, (byte __far *) 0x94000000, 49152u); // copy the wad lump stuff over. gross
+	FAR_memset((byte __far *) 0x94000000, 0, 49152u);
 
 	Z_QuickmapPhysics(); // map default page map
 }
 
-void Z_LinkEMSVariables() {
-	/*
-	// no longer linking dynamically, everything is statically allocated/defined...
-	DEBUG_PRINT("\n  MEMORY AREA  Physics  Render  HU/ST    Demo    Menu");
-	DEBUG_PRINT("\n   0x9000:      %05u   %05u   %05u   00000   00000", size_sectors_physics, size_texturewidthmasks, (ST_WIDTH*ST_HEIGHT));
-
- 
- 	 
-	// 0xE000
-	// 0xcc00
-	// 0xb000
-	// 0x9000  52791  59782  10240  00000  00000
-	// 0x8000  65280  64764  00000  00000  00000
-	// 0x7000  65442  63230  64248  00000  XXXXX
-	// render 6c00-77ff completely full
-
-	// 0x6000  65418  51846  16384  00000  XXXXX
-	// 0x5000  15138  65535  00000  XXXXX  00000
-	// 0x4000  00000  65535  00000  00000  00000
-	// 0x3000  65514  
-	
-	DEBUG_PRINT("\n   0x8000:      %05u   %05u   00000   00000   00000", 64000u + (256 * 5), size_negonearray);
-	DEBUG_PRINT("\n   0x7000:      %05u   %05u   %05u   00000   XXXXX", size_blockmaplump, size_spritetopoffsets + 32768u, 0 - 1288);
-	DEBUG_PRINT("\n   0x6000:      %05u   %05u   %05u   00000   XXXXX", size_nightmarespawns+ 49152u, size_spanstart+ size_texturedefs_bytes, 16384);
-	DEBUG_PRINT("\n   0x5000:      %05u   65535", size_sectors_physics);
-	DEBUG_PRINT("\n   0x4000:      00000   XXXXX");
-	DEBUG_PRINT("\n   0x3000:      %05u", size_events + baselowermemoryaddressStartingOffset, 0, 0);
-
-	I_Error("done");
-	*/
-}
 
 //extern byte __far* pageFrameArea;
 extern int16_t emshandle;

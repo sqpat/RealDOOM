@@ -230,27 +230,16 @@ int16_t pagenum9000;
 
 
 int16_t pageswapargs[total_pages] = {
-	0,	PAGE_9000_OFFSET, 1,	PAGE_9400_OFFSET, 2,	PAGE_9800_OFFSET, 3,	PAGE_9C00_OFFSET,
+	0,	PAGE_4000_OFFSET, 1,	PAGE_4400_OFFSET, 2,	PAGE_4800_OFFSET, 3,	PAGE_4C00_OFFSET,
 	4,	PAGE_8000_OFFSET, 5,	PAGE_8400_OFFSET, 6,	PAGE_8800_OFFSET, 7,	PAGE_8C00_OFFSET,
 	8,	PAGE_7000_OFFSET, 9,	PAGE_7400_OFFSET, 10,	PAGE_7800_OFFSET, 11,	PAGE_7C00_OFFSET,
 	12, PAGE_6000_OFFSET, 13,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,
-	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 34,	PAGE_5C00_OFFSET, //todo make this its own and bring sectors_physics here
-	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_4400_OFFSET,
-	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_4800_OFFSET,
-	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_4C00_OFFSET,
-	0,	PAGE_9000_OFFSET, 1,	PAGE_9400_OFFSET, 2,	PAGE_9800_OFFSET, 3,	PAGE_9C00_OFFSET,
-
-/*
-0,	PAGE_4000_OFFSET, 1,	PAGE_4400_OFFSET, 2,	PAGE_4800_OFFSET, 3,	PAGE_4C00_OFFSET,
-	4,	PAGE_8000_OFFSET, 5,	PAGE_8400_OFFSET, 6,	PAGE_8800_OFFSET, 7,	PAGE_8C00_OFFSET,
-	8,	PAGE_7000_OFFSET, 9,	PAGE_7400_OFFSET, 10,	PAGE_7800_OFFSET, 11,	PAGE_7C00_OFFSET,
-	12, PAGE_6000_OFFSET, 13,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,
-	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 34,	PAGE_5C00_OFFSET, //todo make this its own and bring sectors_physics here
+	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 34,	PAGE_5C00_OFFSET, 
 	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_9400_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_9800_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_9C00_OFFSET,
-	0,	
-*/
+
+ 
 
 	// render
 	FIRST_TEXTURE_LOGICAL_PAGE + 0,	PAGE_9000_OFFSET,
@@ -260,14 +249,14 @@ int16_t pageswapargs[total_pages] = {
 
 	24,	PAGE_8000_OFFSET, 25,	PAGE_8400_OFFSET, 26,	PAGE_8800_OFFSET, 27,	PAGE_8C00_OFFSET,
 	28,	PAGE_7000_OFFSET, 29,	PAGE_7400_OFFSET, 30,	PAGE_7800_OFFSET, 31,	PAGE_7C00_OFFSET,
-	32, PAGE_6000_OFFSET, 33,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,  // map the same 6800, 6C00? 
+	32, PAGE_6000_OFFSET, 33,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,  
 	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET,  // same as physics as its unused for physics..
 	20,	PAGE_4000_OFFSET, 21,	PAGE_4400_OFFSET, 22,	PAGE_4800_OFFSET, 23,	PAGE_4C00_OFFSET,
 	20,	PAGE_9000_OFFSET, 21,	PAGE_9400_OFFSET, 22,	PAGE_9800_OFFSET, 23,	PAGE_9C00_OFFSET,
 
 	
 	// status/hud
-	SCREEN4_LOGICAL_PAGE, PAGE_9C00_OFFSET,
+	SCREEN4_LOGICAL_PAGE, PAGE_9000_OFFSET,
 	FIRST_STATUS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
 	FIRST_STATUS_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
 	FIRST_STATUS_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
@@ -292,13 +281,13 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
 
-// but sometimes we need that in the 0x4000 segment..
-// scratch 4000
-	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_4000_OFFSET,
-	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_4400_OFFSET,
-	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_4800_OFFSET,
-	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_4C00_OFFSET,
-	// and sometimes we need that in the 0x7000 segment..
+// but sometimes we need that in the 0x8000 segment..
+// scratch 8000
+	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_8000_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_8400_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 2, PAGE_8800_OFFSET,
+	FIRST_SCRATCH_LOGICAL_PAGE + 3, PAGE_8C00_OFFSET,
+		// and sometimes we need that in the 0x7000 segment..
 	// scratch 7000
 	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
 	FIRST_SCRATCH_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
@@ -345,7 +334,7 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 5, PAGE_6800_OFFSET,
 	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6, PAGE_6C00_OFFSET,
 
-// task 
+// intermission 
 	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
 	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
 	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
@@ -362,7 +351,7 @@ int16_t pageswapargs[total_pages] = {
 	SCREEN1_LOGICAL_PAGE + 1, PAGE_9400_OFFSET,
 	SCREEN1_LOGICAL_PAGE + 2, PAGE_9800_OFFSET,
 	SCREEN1_LOGICAL_PAGE + 3, PAGE_9C00_OFFSET,
-	// wipe
+// wipe
 
 	FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
 	SCREEN0_LOGICAL_PAGE + 0, PAGE_8000_OFFSET,
@@ -378,9 +367,9 @@ int16_t pageswapargs[total_pages] = {
 	SCREEN3_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
 	SCREEN3_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET,
 
-	FIRST_LUMPINFO_LOGICAL_PAGE,	PAGE_4400_OFFSET,
-	FIRST_LUMPINFO_LOGICAL_PAGE +1, PAGE_4800_OFFSET,
-	FIRST_LUMPINFO_LOGICAL_PAGE +2, PAGE_4C00_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE,	PAGE_9400_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE +1, PAGE_9800_OFFSET,
+	FIRST_LUMPINFO_LOGICAL_PAGE +2, PAGE_9C00_OFFSET,
 
 	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_5400_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_5800_OFFSET,
@@ -395,10 +384,10 @@ int16_t pageswapargoff;
 
 uint8_t current5000RemappedScratchPage = 0;
 
-int8_t current4000State = PAGE_4000_UNMAPPED;
-int8_t last4000State = PAGE_4000_UNMAPPED;
 int8_t current5000State = PAGE_5000_UNMAPPED;
 int8_t last5000State = PAGE_5000_UNMAPPED;
+int8_t current9000State = PAGE_9000_UNMAPPED;
+int8_t last9000State = PAGE_9000_UNMAPPED;
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -413,8 +402,8 @@ int32_t scratchpageswitchcount = 0;
 int32_t scratchpoppageswitchcount = 0;
 int32_t scratchpushpageswitchcount = 0;
 int32_t scratchremapswitchcount = 0;
-int32_t lumpinfo4000switchcount = 0;
 int32_t lumpinfo5000switchcount = 0;
+int32_t lumpinfo9000switchcount = 0;
 int16_t spritecacheevictcount = 0;
 int16_t flatcacheevictcount = 0;
 int16_t patchcacheevictcount = 0;
@@ -463,30 +452,24 @@ void Z_QuickmapPhysics() {
 	taskswitchcount ++;
 #endif
 	currenttask = TASK_PHYSICS;
-	current4000State = PAGE_4000_LUMPINFO;
 	current5000State = PAGE_5000_COLUMN_OFFSETS;
+	current9000State = PAGE_9000_LUMPINFO;
+
 }
- 
+ /*
 // leave off text and do 4000 in 9000 region. Used in p_setup...
 void Z_QuickmapPhysics_4000To9000() {
 	
 	Z_Quickmap(pageswapargs_phys_offset_size+8, 23);
-
-	/*
-	errorreg = regs.h.ah;
-	if (errorreg != 0) {
-		I_Error("Call 0x5000 failed with value %i!\n", errorreg);
-	}
-	*/
+ 
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount ++;
 #endif
 	currenttask = TASK_PHYSICS;
-	current4000State = PAGE_4000_LUMPINFO;
 	current5000State = PAGE_5000_COLUMN_OFFSETS;
 
 }
-
+*/
 
 void Z_QuickmapDemo() {
 	Z_Quickmap(pageswapargs_demo_offset_size, 4);
@@ -527,7 +510,7 @@ void Z_QuickmapRender() {
 
 
 	current5000State = PAGE_5000_COLUMN_OFFSETS;
-	current4000State = PAGE_4000_RENDER;
+	current9000State = PAGE_9000_TEXTURE;
 }
 
 // leave off text and do 4000 in 9000 region. Used in p_setup...
@@ -546,6 +529,7 @@ void Z_QuickmapRender_4000To9000() {
 	currenttask = TASK_RENDER;
 
 	current5000State = PAGE_5000_COLUMN_OFFSETS;
+	current9000State = PAGE_9000_RENDER;
 
 }
 
@@ -555,10 +539,15 @@ void Z_QuickmapRender4000() {
 	Z_Quickmap(pageswapargs_rend_offset_size+80, 4);
 
 	
-	
-	current4000State = PAGE_4000_RENDER;
 
 }
+
+void Z_QuickmapRender9000() {
+	Z_Quickmap(pageswapargs_rend_offset_size+96, 4);
+	current9000State = PAGE_9000_RENDER;
+
+}
+
 
 // sometimes needed when rendering sprites..
 void Z_QuickmapRenderTexture() {
@@ -588,6 +577,7 @@ void Z_QuickmapRenderTexture() {
 
 #endif
 	currenttask = TASK_RENDER_TEXT; // not sure about this
+	current9000State = PAGE_9000_TEXTURE;
 }
 
 
@@ -616,19 +606,17 @@ void Z_QuickmapScratch_5000() {
 	current5000State = PAGE_5000_SCRATCH;
 
 }
-void Z_QuickmapScratch_4000() {
+void Z_QuickmapScratch_8000() {
 
-	if (current4000State != PAGE_4000_SCRATCH){
-		Z_Quickmap(pageswapargs_scratch4000_offset_size, 4);
-	 
-		current4000State = PAGE_4000_SCRATCH;
+	Z_Quickmap(pageswapargs_scratch8000_offset_size, 4);
+	
 
 	#ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;
 		scratchpageswitchcount++;
 
 	#endif
-	}
+	
 }
 
 void Z_QuickmapScratch_7000() {
@@ -756,32 +744,42 @@ void Z_QuickmapColumnOffsets5000() {
 	current5000State = PAGE_5000_COLUMN_OFFSETS;
 }
 
+void Z_QuickmapScreen1(){
+	//Z_Quickmap(pageswapargs_intermission_offset_size + 24, 4);
+	Z_Quickmap(pageswapargs_intermission_offset_size, 16);
+
+	current9000State = PAGE_9000_SCREEN1;
+}
+
 void Z_QuickmapLumpInfo() {
 	
-	switch (current4000State) {
+	switch (current9000State) {
 
-		case PAGE_4000_UNMAPPED:
+		case PAGE_9000_UNMAPPED:
 			// use conventional memory until set up...
 			return;
 	 
-		case PAGE_4000_SCRATCH:
-		case PAGE_4000_RENDER:
-
+		case PAGE_9000_TEXTURE:
+		case PAGE_9000_RENDER:
+		case PAGE_9000_SCREEN1:
+		
 			Z_Quickmap(pageswapargs_lumpinfo_offset_size, 3);
 	#ifdef DETAILED_BENCH_STATS
 			taskswitchcount++;
-			lumpinfo4000switchcount++;
+			lumpinfo9000switchcount++;
 	#endif
 		
-			last4000State = current4000State;
-			current4000State = PAGE_4000_LUMPINFO;
+			last9000State = current9000State;
+			current9000State = PAGE_9000_LUMPINFO;
  
 			return;
-		case PAGE_4000_LUMPINFO:
-			last4000State = PAGE_4000_LUMPINFO;
+
+		case PAGE_9000_LUMPINFO:
+			last9000State = PAGE_9000_LUMPINFO;
 			return;
+			
 		default:
-			I_Error("bad state %i", current4000State);
+			I_Error("bad state %i", current9000State);
 
 	}
 }
@@ -789,12 +787,15 @@ void Z_QuickmapLumpInfo() {
 void Z_UnmapLumpInfo() {
 
 
-	switch (last4000State) {
-		case PAGE_4000_SCRATCH:
-			Z_QuickmapScratch_4000();
+	switch (last9000State) {
+		case PAGE_9000_TEXTURE:
+			Z_QuickmapRenderTexture();
 			break;
-		case PAGE_4000_RENDER:
-			Z_QuickmapRender4000();
+		case PAGE_9000_RENDER:
+			Z_QuickmapRender9000();
+			break;
+		case PAGE_9000_SCREEN1:
+			Z_QuickmapScreen1();
 			break;
 		default:
 			break;
@@ -873,6 +874,8 @@ void Z_QuickmapMenu() {
 	currenttask = TASK_MENU;
 }
 
+
+
 void Z_QuickmapIntermission() {
 	/*
 	regs.w.ax = 0x5000;
@@ -890,6 +893,7 @@ void Z_QuickmapIntermission() {
 #endif
 
 	currenttask = TASK_INTERMISSION;
+	current9000State = PAGE_9000_SCREEN1;
 }
 
 void Z_QuickmapWipe() {

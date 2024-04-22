@@ -269,13 +269,8 @@ void R_GenerateLookup(uint16_t texnum)
 	int16_t				currentcollump;
 	int16_t				currentcollumpRLEStart;
 	uint16_t __far* addr1;
-	//byte patchcountbytes[256];	// 256 enough for doom shareware. maybe 512 for doom ii
-	//byte __near *patchcount = patchcountbytes;
-
-	//byte patchcount[256];	// 256 enough for doom shareware. maybe 512 for doom ii
 
 
-	//byte patchcount[256];
 
 	// rather than alloca or whatever, lets use the scratch page since its already allocated for us...
 	// this is startup code so who cares if its slow
@@ -317,13 +312,13 @@ void R_GenerateLookup(uint16_t texnum)
 		texcollump[i] = 0;
 	}
 
-	patch = texture->patches;
+	//patch = texture->patches;
 	texturepatchcount = texture->patchcount;
 	realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
  
 
 	for (i = 0; i < texturepatchcount; i++) {
-
+		
 		patch = &texture->patches[i];
 		x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchpatch = patch->patch & PATCHMASK;
@@ -591,6 +586,7 @@ void R_InitTextures(void)
 
 	// Reset this since 0x7000 scratch page is active
 	Z_QuickmapRender();
+	Z_QuickmapLumpInfo();
 
 	//I_Error("final size: %i", currentlumpindex);
 

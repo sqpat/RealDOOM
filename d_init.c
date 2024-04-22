@@ -497,7 +497,6 @@ void M_FinishReadThis(int16_t choice);
  
 #ifndef __DEMO_ONLY_BINARY
 
-
 // this is only done in init... pull into there?
 
 void M_Reload(void) {
@@ -538,7 +537,7 @@ void M_Init(void)
 	
 
 	Z_QuickmapMenu();
-
+	
 	M_Reload();
 	
 
@@ -948,12 +947,6 @@ void D_DoomMain2(void)
 
 	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
 	Z_GetEMSPageMap();
-
-
-
-	DEBUG_PRINT("\nZ_LinkEMSVariables: Place variables in specified memory addresses");
-	Z_LinkEMSVariables();
-//	Z_LinkConventionalVariables();
 
 	DEBUG_PRINT("\nZ_LoadBinaries: Load game data into memory");
 	Z_LoadBinaries();

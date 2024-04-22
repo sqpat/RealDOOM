@@ -46,7 +46,7 @@ extern int32_t scratchremapswitchcount;
 extern int32_t patchpageswitchcount;
 extern int32_t compositepageswitchcount;
 extern int32_t spritepageswitchcount;
-extern int32_t lumpinfo4000switchcount;
+extern int32_t lumpinfo9000switchcount;
 extern int32_t lumpinfo5000switchcount;
 
 #endif
@@ -82,9 +82,9 @@ void Z_FreeConventionalAllocations();
 
 void Z_ShutdownEMS();
  
-#define SCRATCH_ADDRESS_4000 (byte __far* )0x40000000
 #define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
 #define SCRATCH_ADDRESS_7000 (byte __far* )0x70000000
+#define SCRATCH_ADDRESS_8000 (byte __far* )0x80000000
 
 #define SCREEN0_LOGICAL_PAGE						4
 #define STRINGS_LOGICAL_PAGE						12
@@ -155,14 +155,14 @@ void Z_ShutdownEMS();
 
 // actually twice the number of pages, 2 params needed per page swap
 // extra 4 for the remapping for page 4000 to 9000 
-#define num_phys_params 54
+#define num_phys_params 46
 // extra 4 for the remapping for page 4000 to 9000 
 #define num_rend_params 56
 #define num_stat_params 12
 #define num_demo_params 8
 #define num_textinfo_params 8
 #define num_scratch5000_params 8
-#define num_scratch4000_params 8
+#define num_scratch8000_params 8
 #define num_scratch7000_params 8
 #define num_scratchstack_params 16
 #define num_flatcache_params 8
@@ -188,8 +188,8 @@ void Z_ShutdownEMS();
 #define pageswapargs_demo_offset_size			(pageswapargs_stat_offset_size			+ 2*num_stat_params)
 #define pageswapargs_textinfo_offset_size		(pageswapargs_demo_offset_size			+ 2*num_demo_params)
 #define pageswapargs_scratch5000_offset_size	(pageswapargs_textinfo_offset_size		+ 2*num_textinfo_params)
-#define pageswapargs_scratch4000_offset_size	(pageswapargs_scratch5000_offset_size	+ 2*num_scratch5000_params)
-#define pageswapargs_scratch7000_offset_size	(pageswapargs_scratch4000_offset_size	+ 2*num_scratch4000_params)
+#define pageswapargs_scratch8000_offset_size	(pageswapargs_scratch5000_offset_size	+ 2*num_scratch5000_params)
+#define pageswapargs_scratch7000_offset_size	(pageswapargs_scratch8000_offset_size	+ 2*num_scratch8000_params)
 #define pageswapargs_scratchstack_offset_size	(pageswapargs_scratch7000_offset_size	+ 2*num_scratch7000_params)
 #define pageswapargs_flatcache_offset_size		(pageswapargs_scratchstack_offset_size	+ 2*num_scratchstack_params)
 #define pageswapargs_flatcache_undo_offset_size	(pageswapargs_flatcache_offset_size		+ 2*num_flatcache_params)
@@ -208,8 +208,8 @@ void Z_ShutdownEMS();
 #define pageswapargs_demo_offset			(pageswapargs_stat_offset				+ num_stat_params)
 #define pageswapargs_textinfo_offset		(pageswapargs_demo_offset				+ num_demo_params)
 #define pageswapargs_scratch5000_offset		(pageswapargs_textinfo_offset			+ num_textinfo_params)
-#define pageswapargs_scratch4000_offset		(pageswapargs_scratch5000_offset		+ num_scratch5000_params)
-#define pageswapargs_scratch7000_offset		(pageswapargs_scratch4000_offset		+ num_scratch4000_params)
+#define pageswapargs_scratch8000_offset		(pageswapargs_scratch5000_offset		+ num_scratch5000_params)
+#define pageswapargs_scratch7000_offset		(pageswapargs_scratch8000_offset		+ num_scratch8000_params)
 #define pageswapargs_scratchstack_offset	(pageswapargs_scratch7000_offset		+ num_scratch7000_params)
 #define pageswapargs_flatcache_offset		(pageswapargs_scratchstack_offset		+ num_scratchstack_params)
 #define pageswapargs_flatcache_undo_offset	(pageswapargs_flatcache_offset			+ num_flatcache_params)
@@ -229,7 +229,6 @@ extern int16_t pageswapargs[total_pages];
 void Z_QuickmapPhysics();
 void Z_QuickmapRender();
 void Z_QuickmapRender_4000To9000();
-void Z_QuickmapPhysics_4000To9000();
 void Z_QuickmapStatus();
 void Z_QuickmapDemo();
 void Z_QuickmapRender4000();
@@ -237,7 +236,7 @@ void Z_QuickmapByTaskNum(int8_t task);
 void Z_QuickmapRenderTexture();
 //void Z_QuickmapRenderTexture(uint8_t offset, uint8_t count);
 void Z_QuickmapScratch_5000();
-void Z_QuickmapScratch_4000();
+void Z_QuickmapScratch_8000();
 void Z_QuickmapScratch_7000();
 void Z_PushScratchFrame();
 void Z_PopScratchFrame();
@@ -270,12 +269,15 @@ void Z_ClearDeadCode();
 #define PAGE_TYPE_RENDER 1
 
 
-#define PAGE_4000_UNMAPPED -1
-#define PAGE_4000_LUMPINFO 1
-#define PAGE_4000_RENDER 2
-#define PAGE_4000_SCRATCH 3
-#define PAGE_4000_PHYSICS 4
-//#define PAGE_4000_READY_TO_INIT 4
+
+
+#define PAGE_9000_UNMAPPED -1
+#define PAGE_9000_LUMPINFO 1
+#define PAGE_9000_TEXTURE 2
+#define PAGE_9000_RENDER 3
+#define PAGE_9000_SCREEN1 4
+
+
 
 #define PAGE_5000_UNMAPPED -1
 #define PAGE_5000_LUMPINFO 1
