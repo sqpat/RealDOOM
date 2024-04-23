@@ -479,7 +479,7 @@ wianimoffsets		7000:A4b8
 /*
 
 
-colormaps					8000:
+colormaps					8000:2000
 colormapbytes				8000:2000
 scalelightfixed				8000:4100
 scalelight					8000:41c0

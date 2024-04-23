@@ -475,7 +475,6 @@ void R_DrawPlanes (void)
 					goto foundflat;
 				}
 			}
-			//I_Error("93"); // too many flats
 			// todo figure out what to do with firstunused flat etc
 			usedflatindex = R_EvictCacheEMSPage(0, CACHETYPE_FLAT);
 			// mult by 4, going from flat index to page index first index of the flat in the evicted page.

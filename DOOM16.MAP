@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/04/23 12:16:14
+Created on:       24/04/23 15:41:49
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -93,8 +93,8 @@ _TEXT                  CODE           AUTO           1ec4:22b0       0000509d
 FAR_DATA               FAR_DATA       AUTO           25f8:000d       00000000
 _NULL                  BEGDATA        DGROUP         25f9:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         25fb:0000       00000002
-CONST                  DATA           DGROUP         25fb:0002       00000ce0
-CONST2                 DATA           DGROUP         26c9:0002       00000116
+CONST                  DATA           DGROUP         25fb:0002       00000ce2
+CONST2                 DATA           DGROUP         26c9:0004       00000116
 _DATA                  DATA           DGROUP         26db:0000       00000ce8
 XIB                    DATA           DGROUP         27a9:0008       00000000
 XI                     DATA           DGROUP         27a9:0008       00000012
@@ -197,7 +197,7 @@ Module: i_sound.obj(C:\REALDOOM\i_sound.c)
 0000:082a*     I_SetChannels_
 0000:082a*     I_sndArbitrateCards_
 0000:082a*     I_UpdateSoundParams_
-25f9:0d02+     _snd_prefixen
+25f9:0d04+     _snd_prefixen
 25f9:1bb9      _snd_DesiredMusicDevice
 Module: d_main.obj(C:\REALDOOM\d_main.c)
 25f9:1bba      _wadfiles
@@ -1619,7 +1619,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(fprtf.c)
 Module: C:\WATCOM\lib286\dos\clibm.lib(vsprintf.c)
 1ec4:3f43      vsprintf_
 Module: C:\WATCOM\lib286\dos\clibm.lib(istable.c)
-25f9:0d0e      __IsTable
+25f9:0d10      __IsTable
 Module: C:\WATCOM\lib286\dos\clibm.lib(stricmp.c)
 1ec4:3f5e      stricmp_
 Module: C:\WATCOM\lib286\dos\clibm.lib(opendos.c)
@@ -1762,7 +1762,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(mbislead.c)
 Module: C:\WATCOM\lib286\dos\clibm.lib(mbtowc.c)
 1ec4:6d1b      mbtowc_
 Module: C:\WATCOM\lib286\dos\clibm.lib(bits.c)
-25f9:0e10      __Bits
+25f9:0e12      __Bits
 Module: C:\WATCOM\lib286\dos\clibm.lib(noefgfmt.c)
 25f9:1afe      ___EFG_printf
 25f9:1b02      ___EFG_scanf
@@ -1793,7 +1793,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(mbinit.c)
 1ec4:7258      __mbinit_
 25f9:1b06+     ___MBCodePage
 Module: C:\WATCOM\lib286\dos\clibm.lib(alphabet.c)
-25f9:0cdc      ___Alphabet
+25f9:0cde      ___Alphabet
 Module: C:\WATCOM\lib286\dos\clibm.lib(bfree.c)
 1ec4:7328      _bfree_
 

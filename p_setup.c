@@ -828,7 +828,6 @@ void P_LoadLineDefs(int16_t lump)
 	int16_t v2y;
 	int16_t mldflags;
 	uint8_t mldspecial;
-	uint8_t mldtag;
 	int16_t mldv1;
 	int16_t mldv2;
 	int16_t mldsidenum0;
@@ -854,7 +853,7 @@ void P_LoadLineDefs(int16_t lump)
 
 		mldflags = (mld->flags);
 		mldspecial = (mld->special);
-		mldtag = (mld->tag);
+		convertedtag = (mld->tag);
 		mldv1 = (mld->v1);
 		mldv2 = (mld->v2);
 		mldsidenum0 = (mld->sidenum[0]);
@@ -876,7 +875,7 @@ void P_LoadLineDefs(int16_t lump)
 
 		ld->flags = mldflags&0xff;
 
-		convertedtag = mldtag;
+		 
 		if (convertedtag == 666) {
 			convertedtag = TAG_666;
 		} else if (convertedtag == 667) {
@@ -894,7 +893,7 @@ void P_LoadLineDefs(int16_t lump)
 		} else if (convertedtag == 86) {
 			convertedtag = TAG_86;
 		} else if (convertedtag >= 55) {
-			I_Error("93 %i %i", convertedtag, i);// found (line) line tag that was too high! %i %i
+			I_Error("93 %i %i %i", convertedtag, i, numlines);// found (line) line tag that was too high! %i %i
 		}
 
 		ld_physics->tag = convertedtag;
