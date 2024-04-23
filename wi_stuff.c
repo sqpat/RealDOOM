@@ -409,13 +409,12 @@ void WI_initAnimatedBack(void)
 
 }
 
-void WI_updateAnimatedBack(void)
-{
+void WI_updateAnimatedBack(void) {
     int16_t		i;
     wianim_t __far*	a;
 
     if (commercial)
-	return;
+		return;
 
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
     if (wbs->epsd > 2)
@@ -503,47 +502,41 @@ WI_drawNum
     int16_t		neg;
     int16_t		temp;
 
-    if (digits < 0)
-    {
-	if (!n)
-	{
-	    // make variable-length zeros 1 digit long
-	    digits = 1;
-	}
-	else
-	{
-	    // figure out # of digits in #
-	    digits = 0;
-	    temp = n;
+    if (digits < 0) {
+		if (!n) {
+			// make variable-length zeros 1 digit long
+			digits = 1;
+		} else {
+			// figure out # of digits in #
+			digits = 0;
+			temp = n;
 
-	    while (temp)
-	    {
-		temp /= 10;
-		digits++;
-	    }
-	}
+			while (temp) {
+				temp /= 10;
+				digits++;
+			}
+		}
     }
 
     neg = n < 0;
-    if (neg)
-	n = -n;
-
+    if (neg){
+		n = -n;
+	}
     // if non-number, do not draw it
-    if (n == 1994)
-	return 0;
-
+    if (n == 1994){
+		return 0;
+	}
     // draw the new number
-    while (digits--)
-    {
-	x -= fontwidth;
-	V_DrawPatch(x, y, FB, WI_GetPatch(numRef[ n % 10 ]));
-	n /= 10;
+    while (digits--) {
+		x -= fontwidth;
+		V_DrawPatch(x, y, FB, WI_GetPatch(numRef[ n % 10 ]));
+		n /= 10;
     }
 
     // draw a minus sign if necessary
-    if (neg)
-	V_DrawPatch(x-=8, y, FB, WI_GetPatch(12));
-
+    if (neg){
+		V_DrawPatch(x-=8, y, FB, WI_GetPatch(12));
+	}
     return x;
 
 }
@@ -554,9 +547,9 @@ WI_drawPercent
   int16_t		y,
   int16_t		p )
 {
-    if (p < 0)
+    if (p < 0){
 		return;
-
+	}
     V_DrawPatch(x, y, FB, WI_GetPatch(13));
     WI_drawNum(x, y, p, -1);
 }
@@ -579,9 +572,9 @@ WI_drawTime
 	patch_t __far* colon;
 	patch_t __far* sucks;
 
-    if (t<0)
-	return;
-
+    if (t<0){
+		return;
+	}
     if (t <= 61*59) {
 		colon = WI_GetPatch(24);
 		div = 1;
@@ -620,10 +613,9 @@ void WI_updateNoState(void) {
 
     WI_updateAnimatedBack();
 
-    if (!--cnt)
-    {
-	WI_End();
-	G_WorldDone();
+    if (!--cnt) {
+		WI_End();
+		G_WorldDone();
     }
 
 }
@@ -721,110 +713,90 @@ void WI_updateStats(void)
 
     WI_updateAnimatedBack();
 
-    if (acceleratestage && sp_state != 10)
-    {
-	acceleratestage = 0;
-	cnt_kills = (plrs.skills * 100) / wbs->maxkills;
-	cnt_items = (plrs.sitems * 100) / wbs->maxitems;
-	cnt_secret = (plrs.ssecret * 100) / wbs->maxsecret;
-	cnt_time = plrs.stime;
-	cnt_par = wbs->partime / TICRATE;
-	S_StartSound(0, sfx_barexp);
-	sp_state = 10;
-    }
-
-    if (sp_state == 2)
-    {
-	cnt_kills += 2;
-
-	if (!(bcnt&3))
-	    S_StartSound(0, sfx_pistol);
-
-	if (cnt_kills >= (plrs.skills * 100) / wbs->maxkills)
-	{
-	    cnt_kills = (plrs.skills * 100) / wbs->maxkills;
-	    S_StartSound(0, sfx_barexp);
-	    sp_state++;
-	}
-    }
-    else if (sp_state == 4)
-    {
-	cnt_items += 2;
-
-	if (!(bcnt&3))
-	    S_StartSound(0, sfx_pistol);
-
-	if (cnt_items >= (plrs.sitems * 100) / wbs->maxitems)
-	{
-	    cnt_items = (plrs.sitems * 100) / wbs->maxitems;
-	    S_StartSound(0, sfx_barexp);
-	    sp_state++;
-	}
-    }
-    else if (sp_state == 6)
-    {
-	cnt_secret += 2;
-
-	if (!(bcnt&3))
-	    S_StartSound(0, sfx_pistol);
-
-	if (cnt_secret >= (plrs.ssecret * 100) / wbs->maxsecret)
-	{
-	    cnt_secret = (plrs.ssecret * 100) / wbs->maxsecret;
-	    S_StartSound(0, sfx_barexp);
-	    sp_state++;
-	}
-    }
-
-    else if (sp_state == 8)
-    {
-	if (!(bcnt&3))
-	    S_StartSound(0, sfx_pistol);
-
-	cnt_time += 3;
-
-	if (cnt_time >= plrs.stime)
-	    cnt_time = plrs.stime;
-
-	cnt_par += 3;
-
-	if (cnt_par >= wbs->partime / TICRATE)
-	{
-	    cnt_par = wbs->partime / TICRATE;
-
-	    if (cnt_time >= plrs.stime)
-	    {
+    if (acceleratestage && sp_state != 10) {
+		acceleratestage = 0;
+		cnt_kills = (plrs.skills * 100) / wbs->maxkills;
+		cnt_items = (plrs.sitems * 100) / wbs->maxitems;
+		cnt_secret = (plrs.ssecret * 100) / wbs->maxsecret;
+		cnt_time = plrs.stime;
+		cnt_par = wbs->partime / TICRATE;
 		S_StartSound(0, sfx_barexp);
-		sp_state++;
-	    }
-	}
+		sp_state = 10;
     }
-    else if (sp_state == 10)
-    {
-	if (acceleratestage)
-	{
-	    S_StartSound(0, sfx_sgcock);
 
-		if (commercial) {
-			WI_initNoState();
-		} else {
-			WI_initShowNextLoc();
+	if (sp_state == 2) {
+		cnt_kills += 2;
+
+		if (!(bcnt&3)){
+			S_StartSound(0, sfx_pistol);
 		}
-	}
+		if (cnt_kills >= (plrs.skills * 100) / wbs->maxkills) {
+			cnt_kills = (plrs.skills * 100) / wbs->maxkills;
+			S_StartSound(0, sfx_barexp);
+			sp_state++;
+		}
+    } else if (sp_state == 4) {
+		cnt_items += 2;
+
+		if (!(bcnt&3)){
+			S_StartSound(0, sfx_pistol);
+		}
+		if (cnt_items >= (plrs.sitems * 100) / wbs->maxitems) {
+			cnt_items = (plrs.sitems * 100) / wbs->maxitems;
+			S_StartSound(0, sfx_barexp);
+			sp_state++;
+		}
+    } else if (sp_state == 6) {
+		cnt_secret += 2;
+
+		if (!(bcnt&3)){
+			S_StartSound(0, sfx_pistol);
+		}
+		if (cnt_secret >= (plrs.ssecret * 100) / wbs->maxsecret) {
+			cnt_secret = (plrs.ssecret * 100) / wbs->maxsecret;
+			S_StartSound(0, sfx_barexp);
+			sp_state++;
+		}
+    } else if (sp_state == 8) {
+		if (!(bcnt&3)){
+			S_StartSound(0, sfx_pistol);
+		}
+		cnt_time += 3;
+
+		if (cnt_time >= plrs.stime){
+			cnt_time = plrs.stime;
+		}
+		cnt_par += 3;
+
+		if (cnt_par >= wbs->partime / TICRATE) {
+			cnt_par = wbs->partime / TICRATE;
+
+			if (cnt_time >= plrs.stime) {
+				S_StartSound(0, sfx_barexp);
+				sp_state++;
+			}
+		}
     }
-    else if (sp_state & 1)
-    {
-	if (!--cnt_pause)
-	{
-	    sp_state++;
-	    cnt_pause = TICRATE;
-	}
+    else if (sp_state == 10) {
+		if (acceleratestage) {
+			S_StartSound(0, sfx_sgcock);
+
+			if (commercial) {
+				WI_initNoState();
+			} else {
+				WI_initShowNextLoc();
+			}
+		}
+    } else if (sp_state & 1) {
+		if (!--cnt_pause) {
+			sp_state++;
+			cnt_pause = TICRATE;
+		}
     }
 
 }
 
-void WI_drawStats(void)
-{
+void WI_drawStats(void) {
     // line height
 	int16_t lh;
 
@@ -901,19 +873,18 @@ void WI_Ticker(void)
 	WI_checkForAccelerate();
 	Z_QuickmapIntermission();
 
-	switch (state)
-	{
-	case StatCount:
-		WI_updateStats();
-		break;
+	switch (state) {
+		case StatCount:
+			WI_updateStats();
+			break;
 
-	case ShowNextLoc:
-		WI_updateShowNextLoc();
-		break;
+		case ShowNextLoc:
+			WI_updateShowNextLoc();
+			break;
 
-	case NoState:
-		WI_updateNoState();
-		break;
+		case NoState:
+			WI_updateNoState();
+			break;
 	}
 	Z_QuickmapPhysics();
 
@@ -925,9 +896,9 @@ void WI_loadData(void)
 	int8_t	name[9];
 
     if (commercial)
-	strcpy(name, "INTERPIC");
+		strcpy(name, "INTERPIC");
     else 
-	sprintf(name, "WIMAP%d", wbs->epsd);
+		sprintf(name, "WIMAP%d", wbs->epsd);
     
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
     if (wbs->epsd == 3)
@@ -985,9 +956,9 @@ void WI_loadData(void)
 		}
 
 
-		for (i = 0; i < 10; i++) {
-			numRef[i] = 14 + i;
-		}
+	}
+	for (i = 0; i < 10; i++) {
+		numRef[i] = 14 + i;
 	}
         				    
  
@@ -1094,8 +1065,7 @@ void WI_Init(void)
 		sprintf(name, "CWILV%2.2d", wbs->next);
 		W_CacheLumpNameDirect(name, dst);
 
-	}
-	else {
+	} else {
 		dst = wigraphicslevelname;
 		sprintf(name, "WILV%d%d", wbs->epsd, wbs->last);
 		W_CacheLumpNameDirect(name, dst);
@@ -1104,7 +1074,7 @@ void WI_Init(void)
 		sprintf(name, "WILV%d%d", wbs->epsd, wbs->next);
 		W_CacheLumpNameDirect(name, dst);
 	}
-}
+}	
 
 void WI_Start(wbstartstruct_t __near* wbstartstruct)
 {
