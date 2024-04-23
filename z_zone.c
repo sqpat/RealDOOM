@@ -235,6 +235,7 @@ int16_t pageswapargs[total_pages] = {
 	8,	PAGE_7000_OFFSET, 9,	PAGE_7400_OFFSET, 10,	PAGE_7800_OFFSET, 11,	PAGE_7C00_OFFSET,
 	12, PAGE_6000_OFFSET, 13,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,
 	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 34,	PAGE_5C00_OFFSET, 
+	35, PAGE_9000_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_9400_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_9800_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_9C00_OFFSET,
@@ -359,9 +360,6 @@ int16_t pageswapargs[total_pages] = {
 	SCREEN3_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
 	SCREEN3_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET,
 
-	FIRST_LUMPINFO_LOGICAL_PAGE,	PAGE_9400_OFFSET,
-	FIRST_LUMPINFO_LOGICAL_PAGE +1, PAGE_9800_OFFSET,
-	FIRST_LUMPINFO_LOGICAL_PAGE +2, PAGE_9C00_OFFSET,
 
 	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_5400_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_5800_OFFSET,
@@ -428,7 +426,7 @@ void Z_Quickmap(int16_t offset, int8_t count){
 void Z_QuickmapPhysics() {
 	//int16_t errorreg;
 
-	Z_Quickmap(pageswapargs_phys_offset_size, 23);
+	Z_Quickmap(pageswapargs_phys_offset_size, 24);
 
 
 	/*
@@ -442,7 +440,7 @@ void Z_QuickmapPhysics() {
 #endif
 	currenttask = TASK_PHYSICS;
 	current5000State = PAGE_5000_COLUMN_OFFSETS;
-	current9000State = PAGE_9000_LUMPINFO;
+	current9000State = PAGE_9000_LUMPINFO_PHYSICS;
 
 }
  /*
@@ -692,19 +690,19 @@ void Z_QuickmapLumpInfo() {
 		case PAGE_9000_RENDER:
 		case PAGE_9000_SCREEN1:
 		
-			Z_Quickmap(pageswapargs_lumpinfo_offset_size, 3);
+			Z_Quickmap(pageswapargs_phys_offset_size+80, 4);
 	#ifdef DETAILED_BENCH_STATS
 			taskswitchcount++;
 			lumpinfo9000switchcount++;
 	#endif
 		
 			last9000State = current9000State;
-			current9000State = PAGE_9000_LUMPINFO;
+			current9000State = PAGE_9000_LUMPINFO_PHYSICS;
  
 			return;
 
-		case PAGE_9000_LUMPINFO:
-			last9000State = PAGE_9000_LUMPINFO;
+		case PAGE_9000_LUMPINFO_PHYSICS:
+			last9000State = PAGE_9000_LUMPINFO_PHYSICS;
 			return;
 			
 		default:

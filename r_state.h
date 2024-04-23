@@ -48,7 +48,7 @@
 #define MAX_NODES_SIZE				(MAX_NODES *		sizeof(node_t))
 #define MAX_SEGS_SIZE				(MAX_SEGS *			sizeof(seg_t))
 
-#define MAX_SEGS_PHYSICS_SIZE		(MAX_SIDES *		sizeof(seg_physics_t))
+#define MAX_SEGS_PHYSICS_SIZE		(MAX_SEGS *		    sizeof(seg_physics_t))
 #define MAX_SECTORS_PHYSICS_SIZE	(MAX_SECTORS *		sizeof(sector_physics_t))
 #define MAX_LINES_PHYSICS_SIZE		(MAX_LINES *		sizeof(line_physics_t))
 
@@ -79,9 +79,12 @@ MAX_SEGS_SIZE				8445
 
 
 //65442
-MAX_SEGS_PHYSICS_SIZE		10348
+MAX_SEGS_PHYSICS_SIZE		11260
 MAX_LINES_PHYSICS_SIZE		28224
 MAX_BLOCKMAP_LUMPSIZE		26870u
+
+
+818 over!!!
 
 //43448
 MAX_SECTORS_PHYSICS_SIZE	6960

@@ -92,47 +92,49 @@ void Z_ShutdownEMS();
 #define RENDER_7800_PAGE							20 + 10
 #define RENDER_7C00_PAGE							20 + 11
 #define TEXTURE_INFO_LOGICAL_PAGE					FIRST_RENDER_LOGICAL_PAGE + 12			//unused...?
+
 // 35
-#define SCREEN4_LOGICAL_PAGE						FIRST_RENDER_LOGICAL_PAGE + 15
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE			35
 // 36
+#define SCREEN4_LOGICAL_PAGE						LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
+// 37
 #define FIRST_STATUS_LOGICAL_PAGE					SCREEN4_LOGICAL_PAGE + 1
-// 40
-#define PALETTE_LOGICAL_PAGE						FIRST_STATUS_LOGICAL_PAGE + 4
 // 41
+#define PALETTE_LOGICAL_PAGE						FIRST_STATUS_LOGICAL_PAGE + 4
+// 42
 #define FIRST_DEMO_LOGICAL_PAGE						PALETTE_LOGICAL_PAGE + 1
-// 45
+// 46
 #define	FIRST_MENU_GRAPHICS_LOGICAL_PAGE			FIRST_DEMO_LOGICAL_PAGE + 4
-// 52
+// 53
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
-// 60
+// 61
 #define SCREEN1_LOGICAL_PAGE						FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 64
+// 65
 #define SCREEN2_LOGICAL_PAGE						SCREEN1_LOGICAL_PAGE + 4
-// 68
+// 69
 #define SCREEN3_LOGICAL_PAGE						SCREEN2_LOGICAL_PAGE + 4
-// 72
-#define FIRST_WIPE_LOGICAL_PAGE						SCREEN3_LOGICAL_PAGE + 4
 // 73
+#define FIRST_WIPE_LOGICAL_PAGE						SCREEN3_LOGICAL_PAGE + 4
+// 74
 #define FIRST_SCRATCH_LOGICAL_PAGE					FIRST_WIPE_LOGICAL_PAGE + 1
-// 77
+// 78
 #define FIRST_LUMPINFO_LOGICAL_PAGE					FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 80
+// 81
 #define FIRST_PATCH_CACHE_LOGICAL_PAGE				FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_PATCH_CACHE_PAGES						16
-// 96
+// 97
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE				FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES						6
-// 102
+// 103
 #define FIRST_TEXTURE_LOGICAL_PAGE					FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 110
+// 111
 #define NUM_TEXTURE_PAGES							8
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE				FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
-// 126
+// 127
 #define NUM_SPRITE_CACHE_PAGES						16
 #define NUM_EMS4_SWAP_PAGES							(int32_t)(FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 127 in use currently (including 0)
+// 128 in use currently (including 0)
 
-// 192 for 3 mb...
 
 
 #define TASK_PHYSICS 0
@@ -152,7 +154,7 @@ void Z_ShutdownEMS();
 
 // actually twice the number of pages, 2 params needed per page swap
 // extra 4 for the remapping for page 4000 to 9000 
-#define num_phys_params 46
+#define num_phys_params 48
 // extra 4 for the remapping for page 4000 to 9000 
 #define num_rend_params 56
 #define num_stat_params 12
@@ -169,7 +171,6 @@ void Z_ShutdownEMS();
 #define num_menu_params 16
 #define num_intermission_params 32
 #define num_wipe_params 26
-#define num_lumpinfo_params 6
 #define num_lumpinfo_5400_params 6
 
 //#define pageswapargoff_demo pageswapargseg +
@@ -193,8 +194,7 @@ void Z_ShutdownEMS();
 #define pageswapargs_menu_offset_size			(pageswapargs_palette_offset_size		+ 2*num_palette_params)
 #define pageswapargs_intermission_offset_size	(pageswapargs_menu_offset_size			+ 2*num_menu_params)
 #define pageswapargs_wipe_offset_size			(pageswapargs_intermission_offset_size	+ 2*num_intermission_params)
-#define pageswapargs_lumpinfo_offset_size		(pageswapargs_wipe_offset_size			+ 2*num_wipe_params)
-#define pageswapargs_lumpinfo_5400_offset_size	(pageswapargs_lumpinfo_offset_size		+ 2*num_lumpinfo_params)
+#define pageswapargs_lumpinfo_5400_offset_size	(pageswapargs_wipe_offset_size		+ 2*num_wipe_params)
 #define total_pages_size						(pageswapargs_lumpinfo_5400_offset_size	+ 2*num_lumpinfo_5400_params)
 
 // used for array indices
@@ -212,8 +212,7 @@ void Z_ShutdownEMS();
 #define pageswapargs_menu_offset			(pageswapargs_palette_offset			+ num_palette_params)
 #define pageswapargs_intermission_offset	(pageswapargs_menu_offset				+ num_menu_params)
 #define pageswapargs_wipe_offset			(pageswapargs_intermission_offset		+ num_intermission_params)
-#define pageswapargs_lumpinfo_offset		(pageswapargs_wipe_offset				+ num_wipe_params)
-#define pageswapargs_lumpinfo_5400_offset	(pageswapargs_lumpinfo_offset			+ num_lumpinfo_params)
+#define pageswapargs_lumpinfo_5400_offset	(pageswapargs_wipe_offset			+ num_wipe_params)
 #define total_pages							(pageswapargs_lumpinfo_5400_offset		+ num_lumpinfo_5400_params)
 
 extern int16_t pageswapargs[total_pages];
@@ -265,7 +264,7 @@ void Z_ClearDeadCode();
 
 
 #define PAGE_9000_UNMAPPED -1
-#define PAGE_9000_LUMPINFO 1
+#define PAGE_9000_LUMPINFO_PHYSICS 1
 #define PAGE_9000_TEXTURE 2
 #define PAGE_9000_RENDER 3
 #define PAGE_9000_SCREEN1 4

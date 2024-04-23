@@ -1210,7 +1210,6 @@ P_SetupLevel
 	int8_t        lumpname[9];
 	int16_t         lumpnum;
 	
-	
 	//I_Error("level is %i %i", episode, map);
 
 	wminfo.partime = 180;
@@ -1268,7 +1267,6 @@ P_SetupLevel
 	W_CacheLumpNumDirect(lumpnum + ML_REJECT, rejectmatrix);
 
 	P_GroupLines();
-
 #ifdef PRECALCULATE_OPENINGS
 	P_CacheLineOpenings();
 #endif
@@ -1320,10 +1318,7 @@ P_SetupLevel
 
 	// set up world state
 	P_SpawnSpecials();
-
-
-	Z_QuickmapRender_4000To9000();
-	Z_QuickmapScratch_5000();
+	
 	
 
 	/*

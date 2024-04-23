@@ -170,7 +170,22 @@ spritedefs		CC00:0000
 
 // ALLOCATION DEFINITIONS: PHYSICS
 
+
 // 0x9000 BLOCK PHYSICS
+
+// note: 0x9400-0x9FFF is for lumpinfo...
+
+#define size_segs_physics		(MAX_SEGS_PHYSICS_SIZE)
+#define segs_physics		((seg_physics_t __far*)		(0x90000000))
+
+// segs_physics   9000:0000
+// [empty]        9000:2BFC
+
+// 5124 bytes free
+
+// 0x4000 BLOCK PHYSICS
+
+
 
 
 
@@ -201,17 +216,17 @@ spritedefs		CC00:0000
 
 
 
-// 9000:0000	thinkerlist
-// 9000:93A8	linebuffer
-// 9000:A784	sectors_physics
-// 9000:C2B4	mobjinfo
-// 9000:C897	intercepts
-// 9000:CC17	ammnumpatchbytes
-// 9000:CE23	ammnumpatchoffsets
+// 4000:0000	thinkerlist
+// 4000:93A8	linebuffer
+// 4000:A784	sectors_physics
+// 4000:C2B4	mobjinfo
+// 4000:C897	intercepts
+// 4000:CC17	ammnumpatchbytes
+// 4000:CE23	ammnumpatchoffsets
 
-// 9000:CE37  	doomednum
-// 9000:CF49	linespeciallist
-// 9000:CFC9	[empty]
+// 4000:CE37  	doomednum
+// 4000:CF49	linespeciallist
+// 4000:CFC9	[empty]
 
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region
@@ -240,24 +255,22 @@ this area used in many tasks including physics but not including render
 */
 
 //0x7000 BLOCK PHYSICS
-#define size_segs_physics		(MAX_SEGS_PHYSICS_SIZE)
-#define size_lines_physics		(size_segs_physics		+ MAX_LINES_PHYSICS_SIZE)
+
+#define size_lines_physics		(MAX_LINES_PHYSICS_SIZE)
 #define size_blockmaplump		(size_lines_physics		+ MAX_BLOCKMAP_LUMPSIZE)
 
 //3f8a, runs up close to 6800 which has mobjposlist, etc
 
 
-#define segs_physics		((seg_physics_t __far*)		(0x70000000))
-#define lines_physics		((line_physics_t __far*)	(0x70000000 + size_segs_physics))
+#define lines_physics		((line_physics_t __far*)	(0x70000000))
 #define blockmaplump		((int16_t __far*)			(0x70000000 + size_lines_physics))
 #define blockmaplump_plus4	((int16_t __far*)			(0x70000008 + size_lines_physics))
 
 /*
-segs_physics		7000:0000
-lines_physics		7000:286c
-blockmaplump		7000:96ac
-[empty]				7000:ffa2
- 94 bytes free
+lines_physics		7000:0000
+blockmaplump		7000:6E40
+[empty]				  7000:D736
+ 10442 bytes free!
 */
 
 
@@ -265,6 +278,7 @@ blockmaplump		7000:96ac
 // 0x6800 BLOCK PHYSICS
 
 // begin stuff that is paged out in sprite code
+// this is used boht in physics and small part of render code
 
 #define size_mobjposlist			0						+ (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_xtoviewangle			size_mobjposlist		+ (sizeof(fineangle_t) * (SCREENWIDTH + 1))

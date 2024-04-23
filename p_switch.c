@@ -99,11 +99,9 @@ P_ChangeSwitchTexture
 	int8_t     i;
 	int16_t     sound;
 
-	line_physics_t __far* line_physics;
 
 	if (!useAgain) {
-		line_physics = &lines_physics[linenum];
-		line_physics->special = 0;
+		lines_physics[linenum].special = 0;
 	}
 	
     texTop = sides[lineside0].toptexture;
