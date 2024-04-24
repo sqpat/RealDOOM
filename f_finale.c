@@ -409,14 +409,14 @@ void F_Ticker (void)
 
 #include "hu_stuff.h"
 
-
 void F_TextWrite (void)
 {
 	byte __far*	dest = screen0;
     
     int16_t		x,y,w;
     int16_t		count;
-    int8_t*	ch;
+    int8_t		chstring[650];
+	int8_t*		ch = &chstring;
     int16_t		c;
     int16_t		cx;
     int16_t		cy;
@@ -426,7 +426,7 @@ void F_TextWrite (void)
 	Z_QuickmapScratch_5000();
 	Z_QuickmapScreen0();
 	W_CacheLumpNameDirect(finaleflat, src);
-	
+
     for (y=0 ; y<SCREENHEIGHT ; y++) {
 		for (x=0 ; x<SCREENWIDTH/64 ; x++) {
 			FAR_memcpy (dest, src+((y&63)<<6), 64);
@@ -442,7 +442,7 @@ void F_TextWrite (void)
     cx = 10;
     cy = 10;
    
-    getStringByIndex(finaletext, ch);
+    getStringByIndex(finaletext, chstring);
 	
     count = (finalecount - 10)/TEXTSPEED;
     if (count < 0){
@@ -894,13 +894,12 @@ void F_BunnyScroll (void) {
 //
 // F_Drawer
 //
-void F_Drawer (void)
-{
+void F_Drawer (void) {
     if (finalestage == 2) {
 		F_CastDrawer ();
 		return;
     }
-
+	
 	if (!finalestage) {
 		F_TextWrite();
 	} else {
