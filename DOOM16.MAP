@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/04/24 10:03:01
+Created on:       24/04/24 13:50:46
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -81,7 +81,7 @@ v_video_TEXT           CODE           AUTO           178d:6360       000002f2
 z_zone_TEXT            CODE           AUTO           178d:6660       00000773
 info_TEXT              CODE           AUTO           178d:6de0       0000069c
 d_math_TEXT            CODE           AUTO           178d:7480       00000000
-d_init_TEXT            CODE           AUTO           1ed5:0000       00000b57
+d_init_TEXT            CODE           AUTO           1ed5:0000       00000b59
 st_init_TEXT           CODE           AUTO           1ed5:0b60       00000287
 r_init_TEXT            CODE           AUTO           1ed5:0df0       0000096a
 w_init_TEXT            CODE           AUTO           1ed5:1760       0000029d
@@ -1397,21 +1397,21 @@ Module: d_math.obj(C:\REALDOOM\d_math.c)
 260a:1950      _FLAT_CACHE_PAGE
 Module: d_init.obj(C:\REALDOOM\d_init.c)
 1ed5:0000      D_InitStrings_
-1ed5:00ba      D_StartTitle_
-1ed5:00ca+     D_GetCursorColumn_
-1ed5:00f2+     D_GetCursorRow_
-1ed5:011a+     D_SetCursorPosition_
-1ed5:0140+     D_DrawTitle_
-1ed5:01c2+     D_RedrawTitle_
-1ed5:01f0+     D_AddFile_
-1ed5:024c+     IdentifyVersion_
-1ed5:02b2+     M_LoadDefaults_
-1ed5:03ea+     HU_Init_
-1ed5:0430*     S_Init_
-1ed5:0432+     M_Reload_
-1ed5:04d4+     M_Init_
-1ed5:0564+     AM_loadPics_
-1ed5:05c8      D_DoomMain2_
+1ed5:00bc      D_StartTitle_
+1ed5:00cc+     D_GetCursorColumn_
+1ed5:00f4+     D_GetCursorRow_
+1ed5:011c+     D_SetCursorPosition_
+1ed5:0142+     D_DrawTitle_
+1ed5:01c4+     D_RedrawTitle_
+1ed5:01f2+     D_AddFile_
+1ed5:024e+     IdentifyVersion_
+1ed5:02b4+     M_LoadDefaults_
+1ed5:03ec+     HU_Init_
+1ed5:0432*     S_Init_
+1ed5:0434+     M_Reload_
+1ed5:04d6+     M_Init_
+1ed5:0566+     AM_loadPics_
+1ed5:05ca      D_DoomMain2_
 Module: st_init.obj(C:\REALDOOM\st_init.c)
 1ed5:0b60+     ST_loadGraphics_
 1ed5:0db2+     ST_loadData_
@@ -1812,4 +1812,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  000297a0 (169888.)
 Entry point address: 1ed5:22b0
-Link time: 00:00.04
+Link time: 00:00.59

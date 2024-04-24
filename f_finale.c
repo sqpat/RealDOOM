@@ -440,7 +440,8 @@ void F_TextWrite (void)
     
     // draw some of the text onto the screen
     cx = 10;
-    cy = -1; 	// not sure why but a newline is triggering before the rest of the text so we have to offset it by a newline..
+    cy = 10;
+   
     getStringByIndex(finaletext, ch);
 	
     count = (finalecount - 10)/TEXTSPEED;

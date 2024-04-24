@@ -295,10 +295,10 @@ NEWLEVEL
 	registered version.\n
 	shareware version.\n
 	commercial version.\n
-M_Init: Init miscellaneous info
+M_Init: Init miscellaneous info\n
 R_Init: Init DOOM refresh daemon - 
-P_Init: Init Playloop state.
+\nP_Init: Init Playloop state.\n
 I_Init: Setting up machine state.\n
-S_Init: Setting up sound.
-HU_Init: Setting up heads up display.
-ST_Init: Init status bar.
+S_Init: Setting up sound.\n
+HU_Init: Setting up heads up display.\n
+ST_Init: Init status bar.\n

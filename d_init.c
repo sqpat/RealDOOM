@@ -101,7 +101,7 @@ void D_InitStrings() {
 
 		for (i = 0; i < 16384 ; i++) {
 			letter = fgetc(handle);
-			stringdata[i ] = letter;
+			stringdata[i] = letter;
 			if (letter == 'n') {
 				if (stringdata[i  - 1] == '\\') {
 					// hacky, but oh well.
@@ -116,6 +116,8 @@ void D_InitStrings() {
 			if (letter == '\n') {
 				j++;
 				stringoffsets[j] = i;// +(page * 16384);
+				i--; // dont want to waste a character saving extra newlines. 
+				// we are appending strings with null terminators when we return them anyway
 			};
 
 			if (feof(handle)) {
@@ -956,6 +958,7 @@ void D_DoomMain2(void)
 	DEBUG_PRINT("\nD_InitStrings: loading text.");
 	D_InitStrings();
 
+
 	// Check for -file in shareware
 	#ifdef DEBUG_PRINTING
 	if (registered) {
@@ -986,6 +989,10 @@ void D_DoomMain2(void)
 	D_RedrawTitle(title);
 	#endif
 	M_Init();
+
+	// 6350 493 10
+	//I_Error("\n%u %u %hhi %s", stringoffsets[E3TEXT], stringoffsets[E3TEXT + 1] - stringoffsets[E3TEXT], textbuffer[0], textbuffer);
+
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(R_INIT_TEXT, textbuffer);

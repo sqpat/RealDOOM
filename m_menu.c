@@ -1091,7 +1091,7 @@ void M_QuitDOOM(int16_t choice)
 	if (commercial)
     {
 		getStringByIndex(endmsg2[chosenendmsg], temp);
-            sprintf(endstring, "%s%s",
+            sprintf(endstring, "%s\n%s",
 				temp,
 				temp2
 			);
@@ -1099,7 +1099,7 @@ void M_QuitDOOM(int16_t choice)
     else
     {
 		getStringByIndex(endmsg[chosenendmsg], temp);
-		sprintf(endstring, "%s%s",
+		sprintf(endstring, "%s\n%s",
 			temp,
 			temp2
 		);
