@@ -160,11 +160,12 @@ void W_AddFile(int8_t *filename)
 				lastsize = fileinfo->size;
 			}
 			else {
+				// filepos is 0 case, usually markers....
 				if (j == 65535)
 					j = i;
 
 				diff = 0;
-				lump_p->position = lastpos;
+				lump_p->position = lastpos + lastsize;
 			}
 			lumpinfo9000[i - 1].sizediff = diff;
 
