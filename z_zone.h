@@ -173,7 +173,7 @@ void Z_ShutdownEMS();
 #define num_palette_params 10
 #define num_7000to6000_params 8
 #define num_menu_params 16
-#define num_intermission_params 32
+#define num_intermission_params 24
 #define num_wipe_params 26
 #define num_lumpinfo_5400_params 6
 
