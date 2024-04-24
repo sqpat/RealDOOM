@@ -302,7 +302,7 @@ void WI_drawLF(void)
 	int16_t y = WI_TITLEY;
 	patch_t __far* finished = WI_GetPatch(5);
 	// draw <LevelName> 
-	patch_t __far* lname = (patch_t __far*)(wigraphicslevelname + NEXT_OFFSET);
+	patch_t __far* lname = (patch_t __far*)(wigraphicslevelname);
 
     V_DrawPatch((SCREENWIDTH - (lname->width))/2, y, FB, lname);
 
@@ -322,7 +322,6 @@ void WI_drawEL(void)
 	patch_t __far* entering = WI_GetPatch(27);
     // draw "Entering"
     V_DrawPatch((SCREENWIDTH - (entering->width))/2, y, FB, entering);
-
 
 	lname = (patch_t __far*)(wigraphicslevelname + NEXT_OFFSET);
 
