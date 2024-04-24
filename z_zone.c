@@ -222,7 +222,6 @@ int16_t pagenum9000;
 #define PAGE_4800_OFFSET - 18
 #define PAGE_4C00_OFFSET - 17
 
-#define RENDER_7000_LOGICAL_PAGE  28
 
 
 //#define pageswapargs_scratch5000_offset pageswapargs_textinfo_offset + num_textinfo_params
@@ -269,12 +268,7 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_DEMO_LOGICAL_PAGE + 2, PAGE_5800_OFFSET,
 	FIRST_DEMO_LOGICAL_PAGE + 3, PAGE_5C00_OFFSET,
 
- // textinfo
-
-	TEXTURE_INFO_LOGICAL_PAGE + 0, PAGE_6000_OFFSET,
-	TEXTURE_INFO_LOGICAL_PAGE + 1, PAGE_6400_OFFSET,
-	TEXTURE_INFO_LOGICAL_PAGE + 2, PAGE_6800_OFFSET,
-	TEXTURE_INFO_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET,
+ 
 // we use 0x5000 as a  'scratch' page frame for certain things
 // scratch 5000
 	FIRST_SCRATCH_LOGICAL_PAGE + 0, PAGE_5000_OFFSET,
@@ -619,7 +613,6 @@ void Z_QuickmapScratch_7000() {
 
 void Z_QuickmapScreen0() {
 	Z_Quickmap(pageswapargs_screen0_offset_size, 4);
-	intx86(EMS_INT, &regs, &regs);
 }
 
 
@@ -631,7 +624,7 @@ void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	}
 
 	Z_Quickmap(pageswapargs_flatcache_offset_size, 4);
-	intx86(EMS_INT, &regs, &regs);
+
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	flatpageswitchcount++;
@@ -800,15 +793,6 @@ void Z_QuickmapMenu() {
 
 
 void Z_QuickmapIntermission() {
-	/*
-	regs.w.ax = 0x5000;
-	regs.w.cx = 0x08; // page count
-	regs.w.dx = emshandle; // handle
-	segregs.ds = pageswapargseg;
-	regs.w.si = pageswapargs_menu_offset_size;
-	intx86(EMS_INT, &regs, &regs);
-	*/
-
 	Z_Quickmap(pageswapargs_intermission_offset_size, 16);
  
 #ifdef DETAILED_BENCH_STATS

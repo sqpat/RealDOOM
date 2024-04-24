@@ -183,8 +183,7 @@ void Z_ShutdownEMS();
 #define pageswapargs_rend_7000_offset_size		(pageswapargs_rend_offset_size + (2*8))
 #define pageswapargs_stat_offset_size			(pageswapargs_rend_offset_size			+ 2*num_rend_params)
 #define pageswapargs_demo_offset_size			(pageswapargs_stat_offset_size			+ 2*num_stat_params)
-#define pageswapargs_textinfo_offset_size		(pageswapargs_demo_offset_size			+ 2*num_demo_params)
-#define pageswapargs_scratch5000_offset_size	(pageswapargs_textinfo_offset_size		+ 2*num_textinfo_params)
+#define pageswapargs_scratch5000_offset_size	(pageswapargs_demo_offset_size			+ 2*num_demo_params)
 #define pageswapargs_scratch8000_offset_size	(pageswapargs_scratch5000_offset_size	+ 2*num_scratch5000_params)
 #define pageswapargs_scratch7000_offset_size	(pageswapargs_scratch8000_offset_size	+ 2*num_scratch8000_params)
 #define pageswapargs_flatcache_offset_size		(pageswapargs_scratch7000_offset_size	+ 2*num_scratch7000_params)
@@ -201,8 +200,7 @@ void Z_ShutdownEMS();
 #define pageswapargs_rend_offset			num_phys_params
 #define pageswapargs_stat_offset			(pageswapargs_rend_offset				+ num_rend_params) 
 #define pageswapargs_demo_offset			(pageswapargs_stat_offset				+ num_stat_params)
-#define pageswapargs_textinfo_offset		(pageswapargs_demo_offset				+ num_demo_params)
-#define pageswapargs_scratch5000_offset		(pageswapargs_textinfo_offset			+ num_textinfo_params)
+#define pageswapargs_scratch5000_offset		(pageswapargs_demo_offset				+ num_demo_params)
 #define pageswapargs_scratch8000_offset		(pageswapargs_scratch5000_offset		+ num_scratch5000_params)
 #define pageswapargs_scratch7000_offset		(pageswapargs_scratch8000_offset		+ num_scratch8000_params)
 #define pageswapargs_flatcache_offset		(pageswapargs_scratch7000_offset		+ num_scratch7000_params)
@@ -212,7 +210,7 @@ void Z_ShutdownEMS();
 #define pageswapargs_menu_offset			(pageswapargs_palette_offset			+ num_palette_params)
 #define pageswapargs_intermission_offset	(pageswapargs_menu_offset				+ num_menu_params)
 #define pageswapargs_wipe_offset			(pageswapargs_intermission_offset		+ num_intermission_params)
-#define pageswapargs_lumpinfo_5400_offset	(pageswapargs_wipe_offset			+ num_wipe_params)
+#define pageswapargs_lumpinfo_5400_offset	(pageswapargs_wipe_offset				+ num_wipe_params)
 #define total_pages							(pageswapargs_lumpinfo_5400_offset		+ num_lumpinfo_5400_params)
 
 extern int16_t pageswapargs[total_pages];

@@ -440,12 +440,13 @@ void F_TextWrite (void)
     
     // draw some of the text onto the screen
     cx = 10;
-    cy = 10;
+    cy = -1; 	// not sure why but a newline is triggering before the rest of the text so we have to offset it by a newline..
     getStringByIndex(finaletext, ch);
 	
     count = (finalecount - 10)/TEXTSPEED;
-    if (count < 0)
-	count = 0;
+    if (count < 0){
+		count = 0;
+	}
     for ( ; count ; count-- ) {
 		c = *ch++;
 		if (!c)
@@ -764,31 +765,26 @@ void F_CastDrawer (void)
 void
 F_DrawPatchCol
 ( int16_t		x,
-  patch_t __far*	patch,
-  int16_t		col )
-{
-    column_t __far*	column;
+  column_t __far*	column) {
+    ;
     byte __far*	source;
     byte __far*	dest;
     byte __far*	desttop;
     int16_t		count;
 	
-    column = (column_t  __far*)((byte  __far*)patch + (patch->columnofs[col]));
     desttop = screen0+x;
 
     // step through the posts in a column
-    while (column->topdelta != 0xff )
-    {
-	source = (byte  __far*)column + 3;
-	dest = desttop + column->topdelta*SCREENWIDTH;
-	count = column->length;
-		
-	while (count--)
-	{
-	    *dest = *source++;
-	    dest += SCREENWIDTH;
-	}
-	column = (column_t  __far*)(  (byte  __far*)column + column->length + 4 );
+    while (column->topdelta != 0xff ) {
+		source = (byte  __far*)column + 3;
+		dest = desttop + column->topdelta*SCREENWIDTH;
+		count = column->length;
+			
+		while (count--) {
+			*dest = *source++;
+			dest += SCREENWIDTH;
+		}
+		column = (column_t  __far*)(  (byte  __far*)column + column->length + 4 );
     }
 }
 
@@ -796,14 +792,20 @@ F_DrawPatchCol
 //
 // F_BunnyScroll
 //
-void F_BunnyScroll (void)
-{
+void F_BunnyScroll (void) {
     int16_t		scrolled;
 	int8_t	name[10];
     int16_t		stage;
+	int32_t		totaloffset = 0;
     static int16_t	laststage;
-	
-	patch_t __far* patch = (patch_t __far*)0x50000000;
+	boolean	pic2 = false;
+	int32_t columnoffset = 0;
+	int16_t x;
+	int16_t col;
+	column_t __far* column;
+	patch_t __far* patch 	  = (patch_t __far*)0x50000000;
+	byte __far* lookupoffset = (byte __far*)0x54000000;
+	Z_QuickmapScratch_5000();
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 	
@@ -812,21 +814,58 @@ void F_BunnyScroll (void)
 		scrolled = 320;
     if (scrolled < 0)
 		scrolled = 0;
-		
-	/*
-	// TODO impl for doom 1 commercial. V_DrawFullscreenPatch?
+
+	
+	//V_DrawFullscreenPatch("PFUB2", PU_LEVEL)
+
+	// get lump for patch 1	
+	// load patch 1. 
+
+	// offsets will always be page 1
+	W_CacheLumpNumDirectFragment(W_GetNumForName("PFUB2"), (byte __far *)(0x50000000), 0);
+	// we will page this 2nd page forward to get the column addr
+	W_CacheLumpNumDirectFragment(W_GetNumForName("PFUB2"), lookupoffset, 0);
+
 	for ( x=0 ; x<SCREENWIDTH ; x++) {
-		if (x+scrolled < 320)
-			F_DrawPatchCol (x, V_DrawFullscreenPatch("PFUB2", PU_LEVEL), x+scrolled);
-		else
-			F_DrawPatchCol (x, V_DrawFullscreenPatch("PFUB1", PU_LEVEL), x+scrolled - 320);
+
+		if (x+scrolled < 320){
+			col = x+scrolled;
+		} else {
+			if (!pic2){
+				totaloffset = 0;
+				columnoffset = 0;
+				pic2 = true;
+				// load patch 2
+				W_CacheLumpNumDirectFragment(W_GetNumForName("PFUB1"), (byte __far *)(0x50000000), 0);
+				W_CacheLumpNumDirectFragment(W_GetNumForName("PFUB1"), lookupoffset, 0);
+			}
+			col = x+scrolled - 320;
+			
+		}
+
+		columnoffset = (patch->columnofs[col]) - totaloffset;
+		if (columnoffset > 15000){
+			totaloffset += columnoffset;
+			if (pic2){
+				W_CacheLumpNumDirectFragment(W_GetNumForName("PFUB1"), lookupoffset, totaloffset);
+				
+			} else {
+				W_CacheLumpNumDirectFragment(W_GetNumForName("PFUB2"), lookupoffset, totaloffset);
+			}
+
+			columnoffset = 0;
+
+		}
+		column = (column_t  __far*)(lookupoffset + columnoffset);
+		F_DrawPatchCol (x, column);			
+		//I_Error("first %i %i %i %i", x, col, scrolled, finalecount);
+
     }
-	*/
+	
     if (finalecount < 1130)
 		return;
     
 	if (finalecount < 1180) {
-		Z_QuickmapScratch_5000();
 		W_CacheLumpNameDirect("END0", (byte __far*)patch);
 		V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
 		laststage = 0;
@@ -842,7 +881,6 @@ void F_BunnyScroll (void)
 		laststage = stage;
     }
 
-	Z_QuickmapScratch_5000();
 
     sprintf (name,"END%i",stage);
 	W_CacheLumpNameDirect(name, (byte __far*)patch);
