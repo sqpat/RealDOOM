@@ -75,7 +75,7 @@ int16_t				ceilingplaneindex;
 //
 // texture mapping
 //
-lighttable_t __far*__far*		planezlight;
+uint16_t __far*		planezlight;
 fixed_t			planeheight;
 
 fixed_t			basexscale;
@@ -101,8 +101,7 @@ void
 R_MapPlane
 ( byte		y,
   int16_t		x1,
-  int16_t		x2 )
-{
+  int16_t		x2 ) {
     fineangle_t	angle;
     fixed_t	distance;
     fixed_t	length;
@@ -126,25 +125,24 @@ R_MapPlane
 	ds_xfrac = viewx.w + FixedMulTrig(finecosine[angle], length );
     ds_yfrac = -viewy.w - FixedMulTrig(finesine[angle], length );
 
-if (fixedcolormap) {
-	ds_colormap = fixedcolormap;
-}
-else {
-	index = distance >> LIGHTZSHIFT;
+	if (fixedcolormap) {
+		ds_colormap = fixedcolormap;
+	}
+	else {
+		index = distance >> LIGHTZSHIFT;
 
-	if (index >= MAXLIGHTZ) {
-		index = MAXLIGHTZ - 1;
+		if (index >= MAXLIGHTZ) {
+			index = MAXLIGHTZ - 1;
+		}
+
+		ds_colormap = MK_FP(0x8000, planezlight[index]);
 	}
 
-	ds_colormap = planezlight[index];
-}
+	ds_y = y;
+	ds_x1 = x1;
+	ds_x2 = x2;
 
-ds_y = y;
-ds_x1 = x1;
-ds_x2 = x2;
-
-// high or low detail
-// NOTE: ds_sourceRef must be active at this point. it's loaded up in R_DrawPlanes
+	// high or low detail
 	spanfunc();
 }
 

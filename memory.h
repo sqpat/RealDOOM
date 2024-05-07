@@ -92,8 +92,8 @@ size_rndtable				E000:fedd
 #define B000Block 0xB0000000
 
 // a lot unused here...
-#define size_zlight					0		+ sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTZ)
-#define zlight				((lighttable_t __far* __far*)	(B000Block + B000BlockOffset))
+#define size_zlight					0		+ sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
+#define zlight				((uint16_t far*)	(B000Block + B000BlockOffset))
 
 // size_zlight is 8192, or 0x2000 in size
 // if we stored it as near pointers, would that save 4k?
