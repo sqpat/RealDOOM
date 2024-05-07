@@ -758,7 +758,7 @@ void R_DrawSpanLow(void)
 		do
 		{
 			// Current texture index in u,v.
-			spot = ((yfrac >> (16 - 6))&(4032)) + ((xfrac.h.fracbits) & 63);
+			spot = ((yfrac >> (16 - 6))&(4032)) + ((xfrac.h.intbits) & 63);
 
 			// Lookup pixel from flat texture tile,
 			//  re-index using light/colormap.
