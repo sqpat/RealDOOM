@@ -96,7 +96,7 @@ size_rndtable				E000:fedd
 #define zlight				((lighttable_t __far* __far*)	(B000Block + B000BlockOffset))
 
 // size_zlight is 8192, or 0x2000 in size
-// if we stored it as near, would that save 4k?
+// if we stored it as near pointers, would that save 4k?
 
 
 // 0xCC00 BLOCK
@@ -152,6 +152,9 @@ spritedefs		CC00:0000
 
 #define size_tantoangle		size_finetangent +  2049u * sizeof(int32_t)
 
+// 
+
+#define baselowermemoryaddresssegment 0x31F0
 #define baselowermemoryaddress (0x31F00000)
 
 

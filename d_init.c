@@ -614,6 +614,8 @@ void DUMP_MEMORY_TO_FILE() {
 // D_DoomMain
 //
 
+int16_t main ( int16_t		argc, int8_t**	argv ) ;
+
 
 void D_DoomMain2(void)
 {
@@ -646,11 +648,30 @@ void D_DoomMain2(void)
 	I_Error("done");
 	
 */
-	/*
+	
+	// cs 2700..
+	// ds 2e3a..
+	// ho wbig is too big?
+
+	// 14080
+	#define DGROUP_SIZE 0x00003700
+	
+	// baselowermemoryaddress
+
 	struct SREGS sregs;
-	segread(&sregs);
-	I_Error("\npointer is %Fp %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, &EMS_PAGE), MK_FP(sregs.ds, &p), MK_FP(sregs.ss, &title), _fmalloc(1024), malloc(1024));
-	*/
+
+	if (M_CheckParm("-mem")){
+		segread(&sregs);
+		//I_Error("\npointer is %Fp %Fp %Fp", MK_FP(sregs.ds, DGROUP_SIZE), MK_FP(sregs.cs, &main), MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0));
+		DEBUG_PRINT("Bytes free %u", (baselowermemoryaddresssegment - (sregs.ds +( DGROUP_SIZE >> 4))) << 4);
+		exit(0);
+
+	}
+
+	
+
+	//I_Error("\npointer is %Fp %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, &EMS_PAGE), MK_FP(sregs.ds, &p), MK_FP(sregs.ss, &title), _fmalloc(1024), malloc(1024));
+
 
 	// 6a30
 	//I_Error("\n 7000: %x", size_textureheights);
