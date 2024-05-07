@@ -91,9 +91,6 @@ size_rndtable				E000:fedd
 #define B000BlockOffset 0x14B0
 #define B000Block 0xB0000000
 
-// a lot unused here...
-#define size_zlight					0		+ sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
-#define zlight				((uint16_t far*)	(B000Block + B000BlockOffset))
 
 // size_zlight is 8192, or 0x2000 in size
 // if we stored it as near pointers, would that save 4k?
@@ -525,8 +522,8 @@ texturecache_nodes			8000:FD32
 #define size_leftover_openings	0x2000
 
 #define size_colormapbytes					((33 * 256) + size_leftover_openings)
-#define size_scalelightfixed				size_colormapbytes					+ sizeof(lighttable_t __far* ) * (MAXLIGHTSCALE)
-#define size_scalelight						size_scalelightfixed				+ sizeof(lighttable_t __far*) * (LIGHTLEVELS * MAXLIGHTSCALE)
+#define size_scalelightfixed				size_colormapbytes					+ sizeof(uint16_t ) * (MAXLIGHTSCALE)
+#define size_scalelight						size_scalelightfixed				+ sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE)
 #define size_usedcompositetexturepagemem	size_scalelight						+ NUM_TEXTURE_PAGES * sizeof(uint8_t)
 #define size_usedpatchpagemem				size_usedcompositetexturepagemem				+ NUM_PATCH_CACHE_PAGES * sizeof(uint8_t)
 #define size_compositetextureoffset			size_usedpatchpagemem				+ MAX_TEXTURES * sizeof(uint8_t)
@@ -553,12 +550,13 @@ texturecache_nodes			8000:FD32
 
 
 
-
+// todo investigate 0x8200 and drop the +0x2000 math
+#define colormapssegment  0x8000
 
 #define colormaps					((lighttable_t  __far*) 		(0x80000000 + size_leftover_openings))
 #define colormapbytes				((byte __far*)					(0x80000000 + size_leftover_openings))
-#define scalelightfixed				((lighttable_t __far*__far*	)	(0x80000000 + size_colormapbytes))
-#define scalelight					((lighttable_t __far*__far*	)	(0x80000000 + size_scalelightfixed))
+#define scalelightfixed				((uint16_t __far*	)	(0x80000000 + size_colormapbytes))
+#define scalelight					((uint16_t __far*	)	(0x80000000 + size_scalelightfixed))
 #define usedcompositetexturepagemem ((uint8_t __far*)				(0x80000000 + size_scalelight))
 #define usedpatchpagemem			((uint8_t __far*)				(0x80000000 + size_usedcompositetexturepagemem))
 #define compositetextureoffset		((uint8_t __far*)				(0x80000000 + size_usedpatchpagemem))
@@ -668,6 +666,7 @@ spritetopoffsets		7000:6C34
 #define size_patchcache_nodes				size_flatcache_nodes	+ sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
 #define size_texturecache_nodes				size_patchcache_nodes	+ sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
 #define size_negonearray					size_texturecache_nodes	+ sizeof(int16_t) * (SCREENWIDTH)
+#define size_zlight					size_negonearray		+ sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
 
 
 #define visplanes			    	((visplane_t __far*)			  (0x40000000 + 0))
@@ -681,6 +680,8 @@ spritetopoffsets		7000:6C34
 #define patchcache_nodes			((cache_node_t __far*)			(0x40000000 + size_flatcache_nodes))
 #define texturecache_nodes		((cache_node_t __far*)			(0x40000000 + size_patchcache_nodes))
 #define negonearray					((int16_t __far*)				(0x40000000 + size_texturecache_nodes))
+#define zlight				  ((uint16_t far*)	(0x40000000 + size_negonearray))
+
 
 // used during p_setup
 #define sides_render_9000			  ((side_render_t __far*)	  	(0x90000000 + size_flatindex))
@@ -698,9 +699,10 @@ sides_render			  4000:c0ae
 player_vissprites		4000:e91a
 texturedefs_offset	4000:e986
 texturewidthmasks		4000:ecde
-[done]					    4000:ee8a
+zlight					    4000:ee8a
+[done]					    4000:fe8a
 
-4470 bytes free
+374 bytes free
 
 */
 

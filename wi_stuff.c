@@ -909,8 +909,8 @@ void WI_loadData(void)
 	V_DrawFullscreenPatch(name, 1); // scratch also used here
 
     if (!commercial) {
-		
-		 			
+
+
 
 		// you are here
 		yahRef[0] = 0;
@@ -986,8 +986,7 @@ void WI_Drawer (void)
 
 	Z_QuickmapIntermission();
 
-    switch (state)
-    {
+    switch (state) {
       case StatCount:
 	    WI_drawStats();
 		break;
@@ -1001,7 +1000,6 @@ void WI_Drawer (void)
 		break;
     }
 	Z_QuickmapPhysics();
-
 }
  
 
@@ -1075,8 +1073,7 @@ void WI_Init(void)
 	}
 }	
 
-void WI_Start(wbstartstruct_t __near* wbstartstruct)
-{
+void WI_Start(wbstartstruct_t __near* wbstartstruct) {
 	unloaded = false;
 	Z_QuickmapIntermission();
 	

@@ -126,7 +126,8 @@ R_MapPlane
     ds_yfrac = -viewy.w - FixedMulTrig(finesine[angle], length );
 
 	if (fixedcolormap) {
-		ds_colormap = fixedcolormap;
+		dc_colormap = MK_FP(colormapssegment, fixedcolormap);
+
 	}
 	else {
 		index = distance >> LIGHTZSHIFT;
@@ -135,7 +136,7 @@ R_MapPlane
 			index = MAXLIGHTZ - 1;
 		}
 
-		ds_colormap = MK_FP(0x8000, planezlight[index]);
+		ds_colormap = MK_FP(colormapssegment, planezlight[index]);
 	}
 
 	ds_y = y;

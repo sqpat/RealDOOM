@@ -186,7 +186,7 @@ void R_InitTextureMapping(void)
 				level = NUMCOLORMAPS - 1;
 			}
 
-			scalelight[i*MAXLIGHTSCALE+j] = colormaps + level * 256;
+			scalelight[i*MAXLIGHTSCALE+j] = 0x2000+ + level * 256;
 		}
 	}
 

@@ -329,7 +329,7 @@ void Z_LoadBinaries() {
 	FAR_fread(epsd2animinfo, 16, 6, fp);
 	FAR_fread(wigraphics, 1, 28 * 9, fp);
 	*/
-
+	
 	
 
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);

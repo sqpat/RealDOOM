@@ -27,6 +27,7 @@
 #include "r_local.h"
 #include "z_zone.h"
 #include "memory.h"
+#include <dos.h>
 
 // OPTIMIZE: closed two sided lines as single sided
 
@@ -79,7 +80,7 @@ fixed_t		bottomfrac;
 fixed_t		bottomstep;
 
 
-lighttable_t __far*__far*	walllights;
+uint16_t __far*	walllights;
 
 int16_t __far*		maskedtexturecol;
 
@@ -179,7 +180,7 @@ R_RenderMaskedSegRange
     dc_texturemid.h.intbits += side_render->rowoffset;
 			
 	if (fixedcolormap) {
-		dc_colormap = fixedcolormap;
+		dc_colormap = MK_FP(colormapssegment, fixedcolormap);
 	}
 
     // draw the columns
@@ -196,7 +197,7 @@ R_RenderMaskedSegRange
 					index = spryscale.w >> LIGHTSCALESHIFT;
 				}
 
-				dc_colormap = walllights[index];
+				dc_colormap = MK_FP(colormapssegment, walllights[index]);
 			}
 			
 			sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
@@ -320,7 +321,7 @@ void R_RenderSegLoop (void)
 			}
 
 
-			dc_colormap = walllights[index];
+			dc_colormap = MK_FP(colormapssegment, walllights[index]);
 			dc_x = rw_x;
 			dc_iscale = 0xffffffffu / rw_scale.w;
 			// the below doesnt work because sometimes < FRACUNIT

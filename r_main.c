@@ -36,6 +36,7 @@
 #include "i_system.h"
 #include "doomstat.h"
 #include "memory.h"
+#include <dos.h>
 
 
 // Fineangles in the SCREENWIDTH wide window.
@@ -52,9 +53,8 @@ state_t r_cachedstatecopy[2];
 int16_t			validcount = 1;
 
 
-//uint16_t __far*		fixedcolormap;
-lighttable_t __far*		fixedcolormap;
-extern lighttable_t __far*__far*	walllights;
+uint16_t		fixedcolormap;
+extern uint16_t __far*	walllights;
 
 int16_t			centerx;
 int16_t			centery;
@@ -616,16 +616,16 @@ void R_SetupFrame ()
     viewsin = finesine[viewangle_shiftright3];
     viewcos = finecosine[viewangle_shiftright3];
 	
-    if (player.fixedcolormap)
-    {
-	fixedcolormap =
-	    colormaps
-	    + player.fixedcolormap*256*sizeof(lighttable_t);
-	
-	walllights = scalelightfixed;
+    if (player.fixedcolormap) {
+		fixedcolormap =
+			0x2000
+			+ player.fixedcolormap*256*sizeof(lighttable_t);
+		
+		walllights = scalelightfixed;
 
-	for (i=0 ; i<MAXLIGHTSCALE ; i++)
-	    scalelightfixed[i] = fixedcolormap;
+		for (i=0 ; i<MAXLIGHTSCALE ; i++){
+			scalelightfixed[i] = fixedcolormap;
+		}
     }
     else
 	fixedcolormap = 0;

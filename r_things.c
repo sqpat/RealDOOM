@@ -33,6 +33,8 @@
 #include "m_misc.h"
 #include "p_local.h"
 #include "memory.h"
+#include <dos.h>
+
 
 
 
@@ -51,7 +53,7 @@
 uint16_t         pspritescale;
 fixed_t         pspriteiscale;
 
-lighttable_t __far*__far*  spritelights;
+uint16_t __far*  spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping
@@ -344,7 +346,7 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
         vis->colormap = NULL;
     } else if (fixedcolormap) {
         // fixed map
-        vis->colormap = fixedcolormap;
+        vis->colormap = MK_FP(colormapssegment, fixedcolormap);
     } else if (thingframe & FF_FULLBRIGHT) {
         // full bright
         vis->colormap = colormaps;
@@ -355,7 +357,7 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
         if (index >= MAXLIGHTSCALE) 
             index = MAXLIGHTSCALE-1;
 
-        vis->colormap = spritelights[index];
+        vis->colormap = MK_FP(colormapssegment, spritelights[index]);
     }
 
 	
@@ -497,13 +499,13 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* 
         vis->colormap = NULL;
     } else if (fixedcolormap) {
         // fixed color
-        vis->colormap = fixedcolormap;
+        vis->colormap = MK_FP(colormapssegment, fixedcolormap);
     } else if (statecopy.frame & FF_FULLBRIGHT) {
         // full bright
         vis->colormap = colormaps;
     } else {
         // local light
-        vis->colormap = spritelights[MAXLIGHTSCALE-1];
+        vis->colormap = MK_FP(colormapssegment, spritelights[MAXLIGHTSCALE-1]);
     }
 
 }
