@@ -567,18 +567,21 @@ void R_PrepareMaskedPSprites(void) {
 //
 //vissprite_t     vsprsortedhead;
 //vissprite_t     vsprsortedhead;
-vissprite_t __far*     vsprsortedheadfirst;
-
+uint16_t     vsprsortedheadfirst;
+#define VISSPRITE_UNSORTED_INDEX 65535u
+#define VISSPRITE_SORTED_HEAD_INDEX 65534u
 
 void R_SortVisSprites (void)
 {
 	int16_t                 i;
 	int16_t                 count;
-    vissprite_t __far*        ds;
+    uint16_t        ds;
+    uint16_t        bestindex;
     vissprite_t __far*        best;
     vissprite_t         unsorted;
     fixed_t             bestscale;
-    vissprite_t __far*     vsprsortedheadprev;
+    uint16_t     vsprsortedheadprev;
+
 	memset(&unsorted, 0, sizeof(vissprite_t));
 
     count = vissprite_p - vissprites;
@@ -587,42 +590,47 @@ void R_SortVisSprites (void)
     if (!count)
         return;
           
-    for (ds=vissprites ; ds<vissprite_p ; ds++) {
-        ds->next = ds+1;
+    for (ds=0 ; ds<count ; ds++) {
+        vissprites[ds].next = ds+1;
     }
 
-    unsorted.next = &vissprites[0];
-    (vissprite_p-1)->next = &unsorted;
+    unsorted.next = 0;
+    (vissprite_p-1)->next = VISSPRITE_UNSORTED_INDEX;
     
     // pull the vissprites out by scale
-    vsprsortedheadfirst = vsprsortedheadprev = NULL;
+    vsprsortedheadfirst = vsprsortedheadprev = VISSPRITE_SORTED_HEAD_INDEX;
     for (i=0 ; i<count ; i++) {
         bestscale = MAXLONG;
-        for (ds=unsorted.next ; ds!= &unsorted ; ds=ds->next) {
-            if (ds->scale < bestscale) {
-                bestscale = ds->scale;
-                best = ds;
+        for (ds=unsorted.next ; ds!= VISSPRITE_UNSORTED_INDEX ; ds=vissprites[ds].next) {
+           if (vissprites[ds].scale < bestscale) {
+                bestscale = vissprites[ds].scale;
+                bestindex = ds;
+                best = &vissprites[ds];
             }
         }
 
-        for (ds=unsorted.next ;  ; ds=ds->next) {
-            if (ds->next == best) {
-                ds->next = best->next;
-                break;
+        if (unsorted.next == bestindex){
+            unsorted.next = best->next;
+        } else {
+            for (ds=unsorted.next ; ; ds=vissprites[ds].next) {
+                if (vissprites[ds].next == bestindex) {
+                    vissprites[ds].next = best->next;
+                    break;
+                }
             }
         }
        
 
-        if (vsprsortedheadfirst == NULL){
+        if (vsprsortedheadfirst == VISSPRITE_SORTED_HEAD_INDEX){
             // only on first iteration
-            vsprsortedheadfirst = best;
+            vsprsortedheadfirst = bestindex;
         } else {
             // dont set on first iteration
-            vsprsortedheadprev->next = best;
+            vissprites[vsprsortedheadprev].next = bestindex;
         }
 
-        best->next = NULL;
-        vsprsortedheadprev = best;
+        best->next = VISSPRITE_SORTED_HEAD_INDEX;
+        vsprsortedheadprev = bestindex;
     }
 }
 
@@ -763,7 +771,7 @@ void R_DrawSprite (vissprite_t __far* spr)
 //
 void R_DrawMasked (void)
 {
-    vissprite_t __far*        spr;
+    uint16_t         spr;
     drawseg_t __far*          ds;
         
 	R_SortVisSprites ();
@@ -771,9 +779,9 @@ void R_DrawMasked (void)
     if (vissprite_p > vissprites) {
         // draw all vissprites back to front
         for (spr = vsprsortedheadfirst ;
-             spr != NULL ;
-             spr=spr->next) {
-            R_DrawSprite (spr);
+             spr != VISSPRITE_SORTED_HEAD_INDEX ;
+             spr=vissprites[spr].next) {
+            R_DrawSprite (&vissprites[spr]);
         }
     }
 
