@@ -54,7 +54,7 @@ int16_t				ceilingplaneindex;
 
 
 // ?
- int16_t __far*		lastopening;
+ uint16_t 		lastopening;
 
 
 //
@@ -165,7 +165,7 @@ void R_ClearPlanes (void)
     }
 
     lastvisplane = 0;
-    lastopening = openings;
+    lastopening = 0;
 
     // texture calculation
     FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);

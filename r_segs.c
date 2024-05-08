@@ -145,7 +145,7 @@ R_RenderMaskedSegRange
 	} else {
 		walllights = &scalelight[lightmult48lookup[lightnum]];
 	}
-    maskedtexturecol = ds->maskedtexturecol;
+    maskedtexturecol = &openings[ds->maskedtexturecol];
 
     rw_scalestep = ds->scalestep;		
     spryscale.w = ds->scale1 + (x1 - ds->x1)*(int32_t)rw_scalestep; // this cast is necessary or some masked textures render wrong behind some sprites
@@ -397,7 +397,7 @@ void R_RenderSegLoop (void)
 			
 			if (maskedtexture) {
 				// save texturecol
-				//  for backdrawing of masked mid texture
+				//  for backdrawing of masked mid texture			
 				maskedtexturecol[rw_x] = texturecolumn;
 			}
 			
@@ -546,7 +546,7 @@ R_StoreWallRange
 	worldbottom.w -= viewz.w;
 #endif
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
-    ds_p->maskedtexturecol = NULL;
+    ds_p->maskedtexturecol = NULL_TEXCOL;
 	
 
 	sidetextureoffset = side->textureoffset;
@@ -693,7 +693,8 @@ R_StoreWallRange
 		if (side->midtexture) {
 			// masked midtexture
 			maskedtexture = true;
-			ds_p->maskedtexturecol = maskedtexturecol = lastopening - rw_x;
+			ds_p->maskedtexturecol = lastopening - rw_x;
+    		maskedtexturecol = &openings[ds_p->maskedtexturecol];
 			lastopening += rw_stopx - rw_x;
 		}
     }
@@ -822,14 +823,14 @@ R_StoreWallRange
     
     // save sprite clipping info
     if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture) && !ds_p->sprtopclip) {
-		FAR_memcpy(lastopening, ceilingclip+start, 2*(rw_stopx-start));
-		ds_p->sprtopclip = lastopening - start;
+		FAR_memcpy(&openings[lastopening], ceilingclip+start, 2*(rw_stopx-start));
+		ds_p->sprtopclip = &openings[lastopening-start];
 		lastopening += rw_stopx - start;
     }
     
     if ( ((ds_p->silhouette & SIL_BOTTOM) || maskedtexture) && !ds_p->sprbottomclip) {
-		FAR_memcpy (lastopening, floorclip+start, 2*(rw_stopx-start));
-		ds_p->sprbottomclip = lastopening - start;
+		FAR_memcpy (&openings[lastopening], floorclip+start, 2*(rw_stopx-start));
+		ds_p->sprbottomclip = &openings[lastopening - start] ;
 		lastopening += rw_stopx - start;	
     }
 

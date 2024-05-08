@@ -24,7 +24,7 @@
 #include "r_data.h"
 
 // Visplane related.
-extern  int16_t __far*		lastopening;
+extern  uint16_t 		lastopening;
  
 
 void R_InitPlanes (void);

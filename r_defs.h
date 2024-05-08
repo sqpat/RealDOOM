@@ -402,10 +402,12 @@ typedef struct drawseg_s
     //  all three adjusted so [x1] is first value.
     int16_t __far*		sprtopclip;
     int16_t __far*		sprbottomclip;
-    int16_t __far*		maskedtexturecol;
+    
+    // offset within openings
+    uint16_t		maskedtexturecol;
     
 } drawseg_t;
-
+#define NULL_TEXCOL 0
 
 typedef struct 
 { 

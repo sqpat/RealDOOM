@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/05/08 04:35:49
+Created on:       24/05/08 04:58:26
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -73,9 +73,9 @@ r_bsp_TEXT             CODE           AUTO           178d:0000       0000084c
 r_data_TEXT            CODE           AUTO           178d:0850       0000136f
 r_draw_TEXT            CODE           AUTO           178d:1bc0       00000c3d
 r_main_TEXT            CODE           AUTO           178d:2800       000009c9
-r_plane_TEXT           CODE           AUTO           178d:31d0       0000092a
-r_segs_TEXT            CODE           AUTO           178d:3b00       000012df
-r_things_TEXT          CODE           AUTO           178d:4de0       00001020
+r_plane_TEXT           CODE           AUTO           178d:31d0       00000922
+r_segs_TEXT            CODE           AUTO           178d:3b00       000012e2
+r_things_TEXT          CODE           AUTO           178d:4df0       00001008
 w_wad_TEXT             CODE           AUTO           178d:5e00       000003f4
 v_video_TEXT           CODE           AUTO           178d:6200       000002f2
 z_zone_TEXT            CODE           AUTO           178d:6500       00000773
@@ -1219,20 +1219,20 @@ Module: r_main.obj(C:\REALDOOM\r_main.c)
 Module: r_plane.obj(C:\REALDOOM\r_plane.c)
 178d:31d0+     R_MapPlane_
 178d:33f8      R_ClearPlanes_
-178d:34d2      R_FindPlane_
-178d:3594      R_CheckPlane_
-178d:36c0      R_DrawPlanes_
+178d:34ca      R_FindPlane_
+178d:358c      R_CheckPlane_
+178d:36b8      R_DrawPlanes_
 25f9:16bc*     _tempcounter
 25f9:16be      _currentflatpage
 25f9:28b0+     _planeheight
 25f9:28b4+     _planezlight
 25f9:28b8+     _baseyscale
 25f9:28bc+     _basexscale
-25f9:28c0      _lastopening
-25f9:28c4      _allocatedflatsperpage
-25f9:28ca+     _lastvisplane
-25f9:28cc      _floorplaneindex
-25f9:28ce      _ceilingplaneindex
+25f9:28c0      _allocatedflatsperpage
+25f9:28c6+     _lastvisplane
+25f9:28c8      _lastopening
+25f9:28ca      _floorplaneindex
+25f9:28cc      _ceilingplaneindex
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 25f9:28d0+     _topfrac
 25f9:28d4+     _bottomstep
@@ -1260,8 +1260,8 @@ Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 25f9:2928+     _toptexture
 25f9:292a+     _midtexture
 178d:3b00      R_RenderMaskedSegRange_
-178d:3f2e+     R_RenderSegLoop_
-178d:436e      R_StoreWallRange_
+178d:3f34+     R_RenderSegLoop_
+178d:4374      R_StoreWallRange_
 25f9:292c+     _bottomtexture
 25f9:292e+     _rw_stopx
 25f9:2930+     _rw_x
@@ -1271,17 +1271,17 @@ Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 25f9:2936+     _markfloor
 25f9:2937+     _markceiling
 Module: r_things.obj(C:\REALDOOM\r_things.c)
-178d:4de0      R_ClearSprites_
-178d:4dee      R_DrawMaskedColumn_
-178d:4f0a+     R_DrawVisSprite_
-178d:500e+     R_ProjectSprite_
-178d:5454      R_AddSprites_
-178d:54da+     R_DrawPSprite_
-178d:574e+     R_DrawPlayerSprites_
-178d:579c      R_PrepareMaskedPSprites_
-178d:5838+     R_SortVisSprites_
-178d:5982+     R_DrawSprite_
-178d:5d80      R_DrawMasked_
+178d:4df0      R_ClearSprites_
+178d:4dfe      R_DrawMaskedColumn_
+178d:4f1a+     R_DrawVisSprite_
+178d:501e+     R_ProjectSprite_
+178d:5464      R_AddSprites_
+178d:54ea+     R_DrawPSprite_
+178d:575e+     R_DrawPlayerSprites_
+178d:57ac      R_PrepareMaskedPSprites_
+178d:5848+     R_SortVisSprites_
+178d:5992+     R_DrawSprite_
+178d:5d7e      R_DrawMasked_
 25f9:2940+     _spritelights
 25f9:2944      _mceilingclip
 25f9:2948      _sprtopscreen
@@ -1812,4 +1812,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00029650 (169552.)
 Entry point address: 1ebf:2300
-Link time: 00:00.24
+Link time: 00:00.59
