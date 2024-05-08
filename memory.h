@@ -550,8 +550,7 @@ texturecache_nodes			8000:FD32
 
 
 
-// todo investigate 0x8200 and drop the +0x2000 math
-#define colormapssegment  0x8000
+#define colormapssegment  0x8200
 
 #define colormaps					((lighttable_t  __far*) 		(0x80000000 + size_leftover_openings))
 #define colormapbytes				((byte __far*)					(0x80000000 + size_leftover_openings))

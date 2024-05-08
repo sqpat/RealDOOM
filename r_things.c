@@ -169,7 +169,7 @@ void R_DrawVisSprite ( vissprite_t __far* vis ) {
         
 
 
-	dc_colormap = vis->colormap;
+	dc_colormap = MK_FP(colormapssegment, vis->colormap);
     
     if (!dc_colormap) {
         // NULL colormap = shadow draw
@@ -343,13 +343,13 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
     // get light level
     if (thingflags & MF_SHADOW) {
         // shadow draw
-        vis->colormap = NULL;
+        vis->colormap = 0;
     } else if (fixedcolormap) {
         // fixed map
-        vis->colormap = MK_FP(colormapssegment, fixedcolormap);
+        vis->colormap = fixedcolormap;
     } else if (thingframe & FF_FULLBRIGHT) {
         // full bright
-        vis->colormap = colormaps;
+        vis->colormap = 0;
     } else {
         // diminished light
         index = xscale.w>>(LIGHTSCALESHIFT-detailshift);
@@ -357,7 +357,7 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
         if (index >= MAXLIGHTSCALE) 
             index = MAXLIGHTSCALE-1;
 
-        vis->colormap = MK_FP(colormapssegment, spritelights[index]);
+        vis->colormap = spritelights[index];
     }
 
 	
@@ -496,16 +496,16 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* 
     if (player.powers[pw_invisibility] > 4*32
         || player.powers[pw_invisibility] & 8) {
         // shadow draw
-        vis->colormap = NULL;
+        vis->colormap = 0;
     } else if (fixedcolormap) {
         // fixed color
-        vis->colormap = MK_FP(colormapssegment, fixedcolormap);
+        vis->colormap = fixedcolormap;
     } else if (statecopy.frame & FF_FULLBRIGHT) {
         // full bright
-        vis->colormap = colormaps;
+        vis->colormap = 0;
     } else {
         // local light
-        vis->colormap = MK_FP(colormapssegment, spritelights[MAXLIGHTSCALE-1]);
+        vis->colormap = spritelights[MAXLIGHTSCALE-1];
     }
 
 }

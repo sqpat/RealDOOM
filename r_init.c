@@ -149,10 +149,9 @@ void R_InitLightTables(void)
 			//DEBUG_PRINT("%i %i %Fp %Fp", i, j, zlight[i *MAXLIGHTZ + j], (colormaps + (level * 256)));
 
 			// << 7 is same as * MAXLIGHTZ
-			// 0x2000 is the colormaps offset
-
+ 
 			// this creates a segment 0x8000 indexed pointer to the colormaps
-			zlight[i *MAXLIGHTZ + j] = (0x2000 + (level * 256));
+			zlight[i *MAXLIGHTZ + j] =  (level * 256);
 			//zlight[i * MAXLIGHTZ + j] = (uint16_t)((uint32_t)(colormaps + (level * 256)) & 0xFFFFu);
 
 
