@@ -519,9 +519,30 @@ texturecache_nodes			8000:FD32
 
 // RENDER 0x8000
 
-#define size_leftover_openings	0x2000
 
-#define size_colormapbytes					((33 * 256) + size_leftover_openings)
+// openings are A000 in size. 0x7800 can be just that. Note that 0x2000 carries over to 8000
+
+#define size_openings			sizeof(int16_t) * MAXOPENINGS
+#define openings				((int16_t __far*			) (0x78000000))
+
+/*
+openings					7800:0000
+[done]						7800:A000  or 8000:2000
+*/
+
+
+#define size_negonearray					    size_openings	+ sizeof(int16_t) * (SCREENWIDTH)
+#define size_screenheightarray				size_negonearray		+ sizeof(int16_t) * (SCREENWIDTH)
+#define size_floorclip						size_screenheightarray		+ (sizeof(int16_t) * SCREENWIDTH)
+#define size_ceilingclip					size_floorclip			+ (sizeof(int16_t) * SCREENWIDTH)
+
+#define negonearray					((int16_t __far*)				  (0x78000000 + size_openings))
+#define screenheightarray		((int16_t __far*)				  (0x78000000 + size_negonearray))
+#define floorclip					  ((int16_t __far*)				  (0x78000000 + size_screenheightarray))
+#define ceilingclip					((int16_t __far*)				  (0x78000000 + size_floorclip))
+
+#define size_leftover_openings_arrays	0x2A00
+#define size_colormapbytes					((33 * 256) + size_leftover_openings_arrays)
 #define size_scalelightfixed				size_colormapbytes					+ sizeof(uint16_t ) * (MAXLIGHTSCALE)
 #define size_scalelight						size_scalelightfixed				+ sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE)
 #define size_usedcompositetexturepagemem	size_scalelight						+ NUM_TEXTURE_PAGES * sizeof(uint8_t)
@@ -537,23 +558,20 @@ texturecache_nodes			8000:FD32
 #define size_usedspritepagemem				size_vissprites			+ NUM_SPRITE_CACHE_PAGES * sizeof(uint8_t)
 #define size_spritepage						size_usedspritepagemem	+ MAX_SPRITE_LUMPS * sizeof(uint8_t)
 #define size_spriteoffset					size_spritepage			+ MAX_SPRITE_LUMPS * sizeof(uint8_t)
-#define size_floorclip						size_spriteoffset		+ (sizeof(int16_t) * SCREENWIDTH)
-#define size_ceilingclip					size_floorclip			+ (sizeof(int16_t) * SCREENWIDTH)
-#define size_segs_render					size_ceilingclip		+ ( MAX_SEGS_RENDER_SIZE)
-#define size_screenheightarray				size_segs_render		+ sizeof(int16_t) * (SCREENWIDTH)
-#define size_texturedefs_offset		size_screenheightarray	+ MAX_TEXTURES * sizeof(uint16_t)
+#define size_segs_render					size_spriteoffset		+ ( MAX_SEGS_RENDER_SIZE)
+#define size_texturedefs_offset		size_segs_render	+ MAX_TEXTURES * sizeof(uint16_t)
 #define size_texturewidthmasks		size_texturedefs_offset	+ MAX_TEXTURES * sizeof(uint8_t)
 
 
 
-//fd4a
+//f764
 
 
 
-#define colormapssegment  0x8200
+#define colormapssegment  0x82A0
 
-#define colormaps					((lighttable_t  __far*) 		(0x80000000 + size_leftover_openings))
-#define colormapbytes				((byte __far*)					(0x80000000 + size_leftover_openings))
+#define colormaps					((lighttable_t  __far*) 		(0x80000000 + size_leftover_openings_arrays))
+#define colormapbytes				((byte __far*)					(0x80000000 + size_leftover_openings_arrays))
 #define scalelightfixed				((uint16_t __far*	)	(0x80000000 + size_colormapbytes))
 #define scalelight					((uint16_t __far*	)	(0x80000000 + size_scalelightfixed))
 #define usedcompositetexturepagemem ((uint8_t __far*)				(0x80000000 + size_scalelight))
@@ -569,12 +587,8 @@ texturecache_nodes			8000:FD32
 #define usedspritepagemem			((uint8_t __far*)				(0x80000000 + size_vissprites))
 #define spritepage					((uint8_t __far*)				(0x80000000 + size_usedspritepagemem))
 #define spriteoffset				((uint8_t __far*)				(0x80000000 + size_spritepage))
-#define floorclip					((int16_t __far*)				(0x80000000 + size_spriteoffset))
-#define ceilingclip					((int16_t __far*)				(0x80000000 + size_floorclip))
-#define segs_render					((seg_render_t	__far*		)	(0x80000000 + size_ceilingclip))
-#define screenheightarray			((int16_t __far*)				(0x80000000 + size_segs_render))
-
-#define texturedefs_offset	((uint16_t	__far*)	  			(0x80000000 + size_screenheightarray))
+#define segs_render					((seg_render_t	__far*		)	(0x80000000 + size_spriteoffset))
+#define texturedefs_offset	((uint16_t	__far*)	  			(0x80000000 + size_segs_render))
 #define texturewidthmasks		((uint8_t	__far*)	    			(0x80000000 + size_texturedefs_offset))
 
 
@@ -586,15 +600,7 @@ texturecache_nodes			8000:FD32
 // 7000-77FF	DATA	flatcache	sprcache
 // 6800-6FFF	DATA	DATA		sprcache
 
-// openings are A000 in size. 0x7800 can be just that. Note that 0x2000 carries over to 8000
 
-#define size_openings			sizeof(int16_t) * MAXOPENINGS
-#define openings				((int16_t __far*			) (0x78000000))
-
-/*
-openings					7800:0000
-[done]						7800:A000  or 8000:2000
-*/
 
 // RENDER 0x7000-0x77FF DATA - USED ONLY IN BSP ... 13k + 8k ... 10592 free
 #define size_nodes_render			0						+ MAX_NODES_RENDER_SIZE
@@ -664,8 +670,7 @@ spritetopoffsets		7000:6C34
 #define size_flatcache_nodes				size_spritecache_nodes	+ sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
 #define size_patchcache_nodes				size_flatcache_nodes	+ sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
 #define size_texturecache_nodes				size_patchcache_nodes	+ sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
-#define size_negonearray					size_texturecache_nodes	+ sizeof(int16_t) * (SCREENWIDTH)
-#define size_zlight					size_negonearray		+ sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_zlight					size_texturecache_nodes		+ sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
 
 
 #define visplanes			    	((visplane_t __far*)			  (0x40000000 + 0))
@@ -678,8 +683,7 @@ spritetopoffsets		7000:6C34
 #define flatcache_nodes				((cache_node_t __far*)			(0x40000000 + size_spritecache_nodes))
 #define patchcache_nodes			((cache_node_t __far*)			(0x40000000 + size_flatcache_nodes))
 #define texturecache_nodes		((cache_node_t __far*)			(0x40000000 + size_patchcache_nodes))
-#define negonearray					((int16_t __far*)				(0x40000000 + size_texturecache_nodes))
-#define zlight				  ((uint16_t far*)	(0x40000000 + size_negonearray))
+#define zlight				  ((uint16_t far*)	(0x40000000 + size_texturecache_nodes))
 
 
 // used during p_setup

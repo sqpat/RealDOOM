@@ -624,8 +624,10 @@ void D_DoomMain2(void)
 	union REGS regs;
 	int8_t          textbuffer[256];
 	int8_t            title[128];
+	
+	
+	
 	/*
-	//I_Error("\n%x", size_sectors_physics);
 	int16_t i, i2;
 	int16_t j;
 	
@@ -659,6 +661,7 @@ void D_DoomMain2(void)
 	// baselowermemoryaddress
 
 	struct SREGS sregs;
+	//I_Error("\n%x", size_texturewidthmasks);
 
 	if (M_CheckParm("-mem")){
 		segread(&sregs);
