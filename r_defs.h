@@ -446,7 +446,7 @@ typedef struct
 typedef struct vissprite_s
 {
     // Doubly linked list.
-    struct vissprite_s __far*	prev;
+    //struct vissprite_s __far*	prev;
     struct vissprite_s __far*	next;
     
 

@@ -565,7 +565,10 @@ void R_PrepareMaskedPSprites(void) {
 //
 // R_SortVisSprites
 //
-vissprite_t     vsprsortedhead;
+//vissprite_t     vsprsortedhead;
+//vissprite_t     vsprsortedhead;
+vissprite_t __far*     vsprsortedheadprev;
+vissprite_t __far*     vsprsortedheadfirst;
 
 
 void R_SortVisSprites (void)
@@ -584,21 +587,22 @@ void R_SortVisSprites (void)
     if (!count)
         return;
           
-	unsorted.next = unsorted.prev = &unsorted;
+	//unsorted.next = unsorted.prev = &unsorted;
+    unsorted.next = &unsorted;
 
     for (ds=vissprites ; ds<vissprite_p ; ds++)
     {
         ds->next = ds+1;
-        ds->prev = ds-1;
+        //ds->prev = ds-1;
     }
     
-    vissprites[0].prev = &unsorted;
+    //vissprites[0].prev = &unsorted;
     unsorted.next = &vissprites[0];
     (vissprite_p-1)->next = &unsorted;
-    unsorted.prev = vissprite_p-1;
+    //unsorted.prev = vissprite_p-1;
     
     // pull the vissprites out by scale
-    vsprsortedhead.next = vsprsortedhead.prev = &vsprsortedhead;
+    vsprsortedheadfirst = vsprsortedheadprev = NULL;
     for (i=0 ; i<count ; i++) {
         bestscale = MAXLONG;
         for (ds=unsorted.next ; ds!= &unsorted ; ds=ds->next) {
@@ -607,12 +611,24 @@ void R_SortVisSprites (void)
                 best = ds;
             }
         }
-        best->next->prev = best->prev;
-        best->prev->next = best->next;
-        best->next = &vsprsortedhead;
-        best->prev = vsprsortedhead.prev;
-        vsprsortedhead.prev->next = best;
-        vsprsortedhead.prev = best;
+
+        for (ds=unsorted.next ;  ; ds=ds->next) {
+            if (ds->next == best) {
+                ds->next = best->next;
+                break;
+            }
+        }
+
+        if (vsprsortedheadfirst == NULL){
+            vsprsortedheadfirst = best;
+        }
+
+        //best->next->prev = best->prev;
+        //best->prev->next = best->next;
+        best->next = NULL;
+        //best->prev = vsprsortedhead.prev;
+        vsprsortedheadprev->next = best;
+        vsprsortedheadprev = best;
     }
 }
 
@@ -760,8 +776,8 @@ void R_DrawMasked (void)
 
     if (vissprite_p > vissprites) {
         // draw all vissprites back to front
-        for (spr = vsprsortedhead.next ;
-             spr != &vsprsortedhead ;
+        for (spr = vsprsortedheadfirst ;
+             spr != NULL ;
              spr=spr->next) {
             R_DrawSprite (spr);
         }
