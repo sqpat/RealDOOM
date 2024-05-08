@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/05/08 03:18:44
+Created on:       24/05/08 03:55:50
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -75,7 +75,7 @@ r_draw_TEXT            CODE           AUTO           178d:1bd0       00000c3d
 r_main_TEXT            CODE           AUTO           178d:2810       000009c9
 r_plane_TEXT           CODE           AUTO           178d:31e0       0000092a
 r_segs_TEXT            CODE           AUTO           178d:3b10       0000130f
-r_things_TEXT          CODE           AUTO           178d:4e20       0000107d
+r_things_TEXT          CODE           AUTO           178d:4e20       00001079
 w_wad_TEXT             CODE           AUTO           178d:5ea0       000003f4
 v_video_TEXT           CODE           AUTO           178d:62a0       000002f2
 z_zone_TEXT            CODE           AUTO           178d:65a0       00000773
@@ -1271,17 +1271,6 @@ Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 2603:2946+     _markfloor
 2603:2947+     _markceiling
 Module: r_things.obj(C:\REALDOOM\r_things.c)
-2603:2950+     _vsprsortedheadfirst
-2603:2954+     _vsprsortedheadprev
-2603:2958+     _spritelights
-2603:295c      _mceilingclip
-2603:2960      _sprtopscreen
-2603:2964      _pspriteiscale
-2603:2968      _spryscale
-2603:296c      _mfloorclip
-2603:2970+     _vissprite_p
-2603:2974      _sprites
-2603:2978      _pspritescale
 178d:4e20      R_ClearSprites_
 178d:4e2e      R_DrawMaskedColumn_
 178d:4f4a+     R_DrawVisSprite_
@@ -1291,9 +1280,19 @@ Module: r_things.obj(C:\REALDOOM\r_things.c)
 178d:578e+     R_DrawPlayerSprites_
 178d:57dc      R_PrepareMaskedPSprites_
 178d:5878+     R_SortVisSprites_
-178d:5a12+     R_DrawSprite_
-178d:5e1a      R_DrawMasked_
-2603:297a      _numsprites
+178d:5a08+     R_DrawSprite_
+178d:5e10      R_DrawMasked_
+2603:2950+     _spritelights
+2603:2954      _mceilingclip
+2603:2958      _sprtopscreen
+2603:295c      _pspriteiscale
+2603:2960      _spryscale
+2603:2964      _mfloorclip
+2603:2968+     _vissprite_p
+2603:296c      _sprites
+2603:2970+     _vsprsortedheadfirst
+2603:2972      _pspritescale
+2603:2974      _numsprites
 Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 178d:5ea0      _far_fread_
 178d:5f2a      _far_read_
@@ -1307,17 +1306,17 @@ Module: w_wad.obj(C:\REALDOOM\w_wad.c)
 178d:625e      W_CacheLumpNameDirect_
 178d:6270      W_CacheLumpNumDirect_
 178d:627e      W_CacheLumpNumDirectFragment_
-2603:297c      _wadfilehandle
-2603:297e      _reloadname
-2603:2980      _reloadlump
-2603:2982      _numlumps
+2603:2976      _wadfilehandle
+2603:2978      _reloadname
+2603:297a      _reloadlump
+2603:297c      _numlumps
 Module: v_video.obj(C:\REALDOOM\v_video.c)
 178d:62a0      V_MarkRect_
 178d:62d2      V_CopyRect_
 178d:6356      V_DrawPatch_
 178d:64a4      V_DrawPatchDirect_
-2603:2984      _dirtybox
-2603:298c      _usegamma
+2603:297e      _dirtybox
+2603:2986      _usegamma
 Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 2603:16d0      _pageswapargs
 2603:18c4*     _current5000RemappedScratchPage
@@ -1371,10 +1370,10 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 2603:18fa      _compositecacheevictcount
 2603:18fc      _currenttask
 2603:18fe*     _oldtask
-2603:298e*     _pageswapargseg
-2603:2990      _pagenum9000
-2603:2992      _pageswapargoff
-2603:2994      _emshandle
+2603:2988*     _pageswapargseg
+2603:298a      _pagenum9000
+2603:298c      _pageswapargoff
+2603:298e      _emshandle
 Module: info.obj(C:\REALDOOM\info.c)
 178d:6d54      getPainChance_
 178d:6dd2      getRaiseState_
@@ -1438,7 +1437,7 @@ Module: z_init.obj(C:\REALDOOM\z_init.c)
 1ec9:1c78      Z_GetEMSPageMap_
 1ec9:1d7c      Z_InitEMS_
 1ec9:1d86      Z_LoadBinaries_
-2603:2996+     _EMS_PAGE
+2603:2990+     _EMS_PAGE
 Module: p_init.obj(C:\REALDOOM\p_init.c)
 1ec9:1ea0+     P_InitSwitchList_
 1ec9:1f5e+     P_InitPicAnims_
@@ -1813,4 +1812,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  0c00 (3072.)
 Memory size:  00029700 (169728.)
 Entry point address: 1ec9:2300
-Link time: 00:00.59
+Link time: 00:00.14

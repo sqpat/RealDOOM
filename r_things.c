@@ -567,7 +567,6 @@ void R_PrepareMaskedPSprites(void) {
 //
 //vissprite_t     vsprsortedhead;
 //vissprite_t     vsprsortedhead;
-vissprite_t __far*     vsprsortedheadprev;
 vissprite_t __far*     vsprsortedheadfirst;
 
 
@@ -579,6 +578,7 @@ void R_SortVisSprites (void)
     vissprite_t __far*        best;
     vissprite_t         unsorted;
     fixed_t             bestscale;
+    vissprite_t __far*     vsprsortedheadprev;
 	memset(&unsorted, 0, sizeof(vissprite_t));
 
     count = vissprite_p - vissprites;
@@ -587,19 +587,12 @@ void R_SortVisSprites (void)
     if (!count)
         return;
           
-	//unsorted.next = unsorted.prev = &unsorted;
-    unsorted.next = &unsorted;
-
-    for (ds=vissprites ; ds<vissprite_p ; ds++)
-    {
+    for (ds=vissprites ; ds<vissprite_p ; ds++) {
         ds->next = ds+1;
-        //ds->prev = ds-1;
     }
-    
-    //vissprites[0].prev = &unsorted;
+
     unsorted.next = &vissprites[0];
     (vissprite_p-1)->next = &unsorted;
-    //unsorted.prev = vissprite_p-1;
     
     // pull the vissprites out by scale
     vsprsortedheadfirst = vsprsortedheadprev = NULL;
@@ -618,16 +611,17 @@ void R_SortVisSprites (void)
                 break;
             }
         }
+       
 
         if (vsprsortedheadfirst == NULL){
+            // only on first iteration
             vsprsortedheadfirst = best;
+        } else {
+            // dont set on first iteration
+            vsprsortedheadprev->next = best;
         }
 
-        //best->next->prev = best->prev;
-        //best->prev->next = best->next;
         best->next = NULL;
-        //best->prev = vsprsortedhead.prev;
-        vsprsortedheadprev->next = best;
         vsprsortedheadprev = best;
     }
 }
