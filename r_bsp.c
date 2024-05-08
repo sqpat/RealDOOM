@@ -35,7 +35,7 @@
 //#include "r_local.h"
 
 
-seg_t __far*		curseg;
+uint16_t		curseg;
 seg_render_t __far* curseg_render;
 sector_t __far*	frontsector;
 sector_t __far*	backsector;
@@ -255,7 +255,7 @@ void R_AddLine (int16_t curlineNum)
 	line_t __far* curlinelinedef = &lines[curline->linedefOffset];
 	vertex_t v1 = vertexes[curline_render->v1Offset];
 	vertex_t v2 = vertexes[curline_render->v2Offset];
-     curseg = curline;
+     curseg = curlineNum;
 	 curseg_render = curline_render;
 
 

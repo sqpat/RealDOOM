@@ -21,7 +21,7 @@
 #define __R_BSP__
 
  
-extern seg_t __far*		curseg;
+extern uint16_t		curseg;
 extern seg_render_t __far* curseg_render;
 extern side_t __far*		sidedef;
 

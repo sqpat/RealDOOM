@@ -106,21 +106,19 @@ R_RenderMaskedSegRange
 	vertex_t v2;
 	line_t __far* curlinelinedef;
 	int16_t		texnum;
-	int16_t segnum;
 	curseg = ds->curseg;
-	segnum = curseg - segs;
-	curseg_render = &segs_render[segnum];
+	curseg_render = &segs_render[curseg];
 
 	side = &sides[curseg_render->sidedefOffset];
 	side_render = &sides_render[curseg_render->sidedefOffset];
 
 	texnum = texturetranslation[side->midtexture];
 
-	curlineside = curseg->side;
+	curlineside = segs[curseg].side;
+	curlinelinedef = &lines[segs[curseg].linedefOffset];
 
 	v1 = vertexes[curseg_render->v1Offset];
 	v2 = vertexes[curseg_render->v2Offset];
-	curlinelinedef = &lines[curseg->linedefOffset];
 	// Calculate light table.
 	// Use different light tables
 	//   for horizontal / vertical / diagonal. Diagonal?
@@ -462,7 +460,7 @@ R_StoreWallRange
 
 		 
 	//linedef = &lines[curseg->linedefOffset];
-	linedefOffset = curseg->linedefOffset;
+	linedefOffset = segs[curseg].linedefOffset;
 	linedef = &lines[linedefOffset];
 
 #ifdef CHECK_FOR_ERRORS
