@@ -592,6 +592,8 @@ int16_t
 	nodenum = numnodes - 1;
 	while (! (nodenum & NF_SUBSECTOR) ) {
 		node = &nodes[nodenum];
+		
+		// only used here... inline?
 		side = R_PointOnSide (x, y, node);
 		nodenum = node->children[side];
 

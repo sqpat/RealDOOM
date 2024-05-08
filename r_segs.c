@@ -149,8 +149,8 @@ R_RenderMaskedSegRange
 
     rw_scalestep = ds->scalestep;		
     spryscale.w = ds->scale1 + (x1 - ds->x1)*(int32_t)rw_scalestep; // this cast is necessary or some masked textures render wrong behind some sprites
-    mfloorclip = ds->sprbottomclip;
-    mceilingclip = ds->sprtopclip;
+    mfloorclip = MK_FP(openings_segment, ds->sprbottomclip_offset);
+    mceilingclip = MK_FP(openings_segment, ds->sprtopclip_offset);
     
     // find positioning
     if (curlinelinedef->flags & ML_DONTPEGBOTTOM) {
@@ -546,7 +546,7 @@ R_StoreWallRange
 	worldbottom.w -= viewz.w;
 #endif
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
-    ds_p->maskedtexturecol = NULL_TEXCOL;
+    ds_p->maskedtexturecol = 0;
 	
 
 	sidetextureoffset = side->textureoffset;
@@ -571,8 +571,8 @@ R_StoreWallRange
 		rw_midtexturemid.h.intbits += side_render->rowoffset;
 
 		ds_p->silhouette = SIL_BOTH;
-		ds_p->sprtopclip = screenheightarray;
-		ds_p->sprbottomclip = negonearray;
+		ds_p->sprtopclip_offset = screenheightarray_offset;
+		ds_p->sprbottomclip_offset = negonearray_offset;
 		ds_p->bsilheight = MAXSHORT;
 		ds_p->tsilheight = MINSHORT;
     } else {
@@ -582,7 +582,7 @@ R_StoreWallRange
 		uint8_t backsectorceilingpic = backsector->ceilingpic;
 		uint8_t backsectorfloorpic = backsector->floorpic;
 		uint8_t backsectorlightlevel = backsector->lightlevel;
-		ds_p->sprtopclip = ds_p->sprbottomclip = NULL;
+		ds_p->sprtopclip_offset = ds_p->sprbottomclip_offset = 0;
 		ds_p->silhouette = 0;
 
 		if (frontsectorfloorheight > backsectorfloorheight) {
@@ -602,13 +602,13 @@ R_StoreWallRange
 		}
 		
 		if (backsectorceilingheight <= frontsectorfloorheight) {
-			ds_p->sprbottomclip = negonearray;
+			ds_p->sprbottomclip_offset = negonearray_offset;
 			ds_p->bsilheight = MAXSHORT;
 			ds_p->silhouette |= SIL_BOTTOM;
 		}
 	
 		if (backsectorfloorheight >= frontsectorceilingheight) {
-			ds_p->sprtopclip = screenheightarray;
+			ds_p->sprtopclip_offset = screenheightarray_offset;
 			ds_p->tsilheight = MINSHORT;
 			ds_p->silhouette |= SIL_TOP;
 		}
@@ -822,15 +822,15 @@ R_StoreWallRange
 	R_RenderSegLoop ();
     
     // save sprite clipping info
-    if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture) && !ds_p->sprtopclip) {
+    if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture) && !ds_p->sprtopclip_offset) {
 		FAR_memcpy(&openings[lastopening], ceilingclip+start, 2*(rw_stopx-start));
-		ds_p->sprtopclip = &openings[lastopening-start];
+		ds_p->sprtopclip_offset = 2*(lastopening-start); // multiply by 2 to get the offset rather than array index
 		lastopening += rw_stopx - start;
     }
     
-    if ( ((ds_p->silhouette & SIL_BOTTOM) || maskedtexture) && !ds_p->sprbottomclip) {
+    if ( ((ds_p->silhouette & SIL_BOTTOM) || maskedtexture) && !ds_p->sprbottomclip_offset) {
 		FAR_memcpy (&openings[lastopening], floorclip+start, 2*(rw_stopx-start));
-		ds_p->sprbottomclip = &openings[lastopening - start] ;
+		ds_p->sprbottomclip_offset = 2*(lastopening - start) ;// multiply by 2 to get the offset rather than array index
 		lastopening += rw_stopx - start;	
     }
 

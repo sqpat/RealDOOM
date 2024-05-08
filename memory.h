@@ -524,12 +524,14 @@ texturecache_nodes			8000:FD32
 
 #define size_openings			sizeof(int16_t) * MAXOPENINGS
 #define openings				((int16_t __far*			) (0x78000000))
-
+#define openings_segment 0x7800
 /*
 openings					7800:0000
 [done]						7800:A000  or 8000:2000
 */
 
+#define negonearray_offset        size_openings
+#define screenheightarray_offset  size_negonearray
 
 #define size_negonearray					    size_openings	+ sizeof(int16_t) * (SCREENWIDTH)
 #define size_screenheightarray				size_negonearray		+ sizeof(int16_t) * (SCREENWIDTH)
@@ -565,6 +567,7 @@ openings					7800:0000
 
 
 //f764
+// 2204 free
 
 
 

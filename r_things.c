@@ -727,19 +727,19 @@ void R_DrawSprite (vissprite_t __far* spr)
             // bottom sil
             for (x=r1 ; x<=r2 ; x++)
                 if (clipbot[x] == -2)
-                    clipbot[x] = ds->sprbottomclip[x];
+                    clipbot[x] = *((int16_t __far *)MK_FP(openings_segment, ds->sprbottomclip_offset+(x*2))); 
         } else if (silhouette == 2) {
             // top sil
             for (x=r1 ; x<=r2 ; x++)
                 if (cliptop[x] == -2)
-                    cliptop[x] = ds->sprtopclip[x];
+                    cliptop[x] = *((int16_t __far *)MK_FP(openings_segment, ds->sprtopclip_offset+(x*2))); 
         } else if (silhouette == 3) {
             // both
             for (x=r1 ; x<=r2 ; x++) {
                 if (clipbot[x] == -2)
-                    clipbot[x] = ds->sprbottomclip[x];
+                    clipbot[x] = *((int16_t __far *)MK_FP(openings_segment, ds->sprbottomclip_offset+(x*2))); 
                 if (cliptop[x] == -2)
-                    cliptop[x] = ds->sprtopclip[x];
+                    cliptop[x] = *((int16_t __far *)MK_FP(openings_segment, ds->sprtopclip_offset+(x*2))); 
             }
         }
                 

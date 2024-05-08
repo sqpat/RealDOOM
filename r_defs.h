@@ -400,14 +400,13 @@ typedef struct drawseg_s
     
     // Pointers to lists for sprite clipping,
     //  all three adjusted so [x1] is first value.
-    int16_t __far*		sprtopclip;
-    int16_t __far*		sprbottomclip;
+    uint16_t		sprtopclip_offset;
+    uint16_t		sprbottomclip_offset;
     
     // offset within openings
     uint16_t		maskedtexturecol;
     
 } drawseg_t;
-#define NULL_TEXCOL 0
 
 typedef struct 
 { 
