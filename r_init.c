@@ -194,11 +194,32 @@ void R_InitSpriteLumps(void)
 		patchleftoffset = (patch->leftoffset);
 		patchtopoffset = (patch->topoffset);
 
-		spritewidths[i] = patchwidth;
-		spriteoffsets[i] = patchleftoffset;
-		spritetopoffsets[i] = patchtopoffset;
+		// patchwidth in practice between 0 and 257.
+		// no patchwidth 1s ever exist, nor does 256.
+		// we will hack in the case that 1 == 257 in the engine and store in uint8_t (gross but saves 1300 bytes)
 
+		if (patchwidth == 257)
+			spritewidths[i] = 1;
+		else
+			spritewidths[i] = patchwidth;
+
+		// left offset between -151 and 130 in practice. too hard to make it work in 8 bits probably
+		spriteoffsets[i] = patchleftoffset;
+
+
+		// top offset between -127 and 129 in practice. 128/-128 never actually happens so we hack in that case
+		if (patchtopoffset == 129)
+			spritetopoffsets[i] = -128;
+		else
+			spritetopoffsets[i] = patchtopoffset;
+
+ 
 	}
+
+	// 0, 257
+	// -151 130
+	// -127 129
+
 }
 
 
@@ -644,7 +665,6 @@ void R_InitPatches() {
 
 void R_InitData(void) {
 	uint8_t         i;
-	int16_t lump;
 
 	//R_InitPatches();
 
@@ -669,11 +689,12 @@ void R_InitData(void) {
 	R_InitSpriteLumps();
 	DEBUG_PRINT(".");
 
-	lump = W_GetNumForName("COLORMAP");
+	//lump = W_GetNumForName("COLORMAP");
+	
 	//length = W_LumpLength(lump) + 255;
 	//colormaps = (byte __far*)colormapbytes;
 	//colormaps = (byte  __far*)(((int32_t)colormaps + 255)&~0xff);
-	W_CacheLumpNumDirect(lump, colormaps);
+	W_CacheLumpNumDirect(1, colormaps);
 
  
 }

@@ -471,52 +471,45 @@ wianimoffsets		7000:A4b8
 
 // ALLOCATION DEFINITIONS: RENDER
 
+// RENDER 0x9000
+// textures
 
 
 
 
 
 /*
+  
 
+colormaps                   8000:2a00
+colormapbytes               8000:2a00
+scalelightfixed             8000:4b00
+scalelight                  8000:4b60
+usedcompositetexturepagemem 8000:5160
+usedpatchpagemem            8000:5168
+compositetextureoffset      8000:5178
+compositetexturepage        8000:5324
+patchpage                   8000:54d0
+patchoffset                 8000:56ac
+texturepatchlump_offset     8000:5888
+texturecolumn_offset        8000:5be0
+texturecompositesizes       8000:5f38
+vissprites                  8000:6290
+usedspritepagemem           8000:7990
+spritepage                  8000:79a0
+spriteoffset                8000:7f05
+segs_render                 8000:846a
+texturedefs_offset          8000:F260
+texturewidthmasks           8000:f5b8
+[empty]                     8000:f764
 
-colormaps					8000:2000
-colormapbytes				8000:2000
-scalelightfixed				8000:4100
-scalelight					8000:41c0
-usedcompositetexturepagemem 8000:4dc0
-usedpatchpagemem			8000:4dc8
-compositetextureoffset		8000:4dd8
-compositetexturepage		8000:4f84
-patchpage					8000:5130
-patchoffset					8000:530c
-texturepatchlump_offset		8000:54e8
-texturecolumn_offset		8000:5840
-texturecompositesizes		8000:5b98
-vissprites					8000:5ef0
-usedspritepagemem			8000:79f0
-spritepage					8000:7a00
-spriteoffset				8000:7f65
-floorclip					8000:84ca
-ceilingclip					8000:874A
-segs_render					8000:89CA
-screenheightarray			8000:F7C0
-negonearray					8000:FA40
-spritecache_nodes			8000:FCC0
-flatcache_nodes				8000:FCF0
-patchcache_nodes			8000:FD02
-texturecache_nodes			8000:FD32
-[done]						8000:FD4a
-
-694 bytes free
+// 2204 free
 */
 
-// RENDER 0x9000
 
 
-// textures
 
 // deff
-
 // RENDER 0x8000
 
 
@@ -526,8 +519,10 @@ texturecache_nodes			8000:FD32
 #define openings				((int16_t __far*			) (0x78000000))
 #define openings_segment 0x7800
 /*
-openings					7800:0000
-[done]						7800:A000  or 8000:2000
+openings                 7800:0000
+negonearray_offset       7800:a000  or 8000:2000
+screenheightarray_offset 7800:A500  or 8000:2500
+[done]                   7800:AA00  or 8000:2A00
 */
 
 #define negonearray_offset        size_openings
@@ -598,7 +593,7 @@ openings					7800:0000
 
 // RENDER 0x7800 - 0x7FFF DATA NOT USED IN PLANES
 
-//				bsp		plane		sprite
+//            bsp		plane		sprite
 // 7800-7FFF	DATA	flatcache	DATA
 // 7000-77FF	DATA	flatcache	sprcache
 // 6800-6FFF	DATA	DATA		sprcache
@@ -608,16 +603,16 @@ openings					7800:0000
 // RENDER 0x7000-0x77FF DATA - USED ONLY IN BSP ... 13k + 8k ... 10592 free
 #define size_nodes_render			0						+ MAX_NODES_RENDER_SIZE
 #define size_viewangletox			size_nodes_render		+ (sizeof(int16_t) * (FINEANGLES / 2))
-#define size_spritewidths			size_viewangletox		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS)
+#define size_spritewidths			size_viewangletox		+ (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 #define size_spriteoffsets			size_spritewidths		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS)
-#define size_spritetopoffsets		size_spriteoffsets		+ (sizeof(int16_t) * MAX_SPRITE_LUMPS)
-//30462
+#define size_spritetopoffsets		size_spriteoffsets		+ (sizeof(int8_t) * MAX_SPRITE_LUMPS)
 
+//30462
 #define nodes_render				((node_render_t __far*)			(0x70000000 + 0))
 #define viewangletox				((int16_t __far*)				(0x70000000 + size_nodes_render))
-#define spritewidths				((int16_t __far*)				(0x70000000 + size_viewangletox))
+#define spritewidths				((uint8_t __far*)				(0x70000000 + size_viewangletox))
 #define spriteoffsets				((int16_t __far*)				(0x70000000 + size_spritewidths))
-#define spritetopoffsets			((int16_t __far*)				(0x70000000 + size_spriteoffsets))
+#define spritetopoffsets			((int8_t __far*)				(0x70000000 + size_spriteoffsets))
 
 
 /*
@@ -625,11 +620,11 @@ openings					7800:0000
 nodes_render				7000:0000
 viewangletox				7000:36A0
 spritewidths				7000:56A0
-spriteoffsets				7000:616A
-spritetopoffsets		7000:6C34
-[empty]						  7000:76FE
+spriteoffsets				7000:5C05
+spritetopoffsets		7000:66CF
+[empty]						  7000:6C34
 
-2306 bytes free
+5068 bytes free
 */
 
 
@@ -643,13 +638,16 @@ spritetopoffsets		7000:6C34
 #define size_texturecolumnofs_bytes		14944u
 #define size_texturecolumnlumps_bytes	(size_texturecolumnofs_bytes + (1264u * sizeof(int16_t)))
 #define size_texturedefs_bytes			(size_texturecolumnlumps_bytes + 8756u)
+#define size_zlight					      size_texturedefs_bytes		+ sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
+
 // size_texturedefs_bytes 0x6184... 0x6674
 
 // dont change texturecolumnofs_bytes_2 segment as it carries into the 6000
 #define texturecolumnofs_bytes_1	((byte __far*)					(0x50000000 ))
 #define texturecolumnofs_bytes_2	((byte __far*)					(0x58000000 ))
 #define texturecolumnlumps_bytes	((int16_t __far*)				(0x60000000 + size_texturecolumnofs_bytes))
-#define texturedefs_bytes			((byte __far*)					(0x60000000 + size_texturecolumnlumps_bytes))
+#define texturedefs_bytes			    ((byte __far*)					(0x60000000 + size_texturecolumnlumps_bytes))
+#define zlight				            ((uint16_t far*)	      (0x60000000 + size_texturedefs_bytes))
 
 
 // texturecolumnlumps_bytes 	6000:3a60
@@ -673,7 +671,6 @@ spritetopoffsets		7000:6C34
 #define size_flatcache_nodes				size_spritecache_nodes	+ sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
 #define size_patchcache_nodes				size_flatcache_nodes	+ sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
 #define size_texturecache_nodes				size_patchcache_nodes	+ sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
-#define size_zlight					size_texturecache_nodes		+ sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
 
 
 #define visplanes			    	((visplane_t __far*)			  (0x40000000 + 0))
@@ -686,7 +683,6 @@ spritetopoffsets		7000:6C34
 #define flatcache_nodes				((cache_node_t __far*)			(0x40000000 + size_spritecache_nodes))
 #define patchcache_nodes			((cache_node_t __far*)			(0x40000000 + size_flatcache_nodes))
 #define texturecache_nodes		((cache_node_t __far*)			(0x40000000 + size_patchcache_nodes))
-#define zlight				  ((uint16_t far*)	(0x40000000 + size_texturecache_nodes))
 
 
 // used during p_setup

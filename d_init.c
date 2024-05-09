@@ -655,13 +655,41 @@ void D_DoomMain2(void)
 	// ds 2e3a..
 	// ho wbig is too big?
 
-	// 14080
-	#define DGROUP_SIZE 0x00003700
+	// 14016
+	#define DGROUP_SIZE 0x000036c0
 	
 	// baselowermemoryaddress
 
 	struct SREGS sregs;
 	//I_Error("\n%x", size_texturewidthmasks);
+
+/*
+	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
+		colormapbytes, 
+		scalelightfixed,
+		 scalelight,
+		  usedcompositetexturepagemem,
+		usedpatchpagemem, 
+		compositetextureoffset, 
+		compositetexturepage,
+			patchpage, 
+			patchoffset,
+			texturepatchlump_offset,
+			texturecolumn_offset,
+			texturecompositesizes,
+			vissprites,
+
+		usedspritepagemem, 
+			spritepage, 
+			spriteoffset, 
+			segs_render,
+
+			texturedefs_offset,
+			texturewidthmasks,
+		
+			size_texturewidthmasks);
+
+*/
 
 	if (M_CheckParm("-mem")){
 		segread(&sregs);
@@ -714,35 +742,7 @@ void D_DoomMain2(void)
 		someptr5, someptr6, someptr7, someptr8);
 */
 
-		/*
-
-		I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		colormapbytes, openings, negonearray, screenheightarray,
-		vissprites, scalelightfixed, scalelight, usedcompositetexturepagemem,
-		usedspritepagemem, usedpatchpagemem, compositetextureoffset, compositetexturepage,
-			spritepage, spriteoffset, patchpage, patchoffset,
-			
-			size_patchoffset);
-
-	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %p",
-		visplanes, visplaneheaders, yslope, distscale,
-		cachedheight, cacheddistance, cachedxstep, cachedystep,
-		spanstart, viewangletox, xtoviewangle, drawsegs,
-		floorclip, ceilingclip, flatindex, size_flatindex);
- 
-	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n",
-		nodes_render, sides_render, segs_render, spritewidths,
-		spriteoffsets, spritetopoffsets, RENDER_SCRATCH, 0L
-		);
-  	I_Error("\n\n%Fp %Fp %Fp %Fp\n%p %p %p %p\n",
-		zlight, texturecolumnlumps_bytes, texturecolumnofs_bytes, texturedefs_bytes,
-		size_texturedefs_bytes, 0, 0, 0
-	);
-	I_Error("\n%Fp %Fp %Fp %p", spritewidths, spriteoffsets, spritetopoffsets, size_spritetopoffsets);
-
-	*/
-
-
+	 
 
 	/*
 
@@ -1066,10 +1066,6 @@ void D_DoomMain2(void)
 
 	// moving this here. We want to load automap related wad lumps into physics ems pages now rather than lazily load it where pages are in a dynamic state.
 	AM_loadPics();
-
-
-	//byte __far* someptr = ;
-	//I_Error("\npointer is %Fp %Fp %Fp %Fp %Fp", _fmalloc(16), _fmalloc(256), _fmalloc(1024), _fmalloc(1024), malloc(1024));
 
 
 	// todo - move this below code in between doommain2 and doomloop?

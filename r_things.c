@@ -213,6 +213,7 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
 	int16_t                 x2;
 
 	int16_t                 lump;
+    int16_t                 usedwidth;
     
 	uint8_t            rot;
     boolean             flip;
@@ -289,8 +290,14 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
     if (x1 > viewwidth)
         return;
     
+    usedwidth = spritewidths[lump];
+    if (usedwidth == 1){
+        usedwidth = 257;
+    }
+
     temp.h.fracbits = 0;
-    temp.h.intbits = spritewidths[lump];
+    temp.h.intbits = usedwidth;
+    // hack to make this fit in 8 bits, check r_init.c
 
     tx.w +=  temp.w;
 	temp.h.intbits = centerxfrac.h.intbits;
@@ -317,6 +324,12 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
     vis->gz = thingz;
     temp.h.fracbits = 0;
     temp.h.intbits = spritetopoffsets[lump];
+    
+    // hack to make this fit in 8 bits, check r_init.c
+    if (temp.h.intbits == -128){
+        temp.h.intbits = 129;
+    }
+
 	vis->gzt.w = vis->gz.w + temp.w;
 //	vis->gzt = thing->z + spritetopoffset[lump];
     vis->texturemid = vis->gzt.w - viewz.w;
@@ -328,7 +341,7 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
 
     if (flip) {
         temp.h.fracbits = 0;
-        temp.h.intbits = spritewidths[lump];
+        temp.h.intbits = usedwidth;
 		vis->startfrac = temp.w-1;
         vis->xiscale = -iscale;
     } else {
@@ -424,6 +437,7 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* 
 	int16_t                 x1;
 	int16_t                 x2;
 	int16_t                 lump;
+	int16_t                 usedwidth;
     boolean             flip;
 	spriteframe_t __far*		spriteframes;
     fixed_t_union temp;
@@ -455,7 +469,12 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* 
 
 
  	temp.h.fracbits = 0;
-	tx.h.intbits += spritewidths[lump];
+    usedwidth = spritewidths[lump];
+    if (usedwidth == 1){
+        usedwidth = 257;
+    }
+
+    tx.h.intbits += usedwidth;
 
 	temp.h.intbits = centerxfrac.h.intbits;
 	if (pspritescale) {
@@ -470,6 +489,11 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* 
     vis->mobjflags = 0;
     temp.h.fracbits = 0;
     temp.h.intbits = spritetopoffsets[lump];
+        // hack to make this fit in 8 bits, check r_init.c
+    if (temp.h.intbits == -128){
+        temp.h.intbits = 129;
+    }
+
 	vis->texturemid = (BASEYCENTER<<FRACBITS)+FRACUNIT/2-(psp->sy-temp.w);
     vis->x1 = x1 < 0 ? 0 : x1;
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
@@ -481,7 +505,7 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* 
     
     if (flip) {
         vis->xiscale = -pspriteiscale;
-        temp.h.intbits = spritewidths[lump];
+        temp.h.intbits = usedwidth;
 		vis->startfrac = temp.w - 1;
     } else {
         vis->xiscale = pspriteiscale;
