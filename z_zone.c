@@ -94,6 +94,10 @@ extern int8_t patchcache_tail;
 extern int8_t texturecache_head;
 extern int8_t texturecache_tail;
 
+extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES];
+extern uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
+extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
+
 
 #define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4
 
@@ -116,17 +120,17 @@ void Z_FreeConventionalAllocations() {
 	//FAR_memset(MK_FP(0x7000, 0), 0, 65535);
 
 	//reset texturee cache
-	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (numtextures));
-	FAR_memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (numtextures));
-	FAR_memset(usedcompositetexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
+	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
+	FAR_memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
+	memset(usedcompositetexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
 	
-	FAR_memset(patchpage, 0xFF, sizeof(uint8_t) * (numpatches));
-	FAR_memset(patchoffset, 0xFF, sizeof(uint8_t) * (numpatches));
-	FAR_memset(usedpatchpagemem, 00, sizeof(uint8_t) * NUM_PATCH_CACHE_PAGES);
+	FAR_memset(patchpage, 0xFF, sizeof(uint8_t) * (MAX_PATCHES));
+	FAR_memset(patchoffset, 0xFF, sizeof(uint8_t) * (MAX_PATCHES));
+	memset(usedpatchpagemem, 00, sizeof(uint8_t) * NUM_PATCH_CACHE_PAGES);
 
-	FAR_memset(spritepage, 0xFF, sizeof(uint8_t) * (numspritelumps));
-	FAR_memset(spriteoffset, 0xFF, sizeof(uint8_t) * (numspritelumps));
-	FAR_memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
+	FAR_memset(spritepage, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
+	FAR_memset(spriteoffset, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
+	memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
 
 
 	spritecache_head = -1;

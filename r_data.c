@@ -251,7 +251,12 @@ void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 
 	 
 }
- 
+
+
+uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES];
+uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
+uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
+
 
 extern int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
 

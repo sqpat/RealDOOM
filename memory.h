@@ -552,9 +552,7 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_colormapbytes                ((33 * 256)                      + size_leftover_openings_arrays)
 #define size_scalelightfixed              size_colormapbytes               + sizeof(uint16_t ) * (MAXLIGHTSCALE)
 #define size_scalelight                   size_scalelightfixed             + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE)
-#define size_usedcompositetexturepagemem  size_scalelight                  + NUM_TEXTURE_PAGES * sizeof(uint8_t)
-#define size_usedpatchpagemem             size_usedcompositetexturepagemem + NUM_PATCH_CACHE_PAGES * sizeof(uint8_t)
-#define size_compositetextureoffset       size_usedpatchpagemem            + MAX_TEXTURES * sizeof(uint8_t)
+#define size_compositetextureoffset       size_scalelight                  + MAX_TEXTURES * sizeof(uint8_t)
 #define size_compositetexturepage         size_compositetextureoffset      + MAX_TEXTURES * sizeof(uint8_t)
 #define size_patchpage                    size_compositetexturepage        + MAX_PATCHES * sizeof(uint8_t)
 #define size_patchoffset                  size_patchpage                   + MAX_PATCHES * sizeof(uint8_t)
@@ -574,9 +572,7 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define colormapbytes               ((byte __far*)            (0x80000000 + size_leftover_openings_arrays))
 #define scalelightfixed             ((uint16_t __far*)        (0x80000000 + size_colormapbytes))
 #define scalelight                  ((uint16_t __far*)        (0x80000000 + size_scalelightfixed))
-#define usedcompositetexturepagemem ((uint8_t __far*)         (0x80000000 + size_scalelight))
-#define usedpatchpagemem            ((uint8_t __far*)         (0x80000000 + size_usedcompositetexturepagemem))
-#define compositetextureoffset      ((uint8_t __far*)         (0x80000000 + size_usedpatchpagemem))
+#define compositetextureoffset      ((uint8_t __far*)         (0x80000000 + size_scalelight))
 #define compositetexturepage        ((uint8_t __far*)         (0x80000000 + size_compositetextureoffset))
 #define patchpage                   ((uint8_t __far*)         (0x80000000 + size_compositetexturepage))
 #define patchoffset                 ((uint8_t __far*)         (0x80000000 + size_patchpage))
@@ -672,8 +668,7 @@ spritetopoffsets    7000:66CF
 #define size_patchcache_nodes         size_flatcache_nodes          + sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
 #define size_texturecache_nodes       size_patchcache_nodes         + sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
 #define size_vissprites               size_texturecache_nodes       + sizeof(vissprite_t) * (MAXVISSPRITES)
-#define size_usedspritepagemem        size_vissprites               + NUM_SPRITE_CACHE_PAGES * sizeof(uint8_t)
-#define size_texturepatchlump_offset  size_usedspritepagemem        + MAX_TEXTURES * sizeof(uint16_t)
+#define size_texturepatchlump_offset  size_vissprites               + MAX_TEXTURES * sizeof(uint16_t)
 #define size_texturecolumn_offset     size_texturepatchlump_offset  + MAX_TEXTURES * sizeof(uint16_t)
 
 
@@ -688,8 +683,7 @@ spritetopoffsets    7000:66CF
 #define patchcache_nodes        ((cache_node_t __far*)       (0x40000000 + size_flatcache_nodes))
 #define texturecache_nodes      ((cache_node_t __far*)       (0x40000000 + size_patchcache_nodes))
 #define vissprites              ((vissprite_t __far*)        (0x40000000 + size_texturecache_nodes))
-#define usedspritepagemem       ((uint8_t __far*)            (0x40000000 + size_vissprites))
-#define texturepatchlump_offset ((uint16_t __far*)           (0x40000000 + size_usedspritepagemem))
+#define texturepatchlump_offset ((uint16_t __far*)           (0x40000000 + size_vissprites))
 #define texturecolumn_offset    ((uint16_t __far*)           (0x40000000 + size_texturepatchlump_offset))
 
 
@@ -712,12 +706,11 @@ flatcache_nodes      4000:e1a6
 patchcache_nodes     4000:e1b8
 texturecache_nodes   4000:e1e8
 vissprites           4000:e200
-usedspritepagemem    4000:f900
-spritepage           4000:f910
-spriteoffset         4000:fc68
-[done]               4000:FFC0
+spritepage           4000:f900
+spriteoffset         4000:fc58
+[done]               4000:FFB0
 
-64 bytes free
+80 bytes free
 
 */
 
