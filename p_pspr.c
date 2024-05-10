@@ -870,6 +870,9 @@ void P_MovePsprites ()
 
 
 
+void A_OpenShotgun2 ( pspdef_t __near*	psp );
+void A_CloseShotgun2 ( pspdef_t __near*	psp );
+void A_LoadShotgun2 ( pspdef_t __near*	psp );
 
 //
 // P_SetPsprite
@@ -917,9 +920,9 @@ P_SetPsprite
 			case ETF_A_Light2: A_Light2(psp); break;
 			case ETF_A_FireShotgun2: A_FireShotgun2(psp); break;
 			case ETF_A_CheckReload: A_CheckReload(psp); break;
-			//case ETF_A_OpenShotgun2: A_OpenShotgun2(psp); break;
-			//case ETF_A_LoadShotgun2: A_LoadShotgun2(psp); break;
-			//case ETF_A_CloseShotgun2: A_CloseShotgun2(psp); break;
+			case ETF_A_OpenShotgun2: A_OpenShotgun2(psp); break;
+			case ETF_A_LoadShotgun2: A_LoadShotgun2(psp); break;
+			case ETF_A_CloseShotgun2: A_CloseShotgun2(psp); break;
 			case ETF_A_FireCGun: A_FireCGun(psp); break;
 			case ETF_A_GunFlash: A_GunFlash(psp); break;
 			case ETF_A_FireMissile: A_FireMissile(psp); break;
