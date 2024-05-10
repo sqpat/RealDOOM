@@ -195,11 +195,11 @@ P_SpawnStrobeFlash
   int16_t		inSync );
 
 void    EV_StartLightStrobing(uint8_t linetag);
-void    EV_TurnTagLightsOff(uint8_t linetag);
 
 void
-EV_LightTurnOn
+EV_LightChange
 (uint8_t linetag,
+int8_t on,
   uint8_t		bright );
 
 void T_Glow(glow_t __far* glow, THINKERREF glowRef);

@@ -532,13 +532,13 @@ P_UseSpecialLine
 	
       case 138:
 	// Light Turn On
-		  EV_LightTurnOn(linetag, 255);
+		  EV_LightChange(linetag, true, 255);
 		  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
 	break;
 	
       case 139:
 	// Light Turn Off
-		  EV_LightTurnOn(linetag, 35);
+		  EV_LightChange(linetag, true, 35);
 		  P_ChangeSwitchTexture(linenum, lineside0, linespecial, linefrontsecnum, 1);
 	break;
 			

@@ -245,7 +245,7 @@ void EV_StartLightStrobing(uint8_t linetag)
 //
 // TURN LINE'S TAG LIGHTS OFF
 //
-void EV_TurnTagLightsOff(uint8_t linetag)
+void EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright)
 {
 	int16_t			i;
 	int16_t			j = 0;
@@ -267,68 +267,37 @@ void EV_TurnTagLightsOff(uint8_t linetag)
 		secnum = tagsecnumlist[j];
 		j++;
 		linecount = sectors[secnum].linecount;
-		offset = sectors[secnum].linesoffset;
-		
+		offset = sectors[secnum].linesoffset;		
 		min = sectors[secnum].lightlevel;
 
-		FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
-		linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
-
-
-		for (i = 0; i < linecount; i++) {
- 			 offset = secnumlist[i];
-
-			if (sectors[offset].lightlevel < min) {
-				min = sectors[offset].lightlevel;
-			}
-		}
-		sectors[secnum].lightlevel = min;
-	}
-}
-
-
-//
-// TURN LINE'S TAG LIGHTS ON
-//
-void
-EV_LightTurnOn
-(uint8_t linetag,
-  uint8_t		bright )
-{
-    int16_t secnum;
-	uint8_t		j = 0;
-	uint8_t		i;
-	uint8_t linecount;
-	int16_t offset;
-	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
-	int16_t tagsecnumlist[MAX_ADJOINING_SECTORS];
-	int16_t secnumlist[MAX_ADJOINING_SECTORS];
-
-	P_FindSectorsFromLineTag(linetag, tagsecnumlist, true);
-
-	while (tagsecnumlist[j] >= 0) {
-		secnum = tagsecnumlist[j];
-		j++;
-
-		if (!bright) {
-			linecount = sectors[secnum].linecount;
-			offset = sectors[secnum].linesoffset;
-			FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
-			linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
-
+		if (!on || !bright){
 
 			for (i = 0; i < linecount; i++) {
 				offset = secnumlist[i];
 
-				if (sectors[offset].lightlevel > bright)
-					bright = sectors[offset].lightlevel;
+				if (on){
+					if (sectors[offset].lightlevel > bright){
+						bright = sectors[offset].lightlevel;
+					}
+				} else {
+					if (sectors[offset].lightlevel < min) {
+						min = sectors[offset].lightlevel;
+					}
+				}
+
 			}
 
-		}
-		sectors[secnum].lightlevel = bright;
 
+		}
+ 
+		if (on)
+			sectors[secnum].lightlevel = bright;
+		else 
+			sectors[secnum].lightlevel = min;
 	}
 }
+
+
 
     
 //

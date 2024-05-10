@@ -508,13 +508,13 @@ P_CrossSpecialLine
 	
       case 12:
 		// Light Turn On - brightest near
-		EV_LightTurnOn(linetag,0);
+		EV_LightChange(linetag, true, 0);
 		setlinespecial = 0;
 		break;
 	
       case 13:
 		// Light Turn On 255
-		EV_LightTurnOn(linetag,255);
+		EV_LightChange(linetag, true, 255);
 		setlinespecial = 0;
 		break;
 	
@@ -557,7 +557,7 @@ P_CrossSpecialLine
 	
       case 35:
 		// Lights Very Dark
-		EV_LightTurnOn(linetag,35);
+		EV_LightChange(linetag,true,35);
 		setlinespecial = 0;
 		break;
 	
@@ -641,7 +641,7 @@ P_CrossSpecialLine
 	
       case 104:
 		// Turn lights off in sector(tag)
-		EV_TurnTagLightsOff(linetag);
+		EV_LightChange(linetag, false, 0);
 		setlinespecial = 0;
 		break;
 	
@@ -739,17 +739,17 @@ P_CrossSpecialLine
 	
       case 79:
 		// Lights Very Dark
-		EV_LightTurnOn(linetag, 35);
+		EV_LightChange(linetag, true, 35);
 		break;
 	
       case 80:
 		// Light Turn On - brightest near
-		EV_LightTurnOn(linetag, 0);
+		EV_LightChange(linetag, true,0);
 		break;
 	
       case 81:
 		// Light Turn On 255
-		EV_LightTurnOn(linetag, 255);
+		EV_LightChange(linetag, true,255);
 		break;
 	
       case 82:
