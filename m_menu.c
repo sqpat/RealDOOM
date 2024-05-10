@@ -166,7 +166,7 @@ int16_t                     saveStringEnter;
 int16_t                     saveSlot;       // which slot to save in
 int16_t                     saveCharIndex;  // which char we're editing
 // old save description before edit
-//int8_t                    saveOldString[SAVESTRINGSIZE];
+int8_t                    saveOldString[SAVESTRINGSIZE];
 
 
 

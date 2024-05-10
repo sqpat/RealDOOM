@@ -349,19 +349,16 @@ spanstart      6800:65e2
 
 #define size_rejectmatrix    (MAX_REJECT_SIZE)
 #define size_savegamestrings  (size_rejectmatrix + (10 * SAVESTRINGSIZE))
-#define size_saveOldString    (size_savegamestrings + (SAVESTRINGSIZE))
 
 #define rejectmatrix      ((byte __far *)        (0x5000C000))
 #define savegamestrings      ((int8_t __far *)       (0x5000C000 + size_rejectmatrix))
-#define saveOldString      ((int8_t __far *)       (0x5000C000 + size_savegamestrings))
 
 
 /*
 rejectmatrix    5000:C000
 savegamestrings    5000:FB22
-saveOldString    5000:FC12
-[empty]        5000:FC2A
-982 bytes free
+[empty]        5000:FC12
+1006 bytes free
 */
 
 
@@ -545,6 +542,10 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define floorclip            ((int16_t __far*)          (0x78000000 + size_screenheightarray))
 #define ceilingclip          ((int16_t __far*)          (0x78000000 + size_floorclip))
 
+
+
+
+
 #define size_leftover_openings_arrays     0x2A00
 #define size_colormapbytes                ((33 * 256)                      + size_leftover_openings_arrays)
 #define size_scalelightfixed              size_colormapbytes               + sizeof(uint16_t ) * (MAXLIGHTSCALE)
@@ -559,9 +560,6 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_segs_render                  size_texturecompositesizes       + MAX_SEGS_RENDER_SIZE
 #define size_texturedefs_offset           size_segs_render                 + MAX_TEXTURES * sizeof(uint16_t)
 #define size_texturewidthmasks            size_texturedefs_offset          + MAX_TEXTURES * sizeof(uint8_t)
-
-
-
 
 #define colormapssegment  0x82A0
 
@@ -590,9 +588,11 @@ screenheightarray_offset 7800:A500  or 8000:2500
 // RENDER 0x7800 - 0x7FFF DATA NOT USED IN PLANES
 
 //            bsp    plane    sprite
+// 8000-9FFF     -- no changes --
 // 7800-7FFF  DATA  flatcache  DATA
 // 7000-77FF  DATA  flatcache  sprcache
 // 6800-6FFF  DATA  DATA       sprcache
+// 4000-67FF     -- no changes --
 
 
 
