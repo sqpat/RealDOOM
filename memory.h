@@ -98,10 +98,10 @@ size_rndtable     E000:fedd
 
 #define CC00Block 0xC000C000
 
+
+
 // shareware: 6939u
 // commercial doom2: 16114u 
-#define size_spritedefs    16114u
-#define spritedefs_bytes  ((byte __far*)          (CC00Block + 0))
 
 /*
 
@@ -439,8 +439,8 @@ This area used during intermission task
 #define sbar  44024u
 #define sbar_patch   ((byte __far *) 0x7000ABF8)
 
-#define  faceback  57152u
-#define  faceback_patch  ((byte __far *) 0x7000DF40)
+#define faceback  57152u
+#define faceback_patch  ((byte __far *) 0x7000DF40)
 
 #define armsbg_patch ((byte __far *)0x7000E668u)
 
@@ -509,9 +509,11 @@ texturedefs_offset          8000:c9be
 texturewidthmasks           8000:cd16
 spritepage                  8000:cec2
 spriteoffset                8000:d427
-[empty]                     8000:d99c
+viewangletox                8000:d99c
+spriteoffset                8000:F99C
+[empty]                     8000:FF01
 
-// 9844 free
+// 255 free
 */
 
 
@@ -523,7 +525,7 @@ spriteoffset                8000:d427
 // openings are A000 in size. 0x7800 can be just that. Note that 0x2000 carries over to 8000
 
 #define size_openings      sizeof(int16_t) * MAXOPENINGS
-#define openings        ((int16_t __far*      ) (0x78000000))
+#define openings        ((uint16_t __far*      ) (0x78000000))
 #define openings_segment 0x7800
 /*
 openings                 7800:0000
@@ -559,6 +561,8 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_texturewidthmasks            size_texturedefs_offset          + MAX_TEXTURES * sizeof(uint8_t)
 #define size_spritepage                   size_texturewidthmasks           + MAX_SPRITE_LUMPS * sizeof(uint8_t)
 #define size_spriteoffset                 size_spritepage                  + MAX_SPRITE_LUMPS * sizeof(uint8_t)
+#define size_viewangletox                 size_spriteoffset                + (sizeof(int16_t) * (FINEANGLES / 2))
+#define size_spriteoffsets                size_viewangletox                + (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 
 
 
@@ -579,6 +583,11 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define texturewidthmasks           ((uint8_t  __far*)        (0x80000000 + size_texturedefs_offset))
 #define spritepage                  ((uint8_t __far*)         (0x80000000 + size_texturewidthmasks))
 #define spriteoffset                ((uint8_t __far*)         (0x80000000 + size_spritepage))
+#define viewangletox                ((int16_t __far*)         (0x80000000 + size_spriteoffset))
+#define spriteoffsets               ((uint8_t __far*)         (0x80000000 + size_viewangletox))
+
+
+
 
 
 
@@ -595,43 +604,40 @@ screenheightarray_offset 7800:A500  or 8000:2500
 
 // RENDER 0x7000-0x77FF DATA - USED ONLY IN BSP ... 13k + 8k ... 10592 free
 #define size_nodes_render      0                    + MAX_NODES_RENDER_SIZE
-#define size_viewangletox      size_nodes_render    + (sizeof(int16_t) * (FINEANGLES / 2))
-#define size_spritewidths      size_viewangletox    + (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
-#define size_spriteoffsets     size_spritewidths    + (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
-#define size_spritetopoffsets  size_spriteoffsets   + (sizeof(int8_t) * MAX_SPRITE_LUMPS)
+#define size_spritedefs        size_nodes_render    + 16114u
+#define size_spritewidths      size_spritedefs      + (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 
 //30462
 #define nodes_render          ((node_render_t __far*)  (0x70000000 + 0))
-#define viewangletox          ((int16_t __far*)        (0x70000000 + size_nodes_render))
-#define spritewidths          ((uint8_t __far*)        (0x70000000 + size_viewangletox))
-#define spriteoffsets         ((uint8_t __far*)        (0x70000000 + size_spritewidths))
-#define spritetopoffsets      ((int8_t __far*)         (0x70000000 + size_spriteoffsets))
+#define spritedefs_bytes      ((byte __far*)           (0x70000000 + size_nodes_render))
+#define spritewidths          ((uint8_t __far*)        (0x70000000 + size_spritedefs))
+
+
 
 
 /*
 
 nodes_render        7000:0000
-viewangletox        7000:36A0
-spritewidths        7000:56A0
-spriteoffsets       7000:5C05
-spritetopoffsets    7000:66CF
-[empty]             7000:6C34
+spritedefs_bytes    7000:36A0
+spritewidths        7000:7592
+[empty]             7000:7AF7
 
-5068 bytes free
+1289 bytes free
 */
 
 
-// RENDER 0x6800-0x6FFF DATA - USED ONLY IN PLANE... PAGED OUT IN SPRITE REGION  8k... 24k free
+// RENDER 0x6800-0x6FFF DATA - USED ONLY IN PLANE... PAGED OUT IN SPRITE REGION
 // carried over from below - mostly visplanes
 
 
-// RENDER 0x5000-0x67FF DATA      LEFTOVER: 52
+// RENDER 0x5000-0x67FF DATA     
 
 // size_texturecolumnofs_bytes is technically 80480. Takes up whole 0x5000 region, 14944 left over in 0x6000...
 #define size_texturecolumnofs_bytes    14944u
-#define size_texturecolumnlumps_bytes  (size_texturecolumnofs_bytes + (1264u * sizeof(int16_t)))
-#define size_texturedefs_bytes      (size_texturecolumnlumps_bytes + 8756u)
-#define size_zlight                size_texturedefs_bytes    + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_texturecolumnlumps_bytes  (size_texturecolumnofs_bytes    + (1264u * sizeof(int16_t)))
+#define size_texturedefs_bytes         (size_texturecolumnlumps_bytes  + 8756u)
+#define size_zlight                    (size_texturedefs_bytes         + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ))
+#define size_spritetopoffsets          (size_zlight                    + (sizeof(int8_t) * MAX_SPRITE_LUMPS))
 
 // size_texturedefs_bytes 0x6184... 0x6674
 
@@ -641,11 +647,15 @@ spritetopoffsets    7000:66CF
 #define texturecolumnlumps_bytes  ((int16_t __far*)       (0x60000000 + size_texturecolumnofs_bytes))
 #define texturedefs_bytes         ((byte __far*)          (0x60000000 + size_texturecolumnlumps_bytes))
 #define zlight                    ((uint16_t far*)        (0x60000000 + size_texturedefs_bytes))
+#define spritetopoffsets          ((int8_t __far*)        (0x60000000 + size_zlight))
 
 
 // texturecolumnlumps_bytes   6000:3a60
 // texturedefs_bytes          6000:4440
 // zlight                     6000:6674
+
+
+
 // [empty]                    6000:7674
 
 
