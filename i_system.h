@@ -57,13 +57,6 @@ void I_StartTic (void);
 void I_Quit (void);
 
 
-// Allocates from low memory under dos,
-// just mallocs under unix
-byte* I_AllocLow (filelength_t length);
-
-//void I_Tactile (int32_t on, int32_t off, int32_t total);
-
-
 void I_Error (int8_t *error, ...);
 
 void I_BeginRead(void);

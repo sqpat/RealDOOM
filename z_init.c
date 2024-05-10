@@ -37,7 +37,6 @@
 #include <stdlib.h>
 #include "memory.h"
 
-//#include <malloc.h>
 
 
 
@@ -353,38 +352,3 @@ void Z_LoadBinaries() {
 
 
 
-
-/*
-
-// maybe move this into umb?
-void Z_LinkConventionalVariables() {
-	byte __near* offset = conventionallowerblock;
-
-	//uint16_t size = MAX_TEXTURES * (sizeof(uint16_t) * 4 + 3 * sizeof(uint8_t));
-
-	//conventionallowerblock = offset = malloc(size);
-	//I_Error("\n%lx %u", conventionallowerblock, size);
-	
-
-	texturecolumn_offset = (uint16_t __near*)offset;
-	offset += MAX_TEXTURES * sizeof(uint16_t);
-	//texturedefs_offset = (uint16_t __near*)offset;
-	//offset += MAX_TEXTURES * sizeof(uint16_t);
-	//texturewidthmasks = offset;
-	//offset += MAX_TEXTURES * sizeof(uint8_t);
-	//textureheights = offset;
-	//offset += MAX_TEXTURES * sizeof(uint8_t);
-	texturecompositesizes = (uint16_t __near*)offset;
-	offset += MAX_TEXTURES * sizeof(uint16_t);
-	//flattranslation = offset;
-	//offset += MAX_TEXTURES * sizeof(uint8_t);
-	//texturetranslation = (uint16_t __near*)offset;
-	//offset += MAX_TEXTURES * sizeof(uint16_t);
-	texturepatchlump_offset = (uint16_t __near*)offset;
-	offset += MAX_TEXTURES * sizeof(uint16_t);
-
-	//I_Error("\n%lx %lx %lx %u", conventionallowerblock, offset, texturetranslation, size);
-
-
-}
-*/

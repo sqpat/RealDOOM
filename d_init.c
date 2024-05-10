@@ -61,7 +61,6 @@
 #include "p_local.h"
 #include "memory.h"
 
-#include <malloc.h>
 #include <dos.h>
 
 #define MAX_STRINGS 306
@@ -257,76 +256,7 @@ void D_RedrawTitle(int8_t __near *title)
 	D_SetCursorPosition(column, row);
 }
 
-//
-// D_AddFile
-//
-void D_AddFile(int8_t*file)
-{
-	int8_t     numwadfiles;
-	int8_t    *newfile;
-
-	for (numwadfiles = 0; wadfiles[numwadfiles]; numwadfiles++)
-		;
-
-	newfile = malloc(strlen(file) + 1);
-	strcpy(newfile, file);
-
-	wadfiles[numwadfiles] = newfile;
-}
-
-//
-// IdentifyVersion
-// Checks availability of IWAD files by name,
-// to determine whether registered/commercial features
-// should be executed (notably loading PWAD's).
-//
-void IdentifyVersion(void)
-{
-	
-	if (!access("doom2.wad", R_OK))
-	{
-		commercial = true;
-		D_AddFile("doom2.wad");
-		return;
-	}
-
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-	if (!access("plutonia.wad", R_OK))
-	{
-		commercial = true;
-		plutonia = true;
-		D_AddFile("plutonia.wad");
-		return;
-	}
-
-	if (!access("tnt.wad", R_OK))
-	{
-		commercial = true;
-		tnt = true;
-		D_AddFile("tnt.wad");
-		return;
-	}
-#endif
-
-	if (!access("doom.wad", R_OK))
-	{
-		registered = true;
-		D_AddFile("doom.wad");
-		return;
-	}
-
-	if (!access("doom1.wad", R_OK))
-	{
-		shareware = true;
-		D_AddFile("doom1.wad");
-		return;
-	}
-
-	DEBUG_PRINT("Game mode indeterminate.\n");
-	exit(1);
-}
-
-
+ 
  
 
 
@@ -624,6 +554,7 @@ void D_DoomMain2(void)
 	union REGS regs;
 	int8_t          textbuffer[256];
 	int8_t            title[128];
+	int8_t            wadfile[20];
 	
 	
 	
@@ -704,45 +635,7 @@ void D_DoomMain2(void)
 	//I_Error("\npointer is %Fp %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, &EMS_PAGE), MK_FP(sregs.ds, &p), MK_FP(sregs.ss, &title), _fmalloc(1024), malloc(1024));
 
 
-	// 6a30
-	//I_Error("\n 7000: %x", size_textureheights);
 
-	//2d7e dosbox 3128 86box
-	/*
-
-
-
-	I_Error("\n\n%x %x %x %x\n%x %x %x %x\n%x %x %x %x\n%x ",
-		size_vertexes,
-		size_sectors,
-		size_sides,
-		size_lines,
-		size_seenlines,
-		size_subsectors,
-		size_nodes,
-		size_segs,
-		size_flattranslation,
-		size_texturetranslation,
-		size_texturedefs_offset,
-		size_texturewidthmasks,
-		size_textureheights
-	);
-
-	int16_t mallocsize = 8192;
-	byte __far* someptr1 = _fmalloc(mallocsize);
-	byte __far* someptr2 = _fmalloc(mallocsize);
-	byte __far* someptr3 = _fmalloc(mallocsize);
-	byte __far* someptr4 = _fmalloc(mallocsize);
-	byte __far* someptr5 = _fmalloc(mallocsize);
-	byte __far* someptr6 = _fmalloc(mallocsize);
-	byte __far* someptr7 = _fmalloc(mallocsize);
-	byte __far* someptr8 = _fmalloc(mallocsize);
-	I_Error("\npointer is \n%Fp\n%Fp\n%Fp\n%Fp\n%Fp\n%Fp\n%Fp\n%Fp", 
-		someptr1, someptr2, someptr3, someptr4, 
-		someptr5, someptr6, someptr7, someptr8);
-*/
-
-	 
 
 	/*
 
@@ -800,7 +693,50 @@ void D_DoomMain2(void)
 	//FindResponseFile ();
 	//P_Init();
 
-	IdentifyVersion();
+
+	if (!access("doom2.wad", R_OK))
+	{
+		commercial = true;
+		strcpy(wadfile,"doom2.wad");
+		goto foundfile;
+	}
+
+#if (EXE_VERSION >= EXE_VERSION_FINAL)
+	if (!access("plutonia.wad", R_OK))
+	{
+		commercial = true;
+		plutonia = true;
+		strcpy(wadfile,"plutonia.wad");
+		goto foundfile;
+	}
+
+	if (!access("tnt.wad", R_OK))
+	{
+		commercial = true;
+		tnt = true;
+		strcpy(wadfile,"tnt.wad");
+		goto foundfile;
+	}
+#endif
+
+	if (!access("doom.wad", R_OK))
+	{
+		registered = true;
+		strcpy(wadfile,"doom.wad");
+		goto foundfile;
+	}
+
+	if (!access("doom1.wad", R_OK))
+	{
+		shareware = true;
+		strcpy(wadfile,"doom1.wad");
+		goto foundfile;
+	}
+
+	DEBUG_PRINT("Game mode indeterminate.\n");
+	exit(1);
+
+	foundfile:
 
 	setbuf(stdout, NULL);
 	modifiedgame = false;
@@ -894,16 +830,7 @@ void D_DoomMain2(void)
 	}
 
 
-	p = M_CheckParm("-file");
-	if (p)
-	{
-		// the parms after p are wadfile/lump names,
-		// until end of parms or another - preceded parm
-		modifiedgame = true;            // homebrew levels
-		while (++p != myargc && myargv[p][0] != '-') {
-			D_AddFile(myargv[p]);
-		}
-	}
+
 
 	p = M_CheckParm("-playdemo");
 
@@ -913,7 +840,7 @@ void D_DoomMain2(void)
 	if (p && p < myargc - 1)
 	{
 		sprintf(file, "%s.lmp", myargv[p + 1]);
-		D_AddFile(file);
+
 		DEBUG_PRINT("Playing demo %s.lmp.\n", myargv[p + 1]);
 	}
 
@@ -964,7 +891,7 @@ void D_DoomMain2(void)
 	Z_InitEMS();
 
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");
-	W_InitMultipleFiles(wadfiles);
+	W_InitMultipleFiles(wadfile, file);
 
 	//DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
 //	Z_InitUMB();

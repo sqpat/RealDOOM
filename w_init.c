@@ -20,7 +20,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <unistd.h>
-//#include <malloc.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -200,7 +199,7 @@ void W_AddFile(int8_t *filename)
 // The name searcher looks backwards, so a later file
 //  does override all earlier ones.
 //
-void W_InitMultipleFiles(int8_t** filenames)
+void W_InitMultipleFiles(int8_t* filename1, int8_t* filename2)
 {
 	//filelength_t         size;
 	//printf("\n\nsize is %u \n\n", _memmax());
@@ -215,8 +214,8 @@ void W_InitMultipleFiles(int8_t** filenames)
 
 	// will be realloced as lumps are added
  
-	for (; *filenames; filenames++)
-		W_AddFile(*filenames);
+	W_AddFile(filename1);
+	W_AddFile(filename2);
 	//printf("\n\nsize is %u \n\n", _memmax());
 
 #ifdef CHECK_FOR_ERRORS

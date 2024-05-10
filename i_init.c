@@ -23,7 +23,6 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
-#include <malloc.h>
 #include "d_main.h"
 #include "doomstat.h"
 #include "doomdef.h"

@@ -63,7 +63,7 @@ typedef struct
 #define lumpinfo9000 ((lumpinfo_t __far*) 0x94000000)
 extern	uint16_t		numlumps;
 
-void    W_InitMultipleFiles (int8_t** filenames);
+void    W_InitMultipleFiles (int8_t* filename1, int8_t* filename2);
 
 int16_t	W_CheckNumForName (int8_t* name);
 int16_t	W_GetNumForName(int8_t* name);

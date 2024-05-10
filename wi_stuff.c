@@ -972,14 +972,8 @@ void WI_unloadData(void){
 	unloaded = true;
 }
 
-void WI_Drawer (void)
-{
+void WI_Drawer (void) {
 	
-	// hack alert... wi_drawer gets called sometimes for a frame or two after it goes away,
-	// using unloaded Z_Malloc EMS vars, causing crashes... not sure why it gets called.
-	// TODO: fix whatever causes this. or set the state below to something that doesnt draw?
-
-
 	if (unloaded) {
 		return;
 	}
