@@ -217,8 +217,7 @@ EV_DoCeiling
 			break;
 
 		  case raiseToHighest: {
-			  short_height_t ceilingtopheight = P_FindHighestCeilingSurrounding(secnum);
-			  ceiling->topheight = ceilingtopheight;
+			  ceiling->topheight = P_FindLowestOrHighestCeilingSurrounding(secnum ,true);
 			  ceiling->direction = 1;
 			  ceiling->speed = CEILSPEED;
 			  break;

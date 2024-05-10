@@ -75,53 +75,7 @@ anim_t __near*		lastanim;
 //      Animating line specials
 //
 
-
-
-
-
-//
-// UTILITIES
-//
-
-
-
-//
-// getSide()
-// Will return a side_t*
-//  given the number of the current sector,
-//  the line number, and the side (0/1) that you want.
-//
-int16_t
-getSideNum
-( int16_t		currentSector,
-  int16_t		offset,
-  int16_t		side ) {
-	return lines[linebuffer[sectors[currentSector].linesoffset + offset]].sidenum[side];
-	
-}
-
-
-//
-// getSector()
-// Will return a sector_t*
-//  given the number of the current sector,
-//  the line number and the side (0/1) that you want.
-//
-int16_t
-getSector
-( int16_t		currentSector,
-  int16_t		offset,
-  int16_t		side )
-{
-	offset = sectors[currentSector].linesoffset + offset;
-
-	offset = linebuffer[offset];
-	//offset = lines[offset].sidenum[side];
-	return side ? lines_physics[offset].backsecnum : lines_physics[offset].frontsecnum;
-
-	//return sides[offset].secnum;
-    //return sides[lines[linebuffer[sectors[currentSector].linesoffset + offset]].sidenum[side]].secnum;
-}
+ 
 
 
 //
@@ -177,10 +131,10 @@ getNextSectorList
 
 
 //
-// P_FindLowestFloorSurrounding()
+// P_FindHighestOrLowestFloorSurrounding()
 // FIND LOWEST FLOOR HEIGHT IN SURROUNDING SECTORS
 //
-short_height_t	P_FindLowestFloorSurrounding(int16_t secnum)
+short_height_t	P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHigh)
 {
     int16_t			i;
 	int16_t offset = sectors[secnum].linesoffset;
@@ -190,48 +144,25 @@ short_height_t	P_FindLowestFloorSurrounding(int16_t secnum)
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
 	FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
+	if (isHigh)
+		floor =  -500 << SHORTFLOORBITS; // - 4000 = 0xE0C0 ?
 
 	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
     for (i=0 ;i < linecount ; i++) {
 		offset = secnumlist[i];
 
-		if (sectors[offset].floorheight < floor) {
+		if (isHigh){
+			if (sectors[offset].floorheight > floor) {
+				floor = sectors[offset].floorheight;
+			}
+		} else if (sectors[offset].floorheight < floor) {
 			floor = sectors[offset].floorheight;
 		}
     }
 	return floor; 
 }
 
-
-
-//
-// P_FindHighestFloorSurrounding()
-// FIND HIGHEST FLOOR HEIGHT IN SURROUNDING SECTORS
-//
-short_height_t	P_FindHighestFloorSurrounding(int16_t secnum)
-{
-    uint8_t		i;    
-	short_height_t		floor =  -500 << SHORTFLOORBITS; // - 4000 = 0xE0C0 ?
-	int16_t offset = sectors[secnum].linesoffset;
-	uint8_t linecount = sectors[secnum].linecount;
-	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
-	int16_t secnumlist[MAX_ADJOINING_SECTORS];
-	
-	FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
-
-	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
-
-    for (i=0 ;i < linecount ; i++) {
-		offset = secnumlist[i];
-	 
-		if (sectors[offset].floorheight > floor) {
-			floor = sectors[offset].floorheight;
-		}
-    }
-    return floor; 
-}
-
-
+ 
 
 //
 // P_FindNextHighestFloor
@@ -286,10 +217,10 @@ P_FindNextHighestFloor
 // FIND LOWEST CEILING IN THE SURROUNDING SECTORS
 //
 short_height_t
-P_FindLowestCeilingSurrounding(int16_t	secnum)
+P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, int8_t isHigh)
 {
     uint8_t		i;
-	short_height_t		height = MAXSHORT;
+	short_height_t		height = isHigh ? 0 : MAXSHORT ;
 	int16_t offset = sectors[secnum].linesoffset;
 	uint8_t linecount = sectors[secnum].linecount;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
@@ -302,42 +233,20 @@ P_FindLowestCeilingSurrounding(int16_t	secnum)
     for (i=0 ;i < linecount ; i++) {
 		offset = secnumlist[i];
 		 
-		if (sectors[offset].ceilingheight < height) {
-			height = sectors[offset].ceilingheight;
+		if (isHigh){
+			if (sectors[offset].ceilingheight > height) {
+				height = sectors[offset].ceilingheight;
+			}
+		} else {
+			if (sectors[offset].ceilingheight < height) {
+				height = sectors[offset].ceilingheight;
+			}
 		}
 	}
 	return height;
 }
 
-
-//
-// FIND HIGHEST CEILING IN THE SURROUNDING SECTORS
-//
-short_height_t	P_FindHighestCeilingSurrounding(int16_t	secnum)
-{
-    uint8_t		i;
-	short_height_t	height = 0;
-	int16_t offset = sectors[secnum].linesoffset;
-	uint8_t linecount = sectors[secnum].linecount;
-	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
-	int16_t secnumlist[MAX_ADJOINING_SECTORS];
-	
-	FAR_memcpy(linebufferlines, &linebuffer[offset], 2 * linecount);
-
-	linecount = getNextSectorList(linebufferlines, secnum, secnumlist, linecount, false);
-
-    for (i=0 ;i < linecount ; i++) {
-		offset = secnumlist[i];
  
-		if (sectors[offset].ceilingheight > height) {
-			height = sectors[offset].ceilingheight;
-		}
-	}
-	return height;
-}
-
-
-
 //
 // RETURN NEXT SECTOR # THAT LINE TAG REFERS TO
 //

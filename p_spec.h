@@ -75,28 +75,16 @@ twoSided
 (int16_t		sector,
 	int16_t		line );
 
-int16_t
-getSector
-(int16_t		currentSector,
-	int16_t		line,
-	int16_t		side );
+ 
 
-int16_t
-getSideNum
-(int16_t		currentSector,
-	int16_t		line,
-	int16_t		side );
-
-short_height_t P_FindLowestFloorSurrounding(int16_t secnum);
-short_height_t P_FindHighestFloorSurrounding(int16_t secnum);
+short_height_t P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHigh);
 
 short_height_t
 P_FindNextHighestFloor
 (int16_t secnum,
   short_height_t		currentheight );
 
-short_height_t P_FindLowestCeilingSurrounding(int16_t secnum);
-short_height_t P_FindHighestCeilingSurrounding(int16_t secnum);
+short_height_t P_FindLowestOrHighestCeilingSurrounding(int16_t secnum, int8_t ishigh);
 
 int16_t
 getNextSectorList

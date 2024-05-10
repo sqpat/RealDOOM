@@ -206,7 +206,7 @@ EV_DoPlat
 
 			case downWaitUpStay:
 				plat->speed = PLATSPEED * 4;
-				specialheight = P_FindLowestFloorSurrounding(secnum);
+				specialheight = P_FindHighestOrLowestFloorSurrounding(secnum, false);
 				plat->low = specialheight;
 
 				if (plat->low > sectorfloorheight) {
@@ -221,7 +221,7 @@ EV_DoPlat
 
 			case blazeDWUS:
 				plat->speed = PLATSPEED * 8;
-				specialheight = P_FindLowestFloorSurrounding(secnum);
+				specialheight = P_FindHighestOrLowestFloorSurrounding(secnum, false);
 
 				plat->low = specialheight;
 
@@ -236,14 +236,14 @@ EV_DoPlat
 
 			case perpetualRaise:
 				plat->speed = PLATSPEED;
-				specialheight = P_FindLowestFloorSurrounding(secnum);
+				specialheight = P_FindHighestOrLowestFloorSurrounding(secnum, false);
 				if (specialheight > sectorfloorheight) {
 					specialheight = sectorfloorheight;
 				}
 
 				plat->low = specialheight;
 
-				specialheight = P_FindHighestFloorSurrounding(secnum);
+				specialheight = P_FindHighestOrLowestFloorSurrounding(secnum, true);
 				plat->high = specialheight;
 
 				if (plat->high < sectorfloorheight) {

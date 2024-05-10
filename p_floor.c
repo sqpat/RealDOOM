@@ -302,6 +302,7 @@ EV_DoFloor
 	int16_t sectorceilingheight;
 	int16_t sectorfloorheight;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
+	int16_t seclinesoffset;
 
 	P_FindSectorsFromLineTag(linetag, secnumlist, false);
 	while (secnumlist[j] >= 0) {
@@ -310,6 +311,7 @@ EV_DoFloor
 		secnum = secnumlist[j];
 		sector = &sectors[secnum];
 		sector_physics = &sectors_physics[secnum];
+		seclinesoffset = sector->linesoffset;
 		j++;
 
 		// new floor thinker
@@ -331,7 +333,7 @@ EV_DoFloor
 			floor->direction = -1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			specialheight =  P_FindHighestFloorSurrounding(secnum); 
+			specialheight =  P_FindHighestOrLowestFloorSurrounding(secnum, true); 
 			floor->floordestheight = specialheight;
 			break;
 
@@ -339,7 +341,7 @@ EV_DoFloor
 			floor->direction = -1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			specialheight = P_FindLowestFloorSurrounding(secnum);
+			specialheight = P_FindHighestOrLowestFloorSurrounding(secnum, false);
 			floor->floordestheight = specialheight;
 
 			break;
@@ -348,7 +350,7 @@ EV_DoFloor
 			floor->direction = -1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED * 4;
-			specialheight = P_FindHighestFloorSurrounding(secnum);
+			specialheight = P_FindHighestOrLowestFloorSurrounding(secnum, true);
 			floor->floordestheight = specialheight;
 
 			if (floor->floordestheight != sectorfloorheight) {
@@ -362,7 +364,7 @@ EV_DoFloor
 			floor->direction = 1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			specialheight = P_FindLowestCeilingSurrounding(secnum);
+			specialheight = P_FindLowestOrHighestCeilingSurrounding(secnum, false);
 			floor->floordestheight = specialheight;
 			if (floor->floordestheight > sectorceilingheight) {
 				floor->floordestheight = sectorceilingheight;
@@ -413,23 +415,27 @@ EV_DoFloor
 
 		  case raiseToTexture: {
 			  short_height_t minsize = MAXSHORT;
-			  int16_t sidenum;
+			  int16_t sidenum0, sidenum1;
 			  uint16_t sidebottomtexture;
-				
+			  line_t __far * line;
+
 			  floor->direction = 1;
 			  floor->secnum = secnum;
 			  floor->speed = FLOORSPEED;
 			  for (i = 0; i < sector->linecount; i++) {
 				  if (twoSided (secnum, i) ) {
-					  sidenum = getSideNum(secnum,i,0);
-					  sidebottomtexture = sides[sidenum].bottomtexture;
+					  line = &lines[linebuffer[seclinesoffset + i]];
+					  sidenum0 = line->sidenum[0];
+					  sidenum1 = line->sidenum[1];
+
+					  sidebottomtexture = sides[sidenum0].bottomtexture;
 					  //if (sidebottomtexture >= 0) {
 						  if ((textureheights[sidebottomtexture]+1) < minsize) {
 							  minsize = textureheights[sidebottomtexture]+1;
 						  }
 					  //}
-					  sidenum = getSideNum(secnum,i,1);
-					  sidebottomtexture = sides[sidenum].bottomtexture;
+
+					  sidebottomtexture = sides[sidenum1].bottomtexture;
 
 					  //if (sidebottomtexture >= 0) {
 						  if ((textureheights[sidebottomtexture]+1) < minsize) {
@@ -451,15 +457,15 @@ EV_DoFloor
 			floor->direction = -1;
 			floor->secnum = secnum;
 			floor->speed = FLOORSPEED;
-			specialheight = P_FindLowestFloorSurrounding(secnum);
+			specialheight = P_FindHighestOrLowestFloorSurrounding(secnum, false);
 			floor->floordestheight = specialheight;
 			floor->texture = sector->floorpic;
 
 			for (i = 0; i < sector->linecount; i++) {
 				if (twoSided(secnum, i)) {
-					//sidenum = getSideNum(secnum, i, 0);
-					sideline = &lines[linebuffer[sectors[secnum].linesoffset + i]];
-					sideline_physics = &lines_physics[linebuffer[sectors[secnum].linesoffset + i]];
+					//sidenum = (secnum, i, 0);
+					sideline = &lines[linebuffer[seclinesoffset + i]];
+					sideline_physics = &lines_physics[linebuffer[seclinesoffset + i]];
 					if (sideline_physics->frontsecnum == secnum) {
 						secnum = sideline->sidenum[1];
 

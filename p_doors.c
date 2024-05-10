@@ -260,7 +260,7 @@ EV_DoDoor
 		switch(type)
 		{
 		  case blazeClose:
-			doortopheight = P_FindLowestCeilingSurrounding(secnum);
+			doortopheight = P_FindLowestOrHighestCeilingSurrounding(secnum, false);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
 			door->speed = VDOORSPEED * 4;
@@ -268,7 +268,7 @@ EV_DoDoor
 			break;
 	    
 		  case close:
-			doortopheight = P_FindLowestCeilingSurrounding(secnum);
+			doortopheight = P_FindLowestOrHighestCeilingSurrounding(secnum, false);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->direction = -1;
 			S_StartSoundWithParams(doorsector_physics->soundorgX, doorsector_physics->soundorgY, sfx_dorcls);
@@ -283,7 +283,7 @@ EV_DoDoor
 		  case blazeRaise:
 		  case blazeOpen:
 			door->direction = 1;
-			doortopheight = P_FindLowestCeilingSurrounding(secnum);
+			doortopheight = P_FindLowestOrHighestCeilingSurrounding(secnum, false);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			door->speed = VDOORSPEED * 4;
 			if (door->topheight != (doorsector->ceilingheight))
@@ -293,7 +293,7 @@ EV_DoDoor
 		  case normal:
 		  case open:
 			door->direction = 1;
-			doortopheight = P_FindLowestCeilingSurrounding(secnum);
+			doortopheight = P_FindLowestOrHighestCeilingSurrounding(secnum, false);
 			door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 			if (door->topheight != doorsector->ceilingheight)
 				S_StartSoundWithParams(doorsector_physics->soundorgX, doorsector_physics->soundorgY, sfx_doropn);
@@ -467,7 +467,7 @@ EV_VerticalDoor
     }
     
     // find the top and bottom of the movement range
-	doortopheight = P_FindLowestCeilingSurrounding(secnum);
+	doortopheight = P_FindLowestOrHighestCeilingSurrounding(secnum, false);
 	door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 }
 
@@ -514,7 +514,7 @@ P_SpawnDoorRaiseIn5Mins
     door->type = raiseIn5Mins;
     door->speed = VDOORSPEED;
 
-	doortopheight = P_FindLowestCeilingSurrounding(secnum);
+	doortopheight = P_FindLowestOrHighestCeilingSurrounding(secnum, false);
 	door->topheight = doortopheight - (4 << SHORTFLOORBITS);
 	door->topwait = VDOORWAIT;
     door->topcountdown = 5 * 60 * 35;
