@@ -420,7 +420,7 @@ This area used during intermission task
 
 
 
-#define           demobuffer ((byte __far*) 0x50000000)
+#define demobuffer ((byte __far*) 0x50000000)
 
 #define stringdata ((byte __far*)0x60000000)
 #define stringoffsets ((uint16_t __far*)0x63C40000)
@@ -499,27 +499,24 @@ colormaps                   8000:2a00
 colormapbytes               8000:2a00
 scalelightfixed             8000:4b00
 scalelight                  8000:4b60
-usedcompositetexturepagemem 8000:5160
-usedpatchpagemem            8000:5168
-compositetextureoffset      8000:5178
-compositetexturepage        8000:5324
-patchpage                   8000:54d0
-patchoffset                 8000:56ac
-texturepatchlump_offset     8000:5888
-segs_render                 8000:5be0
-texturedefs_offset          8000:c9d6
-texturewidthmasks           8000:cd2e
-spritepage                  8000:ceda
-spriteoffset                8000:d43f
-[empty]                     8000:d9a4
+compositetextureoffset      8000:5160
+compositetexturepage        8000:530c
+patchpage                   8000:54b8
+patchoffset                 8000:5694
+texturepatchlump_offset     8000:5870
+segs_render                 8000:5bc8
+texturedefs_offset          8000:c9be
+texturewidthmasks           8000:cd16
+spritepage                  8000:cec2
+spriteoffset                8000:d427
+[empty]                     8000:d99c
 
-// 9820 free
+// 9844 free
 */
 
 
 
 
-// deff
 // RENDER 0x8000
 
 
@@ -600,14 +597,14 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_nodes_render      0                    + MAX_NODES_RENDER_SIZE
 #define size_viewangletox      size_nodes_render    + (sizeof(int16_t) * (FINEANGLES / 2))
 #define size_spritewidths      size_viewangletox    + (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
-#define size_spriteoffsets     size_spritewidths    + (sizeof(int16_t) * MAX_SPRITE_LUMPS)
+#define size_spriteoffsets     size_spritewidths    + (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 #define size_spritetopoffsets  size_spriteoffsets   + (sizeof(int8_t) * MAX_SPRITE_LUMPS)
 
 //30462
 #define nodes_render          ((node_render_t __far*)  (0x70000000 + 0))
 #define viewangletox          ((int16_t __far*)        (0x70000000 + size_nodes_render))
 #define spritewidths          ((uint8_t __far*)        (0x70000000 + size_viewangletox))
-#define spriteoffsets         ((int16_t __far*)        (0x70000000 + size_spritewidths))
+#define spriteoffsets         ((uint8_t __far*)        (0x70000000 + size_spritewidths))
 #define spritetopoffsets      ((int8_t __far*)         (0x70000000 + size_spriteoffsets))
 
 

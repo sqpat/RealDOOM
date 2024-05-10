@@ -453,7 +453,8 @@ void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* 
     // calculate edges of the shape
 	tx.w = psp->sx;// -160 * FRACUNIT;
 
-	tx.h.intbits -= spriteoffsets[lump];
+    // spriteoffsets are only ever negative for psprite - we store as a uint and subtract in that case.
+	tx.h.intbits += spriteoffsets[lump];
 	tx.h.intbits -= 160;
 
 	temp.h.fracbits = 0;

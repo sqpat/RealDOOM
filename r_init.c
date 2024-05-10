@@ -203,8 +203,10 @@ void R_InitSpriteLumps(void)
 		else
 			spritewidths[i] = patchwidth;
 
-		// left offset between -151 and 130 in practice. too hard to make it work in 8 bits probably
-		spriteoffsets[i] = patchleftoffset;
+		// left offset between -151 and 130 in practice. 
+		//  negatives are only ever used for psprites, and psprites are always negative so we encode positve and change
+		// the subtraction operation to an addition and we are good.
+		spriteoffsets[i] = abs(patchleftoffset);
 
 
 		// top offset between -127 and 129 in practice. 128/-128 never actually happens so we hack in that case
@@ -213,7 +215,7 @@ void R_InitSpriteLumps(void)
 		else
 			spritetopoffsets[i] = patchtopoffset;
 
- 
+
 	}
 
 	// 0, 257
