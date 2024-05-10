@@ -408,6 +408,8 @@ typedef struct drawseg_s
     
 } drawseg_t;
 
+#define NULL_TEX_COL 65535u
+
 typedef struct 
 { 
     int16_t		width;		// bounding box size 

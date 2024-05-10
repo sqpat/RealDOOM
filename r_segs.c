@@ -82,7 +82,7 @@ fixed_t		bottomstep;
 
 uint16_t __far*	walllights;
 
-int16_t __far*		maskedtexturecol;
+uint16_t __far*		maskedtexturecol;
 
 
 //
@@ -546,7 +546,7 @@ R_StoreWallRange
 	worldbottom.w -= viewz.w;
 #endif
     midtexture = toptexture = bottomtexture = maskedtexture = 0;
-    ds_p->maskedtexturecol = 0;
+    ds_p->maskedtexturecol = NULL_TEX_COL;
 	
 
 	sidetextureoffset = side->textureoffset;
