@@ -499,21 +499,19 @@ colormaps                   8000:2a00
 colormapbytes               8000:2a00
 scalelightfixed             8000:4b00
 scalelight                  8000:4b60
-compositetextureoffset      8000:5160
-compositetexturepage        8000:530c
-patchpage                   8000:54b8
-patchoffset                 8000:5694
-texturepatchlump_offset     8000:5870
-segs_render                 8000:5bc8
-texturedefs_offset          8000:c9be
-texturewidthmasks           8000:cd16
-spritepage                  8000:cec2
-spriteoffset                8000:d427
-viewangletox                8000:d99c
-spriteoffset                8000:F99C
-[empty]                     8000:FF01
+zlight                      8000:5160
+viewangletox                8000:6160
+compositetextureoffset      8000:8160
+compositetexturepage        8000:830c
+patchpage                   8000:84b8
+patchoffset                 8000:8694
+texturepatchlump_offset     8000:8870
+segs_render                 8000:8bc8
+texturedefs_offset          8000:f9be
+texturewidthmasks           8000:fd16
+[empty]                     8000:FEC2
 
-// 255 free
+// 318 free
 */
 
 
@@ -551,7 +549,9 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_colormapbytes                ((33 * 256)                      + size_leftover_openings_arrays)
 #define size_scalelightfixed              size_colormapbytes               + sizeof(uint16_t ) * (MAXLIGHTSCALE)
 #define size_scalelight                   size_scalelightfixed             + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE)
-#define size_compositetextureoffset       size_scalelight                  + MAX_TEXTURES * sizeof(uint8_t)
+#define size_zlight                       size_scalelight                  + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_viewangletox                 size_zlight                      + (sizeof(int16_t) * (FINEANGLES / 2))
+#define size_compositetextureoffset       size_viewangletox                + MAX_TEXTURES * sizeof(uint8_t)
 #define size_compositetexturepage         size_compositetextureoffset      + MAX_TEXTURES * sizeof(uint8_t)
 #define size_patchpage                    size_compositetexturepage        + MAX_PATCHES * sizeof(uint8_t)
 #define size_patchoffset                  size_patchpage                   + MAX_PATCHES * sizeof(uint8_t)
@@ -559,10 +559,6 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_segs_render                  size_texturecompositesizes       + MAX_SEGS_RENDER_SIZE
 #define size_texturedefs_offset           size_segs_render                 + MAX_TEXTURES * sizeof(uint16_t)
 #define size_texturewidthmasks            size_texturedefs_offset          + MAX_TEXTURES * sizeof(uint8_t)
-#define size_spritepage                   size_texturewidthmasks           + MAX_SPRITE_LUMPS * sizeof(uint8_t)
-#define size_spriteoffset                 size_spritepage                  + MAX_SPRITE_LUMPS * sizeof(uint8_t)
-#define size_viewangletox                 size_spriteoffset                + (sizeof(int16_t) * (FINEANGLES / 2))
-#define size_spriteoffsets                size_viewangletox                + (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 
 
 
@@ -573,7 +569,9 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define colormapbytes               ((byte __far*)            (0x80000000 + size_leftover_openings_arrays))
 #define scalelightfixed             ((uint16_t __far*)        (0x80000000 + size_colormapbytes))
 #define scalelight                  ((uint16_t __far*)        (0x80000000 + size_scalelightfixed))
-#define compositetextureoffset      ((uint8_t __far*)         (0x80000000 + size_scalelight))
+#define zlight                      ((uint16_t far*)          (0x80000000 + size_scalelight))
+#define viewangletox                ((int16_t __far*)         (0x80000000 + size_zlight))
+#define compositetextureoffset      ((uint8_t __far*)         (0x80000000 + size_viewangletox))
 #define compositetexturepage        ((uint8_t __far*)         (0x80000000 + size_compositetextureoffset))
 #define patchpage                   ((uint8_t __far*)         (0x80000000 + size_compositetexturepage))
 #define patchoffset                 ((uint8_t __far*)         (0x80000000 + size_patchpage))
@@ -581,10 +579,6 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define segs_render                 ((seg_render_t  __far*)   (0x80000000 + size_texturecompositesizes))
 #define texturedefs_offset          ((uint16_t  __far*)       (0x80000000 + size_segs_render))
 #define texturewidthmasks           ((uint8_t  __far*)        (0x80000000 + size_texturedefs_offset))
-#define spritepage                  ((uint8_t __far*)         (0x80000000 + size_texturewidthmasks))
-#define spriteoffset                ((uint8_t __far*)         (0x80000000 + size_spritepage))
-#define viewangletox                ((int16_t __far*)         (0x80000000 + size_spriteoffset))
-#define spriteoffsets               ((uint8_t __far*)         (0x80000000 + size_viewangletox))
 
 
 
@@ -636,8 +630,11 @@ spritewidths        7000:7592
 #define size_texturecolumnofs_bytes    14944u
 #define size_texturecolumnlumps_bytes  (size_texturecolumnofs_bytes    + (1264u * sizeof(int16_t)))
 #define size_texturedefs_bytes         (size_texturecolumnlumps_bytes  + 8756u)
-#define size_zlight                    (size_texturedefs_bytes         + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ))
-#define size_spritetopoffsets          (size_zlight                    + (sizeof(int8_t) * MAX_SPRITE_LUMPS))
+#define size_spriteoffsets             size_texturedefs_bytes          + (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
+#define size_spritetopoffsets          (size_spriteoffsets             + (sizeof(int8_t) * MAX_SPRITE_LUMPS))
+#define size_spritepage                size_spritetopoffsets           + MAX_SPRITE_LUMPS * sizeof(uint8_t)
+#define size_spriteoffset              size_spritepage                 + MAX_SPRITE_LUMPS * sizeof(uint8_t)
+
 
 // size_texturedefs_bytes 0x6184... 0x6674
 
@@ -646,20 +643,22 @@ spritewidths        7000:7592
 #define texturecolumnofs_bytes_2  ((byte __far*)          (0x58000000 ))
 #define texturecolumnlumps_bytes  ((int16_t __far*)       (0x60000000 + size_texturecolumnofs_bytes))
 #define texturedefs_bytes         ((byte __far*)          (0x60000000 + size_texturecolumnlumps_bytes))
-#define zlight                    ((uint16_t far*)        (0x60000000 + size_texturedefs_bytes))
-#define spritetopoffsets          ((int8_t __far*)        (0x60000000 + size_zlight))
+#define spriteoffsets             ((uint8_t __far*)       (0x60000000 + size_texturedefs_bytes))
+#define spritetopoffsets          ((int8_t __far*)        (0x60000000 + size_spriteoffsets))
+#define spritepage                ((uint8_t __far*)       (0x60000000 + size_spritetopoffsets))
+#define spriteoffset              ((uint8_t __far*)       (0x60000000 + size_spritepage))
 
 
 // texturecolumnlumps_bytes   6000:3a60
 // texturedefs_bytes          6000:4440
-// zlight                     6000:6674
+// spriteoffsets              6000:6674
+// spritetopoffsets           6000:6BD9
+// spritepage                 6000:713E
+// spriteoffset               6000:76A3
+// [empty]                    6000:7C08
 
 
-
-// [empty]                    6000:7674
-
-
-// 2444 bytes free till 6000:8000 
+// 1016 bytes free till 6000:8000 
 
 // 0x4000 BLOCK RENDER
 
