@@ -320,9 +320,9 @@ EV_DoPlat
 
 void    P_AddActivePlat(THINKERREF platref);
 void    P_RemoveActivePlat(THINKERREF platref);
-void    EV_StopPlat(uint8_t linetag);
-void    P_ActivateInStasis(int8_t tag);
-
+void    EV_PlatFunc(uint8_t linetag, int8_t platfunc);
+#define PLAT_FUNC_IN_STASIS 0
+#define PLAT_FUNC_STOP_PLAT 1
 
 //
 // P_DOORS

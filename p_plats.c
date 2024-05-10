@@ -146,7 +146,7 @@ EV_DoPlat
     //	Activate all <type> plats that are in_stasis
     switch(type) {
 		  case perpetualRaise:
-			P_ActivateInStasis(linetag);
+			EV_PlatFunc(linetag, PLAT_FUNC_IN_STASIS);
 			break;
 	
 		  default:
@@ -263,34 +263,25 @@ EV_DoPlat
 
 
 
-void P_ActivateInStasis(int8_t tag) {
-    int8_t		j;
-	plat_t __far* plat;
-	for (j = 0; j < MAXPLATS; j++)
-		if (activeplats[j] != NULL_THINKERREF) {
-			plat = (plat_t __far*)&thinkerlist[activeplats[j]].data;
-
-			if ((plat->status == plat_in_stasis) && (plat->tag == tag)) {
-				plat->oldstatus = plat->status;
-
-				P_UpdateThinkerFunc(activeplats[j], TF_PLATRAISE_HIGHBITS);
-			}
-		}
-
-}
-
-void EV_StopPlat(uint8_t linetag) {
+void EV_PlatFunc(uint8_t linetag, int8_t type) {
 	int8_t		j;
 	plat_t __far* plat;
-
 	for (j = 0; j < MAXPLATS; j++) {
 		if (activeplats[j] != NULL_THINKERREF) {
 			plat = (plat_t __far*)&thinkerlist[activeplats[j]].data;
-			if ((plat->status != plat_in_stasis) && (plat->tag == linetag)) {
-				plat->oldstatus = plat->status;
-				plat->status = plat_in_stasis;
+			if (plat->tag == linetag){
+				if (type == PLAT_FUNC_IN_STASIS && plat->status == plat_in_stasis){
+						plat->oldstatus = plat->status;
+						P_UpdateThinkerFunc(activeplats[j], TF_PLATRAISE_HIGHBITS);
+					
+				}
 
-				P_UpdateThinkerFunc(activeplats[j], TF_NULL);
+				if (type == PLAT_FUNC_STOP_PLAT && plat->status != plat_in_stasis)  {
+						plat->oldstatus = plat->status;
+						plat->status = plat_in_stasis;
+						P_UpdateThinkerFunc(activeplats[j], TF_NULL);
+				}
+				
 			}
 		}
 	}

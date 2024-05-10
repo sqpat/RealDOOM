@@ -611,7 +611,7 @@ P_CrossSpecialLine
 	
       case 54:
 		// Platform Stop
-		EV_StopPlat(linetag);
+		EV_PlatFunc(linetag, PLAT_FUNC_STOP_PLAT);
 		setlinespecial = 0;
 		break;
 
@@ -784,7 +784,7 @@ P_CrossSpecialLine
 	
       case 89:
 		// Platform Stop
-		EV_StopPlat(linetag);
+		EV_PlatFunc(linetag, PLAT_FUNC_STOP_PLAT);
 		break;
 	
       case 90:
