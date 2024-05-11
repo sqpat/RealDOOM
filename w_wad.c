@@ -71,10 +71,8 @@ void  _far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, 
 	byte __far* destloc = dest;
 	while (totalreadsize < totalsize) {
 
-		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
 		remaining = totalsize - totalreadsize;
 		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
-		//DEBUG_PRINT("%u %u", totalsize, copysize);
 		fread(stackbuffer, copysize, 1, fp);
 		FAR_memcpy(destloc, stackbufferfar, copysize);
 
@@ -89,23 +87,19 @@ void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
 	uint16_t totalreadsize = 0;
 	int16_t copysize;
 	uint16_t remaining;
-	//uint16_t start = _tell(filehandle);
 	byte stackbuffer[FREAD_BUFFER_SIZE];
 	byte __far* stackbufferfar = (byte __far *)stackbuffer;
 	byte __far* destloc = dest;
 	while (totalreadsize < totalsize) {
 
-		//DEBUG_PRINT("\n9 %Fp %Fp ", dest, destloc);
 		remaining = totalsize - totalreadsize;
 		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
-		//DEBUG_PRINT("%u %u", totalsize, copysize);
 		read(filehandle, stackbuffer, copysize);
 
 		FAR_memcpy(destloc, stackbufferfar, copysize);
 
 		destloc += copysize;
 		totalreadsize += copysize;
-		//lseek(filehandle, totalreadsize+start, SEEK_SET);
 	}
 
 }
@@ -120,12 +114,9 @@ void  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, 
 	byte stackbuffer[FREAD_BUFFER_SIZE];
 	byte __far* stackbufferfar = (byte __far *)stackbuffer;
 	byte __far* srcloc = src;
-	//DEBUG_PRINT("\n new %Fp %Fp ", src, srcloc);
 	while (totalreadsize < totalsize) {
-		//DEBUG_PRINT("_ %Fp %Fp ", src, srcloc);
 		remaining = totalsize - totalreadsize;
 		copysize = (FREAD_BUFFER_SIZE > remaining) ? remaining : FREAD_BUFFER_SIZE;
-		//DEBUG_PRINT("%u %u", totalsize, copysize);
 		FAR_memcpy(stackbufferfar, srcloc, copysize);
 		fwrite(stackbuffer, copysize, 1, fp);
 		srcloc += copysize;

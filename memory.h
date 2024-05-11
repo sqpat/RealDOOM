@@ -115,6 +115,8 @@ spritedefs    CC00:0000
 
 */
 
+#define size_viewangletox                     (0     + (sizeof(int16_t) * (FINEANGLES / 2)))
+#define viewangletox                          ((int16_t __far*)  (B000Block + 0))
 
 
 #define size_compositetextureoffset       0                                + MAX_TEXTURES * sizeof(uint8_t)
@@ -162,7 +164,7 @@ spritedefs    CC00:0000
 #define size_flattranslation     (size_events             + MAX_FLATS * sizeof(uint8_t))
 #define size_texturetranslation  (size_flattranslation    + MAX_TEXTURES * sizeof(uint16_t))
 #define size_textureheights      (size_texturetranslation + MAX_TEXTURES * sizeof(uint8_t))
-#define size_viewangletox        (size_textureheights     + (sizeof(int16_t) * (FINEANGLES / 2)))
+//#define size_viewangletox        (size_textureheights     + (sizeof(int16_t) * (FINEANGLES / 2)))
 
 
 
@@ -170,19 +172,24 @@ spritedefs    CC00:0000
 
 // 
 
-#define baselowermemoryaddresssegment 0x3007
-#define baselowermemoryaddress (0x30070000)
+//#define baselowermemoryaddresssegment 0x3007
+//#define baselowermemoryaddress (0x30070000)
+#define baselowermemoryaddresssegment 0x31F0
+#define baselowermemoryaddress (0x31F00000)
 
 
 #define finesine           ((int32_t __far*)  baselowermemoryaddress)  // 10240
-#define finecosine         ((int32_t __far*)  (baselowermemoryaddress+0x2000))  // 10240
+#define finecosine         ((int32_t __far*)  (baselowermemoryaddress + 0x2000))  // 10240
 #define finetangentinner   ((int32_t __far*)  (baselowermemoryaddress + size_finesine ))
 #define states             ((state_t __far*)  (baselowermemoryaddress + size_finetangent))
 #define events             ((event_t __far*)  (baselowermemoryaddress + size_states ))
 #define flattranslation    ((uint8_t __far*)  (baselowermemoryaddress + size_events))
 #define texturetranslation ((uint16_t __far*) (baselowermemoryaddress + size_flattranslation))
 #define textureheights     ((uint8_t __far*)  (baselowermemoryaddress + size_texturetranslation))
-#define viewangletox       ((int16_t __far*)  (baselowermemoryaddress + size_textureheights))
+//#define viewangletox       ((int16_t __far*)  (baselowermemoryaddress + size_textureheights))
+
+#define baselowermemoryaddresssegment 0x31F0
+#define baselowermemoryaddress (0x31F00000)
 
 
 
@@ -484,9 +491,9 @@ This area used during intermission task
 // maximum size for level complete graphic, times two
 #define MAX_LEVEL_COMPLETE_GRAPHIC_SIZE 0x1240
 #define size_level_finished_graphic (MAX_LEVEL_COMPLETE_GRAPHIC_SIZE * 2)
+
 #define size_wioffsets              (size_level_finished_graphic + sizeof(uint16_t) * NUM_WI_ITEMS)
 #define size_wianimoffsets          (size_wioffsets + sizeof(uint16_t) * NUM_WI_ANIM_ITEMS)
-
 #define wioffsets                   ((uint16_t __far*)   (0x70008000 + size_level_finished_graphic))
 #define wianimoffsets               ((uint16_t __far*)   (0x70008000 + size_wioffsets))
 
@@ -552,10 +559,10 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define negonearray_offset        size_openings
 #define screenheightarray_offset  size_negonearray
 
-#define size_negonearray              size_openings  + sizeof(int16_t) * (SCREENWIDTH)
-#define size_screenheightarray        size_negonearray    + sizeof(int16_t) * (SCREENWIDTH)
+#define size_negonearray          size_openings             + sizeof(int16_t) * (SCREENWIDTH)
+#define size_screenheightarray    size_negonearray          + sizeof(int16_t) * (SCREENWIDTH)
 #define size_floorclip            size_screenheightarray    + (sizeof(int16_t) * SCREENWIDTH)
-#define size_ceilingclip          size_floorclip      + (sizeof(int16_t) * SCREENWIDTH)
+#define size_ceilingclip          size_floorclip            + (sizeof(int16_t) * SCREENWIDTH)
 
 #define negonearray          ((int16_t __far*)          (0x78000000 + size_openings))
 #define screenheightarray    ((int16_t __far*)          (0x78000000 + size_negonearray))
@@ -571,7 +578,7 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_scalelightfixed              size_colormapbytes               + sizeof(uint16_t ) * (MAXLIGHTSCALE)
 #define size_scalelight                   size_scalelightfixed             + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE)
 #define size_zlight                       size_scalelight                  + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
-#define size_visplanes                    (size_zlight                     + sizeof(visplane_t) * MAXCONVENTIONALVISPLANES)
+#define size_visplanes                    size_zlight                      + sizeof(visplane_t) * MAXCONVENTIONALVISPLANES
 #define size_visplaneheaders              size_visplanes                   + sizeof(visplaneheader_t) * MAXEMSVISPLANES
 #define size_spritecache_nodes            size_visplaneheaders             + sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
 #define size_flatcache_nodes              size_spritecache_nodes           + sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
@@ -650,7 +657,7 @@ spritewidths        7000:7592
 #define size_spritetopoffsets          (size_spriteoffsets             + (sizeof(int8_t) * MAX_SPRITE_LUMPS))
 #define size_spritepage                size_spritetopoffsets           + MAX_SPRITE_LUMPS * sizeof(uint8_t)
 #define size_spriteoffset              size_spritepage                 + MAX_SPRITE_LUMPS * sizeof(uint8_t)
-#define size_flatindex                 size_spriteoffset                 + (sizeof(uint8_t) * MAX_FLATS)
+#define size_flatindex                 size_spriteoffset               + (sizeof(uint8_t) * MAX_FLATS)
 
 
 // size_texturedefs_bytes 0x6184... 0x6674
@@ -696,6 +703,7 @@ spritewidths        7000:7592
 #define player_vissprites       ((vissprite_t __far*)        (0x40000000 + size_vissprites))
 #define texturepatchlump_offset ((uint16_t __far*)           (0x40000000 + size_player_vissprites))
 #define texturecolumn_offset    ((uint16_t __far*)           (0x40000000 + size_texturepatchlump_offset))
+#define ems_visplanes           ((uint16_t __far*)           (0x4C000000)
 
 
 // used during p_setup
@@ -714,6 +722,8 @@ player_vissprites				4000:B162
 texturepatchlump_offset 4000:B1F9
 texturecolumn_offset    4000:B551
 [done]                  4000:B8A9
+
+ems_visplanes           4C00:0000
 
 1879 bytes free
 

@@ -83,21 +83,18 @@ void W_AddFile(int8_t *filename)
 	// open the file and add to directory
 
 	// handle reload indicator.
-	if (filename[0] == '~')
-	{
+	if (filename[0] == '~') {
 		filename++;
 		reloadname = filename;
 		reloadlump = numlumps;
 	}
 
-	if ((handle = open(filename, O_RDONLY | O_BINARY)) == -1)
-	{
+	if ((handle = open(filename, O_RDONLY | O_BINARY)) == -1) {
 		DEBUG_PRINT("\tcouldn't open %s\n", filename);
 		return;
 	}
-	DEBUG_PRINT("\n", filename);
 
-	DEBUG_PRINT("\tadding %s\n", filename);
+	DEBUG_PRINT("\n\tadding %s\n", filename);
 	startlump = numlumps;
  
 	// WAD file

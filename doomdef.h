@@ -85,7 +85,6 @@ enum { VERSION =  109 };
 //  scaling e.g. to 2. Drawing of status bar,
 //  menues etc. is tied to the scale implied
 //  by the graphics.
-#define	SCREEN_MUL		1
 #define	INV_ASPECT_RATIO	0.625 // 0.75, ideally
 
 // Defines suck. C sucks.
@@ -93,9 +92,7 @@ enum { VERSION =  109 };
 // So there.
 #define SCREENWIDTH  320
 #define SCREENWIDTHOVER2  160
-//SCREEN_MUL*BASE_WIDTH //320
 #define SCREENHEIGHT 200
-//(int32_t)(SCREEN_MUL*BASE_WIDTH*INV_ASPECT_RATIO) //200
 
 #define	FRACBITS		16
 #define	FRACUNIT		0x10000L

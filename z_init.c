@@ -46,9 +46,10 @@ extern struct SREGS segregs;
  
 uint16_t EMS_PAGE;
 // EMS STUFF
+extern int16_t emshandle;
 
 
-byte __far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
+byte __far* Z_InitEMS()
 {
 
 	// 4 mb
@@ -85,11 +86,9 @@ byte __far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 	if (errorreg != 0) {
 		I_Error("90"); // EMS Error 0x46
 	}
-	//vernum = 10*(vernum >> 4) + (vernum&0xF);
-	DEBUG_PRINT("Version %i", vernum);
+	//DEBUG_PRINT("Version %i", vernum);
 	if (vernum < 40) {
-		DEBUG_PRINT("Expected EMS 4.0, found %x", vernum);
-
+		I_Error("Expected EMS 4.0, found %x", vernum);
 	}
 
 	// get page frame address
@@ -110,16 +109,15 @@ byte __far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 	pagestotal = regs.w.dx;
 	DEBUG_PRINT("\n  %i pages total, %i pages available at frame %p", pagestotal, pagesavail, pageframebase);
 
-	if (pagesavail < numPagesToAllocate) {
-		DEBUG_PRINT("\nWarning: %i pages of memory recommended, only %i available.", numPagesToAllocate, pagesavail);
-		numPagesToAllocate = pagesavail;
+	if (pagesavail < NUM_EMS4_SWAP_PAGES) {
+		I_Error("\nERROR: minimum of %i EMS pages required", NUM_EMS4_SWAP_PAGES);
 	}
 
 
 	regs.w.bx = numPagesToAllocate;
 	regs.h.ah = 0x43;
 	intx86(EMS_INT, &regs, &regs);
-	*emshandle = regs.w.dx;
+	emshandle = regs.w.dx;
 	errorreg = regs.h.ah;
 	if (errorreg != 0) {
 		// Error 0 = 0x00 = no error
@@ -135,7 +133,7 @@ byte __far* I_ZoneBaseEMS(/*int32_t *size, */int16_t *emshandle)
 	for (j = 0; j < 4; j++) {
 		regs.h.al = j;  // physical page
 		regs.w.bx = j;    // logical page
-		regs.w.dx = *emshandle; // handle
+		regs.w.dx = emshandle; // handle
 		regs.h.ah = 0x44;
 		intx86(EMS_INT, &regs, &regs);
 		if (regs.h.ah != 0) {
@@ -267,13 +265,6 @@ found:
 //extern byte __far* pageFrameArea;
 extern int16_t emshandle;
 
-void Z_InitEMS(void) {
-	//int32_t size;
-	//todo figure this out based on settings, hardware, etc
-	//pageFrameArea = 
-	I_ZoneBaseEMS(&emshandle);
-	//pageFrameArea = I_ZoneBaseEMS(&size, &emshandle);
-}
 
 
 
@@ -332,21 +323,23 @@ void Z_LoadBinaries() {
 	
 
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);
+	Z_QuickmapRender();
  
-	Z_QuickmapPhysics();
+	//4096
+	FAR_fread(zlight, 1, 4096, fp);
 
+	Z_QuickmapPhysics();
 
 	fclose(fp);
 
 	//I_Error("\n%x %x %x %x", lnodex[0], lnodex[1], lnodex[2], lnodex[3]);
 
-	DEBUG_PRINT(".");
+	DEBUG_PRINT("..");
 
 
 	//fp = fopen("D_TANTOA.BIN", "rb");
 	//FAR_fread(tantoangle, 4, 2049, fp);
 	//fclose(fp);
-	DEBUG_PRINT(".");
 	 
 }
 

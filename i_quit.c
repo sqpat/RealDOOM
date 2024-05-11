@@ -134,10 +134,8 @@ void I_ShutdownKeyboard(void)
 //
 // ShutdownMouse
 //
-void I_ShutdownMouse(void)
-{
-	if (!mousepresent)
-	{
+void I_ShutdownMouse(void) {
+	if (!mousepresent) {
 		return;
 	}
 

@@ -73,7 +73,7 @@ extern uint16_t EMS_PAGE;
 
 
 
-void Z_InitEMS(void);
+byte __far* Z_InitEMS(void);
 //void Z_InitUMB(void);
 void Z_FreeConventionalAllocations();
 

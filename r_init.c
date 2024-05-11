@@ -48,14 +48,6 @@ extern uint8_t			skyflatnum;
 
 
 extern uint8_t R_FlatNumForName(int8_t* name);
-//
-// R_InitSkyMap
-// Called whenever the view size changes.
-//
-void R_InitSkyMap(void)
-{
-	skyflatnum = R_FlatNumForName("F_SKY1");
-}
 
 
 //extern MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES];
@@ -109,58 +101,7 @@ void R_InitPlanes(void) {
 //
 #define DISTMAP		2
 
-void R_InitLightTables(void)
-{
-	int16_t		i;
-	int16_t		j;
-	int16_t		level;
-	int16_t		startmap;
-	fixed_t		scale;
-	fixed_t_union		temp, temp2;
-
-	Z_QuickmapRender();
-	//Z_QuickmapLumpInfo();
-
-	// Calculate the light levels to use
-	//  for each level / distance combination.
-	temp.h.fracbits = 0;
-	temp2.h.fracbits = 0;
-	temp2.h.intbits = SCREENWIDTH / 2;
-	for (i = 0; i < LIGHTLEVELS; i++) {
-		//DEBUG_PRINT("\n%i ", i);
-		startmap = ((LIGHTLEVELS - 1 - i) * 2) * 2; // *NUMCOLORMAPS/LIGHTLEVELS;
-		temp.h.intbits = 1;
-		for (j = 0; j < MAXLIGHTZ; j++) {
-			//DEBUG_PRINT("\n a ");
-			temp.h.intbits += 16;
-
-			scale = FixedDivWholeAB(temp2.w, temp.w);
-			scale >>= LIGHTSCALESHIFT;
-			level = startmap - (scale / DISTMAP);
-
-			if (level < 0) {
-				level = 0;
-			}
-
-			if (level >= NUMCOLORMAPS) {
-				level = NUMCOLORMAPS - 1;
-			}
-
-			//DEBUG_PRINT("%i %i %Fp %Fp", i, j, zlight[i *MAXLIGHTZ + j], (colormaps + (level * 256)));
-
-			// << 7 is same as * MAXLIGHTZ
  
-			// this creates a segment 0x8000 indexed pointer to the colormaps
-			zlight[i *MAXLIGHTZ + j] =  (level * 256);
-			//zlight[i * MAXLIGHTZ + j] = (uint16_t)((uint32_t)(colormaps + (level * 256)) & 0xFFFFu);
-
-
-		}
-	}
-	Z_QuickmapPhysics();
-
-}
-
 
 
 //
@@ -716,10 +657,13 @@ void R_Init(void)
 
 	R_SetViewSize(screenblocks, detailLevel);
 	R_InitPlanes();
-	DEBUG_PRINT(".");
-	R_InitLightTables();
-	DEBUG_PRINT(".");
-	R_InitSkyMap();
+	DEBUG_PRINT("..");
+	//R_InitLightTables();
+	//DEBUG_PRINT(".");
+	Z_QuickmapPhysics();
+	
+	skyflatnum = R_FlatNumForName("F_SKY1");
+
 	DEBUG_PRINT(".");
 
 	}

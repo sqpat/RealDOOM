@@ -84,12 +84,12 @@ void A_PainDie(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
 void A_KeenDie(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
 void A_BrainPain();
 void A_BrainScream(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_BrainDie();
 void A_BrainAwake();
 void A_BrainSpit(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
 void A_SpawnSound(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
 void A_SpawnFly(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
 void A_BrainExplode(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void G_ExitLevel();
 
 mobj_t __far* SAVEDUNIT;
 mobj_t __far* setStateReturn;
@@ -240,8 +240,8 @@ void P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 	if (mo_pos->flags & MF_CORPSE) {
 		// do not stop sliding
 		//  if halfway off a step with some momentum
-		sectorfloorheight = sectors[mosecnum].floorheight;
 		if (mo->momx.w > FRACUNIT/4 || mo->momx.w < -FRACUNIT/4 || mo->momy.w > FRACUNIT/4 || mo->momy.w < -FRACUNIT/4) {
+			sectorfloorheight = sectors[mosecnum].floorheight;
 			if (mo->floorz != sectorfloorheight) {
 				
 				return;
@@ -953,7 +953,7 @@ P_SetMobjState
 			case ETF_A_KeenDie: A_KeenDie(mobj, mobj_pos); break;
 			case ETF_A_BrainPain: A_BrainPain(); break;
 			case ETF_A_BrainScream: A_BrainScream(mobj, mobj_pos); break;
-			case ETF_A_BrainDie: A_BrainDie(); break;
+			case ETF_A_BrainDie: G_ExitLevel(); break;
 				// ugly hacks because these values didnt fit in the char datatype, so we do this to avoid making that field a int16_t in a 1000 element struct array. 
 				// easily saving extra 1-2kb of binary size is worth this hack imo - sq
 			case ETF_A_BrainAwake:
