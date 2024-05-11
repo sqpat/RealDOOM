@@ -71,7 +71,6 @@ THINKERREF P_GetNextThinkerRef(void) {
 
 }
 
-int16_t addCount = 0;
 void __far* P_CreateThinker(uint16_t thinkfunc) {
 	int16_t index = P_GetNextThinkerRef();
 	THINKERREF temp = thinkerlist[0].prevFunctype;// &0x7FF;
@@ -81,7 +80,6 @@ void __far* P_CreateThinker(uint16_t thinkfunc) {
 	thinkerlist[temp].next = index;
 	thinkerlist[0].prevFunctype = index;
 
-	addCount++;
 	return &thinkerlist[index].data;
 
 }
@@ -100,7 +98,6 @@ void P_RemoveThinker (THINKERREF thinkerRef)
 	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
 }
 
-int setval = 0;
 //
 // P_RunThinkers
 //

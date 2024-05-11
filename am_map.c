@@ -1231,7 +1231,6 @@ void AM_drawCrosshair()
     screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
 
 }
-extern int setval;
 //extern void G_ExitLevel();
 void AM_Drawer (void)
 {

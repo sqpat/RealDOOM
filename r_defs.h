@@ -447,7 +447,7 @@ typedef struct
 typedef struct vissprite_s
 {
     // Doubly linked list.
-    uint16_t	next;
+    uint8_t	next;
     
 
 	int16_t x1;

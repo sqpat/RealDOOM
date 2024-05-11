@@ -1189,6 +1189,7 @@ byte __far* getpatchtexture(int16_t lump) {
 	uint8_t texpage = patchpage[index];
 	uint8_t texoffset = patchoffset[index];
 	byte __far* addr;
+	int8_t cachelump = false;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_PATCH;
 #endif
@@ -1200,18 +1201,17 @@ byte __far* getpatchtexture(int16_t lump) {
 		texoffset = patchoffset[index];
 
 		//gettexturepage ensures the page is active
-		addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
- 
-		W_CacheLumpNumDirect(lump, addr);
-		// return
-		return addr;
-	} else {
-		// has been allocated before. find and return
-		addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
-
-		return addr;
+		cachelump = true;
 	}
 	
+	addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
+
+	if (cachelump)
+		W_CacheLumpNumDirect(lump, addr);
+	// return
+	return addr;
+
+
 }
 
 
@@ -1219,6 +1219,7 @@ byte __far* getcompositetexture(int16_t tex_index) {
 	
 	uint8_t texpage = compositetexturepage[tex_index];
 	uint8_t texoffset = compositetextureoffset[tex_index];
+	int8_t cachelump = false;
 	byte __far* addr;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_COMPOSITE;
@@ -1229,21 +1230,19 @@ byte __far* getcompositetexture(int16_t tex_index) {
 		R_GetNextCompositeBlock(tex_index);
 		texpage = compositetexturepage[tex_index];
 		texoffset = compositetextureoffset[tex_index];
-		
+		cachelump = true;
 		//gettexturepage ensures the page is active
+
+	}
+
 		addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 8));
 		// load it in
-		R_GenerateComposite(tex_index, addr);
-		
+		if (cachelump){
+			R_GenerateComposite(tex_index, addr);
+		}
 
 		return addr;
-	} else {
-		// has been allocated before. find and return
-		
-		addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 8));
-		
-		return addr;
-	}
+
 }
 
 byte __far* getspritetexture(int16_t lump) {
@@ -1251,6 +1250,7 @@ byte __far* getspritetexture(int16_t lump) {
 	int16_t index = lump - firstspritelump;
 	uint8_t texpage = spritepage[index];
 	uint8_t texoffset = spriteoffset[index];
+	int8_t cachelump = false;
 	byte __far* addr;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_SPRITE;
@@ -1261,19 +1261,18 @@ byte __far* getspritetexture(int16_t lump) {
 		R_GetNextSpriteBlock(lump);
 		texpage = spritepage[index];
 		texoffset = spriteoffset[index];
-
+		cachelump = true;
 		//gettexturepage ensures the page is active
+	}
+
+		
 		addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
-		W_CacheLumpNumDirect(lump, addr);
+		if (cachelump){
+			W_CacheLumpNumDirect(lump, addr);
+		}
 		// return
 		return addr;
-	}
-	else {
-		// has been allocated before. find and return
-		addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
-		//I_Error("\nb %Fp  %hhu %hhu %u", addr, texpage, texoffset, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)]);
-		return addr;
-	}
+
 
 } 
  

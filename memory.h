@@ -689,9 +689,9 @@ spritewidths        7000:7592
 // 0x4000 BLOCK RENDER
 
 
-#define size_segs_render              0       + MAX_SEGS_RENDER_SIZE
+#define size_segs_render              0                             + MAX_SEGS_RENDER_SIZE
 #define size_sides_render             size_segs_render              + MAX_SIDES_RENDER_SIZE
-#define size_vissprites               size_sides_render                 + sizeof(vissprite_t) * (MAXVISSPRITES)
+#define size_vissprites               size_sides_render             + sizeof(vissprite_t) * (MAXVISSPRITES)
 #define size_player_vissprites        size_vissprites               + (sizeof(vissprite_t) * 2)
 #define size_texturepatchlump_offset  size_player_vissprites        + MAX_TEXTURES * sizeof(uint16_t)
 #define size_texturecolumn_offset     size_texturepatchlump_offset  + MAX_TEXTURES * sizeof(uint16_t)
@@ -718,7 +718,7 @@ spritewidths        7000:7592
 segs_render             4000:0000
 sides_render            4000:6DF6
 vissprites              4000:9662
-player_vissprites				4000:B162
+player_vissprites       4000:B162
 texturepatchlump_offset 4000:B1F9
 texturecolumn_offset    4000:B551
 [done]                  4000:B8A9

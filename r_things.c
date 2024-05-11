@@ -171,9 +171,11 @@ void R_DrawVisSprite ( vissprite_t __far* vis ) {
 
 	dc_colormap = MK_FP(colormapssegment, vis->colormap);
     
-    if (!dc_colormap) {
+    if (vis->colormap == COLORMAP_SHADOW) {
         // NULL colormap = shadow draw
         colfunc = fuzzcolfunc;
+    	//dc_colormap = MK_FP(colormapssegment, 0);
+
     }
         
     dc_iscale = labs(vis->xiscale)>>detailshift;
@@ -215,7 +217,7 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
 	int16_t                 lump;
     int16_t                 usedwidth;
     
-	uint8_t            rot;
+	uint8_t            rot = 0;
     boolean             flip;
     
 	int16_t                 index;
@@ -268,15 +270,10 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
 		ang.wu = R_PointToAngle (thingx, thingy);
 		rot = _rotl(ang.hu.intbits - thingangle.hu.intbits + 0x9000u, 3) & 0x07;
 
-        lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
-        flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[rot];
     }
-    else
-    {
-        // use single rotation for all views
-        lump = spriteframes[thingframe & FF_FRAMEMASK].lump[0];
-        flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[0];
-    }
+
+    lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
+    flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[rot];
 
     // calculate edges of the shape
     temp.h.fracbits = 0;
@@ -356,7 +353,7 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
     // get light level
     if (thingflags & MF_SHADOW) {
         // shadow draw
-        vis->colormap = 0;
+        vis->colormap = COLORMAP_SHADOW;
     } else if (fixedcolormap) {
         // fixed map
         vis->colormap = fixedcolormap;
@@ -590,22 +587,20 @@ void R_PrepareMaskedPSprites(void) {
 //
 // R_SortVisSprites
 //
-//vissprite_t     vsprsortedhead;
-//vissprite_t     vsprsortedhead;
-uint16_t     vsprsortedheadfirst;
-#define VISSPRITE_UNSORTED_INDEX 65535u
-#define VISSPRITE_SORTED_HEAD_INDEX 65534u
+uint8_t     vsprsortedheadfirst;
+#define VISSPRITE_UNSORTED_INDEX 255
+#define VISSPRITE_SORTED_HEAD_INDEX 254
 
 void R_SortVisSprites (void)
 {
 	int16_t                 i;
 	int16_t                 count;
-    uint16_t        ds;
-    uint16_t        bestindex;
+    uint8_t        ds;
+    uint8_t        bestindex;
     vissprite_t __far*        best;
     vissprite_t         unsorted;
     fixed_t             bestscale;
-    uint16_t     vsprsortedheadprev;
+    uint8_t     vsprsortedheadprev;
 
 	memset(&unsorted, 0, sizeof(vissprite_t));
 
@@ -659,7 +654,6 @@ void R_SortVisSprites (void)
     }
 }
 
-extern int setval;
 
 
 
@@ -796,7 +790,7 @@ void R_DrawSprite (vissprite_t __far* spr)
 //
 void R_DrawMasked (void)
 {
-    uint16_t         spr;
+    uint8_t         spr;
     drawseg_t __far*          ds;
         
 	R_SortVisSprites ();

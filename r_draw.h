@@ -31,7 +31,7 @@ extern fixed_t_union		dc_texturemid;
 // first pixel in a column
 extern byte __far*		dc_source;
 
-
+#define COLORMAP_SHADOW 0xFFFFu
 // The span blitting interface.
 // Hook in assembler or system specific BLT
 //  here.

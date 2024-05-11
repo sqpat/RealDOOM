@@ -193,7 +193,7 @@ int16_t  P_DivlineSideNode
     left =  FixedMul1616(node->dy, dx.h.intbits);
     right = FixedMul1616(dy.h.intbits, node->dx);
 
-	    if (right < left)
+	if (right < left)
 		return 0;	// front side
     
     if (left == right)

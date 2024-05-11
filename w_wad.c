@@ -276,7 +276,6 @@ int32_t W_LumpLength (int16_t lump)
 //
 
 
-extern int setval;
 
 void
 W_ReadLump
