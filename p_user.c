@@ -99,7 +99,7 @@ void P_CalcHeight ()
 		return;
     }
 		
-    angle = (FINEANGLES/20*leveltime.h.fracbits)&FINEMASK;
+    angle = (FINEANGLES/20*leveltime.w)&FINEMASK;
     bob = FixedMul (player.bob.w/2, finesine[angle]);
 
     

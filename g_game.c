@@ -613,24 +613,6 @@ void G_PlayerReborn () {
  
 
 
-// DOOM Par Times
-int8_t pars[4][10] =
-{ 
-    {0}, 
-    {0,6,15,24,18,33,36,36,6,33}, 
-    {0,18,18,18,24,18,72,48,6,34}, 
-    {0,18,9,18,30,18,18,33,6,27} 
-}; 
-
-// DOOM II Par Times
-int8_t cpars[32] =
-{
-    3,9,12,12,9,15,12,12,27,9,        //  1-10
-    21,15,15,15,21,15,42,15,21,15,    // 11-20
-    24,15,18,15,15,30,33,42,30,18,    // 21-30
-    12,3                                      // 31-32
-};
- 
 
 //
 // G_DoCompleted 
@@ -732,10 +714,10 @@ void G_DoCompleted (void)  {
     wminfo.maxsecret = totalsecret; 
 
 	if ( commercial )
-        wminfo.partime = 35*10*cpars[gamemap-1]; 
+        wminfo.partime = cpars[gamemap-1]; 
     else
-        wminfo.partime = 35*5*pars[gameepisode][gamemap]; 
-    wminfo.pnum = 0; 
+        wminfo.partime = pars[10*gameepisode+gamemap]; 
+
  
 	wminfo.plyr.in = true;
     wminfo.plyr.skills = player.killcount; 

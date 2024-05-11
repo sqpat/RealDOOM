@@ -327,8 +327,10 @@ void Z_LoadBinaries() {
  
 	//4096
 	FAR_fread(zlight, 1, 4096, fp);
+	FAR_fread(fuzzoffset, 1, 50, fp);
 
 	Z_QuickmapPhysics();
+	FAR_fread(pars, 2, 72, fp);  // 4*10 + 32 par times
 
 	fclose(fp);
 

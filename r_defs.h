@@ -470,7 +470,7 @@ typedef struct vissprite_s
     fixed_t		xiscale;	
 
     fixed_t		texturemid;
-	int16_t patch;
+	int16_t     patch;
 
     // for color translation and shadow draw,
     //  maxbright frames as well

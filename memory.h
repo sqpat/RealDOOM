@@ -291,6 +291,8 @@ this area used in many tasks including physics but not including render
 8000:FF36  lnodey
 8000:FF6C  [empty]
 
+
+//
 */
 
 //0x7000 BLOCK PHYSICS
@@ -411,6 +413,8 @@ savegamestrings    5000:FB22
 #define size_epsd1animinfo    (size_epsd0animinfo + (16 * 9))
 #define size_epsd2animinfo    (size_epsd1animinfo + (16 * 6))
 #define size_wigraphics       (size_epsd2animinfo + (NUM_WI_ITEMS * 9))
+#define size_pars             (size_wigraphics    + (sizeof(int16_t) * (4*10)))
+#define size_cpars            (size_pars          + (sizeof(int16_t) * (32)))
 
 #define screen1          ((byte __far*)       0x90000000)
 #define lnodex           ((int16_t __far*)   (0x90000000 + size_screen1))
@@ -418,7 +422,9 @@ savegamestrings    5000:FB22
 #define epsd0animinfo    ((wianim_t __far*)  (0x90000000 + size_lnodey))
 #define epsd1animinfo    ((wianim_t __far*)  (0x90000000 + size_epsd0animinfo))
 #define epsd2animinfo    ((wianim_t __far*)  (0x90000000 + size_epsd1animinfo))
-#define wigraphics       ((int8_t   __far*)  (0x90000000 + size_epsd2animinfo))
+#define wigraphics       ((int8_t __far*)    (0x90000000 + size_epsd2animinfo))
+#define pars             ((int16_t __far*)   (0x90000000 + size_wigraphics))
+#define cpars            ((int16_t __far*)   (0x90000000 + size_pars))
 
 
 
@@ -527,9 +533,10 @@ spritecache_nodes           8000:FE77
 flatcache_nodes             8000:FEA7
 patchcache_nodes            8000:FEB1
 texturecache_nodes          8000:FEE9
-[empty]                     8000:FF01
+fuzzoffset                  8000:FF01
+[empty]                     8000:FF33
 
-// 255 free
+// 205 free
 */
 
 
@@ -578,7 +585,7 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_flatcache_nodes              size_spritecache_nodes           + sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
 #define size_patchcache_nodes             size_flatcache_nodes             + sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
 #define size_texturecache_nodes           size_patchcache_nodes            + sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
-
+#define size_fuzzofset                    size_texturecache_nodes          + FUZZTABLE
 
 #define colormapssegment  0x82A0
 
@@ -593,7 +600,7 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define flatcache_nodes             ((cache_node_t __far*)    (0x80000000 + size_spritecache_nodes))
 #define patchcache_nodes            ((cache_node_t __far*)    (0x80000000 + size_flatcache_nodes))
 #define texturecache_nodes          ((cache_node_t __far*)    (0x80000000 + size_patchcache_nodes))
-
+#define fuzzoffset                  ((int8_t __far*)          (0x80000000 + size_texturecache_nodes))
 
 
 

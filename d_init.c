@@ -545,7 +545,7 @@ void DUMP_MEMORY_TO_FILE() {
 //
 
 int16_t main ( int16_t		argc, int8_t**	argv ) ;
-
+ 
 
 void D_DoomMain2(void)
 {
@@ -555,43 +555,44 @@ void D_DoomMain2(void)
 	int8_t          textbuffer[256];
 	int8_t            title[128];
 	int8_t            wadfile[20];
-	
+	#define DGROUP_SIZE 0x000036f0
+	struct SREGS sregs;
+
 	
 	
 	/*
 	int16_t i, i2;
 	int16_t j;
+	int16_t val;
+	FILE* fp = fopen("data6.bin", "wb");
+
+	for (i = 0; i < 4; i++){
+		for (i2 = 0; i2 < 10; i2++){
+			val = 35*5*parsa[i][i2];
+			fwrite(&val, 1, 2, fp);
+
+		}
+	}
+	for (i = 0; i < 32; i++){
+		val = 35*10*cparsa[i];
+		fwrite(&val, 1, 2, fp);
+	}
+
 	
-	FILE* fp = fopen("data2.bin", "wb");
-
-	for (i = 0; i < 9; i++){
-		for (i2 = 0; i2 < 3; i2++){
-			j = getLnodeX(i, i2);
-			fwrite(&j, 2, 1, fp);
-		}
-	}
-
-	for (i = 0; i < 9; i++){
-		for (i2 = 0; i2 < 3; i2++){
-			j = getLnodeY(i, i2);
-			fwrite(&j, 2, 1, fp);
-		}
-	}
+	
 	fclose(fp);
 	I_Error("done");
-	
-*/
+	*/
+
 	
 	// cs 2700..
 	// ds 2e3a..
 	// ho wbig is too big?
 
 	// 14016
-	#define DGROUP_SIZE 0x000036f0
 	
 	// baselowermemoryaddress
 
-	struct SREGS sregs;
 	//I_Error("\n%x", size_drawsegs);
 
 /*
@@ -923,7 +924,7 @@ void D_DoomMain2(void)
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
-	S_Init(sfxVolume * 8, musicVolume * 8);
+	//S_Init(sfxVolume * 8, musicVolume * 8);
 
 #ifdef DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT, textbuffer);

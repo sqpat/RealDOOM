@@ -2180,10 +2180,6 @@ void A_BrainExplode (mobj_t __far*mo, mobj_pos_t __far* mo_pos)
 }
 
 
-void A_BrainDie ()
-{
-    G_ExitLevel ();
-}
 
 void A_BrainSpit (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 {

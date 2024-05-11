@@ -698,8 +698,10 @@ void Z_QuickmapLumpInfo() {
 			last9000State = PAGE_9000_LUMPINFO_PHYSICS;
 			return;
 			
+		#ifdef CHECK_FOR_ERRORS
 		default:
-			I_Error("bad state %i", current9000State);
+			I_Error("76 %i", current9000State);
+		#endif
 
 	}
 }
@@ -745,8 +747,10 @@ void Z_QuickmapLumpInfo5000() {
 		case PAGE_5000_LUMPINFO:
 			last5000State = PAGE_5000_LUMPINFO;
 			return;
+		#ifdef CHECK_FOR_ERRORS
 		default:
-			I_Error("bad state %i", current5000State);
+				I_Error("77 %i", current5000State);
+		#endif
 
 	}
 }
@@ -834,8 +838,10 @@ void Z_QuickmapByTaskNum(int8_t tasknum) {
 		case TASK_INTERMISSION:
 			Z_QuickmapIntermission();
 			break;
+		#ifdef CHECK_FOR_ERRORS
 		default:
 			I_Error("78 %hhi", tasknum); // bad tasknum
+		#endif
 	}
 }
 

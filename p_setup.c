@@ -312,7 +312,9 @@ void P_LoadSectors(int16_t lump)
 		} else if (convertedtag == 86) {
 			convertedtag = TAG_86;
 		} else if (convertedtag >= 55) {
-			I_Error("94 %i %i", convertedtag, i); // found (sector) line tag that was too high! %i %i
+			#ifdef CHECK_FOR_ERRORS
+				I_Error("94 %i %i", convertedtag, i); // found (sector) line tag that was too high! %i %i
+			#endif
 		}
 		ss->floorheight = (ms.floorheight) << SHORTFLOORBITS;
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
