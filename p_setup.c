@@ -93,27 +93,24 @@ int16_t         bmaporgy;
 //
 void P_LoadVertexes(int16_t lump)
 {
-	mapvertex_t __far*			data;
+	//mapvertex_t __far*			data;
 	uint16_t                 i;
-	mapvertex_t			ml;
+	//mapvertex_t			ml;
 	// Determine number of lumps:
 	//  total lump length / vertex record length.
-	numvertexes = W_LumpLength(lump) / sizeof(mapvertex_t);
+	uint16_t totalsize = W_LumpLength(lump);
+	numvertexes = totalsize / sizeof(mapvertex_t);
 
 	// Load data into cache.
 	Z_QuickmapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
-	data = (mapvertex_t __far*)SCRATCH_ADDRESS_5000;
+	//data = (mapvertex_t __far*)SCRATCH_ADDRESS_5000;
 
 	// Copy and convert vertex coordinates,
 	// internal representation as fixed.
-	for (i = 0; i < numvertexes; i++) {
-		ml = data[i];
+	FAR_memcpy(vertexes, SCRATCH_ADDRESS_5000, totalsize);
 
-		vertexes[i].x = (ml.x);
-		vertexes[i].y = (ml.y);
-	}
 
 	// Free buffer memory.
  }
@@ -199,11 +196,8 @@ void P_LoadSegs(int16_t lump)
 
 
 	
+	FAR_memcpy(segs_physics, MK_FP(0x5000, 0xc000), numsegs*4);
 
-	for (i = 0; i < numsegs; i++) {
-		segs_physics[i].frontsecnum = tempsecnums[i * 2];
-		segs_physics[i].backsecnum  = tempsecnums[i * 2 + 1];
-	}
 	
 
 
@@ -325,7 +319,7 @@ void P_LoadSectors(int16_t lump)
 		ss->floorpic = R_FlatNumForName(ms.floorpic);
 		ss->ceilingpic = R_FlatNumForName(ms.ceilingpic);
 		ss->lightlevel = (ms.lightlevel);
-		ss->thinglistRef = NULL_THINKERREF;
+		//ss->thinglistRef = NULL_THINKERREF;
 		
 		sp->tag = (convertedtag);
 		sp->special = (ms.special);
@@ -342,38 +336,34 @@ void P_LoadSectors(int16_t lump)
 //
 void P_LoadNodes(int16_t lump)
 {
-	mapnode_t  __far*       data;
+	mapnode_t  __far*       data = (mapnode_t __far*)SCRATCH_ADDRESS_5000;
 	uint16_t         i;
 	uint16_t         j;
 	uint16_t         k;
 	node_t __far*     no;
-	node_render_t __far* no_render;
 
 	mapnode_t	currentdata;
 	
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 
-
 	Z_QuickmapRender_4000To9000();
 	Z_QuickmapScratch_5000();
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
-	data = (mapnode_t __far*)SCRATCH_ADDRESS_5000;
 
 	for (i = 0; i < numnodes; i++) {
 		currentdata = data[i];
 		no = &nodes[i];
-		no_render = &nodes_render[i];
 
 		no->x = (currentdata.x);
 		no->y = (currentdata.y);
 		no->dx = (currentdata.dx);
 		no->dy = (currentdata.dy);
-		for (j = 0; j < 2; j++) {
-			no->children[j] = (currentdata.children[j]);
-			for (k = 0; k < 4; k++) {
-				no_render->bbox[j][k] = (currentdata.bbox[j][k]);
-			}
-		}
+
+		no->children[0] = (currentdata.children[0]);
+		no->children[1] = (currentdata.children[1]);
+
+		FAR_memcpy(&nodes_render[i], currentdata.bbox, 16);
+
  	}
 	Z_QuickmapPhysics();
 
@@ -1053,7 +1043,7 @@ void P_LoadBlockMap(int16_t lump)
 	count = sizeof(THINKERREF) * bmapwidth*bmapheight;
 	
 
-	FAR_memset(blocklinks, 0, count);
+	FAR_memset(blocklinks, 0, MAX_BLOCKLINKS_SIZE);
 }
 
 
