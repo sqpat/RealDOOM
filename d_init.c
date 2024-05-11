@@ -587,12 +587,12 @@ void D_DoomMain2(void)
 	// ho wbig is too big?
 
 	// 14016
-	#define DGROUP_SIZE 0x000036c0
+	#define DGROUP_SIZE 0x000036f0
 	
 	// baselowermemoryaddress
 
 	struct SREGS sregs;
-	//I_Error("\n%x", size_texturewidthmasks);
+	//I_Error("\n%x", size_drawsegs);
 
 /*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
@@ -613,7 +613,6 @@ void D_DoomMain2(void)
 		usedspritepagemem, 
 			spritepage, 
 			spriteoffset, 
-			segs_render,
 
 			texturedefs_offset,
 			texturewidthmasks,
@@ -636,58 +635,7 @@ void D_DoomMain2(void)
 
 
 
-
-	/*
-
-	I_Error("\nsectors_physics: %Fp\nsegs_physics: %Fp\nlines_physics: %Fp\nblocklinks: %Fp\nblockmaplump: %Fp\nlinebuffer: %Fp\nnightmarespawns: %Fp\nrejectmatrix: %Fp\nnodes_render: %Fp\nsides_render: %Fp\nsegs_render: %Fp\nRENDER_SCRATCH: %Fp",
-		sectors_physics, 
-		segs_physics, 
-		lines_physics, 
-		blocklinks,
-		blockmaplump,
-		linebuffer,
-		nightmarespawns,
-		rejectmatrix,
-
-		nodes_render, 
-		sides_render, 
-		segs_render, 
-		RENDER_SCRATCH
-	
-	);
-
-
-
-
-
-	I_Error("\ncolormapbytes: %Fp\nopenings: %Fp\nnegonearray: %Fp\nscreenheightarray: %Fp\nvissprites: %Fp\nscalelightfixed: %Fp\nscalelightfixed: %Fp\nscalelight: %Fp\nusedcompositetexturepagemem: %Fp\nusedspritepagemem: %Fp\nusedpatchpagemem: %Fp\nspritewidths: %Fp",
-	colormapbytes,openings,negonearray,screenheightarray,vissprites,scalelightfixed,scalelight,usedcompositetexturepagemem,usedspritepagemem,usedpatchpagemem,spritewidths
-	); 
-
-	I_Error("\n%u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u",
-		MAX_SIDES_SIZE,		
-		MAX_SECTORS_SIZE,
-		MAX_VERTEXES_SIZE,
-		MAX_LINES_SIZE,
-		MAX_SUBSECTORS_SIZE,
-		MAX_NODES_SIZE,
-		
-		MAX_SEGS_SIZE,
-		MAX_SEGS_PHYSICS_SIZE,
-		MAX_SECTORS_PHYSICS_SIZE,
-		
-		MAX_LINES_PHYSICS_SIZE,
-		MAX_SIDES_RENDER_SIZE,
-		MAX_NODES_RENDER_SIZE,
-		MAX_SEGS_RENDER_SIZE,
-
-		MAX_LINEBUFFER_SIZE,
-		MAX_BLOCKMAP_LUMPSIZE,
-		MAX_BLOCKLINKS_SIZE,123
-	);
-	*/
-
-
+  
 
 	// Removed
 	//FindResponseFile ();

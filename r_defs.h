@@ -304,8 +304,6 @@ typedef struct seg_render_s {
 	int16_t	sidedefOffset;
 } seg_render_t;
 
-//#define seg_render_t seg_t
-//#define segs_render segs
 //
 // BSP node.
 //

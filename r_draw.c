@@ -782,7 +782,7 @@ void R_FillBackScreen (void)
 { 
  
 
-    byte __far*	src; // could be src[104] if nto for name1/name2 flat texture. then we could avoid scratch altogether.
+    byte __far*	src; // could be src[104] if not for name1/name2 flat texture. then we could avoid scratch altogether.
     byte __far*	dest;
     int16_t		x;
     int16_t		y; 

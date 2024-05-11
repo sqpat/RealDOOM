@@ -177,7 +177,7 @@ void P_LoadSegs(int16_t lump)
 		li->side = side ? 1 : 0;
 		li->linedefOffset = mllinedef;
 	
-		li_render = &segs_render[i];
+		li_render = &segs_render_9000[i];
 		li_render->v1Offset = mlv1;
 		li_render->v2Offset = mlv2;
 	
@@ -1090,7 +1090,7 @@ void P_GroupLines(void)
 	for (i = 0; i < numsubsectors; i++) {
 		firstlinenum = subsectors[i].firstline;
 		
-		sidedefOffset = segs_render[firstlinenum].sidedefOffset;
+		sidedefOffset = segs_render_9000[firstlinenum].sidedefOffset;
 		sidesecnum = sides_render_9000[sidedefOffset].secnum;
 		subsectors[i].secnum = sidesecnum;
 

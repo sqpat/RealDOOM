@@ -119,7 +119,7 @@ void R_InitLightTables(void)
 	fixed_t_union		temp, temp2;
 
 	Z_QuickmapRender();
-	Z_QuickmapLumpInfo();
+	//Z_QuickmapLumpInfo();
 
 	// Calculate the light levels to use
 	//  for each level / distance combination.

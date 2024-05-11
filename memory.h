@@ -89,9 +89,11 @@ size_rndtable     E000:fedd
 
 
 #define B000BlockOffset 0x14B0
-#define B000Block 0xB0000000
+#define B000Block 0xB14B0000
 
  
+
+// 2a6c
 
 // 0xCC00 BLOCK
 // going to leave c800 free for xt-ide, etc bios
@@ -113,6 +115,25 @@ spritedefs    CC00:0000
 
 */
 
+
+
+#define size_compositetextureoffset       0                                + MAX_TEXTURES * sizeof(uint8_t)
+#define size_compositetexturepage         size_compositetextureoffset      + MAX_TEXTURES * sizeof(uint8_t)
+#define size_patchpage                    size_compositetexturepage        + MAX_PATCHES * sizeof(uint8_t)
+#define size_patchoffset                  size_patchpage                   + MAX_PATCHES * sizeof(uint8_t)
+#define size_texturecompositesizes        size_patchoffset                 + MAX_TEXTURES * sizeof(uint16_t)
+#define size_texturedefs_offset           size_texturecompositesizes       + MAX_TEXTURES * sizeof(uint16_t)
+#define size_texturewidthmasks            size_texturedefs_offset          + MAX_TEXTURES * sizeof(uint8_t)
+#define size_drawsegs                     size_texturewidthmasks           + (sizeof(drawseg_t) * (MAXDRAWSEGS))
+
+#define compositetextureoffset      ((uint8_t __far*)         (CC00Block + 0))
+#define compositetexturepage        ((uint8_t __far*)         (CC00Block + size_compositetextureoffset))
+#define patchpage                   ((uint8_t __far*)         (CC00Block + size_compositetexturepage))
+#define patchoffset                 ((uint8_t __far*)         (CC00Block + size_patchpage))
+#define texturecompositesizes       ((uint16_t __far*)        (CC00Block + size_patchoffset))
+#define texturedefs_offset          ((uint16_t  __far*)       (CC00Block + size_texturecompositesizes))
+#define texturewidthmasks           ((uint8_t  __far*)        (CC00Block + size_texturedefs_offset))
+#define drawsegs                    ((drawseg_t __far*)       (CC00Block + size_texturewidthmasks))
 
 
 
@@ -141,6 +162,7 @@ spritedefs    CC00:0000
 #define size_flattranslation     (size_events             + MAX_FLATS * sizeof(uint8_t))
 #define size_texturetranslation  (size_flattranslation    + MAX_TEXTURES * sizeof(uint16_t))
 #define size_textureheights      (size_texturetranslation + MAX_TEXTURES * sizeof(uint8_t))
+#define size_viewangletox        (size_textureheights     + (sizeof(int16_t) * (FINEANGLES / 2)))
 
 
 
@@ -148,8 +170,8 @@ spritedefs    CC00:0000
 
 // 
 
-#define baselowermemoryaddresssegment 0x31F0
-#define baselowermemoryaddress (0x31F00000)
+#define baselowermemoryaddresssegment 0x3007
+#define baselowermemoryaddress (0x30070000)
 
 
 #define finesine           ((int32_t __far*)  baselowermemoryaddress)  // 10240
@@ -160,21 +182,23 @@ spritedefs    CC00:0000
 #define flattranslation    ((uint8_t __far*)  (baselowermemoryaddress + size_events))
 #define texturetranslation ((uint16_t __far*) (baselowermemoryaddress + size_flattranslation))
 #define textureheights     ((uint8_t __far*)  (baselowermemoryaddress + size_texturetranslation))
+#define viewangletox       ((int16_t __far*)  (baselowermemoryaddress + size_textureheights))
 
 
 
-// finesine             31F0:0000
-// finecosine           31F0:2000
-// finetangentinner     31F0:A000
-// states               31F0:C000
-// events               31F0:D6AA
+// finesine             3007:0000
+// finecosine           3007:2000
+// finetangentinner     3007:A000
+// states               3007:C000
+// events               3007:D6AA
 
-// flattranslation      31F0:D9EA
-// texturetranslation   31F0:DA81
-// textureheights       31F0:DDD9
-// [done]               31F0:DF85
+// flattranslation      3007:D9EA
+// texturetranslation   3007:DA81
+// textureheights       3007:DDD9
+// viewangletox         3007:DF85
+// [done]               3007:FF85
 //                          0x3FE85
-// 379 bytes to 0x4000
+// 123 bytes to 0x4000
 
 
 
@@ -271,14 +295,14 @@ this area used in many tasks including physics but not including render
 //0x7000 BLOCK PHYSICS
 
 #define size_lines_physics    (MAX_LINES_PHYSICS_SIZE)
-#define size_blockmaplump    (size_lines_physics    + MAX_BLOCKMAP_LUMPSIZE)
+#define size_blockmaplump     (size_lines_physics    + MAX_BLOCKMAP_LUMPSIZE)
 
 //3f8a, runs up close to 6800 which has mobjposlist, etc
 
 
-#define lines_physics    ((line_physics_t __far*)  (0x70000000))
-#define blockmaplump    ((int16_t __far*)      (0x70000000 + size_lines_physics))
-#define blockmaplump_plus4  ((int16_t __far*)      (0x70000008 + size_lines_physics))
+#define lines_physics       ((line_physics_t __far*)  (0x70000000))
+#define blockmaplump        ((int16_t __far*)         (0x70000000 + size_lines_physics))
+#define blockmaplump_plus4  ((int16_t __far*)         (0x70000008 + size_lines_physics))
 
 /*
 lines_physics    7000:0000
@@ -491,24 +515,20 @@ wianimoffsets    7000:A4b8
 
 /*
   
-
 colormaps                   8000:2a00
 colormapbytes               8000:2a00
 scalelightfixed             8000:4b00
 scalelight                  8000:4b60
 zlight                      8000:5160
-viewangletox                8000:6160
-compositetextureoffset      8000:8160
-compositetexturepage        8000:830c
-patchpage                   8000:84b8
-patchoffset                 8000:8694
-texturepatchlump_offset     8000:8870
-segs_render                 8000:8bc8
-texturedefs_offset          8000:f9be
-texturewidthmasks           8000:fd16
-[empty]                     8000:FEC2
+visplanes                   8000:6160
+visplaneheaders             8000:FAA8
+spritecache_nodes           8000:FE77
+flatcache_nodes             8000:FEA7
+patchcache_nodes            8000:FEB1
+texturecache_nodes          8000:FEE9
+[empty]                     8000:FF01
 
-// 318 free
+// 255 free
 */
 
 
@@ -551,15 +571,13 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_scalelightfixed              size_colormapbytes               + sizeof(uint16_t ) * (MAXLIGHTSCALE)
 #define size_scalelight                   size_scalelightfixed             + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE)
 #define size_zlight                       size_scalelight                  + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
-#define size_viewangletox                 size_zlight                      + (sizeof(int16_t) * (FINEANGLES / 2))
-#define size_compositetextureoffset       size_viewangletox                + MAX_TEXTURES * sizeof(uint8_t)
-#define size_compositetexturepage         size_compositetextureoffset      + MAX_TEXTURES * sizeof(uint8_t)
-#define size_patchpage                    size_compositetexturepage        + MAX_PATCHES * sizeof(uint8_t)
-#define size_patchoffset                  size_patchpage                   + MAX_PATCHES * sizeof(uint8_t)
-#define size_texturecompositesizes        size_patchoffset                 + MAX_TEXTURES * sizeof(uint16_t)
-#define size_segs_render                  size_texturecompositesizes       + MAX_SEGS_RENDER_SIZE
-#define size_texturedefs_offset           size_segs_render                 + MAX_TEXTURES * sizeof(uint16_t)
-#define size_texturewidthmasks            size_texturedefs_offset          + MAX_TEXTURES * sizeof(uint8_t)
+#define size_visplanes                    (size_zlight                     + sizeof(visplane_t) * MAXCONVENTIONALVISPLANES)
+#define size_visplaneheaders              size_visplanes                   + sizeof(visplaneheader_t) * MAXEMSVISPLANES
+#define size_spritecache_nodes            size_visplaneheaders             + sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
+#define size_flatcache_nodes              size_spritecache_nodes           + sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
+#define size_patchcache_nodes             size_flatcache_nodes             + sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
+#define size_texturecache_nodes           size_patchcache_nodes            + sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
+
 
 #define colormapssegment  0x82A0
 
@@ -568,15 +586,13 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define scalelightfixed             ((uint16_t __far*)        (0x80000000 + size_colormapbytes))
 #define scalelight                  ((uint16_t __far*)        (0x80000000 + size_scalelightfixed))
 #define zlight                      ((uint16_t far*)          (0x80000000 + size_scalelight))
-#define viewangletox                ((int16_t __far*)         (0x80000000 + size_zlight))
-#define compositetextureoffset      ((uint8_t __far*)         (0x80000000 + size_viewangletox))
-#define compositetexturepage        ((uint8_t __far*)         (0x80000000 + size_compositetextureoffset))
-#define patchpage                   ((uint8_t __far*)         (0x80000000 + size_compositetexturepage))
-#define patchoffset                 ((uint8_t __far*)         (0x80000000 + size_patchpage))
-#define texturecompositesizes       ((uint16_t __far*)        (0x80000000 + size_patchoffset))
-#define segs_render                 ((seg_render_t  __far*)   (0x80000000 + size_texturecompositesizes))
-#define texturedefs_offset          ((uint16_t  __far*)       (0x80000000 + size_segs_render))
-#define texturewidthmasks           ((uint8_t  __far*)        (0x80000000 + size_texturedefs_offset))
+#define visplanes                   ((visplane_t __far*)      (0x80000000 + size_zlight))
+#define visplaneheaders             ((visplaneheader_t __far*)(0x80000000 + size_visplanes))
+#define spritecache_nodes           ((cache_node_t __far*)    (0x80000000 + size_visplaneheaders))
+#define flatcache_nodes             ((cache_node_t __far*)    (0x80000000 + size_spritecache_nodes))
+#define patchcache_nodes            ((cache_node_t __far*)    (0x80000000 + size_flatcache_nodes))
+#define texturecache_nodes          ((cache_node_t __far*)    (0x80000000 + size_patchcache_nodes))
+
 
 
 
@@ -634,6 +650,7 @@ spritewidths        7000:7592
 #define size_spritetopoffsets          (size_spriteoffsets             + (sizeof(int8_t) * MAX_SPRITE_LUMPS))
 #define size_spritepage                size_spritetopoffsets           + MAX_SPRITE_LUMPS * sizeof(uint8_t)
 #define size_spriteoffset              size_spritepage                 + MAX_SPRITE_LUMPS * sizeof(uint8_t)
+#define size_flatindex                 size_spriteoffset                 + (sizeof(uint8_t) * MAX_FLATS)
 
 
 // size_texturedefs_bytes 0x6184... 0x6674
@@ -647,6 +664,7 @@ spritewidths        7000:7592
 #define spritetopoffsets          ((int8_t __far*)        (0x60000000 + size_spriteoffsets))
 #define spritepage                ((uint8_t __far*)       (0x60000000 + size_spritetopoffsets))
 #define spriteoffset              ((uint8_t __far*)       (0x60000000 + size_spritepage))
+#define flatindex                 ((uint8_t __far*)       (0x60000000 + size_spriteoffset))
 
 
 // texturecolumnlumps_bytes   6000:3a60
@@ -655,68 +673,49 @@ spritewidths        7000:7592
 // spritetopoffsets           6000:6BD9
 // spritepage                 6000:713E
 // spriteoffset               6000:76A3
-// [empty]                    6000:7C08
+// flatindex                  6000:7C08
+// [empty]                    6000:7C9F
 
 
-// 1016 bytes free till 6000:8000 
+// 865 bytes free till 6000:8000 
 
 // 0x4000 BLOCK RENDER
 
 
-#define size_visplanes                (0                            + sizeof(visplane_t) * MAXCONVENTIONALVISPLANES)
-#define size_visplaneheaders          size_visplanes                + sizeof(visplaneheader_t) * MAXEMSVISPLANES
-#define size_drawsegs                 size_visplaneheaders          + (sizeof(drawseg_t) * (MAXDRAWSEGS))
-#define size_flatindex                size_drawsegs                 + (sizeof(uint8_t) * MAX_FLATS)
-#define size_sides_render             size_flatindex                + MAX_SIDES_RENDER_SIZE
-#define size_player_vissprites        size_sides_render             + (sizeof(vissprite_t) * 2)
-#define size_spritecache_nodes        size_player_vissprites        + sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
-#define size_flatcache_nodes          size_spritecache_nodes        + sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
-#define size_patchcache_nodes         size_flatcache_nodes          + sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
-#define size_texturecache_nodes       size_patchcache_nodes         + sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
-#define size_vissprites               size_texturecache_nodes       + sizeof(vissprite_t) * (MAXVISSPRITES)
-#define size_texturepatchlump_offset  size_vissprites               + MAX_TEXTURES * sizeof(uint16_t)
+#define size_segs_render              0       + MAX_SEGS_RENDER_SIZE
+#define size_sides_render             size_segs_render              + MAX_SIDES_RENDER_SIZE
+#define size_vissprites               size_sides_render                 + sizeof(vissprite_t) * (MAXVISSPRITES)
+#define size_player_vissprites        size_vissprites               + (sizeof(vissprite_t) * 2)
+#define size_texturepatchlump_offset  size_player_vissprites        + MAX_TEXTURES * sizeof(uint16_t)
 #define size_texturecolumn_offset     size_texturepatchlump_offset  + MAX_TEXTURES * sizeof(uint16_t)
+//c46e
 
-
-#define visplanes               ((visplane_t __far*)         (0x40000000 + 0))
-#define visplaneheaders         ((visplaneheader_t __far*)   (0x40000000 + size_visplanes))
-#define drawsegs                ((drawseg_t __far*)          (0x40000000 + size_visplaneheaders))
-#define flatindex               ((uint8_t __far*)            (0x40000000 + size_drawsegs))
-#define sides_render            ((side_render_t __far*)      (0x40000000 + size_flatindex))
-#define player_vissprites       ((vissprite_t __far*)        (0x40000000 + size_sides_render))
-#define spritecache_nodes       ((cache_node_t __far*)       (0x40000000 + size_player_vissprites))
-#define flatcache_nodes         ((cache_node_t __far*)       (0x40000000 + size_spritecache_nodes))
-#define patchcache_nodes        ((cache_node_t __far*)       (0x40000000 + size_flatcache_nodes))
-#define texturecache_nodes      ((cache_node_t __far*)       (0x40000000 + size_patchcache_nodes))
-#define vissprites              ((vissprite_t __far*)        (0x40000000 + size_texturecache_nodes))
-#define texturepatchlump_offset ((uint16_t __far*)           (0x40000000 + size_vissprites))
+#define segs_render             ((seg_render_t  __far*)      (0x40000000 + 0))
+#define sides_render            ((side_render_t __far*)      (0x40000000 + size_segs_render))
+#define vissprites              ((vissprite_t __far*)        (0x40000000 + size_sides_render))
+#define player_vissprites       ((vissprite_t __far*)        (0x40000000 + size_vissprites))
+#define texturepatchlump_offset ((uint16_t __far*)           (0x40000000 + size_player_vissprites))
 #define texturecolumn_offset    ((uint16_t __far*)           (0x40000000 + size_texturepatchlump_offset))
 
 
 // used during p_setup
-#define sides_render_9000    ((side_render_t __far*)      (0x90000000 + size_flatindex))
+#define sides_render_9000    ((side_render_t __far*)      (0x90000000 + size_segs_render))
+#define segs_render_9000     ((seg_render_t __far*)       (0x90000000 + 0))
 
 
 
 
 /*
 
-visplanes            4000:0000
-visplaneheaders      4000:9948
-drawsegs             4000:9d17
-flatindex				     4000:b817
-sides_render         4000:b8ae
-player_vissprites    4000:e11a
-spritecache_nodes    4000:e176
-flatcache_nodes      4000:e1a6
-patchcache_nodes     4000:e1b8
-texturecache_nodes   4000:e1e8
-vissprites           4000:e200
-spritepage           4000:f900
-spriteoffset         4000:fc58
-[done]               4000:FFB0
+segs_render             4000:0000
+sides_render            4000:6DF6
+vissprites              4000:9662
+player_vissprites				4000:B162
+texturepatchlump_offset 4000:B1F9
+texturecolumn_offset    4000:B551
+[done]                  4000:B8A9
 
-80 bytes free
+1879 bytes free
 
 */
 
