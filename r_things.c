@@ -116,8 +116,6 @@ void R_DrawMaskedColumn (column_t __far* column) {
 	fixed_t_union         topscreen;
 	fixed_t_union         bottomscreen;
 	fixed_t_union     basetexturemid;
-	fixed_t_union     temp;
-	temp.h.fracbits = 0;
     basetexturemid = dc_texturemid;
         
     for ( ; column->topdelta != 0xff ; )  {

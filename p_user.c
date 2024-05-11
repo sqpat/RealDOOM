@@ -54,6 +54,7 @@ P_Thrust
   fineangle_t	angle,
   fixed_t	move )  {
 
+	move *= 2048L;
 	playerMobj->momx.w += FixedMulTrig(move,finecosine[angle]);
 	playerMobj->momy.w += FixedMulTrig(move,finesine[angle]);
 }
@@ -98,7 +99,7 @@ void P_CalcHeight ()
 		return;
     }
 		
-    angle = (FINEANGLES/20*leveltime.w)&FINEMASK;
+    angle = (FINEANGLES/20*leveltime.h.fracbits)&FINEMASK;
     bob = FixedMul (player.bob.w/2, finesine[angle]);
 
     
@@ -152,11 +153,11 @@ void P_MovePlayer ()
     onground = (playerMobj_pos->z.w <= temp.w);
 
 	if (cmd->forwardmove && onground) {
-		P_Thrust(playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT, cmd->forwardmove * 2048L);
+		P_Thrust(playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT, cmd->forwardmove);
 	}
 	
 	if (cmd->sidemove && onground) {
-		P_Thrust(MOD_FINE_ANGLE((playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT) - FINE_ANG90), cmd->sidemove * 2048L);
+		P_Thrust(MOD_FINE_ANGLE((playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT) - FINE_ANG90), cmd->sidemove);
 	}
 
     if ( (cmd->forwardmove || cmd->sidemove)  && playerMobj_pos->stateNum == S_PLAY ) {
@@ -344,23 +345,19 @@ void P_PlayerThink (void)
     if (player.bonuscount)
 		player.bonuscount--;
 
-    
+    player.fixedcolormap = 0;
     // Handling colormaps.
     if (player.powers[pw_invulnerability]) {
 		if (player.powers[pw_invulnerability] > 4*32 || (player.powers[pw_invulnerability]&8) )
 			player.fixedcolormap = INVERSECOLORMAP;
-		else
-			player.fixedcolormap = 0;
     } else if (player.powers[pw_infrared])	 {
 		if (player.powers[pw_infrared] > 4*32 || (player.powers[pw_infrared]&8) ) {
 			// almost full bright
 			player.fixedcolormap = 1;
-		} else {
-			player.fixedcolormap = 0;
 		}
-	} else {
-		player.fixedcolormap = 0;
-	}
+	} 
+		
+	
 }
 
 
