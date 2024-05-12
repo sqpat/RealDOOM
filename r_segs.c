@@ -239,7 +239,28 @@ void R_RenderSegLoop (void)
     int16_t			top;
     int16_t			bottom;
 	fixed_t_union temp;
-	
+	byte __far * ceiltop;
+	//byte __far * ceilbot;
+	byte __far * floortop;
+	//byte __far * floorbot;
+
+	if (ceilingplaneindex < MAXCONVENTIONALVISPLANES){
+		ceiltop = visplanes[ceilingplaneindex].top;
+		//ceilbot = visplanes[ceilingplaneindex].bottom;
+		floortop = visplanes[floorplaneindex].top;
+		//floorbot = visplanes[floorplaneindex].bottom;
+	} else {
+		/*
+		visplanebytes_t __far* ceilingplanebytes = &ems_visplanes[ceilingplaneindex-MAXCONVENTIONALVISPLANES];
+		visplanebytes_t __far* floorplanebytes = &ems_visplanes[floorplaneindex-MAXCONVENTIONALVISPLANES];
+
+		ceiltop = ceilingplanebytes->top;
+		ceilbot = ceilingplanebytes->bottom;
+		floortop = floorplanebytes->top;
+		floorbot = floorplanebytes->bottom;
+		*/
+	}
+
 
 	for ( ; rw_x < rw_stopx ; rw_x++) {
 		// mark floor / ceiling areas
@@ -255,19 +276,13 @@ void R_RenderSegLoop (void)
 			bottom = yl-1;
 
 			if (bottom >= floorclip[rw_x])
-			bottom = floorclip[rw_x]-1;
+				bottom = floorclip[rw_x]-1;
 
 			if (top <= bottom) {
-				if (ceilingplaneindex < MAXCONVENTIONALVISPLANES){
-					visplanes[ceilingplaneindex].top[rw_x] = top;
-					visplanes[ceilingplaneindex].bottom[rw_x] = bottom;
-				} else {
-					/*
-					visplanebytes_t* ceilingplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[ceilingplaneindex-MAXCONVENTIONALVISPLANES].visplanepage]))[visplaneheaders[ceilingplaneindex-MAXCONVENTIONALVISPLANES].visplaneoffset]);
-					ceilingplanebytes->top[rw_x] = top;
-					ceilingplanebytes->bottom[rw_x] = bottom;
-					*/
-				}
+				ceiltop[rw_x] = top;
+				ceiltop[rw_x+322] = bottom;
+				//ceilbot[rw_x] = bottom;
+ 
 			}
 		}
 		
@@ -285,21 +300,11 @@ void R_RenderSegLoop (void)
 				top = ceilingclip[rw_x]+1;
 			}
 			if (top <= bottom) {
-				if (floorplaneindex < MAXCONVENTIONALVISPLANES){
-					visplanes[floorplaneindex].top[rw_x] = top;
-					visplanes[floorplaneindex].bottom[rw_x] = bottom;
-				} else {
-					/*
-					visplanebytes_t* floorplanebytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[visplaneheaders[floorplaneindex-MAXCONVENTIONALVISPLANES].visplanepage]))[visplaneheaders[floorplaneindex-MAXCONVENTIONALVISPLANES].visplaneoffset]);
-					floorplanebytes->top[rw_x] = top;
-					floorplanebytes->bottom[rw_x] = bottom;
-					*/
-				}
+				floortop[rw_x] = top;
+				floortop[rw_x+322] = bottom;
+				//floorbot[rw_x] = bottom;
 			}
 		}
-
-
-
 
 		// texturecolumn and lighting are independent of wall tiers
 		if (segtextured) {

@@ -361,7 +361,7 @@ spanstart      6800:65e2
 #define size_nightmarespawns  (size_blocklinks    + NIGHTMARE_SPAWN_SIZE)
 
 #define blocklinks          ((THINKERREF __far*)    (0x60004000))
-#define nightmarespawns      ((mapthing_t __far *)    (0x60004000 + size_blocklinks))
+#define nightmarespawns     ((mapthing_t __far *)   (0x60004000 + size_blocklinks))
 
 //blocklinks    6000:4000
 //nightmarespanws  6000:5EBA
@@ -375,10 +375,10 @@ spanstart      6800:65e2
 #define MAX_REJECT_SIZE        15138u
 
 #define size_rejectmatrix    (MAX_REJECT_SIZE)
-#define size_savegamestrings  (size_rejectmatrix + (10 * SAVESTRINGSIZE))
+#define size_savegamestrings (size_rejectmatrix + (10 * SAVESTRINGSIZE))
 
-#define rejectmatrix      ((byte __far *)        (0x5000C000))
-#define savegamestrings      ((int8_t __far *)       (0x5000C000 + size_rejectmatrix))
+#define rejectmatrix         ((byte __far *)      (0x5000C000))
+#define savegamestrings      ((int8_t __far *)    (0x5000C000 + size_rejectmatrix))
 
 
 /*
@@ -699,7 +699,7 @@ spritewidths        7000:7592
 #define size_compositetextureoffset   size_texturecolumn_offset     + MAX_TEXTURES * sizeof(uint8_t)
 #define size_compositetexturepage     size_compositetextureoffset   + MAX_TEXTURES * sizeof(uint8_t)
 #define size_texturecompositesizes    size_compositetexturepage     + MAX_TEXTURES * sizeof(uint16_t)
-#define size_texturewidthmasks        size_texturecompositesizes       + MAX_TEXTURES * sizeof(uint8_t)
+#define size_texturewidthmasks        size_texturecompositesizes    + MAX_TEXTURES * sizeof(uint8_t)
 // bfa0
 
 
@@ -714,8 +714,8 @@ spritewidths        7000:7592
 #define texturecompositesizes   ((uint16_t __far*)           (0x40000000 + size_compositetexturepage))
 #define texturewidthmasks       ((uint8_t  __far*)           (0x40000000 + size_texturecompositesizes))
 
-
-#define ems_visplanes           ((uint16_t __far*)           (0x4C000000)
+#define ems_visplanes_segment   0x4C00u
+#define ems_visplanes           ((visplanebytes_t __far*)    (0x4C000000))
 
 
 // used during p_setup
@@ -730,14 +730,18 @@ spritewidths        7000:7592
 segs_render             4000:0000
 sides_render            4000:6DF6
 vissprites              4000:9662
-player_vissprites       4000:B162
-texturepatchlump_offset 4000:B1F9
-texturecolumn_offset    4000:B551
-[done]                  4000:BFA0
+player_vissprites       4000:ACE2
+texturepatchlump_offset 4000:AD3C
+texturecolumn_offset    4000:B094
+compositetextureoffset  4000:B3EC
+compositetexturepage    4000:B598
+texturecompositesizes   4000:B744
+texturewidthmasks       4000:BA9C
+[done]                  4000:BC48
 
 ems_visplanes           4C00:0000
 
-96 bytes free
+952 bytes free
 
 */
 

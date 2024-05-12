@@ -186,7 +186,7 @@ typedef struct
     int16_t		partime;
     
     // index of this player in game
-    int16_t		pnum;	
+    //int16_t		pnum;	
 
 	wbplayerstruct_t	plyr;
 

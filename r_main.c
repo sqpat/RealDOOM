@@ -619,6 +619,7 @@ void R_SetupFrame ()
     viewcos = finecosine[viewangle_shiftright3];
 	
     if (player.fixedcolormap) {
+		//todo what was this again? why 0x2000
 		fixedcolormap =
 			0x2000
 			+ player.fixedcolormap*256*sizeof(lighttable_t);

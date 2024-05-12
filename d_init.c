@@ -546,7 +546,7 @@ void DUMP_MEMORY_TO_FILE() {
 
 int16_t main ( int16_t		argc, int8_t**	argv ) ;
  
-
+void W_AddFile(int8_t *filename);
 void D_DoomMain2(void)
 {
 	int16_t             p;
@@ -557,6 +557,7 @@ void D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
+	file[0] = 0;
 
 	
 	
@@ -593,7 +594,7 @@ void D_DoomMain2(void)
 	
 	// baselowermemoryaddress
 
-	//I_Error("\n%x", size_drawsegs);
+	//I_Error("\n%x", size_player_vissprites);
 
 /*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
@@ -840,10 +841,10 @@ void D_DoomMain2(void)
 	Z_InitEMS();
 
 	DEBUG_PRINT("\nW_Init: Init WADfiles.");
-	W_InitMultipleFiles(wadfile, file);
-
-	//DEBUG_PRINT("\nZ_InitUMB: Init UMB Allocations.");
-//	Z_InitUMB();
+	numlumps = 0;
+	W_AddFile(wadfile);
+	if (file[0])
+		W_AddFile(file);
 
 	DEBUG_PRINT("\nZ_GetEMSPageMap: Init EMS 4.0 features.");
 	Z_GetEMSPageMap();

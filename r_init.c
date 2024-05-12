@@ -60,29 +60,23 @@ extern uint8_t R_FlatNumForName(int8_t* name);
 void R_InitPlanes(void) {
 	// Doh!
 
-	  // idea: create a single allocations with the arrays of the non-byte fields. this is only 10 bytes per visplane, 
-	  // and that's the only thing that is ever iterated on. the big byte arrays are sort of used one at a time - those
-	  // can be in a separately indexed set of data, that can in turn also be separately paged in and out as necessary.
-	  // In theory this also makes it easier to dynamically allocate space to visplanes.
-
-	  // byte fields per visplane is 644, we can fit 25 of those per 16k page. we can, instead of one big fat allocation 
-	  // do those in individual 16k allocations and use the individual memref we need based on index. that should greatly
-	  // reduce the paging involved?
-	/*
+	
 	int16_t i;
 	int16_t j;
+	uint16_t offset;
 	Z_QuickmapRender();
 
 	for (i = 0; i < NUM_VISPLANE_PAGES; i++) {
-		visplanebytesRef[i] = Z_MallocEMS(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0);
+		//visplanebytesRef[i] = Z_MallocEMS(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0);
+		offset = 0;
 
 		for (j = 0; j < VISPLANES_PER_EMS_PAGE; j++) {
-			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplanepage = i;
-			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplaneoffset = j;
+			//visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplanepage = i;
+			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplaneoffset = offset;
+			offset += VISPLANE_BYTE_SIZE;
 		}
-
 	}
-*/
+
 
 
 	//Z_QuickmapPhysics();

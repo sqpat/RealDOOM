@@ -43,11 +43,6 @@
 
 
 
-// backup EMS visplanes to use after conventional visplanes
-//visplaneheader_t	*visplaneheaders; //[MAXEMSVISPLANES];
-//MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES]; 
-
-//visplane_t			*visplanes;// [MAXCONVENTIONALVISPLANES];
 int16_t				lastvisplane;
 int16_t				floorplaneindex;
 int16_t				ceilingplaneindex;
@@ -75,12 +70,13 @@ int16_t				ceilingplaneindex;
 //
 // texture mapping
 //
-uint16_t __far*		planezlight;
+uint16_t __far*	planezlight;
 fixed_t			planeheight;
 
 fixed_t			basexscale;
 fixed_t			baseyscale;
 
+int8_t currentemsvisplanepage = 0; 
 
 
 
@@ -193,21 +189,19 @@ R_FindPlane
   uint8_t		lightlevel )
 {
     visplane_t __far*	check;
-    //visplaneheader_t*	checkheader;
-	//visplanebytes_t* checkbytes;
-	int i;
-		
+    visplaneheader_t __far *checkheader;
+	visplanebytes_t __far * checkbytes;
+	int16_t i;
     if (picnum == skyflatnum) {
 		height = 0;			// all skys map together
 		lightlevel = 0;
     }
 	
     for (i = 0; i<=lastvisplane; i++) {
-		// todo cleanup
 		if (i < MAXCONVENTIONALVISPLANES) {
 			check = &visplanes[i];
 		} else {
-			//check  = (visplane_t*)(&visplaneheaders[i-MAXCONVENTIONALVISPLANES]);
+			//check = (visplane_t __far*)(&visplaneheaders[i-MAXCONVENTIONALVISPLANES]);
 		}
 		// we do this to avoid having to re-set check below, which is extra code.
 		if (i == lastvisplane){
@@ -228,10 +222,6 @@ R_FindPlane
 		return i;
 	}
 
-	if (lastvisplane == MAXCONVENTIONALVISPLANES ){
-		// swap out to EMS
-		I_Error("92"); // out of visplanes
-	}
 
 	// didnt find it, make a new visplane
 
@@ -250,11 +240,10 @@ R_FindPlane
 	    FAR_memset (check->top,0xff,sizeof(check->top));
 	} else {
 
-		/*
-		checkheader = (visplaneheader_t*) check;
-		checkbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[checkheader->visplanepage]))[checkheader->visplaneoffset]);
-		memset(checkbytes->top, 0xff, sizeof(checkbytes->top));
-		*/
+		//checkheader = (visplaneheader_t __far*) check;
+		// todo page if not page 1
+		//checkbytes = &ems_visplanes[i-MAXCONVENTIONALVISPLANES];
+		//FAR_memset(checkbytes->top, 0xff, sizeof(checkbytes->top));
 	}
 
     return i;
@@ -276,19 +265,18 @@ R_CheckPlane
     int16_t		unionl;
     int16_t		unionh;
     int16_t		x;
-	//int16_t		lastvisplaneheader;
-	//visplanebytes_t* plbytes;
+	visplanebytes_t __far* plbytes;
 	visplane_t __far*	pl;
-	//visplaneheader_t* plheader;
+	visplaneheader_t __far* plheader;
+	FILE *fp;
 
 	if (index < MAXCONVENTIONALVISPLANES) {
 		pl = &visplanes[index];
 	} else {
-		/*
-		pl = (visplane_t*) &visplaneheaders[index-MAXCONVENTIONALVISPLANES];
-		plheader = (visplaneheader_t*) pl;
-		plbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[plheader->visplanepage]))[plheader->visplaneoffset]);
-		*/
+		//pl = (visplane_t __far*) &visplaneheaders[index-MAXCONVENTIONALVISPLANES];
+		//plheader = (visplaneheader_t __far*) pl;
+		// todo page if not page 1
+		//plbytes = &ems_visplanes[index-MAXCONVENTIONALVISPLANES];
 	}
 
 	
@@ -330,6 +318,8 @@ R_CheckPlane
     }
 
     // make a new visplane
+
+	// todo clean up this pl thing
 	if (lastvisplane < MAXCONVENTIONALVISPLANES ){
 		visplanes[lastvisplane].height = pl->height;
 		visplanes[lastvisplane].picnum = pl->picnum;
@@ -338,27 +328,18 @@ R_CheckPlane
 		pl = &visplanes[lastvisplane];
 		pl->minx = start;
 		pl->maxx = stop;
-	}  else {
-		/*
-		lastvisplaneheader = lastvisplane - MAXCONVENTIONALVISPLANES;
-		visplaneheaders[lastvisplaneheader].height = pl->height;
-		visplaneheaders[lastvisplaneheader].picnum = pl->picnum;
-		visplaneheaders[lastvisplaneheader].lightlevel = pl->lightlevel;
-
-		pl = (visplane_t*) &visplaneheaders[lastvisplaneheader];
-		pl->minx = start;
-		pl->maxx = stop;
-		plheader = (visplaneheader_t*) pl;
-		*/
-	}
-
-	if (index < MAXCONVENTIONALVISPLANES) {
 		FAR_memset (pl->top,0xff,sizeof(pl->top));
+	}  else {
+/*
+		int8_t lastvisplaneheader = lastvisplane - MAXCONVENTIONALVISPLANES;
+		plheader =  &visplaneheaders[lastvisplaneheader];
+		plheader->height = pl->height;
+		plheader->picnum = pl->picnum;
+		plheader->lightlevel = pl->lightlevel;
+		plheader->minx = start;
+		plheader->maxx = stop;
 
-	} else {
-		//todo dont z_load if same page frame?
-		/*
-		plbytes = &(((visplanebytes_t*)Z_LoadBytesFromEMS(visplanebytesRef[plheader->visplanepage]))[plheader->visplaneoffset]);
+		plbytes = &ems_visplanes[lastvisplaneheader];
 		FAR_memset (plbytes->top,0xff,sizeof(plbytes->top));
 		*/
 
@@ -366,7 +347,6 @@ R_CheckPlane
 	return lastvisplane++;
 }
 
-int tempcounter = 0;
 int16_t currentflatpage[4] = { -1, -1, -1, -1 };
 // there can be 4 flats (4k each) per ems page (16k each). Keep track of how many are allocated here.
 int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
@@ -385,10 +365,8 @@ void R_DrawPlanes (void)
 	int16_t			i;
 	int8_t			j;
 
-    //visplaneheader_t*		plheader;
+    visplaneheader_t __far*		plheader;
 	visplanebytes_t __far*		plbytes = NULL;
-	//int16_t currentplanebyteRef = -1; // visplaneheaders->visplanepage is always 0;
-	//visplanebytes_t* base;
 
 	
 
@@ -403,10 +381,8 @@ void R_DrawPlanes (void)
 		if (i < MAXCONVENTIONALVISPLANES){
 			pl = &visplanes[i];
 		} else {
-			/*
-			pl = (visplane_t*) &visplaneheaders[i-MAXCONVENTIONALVISPLANES];
-			plheader = (visplaneheader_t*) pl;
-			*/
+			//pl = (visplane_t __far*) &visplaneheaders[i-MAXCONVENTIONALVISPLANES];
+			//plheader = (visplaneheader_t __far*) pl;
 		}
 
 		if (pl->minx > pl->maxx)
@@ -414,15 +390,8 @@ void R_DrawPlanes (void)
 
 		if (i >= MAXCONVENTIONALVISPLANES){
 
-			/*
-			if (currentplanebyteRef != plheader->visplanepage) { // new page to set locked..
-				if (plbytes)
-					Z_SetUnlocked(visplanebytesRef[currentplanebyteRef]);
-				currentplanebyteRef = plheader->visplanepage;
-				base = &(((visplanebytes_t*)Z_LoadBytesFromEMSWithOptions(visplanebytesRef[currentplanebyteRef], PAGE_LOCKED))[0]); // load into locked page
-			}
-			plbytes = &(base[plheader->visplaneoffset]);
-			*/
+			// todo page if not page 1
+			//plbytes = &ems_visplanes[i-MAXCONVENTIONALVISPLANES];
 		}
 	
 		// sky flat

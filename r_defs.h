@@ -529,17 +529,15 @@ typedef struct
 typedef struct
 {
   fixed_t height;
-  uint16_t picnum;
+  uint8_t picnum;
   uint8_t lightlevel;
   int16_t minx;
   int16_t maxx;
    
-  // page and offset within the data. takes up some space but i think it's better than constant divisions and modulos.
-  int8_t visplanepage;
-  int8_t visplaneoffset;
+  // offset within the page. todo move to a separate table? perhaps init from file
+  uint16_t visplaneoffset;
 
 } visplaneheader_t;
-
 
 
 typedef struct
@@ -572,7 +570,10 @@ typedef struct
   int16_t maxx;
   
   // leave pads for [minx-1]/[maxx+1]
-  
+// we want the top and bottom arrays to be at multiples of two bytes. 
+// so add an extra pad byte to start and end. doesnt change planes per
+// ems page
+  //byte		pad0;
   byte		pad1;
   // Here lies the rub for all
   //  dynamic resize/change of resolution.
@@ -582,6 +583,7 @@ typedef struct
   // See above.
   byte		bottom[SCREENWIDTH];
   byte		pad4;
+  //byte		pad5;
 
 } visplane_t;
 
