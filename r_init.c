@@ -50,49 +50,6 @@ extern uint8_t			skyflatnum;
 extern uint8_t R_FlatNumForName(int8_t* name);
 
 
-//extern MEMREF 				visplanebytesRef[NUM_VISPLANE_PAGES];
-
-
-//
-// R_InitPlanes
-// Only at game startup.
-//
-void R_InitPlanes(void) {
-	// Doh!
-
-	
-	int16_t i;
-	int16_t j;
-	uint16_t offset;
-	Z_QuickmapRender();
-
-	for (i = 0; i < NUM_VISPLANE_PAGES; i++) {
-		//visplanebytesRef[i] = Z_MallocEMS(VISPLANE_BYTE_SIZE * VISPLANES_PER_EMS_PAGE, PU_STATIC, 0);
-		offset = 0;
-
-		for (j = 0; j < VISPLANES_PER_EMS_PAGE; j++) {
-			//visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplanepage = i;
-			visplaneheaders[i * VISPLANES_PER_EMS_PAGE + j].visplaneoffset = offset;
-			offset += VISPLANE_BYTE_SIZE;
-		}
-	}
-
-
-
-	//Z_QuickmapPhysics();
-
-
-
-
-}
-
-
-
-//
-// R_InitLightTables
-// Only inits the zlight table,
-//  because the scalelight table changes with view size.
-//
 #define DISTMAP		2
 
  
@@ -652,7 +609,6 @@ void R_Init(void)
 	// viewwidth / viewheight / detailLevel are set by the defaults
 
 	R_SetViewSize(screenblocks, detailLevel);
-	R_InitPlanes();
 	DEBUG_PRINT("..");
 	//R_InitLightTables();
 	//DEBUG_PRINT(".");

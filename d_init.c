@@ -594,7 +594,7 @@ void D_DoomMain2(void)
 	
 	// baselowermemoryaddress
 
-	//I_Error("\n%x", size_player_vissprites);
+	//I_Error("\n%x", size_texturecompositesizes);
 
 /*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",

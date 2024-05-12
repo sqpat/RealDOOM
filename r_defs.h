@@ -535,28 +535,12 @@ typedef struct
   int16_t maxx;
    
   // offset within the page. todo move to a separate table? perhaps init from file
-  uint16_t visplaneoffset;
+  //uint16_t visplaneoffset;
 
 } visplaneheader_t;
 
 
-typedef struct
-{
-  
-  // leave pads for [minx-1]/[maxx+1]
-  
-  byte		pad1;
-  // Here lies the rub for all
-  //  dynamic resize/change of resolution.
-  byte		top[SCREENWIDTH];
-  byte		pad2;
-  byte		pad3;
-  // See above.
-  byte		bottom[SCREENWIDTH];
-  byte		pad4;
-
-} visplanebytes_t;
-
+ 
 
 //
 // Now what is a visplane, anyway?
@@ -573,7 +557,7 @@ typedef struct
 // we want the top and bottom arrays to be at multiples of two bytes. 
 // so add an extra pad byte to start and end. doesnt change planes per
 // ems page
-  //byte		pad0;
+  byte		pad0;
   byte		pad1;
   // Here lies the rub for all
   //  dynamic resize/change of resolution.
@@ -583,7 +567,7 @@ typedef struct
   // See above.
   byte		bottom[SCREENWIDTH];
   byte		pad4;
-  //byte		pad5;
+  byte		pad5;
 
 } visplane_t;
 

@@ -190,7 +190,6 @@ R_FindPlane
 {
     visplane_t __far*	check;
     visplaneheader_t __far *checkheader;
-	visplanebytes_t __far * checkbytes;
 	int16_t i;
     if (picnum == skyflatnum) {
 		height = 0;			// all skys map together
@@ -198,20 +197,19 @@ R_FindPlane
     }
 	
     for (i = 0; i<=lastvisplane; i++) {
-		if (i < MAXCONVENTIONALVISPLANES) {
-			check = &visplanes[i];
-		} else {
-			//check = (visplane_t __far*)(&visplaneheaders[i-MAXCONVENTIONALVISPLANES]);
-		}
+		
+		checkheader = &visplaneheaders[i];
+	
+	
 		// we do this to avoid having to re-set check below, which is extra code.
 		if (i == lastvisplane){
 			break;
 		}
 		
 
-		if (height == check->height
-			&& picnum == check->picnum
-			&& lightlevel == check->lightlevel) {
+		if (height == checkheader->height
+			&& picnum == checkheader->picnum
+			&& lightlevel == checkheader->lightlevel) {
 				break;
 		}
 
@@ -226,25 +224,17 @@ R_FindPlane
 	// didnt find it, make a new visplane
 
     lastvisplane++;
-	// check was set in the loop above
 
-
-
-    check->height = height;
-    check->picnum = picnum;
-    check->lightlevel = lightlevel;
-    check->minx = SCREENWIDTH;
-    check->maxx = -1;
-    
-	if (i < MAXCONVENTIONALVISPLANES) {
-	    FAR_memset (check->top,0xff,sizeof(check->top));
-	} else {
-
-		//checkheader = (visplaneheader_t __far*) check;
-		// todo page if not page 1
-		//checkbytes = &ems_visplanes[i-MAXCONVENTIONALVISPLANES];
-		//FAR_memset(checkbytes->top, 0xff, sizeof(checkbytes->top));
+    checkheader->height = height;
+    checkheader->picnum = picnum;
+    checkheader->lightlevel = lightlevel;
+    checkheader->minx = SCREENWIDTH;
+    checkheader->maxx = -1;
+	check = &visplanes_8800[i];
+    if (i >= MAX_8800_VISPLANES){
+		check = &visplanes_4C00[i-MAX_8800_VISPLANES];
 	}
+	FAR_memset (check->top,0xff,sizeof(check->top));
 
     return i;
 
@@ -265,53 +255,41 @@ R_CheckPlane
     int16_t		unionl;
     int16_t		unionh;
     int16_t		x;
-	visplanebytes_t __far* plbytes;
 	visplane_t __far*	pl;
 	visplaneheader_t __far* plheader;
 	FILE *fp;
 
-	if (index < MAXCONVENTIONALVISPLANES) {
-		pl = &visplanes[index];
-	} else {
-		//pl = (visplane_t __far*) &visplaneheaders[index-MAXCONVENTIONALVISPLANES];
-		//plheader = (visplaneheader_t __far*) pl;
-		// todo page if not page 1
-		//plbytes = &ems_visplanes[index-MAXCONVENTIONALVISPLANES];
+	plheader = &visplaneheaders[index];
+	pl = &visplanes_8800[index];
+    if (index >= MAX_8800_VISPLANES){
+		pl = &visplanes_4C00[index-MAX_8800_VISPLANES];
 	}
 
+
 	
-    if (start < pl->minx) {
-		intrl = pl->minx;
+    if (start < plheader->minx) {
+		intrl = plheader->minx;
 		unionl = start;
     } else {
-		unionl = pl->minx;
+		unionl = plheader->minx;
 		intrl = start;
     }
 	
-    if (stop > pl->maxx) {
-		intrh = pl->maxx;
+    if (stop > plheader->maxx) {
+		intrh = plheader->maxx;
 		unionh = stop;
     } else {
-		unionh = pl->maxx;
+		unionh = plheader->maxx;
 		intrh = stop;
     }
 
 
-	if (index < MAXCONVENTIONALVISPLANES) {
-		for (x=intrl ; x<= intrh ; x++)
-			if (pl->top[x] != 0xff)
-				break;
-	} else {
-		/*
-		for (x=intrl ; x<= intrh ; x++)
-			if (plbytes->top[x] != 0xff)
-				break;
-				*/
-	}
+	for (x=intrl ; x<= intrh && pl->top[x]==0xff ; x++)
+		;
 
     if (x > intrh) {
-		pl->minx = unionl;
-		pl->maxx = unionh;
+		plheader->minx = unionl;
+		plheader->maxx = unionh;
 
 		// use the same one
 		return index;		
@@ -320,30 +298,20 @@ R_CheckPlane
     // make a new visplane
 
 	// todo clean up this pl thing
-	if (lastvisplane < MAXCONVENTIONALVISPLANES ){
-		visplanes[lastvisplane].height = pl->height;
-		visplanes[lastvisplane].picnum = pl->picnum;
-		visplanes[lastvisplane].lightlevel = pl->lightlevel;
-		
-		pl = &visplanes[lastvisplane];
-		pl->minx = start;
-		pl->maxx = stop;
-		FAR_memset (pl->top,0xff,sizeof(pl->top));
-	}  else {
-/*
-		int8_t lastvisplaneheader = lastvisplane - MAXCONVENTIONALVISPLANES;
-		plheader =  &visplaneheaders[lastvisplaneheader];
-		plheader->height = pl->height;
-		plheader->picnum = pl->picnum;
-		plheader->lightlevel = pl->lightlevel;
-		plheader->minx = start;
-		plheader->maxx = stop;
-
-		plbytes = &ems_visplanes[lastvisplaneheader];
-		FAR_memset (plbytes->top,0xff,sizeof(plbytes->top));
-		*/
-
+	visplaneheaders[lastvisplane].height = plheader->height;
+	visplaneheaders[lastvisplane].picnum = plheader->picnum;
+	visplaneheaders[lastvisplane].lightlevel = plheader->lightlevel;
+	
+	plheader = &visplaneheaders[lastvisplane];
+	pl = &visplanes_8800[lastvisplane];
+    if (lastvisplane >= MAX_8800_VISPLANES){
+		pl = &visplanes_4C00[lastvisplane-MAX_8800_VISPLANES];
 	}
+
+	plheader->minx = start;
+	plheader->maxx = stop;
+	FAR_memset (pl->top,0xff,sizeof(pl->top));
+
 	return lastvisplane++;
 }
 
@@ -365,9 +333,7 @@ void R_DrawPlanes (void)
 	int16_t			i;
 	int8_t			j;
 
-    visplaneheader_t __far*		plheader;
-	visplanebytes_t __far*		plbytes = NULL;
-
+    visplaneheader_t __far*	plheader;
 	
 
 	int16_t effectivepagenumber = 0;
@@ -378,24 +344,17 @@ void R_DrawPlanes (void)
 	int16_t lastflatcacheindicesused[3] = {3, 2, 1}; // initialized so that allocation order is 0 1 2
 
     for (i = 0; i < lastvisplane ; i++) {
-		if (i < MAXCONVENTIONALVISPLANES){
-			pl = &visplanes[i];
-		} else {
-			//pl = (visplane_t __far*) &visplaneheaders[i-MAXCONVENTIONALVISPLANES];
-			//plheader = (visplaneheader_t __far*) pl;
+		plheader = &visplaneheaders[i];
+		pl = &visplanes_8800[i];
+		if (i >= MAX_8800_VISPLANES){
+			pl = &visplanes_4C00[i-MAX_8800_VISPLANES];
 		}
 
-		if (pl->minx > pl->maxx)
+		if (plheader->minx > plheader->maxx)
 			continue;
 
-		if (i >= MAXCONVENTIONALVISPLANES){
-
-			// todo page if not page 1
-			//plbytes = &ems_visplanes[i-MAXCONVENTIONALVISPLANES];
-		}
-	
 		// sky flat
-		if (pl->picnum == skyflatnum) {
+		if (plheader->picnum == skyflatnum) {
 			dc_iscale = pspriteiscale>>detailshift;
 			
 			// Sky is allways drawn full bright,
@@ -406,33 +365,23 @@ void R_DrawPlanes (void)
 			dc_texturemid.h.intbits = 100;
 			dc_texturemid.h.fracbits = 0;
 
-			for (x=pl->minx ; x <= pl->maxx ; x++) {
-				if (plbytes){
-					dc_yl = plbytes->top[x];
-					dc_yh = plbytes->bottom[x];
-				} else{
-					dc_yl = pl->top[x];
-					dc_yh = pl->bottom[x];
-				}
-				
+			for (x=plheader->minx ; x <= plheader->maxx ; x++) {
+				dc_yl = pl->top[x];
+				dc_yh = pl->bottom[x];				
 
 				if (dc_yl <= dc_yh) {
-
 				 
 					angle = MOD_FINE_ANGLE(viewangle_shiftright3 + xtoviewangle[x]) >> 3;
-					
 					dc_x = x;
-
 					dc_source = R_GetColumn(skytexture, angle);
 					colfunc();
-					
 
 				}
 			}
 			continue;
 		}
 		
-		usedflatindex = flatindex[flattranslation[pl->picnum]];
+		usedflatindex = flatindex[flattranslation[plheader->picnum]];
 		if (usedflatindex == 0xFF) {
 			// load if not loaded
 
@@ -450,7 +399,7 @@ void R_DrawPlanes (void)
 
 			foundflat:
 
-			flatindex[flattranslation[pl->picnum]] = usedflatindex;
+			flatindex[flattranslation[plheader->picnum]] = usedflatindex;
 			flatunloaded = true;
 		}
 
@@ -506,23 +455,23 @@ void R_DrawPlanes (void)
 		// load if necessary
 		if (flatunloaded){
 #ifdef CHECK_FOR_ERRORS
-			int16_t lump = firstflat + flattranslation[pl->picnum];
+			int16_t lump = firstflat + flattranslation[plheader->picnum];
 			if (lump < firstflat || lump > firstflat + numflats) {
 				I_Error("bad flat? %i", lump);
 			}
 #endif
 		 
-			W_CacheLumpNumDirect(firstflat + flattranslation[pl->picnum], src);
+			W_CacheLumpNumDirect(firstflat + flattranslation[plheader->picnum], src);
 		}
 		
 		// regular flat
 		ds_source = src;
 
 		// works but slow?
-		//ds_source = R_GetFlat(firstflat + flattranslation[pl->picnum]);
+		//ds_source = R_GetFlat(firstflat + flattranslation[plheader->picnum]);
 		
-		planeheight = labs(pl->height - viewz.w);
-		light = (pl->lightlevel >> LIGHTSEGSHIFT)+extralight;
+		planeheight = labs(plheader->height - viewz.w);
+		light = (plheader->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 		if (light >= LIGHTLEVELS){
 			light = LIGHTLEVELS-1;
@@ -531,27 +480,15 @@ void R_DrawPlanes (void)
 		// quicker shift 7..
 		planezlight = &zlight[lightshift7lookup[light]];
  
-		if (plbytes){
-			plbytes->top[pl->maxx+1] = 0xff;
-			plbytes->top[pl->minx-1] = 0xff;
-		} else {
-			pl->top[pl->maxx+1] = 0xff;
-			pl->top[pl->minx-1] = 0xff;
-		}
+		pl->top[plheader->maxx+1] = 0xff;
+		pl->top[plheader->minx-1] = 0xff;
 
-		stop = pl->maxx + 1;
-		for (x=pl->minx ; x<= stop ; x++) {
-			if (plbytes){
-				t1 = plbytes->top[x - 1];
-				b1 = plbytes->bottom[x - 1];
-				t2 = plbytes->top[x];
-				b2 = plbytes->bottom[x];
-			} else {
-				t1 = pl->top[x - 1];
-				b1 = pl->bottom[x - 1];
-				t2 = pl->top[x];
-				b2 = pl->bottom[x];
-			}
+		stop = plheader->maxx + 1;
+		for (x=plheader->minx ; x<= stop ; x++) {
+			t1 = pl->top[x - 1];
+			b1 = pl->bottom[x - 1];
+			t2 = pl->top[x];
+			b2 = pl->bottom[x];
 
 			while (t1 < t2 && t1 <= b1) {
 				R_MapPlane(t1, spanstart[t1], x - 1);

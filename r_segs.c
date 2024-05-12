@@ -244,22 +244,11 @@ void R_RenderSegLoop (void)
 	byte __far * floortop;
 	//byte __far * floorbot;
 
-	if (ceilingplaneindex < MAXCONVENTIONALVISPLANES){
-		ceiltop = visplanes[ceilingplaneindex].top;
-		//ceilbot = visplanes[ceilingplaneindex].bottom;
-		floortop = visplanes[floorplaneindex].top;
-		//floorbot = visplanes[floorplaneindex].bottom;
-	} else {
-		/*
-		visplanebytes_t __far* ceilingplanebytes = &ems_visplanes[ceilingplaneindex-MAXCONVENTIONALVISPLANES];
-		visplanebytes_t __far* floorplanebytes = &ems_visplanes[floorplaneindex-MAXCONVENTIONALVISPLANES];
+	ceiltop = visplanes_8800[ceilingplaneindex].top;
+	//ceilbot = visplanes[ceilingplaneindex].bottom;
+	floortop = visplanes_8800[floorplaneindex].top;
+	//floorbot = visplanes[floorplaneindex].bottom;
 
-		ceiltop = ceilingplanebytes->top;
-		ceilbot = ceilingplanebytes->bottom;
-		floortop = floorplanebytes->top;
-		floorbot = floorplanebytes->bottom;
-		*/
-	}
 
 
 	for ( ; rw_x < rw_stopx ; rw_x++) {
