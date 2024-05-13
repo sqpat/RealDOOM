@@ -80,7 +80,7 @@ typedef int32_t fixed_t32;
 /* Basically, there are a number of things (sector floor and ceiling heights mainly) that
  in practice never end up with greater than 1/8th FRACUNIT precision. That happens with
   certain kinds of moving floors and ceilings. aside from that, they never really end up greater
- than ~ 500 height in practice. realistically, 10 bits integer + 3 of precision is already more
+ than ~ 900 height in practice. realistically, 10 bits integer + 3 of precision is already more
  than we need, we are keeping it at 13 and 3 for minimal shifting. Even though its a bit ugly,
  it's way less shifting (remember bigger shifts means more cpu cycles on 16 bit x86 processors )
  and way denser memory storage on many structs. short_height_t exists as a reminder as to when

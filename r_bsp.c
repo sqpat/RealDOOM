@@ -35,7 +35,7 @@
 //#include "r_local.h"
 
 
-uint16_t		curseg;
+int16_t		curseg;
 seg_render_t __far* curseg_render;
 sector_t __far*	frontsector;
 sector_t __far*	backsector;
@@ -74,7 +74,7 @@ typedef	struct
 } cliprange_t;
 
 
-#define MAXSEGS		32
+#define MAXSEGS		64
 
 // newend is one past the last valid seg
 cliprange_t __near*	newend;

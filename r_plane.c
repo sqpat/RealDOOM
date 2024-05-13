@@ -93,6 +93,20 @@ int8_t currentemsvisplanepage = 0;
 //
 // BASIC PRIMITIVE
 //
+
+
+/*
+void checkoffset(void __far* ptr, int16_t check){
+	uint16_t seg = FP_SEG(ptr);
+	uint16_t off = FP_OFF(ptr);
+	uint32_t total = seg << 4 + off;
+	if (total > 0x90000){
+		I_Error("ptr too big %x:%x %i", seg, off, check);
+	}
+
+}
+*/
+
 void
 R_MapPlane
 ( byte		y,
@@ -230,9 +244,12 @@ R_FindPlane
     checkheader->lightlevel = lightlevel;
     checkheader->minx = SCREENWIDTH;
     checkheader->maxx = -1;
-	check = &visplanes_8800[i];
-    if (i >= MAX_8800_VISPLANES){
-		check = &visplanes_4C00[i-MAX_8800_VISPLANES];
+	check = &visplanes_8400[i];
+
+    if (i >= MAX_8400_VISPLANES){
+		//check = &visplanes_4C00[i-MAX_8400_VISPLANES];
+			//todo page
+		I_Error("98");
 	}
 	FAR_memset (check->top,0xff,sizeof(check->top));
 
@@ -260,9 +277,12 @@ R_CheckPlane
 	FILE *fp;
 
 	plheader = &visplaneheaders[index];
-	pl = &visplanes_8800[index];
-    if (index >= MAX_8800_VISPLANES){
-		pl = &visplanes_4C00[index-MAX_8800_VISPLANES];
+	pl = &visplanes_8400[index];
+    if (index >= MAX_8400_VISPLANES){
+		//pl = &visplanes_4C00[index-MAX_8400_VISPLANES];
+			//todo page
+		I_Error("97");
+
 	}
 
 
@@ -303,9 +323,12 @@ R_CheckPlane
 	visplaneheaders[lastvisplane].lightlevel = plheader->lightlevel;
 	
 	plheader = &visplaneheaders[lastvisplane];
-	pl = &visplanes_8800[lastvisplane];
-    if (lastvisplane >= MAX_8800_VISPLANES){
-		pl = &visplanes_4C00[lastvisplane-MAX_8800_VISPLANES];
+	pl = &visplanes_8400[lastvisplane];
+    if (lastvisplane >= MAX_8400_VISPLANES){
+		//pl = &visplanes_4C00[lastvisplane-MAX_8400_VISPLANES];
+			//todo page
+		I_Error("96");
+
 	}
 
 	plheader->minx = start;
@@ -345,9 +368,12 @@ void R_DrawPlanes (void)
 
     for (i = 0; i < lastvisplane ; i++) {
 		plheader = &visplaneheaders[i];
-		pl = &visplanes_8800[i];
-		if (i >= MAX_8800_VISPLANES){
-			pl = &visplanes_4C00[i-MAX_8800_VISPLANES];
+		pl = &visplanes_8400[i];
+		if (i >= MAX_8400_VISPLANES){
+			//pl = &visplanes_4C00[i-MAX_8400_VISPLANES];
+			//todo page
+			I_Error("95");
+
 		}
 
 		if (plheader->minx > plheader->maxx)

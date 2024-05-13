@@ -220,7 +220,7 @@ extern fineangle_t	rw_normalangle;
 #define MAXEMSVISPLANES (NUM_VISPLANE_PAGES * VISPLANES_PER_EMS_PAGE)
 
 
-#define MAX_8800_VISPLANES	50
+#define MAX_8400_VISPLANES	76
   
 
 

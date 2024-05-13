@@ -244,11 +244,11 @@ void R_RenderSegLoop (void)
 	byte __far * floortop;
 	//byte __far * floorbot;
 
-	ceiltop = visplanes_8800[ceilingplaneindex].top;
+	ceiltop = visplanes_8400[ceilingplaneindex].top;
 	//ceilbot = visplanes[ceilingplaneindex].bottom;
-	floortop = visplanes_8800[floorplaneindex].top;
+	floortop = visplanes_8400[floorplaneindex].top;
 	//floorbot = visplanes[floorplaneindex].bottom;
-
+	//todo handle pagination. page both at once if necessary...
 
 
 	for ( ; rw_x < rw_stopx ; rw_x++) {

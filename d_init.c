@@ -594,7 +594,7 @@ void D_DoomMain2(void)
 	
 	// baselowermemoryaddress
 
-	//I_Error("\n%x", size_texturecompositesizes);
+	//I_Error("\n%x %x %x %x", size_patchoffset, size_patchpage, size_zlight, 0);
 
 /*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
@@ -622,6 +622,8 @@ void D_DoomMain2(void)
 			size_texturewidthmasks);
 
 */
+
+
 
 	if (M_CheckParm("-mem")){
 		segread(&sregs);

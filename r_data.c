@@ -252,6 +252,34 @@ void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 	 
 }
 
+/*
+
+int setval = 0;
+uint16_t thechecksum = 0;
+int cachecount = 0;
+int origcachecount = 0;
+
+int8_t checkchecksum(int16_t l){
+	uint16_t checkchecksum = 0;
+	uint16_t i;
+	uint16_t __far* data =  MK_FP(0x9000, 0);
+	if (setval < 2){
+		return 0;
+	}
+	for (i = 0; i <32767; i++){
+		checkchecksum += data[i];
+	}
+
+	//if (checkchecksum != 40411u){
+	if (checkchecksum != thechecksum){
+		I_Error("gametic is %li %u %u %i %i %i", gametic, thechecksum, checkchecksum, l, cachecount, origcachecount);
+		//return 1;
+	}
+	return 0;
+
+}
+*/
+
 
 uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES];
 uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
@@ -1206,8 +1234,9 @@ byte __far* getpatchtexture(int16_t lump) {
 	
 	addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
 
-	if (cachelump)
+	if (cachelump){
 		W_CacheLumpNumDirect(lump, addr);
+	}
 	// return
 	return addr;
 
@@ -1279,6 +1308,20 @@ byte __far* getspritetexture(int16_t lump) {
 //
 // R_GetColumn
 //
+
+/*
+void setchecksum(){
+	uint16_t i;
+	uint16_t __far* data =  MK_FP(0x9000, 0);
+	
+	for (i = 0; i <32767; i++){
+		thechecksum += data[i];
+	}
+
+	origcachecount = cachecount;
+}*/
+
+
 byte __far*
 R_GetColumn
 (int16_t           tex,

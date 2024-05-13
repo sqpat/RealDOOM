@@ -106,11 +106,13 @@ size_rndtable     E000:fedd
 
 CC00 block (16k)
 
-patchpage    CC00:0000
-patchoffset  CC00:01DC
-drawsegs     CC00:038B
-viewangletox CC00:1EB6
-[empty]      CC00:3EB6  
+colormaps       CC00:0000
+scalelightfixed CC00:2100
+scalelights     CC00:2160
+patchpage       CC00:2760
+patchoffset     CC00:2B18
+zlight          CC00:293C
+[empty]         CC00:3B18  
 // 330 bytes free
 
 
@@ -119,15 +121,17 @@ viewangletox CC00:1EB6
 //#define size_viewangletox                     (0     + (sizeof(int16_t) * (FINEANGLES / 2)))
 //#define viewangletox                          ((int16_t __far*)  (B000Block + 0))
 
+#define colormapssegment  0xCC00
 
-#define size_patchpage                0                    + MAX_PATCHES * sizeof(uint8_t)
-#define size_patchoffset              size_patchpage       + MAX_PATCHES * sizeof(uint8_t)
-#define size_viewangletox             size_patchoffset        + (sizeof(int16_t) * (FINEANGLES / 2))
+#define size_colormapbytes                ((33 * 256)                      + 0)
+#define size_scalelightfixed              size_colormapbytes               + sizeof(uint16_t ) * (MAXLIGHTSCALE)
+#define size_scalelight                   size_scalelightfixed             + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE)
 
 
-#define patchpage                   ((uint8_t __far*)      (CC00Block + 0))
-#define patchoffset                 ((uint8_t __far*)      (CC00Block + size_patchpage))
-#define viewangletox                ((int16_t __far*)      (CC00Block + size_patchoffset))
+#define colormaps                   ((lighttable_t  __far*)   (CC00Block + 0))
+#define colormapbytes               ((byte __far*)            (CC00Block + 0))
+#define scalelightfixed             ((uint16_t __far*)        (CC00Block + size_colormapbytes))
+#define scalelight                  ((uint16_t __far*)        (CC00Block + size_scalelightfixed))
 
 
 
@@ -520,21 +524,19 @@ wianimoffsets    7000:A4b8
 
 /*
   
-colormaps                   8000:2a00
-colormapbytes               8000:2a00
-scalelightfixed             8000:4b00
-scalelight                  8000:4b60
-zlight                      8000:5160
-spritecache_nodes           8000:6160
-flatcache_nodes             8000:6190
-patchcache_nodes            8000:61A2
-texturecache_nodes          8000:61D2
-fuzzoffset                  8000:61EA
-texturewidthmasks           8000:621C
-drawsegs                    8000:6378
-[empty]                     8000:7EC8
+spritecache_nodes           8000:2a00
+flatcache_nodes             8000:2a30
+patchcache_nodes            8000:2a42
+texturecache_nodes          8000:2a72
+texturewidthmasks           8000:2a8a
+zlight                      8000:2c36
+patchpage                   8000:3C36
+patchoffset                 8000:3E12
+[empty]                     8000:3FEE
 
-// 312 free
+
+
+// 18 bytes free
 */
 
 
@@ -574,32 +576,23 @@ screenheightarray_offset 7800:A500  or 8000:2500
 
 
 #define size_leftover_openings_arrays     0x2A00
-#define size_colormapbytes                ((33 * 256)                      + size_leftover_openings_arrays)
-#define size_scalelightfixed              size_colormapbytes               + sizeof(uint16_t ) * (MAXLIGHTSCALE)
-#define size_scalelight                   size_scalelightfixed             + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE)
-#define size_zlight                       size_scalelight                  + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
-#define size_spritecache_nodes            size_zlight                      + sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
+#define size_spritecache_nodes            size_leftover_openings_arrays    + sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
 #define size_flatcache_nodes              size_spritecache_nodes           + sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
 #define size_patchcache_nodes             size_flatcache_nodes             + sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
 #define size_texturecache_nodes           size_patchcache_nodes            + sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
-#define size_fuzzofset                    size_texturecache_nodes          + FUZZTABLE
-#define size_texturewidthmasks            size_fuzzofset                   + MAX_TEXTURES * sizeof(uint8_t)
-#define size_drawsegs                     size_texturewidthmasks           + (sizeof(drawseg_t) * (MAXDRAWSEGS))
+#define size_texturewidthmasks            size_texturecache_nodes          + MAX_TEXTURES * sizeof(uint8_t)
+#define size_zlight                       size_texturewidthmasks           + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_patchpage                    size_zlight                      + MAX_PATCHES * sizeof(uint8_t)
+#define size_patchoffset                  size_patchpage                   + MAX_PATCHES * sizeof(uint8_t)
 
-#define colormapssegment  0x82A0
-
-#define colormaps                   ((lighttable_t  __far*)   (0x80000000 + size_leftover_openings_arrays))
-#define colormapbytes               ((byte __far*)            (0x80000000 + size_leftover_openings_arrays))
-#define scalelightfixed             ((uint16_t __far*)        (0x80000000 + size_colormapbytes))
-#define scalelight                  ((uint16_t __far*)        (0x80000000 + size_scalelightfixed))
-#define zlight                      ((uint16_t far*)          (0x80000000 + size_scalelight))
-#define spritecache_nodes           ((cache_node_t __far*)    (0x80000000 + size_zlight))
+#define spritecache_nodes           ((cache_node_t __far*)    (0x80000000 + size_leftover_openings_arrays))
 #define flatcache_nodes             ((cache_node_t __far*)    (0x80000000 + size_spritecache_nodes))
 #define patchcache_nodes            ((cache_node_t __far*)    (0x80000000 + size_flatcache_nodes))
 #define texturecache_nodes          ((cache_node_t __far*)    (0x80000000 + size_patchcache_nodes))
-#define fuzzoffset                  ((int8_t __far*)          (0x80000000 + size_texturecache_nodes))
-#define texturewidthmasks           ((uint8_t  __far*)        (0x80000000 + size_fuzzofset))
-#define drawsegs                    ((drawseg_t __far*)       (0x80000000 + size_texturewidthmasks))
+#define texturewidthmasks           ((uint8_t  __far*)        (0x80000000 + size_texturecache_nodes))
+#define zlight                      ((uint16_t far*)          (0x80000000 + size_texturewidthmasks))
+#define patchpage                   ((uint8_t __far*)         (0x80000000 + size_zlight))
+#define patchoffset                 ((uint8_t __far*)         (0x80000000 + size_patchpage))
 
 #define visplanes_8400              ((visplane_t __far*)      (0x84000000 ))
 #define visplanes_8800              ((visplane_t __far*)      (0x88000000 ))
@@ -705,8 +698,10 @@ spritewidths        7000:7592
 #define size_compositetexturepage     size_compositetextureoffset   + MAX_TEXTURES * sizeof(uint8_t)
 #define size_texturecompositesizes    size_compositetexturepage     + MAX_TEXTURES * sizeof(uint16_t)
 #define size_visplaneheaders          size_texturecompositesizes    + sizeof(visplaneheader_t) * MAXEMSVISPLANES
+#define size_fuzzofset                size_visplaneheaders          + FUZZTABLE
+#define size_viewangletox             size_fuzzofset                + (sizeof(int16_t) * (FINEANGLES / 2))
+#define size_drawsegs                 size_viewangletox             + (sizeof(drawseg_t) * (MAXDRAWSEGS))
 
-// bfa0
 
 
 #define segs_render             ((seg_render_t  __far*)      (0x40000000 + 0))
@@ -719,9 +714,10 @@ spritewidths        7000:7592
 #define compositetexturepage    ((uint8_t __far*)            (0x40000000 + size_compositetextureoffset))
 #define texturecompositesizes   ((uint16_t __far*)           (0x40000000 + size_compositetexturepage))
 #define visplaneheaders         ((visplaneheader_t __far*)   (0x40000000 + size_texturecompositesizes))
+#define fuzzoffset              ((int8_t __far*)             (0x40000000 + size_visplaneheaders))
+#define viewangletox            ((int16_t __far*)            (0x40000000 + size_fuzzofset))
+#define drawsegs                ((drawseg_t __far*)          (0x40000000 + size_viewangletox))
 
-#define ems_visplanes_segment   0x4C00u
-#define visplanes_4C00          ((visplane_t __far*)    (0x4C000000))
 
 
 // used during p_setup
@@ -743,11 +739,16 @@ compositetextureoffset  4000:B3EC
 compositetexturepage    4000:B598
 texturecompositesizes   4000:B744
 visplaneheaders         4000:BA9C
-[done]                  4000:BF7E
 
-ems_visplanes           4C00:0000
+fuzzoffset              4000:BF7E
+[near range over]       
 
-130 bytes free
+viewangletox            4000:BFB0
+drawsegs                4000:DFB0
+[done]                  4000:FAB0
+
+
+1360 bytes free
 
 */
 

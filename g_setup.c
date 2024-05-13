@@ -261,6 +261,7 @@ G_InitNew
 			skytexture = R_TextureNumForName("SKY1");
 		else
 			if (gamemap < 21)
+				//skytexture = R_TextureNumForName("ASHWALL2");  // for debugging skytexture issues...
 				skytexture = R_TextureNumForName("SKY2");
 	}
 	else

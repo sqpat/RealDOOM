@@ -225,7 +225,41 @@ void P_RunThinkers (void)
 //
 // P_Ticker
 //
+/*
 
+void filelog(){
+	
+	//FILE* fp = fopen("p.txt", "a");
+	//fprintf(fp,"\n %li %lx %lx %lx %lx", gametic, playerMobj_pos->x, playerMobj_pos->y ,playerMobj_pos->z, playerMobj_pos->angle);
+	//fclose(fp);
+	
+}
+
+void filelog2(int16_t i){
+	
+	//FILE* fp = fopen("p.txt", "a");
+	//fprintf(fp,"\n %li %i", gametic, i);
+	//fclose(fp);
+	
+}
+
+extern drawseg_t __far*	ds_p;
+
+void filelog3(int16_t i, int16_t b, int16_t c){
+	
+	//FILE* fp = fopen("p.txt", "a");
+	//fprintf(fp,"\n %li %i %i %i %Fp", gametic, i, b, c, ds_p);
+	//fclose(fp);
+	
+}
+void filelog4(int16_t i, void __far* ptr){
+	
+	//FILE* fp = fopen("p.txt", "a");
+	//fprintf(fp,"\n %li %i %Fp", gametic, i, ptr);
+	//fclose(fp);
+	
+}
+*/
 void P_Ticker (void)
 {
     // run the tic
