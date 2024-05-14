@@ -237,8 +237,8 @@ int16_t pageswapargs[total_pages] = {
 	4,	PAGE_8000_OFFSET, 5,	PAGE_8400_OFFSET, 6,	PAGE_8800_OFFSET, 7,	PAGE_8C00_OFFSET,
 	8,	PAGE_7000_OFFSET, 9,	PAGE_7400_OFFSET, 10,	PAGE_7800_OFFSET, 11,	PAGE_7C00_OFFSET,
 	12, PAGE_6000_OFFSET, 13,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,
-	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 34,	PAGE_5C00_OFFSET, 
-	35, PAGE_9000_OFFSET,
+	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 33,	PAGE_5C00_OFFSET, 
+	34, PAGE_9000_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_9400_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_9800_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_9C00_OFFSET,
@@ -251,9 +251,9 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_TEXTURE_LOGICAL_PAGE + 2,	PAGE_9800_OFFSET,
 	FIRST_TEXTURE_LOGICAL_PAGE + 3,	PAGE_9C00_OFFSET,  // texture cache area
 
-	24,	PAGE_8000_OFFSET, 25,	PAGE_8400_OFFSET, 26,	PAGE_8800_OFFSET, 27,	PAGE_8C00_OFFSET,
-	28,	PAGE_7000_OFFSET, 29,	PAGE_7400_OFFSET, 30,	PAGE_7800_OFFSET, 31,	PAGE_7C00_OFFSET,
-	32, PAGE_6000_OFFSET, 33,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,  // shared 6400 6800 with physics
+	24,	PAGE_8000_OFFSET, 25,	PAGE_8400_OFFSET, 26,	PAGE_8800_OFFSET, EMS_VISPLANE_EXTRA_PAGE,	PAGE_8C00_OFFSET,
+	27,	PAGE_7000_OFFSET, 28,	PAGE_7400_OFFSET, 29,	PAGE_7800_OFFSET, 30,	PAGE_7C00_OFFSET,
+	31, PAGE_6000_OFFSET, 32,	PAGE_6400_OFFSET, 14,	PAGE_6800_OFFSET, 15,	PAGE_6C00_OFFSET,  // shared 6400 6800 with physics
 	16, PAGE_5000_OFFSET, 17,	PAGE_5400_OFFSET, 18,	PAGE_5800_OFFSET, 19,	PAGE_5C00_OFFSET,  // same as physics as its unused for physics..
 	20,	PAGE_4000_OFFSET, 21,	PAGE_4400_OFFSET, 22,	PAGE_4800_OFFSET, 23,	PAGE_4C00_OFFSET,
 	20,	PAGE_9000_OFFSET, 21,	PAGE_9400_OFFSET, 22,	PAGE_9800_OFFSET, 23,	PAGE_9C00_OFFSET,
@@ -349,15 +349,17 @@ int16_t pageswapargs[total_pages] = {
 	SCREEN2_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
 	SCREEN2_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
 	SCREEN3_LOGICAL_PAGE + 0, PAGE_6000_OFFSET,
-	SCREEN3_LOGICAL_PAGE + 1, PAGE_6400_OFFSET,
+	SCREEN3_LOGICAL_PAGE + 1, PAGE_6400_OFFSET, // shared with visplanes
 	SCREEN3_LOGICAL_PAGE + 2, PAGE_6800_OFFSET, // shared with visplanes
-	SCREEN3_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET,
+	SCREEN3_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET, // shared with visplanes
 	FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
 	
 
 	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_5400_OFFSET,
 	FIRST_LUMPINFO_LOGICAL_PAGE + 1, PAGE_5800_OFFSET,
-	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_5C00_OFFSET
+	FIRST_LUMPINFO_LOGICAL_PAGE + 2, PAGE_5C00_OFFSET,
+
+	EMS_VISPLANE_EXTRA_PAGE, PAGE_8400_OFFSET
 
 
 
@@ -389,6 +391,7 @@ int16_t spritecacheevictcount = 0;
 int16_t flatcacheevictcount = 0;
 int16_t patchcacheevictcount = 0;
 int16_t compositecacheevictcount = 0;
+int32_t visplaneswitchcount = 0;
 
 #endif
 
@@ -869,6 +872,77 @@ void Z_ClearDeadCode() {
 	fp = fopen("D_TANTOA.BIN", "rb");
 	FAR_fread(tantoangle, 4, 2049, fp);
 	fclose(fp);
+
+}
+
+int8_t visplanedirty = false;
+// virtual to physical page mapping. 
+// 0 means unmapped. 1 means 8400, 2 means 8800, 3 means 8400;
+int8_t active_visplanes[5] = {1, 2, 3, 0, 0};
+
+void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
+
+	// physicalpage 0 = PAGE_8400_OFFSET
+	// physicalpage 1 = PAGE_8800_OFFSET
+	// physicalpage 2 = PAGE_8C00_OFFSET
+
+	// virtual page 0 = original conventional at page 8400
+	// virtual page 1 = original conventional at page 8800
+	// virtual page 2 = original conventional at page 8C00
+	// virtual page 3 = extra ems page 1
+	// virtual page 4 = extra ems page 2
+
+	int16_t usedpageindex = PAGE_8400_OFFSET + physicalpage;
+	int16_t usedpagevalue;
+	int8_t i;
+	if (virtualpage < 2){
+		usedpagevalue = 25 + virtualpage;
+	} else {
+		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + virtualpage;
+	}
+
+	//I_Error("D");
+
+
+	pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
+	pageswapargs[pageswapargs_visplanepage_offset] = usedpagevalue;
+
+	// erase old virtual page map
+	for (i = 0; i < 5; i ++){
+		if (active_visplanes[virtualpage] = physicalpage+1){
+			active_visplanes[virtualpage] = 0;
+			break;
+		}
+	}
+	// set new virtual page map
+	active_visplanes[virtualpage] = physicalpage+1;
+	
+	
+	Z_Quickmap(pageswapargs_visplanepage_offset_size, 1);
+	
+	visplanedirty = true;
+#ifdef DETAILED_BENCH_STATS
+	visplaneswitchcount++;
+
+#endif
+
+
+}
+
+void Z_QuickMapVisplaneRevert(){
+
+	//I_Error("C");
+	Z_Quickmap(pageswapargs_visplane_base_page_offset_size, 3);
+	active_visplanes[0] = 1;
+	active_visplanes[1] = 2;
+	active_visplanes[2] = 3;
+	active_visplanes[3] = 0;
+	active_visplanes[4] = 0;
+	visplanedirty = false;
+
+#ifdef DETAILED_BENCH_STATS
+	visplaneswitchcount++;
+#endif
 
 }
 /*

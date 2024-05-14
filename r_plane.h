@@ -37,13 +37,18 @@ int16_t
 R_FindPlane
 ( fixed_t	height,
   uint8_t		picnum,
-  uint8_t		lightlevel );
+  uint8_t		lightlevel,
+  int8_t    isceil
+   );
 
 int16_t
 R_CheckPlane
 (int16_t	index,
   int16_t		start,
-  int16_t		stop );
+  int16_t		stop,
+  int8_t		isceil
+
+   );
 
 
 

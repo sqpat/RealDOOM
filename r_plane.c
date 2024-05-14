@@ -157,7 +157,8 @@ R_MapPlane
 	spanfunc();
 }
 
-
+extern byte __far * ceiltop;
+extern byte __far * floortop;
 
 //
 // R_ClearPlanes
@@ -190,6 +191,84 @@ void R_ClearPlanes (void)
 }
 
 
+visplane_t __far * visplanelookups[3] = {visplanes_8400, visplanes_8800, visplanes_8C00};
+extern int8_t visplanedirty;
+extern int8_t active_visplanes[5];
+
+// we want to cache the variables/logic based around which plane indices are mapped..
+
+int8_t ceilphyspage = 0;
+int8_t ceilsubindex = 0;
+int8_t floorphyspage = 0;
+int8_t floorsubindex = 0;
+
+
+// requires pagination and juggling of floor/ceil planes...
+visplane_t __far * R_HandleEMSPagination(int8_t index, int8_t isceil){
+
+	int8_t usedphyspage;
+	int8_t usedvirtualpage = 0;
+	int8_t usedsubindex = index;
+	int8_t j = index-25;
+
+
+	// mult + modulo
+	while (j > 0){
+		usedvirtualpage++;
+		usedsubindex -= 25;
+		j -= 25;
+	}
+
+	usedphyspage = usedvirtualpage;
+
+	// check if we need to bother at all with complicated logic (more than 75 visplanes in use)
+	if (visplanedirty || (index > MAX_CONVENTIONAL_VISPLANES)){
+
+		// is this virtual page already in a physical page?
+		if (active_visplanes[usedvirtualpage]){
+			usedphyspage = active_visplanes[usedvirtualpage]-1;
+		} else {
+			// need to page it in. lets determine physical page to use.
+			// we will page it into phys page 2 if its not already in use or paged, otherwise 1, basically
+
+			if (isceil){
+				if (floorphyspage == 2){
+					usedphyspage = 1;
+				} else {
+					usedphyspage = 2;
+				}
+			} else {
+				if (ceilphyspage == 2){
+					usedphyspage = 1;
+				} else {
+					usedphyspage = 2;
+				}
+			}
+
+			//I_Error("B");
+
+			Z_QuickMapVisplanePage(usedvirtualpage, usedphyspage);
+
+			//usedphyspage = active_visplanes[usedvirtualpage]-1
+
+		}
+	}
+
+
+	if (isceil){
+		ceilphyspage = usedphyspage;
+		ceilsubindex = usedsubindex;
+		ceiltop = ((visplanelookups[ceilphyspage])[ceilsubindex]).top;
+
+	} else {
+		floorphyspage = usedphyspage;
+		floorsubindex = usedsubindex;
+		floortop = ((visplanelookups[floorphyspage])[floorsubindex]).top;
+	}
+	 return &((visplanelookups[usedphyspage])[usedsubindex]);
+
+}
+
 //
 // R_FindPlane
 //
@@ -200,7 +279,9 @@ int16_t
 R_FindPlane
 ( fixed_t   	height,
   uint8_t		picnum,
-  uint8_t		lightlevel )
+  uint8_t		lightlevel,
+  int8_t		isceil
+   )
 {
     visplane_t __far*	check;
     visplaneheader_t __far *checkheader;
@@ -231,6 +312,7 @@ R_FindPlane
     
 			
     if (i < lastvisplane){
+		R_HandleEMSPagination(i, isceil);
 		return i;
 	}
 
@@ -244,13 +326,9 @@ R_FindPlane
     checkheader->lightlevel = lightlevel;
     checkheader->minx = SCREENWIDTH;
     checkheader->maxx = -1;
-	check = &visplanes_8400[i];
 
-    if (i >= MAX_8400_VISPLANES){
-		//check = &visplanes_4C00[i-MAX_8400_VISPLANES];
-			//todo page
-		I_Error("98");
-	}
+	check = R_HandleEMSPagination(i, isceil);
+
 	FAR_memset (check->top,0xff,sizeof(check->top));
 
     return i;
@@ -265,28 +343,24 @@ int16_t
 R_CheckPlane
 ( int16_t		index,
   int16_t		start,
-  int16_t		stop )
+  int16_t		stop,
+  int8_t		isceil
+   )
 {
     int16_t		intrl;
     int16_t		intrh;
     int16_t		unionl;
     int16_t		unionh;
     int16_t		x;
-	visplane_t __far*	pl;
-	visplaneheader_t __far* plheader;
-	FILE *fp;
+	byte  __far*	pltop;
+	visplaneheader_t __far* plheader = &visplaneheaders[index];
 
-	plheader = &visplaneheaders[index];
-	pl = &visplanes_8400[index];
-    if (index >= MAX_8400_VISPLANES){
-		//pl = &visplanes_4C00[index-MAX_8400_VISPLANES];
-			//todo page
-		I_Error("97");
-
+	// should be active and have already have been paged in...
+	if (isceil){
+		pltop = ceiltop;
+	} else {
+		pltop = floortop;
 	}
-
-
-	
     if (start < plheader->minx) {
 		intrl = plheader->minx;
 		unionl = start;
@@ -304,7 +378,7 @@ R_CheckPlane
     }
 
 
-	for (x=intrl ; x<= intrh && pl->top[x]==0xff ; x++)
+	for (x=intrl ; x<= intrh && pltop[x]==0xff ; x++)
 		;
 
     if (x > intrh) {
@@ -323,17 +397,11 @@ R_CheckPlane
 	visplaneheaders[lastvisplane].lightlevel = plheader->lightlevel;
 	
 	plheader = &visplaneheaders[lastvisplane];
-	pl = &visplanes_8400[lastvisplane];
-    if (lastvisplane >= MAX_8400_VISPLANES){
-		//pl = &visplanes_4C00[lastvisplane-MAX_8400_VISPLANES];
-			//todo page
-		I_Error("96");
-
-	}
+	pltop = R_HandleEMSPagination(lastvisplane, isceil)->top;
 
 	plheader->minx = start;
 	plheader->maxx = stop;
-	FAR_memset (pl->top,0xff,sizeof(pl->top));
+	FAR_memset (pltop,0xff,320);
 
 	return lastvisplane++;
 }
@@ -353,8 +421,10 @@ void R_DrawPlanes (void)
     int16_t			stop;
     fineangle_t			angle;
 	byte t1, b1, t2, b2;
-	int16_t			i;
+	int8_t			i;
 	int8_t			j;
+	int8_t			physindex = 0;
+	int8_t			subindex = 0;
 
     visplaneheader_t __far*	plheader;
 	
@@ -366,18 +436,23 @@ void R_DrawPlanes (void)
 	int16_t flatcacheindex = 0;
 	int16_t lastflatcacheindicesused[3] = {3, 2, 1}; // initialized so that allocation order is 0 1 2
 
-    for (i = 0; i < lastvisplane ; i++) {
+    for (i = 0; i < lastvisplane ; i++, subindex++) {
 		plheader = &visplaneheaders[i];
-		pl = &visplanes_8400[i];
-		if (i >= MAX_8400_VISPLANES){
-			//pl = &visplanes_4C00[i-MAX_8400_VISPLANES];
-			//todo page
-			I_Error("95");
-
-		}
 
 		if (plheader->minx > plheader->maxx)
 			continue;
+
+		while (subindex >= 25){
+			physindex++;
+			subindex -= 25;
+			if (physindex == 3){
+				//I_Error("A");
+				Z_QuickMapVisplanePage(2, 3+visplanedirty); // will be 3 the first time, 4 the second time.
+				physindex = 2;
+
+			}
+		}
+		pl = &((visplanelookups[physindex])[subindex]);
 
 		// sky flat
 		if (plheader->picnum == skyflatnum) {

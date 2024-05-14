@@ -228,6 +228,16 @@ R_RenderMaskedSegRange
 #define HEIGHTBITS		12
 #define HEIGHTUNIT		(1<<HEIGHTBITS)
 
+extern visplane_t __far * visplanelookups[3];
+extern int8_t ceilphyspage;
+extern int8_t ceilsubindex;
+extern int8_t floorphyspage;
+extern int8_t floorsubindex;
+
+byte __far * ceiltop;
+byte __far * floortop;
+
+
 void R_RenderSegLoop (void)
 {
     fineangle_t		angle;
@@ -239,17 +249,10 @@ void R_RenderSegLoop (void)
     int16_t			top;
     int16_t			bottom;
 	fixed_t_union temp;
-	byte __far * ceiltop;
-	//byte __far * ceilbot;
-	byte __far * floortop;
-	//byte __far * floorbot;
 
-	ceiltop = visplanes_8400[ceilingplaneindex].top;
-	//ceilbot = visplanes[ceilingplaneindex].bottom;
-	floortop = visplanes_8400[floorplaneindex].top;
-	//floorbot = visplanes[floorplaneindex].bottom;
-	//todo handle pagination. page both at once if necessary...
-
+	if ((((int32_t)ceiltop > 0x8C010000 || (int32_t)ceiltop < 0x84000000) && (ceiltop!= NULL)) ||
+		(((int32_t)floortop > 0x8C010000 || (int32_t)floortop < 0x84000000  ) && (floortop!= NULL)))
+		I_Error ("%Fp %Fp %i %i %i %i", ceiltop, floortop, ceilphyspage, ceilsubindex, floorphyspage, floorsubindex);
 
 	for ( ; rw_x < rw_stopx ; rw_x++) {
 		// mark floor / ceiling areas
@@ -269,8 +272,8 @@ void R_RenderSegLoop (void)
 
 			if (top <= bottom) {
 				ceiltop[rw_x] = top;
+				// top[322] is the start of bot[]
 				ceiltop[rw_x+322] = bottom;
-				//ceilbot[rw_x] = bottom;
  
 			}
 		}
@@ -290,8 +293,8 @@ void R_RenderSegLoop (void)
 			}
 			if (top <= bottom) {
 				floortop[rw_x] = top;
+				// top[322] is the start of bot[]
 				floortop[rw_x+322] = bottom;
-				//floorbot[rw_x] = bottom;
 			}
 		}
 
@@ -806,11 +809,11 @@ R_StoreWallRange
 
     // render it
 	if (markceiling) {
-		ceilingplaneindex = R_CheckPlane(ceilingplaneindex, rw_x, rw_stopx - 1);
+		ceilingplaneindex = R_CheckPlane(ceilingplaneindex, rw_x, rw_stopx - 1, 1);
 	}
     
 	if (markfloor) {
-		floorplaneindex = R_CheckPlane(floorplaneindex, rw_x, rw_stopx - 1);
+		floorplaneindex = R_CheckPlane(floorplaneindex, rw_x, rw_stopx - 1, 0);
 	}
 	
 	R_RenderSegLoop ();

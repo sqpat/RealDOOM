@@ -83,62 +83,62 @@ void Z_ShutdownEMS();
 #define SCRATCH_ADDRESS_7000 (byte __far* )0x70000000
 #define SCRATCH_ADDRESS_8000 (byte __far* )0x80000000
 
-#define SCREEN0_LOGICAL_PAGE						4
-#define STRINGS_LOGICAL_PAGE						12
-#define FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE		16
-#define FIRST_RENDER_LOGICAL_PAGE					20
-#define RENDER_7000_PAGE							20 + 8
-#define RENDER_7400_PAGE							20 + 9
-#define RENDER_7800_PAGE							20 + 10
-#define RENDER_7C00_PAGE							20 + 11
-#define TEXTURE_INFO_LOGICAL_PAGE					FIRST_RENDER_LOGICAL_PAGE + 12			//unused...?
+#define SCREEN0_LOGICAL_PAGE                        4
+#define STRINGS_LOGICAL_PAGE                        12
+#define FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE     16
+#define FIRST_RENDER_LOGICAL_PAGE                   20
+
+#define RENDER_7800_PAGE                            20 + 9
+#define RENDER_7C00_PAGE                            20 + 10
+#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
+#define FIRST_VISPLANE_LOGICAL_PAGE                 FIRST_RENDER_LOGICAL_PAGE + 8
 
 // 35
-#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE			35
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         34
 // 36
-#define SCREEN4_LOGICAL_PAGE						LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
+#define SCREEN4_LOGICAL_PAGE                        LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
 // 37
-#define FIRST_STATUS_LOGICAL_PAGE					SCREEN4_LOGICAL_PAGE + 1
+#define FIRST_STATUS_LOGICAL_PAGE                   SCREEN4_LOGICAL_PAGE + 1
 // 41
-#define PALETTE_LOGICAL_PAGE						FIRST_STATUS_LOGICAL_PAGE + 4
+#define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
 // 42
-#define FIRST_DEMO_LOGICAL_PAGE						PALETTE_LOGICAL_PAGE + 1
+#define FIRST_DEMO_LOGICAL_PAGE                     PALETTE_LOGICAL_PAGE + 1
 // 46
-#define	FIRST_MENU_GRAPHICS_LOGICAL_PAGE			FIRST_DEMO_LOGICAL_PAGE + 4
+#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            FIRST_DEMO_LOGICAL_PAGE + 4
 // 53
-#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE	FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
+#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
 // 61
-#define FIRST_WIPE_LOGICAL_PAGE						FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
+#define FIRST_WIPE_LOGICAL_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
 // 62
-#define FIRST_SCRATCH_LOGICAL_PAGE					FIRST_WIPE_LOGICAL_PAGE + 1
+#define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_WIPE_LOGICAL_PAGE + 1
 // 66
-#define FIRST_LUMPINFO_LOGICAL_PAGE					FIRST_SCRATCH_LOGICAL_PAGE + 4
+#define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
 // 69
-#define FIRST_PATCH_CACHE_LOGICAL_PAGE				FIRST_LUMPINFO_LOGICAL_PAGE + 3
-#define NUM_PATCH_CACHE_PAGES						16
+#define FIRST_PATCH_CACHE_LOGICAL_PAGE              FIRST_LUMPINFO_LOGICAL_PAGE + 3
+#define NUM_PATCH_CACHE_PAGES                       16
 // 85
-#define FIRST_FLAT_CACHE_LOGICAL_PAGE				FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
-#define NUM_FLAT_CACHE_PAGES						6
+#define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
+#define NUM_FLAT_CACHE_PAGES                        6
 // 91
-#define FIRST_TEXTURE_LOGICAL_PAGE					FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
+#define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
 // 99
-#define NUM_TEXTURE_PAGES							8
+#define NUM_TEXTURE_PAGES                           8
 
 // 104
-#define SCREEN1_LOGICAL_PAGE						FIRST_SPRITE_CACHE_LOGICAL_PAGE + 5
+#define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 5
 // 108
-#define SCREEN2_LOGICAL_PAGE						FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
+#define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
 // 112
-#define SCREEN3_LOGICAL_PAGE						FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
+#define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
 
 
-#define FIRST_SPRITE_CACHE_LOGICAL_PAGE				FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
+#define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 // 115
-#define NUM_SPRITE_CACHE_PAGES						16
+#define NUM_SPRITE_CACHE_PAGES                      16
 
 // 116
-#define SCREEN1_LOGICAL_PAGE_4						(FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-#define NUM_EMS4_SWAP_PAGES							(int32_t) (SCREEN1_LOGICAL_PAGE_4 + 1)
+#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
+#define NUM_EMS4_SWAP_PAGES                         (int32_t) (SCREEN1_LOGICAL_PAGE_4 + 1)
 // 117 in use currently (including 0)
 
 
@@ -178,46 +178,54 @@ void Z_ShutdownEMS();
 #define num_intermission_params 24
 #define num_wipe_params 26
 #define num_lumpinfo_5400_params 6
+#define num_visplanepage_params 2
 
 //#define pageswapargoff_demo pageswapargseg +
 
 // used for segment offset for params
 // needs to be added to pageswapargoff
-#define pageswapargs_phys_offset_size			0
-#define pageswapargs_screen0_offset_size		16
-#define pageswapargs_rend_offset_size			2*num_phys_params
-#define pageswapargs_rend_7000_offset_size		(pageswapargs_rend_offset_size + (2*8))
-#define pageswapargs_stat_offset_size			(pageswapargs_rend_offset_size			+ 2*num_rend_params)
-#define pageswapargs_demo_offset_size			(pageswapargs_stat_offset_size			+ 2*num_stat_params)
-#define pageswapargs_scratch5000_offset_size	(pageswapargs_demo_offset_size			+ 2*num_demo_params)
-#define pageswapargs_scratch8000_offset_size	(pageswapargs_scratch5000_offset_size	+ 2*num_scratch5000_params)
-#define pageswapargs_scratch7000_offset_size	(pageswapargs_scratch8000_offset_size	+ 2*num_scratch8000_params)
-#define pageswapargs_flatcache_offset_size		(pageswapargs_scratch7000_offset_size	+ 2*num_scratch7000_params)
-#define pageswapargs_flatcache_undo_offset_size	(pageswapargs_flatcache_offset_size		+ 2*num_flatcache_params)
-#define pageswapargs_spritecache_offset_size	(pageswapargs_flatcache_undo_offset_size+ 2*num_flatcache_undo_params)
-#define pageswapargs_palette_offset_size		(pageswapargs_spritecache_offset_size	+ 2*num_spritecache_params)
-#define pageswapargs_menu_offset_size			(pageswapargs_palette_offset_size		+ 2*num_palette_params)
-#define pageswapargs_intermission_offset_size	(pageswapargs_menu_offset_size			+ 2*num_menu_params)
-#define pageswapargs_wipe_offset_size			(pageswapargs_intermission_offset_size	+ 2*num_intermission_params)
-#define pageswapargs_lumpinfo_5400_offset_size	(pageswapargs_wipe_offset_size		+ 2*num_wipe_params)
-#define total_pages_size						(pageswapargs_lumpinfo_5400_offset_size	+ 2*num_lumpinfo_5400_params)
+
+
+#define pageswapargs_phys_offset_size                0
+#define pageswapargs_screen0_offset_size             16
+#define pageswapargs_rend_offset_size                2*num_phys_params
+#define pageswapargs_rend_7000_offset_size           (pageswapargs_rend_offset_size           + (2*8))
+#define pageswapargs_visplane_base_page_offset_size  (pageswapargs_rend_offset_size           + (2*5))
+
+#define pageswapargs_stat_offset_size                (pageswapargs_rend_offset_size           + 2*num_rend_params)
+#define pageswapargs_demo_offset_size                (pageswapargs_stat_offset_size           + 2*num_stat_params)
+#define pageswapargs_scratch5000_offset_size         (pageswapargs_demo_offset_size           + 2*num_demo_params)
+#define pageswapargs_scratch8000_offset_size         (pageswapargs_scratch5000_offset_size    + 2*num_scratch5000_params)
+#define pageswapargs_scratch7000_offset_size         (pageswapargs_scratch8000_offset_size    + 2*num_scratch8000_params)
+#define pageswapargs_flatcache_offset_size           (pageswapargs_scratch7000_offset_size    + 2*num_scratch7000_params)
+#define pageswapargs_flatcache_undo_offset_size      (pageswapargs_flatcache_offset_size      + 2*num_flatcache_params)
+#define pageswapargs_spritecache_offset_size         (pageswapargs_flatcache_undo_offset_size + 2*num_flatcache_undo_params)
+#define pageswapargs_palette_offset_size             (pageswapargs_spritecache_offset_size    + 2*num_spritecache_params)
+#define pageswapargs_menu_offset_size                (pageswapargs_palette_offset_size        + 2*num_palette_params)
+#define pageswapargs_intermission_offset_size        (pageswapargs_menu_offset_size           + 2*num_menu_params)
+#define pageswapargs_wipe_offset_size                (pageswapargs_intermission_offset_size   + 2*num_intermission_params)
+#define pageswapargs_lumpinfo_5400_offset_size       (pageswapargs_wipe_offset_size           + 2*num_wipe_params)
+#define pageswapargs_visplanepage_offset_size        (pageswapargs_lumpinfo_5400_offset_size  + 2*num_lumpinfo_5400_params) 
+#define total_pages_size                             (pageswapargs_visplanepage_offset_size   + 2*num_visplanepage_params)
 
 // used for array indices
-#define pageswapargs_rend_offset			num_phys_params
-#define pageswapargs_stat_offset			(pageswapargs_rend_offset				+ num_rend_params) 
-#define pageswapargs_demo_offset			(pageswapargs_stat_offset				+ num_stat_params)
-#define pageswapargs_scratch5000_offset		(pageswapargs_demo_offset				+ num_demo_params)
-#define pageswapargs_scratch8000_offset		(pageswapargs_scratch5000_offset		+ num_scratch5000_params)
-#define pageswapargs_scratch7000_offset		(pageswapargs_scratch8000_offset		+ num_scratch8000_params)
-#define pageswapargs_flatcache_offset		(pageswapargs_scratch7000_offset		+ num_scratch7000_params)
-#define pageswapargs_flatcache_undo_offset	(pageswapargs_flatcache_offset			+ num_flatcache_params)
-#define pageswapargs_spritecache_offset		(pageswapargs_flatcache_undo_offset		+ num_flatcache_undo_params)
-#define pageswapargs_palette_offset			(pageswapargs_spritecache_offset		+ num_spritecache_params)
-#define pageswapargs_menu_offset			(pageswapargs_palette_offset			+ num_palette_params)
-#define pageswapargs_intermission_offset	(pageswapargs_menu_offset				+ num_menu_params)
-#define pageswapargs_wipe_offset			(pageswapargs_intermission_offset		+ num_intermission_params)
-#define pageswapargs_lumpinfo_5400_offset	(pageswapargs_wipe_offset				+ num_wipe_params)
-#define total_pages							(pageswapargs_lumpinfo_5400_offset		+ num_lumpinfo_5400_params)
+#define pageswapargs_rend_offset            num_phys_params
+#define pageswapargs_stat_offset            (pageswapargs_rend_offset               + num_rend_params) 
+#define pageswapargs_demo_offset            (pageswapargs_stat_offset               + num_stat_params)
+#define pageswapargs_scratch5000_offset     (pageswapargs_demo_offset               + num_demo_params)
+#define pageswapargs_scratch8000_offset     (pageswapargs_scratch5000_offset        + num_scratch5000_params)
+#define pageswapargs_scratch7000_offset     (pageswapargs_scratch8000_offset        + num_scratch8000_params)
+#define pageswapargs_flatcache_offset       (pageswapargs_scratch7000_offset        + num_scratch7000_params)
+#define pageswapargs_flatcache_undo_offset  (pageswapargs_flatcache_offset          + num_flatcache_params)
+#define pageswapargs_spritecache_offset     (pageswapargs_flatcache_undo_offset     + num_flatcache_undo_params)
+#define pageswapargs_palette_offset         (pageswapargs_spritecache_offset        + num_spritecache_params)
+#define pageswapargs_menu_offset            (pageswapargs_palette_offset            + num_palette_params)
+#define pageswapargs_intermission_offset    (pageswapargs_menu_offset               + num_menu_params)
+#define pageswapargs_wipe_offset            (pageswapargs_intermission_offset       + num_intermission_params)
+#define pageswapargs_lumpinfo_5400_offset   (pageswapargs_wipe_offset               + num_wipe_params)
+#define pageswapargs_visplanepage_offset    (pageswapargs_lumpinfo_5400_offset      + num_lumpinfo_5400_params)
+#define total_pages                         (pageswapargs_visplanepage_offset       + num_visplanepage_params)
+
 
 extern int16_t pageswapargs[total_pages];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
@@ -241,7 +249,7 @@ void Z_QuickMapFlatPage(int16_t page, int16_t offset);
 void Z_QuickMapUndoFlatCache();
 void Z_QuickMapSpritePage();
 
-	//void Z_QuickMapTextureInfoPage();
+    //void Z_QuickMapTextureInfoPage();
 void Z_QuickmapPalette();
 void Z_QuickmapMenu();
 void Z_QuickmapIntermission();
@@ -260,6 +268,8 @@ void Z_LinkEMSVariables();
 void Z_LoadBinaries();
 
 void Z_ClearDeadCode();
+void Z_QuickMapVisplanePage(int8_t pagenumber, int8_t value);
+void Z_QuickMapVisplaneRevert();
 
 #define PAGE_TYPE_PHYSICS 0
 #define PAGE_TYPE_RENDER 1
@@ -284,7 +294,7 @@ void Z_ClearDeadCode();
 
 #define PAGE_5000_SCRATCH_REMAP 6
 
-#define MAX_FLATS_LOADED							NUM_FLAT_CACHE_PAGES * 4
+#define MAX_FLATS_LOADED                            NUM_FLAT_CACHE_PAGES * 4
 
 
 //void DUMP_4000_TO_FILE();

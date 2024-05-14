@@ -661,6 +661,8 @@ extern uint16_t renderplayermaskedtics;
 extern uint16_t cachedrenderplayertics;
 #endif
 
+extern int8_t visplanedirty;
+
 //
 // R_RenderView
 //
@@ -718,8 +720,12 @@ void R_RenderPlayerView ()
 
 	// replace render level data with flat cache
 	Z_QuickMapFlatPage(0, 4);
-
-    R_DrawPlanes ();
+	// put visplanes 0-75 back in memory (if necessary)
+	if (visplanedirty){
+		Z_QuickMapVisplaneRevert();
+	}
+    
+	R_DrawPlanes ();
 	// put away flat cache, put back level data
 
 	Z_QuickMapUndoFlatCache();

@@ -42,6 +42,7 @@ sector_t __far*	backsector;
 
 drawseg_t __far*	ds_p;
 
+extern int8_t visplanedirty;
 
 void
 R_StoreWallRange
@@ -111,6 +112,10 @@ R_ClipSolidWallSegment
 			R_StoreWallRange (first, last);
 			next = newend;
 			newend++;
+
+			//if (newend - solidsegs > MAX_SEGS){
+			//	I_Error("blah");
+			//}
 	    
 			// 1/11/98 killough: performance tuning using fast memmove
 			memmove(start + 1, start, (++newend - start) * sizeof(*start));
@@ -166,6 +171,9 @@ R_ClipSolidWallSegment
     }
 
     newend = start+1;
+		//if (newend - solidsegs > MAX_SEGS){
+		//		I_Error("blah2");
+		//	}
 }
 
 
@@ -530,7 +538,12 @@ boolean R_CheckBBox(int16_t __far *bspcoord)
 	return true;
 }
 
-
+extern int8_t ceilphyspage;
+extern int8_t ceilsubindex;
+extern int8_t floorphyspage;
+extern int8_t floorsubindex;
+extern byte __far * ceiltop;
+extern byte __far * floortop;
 //
 // R_Subsector
 // Determine floor/ceiling planes.
@@ -549,11 +562,23 @@ void R_Subsector(int16_t subsecnum)
     count = sub->numlines;
 	firstline = sub->firstline;
 
+	if (visplanedirty){
+		Z_QuickMapVisplaneRevert();
+	}
+
+	ceilphyspage = 0;
+	ceilsubindex = 0;
+	floorphyspage = 0;
+	floorsubindex = 0;
+	ceiltop = NULL;
+	floortop = NULL;
+
+	// clean these indices before we start this subsector...
 
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);
 
 	if (temp.w < viewz.w) {
-		floorplaneindex = R_FindPlane(temp.w, frontsector->floorpic, frontsector->lightlevel);
+		floorplaneindex = R_FindPlane(temp.w, frontsector->floorpic, frontsector->lightlevel,  0);
 	} else {
 		floorplaneindex = -1;
 	}
@@ -562,7 +587,7 @@ void R_Subsector(int16_t subsecnum)
 	// todo: see if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
 	
 	if (temp.w > viewz.w || frontsector->ceilingpic == skyflatnum) {
-		ceilingplaneindex = R_FindPlane(temp.w, frontsector->ceilingpic, frontsector->lightlevel);
+		ceilingplaneindex = R_FindPlane(temp.w, frontsector->ceilingpic, frontsector->lightlevel, 1);
 	} else {
 		ceilingplaneindex = -1;
 	}
