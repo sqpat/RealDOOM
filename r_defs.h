@@ -547,12 +547,7 @@ typedef struct
 // 
 typedef struct
 {
-  fixed_t height;
-  uint8_t picnum;
-  uint8_t lightlevel;
-  int16_t minx;
-  int16_t maxx;
-  
+    
   // leave pads for [minx-1]/[maxx+1]
 // we want the top and bottom arrays to be at multiples of two bytes. 
 // so add an extra pad byte to start and end. doesnt change planes per
