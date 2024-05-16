@@ -517,9 +517,8 @@ void D_Display (void)
     } while (!done);
 
 	// zero out this memory as it will be used for visplanes, etc
-	// optimization todo maybe do just the last two pages?
 	Z_QuickmapWipe();
-	FAR_memset(screen3, 0, 65535u);
+	FAR_memset(screen3+0x4000, 0, 0xBFFF);
 	Z_QuickmapPhysics();
 	wipeduration = ticcount - wiperealstart;
 

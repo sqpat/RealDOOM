@@ -213,7 +213,7 @@ visplane_t __far * R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 
 	// mult + modulo
-	while (j > 0){
+	while (j >= 0){
 		usedvirtualpage++;
 		usedsubindex -= 25;
 		j -= 25;
@@ -229,7 +229,7 @@ visplane_t __far * R_HandleEMSPagination(int8_t index, int8_t isceil){
 			usedphyspage = active_visplanes[usedvirtualpage]-1;
 		} else {
 			// need to page it in. lets determine physical page to use.
-			// we will page it into phys page 2 if its not already in use or paged, otherwise 1, basically
+			// we will page it into phys page 2 if its not already in use by the other page.
 
 			if (isceil){
 				if (floorphyspage == 2){
@@ -248,8 +248,6 @@ visplane_t __far * R_HandleEMSPagination(int8_t index, int8_t isceil){
 			//I_Error("B");
 
 			Z_QuickMapVisplanePage(usedvirtualpage, usedphyspage);
-
-			//usedphyspage = active_visplanes[usedvirtualpage]-1
 
 		}
 	}
@@ -474,6 +472,25 @@ void R_DrawPlanes (void)
 				 
 					angle = MOD_FINE_ANGLE(viewangle_shiftright3 + xtoviewangle[x]) >> 3;
 					dc_x = x;
+/*
+					// 0 31 .... 0 0
+					
+					if ( ((dc_yl + (dc_yh - dc_yl)) > viewheight))
+						setval++;
+
+					
+					// 3 0 255
+					// 3 5    ___ 0 255 1 0 25
+
+
+					if (setval)
+						I_Error("skytexture vals %i, %i %i \n%i %i %Fp %Fp %Fp %i %i %i %i %i", 
+							x,  pl->top[x], pl->bottom[x],
+							plheader->minx, plheader->maxx, pl, pl->top, pl->bottom,
+							dc_yl, dc_yh, physindex, subindex, i);
+							*/
+
+
 					dc_source = R_GetColumn(skytexture, angle);
 					colfunc();
 

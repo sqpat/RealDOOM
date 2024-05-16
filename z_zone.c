@@ -898,7 +898,7 @@ void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 	if (virtualpage < 2){
 		usedpagevalue = 25 + virtualpage;
 	} else {
-		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + virtualpage;
+		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
 	}
 
 	//I_Error("D");
@@ -908,9 +908,10 @@ void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 	pageswapargs[pageswapargs_visplanepage_offset] = usedpagevalue;
 
 	// erase old virtual page map
-	for (i = 0; i < 5; i ++){
-		if (active_visplanes[virtualpage] = physicalpage+1){
-			active_visplanes[virtualpage] = 0;
+	// page 1 is aways 1 and never gets changed, never need to bother erasing it
+	for (i = 1; i < 5; i ++){
+		if (active_visplanes[i] = physicalpage+1){
+			active_visplanes[i] = 0;
 			break;
 		}
 	}
