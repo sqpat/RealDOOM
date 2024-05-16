@@ -515,7 +515,14 @@ void D_Display (void)
  		M_Drawer ();                            // menu is drawn even on top of wipes
  		I_FinishUpdate();                      // page flip or blit buffer
     } while (!done);
+
+	// zero out this memory as it will be used for visplanes, etc
+	// optimization todo maybe do just the last two pages?
+	Z_QuickmapWipe();
+	FAR_memset(screen3, 0, 65535u);
+	Z_QuickmapPhysics();
 	wipeduration = ticcount - wiperealstart;
+
 #endif
 }
  
