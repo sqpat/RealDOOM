@@ -407,6 +407,7 @@ extern int16_t visplanemax;
 extern int16_t visplanedirtycount;
 
 extern int8_t setonce;
+extern uint16_t __far* skyofs;
 
  //
 // R_DrawPlanes
@@ -418,7 +419,6 @@ void R_DrawPlanes (void)
     uint8_t			light;
     int16_t			x;
     int16_t			stop;
-    fineangle_t			angle;
 	byte t1, b1, t2, b2;
 	int8_t			i;
 	int8_t			j;
@@ -475,24 +475,17 @@ void R_DrawPlanes (void)
 				dc_yh = pl->bottom[x];				
 
 				if (dc_yl <= dc_yh) {
-					angle = MOD_FINE_ANGLE(viewangle_shiftright3 + xtoviewangle[x]) >> 3;
+					// all sky textures are 256 wide, just need the 0xFF mod
+					int16_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;
 					dc_x = x;
-/*
-					if (setonce){
-						//filelog2(1000 + i, dc_x, dc_yl, dc_yh, pl->top[x], pl->bottom[x]);
-					}
-					if ( ((dc_yl + (dc_yh - dc_yl)) > viewheight))
-						I_Error("skytexture vals %i, %i %i \n%i %i %Fp %Fp %Fp %i %i %i %i \n %i %i\n %i %i %i %i %i\n%i %i", 
-							x,  pl->top[x], pl->bottom[x],
-							plheader->minx, plheader->maxx, pl, pl->top, pl->bottom,
-							dc_yl, dc_yh, physindex, subindex, 
-							i, lastvisplane,
-							active_visplanes[0],active_visplanes[1],active_visplanes[2],active_visplanes[3],active_visplanes[4],
-							visplanemax,visplanedirtycount
-							);*/
 
+					// inlined special-case R_GetColumn
 
-					dc_source = R_GetColumn(skytexture, angle);
+					// check which 64k page this lives in
+					// todo cache this offset location 
+
+					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
+
 					colfunc();
 
 				}

@@ -399,9 +399,9 @@ void D_Display (void)
 		break;
 
       case GS_FINALE:
-		Z_QuickmapStatus();
+		Z_QuickMapStatus();
         F_Drawer ();
-		Z_QuickmapPhysics();
+		Z_QuickMapPhysics();
         break;
 
       case GS_DEMOSCREEN:
@@ -475,9 +475,9 @@ void D_Display (void)
             y = viewwindowy+4;
 #ifndef __DEMO_ONLY_BINARY
 
-		Z_QuickmapMenu();		
+		Z_QuickMapMenu();		
         V_DrawPatchDirect(viewwindowx+(scaledviewwidth-68)/2, y, M_GetMenuPatch(12));
-		Z_QuickmapPhysics();
+		Z_QuickMapPhysics();
 #endif
     }
 	
@@ -517,9 +517,9 @@ void D_Display (void)
     } while (!done);
 
 	// zero out this memory as it will be used for visplanes, etc
-	Z_QuickmapWipe();
+	Z_QuickMapWipe();
 	FAR_memset(screen3+0x4000, 0, 0xBFFF);
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 	wipeduration = ticcount - wiperealstart;
 
 #endif

@@ -77,7 +77,7 @@ void R_InitSpriteLumps(void)
 		if (!(i & 63))
 			DEBUG_PRINT(".");
 #endif
-		Z_QuickmapScratch_5000();
+		Z_QuickMapScratch_5000();
 
 		W_CacheLumpNumDirect(firstspritelump + i, SCRATCH_ADDRESS_5000);
 		
@@ -498,14 +498,14 @@ void R_InitTextures(void)
 	 
 	// Precalculate whatever possible.  
 	// done using 7000 above ?
-	Z_QuickmapScratch_7000();
+	Z_QuickMapScratch_7000();
 	for (i = 0; i < numtextures; i++){
 		R_GenerateLookup(i);
 	}
 
 	// Reset this since 0x7000 scratch page is active
-	Z_QuickmapRender();
-	Z_QuickmapLumpInfo();
+	Z_QuickMapRender();
+	Z_QuickMapLumpInfo();
 
 	//I_Error("final size: %i", currentlumpindex);
 
@@ -601,18 +601,18 @@ extern uint8_t                     screenblocks;
 
 void R_Init(void)
 {
-	Z_QuickmapRender();
-	Z_QuickmapLumpInfo();
-	//Z_QuickmapTextureInfoPage();
+	Z_QuickMapRender();
+	Z_QuickMapLumpInfo();
+
 	R_InitData();
 	DEBUG_PRINT("..");
 	// viewwidth / viewheight / detailLevel are set by the defaults
 
 	R_SetViewSize(screenblocks, detailLevel);
-	DEBUG_PRINT("..");
+	DEBUG_PRINT("...");
 	//R_InitLightTables();
-	//DEBUG_PRINT(".");
-	Z_QuickmapPhysics();
+
+	Z_QuickMapPhysics();
 	
 	skyflatnum = R_FlatNumForName("F_SKY1");
 

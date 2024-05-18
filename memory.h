@@ -459,7 +459,12 @@ This area used during intermission task
 #define tallpercent_patch  ((byte __far *) 0x7000EF78)
 
 //extern byte __far* palettebytes;
+#define palettebytes_size  10752
 #define palettebytes ((byte __far*) 0x90000000)
+
+// 10752 bytes / 16 = 672 or 2A0 for offset
+#define skytexture_segment 0x9300
+#define skytexture_bytes ((byte __far*) 0x90003000)
 
 // main bar left
 #define sbar  44024u

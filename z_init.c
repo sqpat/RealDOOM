@@ -253,12 +253,12 @@ found:
 	}
 	 
 
-	Z_QuickmapLumpInfo5000();
+	Z_QuickMapLumpInfo5000();
 
 	FAR_memcpy((byte __far *) 0x54000000, (byte __far *) 0x94000000, 49152u); // copy the wad lump stuff over. gross
 	FAR_memset((byte __far *) 0x94000000, 0, 49152u);
 
-	Z_QuickmapPhysics(); // map default page map
+	Z_QuickMapPhysics(); // map default page map
 }
 
 
@@ -307,7 +307,7 @@ void Z_LoadBinaries() {
 	FAR_fread(doomednum, 2, NUMMOBJTYPES, fp);
 
 	// just load them all here in one call instead of 5 like below
-	Z_QuickmapIntermission();
+	Z_QuickMapIntermission();
 	//760
 	FAR_fread(lnodex, 1, 760, fp);
 
@@ -323,13 +323,13 @@ void Z_LoadBinaries() {
 	
 
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);
-	Z_QuickmapRender();
+	Z_QuickMapRender();
  
 	//4096
 	FAR_fread(zlight, 1, 4096, fp);
 	FAR_fread(fuzzoffset, 1, 50, fp);
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 	FAR_fread(pars, 2, 72, fp);  // 4*10 + 32 par times
 
 	fclose(fp);

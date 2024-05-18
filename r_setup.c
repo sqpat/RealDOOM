@@ -76,7 +76,7 @@ void R_InitTextureMapping(void)
 	int16_t		i;
 	int16_t		j;
 	fixed_t_union finetan_i;
-	Z_QuickmapRender();
+	Z_QuickMapRender();
 	temp.h.fracbits = 0;
 
 	// Use tangent table to generate viewangletox:
@@ -190,7 +190,7 @@ void R_InitTextureMapping(void)
 		}
 	}
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 }
 

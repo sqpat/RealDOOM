@@ -103,35 +103,36 @@ void Z_ShutdownEMS();
 #define FIRST_STATUS_LOGICAL_PAGE                   SCREEN4_LOGICAL_PAGE + 1
 // 41
 #define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
-// 42
-#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            PALETTE_LOGICAL_PAGE + 1
-// 49
+#define SKY_TEXTURE_FIRST_PAGE                      PALETTE_LOGICAL_PAGE
+// 44
+#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            SKY_TEXTURE_FIRST_PAGE + 3
+// 51
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
-// 57
+// 59
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 61
+// 63
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 64
+// 66
 #define FIRST_PATCH_CACHE_LOGICAL_PAGE              FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_PATCH_CACHE_PAGES                       16
-// 80
+// 82
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES                        6
-// 86
+// 88
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 94
+// 96
 #define NUM_TEXTURE_PAGES                           8
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
-// 99
+// 101
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 103
+// 105
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 107
+// 109
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 
 
-// 116
+// 118
 #define NUM_SPRITE_CACHE_PAGES                      20
 
 // todo eventuall yjust include this in the spritecache area...
@@ -174,6 +175,7 @@ void Z_ShutdownEMS();
 #define num_scratch5000_params 8
 #define num_scratch8000_params 8
 #define num_scratch7000_params 8
+#define num_renderplane_params 6
 #define num_flatcache_params 8
 #define num_flatcache_undo_params 4
 #define num_spritecache_params 8
@@ -202,7 +204,8 @@ void Z_ShutdownEMS();
 #define pageswapargs_scratch5000_offset_size         (pageswapargs_demo_offset_size           + 2*num_demo_params)
 #define pageswapargs_scratch8000_offset_size         (pageswapargs_scratch5000_offset_size    + 2*num_scratch5000_params)
 #define pageswapargs_scratch7000_offset_size         (pageswapargs_scratch8000_offset_size    + 2*num_scratch8000_params)
-#define pageswapargs_flatcache_offset_size           (pageswapargs_scratch7000_offset_size    + 2*num_scratch7000_params)
+#define pageswapargs_renderplane_offset_size         (pageswapargs_scratch7000_offset_size    + 2*num_scratch7000_params)
+#define pageswapargs_flatcache_offset_size           (pageswapargs_renderplane_offset_size    + 2*num_renderplane_params)
 #define pageswapargs_flatcache_undo_offset_size      (pageswapargs_flatcache_offset_size      + 2*num_flatcache_params)
 #define pageswapargs_spritecache_offset_size         (pageswapargs_flatcache_undo_offset_size + 2*num_flatcache_undo_params)
 #define pageswapargs_palette_offset_size             (pageswapargs_spritecache_offset_size    + 2*num_spritecache_params)
@@ -220,7 +223,8 @@ void Z_ShutdownEMS();
 #define pageswapargs_scratch5000_offset     (pageswapargs_demo_offset               + num_demo_params)
 #define pageswapargs_scratch8000_offset     (pageswapargs_scratch5000_offset        + num_scratch5000_params)
 #define pageswapargs_scratch7000_offset     (pageswapargs_scratch8000_offset        + num_scratch8000_params)
-#define pageswapargs_flatcache_offset       (pageswapargs_scratch7000_offset        + num_scratch7000_params)
+#define pageswapargs_renderplane_offset     (pageswapargs_scratch7000_offset        + num_scratch7000_params)
+#define pageswapargs_flatcache_offset       (pageswapargs_renderplane_offset        + num_renderplane_params)
 #define pageswapargs_flatcache_undo_offset  (pageswapargs_flatcache_offset          + num_flatcache_params)
 #define pageswapargs_spritecache_offset     (pageswapargs_flatcache_undo_offset     + num_flatcache_undo_params)
 #define pageswapargs_palette_offset         (pageswapargs_spritecache_offset        + num_spritecache_params)
@@ -236,18 +240,18 @@ extern int16_t pageswapargs[total_pages];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 
 // EMS 4.0 stuff
-void Z_QuickmapPhysics();
-void Z_QuickmapRender();
-void Z_QuickmapRender_4000To9000();
-void Z_QuickmapStatus();
-void Z_QuickmapDemo();
-void Z_QuickmapRender4000();
-void Z_QuickmapByTaskNum(int8_t task);
-void Z_QuickmapRenderTexture();
-//void Z_QuickmapRenderTexture(uint8_t offset, uint8_t count);
-void Z_QuickmapScratch_5000();
-void Z_QuickmapScratch_8000();
-void Z_QuickmapScratch_7000();
+void Z_QuickMapPhysics();
+void Z_QuickMapRender();
+void Z_QuickMapRender_4000To9000();
+void Z_QuickMapStatus();
+void Z_QuickMapDemo();
+void Z_QuickMapRender4000();
+void Z_QuickMapByTaskNum(int8_t task);
+void Z_QuickMapRenderTexture();
+//void Z_QuickMapRenderTexture(uint8_t offset, uint8_t count);
+void Z_QuickMapScratch_5000();
+void Z_QuickMapScratch_8000();
+void Z_QuickMapScratch_7000();
 void Z_PushScratchFrame();
 void Z_PopScratchFrame();
 void Z_QuickMapFlatPage(int16_t page, int16_t offset);
@@ -255,16 +259,16 @@ void Z_QuickMapUndoFlatCache();
 void Z_QuickMapSpritePage();
 
     //void Z_QuickMapTextureInfoPage();
-void Z_QuickmapPalette();
-void Z_QuickmapMenu();
-void Z_QuickmapIntermission();
-void Z_QuickmapScreen0();
-void Z_QuickmapWipe();
-void Z_QuickmapLumpInfo();
+void Z_QuickMapPalette();
+void Z_QuickMapMenu();
+void Z_QuickMapIntermission();
+void Z_QuickMapScreen0();
+void Z_QuickMapWipe();
+void Z_QuickMapLumpInfo();
 void Z_UnmapLumpInfo();
-void Z_QuickmapLumpInfo5000();
+void Z_QuickMapLumpInfo5000();
 void Z_UnmapLumpInfo5000();
-void Z_QuickmapColumnOffsets5000();
+void Z_QuickMapColumnOffsets5000();
 void Z_QuickMapRender7000();
 
 void Z_GetEMSPageMap();
@@ -275,6 +279,7 @@ void Z_LoadBinaries();
 void Z_ClearDeadCode();
 void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage);
 void Z_QuickMapVisplaneRevert();
+void Z_QuickMapRenderPlanes();
 
 #define PAGE_TYPE_PHYSICS 0
 #define PAGE_TYPE_RENDER 1

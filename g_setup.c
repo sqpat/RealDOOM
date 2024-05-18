@@ -123,7 +123,7 @@ void G_DoLoadLevel(void)
 {
 	
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
-	Z_QuickmapRender();
+	Z_QuickMapRender();
 	// DOOM determines the sky texture to be used
 	// depending on the current episode, and the game version.
 	if (commercial)
@@ -137,7 +137,7 @@ void G_DoLoadLevel(void)
 	}
 #endif
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 	if (wipegamestate == GS_LEVEL)
 		wipegamestate = -1;             // force a wipe 
@@ -249,8 +249,8 @@ G_InitNew
 	gameskill = skill;
 
 	viewactive = true;
-	Z_QuickmapRender();
-	//Z_QuickmapTextureInfoPage();
+	Z_QuickMapRender();
+	//Z_QuickMapTextureInfoPage();
 
 
 	// set the sky map for the episode
@@ -281,7 +281,7 @@ G_InitNew
 			break;
 		}
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 	G_DoLoadLevel();
 

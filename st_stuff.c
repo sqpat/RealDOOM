@@ -779,7 +779,7 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 	if (st_firsttime) {
 		st_firsttime = false;
 		updatedthisframe = true;
-		Z_QuickmapStatus();
+		Z_QuickMapStatus();
 
 		// draw status bar background to off-screen buff
 		ST_refreshBackground();
@@ -792,7 +792,7 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 	}
 
 	if (updatedthisframe) {
-		Z_QuickmapPhysics();
+		Z_QuickMapPhysics();
 	}
 }
 

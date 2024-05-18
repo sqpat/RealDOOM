@@ -191,17 +191,17 @@ int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -
 extern int16_t pagenum9000;
 extern int16_t pageswapargs[total_pages];
 
-void Z_Quickmap(int16_t offset, int8_t count);
+void Z_QuickMap(int16_t offset, int8_t count);
 
 
-void Z_QuickmapUnmapAll() {
+void Z_QuickMapUnmapAll() {
 	int16_t i;
 	for (i = 0; i < 24; i++) {
 		pageswapargs[i * 2 + 0] = -1;
 		pageswapargs[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
 	}
 
-	Z_Quickmap(0, 24);
+	Z_QuickMap(0, 24);
 
 
 }
@@ -213,7 +213,7 @@ void Z_ShutdownEMS() {
 	int16_t result;
 
 	if (emshandle) {
-		Z_QuickmapUnmapAll();
+		Z_QuickMapUnmapAll();
 		regs.w.dx = emshandle; // handle
 		regs.h.ah = 0x45;
 		intx86(EMS_INT, &regs, &regs);

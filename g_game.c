@@ -543,9 +543,9 @@ void G_Ticker (void)
 			break;
                          
 		  case GS_FINALE: 
-			Z_QuickmapStatus();
+			Z_QuickMapStatus();
 			F_Ticker();
-			Z_QuickmapPhysics();		
+			Z_QuickMapPhysics();		
 			break;
  
 		  case GS_DEMOSCREEN: 
@@ -953,7 +953,7 @@ void G_ReadDemoTiccmd (ticcmd_t __near* cmd)
 { 
     // this is just used as an offset so lets just store as int;
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
-	Z_QuickmapDemo();
+	Z_QuickMapDemo();
 
 	if (*demo_addr == DEMOMARKER)  {
         // end of demo data stream 
@@ -967,7 +967,7 @@ void G_ReadDemoTiccmd (ticcmd_t __near* cmd)
     cmd->angleturn = ((uint8_t)*demo_addr++)<<8;
     cmd->buttons = (uint8_t)*demo_addr++;
 	demo_p = (uint16_t)(demo_addr - demobuffer);
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 }
 
@@ -975,7 +975,7 @@ void G_ReadDemoTiccmd (ticcmd_t __near* cmd)
 void G_WriteDemoTiccmd (ticcmd_t __near* cmd) 
 { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
-	Z_QuickmapDemo();
+	Z_QuickMapDemo();
 	if (gamekeydown['q'])           // press q to end demo recording 
         G_CheckDemoStatus (); 
 
@@ -991,13 +991,13 @@ void G_WriteDemoTiccmd (ticcmd_t __near* cmd)
     {
         // no more space 
         G_CheckDemoStatus (); 
-		Z_QuickmapPhysics();
+		Z_QuickMapPhysics();
 		return;
     } 
         
     G_ReadDemoTiccmd (cmd);         // make SURE it is exactly the same 
 	demo_p = (uint16_t)(demo_addr - demobuffer);
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 } 
  
@@ -1026,7 +1026,7 @@ void G_RecordDemo (int8_t* name)
 void G_BeginRecording (void) 
 { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
-	Z_QuickmapDemo();
+	Z_QuickMapDemo();
 
     demo_p = 0;
         
@@ -1046,7 +1046,7 @@ void G_BeginRecording (void)
 	*demo_addr++ = false;
 	
 	demo_p = (demo_addr - demobuffer);
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 } 
  
@@ -1068,7 +1068,7 @@ void G_DoPlayDemo (void)
     skill_t skill; 
 	int8_t             episode, map;
 	byte __far* demo_addr;
-	Z_QuickmapDemo();
+	Z_QuickMapDemo();
 
 	gameaction = ga_nothing;
 	W_CacheLumpNameDirect(defdemoname, demobuffer);
@@ -1106,7 +1106,7 @@ void G_DoPlayDemo (void)
     demoplayback = true; 
 
 	demo_p = (demo_addr - demobuffer);
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 } 
 
@@ -1210,7 +1210,7 @@ boolean G_CheckDemoStatus (void)  {
     } 
  
     if (demorecording)  { 
-		Z_QuickmapDemo();
+		Z_QuickMapDemo();
 		demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 		*demo_addr++ = DEMOMARKER;
 		demo_p++;

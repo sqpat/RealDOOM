@@ -1579,13 +1579,13 @@ boolean M_Responder (event_t __far*  ev)
 			currentMenu->menuitems[itemOn].status == 2) {
 
 			oldtask = currenttask;
-			Z_QuickmapMenu();
+			Z_QuickMapMenu();
 
 
             S_StartSound(NULL,sfx_stnmov);
             currentMenu->menuitems[itemOn].routine(0);
 
-			Z_QuickmapByTaskNum(oldtask);
+			Z_QuickMapByTaskNum(oldtask);
 
         }
         return true;
@@ -1595,12 +1595,12 @@ boolean M_Responder (event_t __far*  ev)
 			currentMenu->menuitems[itemOn].status == 2) {
 
 			oldtask = currenttask;
-			Z_QuickmapMenu();
+			Z_QuickMapMenu();
 
             S_StartSound(NULL,sfx_stnmov);
             currentMenu->menuitems[itemOn].routine(1);
 			
-			Z_QuickmapByTaskNum(oldtask);
+			Z_QuickMapByTaskNum(oldtask);
 
         }
         return true;
@@ -1610,7 +1610,7 @@ boolean M_Responder (event_t __far*  ev)
             currentMenu->menuitems[itemOn].status) {
 
 			oldtask = currenttask;
-			Z_QuickmapMenu();
+			Z_QuickMapMenu();
 
 			currentMenu->lastOn = itemOn;
 			
@@ -1621,7 +1621,7 @@ boolean M_Responder (event_t __far*  ev)
                 currentMenu->menuitems[itemOn].routine(itemOn);
                 S_StartSound(NULL,sfx_pistol);
             }
-			Z_QuickmapByTaskNum(oldtask);
+			Z_QuickMapByTaskNum(oldtask);
 
         }
         return true;
@@ -1701,7 +1701,7 @@ void M_Drawer (void)
     // Horiz. & Vertically center string and print it.
     if (messageToPrint) {
 		// Not menu - because status has the graphics for letter!
-		Z_QuickmapStatus();
+		Z_QuickMapStatus();
 
         start = 0;
         y = 100 - M_StringHeight(messageString)/2;
@@ -1725,7 +1725,7 @@ void M_Drawer (void)
 
 			y += HU_FONT_SIZE;
         }
-		Z_QuickmapPhysics();
+		Z_QuickMapPhysics();
 
 		return;
     }
@@ -1733,7 +1733,7 @@ void M_Drawer (void)
 	if (!menuactive) {
 		return;
 	}
-	Z_QuickmapMenu();
+	Z_QuickMapMenu();
 
 	if (currentMenu->routine) {
 		currentMenu->routine();         // call Draw routine
@@ -1757,7 +1757,7 @@ void M_Drawer (void)
 	V_DrawPatchDirect(x + SKULLXOFF, currentMenu->y - 5 + itemOn * LINEHEIGHT,
 		M_GetMenuPatch(skullName[whichSkull])) ;
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 }
 

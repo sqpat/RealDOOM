@@ -423,8 +423,8 @@ void F_TextWrite (void)
      // erase the entire screen to a tiled background
 	byte __far* src = (byte __far*)0x50000000;
 
-	Z_QuickmapScratch_5000();
-	Z_QuickmapScreen0();
+	Z_QuickMapScratch_5000();
+	Z_QuickMapScreen0();
 	W_CacheLumpNameDirect(finaleflat, src);
 
     for (y=0 ; y<SCREENHEIGHT ; y++) {
@@ -434,7 +434,7 @@ void F_TextWrite (void)
 		}
 	 
     }
-	Z_QuickmapStatus();
+	Z_QuickMapStatus();
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
     
@@ -745,7 +745,7 @@ void F_CastDrawer (void)
 	lump = sprframe->lump[0];
     flip = (boolean)sprframe->flip[0];
 	
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 
 	W_CacheLumpNumDirect(lump + firstspritelump, (byte __far*)patch);
 
@@ -755,7 +755,7 @@ void F_CastDrawer (void)
 	else {
 		V_DrawPatch(160, 170, 0, patch);
 	}
-	Z_QuickmapStatus();
+	Z_QuickMapStatus();
 
 }
 
@@ -806,7 +806,7 @@ void F_BunnyScroll (void) {
 	column_t __far* column;
 	patch_t __far* patch 	  = (patch_t __far*)0x50000000;
 	byte __far* lookupoffset = (byte __far*)0x54000000;
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
 	
@@ -870,7 +870,7 @@ void F_BunnyScroll (void) {
 		W_CacheLumpNameDirect("END0", (byte __far*)patch);
 		V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
 		laststage = 0;
-		Z_QuickmapStatus();
+		Z_QuickMapStatus();
 		return;
     }
 	
@@ -886,7 +886,7 @@ void F_BunnyScroll (void) {
     sprintf (name,"END%i",stage);
 	W_CacheLumpNameDirect(name, (byte __far*)patch);
 	V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
-	Z_QuickmapStatus();
+	Z_QuickMapStatus();
 
 }
 

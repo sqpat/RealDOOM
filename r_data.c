@@ -813,7 +813,7 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 		colofs = (uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[texnum] << 4]);
 	}
 
-	Z_QuickmapScratch_7000();
+	Z_QuickMapScratch_7000();
 
 
 
@@ -881,7 +881,6 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 	*/
 
 	Z_QuickMapRender7000();
-	//Z_QuickMapFlatPage();
 
 }
 uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
@@ -950,7 +949,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 
 		R_MarkCacheLRU(realtexpage, 0, cachetype);
 
-		Z_QuickmapRenderTexture();
+		Z_QuickMapRenderTexture();
 
 
 		return startpage;
@@ -1037,7 +1036,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 		}
 
 		R_MarkCacheLRU(realtexpage, numpages, cachetype);
-		Z_QuickmapRenderTexture();
+		Z_QuickMapRenderTexture();
 
 		// paged in
 
@@ -1321,7 +1320,8 @@ void setchecksum(){
 	origcachecount = cachecount;
 }*/
 
-
+int setval = 0;
+extern int16_t skytexturelump;
 byte __far*
 R_GetColumn
 (int16_t           tex,

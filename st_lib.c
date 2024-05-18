@@ -42,7 +42,7 @@ extern boolean updatedthisframe;
 
 void STlib_updateflag() {
 	if (!updatedthisframe) {
-		Z_QuickmapStatus();
+		Z_QuickMapStatus();
 		updatedthisframe = true;
 	}
 }

@@ -32,6 +32,8 @@
 
 #include "r_local.h"
 
+#include "w_wad.h"
+#include "z_zone.h"
 
 #include "i_system.h"
 #include "doomstat.h"
@@ -662,9 +664,11 @@ extern uint16_t cachedrenderplayertics;
 #endif
 void M_StartMessage(int8_t __near * string,void __far_func (* routine)(int16_t), boolean input);
 
-extern int8_t visplanedirty;
-extern int16_t lastvisplane;
-
+//extern int8_t lastvisplane;
+int8_t visplanedirty = false;
+int8_t skytextureloaded = false;
+uint16_t __far* skyofs;
+int16_t skytexturelump = -3;
 //
 // R_RenderView
 //
@@ -691,7 +695,7 @@ void R_RenderPlayerView ()
 		r_cachedstatecopy[1] = *(player.psprites[1].state);
 	}
 
-	Z_QuickmapRender();
+	Z_QuickMapRender();
 	R_SetupFrame ();
 
 
@@ -724,7 +728,26 @@ void R_RenderPlayerView ()
 	R_PrepareMaskedPSprites();
 
 	// replace render level data with flat cache
-	Z_QuickMapFlatPage(0, 4);
+
+	Z_QuickMapRenderPlanes();
+
+	if (!skytextureloaded){
+		skytexturelump = ((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[skytexture]]))[0];
+		// lump from tex id
+		W_CacheLumpNumDirect(skytexturelump, skytexture_bytes);
+		skytextureloaded = true;
+
+		// precalculate the offsets table location...
+		if (texturecolumn_offset[skytexture] >= 0x0800) {
+			skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[skytexture] - 0x0800) << 4]));
+		} else {
+			skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[skytexture] << 4]));
+
+		}
+
+	}
+
+
 	// put visplanes 0-75 back in memory (if necessary)
 	if (visplanedirty){
 		Z_QuickMapVisplaneRevert();
@@ -755,10 +778,12 @@ void R_RenderPlayerView ()
 	//filelog2(4, 0, 0, 0, 0, 0);
 
 	// Check for new console commands.
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
-	sprintf(tempbuf, "%i", lastvisplane);
-	player.messagestring=tempbuf;
+
+	// visplane hud stuff
+	//sprintf(tempbuf, "%i", lastvisplane);
+	//player.messagestring=tempbuf;
 
 	NetUpdate ();
 

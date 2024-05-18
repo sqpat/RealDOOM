@@ -108,7 +108,7 @@ byte __far*			dc_source;
 // Thus a special case loop for very fast rendering can
 //  be used. It has also been used with Wolfenstein 3D.
 // 
-
+extern int setval;
 void R_DrawColumn (void) 
 { 
     int16_t			count; 
@@ -118,11 +118,16 @@ void R_DrawColumn (void)
 
     count = dc_yh - dc_yl; 
 
-	// todo move this out
     // Zero length, column does not exceed a pixel.
 	if (count < 0) {
 		return;
 	}
+
+// x3 x4 x5
+//
+// 9000:7cfa
+//  7cac
+
 
 	outp (SC_INDEX+1,1<<(dc_x&3));
 
@@ -387,7 +392,7 @@ void R_DrawFuzzColumn (void)
     else {
 		outpw (GC_INDEX,GC_READMAP+((dc_x&3)<<8) );
 		outp (SC_INDEX+1,1<<(dc_x&3)); 
-	dest = destview + dc_yl*80 + (dc_x>>2);
+		dest = destview + dc_yl*80 + (dc_x>>2);
     }
 
     // Looks familiar.
@@ -793,7 +798,7 @@ void R_FillBackScreen (void)
 		name = name2;
     else
 		name = name1;
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 
 	src = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
 	W_CacheLumpNameDirect(name, src);

@@ -62,7 +62,7 @@ V_DrawFullscreenPatch
 	byte __far*       extradata = (byte __far *)patch;
 	int16_t oldtask = currenttask;
 	int16_t lump = W_GetNumForName(pagename);
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 
 	W_CacheLumpNumDirectFragment(lump, (byte __far *)(0x50000000), 0);
 
@@ -124,6 +124,6 @@ V_DrawFullscreenPatch
 		}
 	}
 
-	Z_QuickmapByTaskNum(oldtask);
+	Z_QuickMapByTaskNum(oldtask);
 
 }

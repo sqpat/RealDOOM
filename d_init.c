@@ -318,7 +318,7 @@ void HU_Init(void)
 	int16_t		j;
 	int8_t	buffer[9];
 
-	Z_QuickmapStatus();
+	Z_QuickMapStatus();
 
 	// load the heads-up font
 	j = HU_FONTSTART;
@@ -328,7 +328,7 @@ void HU_Init(void)
 	}
 
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 
 }
@@ -457,7 +457,7 @@ void M_Init(void)
 {
 	
 
-	Z_QuickmapMenu();
+	Z_QuickMapMenu();
 	
 	M_Reload();
 	
@@ -485,7 +485,7 @@ void M_Init(void)
 		ReadMenu1[0].routine = M_FinishReadThis;
 	}
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 	
 }

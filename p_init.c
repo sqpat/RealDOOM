@@ -557,22 +557,15 @@ void R_InitSprites()
 //
 // P_Init
 //
-void P_Init(void)
-{
-	/*
-	FILE *fp = fopen("D_MENUG.BIN", "wb"); // clear old file
-	fwrite(menugraphics, 9, NUM_MENU_ITEMS, fp);
-	fclose(fp);
-	I_Error("done");
-	*/
+void P_Init(void) {
 
-	Z_QuickmapRender();
-	Z_QuickmapLumpInfo();
+	Z_QuickMapRender();
+	Z_QuickMapLumpInfo();
 	P_InitSwitchList();
 	P_InitPicAnims();
 	R_InitSprites();
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 
 }

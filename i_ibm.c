@@ -235,7 +235,7 @@ void I_SetPalette(int8_t paletteNumber) {
     }
 
 	I_WaitVBL(1);
-	Z_QuickmapPalette();
+	Z_QuickMapPalette();
 
 	_outbyte(PEL_WRITE_ADR, 0);
 	gammatablelookup = (gammatable + usegamma*256);
@@ -245,7 +245,7 @@ void I_SetPalette(int8_t paletteNumber) {
 		palette++;
     }
 
-	Z_QuickmapByTaskNum(savedtask);
+	Z_QuickMapByTaskNum(savedtask);
 
 }
 

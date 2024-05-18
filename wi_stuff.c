@@ -870,7 +870,7 @@ void WI_Ticker(void)
 	}
 
 	WI_checkForAccelerate();
-	Z_QuickmapIntermission();
+	Z_QuickMapIntermission();
 
 	switch (state) {
 		case StatCount:
@@ -885,7 +885,7 @@ void WI_Ticker(void)
 			WI_updateNoState();
 			break;
 	}
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 }
 
@@ -978,7 +978,7 @@ void WI_Drawer (void) {
 		return;
 	}
 
-	Z_QuickmapIntermission();
+	Z_QuickMapIntermission();
 
     switch (state) {
       case StatCount:
@@ -993,7 +993,7 @@ void WI_Drawer (void) {
 		WI_drawNoState();
 		break;
     }
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 }
  
 
@@ -1069,14 +1069,14 @@ void WI_Init(void)
 
 void WI_Start(wbstartstruct_t __near* wbstartstruct) {
 	unloaded = false;
-	Z_QuickmapIntermission();
+	Z_QuickMapIntermission();
 	
 	WI_initVariables(wbstartstruct);
 	WI_Init();
 	WI_loadData();
 	WI_initStats();
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 }
 

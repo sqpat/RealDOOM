@@ -57,7 +57,7 @@ wipe_shittyColMajorXform
     uint16_t		y;
     int16_t __far*	dest = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
 	
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 
     for(y=0;y<SCREENHEIGHT;y++)
 		for (x = 0; x < SCREENWIDTHOVER2; x++) {
@@ -169,14 +169,14 @@ wipe_doMelt
 int16_t
 wipe_StartScreen( )
 {
-	Z_QuickmapWipe();
+	Z_QuickMapWipe();
 
 	wipe_scr_start = screen2;
     I_ReadScreen(wipe_scr_start);
 
 
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
     return 0;
 }
@@ -216,14 +216,14 @@ V_DrawBlock
 int16_t
 wipe_EndScreen ()
 {
-	Z_QuickmapWipe();
+	Z_QuickMapWipe();
 
 	wipe_scr_end = screen3;
     I_ReadScreen(wipe_scr_end);
     
 	V_DrawBlock(0, 0,  SCREENWIDTH, SCREENHEIGHT, wipe_scr_start); // restore start scr.
  
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
     return 0;
 }
@@ -233,7 +233,7 @@ wipe_ScreenWipe(int16_t	ticks ) {
 	int16_t rc;
 
 	
-	Z_QuickmapWipe();
+	Z_QuickMapWipe();
 
     // initial stuff
     if (!go) {
@@ -253,7 +253,7 @@ wipe_ScreenWipe(int16_t	ticks ) {
 		
     }
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
     return !go;
 

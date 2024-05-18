@@ -102,7 +102,7 @@ void P_LoadVertexes(int16_t lump)
 	numvertexes = totalsize / sizeof(mapvertex_t);
 
 	// Load data into cache.
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 	//data = (mapvertex_t __far*)SCRATCH_ADDRESS_5000;
@@ -140,12 +140,12 @@ void P_LoadSegs(int16_t lump)
 	int16_t mllinedef;
 	// max segs doom1/2 like 2800. need 5600ish bytes
 	int16_t __far* tempsecnums = MK_FP(0x5000, 0xc000);
-	Z_QuickmapRender_4000To9000();
+	Z_QuickMapRender_4000To9000();
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 
 	FAR_memset(segs, 0xff, MAX_SEGS_SIZE);
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 	data = (mapseg_t __far*)SCRATCH_ADDRESS_5000;
@@ -191,8 +191,8 @@ void P_LoadSegs(int16_t lump)
 	}
 	
 	
-	Z_QuickmapPhysics();
-	Z_QuickmapScratch_5000();
+	Z_QuickMapPhysics();
+	Z_QuickMapScratch_5000();
 
 
 	
@@ -217,7 +217,7 @@ void P_LoadSubsectors(int16_t lump)
 	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
 	FAR_memset(subsectors, 0, MAX_SUBSECTORS_SIZE);
 
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 	data = (mapsubsector_t __far*)SCRATCH_ADDRESS_5000;
@@ -284,7 +284,7 @@ void P_LoadSectors(int16_t lump)
 
 	FAR_memset(sectors, 0, MAX_SECTORS_SIZE);
 	FAR_memset(sectors_physics, 0, MAX_SECTORS_PHYSICS_SIZE);
-	Z_QuickmapScratch_8000();
+	Z_QuickMapScratch_8000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_8000);
 	data = (mapsector_t __far*)SCRATCH_ADDRESS_8000;
@@ -348,8 +348,8 @@ void P_LoadNodes(int16_t lump)
 	
 	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
 
-	Z_QuickmapRender_4000To9000();
-	Z_QuickmapScratch_5000();
+	Z_QuickMapRender_4000To9000();
+	Z_QuickMapScratch_5000();
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 
 	for (i = 0; i < numnodes; i++) {
@@ -367,7 +367,7 @@ void P_LoadNodes(int16_t lump)
 		FAR_memcpy(&nodes_render[i], currentdata.bbox, 16);
 
  	}
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 }
 
@@ -451,7 +451,7 @@ void P_SpawnPlayer(mapthing_t __far* mthing)
 	// setup gun psprite
 	P_SetupPsprites();
 
-	Z_QuickmapStatus();
+	Z_QuickMapStatus();
 
 	// wake up the status bar
 	ST_Start();
@@ -459,8 +459,8 @@ void P_SpawnPlayer(mapthing_t __far* mthing)
 	// wake up the heads up text
 	HU_Start();
 
-	Z_QuickmapPhysics();
-	Z_QuickmapScratch_8000();
+	Z_QuickMapPhysics();
+	Z_QuickMapScratch_8000();
 } 
 
 extern mobj_t __far* setStateReturn;
@@ -740,7 +740,7 @@ void P_LoadThings(int16_t lump)
 	boolean             spawn;
 	
 	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
-	Z_QuickmapScratch_8000();
+	Z_QuickMapScratch_8000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_8000);
 	data = (mapthing_t __far*)SCRATCH_ADDRESS_8000;
@@ -758,7 +758,7 @@ void P_LoadThings(int16_t lump)
 		}
 
 	}
-
+	//return;
 	for (i = 0; i < numthings; i++) {
 		mt = data[i];
 		spawn = true;
@@ -831,13 +831,13 @@ void P_LoadLineDefs(int16_t lump)
 	FAR_memset(lines, 0, MAX_LINES_SIZE);
 	FAR_memset(lines_physics, 0, MAX_LINES_PHYSICS_SIZE);
 	FAR_memset(seenlines, 0, MAX_SEENLINES_SIZE);
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 	data = (maplinedef_t __far*)SCRATCH_ADDRESS_5000;
 
 	// put side_render active
-	Z_QuickmapRender4000();
+	Z_QuickMapRender4000();
 	
 	
 	for (i = 0; i < numlines; i++) {
@@ -927,7 +927,7 @@ void P_LoadLineDefs(int16_t lump)
 
 	 
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 }
 extern uint16_t     R_CheckTextureNumForName(int8_t *name);
 
@@ -968,12 +968,12 @@ void P_LoadSideDefs(int16_t lump)
 	int32_t lumpsize;
 	int32_t offset = 0;
 	int16_t indexoffset = 0;
-	Z_QuickmapRender_4000To9000();
+	Z_QuickMapRender_4000To9000();
  
 	lumpsize = W_LumpLength(lump);
 	numsides = lumpsize / sizeof(mapsidedef_t);
 
-	Z_QuickmapScratch_5000();
+	Z_QuickMapScratch_5000();
 	// this will be a little different. ths can be over 64k so lets load one page at a time (like with titlepics)
 	W_CacheLumpNumDirectFragment(lump, SCRATCH_ADDRESS_5000, 0);
 	
@@ -1028,7 +1028,7 @@ void P_LoadSideDefs(int16_t lump)
 	}
 
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 }
 
@@ -1039,7 +1039,7 @@ void P_LoadSideDefs(int16_t lump)
 void P_LoadBlockMap(int16_t lump)
 {
 	uint16_t         count;
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 
 	W_CacheLumpNumDirect(lump, (byte __far*)blockmaplump);
 	
@@ -1087,7 +1087,7 @@ void P_GroupLines(void)
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
 	
-	Z_QuickmapRender_4000To9000();
+	Z_QuickMapRender_4000To9000();
 
 	// look up sector number for each subsector
 	for (i = 0; i < numsubsectors; i++) {
@@ -1099,7 +1099,7 @@ void P_GroupLines(void)
 
 	}
 
-	Z_QuickmapPhysics();
+	Z_QuickMapPhysics();
 	// count number of lines in each sector
 	total = 0;
 	for (i = 0; i < numlines; i++) {
@@ -1297,8 +1297,28 @@ P_SetupLevel
 	*/
 	
 	P_LoadThings(lumpnum + ML_THINGS);
+
+// most recent
+/*
+	playerMobj_pos->x.w = 		0xfb479075;
+	playerMobj_pos->y.w = 		0xf90a68c7;
+	playerMobj_pos->z.w = 		0x00000000;
+	playerMobj_pos->angle.w = 	0xfd400000;
+	*/
+	//playerMobj_pos->angle.w = 	0xc2c20000;
+	//playerMobj_pos->angle.w = 	0xeac20000;
+	//playerMobj_pos->angle.w = 	0xdd020000;
+
+
 	/*
-	//Z_QuickmapRender();
+	playerMobj_pos->x.w = 		0xfc9150fa;
+	playerMobj_pos->x.w = 		0xfdf02bf7;
+	playerMobj_pos->z.w = 		0x00000000;
+	playerMobj_pos->angle.w = 	0xef800000;
+*/	
+
+	/*
+	//Z_QuickMapRender();
 	fp = fopen("blockmap.bin", "wb");
 	FAR_fwrite(blockmaplump, 0x7fff, 1, fp);
 	fclose(fp);

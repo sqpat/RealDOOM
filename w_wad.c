@@ -186,7 +186,7 @@ int16_t W_CheckNumForName (int8_t* name)
     v4 = name8.x[3];
 
 
-	Z_QuickmapLumpInfo();
+	Z_QuickMapLumpInfo();
 	// scan backwards so patch lump files take precedence
     lump_p = lumpinfo9000 + numlumps;
 
@@ -262,7 +262,7 @@ int32_t W_LumpLength (int16_t lump)
 
 
 	 
-	Z_QuickmapLumpInfo();
+	Z_QuickMapLumpInfo();
 	size = W_LumpLength9000(lump);
 	Z_UnmapLumpInfo();
 	return size;
@@ -297,10 +297,10 @@ W_ReadLump
 	boolean is5000Page = ((int32_t) dest >= 0x90000000) && ((int32_t)dest < 0xA0000000);
 
 	if (is5000Page) {
-		Z_QuickmapLumpInfo5000();
+		Z_QuickMapLumpInfo5000();
 		l = lumpinfo5000+lump;
 	} else { 
-		Z_QuickmapLumpInfo();
+		Z_QuickMapLumpInfo();
 		l = lumpinfo9000+lump;
 	}
 

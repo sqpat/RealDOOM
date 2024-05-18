@@ -229,29 +229,41 @@ void P_RunThinkers (void)
 
 void filelog(){
 	
-	//FILE* fp = fopen("p.txt", "a");
-	//fprintf(fp,"\n %li %lx %lx %lx %lx", gametic, playerMobj_pos->x, playerMobj_pos->y ,playerMobj_pos->z, playerMobj_pos->angle);
-	//fclose(fp);
+	FILE* fp = fopen("q.txt", "a");
+	fprintf(fp,"\n %li %lx %lx %lx %lx %i %i %i", gametic, playerMobj_pos->x, playerMobj_pos->y ,playerMobj_pos->z, playerMobj_pos->angle, lastvisplane, visplanemax, visplanemaxtic-gametic);
+	fclose(fp);
 	
 }
 
-void filelog2(int16_t i){
+
+void filelog2(int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, int16_t f){
 	
-	//FILE* fp = fopen("p.txt", "a");
-	//fprintf(fp,"\n %li %i", gametic, i);
-	//fclose(fp);
-	
+	FILE* fp = fopen("z.txt", "a");
+	fprintf(fp,"\n %li %i %i %i %i %i %i", gametic, a, b, c , d, e, f);
+	fclose(fp);
 }
+void filelog2b(int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, int16_t f){
+	
+	FILE* fp = fopen("z.txt", "a");
+	fprintf(fp,"\n %li %i %i %x %x %x %X", gametic, a, b, c , d, e, f);
+	fclose(fp);
+}
+*/
+
+/*
 
 extern drawseg_t __far*	ds_p;
-
-void filelog3(int16_t i, int16_t b, int16_t c){
+void filelog3(byte __far* vp, int16_t a, int16_t b){
 	
-	//FILE* fp = fopen("p.txt", "a");
-	//fprintf(fp,"\n %li %i %i %i %Fp", gametic, i, b, c, ds_p);
-	//fclose(fp);
+	FILE* fp = fopen("u.txt", "a");
+	fprintf(fp,"\n %li %Fp %i %i %i", gametic, vp, a, b, lastvisplane);
+	fclose(fp);
 	
 }
+*/
+
+/*
+
 void filelog4(int16_t i, void __far* ptr){
 	
 	//FILE* fp = fopen("p.txt", "a");
@@ -259,6 +271,7 @@ void filelog4(int16_t i, void __far* ptr){
 	//fclose(fp);
 	
 }
+int8_t setonce = 0;
 */
 void P_Ticker (void)
 {
@@ -269,9 +282,30 @@ void P_Ticker (void)
     }
 	P_PlayerThink();
 
+	//filelog();
+
  	P_RunThinkers ();
 
 	P_UpdateSpecials ();
+
+/*
+	if (gametic > 15 && !setonce){
+		setonce = 1;
+
+		playerMobj_pos->x.w = 		0xfcc37e8d;
+		playerMobj_pos->y.w = 		0xf63a120b;
+		playerMobj_pos->z.w = 		0x00000000;
+		playerMobj_pos->angle.w = 	0x2f400000;
+
+//		playerMobj_pos->x.w = 		0xfc40b6e6;
+//		playerMobj_pos->y.w = 		0xf865f975;
+//		playerMobj_pos->z.w = 		0x00000000;
+//		playerMobj_pos->angle.w = 	0xee400000;
+
+	}
+/*
+
+*/
 
 	// for par times
     leveltime.w++;	

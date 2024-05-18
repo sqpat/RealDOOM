@@ -69,7 +69,7 @@ void HU_Drawer(void) {
 	// draw everything
 	for (i = 0; i < stext->height; i++) {
 		if (!mapped) {
-			Z_QuickmapStatus();
+			Z_QuickMapStatus();
 			mapped = true;
 		}
 		index = stext->currentline - i;
@@ -84,13 +84,13 @@ void HU_Drawer(void) {
 	}
 
 	if (automapactive) {
-		Z_QuickmapStatus();
+		Z_QuickMapStatus();
 		mapped = true;
 		HUlib_drawTextLine(&w_title);
 	}
 	
 	if (mapped) {
-		Z_QuickmapPhysics();
+		Z_QuickMapPhysics();
 	}
 }
 
