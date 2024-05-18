@@ -81,7 +81,7 @@ void D_InitStrings() {
 	uint16_t stringbuffersize;
 	handle = fopen("dstrings.txt", "rb");
 	if (handle == NULL) {
-		I_Error("strings.txt missing?\n");
+		I_Error("dstrings.txt missing?");
 		return;
 	}
 
@@ -155,7 +155,7 @@ void D_StartTitle(void)
 //
 // D_GetCursorColumn
 //
-int16_t D_GetCursorColumn(void)
+int16_t D_GetCursorColumnRow(void)
 {
 	union REGS regs;
 
@@ -163,32 +163,20 @@ int16_t D_GetCursorColumn(void)
 	regs.h.bh = 0;
 	intx86(0x10, &regs, &regs);
 
-	return regs.h.dl;
+	return regs.w.dx;
 }
 
-//
-// D_GetCursorRow
-//
-int16_t D_GetCursorRow(void)
-{
-	union REGS regs;
-
-	regs.h.ah = 3;
-	regs.h.bh = 0;
-	intx86(0x10, &regs, &regs);
-
-	return regs.h.dh;
-}
 
 //
 // D_SetCursorPosition
 //
-void D_SetCursorPosition(int16_t column, int16_t row)
+void D_SetCursorPosition(int16_t columnrow)
 {
 	union REGS regs;
 
-	regs.h.dh = row;
-	regs.h.dl = column;
+	//regs.h.dh = row;
+	//regs.h.dl = column;
+	regs.w.dx = columnrow;
 	regs.h.ah = 2;
 	regs.h.bh = 0;
 	intx86(0x10, &regs, &regs);
@@ -200,17 +188,17 @@ void D_SetCursorPosition(int16_t column, int16_t row)
 void D_DrawTitle(int8_t __near *string)
 {
 	union REGS regs;
-	int16_t column;
-	int16_t row;
+	int16_t_union columnrow;
 	int16_t i;
 
 	//Calculate text color
 
-	//Get column position
-	column = D_GetCursorColumn();
+	//I_Error("string is \n%s1", string);
 
-	//Get row position
-	row = D_GetCursorRow();
+	//Get column/row position
+	columnrow.h = D_GetCursorColumnRow();
+
+	#define column columnrow.b.bytelow
 
 	for (i = 0; i < strlen(string); i++)
 	{
@@ -223,12 +211,14 @@ void D_DrawTitle(int8_t __near *string)
 		intx86(0x10, &regs, &regs);
 
 		//Check cursor position
-		if (++column > 79)
+		if (++column > 79){
 			column = 0;
+		}
 
 		//Set position
-		D_SetCursorPosition(column, row);
+		D_SetCursorPosition(columnrow.h);
 	}
+	#undef column
 }
 
 
@@ -237,23 +227,22 @@ void D_DrawTitle(int8_t __near *string)
 //
 // D_RedrawTitle
 //
-void D_RedrawTitle(int8_t __near *title)
-{
+void D_RedrawTitle(int8_t __near *title) {
+	int16_t_union columnrow;
 	int16_t column;
 	int16_t row;
 
 	//Get current cursor pos
-	column = D_GetCursorColumn();
-	row = D_GetCursorRow();
+	columnrow.h = D_GetCursorColumnRow();
 
 	//Set cursor pos to zero
-	D_SetCursorPosition(0, 0);
+	D_SetCursorPosition(0);
 
 	//Draw title
 	D_DrawTitle(title);
 
 	//Restore old cursor pos
-	D_SetCursorPosition(column, row);
+	D_SetCursorPosition(columnrow.h);
 }
 
  
@@ -552,7 +541,7 @@ void D_DoomMain2(void)
 	int16_t             p;
 	int8_t                    file[256];
 	union REGS regs;
-	int8_t          textbuffer[256];
+	int8_t          textbuffer[280]; // must be 276 to fit the 3 line titles
 	int8_t            title[128];
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x000036f0
