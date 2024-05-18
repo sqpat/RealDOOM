@@ -32,7 +32,8 @@ void R_ClearPlanes (void);
 
 void R_DrawPlanes (void);
 
-
+#define IS_CEILING_PLANE    1
+#define IS_FLOOR_PLANE      0
 int16_t
 R_FindPlane
 ( fixed_t	height,

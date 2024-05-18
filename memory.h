@@ -109,11 +109,7 @@ CC00 block (16k)
 colormaps       CC00:0000
 scalelightfixed CC00:2100
 scalelights     CC00:2160
-patchpage       CC00:2760
-patchoffset     CC00:2B18
-zlight          CC00:293C
-[empty]         CC00:3B18  
-// 330 bytes free
+[empty]         CC00:2760
 
 
 */

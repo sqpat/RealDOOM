@@ -191,16 +191,14 @@ void R_ClearPlanes (void)
 }
 
 
-visplane_t __far * visplanelookups[3] = {visplanes_8400, visplanes_8800, visplanes_8C00};
+uint16_t visplanelookupsegments[3] = {0x8400, 0x8800, 0x8C00};
 extern int8_t visplanedirty;
 extern int8_t active_visplanes[5];
 
 // we want to cache the variables/logic based around which plane indices are mapped..
 
 int8_t ceilphyspage = 0;
-int8_t ceilsubindex = 0;
 int8_t floorphyspage = 0;
-int8_t floorsubindex = 0;
 
 
 // requires pagination and juggling of floor/ceil planes...
@@ -209,20 +207,19 @@ visplane_t __far * R_HandleEMSPagination(int8_t index, int8_t isceil){
 	int8_t usedphyspage;
 	int8_t usedvirtualpage = 0;
 	int8_t usedsubindex = index;
-	int8_t j = index-25;
+	visplane_t __far * pl;
 
 
 	// mult + modulo
-	while (j >= 0){
+	while (usedsubindex >= 25){
 		usedvirtualpage++;
 		usedsubindex -= 25;
-		j -= 25;
 	}
 
 	usedphyspage = usedvirtualpage;
 
 	// check if we need to bother at all with complicated logic (more than 75 visplanes in use)
-	if (visplanedirty || (index > MAX_CONVENTIONAL_VISPLANES)){
+	if (visplanedirty || (index >= MAX_CONVENTIONAL_VISPLANES)){
 
 		// is this virtual page already in a physical page?
 		if (active_visplanes[usedvirtualpage]){
@@ -251,20 +248,18 @@ visplane_t __far * R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 		}
 	}
-
-
+	pl = (visplane_t __far *) MK_FP(visplanelookupsegments[usedphyspage], usedsubindex * VISPLANE_BYTE_SIZE); 
+	
 	if (isceil){
 		ceilphyspage = usedphyspage;
-		ceilsubindex = usedsubindex;
-		ceiltop = ((visplanelookups[ceilphyspage])[ceilsubindex]).top;
+		ceiltop = pl->top;
 
 	} else {
 		floorphyspage = usedphyspage;
-		floorsubindex = usedsubindex;
-		floortop = ((visplanelookups[floorphyspage])[floorsubindex]).top;
+		floortop = pl->top;
 	}
-	 return &((visplanelookups[usedphyspage])[usedsubindex]);
 
+	 return pl;
 }
 
 //
@@ -315,7 +310,7 @@ R_FindPlane
 	}
 
 
-	// didnt find it, make a new visplane
+	// didnt find it, make a new visplane. i == lastvisplane currently
 
     lastvisplane++;
 
@@ -327,7 +322,7 @@ R_FindPlane
 
 	check = R_HandleEMSPagination(i, isceil);
 
-	FAR_memset (check->top,0xff,sizeof(check->top));
+	FAR_memset (check->top,0xff,SCREENWIDTH);
 
     return i;
 
@@ -395,11 +390,11 @@ R_CheckPlane
 	visplaneheaders[lastvisplane].lightlevel = plheader->lightlevel;
 	
 	plheader = &visplaneheaders[lastvisplane];
-	pltop = R_HandleEMSPagination(lastvisplane, isceil)->top;
-
 	plheader->minx = start;
 	plheader->maxx = stop;
-	FAR_memset (pltop,0xff,320);
+
+	pltop = R_HandleEMSPagination(lastvisplane, isceil)->top;
+	FAR_memset (pltop,0xff,SCREENWIDTH);
 
 	return lastvisplane++;
 }
@@ -407,6 +402,12 @@ R_CheckPlane
 int16_t currentflatpage[4] = { -1, -1, -1, -1 };
 // there can be 4 flats (4k each) per ems page (16k each). Keep track of how many are allocated here.
 int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
+
+extern int16_t visplanemax;
+extern int16_t visplanedirtycount;
+
+extern int8_t setonce;
+
  //
 // R_DrawPlanes
 // At the end of each frame.
@@ -433,25 +434,30 @@ void R_DrawPlanes (void)
 	byte __far* src;
 	int16_t flatcacheindex = 0;
 	int16_t lastflatcacheindicesused[3] = {3, 2, 1}; // initialized so that allocation order is 0 1 2
+	uint16_t visplanesegment = 0x8400;
+	uint16_t visplaneoffset = 0;
 
-    for (i = 0; i < lastvisplane ; i++, subindex++) {
+    for (i = 0; i < lastvisplane ; i++, visplaneoffset+= VISPLANE_BYTE_SIZE) {
 		plheader = &visplaneheaders[i];
 
 		if (plheader->minx > plheader->maxx)
 			continue;
 
-		while (subindex >= 25){
+		// umm... what if we hit this after 100 iters of continue and overflow? probably should never happen...
+		while (visplaneoffset >= (25 * VISPLANE_BYTE_SIZE)){
+			
 			physindex++;
-			subindex -= 25;
+			visplaneoffset -= (25 * VISPLANE_BYTE_SIZE);
 			if (physindex == 3){
 				//I_Error("A");
-				Z_QuickMapVisplanePage(2, 3+visplanedirty); // will be 3 the first time, 4 the second time.
+				// todo eventually page these into 9000 region?
+				Z_QuickMapVisplanePage(3+visplanedirty, 2); // will be 3 the first time, 4 the second time.
 				physindex = 2;
 
 			}
-		}
-		pl = &((visplanelookups[physindex])[subindex]);
-
+			visplanesegment = visplanelookupsegments[physindex];
+		} 
+		pl = (visplane_t __far *) MK_FP(visplanesegment, visplaneoffset); 
 		// sky flat
 		if (plheader->picnum == skyflatnum) {
 			dc_iscale = pspriteiscale>>detailshift;
@@ -469,26 +475,21 @@ void R_DrawPlanes (void)
 				dc_yh = pl->bottom[x];				
 
 				if (dc_yl <= dc_yh) {
-				 
 					angle = MOD_FINE_ANGLE(viewangle_shiftright3 + xtoviewangle[x]) >> 3;
 					dc_x = x;
 /*
-					// 0 31 .... 0 0
-					
+					if (setonce){
+						//filelog2(1000 + i, dc_x, dc_yl, dc_yh, pl->top[x], pl->bottom[x]);
+					}
 					if ( ((dc_yl + (dc_yh - dc_yl)) > viewheight))
-						setval++;
-
-					
-					// 3 0 255
-					// 3 5    ___ 0 255 1 0 25
-
-
-					if (setval)
-						I_Error("skytexture vals %i, %i %i \n%i %i %Fp %Fp %Fp %i %i %i %i %i", 
+						I_Error("skytexture vals %i, %i %i \n%i %i %Fp %Fp %Fp %i %i %i %i \n %i %i\n %i %i %i %i %i\n%i %i", 
 							x,  pl->top[x], pl->bottom[x],
 							plheader->minx, plheader->maxx, pl, pl->top, pl->bottom,
-							dc_yl, dc_yh, physindex, subindex, i);
-							*/
+							dc_yl, dc_yh, physindex, subindex, 
+							i, lastvisplane,
+							active_visplanes[0],active_visplanes[1],active_visplanes[2],active_visplanes[3],active_visplanes[4],
+							visplanemax,visplanedirtycount
+							);*/
 
 
 					dc_source = R_GetColumn(skytexture, angle);

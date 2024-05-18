@@ -329,7 +329,8 @@ int16_t pageswapargs[total_pages] = {
 	SCREEN1_LOGICAL_PAGE + 0, PAGE_9000_OFFSET,
 	SCREEN1_LOGICAL_PAGE + 1, PAGE_9400_OFFSET,
 	SCREEN1_LOGICAL_PAGE + 2, PAGE_9800_OFFSET,
-	SCREEN1_LOGICAL_PAGE_4,   PAGE_9C00_OFFSET,
+	SCREEN1_LOGICAL_PAGE + 3, PAGE_9C00_OFFSET,
+	//SCREEN1_LOGICAL_PAGE_4,   PAGE_9C00_OFFSET,
 	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
 	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 1, PAGE_7400_OFFSET,
 	FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
@@ -352,7 +353,7 @@ int16_t pageswapargs[total_pages] = {
 	SCREEN3_LOGICAL_PAGE + 1, PAGE_6400_OFFSET, // shared with visplanes
 	SCREEN3_LOGICAL_PAGE + 2, PAGE_6800_OFFSET, // shared with visplanes
 	SCREEN3_LOGICAL_PAGE + 3, PAGE_6C00_OFFSET, // shared with visplanes
-	FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
+	//FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
 	
 
 	FIRST_LUMPINFO_LOGICAL_PAGE,	 PAGE_5400_OFFSET,
@@ -404,7 +405,7 @@ void Z_Quickmap(int16_t offset, int8_t count){
 	offset += pageswapargoff;
 	// test if some of these fields can be pulled out
 	while (count > 0){
-		min = count > 8 ? 8 : count;
+		min = count > 8 ? 8 : count; // note: emm386 only supports up to 8 args at a time. Might other EMS drivers work with more at a time?
 		regs.w.ax = 0x5000;  
 		regs.w.cx = min; // page count
 		regs.w.dx = emshandle; // handle
@@ -811,7 +812,7 @@ void Z_QuickmapIntermission() {
 }
 
 void Z_QuickmapWipe() {
-	Z_Quickmap(pageswapargs_wipe_offset_size, 13);
+	Z_Quickmap(pageswapargs_wipe_offset_size, 12);
 	
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -876,8 +877,9 @@ void Z_ClearDeadCode() {
 }
 
 int8_t visplanedirty = false;
+
 // virtual to physical page mapping. 
-// 0 means unmapped. 1 means 8400, 2 means 8800, 3 means 8400;
+// 0 means unmapped. 1 means 8400, 2 means 8800, 3 means 8C00;
 int8_t active_visplanes[5] = {1, 2, 3, 0, 0};
 
 void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
@@ -888,35 +890,34 @@ void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 
 	// virtual page 0 = original conventional at page 8400
 	// virtual page 1 = original conventional at page 8800
-	// virtual page 2 = original conventional at page 8C00
+	// virtual page 2 = original conventional at page 8C00 (extra ems page 0)
 	// virtual page 3 = extra ems page 1
 	// virtual page 4 = extra ems page 2
 
-	int16_t usedpageindex = PAGE_8400_OFFSET + physicalpage;
+	int16_t usedpageindex = pagenum9000 + PAGE_8400_OFFSET + physicalpage;
 	int16_t usedpagevalue;
 	int8_t i;
 	if (virtualpage < 2){
-		usedpagevalue = 25 + virtualpage;
+		usedpagevalue = FIRST_VISPLANE_PAGE + virtualpage;
 	} else {
 		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
 	}
 
-	//I_Error("D");
-
 
 	pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
 	pageswapargs[pageswapargs_visplanepage_offset] = usedpagevalue;
-
+	physicalpage++;
+	
 	// erase old virtual page map
 	// page 1 is aways 1 and never gets changed, never need to bother erasing it
-	for (i = 1; i < 5; i ++){
-		if (active_visplanes[i] = physicalpage+1){
+	for (i = 4; i > 0; i --){
+		if (active_visplanes[i] == physicalpage){
 			active_visplanes[i] = 0;
 			break;
 		}
 	}
 	// set new virtual page map
-	active_visplanes[virtualpage] = physicalpage+1;
+	active_visplanes[virtualpage] = physicalpage;
 	
 	
 	Z_Quickmap(pageswapargs_visplanepage_offset_size, 1);
@@ -934,7 +935,8 @@ void Z_QuickMapVisplaneRevert(){
 
 	//I_Error("C");
 	Z_Quickmap(pageswapargs_visplane_base_page_offset_size, 3);
-	active_visplanes[0] = 1;
+	//active_visplanes[0] = 1;  // never changes 
+	// todo make it two 16 bit writes?
 	active_visplanes[1] = 2;
 	active_visplanes[2] = 3;
 	active_visplanes[3] = 0;

@@ -85,7 +85,7 @@ wipe_initMelt
   int16_t	ticks )
 {
 	int16_t i, r;
-	int16_t __far* y = (int16_t __far*)0x90000000;
+	int16_t __far* y = (int16_t __far*)0x7000FA00;
 
     // copy start screen to main screen
     FAR_memcpy(wipe_scr, wipe_scr_start, 64000u);
@@ -124,7 +124,7 @@ wipe_doMelt
     int16_t		dy;
     uint16_t		idx;
     
-	int16_t __far* y = (int16_t __far*)0x90000000;
+	int16_t __far* y = (int16_t __far*)0x7000FA00;
     int16_t	__far* s;
     int16_t	__far* d;
     boolean	done = true;

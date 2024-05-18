@@ -188,7 +188,7 @@ R_RenderMaskedSegRange
 			if (!fixedcolormap) {
 
 				// prevents a 12 bit shift in many cases. 
-				// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4)
+				// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4) which is 0x30000
 				if (spryscale.h.intbits >= 3) {
 					index = MAXLIGHTSCALE - 1;
 				} else {
@@ -228,15 +228,9 @@ R_RenderMaskedSegRange
 #define HEIGHTBITS		12
 #define HEIGHTUNIT		(1<<HEIGHTBITS)
 
-extern visplane_t __far * visplanelookups[3];
-extern int8_t ceilphyspage;
-extern int8_t ceilsubindex;
-extern int8_t floorphyspage;
-extern int8_t floorsubindex;
-
 byte __far * ceiltop;
 byte __far * floortop;
-
+//extern int setval;
 
 void R_RenderSegLoop (void)
 {
@@ -250,12 +244,10 @@ void R_RenderSegLoop (void)
     int16_t			bottom;
 	fixed_t_union temp;
 
-	if ((((int32_t)ceiltop > 0x8C010000 || (int32_t)ceiltop < 0x84000000) && (ceiltop!= NULL)) ||
-		(((int32_t)floortop > 0x8C010000 || (int32_t)floortop < 0x84000000  ) && (floortop!= NULL)))
-		I_Error ("%Fp %Fp %i %i %i %i", ceiltop, floortop, ceilphyspage, ceilsubindex, floorphyspage, floorsubindex);
-
 	for ( ; rw_x < rw_stopx ; rw_x++) {
 		// mark floor / ceiling areas
+
+		// todo optimize out and make a 16 bit add not 32.
 		yl = (topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
 
 		// no space above wall?
@@ -809,11 +801,11 @@ R_StoreWallRange
 
     // render it
 	if (markceiling) {
-		ceilingplaneindex = R_CheckPlane(ceilingplaneindex, rw_x, rw_stopx - 1, 1);
+		ceilingplaneindex = R_CheckPlane(ceilingplaneindex, rw_x, rw_stopx - 1, IS_CEILING_PLANE);
 	}
     
 	if (markfloor) {
-		floorplaneindex = R_CheckPlane(floorplaneindex, rw_x, rw_stopx - 1, 0);
+		floorplaneindex = R_CheckPlane(floorplaneindex, rw_x, rw_stopx - 1, IS_FLOOR_PLANE);
 	}
 	
 	R_RenderSegLoop ();

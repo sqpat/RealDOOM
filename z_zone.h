@@ -90,9 +90,11 @@ void Z_ShutdownEMS();
 
 #define RENDER_7800_PAGE                            20 + 9
 #define RENDER_7C00_PAGE                            20 + 10
-#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
-#define FIRST_VISPLANE_LOGICAL_PAGE                 FIRST_RENDER_LOGICAL_PAGE + 8
+//#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
+#define EMS_VISPLANE_EXTRA_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5
+#define FIRST_VISPLANE_PAGE							FIRST_RENDER_LOGICAL_PAGE + 5
 
+//#define EMS_VISPLANE_EXTRA_PAGE                     NUM_EMS4_SWAP_PAGES + 1
 // 35
 #define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         34
 // 36
@@ -108,39 +110,39 @@ void Z_ShutdownEMS();
 // 53
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
 // 61
-#define FIRST_WIPE_LOGICAL_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 62
-#define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_WIPE_LOGICAL_PAGE + 1
-// 66
+#define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
+// 65
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 69
+// 68
 #define FIRST_PATCH_CACHE_LOGICAL_PAGE              FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_PATCH_CACHE_PAGES                       16
-// 85
+// 84
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES                        6
-// 91
+// 90
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 99
+// 98
 #define NUM_TEXTURE_PAGES                           8
-
-// 104
-#define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 5
-// 108
-#define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 112
-#define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-
-
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
-// 115
-#define NUM_SPRITE_CACHE_PAGES                      16
 
-// 116
-#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-#define NUM_EMS4_SWAP_PAGES                         (int32_t) (SCREEN1_LOGICAL_PAGE_4 + 1)
-// 117 in use currently (including 0)
+// 103
+#define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
+// 107
+#define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
+// 111
+#define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 
+
+// 120
+#define NUM_SPRITE_CACHE_PAGES                      20
+
+// todo eventuall yjust include this in the spritecache area...
+//#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
+#define NUM_EMS4_SWAP_PAGES                         (int16_t) (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
+// 120 in use currently (including 0)
+
+//4 for ems/hi memory
+// this number needs to be 124 to fit in 2 MB
 
 
 #define TASK_PHYSICS 0
@@ -176,7 +178,7 @@ void Z_ShutdownEMS();
 #define num_7000to6000_params 8
 #define num_menu_params 16
 #define num_intermission_params 24
-#define num_wipe_params 26
+#define num_wipe_params 24
 #define num_lumpinfo_5400_params 6
 #define num_visplanepage_params 2
 
@@ -268,7 +270,7 @@ void Z_LinkEMSVariables();
 void Z_LoadBinaries();
 
 void Z_ClearDeadCode();
-void Z_QuickMapVisplanePage(int8_t pagenumber, int8_t value);
+void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage);
 void Z_QuickMapVisplaneRevert();
 
 #define PAGE_TYPE_PHYSICS 0

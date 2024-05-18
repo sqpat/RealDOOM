@@ -213,7 +213,8 @@ extern fineangle_t	rw_normalangle;
 
 
 // 646
-#define VISPLANE_BYTE_SIZE (6 + 2 * SCREENWIDTH)
+// sizeof(visplane_t)
+#define VISPLANE_BYTE_SIZE (6 + (2 * SCREENWIDTH))
 // 25
 #define VISPLANES_PER_EMS_PAGE (PAGE_FRAME_SIZE  / VISPLANE_BYTE_SIZE)
 #define NUM_VISPLANE_PAGES 5

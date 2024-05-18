@@ -660,12 +660,17 @@ extern uint16_t renderplayerplanetics;
 extern uint16_t renderplayermaskedtics;
 extern uint16_t cachedrenderplayertics;
 #endif
+void M_StartMessage(int8_t __near * string,void __far_func (* routine)(int16_t), boolean input);
 
 extern int8_t visplanedirty;
+extern int16_t lastvisplane;
 
 //
 // R_RenderView
 //
+//void filelog2(int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, int16_t f);
+int8_t tempbuf[5];
+
 void R_RenderPlayerView ()
 {	
 
@@ -747,9 +752,22 @@ void R_RenderPlayerView ()
 #ifdef DETAILED_BENCH_STATS
 	renderplayermaskedtics += ticcount - cachedrenderplayertics;
 #endif
+	//filelog2(4, 0, 0, 0, 0, 0);
 
 	// Check for new console commands.
 	Z_QuickmapPhysics();
+
+	sprintf(tempbuf, "%i", lastvisplane);
+	player.messagestring=tempbuf;
+
 	NetUpdate ();
+
+	/*
+	if (lastvisplane > visplanemax){
+		visplanemax = lastvisplane;
+	}
+	*/
+
+
 
 }
