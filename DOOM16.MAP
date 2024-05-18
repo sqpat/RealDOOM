@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/05/18 15:02:45
+Created on:       24/05/18 15:31:46
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -93,8 +93,8 @@ _TEXT                  CODE           AUTO           1e8e:21e0       000050a1
 FAR_DATA               FAR_DATA       AUTO           25b6:0001       00000000
 _NULL                  BEGDATA        DGROUP         25b7:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         25b9:0000       00000002
-CONST                  DATA           DGROUP         25b9:0002       00000c76
-CONST2                 DATA           DGROUP         2680:0008       00000116
+CONST                  DATA           DGROUP         25b9:0002       00000c78
+CONST2                 DATA           DGROUP         2680:000a       00000116
 _DATA                  DATA           DGROUP         2692:0000       00000c7e
 XIB                    DATA           DGROUP         2759:000e       00000000
 XI                     DATA           DGROUP         2759:000e       00000012
@@ -197,7 +197,7 @@ Module: i_sound.obj(C:\REALDOOM\i_sound.c)
 0000:082a*     I_SetChannels_
 0000:082a*     I_sndArbitrateCards_
 0000:082a*     I_UpdateSoundParams_
-25b7:0c98+     _snd_prefixen
+25b7:0c9a+     _snd_prefixen
 25b7:1ae9      _snd_DesiredMusicDevice
 Module: d_main.obj(C:\REALDOOM\d_main.c)
 25b7:1aea*     _wadfiles
@@ -1614,7 +1614,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(fprtf.c)
 Module: C:\WATCOM\lib286\dos\clibm.lib(vsprintf.c)
 1e8e:3db1      vsprintf_
 Module: C:\WATCOM\lib286\dos\clibm.lib(istable.c)
-25b7:0ca4      __IsTable
+25b7:0ca6      __IsTable
 Module: C:\WATCOM\lib286\dos\clibm.lib(stricmp.c)
 1e8e:3dcc      stricmp_
 Module: C:\WATCOM\lib286\dos\clibm.lib(opendos.c)
@@ -1752,7 +1752,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(mbislead.c)
 Module: C:\WATCOM\lib286\dos\clibm.lib(mbtowc.c)
 1e8e:6a33      mbtowc_
 Module: C:\WATCOM\lib286\dos\clibm.lib(bits.c)
-25b7:0da6      __Bits
+25b7:0da8      __Bits
 Module: C:\WATCOM\lib286\dos\clibm.lib(noefgfmt.c)
 25b7:1a22      ___EFG_printf
 25b7:1a26      ___EFG_scanf
@@ -1794,7 +1794,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(sbrk.c)
 1e8e:7202*     sbrk_
 1e8e:7206      __brk_
 Module: C:\WATCOM\lib286\dos\clibm.lib(alphabet.c)
-25b7:0c72      ___Alphabet
+25b7:0c74      ___Alphabet
 Module: C:\WATCOM\lib286\dos\clibm.lib(bfree.c)
 1e8e:725c      _bfree_
 
@@ -1813,4 +1813,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00029630 (169520.)
 Entry point address: 1e8e:21e0
-Link time: 00:00.33
+Link time: 00:00.69

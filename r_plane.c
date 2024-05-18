@@ -479,7 +479,8 @@ void R_DrawPlanes (void)
 					int16_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;
 					dc_x = x;
 
-					// inlined special-case R_GetColumn
+					// here we have inlined special-case R_GetColumn with precalculated fields for this texture.
+					// as a result, we also avoid a 34k texture mucking up the texture cache region...
 
 					// check which 64k page this lives in
 					// todo cache this offset location 

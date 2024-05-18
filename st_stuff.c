@@ -433,7 +433,7 @@ ST_Responder (event_t __far* ev)
 		  // 'mypos' for player position
 		  static int8_t     buf[ST_MSGWIDTH];
 		
-		sprintf(buf, "ang=0x%x;x,y=(0x%x,0x%x)",
+		sprintf(buf, "ang=0x%lx;x,y=(0x%lx,0x%lx)",
                 playerMobj_pos->angle,
 				playerMobj_pos->x,
 				playerMobj_pos->y);
