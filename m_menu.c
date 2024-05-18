@@ -705,6 +705,7 @@ void M_QuickSaveResponse(int16_t ch)
 
 void M_QuickSave(void)
 {
+        /*
 	int8_t temp[256];
     int8_t    tempstring[80];
     if (!usergame)
@@ -716,6 +717,7 @@ void M_QuickSave(void)
     if (gamestate != GS_LEVEL)
         return;
         
+
     if (quickSaveSlot < 0) // hack for -1 on a uint_8
     {
         M_StartControlPanel();
@@ -727,6 +729,7 @@ void M_QuickSave(void)
 	getStringByIndex(QSPROMPT, temp);
     sprintf(tempstring, temp,&savegamestrings[quickSaveSlot*SAVESTRINGSIZE]);
     M_StartMessage(tempstring,M_QuickSaveResponse,true);
+    */
 }
 
 
@@ -746,7 +749,7 @@ void M_QuickLoadResponse(int16_t ch)
 
 void M_QuickLoad(void)
 {
-    
+    /*
 	int8_t temp[256];
 	int8_t    tempstring[80];
 if (quickSaveSlot < 0) // means to pick a slot now
@@ -758,6 +761,7 @@ if (quickSaveSlot < 0) // means to pick a slot now
 	getStringByIndex(QLPROMPT, temp);
 	sprintf(tempstring, temp,&savegamestrings[quickSaveSlot*SAVESTRINGSIZE]);
     M_StartMessage(tempstring,M_QuickLoadResponse,true);
+    */
 }
 
 

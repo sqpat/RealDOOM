@@ -609,7 +609,9 @@ screenheightarray_offset 7800:A500  or 8000:2500
 // RENDER 0x7800 - 0x7FFF DATA NOT USED IN PLANES
 
 //            bsp    plane    sprite
-// 8000-9FFF     -- no changes --
+// 9C00-9FFF     -- no changes --
+// 9000-9BFF  DATA sky texture DATA
+// 8000-8FFF     -- no changes --
 // 7800-7FFF  DATA  flatcache  DATA
 // 7000-77FF  DATA  flatcache  sprcache
 // 6800-6FFF  DATA  DATA       sprcache

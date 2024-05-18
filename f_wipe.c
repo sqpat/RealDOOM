@@ -223,7 +223,7 @@ wipe_EndScreen ()
     
 	V_DrawBlock(0, 0,  SCREENWIDTH, SCREENHEIGHT, wipe_scr_start); // restore start scr.
  
-	Z_QuickMapPhysics();
+	//Z_QuickMapPhysics();
 
     return 0;
 }
@@ -253,7 +253,7 @@ wipe_ScreenWipe(int16_t	ticks ) {
 		
     }
 
-	Z_QuickMapPhysics();
+	//Z_QuickMapPhysics();
 
     return !go;
 

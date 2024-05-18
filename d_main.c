@@ -456,6 +456,7 @@ void D_Display (void)
             borderdrawcount = 3;
         if (borderdrawcount)
         {
+			if (!inhelpscreens)
             R_DrawViewBorder ();    // erase old menu stuff
             borderdrawcount--;
         }
@@ -516,9 +517,6 @@ void D_Display (void)
  		I_FinishUpdate();                      // page flip or blit buffer
     } while (!done);
 
-	// zero out this memory as it will be used for visplanes, etc
-	Z_QuickMapWipe();
-	FAR_memset(screen3+0x4000, 0, 0xBFFF);
 	Z_QuickMapPhysics();
 	wipeduration = ticcount - wiperealstart;
 
