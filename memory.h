@@ -317,7 +317,7 @@ blockmaplump    7000:6E40
 // 0x6800 BLOCK PHYSICS
 
 // begin stuff that is paged out in sprite code
-// this is used boht in physics and small part of render code
+// this is used boht in physics and part of render code
 
 #define size_mobjposlist       0                   + (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_xtoviewangle      size_mobjposlist    + (sizeof(fineangle_t) * (SCREENWIDTH + 1))
@@ -637,6 +637,9 @@ spritewidths        7000:7592
 
 
 // RENDER 0x6800-0x6FFF DATA - USED ONLY IN PLANE... PAGED OUT IN SPRITE REGION
+// same as physics 6800-6fff
+
+
 // carried over from below - mostly visplanes
 
 
