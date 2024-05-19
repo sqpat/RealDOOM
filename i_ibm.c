@@ -378,7 +378,9 @@ void I_UpdateNoBlit(void) {
 	dirtybox[BOXTOP] = dirtybox[BOXRIGHT] = MINSHORT;
 	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
 }
-
+#ifdef FPS_DISPLAY
+extern int32_t fps_rendered_frames_since_last_measure;
+#endif
 //
 // I_FinishUpdate
 //
@@ -392,6 +394,10 @@ void I_FinishUpdate(void)
 	if ((uint16_t)destscreen.h.fracbits == 0xc000) {
 		destscreen.h.fracbits = 0x0000;
 	}
+
+    #ifdef FPS_DISPLAY
+	    fps_rendered_frames_since_last_measure++;
+    #endif
  
 }
 

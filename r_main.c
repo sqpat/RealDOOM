@@ -673,10 +673,22 @@ int16_t skytexturelump = -3;
 // R_RenderView
 //
 //void filelog2(int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, int16_t f);
-int8_t tempbuf[5];
+//int8_t tempbuf[5];
+
+#ifdef FPS_DISPLAY
+int8_t fps_buf[14];
+int32_t fps_rendered_frames_since_last_measure = 0;
+ticcount_t fps_last_measure_start_tic = 0;
+#endif 
 
 void R_RenderPlayerView ()
 {	
+
+	#ifdef FPS_DISPLAY
+	int32_t fps_num;
+	int32_t fps_denom;
+	int32_t fps;
+	#endif
 
 #ifdef DETAILED_BENCH_STATS
 	cachedrenderplayertics = ticcount;
@@ -784,6 +796,22 @@ void R_RenderPlayerView ()
 	// visplane hud stuff
 	//sprintf(tempbuf, "%i", lastvisplane);
 	//player.messagestring=tempbuf;
+
+#ifdef FPS_DISPLAY
+	// three digit decimal
+	// should we instead do gametic diff > 100?
+	if (fps_rendered_frames_since_last_measure > 100){
+		fps_num = 35000 * fps_rendered_frames_since_last_measure; // or just global and ++ 350?
+		fps_denom = ticcount - fps_last_measure_start_tic;
+		fps = fps_num / fps_denom;
+
+		sprintf(fps_buf, "FPS: %li.%li", fps / 1000, fps % 1000);
+		player.messagestring=fps_buf;
+		fps_rendered_frames_since_last_measure = 0;
+		fps_last_measure_start_tic = ticcount;
+	}
+
+#endif
 
 	NetUpdate ();
 

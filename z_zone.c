@@ -99,6 +99,10 @@ extern uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
 extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
 extern int8_t skytextureloaded;
 
+extern int32_t fps_rendered_frames_since_last_measure;
+extern ticcount_t fps_rendered_frames_since_last_measure;
+
+
 #define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4
 
  // called in between levels, frees level stuff like sectors, frees thinkers, etc.
@@ -132,6 +136,10 @@ void Z_FreeConventionalAllocations() {
 	FAR_memset(spriteoffset, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
 	memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
 
+#ifdef FPS_DISPLAY
+	fps_rendered_frames_since_last_measure = 0;
+	fps_last_measure_start_tic = gametic;
+#endif
 
 	skytextureloaded = 0;
 

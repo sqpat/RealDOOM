@@ -71,6 +71,9 @@ enum { VERSION =  109 };
 // more detailed timedemo numbers
 #define DETAILED_BENCH_STATS
 
+// turn on FPS display
+#define FPS_DISPLAY
+
 // Sets some viewpoitn calculations to 16 bit and less precision than 32 bit. not super obvious, but if you run against a wall up close the wall texture pixels will move less smoothly with the player bob for example
 #define USE_SHORTHEIGHT_VIEWZ	
 
