@@ -100,7 +100,7 @@ extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
 extern int8_t skytextureloaded;
 
 extern int32_t fps_rendered_frames_since_last_measure;
-extern ticcount_t fps_rendered_frames_since_last_measure;
+extern ticcount_t fps_last_measure_start_tic;
 
 
 #define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4
