@@ -55,8 +55,10 @@ EV_Teleport
 	fixed_t_union	oldx;
 	fixed_t_union	oldy;
 	fixed_t_union	oldz;
+	fixed_t_union temp;
 	int16_t		oldsecnum;
 	THINKERREF fogRef;
+	
     // don't teleport missiles
     if (thing_pos->flags & MF_MISSILE)
 		return 0;		
@@ -109,7 +111,9 @@ EV_Teleport
 				if (!P_TeleportMove (thing, thing_pos, m_pos->x, m_pos->y, m->secnum))
 					return 0;
 		#if (EXE_VERSION != EXE_VERSION_FINAL)
-				thing_pos->z.w = thing->floorz;  //fixme: not needed?
+
+				SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, thing->floorz);
+				thing_pos->z = temp;  //fixme: not needed?
 		#endif
 				if (thing->type == MT_PLAYER) {
 					player.viewz.w = thing_pos->z.w + player.viewheight.w;
