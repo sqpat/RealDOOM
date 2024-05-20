@@ -172,7 +172,15 @@ P_RecursiveSound
 		} else {
 			othersecnum = check_physics->frontsecnum;
 		}
-			 
+
+		// 14 37 169 0
+
+		if (gametic == 314 ){
+			FILE * fp = fopen("soundo.txt", "a");
+			fprintf(fp, "first %i %i %i %i\n", i, linecount, secnum, soundblocks);
+			fclose(fp);
+		}
+
 		if (checkflags & ML_SOUNDBLOCK) {
 			if (!soundblocks) {
 				P_RecursiveSound(othersecnum, 1);
@@ -197,7 +205,11 @@ P_NoiseAlert
 
 
     validcount++;
+	// sector 84 not being set on gametic 314 with same inputs?
+
     P_RecursiveSound (playerMobj->secnum, 0);
+
+	
 }
 
 
@@ -610,7 +622,7 @@ P_LookForPlayers
 	return true;
 }
 
-
+extern int setval;
 //
 // A_KeenDie
 // DOOM II special, map 32.
@@ -679,7 +691,6 @@ void A_Look (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 			{
 				
 				if (P_CheckSight(actor, targ, actor_pos, targ_pos)) {
-
 					goto seeyou;
 				}
 			}
@@ -692,8 +703,10 @@ void A_Look (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 
 
 	if (!P_LookForPlayers(actor, false)) {
+
 		return;
 	}
+
 
 	// reload actor here, tends to get paged out
 

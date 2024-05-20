@@ -320,7 +320,7 @@ void P_LoadSectors(int16_t lump)
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
 		ss->floorpic = R_FlatNumForName(ms.floorpic);
 		ss->ceilingpic = R_FlatNumForName(ms.ceilingpic);
-		ss->lightlevel = (ms.lightlevel);
+		sectorlightlevels[i] = ((uint8_t) (ms.lightlevel));
 		//ss->thinglistRef = NULL_THINKERREF;
 		
 		sp->tag = (convertedtag);
@@ -1083,7 +1083,7 @@ void P_GroupLines(void)
 	int16_t				linefrontsecnum;
 	int16_t				linebufferindex;
 	int16_t				sidesecnum;
-	uint8_t				sectorlinecount;
+	int16_t				sectorlinecount;
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
 	

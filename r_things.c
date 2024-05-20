@@ -379,7 +379,7 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
 // During BSP traversal, this adds sprites by sector.
 //
 
-void R_AddSprites (sector_t __far* sec)
+void R_AddSprites (sector_t __far* sec, int16_t secnum)
 {
 	THINKERREF				thingRef;
 	int32_t                 lightnum;
@@ -396,7 +396,7 @@ void R_AddSprites (sector_t __far* sec)
     // Well, now it will be done.
 	sec->validcount = validcount;
         
-    lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
+    lightnum = (sectorlightlevels[secnum] >> LIGHTSEGSHIFT)+extralight;
 
 	if (lightnum < 0) {
 		spritelights = &scalelight[0];
@@ -559,7 +559,7 @@ void R_PrepareMaskedPSprites(void) {
 	uint8_t         lightnum;
 	pspdef_t __near*   psp;
 	// get light level
-	lightnum = (sectors[r_cachedplayerMobjsecnum].lightlevel >> LIGHTSEGSHIFT) +extralight;
+	lightnum = (sectorlightlevels[r_cachedplayerMobjsecnum] >> LIGHTSEGSHIFT) +extralight;
 	
 	//    if (lightnum < 0)          
 	// not sure if this hack is necessary.. since its unsigned we loop around if its below 0 

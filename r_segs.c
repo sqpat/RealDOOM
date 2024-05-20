@@ -83,7 +83,8 @@ fixed_t		bottomstep;
 uint16_t __far*	walllights;
 
 uint16_t __far*		maskedtexturecol;
-
+extern int16_t frontsector_secnum;
+extern int16_t backsector_secnum;
 
 //
 // R_RenderMaskedSegRange
@@ -131,7 +132,9 @@ R_RenderMaskedSegRange
 		&sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
 		: NULL;
 	frontsector = &sectors[frontsecnum];
-	lightnum = (frontsector->lightlevel >> LIGHTSEGSHIFT) + extralight;
+	frontsector_secnum = frontsecnum;
+
+	lightnum = (sectorlightlevels[frontsecnum] >> LIGHTSEGSHIFT) + extralight;
 
 	if (v1.y == v2.y) {
 		lightnum--;
@@ -445,7 +448,7 @@ R_StoreWallRange
 	frontsectorceilingheight = frontsector->ceilingheight;
 	frontsectorceilingpic = frontsector->ceilingpic;
 	frontsectorfloorpic = frontsector->floorpic;
-	frontsectorlightlevel = frontsector->lightlevel;
+	frontsectorlightlevel = sectorlightlevels[frontsector_secnum];
 
 		 
 	//linedef = &lines[curseg->linedefOffset];
@@ -570,7 +573,7 @@ R_StoreWallRange
 		short_height_t backsectorceilingheight = backsector->ceilingheight;
 		uint8_t backsectorceilingpic = backsector->ceilingpic;
 		uint8_t backsectorfloorpic = backsector->floorpic;
-		uint8_t backsectorlightlevel = backsector->lightlevel;
+		uint8_t backsectorlightlevel = sectorlightlevels[backsector_secnum];
 		ds_p->sprtopclip_offset = ds_p->sprbottomclip_offset = 0;
 		ds_p->silhouette = 0;
 

@@ -51,10 +51,10 @@ void T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
 
 	flick->count = 4;
 	amount = (P_Random() & 3) * 16;
-	if (sectors[flicksecnum].lightlevel - amount < flickminlight)
-		sectors[flicksecnum].lightlevel = flickminlight;
+	if (sectorlightlevels[flicksecnum] - amount < flickminlight)
+		sectorlightlevels[flicksecnum] = flickminlight;
 	else
-		sectors[flicksecnum].lightlevel = flickmaxlight - amount;
+		sectorlightlevels[flicksecnum] = flickmaxlight - amount;
 
 }
 
@@ -66,7 +66,7 @@ void T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
 void P_SpawnFireFlicker (int16_t secnum)
 {
     fireflicker_t __far*	flick;
-	uint8_t seclightlevel = sectors[secnum].lightlevel;
+	uint8_t seclightlevel = sectorlightlevels[secnum];
 
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
@@ -102,12 +102,12 @@ void T_LightFlash (lightflash_t __far* flash, THINKERREF flashRef)
 	if (--flash->count)
 		return;
 
-	if (sectors[flashsecnum].lightlevel == flashmaxlight) {
-		sectors[flashsecnum].lightlevel = flashminlight;
+	if (sectorlightlevels[flashsecnum] == flashmaxlight) {
+		sectorlightlevels[flashsecnum] = flashminlight;
 		flash->count = (P_Random()&flash->mintime) + 1;
 	}
 	else {
-		sectors[flashsecnum].lightlevel = flashmaxlight;
+		sectorlightlevels[flashsecnum] = flashmaxlight;
 		flash->count = (P_Random()&flash->maxtime) + 1;
 	}
 
@@ -127,7 +127,7 @@ void P_SpawnLightFlash (int16_t secnum)
     lightflash_t __far*	flash;
 	uint8_t lightamount;
 	// nothing special about it during gameplay
-	int16_t seclightlevel = sectors[secnum].lightlevel;
+	int16_t seclightlevel = sectorlightlevels[secnum];
 	sectors_physics[secnum].special = 0;
 
 	
@@ -165,11 +165,11 @@ void T_StrobeFlash (strobe_t __far* flash, THINKERREF flashRef)
 	flashsecnum = flash->secnum;
 
 	
-    if (sectors[flashsecnum].lightlevel == flash->minlight) {
-		sectors[flashsecnum].lightlevel = flash->maxlight;
+    if (sectorlightlevels[flashsecnum] == flash->minlight) {
+		sectorlightlevels[flashsecnum] = flash->maxlight;
 		flash->count = flash->brighttime;
     } else {
-		sectors[flashsecnum].lightlevel = flash->minlight;
+		sectorlightlevels[flashsecnum] = flash->minlight;
 		flash->count =flash->darktime;
     }
 
@@ -190,7 +190,7 @@ P_SpawnStrobeFlash
 {
 	strobe_t __far*	flash;
 	uint8_t lightamount;
-	int16_t seclightlevel = sectors[secnum].lightlevel;
+	int16_t seclightlevel = sectorlightlevels[secnum];
 
 	// nothing special about it during gameplay
 	sectors_physics[secnum].special = 0;
@@ -251,7 +251,7 @@ void EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright)
 	int16_t			j = 0;
     int16_t			secnum;
     uint8_t			min;
-	uint8_t linecount;
+	int16_t linecount;
 	int16_t offset;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t tagsecnumlist[MAX_ADJOINING_SECTORS];
@@ -268,7 +268,7 @@ void EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright)
 		j++;
 		linecount = sectors[secnum].linecount;
 		offset = sectors[secnum].linesoffset;		
-		min = sectors[secnum].lightlevel;
+		min = sectorlightlevels[secnum];
 
 		if (!on || !bright){
 
@@ -276,12 +276,12 @@ void EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright)
 				offset = secnumlist[i];
 
 				if (on){
-					if (sectors[offset].lightlevel > bright){
-						bright = sectors[offset].lightlevel;
+					if (sectorlightlevels[offset] > bright){
+						bright = sectorlightlevels[offset];
 					}
 				} else {
-					if (sectors[offset].lightlevel < min) {
-						min = sectors[offset].lightlevel;
+					if (sectorlightlevels[offset] < min) {
+						min = sectorlightlevels[offset];
 					}
 				}
 
@@ -291,9 +291,9 @@ void EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright)
 		}
  
 		if (on)
-			sectors[secnum].lightlevel = bright;
+			sectorlightlevels[secnum] = bright;
 		else 
-			sectors[secnum].lightlevel = min;
+			sectorlightlevels[secnum] = min;
 	}
 }
 
@@ -313,18 +313,18 @@ void T_Glow(glow_t __far* glow, THINKERREF glowRef)
     switch(glow->direction) {
       case -1:
 		// DOWN
-		sectors[gsecnum].lightlevel -= GLOWSPEED;
-		if (sectors[gsecnum].lightlevel <= gminlight) {
-			sectors[gsecnum].lightlevel += GLOWSPEED;
+		sectorlightlevels[gsecnum] -= GLOWSPEED;
+		if (sectorlightlevels[gsecnum] <= gminlight) {
+			sectorlightlevels[gsecnum] += GLOWSPEED;
 			glow->direction = 1;
 		}
 		break;
 	
       case 1:
 		// UP
-		sectors[gsecnum].lightlevel += GLOWSPEED;
-		if (sectors[gsecnum].lightlevel >= gmaxlight) {
-			sectors[gsecnum].lightlevel -= GLOWSPEED;
+		sectorlightlevels[gsecnum] += GLOWSPEED;
+		if (sectorlightlevels[gsecnum] >= gmaxlight) {
+			sectorlightlevels[gsecnum] -= GLOWSPEED;
 			glow->direction = -1;
 		}
 		break;
@@ -339,7 +339,7 @@ void P_SpawnGlowingLight(int16_t secnum)
 	// Note that we are resetting sector attributes.
 	// Nothing special about it during gameplay.
 	
-	int16_t seclightlevel = sectors[secnum].lightlevel;
+	int16_t seclightlevel = sectorlightlevels[secnum];
 	sectors_physics[secnum].special = 0;
 
 

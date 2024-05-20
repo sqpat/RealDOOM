@@ -80,12 +80,14 @@ typedef	struct
     short_height_t	ceilingheight;
 	uint8_t	floorpic;
 	uint8_t	ceilingpic;
-    uint8_t	lightlevel; // seems to max at 255
+    
+    // when linecount grew back to 16 bit field, that raised sector_t to 17 bytes so we moved
+    // lightlevels out to its own field to keep sectors as 16 byte struct...
+    //uint8_t	lightlevel; // seems to max at 255
 
 
 
     // if == validcount, already checked
-	//uint8_t validcount;	// [linecount] size
 	int16_t		validcount;
 
     // list of mobjs in sector
@@ -93,7 +95,7 @@ typedef	struct
 
     // thinker_t for reversable actions
 	THINKERREF	specialdataRef;
-    uint8_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
+    int16_t		linecount;  // 374 line count for fricken doom 1 e2m2 sector 157
 
 	int16_t linesoffset;	// [linecount] size
 
@@ -115,7 +117,7 @@ typedef	struct
 	int16_t soundorgY;
 	// thinker_t for reversable actions
 	THINKERREF	specialdataRef;
-	uint8_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
+	int16_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
 
 	int16_t linesoffset;	// [linecount] size
 } sector_physics_t;
@@ -130,7 +132,6 @@ typedef	struct
 	uint8_t	lightlevel; // seems to max at 255
 
 	// if == validcount, already checked
-	//uint8_t validcount;	// [linecount] size
 	int16_t		validcount;
 
 	// list of mobjs in sector
@@ -224,7 +225,6 @@ typedef struct
 	uint8_t	tag;
 
 	// tricky, collisions do seem to happen with 8 bit. I think 10 or 11 would work. would need to fit those 3 high bits elsewhere.
-	//uint8_t		validcount;
 	int16_t		validcount;
 	uint8_t	special;	// both for texture animation but can be fixed to physics only
 

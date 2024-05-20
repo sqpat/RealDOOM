@@ -51,7 +51,6 @@ state_t r_cachedstatecopy[2];
 
 
 // increment every time a check is made
-//uint8_t			validcount = 1;
 int16_t			validcount = 1;
 
 

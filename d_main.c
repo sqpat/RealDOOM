@@ -322,7 +322,8 @@ uint16_t cachedrenderplayertics = 0;
 
 
 
-
+extern mobj_t __far * SAVEDUNIT;
+extern mobj_pos_t __far * SAVEDUNIT_POS;
 //
 // D_Display
 //  draw current display, possibly wiping it from the previous
@@ -594,23 +595,36 @@ void D_DoomLoop (void)
 #endif
 
    
+// tick 514 prndindex goes off
+// player pos stuff ok...
 #ifdef DEBUGLOG_TO_FILE
-			
+				
+
+
 //		if (gametic != lasttick) {
 //			lasttick = gametic;
 				
+// tick 316 prndindex off
+
 			//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
-			SAVEDUNIT = playerMobj;// Z_LoadThinkerBytesFromEMS(1483); // 1457
+			//SAVEDUNIT = playerMobj;
+			//SAVEDUNIT_POS = playerMobj_pos;
+			SAVEDUNIT = &thinkerlist[222].data;
+			SAVEDUNIT_POS = &mobjposlist[222];
 			//SAVEDUNIT = &thinkerlist[playerMobjRef].data;
-			if (gametic == 1) {
-				fp = fopen("debuglog.txt", "w"); // clear old file
-			} else {
+			//if (gametic == 1) {
+			//	fp = fopen("debuglog.txt", "w"); // clear old file
+			//} else {
 				fp = fopen("debuglog.txt", "a");
-			}
+			//}
 			//sprintf(result2, "%li %hhu %li %li %li %li %li %l %l %i \n", gametic, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->z, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->floorz, SAVEDUNIT->ceilingz, SAVEDUNIT->secnum);
-			fprintf(fp, "%li %hhu  %li %i %li %i \n", gametic, prndindex,   SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->health, SAVEDUNIT->secnum);
+			fprintf(fp, "%li %i  %li %li %li %li %li %i %i %i\n", gametic, prndindex,   SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT_POS->z.w, SAVEDUNIT_POS->x.w, SAVEDUNIT_POS->y.w,SAVEDUNIT_POS->stateNum, SAVEDUNIT->tics);
 			//fprintf(result2, fp);
 			fclose(fp);
+
+			if (gametic == 400){
+				I_Error("done blah");
+			}
 				
  
 #endif

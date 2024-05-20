@@ -45,7 +45,6 @@ extern fixed_t_union		centeryfrac;
 extern fixed_t_union		centeryfrac_shiftright4;
 extern fixed_t_union		projection;
 
-//extern uint8_t		validcount;
 extern int16_t		validcount;
 
 //

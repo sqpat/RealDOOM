@@ -139,7 +139,7 @@ short_height_t	P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHi
     int16_t			i;
 	int16_t offset = sectors[secnum].linesoffset;
 	short_height_t		floor = sectors[secnum].floorheight;
-	uint8_t linecount = sectors[secnum].linecount;
+	int16_t linecount = sectors[secnum].linecount;
  	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	
@@ -294,8 +294,8 @@ P_FindMinSurroundingLight
     for (i=0 ; i < linecount ; i++) {
 		offset = secnumlist[i];
 	 
-		if (sectors[offset].lightlevel < min) {
-			min = sectors[offset].lightlevel;
+		if (sectorlightlevels[offset] < min) {
+			min = sectorlightlevels[offset];
 		}
     }
 

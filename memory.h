@@ -43,44 +43,47 @@
 // may swap with EMS/0xD000 ?
 #define uppermemoryblock    0xE0000000
 
-#define size_vertexes     (MAX_VERTEXES_SIZE)
-#define size_sectors      (size_vertexes        + MAX_SECTORS_SIZE)
-#define size_sides        (size_sectors         + MAX_SIDES_SIZE)
-#define size_lines        (size_sides           + MAX_LINES_SIZE)
-#define size_seenlines    (size_lines           + MAX_SEENLINES_SIZE)
-#define size_subsectors   (size_seenlines       + MAX_SUBSECTORS_SIZE)
-#define size_nodes        (size_subsectors      + MAX_NODES_SIZE)
-#define size_segs         (size_nodes           + MAX_SEGS_SIZE)
-#define size_scantokey    (size_segs + 128)
-#define size_rndtable     (size_scantokey + 256)
+#define size_sectors            (MAX_SECTORS_SIZE        )
+#define size_vertexes           (size_sectors         + MAX_VERTEXES_SIZE)
+#define size_sides              (size_vertexes        + MAX_SIDES_SIZE)
+#define size_lines              (size_sides           + MAX_LINES_SIZE)
+#define size_seenlines          (size_lines           + MAX_SEENLINES_SIZE)
+#define size_subsectors         (size_seenlines       + MAX_SUBSECTORS_SIZE)
+#define size_nodes              (size_subsectors      + MAX_NODES_SIZE)
+#define size_segs               (size_nodes           + MAX_SEGS_SIZE)
+#define size_sectorlightlevels  (size_nodes           + (sizeof(uint8_t) * MAX_SECTORS))
 
 
-#define vertexes         ((vertex_t __far*)    (uppermemoryblock))
-#define sectors          ((sector_t __far*)    (uppermemoryblock + size_vertexes))
-#define sides            ((side_t __far*)      (uppermemoryblock + size_sectors))
-#define lines            ((line_t __far*)      (uppermemoryblock + size_sides))
-#define seenlines        ((uint8_t __far*)     (uppermemoryblock + size_lines))
-#define subsectors       ((subsector_t __far*) (uppermemoryblock + size_seenlines))
-#define nodes            ((node_t __far*)      (uppermemoryblock + size_subsectors))
-#define segs             ((seg_t __far*)       (uppermemoryblock + size_nodes))
-#define scantokey        ((byte __far*)        (uppermemoryblock + size_segs))
-#define rndtable         ((uint8_t __far*)     (uppermemoryblock + size_scantokey))
+#define sectors           ((sector_t __far*)    (uppermemoryblock ))
+#define vertexes          ((vertex_t __far*)    (uppermemoryblock + size_sectors))
+#define sides             ((side_t __far*)      (uppermemoryblock + size_vertexes))
+#define lines             ((line_t __far*)      (uppermemoryblock + size_sides))
+#define seenlines         ((uint8_t __far*)     (uppermemoryblock + size_lines))
+#define subsectors        ((subsector_t __far*) (uppermemoryblock + size_seenlines))
+#define nodes             ((node_t __far*)      (uppermemoryblock + size_subsectors))
+#define segs              ((seg_t __far*)       (uppermemoryblock + size_nodes))
+#define sectorlightlevels ((uint8_t __far*)     (uppermemoryblock + size_segs))
+
 //0xE000
 /*
-size_vertexes     E000:0000
-size_sectors      E000:1968
-size_sides        E000:2f28
-size_lines        E000:8000
-size_seenlines    E000:a274
-size_subsectors   E000:a351
-size_nodes        E000:b468
-size_segs         E000:dd60
-size_scantokey    E000:fe5d
-size_rndtable     E000:fedd
-[empty]           E000:ffdd
-// 35 bytes free?
+size_vertexes             E000:0000
+size_sectors              E000:1968
+size_sides                E000:2f28
+size_lines                E000:8000
+size_seenlines            E000:a274
+size_subsectors           E000:a351
+size_nodes                E000:b468
+size_segs                 E000:dd60
+size_sectorlightlevels    E000:fe5d
+[empty]                   E000:ffd3
+
+
+// 45 bytes free?
             
-//  
+//
+
+
+
 */
 
 
@@ -328,6 +331,8 @@ blockmaplump    7000:6E40
 #define size_cachedxstep       size_cacheddistance + (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_cachedystep       size_cachedxstep    + (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_spanstart         size_cachedystep    + (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_scantokey         size_spanstart + 128
+#define size_rndtable          size_scantokey + 256
 
 #define mobjposlist           ((mobj_pos_t __far*)     (0x68000000))
 #define xtoviewangle          ((fineangle_t __far*)    (0x68000000 + size_mobjposlist))
@@ -338,6 +343,10 @@ blockmaplump    7000:6E40
 #define cachedxstep           ((fixed_t __far*)        (0x68000000 + size_cacheddistance))
 #define cachedystep           ((fixed_t __far*)        (0x68000000 + size_cachedxstep))
 #define spanstart             ((int16_t __far*)        (0x68000000 + size_cachedystep))
+#define scantokey             ((byte __far*)           (0x68000000 + size_spanstart))
+#define rndtable              ((uint8_t __far*)        (0x68000000 + size_scantokey))
+
+
 /*
 mobjposlist    6800:0000
 xtoviewangle   6800:4ec0
@@ -348,9 +357,12 @@ cacheddistance 6800:5c82
 cachedxstep    6800:5fa2
 cachedystep    6800:62c2
 spanstart      6800:65e2
-[empty]        6800:6902
+scantokey      6800:6902
+rndtable       6800:6982
+[empty]        6800:6A82
 
-5886 bytes free
+
+5502 bytes free
 
 */
 

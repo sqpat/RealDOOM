@@ -705,12 +705,10 @@ P_BlockLinesIterator
 
 		ld_physics = &lines_physics[list];
 
-		//if (ld->validcount == (validcount & 0xFF)) {
 		if (ld_physics->validcount == validcount) {
 			continue; 	// line has already been checked
 		}
 		ld_physics->validcount = validcount;
-		//ld->validcount = (validcount & 0xFF);
 			
 		if (!func(ld_physics, list)) {
 			return false;

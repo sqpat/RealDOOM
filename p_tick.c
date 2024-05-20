@@ -97,7 +97,7 @@ void P_RemoveThinker (THINKERREF thinkerRef)
 {
 	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
 }
-
+extern int setval;
 //
 // P_RunThinkers
 //
@@ -186,7 +186,7 @@ void P_RunThinkers (void)
 						fp = fopen("debgtick.txt", "a");
 					}
 
-					fprintf(fp, "%li %hhu %i %i %hhu \n", gametic, prndindex, i, currentthinker, currentthinkerFunc);
+					fprintf(fp, "%li %i %i %i %li \n", gametic, prndindex, i, currentthinker, currentthinkerFunc);
 					fclose(fp);
 
 

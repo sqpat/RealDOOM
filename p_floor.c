@@ -523,7 +523,7 @@ EV_BuildStairs
 	short_height_t sectorfloorheight;
 	uint8_t sectorfloorpic;
 	int16_t sectorlinesoffset;
-	uint8_t sectorlinecount;
+	int16_t sectorlinecount;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	int16_t		j = 0;
 	sector_t __far* sector;

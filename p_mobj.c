@@ -91,7 +91,9 @@ void A_SpawnFly(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
 void A_BrainExplode(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
 void G_ExitLevel();
 
+#ifdef DEBUGLOG_TO_FILE
 mobj_t __far* SAVEDUNIT;
+#endif
 mobj_t __far* setStateReturn;
 mobj_pos_t __far* setStateReturn_pos;
 //
