@@ -495,10 +495,10 @@ P_CheckSight
 {
 
     fixed_t_union		pnum;
-    int16_t		bytenum;
+    uint16_t		bytenum;
     int16_t		bitnum;
-	 
-	 
+	// this forces 32 bit operations down below 
+	int32_t		result = numsectors;
 
 	
     // First check for trivial rejection.
@@ -506,8 +506,8 @@ P_CheckSight
     // Determine subsector entries in REJECT table.
     // todo we can do this faster for 16 bite... shifts are slow, we want to avoid the 32 bit int too.
 	// can be 330ish sectors in a level so pnum can surpass 16 bit sizes
-	pnum.w = t1->secnum*numsectors + t2->secnum;
-    bytenum = pnum.w>>3;
+	pnum.wu = t1->secnum*result + t2->secnum;
+    bytenum = pnum.wu>>3;
     bitnum = 1 << (pnum.h.fracbits&7);
 
 	
