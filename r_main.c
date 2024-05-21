@@ -620,20 +620,16 @@ void R_SetupFrame ()
     viewcos = finecosine[viewangle_shiftright3];
 	
     if (player.fixedcolormap) {
-		//todo what was this again? why 0x2000
-		fixedcolormap =
-			0x2000
-			+ player.fixedcolormap*256*sizeof(lighttable_t);
+		fixedcolormap =  player.fixedcolormap*256*sizeof(lighttable_t);
 		
 		walllights = scalelightfixed;
 
 		for (i=0 ; i<MAXLIGHTSCALE ; i++){
 			scalelightfixed[i] = fixedcolormap;
 		}
-    }
-    else
-	fixedcolormap = 0;
-		
+    } else{
+		fixedcolormap = 0;
+	}
     validcount++;
 	// i think this sets the view within the border for when screen size is increased/shrunk
     

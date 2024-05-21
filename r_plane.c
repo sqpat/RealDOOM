@@ -136,7 +136,7 @@ R_MapPlane
     ds_yfrac = -viewy.w - FixedMulTrig(finesine[angle], length );
 
 	if (fixedcolormap) {
-		dc_colormap = MK_FP(colormapssegment, fixedcolormap);
+		ds_colormap = MK_FP(colormapssegment, fixedcolormap);
 
 	}
 	else {
