@@ -520,10 +520,10 @@ boolean		castattacking;
 //
 extern	gamestate_t     wipegamestate;
 
-
 void F_StartCast (void)
 {
-    wipegamestate = -1;		// force a screen wipe
+	if (finalestage != 2)
+    	wipegamestate = -1;		// force a screen wipe
     castnum = 0;
     caststate = &states[getSeeState(castorder[castnum].type)];
     casttics = caststate->tics;
@@ -717,7 +717,6 @@ void F_CastPrint (int8_t* text)
 //
 // F_CastDrawer
 //
-void V_DrawPatchFlipped (int16_t x, int16_t y,  patch_t  __far*patch);
 
 void F_CastDrawer (void)
 {
@@ -733,9 +732,11 @@ void F_CastDrawer (void)
     V_DrawFullscreenPatch("BOSSBACK", 0);
 	getStringByIndex(castorder[castnum].nameindex, text);
     F_CastPrint (text);
-    
+
+	// need render 7000 for spriteframes. (but this overwrites status page)
+	Z_QuickMapRender7000();
+
     // draw the current frame in the middle of the screen
-		
 	sprite = &sprites[caststate->sprite];
 	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprite->spriteframesOffset]);
 
@@ -755,7 +756,6 @@ void F_CastDrawer (void)
 	else {
 		V_DrawPatch(160, 170, 0, patch);
 	}
-	Z_QuickMapStatus();
 
 }
 
