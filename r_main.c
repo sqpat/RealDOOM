@@ -659,16 +659,14 @@ extern uint16_t cachedrenderplayertics;
 #endif
 void M_StartMessage(int8_t __near * string,void __far_func (* routine)(int16_t), boolean input);
 
-//extern int8_t lastvisplane;
 int8_t visplanedirty = false;
 int8_t skytextureloaded = false;
-uint16_t __far* skyofs;
-int16_t skytexturelump = -3;
 //
 // R_RenderView
 //
 //void filelog2(int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, int16_t f);
 //int8_t tempbuf[5];
+//extern int8_t lastvisplane;
 
 #ifdef FPS_DISPLAY
 int8_t fps_buf[14];
@@ -738,23 +736,6 @@ void R_RenderPlayerView ()
 
 	Z_QuickMapRenderPlanes();
 
-	if (!skytextureloaded){
-		skytexturelump = ((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[skytexture]]))[0];
-		// lump from tex id
-		W_CacheLumpNumDirect(skytexturelump, skytexture_bytes);
-		skytextureloaded = true;
-
-		// precalculate the offsets table location...
-		if (texturecolumn_offset[skytexture] >= 0x0800) {
-			skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[skytexture] - 0x0800) << 4]));
-		} else {
-			skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[skytexture] << 4]));
-
-		}
-
-	}
-
-
 	// put visplanes 0-75 back in memory (if necessary)
 	if (visplanedirty){
 		Z_QuickMapVisplaneRevert();
@@ -762,7 +743,6 @@ void R_RenderPlayerView ()
     
 	R_DrawPlanes ();
 	// put away flat cache, put back level data
-
 	Z_QuickMapUndoFlatCache();
 	//Z_QuickMapSpritePage(); //todo combine somehow with above?
 

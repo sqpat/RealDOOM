@@ -42,7 +42,9 @@
 #include "memory.h"
 
 
-void    P_SpawnMapThing(mapthing_t     mthing, int16_t key);
+
+int16_t skytexturelump = -3;
+uint16_t __far* skyofs;
 
 //
 // MAP related Lookup tables.
@@ -1341,7 +1343,20 @@ P_SetupLevel
 	// set up world state
 	P_SpawnSpecials();
 	
+	Z_QuickMapRender();
+	Z_QuickMapRenderPlanes();
+	skytexturelump = ((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[skytexture]]))[0];
+	// lump from tex id
+	W_CacheLumpNumDirect(skytexturelump, skytexture_bytes);
+
+	// precalculate the offsets table location...
+	if (texturecolumn_offset[skytexture] >= 0x0800) {
+		skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[skytexture] - 0x0800) << 4]));
+	} else {
+		skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[skytexture] << 4]));
+	}
 	
+	Z_QuickMapPhysics();
 
 	/*
 	I_Error("\n%Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp",

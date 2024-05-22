@@ -642,7 +642,24 @@ void Z_QuickMapRenderPlanes(){
 		taskswitchcount++;
 		flatpageswitchcount++;
 	#endif
+
+	current9000State = PAGE_9000_RENDER_PLANE;
+
 }
+
+
+void Z_QuickMapRenderPlanesBack(){
+
+	Z_QuickMap(pageswapargs_renderplane_offset_size, 3);
+
+	#ifdef DETAILED_BENCH_STATS
+		taskswitchcount++;
+		flatpageswitchcount++;
+	#endif
+	current9000State = PAGE_9000_RENDER_PLANE;
+
+}
+
 
 void Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	// offset 4 means reset defaults/current values.
@@ -723,6 +740,16 @@ void Z_QuickMapLumpInfo() {
 			current9000State = PAGE_9000_LUMPINFO_PHYSICS;
  
 			return;
+		case PAGE_9000_RENDER_PLANE:
+			Z_QuickMap(pageswapargs_phys_offset_size+80, 4);
+			#ifdef DETAILED_BENCH_STATS
+					taskswitchcount++;
+					lumpinfo9000switchcount++;
+			#endif
+		
+			last9000State = current9000State;
+			current9000State = PAGE_9000_LUMPINFO_PHYSICS;
+			return;
 
 		case PAGE_9000_LUMPINFO_PHYSICS:
 			last9000State = PAGE_9000_LUMPINFO_PHYSICS;
@@ -745,6 +772,9 @@ void Z_UnmapLumpInfo() {
 			break;
 		case PAGE_9000_RENDER:
 			Z_QuickMapRender9000();
+			break;
+		case PAGE_9000_RENDER_PLANE:
+			Z_QuickMapRenderPlanesBack();
 			break;
 		case PAGE_9000_SCREEN1:
 			Z_QuickMapScreen1();

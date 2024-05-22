@@ -451,6 +451,9 @@ void R_DrawPlanes (void)
 			if (physindex == 3){
 				//I_Error("A");
 				// todo eventually page these into 9000 region?
+	
+				//I_Error("Here: %i %Fp", 3+visplanedirty, MK_FP(visplanelookupsegments[2], visplaneoffset) );
+				
 				Z_QuickMapVisplanePage(3+visplanedirty, 2); // will be 3 the first time, 4 the second time.
 				physindex = 2;
 
@@ -475,17 +478,24 @@ void R_DrawPlanes (void)
 				dc_yh = pl->bottom[x];				
 
 				if (dc_yl <= dc_yh) {
-					// all sky textures are 256 wide, just need the 0xFF mod
-					int16_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;
+					// all sky textures are 256 wide, just need the 0xFF and
+					uint8_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;
 					dc_x = x;
 
 					// here we have inlined special-case R_GetColumn with precalculated fields for this texture.
 					// as a result, we also avoid a 34k texture mucking up the texture cache region...
 
-					// check which 64k page this lives in
-					// todo cache this offset location 
+					// todo all skytextures are same size so we should be able to just hardcode the skyofs(?)
+					// does that help speed? 
+ 					//Z_QuickMapRenderPlanesBack();
 
 					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
+/*
+					if (i >= 75){
+						FILE* fp = fopen("headers.txt", "a");
+						fprintf (fp, "render sky %li %i %i %i %i %i %i %i", gametic, i, dc_yl, dc_yh, x, plheader->minx, plheader->maxx, plheader->picnum);
+						fclose(fp);
+					}*/
 
 					colfunc();
 
@@ -590,7 +600,7 @@ void R_DrawPlanes (void)
 			light = LIGHTLEVELS-1;
 		}
 
-		// quicker shift 7..
+		// quicker shift 7.. (? test)
 		planezlight = &zlight[lightshift7lookup[light]];
  
 		pl->top[plheader->maxx+1] = 0xff;
@@ -624,8 +634,6 @@ void R_DrawPlanes (void)
 		}
 		
     }
-
-	
 
 }
 

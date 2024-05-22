@@ -292,6 +292,7 @@ void Z_QuickMapRenderPlanes();
 #define PAGE_9000_TEXTURE 2
 #define PAGE_9000_RENDER 3
 #define PAGE_9000_SCREEN1 4
+#define PAGE_9000_RENDER_PLANE 5
 
 
 
