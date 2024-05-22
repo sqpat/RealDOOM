@@ -81,9 +81,7 @@ typedef	struct
 	uint8_t	floorpic;
 	uint8_t	ceilingpic;
     
-    // when linecount grew back to 16 bit field, that raised sector_t to 17 bytes so we moved
-    // lightlevels out to its own field to keep sectors as 16 byte struct...
-    //uint8_t	lightlevel; // seems to max at 255
+    uint8_t	lightlevel; // seems to max at 255
 
 
 

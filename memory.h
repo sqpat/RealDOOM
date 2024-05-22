@@ -51,7 +51,6 @@
 #define size_subsectors         (size_seenlines       + MAX_SUBSECTORS_SIZE)
 #define size_nodes              (size_subsectors      + MAX_NODES_SIZE)
 #define size_segs               (size_nodes           + MAX_SEGS_SIZE)
-#define size_sectorlightlevels  (size_nodes           + (sizeof(uint8_t) * MAX_SECTORS))
 
 
 #define sectors           ((sector_t __far*)    (uppermemoryblock ))
@@ -62,7 +61,6 @@
 #define subsectors        ((subsector_t __far*) (uppermemoryblock + size_seenlines))
 #define nodes             ((node_t __far*)      (uppermemoryblock + size_subsectors))
 #define segs              ((seg_t __far*)       (uppermemoryblock + size_nodes))
-#define sectorlightlevels ((uint8_t __far*)     (uppermemoryblock + size_segs))
 
 //0xE000
 /*
@@ -322,6 +320,7 @@ blockmaplump    7000:6E40
 // begin stuff that is paged out in sprite code
 // this is used boht in physics and part of render code
 
+
 #define size_mobjposlist       0                   + (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_xtoviewangle      size_mobjposlist    + (sizeof(fineangle_t) * (SCREENWIDTH + 1))
 #define size_yslope            size_xtoviewangle   + (sizeof(fixed_t) * SCREENHEIGHT)
@@ -331,8 +330,9 @@ blockmaplump    7000:6E40
 #define size_cachedxstep       size_cacheddistance + (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_cachedystep       size_cachedxstep    + (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_spanstart         size_cachedystep    + (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_scantokey         size_spanstart + 128
-#define size_rndtable          size_scantokey + 256
+#define size_scantokey         size_spanstart      + 128
+#define size_rndtable          size_scantokey      + 256
+#define size_getPainChaince    size_rndtable       + SIZE_D_INFO
 
 #define mobjposlist           ((mobj_pos_t __far*)     (0x68000000))
 #define xtoviewangle          ((fineangle_t __far*)    (0x68000000 + size_mobjposlist))
@@ -345,6 +345,8 @@ blockmaplump    7000:6E40
 #define spanstart             ((int16_t __far*)        (0x68000000 + size_cachedystep))
 #define scantokey             ((byte __far*)           (0x68000000 + size_spanstart))
 #define rndtable              ((uint8_t __far*)        (0x68000000 + size_scantokey))
+
+
 
 
 /*
@@ -362,9 +364,93 @@ rndtable       6800:6982
 [empty]        6800:6A82
 
 
+
+
+
 5502 bytes free
 
 */
+
+extern int32_t getMobjMass(uint8_t id);
+extern int16_t getPainChance2(uint8_t id);
+extern int16_t getRaiseState(uint8_t id);
+extern int16_t getMeleeState(uint8_t id);
+extern int16_t getXDeathState(uint8_t id);
+extern sfxenum_t getActiveSound(uint8_t id);
+extern sfxenum_t getPainSound(uint8_t id);
+extern sfxenum_t getAttackSound(uint8_t id);
+extern uint8_t getDamage(uint8_t id);
+extern statenum_t getSeeState(uint8_t id);
+extern statenum_t getMissileState(uint8_t id);
+extern statenum_t getDeathState(uint8_t id);
+extern statenum_t getPainState(uint8_t id);
+extern int16_t getSpawnHealth(uint8_t id);
+extern int16_t fakefunc(uint8_t id);
+
+//6800:6a82
+
+//1748:6ef4 
+
+// move up to 6800:6a90
+// or 6EA9:0000
+#define InfoFuncLoadAddr      ((byte __far *)  (0x6EA90000))
+// note: entry point to the function is not necessarily the first byte of the compiled binary.
+#define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (0x6EA90034))
+#define getRaiseStateAddr     ((int16_t    (__far *)(uint8_t))  (0x6EA900B2))
+#define getXDeathStateAddr    ((int16_t    (__far *)(uint8_t))  (0x6EA9010A))
+#define getMeleeStateAddr     ((int16_t    (__far *)(uint8_t))  (0x6EA9015A))
+#define getMobjMassAddr       ((int32_t    (__far *)(uint8_t))  (0x6EA901B8))
+#define getActiveSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90222))
+#define getPainSoundAddr      ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90284))
+#define getAttackSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x6EA902B8))
+#define getDamageAddr         ((uint8_t    (__far *)(uint8_t))  (0x6EA902DA))
+#define getSeeStateAddr       ((statenum_t (__far *)(uint8_t))  (0x6EA90350))
+#define getMissileStateAddr   ((statenum_t (__far *)(uint8_t))  (0x6EA903F4))
+#define getDeathStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA904A8))
+#define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (0x6EA90586))
+#define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (0x6EA9063C))
+
+#define SIZE_D_INFO            0x069C
+
+#define getPainChanceOther     ((int16_t (__far *)(uint8_t))  (&getPainChance2))
+#define getPainChanceOther2(a)   ((getPainChanceOther)(a) )
+#define getPainChance(a)      ((getPainChanceAddr)(a) )
+/*
+#define getRaiseState(a)      ((getRaiseStateAddr)(a) )
+#define getXDeathState(a)     ((getXDeathStateAddr)(a) )
+#define getMeleeState(a)      ((getMeleeStateAddr)(a) )
+#define getMobjMass(a)        ((getMobjMassAddr)(a) )
+#define getActiveSound(a)     ((getActiveSoundAddr)(a) )
+#define getPainSound(a)       ((getPainSoundAddr)(a) )
+#define getAttackSound(a)     ((getAttackSoundAddr)(a) )
+#define getDamage(a)          ((getDamageAddr)(a) )
+#define getSeeState(a)        ((getSeeStateAddr)(a) )
+#define getMissileState(a)    ((getMissileStateAddr)(a) )
+#define getDeathState(a)      ((getDeathStateAddr)(a) )
+#define getPainState(a)       ((getPainStateAddr)(a) )
+#define getSpawnHealth(a)     ((getSpawnHealthAddr)(a) )
+
+
+/*
+
+6EA9:0034      getPainChance2_
+6EA9:00b2      getRaiseState_
+6EA9:010a      getXDeathState_
+6EA9:015a      getMeleeState_
+6EA9:01b8      getMobjMass_
+6EA9:0222      getActiveSound_
+6EA9:0284      getPainSound_
+6EA9:02b8      getAttackSound_
+6EA9:02da      getDamage_
+6EA9:0350      getSeeState_
+6EA9:03f4      getMissileState_
+6EA9:04a8      getDeathState_
+6EA9:0586      getPainState_
+6EA9:063c      getSpawnHealth_
+6EA9:069c*     [empty] ??
+*/
+
+
 
  //0x6400 BLOCK PHYSICS
 #define size_blocklinks      (0 + MAX_BLOCKLINKS_SIZE)

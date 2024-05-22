@@ -39,8 +39,6 @@ int16_t		curseg;
 seg_render_t __far* curseg_render;
 sector_t __far*	frontsector;
 sector_t __far*	backsector;
-int16_t frontsector_secnum;
-int16_t backsector_secnum;
 
 drawseg_t __far*	ds_p;
 
@@ -374,7 +372,7 @@ void R_AddLine (int16_t curlineNum)
 
 	if (backsector->ceilingpic == frontsector->ceilingpic
 		&& backsector->floorpic == frontsector->floorpic
-		&& sectorlightlevels[backsector_secnum] == sectorlightlevels[frontsector_secnum]
+		&& backsector->lightlevel == frontsector->lightlevel
 		&& curlinesidedef->midtexture == 0) {
 		return;
     }
@@ -559,7 +557,6 @@ void R_Subsector(int16_t subsecnum)
 	temp.h.fracbits = 0;
 	
     frontsector = &sectors[sub->secnum];
-	frontsector_secnum = sub->secnum;
     count = sub->numlines;
 	firstline = sub->firstline;
 
@@ -577,7 +574,7 @@ void R_Subsector(int16_t subsecnum)
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, frontsector->floorheight);
 
 	if (temp.w < viewz.w) {
-		floorplaneindex = R_FindPlane(temp.w, frontsector->floorpic, sectorlightlevels[frontsector_secnum],  IS_FLOOR_PLANE);
+		floorplaneindex = R_FindPlane(temp.w, frontsector->floorpic, frontsector->lightlevel,  IS_FLOOR_PLANE);
 	} else {
 		floorplaneindex = -1;
 	}
@@ -586,12 +583,12 @@ void R_Subsector(int16_t subsecnum)
 	// todo: see if frontsector->ceilingheight > viewz.h.intbits would work. same above -sq
 	
 	if (temp.w > viewz.w || frontsector->ceilingpic == skyflatnum) {
-		ceilingplaneindex = R_FindPlane(temp.w, frontsector->ceilingpic, sectorlightlevels[frontsector_secnum], IS_CEILING_PLANE);
+		ceilingplaneindex = R_FindPlane(temp.w, frontsector->ceilingpic, frontsector->lightlevel, IS_CEILING_PLANE);
 	} else {
 		ceilingplaneindex = -1;
 	}
 
-	R_AddSprites(frontsector, sub->secnum);
+	R_AddSprites(frontsector);
 
 	while (count--)	{
 		R_AddLine(firstline);

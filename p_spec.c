@@ -294,8 +294,8 @@ P_FindMinSurroundingLight
     for (i=0 ; i < linecount ; i++) {
 		offset = secnumlist[i];
 	 
-		if (sectorlightlevels[offset] < min) {
-			min = sectorlightlevels[offset];
+		if (sectors[offset].lightlevel < min) {
+			min = sectors[offset].lightlevel;
 		}
     }
 

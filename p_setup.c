@@ -322,7 +322,7 @@ void P_LoadSectors(int16_t lump)
 		ss->ceilingheight = (ms.ceilingheight) << SHORTFLOORBITS;
 		ss->floorpic = R_FlatNumForName(ms.floorpic);
 		ss->ceilingpic = R_FlatNumForName(ms.ceilingpic);
-		sectorlightlevels[i] = ((uint8_t) (ms.lightlevel));
+		ss->lightlevel = (ms.lightlevel);
 		//ss->thinglistRef = NULL_THINKERREF;
 		
 		sp->tag = (convertedtag);
