@@ -989,7 +989,7 @@ void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 }
 
 void Z_QuickMapVisplaneRevert(){
-
+/*
 	//I_Error("C");
 	Z_QuickMap(pageswapargs_visplane_base_page_offset_size, 3);
 	//active_visplanes[0] = 1;  // never changes 
@@ -998,6 +998,12 @@ void Z_QuickMapVisplaneRevert(){
 	active_visplanes[2] = 3;
 	active_visplanes[3] = 0;
 	active_visplanes[4] = 0;
+	*/
+	//Z_QuickMapVisplanePage(0, 0);
+	Z_QuickMapVisplanePage(1, 1);
+	Z_QuickMapVisplanePage(2, 2);
+	
+
 	visplanedirty = false;
 
 #ifdef DETAILED_BENCH_STATS
