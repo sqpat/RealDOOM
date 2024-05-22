@@ -174,13 +174,6 @@ P_RecursiveSound
 		}
 
 		// 14 37 169 0
-
-		if (gametic == 314 ){
-			FILE * fp = fopen("soundo.txt", "a");
-			fprintf(fp, "first %i %i %i %i\n", i, linecount, secnum, soundblocks);
-			fclose(fp);
-		}
-
 		if (checkflags & ML_SOUNDBLOCK) {
 			if (!soundblocks) {
 				P_RecursiveSound(othersecnum, 1);
@@ -205,7 +198,6 @@ P_NoiseAlert
 
 
     validcount++;
-	// sector 84 not being set on gametic 314 with same inputs?
 
     P_RecursiveSound (playerMobj->secnum, 0);
 
