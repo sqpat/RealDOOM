@@ -105,6 +105,8 @@ mobj_pos_t __far* setStateReturn_pos;
 // P_ExplodeMissile  
 //
 void P_ExplodeMissile(mobj_t __far* mo, mobj_pos_t __far* mo_pos){
+	//todoaddr inline later
+	statenum_t (__far  * getDeathState)(uint8_t) = getDeathStateAddr;
 
     mo->momx.w = mo->momy.w = mo->momz.w = 0;
     P_SetMobjState (mo,getDeathState(mo->type));
@@ -565,6 +567,8 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsec
 	THINKERREF mobjRef;
 	int16_t mobjsecnum;
 	fixed_t_union temp;
+	//todoaddr inline later
+	int16_t (__far  * getSpawnHealth)(uint8_t) = getSpawnHealthAddr;
 	temp.h.fracbits = 0;
 
 	mobj = (mobj_t __far*)P_CreateThinker(TF_MOBJTHINKER_HIGHBITS);

@@ -371,21 +371,7 @@ rndtable       6800:6982
 
 */
 
-extern int32_t getMobjMass(uint8_t id);
-extern int16_t getPainChance2(uint8_t id);
-extern int16_t getRaiseState(uint8_t id);
-extern int16_t getMeleeState(uint8_t id);
-extern int16_t getXDeathState(uint8_t id);
-extern sfxenum_t getActiveSound(uint8_t id);
-extern sfxenum_t getPainSound(uint8_t id);
-extern sfxenum_t getAttackSound(uint8_t id);
-extern uint8_t getDamage(uint8_t id);
-extern statenum_t getSeeState(uint8_t id);
-extern statenum_t getMissileState(uint8_t id);
-extern statenum_t getDeathState(uint8_t id);
-extern statenum_t getPainState(uint8_t id);
-extern int16_t getSpawnHealth(uint8_t id);
-extern int16_t fakefunc(uint8_t id);
+ 
 
 //6800:6a82
 
@@ -396,9 +382,9 @@ extern int16_t fakefunc(uint8_t id);
 #define InfoFuncLoadAddr      ((byte __far *)  (0x6EA90000))
 // note: entry point to the function is not necessarily the first byte of the compiled binary.
 #define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (0x6EA90034))
-#define getRaiseStateAddr     ((int16_t    (__far *)(uint8_t))  (0x6EA900B2))
-#define getXDeathStateAddr    ((int16_t    (__far *)(uint8_t))  (0x6EA9010A))
-#define getMeleeStateAddr     ((int16_t    (__far *)(uint8_t))  (0x6EA9015A))
+#define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA900B2))
+#define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (0x6EA9010A))
+#define getMeleeStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA9015A))
 #define getMobjMassAddr       ((int32_t    (__far *)(uint8_t))  (0x6EA901B8))
 #define getActiveSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90222))
 #define getPainSoundAddr      ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90284))
@@ -413,9 +399,6 @@ extern int16_t fakefunc(uint8_t id);
 #define SIZE_D_INFO            0x069C
 
 /*
-
-#define getPainChanceOther     ((int16_t (__far *)(uint8_t))  (&getPainChance2))
-#define getPainChanceOther2(a)   ((getPainChanceOther)(a) )
 #define getPainChance(a)      ((getPainChanceAddr)(a) )
 #define getRaiseState(a)      ((getRaiseStateAddr)(a) )
 #define getXDeathState(a)     ((getXDeathStateAddr)(a) )
@@ -430,7 +413,7 @@ extern int16_t fakefunc(uint8_t id);
 #define getDeathState(a)      ((getDeathStateAddr)(a) )
 #define getPainState(a)       ((getPainStateAddr)(a) )
 #define getSpawnHealth(a)     ((getSpawnHealthAddr)(a) )
-
+*/
 
 /*
 

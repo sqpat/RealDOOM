@@ -632,7 +632,11 @@ P_KillMobj
 	mobj_pos_t __far*	target_pos)
 {
     mobjtype_t	item;
-	
+	//todoaddr inline later
+	int16_t (__far  * getSpawnHealth)(uint8_t) = getSpawnHealthAddr;
+	statenum_t (__far  * getXDeathState)(uint8_t) = getXDeathStateAddr;
+	statenum_t (__far  * getDeathState)(uint8_t) = getDeathStateAddr;
+
 	
 	target_pos->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
 
@@ -739,7 +743,15 @@ P_DamageMobj
 	fixed_t_union inflictory;
 	fixed_t_union inflictorz;
 	mobj_pos_t __far* target_pos = GET_MOBJPOS_FROM_MOBJ(target);
- 
+ 	
+	//todoaddr inline later
+	int16_t (__far  * getPainChance)(uint8_t) = getPainChanceAddr;
+	int32_t (__far  * getMobjMass)(uint8_t) = getMobjMassAddr;
+	statenum_t (__far  * getPainState)(uint8_t) = getPainStateAddr;
+	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
+
+
+
 	if (!(target_pos->flags & MF_SHOOTABLE)) {
 		return;	// shouldn't happen...
 	}

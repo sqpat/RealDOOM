@@ -522,6 +522,9 @@ extern	gamestate_t     wipegamestate;
 
 void F_StartCast (void)
 {
+	//todoaddr inline later
+	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
+
 	if (finalestage != 2)
     	wipegamestate = -1;		// force a screen wipe
     castnum = 0;
@@ -543,7 +546,11 @@ void F_CastTicker (void)
 {
     int16_t		st;
     int16_t		sfx;
-	
+	//todoaddr inline later
+	statenum_t (__far  * getMissileState)(uint8_t) = getMissileStateAddr;
+	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
+	statenum_t (__far  * getMeleeState)(uint8_t) = getMeleeStateAddr;
+
     if (--casttics > 0)
 		return;			// not time to change state yet
 		
@@ -644,7 +651,9 @@ void F_CastTicker (void)
 
 boolean F_CastResponder (event_t __far* ev)
 {
-    if (ev->type != ev_keydown)
+ 	//todoaddr inline later
+	statenum_t (__far  * getDeathState)(uint8_t) = getDeathStateAddr;
+   if (ev->type != ev_keydown)
 	return false;
 		
     if (castdeath)

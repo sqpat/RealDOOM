@@ -172,8 +172,6 @@ void R_DrawVisSprite ( vissprite_t __far* vis ) {
     if (vis->colormap == COLORMAP_SHADOW) {
         // NULL colormap = shadow draw
         colfunc = fuzzcolfunc;
-    	//dc_colormap = MK_FP(colormapssegment, 0);
-
     }
         
     dc_iscale = labs(vis->xiscale)>>detailshift;
@@ -542,8 +540,6 @@ void R_DrawPlayerSprites (void){
 	mfloorclip = screenheightarray;
 	mceilingclip = negonearray;
 
-	//R_DrawVisSprite(&player_vissprites[0]);
-	//R_DrawVisSprite(&player_vissprites[1]);
 	for (i = 0, psp = player.psprites;
 		i < NUMPSPRITES;
 		i++, psp++) {

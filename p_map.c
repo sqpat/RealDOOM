@@ -324,7 +324,8 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __f
 	fixed_t_union thingheight;
 	fixed_t_union thingradius;
 	// don't clip against self
-
+	//todoaddr inline later
+	uint8_t (__far  * getDamage)(uint8_t) = getDamageAddr;
 
 	if (thing == tmthing) {
 		return true;

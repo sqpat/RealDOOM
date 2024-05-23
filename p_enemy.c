@@ -260,6 +260,9 @@ boolean P_CheckMissileRange (mobj_t __far* actor)
 	fixed_t_union actorTargetx;
 	fixed_t_union actorTargety;
 	mobj_pos_t __far*	actor_pos;
+	//todoaddr inline later
+	statenum_t (__far  * getMeleeState)(uint8_t) = getMeleeStateAddr;
+
 	actorTarget = (mobj_t __far*)(&thinkerlist[actor->targetRef].data);
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 	actorTarget_pos = GET_MOBJPOS_FROM_MOBJ(actorTarget);
@@ -659,6 +662,8 @@ void A_Look (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     mobj_t __far*	targ;
 	THINKERREF targRef;
 	int16_t actorsecnum = actor->secnum;
+	//todoaddr inline later
+	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
 	actor->threshold = 0;	// any shot will wake up
 
 
@@ -765,7 +770,12 @@ void A_Chase (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 	uint8_t sound;
 	mobj_t __far*	actorTarget = (mobj_t __far*)(&thinkerlist[actortargetRef].data);
 	mobj_pos_t __far*	actorTarget_pos = &mobjposlist[actortargetRef];
-	
+	//todoaddr inline later
+	statenum_t (__far  * getMissileState)(uint8_t) = getMissileStateAddr;
+	statenum_t (__far  * getMeleeState)(uint8_t) = getMeleeStateAddr;
+	sfxenum_t (__far  * getActiveSound)(uint8_t) = getActiveSoundAddr;
+	sfxenum_t (__far  * getAttackSound)(uint8_t) = getAttackSoundAddr;
+
     if (actor->reactiontime)
 		actor->reactiontime--;
 				
@@ -1002,6 +1012,9 @@ void A_CPosRefire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     // keep firing unless target got out of sight
 	mobj_t __far* actorTarget;
 	THINKERREF actortargetRef;
+	//todoaddr inline later
+	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
+
 	A_FaceTarget (actor);
 	
 	actortargetRef = actor->targetRef;
@@ -1024,6 +1037,8 @@ void A_SpidRefire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     // keep firing unless target got out of sight
 	mobj_t __far* actorTarget;
 	THINKERREF 	actortargetRef;
+	//todoaddr inline later
+	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
 	A_FaceTarget (actor);
 
 	actortargetRef = actor->targetRef;
@@ -1321,7 +1336,9 @@ boolean PIT_VileCheck (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __fa
 {
 	fixed_t_union				maxdist;
     boolean	check;
-	
+	//todoaddr inline later
+	statenum_t (__far  * getRaiseState)(uint8_t) = getRaiseStateAddr;
+
 
 	if (!(thing_pos->flags & MF_CORPSE)) {
 		return true;	// not a monster
@@ -1375,6 +1392,11 @@ void A_VileChase (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	fixed_t_union   coord;
 	THINKERREF		temp;
 	mobj_t __far*	corpsehit;
+	//todoaddr inline later
+	int16_t (__far  * getSpawnHealth)(uint8_t) = getSpawnHealthAddr;
+	statenum_t (__far  * getRaiseState)(uint8_t) = getRaiseStateAddr;
+
+
 	coord.h.fracbits = 0;
     if (actor->movedir != DI_NODIR) {
 		mobj_pos_t __far* corpsehit_pos;
@@ -1536,6 +1558,9 @@ void A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	mobj_t __far* fire;
 	mobj_pos_t __far* actorTarget_pos;
 	mobj_pos_t __far* fire_pos;
+	//todoaddr inline later
+	int32_t (__far  * getMobjMass)(uint8_t) = getMobjMassAddr;
+
 	if (!actor->targetRef)
 		return;
 	actorTarget_pos = &mobjposlist[actor->targetRef];
@@ -1673,7 +1698,9 @@ void A_SkullAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     fineangle_t		an;
     fixed_t			dist;
 	mobj_pos_t __far* dest_pos;
-	
+	//todoaddr inline later
+	sfxenum_t (__far  * getAttackSound)(uint8_t) = getAttackSoundAddr;
+
 
 	if (!actor->targetRef) {
 		return;
@@ -1852,6 +1879,9 @@ void A_XScream (mobj_t __far* actor)
 
 void A_Pain (mobj_t __far* actor)
 {
+	//todoaddr inline later
+	sfxenum_t (__far  * getPainSound)(uint8_t) = getPainSoundAddr;
+
 	S_StartSoundFromRef(actor, getPainSound(actor->type));
 }
 
@@ -2247,6 +2277,8 @@ void A_SpawnFly (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 	THINKERREF fogRef;
 	mobj_pos_t __far* newmobj_pos;
 	mobj_pos_t __far* targ_pos;
+	//todoaddr inline later
+	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
 
 	
 
