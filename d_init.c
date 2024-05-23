@@ -547,7 +547,6 @@ void D_DoomMain2(void)
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
 	
-	
 	/*
 	FILE* fp;
 	byte __far *startaddr = (byte __far*)getPainChance2-0x34; 
