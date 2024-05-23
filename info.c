@@ -587,3 +587,9 @@ int16_t getSpawnHealth(uint8_t id) {
 	}
 }
 
+/*
+int16_t fakefunc(uint8_t id) {
+	return 0 + id;
+}
+*/
+

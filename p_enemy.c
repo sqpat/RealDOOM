@@ -198,7 +198,7 @@ P_NoiseAlert
 
 
     validcount++;
-
+	
     P_RecursiveSound (playerMobj->secnum, 0);
 
 	

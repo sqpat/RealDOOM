@@ -274,7 +274,15 @@ void Z_LoadBinaries() {
 	int i;
 	FILE* fp;
 	// currently in physics region!
-	
+/*
+	fp = fopen("D_INFO.BIN", "rb"); 
+	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
+	fclose(fp);
+	//byte __far *startaddr = 	(byte __far*)getPainChance2-0x34; 
+	//byte __far *endaddr =		(byte __far*)fakefunc;
+	//FAR_memcpy(InfoFuncLoadAddr, startaddr, 0xFF);
+*/
+
 	// all data now in this file instead of spread out a
 	fp = fopen("DOOMDATA.BIN", "rb"); 
 	

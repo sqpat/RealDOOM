@@ -412,10 +412,11 @@ extern int16_t fakefunc(uint8_t id);
 
 #define SIZE_D_INFO            0x069C
 
+/*
+
 #define getPainChanceOther     ((int16_t (__far *)(uint8_t))  (&getPainChance2))
 #define getPainChanceOther2(a)   ((getPainChanceOther)(a) )
 #define getPainChance(a)      ((getPainChanceAddr)(a) )
-/*
 #define getRaiseState(a)      ((getRaiseStateAddr)(a) )
 #define getXDeathState(a)     ((getXDeathStateAddr)(a) )
 #define getMeleeState(a)      ((getMeleeStateAddr)(a) )

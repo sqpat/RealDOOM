@@ -1345,5 +1345,7 @@ extern statenum_t getMissileState(uint8_t id);
 extern statenum_t getDeathState(uint8_t id);
 extern statenum_t getPainState(uint8_t id);
 extern int16_t getSpawnHealth(uint8_t id);
+//extern int16_t fakefunc(uint8_t id);
+
 
 #endif

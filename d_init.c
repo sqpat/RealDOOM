@@ -546,11 +546,27 @@ void D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
-	file[0] = 0;
-
 	
 	
 	/*
+	FILE* fp;
+	byte __far *startaddr = (byte __far*)getPainChance2-0x34; 
+	int16_t (__far *funcloc)(uint8_t) = ((int16_t (__far *)(uint8_t))  (0x6EA90034));
+//FAR_memcpy(InfoFuncLoadAddr, startaddr, 0xFF);
+
+	int16_t p = ((int16_t (__far *)(uint8_t))  (0x6EA90034))(2);
+
+	fp = fopen("D_INFO.BIN", "rb"); 
+	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
+	fclose(fp);
+
+
+	I_Error("done %i %i %i", getPainChance2(2), getPainChanceOther(2), funcloc(2), p);
+
+//FAR_memcpy()
+*/
+	/*
+	
 	int16_t i, i2;
 	int16_t j;
 	int16_t val;
@@ -612,6 +628,7 @@ void D_DoomMain2(void)
 
 */
 
+	file[0] = 0;
 
 
 	if (M_CheckParm("-mem")){
