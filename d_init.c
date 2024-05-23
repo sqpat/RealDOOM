@@ -547,6 +547,8 @@ void D_DoomMain2(void)
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
 	
+	//I_Error("\nblah, %Fp %Fp %Fp %Fp %Fp", spritecache_nodes, flatcache_nodes, patchcache_nodes, texturecache_nodes, events);
+
 	/*
 	FILE* fp;
 	byte __far *startaddr = (byte __far*)getPainChance2-0x34; 

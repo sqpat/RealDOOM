@@ -151,13 +151,20 @@ scalelights     CC00:2160
 
 
 #define size_finesine            (10240u * sizeof(int32_t))
-#define size_finetangent         (size_finesine           +  2048u * sizeof(int32_t))
-#define size_states              (size_finetangent        + sizeof(state_t) * NUMSTATES)
-#define size_events              (size_states             + sizeof(event_t) * MAXEVENTS)
-#define size_flattranslation     (size_events             + MAX_FLATS * sizeof(uint8_t))
-#define size_texturetranslation  (size_flattranslation    + MAX_TEXTURES * sizeof(uint16_t))
-#define size_textureheights      (size_texturetranslation + MAX_TEXTURES * sizeof(uint8_t))
+#define size_finetangent         (2048u * sizeof(int32_t))
+#define size_states              (sizeof(state_t) * NUMSTATES)
+#define size_events              (sizeof(event_t) * MAXEVENTS)
+#define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
+#define size_texturetranslation  (MAX_TEXTURES * sizeof(uint16_t))
+#define size_textureheights      (MAX_TEXTURES * sizeof(uint8_t))
 //#define size_viewangletox        (size_textureheights     + (sizeof(int16_t) * (FINEANGLES / 2)))
+#define size_spritecache_nodes   sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
+#define size_flatcache_nodes     sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
+#define size_patchcache_nodes    sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
+#define size_texturecache_nodes  sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
+
+
+
 
 
 
@@ -171,14 +178,19 @@ scalelights     CC00:2160
 #define baselowermemoryaddress (0x31F00000)
 
 
-#define finesine           ((int32_t __far*)  baselowermemoryaddress)  // 10240
+#define finesine           ((int32_t __far*)  MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
 #define finecosine         ((int32_t __far*)  (baselowermemoryaddress + 0x2000))  // 10240
-#define finetangentinner   ((int32_t __far*)  (baselowermemoryaddress + size_finesine ))
-#define states             ((state_t __far*)  (baselowermemoryaddress + size_finetangent))
-#define events             ((event_t __far*)  (baselowermemoryaddress + size_states ))
-#define flattranslation    ((uint8_t __far*)  (baselowermemoryaddress + size_events))
-#define texturetranslation ((uint16_t __far*) (baselowermemoryaddress + size_flattranslation))
-#define textureheights     ((uint8_t __far*)  (baselowermemoryaddress + size_texturetranslation))
+#define finetangentinner   ((int32_t __far*)  MAKE_FULL_SEGMENT(finesine, size_finesine))
+#define states             ((state_t __far*)  MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
+#define events             ((event_t __far*)  MAKE_FULL_SEGMENT(states, size_states))
+#define flattranslation    ((uint8_t __far*)  MAKE_FULL_SEGMENT(events, size_events))
+#define texturetranslation ((uint16_t __far*) MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
+#define textureheights     ((uint8_t __far*)  MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
+#define spritecache_nodes  ((cache_node_t __far*)    MAKE_FULL_SEGMENT(textureheights , size_textureheights))
+#define flatcache_nodes    ((cache_node_t __far*)    (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
+#define patchcache_nodes   ((cache_node_t __far*)    (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
+#define texturecache_nodes ((cache_node_t __far*)    (((int32_t)patchcache_nodes) + size_patchcache_nodes))
+//MAKE_FULL_SEGMENT(spritecache_nodes , (((int32_t)texturecache_nodes) & 0xFFFF)+ size_texturecache_nodes))
 //#define viewangletox       ((int16_t __far*)  (baselowermemoryaddress + size_textureheights))
 
 #define baselowermemoryaddresssegment 0x31F0
@@ -186,19 +198,23 @@ scalelights     CC00:2160
 
 
 
-// finesine             3007:0000
-// finecosine           3007:2000
-// finetangentinner     3007:A000
-// states               3007:C000
-// events               3007:D6AA
+// finesine             31F0:0000
+// finecosine           31F0:2000
+// finetangentinner     3BF0:0000
+// states               3DF0:0000
+// events               3F5B:0000
+// flattranslation      3F8F:0000
+// texturetranslation   3F99:0000
+// textureheights       3FCF:0000
+// spritecache_nodes    3FEA:0000
+// flatcache_nodes      3FEA:003C
+// patchcache_nodes     3FEA:004E
+// texturecache_nodes   3FEA:007E
 
-// flattranslation      3007:D9EA
-// texturetranslation   3007:DA81
-// textureheights       3007:DDD9
-// viewangletox         3007:DF85
-// [done]               3007:FF85
-//                          0x3FE85
-// 123 bytes to 0x4000
+
+// [done]               3007:FF1E
+//                        0x3FF1E
+// 226 bytes to 0x4000
 
 
 
@@ -248,7 +264,7 @@ scalelights     CC00:2160
 #define sectors_physics    ((sector_physics_t __far* )  MAKE_FULL_SEGMENT(linebuffer, size_linebuffer ))
 #define intercepts         ((intercept_t __far*)        MAKE_FULL_SEGMENT(sectors_physics, size_sectors_physics ))
 #define ammnumpatchbytes   ((byte __far *)              MAKE_FULL_SEGMENT(intercepts, size_intercepts ))
-#define ammnumpatchoffsets ((uint16_t __far*)           (ammnumpatchbytes + 0x020C))
+#define ammnumpatchoffsets ((uint16_t __far*)           (((int32_t)ammnumpatchbytes) + 0x020C))
 #define doomednum          ((int16_t __far*)            MAKE_FULL_SEGMENT(ammnumpatchbytes, (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
 #define linespeciallist    ((int16_t __far*)            MAKE_FULL_SEGMENT(doomednum, size_doomednum ))
   
@@ -290,8 +306,8 @@ scalelights     CC00:2160
 #define size_gammatable     (size_screen0     + 256 * 5)
 #define size_menuoffsets    (size_gammatable  + (sizeof(uint16_t) * NUM_MENU_ITEMS))
 
-#define gammatable          ((byte __far*)      (0x80000000 + size_screen0))
-#define menuoffsets         ((uint16_t __far*)  (0x80000000 + size_gammatable))
+#define gammatable          ((byte __far*)      (0x8FA00000 ))
+#define menuoffsets         ((uint16_t __far*)  (0x8FF00000 ))
 
 /*
 
@@ -310,19 +326,20 @@ this area used in many tasks including physics but not including render
 //0x7000 BLOCK PHYSICS
 
 #define size_lines_physics    (MAX_LINES_PHYSICS_SIZE)
-#define size_blockmaplump     (size_lines_physics    + MAX_BLOCKMAP_LUMPSIZE)
+#define size_blockmaplump     ( MAX_BLOCKMAP_LUMPSIZE)
 
 //3f8a, runs up close to 6800 which has mobjposlist, etc
 
 
-#define lines_physics       ((line_physics_t __far*)  (0x70000000))
-#define blockmaplump        ((int16_t __far*)         (0x70000000 + size_lines_physics))
-#define blockmaplump_plus4  ((int16_t __far*)         (0x70000008 + size_lines_physics))
+#define lines_physics       ((line_physics_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
+#define blockmaplump        ((int16_t __far*)         MAKE_FULL_SEGMENT(lines_physics, size_lines_physics))
+#define blockmaplump_plus4  ((int16_t __far*)        (((int32_t)blockmaplump) + 0x08))
 
 /*
-lines_physics    7000:0000
-blockmaplump    7000:6E40
-[empty]          7000:D736
+lines_physics       7000:0000
+blockmaplump        76E4:0000
+blockmaplump_plus4  76E4:0008
+[empty]             7000:D736
  10442 bytes free!
 */
 
@@ -334,47 +351,46 @@ blockmaplump    7000:6E40
 // this is used boht in physics and part of render code
 
 
-#define size_mobjposlist       0                   + (MAX_THINKERS * sizeof(mobj_pos_t))
-#define size_xtoviewangle      size_mobjposlist    + (sizeof(fineangle_t) * (SCREENWIDTH + 1))
-#define size_yslope            size_xtoviewangle   + (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_distscale         size_yslope         + (sizeof(fixed_t) * SCREENWIDTH)
-#define size_cachedheight      size_distscale      + (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_cacheddistance    size_cachedheight   + (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_cachedxstep       size_cacheddistance + (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_cachedystep       size_cachedxstep    + (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_spanstart         size_cachedystep    + (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_scantokey         size_spanstart      + 128
-#define size_rndtable          size_scantokey      + 256
-#define size_getPainChaince    size_rndtable       + SIZE_D_INFO
+#define size_mobjposlist       (MAX_THINKERS * sizeof(mobj_pos_t))
+#define size_xtoviewangle      (sizeof(fineangle_t) * (SCREENWIDTH + 1))
+#define size_yslope            (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_distscale         (sizeof(fixed_t) * SCREENWIDTH)
+#define size_cachedheight      (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cacheddistance    (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cachedxstep       (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cachedystep       (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_spanstart         (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_scantokey         128
+#define size_rndtable          256
 
-#define mobjposlist           ((mobj_pos_t __far*)     (0x68000000))
-#define xtoviewangle          ((fineangle_t __far*)    (0x68000000 + size_mobjposlist))
-#define yslope                ((fixed_t __far*)        (0x68000000 + size_xtoviewangle))
-#define distscale             ((fixed_t __far*)        (0x68000000 + size_yslope))
-#define cachedheight          ((fixed_t __far*)        (0x68000000 + size_distscale))
-#define cacheddistance        ((fixed_t __far*)        (0x68000000 + size_cachedheight))
-#define cachedxstep           ((fixed_t __far*)        (0x68000000 + size_cacheddistance))
-#define cachedystep           ((fixed_t __far*)        (0x68000000 + size_cachedxstep))
-#define spanstart             ((int16_t __far*)        (0x68000000 + size_cachedystep))
-#define scantokey             ((byte __far*)           (0x68000000 + size_spanstart))
-#define rndtable              ((uint8_t __far*)        (0x68000000 + size_scantokey))
+#define mobjposlist           ((mobj_pos_t __far*)     MAKE_FULL_SEGMENT(0x68000000, 0))
+#define xtoviewangle          ((fineangle_t __far*)    MAKE_FULL_SEGMENT(mobjposlist, size_mobjposlist))
+#define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(xtoviewangle, size_xtoviewangle))
+#define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))
+#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(distscale, size_distscale))
+#define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
+#define cachedxstep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cacheddistance, size_cacheddistance))
+#define cachedystep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedxstep, size_cachedxstep))
+#define spanstart             ((int16_t __far*)        MAKE_FULL_SEGMENT(cachedystep, size_cachedystep))
+#define scantokey             ((byte __far*)           MAKE_FULL_SEGMENT(spanstart, size_spanstart))
+#define rndtable              ((uint8_t __far*)        MAKE_FULL_SEGMENT(scantokey, size_scantokey))
 
 
 
 
 /*
 mobjposlist    6800:0000
-xtoviewangle   6800:4ec0
-yslope         6800:5142
-distscale      6800:5462
-cachedheight   6800:5962
-cacheddistance 6800:5c82
-cachedxstep    6800:5fa2
-cachedystep    6800:62c2
-spanstart      6800:65e2
-scantokey      6800:6902
-rndtable       6800:6982
-[empty]        6800:6A82
+xtoviewangle   6CEC:0000
+yslope         6D15:0000
+distscale      6D47:0000
+cachedheight   6D97:0000
+cacheddistance 6DC9:0000
+cachedxstep    6DFB:0000
+cachedystep    6E2D:0000
+spanstart      6E5F:0000
+scantokey      6E91:0000
+rndtable       6E99:0000
+[empty]        6EA9:0000
 
 
 
@@ -450,15 +466,15 @@ rndtable       6800:6982
 
 
  //0x6400 BLOCK PHYSICS
-#define size_blocklinks      (0 + MAX_BLOCKLINKS_SIZE)
+#define size_blocklinks       (0 + MAX_BLOCKLINKS_SIZE)
 #define size_nightmarespawns  (size_blocklinks    + NIGHTMARE_SPAWN_SIZE)
 
-#define blocklinks          ((THINKERREF __far*)    (0x60004000))
-#define nightmarespawns     ((mapthing_t __far *)   (0x60004000 + size_blocklinks))
+#define blocklinks          ((THINKERREF __far*)    MAKE_FULL_SEGMENT(0x64000000, 0))
+#define nightmarespawns     ((mapthing_t __far *)   MAKE_FULL_SEGMENT(blocklinks, size_blocklinks))
 
-//blocklinks    6000:4000
-//nightmarespanws  6000:5EBA
-//[empty]      6000:7f8a
+//blocklinks       6400:0000
+//nightmarespanws  65EC:0000
+//[empty]          6000:7f8a
 // 118 bytes free
 
 
@@ -470,13 +486,13 @@ rndtable       6800:6982
 #define size_rejectmatrix    (MAX_REJECT_SIZE)
 #define size_savegamestrings (size_rejectmatrix + (10 * SAVESTRINGSIZE))
 
-#define rejectmatrix         ((byte __far *)      (0x5000C000))
-#define savegamestrings      ((int8_t __far *)    (0x5000C000 + size_rejectmatrix))
+#define rejectmatrix         ((byte __far *)      MAKE_FULL_SEGMENT(0x5C000000, 0))
+#define savegamestrings      ((int8_t __far *)    MAKE_FULL_SEGMENT(rejectmatrix, size_rejectmatrix))
 
 
 /*
-rejectmatrix    5000:C000
-savegamestrings    5000:FB22
+rejectmatrix       5C00:0000
+savegamestrings    5FB3:0000
 [empty]        5000:FC12
 1006 bytes free
 */
@@ -500,24 +516,24 @@ savegamestrings    5000:FB22
 
 // screen1 is used during wi_stuff/intermission code, we can stick this anim data there
 #define size_screen1          (64000u)
-#define size_lnodex           (size_screen1       + (sizeof(int16_t) * (9*3)))
-#define size_lnodey           (size_lnodex        + (sizeof(int16_t) * (9*3)))
-#define size_epsd0animinfo    (size_lnodey        + (16 * 10))
-#define size_epsd1animinfo    (size_epsd0animinfo + (16 * 9))
-#define size_epsd2animinfo    (size_epsd1animinfo + (16 * 6))
-#define size_wigraphics       (size_epsd2animinfo + (NUM_WI_ITEMS * 9))
-#define size_pars             (size_wigraphics    + (sizeof(int16_t) * (4*10)))
-#define size_cpars            (size_pars          + (sizeof(int16_t) * (32)))
+#define size_lnodex           ((sizeof(int16_t) * (9*3)))
+#define size_lnodey           ((sizeof(int16_t) * (9*3)))
+#define size_epsd0animinfo    (16 * 10)
+#define size_epsd1animinfo    (16 * 9)
+#define size_epsd2animinfo    (16 * 6)
+#define size_wigraphics       (NUM_WI_ITEMS * 9)
+#define size_pars             ((sizeof(int16_t) * (4*10)))
+#define size_cpars            ((sizeof(int16_t) * (32)))
 
-#define screen1          ((byte __far*)       0x90000000)
-#define lnodex           ((int16_t __far*)   (0x90000000 + size_screen1))
-#define lnodey           ((int16_t __far*)   (0x90000000 + size_lnodex))
-#define epsd0animinfo    ((wianim_t __far*)  (0x90000000 + size_lnodey))
-#define epsd1animinfo    ((wianim_t __far*)  (0x90000000 + size_epsd0animinfo))
-#define epsd2animinfo    ((wianim_t __far*)  (0x90000000 + size_epsd1animinfo))
-#define wigraphics       ((int8_t __far*)    (0x90000000 + size_epsd2animinfo))
-#define pars             ((int16_t __far*)   (0x90000000 + size_wigraphics))
-#define cpars            ((int16_t __far*)   (0x90000000 + size_pars))
+#define screen1          ((byte __far*)      0x90000000)
+#define lnodex           ((int16_t __far*)   MAKE_FULL_SEGMENT(screen1, size_screen1))
+#define lnodey           ((int16_t __far*)   (((int32_t)lnodex) + size_lnodex))
+#define epsd0animinfo    ((wianim_t __far*)  (((int32_t)lnodey) + size_lnodey))
+#define epsd1animinfo    ((wianim_t __far*)  (((int32_t)epsd0animinfo)+ size_epsd0animinfo))
+#define epsd2animinfo    ((wianim_t __far*)  (((int32_t)epsd1animinfo)+ size_epsd1animinfo))
+#define wigraphics       ((int8_t __far*)    (((int32_t)epsd2animinfo)+ size_epsd2animinfo))
+#define pars             ((int16_t __far*)   MAKE_FULL_SEGMENT(lnodex, (((int32_t)wigraphics) & 0xFFFF)+size_wigraphics))
+#define cpars            ((int16_t __far*)   (((int32_t)pars) + size_pars))
 
 
 
@@ -526,13 +542,15 @@ savegamestrings    5000:FB22
 This area used during intermission task
 
 9000:0000  screen1
-9000:FA00  lnodex
-9000:FA36  lnodey
-9000:FB0C  epsd0animinfo
-9000:FAA0  epsd1animinfo
-9000:FB9C  epsd2animinfo
-9000:FBFC  wigraphics
-9000:FCF8  [empty]
+9FA0:0000  lnodex
+9FA0:0036  lnodey
+9FA0:006c  epsd0animinfo
+9FA0:010c  epsd1animinfo
+9FA0:019c  epsd2animinfo
+9FA0:01FC  wigraphics
+9FD0:0000  pars
+9FD0:0050  cpars
+9FD7:0000  [empty]
 
 776 bytes free
 */
@@ -559,7 +577,7 @@ This area used during intermission task
 
 // 10752 bytes / 16 = 672 or 2A0 for offset
 #define skytexture_segment 0x9300
-#define skytexture_bytes ((byte __far*) 0x90003000)
+#define skytexture_bytes ((byte __far*) 0x93000000)
 
 // main bar left
 #define sbar  44024u
@@ -576,10 +594,10 @@ This area used during intermission task
 
 
 #define menugraphicspage0   (byte __far* )0x70000000
-#define menugraphicspage4   (byte __far* )0x60004000
+#define menugraphicspage4   (byte __far* )0x64000000
 
 #define wigraphicspage0     (byte __far* )0x70000000
-#define wigraphicslevelname (byte __far* )0x70008000
+#define wigraphicslevelname (byte __far* )0x78000000
 #define wianimspage         (byte __far* )0x60000000
 
 
@@ -590,15 +608,16 @@ This area used during intermission task
 #define MAX_LEVEL_COMPLETE_GRAPHIC_SIZE 0x1240
 #define size_level_finished_graphic (MAX_LEVEL_COMPLETE_GRAPHIC_SIZE * 2)
 
-#define size_wioffsets              (size_level_finished_graphic + sizeof(uint16_t) * NUM_WI_ITEMS)
-#define size_wianimoffsets          (size_wioffsets + sizeof(uint16_t) * NUM_WI_ANIM_ITEMS)
-#define wioffsets                   ((uint16_t __far*)   (0x70008000 + size_level_finished_graphic))
-#define wianimoffsets               ((uint16_t __far*)   (0x70008000 + size_wioffsets))
+#define size_wioffsets              (sizeof(uint16_t) * NUM_WI_ITEMS)
+#define size_wianimoffsets          (sizeof(uint16_t) * NUM_WI_ANIM_ITEMS)
+
+#define wioffsets                   ((uint16_t __far*)   MAKE_FULL_SEGMENT(0x78000000, size_level_finished_graphic))
+#define wianimoffsets               ((uint16_t __far*)   MAKE_FULL_SEGMENT(wioffsets, size_wioffsets))
 
 /*
-wioffsets      7000:A480
-wianimoffsets    7000:A4b8
-[empty]        7000:A4f4
+wioffsets      7800:2480
+wianimoffsets  7800:24b8
+[empty]        7800:24f4
 // 6924 free? but intermission memory usage isnt common...
 
 
@@ -618,22 +637,7 @@ wianimoffsets    7000:A4b8
 
 
 
-/*
-  
-spritecache_nodes           8000:2a00
-flatcache_nodes             8000:2a30
-patchcache_nodes            8000:2a42
-texturecache_nodes          8000:2a72
-texturewidthmasks           8000:2a8a
-zlight                      8000:2c36
-patchpage                   8000:3C36
-patchoffset                 8000:3E12
-[empty]                     8000:3FEE
 
-
-
-// 18 bytes free
-*/
 
 
 
@@ -643,58 +647,67 @@ patchoffset                 8000:3E12
 
 // openings are A000 in size. 0x7800 can be just that. Note that 0x2000 carries over to 8000
 
-#define size_openings      sizeof(int16_t) * MAXOPENINGS
-#define openings        ((uint16_t __far*      ) (0x78000000))
-#define openings_segment 0x7800
 /*
 openings                 7800:0000
 negonearray_offset       7800:a000  or 8000:2000
 screenheightarray_offset 7800:A500  or 8000:2500
 [done]                   7800:AA00  or 8000:2A00
 */
+// LEAVE ALL THESE in 0x7800 SEGMENT 
+#define openings_segment 0x7800
 
-#define negonearray_offset        size_openings
-#define screenheightarray_offset  size_negonearray
-
+#define size_openings      sizeof(int16_t) * MAXOPENINGS
 #define size_negonearray          size_openings             + sizeof(int16_t) * (SCREENWIDTH)
 #define size_screenheightarray    size_negonearray          + sizeof(int16_t) * (SCREENWIDTH)
 #define size_floorclip            size_screenheightarray    + (sizeof(int16_t) * SCREENWIDTH)
 #define size_ceilingclip          size_floorclip            + (sizeof(int16_t) * SCREENWIDTH)
 
+#define openings             ((uint16_t __far*      ) (0x78000000))
 #define negonearray          ((int16_t __far*)          (0x78000000 + size_openings))
 #define screenheightarray    ((int16_t __far*)          (0x78000000 + size_negonearray))
 #define floorclip            ((int16_t __far*)          (0x78000000 + size_screenheightarray))
 #define ceilingclip          ((int16_t __far*)          (0x78000000 + size_floorclip))
 
+#define negonearray_offset        size_openings
+#define screenheightarray_offset  size_negonearray
+
+// LEAVE ALL THESE in 0x7800 SEGMENT 
 
 
 #define FUZZTABLE		50 
 
-
 #define size_leftover_openings_arrays     0x2A00
-#define size_spritecache_nodes            size_leftover_openings_arrays    + sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
-#define size_flatcache_nodes              size_spritecache_nodes           + sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
-#define size_patchcache_nodes             size_flatcache_nodes             + sizeof(cache_node_t) * (NUM_PATCH_CACHE_PAGES)
-#define size_texturecache_nodes           size_patchcache_nodes            + sizeof(cache_node_t) * (NUM_TEXTURE_PAGES)
-#define size_texturewidthmasks            size_texturecache_nodes          + MAX_TEXTURES * sizeof(uint8_t)
-#define size_zlight                       size_texturewidthmasks           + sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
-#define size_patchpage                    size_zlight                      + MAX_PATCHES * sizeof(uint8_t)
-#define size_patchoffset                  size_patchpage                   + MAX_PATCHES * sizeof(uint8_t)
 
-#define spritecache_nodes           ((cache_node_t __far*)    (0x80000000 + size_leftover_openings_arrays))
-#define flatcache_nodes             ((cache_node_t __far*)    (0x80000000 + size_spritecache_nodes))
-#define patchcache_nodes            ((cache_node_t __far*)    (0x80000000 + size_flatcache_nodes))
-#define texturecache_nodes          ((cache_node_t __far*)    (0x80000000 + size_patchcache_nodes))
-#define texturewidthmasks           ((uint8_t  __far*)        (0x80000000 + size_texturecache_nodes))
-#define zlight                      ((uint16_t far*)          (0x80000000 + size_texturewidthmasks))
-#define patchpage                   ((uint8_t __far*)         (0x80000000 + size_zlight))
-#define patchoffset                 ((uint8_t __far*)         (0x80000000 + size_patchpage))
+#define size_texturewidthmasks  MAX_TEXTURES * sizeof(uint8_t)
+#define size_zlight             sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_patchpage          MAX_PATCHES * sizeof(uint8_t)
+#define size_patchoffset        MAX_PATCHES * sizeof(uint8_t)
+#define texturewidthmasks       ((uint8_t  __far*)        MAKE_FULL_SEGMENT(0x80000000 , size_leftover_openings_arrays))
+#define zlight                  ((uint16_t far*)          MAKE_FULL_SEGMENT(texturewidthmasks , size_texturewidthmasks))
+#define patchpage               ((uint8_t __far*)         MAKE_FULL_SEGMENT(zlight , size_zlight))
+#define patchoffset             ((uint8_t __far*)         (((int32_t)patchpage) + size_patchpage))
 
-#define visplanes_8400              ((visplane_t __far*)      (0x84000000 ))
-#define visplanes_8800              ((visplane_t __far*)      (0x88000000 ))
-#define visplanes_8C00              ((visplane_t __far*)      (0x8C000000 ))
+#define visplanes_8400          ((visplane_t __far*)      (0x84000000 ))
+#define visplanes_8800          ((visplane_t __far*)      (0x88000000 ))
+#define visplanes_8C00          ((visplane_t __far*)      (0x8C000000 ))
+
+/*
+  
+spritecache_nodes           82A0:0000
+flatcache_nodes             82A0:003C
+patchcache_nodes            82A0:004E
+texturecache_nodes          82A0:0073
+
+texturewidthmasks           82A0:0000
+zlight                      82BB:0000
+patchpage                   83BB:0000
+patchoffset                 83BB:01DC
+[empty]                     8000:3F73
 
 
+
+// 152 bytes free
+*/
 
 
 

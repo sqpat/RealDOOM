@@ -31,6 +31,7 @@
 #include "v_video.h"
 #include "st_stuff.h"
 #include "hu_stuff.h"
+#include "wi_stuff.h"
 
 #include <dos.h>
 
