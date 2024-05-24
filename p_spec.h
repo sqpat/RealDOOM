@@ -40,11 +40,10 @@ extern	ticcount_t	levelTimeCount;
 
 
 // at game start
-void    P_InitPicAnims (void);
 
 
 // every tic
-void    P_UpdateSpecials (void);
+void    __near P_UpdateSpecials (void);
 
 // when needed
 boolean
@@ -170,9 +169,9 @@ typedef struct
 #define SLOWDARK			35
 
 void    P_SpawnFireFlicker (int16_t secnum);
-void T_LightFlash(lightflash_t __far* flash, THINKERREF flashRef);
-void    P_SpawnLightFlash (int16_t secnum);
-void	T_StrobeFlash(strobe_t __far* flash, THINKERREF flashRef);
+void __near T_LightFlash(lightflash_t __far* flash, THINKERREF flashRef);
+void  __near  P_SpawnLightFlash (int16_t secnum);
+void	__near T_StrobeFlash(strobe_t __far* flash, THINKERREF flashRef);
 
 void
 P_SpawnStrobeFlash
@@ -188,11 +187,11 @@ EV_LightChange
 int8_t on,
   uint8_t		bright );
 
-void T_Glow(glow_t __far* glow, THINKERREF glowRef);
+void __near T_Glow(glow_t __far* glow, THINKERREF glowRef);
 void    P_SpawnGlowingLight(int16_t secnum);
 
 
-void T_FireFlicker(fireflicker_t __far* flick, THINKERREF flickRef);
+void __near T_FireFlicker(fireflicker_t __far* flick, THINKERREF flickRef);
 
 
 //
@@ -244,8 +243,7 @@ void
 P_ChangeSwitchTexture
 (int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum, int16_t useAgain);
 
-void P_InitSwitchList(void);
-
+ 
 
 //
 // P_PLATS
@@ -295,7 +293,7 @@ typedef struct
 
 extern THINKERREF	activeplats[MAXPLATS];
 
-void T_PlatRaise(plat_t __far* plat, THINKERREF platRef);
+void __near T_PlatRaise(plat_t __far* plat, THINKERREF platRef);
 
 int16_t
 EV_DoPlat
@@ -365,7 +363,7 @@ EV_DoLockedDoor
   vldoor_e	type,
 	THINKERREF thingRef);
 
-void T_VerticalDoor(vldoor_t __far* door, THINKERREF doorRef);
+void __near T_VerticalDoor(vldoor_t __far* door, THINKERREF doorRef);
 void    P_SpawnDoorCloseIn30 (int16_t secnum);
 
 void
@@ -422,7 +420,7 @@ EV_DoCeiling
 (uint8_t linetag,
   ceiling_e	type );
 
-void T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef);
+void __near T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef);
 void    P_AddActiveCeiling(THINKERREF ceilingRef);
 void    P_RemoveActiveCeiling(sector_t __far*, THINKERREF ceilingRef);
 int16_t	EV_CeilingCrushStop(uint8_t linetag);
@@ -504,7 +502,7 @@ typedef uint8_t result_e;
 
 
 result_e
-T_MovePlane
+__near T_MovePlane
 ( sector_t __far* sector,
   short_height_t	speed,
   short_height_t	dest,
@@ -521,7 +519,7 @@ int16_t
 EV_DoFloor
 (uint8_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
 
-void T_MoveFloor(floormove_t __far* floor, THINKERREF floorRef);
+void __near T_MoveFloor(floormove_t __far* floor, THINKERREF floorRef);
 
 //
 // P_TELEPT

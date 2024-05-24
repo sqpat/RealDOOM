@@ -924,7 +924,7 @@ void P_PlayerInSpecialSector () {
 boolean		levelTimer;
 ticcount_t		levelTimeCount;
 
-void P_UpdateSpecials(void)
+void __near P_UpdateSpecials(void)
 {
 	anim_t __near*	anim;
 	uint16_t		pic;
@@ -1120,3 +1120,106 @@ int16_t EV_DoDonut(uint8_t linetag)
 int16_t		numlinespecials;
 //int16_t		linespeciallist[MAXLINEANIMS];
 
+
+// Parses command line parameters.
+void __far P_SpawnSpecials(void)
+{
+	int16_t		i;
+	int8_t		episode;
+
+
+	episode = 1;
+	if (W_CheckNumForName("TEXTURE2") >= 0)
+		episode = 2;
+
+
+	// See if -TIMER needs to be used.
+	levelTimer = false;
+
+	//	Init special SECTORs.
+	//sector = sectors;
+
+	for (i = 0; i < numsectors; i++) {
+
+		if (!sectors_physics[i].special)
+			continue;
+
+		switch (sectors_physics[i].special) {
+		case 1:
+			// FLICKERING LIGHTS
+			P_SpawnLightFlash(i);
+			break;
+
+		case 2:
+			// STROBE FAST
+			P_SpawnStrobeFlash(i, FASTDARK, 0);
+			break;
+
+		case 3:
+			// STROBE SLOW
+			P_SpawnStrobeFlash(i, SLOWDARK, 0);
+			break;
+
+		case 4:
+			// STROBE FAST/DEATH SLIME
+			P_SpawnStrobeFlash(i, FASTDARK, 0);
+			sectors_physics[i].special = 4;
+			break;
+
+		case 8:
+			// GLOWING LIGHT
+			P_SpawnGlowingLight(i);
+			break;
+		case 9:
+			// SECRET SECTOR
+			totalsecret++;
+			break;
+
+		case 10:
+			// DOOR CLOSE IN 30 SECONDS
+			P_SpawnDoorCloseIn30(i);
+			break;
+
+		case 12:
+			// SYNC STROBE SLOW
+			P_SpawnStrobeFlash(i, SLOWDARK, 1);
+			break;
+
+		case 13:
+			// SYNC STROBE FAST
+			P_SpawnStrobeFlash(i, FASTDARK, 1);
+			break;
+
+		case 14:
+			// DOOR RAISE IN 5 MINUTES
+			P_SpawnDoorRaiseIn5Mins(i);
+			break;
+
+		case 17:
+			P_SpawnFireFlicker(i);
+			break;
+		}
+	}
+
+
+	//	Init line EFFECTs
+	numlinespecials = 0;
+
+	for (i = 0; i < numlines; i++) {
+		switch (lines_physics[i].special) {
+		case 48:
+			// EFFECT FIRSTCOL SCROLL+
+			linespeciallist[numlinespecials] = i;
+			numlinespecials++;
+			break;
+		}
+	}
+
+
+	//	Init other misc stuff
+	memset(activeceilings, 0, MAXCEILINGS * sizeof(THINKERREF));
+	memset(activeplats, 0, MAXPLATS * sizeof(THINKERREF));
+	memset(buttonlist, 0, MAXBUTTONS* sizeof(button_t));
+
+
+}

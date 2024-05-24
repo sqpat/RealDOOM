@@ -38,7 +38,7 @@
 //
 // T_FireFlicker
 //
-void T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
+void __near T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
 
 {
 	uint8_t	amount;
@@ -91,7 +91,7 @@ void P_SpawnFireFlicker (int16_t secnum)
 // T_LightFlash
 // Do flashing lights.
 //
-void T_LightFlash (lightflash_t __far* flash, THINKERREF flashRef)
+void __near T_LightFlash (lightflash_t __far* flash, THINKERREF flashRef)
 {
 	int16_t flashsecnum = flash->secnum;
 	uint8_t flashminlight = flash->minlight;
@@ -121,7 +121,7 @@ void T_LightFlash (lightflash_t __far* flash, THINKERREF flashRef)
 // After the map has been loaded, scan each sector
 // for specials that spawn thinkers
 //
-void P_SpawnLightFlash (int16_t secnum)
+void __near P_SpawnLightFlash (int16_t secnum)
 {
     lightflash_t __far*	flash;
 	uint8_t lightamount;
@@ -155,7 +155,7 @@ void P_SpawnLightFlash (int16_t secnum)
 //
 // T_StrobeFlash
 //
-void T_StrobeFlash (strobe_t __far* flash, THINKERREF flashRef)
+void __near T_StrobeFlash (strobe_t __far* flash, THINKERREF flashRef)
 {
 	int16_t flashsecnum;
 
@@ -303,7 +303,7 @@ void EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright)
 // Spawn glowing light
 //
 
-void T_Glow(glow_t __far* glow, THINKERREF glowRef)
+void __near T_Glow(glow_t __far* glow, THINKERREF glowRef)
 {
 	int16_t gsecnum = glow->secnum;
 	uint8_t gminlight = glow->minlight;

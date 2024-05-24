@@ -165,6 +165,7 @@ void P_MovePlayer ()
     }
 }	
 
+void __near P_MovePsprites () ;
 
 
 //
@@ -229,7 +230,7 @@ void P_DeathThink ()
 //
 // P_PlayerThink
 //
-void P_PlayerThink (void)
+void __near P_PlayerThink (void)
 {
     ticcmd_t __near*		cmd;
     weapontype_t	newweapon;

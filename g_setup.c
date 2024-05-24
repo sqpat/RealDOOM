@@ -213,7 +213,9 @@ G_InitNew
 		&& (!commercial))
 		map = 9;
 
-	M_ClearRandom();
+	//M_ClearRandom();
+    rndindex = prndindex = 0;
+
 
 	if (skill == sk_nightmare || respawnparm)
 		respawnmonsters = true;

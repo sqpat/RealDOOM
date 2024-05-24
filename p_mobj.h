@@ -278,4 +278,8 @@ typedef struct mobj_pos_s
 
 extern mobj_t __far* SAVEDUNIT;
 
+// As M_Random, but used only by the play simulation.
+uint8_t __near P_Random(void);
+
+
 #endif

@@ -39,7 +39,7 @@
 //
 // T_VerticalDoor
 //
-void T_VerticalDoor (vldoor_t __far* door, THINKERREF doorRef)
+void __near T_VerticalDoor (vldoor_t __far* door, THINKERREF doorRef)
 {
     result_e	res;
 	sector_t __far* doorsector = &sectors[door->secnum];

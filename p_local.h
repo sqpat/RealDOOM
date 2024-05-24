@@ -113,10 +113,10 @@ typedef struct thinker_s
 
 
 
-void __far* P_CreateThinker(uint16_t thinkfunc);
+void __far* __near P_CreateThinker(uint16_t thinkfunc);
 
-void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
-void P_RemoveThinker(THINKERREF thinkerRef);
+void __near P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
+void __near P_RemoveThinker(THINKERREF thinkerRef);
 
 #define THINKER_SIZE sizeof(thinker_t)
 #define GETTHINKERREF(a) ((((uint16_t)((byte __far*)a - (byte __far*)thinkerlist))-4)/THINKER_SIZE)
@@ -127,13 +127,13 @@ void P_RemoveThinker(THINKERREF thinkerRef);
 //
 // P_PSPR
 //
-void P_DropWeapon ();
+void __near P_DropWeapon ();
 
 
 //
 // P_USER
 //
-void	P_PlayerThink ();
+void	__near P_PlayerThink ();
 
 
 //
@@ -145,22 +145,22 @@ void	P_PlayerThink ();
 // Time interval for item respawning.
 
 THINKERREF
-P_SpawnMobj
+__near P_SpawnMobj
 ( fixed_t	x,
   fixed_t	y,
   fixed_t	z,
   mobjtype_t	type, 
 	int16_t knownsecnum );
 
-void 	P_RemoveMobj (mobj_t __far* mobj);
+void 	__near P_RemoveMobj (mobj_t __far* mobj);
 
-boolean	P_SetMobjState(mobj_t __far* mobj, statenum_t state);
-void P_MobjThinker(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef);
+boolean	__near P_SetMobjState(mobj_t __far* mobj, statenum_t state);
+void __near P_MobjThinker(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef);
 
-void	P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
-void 	P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
-THINKERREF P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source_pos, mobj_t __far* dest,  mobjtype_t type);
-void	P_SpawnPlayerMissile (mobjtype_t type);
+void	__near P_SpawnPuff (fixed_t x, fixed_t y, fixed_t z);
+void 	__near P_SpawnBlood (fixed_t x, fixed_t y, fixed_t z, int16_t damage);
+THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source_pos, mobj_t __far* dest,  mobjtype_t type);
+void	__near P_SpawnPlayerMissile (mobjtype_t type);
 
 
 
@@ -168,7 +168,7 @@ void	P_SpawnPlayerMissile (mobjtype_t type);
 //
 // P_ENEMY
 //
-void P_NoiseAlert ();
+void __near P_NoiseAlert ();
 
 
 //

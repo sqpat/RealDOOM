@@ -42,7 +42,7 @@ THINKERREF		activeplats[MAXPLATS];
 //
 // Move a plat up and down
 //
-void T_PlatRaise(plat_t __far* plat, THINKERREF platRef)
+void __near T_PlatRaise(plat_t __far* plat, THINKERREF platRef)
 {
 
     result_e	res;

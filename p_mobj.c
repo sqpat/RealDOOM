@@ -38,56 +38,56 @@
 void G_PlayerReborn ();
 
 
-void A_Explode(mobj_t __far* mobjmoRef, mobj_pos_t __far* thingy_pos);
-void A_Pain(mobj_t __far* mobj);
-void A_PlayerScream();
-void A_Fall(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_XScream(mobj_t __far* mobj);
-void A_Look(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_Chase(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_FaceTarget(mobj_t __far* mobj);
-void A_PosAttack(mobj_t __far* mobj);
-void A_Scream(mobj_t __far* mobj);
-void A_SPosAttack(mobj_t __far* mobj);
-void A_VileChase(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_VileStart(mobj_t __far* mobj);
-void A_VileTarget(mobj_t __far* mobj);
-void A_VileAttack(mobj_t __far* mobj);
-void A_StartFire(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_Fire(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_FireCrackle(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_Tracer(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
-void A_SkelWhoosh(mobj_t __far* mobj);
-void A_SkelFist(mobj_t __far* mobj);
-void A_SkelMissile(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_FatRaise(mobj_t __far* mobj);
-void A_FatAttack1(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_FatAttack2(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_FatAttack3(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
-void A_BossDeath(mobj_t __far* mobj);
-void A_CPosAttack(mobj_t __far* mobj);
-void A_CPosRefire(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_TroopAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_SargAttack(mobj_t __far* mobj);
-void A_HeadAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_BruisAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_SkullAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_Metal(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
-void A_SpidRefire(mobj_t __far* actor, mobj_pos_t __far* actor_pos);
-void A_BabyMetal(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
-void A_BspiAttack(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
-void A_Hoof(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
-void A_CyberAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_PainAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_PainDie(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_KeenDie(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_BrainPain();
-void A_BrainScream(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_BrainAwake();
-void A_BrainSpit(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_SpawnSound(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_SpawnFly(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
-void A_BrainExplode(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_Explode(mobj_t __far* mobjmoRef, mobj_pos_t __far* thingy_pos);
+void __near A_Pain(mobj_t __far* mobj);
+void __near A_PlayerScream();
+void __near A_Fall(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_XScream(mobj_t __far* mobj);
+void __near A_Look(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_Chase(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_FaceTarget(mobj_t __far* mobj);
+void __near A_PosAttack(mobj_t __far* mobj);
+void __near A_Scream(mobj_t __far* mobj);
+void __near A_SPosAttack(mobj_t __far* mobj);
+void __near A_VileChase(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_VileStart(mobj_t __far* mobj);
+void __near A_VileTarget(mobj_t __far* mobj);
+void __near A_VileAttack(mobj_t __far* mobj);
+void __near A_StartFire(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_Fire(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_FireCrackle(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_Tracer(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
+void __near A_SkelWhoosh(mobj_t __far* mobj);
+void __near A_SkelFist(mobj_t __far* mobj);
+void __near A_SkelMissile(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_FatRaise(mobj_t __far* mobj);
+void __near A_FatAttack1(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_FatAttack2(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_FatAttack3(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
+void __near A_BossDeath(mobj_t __far* mobj);
+void __near A_CPosAttack(mobj_t __far* mobj);
+void __near A_CPosRefire(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_TroopAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_SargAttack(mobj_t __far* mobj);
+void __near A_HeadAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_BruisAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_SkullAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_Metal(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
+void __near A_SpidRefire(mobj_t __far* actor, mobj_pos_t __far* actor_pos);
+void __near A_BabyMetal(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
+void __near A_BspiAttack(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
+void __near A_Hoof(mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
+void __near A_CyberAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_PainAttack(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_PainDie(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_KeenDie(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_BrainPain();
+void __near A_BrainScream(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_BrainAwake();
+void __near A_BrainSpit(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_SpawnSound(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_SpawnFly(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
+void __near A_BrainExplode(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos);
 void G_ExitLevel();
 
 #ifdef DEBUGLOG_TO_FILE
@@ -100,10 +100,259 @@ mobj_pos_t __far* setStateReturn_pos;
 // Returns true if the mobj is still present.
 //
 
+
+// Which one is deterministic?
+uint8_t __near P_Random(void)
+{
+	 
+    prndindex = (prndindex+1)&0xff;
+    return rndtable[prndindex];
+}
+
+void __near P_BringUpWeapon();
+
+//
+// P_SetupPsprites
+// Called at start of level for each player.
+//
+void __near P_SetupPsprites()
+{
+	int8_t	i;
+
+	// remove all psprites
+	for (i = 0; i < NUMPSPRITES; i++)
+		player.psprites[i].state = NULL;
+
+	// spawn the gun
+	player.pendingweapon = player.readyweapon;
+	P_BringUpWeapon();
+}
+void __far ST_Start(void);
+
+//
+// P_SpawnPlayer
+// Called when a player is spawned on the level.
+// Most of the player structure stays unchanged
+//  between levels.
+//
+void __near P_SpawnPlayer(mapthing_t __far* mthing)
+{
+	fixed_t_union		x;
+	fixed_t_union		y;
+	fixed_t_union		z;
+
+	//int16_t mthingtype = mthing->type;
+	int16_t mthingx = mthing->x;
+	int16_t mthingy = mthing->y;
+	int16_t mthingangle = mthing->angle;
+
+	if (player.playerstate == PST_REBORN) {
+		G_PlayerReborn();
+	}
+	x.h.fracbits = 0;
+	y.h.fracbits = 0;
+	x.h.intbits = mthingx;
+	y.h.intbits = mthingy;
+	z.w = ONFLOORZ;
+	
+	P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
+
+	// always index 1 for player
+	//playerMobjRef = P_SpawnMobj(x.w, y.w, z.w, MT_PLAYER, -1);
+	//playerMobj = setStateReturn;
+	///playerMobj_pos = setStateReturn_pos;
+
+
+	playerMobj->reactiontime = 0;
+
+	playerMobj_pos->angle.wu = ANG45 * (mthingangle / 45);
+	playerMobj->health = player.health;
+
+
+	player.playerstate = PST_LIVE;
+	player.refire = 0;
+	player.message = -1;
+	player.damagecount = 0;
+	player.bonuscount = 0;
+	player.extralight = 0;
+	player.fixedcolormap = 0;
+	player.viewheight.w = VIEWHEIGHT;
+
+	// setup gun psprite
+	P_SetupPsprites();
+
+	Z_QuickMapStatus();
+
+	// wake up the status bar
+	ST_Start();
+
+	// wake up the heads up text
+	HU_Start();
+
+	Z_QuickMapPhysics();
+	Z_QuickMapScratch_8000();
+} 
+
+//
+// P_SpawnMapThing
+// The fields of the mapthing should
+// already be in host byte order.
+//
+void __far P_SpawnMapThing(mapthing_t mthing, int16_t key)
+{
+
+
+
+	int16_t			i;
+	int16_t			bit;
+	mobj_t __far*		mobj;
+	mobj_pos_t __far* mobj_pos;
+	fixed_t_union		x;
+	fixed_t_union		y;
+	fixed_t_union		z;
+	THINKERREF mobjRef;
+	int16_t mthingtype = mthing.type;
+	int16_t mthingoptions = mthing.options;
+	int16_t mthingx = mthing.x;
+	int16_t mthingy = mthing.y;
+	int16_t mthingangle = mthing.angle;
+
+	if (mthing.type == 11 || mthing.type == 2 || mthing.type == 3 || mthing.type == 4) {
+		return;
+	}
+
+	// check for players specially
+	if (mthingtype == 1) {
+		// save spots for respawning in network games
+		P_SpawnPlayer(&mthing);
+		return;
+	}
+
+	// check for apropriate skill level
+	if ((mthingoptions & 16)) {
+		return;
+	}
+	if (gameskill == sk_baby) {
+		bit = 1;
+	}
+	else if (gameskill == sk_nightmare) {
+		bit = 4;
+	}
+	else {
+		bit = 1 << (gameskill - 1);
+	}
+	if (!(mthingoptions & bit)) {
+
+		return;
+	}
+
+
+	// find which type to spawn
+	for (i = 0; i < NUMMOBJTYPES; i++) {
+		if (mthingtype == doomednum[i]) {
+			break;
+		}
+	}
+
+
+#ifdef CHECK_FOR_ERRORS
+	if (i == NUMMOBJTYPES) {
+		I_Error("P_SpawnMapThing: Unknown type %i at (%i, %i)",
+			mthingtype,
+			mthingx, mthingy);
+	}
+#endif
+
+
+	// don't spawn any monsters if -nomonsters
+	if (nomonsters && (i == MT_SKULL || (mobjinfo[i].flags & MF_COUNTKILL))) {
+		return;
+	}
+
+	// spawn it
+	x.h.fracbits = 0;
+	y.h.fracbits = 0;
+	x.h.intbits = mthingx;
+	y.h.intbits = mthingy;
+
+	if (mobjinfo[i].flags & MF_SPAWNCEILING) {
+		z.w = ONCEILINGZ;
+	}
+	else {
+		z.w = ONFLOORZ;
+	}
+
+	mobjRef = P_SpawnMobj(x.w, y.w, z.w, i, -1);
+
+	mobj = setStateReturn;
+	mobj_pos = setStateReturn_pos;
+	nightmarespawns[mobjRef] = mthing;
+
+	if (mobj->tics > 0 && mobj->tics < 240)
+		mobj->tics = 1 + (P_Random() % mobj->tics);
+	if (mobj_pos->flags & MF_COUNTKILL)
+		totalkills++;
+	if (mobj_pos->flags & MF_COUNTITEM)
+		totalitems++;
+
+	//todo does this work? or need to be in fixed_mul? -sq
+	mobj_pos->angle.wu = ANG45 * (mthingangle / 45);
+
+	if (mthingoptions & MTF_AMBUSH)
+		mobj_pos->flags |= MF_AMBUSH;
+
+ 
+
+}
+#ifdef PRECALCULATE_OPENINGS
+
+void __near P_CacheLineOpenings() {
+	int16_t linenum, linefrontsecnum, linebacksecnum;
+	sector_t __far* front;
+	sector_t __far* back;
+	
+
+	lineopenings = (lineopening_t __far* )Z_GetNextPhysicsAddress(numlines * sizeof(lineopening_t));
+	FAR_memset(lineopenings, 0, numlines * sizeof(lineopening_t));
+
+	for (linenum = 0; linenum < numlines; linenum++) {
+		int16_t lineside1 = lines[linenum].sidenum[1];
+		if (lineside1 == -1) {
+			// single sided line
+			continue;
+		}
+		linefrontsecnum = lines_physics[linenum].frontsecnum;
+		linebacksecnum = lines_physics[linenum].backsecnum;
+
+		front = &sectors[linefrontsecnum];
+		back = &sectors[linebacksecnum];
+
+		if (front->ceilingheight < back->ceilingheight) {
+			lineopenings[linenum].opentop = front->ceilingheight;
+		}
+		else {
+			lineopenings[linenum].opentop = back->ceilingheight;
+		}
+		if (front->floorheight > back->floorheight) {
+			lineopenings[linenum].openbottom = front->floorheight;
+			lineopenings[linenum].lowfloor = back->floorheight;
+		}
+		else {
+			lineopenings[linenum].openbottom = back->floorheight;
+			lineopenings[linenum].lowfloor = front->floorheight;
+		}
+
+		//lineopenings[linenum].openrange = lineopenings[linenum].opentop - lineopenings[linenum].openbottom;
+	}
+	 
+}
+
+#endif
+
 //
 // P_ExplodeMissile  
 //
-void P_ExplodeMissile(mobj_t __far* mo, mobj_pos_t __far* mo_pos){
+void __near P_ExplodeMissile(mobj_t __far* mo, mobj_pos_t __far* mo_pos){
 	//todoaddr inline later
 	statenum_t (__far  * getDeathState)(uint8_t) = getDeathStateAddr;
 
@@ -130,7 +379,7 @@ void P_ExplodeMissile(mobj_t __far* mo, mobj_pos_t __far* mo_pos){
 #define STOPSPEED		0x1000
 #define FRICTION		0xe800
 
-void P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
+void __near P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 { 	
     fixed_t_union 	ptryx;
     fixed_t_union	ptryy;
@@ -278,7 +527,7 @@ void P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 //
 // P_ZMovement
 //
-void P_ZMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
+void __near P_ZMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 {
     fixed_t	dist;
 	fixed_t	delta;
@@ -393,7 +642,7 @@ void P_ZMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 // P_NightmareRespawn
 //
 void
-P_NightmareRespawn(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
+__near P_NightmareRespawn(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
 {
 
 	
@@ -485,7 +734,7 @@ P_NightmareRespawn(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
 //
 // P_MobjThinker
 //
-void P_MobjThinker (mobj_t __far* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef) {
+void __near P_MobjThinker (mobj_t __far* mobj, mobj_pos_t __far* mobj_pos, THINKERREF mobjRef) {
 
 	// momentum movement
     fixed_t_union temp;
@@ -558,7 +807,7 @@ void P_MobjThinker (mobj_t __far* mobj, mobj_pos_t __far* mobj_pos, THINKERREF m
 // P_SpawnMobj
 //
 THINKERREF
-P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
+__near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsecnum ) {
 	mobj_t __far*	mobj;
 	mobj_pos_t __far*	mobj_pos;
     state_t __far*	st;
@@ -636,7 +885,7 @@ P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t knownsec
 //
 
 
-void P_RemoveMobj (mobj_t __far* mobj)
+void __near P_RemoveMobj (mobj_t __far* mobj)
 {
 	THINKERREF mobjRef = GETTHINKERREF(mobj);
     // unlink from sector and block lists
@@ -666,7 +915,7 @@ void P_RemoveMobj (mobj_t __far* mobj)
 extern fixed_t attackrange;
 
 void
-P_SpawnPuff
+__near P_SpawnPuff
 ( fixed_t	x,
   fixed_t	y,
   fixed_t	z )
@@ -695,7 +944,7 @@ P_SpawnPuff
 // P_SpawnBlood
 // 
 void
-P_SpawnBlood
+__near P_SpawnBlood
 ( fixed_t	x,
   fixed_t	y,
   fixed_t	z,
@@ -726,7 +975,7 @@ P_SpawnBlood
 // Moves the missile forward a bit
 //  and possibly explodes it right there.
 //
-void P_CheckMissileSpawn (mobj_t __far* th, mobj_pos_t __far* th_pos)
+void __near P_CheckMissileSpawn (mobj_t __far* th, mobj_pos_t __far* th_pos)
 {
 
     th->tics -= P_Random()&3;
@@ -750,7 +999,7 @@ void P_CheckMissileSpawn (mobj_t __far* th, mobj_pos_t __far* th_pos)
 // P_SpawnMissile
 //
 THINKERREF
-P_SpawnMissile
+__near P_SpawnMissile
 (mobj_t __far* source,
 	mobj_pos_t __far* source_pos,
   mobj_t __far*	dest,
@@ -811,14 +1060,14 @@ P_SpawnMissile
     return thRef;
 }
 
-void A_BFGSpray(mobj_t __far* mo, mobj_pos_t __far* mo_pos);
+void __near A_BFGSpray(mobj_t __far* mo, mobj_pos_t __far* mo_pos);
 
 //
 // P_SpawnPlayerMissile
 // Tries to aim at a nearby monster
 //
 void
-P_SpawnPlayerMissile
+__near P_SpawnPlayerMissile
 ( 
   mobjtype_t	type )
 {
@@ -877,7 +1126,7 @@ P_SpawnPlayerMissile
 
 
 boolean
-P_SetMobjState
+__near P_SetMobjState
 (mobj_t __far* mobj, statenum_t state)
 //(mobj_t* mobj, statenum_t state, int8_t* file, int32_t line)
 {

@@ -42,7 +42,7 @@ THINKERREF	activeceilings[MAXCEILINGS];
 // T_MoveCeiling
 //
 
-void T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef)
+void __near T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef)
 {
     result_e	res;
 	int16_t secnum = ceiling->secnum;

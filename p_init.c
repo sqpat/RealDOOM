@@ -68,7 +68,7 @@ extern uint16_t  __far   R_CheckTextureNumForName(int8_t *name);
 // P_InitSwitchList
 // Only called at game initialization.
 //
-void P_InitSwitchList(void)
+void __near P_InitSwitchList(void)
 {
 	int8_t		i;
 	int8_t		index;
@@ -197,7 +197,7 @@ extern uint8_t __far R_FlatNumForName(int8_t* name);
 
 
 #define NUMANIMDEFS 23
-void P_InitPicAnims(void)
+void __near P_InitPicAnims(void)
 {
 	int16_t		i;
 	// Floor/ceiling animation sequences,
@@ -297,7 +297,7 @@ int16_t             maxframe;
 // Local function for R_InitSprites.
 //
 void
-R_InstallSpriteLump
+__near R_InstallSpriteLump
 (int16_t           lump,
 	uint16_t      frame,
 	uint16_t      rotation,
@@ -382,7 +382,7 @@ extern int16_t             maxframe;
 //
 
 
-void R_InitSpriteDefs()
+void __near R_InitSpriteDefs()
 {
 	int16_t         i;
 	int16_t         l;
@@ -541,7 +541,7 @@ void R_InitSpriteDefs()
 // R_InitSprites
 // Called at program start.
 //
-void R_InitSprites()
+void __near R_InitSprites()
 {
 	
 	int		i;

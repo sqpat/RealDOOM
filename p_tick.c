@@ -45,7 +45,7 @@ int16_t currentThinkerListHead;
 
 
 //todo merge this below as its only used there
-THINKERREF P_GetNextThinkerRef(void) {
+THINKERREF __near P_GetNextThinkerRef(void) {
 	
 	int16_t i;
     
@@ -71,7 +71,7 @@ THINKERREF P_GetNextThinkerRef(void) {
 
 }
 
-void __far* P_CreateThinker(uint16_t thinkfunc) {
+void __far* __near P_CreateThinker(uint16_t thinkfunc) {
 	int16_t index = P_GetNextThinkerRef();
 	THINKERREF temp = thinkerlist[0].prevFunctype;// &0x7FF;
 	thinkerlist[index].next = 0;
@@ -84,7 +84,7 @@ void __far* P_CreateThinker(uint16_t thinkfunc) {
 
 }
 
-void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc) {
+void __near P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc) {
 	thinkerlist[thinker].prevFunctype = (thinkerlist[thinker].prevFunctype & TF_PREVBITS) + argfunc;
 }
 
@@ -93,7 +93,7 @@ void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc) {
 // Deallocation is lazy -- it will not actually be freed
 // until its thinking turn comes up.
 // 
-void P_RemoveThinker (THINKERREF thinkerRef)
+void __near P_RemoveThinker (THINKERREF thinkerRef)
 {
 	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
 }
@@ -101,7 +101,7 @@ extern int setval;
 //
 // P_RunThinkers
 //
-void P_RunThinkers (void)
+void __near P_RunThinkers (void)
 {
 	THINKERREF	currentthinker;
 	uint16_t	currentthinkerFunc;
@@ -273,7 +273,7 @@ void filelog4(int16_t i, void __far* ptr){
 }
 int8_t setonce = 0;
 */
-void P_Ticker (void)
+void __far P_Ticker (void)
 {
     // run the tic
 	// pause if in menu and at least one tic has been run

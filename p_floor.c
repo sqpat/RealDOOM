@@ -39,7 +39,7 @@
 // Move a plane (floor or ceiling) and check for crushing
 //
 result_e
-T_MovePlane
+__near T_MovePlane
 ( sector_t __far*	sector,
   short_height_t	speed,
   short_height_t	dest,
@@ -232,7 +232,7 @@ T_MovePlane
 //
 // MOVE A FLOOR TO IT'S DESTINATION (UP OR DOWN)
 //
-void T_MoveFloor(floormove_t __far* floor, THINKERREF floorRef)
+void __near T_MoveFloor(floormove_t __far* floor, THINKERREF floorRef)
 {
     result_e	res;
 	int16_t floorsecnum = floor->secnum;

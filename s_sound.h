@@ -47,7 +47,7 @@ S_Init
 //
 void S_Start(void);
 
-void S_StartSoundFromRef(mobj_t __far* mobj, sfxenum_t	sfx_id);
+void __near S_StartSoundFromRef(mobj_t __far* mobj, sfxenum_t	sfx_id);
 
 
 //
