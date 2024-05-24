@@ -559,7 +559,7 @@ void R_InitPatches() {
 }
 */
 
-void R_InitData(void) {
+void __near R_InitData(void) {
 	uint8_t         i;
 
 	//R_InitPatches();

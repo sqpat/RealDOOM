@@ -30,13 +30,12 @@
 #     zt# set far data threshold (i.e., larger objects go in far memory)
 # --------------------------------------------------------------------------
 
-# CCOPTS = $(EXTERNOPT) -omaxtnrih -ol+ -oe=32 -zp4 -3r -ei -j -zq -zc
-# zt1024 too much. 512 ok. 255 ok
 
 # time optimized seems a LOT faster... ?
-CCOPTS = -zp1 -oaxet -oi -zq -j -ml -zt768 -zc
-# CCOPTS = -zp1 -oaxes -oi -zq -j -ml -zt768 -zc
-
+# size optimized saves around 10k
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp -d__COMPILER_WATCOM
+#CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp -wx -d__COMPILER_WATCOM
+ 
 #doom8088 build opts for comparison
 #CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99
 

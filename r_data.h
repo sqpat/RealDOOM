@@ -55,7 +55,7 @@ byte __far* __near getspritetexture(int16_t spritelump);
 #define BAD_TEXTURE 65535
 
 // I/O, setting up the stuff.
-void R_InitData (void);
+void __near R_InitData (void);
 void R_PrecacheLevel (void);
 
  
