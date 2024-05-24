@@ -148,6 +148,9 @@ typedef struct
 
 
 boolean    	automapactive = false;
+static fline_t fl;
+static mline_t ml;
+static mline_t l;
 
 
 #ifdef __DEMO_ONLY_BINARY
@@ -293,18 +296,18 @@ static boolean stopped = true;
 extern boolean viewactive;
 
 
-fixed_16_t MTOF16(fixed_16_t x) {
+fixed_16_t __near MTOF16(fixed_16_t x) {
 	return FixedMul1632(x, scale_mtof.w);
 }
 
 
 
-fixed_16_t CXMTOF16(fixed_16_t x) {
+fixed_16_t __near CXMTOF16(fixed_16_t x) {
 	return MTOF16(x - screen_botleft_x);
 }
 
 
-fixed_16_t CYMTOF16(fixed_16_t y) {
+fixed_16_t __near CYMTOF16(fixed_16_t y) {
 	return automap_screenheight - MTOF16(y - screen_botleft_y);
 }
 
@@ -322,7 +325,7 @@ V_MarkRect
 //
 //
 //
-void AM_activateNewScale(void)
+void __near AM_activateNewScale(void)
 {
  
 
@@ -338,7 +341,7 @@ void AM_activateNewScale(void)
 }
 
 
-void AM_restoreScaleAndLoc(void)
+void __near AM_restoreScaleAndLoc(void)
 {
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
@@ -365,7 +368,7 @@ void AM_restoreScaleAndLoc(void)
 //
 // adds a marker at the current location
 //
-void AM_addMark(void)
+void __near AM_addMark(void)
 {
     markpoints[markpointnum].x = screen_botleft_x + screen_viewport_width /2;
     markpoints[markpointnum].y = screen_botleft_y + screen_viewport_height /2;
@@ -378,7 +381,7 @@ void AM_addMark(void)
 // Determines bounding box of all vertices,
 // sets global variables controlling zoom range.
 //
-void AM_findMinMaxBoundaries(void)
+void __near AM_findMinMaxBoundaries(void)
 {
 	int16_t i;
     fixed_t a;
@@ -421,7 +424,7 @@ void AM_findMinMaxBoundaries(void)
 //
 //
 //
-void AM_changeWindowLoc(void)
+void __near AM_changeWindowLoc(void)
 {
     if (m_paninc.x || m_paninc.y)
     {
@@ -450,7 +453,7 @@ void AM_changeWindowLoc(void)
 //
 //
 //
-void AM_initVariables(void)
+void __near AM_initVariables(void)
 {
     static event_t st_notify = { ev_keyup, AM_MSGENTERED };
 
@@ -490,7 +493,7 @@ void AM_initVariables(void)
 
 
 
-void AM_clearMarks(void)
+void __near AM_clearMarks(void)
 {
 	int8_t i;
 
@@ -503,7 +506,7 @@ void AM_clearMarks(void)
 // should be called at the start of every level
 // right now, i figure it out myself
 //
-void AM_LevelInit(void)
+void __near AM_LevelInit(void)
 {
 	scale_mtof.w = INITSCALEMTOF;
     AM_clearMarks();
@@ -523,7 +526,7 @@ void AM_LevelInit(void)
 //
 //
 //
-void AM_Stop (void)
+void __far AM_Stop (void)
 {
     static event_t st_notify = { 0, ev_keyup, AM_MSGEXITED };
 
@@ -535,7 +538,7 @@ void AM_Stop (void)
 //
 //
 //
-void AM_Start (void)
+void __far AM_Start (void)
 {
     static int8_t lastlevel = -1, lastepisode = -1;
 
@@ -556,7 +559,7 @@ void AM_Start (void)
 //
 // set the window scale to the maximum size
 //
-void AM_minOutWindowScale(void)
+void __near AM_minOutWindowScale(void)
 {
     scale_mtof.w = min_scale_mtof.w;
     scale_ftom.w = FixedDivWholeA(FRACUNIT, scale_mtof.w);
@@ -566,7 +569,7 @@ void AM_minOutWindowScale(void)
 //
 // set the window scale to the minimum size
 //
-void AM_maxOutWindowScale(void)
+void __near AM_maxOutWindowScale(void)
 {
     scale_mtof.w = max_scale_mtof.w;
     scale_ftom.w = FixedDivWholeA(FRACUNIT, scale_mtof.w);
@@ -578,7 +581,7 @@ void AM_maxOutWindowScale(void)
 // Handle events (user inputs) in automap mode
 //
 boolean
-AM_Responder
+__far AM_Responder
 ( event_t __far*	ev )
 {
 
@@ -699,7 +702,7 @@ AM_Responder
 //
 // Zooming
 //
-void AM_changeWindowScale(void)
+void __near AM_changeWindowScale(void)
 {
 
     // Change the scaling multipliers
@@ -718,7 +721,7 @@ void AM_changeWindowScale(void)
 //
 //
 //
-void AM_doFollowPlayer(void) {
+void __near AM_doFollowPlayer(void) {
 
 
     if (screen_oldloc.x != playerMobj_pos->x.h.intbits || screen_oldloc.y != playerMobj_pos->y.h.intbits) {
@@ -738,7 +741,7 @@ void AM_doFollowPlayer(void) {
 //
 // Updates on Game Tick
 //
-void AM_Ticker (void)
+void __far AM_Ticker (void)
 {
 
 
@@ -776,7 +779,7 @@ void AM_Ticker (void)
 #define  TOP	8
 
 
-int16_t DOOUTCODE(int16_t oc, int16_t mx, int16_t my) {
+int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my) {
 	oc = 0; 
 	if ((my) < 0) {
 		oc |= TOP;
@@ -793,7 +796,7 @@ int16_t DOOUTCODE(int16_t oc, int16_t mx, int16_t my) {
 
 
 boolean
-AM_clipMline
+__near AM_clipMline
 ( mline_t __near*	ml,
   fline_t __near*	fl )
 {
@@ -908,7 +911,7 @@ AM_clipMline
 // Classic Bresenham w/ whatever optimizations needed for speed
 //
 void
-AM_drawFline
+__near AM_drawFline
 ( fline_t __near*	fl,
   uint8_t		color )
 {
@@ -969,14 +972,11 @@ AM_drawFline
 
 }
 
-static fline_t fl;
 
 //
 // Clip lines, draw visible part sof lines.
 //
-void
-AM_drawMline
-( mline_t __near*	ml,
+void __near AM_drawMline ( mline_t __near*	ml,
   uint8_t		color )
 {
 
@@ -985,12 +985,11 @@ AM_drawMline
 }
 
 
-static mline_t ml;
 
 //
 // Draws flat (floor/ceiling tile) aligned grid lines.
 //
-void AM_drawGrid()
+void __near AM_drawGrid()
 {
     int16_t x, y;
 	int16_t start, end;
@@ -1029,13 +1028,12 @@ void AM_drawGrid()
     }
 
 }
-static mline_t l;
 
 //
 // Determines visible lines, draws them.
 // This is LineDef based, not LineSeg based.
 //
-void AM_drawWalls()
+void __near AM_drawWalls()
 {
 	uint16_t i;
 	int16_t linev1Offset;
@@ -1101,7 +1099,7 @@ void AM_drawWalls()
 // Used to rotate player arrow line character.
 //
 void
-AM_rotate
+__near AM_rotate
 ( int16_t __near*	x,
 	int16_t __near*	y,
   fineangle_t	a )
@@ -1117,7 +1115,7 @@ AM_rotate
 static mline_t	lc;
 
 void
-AM_drawLineCharacter
+__near AM_drawLineCharacter
 ( mline_t __near*	lineguy,
   int16_t		lineguylines,
   int16_t	scale,
@@ -1169,7 +1167,7 @@ AM_drawLineCharacter
     }
 }
 
-void AM_drawPlayers(void)
+void __near AM_drawPlayers(void)
 {
 	
 	if (cheating)
@@ -1181,9 +1179,7 @@ void AM_drawPlayers(void)
 
 }
 
-void
-AM_drawThings
-()
+void __near AM_drawThings()
 {
     uint16_t		i;
     mobj_pos_t __far*	t;
@@ -1200,7 +1196,7 @@ AM_drawThings
     }
 }
 
-void AM_drawMarks(void)
+void __near AM_drawMarks(void)
 {
 	int8_t i;
 	int16_t fx, fy;
@@ -1226,13 +1222,13 @@ void AM_drawMarks(void)
 
 }
 
-void AM_drawCrosshair()
+void __near AM_drawCrosshair()
 {
     screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
 
 }
 //extern void G_ExitLevel();
-void AM_Drawer (void)
+void __far AM_Drawer (void)
 {
 
 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory

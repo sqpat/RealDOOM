@@ -108,7 +108,7 @@ void checkoffset(void __far* ptr, int16_t check){
 */
 
 void
-R_MapPlane
+__near R_MapPlane
 ( byte		y,
   int16_t		x1,
   int16_t		x2 ) {
@@ -164,7 +164,7 @@ extern byte __far * floortop;
 // R_ClearPlanes
 // At begining of frame.
 //
-void R_ClearPlanes (void)
+void __near R_ClearPlanes (void)
 {
     int16_t		i;
     fineangle_t	angle;
@@ -202,7 +202,7 @@ int8_t floorphyspage = 0;
 
 
 // requires pagination and juggling of floor/ceil planes...
-visplane_t __far * R_HandleEMSPagination(int8_t index, int8_t isceil){
+visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 	int8_t usedphyspage;
 	int8_t usedvirtualpage = 0;
@@ -269,7 +269,7 @@ visplane_t __far * R_HandleEMSPagination(int8_t index, int8_t isceil){
 //todo can we change height to 16 bit? the only tricky part is when viewz is involved, but maybe
 // view z can be 16 too. -sq
 int16_t 
-R_FindPlane
+__near R_FindPlane
 ( fixed_t   	height,
   uint8_t		picnum,
   uint8_t		lightlevel,
@@ -333,7 +333,7 @@ R_FindPlane
 // R_CheckPlane
 //
 int16_t
-R_CheckPlane
+__near R_CheckPlane
 ( int16_t		index,
   int16_t		start,
   int16_t		stop,
@@ -413,7 +413,7 @@ extern uint16_t __far* skyofs;
 // R_DrawPlanes
 // At the end of each frame.
 //
-void R_DrawPlanes (void)
+void __near R_DrawPlanes (void)
 {
     visplane_t __far*		pl;
     uint8_t			light;

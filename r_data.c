@@ -119,7 +119,7 @@ int8_t texturecache_tail = -1;
  
 
 // numpages is 0-3 not 1-4
-void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
+void __near R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype) {
 	int8_t prev;
 	int8_t next;
 	int8_t pagecount;
@@ -289,7 +289,7 @@ uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
 extern int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
 
 // in this case numpages is 1-4, not 0-3
-int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
+int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	int8_t evictedpage;
 	int8_t j;
 	uint8_t currentpage;
@@ -470,7 +470,7 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 // todo merge below
 //int16_t
 void
-R_DrawColumnInCache
+__near R_DrawColumnInCache
 (column_t __far*     patch,
 	byte __far*       cache,
 	int16_t     originy,
@@ -509,7 +509,7 @@ R_DrawColumnInCache
 
  
 
-void R_GetNextCompositeBlock(int16_t tex_index) {
+void __near R_GetNextCompositeBlock(int16_t tex_index) {
 	uint16_t size = texturecompositesizes[tex_index];
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
 	int8_t numpages;
@@ -599,7 +599,7 @@ void R_GetNextCompositeBlock(int16_t tex_index) {
 }
 
 
-void R_GetNextPatchBlock(int16_t lump) {
+void __near R_GetNextPatchBlock(int16_t lump) {
 	uint16_t size = W_LumpLength(lump);
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
 	int8_t numpages;
@@ -678,7 +678,7 @@ void R_GetNextPatchBlock(int16_t lump) {
 
 
 
-void R_GetNextSpriteBlock(int16_t lump) {
+void __near R_GetNextSpriteBlock(int16_t lump) {
 	uint16_t size = W_LumpLength(lump);
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
 	int8_t numpages;
@@ -767,7 +767,7 @@ void R_GetNextSpriteBlock(int16_t lump) {
 
 extern int8_t current5000State;
 
-void R_GenerateComposite(uint16_t texnum, byte __far* block)
+void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 {
 	texpatch_t __far*         patch;
 	patch_t __far*            realpatch;
@@ -883,7 +883,7 @@ void R_GenerateComposite(uint16_t texnum, byte __far* block)
 	Z_QuickMapRender7000();
 
 }
-uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
+uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 	uint8_t realtexpage = texpage >> 2;
 	uint8_t pagenum = pageoffset + realtexpage;
 	uint8_t numpages = (texpage& 0x03);
@@ -1047,7 +1047,7 @@ uint8_t gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 }
 
 
-uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
+uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 	uint8_t realtexpage = texpage >> 2;
 	uint8_t pagenum = pageoffset + realtexpage;
 	uint8_t numpages = (texpage & 0x03);
@@ -1210,7 +1210,7 @@ uint8_t getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 // TODO - try different algos instead of first free block for populating cache pages
 // get 0x9000 offset for texture
-byte __far* getpatchtexture(int16_t lump) {
+byte __far* __near getpatchtexture(int16_t lump) {
 
 	int16_t index = lump - firstpatch;
 	uint8_t texpage = patchpage[index];
@@ -1243,7 +1243,7 @@ byte __far* getpatchtexture(int16_t lump) {
 }
 
 
-byte __far* getcompositetexture(int16_t tex_index) {
+byte __far* __near getcompositetexture(int16_t tex_index) {
 	
 	uint8_t texpage = compositetexturepage[tex_index];
 	uint8_t texoffset = compositetextureoffset[tex_index];
@@ -1273,7 +1273,7 @@ byte __far* getcompositetexture(int16_t tex_index) {
 
 }
 
-byte __far* getspritetexture(int16_t lump) {
+byte __far* __near getspritetexture(int16_t lump) {
 
 	int16_t index = lump - firstspritelump;
 	uint8_t texpage = spritepage[index];
@@ -1323,7 +1323,7 @@ void setchecksum(){
 int setval = 0;
 extern int16_t skytexturelump;
 byte __far*
-R_GetColumn
+__near R_GetColumn
 (int16_t           tex,
 	int16_t           col)
 {

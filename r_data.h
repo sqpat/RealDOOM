@@ -42,15 +42,15 @@ typedef struct {
   //uint8_t value; // lump, value, etc
 } cache_node_t;
 
-int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype);
-void R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype);
+int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype);
+void __near R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype);
 
 byte __far*
-R_GetColumn
+__near R_GetColumn
 ( int16_t		tex,
   int16_t		col );
 
-byte __far* getspritetexture(int16_t spritelump);
+byte __far* __near getspritetexture(int16_t spritelump);
 
 #define BAD_TEXTURE 65535
 

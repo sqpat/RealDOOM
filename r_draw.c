@@ -109,7 +109,7 @@ byte __far*			dc_source;
 //  be used. It has also been used with Wolfenstein 3D.
 // 
 extern int setval;
-void R_DrawColumn (void) 
+void __near R_DrawColumn (void) 
 { 
     int16_t			count; 
     byte __far*		dest;
@@ -302,7 +302,7 @@ void R_DrawColumn (void)
 
  
 
-void R_DrawColumnLow (void) 
+void __near R_DrawColumnLow (void) 
 { 
 
 	int16_t                 count;
@@ -357,7 +357,7 @@ int16_t	fuzzpos = 0;
 //  could create the SHADOW effect,
 //  i.e. spectres and invisible players.
 //
-void R_DrawFuzzColumn (void) 
+void __near R_DrawFuzzColumn (void) 
 { 
     int16_t			count; 
     byte __far*		dest;
@@ -449,7 +449,7 @@ fixed_t                 ds_ystep;
 
 //
 // Draws the actual span.
-void R_DrawSpan(void)
+void __near R_DrawSpan(void)
 {
 	//fixed_t_union             src = 0x80000000;
 	fixed_t_union             xfrac;
@@ -716,7 +716,7 @@ void R_DrawSpan(void)
 //
 // Again..
 //
-void R_DrawSpanLow(void)
+void __near R_DrawSpanLow(void)
 {
 	fixed_t_union             xfrac;
 	fixed_t             yfrac;
@@ -773,7 +773,7 @@ void R_DrawSpanLow(void)
 //  for variable screen sizes
 // Also draws a beveled edge.
 //
-void R_FillBackScreen (void) 
+void __far R_FillBackScreen (void) 
 { 
  
 
@@ -886,7 +886,7 @@ void R_FillBackScreen (void)
 // Copy a screen buffer.
 //
 void
-R_VideoErase
+__far R_VideoErase
 (uint16_t	ofs,
   int16_t		count ) 
 {
@@ -917,7 +917,7 @@ R_VideoErase
 //
 
  
-void R_DrawViewBorder (void) 
+void __far R_DrawViewBorder (void) 
 { 
     uint16_t		top;
     uint16_t		side;

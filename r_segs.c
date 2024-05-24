@@ -88,7 +88,7 @@ uint16_t __far*		maskedtexturecol;
 // R_RenderMaskedSegRange
 //
 void
-R_RenderMaskedSegRange
+__near R_RenderMaskedSegRange
 (drawseg_t __far*	ds,
 	int16_t		x1,
 	int16_t		x2)
@@ -232,7 +232,7 @@ byte __far * ceiltop;
 byte __far * floortop;
 //extern int setval;
 
-void R_RenderSegLoop (void)
+void __near R_RenderSegLoop (void)
 {
     fineangle_t		angle;
 	uint16_t		index;
@@ -412,7 +412,7 @@ extern  fixed_t_union leveltime;
 // while normal fixed_t is int32_t, and you have to make sure you use angles and fixed_t in the
 // correct spots or you end up doing things like comparisons between uint32_t and int32_t.
 void
-R_StoreWallRange
+__near R_StoreWallRange
 ( int16_t	start,
   int16_t	stop )
 {

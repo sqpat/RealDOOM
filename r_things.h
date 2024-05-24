@@ -37,15 +37,15 @@ extern uint16_t		pspritescale;
 extern fixed_t		pspriteiscale;
 
 
-void R_DrawMaskedColumn (column_t __far* column);
+void __near R_DrawMaskedColumn (column_t __far* column);
 
 
-void R_SortVisSprites (void);
+void __near R_SortVisSprites (void);
 
-void R_AddSprites(sector_t __far* sec);
-void R_ClearSprites (void);
-void R_DrawMasked (void);
+void __near R_AddSprites(sector_t __far* sec);
+void __near R_ClearSprites (void);
+void __near R_DrawMasked (void);
 
-void R_PrepareMaskedPSprites(void);
+void __near R_PrepareMaskedPSprites(void);
 
 #endif

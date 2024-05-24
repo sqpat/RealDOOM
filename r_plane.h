@@ -27,15 +27,14 @@
 extern  uint16_t 		lastopening;
  
 
-void R_InitPlanes (void);
-void R_ClearPlanes (void);
+void __near R_ClearPlanes (void);
 
-void R_DrawPlanes (void);
+void __near R_DrawPlanes (void);
 
 #define IS_CEILING_PLANE    1
 #define IS_FLOOR_PLANE      0
 int16_t
-R_FindPlane
+__near R_FindPlane
 ( fixed_t	height,
   uint8_t		picnum,
   uint8_t		lightlevel,
@@ -43,7 +42,7 @@ R_FindPlane
    );
 
 int16_t
-R_CheckPlane
+__near R_CheckPlane
 (int16_t	index,
   int16_t		start,
   int16_t		stop,

@@ -45,20 +45,11 @@ drawseg_t __far*	ds_p;
 extern int8_t visplanedirty;
 
 void
-R_StoreWallRange
+__near R_StoreWallRange
 ( int16_t	start,
   int16_t	stop );
 
 
-
-
-//
-// R_ClearDrawSegs
-//
-void R_ClearDrawSegs (void)
-{
-    ds_p = drawsegs;
-}
 
 
 
@@ -91,7 +82,7 @@ cliprange_t	solidsegs[MAXSEGS];
 //  that entirely block the view.
 // 
 void
-R_ClipSolidWallSegment
+__near R_ClipSolidWallSegment
 ( int16_t			first,
   int16_t			last )
 {
@@ -186,7 +177,7 @@ R_ClipSolidWallSegment
 //  e.g. LineDefs with upper and lower texture.
 //
 void
-R_ClipPassWallSegment
+__near R_ClipPassWallSegment
 ( int16_t	first,
   int16_t	last )
 {
@@ -231,7 +222,7 @@ R_ClipPassWallSegment
 //
 // R_ClearClipSegs
 //
-void R_ClearClipSegs (void)
+void __near R_ClearClipSegs (void)
 {
     solidsegs[0].first = -0x7fff;
     solidsegs[0].last = -1;
@@ -245,7 +236,7 @@ void R_ClearClipSegs (void)
 // Clips the given segment
 // and adds any visible pieces to the line list.
 //
-void R_AddLine (int16_t curlineNum)
+void __near R_AddLine (int16_t curlineNum)
 {
     int16_t			x1;
     int16_t			x2;
@@ -396,7 +387,7 @@ void R_AddLine (int16_t curlineNum)
 //  if some part of the bbox might be visible.
 //
 
-boolean R_CheckBBox(int16_t __far *bspcoord)
+boolean __near R_CheckBBox(int16_t __far *bspcoord)
 {
 	byte boxx;
 	byte boxy;
@@ -548,7 +539,7 @@ extern byte __far * floortop;
 // Add sprites of things in sector.
 // Draw one or more line segments.
 //
-void R_Subsector(int16_t subsecnum)
+void __near R_Subsector(int16_t subsecnum)
 {
 	int16_t count;
 	int16_t firstline;
@@ -604,7 +595,7 @@ void R_Subsector(int16_t subsecnum)
 
 #define MAX_BSP_DEPTH 64
 
-void R_RenderBSPNode()
+void __far R_RenderBSPNode()
 {
 	node_t  __far*bsp;
 	node_render_t __far* bsp_render;

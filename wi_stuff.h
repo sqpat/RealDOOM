@@ -32,14 +32,14 @@
 typedef int8_t stateenum_t;
 
 // Called by main loop, animate the intermission.
-void WI_Ticker (void);
+void __far WI_Ticker (void);
 
 // Called by main loop,
 // draws the intermission directly into the screen buffer.
-void WI_Drawer (void);
+void __far WI_Drawer (void);
 
 // Setup for an intermission screen.
-void WI_Start(wbstartstruct_t __near*	 wbstartstruct);
+void __far WI_Start(wbstartstruct_t __near*	 wbstartstruct);
 
 
 typedef uint8_t animenum_t;

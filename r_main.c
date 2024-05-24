@@ -94,10 +94,10 @@ uint8_t			extralight;
 
 
 
-void (*colfunc) (void);
-void (*basecolfunc) (void);
-void (*fuzzcolfunc) (void);
-void (*spanfunc) (void);
+void __near (* colfunc) (void);
+void __near (* basecolfunc) (void);
+void __near (* fuzzcolfunc) (void);
+void __near (* spanfunc) (void);
 
  
 
@@ -108,7 +108,7 @@ void (*spanfunc) (void);
 // Returns side 0 (front) or 1 (back).
 //
 int16_t
-R_PointOnSide
+__near R_PointOnSide
 ( fixed_t_union	x,
   fixed_t_union	y,
   node_t __far*	node )
@@ -164,7 +164,7 @@ R_PointOnSide
 
 
 int16_t
-R_PointOnSegSide
+__near R_PointOnSegSide
 ( fixed_t_union	x,
   fixed_t_union	y,
   vertex_t __far* v1,
@@ -236,7 +236,7 @@ R_PointOnSegSide
 angle_t __far* tantoangle;
 
 uint32_t
-R_PointToAngle16
+__near R_PointToAngle16
 (int16_t	x,
 	int16_t	y) {
 
@@ -251,7 +251,7 @@ R_PointToAngle16
 
 
 uint32_t
-R_PointToAngle
+__far R_PointToAngle
 ( fixed_t_union	x,
   fixed_t_union	y )
 {	
@@ -410,7 +410,7 @@ R_PointToAngle
 
 
 uint32_t
-R_PointToAngle2
+__far R_PointToAngle2
 ( fixed_t_union	x1,
   fixed_t_union	y1,
   fixed_t_union	x2,
@@ -424,7 +424,7 @@ R_PointToAngle2
 
 
 uint32_t
-R_PointToAngle2_16
+__far R_PointToAngle2_16
 ( 
 	//int16_t	x1,
   //int16_t	y1,
@@ -444,7 +444,7 @@ R_PointToAngle2_16
 
 
 fixed_t
-R_PointToDist
+__near R_PointToDist
 ( int16_t	xarg,
   int16_t	yarg )
 
@@ -489,7 +489,7 @@ R_PointToDist
 //  at the given angle.
 // rw_distance must be calculated first.
 //
-fixed_t R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
+fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
 {
     fixed_t_union		scale;
     fineangle_t			anglea;
@@ -543,7 +543,7 @@ uint8_t		setdetail;
 
 
 void
-R_SetViewSize
+__far R_SetViewSize
 ( uint8_t		blocks,
   uint8_t		detail )
 {
@@ -578,7 +578,7 @@ uint16_t			skytexture;
 // R_PointInSubsector
 //
 int16_t
- R_PointInSubsector
+ __far R_PointInSubsector
 ( fixed_t_union	x,
   fixed_t_union	y )
 {
@@ -674,7 +674,7 @@ int32_t fps_rendered_frames_since_last_measure = 0;
 ticcount_t fps_last_measure_start_tic = 0;
 #endif 
 
-void R_RenderPlayerView ()
+void __far R_RenderPlayerView ()
 {	
 
 	#ifdef FPS_DISPLAY
@@ -706,9 +706,12 @@ void R_RenderPlayerView ()
 
     // Clear buffers.
     R_ClearClipSegs ();
-	R_ClearDrawSegs ();
+    // Clear Drawsegs
+	ds_p = drawsegs;
     R_ClearPlanes ();
-    R_ClearSprites ();
+
+	// R_ClearSprites
+	vissprite_p = vissprites;
 
     // check for new console commands.
 	NetUpdate ();

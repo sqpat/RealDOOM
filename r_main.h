@@ -85,23 +85,24 @@ extern	int8_t		detailshift;
 // Function pointers to switch refresh/drawing functions.
 // Used to select shadow mode etc.
 //
-extern void		(*colfunc) (void);
-extern void		(*basecolfunc) (void);
-extern void		(*fuzzcolfunc) (void);
+extern void __near (* colfunc) (void);
+extern void __near (* basecolfunc) (void);
+extern void __near (* fuzzcolfunc) (void);
 // No shadow effects on floors.
-extern void		(*spanfunc) (void);
+
+extern void __near (* spanfunc) (void);
 
 
 //
 // Utility functions.
 int16_t
-R_PointOnSide
+__near R_PointOnSide
 ( fixed_t_union	x,
   fixed_t_union	y,
   node_t __far*	node );
 
 int16_t
-R_PointOnSegSide
+__near R_PointOnSegSide
 ( fixed_t_union	x,
   fixed_t_union	y,
 	vertex_t __far* v1,
@@ -109,39 +110,39 @@ R_PointOnSegSide
 
 
 uint32_t
-R_PointToAngle16
+__near R_PointToAngle16
 (int16_t	x,
 	int16_t	y);
 
 uint32_t
-R_PointToAngle
+__far R_PointToAngle
 ( fixed_t_union	x,
   fixed_t_union	y );
 
 uint32_t
-R_PointToAngle2
+__far R_PointToAngle2
 ( fixed_t_union	x1,
   fixed_t_union	y1,
   fixed_t_union	x2,
   fixed_t_union	y2 );
 
 uint32_t
-R_PointToAngle2_16
+__far R_PointToAngle2_16
 ( //int16_t	x1,
   //int16_t	y1,
   int16_t	x2,
   int16_t	y2 );
 
 fixed_t
-R_PointToDist
+__near R_PointToDist
  ( int16_t	x,
    int16_t	y );
 
 
-fixed_t R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
+fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
 
 int16_t
-R_PointInSubsector
+__far R_PointInSubsector
 ( fixed_t_union	x,
   fixed_t_union	y );
 
@@ -154,12 +155,12 @@ R_PointInSubsector
 //
 
 // Called by G_Drawer.
-void R_RenderPlayerView ();
+void __far R_RenderPlayerView ();
 
 // Called by startup code.
 void R_Init (void);
 
 // Called by M_Responder.
-void R_SetViewSize (uint8_t blocks, uint8_t detail);
+void __far R_SetViewSize (uint8_t blocks, uint8_t detail);
 
 #endif

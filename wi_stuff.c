@@ -150,11 +150,11 @@ wianim_t __far*wianims[NUMEPISODES] =
 
 
 
-patch_t __far* WI_GetPatch(int16_t i) {
+patch_t __far* __near WI_GetPatch(int16_t i) {
 	return (patch_t __far*)(wigraphicspage0 + wioffsets[i]);
 }
 
-patch_t __far* WI_GetAnimPatch(int16_t i) {
+patch_t __far* __near WI_GetAnimPatch(int16_t i) {
 	return (patch_t __far*)(wianimspage + wianimoffsets[i]);
 }
 
@@ -235,7 +235,7 @@ static uint8_t		numRef[10];
 // slam background
 
 
-void WI_slamBackground(void)
+void __near WI_slamBackground(void)
 {
     FAR_memcpy(screen0, screen1, SCREENWIDTH * SCREENHEIGHT);
     V_MarkRect (0, 0, SCREENWIDTH, SCREENHEIGHT);
@@ -244,7 +244,7 @@ void WI_slamBackground(void)
 
 
 // Draws "<Levelname> Finished!"
-void WI_drawLF(void)
+void __near WI_drawLF(void)
 {
 	int16_t y = WI_TITLEY;
 	patch_t __far* finished = WI_GetPatch(5);
@@ -262,7 +262,7 @@ void WI_drawLF(void)
 
 
 // Draws "Entering <LevelName>"
-void WI_drawEL(void)
+void __near WI_drawEL(void)
 {
 	patch_t __far* lname;
 	int16_t y = WI_TITLEY;
@@ -281,7 +281,7 @@ void WI_drawEL(void)
 }
 
 void
-WI_drawOnLnode
+__near WI_drawOnLnode
 ( int16_t		n,
   uint8_t*	cRef )
 {
@@ -324,7 +324,7 @@ WI_drawOnLnode
 
 
 
-void WI_initAnimatedBack(void)
+void __near WI_initAnimatedBack(void)
 {
     int16_t		i;
     wianim_t __far*	a;
@@ -355,7 +355,7 @@ void WI_initAnimatedBack(void)
 
 }
 
-void WI_updateAnimatedBack(void) {
+void __near WI_updateAnimatedBack(void) {
     int16_t		i;
     wianim_t __far*	a;
 
@@ -406,7 +406,7 @@ void WI_updateAnimatedBack(void) {
 
 }
 
-void WI_drawAnimatedBack(void)
+void __near WI_drawAnimatedBack(void)
 {
    
 	int16_t i;
@@ -437,7 +437,7 @@ void WI_drawAnimatedBack(void)
 //
 
 int16_t
-WI_drawNum
+__near WI_drawNum
 ( int16_t		x,
   int16_t		y,
   int16_t		n,
@@ -488,7 +488,7 @@ WI_drawNum
 }
 
 void
-WI_drawPercent
+__near WI_drawPercent
 ( int16_t		x,
   int16_t		y,
   int16_t		p )
@@ -507,7 +507,7 @@ WI_drawPercent
 //  or "sucks" message if overflow.
 //
 void
-WI_drawTime
+__near WI_drawTime
 ( int16_t		x,
   int16_t		y,
   int16_t		t )
@@ -542,34 +542,20 @@ WI_drawTime
 }
 
 
-void WI_End(void)
-{
-    void WI_unloadData(void);
-    WI_unloadData();
-}
 
-void WI_initNoState(void)
+
+void __near WI_initNoState(void)
 {
     state = NoState;
     acceleratestage = 0;
     cnt = 10;
 }
 
-void WI_updateNoState(void) {
-
-    WI_updateAnimatedBack();
-
-    if (!--cnt) {
-		WI_End();
-		G_WorldDone();
-    }
-
-}
 
 static boolean		snl_pointeron = false;
 
 
-void WI_initShowNextLoc(void)
+void __near WI_initShowNextLoc(void)
 {
     state = ShowNextLoc;
     acceleratestage = 0;
@@ -578,7 +564,7 @@ void WI_initShowNextLoc(void)
     WI_initAnimatedBack();
 }
 
-void WI_updateShowNextLoc(void) {
+void __near WI_updateShowNextLoc(void) {
     WI_updateAnimatedBack();
 
 	if (!--cnt || acceleratestage) {
@@ -588,7 +574,7 @@ void WI_updateShowNextLoc(void) {
 	}
 }
 
-void WI_drawShowNextLoc(void)
+void __near WI_drawShowNextLoc(void)
 {
 
     int16_t		i;
@@ -632,7 +618,7 @@ void WI_drawShowNextLoc(void)
 
 }
 
-void WI_drawNoState(void)
+void __near WI_drawNoState(void)
 {
     snl_pointeron = true;
     WI_drawShowNextLoc();
@@ -642,7 +628,7 @@ void WI_drawNoState(void)
 
 static int16_t	sp_state;
 
-void WI_initStats(void)
+void __near WI_initStats(void)
 {
     state = StatCount;
     acceleratestage = 0;
@@ -654,7 +640,7 @@ void WI_initStats(void)
     WI_initAnimatedBack();
 }
 
-void WI_updateStats(void)
+void __near WI_updateStats(void)
 {
 
     WI_updateAnimatedBack();
@@ -742,7 +728,7 @@ void WI_updateStats(void)
 
 }
 
-void WI_drawStats(void) {
+void __near WI_drawStats(void) {
     // line height
 	int16_t lh;
 
@@ -779,7 +765,7 @@ void WI_drawStats(void) {
 
 }
 
-void WI_checkForAccelerate(void)
+void __near WI_checkForAccelerate(void)
 {
  
 	if (player.cmd.buttons & BT_ATTACK)
@@ -802,41 +788,8 @@ void WI_checkForAccelerate(void)
 
 
 
-// Updates stuff each tick
-void WI_Ticker(void)
-{
-	// counter for general background animation
-	bcnt++;
-	if (bcnt == 1)
-	{
-		// intermission music
-		if (commercial)
-			S_ChangeMusic(mus_dm2int, true);
-		else
-			S_ChangeMusic(mus_inter, true);
-	}
 
-	WI_checkForAccelerate();
-	Z_QuickMapIntermission();
-
-	switch (state) {
-		case StatCount:
-			WI_updateStats();
-			break;
-
-		case ShowNextLoc:
-			WI_updateShowNextLoc();
-			break;
-
-		case NoState:
-			WI_updateNoState();
-			break;
-	}
-	Z_QuickMapPhysics();
-
-}
-
-void WI_loadData(void)
+void __near WI_loadData(void)
 {
     int16_t		i;
 	int8_t	name[9];
@@ -915,11 +868,63 @@ void WI_loadData(void)
 
 
 
-void WI_unloadData(void){
+void __near WI_unloadData(void){
 	unloaded = true;
 }
+void __near WI_End(void)
+{
+    WI_unloadData();
+}
 
-void WI_Drawer (void) {
+void __near WI_updateNoState(void) {
+
+    WI_updateAnimatedBack();
+
+    if (!--cnt) {
+		WI_End();
+		G_WorldDone();
+    }
+
+}
+
+
+
+
+// Updates stuff each tick
+void __far  WI_Ticker(void)
+{
+	// counter for general background animation
+	bcnt++;
+	if (bcnt == 1)
+	{
+		// intermission music
+		if (commercial)
+			S_ChangeMusic(mus_dm2int, true);
+		else
+			S_ChangeMusic(mus_inter, true);
+	}
+
+	WI_checkForAccelerate();
+	Z_QuickMapIntermission();
+
+	switch (state) {
+		case StatCount:
+			WI_updateStats();
+			break;
+
+		case ShowNextLoc:
+			WI_updateShowNextLoc();
+			break;
+
+		case NoState:
+			WI_updateNoState();
+			break;
+	}
+	Z_QuickMapPhysics();
+
+}
+
+void __far WI_Drawer (void) {
 	
 	if (unloaded) {
 		return;
@@ -944,7 +949,7 @@ void WI_Drawer (void) {
 }
  
 
-void WI_initVariables(wbstartstruct_t __near* wbstartstruct)
+void __near WI_initVariables(wbstartstruct_t __near* wbstartstruct)
 {
 	wbs = wbstartstruct;
 	acceleratestage = 0;
@@ -962,7 +967,7 @@ void WI_initVariables(wbstartstruct_t __near* wbstartstruct)
 }
 
 
-void WI_Init(void)
+void __near WI_Init(void)
 {
 	
 
@@ -1014,7 +1019,7 @@ void WI_Init(void)
 	}
 }	
 
-void WI_Start(wbstartstruct_t __near* wbstartstruct) {
+void __far WI_Start(wbstartstruct_t __near* wbstartstruct) {
 	unloaded = false;
 	Z_QuickMapIntermission();
 	

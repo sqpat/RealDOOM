@@ -46,11 +46,10 @@ extern drawseg_t __far*	ds_p;
 
 
 // BSP?
-void R_ClearClipSegs (void);
-void R_ClearDrawSegs (void);
+void __near R_ClearClipSegs (void);
 
 
-void R_RenderBSPNode ();
+void __far R_RenderBSPNode ();
 
 
 #endif

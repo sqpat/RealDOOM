@@ -63,7 +63,7 @@ extern uint8_t		setdetail;
 //
 // R_InitTextureMapping
 //
-void R_InitTextureMapping(void)
+void __near R_InitTextureMapping(void)
 {
 	int16_t			x;
 	fixed_t_union	t;
@@ -199,7 +199,7 @@ void R_InitTextureMapping(void)
 //
 // R_ExecuteSetViewSize
 //
-void R_ExecuteSetViewSize(void)
+void __far R_ExecuteSetViewSize(void)
 {
 
 	fixed_t_union temp;

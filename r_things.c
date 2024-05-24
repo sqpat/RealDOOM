@@ -85,14 +85,6 @@ vissprite_t __far*    vissprite_p;
 
 
  
-//
-// R_ClearSprites
-// Called at frame start.
-//
-void R_ClearSprites (void)
-{
-    vissprite_p = vissprites;
-}
  
 
  
@@ -111,7 +103,7 @@ int16_t __far*          mceilingclip;
 fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
 
-void R_DrawMaskedColumn (column_t __far* column) {
+void __near R_DrawMaskedColumn (column_t __far* column) {
 	
 	fixed_t_union         topscreen;
 	fixed_t_union         bottomscreen;
@@ -159,7 +151,7 @@ void R_DrawMaskedColumn (column_t __far* column) {
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
 //
-void R_DrawVisSprite ( vissprite_t __far* vis ) {
+void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     
 	column_t __far*     column;
     fixed_t_union       frac;
@@ -195,7 +187,7 @@ void R_DrawVisSprite ( vissprite_t __far* vis ) {
 // Generates a vissprite for a thing
 //  if it might be visible.
 //
-void R_ProjectSprite (mobj_pos_t __far* thing){
+void __near R_ProjectSprite (mobj_pos_t __far* thing){
     fixed_t_union             tr_x;
     fixed_t_union             tr_y;
     
@@ -377,7 +369,7 @@ void R_ProjectSprite (mobj_pos_t __far* thing){
 // During BSP traversal, this adds sprites by sector.
 //
 
-void R_AddSprites (sector_t __far* sec)
+void __near R_AddSprites (sector_t __far* sec)
 {
 	THINKERREF				thingRef;
 	int32_t                 lightnum;
@@ -425,7 +417,7 @@ void R_AddSprites (sector_t __far* sec)
 //
 // R_DrawPSprite
 //
-void R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* vis){
+void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t __far* vis){
     fixed_t_union           tx;
 	int16_t                 x1;
 	int16_t                 x2;
@@ -533,7 +525,7 @@ extern state_t r_cachedstatecopy[2];
 //
 // R_DrawPlayerSprites
 //
-void R_DrawPlayerSprites (void){
+void __near R_DrawPlayerSprites (void){
 	uint8_t i;
 	pspdef_t __near*   psp;
 	// clip to screen bounds
@@ -550,7 +542,7 @@ void R_DrawPlayerSprites (void){
 	}
 }
 
-void R_PrepareMaskedPSprites(void) {
+void __near R_PrepareMaskedPSprites(void) {
 	uint8_t         i;
 	uint8_t         lightnum;
 	pspdef_t __near*   psp;
@@ -585,7 +577,7 @@ uint8_t     vsprsortedheadfirst;
 #define VISSPRITE_UNSORTED_INDEX 255
 #define VISSPRITE_SORTED_HEAD_INDEX 254
 
-void R_SortVisSprites (void)
+void __near R_SortVisSprites (void)
 {
 	int16_t                 i;
 	int16_t                 count;
@@ -656,7 +648,7 @@ void R_SortVisSprites (void)
 // R_DrawSprite
 //
 
-void R_DrawSprite (vissprite_t __far* spr)
+void __near R_DrawSprite (vissprite_t __far* spr)
 {
     drawseg_t __far*          ds;
     int16_t               clipbot[SCREENWIDTH]; // could be uint8_t, need to change -2 special case
@@ -782,7 +774,7 @@ void R_DrawSprite (vissprite_t __far* spr)
 //
 // R_DrawMasked
 //
-void R_DrawMasked (void)
+void __near R_DrawMasked (void)
 {
     uint8_t         spr;
     drawseg_t __far*          ds;
