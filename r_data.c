@@ -302,9 +302,9 @@ int8_t R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	int8_t* nodehead;
 	int8_t maxcachesize;
 	int16_t maxitersize;
-	uint8_t far* cacherefpage;
-	uint8_t far* cacherefoffset;
-	uint8_t far* usedcacherefpage;
+	uint8_t __far* cacherefpage;
+	uint8_t __far* cacherefoffset;
+	uint8_t __near* usedcacherefpage;
 
 	//I_Error("evicting %i", cachetype);
 

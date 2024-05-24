@@ -547,7 +547,8 @@ void D_DoomMain2(void)
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
 	
-	//I_Error("\nblah, %Fp %Fp %Fp %Fp %Fp", spritecache_nodes, flatcache_nodes, patchcache_nodes, texturecache_nodes, events);
+	//I_Error("\nblah, %Fp %Fp %Fp %Fp %Fp", scalelightfixed, MAKE_FULL_SEGMENT(texturedefs_offset , size_texturedefs_offset), segs, 0L, 0L);
+
 
 	/*
 	FILE* fp;
