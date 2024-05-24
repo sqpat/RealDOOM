@@ -189,6 +189,56 @@ ticcmd_t localcmds[BACKUPTICS];
 // or reads it from the demo buffer. 
 // If recording a demo, write it out 
 // 
+
+
+
+
+//
+// R_FlatNumForName
+// Retrieval, get a flat number for a flat name.
+//
+uint8_t __far R_FlatNumForName(int8_t* name)
+{
+	int16_t         i;
+#ifdef CHECK_FOR_ERRORS
+	int8_t        namet[9];
+#endif
+
+	i = W_CheckNumForName(name);
+
+#ifdef CHECK_FOR_ERRORS
+	if (i == -1)
+	{
+		namet[8] = 0;
+		memcpy(namet, name, 8);
+		I_Error("\nR_FlatNumForName: %s not found", namet);
+	}
+
+	if (i - firstflat > 255) {
+		I_Error("Flat too big %i %i", i, firstflat);
+	}
+#endif
+
+	return (uint8_t)(i - firstflat);
+}
+
+extern uint16_t     R_CheckTextureNumForName(int8_t *name);
+
+//
+// R_TextureNumForName
+// Calls R_CheckTextureNumForName,
+//  aborts with error message.
+//
+uint16_t     __far R_TextureNumForName(int8_t* name) {
+	uint16_t    __far     i = R_CheckTextureNumForName(name);
+
+	if (i == BAD_TEXTURE) {
+		I_Error("\n96 %s", name); // \nR_TextureNumForName: %s not found
+	}
+	return i;
+}
+
+
 void G_BuildTiccmd (int8_t index)
 { 
 	int8_t         i;

@@ -268,7 +268,7 @@ extern int16_t emshandle;
 
 
 
-
+void PSetupEndFunc();
 
  
 void Z_LoadBinaries() {
@@ -278,6 +278,15 @@ void Z_LoadBinaries() {
 	fp = fopen("D_INFO.BIN", "rb"); 
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
 	fclose(fp);
+
+
+	// 0x1216, about 4630 bytes
+	
+	//FAR_memcpy(PSetupFuncLoadAddr, (byte __far *)PSetupFuncFromAddr, SIZE_PSetup);
+	
+	//0x068a or 1674 ... 6316 ish so far
+	//FAR_memcpy(PSightFuncLoadAddr, (byte __far *)P_DivlineSide, SIZE_PSight);
+
 	//byte __far *startaddr = 	(byte __far*)getPainChance2-0x34; 
 	//byte __far *endaddr =		(byte __far*)fakefunc;
 	//FAR_memcpy(InfoFuncLoadAddr, startaddr, 0xFF);

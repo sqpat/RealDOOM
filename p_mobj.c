@@ -36,7 +36,6 @@
 
 
 void G_PlayerReborn ();
-void P_SpawnMapThing (mapthing_t __far*	mthing, int16_t key);
 
 
 void A_Explode(mobj_t __far* mobjmoRef, mobj_pos_t __far* thingy_pos);

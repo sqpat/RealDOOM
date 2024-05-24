@@ -113,7 +113,6 @@ typedef struct thinker_s
 
 
 
-void P_InitThinkers ();
 void __far* P_CreateThinker(uint16_t thinkfunc);
 
 void P_UpdateThinkerFunc(THINKERREF thinker, uint16_t argfunc);
@@ -128,8 +127,6 @@ void P_RemoveThinker(THINKERREF thinkerRef);
 //
 // P_PSPR
 //
-void P_SetupPsprites ();
-void P_MovePsprites ();
 void P_DropWeapon ();
 
 

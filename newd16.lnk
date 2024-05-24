@@ -36,7 +36,6 @@ file wi_stuff.obj
 
 #these files put in overlay 
 file f_finale.obj
-file p_setup.obj
 file g_setup.obj
 file r_setup.obj
 file st_setup.obj
@@ -44,6 +43,7 @@ file hu_setup.obj
 file p_saveg.obj
 
 
+#todo put these in the future wad segment. maybe pull out p_tick.
 NEWSEGMENT
 file p_ceilng.obj
 file p_doors.obj
@@ -88,6 +88,9 @@ file i_init.obj
 file z_umb.obj
 file z_init.obj
 file p_init.obj
+
+NEWSEGMENT
+file p_setup.obj
 
 NEWSEGMENT
 file info.obj

@@ -95,6 +95,47 @@ size_segs                 EDEF:0000
 #define B000BlockOffset 0x14B0
 #define B000Block 0xB14B0000
 
+
+//#define SIZE_D_SETUP            0x122A
+
+/*
+1ed8:0000+     P_LoadVertexes_
+1ed8:0048+     P_LoadSegs_
+1ed8:01fe+     P_LoadSubsectors_
+1ed8:027e+     P_LoadSectors_
+1ed8:03e6+     P_LoadNodes_
+1ed8:04be+     P_SetupPsprites_
+1ed8:04e8+     P_SpawnPlayer_
+1ed8:059a+     P_SpawnMapThing_
+1ed8:076c+     P_SpawnSpecials_
+1ed8:08d2+     P_LoadThings_
+1ed8:09fa+     P_LoadLineDefs_
+1ed8:0c5c+     P_LoadSideDefs_
+1ed8:0dd0+     P_LoadBlockMap_
+1ed8:0e30+     P_GroupLines_
+1ed8:1084+     P_InitThinkers_
+1ed8:10bc      P_SetupLevel_
+1ed8:11e8*     fakefunc_
+
+#define P_LoadVertexesAddr      ((void     (__far *)(int16_t))                 (0xB14B0000))
+#define P_LoadSegsAddr          ((void     (__far *)(int16_t))                 (0xB14B0048))
+#define P_LoadSubsectorsAddr    ((void     (__far *)(int16_t))                 (0xB14B01FE))
+#define P_LoadSectorsAddr       ((void     (__far *)(int16_t))                 (0xB14B027E))
+#define P_LoadNodesAddr         ((void     (__far *)(int16_t))                 (0xB14B03E6))
+#define P_SetupPspritesAddr     ((void     (__far *)(void))                    (0xB14B04BE))
+#define P_SpawnPlayerAddr       ((void     (__far *)(mobjtype_t))              (0xB14B04E8))
+#define P_SpawnMapThingAddr     ((void     (__far *)(mapthing_t, int16_t))     (0xB14B059A))
+#define P_SpawnSpecialsAddr     ((void     (__far *)(void))                    (0xB14B076C))
+#define P_LoadThingsAddr        ((void     (__far *)(int16_t))                 (0xB14B08D2))
+#define P_LoadLineDefsAddr      ((void     (__far *)(int16_t))                 (0xB14B09FA))
+#define P_LoadSideDefsAddr      ((void     (__far *)(int16_t))                 (0xB14B0C5C))
+#define P_LoadBlockMapAddr      ((void     (__far *)(int16_t))                 (0xB14B0Dd0))
+#define P_GroupLinesAddr        ((void     (__far *)(void))                    (0xB14B0E30))
+#define P_InitThinkersAddr      ((void     (__far *)(void))                    (0xB14B1084))
+#define P_SetupLevelAddr        ((void     (__far *)(int8_t, int8_t, skill_t)) (0xB14B10BC))
+*/
+
+
 // 2a6c
 
 // 0xCC00 BLOCK
@@ -112,6 +153,7 @@ scalelights        CE16:0000
 texturedefs_offset CE76:0000
 [empty]            CEAC:0000
 
+// 10944 used so far
 
 */
 
@@ -231,10 +273,100 @@ texturedefs_offset CE76:0000
 #define size_segs_physics    (MAX_SEGS_PHYSICS_SIZE)
 #define segs_physics    ((seg_physics_t __far*)    (0x90000000))
 
+/*
+#define InfoFuncLoadAddr      ((byte __far *)  (0x92C00000))
+// note: entry point to the function is not necessarily the first byte of the compiled binary.
+#define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (0x92C00034))
+#define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (0x92C000B2))
+#define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (0x92C0010A))
+#define getMeleeStateAddr     ((statenum_t (__far *)(uint8_t))  (0x92C0015A))
+#define getMobjMassAddr       ((int32_t    (__far *)(uint8_t))  (0x92C001B8))
+#define getActiveSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x92C00222))
+#define getPainSoundAddr      ((sfxenum_t  (__far *)(uint8_t))  (0x92C00284))
+#define getAttackSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x92C002B8))
+#define getDamageAddr         ((uint8_t    (__far *)(uint8_t))  (0x92C002DA))
+#define getSeeStateAddr       ((statenum_t (__far *)(uint8_t))  (0x92C00350))
+#define getMissileStateAddr   ((statenum_t (__far *)(uint8_t))  (0x92C003F4))
+#define getDeathStateAddr     ((statenum_t (__far *)(uint8_t))  (0x92C004A8))
+#define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (0x92C00586))
+#define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (0x92C0063C))
+
+#define SIZE_D_INFO            0x069C*/
+
+
+
+// move up to 6800:6a90
+// or 6EA9:0000
+#define InfoFuncLoadAddr      ((byte __far *)  (0x6EA90000))
+// note: entry point to the function is not necessarily the first byte of the compiled binary.
+#define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (0x6EA90034))
+#define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA900B2))
+#define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (0x6EA9010A))
+#define getMeleeStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA9015A))
+#define getMobjMassAddr       ((int32_t    (__far *)(uint8_t))  (0x6EA901B8))
+#define getActiveSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90222))
+#define getPainSoundAddr      ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90284))
+#define getAttackSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x6EA902B8))
+#define getDamageAddr         ((uint8_t    (__far *)(uint8_t))  (0x6EA902DA))
+#define getSeeStateAddr       ((statenum_t (__far *)(uint8_t))  (0x6EA90350))
+#define getMissileStateAddr   ((statenum_t (__far *)(uint8_t))  (0x6EA903F4))
+#define getDeathStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA904A8))
+#define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (0x6EA90586))
+#define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (0x6EA9063C))
+
+#define SIZE_D_INFO            0x069C
+
+
+
 // segs_physics   9000:0000
 // [empty]        9000:2BFC
 
-// 5124 bytes free
+
+/*
+#define getPainChance(a)      ((getPainChanceAddr)(a) )
+#define getRaiseState(a)      ((getRaiseStateAddr)(a) )
+#define getXDeathState(a)     ((getXDeathStateAddr)(a) )
+#define getMeleeState(a)      ((getMeleeStateAddr)(a) )
+#define getMobjMass(a)        ((getMobjMassAddr)(a) )
+#define getActiveSound(a)     ((getActiveSoundAddr)(a) )
+#define getPainSound(a)       ((getPainSoundAddr)(a) )
+#define getAttackSound(a)     ((getAttackSoundAddr)(a) )
+#define getDamage(a)          ((getDamageAddr)(a) )
+#define getSeeState(a)        ((getSeeStateAddr)(a) )
+#define getMissileState(a)    ((getMissileStateAddr)(a) )
+#define getDeathState(a)      ((getDeathStateAddr)(a) )
+#define getPainState(a)       ((getPainStateAddr)(a) )
+#define getSpawnHealth(a)     ((getSpawnHealthAddr)(a) )
+*/
+
+/*
+
+92C0:0034      getPainChance2_
+92C0:00b2      getRaiseState_
+92C0:010a      getXDeathState_
+92C0:015a      getMeleeState_
+92C0:01b8      getMobjMass_
+92C0:0222      getActiveSound_
+92C0:0284      getPainSound_
+92C0:02b8      getAttackSound_
+92C0:02da      getDamage_
+92C0:0350      getSeeState_
+92C0:03f4      getMissileState_
+92C0:04a8      getDeathState_
+92C0:0586      getPainState_
+92C0:063c      getSpawnHealth_
+92C0:069c*     [empty] ??
+*/
+// 0x9323C done
+// 0x9324  empty
+
+//#define PSightFuncLoadAddr      ((byte __far *)  (0x93240000))
+//#define P_CheckSightAddr        ((boolean (__far *)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ))  (0x9324069C))
+//#define SIZE_PSight             (((byte __far*)PSightEndFunc) - ((byte __far*)P_DivlineSide))
+//0x068a or 1674
+
+
+// 3428 bytes free
 
 // 0x4000 BLOCK PHYSICS
 
@@ -291,6 +423,8 @@ texturedefs_offset CE76:0000
 // 4000:CE37    doomednum
 // 4000:CF49  linespeciallist
 // 4000:CFC9  [empty]
+
+// over 8k bytes free?
 
 // PHYSICS 0x6000 - 0x7FFF DATA
 // note: strings in 0x6000-6400 region
@@ -403,62 +537,13 @@ rndtable       6E99:0000
 
 //1748:6ef4 
 
-// move up to 6800:6a90
-// or 6EA9:0000
-#define InfoFuncLoadAddr      ((byte __far *)  (0x6EA90000))
-// note: entry point to the function is not necessarily the first byte of the compiled binary.
-#define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (0x6EA90034))
-#define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA900B2))
-#define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (0x6EA9010A))
-#define getMeleeStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA9015A))
-#define getMobjMassAddr       ((int32_t    (__far *)(uint8_t))  (0x6EA901B8))
-#define getActiveSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90222))
-#define getPainSoundAddr      ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90284))
-#define getAttackSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x6EA902B8))
-#define getDamageAddr         ((uint8_t    (__far *)(uint8_t))  (0x6EA902DA))
-#define getSeeStateAddr       ((statenum_t (__far *)(uint8_t))  (0x6EA90350))
-#define getMissileStateAddr   ((statenum_t (__far *)(uint8_t))  (0x6EA903F4))
-#define getDeathStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA904A8))
-#define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (0x6EA90586))
-#define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (0x6EA9063C))
+//4284 bytes or 0x10BC
 
-#define SIZE_D_INFO            0x069C
-
-/*
-#define getPainChance(a)      ((getPainChanceAddr)(a) )
-#define getRaiseState(a)      ((getRaiseStateAddr)(a) )
-#define getXDeathState(a)     ((getXDeathStateAddr)(a) )
-#define getMeleeState(a)      ((getMeleeStateAddr)(a) )
-#define getMobjMass(a)        ((getMobjMassAddr)(a) )
-#define getActiveSound(a)     ((getActiveSoundAddr)(a) )
-#define getPainSound(a)       ((getPainSoundAddr)(a) )
-#define getAttackSound(a)     ((getAttackSoundAddr)(a) )
-#define getDamage(a)          ((getDamageAddr)(a) )
-#define getSeeState(a)        ((getSeeStateAddr)(a) )
-#define getMissileState(a)    ((getMissileStateAddr)(a) )
-#define getDeathState(a)      ((getDeathStateAddr)(a) )
-#define getPainState(a)       ((getPainStateAddr)(a) )
-#define getSpawnHealth(a)     ((getSpawnHealthAddr)(a) )
-*/
-
-/*
-
-6EA9:0034      getPainChance2_
-6EA9:00b2      getRaiseState_
-6EA9:010a      getXDeathState_
-6EA9:015a      getMeleeState_
-6EA9:01b8      getMobjMass_
-6EA9:0222      getActiveSound_
-6EA9:0284      getPainSound_
-6EA9:02b8      getAttackSound_
-6EA9:02da      getDamage_
-6EA9:0350      getSeeState_
-6EA9:03f4      getMissileState_
-6EA9:04a8      getDeathState_
-6EA9:0586      getPainState_
-6EA9:063c      getSpawnHealth_
-6EA9:069c*     [empty] ??
-*/
+#define PSetupFuncLoadAddr      ((byte __far *)  (0xB14B0000))
+#define PSetupFuncFromAddr      ((byte __far *) ((int32_t)PSetupEndFunc &0xFFFF0000))
+//#define SIZE_PSetup             ((int16_t)(((int32_t)PSetupEndFunc) & 0xFFFF))
+#define SIZE_PSetup             4630
+#define P_SetupLevelAddr        ((void     (__far *)(int8_t, int8_t, skill_t)) (0xB14B0000))
 
 
 

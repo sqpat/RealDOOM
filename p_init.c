@@ -54,9 +54,9 @@ extern int16_t             numtextures;
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
-extern uint16_t     R_TextureNumForName(int8_t* name);
+extern uint16_t  __far   R_TextureNumForName(int8_t* name);
 
-extern uint16_t     R_CheckTextureNumForName(int8_t *name);
+extern uint16_t  __far   R_CheckTextureNumForName(int8_t *name);
   
 
 
@@ -191,7 +191,7 @@ typedef struct
 
 
 
-extern uint8_t R_FlatNumForName(int8_t* name);
+extern uint8_t __far R_FlatNumForName(int8_t* name);
 
 
 

@@ -1116,16 +1116,7 @@ int16_t EV_DoDonut(uint8_t linetag)
 }
 
 
-
-//
-// SPECIAL SPAWNING
-//
-
-//
-// P_SpawnSpecials
-// After the map has been loaded, scan for specials
-//  that spawn thinkers
-//
+ 
 int16_t		numlinespecials;
 //int16_t		linespeciallist[MAXLINEANIMS];
 

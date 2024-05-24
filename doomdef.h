@@ -77,6 +77,10 @@ enum { VERSION =  109 };
 // Sets some viewpoitn calculations to 16 bit and less precision than 32 bit. not super obvious, but if you run against a wall up close the wall texture pixels will move less smoothly with the player bob for example
 #define USE_SHORTHEIGHT_VIEWZ	
 
+// Load P_SETUP source dynamically rather than compiling into binary
+#define P_SETUP_SRC 
+
+
 
 //
 // For resize of screen, at start of game.

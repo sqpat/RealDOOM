@@ -57,6 +57,8 @@ int16_t             numsubsectors;
 int16_t             numnodes;
 int16_t             numlines;
 int16_t             numsides;
+int8_t map0string[7] = "map0%i";
+int8_t mapstring[6] = "map0i";
 
 
 #ifdef PRECALCULATE_OPENINGS
@@ -80,20 +82,17 @@ int16_t             bmapheight;     // size in mapblocks
 int16_t         bmaporgx;
 int16_t         bmaporgy;
 
-// for thing chains
-
-// REJECT
-// For fast sight rejection.
-// Speeds up enemy AI by skipping detailed
-//  LineOf Sight calculation.
-// Without special effect, this could be
-//  used as a PVS lookup as well.
-//
  
+ 
+ 
+uint16_t   __far  R_TextureNumForName(int8_t* name);
+uint8_t    __far R_FlatNumForName(int8_t* name);
+
+
 //
 // P_LoadVertexes
 //
-void P_LoadVertexes(int16_t lump)
+void __near P_LoadVertexes(int16_t lump)
 {
 	//mapvertex_t __far*			data;
 	uint16_t                 i;
@@ -121,7 +120,7 @@ void P_LoadVertexes(int16_t lump)
 //
 // P_LoadSegs
 //
-void P_LoadSegs(int16_t lump)
+void __near P_LoadSegs(int16_t lump)
 {
  	mapseg_t  __far*          data;
 	uint16_t                 i;
@@ -210,7 +209,7 @@ void P_LoadSegs(int16_t lump)
 //
 // P_LoadSubsectors
 //
-void P_LoadSubsectors(int16_t lump)
+void __near P_LoadSubsectors(int16_t lump)
 {
 	mapsubsector_t  __far*               data;
 	uint16_t                 i;
@@ -238,40 +237,10 @@ void P_LoadSubsectors(int16_t lump)
  
 
 
-
-//
-// R_FlatNumForName
-// Retrieval, get a flat number for a flat name.
-//
-uint8_t R_FlatNumForName(int8_t* name)
-{
-	int16_t         i;
-#ifdef CHECK_FOR_ERRORS
-	int8_t        namet[9];
-#endif
-
-	i = W_CheckNumForName(name);
-
-#ifdef CHECK_FOR_ERRORS
-	if (i == -1)
-	{
-		namet[8] = 0;
-		memcpy(namet, name, 8);
-		I_Error("\nR_FlatNumForName: %s not found", namet);
-	}
-
-	if (i - firstflat > 255) {
-		I_Error("Flat too big %i %i", i, firstflat);
-	}
-#endif
-
-	return (uint8_t)(i - firstflat);
-}
-
 //
 // P_LoadSectors
 //
-void P_LoadSectors(int16_t lump)
+void __near P_LoadSectors(int16_t lump)
 {
 	mapsector_t __far*        data;
 	uint16_t                 i;
@@ -338,7 +307,7 @@ void P_LoadSectors(int16_t lump)
 //
 // P_LoadNodes
 //
-void P_LoadNodes(int16_t lump)
+void __near P_LoadNodes(int16_t lump)
 {
 	mapnode_t  __far*       data = (mapnode_t __far*)SCRATCH_ADDRESS_5000;
 	uint16_t         i;
@@ -374,13 +343,13 @@ void P_LoadNodes(int16_t lump)
 }
 
 
-void P_BringUpWeapon();
+void __far P_BringUpWeapon();
 
 //
 // P_SetupPsprites
 // Called at start of level for each player.
 //
-void P_SetupPsprites()
+void __near P_SetupPsprites()
 {
 	int8_t	i;
 
@@ -403,11 +372,11 @@ void P_SetupPsprites()
 extern mobj_t __far* setStateReturn;
 extern mobj_pos_t __far* setStateReturn_pos;
 
-void ST_Start(void);
-void G_PlayerReborn();
-void HU_Start(void);
+void __far ST_Start(void);
+void __far G_PlayerReborn();
+void __far HU_Start(void);
 
-void P_SpawnPlayer(mapthing_t __far* mthing)
+void __near P_SpawnPlayer(mapthing_t __far* mthing)
 {
 	fixed_t_union		x;
 	fixed_t_union		y;
@@ -472,7 +441,7 @@ extern mobj_t __far* setStateReturn;
 // The fields of the mapthing should
 // already be in host byte order.
 //
-void P_SpawnMapThing(mapthing_t mthing, int16_t key)
+void __near P_SpawnMapThing(mapthing_t mthing, int16_t key)
 {
 
 
@@ -580,7 +549,7 @@ void P_SpawnMapThing(mapthing_t mthing, int16_t key)
 }
 #ifdef PRECALCULATE_OPENINGS
 
-void P_CacheLineOpenings() {
+void __near P_CacheLineOpenings() {
 	int16_t linenum, linefrontsecnum, linebacksecnum;
 	sector_t __far* front;
 	sector_t __far* back;
@@ -626,7 +595,7 @@ void P_CacheLineOpenings() {
 
 
 // Parses command line parameters.
-void P_SpawnSpecials(void)
+void __near P_SpawnSpecials(void)
 {
 	int16_t		i;
 	int8_t		episode;
@@ -733,7 +702,7 @@ void P_SpawnSpecials(void)
 //
 // P_LoadThings
 //
-void P_LoadThings(int16_t lump)
+void __near P_LoadThings(int16_t lump)
 {
 	mapthing_t  __far*		data;
 	uint16_t                 i;
@@ -805,7 +774,7 @@ void P_LoadThings(int16_t lump)
 // P_LoadLineDefs
 // Also counts secret lines for intermissions.
 //
-void P_LoadLineDefs(int16_t lump)
+void __near P_LoadLineDefs(int16_t lump)
 {
 	maplinedef_t  __far*		data;
 	uint16_t                 i;
@@ -887,7 +856,7 @@ void P_LoadLineDefs(int16_t lump)
 		} else if (convertedtag == 86) {
 			convertedtag = TAG_86;
 		} else if (convertedtag >= 55) {
-			I_Error("93 %i %i %i", convertedtag, i, numlines);// found (line) line tag that was too high! %i %i
+			//I_Error("93 %i %i %i", convertedtag, i, numlines);// found (line) line tag that was too high! %i %i
 		}
 
 		ld_physics->tag = convertedtag;
@@ -931,27 +900,12 @@ void P_LoadLineDefs(int16_t lump)
 
 	Z_QuickMapPhysics();
 }
-extern uint16_t     R_CheckTextureNumForName(int8_t *name);
-
-//
-// R_TextureNumForName
-// Calls R_CheckTextureNumForName,
-//  aborts with error message.
-//
-uint16_t     R_TextureNumForName(int8_t* name) {
-	uint16_t         i = R_CheckTextureNumForName(name);
-
-	if (i == BAD_TEXTURE) {
-		I_Error("\n96 %s", name); // \nR_TextureNumForName: %s not found
-	}
-	return i;
-}
 
 
 //
 // P_LoadSideDefs
 //
-void P_LoadSideDefs(int16_t lump)
+void __near P_LoadSideDefs(int16_t lump)
 {
 	mapsidedef_t __far*               data;
 	uint16_t                 i;
@@ -1038,7 +992,7 @@ void P_LoadSideDefs(int16_t lump)
 //
 // P_LoadBlockMap
 //
-void P_LoadBlockMap(int16_t lump)
+void __near P_LoadBlockMap(int16_t lump)
 {
 	uint16_t         count;
 	Z_QuickMapPhysics();
@@ -1062,14 +1016,13 @@ void P_LoadBlockMap(int16_t lump)
 }
 
 
-uint16_t                 total;
 
 //
 // P_GroupLines
 // Builds sector line lists and subsector sector numbers.
 // Finds block bounding boxes for sectors.
 //
-void P_GroupLines(void)
+void __near P_GroupLines(void)
 {
 	uint16_t                 i;
 	uint16_t                 j;
@@ -1088,6 +1041,7 @@ void P_GroupLines(void)
 	int16_t				sectorlinecount;
 	fixed_t_union		tempv1;
 	fixed_t_union		tempv2;
+	uint16_t                 total;
 	
 	Z_QuickMapRender_4000To9000();
 
@@ -1186,7 +1140,7 @@ extern int16_t currentThinkerListHead;
 //
 // P_InitThinkers
 //
-void P_InitThinkers(void)
+void  __near P_InitThinkers (void)
 {
 	int16_t i;
 	thinkerlist[0].next = 1;
@@ -1201,18 +1155,21 @@ void P_InitThinkers(void)
 
 }
  
+ 
 
 //
 // P_SetupLevel
 //
+// stick this at top so entry point is always xxxx:0000
 void
-P_SetupLevel
+__far P_SetupLevel
 (int8_t           episode,
 	int8_t           map,
 	skill_t       skill)
 {
 	int8_t        lumpname[9];
 	int16_t         lumpnum;
+	
 	
 	//I_Error("level is %i %i", episode, map);
 
@@ -1236,9 +1193,9 @@ P_SetupLevel
 	if (commercial)
 	{
 		if (map < 10)
-			sprintf(lumpname, "map0%i", map);
+			sprintf(lumpname, map0string, map);
 		else
-			sprintf(lumpname, "map%i", map);
+			sprintf(lumpname, mapstring, map);
 	}
 	else
 	{
@@ -1390,4 +1347,7 @@ P_SetupLevel
 
 
 }
+
+void __near PSetupEndFunc(){}
+
 

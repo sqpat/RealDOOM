@@ -20,8 +20,9 @@
 #define __P_SETUP__
 
 // NOT called by W_Ticker. Fixme.
+
 void
-P_SetupLevel
+__far P_SetupLevel
 ( int8_t		episode,
   int8_t		map,
   skill_t	skill);

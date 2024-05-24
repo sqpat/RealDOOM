@@ -60,7 +60,7 @@
 
 #include "g_game.h"
 #define NUMKEYS         256 
-extern uint16_t     R_TextureNumForName(int8_t* name);
+extern uint16_t   __far  R_TextureNumForName(int8_t* name);
 //
 // G_DoLoadLevel 
 //
@@ -88,7 +88,7 @@ extern int16_t             numtextures;
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
-uint16_t     R_CheckTextureNumForName(int8_t *name)
+uint16_t   __far  R_CheckTextureNumForName(int8_t *name)
 {
 	uint16_t         i;
 	texture_t __far* texture;
@@ -121,7 +121,9 @@ uint16_t     R_CheckTextureNumForName(int8_t *name)
 
 void G_DoLoadLevel(void)
 {
-	
+	//todoaddr inline later
+	//void (__far  * P_SetupLevel)(int8_t, int8_t, skill_t) = P_SetupLevelAddr;
+
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
 	Z_QuickMapRender();
 	// DOOM determines the sky texture to be used

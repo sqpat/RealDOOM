@@ -533,8 +533,11 @@ void DUMP_MEMORY_TO_FILE() {
 // D_DoomMain
 //
 
+
+  void PSetupEndFunc();
 int16_t main ( int16_t		argc, int8_t**	argv ) ;
- 
+ //void fakefunc();
+
 void W_AddFile(int8_t *filename);
 void D_DoomMain2(void)
 {
@@ -547,26 +550,25 @@ void D_DoomMain2(void)
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
 	
-	//I_Error("\nblah, %Fp %Fp %Fp %Fp %Fp", scalelightfixed, MAKE_FULL_SEGMENT(texturedefs_offset , size_texturedefs_offset), segs, 0L, 0L);
+	
+	//I_Error("\nblah, %i %Fp %Fp %Fp %Fp", SIZE_PSetup, PSetupFuncFromAddr, PSetupFuncFromAddr, 0L, 0L);
+/*
+	byte __far *startaddr = (byte __far*)PSetupFuncFromAddr; 
+	byte __far *endaddr = (byte __far*)PSetupEndFunc; 
+	//int16_t (__far *funcloc)(uint8_t) = ((int16_t (__far *)(uint8_t))  (0x6EA90034));
+	//FAR_memcpy(InfoFuncLoadAddr, startaddr, 0xFF);
+	//int16_t p = ((int16_t (__far *)(uint8_t))  (0x6EA90034))(2);
 
-
-	/*
-	FILE* fp;
-	byte __far *startaddr = (byte __far*)getPainChance2-0x34; 
-	int16_t (__far *funcloc)(uint8_t) = ((int16_t (__far *)(uint8_t))  (0x6EA90034));
-//FAR_memcpy(InfoFuncLoadAddr, startaddr, 0xFF);
-
-	int16_t p = ((int16_t (__far *)(uint8_t))  (0x6EA90034))(2);
-
-	fp = fopen("D_INFO.BIN", "rb"); 
-	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
+	FILE* fp = fopen("D_SETUP.BIN", "wb"); 
+	//FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
+	FAR_fwrite(startaddr, 1, 0x1222, fp);
 	fclose(fp);
 
 
-	I_Error("done %i %i %i", getPainChance2(2), getPainChanceOther(2), funcloc(2), p);
-
+//	I_Error("", startaddr, endaddr, 0);
+	I_Error("\ndone %Fp %Fp %Fp, %Fp %x", PSetupFuncLoadAddr, (byte __far *)PSetupFuncFromAddr, PSetupEndFunc, P_SetupLevelAddr, SIZE_PSetup);
 //FAR_memcpy()
-*/
+
 	/*
 	
 	int16_t i, i2;

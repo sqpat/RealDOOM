@@ -42,8 +42,6 @@ extern	ticcount_t	levelTimeCount;
 // at game start
 void    P_InitPicAnims (void);
 
-// at map load
-void    P_SpawnSpecials (void);
 
 // every tic
 void    P_UpdateSpecials (void);
