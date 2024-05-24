@@ -41,7 +41,7 @@
 //
 
 fixed_t
-P_AproxDistance
+__near P_AproxDistance
 ( fixed_t	dx,
   fixed_t	dy )
 {
@@ -58,7 +58,7 @@ P_AproxDistance
 // Returns 0 or 1
 //
 boolean
-P_PointOnLineSide
+__near P_PointOnLineSide
 ( fixed_t	x,
   fixed_t	y,
 	int16_t linedx,
@@ -153,8 +153,7 @@ P_PointOnLineSide16
 
 extern fixed_t_union		tmbbox[4];
 
-int8_t
-P_BoxOnLineSide
+int8_t __near P_BoxOnLineSide
 ( 
 	slopetype_t	lineslopetype,
 	int16_t linedx,
@@ -215,7 +214,7 @@ P_BoxOnLineSide
 // Returns 0 or 1.
 //
 boolean
-P_PointOnDivlineSide
+__near P_PointOnDivlineSide
 ( fixed_t	x,
   fixed_t	y
    )
@@ -323,7 +322,7 @@ P_PointOnDivlineSide16
 // and addlines traversers.
 //
 fixed_t
-P_InterceptVector
+__near P_InterceptVector
 ( divline_t __near*	v1 )
 {
     fixed_t	frac;
@@ -427,7 +426,7 @@ void P_UpdateLineOpening(int16_t secnum, boolean changedFloor) {
 }
 #else
 
-void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {
+void __near P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum) {
 	sector_t __far*	front;
     sector_t __far*	back;
     if (lineside1 == -1) {
@@ -468,7 +467,7 @@ void P_LineOpening (int16_t lineside1, int16_t linefrontsecnum, int16_t lineback
 // lookups maintaining lists ot things inside
 // these structures need to be updated.
 //
-void P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos)
+void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos)
 {
     int16_t		blockx;
     int16_t		blocky;
@@ -577,7 +576,7 @@ void P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos)
 // Sets thing->subsector properly
 //
 void
-P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum)
+__near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum)
 {
 
 
@@ -678,12 +677,7 @@ P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos, int16_t kn
 // to P_BlockLinesIterator, then make one or more calls
 // to it.
 //
-boolean
-P_BlockLinesIterator
-( int16_t			x,
-  int16_t			y,
-  boolean(*func)(line_physics_t __far*, int16_t) )
-{
+boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean(* __far  func )(line_physics_t __far*, int16_t) ){
     int16_t			offset;
 	int16_t			index;
     int16_t		list;
@@ -723,12 +717,8 @@ P_BlockLinesIterator
 //
 // P_BlockThingsIterator
 //
-boolean
-P_BlockThingsIterator
-( int16_t			x,
-  int16_t			y,
-  boolean(*func)(THINKERREF, mobj_t __far*, mobj_pos_t __far*) )
-{
+boolean __near P_BlockThingsIterator ( int16_t x, int16_t y, 
+boolean (* __far  func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*) ){
 	THINKERREF mobjRef;
     mobj_t __far*		mobj;
 
@@ -776,9 +766,7 @@ int32_t		ptflags;
 // Returns true if earlyout and a solid line hit.
 //
 divline_t		dl;
-boolean
-PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum)
-{
+boolean __far  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
      int16_t			s1;
     int16_t			s2;
     fixed_t		frac;
@@ -851,7 +839,7 @@ PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum)
 //
 // PIT_AddThingIntercepts
 //
-boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __far* thing, mobj_pos_t __far* thing_pos)
+boolean __far  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __far* thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union		x1;
 	fixed_t_union		y1;
@@ -915,8 +903,7 @@ boolean PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __far* thing, mobj_p
 // 
 
 // todo: only called once, pull out the func argument or inline?
-void
-P_TraverseIntercepts
+void __near P_TraverseIntercepts
 ( traverser_t	func
    )
 {
@@ -969,14 +956,13 @@ P_TraverseIntercepts
 // Returns true if the traverser function returns true
 // for all lines.
 //
-void
-P_PathTraverse
+void __near P_PathTraverse
 ( fixed_t_union		x1,
   fixed_t_union		y1,
 	fixed_t_union		x2,
 	fixed_t_union		y2,
   uint8_t			flags,
-  boolean (*trav) (intercept_t  __far*))
+  boolean (* __far  trav) (intercept_t  __far*))
 {
     int16_t	xt1;
     int16_t	yt1;

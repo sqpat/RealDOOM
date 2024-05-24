@@ -62,8 +62,7 @@ void __near T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
 //
 // P_SpawnFireFlicker
 //
-void P_SpawnFireFlicker (int16_t secnum)
-{
+void __near P_SpawnFireFlicker (int16_t secnum){
     fireflicker_t __far*	flick;
 	uint8_t seclightlevel = sectors[secnum].lightlevel;
 	
@@ -181,12 +180,7 @@ void __near T_StrobeFlash (strobe_t __far* flash, THINKERREF flashRef)
 // After the map has been loaded, scan each sector
 // for specials that spawn thinkers
 //
-void
-P_SpawnStrobeFlash
-( int16_t secnum,
-  int16_t		fastOrSlow,
-  int16_t		inSync )
-{
+void __near P_SpawnStrobeFlash( int16_t secnum,int16_t		fastOrSlow,int16_t		inSync ){
 	strobe_t __far*	flash;
 	uint8_t lightamount;
 	int16_t seclightlevel = sectors[secnum].lightlevel;
@@ -223,7 +217,7 @@ P_SpawnStrobeFlash
 //
 // Start strobing lights (usually from a trigger)
 //
-void EV_StartLightStrobing(uint8_t linetag)
+void __near EV_StartLightStrobing(uint8_t linetag)
 {
     int16_t		secnum;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
@@ -244,7 +238,7 @@ void EV_StartLightStrobing(uint8_t linetag)
 //
 // TURN LINE'S TAG LIGHTS OFF
 //
-void EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright)
+void __near EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright)
 {
 	int16_t			i;
 	int16_t			j = 0;
@@ -331,7 +325,7 @@ void __near T_Glow(glow_t __far* glow, THINKERREF glowRef)
 }
 
 
-void P_SpawnGlowingLight(int16_t secnum)
+void __near P_SpawnGlowingLight(int16_t secnum)
 {
     glow_t __far*	g;
 	uint8_t lightamount;

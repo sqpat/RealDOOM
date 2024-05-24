@@ -83,27 +83,14 @@ anim_t __near*		lastanim;
 // Given the sector number and the line number,
 //  it will tell you whether the line is two-sided or not.
 //
-int16_t
-twoSided
-( int16_t	sector,
-  int16_t	line )
-{
+int16_t __near twoSided( int16_t	sector,int16_t	line ){
 	line = sectors[sector].linesoffset + line;
 	line = linebuffer[line];
     return lines[line].flags & ML_TWOSIDED;
 }
 
 
-
-
-int16_t
-getNextSectorList
-(int16_t* linenums,
-	int16_t	sec,
-	int16_t* secnums,
-	int16_t linecount,
-	boolean onlybacksecnums)
-{
+int16_t __near getNextSectorList(int16_t* linenums,int16_t	sec,int16_t* secnums,int16_t linecount,boolean onlybacksecnums){
 	
 	int16_t i = 0;
 	int16_t skipped = 0;
@@ -134,8 +121,7 @@ getNextSectorList
 // P_FindHighestOrLowestFloorSurrounding()
 // FIND LOWEST FLOOR HEIGHT IN SURROUNDING SECTORS
 //
-short_height_t	P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHigh)
-{
+short_height_t __near P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHigh){
     int16_t			i;
 	int16_t offset = sectors[secnum].linesoffset;
 	short_height_t		floor = sectors[secnum].floorheight;
@@ -170,11 +156,7 @@ short_height_t	P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHi
 // Note: this should be doable w/o a fixed array.
 
 
-short_height_t
-P_FindNextHighestFloor
-( int16_t	secnum,
-  short_height_t		currentheight )
-{
+short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		currentheight ){
     uint8_t		i;
     short_height_t			h;
     short_height_t			min;
@@ -216,9 +198,7 @@ P_FindNextHighestFloor
 //
 // FIND LOWEST CEILING IN THE SURROUNDING SECTORS
 //
-short_height_t
-P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, int8_t isHigh)
-{
+short_height_t __near P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, int8_t isHigh){
     uint8_t		i;
 	short_height_t		height = isHigh ? 0 : MAXSHORT ;
 	int16_t offset = sectors[secnum].linesoffset;
@@ -250,12 +230,7 @@ P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, int8_t isHigh)
 //
 // RETURN NEXT SECTOR # THAT LINE TAG REFERS TO
 //
-void
-P_FindSectorsFromLineTag
-( int8_t		linetag,
-  int16_t*		foundsectors,
-	boolean		includespecials)
-{
+void __near P_FindSectorsFromLineTag ( int8_t		linetag,int16_t*		foundsectors,boolean		includespecials){
     int16_t	i;
 	int16_t	j = 0;
 
@@ -274,11 +249,7 @@ P_FindSectorsFromLineTag
 //
 // Find minimum light from an adjacent sector
 //
-uint8_t
-P_FindMinSurroundingLight
-( int16_t secnum,
-  uint8_t		max )
-{
+uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max ){
     uint8_t		i;
     uint8_t		min;
 	int16_t offset = sectors[secnum].linesoffset;
@@ -316,13 +287,7 @@ P_FindMinSurroundingLight
 // Called every time a thing origin is about
 //  to cross a line with a non 0 special.
 //
-void
-P_CrossSpecialLine
-( int16_t		linenum,
-  int16_t		side,
-	mobj_t __far*	thing,
-	mobj_pos_t __far* thing_pos)
-{
+void __near P_CrossSpecialLine( int16_t		linenum,int16_t		side,mobj_t __far*	thing,mobj_pos_t __far* thing_pos){
     int16_t		ok;
 	line_physics_t __far*	line_physics = &lines_physics[linenum];
 	uint8_t linetag = line_physics->tag;
@@ -792,11 +757,7 @@ P_CrossSpecialLine
 // P_ShootSpecialLine - IMPACT SPECIALS
 // Called when a thing shoots a special line.
 //
-void
-P_ShootSpecialLine
-( mobj_t __far* thing,
-  int16_t linenum )
-{
+void __near P_ShootSpecialLine( mobj_t __far* thing,int16_t linenum ){
     int16_t		ok;
 	int16_t innerlinenum = linebuffer[linenum];
 	line_t __far* line = &lines[innerlinenum];
@@ -851,7 +812,7 @@ P_ShootSpecialLine
 // Called every tic frame
 //  that the player origin is in a special sector
 //
-void P_PlayerInSpecialSector () {
+void __near P_PlayerInSpecialSector () {
 	int16_t secnum = playerMobj->secnum;
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
@@ -1000,8 +961,7 @@ void __near P_UpdateSpecials(void)
 //
 // Special Stuff that can not be categorized
 //
-int16_t EV_DoDonut(uint8_t linetag)
-{
+int16_t __near EV_DoDonut(uint8_t linetag) {
     int16_t		s1Offset;
     int16_t		s2Offset;
     int16_t		s3Offset;

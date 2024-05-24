@@ -122,13 +122,7 @@ void __near T_PlatRaise(plat_t __far* plat, THINKERREF platRef)
 // Do Platforms
 //  "amount" is only used for SOME platforms.
 //
-int16_t
-EV_DoPlat
-(  uint8_t linetag,
-	int16_t linefrontsecnum,
-  plattype_e	type,
-  int16_t		amount )
-{
+int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	type,int16_t		amount ){
     plat_t __far*	plat;
     int16_t		secnum;
     int16_t		rtn;
@@ -263,7 +257,7 @@ EV_DoPlat
 
 
 
-void EV_PlatFunc(uint8_t linetag, int8_t type) {
+void __near EV_PlatFunc(uint8_t linetag, int8_t type) {
 	int8_t		j;
 	plat_t __far* plat;
 	for (j = 0; j < MAXPLATS; j++) {
@@ -288,7 +282,7 @@ void EV_PlatFunc(uint8_t linetag, int8_t type) {
 }
 
 
-void P_AddActivePlat(THINKERREF thinkerref) {
+void __near P_AddActivePlat(THINKERREF thinkerref) {
     int8_t		i;
     for (i = 0;i < MAXPLATS;i++)
 	if (activeplats[i] == NULL_THINKERREF) {
@@ -299,7 +293,7 @@ void P_AddActivePlat(THINKERREF thinkerref) {
 
 
 
-void P_RemoveActivePlat(THINKERREF platRef)
+void __near P_RemoveActivePlat(THINKERREF platRef)
 {
     int8_t		i;
 	plat_t __far* plat;

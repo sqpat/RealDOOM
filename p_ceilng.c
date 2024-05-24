@@ -148,11 +148,7 @@ void __near T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef)
 // EV_DoCeiling
 // Move a ceiling up/down and all around!
 //
-int16_t
-EV_DoCeiling
-( uint8_t linetag,
-  ceiling_e	type )
-{
+int16_t __near EV_DoCeiling ( uint8_t linetag, ceiling_e	type ) {
 	int16_t		secnum = -1;
 	int16_t		rtn = 0;
     sector_t __far*	sector;
@@ -235,7 +231,7 @@ EV_DoCeiling
 //
 // Add an active ceiling
 //
-void P_AddActiveCeiling(THINKERREF ceilingRef) {
+void __near P_AddActiveCeiling(THINKERREF ceilingRef) {
     int8_t		i;
     
     for (i = 0; i < MAXCEILINGS;i++) {
@@ -251,7 +247,7 @@ void P_AddActiveCeiling(THINKERREF ceilingRef) {
 //
 // Remove a ceiling's thinker
 //
-void P_RemoveActiveCeiling(sector_t __far* ceilingsector, THINKERREF ceilingRef)
+void __near P_RemoveActiveCeiling(sector_t __far* ceilingsector, THINKERREF ceilingRef)
 {
     int8_t		i;
 
@@ -270,7 +266,7 @@ void P_RemoveActiveCeiling(sector_t __far* ceilingsector, THINKERREF ceilingRef)
 //
 // Restart a ceiling that's in-stasis
 //
-void P_ActivateInStasisCeiling(uint8_t linetag)
+void __near P_ActivateInStasisCeiling(uint8_t linetag)
 {
     int8_t		i;
 	ceiling_t __far* c;
@@ -293,7 +289,7 @@ void P_ActivateInStasisCeiling(uint8_t linetag)
 // EV_CeilingCrushStop
 // Stop a ceiling from crushing!
 //
-int16_t	EV_CeilingCrushStop(uint8_t linetag)
+int16_t	__near EV_CeilingCrushStop(uint8_t linetag)
 {
     int8_t		i;
     int16_t		rtn;

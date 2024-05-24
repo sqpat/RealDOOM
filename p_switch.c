@@ -40,14 +40,7 @@ button_t        buttonlist[MAXBUTTONS];
 //
 // Start a button counting down till it turns off.
 //
-void
-P_StartButton
-( int16_t linenum,
-	int16_t linefrontsecnum,
-  bwhere_e	w,
-  int16_t		texture,
-  int16_t		time )
-{
+void __near P_StartButton ( int16_t linenum,int16_t linefrontsecnum,bwhere_e	w,int16_t		texture,int16_t		time ){
     int8_t		i;
     // See if button is already pressed
     for (i = 0;i < MAXBUTTONS;i++)
@@ -88,11 +81,7 @@ P_StartButton
 // Function that changes wall texture.
 // Tell it if switch is ok to use again (1=yes, it's a button).
 //
-void
-P_ChangeSwitchTexture
-( int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum,
-	int16_t 		useAgain )
-{
+void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum,int16_t 		useAgain ){
 	uint16_t     texTop;
 	uint16_t     texMid;
 	uint16_t     texBot;
@@ -160,13 +149,7 @@ P_ChangeSwitchTexture
 // Called when a thing uses a special line.
 // Only the front sides of lines are usable.
 //
-boolean
-P_UseSpecialLine
-( mobj_t __far*	thing,
-  int16_t linenum,
-  int16_t		side,
-	THINKERREF thingRef)
-{               
+boolean __near P_UseSpecialLine ( mobj_t __far*	thing, int16_t linenum,int16_t		side,THINKERREF thingRef){               
 
 	line_t __far* line = &lines[linenum];
 	line_physics_t __far* line_physics = &lines_physics[linenum];

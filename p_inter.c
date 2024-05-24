@@ -60,7 +60,7 @@ int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
 //
 
 boolean
-P_GiveAmmo
+__near P_GiveAmmo
 ( 
   ammotype_t	ammo,
   int16_t		num )
@@ -151,7 +151,7 @@ P_GiveAmmo
 // The weapon name may have a MF_DROPPED flag ored in.
 //
 boolean
-P_GiveWeapon
+__near P_GiveWeapon
 ( 
   weapontype_t	weapon,
   boolean	dropped )
@@ -189,7 +189,7 @@ P_GiveWeapon
 // Returns false if the body isn't needed at all
 //
 boolean
-P_GiveBody
+__near P_GiveBody
 ( 
   int16_t		num )
 {
@@ -214,7 +214,7 @@ P_GiveBody
 // than the current armor.
 //
 boolean
-P_GiveArmor
+__near P_GiveArmor
 ( 
   int16_t		armortype )
 {
@@ -236,7 +236,7 @@ P_GiveArmor
 // P_GiveCard
 //
 void
-P_GiveCard
+__near P_GiveCard
 ( 
   card_t	card )
 {
@@ -252,7 +252,7 @@ P_GiveCard
 // P_GivePower
 //
 boolean
-P_GivePower
+__far P_GivePower
 ( 
 	int16_t /*powertype_t*/	power )
 {
@@ -302,7 +302,7 @@ P_GivePower
 // P_TouchSpecialThing
 //
 void
-P_TouchSpecialThing
+__near P_TouchSpecialThing
 ( mobj_t __far*	special,
   mobj_t __far*	toucher,
 	mobj_pos_t  __far*special_pos,
@@ -626,7 +626,7 @@ extern mobj_pos_t __far* setStateReturn_pos;
 // KillMobj
 //
 void
-P_KillMobj
+__near P_KillMobj
 (	mobj_t __far* source,
 	mobj_t __far*	target,
 	mobj_pos_t __far*	target_pos)
@@ -730,7 +730,7 @@ P_KillMobj
 // and other environmental stuff.
 //
 void
-P_DamageMobj
+__near P_DamageMobj
 (mobj_t __far*	target,
 	mobj_t __far*	inflictor,
 	mobj_t __far*	source,

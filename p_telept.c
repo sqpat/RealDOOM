@@ -39,13 +39,7 @@ extern mobj_t __far* setStateReturn;
 //
 // TELEPORTATION
 //
-int16_t
-EV_Teleport
-(uint8_t linetag,
-  int16_t		side,
-	mobj_t __far*	thing,
-	mobj_pos_t __far* thing_pos)
-{
+int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __far*	thing,mobj_pos_t __far* thing_pos){
     int16_t		i;
     mobj_t __far*	m;
 	mobj_pos_t __far* m_pos;

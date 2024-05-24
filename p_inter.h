@@ -20,7 +20,7 @@
 #ifndef __P_INTER__
 #define __P_INTER__
 
-boolean	P_GivePower(int16_t);
+boolean	__far P_GivePower(int16_t);
 
 
 

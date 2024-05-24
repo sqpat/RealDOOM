@@ -204,13 +204,13 @@ typedef struct
 //extern intercept_t	*intercepts;// [MAXINTERCEPTS];
 extern intercept_t __far*	intercept_p;
 
-typedef boolean (*traverser_t) (intercept_t __far*in);
+typedef boolean (*traverser_t ) (intercept_t __far*in);
 
-fixed_t P_AproxDistance (fixed_t dx, fixed_t dy);
-boolean 	P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
-void 	P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
+fixed_t __near P_AproxDistance (fixed_t dx, fixed_t dy);
+boolean 	__near P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
+void 	__near P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, divline_t* dl);
 
-int8_t 	P_BoxOnLineSide (slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
+int8_t 	__near P_BoxOnLineSide (slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 
 
 extern lineopening_t lineopening;
@@ -219,12 +219,12 @@ extern lineopening_t lineopening;
 void P_LoadLineOpening(int16_t linenumer);
 void P_UpdateLineOpening(int16_t secnum, boolean changedFloor);
 #else
-void 	P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
+void 	__near P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t linebacksecnum);
 #endif
 
 
-boolean P_BlockLinesIterator (int16_t x, int16_t y, boolean(*func)(line_physics_t __far* ld, int16_t ) );
-boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(THINKERREF, mobj_t __far*, mobj_pos_t __far*));
+boolean __near P_BlockLinesIterator (int16_t x, int16_t y, boolean  ( * __far func)(line_physics_t __far* ld, int16_t ) );
+boolean __near P_BlockThingsIterator (int16_t x, int16_t y, boolean  ( * __far func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -233,16 +233,16 @@ boolean P_BlockThingsIterator (int16_t x, int16_t y, boolean(*func)(THINKERREF, 
 extern divline_t	trace;
 
 void
-P_PathTraverse
+__near P_PathTraverse
 ( fixed_t_union	x1,
 	fixed_t_union	y1,
 	fixed_t_union	x2,
 	fixed_t_union	y2,
   uint8_t		flags,
-  boolean	(*trav) (intercept_t  __far*));
+  boolean	(* __near trav) (intercept_t  __far*));
 
-void P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos);
-void P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos, int16_t knownsecnum);
+void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos);
+void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos, int16_t knownsecnum);
 
 
 //
@@ -258,16 +258,13 @@ extern short_height_t		tmceilingz;
 
 extern	int16_t		ceilinglinenum;
 
-boolean P_CheckPosition (mobj_t __far* thing, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
-boolean P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
-boolean P_TeleportMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
-void	P_SlideMove ();
-boolean P_CheckSight (mobj_t __far* t1,mobj_t __far* t2,mobj_pos_t __far* t1_pos,mobj_pos_t __far* t2_pos);
-
-
-void 	P_UseLines ();
-
-boolean P_ChangeSector (sector_t __far* sector, boolean crunch);
+boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
+boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
+boolean __near P_TeleportMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
+void	__near P_SlideMove ();
+boolean __near P_CheckSight (mobj_t __far* t1,mobj_t __far* t2,mobj_pos_t __far* t1_pos,mobj_pos_t __far* t2_pos);
+void 	__near P_UseLines ();
+boolean __near P_ChangeSector (sector_t __far* sector, boolean crunch);
 
 extern mobj_t __far*	linetarget;	// who got hit (or NULL)
 extern mobj_pos_t __far*	linetarget_pos;	// who got hit (or NULL)
@@ -275,26 +272,9 @@ extern mobj_pos_t __far*	linetarget_pos;	// who got hit (or NULL)
 
 #define CHAINSAW_FLAG 0x4000
 
-fixed_t
-P_AimLineAttack
-(mobj_t __far*	t1,
-  fineangle_t	angle,
-  int16_t	distance);
-
-void
-P_LineAttack
-(mobj_t __far*	t1,
-  fineangle_t	angle,
-	int16_t	distance,
-  fixed_t	slope,
-  int16_t		damage );
-
-void
-P_RadiusAttack
-(mobj_t __far*	spot,
-	mobj_pos_t __far* spot_pos,
-	mobj_t __far*	source,
-  int16_t		damage );
+fixed_t __near P_AimLineAttack(mobj_t __far*	t1,fineangle_t	angle,int16_t	distance);
+void __near P_LineAttack(mobj_t __far*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage );
+void __near P_RadiusAttack (mobj_t __far*	spot,mobj_pos_t __far* spot_pos,mobj_t __far*	source, int16_t		damage );
 
 
 
@@ -316,20 +296,8 @@ extern  int16_t	numlinespecials;
 extern int16_t		maxammo[NUMAMMO];
 extern int8_t		clipammo[NUMAMMO];
 
-void
-P_TouchSpecialThing
-(mobj_t __far*	special,
-	mobj_t __far*	toucher,
-	mobj_pos_t  __far*special_pos,
-	mobj_pos_t  __far*toucher_pos
-);
-
-void
-P_DamageMobj
-(mobj_t __far*	target,
-	mobj_t __far*	inflictor,
-	mobj_t __far*	source,
-  int16_t		damage );
+void __near P_TouchSpecialThing (mobj_t __far*	special,mobj_t __far*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);
+void __near P_DamageMobj(mobj_t __far*	target,mobj_t __far*	inflictor,mobj_t __far*	source,int16_t		damage );
 
 
 //

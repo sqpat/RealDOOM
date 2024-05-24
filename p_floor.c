@@ -282,13 +282,7 @@ void __near T_MoveFloor(floormove_t __far* floor, THINKERREF floorRef)
 //
 // HANDLE FLOOR TYPES
 //
-int16_t
-EV_DoFloor
-( 
-	uint8_t linetag,
-	int16_t linefrontsecnum,
-  floor_e	floortype )
-{
+int16_t __near EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floortype ){
     int16_t			secnum = -1;
     int16_t			rtn = 0;
     int16_t			i;
@@ -500,11 +494,7 @@ EV_DoFloor
 //
 // BUILD A STAIRCASE!
 //
-int16_t
-EV_BuildStairs
-( uint8_t	linetag,
-  stair_e	type )
-{
+int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
     int16_t			secnum = -1;
     short_height_t	height;
     uint8_t			i;

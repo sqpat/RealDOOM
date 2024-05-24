@@ -484,7 +484,7 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 // Uses REJECT.
 //
 boolean
-P_CheckSight
+__near P_CheckSight
 ( 
   
 	mobj_t __far* t1,

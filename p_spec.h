@@ -44,71 +44,25 @@ extern	ticcount_t	levelTimeCount;
 
 // every tic
 void    __near P_UpdateSpecials (void);
-
 // when needed
-boolean
-P_UseSpecialLine
-( mobj_t __far* thing,
-	int16_t linenum,
-  int16_t		side, 
-	THINKERREF thingRef );
-
-void
-P_ShootSpecialLine
-(mobj_t __far* thing,
-  int16_t linenum);
-
-void
-P_CrossSpecialLine
-( int16_t		linenum,
-  int16_t		side,
-	mobj_t __far* thing,
-	mobj_pos_t __far* thing_pos);
-
-void    P_PlayerInSpecialSector ();
-
-int16_t
-twoSided
-(int16_t		sector,
-	int16_t		line );
-
- 
-
-short_height_t P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHigh);
-
-short_height_t
-P_FindNextHighestFloor
-(int16_t secnum,
-  short_height_t		currentheight );
-
-short_height_t P_FindLowestOrHighestCeilingSurrounding(int16_t secnum, int8_t ishigh);
-
-int16_t
-getNextSectorList
-(int16_t* linenums,
-	int16_t	sec,
-	int16_t* secnums,
-	int16_t linecount,
-	boolean onlybacksecnum);
-
-void
-P_FindSectorsFromLineTag
-( int8_t		linetag,
-  int16_t*		foundsectors, 
-	boolean includespecials
-	);
-
-uint8_t
-P_FindMinSurroundingLight
-( int16_t secnum,
-  uint8_t		max );
+boolean __near P_UseSpecialLine( mobj_t __far* thing,int16_t linenum,int16_t		side, THINKERREF thingRef );
+void __near P_ShootSpecialLine (mobj_t __far* thing, int16_t linenum);
+void __near P_CrossSpecialLine ( int16_t		linenum,int16_t		side,mobj_t __far* thing,mobj_pos_t __far* thing_pos);
+void __near P_PlayerInSpecialSector ();
+int16_t __near twoSided (int16_t		sector, int16_t		line );
+short_height_t __near P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHigh);
+short_height_t __near P_FindNextHighestFloor(int16_t secnum,short_height_t		currentheight );
+short_height_t __near P_FindLowestOrHighestCeilingSurrounding(int16_t secnum, int8_t ishigh);
+int16_t __near getNextSectorList (int16_t* linenums,int16_t	sec,int16_t* secnums,int16_t linecount,boolean onlybacksecnum);
+void __near P_FindSectorsFromLineTag ( int8_t		linetag,int16_t*		foundsectors, boolean includespecials);
+uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max );
 
  
 
 //
 // SPECIAL
 //
-int16_t EV_DoDonut(uint8_t linetag);
+int16_t __near EV_DoDonut(uint8_t linetag);
 
 
 
@@ -168,29 +122,16 @@ typedef struct
 #define FASTDARK			15
 #define SLOWDARK			35
 
-void    P_SpawnFireFlicker (int16_t secnum);
+void __near P_SpawnFireFlicker (int16_t secnum);
 void __near T_LightFlash(lightflash_t __far* flash, THINKERREF flashRef);
-void  __near  P_SpawnLightFlash (int16_t secnum);
-void	__near T_StrobeFlash(strobe_t __far* flash, THINKERREF flashRef);
+void __near P_SpawnLightFlash (int16_t secnum);
+void __near T_StrobeFlash(strobe_t __far* flash, THINKERREF flashRef);
 
-void
-P_SpawnStrobeFlash
-(int16_t secnum,
-  int16_t		fastOrSlow,
-  int16_t		inSync );
-
-void    EV_StartLightStrobing(uint8_t linetag);
-
-void
-EV_LightChange
-(uint8_t linetag,
-int8_t on,
-  uint8_t		bright );
-
+void __near P_SpawnStrobeFlash (int16_t secnum,int16_t		fastOrSlow,int16_t		inSync );
+void __near EV_StartLightStrobing(uint8_t linetag);
+void __near EV_LightChange (uint8_t linetag, int8_t on,uint8_t		bright );
 void __near T_Glow(glow_t __far* glow, THINKERREF glowRef);
-void    P_SpawnGlowingLight(int16_t secnum);
-
-
+void __near P_SpawnGlowingLight(int16_t secnum);
 void __near T_FireFlicker(fireflicker_t __far* flick, THINKERREF flickRef);
 
 
@@ -239,9 +180,7 @@ typedef struct
 
 extern button_t	buttonlist[MAXBUTTONS]; 
 
-void
-P_ChangeSwitchTexture
-(int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum, int16_t useAgain);
+void __near P_ChangeSwitchTexture (int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum, int16_t useAgain);
 
  
 
@@ -295,16 +234,10 @@ extern THINKERREF	activeplats[MAXPLATS];
 
 void __near T_PlatRaise(plat_t __far* plat, THINKERREF platRef);
 
-int16_t
-EV_DoPlat
-(  uint8_t linetag,
-	int16_t linenum,
-  plattype_e	type,
-  int16_t		amount );
-
-void    P_AddActivePlat(THINKERREF platref);
-void    P_RemoveActivePlat(THINKERREF platref);
-void    EV_PlatFunc(uint8_t linetag, int8_t platfunc);
+int16_t __near EV_DoPlat (  uint8_t linetag,int16_t linenum,plattype_e	type,int16_t		amount );
+void    __near P_AddActivePlat(THINKERREF platref);
+void    __near P_RemoveActivePlat(THINKERREF platref);
+void    __near EV_PlatFunc(uint8_t linetag, int8_t platfunc);
 #define PLAT_FUNC_IN_STASIS 0
 #define PLAT_FUNC_STOP_PLAT 1
 
@@ -415,16 +348,13 @@ typedef struct
 
 extern THINKERREF	activeceilings[MAXCEILINGS];
 
-int16_t
-EV_DoCeiling
-(uint8_t linetag,
-  ceiling_e	type );
+int16_t __near EV_DoCeiling (uint8_t linetag, ceiling_e	type );
 
 void __near T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef);
-void    P_AddActiveCeiling(THINKERREF ceilingRef);
-void    P_RemoveActiveCeiling(sector_t __far*, THINKERREF ceilingRef);
-int16_t	EV_CeilingCrushStop(uint8_t linetag);
-void    P_ActivateInStasisCeiling(uint8_t linetag);
+void    __near P_AddActiveCeiling(THINKERREF ceilingRef);
+void    __near P_RemoveActiveCeiling(sector_t __far*, THINKERREF ceilingRef);
+int16_t	__near EV_CeilingCrushStop(uint8_t linetag);
+void    __near P_ActivateInStasisCeiling(uint8_t linetag);
 
 
 //
@@ -501,34 +431,14 @@ typedef uint8_t result_e;
 
 
 
-result_e
-__near T_MovePlane
-( sector_t __far* sector,
-  short_height_t	speed,
-  short_height_t	dest,
-  boolean	crush,
-  int16_t		floorOrCeiling,
-  int16_t		direction );
-
-int16_t
-EV_BuildStairs
-(uint8_t linetag,
-  stair_e	type );
-
-int16_t
-EV_DoFloor
-(uint8_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
-
+result_e __near T_MovePlane ( sector_t __far* sector, short_height_t	speed,short_height_t	dest,boolean	crush,int16_t		floorOrCeiling,int16_t		direction );
+int16_t __near EV_BuildStairs (uint8_t linetag, stair_e	type );
+int16_t __near EV_DoFloor (uint8_t linetag,   int16_t linefrontsecnum, floor_e	floortype );
 void __near T_MoveFloor(floormove_t __far* floor, THINKERREF floorRef);
 
 //
 // P_TELEPT
 //
-int16_t
-EV_Teleport
-(uint8_t linetag,
-  int16_t		side,
-	mobj_t __far*	thing,
-	mobj_pos_t __far* thing_pos);
+int16_t __near EV_Teleport (uint8_t linetag,int16_t		side,mobj_t __far*	thing,mobj_pos_t __far* thing_pos);
 
 #endif

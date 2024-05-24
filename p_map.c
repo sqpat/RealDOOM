@@ -72,7 +72,7 @@ int16_t		numspechit;
 //
 // PIT_StompThing
 //
-boolean PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __far  PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union	blockdist;
 
@@ -108,7 +108,7 @@ boolean PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __f
 // P_TeleportMove
 //
 boolean
-P_TeleportMove
+__near P_TeleportMove
 (mobj_t __far* thing,
 	mobj_pos_t __far* thing_pos,
   fixed_t_union	x,
@@ -199,7 +199,7 @@ P_TeleportMove
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-boolean PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
+boolean __far PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 {
 	line_t __far* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld_physics->v2Offset & LINE_VERTEX_SLOPETYPE;
@@ -306,7 +306,7 @@ boolean PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 //
 // PIT_CheckThing
 //
-boolean PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __far  PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union blockdist;
     boolean		solid;
@@ -457,7 +457,7 @@ boolean PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __f
 
 int16_t lastcalculatedsector;
 boolean
-P_CheckPosition
+__near P_CheckPosition
 (mobj_t __far* thing,
 	fixed_t_union	x,
 	fixed_t_union	y,
@@ -600,7 +600,7 @@ P_CheckPosition
 // crossing special lines unless MF_TELEPORT is set.
 //
 boolean
-P_TryMove
+__near P_TryMove
 (mobj_t __far* thing,
 	mobj_pos_t __far* thing_pos,
   fixed_t_union	x,
@@ -714,7 +714,7 @@ P_TryMove
 // the z will be set to the lowest value
 // and false will be returned.
 //
-boolean P_ThingHeightClip (mobj_t __far* thing, mobj_pos_t __far* thing_pos)
+boolean __near P_ThingHeightClip (mobj_t __far* thing, mobj_pos_t __far* thing_pos)
 {
     boolean		onfloor;
 	fixed_t_union temp;
@@ -773,7 +773,7 @@ fixed_t_union		tmymove;
 // Adjusts the xmove / ymove
 // so that the next move will slide along the wall.
 //
-void P_HitSlideLine (int16_t linenum)
+void __near P_HitSlideLine (int16_t linenum)
 {
     int16_t			side;
 
@@ -824,7 +824,7 @@ void P_HitSlideLine (int16_t linenum)
 //
 // PTR_SlideTraverse
 //
-boolean PTR_SlideTraverse (intercept_t __far* in)
+boolean __far PTR_SlideTraverse (intercept_t __far* in)
 {
 	line_t __far* li = &lines[in->d.linenum];
 	fixed_t_union temp;
@@ -887,7 +887,7 @@ boolean PTR_SlideTraverse (intercept_t __far* in)
 //
 // This is a kludgy mess.
 //
-void P_SlideMove ()
+void __near P_SlideMove ()
 {
     fixed_t_union		leadx;
 	fixed_t_union		leady;
@@ -1040,7 +1040,7 @@ extern fixed_t	bottomslope;
 // Sets linetaget and aimslope when a target is aimed at.
 //
 boolean
-PTR_AimTraverse (intercept_t __far* in)
+__far PTR_AimTraverse (intercept_t __far* in)
 {
 	line_t __far*		li;
 	line_physics_t __far*		li_physics;
@@ -1135,7 +1135,7 @@ PTR_AimTraverse (intercept_t __far* in)
 //
 // PTR_ShootTraverse
 //
-boolean PTR_ShootTraverse (intercept_t __far* in)
+boolean __far PTR_ShootTraverse (intercept_t __far* in)
 {
     fixed_t		x;
     fixed_t		y;
@@ -1277,7 +1277,7 @@ boolean PTR_ShootTraverse (intercept_t __far* in)
 // P_AimLineAttack
 //
 fixed_t
-P_AimLineAttack
+__near P_AimLineAttack
 ( mobj_t __far*	t1,
   fineangle_t	angle,
   int16_t	distance16
@@ -1339,7 +1339,7 @@ P_AimLineAttack
 // that will leave linetarget set.
 //
 void
-P_LineAttack
+__near P_LineAttack
 (mobj_t __far* t1,
   fineangle_t	angle,
 	int16_t	distance16,
@@ -1386,7 +1386,7 @@ P_LineAttack
 // USE LINES
 //
 
-boolean	PTR_UseTraverse (intercept_t __far* in)
+boolean	__far PTR_UseTraverse (intercept_t __far* in)
 {
     int16_t		side;
 
@@ -1429,7 +1429,7 @@ boolean	PTR_UseTraverse (intercept_t __far* in)
 // P_UseLines
 // Looks for special lines in front of the player to activate.
 //
-void P_UseLines () 
+void __near P_UseLines () 
 {
     fineangle_t angle;
     fixed_t_union	x1;
@@ -1462,7 +1462,7 @@ int16_t		bombdamage;
 // "bombsource" is the creature
 // that caused the explosion at "bombspot".
 //
-boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __far  PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -1507,7 +1507,7 @@ boolean PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t _
 // Source is the creature that caused the explosion at spot.
 //
 void
-P_RadiusAttack
+__near P_RadiusAttack
 (mobj_t __far* spot,
 	mobj_pos_t __far* spot_pos,
 	mobj_t __far* source,
@@ -1571,7 +1571,7 @@ extern mobj_t __far* setStateReturn;
 //
 // PIT_ChangeSector
 //
-boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __far PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
 
 
@@ -1631,7 +1631,7 @@ boolean PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t _
 // P_ChangeSector
 //
 boolean
-P_ChangeSector
+__near P_ChangeSector
 ( sector_t __far*	sector,
   boolean	crunch )
 {
