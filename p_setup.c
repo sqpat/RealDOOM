@@ -57,8 +57,6 @@ int16_t             numsubsectors;
 int16_t             numnodes;
 int16_t             numlines;
 int16_t             numsides;
-int8_t map0string[7] = "map0%i";
-int8_t mapstring[6] = "map0i";
 
 
 #ifdef PRECALCULATE_OPENINGS
@@ -852,12 +850,8 @@ __far P_SetupLevel
 
 
 	// find map name
-	if (commercial)
-	{
-		if (map < 10)
-			sprintf(lumpname, map0string, map);
-		else
-			sprintf(lumpname, mapstring, map);
+	if (commercial) {
+		sprintf(lumpname, "map%02d", map);
 	}
 	else
 	{

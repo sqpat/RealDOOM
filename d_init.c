@@ -381,16 +381,16 @@ void __near AM_loadPics(void)
 {
 	int8_t i;
 	int16_t lump;
-	int8_t namebuf[9];
+	int8_t namebuf[8] = "AMMNUM0";
 	uint16_t offset = 0;
 
 
 	for (i = 0; i < 10; i++) {
-		sprintf(namebuf, "AMMNUM%d", i);
 		ammnumpatchoffsets[i] = offset;
 		lump = W_GetNumForName(namebuf);
 		W_CacheLumpNumDirect(lump, &ammnumpatchbytes[offset]);
 		offset += W_LumpLength(lump);
+		namebuf[6]++;
 	}
 
 }

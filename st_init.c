@@ -82,15 +82,29 @@ void __near ST_loadGraphics(void)
 	int8_t         j;
 	int16_t         facenum;
 
-	int8_t        namebuf[9];
+	int8_t        namebuf[9] = "STTNUM0";
+	int8_t        namebuf2[9] = "STYSNUM0";
+	int8_t        namebuf3[9] = "STKEYS0";
+	int8_t        namebuf4[9] = "STGNUM2";
+	int8_t        namebuf5[9] = "STFST00";
+	
+	int8_t        namebuf10[9] = "STFTR00";
+	int8_t        namebuf11[9] = "STFTL00";
+	int8_t        namebuf12[9] = "STFOUCH0";
+	int8_t        namebuf13[9] = "STFEVL0";
+	int8_t        namebuf14[9] = "STFKILL0";
+
+	// sprints to do increasing digits create big code
+	// we'll just add the digit/char by 1 in a loop.
+
+		
 
 	// Load the numbers, tall and short
 	for (i = 0; i < 10; i++) {
-		sprintf(namebuf, "STTNUM%d", i);
 		W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, tallnum[i]));
-
-		sprintf(namebuf, "STYSNUM%d", i);
-		W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, shortnum[i]));
+		W_CacheLumpNameDirect(namebuf2, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, shortnum[i]));
+		namebuf[6]++;
+		namebuf2[7]++;
 	}
 
 	// 44608 total... fits with screen4
@@ -116,8 +130,8 @@ void __near ST_loadGraphics(void)
 	// key cards
 	for (i = 0; i < NUMCARDS; i++)
 	{
-		sprintf(namebuf, "STKEYS%d", i);
-		W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, keys[i]));
+		W_CacheLumpNameDirect(namebuf3, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, keys[i]));
+		namebuf3[6]++;
 	}
 
 	//keysref
@@ -136,29 +150,22 @@ void __near ST_loadGraphics(void)
 	// arms ownership widgets
 	for (i = 0; i < 6; i++)
 	{
-		sprintf(namebuf, "STGNUM%d", i + 2);
 
 		// gray #
-		 W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, arms[i][0]));
+		 W_CacheLumpNameDirect(namebuf4, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, arms[i][0]));
 
 
+		namebuf4[6]++;
 
 		// yellow #
 		arms[i][1] = shortnum[i + 2];
 	}
 
-	// armsref[i][0]
-	// 76
-	// 72
-	// 60
-	// 72
-	// 72
-	// 72
+
 
 
 	// face backgrounds for different color players
-	sprintf(namebuf, "STFB0");
-	W_CacheLumpNameDirect(namebuf, faceback_patch);
+	W_CacheLumpNameDirect("STFB0", faceback_patch);
 	// 1408 facebakref
 
 	// status bar background bits
@@ -171,19 +178,26 @@ void __near ST_loadGraphics(void)
 	{
 		for (j = 0; j < ST_NUMSTRAIGHTFACES; j++)
 		{
-			sprintf(namebuf, "STFST%d%d", i, j);
-			W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+			W_CacheLumpNameDirect(namebuf5, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+			namebuf5[6]++;
 		}
-		sprintf(namebuf, "STFTR%d0", i);        // turn right
-		W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
-		sprintf(namebuf, "STFTL%d0", i);        // turn left
-		W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
-		sprintf(namebuf, "STFOUCH%d", i);       // ouch!
-		W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
-		sprintf(namebuf, "STFEVL%d", i);        // evil grin ;)
-		W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
-		sprintf(namebuf, "STFKILL%d", i);       // pissed off
-		W_CacheLumpNameDirect(namebuf, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+		namebuf5[6] = '0';
+		namebuf5[5]++;
+	
+	
+
+		W_CacheLumpNameDirect(namebuf10, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+		W_CacheLumpNameDirect(namebuf11, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+		W_CacheLumpNameDirect(namebuf12, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+		W_CacheLumpNameDirect(namebuf13, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+		W_CacheLumpNameDirect(namebuf14, (byte __far *)MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
+
+		namebuf10[5]++;
+		namebuf11[5]++;
+		namebuf12[7]++;
+		namebuf13[6]++;
+		namebuf14[7]++;
+
 	}
 	W_CacheLumpNameDirect("STFGOD0", (byte __far *) MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));
 	W_CacheLumpNameDirect("STFDEAD0", (byte __far *) MK_FP(ST_GRAPHICS_SEGMENT, faces[facenum++]));

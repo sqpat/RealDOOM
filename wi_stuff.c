@@ -793,12 +793,14 @@ void __near WI_checkForAccelerate(void)
 void __near WI_loadData(void)
 {
     int16_t		i;
-	int8_t	name[9];
+	int8_t	name1[9] = "INTERPIC";
+	int8_t	name2[9] = "WIMAP0";
+	int8_t* name = name2;
 
     if (commercial)
-		strcpy(name, "INTERPIC");
+		name = name1;
     else 
-		sprintf(name, "WIMAP%d", wbs->epsd);
+		name2[5]+= wbs->epsd;
     
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
     if (wbs->epsd == 3)
