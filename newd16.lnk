@@ -28,7 +28,6 @@ file sounds.obj
 file f_wipe.obj
 file dmx.obj
 file dutils.obj
-file v_extra.obj
 file wi_stuff.obj
 
 #these files put in overlay 
@@ -100,5 +99,5 @@ file info.obj
 #	init code
 #section file d_init.obj, st_init.obj, r_init.obj, w_init.obj, i_init.obj, z_umb.obj, z_init.obj, p_init.obj
 #	ingame
-#section file am_map.obj, wi_stuff.obj, i_quit.obj, v_extra.obj, f_wipe.obj
+#section file am_map.obj, wi_stuff.obj, i_quit.obj, f_wipe.obj
 #end

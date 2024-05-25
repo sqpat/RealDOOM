@@ -38,6 +38,7 @@
 
 // Needs access to LFB.
 #include "v_video.h"
+#include "f_finale.h"
 
 #include "wi_stuff.h"
 #include "memory.h"
@@ -865,7 +866,6 @@ void __near WI_loadData(void)
 }
 
      
-void        F_StartFinale (); 
 
 extern boolean secretexit;
 //

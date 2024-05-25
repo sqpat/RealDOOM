@@ -371,117 +371,9 @@ void  S_Init
 
 }
 
-//
-// DOOM MENU
-//
  
 
-extern menu_t __near* currentMenu;
-extern menu_t  MainDef;
-extern int16_t           itemOn;                 // menu item skull is on
-extern int16_t           skullAnimCounter;       // skull animation counter
-extern int16_t           whichSkull;             // which skull to draw
-extern uint8_t                     screenSize;
-extern uint8_t                     messageToPrint;
-extern int8_t*                   messageString;
-extern int16_t                     messageLastMenuActive;
-extern uint8_t                     quickSaveSlot;
-extern uint8_t                     screenblocks;           // has default
-extern menuitem_t MainMenu[6];
 
-//
-// DOOM MENU
-//
-extern menu_t  NewDef; 
-extern menu_t  ReadDef1;
-
-
-extern menuitem_t ReadMenu1[1];
-
-void M_DrawReadThisRetail(void);
-void M_FinishReadThis(int16_t choice);
-
-
-
-
-//
-// M_Init
-//
- 
-#ifndef __DEMO_ONLY_BINARY
-
-// this is only done in init... pull into there?
-
-void __near M_Reload(void) {
-	// reload menu graphics
-	int16_t i = 0;
-	uint32_t size = 0;
-	byte __far* dst = menugraphicspage0;
-	uint8_t pageoffset = 0;
-
- 	int8_t menugraphics[NUM_MENU_ITEMS * 9];
-
-	FILE *fp = fopen("D_MENUG.BIN", "rb"); // clear old file
-	fread(menugraphics, 9, NUM_MENU_ITEMS, fp);
-	fclose(fp);
-
-	for (i = 0; i < NUM_MENU_ITEMS; i++) {
-		int16_t lump = W_GetNumForName(&menugraphics[i*9]);
-		uint16_t lumpsize = W_LumpLength(lump);
-		if (i == 27) { // (size + lumpsize) > 65535u) {
-			// repage
-			size = 0;
-			pageoffset += 4;
-			dst = menugraphicspage4;
-		}
-		W_CacheLumpNumDirect(lump, dst);
-		menuoffsets[i] = size;
-		size += lumpsize;
-		dst += lumpsize;
-
-	}
-
-
-
-}
-
-void __near M_Init(void)
-{
-	
-
-	Z_QuickMapMenu();
-	
-	M_Reload();
-	
-
-	currentMenu = &MainDef;
-	menuactive = 0;
-	itemOn = currentMenu->lastOn;
-	whichSkull = 0;
-	skullAnimCounter = 10;
-	screenSize = screenblocks - 3;
-	messageToPrint = 0;
-	messageString = NULL;
-	messageLastMenuActive = menuactive;
-	quickSaveSlot = -1;  // means to pick a slot now
-
-	if (commercial)
-	{
-		MainMenu[readthis] = MainMenu[quitdoom];
-		MainDef.numitems--;
-		MainDef.y += 8;
-		NewDef.prevMenu = &MainDef;
-		ReadDef1.routine = M_DrawReadThisRetail;
-		ReadDef1.x = 330;
-		ReadDef1.y = 165;
-		ReadMenu1[0].routine = M_FinishReadThis;
-	}
-
-	Z_QuickMapPhysics();
-
-	
-}
-#endif
 
 
 
@@ -568,6 +460,9 @@ void __near G_TimeDemo (int8_t* name)
 } 
 
 void __near W_AddFile(int8_t *filename);
+
+void __far M_Init(void);
+
 void __far D_DoomMain2(void)
 {
 	int16_t             p;

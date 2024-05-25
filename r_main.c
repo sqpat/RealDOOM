@@ -657,7 +657,6 @@ extern uint16_t renderplayerplanetics;
 extern uint16_t renderplayermaskedtics;
 extern uint16_t cachedrenderplayertics;
 #endif
-void M_StartMessage(int8_t __near * string,void __far_func (* routine)(int16_t), boolean input);
 
 int8_t visplanedirty = false;
 int8_t skytextureloaded = false;

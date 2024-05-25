@@ -90,7 +90,6 @@ GLOBOBJS = &
  r_things.obj &
  w_init.obj &
  w_wad.obj &
- v_extra.obj &
  v_video.obj &
  z_init.obj &
  z_umb.obj &

@@ -253,3 +253,95 @@ V_DrawPatchDirect
     }
 } 
  
+
+ 
+// Specially handles titlepic and other ~68k textures that exceed the 64k 4x page frames limit.
+// Requires loading data in one page frame at a time
+// It's okay if this is kind of slow... its only used in menus.
+
+void
+V_DrawFullscreenPatch
+(
+	int8_t*       pagename,
+	int16_t screen)
+{
+	int16_t		count;
+	int16_t		col;
+	column_t __far*	column;
+	byte __far* desttop;
+	byte __far*	dest;
+	byte __far*	source;
+	int16_t		w;
+	patch_t __far*	patch = (patch_t __far *) (0x50000000);
+	byte __far*	patch2 = (byte __far *) (0x50008000);
+ 
+	int32_t    offset = 0;
+	int16_t    pageoffset = 0;
+	byte __far*       extradata = (byte __far *)patch;
+	int16_t oldtask = currenttask;
+	int16_t lump = W_GetNumForName(pagename);
+	Z_QuickMapScratch_5000();
+
+	W_CacheLumpNumDirectFragment(lump, (byte __far *)(0x50000000), 0);
+
+	w = (patch->width);
+
+
+	V_MarkRect(0, 0, w, (patch->height));
+	if (screen == 1) {
+		desttop = screen1;
+	} else {
+		desttop = screen0;
+	}
+
+	for (col = 0; col < w; col++, desttop++) {
+
+		// todo dynamically calculate the offsets
+		column = (column_t  __far*)((byte  __far*)extradata + ((patch->columnofs[col]) - offset));
+		pageoffset = (byte  __far*)column - extradata;
+
+		if (pageoffset > 16000) {
+			offset += pageoffset;
+			W_CacheLumpNumDirectFragment(lump, patch2,  offset);
+			extradata = patch2;
+			column = (column_t  __far*)((byte  __far*)extradata + patch->columnofs[col] - offset);
+		}
+
+
+		// step through the posts in a column 
+		while (column->topdelta != 0xff) {
+
+			source = (byte  __far*)column + 3;
+			dest = desttop + column->topdelta * SCREENWIDTH;
+			count = column->length;
+
+			if ((count -= 4) >= 0)
+				do
+				{
+					register byte s0, s1;
+					s0 = source[0];
+					s1 = source[1];
+					dest[0] = s0;
+					dest[SCREENWIDTH] = s1;
+					dest += SCREENWIDTH * 2;
+					s0 = source[2];
+					s1 = source[3];
+					source += 4;
+					dest[0] = s0;
+					dest[SCREENWIDTH] = s1;
+					dest += SCREENWIDTH * 2;
+				} while ((count -= 4) >= 0);
+				if (count += 4)
+					do
+					{
+						*dest = *source;
+						source++;
+						dest += SCREENWIDTH;
+					} while (--count);
+					column = (column_t  __far*)(source + 1);
+		}
+	}
+
+	Z_QuickMapByTaskNum(oldtask);
+
+}

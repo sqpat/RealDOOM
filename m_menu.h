@@ -32,21 +32,21 @@
 // Even when the menu is not displayed,
 // this can resize the view and change game parameters.
 // Does all the real work of the menu interaction.
-boolean M_Responder (event_t __far* ev);
+boolean __far M_Responder (event_t __far* ev);
 
 
 // Called by main loop,
 // only used for menu (skull cursor) animation.
-void M_Ticker (void);
+void __near M_Ticker (void);
 
 // Called by main loop,
 // draws the menus directly into the screen buffer.
-void M_Drawer (void);
+void __near M_Drawer (void);
 
 
 // Called by intro code to force menu up upon a keypress,
 // does nothing if menu is already up.
-void M_StartControlPanel (void);
+void __near M_StartControlPanel (void);
 
 //
 // DOOM MENU
@@ -79,7 +79,7 @@ typedef struct
 	// choice = menu item #.
 	// if status = 2,
 	//   choice=0:leftarrow,1:rightarrow
-	void(*routine)(int16_t choice);
+	void __near (*routine)(int16_t choice);
 
 	// hotkey in menu
 	int8_t        alphaKey;
@@ -92,7 +92,7 @@ typedef struct menu_s
 	int8_t               numitems;       // # of menu items
 	struct menu_s __near*      prevMenu;       // previous menu
 	menuitem_t __near*         menuitems;      // menu items
-	void(*routine)();   // draw routine
+	void __near (*routine)();   // draw routine
 	int16_t               x;
 	uint8_t               y;              // x,y of menu
 	int16_t               lastOn;         // last item user was on in menu

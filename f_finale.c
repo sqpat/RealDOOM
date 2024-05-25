@@ -40,14 +40,14 @@
 
 #ifdef __DEMO_ONLY_BINARY
 
-void F_Drawer(void) {
+void __far F_Drawer(void) {
 }
-void F_Ticker(void) {
+void __far F_Ticker(void) {
 }
-boolean F_Responder(event_t  __far*event) {
+boolean __far F_Responder(event_t  __far*event) {
 
 }
-void F_StartFinale(void) {
+void __far F_StartFinale(void) {
 
 }
 
@@ -97,10 +97,10 @@ int16_t	t6text = T6TEXT;
 int16_t	finaletext;
 int8_t *	finaleflat;
 
-void	F_StartCast (void);
-void	F_CastTicker (void);
-boolean F_CastResponder (event_t __far *ev);
-void	F_CastDrawer (void);
+void	__near F_StartCast (void);
+void	__near F_CastTicker (void);
+boolean __near F_CastResponder (event_t __far *ev);
+void	__near F_CastDrawer (void);
 
 
 
@@ -111,12 +111,7 @@ void	F_CastDrawer (void);
 // Masks a column based masked pic to the screen.
 // Flips horizontally, e.g. to mirror face.
 //
-void
-V_DrawPatchFlipped
-(int16_t		x,
-	int16_t		y,
-	patch_t __far*	patch)
-{
+void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) {
 
 	int16_t		count;
 	int16_t		col;
@@ -165,8 +160,7 @@ V_DrawPatchFlipped
 //
 // F_StartFinale
 //
-void F_StartFinale (void)
-{
+void __far F_StartFinale (void) {
 	int16_t finalemusic;
 
     gameaction = ga_nothing;
@@ -349,8 +343,7 @@ void F_StartFinale (void)
 
 
 
-boolean F_Responder (event_t  __far*event)
-{
+boolean __far F_Responder (event_t  __far*event) {
     if (finalestage == 2)
 	return F_CastResponder (event);
 	
@@ -361,8 +354,7 @@ boolean F_Responder (event_t  __far*event)
 //
 // F_Ticker
 //
-void F_Ticker (void)
-{
+void __far F_Ticker (void) {
 	// big enough for any string here
 	int8_t text[666];
 	
@@ -409,8 +401,7 @@ void F_Ticker (void)
 
 #include "hu_stuff.h"
 
-void F_TextWrite (void)
-{
+void __near F_TextWrite (void) {
 	byte __far*	dest = screen0;
     
     int16_t		x,y,w;
@@ -520,7 +511,7 @@ boolean		castattacking;
 //
 extern	gamestate_t     wipegamestate;
 
-void F_StartCast (void)
+void __near F_StartCast (void)
 {
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
@@ -542,7 +533,7 @@ void F_StartCast (void)
 //
 // F_CastTicker
 //
-void F_CastTicker (void)
+void __near F_CastTicker (void)
 {
     int16_t		st;
     int16_t		sfx;
@@ -649,7 +640,7 @@ void F_CastTicker (void)
 // F_CastResponder
 //
 
-boolean F_CastResponder (event_t __far* ev)
+boolean __near F_CastResponder (event_t __far* ev)
 {
  	//todoaddr inline later
 	statenum_t (__far  * getDeathState)(uint8_t) = getDeathStateAddr;
@@ -671,7 +662,7 @@ boolean F_CastResponder (event_t __far* ev)
 }
 
 
-void F_CastPrint (int8_t* text)
+void __near F_CastPrint (int8_t* text)
 {
     int8_t*	ch;
     int16_t		c;
@@ -727,7 +718,7 @@ void F_CastPrint (int8_t* text)
 // F_CastDrawer
 //
 
-void F_CastDrawer (void)
+void __near F_CastDrawer (void)
 {
     spritedef_t __far*	sprite;
     spriteframe_t __far*	sprframe;
@@ -773,7 +764,7 @@ void F_CastDrawer (void)
 // F_DrawPatchCol
 //
 void
-F_DrawPatchCol
+__near F_DrawPatchCol
 ( int16_t		x,
   column_t __far*	column) {
     ;
@@ -802,7 +793,7 @@ F_DrawPatchCol
 //
 // F_BunnyScroll
 //
-void F_BunnyScroll (void) {
+void __near F_BunnyScroll (void) {
     int16_t		scrolled;
 	int8_t	name[10];
     int16_t		stage;
@@ -903,7 +894,7 @@ void F_BunnyScroll (void) {
 //
 // F_Drawer
 //
-void F_Drawer (void) {
+void __far F_Drawer (void) {
     if (finalestage == 2) {
 		F_CastDrawer ();
 		return;
