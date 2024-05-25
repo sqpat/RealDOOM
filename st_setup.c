@@ -73,7 +73,7 @@ extern int8_t st_palette;
 
 
 // ?
-void __near STlib_initNum (st_number_t __near*  n,int16_t   x,int16_t   y,uint16_t __near*  pl,int16_t   width){
+void __near STlib_initNum (st_number_t __near*  n,int16_t   x,uint8_t   y,uint16_t __near*  pl,int16_t   width){
     n->x = x;
     n->y = y;
     n->oldnum = 0;
@@ -83,14 +83,14 @@ void __near STlib_initNum (st_number_t __near*  n,int16_t   x,int16_t   y,uint16
 
 
 //
-void __near STlib_initPercent (st_percent_t __near*  p,int16_t   x,int16_t   y,uint16_t __near*  pl,uint16_t  percent) {
+void __near STlib_initPercent (st_percent_t __near*  p,int16_t   x,uint8_t   y,uint16_t __near*  pl,uint16_t  percent) {
     STlib_initNum(&p->num, x, y, pl, 3);
     p->patch_offset = percent;
 }
 
 
 
-void __near STlib_initMultIcon (st_multicon_t __near* i,int16_t   x,int16_t   y,uint16_t __near*  il) {
+void __near STlib_initMultIcon (st_multicon_t __near* i,int16_t   x,uint8_t   y,uint16_t __near*  il) {
     i->x = x;
     i->y = y;
     i->oldinum = -1;
@@ -102,6 +102,7 @@ void __near STlib_initMultIcon (st_multicon_t __near* i,int16_t   x,int16_t   y,
 void __near ST_createWidgets(void){
 
     int8_t i;
+    uint8_t ST_MAXAMMOY[4] = {ST_MAXAMMO0Y,ST_MAXAMMO1Y,ST_MAXAMMO2Y,ST_MAXAMMO3Y};
     // ready weapon ammo
     STlib_initNum(&w_ready, ST_AMMOX, ST_AMMOY, tallnum, ST_AMMOWIDTH);
 
@@ -130,17 +131,15 @@ void __near ST_createWidgets(void){
     STlib_initMultIcon(&w_keyboxes[1],  ST_KEY1X,  ST_KEY1Y,  keys);
     STlib_initMultIcon(&w_keyboxes[2],  ST_KEY2X,  ST_KEY2Y,  keys);
 
-    // ammo count (all four kinds)
-    STlib_initNum(&w_ammo[0],  ST_AMMO0X,  ST_AMMO0Y,  shortnum,  ST_AMMO0WIDTH);
-    STlib_initNum(&w_ammo[1],  ST_AMMO1X,  ST_AMMO1Y,  shortnum,  ST_AMMO1WIDTH);
-    STlib_initNum(&w_ammo[2],  ST_AMMO2X,  ST_AMMO2Y,  shortnum,  ST_AMMO2WIDTH);
-    STlib_initNum(&w_ammo[3],  ST_AMMO3X,  ST_AMMO3Y,  shortnum,  ST_AMMO3WIDTH);
 
-    // max ammo count (all four kinds)
-    STlib_initNum(&w_maxammo[0],  ST_MAXAMMO0X,  ST_MAXAMMO0Y,  shortnum,  ST_MAXAMMO0WIDTH);
-    STlib_initNum(&w_maxammo[1],  ST_MAXAMMO1X,  ST_MAXAMMO1Y,  shortnum,  ST_MAXAMMO1WIDTH);
-    STlib_initNum(&w_maxammo[2],  ST_MAXAMMO2X,  ST_MAXAMMO2Y,  shortnum,  ST_MAXAMMO2WIDTH);
-    STlib_initNum(&w_maxammo[3],  ST_MAXAMMO3X,  ST_MAXAMMO3Y,  shortnum,  ST_MAXAMMO3WIDTH);
+    for (i = 0; i < 4; i++){
+
+        // ammo count (all four kinds)
+        STlib_initNum(&w_ammo[i],  ST_AMMO0X,  ST_MAXAMMOY[i],  shortnum,  ST_AMMO0WIDTH);
+        // max ammo count (all four kinds)
+        STlib_initNum(&w_maxammo[i],  ST_MAXAMMO0X,  ST_MAXAMMOY[i],  shortnum,  ST_MAXAMMO0WIDTH);
+    }
+    
 
 }
 

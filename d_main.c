@@ -612,8 +612,6 @@ void __near D_DoomLoop (void)
 #endif
 
    
-// tick 514 prndindex goes off
-// player pos stuff ok...
 #ifdef DEBUGLOG_TO_FILE
 				
 
@@ -621,7 +619,6 @@ void __near D_DoomLoop (void)
 //		if (gametic != lasttick) {
 //			lasttick = gametic;
 				
-// tick 316 prndindex off
 
 			//sprintf(result2, "%i %i %i \n", gametic, prndindex, SAV);
 			//SAVEDUNIT = playerMobj;
