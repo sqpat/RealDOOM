@@ -32,12 +32,7 @@ typedef uint8_t sfxenum_t;
 // Sets channels, SFX and music volume,
 //  allocates channel buffer, sets S_sfx lookup.
 //
-void
-S_Init
-( uint8_t		sfxVolume,
-  uint8_t		musicVolume );
-
-
+ 
 
 
 //

@@ -557,7 +557,7 @@ void __near R_InitSprites()
 //
 // P_Init
 //
-void P_Init(void) {
+void __near P_Init(void) {
 
 	Z_QuickMapRender();
 	Z_QuickMapLumpInfo();

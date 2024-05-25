@@ -266,6 +266,15 @@ int16_t __near wipe_ScreenWipe(int16_t	ticks ) {
 }
 uint16_t                         wipeduration = 0;
 void __far M_Drawer();
+void __far I_UpdateNoBlit(void);
+void __far I_FinishUpdate(void);
+
+
+
+#ifdef FPS_DISPLAY
+extern int32_t fps_rendered_frames_since_last_measure;
+#endif
+
 
 void __far wipe_WipeLoop(){
 	ticcount_t                         nowtime, wipestart;

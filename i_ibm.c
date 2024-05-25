@@ -66,8 +66,6 @@
  
 
 
-void I_ReadMouse(void);
-
 extern uint8_t usemouse;
 
 
@@ -175,7 +173,6 @@ uint8_t kbdtail, kbdhead;
 
 #define SC_RSHIFT       0x36
 #define SC_LSHIFT       0x2a
-void I_WaitVBL(int16_t vbls);
 
 
 union REGS in, out;
@@ -187,7 +184,7 @@ union REGS in, out;
 //
 // I_WaitVBL
 //
-void I_WaitVBL(int16_t vbls)
+void __near I_WaitVBL(int16_t vbls)
 {
 	int16_t stat;
 
@@ -259,7 +256,7 @@ fixed_t_union destscreen;
 //
 // I_UpdateBox
 //
-void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
+void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
 {
 	uint16_t i, j, k, count;
 	int16_t sp_x1, sp_x2;
@@ -295,94 +292,14 @@ void I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
             dest += pstep;
         }
     }
-}
-
-//
-// I_UpdateNoBlit
-//
-int16_t olddb[2][4];
-void I_UpdateNoBlit(void) {
-	int16_t realdr[4];
-	int16_t x, y, w, h;
-	// Set current screen
-    currentscreen = (byte __far*) destscreen.w;
-
-    // Update dirtybox size
-    realdr[BOXTOP] = dirtybox[BOXTOP];
-    if (realdr[BOXTOP] < olddb[0][BOXTOP])
-    {
-        realdr[BOXTOP] = olddb[0][BOXTOP];
-    }
-    if (realdr[BOXTOP] < olddb[1][BOXTOP])
-    {
-        realdr[BOXTOP] = olddb[1][BOXTOP];
-    }
-
-    realdr[BOXRIGHT] = dirtybox[BOXRIGHT];
-    if (realdr[BOXRIGHT] < olddb[0][BOXRIGHT])
-    {
-        realdr[BOXRIGHT] = olddb[0][BOXRIGHT];
-    }
-    if (realdr[BOXRIGHT] < olddb[1][BOXRIGHT])
-    {
-        realdr[BOXRIGHT] = olddb[1][BOXRIGHT];
-    }
-
-    realdr[BOXBOTTOM] = dirtybox[BOXBOTTOM];
-    if (realdr[BOXBOTTOM] > olddb[0][BOXBOTTOM])
-    {
-        realdr[BOXBOTTOM] = olddb[0][BOXBOTTOM];
-    }
-    if (realdr[BOXBOTTOM] > olddb[1][BOXBOTTOM])
-    {
-        realdr[BOXBOTTOM] = olddb[1][BOXBOTTOM];
-    }
-
-    realdr[BOXLEFT] = dirtybox[BOXLEFT];
-    if (realdr[BOXLEFT] > olddb[0][BOXLEFT])
-    {
-        realdr[BOXLEFT] = olddb[0][BOXLEFT];
-    }
-    if (realdr[BOXLEFT] > olddb[1][BOXLEFT])
-    {
-        realdr[BOXLEFT] = olddb[1][BOXLEFT];
-    }
-
-    // Leave current box for next update
-    memcpy(olddb[0], olddb[1], 8);
-    memcpy(olddb[1], dirtybox, 8);
-	/*
-	olddb[0][0] = olddb[1][0];
-	olddb[0][1] = olddb[1][1];
-	olddb[0][2] = olddb[1][2];
-	olddb[0][3] = olddb[1][3];
-	olddb[1][0] = dirtybox[0];
-	olddb[1][1] = dirtybox[1];
-	olddb[1][2] = dirtybox[2];
-	olddb[1][3] = dirtybox[3];
-	*/
-
-    // Update screen
-    if (realdr[BOXBOTTOM] <= realdr[BOXTOP])
-    {
-        x = realdr[BOXLEFT];
-        y = realdr[BOXBOTTOM];
-        w = realdr[BOXRIGHT] - realdr[BOXLEFT] + 1;
-        h = realdr[BOXTOP] - realdr[BOXBOTTOM] + 1;
-        I_UpdateBox(x, y, w, h);
-    }
-	// Clear box
-
-	dirtybox[BOXTOP] = dirtybox[BOXRIGHT] = MINSHORT;
-	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
-}
+} 
 #ifdef FPS_DISPLAY
 extern int32_t fps_rendered_frames_since_last_measure;
 #endif
 //
 // I_FinishUpdate
 //
-void I_FinishUpdate(void)
+void __far I_FinishUpdate(void)
 {
 
 	outpw(CRTC_INDEX, (destscreen.h.fracbits & 0xff00L) + 0xc);
@@ -418,6 +335,45 @@ void I_FinishUpdate(void)
 #define SC_DOWNARROW    0x50
 #define SC_LEFTARROW    0x4b
 #define SC_RIGHTARROW   0x4d
+
+
+ 
+//
+// I_ReadMouse
+//
+void __near I_ReadMouse(void)
+{
+    event_t ev;
+
+    //
+    // mouse events
+    //
+    if (!mousepresent)
+    {
+        return;
+    }
+
+    ev.type = ev_mouse;
+
+
+
+	// 16 bit version
+	in.x.ax = 3;  // read buttons / position
+	int86(0X33, &in, &out);
+
+	ev.data1 = out.x.bx;
+
+	in.x.ax = 11;  // read counters
+	ev.data2 = out.x.cx;
+	ev.data3 = -out.x.dx;
+
+
+
+	D_PostEvent(&ev);
+
+
+}
+
 
 void __near I_StartTic(void)
 {
@@ -546,43 +502,6 @@ int16_t __far I_ResetMouse(void)
 
  
  
- 
-//
-// I_ReadMouse
-//
-void I_ReadMouse(void)
-{
-    event_t ev;
-
-    //
-    // mouse events
-    //
-    if (!mousepresent)
-    {
-        return;
-    }
-
-    ev.type = ev_mouse;
-
-
-
-	// 16 bit version
-	in.x.ax = 3;  // read buttons / position
-	int86(0X33, &in, &out);
-
-	ev.data1 = out.x.bx;
-
-	in.x.ax = 11;  // read counters
-	ev.data2 = out.x.cx;
-	ev.data3 = -out.x.dx;
-
-
-
-	D_PostEvent(&ev);
-
-
-}
-
  
 
 

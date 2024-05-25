@@ -27,7 +27,7 @@
 
 
 // Called by DoomMain.
-void I_Init (void);
+void __near I_Init (void);
 
  
  
@@ -124,11 +124,8 @@ void I_SetChannels(int8_t channels);
 // Takes full 8 bit values.
 void __near I_SetPalette(int8_t paletteNumber);
 
-void I_UpdateNoBlit(void);
-void I_FinishUpdate(void);
-
 // Wait for vertical retrace or pause a bit.
-void I_WaitVBL(int16_t count);
+void __near I_WaitVBL(int16_t count);
 
 void __far I_BeginRead(void);
 void __far I_EndRead(void);

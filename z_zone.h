@@ -239,45 +239,44 @@ extern int16_t pageswapargs[total_pages];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 
 // EMS 4.0 stuff
-void Z_QuickMapPhysics();
-void Z_QuickMapRender();
-void Z_QuickMapRender_4000To9000();
-void Z_QuickMapStatus();
-void Z_QuickMapDemo();
-void Z_QuickMapRender4000();
-void Z_QuickMapByTaskNum(int8_t task);
-void Z_QuickMapRenderTexture();
-//void Z_QuickMapRenderTexture(uint8_t offset, uint8_t count);
-void Z_QuickMapScratch_5000();
-void Z_QuickMapScratch_8000();
-void Z_QuickMapScratch_7000();
-void Z_PushScratchFrame();
-void Z_PopScratchFrame();
-void Z_QuickMapFlatPage(int16_t page, int16_t offset);
-void Z_QuickMapUndoFlatCache();
-void Z_QuickMapSpritePage();
+void __far Z_QuickMapPhysics();
+void __far Z_QuickMapRender();
+void __far Z_QuickMapRender_4000To9000();
+void __far Z_QuickMapStatus();
+void __far Z_QuickMapDemo();
+void __far Z_QuickMapRender4000();
+void __far Z_QuickMapByTaskNum(int8_t task);
+void __near Z_QuickMapRenderTexture();
+//void __far Z_QuickMapRenderTexture(uint8_t offset, uint8_t count);
+void __far Z_QuickMapScratch_5000();
+void __far Z_QuickMapScratch_8000();
+void __far Z_QuickMapScratch_7000();
+void __far Z_PushScratchFrame();
+void __far Z_PopScratchFrame();
+void __far Z_QuickMapFlatPage(int16_t page, int16_t offset);
+void __far Z_QuickMapUndoFlatCache();
+void __far Z_QuickMapSpritePage();
 
-    //void Z_QuickMapTextureInfoPage();
-void Z_QuickMapPalette();
-void Z_QuickMapMenu();
-void Z_QuickMapIntermission();
-void Z_QuickMapScreen0();
-void Z_QuickMapWipe();
-void Z_QuickMapLumpInfo();
-void Z_UnmapLumpInfo();
-void Z_QuickMapLumpInfo5000();
-void Z_UnmapLumpInfo5000();
-void Z_QuickMapColumnOffsets5000();
-void Z_QuickMapRender7000();
+    //void __far Z_QuickMapTextureInfoPage();
+void __far Z_QuickMapPalette();
+void __far Z_QuickMapMenu();
+void __far Z_QuickMapIntermission();
+void __far Z_QuickMapScreen0();
+void __far Z_QuickMapWipe();
+void __far Z_QuickMapLumpInfo();
+void __far Z_UnmapLumpInfo();
+void __far Z_QuickMapLumpInfo5000();
+void __far Z_UnmapLumpInfo5000();
+void __far Z_QuickMapColumnOffsets5000();
+void __far Z_QuickMapRender7000();
 
 void __near Z_GetEMSPageMap();
 //void Z_LinkConventionalVariables();
 void __near Z_LoadBinaries();
 
-void Z_ClearDeadCode();
-void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage);
-void Z_QuickMapVisplaneRevert();
-void Z_QuickMapRenderPlanes();
+void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage);
+void __far Z_QuickMapVisplaneRevert();
+void __far Z_QuickMapRenderPlanes();
 
 #define PAGE_TYPE_PHYSICS 0
 #define PAGE_TYPE_RENDER 1

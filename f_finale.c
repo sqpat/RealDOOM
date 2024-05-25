@@ -718,8 +718,7 @@ void __near F_CastPrint (int8_t* text)
 // F_CastDrawer
 //
 
-void __near F_CastDrawer (void)
-{
+void __near F_CastDrawer (void) {
     spritedef_t __far*	sprite;
     spriteframe_t __far*	sprframe;
     int16_t			lump;
@@ -763,11 +762,8 @@ void __near F_CastDrawer (void)
 //
 // F_DrawPatchCol
 //
-void
-__near F_DrawPatchCol
-( int16_t		x,
-  column_t __far*	column) {
-    ;
+void __near F_DrawPatchCol ( int16_t		x, column_t __far*	column) {
+    
     byte __far*	source;
     byte __far*	dest;
     byte __far*	desttop;

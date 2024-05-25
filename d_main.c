@@ -301,7 +301,7 @@ boolean skipdirectdraws;
 gamestate_t     wipegamestate = GS_DEMOSCREEN;
 extern  boolean setsizeneeded;
 extern  uint8_t             showMessages;
-void R_ExecuteSetViewSize (void);
+void __near R_ExecuteSetViewSize (void);
 
 
 
@@ -339,6 +339,73 @@ extern mobj_pos_t __far * SAVEDUNIT_POS;
 // D_Display
 //  draw current display, possibly wiping it from the previous
 //
+
+extern byte __far *currentscreen;
+void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h);
+
+//
+// I_UpdateNoBlit
+//
+int16_t olddb[2][4];
+void __far I_UpdateNoBlit(void) {
+	int16_t realdr[4];
+	int16_t x, y, w, h;
+	// Set current screen
+    currentscreen = (byte __far*) destscreen.w;
+
+    // Update dirtybox size
+    realdr[BOXTOP] = dirtybox[BOXTOP];
+    if (realdr[BOXTOP] < olddb[0][BOXTOP]) {
+        realdr[BOXTOP] = olddb[0][BOXTOP];
+    }
+    if (realdr[BOXTOP] < olddb[1][BOXTOP]) {
+        realdr[BOXTOP] = olddb[1][BOXTOP];
+    }
+
+    realdr[BOXRIGHT] = dirtybox[BOXRIGHT];
+    if (realdr[BOXRIGHT] < olddb[0][BOXRIGHT]) {
+        realdr[BOXRIGHT] = olddb[0][BOXRIGHT];
+    }
+    if (realdr[BOXRIGHT] < olddb[1][BOXRIGHT]) {
+        realdr[BOXRIGHT] = olddb[1][BOXRIGHT];
+    }
+
+    realdr[BOXBOTTOM] = dirtybox[BOXBOTTOM];
+    if (realdr[BOXBOTTOM] > olddb[0][BOXBOTTOM]) {
+        realdr[BOXBOTTOM] = olddb[0][BOXBOTTOM];
+    }
+    if (realdr[BOXBOTTOM] > olddb[1][BOXBOTTOM]) {
+        realdr[BOXBOTTOM] = olddb[1][BOXBOTTOM];
+    }
+
+    realdr[BOXLEFT] = dirtybox[BOXLEFT];
+    if (realdr[BOXLEFT] > olddb[0][BOXLEFT]) {
+        realdr[BOXLEFT] = olddb[0][BOXLEFT];
+    }
+    if (realdr[BOXLEFT] > olddb[1][BOXLEFT]) {
+        realdr[BOXLEFT] = olddb[1][BOXLEFT];
+    }
+
+    // Leave current box for next update
+    memcpy(olddb[0], olddb[1], 8);
+    memcpy(olddb[1], dirtybox, 8);
+
+    // Update screen
+    if (realdr[BOXBOTTOM] <= realdr[BOXTOP])
+    {
+        x = realdr[BOXLEFT];
+        y = realdr[BOXBOTTOM];
+        w = realdr[BOXRIGHT] - realdr[BOXLEFT] + 1;
+        h = realdr[BOXTOP] - realdr[BOXBOTTOM] + 1;
+        I_UpdateBox(x, y, w, h);
+    }
+	// Clear box
+
+	dirtybox[BOXTOP] = dirtybox[BOXRIGHT] = MINSHORT;
+	dirtybox[BOXBOTTOM] = dirtybox[BOXLEFT] = MAXSHORT;
+}
+
+void __far I_FinishUpdate(void);
 
 void __near D_Display (void)
 {
@@ -761,9 +828,36 @@ void __near D_PageDrawer (void)
 }
 
 
- void D_DoomMain2(void);
+ void __far D_DoomMain2(void);
 
 
+
+
+extern void D_InitStrings();
+
+extern angle_t __far* tantoangle;
+
+// clears dead initialization code.
+void __near Z_ClearDeadCode() {
+	byte __far *startaddr =	(byte __far*)D_InitStrings;
+	byte __far *endaddr =		(byte __far*)P_Init;
+	
+	//8830 bytes or so
+	//8978 currently - 05/29/24
+	uint16_t size = endaddr - startaddr;
+	FILE* fp;
+
+	//I_Error("size: %u", size);
+
+	FAR_memset(startaddr, 0, size);
+	
+	tantoangle = (angle_t __far* )startaddr;
+	
+	fp = fopen("D_TANTOA.BIN", "rb");
+	FAR_fread(tantoangle, 4, 2049, fp);
+	fclose(fp);
+
+}
  void __near D_DoomMain(void) {
 	 D_DoomMain2();
 #ifdef DETAILED_BENCH_STATS

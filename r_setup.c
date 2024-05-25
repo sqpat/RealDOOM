@@ -198,7 +198,7 @@ void __near R_InitTextureMapping(void) {
 //
 // R_ExecuteSetViewSize
 //
-void __far R_ExecuteSetViewSize(void) {
+void __near  R_ExecuteSetViewSize(void) {
 
 	fixed_t_union temp;
 	temp.h.fracbits = 0;

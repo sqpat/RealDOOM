@@ -352,10 +352,7 @@ void __near HU_Init(void)
 // Sets channels, SFX and music volume,
 //  allocates channel buffer, sets S_sfx lookup.
 //
-void  S_Init
-(uint8_t		sfxVolume,
-	uint8_t		musicVolume)
-{
+void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
 
 	/*
 

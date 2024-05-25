@@ -120,8 +120,7 @@ int16_t __near M_CheckParm (int8_t *check);
 // StartupMouse
 //
 
-void I_StartupMouse(void)
-{
+void __near I_StartupMouse(void) {
 	//
 	// General mouse detection
 	//
@@ -150,7 +149,7 @@ void I_StartupMouse(void)
 //
 // I_StartupKeyboard
 //
-void I_StartupKeyboard(void) {
+void __near I_StartupKeyboard(void) {
 	int8_t i = 0;
 	for (i = 0; i < KBDQUESIZE; i++) {
 		keyboardque[i] = 0;
@@ -166,7 +165,7 @@ void I_StartupKeyboard(void) {
 // I_Init
 // hook interrupts and set graphics mode
 //
-void I_Init(void)
+void __near I_Init(void)
 {
 	novideo = M_CheckParm("novideo");
 	DEBUG_PRINT("I_StartupMouse\n");
