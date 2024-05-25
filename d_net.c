@@ -42,7 +42,6 @@ int16_t skiptics;
 
 void __near D_ProcessEvents(void);
 void __near G_BuildTiccmd(int8_t index);
-
 void __near D_DoAdvanceDemo(void);
 
 //

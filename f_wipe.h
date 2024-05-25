@@ -24,19 +24,8 @@
 //                       SCREEN WIPE PACKAGE
 //
 
- 
-
-int16_t
-wipe_StartScreen ();
-
-
-int16_t
-wipe_EndScreen ();
-
-
-int16_t
-wipe_ScreenWipe
-( 
-  int16_t		ticks );
+void __far wipe_WipeLoop();
+int16_t __far wipe_StartScreen();
+  
 
 #endif

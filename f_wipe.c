@@ -49,10 +49,7 @@ static byte __far*	wipe_scr_end;
 static byte __far*	wipe_scr;
 
 
-void
-wipe_shittyColMajorXform
-( int16_t __far*	array )
-{
+void __near wipe_shittyColMajorXform ( int16_t __far*	array ) {
     uint16_t		x;
     uint16_t		y;
     int16_t __far*	dest = MK_FP(SCRATCH_PAGE_SEGMENT, 0);
@@ -79,9 +76,7 @@ wipe_shittyColMajorXform
  
 
 
-int16_t
-wipe_initMelt
-( 
+int16_t __near wipe_initMelt ( 
   int16_t	ticks )
 {
 	int16_t i, r;
@@ -114,9 +109,7 @@ wipe_initMelt
     return 0;
 }
 
-int16_t
-wipe_doMelt
-(
+int16_t __near wipe_doMelt (
   int16_t	ticks )
 {
     int16_t		i;
@@ -166,9 +159,7 @@ wipe_doMelt
 }
 
 
-int16_t
-wipe_StartScreen( )
-{
+int16_t __far wipe_StartScreen( ) {
 	Z_QuickMapWipe();
 
 	wipe_scr_start = screen2;
@@ -188,14 +179,7 @@ wipe_StartScreen( )
 // V_DrawBlock
 // Draw a linear block of pixels into the view buffer.
 //
-void
-V_DrawBlock
-(int16_t		x,
-	int16_t		y,
-	int16_t		width,
-	int16_t		height,
-	byte __far*		src)
-{
+void __near V_DrawBlock (int16_t x, int16_t y, int16_t width, int16_t height, byte __far* src) {
 	byte __far*	dest;
 
 
@@ -213,9 +197,7 @@ V_DrawBlock
 
 
 
-int16_t
-wipe_EndScreen ()
-{
+int16_t __near wipe_EndScreen () {
 	Z_QuickMapWipe();
 
 	wipe_scr_end = screen3;
@@ -228,8 +210,7 @@ wipe_EndScreen ()
     return 0;
 }
 
-int16_t
-wipe_ScreenWipe(int16_t	ticks ) {
+int16_t __near wipe_ScreenWipe(int16_t	ticks ) {
 	int16_t rc;
 
 	
@@ -258,4 +239,36 @@ wipe_ScreenWipe(int16_t	ticks ) {
     return !go;
 
 }
+uint16_t                         wipeduration = 0;
+void __far M_Drawer();
+
+void __far wipe_WipeLoop(){
+	ticcount_t                         nowtime, wipestart;
+	ticcount_t                         wiperealstart;
+	boolean						done = false;
+	int16_t                         tics;
+
+	wipe_EndScreen();
+
+	wiperealstart = wipestart = ticcount - 1;
+
+    do {
+        do {
+            nowtime = ticcount;
+            tics = nowtime - wipestart;
+        } while (!tics);
+        wipestart = nowtime;
+        done = wipe_ScreenWipe(tics);
+        I_UpdateNoBlit ();
+ 		M_Drawer ();                            // menu is drawn even on top of wipes
+ 		I_FinishUpdate();                      // page flip or blit buffer
+
+    } while (!done);
+
+	Z_QuickMapPhysics();
+	wipeduration = ticcount - wiperealstart;
+
+}
+
+
 #endif

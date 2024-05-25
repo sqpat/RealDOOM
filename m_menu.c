@@ -93,7 +93,7 @@ boolean M_Responder(event_t __far*  ev) {
     return false;
 }
 
-void __near M_Drawer(void) {
+void __far M_Drawer(void) {
 }
 void __near M_StartControlPanel(void) {
 
@@ -1680,7 +1680,7 @@ void __near M_StartControlPanel (void)
 // Called after the view has been rendered,
 // but before it has been blitted.
 //
-void __near M_Drawer (void) {
+void __far M_Drawer (void) {
     static int16_t        x;
     static int16_t        y;
     int16_t               i;

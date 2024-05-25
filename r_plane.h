@@ -13,7 +13,7 @@
 // GNU General Public License for more details.
 //
 // DESCRIPTION:
-//	Refresh, visplane stuff (floor, ceilings).
+// Refresh, visplane stuff (floor, ceilings).
 //
 
 
@@ -24,31 +24,16 @@
 #include "r_data.h"
 
 // Visplane related.
-extern  uint16_t 		lastopening;
+extern  uint16_t   lastopening;
  
 
 void __near R_ClearPlanes (void);
-
 void __near R_DrawPlanes (void);
 
 #define IS_CEILING_PLANE    1
 #define IS_FLOOR_PLANE      0
-int16_t
-__near R_FindPlane
-( fixed_t	height,
-  uint8_t		picnum,
-  uint8_t		lightlevel,
-  int8_t    isceil
-   );
-
-int16_t
-__near R_CheckPlane
-(int16_t	index,
-  int16_t		start,
-  int16_t		stop,
-  int8_t		isceil
-
-   );
+int16_t __near R_FindPlane ( fixed_t height, uint8_t  picnum, uint8_t  lightlevel, int8_t isceil );
+int16_t __near R_CheckPlane (int16_t index, int16_t  start, int16_t  stop,int8_t  isceil);
 
 
 

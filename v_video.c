@@ -28,6 +28,7 @@
 #include "m_misc.h"
 
 #include "v_video.h"
+#include "w_wad.h"
 #include <conio.h>
 #include <dos.h>
 #include "memory.h"

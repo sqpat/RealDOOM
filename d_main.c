@@ -303,7 +303,6 @@ extern  boolean setsizeneeded;
 extern  uint8_t             showMessages;
 void R_ExecuteSetViewSize (void);
 
-uint16_t                         wipeduration = 0;
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -349,13 +348,9 @@ void __near D_Display (void)
     static  boolean             fullscreen = false;
     static  gamestate_t         oldgamestate = -1;
     static  uint8_t                 borderdrawcount;
-	ticcount_t                         nowtime, wipestart;
-	ticcount_t                         wiperealstart;
-	int16_t                         tics;
 	int16_t                         y;
     boolean                     wipe;
     boolean                     redrawsbar;
-	boolean						done = false;
 	if (nodrawers)
         return;                    // for comparative timing / profiling
  
@@ -517,25 +512,8 @@ void __near D_Display (void)
     
     // wipe update
 #ifndef SKIPWIPE
-	wipe_EndScreen();
+	wipe_WipeLoop();
 
-	wiperealstart = wipestart = ticcount - 1;
-
-    do {
-        do {
-            nowtime = ticcount;
-            tics = nowtime - wipestart;
-        } while (!tics);
-        wipestart = nowtime;
-        done = wipe_ScreenWipe(tics);
-        I_UpdateNoBlit ();
- 		M_Drawer ();                            // menu is drawn even on top of wipes
- 		I_FinishUpdate();                      // page flip or blit buffer
-
-    } while (!done);
-
-	Z_QuickMapPhysics();
-	wipeduration = ticcount - wiperealstart;
 
 #endif
 }
