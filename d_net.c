@@ -40,10 +40,10 @@ ticcount_t nettics;
 ticcount_t maketic;
 int16_t skiptics;
 
-void D_ProcessEvents(void);
-void G_BuildTiccmd(int8_t index);
+void __near D_ProcessEvents(void);
+void __near G_BuildTiccmd(int8_t index);
 
-void D_DoAdvanceDemo(void);
+void __near D_DoAdvanceDemo(void);
 
 //
 // NetUpdate
@@ -94,7 +94,7 @@ void NetUpdate(void)
 
 extern byte advancedemo;
 
-void TryRunTics(void)
+void __near TryRunTics(void)
 {
 	int32_t entertic;
 	static int32_t oldentertics;

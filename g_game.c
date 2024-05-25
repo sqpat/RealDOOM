@@ -239,7 +239,7 @@ uint16_t     __far R_TextureNumForName(int8_t* name) {
 }
 
 
-void G_BuildTiccmd (int8_t index)
+void __near G_BuildTiccmd (int8_t index)
 { 
 	int8_t         i;
 	int8_t     strafe;

@@ -24,7 +24,7 @@
 #include <dos.h>
 
 
-extern void D_DoomMain();
+extern void __near D_DoomMain();
 
 extern int16_t		myargc;
 extern int8_t**		myargv;

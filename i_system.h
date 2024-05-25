@@ -123,7 +123,7 @@ void I_SetChannels(int8_t channels);
 void I_ShutdownGraphics(void);
 
 // Takes full 8 bit values.
-void I_SetPalette(int8_t paletteNumber);
+void __near I_SetPalette(int8_t paletteNumber);
 
 void I_UpdateNoBlit(void);
 void I_FinishUpdate(void);

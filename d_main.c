@@ -119,8 +119,8 @@ boolean         tnt;
 //int8_t            wadfile[64];          // primary wad file
 
 
-void G_BuildTiccmd(int8_t index);
-void D_DoAdvanceDemo (void);
+void __near G_BuildTiccmd(int8_t index);
+void __near D_DoAdvanceDemo (void);
 
 
 //
@@ -137,7 +137,7 @@ int8_t		eventtail;
 // D_PostEvent
 // Called by the I/O functions when input is detected
 //
-void D_PostEvent (event_t __far* ev)
+void __near D_PostEvent (event_t __far* ev)
 {
     events[eventhead] = *ev;
     eventhead = (++eventhead)&(MAXEVENTS-1);
@@ -147,7 +147,7 @@ void D_PostEvent (event_t __far* ev)
 // D_ProcessEvents
 // Send all the events of the given timestamp down the responder chain
 //
-void D_ProcessEvents (void)
+void __near D_ProcessEvents (void)
 {
     event_t __far*     ev;
 	for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) ) {
@@ -163,7 +163,7 @@ void D_ProcessEvents (void)
 
 
 
-void getStringByIndex(int16_t stringindex, int8_t __far* returndata) {
+void __far getStringByIndex(int16_t stringindex, int8_t __far* returndata) {
 
 	uint16_t stringoffset = stringoffsets[stringindex];
 	uint16_t length = stringoffsets[stringindex + 1] - stringoffset;
@@ -329,7 +329,7 @@ extern mobj_pos_t __far * SAVEDUNIT_POS;
 //  draw current display, possibly wiping it from the previous
 //
 
-void D_Display (void)
+void __near D_Display (void)
 {
     static  boolean             viewactivestate = false;
     static  boolean             menuactivestate = false;
@@ -536,9 +536,9 @@ extern  boolean         demorecording;
 // Called by D_DoomMain,
 // determines the hardware configuration
 // and sets up the video mode
-void I_InitGraphics(void);
+void __near I_InitGraphics(void);
 
-void D_DoomLoop (void)
+void __near D_DoomLoop (void)
 {
 	// debugging stuff i need to find mem leaks...
 #ifdef DEBUGLOG_TO_FILE
@@ -647,7 +647,7 @@ int8_t                    *pagename;
 // D_PageTicker
 // Handles timing for warped projection
 //
-void D_PageTicker (void)
+void __near D_PageTicker (void)
 {
     if (--pagetic < 0)
         D_AdvanceDemo ();
@@ -658,7 +658,7 @@ void D_PageTicker (void)
 //
 // D_PageDrawer
 //
-void D_PageDrawer (void)
+void __near D_PageDrawer (void)
 {
 
 	// we dont have various screen buffers anymore, so we cant draw to buffer in 'read this'
@@ -676,7 +676,7 @@ void D_PageDrawer (void)
 // D_AdvanceDemo
 // Called after each demo or intro demosequence finishes
 //
-void D_AdvanceDemo (void)
+void __near D_AdvanceDemo (void)
 {
     advancedemo = true;
 }
@@ -686,7 +686,7 @@ void D_AdvanceDemo (void)
 // This cycles through the demo sequences.
 // FIXME - version dependend demo numbers?
 //
- void D_DoAdvanceDemo (void)
+ void __near D_DoAdvanceDemo (void)
 {
     player.playerstate = PST_LIVE;  // not reborn
     advancedemo = false;
@@ -759,7 +759,7 @@ void D_AdvanceDemo (void)
  void D_DoomMain2(void);
 
 
- void D_DoomMain(void) {
+ void __near D_DoomMain(void) {
 	 D_DoomMain2();
 #ifdef DETAILED_BENCH_STATS
 	 cachedtics = ticcount;

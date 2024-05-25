@@ -24,10 +24,10 @@
 #define MAXWADFILES             3
 extern int8_t*		wadfiles[MAXWADFILES];
 
-void D_DoomMain (void);
+void __near D_DoomMain (void);
 
 // Called by IO functions when input is detected.
-void D_PostEvent (event_t __far* ev);
+void __near D_PostEvent (event_t __far* ev);
 
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
 	#define BGCOLOR         7
@@ -41,14 +41,14 @@ void D_PostEvent (event_t __far* ev);
 //
 // BASE LEVEL
 //
-void D_PageTicker (void);
-void D_PageDrawer (void);
-void D_AdvanceDemo (void);
-void D_StartTitle (void);
+void __near D_PageTicker (void);
+void __near D_PageDrawer (void);
+void __near D_AdvanceDemo (void);
+void __near D_StartTitle (void);
 
 
 
 
-void D_DoomLoop(void);
+void __near D_DoomLoop(void);
 
 #endif

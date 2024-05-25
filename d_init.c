@@ -145,7 +145,7 @@ void __far D_InitStrings() {
 //
 // D_StartTitle
 //
-void D_StartTitle(void)
+void __near D_StartTitle(void)
 {
 	gameaction = ga_nothing;
 	demosequence = -1;
@@ -538,7 +538,7 @@ void DUMP_MEMORY_TO_FILE() {
 int16_t main ( int16_t		argc, int8_t**	argv ) ;
  //void fakefunc();
 
-void W_AddFile(int8_t *filename);
+void __near W_AddFile(int8_t *filename);
 void __far D_DoomMain2(void)
 {
 	int16_t             p;
@@ -973,17 +973,15 @@ void __far D_DoomMain2(void)
 	{
 		singledemo = true;              // quit after one demo
 		G_DeferedPlayDemo(myargv[p + 1]);
-		return; // D_DoomLoop always called after this anyway;
-		//D_DoomLoop();  // never returns
-	}
+		return;
+ 	}
 
 	p = M_CheckParm("-timedemo");
 	if (p && p < myargc - 1)
 	{
 		G_TimeDemo(myargv[p + 1]);
-		return; // D_DoomLoop always called after this anyway;
-		//D_DoomLoop();  // never returns
-	}
+		return; 
+ 	}
 
 	p = M_CheckParm("-loadgame");
 	if (p && p < myargc - 1)

@@ -48,7 +48,7 @@ void NetUpdate (void);
  
 
 //? how many ticks to run?
-void TryRunTics (void);
+void __near TryRunTics (void);
 
 
 #endif

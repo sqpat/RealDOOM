@@ -62,7 +62,7 @@ extern uint16_t                     reloadlump;
 extern int8_t*                   reloadname;
 #define SCRATCH_FILE_LOAD_LOCATION  (filelump_t __far*)(0x50000000)
 
-void W_AddFile(int8_t *filename)
+void __near W_AddFile(int8_t *filename)
 {
 	wadinfo_t			header;
 	lumpinfo_t __far*		lump_p;

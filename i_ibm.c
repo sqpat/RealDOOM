@@ -223,7 +223,7 @@ void I_WaitVBL(int16_t vbls)
 // Palette source must use 8 bit RGB elements.
 //
 
-void I_SetPalette(int8_t paletteNumber) {
+void __near I_SetPalette(int8_t paletteNumber) {
 	byte __far* gammatablelookup;
 	int16_t i;
 
@@ -766,7 +766,7 @@ void I_InitDiskFlash(void)
 //
 // I_InitGraphics
 //
-void I_InitGraphics(void)
+void __near I_InitGraphics(void)
 {
 	if (novideo) {
 		return;
