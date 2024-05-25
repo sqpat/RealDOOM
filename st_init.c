@@ -75,7 +75,7 @@
  
 
 
-void ST_loadGraphics(void)
+void __near ST_loadGraphics(void)
 {
 
 	int8_t         i;
@@ -201,7 +201,7 @@ void ST_loadGraphics(void)
 	// 23096 total
 }
 
-void ST_loadData(void)
+void __near ST_loadData(void)
 {
 	//todo move this too
 	int16_t lu_palette = W_GetNumForName("PLAYPAL");
@@ -211,7 +211,7 @@ void ST_loadData(void)
 	ST_loadGraphics();
 }
 
-void ST_Init(void)
+void __near ST_Init(void)
 {
 	ST_loadData();
 	Z_QuickMapPhysics();

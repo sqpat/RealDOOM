@@ -15,14 +15,12 @@ file i_main.obj
 file i_quit.obj
 file i_ibm.obj
 file i_sound.obj
-file tables.obj
 file d_main.obj
 file d_net.obj
 file g_game.obj
 file m_misc.obj
 file am_map.obj
 file st_stuff.obj
-file st_lib.obj
 file hu_stuff.obj
 file hu_lib.obj
 file m_menu.obj

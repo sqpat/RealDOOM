@@ -321,6 +321,15 @@ uint16_t cachedrenderplayertics = 0;
 #endif
 
 
+//
+// D_StartTitle
+//
+void __far D_StartTitle(void)
+{
+	gameaction = ga_nothing;
+	demosequence = -1;
+    advancedemo = true;
+}
 
 extern mobj_t __far * SAVEDUNIT;
 extern mobj_pos_t __far * SAVEDUNIT_POS;
@@ -650,7 +659,7 @@ int8_t                    *pagename;
 void __near D_PageTicker (void)
 {
     if (--pagetic < 0)
-        D_AdvanceDemo ();
+	    advancedemo = true;
 }
 
 
@@ -671,16 +680,7 @@ void __near D_PageDrawer (void)
 	 V_DrawFullscreenPatch(pagename, 0);
 }
 
-
-//
-// D_AdvanceDemo
-// Called after each demo or intro demosequence finishes
-//
-void __near D_AdvanceDemo (void)
-{
-    advancedemo = true;
-}
-
+ 
 
 //
 // This cycles through the demo sequences.

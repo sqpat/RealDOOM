@@ -142,15 +142,7 @@ void __far D_InitStrings() {
 }
 
 
-//
-// D_StartTitle
-//
-void __near D_StartTitle(void)
-{
-	gameaction = ga_nothing;
-	demosequence = -1;
-	D_AdvanceDemo();
-}
+
 
 //
 // D_GetCursorColumn

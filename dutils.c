@@ -25,7 +25,7 @@
 // Returns a 1 if the cheat was successful, 0 if failed.
 //
 int8_t
-cht_CheckCheat
+__near cht_CheckCheat
 ( cheatseq_t __near*	cht,
 	int8_t		key )
 {
@@ -53,7 +53,7 @@ cht_CheckCheat
 }
 
 void
-cht_GetParam
+__near cht_GetParam
 ( cheatseq_t __near*	cht,
   int8_t __near*		buffer )
 {

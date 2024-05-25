@@ -39,14 +39,14 @@
 boolean __near ST_Responder (event_t __far* ev);
 
 // Called by main loop.
-void ST_Ticker (void);
+void __near ST_Ticker (void);
 
 // Called by main loop.
-void ST_Drawer (boolean fullscreen, boolean refresh);
+void __near ST_Drawer (boolean fullscreen, boolean refresh);
 
 
 // Called by startup code.
-void ST_Init (void);
+void __near ST_Init (void);
 
 
 

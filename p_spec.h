@@ -53,7 +53,7 @@ int16_t __near twoSided (int16_t		sector, int16_t		line );
 short_height_t __near P_FindHighestOrLowestFloorSurrounding(int16_t secnum, int8_t isHigh);
 short_height_t __near P_FindNextHighestFloor(int16_t secnum,short_height_t		currentheight );
 short_height_t __near P_FindLowestOrHighestCeilingSurrounding(int16_t secnum, int8_t ishigh);
-int16_t __near getNextSectorList (int16_t* linenums,int16_t	sec,int16_t* secnums,int16_t linecount,boolean onlybacksecnum);
+int16_t __near getNextSectorList (int16_t __near* linenums,int16_t	sec,int16_t __near* secnums,int16_t linecount,boolean onlybacksecnum);
 void __near P_FindSectorsFromLineTag ( int8_t		linetag,int16_t*		foundsectors, boolean includespecials);
 uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max );
 

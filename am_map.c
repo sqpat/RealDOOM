@@ -154,17 +154,17 @@ static mline_t l;
 
 
 #ifdef __DEMO_ONLY_BINARY
-void AM_Drawer(void) {
+void __far AM_Drawer(void) {
 }
 
-void AM_Ticker(void) {
+void __far AM_Ticker(void) {
 }
 
-boolean AM_Responder(event_t __far* ev){
+boolean __far AM_Responder(event_t __far* ev){
 	return false;
 }
 
-void AM_Stop(void) {
+void __far AM_Stop(void) {
 }
 
 #else

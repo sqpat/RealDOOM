@@ -50,7 +50,6 @@ GLOBOBJS = &
  i_main.obj &
  i_ibm.obj &
  i_sound.obj &
- tables.obj &
  f_finale.obj &
  d_init.obj &
  d_main.obj &
@@ -99,7 +98,6 @@ GLOBOBJS = &
  st_init.obj &
  st_setup.obj &
  st_stuff.obj &
- st_lib.obj &
  hu_setup.obj &
  hu_stuff.obj &
  hu_lib.obj &

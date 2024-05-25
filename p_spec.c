@@ -90,7 +90,7 @@ int16_t __near twoSided( int16_t	sector,int16_t	line ){
 }
 
 
-int16_t __near getNextSectorList(int16_t* linenums,int16_t	sec,int16_t* secnums,int16_t linecount,boolean onlybacksecnums){
+int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t __near* secnums,int16_t linecount,boolean onlybacksecnums){
 	
 	int16_t i = 0;
 	int16_t skipped = 0;

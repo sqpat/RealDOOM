@@ -13,7 +13,7 @@
 // GNU General Public License for more details.
 //
 // DESCRIPTION:
-// 	The status bar widget code.
+//  The status bar widget code.
 //
 
 #ifndef __STLIB__
@@ -42,17 +42,17 @@ typedef struct
 {
     // upper right-hand corner
     //  of the number (right-justified)
-	int16_t 	x;
-	int16_t 	y;
+ int16_t  x;
+ int16_t  y;
 
     // max # of digits in number
-	int16_t width;
+ int16_t width;
 
     // last number value
-	int16_t 	oldnum;
+ int16_t  oldnum;
 
     // list of patches for 0-9
-	uint16_t __near* patch_offset;
+ uint16_t __near* patch_offset;
 
 } st_number_t;
 
@@ -63,11 +63,11 @@ typedef struct
 typedef struct
 {
     // number information
-    st_number_t		num;
+    st_number_t  num;
 
     // percent sign graphic
-    //patch_t*		p;
-	uint16_t  patch_offset;
+    //patch_t*  p;
+ uint16_t  patch_offset;
     
 } st_percent_t;
 
@@ -77,19 +77,19 @@ typedef struct
 typedef struct
 {
      // center-justified location of icons
-	int16_t 		x;
-	int16_t 		y;
+ int16_t   x;
+ int16_t   y;
 
     // last icon number
-	int16_t 		oldinum;
+ int16_t   oldinum;
 
     // pointer to current icon
 
-	// pointer to boolean stating
+ // pointer to boolean stating
     //  whether to update icon
 
     // list of icons
- 	uint16_t __near*		patch_offset;
+  uint16_t __near*  patch_offset;
     
 } st_multicon_t;
 
@@ -97,67 +97,7 @@ typedef struct
 
  
 
-
-//
-// Widget creation, access, and update routines
-//
-
-// Initializes widget library.
-// More precisely, initialize STMINUS,
-//  everything else is done somewhere else.
-//
-
-
-// Number widget routines
-void
-STlib_initNum
-( st_number_t __near*		num,
-	int16_t 		x,
-	int16_t 		y,
-	uint16_t __near*		pl,
-	int16_t 		width );
-
-void
-STlib_drawNum
-(st_number_t __near*	n,
-	boolean	refresh,
-	int16_t num);
-
-// Percent widget routines
-void
-STlib_initPercent
-( st_percent_t __near*		per,
-	int16_t 		x,
-	int16_t 		y,
-	uint16_t __near*		pl,
-	uint16_t 		percent
-);
-
-
-void
-STlib_updatePercent
-( st_percent_t __near*		per,
-	int16_t 		refresh,
-	int16_t			num);
-
-
-// Multiple Icon widget routines
-void
-STlib_initMultIcon
-( st_multicon_t __near*	mi,
-	int16_t 		x,
-	int16_t 		y,
-	uint16_t __near*		il);
-
-
-void
-STlib_updateMultIcon
-( st_multicon_t __near*	mi,
-  boolean		refresh,
-	int16_t			inum,
-	boolean is_binicon);
  
-
 
 // ready-weapon widget
 extern st_number_t      w_ready;

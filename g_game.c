@@ -1197,6 +1197,7 @@ extern int16_t compositecacheevictcount;
 
 #endif
 
+extern advancedemo;
 
 boolean G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
@@ -1255,7 +1256,7 @@ boolean G_CheckDemoStatus (void)  {
         respawnparm = false;
         fastparm = false;
         nomonsters = false;
-        D_AdvanceDemo (); 
+        advancedemo = true;
         return true; 
     } 
  

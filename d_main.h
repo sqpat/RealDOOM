@@ -43,8 +43,7 @@ void __near D_PostEvent (event_t __far* ev);
 //
 void __near D_PageTicker (void);
 void __near D_PageDrawer (void);
-void __near D_AdvanceDemo (void);
-void __near D_StartTitle (void);
+void __far D_StartTitle (void);
 
 
 

@@ -93,15 +93,15 @@ uint16_t         keys[NUMCARDS] = { 61200u, 61096u, 60992u, 60872u, 60752u, 6063
 
 // face status patches
 uint16_t         faces[ST_NUMFACES] = { 43216u,
-		42408u, 41600u, 40720u, 39836u, 38992u,
-		38176u, 37352u, 36544u, 35736u, 34936u,
-		34048u, 33164u, 32320u, 31504u, 30680u,
-		29856u, 29028u, 28204u, 27308u, 26412u,
-		25568u, 24752u, 23928u, 23088u, 22252u,
-		21420u, 20512u, 19568u, 18724u, 17908u,
-		17084u, 16240u, 15404u, 14560u, 13652u,
-		12668u, 11824u, 11008u, 10184u, 9376u,
-		8540u
+        42408u, 41600u, 40720u, 39836u, 38992u,
+        38176u, 37352u, 36544u, 35736u, 34936u,
+        34048u, 33164u, 32320u, 31504u, 30680u,
+        29856u, 29028u, 28204u, 27308u, 26412u,
+        25568u, 24752u, 23928u, 23088u, 22252u,
+        21420u, 20512u, 19568u, 18724u, 17908u,
+        17084u, 16240u, 15404u, 14560u, 13652u,
+        12668u, 11824u, 11008u, 10184u, 9376u,
+        8540u
 
 };
 
@@ -167,7 +167,7 @@ uint8_t      st_randomnumber;
 // Yeah, right...
 uint8_t   cheat_mus_seq[] =
 {
-	'i', 'd', 'm', 'u', 's', 1, 0, 0, 0xff
+    'i', 'd', 'm', 'u', 's', 1, 0, 0, 0xff
 };
 
 uint8_t   cheat_choppers_seq[] =
@@ -214,7 +214,7 @@ uint8_t   cheat_powerup_seq[7][10] =
     {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'r', 0xff}, // beholdr
     {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'a', 0xff}, // beholda
     {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'l', 0xff}, // beholdl
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 0xff}	 // behold
+    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 0xff}     // behold
 };
 
 
@@ -276,10 +276,9 @@ void __near ST_refreshBackground(void)
 
 // Respond to keyboard input events,
 //  intercept cheats.
-boolean
-__near ST_Responder (event_t __far* ev)
+boolean __near ST_Responder (event_t __far* ev)
 {
-	int8_t           i;
+    int8_t           i;
     
   // Filter automap on/off.
   if (ev->type == ev_keyup
@@ -307,62 +306,62 @@ __near ST_Responder (event_t __far* ev)
       // 'dqd' cheat for toggleable god mode
       if (cht_CheckCheat(&cheat_god, ev->data1))
       {
-		  player.cheats ^= CF_GODMODE;
+          player.cheats ^= CF_GODMODE;
         if (player.cheats & CF_GODMODE)
         {
             playerMobj->health = 100;
           
-		  player.health = 100;
-		  player.message = STSTR_DQDON;
+          player.health = 100;
+          player.message = STSTR_DQDON;
         }
         else 
-			player.message = STSTR_DQDOFF;
+            player.message = STSTR_DQDOFF;
       }
       // 'fa' cheat for killer fucking arsenal
       else if (cht_CheckCheat(&cheat_ammonokey, ev->data1))
       {
-		  player.armorpoints = 200;
-		  player.armortype = 2;
+          player.armorpoints = 200;
+          player.armortype = 2;
         
         for (i=0;i<NUMWEAPONS;i++)
-			player.weaponowned[i] = true;
+            player.weaponowned[i] = true;
         
         for (i=0;i<NUMAMMO;i++)
-			player.ammo[i] = player.maxammo[i];
+            player.ammo[i] = player.maxammo[i];
         
-		player.message = STSTR_FAADDED;
+        player.message = STSTR_FAADDED;
       }
       // 'kfa' cheat for key full ammo
       else if (cht_CheckCheat(&cheat_ammo, ev->data1))
       {
-		  player.armorpoints = 200;
-		  player.armortype = 2;
+          player.armorpoints = 200;
+          player.armortype = 2;
         
         for (i=0;i<NUMWEAPONS;i++)
-			player.weaponowned[i] = true;
+            player.weaponowned[i] = true;
         
         for (i=0;i<NUMAMMO;i++)
-			player.ammo[i] = player.maxammo[i];
+            player.ammo[i] = player.maxammo[i];
         
         for (i=0;i<NUMCARDS;i++)
-			player.cards[i] = true;
+            player.cards[i] = true;
         
-		player.message = STSTR_KFAADDED;
+        player.message = STSTR_KFAADDED;
       }
       // 'mus' cheat for changing music
       else if (cht_CheckCheat(&cheat_mus, ev->data1))
       {
         
-		  int8_t    buf[3];
-		  int16_t             musnum;
+          int8_t    buf[3];
+          int16_t             musnum;
         
-		  player.message = STSTR_MUS;
+          player.message = STSTR_MUS;
         cht_GetParam(&cheat_mus, buf);
 #if (EXE_VERSION < EXE_VERSION_ULTIMATE)
         musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
           
         if (((buf[0]-'0')*10 + buf[1]-'0') > 35)
-			player.message = STSTR_NOMUS;
+            player.message = STSTR_NOMUS;
         else
           S_ChangeMusic(musnum, 1);
 #else
@@ -371,7 +370,7 @@ __near ST_Responder (event_t __far* ev)
           musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
           
           if (((buf[0]-'0')*10 + buf[1]-'0') > 35)
-			  players.message = STSTR_NOMUS;
+              players.message = STSTR_NOMUS;
           else
             S_ChangeMusic(musnum, 1);
         }
@@ -380,7 +379,7 @@ __near ST_Responder (event_t __far* ev)
           musnum = mus_e1m1 + (buf[0]-'1')*9 + (buf[1]-'1');
           
           if (((buf[0]-'1')*9 + buf[1]-'1') > 31)
-			  players.message = STSTR_NOMUS;
+              players.message = STSTR_NOMUS;
           else
             S_ChangeMusic(musnum, 1);
         }
@@ -388,22 +387,22 @@ __near ST_Responder (event_t __far* ev)
       }
       else if(!commercial && cht_CheckCheat(&cheat_noclip, ev->data1))
       { 
-		  player.cheats ^= CF_NOCLIP;
+          player.cheats ^= CF_NOCLIP;
         
         if (player.cheats & CF_NOCLIP)
-			player.message = STSTR_NCON;
+            player.message = STSTR_NCON;
         else
-			player.message = STSTR_NCOFF;
+            player.message = STSTR_NCOFF;
       }
       else if (commercial
           && cht_CheckCheat(&cheat_commercial_noclip, ev->data1))
       {
-		  player.cheats ^= CF_NOCLIP;
+          player.cheats ^= CF_NOCLIP;
         
         if (player.cheats & CF_NOCLIP)
-			player.message = STSTR_NCON;
+            player.message = STSTR_NCON;
         else
-			player.message = STSTR_NCOFF;
+            player.message = STSTR_NCOFF;
       }
       // 'behold?' power-up cheats
       for (i=0;i<6;i++)
@@ -413,41 +412,41 @@ __near ST_Responder (event_t __far* ev)
           if (!player.powers[i])
             P_GivePower( i);
           else if (i!=pw_strength)
-			  player.powers[i] = 1;
+              player.powers[i] = 1;
           else
-			  player.powers[i] = 0;
+              player.powers[i] = 0;
           
-		  player.message = STSTR_BEHOLDX;
+          player.message = STSTR_BEHOLDX;
         }
       }
       
       // 'behold' power-up menu
       if (cht_CheckCheat(&cheat_powerup[6], ev->data1)) {
-		  player.message = STSTR_BEHOLD;
+          player.message = STSTR_BEHOLD;
       } else if (cht_CheckCheat(&cheat_choppers, ev->data1)) {
-		  // 'choppers' invulnerability & chainsaw
-		  player.weaponowned[wp_chainsaw] = true;
-		  player.powers[pw_invulnerability] = true;
-		  player.message = STSTR_CHOPPERS;
+          // 'choppers' invulnerability & chainsaw
+          player.weaponowned[wp_chainsaw] = true;
+          player.powers[pw_invulnerability] = true;
+          player.message = STSTR_CHOPPERS;
       } else if (cht_CheckCheat(&cheat_mypos, ev->data1)) {
-		  // 'mypos' for player position
-		  static int8_t     buf[ST_MSGWIDTH];
-		
-		sprintf(buf, "ang=0x%lx;x,y=(0x%lx,0x%lx)",
+          // 'mypos' for player position
+          static int8_t     buf[ST_MSGWIDTH];
+        
+        sprintf(buf, "ang=0x%lx;x,y=(0x%lx,0x%lx)",
                 playerMobj_pos->angle,
-				playerMobj_pos->x,
-				playerMobj_pos->y);
-		//memcpy(player.messagestring, buf, 40);
-		player.messagestring = buf;
+                playerMobj_pos->x,
+                playerMobj_pos->y);
+        //memcpy(player.messagestring, buf, 40);
+        player.messagestring = buf;
       }
     }
     
     // 'clev' change-level cheat
     if (cht_CheckCheat(&cheat_clev, ev->data1))
     {
-		int8_t              buf[3];
-		int8_t               epsd;
-		int8_t               map;
+        int8_t              buf[3];
+        int8_t               epsd;
+        int8_t               map;
       
       cht_GetParam(&cheat_clev, buf);
       
@@ -468,7 +467,7 @@ __near ST_Responder (event_t __far* ev)
        || (commercial && map > 0 && map <= 40))
       {
           // So be it.
-		  player.message = STSTR_CLEV;
+          player.message = STSTR_CLEV;
           G_DeferedInitNew(gameskill, epsd, map);
       }
 #else
@@ -476,7 +475,7 @@ __near ST_Responder (event_t __far* ev)
        || (commercial && map > 0 && map <= 40))
       {
           // So be it.
-		  players.message = STSTR_CLEV;
+          players.message = STSTR_CLEV;
           G_DeferedInitNew(gameskill, epsd, map);
       }
 #endif
@@ -487,9 +486,9 @@ __near ST_Responder (event_t __far* ev)
 
 
 
-int16_t ST_calcPainOffset(void)
+int16_t __near ST_calcPainOffset(void)
 {
-	int16_t         health;
+    int16_t         health;
     static int16_t  lastcalc;
     static int16_t  oldhealth = -1;
     
@@ -510,15 +509,15 @@ int16_t ST_calcPainOffset(void)
 // the precedence of expressions is:
 //  dead > evil grin > turned head > straight ahead
 //
-void ST_updateFaceWidget(void)
+void __near ST_updateFaceWidget(void)
 {
-	int8_t         i;
+    int8_t         i;
     angle_t     badguyangle;
     angle_t     diffang;
     static int8_t  lastattackdown = -1;
     static int8_t  priority = 0;
     boolean     doevilgrin;
-	mobj_pos_t __far* plyrattacker_pos;
+    mobj_pos_t __far* plyrattacker_pos;
 
     if (priority < 10) {
         // dead
@@ -561,15 +560,15 @@ void ST_updateFaceWidget(void)
                 st_facecount = ST_TURNCOUNT;
                 st_faceindex = ST_calcPainOffset() + ST_OUCHOFFSET;
             } else {
-				 
-				plyrattacker_pos = &mobjposlist[player.attackerRef];
-				badguyangle.wu = R_PointToAngle2(playerMobj_pos->x,
-											    playerMobj_pos->y,
+                 
+                plyrattacker_pos = &mobjposlist[player.attackerRef];
+                badguyangle.wu = R_PointToAngle2(playerMobj_pos->x,
+                                                playerMobj_pos->y,
                                               plyrattacker_pos->x,
                                               plyrattacker_pos->y);
                 
                 if (badguyangle.wu > playerMobj_pos->angle.wu) {
-					//TODO optimize. Shouldnt need to do a 32 bit subtract to figure this out?
+                    //TODO optimize. Shouldnt need to do a 32 bit subtract to figure this out?
 
                     // whether right or left
                     diffang.wu = badguyangle.wu - playerMobj_pos->angle.wu;
@@ -618,17 +617,17 @@ void ST_updateFaceWidget(void)
     if (priority < 6) {
         // rapid firing
         if (player.attackdown) {
-			if (lastattackdown == -1) {
-				lastattackdown = ST_RAMPAGEDELAY;
-			} else if (!--lastattackdown) {
+            if (lastattackdown == -1) {
+                lastattackdown = ST_RAMPAGEDELAY;
+            } else if (!--lastattackdown) {
                 priority = 5;
                 st_faceindex = ST_calcPainOffset() + ST_RAMPAGEOFFSET;
                 st_facecount = 1;
                 lastattackdown = 1;
             }
-		} else {
-			lastattackdown = -1;
-		}
+        } else {
+            lastattackdown = -1;
+        }
     }
   
     if (priority < 5) {
@@ -655,27 +654,27 @@ void ST_updateFaceWidget(void)
 
 }
 
-void ST_updateWidgets(void)
+void __near ST_updateWidgets(void)
 {
-	int8_t i;
+    int8_t i;
 
  
-	// update keycard multiple widgets
-	for (i = 0; i < 3; i++)
-	{
-		keyboxes[i] = player.cards[i] ? i : -1;
+    // update keycard multiple widgets
+    for (i = 0; i < 3; i++)
+    {
+        keyboxes[i] = player.cards[i] ? i : -1;
 
-		if (player.cards[i + 3])
-			keyboxes[i] = i + 3;
-	}
+        if (player.cards[i + 3])
+            keyboxes[i] = i + 3;
+    }
 
-	// refresh everything if this is him coming back to life
-	ST_updateFaceWidget();
+    // refresh everything if this is him coming back to life
+    ST_updateFaceWidget();
 
 
 }
 
-void ST_Ticker (void)
+void __near ST_Ticker (void)
 {
 
     st_randomnumber = M_Random();
@@ -686,12 +685,12 @@ void ST_Ticker (void)
 
 int8_t st_palette = 0;
 
-void ST_doPaletteStuff(void)
+void __near ST_doPaletteStuff(void)
 {
 
-	int8_t         palette;
-	int16_t         cnt;
-	int16_t         bzc;
+    int8_t         palette;
+    int16_t         cnt;
+    int16_t         bzc;
 
     cnt = player.damagecount;
 
@@ -732,79 +731,182 @@ void ST_doPaletteStuff(void)
 
     if (palette != st_palette)
     {
-		st_palette = palette;
-		I_SetPalette (palette);
+        st_palette = palette;
+        I_SetPalette (palette);
     }
 
 }
 
-void ST_drawWidgets(boolean refresh)
-{
-	int8_t i;
 
-	// used by w_arms[] widgets
 
-	if (st_statusbaron) {
-		for (i = 0; i < 4; i++) {
-			STlib_drawNum(&w_ammo[i], refresh, player.ammo[i]);
-			STlib_drawNum(&w_maxammo[i], refresh, player.maxammo[i]);
-		}
 
-		STlib_drawNum(&w_ready, refresh, player.ammo[weaponinfo[player.readyweapon].ammo]);
-
-		STlib_updatePercent(&w_health, refresh, player.health);
-		STlib_updatePercent(&w_armor, refresh, player.armorpoints);
-		STlib_updateMultIcon(&w_armsbg, refresh, true, true);
- 
-		for (i = 0; i < 6; i++) {
-			STlib_updateMultIcon(&w_arms[i], refresh, player.weaponowned[i + 1], false);
-		}
-		STlib_updateMultIcon(&w_faces, refresh, st_faceindex, false);
-
-		for (i = 0; i < 3; i++) {
-			STlib_updateMultIcon(&w_keyboxes[i], refresh, keyboxes[i], false);
-		}
-	}
-}
-
-void ST_Drawer(boolean fullscreen, boolean refresh)
-{
-	st_statusbaron = (!fullscreen) || automapactive;
-	st_firsttime = st_firsttime || refresh;
-	updatedthisframe = false;
-	// Do red-/gold-shifts from damage/items
-	ST_doPaletteStuff();
-
-	// If just after ST_Start(), refresh all
-	if (st_firsttime) {
-		st_firsttime = false;
-		updatedthisframe = true;
+void __near STlib_updateflag() {
+	if (!updatedthisframe) {
 		Z_QuickMapStatus();
-
-		// draw status bar background to off-screen buff
-		ST_refreshBackground();
-
-		// and refresh all widgets
-		ST_drawWidgets(true);
-	} else {
-		// Otherwise, update as little as possible
-		ST_drawWidgets(false);
-	}
-
-	if (updatedthisframe) {
-		Z_QuickMapPhysics();
+		updatedthisframe = true;
 	}
 }
 
 
+void __near STlib_updateMultIcon ( st_multicon_t __near* mi, boolean  refresh, int16_t inum, boolean        is_binicon) {
+    int16_t            w;
+    int16_t            h;
+    int16_t            x;
+    int16_t            y;
+    patch_t __far*    old;
+    if ((mi->oldinum != inum || refresh) && (inum != -1)) {
+        STlib_updateflag();
+        if (!is_binicon && mi->oldinum != -1) {
+            old = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patch_offset[mi->oldinum]));
+            x = mi->x - (old->leftoffset);
+            y = mi->y - (old->topoffset);
+            w = (old->width);
+            h = (old->height);
+
+#ifdef CHECK_FOR_ERRORS
+            if (y - ST_Y < 0) {
+                I_Error("updateMultIcon: y - ST_Y < 0");
+            }
+#endif
+            V_CopyRect(x, y - ST_Y,   w, h, x, y);
+        } 
+            
+        // binicon only has an array length zero and inum is always 1; this inum-is_binicon
+        // to work on the same line of code.
+        V_DrawPatch(mi->x, mi->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patch_offset[inum-is_binicon])));
+
+        mi->oldinum = inum;
+    }
+}
+
+
+void __near STlib_drawNum ( st_number_t __near*	number, boolean	refresh, int16_t num) {
+    int16_t	numdigits = number->width;
+	patch_t __far* p0;
+	int16_t w;
+	int16_t h;
+	int16_t x = number->x;
+    
+    int16_t	neg;
+
+	// [crispy] redraw only if necessary
+	if (number->oldnum == num && !refresh) {
+		return;
+	}
+	
+	STlib_updateflag();
+
+	p0 = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patch_offset[0]));
+	w = (p0->width);
+	h = (p0->height);
+
+
+	number->oldnum = num;
+
+    neg = num < 0;
+
+    if (neg)
+    {
+	if (numdigits == 2 && num < -9)
+	    num = -9;
+	else if (numdigits == 3 && num < -99)
+	    num = -99;
+	
+	num = -num;
+    }
+
+    // clear the area
+    x = number->x - numdigits*w;
+
+    V_CopyRect(x, number->y - ST_Y, w*numdigits, h, x, number->y);
+
+    // if non-number, do not draw it
+    if (num == 1994)
+		return;
+
+    x = number->x;
+
+	// in the special case of 0, you draw 0
+	if (!num) {
+		V_DrawPatch(x - w, number->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patch_offset[0])));
+	}
+    // draw the new number
+    while (num && numdigits--) {
+		x -= w;
+		V_DrawPatch(x, number->y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, number->patch_offset[ num % 10 ])));
+		num /= 10;
+    }
+ 
+}
 
 
 
-void ST_unloadGraphics(void)
+void __near STlib_updatePercent ( st_percent_t __near* per,int16_t refresh, int16_t value) {
+    if (refresh) {
+        STlib_updateflag();
+        V_DrawPatch(per->num.x, per->num.y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, per->patch_offset)));
+    }
+    STlib_drawNum(&per->num, refresh, value);
+}
+
+void __near ST_drawWidgets(boolean refresh) {
+    int8_t i;
+
+    // used by w_arms[] widgets
+
+    if (st_statusbaron) {
+        for (i = 0; i < 4; i++) {
+            STlib_drawNum(&w_ammo[i], refresh, player.ammo[i]);
+            STlib_drawNum(&w_maxammo[i], refresh, player.maxammo[i]);
+        }
+
+        STlib_drawNum(&w_ready, refresh, player.ammo[weaponinfo[player.readyweapon].ammo]);
+
+        STlib_updatePercent(&w_health, refresh, player.health);
+        STlib_updatePercent(&w_armor, refresh, player.armorpoints);
+        STlib_updateMultIcon(&w_armsbg, refresh, true, true);
+ 
+        for (i = 0; i < 6; i++) {
+            STlib_updateMultIcon(&w_arms[i], refresh, player.weaponowned[i + 1], false);
+        }
+        STlib_updateMultIcon(&w_faces, refresh, st_faceindex, false);
+
+        for (i = 0; i < 3; i++) {
+            STlib_updateMultIcon(&w_keyboxes[i], refresh, keyboxes[i], false);
+        }
+    }
+}
+
+void __near ST_Drawer(boolean fullscreen, boolean refresh)
 {
-	// dont worry about unloading...
+    st_statusbaron = (!fullscreen) || automapactive;
+    st_firsttime = st_firsttime || refresh;
+    updatedthisframe = false;
+    // Do red-/gold-shifts from damage/items
+    ST_doPaletteStuff();
 
+    // If just after ST_Start(), refresh all
+    if (st_firsttime) {
+        st_firsttime = false;
+        updatedthisframe = true;
+        Z_QuickMapStatus();
+
+        // draw status bar background to off-screen buff
+        ST_refreshBackground();
+
+        // and refresh all widgets
+        ST_drawWidgets(true);
+    } else {
+        // Otherwise, update as little as possible
+        ST_drawWidgets(false);
+    }
+
+    if (updatedthisframe) {
+        Z_QuickMapPhysics();
+    }
 }
-  
 
+
+
+ 
 
