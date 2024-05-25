@@ -63,8 +63,7 @@ extern uint8_t		setdetail;
 //
 // R_InitTextureMapping
 //
-void __near R_InitTextureMapping(void)
-{
+void __near R_InitTextureMapping(void) {
 	int16_t			x;
 	fixed_t_union	t;
 	fixed_t		focallength;
@@ -199,8 +198,7 @@ void __near R_InitTextureMapping(void)
 //
 // R_ExecuteSetViewSize
 //
-void __far R_ExecuteSetViewSize(void)
-{
+void __far R_ExecuteSetViewSize(void) {
 
 	fixed_t_union temp;
 	temp.h.fracbits = 0;

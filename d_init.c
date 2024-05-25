@@ -248,6 +248,27 @@ void __near D_RedrawTitle(int8_t __near *title) {
 extern int8_t*	defaultfile;
 
 
+ 
+
+//
+// M_CheckParm
+// Checks for the given parameter
+// in the program's command line arguments.
+// Returns the argument number (1 to argc-1)
+// or 0 if not present
+int16_t __near M_CheckParm (int8_t *check)
+{
+    int16_t		i;
+
+    for (i = 1;i<myargc;i++)
+    {
+	if ( !strcasecmp(check, myargv[i]) )
+	    return i;
+    }
+
+    return 0;
+}
+
 
 
 void __near M_LoadDefaults(void)

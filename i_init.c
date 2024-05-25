@@ -41,7 +41,6 @@ extern boolean grmode;
 
 
 extern byte __far *pcscreen;
-extern byte __far *currentscreen;
 extern byte __far *destview; 
 extern fixed_t_union destscreen;
 extern void ( __interrupt __far_func *oldkeyboardisr) (void);
@@ -50,8 +49,8 @@ extern boolean mousepresent;
 extern boolean usemouse;
 
 extern void __interrupt I_KeyboardISR(void);
-extern int16_t I_ResetMouse(void);
-extern void I_StartupSound(void);
+extern int16_t __far I_ResetMouse(void);
+extern void __far I_StartupSound(void);
 
 
 #define KBDQUESIZE 32
@@ -114,6 +113,7 @@ extern struct SREGS segregs;
 
 
 
+int16_t __near M_CheckParm (int8_t *check);
 
 
 //

@@ -817,6 +817,137 @@ void __far P_SpawnSpecials(void);
  
  
 
+
+ 
+extern int16_t spriteLRU[4];
+extern int16_t activespritepages[4];
+ 
+extern int32_t totalpatchsize;
+
+
+extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
+extern int16_t textureLRU[4];
+extern uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
+extern int16_t currentflatpage[4];
+extern uint8_t activespritenumpages[4];
+
+
+extern int8_t spritecache_head;
+extern int8_t spritecache_tail;
+
+extern int8_t flatcache_head;
+extern int8_t flatcache_tail;
+
+extern int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
+
+extern int8_t patchcache_head;
+extern int8_t patchcache_tail;
+
+extern int8_t texturecache_head;
+extern int8_t texturecache_tail;
+
+extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES];
+extern uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
+extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
+extern int8_t skytextureloaded;
+
+extern int32_t fps_rendered_frames_since_last_measure;
+extern ticcount_t fps_last_measure_start_tic;
+
+
+#define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4
+
+ // called in between levels, frees level stuff like sectors, frees thinkers, etc.
+void __near Z_FreeConventionalAllocations() {
+	int16_t i;
+
+	// we should be paged to physics now - should be ok
+	FAR_memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
+
+	//erase the level data region
+	FAR_memset(((byte __far*) uppermemoryblock), 0, size_segs);
+
+	// todo make this area less jank. We want to free all the ems 4.0 region level data...
+	FAR_memset(MK_FP(0x7000, 0), 0, 65535);
+	
+	FAR_memset(nightmarespawns, 0, sizeof(mapthing_t) * MAX_THINKERS);
+
+	Z_QuickMapRender();
+	//FAR_memset(MK_FP(0x7000, 0), 0, 65535);
+
+	//reset texturee cache
+	FAR_memset(compositetexturepage, 0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
+	FAR_memset(compositetextureoffset,0xFF, sizeof(uint8_t) * (MAX_TEXTURES));
+	memset(usedcompositetexturepagemem, 00, sizeof(uint8_t) * NUM_TEXTURE_PAGES);
+	
+	FAR_memset(patchpage, 0xFF, sizeof(uint8_t) * (MAX_PATCHES));
+	FAR_memset(patchoffset, 0xFF, sizeof(uint8_t) * (MAX_PATCHES));
+	memset(usedpatchpagemem, 00, sizeof(uint8_t) * NUM_PATCH_CACHE_PAGES);
+
+	FAR_memset(spritepage, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
+	FAR_memset(spriteoffset, 0xFF, sizeof(uint8_t) * (MAX_SPRITE_LUMPS));
+	memset(usedspritepagemem, 00, sizeof(uint8_t) * NUM_SPRITE_CACHE_PAGES);
+
+#ifdef FPS_DISPLAY
+	fps_rendered_frames_since_last_measure = 0;
+	fps_last_measure_start_tic = gametic;
+#endif
+
+	skytextureloaded = 0;
+
+	spritecache_head = -1;
+	spritecache_tail = -1;
+
+	flatcache_head = -1;
+	flatcache_tail = -1;
+
+
+	patchcache_head = -1;
+	patchcache_tail = -1;
+
+	texturecache_head = -1;
+	texturecache_tail = -1;
+
+	// just run thru the whole bunch in one go instead of multiple 
+	for ( i = 0; i < NUM_SPRITE_CACHE_PAGES+NUM_FLAT_CACHE_PAGES+NUM_PATCH_CACHE_PAGES+NUM_TEXTURE_PAGES; i++) {
+		spritecache_nodes[i].prev = -1; // Mark unused entries
+		spritecache_nodes[i].next = -1; // Mark unused entries
+		spritecache_nodes[i].pagecount = 0;
+	}  
+
+	for ( i = 0; i < NUM_FLAT_CACHE_PAGES; i++) {
+		allocatedflatsperpage[i] = 0;
+	}  
+
+
+
+	FAR_memset(flatindex, 0xFF, sizeof(uint8_t) * numflats);
+	
+	currentflatpage[0] = -1;
+	currentflatpage[1] = -1;
+	currentflatpage[2] = -1;
+	currentflatpage[3] = -1;
+
+	Z_QuickMapPhysics();
+
+	totalpatchsize = 0;
+
+	for (i = 0; i < 4; i++) {
+		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		textureLRU[i] = i;
+		activespritepages[i] = FIRST_SPRITE_CACHE_LOGICAL_PAGE + i;
+		spriteLRU[i] = i;
+
+		pageswapargs[pageswapargs_rend_offset + i * 2]	  = FIRST_TEXTURE_LOGICAL_PAGE + i;
+		pageswapargs[pageswapargs_spritecache_offset + i * 2] = FIRST_SPRITE_CACHE_LOGICAL_PAGE + i;
+
+		activenumpages[i] = 0;
+		activespritenumpages[i] = 0;
+	}
+
+}
+
+
 //
 // P_SetupLevel
 //

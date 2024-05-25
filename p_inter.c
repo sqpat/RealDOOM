@@ -59,12 +59,7 @@ int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
 // Returns false if the ammo can't be picked up at all
 //
 
-boolean
-__near P_GiveAmmo
-( 
-  ammotype_t	ammo,
-  int16_t		num )
-{
+boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
     int16_t		oldammo;
 	
     if (ammo == am_noammo)
@@ -150,12 +145,7 @@ __near P_GiveAmmo
 // P_GiveWeapon
 // The weapon name may have a MF_DROPPED flag ored in.
 //
-boolean
-__near P_GiveWeapon
-( 
-  weapontype_t	weapon,
-  boolean	dropped )
-{
+boolean __near P_GiveWeapon (  weapontype_t	weapon, boolean	dropped ) {
     boolean	gaveammo;
     boolean	gaveweapon;
 	
@@ -188,11 +178,7 @@ __near P_GiveWeapon
 // P_GiveBody
 // Returns false if the body isn't needed at all
 //
-boolean
-__near P_GiveBody
-( 
-  int16_t		num )
-{
+boolean __near P_GiveBody (  int16_t num ) {
     if (player.health >= MAXHEALTH)
 		return false;
 		
@@ -213,11 +199,7 @@ __near P_GiveBody
 // Returns false if the armor is worse
 // than the current armor.
 //
-boolean
-__near P_GiveArmor
-( 
-  int16_t		armortype )
-{
+boolean __near P_GiveArmor(  int16_t		armortype ) {
     int16_t		hits;
 	
     hits = armortype*100;
@@ -235,13 +217,9 @@ __near P_GiveArmor
 //
 // P_GiveCard
 //
-void
-__near P_GiveCard
-( 
-  card_t	card )
-{
+void __near P_GiveCard (  card_t	card ) {
     if (player.cards[card])
-	return;
+		return;
     
 	player.bonuscount = BONUSADD;
 	player.cards[card] = 1;
@@ -251,49 +229,39 @@ __near P_GiveCard
 //
 // P_GivePower
 //
-boolean
-__far P_GivePower
-( 
-	int16_t /*powertype_t*/	power )
-{
-    if (power == pw_invulnerability)
-    {
+boolean __far P_GivePower (  int16_t /*powertype_t*/	power ) {
+    if (power == pw_invulnerability){
 		player.powers[power] = INVULNTICS;
-	return true;
+		return true;
     }
     
-    if (power == pw_invisibility)
-    {
-
-	player.powers[power] = INVISTICS;
-	playerMobj_pos->flags |= MF_SHADOW;
-	return true;
+    if (power == pw_invisibility){
+		player.powers[power] = INVISTICS;
+		playerMobj_pos->flags |= MF_SHADOW;
+		return true;
     }
     
-    if (power == pw_infrared)
-    {
+    if (power == pw_infrared) {
 		player.powers[power] = INFRATICS;
-	return true;
+		return true;
     }
     
-    if (power == pw_ironfeet)
-    {
+    if (power == pw_ironfeet){
 		player.powers[power] = IRONTICS;
-	return true;
+		return true;
     }
     
-    if (power == pw_strength)
-    {
-	P_GiveBody (100);
-	player.powers[power] = 1;
-	return true;
+    if (power == pw_strength){
+		P_GiveBody (100);
+		player.powers[power] = 1;
+		return true;
     }
 	
     if (player.powers[power])
-	return false;	// already got it
+		return false;	// already got it
 		
 	player.powers[power] = 1;
-    return true;
+	return true;
 }
 
 
@@ -301,14 +269,7 @@ __far P_GivePower
 //
 // P_TouchSpecialThing
 //
-void
-__near P_TouchSpecialThing
-( mobj_t __far*	special,
-  mobj_t __far*	toucher,
-	mobj_pos_t  __far*special_pos,
-	mobj_pos_t  __far*toucher_pos
-	)
-{
+void __near P_TouchSpecialThing ( mobj_t __far*	special, mobj_t __far*	toucher, mobj_pos_t  __far*special_pos, mobj_pos_t  __far*toucher_pos ) {
      int8_t		i;
     fixed_t	delta;
     int16_t		sound;
@@ -319,11 +280,9 @@ __near P_TouchSpecialThing
 		
     delta = specialz - toucher_pos->z.w;
 
-    if (delta > toucher->height.w
-	|| delta < -8*FRACUNIT)
-    {
-	// out of reach
-	return;
+    if (delta > toucher->height.w || delta < -8*FRACUNIT) {
+		// out of reach
+		return;
     }
     
 	
@@ -331,8 +290,9 @@ __near P_TouchSpecialThing
 
     // Dead thing touching.
     // Can happen with a sliding player corpse.
-    if (toucher->health <= 0)
-	return;
+    if (toucher->health <= 0){
+		return;
+	}
 
     // Identify by sprite.
     switch (specialsprite) {
@@ -625,12 +585,7 @@ extern mobj_pos_t __far* setStateReturn_pos;
 //
 // KillMobj
 //
-void
-__near P_KillMobj
-(	mobj_t __far* source,
-	mobj_t __far*	target,
-	mobj_pos_t __far*	target_pos)
-{
+void __near P_KillMobj (	mobj_t __far* source, mobj_t __far*	target, mobj_pos_t __far*	target_pos) {
     mobjtype_t	item;
 	//todoaddr inline later
 	int16_t (__far  * getSpawnHealth)(uint8_t) = getSpawnHealthAddr;
@@ -729,13 +684,7 @@ __near P_KillMobj
 // Source can be NULL for slime, barrel explosions
 // and other environmental stuff.
 //
-void
-__near P_DamageMobj
-(mobj_t __far*	target,
-	mobj_t __far*	inflictor,
-	mobj_t __far*	source,
-	int16_t 		damage )
-{
+void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t __far*	source, int16_t 		damage ) {
 	angle_t	ang;
     int16_t		saved;
     fixed_t	thrust;

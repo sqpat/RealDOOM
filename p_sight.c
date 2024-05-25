@@ -44,11 +44,7 @@ fixed_t_union		cachedt2y;
 // Returns side 0 (front), 1 (back), or 2 (on).
 //
 
-int16_t P_DivlineSide
-( fixed_t_union	x,
-  fixed_t_union	y,
-  divline_t __near*	node )
-{
+int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) {
     fixed_t_union	dx;
 	fixed_t_union	dy;
     fixed_t	left;
@@ -87,14 +83,11 @@ int16_t P_DivlineSide
     
     if (left == right)
 		return 2;
+
     return 1;		// back side
 }
 
-int16_t  P_DivlineSide16
-( int16_t	x,
-  int16_t	y,
-  divline_t __near*	node )
-{
+int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node ) {
     fixed_t_union	dx;
     fixed_t_union	dy;
     fixed_t	left;
@@ -144,11 +137,7 @@ int16_t  P_DivlineSide16
     return 1;		// back side
 }
 
-int16_t  P_DivlineSideNode
-( fixed_t_union	x,
-  fixed_t_union	y,
-  node_t __far*	node )
-{
+int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, node_t __far*	node ) {
 
 	// NOTE: these nodes have proper 16 bit integer fields.
 
@@ -249,11 +238,7 @@ P_InterceptVector2
 }
 
 */
-fixed_t
-P_InterceptVector2
-(divline_t __near*	v2,
-	divline_t __near*	v1 )
-{
+fixed_t __near P_InterceptVector2 (divline_t __near* v2, divline_t __near*	v1 ) {
     fixed_t	frac;
     fixed_t	num;
     fixed_t	den;
@@ -277,8 +262,7 @@ P_InterceptVector2
 // Returns true
 //  if strace crosses the given subsector successfully.
 //
-boolean P_CrossSubsector (uint16_t subsecnum)
-{
+boolean __near P_CrossSubsector (uint16_t subsecnum) {
     int16_t		segnum;
 	int16_t linedefOffset;
 	line_t __far*		line;
@@ -444,8 +428,7 @@ boolean P_CrossSubsector (uint16_t subsecnum)
 // Returns true
 //  if strace crosses the given node successfully.
 //
-boolean P_CrossBSPNode (uint16_t bspnum)
-{
+boolean __near P_CrossBSPNode (uint16_t bspnum) {
     node_t __far*	bsp;
     int8_t		side;
 
@@ -483,16 +466,7 @@ boolean P_CrossBSPNode (uint16_t bspnum)
 //  if a straight line between t1 and t2 is unobstructed.
 // Uses REJECT.
 //
-boolean
-__near P_CheckSight
-( 
-  
-	mobj_t __far* t1,
-	mobj_t __far* t2,
-	mobj_pos_t __far* t1_pos,
-	mobj_pos_t __far* t2_pos
-)
-{
+boolean __near P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos ) {
 
     fixed_t_union		pnum;
     uint16_t		bytenum;

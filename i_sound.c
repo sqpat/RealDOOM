@@ -219,6 +219,10 @@ void I_UpdateSoundParams(int16_t handle, uint8_t vol, uint8_t sep, uint8_t pitch
 
 void I_sndArbitrateCards(void)
 {
+
+     // todo when we redo this, checkparm is __near to init code so do that there
+
+
 	/*
     boolean gus, adlib, sb, midi, codec, ensoniq;
     int16_t i, wait, dmxlump;
@@ -356,7 +360,7 @@ void I_sndArbitrateCards(void)
 // I_StartupSound
 // Inits all sound stuff
 //
-void I_StartupSound(void)
+void __far I_StartupSound(void)
 {
 
     //

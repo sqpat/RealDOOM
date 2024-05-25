@@ -50,7 +50,7 @@ uint16_t EMS_PAGE;
 extern int16_t emshandle;
 
 
-byte __far* Z_InitEMS()
+byte __far* __near Z_InitEMS()
 {
 
 	// 4 mb
@@ -165,7 +165,7 @@ extern int16_t pageswapargoff;
 
 
 
-void Z_GetEMSPageMap() {
+void __near Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
 	int16_t __far* pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
@@ -271,7 +271,7 @@ extern int16_t emshandle;
 void PSetupEndFunc();
 
  
-void Z_LoadBinaries() {
+void __near Z_LoadBinaries() {
 	int i;
 	FILE* fp;
 	// currently in physics region!

@@ -50,27 +50,6 @@ int16_t		myargc;
 int8_t**		myargv;
 
  
- 
-
-//
-// M_CheckParm
-// Checks for the given parameter
-// in the program's command line arguments.
-// Returns the argument number (1 to argc-1)
-// or 0 if not present
-int16_t M_CheckParm (int8_t *check)
-{
-    int16_t		i;
-
-    for (i = 1;i<myargc;i++)
-    {
-	if ( !strcasecmp(check, myargv[i]) )
-	    return i;
-    }
-
-    return 0;
-}
-
 
 //
 // M_Random
@@ -306,35 +285,6 @@ default_t	defaults[28] =
 
 int8_t*	defaultfile;
 
-
-//
-// M_SaveDefaults
-//
-void M_SaveDefaults (void)
-{
-    int8_t		i;
-    int8_t		v;
-    FILE*	f;
-	
-    f = fopen (defaultfile, "w");
-    if (!f)
-	    return; // can't write the file, but don't complain
-		
-    for (i=0 ; i< NUM_DEFAULTS; i++) {
-        if (defaults[i].scantranslate){
-            defaults[i].location = &defaults[i].untranslated;
-        }
-        //if (defaults[i].defaultvalue > -0xfff && defaults[i].defaultvalue < 0xfff) {
-            v = *defaults[i].location;
-            fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
-        //} else {
-        //    fprintf (f,"%s\t\t\"%s\"\n",defaults[i].name,
-        //        * (int8_t **) (defaults[i].location));
-        //}
-    }
-	
-    fclose (f);
-}
 
 
 

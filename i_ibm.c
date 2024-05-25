@@ -127,7 +127,7 @@ extern uint8_t usemouse;
 #define PEL_DATA                0x3c9
 #define PEL_MASK                0x3c6
 
-boolean grmode;
+boolean grmode = 0;
 
 
 #define VBLCOUNTER 34000 // hardware tics to a frame
@@ -176,8 +176,6 @@ uint8_t kbdtail, kbdhead;
 #define SC_RSHIFT       0x36
 #define SC_LSHIFT       0x2a
 void I_WaitVBL(int16_t vbls);
-void I_ShutdownSound(void);
-void I_ShutdownTimer(void);
 
 
 union REGS in, out;
@@ -403,25 +401,6 @@ void I_FinishUpdate(void)
 
 
 
-//
-// I_ReadScreen
-// Reads the screen currently displayed into a linear buffer.
-//
-void I_ReadScreen(byte __far *scr)
-{
-	uint16_t i;
-	uint16_t j;
-
-
-	outp(GC_INDEX, GC_READMAP);
-    for (i = 0; i < 4; i++) {
-		outp(GC_INDEX+1, i);
-        for (j = 0; j < (uint16_t)SCREENWIDTH*(uint16_t)SCREENHEIGHT/4u; j++) {
-			scr[i+j*4u] = currentscreen[j];
-        }
-    }
-
-}
 
 
 //
@@ -440,7 +419,7 @@ void I_ReadScreen(byte __far *scr)
 #define SC_LEFTARROW    0x4b
 #define SC_RIGHTARROW   0x4d
 
-void I_StartTic(void)
+void __near I_StartTic(void)
 {
 	uint8_t k;
 	event_t ev;
@@ -556,7 +535,7 @@ void __interrupt I_KeyboardISR(void)
 // Mouse
 //
 
-int16_t I_ResetMouse(void)
+int16_t __far I_ResetMouse(void)
 {
         regs.w.ax = 0; // reset
         intx86 (0x33, &regs, &regs);
@@ -608,14 +587,14 @@ void I_ReadMouse(void)
 
 
 
-void I_Shutdown(void);
+void __near I_Shutdown(void);
 
  
 
 //
 // I_Error
 //
-void I_Error (int8_t *error, ...)
+void __far I_Error (int8_t *error, ...)
 {
     va_list argptr;
 	printf(error, argptr);
@@ -627,17 +606,15 @@ void I_Error (int8_t *error, ...)
     exit(1);
 }
 
-
+#ifdef ENABLE_DISK_FLASH
 // draw disk icon
-void I_BeginRead(void)
-{
-	/*
+void __far I_BeginRead(void) {
 
-    byte __far *src, __far *dest;
-	int32_t y;
+    byte __far *src;
+    byte __far *dest;
+	int8_t y;
 
-    if (!grmode)
-    {
+    if (!grmode) {
         return;
     }
 
@@ -650,8 +627,8 @@ void I_BeginRead(void)
     outp(GC_INDEX + 1, inp(GC_INDEX + 1) | 1);
 #endif
     // copy to backup
-    src = currentscreen + 184 * 80 + 304 / 4;
-	dest = 0xac000000 + 184 * 80 + 288 / 4;
+    src = currentscreen + 0x39CC; // 184 * 80 + 304 / 4;
+	dest = ((byte __far*)0xac0039C8); //+ 0x39C8; // 184 * 80 + 288 / 4;
     for (y = 0; y<16; y++)
     {
 #ifndef	SKIP_DRAW
@@ -665,8 +642,8 @@ void I_BeginRead(void)
     }
 
     // copy disk over
-    dest = currentscreen + 184 * 80 + 304 / 4;
-	src = 0xac000000 + 184 * 80 + 304 / 4;
+    dest = currentscreen + 0x39CC;// + 184 * 80 + 304 / 4;
+	src = ((byte __far*)0xac0039CC);// + 184 * 80 + 304 / 4;
     for (y = 0; y<16; y++)
     {
 #ifndef	SKIP_DRAW
@@ -685,13 +662,11 @@ void I_BeginRead(void)
 	outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
 #endif
-	*/
 }
 
 // erase disk icon
-void I_EndRead(void)
+void __far I_EndRead(void)
 {
-	/*
     byte __far *src, __far *dest;
 	int32_t y;
 
@@ -712,8 +687,8 @@ void I_EndRead(void)
 #endif
 
     // copy disk over
-    dest = currentscreen + 184 * 80 + 304 / 4;
-	src = 0xac000000 + 184 * 80 + 288 / 4;
+    dest = currentscreen + 0x39CC;// 184 * 80 + 304 / 4;
+	src = ((byte __far*)0xac0039C8);// + 184 * 80 + 288 / 4;
     for (y = 0; y<16; y++)
     {
 #ifndef	SKIP_DRAW
@@ -731,7 +706,6 @@ void I_EndRead(void)
 	outp(GC_INDEX, GC_MODE);
     outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~1);
 #endif
-	*/
 }
 
 
@@ -739,22 +713,21 @@ void I_EndRead(void)
 // Disk icon flashing
 //
 
-void I_InitDiskFlash(void)
-{
-	/*
-	//todo: when re-implementing, pull this out
-	byte diskgraphicbtyes[392];  // cdrom is 328 and can fit in here too. EDIT: removed the cd-rom support
-
-	void *pic;
+void __near I_InitDiskFlash(void) {
+    // cache the disk graphic
 	fixed_t_union temp;
-
-    pic = W_CacheLumpNameEMSAsPatch("STDISK", PU_CACHE);
+    W_CacheLumpNameDirect("STDISK", diskgraphicbytes);
 	temp = destscreen;
 	destscreen.w = 0xac000000;
-	V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, pic);
+	V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16,  (patch_t __far*) diskgraphicbytes);
 	destscreen = temp;
-	*/
 }
+#else
+void __far I_BeginRead(void){ }
+void __far I_EndRead(void){ }
+void __near I_InitDiskFlash(void){ }
+
+#endif
 
 //
 // I_InitGraphics

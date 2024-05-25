@@ -270,8 +270,10 @@ texturedefs_offset CE76:0000
 
 // note: 0x9400-0x9FFF is for lumpinfo...
 
-#define size_segs_physics    (MAX_SEGS_PHYSICS_SIZE)
-#define segs_physics    ((seg_physics_t __far*)    (0x90000000))
+#define size_segs_physics     (MAX_SEGS_PHYSICS_SIZE)
+#define size_diskgraphicbytes (392)
+#define segs_physics          ((seg_physics_t __far*)    (0x90000000))
+#define diskgraphicbytes      ((byte __far*) (MAKE_FULL_SEGMENT(segs_physics, size_segs_physics)))
 
 /*
 #define InfoFuncLoadAddr      ((byte __far *)  (0x92C00000))

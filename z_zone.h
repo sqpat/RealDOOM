@@ -73,11 +73,10 @@ extern uint16_t EMS_PAGE;
 
 
 
-byte __far* Z_InitEMS(void);
+byte __far* __near Z_InitEMS(void);
 //void Z_InitUMB(void);
-void Z_FreeConventionalAllocations();
+void __far Z_QuickMapUnmapAll();
 
-void Z_ShutdownEMS();
  
 #define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
 #define SCRATCH_ADDRESS_7000 (byte __far* )0x70000000
@@ -271,10 +270,9 @@ void Z_UnmapLumpInfo5000();
 void Z_QuickMapColumnOffsets5000();
 void Z_QuickMapRender7000();
 
-void Z_GetEMSPageMap();
-void Z_LinkEMSVariables();
+void __near Z_GetEMSPageMap();
 //void Z_LinkConventionalVariables();
-void Z_LoadBinaries();
+void __near Z_LoadBinaries();
 
 void Z_ClearDeadCode();
 void Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage);

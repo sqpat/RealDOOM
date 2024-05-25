@@ -30,9 +30,6 @@ extern  int8_t**	myargv;
 extern int16_t	prndindex;
 
 
-// Returns the position of the given parameter
-// in the arg list (0 if not found).
-int16_t M_CheckParm (int8_t* check);
 
 boolean
 M_WriteFile
@@ -66,7 +63,6 @@ void M_AddToBox16( int16_t __near*	box,int16_t	x,  int16_t	y );
 
 
  
-void M_SaveDefaults (void);
 
 #define NUM_DEFAULTS 28
 

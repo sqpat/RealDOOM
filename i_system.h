@@ -44,7 +44,7 @@ extern volatile uint32_t ticcount;
 // called before processing each tic in a frame.
 // Quick syncronous operations are performed here.
 // Can call D_PostEvent.
-void I_StartTic (void);
+void __near I_StartTic (void);
 
 // Asynchronous interrupt functions should maintain private queues
 // that are read by the synchronous functions
@@ -54,13 +54,13 @@ void I_StartTic (void);
 
 // Called by M_Responder when quit is selected.
 // Clean exit, displays sell blurb.
-void I_Quit (void);
+void __near I_Quit (void);
 
 
-void I_Error (int8_t *error, ...);
+void __far I_Error (int8_t *error, ...);
 
-void I_BeginRead(void);
-void I_EndRead(void);
+void __far I_BeginRead(void);
+void __far I_EndRead(void);
 
 //
 //  MUSIC I/O
@@ -120,7 +120,6 @@ void I_SetChannels(int8_t channels);
 
 
 
-void I_ShutdownGraphics(void);
 
 // Takes full 8 bit values.
 void __near I_SetPalette(int8_t paletteNumber);
@@ -131,10 +130,9 @@ void I_FinishUpdate(void);
 // Wait for vertical retrace or pause a bit.
 void I_WaitVBL(int16_t count);
 
-void I_BeginRead(void);
-void I_EndRead(void);
+void __far I_BeginRead(void);
+void __far I_EndRead(void);
 
-void I_ReadScreen(byte __far* scr);
 
 
 #endif

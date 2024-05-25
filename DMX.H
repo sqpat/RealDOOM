@@ -35,9 +35,7 @@ typedef struct task
 } task;
 
 
-void TS_Shutdown(void);
 void TS_ScheduleTask(void(*Function)(void ), uint16_t rate);
-void TS_Terminate();
 void TS_Dispatch(void);
 void TS_SetTaskRate(task *Task, uint16_t rate);
 

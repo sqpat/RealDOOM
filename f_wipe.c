@@ -29,6 +29,7 @@
 #include "f_wipe.h"
 #include <dos.h>
 #include "memory.h"
+#include <conio.h>
 
 
 #ifdef SKIPWIPE
@@ -155,6 +156,30 @@ int16_t __near wipe_doMelt (
     }
 
     return done;
+
+}
+
+#define GC_INDEX                0x3CE
+#define GC_READMAP              4
+extern byte __far *currentscreen;
+
+//
+// I_ReadScreen
+// Reads the screen currently displayed into a linear buffer.
+//
+void __near I_ReadScreen(byte __far *scr)
+{
+	uint16_t i;
+	uint16_t j;
+
+
+	outp(GC_INDEX, GC_READMAP);
+    for (i = 0; i < 4; i++) {
+		outp(GC_INDEX+1, i);
+        for (j = 0; j < (uint16_t)SCREENWIDTH*(uint16_t)SCREENHEIGHT/4u; j++) {
+			scr[i+j*4u] = currentscreen[j];
+        }
+    }
 
 }
 

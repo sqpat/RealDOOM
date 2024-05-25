@@ -27,7 +27,7 @@ extern struct SREGS segregs;
 // I_ShutdownSound
 // Shuts down all sound stuff
 //
-void I_ShutdownSound(void)
+void __near I_ShutdownSound(void)
 {
 	/*
 	ticcount_t s;
@@ -42,7 +42,7 @@ void I_ShutdownSound(void)
 //
 // I_ShutdownGraphics
 //
-void I_ShutdownGraphics(void) {
+void __near I_ShutdownGraphics(void) {
 	if (*(byte __far*)0x449 == 0x13) // don't reset mode if it didn't get set
 	{
 		regs.w.ax = 3;
@@ -63,18 +63,16 @@ extern volatile int32_t TS_InInterrupt;
 
 void TS_FreeTaskList(void);
 void TS_SetClockSpeed(int32_t speed);
-uint16_t TS_SetTimer(int32_t TickBase);
 void TS_SetTimerToMaxTaskRate(void);
 //void __interrupt __far_func TS_ServiceSchedule(void);
 void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
-void TS_Startup(void);
 //void RestoreRealTimeClock(void);
 
 
 
 extern boolean mousepresent;
 extern boolean usemouse;
-int16_t I_ResetMouse(void);
+int16_t __far I_ResetMouse(void);
 
 
 /*---------------------------------------------------------------------
@@ -83,7 +81,7 @@ int16_t I_ResetMouse(void);
    Ends processing of a specific task.
 ---------------------------------------------------------------------*/
 
-void TS_Terminate()
+void __near TS_Terminate()
 
 {
 	//_disable();
@@ -100,7 +98,7 @@ void TS_Terminate()
    Ends processing of all tasks.
 ---------------------------------------------------------------------*/
 
-void TS_Shutdown(void) {
+void __near TS_Shutdown(void) {
 	if (TS_Installed)
 	{
 		TS_FreeTaskList();
@@ -115,7 +113,7 @@ void TS_Shutdown(void) {
 	}
 }
 
-void I_ShutdownTimer(void)
+void __near I_ShutdownTimer(void)
 {
 	TS_Terminate();
 	TS_Shutdown();
@@ -123,7 +121,7 @@ void I_ShutdownTimer(void)
 
 
 
-void I_ShutdownKeyboard(void)
+void __near I_ShutdownKeyboard(void)
 {
 	if (oldkeyboardisr)
 		_dos_setvect(KEYBOARDINT, oldkeyboardisr);
@@ -134,7 +132,7 @@ void I_ShutdownKeyboard(void)
 //
 // ShutdownMouse
 //
-void I_ShutdownMouse(void) {
+void __near I_ShutdownMouse(void) {
 	if (!mousepresent) {
 		return;
 	}
@@ -187,27 +185,12 @@ void Z_ShutdownUMB() {
 */
 
 
-int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17 };
-extern int16_t pagenum9000;
-extern int16_t pageswapargs[total_pages];
-
-void Z_QuickMap(int16_t offset, int8_t count);
 
 
-void Z_QuickMapUnmapAll() {
-	int16_t i;
-	for (i = 0; i < 24; i++) {
-		pageswapargs[i * 2 + 0] = -1;
-		pageswapargs[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
-	}
-
-	Z_QuickMap(0, 24);
 
 
-}
 
-
-void Z_ShutdownEMS() {
+void __near Z_ShutdownEMS() {
 
 
 	int16_t result;
@@ -233,7 +216,7 @@ void Z_ShutdownEMS() {
 // return to default system state
 //
 // called from I_Error
-void I_Shutdown(void)
+void __near I_Shutdown(void)
 {
 	I_ShutdownGraphics();
 	I_ShutdownSound();
@@ -244,6 +227,40 @@ void I_Shutdown(void)
 	//Z_ShutdownUMB();
 }
 
+extern default_t	defaults[28];
+extern int8_t* defaultfile;
+
+
+//
+// M_SaveDefaults
+//
+void __near M_SaveDefaults (void)
+{
+    int8_t		i;
+    int8_t		v;
+    FILE*	f;
+	
+    f = fopen (defaultfile, "w");
+    if (!f)
+	    return; // can't write the file, but don't complain
+		
+    for (i=0 ; i< NUM_DEFAULTS; i++) {
+        if (defaults[i].scantranslate){
+            defaults[i].location = &defaults[i].untranslated;
+        }
+        //if (defaults[i].defaultvalue > -0xfff && defaults[i].defaultvalue < 0xfff) {
+            v = *defaults[i].location;
+            fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
+        //} else {
+        //    fprintf (f,"%s\t\t\"%s\"\n",defaults[i].name,
+        //        * (int8_t **) (defaults[i].location));
+        //}
+    }
+	
+    fclose (f);
+}
+
+
 
 //
 // I_Quit
@@ -251,7 +268,7 @@ void I_Shutdown(void)
 // Shuts down net game, saves defaults, prints the exit text message,
 // goes to text mode, and exits.
 //
-void I_Quit(void)
+void __near I_Quit(void)
 {
 
 	if (demorecording)
