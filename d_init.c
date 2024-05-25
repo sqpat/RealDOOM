@@ -530,6 +530,43 @@ void DUMP_MEMORY_TO_FILE() {
 int16_t main ( int16_t		argc, int8_t**	argv ) ;
  //void fakefunc();
 
+extern int8_t demoname[32];
+extern boolean timingdemo;
+extern int8_t* defdemoname;
+
+//
+// G_RecordDemo 
+// 
+void __near G_RecordDemo (int8_t* name) 
+{ 
+	int32_t                         maxsize;
+    int16_t i;    
+    usergame = false; 
+    strcpy (demoname, name); 
+    strcat (demoname, ".lmp"); 
+    maxsize = DEMO_MAX_SIZE;
+    i = M_CheckParm ("-maxdemo");
+    if (i && i<myargc-1) 
+            maxsize = atoi(myargv[i+1])*1024;
+    //demoend = demobuffer + maxsize;
+        
+    demorecording = true; 
+} 
+ 
+//
+// G_TimeDemo 
+//
+void __near G_TimeDemo (int8_t* name) 
+{        
+    nodrawers = M_CheckParm ("-nodraw"); 
+    noblit = M_CheckParm ("-noblit"); 
+    timingdemo = true; 
+    singletics = true; 
+
+    defdemoname = name; 
+    gameaction = ga_playdemo; 
+} 
+
 void __near W_AddFile(int8_t *filename);
 void __far D_DoomMain2(void)
 {

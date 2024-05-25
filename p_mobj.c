@@ -35,7 +35,7 @@
 #include "memory.h"
 
 
-void G_PlayerReborn ();
+void __far G_PlayerReborn ();
 
 
 void __near A_Explode(mobj_t __far* mobjmoRef, mobj_pos_t __far* thingy_pos);

@@ -864,8 +864,37 @@ void __near WI_loadData(void)
 
 }
 
- 
+     
+void        F_StartFinale (); 
 
+extern boolean secretexit;
+//
+// G_WorldDone 
+//
+void __near G_WorldDone (void) 
+{ 
+    gameaction = ga_worlddone; 
+
+    if (secretexit) 
+        player.didsecret = true; 
+
+    if ( commercial )
+    {
+        switch (gamemap)
+        {
+          case 15:
+          case 31:
+            if (!secretexit)
+                break;
+          case 6:
+          case 11:
+          case 20:
+          case 30:
+            F_StartFinale ();
+            break;
+        }
+    }
+} 
 
 
 void __near WI_unloadData(void){

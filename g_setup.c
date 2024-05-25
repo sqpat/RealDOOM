@@ -119,7 +119,7 @@ uint16_t   __far  R_CheckTextureNumForName(int8_t *name)
  
 
 
-void G_DoLoadLevel(void)
+void __near G_DoLoadLevel(void)
 {
 	//todoaddr inline later
 	//void (__far  * P_SetupLevel)(int8_t, int8_t, skill_t) = P_SetupLevelAddr;
@@ -167,12 +167,7 @@ void G_DoLoadLevel(void)
 
 
 
-void
-G_InitNew
-(skill_t       skill,
-	int8_t           episode,
-	int8_t           map)
-{
+void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t           map) {
 	int16_t             i;
 
 	if (paused)
@@ -291,34 +286,6 @@ G_InitNew
 
 }
 
-extern boolean         netdemo;
-extern skill_t d_skill;
-extern int8_t     d_episode;
-extern int8_t     d_map;
 
 
 
-
-void G_DoNewGame(void)
-{
-	demoplayback = false;
-	netdemo = false;
-	//playeringame[1] = playeringame[2] = playeringame[3] = 0;
-	respawnparm = false;
-	fastparm = false;
-	nomonsters = false;
-	G_InitNew(d_skill, d_episode, d_map);
-	gameaction = ga_nothing;
-}
-
-
-
-void G_DoWorldDone(void)
-{
-	gamestate = GS_LEVEL;
-	gamemap = wminfo.next + 1;
-	G_DoLoadLevel();
-	gameaction = ga_nothing;
-	viewactive = true;
-
-}

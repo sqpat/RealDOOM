@@ -359,6 +359,10 @@ void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize);
 #define FAR_read _far_read
 
 
+#define SAVEGAMESIZE    0x2c000
+// lets keep this comfortably 16 bit. otherwise how do we fit in ems without big rewrite?
+#define DEMO_MAX_SIZE 0xF800
+
 //#define FAR_fread fread
 //#define FAR_read read
 

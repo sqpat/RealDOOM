@@ -62,25 +62,21 @@
 #include "g_game.h"
 
 
-#define SAVEGAMESIZE    0x2c000
-// lets keep this comfortably 16 bit. otherwise how do we fit in ems without big rewrite?
-#define DEMO_MAX_SIZE 0xF800
 
 
-boolean G_CheckDemoStatus (void); 
-void    G_ReadDemoTiccmd (ticcmd_t __near* cmd); 
-void    G_WriteDemoTiccmd (ticcmd_t __near* cmd); 
-void    G_PlayerReborn (); 
-void    G_InitNew (skill_t skill, int8_t episode, int8_t map);
+boolean __far G_CheckDemoStatus (void); 
+void    __near G_ReadDemoTiccmd (ticcmd_t __near* cmd); 
+void    __near G_WriteDemoTiccmd (ticcmd_t __near* cmd); 
+void    __far G_PlayerReborn (); 
+void    __far G_InitNew (skill_t skill, int8_t episode, int8_t map);
  
   
-void    G_DoLoadLevel (void); 
-void    G_DoNewGame (void); 
-void    G_DoLoadGame (void); 
-void    G_DoPlayDemo (void); 
-void    G_DoCompleted (void); 
-void    G_DoWorldDone (void); 
-void    G_DoSaveGame (void); 
+void   __near G_DoLoadLevel (void); 
+void   __near G_DoNewGame (void); 
+void   __near G_DoLoadGame (void); 
+void   __near G_DoPlayDemo (void); 
+void   __near G_DoCompleted (void); 
+void   __near G_DoSaveGame (void); 
 
 //default_t	defaults[NUM_DEFAULTS];
  
@@ -427,7 +423,7 @@ void __near G_BuildTiccmd (int8_t index)
 // G_Responder  
 // Get info needed to make ticcmd_ts for the players.
 // 
-boolean G_Responder (event_t __far* ev)  {   // any other key pops up menu if in demos
+boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up menu if in demos
 	if (gameaction == ga_nothing && !singledemo &&
 		(demoplayback || gamestate == GS_DEMOSCREEN)) {
 		if (ev->type == ev_keydown ||
@@ -492,12 +488,42 @@ boolean G_Responder (event_t __far* ev)  {   // any other key pops up menu if in
 	return false;
 } 
  
+void __near G_DoWorldDone(void)
+{
+	gamestate = GS_LEVEL;
+	gamemap = wminfo.next + 1;
+	G_DoLoadLevel();
+	gameaction = ga_nothing;
+	viewactive = true;
+
+}
+
+
+extern boolean         netdemo;
+extern skill_t d_skill;
+extern int8_t     d_episode;
+extern int8_t     d_map;
+
+
+void __near G_DoNewGame(void)
+{
+	demoplayback = false;
+	netdemo = false;
+	//playeringame[1] = playeringame[2] = playeringame[3] = 0;
+	respawnparm = false;
+	fastparm = false;
+	nomonsters = false;
+	G_InitNew(d_skill, d_episode, d_map);
+	gameaction = ga_nothing;
+}
+
+
  
 //
 // G_Ticker
 // Make ticcmd_ts for the players.
 //
-void G_Ticker (void) 
+void __near G_Ticker (void) 
 { 
 	int8_t         buf;
     ticcmd_t __near*   cmd;
@@ -612,8 +638,7 @@ void G_Ticker (void)
 // G_PlayerFinishLevel
 // Can when a player completes a level.
 //
-void G_PlayerFinishLevel () 
-{ 
+void __near G_PlayerFinishLevel ()  { 
 
           
     memset (player.powers, 0, sizeof (player.powers));
@@ -631,7 +656,7 @@ void G_PlayerFinishLevel ()
 // Called after a player dies 
 // almost everything is cleared and initialized 
 //
-void G_PlayerReborn () { 
+void __far G_PlayerReborn () { 
  	int8_t         i;
 	int16_t         killcount;
 	int16_t         itemcount;
@@ -670,14 +695,14 @@ void G_PlayerReborn () {
 boolean         secretexit; 
 extern int8_t*    pagename; 
  
-void G_ExitLevel (void) 
+void __far G_ExitLevel (void) 
 { 
     secretexit = false; 
     gameaction = ga_completed; 
 } 
 
 // Here's for the german edition.
-void G_SecretExitLevel (void) 
+void __far G_SecretExitLevel (void) 
 { 
     // IF NO WOLF3D LEVELS, NO SECRET EXIT!
     if ( (commercial)
@@ -688,7 +713,7 @@ void G_SecretExitLevel (void)
     gameaction = ga_completed; 
 } 
  
-void G_DoCompleted (void)  { 
+void __near G_DoCompleted (void)  { 
          
     gameaction = ga_nothing; 
  
@@ -783,34 +808,6 @@ void G_DoCompleted (void)  {
     WI_Start (&wminfo); 
 } 
 
-
-//
-// G_WorldDone 
-//
-void G_WorldDone (void) 
-{ 
-    gameaction = ga_worlddone; 
-
-    if (secretexit) 
-        player.didsecret = true; 
-
-    if ( commercial )
-    {
-        switch (gamemap)
-        {
-          case 15:
-          case 31:
-            if (!secretexit)
-                break;
-          case 6:
-          case 11:
-          case 20:
-          case 30:
-            F_StartFinale ();
-            break;
-        }
-    }
-} 
  
 
 
@@ -822,7 +819,7 @@ extern boolean setsizeneeded;
 
 //int8_t    savename[256];
 
-void G_LoadGame (int8_t* name) 
+void __far G_LoadGame (int8_t* name) 
 { 
     //strcpy (savename, name); 
     //gameaction = ga_loadgame; 
@@ -831,7 +828,7 @@ void G_LoadGame (int8_t* name)
 #define VERSIONSIZE             16 
 
 
-void G_DoLoadGame (void) 
+void __near G_DoLoadGame (void) 
 { 
 	/*
 	filelength_t         length;
@@ -896,17 +893,13 @@ void G_DoLoadGame (void)
 // Called by the menu task.
 // Description is a 24 byte text string 
 //
-void
-G_SaveGame
-(int8_t   slot,
-  int8_t* description ) 
-{ 
+void __far G_SaveGame(int8_t   slot, int8_t* description ) { 
     savegameslot = slot; 
     strcpy (savedescription, description); 
     sendsave = true; 
 } 
  
-void G_DoSaveGame (void) 
+void __near G_DoSaveGame (void) 
 { 
 	/*
 	int8_t        name[100];
@@ -976,7 +969,7 @@ int8_t     d_episode;
 int8_t     d_map;
  
 void
-G_DeferedInitNew
+__near G_DeferedInitNew
 ( skill_t       skill,
 	int8_t           episode,
 	int8_t           map)
@@ -987,7 +980,7 @@ G_DeferedInitNew
     gameaction = ga_newgame; 
 } 
 
-void G_InitNew(skill_t       skill, int8_t           episode, int8_t           map);
+void __far G_InitNew(skill_t       skill, int8_t           episode, int8_t           map);
 
 
 
@@ -997,9 +990,8 @@ void G_InitNew(skill_t       skill, int8_t           episode, int8_t           m
 // DEMO RECORDING 
 // 
 #define DEMOMARKER              0x80
-#define DEMO_SEGMENT 0x5000
 
-void G_ReadDemoTiccmd (ticcmd_t __near* cmd) 
+void __near G_ReadDemoTiccmd (ticcmd_t __near* cmd) 
 { 
     // this is just used as an offset so lets just store as int;
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
@@ -1022,7 +1014,7 @@ void G_ReadDemoTiccmd (ticcmd_t __near* cmd)
 }
 
 
-void G_WriteDemoTiccmd (ticcmd_t __near* cmd) 
+void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd) 
 { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
 	Z_QuickMapDemo();
@@ -1053,52 +1045,8 @@ void G_WriteDemoTiccmd (ticcmd_t __near* cmd)
  
  
  
-//
-// G_RecordDemo 
-// 
-void G_RecordDemo (int8_t* name) 
-{ 
-	int32_t                         maxsize;
-    int16_t i;    
-    usergame = false; 
-    strcpy (demoname, name); 
-    strcat (demoname, ".lmp"); 
-    maxsize = DEMO_MAX_SIZE;
-    i = M_CheckParm ("-maxdemo");
-    if (i && i<myargc-1) 
-            maxsize = atoi(myargv[i+1])*1024;
-    //demoend = demobuffer + maxsize;
-        
-    demorecording = true; 
-} 
  
- 
-void G_BeginRecording (void) 
-{ 
-	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
-	Z_QuickMapDemo();
 
-    demo_p = 0;
-        
-    *demo_addr++ = VERSION;
-    *demo_addr++ = gameskill;
-    *demo_addr++ = gameepisode;
-    *demo_addr++ = gamemap;
-    *demo_addr++ = false;
-    *demo_addr++ = respawnparm;
-    *demo_addr++ = fastparm;
-    *demo_addr++ = nomonsters;
-    *demo_addr++ = 0;
-
-	*demo_addr++ = true;
-	*demo_addr++ = false;
-	*demo_addr++ = false;
-	*demo_addr++ = false;
-	
-	demo_p = (demo_addr - demobuffer);
-	Z_QuickMapPhysics();
-
-} 
  
 
 //
@@ -1107,13 +1055,13 @@ void G_BeginRecording (void)
 
 int8_t*   defdemoname; 
  
-void G_DeferedPlayDemo (int8_t* name) 
+void __far G_DeferedPlayDemo (int8_t* name) 
 { 
     defdemoname = name; 
     gameaction = ga_playdemo; 
 } 
  
-void G_DoPlayDemo (void) 
+void __near G_DoPlayDemo (void) 
 { 
     skill_t skill; 
 	int8_t             episode, map;
@@ -1160,19 +1108,6 @@ void G_DoPlayDemo (void)
 
 } 
 
-//
-// G_TimeDemo 
-//
-void G_TimeDemo (int8_t* name) 
-{        
-    nodrawers = M_CheckParm ("-nodraw"); 
-    noblit = M_CheckParm ("-noblit"); 
-    timingdemo = true; 
-    singletics = true; 
-
-    defdemoname = name; 
-    gameaction = ga_playdemo; 
-} 
  
  
 /* 
@@ -1199,7 +1134,7 @@ extern int16_t compositecacheevictcount;
 
 extern advancedemo;
 
-boolean G_CheckDemoStatus (void)  { 
+boolean __far G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
 #ifdef DETAILED_BENCH_STATS
 	uint32_t fps, fps2;

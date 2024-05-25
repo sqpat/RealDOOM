@@ -28,40 +28,30 @@
 // GAME
 //
 
-void G_InitNew (skill_t skill, int8_t episode, int8_t map);
+void __far G_InitNew (skill_t skill, int8_t episode, int8_t map);
 
 // Can be called by the startup code or M_Responder.
 // A normal game starts at map 1,
 // but a warp test can start elsewhere
-void G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
+void __near G_DeferedInitNew (skill_t skill, int8_t episode, int8_t map);
 
-void G_DeferedPlayDemo (int8_t* demo);
+void __far G_DeferedPlayDemo (int8_t* demo);
 
 // Can be called by the startup code or M_Responder,
 // calls P_SetupLevel or W_EnterWorld.
-void G_LoadGame (int8_t* name);
+void __far G_LoadGame (int8_t* name);
 
-void G_DoLoadGame (void);
 
 // Called by M_Responder.
-void G_SaveGame (int8_t slot, int8_t* description);
+void __far G_SaveGame (int8_t slot, int8_t* description);
 
-// Only called by startup code.
-void G_RecordDemo (int8_t* name);
+boolean __far G_CheckDemoStatus (void);
 
-void G_BeginRecording (void);
+void __far G_ExitLevel (void);
+void __far G_SecretExitLevel (void);
 
-void G_PlayDemo (int8_t* name);
-void G_TimeDemo (int8_t* name);
-boolean G_CheckDemoStatus (void);
 
-void G_ExitLevel (void);
-void G_SecretExitLevel (void);
-
-void G_WorldDone (void);
-
-void G_Ticker (void);
-boolean G_Responder (event_t __far*	ev);
+void __near G_Ticker (void);
 
 
 

@@ -143,6 +143,9 @@ void __near D_PostEvent (event_t __far* ev)
     eventhead = (++eventhead)&(MAXEVENTS-1);
 }
 
+
+boolean __near G_Responder (event_t __far* ev);
+
 //
 // D_ProcessEvents
 // Send all the events of the given timestamp down the responder chain
@@ -537,6 +540,33 @@ void __near D_Display (void)
 #endif
 }
  
+extern uint16_t demo_p;				// buffer
+
+void __near G_BeginRecording (void)  { 
+	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
+	Z_QuickMapDemo();
+
+    demo_p = 0;
+        
+    *demo_addr++ = VERSION;
+    *demo_addr++ = gameskill;
+    *demo_addr++ = gameepisode;
+    *demo_addr++ = gamemap;
+    *demo_addr++ = false;
+    *demo_addr++ = respawnparm;
+    *demo_addr++ = fastparm;
+    *demo_addr++ = nomonsters;
+    *demo_addr++ = 0;
+
+	*demo_addr++ = true;
+	*demo_addr++ = false;
+	*demo_addr++ = false;
+	*demo_addr++ = false;
+	
+	demo_p = (demo_addr - demobuffer);
+	Z_QuickMapPhysics();
+
+} 
 
 //
 //  D_DoomLoop

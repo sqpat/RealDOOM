@@ -639,6 +639,7 @@ This area used during intermission task
 
  
 
+#define DEMO_SEGMENT 0x5000
 
 
 #define demobuffer ((byte __far*) 0x50000000)
