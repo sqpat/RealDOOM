@@ -45,18 +45,17 @@
 // HEADS UP TEXT
 //
 
-void HU_Init(void);
-void HU_Start(void);
+void __near HU_Init(void);
+void __far HU_Start(void);
 
-boolean HU_Responder(event_t __far* ev);
+boolean __near HU_Responder(event_t __far* ev);
 
-void HU_Ticker(void);
-void HU_Drawer(void);
-int8_t HU_dequeueChatChar(void);
-void HU_Erase(void);
+void __near HU_Ticker(void);
+void __near HU_Drawer(void);
+void __near HU_Erase(void);
  
 
-extern	uint16_t hu_font[HU_FONTSIZE];
+extern uint16_t hu_font[HU_FONTSIZE];
 
 
 #endif

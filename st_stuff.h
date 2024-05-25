@@ -36,7 +36,7 @@
 //
 
 // Called by main loop.
-boolean ST_Responder (event_t __far* ev);
+boolean __near ST_Responder (event_t __far* ev);
 
 // Called by main loop.
 void ST_Ticker (void);

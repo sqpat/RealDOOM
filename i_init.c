@@ -161,8 +161,7 @@ void I_StartupKeyboard(void) {
 }
 
 
-void I_StartupDPMI(void);
-
+ 
 //
 // I_Init
 // hook interrupts and set graphics mode

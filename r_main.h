@@ -158,7 +158,7 @@ __far R_PointInSubsector
 void __far R_RenderPlayerView ();
 
 // Called by startup code.
-void R_Init (void);
+void __near R_Init (void);
 
 // Called by M_Responder.
 void __far R_SetViewSize (uint8_t blocks, uint8_t detail);

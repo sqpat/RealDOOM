@@ -98,13 +98,13 @@ typedef struct
 
 
 // returns success
-boolean HUlib_addCharToTextLine(hu_textline_t  __near*t, int8_t ch);
+boolean __near HUlib_addCharToTextLine(hu_textline_t  __near*t, int8_t ch);
 
 // draws tline
-void	HUlib_drawTextLine(hu_textline_t __near *l);
+void __near HUlib_drawTextLine(hu_textline_t __near *l);
 
 // erases text line
-void	HUlib_eraseTextLine(hu_textline_t __near *l);
+void __near HUlib_eraseTextLine(hu_textline_t __near *l);
 
 
 //
@@ -113,7 +113,7 @@ void	HUlib_eraseTextLine(hu_textline_t __near *l);
 
  
 
-void HUlib_addMessageToSText( int8_t*		msg );
+void __near HUlib_addMessageToSText( int8_t*		msg );
  
 
 // Input Text Line widget routines

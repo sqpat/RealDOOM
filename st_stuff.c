@@ -263,7 +263,7 @@ extern int8_t*    mapnames[];
 // STATUS BAR CODE
 //
 
-void ST_refreshBackground(void)
+void __near ST_refreshBackground(void)
 {
 
     if (st_statusbaron) {
@@ -277,7 +277,7 @@ void ST_refreshBackground(void)
 // Respond to keyboard input events,
 //  intercept cheats.
 boolean
-ST_Responder (event_t __far* ev)
+__near ST_Responder (event_t __far* ev)
 {
 	int8_t           i;
     

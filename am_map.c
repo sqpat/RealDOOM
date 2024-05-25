@@ -553,8 +553,7 @@ void __far AM_Start (void)
     }
 
 	AM_initVariables();
-	//AM_loadPics();
-}
+ }
 
 //
 // set the window scale to the maximum size

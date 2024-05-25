@@ -37,7 +37,7 @@ extern boolean	automapactive;	// in AM_map.c
 extern uint16_t		hu_font[HU_FONTSIZE];
 
 
-boolean HUlib_addCharToTextLine ( hu_textline_t __near* textline, int8_t ch ) {
+boolean __near HUlib_addCharToTextLine ( hu_textline_t __near* textline, int8_t ch ) {
 
 	if (textline->len == HU_MAXLINELENGTH) {
 		return false;
@@ -50,7 +50,7 @@ boolean HUlib_addCharToTextLine ( hu_textline_t __near* textline, int8_t ch ) {
 
 }
   
-void HUlib_drawTextLine ( hu_textline_t __near* textline) {
+void __near HUlib_drawTextLine ( hu_textline_t __near* textline) {
 
     int16_t			i;
     int16_t			w;
@@ -84,7 +84,7 @@ void HUlib_drawTextLine ( hu_textline_t __near* textline) {
 
 
 // sorta called by HU_Erase and just better darn get things straight
-void HUlib_eraseTextLine(hu_textline_t __near* textline) {
+void __near HUlib_eraseTextLine(hu_textline_t __near* textline) {
     uint16_t			lineheight = 8; // hacked to reduce page swaps so it might not work with custom wad?
     uint16_t			y;
     uint16_t			yoffset;
@@ -115,7 +115,7 @@ void HUlib_eraseTextLine(hu_textline_t __near* textline) {
 extern hu_stext_t	w_message;
 
 
-void HUlib_addMessageToSText (int8_t* msg ) {
+void __near HUlib_addMessageToSText (int8_t* msg ) {
 	hu_stext_t __near* 	stext = &w_message;
 	int16_t i;
 	hu_textline_t __near* textline;

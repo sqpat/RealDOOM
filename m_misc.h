@@ -65,8 +65,7 @@ uint8_t __far M_Random(void);
 void M_AddToBox16( int16_t __near*	box,int16_t	x,  int16_t	y );
 
 
-void M_LoadDefaults (void);
-
+ 
 void M_SaveDefaults (void);
 
 #define NUM_DEFAULTS 28

@@ -349,8 +349,7 @@ void __near P_LoadNodes(int16_t lump)
  
 
 void __far G_PlayerReborn();
-void __far HU_Start(void);
-
+ 
 
 
 extern mobj_t __far* setStateReturn;

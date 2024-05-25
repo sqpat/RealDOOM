@@ -98,7 +98,6 @@ typedef struct menu_s
 	int16_t               lastOn;         // last item user was on in menu
 } menu_t;
 
-void M_Init(void);
-
+ 
 
 #endif    

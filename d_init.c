@@ -70,7 +70,7 @@ extern uint8_t     musicVolume;
 extern int8_t      demosequence;
 //extern byte*		stringdata;
 
-void D_InitStrings() {
+void __far D_InitStrings() {
 
 	// load file
 	FILE* handle;
@@ -155,7 +155,7 @@ void D_StartTitle(void)
 //
 // D_GetCursorColumn
 //
-int16_t D_GetCursorColumnRow(void)
+int16_t __near D_GetCursorColumnRow(void)
 {
 	union REGS regs;
 
@@ -170,7 +170,7 @@ int16_t D_GetCursorColumnRow(void)
 //
 // D_SetCursorPosition
 //
-void D_SetCursorPosition(int16_t columnrow)
+void __near D_SetCursorPosition(int16_t columnrow)
 {
 	union REGS regs;
 
@@ -185,7 +185,7 @@ void D_SetCursorPosition(int16_t columnrow)
 //
 // D_DrawTitle
 //
-void D_DrawTitle(int8_t __near *string)
+void __near D_DrawTitle(int8_t __near *string)
 {
 	union REGS regs;
 	int16_t_union columnrow;
@@ -227,7 +227,7 @@ void D_DrawTitle(int8_t __near *string)
 //
 // D_RedrawTitle
 //
-void D_RedrawTitle(int8_t __near *title) {
+void __near D_RedrawTitle(int8_t __near *title) {
 	int16_t_union columnrow;
 	int16_t column;
 	int16_t row;
@@ -258,7 +258,7 @@ extern int8_t*	defaultfile;
 
 
 
-void M_LoadDefaults(void)
+void __near M_LoadDefaults(void)
 {
 	int16_t		i;
 	FILE*	f;
@@ -311,7 +311,7 @@ void M_LoadDefaults(void)
 extern uint16_t	hu_font[HU_FONTSIZE];
 
 
-void HU_Init(void)
+void __near HU_Init(void)
 {
 
 	int16_t		i;
@@ -339,7 +339,7 @@ void HU_Init(void)
 // Sets channels, SFX and music volume,
 //  allocates channel buffer, sets S_sfx lookup.
 //
-void S_Init
+void  S_Init
 (uint8_t		sfxVolume,
 	uint8_t		musicVolume)
 {
@@ -420,7 +420,7 @@ void M_FinishReadThis(int16_t choice);
 
 // this is only done in init... pull into there?
 
-void M_Reload(void) {
+void __near M_Reload(void) {
 	// reload menu graphics
 	int16_t i = 0;
 	uint32_t size = 0;
@@ -453,7 +453,7 @@ void M_Reload(void) {
 
 }
 
-void M_Init(void)
+void __near M_Init(void)
 {
 	
 
@@ -493,7 +493,7 @@ void M_Init(void)
 
 
 
-void AM_loadPics(void)
+void __near AM_loadPics(void)
 {
 	int8_t i;
 	int16_t lump;
@@ -539,7 +539,7 @@ int16_t main ( int16_t		argc, int8_t**	argv ) ;
  //void fakefunc();
 
 void W_AddFile(int8_t *filename);
-void D_DoomMain2(void)
+void __far D_DoomMain2(void)
 {
 	int16_t             p;
 	int8_t                    file[256];

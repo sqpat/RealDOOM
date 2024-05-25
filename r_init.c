@@ -599,7 +599,7 @@ void __near R_InitData(void) {
 extern uint8_t                     detailLevel;
 extern uint8_t                     screenblocks;
 
-void R_Init(void)
+void __near R_Init(void)
 {
 	Z_QuickMapRender();
 	Z_QuickMapLumpInfo();
