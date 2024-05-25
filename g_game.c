@@ -908,10 +908,7 @@ void __near G_DoSaveGame (void)
 	filelength_t         length;
 	byte*       savebuffer;
 
-    if (M_CheckParm("-cdrom"))
-        sprintf(name,"c:\\doomdata\\"SAVEGAMENAME"%d.dsg",savegameslot);
-    else
-        sprintf (name,SAVEGAMENAME"%d.dsg",savegameslot); 
+    sprintf (name,SAVEGAMENAME"%d.dsg",savegameslot); 
     description = savedescription; 
 
 	savebuffer = (byte*)Z_LoadBytesFromEMS(savebufferRef);

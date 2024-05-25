@@ -743,19 +743,12 @@ void I_InitDiskFlash(void)
 {
 	/*
 	//todo: when re-implementing, pull this out
-	byte diskgraphicbtyes[392];// cdrom is 328 and can fit in here too.
+	byte diskgraphicbtyes[392];  // cdrom is 328 and can fit in here too. EDIT: removed the cd-rom support
 
 	void *pic;
 	fixed_t_union temp;
 
-	if (M_CheckParm("-cdrom"))
-	{
-		pic = W_CacheLumpNameEMSAsPatch("STCDDISK", PU_CACHE);
-	}
-	else
-	{
-		pic = W_CacheLumpNameEMSAsPatch("STDISK", PU_CACHE);
-	}
+    pic = W_CacheLumpNameEMSAsPatch("STDISK", PU_CACHE);
 	temp = destscreen;
 	destscreen.w = 0xac000000;
 	V_DrawPatchDirect(SCREENWIDTH - 16, SCREENHEIGHT - 16, pic);
