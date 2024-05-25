@@ -204,7 +204,7 @@ typedef struct
 //extern intercept_t	*intercepts;// [MAXINTERCEPTS];
 extern intercept_t __far*	intercept_p;
 
-typedef boolean (*traverser_t ) (intercept_t __far*in);
+typedef boolean __near (*traverser_t ) (intercept_t __far*in);
 
 fixed_t __near P_AproxDistance (fixed_t dx, fixed_t dy);
 boolean 	__near P_PointOnLineSide (fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
@@ -223,8 +223,8 @@ void 	__near P_LineOpening(int16_t lineside1, int16_t linefrontsecnum, int16_t l
 #endif
 
 
-boolean __near P_BlockLinesIterator (int16_t x, int16_t y, boolean  ( * __far func)(line_physics_t __far* ld, int16_t ) );
-boolean __near P_BlockThingsIterator (int16_t x, int16_t y, boolean  ( * __far func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*));
+boolean __near P_BlockLinesIterator (int16_t x, int16_t y, boolean __near ( *  func)(line_physics_t __far* ld, int16_t ) );
+boolean __near P_BlockThingsIterator (int16_t x, int16_t y, boolean __near ( *  func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*));
 
 #define PT_ADDLINES		1
 #define PT_ADDTHINGS	2
@@ -239,7 +239,7 @@ __near P_PathTraverse
 	fixed_t_union	x2,
 	fixed_t_union	y2,
   uint8_t		flags,
-  boolean	(* __near trav) (intercept_t  __far*));
+  boolean	__near(*  trav) (intercept_t  __far*));
 
 void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos);
 void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos, int16_t knownsecnum);

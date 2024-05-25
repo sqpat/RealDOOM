@@ -72,7 +72,7 @@ int16_t		numspechit;
 //
 // PIT_StompThing
 //
-boolean __far  PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union	blockdist;
 
@@ -199,7 +199,7 @@ __near P_TeleportMove
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-boolean __far PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
+boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 {
 	line_t __far* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld_physics->v2Offset & LINE_VERTEX_SLOPETYPE;
@@ -306,7 +306,7 @@ boolean __far PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 //
 // PIT_CheckThing
 //
-boolean __far  PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union blockdist;
     boolean		solid;
@@ -824,7 +824,7 @@ void __near P_HitSlideLine (int16_t linenum)
 //
 // PTR_SlideTraverse
 //
-boolean __far PTR_SlideTraverse (intercept_t __far* in)
+boolean __near PTR_SlideTraverse (intercept_t __far* in)
 {
 	line_t __far* li = &lines[in->d.linenum];
 	fixed_t_union temp;
@@ -1040,7 +1040,7 @@ extern fixed_t	bottomslope;
 // Sets linetaget and aimslope when a target is aimed at.
 //
 boolean
-__far PTR_AimTraverse (intercept_t __far* in)
+__near PTR_AimTraverse (intercept_t __far* in)
 {
 	line_t __far*		li;
 	line_physics_t __far*		li_physics;
@@ -1135,7 +1135,7 @@ __far PTR_AimTraverse (intercept_t __far* in)
 //
 // PTR_ShootTraverse
 //
-boolean __far PTR_ShootTraverse (intercept_t __far* in)
+boolean __near PTR_ShootTraverse (intercept_t __far* in)
 {
     fixed_t		x;
     fixed_t		y;
@@ -1386,7 +1386,7 @@ __near P_LineAttack
 // USE LINES
 //
 
-boolean	__far PTR_UseTraverse (intercept_t __far* in)
+boolean	__near PTR_UseTraverse (intercept_t __far* in)
 {
     int16_t		side;
 
@@ -1462,7 +1462,7 @@ int16_t		bombdamage;
 // "bombsource" is the creature
 // that caused the explosion at "bombspot".
 //
-boolean __far  PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t	dx;
     fixed_t	dy;
@@ -1571,7 +1571,7 @@ extern mobj_t __far* setStateReturn;
 //
 // PIT_ChangeSector
 //
-boolean __far PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
 
 

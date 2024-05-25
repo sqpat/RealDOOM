@@ -677,7 +677,7 @@ __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos, int
 // to P_BlockLinesIterator, then make one or more calls
 // to it.
 //
-boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean(* __far  func )(line_physics_t __far*, int16_t) ){
+boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean __near(*   func )(line_physics_t __far*, int16_t) ){
     int16_t			offset;
 	int16_t			index;
     int16_t		list;
@@ -718,7 +718,7 @@ boolean __near P_BlockLinesIterator ( int16_t x, int16_t y, boolean(* __far  fun
 // P_BlockThingsIterator
 //
 boolean __near P_BlockThingsIterator ( int16_t x, int16_t y, 
-boolean (* __far  func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*) ){
+boolean __near(*   func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*) ){
 	THINKERREF mobjRef;
     mobj_t __far*		mobj;
 
@@ -766,7 +766,7 @@ int32_t		ptflags;
 // Returns true if earlyout and a solid line hit.
 //
 divline_t		dl;
-boolean __far  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
+boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
      int16_t			s1;
     int16_t			s2;
     fixed_t		frac;
@@ -839,7 +839,7 @@ boolean __far  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t 
 //
 // PIT_AddThingIntercepts
 //
-boolean __far  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __far* thing, mobj_pos_t __far* thing_pos)
+boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __far* thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union		x1;
 	fixed_t_union		y1;
@@ -962,7 +962,7 @@ void __near P_PathTraverse
 	fixed_t_union		x2,
 	fixed_t_union		y2,
   uint8_t			flags,
-  boolean (* __far  trav) (intercept_t  __far*))
+  boolean __near(*   trav) (intercept_t  __far*))
 {
     int16_t	xt1;
     int16_t	yt1;

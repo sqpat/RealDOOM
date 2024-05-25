@@ -1328,7 +1328,7 @@ mobj_t __far*		vileobj;
 fixed_t_union		viletryx;
 fixed_t_union		viletryy;
 
-boolean PIT_VileCheck (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
+boolean __near PIT_VileCheck (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
 	fixed_t_union				maxdist;
     boolean	check;
