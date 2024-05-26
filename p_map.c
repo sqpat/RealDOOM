@@ -104,17 +104,29 @@ boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_p
 }
 
 
+boolean DoBlockmapLoop(int16_t xl, int16_t yl, int16_t xh, int16_t yh, boolean __near(*   func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*) , int8_t returnOnFalse){
+	int16_t by;
+	if (xl < 0) xl = 0;
+	if (yl < 0) yl = 0;
+	if (xh >= bmapwidth) xh = bmapwidth - 1;
+	if (yh >= bmapheight) yh = bmapheight - 1;
+
+	for (; xl <= xh; xl++) {
+		for (by = yl; by <= yh; by++) {
+			if (!P_BlockThingsIterator(xl, by, func)) {
+				if (returnOnFalse)
+					return false;
+			}
+		}
+	}
+
+    return true;
+}
+
 //
 // P_TeleportMove
 //
-boolean
-__near P_TeleportMove
-(mobj_t __far* thing,
-	mobj_pos_t __far* thing_pos,
-  fixed_t_union	x,
-  fixed_t_union	y,
-	int16_t oldsecnum)
-{
+boolean __near P_TeleportMove (mobj_t __far* thing,mobj_pos_t __far* thing_pos,fixed_t_union	x,fixed_t_union	y, int16_t oldsecnum){
     int16_t			xl;
     int16_t			xh;
     int16_t			yl;
@@ -161,19 +173,11 @@ __near P_TeleportMove
     yl = (tmbbox[BOXBOTTOM].h.intbits - bmaporgy - MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
     yh = (tmbbox[BOXTOP].h.intbits - bmaporgy + MAXRADIUSNONFRAC)>> MAPBLOCKSHIFT;
 
+ 
+	if (!DoBlockmapLoop(xl, yl, xh, yh, PIT_StompThing, true)){
+		return false;
+	}	
 
-	if (xl < 0) xl = 0;
-	if (yl < 0) yl = 0;
-	if (xh >= bmapwidth) xh = bmapwidth - 1;
-	if (yh >= bmapheight) yh = bmapheight - 1;
-
-	for (; xl <= xh; xl++) {
-		for (by = yl; by <= yh; by++) {
-			if (!P_BlockThingsIterator(xl, by, PIT_StompThing)) {
-				return false;
-			}
-		}
-	}
     
     // the move is ok,
     // so link the thing into its new position
@@ -199,8 +203,7 @@ __near P_TeleportMove
 // PIT_CheckLine
 // Adjusts tmfloorz and tmceilingz as lines are contacted
 //
-boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
-{
+boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum) {
 	line_t __far* ld = &lines[linenum];
 	slopetype_t lineslopetype = ld_physics->v2Offset & LINE_VERTEX_SLOPETYPE;
 	int16_t linedx = ld_physics->dx;
@@ -456,13 +459,7 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
 //
 
 int16_t lastcalculatedsector;
-boolean
-__near P_CheckPosition
-(mobj_t __far* thing,
-	fixed_t_union	x,
-	fixed_t_union	y,
-	int16_t oldsecnum
-	)
+boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum )
 {
     int16_t			xl;
     int16_t			xh;
@@ -498,7 +495,6 @@ __near P_CheckPosition
 	else {
 		int16_t newsubsecnum = R_PointInSubsector(x, y);
 		lastcalculatedsector = subsectors[newsubsecnum].secnum;
-
 	}
 
 
@@ -552,24 +548,11 @@ __near P_CheckPosition
 	yh2 += yh;
 
 
-
-	if (xl < 0) xl = 0;
-	if (yl < 0) yl = 0;
-	if (xh >= bmapwidth) xh = bmapwidth - 1;
-	if (yh >= bmapheight) yh = bmapheight - 1;
-	 
-	for (; xl <= xh; xl++) {
-		for (by = yl; by <= yh; by++) {
-
+ 
 	
-			if (!P_BlockThingsIterator(xl, by, PIT_CheckThing)) {
-
-				return false;
-			}
-		}
-	}
-	
-
+	if (!DoBlockmapLoop(xl, yl, xh, yh, PIT_CheckThing, true)){
+		return false;
+	}	
 
 	 
 
@@ -599,14 +582,7 @@ __near P_CheckPosition
 // Attempt to move to a new position,
 // crossing special lines unless MF_TELEPORT is set.
 //
-boolean
-__near P_TryMove
-(mobj_t __far* thing,
-	mobj_pos_t __far* thing_pos,
-  fixed_t_union	x,
-  fixed_t_union	y
-	)
-{
+boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union	x, fixed_t_union	y ) {
     fixed_t_union	oldx;
     fixed_t_union	oldy;
 	fixed_t_union	newx;
@@ -1039,9 +1015,7 @@ extern fixed_t	bottomslope;
 // PTR_AimTraverse
 // Sets linetaget and aimslope when a target is aimed at.
 //
-boolean
-__near PTR_AimTraverse (intercept_t __far* in)
-{
+boolean __near PTR_AimTraverse (intercept_t __far* in) {
 	line_t __far*		li;
 	line_physics_t __far*		li_physics;
     mobj_t __far*		th;
@@ -1276,13 +1250,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 //
 // P_AimLineAttack
 //
-fixed_t
-__near P_AimLineAttack
-( mobj_t __far*	t1,
-  fineangle_t	angle,
-  int16_t	distance16
-	)
-{
+fixed_t __near P_AimLineAttack ( mobj_t __far*	t1, fineangle_t	angle,int16_t	distance16 ) {
     fixed_t_union	x2;
 	fixed_t_union	y2;
 	fixed_t_union	x;
@@ -1338,14 +1306,7 @@ __near P_AimLineAttack
 // If damage == 0, it is just a test trace
 // that will leave linetarget set.
 //
-void
-__near P_LineAttack
-(mobj_t __far* t1,
-  fineangle_t	angle,
-	int16_t	distance16,
-  fixed_t	slope,
-  int16_t		damage )
-{
+void __near P_LineAttack (mobj_t __far* t1, fineangle_t	angle, int16_t	distance16, fixed_t	slope, int16_t	damage ) {
     fixed_t_union	x2;
 	fixed_t_union	y2;
 	
@@ -1386,8 +1347,7 @@ __near P_LineAttack
 // USE LINES
 //
 
-boolean	__near PTR_UseTraverse (intercept_t __far* in)
-{
+boolean	__near PTR_UseTraverse (intercept_t __far* in) {
     int16_t		side;
 
 	line_physics_t __far* line_physics = &lines_physics[in->d.linenum];
@@ -1429,8 +1389,7 @@ boolean	__near PTR_UseTraverse (intercept_t __far* in)
 // P_UseLines
 // Looks for special lines in front of the player to activate.
 //
-void __near P_UseLines () 
-{
+void __near P_UseLines ()  {
     fineangle_t angle;
     fixed_t_union	x1;
 	fixed_t_union	y1;
@@ -1462,8 +1421,7 @@ int16_t		bombdamage;
 // "bombsource" is the creature
 // that caused the explosion at "bombspot".
 //
-boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
-{
+boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)  {
     fixed_t	dx;
     fixed_t	dy;
     fixed_t_union	dist;
@@ -1506,13 +1464,7 @@ boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_
 // P_RadiusAttack
 // Source is the creature that caused the explosion at spot.
 //
-void
-__near P_RadiusAttack
-(mobj_t __far* spot,
-	mobj_pos_t __far* spot_pos,
-	mobj_t __far* source,
-	int16_t		damage)
-{
+void __near P_RadiusAttack (mobj_t __far* spot, mobj_pos_t __far* spot_pos, mobj_t __far* source, int16_t		damage) {
 	int16_t		x;
 	//int16_t		y;
 
@@ -1534,16 +1486,9 @@ __near P_RadiusAttack
 	bombdamage = damage;
 
 
-	if (xl < 0) xl = 0;
-	if (yl < 0) yl = 0;
-	if (xh >= bmapwidth) xh = bmapwidth - 1;
-	if (yh >= bmapheight) yh = bmapheight - 1;
-	for (; yl <= yh; yl++) {
-		for (x = xl; x <= xh; x++) {
-			P_BlockThingsIterator(x, yl, PIT_RadiusAttack);
-		}
-	}
+ 
 
+	DoBlockmapLoop(xl, yl, xh, yh, PIT_RadiusAttack, false);	
 
 
 }
@@ -1571,8 +1516,7 @@ extern mobj_t __far* setStateReturn;
 //
 // PIT_ChangeSector
 //
-boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
-{
+boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos) {
 
 
     if (P_ThingHeightClip (thing, thing_pos)) {
@@ -1630,11 +1574,7 @@ boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_
 //
 // P_ChangeSector
 //
-boolean
-__near P_ChangeSector
-( sector_t __far*	sector,
-  boolean	crunch )
-{
+boolean __near P_ChangeSector ( sector_t __far*	sector, boolean	crunch ) {
     //int16_t		x;
 	int16_t		y;
 	sector_physics_t __far* sector_physics = &sectors_physics[sector - sectors];
@@ -1644,23 +1584,10 @@ __near P_ChangeSector
 	int16_t yh = sector_physics->blockbox[BOXTOP];
 	int16_t yl = sector_physics->blockbox[BOXBOTTOM];
 
-
     nofit = false;
     crushchange = crunch;
 
-
-	if (xl < 0) xl = 0;
-	if (yl < 0) yl = 0;
-	if (xh >= bmapwidth) xh = bmapwidth - 1;
-	if (yh >= bmapheight) yh = bmapheight - 1;
-    // re-check heights for all things near the moving sector
-	for (; xl <= xh; xl++) {
-		for (y = yl; y <= yh; y++) {
-			P_BlockThingsIterator(xl, y, PIT_ChangeSector); {
-			}
-		}
-	}
-	
+	DoBlockmapLoop(xl, yl, xh, yh, PIT_ChangeSector, false);	
 	
     return nofit;
 }

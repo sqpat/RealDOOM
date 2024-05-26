@@ -1322,11 +1322,7 @@ void setchecksum(){
 
 int setval = 0;
 extern int16_t skytexturelump;
-byte __far*
-__near R_GetColumn
-(int16_t           tex,
-	int16_t           col)
-{
+byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 	int16_t         lump;
 	uint16_t         ofs; 
 	int16_t __far* texturecolumnlump;

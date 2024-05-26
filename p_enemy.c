@@ -2263,27 +2263,27 @@ void __near A_SpawnFly (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
     // Probability distribution (kind of :),
     // decreasing likelihood.
     if ( r<50 )
-	type = MT_TROOP;
+		type = MT_TROOP;
     else if (r<90)
-	type = MT_SERGEANT;
+		type = MT_SERGEANT;
     else if (r<120)
-	type = MT_SHADOWS;
+		type = MT_SHADOWS;
     else if (r<130)
-	type = MT_PAIN;
+		type = MT_PAIN;
     else if (r<160)
-	type = MT_HEAD;
+		type = MT_HEAD;
     else if (r<162)
-	type = MT_VILE;
+		type = MT_VILE;
     else if (r<172)
-	type = MT_UNDEAD;
+		type = MT_UNDEAD;
     else if (r<192)
-	type = MT_BABY;
+		type = MT_BABY;
     else if (r<222)
-	type = MT_FATSO;
+		type = MT_FATSO;
     else if (r<246)
-	type = MT_KNIGHT;
+		type = MT_KNIGHT;
     else
-	type = MT_BRUISER;		
+		type = MT_BRUISER;		
 
 
     newmobjRef	= P_SpawnMobj (targ_pos->x.w, targ_pos->y.w, targ_pos->z.w, type, targ->secnum);
@@ -2307,12 +2307,10 @@ void __near A_PlayerScream () {
     // Default death sound.
     uint8_t		sound = sfx_pldeth;
 	
-    if ( commercial
-	&& 	(playerMobj->health < -50))
-    {
-	// IF THE PLAYER DIES
-	// LESS THAN -50% WITHOUT GIBBING
-	sound = sfx_pdiehi;
+    if ( commercial && 	(playerMobj->health < -50)) {
+		// IF THE PLAYER DIES
+		// LESS THAN -50% WITHOUT GIBBING
+		sound = sfx_pdiehi;
     }
     
 	S_StartSoundFromRef(playerMobj, sound);
