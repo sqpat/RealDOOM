@@ -41,8 +41,7 @@ void __near M_Ticker (void);
 
 // Called by main loop,
 // draws the menus directly into the screen buffer.
-void __far M_Drawer (void);
-
+void __far M_Drawer (int8_t isFromWipe);
 
 // Called by intro code to force menu up upon a keypress,
 // does nothing if menu is already up.

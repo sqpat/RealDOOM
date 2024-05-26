@@ -93,7 +93,7 @@ boolean M_Responder(event_t __far*  ev) {
     return false;
 }
 
-void __far M_Drawer(void) {
+void __far M_Drawer (int8_t isFromWipe) {
 }
 void __near M_StartControlPanel(void) {
 
@@ -1674,7 +1674,7 @@ void __near M_StartControlPanel (void)
 // Called after the view has been rendered,
 // but before it has been blitted.
 //
-void __far M_Drawer (void) {
+void __far M_Drawer (int8_t isFromWipe) {
     static int16_t        x;
     static int16_t        y;
     int16_t               i;
@@ -1713,7 +1713,7 @@ void __far M_Drawer (void) {
 
             y += HU_FONT_SIZE;
         }
-        Z_QuickMapPhysics();
+        isFromWipe ? Z_QuickMapWipe() : Z_QuickMapPhysics();
 
         return;
     }
@@ -1745,7 +1745,7 @@ void __far M_Drawer (void) {
     V_DrawPatchDirect(x + SKULLXOFF, currentMenu->y - 5 + itemOn * LINEHEIGHT,
         M_GetMenuPatch(skullName[whichSkull])) ;
 
-    Z_QuickMapPhysics();
+    isFromWipe ? Z_QuickMapWipe() : Z_QuickMapPhysics();
 
 }
 

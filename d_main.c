@@ -561,7 +561,7 @@ void __near D_Display (void)
     }
 	
     // menus go directly to the screen
-	M_Drawer ();          // menu is drawn even on top of everything
+	M_Drawer (false);          // menu is drawn even on top of everything
 
 	NetUpdate ();         // send out any new accumulation
 
