@@ -114,10 +114,9 @@ CC00 block (16k)
 colormaps          CC00:0000
 scalelightfixed    CE16:0000
 scalelights        CE16:0000
-texturedefs_offset CE76:0000
-[empty]            CEAC:0000
+[empty]            CE76:0000
 
-// 10944 used so far
+// 10080 used so far
 
 */
 
@@ -125,16 +124,14 @@ texturedefs_offset CE76:0000
 #define colormapssegment  0xCC00
 
 #define size_colormapbytes                ((33 * 256)                      + 0)
-#define size_scalelightfixed              (sizeof(uint16_t ) * (MAXLIGHTSCALE))
+#define size_scalelightfixed              (sizeof(uint16_t) * (MAXLIGHTSCALE))
 #define size_scalelight                   (sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
-#define size_texturedefs_offset           (MAX_TEXTURES * sizeof(uint16_t))
 
 
 #define colormaps                   ((lighttable_t  __far*) MAKE_FULL_SEGMENT(0xCC000000      , 0))
 #define colormapbytes               ((byte __far*)          MAKE_FULL_SEGMENT(0xCC000000      , 0))
 #define scalelightfixed             ((uint16_t __far*)      MAKE_FULL_SEGMENT(colormaps       , size_colormapbytes))
 #define scalelight                  ((uint16_t __far*)      MAKE_FULL_SEGMENT(scalelightfixed , size_scalelightfixed))
-#define texturedefs_offset          ((uint16_t  __far*)     MAKE_FULL_SEGMENT(scalelight      , size_scalelight))
 
 
 
@@ -853,6 +850,7 @@ spritewidths        7000:7592
 #define size_fuzzofset                FUZZTABLE
 #define size_viewangletox             (sizeof(int16_t) * (FINEANGLES / 2))
 #define size_drawsegs                 (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
+#define size_texturedefs_offset       (MAX_TEXTURES * sizeof(uint16_t))
 #define size_texturecompositesizes    (MAX_TEXTURES * sizeof(uint16_t))
 #define size_compositetexturepage     (MAX_TEXTURES * sizeof(uint8_t))
 #define size_compositetextureoffset   (MAX_TEXTURES * sizeof(uint8_t))
@@ -868,8 +866,9 @@ spritewidths        7000:7592
 #define fuzzoffset              ((int8_t __far*)             MAKE_FULL_SEGMENT(visplaneheaders         , size_visplaneheaders))
 #define viewangletox            ((int16_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset              , size_fuzzofset))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
-#define drawsegs                ((drawseg_t __far*)          (MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox) + sizeof(drawseg_t)))
-#define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(drawsegs                , size_drawsegs))
+#define drawsegs                ((drawseg_t __far*)          (MAKE_FULL_SEGMENT(viewangletox           , size_viewangletox) + sizeof(drawseg_t)))
+#define texturedefs_offset      ((uint16_t  __far*)          MAKE_FULL_SEGMENT(drawsegs                , size_drawsegs))
+#define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset      , size_texturedefs_offset))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
 #define compositetextureoffset  ((uint8_t __far*)            (((int32_t)compositetexturepage)          + size_compositetexturepage))
 
@@ -892,15 +891,16 @@ visplaneheaders         4B77:0000
 fuzzoffset              4BC6:0000
 viewangletox            4BCA:0000
 drawsegs                4DCA:0000
+texturedefs_offset      4F7A:0000
 
-compositetexturepage    4F7A:0000
-compositetextureoffset  4F7A:01AC
+compositetexturepage    4FB2:0000
+compositetextureoffset  4FB2:01AC
 [near range over]       
 
-[done]                  4000:FB00
+[done]                  4000:FE78
 
 
-1280 bytes free
+392 bytes free
 
 */
 
