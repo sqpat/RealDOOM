@@ -38,11 +38,137 @@ divline_t	strace;			// from t1 to t2
 fixed_t_union		cachedt2x;
 fixed_t_union		cachedt2y;
 
+boolean __near P_CrossBSPNode (uint16_t bspnum);
+
+//
+// P_CheckSight
+// Returns true
+//  if a straight line between t1 and t2 is unobstructed.
+// Uses REJECT.
+//
+boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos ) {
+
+    fixed_t_union		pnum;
+    uint16_t		bytenum;
+    int16_t		bitnum;
+	// this forces 32 bit operations down below 
+	int32_t		result = numsectors;
+
+	
+    // First check for trivial rejection.
+
+    // Determine subsector entries in REJECT table.
+    // todo we can do this faster for 16 bite... shifts are slow, we want to avoid the 32 bit int too.
+	// can be 330ish sectors in a level so pnum can surpass 16 bit sizes
+	pnum.wu = t1->secnum*result + t2->secnum;
+    bytenum = pnum.wu>>3;
+    bitnum = 1 << (pnum.h.fracbits&7);
+
+	
+    // Check in REJECT table.
+	if (rejectmatrix[bytenum] & bitnum) {
+		// can't possibly be connected
+		return false;	
+    }
+
+    // An unobstructed LOS is possible.
+    // Now look from eyes of t1 to any part of t2.
+    validcount++;
+	
+    sightzstart = t1_pos->z.w + t1->height.w - (t1->height.w>>2);
+    topslope = (t2_pos->z.w+t2->height.w) - sightzstart;
+    bottomslope = (t2_pos->z.w) - sightzstart;
+	
+    strace.x = t1_pos->x;
+    strace.y = t1_pos->y;
+    cachedt2x = t2_pos->x;
+	cachedt2y = t2_pos->y;
+    strace.dx.w = t2_pos->x.w - t1_pos->x.w;
+    strace.dy.w = t2_pos->y.w - t1_pos->y.w;
+
+    // the head node is the last node output
+	return P_CrossBSPNode (numnodes-1);
+}
+
+
 
 //
 // P_DivlineSide
 // Returns side 0 (front), 1 (back), or 2 (on).
 //
+
+
+#ifdef MOVE_P_SIGHT
+
+
+
+fixed_t32 __near FixedMul1616Local(int16_t	a, int16_t	b) {
+	return (int32_t)a * b;
+}
+
+fixed_t32 __near FixedMul2432Local (fixed_t32	a, fixed_t32 b) {
+    // fixed_t_union fp;
+    // fp.w = ((long long)a * (long long)b);
+    // return fp.h.intbits;
+    longlong_union llu;
+    llu.l =  ((long long)a * (long long)b);
+	return llu.productresult.usemid;
+}
+
+
+fixed_t32 __near FixedDiv2Local (fixed_t32	a, fixed_t32	b)
+{
+	// all seem to work, but i think long long is probably the least problematic for 16 bit cpu for now. - sq
+
+	long long c;
+	//longlong_union c;
+	c = ((long long)a << 16) / ((long long)b);
+
+
+	//float c;
+	//c = (((float)a) / ((float)b) * FRACUNIT);
+	
+	//double c;
+	//c = (((double)a) / ((double)b) * FRACUNIT);
+
+	return (fixed_t32) c;
+}
+
+
+int32_t __near labs_local(int32_t x) {
+    if (x > 0){
+  		return x;
+	}
+	return -x;
+}
+
+
+//
+// FixedDiv, C version.
+//
+
+//fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
+fixed_t32 __near FixedDivLocal(fixed_t32	a, fixed_t32	b) {
+	// todo rol 2?
+	if ((labs_local(a) >> 14) >= labs_local(b))
+		return (a^b) < 0 ? MINLONG : MAXLONG;
+	//return FixedDiv2(a, b, file, line);
+	return FixedDiv2Local(a, b);
+}
+
+#else
+
+
+#define FixedMul1616Local FixedMul1616
+#define FixedMul2432Local FixedMul2432
+#define FixedDiv2Local FixedDiv2
+#define FixedDivLocal FixedDiv
+#define labs_local labs
+#define FixedMul1616Local FixedMul1616
+
+
+#endif
+
 
 int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) {
     fixed_t_union	dx;
@@ -75,8 +201,8 @@ int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __nea
     dx.w = (x.w - node->x.w);
     dy.w = (y.w - node->y.w);
 	
-    left = FixedMul1616(node->dy.h.intbits,dx.h.intbits);
-    right = FixedMul1616(dy.h.intbits,node->dx.h.intbits);
+    left = FixedMul1616Local(node->dy.h.intbits,dx.h.intbits);
+    right = FixedMul1616Local(dy.h.intbits,node->dx.h.intbits);
 	
     if (right < left)
 		return 0;	// front side
@@ -125,9 +251,9 @@ int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node )
 	temp.h.intbits = y;
     dy.w = (temp.w - node->y.w);
 	temp.w = node->dy.w;
-    left =  FixedMul1616(temp.h.intbits,dx.h.intbits);
+    left =  FixedMul1616Local(temp.h.intbits,dx.h.intbits);
 	temp.w = node->dx.w;
-    right = FixedMul1616(dy.h.intbits,temp.h.intbits);
+    right = FixedMul1616Local(dy.h.intbits,temp.h.intbits);
 	
     if (right < left)
 		return 0;	// front side
@@ -179,8 +305,8 @@ int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, node_t __fa
 	temp.h.intbits = node->y;
     dy.w = (y.w - temp.w);
 
-    left =  FixedMul1616(node->dy, dx.h.intbits);
-    right = FixedMul1616(dy.h.intbits, node->dx);
+    left =  FixedMul1616Local(node->dy, dx.h.intbits);
+    right = FixedMul1616Local(dy.h.intbits, node->dx);
 
 	if (right < left)
 		return 0;	// front side
@@ -243,14 +369,14 @@ fixed_t __near P_InterceptVector2 (divline_t __near* v2, divline_t __near*	v1 ) 
     fixed_t	num;
     fixed_t	den;
 	
-    den = FixedMul2432 (v1->dy.w>>8,v2->dx.w) - FixedMul2432(v1->dx.w>>8,v2->dy.w);
+    den = FixedMul2432Local (v1->dy.w>>8,v2->dx.w) - FixedMul2432Local(v1->dx.w>>8,v2->dy.w);
 
     if (den == 0)
 		return 0;
     
-    num = FixedMul2432 ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + 
-		  FixedMul2432 ( (v2->y.w - v1->y.w)>>8 , v1->dx.w);
-    frac = FixedDiv (num , den);
+    num = FixedMul2432Local ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + 
+		  FixedMul2432Local ( (v2->y.w - v1->y.w)>>8 , v1->dx.w);
+    frac = FixedDivLocal (num , den);
 
     return frac;
 }
@@ -398,7 +524,7 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 		if (frontsector->floorheight != backsector->floorheight) {
 		 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  openbottom);
-			slope = FixedDiv (temp.w - sightzstart , frac);
+			slope = FixedDivLocal (temp.w - sightzstart , frac);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
@@ -406,7 +532,7 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 		if (frontsector->ceilingheight != backsector->ceilingheight) {
 		 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  opentop);
-			slope = FixedDiv (temp.w - sightzstart , frac);
+			slope = FixedDivLocal (temp.w - sightzstart , frac);
 			if (slope < topslope)
 				topslope = slope;
 		}
@@ -458,56 +584,6 @@ boolean __near P_CrossBSPNode (uint16_t bspnum) {
 
     // cross the ending side		
     return P_CrossBSPNode (bsp->children[side^1]);
-}
-
-//
-// P_CheckSight
-// Returns true
-//  if a straight line between t1 and t2 is unobstructed.
-// Uses REJECT.
-//
-boolean __near P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos ) {
-
-    fixed_t_union		pnum;
-    uint16_t		bytenum;
-    int16_t		bitnum;
-	// this forces 32 bit operations down below 
-	int32_t		result = numsectors;
-
-	
-    // First check for trivial rejection.
-
-    // Determine subsector entries in REJECT table.
-    // todo we can do this faster for 16 bite... shifts are slow, we want to avoid the 32 bit int too.
-	// can be 330ish sectors in a level so pnum can surpass 16 bit sizes
-	pnum.wu = t1->secnum*result + t2->secnum;
-    bytenum = pnum.wu>>3;
-    bitnum = 1 << (pnum.h.fracbits&7);
-
-	
-    // Check in REJECT table.
-	if (rejectmatrix[bytenum] & bitnum) {
-		// can't possibly be connected
-		return false;	
-    }
-
-    // An unobstructed LOS is possible.
-    // Now look from eyes of t1 to any part of t2.
-    validcount++;
-	
-    sightzstart = t1_pos->z.w + t1->height.w - (t1->height.w>>2);
-    topslope = (t2_pos->z.w+t2->height.w) - sightzstart;
-    bottomslope = (t2_pos->z.w) - sightzstart;
-	
-    strace.x = t1_pos->x;
-    strace.y = t1_pos->y;
-    cachedt2x = t2_pos->x;
-	cachedt2y = t2_pos->y;
-    strace.dx.w = t2_pos->x.w - t1_pos->x.w;
-    strace.dy.w = t2_pos->y.w - t1_pos->y.w;
-
-    // the head node is the last node output
-	return P_CrossBSPNode (numnodes-1);
 }
 
 

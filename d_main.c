@@ -220,6 +220,7 @@ fixed_t32 FixedMul1632(int16_t	a, fixed_t32 b) {
 	return llu.productresult.usemid;
 }
 
+
 fixed_t32 FixedMul16u32(uint16_t	a, fixed_t32 b) {
 	// fixed_t_union fp;
 	// fp.w = ((long long)a * (long long)b);

@@ -269,7 +269,8 @@ extern int16_t emshandle;
 
 
 void PSetupEndFunc();
-
+void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
+boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
  
 void __near Z_LoadBinaries() {
 	int i;
@@ -279,17 +280,17 @@ void __near Z_LoadBinaries() {
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
 	fclose(fp);
 
-
-	// 0x1216, about 4630 bytes
+	#ifdef MOVE_P_SIGHT
+		FAR_memcpy(PSightFuncLoadAddr, (byte __far *)P_CheckSight, SIZE_PSight);
+	#endif
 	
-	//FAR_memcpy(PSetupFuncLoadAddr, (byte __far *)PSetupFuncFromAddr, SIZE_PSetup);
-	
-	//0x068a or 1674 ... 6316 ish so far
-	//FAR_memcpy(PSightFuncLoadAddr, (byte __far *)P_DivlineSide, SIZE_PSight);
+	#ifdef MOVE_P_SETUP
+		FAR_memcpy(PSetupFuncLoadAddr, (byte __far *)P_SetupLevel, SIZE_PSetup);
+	#endif
+	// copy psetup and pfunc..
+	// 6736 bytes
+	//FAR_memcpy(PSetupFuncLoadAddr, (byte __far *)P_SetupLevel, 0x1A50);
 
-	//byte __far *startaddr = 	(byte __far*)getPainChance2-0x34; 
-	//byte __far *endaddr =		(byte __far*)fakefunc;
-	//FAR_memcpy(InfoFuncLoadAddr, startaddr, 0xFF);
 
 	// all data now in this file instead of spread out a
 	fp = fopen("DOOMDATA.BIN", "rb"); 

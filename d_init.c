@@ -481,6 +481,7 @@ void __near W_AddFile(int8_t *filename);
 
 void __far M_Init(void);
 
+
 void __far D_DoomMain2(void)
 {
 	int16_t             p;
@@ -491,24 +492,26 @@ void __far D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
-	
-	
-	//I_Error("\nblah, %i %Fp %Fp %Fp %Fp", SIZE_PSetup, PSetupFuncFromAddr, PSetupFuncFromAddr, 0L, 0L);
 /*
-	byte __far *startaddr = (byte __far*)PSetupFuncFromAddr; 
-	byte __far *endaddr = (byte __far*)PSetupEndFunc; 
-	//int16_t (__far *funcloc)(uint8_t) = ((int16_t (__far *)(uint8_t))  (0x6EA90034));
-	//FAR_memcpy(InfoFuncLoadAddr, startaddr, 0xFF);
-	//int16_t p = ((int16_t (__far *)(uint8_t))  (0x6EA90034))(2);
+	FILE* fp = fopen("D_OUTPU1.BIN", "wb"); 
 
-	FILE* fp = fopen("D_SETUP.BIN", "wb"); 
-	//FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
-	FAR_fwrite(startaddr, 1, 0x1222, fp);
+	boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
+	void PSetupEndFunc();
+	void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
+
+	FAR_memcpy(PSightFuncLoadAddr, (byte __far *)P_CheckSight, SIZE_PSight);
+	FAR_memcpy(PSetupFuncLoadAddr, (byte __far *)P_SetupLevel, SIZE_PSetup);
+	FAR_fwrite(P_CheckSight, 1, SIZE_PSight, fp);
 	fclose(fp);
-
-
+	fp = fopen("D_OUTPU2.BIN", "wb"); 
+	FAR_fwrite(P_CheckSight, 1, SIZE_PSetup, fp);
+	fclose(fp);
+	
+    I_Error("\nblah, %i %Fp %Fp", SIZE_PSetup, (byte __far *)P_SetupLevel,  (byte __far *)PSetupFuncLoadAddr);
+*/
 //	I_Error("", startaddr, endaddr, 0);
-	I_Error("\ndone %Fp %Fp %Fp, %Fp %x", PSetupFuncLoadAddr, (byte __far *)PSetupFuncFromAddr, PSetupEndFunc, P_SetupLevelAddr, SIZE_PSetup);
+	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
+	//I_Error("\ndone %Fp %Fp %Fp, %Fp %x", P_CheckSightAddr, (byte __far *)P_CheckSightAddr, PSetupEndFunc, P_CheckSight, SIZE_PSetup);
 //FAR_memcpy()
 
 	/*

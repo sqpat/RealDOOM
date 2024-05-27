@@ -321,10 +321,7 @@ P_PointOnDivlineSide16
 // This is only called by the addthings
 // and addlines traversers.
 //
-fixed_t
-__near P_InterceptVector
-( divline_t __near*	v1 )
-{
+fixed_t __near P_InterceptVector ( divline_t __near*	v1 ) {
     fixed_t	frac;
     fixed_t	num;
     fixed_t	den;

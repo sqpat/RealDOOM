@@ -222,7 +222,12 @@ boolean __near P_CheckMeleeRange (mobj_t __far* actor)
 	fixed_t actorX, actorY;
 	//fixed_t plradius;
 	fixed_t_union plradius;
-
+	
+#ifdef MOVE_P_SIGHT
+	//todoaddr inline later
+	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
+#endif
+	
     if (!actor->targetRef)
 		return false;
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
@@ -261,6 +266,9 @@ boolean __near P_CheckMissileRange (mobj_t __far* actor)
 	fixed_t_union actorTargety;
 	mobj_pos_t __far*	actor_pos;
 	//todoaddr inline later
+#ifdef MOVE_P_SIGHT
+	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
+#endif
 	statenum_t (__far  * getMeleeState)(uint8_t) = getMeleeStateAddr;
 
 	actorTarget = (mobj_t __far*)(&thinkerlist[actor->targetRef].data);
@@ -588,6 +596,10 @@ boolean __near P_LookForPlayers (mobj_t __far*	actor, boolean	allaround ) {
     angle_t	an;
     fixed_t_union	dist;
 	mobj_pos_t __far* actor_pos;
+	//todoaddr inline later
+#ifdef MOVE_P_SIGHT
+	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
+#endif
 
  	if (player.health <= 0)
 		return false;		// dead
@@ -660,6 +672,9 @@ void __near A_Look (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	int16_t actorsecnum = actor->secnum;
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
+#ifdef MOVE_P_SIGHT
+	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
+#endif
 	actor->threshold = 0;	// any shot will wake up
 
 
@@ -1010,6 +1025,9 @@ void __near A_CPosRefire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	THINKERREF actortargetRef;
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
+#ifdef MOVE_P_SIGHT
+	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
+#endif
 
 	A_FaceTarget (actor);
 	
@@ -1035,6 +1053,9 @@ void __near A_SpidRefire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	THINKERREF 	actortargetRef;
 	//todoaddr inline later
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
+#ifdef MOVE_P_SIGHT
+	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
+#endif
 	A_FaceTarget (actor);
 
 	actortargetRef = actor->targetRef;
@@ -1483,7 +1504,11 @@ void __near A_Fire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	fineangle_t	an;
 	mobj_t __far* dest;
 	mobj_pos_t __far* dest_pos;
-	
+	//todoaddr inline later
+#ifdef MOVE_P_SIGHT
+	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
+#endif
+
 
     destRef = actor->tracerRef;
     if (!destRef)
@@ -1556,6 +1581,9 @@ void __near A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	mobj_pos_t __far* fire_pos;
 	//todoaddr inline later
 	int32_t (__far  * getMobjMass)(uint8_t) = getMobjMassAddr;
+#ifdef MOVE_P_SIGHT
+	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
+#endif
 
 	if (!actor->targetRef)
 		return;

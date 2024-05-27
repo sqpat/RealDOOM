@@ -11,6 +11,21 @@ libpath %WATCOM%\lib286\dos
 format dos
 name doom16
 
+#file p_setup.obj
+#NEWSEGMENT
+#file p_sight.obj
+#NEWSEGMENT
+
+file d_init.obj
+file st_init.obj
+file r_init.obj
+file w_init.obj
+file i_init.obj
+file z_umb.obj
+file z_init.obj
+file p_init.obj
+
+NEWSEGMENT
 file i_main.obj
 file i_quit.obj
 file i_ibm.obj
@@ -52,7 +67,6 @@ file p_map.obj
 file p_maputl.obj
 file p_plats.obj
 file p_pspr.obj
-file p_sight.obj
 file p_spec.obj
 file p_switch.obj
 file p_mobj.obj
@@ -77,20 +91,12 @@ file d_math.obj
 
 
 NEWSEGMENT
-file d_init.obj
-file st_init.obj
-file r_init.obj
-file w_init.obj
-file i_init.obj
-file z_umb.obj
-file z_init.obj
-file p_init.obj
-
-NEWSEGMENT
 file p_setup.obj
+file p_sight.obj
 
-NEWSEGMENT
-file info.obj
+
+#NEWSEGMENT
+#file info.obj
 
 
 

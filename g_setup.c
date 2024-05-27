@@ -121,8 +121,9 @@ uint16_t   __far  R_CheckTextureNumForName(int8_t *name)
 
 void __near G_DoLoadLevel(void)
 {
-	//todoaddr inline later
-	//void (__far  * P_SetupLevel)(int8_t, int8_t, skill_t) = P_SetupLevelAddr;
+	#ifdef MOVE_P_SETUP
+	void (__far  * P_SetupLevel)(int8_t, int8_t, skill_t) = P_SetupLevelAddr;
+	#endif
 
 #if (EXE_GAME_VERSION >= EXE_VERSION_FINAL2)
 	Z_QuickMapRender();

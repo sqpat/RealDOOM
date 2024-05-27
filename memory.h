@@ -97,43 +97,7 @@ size_segs                 EDEF:0000
 
 
 //#define SIZE_D_SETUP            0x122A
-
-/*
-1ed8:0000+     P_LoadVertexes_
-1ed8:0048+     P_LoadSegs_
-1ed8:01fe+     P_LoadSubsectors_
-1ed8:027e+     P_LoadSectors_
-1ed8:03e6+     P_LoadNodes_
-1ed8:04be+     P_SetupPsprites_
-1ed8:04e8+     P_SpawnPlayer_
-1ed8:059a+     P_SpawnMapThing_
-1ed8:076c+     P_SpawnSpecials_
-1ed8:08d2+     P_LoadThings_
-1ed8:09fa+     P_LoadLineDefs_
-1ed8:0c5c+     P_LoadSideDefs_
-1ed8:0dd0+     P_LoadBlockMap_
-1ed8:0e30+     P_GroupLines_
-1ed8:1084+     P_InitThinkers_
-1ed8:10bc      P_SetupLevel_
-1ed8:11e8*     fakefunc_
-
-#define P_LoadVertexesAddr      ((void     (__far *)(int16_t))                 (0xB14B0000))
-#define P_LoadSegsAddr          ((void     (__far *)(int16_t))                 (0xB14B0048))
-#define P_LoadSubsectorsAddr    ((void     (__far *)(int16_t))                 (0xB14B01FE))
-#define P_LoadSectorsAddr       ((void     (__far *)(int16_t))                 (0xB14B027E))
-#define P_LoadNodesAddr         ((void     (__far *)(int16_t))                 (0xB14B03E6))
-#define P_SetupPspritesAddr     ((void     (__far *)(void))                    (0xB14B04BE))
-#define P_SpawnPlayerAddr       ((void     (__far *)(mobjtype_t))              (0xB14B04E8))
-#define P_SpawnMapThingAddr     ((void     (__far *)(mapthing_t, int16_t))     (0xB14B059A))
-#define P_SpawnSpecialsAddr     ((void     (__far *)(void))                    (0xB14B076C))
-#define P_LoadThingsAddr        ((void     (__far *)(int16_t))                 (0xB14B08D2))
-#define P_LoadLineDefsAddr      ((void     (__far *)(int16_t))                 (0xB14B09FA))
-#define P_LoadSideDefsAddr      ((void     (__far *)(int16_t))                 (0xB14B0C5C))
-#define P_LoadBlockMapAddr      ((void     (__far *)(int16_t))                 (0xB14B0Dd0))
-#define P_GroupLinesAddr        ((void     (__far *)(void))                    (0xB14B0E30))
-#define P_InitThinkersAddr      ((void     (__far *)(void))                    (0xB14B1084))
-#define P_SetupLevelAddr        ((void     (__far *)(int8_t, int8_t, skill_t)) (0xB14B10BC))
-*/
+ 
 
 
 // 2a6c
@@ -275,27 +239,12 @@ texturedefs_offset CE76:0000
 #define segs_physics          ((seg_physics_t __far*)    (0x90000000))
 #define diskgraphicbytes      ((byte __far*) (MAKE_FULL_SEGMENT(segs_physics, size_segs_physics)))
 
-/*
-#define InfoFuncLoadAddr      ((byte __far *)  (0x92C00000))
-// note: entry point to the function is not necessarily the first byte of the compiled binary.
-#define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (0x92C00034))
-#define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (0x92C000B2))
-#define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (0x92C0010A))
-#define getMeleeStateAddr     ((statenum_t (__far *)(uint8_t))  (0x92C0015A))
-#define getMobjMassAddr       ((int32_t    (__far *)(uint8_t))  (0x92C001B8))
-#define getActiveSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x92C00222))
-#define getPainSoundAddr      ((sfxenum_t  (__far *)(uint8_t))  (0x92C00284))
-#define getAttackSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x92C002B8))
-#define getDamageAddr         ((uint8_t    (__far *)(uint8_t))  (0x92C002DA))
-#define getSeeStateAddr       ((statenum_t (__far *)(uint8_t))  (0x92C00350))
-#define getMissileStateAddr   ((statenum_t (__far *)(uint8_t))  (0x92C003F4))
-#define getDeathStateAddr     ((statenum_t (__far *)(uint8_t))  (0x92C004A8))
-#define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (0x92C00586))
-#define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (0x92C0063C))
+// 0x92D90000
+#define PSightFuncLoadAddr      ((byte __far*) (MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes)))
+#define P_CheckSightAddr        ((boolean (__far *)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ))  (PSightFuncLoadAddr))
+#define SIZE_PSight             0x0A70
 
-#define SIZE_D_INFO            0x069C*/
-
-
+// end at 0x9380
 
 // move up to 6800:6a90
 // or 6EA9:0000
@@ -362,11 +311,22 @@ texturedefs_offset CE76:0000
 // 0x9323C done
 // 0x9324  empty
 
-//#define PSightFuncLoadAddr      ((byte __far *)  (0x93240000))
-//#define P_CheckSightAddr        ((boolean (__far *)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ))  (0x9324069C))
-//#define SIZE_PSight             (((byte __far*)PSightEndFunc) - ((byte __far*)P_DivlineSide))
-//0x068a or 1674
 
+// B14B0 + FE0
+
+ 
+
+
+#define PSetupFuncLoadAddr      ((byte __far *)  (0xB14B0000))
+#define PSetupFuncFromAddr      ((byte __far *) ((int32_t)PSetupEndFunc &0xFFFF0000))
+//#define SIZE_PSetup             ((int16_t)(((int32_t)PSetupEndFunc) & 0xFFFF))
+#define SIZE_PSetup             0xFE0
+
+// 4064
+//#define SIZE_PSetup             0xFE0
+#define P_SetupLevelAddr        ((void     (__far *)(int8_t, int8_t, skill_t)) (0xB14B0000))
+
+ 
 
 // 3428 bytes free
 
@@ -540,12 +500,6 @@ rndtable       6E99:0000
 //1748:6ef4 
 
 //4284 bytes or 0x10BC
-
-#define PSetupFuncLoadAddr      ((byte __far *)  (0xB14B0000))
-#define PSetupFuncFromAddr      ((byte __far *) ((int32_t)PSetupEndFunc &0xFFFF0000))
-//#define SIZE_PSetup             ((int16_t)(((int32_t)PSetupEndFunc) & 0xFFFF))
-#define SIZE_PSetup             4630
-#define P_SetupLevelAddr        ((void     (__far *)(int8_t, int8_t, skill_t)) (0xB14B0000))
 
 
 

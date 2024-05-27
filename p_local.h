@@ -262,7 +262,11 @@ boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union x, fixed_t_un
 boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
 boolean __near P_TeleportMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 void	__near P_SlideMove ();
-boolean __near P_CheckSight (mobj_t __far* t1,mobj_t __far* t2,mobj_pos_t __far* t1_pos,mobj_pos_t __far* t2_pos);
+
+#ifndef MOVE_P_SIGHT
+boolean __far P_CheckSight (mobj_t __far* t1,mobj_t __far* t2,mobj_pos_t __far* t1_pos,mobj_pos_t __far* t2_pos);
+#endif
+
 void 	__near P_UseLines ();
 boolean __near P_ChangeSector (sector_t __far* sector, boolean crunch);
 

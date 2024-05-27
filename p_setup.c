@@ -86,12 +86,127 @@ int16_t         bmaporgy;
 uint16_t   __far  R_TextureNumForName(int8_t* name);
 uint8_t    __far R_FlatNumForName(int8_t* name);
 
+void __near P_LoadVertexes(int16_t lump);
+void __near P_LoadSectors(int16_t lump);
+void __near P_LoadSubsectors(int16_t lump);
+void __near P_LoadNodes(int16_t lump);
+void __near P_LoadSideDefs(int16_t lump);
+void __near P_LoadLineDefs(int16_t lump);
+void __near P_LoadBlockMap(int16_t lump);
+void __near P_LoadThings(int16_t lump);
+void __near P_LoadSegs(int16_t lump);	
+void __near P_InitThinkers (void);
+void __near Z_FreeConventionalAllocations();
+void __near P_GroupLines();
+void __far P_SpawnSpecials(void);
+
+//
+// P_SetupLevel
+//
+// stick this at top so entry point is always xxxx:0000
+void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
+	int8_t        lumpname[9];
+	int16_t         lumpnum;
+	
+	
+	//I_Error("level is %i %i", episode, map);
+
+	wminfo.partime = 180;
+	player.killcount = player.secretcount = player.itemcount = 0;
+
+	// Initial height of PointOfView
+	// will be set by player think.
+	player.viewz.w = 1;
+	
+	S_Start();
+	Z_FreeConventionalAllocations();
+
+	// TODO reset 32 bit counters to start values here..
+	validcount = 1;
+
+	P_InitThinkers();
+
+
+	// find map name
+	if (commercial) {
+		sprintf(lumpname, "map%02d", map);
+	}
+	else
+	{
+		lumpname[0] = 'E';
+		lumpname[1] = '0' + episode;
+		lumpname[2] = 'M';
+		lumpname[3] = '0' + map;
+		lumpname[4] = 0;
+	}
+
+	lumpnum = W_GetNumForName(lumpname);
+
+	leveltime.w = 0;
+	
+	// note: most of this ordering is important 
+	P_LoadVertexes(lumpnum + ML_VERTEXES);
+	P_LoadSectors(lumpnum + ML_SECTORS);
+	P_LoadSideDefs(lumpnum + ML_SIDEDEFS);
+
+
+	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
+	P_LoadSubsectors(lumpnum + ML_SSECTORS);
+	P_LoadNodes(lumpnum + ML_NODES);
+
+	P_LoadSegs(lumpnum + ML_SEGS);
+
+	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
+
+
+	W_CacheLumpNumDirect(lumpnum + ML_REJECT, rejectmatrix);
+
+	P_GroupLines();
+#ifdef PRECALCULATE_OPENINGS
+	P_CacheLineOpenings();
+#endif
+
+
+	 
+	P_LoadThings(lumpnum + ML_THINGS);
+ 
+
+	// set up world state
+	P_SpawnSpecials();
+	
+	Z_QuickMapRender();
+	Z_QuickMapRenderPlanes();
+	skytexturelump = ((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[skytexture]]))[0];
+	// lump from tex id
+	W_CacheLumpNumDirect(skytexturelump, skytexture_bytes);
+
+	// precalculate the offsets table location...
+	if (texturecolumn_offset[skytexture] >= 0x0800) {
+		skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[skytexture] - 0x0800) << 4]));
+	} else {
+		skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[skytexture] << 4]));
+	}
+	
+	Z_QuickMapPhysics();
+ 
+
+
+	// preload graphics
+	
+	/*
+	if (precache)
+		R_PrecacheLevel();
+*/
+
+
+}
+
+
 
 //
 // P_LoadVertexes
 //
-void __near P_LoadVertexes(int16_t lump)
-{
+void __near P_LoadVertexes(int16_t lump) {
 	//mapvertex_t __far*			data;
 	uint16_t                 i;
 	//mapvertex_t			ml;
@@ -118,8 +233,7 @@ void __near P_LoadVertexes(int16_t lump)
 //
 // P_LoadSegs
 //
-void __near P_LoadSegs(int16_t lump)
-{
+void __near P_LoadSegs(int16_t lump) {
  	mapseg_t  __far*          data;
 	uint16_t                 i;
 	mapseg_t __far*           ml;
@@ -207,8 +321,7 @@ void __near P_LoadSegs(int16_t lump)
 //
 // P_LoadSubsectors
 //
-void __near P_LoadSubsectors(int16_t lump)
-{
+void __near P_LoadSubsectors(int16_t lump) {
 	mapsubsector_t  __far*               data;
 	uint16_t                 i;
 	mapsubsector_t __far*     ms;
@@ -238,8 +351,7 @@ void __near P_LoadSubsectors(int16_t lump)
 //
 // P_LoadSectors
 //
-void __near P_LoadSectors(int16_t lump)
-{
+void __near P_LoadSectors(int16_t lump) {
 	mapsector_t __far*        data;
 	uint16_t                 i;
 	mapsector_t        ms;
@@ -305,8 +417,7 @@ void __near P_LoadSectors(int16_t lump)
 //
 // P_LoadNodes
 //
-void __near P_LoadNodes(int16_t lump)
-{
+void __near P_LoadNodes(int16_t lump) {
 	mapnode_t  __far*       data = (mapnode_t __far*)SCRATCH_ADDRESS_5000;
 	uint16_t         i;
 	uint16_t         j;
@@ -361,8 +472,7 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key);
 //
 // P_LoadThings
 //
-void __near P_LoadThings(int16_t lump)
-{
+void __near P_LoadThings(int16_t lump) {
 	mapthing_t  __far*		data;
 	uint16_t                 i;
 	mapthing_t         mt;
@@ -433,8 +543,7 @@ void __near P_LoadThings(int16_t lump)
 // P_LoadLineDefs
 // Also counts secret lines for intermissions.
 //
-void __near P_LoadLineDefs(int16_t lump)
-{
+void __near P_LoadLineDefs(int16_t lump) {
 	maplinedef_t  __far*		data;
 	uint16_t                 i;
 	maplinedef_t __far*       mld;
@@ -564,8 +673,7 @@ void __near P_LoadLineDefs(int16_t lump)
 //
 // P_LoadSideDefs
 //
-void __near P_LoadSideDefs(int16_t lump)
-{
+void __near P_LoadSideDefs(int16_t lump) {
 	mapsidedef_t __far*               data;
 	uint16_t                 i;
 	mapsidedef_t __far*       msd;
@@ -651,8 +759,7 @@ void __near P_LoadSideDefs(int16_t lump)
 //
 // P_LoadBlockMap
 //
-void __near P_LoadBlockMap(int16_t lump)
-{
+void __near P_LoadBlockMap(int16_t lump) {
 	uint16_t         count;
 	Z_QuickMapPhysics();
 
@@ -681,8 +788,7 @@ void __near P_LoadBlockMap(int16_t lump)
 // Builds sector line lists and subsector sector numbers.
 // Finds block bounding boxes for sectors.
 //
-void __near P_GroupLines(void)
-{
+void __near P_GroupLines(void) {
 	uint16_t                 i;
 	uint16_t                 j;
 	line_physics_t __far*     li_physics;
@@ -799,8 +905,7 @@ extern int16_t currentThinkerListHead;
 //
 // P_InitThinkers
 //
-void  __near P_InitThinkers (void)
-{
+void  __near P_InitThinkers (void) {
 	int16_t i;
 	thinkerlist[0].next = 1;
 	thinkerlist[0].prevFunctype = 1;
@@ -813,7 +918,6 @@ void  __near P_InitThinkers (void)
 	currentThinkerListHead = 0;
 
 }
-void __far P_SpawnSpecials(void);
  
  
 
@@ -947,193 +1051,6 @@ void __near Z_FreeConventionalAllocations() {
 
 }
 
-
-//
-// P_SetupLevel
-//
-// stick this at top so entry point is always xxxx:0000
-void
-__far P_SetupLevel
-(int8_t           episode,
-	int8_t           map,
-	skill_t       skill)
-{
-	int8_t        lumpname[9];
-	int16_t         lumpnum;
-	
-	
-	//I_Error("level is %i %i", episode, map);
-
-	wminfo.partime = 180;
-	player.killcount = player.secretcount = player.itemcount = 0;
-
-	// Initial height of PointOfView
-	// will be set by player think.
-	player.viewz.w = 1;
-	
-	S_Start();
-	Z_FreeConventionalAllocations();
-
-	// TODO reset 32 bit counters to start values here..
-	validcount = 1;
-
-	P_InitThinkers();
-
-
-	// find map name
-	if (commercial) {
-		sprintf(lumpname, "map%02d", map);
-	}
-	else
-	{
-		lumpname[0] = 'E';
-		lumpname[1] = '0' + episode;
-		lumpname[2] = 'M';
-		lumpname[3] = '0' + map;
-		lumpname[4] = 0;
-	}
-
-	lumpnum = W_GetNumForName(lumpname);
-
-	leveltime.w = 0;
-	
-	// note: most of this ordering is important 
-	P_LoadVertexes(lumpnum + ML_VERTEXES);
-	P_LoadSectors(lumpnum + ML_SECTORS);
-	P_LoadSideDefs(lumpnum + ML_SIDEDEFS);
-
-
-	P_LoadLineDefs(lumpnum + ML_LINEDEFS);
-	P_LoadSubsectors(lumpnum + ML_SSECTORS);
-	P_LoadNodes(lumpnum + ML_NODES);
-
-	P_LoadSegs(lumpnum + ML_SEGS);
-
-	P_LoadBlockMap(lumpnum + ML_BLOCKMAP);
-
-
-	W_CacheLumpNumDirect(lumpnum + ML_REJECT, rejectmatrix);
-
-	P_GroupLines();
-#ifdef PRECALCULATE_OPENINGS
-	P_CacheLineOpenings();
-#endif
-
-
-	
-
-	/*
-	I_Error("\n\n%u %u %u %u %u %u %u %u %u %u \n%u %u %u %u %u %u %u %u %u %u\n%u %u %u %u %u %u %u %u %u %u\n%p %p %p %p %p %p %p %p\n\n %p \n%u %u %u",
-		sizeof(side_t), sizeof(sector_t), sizeof(vertex_t), sizeof(line_t),
-		sizeof(subsector_t), sizeof(node_t), sizeof(seg_t), sizeof(lineopening_t), 2, sizeof(THINKERREF),
-		
-		numsides , numsectors , numvertexes , numlines ,
-		numsubsectors , numnodes , numsegs  , numlines , total,  bmapheight * bmapwidth,
-
-
-		numsides * sizeof(side_t), numsectors * sizeof(sector_t), numvertexes * sizeof(vertex_t), numlines * sizeof(line_t),
-		numsubsectors * sizeof(subsector_t), numnodes * sizeof(node_t), numsegs * sizeof(seg_t), numlines * sizeof(lineopening_t), total * 2, bmapheight * bmapwidth *sizeof(THINKERREF),
-		
-		sides, sectors, vertexes, lines,
-		subsectors, nodes, vertexes, lineopenings,
-		
-		conventionalmemoryblock, 
-		remainingconventional, leveldataoffset_phys, leveldataoffset_rend
-	);
-	*/
-	
-	P_LoadThings(lumpnum + ML_THINGS);
-
-// most recent
-/*
-	playerMobj_pos->x.w = 		0xfb479075;
-	playerMobj_pos->y.w = 		0xf90a68c7;
-	playerMobj_pos->z.w = 		0x00000000;
-	playerMobj_pos->angle.w = 	0xfd400000;
-	*/
-	//playerMobj_pos->angle.w = 	0xc2c20000;
-	//playerMobj_pos->angle.w = 	0xeac20000;
-	//playerMobj_pos->angle.w = 	0xdd020000;
-
-
-	/*
-	playerMobj_pos->x.w = 		0xfc9150fa;
-	playerMobj_pos->x.w = 		0xfdf02bf7;
-	playerMobj_pos->z.w = 		0x00000000;
-	playerMobj_pos->angle.w = 	0xef800000;
-*/	
-
-	/*
-	//Z_QuickMapRender();
-	fp = fopen("blockmap.bin", "wb");
-	FAR_fwrite(blockmaplump, 0x7fff, 1, fp);
-	fclose(fp);
-	fp = fopen("seg_phy.bin", "wb");
-	FAR_fwrite(segs_physics, 0x7fff, 1, fp);
-	fclose(fp);
-	fp = fopen("blockl.bin", "wb");
-	FAR_fwrite(blocklinks, 0x7fff, 1, fp);
-	fclose(fp);
-	fp = fopen("nightmar.bin", "wb");
-	FAR_fwrite(nightmarespawns, 0x7fff, 1, fp);
-	fclose(fp);
-	fp = fopen("reject.bin", "wb");
-	FAR_fwrite(rejectmatrix, 0x7fff, 1, fp);
-	fclose(fp);
-	I_Error("done");
-	 
-	 */
-
-	// set up world state
-	P_SpawnSpecials();
-	
-	Z_QuickMapRender();
-	Z_QuickMapRenderPlanes();
-	skytexturelump = ((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[skytexture]]))[0];
-	// lump from tex id
-	W_CacheLumpNumDirect(skytexturelump, skytexture_bytes);
-
-	// precalculate the offsets table location...
-	if (texturecolumn_offset[skytexture] >= 0x0800) {
-		skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[skytexture] - 0x0800) << 4]));
-	} else {
-		skyofs = ((uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[skytexture] << 4]));
-	}
-	
-	Z_QuickMapPhysics();
-
-	/*
-	I_Error("\n%Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp %Fp",
-		sectors_physics,
-		segs_physics,
-		lines_physics,
-		blocklinks,
-		// 6000
-		blockmaplump,
-		linebuffer,
-		nightmarespawns,
-		rejectmatrix,
-
-		nodes_render,
-		sides_render,
-		segs_render,
-		RENDER_SCRATCH, 0
-
-	);
-	*/
-
-
-
-
-	// preload graphics
-	
-	/*
-	if (precache)
-		R_PrecacheLevel();
-*/
-
-
-}
 
 void __near PSetupEndFunc(){}
 
