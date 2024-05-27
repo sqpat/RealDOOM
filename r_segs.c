@@ -87,12 +87,7 @@ uint16_t __far*		maskedtexturecol;
 //
 // R_RenderMaskedSegRange
 //
-void
-__near R_RenderMaskedSegRange
-(drawseg_t __far*	ds,
-	int16_t		x1,
-	int16_t		x2)
-{
+void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 	uint16_t	index;
 	column_t __far*	col;
 	int16_t		lightnum;
@@ -178,7 +173,7 @@ __near R_RenderMaskedSegRange
     dc_texturemid.h.intbits += side_render->rowoffset;
 			
 	if (fixedcolormap) {
-		dc_colormap = MK_FP(colormapssegment, fixedcolormap);
+		dc_colormap = MK_FP(colormapssegment_high, fixedcolormap);
 	}
 
     // draw the columns
@@ -195,7 +190,7 @@ __near R_RenderMaskedSegRange
 					index = spryscale.w >> LIGHTSCALESHIFT;
 				}
 
-				dc_colormap = MK_FP(colormapssegment, walllights[index]);
+				dc_colormap = MK_FP(colormapssegment_high, walllights[index]);
 			}
 			
 			sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
@@ -411,11 +406,7 @@ extern  fixed_t_union leveltime;
 // sq note: temp and temp angle have become confusing here, but basically angles are uint32_t
 // while normal fixed_t is int32_t, and you have to make sure you use angles and fixed_t in the
 // correct spots or you end up doing things like comparisons between uint32_t and int32_t.
-void
-__near R_StoreWallRange
-( int16_t	start,
-  int16_t	stop )
-{
+void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     fixed_t		hyp;
     fixed_t		sineval;
     fineangle_t	distangle, offsetangle;

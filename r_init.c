@@ -591,6 +591,7 @@ void __near R_InitData(void) {
 	//colormaps = (byte __far*)colormapbytes;
 	//colormaps = (byte  __far*)(((int32_t)colormaps + 255)&~0xff);
 	W_CacheLumpNumDirect(1, colormaps);
+	//W_CacheLumpNumDirect(1, (byte __far*) 0xCC000000);
 
  
 }

@@ -762,6 +762,7 @@ void __far R_RenderPlayerView ()
 	// either one extra page swap per frame or comment this out
 	
 	//NetUpdate ();
+	//FAR_memset((byte __far *) 0x84000000, 0x00, 32767);
 
 	R_DrawMasked ();
 #ifdef DETAILED_BENCH_STATS

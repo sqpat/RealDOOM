@@ -120,7 +120,7 @@ scalelight         CE16:0000
 
 */
 
-
+/*
 #define colormapssegment  0xCC00
 
 #define size_colormapbytes                ((33 * 256)                      + 0)
@@ -132,7 +132,7 @@ scalelight         CE16:0000
 #define colormapbytes               ((byte __far*)          MAKE_FULL_SEGMENT(0xCC000000      , 0))
 #define scalelightfixed             ((uint16_t __far*)      MAKE_FULL_SEGMENT(colormaps       , size_colormapbytes))
 #define scalelight                  ((uint16_t __far*)      MAKE_FULL_SEGMENT(scalelightfixed , size_scalelightfixed))
-
+*/
 // 1632 bytes of scalelight to move
 
 
@@ -445,35 +445,61 @@ blockmaplump_plus4  76E4:0008
 
 #define size_mobjposlist       (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_xtoviewangle      (sizeof(fineangle_t) * (SCREENWIDTH + 1))
-
 #define size_scantokey         128
 #define size_rndtable          256
+#define size_colormaps         ((33 * 256)                      + 0)
+#define size_scalelightfixed   (sizeof(uint16_t) * (MAXLIGHTSCALE))
+#define size_scalelight        (sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
+
 
 #define mobjposlist           ((mobj_pos_t __far*)     MAKE_FULL_SEGMENT(0x68000000, 0))
 #define xtoviewangle          ((fineangle_t __far*)    MAKE_FULL_SEGMENT(mobjposlist, size_mobjposlist))
-
 #define scantokey             ((byte __far*)           MAKE_FULL_SEGMENT(xtoviewangle, size_xtoviewangle))
 #define rndtable              ((uint8_t __far*)        MAKE_FULL_SEGMENT(scantokey, size_scantokey))
+
+
+
+#define colormaps             ((lighttable_t  __far*) MAKE_FULL_SEGMENT(rndtable        , size_rndtable))
+#define scalelightfixed       ((uint16_t __far*)      MAKE_FULL_SEGMENT(colormaps       , size_colormaps))
+#define scalelight            ((uint16_t __far*)      MAKE_FULL_SEGMENT(scalelightfixed , size_scalelightfixed))
+
+//6D2D
+#define colormapssegment      ((uint16_t) ((int32_t)colormaps >> 16))
+
+// used in sprite render, this has been remapped to 8400 page
+// 852D
+#define colormapssegment_high  ((uint16_t) (colormapssegment - 0x6C00 + 0x8C00))
+#define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps) - 0x6C000000 + 0x8C000000))
+//#define colormapssegment_high  0xCC00
+//#define colormaps_high         ((lighttable_t  __far*) (0xCC000000))
+
+
 
 // 11568 free
 
 // 6080 bytes of plane only...
 // can it fit with skytex?
 
-// planes change the 6800 page and remove mobjposlist
+// planes change the 6800 page and remove 
 
 /*
-mobjposlist    6800:0000
-xtoviewangle   6CEC:0000
-scantokey      6D15:0000
-rndtable       6D1D:0000
-[empty]        6D2D:0000
+// todo reverse order of colormaps and mobjpos list? 
+
+//? draw code under colormaps in 6800 segment during drawcol?
+mobjposlist     6800:0000
+xtoviewangle    6CEC:0000
+scantokey       6D15:0000
+rndtable        6D1D:0000
+colormaps       6D2D:0000
+scalelightfixed 6F3D:0000
+scalelight      6F43:0000
+[empty]         6FA3:0000
 
 
 
 
 
-4439 bytes free
+1488 bytes free if colormaps etc here otherwise 11568
 
 */
 
@@ -779,7 +805,7 @@ patchoffset                 83BB:01DC
 
 
 
-
+// RENDER REMAPPING
 
 // RENDER 0x7800 - 0x7FFF DATA NOT USED IN PLANES
 

@@ -407,7 +407,9 @@ void __near R_DrawFuzzColumn (void)
 		//  a pixel that is either one column
 		//  left or right of the current one.
 		// Add index from colormap to index.
-		*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]];
+
+		// only used during sprite, during which colormaps is high
+		*dest = colormaps_high[6*256+dest[fuzzoffset[fuzzpos]]];
 
 		// Clamp table lookup index.
 		if (++fuzzpos == FUZZTABLE) 

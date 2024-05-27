@@ -189,6 +189,8 @@ int16_t pageswapargs[total_pages] = {
 	// flat cache undo   NOTE: we just call it with six params to set everything up for sprites
 	RENDER_7800_PAGE, PAGE_7800_OFFSET,
 	RENDER_7C00_PAGE, PAGE_7C00_OFFSET,
+	PHYSICS_RENDER_6C00_PAGE, PAGE_8C00_OFFSET, // put colormaps where vissprites used to be?
+
 	// sprite cache
 	FIRST_SPRITE_CACHE_LOGICAL_PAGE + 0, PAGE_6800_OFFSET,
 	FIRST_SPRITE_CACHE_LOGICAL_PAGE + 1, PAGE_6C00_OFFSET,
@@ -552,7 +554,7 @@ void __far Z_QuickMapUndoFlatCache() {
 	// also puts 9000 page back from skytexture
 	Z_QuickMap(pageswapargs_rend_offset_size, 4);
 	
-	Z_QuickMap(pageswapargs_flatcache_undo_offset_size, 6);
+	Z_QuickMap(pageswapargs_flatcache_undo_offset_size, 7);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	flatpageswitchcount++;

@@ -1273,9 +1273,9 @@ byte __far* __near getcompositetexture(int16_t tex_index) {
 
 }
 
-byte __far* __near getspritetexture(int16_t lump) {
+byte __far* __near getspritetexture(int16_t index) {
 
-	int16_t index = lump - firstspritelump;
+	int16_t lump = index + firstspritelump;
 	uint8_t texpage = spritepage[index];
 	uint8_t texoffset = spriteoffset[index];
 	int8_t cachelump = false;
@@ -1294,12 +1294,12 @@ byte __far* __near getspritetexture(int16_t lump) {
 	}
 
 		
-		addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
-		if (cachelump){
-			W_CacheLumpNumDirect(lump, addr);
-		}
-		// return
-		return addr;
+	addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+	if (cachelump){
+		W_CacheLumpNumDirect(lump, addr);
+	}
+	// return
+	return addr;
 
 
 } 

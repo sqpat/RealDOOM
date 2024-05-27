@@ -87,8 +87,9 @@ void __far Z_QuickMapUnmapAll();
 #define FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE     16
 #define FIRST_RENDER_LOGICAL_PAGE                   20
 
-#define RENDER_7800_PAGE                            20 + 9
-#define RENDER_7C00_PAGE                            20 + 10
+#define RENDER_7800_PAGE                            FIRST_RENDER_LOGICAL_PAGE + 9
+#define RENDER_7C00_PAGE                            FIRST_RENDER_LOGICAL_PAGE + 10
+#define PHYSICS_RENDER_6C00_PAGE                    15
 //#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
 #define EMS_VISPLANE_EXTRA_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5
 #define FIRST_VISPLANE_PAGE							FIRST_RENDER_LOGICAL_PAGE + 5
@@ -103,36 +104,37 @@ void __far Z_QuickMapUnmapAll();
 // 41
 #define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
 // todo almost 6k free here..
+// 42
 #define SKY_TEXTURE_FIRST_PAGE                      PALETTE_LOGICAL_PAGE + 1
-// 44
+// 45
 #define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            SKY_TEXTURE_FIRST_PAGE + 3
-// 51
+// 52
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
-// 59
+// 60
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 63
+// 64
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 66
+// 67
 #define FIRST_PATCH_CACHE_LOGICAL_PAGE              FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_PATCH_CACHE_PAGES                       16
-// 82
+// 83
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES                        6
-// 88
+// 89
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 96
+// 97
 #define NUM_TEXTURE_PAGES                           8
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
-// 101
+// 102
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 105
+// 106
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 109
+// 110
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 
 
-// 118
+// 119
 #define NUM_SPRITE_CACHE_PAGES                      20
 
 // todo eventuall yjust include this in the spritecache area...
@@ -141,7 +143,7 @@ void __far Z_QuickMapUnmapAll();
 // 116 in use currently (including page 0)
 
 
-// 42
+// 56?
 #define FIRST_DEMO_LOGICAL_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4
 
 
@@ -177,7 +179,7 @@ void __far Z_QuickMapUnmapAll();
 #define num_scratch7000_params 8
 #define num_renderplane_params 6
 #define num_flatcache_params 8
-#define num_flatcache_undo_params 4
+#define num_flatcache_undo_params 6
 #define num_spritecache_params 8
 #define num_palette_params 10
 #define num_7000to6000_params 8

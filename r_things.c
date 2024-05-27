@@ -80,7 +80,6 @@ int16_t             numsprites;
 //
 // GAME FUNCTIONS
 //
-//vissprite_t      __far*vissprites;// [MAXVISSPRITES];
 vissprite_t __far*    vissprite_p;
 
 
@@ -159,7 +158,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
         
 
 
-	dc_colormap = MK_FP(colormapssegment, vis->colormap);
+	dc_colormap = MK_FP(colormapssegment_high, vis->colormap);
     
     if (vis->colormap == COLORMAP_SHADOW) {
         // NULL colormap = shadow draw
@@ -172,7 +171,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     spryscale.w = vis->scale;
     sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
          
-	patch = (patch_t __far*)getspritetexture(vis->patch + firstspritelump);
+	patch = (patch_t __far*)getspritetexture(vis->patch);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		column = (column_t  __far*) ((byte  __far*)patch + (patch->columnofs[frac.h.intbits]));
         R_DrawMaskedColumn (column);
