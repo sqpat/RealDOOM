@@ -153,7 +153,7 @@ void __near R_InitTextureMapping(void) {
 	// 168 viewheight
 	// planes
 
-
+	Z_QuickMapRenderPlanes();
 	for (i = 0; i < viewheight; i++) {
 		temp.h.intbits = (i - viewheight / 2);
 		dy = (temp.w) + 0x8000u;
@@ -169,6 +169,7 @@ void __near R_InitTextureMapping(void) {
 		cosadj = labs(finecosine[an]);
 		distscale[i] = FixedDivWholeA(FRACUNIT, cosadj);
 	}
+	Z_QuickMapRender();
 
 	// Calculate the light levels to use
 	//  for each level / scale combination.

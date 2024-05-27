@@ -113,7 +113,7 @@ CC00 block (16k)
 
 colormaps          CC00:0000
 scalelightfixed    CE16:0000
-scalelights        CE16:0000
+scalelight         CE16:0000
 [empty]            CE76:0000
 
 // 10080 used so far
@@ -133,6 +133,7 @@ scalelights        CE16:0000
 #define scalelightfixed             ((uint16_t __far*)      MAKE_FULL_SEGMENT(colormaps       , size_colormapbytes))
 #define scalelight                  ((uint16_t __far*)      MAKE_FULL_SEGMENT(scalelightfixed , size_scalelightfixed))
 
+// 1632 bytes of scalelight to move
 
 
  // ALLOCATION DEFINITIONS: LOWER MEMORY BLOCKS 
@@ -243,26 +244,27 @@ scalelights        CE16:0000
 
 // end at 0x9380
 
-// move up to 6800:6a90
-// or 6EA9:0000
-#define InfoFuncLoadAddr      ((byte __far *)  (0x6EA90000))
+ // or 9380:0000
+#define InfoFuncLoadAddr      ((byte __far *)  (0x93800000))
 // note: entry point to the function is not necessarily the first byte of the compiled binary.
-#define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (0x6EA90034))
-#define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA900B2))
-#define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (0x6EA9010A))
-#define getMeleeStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA9015A))
-#define getMobjMassAddr       ((int32_t    (__far *)(uint8_t))  (0x6EA901B8))
-#define getActiveSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90222))
-#define getPainSoundAddr      ((sfxenum_t  (__far *)(uint8_t))  (0x6EA90284))
-#define getAttackSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (0x6EA902B8))
-#define getDamageAddr         ((uint8_t    (__far *)(uint8_t))  (0x6EA902DA))
-#define getSeeStateAddr       ((statenum_t (__far *)(uint8_t))  (0x6EA90350))
-#define getMissileStateAddr   ((statenum_t (__far *)(uint8_t))  (0x6EA903F4))
-#define getDeathStateAddr     ((statenum_t (__far *)(uint8_t))  (0x6EA904A8))
-#define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (0x6EA90586))
-#define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (0x6EA9063C))
+#define getPainChanceAddr     ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0034))
+#define getRaiseStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x00B2))
+#define getXDeathStateAddr    ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x010A))
+#define getMeleeStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x015A))
+#define getMobjMassAddr       ((int32_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x01B8))
+#define getActiveSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0222))
+#define getPainSoundAddr      ((sfxenum_t  (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0284))
+#define getAttackSoundAddr    ((sfxenum_t  (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x02B8))
+#define getDamageAddr         ((uint8_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x02DA))
+#define getSeeStateAddr       ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0350))
+#define getMissileStateAddr   ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x03F4))
+#define getDeathStateAddr     ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x04A8))
+#define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0586))
+#define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x063C))
 
 #define SIZE_D_INFO            0x069C
+// 0x93E9
+
 
 
 
@@ -443,50 +445,35 @@ blockmaplump_plus4  76E4:0008
 
 #define size_mobjposlist       (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_xtoviewangle      (sizeof(fineangle_t) * (SCREENWIDTH + 1))
-#define size_yslope            (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_distscale         (sizeof(fixed_t) * SCREENWIDTH)
-#define size_cachedheight      (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_cacheddistance    (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_cachedxstep       (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_cachedystep       (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_spanstart         (sizeof(fixed_t) * SCREENHEIGHT)
+
 #define size_scantokey         128
 #define size_rndtable          256
 
 #define mobjposlist           ((mobj_pos_t __far*)     MAKE_FULL_SEGMENT(0x68000000, 0))
 #define xtoviewangle          ((fineangle_t __far*)    MAKE_FULL_SEGMENT(mobjposlist, size_mobjposlist))
-#define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(xtoviewangle, size_xtoviewangle))
-#define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))
-#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(distscale, size_distscale))
-#define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
-#define cachedxstep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cacheddistance, size_cacheddistance))
-#define cachedystep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedxstep, size_cachedxstep))
-#define spanstart             ((int16_t __far*)        MAKE_FULL_SEGMENT(cachedystep, size_cachedystep))
-#define scantokey             ((byte __far*)           MAKE_FULL_SEGMENT(spanstart, size_spanstart))
+
+#define scantokey             ((byte __far*)           MAKE_FULL_SEGMENT(xtoviewangle, size_xtoviewangle))
 #define rndtable              ((uint8_t __far*)        MAKE_FULL_SEGMENT(scantokey, size_scantokey))
 
+// 11568 free
 
+// 6080 bytes of plane only...
+// can it fit with skytex?
 
+// planes change the 6800 page and remove mobjposlist
 
 /*
 mobjposlist    6800:0000
 xtoviewangle   6CEC:0000
-yslope         6D15:0000
-distscale      6D47:0000
-cachedheight   6D97:0000
-cacheddistance 6DC9:0000
-cachedxstep    6DFB:0000
-cachedystep    6E2D:0000
-spanstart      6E5F:0000
-scantokey      6E91:0000
-rndtable       6E99:0000
-[empty]        6EA9:0000
+scantokey      6D15:0000
+rndtable       6D1D:0000
+[empty]        6D2D:0000
 
 
 
 
 
-5502 bytes free
+4439 bytes free
 
 */
 
@@ -610,10 +597,51 @@ This area used during intermission task
 //extern byte __far* palettebytes;
 #define palettebytes_size  10752
 #define palettebytes ((byte __far*) 0x90000000)
-
 // 10752 bytes / 16 = 672 or 2A0 for offset
-#define skytexture_segment 0x9300
-#define skytexture_bytes ((byte __far*) 0x93000000)
+
+// 38677
+
+
+// 6800 plane only... combine with skytex...
+
+
+#define size_yslope            (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_distscale         (sizeof(fixed_t) * SCREENWIDTH)
+#define size_cachedheight      (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cacheddistance    (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cachedxstep       (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_cachedystep       (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_spanstart         (sizeof(fixed_t) * SCREENHEIGHT)
+
+// start plane only
+#define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(0x90000000, 0))
+#define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))
+#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(distscale, size_distscale))
+#define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
+#define cachedxstep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cacheddistance, size_cacheddistance))
+#define cachedystep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedxstep, size_cachedxstep))
+#define spanstart             ((int16_t __far*)        MAKE_FULL_SEGMENT(cachedystep, size_cachedystep))
+// end plane only
+
+/*
+yslope         9000:0000
+distscale      9032:0000
+cachedheight   9082:0000
+cacheddistance 90B4:0000
+cachedxstep    90E6:0000
+cachedystep    9118:0000
+spanstart      914A:0000
+skytexture     917C:0000
+[empty]        9A0D:0000
+
+*/
+
+// 35080 bytes
+#define skytexture_bytes ((byte __far*) MAKE_FULL_SEGMENT(spanstart, size_spanstart))
+// 917c:0000
+#define skytexture_segment ((uint16_t) ((int32_t)skytexture_bytes >> 16))
+
+// note drawspan code could fit here and colormap in 0x9c00...
 
 // main bar left
 #define sbar  44024u
@@ -790,7 +818,7 @@ spritewidths        7000:7592
 */
 
 
-// RENDER 0x6800-0x6FFF DATA - USED ONLY IN PLANE... PAGED OUT IN SPRITE REGION
+// RENDER 0x6800-0x6FFF DATA - USED ONLY IN PLANE/BSP... PAGED OUT IN SPRITE REGION
 // same as physics 6800-6fff
 
 

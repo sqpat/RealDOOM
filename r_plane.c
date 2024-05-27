@@ -178,8 +178,6 @@ void __near R_ClearPlanes (void)
     lastvisplane = 0;
     lastopening = 0;
 
-    // texture calculation
-    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
 
     // left to right mapping
 	angle = MOD_FINE_ANGLE(viewangle_shiftright3 - FINE_ANG90) ;

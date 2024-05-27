@@ -102,7 +102,8 @@ void __far Z_QuickMapUnmapAll();
 #define FIRST_STATUS_LOGICAL_PAGE                   SCREEN4_LOGICAL_PAGE + 1
 // 41
 #define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
-#define SKY_TEXTURE_FIRST_PAGE                      PALETTE_LOGICAL_PAGE
+// todo almost 6k free here..
+#define SKY_TEXTURE_FIRST_PAGE                      PALETTE_LOGICAL_PAGE + 1
 // 44
 #define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            SKY_TEXTURE_FIRST_PAGE + 3
 // 51

@@ -737,6 +737,9 @@ void __far R_RenderPlayerView ()
 	// replace render level data with flat cache
 
 	Z_QuickMapRenderPlanes();
+    
+	// cant do this in clearplanes, this field isnt in memory yet..
+    FAR_memset (cachedheight, 0, sizeof(fixed_t) * SCREENHEIGHT);
 
 	// put visplanes 0-75 back in memory (if necessary)
 	if (visplanedirty){
