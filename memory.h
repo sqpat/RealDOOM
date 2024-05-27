@@ -805,9 +805,10 @@ spritewidths        7000:7592
 #define size_texturedefs_bytes         8756u
 #define size_spriteoffsets             (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 #define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
+#define size_texturedefs_offset        (MAX_TEXTURES * sizeof(uint16_t))
 #define size_spritepage                (MAX_SPRITE_LUMPS * sizeof(uint8_t))
 #define size_spriteoffset              (MAX_SPRITE_LUMPS * sizeof(uint8_t))
-#define size_flatindex                 (sizeof(uint8_t) * MAX_FLATS)
+
 
 
 // size_texturedefs_bytes 0x6184... 0x6674
@@ -819,8 +820,8 @@ spritewidths        7000:7592
 #define texturedefs_bytes         ((byte __far*)     MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
 #define spriteoffsets             ((uint8_t __far*)  MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
 #define spritetopoffsets          ((int8_t __far*)   MAKE_FULL_SEGMENT(spriteoffsets,            size_spriteoffsets))
-#define flatindex                 ((uint8_t __far*)  MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
-#define spritepage                ((uint8_t __far*)  MAKE_FULL_SEGMENT(flatindex,                size_flatindex))
+#define texturedefs_offset        ((uint16_t  __far*)MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
+#define spritepage                ((uint8_t __far*)  MAKE_FULL_SEGMENT(texturedefs_offset,                size_texturedefs_offset))
 #define spriteoffset              ((uint8_t __far*)  (((int32_t)spritepage)                      + size_spritepage))
 
 
@@ -850,10 +851,10 @@ spritewidths        7000:7592
 #define size_fuzzofset                FUZZTABLE
 #define size_viewangletox             (sizeof(int16_t) * (FINEANGLES / 2))
 #define size_drawsegs                 (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
-#define size_texturedefs_offset       (MAX_TEXTURES * sizeof(uint16_t))
 #define size_texturecompositesizes    (MAX_TEXTURES * sizeof(uint16_t))
 #define size_compositetexturepage     (MAX_TEXTURES * sizeof(uint8_t))
 #define size_compositetextureoffset   (MAX_TEXTURES * sizeof(uint8_t))
+#define size_flatindex                (sizeof(uint8_t) * MAX_FLATS)
 
 
 #define segs_render             ((seg_render_t  __far*)      MAKE_FULL_SEGMENT(0x40000000              , 0))
@@ -867,11 +868,11 @@ spritewidths        7000:7592
 #define viewangletox            ((int16_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset              , size_fuzzofset))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
 #define drawsegs                ((drawseg_t __far*)          (MAKE_FULL_SEGMENT(viewangletox           , size_viewangletox) + sizeof(drawseg_t)))
-#define texturedefs_offset      ((uint16_t  __far*)          MAKE_FULL_SEGMENT(drawsegs                , size_drawsegs))
-#define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset      , size_texturedefs_offset))
+#define flatindex                 ((uint8_t __far*)  MAKE_FULL_SEGMENT(drawsegs,         size_drawsegs))
+#define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex      , size_flatindex))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
 #define compositetextureoffset  ((uint8_t __far*)            (((int32_t)compositetexturepage)          + size_compositetexturepage))
-
+//0x4FBEE
 
 // used during p_setup
 #define segs_render_9000     ((seg_render_t __far*)       (0x90000000 + 0))
