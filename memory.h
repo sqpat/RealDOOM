@@ -468,8 +468,10 @@ blockmaplump_plus4  76E4:0008
 
 // used in sprite render, this has been remapped to 8400 page
 // 852D
-#define colormapssegment_high  ((uint16_t) (colormapssegment - 0x6C00 + 0x8C00))
-#define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps) - 0x6C000000 + 0x8C000000))
+#define colormapssegment_high  ((uint16_t)             (colormapssegment           - 0x6C00 + 0x8C00))
+#define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x6C000000 + 0x8C000000))
+#define scalelightfixed_high   ((uint16_t __far*)      (((int32_t)scalelightfixed) - 0x6C000000 + 0x8C000000))
+#define scalelight_high        ((uint16_t __far*)      (((int32_t)scalelight)      - 0x6C000000 + 0x8C000000))
 //#define colormapssegment_high  0xCC00
 //#define colormaps_high         ((lighttable_t  __far*) (0xCC000000))
 

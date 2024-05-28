@@ -134,11 +134,11 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		lightnum++;
 	}
 	if (lightnum < 0){
-		walllights = &scalelight[0];
+		walllights = &scalelight_high[0];
 	} else if (lightnum >= LIGHTLEVELS) {
-		walllights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
+		walllights = &scalelight_high[lightmult48lookup[LIGHTLEVELS - 1]];
 	} else {
-		walllights = &scalelight[lightmult48lookup[lightnum]];
+		walllights = &scalelight_high[lightmult48lookup[lightnum]];
 	}
     maskedtexturecol = &openings[ds->maskedtexturecol];
 

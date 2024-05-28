@@ -122,11 +122,7 @@ void __near R_DrawColumn (void)
 	if (count < 0) {
 		return;
 	}
-
-// x3 x4 x5
-//
-// 9000:7cfa
-//  7cac
+ 
 
 
 	outp (SC_INDEX+1,1<<(dc_x&3));
@@ -160,20 +156,23 @@ void __near R_DrawColumn (void)
 	
 	we know top 8 bits get ignored
 	we are accepting that droping bits 9-16 of the fraction will be lost, which may cause some infrequent off-by-one texel coordinates.
-		this shouldnt be noticeable
+		this shouldnt be noticeable?
 
 	
 
 	BX = precalculated offset to colormap and dc_source
 	CS prefix pointing to colormap (easy, use EMS to put it in the right segment)
 	DS is 'hacked' pre loop to point to where it needs to for segment + BX to be equal to dc_source[0]
-	ES contains DEST (screen 0, 0x8000 or whatever)
+	ES contains DEST (screen 0, 0xA000 or whatever)
 
-	AH probably contains count. I dont think count can be over 256.
-	SI is contains 80 (for add 80 - add from register is one tick faster and one byte less
+	AH is empty but during low , potato quality we copy al back into ah.
+	SI is contains 4F, 4E, or 4C (to add the remainder of pixel offset for the screenwidth/4 or 0x50 add
 
-	unroll loop 8 or 12 or 16 or something,. benchmark what gives best results on average.
-	big switch case post loop to handle the extra cases/
+	unroll loop all the way. try and keep it 0x10 bytes is for a fast jump calculation.
+	calculate base addr + count shifted 4 store in stack. jump to stack loc, etc.
+
+
+	
 
 
 
@@ -212,17 +211,17 @@ void __near R_DrawColumn (void)
 	5	24 7f                   and    al,0x7f						1		3		0+2-2	1		1	2
 	6																1		2		0		1		1	1
 	7																1		1		0+2		0		0	0	
-	8	d7                      xlat   BYTE PTR ds:[ebx]			1		5		2-1		1		0	1	;xlat read cycle
+	8	d7                      xlat   BYTE PTR ds:[bx]				1		5		2-1		1		0	1	;xlat read cycle
 	9																1		4		1		1		0	2
 	10																1		3		1		1		0	1
 	11																1		2		1+2		1		1	2
 	12																1		1		3		0		0	0	;xlat read cycle
-	13	2e d7                   xlat   BYTE PTR cs:[ebx]			1		5		3-2		1		0	2
+	13	2e d7                   xlat   BYTE PTR cs:[bx]				1		5		3-2		1		0	2
 	14																1		4		1		1		0	2
 	15																1		3		1		1		0	1
 	16																1		2		1+2		1		1	2
 	17																1		1		3		0		0	0
-	18  aa                      stos   BYTE PTR es:[edi],al			1		3		3-1		1		1	2
+	18  aa                      stos   BYTE PTR es:[di],al			1		3		3-1		1		1	2
 	19																1		2		2		1		1	1
 	20																1		1		2+2		0		0	0
 	21	66 01 ca                add    di,si						1		2		4-3		1		0	2	; write bus cycle for stos
@@ -237,17 +236,17 @@ void __near R_DrawColumn (void)
 	29	24 7f                   and    al,0x7f						1		3		0+2-2	1		1	2
 	30																1		2		0		1		1	1
 	31																1		1		0+2		1		0	0
-	32	d7                      xlat   BYTE PTR ds:[ebx]			1		5		2-1		1		0	1	;xlat read cycle
+	32	d7                      xlat   BYTE PTR ds:[bx]				1		5		2-1		1		0	1	;xlat read cycle
 	33																1		4		1		1		0	2
 	34																1		3		1		1		0	1
 	35																1		2		1+2		1		1	2
 	36																1		1		3		0		0	0	;xlat read cycle
-	37	2e d7                   xlat   BYTE PTR cs:[ebx]			1		5		3-2		1		0	2
+	37	2e d7                   xlat   BYTE PTR cs:[bx]				1		5		3-2		1		0	2
 	38																1		4		1		1		0	2
 	39																1		3		1		1		0	1
 	40																1		2		1+2		1		1	2
 	41																1		1		3		0		0	0
-	42  aa                      stos   BYTE PTR es:[edi],al			1		3		3-1		1		1	2
+	42  aa                      stos   BYTE PTR es:[di],al			1		3		3-1		1		1	2
 	43																1		2		2		1		1	1
 	44																1		1		2+2		0		0	0
 	45	66 01 ca                add    di,si						1		2		4-3		1		0	2	; write bus cycle for stos
@@ -261,9 +260,9 @@ void __near R_DrawColumn (void)
 																	cycles  cold  warm
 	0:  88 f0                   mov    al,dh						2		2		0		
 	2:  24 7f                   and    al,0x7f						3		2		0	2
-	4:  d7                      xlat   BYTE PTR ds:[ebx]			5		1		1	4
-	5:  2e d7                   xlat   BYTE PTR cs:[ebx]			5		0		0
-	7:  aa                      stos   BYTE PTR es:[edi],al			3		0		0
+	4:  d7                      xlat   BYTE PTR ds:[bx]				5		1		1	4
+	5:  2e d7                   xlat   BYTE PTR cs:[bx]				5		0		0
+	7:  aa                      stos   BYTE PTR es:[di],al			3		0		0
 	b:  66 01 f7                add    di,si						2		2
 	c:  66 01 ca                add    dx,cx						2		1		1
 	total:															22		10		6
@@ -271,14 +270,46 @@ void __near R_DrawColumn (void)
 
 	0:  88 f0                   mov    al,dh						2		2		1
 	2:  24 7f                   and    al,0x7f						3		2		0
-	4:  d7                      xlat   BYTE PTR ds:[ebx]			5		1		1
-	5:  2e d7                   xlat   BYTE PTR cs:[ebx]			5		0		0
-	7:  aa                      stos   BYTE PTR es:[edi],al			3		0		0
+	4:  d7                      xlat   BYTE PTR ds:[bx]				5		1		1
+	5:  2e d7                   xlat   BYTE PTR cs:[bx]				5		0		0
+	7:  aa                      stos   BYTE PTR es:[di],al			3		0		0
 	8:  66 01 ca                add    dx,cx						2		4		2
 	b:  66 83 c7 4f             add    di,0x4f						3		2		2
 	b:  66 01 f7                add    di,si						2		
 
 	total:															22		10		6
+
+
+low quality:
+	for draw col low we may do (rather than double stos)
+	and then make sure add 0x4e not 0x4f.(?)
+
+
+	0:  88 f0                   mov    al,dh						2		2		1
+	2:  24 7f                   and    al,0x7f						3		2		0
+	4:  d7                      xlat   BYTE PTR ds:[bx]				5		1		1
+	5:  2e d7                   xlat   BYTE PTR cs:[bx]				5		0		0
+	7:  88 c4  					mov AH, AL							2		
+	9:  AB       				stosw word ptr es:[di], ax			3		
+	a:  66 01 f7                add    di,si						2		2
+	d:  66 01 ca                add    dx,cx						2		1
+
+	total:															24		10		6
+	
+potato:
+	and then for potato:
+	
+	0:  88 f0                   mov    al,dh						2		2		1
+	2:  24 7f                   and    al,0x7f						3		2		0
+	4:  d7                      xlat   BYTE PTR ds:[bx]				5		1		1
+	5:  2e d7                   xlat   BYTE PTR cs:[bx]				5		0		0
+	7:  88 c4  					mov AH, AL							2		
+	9:  AB       				stosw word ptr es:[di], ax			3
+	A:  AB       				stosw word ptr es:[di], ax			3
+	B:  66 01 f7                add    di,si						2		2
+	E:  66 01 ca                add    dx,cx						2		1
+
+	total:															27		10		6
 
 	*/
 

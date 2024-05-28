@@ -555,11 +555,15 @@ void __far Z_QuickMapUndoFlatCache() {
 	Z_QuickMap(pageswapargs_rend_offset_size, 4);
 	
 	Z_QuickMap(pageswapargs_flatcache_undo_offset_size, 7);
+
+
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	flatpageswitchcount++;
 
 #endif
+	currenttask = TASK_RENDER_TEXT; 
+	current9000State = PAGE_9000_TEXTURE;
 }
 
 void __far Z_QuickMapSpritePage() {

@@ -773,8 +773,7 @@ void __near R_DrawSprite (vissprite_t __far* spr)
 //
 // R_DrawMasked
 //
-void __near R_DrawMasked (void)
-{
+void __near R_DrawMasked (void) {
     uint8_t         spr;
     drawseg_t __far*          ds;
         
