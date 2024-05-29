@@ -224,7 +224,7 @@ byte __far*			dc_source;
 //  be used. It has also been used with Wolfenstein 3D.
 // 
 extern int setval;
-void __near R_DrawColumn (void) { 
+void __far R_DrawColumn (void) { 
     int16_t			count; 
     byte __far*		dest;
     fixed_t_union		frac;
@@ -428,9 +428,6 @@ another idea
   texture has 128 entries... 
 
   8000:1000      6000:1007
-
-cs (8000) cant be changed!
-
   8100:0000      6100:0007
 
   so if bx is 7
@@ -577,7 +574,7 @@ potato:
 
  
 
-void __near R_DrawColumnLow (void) 
+void __far R_DrawColumnLow (void) 
 { 
 
 	int16_t                 count;
@@ -631,7 +628,7 @@ int16_t	fuzzpos = 0;
 //  could create the SHADOW effect,
 //  i.e. spectres and invisible players.
 //
-void __near R_DrawFuzzColumn (void) 
+void __far R_DrawFuzzColumn (void) 
 { 
     int16_t			count; 
     byte __far*		dest;
@@ -725,7 +722,7 @@ fixed_t                 ds_ystep;
 
 //
 // Draws the actual span.
-void __near R_DrawSpan(void)
+void __far R_DrawSpan(void)
 {
 	//fixed_t_union             src = 0x80000000;
 	fixed_t_union             xfrac;
@@ -992,7 +989,7 @@ void __near R_DrawSpan(void)
 //
 // Again..
 //
-void __near R_DrawSpanLow(void)
+void __far R_DrawSpanLow(void)
 {
 	fixed_t_union             xfrac;
 	fixed_t             yfrac;

@@ -85,66 +85,28 @@ extern	int8_t		detailshift;
 // Function pointers to switch refresh/drawing functions.
 // Used to select shadow mode etc.
 //
-extern void __near (* colfunc) (void);
-extern void __near (* basecolfunc) (void);
-extern void __near (* fuzzcolfunc) (void);
+extern void __far (* colfunc) (void);
+extern void __far (* basecolfunc) (void);
+extern void __far (* fuzzcolfunc) (void);
 // No shadow effects on floors.
 
-extern void __near (* spanfunc) (void);
+extern void __far (* spanfunc) (void);
 
 
 //
 // Utility functions.
-int16_t
-__near R_PointOnSide
-( fixed_t_union	x,
-  fixed_t_union	y,
-  node_t __far*	node );
+int16_t __near R_PointOnSide ( fixed_t_union	x, fixed_t_union	y, node_t __far*	node );
+int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, vertex_t __far* v1, vertex_t __far* v2);
 
-int16_t
-__near R_PointOnSegSide
-( fixed_t_union	x,
-  fixed_t_union	y,
-	vertex_t __far* v1,
-	vertex_t __far* v2);
-
-
-uint32_t
-__near R_PointToAngle16
-(int16_t	x,
-	int16_t	y);
-
-uint32_t
-__far R_PointToAngle
-( fixed_t_union	x,
-  fixed_t_union	y );
-
-uint32_t
-__far R_PointToAngle2
-( fixed_t_union	x1,
-  fixed_t_union	y1,
-  fixed_t_union	x2,
-  fixed_t_union	y2 );
-
-uint32_t
-__far R_PointToAngle2_16
-( //int16_t	x1,
-  //int16_t	y1,
-  int16_t	x2,
-  int16_t	y2 );
-
-fixed_t
-__near R_PointToDist
- ( int16_t	x,
-   int16_t	y );
+uint32_t __near R_PointToAngle16 (int16_t	x, int16_t	y);
+uint32_t __far R_PointToAngle ( fixed_t_union	x, fixed_t_union	y );
+uint32_t __far R_PointToAngle2 ( fixed_t_union	x1,fixed_t_union	y1,fixed_t_union	x2,fixed_t_union	y2 );
+uint32_t __far R_PointToAngle2_16 (  int16_t	x2, int16_t	y2 );
+fixed_t __near R_PointToDist ( int16_t	x,int16_t	y );
 
 
 fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
-
-int16_t
-__far R_PointInSubsector
-( fixed_t_union	x,
-  fixed_t_union	y );
+int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y );
 
  
 

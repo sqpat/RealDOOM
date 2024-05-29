@@ -94,10 +94,10 @@ uint8_t			extralight;
 
 
 
-void __near (* colfunc) (void);
-void __near (* basecolfunc) (void);
-void __near (* fuzzcolfunc) (void);
-void __near (* spanfunc) (void);
+void __far (* colfunc) (void);
+void __far (* basecolfunc) (void);
+void __far (* fuzzcolfunc) (void);
+void __far (* spanfunc) (void);
 
  
 
@@ -107,12 +107,7 @@ void __near (* spanfunc) (void);
 //  check point against partition plane.
 // Returns side 0 (front) or 1 (back).
 //
-int16_t
-__near R_PointOnSide
-( fixed_t_union	x,
-  fixed_t_union	y,
-  node_t __far*	node )
-{
+int16_t __near R_PointOnSide( fixed_t_union	x,fixed_t_union	y,node_t __far*	node ) {
     fixed_t_union	dx;
     fixed_t_union	dy;
     fixed_t_union	left;
@@ -163,13 +158,7 @@ __near R_PointOnSide
 
 
 
-int16_t
-__near R_PointOnSegSide
-( fixed_t_union	x,
-  fixed_t_union	y,
-  vertex_t __far* v1,
-	vertex_t __far* v2)
-{
+int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, vertex_t __far* v1, vertex_t __far* v2) {
     int16_t	lx;
     int16_t	ly;
     int16_t	ldx;
@@ -235,10 +224,7 @@ __near R_PointOnSegSide
 //
 angle_t __far* tantoangle;
 
-uint32_t
-__near R_PointToAngle16
-(int16_t	x,
-	int16_t	y) {
+uint32_t __near R_PointToAngle16 (int16_t	x,int16_t	y) {
 
 	fixed_t_union xfp, yfp;
 	xfp.h.intbits = x;
@@ -250,11 +236,7 @@ __near R_PointToAngle16
 }
 
 
-uint32_t
-__far R_PointToAngle
-( fixed_t_union	x,
-  fixed_t_union	y )
-{	
+uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {	
 	fixed_t_union tempDivision;
 
 	x.w -= viewx.w;
@@ -409,13 +391,7 @@ __far R_PointToAngle
 }
 
 
-uint32_t
-__far R_PointToAngle2
-( fixed_t_union	x1,
-  fixed_t_union	y1,
-  fixed_t_union	x2,
-  fixed_t_union	y2 )
-{	
+uint32_t __far R_PointToAngle2 ( fixed_t_union	x1, fixed_t_union	y1, fixed_t_union	x2, fixed_t_union	y2 ) {	
     viewx.w = x1.w;
     viewy.w = y1.w;
     
@@ -423,14 +399,7 @@ __far R_PointToAngle2
 }
 
 
-uint32_t
-__far R_PointToAngle2_16
-( 
-	//int16_t	x1,
-  //int16_t	y1,
-  int16_t	x2,
-  int16_t	y2 )
-{	
+uint32_t __far R_PointToAngle2_16 (  int16_t	x2, int16_t	y2 ) {	
 	fixed_t_union x2fp, y2fp;
     viewx.w = 0; // called with 0, this is fine
     viewy.w = 0;
@@ -443,12 +412,7 @@ __far R_PointToAngle2_16
 }
 
 
-fixed_t
-__near R_PointToDist
-( int16_t	xarg,
-  int16_t	yarg )
-
-{
+fixed_t __near R_PointToDist ( int16_t	xarg, int16_t	yarg ){
     fineangle_t		angle;
     fixed_t	dx;
     fixed_t	dy;
@@ -542,11 +506,7 @@ uint8_t		setblocks;
 uint8_t		setdetail;
 
 
-void
-__far R_SetViewSize
-( uint8_t		blocks,
-  uint8_t		detail )
-{
+void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
     setsizeneeded = true;
     setblocks = blocks;
     setdetail = detail;
@@ -577,11 +537,7 @@ uint16_t			skytexture;
 //
 // R_PointInSubsector
 //
-int16_t
- __far R_PointInSubsector
-( fixed_t_union	x,
-  fixed_t_union	y )
-{
+int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
     node_t __far*	node;
     int16_t		side;
     int16_t		nodenum;
@@ -607,8 +563,7 @@ int16_t
 //
 // R_SetupFrame
 //
-void R_SetupFrame ()
-{		
+void R_SetupFrame () {		
     int8_t		i;
 
     extralight = player.extralight;

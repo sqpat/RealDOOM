@@ -35,12 +35,12 @@ extern byte __far*		dc_source;
 // The span blitting interface.
 // Hook in assembler or system specific BLT
 //  here.
-void 	__near R_DrawColumn (void);
-void 	__near R_DrawColumnLow (void);
+void 	__far R_DrawColumn (void);
+void 	__far R_DrawColumnLow (void);
 
 // The Spectre/Invisibility effect.
-void 	__near R_DrawFuzzColumn (void);
-void 	__near R_DrawFuzzColumnLow (void);
+void 	__far R_DrawFuzzColumn (void);
+void 	__far R_DrawFuzzColumnLow (void);
  
 
 void
@@ -64,10 +64,10 @@ extern fixed_t		ds_ystep;
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.
-void 	__near R_DrawSpan (void);
+void 	__far R_DrawSpan (void);
 
 // Low resolution mode, 160x200?
-void __near 	R_DrawSpanLow (void);
+void __far 	R_DrawSpanLow (void);
 
  
 

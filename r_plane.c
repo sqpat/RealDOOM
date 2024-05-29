@@ -28,6 +28,7 @@
 #include "doomstat.h"
 
 #include "r_local.h"
+#include "d_math.h"
 #include <dos.h>
 #include "memory.h"
 
@@ -495,7 +496,31 @@ void __near R_DrawPlanes (void)
 						fclose(fp);
 					}*/
 
-					colfunc();
+
+					if (true){
+						uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
+						uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
+
+						// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
+					    // we know skyofs max value is 35080 or 0x8908
+						int16_t segment_difference = (skyofs[texture_x] >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+
+						uint16_t calculated_ds = skytexture_segment + segment_difference;
+						uint16_t cs_base = R_DRAW_COLORMAPS_SEGMENT[colofs_paragraph_offset]; // always colormaps 0, no extra offset math needed...
+						uint16_t callfunc_offset = (colfunc_segment - cs_base) << 4;
+						void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+						
+
+					// this is accurate
+						dc_colormap = 	MK_FP(cs_base+8, 	bx_offset-colofs_paragraph_offset);
+						dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+
+						
+						// func location
+	
+						dynamic_callfunc();
+						//colfunc();
+					}
 
 				}
 			}

@@ -107,8 +107,10 @@ void __near R_DrawMaskedColumn (column_t __far* column) {
 	fixed_t_union         topscreen;
 	fixed_t_union         bottomscreen;
 	fixed_t_union     basetexturemid;
+    uint16_t old_dc_colormap = FP_OFF(dc_colormap);
+    uint16_t old_dc_colormap_shift4 = FP_OFF(dc_colormap) >> 4;
     basetexturemid = dc_texturemid;
-        
+
     for ( ; column->topdelta != 0xff ; )  {
         // calculate unclipped screen coordinates
         //  for post
@@ -136,10 +138,43 @@ void __near R_DrawMaskedColumn (column_t __far* column) {
 
             // Drawn by either R_DrawColumn
             //  or (SHADOW) R_DrawFuzzColumn.
-			colfunc();
+
+            if (colfunc == R_DrawFuzzColumn){
+                // hack until supported via asm func
+                colfunc();
+            } else {
+                uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
+                uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
+
+                // we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
+                // we know skyofs max value is 35080 or 0x8908
+                int16_t segment_difference = (FP_OFF(dc_source) >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+
+                // 0x9000, 1000?
+                // segment_difference = 
+
+                uint16_t calculated_ds = FP_SEG(dc_source) + segment_difference;
+                uint16_t cs_base = R_DRAW_COLORMAPS_HIGH_SEGMENT[colofs_paragraph_offset] + old_dc_colormap_shift4; // also add up the colormap offset
+	            uint16_t callfunc_offset = (colfunc_segment_high - cs_base) << 4;
+                void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+					
+                byte __far* newcolormap = MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
+                byte __far* newdc = MK_FP(calculated_ds, 	bx_offset);
+
+
+
+                // this is accurate
+                dc_colormap = 	MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
+                dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+                
+                // func location
+                dynamic_callfunc();
+                //colfunc();
+            }
         }
         column = (column_t  __far*)(  (byte  __far*)column + column->length + 4);
     }
+    dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
 }

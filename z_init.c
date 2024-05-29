@@ -267,6 +267,8 @@ found:
 extern int16_t emshandle;
 
 
+	void __far R_DrawColumn (void);
+	void __far R_DrawColumnLow(void);
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
@@ -279,6 +281,11 @@ void __near Z_LoadBinaries() {
 	fp = fopen("D_INFO.BIN", "rb"); 
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
 	fclose(fp);
+
+
+	FAR_memcpy(colfunc_function_area,
+	(byte __far *)R_DrawColumn, 
+	(byte __far *)R_DrawColumnLow - (byte __far *)R_DrawColumn);
 
 	#ifdef MOVE_P_SIGHT
 		FAR_memcpy(PSightFuncLoadAddr, (byte __far *)P_CheckSight, SIZE_PSight);

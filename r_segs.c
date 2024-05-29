@@ -319,7 +319,34 @@ void __near R_RenderSegLoop (void)
 				dc_texturemid = rw_midtexturemid;
 
 				dc_source = R_GetColumn(midtexture,texturecolumn);
-				colfunc();
+
+				if (true) {
+					uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
+					uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
+
+					// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
+					// we know skyofs max value is 35080 or 0x8908
+					int16_t segment_difference = (FP_OFF(dc_source) >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+
+					// 0x9000, 1000?
+					// segment_difference = 
+
+					uint16_t calculated_ds = FP_SEG(dc_source) + segment_difference;
+					uint16_t cs_base = R_DRAW_COLORMAPS_SEGMENT[colofs_paragraph_offset] + (FP_OFF(dc_colormap) >> 4); // also add up the colormap offset 
+					uint16_t callfunc_offset = (colfunc_segment - cs_base) << 4;
+					void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+					// this is accurate
+					dc_colormap = 	MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
+					dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+					
+					
+					// func location
+					dynamic_callfunc();
+					//colfunc();
+				}
+
+
 			}
 			ceilingclip[rw_x] = viewheight;
 			floorclip[rw_x] = -1;
@@ -342,7 +369,34 @@ void __near R_RenderSegLoop (void)
 						dc_texturemid = rw_toptexturemid;
 
 						dc_source = R_GetColumn(toptexture,texturecolumn);
-						colfunc();
+						if (true) {
+							uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
+							uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
+
+							// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
+							// we know skyofs max value is 35080 or 0x8908
+							int16_t segment_difference = (FP_OFF(dc_source) >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+
+							// 0x9000, 1000?
+							// segment_difference = 
+
+							uint16_t calculated_ds = FP_SEG(dc_source) + segment_difference;
+							uint16_t cs_base = R_DRAW_COLORMAPS_SEGMENT[colofs_paragraph_offset] + (FP_OFF(dc_colormap) >> 4); // also add up the colormap offset
+							uint16_t callfunc_offset = (colfunc_segment - cs_base) << 4;
+							void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+							// this is accurate
+							dc_colormap = 	MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
+							dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+							
+							// func location
+							dynamic_callfunc();
+							//colfunc();
+
+							// re-set dc_colormap in case it's used againf or bottom
+							dc_colormap = MK_FP(colormapssegment, walllights[index]);
+
+						}					
 					}
 					ceilingclip[rw_x] = mid;
 				} else {
@@ -371,7 +425,31 @@ void __near R_RenderSegLoop (void)
 						dc_texturemid = rw_bottomtexturemid;
 
 						dc_source = R_GetColumn(bottomtexture, texturecolumn);
-						colfunc();
+						if (true) {
+							uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
+							uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
+
+							// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
+							// we know skyofs max value is 35080 or 0x8908
+							int16_t segment_difference = (FP_OFF(dc_source) >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+
+							// 0x9000, 1000?
+							// segment_difference = 
+
+							uint16_t calculated_ds = FP_SEG(dc_source) + segment_difference;
+							uint16_t cs_base = R_DRAW_COLORMAPS_SEGMENT[colofs_paragraph_offset] + (FP_OFF(dc_colormap) >> 4); // also add up the colormap offset
+							uint16_t callfunc_offset = (colfunc_segment - cs_base) << 4;
+							void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+							// this is accurate
+							dc_colormap = 	MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
+							dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+							
+							// func location
+							dynamic_callfunc();
+							//colfunc();
+						}
+
 					}
 					floorclip[rw_x] = mid;
 				}

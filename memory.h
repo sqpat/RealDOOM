@@ -443,17 +443,19 @@ blockmaplump_plus4  76E4:0008
 // this is used boht in physics and part of render code
 
 
-#define size_mobjposlist       (MAX_THINKERS * sizeof(mobj_pos_t))
-#define size_xtoviewangle      (sizeof(fineangle_t) * (SCREENWIDTH + 1))
-#define size_scantokey         128
-#define size_rndtable          256
-#define size_colormaps         ((33 * 256)                      + 0)
-#define size_scalelightfixed   (sizeof(uint16_t) * (MAXLIGHTSCALE))
-#define size_scalelight        (sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
+#define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))
+#define size_colfunc_function_area 1488
+#define size_xtoviewangle          (sizeof(fineangle_t) * (SCREENWIDTH + 1))
+#define size_scantokey             128
+#define size_rndtable              256
+#define size_colormaps             ((33 * 256)                      + 0)
+#define size_scalelightfixed       (sizeof(uint16_t) * (MAXLIGHTSCALE))
+#define size_scalelight            (sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
 
 
 #define mobjposlist           ((mobj_pos_t __far*)     MAKE_FULL_SEGMENT(0x68000000, 0))
-#define xtoviewangle          ((fineangle_t __far*)    MAKE_FULL_SEGMENT(mobjposlist, size_mobjposlist))
+#define colfunc_function_area ((byte  __far*)          MAKE_FULL_SEGMENT(mobjposlist, size_mobjposlist))
+#define xtoviewangle          ((fineangle_t __far*)    MAKE_FULL_SEGMENT(colfunc_function_area, size_colfunc_function_area))
 #define scantokey             ((byte __far*)           MAKE_FULL_SEGMENT(xtoviewangle, size_xtoviewangle))
 #define rndtable              ((uint8_t __far*)        MAKE_FULL_SEGMENT(scantokey, size_scantokey))
 
@@ -463,7 +465,14 @@ blockmaplump_plus4  76E4:0008
 #define scalelightfixed       ((uint16_t __far*)      MAKE_FULL_SEGMENT(colormaps       , size_colormaps))
 #define scalelight            ((uint16_t __far*)      MAKE_FULL_SEGMENT(scalelightfixed , size_scalelightfixed))
 
-//6D2D
+#define R_DrawColumnAddr      ((void    (__far *)(void))  (colfunc_function_area))
+#define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
+
+//6CEC
+#define colfunc_segment       ((uint16_t) ((int32_t)colfunc_function_area >> 16))
+#define colfunc_segment_high  ((uint16_t)             (colfunc_segment           - 0x6C00 + 0x8C00))
+
+//6D8A
 #define colormapssegment      ((uint16_t) ((int32_t)colormaps >> 16))
 
 // used in sprite render, this has been remapped to 8400 page
@@ -477,31 +486,32 @@ blockmaplump_plus4  76E4:0008
 
 
 
-// 11568 free
-
-// 6080 bytes of plane only...
-// can it fit with skytex?
 
 // planes change the 6800 page and remove 
 
 /*
 // todo reverse order of colormaps and mobjpos list? 
 
-//? draw code under colormaps in 6800 segment during drawcol?
-mobjposlist     6800:0000
-xtoviewangle    6CEC:0000
-scantokey       6D15:0000
-rndtable        6D1D:0000
-colormaps       6D2D:0000
-scalelightfixed 6F3D:0000
-scalelight      6F43:0000
-[empty]         6FA3:0000
+draw code can be paged into 6800 area in plane or sprite code because mobjposlist no longer needed
+
+
+mobjposlist           6800:0000
+colfunc_function_area 6CEC:0000
+xtoviewangle          6D49:0000
+scantokey             6D72:0000
+rndtable              6D74:0000
+colormaps             6D8A:0000
+scalelightfixed       6F9A:0000
+scalelight            6FA0:0000
+[empty]               7000:0000
 
 
 
 
 
-1488 bytes free if colormaps etc here otherwise 11568
+
+1488 bytes for colfunc
+ we would prefer to have about 3400...   scalelight is 1632, xtoview is 660ish... free those 2 probably
 
 */
 
@@ -811,14 +821,14 @@ patchoffset                 83BB:01DC
 
 // RENDER 0x7800 - 0x7FFF DATA NOT USED IN PLANES
 
-//            bsp    plane    sprite
-// 9C00-9FFF     -- no changes --
-// 9000-9BFF  DATA sky texture DATA
-// 8000-8FFF     -- no changes --
-// 7800-7FFF  DATA  flatcache  DATA
-// 7000-77FF  DATA  flatcache  sprcache
-// 6800-6FFF  DATA  DATA       sprcache
-// 4000-67FF     -- no changes --
+//              bsp     plane     sprite
+// 9C00-9FFF  TEXTURE   -----     TEXTURE
+// 9000-9BFF    DATA sky texture  DATA
+// 8000-8FFF    VISPLANES_DATA    COLORMAPS_DATA
+// 7800-7FFF    DATA  flatcache   DATA
+// 7000-77FF    DATA  flatcache   sprcache
+// 6800-6FFF    COLORMAPS_DATA    sprcache
+// 4000-67FF        -- no changes --
 
 
 

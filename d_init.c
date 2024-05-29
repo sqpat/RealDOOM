@@ -499,10 +499,10 @@ void __far D_DoomMain2(void)
 
 	FAR_fwrite((byte __far *)R_DrawColumn, 1, (byte __far *)R_DrawColumnLow - (byte __far *)R_DrawColumn, fp);
 	fclose(fp);
-    I_Error("\n done");*/
+    I_Error("\n done");*/	
 //	I_Error("", startaddr, endaddr, 0);
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
-	//I_Error("\ndone %Fp %Fp %Fp, %Fp %x", MAKE_FULL_SEGMENT(scalelight, size_scalelight), colormaps, scalelightfixed, colormaps_high, colormapssegment_high);
+	//I_Error("\ndone %Fp %Fp %Fp, %Fp %x", scalelight, colormaps, scantokey, rndtable, scantokey);
 //FAR_memcpy()
 
 	/*

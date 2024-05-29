@@ -226,7 +226,8 @@ void __near  R_ExecuteSetViewSize(void) {
 	centeryfrac_shiftright4.w = temp.w >> 4;
 
 	if (!detailshift) {
-		colfunc = basecolfunc = R_DrawColumn;
+		void (__far* dynamic_callfunc)(void)  =      R_DrawColumnAddr;
+		colfunc = basecolfunc = dynamic_callfunc;
 		fuzzcolfunc = R_DrawFuzzColumn;
 		spanfunc = R_DrawSpan;
 	}
