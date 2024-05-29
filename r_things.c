@@ -127,7 +127,7 @@ void __near R_DrawMaskedColumn (column_t __far* column) {
         if (dc_yl <= mceilingclip[dc_x])
             dc_yl = mceilingclip[dc_x]+1;
 
-        if (dc_yl <= dc_yh) {
+        if (dc_yl < dc_yh) {
             dc_source = (byte  __far*)column + 3;
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;

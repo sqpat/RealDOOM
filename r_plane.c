@@ -475,7 +475,7 @@ void __near R_DrawPlanes (void)
 				dc_yl = pl->top[x];
 				dc_yh = pl->bottom[x];				
 
-				if (dc_yl <= dc_yh) {
+				if (dc_yl < dc_yh) {
 					// all sky textures are 256 wide, just need the 0xFF and
 					uint8_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;
 					dc_x = x;

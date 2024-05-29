@@ -313,12 +313,14 @@ void __near R_RenderSegLoop (void)
 		// draw the wall tiers
 		if (midtexture) {
 			// single sided line
-			dc_yl = yl;
-			dc_yh = yh;
-			dc_texturemid = rw_midtexturemid;
+			if (yh > yl){
+				dc_yl = yl;
+				dc_yh = yh;
+				dc_texturemid = rw_midtexturemid;
 
-			dc_source = R_GetColumn(midtexture,texturecolumn);
-			colfunc();
+				dc_source = R_GetColumn(midtexture,texturecolumn);
+				colfunc();
+			}
 			ceilingclip[rw_x] = viewheight;
 			floorclip[rw_x] = -1;
 		} else {
@@ -334,12 +336,14 @@ void __near R_RenderSegLoop (void)
 					mid = floorclip[rw_x]-1;
 
 				if (mid >= yl) {
-					dc_yl = yl;
-					dc_yh = mid;
-					dc_texturemid = rw_toptexturemid;
+					if (yh > yl){
+						dc_yl = yl;
+						dc_yh = mid;
+						dc_texturemid = rw_toptexturemid;
 
-					dc_source = R_GetColumn(toptexture,texturecolumn);
-					colfunc();
+						dc_source = R_GetColumn(toptexture,texturecolumn);
+						colfunc();
+					}
 					ceilingclip[rw_x] = mid;
 				} else {
 					ceilingclip[rw_x] = yl - 1;
@@ -361,12 +365,14 @@ void __near R_RenderSegLoop (void)
 					mid = ceilingclip[rw_x] + 1;
 				}
 				if (mid <= yh) {
-					dc_yl = mid;
-					dc_yh = yh;
-					dc_texturemid = rw_bottomtexturemid;
+					if (yh > yl){
+						dc_yl = mid;
+						dc_yh = yh;
+						dc_texturemid = rw_bottomtexturemid;
 
-					dc_source = R_GetColumn(bottomtexture, texturecolumn);
-					colfunc();
+						dc_source = R_GetColumn(bottomtexture, texturecolumn);
+						colfunc();
+					}
 					floorclip[rw_x] = mid;
 				}
 				else {

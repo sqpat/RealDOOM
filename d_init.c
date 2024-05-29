@@ -493,22 +493,13 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
 /*
+	void __near R_DrawColumn (void);
+	void __near R_DrawColumnLow(void);
 	FILE* fp = fopen("D_OUTPU1.BIN", "wb"); 
 
-	boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
-	void PSetupEndFunc();
-	void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
-
-	FAR_memcpy(PSightFuncLoadAddr, (byte __far *)P_CheckSight, SIZE_PSight);
-	FAR_memcpy(PSetupFuncLoadAddr, (byte __far *)P_SetupLevel, SIZE_PSetup);
-	FAR_fwrite(P_CheckSight, 1, SIZE_PSight, fp);
+	FAR_fwrite((byte __far *)R_DrawColumn, 1, (byte __far *)R_DrawColumnLow - (byte __far *)R_DrawColumn, fp);
 	fclose(fp);
-	fp = fopen("D_OUTPU2.BIN", "wb"); 
-	FAR_fwrite(P_CheckSight, 1, SIZE_PSetup, fp);
-	fclose(fp);
-	
-    I_Error("\nblah, %i %Fp %Fp", SIZE_PSetup, (byte __far *)P_SetupLevel,  (byte __far *)PSetupFuncLoadAddr);
-*/
+    I_Error("\n done");*/
 //	I_Error("", startaddr, endaddr, 0);
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
 	//I_Error("\ndone %Fp %Fp %Fp, %Fp %x", MAKE_FULL_SEGMENT(scalelight, size_scalelight), colormaps, scalelightfixed, colormaps_high, colormapssegment_high);
