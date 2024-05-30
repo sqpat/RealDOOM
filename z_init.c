@@ -282,7 +282,7 @@ void __near Z_LoadBinaries() {
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
 	fclose(fp);
 
-
+	// load R_DrawColumn into high memory near colormaps...
 	FAR_memcpy(colfunc_function_area,
 	(byte __far *)R_DrawColumn, 
 	(byte __far *)R_DrawColumnLow - (byte __far *)R_DrawColumn);

@@ -16,13 +16,13 @@
 ; DESCRIPTION:
 ;
 	.286
-	.MODEL  small
+	.MODEL  medium
 	INCLUDE defs.inc
 
 .DATA
 
 EXTRN	_destview:DWORD
-EXTRN	_centery:DWORD
+EXTRN	_centery:WORD
 
 pixelcount dd 0
 loopcount dd 0
@@ -63,10 +63,10 @@ do_draw:
     mov   cx, word ptr [_dc_x]
     mov   ax, 1
     and   cl, 3
-    mov   dx, 0x3c5
+    mov   dx, 3c5h
     shl   ax, cl
     out   dx, al
-    imul  bx, word ptr [_dc_yl], 0x50
+    imul  bx, word ptr [_dc_yl], 50h
     mov   ax, word ptr [_destview + 2] ; todo
     mov   dx, word ptr [_destview + 0] ; todo
     mov   word ptr [bp - 2], ax
@@ -82,16 +82,41 @@ do_draw:
     mov   bx, word ptr [bp - 6]
     sub   ax, word ptr [_centery]
     add   si, dx
-    cdq   
-    lcall 0x277c:0x28a8                     ; big todo
+    cwd   
+
+; TODO optimize/remove
+
+i4m:
+    xchg    ax,bx           ; swap low(M1) and low(M2)
+    push    ax              ; save low(M2)
+    xchg    ax,dx           ; exchange low(M2) and high(M1)
+    or      ax,ax           ; if high(M1) non-zero
+    je skiplowmul
+    mul   dx              ; - low(M2) * high(M1)
+skiplowmul:
+    xchg    ax,cx           ; save that in cx, get high(M2)
+    or      ax,ax           ; if high(M2) non-zero
+    je skiphighmul
+    mul   bx              ; - high(M2) * low(M1)
+    add   cx,ax           ; - add to total
+skiphighmul:
+    pop     ax              ; restore low(M2)
+    mul     bx              ; low(M2) * low(M1)
+    add     dx,cx           ; add previously computed high part
+    
+
+
     mov   cx, word ptr [_dc_texturemid+0]
     add   cx, ax
     adc   dx, word ptr [_dc_texturemid+2]
+
+; TODO we need the jump table, or to calculate the jump offset and jump to a relative offset with self modifying code.
+
 pixel_loop:    
     mov   ax, dx
     xor   ah, dh
     mov   bx, word ptr [_dc_source+0]
-    and   al, 0x7f
+    and   al, 7fh
     mov   es, word ptr [_dc_source+2]
     add   bx, ax
     mov   al, byte ptr es:[bx]
@@ -99,13 +124,13 @@ pixel_loop:
     xor   ah, ah
     mov   es, word ptr [_dc_colormap+2]
     add   bx, ax
-    add   si, 0x50
+    add   si, 50h
     mov   al, byte ptr es:[bx]
     mov   es, word ptr [bp - 2]
     add   cx, word ptr [bp - 6]
     adc   dx, word ptr [bp - 4]
     dec   di
-    mov   byte ptr es:[si - 0x50], al
+    mov   byte ptr es:[si - 50h], al
     cmp   di, -1
     jne   pixel_loop
     leave 

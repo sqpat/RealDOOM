@@ -224,41 +224,8 @@ byte __far*			dc_source;
 //  be used. It has also been used with Wolfenstein 3D.
 // 
 extern int setval;
-void __far R_DrawColumn (void) { 
-    int16_t			count; 
-    byte __far*		dest;
-    fixed_t_union		frac;
-    fixed_t_union		fracstep;	 
-	//int16_t_union		usefrac;
-	//int16_t_union		usestep;
-    count = dc_yh - dc_yl; 
-
-    // Zero length, column does not exceed a pixel.
-	if (count < 0) {
-		return;
-	}
- 
 
 
-	outp (SC_INDEX+1,1<<(dc_x&3));
-
-    dest = destview + dc_yl*80 + (dc_x>>2); 
-
-	// dest is always A000 something...
-
-    // Determine scaling,
-    //  which is the only mapping to be done.
-    fracstep.w = dc_iscale; 
-    frac.w = dc_texturemid.w + (dc_yl-centery)*fracstep.w; 
-	// get the mid 16 bits of the 32 bit values
-	
-	/*
-	confirmed mid 16 bit precision looks right. however, compiled, this actually performs worse than the normal method.
-	usefrac.b.bytehigh = frac.b.intbytelow;
-	usefrac.b.bytelow = frac.b.fracbytehigh;
-	usestep.b.bytehigh = fracstep.b.intbytelow;
-	usestep.b.bytelow = fracstep.b.fracbytehigh;
-	*/
 
 
 	// ASM NOTES
@@ -553,6 +520,49 @@ potato:
 
 
 
+
+
+/*
+void __far R_DrawColumn (void) { 
+    int16_t			count; 
+    byte __far*		dest;
+    fixed_t_union		frac;
+    fixed_t_union		fracstep;	 
+	//int16_t_union		usefrac;
+	//int16_t_union		usestep;
+    count = dc_yh - dc_yl; 
+
+    // Zero length, column does not exceed a pixel.
+	if (count < 0) {
+		return;
+	}
+ 
+
+
+	outp (SC_INDEX+1,1<<(dc_x&3));
+
+    dest = destview + dc_yl*80 + (dc_x>>2); 
+
+	// dest is always A000 something...
+
+    // Determine scaling,
+    //  which is the only mapping to be done.
+    fracstep.w = dc_iscale; 
+    frac.w = dc_texturemid.w + (dc_yl-centery)*fracstep.w; 
+	// get the mid 16 bits of the 32 bit values
+	
+	
+	//confirmed mid 16 bit precision looks right. however, compiled, this actually performs worse than the normal method.
+	//usefrac.b.bytehigh = frac.b.intbytelow;
+	//usefrac.b.bytelow = frac.b.fracbytehigh;
+	//usestep.b.bytehigh = fracstep.b.intbytelow;
+	//usestep.b.bytelow = fracstep.b.fracbytehigh;
+	
+
+
+
+
+
     // Inner loop that does the actual texture mapping,
     //  e.g. a DDA-lile scaling.
     // This is as fast as it gets.
@@ -572,7 +582,7 @@ potato:
     } while (count--); 
 } 
 
- 
+ */
 
 void __far R_DrawColumnLow (void) 
 { 
