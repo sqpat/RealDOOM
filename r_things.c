@@ -102,13 +102,14 @@ int16_t __far*          mceilingclip;
 fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
 
-void __near R_DrawMaskedColumn (column_t __far* column) {
+void __near R_DrawMaskedColumn (column_t __far* column, uint16_t dc_source_seg) {
 	
 	fixed_t_union         topscreen;
 	fixed_t_union         bottomscreen;
 	fixed_t_union     basetexturemid;
-    uint16_t old_dc_colormap = FP_OFF(dc_colormap);
-    uint16_t old_dc_colormap_shift4 = FP_OFF(dc_colormap) >> 4;
+    uint16_t dc_colormap_offset = FP_OFF(dc_colormap);
+    uint16_t dc_colormap_shift4 = FP_OFF(dc_colormap) >> 4;
+
     basetexturemid = dc_texturemid;
 
     for ( ; column->topdelta != 0xff ; )  {
@@ -143,29 +144,42 @@ void __near R_DrawMaskedColumn (column_t __far* column) {
                 // hack until supported via asm func
                 colfunc();
             } else {
-                uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
-                uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
+
+                uint16_t dc_source_offset = FP_OFF(dc_source);
+                uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
+                uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset]; // todothis is just a shift by 16. do without lookup   
 
                 // we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
                 // we know skyofs max value is 35080 or 0x8908
-                int16_t segment_difference = (FP_OFF(dc_source) >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+                int16_t segment_difference =  R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+                int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
 
-                // 0x9000, 1000?
-                // segment_difference = 
-
-                uint16_t calculated_ds = FP_SEG(dc_source) + segment_difference;
-                uint16_t cs_base = R_DRAW_COLORMAPS_HIGH_SEGMENT[colofs_paragraph_offset] + old_dc_colormap_shift4; // also add up the colormap offset
-	            uint16_t callfunc_offset = (colfunc_segment_high - cs_base) << 4;
+                uint16_t calculated_ds = dc_source_seg + ds_segment_difference;
+                uint16_t cs_base = colormapssegment_high - segment_difference+dc_colormap_shift4;
+                uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
                 void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
-					
-                byte __far* newcolormap = MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
-                byte __far* newdc = MK_FP(calculated_ds, 	bx_offset);
+                
+ 
+/*
+6000:0100 colormaps
+9000:1807 tex
+6040:0000 
+cpo 07
+bx 0700
+seg-difference 0070
+cs = 0x5FA0 (6000 - 0070 + 10)
+desired value is 0xA00 (0x700 + 0x400 - 100)
+*/
 
 
+ 
 
-                // this is accurate
-                dc_colormap = 	MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
+                // cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
+                //dc_colormap = 	MK_FP(cs_base, 		bx_offset);
+
                 dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+                
+                
                 
                 // func location
                 dynamic_callfunc();
@@ -174,7 +188,8 @@ void __near R_DrawMaskedColumn (column_t __far* column) {
         }
         column = (column_t  __far*)(  (byte  __far*)column + column->length + 4);
     }
-    dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
+    // if we dont update above we dont need to rest it
+    //dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
 }
@@ -209,7 +224,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
 	patch = (patch_t __far*)getspritetexture(vis->patch);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		column = (column_t  __far*) ((byte  __far*)patch + (patch->columnofs[frac.h.intbits]));
-        R_DrawMaskedColumn (column);
+        R_DrawMaskedColumn (column, 0x6800);
     }
     colfunc = basecolfunc;
 }

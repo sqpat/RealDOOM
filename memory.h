@@ -96,6 +96,17 @@ size_segs                 EDEF:0000
 #define B000Block 0xB14B0000
 
 
+#define size_scalelightfixed       (sizeof(uint16_t) * (MAXLIGHTSCALE))
+#define size_scalelight            (sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
+#define size_xtoviewangle          (sizeof(fineangle_t) * (SCREENWIDTH + 1))
+// these scalelights ought to be in render memory but i couldn't fit it in bsp memory region...
+// make sure to revisit
+#define scalelightfixed    ((uint16_t __far*)     MAKE_FULL_SEGMENT(B000Block       , 0))
+#define scalelight         ((uint16_t __far*)     MAKE_FULL_SEGMENT(scalelightfixed , size_scalelightfixed))
+#define xtoviewangle       ((fineangle_t __far*)  MAKE_FULL_SEGMENT(scalelight      , size_scalelight))
+
+
+
 //#define SIZE_D_SETUP            0x122A
  
 
@@ -161,6 +172,8 @@ scalelight         CE16:0000
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
 #define size_texturetranslation  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_textureheights      (MAX_TEXTURES * sizeof(uint8_t))
+#define size_scantokey             128
+#define size_rndtable              256
 
 #define size_spritecache_nodes   sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
 #define size_flatcache_nodes     sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
@@ -178,46 +191,46 @@ scalelight         CE16:0000
 
 //#define baselowermemoryaddresssegment 0x3007
 //#define baselowermemoryaddress (0x30070000)
-#define baselowermemoryaddresssegment 0x31F0
-#define baselowermemoryaddress (0x31F00000)
+#define baselowermemoryaddresssegment 0x31E4
+#define baselowermemoryaddress (0x31E40000)
 
 
-#define finesine           ((int32_t __far*)  MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
-#define finecosine         ((int32_t __far*)  (baselowermemoryaddress + 0x2000))  // 10240
-#define finetangentinner   ((int32_t __far*)  MAKE_FULL_SEGMENT(finesine, size_finesine))
-#define states             ((state_t __far*)  MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
-#define events             ((event_t __far*)  MAKE_FULL_SEGMENT(states, size_states))
-#define flattranslation    ((uint8_t __far*)  MAKE_FULL_SEGMENT(events, size_events))
-#define texturetranslation ((uint16_t __far*) MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
-#define textureheights     ((uint8_t __far*)  MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
-#define spritecache_nodes  ((cache_node_t __far*)    MAKE_FULL_SEGMENT(textureheights , size_textureheights))
-#define flatcache_nodes    ((cache_node_t __far*)    (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
-#define patchcache_nodes   ((cache_node_t __far*)    (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
-#define texturecache_nodes ((cache_node_t __far*)    (((int32_t)patchcache_nodes) + size_patchcache_nodes))
+#define finesine           ((int32_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
+#define finecosine         ((int32_t __far*)      (baselowermemoryaddress + 0x2000))  // 10240
+#define finetangentinner   ((int32_t __far*)      MAKE_FULL_SEGMENT(finesine, size_finesine))
+#define states             ((state_t __far*)      MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
+#define events             ((event_t __far*)      MAKE_FULL_SEGMENT(states, size_states))
+#define flattranslation    ((uint8_t __far*)      MAKE_FULL_SEGMENT(events, size_events))
+#define texturetranslation ((uint16_t __far*)     MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
+#define textureheights     ((uint8_t __far*)      MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
+#define scantokey          ((byte __far*)         MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
+#define rndtable           ((uint8_t __far*)      MAKE_FULL_SEGMENT(scantokey, size_scantokey))
+#define spritecache_nodes  ((cache_node_t __far*) MAKE_FULL_SEGMENT(rndtable , size_rndtable))
+#define flatcache_nodes    ((cache_node_t __far*) (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
+#define patchcache_nodes   ((cache_node_t __far*) (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
+#define texturecache_nodes ((cache_node_t __far*) (((int32_t)patchcache_nodes) + size_patchcache_nodes))
+
+
+
 //MAKE_FULL_SEGMENT(spritecache_nodes , (((int32_t)texturecache_nodes) & 0xFFFF)+ size_texturecache_nodes))
 
-#define baselowermemoryaddresssegment 0x31F0
-#define baselowermemoryaddress (0x31F00000)
 
 
-
-// finesine             31F0:0000
-// finecosine           31F0:2000
-// finetangentinner     3BF0:0000
-// states               3DF0:0000
-// events               3F5B:0000
-// flattranslation      3F8F:0000
-// texturetranslation   3F99:0000
-// textureheights       3FCF:0000
-// spritecache_nodes    3FEA:0000
-// flatcache_nodes      3FEA:003C
-// patchcache_nodes     3FEA:004E
-// texturecache_nodes   3FEA:007E
-
-
-// [done]               3007:FF1E
-//                        0x3FF1E
-// 226 bytes to 0x4000
+// finesine             31E4:0000
+// finecosine           31E4:2000
+// finetangentinner     3BE4:0000
+// states               3DE4:0000
+// events               3F4F:0000
+// flattranslation      3F83:0000
+// texturetranslation   3F8D:0000
+// textureheights       3FC3:0000
+// scantokey            3FDE:0000
+// rndtable             3FE6:003C
+// spritecache_nodes    3FF6:0000
+// flatcache_nodes      3FF6:003C
+// patchcache_nodes     3FF6:004E
+// texturecache_nodes   3FF6:007E
+// [done]               4000:0000
 
 
 
@@ -444,26 +457,14 @@ blockmaplump_plus4  76E4:0008
 
 
 #define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))
-#define size_colfunc_function_area 1488
-#define size_xtoviewangle          (sizeof(fineangle_t) * (SCREENWIDTH + 1))
-#define size_scantokey             128
-#define size_rndtable              256
+#define size_colfunc_function_area 4160
 #define size_colormaps             ((33 * 256)                      + 0)
-#define size_scalelightfixed       (sizeof(uint16_t) * (MAXLIGHTSCALE))
-#define size_scalelight            (sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
 
 
 #define mobjposlist           ((mobj_pos_t __far*)     MAKE_FULL_SEGMENT(0x68000000, 0))
-#define colfunc_function_area ((byte  __far*)          MAKE_FULL_SEGMENT(mobjposlist, size_mobjposlist))
-#define xtoviewangle          ((fineangle_t __far*)    MAKE_FULL_SEGMENT(colfunc_function_area, size_colfunc_function_area))
-#define scantokey             ((byte __far*)           MAKE_FULL_SEGMENT(xtoviewangle, size_xtoviewangle))
-#define rndtable              ((uint8_t __far*)        MAKE_FULL_SEGMENT(scantokey, size_scantokey))
+#define colormaps             ((lighttable_t  __far*)  MAKE_FULL_SEGMENT(mobjposlist, size_mobjposlist))
+#define colfunc_function_area ((byte  __far*)          MAKE_FULL_SEGMENT(colormaps, size_colormaps))
 
-
-
-#define colormaps             ((lighttable_t  __far*) MAKE_FULL_SEGMENT(rndtable        , size_rndtable))
-#define scalelightfixed       ((uint16_t __far*)      MAKE_FULL_SEGMENT(colormaps       , size_colormaps))
-#define scalelight            ((uint16_t __far*)      MAKE_FULL_SEGMENT(scalelightfixed , size_scalelightfixed))
 
 #define R_DrawColumnAddr      ((void    (__far *)(void))  (colfunc_function_area))
 #define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
@@ -479,12 +480,12 @@ blockmaplump_plus4  76E4:0008
 // 852D
 #define colormapssegment_high  ((uint16_t)             (colormapssegment           - 0x6C00 + 0x8C00))
 #define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x6C000000 + 0x8C000000))
-#define scalelightfixed_high   ((uint16_t __far*)      (((int32_t)scalelightfixed) - 0x6C000000 + 0x8C000000))
-#define scalelight_high        ((uint16_t __far*)      (((int32_t)scalelight)      - 0x6C000000 + 0x8C000000))
 //#define colormapssegment_high  0xCC00
 //#define colormaps_high         ((lighttable_t  __far*) (0xCC000000))
 
-
+#define colormaps_colfunc_seg_difference (colfunc_segment - colormapssegment)
+#define colormaps_colfunc_off_difference (colormaps_colfunc_seg_difference << 4)
+//6f59
 
 
 // planes change the 6800 page and remove 
@@ -668,6 +669,9 @@ cachedheight   9082:0000
 cacheddistance 90B4:0000
 cachedxstep    90E6:0000
 cachedystep    9118:0000
+
+todo insert drawspan here
+
 spanstart      914A:0000
 skytexture     917C:0000
 [empty]        9A0D:0000
@@ -934,8 +938,8 @@ spritewidths        7000:7592
 #define viewangletox            ((int16_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset              , size_fuzzofset))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
 #define drawsegs                ((drawseg_t __far*)          (MAKE_FULL_SEGMENT(viewangletox           , size_viewangletox) + sizeof(drawseg_t)))
-#define flatindex                 ((uint8_t __far*)  MAKE_FULL_SEGMENT(drawsegs,         size_drawsegs))
-#define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex      , size_flatindex))
+#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs                , size_drawsegs))
+#define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
 #define compositetextureoffset  ((uint8_t __far*)            (((int32_t)compositetexturepage)          + size_compositetexturepage))
 //0x4FBEE

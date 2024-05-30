@@ -49,7 +49,7 @@ PUBLIC  R_DrawColumn_
     sub   sp, 6
     mov   ax, word ptr [_dc_yh]
     sub   ax, word ptr [_dc_yl]
-    mov   di, ax
+    mov   si, ax        ; si = count
     test  ax, ax
     jge   do_draw
     leave 
@@ -60,6 +60,7 @@ PUBLIC  R_DrawColumn_
     pop   bx
     retf   
 do_draw:
+    cli   ; disable interrupts on enter main draw function
     mov   cx, word ptr [_dc_x]
     mov   ax, 1
     and   cl, 3
@@ -71,17 +72,17 @@ do_draw:
     mov   dx, word ptr [_destview + 0] ; todo
     mov   word ptr [bp - 2], ax
     mov   ax, word ptr [_dc_iscale + 0]   ; todo
-    mov   si, word ptr [_dc_x]
+    mov   di, word ptr [_dc_x]
     mov   word ptr [bp - 6], ax
     mov   ax, word ptr [_dc_iscale + 2]   ; todo
-    sar   si, 2
+    sar   di, 2
     mov   word ptr [bp - 4], ax
     add   dx, bx
     mov   cx, word ptr [bp - 4]
     mov   ax, word ptr [_dc_yl]
     mov   bx, word ptr [bp - 6]
     sub   ax, word ptr [_centery]
-    add   si, dx
+    add   di, dx
     cwd   
 
 ; TODO optimize/remove
@@ -104,35 +105,49 @@ skiphighmul:
     mul     bx              ; low(M2) * low(M1)
     add     dx,cx           ; add previously computed high part
     
+; multiply completed. 
+; todo optimize out extraneous 32 bit math
+; dx:ax is the 32 bits of the mul. we want dx to have the mid 16.
 
-
-    mov   cx, word ptr [_dc_texturemid+0]
+    mov   cx, word ptr [_dc_texturemid+0]   ; first add dx_texture mid
     add   cx, ax
     adc   dx, word ptr [_dc_texturemid+2]
+    mov   dh, dl
+    mov   dl, ah                          ; mid 16 bits of the 32 bit dx:ax into dx
+    mov   cx, word ptr [_dc_iscale + 1]   ; mid 16 bits of fracstep are the mid 16 of dc_iscale
+
+
+   ; si and di were prepped above
+
+
+   mov     es, word ptr [bp - 2]  ; ready the viewscreen segment
+   push    ds                     ; store ds on stack
+   mov     bx, word ptr [_dc_source]       ; common bx offset
+   mov     ax, word ptr [_dc_source+2]     ; this will be ds..
+   mov     ds, ax                          ; do this last, makes us unable to to ref other vars...
+   push    bp
+   mov     bp,  4Fh
+   mov     ah,  7Fh
 
 ; TODO we need the jump table, or to calculate the jump offset and jump to a relative offset with self modifying code.
 
-pixel_loop:    
-    mov   ax, dx
-    xor   ah, dh
-    mov   bx, word ptr [_dc_source+0]
-    and   al, 7fh
-    mov   es, word ptr [_dc_source+2]
-    add   bx, ax
-    mov   al, byte ptr es:[bx]
-    mov   bx, word ptr [_dc_colormap+0]
-    xor   ah, ah
-    mov   es, word ptr [_dc_colormap+2]
-    add   bx, ax
-    add   si, 50h
-    mov   al, byte ptr es:[bx]
-    mov   es, word ptr [bp - 2]
-    add   cx, word ptr [bp - 6]
-    adc   dx, word ptr [bp - 4]
-    dec   di
-    mov   byte ptr es:[si - 50h], al
-    cmp   di, -1
-    jne   pixel_loop
+pixel_loop_fast:
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+    dec    si
+    cmp    si, -1
+    jne    pixel_loop_fast
+
+; clean up
+    pop   bp
+    pop   ds
+    sti         ; enable interrupts before return
     leave 
     pop   di
     pop   si

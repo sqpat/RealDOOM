@@ -134,11 +134,11 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		lightnum++;
 	}
 	if (lightnum < 0){
-		walllights = &scalelight_high[0];
+		walllights = &scalelight[0];
 	} else if (lightnum >= LIGHTLEVELS) {
-		walllights = &scalelight_high[lightmult48lookup[LIGHTLEVELS - 1]];
+		walllights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
 	} else {
-		walllights = &scalelight_high[lightmult48lookup[lightnum]];
+		walllights = &scalelight[lightmult48lookup[lightnum]];
 	}
     maskedtexturecol = &openings[ds->maskedtexturecol];
 
@@ -201,7 +201,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	    
 			// draw the texture
 			col = (column_t  __far*)((byte  __far*)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
-			R_DrawMaskedColumn (col);
+			R_DrawMaskedColumn (col, 0x9000);
 			maskedtexturecol[dc_x] = MAXSHORT;
 		}
 		spryscale.w += rw_scalestep;
@@ -321,25 +321,61 @@ void __near R_RenderSegLoop (void)
 				dc_source = R_GetColumn(midtexture,texturecolumn);
 
 				if (true) {
-					uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
+					uint16_t dc_colormap_offset = FP_OFF(dc_colormap);
+					uint16_t dc_colormap_shift4 = dc_colormap_offset >> 4;
+					uint16_t dc_source_offset = FP_OFF(dc_source);
+					uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
 					uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
 
 					// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
 					// we know skyofs max value is 35080 or 0x8908
-					int16_t segment_difference = (FP_OFF(dc_source) >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+					int16_t segment_difference =  R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+					int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
+/*
+					9000:280F
+					bxoffset = 0xF00
+					segment_difference = 0xF0
+					ds_seg = 0x190
+					9190:0F00 = 92800
+
+					9000:0000
+					bxoffset = 0xF00
+					segment_difference = 0xF0
+					ds_seg = 0xFF10
+					= 8F10
+					*/
+
+					uint16_t calculated_ds = 0x9000u + ds_segment_difference;
+
+					// so ds will be 0x9000-(colofs >> 4)
+
+					// note dc_source should be fixed so i think these are all static values now...
+
+					// we want cs:bx  to match colormaps
+					// we want ds:bx + y  to match colofs
+					// so bl will be 0 in last 4 bits
+					// bx will be cpo in last 4 bits
+					// so bx format for 0x07 cpo is necessarily:
+					// 0700
+					// so bh always cpo, bl always 0
+
 
 					// 0x9000, 1000?
 					// segment_difference = 
 
-					uint16_t calculated_ds = FP_SEG(dc_source) + segment_difference;
-					uint16_t cs_base = R_DRAW_COLORMAPS_SEGMENT[colofs_paragraph_offset] + (FP_OFF(dc_colormap) >> 4); // also add up the colormap offset 
-					uint16_t callfunc_offset = (colfunc_segment - cs_base) << 4;
-					void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+					// todo what if offset is already huge?
 
-					// this is accurate
-					dc_colormap = 	MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
-					dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+					uint16_t cs_base = colormapssegment - segment_difference+dc_colormap_shift4;
+					uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
+
+					void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
 					
+					// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
+					//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
+
+	
+
+	                dc_source = 	MK_FP(calculated_ds, 	bx_offset);
 					
 					// func location
 					dynamic_callfunc();
@@ -370,31 +406,45 @@ void __near R_RenderSegLoop (void)
 
 						dc_source = R_GetColumn(toptexture,texturecolumn);
 						if (true) {
-							uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
+							uint16_t dc_colormap_offset = FP_OFF(dc_colormap);
+							uint16_t dc_colormap_shift4 = dc_colormap_offset >> 4;
+							uint16_t dc_source_offset = FP_OFF(dc_source);
+							uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
 							uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
 
 							// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
 							// we know skyofs max value is 35080 or 0x8908
-							int16_t segment_difference = (FP_OFF(dc_source) >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+							int16_t segment_difference =  R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+							int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
 
-							// 0x9000, 1000?
-							// segment_difference = 
-
-							uint16_t calculated_ds = FP_SEG(dc_source) + segment_difference;
-							uint16_t cs_base = R_DRAW_COLORMAPS_SEGMENT[colofs_paragraph_offset] + (FP_OFF(dc_colormap) >> 4); // also add up the colormap offset
-							uint16_t callfunc_offset = (colfunc_segment - cs_base) << 4;
+							uint16_t calculated_ds = 0x9000u + ds_segment_difference;
+                			uint16_t cs_base = colormapssegment - segment_difference+dc_colormap_shift4;
+							uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
 							void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+							
+							// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
+							//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
 
-							// this is accurate
-							dc_colormap = 	MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
-							dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+	 
+
+               				dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+
+//  6CEC:1300
+// 9000:c10b
+// 9b60:0b00
+// 8d6c:1900		
+// 8d6c:0b00		
+
+
+			
 							
 							// func location
 							dynamic_callfunc();
 							//colfunc();
 
 							// re-set dc_colormap in case it's used againf or bottom
-							dc_colormap = MK_FP(colormapssegment, walllights[index]);
+							// if we dont update above we dont need to rest it
+							//dc_colormap = MK_FP(colormapssegment, walllights[index]);
 
 						}					
 					}
@@ -426,24 +476,28 @@ void __near R_RenderSegLoop (void)
 
 						dc_source = R_GetColumn(bottomtexture, texturecolumn);
 						if (true) {
-							uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
+							uint16_t dc_colormap_offset = FP_OFF(dc_colormap);
+							uint16_t dc_colormap_shift4 = dc_colormap_offset >> 4;
+							uint16_t dc_source_offset = FP_OFF(dc_source);
+							uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
 							uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
 
 							// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
 							// we know skyofs max value is 35080 or 0x8908
-							int16_t segment_difference = (FP_OFF(dc_source) >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+							int16_t segment_difference =  R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+							int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
 
-							// 0x9000, 1000?
-							// segment_difference = 
-
-							uint16_t calculated_ds = FP_SEG(dc_source) + segment_difference;
-							uint16_t cs_base = R_DRAW_COLORMAPS_SEGMENT[colofs_paragraph_offset] + (FP_OFF(dc_colormap) >> 4); // also add up the colormap offset
-							uint16_t callfunc_offset = (colfunc_segment - cs_base) << 4;
+							uint16_t calculated_ds = 0x9000u + ds_segment_difference;
+							// todo add in the actual colormap?
+                			uint16_t cs_base = colormapssegment - segment_difference+dc_colormap_shift4;
+							uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
 							void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+							
+							// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
+							//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
 
-							// this is accurate
-							dc_colormap = 	MK_FP(cs_base+8, 		bx_offset-colofs_paragraph_offset);
-							dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+                			dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+							
 							
 							// func location
 							dynamic_callfunc();

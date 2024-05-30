@@ -492,17 +492,22 @@ void __far D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
+
 /*
-	void __near R_DrawColumn (void);
-	void __near R_DrawColumnLow(void);
-	FILE* fp = fopen("D_OUTPU1.BIN", "wb"); 
+	void __far R_DrawColumn (void);
+	void __far R_DrawColumnLow(void);
+	FILE* fp = fopen("D_OUTPU2.BIN", "wb"); 
 
 	FAR_fwrite((byte __far *)R_DrawColumn, 1, (byte __far *)R_DrawColumnLow - (byte __far *)R_DrawColumn, fp);
 	fclose(fp);
-    I_Error("\n done");*/	
+    I_Error("\n done");
+		
 //	I_Error("", startaddr, endaddr, 0);
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
-	//I_Error("\ndone %Fp %Fp %Fp, %Fp %x", scalelight, colormaps, scantokey, rndtable, scantokey);
+	//I_Error("\ndone %Fp %Fp %Fp, %Fp %Fp", texturecache_nodes, scantokey, rndtable, spritecache_nodes, MAKE_FULL_SEGMENT(colormaps       , size_colormaps));
+
+
+
 //FAR_memcpy()
 
 	/*

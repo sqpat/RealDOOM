@@ -38,32 +38,17 @@ uint16_t MULT_4096[4] = {0x0000u, 0x1000u, 0x2000u, 0x3000u};
 
 uint16_t FLAT_CACHE_PAGE[4] = { 0x7000, 0x7400, 0x7800, 0x7C00 };
 
+ 
 
-uint16_t R_DRAW_BX_OFFSETS[16] = { 0x8000, 0x7F01, 0x7E02, 0x7D03, 
-								   0x7C04, 0x7B05, 0x7A06, 0x7907, 
-								   0x7808, 0x7709, 0x760A, 0x750B, 
-								   0x740C, 0x730D, 0x720E, 0x710F };
-
-uint16_t R_DRAW_BX_OFFSETS_shift4[16] = { 0x0800, 0x07F0, 0x07E0, 0x07D0, 
-								 	  	0x07C0, 0x07B0, 0x07A0, 0x0790, 
-								   		0x0780, 0x0770, 0x0760, 0x0750, 
-								   		0x0740, 0x0730, 0x0720, 0x0710 };
+uint16_t R_DRAW_BX_OFFSETS[16] = { 0x0000, 0x0100, 0x0200, 0x0300, 
+								   0x0400, 0x0500, 0x0600, 0x0700, 
+								   0x0800, 0x0900, 0x0A00, 0x0B00, 
+								   0x0C00, 0x0D00, 0x0E00, 0x0F00 };
 
 
-uint16_t R_DRAW_COLORMAPS_SEGMENT[16] = 
-{ 
-	colormapssegment - 0x0808, colormapssegment - 0x07F8, colormapssegment - 0x07E8, colormapssegment - 0x07D8,
-	colormapssegment - 0x07C8, colormapssegment - 0x07B8, colormapssegment - 0x07A8, colormapssegment - 0x0798,
-	colormapssegment - 0x0788, colormapssegment - 0x0778, colormapssegment - 0x0768, colormapssegment - 0x0758,
-	colormapssegment - 0x0748, colormapssegment - 0x0738, colormapssegment - 0x0728, colormapssegment - 0x0718
+uint16_t R_DRAW_BX_OFFSETS_shift4[16] = { 0x0000, 0x0010, 0x0020, 0x0030, 
+								 	  	0x0040, 0x0050, 0x0060, 0x0070, 
+								   		0x0080, 0x0090, 0x00A0, 0x00B0, 
+								   		0x00C0, 0x00D0, 0x00E0, 0x00F0 };
 
- };
-
-uint16_t R_DRAW_COLORMAPS_HIGH_SEGMENT[16] = 
-{ 
-	colormapssegment_high - 0x0808, colormapssegment_high - 0x07F8, colormapssegment_high - 0x07E8, colormapssegment_high - 0x07D8,
-	colormapssegment_high - 0x07C8, colormapssegment_high - 0x07B8, colormapssegment_high - 0x07A8, colormapssegment_high - 0x0798,
-	colormapssegment_high - 0x0788, colormapssegment_high - 0x0778, colormapssegment_high - 0x0768, colormapssegment_high - 0x0758,
-	colormapssegment_high - 0x0748, colormapssegment_high - 0x0738, colormapssegment_high - 0x0728, colormapssegment_high - 0x0718
-
- };
+ 

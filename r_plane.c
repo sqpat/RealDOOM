@@ -488,7 +488,7 @@ void __near R_DrawPlanes (void)
 					// does that help speed? 
  					//Z_QuickMapRenderPlanesBack();
 
-					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
+					//dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
 /*
 					if (i >= 75){
 						FILE* fp = fopen("headers.txt", "a");
@@ -498,26 +498,29 @@ void __near R_DrawPlanes (void)
 
 
 					if (true){
-						uint8_t colofs_paragraph_offset = (int32_t)dc_source & 0x0F;
+						uint16_t dc_source_offset = skyofs[texture_x];
+						uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
 						uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
 
 						// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
-					    // we know skyofs max value is 35080 or 0x8908
-						int16_t segment_difference = (skyofs[texture_x] >> 4) - R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+						// we know skyofs max value is 35080 or 0x8908
+						int16_t segment_difference =  R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+						int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
+						uint16_t calculated_ds = skytexture_segment + ds_segment_difference;
 
-						uint16_t calculated_ds = skytexture_segment + segment_difference;
-						uint16_t cs_base = R_DRAW_COLORMAPS_SEGMENT[colofs_paragraph_offset]; // always colormaps 0, no extra offset math needed...
-						uint16_t callfunc_offset = (colfunc_segment - cs_base) << 4;
+						uint16_t cs_base = colormapssegment - segment_difference;
+						// colormap offset always 0 for sky draw
+
+						uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset;
 						void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
 						
+						// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
+						//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
 
-					// this is accurate
-						dc_colormap = 	MK_FP(cs_base+8, 	bx_offset-colofs_paragraph_offset);
-						dc_source = 	MK_FP(calculated_ds, 	bx_offset);
-
+		                dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+						
 						
 						// func location
-	
 						dynamic_callfunc();
 						//colfunc();
 					}
