@@ -496,7 +496,7 @@ void __far D_DoomMain2(void)
 /*
 	void __far R_DrawColumn (void);
 	void __far R_DrawColumnLow(void);
-	FILE* fp = fopen("D_OUTPU2.BIN", "wb"); 
+	FILE* fp = fopen("D_OUTPU4.BIN", "wb"); 
 
 	FAR_fwrite((byte __far *)R_DrawColumn, 1, (byte __far *)R_DrawColumnLow - (byte __far *)R_DrawColumn, fp);
 	fclose(fp);

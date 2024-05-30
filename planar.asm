@@ -24,12 +24,9 @@
 EXTRN	_destview:DWORD
 EXTRN	_centery:WORD
 
-pixelcount dd 0
-loopcount dd 0
 
 
 ;=================================
-
 
 .CODE
 
@@ -42,25 +39,15 @@ PUBLIC  R_DrawColumn_
     push  bx
     push  cx
     push  dx
-    push  si
     push  di
     push  bp
     mov   bp, sp
     sub   sp, 6
-    mov   ax, word ptr [_dc_yh]
-    sub   ax, word ptr [_dc_yl]
-    mov   si, ax        ; si = count
-    test  ax, ax
-    jge   do_draw
-    leave 
-    pop   di
-    pop   si
-    pop   dx
-    pop   cx
-    pop   bx
-    retf   
 do_draw:
     cli   ; disable interrupts on enter main draw function
+
+
+
     mov   cx, word ptr [_dc_x]
     mov   ax, 1
     and   cl, 3
@@ -117,7 +104,7 @@ skiphighmul:
     mov   cx, word ptr [_dc_iscale + 1]   ; mid 16 bits of fracstep are the mid 16 of dc_iscale
 
 
-   ; si and di were prepped above
+   ;  prep our loop variables
 
 
    mov     es, word ptr [bp - 2]  ; ready the viewscreen segment
@@ -129,9 +116,14 @@ skiphighmul:
    mov     bp,  4Fh
    mov     ah,  7Fh
 
-; TODO we need the jump table, or to calculate the jump offset and jump to a relative offset with self modifying code.
+   ;; 14 bytes loop iter
+
+
+   jmp loop_done         ; relative jump to be modified before function is called
+
 
 pixel_loop_fast:
+
     mov    al,dh
 	and    al,ah                  ; ah has 0x7F (127)
 	add    al,bh                  ; bh has the 0 to F offset
@@ -140,17 +132,1815 @@ pixel_loop_fast:
 	stos   BYTE PTR es:[di]       ;
 	add    di,bp                  ; bi has 79 (0x4F) and stos added one
 	add    dx,cx
-    dec    si
-    cmp    si, -1
-    jne    pixel_loop_fast
 
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    dx,cx
+
+    mov    al,dh
+	and    al,ah                  ; ah has 0x7F (127)
+	add    al,bh                  ; bh has the 0 to F offset
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+	; dont need these in last loop
+    ;add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	;add    dx,cx
+
+loop_done:
 ; clean up
     pop   bp
     pop   ds
     sti         ; enable interrupts before return
     leave 
     pop   di
-    pop   si
     pop   dx
     pop   cx
     pop   bx

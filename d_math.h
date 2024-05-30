@@ -30,7 +30,6 @@ extern uint16_t MULT_4096[4];
 extern uint16_t FLAT_CACHE_PAGE[4];
 extern uint16_t R_DRAW_BX_OFFSETS[16];
 extern uint16_t R_DRAW_BX_OFFSETS_shift4[16];
-extern uint16_t R_DRAW_COLORMAPS_SEGMENT[16];
-extern uint16_t R_DRAW_COLORMAPS_HIGH_SEGMENT[16];
+extern uint16_t jump_lookup[201];
 
 #endif

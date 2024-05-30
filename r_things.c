@@ -158,7 +158,8 @@ void __near R_DrawMaskedColumn (column_t __far* column, uint16_t dc_source_seg) 
                 uint16_t cs_base = colormapssegment_high - segment_difference+dc_colormap_shift4;
                 uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
                 void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
-                
+                ((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
+            
  
 /*
 6000:0100 colormaps

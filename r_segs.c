@@ -369,12 +369,14 @@ void __near R_RenderSegLoop (void)
 					uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
 
 					void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
-					
+
+					// modify the jump instruction based on count
+					((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
+
 					// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
 					//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
 
-	
-
+			
 	                dc_source = 	MK_FP(calculated_ds, 	bx_offset);
 					
 					// func location
@@ -421,6 +423,8 @@ void __near R_RenderSegLoop (void)
                 			uint16_t cs_base = colormapssegment - segment_difference+dc_colormap_shift4;
 							uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
 							void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+							// modify the jump instruction based on count
+							((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
 							
 							// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
 							//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
@@ -492,6 +496,9 @@ void __near R_RenderSegLoop (void)
                 			uint16_t cs_base = colormapssegment - segment_difference+dc_colormap_shift4;
 							uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
 							void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+							
+							// modify the jump instruction based on count
+							((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
 							
 							// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
 							//dc_colormap = 	MK_FP(cs_base, 		bx_offset);

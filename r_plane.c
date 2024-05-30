@@ -513,7 +513,8 @@ void __near R_DrawPlanes (void)
 
 						uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset;
 						void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
-						
+						((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
+
 						// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
 						//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
 
