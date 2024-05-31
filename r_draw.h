@@ -43,10 +43,7 @@ void 	__far R_DrawFuzzColumn (void);
 void 	__far R_DrawFuzzColumnLow (void);
  
 
-void
-__far R_VideoErase
-(uint16_t	ofs,
-  int16_t		count );
+void __far R_VideoErase (uint16_t	ofs, int16_t		count );
 
 extern int16_t		ds_y;
 extern int16_t		ds_x1;
@@ -77,6 +74,7 @@ void __far R_FillBackScreen (void);
 // If the view size is not full screen, draws a border around it.
 void __far R_DrawViewBorder (void);
 
+void __far R_DrawColumnPrep(uint16_t used_ds_segment);
 
 
 #endif

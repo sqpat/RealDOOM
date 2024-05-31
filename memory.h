@@ -458,6 +458,13 @@ blockmaplump_plus4  76E4:0008
 
 #define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_colfunc_function_area 4160
+
+// currently using:  2962
+// can stick lookup tables (800 bytes) in
+// plus the extra setup code - should fit
+
+
+
 #define size_colormaps             ((33 * 256)                      + 0)
 
 

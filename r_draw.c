@@ -226,6 +226,42 @@ byte __far*			dc_source;
 extern int setval;
 
 
+void __far R_DrawColumnPrep(uint16_t used_ds_segment){
+
+	uint16_t dc_source_offset = FP_OFF(dc_source);
+	uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
+	uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
+
+	// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
+	// we know skyofs max value is 35080 or 0x8908
+	int16_t segment_difference =  R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+
+	int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
+
+	uint16_t calculated_ds = FP_SEG(dc_source) + ds_segment_difference;
+	// todo add in the actual colormap?
+	uint16_t dc_colormap_offset = FP_OFF(dc_colormap);
+	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
+	uint16_t dc_colormap_shift4 = dc_colormap_offset >> 4;
+
+	uint16_t cs_base = colormapssegment - segment_difference+dc_colormap_shift4;
+	uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
+	void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+	
+	// modify the jump instruction based on count
+	((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
+	
+	// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
+	//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
+
+	dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+	
+	
+	// func location
+	dynamic_callfunc();
+	//colfunc();
+
+}
 
 
 	// ASM NOTES

@@ -468,7 +468,7 @@ void __near R_DrawPlanes (void)
 			//  i.e. colormaps[0] is used.
 			// Because of this hack, sky is not affected
 			//  by INVUL inverse mapping.
-			//dc_colormap = colormaps;
+			dc_colormap = colormaps;
 			
 			//todo fast render knowing this is a fixed #??
 			
@@ -499,7 +499,10 @@ void __near R_DrawPlanes (void)
 						fclose(fp);
 					}*/
 
+					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
+					R_DrawColumnPrep(skytexture_segment);
 
+					/*
 					if (true){
 						uint16_t dc_source_offset = skyofs[texture_x];
 						uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
@@ -523,11 +526,15 @@ void __near R_DrawPlanes (void)
 
 		                dc_source = 	MK_FP(calculated_ds, 	bx_offset);
 						
+
+						// 133 bytes difference per skyofs.
+
 						
 						// func location
 						dynamic_callfunc();
 						//colfunc();
 					}
+					*/
 
 				}
 			}
