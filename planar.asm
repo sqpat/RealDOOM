@@ -58,7 +58,6 @@ do_draw:
 
     ; dest = destview + dc_yl*80 + (dc_x>>2); 
     ;frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
-    ; note this is 8 bit times 32 bit and we want the mid 16
 
 
     mov   ax, word ptr [_dc_yl]
@@ -67,34 +66,33 @@ do_draw:
     mov   bx, word ptr [_dc_yl_lookup+bx]      ; quick mul80
 
     sar   di, 2
-    mov   dx, word ptr [_destview + 0] ; todo
+    mov   dx, word ptr [_destview + 0] 
     add   dx, bx
-    mov   cx, word ptr [_dc_iscale + 2]   ; todo
+    mov   cx, word ptr [_dc_iscale + 2]
 
-    ;mov   ax, word ptr [_dc_yl]
-    mov   bx, word ptr [_dc_iscale + 0]   ; todo
+    mov   bx, word ptr [_dc_iscale + 0]   
     add   di, dx
     mov   dx, 0
     ;  NOTE using this flag for the jns later
     sub   ax, word ptr [_centery]
 
 
-    xchg    ax,bx           ; swap low(M1) and low(M2)
-    mov     es,ax              ; save low(M2)
+    mov     es,ax              ; save low(M1)
+
+; note this is 8 bit times 32 bit and we want the mid 16
 
 ; todo figure out how to do this without a jump
 
     jns skipsignedmul          ; if low(m1) not signed then high(m1) was 0
 ; dx is 0. mul by 0xFFFF is dx - ax;
 ; low (M2) * high (M1) which is 0xFFFF
-    sub     dx,ax
+    sub     dx,bx
 skipsignedmul:
 
-    mov     ax,bx           ; ready mul
-    mul     cl;
-    add   dx,ax           ; - add to total
-    mov   cx, dx
-    mov     ax,es              ; restore low(M2)
+    mul     cl;             ; only the bottom 16 bits are necessary.
+    add     dx,ax           ; - add to total
+    mov     cx,dx           ; - hold total in cx
+    mov     ax,es           ; restore low(M1)
     mul     bx              ; low(M2) * low(M1)
     add     dx,cx           ; add previously computed high part
 

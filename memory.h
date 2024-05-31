@@ -487,7 +487,7 @@ blockmaplump_plus4  76E4:0008
 #define colormaps_colfunc_off_difference (colormaps_colfunc_seg_difference << 4)
 //6f59
 
-#define draw_jump_inst_offset 0x77
+#define draw_jump_inst_offset 0x74
 
 // planes change the 6800 page and remove 
 

@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/05/31 13:08:11
+Created on:       24/05/31 13:28:08
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -74,8 +74,8 @@ p_tick_TEXT            CODE           AUTO           09f8:cbd0       00000242
 p_user_TEXT            CODE           AUTO           09f8:ce20       00000698
 r_bsp_TEXT             CODE           AUTO           1744:0000       00000821
 r_data_TEXT            CODE           AUTO           1744:0830       000011a1
-PLANAR_TEXT            CODE           AUTO           1744:19d2       00000b7c
-r_draw_TEXT            CODE           AUTO           1744:2550       00000b93
+PLANAR_TEXT            CODE           AUTO           1744:19d2       00000b79
+r_draw_TEXT            CODE           AUTO           1744:2550       00000b9b
 r_main_TEXT            CODE           AUTO           1744:30f0       000009e2
 r_plane_TEXT           CODE           AUTO           1744:3ae0       00000a3c
 r_segs_TEXT            CODE           AUTO           1744:4520       00001341
@@ -1142,20 +1142,20 @@ Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 2544:2ac0      _ds_y
 2544:2ac2      _dc_yh
 1744:2550      R_DrawColumnLow_
-1744:2604      R_DrawFuzzColumn_
-1744:2710      R_DrawSpan_
-1744:2c3a      R_DrawSpanLow_
-1744:2d70      R_FillBackScreen_
-1744:2ff4      R_VideoErase_
-1744:3068      R_DrawViewBorder_
+1744:260c      R_DrawFuzzColumn_
+1744:2718      R_DrawSpan_
+1744:2c42      R_DrawSpanLow_
+1744:2d78      R_FillBackScreen_
+1744:2ffc      R_VideoErase_
+1744:3070      R_DrawViewBorder_
 2544:150e+     _fuzzpos
-2544:2ac4      _dc_x
-2544:2ac6      _dc_yl
+2544:2ac4      _dc_yl
+2544:2ac6      _dc_x
 2544:2ac8      _viewwindowoffset
 2544:2aca      _viewwindowx
 2544:2acc      _viewwindowy
-2544:2ace      _viewheight
-2544:2ad0      _scaledviewwidth
+2544:2ace      _scaledviewwidth
+2544:2ad0      _viewheight
 2544:2ad2      _viewwidth
 Module: r_main.obj(C:\REALDOOM\r_main.c)
 2544:2ae0      _tantoangle
@@ -1176,9 +1176,9 @@ Module: r_main.obj(C:\REALDOOM\r_main.c)
 2544:2b24      _viewx
 2544:2b28      _r_cachedplayerMobjsecnum
 2544:2b2a      _fixedcolormap
-2544:2b2c      _skytexture
-2544:2b2e      _centerx
-2544:2b30      _centery
+2544:2b2c      _centery
+2544:2b2e      _skytexture
+2544:2b30      _centerx
 2544:2b32      _viewz_shortheight
 2544:2b34      _viewangle_shiftright3
 2544:2b36      _setsizeneeded
@@ -1791,4 +1791,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  000291c0 (168384.)
 Entry point address: 1eba:23d2
-Link time: 00:00.14
+Link time: 00:00.59
