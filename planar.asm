@@ -1927,15 +1927,6 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
-	add    dx,cx
-
-    mov    al,dh
-	and    al,ah                  ; ah has 0x7F (127)
-	add    al,bh                  ; bh has the 0 to F offset
-	xlat   BYTE PTR ds:[bx]       ;
-	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
-	stos   BYTE PTR es:[di]       ;
 	; dont need these in last loop
     ;add    di,bp                  ; bi has 79 (0x4F) and stos added one
 	;add    dx,cx

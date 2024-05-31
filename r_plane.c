@@ -468,7 +468,10 @@ void __near R_DrawPlanes (void)
 			//  i.e. colormaps[0] is used.
 			// Because of this hack, sky is not affected
 			//  by INVUL inverse mapping.
-			dc_colormap = colormaps;
+			//dc_colormap = colormaps;
+			
+			//todo fast render knowing this is a fixed #??
+			
 			dc_texturemid.h.intbits = 100;
 			dc_texturemid.h.fracbits = 0;
 
