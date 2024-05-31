@@ -23,7 +23,7 @@
 
 EXTRN	_destview:DWORD
 EXTRN	_centery:WORD
-
+EXTRN   _dc_yl_lookup:WORD
 
 
 ;=================================
@@ -42,73 +42,81 @@ PUBLIC  R_DrawColumn_
     push  di
     push  bp
     mov   bp, sp
-    sub   sp, 6
+
 do_draw:
-    cli   ; disable interrupts on enter main draw function
+    cli   ; disable interrupts on enter main draw function (so we can use some registers safely)
 
 
-
+    ; 	outp (SC_INDEX+1,1<<(dc_x&3));
     mov   cx, word ptr [_dc_x]
+    mov   di, cx         ; copy to di
     mov   ax, 1
     and   cl, 3
     mov   dx, 3c5h
     shl   ax, cl
     out   dx, al
-    imul  bx, word ptr [_dc_yl], 50h
-    mov   ax, word ptr [_destview + 2] ; todo
-    mov   dx, word ptr [_destview + 0] ; todo
-    mov   word ptr [bp - 2], ax
-    mov   ax, word ptr [_dc_iscale + 0]   ; todo
-    mov   di, word ptr [_dc_x]
-    mov   word ptr [bp - 6], ax
-    mov   ax, word ptr [_dc_iscale + 2]   ; todo
-    sar   di, 2
-    mov   word ptr [bp - 4], ax
-    add   dx, bx
-    mov   cx, word ptr [bp - 4]
+
+    ; dest = destview + dc_yl*80 + (dc_x>>2); 
+    ;frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
+    ; note this is 8 bit times 32 bit and we want the mid 16
+
+
     mov   ax, word ptr [_dc_yl]
-    mov   bx, word ptr [bp - 6]
-    sub   ax, word ptr [_centery]
+    mov   bx, ax
+    sal   bx, 1                                ; word lookup, dont forget to shift.
+    mov   bx, word ptr [_dc_yl_lookup+bx]      ; quick mul80
+
+    sar   di, 2
+    mov   dx, word ptr [_destview + 0] ; todo
+    add   dx, bx
+    mov   cx, word ptr [_dc_iscale + 2]   ; todo
+
+    ;mov   ax, word ptr [_dc_yl]
+    mov   bx, word ptr [_dc_iscale + 0]   ; todo
     add   di, dx
-    cwd   
+    mov   dx, 0
+    ;  NOTE using this flag for the jns later
+    sub   ax, word ptr [_centery]
 
-; TODO optimize/remove
 
-i4m:
     xchg    ax,bx           ; swap low(M1) and low(M2)
-    push    ax              ; save low(M2)
-    xchg    ax,dx           ; exchange low(M2) and high(M1)
-    or      ax,ax           ; if high(M1) non-zero
-    je skiplowmul
-    mul   dx              ; - low(M2) * high(M1)
-skiplowmul:
-    xchg    ax,cx           ; save that in cx, get high(M2)
-    or      ax,ax           ; if high(M2) non-zero
-    je skiphighmul
-    mul   bx              ; - high(M2) * low(M1)
-    add   cx,ax           ; - add to total
-skiphighmul:
-    pop     ax              ; restore low(M2)
+    mov     es,ax              ; save low(M2)
+
+; todo figure out how to do this without a jump
+
+    jns skipsignedmul          ; if low(m1) not signed then high(m1) was 0
+; dx is 0. mul by 0xFFFF is dx - ax;
+; low (M2) * high (M1) which is 0xFFFF
+    sub     dx,ax
+skipsignedmul:
+
+    mov     ax,bx           ; ready mul
+    mul     cl;
+    add   dx,ax           ; - add to total
+    mov   cx, dx
+    mov     ax,es              ; restore low(M2)
     mul     bx              ; low(M2) * low(M1)
     add     dx,cx           ; add previously computed high part
-    
+
+
 ; multiply completed. 
-; todo optimize out extraneous 32 bit math
 ; dx:ax is the 32 bits of the mul. we want dx to have the mid 16.
 
-    mov   cx, word ptr [_dc_texturemid+0]   ; first add dx_texture mid
-    add   cx, ax
-    adc   dx, word ptr [_dc_texturemid+2]
+;    finishing  dc_texturemid.w + (dc_yl-centery)*fracstep.w
+
+
+    mov   cx, word ptr [_dc_texturemid+1]   ; first add dx_texture mid
     mov   dh, dl
     mov   dl, ah                          ; mid 16 bits of the 32 bit dx:ax into dx
+    add   dx, cx
     mov   cx, word ptr [_dc_iscale + 1]   ; mid 16 bits of fracstep are the mid 16 of dc_iscale
 
 
    ;  prep our loop variables
 
 
-   mov     es, word ptr [bp - 2]  ; ready the viewscreen segment
-   push    ds                     ; store ds on stack
+   mov     es, word ptr [_destview + 2]    ; ready the viewscreen segment
+   push    ds                              ; store ds on stack
    mov     bx, word ptr [_dc_source]       ; common bx offset
    mov     ax, word ptr [_dc_source+2]     ; this will be ds..
    mov     ds, ax                          ; do this last, makes us unable to to ref other vars...
