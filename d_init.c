@@ -503,12 +503,17 @@ void __far D_DoomMain2(void)
     I_Error("\n done");
 		
 //	I_Error("", startaddr, endaddr, 0);
-	*/
+	
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
-	//I_Error("\ndone %Fp %Fp %Fp, %Fp %Fp", compositetexturepage, compositetextureoffset, texturecompositesizes,  MAKE_FULL_SEGMENT(compositetexturepage   , size_compositetexturepage + size_compositetextureoffset) , xtoviewangle);
+	
+	//I_Error("\ndone %Fp %Fp %Fp, %Fp %Fp", dc_yl_lookup, jump_lookup, colfunc_function_area,  MAKE_FULL_SEGMENT(colfunc_function_area   , size_colfunc_function_area) , colormaps);
 
-
-
+/*
+	FILE* fp = fopen("D_FILE.BIN", "wb"); 
+	FAR_fwrite(jump_lookup, 2, 200, fp);
+	FAR_fwrite(dc_yl_lookup, 2, 200, fp);
+	fclose(fp);
+	I_Error("done");
 //FAR_memcpy()
 
 	/*

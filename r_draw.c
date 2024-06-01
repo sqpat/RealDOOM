@@ -212,6 +212,7 @@ int16_t			dc_yl;
 int16_t			dc_yh; 
 fixed_t			dc_iscale; 
 fixed_t_union	dc_texturemid;
+uint16_t		dc_yl_lookup_val; 
 
 // first pixel in a column (possibly virtual) 
 byte __far*			dc_source;
@@ -239,13 +240,14 @@ void __far R_DrawColumnPrep(){
 	int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
 	uint16_t calculated_ds = FP_SEG(dc_source) + ds_segment_difference;
 	
-	
 	void (__far* dynamic_callfunc)(void);
+	uint8_t count = dc_yh-dc_yl;	
 	
-	dc_source = 	MK_FP(calculated_ds, 	bx_offset);
-	
+	dc_source = 	MK_FP(calculated_ds, 	bx_offset);	
+	dc_yl_lookup_val = dc_yl_lookup[dc_yl];   // precalculate dc_yl * 80
+
 	// modify the jump instruction based on count
-	((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
+	((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[count];
 
 	// todo add in the actual colormap?
 	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
@@ -268,7 +270,6 @@ void __far R_DrawColumnPrep(){
 	
 	// func location
 	dynamic_callfunc();
-
 }
 
 
@@ -286,13 +287,16 @@ void __far R_DrawColumnPrepHigh(){
 	int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
 	uint16_t calculated_ds = FP_SEG(dc_source) + ds_segment_difference;
 	
-	
 	void (__far* dynamic_callfunc)(void);
-	
+	uint8_t count = dc_yh-dc_yl;	
+
 	dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+	dc_yl_lookup_val = dc_yl_lookup_high[dc_yl];   // precalculate dc_yl * 80
+	//dc_yl_lookup_val = dc_yl_lookup[dc_yl];   // precalculate dc_yl * 80
 	
 	// modify the jump instruction based on count
-	((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
+	((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = jump_lookup_high[count];
+	//((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = jump_lookup[count];
 
 	// todo add in the actual colormap?
 	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
@@ -315,7 +319,6 @@ void __far R_DrawColumnPrepHigh(){
 	
 	// func location
 	dynamic_callfunc();
-
 }
 
 

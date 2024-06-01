@@ -278,14 +278,19 @@ void __near Z_LoadBinaries() {
 	int i;
 	FILE* fp;
 	// currently in physics region!
-	fp = fopen("D_INFO.BIN", "rb"); 
+	fp = fopen("DOOMDATA.BIN", "rb"); 
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
-	fclose(fp);
 
 	// load R_DrawColumn into high memory near colormaps...
 	FAR_memcpy(colfunc_function_area,
 	(byte __far *)R_DrawColumn, 
 	(byte __far *)R_DrawColumnLow - (byte __far *)R_DrawColumn);
+
+	// 400
+	FAR_fread(jump_lookup,  2, SCREENHEIGHT * 2, fp);
+	// 400
+	//FAR_fread(dc_yl_lookup, 2, SCREENHEIGHT, fp);
+
 
 	#ifdef MOVE_P_SIGHT
 		FAR_memcpy(PSightFuncLoadAddr, (byte __far *)P_CheckSight, SIZE_PSight);
@@ -297,10 +302,10 @@ void __near Z_LoadBinaries() {
 	// copy psetup and pfunc..
 	// 6736 bytes
 	//FAR_memcpy(PSetupFuncLoadAddr, (byte __far *)P_SetupLevel, 0x1A50);
+	//fclose(fp);
 
 
 	// all data now in this file instead of spread out a
-	fp = fopen("DOOMDATA.BIN", "rb"); 
 	
 	//256
 	FAR_fread(rndtable, 1, 256, fp);
@@ -358,14 +363,8 @@ void __near Z_LoadBinaries() {
 
 	fclose(fp);
 
-	//I_Error("\n%x %x %x %x", lnodex[0], lnodex[1], lnodex[2], lnodex[3]);
-
 	DEBUG_PRINT("..");
-
-
-	//fp = fopen("D_TANTOA.BIN", "rb");
-	//FAR_fread(tantoangle, 4, 2049, fp);
-	//fclose(fp);
+ 
 	 
 }
 

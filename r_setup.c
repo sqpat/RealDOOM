@@ -243,10 +243,11 @@ void __near  R_ExecuteSetViewSize(void) {
 	// Handle resize,
 	//  e.g. smaller view windows
 	//  with border and/or status bar.
+	
+	// multiple of 16 guaranteed.. can be a segment instead of offset
 	viewwindowx = (SCREENWIDTH - scaledviewwidth) >> 1;
 
-
-	// Samw with base row offset.
+	// Same with base row offset.
 	if (scaledviewwidth == SCREENWIDTH)
 		viewwindowy = 0;
 	else

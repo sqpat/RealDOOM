@@ -249,6 +249,7 @@ size_segs                 EDEF:0000
 #define getPainStateAddr      ((statenum_t (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x0586))
 #define getSpawnHealthAddr    ((int16_t    (__far *)(uint8_t))  (InfoFuncLoadAddr + 0x063C))
 
+//#define SIZE_D_INFO          0x0698
 #define SIZE_D_INFO            0x069C
 // 0x93E9
 
@@ -431,7 +432,9 @@ blockmaplump_plus4  76E4:0008
 
 
 #define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))
-#define size_colfunc_function_area 4160
+#define size_jump_lookup           (sizeof(uint16_t) * SCREENHEIGHT)
+#define size_dc_yl_lookup          (sizeof(uint16_t) * SCREENHEIGHT)
+#define size_colfunc_function_area 3360
 
 // currently using:  2962
 // can stick lookup tables (800 bytes) in
@@ -442,9 +445,11 @@ blockmaplump_plus4  76E4:0008
 #define size_colormaps        ((33 * 256))
 
 
-#define mobjposlist           ((mobj_pos_t __far*)     MAKE_FULL_SEGMENT(0x68000000, 0))
-#define colormaps             ((lighttable_t  __far*)  MAKE_FULL_SEGMENT(mobjposlist, size_mobjposlist))
-#define colfunc_function_area ((byte  __far*)          MAKE_FULL_SEGMENT(colormaps, size_colormaps))
+#define mobjposlist           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(0x68000000, 0))
+#define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(mobjposlist , size_mobjposlist))
+#define jump_lookup           ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps   , size_colormaps))
+#define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(jump_lookup , size_jump_lookup))
+#define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup, size_dc_yl_lookup))
 
 
 #define R_DrawColumnAddr      ((void    (__far *)(void))  (colfunc_function_area))
@@ -452,7 +457,13 @@ blockmaplump_plus4  76E4:0008
 
 //6CEC
 #define colfunc_segment       ((uint16_t) ((int32_t)colfunc_function_area >> 16))
-#define colfunc_segment_high  ((uint16_t)             (colfunc_segment           - 0x6C00 + 0x8C00))
+#define colfunc_segment_high  ((uint16_t) (colfunc_segment           - 0x6C00 + 0x8C00))
+
+
+
+#define jump_lookup_high      ((uint16_t __far*)  (((int32_t)jump_lookup)       - 0x6C000000 + 0x8C000000))
+#define dc_yl_lookup_high     ((uint16_t  __far*) (((int32_t)dc_yl_lookup)   - 0x6C000000 + 0x8C000000))
+
 
 //6D8A
 #define colormapssegment      ((uint16_t) ((int32_t)colormaps >> 16))
@@ -468,7 +479,8 @@ blockmaplump_plus4  76E4:0008
 #define colormaps_colfunc_off_difference (colormaps_colfunc_seg_difference << 4)
 //6f59
 
-#define draw_jump_inst_offset 0x74
+//#define draw_jump_inst_offset 0x74
+#define draw_jump_inst_offset 0x6E
 
 // planes change the 6800 page and remove 
 
@@ -479,13 +491,10 @@ draw code can be paged into 6800 area in plane or sprite code because mobjposlis
 
 
 mobjposlist           6800:0000
-colfunc_function_area 6CEC:0000
-xtoviewangle          6D49:0000
-scantokey             6D72:0000
-rndtable              6D74:0000
-colormaps             6D8A:0000
-scalelightfixed       6F9A:0000
-scalelight            6FA0:0000
+colormaps             6CEC:0000
+jump_lookup           6EFC:0000
+dc_yl_lookup          6F15:0000
+colfunc_function_area 6F2E:0000
 [empty]               7000:0000
 
 
@@ -762,7 +771,7 @@ screenheightarray_offset 7800:A500  or 8000:2500
 // LEAVE ALL THESE in 0x7800 SEGMENT 
 
 
-#define FUZZTABLE		50 
+#define FUZZTABLE                         50 
 
 #define size_leftover_openings_arrays     0x2A00
 

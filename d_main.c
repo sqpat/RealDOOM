@@ -845,6 +845,7 @@ void __near Z_ClearDeadCode() {
 	
 	//8830 bytes or so
 	//8978 currently - 05/29/24
+	//8342           - 06/01/24
 	uint16_t size = endaddr - startaddr;
 	FILE* fp;
 

@@ -23,7 +23,7 @@
 
 EXTRN	_destview:DWORD
 EXTRN	_centery:WORD
-EXTRN   _dc_yl_lookup:WORD
+EXTRN   _dc_yl_lookup_val:WORD
 
 
 ;=================================
@@ -61,17 +61,14 @@ do_draw:
 
 
     mov   ax, word ptr [_dc_yl]
-    mov   bx, ax
-    sal   bx, 1                                ; word lookup, dont forget to shift.
-    mov   bx, word ptr [_dc_yl_lookup+bx]      ; quick mul80
 
     sar   di, 2
     mov   dx, word ptr [_destview + 0] 
-    add   dx, bx
-    mov   cx, word ptr [_dc_iscale + 2]
 
-    mov   bx, word ptr [_dc_iscale + 0]   
+    add   dx, word ptr [_dc_yl_lookup_val]   ; quick mul 80
     add   di, dx
+    mov   cx, word ptr [_dc_iscale + 2]
+    mov   bx, word ptr [_dc_iscale + 0]   
     mov   dx, 0
     ;  NOTE using this flag for the jns later
     sub   ax, word ptr [_centery]
