@@ -205,7 +205,8 @@ EXISTING R_DRAW
 // R_DrawColumn
 // Source is the top of the column to scale.
 //
-lighttable_t __far*		dc_colormap;
+uint16_t 		dc_colormap_segment;  // dc_colormap segment. the colormap will be byte 0 at this segment.
+uint8_t 		dc_colormap_index;  // dc_colormap offset. this generally is an index
 int16_t			dc_x; 
 int16_t			dc_yl; 
 int16_t			dc_yh; 
@@ -226,40 +227,94 @@ byte __far*			dc_source;
 extern int setval;
 
 
-void __far R_DrawColumnPrep(uint16_t used_ds_segment){
+void __far R_DrawColumnPrep(){
 
 	uint16_t dc_source_offset = FP_OFF(dc_source);
 	uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
-	uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
+	uint16_t bx_offset = colofs_paragraph_offset << 8;
 
 	// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
 	// we know skyofs max value is 35080 or 0x8908
-	int16_t segment_difference =  R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
-
+	int16_t segment_difference =  bx_offset >> 4;
 	int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
-
 	uint16_t calculated_ds = FP_SEG(dc_source) + ds_segment_difference;
-	// todo add in the actual colormap?
-	uint16_t dc_colormap_offset = FP_OFF(dc_colormap);
-	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
-	uint16_t dc_colormap_shift4 = dc_colormap_offset >> 4;
-
-	uint16_t cs_base = colormapssegment - segment_difference+dc_colormap_shift4;
-	uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
-	void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+	
+	
+	void (__far* dynamic_callfunc)(void);
+	
+	dc_source = 	MK_FP(calculated_ds, 	bx_offset);
 	
 	// modify the jump instruction based on count
 	((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
-	
-	// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
-	//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
 
-	dc_source = 	MK_FP(calculated_ds, 	bx_offset);
-	
+	// todo add in the actual colormap?
+	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
+
+	if (dc_colormap_index){
+		uint16_t dc_colormap_offset = dc_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
+		uint16_t dc_colormap_shift4 = dc_colormap_index << 4;
+	 	
+		uint16_t cs_base = dc_colormap_segment - segment_difference + dc_colormap_shift4;
+		uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
+		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+	} else {
+		uint16_t cs_base = dc_colormap_segment - segment_difference;
+		uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset;
+		// todo we can do the fast version with no add al, bh once we find space for it.
+		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+	}
 	
 	// func location
 	dynamic_callfunc();
-	//colfunc();
+
+}
+
+
+
+
+void __far R_DrawColumnPrepHigh(){
+
+	uint16_t dc_source_offset = FP_OFF(dc_source);
+	uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
+	uint16_t bx_offset = colofs_paragraph_offset << 8;
+
+	// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
+	// we know skyofs max value is 35080 or 0x8908
+	int16_t segment_difference =  bx_offset >> 4;
+	int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
+	uint16_t calculated_ds = FP_SEG(dc_source) + ds_segment_difference;
+	
+	
+	void (__far* dynamic_callfunc)(void);
+	
+	dc_source = 	MK_FP(calculated_ds, 	bx_offset);
+	
+	// modify the jump instruction based on count
+	((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
+
+	// todo add in the actual colormap?
+	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
+
+	if (dc_colormap_index){
+		uint16_t dc_colormap_offset = dc_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
+		uint16_t dc_colormap_shift4 = dc_colormap_index << 4;
+	 	
+		uint16_t cs_base = dc_colormap_segment - segment_difference + dc_colormap_shift4;
+		uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
+		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+	} else {
+		uint16_t cs_base = dc_colormap_segment - segment_difference;
+		uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset;
+		// todo we can do the fast version with no add al, bh once we find space for it.
+		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+	}
+	
+	// func location
+	dynamic_callfunc();
 
 }
 
@@ -644,7 +699,7 @@ void __far R_DrawColumnLow (void)
 
 	do
 	{
-		*dest = dc_colormap[dc_source[(frac.h.intbits) & 127]];
+		*dest = ((byte __far*)MK_FP(dc_colormap_segment, 0))[dc_source[(frac.h.intbits) & 127]];
 
 
 		dest += SCREENWIDTH / 4;

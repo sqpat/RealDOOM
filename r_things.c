@@ -53,7 +53,7 @@
 uint16_t         pspritescale;
 fixed_t         pspriteiscale;
 
-uint16_t __far*  spritelights;
+uint8_t __far*  spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping
@@ -102,13 +102,16 @@ int16_t __far*          mceilingclip;
 fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
 
-void __near R_DrawMaskedColumn (column_t __far* column, uint16_t dc_source_seg) {
+void __near R_DrawMaskedColumn (column_t __far* column) {
 	
 	fixed_t_union         topscreen;
 	fixed_t_union         bottomscreen;
 	fixed_t_union     basetexturemid;
-    uint16_t dc_colormap_offset = FP_OFF(dc_colormap);
-    uint16_t dc_colormap_shift4 = FP_OFF(dc_colormap) >> 4;
+    uint16_t dc_colormap_offset = dc_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
+    uint16_t dc_colormap_shift4 = dc_colormap_index << 4;
+    //uint16_t dc_colormap_offset = 0;
+    //uint16_t dc_colormap_shift4 = 0;
+    //dc_colormap_segment
 
     basetexturemid = dc_texturemid;
 
@@ -145,46 +148,32 @@ void __near R_DrawMaskedColumn (column_t __far* column, uint16_t dc_source_seg) 
                 colfunc();
             } else {
 
+                R_DrawColumnPrepHigh();
+/*
                 uint16_t dc_source_offset = FP_OFF(dc_source);
                 uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
-                uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset]; // todothis is just a shift by 16. do without lookup   
+	uint16_t bx_offset = colofs_paragraph_offset << 8;
 
                 // we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
                 // we know skyofs max value is 35080 or 0x8908
-                int16_t segment_difference =  R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+	int16_t segment_difference =  bx_offset >> 4;
                 int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
+                uint16_t dc_source_seg = FP_SEG(dc_source);
 
                 uint16_t calculated_ds = dc_source_seg + ds_segment_difference;
+                //uint16_t cs_base = dc_colormap_segment - segment_difference+dc_colormap_shift4;
                 uint16_t cs_base = colormapssegment_high - segment_difference+dc_colormap_shift4;
                 uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
                 void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
                 ((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
             
- 
-/*
-6000:0100 colormaps
-9000:1807 tex
-6040:0000 
-cpo 07
-bx 0700
-seg-difference 0070
-cs = 0x5FA0 (6000 - 0070 + 10)
-desired value is 0xA00 (0x700 + 0x400 - 100)
-*/
-
-
- 
-
-                // cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
-                //dc_colormap = 	MK_FP(cs_base, 		bx_offset);
-
                 dc_source = 	MK_FP(calculated_ds, 	bx_offset);
-                
-                
                 
                 // func location
                 dynamic_callfunc();
                 //colfunc();
+*/
+                
             }
         }
         column = (column_t  __far*)(  (byte  __far*)column + column->length + 4);
@@ -209,7 +198,8 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
         
 
 
-	dc_colormap = MK_FP(colormapssegment_high, vis->colormap);
+    dc_colormap_segment = colormapssegment_high;
+    dc_colormap_index = vis->colormap;
     
     if (vis->colormap == COLORMAP_SHADOW) {
         // NULL colormap = shadow draw
@@ -225,7 +215,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
 	patch = (patch_t __far*)getspritetexture(vis->patch);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		column = (column_t  __far*) ((byte  __far*)patch + (patch->columnofs[frac.h.intbits]));
-        R_DrawMaskedColumn (column, 0x6800);
+        R_DrawMaskedColumn (column);
     }
     colfunc = basecolfunc;
 }

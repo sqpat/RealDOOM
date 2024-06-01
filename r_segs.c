@@ -80,7 +80,7 @@ fixed_t		bottomfrac;
 fixed_t		bottomstep;
 
 
-uint16_t __far*	walllights;
+uint8_t __far*	walllights;
 
 uint16_t __far*		maskedtexturecol;
 
@@ -88,7 +88,8 @@ uint16_t __far*		maskedtexturecol;
 // R_RenderMaskedSegRange
 //
 void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2) {
-	uint16_t	index;
+	uint8_t	index;
+	uint16_t	spryscale_shift12;
 	column_t __far*	col;
 	int16_t		lightnum;
 	int16_t		frontsecnum;
@@ -142,8 +143,9 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	}
     maskedtexturecol = &openings[ds->maskedtexturecol];
 
-    rw_scalestep = ds->scalestep;		
+    rw_scalestep = ds->scalestep;
     spryscale.w = ds->scale1 + (x1 - ds->x1)*(int32_t)rw_scalestep; // this cast is necessary or some masked textures render wrong behind some sprites
+	spryscale_shift12 = spryscale.w >> LIGHTSCALESHIFT;
     mfloorclip = MK_FP(openings_segment, ds->sprbottomclip_offset);
     mceilingclip = MK_FP(openings_segment, ds->sprtopclip_offset);
     
@@ -173,7 +175,9 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
     dc_texturemid.h.intbits += side_render->rowoffset;
 			
 	if (fixedcolormap) {
-		dc_colormap = MK_FP(colormapssegment_high, fixedcolormap);
+		// todo if this is 0 maybe skip the if?
+		dc_colormap_segment = colormapssegment_high;
+		dc_colormap_index = fixedcolormap;
 	}
 
     // draw the columns
@@ -187,10 +191,13 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 				if (spryscale.h.intbits >= 3) {
 					index = MAXLIGHTSCALE - 1;
 				} else {
-					index = spryscale.w >> LIGHTSCALESHIFT;
+					index = spryscale_shift12;
 				}
 
-				dc_colormap = MK_FP(colormapssegment_high, walllights[index]);
+				dc_colormap_segment = colormapssegment_high;
+			    dc_colormap_index = walllights[index];
+
+				// todo does it have to be reset after this?
 			}
 			
 			sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
@@ -201,7 +208,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	    
 			// draw the texture
 			col = (column_t  __far*)((byte  __far*)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
-			R_DrawMaskedColumn (col, 0x9000);
+			R_DrawMaskedColumn (col);
 			maskedtexturecol[dc_x] = MAXSHORT;
 		}
 		spryscale.w += rw_scalestep;
@@ -303,7 +310,8 @@ void __near R_RenderSegLoop (void)
 			}
 
 
-			dc_colormap = MK_FP(colormapssegment, walllights[index]);
+			dc_colormap_segment = colormapssegment;
+		    dc_colormap_index = walllights[index];
 			dc_x = rw_x;
 			dc_iscale = 0xffffffffu / rw_scale.w;
 			// the below doesnt work because sometimes < FRACUNIT
@@ -320,7 +328,7 @@ void __near R_RenderSegLoop (void)
 
 				dc_source = R_GetColumn(midtexture,texturecolumn);
 
-				R_DrawColumnPrep(0x9000);				
+				R_DrawColumnPrep();				
 
 
 
@@ -346,7 +354,7 @@ void __near R_RenderSegLoop (void)
 						dc_texturemid = rw_toptexturemid;
 
 						dc_source = R_GetColumn(toptexture,texturecolumn);
-						R_DrawColumnPrep(0x9000);				
+						R_DrawColumnPrep();				
 					}
 					ceilingclip[rw_x] = mid;
 				} else {
@@ -375,7 +383,7 @@ void __near R_RenderSegLoop (void)
 						dc_texturemid = rw_bottomtexturemid;
 
 						dc_source = R_GetColumn(bottomtexture, texturecolumn);
-						R_DrawColumnPrep(0x9000);
+						R_DrawColumnPrep();
 						
 
 					}

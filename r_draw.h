@@ -21,7 +21,8 @@
 #define __R_DRAW__
 
 
-extern lighttable_t __far*	dc_colormap;
+extern uint16_t dc_colormap_segment;
+extern uint8_t dc_colormap_index;
 extern int16_t		dc_x;
 extern int16_t		dc_yl;
 extern int16_t		dc_yh;
@@ -31,7 +32,7 @@ extern fixed_t_union		dc_texturemid;
 // first pixel in a column
 extern byte __far*		dc_source;
 
-#define COLORMAP_SHADOW 0xFFFFu
+#define COLORMAP_SHADOW 0xFF
 // The span blitting interface.
 // Hook in assembler or system specific BLT
 //  here.
@@ -74,7 +75,8 @@ void __far R_FillBackScreen (void);
 // If the view size is not full screen, draws a border around it.
 void __far R_DrawViewBorder (void);
 
-void __far R_DrawColumnPrep(uint16_t used_ds_segment);
+void __far R_DrawColumnPrep();
+void __far R_DrawColumnPrepHigh();
 
 
 #endif

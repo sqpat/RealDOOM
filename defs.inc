@@ -38,7 +38,7 @@ OP_MOVDEST	= 	088h
 EXTRN	_dc_x:WORD
 EXTRN	_dc_yl:WORD
 EXTRN	_dc_yh:WORD
-EXTRN	_dc_colormap:DWORD
+EXTRN	_dc_colormap_segment:WORD
 EXTRN	_dc_source:DWORD
 EXTRN	_dc_iscale:DWORD
 EXTRN	_dc_texturemid:DWORD

@@ -96,14 +96,11 @@ size_segs                 EDEF:0000
 #define B000Block 0xB14B0000
 
 
-#define size_scalelightfixed       (sizeof(uint16_t) * (MAXLIGHTSCALE))
-#define size_scalelight            (sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
 #define size_xtoviewangle          (sizeof(fineangle_t) * (SCREENWIDTH + 1))
 // these scalelights ought to be in render memory but i couldn't fit it in bsp memory region...
 // make sure to revisit
-#define scalelightfixed    ((uint16_t __far*)     MAKE_FULL_SEGMENT(B000Block       , 0))
-#define scalelight         ((uint16_t __far*)     MAKE_FULL_SEGMENT(scalelightfixed , size_scalelightfixed))
-#define xtoviewangle       ((fineangle_t __far*)  MAKE_FULL_SEGMENT(scalelight      , size_scalelight))
+
+#define xtoviewangle       ((fineangle_t __far*)  MAKE_FULL_SEGMENT(B000Block       , 0))
 
 
 
@@ -118,33 +115,10 @@ size_segs                 EDEF:0000
 
 #define CC00Block 0xC000C000
 
-/*
 
-CC00 block (16k)
-
-colormaps          CC00:0000
-scalelightfixed    CE16:0000
-scalelight         CE16:0000
-[empty]            CE76:0000
-
-// 10080 used so far
-
-*/
-
-/*
-#define colormapssegment  0xCC00
-
-#define size_colormapbytes                ((33 * 256)                      + 0)
-#define size_scalelightfixed              (sizeof(uint16_t) * (MAXLIGHTSCALE))
-#define size_scalelight                   (sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
-
-
-#define colormaps                   ((lighttable_t  __far*) MAKE_FULL_SEGMENT(0xCC000000      , 0))
-#define colormapbytes               ((byte __far*)          MAKE_FULL_SEGMENT(0xCC000000      , 0))
-#define scalelightfixed             ((uint16_t __far*)      MAKE_FULL_SEGMENT(colormaps       , size_colormapbytes))
-#define scalelight                  ((uint16_t __far*)      MAKE_FULL_SEGMENT(scalelightfixed , size_scalelightfixed))
-*/
-// 1632 bytes of scalelight to move
+//CC00 block (16k)
+ 
+  
 
 
  // ALLOCATION DEFINITIONS: LOWER MEMORY BLOCKS 
@@ -172,8 +146,8 @@ scalelight         CE16:0000
 #define size_flattranslation     (MAX_FLATS * sizeof(uint8_t))
 #define size_texturetranslation  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_textureheights      (MAX_TEXTURES * sizeof(uint8_t))
-#define size_scantokey             128
-#define size_rndtable              256
+#define size_scantokey           128
+#define size_rndtable            256
 
 #define size_spritecache_nodes   sizeof(cache_node_t) * (NUM_SPRITE_CACHE_PAGES)
 #define size_flatcache_nodes     sizeof(cache_node_t) * (NUM_FLAT_CACHE_PAGES)
@@ -465,7 +439,7 @@ blockmaplump_plus4  76E4:0008
 
 
 
-#define size_colormaps             ((33 * 256)                      + 0)
+#define size_colormaps        ((33 * 256))
 
 
 #define mobjposlist           ((mobj_pos_t __far*)     MAKE_FULL_SEGMENT(0x68000000, 0))
@@ -926,7 +900,9 @@ spritewidths        7000:7592
 #define size_texturepatchlump_offset  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_texturecolumn_offset     (MAX_TEXTURES * sizeof(uint16_t))
 #define size_visplaneheaders          (sizeof(visplaneheader_t) * MAXEMSVISPLANES)
-#define size_fuzzofset                FUZZTABLE
+#define size_fuzzoffset               FUZZTABLE
+#define size_scalelightfixed          (sizeof(uint8_t) * (MAXLIGHTSCALE))
+#define size_scalelight               (sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
 #define size_viewangletox             (sizeof(int16_t) * (FINEANGLES / 2))
 #define size_drawsegs                 (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
 #define size_texturecompositesizes    (MAX_TEXTURES * sizeof(uint16_t))
@@ -943,9 +919,12 @@ spritewidths        7000:7592
 #define texturecolumn_offset    ((uint16_t __far*)           MAKE_FULL_SEGMENT(texturepatchlump_offset , size_texturepatchlump_offset))
 #define visplaneheaders         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturecolumn_offset    , size_texturecolumn_offset))
 #define fuzzoffset              ((int8_t __far*)             MAKE_FULL_SEGMENT(visplaneheaders         , size_visplaneheaders))
-#define viewangletox            ((int16_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset              , size_fuzzofset))
+#define scalelightfixed         ((uint8_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset              , size_fuzzoffset))
+#define scalelight              ((uint8_t __far*)            MAKE_FULL_SEGMENT(scalelightfixed         , size_scalelightfixed))
+#define viewangletox            ((int16_t __far*)            MAKE_FULL_SEGMENT(scalelight              , size_scalelight))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
 #define drawsegs                ((drawseg_t __far*)          (MAKE_FULL_SEGMENT(viewangletox           , size_viewangletox) + sizeof(drawseg_t)))
+// need to undo prior drawseg_t shenanigans
 #define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs                , size_drawsegs))
 #define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
@@ -962,24 +941,27 @@ spritewidths        7000:7592
 segs_render             4000:0000
 sides_render            46E0:0000
 vissprites              4967:0000
-player_vissprites       4ACF:0000
-texturepatchlump_offset 4AD5:0000
-texturecolumn_offset    4B0B:0000
-texturecompositesizes   4B41:0000
-visplaneheaders         4B77:0000
-fuzzoffset              4BC6:0000
-viewangletox            4BCA:0000
-drawsegs                4DCA:0000
-texturedefs_offset      4F7A:0000
+player_vissprites       4AC7:0000
+texturepatchlump_offset 4ACD:0000
+texturecolumn_offset    4B03:0000
+visplaneheaders         4B39:0000
+fuzzoffset              4B88:0000
+scalelightfixed         4B8C:0000
+scalelight              4B8F:0000
+viewangletox            4BBF:0000
 
-compositetexturepage    4FB2:0000
-compositetextureoffset  4FB2:01AC
 [near range over]       
 
-[done]                  4000:FE78
+drawsegs                4DBF:001B
+texturedefs_offset      4F71:0000
+texturecompositesizes   4F7B:0000
+compositetexturepage    4FB1:0000
+compositetextureoffset  4FB1:01AC
+[done]                  4FE7:0000
 
 
-392 bytes free
+
+400 bytes free
 
 */
 

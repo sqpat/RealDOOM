@@ -66,7 +66,7 @@ extern int16_t		validcount;
 
 
 extern uint8_t		extralight;
-extern uint16_t	fixedcolormap;
+extern uint8_t	fixedcolormap;
 
 extern byte __far*			texturecache;
 

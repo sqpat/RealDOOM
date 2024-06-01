@@ -70,10 +70,11 @@ void __near R_InitTextureMapping(void) {
 	fixed_t_union		temp;
 	fixed_t	cosadj;
 	fineangle_t	an;
-	int8_t		level;
+	int16_t		level;
 	fixed_t	dy;
 	int16_t		i;
-	int16_t		j;
+	uint8_t		i2;
+	uint8_t		j;
 	fixed_t_union finetan_i;
 	Z_QuickMapRender();
 	temp.h.fracbits = 0;
@@ -173,8 +174,8 @@ void __near R_InitTextureMapping(void) {
 
 	// Calculate the light levels to use
 	//  for each level / scale combination.
-	for (i = 0; i < LIGHTLEVELS; i++) {
-		startmap = ((LIGHTLEVELS - 1 - i) * 2)*NUMCOLORMAPS / LIGHTLEVELS;
+	for (i2 = 0; i2 < LIGHTLEVELS; i2++) {
+		startmap = ((LIGHTLEVELS - 1 - i2) * 2)*NUMCOLORMAPS / LIGHTLEVELS;
 		for (j = 0; j < MAXLIGHTSCALE; j++) {
 			level = startmap - j * SCREENWIDTH / (viewwidth << detailshift) / DISTMAP;
 
@@ -186,7 +187,7 @@ void __near R_InitTextureMapping(void) {
 				level = NUMCOLORMAPS - 1;
 			}
 
-			scalelight[i*MAXLIGHTSCALE+j] =  level * 256;
+			scalelight[i2*MAXLIGHTSCALE+j] =  level;// * 256;
 		}
 	}
 
@@ -226,8 +227,8 @@ void __near  R_ExecuteSetViewSize(void) {
 	centeryfrac_shiftright4.w = temp.w >> 4;
 
 	if (!detailshift) {
-		void (__far* dynamic_callfunc)(void)  =      R_DrawColumnAddr;
-		colfunc = basecolfunc = dynamic_callfunc;
+		//void (__far* dynamic_callfunc)(void)  =      R_DrawColumnAddr;
+		//colfunc = basecolfunc = dynamic_callfunc;
 		fuzzcolfunc = R_DrawFuzzColumn;
 		spanfunc = R_DrawSpan;
 	}

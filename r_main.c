@@ -54,8 +54,8 @@ state_t r_cachedstatecopy[2];
 int16_t			validcount = 1;
 
 
-uint16_t		fixedcolormap;
-extern uint16_t __far*	walllights;
+uint8_t		fixedcolormap;
+extern uint8_t __far*	walllights;
 
 int16_t			centerx;
 int16_t			centery;
@@ -575,7 +575,7 @@ void R_SetupFrame () {
     viewcos = finecosine[viewangle_shiftright3];
 	
     if (player.fixedcolormap) {
-		fixedcolormap =  player.fixedcolormap*256*sizeof(lighttable_t);
+		fixedcolormap =  player.fixedcolormap;
 		
 		walllights = scalelightfixed;
 

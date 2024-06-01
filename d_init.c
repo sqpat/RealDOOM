@@ -503,8 +503,9 @@ void __far D_DoomMain2(void)
     I_Error("\n done");
 		
 //	I_Error("", startaddr, endaddr, 0);
+	*/
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
-	//I_Error("\ndone %Fp %Fp %Fp, %Fp %Fp", texturecache_nodes, scantokey, rndtable, spritecache_nodes, MAKE_FULL_SEGMENT(colormaps       , size_colormaps));
+	//I_Error("\ndone %Fp %Fp %Fp, %Fp %Fp", compositetexturepage, compositetextureoffset, texturecompositesizes,  MAKE_FULL_SEGMENT(compositetexturepage   , size_compositetexturepage + size_compositetextureoffset) , xtoviewangle);
 
 
 

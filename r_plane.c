@@ -96,28 +96,11 @@ int8_t currentemsvisplanepage = 0;
 //
 
 
-/*
-void checkoffset(void __far* ptr, int16_t check){
-	uint16_t seg = FP_SEG(ptr);
-	uint16_t off = FP_OFF(ptr);
-	uint32_t total = seg << 4 + off;
-	if (total > 0x90000){
-		I_Error("ptr too big %x:%x %i", seg, off, check);
-	}
-
-}
-*/
-
-void
-__near R_MapPlane
-( byte		y,
-  int16_t		x1,
-  int16_t		x2 ) {
+void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
     fineangle_t	angle;
     fixed_t	distance;
     fixed_t	length;
 	uint8_t	index;
- 
 
     if (planeheight != cachedheight[y]) {
 		cachedheight[y] = planeheight;
@@ -137,7 +120,7 @@ __near R_MapPlane
     ds_yfrac = -viewy.w - FixedMulTrig(finesine[angle], length );
 
 	if (fixedcolormap) {
-		ds_colormap = MK_FP(colormapssegment, fixedcolormap);
+		ds_colormap = MK_FP(colormapssegment, fixedcolormap * 256);
 
 	}
 	else {
@@ -165,8 +148,7 @@ extern byte __far * floortop;
 // R_ClearPlanes
 // At begining of frame.
 //
-void __near R_ClearPlanes (void)
-{
+void __near R_ClearPlanes (void) {
     int16_t		i;
     fineangle_t	angle;
     
@@ -267,14 +249,7 @@ visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 //todo can we change height to 16 bit? the only tricky part is when viewz is involved, but maybe
 // view z can be 16 too. -sq
-int16_t 
-__near R_FindPlane
-( fixed_t   	height,
-  uint8_t		picnum,
-  uint8_t		lightlevel,
-  int8_t		isceil
-   )
-{
+int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlevel, int8_t isceil ) {
     visplane_t __far*	check;
     visplaneheader_t __far *checkheader;
 	int16_t i;
@@ -412,8 +387,7 @@ extern uint16_t __far* skyofs;
 // R_DrawPlanes
 // At the end of each frame.
 //
-void __near R_DrawPlanes (void)
-{
+void __near R_DrawPlanes (void) {
     visplane_t __far*		pl;
     uint8_t			light;
     int16_t			x;
@@ -468,8 +442,8 @@ void __near R_DrawPlanes (void)
 			//  i.e. colormaps[0] is used.
 			// Because of this hack, sky is not affected
 			//  by INVUL inverse mapping.
-			dc_colormap = colormaps;
-			
+			dc_colormap_segment = colormapssegment;
+			dc_colormap_index = 0;
 			//todo fast render knowing this is a fixed #??
 			
 			dc_texturemid.h.intbits = 100;
@@ -500,17 +474,17 @@ void __near R_DrawPlanes (void)
 					}*/
 
 					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
-					R_DrawColumnPrep(skytexture_segment);
+					R_DrawColumnPrep();
 
 					/*
 					if (true){
 						uint16_t dc_source_offset = skyofs[texture_x];
 						uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
-						uint16_t bx_offset = R_DRAW_BX_OFFSETS[colofs_paragraph_offset];
+	uint16_t bx_offset = colofs_paragraph_offset << 8;
 
 						// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
 						// we know skyofs max value is 35080 or 0x8908
-						int16_t segment_difference =  R_DRAW_BX_OFFSETS_shift4[colofs_paragraph_offset];
+	int16_t segment_difference =  bx_offset >> 4;
 						int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
 						uint16_t calculated_ds = skytexture_segment + ds_segment_difference;
 

@@ -136,7 +136,7 @@ typedef struct player_s
 
     // Current PLAYPAL, ???
     //  can be set to REDCOLORMAP for pain, etc.
-    int8_t			fixedcolormap;
+    uint8_t			fixedcolormap;
 
     // Player skin colorshift,
     //  0-3 for which color to draw player.
