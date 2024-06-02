@@ -503,13 +503,12 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
 //
 boolean		setsizeneeded;
 uint8_t		setblocks;
-uint8_t		setdetail;
 
 
 void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
     setsizeneeded = true;
     setblocks = blocks;
-    setdetail = detail;
+    detailshift = detail;
 }
 
 #define DISTMAP		2

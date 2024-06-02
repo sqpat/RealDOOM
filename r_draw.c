@@ -214,6 +214,7 @@ fixed_t			dc_iscale;
 fixed_t_union	dc_texturemid;
 uint16_t		dc_yl_lookup_val; 
 
+
 // first pixel in a column (possibly virtual) 
 byte __far*			dc_source;
 
@@ -744,7 +745,7 @@ void __far R_DrawColumn (void) {
 } 
 
  */
-
+/*
 void __far R_DrawColumnLow (void) 
 { 
 
@@ -758,11 +759,16 @@ void __far R_DrawColumnLow (void)
 	if (count < 0)
 		return;
 
-	if (dc_x & 1)
-		outp(SC_INDEX + 1, 12);
-	else
-		outp(SC_INDEX + 1, 3);
-	dest = destview + dc_yl * 80 + (dc_x >> 1);
+	if (detailshift){
+
+		if (dc_x & 1)
+			outp(SC_INDEX + 1, 12);
+		else
+			outp(SC_INDEX + 1, 3);
+	} else {
+		outp(SC_INDEX + 1, 1<<(dc_x&3));
+	}
+	dest = destview + dc_yl * 80 + (dc_x >> (2-detailshift));
 
 	fracstep = dc_iscale;
 	frac.w = dc_texturemid.w + (dc_yl - centery)*fracstep;
@@ -777,7 +783,7 @@ void __far R_DrawColumnLow (void)
 
 	} while (count--);
 }
-
+*/
  
 
 //
@@ -821,17 +827,21 @@ void __far R_DrawFuzzColumn (void)
 		return; 
  
 
-    if (detailshift) {
+    if (detailshift== 1) {
 		if (dc_x & 1) {
-		outpw (GC_INDEX,GC_READMAP+(2<<8) );
-	    outp (SC_INDEX+1,12); 
-	} else {
-		outpw (GC_INDEX,GC_READMAP);
-	    outp (SC_INDEX+1,3); 
+			outpw (GC_INDEX,GC_READMAP+(2<<8) );
+			outp (SC_INDEX+1,12); 
+		} else {
+			outpw (GC_INDEX,GC_READMAP);
+			outp (SC_INDEX+1,3); 
 		}
 		dest = destview + dc_yl*80 + (dc_x>>1); 
-    }
-    else {
+    } else if (detailshift == 2) {
+		outpw (GC_INDEX,GC_READMAP );
+		outp (SC_INDEX+1,15); 
+		dest = destview + dc_yl*80 + (dc_x);
+	
+	} else {
 		outpw (GC_INDEX,GC_READMAP+((dc_x&3)<<8) );
 		outp (SC_INDEX+1,1<<(dc_x&3)); 
 		dest = destview + dc_yl*80 + (dc_x>>2);
@@ -1329,11 +1339,7 @@ void __far R_FillBackScreen (void)
 //
 // Copy a screen buffer.
 //
-void
-__far R_VideoErase
-(uint16_t	ofs,
-  int16_t		count ) 
-{
+void __far R_VideoErase (uint16_t ofs, int16_t count )  {
     byte __far* dest;
     byte __far* source;
 	int16_t countp;

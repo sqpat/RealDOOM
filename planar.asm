@@ -32,6 +32,9 @@ EXTRN	_dc_source:DWORD
 EXTRN	_dc_colormap_index:BYTE
 EXTRN	_dc_colormap_segment:WORD
 
+EXTRN   _detailshift:BYTE
+EXTRN   _quality_port_lookup:BYTE
+
 
 ;=================================
 
@@ -47,36 +50,58 @@ PUBLIC  R_DrawColumn_
     push  cx
     push  dx
     push  di
-    push  bp
-    mov   bp, sp
+	push  si
+
 
 do_draw:
-    cli   ; disable interrupts on enter main draw function (so we can use some registers safely)
+    ;cli   ; disable interrupts on enter main draw function (so we can use some registers safely)
 
 
     ; 	outp (SC_INDEX+1,1<<(dc_x&3));
-    mov   cx, word ptr [_dc_x]
-    mov   di, cx         ; copy to di
-    mov   ax, 1
-    and   cl, 3
+
+	mov   dx, word ptr [_dc_x]
+    mov   di, dx         ; copy to di
+
+    mov   cl, 2
+	mov   bl, byte ptr [_detailshift]
+	sub   cl, bl
+    shr   di, cl
+
+    
+
+	xor   bh, bh ; todo figure out a trick to get bh to 0 for free... maybe just make detailshift an int16
+
+    and   dl, 3     ; and dc_x by 3
+	sal   bl, 1
+	sal   bl, 1
+	add   bl, dl
+
+    ;    bl format is now 
+	; n:0    a:detailshift   b:dc_x & 3
+	;   nnnnaabb
+
+	; use this as lookup to get the al byte
+
+    mov al, byte ptr [_quality_port_lookup + bx]
+
     mov   dx, 3c5h
-    shl   ax, cl
     out   dx, al
 
     ; dest = destview + dc_yl*80 + (dc_x>>2); 
-    ;frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
+    ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
 
 
     mov   ax, word ptr [_dc_yl]
+	; shift already done earlier
+    
+	; todo what if we just add directly to di instead of dx
+	
 
-    sar   di, 2
-    mov   dx, word ptr [_destview + 0] 
-
-    add   dx, word ptr [_dc_yl_lookup_val]   ; quick mul 80
-    add   di, dx
-    mov   cx, word ptr [_dc_iscale + 2]
+    add   di, word ptr [_dc_yl_lookup_val]   ; quick mul 80
+    add   di, word ptr [_destview + 0] 
+    cwd                         			 ; we know ax is positive, this is a quick clear out of dx
     mov   bx, word ptr [_dc_iscale + 0]   
-    mov   dx, 0
+    mov   cx, word ptr [_dc_iscale + 2]
     ;  NOTE using this flag for the jns later
     sub   ax, word ptr [_centery]
 
@@ -88,6 +113,8 @@ do_draw:
 ; todo figure out how to do this without a jump
 
     jns skipsignedmul          ; if low(m1) not signed then high(m1) was 0
+
+
 ; dx is 0. mul by 0xFFFF is dx - ax;
 ; low (M2) * high (M1) which is 0xFFFF
     sub     dx,bx
@@ -122,8 +149,7 @@ skipsignedmul:
    mov     bx, word ptr [_dc_source]       ; common bx offset
    mov     ax, word ptr [_dc_source+2]     ; this will be ds..
    mov     ds, ax                          ; do this last, makes us unable to to ref other vars...
-   push    bp
-   mov     bp,  4Fh
+   mov     si,  4Fh
    mov     ah,  7Fh
 
    ;; 14 bytes loop iter
@@ -140,7 +166,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -149,7 +175,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -158,7 +184,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -167,7 +193,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -176,7 +202,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -185,7 +211,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -194,7 +220,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -203,7 +229,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -212,7 +238,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -221,7 +247,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -230,7 +256,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -239,7 +265,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -248,7 +274,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -257,7 +283,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -266,7 +292,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -275,7 +301,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -284,7 +310,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -293,7 +319,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -302,7 +328,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -311,7 +337,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -320,7 +346,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -329,7 +355,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -338,7 +364,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -347,7 +373,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -356,7 +382,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -365,7 +391,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -374,7 +400,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -383,7 +409,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -392,7 +418,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -401,7 +427,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -410,7 +436,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -419,7 +445,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -428,7 +454,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -437,7 +463,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -446,7 +472,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -455,7 +481,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -464,7 +490,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -473,7 +499,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -482,7 +508,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -491,7 +517,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -500,7 +526,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -509,7 +535,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -518,7 +544,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -527,7 +553,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -536,7 +562,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -545,7 +571,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -554,7 +580,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -563,7 +589,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -572,7 +598,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -581,7 +607,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -590,7 +616,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -599,7 +625,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -608,7 +634,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -617,7 +643,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -626,7 +652,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -635,7 +661,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -644,7 +670,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -653,7 +679,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -662,7 +688,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -671,7 +697,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -680,7 +706,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -689,7 +715,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -698,7 +724,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -707,7 +733,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -716,7 +742,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -725,7 +751,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -734,7 +760,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -743,7 +769,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -752,7 +778,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -761,7 +787,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -770,7 +796,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -779,7 +805,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -788,7 +814,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -797,7 +823,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -806,7 +832,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -815,7 +841,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -824,7 +850,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -833,7 +859,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -842,7 +868,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -851,7 +877,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -860,7 +886,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -869,7 +895,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -878,7 +904,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -887,7 +913,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -896,7 +922,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -905,7 +931,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -914,7 +940,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -923,7 +949,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -932,7 +958,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -941,7 +967,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -950,7 +976,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -959,7 +985,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -968,7 +994,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -977,7 +1003,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -986,7 +1012,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -995,7 +1021,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1004,7 +1030,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1013,7 +1039,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1022,7 +1048,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1031,7 +1057,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1040,7 +1066,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1049,7 +1075,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1058,7 +1084,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1067,7 +1093,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1076,7 +1102,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1085,7 +1111,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1094,7 +1120,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1103,7 +1129,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1112,7 +1138,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1121,7 +1147,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1130,7 +1156,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1139,7 +1165,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1148,7 +1174,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1157,7 +1183,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1166,7 +1192,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1175,7 +1201,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1184,7 +1210,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1193,7 +1219,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1202,7 +1228,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1211,7 +1237,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1220,7 +1246,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1229,7 +1255,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1238,7 +1264,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1247,7 +1273,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1256,7 +1282,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1265,7 +1291,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1274,7 +1300,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1283,7 +1309,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1292,7 +1318,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1301,7 +1327,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1310,7 +1336,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1319,7 +1345,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1328,7 +1354,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1337,7 +1363,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1346,7 +1372,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1355,7 +1381,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1364,7 +1390,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1373,7 +1399,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1382,7 +1408,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1391,7 +1417,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1400,7 +1426,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1409,7 +1435,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1418,7 +1444,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1427,7 +1453,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1436,7 +1462,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1445,7 +1471,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1454,7 +1480,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1463,7 +1489,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1472,7 +1498,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1481,7 +1507,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1490,7 +1516,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1499,7 +1525,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1508,7 +1534,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1517,7 +1543,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1526,7 +1552,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1535,7 +1561,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1544,7 +1570,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1553,7 +1579,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1562,7 +1588,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1571,7 +1597,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1580,7 +1606,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1589,7 +1615,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1598,7 +1624,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1607,7 +1633,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1616,7 +1642,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1625,7 +1651,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1634,7 +1660,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1643,7 +1669,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1652,7 +1678,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1661,7 +1687,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1670,7 +1696,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1679,7 +1705,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1688,7 +1714,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1697,7 +1723,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1706,7 +1732,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1715,7 +1741,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1724,7 +1750,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1733,7 +1759,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1742,7 +1768,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1751,7 +1777,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1760,7 +1786,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1769,7 +1795,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1778,7 +1804,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1787,7 +1813,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1796,7 +1822,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1805,7 +1831,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1814,7 +1840,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1823,7 +1849,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1832,7 +1858,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1841,7 +1867,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1850,7 +1876,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1859,7 +1885,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1868,7 +1894,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1877,7 +1903,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1886,7 +1912,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1895,7 +1921,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1904,7 +1930,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1913,7 +1939,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1922,7 +1948,7 @@ pixel_loop_fast:
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    di,bp                  ; bi has 79 (0x4F) and stos added one
+	add    di,si                  ; si has 79 (0x4F) and stos added one
 	add    dx,cx
 
     mov    al,dh
@@ -1932,15 +1958,14 @@ pixel_loop_fast:
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
 	; dont need these in last loop
-    ;add    di,bp                  ; bi has 79 (0x4F) and stos added one
+    ;add    di,si                  ; si has 79 (0x4F) and stos added one
 	;add    dx,cx
 
 loop_done:
 ; clean up
-    pop   bp
     pop   ds
-    sti         ; enable interrupts before return
-    leave 
+    pop   si
+	sti
     pop   di
     pop   dx
     pop   cx
@@ -2004,7 +2029,7 @@ mov   ax, 6efch                              ; segment of dc_yl_lookup array
 add   ax, di                                 ; add argument offset to the ax address
 mov   word ptr [_dc_yl_lookup_val], bx       ; store pre-calculated dc_yl * 80
 mov   es, ax
-mov   bx, 06eh                               ; offset difference between colormaps (in cs) from R_DrawColumn
+mov   bx, 074h                               ; location of jump relative instruction's immediate
 mov   ax, word ptr es:[si]                   ; 
 add   di, 6f2eh                              ; R_DrawColumn segment with 0 indexed function offset
 mov   es, di                                 ; set seg

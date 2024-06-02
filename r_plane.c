@@ -466,50 +466,9 @@ void __near R_DrawPlanes (void) {
 					// does that help speed? 
  					//Z_QuickMapRenderPlanesBack();
 
-					//dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
-/*
-					if (i >= 75){
-						FILE* fp = fopen("headers.txt", "a");
-						fprintf (fp, "render sky %li %i %i %i %i %i %i %i", gametic, i, dc_yl, dc_yh, x, plheader->minx, plheader->maxx, plheader->picnum);
-						fclose(fp);
-					}*/
 
 					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
-					R_DrawColumnPrepCall(0);
-
-					/*
-					if (true){
-						uint16_t dc_source_offset = skyofs[texture_x];
-						uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
-	uint16_t bx_offset = colofs_paragraph_offset << 8;
-
-						// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
-						// we know skyofs max value is 35080 or 0x8908
-	int16_t segment_difference =  bx_offset >> 4;
-						int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
-						uint16_t calculated_ds = skytexture_segment + ds_segment_difference;
-
-						uint16_t cs_base = colormapssegment - segment_difference;
-						// colormap offset always 0 for sky draw
-
-						uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset;
-						void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
-						((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
-
-						// cs is already set and bx_offset is on dc_source so we dont actually need to set dc_colormap
-						//dc_colormap = 	MK_FP(cs_base, 		bx_offset);
-
-		                dc_source = 	MK_FP(calculated_ds, 	bx_offset);
-						
-
-						// 133 bytes difference per skyofs.
-
-						
-						// func location
-						dynamic_callfunc();
-						//colfunc();
-					}
-					*/
+					R_DrawColumnPrepCall(0); 
 
 				}
 			}

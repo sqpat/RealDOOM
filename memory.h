@@ -453,7 +453,6 @@ blockmaplump_plus4  76E4:0008
 
 
 #define R_DrawColumnAddr          ((void    (__far *)(void))  (colfunc_function_area))
-#define R_DrawColumnPrepOffset    0x0B65
 //#define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
 
 //6F2E
@@ -480,8 +479,8 @@ blockmaplump_plus4  76E4:0008
 #define colormaps_colfunc_off_difference (colormaps_colfunc_seg_difference << 4)
 //6f59
 
-//#define draw_jump_inst_offset 0x74
-#define draw_jump_inst_offset 0x6E
+
+#define R_DrawColumnPrepOffset    0x0B6A
 
 // planes change the 6800 page and remove 
 

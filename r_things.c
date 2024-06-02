@@ -149,30 +149,6 @@ void __near R_DrawMaskedColumn (column_t __far* column) {
             } else {
                 void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
                 R_DrawColumnPrepCall(colormaps_high_seg_diff);
-/*
-                uint16_t dc_source_offset = FP_OFF(dc_source);
-                uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
-	uint16_t bx_offset = colofs_paragraph_offset << 8;
-
-                // we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
-                // we know skyofs max value is 35080 or 0x8908
-	int16_t segment_difference =  bx_offset >> 4;
-                int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
-                uint16_t dc_source_seg = FP_SEG(dc_source);
-
-                uint16_t calculated_ds = dc_source_seg + ds_segment_difference;
-                //uint16_t cs_base = dc_colormap_segment - segment_difference+dc_colormap_shift4;
-                uint16_t cs_base = colormapssegment_high - segment_difference+dc_colormap_shift4;
-                uint16_t callfunc_offset = colormaps_colfunc_off_difference + bx_offset - dc_colormap_offset;
-                void (__far* dynamic_callfunc)(void)  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
-                ((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = jump_lookup[dc_yh-dc_yl];
-            
-                dc_source = 	MK_FP(calculated_ds, 	bx_offset);
-                
-                // func location
-                dynamic_callfunc();
-                //colfunc();
-*/
                 
             }
         }

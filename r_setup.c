@@ -54,7 +54,6 @@
 
 extern boolean setsizeneeded;
 extern uint8_t		setblocks;
-extern uint8_t		setdetail;
  
 
 // finetangent(FINEANGLES / 4 + FIELDOFVIEW / 2)
@@ -142,6 +141,8 @@ void __near R_InitTextureMapping(void) {
 	}
 	else {
 		// max of FRACUNIT, we set it to 0 in that case
+		// todo we can make this a lookuplookup
+		
 		pspritescale = (FRACUNIT * viewwidth / SCREENWIDTH);
 		pspriteiscale = (FRACUNIT * SCREENWIDTH / viewwidth);
 	}
@@ -161,7 +162,6 @@ void __near R_InitTextureMapping(void) {
 		dy = labs(dy);
 		temp.h.intbits = (viewwidth << detailshift) / 2;
 		yslope[i] = FixedDivWholeA(temp.w, dy);
-
 	}
 	// 320 viewwidth
 
@@ -215,7 +215,7 @@ void __near  R_ExecuteSetViewSize(void) {
 		viewheight = (setblocks * 168 / 10)&~7;
 	}
 
-	detailshift = setdetail;
+	
 	viewwidth = scaledviewwidth >> detailshift;
 
 	centery = viewheight >> 1;
@@ -229,14 +229,12 @@ void __near  R_ExecuteSetViewSize(void) {
 	if (!detailshift) {
 		//void (__far* dynamic_callfunc)(void)  =      R_DrawColumnAddr;
 		//colfunc = basecolfunc = dynamic_callfunc;
-		fuzzcolfunc = R_DrawFuzzColumn;
 		spanfunc = R_DrawSpan;
 	}
 	else {
-		colfunc = basecolfunc = R_DrawColumnLow;
-		fuzzcolfunc = R_DrawFuzzColumn;
 		spanfunc = R_DrawSpanLow;
 	}
+	fuzzcolfunc = R_DrawFuzzColumn;
 
 
 
@@ -248,11 +246,12 @@ void __near  R_ExecuteSetViewSize(void) {
 	viewwindowx = (SCREENWIDTH - scaledviewwidth) >> 1;
 
 	// Same with base row offset.
-	if (scaledviewwidth == SCREENWIDTH)
+	if (scaledviewwidth == SCREENWIDTH){
 		viewwindowy = 0;
-	else
+	} else {
 		viewwindowy = (SCREENHEIGHT - SBARHEIGHT - viewheight) >> 1;
-
+	}
+	
 	viewwindowoffset = (viewwindowy*SCREENWIDTH / 4) + (viewwindowx >> 2);
 
 
