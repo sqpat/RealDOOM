@@ -179,6 +179,10 @@ int16_t pageswapargs[total_pages] = {
 	SKY_TEXTURE_FIRST_PAGE + 0, PAGE_9000_OFFSET,
 	SKY_TEXTURE_FIRST_PAGE + 1, PAGE_9400_OFFSET,
 	SKY_TEXTURE_FIRST_PAGE + 2, PAGE_9800_OFFSET,
+	
+	PALETTE_LOGICAL_PAGE,       PAGE_6800_OFFSET,      // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused. 
+														// we use the 6k or so that was unused in the palette page
+
 
 	// flat cache
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 0, PAGE_7000_OFFSET,
@@ -510,7 +514,7 @@ void __far Z_QuickMapScreen0() {
 
 void __far Z_QuickMapRenderPlanes(){
 
-	Z_QuickMap(pageswapargs_renderplane_offset_size, 7);
+	Z_QuickMap(pageswapargs_renderplane_offset_size, 8);
 
 	#ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;

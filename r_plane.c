@@ -462,10 +462,6 @@ void __near R_DrawPlanes (void) {
 					// here we have inlined special-case R_GetColumn with precalculated fields for this texture.
 					// as a result, we also avoid a 34k texture mucking up the texture cache region...
 
-					// todo all skytextures are same size so we should be able to just hardcode the skyofs(?)
-					// does that help speed? 
- 					//Z_QuickMapRenderPlanesBack();
-
 
 					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
 					R_DrawColumnPrepCall(0); 

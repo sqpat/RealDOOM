@@ -903,6 +903,8 @@ fixed_t                 ds_ystep;
 
 //
 // Draws the actual span.
+
+/*
 void __far R_DrawSpan(void)
 {
 	//fixed_t_union             src = 0x80000000;
@@ -957,7 +959,7 @@ void __far R_DrawSpan(void)
 							    0000 3333 3322 2222
 			1111 1111 1111 1111 1111 1111 1111 1111
 			*/
-
+/*
 			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
 			//spot = ((yfrac.w >> (16 - 6))&(4032)) + ((xfrac.h.intbits) & 63);
 			dest[0] = ds_colormap[ds_source[spot]];
@@ -1044,6 +1046,7 @@ void __far R_DrawSpan(void)
 			yfrac16.hu = yfrac.wu >> 10;
 
 		}
+		*/
 		// i have no idea why final unrolled loop does not work (artifacts). im going to blame compiler. in handwritten asm this is closer to what we will do.
 		// without the unrolled final loop, we cant push this to its fastest version (16-32 pixel per loop) because the final loop ends up too slow
 		/*
@@ -1153,6 +1156,7 @@ void __far R_DrawSpan(void)
  	
 
 		*/
+	/*
 		do
 		{
 			spot = ((yfrac16.h)&(4032)) + (xfrac16.b.bytehigh & 63);
@@ -1164,7 +1168,7 @@ void __far R_DrawSpan(void)
 		} while (countp--);
 	}
 }
-
+*/
 
   
 //

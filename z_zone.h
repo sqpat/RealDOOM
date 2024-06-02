@@ -177,7 +177,7 @@ void __far Z_QuickMapUnmapAll();
 #define num_scratch5000_params 8
 #define num_scratch8000_params 8
 #define num_scratch7000_params 8
-#define num_renderplane_params 6
+#define num_renderplane_params 8
 #define num_flatcache_params 8
 #define num_flatcache_undo_params 6
 #define num_spritecache_params 8

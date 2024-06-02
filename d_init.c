@@ -492,13 +492,16 @@ void __far D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x000036f0
 	struct SREGS sregs;
-/*/
+/*
 
 	void __far R_DrawColumn (void);
 	void __far R_DrawFuzzColumn(void);
-	FILE* fp = fopen("D_OUTPU4.BIN", "wb"); 
+	void __far R_DrawSpan (void);
+	void __far R_DrawSpanLow(void);
 
-	FAR_fwrite((byte __far *)R_DrawColumn, 1, (byte __far *)R_DrawFuzzColumn - (byte __far *)R_DrawColumn, fp);
+	FILE* fp = fopen("D_OUTPU5.BIN", "wb"); 
+
+	FAR_fwrite((byte __far *)R_DrawSpan, 1, (byte __far *)R_DrawSpanLow - (byte __far *)R_DrawSpan, fp);
 	fclose(fp);
     I_Error("\n done");
 		
