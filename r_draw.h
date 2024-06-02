@@ -23,11 +23,13 @@
 
 extern uint16_t dc_colormap_segment;
 extern uint8_t dc_colormap_index;
-extern int16_t		dc_x;
-extern int16_t		dc_yl;
-extern int16_t		dc_yh;
-extern fixed_t		dc_iscale;
-extern fixed_t_union		dc_texturemid;
+extern int16_t dc_x;
+extern int16_t dc_yl;
+extern int16_t dc_yh;
+extern fixed_t dc_iscale;
+extern fixed_t_union dc_texturemid;
+extern uint16_t dc_yl_lookup_val; 
+
 
 // first pixel in a column
 extern byte __far*		dc_source;

@@ -138,6 +138,7 @@ void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 	ds_x2 = x2;
 
 	// high or low detail
+	dc_yl_lookup_val = dc_yl_lookup[ds_y];
 	spanfunc();
 }
 
@@ -306,14 +307,7 @@ int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlev
 //
 // R_CheckPlane
 //
-int16_t
-__near R_CheckPlane
-( int16_t		index,
-  int16_t		start,
-  int16_t		stop,
-  int8_t		isceil
-   )
-{
+int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t isceil ) {
     int16_t		intrl;
     int16_t		intrh;
     int16_t		unionl;

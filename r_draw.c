@@ -921,15 +921,27 @@ void __far R_DrawSpan(void)
 	uint16_t xadder, yadder;
 	int16_t_union             xfrac16;
 	int16_t_union             yfrac16;
-	//fixed_t x32step = ds_xstep << 6;// (32L * ds_xstep);
-	//fixed_t y32step = ds_ystep << 6;// (32L * ds_ystep);
 	fixed_t x32step = (ds_xstep << 6);
 	fixed_t y32step = (ds_ystep << 6);
-	//fixed_t x32step = (ds_xstep << 5);
-	//fixed_t y32step = (ds_ystep << 5);
 
 	for (i = 0; i < 4; i++)
 	{
+ ds_x1  =   100
+           0 1 2 3
+dsp_x1  =  25 24 24 24
+     *4 + i   +1 +1 +1
+	       25 25 25 25
+		
+		=  0
+dsp_x1  =  0 -1 -2 -3
+
+
+        =  4
+        =  1  0 0 0
+		=  1  1 1 1
+		=  7
+		=  1  1 1 1
+		=  2  2 2 1 
 		outp(SC_INDEX + 1, 1 << i);
 		dsp_x1 = (ds_x1 - i) / 4;
 		if (dsp_x1 * 4 + i < ds_x1)
@@ -943,6 +955,7 @@ void __far R_DrawSpan(void)
 		// TODO: ds_y lookup table in CS
 		dest = destview + ds_y * 80 + dsp_x1;
 
+		// note: dsp_x1 guaranteed positive (see the ++ above)
 		prt = dsp_x1 * 4 - ds_x1 + i;
 		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
 		yfrac.w = basey = ds_yfrac + ds_ystep * prt;

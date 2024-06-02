@@ -2098,8 +2098,6 @@ ENDP
 PROC  R_DrawSpan_
 PUBLIC  R_DrawSpan_ 
 
-; argument AX is diff for various segment lookups
-
 
 push  bx
 push  cx
@@ -2109,70 +2107,111 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 28h                           ; setup stack
-mov   ax, word ptr [_ds_xstep]          
+mov   ax, word ptr [_ds_xstep]          ; dx:ax is ds_xstep
 mov   dx, word ptr [_ds_xstep + 2]      
-mov   cl, 6
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   ax, 0ffc0h
-xor   dx, ax
-mov   word ptr [bp - 10h], ax
-mov   word ptr [bp - 0eh], dx
-mov   ax, word ptr [_ds_ystep]
+mov   cx, 6								; ready shift6
+shl   dx, cl							; shift dx left six
+rol   ax, cl							; rol ax left six
+xor   dx, ax							; mov ax bits into dx
+and   al, 0C0h							; cancel out ax low bits
+xor   dx, ax							; ???
+mov   word ptr [bp - 10h], ax			;  move x_step_32 into bp - 10h
+mov   word ptr [bp - 0Eh], dx			;  move x_step_32 into bp - 0Eh
+
+mov   ax, word ptr [_ds_ystep]			; same process as above
 mov   dx, word ptr [_ds_ystep + 2]
-mov   cl, 6
+; mov   cl, 6							; this is already 6.
 shl   dx, cl
 rol   ax, cl
 xor   dx, ax
-and   ax, 0ffc0h
-xor   dx, ax
-mov   word ptr [bp - 1ch], 0
-mov   word ptr [bp - 14h], ax
-mov   word ptr [bp - 1eh], dx
-label4:
-mov   cl, byte ptr [bp - 1ch]
+and   al, 0C0h
+xor   dx, ax							; ???
+mov   word ptr [bp - 1Ch], 0			; ??? move 0  into bp - 1Ch
+mov   word ptr [bp - 14h], ax			;  move y_step_32  into bp - 14h
+mov   word ptr [bp - 1Eh], dx			;  move y_step_32  into bp - 1Eh
+
+
+; main loop start (i = 0, 1, 2, 3)
+
+span_i_loop_repeat:
+mov   cl, byte ptr [bp - 1Ch]		; ch was 0 above
 mov   ax, 1
-mov   dx, 3c5h
+mov   dx, 3c5h						; outp 1 << i
 shl   ax, cl
 out   dx, al
-mov   ax, word ptr [_ds_x1]
-sub   ax, word ptr [bp - 1ch]
-CWD   
-shl   dx, 2
+
+;dsp_x1 = (ds_x1 - i) / 4;
+;		if (dsp_x1 * 4 + i < ds_x1)
+;			dsp_x1++;
+
+
+mov   ax, word ptr [_ds_x1]	
+mov   di, ax		
+sub   ax, cx		; ax = ds_x1 - i
+CWD   								; 
+shl   dx, 2							; ??? why shift left. its either 0000 or FFFF
 sbb   ax, dx
 sar   ax, 2
-mov   bx, ax
+mov   bx, ax						; bx is dsp_x1
 shl   ax, 2
-add   ax, word ptr [bp - 1ch]
-cmp   ax, word ptr [_ds_x1]
-jge   label5
-inc   bx
-label5:
-mov   ax, word ptr [_ds_x2]
-sub   ax, word ptr [bp - 1ch]
+add   ax, cx						; ax = dsp_x1 * 4 + i...
+cmp   ax, di						; if check..
+jge   dsp_x1_calculated
+inc   bx							; dsp_x1++
+dsp_x1_calculated:
+
+;		dsp_x2 = (ds_x2 - i) / 4;
+;		countp = dsp_x2 - dsp_x1;
+;		if (countp < 0) {
+;			continue;
+;		}
+
+mov   ax, word ptr [_ds_x2]		; grab ds_x2 into ax
+sub   ax, cx					; subtract i i
 CWD   
-shl   dx, 2
-sbb   ax, dx
-sar   ax, 2
-sub   ax, bx
-mov   word ptr [bp - 4], ax
-test  ax, ax
-jge   label1
-jmp   label2
-label1:
-imul  dx, word ptr [_ds_y], 50h
+shl   dx, 2						; ??? sign checking shenanigans
+sbb   ax, dx					;
+sar   ax, 2						; divide by 4 to get dsp_x2
+sub   ax, bx					; sub dsp_x1, ax now equals count
+mov   word ptr [bp - 4], ax		; store count in bp-4.
+test  ax, ax					; if countp <= 0 continue
+jge   dsp_x2_calculated			; todo this so it doesnt loop in both cases
+jmp   do_span_loop
+
+dsp_x2_calculated:
+
+; 		dest = destview + ds_y * 80 + dsp_x1;
+
+
+mov   dx, word ptr [_dc_yl_lookup_val]  ; premultiplied 80
 mov   ax, word ptr [_destview]
 mov   si, word ptr [_destview + 2]
-add   ax, dx
-mov   word ptr [bp - 12h], si
-mov   si, ax
-mov   ax, bx
-shl   ax, 2
-sub   ax, word ptr [_ds_x1]
-add   ax, word ptr [bp - 1ch]
-CWD   
-add   si, bx
+add   ax, dx							; add ds_y * 80  to destview offset
+mov   word ptr [bp - 12h], si			; store destview segment bp-12h
+mov   si, ax							; si now has destview offset + ds_y * 80 (missing add of dsp_x1)
+
+;		prt = dsp_x1 * 4 - ds_x1 + i;
+
+mov   ax, bx							; bx contains dsp_x1, 
+shl   ax, 2								; ax contains dsp_x1 * 4..
+sub   ax, di							; ax contains dsp_x1 * 4 - ds_x1
+add   ax, cx 							; add i. ax is equal to prt
+
+;		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
+;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
+;		xfrac16.hu = xfrac.wu >> 8;
+;		yfrac16.hu = yfrac.wu >> 10;
+
+;		xadder = ds_xstep >> 6; // >> 8, *4... lop off top 8 bits, but multing by 4. bottom 6 bits lopped off.
+;		yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
+
+
+
+CWD   ; zero out dx
+
+;  DX:AX contains sign extended prt. DX is definitely positive.
+
+add   si, bx						; finally add bx to dsp_x1
 mov   word ptr [bp - 28h], dx
 mov   di, ax
 mov   cx, word ptr [bp - 28h]
@@ -2645,12 +2684,12 @@ add   bx, word ptr [bp - 18h]
 mov   byte ptr es:[si - 1], al
 cmp   word ptr [bp - 4], -1
 jne   label7
-label2:
-inc   word ptr [bp - 1ch]
-cmp   word ptr [bp - 1ch], 4
-jge   label3
-jmp   label4
-label3:
+do_span_loop:
+inc   word ptr [bp - 1ch]		; increment i
+cmp   word ptr [bp - 1ch], 4	; loop if i < 4
+jge   span_i_loop_done
+jmp   span_i_loop_repeat
+span_i_loop_done:
 leave 
 pop   di
 pop   si
