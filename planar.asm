@@ -111,6 +111,8 @@ do_draw:
 
     mov     es,ax              ; save low(M1)
 
+;  DX:AX * CX:BX
+
 ; note this is 8 bit times 32 bit and we want the mid 16
 
 ; todo figure out how to do this without a jump
@@ -118,7 +120,7 @@ do_draw:
     jns skipsignedmul          ; if low(m1) not signed then high(m1) was 0
 
 
-; dx is 0. mul by 0xFFFF is dx - ax;
+; dx is 0. mul by 0xFFFF is dx - bx;
 ; low (M2) * high (M1) which is 0xFFFF
     sub     dx,bx
 skipsignedmul:
@@ -2197,30 +2199,28 @@ shl   ax, 2								; ax contains dsp_x1 * 4..
 sub   ax, di							; ax contains dsp_x1 * 4 - ds_x1
 add   ax, cx 							; add i. ax is equal to prt
 
+
+
 ;		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
-;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
 ;		xfrac16.hu = xfrac.wu >> 8;
-;		yfrac16.hu = yfrac.wu >> 10;
-
-;		xadder = ds_xstep >> 6; // >> 8, *4... lop off top 8 bits, but multing by 4. bottom 6 bits lopped off.
-;		yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
 
+CWD   				; extend dx sign
 
-CWD   ; zero out dx
-
-;  DX:AX contains sign extended prt. DX is definitely positive.
+;  DX:AX contains sign extended prt. 
+;  probably dont really need this. can test ax and jge
 
 add   si, bx						; finally add bx to dsp_x1
-mov   word ptr [bp - 28h], dx
-mov   di, ax
-mov   cx, word ptr [bp - 28h]
+;mov   word ptr [bp - 28h], dx
+mov   di, ax						; store dx:ax into es:di
+mov   es, dx						;
+mov   bx, ax
+mov   cx, dx
 mov   ax, word ptr [_ds_xstep]
 mov   dx, word ptr [_ds_xstep + 2]
-mov   bx, di
 
 ; inline i4m
-
+; DX:AX * CX:BX,  CX is 0000 or FFFF
  		xchg    ax,bx           ; swap low(M1) and low(M2)
         push    ax              ; save low(M2)
         xchg    ax,dx           ; exchange low(M2) and high(M1)
@@ -2228,11 +2228,16 @@ mov   bx, di
         je skiphigh11
           mul   dx              ; - low(M2) * high(M1)
         skiphigh11:                  ; endif
-        xchg    ax,cx           ; save that in cx, get high(M2)
-        or      ax,ax           ; if high(M2) non-zero
-        je skiphigh12              ; then
-          mul   bx              ; - high(M2) * low(M1)
-          add   cx,ax           ; - add to total
+        xchg        ax,cx           ; save that in cx, get high(M2)
+        test 	    ax,ax           ; if high(M2) non-zero
+        je  skiphigh12              ; then
+          sub   ax,bx              ; - high(M2) * low(M1)
+
+;        xchg    ax,cx           ; save that in cx, get high(M2)
+;        or      ax,ax           ; if high(M2) non-zero
+;        je skiphigh12              ; then
+;          mul   bx              ; - high(M2) * low(M1)
+;          add   cx,ax           ; - add to total
         skiphigh12:                  ; endif
         pop     ax              ; restore low(M2)
         mul     bx              ; low(M2) * low(M1)
@@ -2240,7 +2245,7 @@ mov   bx, di
 
 
 mov   bx, word ptr [_ds_xfrac]
-mov   cx, word ptr [bp - 28h]
+mov   cx, es
 add   bx, ax
 mov   word ptr [bp - 22h], bx
 mov   word ptr [bp - 8], bx
@@ -2253,7 +2258,11 @@ mov   word ptr [bp - 01ah], ax
 mov   ax, word ptr [_ds_ystep]
 
 
+;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
+;		yfrac16.hu = yfrac.wu >> 10;
+
 ; inline i4m
+; DX:AX * CX:BX,  CX is 0000 or FFFF
 
  		xchg    ax,bx           ; swap low(M1) and low(M2)
         push    ax              ; save low(M2)
@@ -2262,11 +2271,11 @@ mov   ax, word ptr [_ds_ystep]
         je skiphigh21              ; then
           mul   dx              ; - low(M2) * high(M1)
         skiphigh21:                  ; endif
-        xchg    ax,cx           ; save that in cx, get high(M2)
-        or      ax,ax           ; if high(M2) non-zero
-        je skiphigh22              ; then
-          mul   bx              ; - high(M2) * low(M1)
-          add   cx,ax           ; - add to total
+        xchg        ax,cx           ; save that in cx, get high(M2)
+        test 	    ax,ax           ; if high(M2) non-zero
+        je  skiphigh22              ; then
+          sub   ax,bx              ; - high(M2) * low(M1)
+
         skiphigh22:                  ; endif
         pop     ax              ; restore low(M2)
         mul     bx              ; low(M2) * low(M1)
@@ -2285,47 +2294,70 @@ mov   cl, 0ah
 shr   bx, cl
 ror   di, cl
 xor   bx, di
+
+
 and   di, 003fh
-xor   bx, di
-mov   cl, 8
-shr   ax, cl
-ror   dx, cl
-xor   ax, dx
-and   dx, 00ffh
-xor   ax, dx
+xor   bx, di			; what is BX storing?
+
+; shift 8, yadder in dh?
+
+mov dh, dl
+mov dl, ah
+
+;	xadder = ds_xstep >> 6; // >> 8, *4... lop off top 8 bits, but multing by 4. bottom 6 bits lopped off.
+
+
+; not sure why but this doesnt  work with cx instead of di
 mov   di, word ptr [_ds_xstep + 2]
-mov   dx, ax
 mov   ax, word ptr [_ds_xstep]
+
 mov   cx, 6
 loop1:
+
 sar   di, 1
 rcr   ax, 1
-loop  loop1
-mov   di, word ptr [_ds_ystep + 2]
+loop loop1
+
+
+;    11111111 11000000  bit pattern
+;rol   ax , 1
+;rol   ax , 1
+;and   al , 03h
+;    11111111 00000011
+;sal   si , 1
+;sal   si , 1
+;and   si , 00FCh
+;  si				ax
+;  00000000 11111100 11111111 00000011
+;and  ax, si
+;xchg ah, al
+
+ 
 mov   word ptr [bp - 6], ax
-mov   ax, word ptr [_ds_ystep]
-mov   cx, 8
-loop2:
-sar   di, 1
-rcr   ax, 1
-loop  loop2
-mov   word ptr [bp - 18h], ax
-cmp   word ptr [bp - 4], 10h
-jge   label6
-jmp   label7
-label6:
+
+;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
+
+mov   ax, word ptr [_ds_ystep + 1]
+
+
+mov   di, word ptr [_ds_source + 2]
+mov   word ptr [bp - 0ch], di	;  save ds_source_segment in bp -0
+
+mov   word ptr [bp - 18h], ax	; y_adder in bp - 18h
+cmp   word ptr [bp - 4], 10h	; compare count to 16
+jge   do_16_unroll_loop			; if count >= 16 do loop
+jmp   do_last_15_unroll_loop	; do last 15 loop
+do_16_unroll_loop:
 mov   al, dh
 mov   di, word ptr [_ds_source]
 and   al, 3fh
-mov   word ptr [bp - 20h], di
+mov   word ptr [bp - 20h], di	; save ds_source_offset in bp - 20
 CBW  
-mov   di, word ptr [_ds_source + 2]
 mov   cx, ax
-mov   word ptr [bp - 0ch], di
 mov   ax, bx
-mov   es, di
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
 add   di, ax
 mov   ax, word ptr [_ds_colormap]
@@ -2338,19 +2370,20 @@ mov   es, ax
 add   di, cx
 mov   word ptr [bp - 16h], ax
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si], al
+
 mov   al, dh
 and   al, 3fh
 CBW  
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   cx, ax
 mov   ax, bx
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
-mov   es, word ptr [bp - 0ch]
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 add   di, ax
 mov   al, byte ptr es:[di]
 mov   di, word ptr [bp - 2]
@@ -2358,19 +2391,20 @@ xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si + 1], al
+
 mov   al, dh
 and   al, 3fh
 CBW  
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   cx, ax
 mov   ax, bx
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
-mov   es, word ptr [bp - 0ch]
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 add   di, ax
 mov   al, byte ptr es:[di]
 mov   di, word ptr [bp - 2]
@@ -2379,55 +2413,58 @@ mov   es, word ptr [bp - 16h]
 add   di, ax
 add   dx, word ptr [bp - 6]
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
-add   bx, word ptr [bp - 18h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   byte ptr es:[si + 2], al
+
 mov   al, dh
 mov   di, bx
 and   al, 3fh
 and   di, 0FC0h
 CBW  
 add   ax, di
-mov   di, word ptr [bp - 20h]
-mov   es, word ptr [bp - 0ch]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 add   di, ax
 mov   al, byte ptr es:[di]
 mov   di, word ptr [bp - 2]
 xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si + 3], al
+
 mov   al, dh
 mov   di, bx
 and   al, 3fh
 and   di, 0FC0h
 CBW  
 add   ax, di
-mov   di, word ptr [bp - 20h]
-mov   es, word ptr [bp - 0ch]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 add   di, ax
 mov   al, byte ptr es:[di]
 mov   di, word ptr [bp - 2]
 xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si + 4], al
+
 mov   al, dh
 mov   di, bx
 and   al, 3fh
 and   di, 0FC0h
 CBW  
 add   ax, di
-mov   di, word ptr [bp - 20h]
-mov   es, word ptr [bp - 0ch]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 add   di, ax
 mov   al, byte ptr es:[di]
 mov   di, word ptr [bp - 2]
@@ -2435,19 +2472,20 @@ xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 mov   byte ptr es:[si + 5], al
 add   dx, word ptr [bp - 6]
+
 mov   al, dh
 and   al, 3fh
 CBW  
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   cx, ax
 mov   ax, bx
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
-mov   es, word ptr [bp - 0ch]
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 add   di, ax
 mov   al, byte ptr es:[di]
 mov   di, word ptr [bp - 2]
@@ -2455,19 +2493,20 @@ xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si + 6], al
+
 mov   al, dh
 and   al, 3fh
 CBW  
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   cx, ax
 mov   ax, bx
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
-mov   es, word ptr [bp - 0ch]
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 add   di, ax
 mov   al, byte ptr es:[di]
 mov   di, word ptr [bp - 2]
@@ -2475,19 +2514,20 @@ xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si + 7], al
+
 mov   al, dh
 and   al, 3fh
 CBW  
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   cx, ax
 mov   ax, bx
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
-mov   es, word ptr [bp - 0ch]
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 add   di, ax
 mov   al, byte ptr es:[di]
 mov   di, word ptr [bp - 2]
@@ -2496,35 +2536,37 @@ mov   es, word ptr [bp - 16h]
 add   di, ax
 add   dx, word ptr [bp - 6]
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
-add   bx, word ptr [bp - 18h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   byte ptr es:[si + 8], al
+
 mov   al, dh
 mov   di, bx
 and   al, 3fh
 and   di, 0FC0h
 CBW  
 add   ax, di
-mov   di, word ptr [bp - 20h]
-mov   es, word ptr [bp - 0ch]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 add   di, ax
 mov   al, byte ptr es:[di]
 mov   di, word ptr [bp - 2]
 xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si + 9], al
+
 mov   al, dh
 mov   di, bx
 and   al, 3fh
 and   di, 0FC0h
 CBW  
 add   ax, di
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 mov   es, word ptr [bp - 0ch]
 add   di, ax
 mov   al, byte ptr es:[di]
@@ -2532,18 +2574,19 @@ mov   di, word ptr [bp - 2]
 xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si + 0ah], al
+
 mov   al, dh
 mov   di, bx
 and   al, 3fh
 and   di, 0FC0h
 CBW  
 add   ax, di
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 mov   es, word ptr [bp - 0ch]
 add   di, ax
 mov   al, byte ptr es:[di]
@@ -2552,17 +2595,18 @@ xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 mov   byte ptr es:[si + 0bh], al
 add   dx, word ptr [bp - 6]
+
 mov   al, dh
 and   al, 3fh
 CBW  
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   cx, ax
 mov   ax, bx
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
 mov   es, word ptr [bp - 0ch]
 add   di, ax
@@ -2573,16 +2617,17 @@ mov   es, word ptr [bp - 16h]
 add   di, ax
 add   dx, word ptr [bp - 6]
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
-add   bx, word ptr [bp - 18h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   byte ptr es:[si + 0ch], al
+
 mov   al, dh
 mov   di, bx
 and   al, 3fh
 and   di, 0FC0h
 CBW  
 add   ax, di
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 mov   es, word ptr [bp - 0ch]
 add   di, ax
 mov   al, byte ptr es:[di]
@@ -2590,18 +2635,19 @@ mov   di, word ptr [bp - 2]
 xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si + 0dh], al
+
 mov   al, dh
 mov   di, bx
 and   al, 3fh
 and   di, 0FC0h
 CBW  
 add   ax, di
-mov   di, word ptr [bp - 20h]
+mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 mov   es, word ptr [bp - 0ch]
 add   di, ax
 mov   al, byte ptr es:[di]
@@ -2610,11 +2656,12 @@ xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   di, ax
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]
 mov   byte ptr es:[si + 0eh], al
+
 mov   al, dh
-add   bx, word ptr [bp - 18h]
+add   bx, word ptr [bp - 18h]    ; add y_adder
 and   al, 3fh
 and   bx, 0FC0h
 CBW  
@@ -2628,7 +2675,7 @@ xor   ah, ah
 mov   es, word ptr [bp - 16h]
 add   bx, ax
 mov   al, byte ptr es:[bx]
-mov   es, word ptr [bp - 12h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
 sub   word ptr [bp - 4], 10h
 mov   byte ptr es:[si + 0fh], al
 mov   ax, word ptr [bp - 10h]
@@ -2659,9 +2706,10 @@ and   bx, 3fh
 xor   ax, bx
 mov   bx, ax
 cmp   word ptr [bp - 4], 10h
-jl    label7
-jmp   label6
-label7:
+jl    do_last_15_unroll_loop
+jmp   do_16_unroll_loop
+do_last_15_unroll_loop:
+
 mov   al, dh
 mov   di, bx
 and   al, 3fh
@@ -2679,11 +2727,11 @@ mov   es, word ptr [_ds_colormap + 2]
 add   di, ax
 add   dx, word ptr [bp - 6]
 mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]
-add   bx, word ptr [bp - 18h]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   byte ptr es:[si - 1], al
 cmp   word ptr [bp - 4], -1
-jne   label7
+jne   do_last_15_unroll_loop
 do_span_loop:
 inc   word ptr [bp - 1ch]		; increment i
 cmp   word ptr [bp - 1ch], 4	; loop if i < 4
