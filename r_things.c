@@ -147,8 +147,8 @@ void __near R_DrawMaskedColumn (column_t __far* column) {
                 // hack until supported via asm func
                 colfunc();
             } else {
-
-                R_DrawColumnPrepHigh();
+                void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
+                R_DrawColumnPrepCall(colormaps_high_seg_diff);
 /*
                 uint16_t dc_source_offset = FP_OFF(dc_source);
                 uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;

@@ -75,8 +75,7 @@ void __far R_FillBackScreen (void);
 // If the view size is not full screen, draws a border around it.
 void __far R_DrawViewBorder (void);
 
-void __far R_DrawColumnPrep();
-void __far R_DrawColumnPrepHigh();
+void __far R_DrawColumnPrep(uint16_t lookup_offset_difference);
 
 
 #endif

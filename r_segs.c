@@ -322,13 +322,16 @@ void __near R_RenderSegLoop (void)
 		if (midtexture) {
 			// single sided line
 			if (yh > yl){
+                void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
+
 				dc_yl = yl;
 				dc_yh = yh;
 				dc_texturemid = rw_midtexturemid;
 
 				dc_source = R_GetColumn(midtexture,texturecolumn);
 
-				R_DrawColumnPrep();				
+				//I_Error("A %Fp  %Fp %Fp", R_DrawColumnPrepCall, R_DrawColumn, R_DrawColumnPrep);
+				R_DrawColumnPrepCall(0);				
 
 
 
@@ -349,12 +352,13 @@ void __near R_RenderSegLoop (void)
 
 				if (mid >= yl) {
 					if (yh > yl){
+                		void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 						dc_yl = yl;
 						dc_yh = mid;
 						dc_texturemid = rw_toptexturemid;
 
 						dc_source = R_GetColumn(toptexture,texturecolumn);
-						R_DrawColumnPrep();				
+						R_DrawColumnPrepCall(0);				
 					}
 					ceilingclip[rw_x] = mid;
 				} else {
@@ -378,12 +382,13 @@ void __near R_RenderSegLoop (void)
 				}
 				if (mid <= yh) {
 					if (yh > yl){
+                		void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 						dc_yl = mid;
 						dc_yh = yh;
 						dc_texturemid = rw_bottomtexturemid;
 
 						dc_source = R_GetColumn(bottomtexture, texturecolumn);
-						R_DrawColumnPrep();
+						R_DrawColumnPrepCall(0);
 						
 
 					}

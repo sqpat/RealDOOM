@@ -455,6 +455,7 @@ void __near R_DrawPlanes (void) {
 
 				if (dc_yl < dc_yh) {
 					// all sky textures are 256 wide, just need the 0xFF and
+					void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 					uint8_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;
 					dc_x = x;
 
@@ -474,7 +475,7 @@ void __near R_DrawPlanes (void) {
 					}*/
 
 					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
-					R_DrawColumnPrep();
+					R_DrawColumnPrepCall(0);
 
 					/*
 					if (true){

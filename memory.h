@@ -452,10 +452,11 @@ blockmaplump_plus4  76E4:0008
 #define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup, size_dc_yl_lookup))
 
 
-#define R_DrawColumnAddr      ((void    (__far *)(void))  (colfunc_function_area))
-#define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
+#define R_DrawColumnAddr          ((void    (__far *)(void))  (colfunc_function_area))
+#define R_DrawColumnPrepOffset    0x0B65
+//#define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
 
-//6CEC
+//6F2E
 #define colfunc_segment       ((uint16_t) ((int32_t)colfunc_function_area >> 16))
 #define colfunc_segment_high  ((uint16_t) (colfunc_segment           - 0x6C00 + 0x8C00))
 
@@ -468,12 +469,12 @@ blockmaplump_plus4  76E4:0008
 //6D8A
 #define colormapssegment      ((uint16_t) ((int32_t)colormaps >> 16))
 
+#define colormaps_high_seg_diff  ((uint16_t)0x8C00 - 0x6C00)
+
 // used in sprite render, this has been remapped to 8400 page
 // 852D
 #define colormapssegment_high  ((uint16_t)             (colormapssegment           - 0x6C00 + 0x8C00))
 #define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x6C000000 + 0x8C000000))
-//#define colormapssegment_high  0xCC00
-//#define colormaps_high         ((lighttable_t  __far*) (0xCC000000))
 
 #define colormaps_colfunc_seg_difference (colfunc_segment - colormapssegment)
 #define colormaps_colfunc_off_difference (colormaps_colfunc_seg_difference << 4)

@@ -227,8 +227,9 @@ byte __far*			dc_source;
 // 
 extern int setval;
 
+/*
 
-void __far R_DrawColumnPrep(){
+void __far R_DrawColumnPrep(uint16_t lookup_offset_difference){
 
 	uint16_t dc_source_offset = FP_OFF(dc_source);
 	uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
@@ -320,6 +321,74 @@ void __far R_DrawColumnPrepHigh(){
 	// func location
 	dynamic_callfunc();
 }
+
+
+0x0000000000000b6e:  53             push  bx
+0x0000000000000b6f:  51             push  cx
+0x0000000000000b70:  52             push  dx
+0x0000000000000b71:  56             push  si
+0x0000000000000b72:  57             push  di
+0x0000000000000b73:  55             push  bp
+0x0000000000000b74:  89 E5          mov   bp, sp
+0x0000000000000b76:  83 EC 04       sub   sp, 4
+0x0000000000000b79:  A1 38 27       mov   ax, word ptr [0x2738]    ;  dc_source in ax
+0x0000000000000b7c:  89 C2          mov   dx, ax                   ;  copy into dx
+0x0000000000000b7e:  80 E2 0F       and   dl, 0xf                  ;  and by 0xf (get last hex digit)
+0x0000000000000b81:  30 E6          xor   dh, ah                   ;  make dh 0
+0x0000000000000b83:  BE 15 6F       mov   si, 0x6f15               ;  store segmentfor dc_yl_lookup to put into ES later
+0x0000000000000b86:  C1 E2 08       shl   dx, 8                    ;  shift dx left 8 to get bx_offset
+0x0000000000000b89:  BF 2E 6F       mov   di, 0x6f2e               ;  store colfunc_function_area in DI to use later for later
+0x0000000000000b8c:  89 D1          mov   cx, dx                   ; store  0-f offset * 0x100 into cx  
+0x0000000000000b8e:  C1 E8 04       shr   ax, 4                    ;  shift dc_source right 4
+0x0000000000000b91:  C1 E9 04       shr   cx, 4                    ; shift bx_offset right 4 to get segment_difference
+0x0000000000000b94:  8B 1E 3A 27    mov   bx, word ptr [0x273a]    ; get dc_source segment in bx
+0x0000000000000b98:  29 C8          sub   ax, cx                   ; subtract to get ds_segment_difference
+0x0000000000000b9a:  89 16 38 27    mov   word ptr [0x2738], dx	   ; store dx (0-F * 0x100) in dc_source offset
+0x0000000000000b9e:  01 C3          add   bx, ax                   ; add ds_segment_difference to get calculated_ds
+0x0000000000000ba0:  A0 52 27       mov   al, byte ptr [0x2752]    ; get dc_uh in al
+0x0000000000000ba3:  89 1E 3A 27    mov   word ptr [0x273a], bx    ; put calculated_ds in  dc_source segment 
+0x0000000000000ba7:  8B 1E 54 27    mov   bx, word ptr [0x2754]    ; get dc_yl in bx
+0x0000000000000bab:  2A 06 54 27    sub   al, byte ptr [0x2754]    ; get dc_yl in al
+0x0000000000000baf:  8E C6          mov   es, si                   ; move segment for dc_yl_lookup into es
+0x0000000000000bb1:  30 E4          xor   ah, ah                   ; clear top of ah (dc_yl)
+0x0000000000000bb3:  01 DB          add   bx, bx                   ; double dc_yl lookup index (uint16_t)
+0x0000000000000bb5:  89 C6          mov   si, ax                   ; store dc_yl into si
+0x0000000000000bb7:  26 8B 1F       mov   bx, word ptr es:[bx]     ; lookup dc_yl_lookup  store in bx
+0x0000000000000bba:  01 C6          add   si, ax                   ; double si index (lmao)
+0x0000000000000bbc:  B8 FC 6E       mov   ax, 0x6efc               ; jump_lookup_segment in ax
+0x0000000000000bbf:  89 1E 48 27    mov   word ptr [0x2748], bx    ; store bx in dc_yl_lookup_val
+0x0000000000000bc3:  8E C0          mov   es, ax                   ; jump_lookup_segment in es
+0x0000000000000bc5:  BB 6E 00       mov   bx, 0x6e                 ; setup jump addr offset
+0x0000000000000bc8:  26 8B 04       mov   ax, word ptr es:[si]     ; get jump lookup addr in ax
+0x0000000000000bcb:  8E C7          mov   es, di                   ; store colfunc_function_area in es
+0x0000000000000bcd:  26 89 07       mov   word ptr es:[bx], ax     ; store jump value (self modifying code)
+0x0000000000000bd0:  A0 64 27       mov   al, byte ptr [0x2764]    ; grab dc_colormap_index into al
+0x0000000000000bd3:  89 D3          mov   bx, dx                   ; copy bx_offset into bx 
+0x0000000000000bd5:  8B 16 56 27    mov   dx, word ptr [0x2756]    ; store dc_colormap_segment in dx
+0x0000000000000bd9:  81 C3 20 24    add   bx, 0x2420               ; add callfunc offset to bx_offset
+0x0000000000000bdd:  29 CA          sub   dx, cx                   ; subtract segment_difference from dc_colormap_segment
+0x0000000000000bdf:  84 C0          test  al, al                   ; if colormap is 0 then jump
+0x0000000000000be1:  74 1E          je    0xc01
+0x0000000000000be3:  30 E4          xor   ah, ah                   ; zero out ah
+0x0000000000000be5:  89 C1          mov   cx, ax                   ; move colormap index into cx
+0x0000000000000be7:  C1 E1 08       shl   cx, 8                    ; shift to get high byte
+0x0000000000000bea:  C1 E0 04       shl   ax, 4                    ; shift colormap index 4 
+0x0000000000000bed:  29 CB          sub   bx, cx                   ; sub high byte from (bx_offset + callfunc offset)
+0x0000000000000bef:  01 D0          add   ax, dx                   ; add bx_offset into colormap index shifted left 4
+0x0000000000000bf1:  89 5E FC       mov   word ptr [bp - 4], bx    ; prepare longcall 
+0x0000000000000bf4:  89 46 FE       mov   word ptr [bp - 2], ax    ; prepare longcall 
+0x0000000000000bf7:  FF 5E FC       lcall [bp - 4]                 ;
+0x0000000000000bfa:  C9             leave                          ;
+0x0000000000000bfb:  5F             pop   di                       ;
+0x0000000000000bfc:  5E             pop   si
+0x0000000000000bfd:  5A             pop   dx
+0x0000000000000bfe:  59             pop   cx
+0x0000000000000bff:  5B             pop   bx
+0x0000000000000c00:  CB             retf  
+ 
+
+
+*/
 
 
 	// ASM NOTES

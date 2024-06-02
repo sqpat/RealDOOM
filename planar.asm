@@ -25,6 +25,13 @@ EXTRN	_destview:DWORD
 EXTRN	_centery:WORD
 EXTRN   _dc_yl_lookup_val:WORD
 
+EXTRN	_dc_yl:WORD
+EXTRN	_dc_yh:WORD
+EXTRN	_dc_source:DWORD
+
+EXTRN	_dc_colormap_index:BYTE
+EXTRN	_dc_colormap_segment:WORD
+
 
 ;=================================
 
@@ -1940,6 +1947,108 @@ loop_done:
     pop   bx
     retf
 
+
+ENDP
+
+
+
+
+;
+; R_DrawColumnPrep
+;
+	
+PROC  R_DrawColumnPrep_
+PUBLIC  R_DrawColumnPrep_ 
+
+; argument AX is diff for various segment lookups
+
+push  bx
+push  cx
+push  dx
+push  si
+push  di
+push  bp
+mov   bp, sp                                 ;
+sub   sp, 4                                  ;
+mov   si, 6f15h                              ; store this segment
+add   si, ax                                 ; add the offset to it already
+mov   es, si                                 ;
+mov   di, ax                                 ; store arguement (offset)
+mov   ax, word ptr [_dc_source]
+mov   dx, ax
+and   dl, 0fh
+xor   dh, ah
+shl   dx, 8
+mov   cx, dx
+shr   ax, 4
+shr   cx, 4
+mov   bx, word ptr [_dc_source + 2]
+sub   ax, cx
+mov   word ptr [_dc_source], dx
+add   bx, ax
+mov   al, byte ptr [_dc_yh]
+mov   word ptr [_dc_source + 2], bx
+mov   bx, word ptr [_dc_yl]
+sub   al, byte ptr [_dc_yl]
+mov   es, si
+xor   ah, ah
+add   bx, bx
+mov   si, ax
+mov   bx, word ptr es:[bx]
+add   si, ax
+mov   ax, 6efch
+add   ax, di                                 ; add arugment offset to the ax address
+mov   word ptr [_dc_yl_lookup_val], bx
+mov   es, ax
+mov   bx, 06eh
+mov   ax, word ptr es:[si]
+add   di, 6f2eh
+mov   es, di
+mov   word ptr es:[bx], ax
+mov   al, byte ptr [_dc_colormap_index]
+mov   bx, dx
+mov   dx, word ptr [_dc_colormap_segment]
+add   bx, 2420h
+sub   dx, cx
+test  al, al
+je    skipcolormapzero
+xor   ah, ah
+mov   cx, ax
+shl   cx, 8
+shl   ax, 4
+sub   bx, cx
+add   ax, dx
+mov   word ptr [bp - 4], bx
+mov   word ptr [bp - 2], ax
+
+
+db 255  ;FEh   lcall[bp-4]
+db 94   ;5Eh
+db 252  ;FCh
+
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+skipcolormapzero:
+mov   word ptr [bp - 4], bx
+mov   word ptr [bp - 2], dx
+
+db 255  ;FEh   lcall[bp-4]
+db 94   ;5Eh
+db 252  ;FCh
+
+leave 
+pop   di
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+cld   
 
 ENDP
 
