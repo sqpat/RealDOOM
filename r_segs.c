@@ -208,7 +208,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	    
 			// draw the texture
 			col = (column_t  __far*)((byte  __far*)R_GetColumn(texnum,maskedtexturecol[dc_x]) -3);
-			R_DrawMaskedColumn (col);
+			R_DrawMaskedColumn (col, 0);
 			maskedtexturecol[dc_x] = MAXSHORT;
 		}
 		spryscale.w += rw_scalestep;

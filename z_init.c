@@ -267,8 +267,10 @@ found:
 extern int16_t emshandle;
 
 
-	void __far R_DrawColumn (void);
-	void __far R_DrawColumnLow(void);
+void __far R_DrawColumn (void);
+void __far R_DrawColumnLow(void);
+void __far R_DrawSpan (void);
+void __far R_DrawSpanLow(void);
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
@@ -285,6 +287,10 @@ void __near Z_LoadBinaries() {
 	FAR_memcpy(colfunc_function_area,
 	(byte __far *)R_DrawColumn, 
 	(byte __far *)R_DrawFuzzColumn - (byte __far *)R_DrawColumn);
+
+
+
+
 
 	// 400
 	FAR_fread(jump_lookup,  2, SCREENHEIGHT * 2, fp);
@@ -349,6 +355,10 @@ void __near Z_LoadBinaries() {
 	FAR_fread(wigraphics, 1, 28 * 9, fp);
 	*/
 	
+	Z_QuickMapPalette();
+	FAR_memcpy((byte __far *)spanfunc_function_area_9000, 
+	(byte __far *)R_DrawSpan,
+	 (byte __far *)R_DrawSpanLow - (byte __far *)R_DrawSpan);
 	
 
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);

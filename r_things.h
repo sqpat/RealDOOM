@@ -37,7 +37,7 @@ extern uint16_t		pspritescale;
 extern fixed_t		pspriteiscale;
 
 
-void __near R_DrawMaskedColumn (column_t __far* column);
+void __near R_DrawMaskedColumn (column_t __far* column, int8_t isShadow);
 
 
 void __near R_SortVisSprites (void);

@@ -94,9 +94,6 @@ uint8_t			extralight;
 
 
 
-void __far (* colfunc) (void);
-void __far (* basecolfunc) (void);
-void __far (* fuzzcolfunc) (void);
 void __far (* spanfunc) (void);
 
  

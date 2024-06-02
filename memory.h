@@ -482,6 +482,19 @@ blockmaplump_plus4  76E4:0008
 
 #define R_DrawColumnPrepOffset    0x0B6A
 
+
+
+
+//#define palettebytes_size  10752
+//0x2A00
+// 5632 bytes free
+#define spanfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(0x68000000, palettebytes_size))
+#define R_DrawSpanAddr         ((void    (__far *)(void))  (spanfunc_function_area))
+
+// used for loading in while palette already active
+#define spanfunc_function_area_9000 ((byte  __far*)             MAKE_FULL_SEGMENT(0x90000000, palettebytes_size))
+
+
 // planes change the 6800 page and remove 
 
 /*

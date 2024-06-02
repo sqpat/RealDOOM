@@ -102,7 +102,7 @@ int16_t __far*          mceilingclip;
 fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
 
-void __near R_DrawMaskedColumn (column_t __far* column) {
+void __near R_DrawMaskedColumn (column_t __far* column, int8_t isShadow) {
 	
 	fixed_t_union         topscreen;
 	fixed_t_union         bottomscreen;
@@ -143,9 +143,9 @@ void __near R_DrawMaskedColumn (column_t __far* column) {
             // Drawn by either R_DrawColumn
             //  or (SHADOW) R_DrawFuzzColumn.
 
-            if (colfunc == R_DrawFuzzColumn){
+            if (isShadow){
                 // hack until supported via asm func
-                colfunc();
+                R_DrawFuzzColumn();
             } else {
                 void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
                 R_DrawColumnPrepCall(colormaps_high_seg_diff);
@@ -171,7 +171,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
 	column_t __far*     column;
     fixed_t_union       frac;
     patch_t __far*      patch;
-        
+    int8_t isShadow = false;
 
 
     dc_colormap_segment = colormapssegment_high;
@@ -179,7 +179,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     
     if (vis->colormap == COLORMAP_SHADOW) {
         // NULL colormap = shadow draw
-        colfunc = fuzzcolfunc;
+        isShadow = true;
     }
         
     dc_iscale = labs(vis->xiscale)>>detailshift;
@@ -191,9 +191,8 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
 	patch = (patch_t __far*)getspritetexture(vis->patch);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		column = (column_t  __far*) ((byte  __far*)patch + (patch->columnofs[frac.h.intbits]));
-        R_DrawMaskedColumn (column);
+        R_DrawMaskedColumn (column, isShadow);
     }
-    colfunc = basecolfunc;
 }
 
 

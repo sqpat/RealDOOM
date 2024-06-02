@@ -227,16 +227,13 @@ void __near  R_ExecuteSetViewSize(void) {
 	centeryfrac_shiftright4.w = temp.w >> 4;
 
 	if (!detailshift) {
-		//void (__far* dynamic_callfunc)(void)  =      R_DrawColumnAddr;
+		void (__far* dynamic_callfunc)(void)  =      R_DrawSpanAddr;
 		//colfunc = basecolfunc = dynamic_callfunc;
-		spanfunc = R_DrawSpan;
+		spanfunc = dynamic_callfunc;
 	}
 	else {
 		spanfunc = R_DrawSpanLow;
 	}
-	fuzzcolfunc = R_DrawFuzzColumn;
-
-
 
 	// Handle resize,
 	//  e.g. smaller view windows

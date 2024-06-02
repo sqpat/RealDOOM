@@ -85,9 +85,6 @@ extern	int8_t		detailshift;
 // Function pointers to switch refresh/drawing functions.
 // Used to select shadow mode etc.
 //
-extern void __far (* colfunc) (void);
-extern void __far (* basecolfunc) (void);
-extern void __far (* fuzzcolfunc) (void);
 // No shadow effects on floors.
 
 extern void __far (* spanfunc) (void);
