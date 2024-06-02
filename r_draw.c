@@ -235,8 +235,6 @@ void __far R_DrawColumnPrep(uint16_t lookup_offset_difference){
 	uint8_t colofs_paragraph_offset = dc_source_offset & 0x0F;
 	uint16_t bx_offset = colofs_paragraph_offset << 8;
 
-	// we know bx, so what is DS such that DS:BX  ==  skytexture_segment:skyofs[texture_x]?
-	// we know skyofs max value is 35080 or 0x8908
 	int16_t segment_difference =  bx_offset >> 4;
 	int16_t ds_segment_difference = (dc_source_offset >> 4) - segment_difference;
 	uint16_t calculated_ds = FP_SEG(dc_source) + ds_segment_difference;

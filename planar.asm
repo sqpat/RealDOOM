@@ -1969,53 +1969,61 @@ push  si
 push  di
 push  bp
 mov   bp, sp                                 ;
-sub   sp, 4                                  ;
+sub   sp, 4                                  ; need stack space for dynamic farcall
 mov   si, 6f15h                              ; store this segment
 add   si, ax                                 ; add the offset to it already
-mov   es, si                                 ;
-mov   di, ax                                 ; store arguement (offset)
-mov   ax, word ptr [_dc_source]
-mov   dx, ax
-and   dl, 0fh
-xor   dh, ah
-shl   dx, 8
-mov   cx, dx
-shr   ax, 4
-shr   cx, 4
-mov   bx, word ptr [_dc_source + 2]
-sub   ax, cx
-mov   word ptr [_dc_source], dx
-add   bx, ax
-mov   al, byte ptr [_dc_yh]
+mov   es, si                                 ; store this segment for now, with offset pre-added
+mov   di, ax                                 ; store argument (offset)
+mov   ax, word ptr [_dc_source]              ; load dc_source offset
+mov   dh, al                                 ; shift 8 at once
+and   dx, 0f00h                              ; and zero out the other bits to get the last hex digit * 100 bytes for eventual BH value
+mov   cx, dx                                 ;
+shr   ax, 1                                  ; segment value of offset
+shr   ax, 1                                 
+shr   ax, 1                                 
+shr   ax, 1                                 
+mov   word ptr [_dc_source], dx              ; save BX value
+shr   cx, 1                                  ; segment value of eventual bh  (bx offset)
+shr   cx, 1
+shr   cx, 1
+shr   cx, 1
+mov   bx, word ptr [_dc_source + 2]         ; get dc_source segment
+sub   ax, cx                                ; subtract the (bx_offset >> 4) from dc_source offset segment value
+add   bx, ax                                ; modify dc_source segment by calculated desired alpha which offsets bx
+mov   al, byte ptr [_dc_yh]                 ; grab dc_yh
+mov   es, si                                ;
 mov   word ptr [_dc_source + 2], bx
+xor   ah, ah                                 ;
 mov   bx, word ptr [_dc_yl]
-sub   al, byte ptr [_dc_yl]
-mov   es, si
-xor   ah, ah
-add   bx, bx
-mov   si, ax
+sub   al, bl                                 ;
+add   bx, bx                                 ; double dc_yl to get a word offset
+mov   si, ax                                 ;
 mov   bx, word ptr es:[bx]
-add   si, ax
-mov   ax, 6efch
-add   ax, di                                 ; add arugment offset to the ax address
-mov   word ptr [_dc_yl_lookup_val], bx
+add   si, ax                                 ; double count (dc_yh - dc_yl) to get a word offset
+mov   ax, 6efch                              ; segment of dc_yl_lookup array
+add   ax, di                                 ; add argument offset to the ax address
+mov   word ptr [_dc_yl_lookup_val], bx       ; store pre-calculated dc_yl * 80
 mov   es, ax
-mov   bx, 06eh
-mov   ax, word ptr es:[si]
-add   di, 6f2eh
-mov   es, di
-mov   word ptr es:[bx], ax
-mov   al, byte ptr [_dc_colormap_index]
-mov   bx, dx
-mov   dx, word ptr [_dc_colormap_segment]
+mov   bx, 06eh                               ; offset difference between colormaps (in cs) from R_DrawColumn
+mov   ax, word ptr es:[si]                   ; 
+add   di, 6f2eh                              ; R_DrawColumn segment with 0 indexed function offset
+mov   es, di                                 ; set seg
+mov   word ptr es:[bx], ax                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
+mov   al, byte ptr [_dc_colormap_index]      ; lookup colormap index
+mov   bx, dx                                 ;
+; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
+mov   dx, word ptr [_dc_colormap_segment]    
 add   bx, 2420h
 sub   dx, cx
 test  al, al
 je    skipcolormapzero
 xor   ah, ah
-mov   cx, ax
-shl   cx, 8
-shl   ax, 4
+mov   ch, al
+xor   cl, cl
+shl   ax, 1
+shl   ax, 1
+shl   ax, 1
+shl   ax, 1
 sub   bx, cx
 add   ax, dx
 mov   word ptr [bp - 4], bx
