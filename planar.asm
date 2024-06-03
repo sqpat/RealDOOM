@@ -2407,13 +2407,19 @@ mov   word ptr [bp - 6], ax	    ;  storing x_adder into bp - 6 (?)
 mov   ax, word ptr [_ds_ystep + 1]
 
 ; do loop setup here?
-;mov   si, word ptr [_ds_source + 2]
+
+push ds
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+mov   si, word ptr [_ds_source_segment] 		; ds:si is ds_source
+mov   ds, si
 
 mov   word ptr [bp - 18h], ax	; y_adder in bp - 18h
 cmp   word ptr [bp - 4], 10h	; compare count to 16
+
 jge   do_16_unroll_loop			; if count >= 16 do loop
 jmp   do_last_15_unroll_loop	; do last 15 loop
 do_16_unroll_loop:
+
 
 xor   ah, ah
 
@@ -2423,13 +2429,11 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2441,13 +2445,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2459,13 +2462,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2477,13 +2479,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2495,13 +2496,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2513,13 +2513,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2531,13 +2530,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2549,13 +2547,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2567,13 +2564,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2585,13 +2581,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2603,13 +2598,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2621,13 +2615,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2639,13 +2632,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2657,13 +2649,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2675,13 +2666,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2693,13 +2683,12 @@ CBW
 mov   si, bx
 and   si, 0FC0h
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:bx is ds_source
-mov   al, byte ptr es:[si]
+
+mov   al, byte ptr ds:[si]
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 stos   BYTE PTR es:[di]       ;
 
 
@@ -2760,24 +2749,25 @@ and   si, 0fc0h
 ;CBW  
 dec   word ptr [bp - 4]
 add   si, ax
-mov   es, word ptr [_ds_source_segment] 		; es:si is ds_source
-mov   al, byte ptr es:[si]
-
- 
+mov   al, byte ptr ds:[si]
 
 mov   si, 0fc0h
 xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 xchg  bx, si
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
 
 
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
 stos  BYTE PTR es:[di]       ;  ;	; store pixel on screen
 cmp   word ptr [bp - 4], -1
+
 jne   do_last_15_unroll_loop
+
+pop ds
 do_span_loop:
+
+
 mov   cl, byte ptr [bp - 1ch]
 inc   cl						; increment i
 cmp   cl, 4	; loop if i < 4
@@ -2786,6 +2776,7 @@ mov   byte ptr [bp - 1Ch], cl		; ch was 0 or above. store result
 
 jmp   span_i_loop_repeat
 span_i_loop_done:
+
 
 sti								; reenable interrupts
 leave 
