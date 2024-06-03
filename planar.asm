@@ -2202,7 +2202,7 @@ out   dx, al
 
 
 mov   ax, word ptr [_ds_x1]	
-mov   di, ax		
+mov   si, ax		
 sub   ax, cx		; ax = ds_x1 - i
 CWD   								; 
 shl   dx, 1							; ??? why shift left. its either 0000 or FFFF
@@ -2214,7 +2214,7 @@ mov   bx, ax						; bx is dsp_x1
 shl   ax, 1
 shl   ax, 1
 add   ax, cx						; ax = dsp_x1 * 4 + i...
-cmp   ax, di						; if check..
+cmp   ax, si						; if check..
 jge   dsp_x1_calculated
 inc   bx							; dsp_x1++
 dsp_x1_calculated:
@@ -2246,17 +2246,17 @@ dsp_x2_calculated:
 
 mov   dx, word ptr [_dc_yl_lookup_val]  ; premultiplied 80
 mov   ax, word ptr [_destview]
-mov   si, word ptr [_destview + 2]
+mov   di, word ptr [_destview + 2]
 add   ax, dx							; add ds_y * 80  to destview offset
-mov   word ptr [bp - 12h], si			; store destview segment bp-12h
-mov   si, ax							; si now has destview offset + ds_y * 80 (missing add of dsp_x1)
+mov   word ptr [bp - 12h], di			; store destview segment bp-12h
+mov   di, ax							; di now has destview offset + ds_y * 80 (missing add of dsp_x1)
 
 ;		prt = dsp_x1 * 4 - ds_x1 + i;
 ;       note this will be 16 bit value with sign bits extending to 32 bit DX after CWD
 mov   ax, bx							; bx contains dsp_x1, 
 shl   ax, 1								; ax contains dsp_x1 * 4..
 shl   ax, 1								; ax contains dsp_x1 * 4..
-sub   ax, di							; ax contains dsp_x1 * 4 - ds_x1
+sub   ax, si							; ax contains dsp_x1 * 4 - ds_x1
 add   ax, cx 							; add i. ax is equal to prt
 
 
@@ -2269,8 +2269,8 @@ CWD   				; extend sign into DX
 ;  DX:AX contains sign extended prt. 
 ;  probably dont really need this. can test ax and jge
 
-add   si, bx						; finally add bx to dsp_x1
-mov   di, ax						; store dx:ax into es:di
+add   di, bx						; finally add bx to dsp_x1
+mov   si, ax						; store dx:ax into es:si
 mov   es, dx						; store sign bits (dx) in es
 mov   bx, ax
 mov   cx, dx						; also copy sign bits to cx
@@ -2311,7 +2311,7 @@ mov   cx, es					; retrieve prt sign bits
 add   bx, ax					; ds_xfrac + ds_xstep * prt low bits
 mov   word ptr [bp - 22h], bx	; store low 16 bits of x_frac.w
 mov   word ptr [bp - 8], bx		; store low 16 bits of x_frac.w
-mov   bx, di
+mov   bx, si
 mov   ax, word ptr [_ds_xfrac + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
 adc   ax, dx
 
@@ -2350,14 +2350,14 @@ mov   ax, word ptr [_ds_ystep]
 mov   bx, word ptr [_ds_yfrac]	; load ds_yfrac
 add   bx, ax					; create y_frac low bits...
 mov   word ptr [bp - 24h], bx	; store y_frac low bits
-mov   di, word ptr [_ds_yfrac + 2]
-adc   di, dx
+mov   si, word ptr [_ds_yfrac + 2]
+adc   si, dx
 
 ;	xfrac16.hu = xfrac.wu >> 8;
 
 mov   dx, word ptr [bp - 26h]   ;  load high 16 bits of x_frac.w
-mov   word ptr [bp - 0ah], di	;  store high bits of yfrac in bp - 0ah  
-mov   ax, di					;  copy to di so we can byte manip
+mov   word ptr [bp - 0ah], si	;  store high bits of yfrac in bp - 0ah  
+mov   ax, si					;  copy to ax so we can byte manip
 
 ;	yfrac16.hu = yfrac.wu >> 10;
 
@@ -2407,8 +2407,8 @@ mov   word ptr [bp - 6], ax	    ;  storing x_adder into bp - 6 (?)
 mov   ax, word ptr [_ds_ystep + 1]
 
 
-mov   di, word ptr [_ds_source + 2]
-mov   word ptr [bp - 0ch], di	;  save ds_source_segment in bp -0c
+mov   si, word ptr [_ds_source + 2]
+mov   word ptr [bp - 0ch], si	;  save ds_source_segment in bp -0c
 
 mov   word ptr [bp - 18h], ax	; y_adder in bp - 18h
 cmp   word ptr [bp - 4], 10h	; compare count to 16
@@ -2416,31 +2416,31 @@ jge   do_16_unroll_loop			; if count >= 16 do loop
 jmp   do_last_15_unroll_loop	; do last 15 loop
 do_16_unroll_loop:
 mov   al, dh
-mov   di, word ptr [_ds_source]
+mov   si, word ptr [_ds_source]
 and   al, 3fh
-mov   word ptr [bp - 20h], di	; save ds_source_offset in bp - 20
+mov   word ptr [bp - 20h], si	; save ds_source_offset in bp - 20
 CBW  
 mov   cx, ax
 mov   ax, bx
 mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
-add   di, ax
+add   si, ax
 mov   ah, byte ptr [_ds_colormap_index]
 xor   al, al
-mov   cl, byte ptr es:[di]
+mov   cl, byte ptr es:[si]
 mov   word ptr [bp - 2], ax		; store colormap index
 xor   ch, ch
 mov   ax, word ptr [_ds_colormap_segment]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
 mov   es, ax
-add   di, cx
+add   si, cx
 mov   word ptr [bp - 16h], ax	; store ds_colormap segment
-mov   al, byte ptr es:[di]
+mov   al, byte ptr es:[si]
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si], al
+stos   BYTE PTR es:[di]       ;
 
 mov   al, dh
 and   al, 3fh
@@ -2449,19 +2449,19 @@ add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   cx, ax
 mov   ax, bx
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
 mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
 xor   ah, ah
 mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-mov   al, byte ptr es:[di]
+add   si, ax
+mov   al, byte ptr es:[si]
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si + 1], al
+stos   BYTE PTR es:[di]       ;
 
 mov   al, dh
 and   al, 3fh
@@ -2470,201 +2470,78 @@ add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   cx, ax
 mov   ax, bx
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
 mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
 xor   ah, ah
 mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
+add   si, ax
 add   dx, word ptr [bp - 6]     ; add x_adder
-mov   al, byte ptr es:[di]
+mov   al, byte ptr es:[si]
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   byte ptr es:[si + 2], al
+stos  BYTE PTR es:[di]       ;
 
 mov   al, dh
-mov   di, bx
+mov   si, bx
 and   al, 3fh
-and   di, 0FC0h
+and   si, 0FC0h
 CBW  
-add   ax, di
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+add   ax, si
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
 mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
 xor   ah, ah
 mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
+add   si, ax
 add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   al, byte ptr es:[di]
+mov   al, byte ptr es:[si]
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si + 3], al
+stos  BYTE PTR es:[di]       ;
 
 mov   al, dh
-mov   di, bx
+mov   si, bx
 and   al, 3fh
-and   di, 0FC0h
+and   si, 0FC0h
 CBW  
-add   ax, di
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+add   ax, si
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
 mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
 xor   ah, ah
 mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
+add   si, ax
 add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   al, byte ptr es:[di]
+mov   al, byte ptr es:[si]
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si + 4], al
+stos  BYTE PTR es:[di]       ;
 
 mov   al, dh
-mov   di, bx
+mov   si, bx
 and   al, 3fh
-and   di, 0FC0h
+and   si, 0FC0h
 CBW  
-add   ax, di
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+add   ax, si
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
 mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
 xor   ah, ah
 mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-mov   al, byte ptr es:[di]
+add   si, ax
+mov   al, byte ptr es:[si]
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
-mov   byte ptr es:[si + 5], al
-add   dx, word ptr [bp - 6]     ; add x_adder
-
-mov   al, dh
-and   al, 3fh
-CBW  
-add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   cx, ax
-mov   ax, bx
-and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
-add   ax, cx
-mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
-xor   ah, ah
-mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
-add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si + 6], al
-
-mov   al, dh
-and   al, 3fh
-CBW  
-add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   cx, ax
-mov   ax, bx
-and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
-add   ax, cx
-mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
-xor   ah, ah
-mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
-add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si + 7], al
-
-mov   al, dh
-and   al, 3fh
-CBW  
-add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   cx, ax
-mov   ax, bx
-and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
-add   ax, cx
-mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
-xor   ah, ah
-mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-add   dx, word ptr [bp - 6]     ; add x_adder
-mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
-add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   byte ptr es:[si + 8], al
-
-mov   al, dh
-mov   di, bx
-and   al, 3fh
-and   di, 0FC0h
-CBW  
-add   ax, di
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
-mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
-xor   ah, ah
-mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
-add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si + 9], al
-
-mov   al, dh
-mov   di, bx
-and   al, 3fh
-and   di, 0FC0h
-CBW  
-add   ax, di
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
-mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
-xor   ah, ah
-mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
-add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si + 0ah], al
-
-mov   al, dh
-mov   di, bx
-and   al, 3fh
-and   di, 0FC0h
-CBW  
-add   ax, di
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
-mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
-xor   ah, ah
-mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   es, word ptr [bp - 12h]	; retrieve destview segment
-mov   byte ptr es:[si + 0bh], al
+stos  BYTE PTR es:[di]       ;
 add   dx, word ptr [bp - 6]     ; add x_adder
 
 mov   al, dh
@@ -2674,59 +2551,182 @@ add   bx, word ptr [bp - 18h]    ; add y_adder
 mov   cx, ax
 mov   ax, bx
 and   ax, 0FC0h
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
 mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
 xor   ah, ah
 mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-add   dx, word ptr [bp - 6]     ; add x_adder
-mov   al, byte ptr es:[di]
+add   si, ax
+mov   al, byte ptr es:[si]
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
-add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   byte ptr es:[si + 0ch], al
+add   dx, word ptr [bp - 6]     ; add x_adder
+stos  BYTE PTR es:[di]       ;
 
 mov   al, dh
-mov   di, bx
 and   al, 3fh
-and   di, 0FC0h
 CBW  
-add   ax, di
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+add   bx, word ptr [bp - 18h]    ; add y_adder
+mov   cx, ax
+mov   ax, bx
+and   ax, 0FC0h
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
+add   ax, cx
 mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
 xor   ah, ah
 mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   al, byte ptr es:[di]
+add   si, ax
+mov   al, byte ptr es:[si]
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si + 0dh], al
+stos  BYTE PTR es:[di]       ;
 
 mov   al, dh
-mov   di, bx
 and   al, 3fh
-and   di, 0FC0h
 CBW  
-add   ax, di
-mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
+add   bx, word ptr [bp - 18h]    ; add y_adder
+mov   cx, ax
+mov   ax, bx
+and   ax, 0FC0h
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
+add   ax, cx
 mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
-add   di, ax
-mov   al, byte ptr es:[di]
-mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
 xor   ah, ah
 mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
-add   di, ax
-mov   al, byte ptr es:[di]
+add   si, ax
+add   dx, word ptr [bp - 6]     ; add x_adder
+mov   al, byte ptr es:[si]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+add   bx, word ptr [bp - 18h]    ; add y_adder
+stos  BYTE PTR es:[di]       ;
+
+mov   al, dh
+mov   si, bx
+and   al, 3fh
+and   si, 0FC0h
+CBW  
+add   ax, si
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
+xor   ah, ah
+mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
+add   si, ax
+add   bx, word ptr [bp - 18h]    ; add y_adder
+mov   al, byte ptr es:[si]
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
 add   dx, word ptr [bp - 6]     ; add x_adder
-mov   byte ptr es:[si + 0eh], al
+stos  BYTE PTR es:[di]       ;
+
+mov   al, dh
+mov   si, bx
+and   al, 3fh
+and   si, 0FC0h
+CBW  
+add   ax, si
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
+xor   ah, ah
+mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
+add   si, ax
+add   bx, word ptr [bp - 18h]    ; add y_adder
+mov   al, byte ptr es:[si]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+add   dx, word ptr [bp - 6]     ; add x_adder
+stos  BYTE PTR es:[di]       ;
+
+mov   al, dh
+mov   si, bx
+and   al, 3fh
+and   si, 0FC0h
+CBW  
+add   ax, si
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
+xor   ah, ah
+mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+stos  BYTE PTR es:[di]       ;
+add   dx, word ptr [bp - 6]     ; add x_adder
+
+mov   al, dh
+and   al, 3fh
+CBW  
+add   bx, word ptr [bp - 18h]    ; add y_adder
+mov   cx, ax
+mov   ax, bx
+and   ax, 0FC0h
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
+add   ax, cx
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
+xor   ah, ah
+mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
+add   si, ax
+add   dx, word ptr [bp - 6]     ; add x_adder
+mov   al, byte ptr es:[si]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+add   bx, word ptr [bp - 18h]    ; add y_adder
+stos  BYTE PTR es:[di]       ;
+
+mov   al, dh
+mov   si, bx
+and   al, 3fh
+and   si, 0FC0h
+CBW  
+add   ax, si
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
+xor   ah, ah
+mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
+add   si, ax
+add   bx, word ptr [bp - 18h]    ; add y_adder
+mov   al, byte ptr es:[si]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+add   dx, word ptr [bp - 6]     ; add x_adder
+stos  BYTE PTR es:[di]       ;
+
+mov   al, dh
+mov   si, bx
+and   al, 3fh
+and   si, 0FC0h
+CBW  
+add   ax, si
+mov   si, word ptr [bp - 20h]	;  retrieve ds_source_offset
+mov   es, word ptr [bp - 0ch]	; retrieve ds_source_segment
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   si, word ptr [bp - 2]		; retrieve ds_colormap offset
+xor   ah, ah
+mov   es, word ptr [bp - 16h]	; retrieve ds_colormap segment
+add   si, ax
+mov   al, byte ptr es:[si]
+mov   es, word ptr [bp - 12h]	; retrieve destview segment
+add   dx, word ptr [bp - 6]     ; add x_adder
+stos  BYTE PTR es:[di]       ;
 
 mov   al, dh
 add   bx, word ptr [bp - 18h]    ; add y_adder
@@ -2748,13 +2748,12 @@ mov   al, byte ptr es:[bx]
 
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
 sub   word ptr [bp - 4], 10h    ; subtract 16 from count
-mov   byte ptr es:[si + 0fh], al  ; write one more pixel 
+stos  BYTE PTR es:[di]       ;
 
 
 ;			xfrac.w += x32step;
 
 mov   ax, word ptr [bp - 10h]   ; load low 16 bits of x32step
-add   si, 10h					; add 16 to offset 
 add   word ptr [bp - 8], ax		; add low 16 bits of xstep into low 16 bits xfrac
 mov   ax, word ptr [bp - 0eh]	; load high 16 bits of x32step into ax
 adc   word ptr [bp - 1ah], ax   ; add with carry into high 16 bits of xfrac
@@ -2796,32 +2795,31 @@ do_last_15_unroll_loop:
 
 xor   ah, ah
 mov   al, dh
-mov   di, bx
+mov   si, bx
 and   al, 3fh
-and   di, 0fc0h
+and   si, 0fc0h
 ;CBW  
 dec   word ptr [bp - 4]
-add   di, ax
-mov   es, word ptr [_ds_source_segment] 		; es:di is ds_source
-mov   al, byte ptr es:[di]
+add   si, ax
+mov   es, word ptr [_ds_source_segment] 		; es:si is ds_source
+mov   al, byte ptr es:[si]
 
 
 
 ;mov   es, word ptr [_ds_colormap_segment + 2]
-;mov   di, ax
-;mov   al, byte ptr es:[di]
+;mov   si, ax
+;mov   al, byte ptr es:[si]
 
-mov   di, 0fc0h
-xchg  bx, di
+mov   si, 0fc0h
+xchg  bx, si
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
-xchg  bx, di
+xchg  bx, si
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
 
 
 add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   byte ptr es:[si], al  ;	; store pixel on screen
-inc   si
+stos  BYTE PTR es:[di]       ;  ;	; store pixel on screen
 cmp   word ptr [bp - 4], -1
 jne   do_last_15_unroll_loop
 do_span_loop:
