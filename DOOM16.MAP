@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/06/02 18:18:37
+Created on:       24/06/02 20:21:16
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -74,7 +74,7 @@ p_tick_TEXT            CODE           AUTO           09f8:cbd0       00000242
 p_user_TEXT            CODE           AUTO           09f8:ce20       00000698
 r_bsp_TEXT             CODE           AUTO           1744:0000       00000821
 r_data_TEXT            CODE           AUTO           1744:0830       000011a1
-PLANAR_TEXT            CODE           AUTO           1744:19d2       00001140
+PLANAR_TEXT            CODE           AUTO           1744:19d2       00001145
 r_draw_TEXT            CODE           AUTO           1744:2b20       000005eb
 r_main_TEXT            CODE           AUTO           1744:3110       000009dc
 r_plane_TEXT           CODE           AUTO           1744:3af0       000009d8
@@ -1786,4 +1786,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028c60 (167008.)
 Entry point address: 1e9c:23d2
-Link time: 00:02.11
+Link time: 00:00.49
