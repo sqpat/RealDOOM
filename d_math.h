@@ -27,6 +27,7 @@ extern int16_t lightmult48lookup[16];
 extern int16_t lightshift7lookup[16];
 extern uint16_t pageoffsets[4];
 extern uint16_t MULT_4096[4];
+extern uint16_t MULT_256[4];
 extern uint16_t FLAT_CACHE_PAGE[4];
 extern uint8_t quality_port_lookup[12];
 

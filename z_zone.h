@@ -89,7 +89,8 @@ void __far Z_QuickMapUnmapAll();
 
 #define RENDER_7800_PAGE                            FIRST_RENDER_LOGICAL_PAGE + 9
 #define RENDER_7C00_PAGE                            FIRST_RENDER_LOGICAL_PAGE + 10
-#define PHYSICS_RENDER_6C00_PAGE                    15
+#define PHYSICS_RENDER_6800_PAGE                    14
+//#define PHYSICS_RENDER_6C00_PAGE                    15
 //#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
 #define EMS_VISPLANE_EXTRA_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5
 #define FIRST_VISPLANE_PAGE							FIRST_RENDER_LOGICAL_PAGE + 5

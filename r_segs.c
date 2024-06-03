@@ -331,6 +331,9 @@ void __near R_RenderSegLoop (void)
 				dc_source = R_GetColumn(midtexture,texturecolumn);
 
 				//I_Error("A %Fp  %Fp %Fp", R_DrawColumnPrepCall, R_DrawColumn, R_DrawColumnPrep);
+				// 6A42:0B6A
+				// 1CA4:19d2 
+				// 1CA4:253C
 				R_DrawColumnPrepCall(0);				
 
 

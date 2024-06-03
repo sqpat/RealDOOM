@@ -120,7 +120,8 @@ void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
     ds_yfrac = -viewy.w - FixedMulTrig(finesine[angle], length );
 
 	if (fixedcolormap) {
-		ds_colormap = MK_FP(colormapssegment, fixedcolormap * 256);
+		ds_colormap_segment = colormapssegment;
+		ds_colormap_index = fixedcolormap;
 
 	}
 	else {
@@ -130,7 +131,9 @@ void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 			index = MAXLIGHTZ - 1;
 		}
 
-		ds_colormap = MK_FP(colormapssegment, planezlight[index]);
+		ds_colormap_segment = colormapssegment;
+		ds_colormap_index = (planezlight[index]) >> 8;
+
 	}
 
 	ds_y = y;
@@ -138,8 +141,37 @@ void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 	ds_x2 = x2;
 
 	// high or low detail
-	dc_yl_lookup_val = dc_yl_lookup[ds_y];
-	spanfunc();
+ 
+    // seg diff 05b4
+	// offset dicc 5b40
+	// spanfunc  6aa0
+	// colormaps 6cec
+
+
+	// 6EA0:0000
+
+	// need to remap this? spanfunc should be after colormaps or we cant push IP forward to the func.
+	// colormaps will be 6c00 page
+	// span will be 6800 page
+
+
+
+/*
+	7000:0000
+	0
+	0
+	colormaps_spanfunc_off_difference: 24c0
+	..
+	..
+	..
+	;7000:0000 (?)
+	6CEC:24C0
+	6aa0:0000
+
+
+*/
+	//spanfunc();
+	R_DrawSpanPrep();
 }
 
 extern byte __far * ceiltop;
@@ -398,7 +430,6 @@ void __near R_DrawPlanes (void) {
 	int16_t effectivepagenumber = 0;
 	uint8_t usedflatindex;
 	boolean flatunloaded = false;
-	byte __far* src;
 	int16_t flatcacheindex = 0;
 	int16_t lastflatcacheindicesused[3] = {3, 2, 1}; // initialized so that allocation order is 0 1 2
 	uint16_t visplanesegment = 0x8400;
@@ -449,7 +480,7 @@ void __near R_DrawPlanes (void) {
 
 				if (dc_yl < dc_yh) {
 					// all sky textures are 256 wide, just need the 0xFF and
-					void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
+					void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 					uint8_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;
 					dc_x = x;
 
@@ -458,7 +489,9 @@ void __near R_DrawPlanes (void) {
 
 
 					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
-					R_DrawColumnPrepCall(0); 
+					R_DrawColumnPrepCall(0);
+					
+					 
 
 				}
 			}
@@ -534,7 +567,6 @@ void __near R_DrawPlanes (void) {
 
 		R_MarkCacheLRU(usedflatindex >> 2, 0, CACHETYPE_FLAT);
 		
-		src = MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]);
 
 		// load if necessary
 		if (flatunloaded){
@@ -545,11 +577,12 @@ void __near R_DrawPlanes (void) {
 			}
 #endif
 		 
-			W_CacheLumpNumDirect(firstflat + flattranslation[plheader->picnum], src);
+			W_CacheLumpNumDirect(firstflat + flattranslation[plheader->picnum], MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]));
 		}
 		
 		// regular flat
-		ds_source = src;
+		ds_source_segment = FLAT_CACHE_PAGE[flatcacheindex] + MULT_256[usedflatindex & 0x03];
+		ds_source =  MK_FP(ds_source_segment, 0);
 
 		// works but slow?
 		//ds_source = R_GetFlat(firstflat + flattranslation[plheader->picnum]);

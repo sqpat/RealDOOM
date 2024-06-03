@@ -52,7 +52,8 @@ extern int16_t		ds_y;
 extern int16_t		ds_x1;
 extern int16_t		ds_x2;
 
-extern lighttable_t __far*	ds_colormap;
+extern uint16_t ds_colormap_segment;
+extern uint8_t ds_colormap_index;
 
 extern fixed_t		ds_xfrac;
 extern fixed_t		ds_yfrac;
@@ -61,6 +62,7 @@ extern fixed_t		ds_ystep;
 
 // start of a 64*64 tile image
  extern byte __far*		ds_source;
+ extern uint16_t ds_source_segment;
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.
@@ -69,6 +71,7 @@ void 	__far R_DrawSpan (void);
 // Low resolution mode, 160x200?
 void __far 	R_DrawSpanLow (void);
 
+void __far R_DrawSpanPrep();
  
 
 // Rendering function.

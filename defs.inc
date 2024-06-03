@@ -50,12 +50,12 @@ EXTRN	_dc_texturemid:DWORD
 EXTRN	_ds_y:WORD
 EXTRN	_ds_x1:WORD
 EXTRN	_ds_x2:WORD
-EXTRN	_ds_colormap:DWORD
 EXTRN	_ds_xfrac:DWORD
 EXTRN	_ds_yfrac:DWORD
 EXTRN	_ds_xstep:DWORD
 EXTRN	_ds_ystep:DWORD
 EXTRN	_ds_source:DWORD
+EXTRN   _ds_source_segment:WORD
 
 PUSHR	MACRO
 	pushad

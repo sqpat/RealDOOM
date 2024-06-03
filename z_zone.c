@@ -180,8 +180,10 @@ int16_t pageswapargs[total_pages] = {
 	SKY_TEXTURE_FIRST_PAGE + 1, PAGE_9400_OFFSET,
 	SKY_TEXTURE_FIRST_PAGE + 2, PAGE_9800_OFFSET,
 	
-	PALETTE_LOGICAL_PAGE,       PAGE_6800_OFFSET,      // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused. 
+	PALETTE_LOGICAL_PAGE,       PAGE_6C00_OFFSET,      // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused. 
 														// we use the 6k or so that was unused in the palette page
+	//PHYSICS_RENDER_6800_PAGE,     PAGE_6800_OFFSET,      // remap colormaps to be before drawspan code
+														
 
 
 	// flat cache
@@ -190,10 +192,10 @@ int16_t pageswapargs[total_pages] = {
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 2, PAGE_7800_OFFSET,
 	FIRST_FLAT_CACHE_LOGICAL_PAGE + 3, PAGE_7C00_OFFSET,
 
-	// flat cache undo   NOTE: we just call it with six params to set everything up for sprites
+	// flat cache undo   NOTE: we just call it with seven params to set everything up for sprites
 	RENDER_7800_PAGE, PAGE_7800_OFFSET,
 	RENDER_7C00_PAGE, PAGE_7C00_OFFSET,
-	PHYSICS_RENDER_6C00_PAGE, PAGE_8C00_OFFSET, // put colormaps where vissprites used to be?
+	PHYSICS_RENDER_6800_PAGE, PAGE_8C00_OFFSET, // put colormaps where vissprites used to be?
 
 	// sprite cache
 	FIRST_SPRITE_CACHE_LOGICAL_PAGE + 0, PAGE_6800_OFFSET,

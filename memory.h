@@ -445,35 +445,33 @@ blockmaplump_plus4  76E4:0008
 #define size_colormaps        ((33 * 256))
 
 
-#define mobjposlist           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(0x68000000, 0))
-#define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(mobjposlist , size_mobjposlist))
-#define jump_lookup           ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps   , size_colormaps))
-#define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(jump_lookup , size_jump_lookup))
-#define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup, size_dc_yl_lookup))
+#define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x68000000            , 0))
+#define jump_lookup           ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps             , size_colormaps))
+#define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(jump_lookup           , size_jump_lookup))
+#define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
+#define mobjposlist           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
 
 
 #define R_DrawColumnAddr          ((void    (__far *)(void))  (colfunc_function_area))
 //#define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
 
 //6F2E
-#define colfunc_segment       ((uint16_t) ((int32_t)colfunc_function_area >> 16))
-#define colfunc_segment_high  ((uint16_t) (colfunc_segment           - 0x6C00 + 0x8C00))
+#define colfunc_segment        ((uint16_t) ((int32_t)colfunc_function_area >> 16))
+#define colfunc_segment_high   ((uint16_t) (colfunc_segment           - 0x6800 + 0x8C00))
 
 
-
-#define jump_lookup_high      ((uint16_t __far*)  (((int32_t)jump_lookup)       - 0x6C000000 + 0x8C000000))
-#define dc_yl_lookup_high     ((uint16_t  __far*) (((int32_t)dc_yl_lookup)   - 0x6C000000 + 0x8C000000))
+#define jump_lookup_high      ((uint16_t __far*)  (((int32_t)jump_lookup)       - 0x68000000 + 0x8C000000))
+#define dc_yl_lookup_high     ((uint16_t  __far*) (((int32_t)dc_yl_lookup)      - 0x68000000 + 0x8C000000))
 
 
 //6D8A
 #define colormapssegment      ((uint16_t) ((int32_t)colormaps >> 16))
-
-#define colormaps_high_seg_diff  ((uint16_t)0x8C00 - 0x6C00)
+#define colormaps_high_seg_diff  ((uint16_t)0x8C00 - 0x6800)
 
 // used in sprite render, this has been remapped to 8400 page
 // 852D
-#define colormapssegment_high  ((uint16_t)             (colormapssegment           - 0x6C00 + 0x8C00))
-#define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x6C000000 + 0x8C000000))
+#define colormapssegment_high  ((uint16_t)             (colormapssegment           - 0x6800 + 0x8C00))
+#define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x68000000 + 0x8C000000))
 
 #define colormaps_colfunc_seg_difference (colfunc_segment - colormapssegment)
 #define colormaps_colfunc_off_difference (colormaps_colfunc_seg_difference << 4)
@@ -484,12 +482,21 @@ blockmaplump_plus4  76E4:0008
 
 
 
+ 
+
+
 
 //#define palettebytes_size  10752
 //0x2A00
 // 5632 bytes free
-#define spanfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(0x68000000, palettebytes_size))
+
+#define spanfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(0x6C000000, palettebytes_size))
 #define R_DrawSpanAddr         ((void    (__far *)(void))  (spanfunc_function_area))
+#define spanfunc_segment       ((uint16_t) ((int32_t)spanfunc_function_area >> 16))
+
+#define colormaps_spanfunc_seg_difference (spanfunc_segment - colormapssegment)
+#define colormaps_spanfunc_off_difference (colormaps_spanfunc_seg_difference << 4)
+
 
 // used for loading in while palette already active
 #define spanfunc_function_area_9000 ((byte  __far*)             MAKE_FULL_SEGMENT(0x90000000, palettebytes_size))
@@ -503,11 +510,11 @@ blockmaplump_plus4  76E4:0008
 draw code can be paged into 6800 area in plane or sprite code because mobjposlist no longer needed
 
 
-mobjposlist           6800:0000
-colormaps             6CEC:0000
-jump_lookup           6EFC:0000
-dc_yl_lookup          6F15:0000
-colfunc_function_area 6F2E:0000
+colormaps             6800:0000
+jump_lookup           6A10:0000
+dc_yl_lookup          6A29:0000
+colfunc_function_area 6A42:0000
+mobjposlist           6B14:0000
 [empty]               7000:0000
 
 

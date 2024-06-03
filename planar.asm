@@ -32,12 +32,18 @@ EXTRN	_dc_source:DWORD
 EXTRN	_dc_colormap_index:BYTE
 EXTRN	_dc_colormap_segment:WORD
 
+EXTRN   _ds_colormap_index:BYTE
+EXTRN   _ds_colormap_segment:WORD
+
+
 EXTRN   _detailshift:BYTE
 EXTRN   _quality_port_lookup:BYTE
 
 
 EXTRN	_ds_xstep:DWORD
 EXTRN	_ds_ystep:DWORD
+
+
 
 
 ;=================================
@@ -2000,7 +2006,7 @@ push  di
 push  bp
 mov   bp, sp                                 ;
 sub   sp, 4                                  ; need stack space for dynamic farcall
-mov   si, 6f15h                              ; store this segment
+mov   si, 6A29h                              ; store this segment
 add   si, ax                                 ; add the offset to it already
 mov   es, si                                 ; store this segment for now, with offset pre-added
 mov   di, ax                                 ; store argument (offset)
@@ -2030,13 +2036,13 @@ add   bx, bx                                 ; double dc_yl to get a word offset
 mov   si, ax                                 ;
 mov   bx, word ptr es:[bx]
 add   si, ax                                 ; double count (dc_yh - dc_yl) to get a word offset
-mov   ax, 6efch                              ; segment of dc_yl_lookup array
+mov   ax, 6A10h                              ; segment of dc_yl_lookup array
 add   ax, di                                 ; add argument offset to the ax address
 mov   word ptr [_dc_yl_lookup_val], bx       ; store pre-calculated dc_yl * 80
 mov   es, ax
 mov   bx, 074h                               ; location of jump relative instruction's immediate
 mov   ax, word ptr es:[si]                   ; 
-add   di, 6f2eh                              ; R_DrawColumn segment with 0 indexed function offset
+add   di, 6A42h                              ; R_DrawColumn segment with 0 indexed function offset
 mov   es, di                                 ; set seg
 mov   word ptr es:[bx], ax                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
 mov   al, byte ptr [_dc_colormap_index]      ; lookup colormap index
@@ -2106,8 +2112,8 @@ PUBLIC  R_DrawSpan_
 ; 02 ds_colormap offset
 ; 04 count (inner iterator)
 ; 06 x_adder (?)
-; 08 x_frac.w low bits copy
-; 0A y_frac.w high bits copy
+; 08 x_frac.w low bits copy 
+; 0A y_frac.w high bits
 ; 0C ds_source_segment
 ; 0E x32step high 16 bits
 ; 10 x32step low 16 bits
@@ -2119,7 +2125,7 @@ PUBLIC  R_DrawSpan_
 ; 1C i (outer loop counter)
 ; 1E y32step high 16 bits
 ; 20 ds_source_offset
-; 22 x_frac.w low bits
+; 22 x_frac.w low bits copy 
 ; 24 y_frac.w low bits
 ; 26 x_frac.w high bits
 
@@ -2135,37 +2141,55 @@ sub   sp, 28h                           ; setup stack
 cli 									; disable interrupts
 
 ; fixed_t x32step = (ds_xstep << 6);
-	
+
 mov   ax, word ptr [_ds_xstep]          ; dx:ax is ds_xstep
 mov   dx, word ptr [_ds_xstep + 2]      
-mov   cx, 6								; ready shift6
-shl   dx, cl							; shift dx left six
-rol   ax, cl							; rol ax left six
-xor   dx, ax							; mov ax bits into dx
-and   al, 0C0h							; cancel out ax low bits
-xor   dx, ax							; ???
+
+; dx:ax	shift 6 left by shifting right 2 and moving bytes
+
+ror dx, 1
+rcr ax, 1
+rcr bh, 1   ; spillover into bh
+ror dx, 1
+rcr ax, 1
+rcr bh, 1
+mov dh, dl
+mov dl, ah
+mov ah, al
+mov al, bh   ; spillover back into al
+and al, 0C0h  ; keep two high bits
+
+
+
 mov   word ptr [bp - 10h], ax			;  move x32step low  bits into bp - 10h
 mov   word ptr [bp - 0Eh], dx			;  move x32step high bits into bp - 0Eh
-
 
 ;	fixed_t y32step = (ds_ystep << 6);
 
 mov   ax, word ptr [_ds_ystep]			; same process as above
 mov   dx, word ptr [_ds_ystep + 2]
-; mov   cl, 6							; this is already 6.
-shl   dx, cl
-rol   ax, cl
-xor   dx, ax
-and   al, 0C0h
-xor   dx, ax							; ???
-mov   word ptr [bp - 1Ch], 0			;  move 0  into i (outer loop counter)
+
+; dx:ax	shift 6 left by shifting right 2 and moving bytes
+
+ror dx, 1
+rcr ax, 1
+rcr bh, 1   ; spillover into bh
+ror dx, 1
+rcr ax, 1
+rcr bh, 1
+mov dh, dl
+mov dl, ah
+mov ah, al
+mov al, bh   ; spillover back into al
+and al, 0C0h  ; keep two high bits
+
 mov   word ptr [bp - 14h], ax			;  move y32step low  bits into bp - 14h
 mov   word ptr [bp - 1Eh], dx			;  move y32step high bits into bp - 1Eh
 
-
 ; main loop start (i = 0, 1, 2, 3)
 
-mov   cl, byte ptr [bp - 1Ch]		; ch was 0 above
+xor   cx, cx						; zero out cx as loopcount
+mov   word ptr [bp - 1Ch], 0			;  move 0  into i (outer loop counter)
 span_i_loop_repeat:
 mov   ax, 1
 mov   dx, 3c5h						; outp 1 << i
@@ -2181,11 +2205,14 @@ mov   ax, word ptr [_ds_x1]
 mov   di, ax		
 sub   ax, cx		; ax = ds_x1 - i
 CWD   								; 
-shl   dx, 2							; ??? why shift left. its either 0000 or FFFF
+shl   dx, 1							; ??? why shift left. its either 0000 or FFFF
+shl   dx, 1							; ??? why shift left. its either 0000 or FFFF
 sbb   ax, dx
-sar   ax, 2
+sar   ax, 1
+sar   ax, 1
 mov   bx, ax						; bx is dsp_x1
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 add   ax, cx						; ax = dsp_x1 * 4 + i...
 cmp   ax, di						; if check..
 jge   dsp_x1_calculated
@@ -2201,9 +2228,11 @@ dsp_x1_calculated:
 mov   ax, word ptr [_ds_x2]		; grab ds_x2 into ax
 sub   ax, cx					; subtract i i
 CWD   
-shl   dx, 2						; ??? sign checking shenanigans
+shl   dx, 1						; ??? sign checking shenanigans
+shl   dx, 1						; ??? sign checking shenanigans
 sbb   ax, dx					;
-sar   ax, 2						; divide by 4 to get dsp_x2
+sar   ax, 1						; divide by 4 to get dsp_x2
+sar   ax, 1						; divide by 4 to get dsp_x2
 sub   ax, bx					; sub dsp_x1, ax now equals count
 mov   word ptr [bp - 4], ax		; store count in bp-4.
 test  ax, ax					; if countp <= 0 continue
@@ -2225,7 +2254,8 @@ mov   si, ax							; si now has destview offset + ds_y * 80 (missing add of dsp_
 ;		prt = dsp_x1 * 4 - ds_x1 + i;
 ;       note this will be 16 bit value with sign bits extending to 32 bit DX after CWD
 mov   ax, bx							; bx contains dsp_x1, 
-shl   ax, 2								; ax contains dsp_x1 * 4..
+shl   ax, 1								; ax contains dsp_x1 * 4..
+shl   ax, 1								; ax contains dsp_x1 * 4..
 sub   ax, di							; ax contains dsp_x1 * 4 - ds_x1
 add   ax, cx 							; add i. ax is equal to prt
 
@@ -2397,11 +2427,12 @@ and   ax, 0FC0h
 mov   di, word ptr [bp - 20h]	;  retrieve ds_source_offset
 add   ax, cx
 add   di, ax
-mov   ax, word ptr [_ds_colormap]
+mov   ah, byte ptr [_ds_colormap_index]
+xor   al, al
 mov   cl, byte ptr es:[di]
-mov   word ptr [bp - 2], ax
+mov   word ptr [bp - 2], ax		; store colormap index
 xor   ch, ch
-mov   ax, word ptr [_ds_colormap + 2]
+mov   ax, word ptr [_ds_colormap_segment]
 mov   di, word ptr [bp - 2]		; retrieve ds_colormap offset
 mov   es, ax
 add   di, cx
@@ -2763,25 +2794,33 @@ jl    do_last_15_unroll_loop
 jmp   do_16_unroll_loop
 do_last_15_unroll_loop:
 
+xor   ah, ah
 mov   al, dh
 mov   di, bx
 and   al, 3fh
 and   di, 0fc0h
-CBW  
+;CBW  
 dec   word ptr [bp - 4]
-add   ax, di
-les   di,  [_ds_source] 		; es:di is ds_source
-add   di, ax					; add 
-mov   al, byte ptr es:[di]
-mov   di, word ptr [_ds_colormap]
-xor   ah, ah
-mov   es, word ptr [_ds_colormap + 2]
 add   di, ax
-add   dx, word ptr [bp - 6]     ; add x_adder
+mov   es, word ptr [_ds_source_segment] 		; es:di is ds_source
 mov   al, byte ptr es:[di]
+
+
+
+;mov   es, word ptr [_ds_colormap_segment + 2]
+;mov   di, ax
+;mov   al, byte ptr es:[di]
+
+mov   di, 0fc0h
+xchg  bx, di
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+xchg  bx, di
 mov   es, word ptr [bp - 12h]	; retrieve destview segment
+
+
+add   dx, word ptr [bp - 6]     ; add x_adder
 add   bx, word ptr [bp - 18h]    ; add y_adder
-mov   byte ptr es:[si], al  ;
+mov   byte ptr es:[si], al  ;	; store pixel on screen
 inc   si
 cmp   word ptr [bp - 4], -1
 jne   do_last_15_unroll_loop

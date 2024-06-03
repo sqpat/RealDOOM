@@ -228,6 +228,50 @@ byte __far*			dc_source;
 // 
 extern int setval;
 
+
+
+void __far R_DrawSpanPrep(){
+
+	// desired bx offset is 0x0FC0  
+	// so subtracted segment would be 0xFC
+
+	uint16_t cs_source_offset = 0x0FC0;  // always 0
+	uint8_t  cs_source_segment_offset = 0xFC;  // always 0
+	// dont need to change ds at all.
+	
+	void (__far* dynamic_callfunc)(void);
+	//uint8_t count = ds_yh-ds_yl;	
+	
+	dc_yl_lookup_val = dc_yl_lookup[ds_y];
+
+	// modify the jump instruction based on count
+	//((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[count];
+
+	// todo add in the actual colormap?
+	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
+
+	if (ds_colormap_index){
+		uint16_t ds_colormap_offset = ds_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
+		uint16_t ds_colormap_shift4 = ds_colormap_index << 4;
+	 	
+		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset + ds_colormap_shift4;
+		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset - ds_colormap_offset;
+		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+	} else {
+		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset;
+		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset;
+		// todo we can do the fast version with no add al, bh once we find space for it.
+		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+	}
+// 0 121 
+	
+	// func location
+	dynamic_callfunc();
+}
+
+
 /*
 
 void __far R_DrawColumnPrep(uint16_t lookup_offset_difference){
@@ -889,8 +933,8 @@ int16_t                     ds_y;
 int16_t                     ds_x1;
 int16_t                     ds_x2;
 
-lighttable_t __far*           ds_colormap;
-//uint16_t*           ds_colormap;
+uint16_t				ds_colormap_segment;
+uint8_t					ds_colormap_index;
 
 fixed_t                 ds_xfrac;
 fixed_t                 ds_yfrac;
@@ -899,6 +943,7 @@ fixed_t                 ds_ystep;
 
 // start of a 64*64 tile image 
  byte __far*                   ds_source;
+uint16_t ds_source_segment;
 
 
 //
@@ -1181,6 +1226,27 @@ dsp_x1  =  0 -1 -2 -3
 		} while (countp--);
 	}
 }
+
+
+
+
+89 C8       mov   ax, cx
+21 D8       and   ax, bx
+80 E6 3F    and   dh, 0x3f
+00 F0       add   al, dh
+93          xchg  ax, bx
+8A 1F       mov   bl, byte ptr [bx]
+93          xchg  ax, bx
+;           mov   al, byte ptr [ax]
+;8a 04      mov   al, byte ptr [si]
+;8a 04      mov   al, byte ptr [di]
+
+2E D7       xlat  ;BYTE PTR cs:[bx]
+AA          stosb byte ptr es:[di], al
+01 FA       add   dx, di
+01 E9       add   cx, bp
+
+
 */
 
   
@@ -1228,7 +1294,7 @@ void __far R_DrawSpanLow(void)
 
 			// Lookup pixel from flat texture tile,
 			//  re-index using light/colormap.
-			*dest = ds_colormap[ds_source[spot]];
+			*dest = ((byte __far *)MK_FP(ds_colormap_segment, ds_colormap_index << 8))[ds_source[spot]];
 			dest++;
 			// Next step in u,v.
 			xfrac.w += ds_xstep * 2;

@@ -35,6 +35,7 @@ int16_t lightshift7lookup[16] = { 0,  128,  256, 384,
 uint16_t pageoffsets[4] = { 0x0000u, 0x4000u, 0x8000u, 0xc000u };
 
 uint16_t MULT_4096[4] = {0x0000u, 0x1000u, 0x2000u, 0x3000u};
+uint16_t MULT_256[4] = {0x0000u, 0x0100u, 0x0200u, 0x0300u};
 
 uint16_t FLAT_CACHE_PAGE[4] = { 0x7000, 0x7400, 0x7800, 0x7C00 };
 

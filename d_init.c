@@ -508,8 +508,11 @@ void __far D_DoomMain2(void)
 //	I_Error("", startaddr, endaddr, 0);
 	
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
+	I_Error("\ndone %Fp %Fp %Fp %Fp", jump_lookup, dc_yl_lookup, 
 	
-	//I_Error("\ndone %Fp %Fp %Fp, %Fp %Fp", dc_yl_lookup, jump_lookup, colfunc_function_area,  MAKE_FULL_SEGMENT(colfunc_function_area   , size_colfunc_function_area) , colormaps);
+	colfunc_function_area, mobjposlist
+	);
+*/	
 
 /*
 	FILE* fp = fopen("D_FILE.BIN", "wb"); 
