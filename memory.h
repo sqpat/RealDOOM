@@ -432,7 +432,7 @@ blockmaplump_plus4  76E4:0008
 
 
 #define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))
-#define size_jump_lookup           (sizeof(uint16_t) * SCREENHEIGHT)
+#define size_colfunc_jump_lookup   (sizeof(uint16_t) * SCREENHEIGHT)
 #define size_dc_yl_lookup          (sizeof(uint16_t) * SCREENHEIGHT)
 #define size_colfunc_function_area 3360
 
@@ -446,8 +446,8 @@ blockmaplump_plus4  76E4:0008
 
 
 #define colormaps             ((lighttable_t  __far*)     MAKE_FULL_SEGMENT(0x68000000            , 0))
-#define jump_lookup           ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps             , size_colormaps))
-#define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(jump_lookup           , size_jump_lookup))
+#define colfunc_jump_lookup   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colormaps             , size_colormaps))
+#define dc_yl_lookup          ((uint16_t  __far*)         MAKE_FULL_SEGMENT(colfunc_jump_lookup   , size_colfunc_jump_lookup))
 #define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
 #define mobjposlist           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
 
@@ -460,8 +460,8 @@ blockmaplump_plus4  76E4:0008
 #define colfunc_segment_high   ((uint16_t) (colfunc_segment           - 0x6800 + 0x8C00))
 
 
-#define jump_lookup_high      ((uint16_t __far*)  (((int32_t)jump_lookup)       - 0x68000000 + 0x8C000000))
-#define dc_yl_lookup_high     ((uint16_t  __far*) (((int32_t)dc_yl_lookup)      - 0x68000000 + 0x8C000000))
+#define colfunc_jump_lookup_high ((uint16_t __far*)  (((int32_t)colfuncjump_lookup) - 0x68000000 + 0x8C000000))
+#define dc_yl_lookup_high        ((uint16_t  __far*) (((int32_t)dc_yl_lookup)       - 0x68000000 + 0x8C000000))
 
 
 //6D8A
@@ -485,11 +485,14 @@ blockmaplump_plus4  76E4:0008
  
 
 
-
+//#define spanfunc_function_offset  0x1000
+//#define size_spanfunc_jump_lookup 400
+#define size_spanfunc_jump_lookup (0x1000 + 400) 
 
 // spanfunc offset
-#define spanfunc_function_offset  0x1000
-#define spanfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(0x6C000000, spanfunc_function_offset))
+//#define spanfunc_jump_lookup   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(0x6C000000          , spanfunc_function_offset))
+//#define spanfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(spanfunc_jump_lookup, size_spanfunc_jump_lookup))
+#define spanfunc_function_area   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(0x6C000000          , size_spanfunc_jump_lookup))
 #define R_DrawSpanAddr         ((void    (__far *)(void))  (spanfunc_function_area))
 #define spanfunc_segment       ((uint16_t) ((int32_t)spanfunc_function_area >> 16))
 
@@ -508,7 +511,7 @@ draw code can be paged into 6800 area in plane or sprite code because mobjposlis
 
 
 colormaps             6800:0000
-jump_lookup           6A10:0000
+colfunc_jump_lookup   6A10:0000
 dc_yl_lookup          6A29:0000
 colfunc_function_area 6A42:0000
 mobjposlist           6B14:0000

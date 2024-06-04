@@ -248,7 +248,7 @@ void __far R_DrawSpanPrep(){
 	dc_yl_lookup_val = dc_yl_lookup[ds_y];
 
 	// modify the jump instruction based on count
-	//((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[count];
+	//((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = colfunc_jump_lookup[count];
 
 	// todo add in the actual colormap?
 	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
@@ -294,7 +294,7 @@ void __far R_DrawColumnPrep(uint16_t lookup_offset_difference){
 	dc_yl_lookup_val = dc_yl_lookup[dc_yl];   // precalculate dc_yl * 80
 
 	// modify the jump instruction based on count
-	((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = jump_lookup[count];
+	((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = colfunc_jump_lookup[count];
 
 	// todo add in the actual colormap?
 	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
@@ -342,8 +342,8 @@ void __far R_DrawColumnPrepHigh(){
 	//dc_yl_lookup_val = dc_yl_lookup[dc_yl];   // precalculate dc_yl * 80
 	
 	// modify the jump instruction based on count
-	((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = jump_lookup_high[count];
-	//((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = jump_lookup[count];
+	((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = colfunc_jump_lookup_high[count];
+	//((uint16_t __far *)MK_FP(colfunc_segment_high, draw_jump_inst_offset))[0] = colfunc_jump_lookup[count];
 
 	// todo add in the actual colormap?
 	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte

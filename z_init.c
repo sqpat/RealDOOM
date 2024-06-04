@@ -293,7 +293,7 @@ void __near Z_LoadBinaries() {
 
 
 	// 400
-	FAR_fread(jump_lookup,  2, SCREENHEIGHT * 2, fp);
+	FAR_fread(colfunc_jump_lookup,  2, SCREENHEIGHT * 2, fp);
 	// 400
 	//FAR_fread(dc_yl_lookup, 2, SCREENHEIGHT, fp);
 

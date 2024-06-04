@@ -508,7 +508,7 @@ void __far D_DoomMain2(void)
 	//I_Error("\n%Fp", spanfunc_function_area, 0 );
 /*	
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
-	I_Error("\ndone %Fp %Fp %Fp %Fp", jump_lookup, dc_yl_lookup, 
+	I_Error("\ndone %Fp %Fp %Fp %Fp", colfunc_jump_lookup, dc_yl_lookup, 
 	
 	colfunc_function_area, mobjposlist
 	);
@@ -516,7 +516,7 @@ void __far D_DoomMain2(void)
 
 /*
 	FILE* fp = fopen("D_FILE.BIN", "wb"); 
-	FAR_fwrite(jump_lookup, 2, 200, fp);
+	FAR_fwrite(colfunc_jump_lookup, 2, 200, fp);
 	FAR_fwrite(dc_yl_lookup, 2, 200, fp);
 	fclose(fp);
 	I_Error("done");
