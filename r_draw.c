@@ -62,6 +62,8 @@ int16_t		viewwindowx;
 int16_t		viewwindowy; 
 int16_t		viewwindowoffset;
 int16_t		sp_bp_safe_space[2];
+// used to index things via SS when bp and sp are in use (since ss == ds)
+int16_t		ss_variable_space[10];
 
 // Color tables for different players,
 //  translate a limited part to another
