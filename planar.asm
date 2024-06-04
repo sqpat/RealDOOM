@@ -2110,27 +2110,18 @@ PUBLIC  R_DrawSpan_
 
 ; stack vars
 
-; 00 unused?
-; 02 unused?
+; 00 unused
+; 02 i (outer loop counter)
 ; 04 count (inner iterator)
-; 06 x_adder (?)
-; 08 x_frac.w low bits copy 
-; 0A y_frac.w high bits
-; 0C unused
+; 06 x_frac.w low bits
+; 08 x_frac.w high bits 
+; 0A y_frac.w low bits
+; 0C y_frac.w high bits
 ; 0E x32step high 16 bits
 ; 10 x32step low 16 bits
-; 12 destview segment  [ can be removed ]
-; 14 y32step low 16 bits
-; 16 unused
-; 18 y_adder
-; 1A x_frac.w high bits copy
-; 1C i (outer loop counter)
-; 1E y32step high 16 bits
-; 20 ds_source_offset
-; 22 x_frac.w low bits copy 
-; 24 y_frac.w low bits
-; 26 x_frac.w high bits
-
+; 12 y32step low  16 bits
+; 14 y32step high 16 bits
+ 
 
 push  bx
 push  cx
@@ -2139,7 +2130,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 28h                           ; setup stack
+sub   sp, 16h                           ; setup stack
 cli 									; disable interrupts
 
 ; fixed_t x32step = (ds_xstep << 6);
@@ -2163,8 +2154,8 @@ and al, 0C0h  ; keep two high bits
 
 
 
-mov   word ptr [bp - 10h], ax			;  move x32step low  bits into bp - 10h
-mov   word ptr [bp - 0Eh], dx			;  move x32step high bits into bp - 0Eh
+mov   word ptr [bp - 0Eh], ax			;  move x32step low  bits into bp - 0Eh
+mov   word ptr [bp - 10h], dx			;  move x32step high bits into bp - 10h
 
 ;	fixed_t y32step = (ds_ystep << 6);
 
@@ -2185,13 +2176,13 @@ mov ah, al
 mov al, bh   ; spillover back into al
 and al, 0C0h  ; keep two high bits
 
-mov   word ptr [bp - 14h], ax			;  move y32step low  bits into bp - 14h
-mov   word ptr [bp - 1Eh], dx			;  move y32step high bits into bp - 1Eh
+mov   word ptr [bp - 12h], ax			;  move y32step low  bits into bp - 12h
+mov   word ptr [bp - 14h], dx			;  move y32step high bits into bp - 14h
 
 ; main loop start (i = 0, 1, 2, 3)
 
 xor   cx, cx						; zero out cx as loopcount
-mov   word ptr [bp - 1Ch], 0			;  move 0  into i (outer loop counter)
+mov   word ptr [bp - 02h], 0			;  move 0  into i (outer loop counter)
 span_i_loop_repeat:
 mov   ax, 1
 mov   dx, 3c5h						; outp 1 << i
@@ -2311,15 +2302,13 @@ mov   dx, word ptr [_ds_xstep + 2]
 mov   bx, word ptr [_ds_xfrac]	; load _ds_xfrac
 mov   cx, es					; retrieve prt sign bits
 add   bx, ax					; ds_xfrac + ds_xstep * prt low bits
-mov   word ptr [bp - 22h], bx	; store low 16 bits of x_frac.w
-mov   word ptr [bp - 8], bx		; store low 16 bits of x_frac.w
+mov   word ptr [bp - 6h], bx		; store low 16 bits of x_frac.w
 mov   bx, si
 mov   ax, word ptr [_ds_xfrac + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
 adc   ax, dx
 
 mov   dx, word ptr [_ds_ystep + 2]
-mov   word ptr [bp - 26h], ax	; store high 16 bits of x_frac.w
-mov   word ptr [bp - 1ah], ax  ; store high 16 bits of x_frac.w
+mov   word ptr [bp - 8h], ax  ; store high 16 bits of x_frac.w
 mov   ax, word ptr [_ds_ystep]
 
 
@@ -2351,26 +2340,26 @@ mov   ax, word ptr [_ds_ystep]
 ; add 32 bits of ds_yfrac
 mov   bx, word ptr [_ds_yfrac]	; load ds_yfrac
 add   bx, ax					; create y_frac low bits...
-mov   word ptr [bp - 24h], bx	; store y_frac low bits
+mov   word ptr [bp - 0Ah], bx	; store y_frac low bits
 mov   si, word ptr [_ds_yfrac + 2]
 adc   si, dx
 
 ;	xfrac16.hu = xfrac.wu >> 8;
 
-mov   dx, word ptr [bp - 26h]   ;  load high 16 bits of x_frac.w
-mov   word ptr [bp - 0ah], si	;  store high bits of yfrac in bp - 0ah  
+mov   dx, word ptr [bp - 8h]   ;  load high 16 bits of x_frac.w
+mov   word ptr [bp - 0Ch], si	;  store high bits of yfrac in bp - 0Ch  
 mov   ax, si					;  copy to ax so we can byte manip
 
 ;	yfrac16.hu = yfrac.wu >> 10;
 
 mov bl, bh
-mov   ax, word ptr [bp - 0ah]  ; move high 16 bits of yfrac into ax
+mov   ax, word ptr [bp - 0Ch]  ; move high 16 bits of yfrac into ax
 mov bh, al   ; shift 8
 
 sar ah, 1    ; shift two more
 rcr bx, 1
 sar ah, 1
-mov   ax, word ptr [bp - 22h]	;  load low 16 bits of x_frac
+mov   ax, word ptr [bp - 6h]	;  load low 16 bits of x_frac
 rcr bx, 1    ; yfrac16 in bx
 
 
@@ -2401,7 +2390,6 @@ xor cx, cx
 
 
  
-mov   word ptr [bp - 6], ax	    ;  storing x_adder into bp - 6 (?)
 
 mov   word ptr [_sp_bp_safe_space], ax	; store x_adder
 
@@ -2412,7 +2400,6 @@ mov   ax, word ptr [_ds_ystep + 1]
 ; do loop setup here?
 
 mov   word ptr [_sp_bp_safe_space + 2], ax	; y_adder
-mov   word ptr [bp - 18h], ax	; y_adder in bp - 18h
 
 push ds
 
@@ -2633,8 +2620,6 @@ xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to
 stos  BYTE PTR es:[di]       ;
 
 
-
-
  
 
 ; restore stack
@@ -2651,37 +2636,37 @@ mov   bx, 0FC0h
 
 ; TODO this math
 
-sub   word ptr [bp - 4], 10h    ; subtract 16 from count
+sub   word ptr [bp - 04h], 10h    ; subtract 16 from count
 
 
 ;			xfrac.w += x32step;
 
-mov   ax, word ptr [bp - 10h]   ; load low 16 bits of x32step
-add   word ptr [bp - 8], ax		; add low 16 bits of xstep into low 16 bits xfrac
-mov   ax, word ptr [bp - 0eh]	; load high 16 bits of x32step into ax
-adc   word ptr [bp - 1ah], ax   ; add with carry into high 16 bits of xfrac
+mov   ax, word ptr [bp - 0Eh]   ; load low 16 bits of x32step
+add   word ptr [bp - 6h], ax		; add low 16 bits of xstep into low 16 bits xfrac
+mov   ax, word ptr [bp - 10h]	; load high 16 bits of x32step into ax
+adc   word ptr [bp - 8h], ax   ; add with carry into high 16 bits of xfrac
 
+mov   dx, word ptr [bp - 9h]   ; move high 16 bits of xfrac into dx
+;mov dh, dl
+;mov dl, ah					   ; updated xfrac16 into dx
 
 ; 			yfrac.w += y32step;
 
-mov   ax, word ptr [bp - 14h]   ; load low 16 bits of y32step
-mov   dx, word ptr [bp - 1ah]   ; move high 16 bits of xfrac into dx
-add   word ptr [bp - 24h], ax	; add low 16 bits of ystep into low 16 bits yfrac
-mov   ax, word ptr [bp - 1eh]   ; load high 16 bits of y32step 
-adc   word ptr [bp - 0ah], ax   ; add with carry into high 16 bits of yfrac
+mov   ax, word ptr [bp - 12h]   ; load low 16 bits of y32step
+add   word ptr [bp - 0Ah], ax	; add low 16 bits of ystep into low 16 bits yfrac
+mov   ax, word ptr [bp - 14h]   ; load high 16 bits of y32step 
+adc   word ptr [bp - 0Ch], ax   ; add with carry into high 16 bits of yfrac
 
 ;			xfrac16.hu = xfrac.wu >> 8;
 
-mov dh, dl
-mov dl, ah					   ; updated xfrac16 into dx
 
 ;			yfrac16.hu = yfrac.wu >> 10;
 
 
-mov   bx, word ptr [bp - 24h]  ; move low 16 bits of yfrac into bx
+mov   bx, word ptr [bp - 0Ah]  ; move low 16 bits of yfrac into bx
 
 mov bl, bh
-mov   ax, word ptr [bp - 0ah]  ; move high 16 bits of yfrac into ax
+mov   ax, word ptr [bp - 0Ch]  ; move high 16 bits of yfrac into ax
 mov bh, al   ; shift 8
 
 sar ah, 1    ; shift two more
@@ -2694,7 +2679,7 @@ mov   bx, 0FC0h
 xor   ah, ah
 
 
-cmp   word ptr [bp - 4], 10h
+cmp   word ptr [bp - 04h], 10h
 
 jl    do_last_15_unroll_loop
 jmp   do_16_unroll_loop
@@ -2711,12 +2696,12 @@ add   si, ax
 mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
-add   dx, word ptr [bp - 6]     ; add x_adder
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   dx, word ptr ss:[_sp_bp_safe_space]     ; add x_adder
+add   cx, word ptr ss:[_sp_bp_safe_space + 2]    ; add y_adder
 
 
-dec   word ptr [bp - 4]
-cmp   word ptr [bp - 4], -1
+dec   word ptr [bp - 04h]
+cmp   word ptr [bp - 04h], -1
 
 jne   do_last_15_unroll_loop
 
@@ -2724,11 +2709,11 @@ pop ds
 do_span_loop:
 
 xor   cx, cx
-mov   cl, byte ptr [bp - 1ch]
+mov   cl, byte ptr [bp - 02h]
 inc   cl						; increment i
 cmp   cl, 4	; loop if i < 4
 jge   span_i_loop_done
-mov   byte ptr [bp - 1Ch], cl		; ch was 0 or above. store result
+mov   byte ptr [bp - 02h], cl		; ch was 0 or above. store result
 
 jmp   span_i_loop_repeat
 span_i_loop_done:
