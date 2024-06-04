@@ -490,7 +490,7 @@ void __far D_DoomMain2(void)
 	int8_t          textbuffer[280]; // must be 276 to fit the 3 line titles
 	int8_t            title[128];
 	int8_t            wadfile[20];
-	#define DGROUP_SIZE 0x000036f0
+	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 /*
 
@@ -590,8 +590,9 @@ void __far D_DoomMain2(void)
 
 	if (M_CheckParm("-mem")){
 		segread(&sregs);
-		//I_Error("\npointer is %Fp %Fp %Fp", MK_FP(sregs.ds, DGROUP_SIZE), MK_FP(sregs.cs, &main), MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0));
-		DEBUG_PRINT("Bytes free %u", (baselowermemoryaddresssegment - (sregs.ds +( DGROUP_SIZE >> 4))) << 4);
+		//I_Error("\npointer is %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, DGROUP_SIZE), MK_FP(sregs.cs, &main), MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0), MK_FP(sregs.ss, 0));
+		// 
+		DEBUG_PRINT("Bytes free %u %FP", (baselowermemoryaddresssegment - (sregs.ds +( DGROUP_SIZE >> 4))) << 4, MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0));
 		exit(0);
 
 	}

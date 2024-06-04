@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/06/03 21:56:54
+Created on:       24/06/03 23:54:13
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -23,7 +23,7 @@ DGROUP                          250f:0000            00003a10
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-d_init_TEXT            CODE           AUTO           0000:0000       00000a99
+d_init_TEXT            CODE           AUTO           0000:0000       00000a9c
 st_init_TEXT           CODE           AUTO           0000:0aa0       00000247
 r_init_TEXT            CODE           AUTO           0000:0cf0       0000082a
 w_init_TEXT            CODE           AUTO           0000:1520       00000293
@@ -74,7 +74,7 @@ p_tick_TEXT            CODE           AUTO           09f8:cbd0       00000242
 p_user_TEXT            CODE           AUTO           09f8:ce20       00000698
 r_bsp_TEXT             CODE           AUTO           1744:0000       00000821
 r_data_TEXT            CODE           AUTO           1744:0830       000011a1
-PLANAR_TEXT            CODE           AUTO           1744:19d2       00000f5b
+PLANAR_TEXT            CODE           AUTO           1744:19d2       00000f56
 r_draw_TEXT            CODE           AUTO           1744:2930       00000651
 r_main_TEXT            CODE           AUTO           1744:2f90       000009dc
 r_plane_TEXT           CODE           AUTO           1744:3970       000009e6
@@ -90,8 +90,8 @@ _TEXT                  CODE           AUTO           1e85:1800       0000509c
 FAR_DATA               FAR_DATA       AUTO           250e:000c       00000000
 _NULL                  BEGDATA        DGROUP         250f:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         2511:0000       00000002
-CONST                  DATA           DGROUP         2511:0002       00000bce
-CONST2                 DATA           DGROUP         25ce:0000       00000116
+CONST                  DATA           DGROUP         2511:0002       00000bd2
+CONST2                 DATA           DGROUP         25ce:0004       00000116
 _DATA                  DATA           DGROUP         25e0:0000       00000cb2
 XIB                    DATA           DGROUP         26ab:0002       00000000
 XI                     DATA           DGROUP         26ab:0002       00000012
@@ -234,7 +234,7 @@ Module: i_sound.obj(C:\REALDOOM\i_sound.c)
 020f:070a*     I_SetChannels_
 020f:070a*     I_sndArbitrateCards_
 020f:070a*     I_UpdateSoundParams_
-250f:0bf0+     _snd_prefixen
+250f:0bf4+     _snd_prefixen
 250f:1a87      _snd_DesiredMusicDevice
 Module: d_main.obj(C:\REALDOOM\d_main.c)
 250f:1a88+     _olddb
@@ -1600,7 +1600,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(scnf.c)
 Module: C:\WATCOM\lib286\dos\clibm.lib(vsprintf.c)
 1e85:45b7      vsprintf_
 Module: C:\WATCOM\lib286\dos\clibm.lib(istable.c)
-250f:0bfc      __IsTable
+250f:0c00      __IsTable
 Module: C:\WATCOM\lib286\dos\clibm.lib(gfattdos.c)
 1e85:45d2      _dos_getfileattr_
 Module: C:\WATCOM\lib286\dos\clibm.lib(dosret.c)
@@ -1709,7 +1709,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(mbislead.c)
 Module: C:\WATCOM\lib286\dos\clibm.lib(mbtowc.c)
 1e85:5fa7      mbtowc_
 Module: C:\WATCOM\lib286\dos\clibm.lib(bits.c)
-250f:0cfe      __Bits
+250f:0d02      __Bits
 Module: C:\WATCOM\lib286\dos\clibm.lib(noefgfmt.c)
 250f:19b2      ___EFG_printf
 250f:19b6      ___EFG_scanf
@@ -1771,7 +1771,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(sbrk.c)
 1e85:681d*     sbrk_
 1e85:6821      __brk_
 Module: C:\WATCOM\lib286\dos\clibm.lib(alphabet.c)
-250f:0bca      ___Alphabet
+250f:0bce      ___Alphabet
 Module: C:\WATCOM\lib286\dos\clibm.lib(bfree.c)
 1e85:6877      _bfree_
 
@@ -1790,4 +1790,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028b00 (166656.)
 Entry point address: 1e85:23d2
-Link time: 00:02.81
+Link time: 00:00.50

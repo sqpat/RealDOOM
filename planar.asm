@@ -2423,27 +2423,22 @@ jge   do_16_unroll_loop			; if count >= 16 do loop
 jmp   do_last_15_unroll_loop	; do last 15 loop
 do_16_unroll_loop:
 
-mov   ax, word ptr [bp - 6]     ; add x_adder
-xchg  ax, sp
-mov   word ptr [bp - 2], ax     ; store sp
 
-;mov   ax, word ptr [bp - 18]    ; add y_adder
-;push  bp
-;xchg  bp, ax   ; y adder inoto bp
-;mov   ax, 0006h
-;xchg  sp, ax   ; 6h into sp (for push)
-;push  ax
-;xchg  ax, si    ; one byte op
-;xchg  ax, sp	; one byte op. ah is cleared because sp was 0004
+mov   si, word ptr [bp - 06h]    ; get x_adder
+mov   ax, word ptr [bp - 18h]    ; get y_adder
+push  bp
+xchg  bp, ax   ; y adder inoto bp
+;  NOTE this will change as DGROUP size changes... tricky... 
+; would be nice to have self modifying init code based on known dgroup or sp/bp size at runtime
+mov   ax, 2A52h  ; end(ish) of stack  
+xchg  sp, ax  
+push  ax
+mov   sp, si
 
 xor ah, ah
 
 
-mov   al, dh
-and   al, 3fh
-mov   si, cx
-and   si, bx
-add   si, ax
+
 
 ; 89 C8       mov   ax, cx
 ; 21 D8       and   ax, bx
@@ -2454,13 +2449,16 @@ add   si, ax
 ; alternate idea. one cycle slower and same byte count.
 ; cant we somehow make use of xchg and al, 3fh at the same time?
 
-
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
 mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2471,8 +2469,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2483,8 +2480,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2495,8 +2491,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2507,8 +2502,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2519,8 +2513,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2531,8 +2524,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2543,8 +2535,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2555,8 +2546,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2567,8 +2557,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2579,8 +2568,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2591,8 +2579,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2603,8 +2590,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2615,8 +2601,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2627,8 +2612,7 @@ mov   al, byte ptr ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
 add   dx, sp
-;add   cx, bp
-add   cx, word ptr [bp - 18h]    ; add y_adder
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2643,10 +2627,9 @@ stos  BYTE PTR es:[di]       ;
 
 
 ; restore stack
-;mov sp, 0004h
-;pop sp
-;pop bp
-mov sp,  word ptr [bp - 2]      ; retrieve sp
+mov sp, 2A50h
+pop sp
+pop bp
 
 
 
