@@ -355,8 +355,8 @@ void __near Z_LoadBinaries() {
 	FAR_fread(wigraphics, 1, 28 * 9, fp);
 	*/
 	
-	Z_QuickMapPalette();
-	FAR_memcpy((byte __far *)spanfunc_function_area_9000, 
+	Z_QuickMapRenderPlanes();
+	FAR_memcpy((byte __far *)spanfunc_function_area, 
 	(byte __far *)R_DrawSpan,
 	 (byte __far *)R_DrawSpanLow - (byte __far *)R_DrawSpan);
 	

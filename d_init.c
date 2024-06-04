@@ -504,9 +504,9 @@ void __far D_DoomMain2(void)
 	FAR_fwrite((byte __far *)R_DrawSpan, 1, (byte __far *)R_DrawSpanLow - (byte __far *)R_DrawSpan, fp);
 	fclose(fp);
     I_Error("\n done");
-		
-//	I_Error("", startaddr, endaddr, 0);
-	
+*/		
+	//I_Error("\n%Fp", spanfunc_function_area, 0 );
+/*	
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
 	I_Error("\ndone %Fp %Fp %Fp %Fp", jump_lookup, dc_yl_lookup, 
 	

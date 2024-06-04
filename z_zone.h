@@ -108,38 +108,38 @@ void __far Z_QuickMapUnmapAll();
 // 42
 #define SKY_TEXTURE_FIRST_PAGE                      PALETTE_LOGICAL_PAGE + 1
 // 45
-#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            SKY_TEXTURE_FIRST_PAGE + 3
-// 52
+#define DRAW_SPAN_CODE_LOGICAL_PAGE                 SKY_TEXTURE_FIRST_PAGE + 3
+// 46
+#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            DRAW_SPAN_CODE_LOGICAL_PAGE + 1
+// 53
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
-// 60
+// 61
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 64
+// 65
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 67
+// 68
 #define FIRST_PATCH_CACHE_LOGICAL_PAGE              FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_PATCH_CACHE_PAGES                       16
-// 83
+// 84
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES                        6
-// 89
+// 90
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 97
+// 98
 #define NUM_TEXTURE_PAGES                           8
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
-// 102
-#define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
 // 106
-#define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
+#define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
 // 110
+#define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
+// 114
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
-
-
-// 119
 #define NUM_SPRITE_CACHE_PAGES                      20
 
 // todo eventuall yjust include this in the spritecache area...
 //#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
+// 118
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
 // 116 in use currently (including page 0)
 

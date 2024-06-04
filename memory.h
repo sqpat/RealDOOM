@@ -486,11 +486,10 @@ blockmaplump_plus4  76E4:0008
 
 
 
-//#define palettebytes_size  10752
-//0x2A00
-// 5632 bytes free
 
-#define spanfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(0x6C000000, palettebytes_size))
+// spanfunc offset
+#define spanfunc_function_offset  0x1000
+#define spanfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(0x6C000000, spanfunc_function_offset))
 #define R_DrawSpanAddr         ((void    (__far *)(void))  (spanfunc_function_area))
 #define spanfunc_segment       ((uint16_t) ((int32_t)spanfunc_function_area >> 16))
 
@@ -498,8 +497,6 @@ blockmaplump_plus4  76E4:0008
 #define colormaps_spanfunc_off_difference (colormaps_spanfunc_seg_difference << 4)
 
 
-// used for loading in while palette already active
-#define spanfunc_function_area_9000 ((byte  __far*)             MAKE_FULL_SEGMENT(0x90000000, palettebytes_size))
 
 
 // planes change the 6800 page and remove 
@@ -648,6 +645,7 @@ This area used during intermission task
 #define palettebytes_size  10752
 #define palettebytes ((byte __far*) 0x90000000)
 // 10752 bytes / 16 = 672 or 2A0 for offset
+// 5632 bytes free for something else here. can combine a page somehow somewhere later
 
 // 38677
 

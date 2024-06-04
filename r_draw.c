@@ -61,6 +61,7 @@ int16_t		viewheight;
 int16_t		viewwindowx;
 int16_t		viewwindowy; 
 int16_t		viewwindowoffset;
+int16_t		sp_bp_safe_space[2];
 
 // Color tables for different players,
 //  translate a limited part to another
@@ -1230,21 +1231,23 @@ dsp_x1  =  0 -1 -2 -3
 
 
 
-89 C8       mov   ax, cx
-21 D8       and   ax, bx
-80 E6 3F    and   dh, 0x3f
-00 F0       add   al, dh
-93          xchg  ax, bx
-8A 1F       mov   bl, byte ptr [bx]
-93          xchg  ax, bx
-;           mov   al, byte ptr [ax]
-;8a 04      mov   al, byte ptr [si]
-;8a 04      mov   al, byte ptr [di]
+88 F0    mov   al, dh
+24 3F    and   al, 0x3f
+89 CE    mov   si, cx
+21 DE    and   si, bx
+01 C6    add   si, ax
+8A 04    mov   al, byte ptr ds:[si]
+2E D7    xlatb byte ptr cs:[bx], al
+AA       stosb byte ptr es:[di], al
+01 E2    add   dx, sp
+01 E9    add   cx, bp
 
-2E D7       xlat  ;BYTE PTR cs:[bx]
-AA          stosb byte ptr es:[di], al
-01 FA       add   dx, di
-01 E9       add   cx, bp
+19 bytes per loop
+then every 16 loop iters
+
+BC 50 2A    mov sp, 0x2a50
+5C          pop sp
+5D          pop bp
 
 
 */

@@ -43,6 +43,8 @@ EXTRN   _quality_port_lookup:BYTE
 EXTRN	_ds_xstep:DWORD
 EXTRN	_ds_ystep:DWORD
 
+EXTRN   _sp_bp_safe_space:WORD
+
 
 
 
@@ -2279,7 +2281,8 @@ mov   dx, word ptr [_ds_xstep + 2]
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
  		xchg    ax,bx           ; swap low(M1) and low(M2)
-        push    ax              ; save low(M2)
+        ; todo get rid of this push/pop..
+		push    ax              ; save low(M2)
         xchg    ax,dx           ; exchange low(M2) and high(M1)
         or      ax,ax           ; if high(M1) non-zero
         je skiphigh11
@@ -2398,8 +2401,9 @@ xor cx, cx
 
 
  
- 
 mov   word ptr [bp - 6], ax	    ;  storing x_adder into bp - 6 (?)
+
+mov   word ptr [_sp_bp_safe_space], ax	; store x_adder
 
 ;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
@@ -2407,13 +2411,15 @@ mov   ax, word ptr [_ds_ystep + 1]
 
 ; do loop setup here?
 
+mov   word ptr [_sp_bp_safe_space + 2], ax	; y_adder
+mov   word ptr [bp - 18h], ax	; y_adder in bp - 18h
+
 push ds
 
 
 mov   es, word ptr [_destview + 2]	; retrieve destview segment
 mov   si, word ptr [_ds_source_segment] 		; ds:si is ds_source
 mov   ds, si
-mov   word ptr [bp - 18h], ax	; y_adder in bp - 18h
 mov   cx, bx
 mov   bx, 0FC0h
 xor   ah, ah
@@ -2424,17 +2430,20 @@ jmp   do_last_15_unroll_loop	; do last 15 loop
 do_16_unroll_loop:
 
 
-mov   si, word ptr [bp - 06h]    ; get x_adder
-mov   ax, word ptr [bp - 18h]    ; get y_adder
-push  bp
-xchg  bp, ax   ; y adder inoto bp
-;  NOTE this will change as DGROUP size changes... tricky... 
-; would be nice to have self modifying init code based on known dgroup or sp/bp size at runtime
-mov   ax, 2A52h  ; end(ish) of stack  
-xchg  sp, ax  
-push  ax
-mov   sp, si
+ 
+; we have a safe memory space declared in near variable space to put sp/bp values
+; they meanwhile hold x_adder/y_adder and we juggle the two
+; due to openwatcom compilation, SS = DS so we can use SS as if it were DS to address the var safely
 
+; TODO: put all these temporary vars into SS so we dont have to restore sp/bp
+
+mov   bx, OFFSET _sp_bp_safe_space  ; 
+xchg  ss:[bx], sp             ;  store SP and load x_adder
+inc   bx
+inc   bx
+xchg  ss:[bx], bp			;   store BP and load y_adder
+
+mov   bx, 0FC0h
 xor ah, ah
 
 
@@ -2626,10 +2635,16 @@ stos  BYTE PTR es:[di]       ;
 
 
 
+ 
+
 ; restore stack
-mov sp, 2A50h
-pop sp
-pop bp
+mov   bx, OFFSET _sp_bp_safe_space; 
+xchg  ss:[bx], sp             ;  store SP and load x_adder
+inc   bx
+inc   bx
+xchg  ss:[bx], bp			;   store BP and load y_adder
+
+mov   bx, 0FC0h
 
 
 
