@@ -47,8 +47,12 @@ EXTRN   _sp_bp_safe_space:WORD
 EXTRN   _ss_variable_space:WORD
 
 EXTRN _spanfunc_jump_lookup:WORD
-EXTRN _spanfunc_loop_count:BYTE
 
+EXTRN _spanfunc_main_loop_count:BYTE
+EXTRN _spanfunc_inner_loop_count:BYTE
+EXTRN _spanfunc_outp:BYTE
+EXTRN _spanfunc_prt:WORD
+EXTRN _spanfunc_destview_offset:WORD
 
 ;=================================
 
@@ -2185,43 +2189,14 @@ mov   word ptr [_ss_variable_space + 10h], dx			;  move y32step high bits into _
 xor   cx, cx						; zero out cx as loopcount
 mov   word ptr [_ss_variable_space], 0			;  move 0  into i (outer loop counter)
 span_i_loop_repeat:
-mov   ax, 1
+
+mov   bx, cx
+xor   ah, ah
+mov   al, byte ptr [_spanfunc_outp + bx]
 mov   dx, 3c5h						; outp 1 << i
-shl   ax, cl
 out   dx, al
 
-;dsp_x1 = (ds_x1 - i) / 4;
-;		if (dsp_x1 * 4 + i < ds_x1)
-;			dsp_x1++;
-
-
-xor dx, dx
-
-mov   ax, word ptr [_ds_x1]	
-mov   si, ax		; store ds_x1 long term (for count calulcation? maybe remove)
-mov   dl, al		; store ds_x1 for and 3 calculation
-sub   ax, cx		; ax =  ds_x1 - i  
-sar ax, 1			; dsp_x1 = (divisor) / 4;
-sar ax, 1
-and dl, 3			
-cmp dl, cl			; cl still contains i, the loop iter
-je  dsp_x1_calculated ; only inc if not equal
-inc ax
-
-
-dsp_x1_calculated:
-mov bx, ax			; store dsp_x1 in bx for later
-
-;		dsp_x2 = (ds_x2 - i) / 4;
-;		countp = dsp_x2 - dsp_x1;
-
-mov   ax, word ptr [_ds_x2]		; grab ds_x2 into ax
-sub   ax, cx					; ax =  ds_x2 - i 
-sar ax, 1						; dsp_x2 = (divisor) / 4;
-sar ax, 1
-
-sub   ax, bx					; sub dsp_x1, ax now equals count
-
+mov   al, byte ptr [_spanfunc_inner_loop_count + bx]
 
 ;mov   es, ax					; store count in es
 ;mov   di, ax					; copy count to di
@@ -2232,32 +2207,21 @@ sub   ax, bx					; sub dsp_x1, ax now equals count
 ;mov  ax, es						; restore ax
 
 
-test  ax, ax					; if countp <= 0 continue
+test  al, al					; if countp <= 0 continue
 
 ; is count < 0? if so skip this loop iter
 
-jge   dsp_x2_calculated			; todo this so it doesnt loop in both cases
+jge   at_least_one_pixel			; todo this so it doesnt loop in both cases
 jmp   do_span_loop
 
-dsp_x2_calculated:
+at_least_one_pixel:
 
 mov   word ptr [_ss_variable_space + 02h], ax		; store count in _ss_variable_space + 02h
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
-
-mov   DI, word ptr [_dc_yl_lookup_val]  ; premultiplied 80
-add	  DI, word ptr [_destview]
-
-
-;		prt = dsp_x1 * 4 - ds_x1 + i;
-;       note this will be 16 bit value with sign bits extending to 32 bit DX after CWD
-mov   ax, bx							; bx contained dsp_x1, 
-shl   ax, 1								; ax contains dsp_x1 * 4..
-shl   ax, 1								; ax contains dsp_x1 * 4..
-sub   ax, si							; ax contains dsp_x1 * 4 - ds_x1
-add   di, bx				    		; finally add dsp_x1 to view offset
-add   ax, cx 							; add i. ax is equal to prt
-
+sal   bx, 1
+mov   ax, word ptr [_spanfunc_prt + bx]
+mov   DI, word ptr [_spanfunc_destview_offset + bx]  ; destview offset precalculated..
 
 
 ;		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
@@ -2267,7 +2231,7 @@ CWD   				; extend sign into DX
 ;  DX:AX contains sign extended prt. 
 ;  probably dont really need this. can test ax and jge
 
-mov   si, ax						; store dx:ax into es:si
+mov   si, ax						; temporarily store dx:ax into es:si
 mov   es, dx						; store sign bits (dx) in es
 mov   bx, ax
 mov   cx, dx						; also copy sign bits to cx
@@ -2429,7 +2393,7 @@ xor   ah, ah
 
  
 jmp_addr_2:
-;jmp loop_done_2         ; relative jump to be modified before function is called
+;jmp span_i_loop_done         ; relative jump to be modified before function is called
 
 ; chonker 6 byte instruction
 cmp   word ptr ss:[_ss_variable_space + 02h], 10h	; compare count to 16
@@ -2718,7 +2682,9 @@ do_span_loop:
 xor   cx, cx
 mov   cl, byte ptr ss:[_ss_variable_space]
 inc   cl						; increment i
-cmp   cl, 4	; loop if i < 4
+
+; loop if i < loopcount. note we can overwrite this with self modifying coe
+cmp   cl, byte ptr ds:[_spanfunc_main_loop_count]	
 jge   span_i_loop_done
 mov   byte ptr ss:[_ss_variable_space], cl		; ch was 0 or above. store result
 

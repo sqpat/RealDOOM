@@ -254,6 +254,12 @@ void __near  R_ExecuteSetViewSize(void) {
 
 	R_InitTextureMapping();
 
+	// set render 'constants' related to detaillevel
+	spanfunc_main_loop_count = 4;
+	spanfunc_outp[0] = 1;
+	spanfunc_outp[1] = 2;
+	spanfunc_outp[2] = 4;
+	spanfunc_outp[3] = 8;
 
  
 }

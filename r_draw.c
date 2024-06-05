@@ -64,13 +64,14 @@ int16_t		viewwindowoffset;
 int16_t		sp_bp_safe_space[2];
 // used to index things via SS when bp and sp are in use (since ss == ds)
 int16_t		ss_variable_space[10];
-uint8_t 	spanfunc_loop_count[9];
-// index 1: outer loop count (max 4)
-// index 2-9: 
-  // for index n: 
-    // byte 1: inner loop count (0-80)
-	// byte 2: outp value
+int8_t  	spanfunc_main_loop_count;
+uint8_t 	spanfunc_inner_loop_count[4];
+uint8_t     spanfunc_outp[4];
+int16_t    	spanfunc_prt[4];
+uint16_t    spanfunc_destview_offset[4];
 
+// first index in spanfunc_loop_count is the number of i iters
+// 1-4 is countp per iter of i
 
 
 // Color tables for different players,
@@ -248,22 +249,65 @@ void __far R_DrawSpanPrep(){
 
 	uint16_t cs_source_offset = 0x0FC0;  // always 0
 	uint8_t  cs_source_segment_offset = 0xFC;  // always 0
+	int8_t   i = 0;
+	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
 	// dont need to change ds at all.
 	
 	void (__far* dynamic_callfunc)(void);
+
+	//int16_t dsp_x1_base = (ds_x1 - i) >> 2;
+	//int16_t dsp_x2_base = (ds_x2 - i) >> 2;
+	// increment base when i = these values...
+	//int8_t  dsp_x1_mod = spanfunc_main_loop_count-(ds_x1 & (spanfunc_main_loop_count-1));
+	//int8_t  dsp_x2_mod = spanfunc_main_loop_count-(ds_x1 & (spanfunc_main_loop_count-1));
 	//uint8_t count = ds_yh-ds_yl;	
 	
-	dc_yl_lookup_val = dc_yl_lookup[ds_y];
-
 	// get quality
 
 // todo: set these five values in executeviewsize
 // todo: set these based on actual quality option
-	spanfunc_loop_count[0] = 4;
-	spanfunc_loop_count[2] = 1;
-	spanfunc_loop_count[4] = 2;
-	spanfunc_loop_count[6] = 4;
-	spanfunc_loop_count[8] = 8;
+
+	for (i = 0; i < spanfunc_main_loop_count; i ++){
+
+		// precalc these outside in a tighter loop so we dont do it in the core inner loop and juggle variables 
+		int16_t dsp_x1 = (ds_x1 - i) / 4;
+		int16_t dsp_x2 = (ds_x2 - i) / 4;
+		int16_t countp;
+		
+		// this only works in asm todo re-optimize it later
+		//if ((ds_x1 & 3) != i)
+		//	dsp_x1++;
+		if (dsp_x1 * 4 + i < ds_x1)
+			dsp_x1++;
+		countp = dsp_x2 - dsp_x1;
+		spanfunc_inner_loop_count[i] = countp;
+		if (countp < 0) {
+			continue;
+		}
+		
+		spanfunc_prt[i] = (dsp_x1 * 4) - ds_x1 + i;
+		spanfunc_destview_offset[i] = baseoffset + dsp_x1;
+
+		//I_Error("blah!? %i %i %i %i %i %i %x", ds_x1, ds_x2, dsp_x1, dsp_x2, countp, spanfunc_prt[i], spanfunc_destview_offset[i]);
+
+		// todo calculate the steps here especially if there are savings to be had related to 
+		// sharing data across loops?
+
+		// we are definitely duplicating xadder/yadder calulcation
+		// prt is probably different per call
+		/*
+		
+		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
+		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
+		xfrac16.hu = xfrac.wu >> 8;
+		yfrac16.hu = yfrac.wu >> 10;
+
+		xadder = ds_xstep >> 6; // >> 8, *4... lop off top 8 bits, but multing by 4. bottom 6 bits lopped off.
+		yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
+	
+		*/
+
+	}
 
 	// figure out count
 
@@ -999,22 +1043,7 @@ void __far R_DrawSpan(void)
 
 	for (i = 0; i < 4; i++)
 	{
- ds_x1  =   100
-           0 1 2 3
-dsp_x1  =  25 24 24 24
-     *4 + i   +1 +1 +1
-	       25 25 25 25
-		
-		=  0
-dsp_x1  =  0 -1 -2 -3
-
-
-        =  4
-        =  1  0 0 0
-		=  1  1 1 1
-		=  7
-		=  1  1 1 1
-		=  2  2 2 1 
+ 
 		outp(SC_INDEX + 1, 1 << i);
 		dsp_x1 = (ds_x1 - i) / 4;
 		if (dsp_x1 * 4 + i < ds_x1)
@@ -1028,7 +1057,6 @@ dsp_x1  =  0 -1 -2 -3
 		// TODO: ds_y lookup table in CS
 		dest = destview + ds_y * 80 + dsp_x1;
 
-		// note: dsp_x1 guaranteed positive (see the ++ above)
 		prt = dsp_x1 * 4 - ds_x1 + i;
 		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
 		yfrac.w = basey = ds_yfrac + ds_ystep * prt;

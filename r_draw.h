@@ -61,6 +61,12 @@ extern fixed_t		ds_xstep;
 extern fixed_t		ds_ystep;
 extern int16_t      sp_bp_safe_space[2];
 extern int16_t      ss_variable_space[10];
+extern int8_t  	    spanfunc_main_loop_count;
+extern uint8_t 	    spanfunc_inner_loop_count[4];
+extern uint8_t      spanfunc_outp[4];
+extern int16_t    	spanfunc_prt[4];
+extern uint16_t    	spanfunc_destview_offset[4];
+
 // start of a 64*64 tile image
  extern byte __far*		ds_source;
  extern uint16_t ds_source_segment;
