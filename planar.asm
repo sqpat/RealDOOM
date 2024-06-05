@@ -46,6 +46,8 @@ EXTRN	_ds_ystep:DWORD
 EXTRN   _sp_bp_safe_space:WORD
 EXTRN   _ss_variable_space:WORD
 
+EXTRN _spanfunc_jump_lookup:WORD
+EXTRN _spanfunc_loop_count:BYTE
 
 
 ;=================================
@@ -2193,74 +2195,78 @@ out   dx, al
 ;			dsp_x1++;
 
 
+xor dx, dx
+
 mov   ax, word ptr [_ds_x1]	
-mov   si, ax		
-sub   ax, cx		; ax = ds_x1 - i
-CWD   								; 
-shl   dx, 1							; ??? why shift left. its either 0000 or FFFF
-shl   dx, 1							; ??? why shift left. its either 0000 or FFFF
-sbb   ax, dx
-sar   ax, 1
-sar   ax, 1
-mov   bx, ax						; bx is dsp_x1
-shl   ax, 1
-shl   ax, 1
-add   ax, cx						; ax = dsp_x1 * 4 + i...
-cmp   ax, si						; if check..
-jge   dsp_x1_calculated
-inc   bx							; dsp_x1++
+mov   si, ax		; store ds_x1 long term (for count calulcation? maybe remove)
+mov   dl, al		; store ds_x1 for and 3 calculation
+sub   ax, cx		; ax =  ds_x1 - i  
+sar ax, 1			; dsp_x1 = (divisor) / 4;
+sar ax, 1
+and dl, 3			
+cmp dl, cl			; cl still contains i, the loop iter
+je  dsp_x1_calculated ; only inc if not equal
+inc ax
+
+
 dsp_x1_calculated:
+mov bx, ax			; store dsp_x1 in bx for later
 
 ;		dsp_x2 = (ds_x2 - i) / 4;
 ;		countp = dsp_x2 - dsp_x1;
-;		if (countp < 0) {
-;			continue;
-;		}
 
 mov   ax, word ptr [_ds_x2]		; grab ds_x2 into ax
-sub   ax, cx					; subtract i i
-CWD   
-shl   dx, 1						; ??? sign checking shenanigans
-shl   dx, 1						; ??? sign checking shenanigans
-sbb   ax, dx					;
-sar   ax, 1						; divide by 4 to get dsp_x2
-sar   ax, 1						; divide by 4 to get dsp_x2
+sub   ax, cx					; ax =  ds_x2 - i 
+sar ax, 1						; dsp_x2 = (divisor) / 4;
+sar ax, 1
+
 sub   ax, bx					; sub dsp_x1, ax now equals count
-mov   word ptr [_ss_variable_space + 02h], ax		; store count in _ss_variable_space + 02h
+
+
+;mov   es, ax					; store count in es
+;mov   di, ax					; copy count to di
+;sal   di, 1						; shift 2 for word offset in array
+;mov   ax, word PTR [_spanfunc_jump_lookup + di]   ; get jmp offset
+;mov   di, OFFSET jmp_addr_2 + 1	; get jump instruction addr
+;mov   cs:[di], ax				; overwrite jump (self modifying code alert)
+;mov  ax, es						; restore ax
+
+
 test  ax, ax					; if countp <= 0 continue
+
+; is count < 0? if so skip this loop iter
+
 jge   dsp_x2_calculated			; todo this so it doesnt loop in both cases
 jmp   do_span_loop
 
 dsp_x2_calculated:
 
+mov   word ptr [_ss_variable_space + 02h], ax		; store count in _ss_variable_space + 02h
+
 ; 		dest = destview + ds_y * 80 + dsp_x1;
 
+mov   DI, word ptr [_dc_yl_lookup_val]  ; premultiplied 80
+add	  DI, word ptr [_destview]
 
-mov   dx, word ptr [_dc_yl_lookup_val]  ; premultiplied 80
-mov   ax, word ptr [_destview]
-
-add   ax, dx							; add ds_y * 80  to destview offset
-mov   di, ax							; di now has destview offset + ds_y * 80 (missing add of dsp_x1)
 
 ;		prt = dsp_x1 * 4 - ds_x1 + i;
 ;       note this will be 16 bit value with sign bits extending to 32 bit DX after CWD
-mov   ax, bx							; bx contains dsp_x1, 
+mov   ax, bx							; bx contained dsp_x1, 
 shl   ax, 1								; ax contains dsp_x1 * 4..
 shl   ax, 1								; ax contains dsp_x1 * 4..
 sub   ax, si							; ax contains dsp_x1 * 4 - ds_x1
+add   di, bx				    		; finally add dsp_x1 to view offset
 add   ax, cx 							; add i. ax is equal to prt
 
 
 
 ;		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
 
-
 CWD   				; extend sign into DX
 
 ;  DX:AX contains sign extended prt. 
 ;  probably dont really need this. can test ax and jge
 
-add   di, bx						; finally add bx to dsp_x1
 mov   si, ax						; store dx:ax into es:si
 mov   es, dx						; store sign bits (dx) in es
 mov   bx, ax
@@ -2422,7 +2428,8 @@ mov   bx, 0FC0h
 xor   ah, ah
 
  
-;  jmp loop_done_2         ; relative jump to be modified before function is called
+jmp_addr_2:
+;jmp loop_done_2         ; relative jump to be modified before function is called
 
 ; chonker 6 byte instruction
 cmp   word ptr ss:[_ss_variable_space + 02h], 10h	; compare count to 16

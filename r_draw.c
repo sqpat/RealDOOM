@@ -64,6 +64,14 @@ int16_t		viewwindowoffset;
 int16_t		sp_bp_safe_space[2];
 // used to index things via SS when bp and sp are in use (since ss == ds)
 int16_t		ss_variable_space[10];
+uint8_t 	spanfunc_loop_count[9];
+// index 1: outer loop count (max 4)
+// index 2-9: 
+  // for index n: 
+    // byte 1: inner loop count (0-80)
+	// byte 2: outp value
+
+
 
 // Color tables for different players,
 //  translate a limited part to another
@@ -247,6 +255,20 @@ void __far R_DrawSpanPrep(){
 	
 	dc_yl_lookup_val = dc_yl_lookup[ds_y];
 
+	// get quality
+
+// todo: set these five values in executeviewsize
+// todo: set these based on actual quality option
+	spanfunc_loop_count[0] = 4;
+	spanfunc_loop_count[2] = 1;
+	spanfunc_loop_count[4] = 2;
+	spanfunc_loop_count[6] = 4;
+	spanfunc_loop_count[8] = 8;
+
+	// figure out count
+
+
+
 	// modify the jump instruction based on count
 	//((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = colfunc_jump_lookup[count];
 
@@ -268,6 +290,9 @@ void __far R_DrawSpanPrep(){
 		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
 
 	}
+
+	
+
 // 0 121 
 	
 	// func location
