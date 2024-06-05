@@ -87,8 +87,6 @@ extern	int8_t		detailshift;
 //
 // No shadow effects on floors.
 
-extern void __far (* spanfunc) (void);
-
 
 //
 // Utility functions.

@@ -302,3 +302,4 @@ I_Init: Setting up machine state.\n
 S_Init: Setting up sound.\n
 HU_Init: Setting up heads up display.\n
 ST_Init: Init status bar.\n
+Potato detail\n

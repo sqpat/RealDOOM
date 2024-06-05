@@ -105,16 +105,21 @@ void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
     if (planeheight != cachedheight[y]) {
 		cachedheight[y] = planeheight;
 		distance = cacheddistance[y] = FixedMul (planeheight, yslope[y]);
-		ds_xstep = cachedxstep[y] = FixedMul (distance,basexscale);
-		ds_ystep = cachedystep[y] = FixedMul (distance,baseyscale);
+		ds_xstep = cachedxstep[y] = (FixedMul (distance,basexscale));
+		ds_ystep = cachedystep[y] = (FixedMul (distance,baseyscale));
     } else {
 		distance = cacheddistance[y];
-		ds_xstep = cachedxstep[y];
-		ds_ystep = cachedystep[y];
+		ds_xstep = cachedxstep[y] ;
+		ds_ystep = cachedystep[y] ;
     }
+	//ds_xstep <<=  detailshift;
+	//ds_ystep <<=  detailshift;
 	
     length = FixedMul (distance,distscale[x1]);
 	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
+
+	// shouldnt (x * cos[y]) + (x * sin[y]) == x?
+	// if so do we need the second mul or can we subtract 32 bits from the other to get it
 
 	ds_xfrac = viewx.w + FixedMulTrig(finecosine[angle], length );
     ds_yfrac = -viewy.w - FixedMulTrig(finesine[angle], length );

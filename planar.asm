@@ -56,7 +56,7 @@ EXTRN _spanfunc_destview_offset:WORD
 
 
 SPANFUNC_SEGMENT         =   6EAAh
-SPANFUNC_JUMP_OFFSET     =   147h
+SPANFUNC_JUMP_OFFSET     =   14Ch
 
 
 ;=================================
@@ -2355,10 +2355,10 @@ rcl   cl, 1
 mov   al, ah
 mov   ah, cl
 
+; do loop setup here?
 
-xor cx, cx
-
-
+mov cl, byte ptr [_detailshift]
+shr ax, cl			; shift x_step by pixel shift
  
 
 mov   word ptr [_sp_bp_safe_space], ax	; store x_adder
@@ -2367,15 +2367,14 @@ mov   word ptr [_sp_bp_safe_space], ax	; store x_adder
 
 mov   ax, word ptr [_ds_ystep + 1]
 
-; do loop setup here?
 
 
+shr ax, cl			; shift y_step by pixel shift
 mov   word ptr [_sp_bp_safe_space + 2], ax	; y_adder
 
 
 
 mov   es, word ptr [_destview + 2]	; retrieve destview segment
-push ds
 mov   si, word ptr ss:[_ds_source_segment] 		; ds:si is ds_source
 mov   ds, si
 mov   cx, bx
@@ -2390,7 +2389,7 @@ mov   bx, OFFSET _sp_bp_safe_space  ;
 xchg  ss:[bx], sp             ;  store SP and load x_adder
 inc   bx
 inc   bx
-xchg  ss:[bx], bp			;   store BP and load y_adder
+xchg  ss:[bx], bp			  ;   store BP and load y_adder
 
 mov   bx, 0FC0h
 xor   ah, ah
@@ -3296,8 +3295,7 @@ add   si, ax
 lods  BYTE PTR ds:[si]
 xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 stos  BYTE PTR es:[di]       ;
-add   dx, sp
-add   cx, bp
+
 
 
 ;			xfrac.w += x32step;
@@ -3348,9 +3346,9 @@ xchg  ss:[bx], sp             ;  restore sp
 inc   bx
 inc   bx
 xchg  ss:[bx], bp			;   restore BP
-pop ds
+mov   ax, ss					;   SS is DS in this watcom memory model so we use that to restore DS
+mov   ds, ax
 
-loop_done_2:
 do_span_loop:
 
 xor   cx, cx

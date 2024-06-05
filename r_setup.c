@@ -226,14 +226,6 @@ void __near  R_ExecuteSetViewSize(void) {
 	centeryfrac = temp;
 	centeryfrac_shiftright4.w = temp.w >> 4;
 
-	if (!detailshift) {
-		void (__far* dynamic_callfunc)(void)  =      R_DrawSpanAddr;
-		//colfunc = basecolfunc = dynamic_callfunc;
-		spanfunc = dynamic_callfunc;
-	}
-	else {
-		spanfunc = R_DrawSpanLow;
-	}
 
 	// Handle resize,
 	//  e.g. smaller view windows
@@ -254,13 +246,20 @@ void __near  R_ExecuteSetViewSize(void) {
 
 	R_InitTextureMapping();
 
-	// set render 'constants' related to detaillevel
-	spanfunc_main_loop_count = 4;
+	// set render 'constants' related to detaillevel. 
+	spanfunc_main_loop_count = 4 >> detailshift;
 	spanfunc_outp[0] = 1;
 	spanfunc_outp[1] = 2;
 	spanfunc_outp[2] = 4;
 	spanfunc_outp[3] = 8;
-
+	if (detailshift == 1){
+		spanfunc_outp[0] = 3;
+		spanfunc_outp[1] = 12;
+	}
+	if (detailshift == 2){
+		spanfunc_outp[0] = 15;
+	}
+	
  
 }
 

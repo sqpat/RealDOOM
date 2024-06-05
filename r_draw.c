@@ -251,6 +251,7 @@ void __far R_DrawSpanPrep(){
 	uint8_t  cs_source_segment_offset = 0xFC;  // always 0
 	int8_t   i = 0;
 	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
+	int8_t   shiftamount = (2-detailshift);
 	// dont need to change ds at all.
 	
 	void (__far* dynamic_callfunc)(void);
@@ -270,14 +271,14 @@ void __far R_DrawSpanPrep(){
 	for (i = 0; i < spanfunc_main_loop_count; i ++){
 
 		// precalc these outside in a tighter loop so we dont do it in the core inner loop and juggle variables 
-		int16_t dsp_x1 = (ds_x1 - i) / 4;
-		int16_t dsp_x2 = (ds_x2 - i) / 4;
+		int16_t dsp_x1 = (ds_x1 - i) >> shiftamount;
+		int16_t dsp_x2 = (ds_x2 - i) >> shiftamount;
 		int16_t countp;
 		
 		// this only works in asm todo re-optimize it later
 		//if ((ds_x1 & 3) != i)
 		//	dsp_x1++;
-		if (dsp_x1 * 4 + i < ds_x1)
+		if ((dsp_x1 << shiftamount) + i < ds_x1)
 			dsp_x1++;
 		countp = dsp_x2 - dsp_x1;
 		spanfunc_inner_loop_count[i] = countp;
@@ -285,7 +286,7 @@ void __far R_DrawSpanPrep(){
 			continue;
 		}
 		
-		spanfunc_prt[i] = (dsp_x1 * 4) - ds_x1 + i;
+		spanfunc_prt[i] = (dsp_x1 << shiftamount) - ds_x1 + i;
 		spanfunc_destview_offset[i] = baseoffset + dsp_x1;
 
 		//I_Error("blah!? %i %i %i %i %i %i %x", ds_x1, ds_x2, dsp_x1, dsp_x2, countp, spanfunc_prt[i], spanfunc_destview_offset[i]);
@@ -1316,6 +1317,7 @@ BC 50 2A    mov sp, 0x2a50
 //
 // Again..
 //
+/*
 void __far R_DrawSpanLow(void)
 {
 	fixed_t_union             xfrac;
@@ -1365,7 +1367,7 @@ void __far R_DrawSpanLow(void)
 		} while (countp--);
 	}
 }
-
+*/
 
 //
 // R_FillBackScreen

@@ -74,10 +74,6 @@ extern uint16_t    	spanfunc_destview_offset[4];
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.
 void 	__far R_DrawSpan (void);
-
-// Low resolution mode, 160x200?
-void __far 	R_DrawSpanLow (void);
-
 void __far R_DrawSpanPrep();
  
 

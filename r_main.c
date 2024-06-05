@@ -93,11 +93,6 @@ angle_t			fieldofview = { 0 };	// note: fracbits always 0
 uint8_t			extralight;			
 
 
-
-void __far (* spanfunc) (void);
-
- 
-
 //
 // R_PointOnSide
 // Traverse BSP (sub) tree,

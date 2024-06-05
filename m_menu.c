@@ -1133,14 +1133,19 @@ void __near M_ChangeSensitivity(int16_t choice)
 void __near M_ChangeDetail(int16_t choice)
 {
     choice = 0;
-    detailLevel = 1 - detailLevel;
+    detailLevel++;
+    if (detailLevel == 3){
+        detailLevel = 0;
+    }
 
     R_SetViewSize (screenblocks, detailLevel);
 
     if (!detailLevel)
         player.message = DETAILHI;
-    else
+    else if (detailLevel == 1)
         player.message = DETAILLO;
+    else
+        player.message = DETAILPOTATO;
 }
 
 
