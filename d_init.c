@@ -493,19 +493,18 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 /*
-
 	void __far R_DrawColumn (void);
 	void __far R_DrawFuzzColumn(void);
 	void __far R_DrawSpan (void);
-	void __far R_DrawSpanLow(void);
+	void __far R_DrawSpanPrep(void);
 
 	FILE* fp = fopen("D_OUTPU5.BIN", "wb"); 
 
-	FAR_fwrite((byte __far *)R_DrawSpan, 1, (byte __far *)R_DrawSpanLow - (byte __far *)R_DrawSpan, fp);
+	FAR_fwrite((byte __far *)R_DrawSpan, 1, (byte __far *)R_DrawSpanPrep - (byte __far *)R_DrawSpan, fp);
 	fclose(fp);
     I_Error("\n done");
-*/		
-	//I_Error("\n%Fp", spanfunc_function_area, 0 );
+	*/	
+	//I_Error("\n%Fp %Fp", spanfunc_function_area, spanfunc_function_area_9000 );
 /*	
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
 	I_Error("\ndone %Fp %Fp %Fp %Fp", colfunc_jump_lookup, dc_yl_lookup, 

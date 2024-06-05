@@ -270,7 +270,7 @@ extern int16_t emshandle;
 void __far R_DrawColumn (void);
 void __far R_DrawColumnLow(void);
 void __far R_DrawSpan (void);
-void __far R_DrawSpanLow(void);
+void __far R_DrawSpanPrep(void);
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
@@ -346,24 +346,17 @@ void __near Z_LoadBinaries() {
 	//760
 	FAR_fread(lnodex, 1, 760, fp);
 
-	/*
-	FAR_fread(lnodex, 2, 9 * 3, fp);
-	FAR_fread(lnodey, 2, 9 * 3, fp);
-	FAR_fread(epsd0animinfo, 16, 10, fp);
-	FAR_fread(epsd1animinfo, 16, 9, fp);
-	FAR_fread(epsd2animinfo, 16, 6, fp);
-	FAR_fread(wigraphics, 1, 28 * 9, fp);
-	*/
-	
-	Z_QuickMapRenderPlanes();
-	FAR_memcpy((byte __far *)spanfunc_function_area, 
+	Z_QuickMapPalette();
+	FAR_memcpy((byte __far *)spanfunc_function_area_9000, 
 	(byte __far *)R_DrawSpan,
-	 (byte __far *)R_DrawSpanLow - (byte __far *)R_DrawSpan);
+	 FP_OFF(R_DrawSpanPrep) - FP_OFF(R_DrawSpan));
 	
 
+
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);
-	Z_QuickMapRender();
  
+	Z_QuickMapRender();
+
 	//4096
 	FAR_fread(zlight, 1, 4096, fp);
 	FAR_fread(fuzzoffset, 1, 50, fp);
@@ -376,6 +369,9 @@ void __near Z_LoadBinaries() {
 	DEBUG_PRINT("..");
  
 	 
+
+	
+
 }
 
 

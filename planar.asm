@@ -54,6 +54,11 @@ EXTRN _spanfunc_outp:BYTE
 EXTRN _spanfunc_prt:WORD
 EXTRN _spanfunc_destview_offset:WORD
 
+
+SPANFUNC_SEGMENT         =   6EAAh
+SPANFUNC_JUMP_OFFSET     =   147h
+
+
 ;=================================
 
 .CODE
@@ -2198,13 +2203,6 @@ out   dx, al
 
 mov   al, byte ptr [_spanfunc_inner_loop_count + bx]
 
-;mov   es, ax					; store count in es
-;mov   di, ax					; copy count to di
-;sal   di, 1						; shift 2 for word offset in array
-;mov   ax, word PTR [_spanfunc_jump_lookup + di]   ; get jmp offset
-;mov   di, OFFSET jmp_addr_2 + 1	; get jump instruction addr
-;mov   cs:[di], ax				; overwrite jump (self modifying code alert)
-;mov  ax, es						; restore ax
 
 
 test  al, al					; if countp <= 0 continue
@@ -2213,10 +2211,16 @@ test  al, al					; if countp <= 0 continue
 
 jge   at_least_one_pixel			; todo this so it doesnt loop in both cases
 jmp   do_span_loop
-
 at_least_one_pixel:
 
-mov   word ptr [_ss_variable_space + 02h], ax		; store count in _ss_variable_space + 02h
+;       modify the jump for this iteration (self-modifying code)
+mov   DX, SPANFUNC_SEGMENT
+MOV   ES, DX
+sal   AL, 1
+xchg  ax, di
+mov   AX, word ptr [_spanfunc_jump_lookup + DI]
+MOV   DI, SPANFUNC_JUMP_OFFSET
+stos  WORD PTR es:[di]       ;
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
 sal   bx, 1
@@ -2393,14 +2397,8 @@ xor   ah, ah
 
  
 jmp_addr_2:
-;jmp span_i_loop_done         ; relative jump to be modified before function is called
+jmp span_i_loop_done         ; relative jump to be modified before function is called
 
-; chonker 6 byte instruction
-cmp   word ptr ss:[_ss_variable_space + 02h], 10h	; compare count to 16
-
-jge   do_16_unroll_loop			; if count >= 16 do loop
-jmp   do_last_15_unroll_loop	; do last 15 loop
-do_16_unroll_loop:
 
 
  
@@ -2420,6 +2418,710 @@ do_16_unroll_loop:
 
 ; alternate idea. one cycle slower and same byte count.
 ; cant we somehow make use of xchg and al, 3fh at the same time?
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
+
+mov   al, dh
+and   al, 3fh
+mov   si, cx
+and   si, bx
+add   si, ax
+lods  BYTE PTR ds:[si]
+xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+stos  BYTE PTR es:[di]       ;
+add   dx, sp
+add   cx, bp
 
 mov   al, dh
 and   al, 3fh
@@ -2638,35 +3340,7 @@ add   cx, bp
 ;mov   bx, 0FC0h
 ;xor   ah, ah
 
-
-sub   word ptr ss:[_ss_variable_space + 02h], 10h    ; subtract 16 from count
-
-cmp   word ptr ss:[_ss_variable_space + 02h], 10h
-
-jl    do_last_15_unroll_loop
-jmp   do_16_unroll_loop
-do_last_15_unroll_loop:
-
-
-
-
-mov   al, dh
-and   al, 3fh
-mov   si, cx
-and   si, bx
-add   si, ax
-lods  BYTE PTR ds:[si]
-xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
-stos  BYTE PTR es:[di]       ;
-add   dx, sp    ; add x_adder
-add   cx, bp    ; add y_adder
-
-
-dec   word ptr ss:[_ss_variable_space + 02h]
-
-;cmp   word ptr ss:[_ss_variable_space + 02h], -1
-
-jge   do_last_15_unroll_loop
+ 
 
 ; restore stack
 mov   bx, OFFSET _sp_bp_safe_space; 

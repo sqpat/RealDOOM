@@ -108,40 +108,38 @@ void __far Z_QuickMapUnmapAll();
 // 42
 #define SKY_TEXTURE_FIRST_PAGE                      PALETTE_LOGICAL_PAGE + 1
 // 45
-#define DRAW_SPAN_CODE_LOGICAL_PAGE                 SKY_TEXTURE_FIRST_PAGE + 3
-// 46
-#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            DRAW_SPAN_CODE_LOGICAL_PAGE + 1
-// 53
+#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            SKY_TEXTURE_FIRST_PAGE + 3
+// 52
 #define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
-// 61
+// 60
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 65
+// 64
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 68
+// 67
 #define FIRST_PATCH_CACHE_LOGICAL_PAGE              FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_PATCH_CACHE_PAGES                       16
-// 84
+// 83
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES                        6
-// 90
+// 89
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 98
+// 97
 #define NUM_TEXTURE_PAGES                           8
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
-// 106
+// 105
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 110
+// 109
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 114
+// 113
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 #define NUM_SPRITE_CACHE_PAGES                      20
 
 // todo eventuall yjust include this in the spritecache area...
 //#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 118
+// 117
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 116 in use currently (including page 0)
+// 118 in use currently (including page 0)
 
 
 // 56?

@@ -180,7 +180,7 @@ int16_t pageswapargs[total_pages] = {
 	SKY_TEXTURE_FIRST_PAGE + 1, PAGE_9400_OFFSET,
 	SKY_TEXTURE_FIRST_PAGE + 2, PAGE_9800_OFFSET,
 	
-	DRAW_SPAN_CODE_LOGICAL_PAGE,       PAGE_6C00_OFFSET,      // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused. 
+	PALETTE_LOGICAL_PAGE,       PAGE_6C00_OFFSET,      // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused during planes
 														
 	//PHYSICS_RENDER_6800_PAGE,     PAGE_6800_OFFSET,      // remap colormaps to be before drawspan code
 														

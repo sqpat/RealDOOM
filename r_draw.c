@@ -309,15 +309,20 @@ void __far R_DrawSpanPrep(){
 
 	}
 
-	// figure out count
-
-
-
-	// modify the jump instruction based on count
-	//((uint16_t __far *)MK_FP(colfunc_segment, draw_jump_inst_offset))[0] = colfunc_jump_lookup[count];
-
 	// todo add in the actual colormap?
 	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
+
+//SPANFUNC_SEGMENT         =   6EAAh
+//SPANFUNC_JUMP_OFFSET     =   147h
+
+/*
+	I_Error("made it here: %Fp %x %x %x %x", MK_FP(0x6EAA, 0x147), 
+	((uint16_t __far *)MK_FP(0x6800, 0))[0],   // 0x100 ??????
+	((uint16_t __far *)MK_FP(0x6C00, 0))[0],
+	((uint16_t __far *)MK_FP(0x6EAA, 0))[0],
+	((uint16_t __far *)MK_FP(0x6EAA, 0x147))[0]
+	);
+*/
 
 	if (ds_colormap_index){
 		uint16_t ds_colormap_offset = ds_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high

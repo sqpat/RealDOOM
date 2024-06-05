@@ -487,20 +487,23 @@ blockmaplump_plus4  76E4:0008
 
 //#define spanfunc_function_offset  0x1000
 //#define size_spanfunc_jump_lookup 400
-#define size_spanfunc_jump_lookup (0x1000 + 400) 
+#define size_spanfunc_jump_lookup         (80 * sizeof(uint16_t)) 
 
 // spanfunc offset
-//#define spanfunc_jump_lookup   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(0x6C000000          , spanfunc_function_offset))
-//#define spanfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(spanfunc_jump_lookup, size_spanfunc_jump_lookup))
-#define spanfunc_function_area   ((uint16_t  __far*)         MAKE_FULL_SEGMENT(0x6C000000          , size_spanfunc_jump_lookup))
-#define R_DrawSpanAddr         ((void    (__far *)(void))  (spanfunc_function_area))
-#define spanfunc_segment       ((uint16_t) ((int32_t)spanfunc_function_area >> 16))
+#define spanfunc_jump_lookup_src          ((uint16_t  __far*)               MAKE_FULL_SEGMENT(0x6C000000              , palettebytes_size))
+#define spanfunc_function_area            ((byte  __far*)                   MAKE_FULL_SEGMENT(spanfunc_jump_lookup_src, size_spanfunc_jump_lookup))
+//#define spanfunc_function_area          ((uint16_t  __far*)               MAKE_FULL_SEGMENT(0x6C000000              , size_spanfunc_jump_lookup))
+#define spanfunc_function_area_9000       ((uint16_t  __far*)               (((uint32_t)spanfunc_function_area) - 0x6C000000 + 0x90000000))
+#define R_DrawSpanAddr                    ((void    (__far *)(void))        (spanfunc_function_area))
+#define spanfunc_segment                  ((uint16_t) ((int32_t)spanfunc_function_area >> 16))
 
 #define colormaps_spanfunc_seg_difference (spanfunc_segment - colormapssegment)
 #define colormaps_spanfunc_off_difference (colormaps_spanfunc_seg_difference << 4)
 
-
-
+/*
+[palettebytes]         6C00:0000
+spanfunc_jump_lookup   6EA0:0000
+spanfunc_function_area 6EAA:0000
 
 // planes change the 6800 page and remove 
 
