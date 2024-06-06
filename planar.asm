@@ -3399,68 +3399,110 @@ PUBLIC  R_DrawSpanPrep_
  push  bp
  mov   bp, sp
  sub   sp, 0ah
- mov   ax, DC_YL_LOOKUP_SEGMENT
+ 
+ ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
+
+ mov   ax, DC_YL_LOOKUP_SEGMENT			; calculating base view offset 
  mov   bx, word ptr [_ds_y]
  mov   es, ax
  add   bx, bx
- mov   ax, word ptr [_destview]
- mov   dx, word ptr es:[bx]
+ mov   ax, word ptr [_destview]			; get FP_OFF(destview)
+ mov   dx, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
  mov   bh, 2
- add   dx, ax
- sub   bh, byte ptr [_detailshift]
- mov   word ptr [bp - 4], dx
- xor   bl, bl
- cmp   byte ptr [_spanfunc_main_loop_count], 0
- jle   loop5
- loop6:
- mov   al, bl
- mov   dx, word ptr [_ds_x1]
- CBW  
- mov   cl, bh
- sub   dx, ax
- sar   dx, cl
- mov   cx, word ptr [_ds_x2]
- sub   cx, ax
- mov   si, ax
- mov   word ptr [bp - 6], cx
- mov   ax, dx
- mov   cl, bh
- mov   di, word ptr [bp - 6]
- shl   ax, cl
- sar   di, cl
- add   si, ax
- mov   word ptr [bp - 2], di
- cmp   si, word ptr [_ds_x1]
- jge   jumpahead
+ add   dx, ax							; dx is baseoffset
+	
+; int8_t   shiftamount = (2-detailshift);
+ sub   bh, byte ptr [_detailshift]		; get shiftamount in bh
+ mov   word ptr [bp - 4], dx			; store base view offset
+ xor   bl, bl							; zero out bl. use it as loop counter/ i
+ 
+ cmp   byte ptr [_spanfunc_main_loop_count], 0		; if shiftamount is equal to zero
+ jle   spanfunc_arg_setup_complete
+ spanfunc_arg_setup_loop_start:
+ mov   al, bl							; al holds loop counter
+ mov   dx, word ptr [_ds_x1]			; dx holds ds_x1
+ CBW  									; zero out ah
+ mov   cl, bh							; move shiftamount to cl
+
+;		int16_t dsp_x1 = (ds_x1 - i) >> shiftamount;
+ sub   dx, ax							; subtract i 
+ sar   dx, cl							; shift
+
+; 		int16_t dsp_x2 = (ds_x2 - i) >> shiftamount;
+
+ mov   cx, word ptr [_ds_x2]			; cx holds ds_x2
+ sub   cx, ax							; subtract i
+ mov   si, ax							; put i in si
+ mov   word ptr [bp - 6], cx			; store ds_x2 - i on bp-6
+ mov   ax, dx							; copy dsp_x1 to ax
+ mov   cl, bh							; move shiftamount to cl
+ mov   di, word ptr [bp - 6]			; ds_x2 to di
+ shl   ax, cl							; shift dsp_x1 left
+ sar   di, cl							; shift ds_x2 right. di = dsp_x2
+
+;		if ((dsp_x1 << shiftamount) + i < ds_x1)
+
+ add   si, ax							; si = (dsp_x1 << shiftamount) + i
+ mov   word ptr [bp - 2], di			; store dsp_x2 in bp - 2
+ cmp   si, word ptr [_ds_x1]			; if si <  (dsp_x1 << shiftamount) + i
+ jge   dont_increment_ds_x1
+;		ds_x1 ++
+ 
  inc   dx
- jumpahead:
- mov   al, bl
+ dont_increment_ds_x1:
+ mov   al, bl							; al holds loop counter
  CBW  
- mov   cx, word ptr [bp - 2]
- mov   si, ax
- sub   cx, dx
- mov   byte ptr [si + _spanfunc_inner_loop_count], cl
- test  cx, cx
- jl    jumpahead2
- mov   cl, bh
- mov   ax, dx
- shl   ax, cl
- sub   ax, word ptr [_ds_x1]
- add   ax, si
- add   si, si
- add   dx, word ptr [bp - 4]
- mov   word ptr [si + _spanfunc_prt], ax
- mov   word ptr [si + _spanfunc_destview_offset], dx
- jumpahead2:
+ mov   cx, word ptr [bp - 2]			; retrieve dsp_x2
+ mov   si, ax							; store loop counter in si
+
+ ; 		countp = dsp_x2 - dsp_x1;
+ 
+ sub   cx, dx							; cx is countp
+
+ mov   byte ptr [si + _spanfunc_inner_loop_count], cl  ; store it
+ test  cx, cx										   ; if negative then loop
+ jl    spanfunc_arg_setup_iter_done
+ mov   cl, bh										   ; move shiftamount to cl
+ 
+; 		spanfunc_prt[i] = (dsp_x1 << shiftamount) - ds_x1 + i;
+;		spanfunc_destview_offset[i] = baseoffset + dsp_x1;
+
+ 
+ mov   ax, dx										   ; move dsp_x1 to ax
+ shl   ax, cl										   ; shift dsp_x1 left
+ sub   ax, word ptr [_ds_x1]						   ; subtract ds_x1
+ add   ax, si										   ; add i, prt is calculated
+ add   si, si										   ; double i for word lookup index
+ add   dx, word ptr [bp - 4]						   ; dsp_x1 + base view offset
+ mov   word ptr [si + _spanfunc_prt], ax			   ; store prt
+ mov   word ptr [si + _spanfunc_destview_offset], dx   ; store view offset
+ 
+ spanfunc_arg_setup_iter_done:
+ 
  inc   bl
  cmp   bl, byte ptr [_spanfunc_main_loop_count]
- jl    loop6
- loop5:
+ jl    spanfunc_arg_setup_loop_start
+ 
+ spanfunc_arg_setup_complete:
+
+ ; calculate desired cs:ip for far jump
+
  mov   dx, word ptr [_ds_colormap_segment]
  mov   al, byte ptr [_ds_colormap_index]
  sub   dx, 0FCh
- test  al, al
- je    second
+ test  al, al									; check _ds_colormap_index
+ je    ds_colormap_zero
+ 
+ ; colormap not zero. need to offset cs etc by its address
+
+ ;		uint16_t ds_colormap_offset = ds_colormap_index << 8;
+;		uint16_t ds_colormap_shift4 = ds_colormap_index << 4;
+	 	
+;		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset + ds_colormap_shift4;
+;		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset - ds_colormap_offset;
+;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+ 
  xor   ah, ah
  mov   bx, ax
  shl   ax, 4
@@ -3482,8 +3524,16 @@ db 0F6h
  pop   cx
  pop   bx
  retf  
- second:
- mov   word ptr [bp - 0ah], 07a60h
+ ds_colormap_zero:									; if ds_colormap_index is 0
+ 
+ ; easy address calculation
+ 
+; 		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset;
+;		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset;
+;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+ 
+ mov   word ptr [bp - 0ah], 07a60h		; callfunc offset is 0x0FC0+colormaps_spanfunc_off_difference
  mov   word ptr [bp - 8], dx
  
 db 0FFh   ;lcall[bp-0ah]
