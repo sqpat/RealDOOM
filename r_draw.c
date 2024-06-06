@@ -240,33 +240,20 @@ byte __far*			dc_source;
 // 
 extern int setval;
 
-
-
+/*
 void __far R_DrawSpanPrep(){
 
 	// desired bx offset is 0x0FC0  
 	// so subtracted segment would be 0xFC
 
-	uint16_t cs_source_offset = 0x0FC0;  // always 0
-	uint8_t  cs_source_segment_offset = 0xFC;  // always 0
+	#define cs_source_offset  0x0FC0
+	#define cs_source_segment_offset  0xFC
 	int8_t   i = 0;
 	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
 	int8_t   shiftamount = (2-detailshift);
 	// dont need to change ds at all.
 	
 	void (__far* dynamic_callfunc)(void);
-
-	//int16_t dsp_x1_base = (ds_x1 - i) >> 2;
-	//int16_t dsp_x2_base = (ds_x2 - i) >> 2;
-	// increment base when i = these values...
-	//int8_t  dsp_x1_mod = spanfunc_main_loop_count-(ds_x1 & (spanfunc_main_loop_count-1));
-	//int8_t  dsp_x2_mod = spanfunc_main_loop_count-(ds_x1 & (spanfunc_main_loop_count-1));
-	//uint8_t count = ds_yh-ds_yl;	
-	
-	// get quality
-
-// todo: set these five values in executeviewsize
-// todo: set these based on actual quality option
 
 	for (i = 0; i < spanfunc_main_loop_count; i ++){
 
@@ -296,37 +283,12 @@ void __far R_DrawSpanPrep(){
 
 		// we are definitely duplicating xadder/yadder calulcation
 		// prt is probably different per call
-		/*
-		
-		xfrac.w = basex = ds_xfrac + ds_xstep * prt;
-		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
-		xfrac16.hu = xfrac.wu >> 8;
-		yfrac16.hu = yfrac.wu >> 10;
-
-		xadder = ds_xstep >> 6; // >> 8, *4... lop off top 8 bits, but multing by 4. bottom 6 bits lopped off.
-		yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
-	
-		*/
-
+	 
 	}
 
-	// todo add in the actual colormap?
-	// todo this is probably 100h 200h 300h etc. i bet we can do a lookup off the high byte
-
-//SPANFUNC_SEGMENT         =   6EAAh
-//SPANFUNC_JUMP_OFFSET     =   147h
-
-/*
-	I_Error("made it here: %Fp %x %x %x %x", MK_FP(0x6EAA, 0x147), 
-	((uint16_t __far *)MK_FP(0x6800, 0))[0],   // 0x100 ??????
-	((uint16_t __far *)MK_FP(0x6C00, 0))[0],
-	((uint16_t __far *)MK_FP(0x6EAA, 0))[0],
-	((uint16_t __far *)MK_FP(0x6EAA, 0x147))[0]
-	);
-*/
-
+	
 	if (ds_colormap_index){
-		uint16_t ds_colormap_offset = ds_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
+		uint16_t ds_colormap_offset = ds_colormap_index << 8;
 		uint16_t ds_colormap_shift4 = ds_colormap_index << 4;
 	 	
 		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset + ds_colormap_shift4;
@@ -348,7 +310,7 @@ void __far R_DrawSpanPrep(){
 	// func location
 	dynamic_callfunc();
 }
-
+*/
 
 /*
 

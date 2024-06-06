@@ -58,6 +58,9 @@ SPANFUNC_JUMP_LOOKUP_SEGMENT = 6EA0h
 SPANFUNC_JUMP_OFFSET     =   1EAh
 
 
+DC_YL_LOOKUP_SEGMENT =  6A29h
+ 
+
 ;=================================
 
 .CODE
@@ -2018,7 +2021,7 @@ push  di
 push  bp
 mov   bp, sp                                 ;
 sub   sp, 4                                  ; need stack space for dynamic farcall
-mov   si, 6A29h                              ; store this segment
+mov   si, DC_YL_LOOKUP_SEGMENT               ; store this segment
 add   si, ax                                 ; add the offset to it already
 mov   es, si                                 ; store this segment for now, with offset pre-added
 mov   di, ax                                 ; store argument (offset)
@@ -3377,5 +3380,125 @@ retf
 cld   
 
 ENDP
+
+
+
+
+;
+; R_DrawSpanPrep
+;
+	
+PROC  R_DrawSpanPrep_
+PUBLIC  R_DrawSpanPrep_ 
+
+ push  bx
+ push  cx
+ push  dx
+ push  si
+ push  di
+ push  bp
+ mov   bp, sp
+ sub   sp, 0ah
+ mov   ax, DC_YL_LOOKUP_SEGMENT
+ mov   bx, word ptr [_ds_y]
+ mov   es, ax
+ add   bx, bx
+ mov   ax, word ptr [_destview]
+ mov   dx, word ptr es:[bx]
+ mov   bh, 2
+ add   dx, ax
+ sub   bh, byte ptr [_detailshift]
+ mov   word ptr [bp - 4], dx
+ xor   bl, bl
+ cmp   byte ptr [_spanfunc_main_loop_count], 0
+ jle   loop5
+ loop6:
+ mov   al, bl
+ mov   dx, word ptr [_ds_x1]
+ CBW  
+ mov   cl, bh
+ sub   dx, ax
+ sar   dx, cl
+ mov   cx, word ptr [_ds_x2]
+ sub   cx, ax
+ mov   si, ax
+ mov   word ptr [bp - 6], cx
+ mov   ax, dx
+ mov   cl, bh
+ mov   di, word ptr [bp - 6]
+ shl   ax, cl
+ sar   di, cl
+ add   si, ax
+ mov   word ptr [bp - 2], di
+ cmp   si, word ptr [_ds_x1]
+ jge   jumpahead
+ inc   dx
+ jumpahead:
+ mov   al, bl
+ CBW  
+ mov   cx, word ptr [bp - 2]
+ mov   si, ax
+ sub   cx, dx
+ mov   byte ptr [si + _spanfunc_inner_loop_count], cl
+ test  cx, cx
+ jl    jumpahead2
+ mov   cl, bh
+ mov   ax, dx
+ shl   ax, cl
+ sub   ax, word ptr [_ds_x1]
+ add   ax, si
+ add   si, si
+ add   dx, word ptr [bp - 4]
+ mov   word ptr [si + _spanfunc_prt], ax
+ mov   word ptr [si + _spanfunc_destview_offset], dx
+ jumpahead2:
+ inc   bl
+ cmp   bl, byte ptr [_spanfunc_main_loop_count]
+ jl    loop6
+ loop5:
+ mov   dx, word ptr [_ds_colormap_segment]
+ mov   al, byte ptr [_ds_colormap_index]
+ sub   dx, 0FCh
+ test  al, al
+ je    second
+ xor   ah, ah
+ mov   bx, ax
+ shl   ax, 4
+ shl   bx, 8
+ add   dx, ax
+ mov   ax, 07a60h
+ sub   ax, bx
+ mov   word ptr [bp - 8], dx
+ mov   word ptr [bp - 0ah], ax
+ 
+db 0FFh   ;lcall[bp-0ah]
+db 05Eh
+db 0F6h
+ 
+ leave 
+ pop   di
+ pop   si
+ pop   dx
+ pop   cx
+ pop   bx
+ retf  
+ second:
+ mov   word ptr [bp - 0ah], 07a60h
+ mov   word ptr [bp - 8], dx
+ 
+db 0FFh   ;lcall[bp-0ah]
+db 05Eh
+db 0F6h
+ 
+ leave 
+ pop   di
+ pop   si
+ pop   dx
+ pop   cx
+ pop   bx
+ retf  
+
+ENDP
+
 
 END
