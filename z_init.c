@@ -268,9 +268,8 @@ extern int16_t emshandle;
 
 
 void __far R_DrawColumn (void);
-void __far R_DrawColumnLow(void);
 void __far R_DrawSpan (void);
-void __far R_DrawSpanPrep(void);
+void __far R_DrawFuzzColumn(void);
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
@@ -286,7 +285,7 @@ void __near Z_LoadBinaries() {
 	// load R_DrawColumn into high memory near colormaps...
 	FAR_memcpy(colfunc_function_area,
 	(byte __far *)R_DrawColumn, 
-	(byte __far *)R_DrawFuzzColumn - (byte __far *)R_DrawColumn);
+	(byte __far *)R_DrawSpan - (byte __far *)R_DrawColumn);
 
 
 
@@ -353,7 +352,7 @@ void __near Z_LoadBinaries() {
 
 	FAR_memcpy((byte __far *)spanfunc_function_area_9000, 
 	(byte __far *)R_DrawSpan,
-	 FP_OFF(R_DrawSpanPrep) - FP_OFF(R_DrawSpan));
+	 FP_OFF(R_DrawFuzzColumn) - FP_OFF(R_DrawSpan));
 	
 
 

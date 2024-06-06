@@ -1140,12 +1140,13 @@ void __near M_ChangeDetail(int16_t choice)
 
     R_SetViewSize (screenblocks, detailLevel);
 
-    if (!detailLevel)
+    if (!detailLevel){
         player.message = DETAILHI;
-    else if (detailLevel == 1)
+    } else if (detailLevel == 1){
         player.message = DETAILLO;
-    else
+    } else{
         player.message = DETAILPOTATO;
+    }
 }
 
 
