@@ -3398,7 +3398,7 @@ PUBLIC  R_DrawSpanPrep_
  push  di
  push  bp
  mov   bp, sp
- sub   sp, 0ah
+ sub   sp, 6
  
  ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
 
@@ -3410,17 +3410,18 @@ PUBLIC  R_DrawSpanPrep_
  mov   dx, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
  mov   bh, 2
  add   dx, ax							; dx is baseoffset
+ mov   es, word ptr [_ds_x1]			; es holds ds_x1
 	
 ; int8_t   shiftamount = (2-detailshift);
  sub   bh, byte ptr [_detailshift]		; get shiftamount in bh
- mov   word ptr [bp - 4], dx			; store base view offset
+ mov   word ptr [bp - 2], dx			; store base view offset
  xor   bl, bl							; zero out bl. use it as loop counter/ i
  
  cmp   byte ptr [_spanfunc_main_loop_count], 0		; if shiftamount is equal to zero
  jle   spanfunc_arg_setup_complete
  spanfunc_arg_setup_loop_start:
  mov   al, bl							; al holds loop counter
- mov   dx, word ptr [_ds_x1]			; dx holds ds_x1
+ mov   dx, es							; get ds_x1
  CBW  									; zero out ah
  mov   cl, bh							; move shiftamount to cl
 
@@ -3433,18 +3434,18 @@ PUBLIC  R_DrawSpanPrep_
  mov   cx, word ptr [_ds_x2]			; cx holds ds_x2
  sub   cx, ax							; subtract i
  mov   si, ax							; put i in si
- mov   word ptr [bp - 6], cx			; store ds_x2 - i on bp-6
+ mov   di, cx							; store ds_x2 - i on di
  mov   ax, dx							; copy dsp_x1 to ax
  mov   cl, bh							; move shiftamount to cl
- mov   di, word ptr [bp - 6]			; ds_x2 to di
  shl   ax, cl							; shift dsp_x1 left
  sar   di, cl							; shift ds_x2 right. di = dsp_x2
+ mov   cx, di							; store dsp_x2 in cx
+ mov   di, es							; get ds_x1 into di
 
 ;		if ((dsp_x1 << shiftamount) + i < ds_x1)
 
  add   si, ax							; si = (dsp_x1 << shiftamount) + i
- mov   word ptr [bp - 2], di			; store dsp_x2 in bp - 2
- cmp   si, word ptr [_ds_x1]			; if si <  (dsp_x1 << shiftamount) + i
+ cmp   si, di			; if si <  (dsp_x1 << shiftamount) + i
  jge   dont_increment_ds_x1
 ;		ds_x1 ++
  
@@ -3452,11 +3453,11 @@ PUBLIC  R_DrawSpanPrep_
  dont_increment_ds_x1:
  mov   al, bl							; al holds loop counter
  CBW  
- mov   cx, word ptr [bp - 2]			; retrieve dsp_x2
  mov   si, ax							; store loop counter in si
 
  ; 		countp = dsp_x2 - dsp_x1;
  
+;     cx has dsp_x2
  sub   cx, dx							; cx is countp
 
  mov   byte ptr [si + _spanfunc_inner_loop_count], cl  ; store it
@@ -3470,10 +3471,10 @@ PUBLIC  R_DrawSpanPrep_
  
  mov   ax, dx										   ; move dsp_x1 to ax
  shl   ax, cl										   ; shift dsp_x1 left
- sub   ax, word ptr [_ds_x1]						   ; subtract ds_x1
+ sub   ax, di										   ; subtract ds_x1
  add   ax, si										   ; add i, prt is calculated
  add   si, si										   ; double i for word lookup index
- add   dx, word ptr [bp - 4]						   ; dsp_x1 + base view offset
+ add   dx, word ptr [bp - 2]						   ; dsp_x1 + base view offset
  mov   word ptr [si + _spanfunc_prt], ax			   ; store prt
  mov   word ptr [si + _spanfunc_destview_offset], dx   ; store view offset
  
@@ -3510,12 +3511,12 @@ PUBLIC  R_DrawSpanPrep_
  add   dx, ax
  mov   ax, 07a60h
  sub   ax, bx
- mov   word ptr [bp - 8], dx
- mov   word ptr [bp - 0ah], ax
+ mov   word ptr [bp - 4], dx
+ mov   word ptr [bp - 6], ax
  
-db 0FFh   ;lcall[bp-0ah]
+db 0FFh   ;lcall[bp-6]
 db 05Eh
-db 0F6h
+db 0FAh
  
  leave 
  pop   di
@@ -3533,12 +3534,12 @@ db 0F6h
 ;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
 
  
- mov   word ptr [bp - 0ah], 07a60h		; callfunc offset is 0x0FC0+colormaps_spanfunc_off_difference
- mov   word ptr [bp - 8], dx
+ mov   word ptr [bp - 4], dx
+ mov   word ptr [bp - 6], 07a60h		; callfunc offset is 0x0FC0+colormaps_spanfunc_off_difference
  
-db 0FFh   ;lcall[bp-0ah]
+db 0FFh   ;lcall[bp-6]
 db 05Eh
-db 0F6h
+db 0FAh
  
  leave 
  pop   di
