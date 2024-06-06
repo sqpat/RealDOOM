@@ -46,17 +46,16 @@ EXTRN	_ds_ystep:DWORD
 EXTRN   _sp_bp_safe_space:WORD
 EXTRN   _ss_variable_space:WORD
 
-EXTRN _spanfunc_jump_lookup:WORD
-
 EXTRN _spanfunc_main_loop_count:BYTE
 EXTRN _spanfunc_inner_loop_count:BYTE
 EXTRN _spanfunc_outp:BYTE
 EXTRN _spanfunc_prt:WORD
 EXTRN _spanfunc_destview_offset:WORD
 
-
-SPANFUNC_SEGMENT         =   6EAAh
-SPANFUNC_JUMP_OFFSET     =   14Ch
+; jump table is 0 offset at this segment
+SPANFUNC_JUMP_LOOKUP_SEGMENT = 6EA0h
+; offset of the jmp instruction's immediate from the above segment
+SPANFUNC_JUMP_OFFSET     =   1EAh
 
 
 ;=================================
@@ -2205,7 +2204,7 @@ mov   al, byte ptr [_spanfunc_inner_loop_count + bx]
 
 
 
-test  al, al					; if countp <= 0 continue
+test  al, al					
 
 ; is count < 0? if so skip this loop iter
 
@@ -2214,11 +2213,14 @@ jmp   do_span_loop
 at_least_one_pixel:
 
 ;       modify the jump for this iteration (self-modifying code)
-mov   DX, SPANFUNC_SEGMENT
+mov   DX, SPANFUNC_JUMP_LOOKUP_SEGMENT
 MOV   ES, DX
-sal   AL, 1
-xchg  ax, di
-mov   AX, word ptr [_spanfunc_jump_lookup + DI]
+sal   AL, 1					; convert index to  a word lookup index
+xchg  ax, SI
+
+lods  WORD PTR ES:[SI]		; <--- this doesnt work, becomes ES:SI, tasm doesnt warn you. left as a warning for future generations
+;mov  AX, WORD PTR ES:[DI]		; gets the jump amount from the jump lookup
+
 MOV   DI, SPANFUNC_JUMP_OFFSET
 stos  WORD PTR es:[di]       ;
 

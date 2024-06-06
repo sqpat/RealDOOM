@@ -341,12 +341,16 @@ void __near Z_LoadBinaries() {
 	//274
 	FAR_fread(doomednum, 2, NUMMOBJTYPES, fp);
 
-	// just load them all here in one call instead of 5 like below
+	// load consecutive memory contents in one call here
 	Z_QuickMapIntermission();
 	//760
 	FAR_fread(lnodex, 1, 760, fp);
 
+	// FOD3
 	Z_QuickMapPalette();
+	
+	FAR_fread(spanfunc_jump_lookup_9000, 2, 80, fp);
+
 	FAR_memcpy((byte __far *)spanfunc_function_area_9000, 
 	(byte __far *)R_DrawSpan,
 	 FP_OFF(R_DrawSpanPrep) - FP_OFF(R_DrawSpan));
@@ -357,8 +361,8 @@ void __near Z_LoadBinaries() {
  
 	Z_QuickMapRender();
 
-	//4096
-	FAR_fread(zlight, 1, 4096, fp);
+	//2048
+	FAR_fread(zlight, 1, 2048, fp);
 	FAR_fread(fuzzoffset, 1, 50, fp);
 
 	Z_QuickMapPhysics();

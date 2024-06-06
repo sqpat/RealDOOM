@@ -71,7 +71,7 @@ int16_t				ceilingplaneindex;
 //
 // texture mapping
 //
-uint16_t __far*	planezlight;
+uint8_t __far*	planezlight;
 fixed_t			planeheight;
 
 fixed_t			basexscale;
@@ -137,7 +137,7 @@ void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 		}
 
 		ds_colormap_segment = colormapssegment;
-		ds_colormap_index = (planezlight[index]) >> 8;
+		ds_colormap_index = planezlight[index];
 
 	}
 

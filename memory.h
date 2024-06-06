@@ -96,11 +96,6 @@ size_segs                 EDEF:0000
 #define B000Block 0xB14B0000
 
 
-#define size_xtoviewangle          (sizeof(fineangle_t) * (SCREENWIDTH + 1))
-// these scalelights ought to be in render memory but i couldn't fit it in bsp memory region...
-// make sure to revisit
-
-#define xtoviewangle       ((fineangle_t __far*)  MAKE_FULL_SEGMENT(B000Block       , 0))
 
 
 
@@ -490,9 +485,10 @@ blockmaplump_plus4  76E4:0008
 #define size_spanfunc_jump_lookup         (80 * sizeof(uint16_t)) 
 
 // spanfunc offset
-#define spanfunc_jump_lookup_src          ((uint16_t  __far*)               MAKE_FULL_SEGMENT(0x6C000000              , palettebytes_size))
-#define spanfunc_function_area            ((byte  __far*)                   MAKE_FULL_SEGMENT(spanfunc_jump_lookup_src, size_spanfunc_jump_lookup))
-//#define spanfunc_function_area          ((uint16_t  __far*)               MAKE_FULL_SEGMENT(0x6C000000              , size_spanfunc_jump_lookup))
+#define spanfunc_jump_lookup              ((uint16_t  __far*)               MAKE_FULL_SEGMENT(0x6C000000              , palettebytes_size))
+#define spanfunc_function_area            ((byte  __far*)                   MAKE_FULL_SEGMENT(spanfunc_jump_lookup, size_spanfunc_jump_lookup))
+
+#define spanfunc_jump_lookup_9000         ((byte  __far*)                   (((uint32_t)spanfunc_jump_lookup)   - 0x6C000000 + 0x90000000))
 #define spanfunc_function_area_9000       ((uint16_t  __far*)               (((uint32_t)spanfunc_function_area) - 0x6C000000 + 0x90000000))
 #define R_DrawSpanAddr                    ((void    (__far *)(void))        (spanfunc_function_area))
 #define spanfunc_segment                  ((uint16_t) ((int32_t)spanfunc_function_area >> 16))
@@ -800,21 +796,23 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_leftover_openings_arrays     0x2A00
 
 #define size_texturewidthmasks  MAX_TEXTURES * sizeof(uint8_t)
-#define size_zlight             sizeof(uint16_t) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_zlight             sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTZ)
+#define size_xtoviewangle       (sizeof(fineangle_t) * (SCREENWIDTH + 1))
 #define size_patchpage          MAX_PATCHES * sizeof(uint8_t)
 #define size_patchoffset        MAX_PATCHES * sizeof(uint8_t)
 
 
 #define texturewidthmasks       ((uint8_t  __far*)        MAKE_FULL_SEGMENT(0x80000000 , size_leftover_openings_arrays))
-#define zlight                  ((uint16_t far*)          MAKE_FULL_SEGMENT(texturewidthmasks , size_texturewidthmasks))
-#define patchpage               ((uint8_t __far*)         MAKE_FULL_SEGMENT(zlight , size_zlight))
+#define zlight                  ((uint8_t far*)           MAKE_FULL_SEGMENT(texturewidthmasks , size_texturewidthmasks))
+#define xtoviewangle            ((fineangle_t __far*)     MAKE_FULL_SEGMENT(zlight , size_zlight))
+#define patchpage               ((uint8_t __far*)         MAKE_FULL_SEGMENT(xtoviewangle , size_xtoviewangle))
 #define patchoffset             ((uint8_t __far*)         (((int32_t)patchpage) + size_patchpage))
+
 //#define patchoffset             ((uint8_t __far*)         MAKE_FULL_SEGMENT(patchpage, size_patchpage))
 
 #define visplanes_8400          ((visplane_t __far*)      (0x84000000 ))
 #define visplanes_8800          ((visplane_t __far*)      (0x88000000 ))
 #define visplanes_8C00          ((visplane_t __far*)      (0x8C000000 ))
-
 /*
   
 spritecache_nodes           82A0:0000
@@ -824,13 +822,14 @@ texturecache_nodes          82A0:0073
 
 texturewidthmasks           82A0:0000
 zlight                      82BB:0000
-patchpage                   83BB:0000
-patchoffset                 83BB:01DC
-[empty]                     8000:3F73
+xtoviewangle                833B:0000
+patchpage                   8364:0000
+patchoffset                 8364:01DC
+[empty]                     8000:398F
 
 
 
-// 152 bytes free
+// 1649 bytes free
 */
 
 
