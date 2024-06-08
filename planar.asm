@@ -73,6 +73,7 @@ CACHEDXSTEP_SEGMENT = 90e6h
 SPANFUNC_FUNCTION_AREA_SEGMENT = 6eaah
 SPANFUNC_PREP_OFFSET = 0717h
 BASE_COLORMAP_POINTER = 6800h
+XTOVIEWANGLE_SEGMENT = 833bh
 
 EXTRN _basexscale:WORD
 EXTRN _planezlight:WORD
@@ -3772,8 +3773,6 @@ mov   word ptr [bp - 0eh], bx
 mov   word ptr [bp - 016h], SPANFUNC_PREP_OFFSET
 mov   word ptr [bp - 014h], SPANFUNC_FUNCTION_AREA_SEGMENT
 mov   bx, CACHEDHEIGHT_SEGMENT
-mov   word ptr [bp - 6], CACHEDYSTEP_SEGMENT
-mov   word ptr [bp - 4], CACHEDXSTEP_SEGMENT
 xor   ah, ah
 mov   dx, word ptr [_planeheight + 2]
 mov   si, ax
@@ -3792,13 +3791,15 @@ mov   es, di
 mov   ax, word ptr es:[si]
 mov   word ptr [bp - 0ch], ax
 mov   ax, word ptr es:[si + 2]
-mov   es, word ptr [bp - 4]
+mov   bx, CACHEDXSTEP_SEGMENT
+mov   es, bx
 mov   word ptr [bp - 0ah], ax
 mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
 mov   word ptr [_ds_xstep], ax
 mov   word ptr [_ds_xstep+2], dx
-mov   es, word ptr [bp - 6]
+mov   bx, CACHEDYSTEP_SEGMENT
+mov   es, bx
 mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
 mov   word ptr [_ds_ystep], ax
@@ -3818,7 +3819,7 @@ call R_FixedMulLocal_
 
 mov   bx, word ptr [bp - 8]
 mov   di, ax
-mov   ax, 833bh
+mov   ax, XTOVIEWANGLE_SEGMENT
 add   bx, bx
 mov   es, ax
 mov   ax, word ptr [_viewangle_shiftright3]
@@ -3894,6 +3895,14 @@ mov   word ptr [_ds_x2], ax
 db 0FFh   ;lcall[bp-16]
 db 05Eh
 db 0EAh
+; push cs
+; lcall 0x6EEA:0x0717 (SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET)
+;db 00Eh
+;db 09Ah
+;db 017h
+;db 007h
+;db 0EAh 
+;db 06Eh
 
 leave 
 pop   di
@@ -3926,7 +3935,8 @@ mov   word ptr [bp - 010h], ax
 mov   word ptr [bp - 0ch], ax
 ;lcall FixedMul_
 call R_FixedMulLocal_
-mov   es, word ptr [bp - 4]
+mov   bx, CACHEDXSTEP_SEGMENT
+mov   es, bx
 mov   bx, word ptr [_baseyscale]
 mov   word ptr es:[si], ax
 mov   cx, word ptr [_baseyscale+2]
@@ -3939,7 +3949,8 @@ mov   ax, word ptr [bp - 010h]
 ;lcall FixedMul_
 call R_FixedMulLocal_
 
-mov   es, word ptr [bp - 6]
+mov   bx, CACHEDYSTEP_SEGMENT
+mov   es, bx
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
 mov   dx, word ptr es:[si]

@@ -44,6 +44,8 @@ file f_wipe.obj
 file dmx.obj
 file dutils.obj
 file wi_stuff.obj
+file math.obj
+
 
 #these files put in overlay 
 file f_finale.obj

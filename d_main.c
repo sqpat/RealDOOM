@@ -202,6 +202,7 @@ void __far getStringByIndex(int16_t stringindex, int8_t __far* returndata) {
 
 // Fixme. __USE_C_FIXED__ or something.
 
+/*
 fixed_t32 FixedMul (fixed_t32	a, fixed_t32 b) {
     // fixed_t_union fp;
     // fp.w = ((long long)a * (long long)b);
@@ -210,7 +211,8 @@ fixed_t32 FixedMul (fixed_t32	a, fixed_t32 b) {
     llu.l =  ((long long)a * (long long)b);
 	return llu.productresult.usemid;
 }
-
+*/
+/*
 fixed_t32 FixedMul1632(int16_t	a, fixed_t32 b) {
 	// fixed_t_union fp;
 	// fp.w = ((long long)a * (long long)b);
@@ -219,7 +221,7 @@ fixed_t32 FixedMul1632(int16_t	a, fixed_t32 b) {
 	llu.l = (a * (long long)b);
 	return llu.productresult.usemid;
 }
-
+*/
 
 fixed_t32 FixedMul16u32(uint16_t	a, fixed_t32 b) {
 	// fixed_t_union fp;

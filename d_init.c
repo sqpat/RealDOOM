@@ -484,6 +484,7 @@ void __far M_Init(void);
 
 //fixed_t32	__far R_FixedMulLocalWrapper (fixed_t32 a, fixed_t32 b);
 //fixed_t32	__far R_FixedMulLocalWrapper2 (fixed_t32 a, fixed_t32 b);
+fixed_t32 FixedMul1632(int16_t	a, fixed_t32 b);
 
 void __far D_DoomMain2(void)
 {
@@ -496,7 +497,12 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 
-
+	//I_Error("\n%lx %lx", FixedMul(0x8234, 0x56789ABC), FixedMul1632(0x8234, 0x56789ABC));
+// 3A6A1234
+//  AX holds 1234
+//  BX holds 9ABC
+//  CX holds 5678
+// so: 
 /*
 
 
