@@ -418,4 +418,70 @@ ret
 
 ENDP
 
+
+
+
+
+PROC FixedMulBig1632_
+PUBLIC FixedMulBig1632_
+
+; AX  *  CX:BX
+;  0  1   2  3
+
+; AX:00 * CX:BX
+
+; BUT we are going to "alias" AX to DX and 00 to AX for the function to keep things consistent with above
+
+; DX:00 * CX:BX
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               00BXhi	 00BXlo
+;                       00CXhi  00CXlo
+;               00S1hi  00S1lo
+
+;               S0BXhi  S0BXlo                          
+;                       DXBXhi  DXBXlo          
+;               DXCXhi  DXCXlo  
+;                       
+;                               
+;                       
+;       
+
+
+
+; need to get the sign-extends for DX and CX
+
+
+
+
+
+CWD				; DX/S0
+AND   DX, BX	; S0*BX
+NEG   DX
+XCHG  CX, DX	; CX into DX, CX stores hi result
+
+MOV   ES, AX    ; store DX into ES
+
+MUL   DX        ; CX * DX
+ADD   CX, AX    ; low word result into high word return
+
+MOV  AX, ES    ; grab DX again
+MUL  BX        ; BX * DX
+ADD  DX, CX    ; add high bits back
+ 
+
+ret
+
+
+
+ENDP
+
+
 END

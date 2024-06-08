@@ -483,6 +483,10 @@ void __far M_Init(void);
 
 
 
+fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
+fixed_t32	FixedMulBig16322(int16_t a, fixed_t b);
+
+
 void __far D_DoomMain2(void)
 {
 	int16_t             p;
@@ -496,24 +500,25 @@ void __far D_DoomMain2(void)
 	
 	
 /*
-	uint16_t i, j;
+	uint16_t i;
 
 	for (i = 0; i < 65535; i++){
-		for (j = 0; i < 65535; i++){
-			if (FixedMul1616(i, j) != FixedMul16162(i, j)){
-				I_Error("%lx %lx %i %i", FixedMul1616(i, j), FixedMul16162(i, j), i, j);
-			}
+		if (FixedMulBig1632(i, 0x12345678) != FixedMulBig16322(i, 0x12345678)){
+			I_Error("%lx %lx %i %i", FixedMulBig1632(i, 0x12345678), FixedMulBig16322(i, 0x12345678), i, 0x12345678);
+		}
+		if (FixedMulBig1632(i, 0x92345678) != FixedMulBig16322(i, 0x92345678)){
+			I_Error("%lx %lx %i %i", FixedMulBig1632(i, 0x92345678), FixedMulBig16322(i, 0x92345678), i, 0x92345678);
 		}
 	}
 	I_Error("\n\n%lx %lx %lx %lx", 
-		FixedMul16162(0xFFFF, 0x0020),
-		FixedMul1616(0xFFFF, 0x0020),
+		FixedMulBig16322(0xFFFF, 0x0020),
+		FixedMulBig1632(0xFFFF, 0x0020),
 
-		FixedMul16162(0xFFFF, 0x1020),
-		FixedMul1616(0xFFFF, 0x1020)
+		FixedMulBig16322(0xFFFF, 0x1020),
+		FixedMulBig1632(0xFFFF, 0x1020)
 
 	);	
-*/
+
 
 
 	/*
