@@ -209,8 +209,9 @@ ENDP
 
 
 
-PROC FixedMulTrig_
-PUBLIC FixedMulTrig_
+
+PROC FixedMulTrigOld_
+PUBLIC FixedMulTrigOld_
 
 ; DX:AX  *  CX:BX
 ;  0  1   2  3
@@ -241,24 +242,10 @@ PUBLIC FixedMulTrig_
 ;                       
 ;       
 
-; AX is param 1 (segment)
-; DX is param 2 (fineangle or lookup)
-; CX:BX is value 2
-
-
-
 
 
 push  si
 
-; lookup the fine angle
-
-sal dx, 1
-sal dx, 1   ; DWORD lookup index
-mov si, dx
-mov es, ax  ; put segment in ES
-mov ax, es:[si]
-mov dx, es:[si+2]
 
 mov   es, ax    ; store ax in es
 mov   DS, DX    ; store sign bits in DS
@@ -319,8 +306,10 @@ ret
 
 ENDP
 
-PROC FixedMulTrigOld_
-PUBLIC FixedMulTrigOld_
+
+
+PROC FixedMulTrig_
+PUBLIC FixedMulTrig_
 
 ; DX:AX  *  CX:BX
 ;  0  1   2  3
@@ -351,9 +340,23 @@ PUBLIC FixedMulTrigOld_
 ;                       
 ;       
 
+; AX is param 1 (segment)
+; DX is param 2 (fineangle or lookup)
+; CX:BX is value 2
+
+
 
 
 push  si
+
+; lookup the fine angle
+
+sal dx, 1
+sal dx, 1   ; DWORD lookup index
+mov si, dx
+mov es, ax  ; put segment in ES
+mov ax, es:[si]
+mov dx, es:[si+2]
 
 
 mov   es, ax    ; store ax in es

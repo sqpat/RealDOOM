@@ -279,7 +279,32 @@ fixed_t32	FixedMul (fixed_t32 a, fixed_t32 b);
 // puts int16 into the high bits of a 32 bit
 fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 // puts int16 into the low bits of a 32 bit
-fixed_t32	FixedMul1616(int16_t a, int16_t b);
+//fixed_t32	FixedMul1616(int16_t a, int16_t b);
+
+inline fixed_t32 FixedMul1616(int16_t a, int16_t b);
+#pragma aux FixedMul1616 =   \
+"IMUL DX"  \
+    parm [ax] [dx]       \
+    modify [ax dx]   \
+    value [dx ax];
+
+/*
+"CWD"         \
+"AND DX, BX"  \
+"NEG DX"      \
+"MOV CX, DX"  \
+"XCHG AX, BX" \
+"CWD"         \
+"AND DX, BX"  \
+"NEG DX"      \
+"ADD CX, DX"  \
+"MUL BX"      \
+"ADD DX, CX"  \
+    parm [ax] [bx]       \
+    modify [ax bx cx dx]   \
+    value [dx ax];
+
+*/
 
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
 

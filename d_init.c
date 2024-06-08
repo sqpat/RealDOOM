@@ -482,8 +482,6 @@ void __near W_AddFile(int8_t *filename);
 void __far M_Init(void);
 
 
-//fixed_t32	__far R_FixedMulLocalWrapper (fixed_t32 a, fixed_t32 b);
-//fixed_t32	__far R_FixedMulLocalWrapper2 (fixed_t32 a, fixed_t32 b);
 
 void __far D_DoomMain2(void)
 {
@@ -495,30 +493,74 @@ void __far D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
+	
+	
 /*
+	uint16_t i, j;
+
+	for (i = 0; i < 65535; i++){
+		for (j = 0; i < 65535; i++){
+			if (FixedMul1616(i, j) != FixedMul16162(i, j)){
+				I_Error("%lx %lx %i %i", FixedMul1616(i, j), FixedMul16162(i, j), i, j);
+			}
+		}
+	}
+	I_Error("\n\n%lx %lx %lx %lx", 
+		FixedMul16162(0xFFFF, 0x0020),
+		FixedMul1616(0xFFFF, 0x0020),
+
+		FixedMul16162(0xFFFF, 0x1020),
+		FixedMul1616(0xFFFF, 0x1020)
+
+	);	
+*/
+
+
+	/*
+	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
+
+
+
+
+
+	FAR_fread(finesine, 1, 0x2cc9, fp);
+
+	//40960
+	FAR_fread(finesine, 4, 10240, fp);
+	fclose(fp);
+
+	for (i = 0; i < 8192; i++){
+		if (FixedMul(finesine[i], 0x12345678) != FixedMulTrig(FINE_SINE_ARGUMENT, i, 0x12345678)){
+			I_Error("a, %i, %li %li", i, FixedMul(finesine[i], 0x12345678), FixedMulTrig(FINE_SINE_ARGUMENT, i, 0x12345678));
+		}
+		if (FixedMul(finecosine[i], 0x12345678) != FixedMulTrig(FINE_COSINE_ARGUMENT, i, 0x12345678)){
+			I_Error("b, %i, %li %li", i, FixedMul(finecosine[i], 0x12345678), FixedMulTrig(FINE_COSINE_ARGUMENT, i, 0x12345678));
+		}
+
+	}
 	I_Error("\n%lx %lx %lx %lx\n%lx %lx %lx %lx\n%lx %lx %lx %lx\n%lx %lx %lx %lx\n", 
 	
-	FixedMul     (0xFFFFA234, 0xFFFF0000), 
-	FixedMulTrig(FINE_SINE_ARGUMENT, 0, 0xFFFF0000),
-	FixedMulTrigOld(0x80003234, 0x00005678),
-	FixedMulTrigOld(0x80003234, 0x00005678),
-	
-	FixedMul     (0x80003234, 0x00005678), 
-	FixedMulTrig(FINE_SINE_ARGUMENT, 0, 0x12345678),
-	FixedMulTrigOld(0x80003234, 0x00005678),
-	FixedMulTrigOld(0x80003234, 0x00005678),
-	
-	FixedMul     (0x1234A234, 0xFFFF1234), 
-	FixedMulTrig(FINE_SINE_ARGUMENT, 0, 0xFFFF0000),
-	FixedMulTrigOld(0x1234A234, 0xFFFF1234),
-	FixedMulTrigOld(0x1234A234, 0xFFFF1234),
-	
-	FixedMul     (0x80003234, 0xFFFF5678), 
-	FixedMulTrig(FINE_SINE_ARGUMENT, 0, 0xFFFF0000),
-	FixedMulTrigOld(0x80003234, 0xFFFF5678),
-	FixedMulTrigOld(0x80003234, 0xFFFF5678)
+		FixedMul     (finesine[0], 0x12345678), 
+		FixedMulTrig(FINE_SINE_ARGUMENT, 0, 0x12345678),
+		FixedMulTrigOld(finesine[0], 0x12345678),
+		FixedMulTrigOld(finesine[0], 0x12345678),
+		
+		FixedMul     (finesine[500], 0x00005678), 
+		FixedMulTrig(FINE_SINE_ARGUMENT, 500, 0x00005678),
+		FixedMulTrigOld(finesine[500], 0x00005678),
+		FixedMulTrigOld(finesine[500], 0x00005678),
+		
+		
+		FixedMul     (finesine[3000], 0xFFFF1234), 
+		FixedMulTrig(FINE_SINE_ARGUMENT, 3000, 0xFFFF1234),
+		FixedMulTrigOld(finesine[3000], 0xFFFF1234),
+		FixedMulTrigOld(finesine[3000], 0xFFFF1234),
+		
+		FixedMul     (finesine[7000], 0x1FFF1234), 
+		FixedMulTrig(FINE_SINE_ARGUMENT, 7000, 0x1FFF1234),
+		FixedMulTrigOld(finesine[7000], 0x1FFF1234),
+		FixedMulTrigOld(finesine[7000], 0x1FFF1234)
 
-	
 	);
 
 // 3A6A1234

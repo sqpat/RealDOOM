@@ -213,6 +213,8 @@ fixed_t32 FixedMul16u32(uint16_t	a, fixed_t32 b) {
 	return llu.productresult.usemid;
 }
 
+// essentially a is shifted left 16 for the mul?
+//
 fixed_t32 FixedMulBig1632 (int16_t	a, fixed_t	b) {
     fixed_t_union biga;
 	longlong_union llu;
@@ -223,10 +225,11 @@ fixed_t32 FixedMulBig1632 (int16_t	a, fixed_t	b) {
 }
 
  
-
+/*
 fixed_t32 FixedMul1616(int16_t	a, int16_t	b) {
 	return (int32_t)a * b;
 }
+*/
 
 
 
