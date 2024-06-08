@@ -266,7 +266,6 @@ typedef uint8_t powertype_t;
 #define FixedMul2432(a,b) FixedMul(a, b)
 
 // sine/cosine LUT values go in b. This is 16 or 17 bits max - can be like a 24 bit mult except we can 0 check the high 8 bits and maybe just do 2 bytes of mult
-#define FixedMulTrig(a,b) FixedMul(a, b)
 fixed_t32	FixedMul1632(int16_t a, fixed_t32 b);
 fixed_t32	FixedMul16u32(uint16_t a, fixed_t32 b);
 

@@ -484,7 +484,8 @@ void __far M_Init(void);
 
 //fixed_t32	__far R_FixedMulLocalWrapper (fixed_t32 a, fixed_t32 b);
 //fixed_t32	__far R_FixedMulLocalWrapper2 (fixed_t32 a, fixed_t32 b);
-fixed_t32 FixedMul1632(int16_t	a, fixed_t32 b);
+fixed_t32 FixedMulTrig3(fixed_t32	a, fixed_t32 b);
+fixed_t32 FixedMulTrig2(fixed_t32	a, fixed_t32 b);
 
 void __far D_DoomMain2(void)
 {
@@ -496,8 +497,32 @@ void __far D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
+/*
+	I_Error("\n%lx %lx %lx %lx\n%lx %lx %lx %lx\n%lx %lx %lx %lx\n%lx %lx %lx %lx\n", 
+	
+	FixedMul     (0xFFFFA234, 0xFFFF0000), 
+	FixedMulTrig (0xFFFFA234, 0xFFFF0000), 
+	FixedMulTrig2(0xFFFFA234, 0xFFFF0000),
+	FixedMulTrig3(0xFFFFA234, 0xFFFF0000),
+	
+	FixedMul     (0x80003234, 0x00005678), 
+	FixedMulTrig (0x80003234, 0x00005678), 
+	FixedMulTrig2(0x80003234, 0x00005678),
+	FixedMulTrig3(0x80003234, 0x00005678),
+	
+	FixedMul     (0x1234A234, 0xFFFF1234), 
+	FixedMulTrig (0x1234A234, 0xFFFF1234), 
+	FixedMulTrig2(0x1234A234, 0xFFFF1234),
+	FixedMulTrig3(0x1234A234, 0xFFFF1234),
+	
+	FixedMul     (0x80003234, 0xFFFF5678), 
+	FixedMulTrig (0x80003234, 0xFFFF5678), 
+	FixedMulTrig2(0x80003234, 0xFFFF5678),
+	FixedMulTrig3(0x80003234, 0xFFFF5678)
 
-	//I_Error("\n%lx %lx", FixedMul(0x8234, 0x56789ABC), FixedMul1632(0x8234, 0x56789ABC));
+	
+	);
+
 // 3A6A1234
 //  AX holds 1234
 //  BX holds 9ABC
