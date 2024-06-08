@@ -482,6 +482,9 @@ void __near W_AddFile(int8_t *filename);
 void __far M_Init(void);
 
 
+//fixed_t32	__far R_FixedMulLocalWrapper (fixed_t32 a, fixed_t32 b);
+//fixed_t32	__far R_FixedMulLocalWrapper2 (fixed_t32 a, fixed_t32 b);
+
 void __far D_DoomMain2(void)
 {
 	int16_t             p;
@@ -493,17 +496,45 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 
+
 /*
+
+
+
+	fixed_t32 FixedMul (fixed_t32	a, fixed_t32 b);
 	void __far R_DrawColumn (void);
 	void __far R_DrawFuzzColumn(void);
 	void __far R_DrawSpan (void);
 	void __far R_DrawSpanPrep(void);
-	FILE* fp = fopen("D_OUTPU6.BIN", "wb"); 
+	void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
+	void __near R_ClearPlanes(void);
+	FILE* fp = fopen("D_OUTPU8.BIN", "wb"); 
 
-	FAR_fwrite((byte __far *)R_DrawSpanPrep, 1, (byte __far *)R_DrawFuzzColumn - (byte __far *)R_DrawSpanPrep, fp);
+	FAR_fwrite((byte __far *)R_MapPlane, 1, (byte __far *)R_ClearPlanes - (byte __far *)R_MapPlane, fp);
 	fclose(fp);
     I_Error("\n done");
-	
+	*/
+/**/
+/*
+
+	DEBUG_PRINT("\nResult: %lx %lx %lx %lx %lx\nResult: %lx %lx %lx %lx %lx\nResult: %lx %lx %lx %lx %lx", 
+
+
+FixedMul(128L, -10000L),
+FixedMul(10000L, -10000L),
+FixedMul(-4000, -4000L),
+FixedMul(0xFFEEDDCC, 0xAABBCCDD),
+FixedMul(0, 0),
+
+
+R_FixedMulLocalWrapper2(128L, -10000L),
+R_FixedMulLocalWrapper2(10000L, -10000L),
+R_FixedMulLocalWrapper2(-4000, -4000L),
+R_FixedMulLocalWrapper2(0xFFEEDDCC, 0xAABBCCDD),
+R_FixedMulLocalWrapper2(0, 0)
+
+);
+	exit(0);
 	//I_Error("\n%Fp %Fp", spanfunc_function_area, spanfunc_function_area_9000 );
 /*	
 	//boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
@@ -591,10 +622,30 @@ void __far D_DoomMain2(void)
 		segread(&sregs);
 		//I_Error("\npointer is %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, DGROUP_SIZE), MK_FP(sregs.cs, &main), MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0), MK_FP(sregs.ss, 0));
 		// 
-		DEBUG_PRINT("Bytes free %u %FP", (baselowermemoryaddresssegment - (sregs.ds +( DGROUP_SIZE >> 4))) << 4, MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0));
+		DEBUG_PRINT("Bytes free %u %FP %Fp", (baselowermemoryaddresssegment - (sregs.ds +( DGROUP_SIZE >> 4))) << 4, MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0), MK_FP(FP_SEG(P_SetupLevel), 0x26ad));
 		exit(0);
 
 	}
+
+/*
+	if (M_CheckParm("-debug")){
+		segread(&sregs);
+		//I_Error("\npointer is %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, DGROUP_SIZE), MK_FP(sregs.cs, &main), MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0), MK_FP(sregs.ss, 0));
+		// 
+		
+
+		DEBUG_PRINT("\nResult: %li %li %li %li %li", 
+		R_FixedMulLocalWrapper(128L, 0L),
+		R_FixedMulLocalWrapper(0x10000, 1L),
+		R_FixedMulLocalWrapper(128L, 1L),
+		R_FixedMulLocalWrapper(0x10000, 127L),
+		R_FixedMulLocalWrapper(0, 0)
+
+		);
+		exit(0);
+	}
+*/
+
 
 	
 

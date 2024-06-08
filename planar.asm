@@ -52,14 +52,39 @@ EXTRN _spanfunc_outp:BYTE
 EXTRN _spanfunc_prt:WORD
 EXTRN _spanfunc_destview_offset:WORD
 
+
+
 ; jump table is 0 offset at this segment
 SPANFUNC_JUMP_LOOKUP_SEGMENT = 6EA0h
 ; offset of the jmp instruction's immediate from the above segment
 SPANFUNC_JUMP_OFFSET     =   1EAh
 
+COLFUNC_JUMP_OFFSET      =   075h
 
 DC_YL_LOOKUP_SEGMENT =  6A29h
+
+DISTSCALE_SEGMENT = 9032h
+FINESINE_SEGMENT = 31e4h
  
+CACHEDHEIGHT_SEGMENT = 9082h
+CACHEDDISTANCE_SEGMENT = 90b4h
+CACHEDYSTEP_SEGMENT = 9118h
+CACHEDXSTEP_SEGMENT = 90e6h
+SPANFUNC_FUNCTION_AREA_SEGMENT = 6eaah
+SPANFUNC_PREP_OFFSET = 0717h
+BASE_COLORMAP_POINTER = 6800h
+
+EXTRN _basexscale:WORD
+EXTRN _planezlight:WORD
+EXTRN _fixedcolormap:BYTE
+EXTRN _viewx:WORD
+EXTRN _viewy:WORD
+EXTRN _baseyscale:WORD
+EXTRN _basexscale:WORD
+EXTRN _viewangle_shiftright3:WORD
+EXTRN _centeryfrac_shiftright4:WORD
+EXTRN _planeheight:WORD
+
 
 ;=================================
 
@@ -138,13 +163,12 @@ do_draw:
 
 ; todo figure out how to do this without a jump
 
-    jns skipsignedmul          ; if low(m1) not signed then high(m1) was 0
+
+	CWD
+	AND DX, BX
+	NEG DX
 
 
-; dx is 0. mul by 0xFFFF is dx - bx;
-; low (M2) * high (M1) which is 0xFFFF
-    sub     dx,bx
-skipsignedmul:
 
     mul     cl;             ; only the bottom 16 bits are necessary.
     add     dx,ax           ; - add to total
@@ -2055,7 +2079,7 @@ mov   ax, 6A10h                              ; segment of dc_yl_lookup array
 add   ax, di                                 ; add argument offset to the ax address
 mov   word ptr [_dc_yl_lookup_val], bx       ; store pre-calculated dc_yl * 80
 mov   es, ax
-mov   bx, 074h                               ; location of jump relative instruction's immediate
+mov   bx, COLFUNC_JUMP_OFFSET                ; location of jump relative instruction's immediate
 mov   ax, word ptr es:[si]                   ; 
 add   di, 6A42h                              ; R_DrawColumn segment with 0 indexed function offset
 mov   es, di                                 ; set seg
@@ -3551,5 +3575,380 @@ db 0FAh
 
 ENDP
 
+
+
+PROC R_FixedMulTrigLocal_
+PUBLIC R_FixedMulTrigLocal_
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; with sign extend for byte 3:
+; S0:DX:AX    *   S1:CX:BX
+; S0 = DX sign extend
+; S1 = CX sign extend
+
+; DIFFERENT FROM FIXEDMUL - 
+; DX is already a sign extend of AX
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               AXBXhi	 AXBXlo
+;                       DXBXhi  DXBXlo          
+;               S0BXhi  S0BXlo                          
+;
+;                       AXCXhi  AXCXlo
+;               DXCXhi  DXCXlo  
+;                       
+;               AXS1hi  AXS1lo
+;                               
+;                       
+;       
+
+
+
+; need to get the sign-extends for DX and CX
+
+push  si
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+;CWD				; S0 is already equal to dx 
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+AND  AX, CX    ; DX*CX
+NEG  AX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+AND  AX, BX         ; DX*BX
+NEG  AX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; copy CX into S1
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+pop   si
+ret
+
+
+
+ENDP
+
+PROC R_FixedMulLocal_
+PUBLIC R_FixedMulLocal_
+
+; DX:AX  *  CX:BX
+;  0  1      2  3
+
+; with sign extend for byte 3:
+; S0:DX:AX    *   S1:CX:BX
+; S0 = DX sign extend
+; S1 = CX sign extend
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               AXBXhi	 AXBXlo
+;                       DXBXhi  DXBXlo          
+;               S0BXhi  S0BXlo                          
+;
+;                       AXCXhi  AXCXlo
+;               DXCXhi  DXCXlo  
+;                       
+;               AXS1hi  AXS1lo
+;                               
+;                       
+;       
+
+
+
+; need to get the sign-extends for DX and CX
+
+push  si
+
+mov   es, ax	; store ax in es
+mov   ds, dx    ; store dx in ds
+mov   ax, dx	; ax holds dx
+CWD				; S0 in DX
+
+AND   DX, BX	; S0*BX
+NEG   DX
+mov   SI, DX	; DI stores hi word return
+
+; AX still stores DX
+MUL  CX         ; DX*CX
+add  SI, AX    ; low word result into high word return
+
+mov  AX, DS    ; restore DX from ds
+MUL  BX         ; DX*BX
+XCHG BX, AX    ; BX will hold low word return. store bx in ax
+add  SI, DX    ; add high word to result
+
+mov  DX, ES    ; restore AX from ES
+mul  DX        ; BX*AX  
+add  BX, DX    ; high word result into low word return
+ADC  SI, 0
+
+mov  AX, CX   ; AX holds CX
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  SI, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  AX, BX	  ; set up final return value
+ADC  DX, SI
+
+mov  CX, SS   ; restore DS
+mov  DS, CX
+
+pop   si
+ret
+
+
+
+ENDP
+
+
+
+
+
+;
+; R_MapPlane_
+; void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 )
+
+	
+PROC  R_MapPlane_
+PUBLIC  R_MapPlane_ 
+
+push  cx
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 016h
+mov   byte ptr [bp - 2], al
+mov   word ptr [bp - 8], dx
+mov   word ptr [bp - 0eh], bx
+mov   word ptr [bp - 016h], SPANFUNC_PREP_OFFSET
+mov   word ptr [bp - 014h], SPANFUNC_FUNCTION_AREA_SEGMENT
+mov   bx, CACHEDHEIGHT_SEGMENT
+mov   word ptr [bp - 6], CACHEDYSTEP_SEGMENT
+mov   word ptr [bp - 4], CACHEDXSTEP_SEGMENT
+xor   ah, ah
+mov   dx, word ptr [_planeheight + 2]
+mov   si, ax
+mov   ax, word ptr [_planeheight]
+shl   si, 2
+mov   es, bx
+mov   di, CACHEDDISTANCE_SEGMENT
+cmp   dx, word ptr es:[si + 2]
+je    jumpa
+jumpe:
+jmp   jumpb
+jumpa:
+cmp   ax, word ptr es:[si]
+jne   jumpe
+mov   es, di
+mov   ax, word ptr es:[si]
+mov   word ptr [bp - 0ch], ax
+mov   ax, word ptr es:[si + 2]
+mov   es, word ptr [bp - 4]
+mov   word ptr [bp - 0ah], ax
+mov   ax, word ptr es:[si]
+mov   dx, word ptr es:[si + 2]
+mov   word ptr [_ds_xstep], ax
+mov   word ptr [_ds_xstep+2], dx
+mov   es, word ptr [bp - 6]
+mov   ax, word ptr es:[si]
+mov   dx, word ptr es:[si + 2]
+mov   word ptr [_ds_ystep], ax
+mov   word ptr [_ds_ystep+2], dx
+jumpd:
+mov   bx, word ptr [bp - 8]
+mov   ax, DISTSCALE_SEGMENT
+shl   bx, 2
+mov   es, ax
+mov   dx, word ptr [bp - 0ah]
+mov   ax, word ptr es:[bx]
+mov   cx, word ptr es:[bx + 2]
+mov   bx, ax
+mov   ax, word ptr [bp - 0ch]
+;lcall FixedMul_
+call R_FixedMulLocal_
+
+mov   bx, word ptr [bp - 8]
+mov   di, ax
+mov   ax, 833bh
+add   bx, bx
+mov   es, ax
+mov   ax, word ptr [_viewangle_shiftright3]
+add   ax, word ptr es:[bx]
+and   ah, 01fh
+shl   ax, 2
+mov   si, dx
+mov   word ptr [bp - 012h], ax
+mov   ax, FINESINE_SEGMENT
+mov   bx, word ptr [bp - 012h]
+mov   es, ax
+add   bh, 020h
+mov   cx, si
+mov   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx + 2]
+mov   bx, di
+;lcall FixedMul_
+call R_FixedMulLocal_
+
+mov   bx, word ptr [_viewx]
+mov   word ptr [bp - 010h], bx
+mov   bx, word ptr [_viewx+2]
+add   ax, word ptr [bp - 010h]
+mov   word ptr [_ds_xfrac], ax
+adc   dx, bx
+mov   ax, FINESINE_SEGMENT
+mov   bx, word ptr [bp - 012h]
+mov   word ptr [_ds_xfrac+2], dx
+mov   es, ax
+mov   cx, si
+mov   ax, word ptr es:[bx]
+mov   dx, word ptr es:[bx + 2]
+mov   bx, di
+;lcall FixedMul_
+call R_FixedMulLocal_
+
+mov   bx, ax
+mov   ax, word ptr [_viewy+2]
+mov   cx, word ptr [_viewy]
+neg   ax
+neg   cx
+sbb   ax, 0
+sub   cx, bx
+sbb   ax, dx
+mov   word ptr [_ds_yfrac], cx
+mov   word ptr [_ds_yfrac+2], ax
+cmp   byte ptr [_fixedcolormap], 0
+jne   jumpf
+mov   ax, word ptr [bp - 0ah]
+sar   ax, 4
+mov   ah, al
+cmp   al, 080h
+jb    jumpg
+mov   ah, 07fh
+jumpg:
+mov   word ptr [_ds_colormap_segment], BASE_COLORMAP_POINTER
+mov   al, ah
+mov   bx, word ptr [_planezlight]
+xor   ah, ah
+mov   es, word ptr [_planezlight+2]
+add   bx, ax
+mov   al, byte ptr es:[bx]
+jumpc:
+mov   byte ptr [_ds_colormap_index], al
+mov   al, byte ptr [bp - 2]
+xor   ah, ah
+mov   word ptr [_ds_y], ax
+mov   ax, word ptr [bp - 8]
+mov   word ptr [_ds_x1], ax
+mov   ax, word ptr [bp - 0eh]
+mov   word ptr [_ds_x2], ax
+;lcall [bp - 016h]   TODO call direct
+db 0FFh   ;lcall[bp-16]
+db 05Eh
+db 0EAh
+
+leave 
+pop   di
+pop   si
+pop   cx
+retf  
+jumpf:
+mov   al, byte ptr [_fixedcolormap]
+mov   word ptr [_ds_colormap_index], BASE_COLORMAP_POINTER
+jmp   jumpc
+jumpb:
+mov   word ptr es:[si], ax
+mov   bx, 9000h
+mov   word ptr es:[si + 2], dx
+mov   es, bx
+mov   bx, word ptr es:[si]
+mov   cx, word ptr es:[si + 2]
+;lcall FixedMul_
+call R_FixedMulLocal_
+
+mov   es, di
+mov   word ptr [bp - 0ah], dx
+mov   bx, word ptr [_basexscale]
+mov   cx, word ptr [_basexscale+2]
+mov   word ptr es:[si], ax
+mov   di, dx
+mov   ax, word ptr es:[si]
+mov   word ptr es:[si + 2], dx
+mov   word ptr [bp - 010h], ax
+mov   word ptr [bp - 0ch], ax
+;lcall FixedMul_
+call R_FixedMulLocal_
+mov   es, word ptr [bp - 4]
+mov   bx, word ptr [_baseyscale]
+mov   word ptr es:[si], ax
+mov   cx, word ptr [_baseyscale+2]
+mov   word ptr es:[si + 2], dx
+mov   word ptr [_ds_xstep+2], dx
+mov   ax, word ptr es:[si]
+mov   dx, di
+mov   word ptr [_ds_xstep], ax
+mov   ax, word ptr [bp - 010h]
+;lcall FixedMul_
+call R_FixedMulLocal_
+
+mov   es, word ptr [bp - 6]
+mov   word ptr es:[si], ax
+mov   word ptr es:[si + 2], dx
+mov   dx, word ptr es:[si]
+mov   ax, word ptr es:[si + 2]
+mov   word ptr [_ds_ystep], dx
+mov   word ptr [_ds_ystep+2], ax
+jmp   jumpd
+cld   
+
+ENDP
 
 END

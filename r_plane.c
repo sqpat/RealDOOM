@@ -94,9 +94,11 @@ int8_t currentemsvisplanepage = 0;
 //
 // BASIC PRIMITIVE
 //
+/*
 
+fixed_t32	R_FixedMulLocalWrapper (fixed_t32 a, fixed_t32 b);
 
-void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
+void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
     fineangle_t	angle;
     fixed_t	distance;
     fixed_t	length;
@@ -105,9 +107,9 @@ void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 
     if (planeheight != cachedheight[y]) {
 		cachedheight[y] = planeheight;
-		distance = cacheddistance[y] = FixedMul (planeheight, yslope[y]);
-		ds_xstep = cachedxstep[y] = (FixedMul (distance,basexscale));
-		ds_ystep = cachedystep[y] = (FixedMul (distance,baseyscale));
+		distance = cacheddistance[y] = R_FixedMulLocalWrapper (planeheight, yslope[y]);
+		ds_xstep = cachedxstep[y] = (R_FixedMulLocalWrapper (distance,basexscale));
+		ds_ystep = cachedystep[y] = (R_FixedMulLocalWrapper (distance,baseyscale));
     } else {
 		distance = cacheddistance[y];
 		ds_xstep = cachedxstep[y] ;
@@ -116,14 +118,14 @@ void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 	//ds_xstep <<=  detailshift;
 	//ds_ystep <<=  detailshift;
 	
-    length = FixedMul (distance,distscale[x1]);
+    length = R_FixedMulLocalWrapper (distance,distscale[x1]);
 	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
 
 	// shouldnt (x * cos[y]) + (x * sin[y]) == x?
 	// if so do we need the second mul or can we subtract 32 bits from the other to get it
 
-	ds_xfrac = viewx.w + FixedMulTrig(finecosine[angle], length );
-    ds_yfrac = -viewy.w - FixedMulTrig(finesine[angle], length );
+	ds_xfrac = viewx.w + R_FixedMulLocalWrapper(finecosine[angle], length );
+    ds_yfrac = -viewy.w - R_FixedMulLocalWrapper(finesine[angle], length );
 
 	if (fixedcolormap) {
 		ds_colormap_segment = colormapssegment;
@@ -160,27 +162,11 @@ void __near R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 	// colormaps will be 6c00 page
 	// span will be 6800 page
 
-
-
-/*
-	7000:0000
-	0
-	0
-	colormaps_spanfunc_off_difference: 24c0
-	..
-	..
-	..
-	;7000:0000 (?)
-	6CEC:24C0
-	6aa0:0000
-
-
-*/
 	//spanfunc();
 	R_DrawSpanPrepCall();
 
 }
-
+*/
 extern byte __far * ceiltop;
 extern byte __far * floortop;
 
