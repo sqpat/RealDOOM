@@ -1047,8 +1047,8 @@ __near P_SpawnMissile
 
 	th_pos->angle = an;
     an.hu.intbits >>= SHORTTOFINESHIFT;
-    th->momx.w = FixedMulTrig (thspeed, finecosine[an.hu.intbits]);
-    th->momy.w = FixedMulTrig(thspeed, finesine[an.hu.intbits]);
+    th->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an.hu.intbits, thspeed);
+    th->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an.hu.intbits, thspeed);
 	th->momz.w = momz;
 
 
@@ -1117,8 +1117,8 @@ __near P_SpawnPlayerMissile
 
 	speed = MAKESPEED(mobjinfo[type].speed);
 
-    th->momx.w = FixedMulTrig( speed, finecosine[an]);
-    th->momy.w = FixedMulTrig( speed, finesine[an]);
+    th->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an,  speed);
+    th->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an,  speed);
     th->momz.w = FixedMul( speed, slope);
 
     P_CheckMissileSpawn (th, th_pos);

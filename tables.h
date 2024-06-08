@@ -76,7 +76,6 @@
 #define DBITS			(FRACBITS-SLOPEBITS)
 
 typedef fixed_t_union angle_t;
-typedef uint16_t fineangle_t;
 
 // Effective size is 10240.
 

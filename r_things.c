@@ -246,8 +246,8 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     tr_x.w = thingx.w - viewx.w;
     tr_y.w = thingy.w - viewy.w;
         
-    gxt.w = FixedMulTrig(tr_x.w,viewcos);
-    gyt.w = -FixedMulTrig(tr_y.w,viewsin);
+    gxt.w = FixedMulTrigOld(viewcos,tr_x.w);
+    gyt.w = -FixedMulTrigOld(viewsin,tr_y.w);
     
     tz.w = gxt.w-gyt.w; 
 
@@ -257,8 +257,8 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     
     xscale.w = FixedDiv(projection.w, tz.w);
         
-    gxt.w = -FixedMulTrig(tr_x.w,viewsin);
-    gyt.w = FixedMulTrig(tr_y.w,viewcos);
+    gxt.w = -FixedMulTrigOld(viewsin,tr_x.w);
+    gyt.w = FixedMulTrigOld(viewcos,tr_y.w);
     tx.w = -(gyt.w+gxt.w); 
 
     // too far off the side?

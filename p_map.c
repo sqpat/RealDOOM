@@ -790,10 +790,10 @@ void __near P_HitSlideLine (int16_t linenum)
     deltaangle.hu.fracbits = deltaangle.hu.intbits >>= SHORTTOFINESHIFT;
 	
     movelen = P_AproxDistance (tmxmove.w, tmymove.w);
-    newlen = FixedMulTrig(movelen, finecosine[deltaangle.hu.fracbits]);
+    newlen = FixedMulTrig(FINE_COSINE_ARGUMENT, deltaangle.hu.fracbits, movelen);
 
-    tmxmove.w = FixedMulTrig(newlen, finecosine[lineangle.hu.fracbits]);
-    tmymove.w = FixedMulTrig(newlen, finesine[lineangle.hu.fracbits]);
+    tmxmove.w = FixedMulTrig(FINE_COSINE_ARGUMENT, lineangle.hu.fracbits, newlen);
+    tmymove.w = FixedMulTrig(FINE_SINE_ARGUMENT, lineangle.hu.fracbits, newlen);
 }
 
 

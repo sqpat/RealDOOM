@@ -484,8 +484,6 @@ void __far M_Init(void);
 
 //fixed_t32	__far R_FixedMulLocalWrapper (fixed_t32 a, fixed_t32 b);
 //fixed_t32	__far R_FixedMulLocalWrapper2 (fixed_t32 a, fixed_t32 b);
-fixed_t32 FixedMulTrig3(fixed_t32	a, fixed_t32 b);
-fixed_t32 FixedMulTrig2(fixed_t32	a, fixed_t32 b);
 
 void __far D_DoomMain2(void)
 {
@@ -501,24 +499,24 @@ void __far D_DoomMain2(void)
 	I_Error("\n%lx %lx %lx %lx\n%lx %lx %lx %lx\n%lx %lx %lx %lx\n%lx %lx %lx %lx\n", 
 	
 	FixedMul     (0xFFFFA234, 0xFFFF0000), 
-	FixedMulTrig (0xFFFFA234, 0xFFFF0000), 
-	FixedMulTrig2(0xFFFFA234, 0xFFFF0000),
-	FixedMulTrig3(0xFFFFA234, 0xFFFF0000),
+	FixedMulTrig(FINE_SINE_ARGUMENT, 0, 0xFFFF0000),
+	FixedMulTrigOld(0x80003234, 0x00005678),
+	FixedMulTrigOld(0x80003234, 0x00005678),
 	
 	FixedMul     (0x80003234, 0x00005678), 
-	FixedMulTrig (0x80003234, 0x00005678), 
-	FixedMulTrig2(0x80003234, 0x00005678),
-	FixedMulTrig3(0x80003234, 0x00005678),
+	FixedMulTrig(FINE_SINE_ARGUMENT, 0, 0x12345678),
+	FixedMulTrigOld(0x80003234, 0x00005678),
+	FixedMulTrigOld(0x80003234, 0x00005678),
 	
 	FixedMul     (0x1234A234, 0xFFFF1234), 
-	FixedMulTrig (0x1234A234, 0xFFFF1234), 
-	FixedMulTrig2(0x1234A234, 0xFFFF1234),
-	FixedMulTrig3(0x1234A234, 0xFFFF1234),
+	FixedMulTrig(FINE_SINE_ARGUMENT, 0, 0xFFFF0000),
+	FixedMulTrigOld(0x1234A234, 0xFFFF1234),
+	FixedMulTrigOld(0x1234A234, 0xFFFF1234),
 	
 	FixedMul     (0x80003234, 0xFFFF5678), 
-	FixedMulTrig (0x80003234, 0xFFFF5678), 
-	FixedMulTrig2(0x80003234, 0xFFFF5678),
-	FixedMulTrig3(0x80003234, 0xFFFF5678)
+	FixedMulTrig(FINE_SINE_ARGUMENT, 0, 0xFFFF0000),
+	FixedMulTrigOld(0x80003234, 0xFFFF5678),
+	FixedMulTrigOld(0x80003234, 0xFFFF5678)
 
 	
 	);

@@ -55,8 +55,8 @@ P_Thrust
   fixed_t	move )  {
 
 	move *= 2048L;
-	playerMobj->momx.w += FixedMulTrig(move,finecosine[angle]);
-	playerMobj->momy.w += FixedMulTrig(move,finesine[angle]);
+	playerMobj->momx.w += FixedMulTrig(FINE_COSINE_ARGUMENT, angle, move);
+	playerMobj->momy.w += FixedMulTrig(FINE_SINE_ARGUMENT, angle, move);
 }
 
 

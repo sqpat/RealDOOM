@@ -179,6 +179,8 @@ size_segs                 EDEF:0000
 #define patchcache_nodes   ((cache_node_t __far*) (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
 #define texturecache_nodes ((cache_node_t __far*) (((int32_t)patchcache_nodes) + size_patchcache_nodes))
 
+#define FINE_SINE_ARGUMENT  0x31E4
+#define FINE_COSINE_ARGUMENT 0x33E4
 
 
 //MAKE_FULL_SEGMENT(spritecache_nodes , (((int32_t)texturecache_nodes) & 0xFFFF)+ size_texturecache_nodes))

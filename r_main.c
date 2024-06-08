@@ -450,8 +450,6 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
     fixed_t_union		scale;
     fineangle_t			anglea;
     fineangle_t			angleb;
-    fixed_t			sinea;
-    fixed_t			sineb;
     fixed_t_union		    num;
     fixed_t			den;
 
@@ -461,10 +459,8 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
 
 
     // both sines are allways positive
-    sinea = finesine[anglea];	
-    sineb = finesine[angleb];
-    num.w = FixedMulTrig(projection.w,sineb)<<detailshift;
-    den = FixedMulTrig(rw_distance,sinea);
+    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift;
+    den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
 
     if (den > num.h.intbits) {
         scale.w = FixedDiv (num.w, den);

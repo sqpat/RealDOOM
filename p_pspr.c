@@ -319,9 +319,9 @@ void __near A_WeaponReady (  pspdef_t __near*	psp ) {
     // bob the weapon based on movement speed
 	angle = (128*(leveltime.h.fracbits))&FINEMASK;
 	//angle = (128 * leveltime.w)&FINEMASK;
-	psp->sx = FRACUNIT + FixedMulTrig(player.bob.w, finecosine[angle]);
+	psp->sx = FRACUNIT + FixedMulTrig(FINE_COSINE_ARGUMENT, angle, player.bob.w);
     angle &= FINEANGLES/2-1;
-    psp->sy = WEAPONTOP + FixedMulTrig(player.bob.w, finesine[angle]);
+    psp->sy = WEAPONTOP + FixedMulTrig(FINE_SINE_ARGUMENT, angle, player.bob.w);
 
 }
 

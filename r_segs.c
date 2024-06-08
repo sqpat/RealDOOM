@@ -436,7 +436,6 @@ extern  fixed_t_union leveltime;
 // correct spots or you end up doing things like comparisons between uint32_t and int32_t.
 void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     fixed_t		hyp;
-    fixed_t		sineval;
     fineangle_t	distangle, offsetangle;
     int16_t			lightnum;
 
@@ -495,8 +494,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     distangle = FINE_ANG90 - offsetangle;
 
 	hyp = R_PointToDist (curlinev1.x, curlinev1.y);
-    sineval = finesine[distangle];
-    rw_distance = FixedMulTrig(hyp, sineval);
+    rw_distance = FixedMulTrig(FINE_SINE_ARGUMENT, distangle, hyp);
 	
     ds_p->x1 = rw_x = start;
     ds_p->x2 = stop;
@@ -722,9 +720,9 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		if (offsetangle > FINE_ANG90) {
 			offsetangle = FINE_ANG90;
 		}
-		sineval = finesine[offsetangle];
-		rw_offset.w = FixedMulTrig(hyp, sineval);
 
+ 		rw_offset.w = FixedMulTrig(FINE_SINE_ARGUMENT, offsetangle, hyp);
+	
 		// todo: we are subtracting then checking vs 0x8000 (or 0x80000000). 
 		// Is this equivalent to a simpler operation?
 

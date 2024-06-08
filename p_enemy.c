@@ -1283,8 +1283,8 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     }
 	actorspeed = MAKESPEED(mobjinfo[actor->type].speed);
     fineexact = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    actor->momx.w = FixedMulTrig(actorspeed, finecosine[fineexact]);
-    actor->momy.w = FixedMulTrig(actorspeed, finesine[fineexact]);
+    actor->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, fineexact, actorspeed);
+    actor->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, fineexact, actorspeed);
 	
 	dest = (mobj_t __far*)(&thinkerlist[actor->tracerRef].data);
 	dest_pos = &mobjposlist[actor->tracerRef];
@@ -1526,8 +1526,9 @@ void __near A_Fire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	P_UnsetThingPosition (actor, actor_pos);
 
 	//todo isnt this just multiplied by 24?
-	actor_pos->x.w = dest_pos->x.w + FixedMulTrig(24*FRACUNIT, finecosine[an]);
-	actor_pos->y.w = dest_pos->y.w + FixedMulTrig(24*FRACUNIT, finesine[an]);
+	actor_pos->x.w = dest_pos->x.w + FixedMulTrig(FINE_COSINE_ARGUMENT, an, 24*FRACUNIT);
+	actor_pos->y.w = dest_pos->y.w + FixedMulTrig(FINE_SINE_ARGUMENT, an, 24*FRACUNIT);
+
 	actor_pos->z.w = dest_pos->z.w;
     P_SetThingPosition (actor, actor_pos, -1);
 }
@@ -1610,8 +1611,8 @@ void __near A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	fire_pos = &mobjposlist[fireRef];
 	// move the fire between the vile and the player
 	//todo isnt this just multiplied by 24?
-	fire_pos->x.w = actorTarget_pos->x.w - FixedMulTrig(24*FRACUNIT, finecosine[an]);
-	fire_pos->y.w = actorTarget_pos->y.w - FixedMulTrig(24*FRACUNIT, finesine[an]);
+	fire_pos->x.w = actorTarget_pos->x.w - FixedMulTrig(FINE_COSINE_ARGUMENT, an, 24*FRACUNIT);
+	fire_pos->y.w = actorTarget_pos->y.w - FixedMulTrig(FINE_SINE_ARGUMENT, an, 24*FRACUNIT);
     P_RadiusAttack (fire, fire_pos, actor, 70 );
 }
 
@@ -1650,8 +1651,8 @@ void __near A_FatAttack1 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 	mo_pos = &mobjposlist[moRef];
 	mo_pos->angle.wu += FATSPREAD;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finecosine[an]);
-    mo->momy.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine[an]);
+    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, MAKESPEED(mobjinfo[mo->type].speed));
+    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, MAKESPEED(mobjinfo[mo->type].speed));
 }
 
 void __near A_FatAttack2 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
@@ -1673,8 +1674,8 @@ void __near A_FatAttack2 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 	mo_pos = setStateReturn_pos;
 	mo_pos->angle.wu -= FATSPREAD*2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finecosine[an]);
-    mo->momy.w = FixedMulTrig(MAKESPEED(mobjinfo[mo->type].speed), finesine[an]);
+    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, MAKESPEED(mobjinfo[mo->type].speed));
+    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, MAKESPEED(mobjinfo[mo->type].speed));
 }
 
 void __near A_FatAttack3 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
@@ -1696,16 +1697,16 @@ void __near A_FatAttack3 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 	mospeed = MAKESPEED(mobjinfo[mo->type].speed);
 	mo_pos->angle.wu -= FATSPREAD/2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrig(mospeed, finecosine[an]);
-    mo->momy.w = FixedMulTrig(mospeed, finesine[an]);
+    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, mospeed);
+    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, mospeed);
 
 	moRef = P_SpawnMissile (actor, actor_pos, (&thinkerlist[actortargetRef].data), MT_FATSHOT);
 	mo = setStateReturn;
 	mo_pos = setStateReturn_pos;
 	mo_pos->angle.wu += FATSPREAD/2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrig(mospeed, finecosine[an]);
-    mo->momy.w = FixedMulTrig(mospeed, finesine[an]);
+    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, mospeed);
+    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, mospeed);
 }
 
 
@@ -1739,8 +1740,8 @@ void __near A_SkullAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	dest = (mobj_t __far*)(&thinkerlist[destRef].data);
 	dest_pos = &mobjposlist[destRef];
     an = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    actor->momx.w = FixedMulTrig(SKULLSPEED, finecosine[an]);
-    actor->momy.w = FixedMulTrig(SKULLSPEED, finesine[an]);
+    actor->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, SKULLSPEED);
+    actor->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, SKULLSPEED);
     dist = P_AproxDistance (dest_pos->x.w - actor_pos->x.w, dest_pos->y.w - actor_pos->y.w);
     dist = dist / SKULLSPEED;
     
@@ -1812,8 +1813,8 @@ __near A_PainShootSkull
 
 
     
-    x = actor_pos->x.w + FixedMulTrig(prestep.w, finecosine[an]);
-    y = actor_pos->y.w + FixedMulTrig(prestep.w, finesine[an]);
+    x = actor_pos->x.w + FixedMulTrig(FINE_COSINE_ARGUMENT, an, prestep.w);
+    y = actor_pos->y.w + FixedMulTrig(FINE_SINE_ARGUMENT, an, prestep.w);
 	z.w = actor_pos->z.w;
 	z.h.intbits += 8;
 		

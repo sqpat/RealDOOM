@@ -52,7 +52,7 @@ EXTRN _spanfunc_outp:BYTE
 EXTRN _spanfunc_prt:WORD
 EXTRN _spanfunc_destview_offset:WORD
 
-
+EXTRN FixedMul_:PROC
 
 ; jump table is 0 offset at this segment
 SPANFUNC_JUMP_LOOKUP_SEGMENT = 6EA0h
@@ -85,6 +85,7 @@ EXTRN _basexscale:WORD
 EXTRN _viewangle_shiftright3:WORD
 EXTRN _centeryfrac_shiftright4:WORD
 EXTRN _planeheight:WORD
+
 
 
 ;=================================
@@ -3814,8 +3815,10 @@ mov   ax, word ptr es:[bx]
 mov   cx, word ptr es:[bx + 2]
 mov   bx, ax
 mov   ax, word ptr [bp - 0ch]
-;lcall FixedMul_
+
+;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
+
 
 mov   bx, word ptr [bp - 8]
 mov   di, ax
@@ -3836,7 +3839,8 @@ mov   cx, si
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 mov   bx, di
-;lcall FixedMul_
+
+;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 mov   bx, word ptr [_viewx]
@@ -3853,7 +3857,8 @@ mov   cx, si
 mov   ax, word ptr es:[bx]
 mov   dx, word ptr es:[bx + 2]
 mov   bx, di
-;lcall FixedMul_
+
+;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 mov   bx, ax
@@ -3895,6 +3900,7 @@ mov   word ptr [_ds_x2], ax
 db 0FFh   ;lcall[bp-16]
 db 05Eh
 db 0EAh
+; ?? why doesnt this work
 ; push cs
 ; lcall 0x6EEA:0x0717 (SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET)
 ;db 00Eh
@@ -3920,7 +3926,8 @@ mov   word ptr es:[si + 2], dx
 mov   es, bx
 mov   bx, word ptr es:[si]
 mov   cx, word ptr es:[si + 2]
-;lcall FixedMul_
+
+;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 mov   es, di
@@ -3933,8 +3940,10 @@ mov   ax, word ptr es:[si]
 mov   word ptr es:[si + 2], dx
 mov   word ptr [bp - 010h], ax
 mov   word ptr [bp - 0ch], ax
-;lcall FixedMul_
+
+;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
+
 mov   bx, CACHEDXSTEP_SEGMENT
 mov   es, bx
 mov   bx, word ptr [_baseyscale]
@@ -3946,7 +3955,8 @@ mov   ax, word ptr es:[si]
 mov   dx, di
 mov   word ptr [_ds_xstep], ax
 mov   ax, word ptr [bp - 010h]
-;lcall FixedMul_
+
+;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 mov   bx, CACHEDYSTEP_SEGMENT
