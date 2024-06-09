@@ -950,7 +950,7 @@ void __near M_DrawOptions(void)
                  10,mouseSensitivity);
         
     M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(scrnsize+1),
-                 9,screenSize);
+                 11,screenSize);
 }
 
 void __near M_Options(int16_t choice)
@@ -1164,7 +1164,7 @@ void __near M_SizeDisplay(int16_t choice)
         }
         break;
       case 1:
-        if (screenSize < 8)
+        if (screenSize < 10)
         {
             screenblocks++;
             screenSize++;
@@ -1182,11 +1182,7 @@ void __near M_SizeDisplay(int16_t choice)
 //
 //      Menu Functions
 //
-void __near M_DrawThermo (int16_t   x,
-    int16_t   y,
-    int16_t   thermWidth,
-    int16_t   thermDot )
-{
+void __near M_DrawThermo (int16_t   x, int16_t   y, int16_t   thermWidth, int16_t   thermDot ) {
     int16_t         xx;
     int16_t         i;
 
@@ -1841,7 +1837,7 @@ void __far M_Init(void)
 	itemOn = currentMenu->lastOn;
 	whichSkull = 0;
 	skullAnimCounter = 10;
-	screenSize = screenblocks - 3;
+	screenSize = screenblocks - 1;
 	messageToPrint = 0;
 	menu_messageString[0] = '\0';
 	messageLastMenuActive = menuactive;

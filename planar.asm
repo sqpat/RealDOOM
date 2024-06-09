@@ -15,7 +15,6 @@
 ;
 ; DESCRIPTION:
 ;
-	.286
 	.MODEL  medium
 	INCLUDE defs.inc
 
@@ -74,7 +73,7 @@ CACHEDDISTANCE_SEGMENT = 90b4h
 CACHEDYSTEP_SEGMENT = 9118h
 CACHEDXSTEP_SEGMENT = 90e6h
 SPANFUNC_FUNCTION_AREA_SEGMENT = 6eaah
-SPANFUNC_PREP_OFFSET = 0717h
+SPANFUNC_PREP_OFFSET = 0719h
 BASE_COLORMAP_POINTER = 6800h
 XTOVIEWANGLE_SEGMENT = 833bh
 
@@ -2114,7 +2113,8 @@ db 255  ;FEh   lcall[bp-4]
 db 94   ;5Eh
 db 252  ;FCh
 
-leave 
+mov sp, bp
+pop bp 
 pop   di
 pop   si
 pop   dx
@@ -2129,7 +2129,8 @@ db 255  ;FEh   lcall[bp-4]
 db 94   ;5Eh
 db 252  ;FCh
 
-leave 
+mov sp, bp
+pop bp 
 pop   di
 pop   si
 pop   dx
@@ -3399,7 +3400,8 @@ span_i_loop_done:
 
 
 sti								; reenable interrupts
-leave 
+mov sp, bp
+pop bp 
 pop   di
 pop   si
 pop   dx
@@ -3535,8 +3537,12 @@ PUBLIC  R_DrawSpanPrep_
  
  xor   ah, ah
  mov   bx, ax
- shl   ax, 4
- shl   bx, 8
+ shl   ax, 1
+ shl   ax, 1
+ shl   ax, 1
+ shl   ax, 1
+ mov   bh, bl
+ xor   bl, bl
  add   dx, ax
  mov   ax, 07a60h
  sub   ax, bx
@@ -3547,7 +3553,8 @@ db 0FFh   ;lcall[bp-6]
 db 05Eh
 db 0FAh
  
- leave 
+ mov sp, bp
+ pop bp 
  pop   di
  pop   si
  pop   dx
@@ -3570,7 +3577,8 @@ db 0FFh   ;lcall[bp-6]
 db 05Eh
 db 0FAh
  
- leave 
+ mov sp, bp
+ pop bp 
  pop   di
  pop   si
  pop   dx
@@ -3781,7 +3789,8 @@ xor   ah, ah
 mov   dx, word ptr [_planeheight + 2]
 mov   si, ax
 mov   ax, word ptr [_planeheight]
-shl   si, 2
+shl   si, 1
+shl   si, 1
 mov   es, bx
 mov   di, CACHEDDISTANCE_SEGMENT
 cmp   dx, word ptr es:[si + 2]
@@ -3811,7 +3820,8 @@ mov   word ptr [_ds_ystep+2], dx
 jumpd:
 mov   bx, word ptr [bp - 8]
 mov   ax, DISTSCALE_SEGMENT
-shl   bx, 2
+shl   bx, 1
+shl   bx, 1
 mov   es, ax
 mov   dx, word ptr [bp - 0ah]
 mov   ax, word ptr es:[bx]
@@ -3831,7 +3841,8 @@ mov   es, ax
 mov   ax, word ptr [_viewangle_shiftright3]
 add   ax, word ptr es:[bx]
 and   ah, 01fh
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   si, dx
 mov   word ptr [bp - 012h], ax
 mov   ax, FINESINE_SEGMENT
@@ -3877,7 +3888,10 @@ mov   word ptr [_ds_yfrac+2], ax
 cmp   byte ptr [_fixedcolormap], 0
 jne   jumpf
 mov   ax, word ptr [bp - 0ah]
-sar   ax, 4
+sar   ax, 1
+sar   ax, 1
+sar   ax, 1
+sar   ax, 1
 mov   ah, al
 cmp   al, 080h
 jb    jumpg
@@ -3913,7 +3927,8 @@ db 0EAh
 ;db 0EAh 
 ;db 06Eh
 
-leave 
+mov sp, bp
+pop bp 
 pop   di
 pop   si
 pop   cx

@@ -77,9 +77,9 @@ fineangle_t			viewangle_shiftright3;
 fixed_t			viewcos;
 fixed_t			viewsin;
 
-// 0 = high, 1 = low
+// 0 = high, 1 = low, = 2 potato
 int8_t			detailshift;	
-
+int8_t 			setdetail;
 //
 // precalculated math tables
 //
@@ -496,7 +496,7 @@ uint8_t		setblocks;
 void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
     setsizeneeded = true;
     setblocks = blocks;
-    detailshift = detail;
+    setdetail = detail;
 }
 
 #define DISTMAP		2

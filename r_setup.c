@@ -192,7 +192,7 @@ void __near R_InitTextureMapping(void) {
 }
 
 
-
+extern int8_t setdetail;
 //
 // R_ExecuteSetViewSize
 //
@@ -210,6 +210,8 @@ void __near  R_ExecuteSetViewSize(void) {
 		scaledviewwidth = setblocks * 32;
 		viewheight = (setblocks * 168 / 10)&~7;
 	}
+
+	detailshift = setdetail;
 
 	
 	viewwidth = scaledviewwidth >> detailshift;
