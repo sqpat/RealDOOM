@@ -59,6 +59,7 @@ SPANFUNC_JUMP_LOOKUP_SEGMENT = 6EA0h
 ; offset of the jmp instruction's immediate from the above segment
 SPANFUNC_JUMP_OFFSET     =   1EAh
 
+COLFUNC_JUMP_LOOKUP      =   6A10h
 COLFUNC_JUMP_OFFSET      =   075h
 
 DC_YL_LOOKUP_SEGMENT =  6A29h
@@ -66,6 +67,8 @@ DC_YL_LOOKUP_SEGMENT =  6A29h
 DISTSCALE_SEGMENT = 9032h
 FINESINE_SEGMENT = 31e4h
  
+COLFUNC_FUNCTION_AREA_SEGMENT = 6A42h
+
 CACHEDHEIGHT_SEGMENT = 9082h
 CACHEDDISTANCE_SEGMENT = 90b4h
 CACHEDYSTEP_SEGMENT = 9118h
@@ -2077,13 +2080,13 @@ add   bx, bx                                 ; double dc_yl to get a word offset
 mov   si, ax                                 ;
 mov   bx, word ptr es:[bx]
 add   si, ax                                 ; double count (dc_yh - dc_yl) to get a word offset
-mov   ax, 6A10h                              ; segment of dc_yl_lookup array
+mov   ax, COLFUNC_JUMP_LOOKUP                ; segment of jump offset table
 add   ax, di                                 ; add argument offset to the ax address
 mov   word ptr [_dc_yl_lookup_val], bx       ; store pre-calculated dc_yl * 80
 mov   es, ax
 mov   bx, COLFUNC_JUMP_OFFSET                ; location of jump relative instruction's immediate
 mov   ax, word ptr es:[si]                   ; 
-add   di, 6A42h                              ; R_DrawColumn segment with 0 indexed function offset
+add   di, COLFUNC_FUNCTION_AREA_SEGMENT      ; R_DrawColumn segment with 0 indexed function offset
 mov   es, di                                 ; set seg
 mov   word ptr es:[bx], ax                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
 mov   al, byte ptr [_dc_colormap_index]      ; lookup colormap index
@@ -2103,7 +2106,7 @@ shl   ax, 1
 shl   ax, 1
 sub   bx, cx
 add   ax, dx
-mov   word ptr [bp - 4], bx
+mov   word ptr [bp - 4], bx				; setup dynamic call
 mov   word ptr [bp - 2], ax
 
 
@@ -2119,7 +2122,7 @@ pop   cx
 pop   bx
 retf  
 skipcolormapzero:
-mov   word ptr [bp - 4], bx
+mov   word ptr [bp - 4], bx				; setup dynamic call
 mov   word ptr [bp - 2], dx
 
 db 255  ;FEh   lcall[bp-4]

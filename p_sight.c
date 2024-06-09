@@ -98,76 +98,8 @@ boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __f
 //
 
 
-#ifdef MOVE_P_SIGHT
 
 
-
-fixed_t32 __near FixedMul1616Local(int16_t	a, int16_t	b) {
-	return (int32_t)a * b;
-}
-
-fixed_t32 __near FixedMul2432Local (fixed_t32	a, fixed_t32 b) {
-    // fixed_t_union fp;
-    // fp.w = ((long long)a * (long long)b);
-    // return fp.h.intbits;
-    longlong_union llu;
-    llu.l =  ((long long)a * (long long)b);
-	return llu.productresult.usemid;
-}
-
-
-fixed_t32 __near FixedDiv2Local (fixed_t32	a, fixed_t32	b)
-{
-	// all seem to work, but i think long long is probably the least problematic for 16 bit cpu for now. - sq
-
-	long long c;
-	//longlong_union c;
-	c = ((long long)a << 16) / ((long long)b);
-
-
-	//float c;
-	//c = (((float)a) / ((float)b) * FRACUNIT);
-	
-	//double c;
-	//c = (((double)a) / ((double)b) * FRACUNIT);
-
-	return (fixed_t32) c;
-}
-
-
-int32_t __near labs_local(int32_t x) {
-    if (x > 0){
-  		return x;
-	}
-	return -x;
-}
-
-
-//
-// FixedDiv, C version.
-//
-
-//fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
-fixed_t32 __near FixedDivLocal(fixed_t32	a, fixed_t32	b) {
-	// todo rol 2?
-	if ((labs_local(a) >> 14) >= labs_local(b))
-		return (a^b) < 0 ? MINLONG : MAXLONG;
-	//return FixedDiv2(a, b, file, line);
-	return FixedDiv2Local(a, b);
-}
-
-#else
-
-
-#define FixedMul1616Local FixedMul1616
-#define FixedMul2432Local FixedMul2432
-#define FixedDiv2Local FixedDiv2
-#define FixedDivLocal FixedDiv
-#define labs_local labs
-#define FixedMul1616Local FixedMul1616
-
-
-#endif
 
 
 int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __near*	node ) {
@@ -201,8 +133,8 @@ int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __nea
     dx.w = (x.w - node->x.w);
     dy.w = (y.w - node->y.w);
 	
-    left = FixedMul1616Local(node->dy.h.intbits,dx.h.intbits);
-    right = FixedMul1616Local(dy.h.intbits,node->dx.h.intbits);
+    left = FixedMul1616(node->dy.h.intbits,dx.h.intbits);
+    right = FixedMul1616(dy.h.intbits,node->dx.h.intbits);
 	
     if (right < left)
 		return 0;	// front side
@@ -251,9 +183,9 @@ int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node )
 	temp.h.intbits = y;
     dy.w = (temp.w - node->y.w);
 	temp.w = node->dy.w;
-    left =  FixedMul1616Local(temp.h.intbits,dx.h.intbits);
+    left =  FixedMul1616(temp.h.intbits,dx.h.intbits);
 	temp.w = node->dx.w;
-    right = FixedMul1616Local(dy.h.intbits,temp.h.intbits);
+    right = FixedMul1616(dy.h.intbits,temp.h.intbits);
 	
     if (right < left)
 		return 0;	// front side
@@ -305,8 +237,8 @@ int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, node_t __fa
 	temp.h.intbits = node->y;
     dy.w = (y.w - temp.w);
 
-    left =  FixedMul1616Local(node->dy, dx.h.intbits);
-    right = FixedMul1616Local(dy.h.intbits, node->dx);
+    left =  FixedMul1616(node->dy, dx.h.intbits);
+    right = FixedMul1616(dy.h.intbits, node->dx);
 
 	if (right < left)
 		return 0;	// front side
@@ -346,7 +278,7 @@ P_InterceptVector2
 	
 	//v1 has 16 bit fields..
 	
-    den = FixedMul (tempdy.w>>8,v2->dx) - FixedMul(tempdx.w>>8,v2->dy);
+    den = FixedMul2432 (tempdy.w,v2->dx) - FixedMul(tempdx.w,v2->dy);
 
     if (den == 0)
 		return 0;
@@ -356,8 +288,8 @@ P_InterceptVector2
 	tempx.h.fracbits = 0;
 	tempy.h.fracbits = 0;
 
-    num = FixedMul ( (tempx.w - v2->x)>>8 ,tempdy.w) + 
-	FixedMul ( (v2->y - tempy.w)>>8 , v1->dx);
+    num = FixedMul2432 ( (tempx.w - v2->x) ,tempdy.w) + 
+	FixedMul2432 ( (v2->y - tempy.w) , v1->dx);
     frac = FixedDiv (num , den);
 
     return frac;
@@ -369,14 +301,14 @@ fixed_t __near P_InterceptVector2 (divline_t __near* v2, divline_t __near*	v1 ) 
     fixed_t	num;
     fixed_t	den;
 	
-    den = FixedMul2432Local (v1->dy.w>>8,v2->dx.w) - FixedMul2432Local(v1->dx.w>>8,v2->dy.w);
+    den = FixedMul2432 (v1->dy.w,v2->dx.w) - FixedMul2432(v1->dx.w,v2->dy.w);
 
     if (den == 0)
 		return 0;
     
-    num = FixedMul2432Local ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + 
-		  FixedMul2432Local ( (v2->y.w - v1->y.w)>>8 , v1->dx.w);
-    frac = FixedDivLocal (num , den);
+    num = FixedMul2432 ( (v1->x.w - v2->x.w) ,v1->dy.w) + 
+		  FixedMul2432 ( (v2->y.w - v1->y.w) , v1->dx.w);
+    frac = FixedDiv (num , den);
 
     return frac;
 }
@@ -524,7 +456,7 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 		if (frontsector->floorheight != backsector->floorheight) {
 		 	// temp.h.intbits = openbottom >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  openbottom);
-			slope = FixedDivLocal (temp.w - sightzstart , frac);
+			slope = FixedDiv (temp.w - sightzstart , frac);
 			if (slope > bottomslope)
 				bottomslope = slope;
 		}
@@ -532,7 +464,7 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 		if (frontsector->ceilingheight != backsector->ceilingheight) {
 		 	// temp.h.intbits = opentop >> SHORTFLOORBITS;
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  opentop);
-			slope = FixedDivLocal (temp.w - sightzstart , frac);
+			slope = FixedDiv (temp.w - sightzstart , frac);
 			if (slope < topslope)
 				topslope = slope;
 		}

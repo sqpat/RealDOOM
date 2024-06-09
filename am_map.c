@@ -705,7 +705,7 @@ void __near AM_changeWindowScale(void)
 {
 
     // Change the scaling multipliers
-    scale_mtof.w = FixedMul(scale_mtof.w, mtof_zoommul)<<4;
+    scale_mtof.w = FixedMul1632(mtof_zoommul, scale_mtof.w)<<4;
     scale_ftom.w = FixedDivWholeA(FRACUNIT, scale_mtof.w);
 
     if (scale_mtof.w < min_scale_mtof.w)

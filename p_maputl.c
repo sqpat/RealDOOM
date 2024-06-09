@@ -57,15 +57,7 @@ __near P_AproxDistance
 // P_PointOnLineSide
 // Returns 0 or 1
 //
-boolean
-__near P_PointOnLineSide
-( fixed_t	x,
-  fixed_t	y,
-	int16_t linedx,
-	int16_t linedy,
-	int16_t v1x,
-	int16_t v1y)
-{
+boolean __near P_PointOnLineSide ( fixed_t	x, fixed_t	y, int16_t linedx, int16_t linedy,int16_t v1x,int16_t v1y){
     fixed_t	dx;
     fixed_t	dy;
     fixed_t	left;
@@ -153,15 +145,7 @@ P_PointOnLineSide16
 
 extern fixed_t_union		tmbbox[4];
 
-int8_t __near P_BoxOnLineSide
-( 
-	slopetype_t	lineslopetype,
-	int16_t linedx,
-	int16_t linedy,
-	int16_t v1x,
-	int16_t v1y
-	)
-{
+int8_t __near P_BoxOnLineSide (  slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y ) {
 
 
     boolean		p1;
@@ -213,12 +197,7 @@ int8_t __near P_BoxOnLineSide
 // P_PointOnDivlineSide
 // Returns 0 or 1.
 //
-boolean
-__near P_PointOnDivlineSide
-( fixed_t	x,
-  fixed_t	y
-   )
-{
+boolean __near P_PointOnDivlineSide ( fixed_t	x, fixed_t	y ) {
     fixed_t_union	dx;
     fixed_t_union	dy;
     fixed_t	left;
@@ -253,8 +232,9 @@ __near P_PointOnDivlineSide
     }
 	
 	//todo is there a faster way to use just the 3 bytes?
-    left = FixedMul2424 ( line->dy.w >>8, dx.w>>8 );
-    right = FixedMul2424 ( dy.w>>8 , line->dx.w >>8 );
+    // note these are internally being shifted by fixedmul2424
+	left = FixedMul2424 ( line->dy.w, dx.w );
+    right = FixedMul2424 ( dy.w , line->dx.w );
 	
 	return (right >= left);
 
@@ -301,8 +281,8 @@ P_PointOnDivlineSide16
 		return 0;
 	}
 	
-	left = FixedMul2424(line->dy.w >> 8, dx.w >> 8);
-	right = FixedMul2424(dy.w >> 8, line->dx.w >> 8);
+	left = FixedMul2424(line->dy.w , dx.w  );
+	right = FixedMul2424(dy.w  , line->dx.w  );
 
 	
 	return (right >= left);
@@ -327,14 +307,14 @@ fixed_t __near P_InterceptVector ( divline_t __near*	v1 ) {
     fixed_t	den;
 	divline_t __near*	v2 = &trace;
 	
-    den = FixedMul2432 (v1->dy.w>>8,v2->dx.w) - 
-		FixedMul2432(v1->dx.w >>8,v2->dy.w);
+    den = FixedMul2432 (v1->dy.w,v2->dx.w) - 
+		FixedMul2432(v1->dx.w ,v2->dy.w);
 
     if (den == 0)
 		return 0;
     
-    num = FixedMul2432 ( (v1->x.w - v2->x.w)>>8 ,v1->dy.w) + 
-		FixedMul2432 ( (v2->y.w - v1->y.w)>>8, v1->dx.w);
+    num = FixedMul2432 ( (v1->x.w - v2->x.w) ,v1->dy.w) + 
+		FixedMul2432 ( (v2->y.w - v1->y.w), v1->dx.w);
 
     frac = FixedDiv (num , den);
 
@@ -572,9 +552,7 @@ void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_p
 // based on it's x y.
 // Sets thing->subsector properly
 //
-void
-__near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum)
-{
+void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos, int16_t knownsecnum) {
 
 
 
@@ -900,10 +878,7 @@ boolean __near  PIT_AddThingIntercepts (THINKERREF thingRef, mobj_t __far* thing
 // 
 
 // todo: only called once, pull out the func argument or inline?
-void __near P_TraverseIntercepts
-( traverser_t	func
-   )
-{
+void __near P_TraverseIntercepts( traverser_t	func) {
     int16_t			count;
     fixed_t_union		dist;
     intercept_t __far*	scan;
