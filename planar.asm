@@ -65,6 +65,7 @@ DC_YL_LOOKUP_SEGMENT =  6A29h
 
 DISTSCALE_SEGMENT = 9032h
 FINESINE_SEGMENT = 31e4h
+FINECOSINE_SEGMENT = 33e4h
  
 COLFUNC_FUNCTION_AREA_SEGMENT = 6A42h
 
@@ -76,6 +77,8 @@ SPANFUNC_FUNCTION_AREA_SEGMENT = 6eaah
 SPANFUNC_PREP_OFFSET = 0719h
 BASE_COLORMAP_POINTER = 6800h
 XTOVIEWANGLE_SEGMENT = 833bh
+MAXLIGHTZ = 080h
+Y_SLOPE_SEGMENT = 9000h
 
 EXTRN _basexscale:WORD
 EXTRN _planezlight:WORD
@@ -3590,20 +3593,22 @@ ENDP
 
 
 
+
+
+
+
 PROC R_FixedMulTrigLocal_
 PUBLIC R_FixedMulTrigLocal_
 
 ; DX:AX  *  CX:BX
-;  0  1      2  3
+;  0  1   2  3
 
-; with sign extend for byte 3:
-; S0:DX:AX    *   S1:CX:BX
-; S0 = DX sign extend
-; S1 = CX sign extend
-
-; DIFFERENT FROM FIXEDMUL - 
-; DX is already a sign extend of AX
-
+; AX * CX:BX
+; The difference between FixedMulTrig and FixedMul1632:
+; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
+; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
+; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
+; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
 ;
 ; 
 ;BYTE
@@ -3624,39 +3629,63 @@ PUBLIC R_FixedMulTrigLocal_
 ;                       
 ;       
 
+; AX is param 1 (segment)
+; DX is param 2 (fineangle or lookup)
+; CX:BX is value 2
 
 
-; need to get the sign-extends for DX and CX
+
 
 push  si
 
-mov   es, ax	; store ax in es
-mov   ds, dx    ; store dx in ds
-mov   ax, dx	; ax holds dx
-;CWD				; S0 is already equal to dx 
+; lookup the fine angle
 
+sal dx, 1
+sal dx, 1   ; DWORD lookup index
+mov si, dx
+mov es, ax  ; put segment in ES
+mov ax, es:[si]
+mov dx, es:[si+2]
+
+
+mov   es, ax    ; store ax in es
+mov   DS, DX    ; store sign bits in DS
 AND   DX, BX	; S0*BX
 NEG   DX
 mov   SI, DX	; DI stores hi word return
 
-; AX still stores DX
-AND  AX, CX    ; DX*CX
-NEG  AX
-add  SI, AX    ; low word result into high word return
+mov   DX, DS    ; restore sign bits from DS
 
-mov  AX, DS    ; restore DX from ds
-AND  AX, BX         ; DX*BX
-NEG  AX
-XCHG BX, AX    ; BX will hold low word return. store bx in ax
+AND  DX, CX    ; DX*CX
+NEG  DX
+add  SI, DX    ; low word result into high word return
+
+mov   DX, DS    ; restore sign bits from DS
+
+; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+; UNLESS BX is 0. then its also 0!
+
+; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+MOV  AX, BX    ; create BX copy
+SUB  AX, 1     ; DEC DOES NOT AFFECT CARRY FLAG! BOO! 3 byte instruction, can we improve?
+ADC  AX, 0     ; if bx is 0 then restore to 0 after the dex  
+
+AND  AX, DX    ; 0 or BX - 1
+ADD  SI, AX    ; add DX * BX high word. 
 
 
-mov  DX, ES    ; restore AX from ES
+AND  DX, BX    ; DX * BX low bits
+NEG  DX
+XCHG BX, DX    ; BX will hold low word return. store BX in DX for last mul 
+
+mov  AX, ES    ; grab AX from ES
 mul  DX        ; BX*AX  
 add  BX, DX    ; high word result into low word return
 ADC  SI, 0
 
 mov  AX, CX   ; AX holds CX
-CWD           ; copy CX into S1
+
+CWD           ; S1 in DX
 
 mov  CX, ES   ; AX from ES
 AND  DX, CX   ; S1*AX
@@ -3667,9 +3696,9 @@ MUL  CX       ; AX*CX
 
 ADD  AX, BX	  ; set up final return value
 ADC  DX, SI
-
-mov  CX, SS   ; restore DS
-mov  DS, CX
+ 
+MOV CX, SS
+MOV DS, CX    ; put DS back from SS
 
 pop   si
 ret
@@ -3762,14 +3791,20 @@ ret
 ENDP
 
 
-
-
-
 ;
 ; R_MapPlane_
 ; void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 )
-
-	
+; bp - 02h   y
+; bp - 04h   unused
+; bp - 06h   unused
+; bp - 08h   x2
+; bp - 0Ah   distance high
+; bp - 0Ch   distance low
+; bp - 0Eh   x1	
+; bp - 10h   unused
+; bp - 012h  angle (no longer used)
+; bp - 14h   spanfunc jump location offset
+; bp - 16h   spanfunc jump location segment
 PROC  R_MapPlane_
 PUBLIC  R_MapPlane_ 
 
@@ -3779,9 +3814,16 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 016h
+
+xor   ah, ah
+; set these values for drawspan while they are still in registers
+mov   word ptr [_ds_y], ax
+mov   word ptr [_ds_x1], dx
+mov   word ptr [_ds_x2], bx
+
 mov   byte ptr [bp - 2], al
 mov   word ptr [bp - 8], dx
-mov   word ptr [bp - 0eh], bx
+mov   word ptr [bp - 0Eh], bx
 mov   word ptr [bp - 016h], SPANFUNC_PREP_OFFSET
 mov   word ptr [bp - 014h], SPANFUNC_FUNCTION_AREA_SEGMENT
 mov   bx, CACHEDHEIGHT_SEGMENT
@@ -3792,21 +3834,22 @@ mov   ax, word ptr [_planeheight]
 shl   si, 1
 shl   si, 1
 mov   es, bx
+;LEA   bx, [si + 2]
 mov   di, CACHEDDISTANCE_SEGMENT
 cmp   dx, word ptr es:[si + 2]
-je    jumpa
-jumpe:
-jmp   jumpb
-jumpa:
+je    use_cached_values
+go_use_cached_values:
+jmp   generate_distance_steps
+use_cached_values:
 cmp   ax, word ptr es:[si]
-jne   jumpe
+jne   go_use_cached_values
 mov   es, di
 mov   ax, word ptr es:[si]
-mov   word ptr [bp - 0ch], ax
-mov   ax, word ptr es:[si + 2]
-mov   bx, CACHEDXSTEP_SEGMENT
-mov   es, bx
-mov   word ptr [bp - 0ah], ax
+mov   word ptr [bp - 0ch], ax	; store distance low word
+mov   dx, word ptr es:[si + 2]
+mov   cx, CACHEDXSTEP_SEGMENT
+mov   es, cx
+mov   word ptr [bp - 0Ah], dx
 mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
 mov   word ptr [_ds_xstep], ax
@@ -3817,102 +3860,116 @@ mov   ax, word ptr es:[si]
 mov   dx, word ptr es:[si + 2]
 mov   word ptr [_ds_ystep], ax
 mov   word ptr [_ds_ystep+2], dx
-jumpd:
-mov   bx, word ptr [bp - 8]
+distance_steps_ready:
+
+; dx:ax is y_step
+;     length = R_FixedMulLocal (distance,distscale[x1]);
+
+mov   bx, word ptr [bp - 8]		; grab x2 (function input)
 mov   ax, DISTSCALE_SEGMENT
 shl   bx, 1
-shl   bx, 1
+shl   bx, 1						; word lookup
 mov   es, ax
-mov   dx, word ptr [bp - 0ah]
-mov   ax, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
-mov   bx, ax
-mov   ax, word ptr [bp - 0ch]
+mov   dx, word ptr [bp - 0Ah]  ; ; distance high word
+mov   ax, word ptr [bp - 0Ch]   ; distance low word
+mov   cx, word ptr es:[bx + 2]	; distscale high word
+mov   bx, word ptr es:[bx]		; distscale low word
 
 ;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 
-mov   bx, word ptr [bp - 8]
-mov   di, ax
+;	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
+; ds_xfrac = viewx.w + R_FixedMulLocal(finecosine[angle], length );
+
+mov   bx, word ptr [bp - 8] ; grab x2
+mov   di, ax			; store low word of length (product result)in di
+mov   si, dx			; store high word of length  (product result) in si
 mov   ax, XTOVIEWANGLE_SEGMENT
-add   bx, bx
+add   bx, bx			; x2 word lookup
 mov   es, ax
 mov   ax, word ptr [_viewangle_shiftright3]
-add   ax, word ptr es:[bx]
-and   ah, 01fh
-shl   ax, 1
-shl   ax, 1
-mov   si, dx
-mov   word ptr [bp - 012h], ax
-mov   ax, FINESINE_SEGMENT
-mov   bx, word ptr [bp - 012h]
-mov   es, ax
-add   bh, 020h
-mov   cx, si
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
-mov   bx, di
+add   ax, word ptr es:[bx]		; ax is unmodded fine angle..
+and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
+mov   word ptr [bp - 012h], ax	; store fineangle
+mov   dx, ax			; fineangle in DX
+
+mov   ax, FINECOSINE_SEGMENT
+mov   bx, di			; length low word to DX
+mov   cx, si			; length low word to DX
 
 ;call FAR PTR FixedMul_ 
-call R_FixedMulLocal_
+call R_FixedMulTrigLocal_
 
-mov   bx, word ptr [_viewx]
-mov   word ptr [bp - 010h], bx
-mov   bx, word ptr [_viewx+2]
-add   ax, word ptr [bp - 010h]
+;    ds_yfrac = -viewy.w - R_FixedMulLocal(finesine[angle], length );
+
+add   ax, word ptr [_viewx]
+adc   dx, word ptr [_viewx+2]
 mov   word ptr [_ds_xfrac], ax
-adc   dx, bx
-mov   ax, FINESINE_SEGMENT
-mov   bx, word ptr [bp - 012h]
 mov   word ptr [_ds_xfrac+2], dx
-mov   es, ax
-mov   cx, si
-mov   ax, word ptr es:[bx]
-mov   dx, word ptr es:[bx + 2]
-mov   bx, di
+
+mov   ax, FINESINE_SEGMENT
+mov   dx, word ptr [bp - 012h]
+mov   cx, si					; prep length
+mov   bx, di					; prep length
 
 ;call FAR PTR FixedMul_ 
-call R_FixedMulLocal_
+call R_FixedMulTrigLocal_
 
-mov   bx, ax
-mov   ax, word ptr [_viewy+2]
-mov   cx, word ptr [_viewy]
+;    ds_yfrac = -viewy.w - R_FixedMulLocalWrapper(finesine[angle], length );
+
+; let's instead add then take the negative of the whole
+
+; CX:BX as viewy
+mov   bx, word ptr [_viewy]
+mov   cx, word ptr [_viewy+2]
+add   ax, bx
+adc   dx, cx
+; take negative of the whole
+; apparently this is how you neg a dword. 
+neg   dx
 neg   ax
-neg   cx
-sbb   ax, 0
-sub   cx, bx
-sbb   ax, dx
-mov   word ptr [_ds_yfrac], cx
-mov   word ptr [_ds_yfrac+2], ax
+; i dont understand why this is here but the compiler did this. it works with or without, 
+; probably too tiny an error to be visibly noticable?
+sbb   dx, 0
+
+mov   word ptr [_ds_yfrac], ax
+mov   word ptr [_ds_yfrac+2], dx
+
+; 	if (fixedcolormap) {
+
 cmp   byte ptr [_fixedcolormap], 0
-jne   jumpf
+jne   use_fixed_colormap
+; 		index = distance >> LIGHTZSHIFT;
 mov   ax, word ptr [bp - 0ah]
 sar   ax, 1
 sar   ax, 1
 sar   ax, 1
 sar   ax, 1
-mov   ah, al
-cmp   al, 080h
-jb    jumpg
-mov   ah, 07fh
-jumpg:
+
+
+;		if (index >= MAXLIGHTZ) {
+;			index = MAXLIGHTZ - 1;
+;		}
+
+
+
+cmp   al, MAXLIGHTZ
+jb    index_set
+mov   al, MAXLIGHTZ - 1
+index_set:
+
+;		ds_colormap_segment = colormapssegment;
+;		ds_colormap_index = planezlight[index];
+
 mov   word ptr [_ds_colormap_segment], BASE_COLORMAP_POINTER
-mov   al, ah
 mov   bx, word ptr [_planezlight]
 xor   ah, ah
 mov   es, word ptr [_planezlight+2]
 add   bx, ax
 mov   al, byte ptr es:[bx]
-jumpc:
+colormap_ready:
 mov   byte ptr [_ds_colormap_index], al
-mov   al, byte ptr [bp - 2]
-xor   ah, ah
-mov   word ptr [_ds_y], ax
-mov   ax, word ptr [bp - 8]
-mov   word ptr [_ds_x1], ax
-mov   ax, word ptr [bp - 0eh]
-mov   word ptr [_ds_x2], ax
 ;lcall [bp - 016h]   TODO call direct
 db 0FFh   ;lcall[bp-16]
 db 05Eh
@@ -3933,46 +3990,54 @@ pop   di
 pop   si
 pop   cx
 retf  
-jumpf:
+use_fixed_colormap:
 mov   al, byte ptr [_fixedcolormap]
 mov   word ptr [_ds_colormap_index], BASE_COLORMAP_POINTER
-jmp   jumpc
-jumpb:
+jmp   colormap_ready
+generate_distance_steps:
+; di = CACHEDDISTANCE_SEGMENT
+; es = CACHEDHEIGHT_SEGMENT
+; dx:ax = planeheight segment
+
 mov   word ptr es:[si], ax
-mov   bx, 9000h
+mov   bx, Y_SLOPE_SEGMENT
 mov   word ptr es:[si + 2], dx
 mov   es, bx
 mov   bx, word ptr es:[si]
 mov   cx, word ptr es:[si + 2]
 
+; distance = cacheddistance[y] = R_FixedMulLocal (planeheight, yslope[y]);
+
 ;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
+; result is distance
 mov   es, di
-mov   word ptr [bp - 0ah], dx
+mov   word ptr [bp - 0Ah], dx		; distance high word
 mov   bx, word ptr [_basexscale]
 mov   cx, word ptr [_basexscale+2]
-mov   word ptr es:[si], ax
-mov   di, dx
-mov   ax, word ptr es:[si]
-mov   word ptr es:[si + 2], dx
-mov   word ptr [bp - 010h], ax
-mov   word ptr [bp - 0ch], ax
+mov   word ptr es:[si], ax			; store distance
+mov   word ptr es:[si + 2], dx		; store distance
+mov   di, dx						; store distance high word in di
+mov   word ptr [bp - 0Ch], ax		; distance low word
+
+; 		ds_xstep = cachedxstep[y] = (R_FixedMulLocal (distance,basexscale));
 
 ;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 mov   bx, CACHEDXSTEP_SEGMENT
 mov   es, bx
-mov   bx, word ptr [_baseyscale]
 mov   word ptr es:[si], ax
-mov   cx, word ptr [_baseyscale+2]
 mov   word ptr es:[si + 2], dx
-mov   word ptr [_ds_xstep+2], dx
-mov   ax, word ptr es:[si]
-mov   dx, di
 mov   word ptr [_ds_xstep], ax
-mov   ax, word ptr [bp - 010h]
+mov   word ptr [_ds_xstep+2], dx
+mov   dx, di
+mov   bx, word ptr [_baseyscale]
+mov   cx, word ptr [_baseyscale+2]
+mov   ax, word ptr [bp - 0Ch]	; retrieve distance low word
+
+;		ds_ystep = cachedystep[y] = (R_FixedMulLocal (distance,baseyscale));
 
 ;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
@@ -3981,11 +4046,9 @@ mov   bx, CACHEDYSTEP_SEGMENT
 mov   es, bx
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
-mov   dx, word ptr es:[si]
-mov   ax, word ptr es:[si + 2]
-mov   word ptr [_ds_ystep], dx
-mov   word ptr [_ds_ystep+2], ax
-jmp   jumpd
+mov   word ptr [_ds_ystep], ax
+mov   word ptr [_ds_ystep+2], dx
+jmp   distance_steps_ready
 cld   
 
 ENDP

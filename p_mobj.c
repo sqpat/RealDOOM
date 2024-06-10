@@ -998,14 +998,7 @@ void __near P_CheckMissileSpawn (mobj_t __far* th, mobj_pos_t __far* th_pos)
 //
 // P_SpawnMissile
 //
-THINKERREF
-__near P_SpawnMissile
-(mobj_t __far* source,
-	mobj_pos_t __far* source_pos,
-  mobj_t __far*	dest,
-  mobjtype_t	type
-	)
-{
+THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source_pos, mobj_t __far*	dest, mobjtype_t	type ) {
 	mobj_t __far*	th;
 	mobj_pos_t __far*	th_pos;
     angle_t	an;
@@ -1020,9 +1013,8 @@ __near P_SpawnMissile
 	th_pos = setStateReturn_pos;
 	if (mobjinfo[type].seesound) {
 		S_StartSound(th, mobjinfo[type].seesound);
-
-
 	}
+
 
     th->targetRef = GETTHINKERREF(source);	// where it came from
 	thspeed = MAKESPEED(mobjinfo[type].speed);

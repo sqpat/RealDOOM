@@ -121,9 +121,6 @@ void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
     length = R_FixedMulLocalWrapper (distance,distscale[x1]);
 	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
 
-	// shouldnt (x * cos[y]) + (x * sin[y]) == x?
-	// if so do we need the second mul or can we subtract 32 bits from the other to get it
-
 	ds_xfrac = viewx.w + R_FixedMulLocalWrapper(finecosine[angle], length );
     ds_yfrac = -viewy.w - R_FixedMulLocalWrapper(finesine[angle], length );
 
