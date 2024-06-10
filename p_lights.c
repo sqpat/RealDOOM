@@ -49,6 +49,8 @@ void __near T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
 	if (--flick->count)
 		return;
 
+	amount = (P_Random() & 3) * 16;
+
 	flick->count = 4;
 	if (sectors[flicksecnum].lightlevel - amount < flickminlight)
 		sectors[flicksecnum].lightlevel = flickminlight;
@@ -64,7 +66,7 @@ void __near T_FireFlicker (fireflicker_t __far* flick, THINKERREF flickRef)
 //
 void __near P_SpawnFireFlicker (int16_t secnum){
     fireflicker_t __far*	flick;
-	uint8_t seclightlevel = sectors[secnum].lightlevel;
+	int16_t seclightlevel = sectors[secnum].lightlevel;
 	
     // Note that we are resetting sector attributes.
     // Nothing special about it during gameplay.
@@ -125,7 +127,7 @@ void __near P_SpawnLightFlash (int16_t secnum)
     lightflash_t __far*	flash;
 	uint8_t lightamount;
 	// nothing special about it during gameplay
-	uint8_t seclightlevel = sectors[secnum].lightlevel;
+	int16_t seclightlevel = sectors[secnum].lightlevel;
 	sectors_physics[secnum].special = 0;
 
 	
