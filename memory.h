@@ -276,7 +276,7 @@ size_segs                 EDEF:0000
 
 /*
 
-92C0:0034      getPainChance2_
+92C0:0034      getPainChance_
 92C0:00b2      getRaiseState_
 92C0:010a      getXDeathState_
 92C0:015a      getMeleeState_

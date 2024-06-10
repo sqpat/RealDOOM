@@ -460,7 +460,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
 	temp.h.fracbits = 0;
 	temp.h.intbits = centerxfrac.h.intbits;
 	if (pspritescale) {
-		temp.w += FixedMul16u32(pspritescale, tx.wu);
+		temp.w += FixedMul16u32(pspritescale, tx.w);
 	}
 	else {
 		temp.w += tx.w;
@@ -479,7 +479,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
 
 	temp.h.intbits = centerxfrac.h.intbits;
 	if (pspritescale) {
-		temp.w += FixedMul16u32(pspritescale, tx.wu);
+		temp.w += FixedMul16u32(pspritescale, tx.w);
 	} else {
 		temp.w += tx.w;
 	}

@@ -162,7 +162,7 @@ short_height_t __near P_FindNextHighestFloor( int16_t	secnum,short_height_t		cur
     short_height_t			min;
 	int16_t offset = sectors[secnum].linesoffset;
 	short_height_t		height = currentheight;
-	uint8_t linecount = sectors[secnum].linecount;
+	int16_t linecount = sectors[secnum].linecount;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
     
@@ -202,7 +202,7 @@ short_height_t __near P_FindLowestOrHighestCeilingSurrounding(int16_t	secnum, in
     uint8_t		i;
 	short_height_t		height = isHigh ? 0 : MAXSHORT ;
 	int16_t offset = sectors[secnum].linesoffset;
-	uint8_t linecount = sectors[secnum].linecount;
+	int16_t linecount = sectors[secnum].linecount;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
@@ -253,7 +253,7 @@ uint8_t __near P_FindMinSurroundingLight( int16_t secnum,uint8_t		max ){
     uint8_t		i;
     uint8_t		min;
 	int16_t offset = sectors[secnum].linesoffset;
-	uint8_t linecount = sectors[secnum].linecount;
+	int16_t linecount = sectors[secnum].linecount;
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 
@@ -968,7 +968,7 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
     int16_t			secnum;
 	int16_t			i;
 	int16_t			j = 0;
-	uint8_t			linecount;
+	int16_t			linecount;
     floormove_t __far*	floor;
 	THINKERREF floorRef;
 	int16_t offset;

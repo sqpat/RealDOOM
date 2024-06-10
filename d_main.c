@@ -200,47 +200,9 @@ void __far getStringByIndex(int16_t stringindex, int8_t __far* returndata) {
 
 
 
-// Fixme. __USE_C_FIXED__ or something.
-
-
-
-fixed_t32 FixedMul16u32(uint16_t	a, fixed_t32 b) {
-	// fixed_t_union fp;
-	// fp.w = ((long long)a * (long long)b);
-	// return fp.h.intbits;
-	longlong_union llu;
-	llu.l = (a * (long long)b);
-	return llu.productresult.usemid;
-}
-
-// essentially a is shifted left 16 for the mul?
-//
-/*
-fixed_t32 FixedMulBig1632 (int16_t	a, fixed_t	b) {
-    fixed_t_union biga;
-	longlong_union llu;
-	biga.h.intbits = a;
-	biga.h.fracbits = 0;
-	llu.l = (biga.w * (long long)b);
-	return llu.productresult.usemid;
-}
-
- 
-
-fixed_t32 FixedMul1616(int16_t	a, int16_t	b) {
-	return (int32_t)a * b;
-}
-*/
-
-
-
-
-fixed_t32
-FixedDiv2
-(fixed_t32	a, fixed_t32	b
+fixed_t32 FixedDiv2 (fixed_t32	a, fixed_t32	b
 	//,int8_t* file, int32_t line
-)
-{
+) {
 	// all seem to work, but i think long long is probably the least problematic for 16 bit cpu for now. - sq
 
 	long long c;
@@ -665,7 +627,6 @@ void __near D_DoomLoop (void)
 		rendertics += ticcount - cachedtics;
 		cachedtics = ticcount;
 #endif
-
    
 #ifdef DEBUGLOG_TO_FILE
 				

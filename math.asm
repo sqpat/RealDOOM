@@ -691,5 +691,96 @@ ret
 
 ENDP
 
+; first param is unsigned so DX and sign can be skipped
+PROC FixedMul16u32_
+PUBLIC FixedMul16u32_
+
+; AX  *  CX:BX
+;  0  1   2  3
+
+; AX * CX:BX
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               AXBXhi	 AXBXlo
+;                       AXCXhi  AXCXlo
+;               AXS1hi  AXS1lo
+;       
+
+
+
+; need to get the sign-extends for DX and CX
+
+
+XCHG BX, AX    ; AX stored in BX
+MUL  BX        ; AX * BX
+MOV  AX, CX    ; CX to AX
+MOV  CX, DX    ; CX stores low word
+CWD            ; S1 in DX
+AND  DX, BX    ; S1 * AX
+NEG  DX        ; 
+XCHG DX, BX    ; AX into DX, high word into BX
+MUL  DX        ; AX*CX
+ADD AX, CX     ; add low word
+ADC DX, BX     ; add high word
+
+
+
+ret
+
+
+
+ENDP
+
+
+; unused??
+; both params unsigned. drop all sign extensions..
+PROC FixedMul16u32u_
+PUBLIC FixedMul16u32u_
+
+; AX  *  CX:BX
+;  0  1   2  3
+
+; AX * CX:BX
+
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               AXBXhi	 AXBXlo
+;                       AXCXhi  AXCXlo
+;       
+
+
+
+; need to get the sign-extends for DX and CX
+
+
+XCHG BX, AX    ; AX stored in BX
+MUL  BX        ; AX * BX
+MOV AX, BX     ; AX to AX again
+MOV BX, DX     ; high word to bx (as low word result)
+MUL  CX        ; AX * CX
+ADD AX, BX     ; add low word
+ADC DX, 0      ; add carry bit
+
+
+ret
+
+
+
+ENDP
+
+
 
 END
