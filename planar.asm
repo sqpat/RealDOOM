@@ -63,22 +63,24 @@ COLFUNC_JUMP_OFFSET      =   075h
 
 DC_YL_LOOKUP_SEGMENT =  6A29h
 
-DISTSCALE_SEGMENT = 9032h
 FINESINE_SEGMENT = 31e4h
 FINECOSINE_SEGMENT = 33e4h
  
 COLFUNC_FUNCTION_AREA_SEGMENT = 6A42h
 
-CACHEDHEIGHT_SEGMENT = 9082h
+
+CACHEDHEIGHT_SEGMENT = 9000h
+Y_SLOPE_SEGMENT = 9032h
+DISTSCALE_SEGMENT = 9064h
 CACHEDDISTANCE_SEGMENT = 90b4h
-CACHEDYSTEP_SEGMENT = 9118h
 CACHEDXSTEP_SEGMENT = 90e6h
+CACHEDYSTEP_SEGMENT = 9118h
 SPANFUNC_FUNCTION_AREA_SEGMENT = 6eaah
 SPANFUNC_PREP_OFFSET = 0719h
 BASE_COLORMAP_POINTER = 6800h
 XTOVIEWANGLE_SEGMENT = 833bh
 MAXLIGHTZ = 080h
-Y_SLOPE_SEGMENT = 9000h
+MAXLIGHTZ_UNSHIFTED = 0800h
 
 EXTRN _basexscale:WORD
 EXTRN _planezlight:WORD
@@ -3805,6 +3807,16 @@ ENDP
 ; bp - 012h  angle (no longer used)
 ; bp - 14h   spanfunc jump location offset
 ; bp - 16h   spanfunc jump location segment
+
+;cachedheight   9000:0000
+;yslope         9032:0000
+;distscale      9064:0000
+;cacheddistance 90B4:0000
+;cachedxstep    90E6:0000
+;cachedystep    9118:0000
+; 	rather than changing ES a ton we will just modify offsets by segment distance
+;   confirmed to be faster even on 8088 with it's baby prefetch queue - i think on 16 bit busses it is only faster.
+
 PROC  R_MapPlane_
 PUBLIC  R_MapPlane_ 
 
@@ -3826,38 +3838,45 @@ mov   word ptr [bp - 8], dx
 mov   word ptr [bp - 0Eh], bx
 mov   word ptr [bp - 016h], SPANFUNC_PREP_OFFSET
 mov   word ptr [bp - 014h], SPANFUNC_FUNCTION_AREA_SEGMENT
-mov   bx, CACHEDHEIGHT_SEGMENT
-xor   ah, ah
-mov   dx, word ptr [_planeheight + 2]
-mov   si, ax
-mov   ax, word ptr [_planeheight]
-shl   si, 1
-shl   si, 1
+mov   bx, CACHEDHEIGHT_SEGMENT			; base segment
 mov   es, bx
-;LEA   bx, [si + 2]
-mov   di, CACHEDDISTANCE_SEGMENT
-cmp   dx, word ptr es:[si + 2]
+xor   ah, ah
+xchg  si, ax
+mov   ax, word ptr [_planeheight]
+mov   dx, word ptr [_planeheight + 2]
+shl   si, 1
+shl   si, 1
+; CACHEDHEIGHT LOOKUP
+
+cmp   ax, word ptr es:[si] ; compare low word
 je    use_cached_values
 go_use_cached_values:
 jmp   generate_distance_steps
 use_cached_values:
-cmp   ax, word ptr es:[si]
-jne   go_use_cached_values
-mov   es, di
-mov   ax, word ptr es:[si]
-mov   word ptr [bp - 0ch], ax	; store distance low word
-mov   dx, word ptr es:[si + 2]
-mov   cx, CACHEDXSTEP_SEGMENT
-mov   es, cx
-mov   word ptr [bp - 0Ah], dx
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
+
+cmp   dx, word ptr es:[si+2]
+jne   go_use_cached_values	; comparing high word
+
+; CACHED DISTANCE lookup
+
+mov   ax, word ptr es:[si + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   dx, word ptr es:[si + 2 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   di, dx					; store distance high word
+mov   word ptr [bp - 0Ch], ax	; store distance low word
+
+; CACHEDXSTEP lookup
+
+
+mov   ax, word ptr es:[si + (( CACHEDXSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   dx, word ptr es:[si + 2 + (( CACHEDXSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   word ptr [_ds_xstep], ax
 mov   word ptr [_ds_xstep+2], dx
-mov   bx, CACHEDYSTEP_SEGMENT
-mov   es, bx
-mov   ax, word ptr es:[si]
-mov   dx, word ptr es:[si + 2]
+
+; CACHEDYSTEP lookup
+
+
+mov   ax, word ptr es:[si + (( CACHEDYSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   dx, word ptr es:[si + 2 + (( CACHEDYSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   word ptr [_ds_ystep], ax
 mov   word ptr [_ds_ystep+2], dx
 distance_steps_ready:
@@ -3870,7 +3889,8 @@ mov   ax, DISTSCALE_SEGMENT
 shl   bx, 1
 shl   bx, 1						; word lookup
 mov   es, ax
-mov   dx, word ptr [bp - 0Ah]  ; ; distance high word
+mov   dx, di  				    ; distance high word
+mov   word ptr [bp - 0ah], dx   ; store distance high word in case needed for colormap
 mov   ax, word ptr [bp - 0Ch]   ; distance low word
 mov   cx, word ptr es:[bx + 2]	; distscale high word
 mov   bx, word ptr es:[bx]		; distscale low word
@@ -3995,24 +4015,28 @@ mov   al, byte ptr [_fixedcolormap]
 mov   word ptr [_ds_colormap_index], BASE_COLORMAP_POINTER
 jmp   colormap_ready
 generate_distance_steps:
-; di = CACHEDDISTANCE_SEGMENT
-; es = CACHEDHEIGHT_SEGMENT
+
+; es = 9000h  (CACHEDHEIGHT_SEGMENT)
 ; dx:ax = planeheight segment
+; note: es wrecked by function calls to r_fixedmullocal...
+
+
 
 mov   word ptr es:[si], ax
-mov   bx, Y_SLOPE_SEGMENT
-mov   word ptr es:[si + 2], dx
-mov   es, bx
-mov   bx, word ptr es:[si]
-mov   cx, word ptr es:[si + 2]
+mov   word ptr es:[si + 2], dx   ; cachedheight into dx
+mov   bx, word ptr es:[si + (( Y_SLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   cx, word ptr es:[si + 2 + (( Y_SLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 
+
+; not worth continuing to LEA because fixedmul destroys ES and then we have to store and restore from SI which is too much extra time
 ; distance = cacheddistance[y] = R_FixedMulLocal (planeheight, yslope[y]);
 
 ;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
 
 ; result is distance
-mov   es, di
+mov   bx, CACHEDDISTANCE_SEGMENT
+mov   es, bx
 mov   word ptr [bp - 0Ah], dx		; distance high word
 mov   bx, word ptr [_basexscale]
 mov   cx, word ptr [_basexscale+2]

@@ -666,19 +666,19 @@ This area used during intermission task
 #define size_spanstart         (sizeof(fixed_t) * SCREENHEIGHT)
 
 // start plane only
-#define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(0x90000000, 0))
+#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(0x90000000, 0))
+#define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
 #define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))
-#define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(distscale, size_distscale))
-#define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
+#define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(distscale, size_distscale))
 #define cachedxstep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cacheddistance, size_cacheddistance))
 #define cachedystep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedxstep, size_cachedxstep))
 #define spanstart             ((int16_t __far*)        MAKE_FULL_SEGMENT(cachedystep, size_cachedystep))
 // end plane only
 
 /*
-yslope         9000:0000
-distscale      9032:0000
-cachedheight   9082:0000
+cachedheight   9000:0000
+yslope         9032:0000
+distscale      9064:0000
 cacheddistance 90B4:0000
 cachedxstep    90E6:0000
 cachedystep    9118:0000

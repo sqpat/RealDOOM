@@ -1284,7 +1284,7 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	actorspeed = MAKESPEED(mobjinfo[actor->type].speed);
     fineexact = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
     actor->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, fineexact, actorspeed);
-    actor->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, fineexact, actorspeed);
+	actor->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, fineexact, actorspeed);
 	
 	dest = (mobj_t __far*)(&thinkerlist[actor->tracerRef].data);
 	dest_pos = &mobjposlist[actor->tracerRef];
