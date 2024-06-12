@@ -3850,12 +3850,13 @@ shl   si, 1
 
 cmp   ax, word ptr es:[si] ; compare low word
 je    use_cached_values
-go_use_cached_values:
+go_generate_values:
 jmp   generate_distance_steps
 use_cached_values:
 
 cmp   dx, word ptr es:[si+2]
-jne   go_use_cached_values	; comparing high word
+jne   go_generate_values	; comparing high word
+
 
 ; CACHED DISTANCE lookup
 
@@ -3884,16 +3885,16 @@ distance_steps_ready:
 ; dx:ax is y_step
 ;     length = R_FixedMulLocal (distance,distscale[x1]);
 
-mov   bx, word ptr [bp - 8]		; grab x2 (function input)
+mov   si, word ptr [bp - 8]		; grab x2 (function input)
 mov   ax, DISTSCALE_SEGMENT
-shl   bx, 1
-shl   bx, 1						; word lookup
+shl   si, 1
+shl   si, 1						; dword lookup
 mov   es, ax
 mov   dx, di  				    ; distance high word
 mov   word ptr [bp - 0ah], dx   ; store distance high word in case needed for colormap
 mov   ax, word ptr [bp - 0Ch]   ; distance low word
-mov   cx, word ptr es:[bx + 2]	; distscale high word
-mov   bx, word ptr es:[bx]		; distscale low word
+mov   bx, word ptr es:[si]		; distscale low word
+mov   cx, word ptr es:[si + 2]	; distscale high word
 
 ;call FAR PTR FixedMul_ 
 call R_FixedMulLocal_
@@ -3902,11 +3903,11 @@ call R_FixedMulLocal_
 ;	angle = MOD_FINE_ANGLE(viewangle_shiftright3+ xtoviewangle[x1]);
 ; ds_xfrac = viewx.w + R_FixedMulLocal(finecosine[angle], length );
 
-mov   bx, word ptr [bp - 8] ; grab x2
-mov   di, ax			; store low word of length (product result)in di
+mov   bx, si
+shr   bx, 1		
+xchg  di, ax			; store low word of length (product result)in di
 mov   si, dx			; store high word of length  (product result) in si
 mov   ax, XTOVIEWANGLE_SEGMENT
-add   bx, bx			; x2 word lookup
 mov   es, ax
 mov   ax, word ptr [_viewangle_shiftright3]
 add   ax, word ptr es:[bx]		; ax is unmodded fine angle..
@@ -4037,7 +4038,6 @@ call R_FixedMulLocal_
 ; result is distance
 mov   bx, CACHEDDISTANCE_SEGMENT
 mov   es, bx
-mov   word ptr [bp - 0Ah], dx		; distance high word
 mov   bx, word ptr [_basexscale]
 mov   cx, word ptr [_basexscale+2]
 mov   word ptr es:[si], ax			; store distance
