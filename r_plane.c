@@ -79,6 +79,7 @@ fixed_t			baseyscale;
 
 int8_t currentemsvisplanepage = 0; 
 
+void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 
 
 //
@@ -468,7 +469,7 @@ void __near R_DrawPlanes (void) {
 				dc_yl = pl->top[x];
 				dc_yh = pl->bottom[x];				
 
-				if (dc_yl < dc_yh) {
+				if (dc_yl <= dc_yh) {
 					// all sky textures are 256 wide, just need the 0xFF and
 					void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 					uint8_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;

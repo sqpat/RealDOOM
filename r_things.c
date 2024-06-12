@@ -171,17 +171,11 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
 	column_t __far*     column;
     fixed_t_union       frac;
     patch_t __far*      patch;
-    int8_t isShadow = false;
 
 
     dc_colormap_segment = colormapssegment_high;
     dc_colormap_index = vis->colormap;
     
-    if (vis->colormap == COLORMAP_SHADOW) {
-        // NULL colormap = shadow draw
-        isShadow = true;
-    }
-        
     dc_iscale = labs(vis->xiscale)>>detailshift;
     dc_texturemid.w = vis->texturemid;
     frac.w = vis->startfrac;
@@ -191,7 +185,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
 	patch = (patch_t __far*)getspritetexture(vis->patch);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		column = (column_t  __far*) ((byte  __far*)patch + (patch->columnofs[frac.h.intbits]));
-        R_DrawMaskedColumn (column, isShadow);
+        R_DrawMaskedColumn (column, (vis->colormap == COLORMAP_SHADOW));
     }
 }
 

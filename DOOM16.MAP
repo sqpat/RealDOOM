@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/06/10 20:21:50
+Created on:       24/06/12 05:22:58
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -80,7 +80,7 @@ r_draw_TEXT            CODE           AUTO           172e:3020       000004b5
 r_main_TEXT            CODE           AUTO           172e:34e0       000009be
 r_plane_TEXT           CODE           AUTO           172e:3ea0       0000080f
 r_segs_TEXT            CODE           AUTO           172e:46b0       0000121e
-r_things_TEXT          CODE           AUTO           172e:58d0       00000f9d
+r_things_TEXT          CODE           AUTO           172e:58d0       00000f97
 w_wad_TEXT             CODE           AUTO           172e:6870       000003f2
 v_video_TEXT           CODE           AUTO           172e:6c70       00000495
 z_zone_TEXT            CODE           AUTO           172e:7110       00000617
@@ -1282,14 +1282,14 @@ Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 Module: r_things.obj(C:\REALDOOM\r_things.c)
 172e:58d0      R_DrawMaskedColumn_
 172e:5a06+     R_DrawVisSprite_
-172e:5b08+     R_ProjectSprite_
-172e:5f2a      R_AddSprites_
-172e:5fa0+     R_DrawPSprite_
-172e:620e+     R_DrawPlayerSprites_
-172e:6258      R_PrepareMaskedPSprites_
-172e:62e4+     R_SortVisSprites_
-172e:6420+     R_DrawSprite_
-172e:6806      R_DrawMasked_
+172e:5b02+     R_ProjectSprite_
+172e:5f24      R_AddSprites_
+172e:5f9a+     R_DrawPSprite_
+172e:6208+     R_DrawPlayerSprites_
+172e:6252      R_PrepareMaskedPSprites_
+172e:62de+     R_SortVisSprites_
+172e:641a+     R_DrawSprite_
+172e:6800      R_DrawMasked_
 2526:2890+     _spritelights
 2526:2894      _mceilingclip
 2526:2898      _sprtopscreen
@@ -1804,4 +1804,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00028ca0 (167072.)
 Entry point address: 1ea1:2372
-Link time: 00:00.74
+Link time: 00:00.29

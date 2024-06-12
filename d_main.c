@@ -628,6 +628,12 @@ void __near D_DoomLoop (void)
 		cachedtics = ticcount;
 #endif
    
+   /*
+if (gametic == 200){
+    I_Error("done");
+}
+*/
+
 #ifdef DEBUGLOG_TO_FILE
 				
 
