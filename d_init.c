@@ -662,7 +662,8 @@ R_FixedMulLocalWrapper2(0, 0)
 	
 	// baselowermemoryaddress
 
-	//I_Error("\n%x %x %x %x", size_patchoffset, size_patchpage, size_zlight, 0);
+	//I_Error("\n%lx %lx %lx %lx", spanstart, distscale, cachedystep, cachedxstep);
+
 
 /*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",

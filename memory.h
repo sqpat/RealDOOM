@@ -657,44 +657,46 @@ This area used during intermission task
 // 6800 plane only... combine with skytex...
 
 
-#define size_yslope            (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_distscale         (sizeof(fixed_t) * SCREENWIDTH)
 #define size_cachedheight      (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_yslope            (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_cacheddistance    (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_cachedxstep       (sizeof(fixed_t) * SCREENHEIGHT)
 #define size_cachedystep       (sizeof(fixed_t) * SCREENHEIGHT)
-#define size_spanstart         (sizeof(fixed_t) * SCREENHEIGHT)
+#define size_spanstart         (sizeof(int16_t) * SCREENHEIGHT)
+#define size_distscale         (sizeof(fixed_t) * SCREENWIDTH)
 
 // start plane only
 #define cachedheight          ((fixed_t __far*)        MAKE_FULL_SEGMENT(0x90000000, 0))
 #define yslope                ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedheight, size_cachedheight))
-#define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))
-#define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(distscale, size_distscale))
+#define cacheddistance        ((fixed_t __far*)        MAKE_FULL_SEGMENT(yslope, size_yslope))
 #define cachedxstep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cacheddistance, size_cacheddistance))
 #define cachedystep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedxstep, size_cachedxstep))
 #define spanstart             ((int16_t __far*)        MAKE_FULL_SEGMENT(cachedystep, size_cachedystep))
+#define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(spanstart, size_spanstart))
 // end plane only
+
+// 35080 bytes
+#define skytexture_bytes ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
+// 9163:0000
+#define skytexture_segment ((uint16_t) ((int32_t)skytexture_bytes >> 16))
+
 
 /*
 cachedheight   9000:0000
 yslope         9032:0000
-distscale      9064:0000
-cacheddistance 90B4:0000
-cachedxstep    90E6:0000
-cachedystep    9118:0000
+cacheddistance 9064:0000
+cachedxstep    9096:0000
+cachedystep    90C8:0000
+spanstart      90FA:0000
+distscale      9113:0000
 
-todo insert drawspan here
 
-spanstart      914A:0000
-skytexture     917C:0000
-[empty]        9A0D:0000
+
+skytexture     9163:0000
+[empty]        99F4:0000
 
 */
 
-// 35080 bytes
-#define skytexture_bytes ((byte __far*) MAKE_FULL_SEGMENT(spanstart, size_spanstart))
-// 917c:0000
-#define skytexture_segment ((uint16_t) ((int32_t)skytexture_bytes >> 16))
 
 // note drawspan code could fit here and colormap in 0x9c00...
 
