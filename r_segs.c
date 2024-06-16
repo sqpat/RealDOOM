@@ -321,7 +321,7 @@ void __near R_RenderSegLoop (void)
 		// draw the wall tiers
 		if (midtexture) {
 			// single sided line
-			if (yh > yl){
+			if (yh >= yl){
                 void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 
 				dc_yl = yl;
