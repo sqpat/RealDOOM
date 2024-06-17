@@ -314,7 +314,7 @@ W_ReadLump
 	lumpsize = is5000Page ? W_LumpLength5000(lump) : W_LumpLength9000(lump);
 
 	
-	if (dest == colormaps) {//todo unhack this...
+	if (lump == 1) {//colormaps hack.
 		lumpsize = 33 * 256; // hack to override lumpsize of colormaps
 	}
 
