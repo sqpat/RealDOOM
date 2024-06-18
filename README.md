@@ -18,7 +18,7 @@ To build an optimized 80286 build, run make286.bat. Otherwise, run make16.bat fo
 
 If running on real hardware, a pentium or fast 486 is current recommended.
 
-The minimum spec will eventually be a standard 4.77 MhZ 8088 machine with a VGA card, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets support EMS 4.0 and you will be able to use their appropriate EMS drivers. 
+The minimum spec will eventually be a standard 4.77 MhZ 8088 machine with a VGA card, a hard disk that can fit the software/WAD, and 256 KB of system memory with a 2 MB populated Intel Above Board (or other compatible EMS 4.0 board with backfill - note that Lo-Tech EMS card does not support backfill). Many 286 chipsets (C&T SCAT, VLSI SCAMP, VLSI TOPCAT... ) support EMS 4.0 and you will be able to use their appropriate EMS drivers. 
 
 ### Removed features (not planned to be re-added)
  - multiplayer and netplay
@@ -73,18 +73,19 @@ There are also a lot of hard caps on things like texture size and count, node co
    
  
     
- **v0.21** : ASM improvements
-  - some level of early easy asm work (math functions?)
+ ~~**v0.21** : ASM improvements~~
+  - R_DrawColumn, R_DrawSpan, R_MapPlane ASM optimized
+  - Potato quality implemented
+  - FixedMul ASM Optimized
 
- **v0.22** : ASM improvements
-  - function binaries loaded into EMS memory at runtime
-  - fixed DS to 0x3C00? 
+ **v0.22** : More ASM improvements
+  - Entire render pipeline ASM optimzied
+  - FixedDiv ASM optimized
+  - Render function binaries loaded into EMS memory at runtime
+  - core physics functions rewritten in asm
 
  **v0.23** : ASM improvements
-  - core drawing functions rewritten in asm
-
- **v0.25** : ASM improvements
-  - full render pipeline written in asm and runtime-loaded/linked render asm
+  - fixed DS to 0x3C00?
     
  **v0.30** : Full feature compatibility?
   - sound code?
