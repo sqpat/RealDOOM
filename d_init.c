@@ -127,7 +127,8 @@ void __far D_InitStrings() {
 		if (feof(handle)) {
 			break;
 		}
-		I_Error("99"); // Strings too big. Need to implement 2nd page?
+		//I_Error("99"); // Strings too big. Need to implement 2nd page?
+
 		//page++;
 		//lastbuffer = buffer;
 

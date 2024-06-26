@@ -516,13 +516,15 @@ void __near I_Shutdown(void);
 void __far I_Error (int8_t *error, ...)
 {
     va_list argptr;
-	printf(error, argptr);
+	//printf(error, argptr);
     I_Shutdown();
     va_start(argptr, error);
     vprintf(error, argptr);
     va_end(argptr);
     printf("\n");
     exit(1);
+	// if we don't do this it seems like execution falls thru and might do some draws causing hardware graphics problems(??)
+	while (true){}
 }
 
 #ifdef ENABLE_DISK_FLASH

@@ -50,12 +50,16 @@ uint16_t EMS_PAGE;
 extern int16_t emshandle;
 
 
+void near doerror(int16_t errnum, int16_t errorreg){
+	I_Error("\n\n%d %d", errnum, errorreg); // Couldn't init EMS, error %d
+}
+
 byte __far* __near Z_InitEMS()
 {
 
 	// 4 mb
 	// todo test 3, 2 MB, etc. i know we use less..
-	int16_t numPagesToAllocate = NUM_EMS4_SWAP_PAGES; //256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
+	//int16_t numPagesToAllocate = NUM_EMS4_SWAP_PAGES; //256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
 	int16_t pageframebase;
 
 
@@ -70,13 +74,29 @@ byte __far* __near Z_InitEMS()
 	int16_t j;
 	DEBUG_PRINT("  Checking EMS...");
 
+	// used:
+	/*
+	40		1  Get Status                                     40h      
+	41		2  Get Page Frame Segment Address                 41h       
+	42		3  Get Unallocated Page Count                     42h       
+	43		4  Allocate Pages                                 43h      
+	44		removed 5  Map/Unmap Handle Page                          44h      
+	45		6  Deallocate Pages                               45h       
+	46		7  Get Version                                    46h       
 
+          17 Map/Unmap Multiple Handle Pages
+	5000	(Physical page number mode)                    5000h     
+	          25 
+	5800		Get Mappable Physical Address Array            5800h     
+	5801		Get Mappable Physical Address Array Entries    5801h     
+	
+	*/
 
 	regs.h.ah = 0x40;
 	int86(EMS_INT, &regs, &regs);
 	errorreg = regs.h.ah;
 	if (errorreg) {
-		I_Error("91 %d", errorreg); // Couldn't init EMS, error %d
+		doerror(91, errorreg);
 	}
 
 
@@ -85,11 +105,11 @@ byte __far* __near Z_InitEMS()
 	vernum = regs.h.al;
 	errorreg = regs.h.ah;
 	if (errorreg != 0) {
-		I_Error("90"); // EMS Error 0x46
+		doerror(90, errorreg); // EMS Error 0x46
 	}
 	//DEBUG_PRINT("Version %i", vernum);
 	if (vernum < 40) {
-		I_Error("Expected EMS 4.0, found %x", vernum);
+		doerror(92, vernum);
 	}
 
 	// get page frame address
@@ -98,7 +118,7 @@ byte __far* __near Z_InitEMS()
 	pageframebase = regs.w.bx;
 	errorreg = regs.h.ah;
 	if (errorreg != 0) {
-		I_Error("89");/// EMS Error 0x41
+		doerror(89, errorreg);/// EMS Error 0x41
 	}
 
 
@@ -115,7 +135,7 @@ byte __far* __near Z_InitEMS()
 	}
 
 
-	regs.w.bx = numPagesToAllocate;
+	regs.w.bx = NUM_EMS4_SWAP_PAGES; //numPagesToAllocate;
 	regs.h.ah = 0x43;
 	intx86(EMS_INT, &regs, &regs);
 	emshandle = regs.w.dx;
@@ -124,13 +144,13 @@ byte __far* __near Z_InitEMS()
 		// Error 0 = 0x00 = no error
 		// Error 137 = 0x89 = zero pages
 		// Error 136 = 0x88 = OUT_OF_LOG
-		I_Error("88 %i", errorreg);// EMS Error 0x43
+		doerror(88, errorreg);// EMS Error 0x43
 	}
 
 
 	// do initial page remapping
 
-
+/*
 	for (j = 0; j < 4; j++) {
 		regs.h.al = j;  // physical page
 		regs.w.bx = j;    // logical page
@@ -141,7 +161,7 @@ byte __far* __near Z_InitEMS()
 			I_Error("87"); // EMS Error 0x44
 		}
 	}
-
+*/
 
 	//*size = numPagesToAllocate * PAGE_FRAME_SIZE;
 
@@ -176,18 +196,19 @@ void __near Z_GetEMSPageMap() {
 	errorreg = regs.h.ah;
 	numentries = regs.w.cx;
 	if (errorreg != 0) {
-		I_Error("84 %i", errorreg);// \nCall 5801 failed with value %i!\n
+		doerror(84, errorreg);// Call 5801 failed with value %i!\n
 	}
 	DEBUG_PRINT("\n Found: %i mappable EMS pages (28+ required)", numentries);
 
 	regs.w.ax = 0x5800;  // physical page
-	segregs.es = (uint16_t)((uint32_t)pointervalue >> 16);
-	regs.w.di = (uint16_t)(((uint32_t)pointervalue) & 0xffff);
+	segregs.es = FP_SEG(pointervalue);
+	
+	regs.w.di = FP_OFF(pointervalue);
 	intx86(EMS_INT, &regs, &regs);
 	errorreg = regs.h.ah;
 	//pagedata = MK_FP(sregs.es, regs.w.di);
 	if (errorreg != 0) {
-		I_Error("83 %i", errorreg);// \nCall 25 failed with value %i!\n
+		doerror(83, errorreg);// Call 25 failed with value %i!\n
 	}
  
 	for (i = 0; i < numentries; i++) {
@@ -203,10 +224,11 @@ found:
 
 	// cache these args
 	//pageswapargseg = (uint16_t)((uint32_t)pageswapargs >> 16);
-	pageswapargoff = (uint16_t)(((uint32_t)pageswapargs) & 0xffff);
+	pageswapargoff = FP_OFF(pageswapargs);
 	 
 
-	
+	// todo this is old and out of date, but informative.
+	// update!
 
 	//					PHYSICS			RENDER					ST/HUD			DEMO		PALETTE			FWIPE				MENU		INTERMISSION
 	// BLOCK

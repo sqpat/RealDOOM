@@ -868,6 +868,7 @@ void __far Z_QuickMapVisplaneRevert(){
 #endif
 
 }
+// todo do we need to do the page frame?
 int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17 };
 
 void __far Z_QuickMapUnmapAll() {
