@@ -27,6 +27,7 @@
 #include "doomstat.h"
 #include "i_system.h"
 #include "z_zone.h"
+#include "memory.h"
 
 #include "w_wad.h"
 #include "r_defs.h"
@@ -124,7 +125,7 @@ void __near W_AddFile(int8_t *filename)
 	
 	// numlumps 1264
  
-	lump_p = &lumpinfo9000[startlump];
+	lump_p = &lumpinfoinit[startlump];
 
 	storehandle = reloadname ? -1 : handle;
 
@@ -144,7 +145,7 @@ void __near W_AddFile(int8_t *filename)
 				// we need to backtrack and push all 0 length items to the position of the next nonzero length item so size calculations work
 				if (j != 65535) {
 					for (; j < i; j++) {
-						lumpinfo9000[j].position = fileinfo->filepos;
+						lumpinfoinit[j].position = fileinfo->filepos;
 					}
 					j = 65535;
 				}
@@ -163,7 +164,7 @@ void __near W_AddFile(int8_t *filename)
 				diff = 0;
 				lump_p->position = lastpos + lastsize;
 			}
-			lumpinfo9000[i - 1].sizediff = diff;
+			lumpinfoinit[i - 1].sizediff = diff;
 
 		}
 		else {
@@ -173,7 +174,7 @@ void __near W_AddFile(int8_t *filename)
 		copystr8(lump_p->name, fileinfo->name);
 
 	}
-	lumpinfo9000[i - 1].sizediff = 0;
+	lumpinfoinit[i - 1].sizediff = 0;
 
 	if (reloadname)
 		close(handle);

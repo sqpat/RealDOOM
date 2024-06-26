@@ -199,7 +199,6 @@ typedef struct
 #define playerMobjRef	((THINKERREF)1)
 #define playerMobj_pos	((&mobjposlist[playerMobjRef]))
 #define playerMobj		((mobj_t __far *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
-//#define playerMobj		((mobj_t __far *)0x90000000)
 
 //extern intercept_t	*intercepts;// [MAXINTERCEPTS];
 extern intercept_t __far*	intercept_p;

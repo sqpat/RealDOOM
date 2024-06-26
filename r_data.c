@@ -712,8 +712,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 		texpage = i << 2;
 		texoffset = usedspritepagemem[i];
 		usedspritepagemem[i] += blocksize;
-	}
-	else {
+	} else {
 
 		uint8_t numpagesminus1 = numpages - 1;
 		for (i = 0; i < NUM_SPRITE_CACHE_PAGES-numpagesminus1; i++) {

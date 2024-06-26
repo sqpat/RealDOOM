@@ -59,8 +59,6 @@ typedef struct
 
 
 //#define lumpinfo4000 ((lumpinfo_t __far*) 0x44000000)
-#define lumpinfo5000 ((lumpinfo_t __far*) 0x54000000)
-#define lumpinfo9000 ((lumpinfo_t __far*) 0x94000000)
 extern	uint16_t		numlumps;
 
 

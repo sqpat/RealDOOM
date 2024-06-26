@@ -82,67 +82,64 @@ void __far Z_QuickMapUnmapAll();
 #define SCRATCH_ADDRESS_7000 (byte __far* )0x70000000
 #define SCRATCH_ADDRESS_8000 (byte __far* )0x80000000
 
-#define SCREEN0_LOGICAL_PAGE                        4
-#define STRINGS_LOGICAL_PAGE                        12
-#define FIRST_COLUMN_OFFSET_LOOKUP_LOGICAL_PAGE     16
-#define FIRST_RENDER_LOGICAL_PAGE                   20
+#define SCREEN4_LOGICAL_PAGE                        -1
 
-#define RENDER_7800_PAGE                            FIRST_RENDER_LOGICAL_PAGE + 9
-#define RENDER_7C00_PAGE                            FIRST_RENDER_LOGICAL_PAGE + 10
-#define PHYSICS_RENDER_6800_PAGE                    14
+#define SCREEN0_LOGICAL_PAGE                        -1
+#define STRINGS_LOGICAL_PAGE                        -1
+//#define FIRST_RENDER_LOGICAL_PAGE                   20
+
+#define RENDER_7800_PAGE                            9
+#define RENDER_7C00_PAGE                            10
+#define PHYSICS_RENDER_6800_PAGE                    13
 //#define PHYSICS_RENDER_6C00_PAGE                    15
 //#define EMS_VISPLANE_EXTRA_PAGE                     SCREEN3_LOGICAL_PAGE + 1
 #define EMS_VISPLANE_EXTRA_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5
-#define FIRST_VISPLANE_PAGE							FIRST_RENDER_LOGICAL_PAGE + 5
+#define FIRST_VISPLANE_PAGE							5
 
 //#define EMS_VISPLANE_EXTRA_PAGE                     NUM_EMS4_SWAP_PAGES + 1
-// 35
-#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         34
-// 36
-#define SCREEN4_LOGICAL_PAGE                        LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
-// 37
-#define FIRST_STATUS_LOGICAL_PAGE                   SCREEN4_LOGICAL_PAGE + 1
-// 41
+// 16
+#define LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE         15
+// 17
+#define FIRST_STATUS_LOGICAL_PAGE                   LAST_RENDER_OR_PHYSICS_LOGICAL_PAGE + 1
+// 21
 #define PALETTE_LOGICAL_PAGE                        FIRST_STATUS_LOGICAL_PAGE + 4
 // todo almost 6k free here..
-// 42
-#define SKY_TEXTURE_FIRST_PAGE                      PALETTE_LOGICAL_PAGE + 1
-// 45
-#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            SKY_TEXTURE_FIRST_PAGE + 3
-// 52
-#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 7
-// 60
+// 22
+#define FIRST_MENU_GRAPHICS_LOGICAL_PAGE            PALETTE_LOGICAL_PAGE + 1
+// 28
+#define FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE    FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 6
+// 36
 #define FIRST_SCRATCH_LOGICAL_PAGE                  FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 8
-// 64
+// 40
 #define FIRST_LUMPINFO_LOGICAL_PAGE                 FIRST_SCRATCH_LOGICAL_PAGE + 4
-// 67
+// 43
 #define FIRST_PATCH_CACHE_LOGICAL_PAGE              FIRST_LUMPINFO_LOGICAL_PAGE + 3
 #define NUM_PATCH_CACHE_PAGES                       16
-// 83
+// 59
 #define FIRST_FLAT_CACHE_LOGICAL_PAGE               FIRST_PATCH_CACHE_LOGICAL_PAGE + NUM_PATCH_CACHE_PAGES
 #define NUM_FLAT_CACHE_PAGES                        6
-// 89
+// 65
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
-// 97
+// 73
 #define NUM_TEXTURE_PAGES                           8
 #define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
-// 105
+// 81
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 109
+// 85
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 113
+// 89
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 #define NUM_SPRITE_CACHE_PAGES                      20
 
 // todo eventuall yjust include this in the spritecache area...
 //#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 117
+// 93
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 118 in use currently (including page 0)
+// 94 in use currently (including page 0)
 
 
-// 56?
+// 32
 #define FIRST_DEMO_LOGICAL_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4
 
 

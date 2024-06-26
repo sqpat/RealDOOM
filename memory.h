@@ -585,7 +585,7 @@ savegamestrings    5FB3:0000
 #define screen1 ((byte __far*) 0x90000000)
 #define screen2 ((byte __far*) 0x70000000)
 #define screen3 ((byte __far*) 0x60000000)
-#define screen4 ((byte __far*) 0x90000000)
+#define screen4 ((byte __far*) 0x9C000000)
 
 // screen1 is used during wi_stuff/intermission code, we can stick this anim data there
 #define size_screen1          (64000u)
@@ -598,7 +598,6 @@ savegamestrings    5FB3:0000
 #define size_pars             ((sizeof(int16_t) * (4*10)))
 #define size_cpars            ((sizeof(int16_t) * (32)))
 
-#define screen1          ((byte __far*)      0x90000000)
 #define lnodex           ((int16_t __far*)   MAKE_FULL_SEGMENT(screen1, size_screen1))
 #define lnodey           ((int16_t __far*)   (((int32_t)lnodex) + size_lnodex))
 #define epsd0animinfo    ((wianim_t __far*)  (((int32_t)lnodey) + size_lnodey))
@@ -694,6 +693,9 @@ distscale      9113:0000
 
 skytexture     9163:0000
 [empty]        99F4:0000
+
+// 8384 bytes free. could be fast unrolled draw sky code, 
+// and fast unrolled drawspan no tex code.
 
 */
 
@@ -1000,6 +1002,11 @@ compositetextureoffset  4FB1:01AC
 400 bytes free
 
 */
+
+
+#define lumpinfo5000 ((lumpinfo_t __far*) 0x54000000)
+#define lumpinfo9000 ((lumpinfo_t __far*) 0x94000000)
+#define lumpinfoinit ((lumpinfo_t __far*) baselowermemoryaddress)
 
 
 

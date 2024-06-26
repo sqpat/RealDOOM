@@ -102,7 +102,9 @@ GLOBOBJS = &
  f_wipe.obj &
  info.obj &
  d_math.obj &
- dmx.obj 
+ dmx.obj &
+ math.obj &
+ planar.obj
 
 doom16.exe : $(GLOBOBJS) i_ibm.obj
  wlink @newd16.lnk

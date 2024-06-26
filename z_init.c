@@ -55,7 +55,7 @@ byte __far* __near Z_InitEMS()
 
 	// 4 mb
 	// todo test 3, 2 MB, etc. i know we use less..
-	int16_t numPagesToAllocate = 256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
+	int16_t numPagesToAllocate = NUM_EMS4_SWAP_PAGES; //256; //  (4 * 1024 * 1024) / PAGE_FRAME_SIZE;
 	int16_t pageframebase;
 
 
@@ -256,8 +256,8 @@ found:
 
 	Z_QuickMapLumpInfo5000();
 
-	FAR_memcpy((byte __far *) 0x54000000, (byte __far *) 0x94000000, 49152u); // copy the wad lump stuff over. gross
-	FAR_memset((byte __far *) 0x94000000, 0, 49152u);
+	FAR_memcpy((byte __far *) 0x54000000, (byte __far *) lumpinfoinit, 49152u); // copy the wad lump stuff over. gross
+	FAR_memset((byte __far *) lumpinfoinit, 0, 49152u);
 
 	Z_QuickMapPhysics(); // map default page map
 }
