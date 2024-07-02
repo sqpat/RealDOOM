@@ -398,7 +398,6 @@ extern int16_t visplanemax;
 extern int16_t visplanedirtycount;
 
 extern int8_t setonce;
-extern uint16_t __far* skyofs;
 
  //
 // R_DrawPlanes
@@ -479,7 +478,7 @@ void __near R_DrawPlanes (void) {
 					// as a result, we also avoid a 34k texture mucking up the texture cache region...
 
 
-					dc_source = MK_FP(skytexture_segment, skyofs[texture_x]);
+					dc_source = MK_FP(skytexture_texture_segment, ((uint16_t)texture_x) << 7);
 					R_DrawColumnPrepCall(0);
 					
 					 

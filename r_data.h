@@ -55,6 +55,8 @@ byte __far* __near getspritetexture(int16_t index);
 void __near R_InitData (void);
 void R_PrecacheLevel (void);
 
+void R_LoadTextureColumns(uint16_t texture, byte __far * texlocation);
+
  
 //byte __far* R_GetFlat (int16_t flatlump);
 

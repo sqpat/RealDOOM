@@ -1320,7 +1320,6 @@ void setchecksum(){
 }*/
 
 int setval = 0;
-extern int16_t skytexturelump;
 byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 	int16_t         lump;
 	uint16_t         ofs; 
@@ -1357,5 +1356,29 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 
 }
 
+// bypass the colofs cache stuff, store just raw pixel data at texlocation. 
+void R_LoadTextureColumns(uint16_t texture, byte __far * texlocation){
+
+	uint16_t lump = ((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[texture]]))[0];
+	uint16_t __far* ofs;
+	patch_t      __far*patch = (patch_t __far*)SCRATCH_ADDRESS_5000;
+	int16_t col;
+	uint16_t currentoffset = 0;
+	int16_t collength;
+	int16_t patchwidth;
+	byte __far * texaddr;
 
 
+	Z_QuickMapScratch_5000();
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	collength = patch->height;
+	patchwidth = patch->width;
+
+	for (col = 0; col < patchwidth; col++){
+		texaddr = SCRATCH_ADDRESS_5000 + (patch->columnofs[col] + 3);
+		FAR_memcpy(texlocation + currentoffset, texaddr, collength);
+		currentoffset += collength;
+	}
+
+
+}

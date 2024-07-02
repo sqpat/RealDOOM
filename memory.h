@@ -674,10 +674,15 @@ This area used during intermission task
 #define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(spanstart, size_spanstart))
 // end plane only
 
-// 35080 bytes
-#define skytexture_bytes ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
+//FREE AREA
 // 9163:0000
-#define skytexture_segment ((uint16_t) ((int32_t)skytexture_bytes >> 16))
+//#define skytexture_post_bytes ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
+//#define skytexture_post_segment    ((uint16_t) ((int32_t)skytexture_post_bytes >> 16))
+
+// 32768 bytes
+//  9400:0000
+#define skytexture_texture_bytes ((byte __far*) MAKE_FULL_SEGMENT(0x94000000, 0))
+#define skytexture_texture_segment ((uint16_t) ((int32_t)skytexture_texture_bytes >> 16))
 
 
 /*

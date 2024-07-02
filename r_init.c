@@ -228,6 +228,8 @@ void R_GenerateLookup(uint16_t texnum)
 		columnpatchcount[i] = 0;
 		texcollump[i] = 0;
 	}
+	// todo try again
+	//FAR_memset()
 
 	//patch = texture->patches;
 	texturepatchcount = texture->patchcount;
@@ -294,6 +296,9 @@ void R_GenerateLookup(uint16_t texnum)
  
 
 	// Now we generate collump RLE runs
+	// this is a map of the final composite texture's columns to a patch's columns.
+	// since they are generally repetitive, we use RLE compression to store these runs in way less space.
+
 
 	currentcollump = texcollump[0];
 	currentcollumpRLEStart = 0;
@@ -440,6 +445,7 @@ void R_InitTextures(void)
 		mtexture = (maptexture_t  __far*)((byte  __far*)maptex + offset);
 
 		if ((i + 1) < numtextures) {
+			// texturedefs sizes are variable and dependent on texture size/texture patch count.
 			texturedefs_offset[i + 1] = texturedefs_offset[i] + (sizeof(texture_t) + sizeof(texpatch_t)*((mtexture->patchcount) - 1));
 		}
 
