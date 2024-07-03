@@ -174,14 +174,13 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 	
 	Z_QuickMapRender();
 	Z_QuickMapRenderPlanes();
-	// lump from tex id
-	//W_CacheLumpNumDirect(skytexturelump, skytexture_bytes);
-	R_LoadTextureColumns(skytexture, skytexture_texture_bytes);
+
+	// prep sky texture
+								// lump lookup
+	R_LoadPatchColumns(
+	((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[skytexture]]))[0],
+	 skytexture_texture_bytes);
 	
-	Z_QuickMapRender();
-	Z_QuickMapRenderPlanes();
-
-
 
 	// precalculate the offsets table location...
 

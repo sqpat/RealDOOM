@@ -185,6 +185,7 @@ void R_GenerateLookup(uint16_t texnum)
 	
 	int16_t				currentcollump;
 	int16_t				currentcollumpRLEStart;
+	int8_t				currentoffsety;
 	uint16_t __far* addr1;
 
 
@@ -192,7 +193,8 @@ void R_GenerateLookup(uint16_t texnum)
 	// rather than alloca or whatever, lets use the scratch page since its already allocated for us...
 	// this is startup code so who cares if its slow
 	byte __far*					 columnpatchcount = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFB00);
-	int16_t __far*               texcollump = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF000);
+	int16_t __far*               texcollump  = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF000);
+	int8_t __far*                texoffsetys = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFD00);
 	// piggyback these local arrays off scratch data...
 	int16_t __far*  collump = texturecolumnlumps_bytes;
 	uint16_t __far* colofs;
@@ -217,6 +219,14 @@ void R_GenerateLookup(uint16_t texnum)
 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
+
+	// round up to paragraph size
+	// todo is this the right place for it?
+	//if (textureheight % 16){
+	//	textureheight += (16 - (textureheight % 16));
+	//}
+
+
 	// Now count the number of columns
 	//  that are covered by more than one patch.
 	// Fill in the lump / offset, so columns
@@ -227,6 +237,7 @@ void R_GenerateLookup(uint16_t texnum)
 	for (i = 0; i <= texture->width + 1; i++) {
 		columnpatchcount[i] = 0;
 		texcollump[i] = 0;
+		texoffsetys[i] = 0;
 	}
 	// todo try again
 	//FAR_memset()
@@ -237,7 +248,9 @@ void R_GenerateLookup(uint16_t texnum)
  
 
 	for (i = 0; i < texturepatchcount; i++) {
-		
+			
+		//uint16_t offset = 0;
+		//uint16_t colsize;
 		patch = &texture->patches[i];
 		x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchpatch = patch->patch & PATCHMASK;
@@ -261,13 +274,28 @@ void R_GenerateLookup(uint16_t texnum)
 		for (; x < x2; x++) {
 			columnpatchcount[x]++;
 			texcollump[x] = patchpatch;
+			texoffsetys[x] = patch->originy;
 			
 			// might be an optimization bug? I cant just get the int32_t directly, something gets mangled and suddenly
 			// the pointer looks right but the array lookup evaluates wrong. previously working code,  couldn't figure 
 			// it out, but broke it down to an explicit pointer calculation and fetched the data and all was good
 
+
+			
 			addr1 = (uint16_t __far*)&(realpatch->columnofs[x - x1]);
 			colofs[x] = *addr1 + 3;
+
+			//colofs[x] = textureheight * (x-x1);
+
+
+
+			//colsize = *(((uint8_t __far *)&(realpatch->columnofs[x - x1])) + 1);
+			//colofs[x] = offset;
+			//offset += colsize;
+
+			//if (colsize % 16){
+			//	colsize += (16 - (colsize % 16));
+			//}
 			
 		}
 
@@ -288,6 +316,7 @@ void R_GenerateLookup(uint16_t texnum)
 			// two patches in this column!
 
 			texcollump[x] = -1;
+			texoffsetys[x] = 0;	// no y offset for composite textures im pretty sure (?)
 			colofs[x] = texturecompositesizes[texnum];
 
 			texturecompositesizes[texnum] += textureheight;
@@ -301,23 +330,34 @@ void R_GenerateLookup(uint16_t texnum)
 
 
 	currentcollump = texcollump[0];
+	currentoffsety = texoffsetys[0];
 	currentcollumpRLEStart = 0;
 
 	// write collumps data. Needs to be done here, so that we've accounted for multiple-patch cases with patchcount[x] > 1
 	for (x = 1; x < texturewidth; x++) {
 		if (currentcollump != texcollump[x]) {
 			collump[currentlumpindex] = currentcollump;
-			collump[currentlumpindex + 1] = x - currentcollumpRLEStart;
+			// this is never above 128 in doom shareware, 1, 2. 
+			collump[currentlumpindex + 1] = x - currentcollumpRLEStart; 
+			// thus, the high byte is free to store another useful byte - the texture patch offset y.
+
+			collump[currentlumpindex + 1] += (currentoffsety << 8); 
+
+
+
+
 
 			currentcollumpRLEStart = x;
 			currentcollump = texcollump[x];
+			currentoffsety = texoffsetys[x];
+
 			currentlumpindex += 2;
 				
 
 		}
 	}
 	collump[currentlumpindex] = currentcollump;
-	collump[currentlumpindex + 1] = texturewidth - currentcollumpRLEStart;
+	collump[currentlumpindex + 1] = (texturewidth - currentcollumpRLEStart) + (currentoffsety << 8);
 	currentlumpindex += 2;
 
 }
@@ -508,6 +548,7 @@ void R_InitTextures(void)
 	for (i = 0; i < numtextures; i++){
 		R_GenerateLookup(i);
 	}
+
 
 	// Reset this since 0x7000 scratch page is active
 	Z_QuickMapRender();

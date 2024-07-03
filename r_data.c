@@ -469,13 +469,7 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 //
 // todo merge below
 //int16_t
-void
-__near R_DrawColumnInCache
-(column_t __far*     patch,
-	byte __far*       cache,
-	int16_t     originy,
-	int16_t     cacheheight)
-{
+void __near R_DrawColumnInCache (column_t __far* patch, byte __far* cache, int16_t originy, int16_t cacheheight) {
 	int16_t     count;
 	int16_t     position;
 	byte __far*       source;
@@ -845,14 +839,14 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 			x2 = texturewidth;
 
 		currentlump = collump[currentRLEIndex];
-		nextcollumpRLE = collump[currentRLEIndex + 1];
+		nextcollumpRLE = collump[currentRLEIndex + 1] & 255;
 
 
 		for (; x < x2; x++) {
 			while (x >= nextcollumpRLE) {
 				currentRLEIndex += 2;
 				currentlump = collump[currentRLEIndex];
-				nextcollumpRLE += collump[currentRLEIndex + 1];
+				nextcollumpRLE += collump[currentRLEIndex + 1] & 255;
 			}
 
 			// if there is a defined lump, then there are not multiple patches for the column
@@ -1209,7 +1203,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 // TODO - try different algos instead of first free block for populating cache pages
 // get 0x9000 offset for texture
-byte __far* __near getpatchtexture(int16_t lump) {
+byte __far* __near getpatchtexture(int16_t lump, boolean ismasked) {
 
 	int16_t index = lump - firstpatch;
 	uint8_t texpage = patchpage[index];
@@ -1233,7 +1227,12 @@ byte __far* __near getpatchtexture(int16_t lump) {
 	addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
 
 	if (cachelump){
-		W_CacheLumpNumDirect(lump, addr);
+		if (ismasked){
+			W_CacheLumpNumDirect(lump, addr);
+		} else {
+			R_LoadPatchColumns(lump, addr);
+		}
+
 	}
 	// return
 	return addr;
@@ -1295,6 +1294,7 @@ byte __far* __near getspritetexture(int16_t index) {
 		
 	addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 	if (cachelump){
+		// todo... sprite drawing actually expects a patch_t, not raw pixels... 
 		W_CacheLumpNumDirect(lump, addr);
 	}
 	// return
@@ -1322,6 +1322,47 @@ void setchecksum(){
 int setval = 0;
 byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 	int16_t         lump;
+	int16_t __far* texturecolumnlump;
+	int16_t n = 0;
+	int16_t origcol;
+	int16_t startcol = col;
+	int16_t collength = textureheights[tex] + 1;
+	col &= texturewidthmasks[tex];
+	
+	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
+
+	// RLE stuff to figure out actual lump for column
+	while (col >= 0) {
+		lump = texturecolumnlump[n];
+		col -= texturecolumnlump[n+1] & 255;
+		n += 2;
+	}
+
+	origcol = col + texturecolumnlump[n-1] & 255;
+	
+
+	if (lump > 0) {
+		byte __far * base = getpatchtexture(lump, false);		
+		texture_t __far *  texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[tex]]);
+		int8_t yoffset = texturecolumnlump[n-1] >> 8;
+		
+		return base + collength * origcol + yoffset;
+		
+		//return getpatchtexture(lump, false) + ofs;
+
+
+	} else {
+		byte __far *base = getcompositetexture(tex);
+		return base + (collength * origcol);
+		//return getcompositetexture(tex) + ofs;
+
+	}
+
+
+}
+
+byte __far* __near R_GetColumnMasked (int16_t tex, int16_t col) {
+	int16_t         lump;
 	uint16_t         ofs; 
 	int16_t __far* texturecolumnlump;
 	int16_t n = 0;
@@ -1340,14 +1381,14 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 	// RLE stuff to figure out actual lump for column
 	while (col >= 0) {
 		lump = texturecolumnlump[n];
-		col -= texturecolumnlump[n+1];
+		col -= texturecolumnlump[n+1] & 255;
 		n += 2;
 	}
 
 
  
 	if (lump > 0) {
-		return getpatchtexture(lump) + ofs;
+		return getpatchtexture(lump, true) + ofs;
 	} else {
 		return getcompositetexture(tex) + ofs;
 
@@ -1357,11 +1398,9 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 }
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
-void R_LoadTextureColumns(uint16_t texture, byte __far * texlocation){
+void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation){
 
-	uint16_t lump = ((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[texture]]))[0];
-	uint16_t __far* ofs;
-	patch_t      __far*patch = (patch_t __far*)SCRATCH_ADDRESS_5000;
+	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
 	int16_t col;
 	uint16_t currentoffset = 0;
 	int16_t collength;
@@ -1369,16 +1408,31 @@ void R_LoadTextureColumns(uint16_t texture, byte __far * texlocation){
 	byte __far * texaddr;
 
 
-	Z_QuickMapScratch_5000();
+	Z_QuickMapScratch_5000(); // render col info has been paged out..
+
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
 	collength = patch->height;
+
 	patchwidth = patch->width;
+/*	
+	if (W_LumpLength(lump) < (collength * patchwidth)){
+		I_Error("lump size too small? %li %li", W_LumpLength(lump), (collength * patchwidth));
+	}
+	*/
+
+	//if (setval == 1){
+		//I_Error("values %i %i %i", collength, patchwidth, lump);
+	//}
+
 
 	for (col = 0; col < patchwidth; col++){
 		texaddr = SCRATCH_ADDRESS_5000 + (patch->columnofs[col] + 3);
 		FAR_memcpy(texlocation + currentoffset, texaddr, collength);
 		currentoffset += collength;
 	}
+
+	Z_QuickMapColumnOffsets5000(); // put render info back
+
 
 
 }

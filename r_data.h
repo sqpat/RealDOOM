@@ -46,6 +46,7 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype);
 void __near R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype);
 
 byte __far* __near R_GetColumn ( int16_t tex, int16_t col );
+byte __far* __near R_GetColumnMasked ( int16_t tex, int16_t col );
 
 byte __far* __near getspritetexture(int16_t index);
 
@@ -55,7 +56,7 @@ byte __far* __near getspritetexture(int16_t index);
 void __near R_InitData (void);
 void R_PrecacheLevel (void);
 
-void R_LoadTextureColumns(uint16_t texture, byte __far * texlocation);
+void R_LoadPatchColumns(uint16_t texture, byte __far * texlocation);
 
  
 //byte __far* R_GetFlat (int16_t flatlump);
