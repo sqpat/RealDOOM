@@ -164,7 +164,8 @@ static int16_t                 currentlumpindex = 0;
 uint16_t maskedcount = 0;
 
 // global post offset for masked texture posts
-static uint16_t curentpostoffset = 0;
+static uint16_t currentpostoffset = 0;
+static uint16_t currentpostdataoffset = 0;
 // global colof offset for masked texture colofs
 static uint16_t currentpixeloffset = 0;
 
@@ -196,18 +197,19 @@ void R_GenerateLookup(uint16_t texnum)
 
 	// rather than alloca or whatever, lets use the scratch page since its already allocated for us...
 	// this is startup code so who cares if its slow
-	uint16_t __far*              texmaskedpostdata = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xE000);
-	int16_t __far*               texcollump        = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
-	uint16_t __far*              maskedpixlofs     = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFC00);
-	int8_t __far*                texpatchheights   = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFE00);
-	byte __far*					 columnpatchcount  = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFF00);
+	uint16_t __far*              texmaskedpostdata    = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xE000);
+	int16_t __far*               texcollump           = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF800);
+	uint16_t __far*              maskedtexpostdataofs = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
+	uint16_t __far*              maskedpixlofs        = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFC00);
+	int8_t __far*                texpatchheights      = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFE00);
+	byte __far*					 columnpatchcount     = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFF00);
 
 	// put colofs in here. copy to colofs if texture is masked
-	uint16_t usedpostoffset = 0;
 
 	// piggyback these local arrays off scratch data...
 	int16_t __far*  collump = texturecolumnlumps_bytes;
 	uint16_t currenttexturepixelbytecount = 0;
+	uint16_t currenttexturepostoffset = 0;
 	column_t __far * column;
 
 	
@@ -279,8 +281,6 @@ void R_GenerateLookup(uint16_t texnum)
 		if (x2 > texturewidth) {
 			x2 = texturewidth;
 		}
-
-
 		
 		column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, realpatch->columnofs[x]);
 
@@ -302,27 +302,44 @@ void R_GenerateLookup(uint16_t texnum)
 				column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, realpatch->columnofs[x]);
 				
 				maskedpixlofs[x] = currenttexturepixelbytecount; 
-
+				maskedtexpostdataofs[x] = (currentpostdataoffset)+ currenttexturepostoffset * 2;
 	 
 				for ( ; (column->topdelta != 0xff)  ; )  {
 					uint16_t runsize = column->length;
 					columntotalsize += runsize;
-					runsize += runsize &0xF; // round up to next paragraph
+					runsize += (16 - ((runsize &0xF)) &0xF); // round up to next paragraph
 					currenttexturepixelbytecount += runsize;
 
+
 					// copy both topdelta and length at once
-					texmaskedpostdata[usedpostoffset] = *((uint16_t __far *)column);
-					usedpostoffset ++;
+					texmaskedpostdata[currenttexturepostoffset] = *((uint16_t __far *)column);
+					currenttexturepostoffset ++;
 
 
+						// 97 97 
+						// 3700
+						
+						// 209 (thus 208)
+						// 0
+/*
+					if (texnum == 4 && x == 45) {
+						I_Error("\ntexture stuff %u %u %u %x %x %x %x %u %u", texnum, x, 
+							currenttexturepixelbytecount, 
+							*((uint16_t __far *)( (byte  __far*)column + 3)),
+							*((uint16_t __far *)( (byte  __far*)column + 5)),
+							*column,
+							texmaskedpostdata[currenttexturepostoffset-1],
+							currenttexturepostoffset,
+							currentpostoffset
+						 );
+					}
+						 */
 
 					column = (column_t  __far*)(  (byte  __far*)column + column->length + 4);
 					colpatchcount++;
 				}
-				texmaskedpostdata[usedpostoffset] = 0xFFFF; // end the post.
-				usedpostoffset ++;
-
-
+				texmaskedpostdata[currenttexturepostoffset] = 0xFFFF; // end the post.
+				currenttexturepostoffset ++;
 
 
 				// all masked textures (NOT SPRITES) have at least one col with multiple columns
@@ -346,27 +363,45 @@ void R_GenerateLookup(uint16_t texnum)
 	// need to run thru colofs again?
 	masked_lookup[texnum] = 0xFF;	// initialized value - no pointer to colofs
 	if (ismaskedtexture){
-		uint16_t __far* pixelofs   =  MK_FP(maskedpixeldata_segment, currentpixeloffset);
-		uint16_t __far* postofs    =  MK_FP(maskedpostdata_segment, curentpostoffset);
+		uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, currentpixeloffset);
+		uint16_t __far* postofs    =  MK_FP(maskedpostdataofs_segment, currentpostoffset);
+		uint16_t __far* postdata   =  MK_FP(maskedpostdata_segment, currentpostdataoffset);
 		
 		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
 
 		masked_headers[maskedcount].texturesize = currenttexturepixelbytecount;
 		masked_headers[maskedcount].pixelofsoffset = currentpixeloffset;
-		masked_headers[maskedcount].postofsoffset = curentpostoffset;
-		masked_headers[maskedcount].reserved = 0xFFFF;
-
+		masked_headers[maskedcount].postofsoffset = currentpostoffset;
+		
+		// copy the offset data...
 		for (i = 0; i < texturewidth; i++){
 			pixelofs[i] = maskedpixlofs[i];
+			postofs[i] = maskedtexpostdataofs[i];
 		}
-		for (i = 0; i < usedpostoffset; i++){
-			postofs[i] = texmaskedpostdata[i];
+
+		// copy the actual post data
+		for (i = 0; i < currenttexturepostoffset; i++){
+			postdata[i] = texmaskedpostdata[i];
+
+/*
+			if (texnum == 4 && i == 45) {
+				I_Error("\ntexture stuff %u %u %u %x %x %x %x", texnum, x, 
+					currenttexturepixelbytecount, 
+					*((uint16_t __far *)( (byte  __far*)column + 3)),
+					*((uint16_t __far *)( (byte  __far*)column + 5)),
+					*column,
+					texmaskedpostdata[usedpostoffset-1]
+					);
+			}*/
+
+
 		}
 
 
 		// times 2 for word offset to byte offset
-		curentpostoffset += (usedpostoffset*2);
+		currentpostoffset += (texturewidth*2);
 		currentpixeloffset += (texturewidth*2);
+		currentpostdataoffset += (currenttexturepostoffset*2);
 		//DEBUG_PRINT("\n Found masked: %i %i", texnum, maskedcount);
 		maskedcount++;
 
@@ -378,8 +413,8 @@ void R_GenerateLookup(uint16_t texnum)
 		if (!columnpatchcount[x]) {
 			// R_GenerateLookup: column without a patch
 			//I_Error("R_GenerateLookup: column without a patch (%Fs), %i %i %hhu %hhu %Fp\n", texture->name, x, texturewidth, texnum, columnpatchcount[x], columnpatchcount);
-			//I_Error("91 %i %i", texnum, x);
-			I_Error("91");
+			I_Error("91 %i %i", texnum, x);
+			//I_Error("91");
 			return;
 		}
 
@@ -440,8 +475,7 @@ void R_GenerateLookup(uint16_t texnum)
 // Initializes the texture list
 //  with the textures from the world map.
 //
-void R_InitTextures(void)
-{
+void R_InitTextures(void) {
 	maptexture_t __far*       mtexture;
 	texture_t __far*          texture;
 	mappatch_t __far*         mpatch;
@@ -611,7 +645,7 @@ void R_InitTextures(void)
     //DOOM Shareware:	896    8     3170
 	//DOOM 1: 			2304   12    12238
 	//DOOM 2:		 	1408   11    4772
-	//I_Error("currentpixeloffset is %u %u %u", currentpixeloffset, maskedcount, curentpostoffset);
+	//I_Error("currentpixeloffset is %u %u %u", currentpixeloffset, maskedcount, currentpostoffset);
 
 
 	// Reset this since 0x7000 scratch page is active

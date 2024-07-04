@@ -107,11 +107,6 @@ void __near R_DrawMaskedSprite (column_t __far* column, int8_t isShadow) {
 	fixed_t_union     topscreen;
 	fixed_t_union     bottomscreen;
 	fixed_t_union     basetexturemid;
-    //uint16_t dc_colormap_offset = dc_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
-    //uint16_t dc_colormap_shift4 = dc_colormap_index << 4;
-    //uint16_t dc_colormap_offset = 0;
-    //uint16_t dc_colormap_shift4 = 0;
-    //dc_colormap_segment
 
     basetexturemid = dc_texturemid;
     
@@ -140,8 +135,6 @@ void __near R_DrawMaskedSprite (column_t __far* column, int8_t isShadow) {
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
-			// dc_source = (byte *)column + 3 - column->topdelta;
-
             // Drawn by either R_DrawColumn
             //  or (SHADOW) R_DrawFuzzColumn.
 
@@ -156,8 +149,6 @@ void __near R_DrawMaskedSprite (column_t __far* column, int8_t isShadow) {
         }
         column = (column_t  __far*)(  (byte  __far*)column + column->length + 4);
     }
-    // if we dont update above we dont need to rest it
-    //dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
 }
@@ -167,19 +158,8 @@ void __near R_DrawMaskedColumn (byte __far* pixeldata, column_t __far* column) {
 	fixed_t_union     topscreen;
 	fixed_t_union     bottomscreen;
 	fixed_t_union     basetexturemid;
-    //uint16_t dc_colormap_offset = dc_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
-    //uint16_t dc_colormap_shift4 = dc_colormap_index << 4;
     
     uint16_t currentoffset = 0;
-    
-/*
-   uint16_t    postofsoffset;
-    uint16_t    pixelofsoffset;
-    uint16_t    texturesize;
-    uint16_t    reserved;
-*/
-
-    
     basetexturemid = dc_texturemid;
     
     // if its mot a masked texture, we determine length and topdelta from the real values in the texture?
@@ -215,7 +195,8 @@ void __near R_DrawMaskedColumn (byte __far* pixeldata, column_t __far* column) {
         }
         // these column definittions are just contiguous in memory
         currentoffset += column->length;
-        currentoffset += (column->length & 0xF);
+        currentoffset += (16 - ((column->length &0xF)) &0xF);
+        
         column++;
 
     }
@@ -259,7 +240,6 @@ void __near R_DrawSingleMaskedColumn (byte __far* pixeldata, byte length) {
 
         dc_source = pixeldata;
         dc_texturemid = basetexturemid;
-        dc_texturemid.h.intbits;
 
         R_DrawColumnPrepCall(colormaps_high_seg_diff);
 

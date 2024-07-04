@@ -84,6 +84,7 @@ uint8_t __far*	walllights;
 
 uint16_t __far*		maskedtexturecol;
 extern byte cachedbyteheight;
+extern uint8_t cachedcol;
 //
 // R_RenderMaskedSegRange
 //
@@ -212,7 +213,10 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 				uint8_t lookup = masked_lookup[texnum];
 				if (lookup != 0xFF){
 					masked_header_t __far * maskedheader = &masked_headers[lookup];
-					column_t __far * postsdata = (column_t __far *)MK_FP(maskedpostdata_segment, maskedheader->postofsoffset);
+					uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedheader->postofsoffset);
+					uint16_t 		 postoffset = postoffsets[cachedcol];
+					column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
+
 					R_DrawMaskedColumn (pixeldata, postsdata);
 				} else {
 					R_DrawSingleMaskedColumn(pixeldata, cachedbyteheight);

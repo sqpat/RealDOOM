@@ -1312,8 +1312,10 @@ void setchecksum(){
 }*/
 
 byte cachedbyteheight;
+uint8_t cachedcol;
 
 int setval = 0;
+
 byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t __far* texturecolumnlump;
@@ -1341,12 +1343,38 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 			byte __far * base = getpatchtexture(lump, lookup);		
 			return base + (origcol * cachedbyteheight);
 		} else {
-			// check which 64k page this lives in
-			masked_header_t __far * maskedheader = &masked_headers[lookup];
-			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldata_segment, maskedheader->pixelofsoffset);
+			// Does this code ever run outside of draw masked?
 
+			masked_header_t __far * maskedheader = &masked_headers[lookup];
+			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
 
 			uint16_t ofs  = pixelofs[origcol];
+			cachedcol = origcol;
+			/*
+			byte __far * base = getpatchtexture(lump, lookup);		
+			// 4 45 5984
+			if (tex == 4 && origcol == 45){
+				column_t __far* postofs   =  MK_FP(maskedpostdata_segment, maskedheader->postofsoffset);
+				I_Error("\ntexture stuff %u %u %u %x %x %x %x %x %x %hhu %hhu %hhu %hhu", 
+				tex, 
+				origcol, 
+				ofs, 
+				*((uint16_t __far *)(&base[ofs])),
+				*((uint16_t __far *)(&base[ofs+2])),
+				*((uint16_t __far *)(&base[ofs+4])),
+				*((uint16_t __far *)(&base[ofs+6])),
+				*((uint16_t __far *)(&base[ofs+8])),
+				*((uint16_t __far *)(&base[ofs+10])),
+				postofs[0].topdelta,
+				postofs[0].length,
+				postofs[1].topdelta,
+				postofs[1].length
+				// 0 24 33 11   hex
+				// 0 36 51 17   dec
+				 );
+			}
+			return base + ofs;
+			*/
 			return getpatchtexture(lump, lookup) + ofs;
 		}
 		
@@ -1393,7 +1421,7 @@ void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismaske
 				// round up to the next paragraph for masked textures which do multiple renders
 				// and thus the subrenders must also start paragraph aligned...
 				// for non masked textures they are always overlapping - or really "should" be.. revisit for buggy gap pixels
-				destoffset +=  length & 0xF;
+				destoffset += (16 - ((length &0xF)) &0xF);
 				
 			}
 

@@ -908,7 +908,7 @@ spritewidths        7000:7592
 
 
 #define size_maskedpostdata            12238u
-#define size_maskedpixeldata           3456u
+#define size_maskedpixeldataofs        3456u
 #define size_texturecolumnlumps_bytes  (1264u * sizeof(int16_t))
 #define size_texturedefs_bytes         8756u
 #define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
@@ -922,24 +922,28 @@ spritewidths        7000:7592
 
 // size_texturedefs_bytes 0x6184... 0x6674
 
-#define patch_sizes               ((uint16_t __far*)          (0x50000000 ))
+#define patch_sizes                ((uint16_t __far*)          (0x50000000 ))
+#define maskedpostdataofs          ((uint16_t __far*)          (0x51000000 ))
 
-#define maskedpostdata            ((byte __far*)              (0x60000000 ))
-#define maskedpixeldata           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdata,           size_maskedpostdata))
-#define texturecolumnlumps_bytes  ((int16_t __far*)           MAKE_FULL_SEGMENT(maskedpixeldata,          size_maskedpixeldata))
-#define texturedefs_bytes         ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
-#define spritetopoffsets          ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
-#define texturedefs_offset        ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
-#define masked_lookup             ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset,       size_texturedefs_offset))
-#define masked_headers            ((masked_header_t __far *)  MAKE_FULL_SEGMENT(masked_lookup,            size_masked_lookup))
-#define spritepage                ((uint8_t __far*)           MAKE_FULL_SEGMENT(masked_headers,           size_masked_headers))
-#define spriteoffset              ((uint8_t __far*)           (((int32_t)spritepage)                      + size_spritepage))
+#define maskedpostdata             ((byte __far*)              (0x60000000 ))
+#define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdata,           size_maskedpostdata))
+#define texturecolumnlumps_bytes   ((int16_t __far*)           MAKE_FULL_SEGMENT(maskedpixeldataofs,       size_maskedpixeldataofs))
+#define texturedefs_bytes          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
+#define spritetopoffsets           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
+#define texturedefs_offset         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
+#define masked_lookup              ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset,       size_texturedefs_offset))
+#define masked_headers             ((masked_header_t __far *)  MAKE_FULL_SEGMENT(masked_lookup,            size_masked_lookup))
+#define spritepage                 ((uint8_t __far*)           MAKE_FULL_SEGMENT(masked_headers,           size_masked_headers))
+#define spriteoffset               ((uint8_t __far*)           (((int32_t)spritepage)                      + size_spritepage))
 
-#define maskedpixeldata_segment   ((uint16_t) ((int32_t)maskedpixeldata >> 16))
-#define maskedpostdata_segment    ((uint16_t) ((int32_t)maskedpostdata >> 16))
+#define maskedpixeldataofs_segment ((uint16_t) ((int32_t)maskedpixeldataofs >> 16))
+#define maskedpostdata_segment     ((uint16_t) ((int32_t)maskedpostdata >> 16))
+#define maskedpostdataofs_segment  ((uint16_t) ((int32_t)maskedpostdataofs >> 16))
+
+
 
 // maskedpostdata             6000:0000
-// maskedpixeldata            62FD:0000
+// maskedpixeldataofs         62FD:0000
 // texturecolumnlumps_bytes   63D5:0000
 // texturedefs_bytes          6473:0000
 // spritetopoffsets           6697:0000
