@@ -17,6 +17,7 @@
 //
 
 #include "r_data.h"
+#include "r_defs.h"
 
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
@@ -809,14 +810,15 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define size_texturewidthmasks  MAX_TEXTURES * sizeof(uint8_t)
 #define size_zlight             sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTZ)
 #define size_xtoviewangle       (sizeof(fineangle_t) * (SCREENWIDTH + 1))
+#define size_spriteoffsets      (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 #define size_patchpage          MAX_PATCHES * sizeof(uint8_t)
 #define size_patchoffset        MAX_PATCHES * sizeof(uint8_t)
-
 
 #define texturewidthmasks       ((uint8_t  __far*)        MAKE_FULL_SEGMENT(0x80000000 , size_leftover_openings_arrays))
 #define zlight                  ((uint8_t far*)           MAKE_FULL_SEGMENT(texturewidthmasks , size_texturewidthmasks))
 #define xtoviewangle            ((fineangle_t __far*)     MAKE_FULL_SEGMENT(zlight , size_zlight))
-#define patchpage               ((uint8_t __far*)         MAKE_FULL_SEGMENT(xtoviewangle , size_xtoviewangle))
+#define spriteoffsets           ((uint8_t __far*)         MAKE_FULL_SEGMENT(xtoviewangle , size_xtoviewangle))
+#define patchpage               ((uint8_t __far*)         MAKE_FULL_SEGMENT(spriteoffsets, size_spriteoffsets)) 
 #define patchoffset             ((uint8_t __far*)         (((int32_t)patchpage) + size_patchpage))
 
 //#define patchoffset             ((uint8_t __far*)         MAKE_FULL_SEGMENT(patchpage, size_patchpage))
@@ -834,13 +836,14 @@ texturecache_nodes          82A0:0073
 texturewidthmasks           82A0:0000
 zlight                      82BB:0000
 xtoviewangle                833B:0000
-patchpage                   8364:0000
-patchoffset                 8364:01DC
-[empty]                     8000:398F
+spriteoffsets               8364:0000
+patchpage                   83BB:0000
+patchoffset                 83BB:01DC
+[empty]                     83F7:0000
 
 
 
-// 1649 bytes free
+// 144 bytes free
 */
 
 
@@ -852,7 +855,7 @@ patchoffset                 8364:01DC
 
 //              bsp     plane     sprite
 // 9C00-9FFF  TEXTURE   -----     TEXTURE
-// 9000-9BFF    DATA sky texture  DATA
+// 9000-9BFF  TEXTURE sky texture TEXTURE
 // 8000-8FFF    VISPLANES_DATA    COLORMAPS_DATA
 // 7800-7FFF    DATA  flatcache   DATA
 // 7000-77FF    DATA  flatcache   sprcache
@@ -894,13 +897,24 @@ spritewidths        7000:7592
 
 // RENDER 0x5000-0x67FF DATA     
 
+
 // size_texturecolumnofs_bytes is technically 80480. Takes up whole 0x5000 region, 14944 left over in 0x6000...
-#define size_texturecolumnofs_bytes    14944u
+
+
+
+// all of these masked sizes are their maximums in doom1.
+#define MAX_MASKED_TEXTURES 12
+
+
+
+#define size_maskedpostdata            12238u
+#define size_maskedpixeldata           3456u
 #define size_texturecolumnlumps_bytes  (1264u * sizeof(int16_t))
 #define size_texturedefs_bytes         8756u
-#define size_spriteoffsets             (sizeof(uint8_t) * MAX_SPRITE_LUMPS)
 #define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
 #define size_texturedefs_offset        (MAX_TEXTURES * sizeof(uint16_t))
+#define size_masked_lookup             (MAX_TEXTURES * sizeof(uint8_t))
+#define size_masked_headers            (MAX_MASKED_TEXTURES * sizeof(masked_header_t))
 #define size_spritepage                (MAX_SPRITE_LUMPS * sizeof(uint8_t))
 #define size_spriteoffset              (MAX_SPRITE_LUMPS * sizeof(uint8_t))
 
@@ -908,31 +922,36 @@ spritewidths        7000:7592
 
 // size_texturedefs_bytes 0x6184... 0x6674
 
-// dont change texturecolumnofs_bytes_2 segment as it carries into the 6000
-#define texturecolumnofs_bytes_1  ((byte __far*)     (0x50000000 ))
-#define texturecolumnofs_bytes_2  ((byte __far*)     (0x58000000 ))
-#define texturecolumnlumps_bytes  ((int16_t __far*)  MAKE_FULL_SEGMENT(0x60000000,               size_texturecolumnofs_bytes))
-#define texturedefs_bytes         ((byte __far*)     MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
-#define spriteoffsets             ((uint8_t __far*)  MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
-#define spritetopoffsets          ((int8_t __far*)   MAKE_FULL_SEGMENT(spriteoffsets,            size_spriteoffsets))
-#define texturedefs_offset        ((uint16_t  __far*)MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
-#define spritepage                ((uint8_t __far*)  MAKE_FULL_SEGMENT(texturedefs_offset,                size_texturedefs_offset))
-#define spriteoffset              ((uint8_t __far*)  (((int32_t)spritepage)                      + size_spritepage))
+#define patch_sizes               ((uint16_t __far*)          (0x50000000 ))
+
+#define maskedpostdata            ((byte __far*)              (0x60000000 ))
+#define maskedpixeldata           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdata,           size_maskedpostdata))
+#define texturecolumnlumps_bytes  ((int16_t __far*)           MAKE_FULL_SEGMENT(maskedpixeldata,          size_maskedpixeldata))
+#define texturedefs_bytes         ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
+#define spritetopoffsets          ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
+#define texturedefs_offset        ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
+#define masked_lookup             ((uint8_t __far*)           MAKE_FULL_SEGMENT(texturedefs_offset,       size_texturedefs_offset))
+#define masked_headers            ((masked_header_t __far *)  MAKE_FULL_SEGMENT(masked_lookup,            size_masked_lookup))
+#define spritepage                ((uint8_t __far*)           MAKE_FULL_SEGMENT(masked_headers,           size_masked_headers))
+#define spriteoffset              ((uint8_t __far*)           (((int32_t)spritepage)                      + size_spritepage))
+
+#define maskedpixeldata_segment   ((uint16_t) ((int32_t)maskedpixeldata >> 16))
+#define maskedpostdata_segment    ((uint16_t) ((int32_t)maskedpostdata >> 16))
+
+// maskedpostdata             6000:0000
+// maskedpixeldata            62FD:0000
+// texturecolumnlumps_bytes   63D5:0000
+// texturedefs_bytes          6473:0000
+// spritetopoffsets           6697:0000
+// texturedefs_offset         66ee:0000
+// masked_lookup              6724:0000
+// masked_headers             673F:0000
+// spritepage                 6745:0000
+// spriteoffset               6745:0565
+// [empty]                    67F2:0000
 
 
-// texturecolumnlumps_bytes   63A6:0000
-// texturedefs_bytes          6444:0000
-// spriteoffsets              6668:0000
-// spritetopoffsets           66BF:0000
-// spritepage                 6716:0000
-// spriteoffset               6716:0565
-// flatindex                  67C3:0000
-// [empty]                    67C3:7CC7
-
-// zlight could be here...
-
-
-// 825 bytes free till 6000:8000 
+// 224 bytes free till 6000:8000 
 
 // 0x4000 BLOCK RENDER
 

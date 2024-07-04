@@ -102,18 +102,20 @@ int16_t __far*          mceilingclip;
 fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
 
-void __near R_DrawMaskedColumn (column_t __far* column, int8_t isShadow) {
+void __near R_DrawMaskedSprite (column_t __far* column, int8_t isShadow) {
 	
-	fixed_t_union         topscreen;
-	fixed_t_union         bottomscreen;
+	fixed_t_union     topscreen;
+	fixed_t_union     bottomscreen;
 	fixed_t_union     basetexturemid;
-    uint16_t dc_colormap_offset = dc_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
-    uint16_t dc_colormap_shift4 = dc_colormap_index << 4;
+    //uint16_t dc_colormap_offset = dc_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
+    //uint16_t dc_colormap_shift4 = dc_colormap_index << 4;
     //uint16_t dc_colormap_offset = 0;
     //uint16_t dc_colormap_shift4 = 0;
     //dc_colormap_segment
 
     basetexturemid = dc_texturemid;
+    
+    // if its mot a masked texture, we determine length and topdelta from the real values in the texture?
 
     for ( ; column->topdelta != 0xff ; )  {
         // calculate unclipped screen coordinates
@@ -160,6 +162,117 @@ void __near R_DrawMaskedColumn (column_t __far* column, int8_t isShadow) {
     dc_texturemid = basetexturemid;
 }
 
+void __near R_DrawMaskedColumn (byte __far* pixeldata, column_t __far* column) {
+	
+	fixed_t_union     topscreen;
+	fixed_t_union     bottomscreen;
+	fixed_t_union     basetexturemid;
+    //uint16_t dc_colormap_offset = dc_colormap_index << 8;  // hope the compiler is smart and just moves the low byte high
+    //uint16_t dc_colormap_shift4 = dc_colormap_index << 4;
+    
+    uint16_t currentoffset = 0;
+    
+/*
+   uint16_t    postofsoffset;
+    uint16_t    pixelofsoffset;
+    uint16_t    texturesize;
+    uint16_t    reserved;
+*/
+
+    
+    basetexturemid = dc_texturemid;
+    
+    // if its mot a masked texture, we determine length and topdelta from the real values in the texture?
+
+    while (column->topdelta != 0xFF)  {
+        // calculate unclipped screen coordinates
+        //  for post
+        topscreen.w = sprtopscreen + spryscale.w*column->topdelta;
+        bottomscreen.w = topscreen.w + spryscale.w*column->length;
+
+		dc_yl = topscreen.h.intbits; 
+		dc_yh = bottomscreen.h.intbits;
+		if (!bottomscreen.h.fracbits)
+			dc_yh--;
+		if (topscreen.h.fracbits)
+			dc_yl++;
+
+        if (dc_yh >= mfloorclip[dc_x])
+            dc_yh = mfloorclip[dc_x]-1;
+        if (dc_yl <= mceilingclip[dc_x])
+            dc_yl = mceilingclip[dc_x]+1;
+
+        if (dc_yl <= dc_yh) {
+            void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
+
+            dc_source = pixeldata + currentoffset;
+			dc_texturemid = basetexturemid;
+			dc_texturemid.h.intbits -= column->topdelta;
+
+            R_DrawColumnPrepCall(colormaps_high_seg_diff);
+
+                
+        }
+        // these column definittions are just contiguous in memory
+        currentoffset += column->length;
+        currentoffset += (column->length & 0xF);
+        column++;
+
+    }
+    // if we dont update above we dont need to rest it
+    //dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
+        
+    dc_texturemid = basetexturemid;
+}
+
+// this is called for things like reverse sides of columns and openings where the underlying texture is not actually masked
+// only a single column is actually drawn
+void __near R_DrawSingleMaskedColumn (byte __far* pixeldata, byte length) {
+	
+	fixed_t_union     topscreen;
+	fixed_t_union     bottomscreen;
+	fixed_t_union     basetexturemid;
+    
+    basetexturemid = dc_texturemid;
+    
+    // if its mot a masked texture, we determine length and topdelta from the real values in the texture?
+
+    // calculate unclipped screen coordinates
+    //  for post
+    topscreen.w = sprtopscreen;
+    bottomscreen.w = topscreen.w + spryscale.w*length;
+
+    dc_yl = topscreen.h.intbits; 
+    dc_yh = bottomscreen.h.intbits;
+    if (!bottomscreen.h.fracbits)
+        dc_yh--;
+    if (topscreen.h.fracbits)
+        dc_yl++;
+
+    if (dc_yh >= mfloorclip[dc_x])
+        dc_yh = mfloorclip[dc_x]-1;
+    if (dc_yl <= mceilingclip[dc_x])
+        dc_yl = mceilingclip[dc_x]+1;
+
+    if (dc_yl <= dc_yh) {
+        void (__far* R_DrawColumnPrepCall)(uint16_t)  =  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
+
+        dc_source = pixeldata;
+        dc_texturemid = basetexturemid;
+        dc_texturemid.h.intbits;
+
+        R_DrawColumnPrepCall(colormaps_high_seg_diff);
+
+            
+    }
+
+    
+    // if we dont update above we dont need to rest it
+    //dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
+        
+    dc_texturemid = basetexturemid;
+}
+
 
 
 //
@@ -185,7 +298,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
 	patch = (patch_t __far*)getspritetexture(vis->patch);
 	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
 		column = (column_t  __far*) ((byte  __far*)patch + (patch->columnofs[frac.h.intbits]));
-        R_DrawMaskedColumn (column, (vis->colormap == COLORMAP_SHADOW));
+        R_DrawMaskedSprite (column, (vis->colormap == COLORMAP_SHADOW));
     }
 }
 

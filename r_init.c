@@ -156,12 +156,17 @@ typedef struct
 
 
 static int16_t                 currentlumpindex = 0;
-//int16_t texcollump[256];
 //
 // R_GenerateLookup
 //
 //todo pull down below?
 
+uint16_t maskedcount = 0;
+
+// global post offset for masked texture posts
+static uint16_t curentpostoffset = 0;
+// global colof offset for masked texture colofs
+static uint16_t currentpixeloffset = 0;
 
 // complicated memory situation... creating render data at 0x5000-0x6000... lump info will be in 0x4000 range...
 // use scratch at 0x7000 which is usually level data. level data is not used during init, only during setup,
@@ -171,12 +176,11 @@ void R_GenerateLookup(uint16_t texnum)
  
 
 	texture_t __far*          texture;
-	texpatch_t __far*         patch;
 	patch_t __far*            realpatch;
 	int16_t                 x;
-	int16_t                 x1;
-	int16_t                 x2;
 	int16_t                 i;
+	int16_t                 j;
+	uint16_t				eraseoffset;
 	int16_t					patchpatch;
 	int16_t					lastusedpatch = -1;
 	uint8_t				texturepatchcount;
@@ -185,27 +189,29 @@ void R_GenerateLookup(uint16_t texnum)
 	
 	int16_t				currentcollump;
 	int16_t				currentcollumpRLEStart;
-	int8_t				currentoffsety;
-	uint16_t __far* addr1;
-
+	uint16_t				currentheight;  // use int16 so shifting is less of a hassle in here
+	uint16_t texsize;
+	int8_t				ismaskedtexture = 0;
 
 
 	// rather than alloca or whatever, lets use the scratch page since its already allocated for us...
 	// this is startup code so who cares if its slow
-	byte __far*					 columnpatchcount = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFB00);
-	int16_t __far*               texcollump  = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xF000);
-	int8_t __far*                texoffsetys = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFD00);
+	uint16_t __far*              texmaskedpostdata = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xE000);
+	int16_t __far*               texcollump        = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFA00);
+	uint16_t __far*              maskedpixlofs     = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFC00);
+	int8_t __far*                texpatchheights   = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFE00);
+	byte __far*					 columnpatchcount  = MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0xFF00);
+
+	// put colofs in here. copy to colofs if texture is masked
+	uint16_t usedpostoffset = 0;
+
 	// piggyback these local arrays off scratch data...
 	int16_t __far*  collump = texturecolumnlumps_bytes;
-	uint16_t __far* colofs;
+	uint16_t currenttexturepixelbytecount = 0;
+	column_t __far * column;
+
 	
 	// check which 64k page this lives in
-	if (texturecolumn_offset[texnum] >= 0x0800) {
-		colofs = (uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[texnum]-0x0800) << 4]);
-	}
-	else {
-		colofs = (uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[texnum] << 4]);
-	}
 	
 	
 	texturepatchlump_offset[texnum] = currentlumpindex;
@@ -220,11 +226,6 @@ void R_GenerateLookup(uint16_t texnum)
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 
-	// round up to paragraph size
-	// todo is this the right place for it?
-	//if (textureheight % 16){
-	//	textureheight += (16 - (textureheight % 16));
-	//}
 
 
 	// Now count the number of columns
@@ -233,30 +234,38 @@ void R_GenerateLookup(uint16_t texnum)
 	//  with only a single patch are all done.
 
 
-	// far memset seems to be unreliable... let's just do this
-	for (i = 0; i <= texture->width + 1; i++) {
-		columnpatchcount[i] = 0;
-		texcollump[i] = 0;
-		texoffsetys[i] = 0;
+	// far memset seems to be unreliable... maybe stack overflow
+	// let's just do this to zero out the necessary data.
+	// most of these structures don't need a zero default, they are written before read.
+	for (eraseoffset = 0xFF00; eraseoffset != 0; eraseoffset+=2) {
+		*((uint16_t __far *) MK_FP(SCRATCH_PAGE_SEGMENT_7000, eraseoffset)) = 0;
 	}
-	// todo try again
-	//FAR_memset()
-
+	
 	//patch = texture->patches;
 	texturepatchcount = texture->patchcount;
 	realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
  
+	// about masked textures
+	
+	//  In the vanilla engine, composite columns with masked pixels does not seem
+	// to be supported, and furthermore - in doom shareware, 1, 2 -  all masked
+	// textures are single patch in practice. As a result, we can throw out multi
+	// patch textures as non masked. 
+	// so we can do two loops on a single patch texture to determine if its masked
+	// and we arent thrashing the cached lump away
+	
 
 	for (i = 0; i < texturepatchcount; i++) {
 			
-		//uint16_t offset = 0;
-		//uint16_t colsize;
-		patch = &texture->patches[i];
-		x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
+		int16_t columntotalsize = 0;
+		texpatch_t __far*         patch = &texture->patches[i];
+		int16_t                 x2;
+		int16_t                 x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchpatch = patch->patch & PATCHMASK;
 		if (lastusedpatch != patchpatch){
 			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch);
 		}
+		patch_sizes[patchpatch-firstpatch] = realpatch->height * realpatch->width; // used for non masked sizes. doesnt include colofs, headers.
 		lastusedpatch = patchpatch;
 
 		x2 = x1 + (realpatch->width);
@@ -271,42 +280,105 @@ void R_GenerateLookup(uint16_t texnum)
 			x2 = texturewidth;
 		}
 
+
+		
+		column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, realpatch->columnofs[x]);
+
 		for (; x < x2; x++) {
 			columnpatchcount[x]++;
 			texcollump[x] = patchpatch;
-			texoffsetys[x] = patch->originy;
+			texpatchheights[x] = realpatch->height;
 			
-			// might be an optimization bug? I cant just get the int32_t directly, something gets mangled and suddenly
-			// the pointer looks right but the array lookup evaluates wrong. previously working code,  couldn't figure 
-			// it out, but broke it down to an explicit pointer calculation and fetched the data and all was good
+			// this may be a masked texture, so lets store it's data in temporary region
+			if (texturepatchcount == 1){	
+				// openwatcom messes up if column is dfined here...
+				//column_t __far * column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, realpatch->columnofs[x]);
+				
+				int8_t colpatchcount = 0;
+				int16_t columntotalsize = 0;
+				// i dont think we need x1 for texturepatchcount 1 stuff.
+				// i think in practice, all masked textures are same size as the single patch etc
+				// calculate proper addr, paragraph align				
+				column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, realpatch->columnofs[x]);
+				
+				maskedpixlofs[x] = currenttexturepixelbytecount; 
+
+	 
+				for ( ; (column->topdelta != 0xff)  ; )  {
+					uint16_t runsize = column->length;
+					columntotalsize += runsize;
+					runsize += runsize &0xF; // round up to next paragraph
+					currenttexturepixelbytecount += runsize;
+
+					// copy both topdelta and length at once
+					texmaskedpostdata[usedpostoffset] = *((uint16_t __far *)column);
+					usedpostoffset ++;
 
 
-			
-			addr1 = (uint16_t __far*)&(realpatch->columnofs[x - x1]);
-			colofs[x] = *addr1 + 3;
 
-			//colofs[x] = textureheight * (x-x1);
+					column = (column_t  __far*)(  (byte  __far*)column + column->length + 4);
+					colpatchcount++;
+				}
+				texmaskedpostdata[usedpostoffset] = 0xFFFF; // end the post.
+				usedpostoffset ++;
 
 
 
-			//colsize = *(((uint8_t __far *)&(realpatch->columnofs[x - x1])) + 1);
-			//colofs[x] = offset;
-			//offset += colsize;
 
-			//if (colsize % 16){
-			//	colsize += (16 - (colsize % 16));
-			//}
-			
+				// all masked textures (NOT SPRITES) have at least one col with multiple columns
+				// which adds up to less than texture height; seems to be an accurate enough check...
+				if (colpatchcount > 1 && columntotalsize < textureheight ){
+					
+					// most masked textures are not 256 wide. (the ones that are have tons of col patches.)
+					// but theres a couple bugged doom2 256x128 textures that have a pixel gap but arent masked. 
+					// However doom1 has some masked textures that have tons of gaps... We kind of hack around this bad data.
+					
+					if (texturewidth != 256 || colpatchcount > 3){
+						ismaskedtexture = 1;
+					}
+				}
+			} 	
+		}
+	}
+
+
+	// we determined up above we have a masked texture....
+	// need to run thru colofs again?
+	masked_lookup[texnum] = 0xFF;	// initialized value - no pointer to colofs
+	if (ismaskedtexture){
+		uint16_t __far* pixelofs   =  MK_FP(maskedpixeldata_segment, currentpixeloffset);
+		uint16_t __far* postofs    =  MK_FP(maskedpostdata_segment, curentpostoffset);
+		
+		masked_lookup[texnum] = maskedcount;	// index to lookup of struct...
+
+		masked_headers[maskedcount].texturesize = currenttexturepixelbytecount;
+		masked_headers[maskedcount].pixelofsoffset = currentpixeloffset;
+		masked_headers[maskedcount].postofsoffset = curentpostoffset;
+		masked_headers[maskedcount].reserved = 0xFFFF;
+
+		for (i = 0; i < texturewidth; i++){
+			pixelofs[i] = maskedpixlofs[i];
+		}
+		for (i = 0; i < usedpostoffset; i++){
+			postofs[i] = texmaskedpostdata[i];
 		}
 
 
+		// times 2 for word offset to byte offset
+		curentpostoffset += (usedpostoffset*2);
+		currentpixeloffset += (texturewidth*2);
+		//DEBUG_PRINT("\n Found masked: %i %i", texnum, maskedcount);
+		maskedcount++;
+
 	}
+
 
 	for (x = 0; x < texturewidth; x++) {
  
 		if (!columnpatchcount[x]) {
 			// R_GenerateLookup: column without a patch
 			//I_Error("R_GenerateLookup: column without a patch (%Fs), %i %i %hhu %hhu %Fp\n", texture->name, x, texturewidth, texnum, columnpatchcount[x], columnpatchcount);
+			//I_Error("91 %i %i", texnum, x);
 			I_Error("91");
 			return;
 		}
@@ -316,8 +388,6 @@ void R_GenerateLookup(uint16_t texnum)
 			// two patches in this column!
 
 			texcollump[x] = -1;
-			texoffsetys[x] = 0;	// no y offset for composite textures im pretty sure (?)
-			colofs[x] = texturecompositesizes[texnum];
 
 			texturecompositesizes[texnum] += textureheight;
 		}
@@ -330,7 +400,7 @@ void R_GenerateLookup(uint16_t texnum)
 
 
 	currentcollump = texcollump[0];
-	currentoffsety = texoffsetys[0];
+	currentheight = texpatchheights[0];
 	currentcollumpRLEStart = 0;
 
 	// write collumps data. Needs to be done here, so that we've accounted for multiple-patch cases with patchcount[x] > 1
@@ -341,7 +411,7 @@ void R_GenerateLookup(uint16_t texnum)
 			collump[currentlumpindex + 1] = x - currentcollumpRLEStart; 
 			// thus, the high byte is free to store another useful byte - the texture patch offset y.
 
-			collump[currentlumpindex + 1] += (currentoffsety << 8); 
+			collump[currentlumpindex + 1] += (currentheight << 8); 
 
 
 
@@ -349,7 +419,7 @@ void R_GenerateLookup(uint16_t texnum)
 
 			currentcollumpRLEStart = x;
 			currentcollump = texcollump[x];
-			currentoffsety = texoffsetys[x];
+			currentheight = texpatchheights[x];
 
 			currentlumpindex += 2;
 				
@@ -357,7 +427,7 @@ void R_GenerateLookup(uint16_t texnum)
 		}
 	}
 	collump[currentlumpindex] = currentcollump;
-	collump[currentlumpindex + 1] = (texturewidth - currentcollumpRLEStart) + (currentoffsety << 8);
+	collump[currentlumpindex + 1] = (texturewidth - currentcollumpRLEStart) + (currentheight << 8);
 	currentlumpindex += 2;
 
 }
@@ -404,8 +474,6 @@ void R_InitTextures(void)
  	int16_t				texturewidth;
 	uint8_t				textureheightval;
 	int16_t                patchlookup[470]; // 350 for doom shareware/doom1. 459 for doom2
- 	texturedefs_offset[0] = 0;
-	texturecolumn_offset[0] = 0;
 
 
 	firstpatch = W_GetNumForName("P_START") + 1;
@@ -480,7 +548,6 @@ void R_InitTextures(void)
 
 		offset = (*directory);
 
-
 		//mtexture = (maptexture_t  __far*)((byte  __far*)(maptex + offset));
 		mtexture = (maptexture_t  __far*)((byte  __far*)maptex + offset);
 
@@ -498,7 +565,10 @@ void R_InitTextures(void)
 		textureheightval = texture->height; 
 
 		FAR_memcpy(texture->name, mtexture->name, sizeof(texture->name));
-		//FAR_strncpy(name, mtexture->name, 8);
+		
+//		if (i == 210)
+//			DEBUG_PRINT("\n %.8Fs %.8Fs %i %Fp %Fp", texture->name, mtexture->name, sizeof(texture->name), texture->name, mtexture->name);
+//			FAR_strncpy(name, mtexture->name, 8);
 
 		//if ((i % 4) == 0)DEBUG_PRINT("\n");
 		//DEBUG_PRINT(" %i %lx %lx", i, texture, mtexture);
@@ -508,28 +578,15 @@ void R_InitTextures(void)
 		patch = &texture->patches[0];
 
 		for (j = 0; j < texture->patchcount; j++, mpatch++, patch++) {
-
 			patch->originx = abs(mpatch->originx);
 			patch->originy = (mpatch->originy);
 			patch->patch = patchlookup[(mpatch->patch)] + (mpatch->originx < 0 ? 0x8000 : 0);
- 
-
 		}
 
-		//DEBUG_PRINT("name %Fs", texture->name);
-
-		if ((i + 1) < numtextures) {
-			// we store by paragraphs to fit this in 2 bytes per entry for doom2 
-			// (which goes into 80kish size for this struct) and because all 
-			// the offsets are multiples of a word in size anyway due to texturewidth
-			// being multiples of 8 and multiplied by sizeof(int16_t) which is 2
- 
-			texturecolumn_offset[i + 1] = texturecolumn_offset[i] + ((texturewidth * sizeof(int16_t)) >> 4 ) ;
- 		}
-
 		j = 1;
-		while (j * 2 <= texturewidth)
+		while (j * 2 <= texturewidth){
 			j <<= 1;
+		}
 
 		texturewidthmasks[i] = j - 1;
 		textureheights[i] = textureheightval;
@@ -548,6 +605,13 @@ void R_InitTextures(void)
 	for (i = 0; i < numtextures; i++){
 		R_GenerateLookup(i);
 	}
+	
+	//              pixelofs        postofs
+	//    				  masked count
+    //DOOM Shareware:	896    8     3170
+	//DOOM 1: 			2304   12    12238
+	//DOOM 2:		 	1408   11    4772
+	//I_Error("currentpixeloffset is %u %u %u", currentpixeloffset, maskedcount, curentpostoffset);
 
 
 	// Reset this since 0x7000 scratch page is active

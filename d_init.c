@@ -499,7 +499,10 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 	
-	
+
+	//I_Error("blah %Fp %Fp %Fp", masked_headers, spritepage, spriteoffset);
+	//I_Error("blah %Fp", MAKE_FULL_SEGMENT(spritepage, size_spriteoffset + size_spritepage));
+
 /*
 	uint16_t i;
 
@@ -677,7 +680,7 @@ R_FixedMulLocalWrapper2(0, 0)
 			patchpage, 
 			patchoffset,
 			texturepatchlump_offset,
-			texturecolumn_offset,
+			,
 			texturecompositesizes,
 			vissprites,
 

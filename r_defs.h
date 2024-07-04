@@ -343,6 +343,16 @@ typedef struct
 typedef post_t	column_t;
 
 
+typedef struct 
+{
+    uint16_t    postofsoffset;
+    uint16_t    pixelofsoffset;
+    uint16_t    texturesize;
+    uint16_t    reserved;
+
+} masked_header_t;
+
+
 
 // PC direct to screen pointers
 extern byte __far*	destview;

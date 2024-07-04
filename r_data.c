@@ -593,8 +593,7 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 }
 
 
-void __near R_GetNextPatchBlock(int16_t lump) {
-	uint16_t size = W_LumpLength(lump);
+void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
 	int8_t numpages;
 	uint8_t texpage, texoffset;
@@ -770,7 +769,6 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 	int16_t             i;
 	column_t __far*           patchcol;
 	int16_t __far*            collump;
-	uint16_t __far*			colofs;
 	int16_t				textureheight;
 	int16_t				texturewidth;
 	uint8_t				texturepatchcount;
@@ -784,6 +782,7 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 	int16_t currentlump;
 	int16_t currentRLEIndex = 0;
 	int16_t nextcollumpRLE = 0;
+	uint16_t texpixelofs;
 /*
 	FILE*fp;
 	int8_t fname[15];
@@ -799,12 +798,6 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 	collump = &(texturecolumnlumps_bytes[texturepatchlump_offset[texnum]]);
 
 	// check which 64k page this lives in
-	if (texturecolumn_offset[texnum] >= 0x0800) {
-		colofs = (uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[texnum] - 0x0800) << 4]);
-	}
-	else {
-		colofs = (uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[texnum] << 4]);
-	}
 
 	Z_QuickMapScratch_7000();
 
@@ -841,7 +834,7 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 		currentlump = collump[currentRLEIndex];
 		nextcollumpRLE = collump[currentRLEIndex + 1] & 255;
 
-
+		texpixelofs = x * textureheight;
 		for (; x < x2; x++) {
 			while (x >= nextcollumpRLE) {
 				currentRLEIndex += 2;
@@ -855,9 +848,11 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 			}
 			patchcol = (column_t  __far*)((byte  __far*)realpatch + (realpatch->columnofs[x - x1]));
 			R_DrawColumnInCache(patchcol,
-				block + colofs[x],
+				block + texpixelofs,
 				patchoriginy,
 				textureheight);
+
+			texpixelofs += textureheight;
 
 		}
 	}
@@ -1203,19 +1198,21 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 // TODO - try different algos instead of first free block for populating cache pages
 // get 0x9000 offset for texture
-byte __far* __near getpatchtexture(int16_t lump, boolean ismasked) {
+byte __far* __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 
 	int16_t index = lump - firstpatch;
 	uint8_t texpage = patchpage[index];
 	uint8_t texoffset = patchoffset[index];
 	byte __far* addr;
 	int8_t cachelump = false;
+	boolean ismasked = maskedlookup != 0xFF;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_PATCH;
 #endif
 
 	if (texpage == 0xFF) { // texture not loaded -  0xFFu is initial state (and impossible anyway)
-		R_GetNextPatchBlock(lump);
+		uint16_t size = ismasked ? masked_headers[maskedlookup].texturesize : patch_sizes[index];
+		R_GetNextPatchBlock(lump, size);
 
 		texpage = patchpage[index];
 		texoffset = patchoffset[index];
@@ -1227,12 +1224,7 @@ byte __far* __near getpatchtexture(int16_t lump, boolean ismasked) {
 	addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
 
 	if (cachelump){
-		if (ismasked){
-			W_CacheLumpNumDirect(lump, addr);
-		} else {
-			R_LoadPatchColumns(lump, addr);
-		}
-
+		R_LoadPatchColumns(lump, addr, ismasked);
 	}
 	// return
 	return addr;
@@ -1319,16 +1311,15 @@ void setchecksum(){
 	origcachecount = cachecount;
 }*/
 
+byte cachedbyteheight;
+
 int setval = 0;
 byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t __far* texturecolumnlump;
 	int16_t n = 0;
 	int16_t origcol;
-	int16_t startcol = col;
-	int16_t collength = textureheights[tex] + 1;
 	col &= texturewidthmasks[tex];
-	
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
 
 	// RLE stuff to figure out actual lump for column
@@ -1342,97 +1333,75 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 	
 
 	if (lump > 0) {
-		byte __far * base = getpatchtexture(lump, false);		
-		texture_t __far *  texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[tex]]);
-		int8_t yoffset = texturecolumnlump[n-1] >> 8;
-		
-		return base + collength * origcol + yoffset;
+		uint8_t lookup = masked_lookup[tex];
+		cachedbyteheight = texturecolumnlump[n-1] >> 8;
+
+
+		if (lookup == 0xFF){
+			byte __far * base = getpatchtexture(lump, lookup);		
+			return base + (origcol * cachedbyteheight);
+		} else {
+			// check which 64k page this lives in
+			masked_header_t __far * maskedheader = &masked_headers[lookup];
+			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldata_segment, maskedheader->pixelofsoffset);
+
+
+			uint16_t ofs  = pixelofs[origcol];
+			return getpatchtexture(lump, lookup) + ofs;
+		}
 		
 		//return getpatchtexture(lump, false) + ofs;
 
 
 	} else {
+		int16_t collength = textureheights[tex] + 1;
 		byte __far *base = getcompositetexture(tex);
+		cachedbyteheight = collength;
 		return base + (collength * origcol);
 		//return getcompositetexture(tex) + ofs;
 
 	}
 
 
-}
-
-byte __far* __near R_GetColumnMasked (int16_t tex, int16_t col) {
-	int16_t         lump;
-	uint16_t         ofs; 
-	int16_t __far* texturecolumnlump;
-	int16_t n = 0;
-	col &= texturewidthmasks[tex];
-
-	// check which 64k page this lives in
-	if (texturecolumn_offset[tex] >= 0x0800) {
-		ofs = ((uint16_t __far*)&(texturecolumnofs_bytes_2[(texturecolumn_offset[tex] - 0x0800) << 4]))[col];
-	}
-	else {
-		ofs = ((uint16_t __far*)&(texturecolumnofs_bytes_1[texturecolumn_offset[tex] << 4]))[col];
-	}
-
-	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
-	
-	// RLE stuff to figure out actual lump for column
-	while (col >= 0) {
-		lump = texturecolumnlump[n];
-		col -= texturecolumnlump[n+1] & 255;
-		n += 2;
-	}
-
-
- 
-	if (lump > 0) {
-		return getpatchtexture(lump, true) + ofs;
-	} else {
-		return getcompositetexture(tex) + ofs;
-
-	}
-
-
-}
+} 
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
-void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation){
+// todo: draw secondary columns if necessary
+void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
 
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
 	int16_t col;
-	uint16_t currentoffset = 0;
-	int16_t collength;
+	uint16_t destoffset = 0;
 	int16_t patchwidth;
-	byte __far * texaddr;
 
 
 	Z_QuickMapScratch_5000(); // render col info has been paged out..
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
-	collength = patch->height;
-
 	patchwidth = patch->width;
-/*	
-	if (W_LumpLength(lump) < (collength * patchwidth)){
-		I_Error("lump size too small? %li %li", W_LumpLength(lump), (collength * patchwidth));
-	}
-	*/
-
-	//if (setval == 1){
-		//I_Error("values %i %i %i", collength, patchwidth, lump);
-	//}
-
 
 	for (col = 0; col < patchwidth; col++){
-		texaddr = SCRATCH_ADDRESS_5000 + (patch->columnofs[col] + 3);
-		FAR_memcpy(texlocation + currentoffset, texaddr, collength);
-		currentoffset += collength;
+
+		column_t __far * column = (column_t __far *)(SCRATCH_ADDRESS_5000 + patch->columnofs[col]);
+		while (column->topdelta != 0xFF){
+			uint8_t length = column->length;
+			byte __far * texaddr = SCRATCH_ADDRESS_5000 + (((int32_t)column) + 3);
+			FAR_memcpy(texlocation + destoffset, texaddr, length);
+			destoffset += length;
+			if (ismasked){
+
+				// round up to the next paragraph for masked textures which do multiple renders
+				// and thus the subrenders must also start paragraph aligned...
+				// for non masked textures they are always overlapping - or really "should" be.. revisit for buggy gap pixels
+				destoffset +=  length & 0xF;
+				
+			}
+
+	    	column = (column_t __far *)(  (byte  __far*)column + length + 4 );
+		}
+
 	}
 
 	Z_QuickMapColumnOffsets5000(); // put render info back
-
-
 
 }

@@ -83,14 +83,13 @@ fixed_t		bottomstep;
 uint8_t __far*	walllights;
 
 uint16_t __far*		maskedtexturecol;
-
+extern byte cachedbyteheight;
 //
 // R_RenderMaskedSegRange
 //
 void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 	uint8_t	index;
 	uint16_t	spryscale_shift12;
-	column_t __far*	col;
 	int16_t		lightnum;
 	int16_t		frontsecnum;
 
@@ -207,8 +206,19 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 			//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
 	    
 			// draw the texture
-			col = (column_t  __far*)((byte  __far*)R_GetColumnMasked(texnum,maskedtexturecol[dc_x]) -3);
-			R_DrawMaskedColumn (col, 0);
+			{
+				byte __far* pixeldata = ((byte  __far*)R_GetColumn(texnum,maskedtexturecol[dc_x]));
+				
+				uint8_t lookup = masked_lookup[texnum];
+				if (lookup != 0xFF){
+					masked_header_t __far * maskedheader = &masked_headers[lookup];
+					column_t __far * postsdata = (column_t __far *)MK_FP(maskedpostdata_segment, maskedheader->postofsoffset);
+					R_DrawMaskedColumn (pixeldata, postsdata);
+				} else {
+					R_DrawSingleMaskedColumn(pixeldata, cachedbyteheight);
+				}
+
+			}			
 			maskedtexturecol[dc_x] = MAXSHORT;
 		}
 		spryscale.w += rw_scalestep;
