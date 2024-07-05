@@ -216,10 +216,13 @@ void R_GenerateLookup(uint16_t texnum)
 	int16_t                 j;
 	uint16_t				eraseoffset;
 	int16_t					patchpatch;
+	int16_t  patchusedheight;
+
 	int16_t					lastusedpatch = -1;
 	uint8_t				texturepatchcount;
 	int16_t				texturewidth;
 	int16_t				textureheight;
+	int16_t 			usedtextureheight;
 	
 	int16_t				currentcollump;
 	int16_t				currentcollumpRLEStart;
@@ -260,7 +263,7 @@ void R_GenerateLookup(uint16_t texnum)
 	texture = (texture_t __far*)&(texturedefs_bytes[texturedefs_offset[texnum]]);
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
-
+	usedtextureheight = textureheight + ((16 - (textureheight &0xF) ) & 0xF);
 
 
 	// Now count the number of columns
@@ -297,10 +300,13 @@ void R_GenerateLookup(uint16_t texnum)
 		int16_t                 x2;
 		int16_t                 x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchpatch = patch->patch & PATCHMASK;
+
 		if (lastusedpatch != patchpatch){
 			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch);
+			patchusedheight = realpatch->height;
+			patchusedheight += (16 - ((patchusedheight &0xF)) &0xF); // round up to next paragraph
 		}
-		patch_sizes[patchpatch-firstpatch] = realpatch->height * realpatch->width; // used for non masked sizes. doesnt include colofs, headers.
+		patch_sizes[patchpatch-firstpatch] = patchusedheight * realpatch->width; // used for non masked sizes. doesnt include colofs, headers.
 		lastusedpatch = patchpatch;
 
 		x2 = x1 + (realpatch->width);
@@ -320,7 +326,7 @@ void R_GenerateLookup(uint16_t texnum)
 		for (; x < x2; x++) {
 			columnpatchcount[x]++;
 			texcollump[x] = patchpatch;
-			texpatchheights[x] = realpatch->height;
+			texpatchheights[x] = patchusedheight;
 			
 			// this may be a masked texture, so lets store it's data in temporary region
 			if (texturepatchcount == 1){	
@@ -455,8 +461,7 @@ void R_GenerateLookup(uint16_t texnum)
 			// two patches in this column!
 
 			texcollump[x] = -1;
-
-			texturecompositesizes[texnum] += textureheight;
+			texturecompositesizes[texnum] += usedtextureheight;
 		}
 	}
  

@@ -770,6 +770,7 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 	column_t __far*           patchcol;
 	int16_t __far*            collump;
 	int16_t				textureheight;
+	int16_t				usetextureheight;
 	int16_t				texturewidth;
 	uint8_t				texturepatchcount;
 	int16_t				patchpatch = -1;
@@ -792,6 +793,7 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
+	usetextureheight = textureheight + ((16 - (textureheight &0xF)) &0xF);
 	texturepatchcount = texture->patchcount;
 
 	// Composite the columns together.
@@ -834,7 +836,7 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 		currentlump = collump[currentRLEIndex];
 		nextcollumpRLE = collump[currentRLEIndex + 1] & 255;
 
-		texpixelofs = x * textureheight;
+		texpixelofs = x * usetextureheight;
 		for (; x < x2; x++) {
 			while (x >= nextcollumpRLE) {
 				currentRLEIndex += 2;
@@ -852,7 +854,7 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 				patchoriginy,
 				textureheight);
 
-			texpixelofs += textureheight;
+			texpixelofs += usetextureheight;
 
 		}
 	}
@@ -1336,12 +1338,11 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 
 	if (lump > 0) {
 		uint8_t lookup = masked_lookup[tex];
-		cachedbyteheight = texturecolumnlump[n-1] >> 8;
-
+		uint8_t heightval = cachedbyteheight = texturecolumnlump[n-1] >> 8;
 
 		if (lookup == 0xFF){
 			byte __far * base = getpatchtexture(lump, lookup);		
-			return base + (origcol * cachedbyteheight);
+			return base + (origcol * heightval);
 		} else {
 			// Does this code ever run outside of draw masked?
 
@@ -1350,31 +1351,7 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 
 			uint16_t ofs  = pixelofs[origcol];
 			cachedcol = origcol;
-			/*
-			byte __far * base = getpatchtexture(lump, lookup);		
-			// 4 45 5984
-			if (tex == 4 && origcol == 45){
-				column_t __far* postofs   =  MK_FP(maskedpostdata_segment, maskedheader->postofsoffset);
-				I_Error("\ntexture stuff %u %u %u %x %x %x %x %x %x %hhu %hhu %hhu %hhu", 
-				tex, 
-				origcol, 
-				ofs, 
-				*((uint16_t __far *)(&base[ofs])),
-				*((uint16_t __far *)(&base[ofs+2])),
-				*((uint16_t __far *)(&base[ofs+4])),
-				*((uint16_t __far *)(&base[ofs+6])),
-				*((uint16_t __far *)(&base[ofs+8])),
-				*((uint16_t __far *)(&base[ofs+10])),
-				postofs[0].topdelta,
-				postofs[0].length,
-				postofs[1].topdelta,
-				postofs[1].length
-				// 0 24 33 11   hex
-				// 0 36 51 17   dec
-				 );
-			}
-			return base + ofs;
-			*/
+		 
 			return getpatchtexture(lump, lookup) + ofs;
 		}
 		
@@ -1384,6 +1361,7 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 	} else {
 		int16_t collength = textureheights[tex] + 1;
 		byte __far *base = getcompositetexture(tex);
+		collength += (16 - ((collength &0xF)) &0xF);
 		cachedbyteheight = collength;
 		return base + (collength * origcol);
 		//return getcompositetexture(tex) + ofs;
@@ -1425,6 +1403,9 @@ void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismaske
 			}
 
 	    	column = (column_t __far *)(  (byte  __far*)column + length + 4 );
+		}
+		if (!ismasked){
+			destoffset += (16 - ((destoffset &0xF)) &0xF);
 		}
 
 	}
