@@ -45,9 +45,8 @@ typedef struct {
 int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype);
 void __near R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype);
 
-byte __far* __near R_GetColumn ( int16_t tex, int16_t col );
-
-patch_t __far* __near getspritetexture(int16_t index);
+segment_t __near R_GetColumnSegment ( int16_t tex, int16_t col );
+segment_t __near getspritetexture(int16_t index);
 
 #define BAD_TEXTURE 65535
 
@@ -55,12 +54,10 @@ patch_t __far* __near getspritetexture(int16_t index);
 void __near R_InitData (void);
 void R_PrecacheLevel (void);
 
-void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked);
-void R_LoadSpriteColumns(uint16_t lump, patch_t __far * destpatch);
 
+void R_LoadPatchColumns(uint16_t lump, segment_t texlocationsegment, boolean ismasked);
+void R_LoadSpriteColumns(uint16_t lump, segment_t destpatchsegment);
  
-//byte __far* R_GetFlat (int16_t flatlump);
-
 #define TEXTURE_TYPE_PATCH 1
 #define TEXTURE_TYPE_COMPOSITE 2
 #define TEXTURE_TYPE_SPRITE 3

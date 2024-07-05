@@ -40,6 +40,8 @@ typedef uint16_t filelength_t;
 typedef int32_t ticcount_t;
 typedef uint16_t texsize_t;
 
+typedef uint16_t segment_t;
+
 
 #ifndef __BYTEBOOL__
 #define __BYTEBOOL__

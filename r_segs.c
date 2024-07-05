@@ -208,7 +208,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	    
 			// draw the texture
 			{
-				byte __far* pixeldata = ((byte  __far*)R_GetColumn(texnum,maskedtexturecol[dc_x]));
+				segment_t pixelsegment = R_GetColumnSegment(texnum,maskedtexturecol[dc_x]);
 				
 				uint8_t lookup = masked_lookup[texnum];
 				if (lookup != 0xFF){
@@ -217,9 +217,9 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 					uint16_t 		 postoffset = postoffsets[cachedcol];
 					column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
 
-					R_DrawMaskedColumn (pixeldata, postsdata);
+					R_DrawMaskedColumn (pixelsegment, postsdata);
 				} else {
-					R_DrawSingleMaskedColumn(pixeldata, cachedbyteheight);
+					R_DrawSingleMaskedColumn(pixelsegment, cachedbyteheight);
 				}
 
 			}			
@@ -342,7 +342,7 @@ void __near R_RenderSegLoop (void)
 				dc_yh = yh;
 				dc_texturemid = rw_midtexturemid;
 
-				dc_source = R_GetColumn(midtexture,texturecolumn);
+				dc_source = MK_FP(R_GetColumnSegment(midtexture,texturecolumn), 0);
 
 				//I_Error("A %Fp  %Fp %Fp", R_DrawColumnPrepCall, R_DrawColumn, R_DrawColumnPrep);
 				// 6A42:0B6A
@@ -374,7 +374,7 @@ void __near R_RenderSegLoop (void)
 						dc_yh = mid;
 						dc_texturemid = rw_toptexturemid;
 
-						dc_source = R_GetColumn(toptexture,texturecolumn);
+						dc_source = MK_FP(R_GetColumnSegment(toptexture,texturecolumn),0);
 						R_DrawColumnPrepCall(0);				
 					}
 					ceilingclip[rw_x] = mid;
@@ -404,7 +404,7 @@ void __near R_RenderSegLoop (void)
 						dc_yh = yh;
 						dc_texturemid = rw_bottomtexturemid;
 
-						dc_source = R_GetColumn(bottomtexture, texturecolumn);
+						dc_source = MK_FP(R_GetColumnSegment(bottomtexture, texturecolumn),0);
 						R_DrawColumnPrepCall(0);
 						
 

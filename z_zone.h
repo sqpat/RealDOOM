@@ -122,24 +122,24 @@ void __far Z_QuickMapUnmapAll();
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
 // 73
 #define NUM_TEXTURE_PAGES                           8
-#define FIRST_EXTRA_MASKED_DATA_PAGE                FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
+#define EXTRA_MASKED_DATA_PAGE                      FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
 // 81
-#define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_EXTRA_MASKED_DATA_PAGE + 2
+#define FIRST_SPRITE_CACHE_LOGICAL_PAGE             EXTRA_MASKED_DATA_PAGE + 1  
 
-// 83
+// 82
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 87
+// 86
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 91
+// 90
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 #define NUM_SPRITE_CACHE_PAGES                      20
 
 // todo eventuall yjust include this in the spritecache area...
 //#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 95
+// 94
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 96 in use currently (including page 0)
+// 95 in use currently (including page 0)
 
 
 // NUM_EMS4_SWAP_PAGES needs to be 104 to fit in 256 k + (2 MB EMS - 384k)
@@ -178,8 +178,7 @@ void __far Z_QuickMapUnmapAll();
 #define num_scratch7000_params 8
 #define num_renderplane_params 8
 #define num_flatcache_params 8
-#define num_flatcache_undo_params 4
-#define num_maskeddata_params 6
+#define num_flatcache_undo_params 8
 #define num_spritecache_params 8
 #define num_palette_params 10
 #define num_7000to6000_params 8
@@ -209,8 +208,7 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_renderplane_offset_size         (pageswapargs_scratch7000_offset_size    + 2*num_scratch7000_params)
 #define pageswapargs_flatcache_offset_size           (pageswapargs_renderplane_offset_size    + 2*num_renderplane_params)
 #define pageswapargs_flatcache_undo_offset_size      (pageswapargs_flatcache_offset_size      + 2*num_flatcache_params)
-#define pageswapargs_maskeddata_offset_size          (pageswapargs_flatcache_undo_offset_size + 2*num_flatcache_undo_params)
-#define pageswapargs_spritecache_offset_size         (pageswapargs_maskeddata_offset_size     + 2*num_maskeddata_params)
+#define pageswapargs_spritecache_offset_size         (pageswapargs_flatcache_undo_offset_size + 2*num_flatcache_undo_params)
 #define pageswapargs_palette_offset_size             (pageswapargs_spritecache_offset_size    + 2*num_spritecache_params)
 #define pageswapargs_menu_offset_size                (pageswapargs_palette_offset_size        + 2*num_palette_params)
 #define pageswapargs_intermission_offset_size        (pageswapargs_menu_offset_size           + 2*num_menu_params)
@@ -229,8 +227,7 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_renderplane_offset     (pageswapargs_scratch7000_offset        + num_scratch7000_params)
 #define pageswapargs_flatcache_offset       (pageswapargs_renderplane_offset        + num_renderplane_params)
 #define pageswapargs_flatcache_undo_offset  (pageswapargs_flatcache_offset          + num_flatcache_params)
-#define pageswapargs_maskeddata_offset      (pageswapargs_flatcache_undo_offset     + num_flatcache_undo_params)
-#define pageswapargs_spritecache_offset     (pageswapargs_maskeddata_offset         + num_maskeddata_params)
+#define pageswapargs_spritecache_offset     (pageswapargs_flatcache_undo_offset     + num_flatcache_undo_params)
 #define pageswapargs_palette_offset         (pageswapargs_spritecache_offset        + num_spritecache_params)
 #define pageswapargs_menu_offset            (pageswapargs_palette_offset            + num_palette_params)
 #define pageswapargs_intermission_offset    (pageswapargs_menu_offset               + num_menu_params)
@@ -260,8 +257,6 @@ void __far Z_PushScratchFrame();
 void __far Z_PopScratchFrame();
 void __far Z_QuickMapFlatPage(int16_t page, int16_t offset);
 void __far Z_QuickMapUndoFlatCache();
-void __far Z_QuickMapMaskedExtraData();
-
 void __far Z_QuickMapSpritePage();
 
     //void __far Z_QuickMapTextureInfoPage();

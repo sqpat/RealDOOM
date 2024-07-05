@@ -469,7 +469,7 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 //
 // todo merge below
 //int16_t
-void __near R_DrawColumnInCache (column_t __far* patch, byte __far* cache, int16_t originy, int16_t cacheheight) {
+void __near R_DrawColumnInCache (column_t __far* patch, segment_t cache_segment, int16_t originy, int16_t cacheheight) {
 	int16_t     count;
 	int16_t     position;
 	byte __far*       source;
@@ -490,7 +490,7 @@ void __near R_DrawColumnInCache (column_t __far* patch, byte __far* cache, int16
 		if (position + count > cacheheight)
 			count = cacheheight - position;
 		if (count > 0)
-			FAR_memcpy(cache + position, source, count);
+			FAR_memcpy(MK_FP(cache_segment, position), source, count);
 		//totalsize += count;
 
 		patch = (column_t __far*)((byte  __far*)patch + patch->length + 4);
@@ -759,7 +759,7 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 
 extern int8_t current5000State;
 
-void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
+void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 {
 	texpatch_t __far*         patch;
 	patch_t __far*            realpatch;
@@ -794,6 +794,7 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 	texturewidth = texture->width + 1;
 	textureheight = texture->height + 1;
 	usetextureheight = textureheight + ((16 - (textureheight &0xF)) &0xF);
+	usetextureheight = usetextureheight >> 4;
 	texturepatchcount = texture->patchcount;
 
 	// Composite the columns together.
@@ -850,7 +851,7 @@ void __near R_GenerateComposite(uint16_t texnum, byte __far* block)
 			}
 			patchcol = (column_t  __far*)((byte  __far*)realpatch + (realpatch->columnofs[x - x1]));
 			R_DrawColumnInCache(patchcol,
-				block + texpixelofs,
+				block_segment + texpixelofs,
 				patchoriginy,
 				textureheight);
 
@@ -1200,12 +1201,12 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 // TODO - try different algos instead of first free block for populating cache pages
 // get 0x9000 offset for texture
-byte __far* __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
+segment_t __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 
 	int16_t index = lump - firstpatch;
 	uint8_t texpage = patchpage[index];
 	uint8_t texoffset = patchoffset[index];
-	byte __far* addr;
+	segment_t tex_segment;
 	int8_t cachelump = false;
 	boolean ismasked = maskedlookup != 0xFF;
 #ifdef DETAILED_BENCH_STATS
@@ -1223,24 +1224,24 @@ byte __far* __near getpatchtexture(int16_t lump, uint8_t maskedlookup) {
 		cachelump = true;
 	}
 	
-	addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 8));
+	tex_segment = 0x9000 + pagesegments[gettexturepage(texpage, FIRST_PATCH_CACHE_LOGICAL_PAGE, CACHETYPE_PATCH)] + (texoffset << 4);
 
 	if (cachelump){
-		R_LoadPatchColumns(lump, addr, ismasked);
+		R_LoadPatchColumns(lump, tex_segment, ismasked);
 	}
 	// return
-	return addr;
+	return tex_segment;
 
 
 }
 
 
-byte __far* __near getcompositetexture(int16_t tex_index) {
+segment_t getcompositetexture(int16_t tex_index) {
 	
 	uint8_t texpage = compositetexturepage[tex_index];
 	uint8_t texoffset = compositetextureoffset[tex_index];
 	int8_t cachelump = false;
-	byte __far* addr;
+	segment_t tex_segment;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_COMPOSITE;
 #endif
@@ -1255,23 +1256,23 @@ byte __far* __near getcompositetexture(int16_t tex_index) {
 
 	}
 
-		addr = (byte __far*)MK_FP(0x9000, pageoffsets[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 8));
+		tex_segment = 0x9000+ pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+
 		// load it in
 		if (cachelump){
-			R_GenerateComposite(tex_index, addr);
+			R_GenerateComposite(tex_index, tex_segment);
 		}
-
-		return addr;
+		return tex_segment;
 
 }
 
-patch_t __far* __near getspritetexture(int16_t index) {
+segment_t __near getspritetexture(int16_t index) {
 
 	int16_t lump = index + firstspritelump;
 	uint8_t texpage = spritepage[index];
 	uint8_t texoffset = spriteoffset[index];
 	int8_t cachelump = false;
-	patch_t __far * addr;
+	segment_t tex_segment;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_SPRITE;
 #endif
@@ -1286,13 +1287,14 @@ patch_t __far* __near getspritetexture(int16_t index) {
 	}
 
 		
-	addr = (patch_t __far *)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+	tex_segment = 0x6800 + pagesegments[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 4);
+
 	if (cachelump){
-		R_LoadSpriteColumns(lump, addr);
+		R_LoadSpriteColumns(lump, tex_segment);
 
 	}
 	// return
-	return addr;
+	return tex_segment;
 
 
 } 
@@ -1318,7 +1320,7 @@ uint8_t cachedcol;
 
 int setval = 0;
 
-byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
+segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t __far* texturecolumnlump;
 	int16_t n = 0;
@@ -1341,8 +1343,7 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 		uint8_t heightval = cachedbyteheight = texturecolumnlump[n-1] >> 8;
 
 		if (lookup == 0xFF){
-			byte __far * base = getpatchtexture(lump, lookup);		
-			return base + (origcol * heightval);
+			return getpatchtexture(lump, lookup) + ((origcol * heightval) >> 4);
 		} else {
 			// Does this code ever run outside of draw masked?
 
@@ -1352,19 +1353,18 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 			uint16_t ofs  = pixelofs[origcol];
 			cachedcol = origcol;
 		 
-			return getpatchtexture(lump, lookup) + ofs;
+			return getpatchtexture(lump, lookup) + (ofs >> 4);
 		}
 		
-		//return getpatchtexture(lump, false) + ofs;
 
 
 	} else {
 		int16_t collength = textureheights[tex] + 1;
-		byte __far *base = getcompositetexture(tex);
+		segment_t columnsegment = getcompositetexture(tex);
 		collength += (16 - ((collength &0xF)) &0xF);
 		cachedbyteheight = collength;
-		return base + (collength * origcol);
-		//return getcompositetexture(tex) + ofs;
+		columnsegment += ((collength * origcol) >> 4);
+		return columnsegment;
 
 	}
 
@@ -1372,8 +1372,8 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 } 
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
-void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
-
+//void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
+void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
 	int16_t col;
 	uint16_t destoffset = 0;
@@ -1391,7 +1391,7 @@ void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismaske
 		while (column->topdelta != 0xFF){
 			uint8_t length = column->length;
 			byte __far * sourcetexaddr = SCRATCH_ADDRESS_5000 + (((int32_t)column) + 3);
-			FAR_memcpy(texlocation + destoffset, sourcetexaddr, length);
+			FAR_memcpy(MK_FP(texlocation_segment,  destoffset), sourcetexaddr, length);
 			destoffset += length;
 			if (ismasked){
 
@@ -1425,7 +1425,8 @@ void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismaske
 // array of all pixel post runs, paragraph aligned.
 // of course, the colofs and postofs have to be filled in at this time too.
 
-void R_LoadSpriteColumns(uint16_t lump, patch_t __far * destpatch){
+void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
+	patch_t __far * destpatch = MK_FP(destpatch_segment, 0);
 
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
 	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..

@@ -102,7 +102,7 @@ int16_t __far*          mceilingclip;
 fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
 
-void __near R_DrawMaskedSpriteShadow (byte __far* pixeldata, column_t __far* column) {
+void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* column) {
 	
     fixed_t_union     topscreen;
 	fixed_t_union     bottomscreen;
@@ -134,7 +134,7 @@ void __near R_DrawMaskedSpriteShadow (byte __far* pixeldata, column_t __far* col
         if (dc_yl <= dc_yh) {
             //void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
-            dc_source = pixeldata + currentoffset;
+            dc_source = MK_FP(pixelsegment, currentoffset);
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
@@ -157,7 +157,7 @@ void __near R_DrawMaskedSpriteShadow (byte __far* pixeldata, column_t __far* col
 
 }
 
-void __near R_DrawMaskedColumn (byte __far* pixeldata, column_t __far* column) {
+void __near R_DrawMaskedColumn (segment_t pixelsegment, column_t __far* column) {
 	
 	fixed_t_union     topscreen;
 	fixed_t_union     bottomscreen;
@@ -189,7 +189,7 @@ void __near R_DrawMaskedColumn (byte __far* pixeldata, column_t __far* column) {
         if (dc_yl <= dc_yh) {
             void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
-            dc_source = pixeldata + currentoffset;
+            dc_source = MK_FP(pixelsegment, currentoffset);
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
@@ -212,7 +212,7 @@ void __near R_DrawMaskedColumn (byte __far* pixeldata, column_t __far* column) {
 
 // this is called for things like reverse sides of columns and openings where the underlying texture is not actually masked
 // only a single column is actually drawn
-void __near R_DrawSingleMaskedColumn (byte __far* pixeldata, byte length) {
+void __near R_DrawSingleMaskedColumn (segment_t pixeldatasegment, byte length) {
 	
 	fixed_t_union     topscreen;
 	fixed_t_union     bottomscreen;
@@ -242,7 +242,7 @@ void __near R_DrawSingleMaskedColumn (byte __far* pixeldata, byte length) {
     if (dc_yl <= dc_yh) {
         void (__far* R_DrawColumnPrepCall)(uint16_t)  =  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
-        dc_source = pixeldata;
+        dc_source = MK_FP(pixeldatasegment, 0);
         dc_texturemid = basetexturemid;
 
         R_DrawColumnPrepCall(colormaps_high_seg_diff);
@@ -267,7 +267,8 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     
 	column_t __far*     column;
     fixed_t_union       frac;
-    patch_t __far*      patch;
+    segment_t      patch_segment;
+    patch_t __far * patch;
 
 
     dc_colormap_segment = colormapssegment_high;
@@ -280,22 +281,21 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
          
 
-	patch = getspritetexture(vis->patch);
+	patch_segment = getspritetexture(vis->patch);
+    patch = MK_FP(patch_segment, 0);
 
     if ((vis->colormap != COLORMAP_SHADOW)){
         for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
             uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
-            byte __far     * pixeldata  = (byte __far *)patch + columndata[0];
             column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
-            R_DrawMaskedColumn (pixeldata, postdata);
+            R_DrawMaskedColumn(patch_segment + (columndata[0] >> 4), postdata);
         }
     } else {
 
         for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
             uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
-            byte __far     * pixeldata  = (byte __far *)patch + columndata[0];
             column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
-            R_DrawMaskedSpriteShadow (pixeldata, postdata);
+            R_DrawMaskedSpriteShadow(patch_segment + (columndata[0] >> 4), postdata);
         }
     }
 
