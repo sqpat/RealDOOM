@@ -982,7 +982,6 @@ fixed_t                 ds_xstep;
 fixed_t                 ds_ystep;
 
 // start of a 64*64 tile image 
- byte __far*                   ds_source;
 uint16_t ds_source_segment;
 
 

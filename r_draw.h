@@ -68,7 +68,6 @@ extern int16_t    	spanfunc_prt[4];
 extern uint16_t    	spanfunc_destview_offset[4];
 
 // start of a 64*64 tile image
- extern byte __far*		ds_source;
  extern uint16_t ds_source_segment;
 
 // Span blitting for rows, floor/ceiling.

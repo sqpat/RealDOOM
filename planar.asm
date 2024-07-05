@@ -53,11 +53,6 @@ EXTRN _spanfunc_destview_offset:WORD
 
 EXTRN FixedMul_:PROC
 
-; jump table is 0 offset at this segment
-SPANFUNC_JUMP_LOOKUP_SEGMENT   = 6EA0h
-; offset of the jmp instruction's immediate from the above segment
-SPANFUNC_JUMP_OFFSET           = 1EAh
-
 COLFUNC_JUMP_LOOKUP            = 6A10h
 COLFUNC_JUMP_OFFSET            = 06Dh
 
@@ -79,8 +74,15 @@ CACHEDYSTEP_SEGMENT            = 90C8h
 SPANSTART_SEGMENT              = 90FAh
 DISTSCALE_SEGMENT              = 9113h
 
-SPANFUNC_FUNCTION_AREA_SEGMENT = 6eaah
-SPANFUNC_PREP_OFFSET           = 0719h
+SPANFUNC_FUNCTION_AREA_SEGMENT = 6EAAh
+SPANFUNC_PREP_OFFSET           = 070Fh
+
+; jump table is 0 offset at this segment
+SPANFUNC_JUMP_LOOKUP_SEGMENT   = 6EA0h
+; offset of the jmp instruction's immediate from the above segment
+SPANFUNC_JUMP_OFFSET           = 1E5h
+
+
 BASE_COLORMAP_POINTER          = 6800h
 XTOVIEWANGLE_SEGMENT           = 833bh
 MAXLIGHTZ                      = 0080h
@@ -374,11 +376,7 @@ PUBLIC  R_DrawSpan_
 ; 10h y32step high 16 bits
 ; 12h y32step low  16 bits
 
-push  bx
-push  cx
-push  dx
-push  si
-push  di
+
 push  bp
 mov   bp, sp
 cli 									; disable interrupts
@@ -753,11 +751,7 @@ span_i_loop_done:
 sti								; reenable interrupts
 mov sp, bp
 pop bp 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
+
 retf  
 cld   
 
@@ -773,14 +767,6 @@ ENDP
 PROC  R_DrawSpanPrep_
 PUBLIC  R_DrawSpanPrep_ 
 
- push  bx
- push  cx
- push  dx
- push  si
- push  di
- push  bp
- mov   bp, sp
- sub   sp, 6
  
  ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
 
@@ -796,11 +782,12 @@ PUBLIC  R_DrawSpanPrep_
 	
 ; int8_t   shiftamount = (2-detailshift);
  sub   bh, byte ptr [_detailshift]		; get shiftamount in bh
- mov   word ptr [bp - 2], dx			; store base view offset
  xor   bl, bl							; zero out bl. use it as loop counter/ i
  
  cmp   byte ptr [_spanfunc_main_loop_count], 0		; if shiftamount is equal to zero
  jle   spanfunc_arg_setup_complete
+ mov   word ptr [_ss_variable_space], dx			; store base view offset
+ 
  spanfunc_arg_setup_loop_start:
  mov   al, bl							; al holds loop counter
  mov   dx, es							; get ds_x1
@@ -828,7 +815,8 @@ PUBLIC  R_DrawSpanPrep_
 
  add   si, ax							; si = (dsp_x1 << shiftamount) + i
  cmp   si, di			; if si <  (dsp_x1 << shiftamount) + i
- jge   dont_increment_ds_x1
+
+ jge   dont_increment_ds_x1     ; signed so carry flag adc 0 doesnt work?
 ;		ds_x1 ++
  
  inc   dx
@@ -856,7 +844,7 @@ PUBLIC  R_DrawSpanPrep_
  sub   ax, di										   ; subtract ds_x1
  add   ax, si										   ; add i, prt is calculated
  add   si, si										   ; double i for word lookup index
- add   dx, word ptr [bp - 2]						   ; dsp_x1 + base view offset
+ add   dx, word ptr [_ss_variable_space]						   ; dsp_x1 + base view offset
  mov   word ptr [si + _spanfunc_prt], ax			   ; store prt
  mov   word ptr [si + _spanfunc_destview_offset], dx   ; store view offset
  
@@ -874,7 +862,32 @@ PUBLIC  R_DrawSpanPrep_
  mov   al, byte ptr [_ds_colormap_index]
  sub   dx, 0FCh
  test  al, al									; check _ds_colormap_index
- je    ds_colormap_zero
+ jne    ds_colormap_nonzero
+
+
+ ; easy address calculation
+ 
+; 		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset;
+;		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset;
+;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
+
+
+
+
+mov   si, OFFSET _ss_variable_space ; lets use this variable space
+mov   word ptr [si], 07a60h
+mov   word ptr [si+2], dx				; setup dynamic call
+
+db 0FFh  ; lcall[si]
+db 01Ch  ;
+ 
+ 
+ retf  
+ ds_colormap_nonzero:									; if ds_colormap_index is 0
+ 
+
+ 
+ 
  
  ; colormap not zero. need to offset cs etc by its address
 
@@ -897,44 +910,13 @@ PUBLIC  R_DrawSpanPrep_
  add   dx, ax
  mov   ax, 07a60h
  sub   ax, bx
- mov   word ptr [bp - 4], dx
- mov   word ptr [bp - 6], ax
- 
-db 0FFh   ;lcall[bp-6]
-db 05Eh
-db 0FAh
- 
- mov sp, bp
- pop bp 
- pop   di
- pop   si
- pop   dx
- pop   cx
- pop   bx
- retf  
- ds_colormap_zero:									; if ds_colormap_index is 0
- 
- ; easy address calculation
- 
-; 		uint16_t cs_base = ds_colormap_segment - cs_source_segment_offset;
-;		uint16_t callfunc_offset = colormaps_spanfunc_off_difference + cs_source_offset;
-;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
 
- 
- mov   word ptr [bp - 4], dx
- mov   word ptr [bp - 6], 07a60h		; callfunc offset is 0x0FC0+colormaps_spanfunc_off_difference
- 
-db 0FFh   ;lcall[bp-6]
-db 05Eh
-db 0FAh
- 
- mov sp, bp
- pop bp 
- pop   di
- pop   si
- pop   dx
- pop   cx
- pop   bx
+mov   si, OFFSET _ss_variable_space ; lets use this variable space
+mov   word ptr [si], ax
+mov   word ptr [si+2], dx				; setup dynamic call
+
+db 0FFh  ; lcall[si]
+db 01Ch  ;
  retf  
 
 ENDP
@@ -1143,16 +1125,10 @@ ENDP
 ; R_MapPlane_
 ; void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 )
 ; bp - 02h   y
-; bp - 04h   unused
-; bp - 06h   unused
+; bp - 04h   distance low
+; bp - 06h   distance high
 ; bp - 08h   x2
-; bp - 0Ah   distance high
-; bp - 0Ch   distance low
-; bp - 0Eh   x1	
-; bp - 10h   unused
-; bp - 012h  angle (no longer used)
-; bp - 14h   spanfunc jump location offset
-; bp - 16h   spanfunc jump location segment
+; bp - 0Ah   fineangle
 
 ;cachedheight   9000:0000
 ;yslope         9032:0000
@@ -1171,7 +1147,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 016h
+sub   sp, 0Ah
 
 xor   ah, ah
 ; set these values for drawspan while they are still in registers
@@ -1181,9 +1157,7 @@ mov   word ptr [_ds_x2], bx
 
 mov   byte ptr [bp - 2], al
 mov   word ptr [bp - 8], dx
-mov   word ptr [bp - 0Eh], bx
-mov   word ptr [bp - 016h], SPANFUNC_PREP_OFFSET
-mov   word ptr [bp - 014h], SPANFUNC_FUNCTION_AREA_SEGMENT
+
 mov   bx, CACHEDHEIGHT_SEGMENT			; base segment
 mov   es, bx
 xor   ah, ah
@@ -1209,7 +1183,7 @@ jne   go_generate_values	; comparing high word
 mov   ax, word ptr es:[si + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   dx, word ptr es:[si + 2 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   di, dx					; store distance high word
-mov   word ptr [bp - 0Ch], ax	; store distance low word
+mov   word ptr [bp - 04h], ax	; store distance low word
 
 ; CACHEDXSTEP lookup
 
@@ -1237,8 +1211,8 @@ shl   si, 1
 shl   si, 1						; dword lookup
 mov   es, ax
 mov   dx, di  				    ; distance high word
-mov   word ptr [bp - 0ah], dx   ; store distance high word in case needed for colormap
-mov   ax, word ptr [bp - 0Ch]   ; distance low word
+mov   word ptr [bp - 06h], dx   ; store distance high word in case needed for colormap
+mov   ax, word ptr [bp - 04h]   ; distance low word
 mov   bx, word ptr es:[si]		; distscale low word
 mov   cx, word ptr es:[si + 2]	; distscale high word
 
@@ -1258,7 +1232,7 @@ mov   es, ax
 mov   ax, word ptr [_viewangle_shiftright3]
 add   ax, word ptr es:[bx]		; ax is unmodded fine angle..
 and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
-mov   word ptr [bp - 012h], ax	; store fineangle
+mov   word ptr [bp - 0Ah], ax	; store fineangle
 mov   dx, ax			; fineangle in DX
 
 mov   ax, FINECOSINE_SEGMENT
@@ -1276,7 +1250,7 @@ mov   word ptr [_ds_xfrac], ax
 mov   word ptr [_ds_xfrac+2], dx
 
 mov   ax, FINESINE_SEGMENT
-mov   dx, word ptr [bp - 012h]
+mov   dx, word ptr [bp - 0Ah]
 mov   cx, si					; prep length
 mov   bx, di					; prep length
 
@@ -1306,9 +1280,33 @@ mov   word ptr [_ds_yfrac+2], dx
 ; 	if (fixedcolormap) {
 
 cmp   byte ptr [_fixedcolormap], 0
-jne   use_fixed_colormap
+je   use_nonfixed_colormap
+
+mov   al, byte ptr [_fixedcolormap]
+mov   word ptr [_ds_colormap_index], BASE_COLORMAP_POINTER
+
+
+
+colormap_ready:
+
+; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
+
+db 09Ah
+dw SPANFUNC_PREP_OFFSET
+dw SPANFUNC_FUNCTION_AREA_SEGMENT
+
+
+mov sp, bp
+pop bp 
+pop   di
+pop   si
+pop   cx
+retf  
+
+use_nonfixed_colormap:
+
 ; 		index = distance >> LIGHTZSHIFT;
-mov   ax, word ptr [bp - 0ah]
+mov   ax, word ptr [bp - 06h]
 sar   ax, 1
 sar   ax, 1
 sar   ax, 1
@@ -1335,21 +1333,14 @@ xor   ah, ah
 mov   es, word ptr [_planezlight+2]
 add   bx, ax
 mov   al, byte ptr es:[bx]
-colormap_ready:
 mov   byte ptr [_ds_colormap_index], al
-;lcall [bp - 016h]   TODO call direct
-db 0FFh   ;lcall[bp-16]
-db 05Eh
-db 0EAh
-; ?? why doesnt this work
-; push cs
-; lcall 0x6EEA:0x0717 (SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET)
-;db 00Eh
-;db 09Ah
-;db 017h
-;db 007h
-;db 0EAh 
-;db 06Eh
+
+; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
+
+db 09Ah
+dw SPANFUNC_PREP_OFFSET
+dw SPANFUNC_FUNCTION_AREA_SEGMENT
+
 
 mov sp, bp
 pop bp 
@@ -1357,10 +1348,6 @@ pop   di
 pop   si
 pop   cx
 retf  
-use_fixed_colormap:
-mov   al, byte ptr [_fixedcolormap]
-mov   word ptr [_ds_colormap_index], BASE_COLORMAP_POINTER
-jmp   colormap_ready
 generate_distance_steps:
 
 ; es = 9000h  (CACHEDHEIGHT_SEGMENT)
@@ -1389,7 +1376,7 @@ mov   cx, word ptr [_basexscale+2]
 mov   word ptr es:[si], ax			; store distance
 mov   word ptr es:[si + 2], dx		; store distance
 mov   di, dx						; store distance high word in di
-mov   word ptr [bp - 0Ch], ax		; distance low word
+mov   word ptr [bp - 04h], ax		; distance low word
 
 ; 		ds_xstep = cachedxstep[y] = (R_FixedMulLocal (distance,basexscale));
 
@@ -1405,7 +1392,7 @@ mov   word ptr [_ds_xstep+2], dx
 mov   dx, di
 mov   bx, word ptr [_baseyscale]
 mov   cx, word ptr [_baseyscale+2]
-mov   ax, word ptr [bp - 0Ch]	; retrieve distance low word
+mov   ax, word ptr [bp - 04h]	; retrieve distance low word
 
 ;		ds_ystep = cachedystep[y] = (R_FixedMulLocal (distance,baseyscale));
 

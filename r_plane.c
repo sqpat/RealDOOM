@@ -87,7 +87,6 @@ void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 //
 // Uses global vars:
 //  planeheight
-//  ds_source
 //  basexscale
 //  baseyscale
 //  viewx
@@ -572,7 +571,6 @@ void __near R_DrawPlanes (void) {
 		
 		// regular flat
 		ds_source_segment = FLAT_CACHE_PAGE[flatcacheindex] + MULT_256[usedflatindex & 0x03];
-		ds_source =  MK_FP(ds_source_segment, 0);
 
 		// works but slow?
 		//ds_source = R_GetFlat(firstflat + flattranslation[plheader->picnum]);

@@ -477,7 +477,7 @@ blockmaplump_plus4  76E4:0008
 
 
 #define R_DrawColumnPrepOffset    0x09D0
-#define R_DrawSpanPrepOffset      0x0717
+#define R_DrawSpanPrepOffset      0x070D
 
 
 

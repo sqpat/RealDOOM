@@ -54,7 +54,6 @@ EXTRN	_ds_xfrac:DWORD
 EXTRN	_ds_yfrac:DWORD
 EXTRN	_ds_xstep:DWORD
 EXTRN	_ds_ystep:DWORD
-EXTRN	_ds_source:DWORD
 EXTRN   _ds_source_segment:WORD
 
 PUSHR	MACRO
