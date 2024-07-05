@@ -480,7 +480,21 @@ blockmaplump_plus4  76E4:0008
 #define R_DrawSpanPrepOffset      0x0717
 
 
+
+// EXTRA SPRITE/RENDER_MASKED DATA
+
+#define size_spritepostdatasizes    (MAX_SPRITE_LUMPS * sizeof(uint16_t))
+#define size_spritetotaldatasizes   (MAX_SPRITE_LUMPS * sizeof(uint16_t))
+
+#define spritepostdatasizes        ((uint16_t __far*)          (0x88000000 ))
+#define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,  size_spritepostdatasizes))
  
+ /*
+ spritepostdatasizes    8800:0000
+ spritetotaldatasizes   88AD:0000
+ [empty]                895A:0000
+
+ */
 
 
 //#define spanfunc_function_offset  0x1000
@@ -924,6 +938,7 @@ spritewidths        7000:7592
 
 #define patch_sizes                ((uint16_t __far*)          (0x50000000 ))
 #define maskedpostdataofs          ((uint16_t __far*)          (0x51000000 ))
+
 
 #define maskedpostdata             ((byte __far*)              (0x60000000 ))
 #define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdata,           size_maskedpostdata))

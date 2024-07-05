@@ -122,29 +122,32 @@ void __far Z_QuickMapUnmapAll();
 #define FIRST_TEXTURE_LOGICAL_PAGE                  FIRST_FLAT_CACHE_LOGICAL_PAGE + NUM_FLAT_CACHE_PAGES
 // 73
 #define NUM_TEXTURE_PAGES                           8
-#define FIRST_SPRITE_CACHE_LOGICAL_PAGE             FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
+#define EXTRA_MASKED_DATA_PAGE                      FIRST_TEXTURE_LOGICAL_PAGE + NUM_TEXTURE_PAGES
 
 // 81
+#define FIRST_SPRITE_CACHE_LOGICAL_PAGE             EXTRA_MASKED_DATA_PAGE + 1  
+
+// 82
 #define SCREEN1_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 8
-// 85
+// 86
 #define SCREEN2_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 12
-// 89
+// 90
 #define SCREEN3_LOGICAL_PAGE                        FIRST_SPRITE_CACHE_LOGICAL_PAGE + 16
 #define NUM_SPRITE_CACHE_PAGES                      20
 
 // todo eventuall yjust include this in the spritecache area...
 //#define SCREEN1_LOGICAL_PAGE_4                      (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 93
+// 94
 #define NUM_EMS4_SWAP_PAGES                         (int16_t) (FIRST_SPRITE_CACHE_LOGICAL_PAGE + NUM_SPRITE_CACHE_PAGES)
-// 94 in use currently (including page 0)
+// 95 in use currently (including page 0)
 
+
+// NUM_EMS4_SWAP_PAGES needs to be 104 to fit in 256 k + (2 MB EMS - 384k)
 
 // 32
 #define FIRST_DEMO_LOGICAL_PAGE                     FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4
 
 
-//4 for ems/hi memory
-// this number needs to be 124 to fit in 2 MB
 
 
 #define TASK_PHYSICS 0
@@ -175,7 +178,7 @@ void __far Z_QuickMapUnmapAll();
 #define num_scratch7000_params 8
 #define num_renderplane_params 8
 #define num_flatcache_params 8
-#define num_flatcache_undo_params 6
+#define num_flatcache_undo_params 8
 #define num_spritecache_params 8
 #define num_palette_params 10
 #define num_7000to6000_params 8

@@ -38,8 +38,7 @@ extern fixed_t		pspriteiscale;
 
 void __near R_DrawSingleMaskedColumn (byte __far* pixeldata, byte length);
 void __near R_DrawMaskedColumn (byte __far* pixeldata, column_t __far* postdata);
-void __near R_DrawMaskedSprite (column_t __far* column, int8_t isShadow);
-
+void __near R_DrawMaskedSpriteShadow (byte __far* pixeldata, column_t __far* column);
 
 void __near R_SortVisSprites (void);
 

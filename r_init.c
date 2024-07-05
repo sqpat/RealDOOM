@@ -65,13 +65,16 @@ void R_InitSpriteLumps(void)
 {
 	int16_t         i;
 
-	patch_t      __far*patch;
- 	int16_t		patchwidth;
-	int16_t		patchleftoffset;
-	int16_t		patchtopoffset;
-
-	for (i = 0; i < numspritelumps; i++)
-	{
+	for (i = 0; i < numspritelumps; i++) {
+		patch_t     __far*patch;
+		int16_t		patchwidth;
+		int16_t		patchleftoffset;
+		int16_t		patchtopoffset;
+		uint16_t    postdatasize = 0;
+		int16_t     col;
+		uint16_t    startoffset;
+		column_t    __far * column;
+		uint16_t    pixelsize = 0;
 		
 #ifdef DEBUG_PRINTING
 		if (!(i & 63))
@@ -107,12 +110,42 @@ void R_InitSpriteLumps(void)
 		else
 			spritetopoffsets[i] = patchtopoffset;
 
+		// calculate sizes for this
+		for (col = 0; col < patchwidth; col++){
+
+			column = (column_t __far *)(SCRATCH_ADDRESS_5000 + patch->columnofs[col]);
+			while (column->topdelta != 0xFF){
+				
+				uint16_t runsize = column->length;
+				pixelsize += runsize;
+				pixelsize += (16 - ((runsize &0xF)) &0xF); // round up to next paragraph
+				postdatasize += 2;
+
+				column = (column_t __far *)(  (byte  __far*)column + column->length + 4 );
+			}
+			// one more for 0xFFFF to end the column of posts
+			postdatasize += 2;
+
+		}
+
+		// calculate where the pixel data starts. add the patch header, colofs and post data. note postofs will sit
+		// in the extra bytes alongside colofs.
+		startoffset = 8 + (4 * patchwidth) + postdatasize;
+		startoffset += (16 - ((startoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
+		
+		// sigh can we do this better? it's init  code so i dont really care but..
+		Z_QuickMapUndoFlatCache();
+		spritepostdatasizes[i] = postdatasize;
+		spritetotaldatasizes[i] = pixelsize + startoffset;
+		Z_QuickMapRender();
+
+
 
 	}
 
-	// 0, 257
-	// -151 130
-	// -127 129
+	
+
+
 
 }
 
@@ -413,8 +446,7 @@ void R_GenerateLookup(uint16_t texnum)
 		if (!columnpatchcount[x]) {
 			// R_GenerateLookup: column without a patch
 			//I_Error("R_GenerateLookup: column without a patch (%Fs), %i %i %hhu %hhu %Fp\n", texture->name, x, texturewidth, texnum, columnpatchcount[x], columnpatchcount);
-			I_Error("91 %i %i", texnum, x);
-			//I_Error("91");
+			I_Error("91");
 			return;
 		}
 
@@ -710,7 +742,7 @@ void __near R_InitData(void) {
 	//R_InitPatches();
 
 	R_InitTextures();
-	DEBUG_PRINT(".");
+	DEBUG_PRINT("..");
 
 
 	// Create translation table for global animation.
@@ -726,7 +758,6 @@ void __near R_InitData(void) {
 		//  256 byte align tables.
 
 
-	DEBUG_PRINT(".");
 	R_InitSpriteLumps();
 	DEBUG_PRINT(".");
 

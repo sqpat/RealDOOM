@@ -47,7 +47,7 @@ void __near R_MarkCacheLRU(int8_t index, int8_t numpages, int8_t cachetype);
 
 byte __far* __near R_GetColumn ( int16_t tex, int16_t col );
 
-byte __far* __near getspritetexture(int16_t index);
+patch_t __far* __near getspritetexture(int16_t index);
 
 #define BAD_TEXTURE 65535
 
@@ -56,6 +56,7 @@ void __near R_InitData (void);
 void R_PrecacheLevel (void);
 
 void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked);
+void R_LoadSpriteColumns(uint16_t lump, patch_t __far * destpatch);
 
  
 //byte __far* R_GetFlat (int16_t flatlump);

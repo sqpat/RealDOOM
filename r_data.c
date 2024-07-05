@@ -672,7 +672,7 @@ void __near R_GetNextPatchBlock(int16_t lump, uint16_t size) {
 
 
 void __near R_GetNextSpriteBlock(int16_t lump) {
-	uint16_t size = W_LumpLength(lump);
+	uint16_t size = spritetotaldatasizes[lump-firstspritelump];
 	uint8_t blocksize = size >> 8; // num 256-sized blocks needed
 	int8_t numpages;
 	uint8_t texpage, texoffset;
@@ -1263,13 +1263,13 @@ byte __far* __near getcompositetexture(int16_t tex_index) {
 
 }
 
-byte __far* __near getspritetexture(int16_t index) {
+patch_t __far* __near getspritetexture(int16_t index) {
 
 	int16_t lump = index + firstspritelump;
 	uint8_t texpage = spritepage[index];
 	uint8_t texoffset = spriteoffset[index];
 	int8_t cachelump = false;
-	byte __far* addr;
+	patch_t __far * addr;
 #ifdef DETAILED_BENCH_STATS
 	benchtexturetype = TEXTURE_TYPE_SPRITE;
 #endif
@@ -1284,10 +1284,10 @@ byte __far* __near getspritetexture(int16_t index) {
 	}
 
 		
-	addr = (byte __far*)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
+	addr = (patch_t __far *)MK_FP(0x6800, pageoffsets[getspritepage(texpage, FIRST_SPRITE_CACHE_LOGICAL_PAGE)] + (texoffset << 8));
 	if (cachelump){
-		// todo... sprite drawing actually expects a patch_t, not raw pixels... 
-		W_CacheLumpNumDirect(lump, addr);
+		R_LoadSpriteColumns(lump, addr);
+
 	}
 	// return
 	return addr;
@@ -1394,7 +1394,6 @@ byte __far* __near R_GetColumn (int16_t tex, int16_t col) {
 } 
 
 // bypass the colofs cache stuff, store just raw pixel data at texlocation. 
-// todo: draw secondary columns if necessary
 void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
 
 	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
@@ -1413,8 +1412,8 @@ void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismaske
 		column_t __far * column = (column_t __far *)(SCRATCH_ADDRESS_5000 + patch->columnofs[col]);
 		while (column->topdelta != 0xFF){
 			uint8_t length = column->length;
-			byte __far * texaddr = SCRATCH_ADDRESS_5000 + (((int32_t)column) + 3);
-			FAR_memcpy(texlocation + destoffset, texaddr, length);
+			byte __far * sourcetexaddr = SCRATCH_ADDRESS_5000 + (((int32_t)column) + 3);
+			FAR_memcpy(texlocation + destoffset, sourcetexaddr, length);
 			destoffset += length;
 			if (ismasked){
 
@@ -1427,6 +1426,90 @@ void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismaske
 
 	    	column = (column_t __far *)(  (byte  __far*)column + length + 4 );
 		}
+
+	}
+
+	Z_QuickMapColumnOffsets5000(); // put render info back
+
+}
+
+// we store this in the format;
+// first 8 bytrs: regular patch_t
+// for patch->width num rows:
+//   4 bytes per colof as usual, EXCEPT -
+//   rather than the inbetween words being 0, they are now postofs
+// THEN
+// array of all postof data
+// THEN
+// array of all pixel post runs, paragraph aligned.
+// of course, the colofs and postofs have to be filled in at this time too.
+
+void R_LoadSpriteColumns(uint16_t lump, patch_t __far * destpatch){
+
+	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
+	uint16_t __far * columnofs = (uint16_t __far *)&(destpatch->columnofs[0]);   // will be updated in place..
+	uint16_t currentpixelbyte;
+	uint16_t currentpostbyte;
+	int16_t col;
+	int16_t patchwidth;
+	uint16_t __far * postdata;
+	byte __far * pixeldataoffset;
+	
+
+	uint16_t destoffset;
+
+	Z_QuickMapScratch_5000(); // render col info has been paged out..
+
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	patchwidth = patch->width;
+
+	destpatch->width = patch->width;
+	destpatch->height = patch->height;
+	destpatch->leftoffset = patch->leftoffset;
+	destpatch->topoffset = patch->topoffset;
+
+ 	destoffset = 8 + (4 * patchwidth);
+	currentpostbyte = destoffset;
+	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
+
+	destoffset += spritepostdatasizes[lump-firstspritelump];
+	destoffset += (16 - ((destoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
+	currentpixelbyte = destoffset;
+	pixeldataoffset = ((byte __far *)(destpatch)) + currentpixelbyte;
+
+	// 32, 368
+
+	for (col = 0; col < patchwidth; col++){
+
+		column_t __far * column = (column_t __far *)MK_FP(SCRATCH_PAGE_SEGMENT, patch->columnofs[col]);
+		
+		*columnofs = currentpixelbyte;	// colofs pointer
+		columnofs++;
+		*columnofs = currentpostbyte;	// postofs pointer
+		columnofs++;
+
+ 		while (column->topdelta != 0xFF){
+
+			uint8_t length = column->length;
+			byte __far * sourcetexaddr = MK_FP(SCRATCH_PAGE_SEGMENT, (((int32_t)column) + 3));
+
+			FAR_memcpy(pixeldataoffset, sourcetexaddr, length);
+
+			length += ((16 - (length &0xF)) &0xF);
+			currentpixelbyte += length;
+			pixeldataoffset += length;
+
+			*postdata = *((uint16_t __far*)column);
+			postdata++;
+			currentpostbyte +=2;
+
+	    	column = (column_t __far *)(  ((byte  __far*)column) + column->length + 4 );
+		}
+
+ 
+		*postdata = 0xFFFF;
+		postdata++;
+		currentpostbyte +=2;
 
 	}
 

@@ -102,17 +102,18 @@ int16_t __far*          mceilingclip;
 fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
 
-void __near R_DrawMaskedSprite (column_t __far* column, int8_t isShadow) {
+void __near R_DrawMaskedSpriteShadow (byte __far* pixeldata, column_t __far* column) {
 	
-	fixed_t_union     topscreen;
+    fixed_t_union     topscreen;
 	fixed_t_union     bottomscreen;
 	fixed_t_union     basetexturemid;
-
+    
+    uint16_t currentoffset = 0;
     basetexturemid = dc_texturemid;
     
     // if its mot a masked texture, we determine length and topdelta from the real values in the texture?
 
-    for ( ; column->topdelta != 0xff ; )  {
+    while (column->topdelta != 0xFF)  {
         // calculate unclipped screen coordinates
         //  for post
         topscreen.w = sprtopscreen + spryscale.w*column->topdelta;
@@ -131,26 +132,29 @@ void __near R_DrawMaskedSprite (column_t __far* column, int8_t isShadow) {
             dc_yl = mceilingclip[dc_x]+1;
 
         if (dc_yl <= dc_yh) {
-            dc_source = (byte  __far*)column + 3;
+            //void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
+
+            dc_source = pixeldata + currentoffset;
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
-            // Drawn by either R_DrawColumn
-            //  or (SHADOW) R_DrawFuzzColumn.
+            //R_DrawColumnPrepCall(colormaps_high_seg_diff);
+            R_DrawFuzzColumn();
 
-            if (isShadow){
-                // hack until supported via asm func
-                R_DrawFuzzColumn();
-            } else {
-                void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
-                R_DrawColumnPrepCall(colormaps_high_seg_diff);
                 
-            }
         }
-        column = (column_t  __far*)(  (byte  __far*)column + column->length + 4);
+        // these column definittions are just contiguous in memory
+        currentoffset += column->length;
+        currentoffset += (16 - ((column->length &0xF)) &0xF);
+        
+        column++;
+
     }
+    // if we dont update above we dont need to rest it
+    //dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
+
 }
 
 void __near R_DrawMaskedColumn (byte __far* pixeldata, column_t __far* column) {
@@ -275,11 +279,26 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     spryscale.w = vis->scale;
     sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
          
-	patch = (patch_t __far*)getspritetexture(vis->patch);
-	for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
-		column = (column_t  __far*) ((byte  __far*)patch + (patch->columnofs[frac.h.intbits]));
-        R_DrawMaskedSprite (column, (vis->colormap == COLORMAP_SHADOW));
+
+	patch = getspritetexture(vis->patch);
+
+    if ((vis->colormap != COLORMAP_SHADOW)){
+        for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
+            uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
+            byte __far     * pixeldata  = (byte __far *)patch + columndata[0];
+            column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
+            R_DrawMaskedColumn (pixeldata, postdata);
+        }
+    } else {
+
+        for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
+            uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
+            byte __far     * pixeldata  = (byte __far *)patch + columndata[0];
+            column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
+            R_DrawMaskedSpriteShadow (pixeldata, postdata);
+        }
     }
+
 }
 
 
@@ -304,7 +323,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 	int16_t                 x1;
 	int16_t                 x2;
 
-	int16_t                 lump;
+	int16_t                 spriteindex;
     int16_t                 usedwidth;
     
 	uint8_t            rot = 0;
@@ -362,12 +381,12 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 
     }
 
-    lump = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
+    spriteindex = spriteframes[thingframe & FF_FRAMEMASK].lump[rot];
     flip = (boolean)spriteframes[thingframe & FF_FRAMEMASK].flip[rot];
 
     // calculate edges of the shape
     temp.h.fracbits = 0;
-    temp.h.intbits = spriteoffsets[lump];
+    temp.h.intbits = spriteoffsets[spriteindex];
 	tx.w -= temp.w;
 	temp.h.intbits = centerxfrac.h.intbits;
     temp.w +=  FixedMul (tx.w,xscale.w);
@@ -377,7 +396,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     if (x1 > viewwidth)
         return;
     
-    usedwidth = spritewidths[lump];
+    usedwidth = spritewidths[spriteindex];
     if (usedwidth == 1){
         usedwidth = 257;
     }
@@ -410,7 +429,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     vis->gy = thingy;
     vis->gz = thingz;
     temp.h.fracbits = 0;
-    temp.h.intbits = spritetopoffsets[lump];
+    temp.h.intbits = spritetopoffsets[spriteindex];
     
     // hack to make this fit in 8 bits, check r_init.c
     if (temp.h.intbits == -128){
@@ -438,7 +457,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 
     if (vis->x1 > x1)
         vis->startfrac += vis->xiscale*(vis->x1-x1);
-    vis->patch = lump;
+    vis->patch = spriteindex;
     
     // get light level
     if (thingflags & MF_SHADOW) {
@@ -523,7 +542,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
     fixed_t_union           tx;
 	int16_t                 x1;
 	int16_t                 x2;
-	int16_t                 lump;
+	int16_t                 spriteindex;
 	int16_t                 usedwidth;
     boolean             flip;
 	spriteframe_t __far*		spriteframes;
@@ -534,14 +553,14 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
 	spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[statecopy.sprite].spriteframesOffset]);
 
 
-    lump = spriteframes[statecopy.frame & FF_FRAMEMASK].lump[0];
+    spriteindex = spriteframes[statecopy.frame & FF_FRAMEMASK].lump[0];
     flip = (boolean)spriteframes[statecopy.frame & FF_FRAMEMASK].flip[0];
     
     // calculate edges of the shape
 	tx.w = psp->sx;// -160 * FRACUNIT;
 
     // spriteoffsets are only ever negative for psprite - we store as a uint and subtract in that case.
-	tx.h.intbits += spriteoffsets[lump];
+	tx.h.intbits += spriteoffsets[spriteindex];
 	tx.h.intbits -= 160;
 
 	temp.h.fracbits = 0;
@@ -557,7 +576,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
 
 
  	temp.h.fracbits = 0;
-    usedwidth = spritewidths[lump];
+    usedwidth = spritewidths[spriteindex];
     if (usedwidth == 1){
         usedwidth = 257;
     }
@@ -576,7 +595,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
     // store information in a vissprite
     vis->mobjflags = 0;
     temp.h.fracbits = 0;
-    temp.h.intbits = spritetopoffsets[lump];
+    temp.h.intbits = spritetopoffsets[spriteindex];
         // hack to make this fit in 8 bits, check r_init.c
     if (temp.h.intbits == -128){
         temp.h.intbits = 129;
@@ -603,7 +622,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
     if (vis->x1 > x1)
         vis->startfrac += vis->xiscale*(vis->x1-x1);
 
-    vis->patch = lump;
+    vis->patch = spriteindex;
 
     if (player.powers[pw_invisibility] > 4*32
         || player.powers[pw_invisibility] & 8) {
