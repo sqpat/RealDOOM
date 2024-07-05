@@ -44,9 +44,6 @@ extern button_t        buttonlist[MAXBUTTONS];
  
 //todo move this data into functions so it's pulled into overlay space and paged out to free memory
 
-
-
-//extern byte __far* texturedefs_bytes; 
 extern int16_t             numtextures;
  
 

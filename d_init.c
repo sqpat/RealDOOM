@@ -500,7 +500,7 @@ void __far D_DoomMain2(void)
 	struct SREGS sregs;
 	
 
-	//I_Error("blah %Fp %Fp %Fp", masked_headers, spritepage, spriteoffset);
+	//I_Error("blah %Fp %Fp %Fp %Fp", compositetextureoffset, flatindex, texturecompositesizes, MAKE_FULL_SEGMENT(compositetexturepage, size_compositetextureoffset + size_compositetexturepage));
 	//I_Error("blah %Fp", MAKE_FULL_SEGMENT(spritepage, size_spriteoffset + size_spritepage));
 
 /*

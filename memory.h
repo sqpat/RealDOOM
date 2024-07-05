@@ -483,17 +483,38 @@ blockmaplump_plus4  76E4:0008
 
 // EXTRA SPRITE/RENDER_MASKED DATA
 
+#define size_maskedpostdata         12238u
+#define maskedpostdata              ((byte __far*)             (0x84000000 ))           
+
+
 #define size_spritepostdatasizes    (MAX_SPRITE_LUMPS * sizeof(uint16_t))
 #define size_spritetotaldatasizes   (MAX_SPRITE_LUMPS * sizeof(uint16_t))
+#define size_maskedpixeldataofs     3456u
+//#define size_maskedpixeldataofs   2304u
+#define size_maskedpostdataofs      size_maskedpixeldataofs
 
-#define spritepostdatasizes        ((uint16_t __far*)          (0x88000000 ))
-#define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,  size_spritepostdatasizes))
- 
+
+
+#define spritepostdatasizes         ((uint16_t __far*)          (0x88000000 ))
+#define spritetotaldatasizes        ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,   size_spritepostdatasizes))
+#define maskedpixeldataofs          ((byte __far*)              MAKE_FULL_SEGMENT(spritetotaldatasizes,  size_spritetotaldatasizes))
+#define maskedpostdataofs           ((uint16_t __far*)          MAKE_FULL_SEGMENT(maskedpixeldataofs,    size_maskedpixeldataofs))
+
+#define maskedpostdataofs_segment   ((uint16_t) ((int32_t)maskedpostdataofs >> 16))
+
  /*
+ maskedpostdata         8400:0000
+ [empty]                86FD:0000
+
+4144 free
+
  spritepostdatasizes    8800:0000
  spritetotaldatasizes   88AD:0000
- [empty]                895A:0000
-
+ maskedpixeldataofs     895A:0000
+ maskedpixeldataofs     8A32:0000
+ [empty]                8B0A:0000
+ 
+ 3936 free (should be more)
  */
 
 
@@ -921,8 +942,6 @@ spritewidths        7000:7592
 
 
 
-#define size_maskedpostdata            12238u
-#define size_maskedpixeldataofs        3456u
 #define size_texturecolumnlumps_bytes  (1264u * sizeof(int16_t))
 #define size_texturedefs_bytes         8756u
 #define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
@@ -936,13 +955,9 @@ spritewidths        7000:7592
 
 // size_texturedefs_bytes 0x6184... 0x6674
 
-#define patch_sizes                ((uint16_t __far*)          (0x50000000 ))
-#define maskedpostdataofs          ((uint16_t __far*)          (0x51000000 ))
 
 
-#define maskedpostdata             ((byte __far*)              (0x60000000 ))
-#define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdata,           size_maskedpostdata))
-#define texturecolumnlumps_bytes   ((int16_t __far*)           MAKE_FULL_SEGMENT(maskedpixeldataofs,       size_maskedpixeldataofs))
+#define texturecolumnlumps_bytes   ((int16_t __far*)           (0x60000000 ))
 #define texturedefs_bytes          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
 #define spritetopoffsets           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
 #define texturedefs_offset         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
@@ -953,7 +968,6 @@ spritewidths        7000:7592
 
 #define maskedpixeldataofs_segment ((uint16_t) ((int32_t)maskedpixeldataofs >> 16))
 #define maskedpostdata_segment     ((uint16_t) ((int32_t)maskedpostdata >> 16))
-#define maskedpostdataofs_segment  ((uint16_t) ((int32_t)maskedpostdataofs >> 16))
 
 
 
@@ -979,11 +993,11 @@ spritewidths        7000:7592
 #define size_vissprites               (sizeof(vissprite_t) * (MAXVISSPRITES))
 #define size_player_vissprites        (sizeof(vissprite_t) * 2)
 #define size_texturepatchlump_offset  (MAX_TEXTURES * sizeof(uint16_t))
-#define size_texturecolumn_offset     (MAX_TEXTURES * sizeof(uint16_t))
 #define size_visplaneheaders          (sizeof(visplaneheader_t) * MAXEMSVISPLANES)
 #define size_fuzzoffset               FUZZTABLE
 #define size_scalelightfixed          (sizeof(uint8_t) * (MAXLIGHTSCALE))
 #define size_scalelight               (sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
+#define size_patch_sizes            (MAX_PATCHES * sizeof(uint16_t))
 #define size_viewangletox             (sizeof(int16_t) * (FINEANGLES / 2))
 #define size_drawsegs                 (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
 #define size_texturecompositesizes    (MAX_TEXTURES * sizeof(uint16_t))
@@ -997,16 +1011,16 @@ spritewidths        7000:7592
 #define vissprites              ((vissprite_t __far*)        MAKE_FULL_SEGMENT(sides_render            , size_sides_render))
 #define player_vissprites       ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites              , size_vissprites))
 #define texturepatchlump_offset ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites       , size_player_vissprites))
-#define texturecolumn_offset    ((uint16_t __far*)           MAKE_FULL_SEGMENT(texturepatchlump_offset , size_texturepatchlump_offset))
-#define visplaneheaders         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturecolumn_offset    , size_texturecolumn_offset))
+#define visplaneheaders         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturepatchlump_offset , size_texturepatchlump_offset))
 #define fuzzoffset              ((int8_t __far*)             MAKE_FULL_SEGMENT(visplaneheaders         , size_visplaneheaders))
 #define scalelightfixed         ((uint8_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset              , size_fuzzoffset))
 #define scalelight              ((uint8_t __far*)            MAKE_FULL_SEGMENT(scalelightfixed         , size_scalelightfixed))
-#define viewangletox            ((int16_t __far*)            MAKE_FULL_SEGMENT(scalelight              , size_scalelight))
+#define patch_sizes             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight              ,     size_scalelight))
+#define viewangletox            ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes             , size_patch_sizes))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
 #define drawsegs                ((drawseg_t __far*)          (MAKE_FULL_SEGMENT(viewangletox           , size_viewangletox) + sizeof(drawseg_t)))
 // need to undo prior drawseg_t shenanigans
-#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs                , size_drawsegs))
+#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(((int32_t)drawsegs&0xFFFF0000)    , size_drawsegs))
 #define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
 #define compositetextureoffset  ((uint8_t __far*)            (((int32_t)compositetexturepage)          + size_compositetexturepage))
@@ -1024,25 +1038,26 @@ sides_render            46E0:0000
 vissprites              4967:0000
 player_vissprites       4AC7:0000
 texturepatchlump_offset 4ACD:0000
-texturecolumn_offset    4B03:0000
-visplaneheaders         4B39:0000
-fuzzoffset              4B88:0000
-scalelightfixed         4B8C:0000
-scalelight              4B8F:0000
-viewangletox            4BBF:0000
+visplaneheaders         4B03:0000
+TODO
+fuzzoffset              4B52:0000
+scalelightfixed         4B56:0000
+scalelight              4B59:0000
+patch_sizes             4B89:0000
+viewangletox            4BC5:0000
 
 [near range over]       
 
-drawsegs                4DBF:001B
-texturedefs_offset      4F71:0000
-texturecompositesizes   4F7B:0000
-compositetexturepage    4FB1:0000
-compositetextureoffset  4FB1:01AC
-[done]                  4FE7:0000
+drawsegs                4DC5:001B
+flatindex               4F77:0000
+texturecompositesizes   4F81:0000
+compositetexturepage    4FB7:0000
+compositetextureoffset  4FB7:01AC
+[done]                  4FED:0000
 
 
 
-400 bytes free
+304 bytes free
 
 */
 

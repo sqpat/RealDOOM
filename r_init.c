@@ -80,6 +80,7 @@ void R_InitSpriteLumps(void)
 		if (!(i & 63))
 			DEBUG_PRINT(".");
 #endif
+		Z_QuickMapMaskedExtraData();
 		Z_QuickMapScratch_5000();
 
 		W_CacheLumpNumDirect(firstspritelump + i, SCRATCH_ADDRESS_5000);
@@ -134,10 +135,8 @@ void R_InitSpriteLumps(void)
 		startoffset += (16 - ((startoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
 		
 		// sigh can we do this better? it's init  code so i dont really care but..
-		Z_QuickMapUndoFlatCache();
 		spritepostdatasizes[i] = postdatasize;
 		spritetotaldatasizes[i] = pixelsize + startoffset;
-		Z_QuickMapRender();
 
 
 
@@ -421,19 +420,6 @@ void R_GenerateLookup(uint16_t texnum)
 		// copy the actual post data
 		for (i = 0; i < currenttexturepostoffset; i++){
 			postdata[i] = texmaskedpostdata[i];
-
-/*
-			if (texnum == 4 && i == 45) {
-				I_Error("\ntexture stuff %u %u %u %x %x %x %x", texnum, x, 
-					currenttexturepixelbytecount, 
-					*((uint16_t __far *)( (byte  __far*)column + 3)),
-					*((uint16_t __far *)( (byte  __far*)column + 5)),
-					*column,
-					texmaskedpostdata[usedpostoffset-1]
-					);
-			}*/
-
-
 		}
 
 
@@ -673,6 +659,7 @@ void R_InitTextures(void) {
 	// Precalculate whatever possible.  
 	// done using 7000 above ?
 	Z_QuickMapScratch_7000();
+	Z_QuickMapMaskedExtraData();
 	for (i = 0; i < numtextures; i++){
 		R_GenerateLookup(i);
 	}
