@@ -54,35 +54,37 @@ EXTRN _spanfunc_destview_offset:WORD
 EXTRN FixedMul_:PROC
 
 ; jump table is 0 offset at this segment
-SPANFUNC_JUMP_LOOKUP_SEGMENT = 6EA0h
+SPANFUNC_JUMP_LOOKUP_SEGMENT   = 6EA0h
 ; offset of the jmp instruction's immediate from the above segment
-SPANFUNC_JUMP_OFFSET     =   1EAh
+SPANFUNC_JUMP_OFFSET           = 1EAh
 
-COLFUNC_JUMP_LOOKUP      =   6A10h
-COLFUNC_JUMP_OFFSET      =   075h
+COLFUNC_JUMP_LOOKUP            = 6A10h
+COLFUNC_JUMP_OFFSET            = 075h
 
-DC_YL_LOOKUP_SEGMENT =  6A29h
+DRAWCOL_OFFSET                 = 2420h
 
-FINESINE_SEGMENT = 31e4h
-FINECOSINE_SEGMENT = 33e4h
+DC_YL_LOOKUP_SEGMENT           = 6A29h
+
+FINESINE_SEGMENT               = 31e4h
+FINECOSINE_SEGMENT             = 33e4h
  
-COLFUNC_FUNCTION_AREA_SEGMENT = 6A42h
+COLFUNC_FUNCTION_AREA_SEGMENT  = 6A42h
 
 
-CACHEDHEIGHT_SEGMENT = 9000h
-Y_SLOPE_SEGMENT = 9032h
-CACHEDDISTANCE_SEGMENT = 9064h
-CACHEDXSTEP_SEGMENT = 9096h
-CACHEDYSTEP_SEGMENT = 90C8h
-SPANSTART_SEGMENT = 90FAh
-DISTSCALE_SEGMENT = 9113h
+CACHEDHEIGHT_SEGMENT           = 9000h
+Y_SLOPE_SEGMENT                = 9032h
+CACHEDDISTANCE_SEGMENT         = 9064h
+CACHEDXSTEP_SEGMENT            = 9096h
+CACHEDYSTEP_SEGMENT            = 90C8h
+SPANSTART_SEGMENT              = 90FAh
+DISTSCALE_SEGMENT              = 9113h
 
 SPANFUNC_FUNCTION_AREA_SEGMENT = 6eaah
-SPANFUNC_PREP_OFFSET = 0719h
-BASE_COLORMAP_POINTER = 6800h
-XTOVIEWANGLE_SEGMENT = 833bh
-MAXLIGHTZ = 080h
-MAXLIGHTZ_UNSHIFTED = 0800h
+SPANFUNC_PREP_OFFSET           = 0719h
+BASE_COLORMAP_POINTER          = 6800h
+XTOVIEWANGLE_SEGMENT           = 833bh
+MAXLIGHTZ                      = 0080h
+MAXLIGHTZ_UNSHIFTED            = 0800h
 
 EXTRN _basexscale:WORD
 EXTRN _planezlight:WORD
@@ -224,15 +226,12 @@ pixel_loop_fast:
 
 DRAW_SINGLE_PIXEL MACRO 
    ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
-   ; TODO: investigate removing add of bh by changing texture lookup offsets to all be paragraph aligned. 
-   ;   this would increase colofs size... but maybe not by too much?? since columns are all 128 bytes it should only be
-   ;   ~+8 bytes per texture.. maybe less than 1KB.
-   ;   would also free up bh, but i dont think we could do a lot with it. Maybe we could use it for the corrective add every 16 pixels
-   ;   to fix texture 'jaggies'
+   ; TODO: fix texture 'jaggies', maybe every sixteen pixels or so add a corrective factor.
+   ;   would have to preadd to dx by (16 - drawnpixelcount &0xF) so it'd be consistent?
 
     mov    al,dh
 	and    al,ah                  ; ah has 0x7F (127)
-	add    al,bh                  ; bh has the 0 to F offset. 
+	; add    al,bh                ; REMOVED! bh has the 0 to F offset. 
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
@@ -249,7 +248,7 @@ endm
 
     mov    al,dh
 	and    al,ah                  ; ah has 0x7F (127)
-	add    al,bh                  ; bh has the 0 to F offset
+	;add    al,bh                  ; bh has the 0 to F offset
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
@@ -334,7 +333,7 @@ mov   al, byte ptr [_dc_colormap_index]      ; lookup colormap index
 mov   bx, dx                                 ;
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 mov   dx, word ptr [_dc_colormap_segment]    
-add   bx, 2420h
+add   bx, DRAWCOL_OFFSET
 sub   dx, cx
 test  al, al
 je    skipcolormapzero
