@@ -228,7 +228,7 @@ uint16_t		dc_yl_lookup_val;
 
 
 // first pixel in a column (possibly virtual) 
-byte __far*			dc_source;
+segment_t			dc_source_segment;
 
 
 //

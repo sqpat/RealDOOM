@@ -26,7 +26,7 @@ EXTRN   _dc_yl_lookup_val:WORD
 
 EXTRN	_dc_yl:WORD
 EXTRN	_dc_yh:WORD
-EXTRN	_dc_source:DWORD
+EXTRN	_dc_source_segment:WORD
 
 EXTRN	_dc_colormap_index:BYTE
 EXTRN	_dc_colormap_segment:WORD
@@ -59,7 +59,7 @@ SPANFUNC_JUMP_LOOKUP_SEGMENT   = 6EA0h
 SPANFUNC_JUMP_OFFSET           = 1EAh
 
 COLFUNC_JUMP_LOOKUP            = 6A10h
-COLFUNC_JUMP_OFFSET            = 075h
+COLFUNC_JUMP_OFFSET            = 06Dh
 
 DRAWCOL_OFFSET                 = 2420h
 
@@ -109,15 +109,9 @@ EXTRN _planeheight:WORD
 	
 PROC  R_DrawColumn_
 PUBLIC  R_DrawColumn_
-    push  bx
-    push  cx
-    push  dx
-    push  di
-	push  si
 
+; no need to push anything. outer function just returns and pops
 
-do_draw:
-    ;cli   ; disable interrupts on enter main draw function (so we can use some registers safely)
 
     ; 	outp (SC_INDEX+1,1<<(dc_x&3));
 
@@ -208,9 +202,8 @@ do_draw:
 
 
    mov     es, word ptr [_destview + 2]    ; ready the viewscreen segment
-   push    ds                              ; store ds on stack
-   mov     bx, word ptr [_dc_source]       ; common bx offset
-   mov     ax, word ptr [_dc_source+2]     ; this will be ds..
+   xor     bx, bx       ; common bx offset
+   mov     ax, word ptr [_dc_source_segment]     ; this will be ds..
    mov     ds, ax                          ; do this last, makes us unable to to ref other vars...
    mov     si,  4Fh
    mov     ah,  7Fh
@@ -258,13 +251,10 @@ endm
 
 loop_done:
 ; clean up
-    pop   ds
-    pop   si
-	sti
-    pop   di
-    pop   dx
-    pop   cx
-    pop   bx
+
+; restore ds without going to memory.
+    mov ax, ss
+    mov ds, ax
     retf
 
 
@@ -286,33 +276,13 @@ push  bx
 push  cx
 push  dx
 push  si
-push  di
-push  bp
-mov   bp, sp                                 ;
-sub   sp, 4                                  ; need stack space for dynamic farcall
+push  di   ; unused but drawcol clobbers it.
+
 mov   si, DC_YL_LOOKUP_SEGMENT               ; store this segment
 add   si, ax                                 ; add the offset to it already
 mov   es, si                                 ; store this segment for now, with offset pre-added
-mov   di, ax                                 ; store argument (offset)
-mov   ax, word ptr [_dc_source]              ; load dc_source offset
-mov   dh, al                                 ; shift 8 at once
-and   dx, 0f00h                              ; and zero out the other bits to get the last hex digit * 100 bytes for eventual BH value
-mov   cx, dx                                 ;
-shr   ax, 1                                  ; segment value of offset
-shr   ax, 1                                 
-shr   ax, 1                                 
-shr   ax, 1                                 
-mov   word ptr [_dc_source], dx              ; save BX value
-shr   cx, 1                                  ; segment value of eventual bh  (bx offset)
-shr   cx, 1
-shr   cx, 1
-shr   cx, 1
-mov   bx, word ptr [_dc_source + 2]         ; get dc_source segment
-sub   ax, cx                                ; subtract the (bx_offset >> 4) from dc_source offset segment value
-add   bx, ax                                ; modify dc_source segment by calculated desired alpha which offsets bx
+mov   dx, ax                                 ; store argument (offset)
 mov   al, byte ptr [_dc_yh]                 ; grab dc_yh
-mov   es, si                                ;
-mov   word ptr [_dc_source + 2], bx
 xor   ah, ah                                 ;
 mov   bx, word ptr [_dc_yl]
 sub   al, bl                                 ;
@@ -321,22 +291,39 @@ mov   si, ax                                 ;
 mov   bx, word ptr es:[bx]
 add   si, ax                                 ; double count (dc_yh - dc_yl) to get a word offset
 mov   ax, COLFUNC_JUMP_LOOKUP                ; segment of jump offset table
-add   ax, di                                 ; add argument offset to the ax address
+add   ax, dx                                 ; add argument offset to the ax address
 mov   word ptr [_dc_yl_lookup_val], bx       ; store pre-calculated dc_yl * 80
 mov   es, ax
 mov   bx, COLFUNC_JUMP_OFFSET                ; location of jump relative instruction's immediate
 mov   ax, word ptr es:[si]                   ; 
-add   di, COLFUNC_FUNCTION_AREA_SEGMENT      ; R_DrawColumn segment with 0 indexed function offset
-mov   es, di                                 ; set seg
+add   dx, COLFUNC_FUNCTION_AREA_SEGMENT      ; R_DrawColumn segment with 0 indexed function offset
+mov   es, dx                                 ; set seg
 mov   word ptr es:[bx], ax                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
 mov   al, byte ptr [_dc_colormap_index]      ; lookup colormap index
-mov   bx, dx                                 ;
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 mov   dx, word ptr [_dc_colormap_segment]    
-add   bx, DRAWCOL_OFFSET
-sub   dx, cx
+mov   bx, DRAWCOL_OFFSET
+mov   si, OFFSET _ss_variable_space ; lets use this variable space
 test  al, al
-je    skipcolormapzero
+jne    skipcolormapzero
+
+mov   word ptr [si], bx				; setup dynamic call
+mov   word ptr [si+2], dx
+
+db 0FFh  ; lcall[si]
+db 01Ch  ;
+
+
+pop   di ; unused but drawcol clobbers it.
+pop   si
+pop   dx
+pop   cx
+pop   bx
+retf  
+cld  
+
+; if colormap is not zero we must do some segment math
+skipcolormapzero:
 xor   ah, ah
 mov   ch, al
 xor   cl, cl
@@ -346,39 +333,19 @@ shl   ax, 1
 shl   ax, 1
 sub   bx, cx
 add   ax, dx
-mov   word ptr [bp - 4], bx				; setup dynamic call
-mov   word ptr [bp - 2], ax
 
+mov   word ptr [si], bx				; setup dynamic call
+mov   word ptr [si+2], ax
 
-db 255  ;FEh   lcall[bp-4]
-db 94   ;5Eh
-db 252  ;FCh
+db 0FFh  ; lcall[si]
+db 01Ch  ;
 
-mov sp, bp
-pop bp 
-pop   di
+pop   di ; unused but drawcol clobbers it.
 pop   si
 pop   dx
 pop   cx
 pop   bx
-retf  
-skipcolormapzero:
-mov   word ptr [bp - 4], bx				; setup dynamic call
-mov   word ptr [bp - 2], dx
-
-db 255  ;FEh   lcall[bp-4]
-db 94   ;5Eh
-db 252  ;FCh
-
-mov sp, bp
-pop bp 
-pop   di
-pop   si
-pop   dx
-pop   cx
-pop   bx
-retf  
-cld   
+retf   
 
 ENDP
 

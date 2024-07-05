@@ -32,7 +32,7 @@ extern uint16_t dc_yl_lookup_val;
 
 
 // first pixel in a column
-extern byte __far*		dc_source;
+extern segment_t		dc_source_segment;
 
 #define COLORMAP_SHADOW 0xFF
 // The span blitting interface.

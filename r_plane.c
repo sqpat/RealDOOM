@@ -471,14 +471,14 @@ void __near R_DrawPlanes (void) {
 				if (dc_yl <= dc_yh) {
 					// all sky textures are 256 wide, just need the 0xFF and
 					void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
-					uint8_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;
+					uint16_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x]) >> 3) & 0xFF;
 					dc_x = x;
 
 					// here we have inlined special-case R_GetColumn with precalculated fields for this texture.
 					// as a result, we also avoid a 34k texture mucking up the texture cache region...
 
 
-					dc_source = MK_FP(skytexture_texture_segment, ((uint16_t)texture_x) << 7);
+					dc_source_segment = skytexture_texture_segment + (texture_x << 3);
 					R_DrawColumnPrepCall(0);
 					
 					 

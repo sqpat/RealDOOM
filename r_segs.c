@@ -342,7 +342,7 @@ void __near R_RenderSegLoop (void)
 				dc_yh = yh;
 				dc_texturemid = rw_midtexturemid;
 
-				dc_source = MK_FP(R_GetColumnSegment(midtexture,texturecolumn), 0);
+				dc_source_segment = R_GetColumnSegment(midtexture,texturecolumn);
 
 				//I_Error("A %Fp  %Fp %Fp", R_DrawColumnPrepCall, R_DrawColumn, R_DrawColumnPrep);
 				// 6A42:0B6A
@@ -374,7 +374,7 @@ void __near R_RenderSegLoop (void)
 						dc_yh = mid;
 						dc_texturemid = rw_toptexturemid;
 
-						dc_source = MK_FP(R_GetColumnSegment(toptexture,texturecolumn),0);
+						dc_source_segment = R_GetColumnSegment(toptexture,texturecolumn);
 						R_DrawColumnPrepCall(0);				
 					}
 					ceilingclip[rw_x] = mid;
@@ -404,7 +404,7 @@ void __near R_RenderSegLoop (void)
 						dc_yh = yh;
 						dc_texturemid = rw_bottomtexturemid;
 
-						dc_source = MK_FP(R_GetColumnSegment(bottomtexture, texturecolumn),0);
+						dc_source_segment = R_GetColumnSegment(bottomtexture, texturecolumn);
 						R_DrawColumnPrepCall(0);
 						
 

@@ -134,7 +134,7 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
         if (dc_yl <= dc_yh) {
             //void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
-            dc_source = MK_FP(pixelsegment, currentoffset);
+            //dc_source_segment = pixelsegment+ (currentoffset >> 4);
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
@@ -189,7 +189,7 @@ void __near R_DrawMaskedColumn (segment_t pixelsegment, column_t __far* column) 
         if (dc_yl <= dc_yh) {
             void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
-            dc_source = MK_FP(pixelsegment, currentoffset);
+            dc_source_segment = pixelsegment+ (currentoffset >> 4);
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
@@ -242,7 +242,7 @@ void __near R_DrawSingleMaskedColumn (segment_t pixeldatasegment, byte length) {
     if (dc_yl <= dc_yh) {
         void (__far* R_DrawColumnPrepCall)(uint16_t)  =  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
-        dc_source = MK_FP(pixeldatasegment, 0);
+        dc_source_segment = pixeldatasegment;
         dc_texturemid = basetexturemid;
 
         R_DrawColumnPrepCall(colormaps_high_seg_diff);
