@@ -109,7 +109,8 @@ GLOBOBJS = &
  d_math.obj &
  dmx.obj &
  math.obj &
- planar.obj
+ r_column.obj &
+ r_span.obj
 
 doom16.exe : $(GLOBOBJS) i_ibm.obj
  wlink @newd16.lnk
