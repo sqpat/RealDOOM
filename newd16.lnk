@@ -80,7 +80,8 @@ file p_user.obj
 NEWSEGMENT
 file r_bsp.obj
 file r_data.obj
-file planar.obj
+file r_column.obj
+file r_span.obj
 file r_draw.obj
 file r_main.obj
 file r_plane.obj

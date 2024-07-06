@@ -79,6 +79,7 @@ fixed_t		topstep;
 fixed_t		bottomfrac;
 fixed_t		bottomstep;
 
+extern void (__far* R_DrawColumnPrepCall)(uint16_t);
 
 uint8_t __far*	walllights;
 
@@ -336,7 +337,6 @@ void __near R_RenderSegLoop (void)
 		if (midtexture) {
 			// single sided line
 			if (yh >= yl){
-                void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 
 				dc_yl = yl;
 				dc_yh = yh;
@@ -369,7 +369,6 @@ void __near R_RenderSegLoop (void)
 
 				if (mid >= yl) {
 					if (yh > yl){
-                		void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 						dc_yl = yl;
 						dc_yh = mid;
 						dc_texturemid = rw_toptexturemid;
@@ -399,7 +398,6 @@ void __near R_RenderSegLoop (void)
 				}
 				if (mid <= yh) {
 					if (yh > yl){
-                		void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 						dc_yl = mid;
 						dc_yh = yh;
 						dc_texturemid = rw_bottomtexturemid;

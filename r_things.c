@@ -82,6 +82,7 @@ int16_t             numsprites;
 //
 vissprite_t __far*    vissprite_p;
 
+void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
  
  
@@ -132,13 +133,11 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
             dc_yl = mceilingclip[dc_x]+1;
 
         if (dc_yl <= dc_yh) {
-            //void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
             //dc_source_segment = pixelsegment+ (currentoffset >> 4);
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
-            //R_DrawColumnPrepCall(colormaps_high_seg_diff);
             R_DrawFuzzColumn();
 
                 
@@ -187,13 +186,12 @@ void __near R_DrawMaskedColumn (segment_t pixelsegment, column_t __far* column) 
             dc_yl = mceilingclip[dc_x]+1;
 
         if (dc_yl <= dc_yh) {
-            void (__far* R_DrawColumnPrepCall)(uint16_t)  =       ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
             dc_source_segment = pixelsegment+ (currentoffset >> 4);
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
-            R_DrawColumnPrepCall(colormaps_high_seg_diff);
+            R_DrawColumnPrepCallHigh(colormaps_high_seg_diff);
 
                 
         }
@@ -240,12 +238,11 @@ void __near R_DrawSingleMaskedColumn (segment_t pixeldatasegment, byte length) {
         dc_yl = mceilingclip[dc_x]+1;
 
     if (dc_yl <= dc_yh) {
-        void (__far* R_DrawColumnPrepCall)(uint16_t)  =  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
         dc_source_segment = pixeldatasegment;
         dc_texturemid = basetexturemid;
 
-        R_DrawColumnPrepCall(colormaps_high_seg_diff);
+        R_DrawColumnPrepCallHigh(colormaps_high_seg_diff);
 
             
     }
