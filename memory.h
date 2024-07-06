@@ -454,8 +454,8 @@ blockmaplump_plus4  76E4:0008
 //#define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
 
 //6F2E
-#define colfunc_segment        ((uint16_t) ((int32_t)colfunc_function_area >> 16))
-#define colfunc_segment_high   ((uint16_t) (colfunc_segment           - 0x6800 + 0x8C00))
+#define colfunc_segment        ((segment_t) ((int32_t)colfunc_function_area >> 16))
+#define colfunc_segment_high   ((segment_t) (colfunc_segment           - 0x6800 + 0x8C00))
 
 
 #define colfunc_jump_lookup_high ((uint16_t __far*)  (((int32_t)colfuncjump_lookup) - 0x68000000 + 0x8C000000))
@@ -463,12 +463,12 @@ blockmaplump_plus4  76E4:0008
 
 
 //6D8A
-#define colormapssegment      ((uint16_t) ((int32_t)colormaps >> 16))
+#define colormapssegment      ((segment_t) ((int32_t)colormaps >> 16))
 #define colormaps_high_seg_diff  ((uint16_t)0x8C00 - 0x6800)
 
 // used in sprite render, this has been remapped to 8400 page
 // 852D
-#define colormapssegment_high  ((uint16_t)             (colormapssegment           - 0x6800 + 0x8C00))
+#define colormapssegment_high  ((segment_t)             (colormapssegment           - 0x6800 + 0x8C00))
 #define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x68000000 + 0x8C000000))
 
 #define colormaps_colfunc_seg_difference (colfunc_segment - colormapssegment)
@@ -508,7 +508,7 @@ blockmaplump_plus4  76E4:0008
 #define spanfunc_jump_lookup_9000         ((byte  __far*)                   (((uint32_t)spanfunc_jump_lookup)   - 0x6C000000 + 0x90000000))
 #define spanfunc_function_area_9000       ((uint16_t  __far*)               (((uint32_t)spanfunc_function_area) - 0x6C000000 + 0x90000000))
 #define R_DrawSpanAddr                    ((void    (__far *)(void))        (spanfunc_function_area))
-#define spanfunc_segment                  ((uint16_t) ((int32_t)spanfunc_function_area >> 16))
+#define spanfunc_segment                  ((segment_t) ((int32_t)spanfunc_function_area >> 16))
 
 #define colormaps_spanfunc_seg_difference (spanfunc_segment - colormapssegment)
 #define colormaps_spanfunc_off_difference (colormaps_spanfunc_seg_difference << 4)

@@ -22,7 +22,6 @@
 
 EXTRN	_destview:DWORD
 EXTRN	_centery:WORD
-EXTRN   _dc_yl_lookup_val:WORD
 
 EXTRN	_dc_yl:WORD
 EXTRN	_dc_yh:WORD
@@ -53,17 +52,21 @@ EXTRN _spanfunc_destview_offset:WORD
 
 EXTRN FixedMul_:PROC
 
-COLFUNC_JUMP_LOOKUP            = 6A10h
+COLFUNC_JUMP_LOOKUP_SEGMENT    = 6A10h
+DC_YL_LOOKUP_SEGMENT           = 6A29h
+COLFUNC_FUNCTION_AREA_SEGMENT  = 6A42h
+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
+
+
 COLFUNC_JUMP_OFFSET            = 06Dh
 
 DRAWCOL_OFFSET                 = 2420h
 
-DC_YL_LOOKUP_SEGMENT           = 6A29h
 
 FINESINE_SEGMENT               = 31e4h
 FINECOSINE_SEGMENT             = 33e4h
  
-COLFUNC_FUNCTION_AREA_SEGMENT  = 6A42h
 
 
 CACHEDHEIGHT_SEGMENT           = 9000h
@@ -87,6 +90,8 @@ BASE_COLORMAP_POINTER          = 6800h
 XTOVIEWANGLE_SEGMENT           = 833bh
 MAXLIGHTZ                      = 0080h
 MAXLIGHTZ_UNSHIFTED            = 0800h
+
+DC_YL_LOOKUP_SPACE             = _ss_variable_space+4
 
 EXTRN _basexscale:WORD
 EXTRN _planezlight:WORD
@@ -155,7 +160,7 @@ PUBLIC  R_DrawColumn_
 	; todo what if we just add directly to di instead of dx
 	
 
-    add   di, word ptr [_dc_yl_lookup_val]   ; quick mul 80
+    add   di, word ptr [DC_YL_LOOKUP_SPACE]   ; quick mul 80
     add   di, word ptr [_destview + 0] 		 ; add destview offset
     cwd                         			 ; we know ax is positive, this is a quick clear out of dx
     mov   bx, word ptr [_dc_iscale + 0]   
@@ -265,6 +270,8 @@ ENDP
 
 
 
+
+
 ;
 ; R_DrawColumnPrep
 ;
@@ -275,41 +282,30 @@ PUBLIC  R_DrawColumnPrep_
 ; argument AX is diff for various segment lookups
 
 push  bx
-push  cx
-push  dx
+push  cx   
+push  dx   
 push  si
-push  di   ; unused but drawcol clobbers it.
-
-mov   si, DC_YL_LOOKUP_SEGMENT               ; store this segment
-add   si, ax                                 ; add the offset to it already
-mov   es, si                                 ; store this segment for now, with offset pre-added
-mov   dx, ax                                 ; store argument (offset)
-mov   al, byte ptr [_dc_yh]                 ; grab dc_yh
-xor   ah, ah                                 ;
+push  di   
+add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment
+mov   es, ax                                 ; store this segment for now, with offset pre-added
+mov   si, word ptr [_dc_yh]                  ; grab dc_yh
 mov   bx, word ptr [_dc_yl]
-sub   al, bl                                 ;
+sub   si, bx                                 ;
 add   bx, bx                                 ; double dc_yl to get a word offset
-mov   si, ax                                 ;
+add   bx, COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF;
 mov   bx, word ptr es:[bx]
-add   si, ax                                 ; double count (dc_yh - dc_yl) to get a word offset
-mov   ax, COLFUNC_JUMP_LOOKUP                ; segment of jump offset table
-add   ax, dx                                 ; add argument offset to the ax address
-mov   word ptr [_dc_yl_lookup_val], bx       ; store pre-calculated dc_yl * 80
-mov   es, ax
-mov   bx, COLFUNC_JUMP_OFFSET                ; location of jump relative instruction's immediate
-mov   ax, word ptr es:[si]                   ; 
-add   dx, COLFUNC_FUNCTION_AREA_SEGMENT      ; R_DrawColumn segment with 0 indexed function offset
-mov   es, dx                                 ; set seg
-mov   word ptr es:[bx], ax                   ; overwrite the jump relative call for however many iterations in unrolled loop we need
+mov   word ptr [DC_YL_LOOKUP_SPACE], bx      ; store pre-calculated dc_yl * 80
+add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
+mov   ax, word ptr es:[si]                   ; get the jump value
+mov   word ptr es:[COLFUNC_JUMP_OFFSET+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 mov   al, byte ptr [_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 mov   dx, word ptr [_dc_colormap_segment]    
-mov   bx, DRAWCOL_OFFSET
 mov   si, OFFSET _ss_variable_space ; lets use this variable space
 test  al, al
 jne    skipcolormapzero
 
-mov   word ptr [si], bx				; setup dynamic call
+mov   word ptr [si], DRAWCOL_OFFSET				; setup dynamic call
 mov   word ptr [si+2], dx
 
 db 0FFh  ; lcall[si]
@@ -326,18 +322,19 @@ cld
 
 ; if colormap is not zero we must do some segment math
 skipcolormapzero:
-xor   ah, ah
-mov   ch, al
-xor   cl, cl
-shl   ax, 1
-shl   ax, 1
-shl   ax, 1
-shl   ax, 1
-sub   bx, cx
-add   ax, dx
+mov   bx, DRAWCOL_OFFSET
+
+cbw           ; al is like 0-20 so this will zero out ah...
+xchg   ah, al ; move it high with 0 al.
+sub   bx, ax
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+shr   ax, 1
+add   dx, ax
 
 mov   word ptr [si], bx				; setup dynamic call
-mov   word ptr [si+2], ax
+mov   word ptr [si+2], dx
 
 db 0FFh  ; lcall[si]
 db 01Ch  ;

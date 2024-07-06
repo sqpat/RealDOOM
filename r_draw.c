@@ -61,9 +61,15 @@ int16_t		viewheight;
 int16_t		viewwindowx;
 int16_t		viewwindowy; 
 int16_t		viewwindowoffset;
+
+// store sp/bp when doing cli/sti shenanigans
 int16_t		sp_bp_safe_space[2];
+
 // used to index things via SS when bp and sp are in use (since ss == ds)
+// actually we use this as a general variable work space in self-contained asm calls so that we don't have to
+// declare so many one-off variables. 
 int16_t		ss_variable_space[10];
+
 int8_t  	spanfunc_main_loop_count;
 uint8_t 	spanfunc_inner_loop_count[4];
 uint8_t     spanfunc_outp[4];
@@ -217,14 +223,13 @@ EXISTING R_DRAW
 // R_DrawColumn
 // Source is the top of the column to scale.
 //
-uint16_t 		dc_colormap_segment;  // dc_colormap segment. the colormap will be byte 0 at this segment.
+segment_t 		dc_colormap_segment;  // dc_colormap segment. the colormap will be byte 0 at this segment.
 uint8_t 		dc_colormap_index;  // dc_colormap offset. this generally is an index
 int16_t			dc_x; 
 int16_t			dc_yl; 
 int16_t			dc_yh; 
 fixed_t			dc_iscale; 
 fixed_t_union	dc_texturemid;
-uint16_t		dc_yl_lookup_val; 
 
 
 // first pixel in a column (possibly virtual) 
@@ -982,7 +987,7 @@ fixed_t                 ds_xstep;
 fixed_t                 ds_ystep;
 
 // start of a 64*64 tile image 
-uint16_t ds_source_segment;
+segment_t ds_source_segment;
 
 
 //

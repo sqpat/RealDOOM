@@ -55,7 +55,6 @@ extern int16_t             numtextures;
 // Filter out NoTexture indicator.
 //
 extern uint16_t  __far   R_TextureNumForName(int8_t* name);
-
 extern uint16_t  __far   R_CheckTextureNumForName(int8_t *name);
   
 

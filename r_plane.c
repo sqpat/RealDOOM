@@ -195,7 +195,7 @@ void __near R_ClearPlanes (void) {
 }
 
 
-uint16_t visplanelookupsegments[3] = {0x8400, 0x8800, 0x8C00};
+segment_t visplanelookupsegments[3] = {0x8400, 0x8800, 0x8C00};
 extern int8_t visplanedirty;
 extern int8_t active_visplanes[5];
 
@@ -421,7 +421,7 @@ void __near R_DrawPlanes (void) {
 	boolean flatunloaded = false;
 	int16_t flatcacheindex = 0;
 	int16_t lastflatcacheindicesused[3] = {3, 2, 1}; // initialized so that allocation order is 0 1 2
-	uint16_t visplanesegment = 0x8400;
+	segment_t visplanesegment = 0x8400;
 	uint16_t visplaneoffset = 0;
 
     for (i = 0; i < lastvisplane ; i++, visplaneoffset+= VISPLANE_BYTE_SIZE) {

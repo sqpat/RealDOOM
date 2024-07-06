@@ -21,14 +21,13 @@
 #define __R_DRAW__
 
 
-extern uint16_t dc_colormap_segment;
+extern segment_t dc_colormap_segment;
 extern uint8_t dc_colormap_index;
 extern int16_t dc_x;
 extern int16_t dc_yl;
 extern int16_t dc_yh;
 extern fixed_t dc_iscale;
 extern fixed_t_union dc_texturemid;
-extern uint16_t dc_yl_lookup_val; 
 
 
 // first pixel in a column
@@ -68,7 +67,7 @@ extern int16_t    	spanfunc_prt[4];
 extern uint16_t    	spanfunc_destview_offset[4];
 
 // start of a 64*64 tile image
- extern uint16_t ds_source_segment;
+ extern segment_t ds_source_segment;
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.

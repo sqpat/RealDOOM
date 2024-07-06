@@ -82,26 +82,21 @@ void __near P_StartButton ( int16_t linenum,int16_t linefrontsecnum,bwhere_e	w,i
 // Tell it if switch is ok to use again (1=yes, it's a button).
 //
 void __near P_ChangeSwitchTexture ( int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum,int16_t 		useAgain ){
-	uint16_t     texTop;
-	uint16_t     texMid;
-	uint16_t     texBot;
+	uint16_t     texTop = sides[lineside0].toptexture;
+	uint16_t     texMid = sides[lineside0].midtexture;
+	uint16_t     texBot = sides[lineside0].bottomtexture;
 	int8_t     i;
-	int16_t     sound;
+	int16_t     sound = sfx_swtchn;
 
 
 	if (!useAgain) {
 		lines_physics[linenum].special = 0;
 	}
-	
-    texTop = sides[lineside0].toptexture;
-    texMid = sides[lineside0].midtexture;
-    texBot = sides[lineside0].bottomtexture;
-	
-    sound = sfx_swtchn;
 
     // EXIT SWITCH?
-    if (linespecial == 11)                
+    if (linespecial == 11){
 		sound = sfx_swtchx;
+	}
 	
     for (i = 0;i < numswitches*2;i++) {
 		if (switchlist[i] == texTop) {
