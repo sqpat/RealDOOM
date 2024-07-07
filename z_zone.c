@@ -195,7 +195,8 @@ int16_t pageswapargs[total_pages] = {
 	// flat cache undo   NOTE: we just call it with seven params to set everything up for sprites
 	RENDER_7800_PAGE, PAGE_7800_OFFSET,
 	RENDER_7C00_PAGE, PAGE_7C00_OFFSET,
-	EXTRA_MASKED_DATA_PAGE, PAGE_8800_OFFSET,
+	FIRST_EXTRA_MASKED_DATA_PAGE, PAGE_8400_OFFSET,
+	FIRST_EXTRA_MASKED_DATA_PAGE+1, PAGE_8800_OFFSET,
 	PHYSICS_RENDER_6800_PAGE, PAGE_8C00_OFFSET, // put colormaps where vissprites used to be?
 
 
@@ -563,7 +564,7 @@ void __far Z_QuickMapUndoFlatCache() {
 	Z_QuickMap(pageswapargs_rend_offset_size, 4);
 	
 	// this runs 4 over into z_quickmapsprite page
-	Z_QuickMap(pageswapargs_flatcache_undo_offset_size, 8);
+	Z_QuickMap(pageswapargs_flatcache_undo_offset_size, 9);
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -577,7 +578,7 @@ void __far Z_QuickMapUndoFlatCache() {
 
 void __far Z_QuickMapMaskedExtraData() {
 
-	Z_QuickMap(pageswapargs_maskeddata_offset_size, 1);
+	Z_QuickMap(pageswapargs_maskeddata_offset_size, 2);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	spritepageswitchcount++;

@@ -483,24 +483,39 @@ blockmaplump_plus4  76E4:0008
 
 // EXTRA SPRITE/RENDER_MASKED DATA
 
+#define size_maskedpostdata            12238u
+
 #define size_spritepostdatasizes    (MAX_SPRITE_LUMPS * sizeof(uint16_t))
 #define size_spritetotaldatasizes   (MAX_SPRITE_LUMPS * sizeof(uint16_t))
 #define size_maskedpixeldataofs        3456u
 #define size_maskedpostdataofs    size_maskedpixeldataofs
+
+#define maskedpostdata             ((byte __far*)          (0x84000000 ))
+
 
 #define spritepostdatasizes        ((uint16_t __far*)          (0x88000000 ))
 #define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,  size_spritepostdatasizes))
 #define maskedpostdataofs          ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritetotaldatasizes, size_spritetotaldatasizes))
 #define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,    size_maskedpostdataofs))
  
-#define maskedpostdataofs_segment  ((uint16_t) ((int32_t)maskedpostdataofs >> 16))
-#define maskedpostdata_segment     ((uint16_t) ((int32_t)maskedpostdata >> 16))
+#define maskedpostdataofs_segment  ((segment_t) ((int32_t)maskedpostdataofs >> 16))
+#define maskedpostdata_segment     ((segment_t) ((int32_t)maskedpostdata >> 16))
+#define maskedpixeldataofs_segment ((segment_t) ((int32_t)maskedpixeldataofs >> 16))
 
  /*
+
+maskedpostdata          8400:0000
+ [empty]                86FD:0000
+
+4144 free
+
  spritepostdatasizes    8800:0000
  spritetotaldatasizes   88AD:0000
- [empty]                895A:0000
+ maskedpostdataofs      895A:0000
+ maskedpixeldataofs     8A32:0000
+ [empty]                8B0A:0000
 
+3936 free
  */
 
 
@@ -704,7 +719,7 @@ This area used during intermission task
 // 32768 bytes
 //  9400:0000
 #define skytexture_texture_bytes ((byte __far*) MAKE_FULL_SEGMENT(0x94000000, 0))
-#define skytexture_texture_segment ((uint16_t) ((int32_t)skytexture_texture_bytes >> 16))
+#define skytexture_texture_segment ((segment_t) ((int32_t)skytexture_texture_bytes >> 16))
 
 
 /*
@@ -928,7 +943,6 @@ spritewidths        7000:7592
 
 
 
-#define size_maskedpostdata            12238u
 #define size_texturecolumnlumps_bytes  (1264u * sizeof(int16_t))
 #define size_texturedefs_bytes         8756u
 #define size_spritetopoffsets          (sizeof(int8_t) * MAX_SPRITE_LUMPS)
@@ -944,8 +958,7 @@ spritewidths        7000:7592
 
 
 
-#define maskedpostdata             ((byte __far*)              (0x60000000 ))
-#define texturecolumnlumps_bytes   ((int16_t __far*)           MAKE_FULL_SEGMENT(maskedpostdata,           size_maskedpostdata))
+#define texturecolumnlumps_bytes   ((int16_t __far*)           (0x60000000 ))
 #define texturedefs_bytes          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
 #define spritetopoffsets           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
 #define texturedefs_offset         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))
@@ -955,24 +968,21 @@ spritewidths        7000:7592
 #define spriteoffset               ((uint8_t __far*)           (((int32_t)spritepage)                      + size_spritepage))
 
 
-#define maskedpixeldataofs_segment ((uint16_t) ((int32_t)maskedpixeldataofs >> 16))
 
 
 
-// maskedpostdata             6000:0000
-// maskedpixeldataofs         62FD:0000
-// texturecolumnlumps_bytes   63D5:0000
-// texturedefs_bytes          6473:0000
-// spritetopoffsets           6697:0000
-// texturedefs_offset         66ee:0000
-// masked_lookup              6724:0000
-// masked_headers             673F:0000
-// spritepage                 6745:0000
-// spriteoffset               6745:0565
-// [empty]                    67F2:0000
+// texturecolumnlumps_bytes   6000:0000
+// texturedefs_bytes          609E:0000
+// spritetopoffsets           62C2:0000
+// texturedefs_offset         6319:0000
+// masked_lookup              634F:0000
+// masked_headers             636A:0000
+// spritepage                 6370:0000
+// spriteoffset               6370:0565
+// [empty]                    641D:0000
 
 
-// 224 bytes free till 6000:8000 
+// 15920 (!) bytes free till 6000:8000 
 
 // 0x4000 BLOCK RENDER
 
