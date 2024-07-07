@@ -345,7 +345,6 @@ void __near P_SpawnGlowingLight(int16_t secnum)
 	
 	lightamount = P_FindMinSurroundingLight(secnum, seclightlevel);
 	g->minlight = lightamount;
-	g->minlight = 
     g->maxlight = seclightlevel;
     g->direction = -1;
 
