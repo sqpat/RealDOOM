@@ -469,17 +469,15 @@ int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 //
 // todo merge below
 //int16_t
-void __near R_DrawColumnInCache (column_t __far* patch, segment_t cache_segment, int16_t originy, int16_t cacheheight) {
-	int16_t     count;
-	int16_t     position;
-	byte __far*       source;
- 	//int16_t totalsize = 0;
- 	while (patch->topdelta != 0xff)
-	{ 
+void __near R_DrawColumnInCache (column_t __far* patchcol, segment_t currentdestsegment, int16_t patchoriginy, int16_t textureheight) {
+	while (patchcol->topdelta != 0xff) { 
 
-		source = (byte __far *)patch + 3;
-		count = patch->length;
-		position = originy + patch->topdelta;
+		byte __far * source = (byte __far *)patchcol + 3;
+		uint16_t     count = patchcol->length;
+		int16_t     position = patchoriginy + patchcol->topdelta;
+
+
+		patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
 
 		if (position < 0)
 		{
@@ -487,13 +485,12 @@ void __near R_DrawColumnInCache (column_t __far* patch, segment_t cache_segment,
 			position = 0;
 		}
 
-		if (position + count > cacheheight)
-			count = cacheheight - position;
+		if (position + count > textureheight)
+			count = textureheight - position;
 		if (count > 0)
-			FAR_memcpy(MK_FP(cache_segment, position), source, count);
-		//totalsize += count;
+			FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
 
-		patch = (column_t __far*)((byte  __far*)patch + patch->length + 4);
+
 	}
 	//return totalsize;
 }
@@ -509,9 +506,11 @@ void __near R_GetNextCompositeBlock(int16_t tex_index) {
 	int8_t numpages;
 	uint8_t texpage, texoffset;
 	int16_t i;
-	if (size == 0)
+/*
+	if (size == 0){
 		return; // why does this happen...
-
+	}
+	*/
 	if (size & 0xFF) {
 		blocksize++;
 	}
@@ -759,18 +758,20 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 
 extern int8_t current5000State;
 
+#define realpatch7000  ((patch_t __far *)  MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0))
+
 void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 {
 	texpatch_t __far*         patch;
-	patch_t __far*            realpatch;
+	//patch_t __far*            realpatch;
 	int16_t             x;
 	int16_t             x1;
 	int16_t             x2;
 	int16_t             i;
 	column_t __far*           patchcol;
 	int16_t __far*            collump;
-	int16_t				textureheight;
-	int16_t				usetextureheight;
+	uint8_t				textureheight;
+	uint8_t				usetextureheight;
 	int16_t				texturewidth;
 	uint8_t				texturepatchcount;
 	int16_t				patchpatch = -1;
@@ -783,7 +784,9 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 	int16_t currentlump;
 	int16_t currentRLEIndex = 0;
 	int16_t nextcollumpRLE = 0;
-	uint16_t texpixelofs;
+	segment_t currentdestsegment;
+	segment_t testsegment;
+
 /*
 	FILE*fp;
 	int8_t fname[15];
@@ -807,24 +810,23 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 
 
 	for (i = 0; i < texturepatchcount; i++) {
+
 		patch = &texture->patches[i];
 		lastusedpatch = patchpatch;
 		patchpatch = patch->patch & PATCHMASK;
 		index = patch->patch - firstpatch;
 		currentRLEIndex = 0;
-		 
 
 
 		if (lastusedpatch != patchpatch) {
-			realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
-			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch);
+			W_CacheLumpNumDirect(patchpatch, (byte __far*)realpatch7000);
 		}
 		patchoriginx = patch->originx *  (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);
 		patchoriginy = patch->originy;
 
 
 		x1 = patchoriginx;
-		x2 = x1 + (realpatch->width);
+		x2 = x1 + (realpatch7000->width);
 
 		if (x1 < 0)
 			x = 0;
@@ -837,7 +839,43 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 		currentlump = collump[currentRLEIndex];
 		nextcollumpRLE = collump[currentRLEIndex + 1] & 255;
 
-		texpixelofs = x * usetextureheight;
+		// increment starting texel index
+
+		currentdestsegment = block_segment;
+
+		// skip if x is 0, otherwise evaluate till break
+		if (x){
+			int16_t innercurrentRLEIndex = 0;
+			int16_t innercurrentlump = collump[0];
+			uint8_t innernextcollumpRLE = collump[1] & 255;
+			uint8_t currentx = 0;
+			uint8_t diffpixels = 0;
+
+			while (true){ 
+				if ((currentx + innernextcollumpRLE) < x){
+					if (innercurrentlump == -1){
+						diffpixels += (innernextcollumpRLE);
+					}
+					currentx += innernextcollumpRLE;
+					innercurrentRLEIndex += 2;
+					innercurrentlump = collump[innercurrentRLEIndex];
+					innernextcollumpRLE = ((collump[innercurrentRLEIndex + 1]) & 255);
+					continue;
+				} else {
+					if (innercurrentlump == -1){
+						diffpixels += ((x - currentx));
+					}
+					break;
+				}
+
+			}
+			currentdestsegment += ((int16_t)usetextureheight) * diffpixels;
+		}
+
+
+
+
+
 		for (; x < x2; x++) {
 			while (x >= nextcollumpRLE) {
 				currentRLEIndex += 2;
@@ -849,13 +887,40 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 			if (currentlump >= 0) {
 				continue;
 			}
-			patchcol = (column_t  __far*)((byte  __far*)realpatch + (realpatch->columnofs[x - x1]));
+			
+			patchcol = MK_FP(0x7000, realpatch7000->columnofs[x - x1]);
+
+			// inlined R_DrawColumninCache
 			R_DrawColumnInCache(patchcol,
-				block_segment + texpixelofs,
+				currentdestsegment,
 				patchoriginy,
 				textureheight);
+/*
+			while (patchcol->topdelta != 0xff) { 
 
-			texpixelofs += usetextureheight;
+				byte __far * source = (byte __far *)patchcol + 3;
+				uint16_t     count = patchcol->length;
+				int16_t     position = patchoriginy + patchcol->topdelta;
+
+
+				patchcol = (column_t __far*)((byte  __far*)patchcol + count + 4);
+
+				if (position < 0)
+				{
+					count += position;
+					position = 0;
+				}
+
+				if (position + count > textureheight)
+					count = textureheight - position;
+				if (count > 0)
+					FAR_memcpy(MK_FP(currentdestsegment, position), source, count);
+
+
+			}
+			*/
+
+			currentdestsegment += usetextureheight;
 
 		}
 	}
@@ -1256,11 +1321,13 @@ segment_t getcompositetexture(int16_t tex_index) {
 
 	}
 
-		tex_segment = 0x9000+ pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+		tex_segment = 0x9000 + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
 
 		// load it in
 		if (cachelump){
+			// could be inlined i guess.
 			R_GenerateComposite(tex_index, tex_segment);
+			
 		}
 		return tex_segment;
 
@@ -1324,14 +1391,20 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t __far* texturecolumnlump;
 	int16_t n = 0;
+	int16_t texcol;
+
 	int16_t origcol;
 	col &= texturewidthmasks[tex];
+	texcol = col;
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
 
 	// RLE stuff to figure out actual lump for column
 	while (col >= 0) {
 		lump = texturecolumnlump[n];
 		col -= texturecolumnlump[n+1] & 255;
+		if (lump >= 0){ // should be equiv to == -1?
+			texcol -= (texturecolumnlump[n+1] & 255);
+		}
 		n += 2;
 	}
 
@@ -1363,7 +1436,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		segment_t columnsegment = getcompositetexture(tex);
 		collength += (16 - ((collength &0xF)) &0xF);
 		cachedbyteheight = collength;
-		columnsegment += ((collength * origcol) >> 4);
+		columnsegment += ((collength * texcol) >> 4);
 		return columnsegment;
 
 	}

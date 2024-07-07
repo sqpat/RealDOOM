@@ -398,7 +398,7 @@ extern int16_t visplanedirtycount;
 
 extern int8_t setonce;
 
-void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
+extern void (__far* R_DrawColumnPrepCall)(uint16_t);
 
 
  //

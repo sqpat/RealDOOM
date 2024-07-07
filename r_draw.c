@@ -76,6 +76,9 @@ uint8_t     spanfunc_outp[4];
 int16_t    	spanfunc_prt[4];
 uint16_t    spanfunc_destview_offset[4];
 
+
+void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
+
 // first index in spanfunc_loop_count is the number of i iters
 // 1-4 is countp per iter of i
 
