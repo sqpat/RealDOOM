@@ -468,7 +468,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	int16_t linedefOffset;
 	uint16_t rw_normalangle_shiftleft3;
 
-	if (ds_p == &drawsegs[MAXDRAWSEGS])
+	if (ds_p == &drawsegs_BASE[MAXDRAWSEGS])
 		return;		
 
 	frontsectorfloorheight = frontsector->floorheight;

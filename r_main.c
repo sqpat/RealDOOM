@@ -648,7 +648,7 @@ void __far R_RenderPlayerView ()
     // Clear buffers.
     R_ClearClipSegs ();
     // Clear Drawsegs
-	ds_p = drawsegs;
+	ds_p = drawsegs_PLUSONE;
     R_ClearPlanes ();
 
 	// R_ClearSprites

@@ -985,6 +985,7 @@ spritewidths        7000:7592
 #define size_patch_sizes              (MAX_PATCHES * sizeof(uint16_t))
 #define size_viewangletox             (sizeof(int16_t) * (FINEANGLES / 2))
 #define size_drawsegs                 (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
+#define size_drawsegs_PLUS_EXTRA      (sizeof(drawseg_t) * (MAXDRAWSEGS+2))
 #define size_flatindex                (sizeof(uint8_t) * MAX_FLATS)
 #define size_texturecompositesizes    (MAX_TEXTURES * sizeof(uint16_t))
 #define size_compositetexturepage     (MAX_TEXTURES * sizeof(uint8_t))
@@ -1003,12 +1004,17 @@ spritewidths        7000:7592
 #define patch_sizes             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight              , size_scalelight))
 #define viewangletox            ((int16_t __far*)            MAKE_FULL_SEGMENT(patch_sizes             , size_patch_sizes))
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
-#define drawsegs                ((drawseg_t __far*)          (MAKE_FULL_SEGMENT(viewangletox           , size_viewangletox) + sizeof(drawseg_t)))
-// need to undo prior drawseg_t shenanigans
-#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(((uint32_t)drawsegs&0xFFFF0000) + 0x20000, size_drawsegs))
+
+
+#define drawsegs_BASE           ((drawseg_t __far*)          MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
+#define drawsegs_PLUSONE        ((drawseg_t __far*)          (drawsegs_BASE          + 1))
+#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))
+
 #define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
 #define compositetextureoffset  ((uint8_t __far*)            (((int32_t)compositetexturepage)          + size_compositetexturepage))
+
+// need to undo prior drawseg_t shenanigans
 //0x4FBEE
 
 // used during p_setup

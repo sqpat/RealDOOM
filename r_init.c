@@ -256,7 +256,6 @@ void R_GenerateLookup(uint16_t texnum)
 
 	//uint8_t currentpatchpage = 0;
 
-	texturecompositesizes[texnum] = 0;
 
 	// Composited texture not created yet.
 
@@ -666,16 +665,26 @@ void R_InitTextures(void) {
 	}
 	//DUMP_MEMORY_TO_FILE();
 
+
+}
+
+// openwatcom really struggles on the one huge function, causing memory bugs. i've lost a lot of time collectively there.
+// lets just split this into two.
+void R_InitTextures2(){
+	int16_t i;
+
+	Z_QuickMapMaskedExtraData();
+	Z_QuickMapScratch_7000();
 	// Create translation table for global animation.
-	for (i = 0; i < numtextures; i++)
-		texturetranslation[i] = i;
-	 
 	// Precalculate whatever possible.  
 	// done using 7000 above ?
-	Z_QuickMapScratch_7000();
+
 	for (i = 0; i < numtextures; i++){
+		texturecompositesizes[i] = 0;
+		texturetranslation[i] = i;
 		R_GenerateLookup(i);
 	}
+	 
 	
 	//              pixelofs        postofs
 	//    				  masked count
@@ -690,7 +699,6 @@ void R_InitTextures(void) {
 	Z_QuickMapLumpInfo();
 
 	//I_Error("final size: %i", currentlumpindex);
-
 }
 
 /*
@@ -747,6 +755,7 @@ void __near R_InitData(void) {
 	//R_InitPatches();
 
 	R_InitTextures();
+	R_InitTextures2();
 	DEBUG_PRINT("..");
 
 

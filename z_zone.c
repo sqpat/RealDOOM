@@ -575,6 +575,17 @@ void __far Z_QuickMapUndoFlatCache() {
 	current9000State = PAGE_9000_TEXTURE;
 }
 
+void __far Z_QuickMapMaskedExtraData() {
+
+	Z_QuickMap(pageswapargs_maskeddata_offset_size, 1);
+#ifdef DETAILED_BENCH_STATS
+	taskswitchcount++;
+	spritepageswitchcount++;
+
+#endif
+
+}
+
 void __far Z_QuickMapSpritePage() {
 
 	Z_QuickMap(pageswapargs_spritecache_offset_size, 4);
