@@ -1013,35 +1013,13 @@ sbb   dx, 0
 
 mov   word ptr [_ds_yfrac], ax
 mov   word ptr [_ds_yfrac+2], dx
+mov   word ptr [_ds_colormap_segment], BASE_COLORMAP_POINTER
+
 
 ; 	if (fixedcolormap) {
 
 cmp   byte ptr [_fixedcolormap], 0
-je   use_nonfixed_colormap
-
-mov   al, byte ptr [_fixedcolormap]
-mov   word ptr [_ds_colormap_index], BASE_COLORMAP_POINTER
-
-
-
-colormap_ready:
-
-; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
-
-db 09Ah
-dw SPANFUNC_PREP_OFFSET
-dw SPANFUNC_FUNCTION_AREA_SEGMENT
-
-
-mov sp, bp
-pop bp 
-pop   di
-pop   si
-pop   cx
-retf  
-
-use_nonfixed_colormap:
-
+jne   use_fixed_colormap
 ; 		index = distance >> LIGHTZSHIFT;
 mov   ax, word ptr [bp - 06h]
 sar   ax, 1
@@ -1064,12 +1042,12 @@ index_set:
 ;		ds_colormap_segment = colormapssegment;
 ;		ds_colormap_index = planezlight[index];
 
-mov   word ptr [_ds_colormap_segment], BASE_COLORMAP_POINTER
 mov   bx, word ptr [_planezlight]
 xor   ah, ah
 mov   es, word ptr [_planezlight+2]
 add   bx, ax
 mov   al, byte ptr es:[bx]
+colormap_ready:
 mov   byte ptr [_ds_colormap_index], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
@@ -1085,6 +1063,25 @@ pop   di
 pop   si
 pop   cx
 retf  
+
+use_fixed_colormap:
+mov   al, byte ptr [_fixedcolormap]
+mov   byte ptr [_ds_colormap_index], al
+
+; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
+
+db 09Ah
+dw SPANFUNC_PREP_OFFSET
+dw SPANFUNC_FUNCTION_AREA_SEGMENT
+
+
+mov sp, bp
+pop bp 
+pop   di
+pop   si
+pop   cx
+retf  
+
 generate_distance_steps:
 
 ; es = 9000h  (CACHEDHEIGHT_SEGMENT)

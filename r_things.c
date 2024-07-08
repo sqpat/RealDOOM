@@ -624,7 +624,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
     if (player.powers[pw_invisibility] > 4*32
         || player.powers[pw_invisibility] & 8) {
         // shadow draw
-        vis->colormap = 0;
+        vis->colormap = COLORMAP_SHADOW;
     } else if (fixedcolormap) {
         // fixed color
         vis->colormap = fixedcolormap;
