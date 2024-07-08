@@ -271,7 +271,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     dc_colormap_segment = colormapssegment_high;
     dc_colormap_index = vis->colormap;
     
-    dc_iscale = labs(vis->xiscale)>>detailshift;
+    dc_iscale = labs(vis->xiscale)>>detailshift.b.bytelow;
     dc_texturemid.w = vis->texturemid;
     frac.w = vis->startfrac;
     spryscale.w = vis->scale;
@@ -421,7 +421,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 	vis = vissprite_p - 1;
 
 	vis->mobjflags = thingflags;
-    vis->scale = xscale.w<<detailshift;
+    vis->scale = xscale.w<<detailshift.b.bytelow;
     vis->gx = thingx;
     vis->gy = thingy;
     vis->gz = thingz;
@@ -468,7 +468,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
         vis->colormap = 0;
     } else {
         // diminished light
-        index = xscale.w>>(LIGHTSCALESHIFT-detailshift);
+        index = xscale.w>>(LIGHTSCALESHIFT-detailshift.b.bytelow);
 
         if (index >= MAXLIGHTSCALE) 
             index = MAXLIGHTSCALE-1;
@@ -602,9 +602,9 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
     vis->x1 = x1 < 0 ? 0 : x1;
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
 	if (pspritescale) {
-		vis->scale = (int32_t)pspritescale << detailshift;
+		vis->scale = (int32_t)pspritescale << detailshift.b.bytelow;
 	} else {
-		vis->scale = FRACUNIT << detailshift;
+		vis->scale = FRACUNIT << detailshift.b.bytelow;
 	}
     
     if (flip) {

@@ -72,7 +72,7 @@ PUBLIC  R_DrawColumn_
     mov   di, dx         ; copy to di
 
     mov   cl, 2
-	mov   bl, byte ptr [_detailshift]
+	mov   bl, byte ptr [_detailshift] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
 	sub   cl, bl
     shr   di, cl
 

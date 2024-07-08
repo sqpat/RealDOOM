@@ -46,7 +46,6 @@ SPANFUNC_JUMP_OFFSET           = 1E5h
 
 
 BASE_COLORMAP_POINTER          = 6800h
-XTOVIEWANGLE_SEGMENT           = 833bh
 MAXLIGHTZ                      = 0080h
 MAXLIGHTZ_UNSHIFTED            = 0800h
 

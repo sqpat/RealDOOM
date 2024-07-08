@@ -156,7 +156,7 @@ void __near R_InitTextureMapping(void) {
 		temp.h.intbits = (i - viewheight / 2);
 		dy = (temp.w) + 0x8000u;
 		dy = labs(dy);
-		temp.h.intbits = (viewwidth << detailshift) / 2;
+		temp.h.intbits = (viewwidth << detailshift.b.bytelow) / 2;
 		yslope[i] = FixedDivWholeA(temp.w, dy);
 	}
 	// 320 viewwidth
@@ -173,7 +173,7 @@ void __near R_InitTextureMapping(void) {
 	for (i2 = 0; i2 < LIGHTLEVELS; i2++) {
 		startmap = ((LIGHTLEVELS - 1 - i2) * 2)*NUMCOLORMAPS / LIGHTLEVELS;
 		for (j = 0; j < MAXLIGHTSCALE; j++) {
-			level = startmap - j * SCREENWIDTH / (viewwidth << detailshift) / DISTMAP;
+			level = startmap - j * SCREENWIDTH / (viewwidth << detailshift.b.bytelow) / DISTMAP;
 
 			if (level < 0) {
 				level = 0;
@@ -192,7 +192,7 @@ void __near R_InitTextureMapping(void) {
 }
 
 
-extern int8_t setdetail;
+extern int16_t setdetail;
 //
 // R_ExecuteSetViewSize
 //
@@ -211,10 +211,11 @@ void __near  R_ExecuteSetViewSize(void) {
 		viewheight = (setblocks * 168 / 10)&~7;
 	}
 
-	detailshift = setdetail;
+	detailshift.b.bytelow = setdetail;
+	detailshift.b.bytehigh = (setdetail << 2); // high bit contains preshifted by four setdetail
 
 	
-	viewwidth = scaledviewwidth >> detailshift;
+	viewwidth = scaledviewwidth >> detailshift.b.bytelow;
 
 	centery = viewheight >> 1;
 	centerx = viewwidth >> 1;
@@ -245,16 +246,16 @@ void __near  R_ExecuteSetViewSize(void) {
 	R_InitTextureMapping();
 
 	// set render 'constants' related to detaillevel. 
-	spanfunc_main_loop_count = 4 >> detailshift;
+	spanfunc_main_loop_count = 4 >> detailshift.b.bytelow;
 	spanfunc_outp[0] = 1;
 	spanfunc_outp[1] = 2;
 	spanfunc_outp[2] = 4;
 	spanfunc_outp[3] = 8;
-	if (detailshift == 1){
+	if (detailshift.b.bytelow == 1){
 		spanfunc_outp[0] = 3;
 		spanfunc_outp[1] = 12;
 	}
-	if (detailshift == 2){
+	if (detailshift.b.bytelow == 2){
 		spanfunc_outp[0] = 15;
 	}
 	

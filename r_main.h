@@ -78,7 +78,7 @@ extern byte __far*			texturecache;
 // Blocky/low detail mode.
 //B remove this?
 //  0 = high, 1 = low
-extern	int8_t		detailshift;	
+extern	int16_t_union		detailshift;	
 
 
 //

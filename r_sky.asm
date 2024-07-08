@@ -16,12 +16,18 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
-	INCLUDE defs.incs
+	INCLUDE defs.inc
 
 ;=================================
 .DATA
 
+SKYTEXTURE_TEXTURE_SEGMENT = 09400h
 
+
+EXTRN _viewangle_shiftright3:WORD
+EXTRN _dc_source_segment:WORD
+EXTRN _ds_x1:WORD
+EXTRN _dc_x:WORD
 
 
 .CODE
@@ -34,20 +40,14 @@
 PROC  R_DrawSkyColumn_
 PUBLIC  R_DrawSkyColumn_
     ; ax contains dc_yh...
-    ; dx contails dc_yl
-    push bx
-    push cx
-    push dx
+    ; dx contails dc_yl...  
+    ; di contains dc_x
+    ; cx contains _dc_source_segment
+    ; NOTE ah may be garbage but dh is 0
     push si
-    push di
 
-    ; 	outp (SC_INDEX+1,1<<(dc_x&3));
-    
     mov   si, dx     ; copy dc_yl for later
-    
-	mov   di, word ptr [_dc_x]
-    sub   ax, dx     ; ax now has count?
-    mov   cx, 2     ; zero out ch for later
+    sub   al, dl     ; al now has count. 
     
     ; GENERATE UNROLLED JUMP CALL
     ; ax is 0 to 127. we want 128 - ax...
@@ -60,51 +60,33 @@ PUBLIC  R_DrawSkyColumn_
     
 
     ; get instruction count for ax..
-    ; 4 instructions per loop
-    sal   ax, cl
+    ; 3 instructions per loop
+    cbw   ; zero out ah because we anded it to 127 anyway.
+
+    mov   dx, ax    ; dh zero maintained 
+    add   ax, dx   
+    add   ax, dx   ; ax is tripled..
     mov   word ptr [OFFSET jump_location + 1], ax   ; modify the jump
 
-    
-    mov   ax, di    ; copy di...
-    
-
-	mov   bl, byte ptr [_detailshift]
-    xor   bh, bh
-	sub   cl, bl
-    shr   di, cl
-
-
-    and   al, 3     ; and dc_x by 3
-	sal   bl, 1
-	sal   bl, 1
-	add   bl, al
-
-    mov al, byte ptr [_quality_port_lookup + bx]
-
-    mov   dx, 3c5h
-    out   dx, al
-
     ; dest = destview + dc_yl*80 + (dc_x>>2); 
-    ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
- 
-	; shift already done earlier
+
+	; shift of dc_x already done outside
     ; no texture calc overhead. add one pixel at a time via lodsb
     
     mov   ax, DC_YL_LOOKUP_SEGMENT             ; get segment for mul 80
     mov   es, ax                                 ; 
-    mov   bx, si
-    add   bx, bx                                 ; dc_yl lookup pointer
-    add   di, word ptr [es:bx]                   ; quick mul 80
+    sal   si, 1                                 ; dc_yl mul 80 word lookup pointer
+    add   di, word ptr es:[si]                  ; quick mul 80
+    sar   si, 1                                 ; si back to dc_yl
 
     add   di, word ptr [_destview + 0] 		 ; add destview offset, dest index set up
 
    ;  prep our loop variables
 
    mov     es, word ptr [_destview + 2]    ; ready the viewscreen segment
-   mov     ax, word ptr [_dc_source_segment]     ; this will be ds..
-   mov     ds, ax                          ; do this last, makes us unable to to ref other vars...
-   mov     cl, 4Fh
-
+   mov     ds, cx                          ; cx contained dc_source_segment
+   mov     ax, 004Fh
+   
    ; should be able to easily do a lookup into here with available registers (ax, dx, bx)
 
 jump_location:
@@ -114,11 +96,8 @@ sky_pixel_loop_fast:
 
 DRAW_SINGLE_SKY_PIXEL MACRO 
 ; main loop: no colormaps, add by one texel at a time... skip dx, just do lodsb
-
-
-    lodsb                         ; BYTE PTR ds:[si]       
-	stosb                         ; BYTE PTR es:[di]      
-	add    di,cx                  ; cx holds 79, need to add by the sky offset.
+    movsb
+	add    di,ax                  ; dx holds 79, need to add by screenwidth / 4 to get the next dest pixel
 
 ENDM
 
@@ -128,9 +107,7 @@ endm
 
 
 ; draw last pixel, cut off the add
-
-    lodsb               ; BYTE PTR ds:[si]       
-	stosb               ; BYTE PTR es:[di]       
+    movsb
 
 
 sky_loop_done:
@@ -138,17 +115,168 @@ sky_loop_done:
 
 ; restore ds without going to memory.
     mov ax, ss
-    mov ds, ax
+    mov ds, ax  ; restore ds
     
-    
-    pop di
     pop si
-    pop dx
-    pop cx
-    pop bx
 
     retf
 
+
+ENDP
+
+ 
+
+;
+; R_DrawSkyPlane
+;
+
+; ax =
+; dx
+; cx:bx is pl? seems cx/bx can be destroyed freely here
+
+PROC  R_DrawSkyPlane_
+PUBLIC  R_DrawSkyPlane_
+
+; bp - 2 xoffset
+; bp - 4 initial bx (pl )
+; bp - 6 initial cx  (pl)
+; bp - 8 minx 
+; bp - A minxbase4   (minx & 0xFFFC)
+; bp - C maxx
+; bp - E 4 >> detailshift
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+
+push  0                         ; bp-2 initial xoffset value
+push  bx                        ; bp-4
+push  cx                        ; bp-6
+push  ax                        ; bp-8 minx  
+mov   bx, ax
+and   al,  0FCh                 ; 
+push  ax                        ; bp-A minxbase4
+push  dx                        ; bp-c maxx
+
+mov   cl, byte ptr [_detailshift]
+mov   ax, 4
+sar   ax, cl
+
+
+push  ax                        ; bp-E
+
+
+start_drawing_next_vga_plane:
+
+; prep some detailshift stuff
+mov   ax, word ptr [bp - 2]         ; zero out ah
+
+
+mov   dx, word ptr [bp - 0Ah]
+add   dx, ax
+
+cmp   dx, word ptr [bp - 08h]               ; if below minx then increment by detail step
+jge   start_drawing_vga_plane
+
+add   dx, word ptr [bp - 0Eh]
+
+start_drawing_vga_plane:
+; out the appropriate plane value
+
+mov   bl, byte ptr [_detailshift+1]       ; grab pre-shifted by 2 detailshift 
+add   bl, al                              ; al is the current plane, dc_x & 3
+xor   bh, bh
+mov al, byte ptr [_quality_port_lookup + bx]
+
+
+mov   bx, dx   ; copy this value to bx now
+mov   dx, 03C5h
+out   dx, al
+
+mov   dl, byte ptr [bp - 0Eh]    
+
+cmp   bx, word ptr [bp - 0Ch]  ; compare to maxx
+jg    increment_vga_plane
+
+cwd   ; zero out dx, specifically dh. it will remain 0 for the whole vga plane iteration, simplifying some things
+
+mov   ax, bx
+mov   si, word ptr [bp - 04h]
+add   ax, bx
+add   si, bx
+
+draw_next_column:
+
+; si is the x lookup 
+;			dc_yl = pl->top[x];
+;			dc_yh = pl->bottom[x];				
+; note we dont actually store dc_yh dc_yl, they stay in ax/dx
+
+mov   es, word ptr [bp - 06h]
+mov   al, byte ptr es:[si + 0144h]  ; dc_yl
+mov   dl, byte ptr es:[si + 2]      ; dc_yh
+
+; remember dh is already zeroed.
+
+cmp   dl, al
+; dc_yh > dc_yl. unsigned compare because these values are smaller than 255 but high bytes may be garbage.
+ja    skip_column_draw              
+
+
+; draw this sky column. let's generate the sky column segment.
+;  				segment_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
+mov   cx, XTOVIEWANGLE_SEGMENT
+mov   es, cx
+mov   cx, word ptr [_viewangle_shiftright3]
+mov   di, bx
+sal   di, 1
+add   cx, word ptr es:[di]
+
+; 	dc_source_segment = skytexture_texture_segment + texture_x;
+
+and   cx, 07F8h
+add   cx, SKYTEXTURE_TEXTURE_SEGMENT
+; cx contains dc source segment for the function
+
+mov es, cx  ; store cx...
+mov cl, 3
+sub cl, byte ptr [_detailshift]
+shr di, cl 
+mov cx, es  ; retrieve cx
+
+
+; function expects 
+  ; ax = dc_yh
+  ; dx = dc_yl,
+  ; di = dc_x
+  ; cx = dc_source_segment
+push  cs
+call  R_DrawSkyColumn_
+
+
+
+; note: the above functions zeroes out DH
+
+skip_column_draw:
+mov   dl, byte ptr [bp - 0Eh]     ; dh is 0
+add   bx, dx     ; increment x/dc_x by step
+add   si, dx     ; increment pl->top/bot lookup
+cmp   bx, word ptr [bp - 0Ch]
+jle   draw_next_column
+
+increment_vga_plane:
+
+inc   word ptr [bp - 2]
+cmp   byte ptr [bp - 2], dl
+jge   exitfunc
+jmp   start_drawing_next_vga_plane
+exitfunc:
+mov   sp, bp
+pop   bp
+pop   di
+pop   si
+retf   
 
 ENDP
 

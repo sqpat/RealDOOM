@@ -405,9 +405,51 @@ extern void (__far* R_DrawColumnPrepCall)(uint16_t);
 
 void __far R_DrawSkyColumn(int16_t dc_yh, int16_t dc_yl);
 
+/**/
+#pragma aux abcdcall parm caller \
+                    modify [ax bx cx dx es];
+
+#pragma aux (abcdcall)  R_DrawSkyPlane;
+void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
+
+/*
+void __near R_DrawSkyPlane2(int16_t minx, int16_t maxx, visplane_t __far*		pl){
+    
+	int16_t xoffset;
+	int16_t minxbase4 = minx &= 0xFFFC;	// knock out the low 3 bits
+	for (xoffset = 0; xoffset < 4; xoffset++ ){
+		int16_t x = minxbase4 + xoffset;
+		if (x < minx)
+			x+=4;	// dont underdraw
+
+		outp (SC_INDEX+1,1<<(xoffset));
 
 
- //
+		for (; x <= maxx ; x+=4) {
+			dc_yl = pl->top[x];
+			dc_yh = pl->bottom[x];				
+
+			if (dc_yl <= dc_yh) {
+				// all sky textures are 256 wide, just need the 0xFF and
+				uint16_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
+				dc_x = x;
+
+				// here we have inlined special-case R_GetColumn with precalculated fields for this texture.
+				// as a result, we also avoid a 34k texture mucking up the texture cache region...
+
+
+				dc_source_segment = skytexture_texture_segment + texture_x;
+				R_DrawSkyColumn(dc_yh, dc_yl);
+					
+
+			}
+		}
+	}
+
+}
+*/
+
+//
 // R_DrawPlanes
 // At the end of each frame.
 //
@@ -459,39 +501,7 @@ void __near R_DrawPlanes (void) {
 		pl = (visplane_t __far *) MK_FP(visplanesegment, visplaneoffset); 
 		// sky flat
 		if (plheader->picnum == skyflatnum) {
-			dc_iscale = pspriteiscale>>detailshift;
-			
-			// Sky is allways drawn full bright,
-			//  i.e. colormaps[0] is used.
-			// Because of this hack, sky is not affected
-			//  by INVUL inverse mapping.
-			dc_colormap_segment = colormapssegment;
-			dc_colormap_index = 0;
-			//todo fast render knowing this is a fixed #??
-			
-			dc_texturemid.h.intbits = 100;
-			dc_texturemid.h.fracbits = 0;
-
-			for (x=plheader->minx ; x <= plheader->maxx ; x++) {
-				dc_yl = pl->top[x];
-				dc_yh = pl->bottom[x];				
-
-				if (dc_yl <= dc_yh) {
-					// all sky textures are 256 wide, just need the 0xFF and
-					uint16_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
-					dc_x = x;
-
-					// here we have inlined special-case R_GetColumn with precalculated fields for this texture.
-					// as a result, we also avoid a 34k texture mucking up the texture cache region...
-
-
-					dc_source_segment = skytexture_texture_segment + texture_x;
-					R_DrawSkyColumn(dc_yh, dc_yl);
-					
-					 
-
-				}
-			}
+			R_DrawSkyPlane(plheader->minx, plheader->maxx, pl);
 			continue;
 		}
 		

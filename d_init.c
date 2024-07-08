@@ -487,6 +487,9 @@ void __far M_Init(void);
 fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 fixed_t32	FixedMulBig16322(int16_t a, fixed_t b);
 
+//void __near R_DrawPlanes (void);
+//void __near R_DrawSkyPlane2(int16_t minx, int16_t maxx, visplane_t __far*		pl);
+
 
 void __far D_DoomMain2(void)
 {
@@ -499,6 +502,17 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 	
+/*
+	FILE *fp = fopen("output3.bin", "w");
+
+
+
+	FAR_fwrite(R_DrawSkyPlane2, (byte __far *)R_DrawPlanes - (byte __far *)R_DrawSkyPlane2, 1, fp);
+
+	fclose(fp);
+	
+	I_Error("blah %lx %lx %lx", FixedDiv(0x87654321, 0x12345678), FixedDiv(0x12345678, 0x87654321), 
+		FixedDiv(0x12345678, 0x0034FFFF));
 
 	//I_Error("blah %Fp %Fp %Fp", masked_headers, spritepage, spriteoffset);
 	//I_Error("blah %Fp", MAKE_FULL_SEGMENT(spritepage, size_spriteoffset + size_spritepage));

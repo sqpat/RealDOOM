@@ -78,8 +78,8 @@ fixed_t			viewcos;
 fixed_t			viewsin;
 
 // 0 = high, 1 = low, = 2 potato
-int8_t			detailshift;	
-int8_t 			setdetail;
+int16_t_union		detailshift;	
+int16_t 			setdetail;
 //
 // precalculated math tables
 //
@@ -459,7 +459,7 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
 
 
     // both sines are allways positive
-    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift;
+    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
     den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
 
     if (den > num.h.intbits) {

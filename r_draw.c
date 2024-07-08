@@ -795,7 +795,7 @@ void __far R_DrawFuzzColumn (void)
 		return; 
  
 
-    if (detailshift== 1) {
+    if (detailshift.b.bytelow== 1) {
 		if (dc_x & 1) {
 			outpw (GC_INDEX,GC_READMAP+(2<<8) );
 			outp (SC_INDEX+1,12); 
@@ -804,7 +804,7 @@ void __far R_DrawFuzzColumn (void)
 			outp (SC_INDEX+1,3); 
 		}
 		dest = destview + dc_yl*80 + (dc_x>>1); 
-    } else if (detailshift == 2) {
+    } else if (detailshift.b.bytelow == 2) {
 		outpw (GC_INDEX,GC_READMAP );
 		outp (SC_INDEX+1,15); 
 		dest = destview + dc_yl*80 + (dc_x);
