@@ -110,6 +110,7 @@ GLOBOBJS = &
  dmx.obj &
  math.obj &
  r_column.obj &
+ r_sky.obj &
  r_span.obj
 
 doom16.exe : $(GLOBOBJS) i_ibm.obj

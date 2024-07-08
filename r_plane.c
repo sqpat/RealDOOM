@@ -29,6 +29,7 @@
 
 #include "r_local.h"
 #include "d_math.h"
+#include <conio.h>
 #include <dos.h>
 #include "memory.h"
 
@@ -400,6 +401,11 @@ extern int8_t setonce;
 
 extern void (__far* R_DrawColumnPrepCall)(uint16_t);
 
+#define SC_INDEX			0x3C4
+
+void __far R_DrawSkyColumn(int16_t dc_yh, int16_t dc_yl);
+
+
 
  //
 // R_DrawPlanes
@@ -480,7 +486,7 @@ void __near R_DrawPlanes (void) {
 
 
 					dc_source_segment = skytexture_texture_segment + texture_x;
-					R_DrawColumnPrepCall(0);
+					R_DrawSkyColumn(dc_yh, dc_yl);
 					
 					 
 

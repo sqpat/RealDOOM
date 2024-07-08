@@ -20,20 +20,12 @@
 
 .DATA
 
-EXTRN	_destview:DWORD
 EXTRN	_centery:WORD
 
-EXTRN	_dc_yl:WORD
-EXTRN	_dc_yh:WORD
-EXTRN	_dc_source_segment:WORD
 
 EXTRN	_dc_colormap_index:BYTE
 EXTRN	_dc_colormap_segment:WORD
 
-
-
-EXTRN   _detailshift:BYTE
-EXTRN   _quality_port_lookup:BYTE
 
 
 EXTRN   _sp_bp_safe_space:WORD
@@ -44,7 +36,6 @@ EXTRN   _ss_variable_space:WORD
 EXTRN FixedMul_:PROC
 
 COLFUNC_JUMP_LOOKUP_SEGMENT    = 6A10h
-DC_YL_LOOKUP_SEGMENT           = 6A29h
 COLFUNC_FUNCTION_AREA_SEGMENT  = 6A42h
 COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
@@ -84,8 +75,6 @@ PUBLIC  R_DrawColumn_
 	mov   bl, byte ptr [_detailshift]
 	sub   cl, bl
     shr   di, cl
-
-    
 
 	xor   bh, bh ; todo figure out a trick to get bh to 0 for free... maybe just make detailshift an int16
 

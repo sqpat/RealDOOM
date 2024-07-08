@@ -32,6 +32,9 @@ OP_RET		=	0c3h
 OP_MOVAL	= 	08ah
 OP_MOVDEST	= 	088h
 
+COLFUNC_JUMP_LOOKUP_SEGMENT    = 6A10h
+DC_YL_LOOKUP_SEGMENT           = 6A29h
+
 
 	.DATA
 
@@ -55,6 +58,13 @@ EXTRN	_ds_yfrac:DWORD
 EXTRN	_ds_xstep:DWORD
 EXTRN	_ds_ystep:DWORD
 EXTRN   _ds_source_segment:WORD
+
+EXTRN   _ds_colormap_index:BYTE
+EXTRN   _ds_colormap_segment:WORD
+EXTRN	_destview:DWORD
+EXTRN   _detailshift:BYTE
+EXTRN   _quality_port_lookup:BYTE
+
 
 PUSHR	MACRO
 	pushad

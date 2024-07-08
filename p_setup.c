@@ -177,7 +177,7 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 
 	// prep sky texture
 								// lump lookup
-	R_LoadPatchColumns( ((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[skytexture]]))[0], skytexture_texture_segment, false);
+	R_LoadPatchColumnsColormap0( ((int16_t __far *)&(texturecolumnlumps_bytes[texturepatchlump_offset[skytexture]]))[0], skytexture_texture_segment, false);
 	
 
 	// precalculate the offsets table location...

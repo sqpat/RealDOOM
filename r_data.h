@@ -56,6 +56,7 @@ void R_PrecacheLevel (void);
 
 
 void R_LoadPatchColumns(uint16_t lump, segment_t texlocationsegment, boolean ismasked);
+void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocationsegment, boolean ismasked);
 void R_LoadSpriteColumns(uint16_t lump, segment_t destpatchsegment);
  
 #define TEXTURE_TYPE_PATCH 1

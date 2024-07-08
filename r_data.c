@@ -1487,6 +1487,56 @@ void R_LoadPatchColumns(uint16_t lump, segment_t texlocation_segment, boolean is
 
 }
 
+// bypass the colofs cache stuff, store just raw pixel data at texlocation. 
+//void R_LoadPatchColumns(uint16_t lump, byte __far * texlocation, boolean ismasked){
+void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, boolean ismasked){
+	patch_t __far *patch = (patch_t __far *)SCRATCH_ADDRESS_5000;
+	int16_t col;
+	uint16_t destoffset = 0;
+	int16_t patchwidth;
+
+
+	Z_QuickMapScratch_5000(); // render col info has been paged out..
+
+	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
+	patchwidth = patch->width;
+
+	for (col = 0; col < patchwidth; col++){
+
+		column_t __far * column = (column_t __far *)(SCRATCH_ADDRESS_5000 + patch->columnofs[col]);
+		while (column->topdelta != 0xFF){
+			uint8_t length = column->length;
+			byte __far * sourcetexaddr = SCRATCH_ADDRESS_5000 + (((int32_t)column) + 3);
+			byte __far * destaddr = MK_FP(texlocation_segment,  destoffset);
+			byte __far * colormapzero = MK_FP(colormapssegment,  0);
+			//FAR_memcpy(MK_FP(texlocation_segment,  destoffset), sourcetexaddr, length);
+			uint8_t i;
+			for (i = 0; i < length; i++){
+				destaddr[i] = colormapzero[sourcetexaddr[i]];
+			}
+
+			destoffset += length;
+			if (ismasked){
+
+				// round up to the next paragraph for masked textures which do multiple renders
+				// and thus the subrenders must also start paragraph aligned...
+				// for non masked textures they are always overlapping - or really "should" be.. revisit for buggy gap pixels
+				destoffset += (16 - ((length &0xF)) &0xF);
+				
+			}
+
+	    	column = (column_t __far *)(  (byte  __far*)column + length + 4 );
+		}
+		if (!ismasked){
+			destoffset += (16 - ((destoffset &0xF)) &0xF);
+		}
+
+	}
+
+	Z_QuickMapColumnOffsets5000(); // put render info back
+
+}
+
 // we store this in the format;
 // first 8 bytrs: regular patch_t
 // for patch->width num rows:

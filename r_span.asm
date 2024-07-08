@@ -26,7 +26,6 @@
 FINESINE_SEGMENT               = 31e4h
 FINECOSINE_SEGMENT             = 33e4h
  
-DC_YL_LOOKUP_SEGMENT           = 6A29h
 
 
 CACHEDHEIGHT_SEGMENT           = 9000h
@@ -62,12 +61,8 @@ EXTRN _viewangle_shiftright3:WORD
 EXTRN _centeryfrac_shiftright4:WORD
 EXTRN _planeheight:WORD
 
-EXTRN   _ds_colormap_index:BYTE
-EXTRN   _ds_colormap_segment:WORD
 
 
-EXTRN   _detailshift:BYTE
-EXTRN   _quality_port_lookup:BYTE
 
 
 EXTRN	_ds_xstep:DWORD
@@ -82,7 +77,6 @@ EXTRN _spanfunc_outp:BYTE
 EXTRN _spanfunc_prt:WORD
 EXTRN _spanfunc_destview_offset:WORD
 
-EXTRN	_destview:DWORD
 
 EXTRN FixedMul_:PROC
 
