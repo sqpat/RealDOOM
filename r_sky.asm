@@ -44,7 +44,6 @@ PUBLIC  R_DrawSkyColumn_
     ; di contains dc_x
     ; cx contains _dc_source_segment
     ; NOTE ah may be garbage but dh is 0
-    push si
 
     mov   si, dx     ; copy dc_yl for later
     sub   al, dl     ; al now has count. 
@@ -117,9 +116,8 @@ sky_loop_done:
     mov ax, ss
     mov ds, ax  ; restore ds
     
-    pop si
 
-    retf
+    ret
 
 
 ENDP
@@ -208,6 +206,7 @@ add   si, bx
 
 draw_next_column:
 
+
 ; si is the x lookup 
 ;			dc_yl = pl->top[x];
 ;			dc_yh = pl->bottom[x];				
@@ -223,27 +222,28 @@ cmp   dl, al
 ; dc_yh > dc_yl. unsigned compare because these values are smaller than 255 but high bytes may be garbage.
 ja    skip_column_draw              
 
+push si     ; we need scratch space here. push this now instead of in r_drawskycolumn
 
 ; draw this sky column. let's generate the sky column segment.
 ;  				segment_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
 mov   cx, XTOVIEWANGLE_SEGMENT
 mov   es, cx
-mov   cx, word ptr [_viewangle_shiftright3]
+mov   si, word ptr [_viewangle_shiftright3]
 mov   di, bx
 sal   di, 1
-add   cx, word ptr es:[di]
+add   si, word ptr es:[di]
 
 ; 	dc_source_segment = skytexture_texture_segment + texture_x;
 
-and   cx, 07F8h
-add   cx, SKYTEXTURE_TEXTURE_SEGMENT
-; cx contains dc source segment for the function
+and   si, 07F8h
+add   si, SKYTEXTURE_TEXTURE_SEGMENT
+; si contains dc source segment for the function
 
-mov es, cx  ; store cx...
 mov cl, 3
 sub cl, byte ptr [_detailshift]
-shr di, cl 
-mov cx, es  ; retrieve cx
+shr di, cl  ; preshift dc_x by detailshift. Plus one for the earlier word offset shift.
+
+mov cx, si  ; retrieve cx
 
 
 ; function expects 
@@ -251,9 +251,9 @@ mov cx, es  ; retrieve cx
   ; dx = dc_yl,
   ; di = dc_x
   ; cx = dc_source_segment
-push  cs
 call  R_DrawSkyColumn_
 
+pop si  ; retrieve si
 
 
 ; note: the above functions zeroes out DH
