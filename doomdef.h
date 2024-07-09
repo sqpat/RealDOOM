@@ -99,7 +99,7 @@ enum { VERSION =  109 };
 // So there.
 #define SCREENWIDTH  320
 #define SCREENWIDTHOVER2  160
-#define SCREENHEIGHT 200
+#define SCREENHEIGHT 200u
 
 #define	FRACBITS		16
 #define	FRACUNIT		0x10000L

@@ -120,7 +120,10 @@ int16_t __near wipe_initMelt (
 #define screen2_segment ((segment_t)(((int32_t) screen2) >> 16))
 #define screen0_segment ((segment_t)(((int32_t) screen0) >> 16))
 
-int16_t __near wipe_doMelt ( int16_t	ticks ) {
+int16_t __far wipe_doMelt ( int16_t	ticks );
+
+/*
+int16_t __near wipe_doMelt2 ( int16_t	ticks ) {
     uint8_t		i;
     uint8_t		j;
     uint8_t		dy;
@@ -175,6 +178,7 @@ int16_t __near wipe_doMelt ( int16_t	ticks ) {
     return done;
 
 }
+*/
 
 #define GC_INDEX                0x3CE
 #define GC_READMAP              4

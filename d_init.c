@@ -487,8 +487,12 @@ void __far M_Init(void);
 fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 fixed_t32	FixedMulBig16322(int16_t a, fixed_t b);
 
-//void __near R_DrawPlanes (void);
-//void __near R_DrawSkyPlane2(int16_t minx, int16_t maxx, visplane_t __far*		pl);
+void __near R_DrawPlanes (void);
+void __near R_DrawSkyPlane2(int16_t minx, int16_t maxx, visplane_t __far*		pl);
+fixed_t32 FixedDiv2 (fixed_t32	a, fixed_t32	b);
+int16_t __near wipe_doMelt2 ( int16_t	ticks ) ;
+void TS_FreeTaskList(void);
+void __near I_ReadScreen(byte __far *scr);
 
 
 void __far D_DoomMain2(void)
@@ -503,11 +507,11 @@ void __far D_DoomMain2(void)
 	struct SREGS sregs;
 	
 /*
-	FILE *fp = fopen("output3.bin", "w");
+	FILE *fp = fopen("output6.bin", "w");
 
 
 
-	FAR_fwrite(R_DrawSkyPlane2, (byte __far *)R_DrawPlanes - (byte __far *)R_DrawSkyPlane2, 1, fp);
+	FAR_fwrite(wipe_doMelt2, (byte __far *)I_ReadScreen - (byte __far *)wipe_doMelt2, 1, fp);
 
 	fclose(fp);
 	
