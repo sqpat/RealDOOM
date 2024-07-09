@@ -122,6 +122,8 @@ do_next_iteration:
 
 ;				dy = (y[i] < 16) ? y[i]+1 : 8;
 ; es:[bx] is y[i]
+
+; this process zeroes out ch implicitly..
 cmp   word ptr es:[bx], 16
 jl    yi_less_than_16
 mov   cx, 8
@@ -156,11 +158,12 @@ dy_good:
 mov   si, word ptr [bp - 2] ; si = mulI
 mov   di, word ptr es:[bx]	; di = y[i]
 add   si, di
+add   si, si	; si is setup. si = 2*[y[i] + muli]
+
 mov   dx, MUL160LOOKUP_SEGMENT
 mov   es, dx
 add   di, di	; di = 2 * y[i]
 mov   di, word ptr es:[di]  ; mul160lookup[2*y[i]]
-add   si, si	; si is setup. si = 2*[y[i] + muli]
 
 add   di, di	
 add   di, bx    ; di is setup

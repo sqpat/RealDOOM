@@ -117,8 +117,8 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
     while (column->topdelta != 0xFF)  {
         // calculate unclipped screen coordinates
         //  for post
-        topscreen.w = sprtopscreen + spryscale.w*column->topdelta;
-        bottomscreen.w = topscreen.w + spryscale.w*column->length;
+        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
+        bottomscreen.w = topscreen.w + FastMul16u32u(column->length,spryscale.w);
 
 		dc_yl = topscreen.h.intbits; 
 		dc_yh = bottomscreen.h.intbits;
@@ -155,8 +155,10 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
     dc_texturemid = basetexturemid;
 
 }
+void __near R_DrawMaskedColumn (segment_t pixelsegment, column_t __far* column);
 
-void __near R_DrawMaskedColumn (segment_t pixelsegment, column_t __far* column) {
+/*
+void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column) {
 	
 	fixed_t_union     topscreen;
 	fixed_t_union     bottomscreen;
@@ -170,8 +172,8 @@ void __near R_DrawMaskedColumn (segment_t pixelsegment, column_t __far* column) 
     while (column->topdelta != 0xFF)  {
         // calculate unclipped screen coordinates
         //  for post
-        topscreen.w = sprtopscreen + spryscale.w*column->topdelta;
-        bottomscreen.w = topscreen.w + spryscale.w*column->length;
+        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
+        bottomscreen.w = topscreen.w + FastMul16u32u(column->length, spryscale.w);
 
 		dc_yl = topscreen.h.intbits; 
 		dc_yh = bottomscreen.h.intbits;
@@ -207,6 +209,7 @@ void __near R_DrawMaskedColumn (segment_t pixelsegment, column_t __far* column) 
         
     dc_texturemid = basetexturemid;
 }
+*/
 
 // this is called for things like reverse sides of columns and openings where the underlying texture is not actually masked
 // only a single column is actually drawn
@@ -223,7 +226,7 @@ void __near R_DrawSingleMaskedColumn (segment_t pixeldatasegment, byte length) {
     // calculate unclipped screen coordinates
     //  for post
     topscreen.w = sprtopscreen;
-    bottomscreen.w = topscreen.w + spryscale.w*length;
+    bottomscreen.w = topscreen.w + FastMul16u32u(length, spryscale.w);
 
     dc_yl = topscreen.h.intbits; 
     dc_yh = bottomscreen.h.intbits;
@@ -453,7 +456,9 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     }
 
     if (vis->x1 > x1)
+//        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
         vis->startfrac += vis->xiscale*(vis->x1-x1);
+
     vis->patch = spriteindex;
     
     // get light level

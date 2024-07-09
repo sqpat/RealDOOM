@@ -281,6 +281,8 @@ fixed_t32	FixedMul2432(fixed_t32 a, fixed_t32 b);
 
 fixed_t32	FixedMul16u32(uint16_t a, fixed_t32 b);
 fixed_t32	FixedMul16u32u(uint16_t a, uint32_t b);
+fixed_t32   FastMul16u32u(uint16_t a, uint32_t b);
+fixed_t32   FastMul16u32(uint16_t a, uint32_t b);
 
 // puts int16 into the high bits of a 32 bit
 // puts int16 into the low bits of a 32 bit

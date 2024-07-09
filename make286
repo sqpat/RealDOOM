@@ -111,6 +111,7 @@ GLOBOBJS = &
  math.obj &
  d_algo.obj &
  r_column.obj &
+ r_masked.obj &
  r_sky.obj &
  r_span.obj
 
@@ -123,7 +124,7 @@ doom16.exe : $(GLOBOBJS) i_ibm.obj
  wcc $(CCOPTS) $[*
 
 .asm.obj :
- tasm /mx /m2 $[*
+ tasm /mx /m2 /w2 /q /zi $[*
 
 clean : .SYMBOLIC
  del *.obj

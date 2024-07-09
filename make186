@@ -111,6 +111,7 @@ GLOBOBJS = &
  math.obj &
  d_algo.obj &
  r_column.obj &
+ r_masked.obj &
  r_sky.obj &
  r_span.obj
 

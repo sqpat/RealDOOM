@@ -493,7 +493,12 @@ fixed_t32 FixedDiv2 (fixed_t32	a, fixed_t32	b);
 int16_t __near wipe_doMelt2 ( int16_t	ticks ) ;
 void TS_FreeTaskList(void);
 void __near I_ReadScreen(byte __far *scr);
+void __near R_DrawSingleMaskedColumn (segment_t pixeldatasegment, byte length);
+void __near R_DrawMaskedColumn  (segment_t pixelsegment, column_t __far* column) ;
+//void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column) ;
 
+void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2);
+void __near R_RenderSegLoop (void);
 
 void __far D_DoomMain2(void)
 {
@@ -505,20 +510,20 @@ void __far D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
-	
-/*
-	FILE *fp = fopen("output6.bin", "w");
+	/*
 
 
+	FILE *fp = fopen("output8.bin", "wb");
 
-	FAR_fwrite(wipe_doMelt2, (byte __far *)I_ReadScreen - (byte __far *)wipe_doMelt2, 1, fp);
+
+	FAR_fwrite(R_RenderMaskedSegRange, (byte __far *)R_RenderSegLoop - (byte __far *)R_RenderMaskedSegRange, 1, fp);
 
 	fclose(fp);
 	
-	I_Error("blah %lx %lx %lx", FixedDiv(0x87654321, 0x12345678), FixedDiv(0x12345678, 0x87654321), 
+	I_Error("blah %Fp %Fp %lx", (byte __far *)R_DrawMaskedColumn, (byte __far *)R_DrawSingleMaskedColumn,
 		FixedDiv(0x12345678, 0x0034FFFF));
 
-	//I_Error("blah %Fp %Fp %Fp", masked_headers, spritepage, spriteoffset);
+//	I_Error("blah %x %x %x", colfunc_segment_high, colfunc_segment, R_DrawColumnPrepOffset);
 	//I_Error("blah %Fp", MAKE_FULL_SEGMENT(spritepage, size_spriteoffset + size_spritepage));
 
 /*
