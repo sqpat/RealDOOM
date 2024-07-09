@@ -81,7 +81,8 @@ int16_t __near wipe_initMelt (
   int16_t	ticks )
 {
 	int16_t i, r;
-	int16_t __far* y = (int16_t __far*)0x7000FA00;
+	int16_t __far* y = (int16_t __far*)0x7FA00000; // 7000:FA00
+	uint16_t __far* mul160lookup = (uint16_t __far*)0x7FE00000; // 7000:FE00
 
     // copy start screen to main screen
     FAR_memcpy(screen0, screen2, 64000u);
@@ -104,52 +105,70 @@ int16_t __near wipe_initMelt (
 			y[i] = -15;
 		}
     }
+	r = 0;
+    for (i=0;i<SCREENHEIGHT;i++) {
+		mul160lookup[i] = r;
+		r+= SCREENWIDTHOVER2;
+    }
 
 
 
     return 0;
 }
 
+#define screen3_segment ((segment_t)(((int32_t) screen3) >> 16))
+#define screen2_segment ((segment_t)(((int32_t) screen2) >> 16))
+#define screen0_segment ((segment_t)(((int32_t) screen0) >> 16))
+
 int16_t __near wipe_doMelt ( int16_t	ticks ) {
-    int16_t		i;
-    int16_t		j;
-    int16_t		dy;
+    uint8_t		i;
+    uint8_t		j;
+    uint8_t		dy;
     uint16_t		idx;
-    //uint16_t mulI = 0; // i * SCREENHEIGHT
-	int16_t __far* y = (int16_t __far*)0x7000FA00;
-    int16_t	__far* s;
-    int16_t	__far* d;
+	int16_t __far* y = (int16_t __far*)0x7FA00000; // 7000:FA00
+	uint16_t __far* mul160lookup = (uint16_t __far*)0x7FE00000; // 7000:FE00
+    int16_t	__far* source;
+    int16_t	__far* dest;
     boolean	done = true;
 
 	while (ticks--) {
-		for (i=0;i< SCREENWIDTHOVER2;i++/*, mulI+=SCREENHEIGHT*/) {
+		uint16_t mulI = 0;
+		for (i=0;i< SCREENWIDTHOVER2;i++) {
 			if (y[i]<0) {
 				y[i]++; 
-				done = false;
+			done = false;
 			} else if (y[i] < SCREENHEIGHT) {
 				dy = (y[i] < 16) ? y[i]+1 : 8;
 				if (y[i] + dy >= SCREENHEIGHT) {
 					dy = SCREENHEIGHT - y[i];
 				}
-				s = &((int16_t __far*)screen3)	[(uint16_t)i*(uint16_t)SCREENHEIGHT+(uint16_t)y[i]];
-				//s = &((int16_t __far*)screen3)	[mulI+(uint16_t)y[i]];
-				d = &((int16_t __far*)screen0)	[(uint16_t)y[i]* (uint16_t)SCREENWIDTHOVER2 + (uint16_t)i];
+				//source = MK_FP(screen3_segment, 2*(	mulI+y[i]));
+				//dest = MK_FP(screen0_segment, 2*(mul160lookup[y[i]] + i));
+				source = &((int16_t __far*)screen3)	[mulI+y[i]];
+				dest = &((int16_t __far*)screen0)	[mul160lookup[y[i]] + i];
+
+
 				idx = 0;
 				for (j=dy;j;j--) {
-					d[idx] = *(s++);
+					dest[idx] = *(source++);
 					idx += SCREENWIDTHOVER2;
 				}
 				y[i] += dy;
-				s = &((int16_t __far*)screen2)	[(uint16_t)i*(uint16_t)SCREENHEIGHT];
-				//s = &((int16_t __far*)screen2)	[mulI];
-				d = &((int16_t __far*)screen0)	[(uint16_t)y[i]* (uint16_t)SCREENWIDTHOVER2 + (uint16_t)i];
+
+				//source = MK_FP(screen2_segment, 2*mulI);
+				//dest = MK_FP(screen0_segment, 2*(mul160lookup[y[i]] + i));
+				source = &((int16_t __far*)screen2)	[mulI];
+				dest = &((int16_t __far*)screen0)	[mul160lookup[y[i]] + i];
+
 				idx = 0;
 				for (j= SCREENHEIGHT -y[i];j;j--) {
-					d[idx] = *(s++);
+					dest[idx] = *(source++);
 					idx += SCREENWIDTHOVER2;
 				}
 				done = false;
 			}
+			mulI+=SCREENHEIGHT;
+
 		}
     }
 
@@ -214,7 +233,11 @@ int16_t __near wipe_ScreenWipe(int16_t	ticks ) {
 
 
     // do a piece of wipe-in
-    V_MarkRect(0, 0, SCREENWIDTH, SCREENHEIGHT);
+	dirtybox[BOXLEFT] = 0;
+	dirtybox[BOXRIGHT] = SCREENWIDTH;
+	dirtybox[BOXBOTTOM] = 0;
+	dirtybox[BOXTOP] = SCREENHEIGHT;
+
     rc = wipe_doMelt(ticks);
 
     // final stuff
