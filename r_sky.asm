@@ -132,7 +132,7 @@ ENDP
 ; dx
 ; cx:bx is pl? seems cx/bx can be destroyed freely here
 
-PROC  R_DrawSkyPlane_
+PROC  R_DrawSkyPlane_ NEAR
 PUBLIC  R_DrawSkyPlane_
 
 ; bp - 2 xoffset
@@ -276,7 +276,7 @@ mov   sp, bp
 pop   bp
 pop   di
 pop   si
-retf   
+ret
 
 ENDP
 
