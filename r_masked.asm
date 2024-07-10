@@ -118,7 +118,7 @@ mov  [_dc_yl], dx
 neg  ax
 sbb  dx, 0
 
-mov  ds, ax   
+mov  ds, ax    ; store old topscreen
 mov  ax, word ptr ss:[_spryscale+2]    ; use ss as ds as a hack...
 
 mov  cl, byte ptr es:[si + 1] ; get length for mult
@@ -232,7 +232,7 @@ and   ax, 0Fh
 add   si, 2
 add   di, ax
 cmp   byte ptr es:[si], 0FFh
-jne    draw_next_column_patch
+jne    exit_function
 jmp   draw_next_column_patch ; todo inverse and skip jump
 exit_function:
 
