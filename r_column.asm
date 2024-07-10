@@ -108,17 +108,13 @@ PUBLIC  R_DrawColumn_
     cwd                         			 ; we know ax is positive, this is a quick clear out of dx
     mov   bx, word ptr [_dc_iscale + 0]   
     mov   cx, word ptr [_dc_iscale + 2]
-    ;  NOTE using this flag for the jns later
+    
     sub   ax, word ptr [_centery]
-
-
-    mov     es,ax              ; save low(M1)
+    mov   es,ax              ; save low(M1)
 
 ;  DX:AX * CX:BX
 
 ; note this is 8 bit times 32 bit and we want the mid 16
-
-; todo figure out how to do this without a jump
 
 
 	CWD

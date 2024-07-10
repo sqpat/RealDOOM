@@ -156,7 +156,7 @@ sbb dx, 0FFFFh
 
 ; dx is dc_yh but needs to be written back 
 
-; dc_yh, yl are set
+; dc_yh, dc_yl are set
 
 
 
@@ -215,7 +215,6 @@ mov   word ptr [_dc_texturemid+2], dx
 mov   ax, 02400h
 
 
-;push cs
 db 0FFh
 db 01Eh
 dw _R_DrawColumnPrepCallHigh
@@ -232,7 +231,7 @@ and   ax, 0Fh
 add   si, 2
 add   di, ax
 cmp   byte ptr es:[si], 0FFh
-jne    exit_function
+je    exit_function
 jmp   draw_next_column_patch ; todo inverse and skip jump
 exit_function:
 
@@ -246,6 +245,144 @@ pop   dx
 ret
 
 cld   
+
+ENDP
+
+
+
+;
+; R_DrawSingleMaskedColumn
+;
+	
+PROC  R_DrawSingleMaskedColumn_ NEAR
+PUBLIC  R_DrawSingleMaskedColumn_ 
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+
+mov   word ptr [_dc_source_segment], ax	; set this early. 
+
+mov   cl, dl
+xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
+
+
+
+;    topscreen.w = sprtopscreen;
+
+mov   di, word ptr [_sprtopscreen]
+mov   si, word ptr [_sprtopscreen+2]
+mov   bx, word ptr [_spryscale]
+mov   ax, word ptr [_spryscale+2]
+
+;   topscreen = si:di 
+
+; fastmul1632, ax/cx preswapped
+
+; FastMul16u32u(length, spryscale.w)
+
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
+;    bottomscreen.w = topscreen.w + FastMul16u32u(length, spryscale.w);
+
+
+add ax, di
+adc dx, si
+
+; dx:ax = bottomscreen
+; si:di = topscreen (still)
+
+;    dc_yh = bottomscreen.h.intbits;
+;    if (!bottomscreen.h.fracbits)
+;        dc_yh--;
+
+
+
+neg  di
+adc  si, 0
+;mov  word ptr [_dc_yl], si
+
+; dc_yl written back
+
+
+;		dc_yh = bottomscreen.h.intbits;
+;		if (!bottomscreen.h.fracbits)
+;			dc_yh--;
+
+neg ax
+sbb dx, 0FFFFh
+mov  word ptr [_dc_yh], dx
+; dx is dc_yh
+; si is dc_yl
+
+
+
+
+
+skip_inc_dc_yl:
+
+;        if (dc_yh >= mfloorclip[dc_x])
+;            dc_yh = mfloorclip[dc_x]-1;
+
+mov   bx, word ptr [_dc_x]
+mov   ax, word ptr [_mfloorclip]
+add   bx, bx
+mov   es, word ptr [_mfloorclip+2]
+add   bx, ax
+
+mov   cx, word ptr es:[bx]
+cmp   dx, cx
+jl    skip_floor_clip_set_single
+mov   dx, cx
+dec   dx
+skip_floor_clip_set_single:
+
+
+
+;        if (dc_yl <= mceilingclip[dc_x])
+;            dc_yl = mceilingclip[dc_x]+1;
+
+
+sub   bx, ax
+
+mov   es, word ptr [_mceilingclip+2]
+add   bx, word ptr [_mceilingclip]
+
+mov   cx, word ptr es:[bx]
+cmp   si, cx
+jg    skip_ceil_clip_set_single
+mov   si, cx
+inc   si
+skip_ceil_clip_set_single:
+
+cmp   si, dx			
+jnle   exit_function_single
+
+label_6:
+mov   word ptr [_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
+mov   word ptr [_dc_yl], si ;  dc_x could also be trivially recovered from bx
+
+mov   ax, 02400h
+
+
+db 0FFh
+db 01Eh
+dw _R_DrawColumnPrepCallHigh
+
+
+exit_function_single:
+
+pop   bp
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret   
 
 ENDP
 

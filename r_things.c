@@ -213,7 +213,9 @@ void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column)
 
 // this is called for things like reverse sides of columns and openings where the underlying texture is not actually masked
 // only a single column is actually drawn
-void __near R_DrawSingleMaskedColumn (segment_t pixeldatasegment, byte length) {
+
+/*
+void __near R_DrawSingleMaskedColumn2 (segment_t pixeldatasegment, byte length) {
 	
 	fixed_t_union     topscreen;
 	fixed_t_union     bottomscreen;
@@ -257,7 +259,7 @@ void __near R_DrawSingleMaskedColumn (segment_t pixeldatasegment, byte length) {
     dc_texturemid = basetexturemid;
 }
 
-
+*/
 
 //
 // R_DrawVisSprite
