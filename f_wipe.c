@@ -40,7 +40,7 @@
 //
 
 // when zero, stop the wipe
-static boolean	go = 0;
+//static boolean	go = 0;
 
 // screen 2
 //static byte __far*	wipe_scr_start;
@@ -77,9 +77,7 @@ void __near wipe_shittyColMajorXform ( int16_t __far*	array ) {
  
 
 
-int16_t __near wipe_initMelt ( 
-  int16_t	ticks )
-{
+int16_t __near wipe_initMelt (){
 	int16_t i, r;
 	int16_t __far* y = (int16_t __far*)0x7FA00000; // 7000:FA00
 	uint16_t __far* mul160lookup = (uint16_t __far*)0x7FE00000; // 7000:FE00
@@ -224,37 +222,7 @@ int16_t __far wipe_StartScreen( ) {
 
 
 
-int16_t __near wipe_ScreenWipe(int16_t	ticks ) {
-	int16_t rc;
-	
 
-    // initial stuff
-    if (!go) {
-		go = 1;
-		//wipe_scr = screen0;
-		wipe_initMelt(ticks);
-	}
-
-
-    // do a piece of wipe-in
-	dirtybox[BOXLEFT] = 0;
-	dirtybox[BOXRIGHT] = SCREENWIDTH;
-	dirtybox[BOXBOTTOM] = 0;
-	dirtybox[BOXTOP] = SCREENHEIGHT;
-
-    rc = wipe_doMelt(ticks);
-
-    // final stuff
-    if (rc) {
-		go = 0;
-		
-    }
-
-	//Z_QuickMapPhysics();
-
-    return !go;
-
-}
 uint16_t  wipeduration = 0;
 void __far M_Drawer (int8_t isFromWipe);
 void __far I_UpdateNoBlit(void);
@@ -285,7 +253,10 @@ void __far wipe_WipeLoop(){
 	V_MarkRect(0, 0, SCREENWIDTH, SCREENHEIGHT);
 	FAR_memcpy(screen0, screen2, SCREENWIDTH*SCREENHEIGHT);
 
+	wipe_initMelt();
+
 	wiperealstart = wipestart = ticcount - 1;
+
 
     do {
         do {
@@ -293,7 +264,13 @@ void __far wipe_WipeLoop(){
             tics = nowtime - wipestart;
         } while (!tics);
         wipestart = nowtime;
-        done = wipe_ScreenWipe(tics);
+        
+		dirtybox[BOXLEFT] = 0;
+		dirtybox[BOXRIGHT] = SCREENWIDTH;
+		dirtybox[BOXBOTTOM] = 0;
+		dirtybox[BOXTOP] = SCREENHEIGHT;
+
+		done = wipe_doMelt(tics);
         I_UpdateNoBlit ();
  		M_Drawer (true);                            // menu is drawn even on top of wipes
  		I_FinishUpdate();                      // page flip or blit buffer
