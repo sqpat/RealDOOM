@@ -591,6 +591,11 @@ void R_SetupFrame () {
 
 
 }
+
+extern int16_t	lastvisspritepatch;
+extern int16_t    cachedlump;
+extern int16_t    cachedtex;
+
 #ifdef DETAILED_BENCH_STATS
 
 extern uint16_t renderplayersetuptics;
@@ -633,6 +638,12 @@ void __far R_RenderPlayerView ()
 	viewy = playerMobj_pos->y;
 	viewangle = playerMobj_pos->angle;
 	viewangle_shiftright3 = viewangle.hu.intbits >> 3;
+
+	// reset last used segment cache
+	lastvisspritepatch = -1;        
+    cachedlump = -1;
+    cachedtex = -1;
+
 
 	if (player.psprites[0].state) {
 		r_cachedstatecopy[0] = *(player.psprites[0].state);

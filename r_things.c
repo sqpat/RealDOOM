@@ -265,6 +265,10 @@ void __near R_DrawSingleMaskedColumn2 (segment_t pixeldatasegment, byte length) 
 // R_DrawVisSprite
 //  mfloorclip and mceilingclip should also be set.
 //
+
+segment_t lastvisspritesegment = 0xFFFF;
+int16_t   lastvisspritepatch = -1;
+
 void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     
 	column_t __far*     column;
@@ -282,8 +286,13 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     spryscale.w = vis->scale;
     sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
          
+    if (vis->patch == lastvisspritepatch){
+        patch_segment = lastvisspritesegment;
+    } else {
+        lastvisspritepatch = vis->patch;
+    	patch_segment = lastvisspritesegment = getspritetexture(vis->patch);
+    }
 
-	patch_segment = getspritetexture(vis->patch);
     patch = MK_FP(patch_segment, 0);
 
     if ((vis->colormap != COLORMAP_SHADOW)){
@@ -902,7 +911,7 @@ void __near R_DrawSprite (vissprite_t __far* spr)
 void __near R_DrawMasked (void) {
     uint8_t         spr;
     drawseg_t __far*          ds;
-        
+    
 	R_SortVisSprites ();
 
     if (vissprite_p > vissprites) {

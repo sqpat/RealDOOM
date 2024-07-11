@@ -1387,6 +1387,11 @@ uint8_t cachedcol;
 
 int setval = 0;
 
+segment_t cachedsegment = 0xFFFF;
+int16_t   cachedlump = -1;
+int16_t   cachedtex = -1;
+
+
 segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t __far* texturecolumnlump;
@@ -1394,6 +1399,8 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	int16_t texcol;
 
 	int16_t origcol;
+
+
 	col &= texturewidthmasks[tex];
 	texcol = col;
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
@@ -1409,14 +1416,18 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	}
 
 	origcol = col + texturecolumnlump[n-1] & 255;
-	
 
-	if (lump > 0) {
+	if (lump > 0){
 		uint8_t lookup = masked_lookup[tex];
 		uint8_t heightval = cachedbyteheight = texturecolumnlump[n-1] >> 8;
+		if (cachedlump != lump){
+			cachedlump = lump;
+			cachedsegment = getpatchtexture(cachedlump, lookup);
+			cachedtex = -1;
+		}
 
 		if (lookup == 0xFF){
-			return getpatchtexture(lump, lookup) + ((origcol * heightval) >> 4);
+			return cachedsegment + ((origcol * heightval) >> 4);
 		} else {
 			// Does this code ever run outside of draw masked?
 
@@ -1426,21 +1437,22 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 			uint16_t ofs  = pixelofs[origcol];
 			cachedcol = origcol;
 		 
-			return getpatchtexture(lump, lookup) + (ofs >> 4);
+			return cachedsegment + (ofs >> 4);
 		}
-		
-
-
 	} else {
 		int16_t collength = textureheights[tex] + 1;
-		segment_t columnsegment = getcompositetexture(tex);
+
+		if (cachedtex != tex){
+			cachedtex = tex;
+			cachedsegment = getcompositetexture(cachedtex);
+			cachedlump = -1;
+		}
+
 		collength += (16 - ((collength &0xF)) &0xF);
 		cachedbyteheight = collength;
-		columnsegment += ((collength * texcol) >> 4);
-		return columnsegment;
+		return cachedsegment + ((collength * texcol) >> 4);
 
 	}
-
 
 } 
 
