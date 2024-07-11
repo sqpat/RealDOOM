@@ -869,7 +869,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 				}
 
 			}
-			currentdestsegment += ((int16_t)usetextureheight) * diffpixels;
+			currentdestsegment += FastMul8u8u(usetextureheight, diffpixels);
 		}
 
 
@@ -895,6 +895,9 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 				currentdestsegment,
 				patchoriginy,
 				textureheight);
+
+				// TODO this should be inlined but watcom sucks at big functions - do later in asm
+
 /*
 			while (patchcol->topdelta != 0xff) { 
 
@@ -1003,14 +1006,14 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage]) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
-				activetexturepages[startpage+i] = pageswapargs[pageswapargs_rend_offset +2 * (startpage+i)] = -1; // unpaged
+				activetexturepages[startpage+i] = pageswapargs[pageswapargs_rend_offset + ((startpage+i) << 1)] = -1; // unpaged
 				activenumpages[startpage+i] = 0;
 			}
 		}
 		activenumpages[startpage] = 0;
 
 
-		activetexturepages[startpage] = pageswapargs[pageswapargs_rend_offset  + 2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
+		activetexturepages[startpage] = pageswapargs[pageswapargs_rend_offset  + ( startpage << 1)] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 		
 
 
@@ -1091,7 +1094,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activenumpages[startpage] > numpages) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
-				activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset +  2 * (startpage + i)] = -1; // unpaged
+				activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset +   ((startpage + i) << 1)] = -1; // unpaged
 				activenumpages[startpage + i] = 0;
 			}
 		}
@@ -1100,7 +1103,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		for (i = 0; i <= numpages; i++) {
 			textureLRU[startpage + i] = 0;
-			activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset +  2 * (startpage + i)] = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;
+			activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset +  ((startpage + i)<<1)] = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;
 			activenumpages[startpage + i] = numpages-i;
 
 		}
@@ -1171,7 +1174,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activespritenumpages[startpage]) {
 			for (i = 1; i <= activespritenumpages[startpage]; i++) {
-				activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset + 2 * (startpage + i)] = -1; // unpaged
+				activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)<<1)] = -1; // unpaged
 
 				activespritenumpages[startpage + i] = 0;
 			}
@@ -1179,7 +1182,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		activespritenumpages[startpage] = 0;
 
 
-		activespritepages[startpage] = pageswapargs[pageswapargs_spritecache_offset + 2 * startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
+		activespritepages[startpage] = pageswapargs[pageswapargs_spritecache_offset +  (startpage<<1)] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 
 		Z_QuickMapSpritePage();
 		R_MarkCacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
@@ -1255,7 +1258,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		// if the deallocated page was a multipage allocation then we want to invalidate the other pages.
 		if (activespritenumpages[startpage] > numpages) {
 			for (i = 1; i <= activespritenumpages[startpage]; i++) {
-				activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset + 2 * (startpage + i)] = -1; // unpaged
+				activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset + ( (startpage + i)<<1)] = -1; // unpaged
 				activespritenumpages[startpage + i] = 0;
 			}
 		}
@@ -1264,7 +1267,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 		for (i = 0; i <= numpages; i++) {
 			spriteLRU[startpage + i] = 0;
-			activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset + 2 * (startpage + i)] = pagenum + i;
+			activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)<<1)] = pagenum + i;
 			activespritenumpages[startpage + i] = numpages - i;
 
 		}
@@ -1459,7 +1462,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		origcol = col + (texturecolumnlump[n-1] & 255);
 
 		if (lookup == 0xFF){
-			return cachedsegmentlump + ((origcol * heightval) >> 4);
+			return cachedsegmentlump + (FastMul8u8u(origcol , heightval) >> 4);
 		} else {
 			// Does this code ever run outside of draw masked?
 
@@ -1496,7 +1499,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 
 		collength += (16 - ((collength &0xF)) &0xF);
 		cachedbyteheight = collength;
-		return cachedsegmenttex + ((collength * texcol) >> 4);
+		return cachedsegmenttex + (FastMul8u8u(collength , texcol) >> 4);
 
 	}
 
@@ -1631,7 +1634,7 @@ void R_LoadSpriteColumns(uint16_t lump, segment_t destpatch_segment){
 	destpatch->leftoffset = patch->leftoffset;
 	destpatch->topoffset = patch->topoffset;
 
- 	destoffset = 8 + (4 * patchwidth);
+ 	destoffset = 8 + ( patchwidth << 2);
 	currentpostbyte = destoffset;
 	postdata = (uint16_t __far *)(((byte __far*)destpatch) + currentpostbyte);
 

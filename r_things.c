@@ -467,8 +467,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     }
 
     if (vis->x1 > x1)
-//        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
-        vis->startfrac += vis->xiscale*(vis->x1-x1);
+        vis->startfrac += FastMul16u32u((vis->x1-x1),vis->xiscale);
 
     vis->patch = spriteindex;
     
@@ -633,7 +632,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
     }
     
     if (vis->x1 > x1)
-        vis->startfrac += vis->xiscale*(vis->x1-x1);
+        vis->startfrac += FastMul16u32u((vis->x1-x1),  vis->xiscale);
 
     vis->patch = spriteindex;
 

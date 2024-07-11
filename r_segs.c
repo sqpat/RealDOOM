@@ -841,13 +841,13 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     
     // save sprite clipping info
     if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture) && !ds_p->sprtopclip_offset) {
-		FAR_memcpy(&openings[lastopening], ceilingclip+start, 2*(rw_stopx-start));
+		FAR_memcpy(&openings[lastopening], ceilingclip+start, ((rw_stopx-start)<<1));
 		ds_p->sprtopclip_offset = 2*(lastopening-start); // multiply by 2 to get the offset rather than array index
 		lastopening += rw_stopx - start;
     }
     
     if ( ((ds_p->silhouette & SIL_BOTTOM) || maskedtexture) && !ds_p->sprbottomclip_offset) {
-		FAR_memcpy (&openings[lastopening], floorclip+start, 2*(rw_stopx-start));
+		FAR_memcpy (&openings[lastopening], floorclip+start, ((rw_stopx-start)<<1));
 		ds_p->sprbottomclip_offset = 2*(lastopening - start) ;// multiply by 2 to get the offset rather than array index
 		lastopening += rw_stopx - start;	
     }

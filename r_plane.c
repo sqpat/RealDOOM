@@ -211,7 +211,7 @@ visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 	int8_t usedphyspage;
 	int8_t usedvirtualpage = 0;
-	int8_t usedsubindex = index;
+	uint8_t usedsubindex = index;
 	visplane_t __far * pl;
 
 
