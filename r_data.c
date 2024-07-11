@@ -939,6 +939,17 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 	Z_QuickMapRender7000();
 
 }
+
+segment_t cachedsegmentlump = 0xFFFF;
+segment_t cachedsegmenttex = 0xFFFF;
+int16_t   cachedlump = -1;
+int16_t   cachedtex = -1;
+
+segment_t cachedsegmentlump2 = 0xFFFF;
+segment_t cachedsegmenttex2 = 0xFFFF;
+int16_t   cachedlump2 = -1;
+int16_t   cachedtex2 = -1;
+
 uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 	uint8_t realtexpage = texpage >> 2;
 	uint8_t pagenum = pageoffset + realtexpage;
@@ -1004,9 +1015,12 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 		R_MarkCacheLRU(realtexpage, 0, cachetype);
-
 		Z_QuickMapRenderTexture();
-
+		cachedlump = -1;
+		cachedtex = -1;
+		cachedlump2 = -1;
+		cachedtex2 = -1;
+	
 
 		return startpage;
 
@@ -1093,6 +1107,10 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		R_MarkCacheLRU(realtexpage, numpages, cachetype);
 		Z_QuickMapRenderTexture();
+		cachedlump = -1;
+		cachedtex = -1;
+		cachedlump2 = -1;
+		cachedtex2 = -1;
 
 		// paged in
 
@@ -1387,23 +1405,23 @@ uint8_t cachedcol;
 
 int setval = 0;
 
-segment_t cachedsegment = 0xFFFF;
-int16_t   cachedlump = -1;
-int16_t   cachedtex = -1;
 
 
 segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	int16_t         lump;
 	int16_t __far* texturecolumnlump;
 	int16_t n = 0;
-	int16_t texcol;
+	uint8_t texcol;
 
-	int16_t origcol;
+	uint8_t origcol;
 
 
 	col &= texturewidthmasks[tex];
 	texcol = col;
 	texturecolumnlump = &(texturecolumnlumps_bytes[texturepatchlump_offset[tex]]);
+
+	// todo: maybe unroll this in asm to the max RLE size of this operation?
+	// todo: whats the max size of such a texture/rle thing
 
 	// RLE stuff to figure out actual lump for column
 	while (col >= 0) {
@@ -1415,19 +1433,33 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		n += 2;
 	}
 
-	origcol = col + texturecolumnlump[n-1] & 255;
 
 	if (lump > 0){
 		uint8_t lookup = masked_lookup[tex];
 		uint8_t heightval = cachedbyteheight = texturecolumnlump[n-1] >> 8;
 		if (cachedlump != lump){
-			cachedlump = lump;
-			cachedsegment = getpatchtexture(cachedlump, lookup);
-			cachedtex = -1;
+			if (cachedlump2 != lump){
+				cachedlump2 = cachedlump;
+				cachedsegmentlump2 = cachedsegmentlump;
+				cachedlump = lump;
+				cachedsegmentlump = getpatchtexture(cachedlump, lookup);
+			} else {
+				// cycle cache so 2 = 1
+				lump = cachedlump;
+				cachedlump = cachedlump2;
+				cachedlump2 = lump;
+				lump = cachedsegmentlump;
+				cachedsegmentlump = cachedsegmentlump2;
+				cachedsegmentlump2 = lump;
+			}
 		}
 
+		// todo what else can we reuse collength and cachedbyteheight here?
+
+		origcol = col + (texturecolumnlump[n-1] & 255);
+
 		if (lookup == 0xFF){
-			return cachedsegment + ((origcol * heightval) >> 4);
+			return cachedsegmentlump + ((origcol * heightval) >> 4);
 		} else {
 			// Does this code ever run outside of draw masked?
 
@@ -1437,20 +1469,34 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 			uint16_t ofs  = pixelofs[origcol];
 			cachedcol = origcol;
 		 
-			return cachedsegment + (ofs >> 4);
+			return cachedsegmentlump + (ofs >> 4);
 		}
 	} else {
-		int16_t collength = textureheights[tex] + 1;
+		uint8_t collength = textureheights[tex] + 1;
 
 		if (cachedtex != tex){
-			cachedtex = tex;
-			cachedsegment = getcompositetexture(cachedtex);
-			cachedlump = -1;
+			if (cachedtex2 != tex){
+				cachedtex2 = cachedtex;
+				cachedsegmenttex2 = cachedsegmenttex;
+				cachedtex = tex;
+				cachedsegmenttex = getcompositetexture(cachedtex);
+			} else {
+				// cycle cache so 2 = 1
+				tex = cachedtex;
+				cachedtex = cachedtex2;
+				cachedtex2 = tex;
+				tex = cachedsegmenttex;
+				cachedsegmenttex = cachedsegmenttex2;
+				cachedsegmenttex2 = tex;
+
+			}
+
 		}
+			// todo reuse collength and cachedbyteheight here?
 
 		collength += (16 - ((collength &0xF)) &0xF);
 		cachedbyteheight = collength;
-		return cachedsegment + ((collength * texcol) >> 4);
+		return cachedsegmenttex + ((collength * texcol) >> 4);
 
 	}
 

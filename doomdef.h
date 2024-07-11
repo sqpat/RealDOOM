@@ -296,23 +296,17 @@ inline fixed_t32 FixedMul1616(int16_t a, int16_t b);
     modify [ax dx]   \
     value [dx ax];
 
-/*
-"CWD"         \
-"AND DX, BX"  \
-"NEG DX"      \
-"MOV CX, DX"  \
-"XCHG AX, BX" \
-"CWD"         \
-"AND DX, BX"  \
-"NEG DX"      \
-"ADD CX, DX"  \
-"MUL BX"      \
-"ADD DX, CX"  \
-    parm [ax] [bx]       \
-    modify [ax bx cx dx]   \
-    value [dx ax];
+// not working...
 
-*/
+/*
+inline int16_t FastMul8u8u(uint8_t a, uint8_t b);
+#pragma aux FastMul8u8u =   \
+"IMUL DL"  \
+    parm [al] [dl]       \
+    modify [ax dl]   \
+    value [ax];
+*/  
+
 
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
 

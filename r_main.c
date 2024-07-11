@@ -595,6 +595,8 @@ void R_SetupFrame () {
 extern int16_t	lastvisspritepatch;
 extern int16_t    cachedlump;
 extern int16_t    cachedtex;
+extern int16_t    cachedlump2;
+extern int16_t    cachedtex2;
 
 #ifdef DETAILED_BENCH_STATS
 
@@ -643,6 +645,8 @@ void __far R_RenderPlayerView ()
 	lastvisspritepatch = -1;        
     cachedlump = -1;
     cachedtex = -1;
+    cachedlump2 = -1;
+    cachedtex2 = -1;
 
 
 	if (player.psprites[0].state) {

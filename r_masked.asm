@@ -337,7 +337,7 @@ add   bx, ax
 
 mov   cx, word ptr es:[bx]
 cmp   dx, cx
-jl    skip_floor_clip_set_single
+jl    skip_floor_clip_set_single	; todo consider making this jump out and back? whats the better default branch
 mov   dx, cx
 dec   dx
 skip_floor_clip_set_single:
@@ -355,7 +355,7 @@ add   bx, word ptr [_mceilingclip]
 
 mov   cx, word ptr es:[bx]
 cmp   si, cx
-jg    skip_ceil_clip_set_single
+jg    skip_ceil_clip_set_single   ; todo consider making this jump out and back? whats the better default branch
 mov   si, cx
 inc   si
 skip_ceil_clip_set_single:
