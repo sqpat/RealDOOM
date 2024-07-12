@@ -864,11 +864,25 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-; store some copies of stuff...
-push  ax  ; bp - 2
+
+
 mov   si, dx
-push  cx   ; bp - 4
-push  bx   ; bp - 6
+mov   di, ax
+mov   ax, cx
+cwd
+
+; put in all the 8 byte divide arguments early since 99%+ of the time that's what happens
+push dx		; cx sign extend
+push dx		; cx sign extend
+push ax		; cx original value
+push bx		; bx original vlaue
+
+push di     ; for later retrieval of ax...
+
+; copy dx back
+mov dx, si
+mov ax, di
+
 or    dx, dx		; sign check
 jge   dont_negate_a
 neg   ax
@@ -927,7 +941,7 @@ jb    do_full_divide
 
 do_quick_return: 
 ; return (a^b) < 0 ? MINLONG : MAXLONG;
-xor   si, word ptr [bp - 04h]
+xor   si, word ptr [bp - 06h]
 
 test  si, si   ; just need to do the high word due to sign?
 jl    return_MAXLONG
@@ -951,17 +965,15 @@ do_full_divide:
 ; this is the fixeddiv2 call inlined...
 
 
-pop   bx; word ptr [bp - 0Eh]    ; si gets bx copy
-pop   ax; word ptr [bp - 0Ch]    ; si gets cx copy
-pop   cx;  word ptr [bp - 0Ah]  ; retrieve ax as cx (?)
+;pop   bx; word ptr [bp - 0Eh]    ; si gets bx copy
+;pop   ax; word ptr [bp - 0Ch]    ; si gets cx copy
+;pop   cx;  word ptr [bp - 0Ah]  ; retrieve ax as cx (?)
 
-cwd
+;cwd
 
 ; set up 2nd set of params to 8 byte divide
-push dx
-push dx
-push ax
-push bx
+
+pop   cx       ; retrieve AX into cx
 
 mov   bx, si   ;  dx to bx
 mov   ax, si   ;  sign extend ax
