@@ -835,7 +835,6 @@ PUBLIC FixedDiv_
 ; fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 ; 	if ((labs(a) >> 14) >= labs(b))
 ; 		return (a^b) < 0 ? MINLONG : MAXLONG;
-; 	//return FixedDiv2(a, b, file, line);
 ; 	return FixedDiv2(a, b);
 ; }
 
@@ -879,64 +878,64 @@ push bx		; bx original vlaue
 
 push di     ; for later retrieval of ax...
 
+or    cx, cx
+jge   b_is_positive
+neg   bx
+adc   cx, 0
+neg   cx
+b_is_positive:
+
+; if any of high 14 bytes of cx are on, we can quick quit out
+test cx, 0FFFCh
+jne do_full_divide
+
+
 ; copy dx back
 mov dx, si
 mov ax, di
 
 or    dx, dx		; sign check
-jge   dont_negate_a
+jge   a_is_positive
 neg   ax
 adc   dx, 0
 neg   dx
-dont_negate_a:
-
-xchg   bx, ax
-mov    di, dx
-mov    dx, cx
-; calculate labs
-; 	if ((labs(a) >> 14) >= labs(b))
-
-; di:bx is labs dx:ax...
-; shift right 14 with some rol lefts + and/or
+a_is_positive:
 
 
-or    dx, dx
-jge   dont_negate_b
-neg   ax
-adc   dx, 0
-neg   dx
-dont_negate_b:
+;  dx:ax  is  labs(dx:ax) now (unshifted)
+;  cx:bx  is  labs(cx:bx) now
 
-;  di:bx  is  labs(dx:ax) now (unshifted)
-;  dx:ax  is  labs(cx:bx) now
+; if high 2 bits of dh arent present at all, and any bits of cx are present
+; then we can quit out quickly.
 
-test di, 0C000h     ; dx AND 0xC000
+
+test dh, 0C0h     ; dx AND 0xC000
 jne do_shift_and_full_compare
-test dx, dx
+test cx, cx
 jne do_full_divide  ; dx >> 14 is zero, cx is nonzero.
 
 
 do_shift_and_full_compare:
 
-rol di, 1
-rol bx, 1
-rol di, 1
-rol bx, 1
+rol dx, 1
+rol ax, 1
+rol dx, 1
+rol ax, 1
 
-mov cx, di
-and bx, 03h
-and cx, 0FFFCh
-or  bx, cx
-and di, 03h
+mov di, dx
+and ax, 03h
+and di, 0FFFCh  ; cx, 0FFFCh
+or  ax, di
+and dx, 03h
 
 
 ; do comparison  di:bx vs dx:ax
 ; 	if ((labs(a) >> 14) >= labs(b))
 
-cmp   di, dx
+cmp   dx, cx
 jg    do_quick_return
 jne   do_full_divide ; below
-cmp   bx, ax
+cmp   ax, bx
 jb    do_full_divide
 
 do_quick_return: 
@@ -965,19 +964,12 @@ do_full_divide:
 ; this is the fixeddiv2 call inlined...
 
 
-;pop   bx; word ptr [bp - 0Eh]    ; si gets bx copy
-;pop   ax; word ptr [bp - 0Ch]    ; si gets cx copy
-;pop   cx;  word ptr [bp - 0Ah]  ; retrieve ax as cx (?)
-
-;cwd
-
-; set up 2nd set of params to 8 byte divide
 
 pop   cx       ; retrieve AX into cx
 
-mov   bx, si   ;  dx to bx
-mov   ax, si   ;  sign extend ax
+mov   ax, si   ;  sign extend dx via ax
 cwd			   ;  
+mov   bx, si   ;  dx to bx
 mov   ax, dx   ;  move sign to ax
 xor   dx, dx   ;  clear out dx
 
