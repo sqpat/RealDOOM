@@ -855,6 +855,11 @@ PUBLIC FixedDiv_
 
 ; DX:AX   /   CX:BX
 
+
+; ideas: 
+; calculate and push the arguments right away. the labs check passing is super rare.
+; then check for quick outs on that. i.e. AND DX, 0xC000 to check 3 high bits of DX. see if 
+
 push  si
 push  di
 push  bp
@@ -862,14 +867,15 @@ mov   bp, sp
 ; store some copies of stuff...
 push  ax  ; bp - 2
 mov   si, dx
-push cx   ; bp - 4
-push bx   ; bp - 6
-or    dx, dx
+push  cx   ; bp - 4
+push  bx   ; bp - 6
+or    dx, dx		; sign check
 jge   dont_negate_a
 neg   ax
 adc   dx, 0
 neg   dx
 dont_negate_a:
+
 xchg   bx, ax
 mov    di, dx
 mov    dx, cx
@@ -878,6 +884,25 @@ mov    dx, cx
 
 ; di:bx is labs dx:ax...
 ; shift right 14 with some rol lefts + and/or
+
+
+or    dx, dx
+jge   dont_negate_b
+neg   ax
+adc   dx, 0
+neg   dx
+dont_negate_b:
+
+;  di:bx  is  labs(dx:ax) now (unshifted)
+;  dx:ax  is  labs(cx:bx) now
+
+test di, 0C000h     ; dx AND 0xC000
+jne do_shift_and_full_compare
+test dx, dx
+jne do_full_divide  ; dx >> 14 is zero, cx is nonzero.
+
+
+do_shift_and_full_compare:
 
 rol di, 1
 rol bx, 1
@@ -890,16 +915,6 @@ and cx, 0FFFCh
 or  bx, cx
 and di, 03h
 
-
-;  di:bx       bx is dx. di is dx sign.
-;  dx:ax  is  cx:bx now
-
-or    dx, dx
-jge   dont_negate_b
-neg   ax
-adc   dx, 0
-neg   dx
-dont_negate_b:
 
 ; do comparison  di:bx vs dx:ax
 ; 	if ((labs(a) >> 14) >= labs(b))
@@ -914,10 +929,10 @@ do_quick_return:
 ; return (a^b) < 0 ? MINLONG : MAXLONG;
 xor   si, word ptr [bp - 04h]
 
-test  si, si
-jl    return_8000
+test  si, si   ; just need to do the high word due to sign?
+jl    return_MAXLONG
 
-; return 7fffh
+return_MINLONG:
 mov   ax, 0ffffh
 mov   dx, 07fffh
 
@@ -927,7 +942,7 @@ pop   bp
 pop   di
 pop   si
 ret
-return_8000:
+return_MAXLONG:
 mov   dx, 08000h
 xor   ax, ax
 jmp   exit_and_return_early
