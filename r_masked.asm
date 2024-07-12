@@ -244,7 +244,6 @@ pop   si
 pop   dx
 ret
 
-cld   
 
 ENDP
 

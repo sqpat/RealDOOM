@@ -499,6 +499,10 @@ void __near R_DrawMaskedColumn  (segment_t pixelsegment, column_t __far* column)
 
 void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2);
 void __near R_RenderSegLoop (void);
+void copystr8(int8_t __far* dst, int8_t __far* src);
+fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b);
+fixed_t32 FixedDiv3(fixed_t32	a, fixed_t32	b);
+void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) ;
 
 void __far D_DoomMain2(void)
 {
@@ -510,13 +514,13 @@ void __far D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
-	/*
+	
+/*
+
+	FILE *fp = fopen("output2.bin", "wb");
 
 
-	FILE *fp = fopen("output8.bin", "wb");
-
-
-	FAR_fwrite(R_RenderMaskedSegRange, (byte __far *)R_RenderSegLoop - (byte __far *)R_RenderMaskedSegRange, 1, fp);
+	FAR_fwrite(FixedDiv, (byte __far *)V_DrawPatchFlipped - (byte __far *)FixedDiv, 1, fp);
 
 	fclose(fp);
 	

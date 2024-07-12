@@ -200,6 +200,8 @@ void __far getStringByIndex(int16_t stringindex, int8_t __far* returndata) {
 
 
 
+/*
+
 fixed_t32 FixedDiv2 (fixed_t32	a, fixed_t32	b
 	//,int8_t* file, int32_t line
 ) {
@@ -223,13 +225,15 @@ fixed_t32 FixedDiv2 (fixed_t32	a, fixed_t32	b
 // FixedDiv, C version.
 //
 
+/*
 //fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
-fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
+fixed_t32 FixedDiv3(fixed_t32	a, fixed_t32	b) {
 	if ((labs(a) >> 14) >= labs(b))
 		return (a^b) < 0 ? MINLONG : MAXLONG;
 	//return FixedDiv2(a, b, file, line);
 	return FixedDiv2(a, b);
 }
+*/
 
 // basically our own little custom version of far fstrncpy. we were only ever using it with size 8
 void copystr8(int8_t __far* dst, int8_t __far* src){

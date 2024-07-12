@@ -14,7 +14,12 @@
 ;
 ; DESCRIPTION:
 ;
+    .286
 	.MODEL  medium
+
+EXTRN __I8LS:PROC
+EXTRN __I8DQ:PROC
+	
 	INCLUDE defs.inc
 
 GLOBAL FixedMul_:PROC
@@ -52,6 +57,7 @@ PUBLIC FixedMul_
 ;                               
 ;                       
 ;       
+
 
 
 
@@ -820,44 +826,6 @@ ENDP
 
 
 
-COMMENT @
-
-;TODO: this
-
-PROC FixedDiv2_
-PUBLIC FixedDiv2_
-
-0x00000000000007bc:  56                push  si
-0x00000000000007bd:  57                push  di
-0x00000000000007be:  55                push  bp
-0x00000000000007bf:  89 E5             mov   bp, sp
-0x00000000000007c1:  83 EC 0D          sub   sp, 0xd
-0x00000000000007c4:  0A 89 C6 89       or    cl, byte ptr [bx + di - 0x763a]
-0x00000000000007c8:  5E                pop   si
-0x00000000000007c9:  FE 89 CF 89       dec   byte ptr [bx + di - 0x7631]
-0x00000000000007cd:  D3 89 D1 89       ror   word ptr [bx + di - 0x762f], cl
-0x00000000000007d1:  7E F8             jle   0x7cb
-0x00000000000007d3:  C1 FB 0F          sar   bx, 0xf
-0x00000000000007d6:  89 F2             mov   dx, si
-0x00000000000007d8:  C1 FF 0F          sar   di, 0xf
-0x00000000000007db:  BE 10 00          mov   si, 0x10
-0x00000000000007de:  89 D8             mov   ax, bx
-0x00000000000007e0:  89 7E FA          mov   word ptr [bp - 6], di
-0x00000000000007e3:  9A F2 25 5A 27    lcall 0x275a:0x25f2		; I*LS
-0x00000000000007e8:  8B 76 FE          mov   si, word ptr [bp - 2]
-0x00000000000007eb:  89 7E FC          mov   word ptr [bp - 4], di
-0x00000000000007ee:  89 76 F6          mov   word ptr [bp - 0xa], si
-0x00000000000007f1:  8D 76 F6          lea   si, [bp - 0xa]
-0x00000000000007f4:  9A 39 29 5A 27    lcall 0x275a:0x2939		; I8DQ
-0x00000000000007f9:  89 D0             mov   ax, dx
-0x00000000000007fb:  89 CA             mov   dx, cx
-0x00000000000007fd:  C9                leave 
-0x00000000000007fe:  5F                pop   di
-0x00000000000007ff:  5E                pop   si
-0x0000000000000800:  CB                retf  
-
-ENDP
-
 PROC FixedDiv_
 PUBLIC FixedDiv_
 
@@ -870,79 +838,132 @@ PUBLIC FixedDiv_
 ; 	return FixedDiv2(a, b);
 ; }
 
+;    abs(x) = (x XOR y) - y
+;      where y = x's sign bit extended.
 
-0x0000000000000801:  56                push  si
-0x0000000000000802:  57                push  di
-0x0000000000000803:  55                push  bp
-0x0000000000000804:  89 E5             mov   bp, sp
-0x0000000000000806:  83 EC 0C          sub   sp, 0xc
-0x0000000000000809:  50                push  ax
-0x000000000000080a:  89 D6             mov   si, dx
-0x000000000000080c:  89 5E FC          mov   word ptr [bp - 4], bx
-0x000000000000080f:  89 4E FE          mov   word ptr [bp - 2], cx
-0x0000000000000812:  0B D2             or    dx, dx
-0x0000000000000814:  7D 07             jge   0x81d
-0x0000000000000816:  F7 D8             neg   ax
-0x0000000000000818:  83 D2 00          adc   dx, 0
-0x000000000000081b:  F7 DA             neg   dx
-0x000000000000081d:  89 C3             mov   bx, ax
-0x000000000000081f:  89 D7             mov   di, dx
-0x0000000000000821:  8B 46 FC          mov   ax, word ptr [bp - 4]
-0x0000000000000824:  8B 56 FE          mov   dx, word ptr [bp - 2]
-0x0000000000000827:  B9 0E 00          mov   cx, 0xe
-0x000000000000082a:  D1 FF             sar   di, 1
-0x000000000000082c:  D1 DB             rcr   bx, 1
-0x000000000000082e:  E2 FA             loop  0x82a
-0x0000000000000830:  0B D2             or    dx, dx
-0x0000000000000832:  7D 07             jge   0x83b
-0x0000000000000834:  F7 D8             neg   ax
-0x0000000000000836:  83 D2 00          adc   dx, 0
-0x0000000000000839:  F7 DA             neg   dx
-0x000000000000083b:  39 D7             cmp   di, dx
-0x000000000000083d:  7F 06             jg    0x845
-0x000000000000083f:  75 22             jne   0x863
-0x0000000000000841:  39 C3             cmp   bx, ax
-0x0000000000000843:  72 1E             jb    0x863
-0x0000000000000845:  8B 46 F2          mov   ax, word ptr [bp - 0xe]
-0x0000000000000848:  33 76 FE          xor   si, word ptr [bp - 2]
-0x000000000000084b:  33 46 FC          xor   ax, word ptr [bp - 4]
-0x000000000000084e:  85 F6             test  si, si
-0x0000000000000850:  7C 0D             jl    0x85f
-0x0000000000000852:  0A B8 FF FF       or    bh, byte ptr [bx + si - 1]
-0x0000000000000856:  BA FF 7F          mov   dx, 0x7fff
-exit_fixed_div:
-0x0000000000000859:  C9                leave 
-0x000000000000085a:  5F                pop   di
-0x000000000000085b:  5E                pop   si
-0x000000000000085c:  CB                retf  
-0x000000000000085d:  BA 00 80          mov   dx, 0x8000
-0x0000000000000860:  31 C0             xor   ax, ax
-0x0000000000000862:  EB F5             jmp   exit_fixed_div
-0x0000000000000864:  8B 56 F2          mov   dx, word ptr [bp - 0xe]
-0x0000000000000867:  89 F3             mov   bx, si
-0x0000000000000869:  89 F1             mov   cx, si
-0x000000000000086b:  C1 FB 0F          sar   bx, 0xf
-0x000000000000086e:  BE 10 00          mov   si, 0x10
-0x0000000000000871:  89 D8             mov   ax, bx
-0x0000000000000873:  9A F2 25 5A 27    lcall 0x275a:0x25f2
-0x0000000000000878:  8B 76 FC          mov   si, word ptr [bp - 4]
-0x000000000000087b:  89 76 F4          mov   word ptr [bp - 0xc], si
-0x000000000000087e:  8B 76 FE          mov   si, word ptr [bp - 2]
-0x0000000000000881:  89 76 F6          mov   word ptr [bp - 0xa], si
-0x0000000000000884:  C1 FE 0F          sar   si, 0xf
-0x0000000000000887:  89 76 F8          mov   word ptr [bp - 8], si
-0x000000000000088a:  89 76 FA          mov   word ptr [bp - 6], si
-0x000000000000088d:  8D 76 F4          lea   si, [bp - 0xc]
-0x0000000000000890:  9A 39 29 5A 27    lcall 0x275a:0x2939
-0x0000000000000895:  89 D0             mov   ax, dx
-0x0000000000000897:  89 CA             mov   dx, cx
-0x0000000000000899:  C9                leave 
-0x000000000000089a:  5F                pop   di
-0x000000000000089b:  5E                pop   si
-0x000000000000089c:  CB                retf  
-0x000000000000089d:  FC                cld   
 
-endp
+; bp - 2  cx copy
+; bp - 4  bx copy
+; bp - 6  sign extend?
+; bp - 8  sign extend?
+; bp - A  cx again
+; bp - C  bx again
+; bp - E  ax copy
+; si      dx copy
 
-@
+; DX:AX   /   CX:BX
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 08h
+push  ax
+mov   si, dx
+push cx
+push bx
+mov   word ptr [bp - 0Eh], bx
+mov   word ptr [bp - 0Ch], cx
+or    dx, dx
+jge   dont_negate_a
+neg   ax
+adc   dx, 0
+neg   dx
+dont_negate_a:
+xchg   bx, ax
+mov    di, dx
+mov    dx, cx
+
+; di:bx is labs dx:ax...
+; shift right 14 with some rol lefts + and/or
+
+rol di, 1
+rol bx, 1
+rol di, 1
+rol bx, 1
+
+mov cx, di
+and bx, 03h
+and cx, 0FFFCh
+or  bx, cx
+and di, 03h
+
+
+;  di:bx       bx is dx. di is dx sign.
+;  dx:ax  is  cx:bx now
+
+or    dx, dx
+jge   dont_negate_b
+neg   ax
+adc   dx, 0
+neg   dx
+dont_negate_b:
+cmp   di, dx
+jg    do_quick_return
+jne   do_full_divide
+cmp   bx, ax
+jb    do_full_divide
+
+do_quick_return: 
+mov   ax, word ptr [bp - 0Ah]
+xor   si, word ptr [bp - 0Ch]
+xor   ax, word ptr [bp - 0Eh]
+test  si, si
+jl    return_8000
+
+; return 7fffh
+mov   ax, 0ffffh
+mov   dx, 07fffh
+
+exit_and_return_early:
+mov   sp, bp
+pop   bp
+pop   di
+pop   si
+ret
+return_8000:
+mov   dx, 08000h
+xor   ax, ax
+jmp   exit_and_return_early
+
+
+do_full_divide:
+; this is the fixeddiv2 call inlined...
+
+mov   cx, word ptr [bp - 0Ah]  ; retrieve ax as cx (?)
+mov   bx, si   ;  dx to bx
+mov   ax, si   ;  sign extend ax
+cwd			   ;  
+mov   ax, dx   ;  move sign to ax
+xor   dx, dx   ;  clear out dx
+
+
+
+
+mov   si, word ptr [bp - 0Eh]    ; si gets bx copy
+mov   word ptr [bp - 08h], si  ; store it in 0ch
+mov   si, word ptr [bp - 0Ch]    ; si gets cx copy
+mov   word ptr [bp - 06h], si  ; store it in 0axh
+sar   si, 0Fh                  ; sign extend cx
+
+mov   word ptr [bp - 4], si    ; store sign extend of cx:bx
+mov   word ptr [bp - 2], si    ; store sign extend of cx:bx
+lea   si, [bp - 08h]           ; store 
+
+; i8 / i8
+; [dx cx bx ax] __I8DQ [dx cx bx ax] [ss:si]
+
+
+call __I8DQ
+mov   ax, dx
+mov   dx, cx
+mov   sp, bp
+pop   bp
+
+pop   di
+pop   si
+ret
+
+ENDP
+
 END
