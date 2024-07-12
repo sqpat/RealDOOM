@@ -784,6 +784,7 @@ ADC DX, 0      ; add carry bit
 
 ret
 
+ENDP
 
 
 ; unused??
@@ -842,13 +843,14 @@ PUBLIC FixedDiv_
 ;      where y = x's sign bit extended.
 
 
-; bp - 2  cx copy
-; bp - 4  bx copy
-; bp - 6  sign extend?
-; bp - 8  sign extend?
-; bp - A  cx again
-; bp - C  bx again
-; bp - E  ax copy
+; bp - 2  sign extend?
+; bp - 4  sign extend?
+; bp - 6  cx again
+; bp - 8  bx again
+; bp - A  ax copy
+; bp - C  cx copy
+; bp - E  bx copy
+
 ; si      dx copy
 
 ; DX:AX   /   CX:BX
@@ -857,13 +859,11 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 08h
-push  ax
+; store some copies of stuff...
+push  ax  ; bp - 2
 mov   si, dx
-push cx
-push bx
-mov   word ptr [bp - 0Eh], bx
-mov   word ptr [bp - 0Ch], cx
+push cx   ; bp - 4
+push bx   ; bp - 6
 or    dx, dx
 jge   dont_negate_a
 neg   ax
@@ -873,6 +873,8 @@ dont_negate_a:
 xchg   bx, ax
 mov    di, dx
 mov    dx, cx
+; calculate labs
+; 	if ((labs(a) >> 14) >= labs(b))
 
 ; di:bx is labs dx:ax...
 ; shift right 14 with some rol lefts + and/or
@@ -898,16 +900,20 @@ neg   ax
 adc   dx, 0
 neg   dx
 dont_negate_b:
+
+; do comparison  di:bx vs dx:ax
+; 	if ((labs(a) >> 14) >= labs(b))
+
 cmp   di, dx
 jg    do_quick_return
-jne   do_full_divide
+jne   do_full_divide ; below
 cmp   bx, ax
 jb    do_full_divide
 
 do_quick_return: 
-mov   ax, word ptr [bp - 0Ah]
-xor   si, word ptr [bp - 0Ch]
-xor   ax, word ptr [bp - 0Eh]
+; return (a^b) < 0 ? MINLONG : MAXLONG;
+xor   si, word ptr [bp - 04h]
+
 test  si, si
 jl    return_8000
 
@@ -926,35 +932,38 @@ mov   dx, 08000h
 xor   ax, ax
 jmp   exit_and_return_early
 
-
 do_full_divide:
 ; this is the fixeddiv2 call inlined...
 
-mov   cx, word ptr [bp - 0Ah]  ; retrieve ax as cx (?)
+
+pop   bx; word ptr [bp - 0Eh]    ; si gets bx copy
+pop   ax; word ptr [bp - 0Ch]    ; si gets cx copy
+pop   cx;  word ptr [bp - 0Ah]  ; retrieve ax as cx (?)
+
+cwd
+
+; set up 2nd set of params to 8 byte divide
+push dx
+push dx
+push ax
+push bx
+
 mov   bx, si   ;  dx to bx
 mov   ax, si   ;  sign extend ax
 cwd			   ;  
 mov   ax, dx   ;  move sign to ax
 xor   dx, dx   ;  clear out dx
 
-
-
-
-mov   si, word ptr [bp - 0Eh]    ; si gets bx copy
-mov   word ptr [bp - 08h], si  ; store it in 0ch
-mov   si, word ptr [bp - 0Ch]    ; si gets cx copy
-mov   word ptr [bp - 06h], si  ; store it in 0axh
-sar   si, 0Fh                  ; sign extend cx
-
-mov   word ptr [bp - 4], si    ; store sign extend of cx:bx
-mov   word ptr [bp - 2], si    ; store sign extend of cx:bx
 lea   si, [bp - 08h]           ; store 
 
 ; i8 / i8
 ; [dx cx bx ax] __I8DQ [dx cx bx ax] [ss:si]
 
+; todo - reimplement this
 
 call __I8DQ
+
+; set up return values.
 mov   ax, dx
 mov   dx, cx
 mov   sp, bp
