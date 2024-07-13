@@ -827,6 +827,43 @@ ENDP
 
 
 
+;FIXEDDIV
+; DX:AX / CX:BX
+
+
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
+
+
+;                               DX/BX	 AX/BX
+;                       DX/CX  AX/CX          
+;               S0BXhi  S0BXlo                          
+;
+;                       AXCXhi  AXCXlo
+;               DXCXhi  DXCXlo  
+;                       
+;               AXS1hi  AXS1lo
+;                               
+;                       
+;       
+
+; general idea: (?)
+; div the high numbers
+; div and sum the mid numbers + remainder of high
+; adc into high number
+; div the low number + remainder of mid
+; adc into the mid and high number
+; return high:mid
+; so: dx/cx -> high
+;   rem dx/cx + dx/bx + ax/cx -> mid, adc into high
+;     rem of above + ax/bx, adc into mid into high
+
+
+
+
 PROC FixedDiv_
 PUBLIC FixedDiv_
 
@@ -890,7 +927,7 @@ test cx, 0FFFCh
 jne do_full_divide
 
 
-; copy dx back
+; copy dx:ax back
 mov dx, si
 mov ax, di
 
@@ -974,6 +1011,10 @@ mov   ax, dx   ;  move sign to ax
 xor   dx, dx   ;  clear out dx
 
 lea   si, [bp - 08h]           ; store 
+
+
+
+
 
 ; i8 / i8
 ; [dx cx bx ax] __I8DQ [dx cx bx ax] [ss:si]

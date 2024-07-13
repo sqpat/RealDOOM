@@ -45,6 +45,7 @@ file d_algo.obj
 file dmx.obj
 file dutils.obj
 file wi_stuff.obj
+file m_near.obj
 file math.obj
 
 

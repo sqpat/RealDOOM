@@ -25,7 +25,7 @@
 // State.
 #include "r_state.h"
 #include "m_misc.h"
-#include "memory.h"
+#include "m_memory.h"
 
 //
 // P_CheckSight

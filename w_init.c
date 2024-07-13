@@ -27,7 +27,7 @@
 #include "doomstat.h"
 #include "i_system.h"
 #include "z_zone.h"
-#include "memory.h"
+#include "m_memory.h"
 
 #include "w_wad.h"
 #include "r_defs.h"

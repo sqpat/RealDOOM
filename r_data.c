@@ -29,7 +29,8 @@
 #include "doomstat.h"
 #include "r_data.h"
 #include <dos.h>
-#include "memory.h"
+#include "m_memory.h"
+#include "m_near.h"
 
 
 //
@@ -40,21 +41,6 @@
 // a patch or sprite is composed of zero or more columns.
 // 
 
-
- 
-int16_t             firstflat;
-int16_t             lastflat;
-int16_t             numflats;
-
-int16_t             firstpatch;
-int16_t             lastpatch;
-int16_t             numpatches;
-
-int16_t             firstspritelump;
-int16_t             lastspritelump;
-int16_t             numspritelumps;
-
-int16_t             numtextures;
  
 
 #ifdef DETAILED_BENCH_STATS
@@ -66,22 +52,6 @@ extern int16_t compositecacheevictcount ;
 
 #endif
  
-
-
-int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
-uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
-int16_t textureLRU[4];
-
-
-int16_t activespritepages[4]; // always gets reset to defaults at start of frame
-uint8_t activespritenumpages[4]; // always gets reset to defaults at start of frame
-int16_t spriteLRU[4];
-
- 
-
-
-
-int32_t totalpatchsize = 0;
 
 
 
@@ -103,17 +73,6 @@ int32_t totalpatchsize = 0;
 
 
 
-int8_t spritecache_head = -1;
-int8_t spritecache_tail = -1;
-
-int8_t flatcache_head = -1;
-int8_t flatcache_tail = -1;
-
-int8_t patchcache_head = -1;
-int8_t patchcache_tail = -1;
-
-int8_t texturecache_head = -1;
-int8_t texturecache_tail = -1;
 
 
  
@@ -943,15 +902,8 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 
 }
 
-segment_t cachedsegmentlump = 0xFFFF;
-segment_t cachedsegmenttex = 0xFFFF;
-int16_t   cachedlump = -1;
-int16_t   cachedtex = -1;
 
-segment_t cachedsegmentlump2 = 0xFFFF;
-segment_t cachedsegmenttex2 = 0xFFFF;
-int16_t   cachedlump2 = -1;
-int16_t   cachedtex2 = -1;
+
 
 uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachetype){
 	uint8_t realtexpage = texpage >> 2;
@@ -1403,10 +1355,6 @@ void setchecksum(){
 	origcachecount = cachecount;
 }*/
 
-byte cachedbyteheight;
-uint8_t cachedcol;
-
-int setval = 0;
 
 
 

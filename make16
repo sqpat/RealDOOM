@@ -104,6 +104,7 @@ GLOBOBJS = &
  d_math.obj &
  dmx.obj &
  math.obj &
+ m_near.obj &
  d_algo.obj &
  r_column.obj &
  r_masked.obj &

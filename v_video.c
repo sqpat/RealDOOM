@@ -31,7 +31,7 @@
 #include "w_wad.h"
 #include <conio.h>
 #include <dos.h>
-#include "memory.h"
+#include "m_memory.h"
 
 
 

@@ -59,16 +59,13 @@
 
 #include "d_main.h"
 #include "p_local.h"
-#include "memory.h"
+#include "m_memory.h"
+#include "m_near.h"
 
 #include <dos.h>
 
 #define MAX_STRINGS 306
 
-extern uint8_t     sfxVolume;
-extern uint8_t     musicVolume;
-extern int8_t      demosequence;
-//extern byte*		stringdata;
 
 void __far D_InitStrings() {
 
@@ -523,9 +520,11 @@ void __far D_DoomMain2(void)
 	FAR_fwrite(FixedDiv, (byte __far *)V_DrawPatchFlipped - (byte __far *)FixedDiv, 1, fp);
 
 	fclose(fp);
-	
+	*/
+/*
 	I_Error("blah %Fp %Fp %lx", (byte __far *)R_DrawMaskedColumn, (byte __far *)R_DrawSingleMaskedColumn,
-		FixedDiv(0x12345678, 0x0034FFFF));
+		FixedDiv(0x0FEDCBA9, 0x07654321 ));  // 2276
+//		FixedDiv(0x7FFE0000, 0x7FFF0000	));	
 
 //	I_Error("blah %x %x %x", colfunc_segment_high, colfunc_segment, R_DrawColumnPrepOffset);
 	//I_Error("blah %Fp", MAKE_FULL_SEGMENT(spritepage, size_spriteoffset + size_spritepage));

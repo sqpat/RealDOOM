@@ -26,66 +26,15 @@
 
 #include "r_local.h"
 #include "z_zone.h"
-#include "memory.h"
+#include "m_memory.h"
+#include "m_near.h"
 #include <dos.h>
 
 // OPTIMIZE: closed two sided lines as single sided
 
-// True if any of the segs textures might be visible.
-boolean		segtextured;	
-
-// False if the back side is the same plane.
-boolean		markfloor;	
-boolean		markceiling;
-
-boolean		maskedtexture;
-uint16_t		toptexture;
-uint16_t		bottomtexture;
-uint16_t		midtexture;
 
 
-fineangle_t	rw_normalangle;
-// angle to line origin
-//fineangle_t		rw_angle1_fine;  // every attempt to do this has led to rendering bugs
-angle_t			rw_angle1;
 
-//
-// regular wall
-//
-int16_t		rw_x;
-int16_t		rw_stopx;
-fineangle_t		rw_centerangle;
-fixed_t_union		rw_offset;
-fixed_t		rw_distance;
-fixed_t_union		rw_scale;
-int16_t		rw_scalestep;
-fixed_t_union		rw_midtexturemid;
-fixed_t_union		rw_toptexturemid;
-fixed_t_union		rw_bottomtexturemid;
-
-fixed_t_union		worldtop;
-fixed_t_union		worldbottom;
-fixed_t_union		worldhigh;
-fixed_t_union		worldlow;
-
-fixed_t		pixhigh;
-fixed_t		pixlow;
-fixed_t		pixhighstep;
-fixed_t		pixlowstep;
-
-fixed_t		topfrac;
-fixed_t		topstep;
-
-fixed_t		bottomfrac;
-fixed_t		bottomstep;
-
-extern void (__far* R_DrawColumnPrepCall)(uint16_t);
-
-uint8_t __far*	walllights;
-
-uint16_t __far*		maskedtexturecol;
-extern byte cachedbyteheight;
-extern uint8_t cachedcol;
 //
 // R_RenderMaskedSegRange
 //
@@ -246,8 +195,6 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 #define HEIGHTBITS		12
 #define HEIGHTUNIT		(1<<HEIGHTBITS)
 
-byte __far * ceiltop;
-byte __far * floortop;
 //extern int setval;
 
 void __near R_RenderSegLoop (void)
@@ -435,7 +382,6 @@ void __near R_RenderSegLoop (void)
 
 }
 
-extern  fixed_t_union leveltime;
 
 //
 // R_StoreWallRange

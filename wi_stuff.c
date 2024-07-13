@@ -41,7 +41,7 @@
 #include "f_finale.h"
 
 #include "wi_stuff.h"
-#include "memory.h"
+#include "m_memory.h"
 
 //
 // Data needed to add patches to full screen intermission pics.

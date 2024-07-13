@@ -36,7 +36,7 @@
 #include <dos.h>
 
 #include <stdlib.h>
-#include "memory.h"
+#include "m_memory.h"
 
 
 

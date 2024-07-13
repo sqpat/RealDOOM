@@ -24,7 +24,7 @@
 #include "i_system.h"
 #include "m_misc.h"
 #include "p_setup.h"
-#include "memory.h"
+#include "m_memory.h"
 
 fixed_t_union	leveltime;
 int16_t currentThinkerListHead;
@@ -97,7 +97,6 @@ void __near P_RemoveThinker (THINKERREF thinkerRef)
 {
 	thinkerlist[thinkerRef].prevFunctype = (thinkerlist[thinkerRef].prevFunctype & TF_PREVBITS) + TF_DELETEME_HIGHBITS;
 }
-extern int setval;
 //
 // P_RunThinkers
 //

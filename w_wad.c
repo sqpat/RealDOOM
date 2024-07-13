@@ -31,7 +31,7 @@
 #include "w_wad.h"
 #include "r_defs.h"
 #include "r_state.h"
-#include "memory.h"
+#include "m_memory.h"
 
 
 

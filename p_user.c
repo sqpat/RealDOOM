@@ -26,7 +26,7 @@
 
 #include "doomstat.h"
 #include "i_system.h"
-#include "memory.h"
+#include "m_memory.h"
 
 
 

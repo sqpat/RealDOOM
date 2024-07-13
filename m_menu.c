@@ -52,37 +52,13 @@
 #include "m_menu.h"
 #include <dos.h>
 
-#include "memory.h"
+#include "m_memory.h"
+#include "m_near.h"
 
 
 
 
 
- 
-
-//
-// defaulted values
-//
-uint8_t                     mouseSensitivity;       // has default
-
-// Show messages has default, 0 = off, 1 = on
-uint8_t                     showMessages;
-
-uint8_t         sfxVolume;
-uint8_t         musicVolume;
-
-// Blocky mode, has default, 0 = high, 1 = normal
-uint8_t                     detailLevel;
-uint8_t                     screenblocks;           // has default
-
-// temp for screenblocks (0-9)
-uint8_t                     screenSize;
-
-// -1/255 = no quicksave slot picked!
-int8_t                     quickSaveSlot;
-
-boolean                 inhelpscreens;
-boolean                 menuactive;
 
 
 #ifdef __DEMO_ONLY_BINARY

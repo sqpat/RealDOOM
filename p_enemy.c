@@ -36,7 +36,7 @@
 
 // Data.
 #include "sounds.h"
-#include "memory.h"
+#include "m_memory.h"
 
 
 
@@ -625,7 +625,6 @@ boolean __near P_LookForPlayers (mobj_t __far*	actor, boolean	allaround ) {
 	return true;
 }
 
-extern int setval;
 //
 // A_KeenDie
 // DOOM II special, map 32.

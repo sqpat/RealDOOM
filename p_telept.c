@@ -32,7 +32,7 @@
 
 // State.
 #include "r_state.h"
-#include "memory.h"
+#include "m_memory.h"
 
 extern mobj_t __far* setStateReturn;
 

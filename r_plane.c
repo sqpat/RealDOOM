@@ -31,7 +31,8 @@
 #include "d_math.h"
 #include <conio.h>
 #include <dos.h>
-#include "memory.h"
+#include "m_memory.h"
+#include "m_near.h"
 
 
 
@@ -44,14 +45,6 @@
 // Here comes the obnoxious "visplane".
 
 
-
-int16_t				lastvisplane;
-int16_t				floorplaneindex;
-int16_t				ceilingplaneindex;
-
-
-// ?
- uint16_t 		lastopening;
 
 
 //
@@ -72,13 +65,7 @@ int16_t				ceilingplaneindex;
 //
 // texture mapping
 //
-uint8_t __far*	planezlight;
-fixed_t			planeheight;
 
-fixed_t			basexscale;
-fixed_t			baseyscale;
-
-int8_t currentemsvisplanepage = 0; 
 
 void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 
@@ -165,8 +152,7 @@ void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 
 }
 */
-extern byte __far * ceiltop;
-extern byte __far * floortop;
+
 
 //
 // R_ClearPlanes
@@ -196,14 +182,9 @@ void __near R_ClearPlanes (void) {
 }
 
 
-segment_t visplanelookupsegments[3] = {0x8400, 0x8800, 0x8C00};
-extern int8_t visplanedirty;
-extern int8_t active_visplanes[5];
 
 // we want to cache the variables/logic based around which plane indices are mapped..
 
-int8_t ceilphyspage = 0;
-int8_t floorphyspage = 0;
 
 
 // requires pagination and juggling of floor/ceil planes...
@@ -390,14 +371,6 @@ int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t
 	return lastvisplane++;
 }
 
-int16_t currentflatpage[4] = { -1, -1, -1, -1 };
-// there can be 4 flats (4k each) per ems page (16k each). Keep track of how many are allocated here.
-int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
-
-extern int16_t visplanemax;
-extern int16_t visplanedirtycount;
-
-extern int8_t setonce;
 
 extern void (__far* R_DrawColumnPrepCall)(uint16_t);
 

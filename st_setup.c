@@ -52,7 +52,7 @@
 #include "dstrings.h"
 #include "sounds.h"
 #include "st_stuff.h"
-#include "memory.h"
+#include "m_memory.h"
 
 boolean  st_stopped = true;
 uint16_t armsbgarray[1] = { armsbg };

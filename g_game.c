@@ -55,7 +55,7 @@
 // SKY handling - still the wrong place.
 #include "r_data.h"
 
-#include "memory.h"
+#include "m_memory.h"
 
 #include <dos.h>
 

@@ -32,7 +32,8 @@
 #include <dos.h>
 
 #include <stdlib.h>
-#include "memory.h"
+#include "m_memory.h"
+#include "m_near.h"
 
 
 
@@ -809,7 +810,6 @@ extern int8_t skytextureloaded;
 
 // virtual to physical page mapping. 
 // 0 means unmapped. 1 means 8400, 2 means 8800, 3 means 8C00;
-int8_t active_visplanes[5] = {1, 2, 3, 0, 0};
 
 void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 

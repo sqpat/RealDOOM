@@ -32,7 +32,8 @@
 #include "doomstat.h"
 #include "m_misc.h"
 #include "p_local.h"
-#include "memory.h"
+#include "m_memory.h"
+#include "m_near.h"
 #include <dos.h>
 
 
@@ -43,36 +44,6 @@
 
 
 
-//
-// Sprite rotation 0 is facing the viewer,
-//  rotation 1 is one angle turn CLOCKWISE around the axis.
-// This is not the same as the angle,
-//  which increases counter clockwise (protractor).
-// There was a lot of stuff grabbed wrong, so I changed it...
-//
-uint16_t         pspritescale;
-fixed_t         pspriteiscale;
-
-uint8_t __far*  spritelights;
-
-// constant arrays
-//  used for psprite clipping and initializing clipping
-//int16_t           *negonearray;// [SCREENWIDTH];
-//int16_t           *screenheightarray;// [SCREENWIDTH];
-
-
-//
-// INITIALIZATION FUNCTIONS
-//
-
-// variables used to look up
-//  and range check thing_t sprites patches
-spritedef_t __far*	sprites;
-int16_t             numsprites;
-
-
-
-
 
 
 
@@ -80,9 +51,7 @@ int16_t             numsprites;
 //
 // GAME FUNCTIONS
 //
-vissprite_t __far*    vissprite_p;
 
-void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 
  
  
@@ -97,11 +66,6 @@ void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  ((void    (__far *)(uint16_
 // Masked means: partly transparent, i.e. stored
 //  in posts/runs of opaque pixels.
 //
-int16_t __far*          mfloorclip;
-int16_t __far*          mceilingclip;
-
-fixed_t_union         spryscale;
-fixed_t         sprtopscreen;
 
 void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* column) {
 	
@@ -266,8 +230,6 @@ void __near R_DrawSingleMaskedColumn2 (segment_t pixeldatasegment, byte length) 
 //  mfloorclip and mceilingclip should also be set.
 //
 
-segment_t lastvisspritesegment = 0xFFFF;
-int16_t   lastvisspritepatch = -1;
 
 void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     
@@ -706,7 +668,7 @@ void __near R_PrepareMaskedPSprites(void) {
 //
 // R_SortVisSprites
 //
-uint8_t     vsprsortedheadfirst;
+
 #define VISSPRITE_UNSORTED_INDEX 255
 #define VISSPRITE_SORTED_HEAD_INDEX 254
 

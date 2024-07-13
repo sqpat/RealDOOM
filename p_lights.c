@@ -29,7 +29,7 @@
 
 // State.
 #include "r_state.h"
-#include "memory.h"
+#include "m_memory.h"
 
 //
 // FIRELIGHT FLICKER

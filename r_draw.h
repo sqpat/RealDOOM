@@ -23,7 +23,6 @@
 
 extern segment_t dc_colormap_segment;
 extern uint8_t dc_colormap_index;
-extern int16_t dc_x;
 extern int16_t dc_yl;
 extern int16_t dc_yh;
 extern fixed_t dc_iscale;
@@ -59,7 +58,7 @@ extern fixed_t		ds_yfrac;
 extern fixed_t		ds_xstep;
 extern fixed_t		ds_ystep;
 extern int16_t      sp_bp_safe_space[2];
-extern int16_t      ss_variable_space[10];
+extern int16_t      ss_variable_space[18];
 extern int8_t  	    spanfunc_main_loop_count;
 extern uint8_t 	    spanfunc_inner_loop_count[4];
 extern uint8_t      spanfunc_outp[4];

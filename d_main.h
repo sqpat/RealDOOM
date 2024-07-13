@@ -21,8 +21,6 @@
 
 #include "d_event.h"
 
-#define MAXWADFILES             3
-extern int8_t*		wadfiles[MAXWADFILES];
 
 void __near D_DoomMain (void);
 

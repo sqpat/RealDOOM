@@ -30,7 +30,7 @@
 #include "dstrings.h"
 #include "sounds.h"
 #include "i_system.h"
-#include "memory.h"
+#include "m_memory.h"
 
 //
 // VERTICAL DOORS

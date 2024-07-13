@@ -28,7 +28,7 @@
 
 #include "f_wipe.h"
 #include <dos.h>
-#include "memory.h"
+#include "m_memory.h"
 #include <conio.h>
 
 

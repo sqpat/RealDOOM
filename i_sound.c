@@ -31,6 +31,7 @@
 
 #include "doomdef.h"
 #include "doomstat.h"
+#include "m_near.h"
 
 //
 // I_StartupTimer
@@ -48,27 +49,6 @@ void I_StartupTimer(void)
 	TS_Dispatch();
 }
 
-//
-// Sound header & data
-//
-const int8_t snd_prefixen[]
-= { 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S', 'S', 'S' };
-
-//int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
-
-int16_t snd_SBport;
-uint8_t snd_SBirq, snd_SBdma; // sound blaster variables
-int16_t snd_Mport; // midi variables
-
-uint8_t snd_MusicVolume; // maximum volume for music
-uint8_t snd_SfxVolume; // maximum volume for sound
-
-uint8_t snd_SfxDevice; // current sfx card # (index to dmxCodes)
-uint8_t snd_MusicDevice; // current music card # (index to dmxCodes)
-uint8_t snd_DesiredSfxDevice;
-uint8_t snd_DesiredMusicDevice;
-uint8_t snd_SBport8bit;
-uint8_t snd_Mport8bit;
 void I_PauseSong(int16_t handle)
 {
     //MUS_PauseSong(handle);

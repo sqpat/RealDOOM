@@ -64,8 +64,8 @@ EXTRN _planeheight:WORD
 
 
 
-EXTRN	_ds_xstep:DWORD
-EXTRN	_ds_ystep:DWORD
+;EXTRN	_ds_xstep:DWORD
+;EXTRN	_ds_ystep:DWORD
 
 EXTRN   _sp_bp_safe_space:WORD
 EXTRN   _ss_variable_space:WORD
@@ -78,6 +78,13 @@ EXTRN _spanfunc_destview_offset:WORD
 
 
 EXTRN FixedMul_:PROC
+
+
+
+DS_XFRAC    = _ss_variable_space+ 014h
+DS_YFRAC    = _ss_variable_space+ 018h
+DS_XSTEP    = _ss_variable_space+ 01Ch
+DS_YSTEP    = _ss_variable_space+ 020h
 
 
 
@@ -113,8 +120,8 @@ cli 									; disable interrupts
 
 ; fixed_t x32step = (ds_xstep << 6);
 
-mov   ax, word ptr [_ds_xstep]          ; dx:ax is ds_xstep
-mov   dx, word ptr [_ds_xstep + 2]      
+mov   ax, word ptr [DS_XSTEP]          ; dx:ax is ds_xstep
+mov   dx, word ptr [DS_XSTEP + 2]      
 
 ; dx:ax	shift 6 left by shifting right 2 and moving bytes
 
@@ -137,8 +144,8 @@ mov   word ptr [_ss_variable_space + 0Ah], dx			;  move x32step high bits into _
 
 ;	fixed_t y32step = (ds_ystep << 6);
 
-mov   ax, word ptr [_ds_ystep]			; same process as above
-mov   dx, word ptr [_ds_ystep + 2]
+mov   ax, word ptr [DS_YSTEP]			; same process as above
+mov   dx, word ptr [DS_YSTEP + 2]
 
 ; dx:ax	shift 6 left by shifting right 2 and moving bytes
 
@@ -210,8 +217,8 @@ mov   si, ax						; temporarily store dx:ax into es:si
 mov   es, dx						; store sign bits (dx) in es
 mov   bx, ax
 mov   cx, dx						; also copy sign bits to cx
-mov   ax, word ptr [_ds_xstep]
-mov   dx, word ptr [_ds_xstep + 2]
+mov   ax, word ptr [DS_XSTEP]
+mov   dx, word ptr [DS_XSTEP + 2]
 
 ; inline i4m
 ; DX:AX * CX:BX,  CX is 0000 or FFFF
@@ -243,17 +250,17 @@ mov   dx, word ptr [_ds_xstep + 2]
 
 
 
-mov   bx, word ptr [_ds_xfrac]	; load _ds_xfrac
+mov   bx, word ptr [DS_XFRAC]	; load _ds_xfrac
 mov   cx, es					; retrieve prt sign bits
 add   bx, ax					; ds_xfrac + ds_xstep * prt low bits
 mov   word ptr [_ss_variable_space + 04h], bx		; store low 16 bits of x_frac.w
 mov   bx, si
-mov   ax, word ptr [_ds_xfrac + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
+mov   ax, word ptr [DS_XFRAC + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
 adc   ax, dx
 
-mov   dx, word ptr [_ds_ystep + 2]
+mov   dx, word ptr [DS_YSTEP + 2]
 mov   word ptr [_ss_variable_space + 06h], ax  ; store high 16 bits of x_frac.w
-mov   ax, word ptr [_ds_ystep]
+mov   ax, word ptr [DS_YSTEP]
 
 
 ;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
@@ -282,10 +289,10 @@ mov   ax, word ptr [_ds_ystep]
 ; dx:ax contains ds_ystep * prt
 
 ; add 32 bits of ds_yfrac
-mov   bx, word ptr [_ds_yfrac]	; load ds_yfrac
+mov   bx, word ptr [DS_YFRAC]	; load ds_yfrac
 add   bx, ax					; create y_frac low bits...
 mov   word ptr [_ss_variable_space + 0Eh], bx	; store y_frac low bits
-mov   si, word ptr [_ds_yfrac + 2]
+mov   si, word ptr [DS_YFRAC + 2]
 adc   si, dx
 
 ;	xfrac16.hu = xfrac.wu >> 8;
@@ -313,8 +320,8 @@ mov dx, word ptr [_ss_variable_space + 05h]   ;  load high 16 bits of x_frac.w
 
 ;	xadder = ds_xstep >> 6; 
 
-mov   cx, word ptr [_ds_xstep + 2]
-mov   ax, word ptr [_ds_xstep]
+mov   cx, word ptr [DS_XSTEP + 2]
+mov   ax, word ptr [DS_XSTEP]
 
 
 ; quick shift 6
@@ -336,7 +343,7 @@ mov   word ptr [_sp_bp_safe_space], ax	; store x_adder
 
 ;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
-mov   ax, word ptr [_ds_ystep + 1]
+mov   ax, word ptr [DS_YSTEP + 1]
 
 
 
@@ -920,16 +927,16 @@ mov   word ptr [bp - 04h], ax	; store distance low word
 
 mov   ax, word ptr es:[si + (( CACHEDXSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   dx, word ptr es:[si + 2 + (( CACHEDXSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   word ptr [_ds_xstep], ax
-mov   word ptr [_ds_xstep+2], dx
+mov   word ptr [DS_XSTEP], ax
+mov   word ptr [DS_XSTEP+2], dx
 
 ; CACHEDYSTEP lookup
 
 
 mov   ax, word ptr es:[si + (( CACHEDYSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   dx, word ptr es:[si + 2 + (( CACHEDYSTEP_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   word ptr [_ds_ystep], ax
-mov   word ptr [_ds_ystep+2], dx
+mov   word ptr [DS_YSTEP], ax
+mov   word ptr [DS_YSTEP+2], dx
 distance_steps_ready:
 
 ; dx:ax is y_step
@@ -976,8 +983,8 @@ call R_FixedMulTrigLocal_
 
 add   ax, word ptr [_viewx]
 adc   dx, word ptr [_viewx+2]
-mov   word ptr [_ds_xfrac], ax
-mov   word ptr [_ds_xfrac+2], dx
+mov   word ptr [DS_XFRAC], ax
+mov   word ptr [DS_XFRAC+2], dx
 
 mov   ax, FINESINE_SEGMENT
 mov   dx, word ptr [bp - 0Ah]
@@ -1004,8 +1011,8 @@ neg   ax
 ; probably too tiny an error to be visibly noticable?
 sbb   dx, 0
 
-mov   word ptr [_ds_yfrac], ax
-mov   word ptr [_ds_yfrac+2], dx
+mov   word ptr [DS_YFRAC], ax
+mov   word ptr [DS_YFRAC+2], dx
 mov   word ptr [_ds_colormap_segment], BASE_COLORMAP_POINTER
 
 
@@ -1114,8 +1121,8 @@ mov   bx, CACHEDXSTEP_SEGMENT
 mov   es, bx
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
-mov   word ptr [_ds_xstep], ax
-mov   word ptr [_ds_xstep+2], dx
+mov   word ptr [DS_XSTEP], ax
+mov   word ptr [DS_XSTEP+2], dx
 mov   dx, di
 mov   bx, word ptr [_baseyscale]
 mov   cx, word ptr [_baseyscale+2]
@@ -1130,8 +1137,8 @@ mov   bx, CACHEDYSTEP_SEGMENT
 mov   es, bx
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx
-mov   word ptr [_ds_ystep], ax
-mov   word ptr [_ds_ystep+2], dx
+mov   word ptr [DS_YSTEP], ax
+mov   word ptr [DS_YSTEP+2], dx
 jmp   distance_steps_ready
 cld   
 

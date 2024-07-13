@@ -37,60 +37,14 @@
 
 #include "i_system.h"
 #include "doomstat.h"
-#include "memory.h"
+#include "m_memory.h"
+#include "m_near.h"
 #include <dos.h>
 
 
 // Fineangles in the SCREENWIDTH wide window.
 #define FIELDOFVIEW		2048	
 
-// Cached fields to avoid thinker access after page swap
-int16_t r_cachedplayerMobjsecnum;
-state_t r_cachedstatecopy[2];
-
-
-
-// increment every time a check is made
-int16_t			validcount = 1;
-
-
-uint8_t		fixedcolormap;
-extern uint8_t __far*	walllights;
-
-int16_t			centerx;
-int16_t			centery;
-
-// these basically equal: (16 low bits are 0, 16 high bits are view size / 2)
-fixed_t_union			centerxfrac;
-fixed_t_union			centeryfrac;
-fixed_t_union			centeryfrac_shiftright4;
-fixed_t_union			projection;
-
-
-fixed_t_union			viewx;
-fixed_t_union			viewy;
-fixed_t_union			viewz;
-short_height_t			viewz_shortheight;
-angle_t			viewangle;
-fineangle_t			viewangle_shiftright3;
-
-fixed_t			viewcos;
-fixed_t			viewsin;
-
-// 0 = high, 1 = low, = 2 potato
-int16_t_union		detailshift;	
-int16_t 			setdetail;
-//
-// precalculated math tables
-//
-angle_t			clipangle = { 0 };		// note: fracbits always 0
-angle_t			fieldofview = { 0 };	// note: fracbits always 0
-
- 
- 
-
-// bumped light from gun blasts
-uint8_t			extralight;			
 
 
 //
@@ -489,8 +443,6 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
 //  because it might be in the middle of a refresh.
 // The change will take effect next refresh.
 //
-boolean		setsizeneeded;
-uint8_t		setblocks;
 
 
 void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
@@ -502,21 +454,12 @@ void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
 #define DISTMAP		2
 
 
-
-//
-// R_Init
-//
-extern uint8_t	detailLevel;
-extern uint8_t	screenblocks;
-
-
+ 
 
 
 //
 // sky mapping
 //
-uint8_t			skyflatnum;
-uint16_t			skytexture;
 
 
 
@@ -592,23 +535,6 @@ void R_SetupFrame () {
 
 }
 
-extern int16_t	lastvisspritepatch;
-extern int16_t    cachedlump;
-extern int16_t    cachedtex;
-extern int16_t    cachedlump2;
-extern int16_t    cachedtex2;
-
-#ifdef DETAILED_BENCH_STATS
-
-extern uint16_t renderplayersetuptics;
-extern uint16_t renderplayerbsptics;
-extern uint16_t renderplayerplanetics;
-extern uint16_t renderplayermaskedtics;
-extern uint16_t cachedrenderplayertics;
-#endif
-
-int8_t visplanedirty = false;
-int8_t skytextureloaded = false;
 //
 // R_RenderView
 //

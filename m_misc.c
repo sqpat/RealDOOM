@@ -43,7 +43,7 @@
 #include "dstrings.h"
 
 #include "m_misc.h"
-#include "memory.h"
+#include "m_memory.h"
 
 
 int16_t		myargc;

@@ -37,7 +37,7 @@
 #include "z_zone.h"
 #include "st_stuff.h"
 
-#include "memory.h"
+#include "m_memory.h"
 
 #define SC_INDEX                0x3C4
 #define SC_RESET                0

@@ -34,7 +34,8 @@
 #include "doomstat.h"
 #include <conio.h>
 #include <dos.h>
-#include "memory.h"
+#include "m_memory.h"
+#include "m_near.h"
 
 
 // ?
@@ -54,30 +55,8 @@
 //
 
 
-byte __far*		viewimage;
-int16_t		viewwidth;
-int16_t		scaledviewwidth;
-int16_t		viewheight;
-int16_t		viewwindowx;
-int16_t		viewwindowy; 
-int16_t		viewwindowoffset;
-
-// store sp/bp when doing cli/sti shenanigans
-int16_t		sp_bp_safe_space[2];
-
-// used to index things via SS when bp and sp are in use (since ss == ds)
-// actually we use this as a general variable work space in self-contained asm calls so that we don't have to
-// declare so many one-off variables. 
-int16_t		ss_variable_space[10];
-
-int8_t  	spanfunc_main_loop_count;
-uint8_t 	spanfunc_inner_loop_count[4];
-uint8_t     spanfunc_outp[4];
-int16_t    	spanfunc_prt[4];
-uint16_t    spanfunc_destview_offset[4];
 
 
-void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 
  
 #define SC_INDEX                0x3C4
@@ -102,17 +81,6 @@ void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))
 // R_DrawColumn
 // Source is the top of the column to scale.
 //
-segment_t 		dc_colormap_segment;  // dc_colormap segment. the colormap will be byte 0 at this segment.
-uint8_t 		dc_colormap_index;  // dc_colormap offset. this generally is an index
-int16_t			dc_x; 
-int16_t			dc_yl; 
-int16_t			dc_yh; 
-fixed_t			dc_iscale; 
-fixed_t_union	dc_texturemid;
-
-
-// first pixel in a column (possibly virtual) 
-segment_t			dc_source_segment;
 
 
 //
@@ -122,7 +90,6 @@ segment_t			dc_source_segment;
 // Thus a special case loop for very fast rendering can
 //  be used. It has also been used with Wolfenstein 3D.
 // 
-extern int setval;
 
 /*
 void __far R_DrawSpanPrep(){
@@ -699,7 +666,6 @@ void __far R_DrawColumnLow (void)
 
 
 
-int16_t	fuzzpos = 0; 
 
 
 //
@@ -790,20 +756,6 @@ void __far R_DrawFuzzColumn (void)
 // In consequence, flats are not stored by column (like walls),
 //  and the inner loop has to step in texture space u and v.
 //
-int16_t                     ds_y;
-int16_t                     ds_x1;
-int16_t                     ds_x2;
-
-uint16_t				ds_colormap_segment;
-uint8_t					ds_colormap_index;
-
-fixed_t                 ds_xfrac;
-fixed_t                 ds_yfrac;
-fixed_t                 ds_xstep;
-fixed_t                 ds_ystep;
-
-// start of a 64*64 tile image 
-segment_t ds_source_segment;
 
 
 //

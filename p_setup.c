@@ -39,7 +39,7 @@
 
 #include "doomstat.h"
 #include <dos.h>
-#include "memory.h"
+#include "m_memory.h"
 
 
 

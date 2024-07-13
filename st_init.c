@@ -52,7 +52,7 @@
 #include "dstrings.h"
 #include "sounds.h"
 #include <dos.h>
-#include "memory.h"
+#include "m_memory.h"
 
 
 //
