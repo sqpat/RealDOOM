@@ -903,7 +903,8 @@ void __near P_UpdateSpecials(void)
 	//	ANIMATE FLATS AND TEXTURES GLOBALLY
 	for (anim = anims; anim < lastanim; anim++) {
 		for (i = anim->basepic; i < anim->basepic + anim->numpics; i++) {
-			pic = anim->basepic + ((leveltime.h.fracbits / 8 + i) % anim->numpics);
+			pic = anim->basepic + (((leveltime.hu.fracbits >> 3)  + i) % anim->numpics);
+
 			if (anim->istexture) {
 				texturetranslation[i] = pic;
 			}
