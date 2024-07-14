@@ -197,9 +197,9 @@ visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 
 	// mult + modulo
-	while (usedsubindex >= 25){
+	while (usedsubindex >= VISPLANES_PER_EMS_PAGE){
 		usedvirtualpage++;
-		usedsubindex -= 25;
+		usedsubindex -= VISPLANES_PER_EMS_PAGE;
 	}
 
 	usedphyspage = usedvirtualpage;
@@ -455,10 +455,10 @@ void __near R_DrawPlanes (void) {
 			continue;
 
 		// umm... what if we hit this after 100 iters of continue and overflow? probably should never happen...
-		while (visplaneoffset >= (25 * VISPLANE_BYTE_SIZE)){
+		while (visplaneoffset >= (VISPLANES_PER_EMS_PAGE * VISPLANE_BYTE_SIZE)){
 			
 			physindex++;
-			visplaneoffset -= (25 * VISPLANE_BYTE_SIZE);
+			visplaneoffset -= (VISPLANES_PER_EMS_PAGE * VISPLANE_BYTE_SIZE);
 			if (physindex == 3){
 				//I_Error("A");
 				// todo eventually page these into 9000 region?
@@ -580,6 +580,8 @@ void __near R_DrawPlanes (void) {
 		pl->top[plheader->minx-1] = 0xff;
 
 		stop = plheader->maxx + 1;
+		
+		// startasm  by pulling this out 
 		for (x=plheader->minx ; x<= stop ; x++) {
 			t1 = pl->top[x - 1];
 			b1 = pl->bottom[x - 1];
