@@ -302,6 +302,12 @@ int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlev
 	check = R_HandleEMSPagination(i, isceil);
 
 	FAR_memset (check->top,0xff,SCREENWIDTH);
+	FAR_memset (check->bottom,0x00,SCREENWIDTH);
+	//todo these bottom memsets cover up for some other infrequent bug
+	// where plbot ends up wrong. this is fine, but might be cleaner to
+	// fix the actual bug that results from a bottom not being written
+
+//	FAR_memset (check->bottom,0xff,SCREENWIDTH);
 
     return i;
 
@@ -366,7 +372,12 @@ int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t
 	plheader->maxx = stop;
 
 	pltop = R_HandleEMSPagination(lastvisplane, isceil)->top;
-	FAR_memset (pltop,0xff,SCREENWIDTH);
+	FAR_memset (pltop,	  0xff,SCREENWIDTH);
+	FAR_memset (pltop+322,0x00,SCREENWIDTH);
+	//todo these bottom memsets cover up for some other infrequent bug
+	// where plbot ends up wrong. this is fine, but might be cleaner to
+	// fix the actual bug that results from a bottom not being written
+	//FAR_memset (pltop+322,0xff,SCREENWIDTH);
 
 	return lastvisplane++;
 }
