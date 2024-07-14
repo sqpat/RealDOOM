@@ -228,9 +228,9 @@ void __near R_RenderSegLoop (void)
 				bottom = floorclip[rw_x]-1;
 
 			if (top <= bottom) {
-				ceiltop[rw_x] = top;
+				ceiltop[rw_x] = top & 0xFF;
 				// top[322] is the start of bot[]
-				ceiltop[rw_x+322] = bottom;
+				ceiltop[rw_x+322] = bottom & 0xFF;
  
 			}
 		}
@@ -249,9 +249,9 @@ void __near R_RenderSegLoop (void)
 				top = ceilingclip[rw_x]+1;
 			}
 			if (top <= bottom) {
-				floortop[rw_x] = top;
+				floortop[rw_x] = top & 0xFF;
 				// top[322] is the start of bot[]
-				floortop[rw_x+322] = bottom;
+				floortop[rw_x+322] = bottom & 0xFF;
 			}
 		}
 
