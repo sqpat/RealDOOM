@@ -414,7 +414,8 @@ typedef struct drawseg_s
     
 } drawseg_t;
 
-#define NULL_TEX_COL 65535u
+// underflows of up to screenwidth are possible
+#define NULL_TEX_COL (65535u - SCREENWIDTH)
  
 
 // Patches.
