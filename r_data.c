@@ -1364,8 +1364,6 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	int16_t n = 0;
 	uint8_t texcol;
 
-	uint8_t origcol;
-
 
 	col &= texturewidthmasks[tex];
 	texcol = col;
@@ -1388,17 +1386,19 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	if (lump > 0){
 		uint8_t lookup = masked_lookup[tex];
 		uint8_t heightval = cachedbyteheight = texturecolumnlump[n-1] >> 8;
+		uint16_t patchwidth = patchwidths[lump-firstpatch];
 		if (cachedlump != lump){
 			if (cachedlump2 != lump){
+				// var cache miss
 				cachedlump2 = cachedlump;
 				cachedsegmentlump2 = cachedsegmentlump;
+				cachedsegmentlump = getpatchtexture(lump, lookup);  // might zero out cachedlump vars
 				cachedlump = lump;
-				cachedsegmentlump = getpatchtexture(cachedlump, lookup);
 			} else {
 				// cycle cache so 2 = 1
-				lump = cachedlump;
-				cachedlump = cachedlump2;
-				cachedlump2 = lump;
+				cachedlump2 = cachedlump;
+				cachedlump = lump;
+				
 				lump = cachedsegmentlump;
 				cachedsegmentlump = cachedsegmentlump2;
 				cachedsegmentlump2 = lump;
@@ -1406,19 +1406,24 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		}
 
 		// todo what else can we reuse collength and cachedbyteheight here?
-
-		origcol = col + (texturecolumnlump[n-1] & 255);
+		
+		// we cant use rle width as it might be longer than single patch width
+		// in the case of multiple side by side patches. so we essentially
+		// "modulo from negative" by patch width.
+		while (col < 0){
+			col+= patchwidth;
+		}
 
 		if (lookup == 0xFF){
-			return cachedsegmentlump + (FastMul8u8u(origcol , heightval) >> 4);
+			return cachedsegmentlump + (FastMul8u8u(col , heightval) >> 4);
 		} else {
 			// Does this code ever run outside of draw masked?
 
 			masked_header_t __far * maskedheader = &masked_headers[lookup];
 			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
 
-			uint16_t ofs  = pixelofs[origcol];
-			cachedcol = origcol;
+			uint16_t ofs  = pixelofs[col];
+			cachedcol = col;
 		 
 			return cachedsegmentlump + (ofs >> 4);
 		}

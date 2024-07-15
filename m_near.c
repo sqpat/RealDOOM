@@ -376,15 +376,12 @@ int16_t   lastvisspritepatch = -1;
 
  
 int16_t             firstflat;
-int16_t             lastflat;
 int16_t             numflats;
 
 int16_t             firstpatch;
-int16_t             lastpatch;
 int16_t             numpatches;
 
 int16_t             firstspritelump;
-int16_t             lastspritelump;
 int16_t             numspritelumps;
 
 int16_t             numtextures;

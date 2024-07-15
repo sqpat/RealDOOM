@@ -438,7 +438,8 @@ void __near R_InitSpriteDefs()
 	//totalsize = numsprites * sizeof(spritedef_t);
 
 	start = firstspritelump - 1;
-	end = lastspritelump + 1;
+	end = firstspritelump+numspritelumps;
+	
 
 	// scan all the lump names for each of the names,
 	//  noting the highest frame letter.

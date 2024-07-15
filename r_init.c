@@ -544,7 +544,9 @@ void R_InitTextures(void) {
  	int16_t				texturewidth;
 	uint8_t				textureheightval;
 	int16_t                patchlookup[470]; // 350 for doom shareware/doom1. 459 for doom2
-
+	int16_t					lastpatch;
+	int16_t					lastflat;
+	int16_t					lastspritelump;
 
 	firstpatch = W_GetNumForName("P_START") + 1;
 	lastpatch = W_GetNumForName("P_END") - 1;
@@ -749,6 +751,20 @@ void R_InitPatches() {
 }
 */
 
+
+void __near R_InitPatches(){
+	int i = 0;
+	patch_t __far* realpatch = (patch_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0);
+	for (i = 0; i < numpatches; i++){
+		int16_t patchindex = firstpatch+i;
+		W_CacheLumpNumDirect(patchindex, (byte __far*)realpatch);
+		patchwidths[i] = realpatch->width;
+	}
+		
+
+
+}
+
 void __near R_InitData(void) {
 	uint8_t         i;
 
@@ -757,7 +773,7 @@ void __near R_InitData(void) {
 	R_InitTextures();
 	R_InitTextures2();
 	DEBUG_PRINT("..");
-
+	R_InitPatches();
 
 	// Create translation table for global animation.
 

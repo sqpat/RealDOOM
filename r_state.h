@@ -143,15 +143,12 @@ extern int32_t totalpatchsize;
 
 
 extern int16_t		firstspritelump;
-extern int16_t		lastspritelump;
 extern int16_t		numspritelumps;
 
 extern int16_t             firstflat;
-extern int16_t             lastflat;
 extern int16_t             numflats;
 
 extern int16_t             firstpatch;
-extern int16_t             lastpatch;
 extern int16_t             numpatches;
 extern int16_t             numtextures;
 
