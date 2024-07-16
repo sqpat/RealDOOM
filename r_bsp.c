@@ -610,8 +610,8 @@ void __far R_RenderBSPNode() {
 			// is a*b > c*d?
 			// i have a feeling there might be a clever fast way to determine this?
 
-			left =	FixedMul1616(bsp->dy,dx.h.intbits);
-			right = FixedMul1616(dy.h.intbits, bsp->dx);
+			left =	FastMul1616(bsp->dy,dx.h.intbits);
+			right = FastMul1616(dy.h.intbits, bsp->dx);
 
 			side = right >= left;
 

@@ -289,8 +289,8 @@ fixed_t32   FastMul16u32(uint16_t a, uint32_t b);
 //fixed_t32	FixedMul1616(int16_t a, int16_t b);
 
 // just standard 16 * 16 = 32 IMUL 
-inline fixed_t32 FixedMul1616(int16_t a, int16_t b);
-#pragma aux FixedMul1616 =   \
+inline fixed_t32 FastMul1616(int16_t a, int16_t b);
+#pragma aux FastMul1616 =   \
 "IMUL DX"  \
     parm [ax] [dx]       \
     modify [ax dx]   \

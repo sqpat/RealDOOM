@@ -133,8 +133,8 @@ int16_t __near P_DivlineSide ( fixed_t_union	x, fixed_t_union	y, divline_t __nea
     dx.w = (x.w - node->x.w);
     dy.w = (y.w - node->y.w);
 	
-    left = FixedMul1616(node->dy.h.intbits,dx.h.intbits);
-    right = FixedMul1616(dy.h.intbits,node->dx.h.intbits);
+    left = FastMul1616(node->dy.h.intbits,dx.h.intbits);
+    right = FastMul1616(dy.h.intbits,node->dx.h.intbits);
 	
     if (right < left)
 		return 0;	// front side
@@ -183,9 +183,9 @@ int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node )
 	temp.h.intbits = y;
     dy.w = (temp.w - node->y.w);
 	temp.w = node->dy.w;
-    left =  FixedMul1616(temp.h.intbits,dx.h.intbits);
+    left =  FastMul1616(temp.h.intbits,dx.h.intbits);
 	temp.w = node->dx.w;
-    right = FixedMul1616(dy.h.intbits,temp.h.intbits);
+    right = FastMul1616(dy.h.intbits,temp.h.intbits);
 	
     if (right < left)
 		return 0;	// front side
@@ -237,8 +237,8 @@ int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, node_t __fa
 	temp.h.intbits = node->y;
     dy.w = (y.w - temp.w);
 
-    left =  FixedMul1616(node->dy, dx.h.intbits);
-    right = FixedMul1616(dy.h.intbits, node->dx);
+    left =  FastMul1616(node->dy, dx.h.intbits);
+    right = FastMul1616(dy.h.intbits, node->dx);
 
 	if (right < left)
 		return 0;	// front side

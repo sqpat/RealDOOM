@@ -96,7 +96,9 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
     maskedtexturecol = &openings[ds->maskedtexturecol];
 
     rw_scalestep = ds->scalestep;
-    spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,(int32_t)rw_scalestep); // this cast is necessary or some masked textures render wrong behind some sprites
+    //spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,(int32_t)rw_scalestep); // this cast is necessary or some masked textures render wrong behind some sprites
+    spryscale.w = ds->scale1 + FastMul1616(x1 - ds->x1,rw_scalestep); // actually 1616 seems ok
+	
 	spryscale_shift12 = spryscale.w >> LIGHTSCALESHIFT;
     mfloorclip = MK_FP(openings_segment, ds->sprbottomclip_offset);
     mceilingclip = MK_FP(openings_segment, ds->sprtopclip_offset);
@@ -141,6 +143,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		fixed_t basespryscale = spryscale.w;
 		int16_t xoffset;
 		fixed_t rw_scalestep_shift = rw_scalestep << detailshift2minus;
+		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
 
 		while (base4diff){
 			basespryscale -= rw_scalestep;
@@ -161,12 +164,14 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 				spryscale.w += rw_scalestep_shift;
 
 			}
-
+			sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
 
 			// draw the columns
 			for (; dc_x <= x2 ; 
 				dc_x+=detailshiftitercount,
-				spryscale.w += rw_scalestep_shift
+				spryscale.w += rw_scalestep_shift,
+				sprtopscreen -= sprtopscreen_step
+
 			){
 				// calculate lighting
 				if (maskedtexturecol[dc_x] != MAXSHORT) {
@@ -188,7 +193,6 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 					
 					// todo optimize to an add approach instead of a fixedmul every timeapproach...
 					// add by dc_texturemid.w * rw_scalestep_shift
-					sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
 
 					// todo there's got to be a faster way
 					dc_iscale = 0xffffffffu / spryscale.w;
@@ -246,7 +250,7 @@ void __near R_RenderSegLoop (void)
     int16_t		    texturecolumn;
     int16_t			top;
     int16_t			bottom;
-	fixed_t_union temp;
+	fixed_t_union 	temp;
 	int8_t          xoffset;
 	int16_t        	start_rw_x = rw_x;
 	int16_t 		rw_x_base4 = rw_x & detailshiftandval;	// knock out the low 2 bits. 
@@ -294,11 +298,9 @@ void __near R_RenderSegLoop (void)
 			base_rw_scale   += rw_scalestep,
 			base_pixlow	    += pixlowstep,
 		    base_pixhigh    += pixhighstep
-
-				) {
+		) {
 
 		outp(SC_INDEX+1, quality_port_lookup[xoffset+detailshift.b.bytehigh]);
-
 		
 		//frac.w = basespryscale;
 		topfrac    = base_topfrac;
