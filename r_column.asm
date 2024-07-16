@@ -40,7 +40,7 @@ COLFUNC_FUNCTION_AREA_SEGMENT  = 6A42h
 COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 
-COLFUNC_JUMP_OFFSET            = 06Dh
+COLFUNC_JUMP_OFFSET            = 041h
 
 DRAWCOL_OFFSET                 = 2420h
 
@@ -64,47 +64,16 @@ PUBLIC  R_DrawColumn_
 
 ; no need to push anything. outer function just returns and pops
 
-
-    ; 	outp (SC_INDEX+1,1<<(dc_x&3));
-
-	mov   dx, word ptr [_dc_x]
-    mov   di, dx         ; copy to di
-
-    mov   cl, 2
-	mov   bl, byte ptr [_detailshift] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
-	sub   cl, bl
-    shr   di, cl
-
-	xor   bh, bh ; todo figure out a trick to get bh to 0 for free... maybe just make detailshift an int16
-
-    and   dl, 3     ; and dc_x by 3
-	sal   bl, 1
-	sal   bl, 1
-	add   bl, dl
-
-    ;    bl format is now 
-	; n:0    a:detailshift   b:dc_x & 3
-	;   nnnnaabb
-
-	; use this as lookup to get the al byte
-
-    mov al, byte ptr [_quality_port_lookup + bx]
-
-    mov   dx, 3c5h
-    out   dx, al
-
-    ; dest = destview + dc_yl*80 + (dc_x>>2); 
-    ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
-
-
-    mov   ax, word ptr [_dc_yl]
+    ; di contains shifted dc_x relative to details
+    ; cx contains dc_yl
+   
+    
+    mov   ax, cx  ; todo improve
+    
 	; shift already done earlier
     
-	; todo what if we just add directly to di instead of dx
 	
 
-    add   di, word ptr [DC_YL_LOOKUP_SPACE]   ; quick mul 80
-    add   di, word ptr [_destview + 0] 		 ; add destview offset
     cwd                         			 ; we know ax is positive, this is a quick clear out of dx
     mov   bx, word ptr [_dc_iscale + 0]   
     mov   cx, word ptr [_dc_iscale + 2]
@@ -161,7 +130,7 @@ PUBLIC  R_DrawColumn_
 
 pixel_loop_fast:
 
-   ;; 14 bytes loop iter
+   ;; 12 bytes loop iter
 
 DRAW_SINGLE_PIXEL MACRO 
    ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
@@ -225,15 +194,57 @@ push  cx
 push  dx   
 push  si
 push  di   
-add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment
+
+
+; 	outp (SC_INDEX+1,1<<(dc_x&3));
+
+add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
 mov   es, ax                                 ; store this segment for now, with offset pre-added
+
+mov   dx, word ptr [_dc_x]
+mov   di, dx         ; copy to di
+mov   cl, 2
+mov   bl, byte ptr [_detailshift] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
+sub   cl, bl
+shr   di, cl
+
+xor   bh, bh ; todo figure out a trick to get bh to 0 for free... maybe just make detailshift an int16
+
+and   dl, 3     ; and dc_x by 3
+sal   bl, 1
+sal   bl, 1
+add   bl, dl
+
+;    bl format is now 
+; n:0    a:detailshift   b:dc_x & 3
+;   nnnnaabb
+
+; use this as lookup to get the al byte
+
+mov al, byte ptr [_quality_port_lookup + bx]
+
+mov   dx, 3c5h
+out   dx, al
+
+; dest = destview + dc_yl*80 + (dc_x>>2); 
+; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale
+
+
+
+
+
+
+
 mov   si, word ptr [_dc_yh]                  ; grab dc_yh
 mov   bx, word ptr [_dc_yl]
+mov   cx, bx
 sub   si, bx                                 ;
 add   bx, bx                                 ; double dc_yl to get a word offset
 add   bx, COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF;
-mov   bx, word ptr es:[bx]
-mov   word ptr [DC_YL_LOOKUP_SPACE], bx      ; store pre-calculated dc_yl * 80
+add   di, word ptr es:[bx]                  ; set up destview 
+add   di, word ptr [_destview + 0] 		    ; add destview offset
+
+
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[COLFUNC_JUMP_OFFSET+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
@@ -251,7 +262,7 @@ db 0FFh  ; lcall[si]
 db 01Ch  ;
 
 
-pop   di ; unused but drawcol clobbers it.
+pop   di 
 pop   si
 pop   dx
 pop   cx
