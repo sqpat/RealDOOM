@@ -65,6 +65,8 @@ EXTRN   _ds_colormap_index:BYTE
 EXTRN   _ds_colormap_segment:WORD
 EXTRN	_destview:DWORD
 EXTRN   _detailshift:BYTE
+EXTRN   _detailshiftitercount:BYTE
+EXTRN   _detailshift2minus:BYTE
 EXTRN   _quality_port_lookup:BYTE
 
 

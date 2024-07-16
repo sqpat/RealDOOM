@@ -400,7 +400,7 @@ void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 void __near R_DrawSkyPlane2(int16_t minx, int16_t maxx, visplane_t __far*		pl){
     
 	int16_t xoffset;
-	int16_t minxbase4 = minx &= 0xFFFC;	// knock out the low 3 bits
+	int16_t minxbase4 = minx & 0xFFFC;	// knock out the low 2 bits
 	for (xoffset = 0; xoffset < 4; xoffset++ ){
 		int16_t x = minxbase4 + xoffset;
 		if (x < minx)

@@ -264,6 +264,9 @@ fixed_t			viewsin;
 
 // 0 = high, 1 = low, = 2 potato
 int16_t_union		detailshift;	
+uint8_t				detailshiftitercount;
+uint8_t				detailshift2minus;
+uint16_t			detailshiftandval;
 int16_t 			setdetail;
 //
 // precalculated math tables

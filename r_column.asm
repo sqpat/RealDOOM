@@ -201,30 +201,12 @@ push  di
 add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
-mov   dx, word ptr [_dc_x]
-mov   di, dx         ; copy to di
-mov   cl, 2
-mov   bl, byte ptr [_detailshift] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
-sub   cl, bl
+mov   di, word ptr [_dc_x]
+mov   cl, byte ptr [_detailshift2minus] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
 shr   di, cl
 
 xor   bh, bh ; todo figure out a trick to get bh to 0 for free... maybe just make detailshift an int16
 
-and   dl, 3     ; and dc_x by 3
-sal   bl, 1
-sal   bl, 1
-add   bl, dl
-
-;    bl format is now 
-; n:0    a:detailshift   b:dc_x & 3
-;   nnnnaabb
-
-; use this as lookup to get the al byte
-
-mov al, byte ptr [_quality_port_lookup + bx]
-
-mov   dx, 3c5h
-out   dx, al
 
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
 ; frac.w = dc_texturemid.w + (dc_yl-centery)*dc_iscale

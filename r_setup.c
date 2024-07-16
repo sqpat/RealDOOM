@@ -39,6 +39,7 @@
 #include "w_wad.h"
 #include <dos.h>
 #include "m_memory.h"
+#include "m_near.h"
 
 
 #define DISTMAP		2
@@ -214,6 +215,9 @@ void __near  R_ExecuteSetViewSize(void) {
 	detailshift.b.bytelow = setdetail;
 	detailshift.b.bytehigh = (setdetail << 2); // high bit contains preshifted by four setdetail
 
+	detailshift2minus =  (2-setdetail);
+	detailshiftitercount = 1 << (detailshift2minus);
+	detailshiftandval = 0 - detailshiftitercount;
 	
 	viewwidth = scaledviewwidth >> detailshift.b.bytelow;
 

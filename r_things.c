@@ -35,12 +35,14 @@
 #include "m_memory.h"
 #include "m_near.h"
 #include <dos.h>
+#include <conio.h>
 
 
 
 
 #define MINZ_HIGHBITS					4
 #define BASEYCENTER                     100L
+#define SC_INDEX                0x3C4
 
 
 
@@ -257,21 +259,83 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
 
     patch = MK_FP(patch_segment, 0);
 
-    if ((vis->colormap != COLORMAP_SHADOW)){
-        for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
-            uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
-            column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
-            R_DrawMaskedColumn(patch_segment + (columndata[0] >> 4), postdata);
-        }
-    } else {
 
-        for (dc_x=vis->x1 ; dc_x<=vis->x2 ; dc_x++, frac.w += vis->xiscale) {
-            uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
-            column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
-            R_DrawMaskedSpriteShadow(patch_segment + (columndata[0] >> 4), postdata);
+	{
+		int16_t dc_x_base4 = vis->x1 & (detailshiftandval);	// knock out the low 2 bits
+
+        int16_t base4diff = vis->x1 - dc_x_base4;
+
+		fixed_t basespryscale = frac.w;
+		int16_t xoffset;
+        fixed_t xiscalestep_shift = vis->xiscale << detailshift2minus;
+
+
+
+        // offset scale by the number of pixels that will be added back to it later..
+        // essentiall the &0xFFFC of the scale
+        while (base4diff){
+            basespryscale-=vis->xiscale; 
+            base4diff--;
+        }
+
+
+
+
+        // draw the columns
+        // todo combine these, use a function pointer.
+
+        if ((vis->colormap != COLORMAP_SHADOW)){
+            for (xoffset = 0 ; xoffset < detailshiftitercount ;
+                xoffset++, 
+                basespryscale+=vis->xiscale) {
+
+                outp(SC_INDEX+1, quality_port_lookup[xoffset+detailshift.b.bytehigh]);
+
+
+                frac.w = basespryscale;
+                dc_x = dc_x_base4 + xoffset;
+                if (dc_x < vis->x1){
+                    dc_x   += detailshiftitercount;
+                    frac.w += xiscalestep_shift;
+                    
+
+                }
+                
+                for ( ; dc_x<=vis->x2 ; 
+                    dc_x+=detailshiftitercount, 
+                    frac.w += xiscalestep_shift) {
+                    uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
+                    column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
+                    R_DrawMaskedColumn(patch_segment + (columndata[0] >> 4), postdata);
+                }
+            }
+        
+        } else {
+
+            for (xoffset = 0 ; xoffset < detailshiftitercount ; 
+                xoffset++, 
+                basespryscale+=vis->xiscale) {
+
+                frac.w = basespryscale;
+                dc_x = dc_x_base4 + xoffset;
+                if (dc_x < vis->x1){
+                    dc_x+=detailshiftitercount;
+                    frac.w += xiscalestep_shift;
+                }
+
+                outp(SC_INDEX+1, quality_port_lookup[xoffset+detailshift.b.bytehigh]);
+
+                for ( ; dc_x<=vis->x2 ; 
+                    dc_x+=detailshiftitercount, 
+                    frac.w += xiscalestep_shift) {
+
+                    uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
+                    column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
+                    R_DrawMaskedSpriteShadow(patch_segment + (columndata[0] >> 4), postdata);
+                }
+            }
         }
     }
-
 }
 
 

@@ -29,11 +29,14 @@
 #include "m_memory.h"
 #include "m_near.h"
 #include <dos.h>
+#include <conio.h>
+
 
 // OPTIMIZE: closed two sided lines as single sided
 
 
 
+#define SC_INDEX			0x3C4
 
 //
 // R_RenderMaskedSegRange
@@ -68,7 +71,6 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	// Use different light tables
 	//   for horizontal / vertical / diagonal. Diagonal?
 	// OPTIMIZE: get rid of LIGHTSEGSHIFT globally
-
 
 	frontsecnum = side_render->secnum;
 	backsector =
@@ -130,55 +132,91 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		dc_colormap_index = fixedcolormap;
 	}
 
-    // draw the columns
-    for (dc_x = x1 ; dc_x <= x2 ; dc_x++){
-		// calculate lighting
-		if (maskedtexturecol[dc_x] != MAXSHORT) {
-			if (!fixedcolormap) {
 
-				// prevents a 12 bit shift in many cases. 
-				// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4) which is 0x30000
-				if (spryscale.h.intbits >= 3) {
-					index = MAXLIGHTSCALE - 1;
-				} else {
-					index = spryscale_shift12;
-				}
 
-				dc_colormap_segment = colormapssegment_high;
-			    dc_colormap_index = walllights[index];
+	{
+		
+		int16_t dc_x_base4 = x1 & (detailshiftandval);	
+		int16_t base4diff = x1 - dc_x_base4;
+		fixed_t basespryscale = spryscale.w;
+		int16_t xoffset;
+		fixed_t rw_scalestep_shift = rw_scalestep << detailshift2minus;
 
-				// todo does it have to be reset after this?
-			}
-			
-			sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
-
-			// todo there's got to be a faster way
-			dc_iscale = 0xffffffffu / spryscale.w;
-			// the below doesnt work because sometimes < FRACUNIT
-			//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
-	    
-			// draw the texture
-			{
-				segment_t pixelsegment = R_GetColumnSegment(texnum,maskedtexturecol[dc_x]);
-				
-				uint8_t lookup = masked_lookup[texnum];
-				if (lookup != 0xFF){
-					masked_header_t __far * maskedheader = &masked_headers[lookup];
-					uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedheader->postofsoffset);
-					uint16_t 		 postoffset = postoffsets[cachedcol];
-					column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
-
-					R_DrawMaskedColumn (pixelsegment, postsdata);
-				} else {
-					R_DrawSingleMaskedColumn(pixelsegment, cachedbyteheight);
-				}
-
-			}			
-			maskedtexturecol[dc_x] = MAXSHORT;
+		while (base4diff){
+			basespryscale -= rw_scalestep;
+			base4diff--;
 		}
-		spryscale.w += rw_scalestep;
-    }
-	
+
+		for (xoffset = 0 ; xoffset < detailshiftitercount ; 
+			xoffset++, 
+			basespryscale+=rw_scalestep) {
+
+			outp(SC_INDEX+1, quality_port_lookup[xoffset+detailshift.b.bytehigh]);
+
+			spryscale.w = basespryscale;
+			dc_x        = dc_x_base4 + xoffset;
+			
+			if (dc_x < x1){
+				dc_x        += detailshiftitercount;
+				spryscale.w += rw_scalestep_shift;
+
+			}
+
+
+			// draw the columns
+			for (; dc_x <= x2 ; 
+				dc_x+=detailshiftitercount,
+				spryscale.w += rw_scalestep_shift
+			){
+				// calculate lighting
+				if (maskedtexturecol[dc_x] != MAXSHORT) {
+					if (!fixedcolormap) {
+
+						// prevents a 12 bit shift in many cases. 
+						// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4) which is 0x30000
+						if (spryscale.h.intbits >= 3) {
+							index = MAXLIGHTSCALE - 1;
+						} else {
+							index = spryscale_shift12;
+						}
+
+						dc_colormap_segment = colormapssegment_high;
+						dc_colormap_index = walllights[index];
+
+						// todo does it have to be reset after this?
+					}
+					
+					// todo optimize to an add approach instead of a fixedmul every timeapproach...
+					// add by dc_texturemid.w * rw_scalestep_shift
+					sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
+
+					// todo there's got to be a faster way
+					dc_iscale = 0xffffffffu / spryscale.w;
+					// the below doesnt work because sometimes < FRACUNIT
+					//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
+				
+					// draw the texture
+					{
+						segment_t pixelsegment = R_GetColumnSegment(texnum,maskedtexturecol[dc_x]);
+						
+						uint8_t lookup = masked_lookup[texnum];
+						if (lookup != 0xFF){
+							masked_header_t __far * maskedheader = &masked_headers[lookup];
+							uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedheader->postofsoffset);
+							uint16_t 		 postoffset = postoffsets[cachedcol];
+							column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
+
+							R_DrawMaskedColumn (pixelsegment, postsdata);
+						} else {
+							R_DrawSingleMaskedColumn(pixelsegment, cachedbyteheight);
+						}
+
+					}			
+					maskedtexturecol[dc_x] = MAXSHORT;
+				}
+			}
+		}
+	}
 }
 
 
@@ -197,6 +235,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 
 //extern int setval;
 
+
 void __near R_RenderSegLoop (void)
 {
     fineangle_t		angle;
@@ -204,180 +243,267 @@ void __near R_RenderSegLoop (void)
     int16_t			yl;
     int16_t			yh;
     int16_t			mid;
-    int16_t		texturecolumn;
+    int16_t		    texturecolumn;
     int16_t			top;
     int16_t			bottom;
 	fixed_t_union temp;
+	int8_t          xoffset;
+	int16_t        	start_rw_x = rw_x;
+	int16_t 		rw_x_base4 = rw_x & detailshiftandval;	// knock out the low 2 bits. 
 
-	for ( ; rw_x < rw_stopx ; rw_x++) {
-		// mark floor / ceiling areas
 
-		// todo optimize out and make a 16 bit add not 32.
-		yl = (topfrac+HEIGHTUNIT-1)>>HEIGHTBITS;
 
-		// no space above wall?
-		if (yl < ceilingclip[rw_x]+1){
-			yl = ceilingclip[rw_x]+1;
-		}
+	// its fine to do 2 bits even in low/potato because this is becing called word/dword aligned anyway so nothing changes.
 
-		if (markceiling) {
-			top = ceilingclip[rw_x]+1;
-			bottom = yl-1;
+	//todo check for overflow?
+	
+	// need to subtract detailshift mod 4 for base too
 
-			if (bottom >= floorclip[rw_x])
-				bottom = floorclip[rw_x]-1;
+	fixed_t			topstepshift    = topstep      << detailshift2minus;
+	fixed_t			bottomstepshift = bottomstep   << detailshift2minus;
+	int16_t			rwscaleshift    = rw_scalestep << detailshift2minus;
 
-			if (top <= bottom) {
-				ceiltop[rw_x] = top & 0xFF;
-				// top[322] is the start of bot[]
-				ceiltop[rw_x+322] = bottom & 0xFF;
+	fixed_t			pixhighstepshift = pixhighstep << detailshift2minus;
+	fixed_t			pixlowstepshift  = pixlowstep  << detailshift2minus;
+
+	fixed_t base_rw_scale   = rw_scale.w;
+	fixed_t base_topfrac    = topfrac;
+	fixed_t base_bottomfrac = bottomfrac;
+	fixed_t base_pixlow     = pixlow;
+	fixed_t base_pixhigh    = pixhigh;
+
+  	int16_t base4diff = rw_x - rw_x_base4;
+
+
+
+	while (base4diff){
+		base_rw_scale   -= rw_scalestep;
+		base_topfrac    -= topstep;
+		base_bottomfrac -= bottomstep;
+		pixlow		    -= pixlowstep;
+		pixhigh		    -= pixhighstep;
+		base4diff--;
+	}
+
  
-			}
-		}
+
+	for (xoffset = 0 ; xoffset < detailshiftitercount ; 
+			xoffset++,
+			base_topfrac    += topstep, 
+			base_bottomfrac += bottomstep, 
+			base_rw_scale   += rw_scalestep,
+			base_pixlow	    += pixlowstep,
+		    base_pixhigh    += pixhighstep
+
+				) {
+
+		outp(SC_INDEX+1, quality_port_lookup[xoffset+detailshift.b.bytehigh]);
+
 		
-			
-		yh = bottomfrac>>HEIGHTBITS;
+		//frac.w = basespryscale;
+		topfrac    = base_topfrac;
+		bottomfrac = base_bottomfrac;
+		rw_scale.w = base_rw_scale;
+		pixlow     = base_pixlow;
+		pixhigh    = base_pixhigh;
 
-		if (yh >= floorclip[rw_x]){
-			yh = floorclip[rw_x]-1;
+
+
+
+		rw_x = rw_x_base4 + xoffset;
+		if (rw_x < start_rw_x){
+			rw_x       += detailshiftitercount;
+			topfrac    += topstepshift;
+			bottomfrac += bottomstepshift;
+			rw_scale.w += rwscaleshift;
+			pixlow     += pixlowstepshift;
+			pixhigh    += pixhighstepshift;
+
 		}
 
-		if (markfloor) {
-			top = yh+1;
-			bottom = floorclip[rw_x]-1;
-			if (top <= ceilingclip[rw_x]){
+
+// todo:
+ 
+			//rw_scale.w += rw_scalestep;
+			//topfrac += topstep;
+			//bottomfrac += bottomstep;
+
+
+
+		for ( ; rw_x < rw_stopx ; 
+			rw_x		+= detailshiftitercount,
+			topfrac 	+= topstepshift,
+			bottomfrac  += bottomstepshift,
+			rw_scale.w  += rwscaleshift
+		) {
+
+			// mark floor / ceiling areas
+
+			// todo optimize out and make a 16 bit add not 32.
+			yl = (topfrac+(HEIGHTUNIT-1))>>HEIGHTBITS;
+
+			// no space above wall?
+			if (yl < ceilingclip[rw_x]+1){
+				yl = ceilingclip[rw_x]+1;
+			}
+
+			if (markceiling) {
 				top = ceilingclip[rw_x]+1;
-			}
-			if (top <= bottom) {
-				floortop[rw_x] = top & 0xFF;
-				// top[322] is the start of bot[]
-				floortop[rw_x+322] = bottom & 0xFF;
-			}
-		}
+				bottom = yl-1;
 
-		// texturecolumn and lighting are independent of wall tiers
-		if (segtextured) {
-			// calculate texture offset
-			angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
-			temp.w = rw_offset.w-FixedMul(finetangent(angle),rw_distance);
-			texturecolumn = temp.h.intbits;
-	    
-			// calculate lighting
+				if (bottom >= floorclip[rw_x])
+					bottom = floorclip[rw_x]-1;
 
-			// prevents a 12 bit shift in many cases. 
-			// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4)
-			if (rw_scale.h.intbits >= 3) {
-				index = MAXLIGHTSCALE - 1;
-			} else {
-				index = rw_scale.w >> LIGHTSCALESHIFT;
+				if (top <= bottom) {
+					ceiltop[rw_x] = top & 0xFF;
+					// top[322] is the start of bot[]
+					ceiltop[rw_x+322] = bottom & 0xFF;
+	
+				}
+			}
+			
+				
+			yh = bottomfrac>>HEIGHTBITS;
+
+			if (yh >= floorclip[rw_x]){
+				yh = floorclip[rw_x]-1;
 			}
 
-
-			dc_colormap_segment = colormapssegment;
-		    dc_colormap_index = walllights[index];
-			dc_x = rw_x;
-			dc_iscale = 0xffffffffu / rw_scale.w;
-			// the below doesnt work because sometimes < FRACUNIT
-			//dc_iscale = 0xffffu / rw_scale.hu.intbits;  // this might be ok? 
-		}
-
-		// draw the wall tiers
-		if (midtexture) {
-			// single sided line
-			if (yh >= yl){
-
-				dc_yl = yl;
-				dc_yh = yh;
-				dc_texturemid = rw_midtexturemid;
-
-				dc_source_segment = R_GetColumnSegment(midtexture,texturecolumn);
-
-				//I_Error("A %Fp  %Fp %Fp", R_DrawColumnPrepCall, R_DrawColumn, R_DrawColumnPrep);
-				// 6A42:0B6A
-				// 1CA4:19d2 
-				// 1CA4:253C
-				R_DrawColumnPrepCall(0);				
-
-
-
+			if (markfloor) {
+				top = yh+1;
+				bottom = floorclip[rw_x]-1;
+				if (top <= ceilingclip[rw_x]){
+					top = ceilingclip[rw_x]+1;
+				}
+				if (top <= bottom) {
+					floortop[rw_x] = top & 0xFF;
+					// top[322] is the start of bot[]
+					floortop[rw_x+322] = bottom & 0xFF;
+				}
 			}
-			ceilingclip[rw_x] = viewheight;
-			floorclip[rw_x] = -1;
-		} else {
-	    
-		
-			// two sided line
-			if (toptexture) {
-				// top wall
-				mid = pixhigh>>HEIGHTBITS;
-				pixhigh += pixhighstep;
 
-				if (mid >= floorclip[rw_x])
-					mid = floorclip[rw_x]-1;
+			// texturecolumn and lighting are independent of wall tiers
+			if (segtextured) {
+				// calculate texture offset
+				angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
+				temp.w = rw_offset.w-FixedMul(finetangent(angle),rw_distance);
+				texturecolumn = temp.h.intbits;
+			
+				// calculate lighting
 
-				if (mid >= yl) {
-					if (yh > yl){
-						dc_yl = yl;
-						dc_yh = mid;
-						dc_texturemid = rw_toptexturemid;
-
-						dc_source_segment = R_GetColumnSegment(toptexture,texturecolumn);
-						R_DrawColumnPrepCall(0);				
-					}
-					ceilingclip[rw_x] = mid;
+				// prevents a 12 bit shift in many cases. 
+				// Rather than checking if (rw_scale >> 12) > 48, we check if rw_scale high bit > (12 << 4)
+				if (rw_scale.h.intbits >= 3) {
+					index = MAXLIGHTSCALE - 1;
 				} else {
-					ceilingclip[rw_x] = yl - 1;
+					index = rw_scale.w >> LIGHTSCALESHIFT;
 				}
-			} else {
-				// no top wall
-				if (markceiling) {
-					ceilingclip[rw_x] = yl - 1;
-				}
+
+
+				dc_colormap_segment = colormapssegment;
+				dc_colormap_index = walllights[index];
+				dc_x = rw_x;
+				dc_iscale = 0xffffffffu / rw_scale.w;
+				// the below doesnt work because sometimes < FRACUNIT
+				//dc_iscale = 0xffffu / rw_scale.hu.intbits;  // this might be ok? 
 			}
-			
-			if (bottomtexture) {
-				// bottom wall
-				mid = (pixlow + HEIGHTUNIT - 1) >> HEIGHTBITS;
-				pixlow += pixlowstep;
 
-				// no space above wall?
-				if (mid <= ceilingclip[rw_x]) {
-					mid = ceilingclip[rw_x] + 1;
+			// draw the wall tiers
+			if (midtexture) {
+				// single sided line
+				if (yh >= yl){
+
+					dc_yl = yl;
+					dc_yh = yh;
+					dc_texturemid = rw_midtexturemid;
+
+					dc_source_segment = R_GetColumnSegment(midtexture,texturecolumn);
+
+					//I_Error("A %Fp  %Fp %Fp", R_DrawColumnPrepCall, R_DrawColumn, R_DrawColumnPrep);
+					// 6A42:0B6A
+					// 1CA4:19d2 
+					// 1CA4:253C
+					R_DrawColumnPrepCall(0);				
+
+
+
 				}
-				if (mid <= yh) {
-					if (yh > yl){
-						dc_yl = mid;
-						dc_yh = yh;
-						dc_texturemid = rw_bottomtexturemid;
+				ceilingclip[rw_x] = viewheight;
+				floorclip[rw_x] = -1;
+			} else {
+			
+			
+				// two sided line
+				if (toptexture) {
+					// top wall
+					mid = pixhigh>>HEIGHTBITS;
+					pixhigh += pixhighstepshift;
 
-						dc_source_segment = R_GetColumnSegment(bottomtexture, texturecolumn);
-						R_DrawColumnPrepCall(0);
-						
+					if (mid >= floorclip[rw_x])
+						mid = floorclip[rw_x]-1;
 
+					if (mid >= yl) {
+						if (yh > yl){
+							dc_yl = yl;
+							dc_yh = mid;
+							dc_texturemid = rw_toptexturemid;
+
+							dc_source_segment = R_GetColumnSegment(toptexture,texturecolumn);
+							R_DrawColumnPrepCall(0);				
+						}
+						ceilingclip[rw_x] = mid;
+					} else {
+						ceilingclip[rw_x] = yl - 1;
 					}
-					floorclip[rw_x] = mid;
+				} else {
+					// no top wall
+					if (markceiling) {
+						ceilingclip[rw_x] = yl - 1;
+					}
 				}
-				else {
-					floorclip[rw_x] = yh + 1;
+				
+				if (bottomtexture) {
+					// bottom wall
+					mid = (pixlow + HEIGHTUNIT - 1) >> HEIGHTBITS;
+					pixlow += pixlowstepshift;
+
+					// no space above wall?
+					if (mid <= ceilingclip[rw_x]) {
+						mid = ceilingclip[rw_x] + 1;
+					}
+					if (mid <= yh) {
+						if (yh > yl){
+							dc_yl = mid;
+							dc_yh = yh;
+							dc_texturemid = rw_bottomtexturemid;
+
+							dc_source_segment = R_GetColumnSegment(bottomtexture, texturecolumn);
+							R_DrawColumnPrepCall(0);
+							
+
+						}
+						floorclip[rw_x] = mid;
+					}
+					else {
+						floorclip[rw_x] = yh + 1;
+					}
+				} else {
+					// no bottom wall
+					if (markfloor) {
+						floorclip[rw_x] = yh + 1;
+					}
 				}
-			} else {
-				// no bottom wall
-				if (markfloor) {
-					floorclip[rw_x] = yh + 1;
+				
+				if (maskedtexture) {
+					// save texturecol
+					//  for backdrawing of masked mid texture			
+					maskedtexturecol[rw_x] = texturecolumn;
 				}
+				
 			}
 			
-			if (maskedtexture) {
-				// save texturecol
-				//  for backdrawing of masked mid texture			
-				maskedtexturecol[rw_x] = texturecolumn;
-			}
-			
+
 		}
-		
-		rw_scale.w += rw_scalestep;
-		topfrac += topstep;
-		bottomfrac += bottomstep;
 	}
 
 }
@@ -754,6 +880,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		worldhigh.w >>= 4;
 		worldlow.w >>= 4;
 		if (worldhigh.w < worldtop.w) {
+
 			pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
 //			if (rw_scalestep) {
 				pixhighstep = -FixedMul1632(rw_scalestep, worldhigh.w);
