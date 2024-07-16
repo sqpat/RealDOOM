@@ -513,12 +513,12 @@ PUBLIC  R_DrawSpanPrep_
  add   bx, bx
  mov   ax, word ptr [_destview]			; get FP_OFF(destview)
  mov   dx, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
- mov   bh, 2
+ ;mov   bh, 2
  add   dx, ax							; dx is baseoffset
  mov   es, word ptr [_ds_x1]			; es holds ds_x1
 	
 ; int8_t   shiftamount = (2-detailshift);
- sub   bh, byte ptr [_detailshift]		; get shiftamount in bh
+ mov   bh, byte ptr [_detailshift2minus]		; get shiftamount in bh
  xor   bl, bl							; zero out bl. use it as loop counter/ i
  
  cmp   byte ptr [_spanfunc_main_loop_count], 0		; if shiftamount is equal to zero

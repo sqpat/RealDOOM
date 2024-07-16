@@ -68,6 +68,7 @@ EXTRN   _detailshift:BYTE
 EXTRN   _detailshiftitercount:BYTE
 EXTRN   _detailshift2minus:BYTE
 EXTRN   _quality_port_lookup:BYTE
+EXTRN   _detailshiftandval:WORD
 
 
 PUSHR	MACRO

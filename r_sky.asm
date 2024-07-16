@@ -157,9 +157,8 @@ and   al,  0FCh                 ;
 push  ax                        ; bp-A minxbase4
 push  dx                        ; bp-c maxx
 
-mov   cl, byte ptr [_detailshift]
-mov   ax, 4
-sar   ax, cl
+mov   al, byte ptr [_detailshiftitercount]
+cbw
 
 
 push  ax                        ; bp-E
@@ -239,8 +238,8 @@ and   si, 07F8h
 add   si, SKYTEXTURE_TEXTURE_SEGMENT
 ; si contains dc source segment for the function
 
-mov cl, 3
-sub cl, byte ptr [_detailshift]
+mov cl, byte ptr [_detailshift2minus]
+inc cl
 shr di, cl  ; preshift dc_x by detailshift. Plus one for the earlier word offset shift.
 
 mov cx, si  ; retrieve cx
