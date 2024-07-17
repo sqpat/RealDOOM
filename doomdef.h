@@ -296,6 +296,27 @@ inline fixed_t32 FastMul1616(int16_t a, int16_t b);
     modify [ax dx]   \
     value [dx ax];
 
+inline uint32_t FastMul16u16u(uint16_t a, uint16_t b);
+#pragma aux FastMul16u16u =   \
+"MUL DX"  \
+    parm [ax] [dx]       \
+    modify [ax dx]   \
+    value [dx ax];
+
+inline uint16_t DIV3216RESULT(uint32_t a, uint16_t b);
+#pragma aux FastMul16u16u =   \
+"DIV BX"  \
+    parm [dx ax] [bx]       \
+    modify [ax bx dx]   \
+    value [ax];
+
+inline uint16_t DIV3216REMAINDER(uint32_t a, uint16_t b);
+#pragma aux FastMul16u16u =   \
+"DIV BX"  \
+    parm [dx ax] [bx]       \
+    modify [ax bx dx]   \
+    value [dx];
+
 
 inline uint16_t FastMul8u8u(uint8_t a, uint8_t b);
 #pragma aux FastMul8u8u =   \

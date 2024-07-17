@@ -141,7 +141,6 @@ PUBLIC  R_DrawSkyPlane_
 ; bp - 8 minx 
 ; bp - A minxbase4   (minx & 0xFFFC)
 ; bp - C maxx
-; bp - E 4 >> detailshift
 
 push  si
 push  di
@@ -157,11 +156,9 @@ and   al,  0FCh                 ;
 push  ax                        ; bp-A minxbase4
 push  dx                        ; bp-c maxx
 
-mov   al, byte ptr [_detailshiftitercount]
-cbw
-
-
-push  ax                        ; bp-E
+;mov   al, byte ptr [_detailshiftitercount]
+;cbw
+;push  ax                        ; bp-E
 
 
 start_drawing_next_vga_plane:
@@ -176,7 +173,7 @@ add   dx, ax
 cmp   dx, word ptr [bp - 08h]               ; if below minx then increment by detail step
 jge   start_drawing_vga_plane
 
-add   dx, word ptr [bp - 0Eh]
+add   dx, word ptr [_detailshiftitercount]
 
 start_drawing_vga_plane:
 ; out the appropriate plane value
@@ -191,7 +188,7 @@ mov   bx, dx   ; copy this value to bx now
 mov   dx, 03C5h
 out   dx, al
 
-mov   dl, byte ptr [bp - 0Eh]    
+mov   dl, byte ptr [_detailshiftitercount]    
 
 cmp   bx, word ptr [bp - 0Ch]  ; compare to maxx
 jg    increment_vga_plane
@@ -258,7 +255,7 @@ pop si  ; retrieve si
 ; note: the above functions zeroes out DH
 
 skip_column_draw:
-mov   dl, byte ptr [bp - 0Eh]     ; dh is 0
+mov   dl, byte ptr [_detailshiftitercount]     ; dh is 0
 add   bx, dx     ; increment x/dc_x by step
 add   si, dx     ; increment pl->top/bot lookup
 cmp   bx, word ptr [bp - 0Ch]

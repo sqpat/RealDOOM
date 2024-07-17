@@ -201,6 +201,7 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 			{
 				// octant 0
 				if (x.w < 512)
+					// 0x20000000 or ANG45
 					return 536870912L;
 				else
 				{
@@ -208,6 +209,7 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 					if (tempDivision.w < SLOPERANGE)
 						return tantoangle[tempDivision.h.fracbits].wu;
 					else
+						// 0x20000000 or ANG45
 						return 536870912L;
 				}
 			}

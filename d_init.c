@@ -501,6 +501,166 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b);
 fixed_t32 FixedDiv3(fixed_t32	a, fixed_t32	b);
 void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) ;
 
+int16_t countleadingzeroes(uint32_t num){
+	uint32_t start = 1L << 31;
+	int16_t result = 0;
+	while (!(num & start) && result < 31){
+		start >>= 1;
+		result++;
+	}
+
+	return result;
+}
+
+uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
+{
+    // We work in base 2**16.
+    // A uint16 holds a single digit. A uint32 holds two digits.
+    // Our numerator is conceptually [num3, num2, num1, num0].
+    // Our denominator is [den1, den0].
+    const uint32_t b = (1ull << 16);
+
+    // The high and low digits of our computed quotient.
+    uint16_t q1;
+
+    // The normalization shift factor.
+    int16_t shift;
+
+    // The high and low digits of our denominator (after normalizing).
+    // Also the low 2 digits of our numerator (after normalizing).
+    uint16_t den1;
+    uint16_t den0;
+    uint16_t num1;
+    uint16_t num0;
+
+    // A partial remainder.
+    fixed_t_union rem;
+
+    // The estimated quotient, and its corresponding remainder (unrelated to true remainder).
+    uint16_t qhat;
+    uint16_t rhat;
+
+    // Variables used to correct the estimated quotient.
+    uint32_t c1;
+    fixed_t_union c2;
+	fixed_t_union numlo;
+	fixed_t_union numhi;
+	numhi.wu = num_input.hu.intbits;
+	numlo.hu.intbits = num_input.hu.fracbits;
+	numlo.hu.fracbits = 0;
+
+    // Check for overflow and divide by 0.
+    if (numhi.wu >= den.wu) {
+        return 0;
+    }
+
+    // Determine the normalization factor. We multiply den by this, so that its leading digit is at
+    // least half b. In binary this means just shifting left by the number of leading zeros, so that
+    // there's a 1 in the MSB.
+    // We also shift numer by the same amount. This cannot overflow because numhi < den.
+    // The expression (-shift & 63) is the same as (32 - shift), except it avoids the UB of shifting
+    // by 32. The funny bitwise 'and' ensures that numlo does not get shifted into numhi if shift is 0.
+    // clang 11 has an x86 codegen bug here: see LLVM bug 50118. The sequence below avoids it.
+    shift = countleadingzeroes(den.wu);
+    den.wu <<= shift;
+    numhi.wu <<= shift;
+    numhi.wu |= (numlo.wu >> (-shift & 31)) & (-(int32_t)shift >> 31);
+    numlo.wu <<= shift;
+
+    // Extract the low digits of the numerator and both digits of the denominator.
+    num1 = (uint16_t)(numlo.hu.intbits);
+    num0 = (uint16_t)(numlo.hu.fracbits);
+    den1 = (uint16_t)(den.hu.intbits);
+    den0 = (uint16_t)(den.hu.fracbits);
+
+    // We wish to compute q1 = [n3 n2 n1] / [d1 d0].
+    // Estimate q1 as [n3 n2] / [d1], and then correct it.
+    // Note while qhat may be 2 digits, q1 is always 1 digit.
+    qhat = numhi.wu / den1;
+    rhat = numhi.wu % den1;
+    c1 = FastMul16u16u(qhat , den0);
+    c2.hu.intbits = rhat;
+	c2.hu.fracbits = num1;
+    if (c1 > c2.wu)
+        qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
+    q1 = (uint16_t)qhat;
+
+    // Compute the true (partial) remainder.
+	// overflow is expected and fine.
+
+    
+//    rem.wu = numhi.wu * b + num1 - q1*den.wu;
+	rem.hu.intbits = numhi.hu.fracbits;
+	rem.hu.fracbits = num1;
+	rem.wu -= q1 * den.wu;
+
+
+
+    // We wish to compute q0 = [rem1 rem0 n0] / [d1 d0].
+    // Estimate q0 as [rem1 rem0] / [d1] and correct it.
+
+	// NOTE! the qhat * den0 will overflow in some cases.
+	// it wont fit in a 32 bit register if the result is 0x10001 or 0x10000.
+	// so rather than correct later - we must frontload some checking.
+	//  Not expensive - just compare high byte of numerator with denominator.
+	//  if larger than or equal, then subtract denominator, check again and subtract again if necessary.
+	//  in these cases, the later off-by-one-or-two 'corrections' are appropriately skipped 
+    if (rem.hu.intbits < den1){
+
+		qhat = rem.wu / den1;
+		rhat = rem.wu % den1;
+		c1 = FastMul16u16u(qhat , den0);
+
+		//I_Error("%lu %u %u %u %u", c1, qhat, den0, rem.hu.intbits, den1);
+		c2.h.intbits = rhat;
+		c2.h.fracbits = num0;
+
+		if (c1 > c2.wu)
+			qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
+
+		// q0 = qhat
+
+		return ((uint32_t)q1 << 16) | qhat;
+	} else {
+		rem.wu -= den1;
+
+		if (rem.hu.intbits < den1){
+
+			qhat = rem.wu / den1;
+			rhat = rem.wu % den1;
+			c1 = FastMul16u16u(qhat , den0);
+
+			c2.h.intbits = rhat;
+			c2.h.fracbits = num0;
+
+			// skip the double correction case and only do single
+			if (c1 > c2.wu && (c1 - c2.wu > den.wu))
+				qhat--;
+
+			// q0 = qhat
+			return ((uint32_t)q1 << 16) | qhat;
+
+		} else {
+
+			rem.wu -= den1;
+			qhat = rem.wu / den1;
+			rhat = rem.wu % den1;
+			c1 = FastMul16u16u(qhat , den0);
+
+			c2.h.intbits = rhat;
+			c2.h.fracbits = num0;
+
+			// q0 = qhat
+			// no correction. we've already subtracted two
+
+			return ((uint32_t)q1 << 16) | qhat;
+			
+		}
+	}
+		
+
+}
+
 void __far D_DoomMain2(void)
 {
 	int16_t             p;
@@ -511,15 +671,50 @@ void __far D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
-	
 /*
+	fixed_t_union a, b;
+	uint32_t i;
+	uint32_t j;
+
+
 
 	FILE *fp = fopen("output2.bin", "wb");
 
 
-	FAR_fwrite(FixedDiv, (byte __far *)V_DrawPatchFlipped - (byte __far *)FixedDiv, 1, fp);
+	FAR_fwrite(divllu, (byte __far *)D_DoomMain2 - (byte __far *)divllu, 1, fp);
+
+	// bugged with i = 3025 j = 2139
+
+	a.wu = 3025l * 3025l;
+	b.wu = 2139l * 2139l;
+
+	//I_Error("res: %li %lx %li %lx", divllu(a, b ), divllu(a, b ), 	 FixedDiv(a.wu, b.wu ), FixedDiv(a.wu, b.wu ));
+
+	for (i = 2; i < 10000; i++){
+		fixed_t_union ii;
+		ii.wu = i * i;
+		for (j = i/2; j < i; j++){
+			fixed_t_union jj;
+			jj.wu = j * j;
+			if (divllu(ii, jj) != FixedDiv(ii.wu, jj.wu)){
+				I_Error("inequal %li %li %li %li %li %li %lx %lx", i, j, ii.wu, jj.wu,
+				divllu(ii, jj),
+				FixedDiv(ii.wu, jj.wu),
+				divllu(ii, jj),
+				FixedDiv(ii.wu, jj.wu)
+				);
+			}
+
+		}
+
+	}
+
+	a.w = 0x0fedcba9;
+	b.w = 0x07654321;
 
 	fclose(fp);
+	I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
+	I_Error("done");
 	*/
 /*
 	I_Error("blah %Fp %Fp %lx", (byte __far *)R_DrawMaskedColumn, (byte __far *)R_DrawSingleMaskedColumn,
