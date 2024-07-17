@@ -304,19 +304,27 @@ inline uint32_t FastMul16u16u(uint16_t a, uint16_t b);
     value [dx ax];
 
 inline uint16_t DIV3216RESULT(uint32_t a, uint16_t b);
-#pragma aux FastMul16u16u =   \
+#pragma aux DIV3216RESULT =   \
 "DIV BX"  \
     parm [dx ax] [bx]       \
     modify [ax bx dx]   \
     value [ax];
 
 inline uint16_t DIV3216REMAINDER(uint32_t a, uint16_t b);
-#pragma aux FastMul16u16u =   \
+#pragma aux DIV3216REMAINDER =   \
 "DIV BX"  \
     parm [dx ax] [bx]       \
     modify [ax bx dx]   \
     value [dx];
 
+
+
+inline uint32_t DIV3216RESULTREMAINDER(uint32_t a, uint16_t b);
+#pragma aux DIV3216RESULTREMAINDER =   \
+"DIV BX"  \
+    parm [dx ax] [bx]       \
+    modify [ax dx]   \
+    value [dx ax];
 
 inline uint16_t FastMul8u8u(uint8_t a, uint8_t b);
 #pragma aux FastMul8u8u =   \

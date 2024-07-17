@@ -542,6 +542,7 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
 
     // Variables used to correct the estimated quotient.
     uint32_t c1;
+	fixed_t_union divresult;
     fixed_t_union c2;
 	fixed_t_union numlo;
 	fixed_t_union numhi;
@@ -576,8 +577,10 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
     // We wish to compute q1 = [n3 n2 n1] / [d1 d0].
     // Estimate q1 as [n3 n2] / [d1], and then correct it.
     // Note while qhat may be 2 digits, q1 is always 1 digit.
-    qhat = numhi.wu / den1;
-    rhat = numhi.wu % den1;
+	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+	qhat = divresult.hu.fracbits;
+	rhat = divresult.hu.intbits;
+
     c1 = FastMul16u16u(qhat , den0);
     c2.hu.intbits = rhat;
 	c2.hu.fracbits = num1;
@@ -599,7 +602,7 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
     // We wish to compute q0 = [rem1 rem0 n0] / [d1 d0].
     // Estimate q0 as [rem1 rem0] / [d1] and correct it.
 
-	// NOTE! the qhat * den0 will overflow in some cases.
+	// sq NOTE! the qhat * den0 will overflow in some cases.
 	// it wont fit in a 32 bit register if the result is 0x10001 or 0x10000.
 	// so rather than correct later - we must frontload some checking.
 	//  Not expensive - just compare high byte of numerator with denominator.
@@ -607,11 +610,13 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
 	//  in these cases, the later off-by-one-or-two 'corrections' are appropriately skipped 
     if (rem.hu.intbits < den1){
 
-		qhat = rem.wu / den1;
-		rhat = rem.wu % den1;
+		divresult.wu = DIV3216RESULTREMAINDER(rem.wu, den1);
+		qhat = divresult.hu.fracbits;
+		rhat = divresult.hu.intbits;
+
+
 		c1 = FastMul16u16u(qhat , den0);
 
-		//I_Error("%lu %u %u %u %u", c1, qhat, den0, rem.hu.intbits, den1);
 		c2.h.intbits = rhat;
 		c2.h.fracbits = num0;
 
@@ -626,8 +631,9 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
 
 		if (rem.hu.intbits < den1){
 
-			qhat = rem.wu / den1;
-			rhat = rem.wu % den1;
+			divresult.wu = DIV3216RESULTREMAINDER(rem.wu, den1);
+			qhat = divresult.hu.fracbits;
+			rhat = divresult.hu.intbits;
 			c1 = FastMul16u16u(qhat , den0);
 
 			c2.h.intbits = rhat;
@@ -643,8 +649,10 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
 		} else {
 
 			rem.wu -= den1;
-			qhat = rem.wu / den1;
-			rhat = rem.wu % den1;
+			divresult.wu = DIV3216RESULTREMAINDER(rem.wu, den1);
+			qhat = divresult.hu.fracbits;
+			rhat = divresult.hu.intbits;
+
 			c1 = FastMul16u16u(qhat , den0);
 
 			c2.h.intbits = rhat;
@@ -671,7 +679,7 @@ void __far D_DoomMain2(void)
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
-/*
+
 	fixed_t_union a, b;
 	uint32_t i;
 	uint32_t j;
@@ -715,7 +723,7 @@ void __far D_DoomMain2(void)
 	fclose(fp);
 	I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
 	I_Error("done");
-	*/
+	
 /*
 	I_Error("blah %Fp %Fp %lx", (byte __far *)R_DrawMaskedColumn, (byte __far *)R_DrawSingleMaskedColumn,
 		FixedDiv(0x0FEDCBA9, 0x07654321 ));  // 2276
