@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/07/18 09:25:48
+Created on:       24/07/18 09:55:53
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -79,7 +79,7 @@ r_bsp_TEXT             CODE           AUTO           1773:0000       0000081b
 r_data_TEXT            CODE           AUTO           1773:0820       000016aa
 R_COLUMN_TEXT          CODE           AUTO           1773:1eca       00000a19
 R_SPAN_TEXT            CODE           AUTO           1773:28e4       000009ff
-R_SKY_TEXT             CODE           AUTO           1773:32e4       00000256
+R_SKY_TEXT             CODE           AUTO           1773:32e4       00000258
 r_draw_TEXT            CODE           AUTO           1773:3540       000004ac
 r_main_TEXT            CODE           AUTO           1773:39f0       000009d2
 r_plane_TEXT           CODE           AUTO           1773:43d0       00000762
