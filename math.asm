@@ -831,42 +831,20 @@ ENDP
 ;FIXEDDIV
 ; DX:AX / CX:BX
 
-
-PROC countleadingzeroes_
-PUBLIC countleadingzeroes_
-
-
-push bx
-push cx
-push si
-mov  si, ax
-mov  cx, dx
-mov  dx, 08000h
-xor  ax, ax
-xor  bx, bx
-test ch, 080h
-jne  label30
-label31:
-cmp  bx, 01fh
-jge  label30
-shr  dx, 1
-rcr  ax, 1
-inc  bx
-test cx, dx
-jne  label30
-test si, ax
-je   label31
-label30:
-mov  ax, bx
-pop  si
-pop  cx
-pop  bx
-ret
-
-ENDP
-
 PROC div48_32_
 PUBLIC div48_32_
+
+
+;
+;
+;
+;
+; bp - 1ah   dx copy
+;
+; 
+; bp - 20h   ax copy
+; bp - 22h   cx copy
+; bp - 24h   bx copy
 
 push  si
 push  bp
@@ -877,9 +855,45 @@ mov   si, bx
 mov   di, cx
 mov   word ptr [bp - 01ah], dx
 mov   word ptr [bp - 020h], ax
-mov   ax, bx
-mov   dx, cx
-call  countleadingzeroes_
+
+; make copies of cx:bx
+push cx
+push bx
+
+
+; COUNT LEADING ZEROES
+
+push si
+mov  si, bx
+;mov  cx, dx
+mov  dx, 08000h
+xor  ax, ax
+xor  bx, bx
+test ch, 080h
+jne  finished_counting_zeroes
+count_next_binary_digit:
+cmp  bx, 01fh
+jge  finished_counting_zeroes
+shr  dx, 1
+rcr  ax, 1
+inc  bx
+test cx, dx
+jne  finished_counting_zeroes
+test si, ax
+je   count_next_binary_digit
+finished_counting_zeroes:
+mov  ax, bx
+pop  si
+
+; END COUNT LEADING ZEROES
+
+pop  bx
+pop  cx
+
+
+; have zeroes in ax
+; begin doing all the shifts
+
 mov   cx, ax
 jcxz  label_0
 label1:
