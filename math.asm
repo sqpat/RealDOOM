@@ -1168,6 +1168,7 @@ a_is_positive:
 
 ;  dx:ax  is  labs(dx:ax) now (unshifted)
 ;  cx:bx  is  labs(cx:bx) now
+test cx, 0FFFCh
 
 
 je continue_bounds_test
