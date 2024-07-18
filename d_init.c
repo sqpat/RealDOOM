@@ -498,9 +498,15 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 void __near R_RenderSegLoop (void);
 void copystr8(int8_t __far* dst, int8_t __far* src);
 fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b);
+fixed_t32 FixedDiv10(fixed_t32	a, fixed_t32	b);
+fixed_t32 FixedDiv11(fixed_t32	a, fixed_t32	b);
 fixed_t32 FixedDiv3(fixed_t32	a, fixed_t32	b);
 void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) ;
 
+int16_t countleadingzeroes(uint32_t num);
+uint32_t divllu(fixed_t_union num_input, fixed_t_union den);
+
+/*
 int16_t countleadingzeroes(uint32_t num){
 	uint32_t start = 1L << 31;
 	int16_t result = 0;
@@ -512,8 +518,7 @@ int16_t countleadingzeroes(uint32_t num){
 	return result;
 }
 
-uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
-{
+uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
     // We work in base 2**16.
     // A uint16 holds a single digit. A uint32 holds two digits.
     // Our numerator is conceptually [num3, num2, num1, num0].
@@ -551,9 +556,9 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
 	numlo.hu.fracbits = 0;
 
     // Check for overflow and divide by 0.
-    if (numhi.wu >= den.wu) {
-        return 0;
-    }
+    //if (numhi.wu >= den.wu) {
+        //return 0;
+    //}
 
     // Determine the normalization factor. We multiply den by this, so that its leading digit is at
     // least half b. In binary this means just shifting left by the number of leading zeros, so that
@@ -589,13 +594,15 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
     q1 = (uint16_t)qhat;
 
     // Compute the true (partial) remainder.
-	// overflow is expected and fine.
+	// overflow is expected and fine. 
+	// thus we use a 32 bit result for  q1 * den.wu
 
     
 //    rem.wu = numhi.wu * b + num1 - q1*den.wu;
 	rem.hu.intbits = numhi.hu.fracbits;
 	rem.hu.fracbits = num1;
-	rem.wu -= q1 * den.wu;
+	rem.wu -= FastMul16u32u(q1, den.wu);
+	
 
 
 
@@ -665,9 +672,8 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den)
 			
 		}
 	}
-		
-
 }
+*/
 
 void __far D_DoomMain2(void)
 {
@@ -680,23 +686,54 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 
+/*
+
 	fixed_t_union a, b;
-	uint32_t i;
-	uint32_t j;
 
-
-
-	FILE *fp = fopen("output2.bin", "wb");
-
-
-	FAR_fwrite(divllu, (byte __far *)D_DoomMain2 - (byte __far *)divllu, 1, fp);
+	//FILE *fp = fopen("output3.bin", "wb");
+	//FAR_fwrite(divllu, (byte __far *)FixedDiv - (byte __far *)divllu, 1, fp);
+	//fclose(fp);
 
 	// bugged with i = 3025 j = 2139
 
-	a.wu = 3025l * 3025l;
-	b.wu = 2139l * 2139l;
-
+	
+	//I_Error("leading: %i", countleadingzeroes(0x0));
+	//I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
 	//I_Error("res: %li %lx %li %lx", divllu(a, b ), divllu(a, b ), 	 FixedDiv(a.wu, b.wu ), FixedDiv(a.wu, b.wu ));
+
+	a.wu = -16;
+	b.wu = 16;
+	I_Error("res: %li %lx %li %lx", FixedDiv10(a.wu, b.wu ), FixedDiv10(a.wu, b.wu ),
+							    	FixedDiv11(a.wu, b.wu ), FixedDiv11(a.wu, b.wu ));
+/*
+	a.w = 0x0fedcba9;
+	b.w = 0x07654321;
+
+	I_StartupSound();
+
+	tica = ticcount;
+
+	for (i = 2; i < 1000; i++){
+		fixed_t_union ii;
+		ii.wu = i * i;
+		for (j = i/2; j < i; j++){
+			fixed_t_union jj;
+			jj.wu = j * j;
+			FixedDiv(ii.wu, jj.wu);
+		}
+	}
+	ticb = ticcount;
+	for (i = 2; i < 1000; i++){
+		fixed_t_union ii;
+		ii.wu = i * i;
+		for (j = i/2; j < i; j++){
+			fixed_t_union jj;
+			jj.wu = j * j;
+			FixedDiv10(ii.wu, jj.wu);
+		}
+	}
+	ticc = ticcount;
+	I_Error("values %li %li %li %li %li", tica, ticb, ticc, ticb-tica, ticc-ticb);
 
 	for (i = 2; i < 10000; i++){
 		fixed_t_union ii;
@@ -704,11 +741,11 @@ void __far D_DoomMain2(void)
 		for (j = i/2; j < i; j++){
 			fixed_t_union jj;
 			jj.wu = j * j;
-			if (divllu(ii, jj) != FixedDiv(ii.wu, jj.wu)){
+			if (FixedDiv10(ii.wu, jj.wu) != FixedDiv(ii.wu, jj.wu)){
 				I_Error("inequal %li %li %li %li %li %li %lx %lx", i, j, ii.wu, jj.wu,
-				divllu(ii, jj),
+				FixedDiv10(ii.wu, jj.wu),
 				FixedDiv(ii.wu, jj.wu),
-				divllu(ii, jj),
+				FixedDiv10(ii.wu, jj.wu),
 				FixedDiv(ii.wu, jj.wu)
 				);
 			}
@@ -717,13 +754,12 @@ void __far D_DoomMain2(void)
 
 	}
 
-	a.w = 0x0fedcba9;
-	b.w = 0x07654321;
-
-	fclose(fp);
-	I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
 	I_Error("done");
 	
+
+	//I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
+	//I_Error("done");
+	*/
 /*
 	I_Error("blah %Fp %Fp %lx", (byte __far *)R_DrawMaskedColumn, (byte __far *)R_DrawSingleMaskedColumn,
 		FixedDiv(0x0FEDCBA9, 0x07654321 ));  // 2276
