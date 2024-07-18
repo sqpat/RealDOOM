@@ -187,17 +187,16 @@ fixed_t32 FixedDiv2 (fixed_t32	a, fixed_t32	b
 //
 */
 
-fixed_t32 FixedDiv11(fixed_t32	a, fixed_t32	b);
-fixed_t32 FixedDiv10(fixed_t32	a, fixed_t32	b);
 
 //fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
+/*
 fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 	if (FixedDiv10(a,b) != FixedDiv11(a, b)){
         I_Error("miss %li %li", a, b);
     }
     return FixedDiv11(a, b);
 }
-
+*/
 
 // basically our own little custom version of far fstrncpy. we were only ever using it with size 8
 void copystr8(int8_t __far* dst, int8_t __far* src){

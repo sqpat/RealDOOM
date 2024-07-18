@@ -498,8 +498,8 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 void __near R_RenderSegLoop (void);
 void copystr8(int8_t __far* dst, int8_t __far* src);
 fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b);
-fixed_t32 FixedDiv10(fixed_t32	a, fixed_t32	b);
-fixed_t32 FixedDiv11(fixed_t32	a, fixed_t32	b);
+//fixed_t32 FixedDiv10(fixed_t32	a, fixed_t32	b);
+//fixed_t32 FixedDiv11(fixed_t32	a, fixed_t32	b);
 fixed_t32 FixedDiv3(fixed_t32	a, fixed_t32	b);
 void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) ;
 

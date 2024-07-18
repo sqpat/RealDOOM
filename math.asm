@@ -885,8 +885,8 @@ ret
 
 ENDP
 
-PROC divllu_
-PUBLIC divllu_
+PROC div48_32_
+PUBLIC div48_32_
 
 push  si
 push  di
@@ -1125,8 +1125,8 @@ endp
 
 
 
-PROC FixedDiv11_
-PUBLIC FixedDiv11_
+PROC FixedDiv_
+PUBLIC FixedDiv_
 
 
 ;fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
@@ -1270,7 +1270,7 @@ mov ax, es
 do_full_divide_10:
 
 
-call divllu_
+call div48_32_
 
 ; set negative if need be...
 
@@ -1315,176 +1315,5 @@ ENDP
 
 
 
-
-PROC FixedDiv10_
-PUBLIC FixedDiv10_
-
-
-;fixed_t32 FixedDivinner(fixed_t32	a, fixed_t32 b int8_t* file, int32_t line)
-; fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
-; 	if ((labs(a) >> 14) >= labs(b))
-; 		return (a^b) < 0 ? MINLONG : MAXLONG;
-; 	return FixedDiv2(a, b);
-; }
-
-;    abs(x) = (x XOR y) - y
-;      where y = x's sign bit extended.
-
-
-; bp - 2  sign extend?
-; bp - 4  sign extend?
-; bp - 6  cx again
-; bp - 8  bx again
-; bp - A  ax copy
-; bp - C  cx copy
-; bp - E  bx copy
-
-; si      dx copy
-
-; DX:AX   /   CX:BX
-
-
-; ideas: 
-; calculate and push the arguments right away. the labs check passing is super rare.
-; then check for quick outs on that. i.e. AND DX, 0xC000 to check 3 high bits of DX. see if 
-
-push  si
-push  di
-push  bp
-mov   bp, sp
-
-
-mov   si, dx
-mov   di, ax
-mov   ax, cx
-cwd
-
-; put in all the 8 byte divide arguments early since 99%+ of the time that's what happens
-push dx		; cx sign extend
-push dx		; cx sign extend
-push ax		; cx original value
-push bx		; bx original vlaue
-
-push di     ; for later retrieval of ax...
-
-or    cx, cx
-jge   b_is_positive
-neg   bx
-adc   cx, 0
-neg   cx
-b_is_positive:
-
-; if any of high 14 bytes of cx are on, we can quick quit out
-test cx, 0FFFCh
-jne do_full_divide
-
-
-; copy dx:ax back
-mov dx, si
-mov ax, di
-
-or    dx, dx		; sign check
-jge   a_is_positive
-neg   ax
-adc   dx, 0
-neg   dx
-a_is_positive:
-
-
-;  dx:ax  is  labs(dx:ax) now (unshifted)
-;  cx:bx  is  labs(cx:bx) now
-
-; if high 2 bits of dh arent present at all, and any bits of cx are present
-; then we can quit out quickly.
-
-
-test dh, 0C0h     ; dx AND 0xC000
-jne do_shift_and_full_compare
-test cx, cx
-jne do_full_divide  ; dx >> 14 is zero, cx is nonzero.
-
-
-do_shift_and_full_compare:
-
-rol dx, 1
-rol ax, 1
-rol dx, 1
-rol ax, 1
-
-mov di, dx
-and ax, 03h
-and di, 0FFFCh  ; cx, 0FFFCh
-or  ax, di
-and dx, 03h
-
-
-; do comparison  di:bx vs dx:ax
-; 	if ((labs(a) >> 14) >= labs(b))
-
-cmp   dx, cx
-jg    do_quick_return
-jne   do_full_divide ; below
-cmp   ax, bx
-jb    do_full_divide
-
-do_quick_return: 
-; return (a^b) < 0 ? MINLONG : MAXLONG;
-xor   si, word ptr [bp - 06h]
-
-test  si, si   ; just need to do the high word due to sign?
-jl    return_MAXLONG
-
-return_MINLONG:
-mov   ax, 0ffffh
-mov   dx, 07fffh
-
-exit_and_return_early:
-mov   sp, bp
-pop   bp
-pop   di
-pop   si
-ret
-return_MAXLONG:
-mov   dx, 08000h
-xor   ax, ax
-jmp   exit_and_return_early
-
-do_full_divide:
-; this is the fixeddiv2 call inlined...
-
-
-
-pop   cx       ; retrieve AX into cx
-
-mov   ax, si   ;  sign extend dx via ax
-cwd			   ;  
-mov   bx, si   ;  dx to bx
-mov   ax, dx   ;  move sign to ax
-xor   dx, dx   ;  clear out dx
-
-lea   si, [bp - 08h]           ; store 
-
-
-
-
-
-; i8 / i8
-; [dx cx bx ax] __I8DQ [dx cx bx ax] [ss:si]
-
-; todo - reimplement this
-
-call __I8DQ
-
-; set up return values.
-mov   ax, dx
-mov   dx, cx
-mov   sp, bp
-pop   bp
-
-pop   di
-pop   si
-ret
-
-ENDP
 
 END
