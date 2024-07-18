@@ -835,16 +835,26 @@ PROC div48_32_
 PUBLIC div48_32_
 
 
-;
-;
-;
-;
-; bp - 1ah   dx copy
-;
-; 
-; bp - 20h   ax copy
-; bp - 22h   cx copy
-; bp - 24h   bx copy
+; bp - 02h
+; bp - 04h    cx with initial shift left
+; bp - 06h
+; bp - 08h
+; bp - 0Ah    bx with initial shift left
+; bp - 0Ch
+; bp - 0Eh
+; bp - 010h
+; bp - 012h
+; bp - 014h
+; bp - 016h   holds shift count. only used to get negged and do sbb
+; bp - 018h   overflow bits from dx shift   (numhi)
+; bp - 01ah   shifted dx  					(numhi)
+; bp - 01ch	  ax shifted right
+; bp - 01eh   ax shifted right overflow 
+; bp - 020h   shifted ax  					(numlo)
+; bp - 022h   overflow bits from ax shift   (numlo)
+; bp - 024h   ax copy from function start
+
+; di:si get shifted cx:bx
 
 push  si
 push  bp
@@ -891,58 +901,65 @@ pop  bx
 pop  cx
 
 
+done_counting_leading_zeroes:
+
 ; have zeroes in ax
 ; begin doing all the shifts
 
-mov   cx, ax
-jcxz  label_0
-label1:
+; do shifts. ax holds shift count.
+
+mov   cx, ax					; count in cx...
+jcxz  done_with_shift_a
+shift_param_a:
 shl   si, 1
 rcl   di, 1
-loop  label1
-label_0:
+loop  shift_param_a
+done_with_shift_a:
 mov   word ptr [bp - 018h], 0
-mov   cx, ax
+mov   cx, ax					; count in cx...
 mov   word ptr [bp - 022h], 0
-jcxz  label_2
-label_3:
+jcxz  done_with_shift_b
+shift_param_b:
 shl   word ptr [bp - 01ah], 1
 rcl   word ptr [bp - 018h], 1
-loop  label_3
-label_2:
+loop  shift_param_b
+done_with_shift_b:
 mov   word ptr [bp - 01eh], 0
 mov   cx, ax
 mov   bx, ax
 neg   cx
-mov   ax, word ptr [bp - 024h]
+mov   ax, word ptr [bp - 024h]  ; can techniclly pop...
 xor   ch, ch
 mov   word ptr [bp - 01ch], ax
 and   cl, 01fh
 mov   ax, bx
-jcxz  label_4
-label_5:
+jcxz  done_with_shift_c
+shift_param_c:					; shift RIGHT. i think for the ORed stuff.
 shr   word ptr [bp - 01ch], 1
 rcr   word ptr [bp - 01eh], 1
-loop  label_5
-label_4:
+loop  shift_param_c
+done_with_shift_c:
 CWD   
 mov   word ptr [bp - 4], di
 mov   cx, ax
 mov   ax, dx
-mov   word ptr [bp - 016h], cx
 neg   ax
-neg   word ptr [bp - 016h]
+neg   cx
 sbb   ax, 0
-mov   cx, bx
+
+mov   cx, bx  ; move shift count back again
 sar   ax, 0fh
 mov   bx, di
 CWD   
-jcxz  label7
-label8:
+jcxz  done_with_shift_d
+shift_param_d:
 shl   word ptr [bp - 022h], 1
 rcl   word ptr [bp - 020h], 1
-loop  label8
-label7:
+loop  shift_param_d
+done_with_shift_d:
+
+; begin actual first division. create params from shifted ones
+
 and   dx, word ptr [bp - 01ch]
 and   ax, word ptr [bp - 01eh]
 or    word ptr [bp - 01ah], ax
@@ -954,6 +971,9 @@ mov   dx, word ptr [bp - 018h]
 mov   word ptr [bp - 8], ax
 mov   ax, word ptr [bp - 01ah]
 mov   word ptr [bp - 0ah], si
+
+; bx now contains shifted high denominator
+
 div   bx
 mov   bx, dx
 mov   dx, si
@@ -997,6 +1017,8 @@ MUL  CX        ; AX * CX
 XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
 MUL  BX        ; AX * BX
 ADD  DX, CX    ; add 
+
+; actual 2nd division...
 
 mov   bx, word ptr [bp - 014h]
 sub   bx, ax
