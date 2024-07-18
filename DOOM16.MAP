@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/07/18 09:02:55
+Created on:       24/07/18 09:25:48
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -51,7 +51,7 @@ dmx_TEXT               CODE           AUTO           023c:55b0       000001fe
 dutils_TEXT            CODE           AUTO           023c:57b0       0000008b
 wi_stuff_TEXT          CODE           AUTO           023c:5840       00000e56
 m_near_TEXT            CODE           AUTO           023c:66a0       00000000
-MATH_TEXT              CODE           AUTO           023c:66a0       0000046b
+MATH_TEXT              CODE           AUTO           023c:66a0       00000465
 f_finale_TEXT          CODE           AUTO           023c:6b10       00000bff
 g_setup_TEXT           CODE           AUTO           023c:7710       00000299
 r_setup_TEXT           CODE           AUTO           023c:79b0       0000044d
@@ -855,9 +855,9 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 260b:23b8      _snd_Mport8bit
 Module: math.obj(math.ASM)
 023c:6879      FastMul16u32u_
-023c:6a78      FixedDiv_
+023c:6a74      FixedDiv_
+023c:68ad*     div48_32_
 023c:6882*     countleadingzeroes_
-023c:68ad*     divllu_
 023c:686a*     FixedMul16u32u_
 023c:67a4      FixedMulTrigOld_
 023c:67eb      FixedMulTrig_
