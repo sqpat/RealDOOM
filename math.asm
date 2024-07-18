@@ -835,24 +835,23 @@ PROC div48_32_
 PUBLIC div48_32_
 
 
-; bp - 02h
-; bp - 04h    cx with initial shift left
-; bp - 06h
-; bp - 08h
-; bp - 0Ah    bx with initial shift left
-; bp - 0Ch
-; bp - 0Eh
-; bp - 010h
-; bp - 012h
-; bp - 014h
-; bp - 016h   holds shift count. only used to get negged and do sbb
-; bp - 018h   overflow bits from dx shift   (numhi)
-; bp - 01ah   shifted dx  					(numhi)
+; bp - 2
+; bp - 4      den1 (cx initial shift left)
+; bp - 6    first qhat, q1
+; bp - 8      unused
+; bp - 0Ah    den0 (bx initial shift left)
+; bp - 0Ch  q1 
+; bp - 0Eh  q0 storage
+; bp - 010h   unused
+; bp - 012h   unused
+; bp - 014h   unused. was dupe of 020h, which was numhi.hu.fracbits ?
+; bp - 016h   unused
+; bp - 018h   overflow bits from dx shift   (numhi.high)
+; bp - 01ah   shifted dx  					(numhi.low)
 ; bp - 01ch	  ax shifted right
 ; bp - 01eh   ax shifted right overflow 
 ; bp - 020h   shifted ax  					(numlo)
 ; bp - 022h   overflow bits from ax shift   (numlo)
-; bp - 024h   ax copy from function start
 
 ; di:si get shifted cx:bx
 
@@ -860,22 +859,18 @@ push  si
 push  bp
 mov   bp, sp
 sub   sp, 022h
-push  ax
-mov   si, bx
+mov   es, bx
 mov   di, cx
 mov   word ptr [bp - 01ah], dx
 mov   word ptr [bp - 020h], ax
+mov   word ptr [bp - 01Ch], ax  ; initialize this now i guess...
 
 ; make copies of cx:bx
-push cx
-push bx
 
 
 ; COUNT LEADING ZEROES
 
-push si
 mov  si, bx
-;mov  cx, dx
 mov  dx, 08000h
 xor  ax, ax
 xor  bx, bx
@@ -893,12 +888,11 @@ test si, ax
 je   count_next_binary_digit
 finished_counting_zeroes:
 mov  ax, bx
-pop  si
 
 ; END COUNT LEADING ZEROES
 
-pop  bx
-pop  cx
+mov  si, es
+
 
 
 done_counting_leading_zeroes:
@@ -908,13 +902,21 @@ done_counting_leading_zeroes:
 
 ; do shifts. ax holds shift count.
 
+;    den.wu <<= shift;
+; di:si holds den (which was cx:bx)
+
+
 mov   cx, ax					; count in cx...
-jcxz  done_with_shift_a
-shift_param_a:
+jcxz  done_with_shift_denominator
+shift_denominator:
 shl   si, 1
 rcl   di, 1
-loop  shift_param_a
-done_with_shift_a:
+loop  shift_denominator
+done_with_shift_denominator:
+
+;    numhi.wu <<= shift;
+
+
 mov   word ptr [bp - 018h], 0
 mov   cx, ax					; count in cx...
 mov   word ptr [bp - 022h], 0
@@ -924,13 +926,16 @@ shl   word ptr [bp - 01ah], 1
 rcl   word ptr [bp - 018h], 1
 loop  shift_param_b
 done_with_shift_b:
+
+
+;    numhi.wu |= (numlo.wu >> (-shift & 31)) & (-(int32_t)shift >> 31);
+
 mov   word ptr [bp - 01eh], 0
 mov   cx, ax
 mov   bx, ax
 neg   cx
-mov   ax, word ptr [bp - 024h]  ; can techniclly pop...
 xor   ch, ch
-mov   word ptr [bp - 01ch], ax
+
 and   cl, 01fh
 mov   ax, bx
 jcxz  done_with_shift_c
@@ -939,6 +944,9 @@ shr   word ptr [bp - 01ch], 1
 rcr   word ptr [bp - 01eh], 1
 loop  shift_param_c
 done_with_shift_c:
+
+;    numlo.wu <<= shift;
+
 CWD   
 mov   word ptr [bp - 4], di
 mov   cx, ax
@@ -951,6 +959,9 @@ mov   cx, bx  ; move shift count back again
 sar   ax, 0fh
 mov   bx, di
 CWD   
+
+
+
 jcxz  done_with_shift_d
 shift_param_d:
 shl   word ptr [bp - 022h], 1
@@ -963,95 +974,149 @@ done_with_shift_d:
 and   dx, word ptr [bp - 01ch]
 and   ax, word ptr [bp - 01eh]
 or    word ptr [bp - 01ah], ax
-mov   ax, word ptr [bp - 020h]
+
 or    word ptr [bp - 018h], dx
-mov   word ptr [bp - 014h], ax
-mov   ax, word ptr [bp - 022h]
+
 mov   dx, word ptr [bp - 018h]
-mov   word ptr [bp - 8], ax
+
 mov   ax, word ptr [bp - 01ah]
 mov   word ptr [bp - 0ah], si
 
-; bx now contains shifted high denominator
+;    num1 = (uint16_t)(numlo.hu.intbits);
+;    num0 = (uint16_t)(numlo.hu.fracbits);
+;    den1 = (uint16_t)(den.hu.intbits);
+;    den0 = (uint16_t)(den.hu.fracbits);
+
+;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+; DX:AX = numhi.wu
+; bx =  den1
+
+; bx now contains shifted high denominator for division.
 
 div   bx
-mov   bx, dx
-mov   dx, si
+
+; rhat = dx
+; qhat = ax
+;    c1 = FastMul16u16u(qhat , den0);
+
+mov   bx, dx					; bx stores rhat
+mov   dx, si					; si had den0
 mov   word ptr [bp - 6], ax
-mul   dx
-mov   cx, ax
-mov   ax, bx
+mul   dx   						; DX:AX = c1
+
+;  c2 = rhat:num1
+
+
+
+;    if (c1 > c2.wu)
+;         qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
+; 
+
+mov   cx, ax					; CX has low bits of c1
+mov   ax, bx					; ax has rhat
+
+; c1 hi = dx, c2 lo = bx
 cmp   dx, bx
-ja    label9
-jne   label10
+
+
+
+ja    check_c1_c2_diff
+jne   store_q1
 cmp   cx, word ptr [bp - 020h]
-jbe   label10
-label9:
+jbe   store_q1
+check_c1_c2_diff:
+
+; (c1 - c2.wu > den.wu)
+
 sub   cx, word ptr [bp - 020h]
 sbb   dx, ax
 cmp   dx, di
-ja    label25
-je    label26
-label11:
-jmp   label12
-label26:
+ja    qhat_subtract_2
+je    compare_low_word
+qhat_subtract_1:
+mov   ax, 1
+jmp   do_qhat_subtraction
+
+compare_low_word:
 cmp   cx, si
-jbe   label11
-label25:
+jbe   qhat_subtract_1
+qhat_subtract_2:
 mov   ax, 2
-label16:
+
+do_qhat_subtraction:
+
+; qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
+
 sub   word ptr [bp - 6], ax
-label10:
+
+;    q1 = (uint16_t)qhat;
+
+store_q1:
 mov   ax, word ptr [bp - 6]
-mov   bx, si
-mov   word ptr [bp - 0ch], ax
-mov   ax, word ptr [bp - 01ah]
-mov   cx, di
-mov   word ptr [bp - 2], ax
-mov   ax, word ptr [bp - 6]
+mov   word ptr [bp - 0ch], ax	; store q1. could this be better...?
+
+;	rem.hu.intbits = numhi.hu.fracbits;
+;	rem.hu.fracbits = num1;
+;	rem.wu -= FastMul16u32u(q1, den.wu);
+
+
+mov   bx, word ptr [bp - 01ah]
+mov   cx, ax
+mov   word ptr [bp - 2], bx
+
+; multiplying by DI:SI basically. inline SI in as BX.
 
 ;inlined FastMul16u32u_
 
-XCHG CX, AX    ; AX stored in CX
-MUL  CX        ; AX * CX
+MUL  DI        ; AX * CX
 XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
+MUL  SI        ; AX * BX
 ADD  DX, CX    ; add 
 
 ; actual 2nd division...
 
-mov   bx, word ptr [bp - 014h]
+mov   bx, word ptr [bp - 020h]
 sub   bx, ax
 sbb   word ptr [bp - 2], dx
 mov   dx, word ptr [bp - 2]
 mov   ax, bx
 cmp   dx, word ptr [bp - 4]
+
+; check for adjustment
+
 jb    label13
 xor   dx, dx
 sub   ax, word ptr [bp - 4]
 sbb   word ptr [bp - 2], dx
 mov   bx, word ptr [bp - 2]
 cmp   bx, word ptr [bp - 4]
-jae   label14
+
+; check for overflow param
+
+jae   modify_param_to_avoid_overflow
 mov   bx, word ptr [bp - 4]
 mov   dx, word ptr [bp - 2]
+
+; no subtraction needed (most common case)
+
+
 div   bx
 mov   bx, ax
 mov   cx, dx
 mov   dx, word ptr [bp - 0ah]
-mov   word ptr [bp - 0eh], ax
+
 mul   dx
-mov   word ptr [bp - 012h], ax
+mov   es, ax
 mov   ax, cx
 cmp   dx, cx
 ja    label17
 jne   label18
-mov   cx, word ptr [bp - 012h]
-cmp   cx, word ptr [bp - 8]
+mov   cx, es
+cmp   cx, word ptr [bp - 022h]
 jbe   label18
 label17:
-mov   cx, word ptr [bp - 012h]
-sub   cx, word ptr [bp - 8]
+mov   cx, es
+sub   cx, word ptr [bp - 022h]
 sbb   dx, ax
 cmp   dx, di
 ja    label19
@@ -1060,19 +1125,32 @@ cmp   si, cx
 jae   label18
 label19:
 dec   bx
-mov   word ptr [bp - 0eh], bx
 label18:
-mov   ax, word ptr [bp - 0eh]
+mov   ax, bx
 mov   dx, word ptr [bp - 0ch]
 mov   sp, bp
 pop   bp
 pop   si
 ret  
-label12:
-mov   ax, 1
-jmp   label16
-label14:
-jmp   label15
+
+; the divide would have overflowed. subtract values
+modify_param_to_avoid_overflow:
+sub   ax, word ptr [bp - 4]
+sbb   word ptr [bp - 2], dx
+mov   bx, word ptr [bp - 4]
+mov   dx, word ptr [bp - 2]
+div   bx
+
+mov   dx, word ptr [bp - 0ah]
+mov   bx, ax
+mul   dx
+mov   dx, word ptr [bp - 6]
+mov   ax, bx
+mov   sp, bp
+pop   bp
+pop   si
+ret 
+
 label13:
 mov   bx, word ptr [bp - 4]
 div   bx
@@ -1080,17 +1158,17 @@ mov   bx, dx
 mov   dx, word ptr [bp - 0ah]
 mov   cx, ax
 mul   dx
-mov   word ptr [bp - 010h], ax
+mov   es, ax
 mov   ax, bx
 cmp   dx, bx
 ja    label20
 jne   label21
-mov   bx, word ptr [bp - 010h]
-cmp   bx, word ptr [bp - 8]
+mov   bx, es
+cmp   bx, word ptr [bp - 022h]
 jbe   label21
 label20:
-mov   bx, word ptr [bp - 010h]
-sub   bx, word ptr [bp - 8]
+mov   bx, es
+sub   bx, word ptr [bp - 022h]
 sbb   dx, ax
 cmp   dx, di
 ja    label23
@@ -1111,21 +1189,8 @@ ret
 label22:
 mov   ax, 1
 jmp   label24
-label15:
-sub   ax, word ptr [bp - 4]
-sbb   word ptr [bp - 2], dx
-mov   bx, word ptr [bp - 4]
-mov   dx, word ptr [bp - 2]
-div   bx
-mov   dx, word ptr [bp - 0ah]
-mov   bx, ax
-mul   dx
-mov   dx, word ptr [bp - 6]
-mov   ax, bx
-mov   sp, bp
-pop   bp
-pop   si
-ret 
+
+
 
 endp
 
