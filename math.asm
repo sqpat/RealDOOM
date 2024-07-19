@@ -827,58 +827,18 @@ ret
 ENDP
 
 
-a_bit_more_shifting:
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
+shift_word:
+mov si, dx
+mov dx, ax
+xor ax, ax
+mov cx, bx
+xor bx, bx
 
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_jmp
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
+jmp shift_bits
 
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_jmp
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_jmp
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_jmp
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_jmp
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting_jmp
-
-
-
-done_shifting_jmp:
-jmp done_shifting
-
-
-;FIXEDDIV
-; DX:AX / CX:BX
+;div48_32_
+; basically, shift numerator left 16 and divide
+; DX:AX:00 / CX:BX
 
 PROC div48_32_
 PUBLIC div48_32_
@@ -894,15 +854,35 @@ mov   bp, sp
 
 XOR SI, SI ; zero this out to get high bits of numhi
 
-; since we converted signed to unsigned before this,
-; at least one bit of empty space is guaranteed there
+; 2611
+; 4464
+; 6038
 
-SAL BX, 1
-RCL CX, 1
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
+test cx, cx
+je  shift_word
+test ch, ch
+jne shift_bits
+; shift a whole byte immediately
 
+mov ch, cl
+mov cl, bh
+mov bh, bl
+xor bl, bl
+
+
+xchg dh, dl
+mov  si, dx
+and si, 00FFh
+
+mov dl, ah
+mov ah, al
+xor al, al
+
+shift_bits:
+
+
+
+; less than a byte to shift
 ; shift until MSB is 1
 
 SAL BX, 1
@@ -949,48 +929,17 @@ RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
-JC done_shifting  
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting  
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting  
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting  
-SAL AX, 1
-RCL DX, 1
-RCL SI, 1
-
-SAL BX, 1
-RCL CX, 1
-JC done_shifting  
-
-JMP a_bit_more_shifting
 
 
 
 
-; todo get the right count of ops for above... handle last case well
+
 
 
 ; store this
 done_shifting:
 
-; we overshifted. lets shift back right one.
+; we overshifted by one and caught it in the carry bit. lets shift back right one.
 
 RCR CX, 1
 RCR BX, 1
