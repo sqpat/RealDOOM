@@ -835,7 +835,7 @@ PROC div48_32_
 PUBLIC div48_32_
 
 
-; bp - 2     copy of numhi.low?
+; bp - 2      unused
 ; bp - 4      unused
 ; bp - 6      qhat of result 1. not always q1! depends on 
 ; bp - 8      unused
@@ -974,10 +974,10 @@ CWD
 
 and   dx, word ptr [bp - 01ch]
 and   ax, word ptr [bp - 01eh]
-
-or   dx, word ptr [bp - 018h]
+or    dx, word ptr [bp - 018h]
 or    ax, word ptr [bp - 01ah]
-mov   ds, ax
+mov   ds, ax                    ; store copy of numhi.low?
+
 
 ;    num1 = (uint16_t)(numlo.hu.intbits);
 ;    num0 = (uint16_t)(numlo.hu.fracbits);
@@ -986,9 +986,7 @@ mov   ds, ax
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
-; bx =  den1
 
-; bx now contains shifted high denominator for division.
 
 div   di
 
@@ -1050,12 +1048,9 @@ sub   word ptr [bp - 6], ax
 ;    q1 = (uint16_t)qhat;
 
 q1_ready:
-
 mov   ax, word ptr [bp - 6]
-mov   bx, ds
-mov   ds, ax	; store q1. could this be better...?
 
-; q1 is in DS
+mov   es, ax	; store q1. could this be better...?
 
 ;	rem.hu.intbits = numhi.hu.fracbits;
 ;	rem.hu.fracbits = num1;
@@ -1063,7 +1058,6 @@ mov   ds, ax	; store q1. could this be better...?
 
 
 mov   cx, ax
-mov   word ptr [bp - 2], bx
 
 ; multiplying by DI:SI basically. inline SI in as BX.
 
@@ -1078,8 +1072,9 @@ ADD  DX, CX    ; add
 
 mov   bx, word ptr [bp - 020h]
 sub   bx, ax
-sbb   word ptr [bp - 2], dx
-mov   dx, word ptr [bp - 2]
+mov   cx, ds
+sbb   cx, dx
+mov   dx, cx
 mov   ax, bx
 
 cmp   dx, di
@@ -1091,107 +1086,37 @@ cmp   dx, di
 jnb    adjust_for_overflow
 
 ; default case, most common by a ton
+; todo confirm this 
 
 
 div   di
 
-mov   bx, dx
-mov   cx, ax
+mov   bx, ax
+mov   cx, dx
 
 mul   si
+cmp   dx, cx
 
-;mov   es, ax
-;mov   ax, bx
-
-cmp   dx, bx
 ja    continue_c1_c2_test
-jne   do_return
-
-
-
+jne   do_return_2
 cmp   ax, 0
-jbe   do_return
-
+jbe   do_return_2
 continue_c1_c2_test:
-
-
-
-sub   dx, bx
-
-mov   bx, 1
+sbb   dx, cx
 cmp   dx, di
 ja    do_qhat_subtraction_by_2
 jne   do_qhat_subtraction_by_1
 cmp   si, ax
+
 jae   do_qhat_subtraction_by_1
 do_qhat_subtraction_by_2:
-inc   bx
+dec   bx
 do_qhat_subtraction_by_1:
-sub   cx, bx
-do_return:
-mov   ax, cx
-mov   dx, ds
-mov   bx, ss
-mov   ds, bx  ; restore ds
-mov   sp, bp
-pop   bp
-pop   si
-ret  
+dec   bx
+do_return_2:
+mov   dx, es
+mov   ax, bx
 
-
-adjust_for_overflow:
-
-; division result will be over 16 bits. need to subtract once or twice
-
-xor   dx, dx
-sub   ax, di
-sbb   word ptr [bp - 2], dx
-
-cmp   di, word ptr [bp - 2]
-
-; check for overflow param
-
-jb   adjust_for_overflow_again
-
-mov   dx, word ptr [bp - 2]
-
-; no subtraction needed (most common case)
-
-
-div   di
-mov   bx, dx	; cx holds rhat
-mov   cx, ax
-
-
-mul   si
-
-;    c1 = FastMul16u16u(qhat , den0);
-;    c2.hu.intbits = rhat;
-;	c2.hu.fracbits = num1;
-;    if (c1 > c2.wu)
-;        qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
-
-
-cmp   dx, ax
-ja    continue_c1_c2_test_2
-jne   dont_decrement_qhat_and_return
-
-cmp   ax, 0
-jbe   dont_decrement_qhat_and_return
-continue_c1_c2_test_2:
-
-sub   dx, bx
-cmp   dx, di
-ja    decrement_qhat_and_return
-jne   dont_decrement_qhat_and_return
-cmp   si, ax
-jae   dont_decrement_qhat_and_return
-decrement_qhat_and_return:
-dec   cx
-
-dont_decrement_qhat_and_return:
-mov   ax, cx
-mov   dx, ds
 mov   cx, ss
 mov   ds, cx
 mov   sp, bp
@@ -1199,11 +1124,64 @@ pop   bp
 pop   si
 ret  
 
-; the divide would have overflowed. subtract a second time
-adjust_for_overflow_again:
+
+adjust_for_overflow:
+; cx holds bp - 2!
+xor   dx, dx
 sub   ax, di
-sbb   word ptr [bp - 2], dx
-mov   dx, word ptr [bp - 2]
+sbb   cx, dx
+
+cmp   cx, di
+
+; check for overflow param
+
+jae   adjust_for_overflow_again
+
+mov   dx, cx
+
+; no subtraction needed (most common case)
+
+
+div   di
+mov   bx, ax
+mov   cx, dx
+
+mul   si
+cmp   dx, cx
+ja    continue_c1_c2_test_2
+jne   dont_decrement_qhat_and_return
+cmp   ax, 0
+jbe   dont_decrement_qhat_and_return
+continue_c1_c2_test_2:
+
+sub   dx, cx
+cmp   dx, di
+ja    decrement_qhat_and_return
+jne   dont_decrement_qhat_and_return
+cmp   si, ax
+jae   dont_decrement_qhat_and_return
+decrement_qhat_and_return:
+dec   bx
+dont_decrement_qhat_and_return:
+mov   ax, bx
+mov   dx, es
+mov   cx, ss
+mov   ds, cx
+mov   sp, bp
+pop   bp
+pop   si
+ret  
+
+; the divide would have overflowed. subtract values
+adjust_for_overflow_again:
+
+; cx holds bp - 2!!!
+
+sub   ax, di
+sbb   cx, dx
+mov   dx, cx
+div   di
+
 div   di
 
 ; ax has its result...
