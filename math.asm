@@ -851,7 +851,7 @@ PUBLIC div48_32_
 ; bp - 01ch	  ax shifted right
 ; bp - 01eh   ax shifted right overflow 
 ; bp - 020h   shifted ax  					(numlo)
-; bp - 022h   overflow bits from ax shift   (numlo)
+; bp - 022h   unused (was always 0)
 
 ; di:si get shifted cx:bx
 
@@ -861,8 +861,8 @@ mov   bp, sp
 sub   sp, 022h
 mov   es, bx
 mov   di, cx
+mov   ds, ax
 mov   word ptr [bp - 01ah], dx
-mov   word ptr [bp - 020h], ax
 mov   word ptr [bp - 01Ch], ax  ; initialize this now i guess...
 
 ; make copies of cx:bx
@@ -893,6 +893,13 @@ mov  ax, bx
 
 mov  si, es
 
+mov  cx, ax
+mov  bx, ds
+
+; prepare  numlo..
+shl   bx, cl
+mov   word ptr [bp - 020h], bx 
+
 
 
 done_counting_leading_zeroes:
@@ -919,7 +926,7 @@ done_with_shift_denominator:
 
 mov   word ptr [bp - 018h], 0
 mov   cx, ax					; count in cx...
-mov   word ptr [bp - 022h], 0
+
 jcxz  done_with_shift_b
 shift_param_b:
 shl   word ptr [bp - 01ah], 1
@@ -962,12 +969,6 @@ CWD
 
 
 
-jcxz  done_with_shift_d
-shift_param_d:
-shl   word ptr [bp - 022h], 1
-rcl   word ptr [bp - 020h], 1
-loop  shift_param_d
-done_with_shift_d:
 
 ; begin actual first division. create params from shifted ones
 
@@ -1108,14 +1109,14 @@ jne   do_return
 
 
 
-cmp   ax, word ptr [bp - 022h]
+cmp   ax, 0
 jbe   do_return
 
 continue_c1_c2_test:
 
 
-sub   ax, word ptr [bp - 022h]
-sbb   dx, bx
+
+sub   dx, bx
 
 mov   bx, 1
 cmp   dx, di
@@ -1175,12 +1176,11 @@ cmp   dx, ax
 ja    continue_c1_c2_test_2
 jne   dont_decrement_qhat_and_return
 
-cmp   ax, word ptr [bp - 022h]
+cmp   ax, 0
 jbe   dont_decrement_qhat_and_return
 continue_c1_c2_test_2:
 
-sub   ax, word ptr [bp - 022h]
-sbb   dx, bx
+sub   dx, bx
 cmp   dx, di
 ja    decrement_qhat_and_return
 jne   dont_decrement_qhat_and_return
