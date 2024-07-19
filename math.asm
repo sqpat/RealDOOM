@@ -835,30 +835,12 @@ PROC div48_32_
 PUBLIC div48_32_
 
 
-; bp - 2      unused
-; bp - 4      unused
-; bp - 6      qhat of result 1. not always q1! depends on 
-; bp - 8      unused
-; bp - 0Ah    unused
-; bp - 0Ch    unused
-; bp - 0Eh    unused
-; bp - 010h   unused
-; bp - 012h   unused
-; bp - 014h   unused
-; bp - 016h   unused
-; bp - 018h   unused
-; bp - 01ah   unused      					(numhi.low)
-; bp - 01ch	  unused
-; bp - 01eh   unused
-; bp - 020h   shifted ax  					(numlo.high)
-; bp - 022h   unused (was always 0)         (numlo.low)
 
 ; di:si get shifted cx:bx
 
 push  si
 push  bp
 mov   bp, sp
-sub   sp, 022h
 
 
 XOR SI, SI ; zero this out to get high bits of numhi
@@ -891,16 +873,11 @@ RCR BX, 1
 ; numhi = SI:DX
 ; numlo = AX:00...
 
-;mov ax, dx
-;mov dx, si
-;mov   sp, bp
-;pop   bp
-;pop   si
-;ret
 
-; bp - 020h   shifted ax  					(numlo)
-
-mov   word ptr [bp - 020h], ax
+; save numlo word in sp.
+; avoid going to memory... lets do interrupt magic
+cli
+mov sp, ax
 
 
 ; set up first div. 
@@ -927,8 +904,7 @@ div   di
 ;    c1 = FastMul16u16u(qhat , den0);
 
 mov   bx, dx					; bx stores rhat
-
-mov   word ptr [bp - 6], ax
+mov   es, ax     ; store qhat
 
 mul   si   						; DX:AX = c1
 
@@ -950,40 +926,40 @@ cmp   dx, bx
 
 ja    check_c1_c2_diff
 jne   q1_ready
-cmp   cx, word ptr [bp - 020h]
+cmp   cx, sp
 jbe   q1_ready
 check_c1_c2_diff:
 
 ; (c1 - c2.wu > den.wu)
 
-sub   cx, word ptr [bp - 020h]
+sub   cx, sp
 sbb   dx, ax
 cmp   dx, di
 ja    qhat_subtract_2
 je    compare_low_word
-qhat_subtract_1:
-mov   ax, 1
-jmp   do_qhat_subtraction
+jmp   qhat_subtract_1
 
 compare_low_word:
 cmp   cx, si
 jbe   qhat_subtract_1
+
+; ugly but rare occurrence i think?
 qhat_subtract_2:
-mov   ax, 2
+mov ax, es
+dec ax
+mov es, ax
+qhat_subtract_1:
+mov ax, es
+dec ax
+mov es, ax
 
-do_qhat_subtraction:
 
-; qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
-
-sub   word ptr [bp - 6], ax
 
 ;    q1 = (uint16_t)qhat;
 
 q1_ready:
-mov   ax, word ptr [bp - 6]
 
-mov   es, ax	; store q1. could this be better...?
-
+mov  ax, es
 ;	rem.hu.intbits = numhi.hu.fracbits;
 ;	rem.hu.fracbits = num1;
 ;	rem.wu -= FastMul16u32u(q1, den.wu);
@@ -1002,12 +978,12 @@ ADD  DX, CX    ; add
 
 ; actual 2nd division...
 
-mov   bx, word ptr [bp - 020h]
-sub   bx, ax
+
+sub   sp, ax
 mov   cx, ds
 sbb   cx, dx
 mov   dx, cx
-mov   ax, bx
+mov   ax, sp
 
 cmp   dx, di
 
@@ -1046,12 +1022,13 @@ dec   bx
 do_qhat_subtraction_by_1:
 dec   bx
 do_return_2:
-mov   dx, es
+mov   dx, es      ; retrieve q1
 mov   ax, bx
 
 mov   cx, ss
 mov   ds, cx
 mov   sp, bp
+sti
 pop   bp
 pop   si
 ret  
@@ -1096,18 +1073,17 @@ decrement_qhat_and_return:
 dec   bx
 dont_decrement_qhat_and_return:
 mov   ax, bx
-mov   dx, es
+mov   dx, es   ;retrieve q1
 mov   cx, ss
 mov   ds, cx
 mov   sp, bp
+sti
 pop   bp
 pop   si
 ret  
 
 ; the divide would have overflowed. subtract values
 adjust_for_overflow_again:
-
-; cx holds bp - 2!!!
 
 sub   ax, di
 sbb   cx, dx
@@ -1118,10 +1094,11 @@ div   di
 
 ; ax has its result...
 
-mov   dx, word ptr [bp - 6]
+mov   dx, es
 mov   cx, ss
 mov   ds, cx
 mov   sp, bp
+sti
 pop   bp
 pop   si
 ret 
