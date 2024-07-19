@@ -865,6 +865,9 @@ mov   ds, ax
 mov   word ptr [bp - 01ah], dx
 mov   word ptr [bp - 01Ch], ax  ; initialize this now i guess...
 
+; 1Ah dx
+; 1Ch ax
+
 ; make copies of cx:bx
 
 
@@ -912,6 +915,7 @@ done_counting_leading_zeroes:
 ;    den.wu <<= shift;
 ; di:si holds den (which was cx:bx)
 
+; create si:di from cx:bx
 
 mov   cx, ax					; count in cx...
 jcxz  done_with_shift_denominator
@@ -923,6 +927,7 @@ done_with_shift_denominator:
 
 ;    numhi.wu <<= shift;
 
+; 18:1A is 00:DX shifted left
 
 mov   word ptr [bp - 018h], 0
 mov   cx, ax					; count in cx...
@@ -935,6 +940,7 @@ loop  shift_param_b
 done_with_shift_b:
 
 
+
 ;    numhi.wu |= (numlo.wu >> (-shift & 31)) & (-(int32_t)shift >> 31);
 
 mov   word ptr [bp - 01eh], 0
@@ -942,6 +948,8 @@ mov   cx, ax
 mov   bx, ax
 neg   cx
 xor   ch, ch
+
+; 1C:1E = AX:00.. shifted right
 
 and   cl, 01fh
 mov   ax, bx
@@ -954,27 +962,25 @@ done_with_shift_c:
 
 ;    numlo.wu <<= shift;
 
-CWD   
-
-mov   cx, ax
-mov   ax, dx
-neg   ax
-neg   cx
-sbb   ax, 0
-
-mov   cx, bx  ; move shift count back again
-sar   ax, 0fh
-
+xor ax, ax
 CWD   
 
 
 
+; DX:AX
+; 18:1A is 00:DX shifted left
+; 1C:1E = AX:00.. shifted right
+
+; DX:AX becomes... 
+; DX = 18 | 1C
+; AX = 1E | 1A
 
 ; begin actual first division. create params from shifted ones
 
-and   dx, word ptr [bp - 01ch]
-and   ax, word ptr [bp - 01eh]
+mov   dx, word ptr [bp - 01ch]
 or    dx, word ptr [bp - 018h]
+
+mov   ax, word ptr [bp - 01eh]
 or    ax, word ptr [bp - 01ah]
 mov   ds, ax                    ; store copy of numhi.low?
 
