@@ -835,13 +835,13 @@ PROC div48_32_
 PUBLIC div48_32_
 
 
-; bp - 2
-; bp - 4      den1 (cx initial shift left)
-; bp - 6    first qhat, q1
+; bp - 2     copy of numhi.low?
+; bp - 4      unused
+; bp - 6      qhat of result 1. not always q1! depends on 
 ; bp - 8      unused
-; bp - 0Ah    den0 (bx initial shift left)
-; bp - 0Ch  q1 
-; bp - 0Eh  q0 storage
+; bp - 0Ah    unused
+; bp - 0Ch    unused
+; bp - 0Eh    unused
 ; bp - 010h   unused
 ; bp - 012h   unused
 ; bp - 014h   unused. was dupe of 020h, which was numhi.hu.fracbits ?
@@ -948,7 +948,7 @@ done_with_shift_c:
 ;    numlo.wu <<= shift;
 
 CWD   
-mov   word ptr [bp - 4], di
+
 mov   cx, ax
 mov   ax, dx
 neg   ax
@@ -957,7 +957,7 @@ sbb   ax, 0
 
 mov   cx, bx  ; move shift count back again
 sar   ax, 0fh
-mov   bx, di
+
 CWD   
 
 
@@ -980,7 +980,7 @@ or    word ptr [bp - 018h], dx
 mov   dx, word ptr [bp - 018h]
 
 mov   ax, word ptr [bp - 01ah]
-mov   word ptr [bp - 0ah], si
+
 
 ;    num1 = (uint16_t)(numlo.hu.intbits);
 ;    num0 = (uint16_t)(numlo.hu.fracbits);
@@ -993,16 +993,18 @@ mov   word ptr [bp - 0ah], si
 
 ; bx now contains shifted high denominator for division.
 
-div   bx
+div   di
 
 ; rhat = dx
 ; qhat = ax
 ;    c1 = FastMul16u16u(qhat , den0);
 
 mov   bx, dx					; bx stores rhat
-mov   dx, si					; si had den0
+
+;mov   ds, ax
 mov   word ptr [bp - 6], ax
-mul   dx   						; DX:AX = c1
+
+mul   si   						; DX:AX = c1
 
 ;  c2 = rhat:num1
 
@@ -1021,9 +1023,9 @@ cmp   dx, bx
 
 
 ja    check_c1_c2_diff
-jne   store_q1
+jne   q1_ready
 cmp   cx, word ptr [bp - 020h]
-jbe   store_q1
+jbe   q1_ready
 check_c1_c2_diff:
 
 ; (c1 - c2.wu > den.wu)
@@ -1047,13 +1049,19 @@ do_qhat_subtraction:
 
 ; qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
 
+;mov   dx, ds
+;sub   dx, ax
+;mov   ds, dx	; store q1. could this be better...?
 sub   word ptr [bp - 6], ax
 
 ;    q1 = (uint16_t)qhat;
 
-store_q1:
+q1_ready:
+
 mov   ax, word ptr [bp - 6]
-mov   word ptr [bp - 0ch], ax	; store q1. could this be better...?
+mov   ds, ax	; store q1. could this be better...?
+
+; q1 is in DS
 
 ;	rem.hu.intbits = numhi.hu.fracbits;
 ;	rem.hu.fracbits = num1;
@@ -1080,115 +1088,143 @@ sub   bx, ax
 sbb   word ptr [bp - 2], dx
 mov   dx, word ptr [bp - 2]
 mov   ax, bx
-cmp   dx, word ptr [bp - 4]
+
+cmp   dx, di
 
 ; check for adjustment
 
-jb    label13
+;    if (rem.hu.intbits < den1){
+
+jnb    adjust_for_overflow
+
+; default case, most common by a ton
+
+
+div   di
+
+mov   bx, dx
+mov   cx, ax
+
+mul   si
+
+;mov   es, ax
+;mov   ax, bx
+
+cmp   dx, bx
+ja    continue_c1_c2_test
+jne   do_return
+
+
+
+cmp   ax, word ptr [bp - 022h]
+jbe   do_return
+
+continue_c1_c2_test:
+
+
+sub   ax, word ptr [bp - 022h]
+sbb   dx, bx
+
+mov   bx, 1
+cmp   dx, di
+ja    do_qhat_subtraction_by_2
+jne   do_qhat_subtraction_by_1
+cmp   si, ax
+jae   do_qhat_subtraction_by_1
+do_qhat_subtraction_by_2:
+inc   bx
+do_qhat_subtraction_by_1:
+sub   cx, bx
+do_return:
+mov   ax, cx
+mov   dx, ds
+mov   bx, ss
+mov   ds, bx  ; restore ds
+mov   sp, bp
+pop   bp
+pop   si
+ret  
+
+
+adjust_for_overflow:
+
+; division result will be over 16 bits. need to subtract once or twice
+
 xor   dx, dx
-sub   ax, word ptr [bp - 4]
+sub   ax, di
 sbb   word ptr [bp - 2], dx
-mov   bx, word ptr [bp - 2]
-cmp   bx, word ptr [bp - 4]
+
+cmp   di, word ptr [bp - 2]
 
 ; check for overflow param
 
-jae   modify_param_to_avoid_overflow
-mov   bx, word ptr [bp - 4]
+jb   adjust_for_overflow_again
+
 mov   dx, word ptr [bp - 2]
 
 ; no subtraction needed (most common case)
 
 
-div   bx
-mov   bx, ax
-mov   cx, dx
-mov   dx, word ptr [bp - 0ah]
+div   di
+mov   bx, dx	; cx holds rhat
+mov   cx, ax
 
-mul   dx
-mov   es, ax
-mov   ax, cx
-cmp   dx, cx
-ja    label17
-jne   label18
-mov   cx, es
-cmp   cx, word ptr [bp - 022h]
-jbe   label18
-label17:
-mov   cx, es
-sub   cx, word ptr [bp - 022h]
-sbb   dx, ax
+
+mul   si
+
+;    c1 = FastMul16u16u(qhat , den0);
+;    c2.hu.intbits = rhat;
+;	c2.hu.fracbits = num1;
+;    if (c1 > c2.wu)
+;        qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
+
+
+cmp   dx, ax
+ja    continue_c1_c2_test_2
+jne   dont_decrement_qhat_and_return
+
+cmp   ax, word ptr [bp - 022h]
+jbe   dont_decrement_qhat_and_return
+continue_c1_c2_test_2:
+
+sub   ax, word ptr [bp - 022h]
+sbb   dx, bx
 cmp   dx, di
-ja    label19
-jne   label18
-cmp   si, cx
-jae   label18
-label19:
-dec   bx
-label18:
-mov   ax, bx
-mov   dx, word ptr [bp - 0ch]
+ja    decrement_qhat_and_return
+jne   dont_decrement_qhat_and_return
+cmp   si, ax
+jae   dont_decrement_qhat_and_return
+decrement_qhat_and_return:
+dec   cx
+
+dont_decrement_qhat_and_return:
+mov   ax, cx
+mov   dx, ds
+mov   cx, ss
+mov   ds, cx
 mov   sp, bp
 pop   bp
 pop   si
 ret  
 
-; the divide would have overflowed. subtract values
-modify_param_to_avoid_overflow:
-sub   ax, word ptr [bp - 4]
+; the divide would have overflowed. subtract a second time
+adjust_for_overflow_again:
+sub   ax, di
 sbb   word ptr [bp - 2], dx
-mov   bx, word ptr [bp - 4]
 mov   dx, word ptr [bp - 2]
-div   bx
+div   di
 
-mov   dx, word ptr [bp - 0ah]
-mov   bx, ax
-mul   dx
+; ax has its result...
+
 mov   dx, word ptr [bp - 6]
-mov   ax, bx
+mov   cx, ss
+mov   ds, cx
 mov   sp, bp
 pop   bp
 pop   si
 ret 
 
-label13:
-mov   bx, word ptr [bp - 4]
-div   bx
-mov   bx, dx
-mov   dx, word ptr [bp - 0ah]
-mov   cx, ax
-mul   dx
-mov   es, ax
-mov   ax, bx
-cmp   dx, bx
-ja    label20
-jne   label21
-mov   bx, es
-cmp   bx, word ptr [bp - 022h]
-jbe   label21
-label20:
-mov   bx, es
-sub   bx, word ptr [bp - 022h]
-sbb   dx, ax
-cmp   dx, di
-ja    label23
-jne   label22
-cmp   si, bx
-jae   label22
-label23:
-mov   ax, 2
-label24:
-sub   cx, ax
-label21:
-mov   dx, word ptr [bp - 0ch]
-mov   ax, cx
-mov   sp, bp
-pop   bp
-pop   si
-ret  
-label22:
-mov   ax, 1
-jmp   label24
+
 
 
 
