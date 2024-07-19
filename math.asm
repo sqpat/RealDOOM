@@ -846,12 +846,12 @@ PUBLIC div48_32_
 ; bp - 012h   unused
 ; bp - 014h   unused
 ; bp - 016h   unused
-; bp - 018h   overflow bits from dx shift   (numhi.high)
-; bp - 01ah   shifted dx  					(numhi.low)
-; bp - 01ch	  ax shifted right
-; bp - 01eh   ax shifted right overflow 
-; bp - 020h   shifted ax  					(numlo)
-; bp - 022h   unused (was always 0)
+; bp - 018h   unused
+; bp - 01ah   unused      					(numhi.low)
+; bp - 01ch	  unused
+; bp - 01eh   unused
+; bp - 020h   shifted ax  					(numlo.high)
+; bp - 022h   unused (was always 0)         (numlo.low)
 
 ; di:si get shifted cx:bx
 
@@ -859,136 +859,62 @@ push  si
 push  bp
 mov   bp, sp
 sub   sp, 022h
-mov   es, bx
+
+
+XOR SI, SI ; zero this out to get high bits of numhi
+
+continue_shift:
+SAL BX, 1
+RCL CX, 1
+JC done_shifting   ; i think this cant happen. we go from signed to unsigned and thus high bit is always off
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+jmp continue_shift
+
+
+
+; todo get the right count of ops for above... handle last case well
+
+
+; store this
+done_shifting:
+
+; we overshifted. lets shift back right one.
+
+RCR CX, 1
+RCR BX, 1
+
+
+; SI:DX:AX holds divisor...
+; CX:BX holds dividend...
+; numhi = SI:DX
+; numlo = AX:00...
+
+;mov ax, dx
+;mov dx, si
+;mov   sp, bp
+;pop   bp
+;pop   si
+;ret
+
+; bp - 020h   shifted ax  					(numlo)
+
+mov   word ptr [bp - 020h], ax
+
+
+; set up first div. 
+; dx:ax becomes numhi
+mov   ax, dx
+mov   dx, si    
+
+; store these two long term...
 mov   di, cx
-mov   ds, ax
-mov   word ptr [bp - 01ah], dx
-mov   word ptr [bp - 01Ch], ax  ; initialize this now i guess...
+mov   si, bx
 
-; 1Ah dx
-; 1Ch ax
-
-; make copies of cx:bx
-
-
-; COUNT LEADING ZEROES
-
-mov  si, bx
-mov  dx, 08000h
-xor  ax, ax
-xor  bx, bx
-test ch, 080h
-jne  finished_counting_zeroes
-count_next_binary_digit:
-cmp  bx, 01fh
-jge  finished_counting_zeroes
-shr  dx, 1
-rcr  ax, 1
-inc  bx
-test cx, dx
-jne  finished_counting_zeroes
-test si, ax
-je   count_next_binary_digit
-finished_counting_zeroes:
-mov  ax, bx
-
-; END COUNT LEADING ZEROES
-
-mov  si, es
-
-mov  cx, ax
-mov  bx, ds
-
-; prepare  numlo..
-shl   bx, cl
-mov   word ptr [bp - 020h], bx 
-
-
-
-done_counting_leading_zeroes:
-
-; have zeroes in ax
-; begin doing all the shifts
-
-; do shifts. ax holds shift count.
-
-;    den.wu <<= shift;
-; di:si holds den (which was cx:bx)
-
-; create si:di from cx:bx
-
-mov   cx, ax					; count in cx...
-jcxz  done_with_shift_denominator
-shift_denominator:
-shl   si, 1
-rcl   di, 1
-loop  shift_denominator
-done_with_shift_denominator:
-
-;    numhi.wu <<= shift;
-
-; 18:1A is 00:DX shifted left
-
-mov   word ptr [bp - 018h], 0
-mov   cx, ax					; count in cx...
-
-jcxz  done_with_shift_b
-shift_param_b:
-shl   word ptr [bp - 01ah], 1
-rcl   word ptr [bp - 018h], 1
-loop  shift_param_b
-done_with_shift_b:
-
-
-
-;    numhi.wu |= (numlo.wu >> (-shift & 31)) & (-(int32_t)shift >> 31);
-
-mov   word ptr [bp - 01eh], 0
-mov   cx, ax
-mov   bx, ax
-neg   cx
-xor   ch, ch
-
-; 1C:1E = AX:00.. shifted right
-
-and   cl, 01fh
-mov   ax, bx
-jcxz  done_with_shift_c
-shift_param_c:					; shift RIGHT. i think for the ORed stuff.
-shr   word ptr [bp - 01ch], 1
-rcr   word ptr [bp - 01eh], 1
-loop  shift_param_c
-done_with_shift_c:
-
-;    numlo.wu <<= shift;
-
-xor ax, ax
-CWD   
-
-
-
-; DX:AX
-; 18:1A is 00:DX shifted left
-; 1C:1E = AX:00.. shifted right
-
-; DX:AX becomes... 
-; DX = 18 | 1C
-; AX = 1E | 1A
-
-; begin actual first division. create params from shifted ones
-
-mov   dx, word ptr [bp - 01ch]
-or    dx, word ptr [bp - 018h]
-
-mov   ax, word ptr [bp - 01eh]
-or    ax, word ptr [bp - 01ah]
 mov   ds, ax                    ; store copy of numhi.low?
 
 
-;    num1 = (uint16_t)(numlo.hu.intbits);
-;    num0 = (uint16_t)(numlo.hu.fracbits);
-;    den1 = (uint16_t)(den.hu.intbits);
-;    den0 = (uint16_t)(den.hu.fracbits);
 
 ;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
 ; DX:AX = numhi.wu
