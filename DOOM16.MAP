@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/07/19 07:48:16
+Created on:       24/07/19 08:32:13
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -856,7 +856,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 Module: math.obj(math.ASM)
 023c:6879      FastMul16u32u_
 023c:69d9      FixedDiv_
-023c:6890*     div48_32_
+023c:688e*     div48_32_
 023c:686a*     FixedMul16u32u_
 023c:67a4      FixedMulTrigOld_
 023c:67eb      FixedMulTrig_
@@ -1830,4 +1830,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00029a30 (170544.)
 Entry point address: 1f80:2332
-Link time: 00:00.30
+Link time: 00:00.29

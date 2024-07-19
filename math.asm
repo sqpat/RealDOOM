@@ -854,12 +854,12 @@ mov   bp, sp
 
 XOR SI, SI ; zero this out to get high bits of numhi
 
-; 2611
-; 4464
-; 6038
 
 test cx, cx
 je  shift_word
+; default branch taken 314358 vs 126885
+
+
 test ch, ch
 jne shift_bits
 ; shift a whole byte immediately
@@ -872,7 +872,7 @@ xor bl, bl
 
 xchg dh, dl
 mov  si, dx
-and si, 00FFh
+and si, 00FFh  ; todo make this better
 
 mov dl, ah
 mov ah, al
@@ -1070,8 +1070,8 @@ cmp   dx, di
 
 jnb    adjust_for_overflow
 
-; default case, most common by a ton
-; todo confirm this 
+
+; 441240 branch not taken vs 3 taken
 
 
 div   di
@@ -1083,7 +1083,22 @@ mul   si
 cmp   dx, cx
 
 ja    continue_c1_c2_test
-jne   do_return_2
+je    continue_check
+
+; default 440124 vs branch 105492 times
+do_return_2:
+mov   dx, es      ; retrieve q1
+mov   ax, bx
+
+mov   cx, ss
+mov   ds, cx
+mov   sp, bp
+sti
+pop   bp
+pop   si
+ret  
+
+continue_check:
 cmp   ax, 0
 jbe   do_return_2
 continue_c1_c2_test:
@@ -1098,17 +1113,10 @@ do_qhat_subtraction_by_2:
 dec   bx
 do_qhat_subtraction_by_1:
 dec   bx
-do_return_2:
-mov   dx, es      ; retrieve q1
-mov   ax, bx
 
-mov   cx, ss
-mov   ds, cx
-mov   sp, bp
-sti
-pop   bp
-pop   si
-ret  
+jmp do_return_2;
+
+
 
 
 adjust_for_overflow:
@@ -1125,7 +1133,6 @@ jae   adjust_for_overflow_again
 
 mov   dx, cx
 
-; no subtraction needed (most common case)
 
 
 div   di
@@ -1372,20 +1379,6 @@ mov ax, es
 jmp do_full_divide
 
 ENDP
-
-
-
-; general idea: (?)
-; div the high numbers
-; div and sum the mid numbers + remainder of high
-; adc into high number
-; div the low number + remainder of mid
-; adc into the mid and high number
-; return high:mid
-; so: dx/cx -> high
-;   rem dx/cx + dx/bx + ax/cx -> mid, adc into high
-;     rem of above + ax/bx, adc into mid into high
-
 
 
 
