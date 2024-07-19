@@ -844,7 +844,7 @@ PUBLIC div48_32_
 ; bp - 0Eh    unused
 ; bp - 010h   unused
 ; bp - 012h   unused
-; bp - 014h   unused. was dupe of 020h, which was numhi.hu.fracbits ?
+; bp - 014h   unused
 ; bp - 016h   unused
 ; bp - 018h   overflow bits from dx shift   (numhi.high)
 ; bp - 01ah   shifted dx  					(numhi.low)
@@ -973,14 +973,10 @@ done_with_shift_d:
 
 and   dx, word ptr [bp - 01ch]
 and   ax, word ptr [bp - 01eh]
-or    word ptr [bp - 01ah], ax
 
-or    word ptr [bp - 018h], dx
-
-mov   dx, word ptr [bp - 018h]
-
-mov   ax, word ptr [bp - 01ah]
-
+or   dx, word ptr [bp - 018h]
+or    ax, word ptr [bp - 01ah]
+mov   ds, ax
 
 ;    num1 = (uint16_t)(numlo.hu.intbits);
 ;    num0 = (uint16_t)(numlo.hu.fracbits);
@@ -1001,7 +997,6 @@ div   di
 
 mov   bx, dx					; bx stores rhat
 
-;mov   ds, ax
 mov   word ptr [bp - 6], ax
 
 mul   si   						; DX:AX = c1
@@ -1049,9 +1044,6 @@ do_qhat_subtraction:
 
 ; qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
 
-;mov   dx, ds
-;sub   dx, ax
-;mov   ds, dx	; store q1. could this be better...?
 sub   word ptr [bp - 6], ax
 
 ;    q1 = (uint16_t)qhat;
@@ -1059,6 +1051,7 @@ sub   word ptr [bp - 6], ax
 q1_ready:
 
 mov   ax, word ptr [bp - 6]
+mov   bx, ds
 mov   ds, ax	; store q1. could this be better...?
 
 ; q1 is in DS
@@ -1068,7 +1061,6 @@ mov   ds, ax	; store q1. could this be better...?
 ;	rem.wu -= FastMul16u32u(q1, den.wu);
 
 
-mov   bx, word ptr [bp - 01ah]
 mov   cx, ax
 mov   word ptr [bp - 2], bx
 
