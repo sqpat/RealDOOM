@@ -993,8 +993,6 @@ mul   si   						; DX:AX = c1
 ;         qhat -= (c1 - c2.wu > den.wu) ? 2 : 1;
 ; 
 
-mov   cx, ax					; CX has low bits of c1
-mov   ax, bx					; ax has rhat
 
 ; c1 hi = dx, c2 lo = bx
 cmp   dx, bx
@@ -1003,21 +1001,21 @@ cmp   dx, bx
 
 ja    check_c1_c2_diff
 jne   q1_ready
-cmp   cx, sp
+cmp   ax, sp
 jbe   q1_ready
 check_c1_c2_diff:
 
 ; (c1 - c2.wu > den.wu)
 
-sub   cx, sp
-sbb   dx, ax
+sub   ax, sp
+sbb   dx, bx
 cmp   dx, di
 ja    qhat_subtract_2
 je    compare_low_word
 jmp   qhat_subtract_1
 
 compare_low_word:
-cmp   cx, si
+cmp   ax, si
 jbe   qhat_subtract_1
 
 ; ugly but rare occurrence i think?
@@ -1090,8 +1088,8 @@ do_return_2:
 mov   dx, es      ; retrieve q1
 mov   ax, bx
 
-mov   cx, ss
-mov   ds, cx
+mov   cx, ss      ; restore ds
+mov   ds, cx      
 mov   sp, bp
 sti
 pop   bp
@@ -1120,7 +1118,6 @@ jmp do_return_2;
 
 
 adjust_for_overflow:
-; cx holds bp - 2!
 xor   dx, dx
 sub   ax, di
 sbb   cx, dx
@@ -1380,6 +1377,316 @@ jmp do_full_divide
 
 ENDP
 
+
+PROC FastDiv32u16u_
+PUBLIC FastDiv32u16u_
+
+;DX:AX / BX (?)
+
+
+cmp dx, bx
+jl one_part_divide
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+mov bx, ss
+mov ds, bx  ; restored ds
+ret
+
+
+one_part_divide:
+div bx
+xor dx, dx
+ret
+
+
+
+ENDP
+
+; returns 16 bit div result of 32bit / 16bit inputs.
+; return 32767 if answer would be larger than that. 
+; param 1 is signed, param 2 is unsigned. return val is signed.
+
+PROC R_CalculateScaleStep_
+PUBLIC R_CalculateScaleStep_
+
+;DX:AX / BX 
+
+; 1. abs the value
+; 2. if DX > bx then return 32767 
+; 3. otherwise divide
+; 4. reapply sign if necessary
+; 5. return
+
+test dx, dx
+js handle_negative  ; sign set if negative..
+
+;  we have to check for result > 32767, not 65536. so we need the ax sign bit.
+sal ax, 1
+rcl dx, 1
+cmp dx, bx
+jge returnmax ;  result is > 65536
+
+; restore bits
+sar dx, 1
+rcr ax, 1
+div bx
+ret
+
+returnmax:
+mov ax, 07FFFh
+ret
+
+handle_negative:
+
+neg ax
+adc dx, 0
+neg dx
+
+; we need to shift 1 before we compare. again are checking for > 32768 not > 65536. one bit does come from ax.
+sal ax, 1
+rcl dx, 1
+
+cmp dx, bx
+
+jge returnmax_neg
+sar dx, 1
+rcr ax, 1
+div bx
+
+neg ax
+
+ret
+
+returnmax_neg:
+; todo make this 08000h ?
+mov ax, 07FFFh
+ret
+
+
+
+
+ENDP
+
+
+
+fast_div_32_16:
+
+xchg dx, cx   ; cx was 0, dx is FFFF
+div bx        ; after this dx stores remainder, ax stores q1
+xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+div bx
+mov dx, cx   ; q1:q0 is dx:ax
+retf 
+
+
+; NOTE: this may not work write for negative params or DX:AX  besides 0xFFFFFFFF
+
+;FastDiv3232_
+; DX:AX / CX:BX
+
+PROC FastDiv3232_
+PUBLIC FastDiv3232_
+
+
+
+; if top 16 bits missing just do a 32 / 16
+
+test cx, cx
+je fast_div_32_16
+
+push  si
+push  di
+
+
+
+XOR SI, SI ; zero this out to get high bits of numhi
+
+
+
+
+test ch, ch
+jne shift_bits_3232
+; shift a whole byte immediately
+
+mov ch, cl
+mov cl, bh
+mov bh, bl
+xor bl, bl
+
+
+xchg dh, dl
+mov  si, dx
+and si, 00FFh  ; todo make this better
+
+mov dl, ah
+mov ah, al
+xor al, al
+
+shift_bits_3232:
+
+; less than a byte to shift
+; shift until MSB is 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232  
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+
+
+
+; store this
+done_shifting_3232:
+
+; we overshifted by one and caught it in the carry bit. lets shift back right one.
+
+RCR CX, 1
+RCR BX, 1
+
+
+; SI:DX:AX holds divisor...
+; CX:BX holds dividend...
+; numhi = SI:DX
+; numlo = AX:00...
+
+
+; save numlo word in sp.
+; avoid going to memory... lets do interrupt magic
+mov di, ax
+
+
+; set up first div. 
+; dx:ax becomes numhi
+mov   ax, dx
+mov   dx, si    
+
+; store these two long term...
+mov   si, bx
+
+
+
+; numhi is 00:SI in this case?
+
+;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+; DX:AX = numhi.wu
+
+
+div   cx
+
+; rhat = dx
+; qhat = ax
+;    c1 = FastMul16u16u(qhat , den0);
+
+mov   bx, dx					; bx stores rhat
+mov   es, ax     ; store qhat
+
+mul   si   						; DX:AX = c1
+
+
+; c1 hi = dx, c2 lo = bx
+cmp   dx, ax
+
+ja    check_c1_c2_diff_3232
+jne   q1_ready_3232
+cmp   ax, di
+jbe   q1_ready_3232
+check_c1_c2_diff_3232:
+
+; (c1 - c2.wu > den.wu)
+
+sub   ax, di
+sbb   dx, bx
+cmp   dx, cx
+ja    qhat_subtract_2_3232
+je    compare_low_word_3232
+jmp   qhat_subtract_1_3232
+
+compare_low_word_3232:
+cmp   ax, si
+jbe   qhat_subtract_1_3232
+
+; ugly but rare occurrence i think?
+qhat_subtract_2_3232:
+mov ax, es
+dec ax
+dec ax
+xor dx, dx
+
+pop   di
+pop   si
+ret  
+
+
+qhat_subtract_1_3232:
+mov ax, es
+dec ax
+xor dx, dx
+
+pop   di
+pop   si
+ret  
+
+
+
+
+q1_ready_3232:
+
+mov  ax, es
+xor  dx, dx;
+
+pop   di
+pop   si
+ret  
+
+
+endp
 
 
 END

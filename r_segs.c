@@ -142,7 +142,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		int16_t base4diff = x1 - dc_x_base4;
 		fixed_t basespryscale = spryscale.w;
 		int16_t xoffset;
-		fixed_t rw_scalestep_shift = rw_scalestep << detailshift2minus;
+		fixed_t rw_scalestep_shift = ((int32_t)rw_scalestep) << detailshift2minus;
 		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
 
 		while (base4diff){
@@ -195,7 +195,18 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 					// add by dc_texturemid.w * rw_scalestep_shift
 
 					// todo there's got to be a faster way
-					dc_iscale = 0xffffffffu / spryscale.w;
+					//dc_iscale = 0xffffffffu / spryscale.w;
+					dc_iscale = FastDiv3232(0xffffffffu, spryscale.w);
+
+/*
+					if (FastDiv3232(0xffffffffu, spryscale.w) != (0xffffffffu / spryscale.w)){
+						I_Error ("caught a %li %li %li %li",
+						0xffffffffu, spryscale.w,
+						FastDiv3232(0xffffffffu, spryscale.w),
+						0xffffffffu / spryscale.w);						
+					}
+*/
+
 					// the below doesnt work because sometimes < FRACUNIT
 					//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
 				
@@ -405,7 +416,16 @@ void __near R_RenderSegLoop (void)
 				dc_colormap_segment = colormapssegment;
 				dc_colormap_index = walllights[index];
 				dc_x = rw_x;
-				dc_iscale = 0xffffffffu / rw_scale.w;
+				//dc_iscale = 0xffffffffu / rw_scale.w;
+				dc_iscale = FastDiv3232(0xffffffffu, rw_scale.w);
+/*
+					if (FastDiv3232(0xffffffffu, rw_scale.w) != (0xffffffffu / rw_scale.w)){
+						I_Error ("caught b %li %li %li %li",
+						0xffffffffu, rw_scale.w,
+						FastDiv3232(0xffffffffu, rw_scale.w),
+						0xffffffffu / rw_scale.w);
+					}
+*/
 				// the below doesnt work because sometimes < FRACUNIT
 				//dc_iscale = 0xffffu / rw_scale.hu.intbits;  // this might be ok? 
 			}
@@ -594,25 +614,13 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     ds_p->scale1 = rw_scale.w =  R_ScaleFromGlobalAngle (viewangle_shiftright3+xtoviewangle[start]); // internally fineangle modded
 
     if (stop > start ) {
-		fixed_t_union rw_scalestep_extraprecision = { 0L };
 
 		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle_shiftright3 + xtoviewangle[stop]);
 
-		// this is jank (using 32 bits for rw_scalestep) but the precision is actually
-		// necessary for rare situations, generally when screen size is greatly lowered
-		// and something is being drawn at a near 90 degree angle. In those cases the
-		// precision needed is too great.
-		rw_scalestep_extraprecision.w =  (ds_p->scale2 - rw_scale.w) / (stop-start);
-
-		if (rw_scalestep_extraprecision.w == rw_scalestep_extraprecision.h.fracbits) {
-			rw_scalestep = rw_scalestep_extraprecision.h.fracbits;
-			//rw_scalestep_extraprecision.h.fracbits = 0;
-		} else {
-			// Clip to max. When i do this happens i don't see any visual artifacts personally...
-			rw_scalestep = 32767;
-			//rw_scalestep_extraprecision.h.fracbits = 0;
-
-		}
+		// basically a specialized 32 bit divided by 16 bit function that returns 16 bit and clips to short max/min
+		
+		// todo inline R_CalculateScaleStep when doing asm
+		rw_scalestep = R_CalculateScaleStep((ds_p->scale2 - rw_scale.w), (stop-start));
 		
 		ds_p->scalestep = rw_scalestep;
 
