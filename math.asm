@@ -929,7 +929,13 @@ RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
+JC done_shifting  
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
 
+SAL BX, 1
+RCL CX, 1
 
 
 
@@ -1579,6 +1585,13 @@ RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
+JC done_shifting_3232
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
 
 
 
@@ -1631,7 +1644,7 @@ mul   si   						; DX:AX = c1
 
 
 ; c1 hi = dx, c2 lo = bx
-cmp   dx, ax
+cmp   dx, bx
 
 ja    check_c1_c2_diff_3232
 jne   q1_ready_3232
@@ -1657,7 +1670,6 @@ qhat_subtract_2_3232:
 mov ax, es
 dec ax
 dec ax
-xor dx, dx
 
 pop   di
 pop   si

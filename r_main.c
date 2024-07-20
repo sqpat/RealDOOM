@@ -188,6 +188,8 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 	x.w -= viewx.w;
 	y.w -= viewy.w;
 
+	// todo make a fast slope division for this function that internally does the shifts, etc.
+
 	if ((!x.w) && (!y.w))
 		return 0;
 
@@ -419,6 +421,8 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
     den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
 
     if (den > num.h.intbits) {
+		// todo make a custom unsigned fixeddiv that does bounds check to 0x400000L and 256. can quick-out in those cases.
+		// eventualy it will be inlined, eventually the fixedmultrig will be inlined and this function will get fast.
         scale.w = FixedDiv (num.w, den);
 
         if (scale.h.intbits > 64){

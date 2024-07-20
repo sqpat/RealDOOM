@@ -198,14 +198,6 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 					//dc_iscale = 0xffffffffu / spryscale.w;
 					dc_iscale = FastDiv3232(0xffffffffu, spryscale.w);
 
-/*
-					if (FastDiv3232(0xffffffffu, spryscale.w) != (0xffffffffu / spryscale.w)){
-						I_Error ("caught a %li %li %li %li",
-						0xffffffffu, spryscale.w,
-						FastDiv3232(0xffffffffu, spryscale.w),
-						0xffffffffu / spryscale.w);						
-					}
-*/
 
 					// the below doesnt work because sometimes < FRACUNIT
 					//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
@@ -418,14 +410,6 @@ void __near R_RenderSegLoop (void)
 				dc_x = rw_x;
 				//dc_iscale = 0xffffffffu / rw_scale.w;
 				dc_iscale = FastDiv3232(0xffffffffu, rw_scale.w);
-/*
-					if (FastDiv3232(0xffffffffu, rw_scale.w) != (0xffffffffu / rw_scale.w)){
-						I_Error ("caught b %li %li %li %li",
-						0xffffffffu, rw_scale.w,
-						FastDiv3232(0xffffffffu, rw_scale.w),
-						0xffffffffu / rw_scale.w);
-					}
-*/
 				// the below doesnt work because sometimes < FRACUNIT
 				//dc_iscale = 0xffffu / rw_scale.hu.intbits;  // this might be ok? 
 			}
