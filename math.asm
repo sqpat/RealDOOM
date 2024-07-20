@@ -1230,9 +1230,6 @@ mov   bp, sp
 mov   si, dx ; 	si will store sign bit 
 xor   si, cx  ; si now stores signedness via test operator...
 
-; how to test for sign:
-; test  si, si   ; 
-; jl    positive_case
 
 
 ; here we abs the numbers before unsigned division algo
@@ -1700,5 +1697,175 @@ ret
 
 endp
 
+
+PROC FixedDivWholeA_
+PUBLIC FixedDivWholeA_
+
+
+; AX:00 / CX:BX
+; return in DX:AX
+
+; this is fixeddiv so we must do the whole labs14 check and word shift adjustment
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+
+mov dx, ax
+xor ax, ax
+
+mov   si, dx ; 	si will store sign bit 
+xor   si, cx  ; si now stores signedness via test operator...
+
+
+
+; here we abs the numbers before unsigned division algo
+
+or    cx, cx
+jge   b_is_positive_whole
+neg   bx
+adc   cx, 0
+neg   cx
+
+
+b_is_positive_whole:
+
+or    dx, dx			; sign check
+jge   a_is_positive_whole
+neg   ax
+adc   dx, 0
+neg   dx
+
+
+a_is_positive_whole:
+
+;  dx:ax  is  labs(dx:ax) now (unshifted)
+;  cx:bx  is  labs(cx:bx) now
+test cx, 0FFFCh
+
+
+je continue_bounds_test_whole
+
+; main division algo
+
+do_full_divide_whole:
+
+
+call div48_32_
+
+; set negative if need be...
+
+test  si, si
+
+jl do_negative_whole
+
+mov   sp, bp
+pop   bp
+
+pop   di
+pop   si
+ret
+
+do_negative_whole:
+
+neg   ax
+adc   dx, 0
+neg   dx
+
+mov   sp, bp
+pop   bp
+
+pop   di
+pop   si
+ret
+
+continue_bounds_test_whole:
+
+
+
+
+; if high 2 bits of dh arent present at all, and any bits of cx are present
+; then we can quit out quickly.
+
+
+test dh, 0C0h     ; dx AND 0xC000
+jne do_shift_and_full_compare_whole
+test cx, cx
+jne do_full_divide_whole  ; dx >> 14 is zero, cx is nonzero.
+
+
+do_shift_and_full_compare_whole:
+
+; store backup dx:ax in ds:es
+mov ds, dx
+mov es, ax
+
+rol dx, 1
+rol ax, 1
+rol dx, 1
+rol ax, 1
+
+mov di, dx
+and ax, 03h
+and di, 0FFFCh  ; cx, 0FFFCh
+or  ax, di
+and dx, 03h
+
+
+; do comparison  di:bx vs dx:ax
+; 	if ((labs(a) >> 14) >= labs(b))
+
+cmp   dx, cx
+jg    do_quick_return_whole
+jne   restore_reg_then_do_full_divide_whole ; below
+cmp   ax, bx
+jb    restore_reg_then_do_full_divide_whole
+
+do_quick_return_whole: 
+; return (a^b) < 0 ? MINLONG : MAXLONG;
+test  si, si   ; just need to do the high word due to sign?
+jl    return_MAXLONG_whole
+
+return_MINLONG_whole:
+mov   ax, ss
+mov   ds, ax
+
+mov   ax, 0ffffh
+mov   dx, 07fffh
+
+exit_and_return_early_whole:
+
+; restore ds...
+
+mov   sp, bp
+
+pop   bp
+pop   di
+pop   si
+ret
+
+return_MAXLONG_whole:
+mov   ax, ss
+mov   ds, ax
+
+mov   dx, 08000h
+xor   ax, ax
+jmp   exit_and_return_early_whole
+
+restore_reg_then_do_full_divide_whole:
+
+; restore dx
+mov dx, ds
+
+; restore ds
+mov ax, ss
+mov ds, ax 
+
+; restore ax
+mov ax, es
+jmp do_full_divide_whole
+
+endp
 
 END

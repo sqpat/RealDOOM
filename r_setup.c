@@ -85,7 +85,7 @@ void __near R_InitTextureMapping(void) {
 	//
 	// Calc focallength
 	//  so FIELDOFVIEW angles covers SCREENWIDTH.
-	focallength = FixedDivWholeA(centerxfrac.w, FIXED_FINE_TAN);
+	focallength = FixedDivWholeA(centerxfrac.hu.intbits, FIXED_FINE_TAN);
 
 
 	for (i = 0; i < FINEANGLES / 2; i++) {
@@ -158,14 +158,14 @@ void __near R_InitTextureMapping(void) {
 		dy = (temp.w) + 0x8000u;
 		dy = labs(dy);
 		temp.h.intbits = (viewwidth << detailshift.b.bytelow) / 2;
-		yslope[i] = FixedDivWholeA(temp.w, dy);
+		yslope[i] = FixedDivWholeA(temp.h.intbits, dy);
 	}
 	// 320 viewwidth
 
 	for (i = 0; i < viewwidth; i++) {
 		an = xtoviewangle[i];
 		cosadj = labs(finecosine[an]);
-		distscale[i] = FixedDivWholeA(FRACUNIT, cosadj);
+		distscale[i] = FixedDivWholeA(1, cosadj);
 	}
 	Z_QuickMapRender();
 

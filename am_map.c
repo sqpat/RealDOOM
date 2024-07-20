@@ -343,8 +343,6 @@ void __near AM_activateNewScale(void)
 
 void __near AM_restoreScaleAndLoc(void)
 {
-	fixed_t_union temp;
-	temp.h.fracbits = 0;
 
     screen_viewport_width = old_screen_viewport_width;
     screen_viewport_height = old_screen_viewport_height;
@@ -360,9 +358,8 @@ void __near AM_restoreScaleAndLoc(void)
 
     // Change the scaling multipliers
 
-	temp.h.intbits = automap_screenwidth;
-    scale_mtof.w = FixedDivWholeA(temp.w, ((int32_t)screen_viewport_width << 16));
-    scale_ftom.w = FixedDivWholeA(FRACUNIT, scale_mtof.w);
+    scale_mtof.w = FixedDivWholeA(automap_screenwidth, ((int32_t)screen_viewport_width << 16));
+    scale_ftom.w = FixedDivWholeA(1, scale_mtof.w);
 }
 
 //
@@ -412,11 +409,13 @@ void __near AM_findMinMaxBoundaries(void)
   
     max_w = max_level_x - min_level_x;
     max_h = max_level_y - min_level_y;
-	a = FixedDivWholeA(automap_screenwidth, max_w);
-	b = FixedDivWholeA(automap_screenheight, max_h);
+	
+	//todo this in theory can be better. but whoe cares, runs once
+	a = FixedDiv(automap_screenwidth, max_w);
+	b = FixedDiv(automap_screenheight, max_h);
   
     min_scale_mtof.w = a < b ? a : b;
-	max_scale_mtof.w = FixedDivWholeA(automap_screenheight, 2*16);
+	max_scale_mtof.w = FixedDiv(automap_screenheight, 2*16);
 
 }
 
@@ -517,7 +516,7 @@ void __near AM_LevelInit(void)
 	if (scale_mtof.w > max_scale_mtof.w) {
 		scale_mtof.w = min_scale_mtof.w;
 	}
-    scale_ftom.w = FixedDivWholeA(FRACUNIT, scale_mtof.w);
+    scale_ftom.w = FixedDivWholeA(1, scale_mtof.w);
 }
 
 
@@ -561,7 +560,7 @@ void __far AM_Start (void)
 void __near AM_minOutWindowScale(void)
 {
     scale_mtof.w = min_scale_mtof.w;
-    scale_ftom.w = FixedDivWholeA(FRACUNIT, scale_mtof.w);
+    scale_ftom.w = FixedDivWholeA(1, scale_mtof.w);
     AM_activateNewScale();
 }
 
@@ -571,7 +570,7 @@ void __near AM_minOutWindowScale(void)
 void __near AM_maxOutWindowScale(void)
 {
     scale_mtof.w = max_scale_mtof.w;
-    scale_ftom.w = FixedDivWholeA(FRACUNIT, scale_mtof.w);
+    scale_ftom.w = FixedDivWholeA(1, scale_mtof.w);
     AM_activateNewScale();
 }
 
@@ -706,7 +705,7 @@ void __near AM_changeWindowScale(void)
 
     // Change the scaling multipliers
     scale_mtof.w = FixedMul1632(mtof_zoommul, scale_mtof.w)<<4;
-    scale_ftom.w = FixedDivWholeA(FRACUNIT, scale_mtof.w);
+    scale_ftom.w = FixedDivWholeA(1, scale_mtof.w);
 
     if (scale_mtof.w < min_scale_mtof.w)
 		AM_minOutWindowScale();

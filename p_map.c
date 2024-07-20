@@ -1169,7 +1169,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 		// hit line
 		  hitline:
 		// position a bit closer
-		frac = in->frac - FixedDivWholeA (4*FRACUNIT, attackrange.w); // todo can we use intbits and remove fracunit?
+		frac = in->frac - FixedDivWholeA (4, attackrange.w); // todo can we use intbits and remove fracunit?
 		x = trace.x.w + FixedMul (trace.dx.w, frac);
 		y = trace.y.w + FixedMul (trace.dy.w, frac);
 		z = shootz.w + FixedMul (aimslope, FixedMul(frac, attackrange.w));
@@ -1225,7 +1225,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
     
     // hit thing
     // position a bit closer
-    frac = in->frac - FixedDivWholeA (10*FRACUNIT, attackrange.w); // todo can we use intbits and remove fracunit?
+    frac = in->frac - FixedDivWholeA (10, attackrange.w); // todo can we use intbits and remove fracunit?
 
     x = trace.x.w + FixedMul (trace.dx.w, frac);
     y = trace.y.w + FixedMul (trace.dy.w, frac);

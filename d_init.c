@@ -701,10 +701,10 @@ void __far D_DoomMain2(void)
 	//I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
 	//I_Error("res: %li %lx %li %lx", divllu(a, b ), divllu(a, b ), 	 FixedDiv(a.wu, b.wu ), FixedDiv(a.wu, b.wu ));
 
-	a.wu = -16;
-	b.wu = 16;
-	I_Error("res: %li %lx %li %lx", FixedDiv10(a.wu, b.wu ), FixedDiv10(a.wu, b.wu ),
-							    	FixedDiv11(a.wu, b.wu ), FixedDiv11(a.wu, b.wu ));
+	a.wu = 0x30000;
+	b.wu = 0x1678;
+	I_Error("res: %li %lx %li %lx", FixedDivWholeA(3, b.wu ), FixedDivWholeA(3, b.wu ),
+							    	FixedDiv(a.wu, b.wu ), FixedDiv(a.wu, b.wu ));
 /*
 	a.w = 0x0fedcba9;
 	b.w = 0x07654321;
