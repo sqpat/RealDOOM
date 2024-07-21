@@ -1176,7 +1176,6 @@ sbb   cx, dx
 mov   dx, cx
 div   di
 
-div   di
 
 ; ax has its result...
 
@@ -1707,7 +1706,6 @@ PUBLIC FixedDivWholeA_
 ; this is fixeddiv so we must do the whole labs14 check and word shift adjustment
 
 
-push  di
 push  bp
 mov   bp, sp
 
@@ -1759,7 +1757,6 @@ call div48_32_whole_
 
 mov   sp, bp
 pop   bp
-pop   di
 
 ret
 
@@ -1777,7 +1774,6 @@ neg   dx
 
 mov   sp, bp
 pop   bp
-pop  di
 
 ret
 
@@ -1807,7 +1803,6 @@ rol ax, 1
 and ax, 03h
 
 
-; do comparison  di:bx vs dx:ax
 ; 	if ((labs(a) >> 14) >= labs(b))
 
 
@@ -1853,7 +1848,6 @@ exit_and_return_early_whole:
 mov   sp, bp
 
 pop   bp
-pop  di
 ret
 
 return_MAXLONG_whole:
@@ -1873,7 +1867,6 @@ endp
 
 
 shift_word_whole:
-mov si, dx
 mov dx, ax
 xor ax, ax
 mov cx, bx
@@ -1892,9 +1885,7 @@ PUBLIC div48_32_whole_
 
 
 
-
-mov dx, ax
-xor ax, ax
+xor dx, dx
 
 
 push  si
@@ -1903,7 +1894,6 @@ push  bp
 mov   bp, sp
 
 
-XOR SI, SI ; zero this out to get high bits of numhi
 
 
 test cx, cx
@@ -1921,10 +1911,7 @@ mov bh, bl
 xor bl, bl
 
 
-xchg dh, dl
-mov  si, dx
-and si, 00FFh  ; todo make this better
-
+mov  dh, dl
 mov dl, ah
 mov ah, al
 xor al, al
@@ -1941,49 +1928,42 @@ RCL CX, 1
 JC done_shifting_whole
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
 JC done_shifting_whole  
 SAL AX, 1
 RCL DX, 1
-RCL SI, 1
 
 SAL BX, 1
 RCL CX, 1
@@ -2005,38 +1985,22 @@ RCR BX, 1
 
 
 
-; 2a7b
-; f788
-; 0x2BEF
-
-; 2c80000   = 2e0  remainder 
-
-
-
-
-
-; SI:DX:AX holds divisor...
+; DX:AX holds divisor...
 ; CX:BX holds dividend...
-; numhi = SI:DX
-; numlo = AX:00...
+; numhi = DX:AX
+; numlo = 00:00...
 
 
-; save numlo word in sp.
-; avoid going to memory... lets do interrupt magic
-cli
-mov sp, ax
 
 
-; set up first div. 
-; dx:ax becomes numhi
-mov   ax, dx
-mov   dx, si    
 
 ; store these two long term...
+; todo i think cx can be filtered out...
 mov   di, cx
 mov   si, bx
 
-mov   ds, ax                    ; store copy of numhi.low?
+mov   ds, ax                    ; store copy of numhi.low
+
 
 
 
@@ -2071,14 +2035,13 @@ cmp   dx, bx
 
 ja    check_c1_c2_diff_whole
 jne   q1_ready_whole
-cmp   ax, sp
+cmp   ax, 0
 jbe   q1_ready_whole
 check_c1_c2_diff_whole:
 
 ; (c1 - c2.wu > den.wu)
 
-sub   ax, sp
-sbb   dx, bx
+sub   dx, bx
 cmp   dx, di
 ja    qhat_subtract_2_whole
 je    compare_low_word_whole
@@ -2124,11 +2087,10 @@ ADD  DX, CX    ; add
 ; actual 2nd division...
 
 
-sub   sp, ax
+neg   ax
 mov   cx, ds
 sbb   cx, dx
 mov   dx, cx
-mov   ax, sp
 
 cmp   dx, di
 
@@ -2159,7 +2121,7 @@ mov   ax, bx
 mov   cx, ss      ; restore ds
 mov   ds, cx      
 mov   sp, bp
-sti
+
 pop   bp
 pop   di
 pop   si
@@ -2227,7 +2189,7 @@ mov   dx, es   ;retrieve q1
 mov   cx, ss
 mov   ds, cx
 mov   sp, bp
-sti
+
 pop   bp
 pop   di
 pop   si
@@ -2241,15 +2203,13 @@ sbb   cx, dx
 mov   dx, cx
 div   di
 
-div   di
-
 ; ax has its result...
 
 mov   dx, es
 mov   cx, ss
 mov   ds, cx
 mov   sp, bp
-sti
+
 pop   bp
 pop   di
 pop   si

@@ -740,7 +740,7 @@ void __far D_DoomMain2(void)
 
 	//FixedDivWholeA(257l*257, 65536);
 
-	DEBUG_PRINT("%li  ok\n",FixedDiv(4L * 4L * 10000L, 4));
+	//DEBUG_PRINT("%li  ok\n",FixedDiv(4L * 4L * 10000L, 4));
 	// 0x38400
 	// 0x7D29
 	// 0xE1000000
@@ -758,7 +758,7 @@ void __far D_DoomMain2(void)
 		fixed_t_union ii;
 		ii.hu.intbits = i*i;
 		ii.hu.fracbits = 0;
-		for (j = i/2; j < i; j++){
+		for (j = i*i; j < i*i*i; j++){
 			fixed_t_union jj;
 			jj.wu = j*j;
 			if (FixedDivWholeA(i * i	, jj.wu) != FixedDiv(ii.wu, jj.wu)){
@@ -779,7 +779,6 @@ void __far D_DoomMain2(void)
 	}
 
 	I_Error("done");
-	*/
 	
 
 	//I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
