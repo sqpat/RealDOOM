@@ -959,7 +959,7 @@ spritewidths        7000:7592
 
 
 
-#define texturecolumnlumps_bytes   ((int16_t __far*)           (0x60000000 ))
+#define texturecolumnlumps_bytes   ((int16_t_union __far*)     (0x60000000 ))
 #define texturedefs_bytes          ((byte __far*)              MAKE_FULL_SEGMENT(texturecolumnlumps_bytes, size_texturecolumnlumps_bytes))
 #define spritetopoffsets           ((int8_t __far*)            MAKE_FULL_SEGMENT(texturedefs_bytes,        size_texturedefs_bytes))
 #define texturedefs_offset         ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritetopoffsets,         size_spritetopoffsets))

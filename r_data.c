@@ -728,7 +728,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 	int16_t             x2;
 	int16_t             i;
 	column_t __far*           patchcol;
-	int16_t __far*            collump;
+	int16_t_union __far*         collump;
 	uint8_t				textureheight;
 	uint8_t				usetextureheight;
 	int16_t				texturewidth;
@@ -795,8 +795,8 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 		if (x2 > texturewidth)
 			x2 = texturewidth;
 
-		currentlump = collump[currentRLEIndex];
-		nextcollumpRLE = collump[currentRLEIndex + 1] & 255;
+		currentlump = collump[currentRLEIndex].h;
+		nextcollumpRLE = collump[currentRLEIndex + 1].b.bytelow;
 
 		// increment starting texel index
 
@@ -805,8 +805,8 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 		// skip if x is 0, otherwise evaluate till break
 		if (x){
 			int16_t innercurrentRLEIndex = 0;
-			int16_t innercurrentlump = collump[0];
-			uint8_t innernextcollumpRLE = collump[1] & 255;
+			int16_t innercurrentlump = collump[0].h;
+			uint8_t innernextcollumpRLE = collump[1].bu.bytelow;
 			uint8_t currentx = 0;
 			uint8_t diffpixels = 0;
 
@@ -817,8 +817,8 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 					}
 					currentx += innernextcollumpRLE;
 					innercurrentRLEIndex += 2;
-					innercurrentlump = collump[innercurrentRLEIndex];
-					innernextcollumpRLE = ((collump[innercurrentRLEIndex + 1]) & 255);
+					innercurrentlump = collump[innercurrentRLEIndex].h;
+					innernextcollumpRLE = collump[innercurrentRLEIndex + 1].bu.bytelow;
 					continue;
 				} else {
 					if (innercurrentlump == -1){
@@ -838,8 +838,8 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 		for (; x < x2; x++) {
 			while (x >= nextcollumpRLE) {
 				currentRLEIndex += 2;
-				currentlump = collump[currentRLEIndex];
-				nextcollumpRLE += collump[currentRLEIndex + 1] & 255;
+				currentlump = collump[currentRLEIndex].h;
+				nextcollumpRLE += collump[currentRLEIndex + 1].bu.bytelow;
 			}
 
 			// if there is a defined lump, then there are not multiple patches for the column
@@ -1360,7 +1360,7 @@ void setchecksum(){
 
 segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 	int16_t         lump;
-	int16_t __far* texturecolumnlump;
+	int16_t_union __far* texturecolumnlump;
 	int16_t n = 0;
 	uint8_t texcol;
 
@@ -1374,10 +1374,10 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 
 	// RLE stuff to figure out actual lump for column
 	while (col >= 0) {
-		lump = texturecolumnlump[n];
-		col -= texturecolumnlump[n+1] & 255;
+		lump = texturecolumnlump[n].h;
+		col -= texturecolumnlump[n+1].bu.bytelow;
 		if (lump >= 0){ // should be equiv to == -1?
-			texcol -= (texturecolumnlump[n+1] & 255);
+			texcol -= col;
 		}
 		n += 2;
 	}
@@ -1385,8 +1385,10 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 
 	if (lump > 0){
 		uint8_t lookup = masked_lookup[tex];
-		uint8_t heightval = cachedbyteheight = texturecolumnlump[n-1] >> 8;
 		uint16_t patchwidth = patchwidths[lump-firstpatch];
+		uint8_t heightval = texturecolumnlump[n-1].bu.bytehigh;
+		cachedbyteheight = heightval & 0xF0;
+		heightval &= 0x0F;
 		if (cachedlump != lump){
 			if (cachedlump2 != lump){
 				// var cache miss
@@ -1415,7 +1417,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		}
 
 		if (lookup == 0xFF){
-			return cachedsegmentlump + (FastMul8u8u(col , heightval) >> 4);
+			return cachedsegmentlump + (FastMul8u8u(col , heightval) );
 		} else {
 			// Does this code ever run outside of draw masked?
 

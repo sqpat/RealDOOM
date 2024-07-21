@@ -177,6 +177,11 @@ typedef union _int16_t_union {
 		int8_t bytehigh;
 	} b;
 
+	struct dual_uint8_t {
+		uint8_t bytelow;
+		uint8_t bytehigh;
+	} bu;
+
 } int16_t_union;
 
 #endif

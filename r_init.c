@@ -226,8 +226,8 @@ void R_GenerateLookup(uint16_t texnum)
 	
 	int16_t				currentcollump;
 	int16_t				currentcollumpRLEStart;
-	uint16_t				currentheight;  // use int16 so shifting is less of a hassle in here
-	uint16_t texsize;
+	uint16_t            currentheight;  // use int16 so shifting is less of a hassle in here
+	uint16_t            texsize;
 	int8_t				ismaskedtexture = 0;
 
 
@@ -243,7 +243,7 @@ void R_GenerateLookup(uint16_t texnum)
 	// put colofs in here. copy to colofs if texture is masked
 
 	// piggyback these local arrays off scratch data...
-	int16_t __far*  collump = texturecolumnlumps_bytes;
+	int16_t_union __far*  collump = texturecolumnlumps_bytes;
 	uint16_t currenttexturepixelbytecount = 0;
 	uint16_t currenttexturepostoffset = 0;
 	column_t __far * column;
@@ -463,6 +463,7 @@ void R_GenerateLookup(uint16_t texnum)
 			texturecompositesizes[texnum] += usedtextureheight;
 		}
 	}
+
  
 
 	// Now we generate collump RLE runs
@@ -477,12 +478,16 @@ void R_GenerateLookup(uint16_t texnum)
 	// write collumps data. Needs to be done here, so that we've accounted for multiple-patch cases with patchcount[x] > 1
 	for (x = 1; x < texturewidth; x++) {
 		if (currentcollump != texcollump[x]) {
-			collump[currentlumpindex] = currentcollump;
+			collump[currentlumpindex].h = currentcollump;
 			// this is never above 128 in doom shareware, 1, 2. 
-			collump[currentlumpindex + 1] = x - currentcollumpRLEStart; 
+			collump[currentlumpindex + 1].bu.bytelow = x - currentcollumpRLEStart; 
 			// thus, the high byte is free to store another useful byte - the texture patch offset y.
 
-			collump[currentlumpindex + 1] += (currentheight << 8); 
+			
+			// height is a value (number of bytes) between 16 and 144 in practice. it is 00010000 to 10010000 binary.
+			// so we only use the top 4 bits. We often shift this right 4 to get segment count from number of bytes.
+			// So we store two values here and do an AND to avoid 4x shifts (slow on x86-16)
+			collump[currentlumpindex + 1].bu.bytehigh = currentheight | (currentheight >> 4); 
 
 
 
@@ -491,14 +496,15 @@ void R_GenerateLookup(uint16_t texnum)
 			currentcollumpRLEStart = x;
 			currentcollump = texcollump[x];
 			currentheight = texpatchheights[x];
-
 			currentlumpindex += 2;
 				
 
 		}
 	}
-	collump[currentlumpindex] = currentcollump;
-	collump[currentlumpindex + 1] = (texturewidth - currentcollumpRLEStart) + (currentheight << 8);
+	collump[currentlumpindex].h = currentcollump;
+	collump[currentlumpindex + 1].bu.bytelow = (texturewidth - currentcollumpRLEStart);
+	collump[currentlumpindex + 1].bu.bytehigh = currentheight | (currentheight >> 4); 
+
 	currentlumpindex += 2;
 
 }
