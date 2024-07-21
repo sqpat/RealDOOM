@@ -734,32 +734,57 @@ void __far D_DoomMain2(void)
 	}
 	ticc = ticcount;
 	I_Error("values %li %li %li %li %li", tica, ticb, ticc, ticb-tica, ticc-ticb);
+*/
+	int16_t i;
+	int16_t j;
 
-	for (i = 2; i < 10000; i++){
+	//FixedDivWholeA(257l*257, 65536);
+
+	DEBUG_PRINT("%li  ok\n",FixedDiv(4L * 4L * 10000L, 4));
+	// 0x38400
+	// 0x7D29
+	// 0xE1000000
+	// 0x1F4A4000
+	//I_Error("doneA %li %lx %li %lx", FixedDiv(0xe1000000, 0x7D29), FixedDiv(0xe1000000, 0x7D29), 
+	//			FixedDivWholeA(0xe100, 0x7D29), FixedDivWholeA(0xe100, 0x7D29));
+
+//0x7D29
+
+	// 240 57600 179
+	// - max but shouldnt be
+
+/*
+	for (i = 2; i < 255; i++){
 		fixed_t_union ii;
-		ii.wu = i * i;
+		ii.hu.intbits = i*i;
+		ii.hu.fracbits = 0;
 		for (j = i/2; j < i; j++){
 			fixed_t_union jj;
-			jj.wu = j * j;
-			if (FixedDiv10(ii.wu, jj.wu) != FixedDiv(ii.wu, jj.wu)){
-				I_Error("inequal %li %li %li %li %li %li %lx %lx", i, j, ii.wu, jj.wu,
-				FixedDiv10(ii.wu, jj.wu),
+			jj.wu = j*j;
+			if (FixedDivWholeA(i * i	, jj.wu) != FixedDiv(ii.wu, jj.wu)){
+				I_Error("inequal %i %i %i %lx %lx %li %li %lx %lx",
+					 i,
+					 i*i, j, 
+				ii.wu, jj.wu,
+				FixedDivWholeA(i*i, jj.wu),
 				FixedDiv(ii.wu, jj.wu),
-				FixedDiv10(ii.wu, jj.wu),
+				FixedDivWholeA(i*i, jj.wu),
 				FixedDiv(ii.wu, jj.wu)
 				);
 			}
 
+			DEBUG_PRINT("%i %i %li %li ok\n", i, j, ii.wu, jj.wu);
 		}
 
 	}
 
 	I_Error("done");
+	*/
 	
 
 	//I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
 	//I_Error("done");
-	*/
+	
 /*
 	I_Error("blah %Fp %Fp %lx", (byte __far *)R_DrawMaskedColumn, (byte __far *)R_DrawSingleMaskedColumn,
 		FixedDiv(0x0FEDCBA9, 0x07654321 ));  // 2276
