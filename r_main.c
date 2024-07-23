@@ -198,7 +198,7 @@ int16_t divtest(fixed_t_union x, fixed_t_union y){
 }
 */
 
-uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {	
+uint32_t __far R_PointToAngle10( fixed_t_union	x, fixed_t_union	y ) {	
 	uint16_t tempDivision;
 
 	x.w -= viewx.w;

@@ -19,6 +19,9 @@
 
 EXTRN __I8LS:PROC
 EXTRN __I8DQ:PROC
+EXTRN _tantoangle:DWORD
+EXTRN _viewx:DWORD
+EXTRN _viewy:DWORD
 ;EXTRN _divllu:PROC
 	
 INCLUDE defs.inc
@@ -1551,6 +1554,7 @@ call FastDiv3232_
 ret
 
 endp
+
 
 fast_div_32_16_FFFF:
 
