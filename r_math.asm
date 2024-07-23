@@ -31,60 +31,92 @@ INCLUDE defs.inc
 PROC R_PointToAngle_
 PUBLIC R_PointToAngle_
 
+; inputs:
+; DX:AX = x  (32 bit fixed pt 16:16)
+; CX:BX = y  (32 bit fixed pt 16:16)
+
 push  si
 push  di
 mov   di, ax
 mov   si, dx
 mov   ax, bx
 mov   dx, cx
+
+;	x.w -= viewx.w;
+;	y.w -= viewy.w;
+
+
+; si:di = x
+; dx:ax = y
+
+
+
 sub   di, word ptr [_viewx]
 sbb   si, word ptr [_viewx+2]
 mov   bx, si
 sub   ax, word ptr [_viewy]
 sbb   dx, word ptr [_viewy+2]
+
+; 	if ((!x.w) && (!y.w))
+;		return 0;
+
 or    bx, di
-jne   label_1
+jne   inputs_not_zero   ; todo rearrange this. rare case
 mov   bx, dx
 or    bx, ax
-je    label_2
-label_1:
+je    return_0
+
+
+inputs_not_zero:
 test  si, si
-jg    label_1_1
-jne   label_3
-label_1_1:
+jg    x_is_positive
+jne   x_is_negative_1
+
+x_is_positive:
 test  dx, dx
-jg    label_1_2
-jne   label_4
-label_1_2:
+jg    y_is_positive
+jne   y_is_negative_1
+y_is_positive:
+
 cmp   si, dx
-jg    label_1_3
-jne   label_5
+jg    octant_0
+
+jne   octant_1
 cmp   di, ax
-jbe   label_5
-label_1_3:
-test  si, si
-jl    label_1_4
-jne   label_2_1
+jbe   octant_1
+
+
+octant_0:
+test  si, si    ; todo unnecessary...
+
+;	if (x.w < 512)
+
+jl    octant_0_out_of_bounds
+jne   octant_0_do_divide
 cmp   di, 0200h
-jae   label_2_1
-label_1_4:
+jae   octant_0_do_divide
+octant_0_out_of_bounds:
 mov   dx, 02000h
 xor   ax, ax
 pop   di
 pop   si
 retf  
-label_2:
+
+return_0:
+
 xor   ax, ax
 xor   dx, dx
 pop   di
 pop   si
 retf  
-label_2_1:
+
+octant_0_do_divide:
 mov   bx, di
 mov   cx, si
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
-jae   label_1_4
+jae   octant_0_out_of_bounds
+
 mov   si, word ptr [_tantoangle]
 shl   ax, 2
 mov   es, word ptr [_tantoangle+2]
@@ -94,30 +126,33 @@ mov   dx, word ptr es:[si + 2]
 pop   di
 pop   si
 retf  
-label_3:
-jmp   label_6
-label_4:
-jmp   label_7
-label_5:
+
+x_is_negative_1:
+
+jmp   x_is_negative
+y_is_negative_1:
+jmp   y_is_negative
+
+octant_1:
 test  dx, dx
-jl    label_5_2
-jne   label_5_1
+jl    octant_1_out_of_bounds
+jne   octant_1_do_divide
 cmp   ax, 0200h
-jae   label_5_1
-label_5_2:
+jae   octant_1_do_divide
+octant_1_out_of_bounds:
 mov   ax, 0ffffh
 mov   dx, 01fffh
 pop   di
 pop   si
 retf  
-label_5_1:
+octant_1_do_divide:
 mov   bx, ax
 mov   cx, dx
 mov   ax, di
 mov   dx, si
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
-jae   label_5_2
+jae   octant_1_out_of_bounds
 mov   si, word ptr [_tantoangle]
 shl   ax, 2
 mov   es, word ptr [_tantoangle+2]
@@ -129,33 +164,37 @@ sbb   dx, word ptr es:[si + 2]
 pop   di
 pop   si
 retf  
-label_7:
+
+y_is_negative:
+;			y.w = -y.w;
+
 neg   dx
 neg   ax
 sbb   dx, 0
+
 cmp   si, dx
-jg    label_7_1
-jne   label_8
+jg    octant_4
+jne   octant_5
 cmp   di, ax
-jbe   label_8
-label_7_1:
+jbe   octant_5
+octant_4:
 test  si, si
-jl    label_7_2
-jne   label_7_3
+jl    octant_4_out_of_bounds
+jne   octant_4_do_divide
 cmp   di, 0200h
-jae   label_7_3
-label_7_2:
+jae   octant_4_do_divide
+octant_4_out_of_bounds:
 mov   dx, 0e000h
 xor   ax, ax
 pop   di
 pop   si
 retf  
-label_7_3:
+octant_4_do_divide:
 mov   cx, si
 mov   bx, di
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
-jae   label_7_2
+jae   octant_4_out_of_bounds
 mov   si, word ptr [_tantoangle]
 shl   ax, 2
 mov   es, word ptr [_tantoangle+2]
@@ -168,26 +207,26 @@ sbb   dx, 0
 pop   di
 pop   si
 retf  
-label_8:
+octant_5:
 test  dx, dx
-jl    label_8_1
-jne   label_8_2
+jl    octant_5_out_of_bounds
+jne   octant_5_do_divide
 cmp   ax, 0200h
-jae   label_8_2
-label_8_1:
+jae   octant_5_do_divide
+octant_5_out_of_bounds:
 mov   dx, 0e000h
 xor   ax, ax
 pop   di
 pop   si
 retf  
-label_8_2:
+octant_5_do_divide:
 mov   bx, ax
 mov   cx, dx
 mov   ax, di
 mov   dx, si
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
-jae   label_8_1
+jae   octant_5_out_of_bounds
 mov   si, word ptr [_tantoangle]
 shl   ax, 2
 mov   es, word ptr [_tantoangle+2]
@@ -199,37 +238,43 @@ adc   dx, 0c000h
 pop   di
 pop   si
 retf  
-label_6:
+
+x_is_negative:
+
+;		x.w = -x.w;
+
 neg   si
 neg   di
 sbb   si, 0
+
 test  dx, dx
-jg    label_6_1
-jne   label_6_12
-label_6_1:
+jg    y_is_positive_x_neg
+jne   y_is_negative_x_neg_1
+y_is_positive_x_neg:
 cmp   si, dx
-jg    label_6_2
-jne   label_6_4
+jg    octant_3
+jne   octant_2
 cmp   di, ax
-jbe   label_6_4
-label_6_2:
+jbe   octant_2
+
+octant_3:
 test  si, si
-jl    label_6_3
-jne   label_6_5
+jl    octant_3_out_of_bounds
+jne   octant_3_do_divide
 cmp   di, 0200h
-jae   label_6_5
-label_6_3:
+jae   octant_3_do_divide
+octant_3_out_of_bounds:
 mov   ax, 0ffffh
 mov   dx, 05fffh
 pop   di
 pop   si
 retf  
-label_6_5:
+octant_3_do_divide:
 mov   bx, di
 mov   cx, si
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
-jae   label_6_3
+jae   octant_3_out_of_bounds
 mov   si, word ptr [_tantoangle]
 shl   ax, 2
 mov   es, word ptr [_tantoangle+2]
@@ -241,28 +286,28 @@ sbb   dx, word ptr es:[si + 2]
 pop   di
 pop   si
 retf  
-label_6_4:
+octant_2:
 test  dx, dx
-jl    label_6_6
-jne   label_6_51
+jl    octant_2_out_of_bounds
+jne   octant_2_do_divide
 cmp   ax, 0200h
-jae   label_6_51
-label_6_6:
+jae   octant_2_do_divide
+octant_2_out_of_bounds:
 mov   dx, 06000h
 xor   ax, ax
 pop   di
 pop   si
 retf  
-label_6_12:
-jmp   label_6_7
-label_6_51:
+y_is_negative_x_neg_1:
+jmp   y_is_negative_x_neg
+octant_2_do_divide:
 mov   bx, ax
 mov   cx, dx
 mov   ax, di
 mov   dx, si
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
-jae   label_6_6
+jae   octant_2_out_of_bounds
 mov   si, word ptr [_tantoangle]
 shl   ax, 2
 mov   es, word ptr [_tantoangle+2]
@@ -274,33 +319,36 @@ adc   dx, 04000h
 pop   di
 pop   si
 retf  
-label_6_7:
+y_is_negative_x_neg:
+
+;			y.w = -y.w;
+
 neg   dx
 neg   ax
 sbb   dx, 0
 cmp   si, dx
-jg    label_6_8
-jne   label_7_0
+jg    octant_7
+jne   octant_6
 cmp   di, ax
-jbe   label_7_0
-label_6_8:
+jbe   octant_6
+octant_7:
 test  si, si
-jl    label_6_10
-jne   label_6_9
+jl    octant_7_out_of_bounds
+jne   octant_7_do_divide
 cmp   di, 0200h
-jae   label_6_9
-label_6_10:
+jae   octant_7_do_divide
+octant_7_out_of_bounds:
 mov   dx, 0a000h
 xor   ax, ax
 pop   di
 pop   si
 retf  
-label_6_9:
+octant_7_do_divide:
 mov   bx, di
 mov   cx, si
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
-jae   label_6_10
+jae   octant_7_out_of_bounds
 mov   si, word ptr [_tantoangle]
 shl   ax, 2
 mov   es, word ptr [_tantoangle+2]
@@ -312,26 +360,26 @@ adc   dx, 08000h
 pop   di
 pop   si
 retf  
-label_7_0:
+octant_6:
 test  dx, dx
-jl    label_18_1
-jne   label_18_2
+jl    octant_6_out_of_bounds
+jne   octant_6_do_divide
 cmp   ax, 0200h
-jae   label_18_2
-label_18_1:
+jae   octant_6_do_divide
+octant_6_out_of_bounds:
 mov   ax, 0ffffh
 mov   dx, 09fffh
 pop   di
 pop   si
 retf  
-label_18_2:
+octant_6_do_divide:
 mov   bx, ax
 mov   cx, dx
 mov   ax, di
 mov   dx, si
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
-jae   label_18_1
+jae   octant_6_out_of_bounds
 mov   si, word ptr [_tantoangle]
 shl   ax, 2
 mov   es, word ptr [_tantoangle+2]

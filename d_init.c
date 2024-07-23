@@ -877,7 +877,7 @@ void __far D_DoomMain2(void)
 
 	FILE* fp = fopen("D_OUTPU1.BIN", "wb"); 
 
-	FAR_fwrite((byte __far *)R_PointToAngle, 1, (byte __far *)FastDiv3232 - (byte __far *)R_PointToAngle, fp);
+	FAR_fwrite((byte __far *)R_PointToAngle, 1, (byte __far *)R_PointToAngle2 - (byte __far *)R_PointToAngle, fp);
 	fclose(fp);
     I_Error("\n done");
 	

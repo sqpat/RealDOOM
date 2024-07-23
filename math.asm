@@ -19,9 +19,6 @@
 
 EXTRN __I8LS:PROC
 EXTRN __I8DQ:PROC
-EXTRN _tantoangle:DWORD
-EXTRN _viewx:DWORD
-EXTRN _viewy:DWORD
 ;EXTRN _divllu:PROC
 	
 INCLUDE defs.inc
