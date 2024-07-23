@@ -674,6 +674,7 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 	}
 }
 */
+//uint16_t	FastDiv3232_shift_3_8(fixed_t32 a, fixed_t32 b);
 
 void __far D_DoomMain2(void)
 {
@@ -686,9 +687,9 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 
-/*
 
-	fixed_t_union a, b;
+
+	//fixed_t_union x, y;
 
 	//FILE *fp = fopen("output3.bin", "wb");
 	//FAR_fwrite(divllu, (byte __far *)FixedDiv - (byte __far *)divllu, 1, fp);
@@ -700,11 +701,19 @@ void __far D_DoomMain2(void)
 	//I_Error("leading: %i", countleadingzeroes(0x0));
 	//I_Error("res: %li %lx", divllu(a, b ), divllu(a, b ));
 	//I_Error("res: %li %lx %li %lx", divllu(a, b ), divllu(a, b ), 	 FixedDiv(a.wu, b.wu ), FixedDiv(a.wu, b.wu ));
+					//tempDivision.w = (y.w << 3) / (x.w >> 8);
+					//tempDivision.w = FastDiv3232_shift_3_8(y.w, x.w);
 
-	a.wu = 0x30000;
-	b.wu = 0x1678;
-	I_Error("res: %li %lx %li %lx", FixedDivWholeA(3, b.wu ), FixedDivWholeA(3, b.wu ),
-							    	FixedDiv(a.wu, b.wu ), FixedDiv(a.wu, b.wu ));
+	//y.wu = 0x44a23c7; 
+	//x.wu = 0x44a864a;
+	//0x22511E38
+	// 0x44A86
+
+// 0x180000 / 0x1678
+
+	//I_Error("res: %lx %lx\n %u %x %li %lx", y.wu, x.wu, 
+	//FastDiv3232_shift_3_8(y.w, x.w), FastDiv3232_shift_3_8(y.w, x.w),
+	//						    	(y.w << 3) / (x.w >> 8), (y.w << 3) / (x.w >> 8));
 /*
 	a.w = 0x0fedcba9;
 	b.w = 0x07654321;
@@ -735,8 +744,8 @@ void __far D_DoomMain2(void)
 	ticc = ticcount;
 	I_Error("values %li %li %li %li %li", tica, ticb, ticc, ticb-tica, ticc-ticb);
 */
-	int16_t i;
-	int16_t j;
+	//int16_t i;
+	//int16_t j;
 
 	//FixedDivWholeA(257l*257, 65536);
 
@@ -861,29 +870,20 @@ void __far D_DoomMain2(void)
 
 	);
 
-// 3A6A1234
-//  AX holds 1234
-//  BX holds 9ABC
-//  CX holds 5678
-// so: 
+*/
+
+
 /*
 
+	FILE* fp = fopen("D_OUTPU1.BIN", "wb"); 
 
-
-	fixed_t32 FixedMul (fixed_t32	a, fixed_t32 b);
-	void __far R_DrawColumn (void);
-	void __far R_DrawFuzzColumn(void);
-	void __far R_DrawSpan (void);
-	void __far R_DrawSpanPrep(void);
-	void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
-	void __near R_ClearPlanes(void);
-	FILE* fp = fopen("D_OUTPU8.BIN", "wb"); 
-
-	FAR_fwrite((byte __far *)R_MapPlane, 1, (byte __far *)R_ClearPlanes - (byte __far *)R_MapPlane, fp);
+	FAR_fwrite((byte __far *)R_PointToAngle, 1, (byte __far *)R_PointToAngle2 - (byte __far *)R_PointToAngle, fp);
 	fclose(fp);
     I_Error("\n done");
-	*/
-/**/
+	
+*/
+
+
 /*
 
 	DEBUG_PRINT("\nResult: %lx %lx %lx %lx %lx\nResult: %lx %lx %lx %lx %lx\nResult: %lx %lx %lx %lx %lx", 

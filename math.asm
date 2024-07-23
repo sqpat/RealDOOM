@@ -1480,6 +1480,80 @@ ENDP
 
 fast_div_32_16:
 
+mov bl, bh
+mov bh, cl
+
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+
+
+div bx        ; after this dx stores remainder, ax stores q1
+
+retf          ; dx will be garbage, but who cares , return 16 bits.
+
+return_2048:
+
+
+mov ax, 2048
+retf
+
+PROC FastDiv3232_shift_3_8_
+PUBLIC FastDiv3232_shift_3_8_
+
+; used by R_PointToAngle.
+; DX:AX << 3 / CX:BX >> 8
+; signed, but comes in positive. so high bit is never on
+; if result is > 2048, a branch is taken and result is not used, 
+; so this is designed around quickly detecting results greater than that
+
+
+
+
+test ch, ch
+je fast_div_32_16
+
+
+; we have not shifted yet...
+
+
+;TODO: checks are done outside this function, may be okay to remove this. test?
+; we want to know if  (DX:AX << 3)  / (CX:BX >> 8)  >= 2048 for a quick out
+; but that is just "is dx:ax greater than cx:bx"
+
+
+cmp dx, cx
+ja  return_2048
+jb full_32_32
+cmp ax, bx
+jae return_2048
+
+
+full_32_32:
+
+mov bl, bh
+mov bh, cl
+mov cl, ch
+xor ch, ch
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+sal ax, 1
+rcl dx ,1
+
+
+call FastDiv3232_
+
+ret
+
+endp
+
+fast_div_32_16_FFFF:
+
 xchg dx, cx   ; cx was 0, dx is FFFF
 div bx        ; after this dx stores remainder, ax stores q1
 xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
@@ -1501,7 +1575,9 @@ PUBLIC FastDiv3232_
 ; if top 16 bits missing just do a 32 / 16
 
 test cx, cx
-je fast_div_32_16
+je fast_div_32_16_FFFF
+
+main_3232_div:
 
 push  si
 push  di

@@ -181,9 +181,25 @@ uint32_t __near R_PointToAngle16 (int16_t	x,int16_t	y) {
 	return R_PointToAngle(xfp, yfp);
 }
 
+/*
+int16_t divtest(fixed_t_union x, fixed_t_union y){
+	fixed_t_union a;
+	uint16_t b;
+	a.w = (x.w << 3) / (y.w >> 8);
+	b = FastDiv3232_shift_3_8(x.w, y.w);
+	if (a.wu != b){
+		if (a.wu <2048 || b < 2048){
+			I_Error("bad! %li %lx %li %lx %li %lx %u %x",
+			x.w, x.w, y.w, y.w, a.w, a.w, b, b);
+		}
+	}
+
+	return b;
+}
+*/
 
 uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {	
-	fixed_t_union tempDivision;
+	uint16_t tempDivision;
 
 	x.w -= viewx.w;
 	y.w -= viewy.w;
@@ -207,9 +223,10 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 					return 536870912L;
 				else
 				{
-					tempDivision.w = (y.w << 3) / (x.w >> 8);
-					if (tempDivision.w < SLOPERANGE)
-						return tantoangle[tempDivision.h.fracbits].wu;
+					//tempDivision.w = (y.w << 3) / (x.w >> 8);
+					tempDivision = FastDiv3232_shift_3_8(y.w, x.w);
+					if (tempDivision < SLOPERANGE)
+						return tantoangle[tempDivision].wu;
 					else
 						// 0x20000000 or ANG45
 						return 536870912L;
@@ -222,9 +239,11 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 					return ANG90 - 1 - 536870912L;
 				else
 				{
-					tempDivision.w = (x.w << 3) / (y.w >> 8);
-					if (tempDivision.w < SLOPERANGE)
-						return ANG90 - 1 - tantoangle[tempDivision.h.fracbits].wu;
+					//tempDivision.w = (x.w << 3) / (y.w >> 8);
+					tempDivision = FastDiv3232_shift_3_8(x.w, y.w);
+
+					if (tempDivision < SLOPERANGE)
+						return ANG90 - 1 - tantoangle[tempDivision].wu;
 					else
 						return ANG90 - 1 - 536870912L;
 				}
@@ -242,9 +261,11 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 					return -536870912L;
 				else
 				{
-					tempDivision.w = (y.w << 3) / (x.w >> 8);
-					if (tempDivision.w < SLOPERANGE)
-						return -(tantoangle[tempDivision.h.fracbits].wu);
+					//tempDivision.w = (y.w << 3) / (x.w >> 8);
+					tempDivision = FastDiv3232_shift_3_8(y.w, x.w);
+
+					if (tempDivision < SLOPERANGE)
+						return -(tantoangle[tempDivision].wu);
 					else
 						return -536870912L;
 				}
@@ -256,9 +277,11 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 					return ANG270 + 536870912L;
 				else
 				{
-					tempDivision.w = (x.w << 3) / (y.w >> 8);
-					if (tempDivision.w < SLOPERANGE)
-						return ANG270 + tantoangle[tempDivision.h.fracbits].wu;
+					//tempDivision.w = (x.w << 3) / (y.w >> 8);
+					tempDivision = FastDiv3232_shift_3_8(x.w, y.w);
+
+					if (tempDivision < SLOPERANGE)
+						return ANG270 + tantoangle[tempDivision].wu;
 					else
 						return ANG270 + 536870912L;
 				}
@@ -280,9 +303,11 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 					return ANG180 - 1 - 536870912L;
 				else
 				{
-					tempDivision.w = (y.w << 3) / (x.w >> 8);
-					if (tempDivision.w < SLOPERANGE)
-						return ANG180 - 1 - tantoangle[tempDivision.h.fracbits].wu;
+					//tempDivision.w = (y.w << 3) / (x.w >> 8);
+					tempDivision = FastDiv3232_shift_3_8(y.w, x.w);
+
+					if (tempDivision < SLOPERANGE)
+						return ANG180 - 1 - tantoangle[tempDivision].wu;
 					else
 						return ANG180 - 1 - 536870912L;
 				}
@@ -294,9 +319,11 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 					return ANG90 + 536870912L;
 				else
 				{
-					tempDivision.w = (x.w << 3) / (y.w >> 8);
-					if (tempDivision.w < SLOPERANGE)
-						return ANG90 + tantoangle[tempDivision.h.fracbits].wu;
+					//tempDivision.w = (x.w << 3) / (y.w >> 8);
+					tempDivision = FastDiv3232_shift_3_8(x.w, y.w);
+
+					if (tempDivision < SLOPERANGE)
+						return ANG90 + tantoangle[tempDivision].wu;
 					else
 						return ANG90 + 536870912L;
 				};
@@ -314,9 +341,11 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 					return ANG180 + 536870912L;
 				else
 				{
-					tempDivision.w = (y.w << 3) / (x.w >> 8);
-					if (tempDivision.w < SLOPERANGE)
-						return ANG180 + tantoangle[tempDivision.h.fracbits].wu;
+					//tempDivision.w = (y.w << 3) / (x.w >> 8);
+					tempDivision = FastDiv3232_shift_3_8(y.w, x.w);
+
+					if (tempDivision < SLOPERANGE)
+						return ANG180 + tantoangle[tempDivision].wu;
 					else
 						return ANG180 + 536870912L;
 				}
@@ -328,9 +357,11 @@ uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {
 					return ANG270 - 1 - 536870912L;
 				else
 				{
-					tempDivision.w = (x.w << 3) / (y.w >> 8);
-					if (tempDivision.w < SLOPERANGE)
-						return ANG270 - 1 - tantoangle[tempDivision.h.fracbits].wu;
+					//tempDivision.w = (x.w << 3) / (y.w >> 8);
+					tempDivision = FastDiv3232_shift_3_8(x.w, y.w);
+
+					if (tempDivision < SLOPERANGE)
+						return ANG270 - 1 - tantoangle[tempDivision].wu;
 					else
 						return ANG270 - 1 - 536870912L;
 				}
