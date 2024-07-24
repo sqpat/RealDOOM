@@ -1498,7 +1498,7 @@ retf          ; dx will be garbage, but who cares , return 16 bits.
 return_2048:
 
 
-mov ax, 2048
+mov ax, 0800h
 retf
 
 PROC FastDiv3232_shift_3_8_
@@ -1545,11 +1545,247 @@ sal ax, 1
 rcl dx ,1
 
 
-call FastDiv3232_
+call FastDiv3232_RPTA_
 
 ret
 
 endp
+
+
+
+fast_div_32_16_RPTA:
+
+xchg dx, cx   ; cx was 0, dx is FFFF
+div bx        ; after this dx stores remainder, ax stores q1
+xchg cx, ax   ; q1 to cx, ffff to ax  so div remaidner:ffff 
+div bx
+mov dx, cx   ; q1:q0 is dx:ax
+retf 
+
+
+; NOTE: this is used for R_PointToAngle and has a fast out when the high byte is detected to be above the threshhold
+
+;FastDiv3232_RPTA_
+; DX:AX / CX:BX
+
+PROC FastDiv3232_RPTA_
+PUBLIC FastDiv3232_RPTA_
+
+
+
+; if top 16 bits missing just do a 32 / 16
+
+test cx, cx
+je fast_div_32_16_RPTA
+
+main_3232RPTA_div:
+
+push  si
+push  di
+
+
+
+XOR SI, SI ; zero this out to get high bits of numhi
+
+
+
+
+test ch, ch
+jne shift_bits_3232RPTA
+; shift a whole byte immediately
+
+mov ch, cl
+mov cl, bh
+mov bh, bl
+xor bl, bl
+
+
+xchg dh, dl
+mov  si, dx
+and si, 00FFh  ; todo make this better
+
+mov dl, ah
+mov ah, al
+xor al, al
+
+shift_bits_3232RPTA:
+
+; less than a byte to shift
+; shift until MSB is 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA  
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+JC done_shifting_3232RPTA
+SAL AX, 1
+RCL DX, 1
+RCL SI, 1
+
+SAL BX, 1
+RCL CX, 1
+
+
+
+; store this
+done_shifting_3232RPTA:
+
+; we overshifted by one and caught it in the carry bit. lets shift back right one.
+
+RCR CX, 1
+RCR BX, 1
+
+
+; SI:DX:AX holds divisor...
+; CX:BX holds dividend...
+; numhi = SI:DX
+; numlo = AX:00...
+
+
+; save numlo word in sp.
+; avoid going to memory... lets do interrupt magic
+mov di, ax
+
+
+; set up first div. 
+; dx:ax becomes numhi
+mov   ax, dx
+mov   dx, si    
+
+; store these two long term...
+mov   si, bx
+
+
+
+; numhi is 00:SI in this case?
+
+;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+; DX:AX = numhi.wu
+
+
+div   cx
+
+cmp  ax, 0802h
+jg   return_2048_2
+
+
+; rhat = dx
+; qhat = ax
+;    c1 = FastMul16u16u(qhat , den0);
+
+mov   bx, dx					; bx stores rhat
+mov   es, ax     ; store qhat
+
+
+
+
+mul   si   						; DX:AX = c1
+
+
+; c1 hi = dx, c2 lo = bx
+cmp   dx, bx
+
+ja    check_c1_c2_diff_3232RPTA
+jne   q1_ready_3232RPTA
+cmp   ax, di
+jbe   q1_ready_3232RPTA
+check_c1_c2_diff_3232RPTA:
+
+; (c1 - c2.wu > den.wu)
+
+sub   ax, di
+sbb   dx, bx
+cmp   dx, cx
+ja    qhat_subtract_2_3232RPTA
+je    compare_low_word_3232RPTA
+jmp   qhat_subtract_1_3232RPTA
+
+compare_low_word_3232RPTA:
+cmp   ax, si
+jbe   qhat_subtract_1_3232RPTA
+
+; ugly but rare occurrence i think?
+qhat_subtract_2_3232RPTA:
+mov ax, es
+dec ax
+dec ax
+
+pop   di
+pop   si
+ret  
+
+return_2048_2:
+; bigger than 2048.. just return it
+pop   di
+pop   si
+ret
+
+
+qhat_subtract_1_3232RPTA:
+mov ax, es
+dec ax
+
+pop   di
+pop   si
+ret  
+
+
+
+
+q1_ready_3232RPTA:
+
+mov  ax, es
+
+pop   di
+pop   si
+ret  
+
+
+endp
+
+
+
+
 
 
 fast_div_32_16_FFFF:
