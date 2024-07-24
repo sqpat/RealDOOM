@@ -1533,6 +1533,21 @@ jae return_2048
 
 full_32_32:
 
+
+
+
+call FastDiv3232_RPTA_
+
+ret
+
+endp
+
+
+; todo optimize around fact ch is always 0...
+; we are moving a byte back and forth
+
+fast_div_32_16_RPTA:
+
 mov bl, bh
 mov bh, cl
 mov cl, ch
@@ -1544,16 +1559,6 @@ rcl dx ,1
 sal ax, 1
 rcl dx ,1
 
-
-call FastDiv3232_RPTA_
-
-ret
-
-endp
-
-
-
-fast_div_32_16_RPTA:
 
 xchg dx, cx   ; cx was 0, dx is FFFF
 div bx        ; after this dx stores remainder, ax stores q1
@@ -1571,11 +1576,14 @@ retf
 PROC FastDiv3232_RPTA_
 PUBLIC FastDiv3232_RPTA_
 
+; we shift dx:ax by 11 into si... 
+
+
 
 
 ; if top 16 bits missing just do a 32 / 16
 
-test cx, cx
+test ch, ch
 je fast_div_32_16_RPTA
 
 main_3232RPTA_div:
@@ -1583,9 +1591,43 @@ main_3232RPTA_div:
 push  si
 push  di
 
+; shift left 11 in si:dx:ax
 
 
-XOR SI, SI ; zero this out to get high bits of numhi
+;si: 
+;00000111 11111111
+;dx:
+;11111222 22222222
+;ax:
+;22222000 00000000
+
+mov si, dx
+mov dx, ax
+xor ax, ax
+
+; creating si:dx:ax
+
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+shr si, 1
+rcr dx, 1
+rcr ax, 1
+
+
+
+
+
+; now lets shift CX:BX to max...
 
 
 
@@ -1600,13 +1642,14 @@ mov bh, bl
 xor bl, bl
 
 
-xchg dh, dl
-mov  si, dx
-and si, 00FFh  ; todo make this better
+xchg ax, si
+mov  ah, al
+mov  al, dh
+mov  dh, dl
+xchg ax, si
+mov  dl, ah
+xor  al, al
 
-mov dl, ah
-mov ah, al
-xor al, al
 
 shift_bits_3232RPTA:
 
@@ -1704,6 +1747,9 @@ mov   si, bx
 
 
 div   cx
+
+; qhat is at most 2 greater than the real answer.
+; we are capping results at 2048 or 0x800 so quick return in that case.
 
 cmp  ax, 0802h
 jg   return_2048_2
