@@ -1512,7 +1512,6 @@ PUBLIC FastDiv3232_shift_3_8_
 
 
 
-
 test ch, ch
 je fast_div_32_16
 

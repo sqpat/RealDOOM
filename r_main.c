@@ -180,8 +180,8 @@ uint32_t __near R_PointToAngle16 (int16_t	x,int16_t	y) {
 
 	return R_PointToAngle(xfp, yfp);
 }
-
 /*
+
 int16_t divtest(fixed_t_union x, fixed_t_union y){
 	fixed_t_union a;
 	uint16_t b;
@@ -197,6 +197,20 @@ int16_t divtest(fixed_t_union x, fixed_t_union y){
 	return b;
 }
 */
+
+
+/*
+uint32_t __far R_PointToAngle( fixed_t_union	x, fixed_t_union	y ) {	
+	uint32_t a = R_PointToAngle10(x, y);
+	uint32_t b = R_PointToAngle11(x, y);
+	if (a != b){
+		I_Error("bad! %lx %lx %lx %lx %li %li %li\n %lx %li", x.wu, y.wu, b, a, b, a, b - a,
+		x.w - viewx.w, x.w - viewx.w);
+	}
+	
+
+	return a;
+}
 
 uint32_t __far R_PointToAngle10( fixed_t_union	x, fixed_t_union	y ) {	
 	uint16_t tempDivision;
@@ -256,7 +270,7 @@ uint32_t __far R_PointToAngle10( fixed_t_union	x, fixed_t_union	y ) {
 
 			if (x.w > y.w)
 			{
-				// octant 8
+				// octant 7
 				if (x.w < 512)
 					return -536870912L;
 				else
@@ -272,7 +286,7 @@ uint32_t __far R_PointToAngle10( fixed_t_union	x, fixed_t_union	y ) {
 			}
 			else
 			{
-				// octant 7
+				// octant 6
 				if (y.w < 512)
 					return ANG270 + 536870912L;
 				else
@@ -370,7 +384,7 @@ uint32_t __far R_PointToAngle10( fixed_t_union	x, fixed_t_union	y ) {
 	}
 	return 0;
 }
-
+*/
 
 uint32_t __far R_PointToAngle2 ( fixed_t_union	x1, fixed_t_union	y1, fixed_t_union	x2, fixed_t_union	y2 ) {	
     viewx.w = x1.w;
@@ -469,9 +483,6 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
     
 }
 
-
-
- 
 
 
 //

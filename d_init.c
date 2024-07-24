@@ -674,8 +674,10 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 	}
 }
 */
-//uint16_t	FastDiv3232_shift_3_8(fixed_t32 a, fixed_t32 b);
+uint16_t	FastDiv3232_shift_3_8(fixed_t32 a, fixed_t32 b);
 
+uint32_t __far R_PointToAngle11( fixed_t_union	x, fixed_t_union	y );
+uint32_t __far R_PointToAngle10( fixed_t_union	x, fixed_t_union	y );
 void __far D_DoomMain2(void)
 {
 	int16_t             p;
@@ -688,8 +690,8 @@ void __far D_DoomMain2(void)
 	struct SREGS sregs;
 
 
-
-	//fixed_t_union x, y;
+/*
+	fixed_t_union x, y;
 
 	//FILE *fp = fopen("output3.bin", "wb");
 	//FAR_fwrite(divllu, (byte __far *)FixedDiv - (byte __far *)divllu, 1, fp);
@@ -704,16 +706,19 @@ void __far D_DoomMain2(void)
 					//tempDivision.w = (y.w << 3) / (x.w >> 8);
 					//tempDivision.w = FastDiv3232_shift_3_8(y.w, x.w);
 
-	//y.wu = 0x44a23c7; 
-	//x.wu = 0x44a864a;
+	y.wu = 0xfac00000; 
+	x.wu = 0xf2c00000;
 	//0x22511E38
 	// 0x44A86
 
 // 0x180000 / 0x1678
 
-	//I_Error("res: %lx %lx\n %u %x %li %lx", y.wu, x.wu, 
-	//FastDiv3232_shift_3_8(y.w, x.w), FastDiv3232_shift_3_8(y.w, x.w),
-	//						    	(y.w << 3) / (x.w >> 8), (y.w << 3) / (x.w >> 8));
+R_PointToAngle(y, x);
+
+	I_Error("res: %lx %lx\n %lu %lx %lu %lx", y, x, 
+	R_PointToAngle10(y, x), R_PointToAngle10(y, x),
+							    	R_PointToAngle11(y, x), R_PointToAngle11(y, x));
+									*/
 /*
 	a.w = 0x0fedcba9;
 	b.w = 0x07654321;
