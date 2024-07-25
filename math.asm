@@ -1752,7 +1752,7 @@ div   cx
 ; we are capping results at 2048 or 0x800 so quick return in that case.
 
 cmp  ax, 0802h
-jg   return_2048_2
+ja   return_2048_2
 
 
 ; rhat = dx
