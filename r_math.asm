@@ -388,42 +388,25 @@ push  cx
 push  si
 push  di
 
-mov   dx, ax
-sub   dx, word ptr [_viewangle_shiftright3]
-add   dh, 8
+; input ax = visangle_shift3
+
+;    anglea = MOD_FINE_ANGLE(FINE_ANG90 + (visangle_shift3 - viewangle_shiftright3));
+;    angleb = MOD_FINE_ANGLE(FINE_ANG90 + (visangle_shift3) - rw_normalangle);
+
+add   ah, 8      
+mov   dx, ax      ; copy input
+sub   dx, word ptr [_viewangle_shiftright3]  ; 
+sub   ax, word ptr [_rw_normalangle]
+
 and   dh, 01Fh
-add   ah, 8
-mov   di, dx
-mov   dx, ax
-mov   bx, word ptr [_projection]
-mov   cx, word ptr [_projection+2]
-sub   dx, word ptr [_rw_normalangle]
-mov   ax, FINESINE_SEGMENT
-and   dh, 01Fh
+and   ah, 01Fh
+
+mov   di, ax
+
+; dx = anglea
+; di = angleb
 
 
-;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
- 
-call FixedMulTrig_
-
-; si:di stores num
-
-mov   si, ax
-mov   cl, byte ptr [_detailshift]
-xor   ch, ch
-xchg  di, dx
-
-; cl is 0 to 2
-
-jcxz  shift_done
-shl   si, 1
-rcl   di, 1
-dec   cl
-jcxz  shift_done
-shl   si, 1
-rcl   di, 1
-
-shift_done:
 mov   ax, FINESINE_SEGMENT
 mov   bx, word ptr [_rw_distance]
 mov   cx, word ptr [_rw_distance+2]
@@ -431,22 +414,64 @@ mov   cx, word ptr [_rw_distance+2]
 
 ;    den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
  
-
 call FixedMulTrig_
 
-; si:di holds num
+xchg  dx, di
+;  dx now has anglea
+;  di:si is den
+mov   si, ax
+
+mov   bx, word ptr [_projection]
+mov   cx, word ptr [_projection+2]
+mov   ax, FINESINE_SEGMENT
+
+
+;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
+ 
+call FixedMulTrig_
+
+; di:si had den
+; dx:ax has num
+
+mov   cl, byte ptr [_detailshift]
+xor   ch, ch
+
+; cl is 0 to 2
+
+jcxz  shift_done
+shl   ax, 1
+rcl   dx, 1
+dec   cl
+jcxz  shift_done
+shl   ax, 1
+rcl   dx, 1
+
+shift_done:
+
+
+; di:si had den
+; dx:ax has num
+
+
+; di:si holds num
 ; dx:ax holds den
 
-mov   bx, ax
-mov   ax, di
-mov   cx, dx
-cwd   
-cmp   cx, dx
+; todo reverse the above operations..
 
+;xchg dx, di
+;xchg ax, si
 
 
 ;    if (den > num.h.intbits) {
 
+; annoying - we have to account for sign!
+
+ 
+mov    cx, ax  ; temp storage
+mov    ax, dx
+cwd            ; sign extend
+
+cmp   di, dx
 
 jg    do_divide
 
@@ -464,7 +489,7 @@ jne   return_maxvalue   ; less than case - result is greater than 0x1,0000,0000
 
 ; result smaller than 1
 
-cmp   bx, ax
+cmp   si, ax    
 ja    do_divide
 return_maxvalue:
 mov   dx, 040h
@@ -477,8 +502,12 @@ pop   cx
 pop   bx
 ret
 do_divide:
-mov   ax, si
-mov   dx, di
+
+; set up params
+mov   dx, ax  ; mov back
+mov   ax, cx  ; mov back..
+mov   cx, di 
+mov   bx, si 
 
 ; we actually already bounds check more aggressively than fixeddiv
 ;  and guarantee positives here so the fixeddiv wrapper is unnecessary
@@ -493,7 +522,7 @@ call div48_32_
 cmp   dx, 040h
 jg    return_maxvalue
 test  dx, dx
-jl    return_minvalue
+;jl    return_minvalue   ; negative case? does this happen ever
 jne   normal_return
 cmp   ax, 0100h
 jae   normal_return
