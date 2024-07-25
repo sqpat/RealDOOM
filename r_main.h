@@ -101,6 +101,8 @@ fixed_t __near R_PointToDist ( int16_t	x,int16_t	y );
 
 
 fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
+fixed_t __near R_ScaleFromGlobalAngle2 (fineangle_t visangle_shift3);
+fixed_t __far R_ScaleFromGlobalAngle3 (fineangle_t visangle_shift3);
 int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y );
 
  

@@ -484,23 +484,8 @@ void __far M_Init(void);
 fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 fixed_t32	FixedMulBig16322(int16_t a, fixed_t b);
 
-void __near R_DrawPlanes (void);
-void __near R_DrawSkyPlane2(int16_t minx, int16_t maxx, visplane_t __far*		pl);
-fixed_t32 FixedDiv2 (fixed_t32	a, fixed_t32	b);
-int16_t __near wipe_doMelt2 ( int16_t	ticks ) ;
-void TS_FreeTaskList(void);
-void __near I_ReadScreen(byte __far *scr);
-void __near R_DrawSingleMaskedColumn (segment_t pixeldatasegment, byte length);
-void __near R_DrawMaskedColumn  (segment_t pixelsegment, column_t __far* column) ;
-//void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column) ;
 
-void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2);
-void __near R_RenderSegLoop (void);
 void copystr8(int8_t __far* dst, int8_t __far* src);
-fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b);
-//fixed_t32 FixedDiv10(fixed_t32	a, fixed_t32	b);
-//fixed_t32 FixedDiv11(fixed_t32	a, fixed_t32	b);
-fixed_t32 FixedDiv3(fixed_t32	a, fixed_t32	b);
 void __near V_DrawPatchFlipped (int16_t		x, int16_t		y, patch_t __far*	patch) ;
 
 int16_t countleadingzeroes(uint32_t num);
@@ -675,6 +660,13 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 }
 */
 uint16_t	FastDiv3232_shift_3_8(fixed_t32 a, fixed_t32 b);
+/*
+void __far R_ScaleFromGlobalAngleTest ();
+
+fixed_t __far R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
+fixed_t __far R_ScaleFromGlobalAngle2 (fineangle_t visangle_shift3);
+fixed_t __far R_ScaleFromGlobalAngle3 (fineangle_t visangle_shift3);
+*/
 
 uint32_t __far R_PointToAngle11( fixed_t_union	x, fixed_t_union	y );
 uint32_t __far R_PointToAngle10( fixed_t_union	x, fixed_t_union	y );
@@ -875,18 +867,27 @@ R_PointToAngle(y, x);
 
 	);
 
-*/
-
-
-/*
-
-	FILE* fp = fopen("D_OUTPU1.BIN", "wb"); 
-
-	FAR_fwrite((byte __far *)R_PointToAngle, 1, (byte __far *)R_PointToAngle2 - (byte __far *)R_PointToAngle, fp);
-	fclose(fp);
-    I_Error("\n done");
 	
+
+
+	R_ScaleFromGlobalAngleTest();
+	R_ScaleFromGlobalAngle3(0);
+	I_Error("done");
 */
+
+    //fixed_t a = R_ScaleFromGlobalAngle2(3041);
+    //fixed_t b = R_ScaleFromGlobalAngle3(3041);
+	//I_Error("bad %i %li %li", 3041, a, b);
+
+
+
+	//FILE* fp = fopen("D_OUTPU2.BIN", "wb"); 
+
+	//FAR_fwrite((byte __far *)R_ScaleFromGlobalAngle, 1, (byte __far *)R_DrawColumn - (byte __far *)R_ScaleFromGlobalAngle, fp);
+	//fclose(fp);
+    //I_Error("\n done");
+	
+
 
 
 /*

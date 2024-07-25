@@ -395,6 +395,7 @@ uint32_t __far R_PointToAngle2 ( fixed_t_union	x1, fixed_t_union	y1, fixed_t_uni
 
 
 uint32_t __far R_PointToAngle2_16 (  int16_t	x2, int16_t	y2 ) {	
+	// this could be very optimized but is called rarely.
 	fixed_t_union x2fp, y2fp;
     viewx.w = 0; // called with 0, this is fine
     viewy.w = 0;
@@ -433,6 +434,7 @@ fixed_t __near R_PointToDist ( int16_t	xarg, int16_t	yarg ){
 	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
 
     // use as cosine
+	// todo this is 32 bits over 17? probably dont need 2nd divide inside the fixed divetc...
     dist = FixedDiv (dx, finesine[angle] );	
 	
     return dist;
@@ -448,7 +450,9 @@ fixed_t __near R_PointToDist ( int16_t	xarg, int16_t	yarg ){
 //  at the given angle.
 // rw_distance must be calculated first.
 //
-fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
+fixed_t __far R_ScaleFromGlobalAngle3 (fineangle_t visangle_shift3);
+
+fixed_t __near R_ScaleFromGlobalAngle2 (fineangle_t visangle_shift3)
 {
     fixed_t_union		scale;
     fineangle_t			anglea;
@@ -465,6 +469,8 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
     num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
     den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
 
+	//TODO fast check 256/0x400000L just with bit shifts..
+
     if (den > num.h.intbits) {
 		// todo make a custom unsigned fixeddiv that does bounds check to 0x400000L and 256. can quick-out in those cases.
 		// eventualy it will be inlined, eventually the fixedmultrig will be inlined and this function will get fast.
@@ -480,6 +486,21 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
     } else{
         return 0x400000L;
     }
+    
+}
+
+
+
+fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
+{
+    fixed_t a = R_ScaleFromGlobalAngle2(visangle_shift3);
+    fixed_t b = R_ScaleFromGlobalAngle3(visangle_shift3);
+
+	if (a!=b){
+		I_Error("bad %i %li %li %lx", visangle_shift3, a, b, b);
+	}
+	return a;
+	
     
 }
 
