@@ -450,8 +450,8 @@ fixed_t __near R_PointToDist ( int16_t	xarg, int16_t	yarg ){
 //  at the given angle.
 // rw_distance must be calculated first.
 //
-fixed_t __far R_ScaleFromGlobalAngle3 (fineangle_t visangle_shift3);
 
+/*
 fixed_t __near R_ScaleFromGlobalAngle2 (fineangle_t visangle_shift3)
 {
     fixed_t_union		scale;
@@ -489,8 +489,6 @@ fixed_t __near R_ScaleFromGlobalAngle2 (fineangle_t visangle_shift3)
     
 }
 
-
-
 fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
 {
     fixed_t a = R_ScaleFromGlobalAngle2(visangle_shift3);
@@ -503,6 +501,10 @@ fixed_t __near R_ScaleFromGlobalAngle (fineangle_t visangle_shift3)
 	
     
 }
+*/
+
+
+
 
 
 

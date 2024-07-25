@@ -1378,8 +1378,11 @@ jmp do_full_divide
 
 ENDP
 
+; UNUSED
+ COMMENT @
 
-PROC FastDiv32u16u_
+
+PROC FastDiv32u16u_ 
 PUBLIC FastDiv32u16u_
 
 ;DX:AX / BX (?)
@@ -1407,15 +1410,14 @@ div bx
 xor dx, dx
 ret
 
-
-
 ENDP
+@
 
 ; returns 16 bit div result of 32bit / 16bit inputs.
 ; return 32767 if answer would be larger than that. 
 ; param 1 is signed, param 2 is unsigned. return val is signed.
 
-PROC R_CalculateScaleStep_
+PROC R_CalculateScaleStep_ 
 PUBLIC R_CalculateScaleStep_
 
 ;DX:AX / BX 

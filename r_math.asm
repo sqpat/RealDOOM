@@ -379,8 +379,8 @@ endp
 
 ;R_ScaleFromGlobalAngle_
 
-PROC R_ScaleFromGlobalAngle3_
-PUBLIC R_ScaleFromGlobalAngle3_
+PROC R_ScaleFromGlobalAngle_ NEAR
+PUBLIC R_ScaleFromGlobalAngle_ 
 
 
 push  bx
@@ -464,42 +464,43 @@ mov    ax, dx
 cwd            ; sign extend
 
 cmp   di, dx
+mov   dx, ax
+mov   bx, si 
 
 jg    do_divide  ; compare sign bits..
 
-; todo we can bitshift and catch more cases here...
 
-; this is fixeddiv so result is shifted by 16 basically...
-; DX:AX:00  /  CX:BX
-; result is bits
-
-; if cx > dx then the result is less than than 0x10000 (not greater than the max of 0x400000)
 
 
 jne   return_maxvalue   ; less than case - result is greater than 0x1,0000,0000
 
+; todo we can bitshift and catch more cases here...
 
-; result smaller than 1
+
+; shift to account for 0x400000 compare
+
+; so this does work but it triggers once every [many] frames, so wasting 8 ticks to save a hundred or two
+; isn't worth it when the hit rate is < 1%
+;mov ah, al
+;xor al, al
+;sal ah, 1
+;sal ah, 1
 
 cmp   si, ax    
 ja    do_divide
+
+
 return_maxvalue:
+; rare occurence
 mov   dx, 040h
 xor   ax, ax
-normal_return:
+jmp normal_return
 
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret
 do_divide:
 
 ; set up params
-mov   dx, ax  ; mov back
 mov   ax, cx  ; mov back..
 mov   cx, di 
-mov   bx, si 
 
 ; we actually already bounds check more aggressively than fixeddiv
 ;  and guarantee positives here so the fixeddiv wrapper is unnecessary
@@ -515,10 +516,29 @@ cmp   dx, 040h
 jg    return_maxvalue
 test  dx, dx
 ; dont need to check for negative result, this was unsigned.
-jne   normal_return
+je   continue_check 
+
+normal_return:
+
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret
+
+continue_check:
 cmp   ax, 0100h
-jae   normal_return
+jnae   return_minvalue
+
+; also normal return
+pop   di
+pop   si
+pop   cx
+pop   bx
+ret
+
 return_minvalue:
+; super duper rare case. actually never caught it happening.
 mov   ax, 0100h
 xor   dx, dx
 

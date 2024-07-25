@@ -659,17 +659,8 @@ uint32_t divllu(fixed_t_union num_input, fixed_t_union den) {
 	}
 }
 */
-uint16_t	FastDiv3232_shift_3_8(fixed_t32 a, fixed_t32 b);
-/*
-void __far R_ScaleFromGlobalAngleTest ();
 
-fixed_t __far R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
-fixed_t __far R_ScaleFromGlobalAngle2 (fineangle_t visangle_shift3);
-fixed_t __far R_ScaleFromGlobalAngle3 (fineangle_t visangle_shift3);
-*/
 
-uint32_t __far R_PointToAngle11( fixed_t_union	x, fixed_t_union	y );
-uint32_t __far R_PointToAngle10( fixed_t_union	x, fixed_t_union	y );
 void __far D_DoomMain2(void)
 {
 	int16_t             p;
