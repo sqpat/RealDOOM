@@ -408,7 +408,7 @@ uint32_t __far R_PointToAngle2_16 (  int16_t	x2, int16_t	y2 ) {
 }
 
 
-fixed_t __near R_PointToDist ( int16_t	xarg, int16_t	yarg ){
+fixed_t __near R_PointToDist2 ( int16_t	xarg, int16_t	yarg ){
     fineangle_t		angle;
     fixed_t	dx;
     fixed_t	dy;
@@ -440,6 +440,17 @@ fixed_t __near R_PointToDist ( int16_t	xarg, int16_t	yarg ){
     return dist;
 }
 
+fixed_t __near R_PointToDist3 ( int16_t	xarg, int16_t	yarg );
+
+fixed_t __near R_PointToDist ( int16_t	xarg, int16_t	yarg ){
+	fixed_t a =  R_PointToDist2 ( 	xarg,	yarg );
+	fixed_t b =  R_PointToDist3 ( 	xarg,	yarg );
+	if (a != b){
+		I_Error("bad! %i %i %li %lx %li %lx", xarg, yarg, a, a, b, b);
+	}
+
+	return a;
+}
 
  
 

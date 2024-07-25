@@ -871,14 +871,14 @@ R_PointToAngle(y, x);
 	//I_Error("bad %i %li %li", 3041, a, b);
 
 
+/*
+	FILE* fp = fopen("D_OUTPU1.BIN", "wb"); 
 
-	//FILE* fp = fopen("D_OUTPU2.BIN", "wb"); 
-
-	//FAR_fwrite((byte __far *)R_ScaleFromGlobalAngle, 1, (byte __far *)R_DrawColumn - (byte __far *)R_ScaleFromGlobalAngle, fp);
-	//fclose(fp);
-    //I_Error("\n done");
+	FAR_fwrite((byte __far *)R_PointToDist, 1, (byte __far *)R_DrawColumn - (byte __far *)R_PointToDist, fp);
+	fclose(fp);
+    I_Error("\n done");
 	
-
+*/
 
 
 /*
