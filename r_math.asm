@@ -406,24 +406,23 @@ mov   di, ax
 ; dx = anglea
 ; di = angleb
 
-
 mov   ax, FINESINE_SEGMENT
+mov   si, ax
 mov   bx, word ptr [_rw_distance]
 mov   cx, word ptr [_rw_distance+2]
-
 
 ;    den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
  
 call FixedMulTrig_
 
 xchg  dx, di
+xchg  si, ax
 ;  dx now has anglea
+;  ax has finesine_segment
 ;  di:si is den
-mov   si, ax
 
 mov   bx, word ptr [_projection]
 mov   cx, word ptr [_projection+2]
-mov   ax, FINESINE_SEGMENT
 
 
 ;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
@@ -453,18 +452,11 @@ shift_done:
 ; dx:ax has num
 
 
-; di:si holds num
-; dx:ax holds den
-
-; todo reverse the above operations..
-
-;xchg dx, di
-;xchg ax, si
-
 
 ;    if (den > num.h.intbits) {
 
 ; annoying - we have to account for sign!
+; is there a cleaner way?
 
  
 mov    cx, ax  ; temp storage
@@ -473,7 +465,7 @@ cwd            ; sign extend
 
 cmp   di, dx
 
-jg    do_divide
+jg    do_divide  ; compare sign bits..
 
 ; todo we can bitshift and catch more cases here...
 
@@ -522,7 +514,7 @@ call div48_32_
 cmp   dx, 040h
 jg    return_maxvalue
 test  dx, dx
-;jl    return_minvalue   ; negative case? does this happen ever
+; dont need to check for negative result, this was unsigned.
 jne   normal_return
 cmp   ax, 0100h
 jae   normal_return

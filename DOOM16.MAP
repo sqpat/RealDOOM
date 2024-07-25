@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/07/25 09:45:15
+Created on:       24/07/25 10:53:52
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -77,10 +77,10 @@ p_tick_TEXT            CODE           AUTO           0a7f:c9d0       00000242
 p_user_TEXT            CODE           AUTO           0a7f:cc20       00000676
 r_bsp_TEXT             CODE           AUTO           17a9:0000       0000081b
 r_data_TEXT            CODE           AUTO           17a9:0820       000016b2
-R_MATH_TEXT            CODE           AUTO           17a9:1ed2       000002a4
-R_COLUMN_TEXT          CODE           AUTO           17a9:2176       00000a19
-R_SPAN_TEXT            CODE           AUTO           17a9:2b90       000009ff
-R_SKY_TEXT             CODE           AUTO           17a9:3590       00000258
+R_MATH_TEXT            CODE           AUTO           17a9:1ed2       000002a2
+R_COLUMN_TEXT          CODE           AUTO           17a9:2174       00000a19
+R_SPAN_TEXT            CODE           AUTO           17a9:2b8e       000009ff
+R_SKY_TEXT             CODE           AUTO           17a9:358e       00000258
 r_draw_TEXT            CODE           AUTO           17a9:37f0       000004ac
 r_main_TEXT            CODE           AUTO           17a9:3ca0       0000064c
 r_plane_TEXT           CODE           AUTO           17a9:42f0       00000762
@@ -1294,17 +1294,17 @@ Module: r_math.obj(r_math.ASM)
 17a9:20e7      R_ScaleFromGlobalAngle3_
 17a9:1f4e      R_PointToAngle_
 Module: r_column.obj(r_column.ASM)
-17a9:2176      R_DrawColumn_
-17a9:2b1a*     R_DrawColumnPrep_
+17a9:2174      R_DrawColumn_
+17a9:2b18*     R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-17a9:2b90      R_DrawSpan_
-17a9:33b2*     R_FixedMulLocal_
-17a9:329f*     R_DrawSpanPrep_
-17a9:33eb      R_MapPlane_
-17a9:335c*     R_FixedMulTrigLocal_
+17a9:2b8e      R_DrawSpan_
+17a9:33b0*     R_FixedMulLocal_
+17a9:329d*     R_DrawSpanPrep_
+17a9:33e9      R_MapPlane_
+17a9:335a*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-17a9:3590*     R_DrawSkyColumn_
-17a9:3742      R_DrawSkyPlane_
+17a9:358e*     R_DrawSkyColumn_
+17a9:3740      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17a9:37f0      R_DrawFuzzColumn_
 17a9:392e      R_FillBackScreen_
