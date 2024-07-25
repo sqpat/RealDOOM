@@ -387,43 +387,67 @@ push  bx
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 2
+
 mov   dx, ax
 sub   dx, word ptr [_viewangle_shiftright3]
 add   dh, 8
-mov   bx, word ptr [_projection]
 and   dh, 01Fh
 add   ah, 8
-mov   word ptr [bp - 2], dx
+mov   di, dx
 mov   dx, ax
+mov   bx, word ptr [_projection]
 mov   cx, word ptr [_projection+2]
 sub   dx, word ptr [_rw_normalangle]
 mov   ax, FINESINE_SEGMENT
 and   dh, 01Fh
+
+
+;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
+ 
 call FixedMulTrig_
+
+; si:di stores num
+
 mov   si, ax
-mov   al, byte ptr [_detailshift]
-mov   bx, word ptr [_rw_distance]
-cbw
-mov   di, dx
-mov   cx, ax
-mov   dx, word ptr [bp - 2]
-jcxz  label_1
-label_loop:
+mov   cl, byte ptr [_detailshift]
+xor   ch, ch
+xchg  di, dx
+
+; cl is 0 to 2
+
+jcxz  shift_done
 shl   si, 1
 rcl   di, 1
-loop  label_loop
-label_1:
+dec   cl
+jcxz  shift_done
+shl   si, 1
+rcl   di, 1
+
+shift_done:
 mov   ax, FINESINE_SEGMENT
+mov   bx, word ptr [_rw_distance]
 mov   cx, word ptr [_rw_distance+2]
+
+
+;    den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
+ 
+
 call FixedMulTrig_
+
+; si:di holds num
+; dx:ax holds den
+
 mov   bx, ax
 mov   ax, di
 mov   cx, dx
 cwd   
 cmp   cx, dx
+
+
+
+;    if (den > num.h.intbits) {
+
+
 jg    do_divide
 
 ; todo we can bitshift and catch more cases here...
@@ -446,8 +470,7 @@ return_maxvalue:
 mov   dx, 040h
 xor   ax, ax
 normal_return:
-mov   sp, bp
-pop   bp
+
 pop   di
 pop   si
 pop   cx
@@ -477,8 +500,7 @@ jae   normal_return
 return_minvalue:
 mov   ax, 0100h
 xor   dx, dx
-mov   sp, bp
-pop   bp
+
 pop   di
 pop   si
 pop   cx

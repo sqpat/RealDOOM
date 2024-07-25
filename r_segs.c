@@ -584,6 +584,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
     distangle = FINE_ANG90 - offsetangle;
 
+	// todo inline r_pointtodist when doing asm
 	hyp = R_PointToDist (curlinev1.x, curlinev1.y);
     rw_distance = FixedMulTrig(FINE_SINE_ARGUMENT, distangle, hyp);
 	
