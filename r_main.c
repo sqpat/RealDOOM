@@ -407,7 +407,7 @@ uint32_t __far R_PointToAngle2_16 (  int16_t	x2, int16_t	y2 ) {
     return R_PointToAngle (x2fp, y2fp);
 }
 
-
+/*
 fixed_t __near R_PointToDist2 ( int16_t	xarg, int16_t	yarg ){
     fineangle_t		angle;
     fixed_t	dx;
@@ -451,7 +451,7 @@ fixed_t __near R_PointToDist ( int16_t	xarg, int16_t	yarg ){
 
 	return a;
 }
-
+*/
  
 
 //

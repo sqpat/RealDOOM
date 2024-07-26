@@ -554,43 +554,38 @@ endp
 
 ;R_PointToDist_
 
-PROC R_PointToDist3_ NEAR
-PUBLIC R_PointToDist3_ 
+PROC R_PointToDist_ NEAR
+PUBLIC R_PointToDist_ 
 
 
 push  bx
 push  cx
 push  si
 push  di
-push  bp
-mov   bp, sp
-sub   sp, 6
 
 ;    dx = labs(x.w - viewx.w);
+;  x = ax register
+;  y = dx
 
-mov   bx, ax
-mov   word ptr [bp - 6], dx
-xor   ax, ax
-mov   dx, bx
-sub   ax, word ptr [_viewx]
-sbb   dx, word ptr [_viewx+2]
-or    dx, dx
-jge   skip_x_abs
-neg   ax
-adc   dx, 0
-neg   dx
-skip_x_abs:
+xor   bx, bx
 mov   cx, ax
-mov   bx, dx
-
-;    dy = labs(y.w - viewy.w);
-
-mov   si, ax
 xor   ax, ax
-mov   di, dx
+; DX:AX = y
+; CX:BX = x
+sub   bx, word ptr [_viewx]
+sbb   cx, word ptr [_viewx+2]
+
 sub   ax, word ptr [_viewy]
-mov   dx, word ptr [bp - 6]
 sbb   dx, word ptr [_viewy+2]
+
+
+or    cx, cx
+jge   skip_x_abs
+neg   bx
+adc   cx, 0
+neg   cx
+skip_x_abs:
+
 or    dx, dx
 jge   skip_y_abs
 neg   ax
@@ -599,59 +594,64 @@ neg   dx
 skip_y_abs:
 
 
-; if dy > dx exchange them
-mov   word ptr [bp - 4], ax
-mov   word ptr [bp - 2], dx
-cmp   dx, bx
-jg    label_3
-jne   label_4
-cmp   ax, cx
-jbe   label_4
-label_3:
-mov   si, ax
-mov   di, dx
-mov   word ptr [bp - 4], cx
-mov   word ptr [bp - 2], bx
-label_4:
+
+
+;    if (dy>dx) {
+
+cmp   dx, cx
+jg    swap_x_y
+jne   skip_swap_x_y
+cmp   ax, bx
+jbe   skip_swap_x_y
+
+swap_x_y:
+xchg  dx, cx
+xchg  ax, bx
+skip_swap_x_y:
 
 ;	angle = (tantoangle[ FixedDiv(dy,dx)>>DBITS ].hu.intbits+ANG90_HIGHBITS) >> SHORTTOFINESHIFT;
 
+; save dx (var not register)
 
-mov   ax, word ptr [bp - 4]
-mov   dx, word ptr [bp - 2]
-mov   bx, si
-mov   cx, di
+mov   si, bx
+mov   di, cx
+
+
+
+; dx:ax ffa0fd1a
+
+
 call  FixedDiv_
-mov   cx, 5
-looplabel:
+
+; shift 5. since we do a tantoangle lookup... this maxes at 2048
 sar   dx, 1
 rcr   ax, 1
-loop  looplabel
-
+sar   dx, 1
+rcr   ax, 1
+sar   dx, 1
+rcr   ax, 1
+and   al, 0FCh
 
 
 mov   bx, ax
-mov   dx, word ptr [_tantoangle]
-shl   bx, 2
+add   bx, word ptr [_tantoangle]
+
 mov   es, word ptr [_tantoangle+2]
-add   bx, dx
-mov   bx, word ptr es:[bx + 2]
+mov   bx, word ptr es:[bx + 2] ; get just intbits..
 
 ;    dist = FixedDiv (dx, finesine[angle] );	
 
-add   bh, 040h
-mov   ax, 031E4h
-shr   bx, 3
+add   bh, 040h ; ang90 highbits
+mov   ax, FINESINE_SEGMENT
+shr   bx, 1
+and   bl, 0FCh
 mov   es, ax
-shl   bx, 2
 mov   dx, di
-mov   ax, word ptr es:[bx]
-mov   cx, word ptr es:[bx + 2]
-mov   bx, ax
 mov   ax, si
+mov   cx, word ptr es:[bx + 2]
+mov   bx, word ptr es:[bx]
 call  FixedDiv_
-mov   sp, bp
-pop   bp
+
 pop   di
 pop   si
 pop   cx
