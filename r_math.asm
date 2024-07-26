@@ -683,87 +683,146 @@ mov   bp, sp
 sub   sp, 0Ah
 push  ax
 push  bx
+
+; DX:AX = x
+; CX:BX = y
+; segindex = si
+
+;    int16_t	lx =  vertexes[segs_render[segindex].v1Offset].x;
+;    int16_t	ly =  vertexes[segs_render[segindex].v1Offset].y;
+;    int16_t	ldx = vertexes[segs_render[segindex].v2Offset].x;
+;    int16_t	ldy = vertexes[segs_render[segindex].v2Offset].y;
+
+; segs_render is 10 bytes each. need to get the index..
+
 mov   ax, si
 shl   si, 1
 shl   si, 1
 add   si, ax
+shl   si, 1
 mov   ax, SEGS_RENDER_SEGMENT
-add   si, si
-mov   es, ax
+
+mov   es, ax  ; ES for segs_render lookup
+
 mov   di, word ptr es:[si]
+shl   di, 1
+shl   di, 1
+
 mov   ax, VERTEXES_SEGMENT
-shl   di, 1
-shl   di, 1
-mov   es, ax
-mov   ax, word ptr es:[di + 2]
-mov   word ptr [bp - 2], ax
-mov   ax, SEGS_RENDER_SEGMENT
-mov   bx, word ptr es:[di]
-mov   es, ax
-add   di, 2
+mov   ds, ax  ; DS for vertexes lookup
+
+
+mov   bx, word ptr ds:[di]
+mov   ax, word ptr ds:[di + 2]
+
+mov   word ptr [bp - 2], ax   ; store this...   todo put in es
+
+
 mov   di, word ptr es:[si + 2]
-mov   ax, VERTEXES_SEGMENT
 shl   di, 1
 shl   di, 1
-mov   es, ax
-add   si, 2
-mov   si, word ptr es:[di]
-mov   ax, word ptr es:[di + 2]
-add   di, 2
+
+mov   si, word ptr ds:[di]
+mov   ax, word ptr ds:[di + 2]
+
+; di not used here (?)
+
+
+;    ldx -= lx;
+;    ldy -= ly;
+
+; si = ldx
+; ax = ldy
+; bx = lx
+; bp-2 = ly
+
 sub   si, bx
 sub   ax, word ptr [bp - 2]
+
+;    if (!ldx) {
+
 test  si, si
-jne   label_skip_1
+jne   ldx_nonzero
 cmp   dx, bx
-jl    label_1
-jne   label_2
+
+;        if (x.w <= temp.w)
+
+jl    test_ldy_below_0
+jne   ret_ldy_greater_than_0
+
+;           return ldy > 0;
+
 cmp   word ptr [bp - 0Ch], 0
-jbe   label_1
-label_2:
+jbe   test_ldy_below_0
+ret_ldy_greater_than_0:
 test  ax, ax
 jl    return_true
 return_false:
 xor   ax, ax
+
+
+mov   di, ss ;  restore ds
+mov   ds, di
+
 mov   sp, bp
 pop   bp 
 pop   di
 ret   
-label_1:
+test_ldy_below_0:
 test  ax, ax
 jle   return_false
 
 return_true:
 mov   ax, 1
+
+mov   di, ss ;  restore ds
+mov   ds, di
+
 mov   sp, bp
 pop   bp 
 pop   di
 ret   
-label_skip_1:
+
+ldx_nonzero:
+
 test  ax, ax
-jne   label_skip_2
-mov   ax, word ptr [bp - 2]
+
+jne   ldy_nonzero
+mov   ax, word ptr [bp - 2]  ; ly into ax
+
+;        if (y.w <= temp.w)
+
 cmp   cx, ax
-jl    label_4
-jne   label_5
+jl    test_ldx_below_0
+jne   ret_ldx_greater_than_0
 cmp   word ptr [bp - 0Eh], 0
-jbe   label_4
-label_5:
+jbe   test_ldx_below_0
+ret_ldx_greater_than_0:
 test  si, si
 jle   return_false
 mov   ax, 1
+
+mov   di, ss ;  restore ds
+mov   ds, di
+
 mov   sp, bp
 pop   bp 
 pop   di
 ret   
-label_4:
+test_ldx_below_0:
 test  si, si
 jge   return_false
 mov   ax, 1
+
+mov   di, ss ;  restore ds
+mov   ds, di
+
 mov   sp, bp
 pop   bp 
 pop   di
 ret   
-label_skip_2:
+ldy_nonzero:
+
 mov   di, word ptr [bp - 0Ch]
 sub   di, 0
 mov   word ptr [bp - 6], di
@@ -779,7 +838,9 @@ mov   word ptr [bp - 8], di
 xor   bx, cx
 mov   word ptr [bp - 4], cx
 test  bh, 080h
-jne   label_9
+jne   do_sign_bit_return
+
+; gross - we must do a lot of work.
 mov   bx, word ptr [bp - 6]
 mov   cx, dx
 call FixedMul1632_
@@ -799,14 +860,22 @@ cmp   ax, word ptr [bp - 0Ah]
 jb    label_7
 label_8:
 mov   ax, 1
+
+mov   di, ss ;  restore ds
+mov   ds, di
+
 mov   sp, bp
 pop   bp 
 pop   di
 ret   
-label_9:
+do_sign_bit_return:
 xor   ax, dx
 xor   al, al
 and   ah, 080h
+
+mov   di, ss ;  restore ds
+mov   ds, di
+
 mov   sp, bp
 pop   bp 
 pop   di
