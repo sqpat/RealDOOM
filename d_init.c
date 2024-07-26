@@ -874,7 +874,7 @@ R_PointToAngle(y, x);
 /*
 	FILE* fp = fopen("D_OUTPU1.BIN", "wb"); 
 
-	FAR_fwrite((byte __far *)R_PointToDist, 1, (byte __far *)R_DrawColumn - (byte __far *)R_PointToDist, fp);
+	FAR_fwrite((byte __far *)R_PointOnSegSide2, 1, (byte __far *)R_PointOnSegSide - (byte __far *)R_PointOnSegSide2, fp);
 	fclose(fp);
     I_Error("\n done");
 	

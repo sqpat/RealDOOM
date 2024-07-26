@@ -53,74 +53,25 @@
 //  check point against partition plane.
 // Returns side 0 (front) or 1 (back).
 //
-int16_t __near R_PointOnSide( fixed_t_union	x,fixed_t_union	y,node_t __far*	node ) {
+
+
+
+int16_t __near R_PointOnSegSide2 ( fixed_t_union	x, fixed_t_union	y, int16_t segindex) {
+    int16_t	lx = vertexes[segs_render[segindex].v1Offset].x;
+    int16_t	ly = vertexes[segs_render[segindex].v1Offset].y;
+    int16_t	ldx = vertexes[segs_render[segindex].v2Offset].x;
+    int16_t	ldy = vertexes[segs_render[segindex].v2Offset].y;
     fixed_t_union	dx;
     fixed_t_union	dy;
     fixed_t_union	left;
     fixed_t_union	right;
-    fixed_t_union temp;
 
-    
-        temp.h.fracbits = 0;
-	
-    if (!node->dx) {
-        temp.h.intbits = node->x;
-        if (x.w <= temp.w)
-            return node->dy > 0;
-        
-        return node->dy < 0;
-    }
-    if (!node->dy) {
-        temp.h.intbits = node->y;
-        if (y.w <= temp.w)
-            return node->dx < 0;
-        
-        return node->dx > 0;
-    }
-    temp.h.intbits = node->x;
-    dx.w = (x.w - temp.w);
-    temp.h.intbits = node->y;
-    dy.w = (y.w - temp.w);
-	
-    // Try to quickly decide by looking at sign bits.
-    if ( (node->dy ^ node->dx ^ dx.h.intbits ^ dy.h.intbits)&(int16_t)0x8000 ) {
-        if  ( (node->dy ^ dx.h.intbits) &(int16_t) 0x8000 ) {
-	        // (left is negative)
-	        return 1;
-	    }
-	    return 0;
-    }
-
-    left.w = FixedMul1632 ( node->dy , dx.w );
-    right.w = FixedMul1632 (node->dx, dy.w );
-	
-    if (right.w < left.w) {
-	    // front side
-	    return 0;
-    }
-    // back side
-    return 1;			
-}
-
-
-
-int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, vertex_t __far* v1, vertex_t __far* v2) {
-    int16_t	lx;
-    int16_t	ly;
-    int16_t	ldx;
-    int16_t	ldy;
-    fixed_t_union	dx;
-    fixed_t_union	dy;
-    fixed_t_union	left;
-    fixed_t_union	right;
 	
     fixed_t_union temp;
-
-	lx = v1->x;
-    ly = v1->y;
 	
-    ldx = v2->x - lx;
-    ldy = v2->y - ly;
+    ldx -= lx;
+    ldy -= ly;
+
 	temp.h.fracbits = 0;
 
     if (!ldx) {
@@ -137,7 +88,7 @@ int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, vertex_t __f
         
         return ldx > 0;
     }
-
+	// store 
 	temp.h.intbits = lx;
     dx.w = (x.w - temp.w);
 	temp.h.intbits = ly;
@@ -156,6 +107,15 @@ int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, vertex_t __f
 	return right.w >= left.w;
 
 } 
+
+int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, int16_t segindex) {
+	int16_t a = R_PointOnSegSide2(x, y, segindex);
+	int16_t b = R_PointOnSegSide3(x, y, segindex);
+	if (a != b){
+		I_Error("bad! %lx %lx %i %x %i %x %i", x.wu, y.wu, segindex, b, b, a, a);
+	}
+	return a;
+}
 
 
 //
@@ -545,31 +505,6 @@ void __far R_SetViewSize ( uint8_t		blocks, uint8_t		detail ) {
 
 
 
-
-//
-// R_PointInSubsector
-//
-int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
-    node_t __far*	node;
-    int16_t		side;
-    int16_t		nodenum;
-    // single subsector is a special case
-	if (!numnodes) {
-		return 0;
-	}
-		
-	nodenum = numnodes - 1;
-	while (! (nodenum & NF_SUBSECTOR) ) {
-		node = &nodes[nodenum];
-		
-		// only used here... inline?
-		side = R_PointOnSide (x, y, node);
-		nodenum = node->children[side];
-
-    }
-
-	return nodenum & ~NF_SUBSECTOR;
-}
 
 
 //

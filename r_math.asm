@@ -14,11 +14,12 @@
 ;
 ; DESCRIPTION:
 ;
-    .286
 	.MODEL  medium
 
 
 FINESINE_SEGMENT               = 31e4h
+VERTEXES_SEGMENT               = 0E172h
+SEGS_RENDER_SEGMENT            = 04000h
 
 EXTRN _tantoangle:DWORD
 EXTRN _viewx:DWORD
@@ -32,6 +33,7 @@ EXTRN FastDiv3232_shift_3_8_:PROC
 EXTRN FixedMulTrig_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
+EXTRN FixedMul1632_:PROC
 
 INCLUDE defs.inc
 
@@ -54,7 +56,8 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_6_out_of_bounds
 mov   bx, word ptr [_tantoangle]
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, word ptr [_tantoangle+2]
 add   bx, ax
 mov   ax, word ptr es:[bx]
@@ -108,7 +111,8 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_7_out_of_bounds
 mov   bx, word ptr [_tantoangle]
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, word ptr [_tantoangle+2]
 add   bx, ax
 mov   ax, word ptr es:[bx]
@@ -204,7 +208,8 @@ cmp   ax, 0800h
 jae   octant_0_out_of_bounds
 
 mov   bx, word ptr [_tantoangle]
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, word ptr [_tantoangle+2]
 add   bx, ax
 mov   ax, word ptr es:[bx]
@@ -229,7 +234,8 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_1_out_of_bounds
 mov   bx, word ptr [_tantoangle]
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, word ptr [_tantoangle+2]
 add   bx, ax
 mov   ax, 0ffffh
@@ -277,7 +283,8 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_3_out_of_bounds
 mov   bx, word ptr [_tantoangle]
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, word ptr [_tantoangle+2]
 add   bx, ax
 mov   ax, 0ffffh
@@ -302,7 +309,8 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_2_out_of_bounds
 mov   bx, word ptr [_tantoangle]
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, word ptr [_tantoangle+2]
 add   bx, ax
 mov   ax, word ptr es:[bx]
@@ -340,7 +348,8 @@ cmp   ax, 0800h
 jae   octant_4_out_of_bounds
 
 mov   bx, word ptr [_tantoangle]
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, word ptr [_tantoangle+2]
 add   bx, ax
 mov   ax, word ptr es:[bx]
@@ -365,7 +374,8 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_5_out_of_bounds
 mov   bx, word ptr [_tantoangle]
-shl   ax, 2
+shl   ax, 1
+shl   ax, 1
 mov   es, word ptr [_tantoangle+2]
 add   bx, ax
 mov   ax, 0ffffh
@@ -660,5 +670,149 @@ ret
 
 endp
 
+
+
+;R_PointOnSegSide_
+
+PROC R_PointOnSegSide3_ NEAR
+PUBLIC R_PointOnSegSide3_ 
+
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 0Ah
+push  ax
+push  bx
+mov   ax, si
+shl   si, 1
+shl   si, 1
+add   si, ax
+mov   ax, SEGS_RENDER_SEGMENT
+add   si, si
+mov   es, ax
+mov   di, word ptr es:[si]
+mov   ax, VERTEXES_SEGMENT
+shl   di, 1
+shl   di, 1
+mov   es, ax
+mov   ax, word ptr es:[di + 2]
+mov   word ptr [bp - 2], ax
+mov   ax, SEGS_RENDER_SEGMENT
+mov   bx, word ptr es:[di]
+mov   es, ax
+add   di, 2
+mov   di, word ptr es:[si + 2]
+mov   ax, VERTEXES_SEGMENT
+shl   di, 1
+shl   di, 1
+mov   es, ax
+add   si, 2
+mov   si, word ptr es:[di]
+mov   ax, word ptr es:[di + 2]
+add   di, 2
+sub   si, bx
+sub   ax, word ptr [bp - 2]
+test  si, si
+jne   label_skip_1
+cmp   dx, bx
+jl    label_1
+jne   label_2
+cmp   word ptr [bp - 0Ch], 0
+jbe   label_1
+label_2:
+test  ax, ax
+jl    return_true
+return_false:
+xor   ax, ax
+mov   sp, bp
+pop   bp 
+pop   di
+ret   
+label_1:
+test  ax, ax
+jle   return_false
+
+return_true:
+mov   ax, 1
+mov   sp, bp
+pop   bp 
+pop   di
+ret   
+label_skip_1:
+test  ax, ax
+jne   label_skip_2
+mov   ax, word ptr [bp - 2]
+cmp   cx, ax
+jl    label_4
+jne   label_5
+cmp   word ptr [bp - 0Eh], 0
+jbe   label_4
+label_5:
+test  si, si
+jle   return_false
+mov   ax, 1
+mov   sp, bp
+pop   bp 
+pop   di
+ret   
+label_4:
+test  si, si
+jge   return_false
+mov   ax, 1
+mov   sp, bp
+pop   bp 
+pop   di
+ret   
+label_skip_2:
+mov   di, word ptr [bp - 0Ch]
+sub   di, 0
+mov   word ptr [bp - 6], di
+sbb   dx, bx
+mov   di, word ptr [bp - 0Eh]
+mov   bx, word ptr [bp - 2]
+sub   di, 0
+sbb   cx, bx
+mov   bx, ax
+xor   bx, si
+xor   bx, dx
+mov   word ptr [bp - 8], di
+xor   bx, cx
+mov   word ptr [bp - 4], cx
+test  bh, 080h
+jne   label_9
+mov   bx, word ptr [bp - 6]
+mov   cx, dx
+call FixedMul1632_
+mov   bx, word ptr [bp - 8]
+mov   cx, word ptr [bp - 4]
+mov   word ptr [bp - 0Ah], ax
+mov   ax, si
+mov   di, dx
+call FixedMul1632_
+cmp   dx, di
+jg    label_8
+je    label_6
+label_7:
+jmp   return_false
+label_6:
+cmp   ax, word ptr [bp - 0Ah]
+jb    label_7
+label_8:
+mov   ax, 1
+mov   sp, bp
+pop   bp 
+pop   di
+ret   
+label_9:
+xor   ax, dx
+xor   al, al
+and   ah, 080h
+mov   sp, bp
+pop   bp 
+pop   di
+ret   
+
+
+endp
 
 END

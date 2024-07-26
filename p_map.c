@@ -72,6 +72,83 @@ int16_t		numspechit;
 //
 // PIT_StompThing
 //
+
+int16_t __near R_PointOnSide( fixed_t_union	x,fixed_t_union	y,node_t __far*	node ) {
+    fixed_t_union	dx;
+    fixed_t_union	dy;
+    fixed_t_union	left;
+    fixed_t_union	right;
+    fixed_t_union temp;
+
+    
+        temp.h.fracbits = 0;
+	
+    if (!node->dx) {
+        temp.h.intbits = node->x;
+        if (x.w <= temp.w)
+            return node->dy > 0;
+        
+        return node->dy < 0;
+    }
+    if (!node->dy) {
+        temp.h.intbits = node->y;
+        if (y.w <= temp.w)
+            return node->dx < 0;
+        
+        return node->dx > 0;
+    }
+    temp.h.intbits = node->x;
+    dx.w = (x.w - temp.w);
+    temp.h.intbits = node->y;
+    dy.w = (y.w - temp.w);
+	
+    // Try to quickly decide by looking at sign bits.
+    if ( (node->dy ^ node->dx ^ dx.h.intbits ^ dy.h.intbits)&(int16_t)0x8000 ) {
+        if  ( (node->dy ^ dx.h.intbits) &(int16_t) 0x8000 ) {
+	        // (left is negative)
+	        return 1;
+	    }
+	    return 0;
+    }
+
+    left.w = FixedMul1632 ( node->dy , dx.w );
+    right.w = FixedMul1632 (node->dx, dy.w );
+	
+    if (right.w < left.w) {
+	    // front side
+	    return 0;
+    }
+    // back side
+    return 1;			
+}
+
+//
+// R_PointInSubsector
+//
+int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
+    node_t __far*	node;
+    int16_t		side;
+    int16_t		nodenum;
+    // single subsector is a special case
+	if (!numnodes) {
+		return 0;
+	}
+		
+	nodenum = numnodes - 1;
+	while (! (nodenum & NF_SUBSECTOR) ) {
+		node = &nodes[nodenum];
+		
+		// only used here... inline?
+		side = R_PointOnSide (x, y, node);
+		nodenum = node->children[side];
+
+    }
+
+	return nodenum & ~NF_SUBSECTOR;
+}
+
+
+
 boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
 {
     fixed_t_union	blockdist;

@@ -90,8 +90,19 @@ extern	int16_t_union		detailshift;
 
 //
 // Utility functions.
-int16_t __near R_PointOnSide ( fixed_t_union	x, fixed_t_union	y, node_t __far*	node );
-int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, vertex_t __far* v1, vertex_t __far* v2);
+
+int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, int16_t segindex);
+
+
+/**/
+#pragma aux fiveparam \
+                    __parm [dx ax] [cx bx] [si] \
+                    __modify [ax bx cx dx si];
+
+#pragma aux (fiveparam)  R_PointOnSegSide2;
+int16_t __near R_PointOnSegSide2 ( fixed_t_union	x, fixed_t_union	y, int16_t segindex);
+#pragma aux (fiveparam)  R_PointOnSegSide3;
+int16_t __near R_PointOnSegSide3 ( fixed_t_union	x, fixed_t_union	y, int16_t segindex);
 
 uint32_t __near R_PointToAngle16 (int16_t	x, int16_t	y);
 uint32_t __far R_PointToAngle ( fixed_t_union	x, fixed_t_union	y );
@@ -101,7 +112,6 @@ fixed_t __near R_PointToDist ( int16_t	x,int16_t	y );
 
 
 fixed_t __far R_ScaleFromGlobalAngle (fineangle_t visangle_shift3);
-int16_t __far R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y );
 
  
 
