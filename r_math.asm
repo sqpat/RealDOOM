@@ -674,15 +674,14 @@ endp
 
 ;R_PointOnSegSide_
 
-PROC R_PointOnSegSide3_ NEAR
-PUBLIC R_PointOnSegSide3_ 
+PROC R_PointOnSegSide_ NEAR
+PUBLIC R_PointOnSegSide_ 
 
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ah
-push  ax
 push  bx
+push  ax
 
 ; DX:AX = x
 ; CX:BX = y
@@ -712,8 +711,8 @@ mov   ax, VERTEXES_SEGMENT
 mov   ds, ax  ; DS for vertexes lookup
 
 
-mov   bx, word ptr ds:[di]
-mov   ax, word ptr ds:[di + 2]
+mov   bx, word ptr ds:[di]      ; lx
+mov   ax, word ptr ds:[di + 2]  ; ly
 
 
 
@@ -724,10 +723,10 @@ mov   es, ax  ; juggle ax around isntead of putting on stack...
 shl   di, 1
 shl   di, 1
 
-mov   si, word ptr ds:[di]
-mov   ax, word ptr ds:[di + 2]
+mov   si, word ptr ds:[di]      ; ldx
+mov   ax, word ptr ds:[di + 2]  ; ldy
 
-mov   di, es
+mov   di, es                    ; ly
 
 
 ;    ldx -= lx;
@@ -739,8 +738,8 @@ mov   di, es
 ; di = ly
 ; dx = x highbits
 ; cx = y highbits
-; bp -0Ch = x lowbits
-; bp -0Eh = y lowbits
+; bp -4h = x lowbits
+; bp -2h = y lowbits
 
 ; if ldx == lx then 
 ;    if (ldx == lx) {
@@ -756,7 +755,7 @@ jne   ret_ldy_greater_than_ly
 
 ; compare low bits
 
-cmp   word ptr [bp - 0Ch], 0
+cmp   word ptr [bp - 04h], 0
 jbe   return_ly_below_ldy
 
  
@@ -803,7 +802,7 @@ cmp   cx, di
 jl    ret_ldx_less_than_lx
 jne   ret_ldx_greater_than_lx
 ;  compare low bits
-cmp   word ptr [bp - 0Eh], 0
+cmp   word ptr [bp - 02h], 0
 jbe   ret_ldx_less_than_lx
 ret_ldx_greater_than_lx:
 ;            return ldx > lx;
@@ -850,18 +849,15 @@ sub   ax, di
 
 
 
-; todo clean this up, bp 0-6 etc not used, sub does nothing
 
-;	temp.h.intbits = lx;
-;    dx.w = (x.w - temp.w);
-;	temp.h.intbits = ly;
-;    dy.w = (y.w - temp.w);
+;    dx.w = (x.w - (lx shift 16));
+;    dy.w = (y.w - (ly shift 16));
 
 
 sub   dx, bx
 sub   cx, di
 
-;    // Try to quickly decide by looking at sign bits.
+;    Try to quickly decide by looking at sign bits.
 ;    if ( (ldy ^ ldx ^ dx.h.intbits ^ dy.h.intbits)&0x8000 )  // returns 1
 
 
@@ -874,32 +870,33 @@ jne   do_sign_bit_return
 
 ; gross - we must do a lot of work in this case. 
 mov   di, cx  ; store cx.. 
-mov   bx, word ptr [bp - 0ch]
+pop bx
 mov   cx, dx
 call FixedMul1632_
-mov   bx, word ptr [bp - 0Eh]
+
+; set up params..
+pop bx
 mov   cx, di
 mov   ds, ax
 mov   ax, si
 mov   di, dx
 call FixedMul1632_
 cmp   dx, di
-jg    label_8
-je    label_6
+jg    return_true_2
+je    check_lowbits
 return_false_2:
 xor   ax, ax
 mov   di, ss ;  restore ds
 mov   ds, di
-mov   sp, bp
-pop   bp 
+pop   bp
 pop   di
 ret   
 
-label_6:
+check_lowbits:
 mov   cx, ds
 cmp   ax, cx
 jb    return_false_2
-label_8:
+return_true_2:
 mov   ax, 1
 
 mov   di, ss ;  restore ds
