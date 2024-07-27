@@ -69,25 +69,29 @@ int16_t __near R_PointOnSegSide2 ( fixed_t_union	x, fixed_t_union	y, int16_t seg
 	
     fixed_t_union temp;
 	
-    ldx -= lx;
-    ldy -= ly;
-
 	temp.h.fracbits = 0;
 
-    if (!ldx) {
+	if (x.w == 0xf843c383 && y.wu == 0xf445e856 && segindex == 813){
+		//I_Error("%i %i %i %i", lx, ly, ldx, ldy);
+	}
+    if (ldx == lx) {
 	    temp.h.intbits = lx;
         if (x.w <= temp.w)
-            return ldy > 0;
+            return ldy > ly;
         
-        return ldy < 0;
+        return ldy < ly;
     }
-    if (!ldy) {
+    if (ldy == ly) {
 	    temp.h.intbits = ly;
         if (y.w <= temp.w)
-            return ldx < 0;
+            return ldx < lx;
         
-        return ldx > 0;
+        return ldx > lx;
     }
+
+	ldx -= lx;
+    ldy -= ly;
+
 	// store 
 	temp.h.intbits = lx;
     dx.w = (x.w - temp.w);
@@ -108,11 +112,24 @@ int16_t __near R_PointOnSegSide2 ( fixed_t_union	x, fixed_t_union	y, int16_t seg
 
 } 
 
+
+
 int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, int16_t segindex) {
 	int16_t a = R_PointOnSegSide2(x, y, segindex);
 	int16_t b = R_PointOnSegSide3(x, y, segindex);
+	if (x.w == 0xf843c383 && y.wu == 0xf445e856 && segindex == 813){
+		//b = R_PointOnSegSide4(x, y, segindex)
+	}
 	if (a != b){
-		I_Error("bad! %lx %lx %i %x %i %x %i", x.wu, y.wu, segindex, b, b, a, a);
+		int16_t	lx = vertexes[segs_render[segindex].v1Offset].x;
+		int16_t	ly = vertexes[segs_render[segindex].v1Offset].y;
+		int16_t	ldx = vertexes[segs_render[segindex].v2Offset].x;
+		int16_t	ldy = vertexes[segs_render[segindex].v2Offset].y;
+
+		I_Error("bad! %lx %lx %i %x %i %x %i \n%i %i %i %i\n%x %x %x %x", x.wu, y.wu, segindex, b, b, a, a,
+		lx, ldx, ly, ldy,
+		lx, ldx, ly, ldy
+		);
 	}
 	return a;
 }

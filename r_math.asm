@@ -715,17 +715,19 @@ mov   ds, ax  ; DS for vertexes lookup
 mov   bx, word ptr ds:[di]
 mov   ax, word ptr ds:[di + 2]
 
-mov   word ptr [bp - 2], ax   ; store this...   todo put in es
 
 
 mov   di, word ptr es:[si + 2]
+
+mov   es, ax  ; juggle ax around isntead of putting on stack...
+
 shl   di, 1
 shl   di, 1
 
 mov   si, word ptr ds:[di]
 mov   ax, word ptr ds:[di + 2]
 
-; di not used here (?)
+mov   di, es
 
 
 ;    ldx -= lx;
@@ -734,73 +736,84 @@ mov   ax, word ptr ds:[di + 2]
 ; si = ldx
 ; ax = ldy
 ; bx = lx
-; bp-2 = ly
+; di = ly
+; dx = x highbits
+; cx = y highbits
+; bp -0Ch = x lowbits
+; bp -0Eh = y lowbits
 
-sub   si, bx
-sub   ax, word ptr [bp - 2]
+; if ldx == lx then 
+;    if (ldx == lx) {
 
-;    if (!ldx) {
+cmp   si, bx
+jne   ldx_nonequal
 
-test  si, si
-jne   ldx_nonzero
+;        if (x.w <= (lx shift 16))
+;  compare high bits
 cmp   dx, bx
+jl    return_ly_below_ldy
+jne   ret_ldy_greater_than_ly
 
-;        if (x.w <= temp.w)
-
-jl    test_ldy_below_0
-jne   ret_ldy_greater_than_0
-
-;           return ldy > 0;
+; compare low bits
 
 cmp   word ptr [bp - 0Ch], 0
-jbe   test_ldy_below_0
-ret_ldy_greater_than_0:
-test  ax, ax
-jl    return_true
+jbe   return_ly_below_ldy
+
+ 
+ret_ldy_greater_than_ly:
+;            return ldy > ly;
+cmp   ax, di
+jle    return_true
+
 return_false:
 xor   ax, ax
-
-
 mov   di, ss ;  restore ds
 mov   ds, di
-
 mov   sp, bp
 pop   bp 
 pop   di
 ret   
-test_ldy_below_0:
-test  ax, ax
-jle   return_false
+
+;        return ly < ldy;
+
+return_ly_below_ldy:
+cmp  di, ax
+jge  return_false
 
 return_true:
 mov   ax, 1
-
 mov   di, ss ;  restore ds
 mov   ds, di
-
 mov   sp, bp
 pop   bp 
 pop   di
 ret   
 
-ldx_nonzero:
+ldx_nonequal:
 
-test  ax, ax
+;    if (ldy == ly) {
+cmp  ax, di
 
 jne   ldy_nonzero
-mov   ax, word ptr [bp - 2]  ; ly into ax
 
-;        if (y.w <= temp.w)
+;        if (y.w <= (ly shift 16))
+;  compare high bits
 
-cmp   cx, ax
-jl    test_ldx_below_0
-jne   ret_ldx_greater_than_0
+cmp   cx, di
+jl    ret_ldx_less_than_lx
+jne   ret_ldx_greater_than_lx
+;  compare low bits
 cmp   word ptr [bp - 0Eh], 0
-jbe   test_ldx_below_0
-ret_ldx_greater_than_0:
-test  si, si
-jle   return_false
-mov   ax, 1
+jbe   ret_ldx_less_than_lx
+ret_ldx_greater_than_lx:
+;            return ldx > lx;
+
+cmp   si, bx
+; todo double check jge vs jg
+jg    return_true
+
+; return false
+xor   ax, ax
 
 mov   di, ss ;  restore ds
 mov   ds, di
@@ -809,10 +822,16 @@ mov   sp, bp
 pop   bp 
 pop   di
 ret   
-test_ldx_below_0:
-test  si, si
-jge   return_false
-mov   ax, 1
+ret_ldx_less_than_lx:
+
+;            return ldx < lx;
+
+cmp    si, bx
+; todo double check jle vs jl
+jle    return_true
+
+; return false
+xor   ax, ax
 
 mov   di, ss ;  restore ds
 mov   ds, di
@@ -823,41 +842,63 @@ pop   di
 ret   
 ldy_nonzero:
 
-mov   di, word ptr [bp - 0Ch]
-sub   di, 0
-mov   word ptr [bp - 6], di
-sbb   dx, bx
-mov   di, word ptr [bp - 0Eh]
-mov   bx, word ptr [bp - 2]
-sub   di, 0
-sbb   cx, bx
+;	ldx -= lx;
+;    ldy -= ly;
+
+sub   si, bx
+sub   ax, di
+
+
+
+; todo clean this up, bp 0-6 etc not used, sub does nothing
+
+;	temp.h.intbits = lx;
+;    dx.w = (x.w - temp.w);
+;	temp.h.intbits = ly;
+;    dy.w = (y.w - temp.w);
+
+
+sub   dx, bx
+sub   cx, di
+
+;    // Try to quickly decide by looking at sign bits.
+;    if ( (ldy ^ ldx ^ dx.h.intbits ^ dy.h.intbits)&0x8000 )  // returns 1
+
+
 mov   bx, ax
 xor   bx, si
 xor   bx, dx
-mov   word ptr [bp - 8], di
 xor   bx, cx
-mov   word ptr [bp - 4], cx
 test  bh, 080h
 jne   do_sign_bit_return
 
-; gross - we must do a lot of work.
-mov   bx, word ptr [bp - 6]
+; gross - we must do a lot of work in this case. 
+mov   di, cx  ; store cx.. 
+mov   bx, word ptr [bp - 0ch]
 mov   cx, dx
 call FixedMul1632_
-mov   bx, word ptr [bp - 8]
-mov   cx, word ptr [bp - 4]
-mov   word ptr [bp - 0Ah], ax
+mov   bx, word ptr [bp - 0Eh]
+mov   cx, di
+mov   ds, ax
 mov   ax, si
 mov   di, dx
 call FixedMul1632_
 cmp   dx, di
 jg    label_8
 je    label_6
-label_7:
-jmp   return_false
+return_false_2:
+xor   ax, ax
+mov   di, ss ;  restore ds
+mov   ds, di
+mov   sp, bp
+pop   bp 
+pop   di
+ret   
+
 label_6:
-cmp   ax, word ptr [bp - 0Ah]
-jb    label_7
+mov   cx, ds
+cmp   ax, cx
+jb    return_false_2
 label_8:
 mov   ax, 1
 
@@ -869,6 +910,10 @@ pop   bp
 pop   di
 ret   
 do_sign_bit_return:
+
+;		// (left is negative)
+;		return  ((ldy ^ dx.h.intbits) & 0x8000);  // returns 1
+
 xor   ax, dx
 xor   al, al
 and   ah, 080h
