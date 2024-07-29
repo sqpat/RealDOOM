@@ -302,7 +302,18 @@ extern int8_t		clipammo[NUMAMMO];
 void __near P_TouchSpecialThing (mobj_t __far*	special,mobj_t __far*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);
 void __near P_DamageMobj(mobj_t __far*	target,mobj_t __far*	inflictor,mobj_t __far*	source,int16_t		damage );
 
-int16_t __near R_PointOnSide ( fixed_t_union	x, fixed_t_union	y, node_t __far*	node );
+
+#pragma aux fiveparam \
+                    __parm [dx ax] [cx bx] [si] \
+                    __modify [ax bx cx dx si];
+
+#pragma aux (fiveparam)  R_PointOnSide;
+#pragma aux (fiveparam)  R_PointOnSide2;
+#pragma aux (fiveparam)  R_PointOnSide3;
+
+int16_t __near R_PointOnSide3 ( fixed_t_union	x, fixed_t_union	y, int16_t nodenum );
+int16_t __near R_PointOnSide2 ( fixed_t_union	x, fixed_t_union	y, int16_t nodenum );
+int16_t __near R_PointOnSide ( fixed_t_union	x, fixed_t_union	y, int16_t nodenum );
 int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y );
 
 

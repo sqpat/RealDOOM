@@ -69,8 +69,8 @@
 
 //0xE000
 /*
+size_sectors              E000:0000
 size_vertexes             E000:0000
-size_sectors              E172:0000
 size_sides                E309:0000
 size_lines                E817:0000
 size_seenlines            EA3F:0000

@@ -956,21 +956,17 @@ R_FixedMulLocalWrapper2(0, 0)
 
 /*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		colormapbytes, 
-		scalelightfixed,
+		vertexes, 
+		nodes,
 		 scalelight,
-		  usedcompositetexturepagemem,
-		usedpatchpagemem, 
 		compositetextureoffset, 
 		compositetexturepage,
 			patchpage, 
 			patchoffset,
 			texturepatchlump_offset,
-			,
 			texturecompositesizes,
 			vissprites,
 
-		usedspritepagemem, 
 			spritepage, 
 			spriteoffset, 
 

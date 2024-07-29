@@ -73,13 +73,14 @@ int16_t		numspechit;
 // PIT_StompThing
 //
 
-int16_t __near R_PointOnSide( fixed_t_union	x,fixed_t_union	y,node_t __far*	node ) {
+int16_t __near R_PointOnSide2 ( fixed_t_union x, fixed_t_union y, int16_t nodenum){
+	node_t __far* node = &nodes[nodenum];
+
     fixed_t_union	dx;
     fixed_t_union	dy;
     fixed_t_union	left;
     fixed_t_union	right;
     fixed_t_union temp;
-
     
         temp.h.fracbits = 0;
 	
@@ -122,6 +123,23 @@ int16_t __near R_PointOnSide( fixed_t_union	x,fixed_t_union	y,node_t __far*	node
     return 1;			
 }
 
+int16_t __near R_PointOnSide3 ( fixed_t_union x, fixed_t_union y, int16_t nodenum);
+int16_t __near R_PointOnSide2 ( fixed_t_union x, fixed_t_union y, int16_t nodenum);
+
+int16_t __near R_PointOnSide ( fixed_t_union x, fixed_t_union y, int16_t nodenum){
+	int16_t a = R_PointOnSide2(x, y, nodenum);
+	int16_t b = R_PointOnSide3(x, y, nodenum);
+	if (a != b){
+		I_Error("bad! %i %x %i %x %lx %lx %i %x %x %x %x", a, a, b, b, x, y, nodenum
+		, nodes[nodenum].x
+		, nodes[nodenum].y
+		, nodes[nodenum].dx
+		, nodes[nodenum].dy
+		);
+	}
+	return a;
+}
+
 //
 // R_PointInSubsector
 //
@@ -136,10 +154,10 @@ int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 		
 	nodenum = numnodes - 1;
 	while (! (nodenum & NF_SUBSECTOR) ) {
+		// only used here... inline?
+		side = R_PointOnSide (x, y, nodenum);
 		node = &nodes[nodenum];
 		
-		// only used here... inline?
-		side = R_PointOnSide (x, y, node);
 		nodenum = node->children[side];
 
     }
