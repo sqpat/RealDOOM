@@ -129,12 +129,15 @@ int16_t __near R_PointOnSide2 ( fixed_t_union x, fixed_t_union y, int16_t nodenu
 int16_t __near R_PointOnSide ( fixed_t_union x, fixed_t_union y, int16_t nodenum){
 	int16_t a = R_PointOnSide2(x, y, nodenum);
 	int16_t b = R_PointOnSide3(x, y, nodenum);
+	a = nodes[nodenum].children[a];
 	if (a != b){
-		I_Error("bad! %i %x %i %x %lx %lx %i %x %x %x %x", a, a, b, b, x, y, nodenum
+		I_Error("bad! %i %x %i %x %lx %lx %i %x %x %x %x %x %x", a, a, b, b, x, y, nodenum
 		, nodes[nodenum].x
 		, nodes[nodenum].y
 		, nodes[nodenum].dx
 		, nodes[nodenum].dy
+		, nodes[nodenum].children[0]
+		, nodes[nodenum].children[1]
 		);
 	}
 	return a;
@@ -145,7 +148,6 @@ int16_t __near R_PointOnSide ( fixed_t_union x, fixed_t_union y, int16_t nodenum
 //
 int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
     node_t __far*	node;
-    int16_t		side;
     int16_t		nodenum;
     // single subsector is a special case
 	if (!numnodes) {
@@ -155,10 +157,7 @@ int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
 	nodenum = numnodes - 1;
 	while (! (nodenum & NF_SUBSECTOR) ) {
 		// only used here... inline?
-		side = R_PointOnSide (x, y, nodenum);
-		node = &nodes[nodenum];
-		
-		nodenum = node->children[side];
+		nodenum = R_PointOnSide (x, y, nodenum);
 
     }
 

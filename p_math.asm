@@ -69,13 +69,17 @@ mov   es, ax  ; ES for nodes lookup
 mov   bx, word ptr es:[si + 0];   lx
 mov   di, word ptr es:[si + 2];   ly
 
-mov   es, ax  ; juggle ax around isntead of putting on stack...
 
 mov   ax, word ptr es:[si + 4]   ; ldx
-mov   si, word ptr es:[si + 6]   ; ldy
+mov   ds, word ptr es:[si + 6]   ; ldy
+push  ds
+mov   ds, word ptr es:[si + 8]   ; child 1
+mov   es, word ptr es:[si + 0Ah]   ; child 2
 
+pop   si
 
 xchg  ax, si     ; optimize and remove later..
+
 
 
 ; si = ldx
@@ -86,7 +90,8 @@ xchg  ax, si     ; optimize and remove later..
 ; cx = y highbits
 ; bp -4h = x lowbits
 ; bp -2h = y lowbits
-
+; ds = child 0
+; es = child 1
 
 ;    if (!node->dx) 
 
@@ -111,7 +116,7 @@ cmp   ax, 0
 jl    return_true
 
 return_false:
-xor   ax, ax
+mov   ax, ds
 mov   di, ss ;  restore ds
 mov   ds, di
 mov   sp, bp
@@ -127,9 +132,8 @@ jle  return_false
 
 return_true:
 
-; getting here?
 
-mov   ax, 1
+mov   ax, es
 mov   di, ss ;  restore ds
 mov   ds, di
 mov   sp, bp
@@ -157,11 +161,10 @@ jbe   ret_node_dx_less_than_0
 ret_ldx_greater_than_0:
 ;        return node->dx > 0
 cmp   si, 0
-; todo double check jge vs jg
 jg    return_true
 
 ; return false
-xor   ax, ax
+mov   ax, ds
 
 mov   di, ss ;  restore ds
 mov   ds, di
@@ -169,7 +172,7 @@ mov   ds, di
 mov   sp, bp
 pop   bp 
 pop   di
-ret   
+ret    
 ret_node_dx_less_than_0:
 
 ;            return node->dx < 0;
@@ -178,7 +181,7 @@ cmp    si, 0
 jl    return_true
 
 ; return false
-xor   ax, ax
+mov   ax, ds
 
 mov   di, ss ;  restore ds
 mov   ds, di
@@ -201,13 +204,6 @@ sub   dx, bx
 sub   cx, di
 
 
-; lx  bx f4c0
-; ly  di fca0
-; ldx si 0010
-; ldy ax 0010
-; xhi dx f4f0 ...  0030
-; yhi cx fcb0 ...  0010
-
 
 
 ;    Try to quickly decide by looking at sign bits.
@@ -225,22 +221,27 @@ jne   do_sign_bit_return
 mov   di, cx  ; store cx.. 
 pop bx
 mov   cx, dx
-call FixedMul1632_
+push  es
+; note - fixedmul clobbers ES. need to store that.
 
-; 0x3000000 ?
+call FixedMul1632_
 
 ; set up params..
-pop bx
+xchg  si, ax
+pop   es
+pop   bx
 mov   cx, di
-mov   ds, ax
-mov   ax, si
+
 mov   di, dx
+push  es
 call FixedMul1632_
+pop  es
 cmp   dx, di
 jg    return_true_2
 je    check_lowbits
+
 return_false_2:
-xor   ax, ax
+mov   ax, ds
 mov   di, ss ;  restore ds
 mov   ds, di
 pop   bp
@@ -248,11 +249,10 @@ pop   di
 ret   
 
 check_lowbits:
-mov   cx, ds
-cmp   ax, cx
+cmp   ax, si
 jb    return_false_2
 return_true_2:
-mov   ax, 1
+mov   ax, es
 
 mov   di, ss ;  restore ds
 mov   ds, di
@@ -267,9 +267,10 @@ do_sign_bit_return:
 ;		return  ((ldy ^ dx.h.intbits) & 0x8000);  // returns 1
 
 xor   ax, dx
-xor   al, al
-and   ah, 080h
-rol   ax, 1
+jl    return_true_2
+
+mov   ax, ds
+
 
 mov   di, ss ;  restore ds
 mov   ds, di
