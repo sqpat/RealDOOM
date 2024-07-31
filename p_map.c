@@ -72,7 +72,7 @@ int16_t		numspechit;
 //
 // PIT_StompThing
 //
-
+/*
 int16_t __near R_PointOnSide2 ( fixed_t_union x, fixed_t_union y, int16_t nodenum){
 	node_t __far* node = &nodes[nodenum];
 
@@ -82,7 +82,7 @@ int16_t __near R_PointOnSide2 ( fixed_t_union x, fixed_t_union y, int16_t nodenu
     fixed_t_union	right;
     fixed_t_union temp;
     
-        temp.h.fracbits = 0;
+	temp.h.fracbits = 0;
 	
     if (!node->dx) {
         temp.h.intbits = node->x;
@@ -142,7 +142,7 @@ int16_t __near R_PointOnSide ( fixed_t_union x, fixed_t_union y, int16_t nodenum
 	}
 	return a;
 }
-
+*/
 //
 // R_PointInSubsector
 //

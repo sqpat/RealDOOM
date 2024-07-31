@@ -308,12 +308,8 @@ void __near P_DamageMobj(mobj_t __far*	target,mobj_t __far*	inflictor,mobj_t __f
                     __modify [ax bx cx dx si];
 
 #pragma aux (fiveparam)  R_PointOnSide;
-#pragma aux (fiveparam)  R_PointOnSide2;
-#pragma aux (fiveparam)  R_PointOnSide3;
-
-int16_t __near R_PointOnSide3 ( fixed_t_union	x, fixed_t_union	y, int16_t nodenum );
-int16_t __near R_PointOnSide2 ( fixed_t_union	x, fixed_t_union	y, int16_t nodenum );
 int16_t __near R_PointOnSide ( fixed_t_union	x, fixed_t_union	y, int16_t nodenum );
+
 int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y );
 
 

@@ -25,10 +25,10 @@ EXTRN FixedMul1632_:PROC
 
 
 
-;R_PointOnSide3_
+;R_PointOnSide_
 
-PROC R_PointOnSide3_ NEAR
-PUBLIC R_PointOnSide3_ 
+PROC R_PointOnSide_ NEAR
+PUBLIC R_PointOnSide_ 
 
 push  di
 push  bp
@@ -78,12 +78,11 @@ mov   es, word ptr es:[si + 0Ah]   ; child 2
 
 pop   si
 
-xchg  ax, si     ; optimize and remove later..
 
 
 
-; si = ldx
-; ax = ldy
+; ax = ldx
+; si = ldy
 ; bx = lx
 ; di = ly
 ; dx = x highbits
@@ -95,7 +94,7 @@ xchg  ax, si     ; optimize and remove later..
 
 ;    if (!node->dx) 
 
-test  si, si
+test  ax, ax
 jne   node_dx_nonequal
 
 ;        if (x <= (node->x shift 16) )
@@ -112,7 +111,7 @@ jbe   return_node_dy_greater_than_0
  
 return_node_dy_less_than_0:
 ;        return node->dy < 0;
-cmp   ax, 0
+cmp   si, 0
 jl    return_true
 
 return_false:
@@ -127,7 +126,7 @@ ret
 ;            return node->dy > 0;
 
 return_node_dy_greater_than_0:
-cmp  ax, 0
+cmp  si, 0
 jle  return_false
 
 return_true:
@@ -145,7 +144,7 @@ node_dx_nonequal:
 
 
 ;    if (!node->dy) {
-test  ax, ax
+test  si, si
 
 jne   node_dy_nonzero
 
@@ -160,7 +159,7 @@ cmp   word ptr [bp - 02h], 0
 jbe   ret_node_dx_less_than_0
 ret_ldx_greater_than_0:
 ;        return node->dx > 0
-cmp   si, 0
+cmp   ax, 0
 jg    return_true
 
 ; return false
@@ -177,7 +176,7 @@ ret_node_dx_less_than_0:
 
 ;            return node->dx < 0;
 
-cmp    si, 0
+cmp    ax, 0
 jl    return_true
 
 ; return false
@@ -217,12 +216,14 @@ xor   bx, cx
 test  bh, 080h
 jne   do_sign_bit_return
 
+xchg si, ax
+
 ; gross - we must do a lot of work in this case. 
 mov   di, cx  ; store cx.. 
 pop bx
 mov   cx, dx
-push  es
-; note - fixedmul clobbers ES. need to store that.
+push  es ; note - fixedmul clobbers ES. need to store that.
+
 
 call FixedMul1632_
 
@@ -233,7 +234,7 @@ pop   bx
 mov   cx, di
 
 mov   di, dx
-push  es
+push  es ; note - fixedmul clobbers ES. need to store that.
 call FixedMul1632_
 pop  es
 cmp   dx, di
@@ -266,7 +267,7 @@ do_sign_bit_return:
 ;		// (left is negative)
 ;		return  ((ldy ^ dx.h.intbits) & 0x8000);  // returns 1
 
-xor   ax, dx
+xor   si, dx
 jl    return_true_2
 
 mov   ax, ds
