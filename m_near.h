@@ -255,6 +255,9 @@ extern segment_t            cachedsegmentlump2;
 extern segment_t            cachedsegmenttex2;
 extern int16_t              cachedlump2;
 extern int16_t              cachedtex2;
+extern uint8_t              cachedcollength;
+extern uint8_t              cachedcollength2;
+
 extern int8_t               active_visplanes[5];
 extern byte                 cachedbyteheight;
 extern uint8_t              cachedcol;

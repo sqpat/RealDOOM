@@ -248,6 +248,7 @@ uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
 extern int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
 
 // in this case numpages is 1-4, not 0-3
+// todo: consider moving a lot of these small data structures into DS/near memory
 int8_t __near R_EvictCacheEMSPage(int8_t numpages, int8_t cachetype){
 	int8_t evictedpage;
 	int8_t j;
@@ -796,7 +797,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 			x2 = texturewidth;
 
 		currentlump = collump[currentRLEIndex].h;
-		nextcollumpRLE = collump[currentRLEIndex + 1].b.bytelow;
+		nextcollumpRLE = collump[currentRLEIndex + 1].bu.bytelow;
 
 		// increment starting texel index
 
@@ -1294,15 +1295,15 @@ segment_t getcompositetexture(int16_t tex_index) {
 
 	}
 
-		tex_segment = 0x9000 + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
+	tex_segment = 0x9000 + pagesegments[gettexturepage(texpage, FIRST_TEXTURE_LOGICAL_PAGE, CACHETYPE_COMPOSITE)] + (texoffset << 4);
 
-		// load it in
-		if (cachelump){
-			// could be inlined i guess.
-			R_GenerateComposite(tex_index, tex_segment);
-			
-		}
-		return tex_segment;
+	// load it in
+	if (cachelump){
+		// could be inlined i guess.
+		R_GenerateComposite(tex_index, tex_segment);
+		
+	}
+	return tex_segment;
 
 }
 
@@ -1407,6 +1408,8 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 			}
 		}
 
+
+
 		// todo what else can we reuse collength and cachedbyteheight here?
 		
 		// we cant use rle width as it might be longer than single patch width
@@ -1424,37 +1427,46 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 			masked_header_t __far * maskedheader = &masked_headers[lookup];
 			uint16_t __far* pixelofs   =  MK_FP(maskedpixeldataofs_segment, maskedheader->pixelofsoffset);
 
-			uint16_t ofs  = pixelofs[col];
+			uint16_t ofs  = pixelofs[col]; // precached as segment value.
 			cachedcol = col;
 		 
-			return cachedsegmentlump + (ofs >> 4);
+			return cachedsegmentlump + (ofs);
 		}
 	} else {
 		uint8_t collength = textureheights[tex] + 1;
+
+		// todo in the asm make default branch to use cache
 
 		if (cachedtex != tex){
 			if (cachedtex2 != tex){
 				cachedtex2 = cachedtex;
 				cachedsegmenttex2 = cachedsegmenttex;
+				cachedcollength2 = cachedcollength;
 				cachedtex = tex;
 				cachedsegmenttex = getcompositetexture(cachedtex);
+				collength += (16 - ((collength &0xF)) &0xF);
+				cachedcollength = collength >> 4;
+
 			} else {
 				// cycle cache so 2 = 1
 				tex = cachedtex;
 				cachedtex = cachedtex2;
 				cachedtex2 = tex;
+
 				tex = cachedsegmenttex;
 				cachedsegmenttex = cachedsegmenttex2;
 				cachedsegmenttex2 = tex;
 
+				tex = cachedcollength;
+				cachedcollength = cachedcollength2;
+				cachedcollength2 = tex;
+
 			}
 
 		}
-			// todo reuse collength and cachedbyteheight here?
-
-		collength += (16 - ((collength &0xF)) &0xF);
+		
 		cachedbyteheight = collength;
-		return cachedsegmenttex + (FastMul8u8u(collength , texcol) >> 4);
+		return cachedsegmenttex + (FastMul8u8u(cachedcollength , texcol));
 
 	}
 

@@ -413,7 +413,7 @@ void R_GenerateLookup(uint16_t texnum)
 		
 		// copy the offset data...
 		for (i = 0; i < texturewidth; i++){
-			pixelofs[i] = maskedpixlofs[i];
+			pixelofs[i] = maskedpixlofs[i] >> 4;
 			postofs[i] = maskedtexpostdataofs[i];
 		}
 

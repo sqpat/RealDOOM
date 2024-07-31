@@ -428,6 +428,8 @@ segment_t cachedsegmentlump2 = 0xFFFF;
 segment_t cachedsegmenttex2 = 0xFFFF;
 int16_t   cachedlump2 = -1;
 int16_t   cachedtex2 = -1;
+uint8_t   cachedcollength = 0;
+uint8_t   cachedcollength2 = 0;
 int8_t active_visplanes[5] = {1, 2, 3, 0, 0};
 
 byte cachedbyteheight;
