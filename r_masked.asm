@@ -426,11 +426,10 @@ cbw
 mov  bx, ax
 mov  es, cx
 add  bx, di
-mov  al, byte ptr es:[bx]
-mov  bx, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, bx
-mov  bx, ax
+mov  bl, byte ptr es:[bx]
+mov  ax, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  bh, bh
+mov  es, ax
 mov  al, byte ptr es:[bx]
 mov  es, cx
 inc  dl
@@ -463,8 +462,8 @@ test si, si
 je   finished_drawing_fuzzpixels
 
 mov  bx, dx
-mov  al, byte ptr ds:[bx]
-cbw 
+mov  al, byte ptr ds:[bx]  ; 0 or 1. 
+cbw  ; need to extend FF to FFFF for 16 bit add
 mov  bx, di
 mov  es, cx
 add  bx, ax
