@@ -378,6 +378,7 @@ void __near Z_LoadBinaries() {
 	
 
 
+
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);
  
 	Z_QuickMapRender();
@@ -386,6 +387,14 @@ void __near Z_LoadBinaries() {
 	FAR_fread(zlight, 1, 2048, fp);
 	FAR_fread(fuzzoffset, 1, FUZZTABLE, fp);
 	FAR_memcpy(fuzzoffset+FUZZTABLE, fuzzoffset, FUZZ_LOOP_LENGTH-1);
+
+	Z_QuickMapMaskedExtraData();
+		// load R_DrawFuzzColumn into high memory near colormaps_high...
+	FAR_memcpy(drawfuzzcol_area,
+	(byte __far *)R_DrawFuzzColumn, 
+	(byte __far *)R_DrawMaskedSpriteShadow - (byte __far *)R_DrawFuzzColumn);
+
+
 
 	Z_QuickMapPhysics();
 	FAR_fread(pars, 2, 72, fp);  // 4*10 + 32 par times

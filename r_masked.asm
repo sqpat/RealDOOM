@@ -42,6 +42,10 @@ DRAWCOL_PREP_OFFSET           = 09D0h
 
 FUZZ_OFFSET_SEGMENT           = 04B52h
 COLORMAPS_HIGH_SEG_DIFF_SEGMENT = 08C60h
+FUZZCOL_FUNC_SEGMENT            = 08B0Ah
+
+; 5472 or 0x1560
+COLORMAPS_HIGH_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_HIGH_SEG_DIFF_SEGMENT - FUZZCOL_FUNC_SEGMENT)
 
 
 
@@ -391,7 +395,7 @@ ENDP
 ; R_DrawFuzzColumn
 ;
 	
-PROC  R_DrawFuzzColumn_ NEAR
+PROC  R_DrawFuzzColumn_ 
 PUBLIC  R_DrawFuzzColumn_ 
 
 
@@ -406,6 +410,8 @@ mov  si, ax
 mov  di, FUZZ_OFFSET_SEGMENT
 mov  ds, di
 mov  di, bx
+
+mov  es, cx
 
 cmp  ax, 010h
 jg   draw_16_fuzzpixels
@@ -424,16 +430,14 @@ mov  bx, dx
 mov  al, byte ptr ds:[bx]
 cbw 
 mov  bx, ax
-mov  es, cx
+
 add  bx, di
 mov  bl, byte ptr es:[bx]
-mov  ax, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
 xor  bh, bh
-mov  es, ax
-mov  al, byte ptr es:[bx]
-mov  es, cx
+add  bx, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
+mov  al, byte ptr cs:[bx]
+
 inc  dl
-;mov  byte ptr es:[di], al
 stosb
 
 add  di, 04Fh
@@ -465,16 +469,14 @@ mov  bx, dx
 mov  al, byte ptr ds:[bx]  ; 0 or 1. 
 cbw  ; need to extend FF to FFFF for 16 bit add
 mov  bx, di
-mov  es, cx
+
 add  bx, ax
 mov  bl, byte ptr es:[bx]
-mov  ax, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
 xor  bh, bh
-mov  es, ax
-mov  al, byte ptr es:[bx]
-mov  es, cx
+add  bx, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
+mov  al, byte ptr cs:[bx]
+
 inc  dl
-;mov  byte ptr es:[di], al
 stosb
 
 add  di, 04Fh

@@ -279,3 +279,4 @@ extern int16_t __far*       mceilingclip;
 
 extern fixed_t_union        spryscale;
 extern fixed_t              sprtopscreen;
+extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);

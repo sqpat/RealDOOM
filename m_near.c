@@ -495,3 +495,6 @@ int16_t __far*          mceilingclip;
 
 fixed_t_union         spryscale;
 fixed_t         sprtopscreen;
+
+void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  ((void    (__far *)(uint16_t, byte __far *))  (MK_FP(drawfuzzcol_area_segment, 0)));
+

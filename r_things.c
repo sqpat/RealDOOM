@@ -71,6 +71,8 @@
 //  in posts/runs of opaque pixels.
 //
 
+
+
 void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* column) {
 	
     fixed_t_union     topscreen;
@@ -126,7 +128,7 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
                 outp  (SC_INDEX + 1, quality_port_lookup[lookup]); 
                 outpw (GC_INDEX,     vga_read_port_lookup[lookup] );
 
-                R_DrawFuzzColumn(count, dest);
+                R_DrawFuzzColumnCallHigh(count, dest);
             } 
                  
         

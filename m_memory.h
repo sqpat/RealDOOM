@@ -491,6 +491,9 @@ blockmaplump_plus4  76E4:0008
 #define size_maskedpixeldataofs        3456u
 #define size_maskedpostdataofs    size_maskedpixeldataofs
 
+// todo fix?
+#define size_drawfuzzcol_area       1000u
+
 #define maskedpostdata             ((byte __far*)          (0x84000000 ))
 
 
@@ -498,12 +501,17 @@ blockmaplump_plus4  76E4:0008
 #define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,  size_spritepostdatasizes))
 #define maskedpostdataofs          ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritetotaldatasizes, size_spritetotaldatasizes))
 #define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,    size_maskedpostdataofs))
+#define drawfuzzcol_area           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpixeldataofs,   size_maskedpixeldataofs))
  
 #define maskedpostdataofs_segment  ((segment_t) ((int32_t)maskedpostdataofs >> 16))
 #define maskedpostdata_segment     ((segment_t) ((int32_t)maskedpostdata >> 16))
 #define maskedpixeldataofs_segment ((segment_t) ((int32_t)maskedpixeldataofs >> 16))
+#define drawfuzzcol_area_segment   ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
+
 
  /*
+
+TODO this may grow with final doom suppot...?
 
 maskedpostdata          8400:0000
  [empty]                86FD:0000
@@ -514,7 +522,8 @@ maskedpostdata          8400:0000
  spritetotaldatasizes   88AD:0000
  maskedpostdataofs      895A:0000
  maskedpixeldataofs     8A32:0000
- [empty]                8B0A:0000
+ drawfuzzcol_area       8B0A:0000
+ [empty]                    :0000 todo
 
 3936 free
  */
