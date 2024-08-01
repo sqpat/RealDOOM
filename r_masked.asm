@@ -398,22 +398,30 @@ ENDP
 PROC  R_DrawFuzzColumn_ 
 PUBLIC  R_DrawFuzzColumn_ 
 
-
+; todo:
+; fuzzcol as words. remove all the cbw logic.
+; could cli and push bp and use it as 32h for si comps. 
 
 push dx
 push si
 push di
-mov  dl, byte ptr [_fuzzpos]
-xor  dh, dh
-mov  si, ax
+mov  es, cx
+mov  cl, byte ptr [_fuzzpos]
+xor  ch, ch
+mov  si, cx
+mov  cx, ax
 
-mov  di, FUZZ_OFFSET_SEGMENT
-mov  ds, di
+mov  ax, FUZZ_OFFSET_SEGMENT
+mov  ds, ax
 mov  di, bx
 
-mov  es, cx
+; constant space
+mov  dx, 04Fh
+mov  ch, 010h
 
-cmp  ax, 010h
+
+
+cmp  cl, ch
 jg   draw_16_fuzzpixels
 jmp  done_drawing_16_fuzzpixels
 draw_16_fuzzpixels:
@@ -426,8 +434,7 @@ DRAW_SINGLE_FUZZPIXEL MACRO
 
 
 
-mov  bx, dx
-mov  al, byte ptr ds:[bx]
+lodsb
 cbw 
 mov  bx, ax
 
@@ -437,10 +444,9 @@ xor  bh, bh
 add  bx, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
 mov  al, byte ptr cs:[bx]
 
-inc  dl
 stosb
 
-add  di, 04Fh
+add  di, dx
 ENDM
 
 REPT 16
@@ -450,23 +456,22 @@ endm
 
 
 
-
-
-cmp  dl, 032h
+cmp  si, 032h
 jl   fuzzpos_ok
 ; subtract 50 from fuzzpos
-sub  dl, 032h
+sub  si, 032h
 fuzzpos_ok:
-sub  si, 010h
-cmp  si, 010h
+sub  cl, ch
+cmp  cl, ch
 jle  done_drawing_16_fuzzpixels
 jmp  draw_16_fuzzpixels
 done_drawing_16_fuzzpixels:
-test si, si
+draw_one_fuzzpixel:
+test cl, cl
 je   finished_drawing_fuzzpixels
 
-mov  bx, dx
-mov  al, byte ptr ds:[bx]  ; 0 or 1. 
+lodsb
+
 cbw  ; need to extend FF to FFFF for 16 bit add
 mov  bx, di
 
@@ -476,18 +481,18 @@ xor  bh, bh
 add  bx, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
 mov  al, byte ptr cs:[bx]
 
-inc  dl
+
 stosb
 
-add  di, 04Fh
-dec  si
-cmp  dl, 032h
+add  di, dx
+dec  cl
+cmp  si, 032h
 je   zero_out_fuzzpos
 finish_one_fuzzpixel_iteration:
-jmp  done_drawing_16_fuzzpixels
+jmp  draw_one_fuzzpixel
 zero_out_fuzzpos:
-xor  dl, dl
-jmp  done_drawing_16_fuzzpixels
+xor  si, si
+jmp  draw_one_fuzzpixel
 ; write back fuzzpos
 finished_drawing_fuzzpixels:
 
@@ -496,7 +501,8 @@ mov  di, ss
 mov  ds, di
 
 ; write back fuzzpos
-mov  byte ptr [_fuzzpos], dl
+mov  ax, si
+mov  byte ptr [_fuzzpos], al
 
 pop  di
 pop  si
