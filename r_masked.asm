@@ -409,32 +409,20 @@ cmp  ax, 010h
 jg   draw_16_fuzzpixels
 jmp  done_drawing_16_fuzzpixels
 draw_16_fuzzpixels:
-mov  al, dl
 
-cbw 
 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-cbw 
-mov  di, ax
-mov  es, cx
-add  di, bx
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
 
+DRAW_SINGLE_FUZZPIXEL MACRO 
+
+
+
+
+
+mov  al, dl
 cbw 
 mov  di, ax
 mov  al, byte ptr ds:[di]
 cbw 
-add  bx, 050h
 mov  di, ax
 mov  es, cx
 add  di, bx
@@ -447,259 +435,19 @@ mov  al, byte ptr es:[di]
 mov  es, cx
 inc  dl
 mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-cbw 
+
 add  bx, 050h
-mov  di, ax
-mov  es, cx
-add  di, bx
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-add  bx, 050h
-cbw 
-mov  di, bx
-mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-add  bx, 050h
-cbw 
-mov  di, bx
-mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-add  bx, 050h
-cbw 
-mov  di, bx
-mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-cbw 
-add  bx, 050h
-mov  di, ax
-mov  es, cx
-add  di, bx
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-cbw 
-add  bx, 050h
-mov  di, ax
-mov  es, cx
-add  di, bx
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-cbw 
-add  bx, 050h
-mov  di, ax
-mov  es, cx
-add  di, bx
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-add  bx, 050h
-cbw 
-mov  di, bx
-mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-add  bx, 050h
-cbw 
-mov  di, bx
-mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-add  bx, 050h
-cbw 
-mov  di, bx
-mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-mov  byte ptr es:[bx], al
-inc  dl
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-cbw 
-add  bx, 050h
-mov  di, ax
-mov  es, cx
-add  di, bx
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-add  bx, 050h
-cbw 
-mov  di, bx
-mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-add  bx, 050h
-cbw 
-mov  di, bx
-mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx], al
-mov  al, dl
-cbw 
-mov  di, ax
-mov  al, byte ptr ds:[di]
-add  bx, 050h
-cbw 
-mov  di, bx
-mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
-xor  ah, ah
-mov  es, di
-mov  di, ax
-add  bx, 050h
-mov  al, byte ptr es:[di]
-mov  es, cx
-inc  dl
-mov  byte ptr es:[bx - 050h], al
+ENDM
+
+REPT 16
+    DRAW_SINGLE_FUZZPIXEL
+endm
+
+
+
+
+
+
 cmp  dl, 032h
 jl   fuzzpos_ok
 ; subtract 50 from fuzzpos
@@ -729,20 +477,23 @@ mov  al, byte ptr es:[di]
 mov  es, cx
 inc  dl
 mov  byte ptr es:[bx], al
-cmp  dl, 032h
-je   label_1
-finish_one_fuzzpixel_iteration:
 add  bx, 050h
 dec  si
+cmp  dl, 032h
+je   zero_out_fuzzpos
+finish_one_fuzzpixel_iteration:
 jmp  done_drawing_16_fuzzpixels
-label_1:
+zero_out_fuzzpos:
 xor  dl, dl
-jmp  finish_one_fuzzpixel_iteration
+jmp  done_drawing_16_fuzzpixels
 ; write back fuzzpos
 finished_drawing_fuzzpixels:
 
+; restore ds
 mov  di, ss
 mov  ds, di
+
+; write back fuzzpos
 mov  byte ptr [_fuzzpos], dl
 
 pop  di

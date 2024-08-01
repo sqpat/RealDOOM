@@ -693,7 +693,7 @@ void __far R_DrawFuzzColumn (int16_t count, byte __far * dest) {
     //  using the colormap #6 (of 0-31, a bit
     //  brighter than average).
 
-	while (count > FUZZ_LOOP_LENGTH){
+	while (count >= FUZZ_LOOP_LENGTH){
 
     
 		// Lookup framebuffer, and retrieve
