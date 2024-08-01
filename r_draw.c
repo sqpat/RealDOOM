@@ -679,7 +679,9 @@ void __far R_DrawColumnLow (void)
 //
 
 // augmented by 6*256 bytes in paragraphs 
+/*
 #define colormaps_high_fuzz    ((lighttable_t  __far*) (((int32_t)colormaps_high)   + 0x00600000))
+
 
 
 void __far R_DrawFuzzColumn (int16_t count, byte __far * dest) { 
@@ -821,6 +823,7 @@ void __far R_DrawFuzzColumn (int16_t count, byte __far * dest) {
 
     } 
 } 
+*/
 
 //
 // R_DrawSpan 

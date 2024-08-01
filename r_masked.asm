@@ -29,18 +29,19 @@ EXTRN   _mceilingclip:WORD
 
 EXTRN  _R_DrawColumnPrepCallHigh:WORD
 
+EXTRN  _fuzzpos:BYTE
 
 
 
 
 
-DRAWCOL_PREP_SEGMENT           = 06A42h
-;DRAWCOL_PREP_SEGMENT_HIGH      = DRAWCOL_PREP_SEGMENT  - 06800h + 08C00h
+DRAWCOL_PREP_SEGMENT          = 06A42h
+;DRAWCOL_PREP_SEGMENT_HIGH    = DRAWCOL_PREP_SEGMENT  - 06800h + 08C00h
 DRAWCOL_PREP_SEGMENT_HIGH     = 08E42h
-DRAWCOL_PREP_OFFSET            = 09D0h
+DRAWCOL_PREP_OFFSET           = 09D0h
 
-
-
+FUZZ_OFFSET_SEGMENT           = 04B52h
+COLORMAPS_HIGH_SEG_DIFF_SEGMENT = 08C60h
 
 
 
@@ -362,7 +363,7 @@ skip_ceil_clip_set_single:
 cmp   si, dx			
 jnle   exit_function_single
 
-label_6:
+
 mov   word ptr [_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
 mov   word ptr [_dc_yl], si ;  dc_x could also be trivially recovered from bx
 
@@ -382,6 +383,395 @@ pop   si
 pop   cx
 pop   bx
 ret   
+
+ENDP
+
+
+;
+; R_DrawFuzzColumn
+;
+	
+PROC  R_DrawFuzzColumn_ NEAR
+PUBLIC  R_DrawFuzzColumn_ 
+
+
+
+push dx
+push si
+push di
+mov  dl, byte ptr [_fuzzpos]
+mov  si, ax
+cmp  ax, 010h
+jg   draw_16_fuzzpixels
+jmp  done_drawing_16_fuzzpixels
+draw_16_fuzzpixels:
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+cbw 
+mov  di, ax
+mov  es, cx
+add  di, bx
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+cbw 
+add  bx, 050h
+mov  di, ax
+mov  es, cx
+add  di, bx
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+cbw 
+add  bx, 050h
+mov  di, ax
+mov  es, cx
+add  di, bx
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+add  bx, 050h
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+add  bx, 050h
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+add  bx, 050h
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+cbw 
+add  bx, 050h
+mov  di, ax
+mov  es, cx
+add  di, bx
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+cbw 
+add  bx, 050h
+mov  di, ax
+mov  es, cx
+add  di, bx
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+cbw 
+add  bx, 050h
+mov  di, ax
+mov  es, cx
+add  di, bx
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+add  bx, 050h
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+add  bx, 050h
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+add  bx, 050h
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+mov  byte ptr es:[bx], al
+inc  dl
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+cbw 
+add  bx, 050h
+mov  di, ax
+mov  es, cx
+add  di, bx
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+add  bx, 050h
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+add  bx, 050h
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+add  bx, 050h
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+add  bx, 050h
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx - 050h], al
+cmp  dl, 032h
+jl   fuzzpos_ok
+; subtract 50 from fuzzpos
+sub  dl, 032h
+fuzzpos_ok:
+sub  si, 010h
+cmp  si, 010h
+jle  done_drawing_16_fuzzpixels
+jmp  draw_16_fuzzpixels
+done_drawing_16_fuzzpixels:
+test si, si
+je   finished_drawing_fuzzpixels
+mov  al, dl
+mov  di, FUZZ_OFFSET_SEGMENT
+cbw 
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+cbw 
+mov  di, bx
+mov  es, cx
+add  di, ax
+mov  al, byte ptr es:[di]
+mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+xor  ah, ah
+mov  es, di
+mov  di, ax
+mov  al, byte ptr es:[di]
+mov  es, cx
+inc  dl
+mov  byte ptr es:[bx], al
+cmp  dl, 032h
+je   label_1
+finish_one_fuzzpixel_iteration:
+add  bx, 050h
+dec  si
+jmp  done_drawing_16_fuzzpixels
+label_1:
+xor  dl, dl
+jmp  finish_one_fuzzpixel_iteration
+; write back fuzzpos
+finished_drawing_fuzzpixels:
+mov  byte ptr [_fuzzpos], dl
+pop  di
+pop  si
+pop  dx
+retf 
 
 ENDP
 

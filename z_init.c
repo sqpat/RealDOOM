@@ -374,7 +374,7 @@ void __near Z_LoadBinaries() {
 
 	FAR_memcpy((byte __far *)spanfunc_function_area_9000, 
 	(byte __far *)R_DrawSpan,
-	 FP_OFF(R_DrawFuzzColumn) - FP_OFF(R_DrawSpan));
+	 FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan));
 	
 
 

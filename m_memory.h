@@ -464,6 +464,7 @@ blockmaplump_plus4  76E4:0008
 
 //6D8A
 #define colormapssegment      ((segment_t) ((int32_t)colormaps >> 16))
+// 8C60
 #define colormaps_high_seg_diff  ((uint16_t)0x8C00 - 0x6800)
 
 // used in sprite render, this has been remapped to 8400 page
