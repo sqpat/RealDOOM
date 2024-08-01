@@ -405,6 +405,7 @@ mov  si, ax
 
 mov  di, FUZZ_OFFSET_SEGMENT
 mov  ds, di
+mov  di, bx
 
 cmp  ax, 010h
 jg   draw_16_fuzzpixels
@@ -419,23 +420,24 @@ DRAW_SINGLE_FUZZPIXEL MACRO
 
 
 
-mov  di, dx
-mov  al, byte ptr ds:[di]
+mov  bx, dx
+mov  al, byte ptr ds:[bx]
 cbw 
-mov  di, ax
+mov  bx, ax
 mov  es, cx
-add  di, bx
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+add  bx, di
+mov  al, byte ptr es:[bx]
+mov  bx, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
 xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
+mov  es, bx
+mov  bx, ax
+mov  al, byte ptr es:[bx]
 mov  es, cx
 inc  dl
-mov  byte ptr es:[bx], al
+;mov  byte ptr es:[di], al
+stosb
 
-add  bx, 050h
+add  di, 04Fh
 ENDM
 
 REPT 16
@@ -460,22 +462,24 @@ done_drawing_16_fuzzpixels:
 test si, si
 je   finished_drawing_fuzzpixels
 
-mov  di, dx
-mov  al, byte ptr ds:[di]
+mov  bx, dx
+mov  al, byte ptr ds:[bx]
 cbw 
-mov  di, bx
+mov  bx, di
 mov  es, cx
-add  di, ax
-mov  al, byte ptr es:[di]
-mov  di, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
+add  bx, ax
+mov  al, byte ptr es:[bx]
+mov  bx, COLORMAPS_HIGH_SEG_DIFF_SEGMENT
 xor  ah, ah
-mov  es, di
-mov  di, ax
-mov  al, byte ptr es:[di]
+mov  es, bx
+mov  bx, ax
+mov  al, byte ptr es:[bx]
 mov  es, cx
 inc  dl
-mov  byte ptr es:[bx], al
-add  bx, 050h
+;mov  byte ptr es:[di], al
+stosb
+
+add  di, 04Fh
 dec  si
 cmp  dl, 032h
 je   zero_out_fuzzpos
