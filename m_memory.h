@@ -989,13 +989,16 @@ spritewidths        7000:7592
 
 // 0x4000 BLOCK RENDER
 
+
+#define FUZZ_LOOP_LENGTH              16
+
 #define size_segs_render              MAX_SEGS_RENDER_SIZE
 #define size_sides_render             MAX_SIDES_RENDER_SIZE
 #define size_vissprites               (sizeof(vissprite_t) * (MAXVISSPRITES))
 #define size_player_vissprites        (sizeof(vissprite_t) * 2)
 #define size_texturepatchlump_offset  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_visplaneheaders          (sizeof(visplaneheader_t) * MAXEMSVISPLANES)
-#define size_fuzzoffset               FUZZTABLE
+#define size_fuzzoffset               FUZZTABLE + (FUZZ_LOOP_LENGTH - 1)
 #define size_scalelightfixed          (sizeof(uint8_t) * (MAXLIGHTSCALE))
 #define size_scalelight               (sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
 #define size_patch_sizes              (MAX_PATCHES * sizeof(uint16_t))
@@ -1047,20 +1050,20 @@ player_vissprites       4AC7:0000
 texturepatchlump_offset 4ACD:0000
 visplaneheaders         4B03:0000
 fuzzoffset              4B52:0000
-scalelightfixed         4B56:0000
-scalelight              4B59:0000
-patch_sizes             4B89:0000
-viewangletox            4BC5:0000
+scalelightfixed         4B57:0000
+scalelight              4B5A:0000
+patch_sizes             4B8A:0000
+viewangletox            4BC7:0000
 
 [near range over]       
 
-drawsegs                4DC5:001B
-flatindex               4F79:0000
-texturecompositesizes   4F83:0000
-compositetexturepage    4FB9:0000
-compositetextureoffset  4FB9:01AC
-[done]                  4FF0:0000
-256 bytes free
+drawsegs                4DC6:001B
+flatindex               4F7A:0000
+texturecompositesizes   4F84:0000
+compositetexturepage    4FBA:0000
+compositetextureoffset  4FBA:01AC
+[done]                  4FF1:0000
+240 bytes free
 
 
 */

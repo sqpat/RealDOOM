@@ -291,7 +291,7 @@ extern int16_t emshandle;
 
 void __far R_DrawColumn (void);
 void __far R_DrawSpan (void);
-void __far R_DrawFuzzColumn(void);
+void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 
 void PSetupEndFunc();
 void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
@@ -384,7 +384,8 @@ void __near Z_LoadBinaries() {
 
 	//2048
 	FAR_fread(zlight, 1, 2048, fp);
-	FAR_fread(fuzzoffset, 1, 50, fp);
+	FAR_fread(fuzzoffset, 1, FUZZTABLE, fp);
+	FAR_memcpy(fuzzoffset+FUZZTABLE, fuzzoffset, FUZZ_LOOP_LENGTH-1);
 
 	Z_QuickMapPhysics();
 	FAR_fread(pars, 2, 72, fp);  // 4*10 + 32 par times

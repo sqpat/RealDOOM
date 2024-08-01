@@ -55,7 +55,9 @@
 //
 
 
- 
+ #define GC_INDEX                0x3CE
+#define GC_READMAP              4
+
  
 
  
@@ -99,12 +101,37 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
             dc_yl = mceilingclip[dc_x]+1;
 
         if (dc_yl <= dc_yh) {
-
+            int16_t count;  // todo uint8_t?
             //dc_source_segment = pixelsegment+ (currentoffset >> 4);
 			dc_texturemid = basetexturemid;
 			dc_texturemid.h.intbits -= column->topdelta;
 
-            R_DrawFuzzColumn();
+
+            // Adjust borders. Low... 
+            if (!dc_yl) 
+                dc_yl = 1;
+
+            // .. and high.
+            if (dc_yh == viewheight-1) 
+                dc_yh = viewheight - 2; 
+                
+            count = dc_yh - dc_yl; 
+            
+
+            // Zero length.
+            if (count >= 0){
+            	uint8_t lookup = detailshift.b.bytehigh + (dc_x&3);
+                
+                byte __far * dest = destview + dc_yl_lookup_high[dc_yl] + (dc_x>>detailshift2minus);
+                outp  (SC_INDEX + 1, quality_port_lookup[lookup]); 
+                outpw (GC_INDEX,     vga_read_port_lookup[lookup] );
+
+                R_DrawFuzzColumn(count, dest);
+            } 
+                 
+        
+            
+
 
                 
         }

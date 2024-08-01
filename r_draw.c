@@ -661,7 +661,8 @@ void __far R_DrawColumnLow (void)
 //
 // Spectre/Invisibility.
 //
-#define FUZZTABLE		50 
+// the table is 65 in length in memory, with the first 15 continuing after index 50
+// so that we can do 16 unrolled loop iters without checking every step.
 //#define FUZZOFF	(SCREENWIDTH/4)
 
 
@@ -681,43 +682,16 @@ void __far R_DrawColumnLow (void)
 #define colormaps_high_fuzz    ((lighttable_t  __far*) (((int32_t)colormaps_high)   + 0x00600000))
 
 
-void __far R_DrawFuzzColumn (void) 
-{ 
-    int16_t			count; 
-    byte __far*		dest;
-    fixed_t		frac;
-    fixed_t		fracstep;	 
-	uint8_t lookup = detailshift.b.bytehigh + (dc_x&3);
+void __far R_DrawFuzzColumn (int16_t count, byte __far * dest) { 
 
-    // Adjust borders. Low... 
-    if (!dc_yl) 
-		dc_yl = 1;
 
-    // .. and high.
-    if (dc_yh == viewheight-1) 
-		dc_yh = viewheight - 2; 
-		 
-    count = dc_yh - dc_yl; 
 
-    // Zero length.
-    if (count < 0) 
-		return; 
- 
-	
-
-	outp  (SC_INDEX + 1, quality_port_lookup[lookup]); 
-	outpw (GC_INDEX,     vga_read_port_lookup[lookup] );
-	dest = destview + dc_yl*80 + (dc_x>>detailshift2minus);
-
-    // Looks familiar.
-    fracstep = dc_iscale; 
-    frac = dc_texturemid.w + (dc_yl-centery)*fracstep; 
 
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit
     //  brighter than average).
 
-	while (count > 16){
+	while (count > FUZZ_LOOP_LENGTH){
 
     
 		// Lookup framebuffer, and retrieve
@@ -728,119 +702,104 @@ void __far R_DrawFuzzColumn (void)
 		// only used during sprite, during which colormaps is high
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
 		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 		// Clamp table lookup index.
-		if (++fuzzpos == FUZZTABLE) 
-			fuzzpos = 0;
+		fuzzpos ++;
 	
 		dest += SCREENWIDTH/4;
 
+		if (fuzzpos >= FUZZTABLE) 
+			fuzzpos -= FUZZTABLE;
 	
-	
-		count -= 16;
+		count -= FUZZ_LOOP_LENGTH;
     } 
 
     while (count){

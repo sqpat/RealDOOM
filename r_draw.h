@@ -40,8 +40,7 @@ void 	__far R_DrawColumn (void);
 void 	__far R_DrawColumnLow (void);
 
 // The Spectre/Invisibility effect.
-void 	__far R_DrawFuzzColumn (void);
-void 	__far R_DrawFuzzColumnLow (void);
+void 	__far R_DrawFuzzColumn (int16_t count, byte __far * dest);
  
 
 void __far R_VideoErase (uint16_t	ofs, int16_t		count );

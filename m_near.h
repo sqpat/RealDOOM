@@ -128,7 +128,7 @@ extern uint8_t 	            spanfunc_inner_loop_count[4];
 extern uint8_t              spanfunc_outp[4];
 extern int16_t    	        spanfunc_prt[4];
 extern uint16_t             spanfunc_destview_offset[4];
-extern int16_t	            fuzzpos; 
+extern int8_t	            fuzzpos; 
 extern int16_t              ds_y;
 extern int16_t              ds_x1;
 extern int16_t              ds_x2;

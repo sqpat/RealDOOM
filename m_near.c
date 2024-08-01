@@ -187,7 +187,7 @@ uint8_t     spanfunc_outp[4];
 int16_t    	spanfunc_prt[4];
 uint16_t    spanfunc_destview_offset[4];
 
-int16_t	fuzzpos = 0; 
+int8_t	fuzzpos = 0; 
 
 
 int16_t                     ds_y;
