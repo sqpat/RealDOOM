@@ -400,6 +400,7 @@ push dx
 push si
 push di
 mov  dl, byte ptr [_fuzzpos]
+xor  dh, dh
 mov  si, ax
 
 mov  di, FUZZ_OFFSET_SEGMENT
@@ -418,9 +419,7 @@ DRAW_SINGLE_FUZZPIXEL MACRO
 
 
 
-mov  al, dl
-cbw 
-mov  di, ax
+mov  di, dx
 mov  al, byte ptr ds:[di]
 cbw 
 mov  di, ax
@@ -460,9 +459,8 @@ jmp  draw_16_fuzzpixels
 done_drawing_16_fuzzpixels:
 test si, si
 je   finished_drawing_fuzzpixels
-mov  al, dl
-cbw 
-mov  di, ax
+
+mov  di, dx
 mov  al, byte ptr ds:[di]
 cbw 
 mov  di, bx
