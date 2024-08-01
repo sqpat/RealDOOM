@@ -676,12 +676,18 @@ void __far R_DrawColumnLow (void)
 //  could create the SHADOW effect,
 //  i.e. spectres and invisible players.
 //
+
+// augmented by 6*256 bytes in paragraphs 
+#define colormaps_high_fuzz    ((lighttable_t  __far*) (((int32_t)colormaps_high)   + 0x00600000))
+
+
 void __far R_DrawFuzzColumn (void) 
 { 
     int16_t			count; 
     byte __far*		dest;
     fixed_t		frac;
     fixed_t		fracstep;	 
+	uint8_t lookup = detailshift.b.bytehigh + (dc_x&3);
 
     // Adjust borders. Low... 
     if (!dc_yl) 
@@ -697,26 +703,11 @@ void __far R_DrawFuzzColumn (void)
     if (count < 0) 
 		return; 
  
-
-    if (detailshift.b.bytelow== 1) {
-		if (dc_x & 1) {
-			outpw (GC_INDEX,GC_READMAP+(2<<8) );
-			outp (SC_INDEX+1,12); 
-		} else {
-			outpw (GC_INDEX,GC_READMAP);
-			outp (SC_INDEX+1,3); 
-		}
-		dest = destview + dc_yl*80 + (dc_x>>1); 
-    } else if (detailshift.b.bytelow == 2) {
-		outpw (GC_INDEX,GC_READMAP );
-		outp (SC_INDEX+1,15); 
-		dest = destview + dc_yl*80 + (dc_x);
 	
-	} else {
-		outpw (GC_INDEX,GC_READMAP+((dc_x&3)<<8) );
-		outp (SC_INDEX+1,1<<(dc_x&3)); 
-		dest = destview + dc_yl*80 + (dc_x>>2);
-    }
+
+	outp  (SC_INDEX + 1, quality_port_lookup[lookup]); 
+	outpw (GC_INDEX,     vga_read_port_lookup[lookup] );
+	dest = destview + dc_yl*80 + (dc_x>>detailshift2minus);
 
     // Looks familiar.
     fracstep = dc_iscale; 
@@ -725,14 +716,141 @@ void __far R_DrawFuzzColumn (void)
     // Looks like an attempt at dithering,
     //  using the colormap #6 (of 0-31, a bit
     //  brighter than average).
-    do  {
+
+	while (count > 16){
+
+    
 		// Lookup framebuffer, and retrieve
 		//  a pixel that is either one column
 		//  left or right of the current one.
 		// Add index from colormap to index.
 
 		// only used during sprite, during which colormaps is high
-		*dest = colormaps_high[6*256+dest[fuzzoffset[fuzzpos]]];
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
+		// Clamp table lookup index.
+		if (++fuzzpos == FUZZTABLE) 
+			fuzzpos = 0;
+	
+		dest += SCREENWIDTH/4;
+
+	
+	
+		count -= 16;
+    } 
+
+    while (count){
+		// Lookup framebuffer, and retrieve
+		//  a pixel that is either one column
+		//  left or right of the current one.
+		// Add index from colormap to index.
+
+		// only used during sprite, during which colormaps is high
+		*dest = colormaps_high_fuzz[dest[fuzzoffset[fuzzpos]]];
 
 		// Clamp table lookup index.
 		if (++fuzzpos == FUZZTABLE) 
@@ -740,8 +858,9 @@ void __far R_DrawFuzzColumn (void)
 	
 		dest += SCREENWIDTH/4;
 
-		frac += fracstep; 
-    } while (count--); 
+		count --;
+
+    } 
 } 
 
 //

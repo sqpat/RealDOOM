@@ -471,6 +471,21 @@ uint8_t quality_port_lookup[12] = {
 
 };
 
+uint16_t vga_read_port_lookup[12] = {
+
+// lookup for what to write to the vga port for read  for fuzzcolumn
+         4, 260, 516, 772,
+
+	// bit 34  01 = low
+	     4, 516, 4, 516,
+
+	    
+	// bit 34  10  = potato
+		4, 4, 4, 4
+
+
+};
+
 
 
 void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
