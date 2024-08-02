@@ -35,12 +35,12 @@ EXTRN  _fuzzpos:BYTE
 
 
 
-DRAWCOL_PREP_SEGMENT          = 06A42h
-;DRAWCOL_PREP_SEGMENT_HIGH    = DRAWCOL_PREP_SEGMENT  - 06800h + 08C00h
-DRAWCOL_PREP_SEGMENT_HIGH     = 08E42h
-DRAWCOL_PREP_OFFSET           = 09D0h
+DRAWCOL_PREP_SEGMENT            = 06A42h
+;DRAWCOL_PREP_SEGMENT_HIGH      = DRAWCOL_PREP_SEGMENT  - 06800h + 08C00h
+DRAWCOL_PREP_SEGMENT_HIGH       = 08E42h
+DRAWCOL_PREP_OFFSET             = 09D0h
 
-FUZZ_OFFSET_SEGMENT           = 04B52h
+FUZZ_OFFSET_SEGMENT             = 04B52h
 COLORMAPS_HIGH_SEG_DIFF_SEGMENT = 08C60h
 FUZZCOL_FUNC_SEGMENT            = 08B0Ah
 
@@ -399,17 +399,20 @@ PROC  R_DrawFuzzColumn_
 PUBLIC  R_DrawFuzzColumn_ 
 
 ; todo:
-; fuzzcol as words. remove all the cbw logic.
-; could cli and push bp and use it as 32h for si comps. 
+; could write sp somehwere and use it as 64h for si comps. 
 
 push dx
 push si
 push di
 mov  es, cx
-mov  cl, byte ptr [_fuzzpos]
+mov  cl, byte ptr [_fuzzpos]	; note this is always the byte offset - no shift conversion necessary
 xor  ch, ch
 mov  si, cx
 mov  cx, ax
+
+cli
+push bp
+mov  bp, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
 
 mov  ax, FUZZ_OFFSET_SEGMENT
 mov  ds, ax
@@ -432,18 +435,16 @@ DRAW_SINGLE_FUZZPIXEL MACRO
 
 
 
-
-
-lodsb
-cbw 
+; load fuzz offset... its a word so the negative FF is carried if necessary
+lodsw     
 mov  bx, ax
-
-add  bx, di
-mov  bl, byte ptr es:[bx]
+; read screen
+mov   bl, byte ptr es:[bx + di]
 xor  bh, bh
-add  bx, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
+add  bx, bp
+; colormap lookup
 mov  al, byte ptr cs:[bx]
-
+; write to screen
 stosb
 
 add  di, dx
@@ -454,12 +455,10 @@ REPT 16
 endm
 
 
-
-
-cmp  si, 032h
+cmp  si, 064h
 jl   fuzzpos_ok
 ; subtract 50 from fuzzpos
-sub  si, 032h
+sub  si, 064h
 fuzzpos_ok:
 sub  cl, ch
 cmp  cl, ch
@@ -470,15 +469,14 @@ draw_one_fuzzpixel:
 test cl, cl
 je   finished_drawing_fuzzpixels
 
-lodsb
+lodsw
 
-cbw  ; need to extend FF to FFFF for 16 bit add
 mov  bx, di
 
 add  bx, ax
 mov  bl, byte ptr es:[bx]
 xor  bh, bh
-add  bx, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
+add  bx, bp
 mov  al, byte ptr cs:[bx]
 
 
@@ -486,7 +484,7 @@ stosb
 
 add  di, dx
 dec  cl
-cmp  si, 032h
+cmp  si, 064h
 je   zero_out_fuzzpos
 finish_one_fuzzpixel_iteration:
 jmp  draw_one_fuzzpixel
@@ -496,12 +494,16 @@ jmp  draw_one_fuzzpixel
 ; write back fuzzpos
 finished_drawing_fuzzpixels:
 
+pop bp
+sti
+
 ; restore ds
 mov  di, ss
 mov  ds, di
 
 ; write back fuzzpos
 mov  ax, si
+
 mov  byte ptr [_fuzzpos], al
 
 pop  di

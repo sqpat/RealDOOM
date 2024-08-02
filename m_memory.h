@@ -1008,7 +1008,7 @@ spritewidths        7000:7592
 #define size_player_vissprites        (sizeof(vissprite_t) * 2)
 #define size_texturepatchlump_offset  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_visplaneheaders          (sizeof(visplaneheader_t) * MAXEMSVISPLANES)
-#define size_fuzzoffset               FUZZTABLE + (FUZZ_LOOP_LENGTH - 1)
+#define size_fuzzoffset               ((FUZZTABLE + (FUZZ_LOOP_LENGTH - 1)) * sizeof(int16_t))
 #define size_scalelightfixed          (sizeof(uint8_t) * (MAXLIGHTSCALE))
 #define size_scalelight               (sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
 #define size_patch_sizes              (MAX_PATCHES * sizeof(uint16_t))
@@ -1027,7 +1027,7 @@ spritewidths        7000:7592
 #define player_vissprites       ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites              , size_vissprites))
 #define texturepatchlump_offset ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites       , size_player_vissprites))
 #define visplaneheaders         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturepatchlump_offset , size_texturepatchlump_offset))
-#define fuzzoffset              ((int8_t __far*)             MAKE_FULL_SEGMENT(visplaneheaders         , size_visplaneheaders))
+#define fuzzoffset              ((int16_t __far*)            MAKE_FULL_SEGMENT(visplaneheaders         , size_visplaneheaders))
 #define scalelightfixed         ((uint8_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset              , size_fuzzoffset))
 #define scalelight              ((uint8_t __far*)            MAKE_FULL_SEGMENT(scalelightfixed         , size_scalelightfixed))
 #define patch_sizes             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight              , size_scalelight))
@@ -1060,20 +1060,20 @@ player_vissprites       4AC7:0000
 texturepatchlump_offset 4ACD:0000
 visplaneheaders         4B03:0000
 fuzzoffset              4B52:0000
-scalelightfixed         4B57:0000
-scalelight              4B5A:0000
-patch_sizes             4B8A:0000
-viewangletox            4BC7:0000
+scalelightfixed         4B5B:0000
+scalelight              4B5E:0000
+patch_sizes             4B8E:0000
+viewangletox            4BCB:0000
 
 [near range over]       
 
-drawsegs                4DC6:001B
-flatindex               4F7A:0000
-texturecompositesizes   4F84:0000
-compositetexturepage    4FBA:0000
-compositetextureoffset  4FBA:01AC
-[done]                  4FF1:0000
-240 bytes free
+drawsegs                4DCA:001B
+flatindex               4F7E:0000
+texturecompositesizes   4F88:0000
+compositetexturepage    4FBE:0000
+compositetextureoffset  4FBE:01AC
+[done]                  4FF5:0000
+176 bytes free
 
 
 */
