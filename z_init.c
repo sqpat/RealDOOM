@@ -300,7 +300,6 @@ boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __f
 void __near Z_LoadBinaries() {
 	int i;
 	FILE* fp;
-	int8_t fuzzbuffer[50];
 	// currently in physics region!
 	fp = fopen("DOOMDATA.BIN", "rb"); 
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
@@ -386,11 +385,7 @@ void __near Z_LoadBinaries() {
 
 	//2048
 	FAR_fread(zlight, 1, 2048, fp);
-	FAR_fread(fuzzbuffer, 1, FUZZTABLE, fp);
-	for (i = 0; i < FUZZTABLE; i++){
-		fuzzoffset[i] = fuzzbuffer[i];
-	}
-	FAR_memcpy(fuzzoffset+FUZZTABLE, fuzzoffset, FUZZ_LOOP_LENGTH-1);
+	FAR_fread(fuzzoffset, 1, size_fuzzoffset, fp);
 
 	Z_QuickMapMaskedExtraData();
 		// load R_DrawFuzzColumn into high memory near colormaps_high...
