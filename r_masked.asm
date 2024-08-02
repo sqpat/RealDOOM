@@ -409,18 +409,19 @@ mov  cl, byte ptr [_fuzzpos]	; note this is always the byte offset - no shift co
 xor  ch, ch
 mov  si, cx
 mov  cx, ax
+mov  ax, FUZZ_OFFSET_SEGMENT
+mov  ds, ax
+mov  di, bx
+; constant space
+mov  dx, 04Fh
+mov  ch, 010h
+
 
 cli
 push bp
 mov  bp, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
 
-mov  ax, FUZZ_OFFSET_SEGMENT
-mov  ds, ax
-mov  di, bx
 
-; constant space
-mov  dx, 04Fh
-mov  ch, 010h
 
 
 
@@ -435,19 +436,15 @@ DRAW_SINGLE_FUZZPIXEL MACRO
 
 
 
-; load fuzz offset... its a word so the negative FF is carried if necessary
-lodsw     
-mov  bx, ax
-; read screen
-mov   bl, byte ptr es:[bx + di]
-xor  bh, bh
-add  bx, bp
-; colormap lookup
-mov  al, byte ptr cs:[bx]
-; write to screen
-stosb
+lodsw     						; load fuzz offset...
+mov  bx, ax	       				; move offset to bx.
+mov  al, byte ptr es:[bx + di]  ; read screen
+mov  bx, bp						; set colormaps 6 CS-based offset
+xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
+stosb							; write to screen
+add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
 
-add  di, dx
+
 ENDM
 
 REPT 16
@@ -465,32 +462,23 @@ cmp  cl, ch
 jle  done_drawing_16_fuzzpixels
 jmp  draw_16_fuzzpixels
 done_drawing_16_fuzzpixels:
-draw_one_fuzzpixel:
 test cl, cl
 je   finished_drawing_fuzzpixels
+xor ch, ch;
+draw_one_fuzzpixel:
 
-lodsw
+lodsw     						; load fuzz offset...
+mov  bx, ax	       				; move offset to bx.
+mov  al, byte ptr es:[bx + di]  ; read screen
+mov  bx, bp						; set colormaps 6 CS-based offset
+xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
+stosb							; write to screen
+add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
 
-mov  bx, di
-
-add  bx, ax
-mov  bl, byte ptr es:[bx]
-xor  bh, bh
-add  bx, bp
-mov  al, byte ptr cs:[bx]
-
-
-stosb
-
-add  di, dx
-dec  cl
 cmp  si, 064h
 je   zero_out_fuzzpos
 finish_one_fuzzpixel_iteration:
-jmp  draw_one_fuzzpixel
-zero_out_fuzzpos:
-xor  si, si
-jmp  draw_one_fuzzpixel
+loop  draw_one_fuzzpixel
 ; write back fuzzpos
 finished_drawing_fuzzpixels:
 
@@ -511,7 +499,14 @@ pop  si
 pop  dx
 retf 
 
+zero_out_fuzzpos:
+xor  si, si
+loop  draw_one_fuzzpixel
+jmp finished_drawing_fuzzpixels
+
 ENDP
+
+
 
 
 END
