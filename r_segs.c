@@ -43,7 +43,6 @@
 //
 void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2) {
 	uint8_t	index;
-	uint16_t	spryscale_shift12;
 	int16_t		lightnum;
 	int16_t		frontsecnum;
 
@@ -99,7 +98,6 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
     //spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,(int32_t)rw_scalestep); // this cast is necessary or some masked textures render wrong behind some sprites
     spryscale.w = ds->scale1 + FastMul1616(x1 - ds->x1,rw_scalestep); // actually 1616 seems ok
 	
-	spryscale_shift12 = spryscale.w >> LIGHTSCALESHIFT;
     mfloorclip = MK_FP(openings_segment, ds->sprbottomclip_offset);
     mceilingclip = MK_FP(openings_segment, ds->sprtopclip_offset);
     
@@ -182,7 +180,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 						if (spryscale.h.intbits >= 3) {
 							index = MAXLIGHTSCALE - 1;
 						} else {
-							index = spryscale_shift12;
+							index = spryscale.w >> LIGHTSCALESHIFT;
 						}
 
 						dc_colormap_segment = colormapssegment_high;

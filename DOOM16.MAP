@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/08/05 02:49:47
+Created on:       24/08/05 03:50:45
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -85,8 +85,8 @@ R_SKY_TEXT             CODE           AUTO           17bc:3730       00000258
 r_draw_TEXT            CODE           AUTO           17bc:3990       0000036e
 r_main_TEXT            CODE           AUTO           17bc:3d00       00000276
 r_plane_TEXT           CODE           AUTO           17bc:3f80       00000762
-r_segs_TEXT            CODE           AUTO           17bc:46f0       000014cc
-R_MASKED_TEXT          CODE           AUTO           17bc:5bbc       000002ac
+r_segs_TEXT            CODE           AUTO           17bc:46f0       000014ce
+R_MASKED_TEXT          CODE           AUTO           17bc:5bbe       000002ac
 r_things_TEXT          CODE           AUTO           17bc:5e70       00001184
 w_wad_TEXT             CODE           AUTO           17bc:7000       000003ec
 v_video_TEXT           CODE           AUTO           17bc:73f0       00000495
@@ -1334,12 +1334,12 @@ Module: r_plane.obj(C:\REALDOOM\r_plane.c)
 17bc:4324      R_DrawPlanes_
 Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 17bc:46f0      R_RenderMaskedSegRange_
-17bc:4c12+     R_RenderSegLoop_
-17bc:5224      R_StoreWallRange_
+17bc:4c14+     R_RenderSegLoop_
+17bc:5226      R_StoreWallRange_
 Module: r_masked.obj(r_masked.ASM)
-17bc:5d31      R_DrawFuzzColumn_
-17bc:5cb7      R_DrawSingleMaskedColumn_
-17bc:5bbc      R_DrawMaskedColumn_
+17bc:5d33      R_DrawFuzzColumn_
+17bc:5cb9      R_DrawSingleMaskedColumn_
+17bc:5bbe      R_DrawMaskedColumn_
 Module: r_things.obj(C:\REALDOOM\r_things.c)
 17bc:5e70      R_DrawMaskedSpriteShadow_
 17bc:5ff8+     R_DrawVisSprite_
@@ -1844,4 +1844,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00029cd0 (171216.)
 Entry point address: 1fa9:2322
-Link time: 00:00.75
+Link time: 00:00.30

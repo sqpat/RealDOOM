@@ -311,7 +311,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
 
 
         // draw the columns
-        // todo combine these, use a function pointer.
+        // todo eventually combine these, use a function pointer.
 
         if ((vis->colormap != COLORMAP_SHADOW)){
             for (xoffset = 0 ; xoffset < detailshiftitercount ;
