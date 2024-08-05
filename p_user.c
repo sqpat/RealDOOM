@@ -223,6 +223,10 @@ void P_DeathThink ()
 		player.damagecount--;
 	
 
+
+    if (player.cmd.buttons & BT_USE)
+		player.playerstate = PST_REBORN;
+
 }
 
 

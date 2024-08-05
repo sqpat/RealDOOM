@@ -529,13 +529,17 @@ void __near G_Ticker (void)
     ticcmd_t __near*   cmd;
     // do player reborns if needed
 
+    // do player reborn if needed
+	if (player.playerstate == PST_REBORN) 
+        gameaction = ga_loadlevel;  
+
+
 	// do things to change the game state
     while (gameaction != ga_nothing)  { 
 		switch (gameaction) { 
-          /* Seemingly never used.
 		  case ga_loadlevel: 
             G_DoLoadLevel (); 
-            break; */
+            break; 
           case ga_newgame: 
             G_DoNewGame (); 
             break; 
