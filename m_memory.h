@@ -1068,11 +1068,11 @@ viewangletox            4BCB:0000
 [near range over]       
 
 drawsegs                4DCA:001B
-flatindex               4F7E:0000
-texturecompositesizes   4F88:0000
-compositetexturepage    4FBE:0000
-compositetextureoffset  4FBE:01AC
-[done]                  4FF5:0000
+flatindex               4F9E:0000
+texturecompositesizes   4FA8:0000
+compositetexturepage    4FDE:0000
+compositetextureoffset  4FDE:01AC
+[done]                  5015:0000
 176 bytes free
 
 

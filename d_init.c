@@ -953,15 +953,15 @@ R_FixedMulLocalWrapper2(0, 0)
 	// baselowermemoryaddress
 
 	//I_Error("\n%x %x %x %x", size_patchoffset, size_patchpage, size_zlight, 0);
-
 /*
+
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		vertexes, 
-		nodes,
-		 scalelight,
-		compositetextureoffset, 
+		drawsegs_BASE, 
+		flatindex,
+		 flatindex,
+		texturecompositesizes, 
 		compositetexturepage,
-			patchpage, 
+			compositetextureoffset, 
 			patchoffset,
 			texturepatchlump_offset,
 			texturecompositesizes,

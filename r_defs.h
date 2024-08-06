@@ -42,7 +42,7 @@
 #define SIL_TOP			2
 #define SIL_BOTH		3
 
-#define MAXDRAWSEGS		256
+#define MAXDRAWSEGS		200
 
 
 
@@ -379,6 +379,7 @@ typedef byte	lighttable_t;
 //
 // ?
 //
+// 29 bytes each now... gross.. make 32 perhaps?
 typedef struct drawseg_s
 {
 	uint16_t		curseg;

@@ -96,15 +96,17 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
     maskedtexturecol = &openings[ds->maskedtexturecol];
 
     rw_scalestep.w = ds->scalestep;
-/*
-	if (rw_scalestep.h.intbits == 0x0000 || rw_scalestep.h.intbits == 0xFFFF){
+
+	// can we use 16 bits? most of the time the answer is yes...
+	// but need to handle obscure 16th bit case
+	if ((rw_scalestep.h.intbits == 0x0000 && !(rw_scalestep.h.fracbits & 0x8000) ) || 
+		(rw_scalestep.h.intbits == 0xFFFF &&  (rw_scalestep.h.fracbits & 0x8000) )){
 	    spryscale.w = ds->scale1 + FastMul1616(x1 - ds->x1,rw_scalestep.h.fracbits); // actually 1616 seems ok
 	} else {
 		//todo 1632 doesnt exist?
 		spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,rw_scalestep.w); // actually 1616 seems ok
 	}
-	*/
-	spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,rw_scalestep.w); // actually 1616 seems ok
+	
 	
     //spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,(int32_t)rw_scalestep); // this cast is necessary or some masked textures render wrong behind some sprites
 	
@@ -538,7 +540,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     fixed_t		hyp;
     fineangle_t	distangle, offsetangle;
     int16_t			lightnum;
-	fixed_t rw_scalestep;
+	fixed_t_union rw_scalestep;
+	boolean     use16bit = false;
 
 	// needs to be refreshed...
 	side_t __far* side = &sides[curseg_render->sidedefOffset];
@@ -611,10 +614,14 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     if (stop > start ) {
 		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle_shiftright3 + xtoviewangle[stop]);
 
-		rw_scalestep = FastDiv3216u((ds_p->scale2 - rw_scale.w), (stop-start));
+		rw_scalestep.w = FastDiv3216u((ds_p->scale2 - rw_scale.w), (stop-start));
+		ds_p->scalestep = rw_scalestep.w;
+		if ((rw_scalestep.h.intbits == 0x0000 && !(rw_scalestep.h.fracbits & 0x8000) ) || 
+			(rw_scalestep.h.intbits == 0xFFFF &&  (rw_scalestep.h.fracbits & 0x8000) )){
+			use16bit = true;
 
+		}
 
-		ds_p->scalestep = rw_scalestep;
 
 
     } else {
@@ -867,40 +874,44 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     worldtop.w >>= 4;
     worldbottom.w >>= 4;
 	
-    topfrac = (centeryfrac_shiftright4.w) - FixedMul (worldtop.w, rw_scale.w);
+    topfrac    = (centeryfrac_shiftright4.w) - FixedMul (worldtop.w, rw_scale.w);
     bottomfrac = (centeryfrac_shiftright4.w) - FixedMul (worldbottom.w, rw_scale.w);
-//	if (rw_scalestep) {
-		topstep = -FixedMul(rw_scalestep, worldtop.w);
-		bottomstep = -FixedMul(rw_scalestep, worldbottom.w);
-/*	}
-	else {
-		topstep = -FixedMul(rw_scalestep_extraprecision.w, worldtop);
-		bottomstep = -FixedMul(rw_scalestep_extraprecision.w, worldbottom);
-	}*/
+	if (use16bit) {
+		topstep =    -FixedMul1632(rw_scalestep.h.fracbits, worldtop.w);
+		bottomstep = -FixedMul1632(rw_scalestep.h.fracbits, worldbottom.w);
+	} else {
+		topstep =    -FixedMul    (rw_scalestep.w,          worldtop.w);
+		bottomstep = -FixedMul    (rw_scalestep.w,          worldbottom.w);
+	}
 	
-    if (backsector) {	
+    if (backsector) {
+		// todo dont shift 4 twice, instead borrow old value somehow and do byte shift... rare case though
+		int16_t checkboth = 0;
 		worldhigh.w >>= 4;
 		worldlow.w >>= 4;
 		if (worldhigh.w < worldtop.w) {
 
 			pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
-//			if (rw_scalestep) {
-				pixhighstep = -FixedMul(rw_scalestep, worldhigh.w);
-//			} else {
-//				pixhighstep = -FixedMul(rw_scalestep_extraprecision.w, worldhigh);
-//			}
+			if (use16bit) {
+				pixhighstep = -FixedMul1632(rw_scalestep.h.fracbits, worldhigh.w);
+			} else {
+				pixhighstep = -FixedMul    (rw_scalestep.w,          worldhigh.w);
+			}
+			checkboth++;
 		}
 	
 		if (worldlow.w > worldbottom.w) {
+			checkboth++;
 			pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
-//			if (rw_scalestep) {
-				pixlowstep = -FixedMul(rw_scalestep, worldlow.w);
-//			}
-//			else {
-//				pixlowstep = -FixedMul(rw_scalestep_extraprecision.w, worldlow);
-//			}
+			if (use16bit) {
+				pixlowstep = -FixedMul1632(rw_scalestep.h.fracbits, worldlow.w);
+			}
+			else {
+				pixlowstep = -FixedMul    (rw_scalestep.w,          worldlow.w);
+			}
 
 		}
+
     }
 
     // render it
@@ -912,7 +923,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		floorplaneindex = R_CheckPlane(floorplaneindex, rw_x, rw_stopx - 1, IS_FLOOR_PLANE);
 	}
 	
-	R_RenderSegLoop (rw_scalestep);
+	R_RenderSegLoop (rw_scalestep.w);
     
     // save sprite clipping info
     if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture) && !ds_p->sprtopclip_offset) {
