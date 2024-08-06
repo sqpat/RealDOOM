@@ -313,7 +313,6 @@ fineangle_t		rw_centerangle;
 fixed_t_union		rw_offset;
 fixed_t		rw_distance;
 fixed_t_union		rw_scale;
-int16_t		rw_scalestep;
 fixed_t_union		rw_midtexturemid;
 fixed_t_union		rw_toptexturemid;
 fixed_t_union		rw_bottomtexturemid;

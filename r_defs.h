@@ -393,7 +393,7 @@ typedef struct drawseg_s
     // scale at right (based on player distance)
 	fixed_t		scale2;
 	// scale step per pixel
-    int16_t		scalestep;
+    fixed_t		scalestep;
 
     // 0=none, 1=bottom, 2=top, 3=both
     int8_t			silhouette;

@@ -196,7 +196,6 @@ extern fineangle_t		    rw_centerangle;
 extern fixed_t_union		rw_offset;
 extern fixed_t		        rw_distance;
 extern fixed_t_union		rw_scale;
-extern int16_t		        rw_scalestep;
 extern fixed_t_union		rw_midtexturemid;
 extern fixed_t_union		rw_toptexturemid;
 extern fixed_t_union		rw_bottomtexturemid;

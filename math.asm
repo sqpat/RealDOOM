@@ -1378,15 +1378,11 @@ jmp do_full_divide
 
 ENDP
 
-; UNUSED
- COMMENT @
-
 
 PROC FastDiv32u16u_ 
 PUBLIC FastDiv32u16u_
 
 ;DX:AX / BX (?)
-
 
 cmp dx, bx
 jl one_part_divide
@@ -1411,11 +1407,79 @@ xor dx, dx
 ret
 
 ENDP
-@
+
+PROC FastDiv3216u_ 
+PUBLIC FastDiv3216u_
+
+;DX:AX / BX (?)
+
+test dx, dx
+js   handle_negative_3216
+
+cmp dx, bx
+jl one_part_divide
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+mov bx, ss
+mov ds, bx  ; restored ds
+ret
+
+handle_negative_3216:
+
+neg ax
+adc dx, 0
+neg dx
+
+
+cmp dx, bx
+jl one_part_divide_3216
+mov es, ax
+mov ax, dx
+xor dx, dx
+div bx     ; div high
+mov ds, ax ; store q1
+mov ax, es
+; DX:AX contains remainder + ax...
+div bx
+mov dx, ds  ; retrieve q1
+            ; q0 already in ax
+neg ax
+adc dx, 0
+neg dx
+
+
+mov bx, ss
+mov ds, bx  ; restored ds
+ret
+
+
+one_part_divide_3216:
+div bx
+xor dx, dx
+
+neg ax
+adc dx, 0
+neg dx
+
+ret
+
+ENDP
+
 
 ; returns 16 bit div result of 32bit / 16bit inputs.
 ; return 32767 if answer would be larger than that. 
 ; param 1 is signed, param 2 is unsigned. return val is signed.
+
+; UNUSED
+ COMMENT @
 
 PROC R_CalculateScaleStep_ 
 PUBLIC R_CalculateScaleStep_
@@ -1478,7 +1542,7 @@ ret
 
 ENDP
 
-
+@
 
 fast_div_32_16:
 

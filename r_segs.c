@@ -45,6 +45,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	uint8_t	index;
 	int16_t		lightnum;
 	int16_t		frontsecnum;
+	fixed_t_union rw_scalestep;
 
 	side_t __far* side;
 	side_render_t __far* side_render;
@@ -94,9 +95,18 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	}
     maskedtexturecol = &openings[ds->maskedtexturecol];
 
-    rw_scalestep = ds->scalestep;
+    rw_scalestep.w = ds->scalestep;
+/*
+	if (rw_scalestep.h.intbits == 0x0000 || rw_scalestep.h.intbits == 0xFFFF){
+	    spryscale.w = ds->scale1 + FastMul1616(x1 - ds->x1,rw_scalestep.h.fracbits); // actually 1616 seems ok
+	} else {
+		//todo 1632 doesnt exist?
+		spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,rw_scalestep.w); // actually 1616 seems ok
+	}
+	*/
+	spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,rw_scalestep.w); // actually 1616 seems ok
+	
     //spryscale.w = ds->scale1 + FastMul16u32u(x1 - ds->x1,(int32_t)rw_scalestep); // this cast is necessary or some masked textures render wrong behind some sprites
-    spryscale.w = ds->scale1 + FastMul1616(x1 - ds->x1,rw_scalestep); // actually 1616 seems ok
 	
     mfloorclip = MK_FP(openings_segment, ds->sprbottomclip_offset);
     mceilingclip = MK_FP(openings_segment, ds->sprtopclip_offset);
@@ -140,17 +150,17 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		int16_t base4diff = x1 - dc_x_base4;
 		fixed_t basespryscale = spryscale.w;
 		int16_t xoffset;
-		fixed_t rw_scalestep_shift = ((int32_t)rw_scalestep) << detailshift2minus;
+		fixed_t rw_scalestep_shift = rw_scalestep.w << detailshift2minus;
 		fixed_t sprtopscreen_step = FixedMul(dc_texturemid.w, rw_scalestep_shift);
 
 		while (base4diff){
-			basespryscale -= rw_scalestep;
+			basespryscale -= rw_scalestep.w;
 			base4diff--;
 		}
 
 		for (xoffset = 0 ; xoffset < detailshiftitercount ; 
 			xoffset++, 
-			basespryscale+=rw_scalestep) {
+			basespryscale+=rw_scalestep.w) {
 
 			outp(SC_INDEX+1, quality_port_lookup[xoffset+detailshift.b.bytehigh]);
 
@@ -180,6 +190,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 						if (spryscale.h.intbits >= 3) {
 							index = MAXLIGHTSCALE - 1;
 						} else {
+							// todo precalc the shift somehow. maybe precalc shift 4 and do byte swaps after 
 							index = spryscale.w >> LIGHTSCALESHIFT;
 						}
 
@@ -241,7 +252,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 //extern int setval;
 
 
-void __near R_RenderSegLoop (void)
+void __near R_RenderSegLoop (fixed_t rw_scalestep)
 {
     fineangle_t		angle;
 	uint16_t		index;
@@ -264,9 +275,9 @@ void __near R_RenderSegLoop (void)
 	
 	// need to subtract detailshift mod 4 for base too
 
+	fixed_t			rwscaleshift    = rw_scalestep << detailshift2minus;
 	fixed_t			topstepshift    = topstep      << detailshift2minus;
 	fixed_t			bottomstepshift = bottomstep   << detailshift2minus;
-	int16_t			rwscaleshift    = rw_scalestep << detailshift2minus;
 
 	fixed_t			pixhighstepshift = pixhighstep << detailshift2minus;
 	fixed_t			pixlowstepshift  = pixlowstep  << detailshift2minus;
@@ -527,6 +538,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     fixed_t		hyp;
     fineangle_t	distangle, offsetangle;
     int16_t			lightnum;
+	fixed_t rw_scalestep;
 
 	// needs to be refreshed...
 	side_t __far* side = &sides[curseg_render->sidedefOffset];
@@ -597,14 +609,11 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     ds_p->scale1 = rw_scale.w =  R_ScaleFromGlobalAngle (viewangle_shiftright3+xtoviewangle[start]); // internally fineangle modded
 
     if (stop > start ) {
-
 		ds_p->scale2 = R_ScaleFromGlobalAngle (viewangle_shiftright3 + xtoviewangle[stop]);
 
-		// basically a specialized 32 bit divided by 16 bit function that returns 16 bit and clips to short max/min
-		
-		// todo inline R_CalculateScaleStep when doing asm
-		rw_scalestep = R_CalculateScaleStep((ds_p->scale2 - rw_scale.w), (stop-start));
-		
+		rw_scalestep = FastDiv3216u((ds_p->scale2 - rw_scale.w), (stop-start));
+
+
 		ds_p->scalestep = rw_scalestep;
 
 
@@ -861,8 +870,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     topfrac = (centeryfrac_shiftright4.w) - FixedMul (worldtop.w, rw_scale.w);
     bottomfrac = (centeryfrac_shiftright4.w) - FixedMul (worldbottom.w, rw_scale.w);
 //	if (rw_scalestep) {
-		topstep = -FixedMul1632(rw_scalestep, worldtop.w);
-		bottomstep = -FixedMul1632(rw_scalestep, worldbottom.w);
+		topstep = -FixedMul(rw_scalestep, worldtop.w);
+		bottomstep = -FixedMul(rw_scalestep, worldbottom.w);
 /*	}
 	else {
 		topstep = -FixedMul(rw_scalestep_extraprecision.w, worldtop);
@@ -876,7 +885,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 			pixhigh = (centeryfrac_shiftright4.w) - FixedMul (worldhigh.w, rw_scale.w);
 //			if (rw_scalestep) {
-				pixhighstep = -FixedMul1632(rw_scalestep, worldhigh.w);
+				pixhighstep = -FixedMul(rw_scalestep, worldhigh.w);
 //			} else {
 //				pixhighstep = -FixedMul(rw_scalestep_extraprecision.w, worldhigh);
 //			}
@@ -885,7 +894,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		if (worldlow.w > worldbottom.w) {
 			pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
 //			if (rw_scalestep) {
-				pixlowstep = -FixedMul1632(rw_scalestep, worldlow.w);
+				pixlowstep = -FixedMul(rw_scalestep, worldlow.w);
 //			}
 //			else {
 //				pixlowstep = -FixedMul(rw_scalestep_extraprecision.w, worldlow);
@@ -903,7 +912,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		floorplaneindex = R_CheckPlane(floorplaneindex, rw_x, rw_stopx - 1, IS_FLOOR_PLANE);
 	}
 	
-	R_RenderSegLoop ();
+	R_RenderSegLoop (rw_scalestep);
     
     // save sprite clipping info
     if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture) && !ds_p->sprtopclip_offset) {
