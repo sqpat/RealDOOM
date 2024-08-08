@@ -432,6 +432,7 @@ xchg  si, ax
 ;  ax has finesine_segment
 ;  di:si is den
 
+; todo: low word is 0
 mov   bx, word ptr [_projection]
 mov   cx, word ptr [_projection+2]
 

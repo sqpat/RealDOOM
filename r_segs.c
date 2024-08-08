@@ -31,6 +31,9 @@
 #include <dos.h>
 #include <conio.h>
 
+#define playerMobjRef	((THINKERREF)1)
+#define playerMobj_pos	((&mobjposlist[playerMobjRef]))
+
 
 // OPTIMIZE: closed two sided lines as single sided
 
@@ -284,14 +287,13 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 	fixed_t			pixhighstepshift = pixhighstep << detailshift2minus;
 	fixed_t			pixlowstepshift  = pixlowstep  << detailshift2minus;
 
-	fixed_t base_rw_scale   = rw_scale.w;
-	fixed_t base_topfrac    = topfrac;
-	fixed_t base_bottomfrac = bottomfrac;
-	fixed_t base_pixlow     = pixlow;
-	fixed_t base_pixhigh    = pixhigh;
+	fixed_t base_rw_scale;
+	fixed_t base_topfrac;
+	fixed_t base_bottomfrac;
+	fixed_t base_pixlow;
+	fixed_t base_pixhigh;
 
   	int16_t base4diff = rw_x - rw_x_base4;
-
 
 
 	while (base4diff){
@@ -303,7 +305,15 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 		base4diff--;
 	}
 
+
+	base_rw_scale   = rw_scale.w;
+	base_topfrac    = topfrac;
+	base_bottomfrac = bottomfrac;
+	base_pixlow     = pixlow;
+	base_pixhigh    = pixhigh;
+
  
+	// per vga plane loop
 
 	for (xoffset = 0 ; xoffset < detailshiftitercount ; 
 			xoffset++,
@@ -325,7 +335,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 
 
 
-
+		// if below minimum pixel, jump to next pixel in the plane
 		rw_x = rw_x_base4 + xoffset;
 		if (rw_x < start_rw_x){
 			rw_x       += detailshiftitercount;
@@ -338,14 +348,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 		}
 
 
-// todo:
- 
-			//rw_scale.w += rw_scalestep;
-			//topfrac += topstep;
-			//bottomfrac += bottomstep;
-
-
-
+		// per pixel loop. each iteration moves to next pixel in the plane
 		for ( ; rw_x < rw_stopx ; 
 			rw_x		+= detailshiftitercount,
 			topfrac 	+= topstepshift,
@@ -481,6 +484,8 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 				
 				if (bottomtexture) {
 					// bottom wall
+					// todo: should (pixlow + heightunit - 1) be baked into the loop?
+
 					mid = (pixlow + HEIGHTUNIT - 1) >> HEIGHTBITS;
 					pixlow += pixlowstepshift;
 
@@ -559,6 +564,10 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	line_t __far* linedef;
 	int16_t linedefOffset;
 	uint16_t rw_normalangle_shiftleft3;
+	fixed_t_union		worldtop;
+	fixed_t_union		worldbottom;
+	fixed_t_union		worldhigh;
+	fixed_t_union		worldlow;
 
 	if (ds_p == &drawsegs_BASE[MAXDRAWSEGS])
 		return;		
@@ -616,19 +625,21 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 		rw_scalestep.w = FastDiv3216u((ds_p->scale2 - rw_scale.w), (stop-start));
 		ds_p->scalestep = rw_scalestep.w;
-		if ((rw_scalestep.h.intbits == 0x0000 && !(rw_scalestep.h.fracbits & 0x8000) ) || 
-			(rw_scalestep.h.intbits == 0xFFFF &&  (rw_scalestep.h.fracbits & 0x8000) )){
-			use16bit = true;
-
-		}
 
 
 
     } else {
 		ds_p->scale2 = ds_p->scale1;
+		rw_scalestep.w = ds_p->scale2 - rw_scale.w;
+		ds_p->scalestep = rw_scalestep.w;
     }
     
- 
+
+	if ((rw_scalestep.h.intbits == 0x0000 && !(rw_scalestep.h.fracbits & 0x8000) ) || 
+		(rw_scalestep.h.intbits == 0xFFFF &&  (rw_scalestep.h.fracbits & 0x8000) )){
+		use16bit = true;
+	}
+
 
     // calculate texture boundaries
     //  and decide if floor / ceiling marks are needed
@@ -886,7 +897,6 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	
     if (backsector) {
 		// todo dont shift 4 twice, instead borrow old value somehow and do byte shift... rare case though
-		int16_t checkboth = 0;
 		worldhigh.w >>= 4;
 		worldlow.w >>= 4;
 		if (worldhigh.w < worldtop.w) {
@@ -897,11 +907,9 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 			} else {
 				pixhighstep = -FixedMul    (rw_scalestep.w,          worldhigh.w);
 			}
-			checkboth++;
 		}
 	
 		if (worldlow.w > worldbottom.w) {
-			checkboth++;
 			pixlow = (centeryfrac_shiftright4.w) - FixedMul (worldlow.w, rw_scale.w);
 			if (use16bit) {
 				pixlowstep = -FixedMul1632(rw_scalestep.h.fracbits, worldlow.w);

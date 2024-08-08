@@ -317,10 +317,6 @@ fixed_t_union		rw_midtexturemid;
 fixed_t_union		rw_toptexturemid;
 fixed_t_union		rw_bottomtexturemid;
 
-fixed_t_union		worldtop;
-fixed_t_union		worldbottom;
-fixed_t_union		worldhigh;
-fixed_t_union		worldlow;
 
 fixed_t		pixhigh;
 fixed_t		pixlow;

@@ -277,6 +277,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     dc_texturemid.w = vis->texturemid;
     frac.w = vis->startfrac;
     spryscale.w = vis->scale;
+    // note: bottom 16 bits of centeryfrac are 0. optimizable?
     sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
          
     if (vis->patch == lastvisspritepatch){
@@ -427,6 +428,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     if (tz.h.intbits < MINZ_HIGHBITS) // (- sq: where does this come from)
         return;
     
+    // todo: projection's low 16 bits are 0. optimize?
     xscale.w = FixedDiv(projection.w, tz.w);
         
     gxt.w = -FixedMulTrigOld(viewsin,tr_x.w);
