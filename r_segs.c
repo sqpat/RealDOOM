@@ -297,9 +297,9 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 
 
 	while (base4diff){
-		base_rw_scale   -= rw_scalestep;
-		base_topfrac    -= topstep;
-		base_bottomfrac -= bottomstep;
+		rw_scale.w      -= rw_scalestep;
+		topfrac         -= topstep;
+		bottomfrac      -= bottomstep;
 		pixlow		    -= pixlowstep;
 		pixhigh		    -= pixhighstep;
 		base4diff--;
