@@ -245,9 +245,6 @@ uint8_t		fixedcolormap;
 int16_t			centerx;
 int16_t			centery;
 
-// these basically equal: (16 low bits are 0, 16 high bits are view size / 2)
-fixed_t_union			centerxfrac;
-fixed_t_union			centeryfrac;
 fixed_t_union			centeryfrac_shiftright4;
 fixed_t_union			projection;
 
@@ -271,8 +268,8 @@ int16_t 			setdetail;
 //
 // precalculated math tables
 //
-angle_t			clipangle = { 0 };		// note: fracbits always 0
-angle_t			fieldofview = { 0 };	// note: fracbits always 0
+uint16_t			clipangle = 0;		// note: fracbits always 0
+uint16_t			fieldofview =  0;	// note: fracbits always 0
 
  
  
@@ -489,7 +486,7 @@ int16_t __far*          mfloorclip;
 int16_t __far*          mceilingclip;
 
 fixed_t_union         spryscale;
-fixed_t         sprtopscreen;
+fixed_t_union         sprtopscreen;
 
 void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  ((void    (__far *)(uint16_t, byte __far *))  (MK_FP(drawfuzzcol_area_segment, 0)));
 

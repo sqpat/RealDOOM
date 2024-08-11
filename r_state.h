@@ -194,11 +194,6 @@ extern angle_t		viewangle;
 extern fineangle_t		viewangle_shiftright3;
 
 
-// ?
-extern angle_t		clipangle;	// note: fracbits always 0
-extern angle_t fieldofview;		// note: fracbits always 0
-
-//extern fixed_t		finetangent[FINEANGLES/2];
 
 extern fixed_t		rw_distance;
 extern fineangle_t	rw_normalangle;

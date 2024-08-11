@@ -87,8 +87,10 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
     while (column->topdelta != 0xFF)  {
         // calculate unclipped screen coordinates
         //  for post
-        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
-        bottomscreen.w = topscreen.w + FastMul16u32u(column->length,spryscale.w);
+
+        //todo: this is fastmul 8 by 32. maybe even faster.
+        topscreen.w = sprtopscreen.w + FastMul8u32u(column->topdelta, spryscale.w);
+        bottomscreen.w = topscreen.w + FastMul8u32u(column->length,   spryscale.w);
 
 		dc_yl = topscreen.h.intbits; 
 		dc_yh = bottomscreen.h.intbits;
@@ -278,7 +280,9 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     frac.w = vis->startfrac;
     spryscale.w = vis->scale;
     // note: bottom 16 bits of centeryfrac are 0. optimizable?
-    sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w,spryscale.w);
+    sprtopscreen.h.intbits = centery;
+    sprtopscreen.h.fracbits = 0;
+    sprtopscreen.w -= FixedMul(dc_texturemid.w,spryscale.w);
          
     if (vis->patch == lastvisspritepatch){
         patch_segment = lastvisspritesegment;
@@ -456,7 +460,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     temp.h.fracbits = 0;
     temp.h.intbits = spriteoffsets[spriteindex];
 	tx.w -= temp.w;
-	temp.h.intbits = centerxfrac.h.intbits;
+	temp.h.intbits = centerx;
     temp.w +=  FixedMul (tx.w,xscale.w);
     x1 = temp.h.intbits;
 
@@ -474,7 +478,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     // hack to make this fit in 8 bits, check r_init.c
 
     tx.w +=  temp.w;
-	temp.h.intbits = centerxfrac.h.intbits;
+	temp.h.intbits = centerx;
 	temp.w += FixedMul (tx.w,xscale.w);
     x2 = temp.h.intbits - 1;
 
@@ -633,7 +637,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
 	tx.h.intbits -= 160;
 
 	temp.h.fracbits = 0;
-	temp.h.intbits = centerxfrac.h.intbits;
+	temp.h.intbits = centerx;
 	if (pspritescale) {
 		temp.w += FixedMul16u32(pspritescale, tx.w);
 	}
@@ -652,7 +656,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
 
     tx.h.intbits += usedwidth;
 
-	temp.h.intbits = centerxfrac.h.intbits;
+	temp.h.intbits = centerx;
 	if (pspritescale) {
 		temp.w += FixedMul16u32(pspritescale, tx.w);
 	} else {

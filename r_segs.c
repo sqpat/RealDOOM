@@ -178,13 +178,16 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 
 			// todo optimize to an add approach instead of a fixedmul every timeapproach...
 			// add by dc_texturemid.w * rw_scalestep_shift
-			sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
+			
+			sprtopscreen.h.intbits = centery;
+			sprtopscreen.h.fracbits = 0;
+			sprtopscreen.w -= FixedMul(dc_texturemid.w,spryscale.w);
 
 			// draw the columns
 			for (; dc_x <= x2 ; 
 				dc_x+=detailshiftitercount,
 				spryscale.w += rw_scalestep_shift,
-				sprtopscreen -= sprtopscreen_step
+				sprtopscreen.w -= sprtopscreen_step
 
 			){
 				// calculate lighting
@@ -242,7 +245,10 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		int16_t dc_x_base4 = x1 & (detailshiftandval);	
 		outp(SC_INDEX+1, quality_port_lookup[dc_x_base4+detailshift.b.bytehigh]);
 		dc_x        = x1;
-		sprtopscreen = centeryfrac.w - FixedMul(dc_texturemid.w, spryscale.w);
+
+		sprtopscreen.h.intbits = centery;
+		sprtopscreen.h.fracbits = 0;
+		sprtopscreen.w -= FixedMul(dc_texturemid.w, spryscale.w);
 
 		// draw the column
 		// calculate lighting
@@ -460,6 +466,8 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 			if (segtextured) {
 				// calculate texture offset
 				angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
+				
+				//todo can we calculate this fast? fixedmul high 16? maybe not,  need precision of the low one...?
 				temp.w = rw_offset.w-FixedMul(finetangent(angle),rw_distance);
 				texturecolumn = temp.h.intbits;
 			
@@ -659,8 +667,9 @@ void __near R_RenderOneSeg ()
 	if (segtextured) {
 		// calculate texture offset
 		angle = MOD_FINE_ANGLE (rw_centerangle + xtoviewangle[rw_x]);
-		temp.w = rw_offset.w-FixedMul(finetangent(angle),rw_distance);
+		temp.w = rw_offset.w - FixedMul(finetangent(angle),rw_distance);
 		texturecolumn = temp.h.intbits;
+		
 	
 		// calculate lighting
 

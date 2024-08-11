@@ -161,7 +161,9 @@ void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 void __near R_ClearPlanes (void) {
     int16_t		i;
     fineangle_t	angle;
-    
+    fixed_t_union temp;
+	temp.h.fracbits = 0;
+	temp.h.intbits = centerx;
     // opening / clipping determination
     for (i=0 ; i<viewwidth ; i++) {
 		floorclip[i] = viewheight;
@@ -176,8 +178,8 @@ void __near R_ClearPlanes (void) {
 	angle = MOD_FINE_ANGLE(viewangle_shiftright3 - FINE_ANG90) ;
 
     // scale will be unit scale at SCREENWIDTH/2 distance
-    basexscale = FixedDivWholeB(finecosine[angle],centerxfrac.w);
-    baseyscale = -FixedDivWholeB(finesine[angle],centerxfrac.w);
+    basexscale = FixedDivWholeB(finecosine[angle],temp.w);
+    baseyscale = -FixedDivWholeB(finesine[angle],temp.w);
 
 }
 

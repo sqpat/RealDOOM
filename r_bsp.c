@@ -31,6 +31,7 @@
 #include "doomstat.h"
 #include "r_state.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 //#include "r_local.h"
 
@@ -215,6 +216,8 @@ void __near R_ClearClipSegs (void) {
     newend = solidsegs+2;
 }
 
+extern angle_t __far* tantoangle;
+
 //
 // R_AddLine
 // Clips the given segment
@@ -248,15 +251,9 @@ void __near R_AddLine (int16_t curlineNum) {
 #endif
 
 	// using span and angle2 as temporary vars to reduce local var count
-	span.hu.fracbits = 0;
-	angle2.hu.fracbits = 0;
-	span.hu.intbits = v1.x;
-	angle2.hu.intbits = v1.y;
     // OPTIMIZE: quickly reject orthogonal back sides.
-    angle1.wu = R_PointToAngle (span, angle2);
-	span.hu.intbits = v2.x;
-	angle2.hu.intbits = v2.y;
-    angle2.wu = R_PointToAngle (span, angle2);
+    angle1.wu = R_PointToAngle16 (v1.x, v1.y);
+    angle2.wu = R_PointToAngle16 (v2.x, v2.y);
     
 
 
@@ -276,35 +273,45 @@ void __near R_AddLine (int16_t curlineNum) {
 	angle1.wu -= viewangle.wu;
     angle2.wu -= viewangle.wu;
 	
-    tspan.wu = angle1.wu + clipangle.wu;
-	if (tspan.hu.intbits > fieldofview.hu.intbits) {
-		tspan.hu.intbits -= fieldofview.hu.intbits;
+    tspan.wu = angle1.wu;
+	tspan.hu.intbits += clipangle;
+
+	if (tspan.hu.intbits > fieldofview) {
+		tspan.hu.intbits -= fieldofview;
 
 		// Totally off the left edge?
 		if (tspan.wu >= span.wu) {
 			return;
 		}
 	
-		angle1 = clipangle;
+		angle1.hu.intbits = clipangle;
+		angle1.hu.fracbits = 0; //fracbits arent used beyond this.
     }
-    tspan.wu = clipangle.wu - angle2.wu;
-	if (tspan.hu.intbits > fieldofview.hu.intbits) {
-		tspan.hu.intbits -= fieldofview.hu.intbits;
+	tspan.hu.intbits = clipangle;
+	tspan.hu.fracbits = 0;
+
+    tspan.wu -= angle2.wu;
+	if (tspan.hu.intbits > fieldofview) {
+		tspan.hu.intbits -= fieldofview;
 	
 		// Totally off the left edge?
 			if (tspan.wu >= span.wu) {
 				return;
 			}
-		angle2.wu = -clipangle.wu;
+		angle2.hu.intbits = -clipangle;
+		//angle2.hu.fracbits = 0;  fracbits arent used beyond this.
     }
     
     // The seg is in the view range,
     // but not necessarily visible.
 
-	angle1.hu.fracbits = (angle1.hu.intbits+ ANG90_HIGHBITS)>> SHORTTOFINESHIFT;
-    angle2.hu.fracbits = (angle2.hu.intbits+ ANG90_HIGHBITS)>> SHORTTOFINESHIFT;
-	x1 = viewangletox[angle1.hu.fracbits];
-	x2 = viewangletox[angle2.hu.fracbits];
+	angle1.hu.intbits += ANG90_HIGHBITS;
+	angle1.hu.intbits >>= SHORTTOFINESHIFT;
+	x1 = viewangletox[angle1.hu.intbits];
+
+	angle2.hu.intbits += ANG90_HIGHBITS;
+	angle2.hu.intbits >>= SHORTTOFINESHIFT;
+	x2 = viewangletox[angle2.hu.intbits];
 
     // Does not cross a pixel?
 	if (x1 == x2) {
@@ -462,26 +469,31 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 	if (span.hu.intbits >= ANG180_HIGHBITS)
 		return true;
 
-	tspan.wu = angle1.wu + clipangle.wu;
+	tspan.wu = angle1.wu;
+	tspan.hu.intbits += clipangle;
 
-	if (tspan.hu.intbits > fieldofview.hu.intbits) {
-		tspan.hu.intbits -= fieldofview.hu.intbits;
+	if (tspan.hu.intbits > fieldofview) {
+		tspan.hu.intbits -= fieldofview;
 
 		// Totally off the left edge?
 		if (tspan.wu >= span.wu)
 			return false;
 
-		angle1 = clipangle;
+		angle1.hu.intbits = clipangle;
+		angle1.hu.fracbits = 0;
 	}
-	tspan.wu = clipangle.wu - angle2.wu;
-	if (tspan.hu.intbits > fieldofview.hu.intbits) {
-		tspan.hu.intbits -= fieldofview.hu.intbits;
+	tspan.hu.intbits = clipangle;
+	tspan.hu.fracbits= 0;
+	tspan.wu -= angle2.wu;
+
+	if (tspan.hu.intbits > fieldofview) {
+		tspan.hu.intbits -= fieldofview;
 
 		// Totally off the left edge?
 		if (tspan.wu >= span.wu)
 			return false;
 
-		angle2.wu = -clipangle.wu;
+		angle2.hu.intbits = -clipangle;
 	}
 
 	// Find the first clippost

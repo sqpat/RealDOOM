@@ -31,7 +31,7 @@ extern vissprite_t	vsprsortedhead;
 extern int16_t __far*		mfloorclip;
 extern int16_t __far*		mceilingclip;
 extern fixed_t_union		spryscale;
-extern fixed_t		sprtopscreen;
+extern fixed_t_union		sprtopscreen;
 
 extern uint16_t		pspritescale;
 extern fixed_t		pspriteiscale;

@@ -85,7 +85,7 @@ void __near R_InitTextureMapping(void) {
 	//
 	// Calc focallength
 	//  so FIELDOFVIEW angles covers SCREENWIDTH.
-	focallength = FixedDivWholeA(centerxfrac.hu.intbits, FIXED_FINE_TAN);
+	focallength = FixedDivWholeA(centerx, FIXED_FINE_TAN);
 
 
 	for (i = 0; i < FINEANGLES / 2; i++) {
@@ -95,9 +95,12 @@ void __near R_InitTextureMapping(void) {
 		else if (finetan_i.w < -FRACUNIT * 2)
 			t.h.intbits = viewwidth + 1;
 		else {
+			fixed_t_union temp;
+			temp.h.intbits = centerx;
+			temp.h.fracbits = 0;
 			t.w = FixedMul(finetan_i.w, focallength);
 			//todo optimize given centerxfrac low bits are 0
-			t.w = (centerxfrac.w - t.w + 0xFFFFu);
+			t.w = (temp.w - t.w + 0xFFFFu);
 
 			if (t.h.intbits < -1)
 				t.h.intbits = -1;
@@ -126,8 +129,8 @@ void __near R_InitTextureMapping(void) {
 			viewangletox[i] = viewwidth;
 	}
 
-	clipangle.hu.intbits = xtoviewangle[0] << 3;
-	fieldofview.hu.intbits = 2 * clipangle.hu.intbits;
+	clipangle = xtoviewangle[0] << 3;
+	fieldofview = 2 * clipangle;
 
 
 	// psprite scales
@@ -224,9 +227,8 @@ void __near  R_ExecuteSetViewSize(void) {
 	centery = viewheight >> 1;
 	centerx = viewwidth >> 1;
 	temp.h.intbits = centerx;
-	projection = centerxfrac = temp; // todo: calculate (or fetch) magic number from stored cache, to be used in R_ProjectSprite
+	projection = temp; // todo: calculate (or fetch) magic number from stored cache, to be used in R_ProjectSprite
 	temp.h.intbits = centery;
-	centeryfrac = temp;
 	centeryfrac_shiftright4.w = temp.w >> 4;
 
 
