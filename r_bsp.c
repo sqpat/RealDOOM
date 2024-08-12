@@ -400,8 +400,12 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 	// Find the corners of the box
 	// that define the edges from current viewpoint.
 
-	boxx = (viewx.h.intbits < bspcoord[BOXLEFT] || (viewx.h.fracbits == 0 && viewx.h.intbits == bspcoord[BOXLEFT]))  ? 0 : viewx.h.intbits < bspcoord[BOXRIGHT] ? 1 : 2;
-	boxy = viewy.h.intbits >= bspcoord[BOXTOP] ? 0 : (viewy.h.intbits > bspcoord[BOXBOTTOM] || (viewy.h.fracbits > 0 && viewy.h.intbits == bspcoord[BOXBOTTOM]  )) ? 1 : 2;
+	boxx = (viewx.h.intbits < bspcoord[BOXLEFT] || (viewx.h.fracbits == 0 && viewx.h.intbits == bspcoord[BOXLEFT])) 
+	    ? 0 : viewx.h.intbits < bspcoord[BOXRIGHT] ? 1 : 
+		2;
+	boxy = viewy.h.intbits >= bspcoord[BOXTOP] ? 0 : 
+	    (viewy.h.intbits > bspcoord[BOXBOTTOM] || (viewy.h.fracbits > 0 && viewy.h.intbits == bspcoord[BOXBOTTOM]  )) ? 1 : 
+		 2;
 
 	boxpos = (boxy << 2) + boxx;
 	if (boxpos == 5)
@@ -428,7 +432,7 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 		break;
 	case 3:
 	case 7:
-		x1 = x2 = y1 = y2 = bspcoord[BOXTOP];
+		x1 = x2 = y1 = y2 = bspcoord[BOXTOP]; // todo optimize since angle1 = angle 2? how common is this.
 		break;
 	case 4:
 		x1 = x2 = bspcoord[BOXLEFT];

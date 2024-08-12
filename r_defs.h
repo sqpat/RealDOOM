@@ -42,7 +42,7 @@
 #define SIL_TOP			2
 #define SIL_BOTH		3
 
-#define MAXDRAWSEGS		200
+#define MAXDRAWSEGS		256
 
 
 
@@ -73,6 +73,8 @@ struct line_s;
 // The SECTORS record, at runtime.
 // Stores things/mobjs.
 //
+
+// 17 bytes... can we reduce to 16 somehow????
 typedef	struct
 {
 
@@ -81,7 +83,6 @@ typedef	struct
 	uint8_t	floorpic;
 	uint8_t	ceilingpic;
     
-    uint8_t	lightlevel; // seems to max at 255
 
 
 
@@ -92,22 +93,21 @@ typedef	struct
     THINKERREF	thinglistRef;
 
     // thinker_t for reversable actions
-	THINKERREF	specialdataRef;
+	THINKERREF	specialdataRef; // todo duped, remove
     int16_t		linecount;  // 374 line count for fricken doom 1 e2m2 sector 157
 
 	int16_t linesoffset;	// [linecount] size
+    uint8_t	lightlevel; // seems to max at 255
 
 } sector_t;
 
 
-
+// 21 bytes
 typedef	struct
 {
 
 	uint8_t	special;	// only a few small numbers
 	uint8_t	tag;
-	// 0 = untraversed, 1,2 = sndlines -1
-	int8_t		soundtraversed;
 	int16_t	blockbox[4];
 	// origin for any sounds played by the sector
 	// corresponds to fixed_t, not easy to change
@@ -118,24 +118,13 @@ typedef	struct
 	int16_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
 
 	int16_t linesoffset;	// [linecount] size
+
+	// 0 = untraversed, 1,2 = sndlines -1
+	int8_t		soundtraversed;
+
 } sector_physics_t;
 
  
-typedef	struct
-{
-	short_height_t	floorheight;
-	short_height_t	ceilingheight;
-	uint8_t	floorpic;
-	uint8_t	ceilingpic;
-	uint8_t	lightlevel; // seems to max at 255
-
-	// if == validcount, already checked
-	int16_t		validcount;
-
-	// list of mobjs in sector
-	THINKERREF	thinglistRef;
-	// [linecount] size
-} sector_common_t;
 
 
 
@@ -194,11 +183,11 @@ typedef struct line_s
 {
     // Animation related.
     // theres normally 9 flags here, one is runtime created and not pulled from the wad (?) we put that flag in seenlines bit array
-	uint8_t	flags;	// both
 
     // Visual appearance: SideDefs.
     //  sidenum[1] will be -1 if one sided
     int16_t	sidenum[2];	  // needed to figure out the other side of a line to get its sector...
+	uint8_t	flags;	// both
 
 
     // if == validcount, already checked
@@ -220,16 +209,16 @@ typedef struct
 	int16_t	dx;
 	int16_t	dy;
 
-	uint8_t	tag;
 
 	// tricky, collisions do seem to happen with 8 bit. I think 10 or 11 would work. would need to fit those 3 high bits elsewhere.
 	int16_t		validcount;
-	uint8_t	special;	// both for texture animation but can be fixed to physics only
 
 		// Front and back sector.
 	int16_t	frontsecnum;
 	int16_t	backsecnum; 
 
+	uint8_t	tag;
+	uint8_t	special;	// both for texture animation but can be fixed to physics only
 
 
 
@@ -262,8 +251,8 @@ typedef struct lineopening_s
 typedef struct subsector_s
 {
     int16_t	secnum;   
-    uint8_t	numlines; 
     int16_t	firstline;
+    uint8_t	numlines; 
     
 } subsector_t; // used in sight and bsp
 
@@ -378,8 +367,7 @@ typedef byte	lighttable_t;
 
 //
 // ?
-//
-// 29 bytes each now... gross.. make 32 perhaps?
+// padded to 32 bytes each..
 typedef struct drawseg_s
 {
 	uint16_t		curseg;
@@ -396,8 +384,6 @@ typedef struct drawseg_s
 	// scale step per pixel
     fixed_t		scalestep;
 
-    // 0=none, 1=bottom, 2=top, 3=both
-    int8_t			silhouette;
 
     // do not clip sprites above this
     short_height_t		bsilheight;
@@ -412,6 +398,15 @@ typedef struct drawseg_s
     
     // offset within openings
     uint16_t		maskedtexturecol;
+
+    // 0=none, 1=bottom, 2=top, 3=both
+    int8_t			silhouette;
+    
+    // pad to 32 bytes for faster lookups! todo: can we use this space to cache any values? tsilheight and bsilheight need 2 extra bytes each...
+    int8_t          unused_padding_a;
+    int8_t          unused_padding_b;
+    int8_t          unused_padding_c;
+
     
 } drawseg_t;
 
@@ -444,10 +439,13 @@ typedef struct
 // A vissprite_t is a thing
 //  that will be drawn during a refresh.
 // I.e. a sprite object that is partly visible.
+
+// 42 bytes.
 typedef struct vissprite_s
 {
     // Doubly linked list.
     uint8_t	next;
+    uint8_t	colormap;
     
 
 	int16_t x1;
@@ -474,7 +472,6 @@ typedef struct vissprite_s
 
     // for color translation and shadow draw,
     //  maxbright frames as well
-    uint8_t	colormap;
    
     int32_t			mobjflags;
     
@@ -501,13 +498,14 @@ typedef struct
     // If false use 0 for any position.
     // Note: as eight entries are available,
     //  we might as well insert the same name eight times.
-    boolean	rotate;
 
     // Lump to use for view angles 0-7.
     int16_t	lump[8];
 
     // Flip bit (1 = flip) to use for view angles 0-7.
     byte	flip[8];
+
+    boolean	rotate;
     
 } spriteframe_t;
 
@@ -519,8 +517,8 @@ typedef struct
 //
 typedef struct
 {
-    int8_t			numframes;
     uint16_t		spriteframesOffset;
+    int8_t			numframes;
 
 } spritedef_t;
 
@@ -529,10 +527,10 @@ typedef struct
 typedef struct
 {
   fixed_t height;
-  uint8_t picnum;
-  uint8_t lightlevel;
   int16_t minx;
   int16_t maxx;
+  uint8_t picnum;
+  uint8_t lightlevel;
    
   // offset within the page. todo move to a separate table? perhaps init from file
   //uint16_t visplaneoffset;

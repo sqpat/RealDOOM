@@ -962,6 +962,8 @@ spritewidths        7000:7592
 #define size_spritepage                (MAX_SPRITE_LUMPS * sizeof(uint8_t))
 #define size_spriteoffset              (MAX_SPRITE_LUMPS * sizeof(uint8_t))
 #define size_patchwidths               (MAX_PATCHES * sizeof(uint16_t))
+#define size_drawsegs                 (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
+#define size_drawsegs_PLUS_EXTRA      (sizeof(drawseg_t) * (MAXDRAWSEGS+2))
 
 
 
@@ -979,6 +981,9 @@ spritewidths        7000:7592
 #define spriteoffset               ((uint8_t __far*)           (((int32_t)spritepage)                      + size_spritepage))
 #define patchwidths                ((uint16_t  __far*)         MAKE_FULL_SEGMENT(spritepage,               (size_spriteoffset + size_spritetopoffsets)))
 
+#define drawsegs_BASE           ((drawseg_t __far*)          MAKE_FULL_SEGMENT(patchwidths            , size_patchwidths))
+#define drawsegs_PLUSONE        ((drawseg_t __far*)          (drawsegs_BASE          + 1))
+//#define nextthing               ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))//
 
 
 
@@ -1013,8 +1018,7 @@ spritewidths        7000:7592
 #define size_scalelight               (sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
 #define size_patch_sizes              (MAX_PATCHES * sizeof(uint16_t))
 #define size_viewangletox             (sizeof(int16_t) * (FINEANGLES / 2))
-#define size_drawsegs                 (sizeof(drawseg_t) * (MAXDRAWSEGS+1))
-#define size_drawsegs_PLUS_EXTRA      (sizeof(drawseg_t) * (MAXDRAWSEGS+2))
+
 #define size_flatindex                (sizeof(uint8_t) * MAX_FLATS)
 #define size_texturecompositesizes    (MAX_TEXTURES * sizeof(uint16_t))
 #define size_compositetexturepage     (MAX_TEXTURES * sizeof(uint8_t))
@@ -1035,9 +1039,8 @@ spritewidths        7000:7592
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
 
 
-#define drawsegs_BASE           ((drawseg_t __far*)          MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
-#define drawsegs_PLUSONE        ((drawseg_t __far*)          (drawsegs_BASE          + 1))
-#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))
+
+#define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
 
 #define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
