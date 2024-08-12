@@ -43,8 +43,10 @@
 #define MAX_SECTORS_SIZE			(MAX_SECTORS *		sizeof(sector_t))
 #define MAX_VERTEXES_SIZE			(MAX_VERTEXES *		sizeof(vertex_t))
 #define MAX_LINES_SIZE				(MAX_LINES *		sizeof(line_t))
+#define MAX_LINEFLAGS_SIZE			(MAX_LINES *        sizeof(uint8_t))
 #define MAX_SEENLINES_SIZE			((MAX_LINES / 8) + 1)
 #define MAX_SUBSECTORS_SIZE			(MAX_SUBSECTORS *	sizeof(subsector_t))
+#define MAX_SUBSECTOR_LINES_SIZE	(MAX_SUBSECTORS *	sizeof(uint8_t))
 #define MAX_NODES_SIZE				(MAX_NODES *		sizeof(node_t))
 #define MAX_SEGS_SIZE				(MAX_SEGS *			sizeof(seg_t))
 
@@ -163,7 +165,6 @@ extern int16_t		numvertexes;
 extern vertex_t __far*	vertexes;
 
 extern int16_t		numsegs;
-extern seg_t __far*		segs;
 
 
 extern int16_t		numsectors;

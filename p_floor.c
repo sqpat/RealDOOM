@@ -568,7 +568,7 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
 			for (i = 0;i < sectorlinecount;i++) {
 				linebufferOffset = sectorlinesoffset + i;
 				linenum = linebuffer[linebufferOffset];
-				if (!(lines[linenum].flags & ML_TWOSIDED)) {
+				if (!(lineflagslist[linenum] & ML_TWOSIDED)) {
 					continue;
 				}
 				tsecOffset = lines_physics[linenum].frontsecnum;

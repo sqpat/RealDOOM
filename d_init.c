@@ -956,11 +956,12 @@ R_FixedMulLocalWrapper2(0, 0)
 
 /*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		flatindex, 
-		texturecompositesizes,
-		 compositetexturepage,
-		compositetextureoffset, 
+		lineflagslist, 
 		seenlines,
+		 subsectors,
+		 subsector_lines,
+		nodes, 
+		segs,
 			subsectors, 
 			nodes,
 			segs,
@@ -980,6 +981,7 @@ R_FixedMulLocalWrapper2(0, 0)
 
 
 	file[0] = 0;
+
 
 	if (M_CheckParm("-mem")){
 		segread(&sregs);

@@ -149,9 +149,9 @@ boolean __near P_UseSpecialLine ( mobj_t __far*	thing, int16_t linenum,int16_t		
 	line_t __far* line = &lines[linenum];
 	line_physics_t __far* line_physics = &lines_physics[linenum];
 
+	uint8_t lineflags = lineflagslist[linenum];
 	uint8_t linetag = line_physics->tag;
 	uint8_t linespecial = line_physics->special;
-	uint8_t lineflags = line->flags;
 	int16_t linefrontsecnum = line_physics->frontsecnum;
 	int16_t lineside0 = line->sidenum[0];
  

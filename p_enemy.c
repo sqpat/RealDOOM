@@ -141,9 +141,9 @@ __near P_RecursiveSound
 	for (i=0 ;i<linecount ; i++) {
 		lineoffset = soundsector->linesoffset + i;
 		linenumber = linebuffer[lineoffset];
+		checkflags = lineflagslist[linenumber];
 		check = &lines[linenumber];
 		check_physics = &lines_physics[linenumber];
-		checkflags = check->flags;
 		checksidenum0 = check->sidenum[0];
 		checksidenum1 = check->sidenum[1];
 

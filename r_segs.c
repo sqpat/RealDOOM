@@ -57,6 +57,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 	vertex_t v2;
 	line_t __far* curlinelinedef;
 	int16_t		texnum;
+	uint8_t lineflags;
 	curseg = ds->curseg;
 	curseg_render = &segs_render[curseg];
 
@@ -67,6 +68,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 
 	curlineside = segs[curseg].side;
 	curlinelinedef = &lines[segs[curseg].linedefOffset];
+	lineflags = lineflagslist[segs[curseg].linedefOffset];
 
 	v1 = vertexes[curseg_render->v1Offset];
 	v2 = vertexes[curseg_render->v2Offset];
@@ -77,7 +79,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 
 	frontsecnum = side_render->secnum;
 	backsector =
-		curlinelinedef->flags & ML_TWOSIDED ?
+		lineflags & ML_TWOSIDED ?
 		&sectors[sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum]
 		: NULL;
 	frontsector = &sectors[frontsecnum];
@@ -116,7 +118,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
     mceilingclip = MK_FP(openings_segment, ds->sprtopclip_offset);
     
     // find positioning
-    if (curlinelinedef->flags & ML_DONTPEGBOTTOM) {
+    if (lineflags & ML_DONTPEGBOTTOM) {
 
 #ifdef USE_SHORTHEIGHT_VIEWZ	
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(dc_texturemid, 
@@ -841,6 +843,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	//linedef = &lines[curseg->linedefOffset];
 	linedefOffset = segs[curseg].linedefOffset;
 	linedef = &lines[linedefOffset];
+	lineflags = lineflagslist[linedefOffset];
 
 #ifdef CHECK_FOR_ERRORS
 	if (linedefOffset > numlines) {
@@ -852,11 +855,17 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	// todo might actually be faster on average to check the bit... these shifts may suck
 	seenlines[linedefOffset/8] |= (0x01 << (linedefOffset % 8));
 
-	lineflags = linedef->flags;
 
     // calculate rw_distance for scale calculation
     rw_normalangle = MOD_FINE_ANGLE(curseg_render->fineangle + FINE_ANG90);
 	rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
+
+    // calculate rw_distance for scale calculation
+    // todo: precalculate this operation in the fineangle field since its not used anywhere else (?)
+	//rw_normalangle = MOD_FINE_ANGLE(curseg_render->fineangle + FINE_ANG90);
+	//rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
+
+
 
 
 	offsetangle = abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;

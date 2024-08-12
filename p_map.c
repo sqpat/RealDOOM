@@ -309,6 +309,7 @@ boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 	int16_t lineleft = v1x;
 	int16_t linetop = v1y;
 	int16_t linebot = v1y;
+	uint8_t flags;
 
 #ifndef	PRECALCULATE_OPENINGS
 	int16_t linefrontsecnum = ld_physics->frontsecnum;
@@ -358,14 +359,14 @@ boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 	if (ld_physics->backsecnum == SECNUM_NULL) {
 		return false;		// one sided line
 	}
-	ld = &lines[linenum];
+	flags = lineflagslist[linenum];
 
 
     if (!(tmthing_pos->flags & MF_MISSILE) ) {
-		if (ld->flags & ML_BLOCKING) {
+		if (flags & ML_BLOCKING) {
 			return false;	// explicitly blocking everything
 		}
-		if (tmthing->type != MT_PLAYER && ld->flags & ML_BLOCKMONSTERS) {
+		if (tmthing->type != MT_PLAYER && flags & ML_BLOCKMONSTERS) {
 			return false;	// block monsters only
 		}
     }
@@ -894,15 +895,15 @@ void __near P_HitSlideLine (int16_t linenum)
 //
 // PTR_SlideTraverse
 //
-boolean __near PTR_SlideTraverse (intercept_t __far* in)
-{
+boolean __near PTR_SlideTraverse (intercept_t __far* in) {
+	uint8_t lineflags = lineflagslist[in->d.linenum];
 	line_t __far* li = &lines[in->d.linenum];
 	fixed_t_union temp;
 	line_physics_t __far* li_physics = &lines_physics[in->d.linenum];
 
 
     
-    if ( ! (li->flags & ML_TWOSIDED) ) {
+    if ( ! (lineflags & ML_TWOSIDED) ) {
  		if (P_PointOnLineSide (playerMobj_pos->x.w, playerMobj_pos->y.w, li_physics->dx, li_physics->dy, vertexes[li_physics->v1Offset].x, vertexes[li_physics->v1Offset].y)) {
 	    // don't hit the back side
 			return true;		
@@ -1121,10 +1122,10 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 	fixed_t_union temp;
 
     if (in->isaline) {
-		li = &lines[in->d.linenum];
-		if (!(li->flags & ML_TWOSIDED)) {
+		if (!(lineflagslist[in->d.linenum] & ML_TWOSIDED)) {
 			return false;		// stop
 		}
+		li = &lines[in->d.linenum];
 		// Crosses a two sided line.
 		// A two sided line will restrict
 		// the possible target ranges.
@@ -1225,12 +1226,13 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 	temp.h.fracbits = 0;
 
     if (in->isaline) {
+		uint8_t lineflags = lineflagslist[in->d.linenum];
 		li = &lines[in->d.linenum];
 		li_physics = &lines_physics[in->d.linenum];
 		if (li_physics->special)
 			P_ShootSpecialLine (shootthing, in->d.linenum);
 
-		if ( !(li->flags & ML_TWOSIDED) )
+		if ( !(lineflags & ML_TWOSIDED) )
 			goto hitline;
 	
 		// crosses a two sided line

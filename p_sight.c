@@ -346,7 +346,7 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 	int16_t curlineside;
  	temp.h.fracbits = 0;
     // check lines
-    count = subsectors[subsecnum].numlines;
+    count = subsector_lines[subsecnum];
     segnum = subsectors[subsecnum].firstline;
 
 
@@ -363,12 +363,12 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 			continue;
 		}
 		line = &lines[linedefOffset];
+		lineflags = lineflagslist[linedefOffset];
 
 		//line->validcount = (validcount & 0xFF);
 		line_physics->validcount = validcount;
 		linev1Offset = line_physics->v1Offset;
 		linev2Offset = line_physics->v2Offset & VERTEX_OFFSET_MASK;
-		lineflags = line->flags;
 
 		v1 = vertexes[linev1Offset];
 		v2 = vertexes[linev2Offset];

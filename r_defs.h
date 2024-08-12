@@ -182,7 +182,7 @@ typedef int16_t slopetype_t;
 //#define		LINETAG_MASK		0x3F
 //#define		LINETAG_VALIDCOUNT_MASK		0xC0
 
-// 5 bytes, gross. make lineflags a thing?
+// 4 bytes, lineflags was moved out
 typedef struct line_s
 {
     // Animation related.
@@ -191,7 +191,6 @@ typedef struct line_s
     // Visual appearance: SideDefs.
     //  sidenum[1] will be -1 if one sided
     int16_t	sidenum[2];	  // needed to figure out the other side of a line to get its sector...
-	uint8_t	flags;	// both
 
 
     // if == validcount, already checked
@@ -202,7 +201,9 @@ typedef struct line_s
 } line_t;
 
 
-// 16 bytes, great
+
+
+
 typedef struct 
 {
 	// Vertices, from v1 to v2.
@@ -233,7 +234,7 @@ typedef struct
 #define	LO_CEILING_DIRTY_BIT  0x02
 
 
-// 7 bytes, gross. but not in an array, who cares
+// 6 bytes. not in an array, who cares..
 typedef struct lineopening_s
 {
 	short_height_t		opentop;
@@ -254,12 +255,12 @@ typedef struct lineopening_s
 //  indicating the visible walls that define
 //  (all or some) sides of a convex BSP leaf.
 //
-// 5 bytes, gross
+
+// 4 bytes now, lines mvoed out..
 typedef struct subsector_s
 {
     int16_t	secnum;   
     int16_t	firstline;
-    uint8_t	numlines; 
     
 } subsector_t; // used in sight and bsp
 

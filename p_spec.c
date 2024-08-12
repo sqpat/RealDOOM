@@ -86,7 +86,7 @@ anim_t __near*		lastanim;
 int16_t __near twoSided( int16_t	sector,int16_t	line ){
 	line = sectors[sector].linesoffset + line;
 	line = linebuffer[line];
-    return lines[line].flags & ML_TWOSIDED;
+    return lineflagslist[line] & ML_TWOSIDED;
 }
 
 
@@ -94,12 +94,12 @@ int16_t __near getNextSectorList(int16_t __near * linenums,int16_t	sec,int16_t _
 	
 	int16_t i = 0;
 	int16_t skipped = 0;
-	line_t __far* line;
 	line_physics_t __far* line_physics;
 
 	for (i = 0; i < linecount; i++) {
-		line  = &lines[linenums[i]];
-		if (!(line->flags & ML_TWOSIDED)) {
+		
+
+		if (!(lineflagslist[linenums[i]] & ML_TWOSIDED)) {
 			skipped++;
 			continue;
 		}
@@ -975,8 +975,7 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 	int16_t offset;
 	int16_t sectors3floorpic;
 	short_height_t sectors3floorheight;
-	line_t __far* line;
-	line_physics_t __far* line_physics;
+ 	line_physics_t __far* line_physics;
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 	int16_t innersecnumlist[MAX_ADJOINING_SECTORS];
 	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
@@ -1012,9 +1011,8 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 	j = 0;
 	while (linebufferoffsets[j] >= 0) {
 
-		line = &lines[linebufferoffsets[j]];
 		line_physics = &lines_physics[linebufferoffsets[j]];
-		if (!(line->flags & ML_TWOSIDED)) {
+		if (!(lineflagslist[linebufferoffsets[j]] & ML_TWOSIDED)) {
 			skipped++;
 			j++;
 			continue;

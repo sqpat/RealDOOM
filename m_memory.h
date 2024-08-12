@@ -50,8 +50,10 @@
 #define size_vertexes           (MAX_VERTEXES_SIZE)
 #define size_sides              (MAX_SIDES_SIZE)
 #define size_lines              (MAX_LINES_SIZE)
+#define size_lineflagslist      (MAX_LINEFLAGS_SIZE)
 #define size_seenlines          (MAX_SEENLINES_SIZE)
 #define size_subsectors         (MAX_SUBSECTORS_SIZE)
+#define size_subsector_lines    (MAX_SUBSECTOR_LINES_SIZE)
 #define size_nodes              (MAX_NODES_SIZE)
 #define size_segs               (MAX_SEGS_SIZE)
 
@@ -62,22 +64,28 @@
 #define vertexes          ((vertex_t __far*)    MAKE_FULL_SEGMENT(sectors          , size_sectors))
 #define sides             ((side_t __far*)      MAKE_FULL_SEGMENT(vertexes         , size_vertexes))
 #define lines             ((line_t __far*)      MAKE_FULL_SEGMENT(sides            , size_sides))
-#define seenlines         ((uint8_t __far*)     MAKE_FULL_SEGMENT(lines            , size_lines))
+#define lineflagslist     ((uint8_t __far*)     MAKE_FULL_SEGMENT(lines            , size_lines))
+#define seenlines         ((uint8_t __far*)     MAKE_FULL_SEGMENT(lineflagslist    , size_lineflagslist))
 #define subsectors        ((subsector_t __far*) MAKE_FULL_SEGMENT(seenlines        , size_seenlines))
-#define nodes             ((node_t __far*)      MAKE_FULL_SEGMENT(subsectors       , size_subsectors))
+#define subsector_lines   ((uint8_t __far*)     MAKE_FULL_SEGMENT(subsectors       , size_subsectors))
+#define nodes             ((node_t __far*)      MAKE_FULL_SEGMENT(subsector_lines  , size_subsector_lines))
 #define segs              ((seg_t __far*)       MAKE_FULL_SEGMENT(nodes            , size_nodes))
 
 //0xE000
 /*
-size_sectors              E000:0000
-size_vertexes             E15C:0000
-size_sides                E2F3:0000
-size_lines                E801:0000
-size_seenlines            EA29:0000
-size_subsectors           EA37:0000
-size_nodes                EB49:0000
-size_segs                 EDD9:0000
-[empty]                   EFE9:0000
+sectors              E000:0000
+vertexes             E15C:0000
+sides                E2F3:0000
+lines                E801:0000
+
+lineflagslist        E9BA:0000
+
+seenlines            EA29:0000
+subsectors           EA37:0000
+subsector_lines      EB12:0000
+nodes                EB49:0000
+segs                 EDD9:0000
+[empty]              EFE9:0000
 
 
 // 368 bytes free? 

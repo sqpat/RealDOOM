@@ -321,7 +321,8 @@ void __near R_AddLine (int16_t curlineNum) {
 	
 	//linebacksecnum = curlinelinedef->backsecnum;
 	linebacksecnum =
-		curlinelinedef->flags & ML_TWOSIDED ?
+		
+		lineflagslist[curline->linedefOffset] & ML_TWOSIDED ?
 		sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum
 		: SECNUM_NULL;
 		
@@ -538,15 +539,13 @@ extern byte __far * floortop;
 // Draw one or more line segments.
 //
 void __near R_Subsector(int16_t subsecnum) {
-	int16_t count;
-	int16_t firstline;
-	fixed_t_union temp;
+	int16_t count = subsector_lines[subsecnum];
 	subsector_t __far* sub = &subsectors[subsecnum];
+	int16_t firstline = sub->firstline;
+	fixed_t_union temp;
+    frontsector = &sectors[sub->secnum];
 	temp.h.fracbits = 0;
 	
-    frontsector = &sectors[sub->secnum];
-    count = sub->numlines;
-	firstline = sub->firstline;
 
 	if (visplanedirty){
 		Z_QuickMapVisplaneRevert();
