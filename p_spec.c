@@ -235,7 +235,7 @@ void __near P_FindSectorsFromLineTag ( int8_t		linetag,int16_t*		foundsectors,bo
 	int16_t	j = 0;
 
 	for (i = 0; i < numsectors; i++) {
-		if (sectors_physics[i].tag == linetag && (includespecials || !sectors[i].specialdataRef)) {
+		if (sectors_physics[i].tag == linetag && (includespecials || !sectors_physics[i].specialdataRef)) {
 			foundsectors[j] = i;
 			j++;
 		}
@@ -1049,7 +1049,7 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 
 			floor = (floormove_t __far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 			floorRef = GETTHINKERREF(floor);
-			sectors[s2Offset].specialdataRef = floorRef;
+			sectors_physics[s2Offset].specialdataRef = floorRef;
 
 			floor->type = donutRaise;
 			floor->crush = false;
@@ -1063,7 +1063,7 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 			//	Spawn lowering donut-hole
 			floor = (floormove_t __far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 			floorRef = GETTHINKERREF(floor);
-			sectors[s1Offset].specialdataRef = floorRef;
+			sectors_physics[s1Offset].specialdataRef = floorRef;
 			floor->type = lowerFloor;
 			floor->crush = false;
 			floor->direction = -1;

@@ -953,18 +953,19 @@ R_FixedMulLocalWrapper2(0, 0)
 	// baselowermemoryaddress
 
 	//I_Error("\n%x %x %x %x", size_patchoffset, size_patchpage, size_zlight, 0);
-/*
 
+/*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		drawsegs_BASE, 
-		flatindex,
-		 flatindex,
-		texturecompositesizes, 
-		compositetexturepage,
-			compositetextureoffset, 
-			patchoffset,
-			texturepatchlump_offset,
-			texturecompositesizes,
+		flatindex, 
+		texturecompositesizes,
+		 compositetexturepage,
+		compositetextureoffset, 
+		seenlines,
+			subsectors, 
+			nodes,
+			segs,
+			((seg_t __far*)       MAKE_FULL_SEGMENT(segs            , size_segs)),
+			0L,
 			vissprites,
 
 			spritepage, 
@@ -977,8 +978,8 @@ R_FixedMulLocalWrapper2(0, 0)
 
 */
 
-	file[0] = 0;
 
+	file[0] = 0;
 
 	if (M_CheckParm("-mem")){
 		segread(&sregs);

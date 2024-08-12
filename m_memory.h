@@ -70,17 +70,17 @@
 //0xE000
 /*
 size_sectors              E000:0000
-size_vertexes             E000:0000
-size_sides                E309:0000
-size_lines                E817:0000
-size_seenlines            EA3F:0000
-size_subsectors           EA4D:0000
-size_nodes                EB5F:0000
-size_segs                 EDEF:0000
-[empty]                   EFFF:0000
+size_vertexes             E15C:0000
+size_sides                E2F3:0000
+size_lines                E801:0000
+size_seenlines            EA29:0000
+size_subsectors           EA37:0000
+size_nodes                EB49:0000
+size_segs                 EDD9:0000
+[empty]                   EFE9:0000
 
 
-// 16-32 bytes free?
+// 368 bytes free? 
             
 //
 
@@ -983,7 +983,7 @@ spritewidths        7000:7592
 
 #define drawsegs_BASE           ((drawseg_t __far*)          MAKE_FULL_SEGMENT(patchwidths            , size_patchwidths))
 #define drawsegs_PLUSONE        ((drawseg_t __far*)          (drawsegs_BASE          + 1))
-//#define nextthing               ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))//
+#define nextthing               ((uint8_t __far*)            MAKE_FULL_SEGMENT(drawsegs_BASE   , size_drawsegs_PLUS_EXTRA))//
 
 
 
@@ -997,10 +997,12 @@ spritewidths        7000:7592
 // spritepage                 6370:0000
 // spriteoffset               6370:0565
 // patchwidths                641D:0000
-// [empty]                    ????:0000
+// drawsegs_BASE              6459:0000
+// drawsegs_PLUSONE           6459:0020
+// [empty]                    665D:0000
 
 
-// 15920 (!) bytes free till 6000:8000 
+// 6704 (!) bytes free till 6000:8000 
 
 // 0x4000 BLOCK RENDER
 
@@ -1070,13 +1072,12 @@ viewangletox            4BCB:0000
 
 [near range over]       
 
-drawsegs                4DCA:001B
-flatindex               4F9E:0000
-texturecompositesizes   4FA8:0000
-compositetexturepage    4FDE:0000
-compositetextureoffset  4FDE:01AC
-[done]                  5015:0000
-176 bytes free
+flatindex               4DCA:0000
+texturecompositesizes   4DD4:0000
+compositetexturepage    4E0A:0000
+compositetextureoffset  4E0A:01AC
+[done]                  4E41:0000
+7152 bytes free
 
 
 */

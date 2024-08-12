@@ -18,7 +18,7 @@
 
 
 FINESINE_SEGMENT               = 31e4h
-VERTEXES_SEGMENT               = 0E172h
+VERTEXES_SEGMENT               = 0E15Ch
 SEGS_RENDER_SEGMENT            = 04000h
 
 EXTRN _tantoangle:DWORD

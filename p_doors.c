@@ -95,14 +95,14 @@ void __near T_VerticalDoor (vldoor_t __far* door, THINKERREF doorRef)
 				switch(door->type) {
 					case blazeRaise:
 					case blazeClose:
-						sectors[door->secnum].specialdataRef = NULL_THINKERREF;
+						sectors_physics[door->secnum].specialdataRef = NULL_THINKERREF;
 						P_RemoveThinker (doorRef);  // unlink and free
 						S_StartSoundWithParams(doorsector_physics->soundorgX, doorsector_physics->soundorgY, sfx_bdcls);
 						break;
 		
 					case normal:
 					case close:
-						sectors[door->secnum].specialdataRef = NULL_THINKERREF;
+						sectors_physics[door->secnum].specialdataRef = NULL_THINKERREF;
 						P_RemoveThinker(doorRef);  // unlink and free
 						break;
 		
@@ -146,7 +146,7 @@ void __near T_VerticalDoor (vldoor_t __far* door, THINKERREF doorRef)
 						case close30ThenOpen:
 						case blazeOpen:
 						case open:
-							sectors[door->secnum].specialdataRef = NULL_THINKERREF;
+							sectors_physics[door->secnum].specialdataRef = NULL_THINKERREF;
 							P_RemoveThinker(doorRef);  // unlink and free
 							break;
 		
@@ -249,7 +249,7 @@ EV_DoDoor
 		doorsector_physics = &sectors_physics[secnum];
 		door  = (vldoor_t __far*)P_CreateThinker (TF_VERTICALDOOR_HIGHBITS);
 		doorRef = GETTHINKERREF(door);
-		sectors[secnum].specialdataRef = doorRef;
+		sectors_physics[secnum].specialdataRef = doorRef;
 
 	
 		door->secnum = secnum;
@@ -382,9 +382,9 @@ EV_VerticalDoor
 	doorsector = &sectors[secnum];
 	doorsector_physics = &sectors_physics[secnum];
 
-    if (doorsector->specialdataRef) {
+    if (doorsector_physics->specialdataRef) {
 		
-		doorRef = doorsector->specialdataRef;
+		doorRef = doorsector_physics->specialdataRef;
 		door = (vldoor_t __far*)&thinkerlist[doorRef].data;
 
 
@@ -436,7 +436,7 @@ EV_VerticalDoor
 	door->direction = 1;
 	door->speed = VDOORSPEED;
 	door->topwait = VDOORWAIT;
-	sectors[secnum].specialdataRef = doorRef;
+	sectors_physics[secnum].specialdataRef = doorRef;
 
 
     switch(linespecial) {
@@ -488,7 +488,7 @@ void P_SpawnDoorCloseIn30 (int16_t secnum)
 	door->speed = VDOORSPEED;
 	door->topcountdown = 30 * 35;
 
-	sectors[secnum].specialdataRef = doorRef;
+	sectors_physics[secnum].specialdataRef = doorRef;
 	sectors_physics[secnum].special = 0;
 
    
@@ -519,7 +519,7 @@ P_SpawnDoorRaiseIn5Mins
 	door->topwait = VDOORWAIT;
     door->topcountdown = 5 * 60 * 35;
 
-	sectors[secnum].specialdataRef = doorRef;
+	sectors_physics[secnum].specialdataRef = doorRef;
 	sectors_physics[secnum].special = 0;
 
 

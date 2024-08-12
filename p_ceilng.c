@@ -47,6 +47,7 @@ void __near T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef)
     result_e	res;
 	int16_t secnum = ceiling->secnum;
 	sector_t __far* ceilingsector = &sectors[secnum];
+	sector_physics_t __far* ceilingsector_physics = &sectors_physics[secnum];
 	int16_t soundorgX = sectors_physics[secnum].soundorgX;
 	int16_t soundorgY = sectors_physics[secnum].soundorgY;
 	//int16_t ceilingsecnum;
@@ -74,7 +75,7 @@ void __near T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef)
 			{
 				switch(ceiling->type) {
 					case raiseToHighest:
-						P_RemoveActiveCeiling(ceilingsector, ceilingRef);
+						P_RemoveActiveCeiling(ceilingsector_physics, ceilingRef);
 					break;
 					
 					case silentCrushAndRaise:
@@ -119,7 +120,7 @@ void __near T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef)
 
 					case lowerAndCrush:
 					case lowerToFloor:
-						P_RemoveActiveCeiling(ceilingsector, ceilingRef);
+						P_RemoveActiveCeiling(ceilingsector_physics, ceilingRef);
 						break;
 
 					default:
@@ -187,7 +188,7 @@ int16_t __near EV_DoCeiling ( uint8_t linetag, ceiling_e	type ) {
 		ceiling->crush = false;
 		ceilingRef = GETTHINKERREF(ceiling);
 
-		sectors[secnum].specialdataRef = ceilingRef;
+		sectors_physics[secnum].specialdataRef = ceilingRef;
 
 		switch(type)
 		{
@@ -247,13 +248,13 @@ void __near P_AddActiveCeiling(THINKERREF ceilingRef) {
 //
 // Remove a ceiling's thinker
 //
-void __near P_RemoveActiveCeiling(sector_t __far* ceilingsector, THINKERREF ceilingRef)
+void __near P_RemoveActiveCeiling(sector_physics_t __far* ceilingsector_physics, THINKERREF ceilingRef)
 {
     int8_t		i;
 
     for (i = 0;i < MAXCEILINGS;i++) {
 		if (activeceilings[i] == ceilingRef) {
-			ceilingsector->specialdataRef = NULL_THINKERREF;
+			ceilingsector_physics->specialdataRef = NULL_THINKERREF;
 			P_RemoveThinker (ceilingRef);
 			activeceilings[i] = NULL_THINKERREF;
 			break;

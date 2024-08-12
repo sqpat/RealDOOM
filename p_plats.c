@@ -163,7 +163,7 @@ int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	
 
 		plat = (plat_t __far*)P_CreateThinker(TF_PLATRAISE_HIGHBITS);
 		platRef = GETTHINKERREF(plat);
-		sectors[secnum].specialdataRef = platRef;
+		sectors_physics[secnum].specialdataRef = platRef;
 
 		plat->type = type;
 		plat->secnum = secnum;
@@ -303,7 +303,7 @@ void __near P_RemoveActivePlat(THINKERREF platRef)
 			plat = (plat_t __far*)&thinkerlist[platRef].data;
 			platsecnum = plat->secnum;
 			P_RemoveThinker(platRef);
-			(&sectors[platsecnum])->specialdataRef = NULL_THINKERREF;
+			(&sectors_physics[platsecnum])->specialdataRef = NULL_THINKERREF;
 
 			activeplats[i] = NULL_THINKERREF;
 

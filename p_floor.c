@@ -253,7 +253,7 @@ void __near T_MoveFloor(floormove_t __far* floor, THINKERREF floorRef)
 		floordirection = floor->direction;
 		floortexture = floor->texture;
 
-		sectors[floorsecnum].specialdataRef = NULL_THINKERREF;
+		sectors_physics[floorsecnum].specialdataRef = NULL_THINKERREF;
 
 		if (floordirection == 1) {
 			switch(floortype) {
@@ -316,7 +316,7 @@ int16_t __near EV_DoFloor ( uint8_t linetag,int16_t linefrontsecnum,floor_e	floo
 
 		floor = (floormove_t __far*)P_CreateThinker(TF_MOVEFLOOR_HIGHBITS);
 		floorRef = GETTHINKERREF(floor);
-		sector->specialdataRef = floorRef;
+		sector_physics->specialdataRef = floorRef;
 
 
 		floor->type = floortype;
@@ -538,7 +538,7 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
 		floorRef = GETTHINKERREF(floor);		
 		floor->direction = 1;
 		floor->secnum = secnum;
-		sector->specialdataRef = floorRef;
+		sectors_physics[secnum].specialdataRef = floorRef;
 
 		switch(type) {
 		  case build8:
@@ -583,7 +583,7 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
 					
 				height += stairsize;
 
-				if (sectors[tsecOffset].specialdataRef)
+				if (sectors_physics[tsecOffset].specialdataRef)
 					continue;
 					
 				//sec = tsecOffset;
@@ -598,7 +598,7 @@ int16_t __near EV_BuildStairs ( uint8_t	linetag,stair_e	type ) {
 				floor->secnum = tsecOffset;
 				floor->speed = speed;
 				floor->floordestheight = height;
-				sectors[tsecOffset].specialdataRef = floorRef;
+				sectors_physics[tsecOffset].specialdataRef = floorRef;
 				ok = 1;
 				break;
 			}

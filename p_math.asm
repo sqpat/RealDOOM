@@ -17,7 +17,7 @@
 	.MODEL  medium
 
 
-NODES_SEGMENT        = 0EB5Fh   
+NODES_SEGMENT        = 0EB49h   
 EXTRN FixedMul1632_:PROC 
 
 .DATA
