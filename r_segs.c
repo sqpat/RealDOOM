@@ -805,7 +805,8 @@ void __near R_RenderOneSeg ()
 // correct spots or you end up doing things like comparisons between uint32_t and int32_t.
 void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     fixed_t		hyp;
-    fineangle_t	distangle, offsetangle;
+    fineangle_t	distangle = 0;
+	fineangle_t offsetangle;
     int16_t			lightnum;
 	fixed_t_union rw_scalestep;
 	boolean     use16bit = false;
@@ -857,27 +858,27 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 
     // calculate rw_distance for scale calculation
-    rw_normalangle = MOD_FINE_ANGLE(curseg_render->fineangle + FINE_ANG90);
+    rw_normalangle = curseg_render->finenormalangle;
 	rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
 
-    // calculate rw_distance for scale calculation
-    // todo: precalculate this operation in the fineangle field since its not used anywhere else (?)
-	//rw_normalangle = MOD_FINE_ANGLE(curseg_render->fineangle + FINE_ANG90);
-	//rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
 
 
 
 
+	hyp = R_PointToDist (curlinev1.x, curlinev1.y);
 	offsetangle = abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
 
-    if (offsetangle > FINE_ANG90)
-		offsetangle = 	FINE_ANG90;
+    if (offsetangle < FINE_ANG90){
+	    distangle = FINE_ANG90 - offsetangle;
+	    rw_distance = FixedMulTrig(FINE_SINE_ARGUMENT, distangle, hyp);
+	} else {
+		// optimized from the above where distangle is FINE_ANG90 - FINE_ANG90 (or 0) then 
+		// rw_distance is hyp multiplied by sine 0 (which is 0).
+		rw_distance = 0;
+	}
 
-    distangle = FINE_ANG90 - offsetangle;
 
 	// todo inline r_pointtodist when doing asm
-	hyp = R_PointToDist (curlinev1.x, curlinev1.y);
-    rw_distance = FixedMulTrig(FINE_SINE_ARGUMENT, distangle, hyp);
 	
     ds_p->x1 = rw_x = start;
     ds_p->x2 = stop;
@@ -1081,7 +1082,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     if (segtextured) {
  
 		
-		offsetangle = ((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
+		//offsetangle = ((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
 
 
 		if (offsetangle > FINE_ANG180) {
@@ -1089,10 +1090,12 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		}
 
 		if (offsetangle > FINE_ANG90) {
-			offsetangle = FINE_ANG90;
+			//optimized from setting it to fine_ang90 then multiplying hyp by sine of 90
+			rw_offset.w = hyp;
+		} else {
+	 		rw_offset.w = FixedMulTrig(FINE_SINE_ARGUMENT, offsetangle, hyp);
 		}
 
- 		rw_offset.w = FixedMulTrig(FINE_SINE_ARGUMENT, offsetangle, hyp);
 	
 		// todo: we are subtracting then checking vs 0x8000 (or 0x80000000). 
 		// Is this equivalent to a simpler operation?

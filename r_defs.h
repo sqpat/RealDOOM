@@ -104,7 +104,7 @@ typedef	struct
 } sector_t;
 
 
-// 21 bytes
+// 21 bytes... how to improve? move out soundorgx/y to make it 17... move out soundtraversed?
 typedef	struct
 {
 
@@ -296,7 +296,7 @@ typedef struct seg_render_s {
 
 	int16_t	offset;
 
-	fineangle_t	fineangle;
+	fineangle_t	finenormalangle;
 
 	int16_t	sidedefOffset;
 } seg_render_t;
