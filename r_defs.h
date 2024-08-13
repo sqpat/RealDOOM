@@ -307,7 +307,7 @@ typedef struct seg_render_s {
 //
 // BSP node.
 //
-// 12 bytes. nice
+// 12 bytes. ok
 typedef struct node_s
 {
     // Partition line.

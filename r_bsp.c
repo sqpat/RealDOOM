@@ -32,6 +32,7 @@
 #include "r_state.h"
 #include "m_memory.h"
 #include "m_near.h"
+#include <dos.h>
 
 //#include "r_local.h"
 
@@ -433,7 +434,9 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 		break;
 	case 3:
 	case 7:
-		x1 = x2 = y1 = y2 = bspcoord[BOXTOP]; // todo optimize since angle1 = angle 2? how common is this.
+	 // todo optimize since angle1 = angle 2? how common is this.
+	 // span would be 0
+		x1 = x2 = y1 = y2 = bspcoord[BOXTOP];
 		break;
 	case 4:
 		x1 = x2 = bspcoord[BOXLEFT];
@@ -593,7 +596,6 @@ void __near R_Subsector(int16_t subsecnum) {
 
 void __far R_RenderBSPNode() {
 	node_t  __far*bsp;
-	node_render_t __far* bsp_render;
 	fixed_t_union dx, dy;
 	fixed_t left, right;
 	int16_t stack_bsp[MAX_BSP_DEPTH];
@@ -653,12 +655,14 @@ void __far R_RenderBSPNode() {
 
 		bspnum = stack_bsp[sp];
 		side = stack_side[sp];
-		bsp_render = &nodes_render[bspnum];
 
 		// Possibly divide back space.
 		//Walk back up the tree until we find
 		//a node that has a visible backspace.
-		while (!R_CheckBBox(bsp_render->bbox[side ^ 1]))  // - todo only used once, is it better to inline this? - sq
+
+
+
+		while (!R_CheckBBox(((node_render_t __far *)MK_FP(NODES_RENDER_SEGMENT+ bspnum, 0))->bbox[side ^ 1]))  // - todo only used once, is it better to inline this? - sq
 		{
 			if (sp == 0)
 			{
@@ -673,7 +677,6 @@ void __far R_RenderBSPNode() {
 			bspnum = stack_bsp[sp];
 			side = stack_side[sp];
 
-			bsp_render = &nodes_render[bspnum];
 		}
 
 		bspnum = nodes[bspnum].children[side ^ 1];

@@ -936,6 +936,9 @@ patchoffset                 83BB:01DC
 #define spritewidths          ((uint8_t __far*)        MAKE_FULL_SEGMENT(spritedefs_bytes, size_spritedefs))
 
 
+#define NODES_RENDER_SEGMENT 0x7000
+
+
 
 
 /*
