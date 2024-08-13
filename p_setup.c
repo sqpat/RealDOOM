@@ -363,6 +363,8 @@ void __near P_LoadSectors(int16_t lump) {
 
 	FAR_memset(sectors, 0, MAX_SECTORS_SIZE);
 	FAR_memset(sectors_physics, 0, MAX_SECTORS_PHYSICS_SIZE);
+	FAR_memset(sectors_soundorgs, 0, MAX_SECTORS_SOUNDORGS_SIZE);
+	FAR_memset(sector_soundtraversed, 0, MAX_SECTORS_SOUNDTRAVERSED_SIZE);
 	Z_QuickMapScratch_8000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_8000);
