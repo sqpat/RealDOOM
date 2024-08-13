@@ -873,8 +873,8 @@ void __near P_GroupLines(void) {
 		// set the degenmobj_t to the middle of the bounding box
 		
 
-		sectors_physics[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
-		sectors_physics[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
+		sectors_soundorgs[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
+		sectors_soundorgs[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
 
 		// adjust bounding box to map blocks
 		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;

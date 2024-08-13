@@ -48,8 +48,8 @@ void __near T_MoveCeiling(ceiling_t __far* ceiling, THINKERREF ceilingRef)
 	int16_t secnum = ceiling->secnum;
 	sector_t __far* ceilingsector = &sectors[secnum];
 	sector_physics_t __far* ceilingsector_physics = &sectors_physics[secnum];
-	int16_t soundorgX = sectors_physics[secnum].soundorgX;
-	int16_t soundorgY = sectors_physics[secnum].soundorgY;
+	int16_t soundorgX = sectors_soundorgs[secnum].soundorgX;
+	int16_t soundorgY = sectors_soundorgs[secnum].soundorgY;
 	//int16_t ceilingsecnum;
 
     switch(ceiling->direction) {

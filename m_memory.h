@@ -332,25 +332,30 @@ segs                 EDD9:0000
 #define MAXEVENTS           64
 #define MAXINTERCEPTS       128
 
-#define size_thinkerlist         (sizeof(thinker_t) * MAX_THINKERS)
-#define size_linebuffer          (MAX_LINEBUFFER_SIZE)
-#define size_sectors_physics     (MAX_SECTORS_PHYSICS_SIZE)
-#define size_mobjinfo            (sizeof(mobjinfo_t) * NUMMOBJTYPES)
-#define size_intercepts          (sizeof(intercept_t) * MAXINTERCEPTS)
-#define size_ammnumpatchbytes    (524)
-#define size_ammnumpatchoffsets  ((sizeof(uint16_t) * 10))
-#define size_doomednum           ((sizeof(int16_t) * NUMMOBJTYPES))
-#define size_linespeciallist     ((sizeof(int16_t) * MAXLINEANIMS))
+#define size_thinkerlist           (sizeof(thinker_t) * MAX_THINKERS)
+#define size_linebuffer            (MAX_LINEBUFFER_SIZE)
+#define size_sectors_physics       (MAX_SECTORS_PHYSICS_SIZE)
+#define size_sectors_soundorgs     (MAX_SECTORS_SOUNDORGS_SIZE)
+#define size_sector_soundtraversed (MAX_SECTORS_SOUNDTRAVERSED_SIZE)
+#define size_mobjinfo              (sizeof(mobjinfo_t) * NUMMOBJTYPES)
+#define size_intercepts            (sizeof(intercept_t) * MAXINTERCEPTS)
+#define size_ammnumpatchbytes      (524)
+#define size_ammnumpatchoffsets    ((sizeof(uint16_t) * 10))
+#define size_doomednum             ((sizeof(int16_t) * NUMMOBJTYPES))
+#define size_linespeciallist       ((sizeof(int16_t) * MAXLINEANIMS))
 
-#define thinkerlist        ((thinker_t __far*)          MAKE_FULL_SEGMENT(0x40000000, 0))
-#define mobjinfo           ((mobjinfo_t __far *)        MAKE_FULL_SEGMENT(thinkerlist, size_thinkerlist))
-#define linebuffer         ((int16_t __far*)            MAKE_FULL_SEGMENT(mobjinfo, size_mobjinfo ))
-#define sectors_physics    ((sector_physics_t __far* )  MAKE_FULL_SEGMENT(linebuffer, size_linebuffer ))
-#define intercepts         ((intercept_t __far*)        MAKE_FULL_SEGMENT(sectors_physics, size_sectors_physics ))
-#define ammnumpatchbytes   ((byte __far *)              MAKE_FULL_SEGMENT(intercepts, size_intercepts ))
-#define ammnumpatchoffsets ((uint16_t __far*)           (((int32_t)ammnumpatchbytes) + 0x020C))
-#define doomednum          ((int16_t __far*)            MAKE_FULL_SEGMENT(ammnumpatchbytes, (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
-#define linespeciallist    ((int16_t __far*)            MAKE_FULL_SEGMENT(doomednum, size_doomednum ))
+#define thinkerlist        ((thinker_t __far*)            MAKE_FULL_SEGMENT(0x40000000, 0))
+#define mobjinfo           ((mobjinfo_t __far *)          MAKE_FULL_SEGMENT(thinkerlist, size_thinkerlist))
+#define linebuffer         ((int16_t __far*)              MAKE_FULL_SEGMENT(mobjinfo, size_mobjinfo ))
+#define sectors_physics    ((sector_physics_t __far* )    MAKE_FULL_SEGMENT(linebuffer, size_linebuffer ))
+#define sectors_soundorgs  ((sector_soundorg_t __far* )  MAKE_FULL_SEGMENT(sectors_physics, size_sectors_physics ))
+#define sector_soundtraversed ((int8_t __far*)           MAKE_FULL_SEGMENT(sectors_soundorgs, size_sectors_soundorgs ))
+
+#define intercepts         ((intercept_t __far*)          MAKE_FULL_SEGMENT(sector_soundtraversed, size_sector_soundtraversed ))
+#define ammnumpatchbytes   ((byte __far *)                MAKE_FULL_SEGMENT(intercepts, size_intercepts ))
+#define ammnumpatchoffsets ((uint16_t __far*)             (((int32_t)ammnumpatchbytes) + 0x020C))
+#define doomednum          ((int16_t __far*)              MAKE_FULL_SEGMENT(ammnumpatchbytes, (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
+#define linespeciallist    ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum, size_doomednum ))
   
  
 
@@ -360,6 +365,8 @@ segs                 EDD9:0000
 // 493B:0000  mobjinfo
 // 499A:0000  linebuffer
 // 4AD8:0000  sectors_physics
+// 4C34:0000  sectors_soundorgs
+// 4C8B:0000  sectors_soundstraversed
 // 4CA1:0000  intercepts
 // 4CD9:0000  ammnumpatchbytes
 // 4CD9:020C  ammnumpatchoffsets

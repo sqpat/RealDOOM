@@ -126,12 +126,12 @@ __near P_RecursiveSound
 #endif
 
 	// wake up all monsters in this sector
-    if (soundsector->validcount == validcount && soundsector_physics->soundtraversed <= soundblocks+1) {
+    if (soundsector->validcount == validcount && sector_soundtraversed[secnum] <= soundblocks+1) {
 		return;		// already flooded
     }
 
 	soundsector->validcount = validcount;
-	soundsector_physics->soundtraversed = soundblocks+1;
+	sector_soundtraversed[secnum] = soundblocks+1;
 	//soundsector->soundtargetRef = 1;
 
 
@@ -682,7 +682,8 @@ void __near A_Look (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 			actor = (mobj_t __far*)(&thinkerlist[actorRef].data);
 		}
 	#endif
-    targRef = sectors_physics[actorsecnum].soundtraversed ? playerMobjRef : 0;
+    targRef = sector_soundtraversed[actorsecnum] ? playerMobjRef : 0;
+
 
 
 	if (targRef) {

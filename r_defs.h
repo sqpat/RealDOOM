@@ -108,23 +108,26 @@ typedef	struct
 typedef	struct
 {
 
-	uint8_t	special;	// only a few small numbers
-	uint8_t	tag;
 	int16_t	blockbox[4];
 	// origin for any sounds played by the sector
 	// corresponds to fixed_t, not easy to change
-	int16_t soundorgX;
-	int16_t soundorgY;
 	// thinker_t for reversable actions
 	THINKERREF	specialdataRef;
 	int16_t		linecount;  // is int8 ok? seems more than 2-3 is rare..
 
 	int16_t linesoffset;	// [linecount] size
 
-	// 0 = untraversed, 1,2 = sndlines -1
-	int8_t		soundtraversed;
+	uint8_t	special;	// only a few small numbers
+	uint8_t	tag;
+
 
 } sector_physics_t;
+
+typedef struct {
+	int16_t soundorgX;
+	int16_t soundorgY;
+} sector_soundorg_t;
+
 
  
 
@@ -304,6 +307,7 @@ typedef struct seg_render_s {
 //
 // BSP node.
 //
+// 8 bytes, nice
 typedef struct node_s
 {
     // Partition line.
@@ -319,6 +323,7 @@ typedef struct node_s
     
 } node_t; // used in sight and bsp, but bbox is render only?
 
+// 16 bytes, nice
 typedef struct node_render_s
 {
 	// Bounding box for each child.

@@ -954,12 +954,12 @@ R_FixedMulLocalWrapper2(0, 0)
 
 	//I_Error("\n%x %x %x %x", size_patchoffset, size_patchpage, size_zlight, 0);
 
-/*
+
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		lineflagslist, 
-		seenlines,
-		 subsectors,
-		 subsector_lines,
+		sectors_physics, 
+		sectors_soundorgs,
+		 sector_soundtraversed,
+		 intercepts,
 		nodes, 
 		segs,
 			subsectors, 
@@ -977,7 +977,7 @@ R_FixedMulLocalWrapper2(0, 0)
 		
 			size_texturewidthmasks);
 
-*/
+
 
 
 	file[0] = 0;

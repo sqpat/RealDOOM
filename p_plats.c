@@ -48,10 +48,10 @@ void __near T_PlatRaise(plat_t __far* plat, THINKERREF platRef)
     result_e	res;
 	int16_t platsecnum = plat->secnum;
 	sector_t __far* platsector = &sectors[platsecnum];
-	sector_physics_t __far* platsector_physics = &sectors_physics[platsecnum];
+	sector_soundorg_t __far* platsector_soundorg = &sectors_soundorgs[platsecnum];
 
-	int16_t sectorsoundorgX = platsector_physics->soundorgX;
-	int16_t sectorsoundorgY = platsector_physics->soundorgY;
+	int16_t sectorsoundorgX = platsector_soundorg->soundorgX;
+	int16_t sectorsoundorgY = platsector_soundorg->soundorgY;
 	short_height_t sectorfloorheight = platsector->floorheight;
 
 
@@ -156,8 +156,8 @@ int16_t __near EV_DoPlat (  uint8_t linetag, int16_t linefrontsecnum,plattype_e	
 		rtn = 1;
 
 
-		sectorsoundorgX = sectors_physics[secnum].soundorgX;
-		sectorsoundorgY = sectors_physics[secnum].soundorgY;
+		sectorsoundorgX = sectors_soundorgs[secnum].soundorgX;
+		sectorsoundorgY = sectors_soundorgs[secnum].soundorgY;
 		sectorfloorheight = sectors[secnum].floorheight;
 
 

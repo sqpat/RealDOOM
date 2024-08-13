@@ -62,8 +62,8 @@ void __near P_StartButton ( int16_t linenum,int16_t linefrontsecnum,bwhere_e	w,i
 	    buttonlist[i].where = w;
 	    buttonlist[i].btexture = texture;
 	    buttonlist[i].btimer = time;
-		buttonlist[i].soundorgX = sectors_physics[linefrontsecnum].soundorgX;
-		buttonlist[i].soundorgY = sectors_physics[linefrontsecnum].soundorgY;
+		buttonlist[i].soundorgX = sectors_soundorgs[linefrontsecnum].soundorgX;
+		buttonlist[i].soundorgY = sectors_soundorgs[linefrontsecnum].soundorgY;
 		return;
 	}
     }

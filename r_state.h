@@ -39,30 +39,32 @@
 #define MAX_SEGS				2815u
 #define MAX_LINEBUFFER_COUNT	2542u
 
-#define MAX_SIDES_SIZE				(MAX_SIDES *		sizeof(side_t))
-#define MAX_SECTORS_SIZE			(MAX_SECTORS *		sizeof(sector_t))
-#define MAX_VERTEXES_SIZE			(MAX_VERTEXES *		sizeof(vertex_t))
-#define MAX_LINES_SIZE				(MAX_LINES *		sizeof(line_t))
-#define MAX_LINEFLAGS_SIZE			(MAX_LINES *        sizeof(uint8_t))
-#define MAX_SEENLINES_SIZE			((MAX_LINES / 8) + 1)
-#define MAX_SUBSECTORS_SIZE			(MAX_SUBSECTORS *	sizeof(subsector_t))
-#define MAX_SUBSECTOR_LINES_SIZE	(MAX_SUBSECTORS *	sizeof(uint8_t))
-#define MAX_NODES_SIZE				(MAX_NODES *		sizeof(node_t))
-#define MAX_SEGS_SIZE				(MAX_SEGS *			sizeof(seg_t))
+#define MAX_SIDES_SIZE		    		(MAX_SIDES *		sizeof(side_t))
+#define MAX_SECTORS_SIZE			    (MAX_SECTORS *		sizeof(sector_t))
+#define MAX_VERTEXES_SIZE			    (MAX_VERTEXES *		sizeof(vertex_t))
+#define MAX_LINES_SIZE				    (MAX_LINES *		sizeof(line_t))
+#define MAX_LINEFLAGS_SIZE			    (MAX_LINES *        sizeof(uint8_t))
+#define MAX_SEENLINES_SIZE			    ((MAX_LINES / 8) + 1)
+#define MAX_SUBSECTORS_SIZE	    		(MAX_SUBSECTORS *	sizeof(subsector_t))
+#define MAX_SUBSECTOR_LINES_SIZE    	(MAX_SUBSECTORS *	sizeof(uint8_t))
+#define MAX_NODES_SIZE				    (MAX_NODES *		sizeof(node_t))
+#define MAX_SEGS_SIZE				    (MAX_SEGS *			sizeof(seg_t))
 
-#define MAX_SEGS_PHYSICS_SIZE		(MAX_SEGS *		    sizeof(seg_physics_t))
-#define MAX_SECTORS_PHYSICS_SIZE	(MAX_SECTORS *		sizeof(sector_physics_t))
-#define MAX_LINES_PHYSICS_SIZE		(MAX_LINES *		sizeof(line_physics_t))
+#define MAX_SEGS_PHYSICS_SIZE   		(MAX_SEGS *		    sizeof(seg_physics_t))
+#define MAX_SECTORS_PHYSICS_SIZE    	(MAX_SECTORS *		sizeof(sector_physics_t))
+#define MAX_SECTORS_SOUNDORGS_SIZE      (MAX_SECTORS *      sizeof(sector_soundorg_t))
+#define MAX_SECTORS_SOUNDTRAVERSED_SIZE (MAX_SECTORS *      sizeof(int8_t))
+#define MAX_LINES_PHYSICS_SIZE  		(MAX_LINES *		sizeof(line_physics_t))
 
-#define MAX_SIDES_RENDER_SIZE		(MAX_SIDES *		sizeof(side_render_t))
-#define MAX_NODES_RENDER_SIZE		(MAX_NODES *		sizeof(node_render_t))
-#define MAX_SEGS_RENDER_SIZE		(MAX_SEGS *			sizeof(seg_render_t))
+#define MAX_SIDES_RENDER_SIZE   		(MAX_SIDES *		sizeof(side_render_t))
+#define MAX_NODES_RENDER_SIZE	    	(MAX_NODES *		sizeof(node_render_t))
+#define MAX_SEGS_RENDER_SIZE		    (MAX_SEGS *			sizeof(seg_render_t))
 
-#define MAX_LINEBUFFER_SIZE			(MAX_LINEBUFFER_COUNT * sizeof(int16_t))
-#define MAX_BLOCKMAP_LUMPSIZE		26870u
-#define MAX_BLOCKLINKS_SIZE			7866u
-#define MAX_REJECT_SIZE				15138u
-#define NIGHTMARE_SPAWN_SIZE		(MAX_THINKERS *  sizeof(mapthing_t))
+#define MAX_LINEBUFFER_SIZE 			(MAX_LINEBUFFER_COUNT * sizeof(int16_t))
+#define MAX_BLOCKMAP_LUMPSIZE	    	26870u
+#define MAX_BLOCKLINKS_SIZE	    		7866u
+#define MAX_REJECT_SIZE				    15138u
+#define NIGHTMARE_SPAWN_SIZE		    (MAX_THINKERS *  sizeof(mapthing_t))
 
 
 #define MAX_LEVEL_THINKERS			509u
