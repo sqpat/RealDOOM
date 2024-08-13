@@ -600,9 +600,7 @@ void __far R_RenderBSPNode() {
 	byte stack_side[MAX_BSP_DEPTH];
 	int16_t sp = 0;
 	byte side = 0;
-	fixed_t_union temp;
 	int16_t bspnum = numnodes - 1;
-	temp.h.fracbits = 0;
 	
 
 	while (true)
@@ -616,10 +614,10 @@ void __far R_RenderBSPNode() {
 
 			//decide which side the view point is on
 			// todo try and use just the high 16 bits (dont subtract w's, they may not even be used below?)
-			temp.h.intbits = bsp->x;
-			dx.w = (viewx.w - temp.w);
-			temp.h.intbits = bsp->y;
-			dy.w = (viewy.w - temp.w);
+			dx.w = viewx.w;
+			dx.h.intbits -= bsp->x;
+			dy.w = viewy.w;
+			dy.h.intbits -= bsp->y;
 
 
 			// is a*b > c*d?
@@ -655,7 +653,6 @@ void __far R_RenderBSPNode() {
 
 		bspnum = stack_bsp[sp];
 		side = stack_side[sp];
-		bsp = &nodes[bspnum];
 		bsp_render = &nodes_render[bspnum];
 
 		// Possibly divide back space.
@@ -676,10 +673,9 @@ void __far R_RenderBSPNode() {
 			bspnum = stack_bsp[sp];
 			side = stack_side[sp];
 
-			bsp = &nodes[bspnum];
 			bsp_render = &nodes_render[bspnum];
 		}
 
-		bspnum = bsp->children[side ^ 1];
+		bspnum = nodes[bspnum].children[side ^ 1];
 	}
 }

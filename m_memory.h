@@ -1076,23 +1076,23 @@ spritewidths        7000:7592
 segs_render             4000:0000
 sides_render            46E0:0000
 vissprites              4967:0000
-player_vissprites       4AC7:0000
-texturepatchlump_offset 4ACD:0000
-visplaneheaders         4B03:0000
-fuzzoffset              4B52:0000
-scalelightfixed         4B5B:0000
-scalelight              4B5E:0000
-patch_sizes             4B8E:0000
-viewangletox            4BCB:0000
+player_vissprites       4AA7:0000
+texturepatchlump_offset 4AAC:0000
+visplaneheaders         4AE2:0000
+fuzzoffset              4B31:0000
+scalelightfixed         4B3A:0000
+scalelight              4B3D:0000
+patch_sizes             4B6D:0000
+viewangletox            4BA9:0000
 
 [near range over]       
 
-flatindex               4DCA:0000
-texturecompositesizes   4DD4:0000
-compositetexturepage    4E0A:0000
-compositetextureoffset  4E0A:01AC
-[done]                  4E41:0000
-7152 bytes free
+flatindex               4DA9:0000
+texturecompositesizes   4DB3:0000
+compositetexturepage    4DE9:0000
+compositetextureoffset  4DE9:01AC
+[done]                  4E20:0000
+7680 bytes free
 
 
 */

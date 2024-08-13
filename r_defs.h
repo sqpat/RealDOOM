@@ -104,7 +104,7 @@ typedef	struct
 } sector_t;
 
 
-// 21 bytes... how to improve? move out soundorgx/y to make it 17... move out soundtraversed?
+// 16 bytes...
 typedef	struct
 {
 
@@ -307,7 +307,7 @@ typedef struct seg_render_s {
 //
 // BSP node.
 //
-// 8 bytes, nice
+// 12 bytes. nice
 typedef struct node_s
 {
     // Partition line.
@@ -455,7 +455,7 @@ typedef struct
 //  that will be drawn during a refresh.
 // I.e. a sprite object that is partly visible.
 
-// 42 bytes.
+// 38 bytes.
 typedef struct vissprite_s
 {
     // Doubly linked list.
@@ -488,7 +488,6 @@ typedef struct vissprite_s
     // for color translation and shadow draw,
     //  maxbright frames as well
    
-    int32_t			mobjflags;
     
 } vissprite_t;
 

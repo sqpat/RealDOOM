@@ -956,26 +956,16 @@ R_FixedMulLocalWrapper2(0, 0)
 
 /*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		lineflagslist, 
-		seenlines,
-		 subsectors,
-		 subsector_lines,
-		nodes, 
-		segs,
-			subsectors, 
-			nodes,
-			segs,
-			((seg_t __far*)       MAKE_FULL_SEGMENT(segs            , size_segs)),
-			0L,
-			vissprites,
-
-			spritepage, 
-			spriteoffset, 
-
-			texturedefs_offset,
-			texturewidthmasks,
-		
-			size_texturewidthmasks);
+		flatindex, 
+		texturecompositesizes,
+		 texturepatchlump_offset,
+		 visplaneheaders,
+		fuzzoffset, 
+		scalelightfixed,
+			scalelight, 
+			patch_sizes,
+			viewangletox
+);
 
 */
 

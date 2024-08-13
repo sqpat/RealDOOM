@@ -495,7 +495,6 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 	vissprite_p++;
 	vis = vissprite_p - 1;
 
-	vis->mobjflags = thingflags;
     vis->scale = xscale.w<<detailshift.b.bytelow;
     vis->gx = thingx;
     vis->gy = thingy;
@@ -666,7 +665,6 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
 
     
     // store information in a vissprite
-    vis->mobjflags = 0;
     temp.h.fracbits = 0;
     temp.h.intbits = spritetopoffsets[spriteindex];
         // hack to make this fit in 8 bits, check r_init.c
