@@ -260,10 +260,14 @@ int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlev
     visplane_t __far*	check;
     visplaneheader_t __far *checkheader;
 	int16_t i;
+	int16_t_union piclight;
     if (picnum == skyflatnum) {
 		height = 0;			// all skys map together
 		lightlevel = 0;
     }
+	piclight.bu.bytelow = picnum;
+	piclight.bu.bytehigh = lightlevel;
+	
 	
     for (i = 0; i<=lastvisplane; i++) {
 		
@@ -277,8 +281,7 @@ int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlev
 		
 
 		if (height == checkheader->height
-			&& picnum == checkheader->picnum
-			&& lightlevel == checkheader->lightlevel) {
+			&& piclight.hu == visplanepiclights[i].pic_and_light) {
 				break;
 		}
 
@@ -296,10 +299,11 @@ int16_t  __near R_FindPlane ( fixed_t   height, uint8_t picnum, uint8_t lightlev
     lastvisplane++;
 
     checkheader->height = height;
-    checkheader->picnum = picnum;
-    checkheader->lightlevel = lightlevel;
     checkheader->minx = SCREENWIDTH;
     checkheader->maxx = -1;
+	// using this ugly MK_FP because c compiler seems confused when we use the define array to set...
+	visplanepiclights[i].pic_and_light = piclight.hu;
+
 
 	check = R_HandleEMSPagination(i, isceil);
 
@@ -366,9 +370,9 @@ int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t
 
 	// todo clean up this pl thing
 	visplaneheaders[lastvisplane].height = plheader->height;
-	visplaneheaders[lastvisplane].picnum = plheader->picnum;
-	visplaneheaders[lastvisplane].lightlevel = plheader->lightlevel;
-	
+
+	visplanepiclights[lastvisplane].pic_and_light = visplanepiclights[index].pic_and_light;
+
 	plheader = &visplaneheaders[lastvisplane];
 	plheader->minx = start;
 	plheader->maxx = stop;
@@ -450,7 +454,6 @@ void __near R_DrawPlanes (void) {
 	int8_t			physindex = 0;
 	int8_t			subindex = 0;
 
-    visplaneheader_t __far*	plheader;
 	
 
 	int16_t effectivepagenumber = 0;
@@ -460,15 +463,16 @@ void __near R_DrawPlanes (void) {
 	int16_t lastflatcacheindicesused[3] = {3, 2, 1}; // initialized so that allocation order is 0 1 2
 	segment_t visplanesegment = 0x8400;
 	uint16_t visplaneoffset = 0;
+	visplanepiclight_t piclight;
 
     for (i = 0; i < lastvisplane ; i++, visplaneoffset+= VISPLANE_BYTE_SIZE) {
-		plheader = &visplaneheaders[i];
+		visplaneheader_t __far*	plheader = &visplaneheaders[i];
 
 		if (plheader->minx > plheader->maxx)
 			continue;
 
-		// umm... what if we hit this after 100 iters of continue and overflow? probably should never happen...
 		while (visplaneoffset >= (VISPLANES_PER_EMS_PAGE * VISPLANE_BYTE_SIZE)){
+		// umm... what if we hit this after 100 iters of continue above and overflow? probably should never happen...
 			
 			physindex++;
 			visplaneoffset -= (VISPLANES_PER_EMS_PAGE * VISPLANE_BYTE_SIZE);
@@ -486,12 +490,23 @@ void __near R_DrawPlanes (void) {
 		} 
 		pl = (visplane_t __far *) MK_FP(visplanesegment, visplaneoffset); 
 		// sky flat
-		if (plheader->picnum == skyflatnum) {
+		piclight.pic_and_light = visplanepiclights[i].pic_and_light;
+		if (piclight.bytes.picnum == skyflatnum) {
 			R_DrawSkyPlane(plheader->minx, plheader->maxx, pl);
 			continue;
 		}
+
+		// calculate light early while some of these vars (like i) can be in registers..
+
+		light = (piclight.bytes.lightlevel >> LIGHTSEGSHIFT)+extralight;
+
+		if (light >= LIGHTLEVELS){
+			light = LIGHTLEVELS-1;
+		}
+		planezlight = &zlight[lightshift7lookup[light]];
+
 		
-		usedflatindex = flatindex[flattranslation[plheader->picnum]];
+		usedflatindex = flatindex[flattranslation[piclight.bytes.picnum]];
 		if (usedflatindex == 0xFF) {
 			// load if not loaded
 
@@ -509,7 +524,7 @@ void __near R_DrawPlanes (void) {
 
 			foundflat:
 
-			flatindex[flattranslation[plheader->picnum]] = usedflatindex;
+			flatindex[flattranslation[piclight.bytes.picnum]] = usedflatindex;
 			flatunloaded = true;
 		}
 
@@ -564,31 +579,25 @@ void __near R_DrawPlanes (void) {
 		// load if necessary
 		if (flatunloaded){
 #ifdef CHECK_FOR_ERRORS
-			int16_t lump = firstflat + flattranslation[plheader->picnum];
+			int16_t lump = firstflat + flattranslation[piclight.bytes.picnum];
 			if (lump < firstflat || lump > firstflat + numflats) {
 				I_Error("bad flat? %i", lump);
 			}
 #endif
 		 
-			W_CacheLumpNumDirect(firstflat + flattranslation[plheader->picnum], MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]));
+			W_CacheLumpNumDirect(firstflat + flattranslation[piclight.bytes.picnum], MK_FP(FLAT_CACHE_PAGE[flatcacheindex], MULT_4096[usedflatindex & 0x03]));
 		}
 		
 		// regular flat
 		ds_source_segment = FLAT_CACHE_PAGE[flatcacheindex] + MULT_256[usedflatindex & 0x03];
 
 		// works but slow?
-		//ds_source = R_GetFlat(firstflat + flattranslation[plheader->picnum]);
+		//ds_source = R_GetFlat(firstflat + flattranslation[piclight.bytes.picnum]);
 		
 		planeheight = labs(plheader->height - viewz.w);
-		light = (plheader->lightlevel >> LIGHTSEGSHIFT)+extralight;
-
-		if (light >= LIGHTLEVELS){
-			light = LIGHTLEVELS-1;
-		}
-
-		// quicker shift 7.. (? test)
-		planezlight = &zlight[lightshift7lookup[light]];
- 
+				// quicker shift 7.. (? test)
+	
+	 
 		pl->top[plheader->maxx+1] = 0xff;
 		pl->top[plheader->minx-1] = 0xff;
 

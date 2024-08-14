@@ -1037,6 +1037,7 @@ spritewidths        7000:7592
 #define size_player_vissprites        (sizeof(vissprite_t) * 2)
 #define size_texturepatchlump_offset  (MAX_TEXTURES * sizeof(uint16_t))
 #define size_visplaneheaders          (sizeof(visplaneheader_t) * MAXEMSVISPLANES)
+#define size_visplanepiclights        (sizeof(visplanepiclight_t) * MAXEMSVISPLANES)
 #define size_fuzzoffset               ((FUZZTABLE + (FUZZ_LOOP_LENGTH - 1)) * sizeof(int16_t))
 #define size_scalelightfixed          (sizeof(uint8_t) * (MAXLIGHTSCALE))
 #define size_scalelight               (sizeof(uint8_t) * (LIGHTLEVELS * MAXLIGHTSCALE))
@@ -1056,7 +1057,8 @@ spritewidths        7000:7592
 #define player_vissprites       ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites              , size_vissprites))
 #define texturepatchlump_offset ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites       , size_player_vissprites))
 #define visplaneheaders         ((visplaneheader_t __far*)   MAKE_FULL_SEGMENT(texturepatchlump_offset , size_texturepatchlump_offset))
-#define fuzzoffset              ((int16_t __far*)            MAKE_FULL_SEGMENT(visplaneheaders         , size_visplaneheaders))
+#define visplanepiclights       ((visplanepiclight_t __far*) MAKE_FULL_SEGMENT(visplaneheaders         , size_visplaneheaders))
+#define fuzzoffset              ((int16_t __far*)            MAKE_FULL_SEGMENT(visplanepiclights       , size_visplanepiclights))
 #define scalelightfixed         ((uint8_t __far*)            MAKE_FULL_SEGMENT(fuzzoffset              , size_fuzzoffset))
 #define scalelight              ((uint8_t __far*)            MAKE_FULL_SEGMENT(scalelightfixed         , size_scalelightfixed))
 #define patch_sizes             ((uint16_t __far*)           MAKE_FULL_SEGMENT(scalelight              , size_scalelight))
@@ -1070,6 +1072,10 @@ spritewidths        7000:7592
 #define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
 #define compositetextureoffset  ((uint8_t __far*)            (((int32_t)compositetexturepage)          + size_compositetexturepage))
+
+#define visplanepiclights_segment       ((segment_t) ((int32_t)visplanepiclights >> 16))
+
+
 
 // need to undo prior drawseg_t shenanigans
 //0x4FBEE
@@ -1089,6 +1095,7 @@ vissprites              4967:0000
 player_vissprites       4AA7:0000
 texturepatchlump_offset 4AAC:0000
 visplaneheaders         4AE2:0000
+visplanepiclights       4B21:0000
 fuzzoffset              4B31:0000
 scalelightfixed         4B3A:0000
 scalelight              4B3D:0000

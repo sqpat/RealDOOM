@@ -544,22 +544,29 @@ typedef struct
 } spritedef_t;
 
 
-// 12 bytes...
+// 8 bytes... picnum and lightlevel pulled out to their own fields
 typedef struct
 {
   fixed_t height;
   int16_t minx;
   int16_t maxx;
-  uint8_t picnum;
-  uint8_t lightlevel;
    
-  // offset within the page. todo move to a separate table? perhaps init from file
-  //uint16_t visplaneoffset;
 
 } visplaneheader_t;
 
 
- 
+typedef union visplanepiclight_s
+{
+    int16_t pic_and_light;
+
+    struct visplanepiclightbytes {
+        uint8_t picnum;
+        uint8_t lightlevel;
+	} bytes;
+
+} visplanepiclight_t;
+
+
 
 //
 // Now what is a visplane, anyway?
