@@ -1031,6 +1031,7 @@ spritewidths        7000:7592
 #define FUZZ_LOOP_LENGTH              16
 
 #define size_segs_render              MAX_SEGS_RENDER_SIZE
+#define size_seg_normalangles         (MAX_SEGS * (sizeof(fineangle_t)))
 #define size_sides_render             MAX_SIDES_RENDER_SIZE
 #define size_vissprites               (sizeof(vissprite_t) * (MAXVISSPRITES))
 #define size_player_vissprites        (sizeof(vissprite_t) * 2)
@@ -1049,7 +1050,8 @@ spritewidths        7000:7592
 
 
 #define segs_render             ((seg_render_t  __far*)      MAKE_FULL_SEGMENT(0x40000000              , 0))
-#define sides_render            ((side_render_t __far*)      MAKE_FULL_SEGMENT(segs_render             , size_segs_render))
+#define seg_normalangles        ((fineangle_t  __far*)       MAKE_FULL_SEGMENT(segs_render             , size_segs_render))
+#define sides_render            ((side_render_t __far*)      MAKE_FULL_SEGMENT(seg_normalangles        , size_seg_normalangles))
 #define vissprites              ((vissprite_t __far*)        MAKE_FULL_SEGMENT(sides_render            , size_sides_render))
 #define player_vissprites       ((vissprite_t __far*)        MAKE_FULL_SEGMENT(vissprites              , size_vissprites))
 #define texturepatchlump_offset ((uint16_t __far*)           MAKE_FULL_SEGMENT(player_vissprites       , size_player_vissprites))
@@ -1073,13 +1075,15 @@ spritewidths        7000:7592
 //0x4FBEE
 
 // used during p_setup
-#define segs_render_9000     ((seg_render_t __far*)       (0x90000000 + 0))
-#define sides_render_9000    ((side_render_t __far*)      MAKE_FULL_SEGMENT(segs_render_9000, size_segs_render))
+#define segs_render_9000      ((seg_render_t __far*)       (0x90000000 + 0))
+#define seg_normalangles_9000 ((fineangle_t  __far*)       MAKE_FULL_SEGMENT(segs_render_9000             , size_segs_render))
+#define sides_render_9000     ((side_render_t __far*)      MAKE_FULL_SEGMENT(seg_normalangles_9000        , size_seg_normalangles))
 
 
 /*
 
 segs_render             4000:0000
+seg_normalangles        4580:0000
 sides_render            46E0:0000
 vissprites              4967:0000
 player_vissprites       4AA7:0000

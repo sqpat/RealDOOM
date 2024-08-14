@@ -858,7 +858,7 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 
     // calculate rw_distance for scale calculation
-    rw_normalangle = curseg_render->finenormalangle;
+    rw_normalangle = seg_normalangles[curseg];
 	rw_normalangle_shiftleft3 = rw_normalangle << SHORTTOFINESHIFT;
 
 

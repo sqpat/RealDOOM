@@ -286,7 +286,7 @@ void __near P_LoadSegs(int16_t lump) {
 		li_render->v1Offset = mlv1;
 		li_render->v2Offset = mlv2;
 	
-		li_render->finenormalangle = MOD_FINE_ANGLE((mlangle >> SHORTTOFINESHIFT) + FINE_ANG90);
+		seg_normalangles_9000[i] = MOD_FINE_ANGLE((mlangle >> SHORTTOFINESHIFT) + FINE_ANG90);
 		
 		// precalculate, too?
 		//li_render->fineangle = li_render->fineangle << SHORTTOFINESHIFT;

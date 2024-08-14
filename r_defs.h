@@ -299,7 +299,6 @@ typedef struct seg_render_s {
 
 	int16_t	offset;
 
-	fineangle_t	finenormalangle;
 
 	int16_t	sidedefOffset;
 } seg_render_t;
