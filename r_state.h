@@ -47,7 +47,8 @@
 #define MAX_SEENLINES_SIZE			    ((MAX_LINES / 8) + 1)
 #define MAX_SUBSECTORS_SIZE	    		(MAX_SUBSECTORS *	sizeof(subsector_t))
 #define MAX_SUBSECTOR_LINES_SIZE    	(MAX_SUBSECTORS *	sizeof(uint8_t))
-#define MAX_NODES_SIZE				    (MAX_NODES *		sizeof(node_t))
+#define MAX_NODES_SIZE		  		    (MAX_NODES *		sizeof(node_t))
+#define MAX_NODE_CHILDREN_SIZE		    (MAX_NODES *		sizeof(node_children_t))
 #define MAX_SEGS_SIZE				    (MAX_SEGS *			sizeof(seg_t))
 
 #define MAX_SEGS_PHYSICS_SIZE   		(MAX_SEGS *		    sizeof(seg_physics_t))

@@ -307,7 +307,7 @@ typedef struct seg_render_s {
 //
 // BSP node.
 //
-// 12 bytes. ok
+// 8 bytes. ok
 typedef struct node_s
 {
     // Partition line.
@@ -318,10 +318,19 @@ typedef struct node_s
 
     // Bounding box for each child.
 
+    
+} node_t; // used in sight and bsp, but bbox is render only?
+
+
+// 4 bytes
+typedef struct node_children_s
+{
+ 
     // If NF_SUBSECTOR its a subsector.
     uint16_t children[2];
     
-} node_t; // used in sight and bsp, but bbox is render only?
+} node_children_t; // used in sight and bsp, but bbox is render only?
+
 
 // 16 bytes, nice
 typedef struct node_render_s
@@ -485,8 +494,7 @@ typedef struct vissprite_s
     fixed_t		texturemid;
 	int16_t     patch;
 
-    // for color translation and shadow draw,
-    //  maxbright frames as well
+    // flags removed -were only used for player color translations?
    
     
 } vissprite_t;
@@ -537,7 +545,7 @@ typedef struct
 } spritedef_t;
 
 
-
+// 12 bytes...
 typedef struct
 {
   fixed_t height;
@@ -575,6 +583,7 @@ typedef struct
   byte		bottom[SCREENWIDTH];
   byte		pad4;
   byte		pad5;
+
 
 } visplane_t;
 

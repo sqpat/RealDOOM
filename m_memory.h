@@ -55,21 +55,23 @@
 #define size_subsectors         (MAX_SUBSECTORS_SIZE)
 #define size_subsector_lines    (MAX_SUBSECTOR_LINES_SIZE)
 #define size_nodes              (MAX_NODES_SIZE)
+#define size_node_children      (MAX_NODE_CHILDREN_SIZE)
 #define size_segs               (MAX_SEGS_SIZE)
 
 
 
 
-#define sectors           ((sector_t __far*)    MAKE_FULL_SEGMENT(uppermemoryblock , 0))
-#define vertexes          ((vertex_t __far*)    MAKE_FULL_SEGMENT(sectors          , size_sectors))
-#define sides             ((side_t __far*)      MAKE_FULL_SEGMENT(vertexes         , size_vertexes))
-#define lines             ((line_t __far*)      MAKE_FULL_SEGMENT(sides            , size_sides))
-#define lineflagslist     ((uint8_t __far*)     MAKE_FULL_SEGMENT(lines            , size_lines))
-#define seenlines         ((uint8_t __far*)     MAKE_FULL_SEGMENT(lineflagslist    , size_lineflagslist))
-#define subsectors        ((subsector_t __far*) MAKE_FULL_SEGMENT(seenlines        , size_seenlines))
-#define subsector_lines   ((uint8_t __far*)     MAKE_FULL_SEGMENT(subsectors       , size_subsectors))
-#define nodes             ((node_t __far*)      MAKE_FULL_SEGMENT(subsector_lines  , size_subsector_lines))
-#define segs              ((seg_t __far*)       MAKE_FULL_SEGMENT(nodes            , size_nodes))
+#define sectors           ((sector_t __far*)        MAKE_FULL_SEGMENT(uppermemoryblock , 0))
+#define vertexes          ((vertex_t __far*)        MAKE_FULL_SEGMENT(sectors          , size_sectors))
+#define sides             ((side_t __far*)          MAKE_FULL_SEGMENT(vertexes         , size_vertexes))
+#define lines             ((line_t __far*)          MAKE_FULL_SEGMENT(sides            , size_sides))
+#define lineflagslist     ((uint8_t __far*)         MAKE_FULL_SEGMENT(lines            , size_lines))
+#define seenlines         ((uint8_t __far*)         MAKE_FULL_SEGMENT(lineflagslist    , size_lineflagslist))
+#define subsectors        ((subsector_t __far*)     MAKE_FULL_SEGMENT(seenlines        , size_seenlines))
+#define subsector_lines   ((uint8_t __far*)         MAKE_FULL_SEGMENT(subsectors       , size_subsectors))
+#define nodes             ((node_t __far*)          MAKE_FULL_SEGMENT(subsector_lines  , size_subsector_lines))
+#define node_children     ((node_children_t __far*) MAKE_FULL_SEGMENT(nodes            , size_nodes))
+#define segs              ((seg_t __far*)           MAKE_FULL_SEGMENT(node_children    , size_node_children))
 
 //0xE000
 /*
@@ -84,6 +86,7 @@ seenlines            EA29:0000
 subsectors           EA37:0000
 subsector_lines      EB12:0000
 nodes                EB49:0000
+node_children        ECFE:0000
 segs                 EDD9:0000
 [empty]              EFE9:0000
 

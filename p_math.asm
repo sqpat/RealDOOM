@@ -17,7 +17,9 @@
 	.MODEL  medium
 
 
-NODES_SEGMENT        = 0EB49h   
+NODES_SEGMENT         = 0EB49h   
+NODE_CHILDREN_SEGMENT = 0ECFEh
+
 EXTRN FixedMul1632_:PROC 
 
 .DATA
@@ -48,20 +50,27 @@ push  ax
 ;    int16_t	dy;
 ;    uint16_t   children[2];
 
-; nodes are 12 bytes each. need to get the index..
+; nodes are 8 bytes each. node children are 4 each.
 
 ; todo eventually return child value instead of node
 
 shl   si, 1     ; 2
 shl   si, 1     ; 4
-mov   ax, si    ; set 4
-shl   si, 1     ; 8
-add   si, ax    ; 8 + 4
 
+mov   ax, NODE_CHILDREN_SEGMENT
+mov   es, ax
+
+
+
+
+mov   ds, word ptr es:[si + 00h]   ; child 0
+mov   di, word ptr es:[si + 02h]   ; child 1
+
+push  di ; child 1 to go into es later...
+
+shl   si, 1     ; 8 indexed
 mov   ax, NODES_SEGMENT
-
 mov   es, ax  ; ES for nodes lookup
-
 
 
 ;  get lx, ly, ldx, ldy
@@ -71,12 +80,10 @@ mov   di, word ptr es:[si + 2];   ly
 
 
 mov   ax, word ptr es:[si + 4]   ; ldx
-mov   ds, word ptr es:[si + 6]   ; ldy
-push  ds
-mov   ds, word ptr es:[si + 8]   ; child 1
-mov   es, word ptr es:[si + 0Ah]   ; child 2
+mov   si, word ptr es:[si + 6]   ; ldy
 
-pop   si
+
+pop   es ; shove child 1 in es..
 
 
 

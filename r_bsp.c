@@ -635,7 +635,7 @@ void __far R_RenderBSPNode() {
 
 			sp++;
 
-			bspnum = bsp->children[side];
+			bspnum = node_children[bspnum].children[side];
 		}
 		 
 		if (bspnum == -1)
@@ -679,6 +679,6 @@ void __far R_RenderBSPNode() {
 
 		}
 
-		bspnum = nodes[bspnum].children[side ^ 1];
+		bspnum = node_children[bspnum].children[side ^ 1];
 	}
 }

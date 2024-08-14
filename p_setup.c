@@ -423,6 +423,7 @@ void __near P_LoadNodes(int16_t lump) {
 	uint16_t         j;
 	uint16_t         k;
 	node_t __far*     no;
+	node_children_t __far*     no_children;
 
 	mapnode_t	currentdata;
 	
@@ -435,14 +436,15 @@ void __near P_LoadNodes(int16_t lump) {
 	for (i = 0; i < numnodes; i++) {
 		currentdata = data[i];
 		no = &nodes[i];
+		no_children = &node_children[i];
 
 		no->x = (currentdata.x);
 		no->y = (currentdata.y);
 		no->dx = (currentdata.dx);
 		no->dy = (currentdata.dy);
 
-		no->children[0] = (currentdata.children[0]);
-		no->children[1] = (currentdata.children[1]);
+		no_children->children[0] = (currentdata.children[0]);
+		no_children->children[1] = (currentdata.children[1]);
 
 		FAR_memcpy(&nodes_render[i], currentdata.bbox, 16);
 

@@ -956,9 +956,9 @@ R_FixedMulLocalWrapper2(0, 0)
 
 /*
 	I_Error("\n\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%Fp %Fp %Fp %Fp\n%p",
-		flatindex, 
-		texturecompositesizes,
-		 texturepatchlump_offset,
+		nodes, 
+		node_children,
+		 segs,
 		 visplaneheaders,
 		fuzzoffset, 
 		scalelightfixed,
@@ -966,7 +966,6 @@ R_FixedMulLocalWrapper2(0, 0)
 			patch_sizes,
 			viewangletox
 );
-
 */
 
 

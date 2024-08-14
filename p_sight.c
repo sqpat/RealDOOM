@@ -195,7 +195,7 @@ int16_t  __near P_DivlineSide16 ( int16_t	x, int16_t	y, divline_t __near*	node )
     return 1;		// back side
 }
 
-int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, node_t __far*	node ) {
+int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, uint16_t nodenum ) {
 
 	// NOTE: these nodes have proper 16 bit integer fields.
 
@@ -204,6 +204,7 @@ int16_t __near P_DivlineSideNode ( fixed_t_union	x, fixed_t_union	y, node_t __fa
     fixed_t	left;
     fixed_t	right;
     fixed_t_union	temp;
+	node_t __far*	node = &nodes[nodenum];
 
     if (!node->dx) {
 		temp.h.intbits = node->x;
@@ -487,7 +488,6 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 //  if strace crosses the given node successfully.
 //
 boolean __near P_CrossBSPNode (uint16_t bspnum) {
-    node_t __far*	bsp;
     int8_t		side;
 
 	if (bspnum & NF_SUBSECTOR) {
@@ -499,23 +499,23 @@ boolean __near P_CrossBSPNode (uint16_t bspnum) {
     }
 		
 
-	bsp = &nodes[bspnum];
+
 	 
-	side = P_DivlineSideNode (strace.x, strace.y, bsp);
+	side = P_DivlineSideNode (strace.x, strace.y, bspnum);
 	side &= 0x01; // turn 0x02 case to 0x01
-	if (!P_CrossBSPNode(bsp->children[side])) {
+	if (!P_CrossBSPNode(node_children[bspnum].children[side])) {
 		return false;
 	}
 
     // the partition plane is crossed here
-    if (side == P_DivlineSideNode (cachedt2x, cachedt2y,bsp)) {
+    if (side == P_DivlineSideNode (cachedt2x, cachedt2y,bspnum)) {
 		// the line doesn't touch the other side
 		return true;
     }
 	//bsp = &nodes[bspnum];
 
     // cross the ending side		
-    return P_CrossBSPNode (bsp->children[side^1]);
+    return P_CrossBSPNode (node_children[bspnum].children[side^1]);
 }
 
 
