@@ -52,7 +52,8 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 
 	side_t __far* side;
 	side_render_t __far* side_render;
-	int16_t curlineside;
+	uint8_t curlineside;
+	int16_t cursegline;
 	vertex_t v1;
 	vertex_t v2;
 	line_t __far* curlinelinedef;
@@ -66,9 +67,11 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 
 	texnum = texturetranslation[side->midtexture];
 
-	curlineside = segs[curseg].side;
-	curlinelinedef = &lines[segs[curseg].linedefOffset];
-	lineflags = lineflagslist[segs[curseg].linedefOffset];
+	
+	curlineside = *((uint8_t __far *)MK_FP(seg_linedefs_segment, curseg + (seg_sides_offset_in_seglines)));//seg_sides[curseg];
+	cursegline =  *((int16_t __far *)MK_FP(seg_linedefs_segment, 2*curseg)); // seg_linedefs[curseg];
+	curlinelinedef = &lines[cursegline];
+	lineflags = lineflagslist[cursegline];
 
 	v1 = vertexes[curseg_render->v1Offset];
 	v2 = vertexes[curseg_render->v2Offset];
@@ -821,8 +824,8 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	angle_t tempangle;
 	short_height_t frontsectorfloorheight;
 	short_height_t frontsectorceilingheight;
-	uint16_t frontsectorceilingpic;
-	uint16_t frontsectorfloorpic;
+	uint8_t frontsectorceilingpic;
+	uint8_t frontsectorfloorpic;
 	uint8_t frontsectorlightlevel;
 	line_t __far* linedef;
 	int16_t linedefOffset;
@@ -835,14 +838,9 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 	if (ds_p == &drawsegs_BASE[MAXDRAWSEGS])
 		return;		
 
-	frontsectorfloorheight = frontsector->floorheight;
-	frontsectorceilingheight = frontsector->ceilingheight;
-	frontsectorceilingpic = frontsector->ceilingpic;
-	frontsectorfloorpic = frontsector->floorpic;
-	frontsectorlightlevel = frontsector->lightlevel;
 		 
 	//linedef = &lines[curseg->linedefOffset];
-	linedefOffset = segs[curseg].linedefOffset;
+	linedefOffset = seg_linedefs[curseg];
 	linedef = &lines[linedefOffset];
 	lineflags = lineflagslist[linedefOffset];
 
@@ -912,6 +910,14 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     //  and decide if floor / ceiling marks are needed
 	
 	
+
+	
+	frontsectorfloorheight = frontsector->floorheight;
+	frontsectorceilingheight = frontsector->ceilingheight;
+	frontsectorfloorpic = frontsector->floorpic;
+	frontsectorceilingpic = frontsector->ceilingpic;
+	frontsectorlightlevel = frontsector->lightlevel;
+
 #ifdef USE_SHORTHEIGHT_VIEWZ	
 
 	SET_FIXED_UNION_FROM_SHORT_HEIGHT(worldtop, frontsectorceilingheight - viewz_shortheight);

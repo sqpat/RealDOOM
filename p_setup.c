@@ -232,7 +232,6 @@ void __near P_LoadSegs(int16_t lump) {
  	mapseg_t  __far*          data;
 	uint16_t                 i;
 	mapseg_t __far*           ml;
-	seg_t __far*              li;
 	seg_render_t __far*              li_render;
 	line_t __far*             ldef;
 	uint16_t                 side;
@@ -252,7 +251,7 @@ void __near P_LoadSegs(int16_t lump) {
 
 	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
 
-	FAR_memset(segs, 0xff, MAX_SEGS_SIZE);
+	FAR_memset(seg_linedefs, 0xff, size_seg_linedefs + size_seg_sides);
 	Z_QuickMapScratch_5000();
 
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_5000);
@@ -278,9 +277,8 @@ void __near P_LoadSegs(int16_t lump) {
 		othersidesecnum = sides_render_9000[ldefothersidenum].secnum;
 
 
-		li = &segs[i];
-		li->side = side ? 1 : 0;
-		li->linedefOffset = mllinedef;
+		seg_linedefs[i] = mllinedef;
+		seg_sides[i] = side ? 1 : 0;
 	
 		li_render = &segs_render_9000[i];
 		li_render->v1Offset = mlv1;
@@ -971,7 +969,7 @@ void __near Z_FreeConventionalAllocations() {
 	FAR_memset(thinkerlist, 0, MAX_THINKERS * sizeof(thinker_t));
 
 	//erase the level data region
-	FAR_memset(((byte __far*) uppermemoryblock), 0, size_segs);
+	FAR_memset(((byte __far*) uppermemoryblock), 0, 0xFFFF);
 
 	// todo make this area less jank. We want to free all the ems 4.0 region level data...
 	FAR_memset(MK_FP(0x7000, 0), 0, 65535);

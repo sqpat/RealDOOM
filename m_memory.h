@@ -56,7 +56,8 @@
 #define size_subsector_lines    (MAX_SUBSECTOR_LINES_SIZE)
 #define size_nodes              (MAX_NODES_SIZE)
 #define size_node_children      (MAX_NODE_CHILDREN_SIZE)
-#define size_segs               (MAX_SEGS_SIZE)
+#define size_seg_linedefs       (MAX_SEGS * sizeof(int16_t))
+#define size_seg_sides          (MAX_SEGS * sizeof(uint8_t))
 
 
 
@@ -71,7 +72,13 @@
 #define subsector_lines   ((uint8_t __far*)         MAKE_FULL_SEGMENT(subsectors       , size_subsectors))
 #define nodes             ((node_t __far*)          MAKE_FULL_SEGMENT(subsector_lines  , size_subsector_lines))
 #define node_children     ((node_children_t __far*) MAKE_FULL_SEGMENT(nodes            , size_nodes))
-#define segs              ((seg_t __far*)           MAKE_FULL_SEGMENT(node_children    , size_node_children))
+#define seg_linedefs      ((int16_t __far*)         MAKE_FULL_SEGMENT(node_children    , size_node_children))
+#define seg_sides         ((uint8_t __far*)         MAKE_FULL_SEGMENT(seg_linedefs     , size_seg_linedefs))
+
+
+#define seg_linedefs_segment  ((segment_t) ((int32_t)seg_linedefs >> 16))
+#define seg_sides_segment     ((segment_t) ((int32_t)seg_sides >> 16))
+#define seg_sides_offset_in_seglines ((uint16_t)(((seg_sides_segment - seg_linedefs_segment) << 4)))
 
 //0xE000
 /*

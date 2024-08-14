@@ -352,7 +352,7 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 
 
     for ( ; count ; segnum++, count--) {
-		linedefOffset = segs[segnum].linedefOffset;
+		linedefOffset = seg_linedefs[segnum];
 		line_physics = &lines_physics[linedefOffset];
 
 
@@ -412,12 +412,12 @@ boolean __near P_CrossSubsector (uint16_t subsecnum) {
 
 		// no wall to block sight with?
 
-		curlineside = segs[segnum].side;
+		curlineside = seg_sides[segnum];
 		frontsecnum = segs_physics[segnum].frontsecnum;
 		backsecnum = segs_physics[segnum].backsecnum;
 
 		/*
-		curlineside = segs[segnum].side;
+		curlineside = seg_sides[segnum];
 		frontsecnum = sides[line->sidenum[curlineside]].secnum;
 		backsecnum =
 			line->flags & ML_TWOSIDED ?

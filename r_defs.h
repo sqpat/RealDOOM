@@ -271,7 +271,9 @@ typedef struct subsector_s
  //
 // The LineSeg.
 //
-typedef struct seg_s
+
+// original seg_t replaced with other arrays
+/*typedef struct seg_s
 {
  
     int16_t	linedefOffset;
@@ -279,6 +281,7 @@ typedef struct seg_s
 
     
 } seg_t;
+*/
 
 // 4, great
 typedef struct seg_physics_s {
@@ -291,7 +294,7 @@ typedef struct seg_physics_s {
 } seg_physics_t;
 
 
-// 10, ok... can we make 8 and 2?
+// 8 bytes
 typedef struct seg_render_s {
 
 	uint16_t	v1Offset;
@@ -514,6 +517,8 @@ typedef struct vissprite_s
 // Some sprites will only have one picture used
 // for all views: NNNNF0
 //
+
+//not really used in engine just gamesetup, who cares if struct sucks
 typedef struct
 {
     // If false use 0 for any position.
@@ -554,7 +559,7 @@ typedef struct
 
 } visplaneheader_t;
 
-
+// 2 bytes
 typedef union visplanepiclight_s
 {
     int16_t pic_and_light;

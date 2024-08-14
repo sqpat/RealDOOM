@@ -231,14 +231,17 @@ void __near R_AddLine (int16_t curlineNum) {
 	angle_t		angle2;
     angle_t		span;
     angle_t		tspan;
-	seg_t __far*		curline = &segs[curlineNum];
 	seg_render_t __far*		curline_render = &segs_render[curlineNum];
-	int16_t curlineside = curline->side;
-	
+
+	uint8_t curlineside = *((uint8_t __far *)MK_FP(seg_linedefs_segment, curlineNum + seg_sides_offset_in_seglines));//seg_sides[curseg];
+	int16_t curseglinedef =  *((int16_t __far *)MK_FP(seg_linedefs_segment, 2*curlineNum)); // seg_linedefs[curseg];
+
+
+	line_t __far* curlinelinedef = &lines[curseglinedef];
+
 	int16_t linebacksecnum;
 
 	side_t __far* curlinesidedef = &sides[curline_render->sidedefOffset];
-	line_t __far* curlinelinedef = &lines[curline->linedefOffset];
 	vertex_t v1 = vertexes[curline_render->v1Offset];
 	vertex_t v2 = vertexes[curline_render->v2Offset];
      curseg = curlineNum;
@@ -323,7 +326,7 @@ void __near R_AddLine (int16_t curlineNum) {
 	//linebacksecnum = curlinelinedef->backsecnum;
 	linebacksecnum =
 		
-		lineflagslist[curline->linedefOffset] & ML_TWOSIDED ?
+		lineflagslist[curseglinedef] & ML_TWOSIDED ?
 		sides_render[curlinelinedef->sidenum[curlineside ^ 1]].secnum
 		: SECNUM_NULL;
 		
