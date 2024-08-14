@@ -693,12 +693,10 @@ push  ax
 ;    int16_t	ldx = vertexes[segs_render[segindex].v2Offset].x;
 ;    int16_t	ldy = vertexes[segs_render[segindex].v2Offset].y;
 
-; segs_render is 10 bytes each. need to get the index..
+; segs_render is 8 bytes each. need to get the index..
 
-mov   ax, si
 shl   si, 1
 shl   si, 1
-add   si, ax
 shl   si, 1
 mov   ax, SEGS_RENDER_SEGMENT
 

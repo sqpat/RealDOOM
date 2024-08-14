@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/08/13 11:40:06
+Created on:       24/08/13 19:39:55
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -78,10 +78,10 @@ p_tick_TEXT            CODE           AUTO           0a84:ca30       00000242
 p_user_TEXT            CODE           AUTO           0a84:cc80       0000067b
 r_bsp_TEXT             CODE           AUTO           17b4:0000       000007c8
 r_data_TEXT            CODE           AUTO           17b4:07d0       000016ce
-R_MATH_TEXT            CODE           AUTO           17b4:1e9e       00000427
-R_COLUMN_TEXT          CODE           AUTO           17b4:22c6       00000a19
-R_SPAN_TEXT            CODE           AUTO           17b4:2ce0       000009ff
-R_SKY_TEXT             CODE           AUTO           17b4:36e0       00000258
+R_MATH_TEXT            CODE           AUTO           17b4:1e9e       00000423
+R_COLUMN_TEXT          CODE           AUTO           17b4:22c2       00000a19
+R_SPAN_TEXT            CODE           AUTO           17b4:2cdc       000009ff
+R_SKY_TEXT             CODE           AUTO           17b4:36dc       00000258
 r_draw_TEXT            CODE           AUTO           17b4:3940       0000036e
 r_main_TEXT            CODE           AUTO           17b4:3cb0       00000276
 r_plane_TEXT           CODE           AUTO           17b4:3f30       0000077c
@@ -1298,17 +1298,17 @@ Module: r_math.obj(r_math.ASM)
 17b4:1f1c      R_PointToAngle_
 17b4:20bb      R_ScaleFromGlobalAngle_
 Module: r_column.obj(r_column.ASM)
-17b4:22c6      R_DrawColumn_
-17b4:2c6a*     R_DrawColumnPrep_
+17b4:22c2      R_DrawColumn_
+17b4:2c66*     R_DrawColumnPrep_
 Module: r_span.obj(r_span.ASM)
-17b4:2ce0      R_DrawSpan_
-17b4:3502*     R_FixedMulLocal_
-17b4:33ef*     R_DrawSpanPrep_
-17b4:353b      R_MapPlane_
-17b4:34ac*     R_FixedMulTrigLocal_
+17b4:2cdc      R_DrawSpan_
+17b4:34fe*     R_FixedMulLocal_
+17b4:33eb*     R_DrawSpanPrep_
+17b4:3537      R_MapPlane_
+17b4:34a8*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-17b4:36e0*     R_DrawSkyColumn_
-17b4:3892      R_DrawSkyPlane_
+17b4:36dc*     R_DrawSkyColumn_
+17b4:388e      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 17b4:3940      R_FillBackScreen_
 17b4:3bc4      R_VideoErase_
@@ -1840,4 +1840,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  0002a2e0 (172768.)
 Entry point address: 2004:2382
-Link time: 00:00.75
+Link time: 00:00.74
