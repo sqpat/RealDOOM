@@ -267,6 +267,7 @@ extern uint16_t             MULT_256[4];
 extern uint16_t             FLAT_CACHE_PAGE[4];
 extern uint8_t              quality_port_lookup[12]; 
 extern uint16_t             vga_read_port_lookup[12];
+extern uint16_t             visplane_offset[25];
 
 
 extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);

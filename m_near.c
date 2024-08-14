@@ -463,6 +463,15 @@ uint8_t quality_port_lookup[12] = {
 
 };
 
+uint16_t visplane_offset[25] = {
+	0,
+	646 ,1292, 1938, 2584, 3230, 
+	3876, 4522, 5168, 5814, 6460, 
+	7106, 7752, 8398, 9044, 9690, 
+	10336, 10982, 11628, 12274, 12920, 
+	13566, 14212, 14858, 15504
+};
+
 uint16_t vga_read_port_lookup[12] = {
 
 // lookup for what to write to the vga port for read  for fuzzcolumn

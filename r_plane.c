@@ -236,7 +236,7 @@ visplane_t __far * __near R_HandleEMSPagination(int8_t index, int8_t isceil){
 
 		}
 	}
-	pl = (visplane_t __far *) MK_FP(visplanelookupsegments[usedphyspage], usedsubindex * VISPLANE_BYTE_SIZE); 
+	pl = (visplane_t __far *) MK_FP(visplanelookupsegments[usedphyspage], visplane_offset[usedsubindex]); 
 	
 	if (isceil){
 		ceilphyspage = usedphyspage;
