@@ -151,9 +151,9 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		dc_colormap_index = fixedcolormap;
 	}
 
-	if (x2 > x1) {
+	//if (x2 > x1) 
 		// multiple pixel case. extra logic around calculating scale shifts and vga plane stuff
-
+	{
 		int16_t dc_x_base4 = x1 & (detailshiftandval);	
 		int16_t base4diff = x1 - dc_x_base4;
 		fixed_t basespryscale = spryscale.w;
@@ -244,20 +244,26 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 				}
 			}
 		}
-	} else {
+	}
+		/*
+	 else {
 		// single pixel case
 
-		int16_t dc_x_base4 = x1 & (detailshiftandval);	
-		outp(SC_INDEX+1, quality_port_lookup[dc_x_base4+detailshift.b.bytehigh]);
-		dc_x        = x1;
 
-		sprtopscreen.h.intbits = centery;
-		sprtopscreen.h.fracbits = 0;
-		sprtopscreen.w -= FixedMul(dc_texturemid.w, spryscale.w);
 
 		// draw the column
 		// calculate lighting
-		if (maskedtexturecol[dc_x] != MAXSHORT) {
+		if (maskedtexturecol[x1] != MAXSHORT) {
+			segment_t pixelsegment = R_GetColumnSegment(texnum,maskedtexturecol[x1]);
+			uint8_t lookup = masked_lookup[texnum];
+			int16_t dc_x_base4 = x1 & (detailshiftandval);	
+			outp(SC_INDEX+1, quality_port_lookup[dc_x_base4+detailshift.b.bytehigh]);
+			dc_x        = x1;
+
+			sprtopscreen.h.intbits = centery;
+			sprtopscreen.h.fracbits = 0;
+			sprtopscreen.w -= FixedMul(dc_texturemid.w, spryscale.w);
+
 			if (!fixedcolormap) {
 
 				// prevents a 12 bit shift in many cases. 
@@ -284,26 +290,23 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 			//dc_iscale = 0xffffu / spryscale.hu.intbits;  // this might be ok? 
 		
 			// draw the texture
-			{
-				segment_t pixelsegment = R_GetColumnSegment(texnum,maskedtexturecol[dc_x]);
 				
-				uint8_t lookup = masked_lookup[texnum];
-				if (lookup != 0xFF){
-					masked_header_t __far * maskedheader = &masked_headers[lookup];
-					uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedheader->postofsoffset);
-					uint16_t 		 postoffset = postoffsets[cachedcol];
-					column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
+			if (lookup != 0xFF){
+				masked_header_t __far * maskedheader = &masked_headers[lookup];
+				uint16_t __far * postoffsets  =  MK_FP(maskedpostdataofs_segment, maskedheader->postofsoffset);
+				uint16_t 		 postoffset = postoffsets[cachedcol];
+				column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
 
-					R_DrawMaskedColumn (pixelsegment, postsdata);
-				} else {
-					R_DrawSingleMaskedColumn(pixelsegment, cachedbyteheight);
-				}
+				R_DrawMaskedColumn (pixelsegment, postsdata);
+			} else {
+				R_DrawSingleMaskedColumn(pixelsegment, cachedbyteheight);
+			}
 
-			}			
 			maskedtexturecol[dc_x] = MAXSHORT;
 		}
-
 	}
+*/
+
 }
 
 
