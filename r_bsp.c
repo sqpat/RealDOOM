@@ -595,10 +595,10 @@ void __near R_Subsector(int16_t subsecnum) {
 //  traversing subtree recursively.
 // Just call with BSP root.
 
-/*
+
 #define MAX_BSP_DEPTH 64
 
-void __far R_RenderBSPNodeNonRecursive() {
+void __far R_RenderBSPNode() {
 	node_t  __far*bsp;
 	fixed_t_union dx, dy;
 	fixed_t left, right;
@@ -613,8 +613,9 @@ void __far R_RenderBSPNodeNonRecursive() {
 	{
 		//Front sides.
 		while ((bspnum & NF_SUBSECTOR) == 0) {
-			if (sp == MAX_BSP_DEPTH)
-				break;
+			// get rid of this?
+			//if (sp == MAX_BSP_DEPTH)
+			//	break;
 
 			bsp = &nodes[bspnum];
 
@@ -629,10 +630,18 @@ void __far R_RenderBSPNodeNonRecursive() {
 			// is a*b > c*d?
 			// i have a feeling there might be a clever fast way to determine this?
 
+// in asm grab the fields to dx:ax, cx:bx and xchg after first mul, then compare after 2nd.
+	// side calculation should fit in ax thru dx.
+
+
 			left =	FastMul1616(bsp->dy,dx.h.intbits);
 			right = FastMul1616(dy.h.intbits, bsp->dx);
 
-			side = right >= left;
+	//side = FastMul1616(bsp->dx, viewy.h.intbits-bsp->y) >= 
+	//	   FastMul1616(bsp->dy, viewx.h.intbits-bsp->x);
+
+
+			side = right > left;
 
 			stack_bsp[sp] = bspnum;
 			stack_side[sp] = side;
@@ -686,7 +695,7 @@ void __far R_RenderBSPNodeNonRecursive() {
 		bspnum = node_children[bspnum].children[side ^ 1];
 	}
 }
-*/ 
+/*
 
 void __far R_RenderBSPNode(int16_t bspnum) {
 
@@ -703,7 +712,8 @@ void __far R_RenderBSPNode(int16_t bspnum) {
     }
 	bsp_node = &nodes[bspnum];
 
-	side = FastMul1616(bsp_node->dx, viewy.h.intbits-bsp_node->y) >= 
+	
+	side = FastMul1616(bsp_node->dx, viewy.h.intbits-bsp_node->y) > 
 		   FastMul1616(bsp_node->dy, viewx.h.intbits-bsp_node->x);
 
 	// do both
@@ -719,3 +729,11 @@ void __far R_RenderBSPNode(int16_t bspnum) {
 	}
 
 }
+*/
+
+
+
+ 
+
+//386     42712 vs 40728 recursive way way slower (?)
+//pentium 4416 v s 4403  recursive faster (?)
