@@ -595,9 +595,10 @@ void __near R_Subsector(int16_t subsecnum) {
 //  traversing subtree recursively.
 // Just call with BSP root.
 
+/*
 #define MAX_BSP_DEPTH 64
 
-void __far R_RenderBSPNode() {
+void __far R_RenderBSPNodeNonRecursive() {
 	node_t  __far*bsp;
 	fixed_t_union dx, dy;
 	fixed_t left, right;
@@ -684,4 +685,37 @@ void __far R_RenderBSPNode() {
 
 		bspnum = node_children[bspnum].children[side ^ 1];
 	}
+}
+*/ 
+
+void __far R_RenderBSPNode(int16_t bspnum) {
+
+	int16_t side;
+	node_t __far *bsp_node;
+
+	if (bspnum & NF_SUBSECTOR) {
+		if (bspnum == -1) {
+			R_Subsector(0);
+		} else {
+			R_Subsector(bspnum&(~NF_SUBSECTOR));
+		}
+		return;
+    }
+	bsp_node = &nodes[bspnum];
+
+	side = FastMul1616(bsp_node->dx, viewy.h.intbits-bsp_node->y) >= 
+		   FastMul1616(bsp_node->dy, viewx.h.intbits-bsp_node->x);
+
+	// do both
+	if (R_CheckBBox(&nodes_render[bspnum].bbox[side ^ 1])){
+		int16_t childa, childb;
+		childa = node_children[bspnum].children[side];
+		childb = node_children[bspnum].children[side^1];
+		R_RenderBSPNode (childa); 
+		R_RenderBSPNode (childb);
+		
+	} else {
+		R_RenderBSPNode (node_children[bspnum].children[side]); 
+	}
+
 }

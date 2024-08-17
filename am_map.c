@@ -1225,6 +1225,8 @@ void __near AM_drawCrosshair()
     screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
 
 }
+//extern int16_t setval;
+
 //extern void G_ExitLevel();
 void __far AM_Drawer (void)
 {
@@ -1232,8 +1234,14 @@ void __far AM_Drawer (void)
 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
 	//G_ExitLevel();
 
+	playerMobj_pos->x.w =     0xff809e2b;
+	playerMobj_pos->y.w =     0xfdd065a0;
+	playerMobj_pos->z.w =     0x00600000;
+	playerMobj_pos->angle.w = 0xbe400000;
+	 
 
-
+	//setval = 1;
+	
 	// Clear automap frame buffer.
 	FAR_memset(screen0, BACKGROUND, automap_screenwidth*automap_screenheight);
 

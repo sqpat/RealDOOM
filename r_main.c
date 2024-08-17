@@ -636,7 +636,7 @@ void __far R_RenderPlayerView ()
 #endif
 
 	// The head node is the last node output.
-	R_RenderBSPNode ();
+	R_RenderBSPNode (numnodes-1);
 
 #ifdef DETAILED_BENCH_STATS
 	renderplayerbsptics += ticcount - cachedrenderplayertics;

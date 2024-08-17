@@ -603,12 +603,14 @@ void __near R_DrawPlanes (void) {
 
 		stop = plheader->maxx + 1;
 		
-		// startasm  by pulling this out 
+		// start  asm  by pulling this out 
 		for (x=plheader->minx ; x<= stop ; x++) {
 			t1 = pl->top[x - 1];
 			b1 = pl->bottom[x - 1];
 			t2 = pl->top[x];
 			b2 = pl->bottom[x];
+
+			//todo make a single pixel  inlined mapplane for when its just one pix? rare but would save a lot of jank
 
 			while (t1 < t2 && t1 <= b1) {
 				R_MapPlane(t1, spanstart[t1], x - 1);
@@ -619,6 +621,8 @@ void __near R_DrawPlanes (void) {
 				b1--;
 			}
 
+
+			// sq note: make more sense of this logic
 			while (t2 < t1 && t2 <= b2) {
 				spanstart[t2] = x;
 				t2++;
