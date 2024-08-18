@@ -283,7 +283,33 @@ fixed_t32	FixedMul16u32(uint16_t a, fixed_t32 b);
 fixed_t32	FixedMul16u32u(uint16_t a, uint32_t b);
 fixed_t32   FastMul16u32u(uint16_t a, uint32_t b);
 
+
+//#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.h.fracbits = (y & SHORTFLOORBITMASK) << (16 - SHORTFLOORBITS)
+
+/*
+
+// the result of this is wrong for some reason (?)
+// also generates huge code. perhaps because the compiled code must shift DX/CX/AX registers around to fit this.
+// could there be a better way, where this can work with any registers? no reason it has to be dx/cx/ax
+
+fixed_t_union SET_FIXED_UNION_FROM_SHORT_HEIGHT(fixed_t_union a, int16_t b);
+#pragma aux SET_FIXED_UNION_FROM_SHORT_HEIGHT =   \
+"MOV DX, CX" \
+"XOR AX, AX" \
+"SAR DX, 1"  \
+"RCR AX, 1"  \
+"SAR DX, 1"  \
+"RCR AX, 1"  \
+"SAR DX, 1"  \
+"RCR AX, 1"  \
+    parm [dx ax] [cx] \
+    modify [dx ax]   \
+    value [dx ax];
+    */
+
+
 // 1 if negative, 0 if positive.
+
 
 inline int8_t ROLAND1(int16_t a);
 #pragma aux ROLAND1 =   \

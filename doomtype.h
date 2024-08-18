@@ -99,8 +99,15 @@ typedef int16_t short_height_t;
 //#define SHORTFLOORBITS 4
 //#define SHORTFLOORBITMASK 0x0F
 
-#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.h.fracbits = (y & SHORTFLOORBITMASK) << (8 - SHORTFLOORBITS)
+//#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.h.fracbits = (y & SHORTFLOORBITMASK) << (8 - SHORTFLOORBITS)
+#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.h.fracbits = (y & SHORTFLOORBITMASK) << (16 - SHORTFLOORBITS)
 
+//#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y; x.h.fracbits = 0; x.w >>= SHORTFLOORBITS;
+
+// old version bugged   6144
+// old version bugfixed
+
+//new version 6187
  
 
 typedef int32_t fixed_t;
