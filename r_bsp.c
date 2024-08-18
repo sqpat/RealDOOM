@@ -599,49 +599,45 @@ void __near R_Subsector(int16_t subsecnum) {
 #define MAX_BSP_DEPTH 64
 
 void __far R_RenderBSPNode() {
-	node_t  __far*bsp;
-	fixed_t_union dx, dy;
-	fixed_t left, right;
 	int16_t stack_bsp[MAX_BSP_DEPTH];
 	byte stack_side[MAX_BSP_DEPTH];
 	int16_t sp = 0;
-	byte side = 0;
 	int16_t bspnum = numnodes - 1;
+	byte side;
 	
 
-	while (true)
-	{
+	while (true) {
 		//Front sides.
 		while ((bspnum & NF_SUBSECTOR) == 0) {
 			// get rid of this?
 			//if (sp == MAX_BSP_DEPTH)
 			//	break;
-
-			bsp = &nodes[bspnum];
+			node_t  __far* bsp = &nodes[bspnum];
+			int16_t dx = viewx.h.intbits - bsp->x;
+			int16_t dy = viewy.h.intbits - bsp->y;
+			int16_t intermediate = bsp->dy ^ dx;
 
 			//decide which side the view point is on
 			// todo try and use just the high 16 bits (dont subtract w's, they may not even be used below?)
-			dx.w = viewx.w;
-			dx.h.intbits -= bsp->x;
-			dy.w = viewy.w;
-			dy.h.intbits -= bsp->y;
-
 
 			// is a*b > c*d?
 			// i have a feeling there might be a clever fast way to determine this?
 
-// in asm grab the fields to dx:ax, cx:bx and xchg after first mul, then compare after 2nd.
-	// side calculation should fit in ax thru dx.
+			// check signs... if one side is positive and the other negative, then we dont need to multiply to 
+			// figure out which is larger
+			if ((intermediate ^ dy ^ bsp->dx) & 0x8000){
+				side = ROLAND1(intermediate);
+			} else {
 
+				// in asm grab the fields to dx:ax, cx:bx and xchg after first mul, then compare after 2nd.
+				// side calculation should fit in ax thru dx.
 
-			left =	FastMul1616(bsp->dy,dx.h.intbits);
-			right = FastMul1616(dy.h.intbits, bsp->dx);
+				fixed_t left =	FastMul1616(bsp->dy, dx);
+				fixed_t right = FastMul1616(bsp->dx, dy);
 
-	//side = FastMul1616(bsp->dx, viewy.h.intbits-bsp->y) >= 
-	//	   FastMul1616(bsp->dy, viewx.h.intbits-bsp->x);
+				side = right > left;
 
-
-			side = right > left;
+			}
 
 			stack_bsp[sp] = bspnum;
 			stack_side[sp] = side;
@@ -656,8 +652,7 @@ void __far R_RenderBSPNode() {
 		else
 			R_Subsector(bspnum & (~NF_SUBSECTOR));
 
-		if (sp == 0)
-		{
+		if (sp == 0) {
 			//back at root node and not visible. All done!
 			return;
 		}

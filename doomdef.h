@@ -283,6 +283,16 @@ fixed_t32	FixedMul16u32(uint16_t a, fixed_t32 b);
 fixed_t32	FixedMul16u32u(uint16_t a, uint32_t b);
 fixed_t32   FastMul16u32u(uint16_t a, uint32_t b);
 
+// 1 if negative, 0 if positive.
+
+inline int8_t ROLAND1(int16_t a);
+#pragma aux ROLAND1 =   \
+"ROL AX, 1"  \
+"AND AX, 1"  \
+    parm [ax] \
+    modify [ax]   \
+    value [al];
+
 #define FastMul8u32u(a, b) FastMul16u32u(a, b)
 fixed_t32   FastMul16u32(uint16_t a, uint32_t b);
 
