@@ -78,14 +78,20 @@ There are also a lot of hard caps on things like texture size and count, node co
   - Potato quality implemented
   - FixedMul ASM Optimized
 
- **v0.22** : More ASM improvements
-  - Entire render pipeline ASM optimzied
+ ~~**v0.22** : More ASM improvements~~
   - FixedDiv ASM optimized
-  - Render function binaries loaded into EMS memory at runtime
-  - core physics functions rewritten in asm
-
- **v0.23** : ASM improvements
+  - Additional render pipeline optimization
+  - Textures paragraph/segment aligned
+  
+ **v0.23** : Memory, Build
   - fixed DS to 0x3C00?
+  - build tools to support fixed DS and binary offloading to file
+  - offloaded render function binaries loaded into EMS memory at runtime 
+
+**v0.24** : More ASM improvements
+ - Entire render pipeline ASM optimzied
+ - core physics functions rewritten in asm
+  
     
  **v0.30** : Full feature compatibility?
   - sound code?
