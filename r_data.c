@@ -1378,7 +1378,7 @@ segment_t __near R_GetColumnSegment (int16_t tex, int16_t col) {
 		lump = texturecolumnlump[n].h;
 		col -= texturecolumnlump[n+1].bu.bytelow;
 		if (lump >= 0){ // should be equiv to == -1?
-			texcol -= col;
+			texcol -= texturecolumnlump[n+1].bu.bytelow;
 		}
 		n += 2;
 	}
