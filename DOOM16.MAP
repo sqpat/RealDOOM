@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/08/31 11:05:00
+Created on:       24/08/31 11:39:35
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -90,8 +90,8 @@ R_MASKED_TEXT          CODE           AUTO           177f:6060       000002ac
 r_things_TEXT          CODE           AUTO           177f:6310       00001164
 w_wad_TEXT             CODE           AUTO           177f:7480       000003ec
 v_video_TEXT           CODE           AUTO           177f:7870       00000495
-z_zone_TEXT            CODE           AUTO           177f:7d10       000004e7
-Z_SCAMP_TEXT           CODE           AUTO           177f:81f8       00000042
+z_zone_TEXT            CODE           AUTO           177f:7d10       00000477
+Z_SCAMP_TEXT           CODE           AUTO           177f:8188       000000b1
 d_math_TEXT            CODE           AUTO           177f:8240       00000000
 p_setup_TEXT           CODE           AUTO           1fa3:0000       0000101b
 p_sight_TEXT           CODE           AUTO           1fa3:1020       000007a9
@@ -1361,40 +1361,39 @@ Module: v_video.obj(C:\REALDOOM\v_video.c)
 262b:253c      _dirtybox
 262b:2544      _usegamma
 Module: z_zone.obj(C:\REALDOOM\z_zone.c)
-177f:7d10+     Z_QuickMap_
-177f:7d80      Z_QuickMapPhysics_
-177f:7d9a      Z_QuickMapDemo_
-177f:7db2      Z_QuickMapRender7000_
-177f:7dbe      Z_QuickMapRender_
-177f:7dda      Z_QuickMapRender_4000To9000_
-177f:7e00      Z_QuickMapRender4000_
-177f:7e0c*     Z_QuickMapRender9000_
-177f:7e1e      Z_QuickMapRenderTexture_
-177f:7e36      Z_QuickMapStatus_
-177f:7e48      Z_QuickMapScratch_5000_
-177f:7e5a      Z_QuickMapScratch_8000_
-177f:7e66      Z_QuickMapScratch_7000_
-177f:7e72      Z_QuickMapScreen0_
-177f:7e7e      Z_QuickMapRenderPlanes_
-177f:7e90*     Z_QuickMapRenderPlanesBack_
-177f:7ea2      Z_QuickMapFlatPage_
-177f:7ebc      Z_QuickMapUndoFlatCache_
-177f:7edc      Z_QuickMapMaskedExtraData_
-177f:7ee8      Z_QuickMapSpritePage_
-177f:7ef4      Z_QuickMapColumnOffsets5000_
-177f:7f06*     Z_QuickMapScreen1_
-177f:7f26      Z_QuickMapLumpInfo_
-177f:7f66      Z_UnmapLumpInfo_
-177f:7fd2      Z_QuickMapLumpInfo5000_
-177f:8014      Z_UnmapLumpInfo5000_
-177f:8064      Z_QuickMapPalette_
-177f:8076      Z_QuickMapMenu_
-177f:8088      Z_QuickMapIntermission_
-177f:80a0      Z_QuickMapWipe_
-177f:80ca      Z_QuickMapByTaskNum_
-177f:8140      Z_QuickMapVisplanePage_
-177f:81a2      Z_QuickMapVisplaneRevert_
-177f:81bc      Z_QuickMapUnmapAll_
+177f:7d10      Z_QuickMapPhysics_
+177f:7d2a      Z_QuickMapDemo_
+177f:7d42      Z_QuickMapRender7000_
+177f:7d4e      Z_QuickMapRender_
+177f:7d6a      Z_QuickMapRender_4000To9000_
+177f:7d90      Z_QuickMapRender4000_
+177f:7d9c*     Z_QuickMapRender9000_
+177f:7dae      Z_QuickMapRenderTexture_
+177f:7dc6      Z_QuickMapStatus_
+177f:7dd8      Z_QuickMapScratch_5000_
+177f:7dea      Z_QuickMapScratch_8000_
+177f:7df6      Z_QuickMapScratch_7000_
+177f:7e02      Z_QuickMapScreen0_
+177f:7e0e      Z_QuickMapRenderPlanes_
+177f:7e20*     Z_QuickMapRenderPlanesBack_
+177f:7e32      Z_QuickMapFlatPage_
+177f:7e4c      Z_QuickMapUndoFlatCache_
+177f:7e6c      Z_QuickMapMaskedExtraData_
+177f:7e78      Z_QuickMapSpritePage_
+177f:7e84      Z_QuickMapColumnOffsets5000_
+177f:7e96*     Z_QuickMapScreen1_
+177f:7eb6      Z_QuickMapLumpInfo_
+177f:7ef6      Z_UnmapLumpInfo_
+177f:7f62      Z_QuickMapLumpInfo5000_
+177f:7fa4      Z_UnmapLumpInfo5000_
+177f:7ff4      Z_QuickMapPalette_
+177f:8006      Z_QuickMapMenu_
+177f:8018      Z_QuickMapIntermission_
+177f:8030      Z_QuickMapWipe_
+177f:805a      Z_QuickMapByTaskNum_
+177f:80d0      Z_QuickMapVisplanePage_
+177f:8132      Z_QuickMapVisplaneRevert_
+177f:814c      Z_QuickMapUnmapAll_
 262b:129a      _pageswapargs
 262b:14aa*     _current5000RemappedScratchPage
 262b:14ab+     _current5000State
@@ -1409,7 +1408,8 @@ Module: z_zone.obj(C:\REALDOOM\z_zone.c)
 262b:254a      _pageswapargoff
 262b:254c      _emshandle
 Module: z_scamp.obj(z_scamp.ASM)
-177f:81f8*     Z_QuickMapNo_
+177f:81f7*     Z_QuickMapNo_
+177f:8188      Z_QuickMap_
 Module: p_setup.obj(C:\REALDOOM\p_setup.c)
 1fa3:0000      P_SetupLevel_
 1fa3:0110+     P_LoadVertexes_
@@ -1815,4 +1815,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00029970 (170352.)
 Entry point address: 1fa3:23a2
-Link time: 00:00.30
+Link time: 00:00.29

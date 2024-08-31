@@ -310,7 +310,9 @@ int16_t oldtask = -1;
                     __modify [ax bx si cl];
 #pragma aux (Z_QuickMapCall)  Z_QuickMap;
 */
+void __near Z_QuickMap(uint16_t offset, int8_t count);
 
+/*
 void __near Z_QuickMap(uint16_t offset, int8_t count){
 	
 	uint16_t logicalindex,pagenumber;
@@ -354,7 +356,7 @@ void __near Z_QuickMap(uint16_t offset, int8_t count){
 		// todo unroll
 	}
 
-}
+}*/
 
 #else
 
