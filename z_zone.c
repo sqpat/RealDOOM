@@ -30,6 +30,7 @@
 #include "p_local.h"
 
 #include <dos.h>
+#include <conio.h>
 
 #include <stdlib.h>
 #include "m_memory.h"
@@ -298,27 +299,91 @@ int32_t visplaneswitchcount = 0;
 int16_t currenttask = -1;
 int16_t oldtask = -1;
 
-void __near Z_QuickMap(int16_t offset, int8_t count){
+#ifdef __SCAMP_BUILD
+
+// corresponds to 2 MB worth of address lines/ems pages.
+#define EMS_MEMORY_BASE   0x0080
+	// dont do anything
+/*
+#pragma aux Z_QuickMapCall \
+                    __parm [ax] [cl] \
+                    __modify [ax bx si cl];
+#pragma aux (Z_QuickMapCall)  Z_QuickMap;
+*/
+
+void __near Z_QuickMap(uint16_t offset, int8_t count){
 	
-	int8_t min;
+	uint16_t logicalindex,pagenumber;
+	
 	offset += pageswapargoff;
 	// test if some of these fields can be pulled out
 	while (count > 0){
-		min = count > 8 ? 8 : count; // note: emm386 only supports up to 8 args at a time. Might other EMS drivers work with more at a time?
-		regs.w.ax = 0x5000;  
-		regs.w.cx = min; // page count
-		regs.w.dx = emshandle; // handle
-		//This is a near var. and  DS should be near by default.
-		//segregs.ds = pageswapargseg;
-		regs.w.si = offset;
-		intx86(EMS_INT, &regs, &regs);
+		
+		logicalindex = *(( int16_t __near *)(offset)); // bx
+		pagenumber = *(( int16_t __near *)(offset+2)); // ax
+		if (pagenumber >= 12){
+			// backfill register
 
-		count -= 8;
-		offset+= 32;
+			outp (0xE8,  pagenumber);
+			// 2 MB EMS offset
+
+			if (logicalindex == 0xFFFF){
+				outpw(0xEA, pagenumber+4);
+			} else {
+				logicalindex += EMS_MEMORY_BASE;
+				outpw(0xEA, logicalindex);
+			}
+
+		} else {
+			// page register, need to add 4 to logicalindex to get D000 indexed
+			pagenumber += 4;
+			outp (0xE8,  pagenumber);
+			// 2 MB EMS offset
+
+			if (logicalindex == 0xFFFF){
+				// 4 was already added...
+				outpw(0xEA, pagenumber);
+			} else {
+				logicalindex += EMS_MEMORY_BASE;
+				outpw(0xEA, logicalindex);
+			}
+		}
+		
+		count--;
+		offset+= 4;
+		// todo unroll
 	}
 
+}
+
+#else
+
+
+
+
+void __near Z_QuickMap(int16_t offset, int8_t count){
+	
+		int8_t min;
+
+
+		offset += pageswapargoff;
+		// test if some of these fields can be pulled out
+		while (count > 0){
+			min = count > 8 ? 8 : count; // note: emm386 only supports up to 8 args at a time. Might other EMS drivers work with more at a time?
+			regs.w.ax = 0x5000;  
+			regs.w.cx = min; // page count
+			regs.w.dx = emshandle; // handle
+			//This is a near var. and  DS should be near by default.
+			//segregs.ds = pageswapargseg;
+			regs.w.si = offset;
+			intx86(EMS_INT, &regs, &regs);
+
+			count -= 8;
+			offset+= 32;
+		}
 
 }
+#endif
 
 void __far Z_QuickMapPhysics() {
 	//int16_t errorreg;

@@ -40,6 +40,18 @@
 
 
 
+extern int16_t pagenum9000;
+extern int16_t pageswapargs[total_pages];
+extern int16_t pageswapargoff;
+
+  
+
+
+
+
+
+//extern byte __far* pageFrameArea;
+extern int16_t emshandle;
 
 
 extern union REGS regs;
@@ -54,6 +66,37 @@ void near doerror(int16_t errnum, int16_t errorreg){
 	I_Error("\n\n%d %d", errnum, errorreg); // Couldn't init EMS, error %d
 }
 
+#ifdef __SCAMP_BUILD
+
+byte __far* __near Z_InitEMS() {
+	emshandle = 1;
+	EMS_PAGE = 0xD000; // hard coded
+	return  MK_FP(EMS_PAGE, 0);
+}
+
+
+
+void __near Z_GetEMSPageMap() {
+	int16_t  i;
+
+
+	pagenum9000 = 0x20;
+
+	pageswapargoff = FP_OFF(pageswapargs);
+	for (i = 1; i < total_pages; i+= 2) {
+		pageswapargs[i] += pagenum9000;
+	}
+	 
+	Z_QuickMapLumpInfo5000();
+
+	FAR_memcpy((byte __far *) 0x54000000, (byte __far *) lumpinfoinit, 49152u); // copy the wad lump stuff over. gross
+	FAR_memset((byte __far *) lumpinfoinit, 0, 49152u);
+
+	Z_QuickMapPhysics(); // map default page map
+}
+
+
+#else
 byte __far* __near Z_InitEMS()
 {
 
@@ -171,19 +214,7 @@ byte __far* __near Z_InitEMS()
 
 
 
-
 }
-
- 
- 
-
-extern int16_t pagenum9000;
-extern int16_t pageswapargs[total_pages];
-extern int16_t pageswapargoff;
-
-  
-
-
 
 void __near Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
@@ -285,8 +316,14 @@ found:
 }
 
 
-//extern byte __far* pageFrameArea;
-extern int16_t emshandle;
+
+
+#endif
+
+
+ 
+ 
+
 
 
 void __far R_DrawColumn (void);

@@ -105,7 +105,7 @@ typedef int16_t short_height_t;
 //#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y; x.h.fracbits = 0; x.w >>= SHORTFLOORBITS;
 
 // old version bugged   6144
-// old version bugfixed
+// old version bugfixed 6146
 
 //new version 6187
  

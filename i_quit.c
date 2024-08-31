@@ -197,13 +197,18 @@ void __near Z_ShutdownEMS() {
 
 	if (emshandle) {
 		Z_QuickMapUnmapAll();
-		regs.w.dx = emshandle; // handle
-		regs.h.ah = 0x45;
-		intx86(EMS_INT, &regs, &regs);
-		result = regs.h.ah;
-		if (result != 0) {
-			printf("Failed deallocating EMS memory! %i!\n", result);
-		}
+
+		#ifdef __SCAMP_BUILD
+			// dont do anything
+		#else
+			regs.w.dx = emshandle; // handle
+			regs.h.ah = 0x45;
+			intx86(EMS_INT, &regs, &regs);
+			result = regs.h.ah;
+			if (result != 0) {
+				printf("Failed deallocating EMS memory! %i!\n", result);
+			}
+		#endif
 	}
 
 

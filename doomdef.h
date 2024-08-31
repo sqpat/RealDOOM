@@ -69,7 +69,7 @@ enum { VERSION =  109 };
 //#define SKIPWIPE
 
 // more detailed timedemo numbers
-#define DETAILED_BENCH_STATS
+//#define DETAILED_BENCH_STATS
 
 // turn on FPS display
 //#define FPS_DISPLAY
