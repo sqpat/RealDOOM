@@ -26,8 +26,8 @@ INCLUDE defs.inc
 EXTRN	_pageswapargs:WORD
 EXTRN	_pageswapargoff:WORD
 
-SCAMP_PAGE_SELECT_REGISTER = 0E8h
-SCAMP_PAGE_SET_REGISTER = 0EAh
+SCAT_PAGE_SELECT_REGISTER = 020Ah
+SCAT_PAGE_SET_REGISTER = 0208h
 
 .CODE
 
@@ -39,8 +39,8 @@ SCAMP_PAGE_SET_REGISTER = 0EAh
 ;int16_t offset, int8_t count
 
 
-PROC Z_QuickMap_ NEAR
-PUBLIC Z_QuickMap_
+PROC Z_QuickMap2_ NEAR
+PUBLIC Z_QuickMap2_
 
 ; AX = offset
 ; dl (? or dx)= count
@@ -48,6 +48,7 @@ PUBLIC Z_QuickMap_
 push  cx
 push  bx
 push  si
+push  dx
 
 ; set up lodsw
 mov   si, ax
@@ -61,12 +62,15 @@ DO_NEXT_PAGE_5000:
 lodsw      ; next page in ax....
 mov   bx, ax
 lodsw             						; read two words - bx and ax
-out   SCAMP_PAGE_SELECT_REGISTER, al   	; select EMS page
+mov   dx, SCAT_PAGE_SELECT_REGISTER
+out   dx, al   	; select EMS page
 mov   ax, bx
-out   SCAMP_PAGE_SET_REGISTER, ax   	; write 16 bit page num. 
+mov   dx, SCAT_PAGE_SET_REGISTER
+out   dx, ax   	; write 16 bit page num. 
 loop  DO_NEXT_PAGE_5000
 
 ; exits if we fall thru loop with no error
+pop dx
 pop si
 pop bx
 pop cx

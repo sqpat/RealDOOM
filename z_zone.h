@@ -72,6 +72,70 @@ extern uint16_t remainingconventional;
 extern uint16_t EMS_PAGE;
 
 
+#define PAGE_9000_OFFSET + 0
+#define PAGE_9400_OFFSET + 1
+#define PAGE_9800_OFFSET + 2
+#define PAGE_9C00_OFFSET + 3
+
+#define PAGE_8000_OFFSET - 4
+#define PAGE_8400_OFFSET - 3
+#define PAGE_8800_OFFSET - 2
+#define PAGE_8C00_OFFSET - 1
+
+#define PAGE_7000_OFFSET - 8
+#define PAGE_7400_OFFSET - 7
+#define PAGE_7800_OFFSET - 6
+#define PAGE_7C00_OFFSET - 5
+
+#define PAGE_6000_OFFSET - 12
+#define PAGE_6400_OFFSET - 11
+#define PAGE_6800_OFFSET - 10
+#define PAGE_6C00_OFFSET - 9
+
+#define PAGE_5000_OFFSET - 16
+#define PAGE_5400_OFFSET - 15
+#define PAGE_5800_OFFSET - 14
+#define PAGE_5C00_OFFSET - 13
+
+#define PAGE_4000_OFFSET - 20
+#define PAGE_4400_OFFSET - 19
+#define PAGE_4800_OFFSET - 18
+#define PAGE_4C00_OFFSET - 17
+
+
+
+// Null page register. Represents 'map this to its original conventional page"
+// This should be -1 per EMS spec, but in the case of hardcoded
+// chipset code - we can make the asm faster by preprocessing the expected values in there
+// because the chipsets don't necessarily expect -1
+
+// Unindexed means it doesnt have the +pagenum9000 at the start included...
+
+#ifdef __SCAMP_BUILD
+#define EMS_MEMORY_OFFSET  0x0080
+#define _NPR(a)            a+4
+// todo should this be minus?
+#define _NPR_UNINDEXED(a)  (a + 0x20 + 4)
+#define _EPR(a)            a+EMS_MEMORY_OFFSET
+#elif defined(__SCAT_BUILD)
+// includes turn high bit on
+#define EMS_MEMORY_OFFSET 0x8080
+#define _NPR(a)           0x03FF
+#define _NPR_UNINDEXED(a) 0x03FF
+#define _EPR(a)           a+EMS_MEMORY_OFFSET
+
+#else
+#define EMS_MEMORY_OFFSET 0x0000
+#define _NPR(a) 0xFFFF
+#define _NPR_UNINDEXED(a) 0xFFFF
+
+// EMS page register. 0-n per EMS spec, but in the case of hardcoded
+// chipset code - we preadd the EMS memory boundary into this value so we dont have to add in asm
+#define _EPR(a) a
+#endif
+
+uint16_t _EPRRuntime(int16_t a);
+uint16_t _NPRRuntime(int16_t a);
 
 byte __far* __near Z_InitEMS(void);
 //void Z_InitUMB(void);
@@ -240,7 +304,7 @@ void __far Z_QuickMapUnmapAll();
 #define total_pages                         (pageswapargs_visplanepage_offset       + num_visplanepage_params)
 
 
-extern int16_t pageswapargs[total_pages];
+extern uint16_t pageswapargs[total_pages];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 
 // EMS 4.0 stuff

@@ -200,6 +200,7 @@ void __near Z_ShutdownEMS() {
 
 		#ifdef __SCAMP_BUILD
 			// dont do anything
+		#elif defined(__SCAT_BUILD)
 		#else
 			regs.w.dx = emshandle; // handle
 			regs.h.ah = 0x45;
