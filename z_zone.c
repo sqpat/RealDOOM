@@ -87,7 +87,7 @@ extern struct SREGS segregs;
 
 // these are prepared for calls to outsw with autoincrementing ems register on
 
-uint16_t pageswapargs_single[total_pages] = {
+uint16_t pageswapargs[total_pages] = {
 
 	_NPR(PAGE_4000_OFFSET),	 _NPR(PAGE_4400_OFFSET),	 _NPR(PAGE_4800_OFFSET),	 _NPR(PAGE_4C00_OFFSET),	
 	_NPR(PAGE_5000_OFFSET),  _NPR(PAGE_5400_OFFSET),	 _NPR(PAGE_5800_OFFSET),	 _NPR(PAGE_5C00_OFFSET),	 
@@ -710,11 +710,7 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	// offset 4 means reset defaults/current values.
 	if (offset != 4) {
 
-		#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
-			pageswapargs_single[pageswapargs_flatcache_offset + offset] = _EPR(page);
-		#else
-			pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = _EPR(page);
-		#endif
+		pageswapargs[pageswapargs_flatcache_offset + offset * PAGE_SWAP_ARG_MULT] = _EPR(page);
 	}
 
 	// todo change this to 1 with offset?
@@ -1006,10 +1002,9 @@ void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
 	}
 
-	#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
-		pageswapargs_single[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
-	#else
 		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
+	#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+	#else
 		pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
 	#endif
 
@@ -1058,12 +1053,10 @@ void __far Z_QuickMapUnmapAll() {
 	int16_t i;
 	for (i = 0; i < 24; i++) {
 
+		pageswapargs[i * PAGE_SWAP_ARG_MULT] = _NPR(i + PAGE_4000_OFFSET);
 		#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
-			pageswapargs_single[i + 0] = _NPR(i + PAGE_4000_OFFSET);
-			//pageswapargs_single[i + 1] = pagenum9000 + ems_backfill_page_order[i];
 		#else
-			pageswapargs[i * 2 + 0] = _NPR(i + PAGE_4000_OFFSET);
-			pageswapargs[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
+			pageswapargs[i * PAGE_SWAP_ARG_MULT + 1] = pagenum9000 + ems_backfill_page_order[i];
 		#endif
 
 		

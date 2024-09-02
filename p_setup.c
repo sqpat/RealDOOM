@@ -1042,13 +1042,8 @@ void __near Z_FreeConventionalAllocations() {
 		activespritepages[i] = FIRST_SPRITE_CACHE_LOGICAL_PAGE + i;
 		spriteLRU[i] = i;
 
-		#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
-			pageswapargs_single[pageswapargs_rend_offset + 20 + i] = _EPR(FIRST_TEXTURE_LOGICAL_PAGE + i);
-			pageswapargs_single[pageswapargs_spritecache_offset + i]  = _EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + i);
-		#else
-			pageswapargs[pageswapargs_rend_offset + 40 + i * 2]	  =      _EPR(FIRST_TEXTURE_LOGICAL_PAGE + i);
-			pageswapargs[pageswapargs_spritecache_offset + i * 2] = _EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + i);
-		#endif
+		pageswapargs[pageswapargs_rend_offset + (20 + i)*PAGE_SWAP_ARG_MULT]  = _EPR(FIRST_TEXTURE_LOGICAL_PAGE + i);
+		pageswapargs[pageswapargs_spritecache_offset + i*PAGE_SWAP_ARG_MULT]  = _EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + i);
 		activenumpages[i] = 0;
 		activespritenumpages[i] = 0;
 	}

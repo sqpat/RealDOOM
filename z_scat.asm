@@ -23,7 +23,7 @@ INCLUDE defs.inc
 
 .DATA
 
-EXTRN	_pageswapargs_single:WORD
+EXTRN	_pageswapargs:WORD
 
 SCAT_PAGE_SELECT_REGISTER = 020Ah
 SCAT_PAGE_SET_REGISTER = 0208h
@@ -40,7 +40,7 @@ PUBLIC Z_QuickMap24AI_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, SCAT_PAGE_SELECT_REGISTER
@@ -60,7 +60,7 @@ PUBLIC Z_QuickMap16AI_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, dl
 or   al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
@@ -79,7 +79,7 @@ PUBLIC Z_QuickMap9AI_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, dl
 or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
@@ -98,7 +98,7 @@ PUBLIC Z_QuickMap8AI_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, dl
 or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
@@ -118,7 +118,7 @@ PUBLIC Z_QuickMap6AI_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, dl
 or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
@@ -137,7 +137,7 @@ PUBLIC Z_QuickMap5AI_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, dl
 or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
@@ -156,7 +156,7 @@ PUBLIC Z_QuickMap4AI_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, dl
 or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
@@ -174,7 +174,7 @@ PROC Z_QuickMap3AI_ NEAR
 PUBLIC Z_QuickMap3AI_
 push si
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, dl
 or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
@@ -195,7 +195,7 @@ PROC Z_QuickMap2AI_ NEAR
 PUBLIC Z_QuickMap2AI_
 push si
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, dl
 or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
@@ -216,7 +216,7 @@ PROC Z_QuickMap1AI_ NEAR
 PUBLIC Z_QuickMap1AI_
 push si
 push dx
-add  ax, OFFSET _pageswapargs_single
+add  ax, OFFSET _pageswapargs
 mov  si, ax
 mov  al, dl
 or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
