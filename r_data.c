@@ -961,10 +961,11 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		if (activenumpages[startpage]) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
 				activetexturepages[startpage+i]  = -1; // unpaged
-				#ifndef __SCAMP_BUILD
-					pageswapargs[pageswapargs_rend_offset+40 + ((startpage+i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i);
+
+				#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+					pageswapargs_single[pageswapargs_rend_offset+20 + ((startpage+i) )] = _NPR(PAGE_9000_OFFSET+startpage+i);
 				#else
-					pageswapargs_single[pageswapargs_rend_offset+20 + ((startpage+i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i);
+					pageswapargs[pageswapargs_rend_offset+40 + ((startpage+i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i);
 				#endif
 
 				activenumpages[startpage+i] = 0;
@@ -975,10 +976,10 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		activetexturepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
 		
-		#ifndef __SCAMP_BUILD
-			pageswapargs[pageswapargs_rend_offset+40  + ( startpage << 1)] = _EPR(pagenum);
+		#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+			pageswapargs_single[pageswapargs_rend_offset+20  + ( startpage )] = _EPR(pagenum);
 		#else
-			pageswapargs_single[pageswapargs_rend_offset+20  + ( startpage << 1)] = _EPR(pagenum);
+			pageswapargs[pageswapargs_rend_offset+40  + ( startpage << 1)] = _EPR(pagenum);
 		#endif
 
 
@@ -1063,10 +1064,10 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 				activetexturepages[startpage + i] = -1;
 
 
-				#ifndef __SCAMP_BUILD
-					pageswapargs[pageswapargs_rend_offset+40 +   ((startpage + i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
+				#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+					pageswapargs_single[pageswapargs_rend_offset+20 +   ((startpage + i) )] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
 				#else
-					pageswapargs_single[pageswapargs_rend_offset+20 +   ((startpage + i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
+					pageswapargs[pageswapargs_rend_offset+40 +   ((startpage + i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
 				#endif
 
 
@@ -1079,10 +1080,10 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		for (i = 0; i <= numpages; i++) {
 			textureLRU[startpage + i] = 0;
 			activetexturepages[startpage + i]  = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;			
-			#ifndef __SCAMP_BUILD
-				pageswapargs[pageswapargs_rend_offset+40 +  ((startpage + i)<<1)] = _EPR(pagenum + i);
+			#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+				pageswapargs_single[pageswapargs_rend_offset+20 +  ((startpage + i))] = _EPR(pagenum + i);
 			#else
-				pageswapargs_single[pageswapargs_rend_offset+20 +  ((startpage + i)<<1)] = _EPR(pagenum + i);
+				pageswapargs[pageswapargs_rend_offset+40 +  ((startpage + i)<<1)] = _EPR(pagenum + i);
 			#endif
 
 			activenumpages[startpage + i] = numpages-i;

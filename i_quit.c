@@ -198,9 +198,8 @@ void __near Z_ShutdownEMS() {
 	if (emshandle) {
 		Z_QuickMapUnmapAll();
 
-		#ifdef __SCAMP_BUILD
+		#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
 			// dont do anything
-		#elif defined(__SCAT_BUILD)
 		#else
 			regs.w.dx = emshandle; // handle
 			regs.h.ah = 0x45;

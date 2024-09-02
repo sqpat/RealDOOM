@@ -138,10 +138,9 @@ extern uint16_t EMS_PAGE;
 byte __far* __near Z_InitEMS(void);
 //void Z_InitUMB(void);
 void __far Z_QuickMapUnmapAll();
-void __near Z_QuickMap(int16_t offset, int8_t count);
 
  
-#ifdef __SCAMP_BUILD
+#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
 
     void __near Z_QuickMap24(int16_t offset);
     void __near Z_QuickMap23(int16_t offset);
@@ -245,6 +244,7 @@ void __near Z_QuickMap(int16_t offset, int8_t count);
     #define Z_QuickMap2AI(a) Z_QuickMap(a, 2)
     #define Z_QuickMap1AI(a) Z_QuickMap(a, 1)
 
+    void  __near Z_QuickMap(int16_t offset, int8_t count);
     
 #endif
 

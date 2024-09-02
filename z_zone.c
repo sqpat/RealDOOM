@@ -231,7 +231,7 @@ uint16_t pageswapargs[total_pages] = {
 
 };
 
-#ifdef __SCAMP_BUILD
+#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
 
 // these are prepared for calls to outsw with autoincrementing ems register on
 
@@ -414,78 +414,7 @@ int32_t visplaneswitchcount = 0;
 int16_t currenttask = -1;
 int16_t oldtask = -1;
 
-#ifdef __SCAMP_BUILD
-
-// corresponds to 2 MB worth of address lines/ems pages.
-#define EMS_MEMORY_BASE   0x0080
-	// dont do anything
-/*
-#pragma aux Z_QuickMapCall \
-                    __parm [ax] [cl] \
-                    __modify [ax bx si cl];
-#pragma aux (Z_QuickMapCall)  Z_QuickMap;
-*/
-//void __near Z_QuickMap(uint16_t offset, int8_t count);
-
-/*
-void __near Z_QuickMap(uint16_t offset, int8_t count){
-	
-	uint16_t logicalindex, pagenumber;
-	
-	offset += pageswapargoff;
-	// test if some of these fields can be pulled out
-	while (count > 0){
-		
-		logicalindex = *(( uint16_t __near *)(offset)); // bx
-		pagenumber   = *(( uint16_t __near *)(offset+2)); // ax
-
-		
-		outp (0xE8, pagenumber);
-		outpw(0xEA, logicalindex);
-		
-		count--;
-		offset+= 4;
-		// todo unroll
-	}
-
-}*/
-#elif defined(__SCAT_BUILD)
-	#define EMS_MEMORY_BASE   0x8080
-	 
-	//void __near Z_QuickMap(uint16_t offset, int8_t count);
-
-	void __near Z_QuickMap(uint16_t offset, int8_t count){
-		
-		uint16_t logicalindex,pagenumber;
-		//FILE* fp = fopen ("maps.txt", "a");
-		offset += pageswapargoff;
-		// test if some of these fields can be pulled out
-		while (count > 0){
-			
-			logicalindex = *(( int16_t __near *)(offset)); // bx
-			pagenumber =   *(( int16_t __near *)(offset+2)); // ax
-
-			if (pagenumber >= 24){
-				I_Error("1 page bad? %x %x %x %x", offset, count, logicalindex, pagenumber);
-			}
-
-			if (logicalindex < EMS_MEMORY_BASE && logicalindex != 0x03FF){
-				I_Error("2 page bad? %x %x %x %x", offset, count, logicalindex, pagenumber);
-			}
-
-			//fprintf(fp, "%x %x\n", logicalindex, pagenumber);
-
-			outp (0x20A,  pagenumber);
-			outpw(0x208,  logicalindex);
-
-			
-			count--;
-			offset+= 4;
-			// todo unroll
-		}
-		//fclose(fp);
-
-	}
+#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
 
 #else
 
@@ -1075,12 +1004,12 @@ void __far Z_QuickMapUnmapAll() {
 	int16_t i;
 	for (i = 0; i < 24; i++) {
 
-		#ifndef __SCAMP_BUILD
+		#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+			pageswapargs_single[i + 0] = _NPR(i + PAGE_4000_OFFSET);
+			//pageswapargs_single[i + 1] = pagenum9000 + ems_backfill_page_order[i];
+		#else
 			pageswapargs[i * 2 + 0] = _NPR(i + PAGE_4000_OFFSET);
 			pageswapargs[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
-		#else
-			pageswapargs_single[i + 0] = _NPR(i + PAGE_4000_OFFSET);
-			pageswapargs_single[i + 1] = pagenum9000 + ems_backfill_page_order[i];
 		#endif
 
 		
