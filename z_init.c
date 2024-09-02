@@ -73,8 +73,7 @@ void __near Z_GetEMSPageMap()
 	pagenum9000 = 0x20;
 
 	pageswapargoff = FP_OFF(pageswapargs);
-	for (i = 1; i < total_pages; i += 2)
-	{
+	for (i = 1; i < total_pages; i += 2) {
 		pageswapargs[i] += pagenum9000;
 	}
 

@@ -962,7 +962,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			for (i = 1; i <= activenumpages[startpage]; i++) {
 				//activetexturepages[startpage+i] = pageswapargs[pageswapargs_rend_offset + ((startpage+i) << 1)] = -1; // unpaged
 				activetexturepages[startpage+i]  = -1; // unpaged
-				pageswapargs[pageswapargs_rend_offset + ((startpage+i) << 1)] = _NPRRuntime(PAGE_9000_OFFSET+startpage+i);
+				pageswapargs[pageswapargs_rend_offset + ((startpage+i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i);
 				activenumpages[startpage+i] = 0;
 			}
 		}
@@ -971,7 +971,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		//activetexturepages[startpage] = pageswapargs[pageswapargs_rend_offset  + ( startpage << 1)] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 		activetexturepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
-		pageswapargs[pageswapargs_rend_offset  + ( startpage << 1)] = _EPRRuntime(pagenum);
+		pageswapargs[pageswapargs_rend_offset  + ( startpage << 1)] = _EPR(pagenum);
 		
 
 
@@ -1054,7 +1054,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			for (i = 1; i <= activenumpages[startpage]; i++) {
 				//activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset +   ((startpage + i) << 1)] = -1; // unpaged
 				activetexturepages[startpage + i] = -1;
-				pageswapargs[pageswapargs_rend_offset +   ((startpage + i) << 1)] = _NPRRuntime(PAGE_9000_OFFSET+startpage+i); // unpaged
+				pageswapargs[pageswapargs_rend_offset +   ((startpage + i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
 				activenumpages[startpage + i] = 0;
 			}
 		}
@@ -1065,7 +1065,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			textureLRU[startpage + i] = 0;
 			//activetexturepages[startpage + i] = pageswapargs[pageswapargs_rend_offset +  ((startpage + i)<<1)] = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;
 			activetexturepages[startpage + i]  = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;			
-			pageswapargs[pageswapargs_rend_offset +  ((startpage + i)<<1)] = _EPRRuntime(pagenum + i);
+			pageswapargs[pageswapargs_rend_offset +  ((startpage + i)<<1)] = _EPR(pagenum + i);
 			activenumpages[startpage + i] = numpages-i;
 
 		}
@@ -1138,7 +1138,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 			for (i = 1; i <= activespritenumpages[startpage]; i++) {
 				//activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)<<1)] = -1; // unpaged
 				activespritepages[startpage + i] = -1;
-				pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)<<1)] = _NPRRuntime((PAGE_6800_OFFSET)+(startpage+i)); // unpaged				
+				pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)<<1)] = _NPR(PAGE_6800_OFFSET+(startpage+i)); // unpaged				
 
 				activespritenumpages[startpage + i] = 0;
 			}
@@ -1149,7 +1149,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 		//activespritepages[startpage] = pageswapargs[pageswapargs_spritecache_offset +  (startpage<<1)] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 
 		activespritepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
-		pageswapargs[pageswapargs_spritecache_offset +  (startpage<<1)] = _EPRRuntime(pagenum);		
+		pageswapargs[pageswapargs_spritecache_offset +  (startpage<<1)] = _EPR(pagenum);		
 		Z_QuickMapSpritePage();
 		R_MarkCacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
 
@@ -1226,7 +1226,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 			for (i = 1; i <= activespritenumpages[startpage]; i++) {
 				//activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset + ( (startpage + i)<<1)] = -1; // unpaged
 				activespritepages[startpage + i] = -1;
-				pageswapargs[pageswapargs_spritecache_offset + ( (startpage + i)<<1)] = _NPRRuntime((PAGE_6800_OFFSET)+(startpage+i));
+				pageswapargs[pageswapargs_spritecache_offset + ( (startpage + i)<<1)] = _NPR(PAGE_6800_OFFSET+(startpage+i));
 				activespritenumpages[startpage + i] = 0;
 			}
 		}
@@ -1237,7 +1237,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 			spriteLRU[startpage + i] = 0;
 		//	activespritepages[startpage + i] = pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)<<1)] = pagenum + i;
 			activespritepages[startpage + i] =  pagenum + i;			
-			pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)<<1)] = _EPRRuntime(pagenum + i);
+			pageswapargs[pageswapargs_spritecache_offset +  ((startpage + i)<<1)] = _EPR(pagenum + i);
 			activespritenumpages[startpage + i] = numpages - i;
 
 		}

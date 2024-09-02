@@ -82,21 +82,6 @@ int16_t pagenum9000;
 
 
 //#define pageswapargs_scratch5000_offset pageswapargs_textinfo_offset + num_textinfo_params
-uint16_t _NPRRuntime(int16_t a){
-	a += pagenum9000;
-	if (a > 24 || a < 0){
-		I_Error("npr called with a %x", a);
-	}	
-	return _NPR(a);
-
-}
-
-uint16_t _EPRRuntime(int16_t a){
-	if (a == 0xFFFF){
-		I_Error("called with a %x", a);
-	}	
-	return _EPR(a);
-}
 
 
 uint16_t pageswapargs[total_pages] = {
@@ -295,53 +280,30 @@ int16_t oldtask = -1;
                     __modify [ax bx si cl];
 #pragma aux (Z_QuickMapCall)  Z_QuickMap;
 */
-void __near Z_QuickMap(uint16_t offset, int8_t count);
+//void __near Z_QuickMap(uint16_t offset, int8_t count);
 
-/*
-void __near Z_QuickMap(uint16_t offset, int8_t count){
+
+void __near Z_QuickMap3(uint16_t offset, int8_t count){
 	
-	uint16_t logicalindex,pagenumber;
+	uint16_t logicalindex, pagenumber;
 	
 	offset += pageswapargoff;
 	// test if some of these fields can be pulled out
 	while (count > 0){
 		
-		logicalindex = *(( int16_t __near *)(offset)); // bx
-		pagenumber = *(( int16_t __near *)(offset+2)); // ax
-		if (pagenumber >= 12){
-			// backfill register
+		logicalindex = *(( uint16_t __near *)(offset)); // bx
+		pagenumber   = *(( uint16_t __near *)(offset+2)); // ax
 
-			outp (0xE8,  pagenumber);
-			// 2 MB EMS offset
-
-			if (logicalindex == 0xFFFF){
-				outpw(0xEA, pagenumber+4);
-			} else {
-				logicalindex += EMS_MEMORY_BASE;
-				outpw(0xEA, logicalindex);
-			}
-
-		} else {
-			// page register, need to add 4 to logicalindex to get D000 indexed
-			pagenumber += 4;
-			outp (0xE8,  pagenumber);
-			// 2 MB EMS offset
-
-			if (logicalindex == 0xFFFF){
-				// 4 was already added...
-				outpw(0xEA, pagenumber);
-			} else {
-				logicalindex += EMS_MEMORY_BASE;
-				outpw(0xEA, logicalindex);
-			}
-		}
+		
+		outp (0xE8, pagenumber);
+		outpw(0xEA, logicalindex);
 		
 		count--;
 		offset+= 4;
 		// todo unroll
 	}
 
-}*/
+}
 #elif defined(__SCAT_BUILD)
 	#define EMS_MEMORY_BASE   0x8080
 	 
@@ -638,7 +600,7 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	// offset 4 means reset defaults/current values.
 	if (offset != 4) {
 		//pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = page;
-		pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = _EPRRuntime(page);
+		pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = _EPR(page);
 	}
 
 	// todo change this to 1 with offset?
@@ -923,7 +885,7 @@ void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 		usedpagevalue = EMS_VISPLANE_EXTRA_PAGE + (virtualpage-2);
 	}
 
-	pageswapargs[pageswapargs_visplanepage_offset] = _EPRRuntime(usedpagevalue);
+	pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
 	//pageswapargs[pageswapargs_visplanepage_offset] = usedpagevalue;
 	
 	
@@ -982,7 +944,7 @@ int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -
 void __far Z_QuickMapUnmapAll() {
 	int16_t i;
 	for (i = 0; i < 24; i++) {
-		pageswapargs[i * 2 + 0] = _NPR_UNINDEXED(i + PAGE_4000_OFFSET);
+		pageswapargs[i * 2 + 0] = _NPR(i + PAGE_4000_OFFSET);
 		pageswapargs[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
 	}
 

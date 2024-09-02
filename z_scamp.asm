@@ -39,8 +39,8 @@ SCAMP_PAGE_SET_REGISTER = 0EAh
 ;int16_t offset, int8_t count
 
 
-PROC Z_QuickMap_ NEAR
-PUBLIC Z_QuickMap_
+PROC Z_QuickMap2_ NEAR
+PUBLIC Z_QuickMap2_
 
 ; AX = offset
 ; dl (? or dx)= count
@@ -76,6 +76,47 @@ ret
  
 
 ENDP
+
+
+
+
+
+
+PROC Z_QuickMap_ NEAR
+PUBLIC Z_QuickMap_
+
+; AX = offset
+; dl (? or dx)= count
+
+push bx
+push cx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  cl, dl
+xor  ch, ch
+
+loop_start:
+mov  dx, SCAMP_PAGE_SELECT_REGISTER
+lodsw
+mov  bx, ax
+lodsw
+out  dx, al
+mov  ax, bx
+mov  dx, SCAMP_PAGE_SET_REGISTER
+out  dx, ax
+loop loop_start
+
+pop  si
+pop  cx
+pop  bx
+ret  
+ 
+
+ 
+
+ENDP
+
 
 
 

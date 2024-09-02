@@ -113,16 +113,16 @@ extern uint16_t EMS_PAGE;
 
 #ifdef __SCAMP_BUILD
 #define EMS_MEMORY_OFFSET  0x0080
-#define _NPR(a)            a+4
+#define SCAMP_PAGE_9000_OFFSET   0x20
+#define _NPR(a)            a + SCAMP_PAGE_9000_OFFSET + 4
 // todo should this be minus?
-#define _NPR_UNINDEXED(a)  (a + 0x20 + 4)
-#define _EPR(a)            a+EMS_MEMORY_OFFSET
+#define _EPR(a)            a + EMS_MEMORY_OFFSET
 #elif defined(__SCAT_BUILD)
 // includes turn high bit on
 #define EMS_MEMORY_OFFSET 0x8080
 #define _NPR(a)           0x03FF
 #define _NPR_UNINDEXED(a) 0x03FF
-#define _EPR(a)           a+EMS_MEMORY_OFFSET
+#define _EPR(a)           a + EMS_MEMORY_OFFSET
 
 #else
 #define EMS_MEMORY_OFFSET 0x0000
@@ -134,12 +134,11 @@ extern uint16_t EMS_PAGE;
 #define _EPR(a) a
 #endif
 
-uint16_t _EPRRuntime(int16_t a);
-uint16_t _NPRRuntime(int16_t a);
 
 byte __far* __near Z_InitEMS(void);
 //void Z_InitUMB(void);
 void __far Z_QuickMapUnmapAll();
+void __near Z_QuickMap(int16_t offset, int8_t count);
 
  
 #define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
