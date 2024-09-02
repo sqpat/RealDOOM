@@ -161,19 +161,21 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 2), 
 	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 3), 
 
-	// flat cache undo   NOTE: we just call it with seven params to set everything up for sprites
-	_EPR(RENDER_7800_PAGE), 
-	_EPR(RENDER_7C00_PAGE), 
-	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE), 
-	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE+1), 
-	_EPR(PHYSICS_RENDER_6800_PAGE),  // put colormaps where vissprites used to be?
-
-
 	// sprite cache
 	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 0), 
 	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 1), 
 	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 2), 
 	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 3), 
+
+	// flat cache undo   NOTE: we just call it with seven params to set everything up for sprites
+	_EPR(RENDER_7800_PAGE), 
+	_EPR(RENDER_7C00_PAGE), 
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE), 
+	//masked
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE+1), 
+	_EPR(PHYSICS_RENDER_6800_PAGE),  // put colormaps where vissprites used to be?
+
+
 	// palette
 	_NPR(PAGE_8000_OFFSET), 
 	_NPR(PAGE_8400_OFFSET), 
@@ -211,14 +213,14 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(SCREEN1_LOGICAL_PAGE + 2), 
 	_EPR(SCREEN1_LOGICAL_PAGE + 3), 
 
-	_EPR(SCREEN2_LOGICAL_PAGE + 0), 
-	_EPR(SCREEN2_LOGICAL_PAGE + 1), 
-	_EPR(SCREEN2_LOGICAL_PAGE + 2), 
-	_EPR(SCREEN2_LOGICAL_PAGE + 3), 
 	_EPR(SCREEN3_LOGICAL_PAGE + 0), 
 	_EPR(SCREEN3_LOGICAL_PAGE + 1),  // shared with visplanes
 	_EPR(SCREEN3_LOGICAL_PAGE + 2),  // shared with visplanes
 	_EPR(SCREEN3_LOGICAL_PAGE + 3),  // shared with visplanes
+	_EPR(SCREEN2_LOGICAL_PAGE + 0), 
+	_EPR(SCREEN2_LOGICAL_PAGE + 1), 
+	_EPR(SCREEN2_LOGICAL_PAGE + 2), 
+	_EPR(SCREEN2_LOGICAL_PAGE + 3), 
 
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE	), 
 	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), 
@@ -307,18 +309,20 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
 
 	// flat cache undo   NOTE: we just call it with seven params to set everything up for sprites
-	_EPR(RENDER_7800_PAGE), PAGE_7800_OFFSET,
-	_EPR(RENDER_7C00_PAGE), PAGE_7C00_OFFSET,
-	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE), PAGE_8400_OFFSET,
-	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE+1), PAGE_8800_OFFSET,
-	_EPR(PHYSICS_RENDER_6800_PAGE), PAGE_8C00_OFFSET, // put colormaps where vissprites used to be?
-
-
 	// sprite cache
 	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 0), PAGE_6800_OFFSET,
 	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 1), PAGE_6C00_OFFSET,
 	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 2), PAGE_7000_OFFSET,
 	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 3), PAGE_7400_OFFSET,
+
+	_EPR(RENDER_7800_PAGE), PAGE_7800_OFFSET,
+	_EPR(RENDER_7C00_PAGE), PAGE_7C00_OFFSET,
+	//masked
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE), PAGE_8400_OFFSET,
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE+1), PAGE_8800_OFFSET,
+	_EPR(PHYSICS_RENDER_6800_PAGE), PAGE_8C00_OFFSET, // put colormaps where vissprites used to be?
+
+
 	// palette
 	_NPR(PAGE_8000_OFFSET), PAGE_8000_OFFSET,
 	_NPR(PAGE_8400_OFFSET), PAGE_8400_OFFSET,
@@ -351,19 +355,20 @@ uint16_t pageswapargs[total_pages] = {
 	_NPR(PAGE_8400_OFFSET), PAGE_8400_OFFSET,
 	_NPR(PAGE_8800_OFFSET), PAGE_8800_OFFSET,
 	_NPR(PAGE_8C00_OFFSET), PAGE_8C00_OFFSET,
+	// wipe start
 	_EPR(SCREEN1_LOGICAL_PAGE + 0), PAGE_9000_OFFSET,
 	_EPR(SCREEN1_LOGICAL_PAGE + 1), PAGE_9400_OFFSET,
 	_EPR(SCREEN1_LOGICAL_PAGE + 2), PAGE_9800_OFFSET,
 	_EPR(SCREEN1_LOGICAL_PAGE + 3), PAGE_9C00_OFFSET,
 
-	_EPR(SCREEN2_LOGICAL_PAGE + 0), PAGE_7000_OFFSET,
-	_EPR(SCREEN2_LOGICAL_PAGE + 1), PAGE_7400_OFFSET,
-	_EPR(SCREEN2_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
-	_EPR(SCREEN2_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
 	_EPR(SCREEN3_LOGICAL_PAGE + 0), PAGE_6000_OFFSET,
 	_EPR(SCREEN3_LOGICAL_PAGE + 1), PAGE_6400_OFFSET, // shared with visplanes
 	_EPR(SCREEN3_LOGICAL_PAGE + 2), PAGE_6800_OFFSET, // shared with visplanes
 	_EPR(SCREEN3_LOGICAL_PAGE + 3), PAGE_6C00_OFFSET, // shared with visplanes
+	_EPR(SCREEN2_LOGICAL_PAGE + 0), PAGE_7000_OFFSET,
+	_EPR(SCREEN2_LOGICAL_PAGE + 1), PAGE_7400_OFFSET,
+	_EPR(SCREEN2_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
+	_EPR(SCREEN2_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
 	//FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
 	
 
@@ -730,9 +735,8 @@ void __far Z_QuickMapUndoFlatCache() {
 	// this runs 4 over into z_quickmapsprite page
 	//Z_QuickMap9(pageswapargs_flatcache_undo_offset_size);
 
-	Z_QuickMap2AI(pageswapargs_flatcache_undo_offset_size,     INDEXED_PAGE_7800_OFFSET);
-	Z_QuickMap3AI(pageswapargs_flatcache_undo_offset_size+2*AMTSIO16,   INDEXED_PAGE_8400_OFFSET);
-	Z_QuickMap4AI(pageswapargs_flatcache_undo_offset_size+5*AMTSIO16,  INDEXED_PAGE_6800_OFFSET);
+	Z_QuickMap2AI(pageswapargs_spritecache_offset_size,     			INDEXED_PAGE_6800_OFFSET);
+	Z_QuickMap3AI(pageswapargs_maskeddata_offset_size,   				INDEXED_PAGE_8400_OFFSET);
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -937,8 +941,7 @@ void __far Z_QuickMapIntermission() {
 void __far Z_QuickMapWipe() {
 	//Z_QuickMap12(pageswapargs_wipe_offset_size);
 	Z_QuickMap4AI(pageswapargs_wipe_offset_size,    INDEXED_PAGE_9000_OFFSET);
-	Z_QuickMap4AI(pageswapargs_wipe_offset_size+4*AMTSIO16, INDEXED_PAGE_7000_OFFSET);
-	Z_QuickMap4AI(pageswapargs_wipe_offset_size+8*AMTSIO16, INDEXED_PAGE_6000_OFFSET);
+	Z_QuickMap8AI(pageswapargs_wipe_offset_size+4*AMTSIO16, INDEXED_PAGE_6000_OFFSET);
 	
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
