@@ -961,7 +961,12 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		if (activenumpages[startpage]) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
 				activetexturepages[startpage+i]  = -1; // unpaged
-				pageswapargs[pageswapargs_rend_offset+40 + ((startpage+i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i);
+				#ifndef __SCAMP_BUILD
+					pageswapargs[pageswapargs_rend_offset+40 + ((startpage+i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i);
+				#else
+					pageswapargs_single[pageswapargs_rend_offset+20 + ((startpage+i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i);
+				#endif
+
 				activenumpages[startpage+i] = 0;
 			}
 		}
@@ -969,8 +974,13 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 
 		activetexturepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
-		pageswapargs[pageswapargs_rend_offset+40  + ( startpage << 1)] = _EPR(pagenum);
 		
+		#ifndef __SCAMP_BUILD
+			pageswapargs[pageswapargs_rend_offset+40  + ( startpage << 1)] = _EPR(pagenum);
+		#else
+			pageswapargs_single[pageswapargs_rend_offset+20  + ( startpage << 1)] = _EPR(pagenum);
+		#endif
+
 
 
 		R_MarkCacheLRU(realtexpage, 0, cachetype);
@@ -1051,7 +1061,15 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		if (activenumpages[startpage] > numpages) {
 			for (i = 1; i <= activenumpages[startpage]; i++) {
 				activetexturepages[startpage + i] = -1;
-				pageswapargs[pageswapargs_rend_offset+40 +   ((startpage + i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
+
+
+				#ifndef __SCAMP_BUILD
+					pageswapargs[pageswapargs_rend_offset+40 +   ((startpage + i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
+				#else
+					pageswapargs_single[pageswapargs_rend_offset+20 +   ((startpage + i) << 1)] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
+				#endif
+
+
 				activenumpages[startpage + i] = 0;
 			}
 		}
@@ -1061,7 +1079,12 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		for (i = 0; i <= numpages; i++) {
 			textureLRU[startpage + i] = 0;
 			activetexturepages[startpage + i]  = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;			
-			pageswapargs[pageswapargs_rend_offset+40 +  ((startpage + i)<<1)] = _EPR(pagenum + i);
+			#ifndef __SCAMP_BUILD
+				pageswapargs[pageswapargs_rend_offset+40 +  ((startpage + i)<<1)] = _EPR(pagenum + i);
+			#else
+				pageswapargs_single[pageswapargs_rend_offset+20 +  ((startpage + i)<<1)] = _EPR(pagenum + i);
+			#endif
+
 			activenumpages[startpage + i] = numpages-i;
 
 		}
@@ -1144,6 +1167,7 @@ uint8_t __near getspritepage(uint8_t texpage, uint8_t pageoffset) {
 
 		activespritepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;
 		pageswapargs[pageswapargs_spritecache_offset +  (startpage<<1)] = _EPR(pagenum);		
+		
 		Z_QuickMapSpritePage();
 		R_MarkCacheLRU(realtexpage, 0, CACHETYPE_SPRITE);
 

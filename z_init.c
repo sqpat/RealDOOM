@@ -40,6 +40,7 @@
 
 extern int16_t pagenum9000;
 extern uint16_t pageswapargs[total_pages];
+extern uint16_t pageswapargs_single[total_pages/2];
 extern int16_t pageswapargoff;
 
 // extern byte __far* pageFrameArea;

@@ -410,6 +410,7 @@ void __near Z_QuickMap(int16_t offset, int8_t count);
 
 
 extern uint16_t pageswapargs[total_pages];
+extern uint16_t pageswapargs_single[total_pages/2];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 
 // EMS 4.0 stuff

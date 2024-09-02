@@ -231,6 +231,154 @@ uint16_t pageswapargs[total_pages] = {
 
 };
 
+#ifdef __SCAMP_BUILD
+
+// these are prepared for calls to outsw with autoincrementing ems register on
+
+uint16_t pageswapargs_single[total_pages/2] = {
+
+	_NPR(PAGE_4000_OFFSET),	 _NPR(PAGE_4400_OFFSET),	 _NPR(PAGE_4800_OFFSET),	 _NPR(PAGE_4C00_OFFSET),	
+	_NPR(PAGE_5000_OFFSET),  _NPR(PAGE_5400_OFFSET),	 _NPR(PAGE_5800_OFFSET),	 _NPR(PAGE_5C00_OFFSET),	 
+	_NPR(PAGE_6000_OFFSET),  _NPR(PAGE_6400_OFFSET),	 _EPR(13),	                 _NPR(PAGE_6C00_OFFSET),	
+	_NPR(PAGE_7000_OFFSET),	 _NPR(PAGE_7400_OFFSET),	 _NPR(PAGE_7800_OFFSET),	 _NPR(PAGE_7C00_OFFSET),	
+	_NPR(PAGE_8000_OFFSET),	 _NPR(PAGE_8400_OFFSET),	 _NPR(PAGE_8800_OFFSET),	 _NPR(PAGE_8C00_OFFSET),	
+	_EPR(15), 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE)    , 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), 
+
+	// render
+	_EPR(0),				 _EPR(1),					 _EPR(2),					 _EPR(3),						
+	_NPR(PAGE_5000_OFFSET),  _NPR(PAGE_5400_OFFSET),	 _NPR(PAGE_5800_OFFSET),	 _EPR(14),						  // same as physics as its unused for physics..
+	_EPR(11), 				 _EPR(12),					 _EPR(13),					 _NPR(PAGE_6C00_OFFSET),		  // shared 6400 6800 with physics
+	_EPR(7),				 _EPR(8),					 _EPR(9),					 _EPR(10),						
+	_EPR(4),				 _EPR(5),					 _EPR(6),					 _EPR(EMS_VISPLANE_EXTRA_PAGE),
+	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 0),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 1),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 2),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 3),	  // texture cache area
+	_EPR(0),				 _EPR(1),					 _EPR(2),					 _EPR(3),						
+
+	
+	// status/hud
+	_NPR(PAGE_9C00_OFFSET), 		  //SCREEN4_LOGICAL_PAGE
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 3), 
+	_NPR(PAGE_6000_OFFSET), 		  // STRINGS_LOGICAL_PAGE
+	// demo
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 3), 
+
+ 
+// we use 0x5000 as a  'scratch' page frame for certain things
+// scratch 5000
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), 
+
+// but sometimes we need that in the 0x8000 segment..
+// scratch 8000
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), 
+		// and sometimes we need that in the 0x7000 segment..
+	// scratch 7000
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), 
+
+	// puts sky_texture in the right place, adjacent to flat cache for planes
+	//  RenderPlane
+	_NPR(PAGE_9000_OFFSET), 	
+	_NPR(PAGE_9400_OFFSET), 	
+	_NPR(PAGE_9800_OFFSET), 	
+	
+	_EPR(PALETTE_LOGICAL_PAGE),       // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused during planes
+														
+	//PHYSICS_RENDER_6800_PAGE,           // remap colormaps to be before drawspan code
+														
+
+
+	// flat cache
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 3), 
+
+	// flat cache undo   NOTE: we just call it with seven params to set everything up for sprites
+	_EPR(RENDER_7800_PAGE), 
+	_EPR(RENDER_7C00_PAGE), 
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE), 
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE+1), 
+	_EPR(PHYSICS_RENDER_6800_PAGE),  // put colormaps where vissprites used to be?
+
+
+	// sprite cache
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 3), 
+	// palette
+	_NPR(PAGE_8000_OFFSET), 
+	_NPR(PAGE_8400_OFFSET), 
+	_NPR(PAGE_8800_OFFSET), 
+	_NPR(PAGE_8C00_OFFSET),  // SCREEN0_LOGICAL_PAGE
+	_EPR(PALETTE_LOGICAL_PAGE), 
+
+ 
+// menu 
+	_NPR(PAGE_6000_OFFSET) 				  	  ,  // STRINGS_LOGICAL_PAGE
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 4), 
+	_NPR(PAGE_6800_OFFSET)  				  , 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 5), 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 3), 
+
+// intermission 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 6), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 7), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 3), 
+// wipe/intermission, shared pages
+	_NPR(PAGE_8000_OFFSET),  // SCREEN0_LOGICAL_PAGE
+	_NPR(PAGE_8400_OFFSET), 
+	_NPR(PAGE_8800_OFFSET), 
+	_NPR(PAGE_8C00_OFFSET), 
+	_EPR(SCREEN1_LOGICAL_PAGE + 0), 
+	_EPR(SCREEN1_LOGICAL_PAGE + 1), 
+	_EPR(SCREEN1_LOGICAL_PAGE + 2), 
+	_EPR(SCREEN1_LOGICAL_PAGE + 3), 
+
+	_EPR(SCREEN2_LOGICAL_PAGE + 0), 
+	_EPR(SCREEN2_LOGICAL_PAGE + 1), 
+	_EPR(SCREEN2_LOGICAL_PAGE + 2), 
+	_EPR(SCREEN2_LOGICAL_PAGE + 3), 
+	_EPR(SCREEN3_LOGICAL_PAGE + 0), 
+	_EPR(SCREEN3_LOGICAL_PAGE + 1),  // shared with visplanes
+	_EPR(SCREEN3_LOGICAL_PAGE + 2),  // shared with visplanes
+	_EPR(SCREEN3_LOGICAL_PAGE + 3),  // shared with visplanes
+
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE	), 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), 
+
+	_EPR(EMS_VISPLANE_EXTRA_PAGE)
+
+};
+
+
+#endif
+
   
 
 int16_t pageswapargseg;
@@ -430,7 +578,7 @@ void __far  Z_QuickMapRender7000() {
 void __far  Z_QuickMapRender() {
 	
 	
-	Z_QuickMap24AI(pageswapargs_rend_offset_size);
+	Z_QuickMap24AI(pageswapargs_rend_offset_size/2);
 
 
 
@@ -926,8 +1074,16 @@ int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -
 void __far Z_QuickMapUnmapAll() {
 	int16_t i;
 	for (i = 0; i < 24; i++) {
-		pageswapargs[i * 2 + 0] = _NPR(i + PAGE_4000_OFFSET);
-		pageswapargs[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
+
+		#ifndef __SCAMP_BUILD
+			pageswapargs[i * 2 + 0] = _NPR(i + PAGE_4000_OFFSET);
+			pageswapargs[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
+		#else
+			pageswapargs_single[i + 0] = _NPR(i + PAGE_4000_OFFSET);
+			pageswapargs_single[i + 1] = pagenum9000 + ems_backfill_page_order[i];
+		#endif
+
+		
 	}
 
 	Z_QuickMap24AI(0);

@@ -25,6 +25,7 @@ INCLUDE defs.inc
 
 EXTRN	_pageswapargs:WORD
 EXTRN	_pageswapargoff:WORD
+EXTRN	_pageswapargs_single:WORD
 
 SCAMP_PAGE_SELECT_REGISTER = 0E8h
 SCAMP_PAGE_SET_REGISTER = 0EAh
@@ -309,22 +310,36 @@ ret
 ENDP
 
  ; todo: pass in the argument precalced as compile time thing
+   ; eventually change the data structure to not even use the 2nd params (?)
  ; todo: make the 24 case fall thru
-; todo: skip jump and do the whole thing for 1s, 4s, etc?
+ ; todo: skip jump and do the whole thing for 1s, 4s, etc?
+
 
 ; Z_QuickMapAI  (autoincrement)
 ;
 
+
+
+; no need for input registers because its always going to be ems page 0x4000
 PROC Z_QuickMap24AI_ NEAR
 PUBLIC Z_QuickMap24AI_
 push si
+push cx
+push dx
 mov  si, ax
-add  si, OFFSET _pageswapargs
-mov  ax, word ptr ds:[si+2]        ; first word param
-or   al, 040h                     ; enable autoincrement
+add  si, OFFSET _pageswapargs_single  ; put this here to put some space between the out commands...
+mov  al, 04Ch     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
-jmp unrolled_loop_AI_24
+mov  dx, SCAMP_PAGE_SET_REGISTER
+mov  cx, 24
+rep  outsw
+pop dx
+pop cx
+pop si
+ret
+
 ENDP
+
 PROC Z_QuickMap16AI_ NEAR
 PUBLIC Z_QuickMap16AI_
 push si
