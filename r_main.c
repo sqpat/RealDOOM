@@ -551,18 +551,7 @@ void R_SetupFrame () {
 	// i think this sets the view within the border for when screen size is increased/shrunk
     
 	destview = (byte __far*)(destscreen.w + viewwindowoffset);
-
-	/*
-	for (i = 0; i < 4; i++) {
-		//todo dont reset this per frame? keep last frame's cache?
-		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;
-		textureLRU[i] = i;
-		pageswapargs_rend[40 + i * 2] = FIRST_TEXTURE_LOGICAL_PAGE + i;
-		
-		
-		//#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
-	}	 
-	*/
+ 
 
 
 }

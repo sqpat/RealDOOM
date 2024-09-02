@@ -309,7 +309,8 @@ ret
 ENDP
 
  ; todo: pass in the argument precalced as compile time thing
-
+ ; todo: make the 24 case fall thru
+; todo: skip jump and do the whole thing for 1s, 4s, etc?
 
 ; Z_QuickMapAI  (autoincrement)
 ;

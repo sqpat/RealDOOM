@@ -98,16 +98,13 @@ uint16_t pageswapargs[total_pages] = {
  
 
 	// render
-	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 0),	PAGE_9000_OFFSET,
-	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 1),	PAGE_9400_OFFSET,
-	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 2),	PAGE_9800_OFFSET,
-	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 3),	PAGE_9C00_OFFSET,  // texture cache area
-
-	_EPR(4),				PAGE_8000_OFFSET, _EPR(5),					PAGE_8400_OFFSET, _EPR(6),					PAGE_8800_OFFSET, _EPR(EMS_VISPLANE_EXTRA_PAGE),PAGE_8C00_OFFSET,
-	_EPR(7),				PAGE_7000_OFFSET, _EPR(8),					PAGE_7400_OFFSET, _EPR(9),					PAGE_7800_OFFSET, _EPR(10),						PAGE_7C00_OFFSET,
-	_EPR(11), 				PAGE_6000_OFFSET, _EPR(12),					PAGE_6400_OFFSET, _EPR(13),					PAGE_6800_OFFSET, _NPR(PAGE_6C00_OFFSET),		PAGE_6C00_OFFSET,  // shared 6400 6800 with physics
-	_NPR(PAGE_5000_OFFSET), PAGE_5000_OFFSET, _NPR(PAGE_5400_OFFSET),	PAGE_5400_OFFSET, _NPR(PAGE_5800_OFFSET),	PAGE_5800_OFFSET, _EPR(14),						PAGE_5C00_OFFSET,  // same as physics as its unused for physics..
 	_EPR(0),				PAGE_4000_OFFSET, _EPR(1),					PAGE_4400_OFFSET, _EPR(2),					PAGE_4800_OFFSET, _EPR(3),						PAGE_4C00_OFFSET,
+	_NPR(PAGE_5000_OFFSET), PAGE_5000_OFFSET, _NPR(PAGE_5400_OFFSET),	PAGE_5400_OFFSET, _NPR(PAGE_5800_OFFSET),	PAGE_5800_OFFSET, _EPR(14),						PAGE_5C00_OFFSET,  // same as physics as its unused for physics..
+	_EPR(11), 				PAGE_6000_OFFSET, _EPR(12),					PAGE_6400_OFFSET, _EPR(13),					PAGE_6800_OFFSET, _NPR(PAGE_6C00_OFFSET),		PAGE_6C00_OFFSET,  // shared 6400 6800 with physics
+	_EPR(7),				PAGE_7000_OFFSET, _EPR(8),					PAGE_7400_OFFSET, _EPR(9),					PAGE_7800_OFFSET, _EPR(10),						PAGE_7C00_OFFSET,
+	_EPR(4),				PAGE_8000_OFFSET, _EPR(5),					PAGE_8400_OFFSET, _EPR(6),					PAGE_8800_OFFSET, _EPR(EMS_VISPLANE_EXTRA_PAGE),PAGE_8C00_OFFSET,
+	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 0),	PAGE_9000_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 1),	PAGE_9400_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 2),	PAGE_9800_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 3),	PAGE_9C00_OFFSET,  // texture cache area
+
 	_EPR(0),				PAGE_9000_OFFSET, _EPR(1),					PAGE_9400_OFFSET, _EPR(2),					PAGE_9800_OFFSET, _EPR(3),						PAGE_9C00_OFFSET,
 
 	
@@ -146,6 +143,7 @@ uint16_t pageswapargs[total_pages] = {
 	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
 
 	// puts sky_texture in the right place, adjacent to flat cache for planes
+	//  RenderPlane
 	_NPR(PAGE_9000_OFFSET), 	PAGE_9000_OFFSET,
 	_NPR(PAGE_9400_OFFSET), 	PAGE_9400_OFFSET,
 	_NPR(PAGE_9800_OFFSET), 	PAGE_9800_OFFSET,
@@ -421,7 +419,7 @@ void __far Z_QuickMapDemo() {
 void __far  Z_QuickMapRender7000() {
 
 
-	Z_QuickMap4(pageswapargs_rend_offset_size + 32);
+	Z_QuickMap4(pageswapargs_rend_offset_size + 48);
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -452,8 +450,8 @@ void __far Z_QuickMapRender_4000To9000() {
 
 	//todo
 
-	Z_QuickMap16(pageswapargs_rend_offset_size+16);
-	Z_QuickMap4(pageswapargs_rend_offset_size+96);
+	Z_QuickMap16(pageswapargs_rend_offset_size+16); // 5000 to 8000
+	Z_QuickMap4(pageswapargs_rend_offset_size+96);  // 4000 as 9000
 
 
 
@@ -470,7 +468,7 @@ void __far Z_QuickMapRender_4000To9000() {
 
 void __far Z_QuickMapRender4000() {
 
-	Z_QuickMap4(pageswapargs_rend_offset_size+80);
+	Z_QuickMap4(pageswapargs_rend_offset_size);
 
 	
 
@@ -490,7 +488,7 @@ void __near Z_QuickMapRenderTexture() {
 	//pageswapargs_textcache[2];
 	
 	
-	Z_QuickMap4(pageswapargs_rend_offset_size);
+	Z_QuickMap4(pageswapargs_rend_offset_size+80);
 
 
 
@@ -598,7 +596,6 @@ void __far Z_QuickMapRenderPlanesBack(){
 void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	// offset 4 means reset defaults/current values.
 	if (offset != 4) {
-		//pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = page;
 		pageswapargs[pageswapargs_flatcache_offset + 2 * offset] = _EPR(page);
 	}
 
@@ -614,7 +611,7 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 
 void __far Z_QuickMapUndoFlatCache() {
 	// also puts 9000 page back from skytexture
-	Z_QuickMap4(pageswapargs_rend_offset_size);
+	Z_QuickMap4(pageswapargs_rend_offset_size+80);
 	
 	// this runs 4 over into z_quickmapsprite page
 	Z_QuickMap9(pageswapargs_flatcache_undo_offset_size);
@@ -656,7 +653,7 @@ void __far Z_QuickMapSpritePage() {
 
 void __far Z_QuickMapColumnOffsets5000() {
 
-	Z_QuickMap4(pageswapargs_rend_offset_size + 64);
+	Z_QuickMap4(pageswapargs_rend_offset_size + 16);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -885,9 +882,6 @@ void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 	}
 
 	pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
-	//pageswapargs[pageswapargs_visplanepage_offset] = usedpagevalue;
-	
-	
 	pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
 	physicalpage++;
 	
@@ -915,17 +909,7 @@ void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 }
 
 void __far Z_QuickMapVisplaneRevert(){
-/*
-	//I_Error("C");
-	Z_QuickMap(pageswapargs_visplane_base_page_offset_size, 3);
-	//active_visplanes[0] = 1;  // never changes 
-	// todo make it two 16 bit writes?
-	active_visplanes[1] = 2;
-	active_visplanes[2] = 3;
-	active_visplanes[3] = 0;
-	active_visplanes[4] = 0;
-	*/
-	//Z_QuickMapVisplanePage(0, 0);
+ 
 	Z_QuickMapVisplanePage(1, 1);
 	Z_QuickMapVisplanePage(2, 2);
 	
