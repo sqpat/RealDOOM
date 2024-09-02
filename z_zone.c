@@ -231,7 +231,7 @@ uint16_t pageswapargs[total_pages] = {
 
 };
 
- 
+  
 
 int16_t pageswapargseg;
 int16_t pageswapargoff;
@@ -661,7 +661,7 @@ void __far Z_QuickMapColumnOffsets5000() {
 }
 
 void __far Z_QuickMapScreen1(){
-	Z_QuickMap4AI(pageswapargs_intermission_offset_size);
+	Z_QuickMap4AI(pageswapargs_intermission_offset_size+48);
 
 	current9000State = PAGE_9000_SCREEN1;
 }

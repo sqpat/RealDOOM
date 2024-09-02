@@ -387,7 +387,7 @@ void __near Z_QuickMap(int16_t offset, int8_t count);
 #define pageswapargs_lumpinfo_5400_offset_size       (pageswapargs_wipe_offset_size           + 2*num_wipe_params)
 #define pageswapargs_visplanepage_offset_size        (pageswapargs_lumpinfo_5400_offset_size  + 2*num_lumpinfo_5400_params) 
 #define total_pages_size                             (pageswapargs_visplanepage_offset_size   + 2*num_visplanepage_params)
-
+ 
 // used for array indices
 #define pageswapargs_rend_offset            num_phys_params
 #define pageswapargs_stat_offset            (pageswapargs_rend_offset               + num_rend_params) 
