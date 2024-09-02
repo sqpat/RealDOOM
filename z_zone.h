@@ -117,13 +117,14 @@ extern uint16_t EMS_PAGE;
 #define _NPR(a)            a + SCAMP_PAGE_9000_OFFSET + 4
 // todo should this be minus?
 #define _EPR(a)            a + EMS_MEMORY_OFFSET
+#define CHIPSET_PAGE_9000 0x20
 #elif defined(__SCAT_BUILD)
 // includes turn high bit on
 #define EMS_MEMORY_OFFSET 0x8080
 #define _NPR(a)           0x03FF
 #define _NPR_UNINDEXED(a) 0x03FF
 #define _EPR(a)           a + EMS_MEMORY_OFFSET
-
+#define CHIPSET_PAGE_9000 0x14
 #else
 #define EMS_MEMORY_OFFSET 0x0000
 #define _NPR(a) 0xFFFF
@@ -142,112 +143,120 @@ void __far Z_QuickMapUnmapAll();
  
 #if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
 
-    void __near Z_QuickMap24(int16_t offset);
-    void __near Z_QuickMap23(int16_t offset);
-    void __near Z_QuickMap22(int16_t offset);
-    void __near Z_QuickMap21(int16_t offset);
-    void __near Z_QuickMap20(int16_t offset);
-    void __near Z_QuickMap19(int16_t offset);
-    void __near Z_QuickMap18(int16_t offset);
-    void __near Z_QuickMap17(int16_t offset);
-    void __near Z_QuickMap16(int16_t offset);
-    void __near Z_QuickMap15(int16_t offset);
-    void __near Z_QuickMap14(int16_t offset);
-    void __near Z_QuickMap13(int16_t offset);
-    void __near Z_QuickMap12(int16_t offset);
-    void __near Z_QuickMap11(int16_t offset);
-    void __near Z_QuickMap10(int16_t offset);
-    void __near Z_QuickMap9(int16_t offset);
-    void __near Z_QuickMap8(int16_t offset);
-    void __near Z_QuickMap7(int16_t offset);
-    void __near Z_QuickMap6(int16_t offset);
-    void __near Z_QuickMap5(int16_t offset);
-    void __near Z_QuickMap4(int16_t offset);
-    void __near Z_QuickMap3(int16_t offset);
-    void __near Z_QuickMap2(int16_t offset);
-    void __near Z_QuickMap1(int16_t offset);
+    #define pagenum9000 CHIPSET_PAGE_9000
+
+    #define INDEXED_PAGE_9000_OFFSET (PAGE_9000_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_9400_OFFSET (PAGE_9400_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_9800_OFFSET (PAGE_9800_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_9C00_OFFSET (PAGE_9C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+
+    #define INDEXED_PAGE_8000_OFFSET (PAGE_8000_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_8400_OFFSET (PAGE_8400_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_8800_OFFSET (PAGE_8800_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_8C00_OFFSET (PAGE_8C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+
+    #define INDEXED_PAGE_7000_OFFSET (PAGE_7000_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_7400_OFFSET (PAGE_7400_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_7800_OFFSET (PAGE_7800_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_7C00_OFFSET (PAGE_7C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+
+    #define INDEXED_PAGE_6000_OFFSET (PAGE_6000_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_6400_OFFSET (PAGE_6400_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_6800_OFFSET (PAGE_6800_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_6C00_OFFSET (PAGE_6C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+
+    #define INDEXED_PAGE_5000_OFFSET (PAGE_5000_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_5400_OFFSET (PAGE_5400_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_5800_OFFSET (PAGE_5800_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_5C00_OFFSET (PAGE_5C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+
+    #define INDEXED_PAGE_4000_OFFSET (PAGE_4000_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_4400_OFFSET (PAGE_4400_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_4800_OFFSET (PAGE_4800_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_4C00_OFFSET (PAGE_4C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+
 
 
     void __near Z_QuickMap24AI(int16_t offset);
-    void __near Z_QuickMap23AI(int16_t offset);
-    void __near Z_QuickMap22AI(int16_t offset);
-    void __near Z_QuickMap21AI(int16_t offset);
-    void __near Z_QuickMap20AI(int16_t offset);
-    void __near Z_QuickMap19AI(int16_t offset);
-    void __near Z_QuickMap18AI(int16_t offset);
-    void __near Z_QuickMap17AI(int16_t offset);
-    void __near Z_QuickMap16AI(int16_t offset);
-    void __near Z_QuickMap15AI(int16_t offset);
-    void __near Z_QuickMap14AI(int16_t offset);
-    void __near Z_QuickMap13AI(int16_t offset);
-    void __near Z_QuickMap12AI(int16_t offset);
-    void __near Z_QuickMap11AI(int16_t offset);
-    void __near Z_QuickMap10AI(int16_t offset);
-    void __near Z_QuickMap9AI(int16_t offset);
-    void __near Z_QuickMap8AI(int16_t offset);
-    void __near Z_QuickMap7AI(int16_t offset);
-    void __near Z_QuickMap6AI(int16_t offset);
-    void __near Z_QuickMap5AI(int16_t offset);
-    void __near Z_QuickMap4AI(int16_t offset);
-    void __near Z_QuickMap3AI(int16_t offset);
-    void __near Z_QuickMap2AI(int16_t offset);
-    void __near Z_QuickMap1AI(int16_t offset);
+    void __near Z_QuickMap16AI(int16_t offset, int16_t page);
+    void __near Z_QuickMap8AI(int16_t offset, int16_t page);
+    void __near Z_QuickMap7AI(int16_t offset, int16_t page);
+    void __near Z_QuickMap6AI(int16_t offset, int16_t page);
+    void __near Z_QuickMap5AI(int16_t offset, int16_t page);
+    void __near Z_QuickMap4AI(int16_t offset, int16_t page);
+    void __near Z_QuickMap3AI(int16_t offset, int16_t page);
+    void __near Z_QuickMap2AI(int16_t offset, int16_t page);
+    void __near Z_QuickMap1AI(int16_t offset, int16_t page);
+
+    #define PAGE_SWAP_ARG_MULT 1
 
 #else
-    #define Z_QuickMap24(a) Z_QuickMap(a,24)
-    #define Z_QuickMap23(a) Z_QuickMap(a,23)
-    #define Z_QuickMap22(a) Z_QuickMap(a,22)
-    #define Z_QuickMap21(a) Z_QuickMap(a,21)
-    #define Z_QuickMap20(a) Z_QuickMap(a,20)
-    #define Z_QuickMap19(a) Z_QuickMap(a,19)
-    #define Z_QuickMap18(a) Z_QuickMap(a,18)
-    #define Z_QuickMap17(a) Z_QuickMap(a,17)
-    #define Z_QuickMap16(a) Z_QuickMap(a,16)
-    #define Z_QuickMap15(a) Z_QuickMap(a,15)
-    #define Z_QuickMap14(a) Z_QuickMap(a,14)
-    #define Z_QuickMap13(a) Z_QuickMap(a,13)
-    #define Z_QuickMap12(a) Z_QuickMap(a,12)
-    #define Z_QuickMap11(a) Z_QuickMap(a,11)
-    #define Z_QuickMap10(a) Z_QuickMap(a,10)
-    #define Z_QuickMap9(a) Z_QuickMap(a, 9)
-    #define Z_QuickMap8(a) Z_QuickMap(a, 8)
-    #define Z_QuickMap7(a) Z_QuickMap(a, 7)
-    #define Z_QuickMap6(a) Z_QuickMap(a, 6)
-    #define Z_QuickMap5(a) Z_QuickMap(a, 5)
-    #define Z_QuickMap4(a) Z_QuickMap(a, 4)
-    #define Z_QuickMap3(a) Z_QuickMap(a, 3)
-    #define Z_QuickMap2(a) Z_QuickMap(a, 2)
-    #define Z_QuickMap1(a) Z_QuickMap(a, 1)
+ 
 
     #define Z_QuickMap24AI(a) Z_QuickMap(a,24)
-    #define Z_QuickMap23AI(a) Z_QuickMap(a,23)
-    #define Z_QuickMap22AI(a) Z_QuickMap(a,22)
-    #define Z_QuickMap21AI(a) Z_QuickMap(a,21)
-    #define Z_QuickMap20AI(a) Z_QuickMap(a,20)
-    #define Z_QuickMap19AI(a) Z_QuickMap(a,19)
-    #define Z_QuickMap18AI(a) Z_QuickMap(a,18)
-    #define Z_QuickMap17AI(a) Z_QuickMap(a,17)
-    #define Z_QuickMap16AI(a) Z_QuickMap(a,16)
-    #define Z_QuickMap15AI(a) Z_QuickMap(a,15)
-    #define Z_QuickMap14AI(a) Z_QuickMap(a,14)
-    #define Z_QuickMap13AI(a) Z_QuickMap(a,13)
-    #define Z_QuickMap12AI(a) Z_QuickMap(a,12)
-    #define Z_QuickMap11AI(a) Z_QuickMap(a,11)
-    #define Z_QuickMap10AI(a) Z_QuickMap(a,10)
-    #define Z_QuickMap9AI(a) Z_QuickMap(a, 9)
-    #define Z_QuickMap8AI(a) Z_QuickMap(a, 8)
-    #define Z_QuickMap7AI(a) Z_QuickMap(a, 7)
-    #define Z_QuickMap6AI(a) Z_QuickMap(a, 6)
-    #define Z_QuickMap5AI(a) Z_QuickMap(a, 5)
-    #define Z_QuickMap4AI(a) Z_QuickMap(a, 4)
-    #define Z_QuickMap3AI(a) Z_QuickMap(a, 3)
-    #define Z_QuickMap2AI(a) Z_QuickMap(a, 2)
-    #define Z_QuickMap1AI(a) Z_QuickMap(a, 1)
+    #define Z_QuickMap23AI(a,b) Z_QuickMap(a,23)
+    #define Z_QuickMap22AI(a,b) Z_QuickMap(a,22)
+    #define Z_QuickMap21AI(a,b) Z_QuickMap(a,21)
+    #define Z_QuickMap20AI(a,b) Z_QuickMap(a,20)
+    #define Z_QuickMap19AI(a,b) Z_QuickMap(a,19)
+    #define Z_QuickMap18AI(a,b) Z_QuickMap(a,18)
+    #define Z_QuickMap17AI(a,b) Z_QuickMap(a,17)
+    #define Z_QuickMap16AI(a,b) Z_QuickMap(a,16)
+    #define Z_QuickMap15AI(a,b) Z_QuickMap(a,15)
+    #define Z_QuickMap14AI(a,b) Z_QuickMap(a,14)
+    #define Z_QuickMap13AI(a,b) Z_QuickMap(a,13)
+    #define Z_QuickMap12AI(a,b) Z_QuickMap(a,12)
+    #define Z_QuickMap11AI(a,b) Z_QuickMap(a,11)
+    #define Z_QuickMap10AI(a,b) Z_QuickMap(a,10)
+    #define Z_QuickMap9AI(a,b) Z_QuickMap(a, 9)
+    #define Z_QuickMap8AI(a,b) Z_QuickMap(a, 8)
+    #define Z_QuickMap7AI(a,b) Z_QuickMap(a, 7)
+    #define Z_QuickMap6AI(a,b) Z_QuickMap(a, 6)
+    #define Z_QuickMap5AI(a,b) Z_QuickMap(a, 5)
+    #define Z_QuickMap4AI(a,b) Z_QuickMap(a, 4)
+    #define Z_QuickMap3AI(a,b) Z_QuickMap(a, 3)
+    #define Z_QuickMap2AI(a,b) Z_QuickMap(a, 2)
+    #define Z_QuickMap1AI(a,b) Z_QuickMap(a, 1)
+
+    #define INDEXED_PAGE_9000_OFFSET (PAGE_9000_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_9400_OFFSET (PAGE_9400_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_9800_OFFSET (PAGE_9800_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_9C00_OFFSET (PAGE_9C00_OFFSET + 0 + pagenum9000)
+
+    #define INDEXED_PAGE_8000_OFFSET (PAGE_8000_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_8400_OFFSET (PAGE_8400_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_8800_OFFSET (PAGE_8800_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_8C00_OFFSET (PAGE_8C00_OFFSET + 0 + pagenum9000)
+
+    #define INDEXED_PAGE_7000_OFFSET (PAGE_7000_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_7400_OFFSET (PAGE_7400_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_7800_OFFSET (PAGE_7800_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_7C00_OFFSET (PAGE_7C00_OFFSET + 0 + pagenum9000)
+
+    #define INDEXED_PAGE_6000_OFFSET (PAGE_6000_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_6400_OFFSET (PAGE_6400_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_6800_OFFSET (PAGE_6800_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_6C00_OFFSET (PAGE_6C00_OFFSET + 0 + pagenum9000)
+
+    #define INDEXED_PAGE_5000_OFFSET (PAGE_5000_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_5400_OFFSET (PAGE_5400_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_5800_OFFSET (PAGE_5800_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_5C00_OFFSET (PAGE_5C00_OFFSET + 0 + pagenum9000)
+
+    #define INDEXED_PAGE_4000_OFFSET (PAGE_4000_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_4400_OFFSET (PAGE_4400_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_4800_OFFSET (PAGE_4800_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_4C00_OFFSET (PAGE_4C00_OFFSET + 0 + pagenum9000)
 
     void  __near Z_QuickMap(int16_t offset, int8_t count);
+
+    #define PAGE_SWAP_ARG_MULT 2
     
 #endif
 
+#define AMTSIO16 (PAGE_SWAP_ARG_MULT * sizeof(int16_t))
+
+// arg mult times size of int16
 
 #define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
 #define SCRATCH_ADDRESS_7000 (byte __far* )0x70000000
@@ -336,29 +345,27 @@ void __far Z_QuickMapUnmapAll();
 #define SCRATCH_PAGE_SEGMENT 0x5000u
 #define SCRATCH_PAGE_SEGMENT_7000 0x7000u
 
-// actually twice the number of pages, 2 params needed per page swap
+#define num_phys_params 24
 // extra 4 for the remapping for page 4000 to 9000 
-#define num_phys_params 48
-// extra 4 for the remapping for page 4000 to 9000 
-#define num_rend_params 56
-#define num_stat_params 12
-#define num_demo_params 8
-#define num_textinfo_params 8
-#define num_scratch5000_params 8
-#define num_scratch8000_params 8
-#define num_scratch7000_params 8
-#define num_renderplane_params 8
-#define num_flatcache_params 8
-#define num_flatcache_undo_params 4
-#define num_maskeddata_params 6
-#define num_spritecache_params 8
-#define num_palette_params 10
-#define num_7000to6000_params 8
-#define num_menu_params 16
-#define num_intermission_params 24
-#define num_wipe_params 24
-#define num_lumpinfo_5400_params 6
-#define num_visplanepage_params 2
+#define num_rend_params 28
+#define num_stat_params 6
+#define num_demo_params 4
+#define num_textinfo_params 4
+#define num_scratch5000_params 4
+#define num_scratch8000_params 4
+#define num_scratch7000_params 4
+#define num_renderplane_params 4
+#define num_flatcache_params 4
+#define num_flatcache_undo_params 2
+#define num_maskeddata_params 3
+#define num_spritecache_params 4
+#define num_palette_params 5
+#define num_7000to6000_params 4
+#define num_menu_params 8
+#define num_intermission_params 12
+#define num_wipe_params 12
+#define num_lumpinfo_5400_params 3
+#define num_visplanepage_params 1
 
 //#define pageswapargoff_demo pageswapargseg +
 
@@ -366,51 +373,52 @@ void __far Z_QuickMapUnmapAll();
 // needs to be added to pageswapargoff
 
 
-#define pageswapargs_phys_offset_size                0
-#define pageswapargs_screen0_offset_size             64
-#define pageswapargs_rend_offset_size                2*num_phys_params
 
-#define pageswapargs_stat_offset_size                (pageswapargs_rend_offset_size           + 2*num_rend_params)
-#define pageswapargs_demo_offset_size                (pageswapargs_stat_offset_size           + 2*num_stat_params)
-#define pageswapargs_scratch5000_offset_size         (pageswapargs_demo_offset_size           + 2*num_demo_params)
-#define pageswapargs_scratch8000_offset_size         (pageswapargs_scratch5000_offset_size    + 2*num_scratch5000_params)
-#define pageswapargs_scratch7000_offset_size         (pageswapargs_scratch8000_offset_size    + 2*num_scratch8000_params)
-#define pageswapargs_renderplane_offset_size         (pageswapargs_scratch7000_offset_size    + 2*num_scratch7000_params)
-#define pageswapargs_flatcache_offset_size           (pageswapargs_renderplane_offset_size    + 2*num_renderplane_params)
-#define pageswapargs_flatcache_undo_offset_size      (pageswapargs_flatcache_offset_size      + 2*num_flatcache_params)
-#define pageswapargs_maskeddata_offset_size          (pageswapargs_flatcache_undo_offset_size + 2*num_flatcache_undo_params)
-#define pageswapargs_spritecache_offset_size         (pageswapargs_maskeddata_offset_size     + 2*num_maskeddata_params)
-#define pageswapargs_palette_offset_size             (pageswapargs_spritecache_offset_size    + 2*num_spritecache_params)
-#define pageswapargs_menu_offset_size                (pageswapargs_palette_offset_size        + 2*num_palette_params)
-#define pageswapargs_intermission_offset_size        (pageswapargs_menu_offset_size           + 2*num_menu_params)
-#define pageswapargs_wipe_offset_size                (pageswapargs_intermission_offset_size   + 2*num_intermission_params)
-#define pageswapargs_lumpinfo_5400_offset_size       (pageswapargs_wipe_offset_size           + 2*num_wipe_params)
-#define pageswapargs_visplanepage_offset_size        (pageswapargs_lumpinfo_5400_offset_size  + 2*num_lumpinfo_5400_params) 
-#define total_pages_size                             (pageswapargs_visplanepage_offset_size   + 2*num_visplanepage_params)
+#define pageswapargs_phys_offset_size                0
+#define pageswapargs_screen0_offset_size             (16*sizeof(int16_t)*PAGE_SWAP_ARG_MULT)
+#define pageswapargs_rend_offset_size                (num_phys_params*sizeof(int16_t)*PAGE_SWAP_ARG_MULT)
+
+#define pageswapargs_stat_offset_size                (pageswapargs_rend_offset_size           + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_rend_params)
+#define pageswapargs_demo_offset_size                (pageswapargs_stat_offset_size           + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_stat_params)
+#define pageswapargs_scratch5000_offset_size         (pageswapargs_demo_offset_size           + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_demo_params)
+#define pageswapargs_scratch8000_offset_size         (pageswapargs_scratch5000_offset_size    + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_scratch5000_params)
+#define pageswapargs_scratch7000_offset_size         (pageswapargs_scratch8000_offset_size    + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_scratch8000_params)
+#define pageswapargs_renderplane_offset_size         (pageswapargs_scratch7000_offset_size    + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_scratch7000_params)
+#define pageswapargs_flatcache_offset_size           (pageswapargs_renderplane_offset_size    + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_renderplane_params)
+#define pageswapargs_flatcache_undo_offset_size      (pageswapargs_flatcache_offset_size      + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_flatcache_params)
+#define pageswapargs_maskeddata_offset_size          (pageswapargs_flatcache_undo_offset_size + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_flatcache_undo_params)
+#define pageswapargs_spritecache_offset_size         (pageswapargs_maskeddata_offset_size     + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_maskeddata_params)
+#define pageswapargs_palette_offset_size             (pageswapargs_spritecache_offset_size    + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_spritecache_params)
+#define pageswapargs_menu_offset_size                (pageswapargs_palette_offset_size        + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_palette_params)
+#define pageswapargs_intermission_offset_size        (pageswapargs_menu_offset_size           + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_menu_params)
+#define pageswapargs_wipe_offset_size                (pageswapargs_intermission_offset_size   + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_intermission_params)
+#define pageswapargs_lumpinfo_5400_offset_size       (pageswapargs_wipe_offset_size           + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_wipe_params)
+#define pageswapargs_visplanepage_offset_size        (pageswapargs_lumpinfo_5400_offset_size  + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_lumpinfo_5400_params) 
+#define total_pages_size                             (pageswapargs_visplanepage_offset_size   + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_visplanepage_params)
  
 // used for array indices
-#define pageswapargs_rend_offset            num_phys_params
-#define pageswapargs_stat_offset            (pageswapargs_rend_offset               + num_rend_params) 
-#define pageswapargs_demo_offset            (pageswapargs_stat_offset               + num_stat_params)
-#define pageswapargs_scratch5000_offset     (pageswapargs_demo_offset               + num_demo_params)
-#define pageswapargs_scratch8000_offset     (pageswapargs_scratch5000_offset        + num_scratch5000_params)
-#define pageswapargs_scratch7000_offset     (pageswapargs_scratch8000_offset        + num_scratch8000_params)
-#define pageswapargs_renderplane_offset     (pageswapargs_scratch7000_offset        + num_scratch7000_params)
-#define pageswapargs_flatcache_offset       (pageswapargs_renderplane_offset        + num_renderplane_params)
-#define pageswapargs_flatcache_undo_offset  (pageswapargs_flatcache_offset          + num_flatcache_params)
-#define pageswapargs_maskeddata_offset      (pageswapargs_flatcache_undo_offset     + num_flatcache_undo_params)
-#define pageswapargs_spritecache_offset     (pageswapargs_maskeddata_offset         + num_maskeddata_params)
-#define pageswapargs_palette_offset         (pageswapargs_spritecache_offset        + num_spritecache_params)
-#define pageswapargs_menu_offset            (pageswapargs_palette_offset            + num_palette_params)
-#define pageswapargs_intermission_offset    (pageswapargs_menu_offset               + num_menu_params)
-#define pageswapargs_wipe_offset            (pageswapargs_intermission_offset       + num_intermission_params)
-#define pageswapargs_lumpinfo_5400_offset   (pageswapargs_wipe_offset               + num_wipe_params)
-#define pageswapargs_visplanepage_offset    (pageswapargs_lumpinfo_5400_offset      + num_lumpinfo_5400_params)
-#define total_pages                         (pageswapargs_visplanepage_offset       + num_visplanepage_params)
+#define pageswapargs_rend_offset            (num_phys_params*PAGE_SWAP_ARG_MULT)
+#define pageswapargs_stat_offset            (pageswapargs_rend_offset               + (num_rend_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_demo_offset            (pageswapargs_stat_offset               + (num_stat_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_scratch5000_offset     (pageswapargs_demo_offset               + (num_demo_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_scratch8000_offset     (pageswapargs_scratch5000_offset        + (num_scratch5000_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_scratch7000_offset     (pageswapargs_scratch8000_offset        + (num_scratch8000_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_renderplane_offset     (pageswapargs_scratch7000_offset        + (num_scratch7000_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_flatcache_offset       (pageswapargs_renderplane_offset        + (num_renderplane_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_flatcache_undo_offset  (pageswapargs_flatcache_offset          + (num_flatcache_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_maskeddata_offset      (pageswapargs_flatcache_undo_offset     + (num_flatcache_undo_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_spritecache_offset     (pageswapargs_maskeddata_offset         + (num_maskeddata_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_palette_offset         (pageswapargs_spritecache_offset        + (num_spritecache_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_menu_offset            (pageswapargs_palette_offset            + (num_palette_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_intermission_offset    (pageswapargs_menu_offset               + (num_menu_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_wipe_offset            (pageswapargs_intermission_offset       + (num_intermission_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_lumpinfo_5400_offset   (pageswapargs_wipe_offset               + (num_wipe_params*PAGE_SWAP_ARG_MULT))
+#define pageswapargs_visplanepage_offset    (pageswapargs_lumpinfo_5400_offset      + (num_lumpinfo_5400_params*PAGE_SWAP_ARG_MULT))
+#define total_pages                         (pageswapargs_visplanepage_offset       + (num_visplanepage_params*PAGE_SWAP_ARG_MULT))
 
 
 extern uint16_t pageswapargs[total_pages];
-extern uint16_t pageswapargs_single[total_pages/2];
+extern uint16_t pageswapargs_single[total_pages];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 
 // EMS 4.0 stuff

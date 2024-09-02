@@ -38,20 +38,14 @@
 #include <stdlib.h>
 #include "m_memory.h"
 
-extern int16_t pagenum9000;
-extern uint16_t pageswapargs[total_pages];
-extern uint16_t pageswapargs_single[total_pages/2];
-extern int16_t pageswapargoff;
 
 // extern byte __far* pageFrameArea;
-extern int16_t emshandle;
 
 extern union REGS regs;
 extern struct SREGS segregs;
 
 uint16_t EMS_PAGE;
 // EMS STUFF
-extern int16_t emshandle;
 
 void near doerror(int16_t errnum, int16_t errorreg)
 {
@@ -62,7 +56,6 @@ void near doerror(int16_t errnum, int16_t errorreg)
 
 byte __far *__near Z_InitEMS()
 {
-	emshandle = 1;
 	EMS_PAGE = 0xD000; // hard coded
 	return MK_FP(EMS_PAGE, 0);
 }
@@ -71,12 +64,7 @@ void __near Z_GetEMSPageMap()
 {
 	int16_t i;
 
-	pagenum9000 = 0x20;
 
-	pageswapargoff = FP_OFF(pageswapargs);
-	for (i = 1; i < total_pages; i += 2) {
-		pageswapargs[i] += pagenum9000;
-	}
 
 	Z_QuickMapLumpInfo5000();
 
@@ -90,7 +78,6 @@ void __near Z_GetEMSPageMap()
 
 byte __far *__near Z_InitEMS()
 {
-	emshandle = 1;
 	EMS_PAGE = 0xD000; // hard coded
 	return MK_FP(EMS_PAGE, 0);
 }
@@ -99,13 +86,6 @@ void __near Z_GetEMSPageMap()
 {
 	int16_t i;
 
-	pagenum9000 = 0x14;
-
-	pageswapargoff = FP_OFF(pageswapargs);
-	for (i = 1; i < total_pages; i += 2)
-	{
-		pageswapargs[i] += pagenum9000;
-	}
 
 	Z_QuickMapLumpInfo5000();
 
@@ -115,6 +95,9 @@ void __near Z_GetEMSPageMap()
 	Z_QuickMapPhysics(); // map default page map
 }
 #else
+extern int16_t emshandle;
+extern int16_t pagenum9000;
+extern int16_t pageswapargoff;
 byte __far *__near Z_InitEMS() {
 
 	// 4 mb

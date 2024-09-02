@@ -1044,7 +1044,7 @@ void __near Z_FreeConventionalAllocations() {
 
 		#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
 			pageswapargs_single[pageswapargs_rend_offset + 20 + i] = _EPR(FIRST_TEXTURE_LOGICAL_PAGE + i);
-			pageswapargs[pageswapargs_spritecache_offset + i * 2]  = _EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + i);
+			pageswapargs_single[pageswapargs_spritecache_offset + i]  = _EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + i);
 		#else
 			pageswapargs[pageswapargs_rend_offset + 40 + i * 2]	  =      _EPR(FIRST_TEXTURE_LOGICAL_PAGE + i);
 			pageswapargs[pageswapargs_spritecache_offset + i * 2] = _EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + i);

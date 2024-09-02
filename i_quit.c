@@ -195,21 +195,24 @@ void __near Z_ShutdownEMS() {
 
 	int16_t result;
 
-	if (emshandle) {
-		Z_QuickMapUnmapAll();
-
-		#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+	#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
 			// dont do anything
-		#else
-			regs.w.dx = emshandle; // handle
-			regs.h.ah = 0x45;
-			intx86(EMS_INT, &regs, &regs);
-			result = regs.h.ah;
-			if (result != 0) {
-				printf("Failed deallocating EMS memory! %i!\n", result);
-			}
-		#endif
-	}
+		Z_QuickMapUnmapAll();
+	#else
+
+
+		if (emshandle) {
+			Z_QuickMapUnmapAll();
+
+				regs.w.dx = emshandle; // handle
+				regs.h.ah = 0x45;
+				intx86(EMS_INT, &regs, &regs);
+				result = regs.h.ah;
+				if (result != 0) {
+					printf("Failed deallocating EMS memory! %i!\n", result);
+				}
+		}
+	#endif
 
 
 }
