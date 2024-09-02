@@ -43,12 +43,11 @@ SCAMP_PAGE_SET_REGISTER = 0EAh
 
 
 ; no need for input registers because its always going to be ems page 0x4000
-PROC Z_QuickMap24AI_ NEAR
-PUBLIC Z_QuickMap24AI_
+PROC Z_QuickMap24AIC_ NEAR
+PUBLIC Z_QuickMap24AIC_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs  ; put this here to put some space between the out commands...
 mov  si, ax
 mov  al, 04Ch     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
@@ -63,12 +62,11 @@ ret
 ENDP
 
 
-PROC Z_QuickMap16AI_ NEAR
-PUBLIC Z_QuickMap16AI_
+PROC Z_QuickMap16AIC_ NEAR
+PUBLIC Z_QuickMap16AIC_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs  ; put this here to put some space between the out commands...
 mov  si, ax
 mov  al, dl
 or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
@@ -83,12 +81,11 @@ ret
 
 ENDP
 
-PROC Z_QuickMap12AI_ NEAR
-PUBLIC Z_QuickMap12AI_
+PROC Z_QuickMap12AIC_ NEAR
+PUBLIC Z_QuickMap12AIC_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs  ; put this here to put some space between the out commands...
 mov  si, ax
 mov  al, dl
 or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
@@ -105,12 +102,11 @@ ENDP
 
   
 
-PROC Z_QuickMap8AI_ NEAR
-PUBLIC Z_QuickMap8AI_
+PROC Z_QuickMap8AIC_ NEAR
+PUBLIC Z_QuickMap8AIC_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs  ; put this here to put some space between the out commands...
 mov  si, ax
 mov  al, dl
 or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
@@ -126,12 +122,11 @@ ret
 ENDP
 
 
-PROC Z_QuickMap5AI_ NEAR
-PUBLIC Z_QuickMap5AI_
+PROC Z_QuickMap5AIC_ NEAR
+PUBLIC Z_QuickMap5AIC_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs  ; put this here to put some space between the out commands...
 mov  si, ax
 mov  al, dl
 or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
@@ -144,12 +139,11 @@ pop cx
 pop si
 ret
 
-PROC Z_QuickMap4AI_ NEAR
-PUBLIC Z_QuickMap4AI_
+PROC Z_QuickMap4AIC_ NEAR
+PUBLIC Z_QuickMap4AIC_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs  ; put this here to put some space between the out commands...
 mov  si, ax
 mov  al, dl
 or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
@@ -163,12 +157,11 @@ pop si
 ret
 
 ENDP
-PROC Z_QuickMap3AI_ NEAR
-PUBLIC Z_QuickMap3AI_
+PROC Z_QuickMap3AIC_ NEAR
+PUBLIC Z_QuickMap3AIC_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs  ; put this here to put some space between the out commands...
 mov  si, ax
 mov  al, dl
 or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
@@ -182,12 +175,11 @@ pop si
 ret
 
 ENDP
-PROC Z_QuickMap2AI_ NEAR
-PUBLIC Z_QuickMap2AI_
+PROC Z_QuickMap2AIC_ NEAR
+PUBLIC Z_QuickMap2AIC_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs  ; put this here to put some space between the out commands...
 mov  si, ax
 mov  al, dl
 or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
@@ -201,12 +193,11 @@ pop si
 ret
 
 ENDP
-PROC Z_QuickMap1AI_ NEAR
-PUBLIC Z_QuickMap1AI_
+PROC Z_QuickMap1AIC_ NEAR
+PUBLIC Z_QuickMap1AIC_
 push si
 push cx
 push dx
-add  ax, OFFSET _pageswapargs  ; put this here to put some space between the out commands...
 mov  si, ax
 mov  al, dl
 or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index

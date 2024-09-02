@@ -433,7 +433,7 @@ int16_t oldtask = -1;
 
 #define MAX_COUNT_ITER 1
 
-void __near Z_QuickMap(int16_t offset, int8_t count){
+void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 
 	int8_t min;
 /*
@@ -460,11 +460,9 @@ void __near Z_QuickMap(int16_t offset, int8_t count){
 	}
 	fclose(fp);
 	*/
-	offset += pageswapargoff;
+	//offset += pageswapargoff;
 	// test if some of these fields can be pulled out
 	while (count > 0){
-
- 
 
 		min = count > MAX_COUNT_ITER ? MAX_COUNT_ITER : count; // note: emm386 only supports up to 8 args at a time. Might other EMS drivers work with more at a time?
 		regs.w.ax = 0x5000;  
@@ -472,11 +470,11 @@ void __near Z_QuickMap(int16_t offset, int8_t count){
 		regs.w.dx = emshandle; // handle
 		//This is a near var. and  DS should be near by default.
 		//segregs.ds = pageswapargseg;
-		regs.w.si = offset;
+		regs.w.si = (int16_t)offset;
 		intx86(EMS_INT, &regs, &regs);
 
 		count -= MAX_COUNT_ITER;
-		offset+= MAX_COUNT_ITER*4;
+		offset+= MAX_COUNT_ITER*PAGE_SWAP_ARG_MULT;
 	}
 
 }
@@ -532,7 +530,7 @@ void __far Z_QuickMapDemo() {
 void __far  Z_QuickMapRender7000() {
 
 
-	Z_QuickMap4AI((pageswapargs_rend_offset_size + 12*AMTSIO16), INDEXED_PAGE_7000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_rend_offset_size + 12, INDEXED_PAGE_7000_OFFSET);
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -563,8 +561,8 @@ void __far Z_QuickMapRender_4000To9000() {
 
 	//todo
 
-	Z_QuickMap16AI((pageswapargs_rend_offset_size+4*AMTSIO16), INDEXED_PAGE_5000_OFFSET); // 5000 to 8000
-	Z_QuickMap4AI((pageswapargs_rend_offset_size+24*AMTSIO16), INDEXED_PAGE_9000_OFFSET);  // 4000 as 9000
+	Z_QuickMap16AI(pageswapargs_rend_offset_size+4, INDEXED_PAGE_5000_OFFSET); // 5000 to 8000
+	Z_QuickMap4AI(pageswapargs_rend_other9000_size, INDEXED_PAGE_9000_OFFSET);  // 4000 as 9000
 
 
 
@@ -588,7 +586,7 @@ void __far Z_QuickMapRender4000() {
 }
 
 void __far Z_QuickMapRender9000() {
-	Z_QuickMap4AI((pageswapargs_rend_offset_size+24*AMTSIO16), INDEXED_PAGE_9000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_rend_other9000_size, INDEXED_PAGE_9000_OFFSET);
 	current9000State = PAGE_9000_RENDER;
 
 }
@@ -601,7 +599,7 @@ void __near Z_QuickMapRenderTexture() {
 	//pageswapargs_textcache[2];
 	
 	//pageswapargs_rend_texture_size
-	Z_QuickMap4AI((pageswapargs_rend_offset_size+20*AMTSIO16), INDEXED_PAGE_9000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_9000_OFFSET);
 
 
 
@@ -632,8 +630,8 @@ void __far Z_QuickMapStatus() {
 	//Z_QuickMap6(pageswapargs_stat_offset_size);
 
 	Z_QuickMap1AI(pageswapargs_stat_offset_size,    INDEXED_PAGE_9C00_OFFSET);
-	Z_QuickMap4AI(pageswapargs_stat_offset_size+1*AMTSIO16,  INDEXED_PAGE_7000_OFFSET);
-	Z_QuickMap1AI(pageswapargs_stat_offset_size+5*AMTSIO16, INDEXED_PAGE_6000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_stat_offset_size+1,  INDEXED_PAGE_7000_OFFSET);
+	Z_QuickMap1AI(pageswapargs_stat_offset_size+5, INDEXED_PAGE_6000_OFFSET);
 
 
 
@@ -686,7 +684,7 @@ void __far Z_QuickMapRenderPlanes(){
 
 	//Z_QuickMap8(pageswapargs_renderplane_offset_size);
 	Z_QuickMap3AI(pageswapargs_renderplane_offset_size, INDEXED_PAGE_9000_OFFSET);
-	Z_QuickMap5AI(pageswapargs_renderplane_offset_size+3*AMTSIO16, INDEXED_PAGE_6C00_OFFSET);
+	Z_QuickMap5AI(pageswapargs_renderplane_offset_size+3, INDEXED_PAGE_6C00_OFFSET);
 
 	#ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;
@@ -730,7 +728,7 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 
 void __far Z_QuickMapUndoFlatCache() {
 	// also puts 9000 page back from skytexture
-	Z_QuickMap4AI((pageswapargs_rend_offset_size+20*AMTSIO16), INDEXED_PAGE_9000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_rend_texture_size, INDEXED_PAGE_9000_OFFSET);
 	
 	// this runs 4 over into z_quickmapsprite page
 	//Z_QuickMap9(pageswapargs_flatcache_undo_offset_size);
@@ -775,7 +773,7 @@ void __far Z_QuickMapSpritePage() {
 
 void __far Z_QuickMapColumnOffsets5000() {
 
-	Z_QuickMap4AI((pageswapargs_rend_offset_size + 4*AMTSIO16), INDEXED_PAGE_5000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_rend_offset_size + 4, INDEXED_PAGE_5000_OFFSET);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -784,7 +782,7 @@ void __far Z_QuickMapColumnOffsets5000() {
 }
 
 void __far Z_QuickMapScreen1(){
-	Z_QuickMap4AI((pageswapargs_intermission_offset_size+12*AMTSIO16), INDEXED_PAGE_9000_OFFSET);
+	Z_QuickMap4AI(pageswapargs_intermission_offset_size+12, INDEXED_PAGE_9000_OFFSET);
 
 	current9000State = PAGE_9000_SCREEN1;
 }
@@ -801,7 +799,7 @@ void __far Z_QuickMapLumpInfo() {
 		case PAGE_9000_RENDER:
 		case PAGE_9000_SCREEN1:
 		
-			Z_QuickMap4AI((pageswapargs_phys_offset_size+20*AMTSIO16), INDEXED_PAGE_9000_OFFSET);
+			Z_QuickMap4AI(pageswapargs_phys_offset_size+20, INDEXED_PAGE_9000_OFFSET);
 	#ifdef DETAILED_BENCH_STATS
 			taskswitchcount++;
 			lumpinfo9000switchcount++;
@@ -812,7 +810,7 @@ void __far Z_QuickMapLumpInfo() {
  
 			return;
 		case PAGE_9000_RENDER_PLANE:
-			Z_QuickMap4AI((pageswapargs_phys_offset_size+20*AMTSIO16), INDEXED_PAGE_9000_OFFSET);
+			Z_QuickMap4AI(pageswapargs_phys_offset_size+20, INDEXED_PAGE_9000_OFFSET);
 			#ifdef DETAILED_BENCH_STATS
 					taskswitchcount++;
 					lumpinfo9000switchcount++;
@@ -941,7 +939,7 @@ void __far Z_QuickMapIntermission() {
 void __far Z_QuickMapWipe() {
 	//Z_QuickMap12(pageswapargs_wipe_offset_size);
 	Z_QuickMap4AI(pageswapargs_wipe_offset_size,    INDEXED_PAGE_9000_OFFSET);
-	Z_QuickMap8AI(pageswapargs_wipe_offset_size+4*AMTSIO16, INDEXED_PAGE_6000_OFFSET);
+	Z_QuickMap8AI(pageswapargs_wipe_offset_size+4, INDEXED_PAGE_6000_OFFSET);
 	
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;

@@ -961,7 +961,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			for (i = 1; i <= activenumpages[startpage]; i++) {
 				activetexturepages[startpage+i]  = -1; // unpaged
 
-				pageswapargs[pageswapargs_rend_offset+(20 + startpage+i)*PAGE_SWAP_ARG_MULT] = _NPR(PAGE_9000_OFFSET+startpage+i);
+				pageswapargs[pageswapargs_rend_texture_offset+( startpage+i)*PAGE_SWAP_ARG_MULT] = _NPR(PAGE_9000_OFFSET+startpage+i);
 
 				activenumpages[startpage+i] = 0;
 			}
@@ -971,7 +971,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 
 		activetexturepages[startpage] = pagenum; // FIRST_TEXTURE_LOGICAL_PAGE + pagenum;		
 		
-		pageswapargs[pageswapargs_rend_offset+(20+startpage)*PAGE_SWAP_ARG_MULT] = _EPR(pagenum);
+		pageswapargs[pageswapargs_rend_texture_offset+(startpage)*PAGE_SWAP_ARG_MULT] = _EPR(pagenum);
 
 
 
@@ -1054,7 +1054,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 			for (i = 1; i <= activenumpages[startpage]; i++) {
 				activetexturepages[startpage + i] = -1;
 
-				pageswapargs[pageswapargs_rend_offset+(20 +startpage + i)*PAGE_SWAP_ARG_MULT] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
+				pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT] = _NPR(PAGE_9000_OFFSET+startpage+i); // unpaged
 				activenumpages[startpage + i] = 0;
 			}
 		}
@@ -1064,7 +1064,7 @@ uint8_t __near gettexturepage(uint8_t texpage, uint8_t pageoffset, int8_t cachet
 		for (i = 0; i <= numpages; i++) {
 			textureLRU[startpage + i] = 0;
 			activetexturepages[startpage + i]  = pagenum + i;// FIRST_TEXTURE_LOGICAL_PAGE + pagenum + i;			
-			pageswapargs[pageswapargs_rend_offset+(20 +startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(pagenum + i);
+			pageswapargs[pageswapargs_rend_texture_offset+(startpage + i)*PAGE_SWAP_ARG_MULT]  = _EPR(pagenum + i);
 
 			activenumpages[startpage + i] = numpages-i;
 
