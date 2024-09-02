@@ -374,9 +374,13 @@ void __far Z_QuickMapUnmapAll();
 
 
 
+
 #define pageswapargs_phys_offset_size                0
 #define pageswapargs_screen0_offset_size             (16*sizeof(int16_t)*PAGE_SWAP_ARG_MULT)
 #define pageswapargs_rend_offset_size                (num_phys_params*sizeof(int16_t)*PAGE_SWAP_ARG_MULT)
+
+#define pageswapargs_rend_texture_size                (pageswapargs_rend_offset_size + 20*sizeof(int16_t)*PAGE_SWAP_ARG_MULT)
+#define pageswapargs_rend_other9000_size              (pageswapargs_rend_offset_size + 24*sizeof(int16_t)*PAGE_SWAP_ARG_MULT)
 
 #define pageswapargs_stat_offset_size                (pageswapargs_rend_offset_size           + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_rend_params)
 #define pageswapargs_demo_offset_size                (pageswapargs_stat_offset_size           + sizeof(int16_t)*PAGE_SWAP_ARG_MULT*num_stat_params)
@@ -415,6 +419,9 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_lumpinfo_5400_offset   (pageswapargs_wipe_offset               + (num_wipe_params*PAGE_SWAP_ARG_MULT))
 #define pageswapargs_visplanepage_offset    (pageswapargs_lumpinfo_5400_offset      + (num_lumpinfo_5400_params*PAGE_SWAP_ARG_MULT))
 #define total_pages                         (pageswapargs_visplanepage_offset       + (num_visplanepage_params*PAGE_SWAP_ARG_MULT))
+
+#define pageswapargs_rend_texture_offset                (pageswapargs_rend_offset + 20*PAGE_SWAP_ARG_MULT)
+#define pageswapargs_rend_other9000_offset              (pageswapargs_rend_offset + 24*PAGE_SWAP_ARG_MULT)
 
 
 extern uint16_t pageswapargs[total_pages];

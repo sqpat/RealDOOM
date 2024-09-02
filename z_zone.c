@@ -600,7 +600,7 @@ void __near Z_QuickMapRenderTexture() {
 
 	//pageswapargs_textcache[2];
 	
-	
+	//pageswapargs_rend_texture_size
 	Z_QuickMap4AI((pageswapargs_rend_offset_size+20*AMTSIO16), INDEXED_PAGE_9000_OFFSET);
 
 
@@ -735,7 +735,7 @@ void __far Z_QuickMapUndoFlatCache() {
 	// this runs 4 over into z_quickmapsprite page
 	//Z_QuickMap9(pageswapargs_flatcache_undo_offset_size);
 
-	Z_QuickMap2AI(pageswapargs_spritecache_offset_size,     			INDEXED_PAGE_6800_OFFSET);
+	Z_QuickMap6AI(pageswapargs_spritecache_offset_size,     			INDEXED_PAGE_6800_OFFSET);
 	Z_QuickMap3AI(pageswapargs_maskeddata_offset_size,   				INDEXED_PAGE_8400_OFFSET);
 
 
