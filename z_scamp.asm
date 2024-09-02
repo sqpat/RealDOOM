@@ -36,72 +36,103 @@ SCAMP_PAGE_SET_REGISTER = 0EAh
 ; Z_QuickMap
 ;
 
-;int16_t offset, int8_t count
-
-
-PROC Z_QuickMap2_ NEAR
-PUBLIC Z_QuickMap2_
-
-; AX = offset
-; dl (? or dx)= count
-
-push  cx
-push  bx
-push  si
-
-; set up lodsw
-mov   si, ax
-add   si, word ptr _pageswapargoff
-mov   cx, dx
-xor   ch, ch
-
-; todo optimization rather than loop lets jump into unrolled loop?
-
-DO_NEXT_PAGE_5000:
-lodsw      ; next page in ax....
-mov   bx, ax
-lodsw             						; read two words - bx and ax
-out   SCAMP_PAGE_SELECT_REGISTER, al   	; select EMS page
-mov   ax, bx
-out   SCAMP_PAGE_SET_REGISTER, ax   	; write 16 bit page num. 
-loop  DO_NEXT_PAGE_5000
-
-; exits if we fall thru loop with no error
-pop si
-pop bx
-pop cx
-ret
- 
-
- 
-
-ENDP
-
-
-
-
-
-
-PROC Z_QuickMap_ NEAR
-PUBLIC Z_QuickMap_
-
-; AX = offset
-; dl (? or dx)= count
-
+PROC Z_QuickMap24_ NEAR
+PUBLIC Z_QuickMap24_
 push bx
 push si
 mov  si, ax
-mov  ax, 00A18h   ; 10 in ah for mul. 24 in al to sub for 24 - count
-sub  al, dl
-mul  ah  ; 10 bytes per loop
 add  si, OFFSET _pageswapargs
+jmp unrolled_loop_24
+ENDP
+PROC Z_QuickMap16_ NEAR
+PUBLIC Z_QuickMap16_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_16
+ENDP
+PROC Z_QuickMap12_ NEAR
+PUBLIC Z_QuickMap12_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_12
+ENDP
+PROC Z_QuickMap9_ NEAR
+PUBLIC Z_QuickMap9_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_9
+ENDP
+PROC Z_QuickMap8_ NEAR
+PUBLIC Z_QuickMap8_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_8
+ENDP
+PROC Z_QuickMap7_ NEAR
+PUBLIC Z_QuickMap7_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_7
+ENDP
+PROC Z_QuickMap6_ NEAR
+PUBLIC Z_QuickMap6_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_6
+ENDP
+PROC Z_QuickMap5_ NEAR
+PUBLIC Z_QuickMap5_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_5
+ENDP
+PROC Z_QuickMap4_ NEAR
+PUBLIC Z_QuickMap4_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_4
+ENDP
+PROC Z_QuickMap3_ NEAR
+PUBLIC Z_QuickMap3_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_3
+ENDP
+PROC Z_QuickMap2_ NEAR
+PUBLIC Z_QuickMap2_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_2
+ENDP
+PROC Z_QuickMap1_ NEAR
+PUBLIC Z_QuickMap1_
+push bx
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+jmp unrolled_loop_1
 
-
-mov  bx, OFFSET unrolled_loop_start
-add  bx, ax
-jmp  bx
-
-unrolled_loop_start:
+unrolled_loop_24:
 lodsw
 mov  bx, ax
 lodsw

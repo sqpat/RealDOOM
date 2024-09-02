@@ -282,8 +282,8 @@ int16_t oldtask = -1;
 */
 //void __near Z_QuickMap(uint16_t offset, int8_t count);
 
-
-void __near Z_QuickMap3(uint16_t offset, int8_t count){
+/*
+void __near Z_QuickMap(uint16_t offset, int8_t count){
 	
 	uint16_t logicalindex, pagenumber;
 	
@@ -303,7 +303,7 @@ void __near Z_QuickMap3(uint16_t offset, int8_t count){
 		// todo unroll
 	}
 
-}
+}*/
 #elif defined(__SCAT_BUILD)
 	#define EMS_MEMORY_BASE   0x8080
 	 
@@ -374,7 +374,7 @@ void __near Z_QuickMap(int16_t offset, int8_t count){
 void __far Z_QuickMapPhysics() {
 	//int16_t errorreg;
 
-	Z_QuickMap(pageswapargs_phys_offset_size, 24);
+	Z_QuickMap24(pageswapargs_phys_offset_size);
 
 
 	/*
@@ -407,7 +407,7 @@ void __far Z Z_QuickMapPhysics_4000To9000() {
 */
 
 void __far Z_QuickMapDemo() {
-	Z_QuickMap(pageswapargs_demo_offset_size, 4);
+	Z_QuickMap4(pageswapargs_demo_offset_size);
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -422,7 +422,7 @@ void __far Z_QuickMapDemo() {
 void __far  Z_QuickMapRender7000() {
 
 
-	Z_QuickMap(pageswapargs_rend_offset_size + 32, 4);
+	Z_QuickMap4(pageswapargs_rend_offset_size + 32);
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -434,7 +434,7 @@ void __far  Z_QuickMapRender7000() {
 void __far  Z_QuickMapRender() {
 	
 	
-	Z_QuickMap(pageswapargs_rend_offset_size, 24);
+	Z_QuickMap24(pageswapargs_rend_offset_size);
 
 
 
@@ -453,8 +453,8 @@ void __far Z_QuickMapRender_4000To9000() {
 
 	//todo
 
-	Z_QuickMap(pageswapargs_rend_offset_size+16, 16);
-	Z_QuickMap(pageswapargs_rend_offset_size+96, 4);
+	Z_QuickMap16(pageswapargs_rend_offset_size+16);
+	Z_QuickMap4(pageswapargs_rend_offset_size+96);
 
 
 
@@ -471,14 +471,14 @@ void __far Z_QuickMapRender_4000To9000() {
 
 void __far Z_QuickMapRender4000() {
 
-	Z_QuickMap(pageswapargs_rend_offset_size+80, 4);
+	Z_QuickMap4(pageswapargs_rend_offset_size+80);
 
 	
 
 }
 
 void __far Z_QuickMapRender9000() {
-	Z_QuickMap(pageswapargs_rend_offset_size+96, 4);
+	Z_QuickMap4(pageswapargs_rend_offset_size+96);
 	current9000State = PAGE_9000_RENDER;
 
 }
@@ -491,7 +491,7 @@ void __near Z_QuickMapRenderTexture() {
 	//pageswapargs_textcache[2];
 	
 	
-	Z_QuickMap(pageswapargs_rend_offset_size, 4);
+	Z_QuickMap4(pageswapargs_rend_offset_size);
 
 
 
@@ -520,7 +520,7 @@ void __near Z_QuickMapRenderTexture() {
 void __far Z_QuickMapStatus() {
 
 
-	Z_QuickMap(pageswapargs_stat_offset_size, 6);
+	Z_QuickMap6(pageswapargs_stat_offset_size);
 
 
 
@@ -532,7 +532,7 @@ void __far Z_QuickMapStatus() {
 
 void __far Z_QuickMapScratch_5000() {
 
-	Z_QuickMap(pageswapargs_scratch5000_offset_size, 4);
+	Z_QuickMap4(pageswapargs_scratch5000_offset_size);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	scratchpageswitchcount++;
@@ -543,7 +543,7 @@ void __far Z_QuickMapScratch_5000() {
 }
 void __far Z_QuickMapScratch_8000() {
 
-	Z_QuickMap(pageswapargs_scratch8000_offset_size, 4);
+	Z_QuickMap4(pageswapargs_scratch8000_offset_size);
 	
 
 	#ifdef DETAILED_BENCH_STATS
@@ -556,7 +556,7 @@ void __far Z_QuickMapScratch_8000() {
 
 void __far Z_QuickMapScratch_7000() {
 
-	Z_QuickMap(pageswapargs_scratch7000_offset_size, 4);
+	Z_QuickMap4(pageswapargs_scratch7000_offset_size);
 
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -566,12 +566,12 @@ void __far Z_QuickMapScratch_7000() {
 }
 
 void __far Z_QuickMapScreen0() {
-	Z_QuickMap(pageswapargs_screen0_offset_size, 4);
+	Z_QuickMap4(pageswapargs_screen0_offset_size);
 }
 
 void __far Z_QuickMapRenderPlanes(){
 
-	Z_QuickMap(pageswapargs_renderplane_offset_size, 8);
+	Z_QuickMap8(pageswapargs_renderplane_offset_size);
 
 	#ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;
@@ -585,7 +585,7 @@ void __far Z_QuickMapRenderPlanes(){
 
 void __far Z_QuickMapRenderPlanesBack(){
 
-	Z_QuickMap(pageswapargs_renderplane_offset_size, 3);
+	Z_QuickMap3(pageswapargs_renderplane_offset_size);
 
 	#ifdef DETAILED_BENCH_STATS
 		taskswitchcount++;
@@ -604,7 +604,7 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 	}
 
 	// todo change this to 1 with offset?
-	Z_QuickMap(pageswapargs_flatcache_offset_size, 4);
+	Z_QuickMap4(pageswapargs_flatcache_offset_size);
 
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -615,10 +615,10 @@ void __far Z_QuickMapFlatPage(int16_t page, int16_t offset) {
 
 void __far Z_QuickMapUndoFlatCache() {
 	// also puts 9000 page back from skytexture
-	Z_QuickMap(pageswapargs_rend_offset_size, 4);
+	Z_QuickMap4(pageswapargs_rend_offset_size);
 	
 	// this runs 4 over into z_quickmapsprite page
-	Z_QuickMap(pageswapargs_flatcache_undo_offset_size, 9);
+	Z_QuickMap9(pageswapargs_flatcache_undo_offset_size);
 
 
 #ifdef DETAILED_BENCH_STATS
@@ -632,7 +632,7 @@ void __far Z_QuickMapUndoFlatCache() {
 
 void __far Z_QuickMapMaskedExtraData() {
 
-	Z_QuickMap(pageswapargs_maskeddata_offset_size, 2);
+	Z_QuickMap2(pageswapargs_maskeddata_offset_size);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	spritepageswitchcount++;
@@ -643,7 +643,7 @@ void __far Z_QuickMapMaskedExtraData() {
 
 void __far Z_QuickMapSpritePage() {
 
-	Z_QuickMap(pageswapargs_spritecache_offset_size, 4);
+	Z_QuickMap4(pageswapargs_spritecache_offset_size);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 	spritepageswitchcount++;
@@ -657,7 +657,7 @@ void __far Z_QuickMapSpritePage() {
 
 void __far Z_QuickMapColumnOffsets5000() {
 
-	Z_QuickMap(pageswapargs_rend_offset_size + 64, 4);
+	Z_QuickMap4(pageswapargs_rend_offset_size + 64);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -666,7 +666,7 @@ void __far Z_QuickMapColumnOffsets5000() {
 }
 
 void __far Z_QuickMapScreen1(){
-	Z_QuickMap(pageswapargs_intermission_offset_size, 4);
+	Z_QuickMap4(pageswapargs_intermission_offset_size);
 
 	current9000State = PAGE_9000_SCREEN1;
 }
@@ -683,7 +683,7 @@ void __far Z_QuickMapLumpInfo() {
 		case PAGE_9000_RENDER:
 		case PAGE_9000_SCREEN1:
 		
-			Z_QuickMap(pageswapargs_phys_offset_size+80, 4);
+			Z_QuickMap4(pageswapargs_phys_offset_size+80);
 	#ifdef DETAILED_BENCH_STATS
 			taskswitchcount++;
 			lumpinfo9000switchcount++;
@@ -694,7 +694,7 @@ void __far Z_QuickMapLumpInfo() {
  
 			return;
 		case PAGE_9000_RENDER_PLANE:
-			Z_QuickMap(pageswapargs_phys_offset_size+80, 4);
+			Z_QuickMap4(pageswapargs_phys_offset_size+80);
 			#ifdef DETAILED_BENCH_STATS
 					taskswitchcount++;
 					lumpinfo9000switchcount++;
@@ -748,7 +748,7 @@ void __far Z_QuickMapLumpInfo5000() {
 		case PAGE_5000_UNMAPPED:
 		case PAGE_5000_DEMOBUFFER:
 
-			Z_QuickMap(pageswapargs_lumpinfo_5400_offset_size, 3);
+			Z_QuickMap3(pageswapargs_lumpinfo_5400_offset_size);
 	#ifdef DETAILED_BENCH_STATS
 			taskswitchcount++;
 			lumpinfo5000switchcount++;
@@ -791,7 +791,7 @@ void __far Z_UnmapLumpInfo5000() {
 
 void __far Z_QuickMapPalette() {
 
-	Z_QuickMap(pageswapargs_palette_offset_size, 5);
+	Z_QuickMap5(pageswapargs_palette_offset_size);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -799,7 +799,7 @@ void __far Z_QuickMapPalette() {
 	currenttask = TASK_PALETTE;
 }
 void __far Z_QuickMapMenu() {
-	Z_QuickMap(pageswapargs_menu_offset_size, 8);
+	Z_QuickMap8(pageswapargs_menu_offset_size);
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
 #endif
@@ -810,7 +810,7 @@ void __far Z_QuickMapMenu() {
 
 
 void __far Z_QuickMapIntermission() {
-	Z_QuickMap(pageswapargs_intermission_offset_size, 16);
+	Z_QuickMap16(pageswapargs_intermission_offset_size);
  
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -821,7 +821,7 @@ void __far Z_QuickMapIntermission() {
 }
 
 void __far Z_QuickMapWipe() {
-	Z_QuickMap(pageswapargs_wipe_offset_size, 12);
+	Z_QuickMap12(pageswapargs_wipe_offset_size);
 	
 #ifdef DETAILED_BENCH_STATS
 	taskswitchcount++;
@@ -904,7 +904,7 @@ void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 	active_visplanes[virtualpage] = physicalpage;
 	
 	
-	Z_QuickMap(pageswapargs_visplanepage_offset_size, 1);
+	Z_QuickMap1(pageswapargs_visplanepage_offset_size);
 	
 	visplanedirty = true;
 #ifdef DETAILED_BENCH_STATS
@@ -948,7 +948,7 @@ void __far Z_QuickMapUnmapAll() {
 		pageswapargs[i * 2 + 1] = pagenum9000 + ems_backfill_page_order[i];
 	}
 
-	Z_QuickMap(0, 24);
+	Z_QuickMap24(0);
 
 
 }

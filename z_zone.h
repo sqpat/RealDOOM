@@ -141,6 +141,61 @@ void __far Z_QuickMapUnmapAll();
 void __near Z_QuickMap(int16_t offset, int8_t count);
 
  
+#ifdef __SCAMP_BUILD
+
+    void __near Z_QuickMap24(int16_t offset);
+    void __near Z_QuickMap23(int16_t offset);
+    void __near Z_QuickMap22(int16_t offset);
+    void __near Z_QuickMap21(int16_t offset);
+    void __near Z_QuickMap20(int16_t offset);
+    void __near Z_QuickMap19(int16_t offset);
+    void __near Z_QuickMap18(int16_t offset);
+    void __near Z_QuickMap17(int16_t offset);
+    void __near Z_QuickMap16(int16_t offset);
+    void __near Z_QuickMap15(int16_t offset);
+    void __near Z_QuickMap14(int16_t offset);
+    void __near Z_QuickMap13(int16_t offset);
+    void __near Z_QuickMap12(int16_t offset);
+    void __near Z_QuickMap11(int16_t offset);
+    void __near Z_QuickMap10(int16_t offset);
+    void __near Z_QuickMap9(int16_t offset);
+    void __near Z_QuickMap8(int16_t offset);
+    void __near Z_QuickMap7(int16_t offset);
+    void __near Z_QuickMap6(int16_t offset);
+    void __near Z_QuickMap5(int16_t offset);
+    void __near Z_QuickMap4(int16_t offset);
+    void __near Z_QuickMap3(int16_t offset);
+    void __near Z_QuickMap2(int16_t offset);
+    void __near Z_QuickMap1(int16_t offset);
+
+#else
+    #define Z_QuickMap_24(a) Z_Quickmap(a,24)
+    #define Z_QuickMap_23(a) Z_Quickmap(a,23)
+    #define Z_QuickMap_22(a) Z_Quickmap(a,22)
+    #define Z_QuickMap_21(a) Z_Quickmap(a,21)
+    #define Z_QuickMap_20(a) Z_Quickmap(a,20)
+    #define Z_QuickMap_19(a) Z_Quickmap(a,19)
+    #define Z_QuickMap_18(a) Z_Quickmap(a,18)
+    #define Z_QuickMap_17(a) Z_Quickmap(a,17)
+    #define Z_QuickMap_16(a) Z_Quickmap(a,16)
+    #define Z_QuickMap_15(a) Z_Quickmap(a,15)
+    #define Z_QuickMap_14(a) Z_Quickmap(a,14)
+    #define Z_QuickMap_13(a) Z_Quickmap(a,13)
+    #define Z_QuickMap_12(a) Z_Quickmap(a,12)
+    #define Z_QuickMap_11(a) Z_Quickmap(a,11)
+    #define Z_QuickMap_10(a) Z_Quickmap(a,10)
+    #define Z_QuickMap_9(a) Z_Quickmap(a, 9)
+    #define Z_QuickMap_8(a) Z_Quickmap(a, 8)
+    #define Z_QuickMap_7(a) Z_Quickmap(a, 7)
+    #define Z_QuickMap_6(a) Z_Quickmap(a, 6)
+    #define Z_QuickMap_5(a) Z_Quickmap(a, 5)
+    #define Z_QuickMap_4(a) Z_Quickmap(a, 4)
+    #define Z_QuickMap_3(a) Z_Quickmap(a, 3)
+    #define Z_QuickMap_2(a) Z_Quickmap(a, 2)
+    #define Z_QuickMap_1(a) Z_Quickmap(a, 1)
+#endif
+
+
 #define SCRATCH_ADDRESS_5000 (byte __far* )0x50000000
 #define SCRATCH_ADDRESS_7000 (byte __far* )0x70000000
 #define SCRATCH_ADDRESS_8000 (byte __far* )0x80000000
