@@ -89,26 +89,189 @@ PUBLIC Z_QuickMap_
 ; dl (? or dx)= count
 
 push bx
-push cx
 push si
 mov  si, ax
+mov  ax, 00A18h   ; 10 in ah for mul. 24 in al to sub for 24 - count
+sub  al, dl
+mul  ah  ; 10 bytes per loop
 add  si, OFFSET _pageswapargs
-mov  cl, dl
-xor  ch, ch
 
-loop_start:
-mov  dx, SCAMP_PAGE_SELECT_REGISTER
+
+mov  bx, OFFSET unrolled_loop_start
+add  bx, ax
+jmp  bx
+
+unrolled_loop_start:
 lodsw
 mov  bx, ax
 lodsw
-out  dx, al
+out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  ax, bx
-mov  dx, SCAMP_PAGE_SET_REGISTER
-out  dx, ax
-loop loop_start
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_23:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_22:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_21:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_20:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_19:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_18:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_17:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_16:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_15:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_14:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_13:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_12:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_11:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_10:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_9:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_8:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_7:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_6:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_5:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_4:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_3:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_2:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_1:
+lodsw
+mov  bx, ax
+lodsw
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  ax, bx
+out  SCAMP_PAGE_SET_REGISTER, ax
+
 
 pop  si
-pop  cx
 pop  bx
 ret  
  
