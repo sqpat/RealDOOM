@@ -168,31 +168,84 @@ void __near Z_QuickMap(int16_t offset, int8_t count);
     void __near Z_QuickMap2(int16_t offset);
     void __near Z_QuickMap1(int16_t offset);
 
+
+    void __near Z_QuickMap24AI(int16_t offset);
+    void __near Z_QuickMap23AI(int16_t offset);
+    void __near Z_QuickMap22AI(int16_t offset);
+    void __near Z_QuickMap21AI(int16_t offset);
+    void __near Z_QuickMap20AI(int16_t offset);
+    void __near Z_QuickMap19AI(int16_t offset);
+    void __near Z_QuickMap18AI(int16_t offset);
+    void __near Z_QuickMap17AI(int16_t offset);
+    void __near Z_QuickMap16AI(int16_t offset);
+    void __near Z_QuickMap15AI(int16_t offset);
+    void __near Z_QuickMap14AI(int16_t offset);
+    void __near Z_QuickMap13AI(int16_t offset);
+    void __near Z_QuickMap12AI(int16_t offset);
+    void __near Z_QuickMap11AI(int16_t offset);
+    void __near Z_QuickMap10AI(int16_t offset);
+    void __near Z_QuickMap9AI(int16_t offset);
+    void __near Z_QuickMap8AI(int16_t offset);
+    void __near Z_QuickMap7AI(int16_t offset);
+    void __near Z_QuickMap6AI(int16_t offset);
+    void __near Z_QuickMap5AI(int16_t offset);
+    void __near Z_QuickMap4AI(int16_t offset);
+    void __near Z_QuickMap3AI(int16_t offset);
+    void __near Z_QuickMap2AI(int16_t offset);
+    void __near Z_QuickMap1AI(int16_t offset);
+
 #else
-    #define Z_QuickMap_24(a) Z_Quickmap(a,24)
-    #define Z_QuickMap_23(a) Z_Quickmap(a,23)
-    #define Z_QuickMap_22(a) Z_Quickmap(a,22)
-    #define Z_QuickMap_21(a) Z_Quickmap(a,21)
-    #define Z_QuickMap_20(a) Z_Quickmap(a,20)
-    #define Z_QuickMap_19(a) Z_Quickmap(a,19)
-    #define Z_QuickMap_18(a) Z_Quickmap(a,18)
-    #define Z_QuickMap_17(a) Z_Quickmap(a,17)
-    #define Z_QuickMap_16(a) Z_Quickmap(a,16)
-    #define Z_QuickMap_15(a) Z_Quickmap(a,15)
-    #define Z_QuickMap_14(a) Z_Quickmap(a,14)
-    #define Z_QuickMap_13(a) Z_Quickmap(a,13)
-    #define Z_QuickMap_12(a) Z_Quickmap(a,12)
-    #define Z_QuickMap_11(a) Z_Quickmap(a,11)
-    #define Z_QuickMap_10(a) Z_Quickmap(a,10)
-    #define Z_QuickMap_9(a) Z_Quickmap(a, 9)
-    #define Z_QuickMap_8(a) Z_Quickmap(a, 8)
-    #define Z_QuickMap_7(a) Z_Quickmap(a, 7)
-    #define Z_QuickMap_6(a) Z_Quickmap(a, 6)
-    #define Z_QuickMap_5(a) Z_Quickmap(a, 5)
-    #define Z_QuickMap_4(a) Z_Quickmap(a, 4)
-    #define Z_QuickMap_3(a) Z_Quickmap(a, 3)
-    #define Z_QuickMap_2(a) Z_Quickmap(a, 2)
-    #define Z_QuickMap_1(a) Z_Quickmap(a, 1)
+    #define Z_QuickMap24(a) Z_Quickmap(a,24)
+    #define Z_QuickMap23(a) Z_Quickmap(a,23)
+    #define Z_QuickMap22(a) Z_Quickmap(a,22)
+    #define Z_QuickMap21(a) Z_Quickmap(a,21)
+    #define Z_QuickMap20(a) Z_Quickmap(a,20)
+    #define Z_QuickMap19(a) Z_Quickmap(a,19)
+    #define Z_QuickMap18(a) Z_Quickmap(a,18)
+    #define Z_QuickMap17(a) Z_Quickmap(a,17)
+    #define Z_QuickMap16(a) Z_Quickmap(a,16)
+    #define Z_QuickMap15(a) Z_Quickmap(a,15)
+    #define Z_QuickMap14(a) Z_Quickmap(a,14)
+    #define Z_QuickMap13(a) Z_Quickmap(a,13)
+    #define Z_QuickMap12(a) Z_Quickmap(a,12)
+    #define Z_QuickMap11(a) Z_Quickmap(a,11)
+    #define Z_QuickMap10(a) Z_Quickmap(a,10)
+    #define Z_QuickMap9(a) Z_Quickmap(a, 9)
+    #define Z_QuickMap8(a) Z_Quickmap(a, 8)
+    #define Z_QuickMap7(a) Z_Quickmap(a, 7)
+    #define Z_QuickMap6(a) Z_Quickmap(a, 6)
+    #define Z_QuickMap5(a) Z_Quickmap(a, 5)
+    #define Z_QuickMap4(a) Z_Quickmap(a, 4)
+    #define Z_QuickMap3(a) Z_Quickmap(a, 3)
+    #define Z_QuickMap2(a) Z_Quickmap(a, 2)
+    #define Z_QuickMap1(a) Z_Quickmap(a, 1)
+
+    #define Z_QuickMap24AI(a) Z_Quickmap(a,24)
+    #define Z_QuickMap23AI(a) Z_Quickmap(a,23)
+    #define Z_QuickMap22AI(a) Z_Quickmap(a,22)
+    #define Z_QuickMap21AI(a) Z_Quickmap(a,21)
+    #define Z_QuickMap20AI(a) Z_Quickmap(a,20)
+    #define Z_QuickMap19AI(a) Z_Quickmap(a,19)
+    #define Z_QuickMap18AI(a) Z_Quickmap(a,18)
+    #define Z_QuickMap17AI(a) Z_Quickmap(a,17)
+    #define Z_QuickMap16AI(a) Z_Quickmap(a,16)
+    #define Z_QuickMap15AI(a) Z_Quickmap(a,15)
+    #define Z_QuickMap14AI(a) Z_Quickmap(a,14)
+    #define Z_QuickMap13AI(a) Z_Quickmap(a,13)
+    #define Z_QuickMap12AI(a) Z_Quickmap(a,12)
+    #define Z_QuickMap11AI(a) Z_Quickmap(a,11)
+    #define Z_QuickMap10AI(a) Z_Quickmap(a,10)
+    #define Z_QuickMap9AI(a) Z_Quickmap(a, 9)
+    #define Z_QuickMap8AI(a) Z_Quickmap(a, 8)
+    #define Z_QuickMap7AI(a) Z_Quickmap(a, 7)
+    #define Z_QuickMap6AI(a) Z_Quickmap(a, 6)
+    #define Z_QuickMap5AI(a) Z_Quickmap(a, 5)
+    #define Z_QuickMap4AI(a) Z_Quickmap(a, 4)
+    #define Z_QuickMap3AI(a) Z_Quickmap(a, 3)
+    #define Z_QuickMap2AI(a) Z_Quickmap(a, 2)
+    #define Z_QuickMap1AI(a) Z_Quickmap(a, 1)
+
+    
 #endif
 
 
@@ -314,7 +367,7 @@ void __near Z_QuickMap(int16_t offset, int8_t count);
 
 
 #define pageswapargs_phys_offset_size                0
-#define pageswapargs_screen0_offset_size             16
+#define pageswapargs_screen0_offset_size             64
 #define pageswapargs_rend_offset_size                2*num_phys_params
 #define pageswapargs_rend_7000_offset_size           (pageswapargs_rend_offset_size           + (2*8))
 #define pageswapargs_visplane_base_page_offset_size  (pageswapargs_rend_offset_size           + (2*5))

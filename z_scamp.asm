@@ -306,7 +306,232 @@ pop  si
 pop  bx
 ret  
  
+ENDP
 
+ ; todo: pass in the argument precalced as compile time thing
+
+
+; Z_QuickMapAI  (autoincrement)
+;
+
+PROC Z_QuickMap24AI_ NEAR
+PUBLIC Z_QuickMap24AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_24
+ENDP
+PROC Z_QuickMap16AI_ NEAR
+PUBLIC Z_QuickMap16AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_16
+ENDP
+PROC Z_QuickMap12AI_ NEAR
+PUBLIC Z_QuickMap12AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_12
+ENDP
+PROC Z_QuickMap9AI_ NEAR
+PUBLIC Z_QuickMap9AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_9
+ENDP
+PROC Z_QuickMap8AI_ NEAR
+PUBLIC Z_QuickMap8AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_8
+ENDP
+PROC Z_QuickMap7AI_ NEAR
+PUBLIC Z_QuickMap7AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_7
+ENDP
+PROC Z_QuickMap6AI_ NEAR
+PUBLIC Z_QuickMap6AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_6
+ENDP
+PROC Z_QuickMap5AI_ NEAR
+PUBLIC Z_QuickMap5AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_5
+ENDP
+PROC Z_QuickMap4AI_ NEAR
+PUBLIC Z_QuickMap4AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_4
+ENDP
+PROC Z_QuickMap3AI_ NEAR
+PUBLIC Z_QuickMap3AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_3
+ENDP
+PROC Z_QuickMap2AI_ NEAR
+PUBLIC Z_QuickMap2AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_2
+ENDP
+PROC Z_QuickMap1AI_ NEAR
+PUBLIC Z_QuickMap1AI_
+push si
+mov  si, ax
+add  si, OFFSET _pageswapargs
+mov  ax, word ptr ds:[si+2]        ; first word param
+or   al, 040h                     ; enable autoincrement
+out  SCAMP_PAGE_SELECT_REGISTER, al
+jmp unrolled_loop_AI_1
+
+unrolled_loop_AI_24:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_23:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_22:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_21:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_20:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_19:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_18:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_17:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_16:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_15:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_14:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_13:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_12:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_11:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_10:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_9:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_8:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_7:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_6:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_5:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_4:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_3:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_2:
+lodsw
+add  si, 2
+out  SCAMP_PAGE_SET_REGISTER, ax
+unrolled_loop_AI_1:
+lodsw
+out  SCAMP_PAGE_SET_REGISTER, ax
+
+pop  si
+ret  
  
 
 ENDP
