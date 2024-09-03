@@ -61,7 +61,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or   al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER
@@ -79,7 +78,7 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
+
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER
@@ -97,7 +96,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER
@@ -116,7 +114,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER
@@ -127,6 +124,7 @@ pop cx
 pop si
 ret
 ENDP
+
 PROC Z_QuickMap5AIC_ NEAR
 PUBLIC Z_QuickMap5AIC_
 push si
@@ -134,7 +132,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER
@@ -152,7 +149,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER
@@ -169,7 +165,6 @@ push si
 push dx
 mov  si, ax
 mov  al, dl
-or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER
@@ -189,7 +184,6 @@ push si
 push dx
 mov  si, ax
 mov  al, dl
-or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER
@@ -209,7 +203,6 @@ push si
 push dx
 mov  si, ax
 mov  al, dl
-or  al, 080h     ; 080h for autoincrement enable. 00h for page 4000 index
 mov  dx, SCAT_PAGE_SELECT_REGISTER
 out  dx, al
 mov  dx, SCAT_PAGE_SET_REGISTER

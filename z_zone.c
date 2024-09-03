@@ -386,8 +386,6 @@ uint16_t pageswapargs[total_pages] = {
 
   
 
-int16_t pageswapargseg;
-int16_t pageswapargoff;
 
 uint8_t current5000RemappedScratchPage = 0;
 

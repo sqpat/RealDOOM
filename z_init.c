@@ -97,7 +97,6 @@ void __near Z_GetEMSPageMap()
 #else
 extern int16_t emshandle;
 extern int16_t pagenum9000;
-extern int16_t pageswapargoff;
 byte __far *__near Z_InitEMS() {
 
 	// 4 mb
@@ -253,9 +252,6 @@ void __near Z_GetEMSPageMap() {
 
 found:
 
-	// cache these args
-	//pageswapargseg = (uint16_t)((uint32_t)pageswapargs >> 16);
-	pageswapargoff = FP_OFF(pageswapargs);
 	 
 
 	// todo this is old and out of date, but informative.

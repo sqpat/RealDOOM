@@ -69,7 +69,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 16
@@ -88,7 +87,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 12
@@ -109,7 +107,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 8
@@ -122,6 +119,23 @@ ret
 ENDP
 
 
+PROC Z_QuickMap6AIC_ NEAR
+PUBLIC Z_QuickMap6AIC_
+push si
+push cx
+push dx
+mov  si, ax
+mov  al, dl
+out  SCAMP_PAGE_SELECT_REGISTER, al
+mov  dx, SCAMP_PAGE_SET_REGISTER
+mov  cx, 6
+rep  outsw
+pop dx
+pop cx
+pop si
+ret
+
+
 PROC Z_QuickMap5AIC_ NEAR
 PUBLIC Z_QuickMap5AIC_
 push si
@@ -129,7 +143,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 5
@@ -146,7 +159,6 @@ push cx
 push dx
 mov  si, ax
 mov  al, dl
-or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
 mov  dx, SCAMP_PAGE_SET_REGISTER
 mov  cx, 4
@@ -160,17 +172,15 @@ ENDP
 PROC Z_QuickMap3AIC_ NEAR
 PUBLIC Z_QuickMap3AIC_
 push si
-push cx
-push dx
 mov  si, ax
 mov  al, dl
-or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
-mov  dx, SCAMP_PAGE_SET_REGISTER
-mov  cx, 3
-rep  outsw
-pop dx
-pop cx
+lodsw
+out SCAMP_PAGE_SET_REGISTER, ax
+lodsw
+out SCAMP_PAGE_SET_REGISTER, ax
+lodsw
+out SCAMP_PAGE_SET_REGISTER, ax
 pop si
 ret
 
@@ -178,17 +188,13 @@ ENDP
 PROC Z_QuickMap2AIC_ NEAR
 PUBLIC Z_QuickMap2AIC_
 push si
-push cx
-push dx
 mov  si, ax
 mov  al, dl
-or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
-mov  dx, SCAMP_PAGE_SET_REGISTER
-mov  cx, 2
-rep  outsw
-pop dx
-pop cx
+lodsw
+out SCAMP_PAGE_SET_REGISTER, ax
+lodsw
+out SCAMP_PAGE_SET_REGISTER, ax
 pop si
 ret
 
@@ -196,17 +202,11 @@ ENDP
 PROC Z_QuickMap1AIC_ NEAR
 PUBLIC Z_QuickMap1AIC_
 push si
-push cx
-push dx
 mov  si, ax
 mov  al, dl
-or   al, 040h     ; 040h for autoincrement enable. 0Ch for page 4000 index
 out  SCAMP_PAGE_SELECT_REGISTER, al
-mov  dx, SCAMP_PAGE_SET_REGISTER
-mov  cx, 1
-rep  outsw
-pop dx
-pop cx
+lodsw
+out SCAMP_PAGE_SET_REGISTER, ax
 pop si
 ret
 

@@ -118,6 +118,7 @@ extern uint16_t EMS_PAGE;
 // todo should this be minus?
 #define _EPR(a)            a + EMS_MEMORY_OFFSET
 #define CHIPSET_PAGE_9000 0x20
+#define EMS_AUTOINCREMENT_FLAG 0x40
 #elif defined(__SCAT_BUILD)
 // includes turn high bit on
 #define EMS_MEMORY_OFFSET 0x8080
@@ -125,6 +126,7 @@ extern uint16_t EMS_PAGE;
 #define _NPR_UNINDEXED(a) 0x03FF
 #define _EPR(a)           a + EMS_MEMORY_OFFSET
 #define CHIPSET_PAGE_9000 0x14
+#define EMS_AUTOINCREMENT_FLAG 0x80
 #else
 #define EMS_MEMORY_OFFSET 0x0000
 #define _NPR(a) 0xFFFF
@@ -192,15 +194,15 @@ void __far Z_QuickMapUnmapAll();
 
 
     #define Z_QuickMap24AI(a)   Z_QuickMap24AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT])
-    #define Z_QuickMap16AI(a,b) Z_QuickMap16AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],b)
-    #define Z_QuickMap8AI(a,b) Z_QuickMap8AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b)
-    #define Z_QuickMap7AI(a,b) Z_QuickMap7AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b)
-    #define Z_QuickMap6AI(a,b) Z_QuickMap6AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b)
-    #define Z_QuickMap5AI(a,b) Z_QuickMap5AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b)
-    #define Z_QuickMap4AI(a,b) Z_QuickMap4AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b)
-    #define Z_QuickMap3AI(a,b) Z_QuickMap3AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b)
-    #define Z_QuickMap2AI(a,b) Z_QuickMap2AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b)
-    #define Z_QuickMap1AI(a,b) Z_QuickMap1AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b)
+    #define Z_QuickMap16AI(a,b) Z_QuickMap16AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap8AI(a,b) Z_QuickMap8AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap7AI(a,b) Z_QuickMap7AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap6AI(a,b) Z_QuickMap6AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap5AI(a,b) Z_QuickMap5AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap4AI(a,b) Z_QuickMap4AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap3AI(a,b) Z_QuickMap3AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap2AI(a,b) Z_QuickMap2AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap1AI(a,b) Z_QuickMap1AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
 
 
 #else
