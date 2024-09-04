@@ -58,7 +58,6 @@ pop dx
 pop cx
 pop si
 ret
-
 ENDP
 
 
@@ -77,7 +76,6 @@ pop dx
 pop cx
 pop si
 ret
-
 ENDP
 
 PROC Z_QuickMap12AIC_ NEAR
@@ -95,7 +93,6 @@ pop dx
 pop cx
 pop si
 ret
-
 ENDP
 
   
@@ -115,7 +112,6 @@ pop dx
 pop cx
 pop si
 ret
-
 ENDP
 
 
@@ -134,7 +130,7 @@ pop dx
 pop cx
 pop si
 ret
-
+ENDP
 
 PROC Z_QuickMap5AIC_ NEAR
 PUBLIC Z_QuickMap5AIC_
@@ -151,6 +147,7 @@ pop dx
 pop cx
 pop si
 ret
+ENDP
 
 PROC Z_QuickMap4AIC_ NEAR
 PUBLIC Z_QuickMap4AIC_
@@ -167,8 +164,8 @@ pop dx
 pop cx
 pop si
 ret
-
 ENDP
+
 PROC Z_QuickMap3AIC_ NEAR
 PUBLIC Z_QuickMap3AIC_
 push si
@@ -183,8 +180,8 @@ lodsw
 out SCAMP_PAGE_SET_REGISTER, ax
 pop si
 ret
-
 ENDP
+
 PROC Z_QuickMap2AIC_ NEAR
 PUBLIC Z_QuickMap2AIC_
 push si
@@ -197,8 +194,8 @@ lodsw
 out SCAMP_PAGE_SET_REGISTER, ax
 pop si
 ret
-
 ENDP
+
 PROC Z_QuickMap1AIC_ NEAR
 PUBLIC Z_QuickMap1AIC_
 push si
@@ -209,11 +206,6 @@ lodsw
 out SCAMP_PAGE_SET_REGISTER, ax
 pop si
 ret
-
-ENDP
-
-ENDP 
-
 ENDP
 
 

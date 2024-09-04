@@ -34,6 +34,7 @@
 #include "wi_stuff.h"
 
 #include <dos.h>
+#include <conio.h>
 
 #include <stdlib.h>
 #include "m_memory.h"
@@ -54,9 +55,29 @@ void near doerror(int16_t errnum, int16_t errorreg)
 
 #ifdef __SCAMP_BUILD
 
-byte __far *__near Z_InitEMS()
-{
+byte __far *__near Z_InitEMS() {
+	int8_t i;
 	EMS_PAGE = 0xD000; // hard coded
+	//. enable EMS and page D000 in chipset
+	outp(0xFB, 0x00); // dummy write configuration enable
+	
+	outp(0xEC, 0x0B);
+	outp(0xED, 0xC0); // enable EMS and backfill
+
+	outp(0xEC, 0x0C);
+	outp(0xED, 0xF0); // enabled page D000
+
+	// set default pages
+	for (i = 0xC; i < 0x24; i++){
+		// initialize pages..
+		outp(0xE8, i);
+		outpw(0xEA, i+0x04); // set default EMS pages for global stuff...
+	}
+
+
+
+	//todo do we disable config after?
+
 	return MK_FP(EMS_PAGE, 0);
 }
 

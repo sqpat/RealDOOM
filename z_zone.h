@@ -147,35 +147,35 @@ void __far Z_QuickMapUnmapAll();
 
     #define pagenum9000 CHIPSET_PAGE_9000
 
-    #define INDEXED_PAGE_9000_OFFSET (PAGE_9000_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_9400_OFFSET (PAGE_9400_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_9800_OFFSET (PAGE_9800_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_9C00_OFFSET (PAGE_9C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_9000_OFFSET (PAGE_9000_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_9400_OFFSET (PAGE_9400_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_9800_OFFSET (PAGE_9800_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_9C00_OFFSET (PAGE_9C00_OFFSET + CHIPSET_PAGE_9000)
 
-    #define INDEXED_PAGE_8000_OFFSET (PAGE_8000_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_8400_OFFSET (PAGE_8400_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_8800_OFFSET (PAGE_8800_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_8C00_OFFSET (PAGE_8C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_8000_OFFSET (PAGE_8000_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_8400_OFFSET (PAGE_8400_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_8800_OFFSET (PAGE_8800_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_8C00_OFFSET (PAGE_8C00_OFFSET + CHIPSET_PAGE_9000)
 
-    #define INDEXED_PAGE_7000_OFFSET (PAGE_7000_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_7400_OFFSET (PAGE_7400_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_7800_OFFSET (PAGE_7800_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_7C00_OFFSET (PAGE_7C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_7000_OFFSET (PAGE_7000_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_7400_OFFSET (PAGE_7400_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_7800_OFFSET (PAGE_7800_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_7C00_OFFSET (PAGE_7C00_OFFSET + CHIPSET_PAGE_9000)
 
-    #define INDEXED_PAGE_6000_OFFSET (PAGE_6000_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_6400_OFFSET (PAGE_6400_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_6800_OFFSET (PAGE_6800_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_6C00_OFFSET (PAGE_6C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_6000_OFFSET (PAGE_6000_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_6400_OFFSET (PAGE_6400_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_6800_OFFSET (PAGE_6800_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_6C00_OFFSET (PAGE_6C00_OFFSET + CHIPSET_PAGE_9000)
 
-    #define INDEXED_PAGE_5000_OFFSET (PAGE_5000_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_5400_OFFSET (PAGE_5400_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_5800_OFFSET (PAGE_5800_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_5C00_OFFSET (PAGE_5C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_5000_OFFSET (PAGE_5000_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_5400_OFFSET (PAGE_5400_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_5800_OFFSET (PAGE_5800_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_5C00_OFFSET (PAGE_5C00_OFFSET + CHIPSET_PAGE_9000)
 
-    #define INDEXED_PAGE_4000_OFFSET (PAGE_4000_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_4400_OFFSET (PAGE_4400_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_4800_OFFSET (PAGE_4800_OFFSET + 0 + CHIPSET_PAGE_9000)
-    #define INDEXED_PAGE_4C00_OFFSET (PAGE_4C00_OFFSET + 0 + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_4000_OFFSET (PAGE_4000_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_4400_OFFSET (PAGE_4400_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_4800_OFFSET (PAGE_4800_OFFSET + CHIPSET_PAGE_9000)
+    #define INDEXED_PAGE_4C00_OFFSET (PAGE_4C00_OFFSET + CHIPSET_PAGE_9000)
 
 
 
@@ -192,38 +192,23 @@ void __far Z_QuickMapUnmapAll();
 
     #define PAGE_SWAP_ARG_MULT 1
 
-
     #define Z_QuickMap24AI(a)   Z_QuickMap24AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT])
     #define Z_QuickMap16AI(a,b) Z_QuickMap16AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],b | EMS_AUTOINCREMENT_FLAG)
-    #define Z_QuickMap8AI(a,b) Z_QuickMap8AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
-    #define Z_QuickMap7AI(a,b) Z_QuickMap7AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
-    #define Z_QuickMap6AI(a,b) Z_QuickMap6AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
-    #define Z_QuickMap5AI(a,b) Z_QuickMap5AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
-    #define Z_QuickMap4AI(a,b) Z_QuickMap4AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
-    #define Z_QuickMap3AI(a,b) Z_QuickMap3AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
-    #define Z_QuickMap2AI(a,b) Z_QuickMap2AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
-    #define Z_QuickMap1AI(a,b) Z_QuickMap1AIC(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap8AI(a,b)  Z_QuickMap8AIC (&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap7AI(a,b)  Z_QuickMap7AIC (&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap6AI(a,b)  Z_QuickMap6AIC (&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap5AI(a,b)  Z_QuickMap5AIC (&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap4AI(a,b)  Z_QuickMap4AIC (&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap3AI(a,b)  Z_QuickMap3AIC (&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap2AI(a,b)  Z_QuickMap2AIC (&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
+    #define Z_QuickMap1AI(a,b)  Z_QuickMap1AIC (&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], b | EMS_AUTOINCREMENT_FLAG)
 
 
 #else
  
 
     #define Z_QuickMap24AI(a)   Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],24)
-    #define Z_QuickMap23AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],23)
-    #define Z_QuickMap22AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],22)
-    #define Z_QuickMap21AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],21)
-    #define Z_QuickMap20AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],20)
-    #define Z_QuickMap19AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],19)
-    #define Z_QuickMap18AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],18)
-    #define Z_QuickMap17AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],17)
     #define Z_QuickMap16AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],16)
-    #define Z_QuickMap15AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],15)
-    #define Z_QuickMap14AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],14)
-    #define Z_QuickMap13AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],13)
-    #define Z_QuickMap12AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],12)
-    #define Z_QuickMap11AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],11)
-    #define Z_QuickMap10AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT],10)
-    #define Z_QuickMap9AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], 9)
     #define Z_QuickMap8AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], 8)
     #define Z_QuickMap7AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], 7)
     #define Z_QuickMap6AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], 6)
@@ -233,39 +218,43 @@ void __far Z_QuickMapUnmapAll();
     #define Z_QuickMap2AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], 2)
     #define Z_QuickMap1AI(a,b) Z_QuickMap(&pageswapargs[(a)*PAGE_SWAP_ARG_MULT], 1)
 
-    #define INDEXED_PAGE_9000_OFFSET (PAGE_9000_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_9400_OFFSET (PAGE_9400_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_9800_OFFSET (PAGE_9800_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_9C00_OFFSET (PAGE_9C00_OFFSET + 0 + pagenum9000)
+    // unused dummy args
+    #define INDEXED_PAGE_9000_OFFSET (0)
+    #define INDEXED_PAGE_9400_OFFSET (0)
+    #define INDEXED_PAGE_9800_OFFSET (0)
+    #define INDEXED_PAGE_9C00_OFFSET (0)
 
-    #define INDEXED_PAGE_8000_OFFSET (PAGE_8000_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_8400_OFFSET (PAGE_8400_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_8800_OFFSET (PAGE_8800_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_8C00_OFFSET (PAGE_8C00_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_8000_OFFSET (0)
+    #define INDEXED_PAGE_8400_OFFSET (0)
+    #define INDEXED_PAGE_8800_OFFSET (0)
+    #define INDEXED_PAGE_8C00_OFFSET (0)
 
-    #define INDEXED_PAGE_7000_OFFSET (PAGE_7000_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_7400_OFFSET (PAGE_7400_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_7800_OFFSET (PAGE_7800_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_7C00_OFFSET (PAGE_7C00_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_7000_OFFSET (0)
+    #define INDEXED_PAGE_7400_OFFSET (0)
+    #define INDEXED_PAGE_7800_OFFSET (0)
+    #define INDEXED_PAGE_7C00_OFFSET (0)
 
-    #define INDEXED_PAGE_6000_OFFSET (PAGE_6000_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_6400_OFFSET (PAGE_6400_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_6800_OFFSET (PAGE_6800_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_6C00_OFFSET (PAGE_6C00_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_6000_OFFSET (0)
+    #define INDEXED_PAGE_6400_OFFSET (0)
+    #define INDEXED_PAGE_6800_OFFSET (0)
+    #define INDEXED_PAGE_6C00_OFFSET (0)
 
-    #define INDEXED_PAGE_5000_OFFSET (PAGE_5000_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_5400_OFFSET (PAGE_5400_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_5800_OFFSET (PAGE_5800_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_5C00_OFFSET (PAGE_5C00_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_5000_OFFSET (0)
+    #define INDEXED_PAGE_5400_OFFSET (0)
+    #define INDEXED_PAGE_5800_OFFSET (0)
+    #define INDEXED_PAGE_5C00_OFFSET (0)
 
-    #define INDEXED_PAGE_4000_OFFSET (PAGE_4000_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_4400_OFFSET (PAGE_4400_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_4800_OFFSET (PAGE_4800_OFFSET + 0 + pagenum9000)
-    #define INDEXED_PAGE_4C00_OFFSET (PAGE_4C00_OFFSET + 0 + pagenum9000)
+    #define INDEXED_PAGE_4000_OFFSET (0)
+    #define INDEXED_PAGE_4400_OFFSET (0)
+    #define INDEXED_PAGE_4800_OFFSET (0)
+    #define INDEXED_PAGE_4C00_OFFSET (0)
 
     void  __near Z_QuickMap(uint16_t __near * offset, int8_t count);
 
     #define PAGE_SWAP_ARG_MULT 2
+
+    extern int16_t emshandle;
+
     
 #endif
 
