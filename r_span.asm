@@ -37,12 +37,12 @@ SPANSTART_SEGMENT              = 90FAh
 DISTSCALE_SEGMENT              = 9113h
 
 SPANFUNC_FUNCTION_AREA_SEGMENT = 6EAAh
-SPANFUNC_PREP_OFFSET           = 070Fh
+SPANFUNC_PREP_OFFSET           = 06FEh
 
 ; jump table is 0 offset at this segment
 SPANFUNC_JUMP_LOOKUP_SEGMENT   = 6EA0h
 ; offset of the jmp instruction's immediate from the above segment
-SPANFUNC_JUMP_OFFSET           = 1E5h
+SPANFUNC_JUMP_OFFSET           = 1DCh
 
 
 BASE_COLORMAP_POINTER          = 6800h
@@ -114,8 +114,6 @@ PUBLIC  R_DrawSpan_
 ; 12h y32step low  16 bits
 
 
-push  bp
-mov   bp, sp
 cli 									; disable interrupts
 
 ; fixed_t x32step = (ds_xstep << 6);
@@ -195,7 +193,6 @@ sal   AL, 1					; convert index to  a word lookup index
 xchg  ax, SI
 
 lods  WORD PTR ES:[SI]		; <--- this doesnt work, becomes ES:SI, tasm doesnt warn you. left as a warning for future generations
-;mov  AX, WORD PTR ES:[DI]		; gets the jump amount from the jump lookup
 
 MOV   DI, SPANFUNC_JUMP_OFFSET
 stos  WORD PTR es:[di]       ;
@@ -303,7 +300,7 @@ mov   ax, si					;  copy to ax so we can byte manip
 ;	yfrac16.hu = yfrac.wu >> 10;
 
 mov bl, bh
-mov   ax, word ptr [_ss_variable_space + 0Ch]  ; move high 16 bits of yfrac into ax
+mov ax, word ptr [_ss_variable_space + 0Ch]  ; move high 16 bits of yfrac into ax
 mov bh, al   ; shift 8
 
 sar ah, 1    ; shift two more
@@ -347,27 +344,27 @@ mov   ax, word ptr [DS_YSTEP + 1]
 
 
 
-shr ax, cl			; shift y_step by pixel shift
+shr   ax, cl			; shift y_step by pixel shift
 mov   word ptr [_sp_bp_safe_space + 2], ax	; y_adder
 
 
 
 mov   es, word ptr [_destview + 2]	; retrieve destview segment
-mov   si, word ptr ss:[_ds_source_segment] 		; ds:si is ds_source
-mov   ds, si
-mov   cx, bx
+
+; stack shenanigans. swap adders and sp/bp
+; todo - this has got to be able to be improved somehow?
+
+xchg  ds:[_sp_bp_safe_space], sp             ;  store SP and load x_adder
+xchg  ds:[_sp_bp_safe_space+2], bp			  ;   store BP and load y_adder
+
+mov   ds, word ptr [_ds_source_segment] 		; ds:si is ds_source
+mov   cx, bx  ; yfrac16
 
 ; we have a safe memory space declared in near variable space to put sp/bp values
 ; they meanwhile hold x_adder/y_adder and we juggle the two
 ; due to openwatcom compilation, SS = DS so we can use SS as if it were DS to address the var safely
 
 
-; stack shenanigans. adders in sp/bp
-mov   bx, OFFSET _sp_bp_safe_space  ; 
-xchg  ss:[bx], sp             ;  store SP and load x_adder
-inc   bx
-inc   bx
-xchg  ss:[bx], bp			  ;   store BP and load y_adder
 
 mov   bx, 0FC0h
 xor   ah, ah
@@ -418,76 +415,31 @@ xlat  BYTE PTR cs:[bx]       ; before calling this function we already set CS to
 stos  BYTE PTR es:[di]       ;
 
 
-
-;			xfrac.w += x32step;
-
-;mov   ax, word ptr ss:[_ss_variable_space + 08h]   ; load low 16 bits of x32step
-;add   word ptr ss:[_ss_variable_space + 04h], ax   ; add low 16 bits of xstep into low 16 bits xfrac
-;mov   ax, word ptr ss:[_ss_variable_space + 0Ah]   ; load high 16 bits of x32step into ax
-;adc   word ptr ss:[_ss_variable_space + 06h], ax   ; add with carry into high 16 bits of xfrac
-
-;			xfrac16.hu = xfrac.wu >> 8;
-
-;mov   dx, word ptr ss:[_ss_variable_space + 05h]   ; grab middle 16 bits of xfrac to get the shifted 8
-
-
-; 			yfrac.w += y32step;
-; i wonder if its better to order these so reads are sequential (?)
-
-;mov   ax, word ptr ss:[_ss_variable_space + 12h]   ; load low 16 bits of y32step
-;add   word ptr ss:[_ss_variable_space + 0Eh], ax	; add low 16 bits of ystep into low 16 bits yfrac
-;mov   ax, word ptr ss:[_ss_variable_space + 10h]   ; load high 16 bits of y32step 
-;adc   word ptr ss:[_ss_variable_space + 0Ch], ax   ; add with carry into high 16 bits of yfrac
-
-
-
-;			yfrac16.hu = yfrac.wu >> 10;
-
-; byte ptr fine?
-;mov   bx, word ptr ss:[_ss_variable_space + 0Eh]  ; move low 16 bits of yfrac into bx
-
-;mov bl, bh
-;mov   ax, word ptr ss:[_ss_variable_space + 0Ch]  ; move high 16 bits of yfrac into ax
-;mov bh, al   ; shift 8
-
-;sar ah, 1    ; shift two more
-;rcr bx, 1
-;sar ah, 1
-;rcr bx, 1    ; yfrac16 in bx
-
-;mov   cx, bx
-;mov   bx, 0FC0h
-;xor   ah, ah
-
+ 
  
 
 ; restore stack
-mov   bx, OFFSET _sp_bp_safe_space; 
-xchg  ss:[bx], sp             ;  restore sp
-inc   bx
-inc   bx
-xchg  ss:[bx], bp			;   restore BP
 mov   ax, ss					;   SS is DS in this watcom memory model so we use that to restore DS
 mov   ds, ax
+xchg  ds:[_sp_bp_safe_space], sp             ;  store SP and load x_adder
+xchg  ds:[_sp_bp_safe_space+2], bp			  ;   store BP and load y_adder
 
 do_span_loop:
 
 xor   cx, cx
-mov   cl, byte ptr ss:[_ss_variable_space]
+mov   cl, byte ptr ds:[_ss_variable_space]
 inc   cl						; increment i
 
 ; loop if i < loopcount. note we can overwrite this with self modifying coe
 cmp   cl, byte ptr ds:[_spanfunc_main_loop_count]	
 jge   span_i_loop_done
-mov   byte ptr ss:[_ss_variable_space], cl		; ch was 0 or above. store result
+mov   byte ptr ds:[_ss_variable_space], cl		; ch was 0 or above. store result
 
 jmp   span_i_loop_repeat
 span_i_loop_done:
 
 
 sti								; reenable interrupts
-mov sp, bp
-pop bp 
 
 retf  
 cld   
