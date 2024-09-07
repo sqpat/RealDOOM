@@ -40,7 +40,7 @@ COLFUNC_FUNCTION_AREA_SEGMENT  = 6A42h
 COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 
-COLFUNC_JUMP_OFFSET            = 049h
+COLFUNC_JUMP_OFFSET            = 047h
 
 DRAWCOL_OFFSET                 = 2420h
 
@@ -114,18 +114,14 @@ PUBLIC  R_DrawColumn_
     mov   dh, dl
     mov   dl, ah                          ; mid 16 bits of the 32 bit dx:ax into dx
     
-    ; 2 less
     add   dx, word ptr [_dc_texturemid+1]   ; first add dx_texture mid
-
+    add   al, byte ptr [_dc_texturemid+3]
+    mov   ch, al        ; ch gets the low 8 bits
 
     
     ; bx still has dc_iscale low word from above. prepare low bits of precision
-    mov cl, 5
-    shr bl, cl          ; cx is now 0. is that useful? 
-    xor bh, bh
+    mov   cl, bl          ; cl has 8 bits of precision
     
-    mov cx, bp          ; mid 16 bits of fracstep are the mid 16 of dc_iscale, which was prepped above.
-    mov bp, bx
 
     
 
@@ -150,7 +146,7 @@ pixel_loop_fast:
 
    ;; 12 bytes loop iter
 
-; 0xC size
+; 0xE size
 DRAW_SINGLE_PIXEL MACRO 
    ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
 
@@ -159,41 +155,13 @@ DRAW_SINGLE_PIXEL MACRO
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-	add    dx,cx
+	add    ch,cl                  ; add 8 low bits of precision
+    adc    dx,bp                  ; carry result into this add
 	add    di,si                  ; si has 79 (0x4F) and stos added one
 ENDM
 
 
-; 0x10 size
-DRAW_SINGLE_PIXEL_WITH_CORRECTION MACRO 
-   ;   fix 'jaggies' by overcorrecting a bit
-
-    mov    al,dh
-	and    al,ah                  ; ah is 7F
-
-	xlat   BYTE PTR ds:[bx]       ;
-	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
-	stos   BYTE PTR es:[di]       ;
-    add    dx,bp                  ; low 8 bits of precision times eight being added
-	add    dx,cx
-	add    di,si                  ; si has 79 (0x4F) and stos added one
-ENDM
-
-REPT 24
-    REPT 4
-        DRAW_SINGLE_PIXEL
-    ENDM
-    DRAW_SINGLE_PIXEL_WITH_CORRECTION
-    REPT 3
-        DRAW_SINGLE_PIXEL
-    ENDM
-ENDM
-
-REPT 4
-    DRAW_SINGLE_PIXEL
-ENDM
-    DRAW_SINGLE_PIXEL_WITH_CORRECTION
-REPT 2
+REPT 199
     DRAW_SINGLE_PIXEL
 ENDM
 
