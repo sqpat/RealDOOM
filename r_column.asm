@@ -40,7 +40,7 @@ COLFUNC_FUNCTION_AREA_SEGMENT  = 6A42h
 COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 
-COLFUNC_JUMP_OFFSET            = 048h
+COLFUNC_JUMP_OFFSET            = 049h
 
 DRAWCOL_OFFSET                 = 2420h
 
@@ -84,7 +84,7 @@ PUBLIC  R_DrawColumn_
 
     
     sub   ax, word ptr [_centery]
-    mov   es,ax              ; save low(M1)
+    mov   es, ax              ; save low(M1)
 
 ;  DX:AX * CX:BX
 
@@ -121,10 +121,13 @@ PUBLIC  R_DrawColumn_
     
     ; bx still has dc_iscale low word from above. prepare low bits of precision
     mov cl, 5
-    shr bl, cl ; cx is now 0. is that useful?
-    mov ah, bl
+    shr bl, cl          ; cx is now 0. is that useful? 
+    xor bh, bh
     
-    mov cx, bp   ; mid 16 bits of fracstep are the mid 16 of dc_iscale, which was prepped above.
+    mov cx, bp          ; mid 16 bits of fracstep are the mid 16 of dc_iscale, which was prepped above.
+    mov bp, bx
+
+    
 
     ; for fixing jaggies... need extra precision from time to time
 
@@ -137,7 +140,7 @@ PUBLIC  R_DrawColumn_
 
    mov     ds, word ptr [_dc_source_segment]     ; this will be ds..
    mov     si,  4Fh
-   mov     bp,  0FF7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
+   mov     ah,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
 
 
    jmp loop_done         ; relative jump to be modified before function is called
@@ -147,11 +150,12 @@ pixel_loop_fast:
 
    ;; 12 bytes loop iter
 
+; 0xC size
 DRAW_SINGLE_PIXEL MACRO 
    ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
 
     mov    al,dh
-	and    ax,bp                  ; bp has 0xFF7F (127 for al)
+	and    al,ah                  ; ah is 7F
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
@@ -159,39 +163,44 @@ DRAW_SINGLE_PIXEL MACRO
 	add    di,si                  ; si has 79 (0x4F) and stos added one
 ENDM
 
-REPT 199
-    DRAW_SINGLE_PIXEL
-endm
 
+; 0x10 size
 DRAW_SINGLE_PIXEL_WITH_CORRECTION MACRO 
    ;   fix 'jaggies' by overcorrecting a bit
 
     mov    al,dh
-	and    ax,bp                  ; bp has 0xFF7F (127 for al)
+	and    al,ah                  ; ah is 7F
 
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
-    add    dl,ah                  ; AH times eight being added
-	adc    dh, 0
-    add    dx,cx
+    add    dx,bp                  ; low 8 bits of precision times eight being added
+	add    dx,cx
 	add    di,si                  ; si has 79 (0x4F) and stos added one
 ENDM
 
-;REPT 12
-;    REPT 7
-;        DRAW_SINGLE_PIXEL
-;    ENDM
-;        DRAW_SINGLE_PIXEL_WITH_CORRECTION
-;ENDM
-;REPT 7
-;    DRAW_SINGLE_PIXEL
-;ENDM
+REPT 24
+    REPT 4
+        DRAW_SINGLE_PIXEL
+    ENDM
+    DRAW_SINGLE_PIXEL_WITH_CORRECTION
+    REPT 3
+        DRAW_SINGLE_PIXEL
+    ENDM
+ENDM
+
+REPT 4
+    DRAW_SINGLE_PIXEL
+ENDM
+    DRAW_SINGLE_PIXEL_WITH_CORRECTION
+REPT 2
+    DRAW_SINGLE_PIXEL
+ENDM
 
 ; draw last pixel, cut off the add
 
     mov    al,dh
-	and    ax,bp                  ; bp has 0xFF7F (127 for al)
+	and    al,ah                  ; ah is 7F
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
@@ -229,13 +238,12 @@ PUBLIC  R_DrawColumnPrep_
 ; argument AX is diff for various segment lookups
 
 push  bx
-push  cx   
-push  dx   
+push  cx
+push  dx
 push  si
-push  di   
+push  di
 
 
-; 	outp (SC_INDEX+1,1<<(dc_x&3));
 
 add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
 mov   es, ax                                 ; store this segment for now, with offset pre-added
@@ -244,7 +252,6 @@ mov   di, word ptr [_dc_x]
 mov   cl, byte ptr [_detailshift2minus] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
 shr   di, cl
 
-xor   bh, bh ; todo figure out a trick to get bh to 0 for free... maybe just make detailshift an int16
 
 
 ; dest = destview + dc_yl*80 + (dc_x>>2); 
@@ -289,7 +296,7 @@ pop   dx
 pop   cx
 pop   bx
 retf  
-cld  
+
 
 ; if colormap is not zero we must do some segment math
 skipcolormapzero:

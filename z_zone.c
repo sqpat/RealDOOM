@@ -429,6 +429,10 @@ int16_t oldtask = -1;
 #else
 
 
+// note: emm386 only supports up to 8 args at a time.
+// its kind of infrequent that we go more than 8 at once, and thus not a big perf hit, 
+// so let's just do this for simplicity
+
 #define MAX_COUNT_ITER 8
 
 void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
@@ -459,10 +463,11 @@ void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 	fclose(fp);
 	*/
 	//offset += pageswapargoff;
+	
 	// test if some of these fields can be pulled out
 	while (count > 0){
 
-		min = count > MAX_COUNT_ITER ? MAX_COUNT_ITER : count; // note: emm386 only supports up to 8 args at a time. Might other EMS drivers work with more at a time?
+		min = count > MAX_COUNT_ITER ? MAX_COUNT_ITER : count; 
 		regs.w.ax = 0x5000;  
 		regs.w.cx = min; // page count
 		regs.w.dx = emshandle; // handle
