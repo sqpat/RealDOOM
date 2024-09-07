@@ -429,7 +429,7 @@ int16_t oldtask = -1;
 #else
 
 
-#define MAX_COUNT_ITER 1
+#define MAX_COUNT_ITER 8
 
 void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 

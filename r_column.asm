@@ -40,7 +40,7 @@ COLFUNC_FUNCTION_AREA_SEGMENT  = 6A42h
 COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 
-COLFUNC_JUMP_OFFSET            = 041h
+COLFUNC_JUMP_OFFSET            = 048h
 
 DRAWCOL_OFFSET                 = 2420h
 
@@ -66,17 +66,22 @@ PUBLIC  R_DrawColumn_
 
     ; di contains shifted dc_x relative to details
     ; cx contains dc_yl
-   
-    
+
+    cli 									; disable interrupts
+    push bp
+
     mov   ax, cx  ; todo improve
     
 	; shift already done earlier
     
 	
 
-    cwd                         			 ; we know ax is positive, this is a quick clear out of dx
+
     mov   bx, word ptr [_dc_iscale + 0]   
-    mov   cx, word ptr [_dc_iscale + 2]
+    mov   ch, byte ptr [_dc_iscale + 2]      ; 2nd byte of high word not used up ahead...
+    mov   cl, bh                             ; construct dc_iscale + 1 word
+    mov   bp, cx                             ; cache for later to avoid going to memory
+
     
     sub   ax, word ptr [_centery]
     mov   es,ax              ; save low(M1)
@@ -92,7 +97,7 @@ PUBLIC  R_DrawColumn_
 
 
 
-    mul     cl;             ; only the bottom 16 bits are necessary.
+    mul     ch;             ; only the bottom 16 bits are necessary.
     add     dx,ax           ; - add to total
     mov     cx,dx           ; - hold total in cx
     mov     ax,es           ; restore low(M1)
@@ -106,23 +111,33 @@ PUBLIC  R_DrawColumn_
 ;    finishing  dc_texturemid.w + (dc_yl-centery)*fracstep.w
 
 
-    mov   cx, word ptr [_dc_texturemid+1]   ; first add dx_texture mid
     mov   dh, dl
     mov   dl, ah                          ; mid 16 bits of the 32 bit dx:ax into dx
-    add   dx, cx
-    mov   cx, word ptr [_dc_iscale + 1]   ; mid 16 bits of fracstep are the mid 16 of dc_iscale
+    
+    ; 2 less
+    add   dx, word ptr [_dc_texturemid+1]   ; first add dx_texture mid
+
+
+    
+    ; bx still has dc_iscale low word from above. prepare low bits of precision
+    mov cl, 5
+    shr bl, cl ; cx is now 0. is that useful?
+    mov ah, bl
+    
+    mov cx, bp   ; mid 16 bits of fracstep are the mid 16 of dc_iscale, which was prepped above.
+
+    ; for fixing jaggies... need extra precision from time to time
 
 
    ;  prep our loop variables
 
 
    mov     es, word ptr [_destview + 2]    ; ready the viewscreen segment
-   xor     bx, bx       ; common bx offset
-   mov     ax, word ptr [_dc_source_segment]     ; this will be ds..
-   mov     ds, ax                          ; do this last, makes us unable to to ref other vars...
-   mov     si,  4Fh
-   mov     ah,  7Fh
+   xor     bx, bx       ; common bx offset of zero in the xlats ahead
 
+   mov     ds, word ptr [_dc_source_segment]     ; this will be ds..
+   mov     si,  4Fh
+   mov     bp,  0FF7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
 
 
    jmp loop_done         ; relative jump to be modified before function is called
@@ -134,12 +149,9 @@ pixel_loop_fast:
 
 DRAW_SINGLE_PIXEL MACRO 
    ; tried to reorder adds in between xlats and stos, but it didn't make anything faster.
-   ; TODO: fix texture 'jaggies', maybe every sixteen pixels or so add a corrective factor.
-   ;   would have to preadd to dx by (16 - drawnpixelcount &0xF) so it'd be consistent?
 
     mov    al,dh
-	and    al,ah                  ; ah has 0x7F (127)
-	; add    al,bh                ; REMOVED! bh has the 0 to F offset. 
+	and    ax,bp                  ; bp has 0xFF7F (127 for al)
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
@@ -151,12 +163,35 @@ REPT 199
     DRAW_SINGLE_PIXEL
 endm
 
+DRAW_SINGLE_PIXEL_WITH_CORRECTION MACRO 
+   ;   fix 'jaggies' by overcorrecting a bit
+
+    mov    al,dh
+	and    ax,bp                  ; bp has 0xFF7F (127 for al)
+
+	xlat   BYTE PTR ds:[bx]       ;
+	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
+	stos   BYTE PTR es:[di]       ;
+    add    dl,ah                  ; AH times eight being added
+	adc    dh, 0
+    add    dx,cx
+	add    di,si                  ; si has 79 (0x4F) and stos added one
+ENDM
+
+;REPT 12
+;    REPT 7
+;        DRAW_SINGLE_PIXEL
+;    ENDM
+;        DRAW_SINGLE_PIXEL_WITH_CORRECTION
+;ENDM
+;REPT 7
+;    DRAW_SINGLE_PIXEL
+;ENDM
 
 ; draw last pixel, cut off the add
 
     mov    al,dh
-	and    al,ah                  ; ah has 0x7F (127)
-	;add    al,bh                  ; bh has the 0 to F offset
+	and    ax,bp                  ; bp has 0xFF7F (127 for al)
 	xlat   BYTE PTR ds:[bx]       ;
 	xlat   BYTE PTR cs:[bx]       ; before calling this function we already set CS to the correct segment..
 	stos   BYTE PTR es:[di]       ;
@@ -168,8 +203,12 @@ loop_done:
 ; clean up
 
 ; restore ds without going to memory.
+
     mov ax, ss
     mov ds, ax
+
+    pop bp
+    sti
     retf
 
 
