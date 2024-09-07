@@ -437,15 +437,9 @@ void __near WI_drawAnimatedBack(void)
 // Returns new x position.
 //
 
-int16_t
-__near WI_drawNum
-( int16_t		x,
-  int16_t		y,
-  int16_t		n,
-  int16_t		digits )
-{
-
-    int16_t		fontwidth = (WI_GetPatch(numRef[0]) ->width);
+int16_t __near WI_drawNum ( int16_t x, int16_t y, int16_t n, int16_t digits ){
+    
+	int16_t		fontwidth = (WI_GetPatch(numRef[0]) ->width);
     int16_t		neg;
     int16_t		temp;
 
@@ -488,12 +482,7 @@ __near WI_drawNum
 
 }
 
-void
-__near WI_drawPercent
-( int16_t		x,
-  int16_t		y,
-  int16_t		p )
-{
+void __near WI_drawPercent ( int16_t x, int16_t y, int16_t p ) {
     if (p < 0){
 		return;
 	}
@@ -507,12 +496,7 @@ __near WI_drawPercent
 // Display level completion time and par,
 //  or "sucks" message if overflow.
 //
-void
-__near WI_drawTime
-( int16_t		x,
-  int16_t		y,
-  int16_t		t )
-{
+void __near WI_drawTime ( int16_t x, int16_t y, int16_t t ) {
 
     int16_t		div;
     int16_t		n;
@@ -545,8 +529,7 @@ __near WI_drawTime
 
 
 
-void __near WI_initNoState(void)
-{
+void __near WI_initNoState(void) {
     state = NoState;
     acceleratestage = 0;
     cnt = 10;
@@ -556,8 +539,7 @@ void __near WI_initNoState(void)
 static boolean		snl_pointeron = false;
 
 
-void __near WI_initShowNextLoc(void)
-{
+void __near WI_initShowNextLoc(void) {
     state = ShowNextLoc;
     acceleratestage = 0;
     cnt = SHOWNEXTLOCDELAY * TICRATE;
@@ -575,8 +557,7 @@ void __near WI_updateShowNextLoc(void) {
 	}
 }
 
-void __near WI_drawShowNextLoc(void)
-{
+void __near WI_drawShowNextLoc(void) {
 
     int16_t		i;
     int16_t		last;
@@ -619,18 +600,15 @@ void __near WI_drawShowNextLoc(void)
 
 }
 
-void __near WI_drawNoState(void)
-{
+void __near WI_drawNoState(void) {
     snl_pointeron = true;
     WI_drawShowNextLoc();
 }
  
 
-
 static int16_t	sp_state;
 
-void __near WI_initStats(void)
-{
+void __near WI_initStats(void) {
     state = StatCount;
     acceleratestage = 0;
     sp_state = 1;
@@ -641,8 +619,7 @@ void __near WI_initStats(void)
     WI_initAnimatedBack();
 }
 
-void __near WI_updateStats(void)
-{
+void __near WI_updateStats(void) {
 
     WI_updateAnimatedBack();
 
@@ -766,8 +743,7 @@ void __near WI_drawStats(void) {
 
 }
 
-void __near WI_checkForAccelerate(void)
-{
+void __near WI_checkForAccelerate(void) {
  
 	if (player.cmd.buttons & BT_ATTACK)
 	{
@@ -790,8 +766,7 @@ void __near WI_checkForAccelerate(void)
 
 
 
-void __near WI_loadData(void)
-{
+void __near WI_loadData(void) {
     int16_t		i;
 	int8_t	name1[9] = "INTERPIC";
 	int8_t	name2[9] = "WIMAP0";
@@ -873,8 +848,7 @@ extern boolean secretexit;
 //
 // G_WorldDone 
 //
-void __near G_WorldDone (void) 
-{ 
+void __near G_WorldDone (void)  { 
     gameaction = ga_worlddone; 
 
     if (secretexit) 
@@ -922,12 +896,10 @@ void __near WI_updateNoState(void) {
 
 
 // Updates stuff each tick
-void __far  WI_Ticker(void)
-{
+void __far  WI_Ticker(void) {
 	// counter for general background animation
 	bcnt++;
-	if (bcnt == 1)
-	{
+	if (bcnt == 1) {
 		// intermission music
 		if (commercial)
 			S_ChangeMusic(mus_dm2int, true);
@@ -980,8 +952,7 @@ void __far WI_Drawer (void) {
 }
  
 
-void __near WI_initVariables(wbstartstruct_t __near* wbstartstruct)
-{
+void __near WI_initVariables(wbstartstruct_t __near* wbstartstruct) {
 	wbs = wbstartstruct;
 	acceleratestage = 0;
 	cnt = bcnt = 0;
@@ -998,9 +969,7 @@ void __near WI_initVariables(wbstartstruct_t __near* wbstartstruct)
 }
 
 
-void __near WI_Init(void)
-{
-	
+void __near WI_Init(void) {
 
 	int16_t i = 0;
 	int8_t j = 0;

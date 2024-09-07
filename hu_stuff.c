@@ -56,7 +56,6 @@ extern boolean		automapactive;
 
 void __near HU_Drawer(void) {
 
-
 	hu_stext_t __near* stext = &w_message;
 	int16_t i, index;
 	hu_textline_t __near*line;
@@ -94,8 +93,7 @@ void __near HU_Drawer(void) {
 	}
 }
 
-void __near HU_Erase(void)
-{
+void __near HU_Erase(void) {
 	int16_t i;
 	for (i = 0; i < w_message.height; i++) {
 		if (w_message.laston && !*w_message.on) {
@@ -144,8 +142,7 @@ void __near HU_Ticker(void) {
 #define QUEUESIZE		128
 
  
-boolean __near HU_Responder(event_t __far *ev)
-{
+boolean __near HU_Responder(event_t __far *ev) {
 
 	boolean eatkey = false;
 	static boolean shiftdown = false;

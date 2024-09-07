@@ -235,8 +235,7 @@ uint16_t     __far R_TextureNumForName(int8_t* name) {
 }
 
 
-void __near G_BuildTiccmd (int8_t index)
-{ 
+void __near G_BuildTiccmd (int8_t index) { 
 	int8_t         i;
 	int8_t     strafe;
     boolean     bstrafe; 
@@ -268,36 +267,29 @@ void __near G_BuildTiccmd (int8_t index)
         tspeed = speed;
 
     // let movement keys cancel each other out
-    if (strafe) 
-    { 
-        if (gamekeydown[key_right]) 
-        {
+    if (strafe)  { 
+        if (gamekeydown[key_right])  {
             // fprintf(stderr, "strafe right\n");
             side += sidemove[speed]; 
         }
-        if (gamekeydown[key_left]) 
-        {
+        if (gamekeydown[key_left])  {
             //  fprintf(stderr, "strafe left\n");
             side -= sidemove[speed]; 
         }
  
-    } 
-    else 
-    { 
+    } else { 
         if (gamekeydown[key_right]) 
             cmd->angleturn -= angleturn[tspeed]; 
         if (gamekeydown[key_left]) 
             cmd->angleturn += angleturn[tspeed]; 
     } 
 
-    if (gamekeydown[key_up]) 
-    {
+    if (gamekeydown[key_up])  {
 		//I_Error("keydown");
         // fprintf(stderr, "up\n");
         forward += forwardmove[speed]; 
     }
-    if (gamekeydown[key_down]) 
-    {
+    if (gamekeydown[key_down])  {
         // fprintf(stderr, "down\n");
         forward -= forwardmove[speed]; 
     }
@@ -308,12 +300,10 @@ void __near G_BuildTiccmd (int8_t index)
  
     // buttons
     
-    if (gamekeydown[key_fire] || mousebuttons[mousebfire]
-        ) 
+    if (gamekeydown[key_fire] || mousebuttons[mousebfire]) 
         cmd->buttons |= BT_ATTACK; 
  
-    if (gamekeydown[key_use] ) 
-    { 
+    if (gamekeydown[key_use] ) { 
         cmd->buttons |= BT_USE;
         // clear double clicks if hit use button 
         dclicks = 0;                   
@@ -321,8 +311,7 @@ void __near G_BuildTiccmd (int8_t index)
 
     // chainsaw overrides 
     for (i=0 ; i<NUMWEAPONS-1 ; i++)        
-        if (gamekeydown['1'+i]) 
-        { 
+        if (gamekeydown['1'+i])  { 
             cmd->buttons |= BT_CHANGE; 
             cmd->buttons |= i<<BT_WEAPONSHIFT; 
             break; 
@@ -333,50 +322,39 @@ void __near G_BuildTiccmd (int8_t index)
         forward += forwardmove[speed];
     
     // forward double click
-    if (mousebuttons[mousebforward] != dclickstate && dclicktime > 1 )
-    { 
+    if (mousebuttons[mousebforward] != dclickstate && dclicktime > 1 ) { 
         dclickstate = mousebuttons[mousebforward];
         if (dclickstate) 
             dclicks++; 
-        if (dclicks == 2) 
-        { 
+        if (dclicks == 2)  { 
             cmd->buttons |= BT_USE; 
             dclicks = 0; 
         } 
         else 
             dclicktime = 0; 
-    } 
-    else 
-    { 
+    } else { 
         dclicktime += 1; 
-        if (dclicktime > 20) 
-        { 
+        if (dclicktime > 20) { 
             dclicks = 0; 
             dclickstate = 0; 
         } 
     }
     
     // strafe double click
-    bstrafe =
-		mousebuttons[mousebstrafe]  ;
-    if (bstrafe != dclickstate2 && dclicktime2 > 1 ) 
-    { 
+    bstrafe = mousebuttons[mousebstrafe]  ;
+    if (bstrafe != dclickstate2 && dclicktime2 > 1 )  { 
         dclickstate2 = bstrafe; 
         if (dclickstate2) 
             dclicks2++; 
-        if (dclicks2 == 2) 
-        { 
+        if (dclicks2 == 2) { 
             cmd->buttons |= BT_USE; 
             dclicks2 = 0; 
         } 
         else 
             dclicktime2 = 0; 
-    } 
-    else 
-    { 
+    } else { 
         dclicktime2 += 1; 
-        if (dclicktime2 > 20) 
-        { 
+        if (dclicktime2 > 20) { 
             dclicks2 = 0; 
             dclickstate2 = 0; 
         } 
@@ -403,14 +381,12 @@ void __near G_BuildTiccmd (int8_t index)
     cmd->sidemove += side;
     
     // special buttons
-    if (sendpause) 
-    { 
+    if (sendpause) { 
         sendpause = false; 
         cmd->buttons = BT_SPECIAL | BTS_PAUSE; 
     } 
  
-    if (sendsave) 
-    { 
+    if (sendsave) { 
         sendsave = false; 
         cmd->buttons = BT_SPECIAL | BTS_SAVEGAME | (savegameslot<<BTS_SAVESHIFT); 
     } 
@@ -426,9 +402,7 @@ void __near G_BuildTiccmd (int8_t index)
 boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up menu if in demos
 	if (gameaction == ga_nothing && !singledemo &&
 		(demoplayback || gamestate == GS_DEMOSCREEN)) {
-		if (ev->type == ev_keydown ||
-			(ev->type == ev_mouse && ev->data1)
-			) {
+		if (ev->type == ev_keydown || (ev->type == ev_mouse && ev->data1)) {
 			M_StartControlPanel();
 			return true;
 		}
@@ -488,8 +462,7 @@ boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up men
 	return false;
 } 
  
-void __near G_DoWorldDone(void)
-{
+void __near G_DoWorldDone(void) {
 	gamestate = GS_LEVEL;
 	gamemap = wminfo.next + 1;
 	G_DoLoadLevel();
@@ -505,8 +478,7 @@ extern int8_t     d_episode;
 extern int8_t     d_map;
 
 
-void __near G_DoNewGame(void)
-{
+void __near G_DoNewGame(void) {
 	demoplayback = false;
 	netdemo = false;
 	//playeringame[1] = playeringame[2] = playeringame[3] = 0;
@@ -523,8 +495,7 @@ void __near G_DoNewGame(void)
 // G_Ticker
 // Make ticcmd_ts for the players.
 //
-void __near G_Ticker (void) 
-{ 
+void __near G_Ticker (void)  { 
 	int8_t         buf;
     ticcmd_t __near*   cmd;
     // do player reborns if needed
@@ -706,11 +677,9 @@ void __far G_ExitLevel (void)
 } 
 
 // Here's for the german edition.
-void __far G_SecretExitLevel (void) 
-{ 
+void __far G_SecretExitLevel (void) { 
     // IF NO WOLF3D LEVELS, NO SECRET EXIT!
-    if ( (commercial)
-      && (W_CheckNumForName("map31")<0))
+    if ( (commercial) && (W_CheckNumForName("map31")<0))
         secretexit = false;
     else
         secretexit = true; 
@@ -745,31 +714,24 @@ void __near G_DoCompleted (void)  {
     wminfo.last = gamemap -1;
     
     // wminfo.next is 0 biased, unlike gamemap
-    if (commercial)
-    {
+    if (commercial) {
         if (secretexit)
-            switch(gamemap)
-            {
+            switch(gamemap) {
               case 15: wminfo.next = 30; break;
               case 31: wminfo.next = 31; break;
+            } else {
+                switch(gamemap) {
+                    case 31:
+                    case 32: wminfo.next = 15; break;
+                    default: wminfo.next = gamemap;
+                }
             }
-        else
-            switch(gamemap)
-            {
-              case 31:
-              case 32: wminfo.next = 15; break;
-              default: wminfo.next = gamemap;
-            }
-    }
-    else
-    {
+    } else {
         if (secretexit) 
             wminfo.next = 8;    // go to secret level 
-        else if (gamemap == 9) 
-        {
+        else if (gamemap == 9) {
             // returning from secret level 
-            switch (gameepisode) 
-            { 
+            switch (gameepisode)  { 
               case 1: 
                 wminfo.next = 3; 
                 break; 

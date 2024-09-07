@@ -1141,7 +1141,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 			return false;		// stop
 		}
 	
-		dist = FixedMul (attackrange.w, in->frac);
+		dist = FixedMulBig1632 (attackrange.h.intbits, in->frac);
 
 		temp.h.fracbits = 0;
 		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
@@ -1176,7 +1176,8 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 		return true;			// corpse or something
 	}
     // check angles to see if the thing can be aimed at
-    dist = FixedMul (attackrange.w, in->frac);
+	dist = FixedMulBig1632 (attackrange.h.intbits, in->frac);
+
     thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
 	if (thingtopslope < bottomslope) {
@@ -1242,7 +1243,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
 #endif
 
-		dist = FixedMul (attackrange.w, in->frac);
+		dist = FixedMulBig1632 (attackrange.h.intbits, in->frac);
 
 		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
@@ -1268,7 +1269,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 		frac = in->frac - FixedDivWholeA (4, attackrange.w); // todo can we use intbits and remove fracunit?
 		x = trace.x.w + FixedMul (trace.dx.w, frac);
 		y = trace.y.w + FixedMul (trace.dy.w, frac);
-		z = shootz.w + FixedMul (aimslope, FixedMul(frac, attackrange.w));
+		z = shootz.w + FixedMul (aimslope, FixedMulBig1632(attackrange.h.intbits, frac));
 
 
 
@@ -1305,7 +1306,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 	}
 
     // check angles to see if the thing can be aimed at
-    dist = FixedMul (attackrange.w, in->frac);
+	dist = FixedMulBig1632 (attackrange.h.intbits, in->frac);
     thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
 
@@ -1325,7 +1326,8 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 
     x = trace.x.w + FixedMul (trace.dx.w, frac);
     y = trace.y.w + FixedMul (trace.dy.w, frac);
-    z = shootz.w + FixedMul (aimslope, FixedMul(frac, attackrange.w));
+    z = shootz.w + FixedMul (aimslope, FixedMulBig1632 (attackrange.h.intbits, in->frac));
+
 
     // Spawn bullet puffs or blod spots,
     // depending on target type.

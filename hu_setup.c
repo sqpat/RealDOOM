@@ -255,10 +255,7 @@ extern uint8_t		message_counter;
 
 extern hu_textline_t	w_title;
 
-void __far HU_Start(void)
-{
-
-
+void __far HU_Start(void) {
 
 	//
 	// Builtin map names.

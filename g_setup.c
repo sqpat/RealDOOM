@@ -88,8 +88,7 @@ extern int16_t             numtextures;
 // Check whether texture is available.
 // Filter out NoTexture indicator.
 //
-uint16_t   __far  R_CheckTextureNumForName(int8_t *name)
-{
+uint16_t   __far  R_CheckTextureNumForName(int8_t *name) {
 	uint16_t         i;
 	texture_t __far* texture;
 	int8_t texturename[8];
@@ -119,8 +118,7 @@ uint16_t   __far  R_CheckTextureNumForName(int8_t *name)
  
 
 
-void __near G_DoLoadLevel(void)
-{
+void __near G_DoLoadLevel(void) {
 	#ifdef MOVE_P_SETUP
 	void (__far  * P_SetupLevel)(int8_t, int8_t, skill_t) = P_SetupLevelAddr;
 	#endif
@@ -171,8 +169,7 @@ void __near G_DoLoadLevel(void)
 void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t           map) {
 	int16_t             i;
 
-	if (paused)
-	{
+	if (paused) {
 		paused = false;
 		S_ResumeSound();
 	}
@@ -182,32 +179,29 @@ void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t     
 		skill = sk_nightmare;
 
 #if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-	if (episode < 1)
-	{
+	if (episode < 1) {
 		episode = 1;
 	}
-	if (episode > 3)
-	{
+	if (episode > 3) {
 		episode = 3;
 	}
 #else
-	if (episode == 0)
-	{
+	if (episode == 0) {
 		episode = 4;
 	}
 #endif
 
-	if (episode > 1 && shareware)
-	{
+	if (episode > 1 && shareware) {
 		episode = 1;
 	}
 
-	if (map < 1)
+	if (map < 1){
 		map = 1;
+	}
 
-	if ((map > 9)
-		&& (!commercial))
+	if ((map > 9) && (!commercial)){
 		map = 9;
+	}
 
 	//M_ClearRandom();
     rndindex = prndindex = 0;
@@ -218,16 +212,14 @@ void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t     
 	else
 		respawnmonsters = false;
 
-	if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare))
-	{
+	if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare)){
 		for (i = S_SARG_RUN1; i <= S_SARG_PAIN2; i++)
 			states[i].tics >>= 1;
 		mobjinfo[MT_BRUISERSHOT].speed = 20 + HIGHBIT;
 		mobjinfo[MT_HEADSHOT].speed = 20 + HIGHBIT;
 		mobjinfo[MT_TROOPSHOT].speed = 20 + HIGHBIT;
 	}
-	else if (skill != sk_nightmare && gameskill == sk_nightmare)
-	{
+	else if (skill != sk_nightmare && gameskill == sk_nightmare) {
 		for (i = S_SARG_RUN1; i <= S_SARG_PAIN2; i++)
 			states[i].tics <<= 1;
 		mobjinfo[MT_BRUISERSHOT].speed = 15 + HIGHBIT;
@@ -254,8 +246,7 @@ void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t     
 
 
 	// set the sky map for the episode
-	if (commercial)
-	{
+	if (commercial) {
 		skytexture = R_TextureNumForName("SKY3");
 		if (gamemap < 12)
 			skytexture = R_TextureNumForName("SKY1");
@@ -263,22 +254,20 @@ void __far G_InitNew (skill_t       skill, int8_t           episode, int8_t     
 			if (gamemap < 21)
 				//skytexture = R_TextureNumForName("ASHWALL2");  // for debugging skytexture issues...
 				skytexture = R_TextureNumForName("SKY2");
-	}
-	else
-		switch (episode)
-		{
-		case 1:
-			skytexture = R_TextureNumForName("SKY1");
-			break;
-		case 2:
-			skytexture = R_TextureNumForName("SKY2");
-			break;
-		case 3:
-			skytexture = R_TextureNumForName("SKY3");
-			break;
-		case 4:       // Special Edition sky
-			skytexture = R_TextureNumForName("SKY4");
-			break;
+	} else
+		switch (episode) {
+			case 1:
+				skytexture = R_TextureNumForName("SKY1");
+				break;
+			case 2:
+				skytexture = R_TextureNumForName("SKY2");
+				break;
+			case 3:
+				skytexture = R_TextureNumForName("SKY3");
+				break;
+			case 4:       // Special Edition sky
+				skytexture = R_TextureNumForName("SKY4");
+				break;
 		}
 
 	Z_QuickMapPhysics();

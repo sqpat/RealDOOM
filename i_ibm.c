@@ -184,29 +184,22 @@ union REGS in, out;
 //
 // I_WaitVBL
 //
-void __near I_WaitVBL(int16_t vbls)
-{
+void __near I_WaitVBL(int16_t vbls){
 	int16_t stat;
 
-    if (novideo)
-    {
+    if (novideo) {
         return;
     }
-    while (vbls--)
-    {
-        do
-        {
+    while (vbls--) {
+        do {
             stat = inp(STATUS_REGISTER_1);
-            if (stat & 8)
-            {
+            if (stat & 8) {
                 break;
             }
         } while (1);
-        do
-        {
+        do {
             stat = inp(STATUS_REGISTER_1);
-            if ((stat & 8) == 0)
-            {
+            if ((stat & 8) == 0) {
                 break;
             }
         } while (1);
@@ -256,8 +249,7 @@ fixed_t_union destscreen;
 //
 // I_UpdateBox
 //
-void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h)
-{
+void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h) {
 	uint16_t i, j, k, count;
 	int16_t sp_x1, sp_x2;
 	uint16_t poffset;

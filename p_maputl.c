@@ -996,7 +996,7 @@ void __near P_PathTraverse
     x2.h.intbits -= bmaporgx;
     y2.h.intbits -= bmaporgy;
     xt2 = x2.h.intbits >> MAPBLOCKSHIFT;
-    yt2 = y2.h.intbits >>MAPBLOCKSHIFT;
+    yt2 = y2.h.intbits >> MAPBLOCKSHIFT;
  
 
 	x1mapblockshifted.w = (x1.w >> MAPBLOCKSHIFT);
