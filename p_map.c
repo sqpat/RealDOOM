@@ -1097,7 +1097,7 @@ mobj_t __far*		shootthing;
 fixed_t_union		shootz;	
 
 int16_t		la_damage;
-fixed_t_union		attackrange;
+int16_t		attackrange16;
 
 fixed_t		aimslope;
 
@@ -1141,7 +1141,24 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 			return false;		// stop
 		}
 	
-		dist = FixedMulBig1632 (attackrange.h.intbits, in->frac);
+
+		switch (attackrange16){
+			case MISSILERANGE:
+				// todo byte swaps
+				dist = in->frac << 11; 
+				break;
+			case HALFMISSILERANGE:
+				// todo byte swaps
+				dist = in->frac << 10; 
+				break;
+			case MELEERANGE:
+				// todo byte swaps
+				dist = in->frac << 6; 
+				break;
+			case CHAINSAWRANGE:
+				dist = FixedMulBig1632 (CHAINSAWRANGE, in->frac);
+				break;
+		}
 
 		temp.h.fracbits = 0;
 		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
@@ -1176,7 +1193,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 		return true;			// corpse or something
 	}
     // check angles to see if the thing can be aimed at
-	dist = FixedMulBig1632 (attackrange.h.intbits, in->frac);
+	dist = FixedMulBig1632 (attackrange16, in->frac);
 
     thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
@@ -1243,7 +1260,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
 #endif
 
-		dist = FixedMulBig1632 (attackrange.h.intbits, in->frac);
+		dist = FixedMulBig1632 (attackrange16, in->frac);
 
 		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
@@ -1266,30 +1283,30 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 		// hit line
 		  hitline:
 		// position a bit closer
-		frac = in->frac - FixedDivWholeA (4, attackrange.w); // todo can we use intbits and remove fracunit?
-		x = trace.x.w + FixedMul (trace.dx.w, frac);
-		y = trace.y.w + FixedMul (trace.dy.w, frac);
-		z = shootz.w + FixedMul (aimslope, FixedMulBig1632(attackrange.h.intbits, frac));
+			frac = in->frac - FixedDivWholeAB (4, attackrange16); // todo can we use intbits and remove fracunit?
+			x = trace.x.w + FixedMul (trace.dx.w, frac);
+			y = trace.y.w + FixedMul (trace.dy.w, frac);
+			z = shootz.w  + FixedMul (aimslope, FixedMulBig1632(attackrange16, frac));
 
 
 
-		if (sectors[li_physics->frontsecnum].ceilingpic == skyflatnum) {
-			// don't shoot the sky!
-			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[li_physics->frontsecnum].ceilingheight);
-			if (z > temp.w) {
-				return false;
+			if (sectors[li_physics->frontsecnum].ceilingpic == skyflatnum) {
+				// don't shoot the sky!
+				SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp,  sectors[li_physics->frontsecnum].ceilingheight);
+				if (z > temp.w) {
+					return false;
+				}
+				// it's a sky hack wall
+				if (li_physics->backsecnum != SECNUM_NULL && sectors[li_physics->backsecnum].ceilingpic == skyflatnum) {
+					return false;
+				}
 			}
-			// it's a sky hack wall
-			if (li_physics->backsecnum != SECNUM_NULL && sectors[li_physics->backsecnum].ceilingpic == skyflatnum) {
-				return false;
-			}
-		}
 
-		// Spawn bullet puffs.
-		P_SpawnPuff (x,y,z);
-	
-		// don't go any farther
-		return false;	
+			// Spawn bullet puffs.
+			P_SpawnPuff (x,y,z);
+		
+			// don't go any farther
+			return false;	
     }
 	 
     // shoot a thing
@@ -1306,7 +1323,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 	}
 
     // check angles to see if the thing can be aimed at
-	dist = FixedMulBig1632 (attackrange.h.intbits, in->frac);
+	dist = FixedMulBig1632 (attackrange16, in->frac);
     thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
 
@@ -1322,11 +1339,11 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
     
     // hit thing
     // position a bit closer
-    frac = in->frac - FixedDivWholeA (10, attackrange.w); // todo can we use intbits and remove fracunit?
+    frac = in->frac - FixedDivWholeAB (10, attackrange16); // todo can we use intbits and remove fracunit?
 
     x = trace.x.w + FixedMul (trace.dx.w, frac);
     y = trace.y.w + FixedMul (trace.dy.w, frac);
-    z = shootz.w + FixedMul (aimslope, FixedMulBig1632 (attackrange.h.intbits, in->frac));
+    z = shootz.w + FixedMul (aimslope, FixedMulBig1632 (attackrange16, in->frac));
 
 
     // Spawn bullet puffs or blod spots,
@@ -1353,12 +1370,9 @@ fixed_t __near P_AimLineAttack ( mobj_t __far*	t1, fineangle_t	angle,int16_t	dis
 	fixed_t_union	y2;
 	fixed_t_union	x;
 	fixed_t_union	y;
-	fixed_t_union distance;
-	int16_t ischainsaw = distance16 & CHAINSAW_FLAG;
 	mobj_pos_t __far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
 	
     shootthing = t1;
-	distance16 &= (CHAINSAW_FLAG-1);
 
 	x = t1_pos->x;
 	y = t1_pos->y;
@@ -1377,9 +1391,7 @@ fixed_t __near P_AimLineAttack ( mobj_t __far*	t1, fineangle_t	angle,int16_t	dis
     topslope = 100*FRACUNIT/160;	
     bottomslope = -100*FRACUNIT/160;
     
-	distance.h.fracbits = ischainsaw ? 1 : 0;
-	distance.h.intbits = distance16;
-    attackrange = distance;
+	attackrange16 = distance16;
     linetarget = NULL;
 	linetarget_pos = NULL;
 
@@ -1410,12 +1422,9 @@ void __near P_LineAttack (mobj_t __far* t1, fineangle_t	angle, int16_t	distance1
 	
 	fixed_t_union	x;
 	fixed_t_union	y;
-	fixed_t_union	distance;
-	int16_t ischainsaw = distance16 & CHAINSAW_FLAG; //sigh... look into why this needs to be here, remove if at all possible - sq
 	mobj_pos_t __far* t1_pos = GET_MOBJPOS_FROM_MOBJ(t1);
 	x = t1_pos->x;
 	y = t1_pos->y;
-	distance16 &= (CHAINSAW_FLAG-1);
 	shootthing = t1;
     la_damage = damage;
     //x2.w = x.w + FixedMul1616(distance16,finecosine[angle]);
@@ -1426,9 +1435,8 @@ void __near P_LineAttack (mobj_t __far* t1, fineangle_t	angle, int16_t	distance1
 	shootz.w = t1_pos->z.w;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
 	
-	distance.h.intbits = distance16;
-	distance.h.fracbits = ischainsaw ? 1 : 0;
-	attackrange = distance;
+	attackrange16  = distance16;
+    
     aimslope = slope;
 	
 

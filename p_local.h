@@ -52,9 +52,11 @@
 #define GRAVITY_HIGHBITS		1
 #define MAXMOVE		(30*FRACUNIT)
 
-#define USERANGE		(64)
-#define MELEERANGE		(64)
-#define MISSILERANGE	(32*64)
+#define USERANGE         (64)
+#define MELEERANGE       (64)
+#define CHAINSAWRANGE	 (65)
+#define MISSILERANGE     (32*64)
+#define HALFMISSILERANGE (16*64)
 
 // follow a player exlusively for 3 seconds
 #define	BASETHRESHOLD	 	100
@@ -273,7 +275,6 @@ extern mobj_t __far*	linetarget;	// who got hit (or NULL)
 extern mobj_pos_t __far*	linetarget_pos;	// who got hit (or NULL)
 
 
-#define CHAINSAW_FLAG 0x4000
 
 fixed_t __near P_AimLineAttack(mobj_t __far*	t1,fineangle_t	angle,int16_t	distance);
 void __near P_LineAttack(mobj_t __far*	t1,fineangle_t	angle,int16_t	distance,fixed_t	slope,int16_t		damage );

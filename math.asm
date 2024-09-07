@@ -2120,6 +2120,7 @@ ret
 endp
 
 
+
 PROC FixedDivWholeA_
 PUBLIC FixedDivWholeA_
 
@@ -2128,11 +2129,6 @@ PUBLIC FixedDivWholeA_
 ; return in DX:AX
 
 ; this is fixeddiv so we must do the whole labs14 check and word shift adjustment
-
-
-push  bp
-mov   bp, sp
-
 
 
 mov   dx, ax  ; dx will store sign bit 
@@ -2179,8 +2175,6 @@ jl do_negative_whole
 call div48_32_whole_
 
 
-mov   sp, bp
-pop   bp
 
 ret
 
@@ -2196,8 +2190,6 @@ neg   ax
 adc   dx, 0
 neg   dx
 
-mov   sp, bp
-pop   bp
 
 ret
 
@@ -2269,9 +2261,6 @@ mov   dx, 07fffh
 exit_and_return_early_whole:
 
 
-mov   sp, bp
-
-pop   bp
 ret
 
 return_MAXLONG_whole:
@@ -2644,5 +2633,184 @@ ret
 
 
 endp
+
+
+
+PROC FixedDivWholeAB_
+PUBLIC FixedDivWholeAB_
+
+
+; AX:00 / DX:00
+; return in DX:AX
+
+; this is fixeddiv so we must do the whole labs14 check and word shift adjustment
+
+push  cx
+push  bx
+push  bp
+mov   bp, sp
+
+mov   cx, dx
+xor   bx, bx
+
+mov   dx, ax  ; dx will store sign bit 
+xor   dx, cx  ; dx now stores signedness via test operator...
+
+
+
+; here we abs the numbers before unsigned division algo
+
+or    cx, cx
+jge   b_is_positive_whole_AB
+neg   bx
+adc   cx, 0
+neg   cx
+
+
+b_is_positive_whole_AB:
+
+or    ax, ax			; sign check
+jge   a_is_positive_whole_AB
+neg   ax
+
+a_is_positive_whole_AB:
+
+;  ax:00  is  labs(ax:00) now (unshifted)
+;  cx:bx  is  labs(cx:bx) now
+test cx, 0FFFCh
+
+
+je continue_bounds_test_whole_AB
+
+; main division algo
+
+do_full_divide_whole_AB:
+
+
+; set negative if need be...
+
+test  dx, dx
+jl do_negative_whole_AB
+
+
+
+call div48_32_whole_
+
+
+mov   sp, bp
+pop   bp
+pop   bx
+pop   cx
+
+ret
+
+do_negative_whole_AB:
+
+
+
+call div48_32_whole_
+
+
+
+neg   ax
+adc   dx, 0
+neg   dx
+
+mov   sp, bp
+pop   bp
+pop   bx
+pop   cx
+
+ret
+
+continue_bounds_test_whole_AB:
+
+
+
+; if high 2 bits of dh arent present at all, and any bits of cx are present
+; then we can quit out quickly.
+
+
+test ah, 0C0h     ; ax AND 0xC000
+jne do_shift_and_full_compare_whole_AB
+test cx, cx
+jne do_full_divide_whole_AB  ; ax >> 14 is zero, cx is nonzero.
+
+
+do_shift_and_full_compare_whole_AB:
+
+; store backup dx:ax in ds:es
+mov es, ax
+
+
+rol ax, 1
+rol ax, 1
+
+and ax, 03h
+
+
+; 	if ((labs(a) >> 14) >= labs(b))
+
+
+
+cmp   ax, cx
+jg    do_quick_return_whole_AB                 ; greater
+jne   restore_reg_then_do_full_divide_whole_AB ; smaller
+mov    ax, es
+
+; shift right fourteen?
+shl ax, 1
+shl ax, 1
+and ax, 0FFFCh
+
+
+
+cmp   ax, bx                               ; low word vs 0 
+
+; if bx is zero we fall thru.
+; if not zero a was not greater, do full divide
+
+
+jb    restore_reg_then_do_full_divide_whole_AB
+
+
+do_quick_return_whole_AB: 
+; return (a^b) < 0 ? MINLONG : MAXLONG;
+
+
+
+
+test  dx, dx   ; just need to do the high word due to sign?
+jl    return_MAXLONG_whole_AB
+
+return_MINLONG_whole_AB:
+
+mov   ax, 0ffffh
+mov   dx, 07fffh
+
+exit_and_return_early_whole_AB:
+
+
+mov   sp, bp
+pop   bp
+pop   bx
+pop   cx
+
+ret
+
+return_MAXLONG_whole_AB:
+
+mov   dx, 08000h
+xor   ax, ax
+jmp   exit_and_return_early_whole_AB
+
+restore_reg_then_do_full_divide_whole_AB:
+
+; restore ax
+mov ax, es
+jmp do_full_divide_whole_AB
+
+endp
+
 
 END

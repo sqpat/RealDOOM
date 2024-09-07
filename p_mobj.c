@@ -912,14 +912,9 @@ void __near P_RemoveMobj (mobj_t __far* mobj)
 //
 // P_SpawnPuff
 //
-extern fixed_t attackrange;
+extern int16_t attackrange16;
 
-void
-__near P_SpawnPuff
-( fixed_t	x,
-  fixed_t	y,
-  fixed_t	z )
-{
+void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
 	mobj_t __far*	th;
 	THINKERREF thRef;
 	
@@ -934,7 +929,7 @@ __near P_SpawnPuff
 		th->tics = 1;
 	
     // don't make punches spark on the wall
-    if (attackrange == MELEERANGE * FRACUNIT)
+    if (attackrange16 == MELEERANGE)
 		P_SetMobjState (th, S_PUFF3);
 }
 
@@ -1075,16 +1070,16 @@ __near P_SpawnPlayerMissile
     // see which target is to be aimed at
     // todo use fixed_t_union
 	an = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-	slope = P_AimLineAttack (playerMobj, an, 16*64);
+	slope = P_AimLineAttack (playerMobj, an, HALFMISSILERANGE);
     
     if (!linetarget) {
 		// todo use fixed_t_union
 		an = MOD_FINE_ANGLE(an +(1<<(26- ANGLETOFINESHIFT)));
-		slope = P_AimLineAttack (playerMobj, an, 16*64);
+		slope = P_AimLineAttack (playerMobj, an, HALFMISSILERANGE);
 		if (!linetarget) {
 			// todo use fixed_t_union
 			an = MOD_FINE_ANGLE(an - (2<<(26-ANGLETOFINESHIFT)));
-			slope = P_AimLineAttack (playerMobj, an, 16*64);
+			slope = P_AimLineAttack (playerMobj, an, HALFMISSILERANGE);
 		}
 		if (!linetarget) {
 			an = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;

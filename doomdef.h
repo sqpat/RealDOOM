@@ -387,7 +387,8 @@ void copystr8(int8_t __far* dst, int8_t __far* src);
 // A or (and) B is a whole number (0 in the low 16 bits). should be optimizable?
 //#define	FixedDivWholeA(a,b) FixedDiv(a, b)
 #define	FixedDivWholeB(a,b) FixedDiv(a, b)
-#define	FixedDivWholeAB(a,b) FixedDiv(a, b)
+//#define	FixedDivWholeAB(a,b) FixedDiv(a, b)
+fixed_t32   FixedDivWholeAB(fixed_16_t a, fixed_16_t b);
 
 //fixed_t32	FixedDivinner (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);
 //fixed_t32	FixedDiv2 (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);

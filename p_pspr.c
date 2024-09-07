@@ -480,8 +480,8 @@ void __near A_Saw (  pspdef_t __near*	psp ){
 	angle = MOD_FINE_ANGLE(angle);
     
     // use meleerange + 1 se the puff doesn't skip the flash
-    slope = P_AimLineAttack (playerMobj, angle, MELEERANGE + CHAINSAW_FLAG);
-    P_LineAttack (playerMobj, angle, MELEERANGE + CHAINSAW_FLAG, slope, damage);
+    slope = P_AimLineAttack (playerMobj, angle, CHAINSAWRANGE);
+    P_LineAttack (playerMobj, angle, CHAINSAWRANGE, slope, damage);
 
     if (!linetarget) {
 		S_StartSoundFromRef(playerMobj, sfx_sawful);
@@ -558,16 +558,16 @@ void __near P_BulletSlope () {
     // see which target is to be aimed at
 	// todo use fixed_t_union to reduce shift
 	an = playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    bulletslope = P_AimLineAttack (playerMobj, an, 16*64);
+    bulletslope = P_AimLineAttack (playerMobj, an, HALFMISSILERANGE);
 
     if (!linetarget) {
-		// todo use fixed_t_union to reduce shift
+		// todo reduce shift
 		an =  MOD_FINE_ANGLE(an +(1<<(26-ANGLETOFINESHIFT)));
-		bulletslope = P_AimLineAttack (playerMobj, an, 16*64);
+		bulletslope = P_AimLineAttack (playerMobj, an, HALFMISSILERANGE);
 		if (!linetarget) {
-			// todo use fixed_t_union to reduce shift
+			// todo reduce shift
 			an = MOD_FINE_ANGLE(an- (2<<(26-ANGLETOFINESHIFT)));
-			bulletslope = P_AimLineAttack (playerMobj, an, 16*64);
+			bulletslope = P_AimLineAttack (playerMobj, an, HALFMISSILERANGE);
 		}
     }
 
@@ -746,7 +746,7 @@ void __near A_BFGSpray (mobj_t __far* mo, mobj_pos_t __far* mo_pos) {
 
 		// mo->target is the originator ()
 		//  of the missile
-		P_AimLineAttack (motarget, an, 16*64);
+		P_AimLineAttack (motarget, an, HALFMISSILERANGE);
 
 		if (!linetarget)
 			continue;
