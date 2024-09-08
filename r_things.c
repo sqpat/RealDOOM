@@ -431,10 +431,9 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     // thing is behind view plane?
     if (tz.h.intbits < MINZ_HIGHBITS) // (- sq: where does this come from)
         return;
-    
-    // todo: projection's low 16 bits are 0. optimize?
-    // same as centerx. do we need projection?
-    xscale.w = FixedDivWholeA(projection.h.intbits, tz.w);
+
+        
+    xscale.w = FixedDivWholeA(centerx, tz.w);
         
     gxt.w = -FixedMulTrig(FINE_SINE_ARGUMENT, viewangle_shiftright3 ,tr_x.w);
     gyt.w = FixedMulTrig(FINE_COSINE_ARGUMENT, viewangle_shiftright3 ,tr_y.w);

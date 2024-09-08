@@ -158,7 +158,6 @@ extern uint8_t		        fixedcolormap;
 extern int16_t			    centerx;
 extern int16_t			    centery;
 extern fixed_t_union		centeryfrac_shiftright4;
-extern fixed_t_union		projection;
 extern fixed_t_union		viewx;
 extern fixed_t_union		viewy;
 extern fixed_t_union		viewz;

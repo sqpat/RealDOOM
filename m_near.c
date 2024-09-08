@@ -246,7 +246,6 @@ int16_t			centerx;
 int16_t			centery;
 
 fixed_t_union			centeryfrac_shiftright4;
-fixed_t_union			projection;
 
 
 fixed_t_union			viewx;

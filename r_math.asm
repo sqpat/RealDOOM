@@ -25,7 +25,7 @@ EXTRN _tantoangle:DWORD
 EXTRN _viewx:DWORD
 EXTRN _viewy:DWORD
 EXTRN _viewangle_shiftright3:WORD
-EXTRN _projection:WORD
+EXTRN _centerx:WORD
 EXTRN _rw_distance:WORD
 EXTRN _rw_normalangle:WORD
 
@@ -157,6 +157,8 @@ test  ax, ax
 jne   inputs_not_zero   ; todo rearrange this. rare case
 test  bx, bx
 jne   inputs_not_zero   ; todo rearrange this. rare case
+
+
 return_0:
 
 xor   ax, ax
@@ -433,8 +435,8 @@ xchg  si, ax
 ;  di:si is den
 
 ; todo: low word is 0
-mov   bx, word ptr [_projection]
-mov   cx, word ptr [_projection+2]
+xor   bx, bx
+mov   cx, word ptr [_centerx]
 
 
 ;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;

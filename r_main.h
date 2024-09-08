@@ -38,7 +38,6 @@ extern int16_t		centerx;
 extern int16_t		centery;
 
 extern fixed_t_union		centeryfrac_shiftright4;
-extern fixed_t_union		projection;
 
 extern int16_t		validcount;
 
