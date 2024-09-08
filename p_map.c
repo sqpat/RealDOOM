@@ -143,6 +143,26 @@ int16_t __near R_PointOnSide ( fixed_t_union x, fixed_t_union y, int16_t nodenum
 	return a;
 }
 */
+
+fixed_t __near R_GetAttackRangeMult(int16_t range, fixed_t frac){
+
+	switch (range){
+		case MISSILERANGE:
+			// todo byte swaps
+			return frac << 11; 
+		case HALFMISSILERANGE:
+			// todo byte swaps
+			return frac << 10; 
+		case MELEERANGE:
+			// todo byte swaps
+			return frac << 6; 
+		case CHAINSAWRANGE:
+			// todo this can probably be a sum of two shifts.
+			return FixedMulBig1632 (CHAINSAWRANGE, frac);
+	}
+	return 0;  // shouldnt ever happen?
+}
+
 //
 // R_PointInSubsector
 //
@@ -1141,25 +1161,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 			return false;		// stop
 		}
 	
-
-		switch (attackrange16){
-			case MISSILERANGE:
-				// todo byte swaps
-				dist = in->frac << 11; 
-				break;
-			case HALFMISSILERANGE:
-				// todo byte swaps
-				dist = in->frac << 10; 
-				break;
-			case MELEERANGE:
-				// todo byte swaps
-				dist = in->frac << 6; 
-				break;
-			case CHAINSAWRANGE:
-				// todo this can probably be a sum of two shifts.
-				dist = FixedMulBig1632 (CHAINSAWRANGE, in->frac);
-				break;
-		}
+		dist = R_GetAttackRangeMult(attackrange16, in->frac);
 
 		temp.h.fracbits = 0;
 		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
@@ -1194,7 +1196,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 		return true;			// corpse or something
 	}
     // check angles to see if the thing can be aimed at
-	dist = FixedMulBig1632 (attackrange16, in->frac);
+	dist = R_GetAttackRangeMult(attackrange16, in->frac);
 
     thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
@@ -1261,7 +1263,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 		P_LineOpening(li->sidenum[1], li_physics->frontsecnum, li_physics->backsecnum);
 #endif
 
-		dist = FixedMulBig1632 (attackrange16, in->frac);
+		dist = R_GetAttackRangeMult(attackrange16, in->frac);
 
 		if (sectors[li_physics->frontsecnum].floorheight != sectors[li_physics->backsecnum].floorheight) {
  			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, lineopening.openbottom);
@@ -1286,12 +1288,31 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 		// position a bit closer
 			// todo this can be hardcoded. there are only 4 values for attackrange16.
 
-			frac = in->frac - FixedDivWholeAB2 (4, attackrange16); // todo can we use intbits and remove fracunit?
-			x = trace.x.w + FixedMul (trace.dx.w, frac);
-			y = trace.y.w + FixedMul (trace.dy.w, frac);
-			z = shootz.w  + FixedMul (aimslope, FixedMulBig1632(attackrange16, frac));
+			// 0x40000L / attackrange16 hardcoded
+
+			//frac = in->frac - FixedDivWholeAB2 (4, attackrange16); // todo can we use intbits and remove fracunit?
+
+			switch (attackrange16){
+				case MISSILERANGE:
+					frac = in->frac - 128;
+					break;
+					// todo are non missilerange cases possible?
+				case HALFMISSILERANGE:
+					frac = in->frac - 256;
+					break;
+				case MELEERANGE:
+					frac = in->frac - 4096;
+					break;
+				case MELEERANGE + 1:
+					frac = in->frac - 4095;
+					break;
+			}
 
 
+
+		x = trace.x.w + FixedMul (trace.dx.w, frac);
+		y = trace.y.w + FixedMul (trace.dy.w, frac);
+		z = shootz.w  + FixedMul (aimslope, R_GetAttackRangeMult(attackrange16, frac));
 
 			if (sectors[li_physics->frontsecnum].ceilingpic == skyflatnum) {
 				// don't shoot the sky!
@@ -1326,7 +1347,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 	}
 
     // check angles to see if the thing can be aimed at
-	dist = FixedMulBig1632 (attackrange16, in->frac);
+	dist = R_GetAttackRangeMult(attackrange16, in->frac);
     thingtopslope = FixedDiv (th_pos->z.w+th->height.w - shootz.w , dist);
 
 
@@ -1342,11 +1363,27 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
     
     // hit thing
     // position a bit closer
-    frac = in->frac - FixedDivWholeAB2 (10, attackrange16); // todo can we use intbits and remove fracunit?
+    //frac = in->frac - FixedDivWholeAB2 (10, attackrange16); // todo can we use intbits and remove fracunit?
+
+	switch (attackrange16){
+			case MISSILERANGE:
+			frac = in->frac - 320;
+			break;
+			case HALFMISSILERANGE:
+			frac = in->frac - 640;
+			break;
+			// todo are non missilerange cases possible?
+		case MELEERANGE:
+			frac = in->frac - 10240;
+			break;
+		case MELEERANGE + 1:
+			frac = in->frac - 10239;
+			break;
+	}
 
     x = trace.x.w + FixedMul (trace.dx.w, frac);
     y = trace.y.w + FixedMul (trace.dy.w, frac);
-    z = shootz.w + FixedMul (aimslope, FixedMulBig1632 (attackrange16, in->frac));
+    z = shootz.w + FixedMul (aimslope, R_GetAttackRangeMult(attackrange16, in->frac));
 
 
     // Spawn bullet puffs or blod spots,

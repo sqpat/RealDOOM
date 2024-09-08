@@ -2634,7 +2634,8 @@ ret
 
 endp
 
-
+; UNUSED
+COMMENT @
 
 PROC FixedDivWholeAB3_
 PUBLIC FixedDivWholeAB3_
@@ -2664,7 +2665,7 @@ PUBLIC FixedDivWholeAB2_
 
 ; AX:00:00 / DX:00  OR AX:00 / DX
 ; return in DX:AX
-
+; works as long as AX > DX. NOT EQUAL because we cheat to avoid to push/pop..
 
 
 xchg dx, ax
@@ -2988,5 +2989,5 @@ ret
 
 
 endp
-
+@
 END
