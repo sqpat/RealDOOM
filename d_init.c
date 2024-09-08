@@ -746,26 +746,29 @@ R_PointToAngle(y, x);
 	//			FixedDivWholeA(0xe100, 0x7D29), FixedDivWholeA(0xe100, 0x7D29));
 
 //0x7D29
-
+/*
 	// 240 57600 179
 	// - max but shouldnt be
 
-/*
-	for (i = 2; i < 255; i++){
+	int16_t i, j;
+	for (i = 2; i < 127; i++){
 		fixed_t_union ii;
-		ii.hu.intbits = i*i;
+		fixed_t_union jj;
+		jj.hu.fracbits = 0;
+		ii.hu.intbits = i;
 		ii.hu.fracbits = 0;
-		for (j = i*i; j < i*i*i; j++){
-			fixed_t_union jj;
-			jj.wu = j*j;
-			if (FixedDivWholeA(i * i	, jj.wu) != FixedDiv(ii.wu, jj.wu)){
+		for (j = i+1; j < 4096; j++){
+			jj.h.intbits = j;
+
+
+			if (FixedDivWholeAB2(i 	, j) != FixedDiv(ii.wu, jj.wu)){
 				I_Error("inequal %i %i %i %lx %lx %li %li %lx %lx",
 					 i,
-					 i*i, j, 
+					 0xff, j, 
 				ii.wu, jj.wu,
-				FixedDivWholeA(i*i, jj.wu),
+				FixedDivWholeAB2(i, j),
 				FixedDiv(ii.wu, jj.wu),
-				FixedDivWholeA(i*i, jj.wu),
+				FixedDivWholeAB2(i, j),
 				FixedDiv(ii.wu, jj.wu)
 				);
 			}

@@ -2636,6 +2636,51 @@ endp
 
 
 
+PROC FixedDivWholeAB3_
+PUBLIC FixedDivWholeAB3_
+
+; AX:00:00 / DX:00  OR AX:00 / DX
+; return in DX:AX
+
+; can we do dx:ax / ax and sub 1? avoids push/pop/moves to cx
+
+push cx
+
+mov  cx, dx
+xchg  dx, ax
+;xor  ax, ax 
+div  ax     ; dx has remainder ax has result
+
+xor dx, dx
+dec ax
+
+pop cx
+retf
+
+ENDP
+
+PROC FixedDivWholeAB2_
+PUBLIC FixedDivWholeAB2_
+
+; AX:00:00 / DX:00  OR AX:00 / DX
+; return in DX:AX
+
+
+
+xchg dx, ax
+div  ax
+dec  ax
+xor dx, dx
+
+retf
+
+ENDP
+
+
+; todo optimize. work around dx as the param,
+; handle optims related to bx 0
+
+
 PROC FixedDivWholeAB_
 PUBLIC FixedDivWholeAB_
 
@@ -2653,48 +2698,12 @@ mov   bp, sp
 mov   cx, dx
 xor   bx, bx
 
-mov   dx, ax  ; dx will store sign bit 
-xor   dx, cx  ; dx now stores signedness via test operator...
+
+; this is never called with params that trip labs 14 check. go directly to division
 
 
-
-; here we abs the numbers before unsigned division algo
-
-or    cx, cx
-jge   b_is_positive_whole_AB
-neg   bx
-adc   cx, 0
-neg   cx
-
-
-b_is_positive_whole_AB:
-
-or    ax, ax			; sign check
-jge   a_is_positive_whole_AB
-neg   ax
-
-a_is_positive_whole_AB:
-
-;  ax:00  is  labs(ax:00) now (unshifted)
-;  cx:bx  is  labs(cx:bx) now
-test cx, 0FFFCh
-
-
-je continue_bounds_test_whole_AB
-
-; main division algo
-
-do_full_divide_whole_AB:
-
-
-; set negative if need be...
-
-test  dx, dx
-jl do_negative_whole_AB
-
-
-
-call div48_32_whole_
+; todo inline
+call div48_32_wholeAB_
 
 
 mov   sp, bp
@@ -2703,114 +2712,281 @@ pop   bx
 pop   cx
 
 ret
-
-do_negative_whole_AB:
-
-
-
-call div48_32_whole_
-
-
-
-neg   ax
-adc   dx, 0
-neg   dx
-
-mov   sp, bp
-pop   bp
-pop   bx
-pop   cx
-
-ret
-
-continue_bounds_test_whole_AB:
-
-
-
-; if high 2 bits of dh arent present at all, and any bits of cx are present
-; then we can quit out quickly.
-
-
-test ah, 0C0h     ; ax AND 0xC000
-jne do_shift_and_full_compare_whole_AB
-test cx, cx
-jne do_full_divide_whole_AB  ; ax >> 14 is zero, cx is nonzero.
-
-
-do_shift_and_full_compare_whole_AB:
-
-; store backup dx:ax in ds:es
-mov es, ax
-
-
-rol ax, 1
-rol ax, 1
-
-and ax, 03h
-
-
-; 	if ((labs(a) >> 14) >= labs(b))
-
-
-
-cmp   ax, cx
-jg    do_quick_return_whole_AB                 ; greater
-jne   restore_reg_then_do_full_divide_whole_AB ; smaller
-mov    ax, es
-
-; shift right fourteen?
-shl ax, 1
-shl ax, 1
-and ax, 0FFFCh
-
-
-
-cmp   ax, bx                               ; low word vs 0 
-
-; if bx is zero we fall thru.
-; if not zero a was not greater, do full divide
-
-
-jb    restore_reg_then_do_full_divide_whole_AB
-
-
-do_quick_return_whole_AB: 
-; return (a^b) < 0 ? MINLONG : MAXLONG;
-
-
-
-
-test  dx, dx   ; just need to do the high word due to sign?
-jl    return_MAXLONG_whole_AB
-
-return_MINLONG_whole_AB:
-
-mov   ax, 0ffffh
-mov   dx, 07fffh
-
-exit_and_return_early_whole_AB:
-
-
-mov   sp, bp
-pop   bp
-pop   bx
-pop   cx
-
-ret
-
-return_MAXLONG_whole_AB:
-
-mov   dx, 08000h
-xor   ax, ax
-jmp   exit_and_return_early_whole_AB
-
-restore_reg_then_do_full_divide_whole_AB:
-
-; restore ax
-mov ax, es
-jmp do_full_divide_whole_AB
 
 endp
 
+
+
+
+
+
+jmp shift_bits_wholeAB
+
+;div48_32_wholeAB_
+; basically, shift numerator left 16 and divide
+; AX:00:00 / CX:00  (bx is 00)
+
+PROC div48_32_wholeAB_
+PUBLIC div48_32_wholeAB_
+
+; di:si get shifted cx:bx
+
+
+
+xor dx, dx
+
+
+push  di
+
+
+
+test ch, ch
+jne shift_bits_wholeAB
+; shift a wholeAB byte immediately
+
+mov ch, cl
+xor cl, cl
+
+mov  dh, dl
+mov dl, ah
+mov ah, al
+xor al, al
+
+shift_bits_wholeAB:
+
+
+
+; less than a byte to shift
+; shift until MSB is 1
+
+SAL CX, 1
+JC done_shifting_wholeAB
+SAL AX, 1
+RCL DX, 1
+
+SAL CX, 1
+JC done_shifting_wholeAB  
+SAL AX, 1
+RCL DX, 1
+
+SAL CX, 1
+JC done_shifting_wholeAB  
+SAL AX, 1
+RCL DX, 1
+
+SAL CX, 1
+JC done_shifting_wholeAB  
+SAL AX, 1
+RCL DX, 1
+
+SAL CX, 1
+JC done_shifting_wholeAB  
+SAL AX, 1
+RCL DX, 1
+
+SAL CX, 1
+JC done_shifting_wholeAB  
+SAL AX, 1
+RCL DX, 1
+
+SAL CX, 1
+JC done_shifting_wholeAB  
+SAL AX, 1
+RCL DX, 1
+
+SAL CX, 1
+
+
+
+
+
+
+; store this
+done_shifting_wholeAB:
+
+; we overshifted by one and caught it in the carry bit. lets shift back right one.
+
+RCR CX, 1
+
+ 
+
+
+
+; store these two long term...
+; todo i think cx can be filtered out...
+mov   di, cx
+mov   ds, ax                    ; store copy of numhi.low
+
+
+
+
+;	divresult.wu = DIV3216RESULTREMAINDER(numhi.wu, den1);
+; DX:AX = numhi.wu
+
+
+div   di
+
+; rhat = dx
+; qhat = ax
+;    c1 = FastMul16u16u(qhat , den0);
+
+mov   bx, dx					; bx stores rhat
+mov   es, ax     ; store qhat
+
+
+
+q1_ready_wholeAB:
+
+mov  ax, es
+;	rem.hu.intbits = numhi.hu.fracbits;
+;	rem.hu.fracbits = num1;
+;	rem.wu -= FastMul16u32u(q1, den.wu);
+
+
+mov   cx, ax
+
+; multiplying by DI:SI basically. inline SI in as BX.
+
+;inlined FastMul16u32u_
+
+MUL  DI        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+
+; mul si
+;xor  AX, AX
+;CWD
+
+MOV  DX, CX    ; add 
+
+; actual 2nd division...
+
+
+xor  ax, ax
+mov   cx, ds
+sbb   cx, dx
+mov   dx, cx
+
+cmp   dx, di
+
+; check for adjustment
+
+;    if (rem.hu.intbits < den1){
+
+jnb    adjust_for_overflow_wholeAB
+
+
+
+
+div   di
+
+mov   bx, ax
+mov   cx, dx
+
+; mul si
+xor ax, ax
+cwd
+
+cmp   dx, cx
+
+ja    continue_c1_c2_test_wholeAB
+je    continue_check_wholeAB
+
+do_return_2_wholeAB:
+mov   dx, es      ; retrieve q1
+mov   ax, bx
+
+mov   cx, ss      ; restore ds
+mov   ds, cx      
+pop   di
+ret  
+
+continue_check_wholeAB:
+cmp   ax, 0
+jbe   do_return_2_wholeAB
+continue_c1_c2_test_wholeAB:
+sbb   dx, cx
+cmp   dx, di
+ja    do_qhat_subtraction_by_2_wholeAB
+jne   do_qhat_subtraction_by_1_wholeAB
+cmp   ax, 0
+
+jbe   do_qhat_subtraction_by_1_wholeAB
+do_qhat_subtraction_by_2_wholeAB:
+dec   bx
+do_qhat_subtraction_by_1_wholeAB:
+dec   bx
+
+jmp do_return_2_wholeAB
+
+
+
+
+adjust_for_overflow_wholeAB:
+xor   dx, dx
+sub   ax, di
+sbb   cx, dx
+
+cmp   cx, di
+
+; check for overflow param
+
+jae   adjust_for_overflow_again_wholeAB
+
+mov   dx, cx
+
+
+
+div   di
+mov   bx, ax
+mov   cx, dx
+
+; mul si
+xor ax, ax
+cwd
+
+cmp   dx, cx
+ja    continue_c1_c2_test_2_wholeAB
+jne   dont_decrement_qhat_and_return_wholeAB
+cmp   ax, 0
+jbe   dont_decrement_qhat_and_return_wholeAB
+continue_c1_c2_test_2_wholeAB:
+
+sub   dx, cx
+cmp   dx, di
+ja    decrement_qhat_and_return_wholeAB
+jne   dont_decrement_qhat_and_return_wholeAB
+cmp   ax, 0
+jbe   dont_decrement_qhat_and_return_wholeAB
+decrement_qhat_and_return_wholeAB:
+dec   bx
+dont_decrement_qhat_and_return_wholeAB:
+mov   ax, bx
+mov   dx, es   ;retrieve q1
+mov   cx, ss
+mov   ds, cx
+pop   di
+ret  
+
+; the divide would have overflowed. subtract values
+adjust_for_overflow_again_wholeAB:
+
+sub   ax, di
+sbb   cx, dx
+mov   dx, cx
+div   di
+
+; ax has its result...
+
+mov   dx, es
+mov   cx, ss
+mov   ds, cx
+pop   di
+ret 
+
+
+
+
+
+endp
 
 END

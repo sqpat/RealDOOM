@@ -1156,6 +1156,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 				dist = in->frac << 6; 
 				break;
 			case CHAINSAWRANGE:
+				// todo this can probably be a sum of two shifts.
 				dist = FixedMulBig1632 (CHAINSAWRANGE, in->frac);
 				break;
 		}
@@ -1283,7 +1284,9 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 		// hit line
 		  hitline:
 		// position a bit closer
-			frac = in->frac - FixedDivWholeAB (4, attackrange16); // todo can we use intbits and remove fracunit?
+			// todo this can be hardcoded. there are only 4 values for attackrange16.
+
+			frac = in->frac - FixedDivWholeAB2 (4, attackrange16); // todo can we use intbits and remove fracunit?
 			x = trace.x.w + FixedMul (trace.dx.w, frac);
 			y = trace.y.w + FixedMul (trace.dy.w, frac);
 			z = shootz.w  + FixedMul (aimslope, FixedMulBig1632(attackrange16, frac));
@@ -1339,7 +1342,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
     
     // hit thing
     // position a bit closer
-    frac = in->frac - FixedDivWholeAB (10, attackrange16); // todo can we use intbits and remove fracunit?
+    frac = in->frac - FixedDivWholeAB2 (10, attackrange16); // todo can we use intbits and remove fracunit?
 
     x = trace.x.w + FixedMul (trace.dx.w, frac);
     y = trace.y.w + FixedMul (trace.dy.w, frac);

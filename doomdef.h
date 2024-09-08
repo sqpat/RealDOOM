@@ -389,6 +389,7 @@ void copystr8(int8_t __far* dst, int8_t __far* src);
 #define	FixedDivWholeB(a,b) FixedDiv(a, b)
 //#define	FixedDivWholeAB(a,b) FixedDiv(a, b)
 fixed_t32   FixedDivWholeAB(fixed_16_t a, fixed_16_t b);
+fixed_t32   FixedDivWholeAB2(fixed_16_t a, fixed_16_t b);
 
 //fixed_t32	FixedDivinner (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);
 //fixed_t32	FixedDiv2 (fixed_t32 a, fixed_t32 b, int8_t* file, int32_t line);
