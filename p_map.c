@@ -1286,11 +1286,10 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 		// hit line
 		  hitline:
 		// position a bit closer
-			// todo this can be hardcoded. there are only 4 values for attackrange16.
 
 			// 0x40000L / attackrange16 hardcoded
 
-			//frac = in->frac - FixedDivWholeAB2 (4, attackrange16); // todo can we use intbits and remove fracunit?
+			//frac = in->frac - FixedDivWholeAB2 (4, attackrange16); 
 
 			switch (attackrange16){
 				case MISSILERANGE:
@@ -1363,7 +1362,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
     
     // hit thing
     // position a bit closer
-    //frac = in->frac - FixedDivWholeAB2 (10, attackrange16); // todo can we use intbits and remove fracunit?
+    //frac = in->frac - FixedDivWholeAB2 (10, attackrange16);
 
 	switch (attackrange16){
 			case MISSILERANGE:
@@ -1417,12 +1416,30 @@ fixed_t __near P_AimLineAttack ( mobj_t __far*	t1, fineangle_t	angle,int16_t	dis
 	x = t1_pos->x;
 	y = t1_pos->y;
     
-	//todo re-enable? oh, but cosine and sine are 17 bit...
-    //x2.w = x.w + FixedMul1616(distance16,finecosine[angle]);
-    //y2.w = y.w + FixedMul1616(distance16,finesine[angle]);
 
-	x2.w = x.w + FixedMulBig1632(distance16,finecosine[angle]);
-	y2.w = y.w + FixedMulBig1632(distance16,finesine[angle]);
+	// todo: byte swaps for multiples of 8 and add
+	switch (distance16) {
+		case MISSILERANGE:			
+			x2.w = x.w + (finecosine[angle] << 11);
+			y2.w = y.w + (finesine[angle] << 11);
+			break;
+		case HALFMISSILERANGE:
+			x2.w = x.w + (finecosine[angle] << 10);
+			y2.w = y.w + (finesine[angle] << 10);
+			break;
+		case MELEERANGE:
+			x2.w = x.w + (finecosine[angle] << 6);
+			y2.w = y.w + (finesine[angle] << 6);
+			break;
+		case CHAINSAWRANGE:
+			x2.w = x.w + ((finecosine[angle] << 6) + finecosine[angle]);
+			y2.w = y.w + ((finesine[angle] << 6) + finesine[angle]);
+			break;
+    }
+
+
+
+
 
 	shootz.w = t1_pos->z.w;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);
@@ -1467,10 +1484,27 @@ void __near P_LineAttack (mobj_t __far* t1, fineangle_t	angle, int16_t	distance1
 	y = t1_pos->y;
 	shootthing = t1;
     la_damage = damage;
-    //x2.w = x.w + FixedMul1616(distance16,finecosine[angle]);
-    //y2.w = y.w + FixedMul1616(distance16,finesine[angle]);
-	x2.w = x.w + FixedMulBig1632(distance16,finecosine[angle]);
-	y2.w = y.w + FixedMulBig1632(distance16,finesine[angle]);
+
+	// todo: byte swaps for multiples of 8 and add
+	switch (distance16) {
+		case MISSILERANGE:			
+			x2.w = x.w + (finecosine[angle] << 11);
+			y2.w = y.w + (finesine[angle] << 11);
+			break;
+		case HALFMISSILERANGE:
+			x2.w = x.w + (finecosine[angle] << 10);
+			y2.w = y.w + (finesine[angle] << 10);
+			break;
+		case MELEERANGE:
+			x2.w = x.w + (finecosine[angle] << 6);
+			y2.w = y.w + (finesine[angle] << 6);
+			break;
+		case CHAINSAWRANGE:
+			x2.w = x.w + ((finecosine[angle] << 6) + finecosine[angle]);
+			y2.w = y.w + ((finesine[angle] << 6) + finesine[angle]);
+			break;
+    }
+
 
 	shootz.w = t1_pos->z.w;
 	shootz.h.intbits += ((t1->height.h.intbits >> 1) + 8);

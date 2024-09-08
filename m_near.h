@@ -165,8 +165,6 @@ extern fixed_t_union		viewz;
 extern short_height_t		viewz_shortheight;
 extern angle_t			    viewangle;
 extern fineangle_t			viewangle_shiftright3;
-extern fixed_t			    viewcos;
-extern fixed_t			    viewsin;
 extern int16_t_union		detailshift;	
 extern uint8_t				detailshiftitercount;
 extern uint8_t				detailshift2minus;

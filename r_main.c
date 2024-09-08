@@ -533,8 +533,8 @@ void R_SetupFrame () {
     viewz = player.viewz;
 	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
 
-    viewsin = finesine[viewangle_shiftright3];
-    viewcos = finecosine[viewangle_shiftright3];
+    //viewsin = finesine[viewangle_shiftright3];
+    //viewcos = finecosine[viewangle_shiftright3];
 	
     if (player.fixedcolormap) {
 		fixedcolormap =  player.fixedcolormap;

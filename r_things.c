@@ -423,8 +423,8 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     tr_x.w = thingx.w - viewx.w;
     tr_y.w = thingy.w - viewy.w;
         
-    gxt.w = FixedMulTrigOld(viewcos,tr_x.w);
-    gyt.w = -FixedMulTrigOld(viewsin,tr_y.w);
+    gxt.w = FixedMulTrig(FINE_COSINE_ARGUMENT, viewangle_shiftright3 ,tr_x.w);
+    gyt.w = -FixedMulTrig(FINE_SINE_ARGUMENT, viewangle_shiftright3 ,tr_y.w);
     
     tz.w = gxt.w-gyt.w; 
 
@@ -433,10 +433,11 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
         return;
     
     // todo: projection's low 16 bits are 0. optimize?
-    xscale.w = FixedDiv(projection.w, tz.w);
+    // same as centerx. do we need projection?
+    xscale.w = FixedDivWholeA(projection.h.intbits, tz.w);
         
-    gxt.w = -FixedMulTrigOld(viewsin,tr_x.w);
-    gyt.w = FixedMulTrigOld(viewcos,tr_y.w);
+    gxt.w = -FixedMulTrig(FINE_SINE_ARGUMENT, viewangle_shiftright3 ,tr_x.w);
+    gyt.w = FixedMulTrig(FINE_COSINE_ARGUMENT, viewangle_shiftright3 ,tr_y.w);
     tx.w = -(gyt.w+gxt.w); 
 
     // too far off the side?
@@ -514,7 +515,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     vis->x2 = x2 >= viewwidth ? viewwidth-1 : x2;       
     
 	// todo does a quick  inverse function exist? considering this is fixed point
-	iscale = FixedDiv (FRACUNIT, xscale.w);
+	iscale = FixedDivWholeA (1, xscale.w);
 
     if (flip) {
         temp.h.fracbits = 0;

@@ -810,7 +810,7 @@ void __near R_RenderOneSeg ()
 // while normal fixed_t is int32_t, and you have to make sure you use angles and fixed_t in the
 // correct spots or you end up doing things like comparisons between uint32_t and int32_t.
 void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
-    fixed_t		hyp;
+    fixed_t		hyp = 0;
     fineangle_t	distangle = 0;
 	fineangle_t offsetangle;
     int16_t			lightnum;
@@ -866,10 +866,10 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 
 
-	hyp = R_PointToDist (curlinev1.x, curlinev1.y);
 	offsetangle = abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
 
     if (offsetangle < FINE_ANG90){
+		hyp = R_PointToDist (curlinev1.x, curlinev1.y);
 	    distangle = FINE_ANG90 - offsetangle;
 	    rw_distance = FixedMulTrig(FINE_SINE_ARGUMENT, distangle, hyp);
 	} else {
@@ -1096,6 +1096,10 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 		if (offsetangle > FINE_ANG180) {
 			offsetangle = MOD_FINE_ANGLE(-offsetangle);
+		}
+
+		if (!hyp){
+			hyp = R_PointToDist (curlinev1.x, curlinev1.y);
 		}
 
 		if (offsetangle > FINE_ANG90) {
