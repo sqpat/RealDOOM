@@ -422,7 +422,8 @@ ret
 ENDP
 
 
-
+; unused
+COMMENT @
 
 
 PROC FixedMulTrigOld_
@@ -521,7 +522,7 @@ ret
 
 ENDP
 
-
+@ 
 
 PROC FixedMulTrig_
 PUBLIC FixedMulTrig_
@@ -634,8 +635,77 @@ ret
 ENDP
 
 
+; UNUSED
+ COMMENT @
+
+PROC FixedMulTrig16_
+PUBLIC FixedMulTrig16_
+
+; DX:AX  *  CX:00
+;  0  1   2  
+
+; DX:AX * CX:00
+; The difference between FixedMulTrig and FixedMul1632:
+; fine sine/cosine lookup tables are -65535 to 65535, so 17 bits. 
+; technically, this resembles 16 * 32 with sign extend, except we cannot use CWD to generate the high 16 bits.
+; So those sign bits which contain bit 17, sign extended must be stored somewhere cannot be regenerated via CWD
+; we basically take the above function and shove sign bits in DS for storage and regenerate DS from SS upon return
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE USE     USE    DONTUSE
 
 
+;                               AXBXhi	 AXBXlo
+;                       DXBXhi  DXBXlo          
+;               S0BXhi  S0BXlo                          
+;
+;                       AXCXhi  AXCXlo
+;               DXCXhi  DXCXlo  
+;                       
+;               AXS1hi  AXS1lo
+;                               
+;                       
+;       
+
+; AX is param 1 (segment)
+; DX is param 2 (fineangle or lookup)
+; CX:00 is value 2
+
+; DX:AX * CX
+
+; BX is used by this function and not preserved! fine in our use case.
+
+
+; lookup the fine angle
+
+SAL dx, 1
+SAL dx, 1   ; DWORD lookup index
+MOV BX, dx
+MOV es, ax  ; put segment in ES
+MOV ax, es:[BX]
+MOV dx, es:[BX+2]
+
+
+
+AND  DX, CX    ; DX*CX
+NEG  DX
+MOV  BX, DX    ; store high result
+
+
+MUL  CX       ; AX*CX
+ADD  DX, BX   
+ 
+
+ret
+
+
+
+ENDP
+
+@
 
 PROC FixedMulBig1632_
 PUBLIC FixedMulBig1632_

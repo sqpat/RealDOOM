@@ -282,6 +282,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     // note: bottom 16 bits of centeryfrac are 0. optimizable?
     sprtopscreen.h.intbits = centery;
     sprtopscreen.h.fracbits = 0;
+    // todo: maybe do a check for spryscale fracbits = 0; common case.
     sprtopscreen.w -= FixedMul(dc_texturemid.w,spryscale.w);
          
     if (vis->patch == lastvisspritepatch){

@@ -31,6 +31,7 @@ EXTRN _rw_normalangle:WORD
 
 EXTRN FastDiv3232_shift_3_8_:PROC
 EXTRN FixedMulTrig_:PROC
+;EXTRN FixedMulTrig16_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
@@ -424,24 +425,40 @@ mov   si, ax
 mov   bx, word ptr [_rw_distance]
 mov   cx, word ptr [_rw_distance+2]
 
+; todo is rw_distance = 0 a common case...?
+
 ;    den = FixedMulTrig(FINE_SINE_ARGUMENT, anglea, rw_distance);
  
 call FixedMulTrig_
 
-xchg  dx, di
-xchg  si, ax
+
+;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
+ 
+;call FixedMulTrig16_
+; inlined  16 bit times sine value
+
+mov es, si
+sal di, 1
+sal di, 1
+mov si, word ptr es:[di]
+mov di, word ptr es:[di+2]
+xchg dx, di
+xchg ax, si
+
 ;  dx now has anglea
 ;  ax has finesine_segment
 ;  di:si is den
 
-; todo: low word is 0
-xor   bx, bx
 mov   cx, word ptr [_centerx]
 
 
-;    num.w = FixedMulTrig(FINE_SINE_ARGUMENT, angleb, projection.w)<<detailshift.b.bytelow;
- 
-call FixedMulTrig_
+AND  DX, CX    ; DX*CX
+NEG  DX
+MOV  BX, DX    ; store high result
+
+MUL  CX       ; AX*CX
+ADD  DX, BX   
+
 
 ; di:si had den
 ; dx:ax has num

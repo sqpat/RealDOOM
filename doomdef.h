@@ -271,7 +271,8 @@ typedef uint16_t fineangle_t;
 
 
 fixed_t32	FixedMulTrig(uint16_t trigtype, fineangle_t fineangle, fixed_t32 b);
-fixed_t32	FixedMulTrigOld(fixed_t32 a, fixed_t32 b);
+//fixed_t32	FixedMulTrig16(uint16_t trigtype, fineangle_t fineangle, int16_t b);
+//fixed_t32	FixedMulTrigOld(fixed_t32 a, fixed_t32 b);
 fixed_t32	FixedMul1632(int16_t a, fixed_t32 b);
 fixed_t32	FixedMulBig1632(int16_t a, fixed_t b);
 fixed_t32	FixedMul (fixed_t32 a, fixed_t32 b);

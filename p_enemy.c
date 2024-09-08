@@ -1283,7 +1283,10 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     }
 	actorspeed = MAKESPEED(mobjinfo[actor->type].speed);
     fineexact = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    actor->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, fineexact, actorspeed);
+    
+	//todo if 16 bit, do 16 bit mul... speed seems to usually be 16 bits or 32 bits with low word of 0.
+	
+	actor->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, fineexact, actorspeed);
 	actor->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, fineexact, actorspeed);
 	
 	dest = (mobj_t __far*)(&thinkerlist[actor->tracerRef].data);
@@ -1756,11 +1759,7 @@ void __near A_SkullAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 // A_PainShootSkull
 // Spawn a lost soul and launch it at the target
 //
-void
-__near A_PainShootSkull
-(mobj_t __far* actor,
-  angle_t	angle )
-{
+void __near A_PainShootSkull (mobj_t __far* actor, angle_t	angle ) {
     fixed_t	x;
     fixed_t	y;
     fixed_t_union	z;

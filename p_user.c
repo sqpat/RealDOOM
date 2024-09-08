@@ -54,7 +54,9 @@ P_Thrust
   fineangle_t	angle,
   fixed_t	move )  {
 
-	move *= 2048L;
+	// todo
+	move <<= 11;
+	//move *= 2048L;
 	playerMobj->momx.w += FixedMulTrig(FINE_COSINE_ARGUMENT, angle, move);
 	playerMobj->momy.w += FixedMulTrig(FINE_SINE_ARGUMENT, angle, move);
 }
@@ -100,6 +102,7 @@ void P_CalcHeight ()
     }
 		
     angle = (FINEANGLES/20*leveltime.w)&FINEMASK;
+	// check for MAX_BOB case?
     bob = FixedMul (player.bob.w/2, finesine[angle]);
 
     
