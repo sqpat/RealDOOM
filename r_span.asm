@@ -994,9 +994,8 @@ index_set:
 ;		ds_colormap_segment = colormapssegment;
 ;		ds_colormap_index = planezlight[index];
 
-mov   bx, word ptr [_planezlight]
+les    bx, dword ptr [_planezlight]
 xor   ah, ah
-mov   es, word ptr [_planezlight+2]
 add   bx, ax
 mov   al, byte ptr es:[bx]
 colormap_ready:

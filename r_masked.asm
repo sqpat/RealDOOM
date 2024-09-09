@@ -155,9 +155,7 @@ mov   ds, cx
 
 neg ax
 sbb dx, 0FFFFh
-;mov [_dc_yh], dx
-;neg ax
-;adc dx, 0FFFFh
+
 
 ; dx is dc_yh but needs to be written back 
 
@@ -168,10 +166,10 @@ sbb dx, 0FFFFh
 ;        if (dc_yh >= mfloorclip[dc_x])
 ;            dc_yh = mfloorclip[dc_x]-1;
 
+
 mov   bx, word ptr [_dc_x]
-mov   ax, word ptr [_mfloorclip]
-add   bx, bx
-mov   es, word ptr [_mfloorclip+2]
+sal   bx, 1
+les   ax, dword ptr [_mfloorclip]
 add   bx, ax
 
 mov   cx, word ptr es:[bx]
@@ -183,15 +181,13 @@ skip_floor_clip_set:
 mov   word ptr [_dc_yh], dx
 
 
-
 ;        if (dc_yl <= mceilingclip[dc_x])
 ;            dc_yl = mceilingclip[dc_x]+1;
 
-
 sub   bx, ax
+les   ax, dword ptr [_mceilingclip]   
+add   bx, ax
 
-mov   es, word ptr [_mceilingclip+2]
-add   bx, word ptr [_mceilingclip]
 mov   ax, word ptr [_dc_yl]
 mov   cx, word ptr es:[bx]
 cmp   ax, cx
@@ -203,16 +199,16 @@ skip_ceil_clip_set:
 
 cmp   ax, word ptr [_dc_yh]
 jg    increment_column_and_continue_loop
-mov   ax, di
+mov   bx, di
 
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-shr   ax, 1
-add   ax, word ptr [bp - 4]
-mov   word ptr [_dc_source_segment], ax
+shr   bx, 1
+shr   bx, 1
+shr   bx, 1
+shr   bx, 1
 mov   dx, word ptr [bp - 6]
-mov   es, word ptr [bp - 2]
+les   ax, dword ptr [bp - 4]
+add   ax, bx
+mov   word ptr [_dc_source_segment], ax
 mov   al, byte ptr es:[si]
 xor   ah, ah
 sub   dx, ax
@@ -333,13 +329,14 @@ skip_inc_dc_yl:
 ;        if (dc_yh >= mfloorclip[dc_x])
 ;            dc_yh = mfloorclip[dc_x]-1;
 
-mov   bx, word ptr [_dc_x]
-mov   ax, word ptr [_mfloorclip]
-add   bx, bx
-mov   es, word ptr [_mfloorclip+2]
-add   bx, ax
 
+
+mov   bx, word ptr [_dc_x]
+sal   bx, 1
+les   ax, dword ptr [_mfloorclip]
+add   bx, ax
 mov   cx, word ptr es:[bx]
+
 cmp   dx, cx
 jl    skip_floor_clip_set_single	; todo consider making this jump out and back? whats the better default branch
 mov   dx, cx
@@ -354,8 +351,8 @@ skip_floor_clip_set_single:
 
 sub   bx, ax
 
-mov   es, word ptr [_mceilingclip+2]
-add   bx, word ptr [_mceilingclip]
+les   ax, dword ptr [_mceilingclip]   
+add   bx, ax
 
 mov   cx, word ptr es:[bx]
 cmp   si, cx
