@@ -635,8 +635,7 @@ ret
 ENDP
 
 
-; UNUSED
- COMMENT @
+
 
 PROC FixedMulTrig16_
 PUBLIC FixedMulTrig16_
@@ -705,7 +704,39 @@ ret
 
 ENDP
 
-@
+
+; takes in 8 bit speed param, makes it "32 bit" if 0x80 flag is on
+; then calls appropriate fixedmultrig func
+
+; bl holds speed
+; allowed to modify ax bx cx dx
+; todo: optimize, inline due to being 8 bit values
+
+PROC FixedMulTrigSpeed_
+PUBLIC FixedMulTrigSpeed_
+
+test bx, 080h  ; check 32 bit flag
+jnz fulltrig   ; 32 bit
+
+
+
+; speed is just bx
+mov  cx, bx
+xor  ch, ch
+call FixedMulTrig16_  ; doesn't preserve cx, so lets do it here
+ret
+
+fulltrig:
+
+; speed is cx:bx 
+and bx, 07Fh  ; drop the 32 bit flag
+mov cx, bx
+xor bx, bx
+call FixedMulTrig_
+ret
+
+ENDP
+
 
 PROC FixedMulBig1632_
 PUBLIC FixedMulBig1632_
@@ -1980,7 +2011,7 @@ mov dx, cx   ; q1:q0 is dx:ax
 retf 
 
 
-; NOTE: this may not work write for negative params or DX:AX  besides 0xFFFFFFFF
+; NOTE: this may not work right for negative params or DX:AX  besides 0xFFFFFFFF
 
 ;FastDiv3232_
 ; DX:AX / CX:BX

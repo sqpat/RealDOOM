@@ -1000,7 +1000,7 @@ THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source
     fixed_t	dist;
 	fixed_t destz;
 	fixed_t momz;
-	int32_t thspeed;
+	fixed_t thspeed;
 	uint16_t temp;
 	mobj_pos_t __far*	dest_pos = GET_MOBJPOS_FROM_MOBJ(dest);
 	THINKERREF thRef = P_SpawnMobj (source_pos->x.w, source_pos->y.w, source_pos->z.w + 4*8*FRACUNIT, type, source->secnum);
@@ -1027,6 +1027,8 @@ THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source
 	dist = P_AproxDistance(dest_pos->x.w - source_pos->x.w, dest_pos->y.w - source_pos->y.w);
 	dist = dist / thspeed;
 	momz = (destz - source_pos->z.w) / dist;
+    //dist = FastDiv3232(dist, thspeed);
+	//momz = FastDiv3232((destz - source_pos->z.w), dist);
 
 	if (dist < 1)
 		dist = 1;
@@ -1034,8 +1036,8 @@ THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source
 
 	th_pos->angle = an;
     an.hu.intbits >>= SHORTTOFINESHIFT;
-    th->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an.hu.intbits, thspeed);
-    th->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an.hu.intbits, thspeed);
+    th->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an.hu.intbits, mobjinfo[type].speed);
+    th->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an.hu.intbits, mobjinfo[type].speed);
 	th->momz.w = momz;
 
 
@@ -1104,8 +1106,8 @@ __near P_SpawnPlayerMissile
 
 	speed = MAKESPEED(mobjinfo[type].speed);
 
-    th->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an,  speed);
-    th->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an,  speed);
+    th->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an,  mobjinfo[type].speed);
+    th->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an,  mobjinfo[type].speed);
     th->momz.w = FixedMul( speed, slope);
 
     P_CheckMissileSpawn (th, th_pos);

@@ -1286,8 +1286,8 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     
 	//todo if 16 bit, do 16 bit mul... speed seems to usually be 16 bits or 32 bits with low word of 0.
 	
-	actor->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, fineexact, actorspeed);
-	actor->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, fineexact, actorspeed);
+	actor->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, fineexact, mobjinfo[actor->type].speed);
+	actor->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, fineexact, mobjinfo[actor->type].speed);
 	
 	dest = (mobj_t __far*)(&thinkerlist[actor->tracerRef].data);
 	dest_pos = &mobjposlist[actor->tracerRef];
@@ -1298,8 +1298,9 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 			    dest_pos->y.w - actor_pos->y.w);
     
 
-
     dist = dist / actorspeed;
+	
+    //dist = FastDiv3232(dist, actorspeed;
 
 	if (dist < 1) {
 		dist = 1;
@@ -1654,8 +1655,8 @@ void __near A_FatAttack1 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 	mo_pos = &mobjposlist[moRef];
 	mo_pos->angle.wu += FATSPREAD;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, MAKESPEED(mobjinfo[mo->type].speed));
-    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, MAKESPEED(mobjinfo[mo->type].speed));
+    mo->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an, (mobjinfo[mo->type].speed));
+    mo->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an, (mobjinfo[mo->type].speed));
 }
 
 void __near A_FatAttack2 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
@@ -1677,8 +1678,8 @@ void __near A_FatAttack2 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 	mo_pos = setStateReturn_pos;
 	mo_pos->angle.wu -= FATSPREAD*2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, MAKESPEED(mobjinfo[mo->type].speed));
-    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, MAKESPEED(mobjinfo[mo->type].speed));
+    mo->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an, (mobjinfo[mo->type].speed));
+    mo->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an, (mobjinfo[mo->type].speed));
 }
 
 void __near A_FatAttack3 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
@@ -1687,7 +1688,6 @@ void __near A_FatAttack3 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
     fineangle_t		an;
 	THINKERREF moRef;
 	THINKERREF actortargetRef;
-	fixed_t mospeed;
 	mobj_pos_t __far*	mo_pos;
 	A_FaceTarget(actor);
 	actortargetRef = actor->targetRef;
@@ -1697,19 +1697,18 @@ void __near A_FatAttack3 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 	mo_pos = setStateReturn_pos;
 
 	// todo hardcode this value, it's static..
-	mospeed = MAKESPEED(mobjinfo[mo->type].speed);
 	mo_pos->angle.wu -= FATSPREAD/2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, mospeed);
-    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, mospeed);
+    mo->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an, mobjinfo[mo->type].speed);
+    mo->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an, mobjinfo[mo->type].speed);
 
 	moRef = P_SpawnMissile (actor, actor_pos, (&thinkerlist[actortargetRef].data), MT_FATSHOT);
 	mo = setStateReturn;
 	mo_pos = setStateReturn_pos;
 	mo_pos->angle.wu += FATSPREAD/2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, mospeed);
-    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, mospeed);
+    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, mobjinfo[mo->type].speed);
+    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, mobjinfo[mo->type].speed);
 }
 
 
