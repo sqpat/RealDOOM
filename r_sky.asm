@@ -41,8 +41,7 @@ PROC  R_DrawSkyColumn_
 PUBLIC  R_DrawSkyColumn_
     ; ax contains dc_yh...
     ; dx contails dc_yl...  
-    ; di contains dc_x
-    ; cx contains _dc_source_segment
+    ; bx contains dc_x (don't modify)
     ; NOTE ah may be garbage but dh is 0
 
     mov   si, dx     ; copy dc_yl for later
@@ -75,17 +74,43 @@ PUBLIC  R_DrawSkyColumn_
     mov   ax, DC_YL_LOOKUP_SEGMENT             ; get segment for mul 80
     mov   es, ax                                 ; 
     sal   si, 1                                 ; dc_yl mul 80 word lookup pointer
-    add   di, word ptr es:[si]                  ; quick mul 80
+    mov   ax, word ptr es:[si]                  ; quick mul 80
     sar   si, 1                                 ; si back to dc_yl
 
-    add   di, word ptr [_destview + 0] 		 ; add destview offset, dest index set up
+
+    ; draw this sky column. let's generate the sky column segment.
+    ;  				segment_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
+    mov   cx, XTOVIEWANGLE_SEGMENT
+    mov   es, cx
+    mov   dx, word ptr [_viewangle_shiftright3]
+    mov   di, bx    ; grab dc_x
+    sal   di, 1
+    add   dx, word ptr es:[di]
+
+    ; 	dc_source_segment = skytexture_texture_segment + texture_x;
+
+    
+    mov cl, byte ptr [_detailshift2minus]
+    inc cl  ; plus 1 to account for sal di 1 above..
+    shr di, cl  ; preshift dc_x by detailshift. Plus one for the earlier word offset shift.
+
+    ; move operations beyond the shr to keep prefetch busy...
+
+    and   dx, 07F8h
+    add   dx, SKYTEXTURE_TEXTURE_SEGMENT
+    ; dx contains dc source segment for the function
+
+    add di, ax
+    les ax, dword ptr [_destview]
+    add di, ax
+
+
 
    ;  prep our loop variables
 
-   mov     es, word ptr [_destview + 2]    ; ready the viewscreen segment
-   mov     ds, cx                          ; cx contained dc_source_segment
+   mov     ds, dx                          ; cx contained dc_source_segment
    mov     ax, 004Fh
-   
+   cwd     ; zero out dx 
    ; should be able to easily do a lookup into here with available registers (ax, dx, bx)
 
 jump_location:
@@ -224,33 +249,11 @@ ja    skip_column_draw
 
 push si     ; we need scratch space here. push this now instead of in r_drawskycolumn
 
-; draw this sky column. let's generate the sky column segment.
-;  				segment_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
-mov   cx, XTOVIEWANGLE_SEGMENT
-mov   es, cx
-mov   si, word ptr [_viewangle_shiftright3]
-mov   di, bx
-sal   di, 1
-add   si, word ptr es:[di]
-
-; 	dc_source_segment = skytexture_texture_segment + texture_x;
-
-and   si, 07F8h
-add   si, SKYTEXTURE_TEXTURE_SEGMENT
-; si contains dc source segment for the function
-
-mov cl, byte ptr [_detailshift2minus]
-inc cl
-shr di, cl  ; preshift dc_x by detailshift. Plus one for the earlier word offset shift.
-
-mov cx, si  ; retrieve cx
-
 
 ; function expects 
   ; ax = dc_yh
   ; dx = dc_yl,
-  ; di = dc_x
-  ; cx = dc_source_segment
+  ; bx = dc_x (don't modify)
 call  R_DrawSkyColumn_
 
 pop si  ; retrieve si
