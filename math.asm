@@ -715,24 +715,67 @@ ENDP
 PROC FixedMulTrigSpeed_
 PUBLIC FixedMulTrigSpeed_
 
-test bx, 080h  ; check 32 bit flag
+SAL dx, 1
+SAL dx, 1   ; DWORD lookup index
+mov es, ax  ; put segment in ES
+mov cx, bx
+MOV BX, dx
+MOV ax, es:[BX]
+MOV dx, es:[BX+2]
+
+; DX:AX is loaded, cl holds speed, bx is dirty
+
+test cx, 080h  ; check 32 bit flag
 jnz fulltrig   ; 32 bit
 
-
-
 ; speed is just bx
-mov  cx, bx
 xor  ch, ch
-call FixedMulTrig16_  ; doesn't preserve cx, so lets do it here
+
+AND  DX, CX    ; DX*CX
+NEG  DX
+MOV  BX, DX    ; store high result
+MUL  CX       ; AX*CX
+ADD  DX, BX   
+
+
 ret
 
 fulltrig:
 
 ; speed is cx:bx 
-and bx, 07Fh  ; drop the 32 bit flag
-mov cx, bx
-xor bx, bx
-call FixedMulTrig_
+and cx, 07Fh  ; drop the 32 bit flag
+
+; lookup the fine angle
+
+
+mov   es, ax    ; store ax in es
+mov   BX, DX    ; store sign bits in DS
+
+AND  DX, CX    ; DX*CX
+NEG  DX
+
+xchg   DX, BX    ; restore sign bits from DS
+
+; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
+; UNLESS BX is 0. then its also 0!
+
+; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
+
+
+mov  AX, CX   ; AX holds CX
+
+CWD           ; S1 in DX
+
+mov  CX, ES   ; AX from ES
+AND  DX, CX   ; S1*AX
+NEG  DX
+ADD  BX, DX   ; result into high word return
+
+MUL  CX       ; AX*CX
+
+ADD  DX, BX
+ 
+
 ret
 
 ENDP
