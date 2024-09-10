@@ -379,6 +379,9 @@ void __near P_ExplodeMissile(mobj_t __far* mo, mobj_pos_t __far* mo_pos){
 #define STOPSPEED		0x1000
 #define FRICTION		0xe800
 
+// todo make near?
+fixed_t  FastMulFriction (fixed_t num);
+
 void __near P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 { 	
     fixed_t_union 	ptryx;
@@ -519,7 +522,11 @@ void __near P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 
 		mo->momx.w = FixedMul16u32 (FRICTION, momomx.w);
 		mo->momy.w = FixedMul16u32 (FRICTION, momomy.w);
-		 
+
+		// todo revisit. has rounding errors
+		//mo->momx.w = FastMulFriction ( momomx.w);
+		//mo->momy.w = FastMulFriction ( momomy.w);
+
 	}
 
 }

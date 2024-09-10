@@ -705,6 +705,55 @@ ret
 ENDP
 
 
+COMMENT @
+
+PROC FastMulFriction_
+PUBLIC FastMulFriction_
+
+; hardcoded multiply by E800:0000 
+; this is equivalent to multiply by 13/16 so i tried to subtract 1/16th 3 times via shift
+; however the rounding errors make this not work. could not deterministically
+; figure out rounding errors either. but maybe its possible
+
+; Param is DX:AX
+
+push cx
+push bx
+
+mov cx, dx
+mov bx, ax
+sar cx, 1
+rcr bx, 1
+sar cx, 1
+rcr bx, 1
+sar cx, 1
+rcr bx, 1
+sar cx, 1
+rcr bx, 1
+ 
+; shift right to get cx:bx = dx:ax >> 5
+
+; subtract three times (dx:ax >> 5)
+sub ax, bx
+sbb dx, cx
+
+sar cx, 1
+rcr bx, 1
+
+sub ax, bx
+sbb dx, cx
+
+
+pop bx
+pop cx
+ 
+ret
+ENDP
+
+@
+
+
+; todo: hardcode 10, 15, 20, 25 versions on switch case
 ; takes in 8 bit speed param, which is always a missile 
 ; then does a multiply to get the expected result.
 ; avoids needless back and forth 16 bit shift
