@@ -705,12 +705,14 @@ ret
 ENDP
 
 
-; takes in 8 bit speed param, makes it "32 bit" if 0x80 flag is on
-; then calls appropriate fixedmultrig func
+; takes in 8 bit speed param, which is always a missile 
+; then does a multiply to get the expected result.
+; avoids needless back and forth 16 bit shift
 
 ; bl holds speed
 ; allowed to modify ax bx cx dx
-; todo: optimize, inline due to being 8 bit values
+
+; equivalent to an unsigned mult even though it is signed.
 
 PROC FixedMulTrigSpeed_
 PUBLIC FixedMulTrigSpeed_
@@ -718,63 +720,24 @@ PUBLIC FixedMulTrigSpeed_
 SAL dx, 1
 SAL dx, 1   ; DWORD lookup index
 mov es, ax  ; put segment in ES
-mov cx, bx
-MOV BX, dx
-MOV ax, es:[BX]
-MOV dx, es:[BX+2]
+xchg dx, bx
 
-; DX:AX is loaded, cl holds speed, bx is dirty
+MOV cx, es:[BX]
+MOV ax, es:[BX+2]
 
-test cx, 080h  ; check 32 bit flag
-jnz fulltrig   ; 32 bit
-
-; speed is just bx
-xor  ch, ch
-
-AND  DX, CX    ; DX*CX
-NEG  DX
-MOV  BX, DX    ; store high result
-MUL  CX       ; AX*CX
-ADD  DX, BX   
+; speed is dx, mul by ax:Cx 
+and dx, 07Fh  ; drop the 32 bit flag
 
 
-ret
+mov  BX, DX    ; dupe DX
 
-fulltrig:
+MUL  DX        ; high mul
 
-; speed is cx:bx 
-and cx, 07Fh  ; drop the 32 bit flag
+XCHG BX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  CX        ; low mul
+ADD  DX, BX    ; add 
 
-; lookup the fine angle
-
-
-mov   es, ax    ; store ax in es
-mov   BX, DX    ; store sign bits in DS
-
-AND  DX, CX    ; DX*CX
-NEG  DX
-
-xchg   DX, BX    ; restore sign bits from DS
-
-; NEED TO ALSO EXTEND SIGN MULTIPLY TO HIGH WORD. if sign is FFFF then result is BX - 1. Otherwise 0.
-; UNLESS BX is 0. then its also 0!
-
-; the algorithm for high sign bit mult:   IF FFFF result is (BX - 1). If 0000 then 0.
-
-
-mov  AX, CX   ; AX holds CX
-
-CWD           ; S1 in DX
-
-mov  CX, ES   ; AX from ES
-AND  DX, CX   ; S1*AX
-NEG  DX
-ADD  BX, DX   ; result into high word return
-
-MUL  CX       ; AX*CX
-
-ADD  DX, BX
- 
+; ax * cx:bx
 
 ret
 
