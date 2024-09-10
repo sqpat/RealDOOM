@@ -209,8 +209,6 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_0_out_of_bounds
 
-;mov   bx, word ptr [_tantoangle]
-;mov   es, word ptr [_tantoangle+2]
 les   bx, dword ptr [_tantoangle]
 shl   ax, 1
 shl   ax, 1

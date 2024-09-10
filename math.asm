@@ -705,6 +705,77 @@ ret
 ENDP
 
 
+
+PROC FastMulTrig16_
+PUBLIC FastMulTrig16_
+
+; DX:AX  *  BX:00
+;  0  1   2  
+
+; DX:AX * BX
+; (dont shift answer 16)
+;
+; 
+;BYTE
+; RETURN VALUE
+;                3       2       1		0
+;                DONTUSE DONTUSE USE    USE
+
+
+;                               AXBXhi	 AXBXlo
+;                       DXBXhi  DXBXlo          
+;               S0BXhi  S0BXlo                          
+;
+;               AXS1hi  AXS1lo
+;                               
+;                       
+;       
+
+; AX is param 1 (segment)
+; DX is param 2 (fineangle or lookup)
+; BX is value 2
+
+; DX:AX * BX
+
+; BX is used by this function and not preserved! fine in our use case.
+; lookup the fine angle
+
+; do lookup..
+
+SAL dx, 1
+SAL dx, 1   ; DWORD lookup index
+xchg BX, dx
+
+MOV es, ax  ; put segment in ES
+MOV ax, es:[BX]
+MOV bx, es:[BX+2]
+
+xchg bx, dx
+
+; DX:AX is trig val, 
+
+; begin multiply...
+
+mov  es, ax ; store ax copy
+mov  ax, dx
+mul  bx      ; DX * BX
+
+; this can be and/neg 
+
+mov  dx, es
+mov  es, ax
+mov  ax, dx
+
+mul  bx      ; AX * BX
+
+mov  bx, es
+add  ax, bx
+
+ret
+
+
+ENDP
+
 COMMENT @
 
 PROC FastMulFriction_

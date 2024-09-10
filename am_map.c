@@ -1096,17 +1096,19 @@ void __near AM_drawWalls()
 // Rotation in 2D.
 // Used to rotate player arrow line character.
 //
-void
-__near AM_rotate
-( int16_t __near*	x,
-	int16_t __near*	y,
-  fineangle_t	a )
-{
+void __near AM_rotate ( int16_t __near*	x, int16_t __near* y, fineangle_t a ) {
 	fixed_t_union tmpx;
-    tmpx.w = ((int32_t)(*x * finecosine[a]))
-	- ((int32_t)(*y * finesine[a]));
-    
-	*y = ((int32_t)(*x*finesine[a])) + ((int32_t)(*y*finecosine[a])) >> 16;
+	fixed_t_union tmpy;
+
+
+    tmpx.w = ((int32_t)(*x * finecosine[a])) - ((int32_t)(*y * finesine[a]));
+    tmpy.w = ((int32_t)(*x * finesine[a])) + ((int32_t)(*y*finecosine[a]));
+
+    //tmpx.w = (FastMulTrig16(FINE_COSINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_SINE_ARGUMENT, a,  *y);
+    //tmpy.w = (FastMulTrig16(FINE_SINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_COSINE_ARGUMENT, a,  *y);
+
+
+	*y = tmpy.h.intbits;
 	*x = tmpx.h.intbits;
 
 }
