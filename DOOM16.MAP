@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/09/09 12:00:46
+Created on:       24/09/09 12:24:30
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -61,9 +61,9 @@ p_saveg_TEXT           CODE           AUTO           023f:8260       00000001
 s_sound_TEXT           CODE           AUTO           0a66:0000       0000001f
 p_ceilng_TEXT          CODE           AUTO           0a66:0020       00000441
 p_doors_TEXT           CODE           AUTO           0a66:0470       00000772
-p_enemy_TEXT           CODE           AUTO           0a66:0bf0       00002a71
+p_enemy_TEXT           CODE           AUTO           0a66:0bf0       00002a7d
 p_floor_TEXT           CODE           AUTO           0a66:3670       000008dc
-p_inter_TEXT           CODE           AUTO           0a66:3f50       00000c65
+p_inter_TEXT           CODE           AUTO           0a66:3f50       00000c6d
 p_lights_TEXT          CODE           AUTO           0a66:4bc0       0000045b
 p_map_TEXT             CODE           AUTO           0a66:5020       000023bb
 p_maputl_TEXT          CODE           AUTO           0a66:73e0       00000c90
@@ -963,63 +963,63 @@ Module: p_enemy.obj(C:\REALDOOM\p_enemy.c)
 0a66:0bf0+     P_RecursiveSound_
 0a66:0d06      P_NoiseAlert_
 0a66:0d20+     P_CheckMeleeRange_
-0a66:0e14+     P_CheckMissileRange_
-0a66:0f68+     P_Move_
-0a66:10e2+     P_TryWalk_
-0a66:1108+     P_NewChaseDir_
-0a66:13c0+     P_LookForPlayers_
-0a66:14d0      A_KeenDie_
-0a66:154e      A_Look_
-0a66:166c      A_Chase_
-0a66:18bc      A_FaceTarget_
-0a66:196e      A_PosAttack_
-0a66:1a0a      A_SPosAttack_
-0a66:1ab6      A_CPosAttack_
-0a66:1b56      A_CPosRefire_
-0a66:1bde      A_SpidRefire_
-0a66:1c66      A_BspiAttack_
-0a66:1c96      A_TroopAttack_
-0a66:1d14      A_SargAttack_
-0a66:1d60      A_HeadAttack_
-0a66:1dca      A_CyberAttack_
-0a66:1dfa      A_BruisAttack_
-0a66:1e72      A_SkelMissile_
-0a66:1f14      A_Tracer_
-0a66:21d0      A_SkelWhoosh_
-0a66:21f6      A_SkelFist_
-0a66:2256+     PIT_VileCheck_
-0a66:2384      A_VileChase_
-0a66:2592      A_VileStart_
-0a66:259c      A_StartFire_
-0a66:25c0      A_FireCrackle_
-0a66:25e4      A_Fire_
-0a66:26dc      A_VileTarget_
-0a66:2780      A_VileAttack_
-0a66:28e0      A_FatRaise_
-0a66:28f8      A_FatAttack1_
-0a66:29d8      A_FatAttack2_
-0a66:2ab0      A_FatAttack3_
-0a66:2bf8      A_SkullAttack_
-0a66:2d48+     A_PainShootSkull_
-0a66:2edc      A_PainAttack_
-0a66:2f08      A_PainDie_
-0a66:2f5e      A_Scream_
-0a66:3004      A_XScream_
-0a66:300e      A_Pain_
-0a66:303a      A_Fall_
-0a66:3042      A_Explode_
-0a66:305e      A_BossDeath_
-0a66:3176      A_Hoof_
-0a66:319a      A_Metal_
-0a66:31be      A_BabyMetal_
-0a66:31e2      A_BrainAwake_
-0a66:3254      A_BrainPain_
-0a66:3264      A_BrainScream_
-0a66:3326      A_BrainExplode_
-0a66:33b8      A_BrainSpit_
-0a66:34aa      A_SpawnSound_
-0a66:34ce      A_SpawnFly_
-0a66:3636      A_PlayerScream_
+0a66:0e12+     P_CheckMissileRange_
+0a66:0f66+     P_Move_
+0a66:10e0+     P_TryWalk_
+0a66:1106+     P_NewChaseDir_
+0a66:13be+     P_LookForPlayers_
+0a66:14ce      A_KeenDie_
+0a66:154c      A_Look_
+0a66:166a      A_Chase_
+0a66:18ba      A_FaceTarget_
+0a66:196c      A_PosAttack_
+0a66:1a08      A_SPosAttack_
+0a66:1ab4      A_CPosAttack_
+0a66:1b54      A_CPosRefire_
+0a66:1bdc      A_SpidRefire_
+0a66:1c64      A_BspiAttack_
+0a66:1c94      A_TroopAttack_
+0a66:1d12      A_SargAttack_
+0a66:1d5e      A_HeadAttack_
+0a66:1dc8      A_CyberAttack_
+0a66:1df8      A_BruisAttack_
+0a66:1e70      A_SkelMissile_
+0a66:1f12      A_Tracer_
+0a66:21ce      A_SkelWhoosh_
+0a66:21f4      A_SkelFist_
+0a66:2254+     PIT_VileCheck_
+0a66:2382      A_VileChase_
+0a66:2590      A_VileStart_
+0a66:259a      A_StartFire_
+0a66:25be      A_FireCrackle_
+0a66:25e2      A_Fire_
+0a66:26da      A_VileTarget_
+0a66:277e      A_VileAttack_
+0a66:28f2      A_FatRaise_
+0a66:290a      A_FatAttack1_
+0a66:29ea      A_FatAttack2_
+0a66:2ac2      A_FatAttack3_
+0a66:2c0a      A_SkullAttack_
+0a66:2d54+     A_PainShootSkull_
+0a66:2ee8      A_PainAttack_
+0a66:2f14      A_PainDie_
+0a66:2f6a      A_Scream_
+0a66:3010      A_XScream_
+0a66:301a      A_Pain_
+0a66:3046      A_Fall_
+0a66:304e      A_Explode_
+0a66:306a      A_BossDeath_
+0a66:3182      A_Hoof_
+0a66:31a6      A_Metal_
+0a66:31ca      A_BabyMetal_
+0a66:31ee      A_BrainAwake_
+0a66:3260      A_BrainPain_
+0a66:3270      A_BrainScream_
+0a66:3332      A_BrainExplode_
+0a66:33c4      A_BrainSpit_
+0a66:34b6      A_SpawnSound_
+0a66:34da      A_SpawnFly_
+0a66:3642      A_PlayerScream_
 2677:1270+     _opposite
 2677:1279+     _diags
 2677:1280+     _xspeed

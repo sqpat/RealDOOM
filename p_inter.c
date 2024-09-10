@@ -688,6 +688,7 @@ void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t 
 	angle_t	ang;
     int16_t		saved;
     fixed_t	thrust;
+	fixed_t_union mass;
 	fixed_t_union inflictorx;
 	fixed_t_union inflictory;
 	fixed_t_union inflictorz;
@@ -736,7 +737,15 @@ void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t 
 				target_pos->y);
 
 			//thrust = FixedDiv(damage*(FRACUNIT >> 3) * 100, getMobjMass(target->type));
-			thrust = (damage*(FRACUNIT >> 3) * 100L) / getMobjMass(target->type);
+			
+			// todo hard code this based on the finite mass values
+			mass.w = getMobjMass(target->type);
+			if (mass.h.intbits){
+				thrust = 0;
+			} else {
+				thrust = (damage*(FRACUNIT >> 3) * 100L) / mass.h.fracbits;
+			}
+			//thrust = FastMul16u32u(damage,0xC8000) / getMobjMass(target->type);
 
 			// make fall forwards sometimes
 			if (damage < 40

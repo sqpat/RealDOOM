@@ -258,7 +258,7 @@ boolean __near P_CheckMeleeRange (mobj_t __far* actor)
 	mobj_pos_t __far*	pl_pos;
 	mobj_pos_t __far*	actor_pos;
 	THINKERREF plRef;
-    fixed_t	dist;
+    fixed_t_union	dist;
 	fixed_t plx;
 	fixed_t ply;
 	fixed_t actorX, actorY;
@@ -285,9 +285,9 @@ boolean __near P_CheckMeleeRange (mobj_t __far* actor)
 	plradius.h.intbits = mobjinfo[pl->type].radius;
 	plradius.h.fracbits = 0;
 
-	dist = P_AproxDistance (plx-actorX, ply-actorY);
+	dist.w = P_AproxDistance (plx-actorX, ply-actorY);
 	plradius.h.intbits += (MELEERANGE - 20);
-    if (dist >= plradius.w)
+    if (dist.h.intbits >= plradius.h.intbits)
 		return false;
     if (! P_CheckSight (actor, pl, actor_pos, pl_pos) )
 		return false;
@@ -1619,6 +1619,7 @@ void __near A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     uint16_t		an;
 	mobj_t __far* actorTarget;
 	mobj_t __far* fire;
+	fixed_t_union mass;
 	mobj_pos_t __far* actorTarget_pos;
 	mobj_pos_t __far* fire_pos;
 	//todoaddr inline later
@@ -1640,8 +1641,14 @@ void __near A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	an = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 	fireRef = actor->tracerRef;
 
+	// todo switch/hardcase
+	mass.w = getMobjMass(actorTarget->type);
+	if (mass.h.intbits){
+		actorTarget->momz.w = 1;	
+	} else {
+		actorTarget->momz.w = 1000*FRACUNIT/ mass.h.fracbits;
 
-	actorTarget->momz.w = 1000*FRACUNIT/ getMobjMass(actorTarget->type);
+	}
 
 
     if (!fireRef)
@@ -1754,13 +1761,15 @@ void __near A_FatAttack3 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 // Fly at the player like a missile.
 //
 #define	SKULLSPEED		(20*FRACUNIT)
+#define	SKULLSPEED_SMALL		(20)
 
 void __near A_SkullAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
     mobj_t __far*		dest;
 	THINKERREF		destRef;
     fineangle_t		an;
-    fixed_t			dist;
+    fixed_t_union			dist;
+	int16_t         dist16;
 	mobj_pos_t __far* dest_pos;
 	//todoaddr inline later
 	sfxenum_t (__far  * getAttackSound)(uint8_t) = getAttackSoundAddr;
@@ -1779,15 +1788,15 @@ void __near A_SkullAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	dest = (mobj_t __far*)(&thinkerlist[destRef].data);
 	dest_pos = &mobjposlist[destRef];
     an = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    actor->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, SKULLSPEED);
-    actor->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, SKULLSPEED);
-    dist = P_AproxDistance (dest_pos->x.w - actor_pos->x.w, dest_pos->y.w - actor_pos->y.w);
-    dist = dist / SKULLSPEED;
+    actor->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an, SKULLSPEED_SMALL);
+    actor->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an, SKULLSPEED_SMALL);
+    dist.w = P_AproxDistance (dest_pos->x.w - actor_pos->x.w, dest_pos->y.w - actor_pos->y.w);
+    dist16 = dist.h.intbits / SKULLSPEED_SMALL;
     
-	if (dist < 1) {
-		dist = 1;
+	if (dist16 < 1) {
+		dist16 = 1;
 	}
-    actor->momz.w = (dest_pos->z.w+(dest->height.w>>1) - actor_pos->z.w) / dist;
+    actor->momz.w = (dest_pos->z.w+(dest->height.w>>1) - actor_pos->z.w) / dist16;
 }
 
 
@@ -1838,7 +1847,7 @@ void __near A_PainShootSkull (mobj_t __far* actor, angle_t	angle ) {
     an = angle.hu.intbits >> SHORTTOFINESHIFT;
 	actortargetRef = actor->targetRef;
 	radii = mobjinfo[actor->type].radius + mobjinfo[MT_SKULL].radius;
-	prestep.h.intbits= 4 + 3 * (radii) / 2;
+	prestep.h.intbits = 4 + 3 * (radii) / 2;
 	if (radii % 1)
 		prestep.h.fracbits = -32768; // handle the radii / 2 case
 	else
