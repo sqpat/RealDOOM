@@ -85,12 +85,54 @@ void __near A_Fall (mobj_t __far* mobj, mobj_pos_t __far* actor_pos);
 // but some can be made preaware
 //
 
+/*
+
+int16_t __near P_FastDivBySpeed(fixed_t_union num, uint8_t speed){
+//todo take out switch, sub 128
+
+	switch (speed){
+		// todo magic numbers or other fast algos?
+		case 138: // 10 + 0x80
+			return  num.h.intbits / 10;
+		case 143: // 15 + 0x80
+			return  num.h.intbits / 15;
+		case 148: // 20 + 0x80
+			return  num.h.intbits / 20;
+		case 153: // 25 + 0x80
+			return  num.h.intbits / 25;
+
+	}
+	return 0;
+
+}
+int16_t __near P_FixedMulBySpeed(fixed_t num, uint8_t speed){
+
+//todo take out switch, sub 128
+
+	switch (speed){
+		// todo magic numbers or other fast algos?
+		case 138: // 10 + 0x80
+			return  FastMul16u32u(10, num);
+		case 143: // 15 + 0x80
+			return  FastMul16u32u(15, num);
+		case 148: // 20 + 0x80
+			return  FastMul16u32u(20, num);
+		case 153: // 25 + 0x80
+			return  FastMul16u32u(25, num);
+
+	}
+	return 0;
+
+}
+*/
 
 //
 // Called by P_NoiseAlert.
 // Recursively traverse adjacent sectors,
 // sound blocking lines cut off traversal.
 //
+
+
 
 
 void
@@ -1222,13 +1264,13 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
     angle_t	exact;
 	fineangle_t fineexact;
-	fixed_t	dist;
+	fixed_t_union dist;
+	int16_t dist16;
     fixed_t	slope;
     mobj_t __far*	dest;
     mobj_t __far*	th;
 	THINKERREF thRef;
 	fixed_t destz;
-	fixed_t actorspeed;
 	
 	mobj_pos_t __far*	dest_pos;
 
@@ -1281,10 +1323,8 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 				actor_pos->angle = exact;
 		}
     }
-	actorspeed = MAKESPEED(mobjinfo[actor->type].speed);
     fineexact = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
     
-	//todo if 16 bit, do 16 bit mul... speed seems to usually be 16 bits or 32 bits with low word of 0.
 	
 	actor->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, fineexact, mobjinfo[actor->type].speed);
 	actor->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, fineexact, mobjinfo[actor->type].speed);
@@ -1294,18 +1334,15 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	destz = dest_pos->z.w;
 
 	// change slope
-    dist = P_AproxDistance (dest_pos->x.w - actor_pos->x.w,
+    dist.w = P_AproxDistance (dest_pos->x.w - actor_pos->x.w,
 			    dest_pos->y.w - actor_pos->y.w);
     
-
-    dist = dist / actorspeed;
+	dist16 = dist.h.intbits / (mobjinfo[actor->type].speed - 0x80);
 	
-    //dist = FastDiv3232(dist, actorspeed;
-
-	if (dist < 1) {
-		dist = 1;
+	if (dist16 < 1) {
+		dist16 = 1;
 	}
-    slope = (destz+40*FRACUNIT - actor_pos->z.w) / dist;
+    slope = FastDiv3216u(destz+40*FRACUNIT - actor_pos->z.w, dist16);
 
     if (slope < actor->momz.w)
 		actor->momz.w -= FRACUNIT/8;

@@ -289,7 +289,10 @@ fixed_t32	FixedMul2432(fixed_t32 a, fixed_t32 b);
 
 fixed_t32	FixedMul16u32(uint16_t a, fixed_t32 b);
 fixed_t32	FixedMul16u32u(uint16_t a, uint32_t b);
+// 
 fixed_t32   FastMul16u32u(uint16_t a, uint32_t b);
+// i think its correct that the sign extends dont play a factor in this..
+#define     FastMul16u32(a, b)  FastMul16u32u(a, b)
 
 
 //#define SET_FIXED_UNION_FROM_SHORT_HEIGHT(x, y) x.h.intbits = y >> SHORTFLOORBITS; x.h.fracbits = (y & SHORTFLOORBITMASK) << (16 - SHORTFLOORBITS)
@@ -328,7 +331,7 @@ inline int8_t ROLAND1(int16_t a);
     value [al];
 
 #define FastMul8u32u(a, b) FastMul16u32u(a, b)
-fixed_t32   FastMul16u32(uint16_t a, uint32_t b);
+//fixed_t32   FastMul16u32(uint16_t a, uint32_t b);
 
 // puts int16 into the high bits of a 32 bit
 // puts int16 into the low bits of a 32 bit

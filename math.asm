@@ -932,7 +932,6 @@ ret
 ENDP
 
 
-; unused??
 ; both params unsigned. drop all sign extensions.. and dont shift by 16 like fixed algos!
 PROC FastMul16u32u_
 PUBLIC FastMul16u32u_

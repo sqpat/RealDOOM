@@ -997,10 +997,10 @@ THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source
 	mobj_t __far*	th;
 	mobj_pos_t __far*	th_pos;
     angle_t	an;
-    fixed_t	dist;
+    fixed_t_union dist;
+    int16_t dist16;
 	fixed_t destz;
 	fixed_t momz;
-	fixed_t thspeed;
 	uint16_t temp;
 	mobj_pos_t __far*	dest_pos = GET_MOBJPOS_FROM_MOBJ(dest);
 	THINKERREF thRef = P_SpawnMobj (source_pos->x.w, source_pos->y.w, source_pos->z.w + 4*8*FRACUNIT, type, source->secnum);
@@ -1012,7 +1012,7 @@ THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source
 
 
     th->targetRef = GETTHINKERREF(source);	// where it came from
-	thspeed = MAKESPEED(mobjinfo[type].speed);
+
 
 	destz = dest_pos->z.w;
 	an.wu = R_PointToAngle2 (source_pos->x, source_pos->y, dest_pos->x, dest_pos->y);
@@ -1024,14 +1024,16 @@ THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source
 		an.hu.intbits += temp;
 	}
 
-	dist = P_AproxDistance(dest_pos->x.w - source_pos->x.w, dest_pos->y.w - source_pos->y.w);
-	dist = dist / thspeed;
-	momz = (destz - source_pos->z.w) / dist;
+	dist.w = P_AproxDistance(dest_pos->x.w - source_pos->x.w, dest_pos->y.w - source_pos->y.w);
+	//dist16 = P_FastDivBySpeed(dist, mobjinfo[type].speed);
+	dist16 = dist.h.intbits / (mobjinfo[type].speed - 0x80);
+	momz = FastDiv3216u(destz - source_pos->z.w, dist16);
     //dist = FastDiv3232(dist, thspeed);
 	//momz = FastDiv3232((destz - source_pos->z.w), dist);
 
-	if (dist < 1)
-		dist = 1;
+	// was this a bug? not used beyond this point in the func.
+	//if (dist16 < 1)
+	//	dist16 = 1;
 
 
 	th_pos->angle = an;
@@ -1067,7 +1069,6 @@ __near P_SpawnPlayerMissile
     
     fixed_t_union	z;
     fixed_t	slope;
-	fixed_t speed;
 
     // see which target is to be aimed at
     // todo use fixed_t_union
@@ -1104,11 +1105,18 @@ __near P_SpawnPlayerMissile
 	th_pos->angle.hu.intbits <<= 3;
 	th_pos->angle.hu.fracbits = 0;
 
-	speed = MAKESPEED(mobjinfo[type].speed);
 
     th->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an,  mobjinfo[type].speed);
     th->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an,  mobjinfo[type].speed);
-    th->momz.w = FixedMul( speed, slope);
+    
+	// todo check slope for 0
+	// basically this is only ever called with projectile speed values (10, 15, 20, or 25 * FRACUNIT)
+	// this is encoded as 10, 25, 20, or 25 + the 0x80 flag in the mobjinfo speed byte.
+	// since the bottom word is 0 (since its shifted 16 bits left by the FRACUNIT)
+	// the Fixedmul (16 bit shifted result) is equivalent to a normal multiply without shifting.
+	// so we just multiply slope by speed - 0x80 
+
+	th->momz.w = FastMul16u32( mobjinfo[type].speed-0x80, slope);
 
     P_CheckMissileSpawn (th, th_pos);
 }
