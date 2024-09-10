@@ -673,6 +673,44 @@ void __near P_KillMobj (	mobj_t __far* source, mobj_t __far*	target, mobj_pos_t 
 }
 
 
+fixed_t __near getMassThrust(int16_t damage, int8_t id){
+	
+			//return (damage*(FRACUNIT >> 3) * 100L) / mass.h.fracbits;
+			// or   damage * 0xC8000  / mass
+	switch (id){
+		case MT_SKULL:
+				
+				return FastMul16u16u(damage, 0x4000);
+			case MT_SERGEANT:
+			case MT_SHADOWS:
+			case MT_HEAD:
+			case MT_PAIN:
+				return FastMul16u16u(damage, 0x800);
+
+			case MT_VILE:
+			case MT_UNDEAD:
+				return FastDiv32u16u(FastMul16u32u(damage, 0xc8000), 500);
+			case MT_BABY:
+				return FastDiv32u16u(FastMul16u32u(damage, 0xc8000), 600);
+			case MT_FATSO:
+			case MT_BRUISER:
+			case MT_KNIGHT:
+			case MT_SPIDER:
+			case MT_CYBORG:
+				return FastDiv32u16u(FastMul16u32u(damage, 0xc8000), 1000);
+
+			case MT_KEEN:
+			case MT_BOSSBRAIN:
+				
+				return damage / 80;
+
+
+			default:
+
+				return FastMul16u16u(damage, 0x2000);
+	}
+}
+
 //
 // P_DamageMobj
 // Damages both enemies and players
@@ -688,16 +726,14 @@ void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t 
 	angle_t	ang;
     int16_t		saved;
     fixed_t	thrust;
-	fixed_t_union mass;
-	fixed_t_union inflictorx;
+ 	fixed_t_union inflictorx;
 	fixed_t_union inflictory;
 	fixed_t_union inflictorz;
 	mobj_pos_t __far* target_pos = GET_MOBJPOS_FROM_MOBJ(target);
  	
 	//todoaddr inline later
 	int16_t (__far  * getPainChance)(uint8_t) = getPainChanceAddr;
-	int32_t (__far  * getMobjMass)(uint8_t) = getMobjMassAddr;
-	statenum_t (__far  * getPainState)(uint8_t) = getPainStateAddr;
+ 	statenum_t (__far  * getPainState)(uint8_t) = getPainStateAddr;
 	statenum_t (__far  * getSeeState)(uint8_t) = getSeeStateAddr;
 
 
@@ -739,14 +775,9 @@ void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t 
 			//thrust = FixedDiv(damage*(FRACUNIT >> 3) * 100, getMobjMass(target->type));
 			
 			// todo hard code this based on the finite mass values
-			mass.w = getMobjMass(target->type);
-			if (mass.h.intbits){
-				thrust = 0;
-			} else {
-				thrust = (damage*(FRACUNIT >> 3) * 100L) / mass.h.fracbits;
-			}
-			//thrust = FastMul16u32u(damage,0xC8000) / getMobjMass(target->type);
-
+	
+			thrust = getMassThrust(damage, target->type);
+ 
 			// make fall forwards sometimes
 			if (damage < 40
 				&& damage > target->health

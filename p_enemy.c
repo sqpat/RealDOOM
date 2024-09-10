@@ -1608,7 +1608,41 @@ void __near A_VileTarget (mobj_t __far* actor)
 }
 
 
+fixed_t __near GetVileMomz(int8_t id){
+	
+	// return 1000 * FRACUNIT / mass
+	switch (id){
 
+		case MT_SKULL:
+			return 20 * FRACUNIT;
+		case MT_SERGEANT:
+		case MT_SHADOWS:
+		case MT_HEAD:
+		case MT_PAIN:
+			return 163840L;
+
+		case MT_VILE:
+		case MT_UNDEAD:
+			return 2 * FRACUNIT;
+		case MT_BABY:
+			return 109226L;
+		case MT_FATSO:
+		case MT_BRUISER:
+		case MT_KNIGHT:
+		case MT_SPIDER:
+		case MT_CYBORG:
+			return FRACUNIT;
+
+		case MT_KEEN:
+		case MT_BOSSBRAIN:
+			return 1;
+
+
+		default:
+
+			return 10 * FRACUNIT;
+	}
+}
 
 //
 // A_VileAttack
@@ -1623,7 +1657,6 @@ void __near A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	mobj_pos_t __far* actorTarget_pos;
 	mobj_pos_t __far* fire_pos;
 	//todoaddr inline later
-	int32_t (__far  * getMobjMass)(uint8_t) = getMobjMassAddr;
 #ifdef MOVE_P_SIGHT
 	boolean (__far  * P_CheckSight)(mobj_t __far* ,mobj_t __far* ,mobj_pos_t __far* ,mobj_pos_t __far* ) = P_CheckSightAddr;
 #endif
@@ -1641,14 +1674,7 @@ void __near A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	an = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
 	fireRef = actor->tracerRef;
 
-	// todo switch/hardcase
-	mass.w = getMobjMass(actorTarget->type);
-	if (mass.h.intbits){
-		actorTarget->momz.w = 1;	
-	} else {
-		actorTarget->momz.w = 1000*FRACUNIT/ mass.h.fracbits;
-
-	}
+	actorTarget->momz.w = GetVileMomz(actorTarget->type);
 
 
     if (!fireRef)
