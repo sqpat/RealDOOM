@@ -616,7 +616,7 @@ void __near P_ZMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 		}
 	} else if (! (mo_pos->flags & MF_NOGRAVITY) ) {
 		if (mo->momz.w == 0) {
-			mo->momz.h.intbits = -GRAVITY_HIGHBITS * 2;
+			mo->momz.h.intbits = -GRAVITY_HIGHBITS << 1;
 		} else {
 			mo->momz.h.intbits -= GRAVITY_HIGHBITS;
 		}

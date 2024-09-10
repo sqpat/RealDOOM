@@ -130,7 +130,7 @@ void R_InitSpriteLumps(void)
 
 		// calculate where the pixel data starts. add the patch header, colofs and post data. note postofs will sit
 		// in the extra bytes alongside colofs.
-		startoffset = 8 + (4 * patchwidth) + postdatasize;
+		startoffset = 8 + (patchwidth << 2) + postdatasize;
 		startoffset += (16 - ((startoffset &0xF)) &0xF); // round up so first pixel data starts aligned of course.
 		
 		// sigh can we do this better? it's init  code so i dont really care but..
@@ -340,7 +340,7 @@ void R_GenerateLookup(uint16_t texnum)
 				column = (column_t __far*) MK_FP(SCRATCH_PAGE_SEGMENT_7000, realpatch->columnofs[x]);
 				
 				maskedpixlofs[x] = currenttexturepixelbytecount; 
-				maskedtexpostdataofs[x] = (currentpostdataoffset)+ currenttexturepostoffset * 2;
+				maskedtexpostdataofs[x] = (currentpostdataoffset)+ (currenttexturepostoffset << 1);
 	 
 				for ( ; (column->topdelta != 0xff)  ; )  {
 					uint16_t runsize = column->length;
@@ -574,7 +574,7 @@ void R_InitTextures(void) {
 	name_p = (int8_t __far*)(TEX_LOAD_ADDRESS + 4);
 	for (i = 0; i < nummappatches; i++)
 	{
-		copystr8(name, name_p + i * 8);
+		copystr8(name, name_p + (i << 3 ));
 		patchlookup[i] = W_CheckNumForName(name);
 	}
 
@@ -662,7 +662,7 @@ void R_InitTextures(void) {
 		}
 
 		j = 1;
-		while (j * 2 <= texturewidth){
+		while ((j << 1) <= texturewidth){
 			j <<= 1;
 		}
 

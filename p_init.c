@@ -147,7 +147,7 @@ void __near P_InitSwitchList(void)
 
 	for (index = 0, i = 0; i < MAXSWITCHES; i++) {
 		if (!alphSwitchList[i].episode) {
-			numswitches = index / 2;
+			numswitches = index >> 1;
 			switchlist[index] = BAD_TEXTURE;
 			break;
 		}

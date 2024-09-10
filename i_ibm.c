@@ -259,13 +259,13 @@ void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h) {
 	byte __far *dest;
 	byte __far *source;
  
-    sp_x1 = x / 8;
-    sp_x2 = (x + w) / 8;
+    sp_x1 = x >> 3;
+    sp_x2 = (x + w) >> 3;
     count = sp_x2 - sp_x1 + 1;
-    offset = (uint16_t)y * SCREENWIDTH + sp_x1 * 8;
-    step = SCREENWIDTH - count * 8;
-    poffset = offset / 4;
-    pstep = step / 4;
+    offset = (uint16_t)y * SCREENWIDTH + (sp_x1 << 3);
+    step = SCREENWIDTH - (count << 3);
+    poffset = offset >> 2;
+    pstep = step >> 2;
 	outp(SC_INDEX, SC_MAPMASK);
     for (i = 0; i < 4; i++) {
 		outp(SC_INDEX + 1, 1 << i);

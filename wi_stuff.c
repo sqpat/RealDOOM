@@ -252,12 +252,12 @@ void __near WI_drawLF(void)
 	// draw <LevelName> 
 	patch_t __far* lname = (patch_t __far*)(wigraphicslevelname);
 
-    V_DrawPatch((SCREENWIDTH - (lname->width))/2, y, FB, lname);
+    V_DrawPatch((SCREENWIDTH - (lname->width))>>1, y, FB, lname);
 
     // draw "Finished!"
-	y += (5 * (lname->height)) / 4;
+	y += (5 * (lname->height)) >>2;
     
-    V_DrawPatch((SCREENWIDTH - (finished->width))/2, y, FB, finished);
+    V_DrawPatch((SCREENWIDTH - (finished->width))>> 1, y, FB, finished);
 }
 
 
@@ -269,15 +269,15 @@ void __near WI_drawEL(void)
 	int16_t y = WI_TITLEY;
 	patch_t __far* entering = WI_GetPatch(27);
     // draw "Entering"
-    V_DrawPatch((SCREENWIDTH - (entering->width))/2, y, FB, entering);
+    V_DrawPatch((SCREENWIDTH - (entering->width))>>1, y, FB, entering);
 
 	lname = (patch_t __far*)(wigraphicslevelname + NEXT_OFFSET);
 
     // draw level
-    y += (5*(lname->height))/4;
+    y += (5*(lname->height))>>2;
 
 
-    V_DrawPatch((SCREENWIDTH - (lname->width))/2, y, FB, lname);
+    V_DrawPatch((SCREENWIDTH - (lname->width))>>1, y, FB, lname);
 
 }
 

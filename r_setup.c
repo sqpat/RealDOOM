@@ -130,7 +130,7 @@ void __near R_InitTextureMapping(void) {
 	}
 
 	clipangle = xtoviewangle[0] << 3;
-	fieldofview = 2 * clipangle;
+	fieldofview = clipangle << 1;
 
 
 	// psprite scales
@@ -143,8 +143,8 @@ void __near R_InitTextureMapping(void) {
 		// max of FRACUNIT, we set it to 0 in that case
 		// todo we can make this a lookuplookup
 		
-		pspritescale = (FRACUNIT * viewwidth / SCREENWIDTH);
-		pspriteiscale = (FRACUNIT * SCREENWIDTH / viewwidth);
+		pspritescale = FastDiv32u16u(FRACUNIT * viewwidth, SCREENWIDTH);
+		pspriteiscale = FastDiv32u16u(FRACUNIT * SCREENWIDTH, viewwidth);
 	}
 
 	// thing clipping
@@ -157,10 +157,10 @@ void __near R_InitTextureMapping(void) {
 
 	Z_QuickMapRenderPlanes();
 	for (i = 0; i < viewheight; i++) {
-		temp.h.intbits = (i - viewheight / 2);
+		temp.h.intbits = (i - (viewheight >> 1));
 		dy = (temp.w) + 0x8000u;
 		dy = labs(dy);
-		temp.h.intbits = (viewwidth << detailshift.b.bytelow) / 2;
+		temp.h.intbits = (viewwidth << detailshift.b.bytelow) >> 1;
 		yslope[i] = FixedDivWholeA(temp.h.intbits, dy);
 	}
 	// 320 viewwidth
@@ -175,7 +175,8 @@ void __near R_InitTextureMapping(void) {
 	// Calculate the light levels to use
 	//  for each level / scale combination.
 	for (i2 = 0; i2 < LIGHTLEVELS; i2++) {
-		startmap = ((LIGHTLEVELS - 1 - i2) * 2)*NUMCOLORMAPS / LIGHTLEVELS;
+		//startmap = ((LIGHTLEVELS - 1 - i2) << 1)*NUMCOLORMAPS / LIGHTLEVELS;
+		startmap = ((LIGHTLEVELS - 1 - i2) << 2);
 		for (j = 0; j < MAXLIGHTSCALE; j++) {
 			level = startmap - j * SCREENWIDTH / (viewwidth << detailshift.b.bytelow) / DISTMAP;
 
@@ -211,7 +212,7 @@ void __near  R_ExecuteSetViewSize(void) {
 		viewheight = SCREENHEIGHT;
 	}
 	else {
-		scaledviewwidth = setblocks * 32;
+		scaledviewwidth = setblocks << 5;
 		viewheight = (setblocks * 168 / 10)&~7;
 	}
 
@@ -245,7 +246,7 @@ void __near  R_ExecuteSetViewSize(void) {
 		viewwindowy = (SCREENHEIGHT - SBARHEIGHT - viewheight) >> 1;
 	}
 	
-	viewwindowoffset = (viewwindowy*SCREENWIDTH / 4) + (viewwindowx >> 2);
+	viewwindowoffset = (viewwindowy*(SCREENWIDTH / 4)) + (viewwindowx >> 2);
 
 
 	R_InitTextureMapping();

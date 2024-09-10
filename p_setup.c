@@ -293,11 +293,11 @@ void __near P_LoadSegs(int16_t lump) {
 		li_render->offset = mloffset;
 		li_render->sidedefOffset = ldefsidenum;
 
-		tempsecnums[i * 2] = sidesecnum;
+		tempsecnums[i <<1] = sidesecnum;
 		if (ldefflags & ML_TWOSIDED)
-			tempsecnums[i * 2 + 1] = othersidesecnum;
+			tempsecnums[(i <<1) + 1] = othersidesecnum;
 		else
-			tempsecnums[i * 2 + 1] = SECNUM_NULL;
+			tempsecnums[(i <<1) + 1] = SECNUM_NULL;
 
 	}
 	
@@ -875,8 +875,8 @@ void __near P_GroupLines(void) {
 		// set the degenmobj_t to the middle of the bounding box
 		
 
-		sectors_soundorgs[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) / 2;
-		sectors_soundorgs[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) / 2;
+		sectors_soundorgs[i].soundorgX = (bbox[BOXRIGHT] + bbox[BOXLEFT]) >> 1;
+		sectors_soundorgs[i].soundorgY = (bbox[BOXTOP] + bbox[BOXBOTTOM]) >> 1;
 
 		// adjust bounding box to map blocks
 		block = (bbox[BOXTOP] - bmaporgy + MAXRADIUSNONFRAC) >> MAPBLOCKSHIFT;

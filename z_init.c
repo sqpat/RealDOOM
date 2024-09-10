@@ -263,8 +263,8 @@ void __near Z_GetEMSPageMap() {
 	}
  
 	for (i = 0; i < numentries; i++) {
-		if (pagedata[i * 2] == 0x9000u) {
-			pagenum9000 = pagedata[(i * 2) + 1];
+		if (pagedata[i << 1] == 0x9000u) {
+			pagenum9000 = pagedata[(i << 1) + 1];
 			goto found;
 		}
 	}
