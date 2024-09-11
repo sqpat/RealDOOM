@@ -1745,10 +1745,8 @@ void __near M_SetupNextMenu(menu_t __near *menudef)
 //
 // M_Ticker
 //
-void __near M_Ticker (void)
-{
-    if (--skullAnimCounter <= 0)
-    {
+void __near M_Ticker (void) {
+    if (--skullAnimCounter <= 0) {
         whichSkull ^= 1;
         skullAnimCounter = 8;
     }

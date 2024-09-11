@@ -666,7 +666,7 @@ void __far R_RenderPlayerView ()
     // Check for new console commands.
     // 0x5c00 currently used in R_DrawPlanes as flat cache, but also needed in netupdate for events
 	// either one extra page swap per frame or comment this out
-	
+	// todo reenable...?
 	//NetUpdate ();
 
 	R_DrawMasked ();

@@ -35,8 +35,6 @@
 #define PL_DRONE 0x80 // bit flag in doomdata->player
 
 
-ticcount_t nettics;
-
 ticcount_t maketic;
 int16_t skiptics;
 
@@ -51,8 +49,7 @@ void __near D_DoAdvanceDemo(void);
 //
 ticcount_t gametime;
 
-void NetUpdate(void)
-{
+void NetUpdate(void) {
 	uint32_t nowtime;
 	int16_t newtics;
 	int16_t i;
@@ -60,21 +57,11 @@ void NetUpdate(void)
 	// check time
 	nowtime = ticcount;
 	newtics = nowtime - gametime;
-	gametime = nowtime;
 
 	if (newtics <= 0) // nothing new to update
 		return;
 
-	if (skiptics <= newtics)
-	{
-		newtics -= skiptics;
-		skiptics = 0;
-	}
-	else
-	{
-		skiptics -= newtics;
-		newtics = 0;
-	}
+	gametime = nowtime;
 
 	// build new ticcmds for console player
 	for (i = 0; i < newtics; i++)
