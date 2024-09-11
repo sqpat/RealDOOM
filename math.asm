@@ -560,15 +560,19 @@ PUBLIC FixedMulTrig_
 ; DX is param 2 (fineangle or lookup)
 ; CX:BX is value 2
 
+sal dx, 1
+sal dx, 1   ; DWORD lookup index
 
 
+PROC FixedMulTrigNoShift_
+PUBLIC FixedMulTrigNoShift_
+; pass in the index already shifted to be a dword lookup..
 
 push  si
 
 ; lookup the fine angle
 
-sal dx, 1
-sal dx, 1   ; DWORD lookup index
+
 mov si, dx
 mov es, ax  ; put segment in ES
 mov ax, es:[si]
@@ -841,6 +845,11 @@ PUBLIC FixedMulTrigSpeed_
 
 SAL dx, 1
 SAL dx, 1   ; DWORD lookup index
+
+
+PROC FixedMulTrigSpeedNoShift_
+PUBLIC FixedMulTrigSpeedNoShift_
+
 mov es, ax  ; put segment in ES
 xchg dx, bx
 

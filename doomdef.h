@@ -271,13 +271,16 @@ typedef uint16_t fineangle_t;
 
 
 fixed_t32	FixedMulTrig(uint16_t trigtype, fineangle_t fineangle, fixed_t32 b);
+fixed_t32	FixedMulTrigNoShift(uint16_t trigtype, uint16_t fineanglelookup, fixed_t32 b);
 
 
 #pragma aux speedfuncparams \
                     __modify [ax bx cx dx];
 
 #pragma aux (speedfuncparams)  FixedMulTrigSpeed;
+#pragma aux (speedfuncparams)  FixedMulTrigSpeedNoShift;
 fixed_t32	FixedMulTrigSpeed(uint16_t trigtype, fineangle_t fineangle, int8_t speed);
+fixed_t32	FixedMulTrigSpeedNoShift(uint16_t trigtype, uint16_t fineanglelookup, int8_t speed);
 
 
 #pragma aux trig16params \

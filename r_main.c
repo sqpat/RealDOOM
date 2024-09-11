@@ -586,6 +586,7 @@ void __far R_RenderPlayerView ()
 	viewx = playerMobj_pos->x;
 	viewy = playerMobj_pos->y;
 	viewangle = playerMobj_pos->angle;
+	viewangle_shiftright1 = (viewangle.hu.intbits >> 1) & 0xFFFC;
 	viewangle_shiftright3 = viewangle.hu.intbits >> 3;
 
 	// reset last used segment cache

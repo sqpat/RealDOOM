@@ -1044,9 +1044,10 @@ THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source
 
 
 	th_pos->angle = an;
-    an.hu.intbits >>= SHORTTOFINESHIFT;
-    th->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an.hu.intbits, mobjinfo[type].speed);
-    th->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an.hu.intbits, mobjinfo[type].speed);
+    temp = (an.hu.intbits >> 1) & 0xFFFC;
+	
+    th->momx.w = FixedMulTrigSpeedNoShift(FINE_COSINE_ARGUMENT, temp, mobjinfo[type].speed);
+    th->momy.w = FixedMulTrigSpeedNoShift(FINE_SINE_ARGUMENT  , temp, mobjinfo[type].speed);
 	th->momz.w = momz;
 
 

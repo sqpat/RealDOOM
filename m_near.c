@@ -254,6 +254,7 @@ fixed_t_union			viewz;
 short_height_t			viewz_shortheight;
 angle_t			viewangle;
 fineangle_t			viewangle_shiftright3;
+uint16_t			viewangle_shiftright1;
 
 // 0 = high, 1 = low, = 2 potato
 int16_t_union		detailshift;	
