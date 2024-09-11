@@ -329,12 +329,12 @@ void __near AM_activateNewScale(void)
 {
  
 
-    screen_botleft_x += screen_viewport_width/2;
-    screen_botleft_y += screen_viewport_height/2;
+    screen_botleft_x += screen_viewport_width>>1;
+    screen_botleft_y += screen_viewport_height>>1;
     screen_viewport_width = FTOM16(automap_screenwidth);
     screen_viewport_height = FTOM16(automap_screenheight);
-    screen_botleft_x -= screen_viewport_width /2;
-    screen_botleft_y -= screen_viewport_height /2;
+    screen_botleft_x -= screen_viewport_width >>1;
+    screen_botleft_y -= screen_viewport_height >>1;
     screen_topright_x = screen_botleft_x + screen_viewport_width;
     screen_topright_y = screen_botleft_y + screen_viewport_height;
 
@@ -350,8 +350,8 @@ void __near AM_restoreScaleAndLoc(void)
 		screen_botleft_x = old_screen_botleft_x;
 		screen_botleft_y = old_screen_botleft_y;
     } else {
-		screen_botleft_x = (playerMobj_pos->x.h.intbits) - screen_viewport_width /2;
-		screen_botleft_y = (playerMobj_pos->y.h.intbits) - screen_viewport_height /2;
+		screen_botleft_x = (playerMobj_pos->x.h.intbits) - (screen_viewport_width >>1);
+		screen_botleft_y = (playerMobj_pos->y.h.intbits) - (screen_viewport_height >>1);
     }
     screen_topright_x = screen_botleft_x + screen_viewport_width;
     screen_topright_y = screen_botleft_y + screen_viewport_height;
@@ -367,8 +367,8 @@ void __near AM_restoreScaleAndLoc(void)
 //
 void __near AM_addMark(void)
 {
-    markpoints[markpointnum].x = screen_botleft_x + screen_viewport_width /2;
-    markpoints[markpointnum].y = screen_botleft_y + screen_viewport_height /2;
+    markpoints[markpointnum].x = screen_botleft_x + (screen_viewport_width >>1);
+    markpoints[markpointnum].y = screen_botleft_y + (screen_viewport_height >>1);
 	 
 	markpointnum = (markpointnum + 1) % AM_NUMMARKPOINTS;
 
@@ -415,7 +415,8 @@ void __near AM_findMinMaxBoundaries(void)
 	b = FixedDiv(automap_screenheight, max_h);
   
     min_scale_mtof.w = a < b ? a : b;
-	max_scale_mtof.w = FixedDiv(automap_screenheight, 2*16);
+	max_scale_mtof.w = 0x54000;// FixedDiv(automap_screenheight, 2*16);
+
 
 }
 
@@ -434,15 +435,15 @@ void __near AM_changeWindowLoc(void)
     screen_botleft_x += m_paninc.x;
     screen_botleft_y += m_paninc.y;
 
-    if (screen_botleft_x + screen_viewport_width /2 > max_level_x)
-		screen_botleft_x = max_level_x - screen_viewport_width /2;
-    else if (screen_botleft_x + screen_viewport_width /2 < min_level_x)
-		screen_botleft_x = min_level_x - screen_viewport_width /2;
+    if (screen_botleft_x + (screen_viewport_width >>1) > max_level_x)
+		screen_botleft_x = max_level_x - (screen_viewport_width >>1);
+    else if (screen_botleft_x + (screen_viewport_width >>1) < min_level_x)
+		screen_botleft_x = min_level_x - (screen_viewport_width >>1);
   
-    if (screen_botleft_y + screen_viewport_height /2 > max_level_y)
-		screen_botleft_y = max_level_y - screen_viewport_height /2;
-    else if (screen_botleft_y + screen_viewport_height /2 < min_level_y)
-		screen_botleft_y = min_level_y - screen_viewport_height /2;
+    if (screen_botleft_y + (screen_viewport_height >>1) > max_level_y)
+		screen_botleft_y = max_level_y - (screen_viewport_height >>1);
+    else if (screen_botleft_y + (screen_viewport_height >>1) < min_level_y)
+		screen_botleft_y = min_level_y - (screen_viewport_height >>1);
 
     screen_topright_x = screen_botleft_x + screen_viewport_width;
     screen_topright_y = screen_botleft_y + screen_viewport_height;
@@ -468,8 +469,8 @@ void __near AM_initVariables(void)
     screen_viewport_height = FTOM16(automap_screenheight);
 
   
-	screen_botleft_x = (playerMobj_pos->x.h.intbits) - screen_viewport_width /2;
-    screen_botleft_y = (playerMobj_pos->y.h.intbits) - screen_viewport_height /2;
+	screen_botleft_x = (playerMobj_pos->x.h.intbits) - (screen_viewport_width >>1);
+    screen_botleft_y = (playerMobj_pos->y.h.intbits) - (screen_viewport_height >>1);
     AM_changeWindowLoc();
 
     // for saving & restoring
@@ -723,8 +724,8 @@ void __near AM_doFollowPlayer(void) {
 
 
     if (screen_oldloc.x != playerMobj_pos->x.h.intbits || screen_oldloc.y != playerMobj_pos->y.h.intbits) {
-		screen_botleft_x = (playerMobj_pos->x.h.intbits) - screen_viewport_width /2;
-		screen_botleft_y = (playerMobj_pos->y.h.intbits) - screen_viewport_height /2;
+		screen_botleft_x = (playerMobj_pos->x.h.intbits) - (screen_viewport_width >>1);
+		screen_botleft_y = (playerMobj_pos->y.h.intbits) - (screen_viewport_height >>1);
 		screen_topright_x = screen_botleft_x + screen_viewport_width;
 		screen_topright_y= screen_botleft_y + screen_viewport_height;
 		screen_oldloc.x = playerMobj_pos->x.h.intbits;
@@ -939,7 +940,7 @@ __near AM_drawFline
     y = fl->a.y;
 
     if (ax > ay) {
-		d = ay - ax/2;
+		d = ay - (ax>>1);
 		while (1) {
 			PUTDOT(x,y,color);
 			if (x == fl->b.x) return;
@@ -952,7 +953,7 @@ __near AM_drawFline
 			d += ay;
 		}
 	} else {
-		d = ax - ay/2;
+		d = ax - (ay>>1);
 		while (1) {
 			PUTDOT(x, y, color);
 			if (y == fl->b.y) return;

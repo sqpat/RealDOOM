@@ -81,9 +81,12 @@ void P_CalcHeight ()
     // Note: a LUT allows for effects
     //  like a ramp with low health.
     // todo <- yea lets actually optimize with LUT? - sq
+	temp2 = (playerMobj->ceilingz - (4 << SHORTFLOORBITS));
+	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
+
 	player.bob.w =
 	FixedMul (playerMobj->momx.w, playerMobj->momx.w) + FixedMul (playerMobj->momy.w, playerMobj->momy.w);
-    
+
 	player.bob.w >>= 2;
 
     if (player.bob.w>MAXBOB)
@@ -91,8 +94,6 @@ void P_CalcHeight ()
     if ((player.cheats & CF_NOMOMENTUM) || !onground) {
 		player.viewz = playerMobj_pos->z;
 		player.viewz.h.intbits += VIEWHEIGHT_HIGHBITS;
-		temp2 = (playerMobj->ceilingz - (4 << SHORTFLOORBITS));
-		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
 		if (player.viewz.w > temp.w)
 			player.viewz = temp;
@@ -103,7 +104,7 @@ void P_CalcHeight ()
 		
     angle = (FINEANGLES/20*leveltime.w)&FINEMASK;
 	// check for MAX_BOB case?
-    bob = FixedMul (player.bob.w/2, finesine[angle]);
+    bob = FixedMulTrig (FINE_SINE_ARGUMENT, angle, player.bob.w>>1);
 
     
     // move viewheight
@@ -129,8 +130,6 @@ void P_CalcHeight ()
     }
 	player.viewz.w = playerMobj_pos->z.w + player.viewheight.w + bob;
 
-	temp2 = (playerMobj->ceilingz - (4 << SHORTFLOORBITS));
-	SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 
     if (player.viewz.w > temp.w)
 		player.viewz = temp;

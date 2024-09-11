@@ -1215,7 +1215,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
     if (thingbottomslope < bottomslope)
 		thingbottomslope = bottomslope;
  
-	aimslope = (thingtopslope+thingbottomslope)/2;
+	aimslope = (thingtopslope+thingbottomslope)>>1;
 	linetarget = th;
 	linetarget_pos = th_pos;
     return false;			// don't go any farther
@@ -1744,7 +1744,7 @@ boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_
 		P_DamageMobj(thing,NULL_THINKERREF,NULL_THINKERREF,10);
 
 		// spray blood in a random direction
-		moRef = P_SpawnMobj (thing_pos->x.w, thing_pos->y.w, thing_pos->z.w + thing->height.w/2, MT_BLOOD, thing->secnum);
+		moRef = P_SpawnMobj (thing_pos->x.w, thing_pos->y.w, thing_pos->z.w + thing->height.w>>1, MT_BLOOD, thing->secnum);
 		
 		mo = setStateReturn;
 		mo->momx.w = (P_Random() - P_Random ())<<12;

@@ -431,8 +431,8 @@ void __near P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 	do {
 
 		if (xmove.w > MAXMOVE/2 || ymove.w > MAXMOVE/2) {
-			ptryx.w = mo_pos->x.w + xmove.w/2;
-			ptryy.w = mo_pos->y.w + ymove.w/2;
+			ptryx.w = mo_pos->x.w + (xmove.w>>1);
+			ptryy.w = mo_pos->y.w + (ymove.w>>1);
 			xmove.w >>= 1;
 			ymove.w >>= 1;
 		} else {

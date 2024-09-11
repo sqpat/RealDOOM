@@ -1670,7 +1670,7 @@ void __far M_Drawer (int8_t isFromWipe) {
         Z_QuickMapStatus();
 
         start = 0;
-        y = 100 - M_StringHeight(menu_messageString)/2;
+        y = 100 - (M_StringHeight(menu_messageString)>>1);
         while(*(menu_messageString+start)) {
             for (i = 0; i < strlen(menu_messageString + start); i++) {
                 if (*(menu_messageString + start + i) == '\n') {
@@ -1686,7 +1686,7 @@ void __far M_Drawer (int8_t isFromWipe) {
                 start += i;
             }
                                 
-            x = 160 - M_StringWidth(string)/2;
+            x = 160 - (M_StringWidth(string)>>1);
             M_WriteText(x,y,string);
 
             y += HU_FONT_SIZE;

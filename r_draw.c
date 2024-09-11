@@ -1340,8 +1340,8 @@ void __far R_DrawViewBorder (void)
     if (scaledviewwidth == SCREENWIDTH) 
 		return; 
   
-    top = ((SCREENHEIGHT-SBARHEIGHT)-viewheight)/2; 
-    side = (SCREENWIDTH-scaledviewwidth)/2; 
+    top = ((SCREENHEIGHT-SBARHEIGHT)-viewheight)>>1; 
+    side = (SCREENWIDTH-scaledviewwidth)>>1; 
  
     // copy top and one line of left side 
     R_VideoErase (0, top*SCREENWIDTH+side); 

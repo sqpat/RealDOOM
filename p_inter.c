@@ -72,7 +72,7 @@ boolean __near P_GiveAmmo (  ammotype_t	ammo, int16_t		num ) {
     if (num)
 		num *= clipammo[ammo];
     else
-		num = clipammo[ammo]/2;
+		num = clipammo[ammo]>>1;
     
     if (gameskill == sk_baby
 	|| gameskill == sk_nightmare)
@@ -689,6 +689,7 @@ fixed_t __near getMassThrust(int16_t damage, int8_t id){
 
 			case MT_VILE:
 			case MT_UNDEAD:
+				// these arent clean multiplies. dont think it is safe to round and do one operation..
 				return FastDiv32u16u(FastMul16u32u(damage, 0xc8000), 500);
 			case MT_BABY:
 				return FastDiv32u16u(FastMul16u32u(damage, 0xc8000), 600);
@@ -701,7 +702,7 @@ fixed_t __near getMassThrust(int16_t damage, int8_t id){
 
 			case MT_KEEN:
 			case MT_BOSSBRAIN:
-				
+
 				return damage / 80;
 
 
@@ -815,7 +816,7 @@ void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t 
 			if (player.armortype == 1)
 			saved = damage/3;
 			else
-			saved = damage/2;
+			saved = damage>>1;
 	    
 			if (player.armorpoints <= saved)
 			{
