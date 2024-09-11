@@ -262,8 +262,7 @@ boolean __near P_CheckMeleeRange (mobj_t __far* actor)
 	fixed_t plx;
 	fixed_t ply;
 	fixed_t actorX, actorY;
-	//fixed_t plradius;
-	fixed_t_union plradius;
+	int16_t plradius;
 	
 #ifdef MOVE_P_SIGHT
 	//todoaddr inline later
@@ -282,12 +281,11 @@ boolean __near P_CheckMeleeRange (mobj_t __far* actor)
 	pl_pos = &mobjposlist[plRef];
 	plx = pl_pos->x.w;
 	ply = pl_pos->y.w;
-	plradius.h.intbits = mobjinfo[pl->type].radius;
-	plradius.h.fracbits = 0;
-
+	plradius  = mobjinfo[pl->type].radius;
+	
 	dist.w = P_AproxDistance (plx-actorX, ply-actorY);
-	plradius.h.intbits += (MELEERANGE - 20);
-    if (dist.h.intbits >= plradius.h.intbits)
+	plradius += (MELEERANGE - 20);
+    if (dist.h.intbits >= plradius)
 		return false;
     if (! P_CheckSight (actor, pl, actor_pos, pl_pos) )
 		return false;
@@ -1851,6 +1849,7 @@ void __near A_FatAttack3 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 	THINKERREF moRef;
 	THINKERREF actortargetRef;
 	mobj_pos_t __far*	mo_pos;
+	int8_t mospeed;
 	A_FaceTarget(actor);
 	actortargetRef = actor->targetRef;
 
@@ -1861,16 +1860,17 @@ void __near A_FatAttack3 (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 	// todo hardcode this value, it's static..
 	mo_pos->angle.wu -= FATSPREAD/2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an, mobjinfo[mo->type].speed);
-    mo->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an, mobjinfo[mo->type].speed);
+	mospeed = mobjinfo[mo->type].speed;
+    mo->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an, mospeed);
+    mo->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an, mospeed);
 
 	moRef = P_SpawnMissile (actor, actor_pos, (&thinkerlist[actortargetRef].data), MT_FATSHOT);
 	mo = setStateReturn;
 	mo_pos = setStateReturn_pos;
 	mo_pos->angle.wu += FATSPREAD/2;
     an = mo_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
-    mo->momx.w = FixedMulTrig(FINE_COSINE_ARGUMENT, an, mobjinfo[mo->type].speed);
-    mo->momy.w = FixedMulTrig(FINE_SINE_ARGUMENT, an, mobjinfo[mo->type].speed);
+    mo->momx.w = FixedMulTrigSpeed(FINE_COSINE_ARGUMENT, an, mospeed);
+    mo->momy.w = FixedMulTrigSpeed(FINE_SINE_ARGUMENT, an, mospeed);
 }
 
 
