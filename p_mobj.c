@@ -724,7 +724,7 @@ __near P_NightmareRespawn(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
 	mo = setStateReturn;
 	mo_pos = setStateReturn_pos;
 	//mo->spawnpoint = mobjspawnpoint;
-    //todo does this work? or need to be in fixed_mul? -sq
+    //todo  fixed_mul? fastdiv -sq
 	mo_pos->angle.wu = ANG45 * (mobjspawnpoint.angle/45);
 
 	if (mobjspawnpoint.options & MTF_AMBUSH) {
@@ -1099,7 +1099,7 @@ __near P_SpawnPlayerMissile
 
 	
 	z.w = playerMobj_pos->z.w;
-	z.h.intbits += 4 * 8;
+	z.h.intbits += 32;
 	
     thRef = P_SpawnMobj (playerMobj_pos->x.w, playerMobj_pos->y.w,z.w, type, playerMobj->secnum);
 	th = setStateReturn;

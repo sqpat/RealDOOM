@@ -1583,8 +1583,8 @@ void __near P_UseLines ()  {
 
 //	x2.w = x1.w + (USERANGE)*finecosine[angle];
 //	y2.w = y1.w + (USERANGE)*finesine[angle];
-	x2.w = x1.w + (finecosine[angle] << 8);
-	y2.w = y1.w + (finesine[angle] << 8);
+	x2.w = x1.w + (finecosine[angle] << 6);
+	y2.w = y1.w + (finesine[angle] << 6);
     P_PathTraverse ( x1, y1, x2, y2, PT_ADDLINES, PTR_UseTraverse );
 }
 

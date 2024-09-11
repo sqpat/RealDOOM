@@ -69,6 +69,7 @@ void __near R_InitTextureMapping(void) {
 	fixed_t		focallength;
 	fixed_t_union		temp;
 	fineangle_t	an;
+	fixed_t     cosadj;
 	int16_t		level;
 	fixed_t	dy;
 	int16_t		i;
@@ -166,8 +167,9 @@ void __near R_InitTextureMapping(void) {
 
 	for (i = 0; i < viewwidth; i++) {
 		an = xtoviewangle[i];
-		// cosine is 17 bit in a 32 bit storage
-		distscale[i] = FastDiv32u16u(0x10000L, (uint16_t) (finecosine[an]));
+		// cosine is 17 bit in a 32 bit storage... we can probably figure out a way to do this without labs.
+		cosadj = labs(finecosine[an]);
+		distscale[i] = FixedDivWholeA(1, cosadj);
 	}
 	Z_QuickMapRender();
 

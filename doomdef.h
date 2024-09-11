@@ -278,6 +278,14 @@ fixed_t32	FixedMulTrig(uint16_t trigtype, fineangle_t fineangle, fixed_t32 b);
 
 #pragma aux (speedfuncparams)  FixedMulTrigSpeed;
 fixed_t32	FixedMulTrigSpeed(uint16_t trigtype, fineangle_t fineangle, int8_t speed);
+
+
+#pragma aux trig16params \
+                    __modify [bx] \
+                    __parm [ax] [dx] [bx] \
+                    __value [dx ax];
+#pragma aux (trig16params)  FastMulTrig16;
+
 fixed_t32	FastMulTrig16(uint16_t trigtype, fineangle_t fineangle, int16_t b);
 
 //fixed_t32	FixedMulTrig16(uint16_t trigtype, fineangle_t fineangle, int16_t b);

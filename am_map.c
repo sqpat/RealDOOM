@@ -928,11 +928,11 @@ __near AM_drawFline
 #define PUTDOT(xx,yy,cc) screen0[(yy)*automap_screenwidth+(xx)]=(cc)
 
     dx = fl->b.x - fl->a.x;
-    ax = 2 * (dx<0 ? -dx : dx);
+    ax = (dx<0 ? -dx : dx) << 1;
     sx = dx<0 ? -1 : 1;
 
     dy = fl->b.y - fl->a.y;
-    ay = 2 * (dy<0 ? -dy : dy);
+    ay = (dy<0 ? -dy : dy) << 1;
     sy = dy<0 ? -1 : 1;
 
     x = fl->a.x;
@@ -1101,12 +1101,12 @@ void __near AM_rotate ( int16_t __near*	x, int16_t __near* y, fineangle_t a ) {
 	fixed_t_union tmpy;
 
 
-    tmpx.w = ((int32_t)(*x * finecosine[a])) - ((int32_t)(*y * finesine[a]));
-    tmpy.w = ((int32_t)(*x * finesine[a])) + ((int32_t)(*y*finecosine[a]));
+    //tmpx.w = ((int32_t)(*x * finecosine[a])) - ((int32_t)(*y * finesine[a]));
+    //tmpy.w = ((int32_t)(*x * finesine[a])) + ((int32_t)(*y*finecosine[a]));
 
-    //tmpx.w = (FastMulTrig16(FINE_COSINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_SINE_ARGUMENT, a,  *y);
-    //tmpy.w = (FastMulTrig16(FINE_SINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_COSINE_ARGUMENT, a,  *y);
 
+    tmpx.w = (FastMulTrig16(FINE_COSINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_SINE_ARGUMENT, a,  *y);
+    tmpy.w = (FastMulTrig16(FINE_SINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_COSINE_ARGUMENT, a,  *y);
 
 	*y = tmpy.h.intbits;
 	*x = tmpx.h.intbits;

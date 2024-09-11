@@ -579,7 +579,7 @@ mov   es, ax    ; store ax in es
 mov   DS, DX    ; store sign bits in DS
 AND   DX, BX	; S0*BX
 NEG   DX
-mov   SI, DX	; DI stores hi word return
+mov   SI, DX	; SI stores hi word return
 
 mov   DX, DS    ; restore sign bits from DS
 
@@ -709,8 +709,8 @@ ENDP
 PROC FastMulTrig16_
 PUBLIC FastMulTrig16_
 
-; DX:AX  *  BX:00
-;  0  1   2  
+; DX:AX  *  BX
+;  0  1      2  
 
 ; DX:AX * BX
 ; (dont shift answer 16)
@@ -736,9 +736,7 @@ PUBLIC FastMulTrig16_
 ; BX is value 2
 
 ; DX:AX * BX
-
-; BX is used by this function and not preserved! fine in our use case.
-; lookup the fine angle
+; need to sign extend BX to CX...
 
 ; do lookup..
 
@@ -750,26 +748,30 @@ MOV es, ax  ; put segment in ES
 MOV ax, es:[BX]
 MOV bx, es:[BX+2]
 
-xchg bx, dx
 
-; DX:AX is trig val, 
 
 ; begin multiply...
 
-mov  es, ax ; store ax copy
-mov  ax, dx
-mul  bx      ; DX * BX
+AND   BX, DX
+NEG   BX        ; get sign mult for 16 bit param * high trig.
 
-; this can be and/neg 
+MOV   ES, BX    ; store it in ES
 
-mov  dx, es
-mov  es, ax
-mov  ax, dx
+MOV   BX, AX  ; BX stores trig param lowbits
+MOV   AX, DX  ; AX stores 16 bit param 
 
-mul  bx      ; AX * BX
+CWD   ; DX gets 16 bit arg's sign bits
+AND   DX, BX  ; still need to neg. move after mul for pipelining
+XCHG  DX, BX  ; swap params
 
-mov  bx, es
-add  ax, bx
+MUL   DX
+
+NEG   BX      ; finish the sign multiply from above, after the queue is full from mul
+ADD   DX, BX  ; add first sign bits back
+MOV   BX, ES  ; add second sign bits back
+ADD   DX, BX
+
+
 
 ret
 
