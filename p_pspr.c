@@ -317,7 +317,8 @@ void __near A_WeaponReady (  pspdef_t __near*	psp ) {
 		player.attackdown = false;
 	}
     // bob the weapon based on movement speed
-	angle = (128*(leveltime.h.fracbits))&FINEMASK;
+	// todo: could call FixedMulTrigNoShift with a single extra shift if we move bytes around.
+	angle = ((leveltime.h.fracbits) << 7)&FINEMASK;
 	//angle = (128 * leveltime.w)&FINEMASK;
 	psp->sx = FRACUNIT + FixedMulTrig(FINE_COSINE_ARGUMENT, angle, player.bob.w);
     angle &= FINEANGLES/2-1;

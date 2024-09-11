@@ -269,7 +269,8 @@ typedef uint8_t powertype_t;
 
 typedef uint16_t fineangle_t;
 
-
+// NoShift variant takes in an offset (index shifted by 2 already for dword lookup). 
+// We do this because shifts are a little slow and we would be shifting right then left again in many cases.
 fixed_t32	FixedMulTrig(uint16_t trigtype, fineangle_t fineangle, fixed_t32 b);
 fixed_t32	FixedMulTrigNoShift(uint16_t trigtype, uint16_t fineanglelookup, fixed_t32 b);
 

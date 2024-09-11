@@ -1651,14 +1651,14 @@ void __near A_Fire (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	if (!P_CheckSight ((&thinkerlist[actor->targetRef].data), dest, &mobjposlist[actor->targetRef], dest_pos) )
 		return;
 
-    an = dest_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
+    an = (dest_pos->angle.hu.intbits >> 1) & 0xFFFC;
 
 
 	P_UnsetThingPosition (actor, actor_pos);
 
 	//todo isnt this just multiplied by 24?
-	actor_pos->x.w = dest_pos->x.w + FixedMulTrig(FINE_COSINE_ARGUMENT, an, 24*FRACUNIT);
-	actor_pos->y.w = dest_pos->y.w + FixedMulTrig(FINE_SINE_ARGUMENT, an, 24*FRACUNIT);
+	actor_pos->x.w = dest_pos->x.w + FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, 24*FRACUNIT);
+	actor_pos->y.w = dest_pos->y.w + FixedMulTrigNoShift(FINE_SINE_ARGUMENT,   an, 24*FRACUNIT);
 
 	actor_pos->z.w = dest_pos->z.w;
     P_SetThingPosition (actor, actor_pos, -1);
@@ -1761,7 +1761,8 @@ void __near A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 		return;
 	S_StartSoundFromRef (actor, sfx_barexp);
 	P_DamageMobj ((&thinkerlist[actor->targetRef].data), actor, actor, 20);
-	an = actor_pos->angle.hu.intbits >> SHORTTOFINESHIFT;
+    an = (actor_pos->angle.hu.intbits >> 1) & 0xFFFC;
+
 	fireRef = actor->tracerRef;
 
 	actorTarget->momz.w = GetVileMomz(actorTarget->type);
@@ -1775,8 +1776,8 @@ void __near A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	fire_pos = &mobjposlist[fireRef];
 	// move the fire between the vile and the player
 	//todo isnt this just multiplied by 24?
-	fire_pos->x.w = actorTarget_pos->x.w - FixedMulTrig(FINE_COSINE_ARGUMENT, an, 24*FRACUNIT);
-	fire_pos->y.w = actorTarget_pos->y.w - FixedMulTrig(FINE_SINE_ARGUMENT, an, 24*FRACUNIT);
+	fire_pos->x.w = actorTarget_pos->x.w - FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, 24*FRACUNIT);
+	fire_pos->y.w = actorTarget_pos->y.w - FixedMulTrigNoShift(FINE_SINE_ARGUMENT, an, 24*FRACUNIT);
     P_RadiusAttack (fire, fire_pos, actor, 70 );
 }
 
@@ -1963,7 +1964,8 @@ void __near A_PainShootSkull (mobj_t __far* actor, angle_t	angle ) {
 	}
 
     // okay, there's playe for another one
-    an = angle.hu.intbits >> SHORTTOFINESHIFT;
+    an = (angle.hu.intbits >> 1) & 0xFFFC;
+	
 	actortargetRef = actor->targetRef;
 	radii = mobjinfo[actor->type].radius + mobjinfo[MT_SKULL].radius;
 	prestep.h.intbits = 4 + 3 * ((radii) >> 1);
@@ -1976,8 +1978,8 @@ void __near A_PainShootSkull (mobj_t __far* actor, angle_t	angle ) {
 
 
     
-    x = actor_pos->x.w + FixedMulTrig(FINE_COSINE_ARGUMENT, an, prestep.w);
-    y = actor_pos->y.w + FixedMulTrig(FINE_SINE_ARGUMENT, an, prestep.w);
+    x = actor_pos->x.w + FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, an, prestep.w);
+    y = actor_pos->y.w + FixedMulTrigNoShift(FINE_SINE_ARGUMENT, an, prestep.w);
 	z.w = actor_pos->z.w;
 	z.h.intbits += 8;
 		

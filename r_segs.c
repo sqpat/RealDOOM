@@ -811,8 +811,8 @@ void __near R_RenderOneSeg ()
 // correct spots or you end up doing things like comparisons between uint32_t and int32_t.
 void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
     fixed_t		hyp = 0;
-    fineangle_t	distangle = 0;
-	fineangle_t offsetangle;
+    uint16_t	distangle = 0;
+	uint16_t offsetangle;
     int16_t			lightnum;
 	fixed_t_union rw_scalestep;
 	boolean     use16bit = false;
@@ -866,12 +866,12 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 
 
 
-	offsetangle = abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
+	offsetangle = (abs((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> 1) & 0xFFFC;
 
-    if (offsetangle < FINE_ANG90){
+    if (offsetangle < FINE_ANG90_NOSHIFT){
 		hyp = R_PointToDist (curlinev1.x, curlinev1.y);
-	    distangle = FINE_ANG90 - offsetangle;
-	    rw_distance = FixedMulTrig(FINE_SINE_ARGUMENT, distangle, hyp);
+	    distangle = FINE_ANG90_NOSHIFT - offsetangle;
+	    rw_distance = FixedMulTrigNoShift(FINE_SINE_ARGUMENT, distangle, hyp);
 	} else {
 		// optimized from the above where distangle is FINE_ANG90 - FINE_ANG90 (or 0) then 
 		// rw_distance is hyp multiplied by sine 0 (which is 0).
@@ -1094,19 +1094,19 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 		//offsetangle = ((rw_normalangle_shiftleft3) - (rw_angle1.hu.intbits)) >> SHORTTOFINESHIFT;
 
 
-		if (offsetangle > FINE_ANG180) {
-			offsetangle = MOD_FINE_ANGLE(-offsetangle);
+		if (offsetangle > FINE_ANG180_NOSHIFT) {
+			offsetangle = MOD_FINE_ANGLE_NOSHIFT(-offsetangle);
 		}
 
 		if (!hyp){
 			hyp = R_PointToDist (curlinev1.x, curlinev1.y);
 		}
 
-		if (offsetangle > FINE_ANG90) {
+		if (offsetangle > FINE_ANG90_NOSHIFT) {
 			//optimized from setting it to fine_ang90 then multiplying hyp by sine of 90
 			rw_offset.w = hyp;
 		} else {
-	 		rw_offset.w = FixedMulTrig(FINE_SINE_ARGUMENT, offsetangle, hyp);
+	 		rw_offset.w = FixedMulTrigNoShift(FINE_SINE_ARGUMENT, offsetangle, hyp);
 		}
 
 	

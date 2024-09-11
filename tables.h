@@ -69,7 +69,17 @@
 #define FINE_ANG270		0x1800
 #define FINE_ANG360		0x2000
 
+#define FINE_ANG90_NOSHIFT	    0x2000		    
+
+#define FINE_ANG45_NOSHIFT		0x1000
+#define FINE_ANG90_NOSHIFT	    0x2000		    
+#define FINE_ANG180_NOSHIFT		0x4000
+#define FINE_ANG270_NOSHIFT		0x6000
+#define FINE_ANG360_NOSHIFT		0x8000
+
+
 #define MOD_FINE_ANGLE(x)  ((x & 0x1FFF))
+#define MOD_FINE_ANGLE_NOSHIFT(x)  ((x & 0x7FFF))
 
 #define SLOPERANGE		2048
 #define SLOPEBITS		11

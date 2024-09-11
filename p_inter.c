@@ -789,9 +789,9 @@ void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t 
 				thrust *= 4;
 			}
 
-			ang.hu.fracbits = ang.hu.intbits >> SHORTTOFINESHIFT;
-			target->momx.w += FixedMulTrig(FINE_COSINE_ARGUMENT, ang.hu.fracbits, thrust);
-			target->momy.w += FixedMulTrig(FINE_SINE_ARGUMENT, ang.hu.fracbits, thrust);
+			ang.hu.intbits = (ang.hu.intbits >> 1) & 0xFFFC;
+			target->momx.w += FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, ang.hu.intbits, thrust);
+			target->momy.w += FixedMulTrigNoShift(FINE_SINE_ARGUMENT, ang.hu.intbits, thrust);
 		}
 	}
     // player specific

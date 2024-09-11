@@ -901,14 +901,14 @@ void __near P_HitSlideLine (int16_t linenum)
 		deltaangle.hu.intbits += ANG180_HIGHBITS;
     //	I_Error ("SlideLine: ang>ANG180");
 
-    lineangle.hu.fracbits = lineangle.hu.intbits >>= SHORTTOFINESHIFT;
-    deltaangle.hu.fracbits = deltaangle.hu.intbits >>= SHORTTOFINESHIFT;
+    lineangle.hu.intbits = (lineangle.hu.intbits >> 1) & 0xFFFC;
+    deltaangle.hu.intbits = (deltaangle.hu.intbits >> 1) & 0xFFFC;
 	
     movelen = P_AproxDistance (tmxmove.w, tmymove.w);
-    newlen = FixedMulTrig(FINE_COSINE_ARGUMENT, deltaangle.hu.fracbits, movelen);
+    newlen = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, deltaangle.hu.intbits, movelen);
 
-    tmxmove.w = FixedMulTrig(FINE_COSINE_ARGUMENT, lineangle.hu.fracbits, newlen);
-    tmymove.w = FixedMulTrig(FINE_SINE_ARGUMENT, lineangle.hu.fracbits, newlen);
+    tmxmove.w = FixedMulTrigNoShift(FINE_COSINE_ARGUMENT, lineangle.hu.intbits, newlen);
+    tmymove.w = FixedMulTrigNoShift(FINE_SINE_ARGUMENT, lineangle.hu.intbits, newlen);
 }
 
 
