@@ -388,8 +388,8 @@ boolean __near P_CheckMissileRange (mobj_t __far* actor)
 // Move in the current direction,
 // returns false if the move is blocked.
 //
-fixed_t	xspeed[8] = {FRACUNIT,47000,0,-47000,-FRACUNIT,-47000,0,47000};
-fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
+//fixed_t	xspeed[8] = {FRACUNIT,47000,0,-47000,-FRACUNIT,-47000,0,47000};
+//fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
 
 #define MAXSPECIALCROSS	8
 
@@ -402,6 +402,7 @@ boolean __near P_Move (mobj_t __far* actor, mobj_pos_t __far*	actor_pos)
     fixed_t_union	tryy;
     
 	int16_t linenum;
+	int16_t usespeed;
     
     // warning: 'catch', 'throw', and 'try'
     // are all C++ reserved words
@@ -410,7 +411,6 @@ boolean __near P_Move (mobj_t __far* actor, mobj_pos_t __far*	actor_pos)
 	
 
 	fixed_t_union temp;
-	temp.h.fracbits = 0;
 	if (actor->movedir == DI_NODIR) {
 		return false;
 	}
@@ -420,9 +420,53 @@ boolean __near P_Move (mobj_t __far* actor, mobj_pos_t __far*	actor_pos)
 		I_Error("Weird actor->movedir!");
 	}
 #endif
+	tryx.w = actor_pos->x.w;
+	tryy.w = actor_pos->y.w;
+	temp.h.fracbits = 0;
+	usespeed = mobjinfo[actor->type].speed;
 
-    tryx.w = actor_pos->x.w + mobjinfo[actor->type].speed*xspeed[actor->movedir];
-    tryy.w = actor_pos->y.w + mobjinfo[actor->type].speed*yspeed[actor->movedir];
+	switch(actor->movedir){
+		case 0:
+			 tryx.h.intbits +=  usespeed;
+			break;
+
+		case 1:
+			 temp.w = FastMul16u16u(usespeed, 47000);
+			 tryx.w += temp.w;
+			 tryy.w += temp.w;
+			break;
+
+		case 2:
+			 tryy.h.intbits +=  usespeed;
+			break;
+		case 3:
+			 temp.w = FastMul16u16u(usespeed, 47000);
+			 tryx.w -= temp.w;
+			 tryy.w += temp.w;
+			break;
+		case 4:
+			 temp.h.intbits = usespeed;
+			 tryx.w -= temp.w;
+			break;
+		case 5:
+			 temp.w = FastMul16u16u(usespeed, 47000);
+			 tryx.w -= temp.w;
+			 tryy.w -= temp.w;
+
+			break;
+		case 6:
+			 temp.h.intbits = usespeed;
+			 tryy.w -= temp.w;
+			break;
+		case 7:
+			 temp.w = FastMul16u16u(usespeed, 47000);
+			 tryx.w += temp.w;
+			 tryy.w -= temp.w;
+			break;
+	}
+
+//	tryx.w = actor_pos->x.w + mobjinfo[actor->type].speed*xspeed[actor->movedir];
+    //tryy.w = actor_pos->y.w + mobjinfo[actor->type].speed*yspeed[actor->movedir];
 
 	try_ok = P_TryMove (actor, actor_pos, tryx, tryy);
 
@@ -971,8 +1015,9 @@ void __near A_FaceTarget (mobj_t __far* actor)
 
 
 
-	actor_pos->angle.wu = R_PointToAngle2 (actor_pos->x,
-				    actor_pos->y,
+	actor_pos->angle.wu = R_PointToAngle2 (
+		actor_pos->x,
+		actor_pos->y,
 		actorTarget_pos->x,
 		actorTarget_pos->y);
     
@@ -1448,7 +1493,7 @@ void __near A_VileChase (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 
     mobjinfo_t __far*		info;
 	fixed_t_union   coord;
-	THINKERREF		temp;
+	THINKERREF		tempRef;
 	mobj_t __far*	corpsehit;
 	//todoaddr inline later
 	int16_t (__far  * getSpawnHealth)(uint8_t) = getSpawnHealthAddr;
@@ -1458,9 +1503,56 @@ void __near A_VileChase (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	coord.h.fracbits = 0;
     if (actor->movedir != DI_NODIR) {
 		mobj_pos_t __far* corpsehit_pos;
+		int16_t usespeed = mobjinfo[actor->type].speed;
+		fixed_t_union temp;
+		temp.h.fracbits = 0;
 		// check for corpses to raise
-		viletryx.w = actor_pos->x.w + mobjinfo[actor->type].speed*xspeed[actor->movedir];
-		viletryy.w = actor_pos->y.w + mobjinfo[actor->type].speed*yspeed[actor->movedir];
+		viletryx.w = actor_pos->x.w;// + mobjinfo[actor->type].speed*xspeed[actor->movedir];
+		viletryy.w = actor_pos->y.w;// + mobjinfo[actor->type].speed*yspeed[actor->movedir];
+		
+
+		switch(actor->movedir){
+			case 0:
+				viletryx.h.intbits +=  usespeed;
+				break;
+
+			case 1:
+				temp.w = FastMul16u16u(usespeed, 47000);
+				viletryx.w += temp.w;
+				viletryy.w += temp.w;
+				break;
+
+			case 2:
+				viletryy.h.intbits +=  usespeed;
+				break;
+			case 3:
+				temp.w = FastMul16u16u(usespeed, 47000);
+				viletryx.w -= temp.w;
+				viletryy.w += temp.w;
+				break;
+			case 4:
+				temp.h.intbits = usespeed;
+				viletryx.w -= temp.w;
+				break;
+			case 5:
+				temp.w = FastMul16u16u(usespeed, 47000);
+				viletryx.w -= temp.w;
+				viletryy.w -= temp.w;
+
+				break;
+			case 6:
+				temp.h.intbits = usespeed;
+				viletryy.w -= temp.w;
+				break;
+			case 7:
+				temp.w = FastMul16u16u(usespeed, 47000);
+				viletryx.w += temp.w;
+				viletryy.w -= temp.w;
+				break;
+		}
+
+
+
 		coord.h.intbits = bmaporgx;
 		// todo optimize when doing doom2 stuff
 		xl = (viletryx.w - coord.w - MAXRADIUS*2)>>MAPBLOCKSHIFT;
@@ -1481,10 +1573,10 @@ void __near A_VileChase (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 			{
 				// got one!
 
-				temp = actor->targetRef;
+				tempRef = actor->targetRef;
 				actor->targetRef = corpsehitRef;
 				A_FaceTarget (actor);
-				actor->targetRef = temp;
+				actor->targetRef = tempRef;
 					
 				P_SetMobjState (actor, S_VILE_HEAL1);
 				//actor = setStateReturn;
