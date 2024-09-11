@@ -320,10 +320,10 @@ boolean __near P_CheckMissileRange (mobj_t __far* actor)
 		return false;
 	}
 
-    if (actor_pos->flags & MF_JUSTHIT ) {
+    if (actor_pos->flags1 & MF_JUSTHIT ) {
 		// the target just hit the enemy,
 		// so fight back!
-		actor_pos->flags &= ~MF_JUSTHIT;
+		actor_pos->flags1 &= ~MF_JUSTHIT;
 		return true;
     }
 	
@@ -471,7 +471,7 @@ boolean __near P_Move (mobj_t __far* actor, mobj_pos_t __far*	actor_pos)
 
     if (!try_ok) {
 		// open any specials
-		if (actor_pos->flags & MF_FLOAT && floatok) {
+		if (actor_pos->flags1 & MF_FLOAT && floatok) {
 			// must adjust height
 			SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
 
@@ -480,7 +480,7 @@ boolean __near P_Move (mobj_t __far* actor, mobj_pos_t __far*	actor_pos)
 			else
 				actor_pos->z.h.intbits -= FLOATSPEED_HIGHBITS;
 
-			actor_pos->flags |= MF_INFLOAT;
+			actor_pos->flags2 |= MF_INFLOAT;
 
 			return true;
 		}
@@ -503,12 +503,12 @@ boolean __near P_Move (mobj_t __far* actor, mobj_pos_t __far*	actor_pos)
 
 		return good;
     } else {
-		actor_pos->flags &= ~MF_INFLOAT;
+		actor_pos->flags2 &= ~MF_INFLOAT;
  
 	}
 
 	
-	if (!(actor_pos->flags & MF_FLOAT)) {
+	if (!(actor_pos->flags1 & MF_FLOAT)) {
     	SET_FIXED_UNION_FROM_SHORT_HEIGHT(actor_pos->z, actor->floorz);
 	}
 
@@ -775,11 +775,11 @@ void __near A_Look (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 		mobj_pos_t __far* targ_pos = &mobjposlist[targRef];
 
 		targ = (mobj_t __far*)(&thinkerlist[targRef].data);
-		if (targ_pos->flags & MF_SHOOTABLE) {
+		if (targ_pos->flags1 & MF_SHOOTABLE) {
 
 			actor->targetRef = targRef;
 
-			if (actor_pos->flags & MF_AMBUSH)
+			if (actor_pos->flags1 & MF_AMBUSH)
 			{
 				
 				if (P_CheckSight(actor, targ, actor_pos, targ_pos)) {
@@ -906,7 +906,7 @@ void __near A_Chase (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 
 
 	
-    if (!actorTarget || !(actorTarget_pos->flags&MF_SHOOTABLE)) {
+    if (!actorTarget || !(actorTarget_pos->flags1&MF_SHOOTABLE)) {
 		// look for a new target
 		if (P_LookForPlayers(actor, true)) {
 			 
@@ -923,8 +923,8 @@ void __near A_Chase (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 
 
 	// do not attack twice in a row
-    if (actor_pos->flags & MF_JUSTATTACKED) {
-		actor_pos->flags &= ~MF_JUSTATTACKED;
+    if (actor_pos->flags1 & MF_JUSTATTACKED) {
+		actor_pos->flags1 &= ~MF_JUSTATTACKED;
 		if (gameskill != sk_nightmare && !fastparm) {
 			P_NewChaseDir(actor, actor_pos);
 		}
@@ -961,7 +961,7 @@ void __near A_Chase (mobj_t __far*	actor, mobj_pos_t __far* actor_pos)
 
 		P_SetMobjState (actor, getMissileState(actor->type));
 		//actor = setStateReturn;
-		actor_pos->flags |= MF_JUSTATTACKED;
+		actor_pos->flags1 |= MF_JUSTATTACKED;
 
 		return;
     }
@@ -1007,9 +1007,9 @@ void __near A_FaceTarget (mobj_t __far* actor)
 	actorTarget_pos = &mobjposlist[actor->targetRef];
 	actor_pos = GET_MOBJPOS_FROM_MOBJ(actor);
 
-    actor_pos->flags &= ~MF_AMBUSH;
+    actor_pos->flags1 &= ~MF_AMBUSH;
 	actorTarget_pos = &mobjposlist[actor->targetRef];
-	actorTargetShadow = actorTarget_pos->flags & MF_SHADOW ? 1 : 0;
+	actorTargetShadow = actorTarget_pos->flags2 & MF_SHADOW ? 1 : 0;
 
 
 
@@ -1441,7 +1441,7 @@ boolean __near PIT_VileCheck (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos
 	statenum_t (__far  * getRaiseState)(uint8_t) = getRaiseStateAddr;
 
 
-	if (!(thing_pos->flags & MF_CORPSE)) {
+	if (!(thing_pos->flags2 & MF_CORPSE)) {
 		return true;	// not a monster
 	}
     
@@ -1587,7 +1587,8 @@ void __near A_VileChase (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 				P_SetMobjState (corpsehit,getRaiseState(corpsehit->type));
 				//corpsehit = setStateReturn;
 				corpsehit->height.h.intbits <<= 2;
-				corpsehit_pos->flags = info->flags;
+				corpsehit_pos->flags1 = info->flags1;
+				corpsehit_pos->flags2 = info->flags2;
 				corpsehit->health = getSpawnHealth(corpsehit->type);
 				corpsehit->targetRef = NULL_THINKERREF;
 
@@ -1898,7 +1899,7 @@ void __near A_SkullAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 		return;
 	}
 
-	actor_pos->flags |= MF_SKULLFLY;
+	actor_pos->flags2 |= MF_SKULLFLY;
 
     destRef = actor->targetRef;	
 
@@ -2080,7 +2081,7 @@ void __near A_Pain (mobj_t __far* actor)
 void __near A_Fall (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 {
 	// actor is on ground, it can be walked over
-    actor_pos->flags &= ~MF_SOLID;
+    actor_pos->flags1 &= ~MF_SOLID;
 
     // So change this if corpse objects
     // are meant to be obstacles.

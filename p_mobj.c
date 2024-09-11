@@ -265,7 +265,7 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key)
 
 
 	// don't spawn any monsters if -nomonsters
-	if (nomonsters && (i == MT_SKULL || (mobjinfo[i].flags & MF_COUNTKILL))) {
+	if (nomonsters && (i == MT_SKULL || (mobjinfo[i].flags2 & MF_COUNTKILL))) {
 		return;
 	}
 
@@ -275,7 +275,7 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key)
 	x.h.intbits = mthingx;
 	y.h.intbits = mthingy;
 
-	if (mobjinfo[i].flags & MF_SPAWNCEILING) {
+	if (mobjinfo[i].flags1 & MF_SPAWNCEILING) {
 		z.w = ONCEILINGZ;
 	}
 	else {
@@ -290,16 +290,16 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key)
 
 	if (mobj->tics > 0 && mobj->tics < 240)
 		mobj->tics = 1 + (P_Random() % mobj->tics);
-	if (mobj_pos->flags & MF_COUNTKILL)
+	if (mobj_pos->flags2 & MF_COUNTKILL)
 		totalkills++;
-	if (mobj_pos->flags & MF_COUNTITEM)
+	if (mobj_pos->flags2 & MF_COUNTITEM)
 		totalitems++;
 
 	//todo does this work? or need to be in fixed_mul? -sq
 	mobj_pos->angle.wu = ANG45 * (mthingangle / 45);
 
 	if (mthingoptions & MTF_AMBUSH)
-		mobj_pos->flags |= MF_AMBUSH;
+		mobj_pos->flags1 |= MF_AMBUSH;
 
  
 
@@ -365,7 +365,7 @@ void __near P_ExplodeMissile(mobj_t __far* mo, mobj_pos_t __far* mo_pos){
 		mo->tics = 1;
 	}
 
-	mo_pos->flags &= ~MF_MISSILE;
+	mo_pos->flags2 &= ~MF_MISSILE;
 	
 	if (mobjinfo[mo->type].deathsound) {
 		S_StartSound(mo, mobjinfo[mo->type].deathsound);
@@ -401,9 +401,9 @@ void __near P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 
 	if (!mo->momx.w && !mo->momy.w) {
 
-		if (mo_pos->flags & MF_SKULLFLY) {
+		if (mo_pos->flags2 & MF_SKULLFLY) {
 			// the skull slammed into something
-			mo_pos->flags &= ~MF_SKULLFLY;
+			mo_pos->flags2 &= ~MF_SKULLFLY;
 			mo->momx.w = mo->momy.w = mo->momz.w = 0;
 
 			P_SetMobjState (mo,mobjinfo[mo->type].spawnstate);
@@ -448,7 +448,7 @@ void __near P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 			// blocked move
 			if (motype == MT_PLAYER) {	// try to slide along it
 				P_SlideMove ();
-			} else if (mo_pos->flags & MF_MISSILE) {
+			} else if (mo_pos->flags2 & MF_MISSILE) {
 				// explode a missile
 				ceilinglinebacksecnum= lines_physics[ceilinglinenum].backsecnum;
 
@@ -481,7 +481,7 @@ void __near P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 		return;
     }
 
-	if (mo_pos->flags & (MF_MISSILE | MF_SKULLFLY)) {
+	if (mo_pos->flags2 & (MF_MISSILE | MF_SKULLFLY)) {
 
 	 
 		return; 	// no friction for missiles ever
@@ -492,7 +492,7 @@ void __near P_XYMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 		return;		// no friction when airborne
 	}
     
-	if (mo_pos->flags & MF_CORPSE) {
+	if (mo_pos->flags2 & MF_CORPSE) {
 		// do not stop sliding
 		//  if halfway off a step with some momentum
 		if (mo->momx.w > FRACUNIT/4 || mo->momx.w < -FRACUNIT/4 || mo->momy.w > FRACUNIT/4 || mo->momy.w < -FRACUNIT/4) {
@@ -554,9 +554,10 @@ void __near P_ZMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
     // adjust height
 	mo_pos->z.w += mo->momz.w;
 	
-    if (mo_pos->flags & MF_FLOAT && mo->targetRef) {
+    if (mo_pos->flags1 & MF_FLOAT && mo->targetRef) {
 		// float down towards target if too close
-		if ( !(mo_pos->flags & MF_SKULLFLY) && !(mo_pos->flags & MF_INFLOAT) ) {
+		//todo can this be done with a single if?
+		if ( !(mo_pos->flags2 & MF_SKULLFLY) && !(mo_pos->flags2 & MF_INFLOAT) ) {
 			moTarget = (mobj_t __far*)&thinkerlist[mo->targetRef].data;
 			moTarget_pos = &mobjposlist[mo->targetRef];
 			dist = P_AproxDistance (mo_pos->x.w - moTarget_pos->x.w,
@@ -580,7 +581,7 @@ void __near P_ZMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 		// Note (id):
 		//  somebody left this after the setting momz to 0,
 		//  kinda useless there.
-		if (mo_pos->flags & MF_SKULLFLY)
+		if (mo_pos->flags2 & MF_SKULLFLY)
 		{
 			// the skull slammed into something
 			mo->momz = -mo->momz;
@@ -604,17 +605,17 @@ void __near P_ZMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 		mo_pos->z.w = temp.w;
 
 	#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-		if (mo_pos->flags & MF_SKULLFLY) {
+		if (mo_pos->flags2 & MF_SKULLFLY) {
 			// the skull slammed into something
 			mo->momz.w = -mo->momz.w;
 		}
 	#endif
 
-		if ( (mo_pos->flags & MF_MISSILE) && !(mo_pos->flags & MF_NOCLIP) ) {
+		if ( (mo_pos->flags2 & MF_MISSILE) && !(mo_pos->flags1 & MF_NOCLIP) ) {
 			P_ExplodeMissile (mo, mo_pos);
 			return;
 		}
-	} else if (! (mo_pos->flags & MF_NOGRAVITY) ) {
+	} else if (! (mo_pos->flags1 & MF_NOGRAVITY) ) {
 		if (mo->momz.w == 0) {
 			mo->momz.h.intbits = -GRAVITY_HIGHBITS << 1;
 		} else {
@@ -629,11 +630,11 @@ void __near P_ZMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 		}
 		mo_pos->z.w = temp.w - mo->height.w;
 
-		if (mo_pos->flags & MF_SKULLFLY) {	// the skull slammed into something
+		if (mo_pos->flags2 & MF_SKULLFLY) {	// the skull slammed into something
 			mo->momz.w = -mo->momz.w;
 		}
 	
-		if ( (mo_pos->flags & MF_MISSILE) && !(mo_pos->flags & MF_NOCLIP) ) {
+		if ( (mo_pos->flags2 & MF_MISSILE) && !(mo_pos->flags1 & MF_NOCLIP) ) {
 			P_ExplodeMissile (mo, mo_pos);
 			return;
 		}
@@ -707,7 +708,7 @@ __near P_NightmareRespawn(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
 	mobjtype = mobj->type;
 
 	// spawn it
-	if (mobjinfo[mobjtype].flags & MF_SPAWNCEILING){
+	if (mobjinfo[mobjtype].flags1 & MF_SPAWNCEILING){
 		z.w = ONCEILINGZ;
 	} else {
 		z.w = ONFLOORZ;
@@ -728,7 +729,7 @@ __near P_NightmareRespawn(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
 	mo_pos->angle.wu = ANG45 * (mobjspawnpoint.angle/45);
 
 	if (mobjspawnpoint.options & MTF_AMBUSH) {
-		mo_pos->flags |= MF_AMBUSH;
+		mo_pos->flags1 |= MF_AMBUSH;
 	}
 
     mo->reactiontime = 18;
@@ -746,7 +747,7 @@ void __near P_MobjThinker (mobj_t __far* mobj, mobj_pos_t __far* mobj_pos, THINK
 	// momentum movement
     fixed_t_union temp;
 
-	if (mobj->momx.w || mobj->momy.w || (mobj_pos->flags&MF_SKULLFLY) ) {
+	if (mobj->momx.w || mobj->momy.w || (mobj_pos->flags2&MF_SKULLFLY) ) {
 		P_XYMovement (mobj, mobj_pos);
 
 		if ((thinkerlist[mobjRef].prevFunctype & TF_FUNCBITS) == TF_DELETEME_HIGHBITS) {
@@ -786,7 +787,7 @@ void __near P_MobjThinker (mobj_t __far* mobj, mobj_pos_t __far* mobj_pos, THINK
 		}
 	} else {
 		// check for nightmare respawn
-		if (!(mobj_pos->flags & MF_COUNTKILL)) {
+		if (!(mobj_pos->flags2 & MF_COUNTKILL)) {
 			return;
 		}
 		if (!respawnmonsters) {
@@ -843,7 +844,8 @@ __near P_SpawnMobj ( fixed_t	x, fixed_t	y, fixed_t	z, mobjtype_t	type, int16_t k
 	mobj->radius = info->radius;// *FRACUNIT;
 	mobj->height.h.intbits = info->height;// *FRACUNIT;
 	mobj->height.h.fracbits = 0;
-	mobj_pos->flags = info->flags;
+	mobj_pos->flags1 = info->flags1;
+	mobj_pos->flags2 = info->flags2;
     mobj->health = getSpawnHealth(type);
 
 
@@ -1025,7 +1027,7 @@ THINKERREF __near P_SpawnMissile (mobj_t __far* source, mobj_pos_t __far* source
 	an.wu = R_PointToAngle2 (source_pos->x, source_pos->y, dest_pos->x, dest_pos->y);
 
     // fuzzy player
-	if (dest_pos->flags & MF_SHADOW) {
+	if (dest_pos->flags2 & MF_SHADOW) {
 		temp = (P_Random() - P_Random());
 		temp  <<= 4;
 		an.hu.intbits += temp;

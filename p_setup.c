@@ -926,7 +926,6 @@ void  __near P_InitThinkers (void) {
 extern int16_t spriteLRU[4];
 extern int16_t activespritepages[4];
  
-extern int32_t totalpatchsize;
 
 
 extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
@@ -1033,8 +1032,6 @@ void __near Z_FreeConventionalAllocations() {
 	currentflatpage[3] = -1;
 
 	Z_QuickMapPhysics();
-
-	totalpatchsize = 0;
 
 	for (i = 0; i < 4; i++) {
 		activetexturepages[i] = FIRST_TEXTURE_LOGICAL_PAGE + i;

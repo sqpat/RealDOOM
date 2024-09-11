@@ -1324,7 +1324,8 @@ typedef struct
     //int32_t	mass;
     //uint8_t	damage;	// replaced with getter saved 64 bytes
 	// sfxenum_t	activesound;   replaced with getter  saved 48 bytes
-    int32_t	flags;
+    int16_t	flags1;
+    int16_t	flags2;
 	// statenum_t	raisestate;  replaced with getter
 
 } mobjinfo_t;

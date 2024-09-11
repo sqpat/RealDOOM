@@ -266,7 +266,8 @@ static int16_t	max_level_y;
 
 
 // based on player size
-static fixed_t_union 	min_scale_mtof; // used to tell when to stop zooming out
+//this is never a 32 bit level in any commercial levels..
+static uint16_t 	min_scale_mtof; // used to tell when to stop zooming out
 static fixed_t_union 	max_scale_mtof; // used to tell when to stop zooming in
 
 // old stuff for recovery later
@@ -314,19 +315,14 @@ fixed_16_t __near CYMTOF16(fixed_16_t y) {
  
 
 void
-V_MarkRect
-( int16_t	x,
-  int16_t	y,
-  int16_t	width,
-  int16_t	height );
+V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height);
 
  
 
 //
 //
 //
-void __near AM_activateNewScale(void)
-{
+void __near AM_activateNewScale(void) {
  
 
     screen_botleft_x += screen_viewport_width>>1;
@@ -341,9 +337,8 @@ void __near AM_activateNewScale(void)
 }
 
 
-void __near AM_restoreScaleAndLoc(void)
-{
-
+void __near AM_restoreScaleAndLoc(void) {
+	fixed_t_union temp;
     screen_viewport_width = old_screen_viewport_width;
     screen_viewport_height = old_screen_viewport_height;
     if (!followplayer) {
@@ -357,16 +352,17 @@ void __near AM_restoreScaleAndLoc(void)
     screen_topright_y = screen_botleft_y + screen_viewport_height;
 
     // Change the scaling multipliers
-
-    scale_mtof.w = FixedDivWholeA(automap_screenwidth, ((int32_t)screen_viewport_width << 16));
+	temp.h.intbits = screen_viewport_width;
+	temp.h.fracbits = 0;
+    // todo FixedDivWholeAB
+	scale_mtof.w = FixedDivWholeA(automap_screenwidth, temp.w);
     scale_ftom.w = FixedDivWholeA(1, scale_mtof.w);
 }
 
 //
 // adds a marker at the current location
 //
-void __near AM_addMark(void)
-{
+void __near AM_addMark(void) {
     markpoints[markpointnum].x = screen_botleft_x + (screen_viewport_width >>1);
     markpoints[markpointnum].y = screen_botleft_y + (screen_viewport_height >>1);
 	 
@@ -414,7 +410,12 @@ void __near AM_findMinMaxBoundaries(void)
 	a = FixedDiv(automap_screenwidth, max_w);
 	b = FixedDiv(automap_screenheight, max_h);
   
-    min_scale_mtof.w = a < b ? a : b;
+    min_scale_mtof = a < b ? a : b;
+
+	//if (min_scale_mtof > 0xB333){
+	//	I_Error("too big? %x", min_scale_mtof);
+	//}
+
 	max_scale_mtof.w = 0x54000;// FixedDiv(automap_screenheight, 2*16);
 
 
@@ -424,8 +425,7 @@ void __near AM_findMinMaxBoundaries(void)
 //
 //
 //
-void __near AM_changeWindowLoc(void)
-{
+void __near AM_changeWindowLoc(void) {
     if (m_paninc.x || m_paninc.y)
     {
 	followplayer = 0;
@@ -493,8 +493,7 @@ void __near AM_initVariables(void)
 
 
 
-void __near AM_clearMarks(void)
-{
+void __near AM_clearMarks(void) {
 	int8_t i;
 
     for (i=0;i<AM_NUMMARKPOINTS;i++)
@@ -506,16 +505,23 @@ void __near AM_clearMarks(void)
 // should be called at the start of every level
 // right now, i figure it out myself
 //
-void __near AM_LevelInit(void)
-{
+void __near AM_LevelInit(void) {
+	fixed_t_union temp;
 	scale_mtof.w = INITSCALEMTOF;
     AM_clearMarks();
 
     AM_findMinMaxBoundaries();
     //todo should this be a fixedMul by 1/0.7 instead?
-	scale_mtof.w = FixedDiv(min_scale_mtof.w, (int32_t) (0.7*FRACUNIT));
+	//scale_mtof.w = FixedDiv(min_scale_mtof, (int32_t) (0.7*FRACUNIT));
+
+	temp.h.intbits = min_scale_mtof;
+	temp.h.fracbits = 0;
+	scale_mtof.w = FastDiv3216u(temp.w, 0xB333);
+
+	//I_Error("%lx %lx %lx %lx", scale_mtof.w, a.w, b.w, min_scale_mtof);
+
 	if (scale_mtof.w > max_scale_mtof.w) {
-		scale_mtof.w = min_scale_mtof.w;
+		scale_mtof.w = min_scale_mtof;
 	}
     scale_ftom.w = FixedDivWholeA(1, scale_mtof.w);
 }
@@ -526,8 +532,7 @@ void __near AM_LevelInit(void)
 //
 //
 //
-void __far AM_Stop (void)
-{
+void __far AM_Stop (void) {
     static event_t st_notify = { 0, ev_keyup, AM_MSGEXITED };
 
     automapactive = false;
@@ -538,8 +543,7 @@ void __far AM_Stop (void)
 //
 //
 //
-void __far AM_Start (void)
-{
+void __far AM_Start (void) {
     static int8_t lastlevel = -1, lastepisode = -1;
 
     if (!stopped) 
@@ -558,9 +562,8 @@ void __far AM_Start (void)
 //
 // set the window scale to the maximum size
 //
-void __near AM_minOutWindowScale(void)
-{
-    scale_mtof.w = min_scale_mtof.w;
+void __near AM_minOutWindowScale(void) {
+    scale_mtof.w = min_scale_mtof;
     scale_ftom.w = FixedDivWholeA(1, scale_mtof.w);
     AM_activateNewScale();
 }
@@ -579,10 +582,7 @@ void __near AM_maxOutWindowScale(void)
 //
 // Handle events (user inputs) in automap mode
 //
-boolean
-__far AM_Responder
-( event_t __far*	ev )
-{
+boolean __far AM_Responder ( event_t __far* ev ) {
 
 	boolean rc;
     static int8_t bigstate=0;
@@ -701,14 +701,13 @@ __far AM_Responder
 //
 // Zooming
 //
-void __near AM_changeWindowScale(void)
-{
+void __near AM_changeWindowScale(void) {
 
     // Change the scaling multipliers
     scale_mtof.w = FixedMul1632(mtof_zoommul, scale_mtof.w)<<4;
     scale_ftom.w = FixedDivWholeA(1, scale_mtof.w);
 
-    if (scale_mtof.w < min_scale_mtof.w)
+    if (scale_mtof.w < min_scale_mtof)
 		AM_minOutWindowScale();
     else if (scale_mtof.w > max_scale_mtof.w)
 		AM_maxOutWindowScale();
@@ -740,9 +739,7 @@ void __near AM_doFollowPlayer(void) {
 //
 // Updates on Game Tick
 //
-void __far AM_Ticker (void)
-{
-
+void __far AM_Ticker (void) {
 
 	if (followplayer) {
 		AM_doFollowPlayer();
@@ -794,11 +791,7 @@ int16_t __near DOOUTCODE(int16_t oc, int16_t mx, int16_t my) {
 }
 
 
-boolean
-__near AM_clipMline
-( mline_t __near*	ml,
-  fline_t __near*	fl )
-{
+boolean __near AM_clipMline ( mline_t __near*	ml,fline_t __near*	fl ) {
     
     int16_t outcode1 = 0;
     int16_t outcode2 = 0;
@@ -909,11 +902,7 @@ __near AM_clipMline
 //
 // Classic Bresenham w/ whatever optimizations needed for speed
 //
-void
-__near AM_drawFline
-( fline_t __near*	fl,
-  uint8_t		color )
-{
+void __near AM_drawFline ( fline_t __near*	fl, uint8_t		color ) {
     register int16_t x;
 	register int16_t y;
 	register int16_t dx;
@@ -975,9 +964,7 @@ __near AM_drawFline
 //
 // Clip lines, draw visible part sof lines.
 //
-void __near AM_drawMline ( mline_t __near*	ml,
-  uint8_t		color )
-{
+void __near AM_drawMline ( mline_t __near*	ml, uint8_t	color ) {
 
     if (AM_clipMline(ml, &fl))
 		AM_drawFline(&fl, color); // draws it on frame buffer using fb coords
@@ -988,8 +975,7 @@ void __near AM_drawMline ( mline_t __near*	ml,
 //
 // Draws flat (floor/ceiling tile) aligned grid lines.
 //
-void __near AM_drawGrid()
-{
+void __near AM_drawGrid() {
     int16_t x, y;
 	int16_t start, end;
 
@@ -1032,8 +1018,7 @@ void __near AM_drawGrid()
 // Determines visible lines, draws them.
 // This is LineDef based, not LineSeg based.
 //
-void __near AM_drawWalls()
-{
+void __near AM_drawWalls() {
 	uint16_t i;
 	int16_t linev1Offset;
 	int16_t linev2Offset;
@@ -1101,11 +1086,6 @@ void __near AM_rotate ( int16_t __near*	x, int16_t __near* y, fineangle_t a ) {
 	fixed_t_union tmpx;
 	fixed_t_union tmpy;
 
-
-    //tmpx.w = ((int32_t)(*x * finecosine[a])) - ((int32_t)(*y * finesine[a]));
-    //tmpy.w = ((int32_t)(*x * finesine[a])) + ((int32_t)(*y*finecosine[a]));
-
-
     tmpx.w = (FastMulTrig16(FINE_COSINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_SINE_ARGUMENT, a,  *y);
     tmpy.w = (FastMulTrig16(FINE_SINE_ARGUMENT, a, *x)) - FastMulTrig16(FINE_COSINE_ARGUMENT, a,  *y);
 
@@ -1115,16 +1095,7 @@ void __near AM_rotate ( int16_t __near*	x, int16_t __near* y, fineangle_t a ) {
 }
 static mline_t	lc;
 
-void
-__near AM_drawLineCharacter
-( mline_t __near*	lineguy,
-  int16_t		lineguylines,
-  int16_t	scale,
-  fineangle_t	angle,
-  uint8_t		color,
-  int16_t	x,
-	int16_t	y )
-{
+void __near AM_drawLineCharacter ( mline_t __near*	lineguy,int16_t		lineguylines,int16_t	scale,fineangle_t	angle,uint8_t		color,int16_t	x,int16_t	y ){
     uint16_t		i;
 
     for (i=0;i<lineguylines;i++) {
@@ -1168,8 +1139,7 @@ __near AM_drawLineCharacter
     }
 }
 
-void __near AM_drawPlayers(void)
-{
+void __near AM_drawPlayers(void) {
 	
 	if (cheating)
 		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj_pos->angle.hu.intbits>>SHORTTOFINESHIFT, WHITE, playerMobj_pos->x.h.intbits, playerMobj_pos->y.h.intbits);
@@ -1180,8 +1150,7 @@ void __near AM_drawPlayers(void)
 
 }
 
-void __near AM_drawThings()
-{
+void __near AM_drawThings() {
     uint16_t		i;
     mobj_pos_t __far*	t;
 	THINKERREF tRef;
@@ -1223,16 +1192,14 @@ void __near AM_drawMarks(void)
 
 }
 
-void __near AM_drawCrosshair()
-{
+void __near AM_drawCrosshair() {
     screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
 
 }
 //extern int16_t setval;
 
 //extern void G_ExitLevel();
-void __far AM_Drawer (void)
-{
+void __far AM_Drawer (void) {
 
 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory
 	//G_ExitLevel();

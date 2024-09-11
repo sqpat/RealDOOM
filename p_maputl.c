@@ -456,12 +456,12 @@ void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_p
 
 	THINKERREF thingsnextRef = thing_pos->snextRef;
 	THINKERREF thingbnextRef = thing->bnextRef;
-	int32_t thingflags = thing_pos->flags;
+	int16_t thingflags1 = thing_pos->flags1;
 	//int16_t thingsubsecnum = thing->subsecnum;
 	int16_t thingsecnum = thing->secnum;
 	THINKERREF thisRef = GETTHINKERREF(thing);
 
-	if (!(thingflags & MF_NOSECTOR)) {
+	if (!(thingflags1 & MF_NOSECTOR)) {
 		// inert things don't need to be in blockmap?
 		// unlink from subsector
 		if (thingsnextRef) {
@@ -479,7 +479,7 @@ void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_p
 	}
 
 	/*
-	if ( ! (thingflags & MF_NOSECTOR) ) {
+	if ( ! (thingflags1 & MF_NOSECTOR) ) {
 	// inert things don't need to be in blockmap?
 	// unlink from subsector
 
@@ -503,7 +503,7 @@ void __near P_UnsetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_p
 	
 
 
-    if (! (thingflags & MF_NOBLOCKMAP) ) {
+    if (! (thingflags1 & MF_NOBLOCKMAP) ) {
 	// insert things don't need to be in blockmap
 	// unlink from block map
 		fixed_t_union thingx = thing_pos->x;
@@ -578,7 +578,7 @@ void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos
 	}
 
 
-	if (!(thing_pos->flags & MF_NOSECTOR)) {
+	if (!(thing_pos->flags1 & MF_NOSECTOR)) {
 		// invisible things don't go into the sector links
 
 		oldsectorthinglist = sectors[thing->secnum].thinglistRef;
@@ -600,7 +600,7 @@ void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos
 
 
 	/*
-    if ( ! (thing->flags & MF_NOSECTOR) ) {
+    if ( ! (thing->flags1 & MF_NOSECTOR) ) {
 		// invisible things don't go into the sector links
 
 		thing->snextRef = sectors[subsectorsecnum].thinglistRef;
@@ -612,7 +612,7 @@ void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* thing_pos
 
 
     // link into blockmap
-    if ( ! (thing_pos->flags & MF_NOBLOCKMAP) ) {
+    if ( ! (thing_pos->flags1 & MF_NOBLOCKMAP) ) {
 		// inert things don't need to be in blockmap		
 		temp = thing_pos->x;
 		blockx = (temp.h.intbits - bmaporgx) >> MAPBLOCKSHIFT;

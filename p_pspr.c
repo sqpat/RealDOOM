@@ -506,7 +506,7 @@ void __near A_Saw (  pspdef_t __near*	psp ){
 	else
 		playerMobj_pos->angle.wu += ANG90/20; // i dont think this math can be FINEd because 20 doesnt divide evenly??
     }
-	playerMobj_pos->flags |= MF_JUSTATTACKED;
+	playerMobj_pos->flags1 |= MF_JUSTATTACKED;
 }
 
 

@@ -136,7 +136,6 @@ extern int16_t		viewheight;
 extern int16_t		firstflat;
 
 
-extern int32_t totalpatchsize;
 
 
 

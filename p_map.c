@@ -39,7 +39,7 @@
 fixed_t_union		tmbbox[4];
 mobj_t __far*		tmthing;
 mobj_pos_t __far*		tmthing_pos;
-int32_t		tmflags;
+int16_t		tmflags1;
 fixed_t_union		tmx;
 fixed_t_union		tmy;
 
@@ -190,7 +190,7 @@ boolean __near  PIT_StompThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_p
 {
     fixed_t_union	blockdist;
 
-    if (!(thing_pos->flags & MF_SHOOTABLE) )
+    if (!(thing_pos->flags1 & MF_SHOOTABLE) )
 		return true;
 		
     blockdist.h.intbits = thing->radius + tmthing->radius;
@@ -255,7 +255,7 @@ boolean __near P_TeleportMove (mobj_t __far* thing,mobj_pos_t __far* thing_pos,f
     // kill anything occupying the position
 	tmthing = thing;
 	tmthing_pos = thing_pos;
-	tmflags = thing_pos->flags;
+	tmflags1 = thing_pos->flags1;
 
     tmx = x;
     tmy = y;
@@ -382,7 +382,7 @@ boolean __near PIT_CheckLine (line_physics_t __far* ld_physics, int16_t linenum)
 	flags = lineflagslist[linenum];
 
 
-    if (!(tmthing_pos->flags & MF_MISSILE) ) {
+    if (!(tmthing_pos->flags2 & MF_MISSILE) ) {
 		if (flags & ML_BLOCKING) {
 			return false;	// explicitly blocking everything
 		}
@@ -433,7 +433,7 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
 	mobjtype_t tmthingTargettype;
 	mobjtype_t thingtype;
 	THINKERREF tmthingtargetRef;
-	int32_t thingflags;
+	int16_t thingflags1;
 	fixed_t_union thingx;
 	fixed_t_union thingy;
 	fixed_t_union thingz;
@@ -449,9 +449,9 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
 		return true;
 	}
 
-	thingflags = thing_pos->flags;
+	thingflags1 = thing_pos->flags1;
 
-	if (!(thingflags & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
+	if (!(thingflags1 & (MF_SOLID | MF_SPECIAL | MF_SHOOTABLE))) {
 			return true;
 	}
 	thingtype = thing->type;
@@ -477,10 +477,10 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
 
 
     // check for skulls slamming into things
-    if (tmthing_pos->flags & MF_SKULLFLY) {
+    if (tmthing_pos->flags2 & MF_SKULLFLY) {
 		damage = ((P_Random()%8)+1)*getDamage(tmthing->type);
 		P_DamageMobj (thing, tmthing, tmthing, damage);
-		tmthing_pos->flags &= ~MF_SKULLFLY;
+		tmthing_pos->flags2 &= ~MF_SKULLFLY;
 		tmthing->momx.w = tmthing->momy.w = tmthing->momz.w = 0;
 	
 		P_SetMobjState (tmthing, mobjinfo[tmthing->type].spawnstate);
@@ -489,7 +489,7 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
     }
 	
     // missiles can hit other things
-    if (tmthing_pos->flags & MF_MISSILE) {
+    if (tmthing_pos->flags2 & MF_MISSILE) {
 		// see if it went over / under
 		if (tmthingz.w > thingz.w + thingheight.w) {
 			return true;		// overhead
@@ -514,9 +514,9 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
 				}
 			}
 		}
-		if (! (thingflags & MF_SHOOTABLE) ) {
+		if (! (thingflags1 & MF_SHOOTABLE) ) {
 			// didn't do any damage
-			return !(thingflags & MF_SOLID);
+			return !(thingflags1 & MF_SOLID);
 		}
 	
 		// damage / explode
@@ -530,9 +530,9 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
     }
     
     // check for special pickup
-    if (thingflags & MF_SPECIAL) {
-		solid = thingflags &MF_SOLID;
-		if (tmflags&MF_PICKUP) {
+    if (thingflags1 & MF_SPECIAL) {
+		solid = thingflags1 &MF_SOLID;
+		if (tmflags1&MF_PICKUP) {
 			//I_Error("%i %i %i", players.moRef, tmthingRef, thingRef);
 			// can remove thing
 			P_TouchSpecialThing (thing, tmthing, thing_pos, tmthing_pos);
@@ -540,7 +540,7 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
 		return !solid;
     }
 
-    return !(thingflags & MF_SOLID);
+    return !(thingflags1 & MF_SOLID);
 }
 
 
@@ -587,7 +587,7 @@ boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union	x, fixed_t_un
 	temp.h.fracbits = 0;
     tmthing = thing;
 	tmthing_pos = GET_MOBJPOS_FROM_MOBJ(tmthing);
-	tmflags = tmthing_pos->flags;
+	tmflags1 = tmthing_pos->flags1;
     tmx = x;
     tmy = y;
  
@@ -626,7 +626,7 @@ boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union	x, fixed_t_un
     validcount++;
     numspechit = 0;
 
-	if (tmflags & MF_NOCLIP) {
+	if (tmflags1 & MF_NOCLIP) {
 		return true;
 	}
 
@@ -713,7 +713,7 @@ boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixe
 	if (!P_CheckPosition(thing, x, y, -1)) {
 		return false;		// solid wall or thing
 	}
-    if ( !(thing_pos->flags & MF_NOCLIP) ) {
+    if ( !(thing_pos->flags1 & MF_NOCLIP) ) {
 		temp2 = (tmceilingz - tmfloorz);
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, temp2);
 //		if (temp.w < thing->height.w) { 
@@ -725,16 +725,16 @@ boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixe
 		
 		// temp.h.intbits = tmceilingz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmceilingz);
-		if (!(thing_pos->flags&MF_TELEPORT) && temp.w - thing_pos->z.w < thing->height.w) {
+		if (!(thing_pos->flags1&MF_TELEPORT) && temp.w - thing_pos->z.w < thing->height.w) {
 			return false;	// mobj must lower itself to fit
 		}
 		// temp.h.intbits = tmfloorz >> SHORTFLOORBITS;
 		SET_FIXED_UNION_FROM_SHORT_HEIGHT(temp, tmfloorz);
-		if (!(thing_pos->flags&MF_TELEPORT) && (temp.w - thing_pos->z.w) > 24 * FRACUNIT) {
+		if (!(thing_pos->flags1&MF_TELEPORT) && (temp.w - thing_pos->z.w) > 24 * FRACUNIT) {
 			return false;	// too big a step up
 		}
 
-		if (!(thing_pos->flags&(MF_DROPOFF | MF_FLOAT)) && (tmfloorz - tmdropoffz) > (24<<SHORTFLOORBITS) ) {
+		if (!(thing_pos->flags1&(MF_DROPOFF | MF_FLOAT)) && (tmfloorz - tmdropoffz) > (24<<SHORTFLOORBITS) ) {
 			return false;	// don't stand over a dropoff
 		}
 		
@@ -761,7 +761,7 @@ boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixe
 	newy = thing_pos->y;
     
 	// if any special lines were hit, do the effect
-    if (! (thing_pos->flags&(MF_TELEPORT|MF_NOCLIP)) ) {
+    if (! (thing_pos->flags1&(MF_TELEPORT|MF_NOCLIP)) ) {
 		int16_t v1x;
 		int16_t v1y;
 		int16_t lddx;
@@ -1192,7 +1192,7 @@ boolean __near PTR_AimTraverse (intercept_t __far* in) {
 	}
 	th_pos = &mobjposlist[in->d.thingRef];
 
-	if (!(th_pos->flags&MF_SHOOTABLE)) {
+	if (!(th_pos->flags1&MF_SHOOTABLE)) {
 		return true;			// corpse or something
 	}
     // check angles to see if the thing can be aimed at
@@ -1341,7 +1341,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 	th_pos = &mobjposlist[thRef];
 
 
-	if (!(th_pos->flags&MF_SHOOTABLE)) {
+	if (!(th_pos->flags1&MF_SHOOTABLE)) {
 		return true;		// corpse or something
 	}
 
@@ -1387,7 +1387,7 @@ boolean __near PTR_ShootTraverse (intercept_t __far* in)
 
     // Spawn bullet puffs or blod spots,
     // depending on target type.
-	if (th_pos->flags & MF_NOBLOOD) {
+	if (th_pos->flags2 & MF_NOBLOOD) {
 		P_SpawnPuff(x, y, z);
 	}
 	else {
@@ -1613,7 +1613,7 @@ boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_
 #endif
 
 	
-	if (!(thing_pos->flags & MF_SHOOTABLE)) {
+	if (!(thing_pos->flags1 & MF_SHOOTABLE)) {
 		return true;
 	}
     // Boss spider and cyborg
@@ -1715,7 +1715,7 @@ boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_
     if (thing->health <= 0) {
 		P_SetMobjState (thing, S_GIBS);
 		thing = setStateReturn;
-		thing_pos->flags &= ~MF_SOLID;
+		thing_pos->flags1 &= ~MF_SOLID;
 		thing->height.w = 0;
 		thing->radius = 0;
 
@@ -1724,14 +1724,14 @@ boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_
     }
 
     // crunch dropped items
-    if (thing_pos->flags & MF_DROPPED) {
+    if (thing_pos->flags2 & MF_DROPPED) {
 		P_RemoveMobj (thing);
 	
 		// keep checking
 		return true;		
     }
 
-    if (! (thing_pos->flags & MF_SHOOTABLE) ) {
+    if (! (thing_pos->flags1 & MF_SHOOTABLE) ) {
 	// assume it is bloody gibs or something
 		return true;			
     }

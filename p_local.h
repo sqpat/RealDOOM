@@ -97,7 +97,7 @@
 #define TF_FUNCBITS					0xF800u
 #define TF_PREVBITS					0x07FFu
 
-
+// 45 or 46 in size
 typedef struct thinker_s
 {
 	// functiontype is the five high bits

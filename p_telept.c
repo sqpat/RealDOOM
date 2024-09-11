@@ -54,7 +54,7 @@ int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __far*	thing,m
 	THINKERREF fogRef;
 	
     // don't teleport missiles
-    if (thing_pos->flags & MF_MISSILE)
+    if (thing_pos->flags2 & MF_MISSILE)
 		return 0;		
 
     // Don't teleport if hit back of line,

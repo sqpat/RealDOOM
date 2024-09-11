@@ -393,7 +393,6 @@ int16_t spriteLRU[4];
 
 
 
-int32_t totalpatchsize = 0;
 
 
 int8_t spritecache_head = -1;

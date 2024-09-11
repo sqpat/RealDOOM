@@ -618,7 +618,7 @@ void __near G_PlayerFinishLevel ()  {
           
     memset (player.powers, 0, sizeof (player.powers));
     memset (player.cards, 0, sizeof (player.cards));
-    playerMobj_pos->flags &= ~MF_SHADOW;         // cancel invisibility 
+    playerMobj_pos->flags2 &= ~MF_SHADOW;   // cancel invisibility 
 	player.extralight = 0;                  // cancel gun flashes 
 	player.fixedcolormap = 0;               // cancel ir gogles 
 	player.damagecount = 0;                 // no palette changes 

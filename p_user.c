@@ -243,17 +243,17 @@ void __near P_PlayerThink (void)
 
     // fixme: do this in the cheat code
     if (player.cheats & CF_NOCLIP)
-		playerMobj_pos->flags |= MF_NOCLIP;
+		playerMobj_pos->flags1 |= MF_NOCLIP;
     else
-		playerMobj_pos->flags &= ~MF_NOCLIP;
+		playerMobj_pos->flags1 &= ~MF_NOCLIP;
     
     // chain saw run forward
     cmd = &player.cmd;
-    if (playerMobj_pos->flags & MF_JUSTATTACKED) {
+    if (playerMobj_pos->flags1 & MF_JUSTATTACKED) {
 		cmd->angleturn = 0;
 		cmd->forwardmove = 100; // 0xc800/512;
 		cmd->sidemove = 0;
-		playerMobj_pos->flags &= ~MF_JUSTATTACKED;
+		playerMobj_pos->flags1 &= ~MF_JUSTATTACKED;
     }
 			
 	
@@ -338,7 +338,7 @@ void __near P_PlayerThink (void)
 
     if (player.powers[pw_invisibility])
 		if (! --player.powers[pw_invisibility] )
-			playerMobj_pos->flags &= ~MF_SHADOW;
+			playerMobj_pos->flags2 &= ~MF_SHADOW;
 			
     if (player.powers[pw_infrared])
 		player.powers[pw_infrared]--;

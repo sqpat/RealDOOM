@@ -237,7 +237,7 @@ boolean __far P_GivePower (  int16_t /*powertype_t*/	power ) {
     
     if (power == pw_invisibility){
 		player.powers[power] = INVISTICS;
-		playerMobj_pos->flags |= MF_SHADOW;
+		playerMobj_pos->flags2 |= MF_SHADOW;
 		return true;
     }
     
@@ -275,8 +275,8 @@ void __near P_TouchSpecialThing ( mobj_t __far*	special, mobj_t __far*	toucher, 
     int16_t		sound;
 	fixed_t specialz = special_pos->z.w;
 	spritenum_t specialsprite = states[special_pos->stateNum].sprite;
-	boolean specialflagsdropped =special_pos->flags&MF_DROPPED ? 1 : 0;
-	boolean specialflagscountitem =  special_pos->flags&MF_COUNTITEM ? 1 : 0;
+	boolean specialflagsdropped =special_pos->flags2&MF_DROPPED ? 1 : 0;
+	boolean specialflagscountitem =  special_pos->flags2&MF_COUNTITEM ? 1 : 0;
 		
     delta = specialz - toucher_pos->z.w;
 
@@ -593,23 +593,25 @@ void __near P_KillMobj (	mobj_t __far* source, mobj_t __far*	target, mobj_pos_t 
 	statenum_t (__far  * getDeathState)(uint8_t) = getDeathStateAddr;
 
 	
-	target_pos->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
+	target_pos->flags1 &= ~(MF_SHOOTABLE|MF_FLOAT);
+	target_pos->flags2 &= ~(MF_SKULLFLY);
 
     if (target->type != MT_SKULL)
-		target_pos->flags &= ~MF_NOGRAVITY;
+		target_pos->flags1 &= ~MF_NOGRAVITY;
 
-	target_pos->flags |= MF_CORPSE|MF_DROPOFF;
+	target_pos->flags1 |= MF_DROPOFF;
+	target_pos->flags2 |= MF_CORPSE;
     target->height.w >>= 2;
 
     if (source) {
 		if (source->type == MT_PLAYER) {
 			// count for intermission
-			if (target_pos->flags & MF_COUNTKILL)
+			if (target_pos->flags2 & MF_COUNTKILL)
 				player.killcount++;
 
 			 
 		}
-    } else if (target_pos->flags & MF_COUNTKILL) {
+    } else if (target_pos->flags2 & MF_COUNTKILL) {
 		// count all monster deaths,
 		// even those caused by other monsters
 		player.killcount++;
@@ -617,7 +619,7 @@ void __near P_KillMobj (	mobj_t __far* source, mobj_t __far*	target, mobj_pos_t 
     
     if (target->type == MT_PLAYER) {
 			
-		target_pos->flags &= ~MF_SOLID;
+		target_pos->flags1 &= ~MF_SOLID;
 		player.playerstate = PST_DEAD;
 		P_DropWeapon ();
 
@@ -669,7 +671,7 @@ void __near P_KillMobj (	mobj_t __far* source, mobj_t __far*	target, mobj_pos_t 
 
     P_SpawnMobj (target_pos->x.w, target_pos->y.w,ONFLOORZ, item, target->secnum);
 	//mo = setStateReturn;
-	setStateReturn_pos->flags |= MF_DROPPED;	// special versions of items
+	setStateReturn_pos->flags2 |= MF_DROPPED;	// special versions of items
 }
 
 
@@ -739,14 +741,14 @@ void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t 
 
 
 
-	if (!(target_pos->flags & MF_SHOOTABLE)) {
+	if (!(target_pos->flags1 & MF_SHOOTABLE)) {
 		return;	// shouldn't happen...
 	}
 		
 	if (target->health <= 0) {
 		return;
 	}
-    if (target_pos->flags & MF_SKULLFLY ) {
+    if (target_pos->flags2 & MF_SKULLFLY ) {
 		target->momx.w = target->momy.w = target->momz.w = 0;
     }
 	
@@ -759,7 +761,7 @@ void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t 
     // inflict thrust and push the victim out of reach,
     // thus kick away unless using the chainsaw.
 
-	if (inflictor && !(target_pos->flags & MF_NOCLIP)) {
+	if (inflictor && !(target_pos->flags1 & MF_NOCLIP)) {
 		if (source) {
 		}
 		if ((!source || source->type == MT_PLAYER || player.readyweapon != wp_chainsaw)) {
@@ -856,8 +858,8 @@ void __near P_DamageMobj (mobj_t __far*	target, mobj_t __far*	inflictor, mobj_t 
 		return;
     }
 
-    if ( (P_Random () < getPainChance(target->type)) && !(target_pos->flags&MF_SKULLFLY) ) {
-		target_pos->flags |= MF_JUSTHIT;	// fight back!
+    if ( (P_Random () < getPainChance(target->type)) && !(target_pos->flags2&MF_SKULLFLY) ) {
+		target_pos->flags1 |= MF_JUSTHIT;	// fight back!
 		P_SetMobjState (target, getPainState(target->type));
 		//target = setStateReturn;
 	}

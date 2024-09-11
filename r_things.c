@@ -416,7 +416,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 	fixed_t_union thingx = thing->x;
 	fixed_t_union thingy = thing->y;
 	fixed_t_union thingz = thing->z;
-	int32_t thingflags = thing->flags;
+	int16_t thingflags2 = thing->flags2;
 	angle_t thingangle = thing->angle;
     fixed_t_union temp;
 		
@@ -533,7 +533,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
     vis->patch = spriteindex;
     
     // get light level
-    if (thingflags & MF_SHADOW) {
+    if (thingflags2 & MF_SHADOW) {
         // shadow draw
         vis->colormap = COLORMAP_SHADOW;
     } else if (fixedcolormap) {
@@ -566,7 +566,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
 void __near R_AddSprites (sector_t __far* sec)
 {
 	THINKERREF				thingRef;
-	int32_t                 lightnum;
+	int16_t                 lightnum;
  
 
     // BSP is traversed by subsector.

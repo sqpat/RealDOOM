@@ -146,51 +146,59 @@ typedef enum
     MF_FLOAT		= 0x4000,
     // Don't cross lines
     //   ??? or look at heights on teleport.
-    MF_TELEPORT		= 0x8000,
+    MF_TELEPORT		= 0x8000
     // Don't hit same species, explode on block.
     // Player missiles as well as fireballs of various kinds.
-    MF_MISSILE		= 0x10000,	
+
+
+} mobjflag_1_t;
+
+typedef enum
+{
+
+    MF_MISSILE		= 0x1,	
     // Dropped by a demon, not level spawned.
     // E.g. ammo clips dropped by dying former humans.
-    MF_DROPPED		= 0x20000,
+    MF_DROPPED		= 0x2,
     // Use fuzzy draw (shadow demons or spectres),
     //  temporary player invisibility powerup.
-    MF_SHADOW		= 0x40000,
+    MF_SHADOW		= 0x4,
     // Flag: don't bleed when shot (use puff),
     //  barrels and shootable furniture shall not bleed.
-    MF_NOBLOOD		= 0x80000,
+    MF_NOBLOOD		= 0x8,
     // Don't stop moving halfway off a step,
     //  that is, have dead bodies slide down all the way.
-    MF_CORPSE		= 0x100000,
+    MF_CORPSE		= 0x10,
     // Floating to a height for a move, ???
     //  don't auto float to target's height.
-    MF_INFLOAT		= 0x200000,
+    MF_INFLOAT		= 0x20,
 
     // On kill, count this enemy object
     //  towards intermission kill total.
     // Happy gathering.
-    MF_COUNTKILL	= 0x400000,
+    MF_COUNTKILL	= 0x40,
     
     // On picking up, count this item object
     //  towards intermission item total.
-    MF_COUNTITEM	= 0x800000,
+    MF_COUNTITEM	= 0x80,
 
     // Special handling: skull in flight.
     // Neither a cacodemon nor a missile.
-    MF_SKULLFLY		= 0x1000000,
+    MF_SKULLFLY		= 0x100,
 
     // Don't spawn this object
     //  in death match mode (e.g. key cards).
-    MF_NOTDMATCH    	= 0x2000000,
+    MF_NOTDMATCH    	= 0x200,
 
 
     // Hmm ???.
     MF_TRANSSHIFT	= 26
-
-} mobjflag_t;
+} mobjflag_2_t;
 
 
 // Map Object definition.
+// 41 bytes
+
 typedef struct mobj_s
 {
     // More list: links in sector (if needed)
@@ -255,6 +263,8 @@ typedef struct mobj_s
 // Kind of gross. This is a minimal set of fields needed in render task code
 // which allows us to not have to allocate the whole 9000 block to thinkers, 
 // and reduces some task switching in the sprite code 
+
+// 22 bytes.
 typedef struct mobj_pos_s
 {
 	// List: thinker links.
@@ -270,7 +280,8 @@ typedef struct mobj_pos_s
 	angle_t		angle;	// orientation
 	
  	statenum_t		stateNum;
-	int32_t			flags;
+	int16_t			flags1;
+	int16_t			flags2;
 
 
 } mobj_pos_t;
