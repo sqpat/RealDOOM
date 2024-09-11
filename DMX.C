@@ -86,6 +86,7 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void)
 
 	TS_TimesInInterrupt++;
 	TaskServiceCount += TaskServiceRate;
+	//todo implement this in asm via carry flag rather than a 32 bit add.
 	if (TaskServiceCount > 0xffffL)
 	{
 		TaskServiceCount &= 0xffff;

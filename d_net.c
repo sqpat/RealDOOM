@@ -81,7 +81,7 @@ void NetUpdate(void)
 	{
 		I_StartTic();
 		D_ProcessEvents();
-		if (maketic - gametic >= BACKUPTICS / 2 - 1) {
+		if (maketic - gametic >= (BACKUPTICS / 2 - 1)) {
 			break; // can't hold any more
 		}
 
@@ -93,10 +93,10 @@ void NetUpdate(void)
 
 extern byte advancedemo;
 
-void __near TryRunTics(void)
-{
-	int32_t entertic;
-	static int32_t oldentertics;
+void __near TryRunTics(void) {
+	// dont need 32 bit precision to find a diff.
+	uint16_t entertic;
+	static uint16_t oldentertics;
 	int16_t realtics;
 	int16_t availabletics;
 	int16_t counts;
