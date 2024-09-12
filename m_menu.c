@@ -98,8 +98,7 @@ boolean                 messageNeedsInput;
 void    (__near *messageRoutine)(int16_t response);
 
 
-int8_t gammamsg[5] =
-{
+int8_t gammamsg[5] ={
     GAMMALVL0,
     GAMMALVL1,
     GAMMALVL2,
@@ -107,8 +106,7 @@ int8_t gammamsg[5] =
     GAMMALVL4
 };
 
-int16_t endmsg[NUM_QUITMESSAGES] =
-{
+int16_t endmsg[NUM_QUITMESSAGES] ={
     // DOOM1
     QUITMSG,
     QUITMSGD11,
@@ -120,8 +118,7 @@ int16_t endmsg[NUM_QUITMESSAGES] =
     QUITMSGD17
 };
 
-int16_t endmsg2[NUM_QUITMESSAGES] =
-{
+int16_t endmsg2[NUM_QUITMESSAGES] ={
     // QuitDOOM II messages
     QUITMSG,
     QUITMSGD21,
@@ -151,11 +148,12 @@ extern boolean          sendpause;
 
 
 int16_t           itemOn;                 // menu item skull is on
+
+// 
 int16_t           skullAnimCounter;       // skull animation counter
 int16_t           whichSkull;             // which skull to draw
 
 // graphic name of skulls
-// warning: initializer-string for array of chars is too long
 int16_t    skullName[2] = {5, 6};
 
 // current menudef
@@ -213,8 +211,7 @@ void __near M_StartMessage(int8_t __near * string,void __near (* routine)(int16_
 
 
 
-menuitem_t MainMenu[]=
-{
+menuitem_t MainMenu[]={
     {1,4,M_NewGame,'n'},
     {1,2,M_Options,'o'},
     {1,30,M_LoadGame,'l'},
@@ -228,8 +225,7 @@ menuitem_t MainMenu[]=
     {1,3,M_QuitDOOM,'q'}
 };
 
-menu_t  MainDef =
-{
+menu_t  MainDef ={
     main_end,
     NULL,
     MainMenu,
@@ -242,8 +238,7 @@ menu_t  MainDef =
 //
 // EPISODE SELECT
 //
-enum
-{
+enum{
     ep1,
     ep2,
     ep3,
@@ -253,8 +248,7 @@ enum
     ep_end
 } episodes_e;
 
-menuitem_t EpisodeMenu[]=
-{
+menuitem_t EpisodeMenu[]={
     {1,17, M_Episode,'k'},
     {1,18, M_Episode,'t'},
     {1,19, M_Episode,'i'},
@@ -263,8 +257,7 @@ menuitem_t EpisodeMenu[]=
 #endif
 };
 
-menu_t  EpiDef =
-{
+menu_t  EpiDef ={
     ep_end,             // # of menu items
     &MainDef,           // previous menu
     EpisodeMenu,        // menuitem_t ->
@@ -276,8 +269,7 @@ menu_t  EpiDef =
 //
 // NEW GAME
 //
-enum
-{
+enum{
     killthings,
     toorough,
     hurtme,
@@ -286,8 +278,7 @@ enum
     newg_end
 } newgame_e;
 
-menuitem_t NewGameMenu[]=
-{
+menuitem_t NewGameMenu[]={
     {1,21,       M_ChooseSkill, 'i'},
     {1,22,       M_ChooseSkill, 'h'},
     {1,20,        M_ChooseSkill, 'h'},
@@ -295,8 +286,7 @@ menuitem_t NewGameMenu[]=
     {1,26,       M_ChooseSkill, 'n'}
 };
 
-menu_t  NewDef =
-{
+menu_t  NewDef ={
     newg_end,           // # of menu items
     &EpiDef,            // previous menu
     NewGameMenu,        // menuitem_t ->
@@ -310,8 +300,7 @@ menu_t  NewDef =
 //
 // OPTIONS MENU
 //
-enum
-{
+enum{
     endgame,
     messages,
     detail,
@@ -323,8 +312,7 @@ enum
     opt_end
 } options_e;
 
-menuitem_t OptionsMenu[]=
-{
+menuitem_t OptionsMenu[]={
     {1,11,      M_EndGame,'e'},
     {1,13,       M_ChangeMessages,'m'},
     {1,35,      M_ChangeDetail,'g'},
@@ -335,8 +323,7 @@ menuitem_t OptionsMenu[]=
     {1,27,        M_Sound,'s'}
 };
 
-menu_t  OptionsDef =
-{
+menu_t  OptionsDef ={
     opt_end,
     &MainDef,
     OptionsMenu,
@@ -348,19 +335,16 @@ menu_t  OptionsDef =
 //
 // Read This! MENU 1 & 2
 //
-enum
-{
+enum{
     rdthsempty1,
     read1_end
 } read_e;
 
-menuitem_t ReadMenu1[] =
-{
+menuitem_t ReadMenu1[] ={
     {1,-1,M_ReadThis2,0}
 };
 
-menu_t  ReadDef1 =
-{
+menu_t  ReadDef1 ={
     read1_end,
     &MainDef,
     ReadMenu1,
@@ -369,19 +353,16 @@ menu_t  ReadDef1 =
     0
 };
 
-enum
-{
+enum{
     rdthsempty2,
     read2_end
 } read_e2;
 
-menuitem_t ReadMenu2[]=
-{
+menuitem_t ReadMenu2[]={
     {1,-1,M_FinishReadThis,0}
 };
 
-menu_t  ReadDef2 =
-{
+menu_t  ReadDef2 ={
     read2_end,
 #if (EXE_VERSION < EXE_VERSION_ULTIMATE)
     &ReadDef1,
@@ -401,8 +382,7 @@ menu_t  ReadDef2 =
 //
 // SOUND VOLUME MENU
 //
-enum
-{
+enum{
     sfx_vol,
     sfx_empty1,
     music_vol,
@@ -410,16 +390,14 @@ enum
     sound_end
 } sound_e;
 
-menuitem_t SoundMenu[]=
-{
+menuitem_t SoundMenu[]={
     {2,40,M_SfxVol,'s'},
     {-1,-1,0},
     {2,41,M_MusicVol,'m'},
     {-1,-1,0}
 };
 
-menu_t  SoundDef =
-{
+menu_t  SoundDef ={
     sound_end,
     &OptionsDef,
     SoundMenu,
@@ -433,8 +411,7 @@ menu_t  SoundDef =
 //
 #define load_end 6
 
-menuitem_t LoadMenu[]=
-{
+menuitem_t LoadMenu[]={
     {1,-1, M_LoadSelect,'1'},
     {1,-1, M_LoadSelect,'2'},
     {1,-1, M_LoadSelect,'3'},
@@ -443,8 +420,7 @@ menuitem_t LoadMenu[]=
     {1,-1, M_LoadSelect,'6'}
 };
 
-menu_t  LoadDef =
-{
+menu_t  LoadDef ={
     load_end,
     &MainDef,
     LoadMenu,
@@ -456,8 +432,7 @@ menu_t  LoadDef =
 //
 // SAVE GAME MENU
 //
-menuitem_t SaveMenu[]=
-{
+menuitem_t SaveMenu[]={
     {1,-1, M_SaveSelect,'1'},
     {1,-1, M_SaveSelect,'2'},
     {1,-1, M_SaveSelect,'3'},
@@ -466,8 +441,7 @@ menuitem_t SaveMenu[]=
     {1,-1, M_SaveSelect,'6'}
 };
 
-menu_t  SaveDef =
-{
+menu_t  SaveDef ={
     load_end,
     &MainDef,
     SaveMenu,
@@ -489,8 +463,7 @@ patch_t __far* __near M_GetMenuPatch(int16_t i) {
 // M_ReadSaveStrings
 //  read the strings from the savegame files
 //
-void __near M_ReadSaveStrings(void)
-{
+void __near M_ReadSaveStrings(void){
     int16_t             handle;
     int16_t             count;
     int8_t             i;
@@ -519,8 +492,7 @@ void __near M_ReadSaveStrings(void)
 //
 // M_LoadGame & Cie.
 //
-void __near M_DrawLoad(void)
-{
+void __near M_DrawLoad(void){
     int8_t             i;
         
     V_DrawPatchDirect (72,28, M_GetMenuPatch(30));
@@ -536,8 +508,7 @@ void __near M_DrawLoad(void)
 //
 // Draw border for the savegame description
 //
-void __near M_DrawSaveLoadBorder(int16_t x, int16_t y)
-{
+void __near M_DrawSaveLoadBorder(int16_t x, int16_t y){
     int8_t             i;
         
     V_DrawPatchDirect (x-8,y+7, M_GetMenuPatch(42));
@@ -556,8 +527,7 @@ void __near M_DrawSaveLoadBorder(int16_t x, int16_t y)
 //
 // User wants to load this game
 //
-void __near M_LoadSelect(int16_t choice)
-{
+void __near M_LoadSelect(int16_t choice){
     int8_t    name[256];
         
     sprintf(name,SAVEGAMENAME"%d.dsg",choice);
@@ -569,8 +539,7 @@ void __near M_LoadSelect(int16_t choice)
 //
 // Selected from DOOM menu
 //
-void __near M_LoadGame (int16_t choice)
-{
+void __near M_LoadGame (int16_t choice){
  
     M_SetupNextMenu(&LoadDef);
     M_ReadSaveStrings();
@@ -580,8 +549,7 @@ void __near M_LoadGame (int16_t choice)
 //
 //  M_SaveGame & Cie.
 //
-void __near M_DrawSave(void)
-{
+void __near M_DrawSave(void){
     int8_t             i;
         
     V_DrawPatchDirect (72,28, M_GetMenuPatch(29));
@@ -601,8 +569,7 @@ void __near M_DrawSave(void)
 //
 // M_Responder calls this when user is finished
 //
-void __near M_DoSave(int16_t slot)
-{
+void __near M_DoSave(int16_t slot){
     G_SaveGame (slot,&savegamestrings[slot*SAVESTRINGSIZE]);
     // M_ClearMenus
     menuactive = 0;
@@ -615,8 +582,7 @@ void __near M_DoSave(int16_t slot)
 //
 // User wants to save. Start string input for M_Responder
 //
-void __near M_SaveSelect(int16_t choice)
-{
+void __near M_SaveSelect(int16_t choice){
     int8_t temp[256];
     int8_t i;
     int16_t offset = choice*SAVESTRINGSIZE;
@@ -639,8 +605,7 @@ void __near M_SaveSelect(int16_t choice)
 //
 // Selected from DOOM menu
 //
-void __near M_SaveGame (int16_t choice)
-{
+void __near M_SaveGame (int16_t choice){
     int8_t temp[256];
     if (!usergame)
     {
@@ -662,8 +627,7 @@ void __near M_SaveGame (int16_t choice)
 //      M_QuickSave
 //
 
-void __near M_QuickSaveResponse(int16_t ch)
-{
+void __near M_QuickSaveResponse(int16_t ch){
     if (ch == 'y')
     {
         M_DoSave(quickSaveSlot);
@@ -671,8 +635,7 @@ void __near M_QuickSaveResponse(int16_t ch)
     }
 }
 
-void __near M_QuickSave(void)
-{
+void __near M_QuickSave(void){
         /*
     int8_t temp[256];
     int8_t    tempstring[80];
@@ -705,8 +668,7 @@ void __near M_QuickSave(void)
 //
 // M_QuickLoad
 //
-void __near M_QuickLoadResponse(int16_t ch)
-{
+void __near M_QuickLoadResponse(int16_t ch){
     if (ch == 'y')
     {
         M_LoadSelect(quickSaveSlot);
@@ -715,8 +677,7 @@ void __near M_QuickLoadResponse(int16_t ch)
 }
 
 
-void __near M_QuickLoad(void)
-{
+void __near M_QuickLoad(void){
     /*
     int8_t temp[256];
     int8_t    tempstring[80];
@@ -739,8 +700,7 @@ if (quickSaveSlot < 0) // means to pick a slot now
 // Read This Menus
 // Had a "quick hack to fix romero bug"
 //
-void __near M_DrawReadThis1(void)
-{
+void __near M_DrawReadThis1(void){
     inhelpscreens = true;
     V_DrawFullscreenPatch("HELP2", 0);
 }
@@ -751,15 +711,13 @@ void __near M_DrawReadThis1(void)
 // Read This Menus - optional second page.
 //
 #if (EXE_VERSION < EXE_VERSION_FINAL)
-void __near M_DrawReadThis2(void)
-{
+void __near M_DrawReadThis2(void){  
     inhelpscreens = true;
     V_DrawFullscreenPatch("HELP1", 0);
 }
 #endif
 
-void __near M_DrawReadThisRetail(void)
-{
+void __near M_DrawReadThisRetail(void){
     inhelpscreens = true;
     V_DrawFullscreenPatch("HELP", 0);
 }
@@ -768,8 +726,7 @@ void __near M_DrawReadThisRetail(void)
 //
 // Change Sfx & Music volumes
 //
-void __near M_DrawSound(void)
-{
+void __near M_DrawSound(void){
     V_DrawPatchDirect (60,38, M_GetMenuPatch(27));
 
     M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(sfx_vol+1),
@@ -779,13 +736,11 @@ void __near M_DrawSound(void)
                  16,musicVolume);
 }
 
-void __near M_Sound(int16_t choice)
-{
+void __near M_Sound(int16_t choice){
     M_SetupNextMenu(&SoundDef);
 }
 
-void __near M_SfxVol(int16_t choice)
-{
+void __near M_SfxVol(int16_t choice){
     switch(choice)
     {
       case 0:
@@ -801,8 +756,7 @@ void __near M_SfxVol(int16_t choice)
     S_SetSfxVolume(sfxVolume * 8);
 }
 
-void __near M_MusicVol(int16_t choice)
-{
+void __near M_MusicVol(int16_t choice){
     switch(choice)
     {
       case 0:
@@ -824,8 +778,7 @@ void __near M_MusicVol(int16_t choice)
 //
 // M_DrawMainMenu
 //
-void __near M_DrawMainMenu(void)
-{
+void __near M_DrawMainMenu(void){
     V_DrawPatchDirect (94,2, M_GetMenuPatch(0));
 }
 
@@ -835,14 +788,12 @@ void __near M_DrawMainMenu(void)
 //
 // M_NewGame
 //
-void __near M_DrawNewGame(void)
-{
+void __near M_DrawNewGame(void){
     V_DrawPatchDirect (96,14, M_GetMenuPatch(24));
     V_DrawPatchDirect (54,38, M_GetMenuPatch(23));
 }
 
-void __near M_NewGame(int16_t choice)
-{
+void __near M_NewGame(int16_t choice){
     if (commercial)
         M_SetupNextMenu(&NewDef);
     else
@@ -855,13 +806,11 @@ void __near M_NewGame(int16_t choice)
 //
 int8_t     epi;
 
-void __near M_DrawEpisode(void)
-{
+void __near M_DrawEpisode(void){
     V_DrawPatchDirect (54,38, M_GetMenuPatch(16));
 }
 
-void __near M_VerifyNightmare(int16_t ch)
-{
+void __near M_VerifyNightmare(int16_t ch){
     if (ch != 'y')
         return;
                 
@@ -870,8 +819,7 @@ void __near M_VerifyNightmare(int16_t ch)
     menuactive = 0;
 }
 
-void __near M_ChooseSkill(int16_t choice)
-{
+void __near M_ChooseSkill(int16_t choice){
     int8_t temp[256];
     if (choice == nightmare)
     {
@@ -885,8 +833,7 @@ void __near M_ChooseSkill(int16_t choice)
     menuactive = 0;
 }
 
-void __near M_Episode(int16_t choice)
-{
+void __near M_Episode(int16_t choice){
     int8_t temp[256];
     if ( shareware
          && choice)
@@ -910,8 +857,7 @@ int8_t    detailNames[2]       = {33, 34};
 int8_t    msgNames[2]          = {15, 14};
 
 
-void __near M_DrawOptions(void)
-{
+void __near M_DrawOptions(void) {
     
 
     V_DrawPatchDirect (108,15, M_GetMenuPatch(28));
@@ -929,8 +875,7 @@ void __near M_DrawOptions(void)
                  11,screenSize);
 }
 
-void __near M_Options(int16_t choice)
-{
+void __near M_Options(int16_t choice) {
     M_SetupNextMenu(&OptionsDef);
 }
 
@@ -939,8 +884,7 @@ void __near M_Options(int16_t choice)
 //
 //      Toggle messages on/off
 //
-void __near M_ChangeMessages(int16_t choice)
-{
+void __near M_ChangeMessages(int16_t choice) {
     // warning: unused parameter `int16_t choice'
     choice = 0;
     showMessages = 1 - showMessages;
@@ -957,8 +901,7 @@ void __near M_ChangeMessages(int16_t choice)
 //
 // M_EndGame
 //
-void __near M_EndGameResponse(int16_t ch)
-{
+void __near M_EndGameResponse(int16_t ch) {
     if (ch != 'y')
         return;
                 
@@ -968,8 +911,7 @@ void __near M_EndGameResponse(int16_t ch)
     D_StartTitle ();
 }
 
-void __near M_EndGame(int16_t choice)
-{
+void __near M_EndGame(int16_t choice){
     int8_t temp[256];
     choice = 0;
     if (!usergame)
@@ -987,20 +929,17 @@ void __near M_EndGame(int16_t choice)
 //
 // M_ReadThis
 //
-void __near M_ReadThis(int16_t choice)
-{
+void __near M_ReadThis(int16_t choice){
     choice = 0;
     M_SetupNextMenu(&ReadDef1);
 }
 
-void __near M_ReadThis2(int16_t choice)
-{
+void __near M_ReadThis2(int16_t choice){
     choice = 0;
     M_SetupNextMenu(&ReadDef2);
 }
 
-void __near M_FinishReadThis(int16_t choice)
-{
+void __near M_FinishReadThis(int16_t choice){
     choice = 0;
     M_SetupNextMenu(&MainDef);
 }
@@ -1011,8 +950,7 @@ void __near M_FinishReadThis(int16_t choice)
 //
 // M_QuitDOOM
 //
-int8_t     quitsounds[8] =
-{
+int8_t     quitsounds[8] ={
     sfx_pldeth,
     sfx_dmpain,
     sfx_popain,
@@ -1023,8 +961,7 @@ int8_t     quitsounds[8] =
     sfx_sgtatk
 };
 
-int8_t     quitsounds2[8] =
-{
+int8_t     quitsounds2[8] ={
     sfx_vilact,
     sfx_getpow,
     sfx_boscub,
@@ -1037,8 +974,7 @@ int8_t     quitsounds2[8] =
 
 
 
-void __near M_QuitResponse(int16_t ch)
-{
+void __near M_QuitResponse(int16_t ch){
     if (ch != 'y')
         return;
 
@@ -1054,8 +990,7 @@ void __near M_QuitResponse(int16_t ch)
 
 
 
-void __near M_QuitDOOM(int16_t choice)
-{
+void __near M_QuitDOOM(int16_t choice) {
   // We pick index 0 which is language sensitive,
   //  or one at random, between 1 and maximum number.
     int8_t temp[100];
@@ -1063,16 +998,13 @@ void __near M_QuitDOOM(int16_t choice)
     int8_t endstring[140];
     int8_t chosenendmsg = (gametic >> 2) % NUM_QUITMESSAGES;
     getStringByIndex(DOSY, temp2);
-    if (commercial)
-    {
+    if (commercial) {
         getStringByIndex(endmsg2[chosenendmsg], temp);
             sprintf(endstring, "%s\n%s",
                 temp,
                 temp2
             );
-    }
-    else
-    {
+    } else {
         getStringByIndex(endmsg[chosenendmsg], temp);
         sprintf(endstring, "%s\n%s",
             temp,
@@ -1088,10 +1020,8 @@ void __near M_QuitDOOM(int16_t choice)
 
 
 
-void __near M_ChangeSensitivity(int16_t choice)
-{
-    switch(choice)
-    {
+void __near M_ChangeSensitivity(int16_t choice) {
+    switch(choice) {
       case 0:
         if (mouseSensitivity)
             mouseSensitivity--;
@@ -1106,8 +1036,7 @@ void __near M_ChangeSensitivity(int16_t choice)
 
 
 
-void __near M_ChangeDetail(int16_t choice)
-{
+void __near M_ChangeDetail(int16_t choice) {
     choice = 0;
     detailLevel++;
     if (detailLevel == 3){
@@ -1128,20 +1057,16 @@ void __near M_ChangeDetail(int16_t choice)
 
 
 
-void __near M_SizeDisplay(int16_t choice)
-{
-    switch(choice)
-    {
+void __near M_SizeDisplay(int16_t choice) {
+    switch(choice) {
       case 0:
-        if (screenSize > 0)
-        {
+        if (screenSize > 0) {
             screenblocks--;
             screenSize--;
         }
         break;
       case 1:
-        if (screenSize < 10)
-        {
+        if (screenSize < 10) {
             screenblocks++;
             screenSize++;
         }
@@ -1179,8 +1104,7 @@ void __near M_DrawThermo (int16_t   x, int16_t   y, int16_t   thermWidth, int16_
  
 
 
-void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int16_t), boolean input )
-{
+void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int16_t), boolean input ) {
     messageLastMenuActive = menuactive;
     messageToPrint = 1;
     //messageString = 
@@ -1199,8 +1123,7 @@ void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int1
 //
 // Find string width from hu_font chars
 //
-int16_t __near M_StringWidth(int8_t* string)
-{
+int16_t __near M_StringWidth(int8_t* string) {
     int16_t             i;
     int16_t             w = 0;
     int16_t             c;
@@ -1223,8 +1146,7 @@ int16_t __near M_StringWidth(int8_t* string)
 //
 //      Find string height from hu_font chars
 //
-int16_t __near M_StringHeight(int8_t* string)
-{
+int16_t __near M_StringHeight(int8_t* string){
     int8_t             i;
     int16_t             h = HU_FONT_SIZE;
      
@@ -1289,8 +1211,7 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t* string) {
 //
 // M_Responder
 //
-boolean __far M_Responder (event_t __far*  ev)
-{
+boolean __far M_Responder (event_t __far*  ev) {
     int16_t             ch;
     int16_t             i;
     int16_t             offset;
@@ -1304,49 +1225,39 @@ boolean __far M_Responder (event_t __far*  ev)
 
     ch = -1;
     
-    if (ev->type == ev_mouse && mousewait < ticcount)
-    {
+    if (ev->type == ev_mouse && mousewait < ticcount) {
         mousey += ev->data3;
-        if (mousey < lasty-30)
-        {
+        if (mousey < lasty-30) {
             ch = KEY_DOWNARROW;
             mousewait = ticcount + 5;
             mousey = lasty -= 30;
-        }
-        else if (mousey > lasty+30)
-        {
+        } else if (mousey > lasty+30) {
             ch = KEY_UPARROW;
             mousewait = ticcount + 5;
             mousey = lasty += 30;
         }
                 
         mousex += ev->data2;
-        if (mousex < lastx-30)
-        {
+        if (mousex < lastx-30) {
             ch = KEY_LEFTARROW;
             mousewait = ticcount + 5;
             mousex = lastx -= 30;
-        }
-        else if (mousex > lastx+30)
-        {
+        } else if (mousex > lastx+30) {
             ch = KEY_RIGHTARROW;
             mousewait = ticcount + 5;
             mousex = lastx += 30;
         }
                 
-        if (ev->data1&1)
-        {
+        if (ev->data1&1) {
             ch = KEY_ENTER;
             mousewait = ticcount + 15;
         }
                         
-        if (ev->data1&2)
-        {
+        if (ev->data1&2) {
             ch = KEY_BACKSPACE;
             mousewait = ticcount + 15;
         }
-    }
-    else {
+    } else {
         if (ev->type == ev_keydown) {
             ch = ev->data1;
         }
@@ -1635,8 +1546,7 @@ boolean __far M_Responder (event_t __far*  ev)
 //
 // M_StartControlPanel
 //
-void __near M_StartControlPanel (void)
-{
+void __near M_StartControlPanel (void) {
     // intro might call this repeatedly
     if (menuactive) {
         return;
@@ -1735,8 +1645,7 @@ void __far M_Drawer (int8_t isFromWipe) {
 //
 // M_SetupNextMenu
 //
-void __near M_SetupNextMenu(menu_t __near *menudef)
-{
+void __near M_SetupNextMenu(menu_t __near *menudef) {
     currentMenu = menudef;
     itemOn = currentMenu->lastOn;
 }
@@ -1797,8 +1706,7 @@ void __near M_Reload(void) {
 
 
 
-void __far M_Init(void)
-{
+void __far M_Init(void){
 	
 
 	Z_QuickMapMenu();

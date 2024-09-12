@@ -44,7 +44,11 @@
 // 0xE000 Block
 
 // may swap with EMS/0xD000 ?
+#ifdef _USED000
+#define uppermemoryblock    0xD0000000
+#else
 #define uppermemoryblock    0xE0000000
+#endif
 
 #define size_sectors            (MAX_SECTORS_SIZE)
 #define size_vertexes           (MAX_VERTEXES_SIZE)

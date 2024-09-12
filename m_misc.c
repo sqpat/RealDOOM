@@ -61,8 +61,7 @@ int16_t	prndindex = 0;
 
 
 
-uint8_t __far M_Random (void)
-{
+uint8_t __far M_Random (void){
     rndindex = (rndindex+1)&0xff;
     return rndtable[rndindex];
 }
@@ -70,12 +69,7 @@ uint8_t __far M_Random (void)
 
  
 
-void
-M_AddToBox16
-( int16_t __near*	box,
-  int16_t	x,
-  int16_t	y )
-{
+void M_AddToBox16 ( int16_t __near*	box, int16_t	x, int16_t	y ) {
     if (x<box[BOXLEFT])
 		box[BOXLEFT] = x;
     else if (x>box[BOXRIGHT])
@@ -94,12 +88,7 @@ M_AddToBox16
 #define O_BINARY 0
 #endif
 
-boolean
-M_WriteFile
-(int8_t const*	name,
-  void __far*		source,
-  filelength_t		length )
-{
+boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		length ){
     filehandle_t		handle;
     filelength_t		count;
 	
@@ -127,8 +116,7 @@ M_WriteFile
 filelength_t
 M_ReadFile
 (int8_t const*	name,
-  byte __far*	bufferRef )
-{
+  byte __far*	bufferRef ){
     filelength_t count, length;
 	filehandle_t handle;
     struct stat	fileinfo;
@@ -243,8 +231,7 @@ extern uint8_t snd_Mport8bit;
 #define SC_KEY_Z                0x2c
 #define SC_BACKSPACE            0x0e
 
-default_t	defaults[28] =
-{
+default_t	defaults[28] ={
     {"mouse_sensitivity",&mouseSensitivity, 5},
     {"sfx_volume",&sfxVolume, 8},
     {"music_volume",&musicVolume, 8},

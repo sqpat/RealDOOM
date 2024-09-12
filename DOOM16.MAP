@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/09/11 10:03:19
+Created on:       24/09/12 03:27:55
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -214,8 +214,8 @@ Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
 267f:1788+     _in
 267f:1796+     _kbdhead
 267f:1797+     _kbdtail
-267f:1798      _mousepresent
-267f:1799      _novideo
+267f:1798      _novideo
+267f:1799      _mousepresent
 Module: i_sound.obj(C:\REALDOOM\i_sound.c)
 023f:0660*     I_StartupTimer_
 023f:0660      I_StartupSound_
@@ -284,24 +284,24 @@ Module: g_game.obj(C:\REALDOOM\g_game.c)
 267f:1a69      _secretexit
 267f:1a6a+     _d_skill
 267f:1a6b+     _d_map
-267f:1a6c+     _turnheld
-267f:1a6d+     _savegameslot
-267f:1a6e      _mousebforward
-267f:1a6f      _key_speed
-267f:1a70      _mousebfire
-267f:1a71      _key_left
-267f:1a72      _key_fire
-267f:1a73      _key_strafe
+267f:1a6c+     _savegameslot
+267f:1a6d      _mousebforward
+267f:1a6e      _key_speed
+267f:1a6f      _mousebfire
+267f:1a70      _key_left
+267f:1a71      _key_fire
+267f:1a72      _key_strafe
+267f:1a73+     _turnheld
 267f:1a74      _key_straferight
 267f:1a75      _key_up
 267f:1a76      _mousebstrafe
-267f:1a77+     _netdemo
-267f:1a78      _key_down
-267f:1a79      _key_use
-267f:1a7a      _key_right
-267f:1a7b      _key_strafeleft
-267f:1a7c      _timingdemo
-267f:1a7d      _sendsave
+267f:1a77      _key_down
+267f:1a78      _key_use
+267f:1a79      _key_right
+267f:1a7a      _key_strafeleft
+267f:1a7b      _timingdemo
+267f:1a7c      _sendsave
+267f:1a7d+     _netdemo
 267f:1a7e      _sendpause
 267f:1a7f      _gameaction
 267f:1a80      _demoplayback
@@ -1030,8 +1030,8 @@ Module: p_enemy.obj(C:\REALDOOM\p_enemy.c)
 267f:2160+     _viletryy
 267f:2164+     _viletryx
 267f:2168+     _vileobj
-267f:216c+     _braintargeton
-267f:216e+     _numbraintargets
+267f:216c+     _numbraintargets
+267f:216e+     _braintargeton
 267f:2170+     _corpsehitRef
 Module: p_floor.obj(C:\REALDOOM\p_floor.c)
 0a58:3780      T_MovePlane_
@@ -1071,13 +1071,13 @@ Module: p_map.obj(C:\REALDOOM\p_map.c)
 267f:21ac+     _shootthing
 267f:21b0+     _aimslope
 267f:21b4+     _shootz
-267f:21b8+     _tmymove
-267f:21bc+     _bestslidefrac
+267f:21b8+     _bestslidefrac
+267f:21bc+     _tmymove
 267f:21c0+     _tmxmove
 267f:21c4+     _tmy
 267f:21c8+     _tmx
-267f:21cc+     _tmthing_pos
-267f:21d0+     _tmthing
+267f:21cc+     _tmthing
+267f:21d0+     _tmthing_pos
 267f:21d4      _linetarget
 267f:21d8      _linetarget_pos
 267f:21dc+     _bombdamage
@@ -1225,8 +1225,8 @@ Module: p_mobj.obj(C:\REALDOOM\p_mobj.c)
 0a58:c3fe      P_SpawnMissile_
 0a58:c640      P_SpawnPlayerMissile_
 0a58:c88c      P_SetMobjState_
-267f:2440      _setStateReturn_pos
-267f:2444      _setStateReturn
+267f:2440      _setStateReturn
+267f:2444      _setStateReturn_pos
 Module: p_telept.obj(C:\REALDOOM\p_telept.c)
 0a58:cc00      EV_Teleport_
 Module: p_tick.obj(C:\REALDOOM\p_tick.c)
@@ -1811,4 +1811,4 @@ C:\WATCOM\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00029f00 (171776.)
 Entry point address: 1ff8:2392
-Link time: 00:00.30
+Link time: 00:00.75

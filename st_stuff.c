@@ -165,49 +165,41 @@ uint8_t      st_randomnumber;
 // Massive bunches of cheat shit
 //  to keep it from being easy to figure them out.
 // Yeah, right...
-uint8_t   cheat_mus_seq[] =
-{
+uint8_t   cheat_mus_seq[] = {
     'i', 'd', 'm', 'u', 's', 1, 0, 0, 0xff
 };
 
-uint8_t   cheat_choppers_seq[] =
-{
+uint8_t   cheat_choppers_seq[] = {
     'i', 'd', 'c', 'h', 'o', 'p', 'p', 'e', 'r', 's', 0xff // idchoppers
 };
 
-uint8_t   cheat_god_seq[] =
-{
+uint8_t   cheat_god_seq[] = {
     'i', 'd', 'd', 'q', 'd', 0xff // iddqd
 };
 
-uint8_t   cheat_ammo_seq[] =
-{
+uint8_t   cheat_ammo_seq[] = {
     'i', 'd', 'k', 'f', 'a', 0xff // idkfa
 };
 
-uint8_t   cheat_ammonokey_seq[] =
-{
+uint8_t   cheat_ammonokey_seq[] = {
     'i', 'd', 'f', 'a', 0xff // idfa
 };
 
 
 // Smashing Pumpkins Into Samml Piles Of Putried Debris. 
-uint8_t   cheat_noclip_seq[] =
-{
+uint8_t   cheat_noclip_seq[] = {
     'i', 'd', 's', 'p', 'i', // idspispopd
     's', 'p', 'o', 'p', 'd', 0xff
 };
 
 //
-uint8_t   cheat_commercial_noclip_seq[] =
-{
+uint8_t   cheat_commercial_noclip_seq[] = {
     'i', 'd', 'c', 'l', 'i', 'p', 0xff // idclip
 }; 
 
 
 
-uint8_t   cheat_powerup_seq[7][10] =
-{
+uint8_t   cheat_powerup_seq[7][10] = {
     {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'v', 0xff}, // beholdv
     {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 's', 0xff}, // beholds
     {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'i', 0xff}, // beholdi
@@ -218,15 +210,13 @@ uint8_t   cheat_powerup_seq[7][10] =
 };
 
 
-uint8_t   cheat_clev_seq[] =
-{
+uint8_t   cheat_clev_seq[] = {
     'i', 'd', 'c', 'l', 'e', 'v', 1, 0, 0, 0xff // idclev
 };
 
 
 // my position cheat
-uint8_t   cheat_mypos_seq[] =
-{
+uint8_t   cheat_mypos_seq[] = {
     'i', 'd', 'm', 'y', 'p', 'o', 's', 0xff // idmypos   
 }; 
 
@@ -239,8 +229,7 @@ cheatseq_t      cheat_ammonokey = { cheat_ammonokey_seq, 0 };
 cheatseq_t      cheat_noclip = { cheat_noclip_seq, 0 };
 cheatseq_t      cheat_commercial_noclip = { cheat_commercial_noclip_seq, 0 };
 
-cheatseq_t      cheat_powerup[7] =
-{
+cheatseq_t      cheat_powerup[7] = {
     { cheat_powerup_seq[0], 0 },
     { cheat_powerup_seq[1], 0 },
     { cheat_powerup_seq[2], 0 },
@@ -263,8 +252,7 @@ extern int8_t*    mapnames[];
 // STATUS BAR CODE
 //
 
-void __near ST_refreshBackground(void)
-{
+void __near ST_refreshBackground(void) {
 
     if (st_statusbaron) {
         V_DrawPatch(ST_X, 0, BG, (patch_t __far*)sbar_patch);
@@ -276,8 +264,7 @@ void __near ST_refreshBackground(void)
 
 // Respond to keyboard input events,
 //  intercept cheats.
-boolean __near ST_Responder (event_t __far* ev)
-{
+boolean __near ST_Responder (event_t __far* ev) {
     int8_t           i;
     
   // Filter automap on/off.
@@ -299,16 +286,12 @@ boolean __near ST_Responder (event_t __far* ev)
   }
 
   // if a user keypress...
-  else if (ev->type == ev_keydown)
-  {
-    if (gameskill != sk_nightmare)
-    {
+  else if (ev->type == ev_keydown) {
+    if (gameskill != sk_nightmare) {
       // 'dqd' cheat for toggleable god mode
-      if (cht_CheckCheat(&cheat_god, ev->data1))
-      {
+      if (cht_CheckCheat(&cheat_god, ev->data1)) {
           player.cheats ^= CF_GODMODE;
-        if (player.cheats & CF_GODMODE)
-        {
+        if (player.cheats & CF_GODMODE) {
             playerMobj->health = 100;
           
           player.health = 100;
@@ -318,8 +301,7 @@ boolean __near ST_Responder (event_t __far* ev)
             player.message = STSTR_DQDOFF;
       }
       // 'fa' cheat for killer fucking arsenal
-      else if (cht_CheckCheat(&cheat_ammonokey, ev->data1))
-      {
+      else if (cht_CheckCheat(&cheat_ammonokey, ev->data1)) {
           player.armorpoints = 200;
           player.armortype = 2;
         
@@ -332,8 +314,7 @@ boolean __near ST_Responder (event_t __far* ev)
         player.message = STSTR_FAADDED;
       }
       // 'kfa' cheat for key full ammo
-      else if (cht_CheckCheat(&cheat_ammo, ev->data1))
-      {
+      else if (cht_CheckCheat(&cheat_ammo, ev->data1)) {
           player.armorpoints = 200;
           player.armortype = 2;
         
@@ -349,8 +330,7 @@ boolean __near ST_Responder (event_t __far* ev)
         player.message = STSTR_KFAADDED;
       }
       // 'mus' cheat for changing music
-      else if (cht_CheckCheat(&cheat_mus, ev->data1))
-      {
+      else if (cht_CheckCheat(&cheat_mus, ev->data1)) {
         
           int8_t    buf[3];
           int16_t             musnum;
@@ -384,19 +364,14 @@ boolean __near ST_Responder (event_t __far* ev)
             S_ChangeMusic(musnum, 1);
         }
 #endif
-      }
-      else if(!commercial && cht_CheckCheat(&cheat_noclip, ev->data1))
-      { 
+      } else if(!commercial && cht_CheckCheat(&cheat_noclip, ev->data1)) { 
           player.cheats ^= CF_NOCLIP;
         
         if (player.cheats & CF_NOCLIP)
             player.message = STSTR_NCON;
         else
             player.message = STSTR_NCOFF;
-      }
-      else if (commercial
-          && cht_CheckCheat(&cheat_commercial_noclip, ev->data1))
-      {
+      } else if (commercial && cht_CheckCheat(&cheat_commercial_noclip, ev->data1)) {
           player.cheats ^= CF_NOCLIP;
         
         if (player.cheats & CF_NOCLIP)
@@ -405,17 +380,15 @@ boolean __near ST_Responder (event_t __far* ev)
             player.message = STSTR_NCOFF;
       }
       // 'behold?' power-up cheats
-      for (i=0;i<6;i++)
-      {
-        if (cht_CheckCheat(&cheat_powerup[i], ev->data1))
-        {
-          if (!player.powers[i])
+      for (i=0;i<6;i++) {
+        if (cht_CheckCheat(&cheat_powerup[i], ev->data1)) {
+          if (!player.powers[i]){
             P_GivePower( i);
-          else if (i!=pw_strength)
+          } else if (i!=pw_strength){
               player.powers[i] = 1;
-          else
+          }else{
               player.powers[i] = 0;
-          
+          }
           player.message = STSTR_BEHOLDX;
         }
       }
@@ -442,38 +415,30 @@ boolean __near ST_Responder (event_t __far* ev)
     }
     
     // 'clev' change-level cheat
-    if (cht_CheckCheat(&cheat_clev, ev->data1))
-    {
+    if (cht_CheckCheat(&cheat_clev, ev->data1)) {
         int8_t              buf[3];
         int8_t               epsd;
         int8_t               map;
       
       cht_GetParam(&cheat_clev, buf);
       
-      if (commercial)
-      {
+      if (commercial) {
         epsd = 0;
         map = (buf[0] - '0')*10 + buf[1] - '0';
-      }
-      else
-      {
+      } else {
         epsd = buf[0] - '0';
         map = buf[1] - '0';
       }
 
       // Catch invalid maps.
 #if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-      if ((!commercial && epsd > 0 && epsd < 4 && map > 0 && map < 10)
-       || (commercial && map > 0 && map <= 40))
-      {
+      if ((!commercial && epsd > 0 && epsd < 4 && map > 0 && map < 10) || (commercial && map > 0 && map <= 40)) {
           // So be it.
           player.message = STSTR_CLEV;
           G_DeferedInitNew(gameskill, epsd, map);
       }
 #else
-      if ((!commercial && epsd > 0 && epsd < 5 && map > 0 && map < 10)
-       || (commercial && map > 0 && map <= 40))
-      {
+      if ((!commercial && epsd > 0 && epsd < 5 && map > 0 && map < 10) || (commercial && map > 0 && map <= 40)) {
           // So be it.
           players.message = STSTR_CLEV;
           G_DeferedInitNew(gameskill, epsd, map);
@@ -486,16 +451,14 @@ boolean __near ST_Responder (event_t __far* ev)
 
 
 
-int16_t __near ST_calcPainOffset(void)
-{
+int16_t __near ST_calcPainOffset(void) {
     int16_t         health;
     static int16_t  lastcalc;
     static int16_t  oldhealth = -1;
     
     health = player.health > 100 ? 100 : player.health;
 
-    if (health != oldhealth)
-    {
+    if (health != oldhealth) {
         lastcalc = ST_FACESTRIDE * (((100 - health) * ST_NUMPAINFACES) / 101);
         oldhealth = health;
     }
@@ -509,8 +472,7 @@ int16_t __near ST_calcPainOffset(void)
 // the precedence of expressions is:
 //  dead > evil grin > turned head > straight ahead
 //
-void __near ST_updateFaceWidget(void)
-{
+void __near ST_updateFaceWidget(void) {
     int8_t         i;
     angle_t     badguyangle;
     angle_t     diffang;
@@ -654,8 +616,7 @@ void __near ST_updateFaceWidget(void)
 
 }
 
-void __near ST_updateWidgets(void)
-{
+void __near ST_updateWidgets(void) {
     int8_t i;
 
  
@@ -674,8 +635,7 @@ void __near ST_updateWidgets(void)
 
 }
 
-void __near ST_Ticker (void)
-{
+void __near ST_Ticker (void) {
 
     st_randomnumber = M_Random();
     ST_updateWidgets();
@@ -685,8 +645,7 @@ void __near ST_Ticker (void)
 
 int8_t st_palette = 0;
 
-void __near ST_doPaletteStuff(void)
-{
+void __near ST_doPaletteStuff(void){
 
     int8_t         palette;
     int16_t         cnt;

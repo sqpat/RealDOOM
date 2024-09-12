@@ -25,22 +25,15 @@
 //
 // MISC
 //
-extern  int16_t	myargc;
-extern  int8_t**	myargv;
-extern int16_t	prndindex;
+extern  int16_t myargc;
+extern  int8_t** myargv;
+extern int16_t prndindex;
 
 
 
-boolean
-M_WriteFile
-(int8_t const*	name,
-  void __far*		source,
-  filelength_t		length );
+boolean M_WriteFile (int8_t const* name, void __far* source,filelength_t length );
 
-filelength_t
-M_ReadFile
-(int8_t const*	name,
-  byte __far*	bufferRef );
+filelength_t M_ReadFile (int8_t const* name, byte __far* bufferRef );
 
 // Returns a number from 0 to 255,
 // from a lookup table.
@@ -56,10 +49,10 @@ uint8_t __far M_Random(void);
 #define    BOXBOTTOM 1
 #define    BOXLEFT 2
 #define    BOXRIGHT 3
-	// bbox coordinates
+ // bbox coordinates
 
 // Bounding box functions.
-void M_AddToBox16( int16_t __near*	box,int16_t	x,  int16_t	y );
+void M_AddToBox16( int16_t __near* box,int16_t x,  int16_t y );
 
 
  
@@ -67,16 +60,15 @@ void M_AddToBox16( int16_t __near*	box,int16_t	x,  int16_t	y );
 #define NUM_DEFAULTS 28
 
 
-typedef struct
-{
-	int8_t  __near*	name;
-	uint8_t __near*	location;
-	uint8_t		defaultvalue;
-	uint8_t		scantranslate;		// PC scan code hack
-	uint8_t		untranslated;		// lousy hack
+typedef struct{
+ int8_t  __near* name;
+ uint8_t __near* location;
+ uint8_t  defaultvalue;
+ uint8_t  scantranslate;  // PC scan code hack
+ uint8_t  untranslated;  // lousy hack
 } default_t;
 
 
-extern default_t	defaults[NUM_DEFAULTS];
+extern default_t defaults[NUM_DEFAULTS];
 
 #endif

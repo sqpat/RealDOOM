@@ -50,8 +50,7 @@ void __near M_StartControlPanel (void);
 //
 // DOOM MENU
 //
-typedef enum main_e
-{
+typedef enum main_e{
 	newgame = 0,
 	options,
 	loadgame,
@@ -68,8 +67,7 @@ typedef enum main_e
 //
 // MENU TYPEDEFS
 //
-typedef struct
-{
+typedef struct{
 	// 0 = no cursor here, 1 = ok, 2 = arrows ok
 	int8_t       status;
 
@@ -86,8 +84,7 @@ typedef struct
 
 
 
-typedef struct menu_s
-{
+typedef struct menu_s{
 	int8_t               numitems;       // # of menu items
 	struct menu_s __near*      prevMenu;       // previous menu
 	menuitem_t __near*         menuitems;      // menu items
