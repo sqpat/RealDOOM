@@ -93,7 +93,7 @@ boolean         sendsave;               // send a save event next tic
 boolean         usergame;               // ok to save / end game 
  
 boolean         timingdemo;             // if true, exit with report on completion 
-boolean         nodrawers;              // for comparative timing purposes 
+//boolean         nodrawers;              // for comparative timing purposes 
 boolean         noblit;                 // for comparative timing purposes 
 ticcount_t             starttime;              // for comparative timing purposes       
  

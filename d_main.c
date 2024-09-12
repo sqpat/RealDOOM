@@ -304,7 +304,7 @@ void __far I_UpdateNoBlit(void) {
 }
 
 void __far I_FinishUpdate(void);
-
+extern boolean novideo;
 void __near D_Display (void)
 {
     static  boolean             viewactivestate = false;
@@ -316,7 +316,7 @@ void __near D_Display (void)
 	int16_t                         y;
     boolean                     wipe;
     boolean                     redrawsbar;
-	if (nodrawers)
+	if (novideo)
         return;                    // for comparative timing / profiling
  
 #ifdef DETAILED_BENCH_STATS

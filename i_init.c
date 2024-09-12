@@ -40,7 +40,6 @@ extern boolean novideo;
 extern boolean grmode;
 
 
-extern byte __far *pcscreen;
 extern byte __far *destview; 
 extern fixed_t_union destscreen;
 extern void ( __interrupt __far_func *oldkeyboardisr) (void);
@@ -167,7 +166,7 @@ void __near I_StartupKeyboard(void) {
 //
 void __near I_Init(void)
 {
-	novideo = M_CheckParm("novideo");
+	novideo = M_CheckParm("-nodraw");
 	DEBUG_PRINT("I_StartupMouse\n");
 	I_StartupMouse();
 	DEBUG_PRINT("I_StartupKeyboard\n");

@@ -466,7 +466,7 @@ void __near G_RecordDemo (int8_t* name)
 //
 void __near G_TimeDemo (int8_t* name) 
 {        
-    nodrawers = M_CheckParm ("-nodraw"); 
+    //nodrawers = M_CheckParm ("-nodraw"); 
     noblit = M_CheckParm ("-noblit"); 
     timingdemo = true; 
     singletics = true; 

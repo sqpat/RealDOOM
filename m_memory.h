@@ -416,6 +416,10 @@ segs                 EDD9:0000
 #define gammatable          ((byte __far*)      (0x8FA00000 ))
 #define menuoffsets         ((uint16_t __far*)  (0x8FF00000 ))
 
+
+
+#define gammatable_segment  ((segment_t) ((int32_t)gammatable >> 16))
+
 /*
 
 this area used in many tasks including physics but not including render

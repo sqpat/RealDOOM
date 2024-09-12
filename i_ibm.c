@@ -214,8 +214,10 @@ void __near I_WaitVBL(int16_t vbls){
 void __near I_SetPalette(int8_t paletteNumber) {
 	byte __far* gammatablelookup;
 	int16_t i;
+	int16_t_union biggamma;
 
 	byte __far* palette = palettebytes + paletteNumber * 768u;
+	//byte __far* palette = MK_FP(0x9000,  FastMul1616(paletteNumber, 768));
 	int16_t savedtask = currenttask;
 	
     if(novideo) {
@@ -226,8 +228,11 @@ void __near I_SetPalette(int8_t paletteNumber) {
 	Z_QuickMapPalette();
 
 	_outbyte(PEL_WRITE_ADR, 0);
-	gammatablelookup = (gammatable + usegamma*256);
+	biggamma.b.bytelow = 0;
+	biggamma.b.bytehigh = usegamma;
+	gammatablelookup = MK_FP(gammatable_segment, biggamma.h);
 
+	// todo outsb?
 	for(i = 0; i < 768; i++) {
  		_outbyte(PEL_DATA, gammatablelookup[*palette] >> 2);
 		palette++;
@@ -241,7 +246,6 @@ void __near I_SetPalette(int8_t paletteNumber) {
 // Graphics mode
 //
 
-byte __far *pcscreen;
 byte __far *currentscreen;
 byte __far *destview;
 fixed_t_union destscreen;
@@ -645,15 +649,14 @@ void __near I_InitDiskFlash(void){ }
 //
 // I_InitGraphics
 //
-void __near I_InitGraphics(void)
-{
+void __near I_InitGraphics(void) {
 	if (novideo) {
 		return;
 	}
 	grmode = true;
 	regs.w.ax = 0x13;
 	intx86(0x10, (union REGS *)&regs, &regs);
-	pcscreen = currentscreen = (byte __far*) 0xA0000000L;
+	currentscreen = (byte __far*) 0xA0000000L;
 	destscreen.w = 0xA0004000;
 
 	outp(SC_INDEX, SC_MEMMODE);
@@ -663,7 +666,7 @@ void __near I_InitGraphics(void)
 	outp(GC_INDEX, GC_MISCELLANEOUS);
 	outp(GC_INDEX + 1, inp(GC_INDEX + 1)&~2);
 	outpw(SC_INDEX, 0xf02);
-	FAR_memset(pcscreen, 0, 0xFFFFu);
+	FAR_memset(currentscreen, 0, 0xFFFFu);
 	outp(CRTC_INDEX, CRTC_UNDERLINE);
 	outp(CRTC_INDEX + 1, inp(CRTC_INDEX + 1)&~0x40);
 	outp(CRTC_INDEX, CRTC_MODE);
