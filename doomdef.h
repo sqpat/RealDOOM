@@ -428,7 +428,6 @@ typedef uint8_t  THINKFUNCTION;
 
 
 #define intx86(a, b, c) int86(a, b, c)
-#define intx86x(a, b, c, d) int86x(a, b, c, d)
 
 
 #define DPMI_INT 0x31

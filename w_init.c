@@ -34,7 +34,8 @@
 #include <dos.h>
 
 
-extern filehandle_t				wadfilehandle;
+extern FILE*					wadfilefp;
+extern FILE*					wadfilefp2;
 extern uint16_t                     numlumps;
  
 
@@ -59,8 +60,6 @@ extern uint16_t                     numlumps;
 //  specially to allow map reloads.
 // But: the reload feature is a fragile hack...
 
-extern uint16_t                     reloadlump;
-extern int8_t*                   reloadname;
 #define SCRATCH_FILE_LOAD_LOCATION  (filelump_t __far*)(0x50000000)
 
 void __near W_AddFile(int8_t *filename) {
@@ -68,12 +67,11 @@ void __near W_AddFile(int8_t *filename) {
 	lumpinfo_t __far*		lump_p;
 	uint16_t			i;
 	uint16_t			j = 65535;
-	filehandle_t		handle;
 	int32_t				length;
 	uint16_t			startlump;
 	filelump_t __far*		fileinfo;
+	FILE* usefp;
 
-	filehandle_t		storehandle;
 
 	int32_t lastpos = 0;
 	int32_t lastsize = 0;
@@ -83,24 +81,35 @@ void __near W_AddFile(int8_t *filename) {
 	// open the file and add to directory
 
 	// handle reload indicator.
+	/*
 	if (filename[0] == '~') {
 		filename++;
 		reloadname = filename;
 		reloadlump = numlumps;
 	}
+	*/
 
-	if ((handle = open(filename, O_RDONLY | O_BINARY)) == -1) {
+	if (!wadfilefp){
+		wadfilefp = fopen(filename, "rb");
+		usefp = wadfilefp;
+	} else {
+		// timedemo case
+		wadfilefp2 = fopen(filename, "rb");
+		usefp = wadfilefp2;
+	}
+
+	if (!usefp) {
 		DEBUG_PRINT("\tcouldn't open %s\n", filename);
 		return;
 	}
+
 
 	DEBUG_PRINT("\n\tadding %s\n", filename);
 	startlump = numlumps;
  
 	// WAD file
-	FAR_read(handle, &header, sizeof(header));
-	if (strncmp(header.identification, "IWAD", 4))
-	{
+	FAR_fread(&header, sizeof(header), 1, usefp);
+	if (strncmp(header.identification, "IWAD", 4)) {
 #ifdef CHECK_FOR_ERRORS
 		// Homebrew levels?
 		if (strncmp(header.identification, "PWAD", 4))
@@ -118,17 +127,15 @@ void __near W_AddFile(int8_t *filename) {
 
 	// let's piggyback off scratch EMS block
 	fileinfo = SCRATCH_FILE_LOAD_LOCATION;
-	lseek(handle, header.infotableofs, SEEK_SET);
-	FAR_read(handle, fileinfo, length);
+	fseek(usefp, header.infotableofs, SEEK_SET);
+	FAR_fread(fileinfo, length, 1, usefp);
 	numlumps += header.numlumps;
 	
 	// numlumps 1264
  
 	lump_p = &lumpinfoinit[startlump];
 
-	storehandle = reloadname ? -1 : handle;
 
-	wadfilehandle = storehandle;
 	for (i = startlump; i < numlumps; i++, lump_p++, fileinfo++) {
 
 		lump_p->position = (fileinfo->filepos);
@@ -174,8 +181,6 @@ void __near W_AddFile(int8_t *filename) {
 	}
 	lumpinfoinit[i - 1].sizediff = 0;
 
-	if (reloadname)
-		close(handle);
 	
 	FAR_memset(SCRATCH_FILE_LOAD_LOCATION, 0, 65535);
 }

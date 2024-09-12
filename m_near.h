@@ -233,7 +233,6 @@ extern int16_t              textureLRU[4];
 extern int16_t              activespritepages[4];
 extern uint8_t              activespritenumpages[4];
 extern int16_t              spriteLRU[4];
-extern int32_t              totalpatchsize;
 extern int8_t               spritecache_head;
 extern int8_t               spritecache_tail;
 extern int8_t               flatcache_head;

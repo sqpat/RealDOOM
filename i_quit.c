@@ -217,14 +217,22 @@ void __near Z_ShutdownEMS() {
 }
 
 
-
+extern FILE* wadfilefp;
+extern FILE* wadfilefp2;
 //
 // I_Shutdown
 // return to default system state
 //
 // called from I_Error
-void __near I_Shutdown(void)
-{
+void __near I_Shutdown(void) {
+	
+	if (wadfilefp) {
+		fclose(wadfilefp);
+	}
+	if (wadfilefp2){
+		fclose(wadfilefp);
+	}
+
 	I_ShutdownGraphics();
 	I_ShutdownSound();
 	I_ShutdownTimer();

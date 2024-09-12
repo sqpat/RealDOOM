@@ -1157,13 +1157,12 @@ R_FixedMulLocalWrapper2(0, 0)
 
 	p = M_CheckParm("-playdemo");
 
-	if (!p)
+	if (!p) {
 		p = M_CheckParm("-timedemo");
+	}
 
-	if (p && p < myargc - 1)
-	{
+	if (p && p < myargc - 1) {
 		sprintf(file, "%s.lmp", myargv[p + 1]);
-
 		DEBUG_PRINT("Playing demo %s.lmp.\n", myargv[p + 1]);
 	}
 
@@ -1175,15 +1174,13 @@ R_FixedMulLocalWrapper2(0, 0)
 
 
 	p = M_CheckParm("-skill");
-	if (p && p < myargc - 1)
-	{
+	if (p && p < myargc - 1) {
 		startskill = myargv[p + 1][0] - '1';
 		autostart = true;
 	}
 
 	p = M_CheckParm("-episode");
-	if (p && p < myargc - 1)
-	{
+	if (p && p < myargc - 1) {
 		startepisode = myargv[p + 1][0] - '0';
 		startmap = 1;
 		autostart = true;
@@ -1191,8 +1188,7 @@ R_FixedMulLocalWrapper2(0, 0)
 
 
 	p = M_CheckParm("-warp");
-	if (p && p < myargc - 1)
-	{
+	if (p && p < myargc - 1) {
 		if (commercial)
 			startmap = atoi(myargv[p + 1]);
 		else

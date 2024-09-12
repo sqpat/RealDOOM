@@ -48,12 +48,10 @@
 uint16_t                     numlumps;
 
   
-uint16_t                     reloadlump;
-int8_t*                   reloadname;
-
 
 // rather than storing a billion duplicate file handles, we'll store a couple
-filehandle_t				wadfilehandle;
+FILE* wadfilefp;
+FILE* wadfilefp2;
 
 
 
@@ -81,6 +79,8 @@ void  _far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, 
 	}
 
 }
+
+/*
 void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
 
 	// cheating with size/element count
@@ -103,7 +103,7 @@ void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
 	}
 
 }
-
+*/
 // unused outside of debug stuff
 /*
 void  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
@@ -288,7 +288,6 @@ W_ReadLump
 {
 	//filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t __far* l;
-	filehandle_t         handle;
 #ifdef CHECK_FOR_ERRORS
 	int32_t sizetoread;
 #endif
@@ -321,9 +320,11 @@ W_ReadLump
 	}
 
     I_BeginRead ();
-        
-	if (wadfilehandle == -1){
+
+/*        
+	if (!wadfilefp){
 		// reloadable file, so use open / read / close
+		wadfilefp = fopen(relo)
 		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1) {
 #ifdef CHECK_FOR_ERRORS
 			I_Error("W_ReadLump: couldn't open %s", reloadname);
@@ -333,16 +334,14 @@ W_ReadLump
 	else {
 		handle = wadfilehandle;
 	}
+	*/
     
 	startoffset = l->position + start;
-    lseek(handle, startoffset, SEEK_SET);
+    fseek(wadfilefp, startoffset, SEEK_SET);
 
-	FAR_read(handle, dest, size ? size : lumpsize);
+	FAR_fread(dest, size ? size : lumpsize, 1, wadfilefp);
  
 
-	if (wadfilehandle == -1) {
-		close(handle);
-	}
  
 
 	if (is5000Page) {
