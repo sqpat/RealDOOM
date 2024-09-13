@@ -38,8 +38,8 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAT_BUILD=1 -d__CHIPSET_BUILD=1
-ASMOPTS = /d_USED000=0
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__HT18_BUILD=1 -d__CHIPSET_BUILD=1 -d__USED000=1
+ASMOPTS = /d_USED000=1
 
 GLOBOBJS = &
  i_init.obj &
@@ -92,7 +92,7 @@ GLOBOBJS = &
  z_init.obj &
  z_umb.obj &
  z_zone.obj &
- z_scat.obj &
+ z_ht18.obj &
  st_init.obj &
  st_setup.obj &
  st_stuff.obj &
@@ -117,7 +117,7 @@ GLOBOBJS = &
  r_span.obj
 
 doom16.exe : $(GLOBOBJS) i_ibm.obj
- wlink @newdscat.lnk
+ wlink @newdht18.lnk
  copy doom16.exe doom.exe
  wstrip doom.exe
 

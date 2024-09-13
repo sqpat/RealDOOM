@@ -127,6 +127,14 @@ extern uint16_t EMS_PAGE;
 #define _EPR(a)           a + EMS_MEMORY_OFFSET
 #define CHIPSET_PAGE_9000 0x14
 #define EMS_AUTOINCREMENT_FLAG 0x80
+#elif defined(__HT18_BUILD)
+#define EMS_MEMORY_OFFSET 0x0280
+#define _NPR(a)           0x0000
+#define _NPR_UNINDEXED(a) 0x0000
+#define _EPR(a)           a + EMS_MEMORY_OFFSET
+#define CHIPSET_PAGE_9000 0x14
+#define EMS_AUTOINCREMENT_FLAG 0x80
+
 #else
 #define EMS_MEMORY_OFFSET 0x0000
 #define _NPR(a) 0xFFFF
@@ -143,7 +151,7 @@ byte __far* __near Z_InitEMS(void);
 void __far Z_QuickMapUnmapAll();
 
  
-#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+#if defined(__CHIPSET_BUILD)
 
     #define pagenum9000 CHIPSET_PAGE_9000
 

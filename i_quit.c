@@ -194,7 +194,7 @@ void __near Z_ShutdownEMS() {
 
 	int16_t result;
 
-	#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+	#if defined(__CHIPSET_BUILD)
 			// dont do anything
 		Z_QuickMapUnmapAll();
 	#else

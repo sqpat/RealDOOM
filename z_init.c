@@ -115,6 +115,45 @@ void __near Z_GetEMSPageMap()
 
 	Z_QuickMapPhysics(); // map default page map
 }
+#elif defined(__HT18_BUILD)
+
+byte __far *__near Z_InitEMS() {
+	
+	EMS_PAGE = 0xD000; // hard coded
+	
+	
+	// set d000 pages to working values
+	
+	outp(0x1EE, 0x1C); 
+	outp(0x1EC, 0x03C);
+	
+	outp(0x1EE, 0x1D); 
+	outp(0x1EC, 0x03D);
+
+	outp(0x1EE, 0x1E); 
+	outp(0x1EC, 0x03E);
+
+	outp(0x1EE, 0x1F); 
+	outp(0x1EC, 0x03F);
+	
+	
+	return MK_FP(EMS_PAGE, 0);
+
+}
+
+void __near Z_GetEMSPageMap()
+{
+	int16_t i;
+
+
+	Z_QuickMapLumpInfo5000();
+
+	FAR_memcpy((byte __far *)0x54000000, (byte __far *)lumpinfoinit, 49152u); // copy the wad lump stuff over. gross
+	FAR_memset((byte __far *)lumpinfoinit, 0, 49152u);
+
+	Z_QuickMapPhysics(); // map default page map
+}
+
 #else
 extern int16_t emshandle;
 extern int16_t pagenum9000;

@@ -83,7 +83,7 @@ extern struct SREGS segregs;
 
 
 
-#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+#if defined(__CHIPSET_BUILD)
 
 // these are prepared for calls to outsw with autoincrementing ems register on
 
@@ -424,8 +424,8 @@ int16_t oldtask = -1;
  
 #elif defined(__SCAT_BUILD)
 	#define EMS_MEMORY_BASE   0x8080
-
-
+#elif defined(__HT18_BUILD)
+	#define EMS_MEMORY_BASE   0x0280
 #else
 
 
@@ -1007,7 +1007,7 @@ void __far Z_QuickMapVisplanePage(int8_t virtualpage, int8_t physicalpage){
 	}
 
 		pageswapargs[pageswapargs_visplanepage_offset] = _EPR(usedpagevalue);
-	#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+	#if defined(__CHIPSET_BUILD)
 	#else
 		pageswapargs[pageswapargs_visplanepage_offset+1] = usedpageindex;
 	#endif
@@ -1058,7 +1058,7 @@ void __far Z_QuickMapUnmapAll() {
 	for (i = 0; i < 24; i++) {
 
 		pageswapargs[i * PAGE_SWAP_ARG_MULT] = _NPR(i + PAGE_4000_OFFSET);
-		#if defined(__SCAMP_BUILD) || defined(__SCAT_BUILD)
+		#if defined(__CHIPSET_BUILD)
 		#else
 			pageswapargs[i * PAGE_SWAP_ARG_MULT + 1] = pagenum9000 + ems_backfill_page_order[i];
 		#endif

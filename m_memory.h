@@ -44,7 +44,7 @@
 // 0xE000 Block
 
 // may swap with EMS/0xD000 ?
-#ifdef _USED000
+#ifdef __USED000
 #define uppermemoryblock    0xD0000000
 #else
 #define uppermemoryblock    0xE0000000

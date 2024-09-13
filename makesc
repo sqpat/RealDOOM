@@ -38,7 +38,8 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__COMPILER_WATCOM=1 -d__SCAMP_BUILD=1
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAMP_BUILD=1 -d__CHIPSET_BUILD=1
+ASMOPTS = /d_USED000=0
 
 GLOBOBJS = &
  i_init.obj &
@@ -124,7 +125,7 @@ doom16.exe : $(GLOBOBJS) i_ibm.obj
  wcc $(CCOPTS) $[*
 
 .asm.obj :
- tasm /mx /m2 /w2 /q /zi $[*
+ tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
 
 clean : .SYMBOLIC
  del *.obj

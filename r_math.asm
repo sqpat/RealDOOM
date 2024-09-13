@@ -16,7 +16,6 @@
 ;
 	.MODEL  medium
 
-_USED000 = 0
 
 
 IF _USED000 EQ 1 
