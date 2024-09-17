@@ -165,7 +165,7 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing)
 
 	playerMobj->reactiontime = 0;
 
-	playerMobj_pos->angle.wu = ANG45 * (mthingangle / 45);
+	playerMobj_pos->angle.wu = FastMul1632u((mthingangle / 45), ANG45);
 	playerMobj->health = player.health;
 
 
@@ -295,8 +295,8 @@ void __far P_SpawnMapThing(mapthing_t mthing, int16_t key)
 	if (mobj_pos->flags2 & MF_COUNTITEM)
 		totalitems++;
 
-	//todo does this work? or need to be in fixed_mul? -sq
-	mobj_pos->angle.wu = ANG45 * (mthingangle / 45);
+
+	mobj_pos->angle.wu = FastMul1632u((mthingangle / 45), ANG45);
 
 	if (mthingoptions & MTF_AMBUSH)
 		mobj_pos->flags1 |= MF_AMBUSH;
@@ -565,9 +565,9 @@ void __near P_ZMovement (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 	    
 			delta =(moTarget_pos->z.w + (mo->height.w>>1)) - mo_pos->z.w;
 
-			if (delta<0 && dist < -(delta*3) )
+			if (delta<0 && dist < -(FastMul8u32(3, delta)) )
 				mo_pos->z.h.intbits -= FLOATSPEED_HIGHBITS;
-			else if (delta>0 && dist < (delta*3) )
+			else if (delta>0 && dist < FastMul8u32(3, delta)  )
 				mo_pos->z.h.intbits += FLOATSPEED_HIGHBITS;
 		}
 	
@@ -726,8 +726,7 @@ __near P_NightmareRespawn(mobj_t __far* mobj, mobj_pos_t __far* mobj_pos)
 	mo_pos = setStateReturn_pos;
 	//mo->spawnpoint = mobjspawnpoint;
     //todo  fixed_mul? fastdiv -sq
-	mo_pos->angle.wu = ANG45 * (mobjspawnpoint.angle/45);
-
+	mo_pos->angle.wu = FastMul1632u((mobjspawnpoint.angle / 45), ANG45);
 	if (mobjspawnpoint.options & MTF_AMBUSH) {
 		mo_pos->flags1 |= MF_AMBUSH;
 	}

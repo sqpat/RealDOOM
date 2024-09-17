@@ -65,7 +65,9 @@ uint16_t TS_SetTimer(int32_t TickBase)
 {
 	uint16_t speed;
 	// VITI95: OPTIMIZE
-	speed = 1192030L / TickBase;
+	//speed =   1192030L / TickBase;
+	speed = 1192030L / 35;
+
 	if (speed < TaskServiceRate)
 	{
 		TS_SetClockSpeed(speed);

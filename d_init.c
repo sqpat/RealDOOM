@@ -267,10 +267,20 @@ int16_t __near M_CheckParm (int8_t *check)
     return 0;
 }
 
+uint8_t sscanf_uint8(int8_t* strparm){
+	int8_t i;
+	int8_t parm = 0;
+	for (i = 0; ; i++){
+		if (strparm[i] == '\0'){
+			return parm;
+		}
+		parm = parm * 10;
+		parm += (strparm[i] - '0');
+	}
+	
+}
 
-
-void __near M_LoadDefaults(void)
-{
+void __near M_LoadDefaults(void) {
 	int16_t		i;
 	FILE*	f;
 	int8_t	strparm[80];
@@ -293,7 +303,68 @@ void __near M_LoadDefaults(void)
 	// read the file in, overriding any set defaults
 	f = fopen(defaultfile, "r");
 	if (f) {
+		int8_t readphase = 0; // getting param 0
+		int8_t defindex = 0;
+		int8_t strparmindex = 0;
 		while (!feof(f)) {
+			// fscanf  replacement
+			// removed fscanf which includes like 4 KB of c library cruft.
+
+			char c = fgetc(f);
+			boolean iswhitespace = c == ' ' || c == '\t';
+			boolean isnewline = c == '\n' || c == '\r';
+			
+			// readphase 0 = read param name
+			// readphase 1 = read param value
+
+			if (readphase == 0){
+				if (!iswhitespace && ! isnewline){
+					def[defindex] = c;
+					defindex++;
+				} else if (iswhitespace){
+					def[defindex] = '\0';
+					readphase = 1;
+				} else { // isnewline
+					// no value found.
+					readphase = 0;
+					defindex = 0;
+					strparmindex = 0;
+				}
+			} else if (readphase == 1){
+				if (iswhitespace){
+					continue;
+				} else if (!isnewline){
+					strparm[strparmindex] = c;
+					strparmindex++;
+				} else { // isnewline
+					// done reading value!
+					strparm[strparmindex] = '\0';
+						readphase = 0;
+						defindex = 0;
+					if (strparmindex == 0){
+						// no value found.
+						strparmindex = 0;
+						continue;
+					}
+					strparmindex = 0;
+					parm = 0;
+					//printf("\nDefault found: %s : %s", def, strparm);
+
+
+					// sscanf replacement. get uint8_t value of strparm
+					parm = sscanf_uint8(strparm);
+
+
+					for (i = 0; i < NUM_DEFAULTS; i++) {
+						if (!strcmp(def, defaults[i].name)) {
+							*(defaults[i].location) = parm;
+							break;
+						}
+					}
+				}
+			}
+
+			/*
 			if (fscanf(f, "%s %[^\n]\n", def, strparm) == 2) {
 				sscanf(strparm, "%i", &parm);
 				for (i = 0; i < NUM_DEFAULTS; i++) {
@@ -302,8 +373,9 @@ void __near M_LoadDefaults(void)
 						break;
 					}
 				}
-			}
+			}*/	
 		}
+		
 
 		fclose(f);
 	}

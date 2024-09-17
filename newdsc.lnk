@@ -96,7 +96,7 @@ file r_things.obj
 file w_wad.obj
 file v_video.obj
 file z_zone.obj
-file z_ht18.obj
+file z_scamp.obj
 #file info.obj
 file d_math.obj
 

@@ -449,8 +449,8 @@ boolean __near G_Responder (event_t __far* ev)  {   // any other key pops up men
 			mousearray[0] = ev->data1 & 1;
 			mousearray[1] = ev->data1 & 2;
 			mousearray[2] = ev->data1 & 4;
-			mousex = ev->data2 * (mouseSensitivity + 5) / 10;
-			mousey = ev->data3 * (mouseSensitivity + 5) / 10;
+			mousex = FastDiv3216u(FastMul16u32((mouseSensitivity + 5), ev->data2), 10);
+			mousey = FastDiv3216u(FastMul16u32((mouseSensitivity + 5),ev->data3), 10);
 			return true; // eat events
 
  
@@ -764,7 +764,7 @@ void __near G_DoCompleted (void)  {
     wminfo.plyr.skills = player.killcount; 
     wminfo.plyr.sitems = player.itemcount; 
     wminfo.plyr.ssecret = player.secretcount; 
-    wminfo.plyr.stime = (leveltime.w / TICRATE); 
+    wminfo.plyr.stime = FastDiv32u16u(leveltime.w, 35); 
  
     gamestate = GS_INTERMISSION; 
     viewactive = false; 

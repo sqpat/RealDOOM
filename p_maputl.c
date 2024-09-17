@@ -40,15 +40,13 @@
 // Gives an estimation of distance (not exact)
 //
 
-fixed_t
-__near P_AproxDistance
-( fixed_t	dx,
-  fixed_t	dy )
-{
+fixed_t __near P_AproxDistance ( fixed_t	dx, fixed_t	dy ) {
     dx = labs(dx);
     dy = labs(dy);
-    if (dx < dy)
-	return dx+dy-(dx>>1);
+    if (dx < dy){
+		return dx+dy-(dx>>1);
+	}
+	
     return dx+dy-(dy>>1);
 }
 

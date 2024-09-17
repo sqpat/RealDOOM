@@ -1303,8 +1303,7 @@ void __near A_SkelMissile (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 
 #define	TRACEANGLE 0xc000000
 
-void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
-{
+void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos) {
     angle_t	exact;
 	fineangle_t fineexact;
 	fixed_t_union dist;
@@ -1380,7 +1379,7 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     dist.w = P_AproxDistance (dest_pos->x.w - actor_pos->x.w,
 			    dest_pos->y.w - actor_pos->y.w);
     
-	dist16 = dist.h.intbits / (mobjinfo[actor->type].speed - 0x80);
+	dist16 =  dist.h.intbits / (mobjinfo[actor->type].speed - 0x80);
 	
 	if (dist16 < 1) {
 		dist16 = 1;
@@ -1394,8 +1393,7 @@ void __near A_Tracer (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 }
 
 
-void __near A_SkelWhoosh (mobj_t __far* actor)
-{
+void __near A_SkelWhoosh (mobj_t __far* actor) {
     if (!actor->targetRef)
 		return;
 
@@ -1404,8 +1402,7 @@ void __near A_SkelWhoosh (mobj_t __far* actor)
 	S_StartSoundFromRef(actor,sfx_skeswg);
 }
 
-void __near A_SkelFist (mobj_t __far* actor)
-{
+void __near A_SkelFist (mobj_t __far* actor) {
     int16_t		damage;
     if (!actor->targetRef)
 		return;
@@ -1433,8 +1430,7 @@ mobj_t __far*		vileobj;
 fixed_t_union		viletryx;
 fixed_t_union		viletryy;
 
-boolean __near PIT_VileCheck (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos)
-{
+boolean __near PIT_VileCheck (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos_t __far* thing_pos) {
 	fixed_t_union				maxdist;
     boolean	check;
 	//todoaddr inline later
@@ -1479,8 +1475,7 @@ boolean __near PIT_VileCheck (THINKERREF thingRef, mobj_t __far*	thing, mobj_pos
 // A_VileChase
 // Check for ressurecting a body
 //
-void __near A_VileChase (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
-{
+void __near A_VileChase (mobj_t __far* actor, mobj_pos_t __far* actor_pos) {
     int16_t			xl;
     int16_t			xh;
     int16_t			yl;
@@ -1889,7 +1884,7 @@ void __near A_SkullAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
 	THINKERREF		destRef;
     fineangle_t		an;
     fixed_t_union			dist;
-	int16_t         dist16;
+	uint16_t         dist16;
 	mobj_pos_t __far* dest_pos;
 	//todoaddr inline later
 	sfxenum_t (__far  * getAttackSound)(uint8_t) = getAttackSoundAddr;
@@ -1912,12 +1907,12 @@ void __near A_SkullAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     actor->momx.w = FixedMulTrigSpeedNoShift(FINE_COSINE_ARGUMENT, an, SKULLSPEED_SMALL);
     actor->momy.w = FixedMulTrigSpeedNoShift(FINE_SINE_ARGUMENT, an, SKULLSPEED_SMALL);
     dist.w = P_AproxDistance (dest_pos->x.w - actor_pos->x.w, dest_pos->y.w - actor_pos->y.w);
-    dist16 = dist.h.intbits / SKULLSPEED_SMALL;
+    dist16 =  dist.h.intbits / SKULLSPEED_SMALL;
     
 	if (dist16 < 1) {
 		dist16 = 1;
 	}
-    actor->momz.w = (dest_pos->z.w+(dest->height.w>>1) - actor_pos->z.w) / dist16;
+    actor->momz.w = FastDiv3216u((dest_pos->z.w+(dest->height.w>>1) - actor_pos->z.w), dist16);
 }
 
 
@@ -2411,7 +2406,7 @@ void __near A_BrainSpit (mobj_t __far* mo, mobj_pos_t __far* mo_pos)
 	newmobj = setStateReturn;
 	newmobj_pos = setStateReturn_pos;
 	newmobj->targetRef = targRef;
-    newmobj->reactiontime = ((targy - moy)/newmobj->momy.w) / states[newmobj_pos->stateNum].tics;
+    newmobj->reactiontime = FastDiv3216u ((FastDiv3232(targy - moy, newmobj->momy.w)) , states[newmobj_pos->stateNum].tics);
 
 	S_StartSoundFromRef(NULL, sfx_bospit);
 }

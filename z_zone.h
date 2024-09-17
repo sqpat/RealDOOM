@@ -112,7 +112,7 @@ extern uint16_t EMS_PAGE;
 // Unindexed means it doesnt have the +pagenum9000 at the start included...
 
 #ifdef __SCAMP_BUILD
-#define EMS_MEMORY_OFFSET  0x0080
+#define EMS_MEMORY_OFFSET  0x0050
 #define SCAMP_PAGE_9000_OFFSET   0x20
 #define _NPR(a)            a + SCAMP_PAGE_9000_OFFSET + 4
 // todo should this be minus?

@@ -208,7 +208,7 @@ void __near P_LoadVertexes(int16_t lump) {
 	// Determine number of lumps:
 	//  total lump length / vertex record length.
 	uint16_t totalsize = W_LumpLength(lump);
-	numvertexes = totalsize / sizeof(mapvertex_t);
+	numvertexes = FastDiv32u16u(totalsize, sizeof(mapvertex_t));
 
 	// Load data into cache.
 	Z_QuickMapScratch_5000();
@@ -249,7 +249,7 @@ void __near P_LoadSegs(int16_t lump) {
 	int16_t __far* tempsecnums = MK_FP(0x5000, 0xc000);
 	Z_QuickMapRender_4000To9000();
 
-	numsegs = W_LumpLength(lump) / sizeof(mapseg_t);
+	numsegs = FastDiv3216u(W_LumpLength(lump), sizeof(mapseg_t));
 
 	FAR_memset(seg_linedefs, 0xff, size_seg_linedefs + size_seg_sides);
 	Z_QuickMapScratch_5000();
@@ -323,7 +323,7 @@ void __near P_LoadSubsectors(int16_t lump) {
 	mapsubsector_t  __far*               data;
 	uint16_t                 i;
 	mapsubsector_t __far*     ms;
-	numsubsectors = W_LumpLength(lump) / sizeof(mapsubsector_t);
+	numsubsectors = FastDiv32u16u(W_LumpLength(lump), sizeof(mapsubsector_t));
 	FAR_memset(subsectors, 0, MAX_SUBSECTORS_SIZE);
 
 	Z_QuickMapScratch_5000();
@@ -356,7 +356,7 @@ void __near P_LoadSectors(int16_t lump) {
 	// most tags are under 100, a couple are like 666 or 667 or 999 or other such special numbers.
 	// we will special case those and fit it in 8 bits so allocations are smaller
 	int16_t convertedtag;
-	numsectors = W_LumpLength(lump) / sizeof(mapsector_t);
+	numsectors = FastDiv32u16u(W_LumpLength(lump), sizeof(mapsector_t));
 
 
 	FAR_memset(sectors, 0, MAX_SECTORS_SIZE);
@@ -425,7 +425,7 @@ void __near P_LoadNodes(int16_t lump) {
 
 	mapnode_t	currentdata;
 	
-	numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
+	numnodes = FastDiv32u16u(W_LumpLength(lump), sizeof(mapnode_t));
 
 	Z_QuickMapRender_4000To9000();
 	Z_QuickMapScratch_5000();
@@ -485,7 +485,7 @@ void __near P_LoadThings(int16_t lump) {
 	W_CacheLumpNumDirect(lump, SCRATCH_ADDRESS_8000);
 	data = (mapthing_t __far*)SCRATCH_ADDRESS_8000;
 
-	numthings = W_LumpLength(lump) / sizeof(mapthing_t);
+	numthings = FastDiv32u16u(W_LumpLength(lump), sizeof(mapthing_t));
 
 	// first do a run to search for the player1 object as we want to force it to be thing 1 in memory.
 	for (i = 0; i < numthings; i++) {
@@ -565,7 +565,7 @@ void __near P_LoadLineDefs(int16_t lump) {
 	int16_t mldsidenum1;
 	int16_t convertedtag;
 	
-	numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
+	numlines = FastDiv32u16u(W_LumpLength(lump), sizeof(maplinedef_t));
 
 	FAR_memset(lines, 0, MAX_LINES_SIZE);
 	FAR_memset(lines_physics, 0, MAX_LINES_PHYSICS_SIZE);
@@ -694,7 +694,7 @@ void __near P_LoadSideDefs(int16_t lump) {
 	Z_QuickMapRender_4000To9000();
  
 	lumpsize = W_LumpLength(lump);
-	numsides = lumpsize / sizeof(mapsidedef_t);
+	numsides = FastDiv32u16u(lumpsize, sizeof(mapsidedef_t));
 
 	Z_QuickMapScratch_5000();
 	// this will be a little different. ths can be over 64k so lets load one page at a time (like with titlepics)
