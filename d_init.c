@@ -190,7 +190,7 @@ void __near D_DrawTitle(int8_t __near *string)
 
 	#define column columnrow.b.bytelow
 
-	for (i = 0; i < strlen(string); i++)
+	for (i = 0; i < locallib_strlen(string); i++)
 	{
 		//Set character
 		regs.h.ah = 9;
@@ -393,6 +393,15 @@ void __near M_LoadDefaults(void) {
 
 extern uint16_t	hu_font[HU_FONTSIZE];
 
+void __near makethreecharint(int16_t j, char __far *str ){
+	int16_t val = j / 10;
+	str[0] = '0' + val / 10;
+	str[1] = '0' + val;
+	str[2] = '0' + j % 10;
+	str[3] = '\0';
+
+}
+
 
 void __near HU_Init(void)
 {
@@ -400,13 +409,16 @@ void __near HU_Init(void)
 	int16_t		i;
 	int16_t		j;
 	int8_t	buffer[9];
+	int8_t	ext[4];
+
 
 	Z_QuickMapStatus();
 
 	// load the heads-up font
 	j = HU_FONTSTART;
 	for (i = 0; i < HU_FONTSIZE; i++) {
-		sprintf(buffer, "STCFN%.3d", j++);
+		makethreecharint(j++, ext);
+		combine_strings(buffer, "STCFN", ext );
 		W_CacheLumpNameDirect(buffer, (byte __far*)(MK_FP(ST_GRAPHICS_SEGMENT, hu_font[i])));
 	}
 
@@ -522,8 +534,7 @@ void __near G_RecordDemo (int8_t* name)
 	int32_t                         maxsize;
     int16_t i;    
     usergame = false; 
-    strcpy (demoname, name); 
-    strcat (demoname, ".lmp"); 
+    combine_strings (demoname, name, ".lmp"); 
     maxsize = DEMO_MAX_SIZE;
     i = M_CheckParm ("-maxdemo");
     if (i && i<myargc-1) 
@@ -1092,7 +1103,7 @@ R_FixedMulLocalWrapper2(0, 0)
 	if (!access("doom2.wad", R_OK))
 	{
 		commercial = true;
-		strcpy(wadfile,"doom2.wad");
+		locallib_strcpy(wadfile,"doom2.wad");
 		goto foundfile;
 	}
 
@@ -1101,7 +1112,7 @@ R_FixedMulLocalWrapper2(0, 0)
 	{
 		commercial = true;
 		plutonia = true;
-		strcpy(wadfile,"plutonia.wad");
+		locallib_strcpy(wadfile,"plutonia.wad");
 		goto foundfile;
 	}
 
@@ -1109,7 +1120,7 @@ R_FixedMulLocalWrapper2(0, 0)
 	{
 		commercial = true;
 		tnt = true;
-		strcpy(wadfile,"tnt.wad");
+		locallib_strcpy(wadfile,"tnt.wad");
 		goto foundfile;
 	}
 #endif
@@ -1117,14 +1128,14 @@ R_FixedMulLocalWrapper2(0, 0)
 	if (!access("doom.wad", R_OK))
 	{
 		registered = true;
-		strcpy(wadfile,"doom.wad");
+		locallib_strcpy(wadfile,"doom.wad");
 		goto foundfile;
 	}
 
 	if (!access("doom1.wad", R_OK))
 	{
 		shareware = true;
-		strcpy(wadfile,"doom1.wad");
+		locallib_strcpy(wadfile,"doom1.wad");
 		goto foundfile;
 	}
 
@@ -1145,52 +1156,34 @@ R_FixedMulLocalWrapper2(0, 0)
 	if (!commercial)
 	{
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-		sprintf(title,
-			"                         "
-			"The Ultimate DOOM Startup v%i.%i"
-			"                        ",
-			VERSION / 100, VERSION % 100);
+
+    combine_strings(title, "                         The Ultimate DOOM Startup v", VERSION_STRING);
+	combine_strings(title, title, "                        ");
+
 #else
-		sprintf(title,
-			"                          "
-			"DOOM System Startup v%i.%i"
-			"                          ",
-			VERSION / 100, VERSION % 100);
+    combine_strings(title, "                          DOOM System Startup v", VERSION_STRING);
+	combine_strings(title, title, "                          ");
+
 #endif
 	}
 	else
 	{
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-		if (plutonia)
-		{
-			sprintf(title,
-				"                   "
-				"DOOM 2: Plutonia Experiment v%i.%i"
-				"                           ",
-				VERSION / 100, VERSION % 100);
+		if (plutonia) {
+	    	combine_strings(title, "                   DOOM 2: Plutonia Experiment v", VERSION_STRING);
+		combine_strings(title, title, "                           ");
 		}
-		else if (tnt)
-		{
-			sprintf(title,
-				"                     "
-				"DOOM 2: TNT - Evilution v%i.%i"
-				"                           ",
-				VERSION / 100, VERSION % 100);
-		}
-		else
-		{
-			sprintf(title,
-				"                         "
-				"DOOM 2: Hell on Earth v%i.%i"
-				"                           ",
-				VERSION / 100, VERSION % 100);
+		else if (tnt) {
+		    combine_strings(title, "                     DOOM 2: TNT - Evilution v", VERSION_STRING);
+			combine_strings(title, title, "                           ");
+		} else {
+		    combine_strings(title, "                         DOOM 2: Hell on Earth v", VERSION_STRING);
+		    combine_strings(title, title, "                           ");
+
 		}
 #else
-		sprintf(title,
-			"                         "
-			"DOOM 2: Hell on Earth v%i.%i"
-			"                           ",
-			VERSION / 100, VERSION % 100);
+		    combine_strings(title, "                         DOOM 2: Hell on Earth v", VERSION_STRING);
+		    combine_strings(title, title, "                           ");
 #endif
 	}
 
@@ -1234,7 +1227,8 @@ R_FixedMulLocalWrapper2(0, 0)
 	}
 
 	if (p && p < myargc - 1) {
-		sprintf(file, "%s.lmp", myargv[p + 1]);
+
+		combine_strings(file, myargv[p + 1], ".lmp");
 		DEBUG_PRINT("Playing demo %s.lmp.\n", myargv[p + 1]);
 	}
 
@@ -1413,9 +1407,9 @@ R_FixedMulLocalWrapper2(0, 0)
  	}
 
 	p = M_CheckParm("-loadgame");
-	if (p && p < myargc - 1)
-	{
-		sprintf(file, SAVEGAMENAME"%c.dsg", myargv[p + 1][0]);
+	if (p && p < myargc - 1) {
+
+		makesavegamename(file, myargv[p + 1][0]);
 		G_LoadGame(file);
 	}
 

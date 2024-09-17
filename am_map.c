@@ -655,8 +655,14 @@ boolean __far AM_Responder ( event_t __far* ev ) {
 			break;
 		  case AM_MARKKEY:
 			getStringByIndex(AMSTR_MARKEDSPOT, text);
-			sprintf(buffer, "%s %d", text, markpointnum);
-			player.messagestring = buffer;
+			{
+				char markpointstr[2];
+				markpointstr[0] = '0' + markpointnum; 
+				markpointstr[0] = '\0';
+				combine_strings(buffer, text, markpointstr);
+				player.messagestring = buffer;
+
+			}
 			AM_addMark();
 			break;
 		  case AM_CLEARMARKKEY:

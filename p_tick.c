@@ -224,54 +224,6 @@ void __near P_RunThinkers (void)
 //
 // P_Ticker
 //
-/*
-
-void filelog(){
-	
-	FILE* fp = fopen("q.txt", "a");
-	fprintf(fp,"\n %li %lx %lx %lx %lx %i %i %i", gametic, playerMobj_pos->x, playerMobj_pos->y ,playerMobj_pos->z, playerMobj_pos->angle, lastvisplane, visplanemax, visplanemaxtic-gametic);
-	fclose(fp);
-	
-}
-
-
-void filelog2(int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, int16_t f){
-	
-	FILE* fp = fopen("z.txt", "a");
-	fprintf(fp,"\n %li %i %i %i %i %i %i", gametic, a, b, c , d, e, f);
-	fclose(fp);
-}
-void filelog2b(int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, int16_t f){
-	
-	FILE* fp = fopen("z.txt", "a");
-	fprintf(fp,"\n %li %i %i %x %x %x %X", gametic, a, b, c , d, e, f);
-	fclose(fp);
-}
-*/
-
-/*
-
-extern drawseg_t __far*	ds_p;
-void filelog3(byte __far* vp, int16_t a, int16_t b){
-	
-	FILE* fp = fopen("u.txt", "a");
-	fprintf(fp,"\n %li %Fp %i %i %i", gametic, vp, a, b, lastvisplane);
-	fclose(fp);
-	
-}
-*/
-
-/*
-
-void filelog4(int16_t i, void __far* ptr){
-	
-	//FILE* fp = fopen("p.txt", "a");
-	//fprintf(fp,"\n %li %i %Fp", gametic, i, ptr);
-	//fclose(fp);
-	
-}
-int8_t setonce = 0;
-*/
 void __far P_Ticker (void)
 {
     // run the tic

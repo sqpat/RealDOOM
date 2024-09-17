@@ -198,6 +198,11 @@ fixed_t32 FixedDiv(fixed_t32	a, fixed_t32	b) {
 }
 */
 
+
+// BIG TODO:
+// asm all these. they arent super performance critical but the point is to make them small and take advantage of x86 string commands and such.
+
+
 // basically our own little custom version of far fstrncpy. we were only ever using it with size 8
 void copystr8(int8_t __far* dst, int8_t __far* src){
 	int8_t j;
@@ -209,6 +214,79 @@ void copystr8(int8_t __far* dst, int8_t __far* src){
 	}
 }
 
+
+int16_t __far locallib_strlen(char __far *src){
+	int16_t i = 0;
+	while (src[i] != '\0'){
+		i++;
+	}
+	return i;
+
+}
+
+void __far locallib_strcpy(char __far *dest, char __far *src){
+	int16_t i = 0;
+	while (src[i] != '\0'){
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = '\0';
+
+}
+
+void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n){
+	int16_t i = 0;
+    int8_t doNulls = 0;
+	while (i < n){
+        if (src[i] == '\0'){
+        	while (i < n){
+        		dest[i] = '\0';
+                i++;
+            }
+            return;
+        }
+		dest[i] = src[i];
+		i++;
+	}
+
+}
+
+
+void locallib_strupr(char __far *str){
+	int i = 0;
+	while (str[i] != '\0'){
+		if ((str[i] >= 'a') && (str[i] <= 'z')){
+			str[i] -= 32;
+		}
+		i++;
+	}
+}
+
+void __far combine_strings(char __far *dest, char __far *src1, char __far *src2){
+	int16_t i = 0;
+	int16_t j = 0;
+	while (src1[i] != '\0'){
+		dest[i] = src1[i];
+		i++;
+	}
+	while (src2[j] != '\0'){
+		dest[i] = src2[j];
+		i++;
+		j++;
+	}
+	dest[i] = '\0';
+}
+
+
+void __far makesavegamename(char __far *name, int8_t i){
+
+        int8_t numstring[2];
+        numstring[0] = '0' + i;
+        numstring[1] = '\0';
+        combine_strings(name, SAVEGAMENAME, numstring);
+        combine_strings(name, name, ".dsg");
+
+}
 
 extern patch_t __far* M_GetMenuPatch(int16_t i);
 extern  boolean setsizeneeded;

@@ -472,13 +472,13 @@ void __near M_ReadSaveStrings(void){
         
     for (i = 0;i < load_end;i++)
     {
-        sprintf(name,SAVEGAMENAME"%d.dsg",i);
+        makesavegamename(name, i);
 
         handle = open (name, O_RDONLY | 0, 0666);
         if (handle == -1)
         {
             getStringByIndex(EMPTYSTRING, temp);
-            strcpy(&savegamestrings[i*SAVESTRINGSIZE],temp);
+            locallib_strcpy(&savegamestrings[i*SAVESTRINGSIZE],temp);
             LoadMenu[i].status = 0;
             continue;
         }
@@ -529,8 +529,9 @@ void __near M_DrawSaveLoadBorder(int16_t x, int16_t y){
 //
 void __near M_LoadSelect(int16_t choice){
     int8_t    name[256];
-        
-    sprintf(name,SAVEGAMENAME"%d.dsg",choice);
+
+    makesavegamename(name, choice);
+
     G_LoadGame (name);
     // M_ClearMenus
     menuactive = 0;
@@ -599,7 +600,7 @@ void __near M_SaveSelect(int16_t choice){
     getStringByIndex(EMPTYSTRING, temp);
     if (!strcmp(&savegamestrings[choice*SAVESTRINGSIZE], temp))
         savegamestrings[choice*SAVESTRINGSIZE] = 0;
-    saveCharIndex = strlen(&savegamestrings[choice*SAVESTRINGSIZE]);
+    saveCharIndex = locallib_strlen(&savegamestrings[choice*SAVESTRINGSIZE]);
 }
 
 //
@@ -1000,18 +1001,13 @@ void __near M_QuitDOOM(int16_t choice) {
     getStringByIndex(DOSY, temp2);
     if (commercial) {
         getStringByIndex(endmsg2[chosenendmsg], temp);
-            sprintf(endstring, "%s\n%s",
-                temp,
-                temp2
-            );
     } else {
         getStringByIndex(endmsg[chosenendmsg], temp);
-        sprintf(endstring, "%s\n%s",
-            temp,
-            temp2
-        );
-            
     }
+
+    combine_strings(endstring, temp, "\n");
+    combine_strings(endstring, endstring, temp2);
+
 
     M_StartMessage(endstring,M_QuitResponse,true);
 }
@@ -1108,7 +1104,7 @@ void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int1
     messageLastMenuActive = menuactive;
     messageToPrint = 1;
     //messageString = 
-    strcpy(menu_messageString, string);
+    locallib_strcpy(menu_messageString, string);
     messageRoutine = routine;
     messageNeedsInput = input;
     menuactive = true;
@@ -1128,7 +1124,7 @@ int16_t __near M_StringWidth(int8_t* string) {
     int16_t             w = 0;
     int16_t             c;
     
-    for (i = 0;i < strlen(string);i++)
+    for (i = 0;i < locallib_strlen(string);i++)
     {
         c = toupper(string[i]) - HU_FONTSTART;
         if (c < 0 || c >= HU_FONTSIZE)
@@ -1151,7 +1147,7 @@ int16_t __near M_StringHeight(int8_t* string){
     int16_t             h = HU_FONT_SIZE;
      
         
-     for (i = 0;i < strlen(string);i++)
+     for (i = 0;i < locallib_strlen(string);i++)
         if (string[i] == '\n')
             h += HU_FONT_SIZE;
                 
@@ -1582,17 +1578,17 @@ void __far M_Drawer (int8_t isFromWipe) {
         start = 0;
         y = 100 - (M_StringHeight(menu_messageString)>>1);
         while(*(menu_messageString+start)) {
-            for (i = 0; i < strlen(menu_messageString + start); i++) {
+            for (i = 0; i < locallib_strlen(menu_messageString + start); i++) {
                 if (*(menu_messageString + start + i) == '\n') {
-                    memset(string, 0, 40);
-                    strncpy(string, menu_messageString + start, i);
+                    locallib_strncpy(string, menu_messageString + start, i);
+                    string[i] = '\0';
                     start += i + 1;
                     break;
                 }
             }
 
-            if (i == strlen(menu_messageString+start)) {
-                strcpy(string,menu_messageString+start);
+            if (i == locallib_strlen(menu_messageString+start)) {
+                locallib_strcpy(string,menu_messageString+start);
                 start += i;
             }
                                 

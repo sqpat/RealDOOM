@@ -382,7 +382,7 @@ void __far F_Ticker (void) {
 		return;
 	}
 	getStringByIndex(finaletext, text);
-    if (!finalestage && finalecount>strlen (text)*TEXTSPEED + TEXTWAIT) {
+    if (!finalestage && finalecount>locallib_strlen (text)*TEXTSPEED + TEXTWAIT) {
 		finalecount = 0;
 		finalestage = 1;
 		wipegamestate = -1;		// force a wipe
@@ -793,6 +793,7 @@ void __near F_BunnyScroll (void) {
     int16_t		scrolled;
 	int8_t	name[10];
     int16_t		stage;
+	int8_t  stagestring[2];
 	int32_t		totaloffset = 0;
     static int16_t	laststage;
 	boolean	pic2 = false;
@@ -878,8 +879,10 @@ void __near F_BunnyScroll (void) {
 		laststage = stage;
     }
 
-
-    sprintf (name,"END%i",stage);
+	// max at 6.
+	stagestring[0] = '0' + stage;
+	stagestring[1] = '\0';
+    combine_strings(name,"END", stagestring);
 	W_CacheLumpNameDirect(name, (byte __far*)patch);
 	V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
 	Z_QuickMapStatus();

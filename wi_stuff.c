@@ -235,6 +235,13 @@ static uint8_t		numRef[10];
 
 // slam background
 
+void __near maketwocharint(int16_t j, char __far *str ){
+	str[0] = '0' + j / 10;
+	str[1] = '0' + j % 10;
+	str[2] = '\0';
+
+}
+
 
 void __near WI_slamBackground(void)
 {
@@ -765,11 +772,13 @@ void __near WI_checkForAccelerate(void) {
 
 
 
+ 
 
 void __near WI_loadData(void) {
     int16_t		i;
 	int8_t	name1[9] = "INTERPIC";
 	int8_t	name2[9] = "WIMAP0";
+	int8_t tempstring [10];
 	int8_t* name = name2;
 
     if (commercial)
@@ -779,7 +788,7 @@ void __near WI_loadData(void) {
     
 #if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
     if (wbs->epsd == 3)
-	strcpy(name,"INTERPIC");
+	locallib_strcpy(name,"INTERPIC");
 #endif
 
 
@@ -813,7 +822,18 @@ void __near WI_loadData(void) {
 					// MONDO HACK!
 					if (wbs->epsd != 1 || j != 8) {
 						// animations
-						sprintf(name, "WIA%d%.2d%.2d", wbs->epsd, j, i);
+
+						int8_t numstring0[2];
+						int8_t numstring1[3];
+						int8_t numstring2[3];
+						numstring0[0] = '0' + wbs->epsd;
+						numstring0[1] = '\0';
+						maketwocharint(j, numstring1);
+						maketwocharint(i, numstring2);
+						combine_strings(name, "WIA", numstring0);
+						combine_strings(name, name, numstring1);
+						combine_strings(name, name, numstring2);
+
 						lump = W_GetNumForName(name);
 						lumpsize = W_LumpLength(lump);
 						W_CacheLumpNumDirect(lump, dst);
@@ -1000,21 +1020,37 @@ void __near WI_Init(void) {
 
 
 	if (commercial) {
-		dst = wigraphicslevelname;
-		sprintf(name, "CWILV%2.2d", wbs->last);
+		int8_t temp[3];
+		maketwocharint(wbs->last, temp);
+        combine_strings(name, "CWILV", temp);
+
 		W_CacheLumpNameDirect(name, dst);
 
+		maketwocharint(wbs->next, temp);
 		dst = (byte __far *)(wigraphicslevelname + NEXT_OFFSET);
-		sprintf(name, "CWILV%2.2d", wbs->next);
+        combine_strings(name, "CWILV", temp);
 		W_CacheLumpNameDirect(name, dst);
 
 	} else {
+		int8_t temp[2];
+		temp[1] = '\0';
 		dst = wigraphicslevelname;
-		sprintf(name, "WILV%d%d", wbs->epsd, wbs->last);
+
+		temp[0] = '0' + wbs->epsd;        
+		combine_strings(name, "WILV", temp);
+		temp[0] = '0' + wbs->last;
+        combine_strings(name, name, temp);
+
 		W_CacheLumpNameDirect(name, dst);
 
 		dst = (byte __far *)(wigraphicslevelname + NEXT_OFFSET);
-		sprintf(name, "WILV%d%d", wbs->epsd, wbs->next);
+        
+		temp[0] = '0' + wbs->epsd;        
+		combine_strings(name, "WILV", temp);
+		temp[0] = '0' + wbs->next;
+        combine_strings(name, name, temp);
+
+		
 		W_CacheLumpNameDirect(name, dst);
 	}
 }	

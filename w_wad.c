@@ -18,7 +18,6 @@
 
 
 #include <ctype.h>
-#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -158,6 +157,8 @@ void _fmemmove(char __far *dest, const void __far *src, size_t size);
 // Returns -1 if name not found.
 //
 
+
+
 int16_t W_CheckNumForName (int8_t* name)
 {
     union {
@@ -175,12 +176,13 @@ int16_t W_CheckNumForName (int8_t* name)
 	lumpinfo_t __far* lump_p;
 	//lumpinfo_t __far* lumpinfo = lumpinfo9000;
     // make the name into two integers for easy compares
-    memset (name8.s, 0, 9);
-	strncpy (name8.s,name,8);
+	locallib_strncpy (name8.s,name,8);
+	name8.s[8] = '\0';
 
     
     // case insensitive
-    strupr (name8.s);           
+    //locallib_strupr (name8.s);           
+	strupr(name8.s);
 
     v1 = name8.x[0];
     v2 = name8.x[1];

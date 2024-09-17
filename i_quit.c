@@ -208,7 +208,7 @@ void __near Z_ShutdownEMS() {
 				intx86(EMS_INT, &regs, &regs);
 				result = regs.h.ah;
 				if (result != 0) {
-					printf("Failed deallocating EMS memory! %i!\n", result);
+					DEBUG_PRINT("Failed deallocating EMS memory! %i!\n", result);
 				}
 		}
 	#endif

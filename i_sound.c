@@ -43,7 +43,7 @@ void I_StartupTimer(void)
 
 	extern void I_TimerISR(void);
 
-	printf("I_StartupTimer()\n");
+	DEBUG_PRINT("I_StartupTimer()\n");
 	// installs master timer.  Must be done before StartupTimer()!
 	TS_ScheduleTask(I_TimerISR, 35);
 	TS_Dispatch();
@@ -149,12 +149,16 @@ void I_PlaySong(int16_t handle, boolean looping)
 int16_t I_GetSfxLumpNum(sfxinfo_t* sfx)
 {
 	int8_t namebuf[9];
-
+    int8_t part1[3];
     if (sfx->link)
     {
         sfx = sfx->link;
     }
-    sprintf(namebuf, "d%c%s", snd_prefixen[snd_SfxDevice], sfx->name);
+    part1[0] = 'd';
+    part1[1] = snd_prefixen[snd_SfxDevice];
+    part1[2] = '\0';
+
+    combine_strings(namebuf, part1, sfx->name);
     return W_GetNumForName(namebuf);
 }
 

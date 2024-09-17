@@ -861,7 +861,7 @@ void __near G_DoLoadGame (void)
 //
 void __far G_SaveGame(int8_t   slot, int8_t* description ) { 
     savegameslot = slot; 
-    strcpy (savedescription, description); 
+    locallib_strcpy (savedescription, description); 
     sendsave = true; 
 } 
  

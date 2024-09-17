@@ -127,7 +127,12 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 
 	// find map name
 	if (commercial) {
-		sprintf(lumpname, "map%02d", map);
+		lumpname[0] = 'm';
+		lumpname[1] = 'a';
+		lumpname[2] = 'p';
+		lumpname[3] = '0' + map / 10;
+		lumpname[4] = '0' + map % 10;
+
 	}
 	else
 	{

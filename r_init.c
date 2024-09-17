@@ -450,8 +450,8 @@ void R_GenerateLookup(uint16_t texnum)
  
 		if (!columnpatchcount[x]) {
 			// R_GenerateLookup: column without a patch
-			//I_Error("R_GenerateLookup: column without a patch (%Fs), %i %i %hhu %hhu %Fp\n", texture->name, x, texturewidth, texnum, columnpatchcount[x], columnpatchcount);
-			I_Error("91");
+			I_Error("R_GenerateLookup: column without a patch (%Fs), %i %i %hhu %hhu %Fp\n", texture->name, x, texturewidth, texnum, columnpatchcount[x], columnpatchcount);
+			//I_Error("91");
 			return;
 		}
 

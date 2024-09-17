@@ -404,11 +404,14 @@ boolean __near ST_Responder (event_t __far* ev) {
       } else if (cht_CheckCheat(&cheat_mypos, ev->data1)) {
           // 'mypos' for player position
           static int8_t     buf[ST_MSGWIDTH];
-        
+
+//todo: this      player pos  
+        /*
         sprintf(buf, "ang=0x%lx;x,y=(0x%lx,0x%lx)",
                 playerMobj_pos->angle,
                 playerMobj_pos->x,
                 playerMobj_pos->y);
+                */
         //memcpy(player.messagestring, buf, 40);
         player.messagestring = buf;
       }
