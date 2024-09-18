@@ -17,8 +17,6 @@
 //      Sliders and icons. Kinda widget stuff.
 //
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -464,26 +462,22 @@ patch_t __far* __near M_GetMenuPatch(int16_t i) {
 //  read the strings from the savegame files
 //
 void __near M_ReadSaveStrings(void){
-    int16_t             handle;
-    int16_t             count;
     int8_t             i;
     int8_t    name[256];
-    int8_t    temp[256];
+    FILE* fp;
         
     for (i = 0;i < load_end;i++)
     {
         makesavegamename(name, i);
 
-        handle = open (name, O_RDONLY | 0, 0666);
-        if (handle == -1)
-        {
-            getStringByIndex(EMPTYSTRING, temp);
-            locallib_strcpy(&savegamestrings[i*SAVESTRINGSIZE],temp);
+        fp = fopen (name, "rb");
+        if (!fp) {
+            getStringByIndex(EMPTYSTRING, &savegamestrings[i*SAVESTRINGSIZE]);
             LoadMenu[i].status = 0;
             continue;
         }
-        count = read (handle, &savegamestrings[i*SAVESTRINGSIZE], SAVESTRINGSIZE);
-        close (handle);
+        FAR_fread (&savegamestrings[i*SAVESTRINGSIZE], 1, SAVESTRINGSIZE, fp);
+        fclose (fp);
         LoadMenu[i].status = 1;
     }
 }

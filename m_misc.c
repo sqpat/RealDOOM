@@ -17,10 +17,8 @@
 //	Default Config File.
 //
 
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include <ctype.h>
 
@@ -92,17 +90,17 @@ boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		leng
     filehandle_t		handle;
     filelength_t		count;
 	
-    handle = open ( name, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+    FILE* fp = fopen ( name, "wb");
 
-    if (handle == -1)
-	return false;
+    if (!fp)
+	    return false;
 
 	//todo 
-    //count = write (handle, source, length);
-    close (handle);
+     //count = FAR_fwrite (source, 1, length, fp);
+    fclose (fp);
 	
     if (count < length)
-	return false;
+	    return false;
 		
     return true;
 }

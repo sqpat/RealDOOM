@@ -18,9 +18,7 @@
 
 
 #include <ctype.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include <sys/stat.h>
 
 #include "doomtype.h"
 #include "doomstat.h"
@@ -105,10 +103,10 @@ void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
 */
 // unused outside of debug stuff
 /*
-void  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+filelength_t  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count
 	uint16_t totalsize = elementsize * elementcount;
-	uint16_t totalreadsize = 0;
+	filelength_t totalreadsize = 0;
 	uint16_t copysize;
 	uint16_t remaining;
 	byte stackbuffer[FREAD_BUFFER_SIZE];
@@ -122,6 +120,7 @@ void  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, 
 		srcloc += copysize;
 		totalreadsize += copysize;
 	}
+	return totalreadsize;
 }
 */
 

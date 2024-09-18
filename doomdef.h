@@ -490,7 +490,7 @@ void __far  _fstrncpy(char __far *dst, const char __far *src, size_t n);
 #endif
 
 void  _far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
-void _far_fwrite(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
+filelength_t _far_fwrite(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * stream);
 void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize);
 
 #define FAR_fwrite _far_fwrite

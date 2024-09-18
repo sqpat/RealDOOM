@@ -21,7 +21,6 @@
 
 
 #include <stdlib.h>
-//#include <graph.h>
 #include <direct.h>
 #include <io.h>
 #include <fcntl.h>
@@ -70,14 +69,14 @@
 void __far D_InitStrings() {
 
 	// load file
-	FILE* handle;
+	FILE* fp;
 	//filelength_t length;
 	int16_t i;
 	int16_t j = 0;
 	int8_t letter;
 	uint16_t stringbuffersize;
-	handle = fopen("dstrings.txt", "rb");
-	if (handle == NULL) {
+	fp = fopen("dstrings.txt", "rb");
+	if (!fp) {
 		I_Error("dstrings.txt missing?");
 		return;
 	}
@@ -96,7 +95,7 @@ void __far D_InitStrings() {
 		//}
 
 		for (i = 0; i < 16384 ; i++) {
-			letter = fgetc(handle);
+			letter = fgetc(fp);
 			stringdata[i] = letter;
 			if (letter == 'n') {
 				if (stringdata[i  - 1] == '\\') {
@@ -116,12 +115,12 @@ void __far D_InitStrings() {
 				// we are appending strings with null terminators when we return them anyway
 			};
 
-			if (feof(handle)) {
+			if (feof(fp)) {
 				break;
 			}
 		}
 		stringbuffersize = stringoffsets[j];
-		if (feof(handle)) {
+		if (feof(fp)) {
 			break;
 		}
 		//I_Error("99"); // Strings too big. Need to implement 2nd page?
@@ -134,7 +133,7 @@ void __far D_InitStrings() {
 	}
 
 
-	fclose(handle);
+	fclose(fp);
 
 
 }
