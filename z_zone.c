@@ -387,7 +387,6 @@ uint16_t pageswapargs[total_pages] = {
   
 
 
-uint8_t current5000RemappedScratchPage = 0;
 
 int8_t current5000State = PAGE_5000_UNMAPPED;
 int8_t last5000State = PAGE_5000_UNMAPPED;
@@ -438,32 +437,7 @@ int16_t oldtask = -1;
 void __near Z_QuickMap(uint16_t __near *offset, int8_t count){
 
 	int8_t min;
-/*
-	int8_t count2 = count;
-	int16_t __near *offset2 = (int16_t*)(offset+pageswapargoff);
-	FILE* fp = fopen ("mapa.txt", "a");
-	int16_t lastax = 0x7000;
-	while (count2){
-		int16_t bx = offset2[0];
-		int16_t ax = offset2[1];
-		if (lastax != 0x7000){
-			if (ax != lastax + 1){
-				fprintf(fp, "wasn't increment! %i %i %x %i %i\n", ax, lastax, offset, count2, count);
-				fclose(fp);
-				I_Error("wasn't increment! %i %i %x %i %i\n",     ax, lastax, offset, count2, count);
-			}
-		}
-		lastax = ax;
 
-		fprintf(fp, "%x %x %i %x\n", bx, ax, count2, offset2);
-		count2--;
-		offset2++;
-		offset2++;
-	}
-	fclose(fp);
-	*/
-	//offset += pageswapargoff;
-	
 	// test if some of these fields can be pulled out
 	while (count > 0){
 

@@ -269,11 +269,9 @@ void __near G_BuildTiccmd (int8_t index) {
     // let movement keys cancel each other out
     if (strafe)  { 
         if (gamekeydown[key_right])  {
-            // fprintf(stderr, "strafe right\n");
             side += sidemove[speed]; 
         }
         if (gamekeydown[key_left])  {
-            //  fprintf(stderr, "strafe left\n");
             side -= sidemove[speed]; 
         }
  
@@ -285,12 +283,9 @@ void __near G_BuildTiccmd (int8_t index) {
     } 
 
     if (gamekeydown[key_up])  {
-		//I_Error("keydown");
-        // fprintf(stderr, "up\n");
         forward += forwardmove[speed]; 
     }
     if (gamekeydown[key_down])  {
-        // fprintf(stderr, "down\n");
         forward -= forwardmove[speed]; 
     }
     if (gamekeydown[key_straferight]) 

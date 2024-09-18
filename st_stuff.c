@@ -279,7 +279,6 @@ boolean __near ST_Responder (event_t __far* ev) {
         break;
         
       case AM_MSGEXITED:
-        //      fprintf(stderr, "AM exited\n");
         st_gamestate = FirstPersonState;
         break;
     }

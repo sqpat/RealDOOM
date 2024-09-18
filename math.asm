@@ -17,9 +17,6 @@
     .286
 	.MODEL  medium
 
-EXTRN __I8LS:PROC
-EXTRN __I8DQ:PROC
-;EXTRN _divllu:PROC
 	
 INCLUDE defs.inc
 

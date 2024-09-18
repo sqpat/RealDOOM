@@ -265,7 +265,10 @@ void __near M_SaveDefaults (void)
         }
         //if (defaults[i].defaultvalue > -0xfff && defaults[i].defaultvalue < 0xfff) {
             v = *defaults[i].location;
-            fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
+
+			// todo reenable fprintf
+            //fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
+
         //} else {
         //    fprintf (f,"%s\t\t\"%s\"\n",defaults[i].name,
         //        * (int8_t **) (defaults[i].location));

@@ -36,7 +36,7 @@
 
 
 ticcount_t maketic;
-int16_t skiptics;
+//int16_t skiptics;
 
 void __near D_ProcessEvents(void);
 void __near G_BuildTiccmd(int8_t index);

@@ -726,7 +726,6 @@ boolean __near(*   func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*) ){
 
 divline_t 	trace;
 boolean 	earlyout;
-int32_t		ptflags;
 
 //
 // PIT_AddLineIntercepts.
