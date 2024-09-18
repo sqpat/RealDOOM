@@ -181,7 +181,7 @@ int16_t W_CheckNumForName (int8_t* name)
     
     // case insensitive
     //locallib_strupr (name8.s);           
-	strupr(name8.s);
+	locallib_strupr(name8.s);
 
     v1 = name8.x[0];
     v2 = name8.x[1];

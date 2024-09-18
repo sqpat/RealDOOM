@@ -449,7 +449,7 @@ void __near F_TextWrite (void) {
 			continue;
 		}
 			
-		c = toupper(c) - HU_FONTSTART;
+		c = locallib_toupper(c) - HU_FONTSTART;
 		if (c < 0 || c> HU_FONTSIZE) {
 			cx += 4;
 			continue;
@@ -679,7 +679,7 @@ void __near F_CastPrint (int8_t* text)
 	c = *ch++;
 	if (!c)
 	    break;
-	c = toupper(c) - HU_FONTSTART;
+	c = locallib_toupper(c) - HU_FONTSTART;
 	if (c < 0 || c> HU_FONTSIZE)
 	{
 	    width += 4;
@@ -699,7 +699,7 @@ void __near F_CastPrint (int8_t* text)
 	c = *ch++;
 	if (!c)
 	    break;
-	c = toupper(c) - HU_FONTSTART;
+	c = locallib_toupper(c) - HU_FONTSTART;
 	if (c < 0 || c> HU_FONTSIZE)
 	{
 	    cx += 4;

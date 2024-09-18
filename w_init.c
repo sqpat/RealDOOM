@@ -107,11 +107,20 @@ void __near W_AddFile(int8_t *filename) {
  
 	// WAD file
 	FAR_fread(&header, sizeof(header), 1, usefp);
-	if (strncmp(header.identification, "IWAD", 4)) {
+	
+
+
+
+	// 0x4957 == "IW" && 0x4144 == "AD"
+	if (((uint16_t)(header.identification[0])) == 0x4957 && 
+	 	((uint16_t)(header.identification[2])) == 0x4144
+	 ) {
 #ifdef CHECK_FOR_ERRORS
 		// Homebrew levels?
-		if (strncmp(header.identification, "PWAD", 4))
-		{
+	// 0x5057 == "PW" && 0x4144 == "AD"
+	if (((uint16_t)(header.identification[0])) == 0x5057 && 
+	 	((uint16_t)(header.identification[2])) == 0x4144
+	 ) {
 			I_Error("Wad file %s doesn't have IWAD "
 				"or PWAD id\n", filename);
 		}

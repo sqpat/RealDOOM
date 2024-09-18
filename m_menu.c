@@ -592,7 +592,7 @@ void __near M_SaveSelect(int16_t choice){
     //FAR_strcpy(saveOldString,&savegamestrings[choice*SAVESTRINGSIZE]);
 
     getStringByIndex(EMPTYSTRING, temp);
-    if (!strcmp(&savegamestrings[choice*SAVESTRINGSIZE], temp))
+    if (!locallib_strcmp(&savegamestrings[choice*SAVESTRINGSIZE], temp))
         savegamestrings[choice*SAVESTRINGSIZE] = 0;
     saveCharIndex = locallib_strlen(&savegamestrings[choice*SAVESTRINGSIZE]);
 }
@@ -1120,7 +1120,7 @@ int16_t __near M_StringWidth(int8_t* string) {
     
     for (i = 0;i < locallib_strlen(string);i++)
     {
-        c = toupper(string[i]) - HU_FONTSTART;
+        c = locallib_toupper(string[i]) - HU_FONTSTART;
         if (c < 0 || c >= HU_FONTSIZE)
             w += 4;
         else {
@@ -1176,7 +1176,7 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t* string) {
             continue;
         }
                 
-        c = toupper(c) - HU_FONTSTART;
+        c = locallib_toupper(c) - HU_FONTSTART;
         if (c < 0 || c>= HU_FONTSIZE)
         {
             cx += 4;
@@ -1285,7 +1285,7 @@ boolean __far M_Responder (event_t __far*  ev) {
             break;
                                 
           default:
-            ch = toupper(ch);
+            ch = locallib_toupper(ch);
             if (ch != 32)
                 if (ch-HU_FONTSTART < 0 || ch-HU_FONTSTART >= HU_FONTSIZE)
                     break;

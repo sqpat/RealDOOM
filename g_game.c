@@ -810,7 +810,7 @@ void __near G_DoLoadGame (void)
     // skip the description field 
     memset (vcheck,0,sizeof(vcheck)); 
     sprintf (vcheck,"version %i",VERSION); 
-    if (strcmp ((int8_t*)save_p, vcheck)) 
+    if (locallib_strcmp ((int8_t*)save_p, vcheck)) 
         return;                         // bad version 
     save_p += VERSIONSIZE; 
                          

@@ -261,7 +261,15 @@ void locallib_strupr(char __far *str){
 		i++;
 	}
 }
-
+void locallib_strlwr(char __far *str){
+	int i = 0;
+	while (str[i] != '\0'){
+		if ((str[i] >= 'A') && (str[i] <= 'Z')){
+			str[i] += 32;
+		}
+		i++;
+	}
+}
 void __far combine_strings(char __far *dest, char __far *src1, char __far *src2){
 	int16_t i = 0;
 	int16_t j = 0;
@@ -276,6 +284,35 @@ void __far combine_strings(char __far *dest, char __far *src1, char __far *src2)
 	}
 	dest[i] = '\0';
 }
+
+int16_t __far locallib_strcmp(char __far *str1, char __far *str2){
+	int16_t i = 0;
+	while (str1[i]){
+		int16_t b  = str1[i] - str2[i];
+		if (b){
+			return b;
+		}
+		i++;
+	}
+	return str1[i] - str2[i];
+}
+/*
+
+// not true to c standard
+// optim assumption: str1 is always lowercase already
+int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2){
+	int16_t i = 0;
+	while (str1[i]){
+		int16_t b  = str1[i] - tolower(str2[i]);
+		if (b){
+			return b;
+		}
+		i++;
+	}
+	return str1[i] - tolower(str2[i]);
+}
+
+*/
 
 
 void __far makesavegamename(char __far *name, int8_t i){

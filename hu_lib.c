@@ -61,7 +61,7 @@ void __near HUlib_drawTextLine ( hu_textline_t __near* textline) {
     // draw the new stuff
     x = textline->x;
     for (i=0;i<textline->len;i++) {
-		c = toupper(textline->characters[i]);
+		c = locallib_toupper(textline->characters[i]);
 		if (c != ' ' && c >= textline->sc && c <= '_') {
 			currentpatch = (((patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c - textline->sc])));
 

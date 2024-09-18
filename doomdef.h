@@ -412,12 +412,19 @@ fixed_t32	FastDiv3216u (fixed_t32 a, int16_t b);
 fixed_t32   FixedDivWholeA(fixed_16_t a, fixed_t32 b);
 
 void copystr8(int8_t __far* dst, int8_t __far* src);
+
+int16_t __far locallib_strcmp(char __far *str1, char __far *str2);
+//int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2);
 void __far combine_strings(char __far *dest, char __far *src1, char __far *src2);
 void __far makesavegamename(char __far *dest, int8_t number);
 void __far locallib_strcpy(char __far *dest, char __far *src);
 void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n);
 int16_t __far locallib_strlen(char __far *src);
 void locallib_strupr(char __far *str);
+void locallib_strlwr(char __far *str);
+
+// subtract 32 by turning off this bit..
+#define locallib_toupper(ch) (ch >= 'a' && ch <= 'z') ? ch - 32 : ch
 
 
 // A or (and) B is a whole number (0 in the low 16 bits). should be optimizable?

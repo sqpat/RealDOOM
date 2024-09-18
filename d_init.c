@@ -253,15 +253,21 @@ extern int8_t*	defaultfile;
 // in the program's command line arguments.
 // Returns the argument number (1 to argc-1)
 // or 0 if not present
-int16_t __near M_CheckParm (int8_t *check)
-{
-    int16_t		i;
 
-    for (i = 1;i<myargc;i++)
-    {
-	if ( !strcasecmp(check, myargv[i]) )
-	    return i;
-    }
+
+int16_t __near M_CheckParm (int8_t *check) {
+    int16_t		i;
+	// ASSUMES *check is LOWERCASE. dont pass in uppercase!
+	// myargv must be tolower()
+	// trying to avoid strcasecmp dependency.
+    for (i = 1;i<myargc;i++) {
+		// technically this runs over and over for myargv, 
+		// but its during initialization so who cares speed-wise. 
+		// code is smaller to stick it here rather than make a loop elsewhere (i think)
+		locallib_strlwr(myargv[i]);
+		if ( !locallib_strcmp(check, myargv[i]) )
+			return i;
+		}
 
     return 0;
 }
@@ -355,7 +361,7 @@ void __near M_LoadDefaults(void) {
 
 
 					for (i = 0; i < NUM_DEFAULTS; i++) {
-						if (!strcmp(def, defaults[i].name)) {
+						if (!locallib_strcmp(def, defaults[i].name)) {
 							*(defaults[i].location) = parm;
 							break;
 						}
@@ -367,7 +373,7 @@ void __near M_LoadDefaults(void) {
 			if (fscanf(f, "%s %[^\n]\n", def, strparm) == 2) {
 				sscanf(strparm, "%i", &parm);
 				for (i = 0; i < NUM_DEFAULTS; i++) {
-					if (!strcmp(def, defaults[i].name)) {
+					if (!locallib_strcmp(def, defaults[i].name)) {
 						*(defaults[i].location) = parm;
 						break;
 					}
