@@ -362,8 +362,8 @@ segs                 EDD9:0000
 #define mobjinfo           ((mobjinfo_t __far *)          MAKE_FULL_SEGMENT(thinkerlist, size_thinkerlist))
 #define linebuffer         ((int16_t __far*)              MAKE_FULL_SEGMENT(mobjinfo, size_mobjinfo ))
 #define sectors_physics    ((sector_physics_t __far* )    MAKE_FULL_SEGMENT(linebuffer, size_linebuffer ))
-#define sectors_soundorgs  ((sector_soundorg_t __far* )  MAKE_FULL_SEGMENT(sectors_physics, size_sectors_physics ))
-#define sector_soundtraversed ((int8_t __far*)           MAKE_FULL_SEGMENT(sectors_soundorgs, size_sectors_soundorgs ))
+#define sectors_soundorgs  ((sector_soundorg_t __far* )   MAKE_FULL_SEGMENT(sectors_physics, size_sectors_physics ))
+#define sector_soundtraversed ((int8_t __far*)            MAKE_FULL_SEGMENT(sectors_soundorgs, size_sectors_soundorgs ))
 
 #define intercepts         ((intercept_t __far*)          MAKE_FULL_SEGMENT(sector_soundtraversed, size_sector_soundtraversed ))
 #define ammnumpatchbytes   ((byte __far *)                MAKE_FULL_SEGMENT(intercepts, size_intercepts ))
@@ -376,29 +376,18 @@ segs                 EDD9:0000
 
 
 // 4000:0000  thinkerlist
-// 493B:0000  mobjinfo
-// 499A:0000  linebuffer
-// 4AD8:0000  sectors_physics
-// 4C34:0000  sectors_soundorgs
-// 4C8B:0000  sectors_soundstraversed
-// 4CA1:0000  intercepts
-// 4CD9:0000  ammnumpatchbytes
-// 4CD9:020C  ammnumpatchoffsets
-// 4CFB:0000  doomednum
-// 4D0D:0000  linespeciallist
-// 4CFF:03B1  [empty]
+// 4906:0000  mobjinfo
+// 4965:0000  linebuffer
+// 4AA3:0000  sectors_physics
+// 4BFF:0000  sectors_soundorgs
+// 4C56:0000  sectors_soundstraversed
+// 4C6c:0000  intercepts
+// 4CA4:0000  ammnumpatchbytes
+// 4CA4:020C  ammnumpatchoffsets
+// 4CC6:0000  doomednum
+// 4CD8:0000  linespeciallist
+// 4CCA:03B1  [empty]
 
-
-// 4000:0000  thinkerlist
-// 4000:93A8  linebuffer
-// 4000:A784  sectors_physics
-// 4000:C2B4  mobjinfo
-// 4000:C897  intercepts
-// 4000:CC17  ammnumpatchbytes
-// 4000:CE23  ammnumpatchoffsets
-// 4000:CE37    doomednum
-// 4000:CF49  linespeciallist
-// 4000:CFC9  [empty]
 
 // over 8k bytes free?
 

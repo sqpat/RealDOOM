@@ -197,7 +197,7 @@ typedef enum
 
 
 // Map Object definition.
-// 41 bytes
+// 40 bytes
 
 typedef struct mobj_s
 {
@@ -219,7 +219,6 @@ typedef struct mobj_s
     short_height_t		ceilingz;
 
     // For movement checking.
-    int16_t		radius;
     fixed_t_union		height;	
 
     // Momentums, used to update position.
@@ -231,6 +230,9 @@ typedef struct mobj_s
     
     uint8_t			tics;	// state tic counter
     int16_t			health;
+
+    // Also for movement checking.
+    uint8_t		radius;
 
     // Movement direction, movement generation (zig-zagging).
     int8_t			movedir;	// 0-7  // uses 4 bits
