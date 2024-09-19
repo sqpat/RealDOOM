@@ -98,7 +98,7 @@ typedef struct
 
 
 // returns success
-boolean __near HUlib_addCharToTextLine(hu_textline_t  __near*t, int8_t ch);
+void __near HUlib_addStringToTextLine(hu_textline_t  __near*t, int8_t* __far ch);
 
 // draws tline
 void __near HUlib_drawTextLine(hu_textline_t __near *l);

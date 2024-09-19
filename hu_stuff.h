@@ -38,7 +38,7 @@
 #define HU_MSGY		0
 #define HU_MSGWIDTH	64	// in characters
 #define HU_MSGHEIGHT	1	// in lines
-
+#define HU_INPUTY HU_MSGY + HUD_FONTHEIGHT
 #define HU_MSGTIMEOUT	(4*TICRATE)
 
 //

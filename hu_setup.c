@@ -58,12 +58,17 @@ uint16_t hu_font[HU_FONTSIZE]  ={ 8468,
 //
 // Locally used constants, shortcuts.
 //
+#define HUD_FONTHEIGHT 7
+#define HUD_LINEHEIGHT HUD_FONTHEIGHT + 1
+
 #define HU_TITLE	(mapnames[(gameepisode-1)*9+gamemap-1])
 #define HU_TITLE2	(mapnames2[gamemap-1])
 #define HU_TITLEP	(mapnamesp[gamemap-1])
 #define HU_TITLET	(mapnamest[gamemap-1])
 #define HU_TITLEHEIGHT	1
 #define HU_TITLEX	0
+#define HU_TITLEY   167 - HUD_FONTHEIGHT
+
 
 #define HU_INPUTTOGGLE	't'
 #define HU_INPUTX	HU_MSGX
@@ -262,30 +267,16 @@ void __far HU_Start(void) {
 	// The actual names can be found in DStrings.h.
 	//
 
- 
-
 	// int32_t		i;
 	int16_t	sindex;
-	int8_t s[256];
-	int16_t s_index = 0;
-	int16_t HU_TITLEY;
-	int16_t HU_INPUTY;
+	int8_t str[256];
 	hu_textline_t __near*	t;
-	uint16_t			fontheight = 7;// might not work with custom wad?
-	uint16_t			lineheight = 8;//might not work with custom wad?
 
-
-	HU_TITLEY = (167 - fontheight);
-	HU_INPUTY = (HU_MSGY + lineheight);
 
 	message_on = false;
 	message_dontfuckwithme = false;
 	message_nottobefuckedwith = false;
 	// create the message widget
-
-
-
-
 
 	w_message.height = 1;
 	w_message.on = &message_on;
@@ -334,11 +325,9 @@ void __far HU_Start(void) {
 	sindex += title_string_offset;
 
 
-	getStringByIndex(sindex, s);
+	getStringByIndex(sindex, str);
 
-	while (s[s_index]) {
-		HUlib_addCharToTextLine(&w_title, (s[s_index++]));
-	}
+	HUlib_addStringToTextLine(&w_title, str);
 
 
 

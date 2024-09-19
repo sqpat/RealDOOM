@@ -578,7 +578,7 @@ void __near AM_maxOutWindowScale(void)
     AM_activateNewScale();
 }
 
- 
+ extern int8_t hudneedsupdate;
 //
 // Handle events (user inputs) in automap mode
 //
@@ -629,6 +629,7 @@ boolean __far AM_Responder ( event_t __far* ev ) {
 			bigstate = 0;
 			viewactive = true;
 			AM_Stop ();
+
 			break;
 		  case AM_GOBIGKEY:
 			bigstate = !bigstate;

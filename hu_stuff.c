@@ -51,35 +51,48 @@ uint8_t		message_counter;
 extern uint8_t		showMessages;
 extern boolean		automapactive;
 
+extern uint8_t screenblocks;
+extern boolean inhelpscreens;
 
- 
+int8_t hudneedsupdate = 0;
+
+//todo: on automap toggles and such, set needsupdate back to 4
 
 void __near HU_Drawer(void) {
 
 	hu_stext_t __near* stext = &w_message;
 	int16_t i, index;
 	hu_textline_t __near*line;
-	boolean	mapped = false;
+	boolean	mapped = false;  // keep track of if we mapped out
 	
 	if (!*stext->on) {
 		return; // if not on, don't draw
 	}
 	
-	// draw everything
-	for (i = 0; i < stext->height; i++) {
-		if (!mapped) {
-			Z_QuickMapStatus();
-			mapped = true;
-		}
-		index = stext->currentline - i;
-		if (index < 0) {
-			index += stext->height; // handle queue of lines
+	
+	if (hudneedsupdate || automapactive || screenblocks >= 10){
+	
+		// draw everything
+		for (i = 0; i < stext->height; i++) {
+
+			index = stext->currentline - i;
+			if (index < 0) {
+				index += stext->height; // handle queue of lines
+			}
+
+			line = &stext->textlines[index];
+
+			// need a decision made here on whether to skip the draw
+
+			if (!mapped) {
+				Z_QuickMapStatus();
+				mapped = true;
+			}
+
+			HUlib_drawTextLine(line); // no cursor, please
 		}
 
-		line = &stext->textlines[index];
-
-		// need a decision made here on whether to skip the draw
-		HUlib_drawTextLine(line); // no cursor, please
+		hudneedsupdate--;
 	}
 
 	if (automapactive) {
@@ -89,6 +102,7 @@ void __near HU_Drawer(void) {
 	}
 	
 	if (mapped) {
+		// remap physics memory if mapped out
 		Z_QuickMapPhysics();
 	}
 }

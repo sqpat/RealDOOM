@@ -197,7 +197,7 @@ void __near R_InitTextureMapping(void) {
 
 }
 
-
+extern int8_t hudneedsupdate;
 extern int16_t setdetail;
 //
 // R_ExecuteSetViewSize
@@ -207,6 +207,8 @@ void __near  R_ExecuteSetViewSize(void) {
 	fixed_t_union temp;
 	temp.h.fracbits = 0;
 	setsizeneeded = false;
+	// i think the first draw or two dont write to the correct framebuffer? needs six
+	hudneedsupdate = 6;
 
 	if (setblocks == 11) {
 		scaledviewwidth = SCREENWIDTH;

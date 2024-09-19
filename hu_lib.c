@@ -37,23 +37,26 @@ extern boolean	automapactive;	// in AM_map.c
 extern uint16_t		hu_font[HU_FONTSIZE];
 
 
-boolean __near HUlib_addCharToTextLine ( hu_textline_t __near* textline, int8_t ch ) {
-
-	if (textline->len == HU_MAXLINELENGTH) {
-		return false;
-	} else {
-		textline->characters[textline->len++] = ch;
-		textline->characters[textline->len] = 0;
-		textline->needsupdate = 4;
-		return true;
-    }
+void __near HUlib_addStringToTextLine(hu_textline_t  __near*textline, int8_t* __far str){	
+	int16_t index = 0;
+	while (str[index]){
+		if (textline->len == HU_MAXLINELENGTH) {
+			textline->characters[textline->len] = 0;
+			return;
+		} else {
+			textline->characters[textline->len++] = locallib_toupper(str[index]);
+			textline->needsupdate = 4;
+		}
+		index++;
+	}
+	textline->characters[textline->len] = 0;
 
 }
   
 void __near HUlib_drawTextLine ( hu_textline_t __near* textline) {
 
     int16_t			i;
-    int16_t			w;
+    int16_t			width;
     int16_t			x;
     uint8_t	c;
 	patch_t __far* currentpatch;
@@ -61,17 +64,17 @@ void __near HUlib_drawTextLine ( hu_textline_t __near* textline) {
     // draw the new stuff
     x = textline->x;
     for (i=0;i<textline->len;i++) {
-		c = locallib_toupper(textline->characters[i]);
+		c = textline->characters[i];
 		if (c != ' ' && c >= textline->sc && c <= '_') {
-			currentpatch = (((patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c - textline->sc])));
+			currentpatch = ((patch_t __far *) MK_FP(ST_GRAPHICS_SEGMENT, hu_font[c - textline->sc]));
 
 
-			w = (currentpatch->width);
-			if (x + w > SCREENWIDTH) {
+			width = (currentpatch->width);
+			if (x + width > SCREENWIDTH) {
 				break;
 			}
 			V_DrawPatchDirect(x, textline->y,  currentpatch);
-			x += w;
+			x += width;
 		} else {
 			x += 4;
 			if (x >= SCREENWIDTH) {
@@ -113,7 +116,7 @@ void __near HUlib_eraseTextLine(hu_textline_t __near* textline) {
 
 }
 extern hu_stext_t	w_message;
-
+extern int8_t hudneedsupdate;
 
 void __near HUlib_addMessageToSText (int8_t* msg ) {
 	hu_stext_t __near* 	stext = &w_message;
@@ -135,9 +138,8 @@ void __near HUlib_addMessageToSText (int8_t* msg ) {
 		stext->textlines[i].needsupdate = 4;
 	}
 	 
-	while (*msg) {
-		HUlib_addCharToTextLine(&stext->textlines[stext->currentline], *(msg++));
-	}
+	HUlib_addStringToTextLine(&stext->textlines[stext->currentline], msg);
+	hudneedsupdate = 4;
 }
 
  

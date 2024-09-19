@@ -234,6 +234,7 @@ void __far I_FinishUpdate(void);
 extern int32_t fps_rendered_frames_since_last_measure;
 #endif
 
+extern int8_t hudneedsupdate;
 
 void __far wipe_WipeLoop(){
 	ticcount_t                         nowtime, wipestart;
@@ -276,6 +277,8 @@ void __far wipe_WipeLoop(){
  		I_FinishUpdate();                      // page flip or blit buffer
 
     } while (!done);
+	// i think the first draw or two dont write to the correct framebuffer? needs six
+	hudneedsupdate = 6;
 
 	Z_QuickMapPhysics();
 	wipeduration = ticcount - wiperealstart;
