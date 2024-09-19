@@ -572,10 +572,9 @@ maskedpostdata          8400:0000
 spanfunc_jump_lookup   6EA0:0000
 spanfunc_function_area 6EAA:0000
 
-// planes change the 6800 page and remove 
+ planes change the 6800 page and remove 
 
-/*
-// todo reverse order of colormaps and mobjpos list? 
+ todo reverse order of colormaps and mobjpos list? 
 
 draw code can be paged into 6800 area in plane or sprite code because mobjposlist no longer needed
 
@@ -815,7 +814,8 @@ skytexture     9163:0000
 wioffsets      7800:2480
 wianimoffsets  7800:24b8
 [empty]        7800:24f4
-// 6924 free? but intermission memory usage isnt common...
+*/
+//6924 free? but intermission memory usage isnt common...
 
 
 

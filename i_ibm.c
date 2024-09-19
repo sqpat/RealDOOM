@@ -511,8 +511,7 @@ void __near I_Shutdown(void);
 //
 void __far I_Error (int8_t *error, ...)
 {
-    va_list argptr;
-	//printf(error, argptr);
+    //va_list argptr;
     I_Shutdown();
     /*
 	va_start(argptr, error);

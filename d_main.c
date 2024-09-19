@@ -236,7 +236,6 @@ void __far locallib_strcpy(char __far *dest, char __far *src){
 
 void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n){
 	int16_t i = 0;
-    int8_t doNulls = 0;
 	while (i < n){
         if (src[i] == '\0'){
         	while (i < n){

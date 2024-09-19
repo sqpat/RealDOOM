@@ -778,7 +778,6 @@ void __near WI_loadData(void) {
     int16_t		i;
 	int8_t	name1[9] = "INTERPIC";
 	int8_t	name2[9] = "WIMAP0";
-	int8_t tempstring [10];
 	int8_t* name = name2;
 
     if (commercial)

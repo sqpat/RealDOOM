@@ -146,7 +146,6 @@ __near P_RecursiveSound
     int16_t	othersecnum;
 	int16_t linecount;
 	sector_t __far* soundsector = &sectors[secnum];
-	sector_physics_t __far* soundsector_physics = &sectors_physics[secnum];
 	int16_t linenumber;
 	uint8_t checkflags;
 	int16_t checksidenum0;
@@ -1739,7 +1738,6 @@ void __near A_VileAttack (mobj_t __far* actor, mobj_pos_t __far* actor_pos)
     uint16_t		an;
 	mobj_t __far* actorTarget;
 	mobj_t __far* fire;
-	fixed_t_union mass;
 	mobj_pos_t __far* actorTarget_pos;
 	mobj_pos_t __far* fire_pos;
 	//todoaddr inline later

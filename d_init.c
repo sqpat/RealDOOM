@@ -216,10 +216,11 @@ void __near D_DrawTitle(int8_t __near *string)
 //
 // D_RedrawTitle
 //
+
+#ifdef DEBUG_PRINTING
+
 void __near D_RedrawTitle(int8_t __near *title) {
 	int16_t_union columnrow;
-	int16_t column;
-	int16_t row;
 
 	//Get current cursor pos
 	columnrow.h = D_GetCursorColumnRow();
@@ -233,7 +234,7 @@ void __near D_RedrawTitle(int8_t __near *title) {
 	//Restore old cursor pos
 	D_SetCursorPosition(columnrow.h);
 }
-
+#endif
  
  
 
@@ -754,8 +755,10 @@ void __far D_DoomMain2(void)
 	int16_t             p;
 	int8_t                    file[256];
 	union REGS regs;
+#ifdef DEBUG_PRINTING
 	int8_t          textbuffer[280]; // must be 276 to fit the 3 line titles
 	int8_t            title[128];
+#endif
 	int8_t            wadfile[20];
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
@@ -920,15 +923,6 @@ R_PointToAngle(y, x);
 
 	file[0] = 0;
 
-
-	if (M_CheckParm("-mem")){
-		segread(&sregs);
-		//I_Error("\npointer is %Fp %Fp %Fp %Fp", MK_FP(sregs.ds, DGROUP_SIZE), MK_FP(sregs.cs, &main), MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0), MK_FP(sregs.ss, 0));
-		// 
-		DEBUG_PRINT("Bytes free %u %FP %Fp", (baselowermemoryaddresssegment - (sregs.ds +( DGROUP_SIZE >> 4))) << 4, MK_FP(sregs.ds +( DGROUP_SIZE >> 4), 0), MK_FP(FP_SEG(P_SetupLevel), 0x26ad));
-		exit(0);
-
-	}
 
 /*
 	if (M_CheckParm("-debug")){

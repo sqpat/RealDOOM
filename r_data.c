@@ -745,7 +745,7 @@ void __near R_GenerateComposite(uint16_t texnum, segment_t block_segment)
 	int16_t currentRLEIndex = 0;
 	int16_t nextcollumpRLE = 0;
 	segment_t currentdestsegment;
-	segment_t testsegment;
+
 
 /*
 	FILE*fp;

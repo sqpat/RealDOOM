@@ -248,7 +248,6 @@ void __near EV_LightChange(uint8_t linetag, int8_t on, uint8_t		bright)
     uint8_t			min;
 	int16_t linecount;
 	int16_t offset;
-	int16_t linebufferlines[MAX_ADJOINING_SECTORS];
 	int16_t tagsecnumlist[MAX_ADJOINING_SECTORS];
 	int16_t secnumlist[MAX_ADJOINING_SECTORS];
 

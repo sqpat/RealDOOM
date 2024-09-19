@@ -173,7 +173,6 @@ byte __far *__near Z_InitEMS() {
 	int16_t pagestotal, pagesavail;
 	int16_t errorreg;
 	uint8_t vernum;
-	int16_t j;
 	DEBUG_PRINT("  Checking EMS...");
 
 	// used:
@@ -252,18 +251,6 @@ byte __far *__near Z_InitEMS() {
 
 	// do initial page remapping
 
-/*
-	for (j = 0; j < 4; j++) {
-		regs.h.al = j;  // physical page
-		regs.w.bx = j;    // logical page
-		regs.w.dx = emshandle; // handle
-		regs.h.ah = 0x44;
-		intx86(EMS_INT, &regs, &regs);
-		if (regs.h.ah != 0) {
-			I_Error("87"); // EMS Error 0x44
-		}
-	}
-*/
 
 	//*size = numPagesToAllocate * PAGE_FRAME_SIZE;
 
@@ -391,7 +378,6 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
 boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
  
 void __near Z_LoadBinaries() {
-	int i;
 	FILE* fp;
 	// currently in physics region!
 	fp = fopen("DOOMDATA.BIN", "rb"); 

@@ -208,7 +208,6 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 //
 void __near P_LoadVertexes(int16_t lump) {
 	//mapvertex_t __far*			data;
-	uint16_t                 i;
 	//mapvertex_t			ml;
 	// Determine number of lumps:
 	//  total lump length / vertex record length.
@@ -423,8 +422,6 @@ void __near P_LoadSectors(int16_t lump) {
 void __near P_LoadNodes(int16_t lump) {
 	mapnode_t  __far*       data = (mapnode_t __far*)SCRATCH_ADDRESS_5000;
 	uint16_t         i;
-	uint16_t         j;
-	uint16_t         k;
 	node_t __far*     no;
 	node_children_t __far*     no_children;
 

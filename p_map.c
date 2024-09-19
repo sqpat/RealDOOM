@@ -167,7 +167,6 @@ fixed_t __near R_GetAttackRangeMult(int16_t range, fixed_t frac){
 // R_PointInSubsector
 //
 int16_t __near R_PointInSubsector ( fixed_t_union	x, fixed_t_union	y ) {
-    node_t __far*	node;
     int16_t		nodenum;
     // single subsector is a special case
 	if (!numnodes) {
@@ -245,8 +244,6 @@ boolean __near P_TeleportMove (mobj_t __far* thing,mobj_pos_t __far* thing_pos,f
     int16_t			xh;
     int16_t			yl;
     int16_t			yh;
-    //int16_t			bx;
-    int16_t			by;
     
 	 
 	
@@ -1651,9 +1648,6 @@ boolean __near PIT_RadiusAttack (THINKERREF thingRef, mobj_t __far*	thing, mobj_
 // Source is the creature that caused the explosion at spot.
 //
 void __near P_RadiusAttack (mobj_t __far* spot, mobj_pos_t __far* spot_pos, mobj_t __far* source, int16_t		damage) {
-	int16_t		x;
-	//int16_t		y;
-
 	int16_t		xl;
 	int16_t		xh;
 	int16_t		yl;
@@ -1761,8 +1755,6 @@ boolean __near PIT_ChangeSector (THINKERREF thingRef, mobj_t __far*	thing, mobj_
 // P_ChangeSector
 //
 boolean __near P_ChangeSector ( sector_t __far*	sector, boolean	crunch ) {
-    //int16_t		x;
-	int16_t		y;
 	sector_physics_t __far* sector_physics = &sectors_physics[sector - sectors];
 
 	int16_t xl = sector_physics->blockbox[BOXLEFT];

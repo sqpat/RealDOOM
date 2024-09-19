@@ -35,7 +35,6 @@ typedef long long				int64_t;
 typedef unsigned long long		uint64_t;
 #endif
 
-typedef int16_t filehandle_t;
 typedef uint16_t filelength_t;
 typedef int32_t ticcount_t;
 typedef uint16_t texsize_t;

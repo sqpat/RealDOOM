@@ -87,7 +87,6 @@ void M_AddToBox16 ( int16_t __near*	box, int16_t	x, int16_t	y ) {
 #endif
 
 boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		length ){
-    filehandle_t		handle;
     filelength_t		count;
 	
     FILE* fp = fopen ( name, "wb");
@@ -95,7 +94,7 @@ boolean M_WriteFile (int8_t const*	name, void __far*		source, filelength_t		leng
     if (!fp)
 	    return false;
 
-	//todo 
+	//todo re-enable with demos re-enabled. or dont use far_fwrite or something.
      //count = FAR_fwrite (source, 1, length, fp);
     fclose (fp);
 	

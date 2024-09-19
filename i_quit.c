@@ -267,7 +267,7 @@ void __near M_SaveDefaults (void)
             v = *defaults[i].location;
 
 			// todo reenable fprintf
-            //fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
+            fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
 
         //} else {
         //    fprintf (f,"%s\t\t\"%s\"\n",defaults[i].name,

@@ -616,8 +616,6 @@ void __near R_RenderOneSeg ()
     int16_t			top;
     int16_t			bottom;
 	fixed_t_union 	temp;
-	int8_t          xoffset;
-	int16_t        	start_rw_x = rw_x;
 	int16_t 		rw_x_base4 = rw_x & detailshiftandval;	// knock out the low 2 bits. 
   	int16_t 		base4diff = rw_x - rw_x_base4;
 

@@ -213,7 +213,6 @@ void R_GenerateLookup(uint16_t texnum)
 	patch_t __far*            realpatch;
 	int16_t                 x;
 	int16_t                 i;
-	int16_t                 j;
 	uint16_t				eraseoffset;
 	int16_t					patchpatch;
 	int16_t  patchusedheight;
@@ -227,7 +226,6 @@ void R_GenerateLookup(uint16_t texnum)
 	int16_t				currentcollump;
 	int16_t				currentcollumpRLEStart;
 	uint16_t            currentheight;  // use int16 so shifting is less of a hassle in here
-	uint16_t            texsize;
 	int8_t				ismaskedtexture = 0;
 
 
@@ -294,7 +292,6 @@ void R_GenerateLookup(uint16_t texnum)
 
 	for (i = 0; i < texturepatchcount; i++) {
 			
-		int16_t columntotalsize = 0;
 		texpatch_t __far*         patch = &texture->patches[i];
 		int16_t                 x2;
 		int16_t                 x1 = patch->originx * (patch->patch & ORIGINX_SIGN_FLAG ? -1 : 1);

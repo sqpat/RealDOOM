@@ -50,7 +50,7 @@ enum { VERSION =  109 };
 //#define PRECALCULATE_OPENINGS
 
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
-// #define DEBUG_PRINTING
+#define DEBUG_PRINTING
 
 #ifdef DEBUG_PRINTING
 	#define DEBUG_PRINT(...) printf(__VA_ARGS__)
@@ -63,9 +63,6 @@ enum { VERSION =  109 };
 
 // Error checking. recommended ON during development. however, turning this off makes the binary like 10-12k smaller
 //#define CHECK_FOR_ERRORS
-
-// Debug flag which checks integrity of the EMS allocations data structures. Recommended to stay off for performance, on for development
-//#define CHECKREFS
 
 // skips fwipe (screen wipe)
 //#define SKIPWIPE

@@ -452,7 +452,6 @@ void __near R_DrawPlanes (void) {
 	int8_t			i;
 	int8_t			j;
 	int8_t			physindex = 0;
-	int8_t			subindex = 0;
 
 	
 

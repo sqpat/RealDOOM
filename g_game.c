@@ -1090,7 +1090,7 @@ extern int16_t compositecacheevictcount;
 
 #endif
 
-extern advancedemo;
+extern int16_t advancedemo;
 
 boolean __far G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;
