@@ -102,7 +102,7 @@ uint16_t   __far  R_CheckTextureNumForName(int8_t *name) {
 		copystr8(texturename, texture->name);
 		//DEBUG_PRINT("\n %.8Fs %8s %8s %i %Fp", texture->name, texturename, name, texture->name);
 
-		if (!strncasecmp(texturename, name, 8)) {
+		if (!locallib_strncasecmp(texturename, name, 8)) {
 			//DEBUG_PRINT("\n FOUND %i %s %s %s", i, texture->name, texturename, name);
 			return i;
 		}

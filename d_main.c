@@ -302,6 +302,19 @@ int16_t __far locallib_strcmp(char __far *str1, char __far *str2){
 	}
 	return str1[i] - str2[i];
 }
+
+int16_t __far locallib_strncasecmp(char __far *str1, char __far *str2, int16_t n){
+	int16_t i = 0;
+	while (str1[i] && i < n){
+		int16_t b  = locallib_toupper(str1[i] )- locallib_toupper(str2[i]);
+		if (b){
+			return b;
+		}
+		i++;
+	}
+	return 0;
+}
+
 /*
 
 // not true to c standard
@@ -724,7 +737,6 @@ if (gametic == 200){
 			//}
 			//sprintf(result2, "%li %hhu %li %li %li %li %li %l %l %i \n", gametic, prndindex, SAVEDUNIT->x, SAVEDUNIT->y, SAVEDUNIT->z, SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT->floorz, SAVEDUNIT->ceilingz, SAVEDUNIT->secnum);
 			fprintf(fp, "%li %i  %li %li %li %li %li %i %i %i\n", gametic, prndindex,   SAVEDUNIT->momx, SAVEDUNIT->momy, SAVEDUNIT_POS->z.w, SAVEDUNIT_POS->x.w, SAVEDUNIT_POS->y.w,SAVEDUNIT_POS->stateNum, SAVEDUNIT->tics);
-			//fprintf(result2, fp);
 			fclose(fp);
 
 			if (gametic == 400){

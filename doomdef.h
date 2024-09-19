@@ -50,10 +50,10 @@ enum { VERSION =  109 };
 //#define PRECALCULATE_OPENINGS
 
 // Prints startup messages. Good for development, turn off to save a little bit of binary size (~2k)
-#define DEBUG_PRINTING
+#define DEBUG_PRINTING 0
 
-#ifdef DEBUG_PRINTING
-	#define DEBUG_PRINT(...) printf(__VA_ARGS__)
+#if DEBUG_PRINTING
+	//#define DEBUG_PRINT(...) printf(__VA_ARGS__)
 #else
 	#define DEBUG_PRINT(...) 
 #endif
@@ -411,6 +411,8 @@ fixed_t32   FixedDivWholeA(fixed_16_t a, fixed_t32 b);
 void copystr8(int8_t __far* dst, int8_t __far* src);
 
 int16_t __far locallib_strcmp(char __far *str1, char __far *str2);
+int16_t __far locallib_strncasecmp(char __far *str1, char __far *str2, int16_t n);
+
 //int16_t __far locallib_strcasecmp(char __far *str1, char __far *str2);
 void __far combine_strings(char __far *dest, char __far *src1, char __far *src2);
 void __far makesavegamename(char __far *dest, int8_t number);

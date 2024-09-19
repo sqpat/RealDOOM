@@ -217,7 +217,7 @@ void __near D_DrawTitle(int8_t __near *string)
 // D_RedrawTitle
 //
 
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 
 void __near D_RedrawTitle(int8_t __near *title) {
 	int16_t_union columnrow;
@@ -447,7 +447,6 @@ void  __near S_Init (uint8_t		sfxVolume, uint8_t		musicVolume) {
   int16_t		i;
   channel_t* channels;
 
-  //fprintf( stderr, "S_Init: default sfx volume %d\n", sfxVolume);
 
   // Whatever these did with DMX, these are rather dummies now.
   I_SetChannels(numChannels);
@@ -755,7 +754,7 @@ void __far D_DoomMain2(void)
 	int16_t             p;
 	int8_t                    file[256];
 	union REGS regs;
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 	int8_t          textbuffer[280]; // must be 276 to fit the 3 line titles
 	int8_t            title[128];
 #endif
@@ -1008,7 +1007,7 @@ R_PointToAngle(y, x);
 	respawnparm = M_CheckParm("-respawn");
 	fastparm = M_CheckParm("-fast");
 
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 
 	if (!commercial)
 	{
@@ -1153,7 +1152,7 @@ R_PointToAngle(y, x);
 
 
 	// Check for -file in shareware
-	#ifdef DEBUG_PRINTING
+	#if DEBUG_PRINTING
 	if (registered) {
 		getStringByIndex(VERSION_REGISTERED, textbuffer);
 		DEBUG_PRINT(textbuffer);
@@ -1187,7 +1186,7 @@ R_PointToAngle(y, x);
 	//I_Error("\n%u %u %hhi %s", stringoffsets[E3TEXT], stringoffsets[E3TEXT + 1] - stringoffsets[E3TEXT], textbuffer[0], textbuffer);
 
 
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 	getStringByIndex(R_INIT_TEXT, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
@@ -1196,7 +1195,7 @@ R_PointToAngle(y, x);
 	R_Init();
 
 
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 	getStringByIndex(P_INIT_TEXT, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
@@ -1204,7 +1203,7 @@ R_PointToAngle(y, x);
 	P_Init();
 
 
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 	getStringByIndex(I_INIT_TEXT, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
@@ -1212,21 +1211,21 @@ R_PointToAngle(y, x);
 	I_Init();
 	maketic = 0;
 
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 	getStringByIndex(S_INIT_TEXT, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
 	//S_Init(sfxVolume * 8, musicVolume * 8);
 
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 	getStringByIndex(HU_INIT_TEXT, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);
 #endif
 	HU_Init();
 
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 	getStringByIndex(ST_INIT_TEXT, textbuffer);
 	DEBUG_PRINT(textbuffer);
 	D_RedrawTitle(title);

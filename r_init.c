@@ -76,7 +76,7 @@ void R_InitSpriteLumps(void)
 		column_t    __far * column;
 		uint16_t    pixelsize = 0;
 		
-#ifdef DEBUG_PRINTING
+#if DEBUG_PRINTING
 		if (!(i & 63))
 			DEBUG_PRINT(".");
 #endif

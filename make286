@@ -120,7 +120,7 @@ GLOBOBJS = &
  r_span.obj
 
 doom16.exe : $(GLOBOBJS) i_ibm.obj
- wlink @newd16.lnk symt fprintf_,__U4M,__prtf_,vsprintf_,__fprtf_,vprintf_,sprintf_,printf_,strupr_
+ wlink @newd16.lnk symt fprintf_,__U4M,__prtf_,__fprtf_,vprintf_,printf_
  copy doom16.exe doom.exe
  wstrip doom.exe
 

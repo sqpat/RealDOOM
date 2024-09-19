@@ -43,7 +43,7 @@ void __far G_LoadGame (int8_t* name);
 
 
 // Called by M_Responder.
-void __far G_SaveGame (int8_t slot, int8_t* description);
+void __far G_SaveGame (int8_t slot, int8_t __far* description);
 
 boolean __far G_CheckDemoStatus (void);
 

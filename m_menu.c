@@ -200,9 +200,9 @@ void __near M_DrawSave(void);
 void __near M_DrawSaveLoadBorder(int16_t x, int16_t y);
 void __near M_SetupNextMenu(menu_t __near*menudef);
 void __near M_DrawThermo(int16_t x, int16_t y, int16_t thermWidth, int16_t thermDot);
-void __near M_WriteText(int16_t x, int16_t y, int8_t *string);
-int16_t  __near M_StringWidth(int8_t *string);
-int16_t  __near M_StringHeight(int8_t *string);
+void __near M_WriteText(int16_t x, int16_t y, int8_t __far* string);
+int16_t  __near M_StringWidth(int8_t __far*string);
+int16_t  __near M_StringHeight(int8_t __far*string);
 void __near M_StartControlPanel(void);
 void __near M_StartMessage(int8_t __near * string,void __near (* routine)(int16_t), boolean input);
  
@@ -1113,7 +1113,7 @@ void __near M_StartMessage ( int8_t __near * string, void __near (*routine)(int1
 //
 // Find string width from hu_font chars
 //
-int16_t __near M_StringWidth(int8_t* string) {
+int16_t __near M_StringWidth(int8_t __far* string) {
     int16_t             i;
     int16_t             w = 0;
     int16_t             c;
@@ -1135,7 +1135,7 @@ int16_t __near M_StringWidth(int8_t* string) {
 //
 //      Find string height from hu_font chars
 //
-int16_t __near M_StringHeight(int8_t* string){
+int16_t __near M_StringHeight(int8_t __far* string){
     int8_t             i;
     int16_t             h = HU_FONT_SIZE;
      
@@ -1151,9 +1151,9 @@ int16_t __near M_StringHeight(int8_t* string){
 //
 //      Write a string using the hu_font
 //
-void __near M_WriteText (int16_t x, int16_t y, int8_t* string) {
+void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
     int16_t         w;
-    int8_t*       ch;
+    int8_t __far*       ch;
     int16_t         c;
     int16_t         cx;
     int16_t         cy;

@@ -125,7 +125,7 @@ doom16.exe : $(GLOBOBJS) i_ibm.obj
  wcc $(CCOPTS) $[*
 
 .asm.obj :
- tasm /mx $(ASMOPTS) $[*
+ tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
 
 clean : .SYMBOLIC
  del *.obj
