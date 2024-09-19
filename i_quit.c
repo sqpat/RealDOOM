@@ -252,9 +252,10 @@ extern int8_t* defaultfile;
 void __near M_SaveDefaults (void)
 {
     int8_t		i;
-    int8_t		v;
+    int8_t		j;
+    uint8_t		v;
     FILE*	f;
-	
+	int8_t	currentvchar;
     f = fopen (defaultfile, "w");
     if (!f)
 	    return; // can't write the file, but don't complain
@@ -263,16 +264,29 @@ void __near M_SaveDefaults (void)
         if (defaults[i].scantranslate){
             defaults[i].location = &defaults[i].untranslated;
         }
-        //if (defaults[i].defaultvalue > -0xfff && defaults[i].defaultvalue < 0xfff) {
-            v = *defaults[i].location;
+		v = *defaults[i].location;
 
-			// todo reenable fprintf
-            //fprintf (f,"%s\t\t%i\n",defaults[i].name,v);
+		// replaced fprintf with this monstrosity.
 
-        //} else {
-        //    fprintf (f,"%s\t\t\"%s\"\n",defaults[i].name,
-        //        * (int8_t **) (defaults[i].location));
-        //}
+		for (j = 0; defaults[i].name[j] != '\0'; j++){
+			fputc(defaults[i].name[j],f);
+		}
+		fputc('\t',f);
+		fputc('\t',f);
+		if (v >= 200){
+			fputc('2',f);
+			v-=200;
+		} else if (v >= 100){
+			fputc('1',f);
+			v-=100;
+		}
+		if (v >= 10){
+			fputc('0' + v / 10,f);
+			v = v % 10;
+		}
+		fputc('0' + v,f);
+		fputc('\n',f);
+
     }
 	
     fclose (f);

@@ -158,8 +158,7 @@ void _fmemmove(char __far *dest, const void __far *src, size_t size);
 
 
 
-int16_t W_CheckNumForName (int8_t* name)
-{
+int16_t W_CheckNumForName (int8_t* name) {
     union {
 		int8_t    s[9];
 		int16_t     x[4];
@@ -225,9 +224,7 @@ int16_t W_CheckNumForName (int8_t* name)
 // W_GetNumForName
 // Calls W_CheckNumForName, but bombs out if not found.
 //
-int16_t W_GetNumForName(int8_t* name)
-//int16_t W_GetNumForName2 (int8_t* name, int8_t*file, int line)
-{
+int16_t W_GetNumForName(int8_t* name) {
 	int16_t i;
 
     i = W_CheckNumForName (name);
@@ -280,13 +277,7 @@ int32_t W_LumpLength (int16_t lump)
 
 
 
-void
-W_ReadLump
-(int16_t           lump,
-  byte __far*         dest,
-  int32_t           start,
-  int32_t           size )
-{
+void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 	//filelength_t         c;  // size, leave as 32 bit
     lumpinfo_t __far* l;
 #ifdef CHECK_FOR_ERRORS
@@ -360,34 +351,18 @@ W_ReadLump
  
  
 
-void
-W_CacheLumpNameDirect
-(int8_t*         name,
-	byte __far*			dest
-) {
-	//printf("\nA %s %i %lx", name, W_GetNumForName(name), dest);
-	//printf("\nB %s %i %i %lx", name, *(int16_t __far*)dest, *((int16_t __far*)(dest + 1)), dest);
+void W_CacheLumpNameDirect (int8_t* name, byte __far* dest ) {
 	W_ReadLump(W_GetNumForName(name), dest, 0, 0);
-	//printf("\nC %s %i %i %lx", name, *(int16_t __far*)dest, *((int16_t __far*)(dest+1)),dest);
-
 }
 
 
-void
-W_CacheLumpNumDirect
-(int16_t lump,
-	byte __far*			dest
-) {
+void W_CacheLumpNumDirect (int16_t lump, byte __far* dest ) {
 	W_ReadLump(lump, dest, 0, 0);
 }
 
  
 // used for stuff > 64k, especially titlepics, to draw one ems frame at a tiem
-void
-W_CacheLumpNumDirectFragment
-(int16_t lump,
-	byte __far*			dest,
-    int32_t offset){
+void W_CacheLumpNumDirectFragment (int16_t lump, byte __far* dest,int32_t offset){
  
 	W_ReadLump(lump, dest, offset, 16384);
     
