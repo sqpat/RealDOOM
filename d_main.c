@@ -224,6 +224,13 @@ int16_t __far locallib_strlen(char __far *src){
 
 }
 
+uint8_t __far locallib_toupper(uint8_t ch){
+	if (ch >=  0x61 && ch <= 0x7A){
+		return ch - 0x20;
+	}
+	return ch;
+}
+
 void __far locallib_strcpy(char __far *dest, char __far *src){
 	int16_t i = 0;
 	while (src[i] != '\0'){

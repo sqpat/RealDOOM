@@ -1,6 +1,6 @@
 Open Watcom Linker Version 1.9
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/09/18 16:45:38
+Created on:       24/09/18 17:50:04
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -33,17 +33,17 @@ z_init_TEXT            CODE           AUTO           0000:1bd0       00000410
 p_init_TEXT            CODE           AUTO           0000:1fe0       00000451
 i_main_TEXT            CODE           AUTO           0244:0000       0000000d
 i_quit_TEXT            CODE           AUTO           0244:0010       000001e3
-i_ibm_TEXT             CODE           AUTO           0244:0200       0000044a
-i_sound_TEXT           CODE           AUTO           0244:0650       0000008b
-d_main_TEXT            CODE           AUTO           0244:06e0       000008ae
-d_net_TEXT             CODE           AUTO           0244:0f90       00000104
-g_game_TEXT            CODE           AUTO           0244:10a0       00000bcc
-m_misc_TEXT            CODE           AUTO           0244:1c70       00000061
-am_map_TEXT            CODE           AUTO           0244:1ce0       000011e3
-st_stuff_TEXT          CODE           AUTO           0244:2ed0       00000a65
-hu_stuff_TEXT          CODE           AUTO           0244:3940       000001d5
-hu_lib_TEXT            CODE           AUTO           0244:3b20       000001c5
-m_menu_TEXT            CODE           AUTO           0244:3cf0       00001434
+i_ibm_TEXT             CODE           AUTO           0244:0200       00000470
+i_sound_TEXT           CODE           AUTO           0244:0670       0000008b
+d_main_TEXT            CODE           AUTO           0244:0700       000008ba
+d_net_TEXT             CODE           AUTO           0244:0fc0       00000104
+g_game_TEXT            CODE           AUTO           0244:10d0       00000bcc
+m_misc_TEXT            CODE           AUTO           0244:1ca0       00000061
+am_map_TEXT            CODE           AUTO           0244:1d10       000011e3
+st_stuff_TEXT          CODE           AUTO           0244:2f00       00000a65
+hu_stuff_TEXT          CODE           AUTO           0244:3970       000001d5
+hu_lib_TEXT            CODE           AUTO           0244:3b50       000001a7
+m_menu_TEXT            CODE           AUTO           0244:3d00       00001428
 sounds_TEXT            CODE           AUTO           0244:5130       00000000
 f_wipe_TEXT            CODE           AUTO           0244:5130       00000264
 D_ALGO_TEXT            CODE           AUTO           0244:5394       000000ed
@@ -52,7 +52,7 @@ dutils_TEXT            CODE           AUTO           0244:5680       0000008b
 wi_stuff_TEXT          CODE           AUTO           0244:5710       00000efa
 m_near_TEXT            CODE           AUTO           0244:6610       00000000
 MATH_TEXT              CODE           AUTO           0244:6610       000007f5
-f_finale_TEXT          CODE           AUTO           0244:6e10       00000c1b
+f_finale_TEXT          CODE           AUTO           0244:6e10       00000c15
 g_setup_TEXT           CODE           AUTO           0244:7a30       00000299
 r_setup_TEXT           CODE           AUTO           0244:7cd0       00000405
 st_setup_TEXT          CODE           AUTO           0244:80e0       000001fa
@@ -98,8 +98,8 @@ _TEXT                  CODE           AUTO           200f:17d0       00003665
 FAR_DATA               FAR_DATA       AUTO           24f2:0005       00000000
 _NULL                  BEGDATA        DGROUP         24f3:0000       00000020
 _AFTERNULL             BEGDATA        DGROUP         24f5:0000       00000002
-CONST                  DATA           DGROUP         24f5:0002       000008dc
-CONST2                 DATA           DGROUP         2582:000e       0000010e
+CONST                  DATA           DGROUP         24f5:0002       000008de
+CONST2                 DATA           DGROUP         2583:0000       0000010e
 _DATA                  DATA           DGROUP         2594:0000       00000c76
 XIB                    DATA           DGROUP         265b:0006       00000000
 XI                     DATA           DGROUP         265b:0006       00000012
@@ -199,9 +199,9 @@ Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
 0244:0532      I_KeyboardISR_
 0244:0562      I_ResetMouse_
 0244:057c      I_Error_
-0244:058c      I_EndRead_
-0244:058c      I_BeginRead_
-0244:058e      I_InitGraphics_
+0244:05b2      I_EndRead_
+0244:05b2      I_BeginRead_
+0244:05b4      I_InitGraphics_
 24f3:0a80+     _grmode
 24f3:0a84      _oldkeyboardisr
 24f3:16d0      _keyboardque
@@ -218,51 +218,52 @@ Module: i_ibm.obj(C:\REALDOOM\i_ibm.c)
 24f3:1734      _mousepresent
 24f3:1735      _novideo
 Module: i_sound.obj(C:\REALDOOM\i_sound.c)
-0244:0650*     I_StartupTimer_
-0244:0650      I_StartupSound_
-0244:0672*     I_ResumeSong_
-0244:0672*     I_PauseSong_
-0244:0674*     I_SetMusicVolume_
-0244:0678*     I_SetSfxVolume_
-0244:067c*     I_QrySongPlaying_
-0244:067c*     I_RegisterSong_
-0244:0680*     I_PlaySong_
-0244:0680*     I_StopSong_
-0244:0680*     I_UnRegisterSong_
-0244:0682*     I_GetSfxLumpNum_
-0244:06cc*     I_StopSound_
-0244:06ce*     I_StartSound_
-0244:06d8*     I_SoundIsPlaying_
-0244:06da*     I_SetChannels_
-0244:06da*     I_sndArbitrateCards_
-0244:06da*     I_UpdateSoundParams_
+0244:0670*     I_StartupTimer_
+0244:0670      I_StartupSound_
+0244:0692*     I_ResumeSong_
+0244:0692*     I_PauseSong_
+0244:0694*     I_SetMusicVolume_
+0244:0698*     I_SetSfxVolume_
+0244:069c*     I_QrySongPlaying_
+0244:069c*     I_RegisterSong_
+0244:06a0*     I_PlaySong_
+0244:06a0*     I_StopSong_
+0244:06a0*     I_UnRegisterSong_
+0244:06a2*     I_GetSfxLumpNum_
+0244:06ec*     I_StopSound_
+0244:06ee*     I_StartSound_
+0244:06f8*     I_SoundIsPlaying_
+0244:06fa*     I_SetChannels_
+0244:06fa*     I_sndArbitrateCards_
+0244:06fa*     I_UpdateSoundParams_
 Module: d_main.obj(C:\REALDOOM\d_main.c)
-0244:06e0      D_PostEvent_
-0244:070c      D_ProcessEvents_
-0244:0756      getStringByIndex_
-0244:079c      copystr8_
-0244:07d6      locallib_strlen_
-0244:07f4      locallib_strcpy_
-0244:0824      locallib_strncpy_
-0244:087a      locallib_strupr_
-0244:08a8      locallib_strlwr_
-0244:08d6      combine_strings_
-0244:094c      locallib_strcmp_
-0244:099c      makesavegamename_
-0244:09d8      D_StartTitle_
-0244:09e8      I_UpdateNoBlit_
-0244:0ad8+     D_Display_
-0244:0d3a+     G_BeginRecording_
-0244:0db8      D_PageTicker_
-0244:0dca+     D_PageDrawer_
-0244:0dec      D_DoAdvanceDemo_
-0244:0ec4+     Z_ClearDeadCode_
-0244:0f1c      D_DoomMain_
-0244:0f24*     D_DoomLoop_
+0244:0700      D_PostEvent_
+0244:072c      D_ProcessEvents_
+0244:0776      getStringByIndex_
+0244:07bc      copystr8_
+0244:07f6      locallib_strlen_
+0244:0814      locallib_toupper_
+0244:0820      locallib_strcpy_
+0244:0850      locallib_strncpy_
+0244:08a6      locallib_strupr_
+0244:08d4      locallib_strlwr_
+0244:0902      combine_strings_
+0244:0978      locallib_strcmp_
+0244:09c8      makesavegamename_
+0244:0a04      D_StartTitle_
+0244:0a14      I_UpdateNoBlit_
+0244:0b04+     D_Display_
+0244:0d66+     G_BeginRecording_
+0244:0de4      D_PageTicker_
+0244:0df6+     D_PageDrawer_
+0244:0e18      D_DoAdvanceDemo_
+0244:0ef0+     Z_ClearDeadCode_
+0244:0f48      D_DoomMain_
+0244:0f50*     D_DoomLoop_
 24f3:1736+     _olddb
 Module: d_net.obj(C:\REALDOOM\d_net.c)
-0244:0f90      NetUpdate_
-0244:0ff2      TryRunTics_
+0244:0fc0      NetUpdate_
+0244:1022      TryRunTics_
 24f3:1750+     _gametime
 24f3:1754      _maketic
 Module: g_game.obj(C:\REALDOOM\g_game.c)
@@ -321,28 +322,28 @@ Module: g_game.obj(C:\REALDOOM\g_game.c)
 24f3:1a26      _viewactive
 24f3:1a27      _noblit
 24f3:1a28      _respawnmonsters
-0244:10a0      R_FlatNumForName_
-0244:10aa      R_TextureNumForName_
-0244:10d0      G_BuildTiccmd_
-0244:14ac      G_Responder_
-0244:1628*     G_DoWorldDone_
-0244:1644+     G_DoNewGame_
-0244:1696      G_Ticker_
-0244:17c2+     G_PlayerFinishLevel_
-0244:1810      G_PlayerReborn_
-0244:1886      G_ExitLevel_
-0244:1892      G_SecretExitLevel_
-0244:18a4      G_LoadGame_
-0244:18c4+     G_DoCompleted_
-0244:1998*     G_DoSaveGame_
-0244:1998*     G_DoLoadGame_
-0244:1a44      G_SaveGame_
-0244:1a60      G_DeferedInitNew_
-0244:1a72+     G_ReadDemoTiccmd_
-0244:1ac4+     G_WriteDemoTiccmd_
-0244:1b32      G_DeferedPlayDemo_
-0244:1b3c+     G_DoPlayDemo_
-0244:1bc4      G_CheckDemoStatus_
+0244:10d0      R_FlatNumForName_
+0244:10da      R_TextureNumForName_
+0244:1100      G_BuildTiccmd_
+0244:14dc      G_Responder_
+0244:1658*     G_DoWorldDone_
+0244:1674+     G_DoNewGame_
+0244:16c6      G_Ticker_
+0244:17f2+     G_PlayerFinishLevel_
+0244:1840      G_PlayerReborn_
+0244:18b6      G_ExitLevel_
+0244:18c2      G_SecretExitLevel_
+0244:18d4      G_LoadGame_
+0244:18f4+     G_DoCompleted_
+0244:19c8*     G_DoSaveGame_
+0244:19c8*     G_DoLoadGame_
+0244:1a74      G_SaveGame_
+0244:1a90      G_DeferedInitNew_
+0244:1aa2+     G_ReadDemoTiccmd_
+0244:1af4+     G_WriteDemoTiccmd_
+0244:1b62      G_DeferedPlayDemo_
+0244:1b6c+     G_DoPlayDemo_
+0244:1bf4      G_CheckDemoStatus_
 24f3:0a8e+     _precache
 24f3:0a8f      _forwardmove
 24f3:0a91      _sidemove
@@ -352,9 +353,9 @@ Module: g_game.obj(C:\REALDOOM\g_game.c)
 24f3:1a2a      _gamemap
 24f3:1a2b      _gameepisode
 Module: m_misc.obj(C:\REALDOOM\m_misc.c)
-0244:1c70      M_Random_
-0244:1c8c      M_AddToBox16_
-0244:1cb6      M_WriteFile_
+0244:1ca0      M_Random_
+0244:1cbc      M_AddToBox16_
+0244:1ce6      M_WriteFile_
 24f3:0a9c      _rndindex
 24f3:0a9e      _prndindex
 24f3:0aa0      _defaults
@@ -368,45 +369,45 @@ Module: am_map.obj(C:\REALDOOM\am_map.c)
 24f3:0b9d+     _cheat_player_arrow
 24f3:0c1d*     _triangle_guy
 24f3:0c35+     _thintriangle_guy
-0244:1ce0*     MTOF16_
-0244:1cf4*     CXMTOF16_
-0244:1d0c*     CYMTOF16_
-0244:1d2c+     AM_activateNewScale_
-0244:1d92+     AM_restoreScaleAndLoc_
-0244:1e1a+     AM_addMark_
-0244:1e50+     AM_findMinMaxBoundaries_
-0244:1f26+     AM_changeWindowLoc_
-0244:1fb4+     AM_initVariables_
-0244:2046+     AM_clearMarks_
-0244:2068+     AM_LevelInit_
-0244:20c6      AM_Stop_
-0244:20dc+     AM_Start_
-0244:2118+     AM_minOutWindowScale_
-0244:2142+     AM_maxOutWindowScale_
-0244:216c      AM_Responder_
-0244:24fe+     AM_changeWindowScale_
-0244:2574+     AM_doFollowPlayer_
-0244:25e2      AM_Ticker_
-0244:260c+     DOOUTCODE_
-0244:2630+     AM_clipMline_
-0244:2864+     AM_drawFline_
-0244:2930+     AM_drawMline_
-0244:294e+     AM_drawGrid_
-0244:2a0e+     AM_drawWalls_
-0244:2bd4+     AM_rotate_
-0244:2c42+     AM_drawLineCharacter_
-0244:2cfe+     AM_drawPlayers_
-0244:2d50+     AM_drawThings_
-0244:2dc2+     AM_drawMarks_
-0244:2e58*     AM_drawCrosshair_
-0244:2e68      AM_Drawer_
+0244:1d10*     MTOF16_
+0244:1d24*     CXMTOF16_
+0244:1d3c*     CYMTOF16_
+0244:1d5c+     AM_activateNewScale_
+0244:1dc2+     AM_restoreScaleAndLoc_
+0244:1e4a+     AM_addMark_
+0244:1e80+     AM_findMinMaxBoundaries_
+0244:1f56+     AM_changeWindowLoc_
+0244:1fe4+     AM_initVariables_
+0244:2076+     AM_clearMarks_
+0244:2098+     AM_LevelInit_
+0244:20f6      AM_Stop_
+0244:210c+     AM_Start_
+0244:2148+     AM_minOutWindowScale_
+0244:2172+     AM_maxOutWindowScale_
+0244:219c      AM_Responder_
+0244:252e+     AM_changeWindowScale_
+0244:25a4+     AM_doFollowPlayer_
+0244:2612      AM_Ticker_
+0244:263c+     DOOUTCODE_
+0244:2660+     AM_clipMline_
+0244:2894+     AM_drawFline_
+0244:2960+     AM_drawMline_
+0244:297e+     AM_drawGrid_
+0244:2a3e+     AM_drawWalls_
+0244:2c04+     AM_rotate_
+0244:2c72+     AM_drawLineCharacter_
+0244:2d2e+     AM_drawPlayers_
+0244:2d80+     AM_drawThings_
+0244:2df2+     AM_drawMarks_
+0244:2e88*     AM_drawCrosshair_
+0244:2e98      AM_Drawer_
 Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
-24f3:1ac6      _w_faces
-24f3:1ace      _w_ammo
-24f3:1af6      _w_arms
-24f3:1b26      _w_keyboxes
-24f3:1b3e      _w_armsbg
-24f3:1b46      _w_maxammo
+24f3:1ac6      _w_maxammo
+24f3:1aee      _w_faces
+24f3:1af6      _w_ammo
+24f3:1b1e      _w_arms
+24f3:1b4e      _w_keyboxes
+24f3:1b66      _w_armsbg
 24f3:1b6e      _w_health
 24f3:1b7a      _w_armor
 24f3:1b86      _keyboxes
@@ -438,19 +439,19 @@ Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
 24f3:0db5+     _cheat_ammo
 24f3:0db9+     _cheat_ammonokey
 24f3:0dbd+     _cheat_noclip
-0244:2ed0+     ST_refreshBackground_
-0244:2f08      ST_Responder_
-0244:3286+     ST_calcPainOffset_
-0244:32c8+     ST_updateFaceWidget_
-0244:351a+     ST_updateWidgets_
-0244:355e      ST_Ticker_
-0244:3570+     ST_doPaletteStuff_
-0244:35f8*     STlib_updateflag_
-0244:360c+     STlib_updateMultIcon_
-0244:369e+     STlib_drawNum_
-0244:3796+     STlib_updatePercent_
-0244:37cc+     ST_drawWidgets_
-0244:38d8      ST_Drawer_
+0244:2f00+     ST_refreshBackground_
+0244:2f38      ST_Responder_
+0244:32b6+     ST_calcPainOffset_
+0244:32f8+     ST_updateFaceWidget_
+0244:354a+     ST_updateWidgets_
+0244:358e      ST_Ticker_
+0244:35a0+     ST_doPaletteStuff_
+0244:3628*     STlib_updateflag_
+0244:363c+     STlib_updateMultIcon_
+0244:36ce+     STlib_drawNum_
+0244:37c6+     STlib_updatePercent_
+0244:37fc+     ST_drawWidgets_
+0244:3908      ST_Drawer_
 24f3:0dc1+     _cheat_commercial_noclip
 24f3:0dc5+     _cheat_powerup
 24f3:0de1+     _cheat_choppers
@@ -460,10 +461,10 @@ Module: st_stuff.obj(C:\REALDOOM\st_stuff.c)
 24f3:1ba2      _st_statusbaron
 24f3:1ba3      _st_gamestate
 Module: hu_stuff.obj(C:\REALDOOM\hu_stuff.c)
-0244:3940      HU_Drawer_
-0244:39b0      HU_Erase_
-0244:39f8      HU_Ticker_
-0244:3a98      HU_Responder_
+0244:3970      HU_Drawer_
+0244:39e0      HU_Erase_
+0244:3a28      HU_Ticker_
+0244:3ac8      HU_Responder_
 24f3:1bda      _w_message
 24f3:1d43      _w_title
 24f3:1d9c      _message_dontfuckwithme
@@ -471,10 +472,10 @@ Module: hu_stuff.obj(C:\REALDOOM\hu_stuff.c)
 24f3:1d9e      _message_nottobefuckedwith
 24f3:1d9f      _message_on
 Module: hu_lib.obj(C:\REALDOOM\hu_lib.c)
-0244:3b20      HUlib_addCharToTextLine_
-0244:3b50      HUlib_drawTextLine_
-0244:3bfc      HUlib_eraseTextLine_
-0244:3c7a      HUlib_addMessageToSText_
+0244:3b50      HUlib_addCharToTextLine_
+0244:3b80      HUlib_drawTextLine_
+0244:3c0e      HUlib_eraseTextLine_
+0244:3c8c      HUlib_addMessageToSText_
 Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 24f3:1da0+     _saveOldString
 24f3:1db8+     _messageLastMenuActive
@@ -502,59 +503,59 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 24f3:0ec0+     _ReadMenu1
 24f3:0ec5+     _ReadDef1
 24f3:0ed1+     _ReadMenu2
-0244:3cf0      M_GetMenuPatch_
-0244:3d2e+     M_DrawLoad_
-0244:3d84+     M_DrawSaveLoadBorder_
-0244:3dee+     M_LoadSelect_
-0244:3e18+     M_LoadGame_
-0244:3e24+     M_ReadSaveStrings_
-0244:3e92+     M_DrawSave_
-0244:3f12+     M_DoSave_
-0244:3f36+     M_SaveSelect_
-0244:3fb6+     M_SaveGame_
-0244:4002*     M_QuickSaveResponse_
-0244:400c*     M_QuickSave_
-0244:4024*     M_QuickLoadResponse_
-0244:402e*     M_QuickLoad_
-0244:4046+     M_DrawReadThis1_
-0244:4058+     M_DrawReadThis2_
-0244:406a+     M_DrawReadThisRetail_
-0244:407c+     M_DrawSound_
-0244:40ca+     M_Sound_
-0244:40d8+     M_SfxVol_
-0244:410c+     M_MusicVol_
-0244:4140+     M_DrawMainMenu_
-0244:415c+     M_DrawNewGame_
-0244:418e+     M_NewGame_
-0244:41b0+     M_DrawEpisode_
-0244:41cc+     M_VerifyNightmare_
-0244:41f0+     M_ChooseSkill_
-0244:423e+     M_Episode_
-0244:4292+     M_DrawOptions_
-0244:4332+     M_Options_
-0244:4340+     M_ChangeMessages_
-0244:4364+     M_EndGameResponse_
-0244:4382+     M_EndGame_
-0244:43c4+     M_ReadThis_
-0244:43d2+     M_ReadThis2_
-0244:43e0+     M_FinishReadThis_
-0244:43ee+     M_QuitResponse_
-0244:4434+     M_QuitDOOM_
-0244:44da+     M_ChangeSensitivity_
-0244:4502+     M_ChangeDetail_
-0244:4552+     M_SizeDisplay_
-0244:4592+     M_DrawThermo_
-0244:4616+     M_StartMessage_
-0244:4654+     M_StringWidth_
-0244:46b2+     M_StringHeight_
-0244:46ea+     M_WriteText_
-0244:4768      M_Responder_
-0244:4e04      M_StartControlPanel_
-0244:4e1e      M_Drawer_
-0244:4fd6*     M_SetupNextMenu_
-0244:4fe6      M_Ticker_
-0244:5004+     M_Reload_
-0244:50a2      M_Init_
+0244:3d00      M_GetMenuPatch_
+0244:3d3e+     M_DrawLoad_
+0244:3d94+     M_DrawSaveLoadBorder_
+0244:3dfe+     M_LoadSelect_
+0244:3e28+     M_LoadGame_
+0244:3e34+     M_ReadSaveStrings_
+0244:3ea2+     M_DrawSave_
+0244:3f22+     M_DoSave_
+0244:3f46+     M_SaveSelect_
+0244:3fc6+     M_SaveGame_
+0244:4012*     M_QuickSaveResponse_
+0244:401c*     M_QuickSave_
+0244:4034*     M_QuickLoadResponse_
+0244:403e*     M_QuickLoad_
+0244:4056+     M_DrawReadThis1_
+0244:4068+     M_DrawReadThis2_
+0244:407a+     M_DrawReadThisRetail_
+0244:408c+     M_DrawSound_
+0244:40da+     M_Sound_
+0244:40e8+     M_SfxVol_
+0244:411c+     M_MusicVol_
+0244:4150+     M_DrawMainMenu_
+0244:416c+     M_DrawNewGame_
+0244:419e+     M_NewGame_
+0244:41c0+     M_DrawEpisode_
+0244:41dc+     M_VerifyNightmare_
+0244:4200+     M_ChooseSkill_
+0244:424e+     M_Episode_
+0244:42a2+     M_DrawOptions_
+0244:4342+     M_Options_
+0244:4350+     M_ChangeMessages_
+0244:4374+     M_EndGameResponse_
+0244:4392+     M_EndGame_
+0244:43d4+     M_ReadThis_
+0244:43e2+     M_ReadThis2_
+0244:43f0+     M_FinishReadThis_
+0244:43fe+     M_QuitResponse_
+0244:4444+     M_QuitDOOM_
+0244:44ea+     M_ChangeSensitivity_
+0244:4512+     M_ChangeDetail_
+0244:4562+     M_SizeDisplay_
+0244:45a2+     M_DrawThermo_
+0244:4626+     M_StartMessage_
+0244:4664+     M_StringWidth_
+0244:46bc+     M_StringHeight_
+0244:46f4+     M_WriteText_
+0244:4770      M_Responder_
+0244:4e08      M_StartControlPanel_
+0244:4e22      M_Drawer_
+0244:4fda*     M_SetupNextMenu_
+0244:4fea      M_Ticker_
+0244:5008+     M_Reload_
+0244:50a6      M_Init_
 24f3:0ed6+     _ReadDef2
 24f3:0ee2+     _SoundMenu
 24f3:0ef6+     _SoundDef
@@ -649,19 +650,19 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 24f3:1ec4      _mceilingclip
 24f3:1ec8      _sprtopscreen
 24f3:1ecc      _spryscale
-24f3:1ed0      _activenumpages
-24f3:1ed4      _ceiltop
-24f3:1ed8      _spritelights
-24f3:1edc      _bottomstep
-24f3:1ee0      _bottomfrac
-24f3:1ee4      _vissprite_p
-24f3:1ee8      _pspriteiscale
-24f3:1eec      _walllights
-24f3:1ef0      _topstep
-24f3:1ef4      _activespritenumpages
-24f3:1ef8      _maskedtexturecol
-24f3:1efc      _floortop
-24f3:1f00      _topfrac
+24f3:1ed0      _activespritenumpages
+24f3:1ed4      _activenumpages
+24f3:1ed8      _topfrac
+24f3:1edc      _ceiltop
+24f3:1ee0      _spritelights
+24f3:1ee4      _bottomstep
+24f3:1ee8      _bottomfrac
+24f3:1eec      _vissprite_p
+24f3:1ef0      _pspriteiscale
+24f3:1ef4      _walllights
+24f3:1ef8      _topstep
+24f3:1efc      _maskedtexturecol
+24f3:1f00      _floortop
 24f3:1f04      _rw_toptexturemid
 24f3:1f08      _rw_bottomtexturemid
 24f3:1f0c      _rw_midtexturemid
@@ -677,12 +678,12 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 24f3:1f3c      _planezlight
 24f3:1f40      _baseyscale
 24f3:1f44      _basexscale
-24f3:1f48*     _viewimage
-24f3:1f4c      _spanfunc_inner_loop_count
-24f3:1f50      _spanfunc_outp
-24f3:1f54      _sp_bp_safe_space
-24f3:1f58      _ss_variable_space
-24f3:1f7c      _dc_texturemid
+24f3:1f48      _dc_texturemid
+24f3:1f4c*     _viewimage
+24f3:1f50      _spanfunc_inner_loop_count
+24f3:1f54      _spanfunc_outp
+24f3:1f58      _sp_bp_safe_space
+24f3:1f5c      _ss_variable_space
 24f3:1f80      _dc_iscale
 24f3:1f84      _rw_distance
 24f3:1f88      _rw_angle1
@@ -696,21 +697,21 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 24f3:1fac      _pspritescale
 24f3:1fae      _rw_stopx
 24f3:1fb0      _rw_centerangle
-24f3:1fb2      _midtexture
-24f3:1fb4      _rw_x
-24f3:1fb6      _bottomtexture
-24f3:1fb8      _detailshiftandval
-24f3:1fba      _detailshift
-24f3:1fbc      _viewangle_shiftright1
-24f3:1fbe      _toptexture
+24f3:1fb2      _toptexture
+24f3:1fb4      _midtexture
+24f3:1fb6      _rw_x
+24f3:1fb8      _bottomtexture
+24f3:1fba      _detailshiftandval
+24f3:1fbc      _detailshift
+24f3:1fbe      _viewangle_shiftright1
 24f3:1fc0      _setdetail
-24f3:1fc2      _centery
-24f3:1fc4      _lastopening
-24f3:1fc6      _lastvisplane
-24f3:1fc8      _r_cachedplayerMobjsecnum
-24f3:1fca      _centerx
-24f3:1fcc      _ds_colormap_segment
-24f3:1fce      _ds_source_segment
+24f3:1fc2      _centerx
+24f3:1fc4      _centery
+24f3:1fc6      _lastopening
+24f3:1fc8      _lastvisplane
+24f3:1fca      _ds_source_segment
+24f3:1fcc      _r_cachedplayerMobjsecnum
+24f3:1fce      _ds_colormap_segment
 24f3:1fd0      _viewwindowoffset
 24f3:1fd2      _ds_x1
 24f3:1fd4      _ds_x2
@@ -718,11 +719,11 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 24f3:1fd8      _viewwindowx
 24f3:1fda      _viewwindowy
 24f3:1fdc      _ds_y
-24f3:1fde      _dc_x
-24f3:1fe0      _dc_yh
-24f3:1fe2      _dc_yl
-24f3:1fe4      _dc_colormap_segment
-24f3:1fe6      _pagename
+24f3:1fde      _pagename
+24f3:1fe0      _dc_x
+24f3:1fe2      _dc_yh
+24f3:1fe4      _dc_yl
+24f3:1fe6      _dc_colormap_segment
 24f3:1fe8      _pagetic
 24f3:1fea*     _snd_SBport
 24f3:1fec*     _snd_Mport
@@ -785,11 +786,13 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 24f3:2037      _respawnparm
 24f3:2038      _commercial
 24f3:2039      _startepisode
-24f3:203a      _demosequence
-24f3:203b      _snd_SBirq
-24f3:203c      _snd_MusicVolume
-24f3:203d      _snd_SBport8bit
-24f3:203e      _snd_SfxVolume
+24f3:203a      _snd_Mport8bit
+24f3:203b      _demosequence
+24f3:203c      _snd_SBirq
+24f3:203d      _snd_MusicVolume
+24f3:203e      _snd_SBport8bit
+24f3:203f      _snd_SfxVolume
+24f3:2040      _snd_DesiredSfxDevice
 24f3:0fc0      _wipegamestate
 24f3:0fc1      _singletics
 24f3:0fc2      _fuzzpos
@@ -831,19 +834,17 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 24f3:104a      _MULT_4096
 24f3:1052      _MULT_256
 24f3:105a      _FLAT_CACHE_PAGE
-24f3:08fe      _snd_prefixen
+24f3:0900      _snd_prefixen
 24f3:1062      _quality_port_lookup
 24f3:106e      _visplane_offset
 24f3:10a0      _vga_read_port_lookup
 24f3:10b8      _R_DrawColumnPrepCallHigh
 24f3:10bc      _R_DrawColumnPrepCall
 24f3:10c0      _R_DrawFuzzColumnCallHigh
-24f3:203f      _snd_DesiredSfxDevice
-24f3:2040*     _snd_MusicDevice
-24f3:2041      _snd_SfxDevice
-24f3:2042      _snd_SBdma
-24f3:2043      _snd_DesiredMusicDevice
-24f3:2044      _snd_Mport8bit
+24f3:2041*     _snd_MusicDevice
+24f3:2042      _snd_SfxDevice
+24f3:2043      _snd_SBdma
+24f3:2044      _snd_DesiredMusicDevice
 Module: math.obj(math.ASM)
 0244:69fc      FastDiv32u16u_
 0244:6718      FixedMulTrigNoShift_
@@ -874,14 +875,14 @@ Module: f_finale.obj(C:\REALDOOM\f_finale.c)
 0244:6fc8      F_Responder_
 0244:6fd6      F_Ticker_
 0244:7076+     F_TextWrite_
-0244:719e+     F_StartCast_
-0244:720a+     F_CastTicker_
-0244:7548+     F_CastResponder_
-0244:75e2+     F_CastPrint_
-0244:7696+     F_CastDrawer_
-0244:774c+     F_DrawPatchCol_
-0244:77c2+     F_BunnyScroll_
-0244:79d0      F_Drawer_
+0244:719a+     F_StartCast_
+0244:7206+     F_CastTicker_
+0244:7544+     F_CastResponder_
+0244:75de+     F_CastPrint_
+0244:7690+     F_CastDrawer_
+0244:7746+     F_DrawPatchCol_
+0244:77bc+     F_BunnyScroll_
+0244:79ca      F_Drawer_
 24f3:10c4+     _e1text
 24f3:10c6+     _e2text
 24f3:10c8+     _e3text
@@ -1445,10 +1446,10 @@ Module: p_sight.obj(C:\REALDOOM\p_sight.c)
 200f:172a+     P_CrossBSPNode_
 24f3:2550+     _strace
 24f3:2560      _bottomslope
-24f3:2564+     _cachedt2x
-24f3:2568+     _cachedt2y
-24f3:256c      _topslope
-24f3:2570+     _sightzstart
+24f3:2564+     _sightzstart
+24f3:2568+     _cachedt2x
+24f3:256c+     _cachedt2y
+24f3:2570      _topslope
 Module: C:\WATCOM\lib286\dos\clibm.lib(fprintf.c)
 200f:17d0      fprintf_
 Module: C:\WATCOM\lib286\dos\clibm.lib(i4m)
@@ -1599,7 +1600,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(intr.c)
 Module: C:\WATCOM\lib286\dos\clibm.lib(segread.c)
 200f:3a63      segread_
 Module: C:\WATCOM\lib286\dos\clibm.lib(istable.c)
-24f3:090a      __IsTable
+24f3:090c      __IsTable
 Module: C:\WATCOM\lib286\dos\clibm.lib(gfattdos.c)
 200f:3a7b      _dos_getfileattr_
 Module: C:\WATCOM\lib286\dos\clibm.lib(dosret.c)
@@ -1657,7 +1658,7 @@ Module: C:\WATCOM\lib286\dos\clibm.lib(initargv.c)
 Module: C:\WATCOM\lib286\dos\clibm.lib(strnicmp.c)
 200f:3f68      strnicmp_
 Module: C:\WATCOM\lib286\dos\clibm.lib(alphabet.c)
-24f3:08d8      ___Alphabet
+24f3:08da      ___Alphabet
 Module: C:\WATCOM\lib286\dos\clibm.lib(mbinit.c)
 200f:3fe2      __mbinit_
 24f3:164a+     ___MBCodePage
@@ -1759,6 +1760,8 @@ printf_ referenced by module C:\REALDOOM\i_init.c
 printf_ referenced by module C:\REALDOOM\z_init.c
 printf_ referenced by module C:\REALDOOM\i_quit.c
 fprintf_ referenced by module C:\REALDOOM\i_quit.c
+vprintf_ referenced by module C:\REALDOOM\i_ibm.c
+printf_ referenced by module C:\REALDOOM\i_ibm.c
 printf_ referenced by module C:\REALDOOM\i_sound.c
 __fprtf_ referenced by module fprintf.c
 __U4M referenced by module prtf.c

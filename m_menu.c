@@ -1118,8 +1118,7 @@ int16_t __near M_StringWidth(int8_t* string) {
     int16_t             w = 0;
     int16_t             c;
     
-    for (i = 0;i < locallib_strlen(string);i++)
-    {
+    for (i = 0;i < locallib_strlen(string);i++) {
         c = locallib_toupper(string[i]) - HU_FONTSTART;
         if (c < 0 || c >= HU_FONTSIZE)
             w += 4;
@@ -1158,27 +1157,22 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t* string) {
     int16_t         c;
     int16_t         cx;
     int16_t         cy;
-    
     ch = string;
     cx = x;
     cy = y;
         
-    while(1)
-    {
+    while(1) {
         c = *ch;
         ch++;
         if (!c)
             break;
-        if (c == '\n')
-        {
+        if (c == '\n') {
             cx = x;
             cy += 12;
             continue;
         }
-                
         c = locallib_toupper(c) - HU_FONTSTART;
-        if (c < 0 || c>= HU_FONTSIZE)
-        {
+        if (c < 0 || c>= HU_FONTSIZE) {
             cx += 4;
             continue;
         }
@@ -1191,7 +1185,6 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t* string) {
         cx+=w;
     }
 }
-
 
 
 //

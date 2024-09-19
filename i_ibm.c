@@ -509,16 +509,15 @@ void __near I_Shutdown(void);
 //
 // I_Error
 //
-void __far I_Error (int8_t *error, ...)
-{
-    //va_list argptr;
+void __far I_Error (int8_t *error, ...){
+    va_list argptr;
     I_Shutdown();
-    /*
+    
 	va_start(argptr, error);
     vprintf(error, argptr);
     va_end(argptr);
     printf("\n");
-	*/
+	
     exit(1);
 
 }

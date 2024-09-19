@@ -38,7 +38,6 @@
 // QuitDOOM messages
 #define NUM_QUITMESSAGES   8
 
-extern int16_t endmsg1[NUM_QUITMESSAGES];
 extern int16_t endmsg2[NUM_QUITMESSAGES];
 
 
