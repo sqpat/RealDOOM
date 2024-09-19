@@ -20,7 +20,7 @@
 //
 
 #include <stdlib.h>
-//#include <graph.h>
+#include <stdarg.h>
 #include <direct.h>
 #include <io.h>
 #include <fcntl.h>
@@ -257,6 +257,20 @@ void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n){
 
 }
 
+void __far locallib_printf (int8_t *str, ...){
+    va_list argptr;
+    int16_t i;
+	for (i = 0; str[i] != '\0'; i++){
+		putchar(str[i]);
+	}
+	va_start(argptr, str);
+    
+	//vprintf(str, argptr);
+    va_end(argptr);
+    
+	
+
+}
 
 void locallib_strupr(char __far *str){
 	int i = 0;
