@@ -254,20 +254,197 @@ void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n){
 		dest[i] = src[i];
 		i++;
 	}
+}
+
+
+void __far locallib_printhexdigit (uint8_t digit, boolean printifzero){
+	
+	if (digit){
+		if (digit < 0xA){
+			digit = ('0' + digit);
+		} else {
+			digit = (55 + digit);
+		}
+	} else {
+		if (printifzero){
+			digit = ('0');
+		} else {
+			return;
+		}
+	}
+	putchar(digit);
+}
+
+
+void __far locallib_printhex (uint32_t number, boolean islong){
+	uint32_t modder = 0xF000;
+	int8_t shifter = 12;
+	boolean printedonedigit = false;
+	if (islong){
+		modder = 0xF0000000;
+		shifter = 28;
+
+	}
+	while (shifter ){
+		int8_t digit = (number&modder) >> shifter;
+		locallib_printhexdigit(digit, printedonedigit);
+		if (digit){
+			printedonedigit = true;
+		}
+		modder >>= 4;
+		shifter -=4;
+	}
+	
+	locallib_printhexdigit((number&0x000F), true);
+	
+}
+
+uint32_t mod10s[10] = {
+	1000000000L,
+	100000000L,
+	10000000L,
+	1000000L,
+	100000L,
+	10000L,
+	1000L,
+	100L,
+	10L,
+	1L
+};
+
+void __far locallib_printdecimal (int32_t number){
+	// 4 billion max
+	uint32_t positivenumber = number;
+	boolean firstdigitprinted = false;
+
+
+	if (number) {
+		int8_t i = 0;
+		if (number < 0) {
+			putchar('-');
+			positivenumber = -number;
+		}
+
+		for (i = 0; i < 10; i++){
+			int8_t j = 0;
+			uint32_t modder = mod10s[i];
+			
+			// modulo...
+			while (positivenumber >= modder){
+				positivenumber -= modder;
+				j++;
+			}
+
+			if (j || firstdigitprinted){
+				putchar('0' + j);
+				firstdigitprinted = true;
+			}
+		}
+	
+	
+	} else {
+		putchar('0');
+	}
+
 
 }
 
-void __far locallib_printf (int8_t *str, ...){
-    va_list argptr;
-    int16_t i;
+
+void __far locallib_printstringfar (int8_t __far *str){
+	int16_t i;
 	for (i = 0; str[i] != '\0'; i++){
 		putchar(str[i]);
 	}
+}
+
+void __far locallib_printstringnear (int8_t __near *str){
+	locallib_printstringfar(str);
+}
+
+void __far locallib_printf (int8_t *str, ...){
+    int16_t i = 0;
+    int8_t longflag = false;
+	va_list argptr;
 	va_start(argptr, str);
+
+	while (str[i] != '\0'){
+		for (; (str[i] != '%' && str[i] != '\0') && (!longflag); i++){
+			putchar(str[i]);
+		}
+		if (str[i] == '\0'){
+			break;
+		}
+		// i think this is always true.
+		if (str[i] == '%' || longflag){
+			switch  (str[i+1]){
+
+				case '%':
+					putchar('%');
+					i+=2;
+					continue;
+				case 'l':
+				case 'L':
+				case 'f':
+				case 'F':
+					longflag = true;
+					i++; 
+					continue;
+					 
+				case 'x':
+				case 'X':
+				case 'p':
+				case 'P':
+					if (longflag){
+						locallib_printhex(va_arg(argptr, uint32_t), true);
+					} else {
+						locallib_printhex((uint32_t)va_arg(argptr, uint16_t), false);
+					}
+					i+=2;
+					longflag = false;
+					continue;
+				case 'i':
+				case 'I':
+					if (longflag){
+						locallib_printdecimal(va_arg(argptr, int32_t ));
+					} else {
+						locallib_printdecimal((int32_t)va_arg(argptr, int16_t));
+					}
+					i+=2;
+					longflag = false;
+					continue;
+/*
+				case 'u':
+				case 'U':
+					locallib_printdecimal(va_arg(argptr, uint16_t));
+					i+=2;
+					continue;
+*/
+				case 's':
+				case 'S':
+					if (longflag){
+						locallib_printstringfar(va_arg(argptr, int8_t __far *));
+					} else {
+						locallib_printstringnear(va_arg(argptr, int8_t __near *));
+					}
+					i+=2;
+					longflag = false;
+					continue;
+				
+				case 'c':
+				case 'C':
+					putchar(va_arg(argptr, int8_t));
+					i+=2;
+					continue;
+				
+				default:
+					i++;
+			}
+		}
+		
+	}
+
     
-	//vprintf(str, argptr);
-    va_end(argptr);
-    
+	va_end(argptr);
 	
 
 }
@@ -320,7 +497,10 @@ int16_t __far locallib_strcmp(char __far *str1, char __far *str2){
 int16_t __far locallib_strncasecmp(char __far *str1, char __far *str2, int16_t n){
 	int16_t i = 0;
 	while (str1[i] && i < n){
-		int16_t b  = locallib_toupper(str1[i] )- locallib_toupper(str2[i]);
+		int16_t b  = locallib_toupper(str1[i]) - locallib_toupper(str2[i]);
+		
+		
+		
 		if (b){
 			return b;
 		}
