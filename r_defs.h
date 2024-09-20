@@ -354,7 +354,7 @@ typedef struct
     byte		length; 	// length data bytes follows
 } post_t;
 
-// column_t is a list of 0 or more post_t, (byte)-1 terminated
+// column_t is a list of 0 or more post_t, 0xFF terminated
 typedef post_t	column_t;
 
 
