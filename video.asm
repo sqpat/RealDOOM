@@ -39,7 +39,7 @@ PUBLIC V_DrawPatch_
 ; cx is unused?
 ; bp + 0c is ptr to patch
 
-; bp - 2 is screen
+; REMOVED bp - 2 is screen
 ; REMOVED bp - 4 stores dest segment
 ; REMOVED bp - 6 stores column segment   
 ; REMOVED bp - 8 stores desttop segment
@@ -49,7 +49,6 @@ PUBLIC V_DrawPatch_
 ; REMOVED bp - 10h column segment (is this same as patch segment?)
 ; bp - 12h x
 
-; todo: move es:di usage to ds:si for most of function
 ; todo: modify stack amount
 ; todo: use dx for storing a loop var
 ; todo: use cx more effectively. ch and cl?
@@ -64,7 +63,10 @@ push  bp
 mov   bp, sp
 sub   sp, 010h
 push  ax      ; bp - 12h
-mov   byte ptr [bp - 2], bl   ; do push?
+mov   cl, bl   ; do push?
+sal   bl, 1
+xor   bh, bh
+mov   es, word ptr ds:[bx + _screen_segments]
 
 	;if (skipdirectdraws) {
 	;	return;
@@ -82,8 +84,8 @@ doing_draws:
 
 ;bp +0ch = patch dword..
 
-les   bx, dword ptr [bp + 0Ch]
-sub   dl, byte ptr es:[bx + 6]
+lds   bx, dword ptr [bp + 0Ch]
+sub   dl, byte ptr ds:[bx + 6]
 xor   dh, dh
 
 ; si = y * screenwidth
@@ -95,7 +97,7 @@ xor   dh, dh
 imul   si, dx, SCREENWIDTH
 
 
-mov   ax, word ptr es:[bx + 4]
+mov   ax, word ptr ds:[bx + 4]
 sub   word ptr [bp - 012h], ax
 
 ; y is not used beyond this point
@@ -106,7 +108,7 @@ sub   word ptr [bp - 012h], ax
 add   si, word ptr [bp - 012h]
 
 
-cmp   byte ptr [bp - 2], 0
+cmp   cl, 0
 jne   dontmarkrect
 jmp   domarkrect
 dontmarkrect:
@@ -114,20 +116,14 @@ donemarkingrect:
 
 ; 	desttop = MK_FP(screen_segments[scrn], offset); 
 
-mov   al, byte ptr [bp - 2]
-cbw  
 
 ; bx = 2*ax for word lookup
 
-mov   bx, ax
-add   bx, ax
 mov   word ptr [bp - 0Ah], 0
-mov   ax, word ptr [bx + _screen_segments]
 
 ; load patch addr again
 mov   cx, si
-lds   bx, dword ptr [bp + 0Ch]
-mov   es, ax
+mov   bx, word ptr [bp + 0Ch]
 
 ;    w = (patch->width); 
 mov   ax, word ptr ds:[bx]
@@ -137,6 +133,8 @@ mov   word ptr [bp - 0Eh], ax  ; store width
 
 test  ax, ax
 jle   jumptoexit
+push dx
+mov  dx, SCREENWIDTH-1
 ; store patch segment (???) remove;
 mov   word ptr [bp - 0Ch], bx
 draw_next_column:
@@ -182,23 +180,22 @@ jl    done_drawing_4_pixels
 
 ;  todo full unroll
 
-
 draw_4_more_pixels:
-;s0 = dl
-;s1 = dh
 
 movsb
-add di, SCREENWIDTH-1
+add di, dx
 movsb
-add di, SCREENWIDTH-1
+add di, dx
 movsb
-add di, SCREENWIDTH-1
+add di, dx
 movsb
-add di, SCREENWIDTH-1
+add di, dx
 
 sub   ax, 4
 test  ax, ax
 jge   draw_4_more_pixels
+
+; todo: variable jmp here
 
 done_drawing_4_pixels:
 add   ax, 4
@@ -206,7 +203,7 @@ je    done_drawing_pixels
 
 draw_one_more_pixel:
 movsb
-add di, SCREENWIDTH-1
+add di, dx
 dec   ax
 jne   draw_one_more_pixel
 
@@ -230,8 +227,10 @@ add   word ptr [bp - 0Ch], 4
 mov   ax, word ptr [bp - 0Ah]
 inc   cx
 cmp   ax, word ptr [bp - 0Eh]
-jge   jumpexit
+jge   jumpexit_restore_dx
 jmp   draw_next_column
+jumpexit_restore_dx:
+pop   dx
 jumpexit:
 mov   ax, ss
 mov   ds, ax
@@ -242,10 +241,16 @@ pop   si
 pop   cx
 retf  4
 domarkrect:
+mov   cx, word ptr ds:[bx + 2]
+mov   bx, word ptr ds:[bx]
+push ds
+mov  ax, ss
+mov  ds, ax
 mov   ax, word ptr [bp - 012h]
-mov   cx, word ptr es:[bx + 2]
-mov   bx, word ptr es:[bx]
+push es
 call  V_MarkRect_
+pop  es
+pop  ds
 jmp   donemarkingrect
 
 ENDP
