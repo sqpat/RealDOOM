@@ -42,17 +42,17 @@ PUBLIC V_DrawPatch_
 ; bp - 2 is screen
 ; REMOVED bp - 4 stores dest segment
 ; REMOVED bp - 6 stores column segment   
-; bp - 8 stores desttop segment
+; REMOVED bp - 8 stores desttop segment
 ; bp - 0A stores desttop offset (starts 0)
 ; bp - 0E stores w (width)
 ; bp - 0C column offset
 ; REMOVED bp - 10h column segment (is this same as patch segment?)
 ; bp - 12h x
 
+; todo: move es:di usage to ds:si for most of function
 ; todo: modify stack amount
 ; todo: use dx for storing a loop var
 ; todo: use cx more effectively. ch and cl?
-; todo: move es:di usage to ds:si for most of function
 ; todo: change input to not be bp based
 ; possible todo: interrupts, sp
 ; todo: make 8086
@@ -105,8 +105,6 @@ sub   word ptr [bp - 012h], ax
 
 add   si, word ptr [bp - 012h]
 
-;    if (!scrn)
-;		V_MarkRect (x, y, (patch->width), (patch->height)); 
 
 cmp   byte ptr [bp - 2], 0
 jne   dontmarkrect
@@ -127,18 +125,16 @@ mov   word ptr [bp - 0Ah], 0
 mov   ax, word ptr [bx + _screen_segments]
 
 ; load patch addr again
-les   bx, dword ptr [bp + 0Ch]
-mov   word ptr [bp - 8], ax
+mov   cx, si
+lds   bx, dword ptr [bp + 0Ch]
+mov   es, ax
 
 ;    w = (patch->width); 
-mov   ax, word ptr es:[bx]
-mov   cx, si
+mov   ax, word ptr ds:[bx]
+;lodsw
 
 mov   word ptr [bp - 0Eh], ax  ; store width
 
-;    for ( ; col<w ; x++, col++, desttop++) { 
-
-; 
 test  ax, ax
 jle   jumptoexit
 ; store patch segment (???) remove;
@@ -147,17 +143,16 @@ draw_next_column:
 
 ;		column = (column_t __far *)((byte __far*)patch + (patch->columnofs[col])); 
 
-; es:bx is patch segment
-mov   es, word ptr [bp + 0Eh] ; 
+; ds:si is patch segment
 mov   bx, word ptr [bp - 0Ch]
 ; grab patch offset into di
-mov   di, word ptr [bp + 0Ch]
-; di equals colofs lookup
-add   di, word ptr es:[bx + 8]
+mov   si, word ptr [bp + 0Ch]
+; si equals colofs lookup
+add   si, word ptr ds:[bx + 8]
 
 ;		while (column->topdelta != 0xff )  
 ; check topdelta for 0xFFh
-cmp   byte ptr es:[di], 0FFh
+cmp   byte ptr ds:[si], 0FFh
 jne   draw_next_column_patch
 jmp   column_done
 
@@ -165,30 +160,20 @@ jmp   column_done
 ; here we render the next patch in the column.
 draw_next_column_patch:
 
-; es:di is column pointer
-
-;register const byte __far*source = (byte __far*)column + 3;
-;register byte __far*dest = desttop + column->topdelta * SCREENWIDTH;
-;register int16_t count = column->length;
-
-;ax = count
 
 
-mov   al, byte ptr es:[di]
+mov   al, byte ptr ds:[si]
 xor   ah, ah
 imul   ax, ax, SCREENWIDTH  ; column->topdelta * SCREENWIDTH
 
-mov   bl, byte ptr es:[di + 1]   ; grab column length
+mov   bl, byte ptr ds:[si + 1]   ; grab column length
 xor   bh, bh
-mov   si, es
-mov   ds, si
 
-mov   es, word ptr [bp - 8]   ; get dest segment
 
 xchg  bx, ax
 add   bx, cx   ; retrieve offset
 
-lea   si, [di + 3]
+add   si, 3
 sub   ax, 4
 
 xchg  bx, di
@@ -233,13 +218,7 @@ inc si
 cmp   byte ptr ds:[si], 0FFh
 
 ; restore flags for next iteration. does not modify above flag
-mov   dx, ds
-mov   es, dx
-mov   dx, ss
-mov   ds, dx
 xchg  di, bx
-mov   di, si
-mov   dx, es
 
 
 je    column_done
@@ -254,6 +233,8 @@ cmp   ax, word ptr [bp - 0Eh]
 jge   jumpexit
 jmp   draw_next_column
 jumpexit:
+mov   ax, ss
+mov   ds, ax
 mov   sp, bp
 pop   bp
 pop   di
