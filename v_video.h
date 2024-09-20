@@ -65,41 +65,18 @@ extern	uint8_t	usegamma;
 //void V_Init (void);
 
 
-void
-V_CopyRect
-( uint16_t		srcx,
-  uint16_t		srcy,
-  uint16_t		width,
-  uint16_t		height,
-  int16_t		destx,
-  int16_t		desty);
+void V_CopyRect ( uint16_t srcx, uint16_t srcy, uint16_t width, uint16_t height, int16_t destx, int16_t desty);
+void V_DrawFullscreenPatch ( int8_t __near* texname, int8_t screen) ;
 
-void 
-V_DrawFullscreenPatch
-( 
-  int8_t*       texname,
-	int16_t		screen) ;
+/*
+#pragma aux drawpatchparams \
+                    __modify [ax] [dx] \
+                    __parm [ax] [dh] [dl] [cx bx] ;
+#pragma aux (drawpatchparams)  V_DrawPatch;
+*/
+void __far V_DrawPatch ( int16_t x, uint8_t y, int8_t scrn, patch_t __far* patch);
 
-void
-V_DrawPatch
-( int16_t		x,
-  int16_t		y,
-  int16_t		scrn,
-  patch_t __far*	patch);
-
-void
-V_DrawPatchDirect
-( int16_t		x,
-  int16_t		y,
-  patch_t __far*	patch );
-
- 
-
-void
-V_MarkRect
-( int16_t		x,
-  int16_t		y,
-  int16_t		width,
-  int16_t		height );
+void V_DrawPatchDirect( int16_t x,int16_t y, patch_t __far* patch );
+void __far V_MarkRect( int16_t x, int16_t y, int16_t width, int16_t height );
 
 #endif

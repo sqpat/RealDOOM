@@ -69,13 +69,13 @@ uint8_t __far M_Random (void){
 
 void M_AddToBox16 ( int16_t __near*	box, int16_t	x, int16_t	y ) {
     if (x<box[BOXLEFT])
-		box[BOXLEFT] = x;
+		  box[BOXLEFT] = x;
     else if (x>box[BOXRIGHT])
-		box[BOXRIGHT] = x;
+		  box[BOXRIGHT] = x;
     if (y<box[BOXBOTTOM])
-		box[BOXBOTTOM] = y;
+		  box[BOXBOTTOM] = y;
     else if (y>box[BOXTOP])
-		box[BOXTOP] = y;
+		  box[BOXTOP] = y;
 }
  
  

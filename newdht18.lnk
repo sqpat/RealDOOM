@@ -94,6 +94,7 @@ file r_segs.obj
 file r_masked.obj
 file r_things.obj
 file w_wad.obj
+file video.obj
 file v_video.obj
 file z_zone.obj
 file z_ht18.obj

@@ -102,7 +102,6 @@ void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
 }
 */
 // unused outside of debug stuff
-/*
 filelength_t  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count
 	uint16_t totalsize = elementsize * elementcount;
@@ -122,7 +121,6 @@ filelength_t  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elemen
 	}
 	return totalreadsize;
 }
-*/
 
 #ifdef __COMPILER_WATCOM
 

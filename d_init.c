@@ -762,13 +762,16 @@ void __far D_DoomMain2(void)
 	#define DGROUP_SIZE 0x3a30
 	struct SREGS sregs;
 
+/*
+	FILE *fp = fopen("output3.bin", "wb");
+	FAR_fwrite(V_DrawPatch, (byte __far *)V_MarkRect - (byte __far *)V_DrawPatch, 1, fp);
+	fclose(fp);
+	exit(0);
+	*/
 
 /*
 	fixed_t_union x, y;
 
-	//FILE *fp = fopen("output3.bin", "wb");
-	//FAR_fwrite(divllu, (byte __far *)FixedDiv - (byte __far *)divllu, 1, fp);
-	//fclose(fp);
 
 	// bugged with i = 3025 j = 2139
 

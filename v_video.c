@@ -66,13 +66,7 @@ extern boolean skipdirectdraws;
 //
 // V_MarkRect 
 // 
-void
-V_MarkRect
-( int16_t		x,
-  int16_t		y,
-  int16_t		width,
-  int16_t		height ) 
-{ 
+void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height )  { 
     M_AddToBox16 (dirtybox, x, y); 
     M_AddToBox16 (dirtybox, x+width-1, y+height-1); 
 } 
@@ -116,13 +110,11 @@ extern boolean skipdirectdraws;
 // V_DrawPatch
 // Masks a column based masked pic to the screen. 
 //
-void
-V_DrawPatch
-( int16_t		x,
-  int16_t		y,
-  int16_t		scrn,
-  patch_t __far*	patch )
-{ 
+
+segment_t screen_segments[5] = {0x8000,0x8000,0x7000,0x6000,0x9C00};
+
+/*
+void V_DrawPatch ( int16_t x, uint8_t y,int8_t scrn,patch_t __far* patch ) { 
 
     int16_t		col; 
     column_t __far*	column;
@@ -141,23 +133,7 @@ V_DrawPatch
     if (!scrn)
 		V_MarkRect (x, y, (patch->width), (patch->height)); 
 
-	switch (scrn) {
-		case 0:
-		case 1:
-			desttop = screen0 + offset;
-			break;
-		case 2:
-			desttop = screen2 + offset;
-			break;
-		case 3:
-			desttop = screen3 + offset;
-			break;
-		case 4:
-			desttop = screen4 + offset;
-			break;
-	}
-
-
+	desttop = MK_FP(screen_segments[scrn], offset);
 
     col = 0; 
 	 
@@ -201,7 +177,7 @@ V_DrawPatch
 		} 
     }			 
 } 
- 
+ */
 
 
 //
@@ -260,12 +236,7 @@ V_DrawPatchDirect
 // Requires loading data in one page frame at a time
 // It's okay if this is kind of slow... its only used in menus.
 
-void
-V_DrawFullscreenPatch
-(
-	int8_t*       pagename,
-	int16_t screen)
-{
+void V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
 	int16_t		count;
 	int16_t		col;
 	column_t __far*	column;
