@@ -44,10 +44,18 @@ PUBLIC V_DrawPatch_
 ; REMOVED bp - 6 stores column segment   
 ; bp - 8 stores desttop segment
 ; bp - 0A stores desttop offset (starts 0)
-; bp - 0E stores w  (width)
+; bp - 0E stores w (width)
 ; bp - 0C column offset
-; bp - 10h column segment (is this same as patch segment?)
+; REMOVED bp - 10h column segment (is this same as patch segment?)
 ; bp - 12h x
+
+; todo: modify stack amount
+; todo: use dx for storing a loop var
+; todo: use cx more effectively. ch and cl?
+; todo: move es:di usage to ds:si for most of function
+; todo: change input to not be bp based
+; possible todo: interrupts, sp
+; todo: make 8086
 
 push  cx
 push  si
@@ -80,7 +88,13 @@ xor   dh, dh
 
 ; si = y * screenwidth
 
+;mov   ax, SCREENWIDTH
+;mul   dx
+; dx is 0 or garbage?
+;mov   si, ax 
 imul   si, dx, SCREENWIDTH
+
+
 mov   ax, word ptr es:[bx + 4]
 sub   word ptr [bp - 012h], ax
 
@@ -129,20 +143,17 @@ test  ax, ax
 jle   jumptoexit
 ; store patch segment (???) remove;
 mov   word ptr [bp - 0Ch], bx
-mov   word ptr [bp - 010h], es
 draw_next_column:
 
 ;		column = (column_t __far *)((byte __far*)patch + (patch->columnofs[col])); 
 
 ; es:bx is patch segment
-mov   es, word ptr [bp - 010h]
+mov   es, word ptr [bp + 0Eh] ; 
 mov   bx, word ptr [bp - 0Ch]
-; grab patch into dx:di 
+; grab patch offset into di
 mov   di, word ptr [bp + 0Ch]
-mov   dx, word ptr [bp + 0Eh]
 ; di equals colofs lookup
 add   di, word ptr es:[bx + 8]
-mov   es, dx
 
 ;		while (column->topdelta != 0xff )  
 ; check topdelta for 0xFFh
@@ -163,27 +174,28 @@ draw_next_column_patch:
 ;ax = count
 
 
-mov   es, dx                ; patch segment again
 mov   al, byte ptr es:[di]
 xor   ah, ah
 imul   ax, ax, SCREENWIDTH  ; column->topdelta * SCREENWIDTH
 
 mov   bl, byte ptr es:[di + 1]   ; grab column length
 xor   bh, bh
+mov   si, es
+mov   ds, si
+
 mov   es, word ptr [bp - 8]   ; get dest segment
 
 xchg  bx, ax
 add   bx, cx   ; retrieve offset
 
 lea   si, [di + 3]
-mov   ds, dx  ; set up ds
 sub   ax, 4
 
 xchg  bx, di
 test  ax, ax
 jl    done_drawing_4_pixels
 
-;  todo full unroll?
+;  todo full unroll
 
 
 draw_4_more_pixels:
@@ -242,7 +254,8 @@ cmp   ax, word ptr [bp - 0Eh]
 jge   jumpexit
 jmp   draw_next_column
 jumpexit:
-leave 
+mov   sp, bp
+pop   bp
 pop   di
 pop   si
 pop   cx

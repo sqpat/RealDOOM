@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/09/20 11:10:44
+Created on:       24/09/20 11:25:22
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -90,7 +90,7 @@ r_segs_TEXT            CODE           AUTO           185d:47a0       00001a46
 R_MASKED_TEXT          CODE           AUTO           185d:61e6       000002a1
 r_things_TEXT          CODE           AUTO           185d:6490       00001166
 w_wad_TEXT             CODE           AUTO           185d:7600       00000342
-VIDEO_TEXT             CODE           AUTO           185d:7942       0000010b
+VIDEO_TEXT             CODE           AUTO           185d:7942       00000105
 v_video_TEXT           CODE           AUTO           185d:7a50       00000334
 z_zone_TEXT            CODE           AUTO           185d:7d90       000004aa
 d_math_TEXT            CODE           AUTO           185d:8240       00000000
