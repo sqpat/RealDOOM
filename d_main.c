@@ -357,11 +357,10 @@ void __far locallib_printstringnear (int8_t __near *str){
 	locallib_printstringfar(str);
 }
 
-void __far locallib_printf (int8_t *str, ...){
+void __far locallib_printf (int8_t *str, va_list argptr){
     int16_t i = 0;
     int8_t longflag = false;
-	va_list argptr;
-	va_start(argptr, str);
+	
 
 	while (str[i] != '\0'){
 		for (; (str[i] != '%' && str[i] != '\0') && (!longflag); i++){
@@ -440,10 +439,23 @@ void __far locallib_printf (int8_t *str, ...){
 	}
 
     
-	va_end(argptr);
 	
 
 }
+
+
+#if DEBUG_PRINTING
+
+
+void __far DEBUG_PRINT (int8_t *error, ...){
+    va_list argptr;
+    
+	va_start(argptr, error);
+    locallib_printf(error, argptr);
+    va_end(argptr);
+}
+
+#endif
 
 void locallib_strupr(char __far *str){
 	int i = 0;

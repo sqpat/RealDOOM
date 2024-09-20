@@ -161,10 +161,6 @@ void __near W_AddFile(int8_t *filename) {
 					}
 					j = 65535;
 				}
-				//				if (lastsize != diff) {
-				//					if (diff > 127 || diff < -128)
-				//						I_Error("\nbad size? %i %i %i %i", i, lastsize, lastpos, fileinfo->filepos);
-				//				}
 				lastpos = fileinfo->filepos;
 				lastsize = fileinfo->size;
 			}

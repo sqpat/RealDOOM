@@ -208,13 +208,7 @@ int16_t W_CheckNumForName (int8_t* name) {
 		lump_p--;
 
     }
-
-#ifdef CHECK_FOR_ERRORS
-	if (returnval < -1) {
-		I_Error("what? %s %i %Fp %Fp ", name, returnval, lump_p, lumpinfo9000);
-	}
-#endif
-
+ 
 	Z_UnmapLumpInfo();
     // TFB. Not found.
     return returnval;
@@ -302,8 +296,6 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 	if (lump >= numlumps)
         I_Error ("W_ReadLump: %i >= numlumps",lump);
 #endif
-    //l = lumpinfo+lump;
-	//lumpsize = ((lumpinfo + lump + 1)->position - l->position) + l->sizediff;
 	lumpsize = is5000Page ? W_LumpLength5000(lump) : W_LumpLength9000(lump);
 
 	
@@ -313,21 +305,7 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 
     I_BeginRead ();
 
-/*        
-	if (!wadfilefp){
-		// reloadable file, so use open / read / close
-		wadfilefp = fopen(relo)
-		if ((handle = open(reloadname, O_RDONLY | O_BINARY)) == -1) {
-#ifdef CHECK_FOR_ERRORS
-			I_Error("W_ReadLump: couldn't open %s", reloadname);
-#endif
-		}
-	}
-	else {
-		handle = wadfilehandle;
-	}
-	*/
-    
+ 
 	startoffset = l->position + start;
     fseek(wadfilefp, startoffset, SEEK_SET);
 

@@ -21,6 +21,7 @@
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include "doomtype.h" 
@@ -53,7 +54,7 @@ enum { VERSION =  109 };
 #define DEBUG_PRINTING 1
 
 #if DEBUG_PRINTING
-	#define DEBUG_PRINT(...) locallib_printf(__VA_ARGS__)
+    void __far DEBUG_PRINT (int8_t *error, ...);
 #else
 	#define DEBUG_PRINT(...) 
 #endif
@@ -417,7 +418,8 @@ int16_t __far locallib_strncasecmp(char __far *str1, char __far *str2, int16_t n
 void __far combine_strings(char __far *dest, char __far *src1, char __far *src2);
 void __far makesavegamename(char __far *dest, int8_t number);
 void __far locallib_strcpy(char __far *dest, char __far *src);
-void __far locallib_printf (int8_t *str, ...);
+void __far locallib_printf (int8_t *str, va_list argptr);
+
 void __far locallib_strncpy(char __far *dest, char __far *src, int16_t n);
 int16_t __far locallib_strlen(char __far *src);
 uint8_t __far locallib_toupper(uint8_t ch);

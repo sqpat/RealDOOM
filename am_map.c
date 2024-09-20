@@ -412,10 +412,6 @@ void __near AM_findMinMaxBoundaries(void)
   
     min_scale_mtof = a < b ? a : b;
 
-	//if (min_scale_mtof > 0xB333){
-	//	I_Error("too big? %x", min_scale_mtof);
-	//}
-
 	max_scale_mtof.w = 0x54000;// FixedDiv(automap_screenheight, 2*16);
 
 
