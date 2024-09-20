@@ -403,7 +403,7 @@ inline uint16_t FastMul8u8u(uint8_t a, uint8_t b);
 fixed_t32	FixedDiv(fixed_t32 a, fixed_t32 b);
 fixed_t32	FastDiv3232(fixed_t32 a, fixed_t32 b);
 uint16_t 	FastDiv3232_shift_3_8(fixed_t32 a, fixed_t32 b);
-fixed_t32	FastDiv32u16u (fixed_t32 a, int16_t b);
+fixed_t32	FastDiv32u16u (fixed_t32 a, uint16_t b);
 fixed_t32	FastDiv3216u (fixed_t32 a, int16_t b);
 //int16_t     R_CalculateScaleStep(fixed_t32 a, int16_t b);
 fixed_t32   FixedDivWholeA(fixed_16_t a, fixed_t32 b);

@@ -299,35 +299,30 @@ void __far locallib_printhex (uint32_t number, boolean islong){
 	
 }
 
-uint32_t mod10s[10] = {
-	1000000000L,
-	100000000L,
-	10000000L,
-	1000000L,
-	100000L,
-	10000L,
-	1000L,
-	100L,
-	10L,
-	1L
-};
+ 
 
 void __far locallib_printdecimal (int32_t number){
 	// 4 billion max
-	uint32_t positivenumber = number;
-	boolean firstdigitprinted = false;
 
 
 	if (number) {
+		uint32_t positivenumber;
+		boolean firstdigitprinted = false;
 		int8_t i = 0;
 		if (number < 0) {
 			putchar('-');
 			positivenumber = -number;
+		} else {
+			positivenumber = number;
 		}
 
-		for (i = 0; i < 10; i++){
+		for (i = 9; i >= 0; i--){
+			uint32_t modder = 1;
 			int8_t j = 0;
-			uint32_t modder = mod10s[i];
+			for (j = 0; j < i; j++){
+				modder = FastMul16u32u(10, modder);
+			}
+			j = 0;
 			
 			// modulo...
 			while (positivenumber >= modder){
@@ -339,6 +334,7 @@ void __far locallib_printdecimal (int32_t number){
 				putchar('0' + j);
 				firstdigitprinted = true;
 			}
+
 		}
 	
 	

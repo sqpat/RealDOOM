@@ -144,48 +144,7 @@ void __near I_ShutdownMouse(void) {
 
 
 extern uint16_t UMBbase;
-//extern byte __far* conventional_far_bytes;
-/*
-
-
-#pragma aux FREE_UMB_MEMORY_1 = \
-		"mov    ax, 4900h",     \
-		"mov    es, [UMBbase]", \
-		"mov    bx, 0000h",		\
-		"int    21h",           \
-parm[] modify exact[ax bx es];
-#pragma aux FREE_UMB_MEMORY_2 = \
-		"mov    ax, 4900h",     \
-		"mov    es, [UMBbase2]",\
-		"mov    bx, 0000h",		\
-		"int    21h",           \
-parm[] modify exact[ax bx es];
-*/
-
-/*
-void Z_ShutdownUMB() {
  
- 
-	if (UMBbase) {
-		regs.w.ax = 0x4900;
-		segregs.es = UMBbase;
-		intx86x(DOSMM_INT, &regs, &regs, &segregs);
-		if (regs.x.cflag){
-			printf("Failed deallocating UMB 1 memory! %i!\n", regs.w.ax);
-		}
-	}
-	if (regs.x.cflag){
-		printf("Failed deallocating UMB 1 memory! %i!\n", regs.w.ax);
-	}
-
-
-	
-}
-*/
-
-
-
-
 
 
 

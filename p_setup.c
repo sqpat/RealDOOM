@@ -727,17 +727,6 @@ void __near P_LoadSideDefs(int16_t lump) {
 		toptex = R_TextureNumForName(texnametop);
 		bottex = R_TextureNumForName(texnamebot);
 		midtex = R_TextureNumForName(texnamemid);
-/*
-		if (toptex > 0){
-			toptex = R_TextureNumForName("WOOD12");
-		}
-		if (bottex > 0){
-			bottex = R_TextureNumForName("WOOD12");
-		}
-		if (midtex > 0){
-			midtex = R_TextureNumForName("WOOD12");
-		}
-		*/
 
 		sd = &sides[i];
 		sd->toptexture = toptex;

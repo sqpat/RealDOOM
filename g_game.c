@@ -1121,11 +1121,7 @@ boolean __far G_CheckDemoStatus (void)  {
  
 #else
 
-		I_Error("\ntimed %li gametics in %li realtics \n prnd index %i ", gametic
-			, endtime - starttime,  prndindex
-            
-
-            );
+		I_Error("\ntimed %li gametics in %li realtics \n prnd index %i ", gametic, endtime - starttime,  prndindex );
 
 /*
 
