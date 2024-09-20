@@ -40,14 +40,14 @@ PUBLIC V_DrawPatch_
 ; bp + 0c is ptr to patch
 
 ; bp - 2 is screen
-
-; bp - 04 stores dest segment
-; bp - 06 stores column segment
-; bp - 08 stores desttop segment
+; REMOVED bp - 4 stores dest segment
+; REMOVED bp - 6 stores column segment   
+; bp - 8 stores desttop segment
 ; bp - 0A stores desttop offset (starts 0)
 ; bp - 0E stores w  (width)
 ; bp - 0C column offset
 ; bp - 10h column segment (is this same as patch segment?)
+; bp - 12h x
 
 push  cx
 push  si
@@ -55,7 +55,7 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 010h
-push  ax
+push  ax      ; bp - 12h
 mov   byte ptr [bp - 2], bl   ; do push?
 
 	;if (skipdirectdraws) {
@@ -84,6 +84,7 @@ imul   si, dx, SCREENWIDTH
 mov   ax, word ptr es:[bx + 4]
 sub   word ptr [bp - 012h], ax
 
+; y is not used beyond this point
 ; offset = si += x
 
 
@@ -146,12 +147,12 @@ mov   es, dx
 ;		while (column->topdelta != 0xff )  
 ; check topdelta for 0xFFh
 cmp   byte ptr es:[di], 0FFh
-jne   continue_column_patches
+jne   draw_next_column_patch
 jmp   column_done
 
 
 ; here we render the next patch in the column.
-continue_column_patches:
+draw_next_column_patch:
 
 ; es:di is column pointer
 
@@ -166,82 +167,71 @@ mov   es, dx                ; patch segment again
 mov   al, byte ptr es:[di]
 xor   ah, ah
 imul   ax, ax, SCREENWIDTH  ; column->topdelta * SCREENWIDTH
-mov   bx, word ptr [bp - 8] ; bx = dest segment
-mov   word ptr [bp - 4], bx
-mov   bx, cx   ; retrieve offset
-add   bx, ax
-mov   al, byte ptr es:[di + 1]   ; grab column length
-xor   ah, ah
-mov   word ptr [bp - 6], dx
-sub   ax, 4
+
+mov   bl, byte ptr es:[di + 1]   ; grab column length
+xor   bh, bh
+mov   es, word ptr [bp - 8]   ; get dest segment
+
+xchg  bx, ax
+add   bx, cx   ; retrieve offset
+
 lea   si, [di + 3]
+mov   ds, dx  ; set up ds
+sub   ax, 4
+
+xchg  bx, di
 test  ax, ax
 jl    done_drawing_4_pixels
 
-;  todo unroll more?
-
-;				do {
-;					register byte s0, s1;
-;					s0 = source[0];
-;					s1 = source[1];
-;					dest[0] = s0;
-;					dest[SCREENWIDTH] = s1;
-;					dest += SCREENWIDTH * 2;
-;					s0 = source[2];
-;					s1 = source[3];
-;					source += 4;
-;					dest[0] = s0;
-;					dest[SCREENWIDTH] = s1;
-;					dest += SCREENWIDTH * 2;
-;				} while ((count -= 4) >= 0);
+;  todo full unroll?
 
 
 draw_4_more_pixels:
 ;s0 = dl
 ;s1 = dh
 
-mov   es, word ptr [bp - 6]     ; restore column segment
-mov   dl, byte ptr es:[si]
-mov   dh, byte ptr es:[si + 1]
-mov   es, word ptr [bp - 4]     ; dest segment
-mov   byte ptr es:[bx], dl
-mov   byte ptr es:[bx + SCREENWIDTH], dh
-mov   es, word ptr [bp - 6]
-add   bx, 2*SCREENWIDTH         ; todo just do this once per loop * 4. or do movsb
+movsb
+add di, SCREENWIDTH-1
+movsb
+add di, SCREENWIDTH-1
+movsb
+add di, SCREENWIDTH-1
+movsb
+add di, SCREENWIDTH-1
 
-;s2 = dl
-;s3 = dh
-
-mov   dl, byte ptr es:[si + 2]
-add   bx, 2*SCREENWIDTH
-mov   dh, byte ptr es:[si + 3]
-mov   es, word ptr [bp - 4]
-add   si, 4
-mov   byte ptr es:[bx - (2*SCREENWIDTH)], dl
 sub   ax, 4
-mov   byte ptr es:[bx - SCREENWIDTH], dh
 test  ax, ax
 jge   draw_4_more_pixels
+
 done_drawing_4_pixels:
 add   ax, 4
 je    done_drawing_pixels
+
 draw_one_more_pixel:
-mov   es, word ptr [bp - 6]
-add   bx, SCREENWIDTH
-mov   dl, byte ptr es:[si]
-mov   es, word ptr [bp - 4]
-inc   si
-mov   byte ptr es:[bx - SCREENWIDTH], dl
+movsb
+add di, SCREENWIDTH-1
 dec   ax
 jne   draw_one_more_pixel
+
+; restore stuff we changed above
 done_drawing_pixels:
 check_for_next_column:
-mov   dx, word ptr [bp - 6]
-lea   di, [si + 1]
+
+inc si
+cmp   byte ptr ds:[si], 0FFh
+
+; restore flags for next iteration. does not modify above flag
+mov   dx, ds
 mov   es, dx
-cmp   byte ptr es:[di], 0FFh
+mov   dx, ss
+mov   ds, dx
+xchg  di, bx
+mov   di, si
+mov   dx, es
+
+
 je    column_done
-jmp   continue_column_patches
+jmp   draw_next_column_patch
 column_done:
 inc   word ptr [bp - 012h]
 inc   word ptr [bp - 0Ah]
