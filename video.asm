@@ -280,7 +280,6 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-push  ax
 
 mov   es, cx
 
@@ -289,10 +288,9 @@ mov   es, cx
  
 
 ; patch is es:bx
-
-mov   ax, word ptr es:[bx + 4]
+sub   ax, word ptr es:[bx + 4]
 sub   dx, word ptr es:[bx + 6]
-sub   word ptr [bp - 2], ax
+mov   si, ax  ; store x
 mov   ax, (SCREENWIDTH / 4)
 mul   dx
 
@@ -304,7 +302,7 @@ mov   ds, cx
 
    
 add   bx, ax
-mov   ax, word ptr [bp - 2]
+mov   ax, si
 
 ;	desttop = (byte __far*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
 ;   es:bx is desttop
@@ -334,7 +332,7 @@ draw_next_column_direct:
 ;		outp (SC_INDEX+1,1<<(x&3));
 inc   word ptr cs:[SELFMODIFY_col_increment+1]    ; col++
 
-mov   cx, word ptr [bp - 2] ; retrieve x
+mov   cx, si ; retrieve x
 mov   ax, 1
 
 
@@ -349,6 +347,7 @@ mov   bx, 0F030h
 
 
 out   dx, al
+mov   dx, si  ; store x in dx
 add   bx, word ptr ds:[di + 8]
 cmp   byte ptr ds:[bx], 0FFh
 je    check_desttop_increment
@@ -362,7 +361,7 @@ add   di, ax
 mov   cl, byte ptr ds:[bx + 1]
 lea   si, [bx + 3]
 xor   ch, ch
-mov   dx,  (SCREENWIDTH / 4) - 1
+mov   ax,  (SCREENWIDTH / 4) - 1
 draw_next_pixel:
 
 ;	    while (count--)  { 
@@ -372,7 +371,7 @@ draw_next_pixel:
 ;			dest +=  (SCREENWIDTH / 4);
 
 movsb
-add   di, dx
+add   di, ax
 
 loop   draw_next_pixel
 jmp    done_drawing_column
@@ -395,8 +394,8 @@ check_desttop_increment:
 ;    }
 
 
-inc   word ptr [bp - 2]
-test  byte ptr [bp - 2], 3
+inc   dx
+test  dx, 3
 jne   dont_increment_desttop
 inc   word ptr cs:[SELFMODIFY_offset_set_di+1]
 dont_increment_desttop:
@@ -406,6 +405,8 @@ add   word ptr cs:[SELFMODIFY_retrievenextcoloffset + 1], 4
 SELFMODIFY_compare_instruction_direct:
 cmp   ax, 0F030h
 jge   jumpexitdirect
+
+mov   si, dx
 jmp   draw_next_column_direct
 jumpexitdirect:
 mov   ax, ss
