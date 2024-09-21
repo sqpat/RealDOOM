@@ -62,7 +62,6 @@ push  di
 push  bp
 mov   bp, sp
 sub   sp, 010h
-push  ax      ; bp - 12h
 mov   cl, bl   ; do push?
 sal   bl, 1
 xor   bh, bh
@@ -90,22 +89,15 @@ xor   dh, dh
 
 ; si = y * screenwidth
 
-;mov   ax, SCREENWIDTH
-;mul   dx
-; dx is 0 or garbage?
-;mov   si, ax 
+
+mov    di, ax
 imul   si, dx, SCREENWIDTH
 
-
-mov   ax, word ptr ds:[bx + 4]
-sub   word ptr [bp - 012h], ax
-
-; y is not used beyond this point
-; offset = si += x
+ 
 
 
-
-add   si, word ptr [bp - 012h]
+add   si, di
+sub   si, word ptr ds:[bx + 4]
 
 
 cmp   cl, 0
@@ -221,7 +213,6 @@ xchg  di, bx
 je    column_done
 jmp   draw_next_column_patch
 column_done:
-inc   word ptr [bp - 012h]
 inc   word ptr [bp - 0Ah]
 add   word ptr [bp - 0Ch], 4
 mov   ax, word ptr [bp - 0Ah]
@@ -246,7 +237,7 @@ mov   bx, word ptr ds:[bx]
 push ds
 mov  ax, ss
 mov  ds, ax
-mov   ax, word ptr [bp - 012h]
+mov  ax, di
 push es
 call  V_MarkRect_
 pop  es

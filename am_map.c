@@ -314,8 +314,7 @@ fixed_16_t __near CYMTOF16(fixed_16_t y) {
 
  
 
-void
-V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height);
+void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height);
 
  
 

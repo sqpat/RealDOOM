@@ -75,15 +75,7 @@ void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height )  {
 //
 // V_CopyRect 
 // 
-void 
-V_CopyRect
-( uint16_t		srcx,
-  uint16_t		srcy,
-  uint16_t		width,
-  uint16_t		height,
-  int16_t		destx,
-  int16_t		desty ) 
-{ 
+void  V_CopyRect ( uint16_t srcx, uint16_t srcy, uint16_t width, uint16_t height, int16_t destx, int16_t desty ) { 
     byte __far*	src;
     byte __far*	dest;
 	if (skipdirectdraws) {
@@ -92,7 +84,6 @@ V_CopyRect
      
     V_MarkRect (destx, desty, width, height); 
 	 
-
 	src =  screen4 + ((uint16_t)SCREENWIDTH*srcy + srcx);
 	dest = screen0 + ((uint16_t)SCREENWIDTH*desty + destx);
 	//src = MK_FP(0x9000, ((uint16_t)SCREENWIDTH*srcy + srcx));
