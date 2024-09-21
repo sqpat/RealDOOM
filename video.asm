@@ -275,8 +275,8 @@ PUBLIC V_DrawPatchDirect_
 ; ax is x
 
 ;REMOVED bp  - 002h a segment?
-;bp  - 004h desttop offset
-;bp  - 006h desttop segment
+;REMOVED bp  - 004h desttop segment
+;bp  - 006h desttop offset
 ;bp  - 008h column offset(?)
 ;bp  - 00Ah is col (?)
 ;bp  - 00Ch is w
@@ -306,21 +306,18 @@ mov   es, cx
 mov   ax, word ptr es:[bx + 4]
 sub   dx, word ptr es:[bx + 6]
 sub   word ptr [bp - 012h], ax
-imul  ax, dx, (SCREENWIDTH / 4)
-mov   bx, word ptr [_destscreen]
+mov   ax, (SCREENWIDTH / 4)
+mul   dx
 
-
-
-
+les   bx, dword ptr [_destscreen]
+mov   ds, cx
 
 cwd   
 add   bx, ax
 mov   ax, word ptr [bp - 012h]
-mov   cx, word ptr [_destscreen+2]
-adc   cx, dx
 
 ;	desttop = (byte __far*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
-;   cx:bx is desttop
+;   es:bx is desttop
 
 sar   ax, 2
 cwd   
@@ -335,13 +332,12 @@ mov   word ptr [bp - 0Ah], 0
 add   ax, bx
 mov   bx, word ptr [bp - 014h]
 mov   word ptr [bp - 6], ax
-adc   dx, cx
-mov   ax, word ptr es:[bx]  ; get width
-mov   word ptr [bp - 4], dx
+mov   ax, word ptr ds:[bx]  ; get width
 mov   word ptr [bp - 0Ch], ax
 test  ax, ax
 jle   jumptoexitdirect
 mov   word ptr [bp - 8], bx
+
 draw_next_column_direct:
 
 ;		outp (SC_INDEX+1,1<<(x&3));
@@ -359,19 +355,16 @@ mov   di, word ptr [bp - 014h]
 
 
 out   dx, al
-mov   es, word ptr [bp - 016h]
-add   di, word ptr es:[bx + 8]
-cmp   byte ptr es:[di], 0FFh
+add   di, word ptr ds:[bx + 8]
+cmp   byte ptr ds:[di], 0FFh
 je    check_desttop_increment
-mov   cx, word ptr [bp - 4]
 jump4:
-mov   es, word ptr [bp - 016h]
-mov   al, byte ptr es:[di]
+mov   al, byte ptr ds:[di]
 xor   ah, ah
 imul  ax, ax, (SCREENWIDTH / 4)
 mov   bx, word ptr [bp - 6]
 add   bx, ax
-mov   al, byte ptr es:[di + 1]
+mov   al, byte ptr ds:[di + 1]
 lea   si, [di + 3]
 xor   ah, ah
 draw_next_column_patch_direct:
@@ -384,11 +377,9 @@ dec   ax
 ;			dest +=  (SCREENWIDTH / 4);
 
 cmp   ax, 0FFFFh
-je    done_copying_pixels
-mov   es, word ptr [bp - 016h]
+je    done_drawing_column
 add   bx, (SCREENWIDTH / 4)
-mov   dl, byte ptr es:[si]
-mov   es, cx
+mov   dl, byte ptr ds:[si]
 inc   si
 mov   byte ptr es:[bx - (SCREENWIDTH / 4)], dl
 jmp   draw_next_column_patch_direct
@@ -397,13 +388,12 @@ jmp   draw_next_column_patch_direct
 jumptoexitdirect:
 jmp   jumpexitdirect
 
-done_copying_pixels:
-mov   es, word ptr [bp - 016h]
-mov   al, byte ptr es:[di + 1]
+done_drawing_column:
+mov   al, byte ptr ds:[di + 1]
 xor   ah, ah
 add   di, ax
 add   di, 4
-cmp   byte ptr es:[di], 0FFh
+cmp   byte ptr ds:[di], 0FFh
 jne   jump4
 check_desttop_increment:
 
@@ -424,6 +414,8 @@ cmp   ax, word ptr [bp - 0Ch]
 jge   jumpexitdirect
 jmp   draw_next_column_direct
 jumpexitdirect:
+mov   ax, ss
+mov   ds, ax
 mov   sp, bp
 pop   bp
 pop   di
