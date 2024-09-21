@@ -764,11 +764,10 @@ void __far D_DoomMain2(void)
 
 /*
 	FILE *fp = fopen("output3.bin", "wb");
-	FAR_fwrite(V_DrawPatch, (byte __far *)V_MarkRect - (byte __far *)V_DrawPatch, 1, fp);
+	FAR_fwrite(V_DrawPatchDirect, (byte __far *)V_DrawFullscreenPatch - (byte __far *)V_DrawPatchDirect, 1, fp);
 	fclose(fp);
 	exit(0);
-	*/
-
+*/
 /*
 	fixed_t_union x, y;
 

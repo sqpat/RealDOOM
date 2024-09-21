@@ -15,7 +15,7 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
-	.8086
+	.286
 
 
 INCLUDE defs.inc
@@ -24,6 +24,7 @@ INCLUDE defs.inc
 .DATA
 
 EXTRN	_skipdirectdraws:BYTE
+EXTRN   _destscreen:DWORD
 EXTRN   _screen_segments:WORD
 EXTRN   _jump_mult_table_3:BYTE
 
@@ -264,5 +265,172 @@ pop  ds
 jmp   donemarkingrect
 
 ENDP
+
+
+PROC V_DrawPatchDirect_ FAR
+PUBLIC V_DrawPatchDirect_
+
+; CX:BX is patch
+; dx is y
+; ax is x
+
+;REMOVED bp  - 002h a segment?
+;bp  - 004h desttop offset
+;bp  - 006h desttop segment
+;bp  - 008h column offset(?)
+;bp  - 00Ah is col (?)
+;bp  - 00Ch is w
+;REMOVED bp  - 00Eh column segment (?)
+
+;REMOVED bp  - 010h is a segment?
+;bp  - 012h is ax  (x)
+;bp  - 014h is bx  (patch offset)
+;bp  - 016h is cx  (patch seg)
+
+push  si
+push  di
+push  bp
+mov   bp, sp
+sub   sp, 010h
+push  ax
+push  bx
+push  cx
+mov   es, cx
+
+;    y -= (patch->topoffset); 
+;    x -= (patch->leftoffset); 
+ 
+
+; patch is es:bx
+
+mov   ax, word ptr es:[bx + 4]
+sub   dx, word ptr es:[bx + 6]
+sub   word ptr [bp - 012h], ax
+imul  ax, dx, (SCREENWIDTH / 4)
+mov   bx, word ptr [_destscreen]
+
+
+
+
+
+cwd   
+add   bx, ax
+mov   ax, word ptr [bp - 012h]
+mov   cx, word ptr [_destscreen+2]
+adc   cx, dx
+
+;	desttop = (byte __far*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
+;   cx:bx is desttop
+
+sar   ax, 2
+cwd   
+
+;    w = (patch->width); 
+;    for ( col = 0 ; col<w ; col++) 
+
+
+;	column = (column_t  __far*)((byte  __far*)patch + (patch->columnofs[col]));
+
+mov   word ptr [bp - 0Ah], 0
+add   ax, bx
+mov   bx, word ptr [bp - 014h]
+mov   word ptr [bp - 6], ax
+adc   dx, cx
+mov   ax, word ptr es:[bx]  ; get width
+mov   word ptr [bp - 4], dx
+mov   word ptr [bp - 0Ch], ax
+test  ax, ax
+jle   jumptoexitdirect
+mov   word ptr [bp - 8], bx
+draw_next_column_direct:
+
+;		outp (SC_INDEX+1,1<<(x&3));
+
+mov   cx, word ptr [bp - 012h] ; retrieve x
+mov   ax, 1
+
+
+mov   dx, 03C5h
+and   cl, 3
+mov   bx, word ptr [bp - 8]
+shl   ax, cl
+mov   di, word ptr [bp - 014h]
+
+
+
+out   dx, al
+mov   es, word ptr [bp - 016h]
+add   di, word ptr es:[bx + 8]
+cmp   byte ptr es:[di], 0FFh
+je    check_desttop_increment
+mov   cx, word ptr [bp - 4]
+jump4:
+mov   es, word ptr [bp - 016h]
+mov   al, byte ptr es:[di]
+xor   ah, ah
+imul  ax, ax, (SCREENWIDTH / 4)
+mov   bx, word ptr [bp - 6]
+add   bx, ax
+mov   al, byte ptr es:[di + 1]
+lea   si, [di + 3]
+xor   ah, ah
+draw_next_column_patch_direct:
+dec   ax
+
+;	    while (count--)  { 
+ 
+;			*dest = *source;
+;			source++;
+;			dest +=  (SCREENWIDTH / 4);
+
+cmp   ax, 0FFFFh
+je    done_copying_pixels
+mov   es, word ptr [bp - 016h]
+add   bx, (SCREENWIDTH / 4)
+mov   dl, byte ptr es:[si]
+mov   es, cx
+inc   si
+mov   byte ptr es:[bx - (SCREENWIDTH / 4)], dl
+jmp   draw_next_column_patch_direct
+
+
+jumptoexitdirect:
+jmp   jumpexitdirect
+
+done_copying_pixels:
+mov   es, word ptr [bp - 016h]
+mov   al, byte ptr es:[di + 1]
+xor   ah, ah
+add   di, ax
+add   di, 4
+cmp   byte ptr es:[di], 0FFh
+jne   jump4
+check_desttop_increment:
+
+;	if ( ((++x)&3) == 0 ) 
+;	    desttop++;	// go to next byte, not next plane 
+;    }
+
+
+inc   word ptr [bp - 012h]
+test  byte ptr [bp - 012h], 3
+jne   dont_increment_desttop
+inc   word ptr [bp - 6]
+dont_increment_desttop:
+inc   word ptr [bp - 0Ah]    ; col++
+mov   ax, word ptr [bp - 0Ah]
+add   word ptr [bp - 8], 4
+cmp   ax, word ptr [bp - 0Ch]
+jge   jumpexitdirect
+jmp   draw_next_column_direct
+jumpexitdirect:
+mov   sp, bp
+pop   bp
+pop   di
+pop   si
+retf  
+
+ENDP
+
 
 END

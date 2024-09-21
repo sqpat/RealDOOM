@@ -175,6 +175,7 @@ void V_DrawPatch ( int16_t x, uint8_t y,int8_t scrn,patch_t __far* patch ) {
 // V_DrawPatchDirect
 // Draws directly to the screen on the pc. 
 //
+/*
 void
 V_DrawPatchDirect
 ( int16_t		x,
@@ -220,7 +221,7 @@ V_DrawPatchDirect
 	    desttop++;	// go to next byte, not next plane 
     }
 } 
- 
+ */
 
  
 // Specially handles titlepic and other ~68k textures that exceed the 64k 4x page frames limit.
