@@ -39,15 +39,7 @@ PUBLIC V_DrawPatch_
 ; cx is unused?
 ; bp + 0c is ptr to patch
 
-; REMOVED bp - 2 is screen
-; REMOVED bp - 4 stores dest segment
-; REMOVED bp - 6 stores column segment   
-; REMOVED bp - 8 stores desttop segment
-; bp - 0A stores desttop offset (starts 0)
-; bp - 0E stores w (width)
-; bp - 0C column offset
-; REMOVED bp - 10h column segment (is this same as patch segment?)
-; bp - 12h x
+ 
 
 ; todo: modify stack amount
 ; todo: use dx for storing a loop var
@@ -61,15 +53,11 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 010h
 mov   cl, bl   ; do push?
 sal   bl, 1
 xor   bh, bh
 mov   es, word ptr ds:[bx + _screen_segments]
 
-	;if (skipdirectdraws) {
-	;	return;
-	;}
 
 cmp   byte ptr [_skipdirectdraws], 0
 je    doing_draws
@@ -93,8 +81,6 @@ xor   dh, dh
 mov    di, ax
 imul   si, dx, SCREENWIDTH
 
- 
-
 
 add   si, di
 sub   si, word ptr ds:[bx + 4]
@@ -111,30 +97,35 @@ donemarkingrect:
 
 ; bx = 2*ax for word lookup
 
-mov   word ptr [bp - 0Ah], 0
 
 ; load patch addr again
 mov   cx, si
+mov   si, OFFSET setup_ax_instruction + 1
+mov   cs:[si], 0
+
 mov   bx, word ptr [bp + 0Ch]
 
 ;    w = (patch->width); 
 mov   ax, word ptr ds:[bx]
 ;lodsw
 
-mov   word ptr [bp - 0Eh], ax  ; store width
-
+mov   si, OFFSET compare_instruction + 1
+mov   cs:[si], ax  ; store width
+mov   si, OFFSET setup_bx_instruction + 1
+mov   cs:[si], bx  ; store column
 test  ax, ax
 jle   jumptoexit
 push dx
 mov  dx, SCREENWIDTH-1
 ; store patch segment (???) remove;
-mov   word ptr [bp - 0Ch], bx
+
 draw_next_column:
 
 ;		column = (column_t __far *)((byte __far*)patch + (patch->columnofs[col])); 
 
 ; ds:si is patch segment
-mov   bx, word ptr [bp - 0Ch]
+setup_bx_instruction:
+mov   bx, 0F030h;
 ; grab patch offset into di
 mov   si, word ptr [bp + 0Ch]
 ; si equals colofs lookup
@@ -213,11 +204,16 @@ xchg  di, bx
 je    column_done
 jmp   draw_next_column_patch
 column_done:
-inc   word ptr [bp - 0Ah]
-add   word ptr [bp - 0Ch], 4
-mov   ax, word ptr [bp - 0Ah]
+mov   bx, OFFSET setup_ax_instruction + 1
+inc   word ptr cs:[bx]
+mov   bx, OFFSET setup_bx_instruction + 1
+
+add   word ptr cs:[bx], 4
+setup_ax_instruction:
+mov   ax, 0F030h
 inc   cx
-cmp   ax, word ptr [bp - 0Eh]
+compare_instruction:
+cmp   ax, 0F030h
 jge   jumpexit_restore_dx
 jmp   draw_next_column
 jumpexit_restore_dx:
