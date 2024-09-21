@@ -169,8 +169,6 @@ mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels + 1], al
 shr   cx, 1
 shr   cx, 1
 shr   cx, 1
-
-
 je    done_drawing_8_pixels
 
 
@@ -267,6 +265,9 @@ jmp   donemarkingrect
 ENDP
 
 
+jumptoexitdirect:
+jmp   jumpexitdirect
+
 PROC V_DrawPatchDirect_ FAR
 PUBLIC V_DrawPatchDirect_
 
@@ -274,7 +275,6 @@ PUBLIC V_DrawPatchDirect_
 ; dx is y
 ; ax is x
 
-;bp  - 2 is ax  (x)
 
 push  si
 push  di
@@ -291,7 +291,6 @@ mov   es, cx
 sub   ax, word ptr es:[bx + 4]
 sub   dx, word ptr es:[bx + 6]
 mov   si, ax  ; store x
-mov   ax, (SCREENWIDTH / 4)
 mul   dx
 
 mov   word ptr cs:[SELFMODIFY_retrievepatchoffset+1], bx
@@ -300,9 +299,7 @@ mov   di, bx
 les   bx, dword ptr [_destscreen]
 mov   ds, cx
 
-   
-add   bx, ax
-mov   ax, si
+add   bx, (SCREENWIDTH / 4)
 
 ;	desttop = (byte __far*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
 ;   es:bx is desttop
@@ -351,42 +348,75 @@ mov   dx, si  ; store x in dx
 add   bx, word ptr ds:[di + 8]
 cmp   byte ptr ds:[bx], 0FFh
 je    check_desttop_increment
-jump4:
+draw_next_column_patch_direct:
 mov   al, byte ptr ds:[bx]
 mov   ah, (SCREENWIDTH / 4)
 mul   ah
 SELFMODIFY_offset_set_di:
 mov   di, 0F030h
 add   di, ax
-mov   cl, byte ptr ds:[bx + 1]
-lea   si, [bx + 3]
+mov   cl, byte ptr ds:[bx + 1]  ; get col length
 xor   ch, ch
-mov   ax,  (SCREENWIDTH / 4) - 1
-draw_next_pixel:
+mov   si, cx
+and   si, 0007h
+mov   al, byte ptr ss:[_jump_mult_table_3 + si]
+mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels_direct + 1], al
+mov   ax,  ((SCREENWIDTH / 4) - 1)
+lea   si, [bx + 3]
+shr   cx, 1
+shr   cx, 1
+shr   cx, 1
+je    done_drawing_8_pixels_direct
 
-;	    while (count--)  { 
- 
-;			*dest = *source;
-;			source++;
-;			dest +=  (SCREENWIDTH / 4);
+
+draw_8_more_pixels_direct:
 
 movsb
 add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+loop draw_8_more_pixels_direct
 
-loop   draw_next_pixel
-jmp    done_drawing_column
+done_drawing_8_pixels_direct:
 
+SELFMODIFY_offset_draw_remaining_pixels_direct:
+db 0EBh, 00h		; jump rel8
 
-jumptoexitdirect:
-jmp   jumpexitdirect
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+movsb
+add   di, ax
+
 
 done_drawing_column:
 mov   al, byte ptr ds:[bx + 1]
-xor   ah, ah
+; ah is 0
 add   bx, ax
 add   bx, 4
 cmp   byte ptr ds:[bx], 0FFh
-jne   jump4
+jne   draw_next_column_patch_direct
 check_desttop_increment:
 
 ;	if ( ((++x)&3) == 0 ) 
