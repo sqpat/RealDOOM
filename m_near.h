@@ -256,6 +256,7 @@ extern int8_t               active_visplanes[5];
 extern byte                 cachedbyteheight;
 extern uint8_t              cachedcol;
 extern int16_t              setval;
+extern uint16_t             mult_table_320[200];
 extern int16_t              lightmult48lookup[16];
 extern int16_t              lightshift7lookup[16];
 extern segment_t            pagesegments[4];

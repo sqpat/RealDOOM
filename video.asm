@@ -15,7 +15,7 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
-	.286
+	.8086
 
 
 INCLUDE defs.inc
@@ -25,6 +25,7 @@ INCLUDE defs.inc
 
 EXTRN	_skipdirectdraws:BYTE
 EXTRN   _screen_segments:WORD
+EXTRN   _mult_table_320:WORD
 
 .CODE
 EXTRN	V_MarkRect_:PROC
@@ -78,9 +79,10 @@ xor   dh, dh
 
 ; si = y * screenwidth
 
-
+mov    si, dx
+sal    si, 1
+mov    si, word ptr ss:[_mult_table_320 + si]
 mov    di, ax
-imul   si, dx, SCREENWIDTH
 
 
 add   si, di
@@ -97,21 +99,18 @@ donemarkingrect:
 
 
 
-
 ; load patch addr again
-mov   cx, si
-mov   si, OFFSET setup_ax_instruction + 1
-mov   word ptr cs:[si], 0
+mov   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2], si
+
+mov   word ptr cs:[OFFSET SELFMODIFY_setup_ax_instruction + 1], 0
 
 mov   bx, word ptr [bp + 0Ch]
 
 ;    w = (patch->width); 
 mov   ax, word ptr ds:[bx]
 
-mov   si, OFFSET compare_instruction + 1
-mov   cs:[si], ax  ; store width
-mov   si, OFFSET setup_bx_instruction + 1
-mov   cs:[si], bx  ; store column
+mov   word ptr cs:[OFFSET SELFMODIFY_compare_instruction + 1], ax  ; store width
+mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction + 1], bx  ; store column
 test  ax, ax
 jle   jumptoexit
 push dx
@@ -123,7 +122,9 @@ draw_next_column:
 ;		column = (column_t __far *)((byte __far*)patch + (patch->columnofs[col])); 
 
 ; ds:si is patch segment
-setup_bx_instruction:
+; es:di is screen pixel target
+
+SELFMODIFY_setup_bx_instruction:
 mov   bx, 0F030h               ; F030h is target for self modifying code     
 ; grab patch offset into di
 mov   si, word ptr [bp + 0Ch]
@@ -141,24 +142,36 @@ jmp   column_done
 draw_next_column_patch:
 
 
+; grab both column fields at once. si + 0 is topdelta. si + 1 is column length
 
-mov   al, byte ptr ds:[si]
-xor   ah, ah
-imul   ax, ax, SCREENWIDTH  ; column->topdelta * SCREENWIDTH
+mov   ax, word ptr ds:[si]
 
-mov   bl, byte ptr ds:[si + 1]   ; grab column length
+mov   bl, al
+mov   cl, ah
 xor   bh, bh
+xor   ch, ch
+sal   bx, 1
 
+mov   di, word ptr ss:[_mult_table_320 + bx]
 
-xchg  bx, ax
-add   bx, cx   ; retrieve offset
+SELFMODIFY_offset_add_di:
+add   di, 0F030h   ; retrieve offset
+
 
 add   si, 3
-sub   ax, 4
 
-xchg  bx, di
-test  ax, ax
-jl    done_drawing_4_pixels
+
+mov   ax, cx
+sar   cx, 1
+sar   cx, 1
+
+and   al, 03h
+
+test  cx, cx
+je    done_drawing_4_pixels
+
+
+; bx, cx unused...
 
 ;  todo full unroll
 
@@ -173,14 +186,12 @@ add di, dx
 movsb
 add di, dx
 
-sub   ax, 4
-test  ax, ax
-jge   draw_4_more_pixels
+loop   draw_4_more_pixels
 
 ; todo: variable jmp here
 
 done_drawing_4_pixels:
-add   ax, 4
+test  ax, ax
 je    done_drawing_pixels
 
 draw_one_more_pixel:
@@ -203,15 +214,13 @@ xchg  di, bx
 je    column_done
 jmp   draw_next_column_patch
 column_done:
-mov   bx, OFFSET setup_ax_instruction + 1
-inc   word ptr cs:[bx]
-mov   bx, OFFSET setup_bx_instruction + 1
-
-add   word ptr cs:[bx], 4
-setup_ax_instruction:
+inc   word ptr cs:[OFFSET SELFMODIFY_setup_ax_instruction + 1]
+add   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction + 1], 4
+SELFMODIFY_setup_ax_instruction:
 mov   ax, 0F030h		; F030h is target for self modifying code
-inc   cx
-compare_instruction:
+inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2]
+
+SELFMODIFY_compare_instruction:
 cmp   ax, 0F030h		; F030h is target for self modifying code
 jge   jumpexit_restore_dx
 jmp   draw_next_column
