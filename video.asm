@@ -294,7 +294,6 @@ mov   bp, sp
 sub   sp, 010h
 push  ax
 push  bx
-push  cx
 mov   es, cx
 
 ;    y -= (patch->topoffset); 
@@ -348,27 +347,27 @@ mov   ax, 1
 
 mov   dx, 03C5h
 and   cl, 3
-mov   bx, word ptr [bp - 8]
+mov   di, word ptr [bp - 8]
 shl   ax, cl
-mov   di, word ptr [bp - 014h]
+mov   bx, word ptr [bp - 014h]
 
 
 
 out   dx, al
-add   di, word ptr ds:[bx + 8]
-cmp   byte ptr ds:[di], 0FFh
+add   bx, word ptr ds:[di + 8]
+cmp   byte ptr ds:[bx], 0FFh
 je    check_desttop_increment
 jump4:
-mov   al, byte ptr ds:[di]
-xor   ah, ah
-imul  ax, ax, (SCREENWIDTH / 4)
-mov   bx, word ptr [bp - 6]
-add   bx, ax
-mov   al, byte ptr ds:[di + 1]
-lea   si, [di + 3]
-xor   ah, ah
-draw_next_column_patch_direct:
-dec   ax
+mov   al, byte ptr ds:[bx]
+mov   ah, (SCREENWIDTH / 4)
+mul   ah
+mov   di, word ptr [bp - 6]
+add   di, ax
+mov   cl, byte ptr ds:[bx + 1]
+lea   si, [bx + 3]
+xor   ch, ch
+mov   dx,  (SCREENWIDTH / 4) - 1
+draw_next_pixel:
 
 ;	    while (count--)  { 
  
@@ -376,24 +375,22 @@ dec   ax
 ;			source++;
 ;			dest +=  (SCREENWIDTH / 4);
 
-cmp   ax, 0FFFFh
-je    done_drawing_column
-add   bx, (SCREENWIDTH / 4)
-mov   dl, byte ptr ds:[si]
-inc   si
-mov   byte ptr es:[bx - (SCREENWIDTH / 4)], dl
-jmp   draw_next_column_patch_direct
+movsb
+add   di, dx
+
+loop   draw_next_pixel
+jmp    done_drawing_column
 
 
 jumptoexitdirect:
 jmp   jumpexitdirect
 
 done_drawing_column:
-mov   al, byte ptr ds:[di + 1]
+mov   al, byte ptr ds:[bx + 1]
 xor   ah, ah
-add   di, ax
-add   di, 4
-cmp   byte ptr ds:[di], 0FFh
+add   bx, ax
+add   bx, 4
+cmp   byte ptr ds:[bx], 0FFh
 jne   jump4
 check_desttop_increment:
 
