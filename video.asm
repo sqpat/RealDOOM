@@ -15,7 +15,7 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
-	.286
+	.8086
 
 
 INCLUDE defs.inc
@@ -274,26 +274,14 @@ PUBLIC V_DrawPatchDirect_
 ; dx is y
 ; ax is x
 
-;REMOVED bp  - 002h a segment?
-;REMOVED bp  - 004h desttop segment
-;bp  - 006h desttop offset
-;bp  - 008h column offset(?)
-;bp  - 00Ah is col (?)
-;bp  - 00Ch is w
-;REMOVED bp  - 00Eh column segment (?)
-
-;REMOVED bp  - 010h is a segment?
-;bp  - 012h is ax  (x)
-;bp  - 014h is bx  (patch offset)
-;bp  - 016h is cx  (patch seg)
+;bp  - 2 is ax  (x)
 
 push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 010h
 push  ax
-push  bx
+
 mov   es, cx
 
 ;    y -= (patch->topoffset); 
@@ -304,22 +292,25 @@ mov   es, cx
 
 mov   ax, word ptr es:[bx + 4]
 sub   dx, word ptr es:[bx + 6]
-sub   word ptr [bp - 012h], ax
+sub   word ptr [bp - 2], ax
 mov   ax, (SCREENWIDTH / 4)
 mul   dx
 
+mov   word ptr cs:[SELFMODIFY_retrievepatchoffset+1], bx
+; load destscreen into es:bx to calc desttop
+mov   di, bx
 les   bx, dword ptr [_destscreen]
 mov   ds, cx
 
-cwd   
+   
 add   bx, ax
-mov   ax, word ptr [bp - 012h]
+mov   ax, word ptr [bp - 2]
 
 ;	desttop = (byte __far*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
 ;   es:bx is desttop
 
-sar   ax, 2
-cwd   
+sar   ax, 1
+sar   ax, 1
 
 ;    w = (patch->width); 
 ;    for ( col = 0 ; col<w ; col++) 
@@ -327,29 +318,33 @@ cwd
 
 ;	column = (column_t  __far*)((byte  __far*)patch + (patch->columnofs[col]));
 
-mov   word ptr [bp - 0Ah], 0
+mov   word ptr cs:[SELFMODIFY_col_increment+1], 0
+
 add   ax, bx
-mov   bx, word ptr [bp - 014h]
-mov   word ptr [bp - 6], ax
-mov   ax, word ptr ds:[bx]  ; get width
-mov   word ptr [bp - 0Ch], ax
+
+mov   word ptr cs:[SELFMODIFY_offset_set_di+1], ax
+mov   ax, word ptr ds:[di]  ; get width
+mov   word ptr cs:[SELFMODIFY_compare_instruction_direct + 1], ax
 test  ax, ax
 jle   jumptoexitdirect
-mov   word ptr [bp - 8], bx
+mov   word ptr cs:[SELFMODIFY_retrievenextcoloffset + 1], di
 
 draw_next_column_direct:
 
 ;		outp (SC_INDEX+1,1<<(x&3));
+inc   word ptr cs:[SELFMODIFY_col_increment+1]    ; col++
 
-mov   cx, word ptr [bp - 012h] ; retrieve x
+mov   cx, word ptr [bp - 2] ; retrieve x
 mov   ax, 1
 
 
 mov   dx, 03C5h
 and   cl, 3
-mov   di, word ptr [bp - 8]
+SELFMODIFY_retrievenextcoloffset:
+mov   di, 0F030h
 shl   ax, cl
-mov   bx, word ptr [bp - 014h]
+SELFMODIFY_retrievepatchoffset:
+mov   bx, 0F030h
 
 
 
@@ -361,7 +356,8 @@ jump4:
 mov   al, byte ptr ds:[bx]
 mov   ah, (SCREENWIDTH / 4)
 mul   ah
-mov   di, word ptr [bp - 6]
+SELFMODIFY_offset_set_di:
+mov   di, 0F030h
 add   di, ax
 mov   cl, byte ptr ds:[bx + 1]
 lea   si, [bx + 3]
@@ -399,15 +395,16 @@ check_desttop_increment:
 ;    }
 
 
-inc   word ptr [bp - 012h]
-test  byte ptr [bp - 012h], 3
+inc   word ptr [bp - 2]
+test  byte ptr [bp - 2], 3
 jne   dont_increment_desttop
-inc   word ptr [bp - 6]
+inc   word ptr cs:[SELFMODIFY_offset_set_di+1]
 dont_increment_desttop:
-inc   word ptr [bp - 0Ah]    ; col++
-mov   ax, word ptr [bp - 0Ah]
-add   word ptr [bp - 8], 4
-cmp   ax, word ptr [bp - 0Ch]
+SELFMODIFY_col_increment:
+mov   ax, 0F030h
+add   word ptr cs:[SELFMODIFY_retrievenextcoloffset + 1], 4
+SELFMODIFY_compare_instruction_direct:
+cmp   ax, 0F030h
 jge   jumpexitdirect
 jmp   draw_next_column_direct
 jumpexitdirect:
