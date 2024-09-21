@@ -192,8 +192,9 @@ MOV   ES, DX
 sal   AL, 1					; convert index to  a word lookup index
 xchg  ax, SI
 
-lods  WORD PTR ES:[SI]		; <--- this doesnt work, becomes ES:SI, tasm doesnt warn you. left as a warning for future generations
+lods  WORD PTR ES:[SI]	
 
+; todo: move offset to es:[offset]
 MOV   DI, SPANFUNC_JUMP_OFFSET
 stos  WORD PTR es:[di]       ;
 

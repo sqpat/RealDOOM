@@ -25,7 +25,7 @@ INCLUDE defs.inc
 
 EXTRN	_skipdirectdraws:BYTE
 EXTRN   _screen_segments:WORD
-EXTRN   _mult_table_320:WORD
+EXTRN   _jump_mult_table_3:BYTE
 
 .CODE
 EXTRN	V_MarkRect_:PROC
@@ -54,6 +54,8 @@ push  si
 push  di
 push  bp
 mov   bp, sp
+push  dx
+
 mov   cl, bl   ; do push?
 ; bx = 2*ax for word lookup
 sal   bl, 1
@@ -80,10 +82,11 @@ xor   dh, dh
 ; si = y * screenwidth
 
 mov    si, dx
-sal    si, 1
-mov    si, word ptr ss:[_mult_table_320 + si]
 mov    di, ax
-
+mov    ax, SCREENWIDTH
+mul    dx
+mov    dx, si
+mov    si, ax
 
 add   si, di
 sub   si, word ptr ds:[bx + 4]
@@ -101,23 +104,21 @@ donemarkingrect:
 
 ; load patch addr again
 mov   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2], si
-
-mov   word ptr cs:[OFFSET SELFMODIFY_setup_ax_instruction + 1], 0
-
 mov   bx, word ptr [bp + 0Ch]
 
 ;    w = (patch->width); 
 mov   ax, word ptr ds:[bx]
 
+add   bx, 8
 mov   word ptr cs:[OFFSET SELFMODIFY_compare_instruction + 1], ax  ; store width
 mov   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction + 1], bx  ; store column
 test  ax, ax
 jle   jumptoexit
-push dx
-mov  dx, SCREENWIDTH-1
 ; store patch segment (???) remove;
 
 draw_next_column:
+
+dec   word ptr cs:[OFFSET SELFMODIFY_compare_instruction + 1] ; decrement count ahead of time
 
 ;		column = (column_t __far *)((byte __far*)patch + (patch->columnofs[col])); 
 
@@ -129,7 +130,7 @@ mov   bx, 0F030h               ; F030h is target for self modifying code
 ; grab patch offset into di
 mov   si, word ptr [bp + 0Ch]
 ; si equals colofs lookup
-add   si, word ptr ds:[bx + 8]
+add   si, word ptr ds:[bx]
 
 ;		while (column->topdelta != 0xff )  
 ; check topdelta for 0xFFh
@@ -143,39 +144,40 @@ draw_next_column_patch:
 
 
 ; grab both column fields at once. si + 0 is topdelta. si + 1 is column length
-
 mov   ax, word ptr ds:[si]
 
-mov   bl, al
 mov   cl, ah
-xor   bh, bh
-xor   ch, ch
-sal   bx, 1
+xor   ah, ah      ; al contains topdelta
+mov   di, SCREENWIDTH
+mul   di
+mov   dx, di
+mov   di, ax
+dec   dx
 
-mov   di, word ptr ss:[_mult_table_320 + bx]
 
 SELFMODIFY_offset_add_di:
 add   di, 0F030h   ; retrieve offset
 
 
 add   si, 3
+; figure out loop counts
+mov   bl, cl
+and   bx, 0007h
+mov   al, byte ptr ss:[_jump_mult_table_3 + bx]
+mov   byte ptr cs:[SELFMODIFY_offset_draw_remaining_pixels + 1], al
+shr   cx, 1
+shr   cx, 1
+shr   cx, 1
 
 
-mov   ax, cx
-sar   cx, 1
-sar   cx, 1
-
-and   al, 03h
-
-test  cx, cx
-je    done_drawing_4_pixels
+je    done_drawing_8_pixels
 
 
 ; bx, cx unused...
 
 ;  todo full unroll
 
-draw_4_more_pixels:
+draw_8_more_pixels:
 
 movsb
 add di, dx
@@ -185,20 +187,40 @@ movsb
 add di, dx
 movsb
 add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
 
-loop   draw_4_more_pixels
+loop   draw_8_more_pixels
 
 ; todo: variable jmp here
 
-done_drawing_4_pixels:
-test  ax, ax
-je    done_drawing_pixels
+done_drawing_8_pixels:
 
-draw_one_more_pixel:
+SELFMODIFY_offset_draw_remaining_pixels:
+db 0EBh, 00h		; jump rel8
+
+
 movsb
 add di, dx
-dec   ax
-jne   draw_one_more_pixel
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+movsb
+add di, dx
+
 
 ; restore stuff we changed above
 done_drawing_pixels:
@@ -207,26 +229,19 @@ check_for_next_column:
 inc si
 cmp   byte ptr ds:[si], 0FFh
 
-; restore flags for next iteration. does not modify above flag
-xchg  di, bx
-
 
 je    column_done
 jmp   draw_next_column_patch
 column_done:
-inc   word ptr cs:[OFFSET SELFMODIFY_setup_ax_instruction + 1]
 add   word ptr cs:[OFFSET SELFMODIFY_setup_bx_instruction + 1], 4
-SELFMODIFY_setup_ax_instruction:
-mov   ax, 0F030h		; F030h is target for self modifying code
 inc   word ptr cs:[OFFSET SELFMODIFY_offset_add_di + 2]
-
+xor   ax, ax
 SELFMODIFY_compare_instruction:
-cmp   ax, 0F030h		; F030h is target for self modifying code
-jge   jumpexit_restore_dx
+cmp   ax, 0F030h		; compare to width
+jge   jumpexit
 jmp   draw_next_column
-jumpexit_restore_dx:
-pop   dx
 jumpexit:
+pop   dx
 mov   ax, ss
 mov   ds, ax
 mov   sp, bp
