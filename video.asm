@@ -54,6 +54,7 @@ push  di
 push  bp
 mov   bp, sp
 mov   cl, bl   ; do push?
+; bx = 2*ax for word lookup
 sal   bl, 1
 xor   bh, bh
 mov   es, word ptr ds:[bx + _screen_segments]
@@ -69,7 +70,7 @@ doing_draws:
 ;    x -= (patch->leftoffset); 
 ;	offset = y * SCREENWIDTH + x;
 
-;bp +0ch = patch dword..
+; load patch
 
 lds   bx, dword ptr [bp + 0Ch]
 sub   dl, byte ptr ds:[bx + 6]
@@ -95,19 +96,17 @@ donemarkingrect:
 ; 	desttop = MK_FP(screen_segments[scrn], offset); 
 
 
-; bx = 2*ax for word lookup
 
 
 ; load patch addr again
 mov   cx, si
 mov   si, OFFSET setup_ax_instruction + 1
-mov   cs:[si], 0
+mov   word ptr cs:[si], 0
 
 mov   bx, word ptr [bp + 0Ch]
 
 ;    w = (patch->width); 
 mov   ax, word ptr ds:[bx]
-;lodsw
 
 mov   si, OFFSET compare_instruction + 1
 mov   cs:[si], ax  ; store width
@@ -125,7 +124,7 @@ draw_next_column:
 
 ; ds:si is patch segment
 setup_bx_instruction:
-mov   bx, 0F030h;
+mov   bx, 0F030h               ; F030h is target for self modifying code     
 ; grab patch offset into di
 mov   si, word ptr [bp + 0Ch]
 ; si equals colofs lookup
@@ -210,10 +209,10 @@ mov   bx, OFFSET setup_bx_instruction + 1
 
 add   word ptr cs:[bx], 4
 setup_ax_instruction:
-mov   ax, 0F030h
+mov   ax, 0F030h		; F030h is target for self modifying code
 inc   cx
 compare_instruction:
-cmp   ax, 0F030h
+cmp   ax, 0F030h		; F030h is target for self modifying code
 jge   jumpexit_restore_dx
 jmp   draw_next_column
 jumpexit_restore_dx:
