@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/09/21 15:26:33
+Created on:       24/09/21 15:52:54
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -491,9 +491,9 @@ Module: m_menu.obj(C:\REALDOOM\m_menu.c)
 2479:1d68+     _whichSkull
 2479:1d6a+     _currentMenu
 2479:1d6c+     _skullAnimCounter
-2479:1d6e+     _messageLastMenuActive
-2479:1d70+     _saveStringEnter
-2479:1d72+     _itemOn
+2479:1d6e+     _itemOn
+2479:1d70+     _messageLastMenuActive
+2479:1d72+     _saveStringEnter
 2479:1d74+     _saveCharIndex
 2479:1d76+     _messageRoutine
 2479:1d78+     _saveSlot

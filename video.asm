@@ -275,6 +275,7 @@ PUBLIC V_DrawPatchDirect_
 ; dx is y
 ; ax is x
 
+;bp  - 2 is ax  (x)
 
 push  si
 push  di
@@ -291,6 +292,7 @@ mov   es, cx
 sub   ax, word ptr es:[bx + 4]
 sub   dx, word ptr es:[bx + 6]
 mov   si, ax  ; store x
+mov   ax, (SCREENWIDTH / 4)
 mul   dx
 
 mov   word ptr cs:[SELFMODIFY_retrievepatchoffset+1], bx
@@ -299,7 +301,9 @@ mov   di, bx
 les   bx, dword ptr [_destscreen]
 mov   ds, cx
 
-add   bx, (SCREENWIDTH / 4)
+   
+add   bx, ax
+mov   ax, si
 
 ;	desttop = (byte __far*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
 ;   es:bx is desttop
@@ -357,6 +361,7 @@ mov   di, 0F030h
 add   di, ax
 mov   cl, byte ptr ds:[bx + 1]  ; get col length
 xor   ch, ch
+;    ch is 0
 mov   si, cx
 and   si, 0007h
 mov   al, byte ptr ss:[_jump_mult_table_3 + si]
