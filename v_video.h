@@ -65,7 +65,7 @@ extern	uint8_t	usegamma;
 //void V_Init (void);
 
 
-void V_CopyRect ( uint16_t srcx, uint16_t srcy, uint16_t width, uint16_t height, int16_t destx, int16_t desty);
+void  V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint16_t height);
 void V_DrawFullscreenPatch ( int8_t __near* texname, int8_t screen) ;
 
 /*

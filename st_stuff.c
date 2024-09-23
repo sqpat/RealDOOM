@@ -247,6 +247,7 @@ cheatseq_t      cheat_mypos = { cheat_mypos_seq, 0 };
 // 
 extern int8_t*    mapnames[];
 
+boolean do_st_refresh;
 
 //
 // STATUS BAR CODE
@@ -256,7 +257,8 @@ void __near ST_refreshBackground(void) {
 
     if (st_statusbaron) {
         V_DrawPatch(ST_X, 0, BG, (patch_t __far*)sbar_patch);
-        V_CopyRect(ST_X, 0, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
+        V_MarkRect (ST_X, ST_Y, ST_WIDTH, ST_HEIGHT); 
+        V_CopyRect(ST_X, ST_Y*SCREENWIDTH+ST_X, ST_WIDTH, ST_HEIGHT);
     }
 
 }
@@ -709,13 +711,15 @@ void __near STlib_updateflag() {
 }
 
 
-void __near STlib_updateMultIcon ( st_multicon_t __near* mi, boolean  refresh, int16_t inum, boolean        is_binicon) {
+void __near STlib_updateMultIcon ( st_multicon_t __near* mi, int16_t inum, boolean        is_binicon) {
     int16_t            w;
     int16_t            h;
     int16_t            x;
     int16_t            y;
     patch_t __far*    old;
-    if ((mi->oldinum != inum || refresh) && (inum != -1)) {
+    uint16_t offset;
+
+    if ((mi->oldinum != inum || do_st_refresh) && (inum != -1)) {
         STlib_updateflag();
         if (!is_binicon && mi->oldinum != -1) {
             old = (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, mi->patch_offset[mi->oldinum]));
@@ -729,7 +733,10 @@ void __near STlib_updateMultIcon ( st_multicon_t __near* mi, boolean  refresh, i
                 I_Error("updateMultIcon: y - ST_Y < 0");
             }
 #endif
-            V_CopyRect(x, y - ST_Y,   w, h, x, y);
+
+            V_MarkRect (x, y, w, h); 
+            offset = x+y*SCREENWIDTH;
+            V_CopyRect(offset - (ST_Y*SCREENWIDTH), offset,  w, h);
         } 
             
         // binicon only has an array length zero and inum is always 1; this inum-is_binicon
@@ -741,8 +748,9 @@ void __near STlib_updateMultIcon ( st_multicon_t __near* mi, boolean  refresh, i
 }
 
 
-void __near STlib_drawNum ( st_number_t __near*	number, boolean	refresh, int16_t num) {
-    int16_t	numdigits = number->width;
+void __near STlib_drawNum ( st_number_t __near*	number, int16_t num) {
+    uint8_t	numdigits = number->width;
+    uint8_t	digitwidth;
 	patch_t __far* p0;
 	int16_t w;
 	int16_t h;
@@ -751,7 +759,7 @@ void __near STlib_drawNum ( st_number_t __near*	number, boolean	refresh, int16_t
     int16_t	neg;
 
 	// [crispy] redraw only if necessary
-	if (number->oldnum == num && !refresh) {
+	if (number->oldnum == num && !do_st_refresh) {
 		return;
 	}
 	
@@ -777,9 +785,12 @@ void __near STlib_drawNum ( st_number_t __near*	number, boolean	refresh, int16_t
     }
 
     // clear the area
-    x = number->x - numdigits*w;
+    //digitwidth = FastMul8u8u(w,numdigits);
+    digitwidth = w * numdigits;
+    x = number->x - digitwidth;
 
-    V_CopyRect(x, number->y - ST_Y, w*numdigits, h, x, number->y);
+    V_MarkRect (x, number->y, digitwidth, h); 
+    V_CopyRect (x + SCREENWIDTH*(number->y - ST_Y), x + SCREENWIDTH*number->y, digitwidth, h);
 
     // if non-number, do not draw it
     if (num == 1994)
@@ -802,44 +813,43 @@ void __near STlib_drawNum ( st_number_t __near*	number, boolean	refresh, int16_t
 
 
 
-void __near STlib_updatePercent ( st_percent_t __near* per,int16_t refresh, int16_t value) {
-    if (refresh) {
+void __near STlib_updatePercent ( st_percent_t __near* per, int16_t value) {
+    if (do_st_refresh) {
         STlib_updateflag();
         V_DrawPatch(per->num.x, per->num.y, FG, (patch_t __far*)(MK_FP(ST_GRAPHICS_SEGMENT, per->patch_offset)));
     }
-    STlib_drawNum(&per->num, refresh, value);
+    STlib_drawNum(&per->num, value);
 }
 
-void __near ST_drawWidgets(boolean refresh) {
+void __near ST_drawWidgets() {
     int8_t i;
 
     // used by w_arms[] widgets
 
     if (st_statusbaron) {
         for (i = 0; i < 4; i++) {
-            STlib_drawNum(&w_ammo[i], refresh, player.ammo[i]);
-            STlib_drawNum(&w_maxammo[i], refresh, player.maxammo[i]);
+            STlib_drawNum(&w_ammo[i], player.ammo[i]);
+            STlib_drawNum(&w_maxammo[i], player.maxammo[i]);
         }
 
-        STlib_drawNum(&w_ready, refresh, player.ammo[weaponinfo[player.readyweapon].ammo]);
+        STlib_drawNum(&w_ready, player.ammo[weaponinfo[player.readyweapon].ammo]);
 
-        STlib_updatePercent(&w_health, refresh, player.health);
-        STlib_updatePercent(&w_armor, refresh, player.armorpoints);
-        STlib_updateMultIcon(&w_armsbg, refresh, true, true);
+        STlib_updatePercent(&w_health, player.health);
+        STlib_updatePercent(&w_armor, player.armorpoints);
+        STlib_updateMultIcon(&w_armsbg, true, true);
  
         for (i = 0; i < 6; i++) {
-            STlib_updateMultIcon(&w_arms[i], refresh, player.weaponowned[i + 1], false);
+            STlib_updateMultIcon(&w_arms[i], player.weaponowned[i + 1], false);
         }
-        STlib_updateMultIcon(&w_faces, refresh, st_faceindex, false);
+        STlib_updateMultIcon(&w_faces, st_faceindex, false);
 
         for (i = 0; i < 3; i++) {
-            STlib_updateMultIcon(&w_keyboxes[i], refresh, keyboxes[i], false);
+            STlib_updateMultIcon(&w_keyboxes[i], keyboxes[i], false);
         }
     }
 }
 
-void __near ST_Drawer(boolean fullscreen, boolean refresh)
-{
+void __near ST_Drawer(boolean fullscreen, boolean refresh) {
     st_statusbaron = (!fullscreen) || automapactive;
     st_firsttime = st_firsttime || refresh;
     updatedthisframe = false;
@@ -856,10 +866,12 @@ void __near ST_Drawer(boolean fullscreen, boolean refresh)
         ST_refreshBackground();
 
         // and refresh all widgets
-        ST_drawWidgets(true);
+        do_st_refresh = true;
+        ST_drawWidgets();
     } else {
         // Otherwise, update as little as possible
-        ST_drawWidgets(false);
+        do_st_refresh = false;
+        ST_drawWidgets();
     }
 
     if (updatedthisframe) {

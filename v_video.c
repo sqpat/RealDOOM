@@ -75,19 +75,20 @@ void __far V_MarkRect ( int16_t x, int16_t y, int16_t width, int16_t height )  {
 //
 // V_CopyRect 
 // 
-void  V_CopyRect ( uint16_t srcx, uint16_t srcy, uint16_t width, uint16_t height, int16_t destx, int16_t desty ) { 
+
+#define SCREEN4_SEGMENT 0x9C00
+#define SCREEN0_SEGMENT 0x8000
+
+void  V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint16_t height) { 
     byte __far*	src;
     byte __far*	dest;
 	if (skipdirectdraws) {
 		return;
 	}
      
-    V_MarkRect (destx, desty, width, height); 
 	 
-	src =  screen4 + ((uint16_t)SCREENWIDTH*srcy + srcx);
-	dest = screen0 + ((uint16_t)SCREENWIDTH*desty + destx);
-	//src = MK_FP(0x9000, ((uint16_t)SCREENWIDTH*srcy + srcx));
-	//dest = MK_FP(0x8000, ((uint16_t)SCREENWIDTH*desty+destx));
+	src =  MK_FP(SCREEN4_SEGMENT, srcoffset);
+	dest = MK_FP(SCREEN0_SEGMENT, destoffset);
 
     for ( ; height>0 ; height--) { 
         FAR_memcpy (dest, src, width); 
@@ -238,7 +239,6 @@ void V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
 	byte __far*	source;
 	int16_t		w;
 	patch_t __far*	patch = (patch_t __far *) (0x50000000);
-	byte __far*	patch2 = (byte __far *) (0x50008000);
  
 	int32_t    offset = 0;
 	int16_t    pageoffset = 0;
@@ -247,7 +247,7 @@ void V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
 	int16_t lump = W_GetNumForName(pagename);
 	Z_QuickMapScratch_5000();
 
-	W_CacheLumpNumDirectFragment(lump, (byte __far *)(0x50000000), 0);
+	W_CacheLumpNumDirectFragment(lump, extradata, 0);
 
 	w = (patch->width);
 
@@ -266,6 +266,7 @@ void V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
 		pageoffset = (byte  __far*)column - extradata;
 
 		if (pageoffset > 16000) {
+			byte __far*	patch2 = (byte __far *) (0x50008000);
 			offset += pageoffset;
 			W_CacheLumpNumDirectFragment(lump, patch2,  offset);
 			extradata = patch2;

@@ -133,7 +133,7 @@ uint8_t	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
 	NEWLEVELMSG - title_string_offset
 };
 
-int16_t	mapnames2[] =	// DOOM 2 map names.
+uint8_t	mapnames2[] =	// DOOM 2 map names.
 {
 	HUSTR_1 - title_string_offset,
 	HUSTR_2 - title_string_offset,
@@ -172,7 +172,7 @@ int16_t	mapnames2[] =	// DOOM 2 map names.
 };
 
 #if (EXE_VERSION >= EXE_VERSION_FINAL)
-int16_t	mapnamesp[] =	// Plutonia WAD map names.
+uint8_t	mapnamesp[] =	// Plutonia WAD map names.
 {
 	PHUSTR_1 - title_string_offset,
 	PHUSTR_2 - title_string_offset,
@@ -211,7 +211,7 @@ int16_t	mapnamesp[] =	// Plutonia WAD map names.
 };
 
 
-int16_t mapnamest[] =	// TNT WAD map names.
+uint8_t mapnamest[] =	// TNT WAD map names.
 {
 	THUSTR_1 - title_string_offset,
 	THUSTR_2 - title_string_offset,
@@ -242,7 +242,7 @@ int16_t mapnamest[] =	// TNT WAD map names.
 	THUSTR_25 - title_string_offset,
 	THUSTR_26 - title_string_offset,
 	THUSTR_27 - title_string_offset,
-	THUSTR_28v
+	THUSTR_28 - title_string_offset,
 	THUSTR_29 - title_string_offset,
 	THUSTR_30 - title_string_offset,
 	THUSTR_31 - title_string_offset,
