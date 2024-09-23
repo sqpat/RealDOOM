@@ -235,8 +235,8 @@ mline_t thintriangle_guy[] = {
 
 
 
-static int8_t 	cheating = 0;
-static int8_t 	grid = 0;
+int8_t 	cheating = 0;
+int8_t 	grid = 0;
 
 
 
@@ -245,54 +245,54 @@ static int8_t 	grid = 0;
 #define	automap_screenheight (SCREENHEIGHT - 32)
 
 
-static mpoint_t m_paninc; // how far the window pans each tic (map coords)
-static int16_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
-static int16_t 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
+mpoint_t m_paninc; // how far the window pans each tic (map coords)
+int16_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
+int16_t 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
 
-static int16_t 	screen_botleft_x, screen_botleft_y;   // LL x,y where the window is on the map (map coords)
-static int16_t 	screen_topright_x, screen_topright_y; // UR x,y where the window is on the map (map coords)
+int16_t 	screen_botleft_x, screen_botleft_y;   // LL x,y where the window is on the map (map coords)
+int16_t 	screen_topright_x, screen_topright_y; // UR x,y where the window is on the map (map coords)
 
 //
 // width/height of window on map (map coords)
 //
-static int16_t	screen_viewport_width;
-static int16_t	screen_viewport_height;
+int16_t	screen_viewport_width;
+int16_t	screen_viewport_height;
 
 // based on level size
-static int16_t 	min_level_x;
-static int16_t	min_level_y;
-static int16_t 	max_level_x;
-static int16_t	max_level_y;
+int16_t 	min_level_x;
+int16_t	min_level_y;
+int16_t 	max_level_x;
+int16_t	max_level_y;
 
 
 // based on player size
 //this is never a 32 bit level in any commercial levels..
-static uint16_t 	min_scale_mtof; // used to tell when to stop zooming out
-static fixed_t_union 	max_scale_mtof; // used to tell when to stop zooming in
+uint16_t 	min_scale_mtof; // used to tell when to stop zooming out
+fixed_t_union 	max_scale_mtof; // used to tell when to stop zooming in
 
 // old stuff for recovery later
-static int16_t old_screen_viewport_width, old_screen_viewport_height;
-static int16_t old_screen_botleft_x, old_screen_botleft_y;
+int16_t old_screen_viewport_width, old_screen_viewport_height;
+int16_t old_screen_botleft_x, old_screen_botleft_y;
 
 // old location used by the Follower routine
-static mpoint_t screen_oldloc;
+mpoint_t screen_oldloc;
 
 // used by MTOF to scale from map-to-frame-buffer coords
 
-static fixed_t_union scale_mtof;
+fixed_t_union scale_mtof;
 
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
-static fixed_t_union scale_ftom;
+fixed_t_union scale_ftom;
 
-static mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
-static int8_t markpointnum = 0; // next point to be assigned
+mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
+int8_t markpointnum = 0; // next point to be assigned
 
-static int8_t followplayer = 1; // specifies whether to follow the player around
+int8_t followplayer = 1; // specifies whether to follow the player around
 
-static uint8_t cheat_amap_seq[] = {'i', 'd', 'd', 't', 0xff};
-static cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
+uint8_t cheat_amap_seq[] = {'i', 'd', 'd', 't', 0xff};
+cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
 
-static boolean stopped = true;
+boolean stopped = true;
 
 extern boolean viewactive;
 
@@ -445,12 +445,12 @@ void __near AM_changeWindowLoc(void) {
 }
 
 
+extern boolean st_firsttime;
 //
 //
 //
 void __near AM_initVariables(void)
 {
-    static event_t st_notify = { ev_keyup, AM_MSGENTERED };
 
     automapactive = true;
 
@@ -475,7 +475,10 @@ void __near AM_initVariables(void)
     old_screen_viewport_height = screen_viewport_height;
 
     // inform the status bar of the change
-    ST_Responder(&st_notify);
+	st_gamestate = AutomapState;
+	st_firsttime = true;
+
+
 
 }
 
@@ -528,10 +531,10 @@ void __near AM_LevelInit(void) {
 //
 //
 void __far AM_Stop (void) {
-    static event_t st_notify = { 0, ev_keyup, AM_MSGEXITED };
 
     automapactive = false;
-    ST_Responder(&st_notify);
+	st_gamestate = FirstPersonState;
+
     stopped = true;
 }
 
