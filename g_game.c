@@ -985,8 +985,7 @@ void __near G_DoPlayDemo (void)
 =================== 
 */ 
 
-extern int16_t wipeduration;
-#ifdef DETAILED_BENCH_STATS
+ #ifdef DETAILED_BENCH_STATS
 
 extern uint16_t physicstics, rendertics, othertics, rendersetuptics, renderplayerviewtics, renderpostplayerviewtics;
 extern uint16_t renderplayersetuptics, renderplayerbsptics, renderplayerplanetics, renderplayermaskedtics, cachedrenderplayertics;

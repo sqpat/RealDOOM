@@ -56,47 +56,8 @@ void __far F_StartFinale(void) {
 #else
 
 
-// Stage of animation:
-//  0 = text, 1 = art screen, 2 = character cast
-int16_t		finalestage;
-
-int16_t		finalecount;
-
 #define	TEXTSPEED	3
 #define	TEXTWAIT	250
-
-int16_t	e1text = E1TEXT;
-int16_t	e2text = E2TEXT;
-int16_t	e3text = E3TEXT;
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-int8_t*	e4text = E4TEXT;
-#endif
-
-int16_t	c1text = C1TEXT;
-int16_t	c2text = C2TEXT;
-int16_t	c3text = C3TEXT;
-int16_t	c4text = C4TEXT;
-int16_t	c5text = C5TEXT;
-int16_t	c6text = C6TEXT;
-
-#if (EXE_VERSION >= EXE_VERSION_FINAL)
-int16_t	p1text = P1TEXT;
-int16_t	p2text = P2TEXT;
-int16_t	p3text = P3TEXT;
-int16_t	p4text = P4TEXT;
-int16_t	p5text = P5TEXT;
-int16_t	p6text = P6TEXT;
-
-int16_t	t1text = T1TEXT;
-int16_t	t2text = T2TEXT;
-int16_t	t3text = T3TEXT;
-int16_t	t4text = T4TEXT;
-int16_t	t5text = T5TEXT;
-int16_t	t6text = T6TEXT;
-#endif
-
-int16_t	finaletext;
-int8_t *	finaleflat;
 
 void	__near F_StartCast (void);
 void	__near F_CastTicker (void);
@@ -796,7 +757,6 @@ void __near F_BunnyScroll (void) {
     int16_t		stage;
 	int8_t  stagestring[2];
 	int32_t		totaloffset = 0;
-    static int16_t	laststage;
 	boolean	pic2 = false;
 	int32_t columnoffset = 0;
 	int16_t x;
@@ -867,7 +827,7 @@ void __near F_BunnyScroll (void) {
 	if (finalecount < 1180) {
 		W_CacheLumpNameDirect("END0", (byte __far*)patch);
 		V_DrawPatch ((SCREENWIDTH-13*8)/2, (SCREENHEIGHT-8*8)/2,0, patch);
-		laststage = 0;
+		finale_laststage = 0;
 		Z_QuickMapStatus();
 		return;
     }
@@ -875,9 +835,9 @@ void __near F_BunnyScroll (void) {
     stage = (finalecount-1180) / 5;
     if (stage > 6)
 		stage = 6;
-    if (stage > laststage) {
+    if (stage > finale_laststage) {
 		S_StartSound (NULL, sfx_pistol);
-		laststage = stage;
+		finale_laststage = stage;
     }
 
 	// max at 6.

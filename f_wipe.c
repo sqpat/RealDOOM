@@ -29,6 +29,7 @@
 #include "f_wipe.h"
 #include <dos.h>
 #include "m_memory.h"
+#include "m_near.h"
 #include <conio.h>
 
 
@@ -223,7 +224,6 @@ int16_t __far wipe_StartScreen( ) {
 
 
 
-uint16_t  wipeduration = 0;
 void __far M_Drawer (int8_t isFromWipe);
 void __far I_UpdateNoBlit(void);
 void __far I_FinishUpdate(void);

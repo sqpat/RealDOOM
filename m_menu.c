@@ -77,85 +77,33 @@ patch_t __far* M_GetMenuPatch(int16_t i);
 
 #else
 
-extern boolean          message_dontfuckwithme;
-extern uint16_t            hu_font[HU_FONTSIZE];
-
-//uint16_t menuoffsets[NUM_MENU_ITEMS];
-
-// 1 = message to be printed
-uint8_t                     messageToPrint;
-// ...and here is the message string!
-int8_t                   menu_messageString[105];
-
-// message x & y
-int16_t                     messageLastMenuActive;
-
-// timed message = no input from user
-boolean                 messageNeedsInput;
-
-void    (__near *messageRoutine)(int16_t response);
-
-
-int8_t gammamsg[5] ={
-    GAMMALVL0,
-    GAMMALVL1,
-    GAMMALVL2,
-    GAMMALVL3,
-    GAMMALVL4
-};
-
-int16_t endmsg[NUM_QUITMESSAGES] ={
-    // DOOM1
-    QUITMSG,
-    QUITMSGD11,
-    QUITMSGD12,
-    QUITMSGD13,
-    QUITMSGD14,
-    QUITMSGD15,
-    QUITMSGD16,
-    QUITMSGD17
-};
-
-int16_t endmsg2[NUM_QUITMESSAGES] ={
-    // QuitDOOM II messages
-    QUITMSG,
-    QUITMSGD21,
-    QUITMSGD22,
-    QUITMSGD23,
-    QUITMSGD24,
-    QUITMSGD25,
-    QUITMSGD26,
-    QUITMSGD27
-
-};
-
-// we are going to be entering a savegame string
-int16_t                     saveStringEnter;
-int16_t                     saveSlot;       // which slot to save in
-int16_t                     saveCharIndex;  // which char we're editing
-// old save description before edit
-int8_t                    saveOldString[SAVESTRINGSIZE];
-
 
 
 #define SKULLXOFF               -32
 #define LINEHEIGHT              16
 #define HU_FONT_SIZE            8
-extern boolean          sendpause;
-//int8_t                    savegamestrings[10*SAVESTRINGSIZE];
 
 
-int16_t           itemOn;                 // menu item skull is on
+#define sound_e_sfx_vol 0
+#define sound_e_sfx_empty1 1
+#define sound_e_music_vol 2
+#define sound_e_sfx_empty2 3
+#define sound_e_sound_end 4
 
-// 
-int16_t           skullAnimCounter;       // skull animation counter
-int16_t           whichSkull;             // which skull to draw
 
-// graphic name of skulls
-int16_t    skullName[2] = {5, 6};
 
-// current menudef
-menu_t __near* currentMenu;                          
+
+//
+// OPTIONS MENU
+//
+#define messages 1
+#define options_e_messages 1
+#define options_e_detail 2
+#define options_e_scrnsize 3
+#define options_e_mousesens 5
+
+
+                    
 
 //
 // PROTOTYPES
@@ -209,246 +157,6 @@ void __near M_StartMessage(int8_t __near * string,void __near (* routine)(int16_
 
 
 
-menuitem_t MainMenu[]={
-    {1,4,M_NewGame,'n'},
-    {1,2,M_Options,'o'},
-    {1,30,M_LoadGame,'l'},
-    {1,29,M_SaveGame,'s'},
-    // Another hickup with Special edition.
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-    {1,1,M_ReadThis,'r'},
-#else
-    {1,1,M_ReadThis2,'r'},
-#endif
-    {1,3,M_QuitDOOM,'q'}
-};
-
-menu_t  MainDef ={
-    main_end,
-    NULL,
-    MainMenu,
-    M_DrawMainMenu,
-    97,64,
-    0
-};
-
-
-//
-// EPISODE SELECT
-//
-enum{
-    ep1,
-    ep2,
-    ep3,
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-    ep4,
-#endif
-    ep_end
-} episodes_e;
-
-menuitem_t EpisodeMenu[]={
-    {1,17, M_Episode,'k'},
-    {1,18, M_Episode,'t'},
-    {1,19, M_Episode,'i'},
-#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
-    {1,46, M_Episode,'t'}
-#endif
-};
-
-menu_t  EpiDef ={
-    ep_end,             // # of menu items
-    &MainDef,           // previous menu
-    EpisodeMenu,        // menuitem_t ->
-    M_DrawEpisode,      // drawing routine ->
-    48,63,              // x,y
-    ep1                 // lastOn
-};
-
-//
-// NEW GAME
-//
-enum{
-    killthings,
-    toorough,
-    hurtme,
-    violence,
-    nightmare,
-    newg_end
-} newgame_e;
-
-menuitem_t NewGameMenu[]={
-    {1,21,       M_ChooseSkill, 'i'},
-    {1,22,       M_ChooseSkill, 'h'},
-    {1,20,        M_ChooseSkill, 'h'},
-    {1,25,       M_ChooseSkill, 'u'},
-    {1,26,       M_ChooseSkill, 'n'}
-};
-
-menu_t  NewDef ={
-    newg_end,           // # of menu items
-    &EpiDef,            // previous menu
-    NewGameMenu,        // menuitem_t ->
-    M_DrawNewGame,      // drawing routine ->
-    48,63,              // x,y
-    hurtme              // lastOn
-};
-
-
-
-//
-// OPTIONS MENU
-//
-enum{
-    endgame,
-    messages,
-    detail,
-    scrnsize,
-    option_empty1,
-    mousesens,
-    option_empty2,
-    soundvol,
-    opt_end
-} options_e;
-
-menuitem_t OptionsMenu[]={
-    {1,11,      M_EndGame,'e'},
-    {1,13,       M_ChangeMessages,'m'},
-    {1,35,      M_ChangeDetail,'g'},
-    {2,37,      M_SizeDisplay,'s'},
-    {-1,-1,0},
-    {2,32,       M_ChangeSensitivity,'m'},
-    {-1,-1,0},
-    {1,27,        M_Sound,'s'}
-};
-
-menu_t  OptionsDef ={
-    opt_end,
-    &MainDef,
-    OptionsMenu,
-    M_DrawOptions,
-    60,37,
-    0
-};
-
-//
-// Read This! MENU 1 & 2
-//
-enum{
-    rdthsempty1,
-    read1_end
-} read_e;
-
-menuitem_t ReadMenu1[] ={
-    {1,-1,M_ReadThis2,0}
-};
-
-menu_t  ReadDef1 ={
-    read1_end,
-    &MainDef,
-    ReadMenu1,
-    M_DrawReadThis1,
-    280,185,
-    0
-};
-
-enum{
-    rdthsempty2,
-    read2_end
-} read_e2;
-
-menuitem_t ReadMenu2[]={
-    {1,-1,M_FinishReadThis,0}
-};
-
-menu_t  ReadDef2 ={
-    read2_end,
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-    &ReadDef1,
-#else
-    NULL,
-#endif
-    ReadMenu2,
-#if (EXE_VERSION < EXE_VERSION_FINAL)
-    M_DrawReadThis2,
-#else
-    M_DrawReadThisRetail,
-#endif
-    330,175,
-    0
-};
-
-//
-// SOUND VOLUME MENU
-//
-enum{
-    sfx_vol,
-    sfx_empty1,
-    music_vol,
-    sfx_empty2,
-    sound_end
-} sound_e;
-
-menuitem_t SoundMenu[]={
-    {2,40,M_SfxVol,'s'},
-    {-1,-1,0},
-    {2,41,M_MusicVol,'m'},
-    {-1,-1,0}
-};
-
-menu_t  SoundDef ={
-    sound_end,
-    &OptionsDef,
-    SoundMenu,
-    M_DrawSound,
-    80,64,
-    0
-};
-
-//
-// LOAD GAME MENU
-//
-#define load_end 6
-
-menuitem_t LoadMenu[]={
-    {1,-1, M_LoadSelect,'1'},
-    {1,-1, M_LoadSelect,'2'},
-    {1,-1, M_LoadSelect,'3'},
-    {1,-1, M_LoadSelect,'4'},
-    {1,-1, M_LoadSelect,'5'},
-    {1,-1, M_LoadSelect,'6'}
-};
-
-menu_t  LoadDef ={
-    load_end,
-    &MainDef,
-    LoadMenu,
-    M_DrawLoad,
-    80,54,
-    0
-};
-
-//
-// SAVE GAME MENU
-//
-menuitem_t SaveMenu[]={
-    {1,-1, M_SaveSelect,'1'},
-    {1,-1, M_SaveSelect,'2'},
-    {1,-1, M_SaveSelect,'3'},
-    {1,-1, M_SaveSelect,'4'},
-    {1,-1, M_SaveSelect,'5'},
-    {1,-1, M_SaveSelect,'6'}
-};
-
-menu_t  SaveDef ={
-    load_end,
-    &MainDef,
-    SaveMenu,
-    M_DrawSave,
-    80,54,
-    0
-};
-
-
 patch_t __far* __near M_GetMenuPatch(int16_t i) {
     if (i >= 27){
         return (patch_t __far*)(menugraphicspage4 + menuoffsets[i]);
@@ -456,6 +164,8 @@ patch_t __far* __near M_GetMenuPatch(int16_t i) {
     return (patch_t __far*)(menugraphicspage0 + menuoffsets[i]);
 
 }
+
+#define load_end 6
 
 //
 // M_ReadSaveStrings
@@ -724,10 +434,10 @@ void __near M_DrawReadThisRetail(void){
 void __near M_DrawSound(void){
     V_DrawPatchDirect (60,38, M_GetMenuPatch(27));
 
-    M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(sfx_vol+1),
+    M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(sound_e_sfx_vol+1),
                  16,sfxVolume);
 
-    M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(music_vol+1),
+    M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(sound_e_music_vol+1),
                  16,musicVolume);
 }
 
@@ -799,7 +509,7 @@ void __near M_NewGame(int16_t choice){
 //
 //      M_Episode
 //
-int8_t     epi;
+#define diff_nightmare 4
 
 void __near M_DrawEpisode(void){
     V_DrawPatchDirect (54,38, M_GetMenuPatch(16));
@@ -809,37 +519,36 @@ void __near M_VerifyNightmare(int16_t ch){
     if (ch != 'y')
         return;
                 
-    G_DeferedInitNew(nightmare,epi+1,1);
+    G_DeferedInitNew(diff_nightmare ,menu_epi+1,1);
     // M_ClearMenus
     menuactive = 0;
 }
 
 void __near M_ChooseSkill(int16_t choice){
     int8_t temp[256];
-    if (choice == nightmare)
+    if (choice == diff_nightmare 
+)
     {
         getStringByIndex(NIGHTMARE, temp);
         M_StartMessage(temp,M_VerifyNightmare,true);
         return;
     }
         
-    G_DeferedInitNew(choice,epi+1,1);
+    G_DeferedInitNew(choice,menu_epi+1,1);
     // M_ClearMenus
     menuactive = 0;
 }
 
 void __near M_Episode(int16_t choice){
     int8_t temp[256];
-    if ( shareware
-         && choice)
-    {
+    if ( shareware && choice) {
         getStringByIndex(SWSTRING, temp);
         M_StartMessage(temp,NULL,false);
         M_SetupNextMenu(&ReadDef1);
         return;
     }
          
-    epi = choice;
+    menu_epi = choice;
     M_SetupNextMenu(&NewDef);
 }
 
@@ -848,8 +557,6 @@ void __near M_Episode(int16_t choice){
 //
 // M_Options
 //
-int8_t    detailNames[2]       = {33, 34};
-int8_t    msgNames[2]          = {15, 14};
 
 
 void __near M_DrawOptions(void) {
@@ -857,16 +564,16 @@ void __near M_DrawOptions(void) {
 
     V_DrawPatchDirect (108,15, M_GetMenuPatch(28));
         
-    V_DrawPatchDirect (OptionsDef.x + 175,OptionsDef.y+LINEHEIGHT*detail,
+    V_DrawPatchDirect (OptionsDef.x + 175,OptionsDef.y+LINEHEIGHT*options_e_detail,
         M_GetMenuPatch(detailNames[detailLevel]));
 
-    V_DrawPatchDirect (OptionsDef.x + 120,OptionsDef.y+LINEHEIGHT*messages,
+    V_DrawPatchDirect (OptionsDef.x + 120,OptionsDef.y+LINEHEIGHT*options_e_messages,
         M_GetMenuPatch(msgNames[showMessages])) ;
 
-    M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(mousesens+1),
+    M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(options_e_mousesens+1),
                  10,mouseSensitivity);
         
-    M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(scrnsize+1),
+    M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(options_e_scrnsize+1),
                  11,screenSize);
 }
 
@@ -941,31 +648,6 @@ void __near M_FinishReadThis(int16_t choice){
 
 
 
-
-//
-// M_QuitDOOM
-//
-int8_t     quitsounds[8] ={
-    sfx_pldeth,
-    sfx_dmpain,
-    sfx_popain,
-    sfx_slop,
-    sfx_telept,
-    sfx_posit1,
-    sfx_posit3,
-    sfx_sgtatk
-};
-
-int8_t     quitsounds2[8] ={
-    sfx_vilact,
-    sfx_getpow,
-    sfx_boscub,
-    sfx_slop,
-    sfx_skeswg,
-    sfx_kntdth,
-    sfx_bspact,
-    sfx_sgtatk
-};
 
 
 
@@ -1194,51 +876,49 @@ void __near M_WriteText (int16_t x, int16_t y, int8_t __far * string) {
 //
 // M_Responder
 //
+
+
+
 boolean __far M_Responder (event_t __far*  ev) {
     int16_t             ch;
     int16_t             i;
     int16_t             offset;
-    static  int16_t     mousewait = 0;
-    static  int16_t     mousey = 0;
-    static  int16_t     lasty = 0;
-    static  int16_t     mousex = 0;
-    static  int16_t     lastx = 0;
     int8_t oldtask;
     int8_t j;
 
     ch = -1;
     
-    if (ev->type == ev_mouse && mousewait < ticcount) {
-        mousey += ev->data3;
-        if (mousey < lasty-30) {
+    if (ev->type == ev_mouse && menu_mousewait < ticcount) {
+        menu_mousey += ev->data3;
+        if (menu_mousey < menu_lasty-30) {
             ch = KEY_DOWNARROW;
-            mousewait = ticcount + 5;
-            mousey = lasty -= 30;
-        } else if (mousey > lasty+30) {
+            menu_mousewait = ticcount + 5;
+            menu_mousey = menu_lasty -= 30;
+        } else if (menu_mousey > menu_lasty+30) {
             ch = KEY_UPARROW;
-            mousewait = ticcount + 5;
-            mousey = lasty += 30;
+            menu_mousewait = ticcount + 5;
+            menu_mousey = menu_lasty += 30;
         }
                 
-        mousex += ev->data2;
-        if (mousex < lastx-30) {
+        menu_mousex += ev->data2;
+        if (menu_mousex < menu_lastx-30) {
             ch = KEY_LEFTARROW;
-            mousewait = ticcount + 5;
-            mousex = lastx -= 30;
-        } else if (mousex > lastx+30) {
+            menu_mousewait = ticcount + 5;
+            menu_mousex = menu_lastx -= 30;
+        } else if (menu_mousex > menu_lastx+30) {
             ch = KEY_RIGHTARROW;
-            mousewait = ticcount + 5;
-            mousex = lastx += 30;
+            menu_mousewait = ticcount + 5;
+            mousex = menu_lastx += 30;
         }
                 
         if (ev->data1&1) {
             ch = KEY_ENTER;
-            mousewait = ticcount + 15;
+            menu_mousewait = ticcount + 15;
         }
                         
         if (ev->data1&2) {
             ch = KEY_BACKSPACE;
-            mousewait = ticcount + 15;
+            menu_mousewait = ticcount + 15;
         }
     } else {
         if (ev->type == ev_keydown) {
@@ -1358,7 +1038,7 @@ boolean __far M_Responder (event_t __far*  ev) {
           case KEY_F4:            // Sound Volume
             M_StartControlPanel ();
             currentMenu = &SoundDef;
-            itemOn = sfx_vol;
+            itemOn = sound_e_sfx_vol;
             S_StartSound(NULL,sfx_swtchn);
             return true;
                                 
@@ -1545,9 +1225,8 @@ void __near M_StartControlPanel (void) {
 // Called after the view has been rendered,
 // but before it has been blitted.
 //
+
 void __far M_Drawer (int8_t isFromWipe) {
-    static int16_t        x;
-    static int16_t        y;
     int16_t               i;
     int16_t               max;
     int8_t                string[40];
@@ -1563,7 +1242,7 @@ void __far M_Drawer (int8_t isFromWipe) {
         Z_QuickMapStatus();
 
         start = 0;
-        y = 100 - (M_StringHeight(menu_messageString)>>1);
+        menu_drawer_y = 100 - (M_StringHeight(menu_messageString)>>1);
         while(*(menu_messageString+start)) {
             for (i = 0; i < locallib_strlen(menu_messageString + start); i++) {
                 if (*(menu_messageString + start + i) == '\n') {
@@ -1579,10 +1258,10 @@ void __far M_Drawer (int8_t isFromWipe) {
                 start += i;
             }
                                 
-            x = 160 - (M_StringWidth(string)>>1);
-            M_WriteText(x,y,string);
+            menu_drawer_x = 160 - (M_StringWidth(string)>>1);
+            M_WriteText(menu_drawer_x,menu_drawer_y,string);
 
-            y += HU_FONT_SIZE;
+            menu_drawer_y += HU_FONT_SIZE;
         }
         isFromWipe ? Z_QuickMapWipe() : Z_QuickMapPhysics();
 
@@ -1599,21 +1278,21 @@ void __far M_Drawer (int8_t isFromWipe) {
     }
 
     // DRAW MENU
-    x = currentMenu->x;
-    y = currentMenu->y;
+    menu_drawer_x = currentMenu->x;
+    menu_drawer_y = currentMenu->y;
     max = currentMenu->numitems;
 
     for (i=0;i<max;i++) {
         if (currentMenu->menuitems[i].name != -1) {
-            V_DrawPatchDirect(x, y,
+            V_DrawPatchDirect(menu_drawer_x, menu_drawer_y,
                 M_GetMenuPatch(currentMenu->menuitems[i].name)) ;
         }
-        y += LINEHEIGHT;
+        menu_drawer_y += LINEHEIGHT;
     }
 
     
     // DRAW SKULL
-    V_DrawPatchDirect(x + SKULLXOFF, currentMenu->y - 5 + itemOn * LINEHEIGHT,
+    V_DrawPatchDirect(menu_drawer_x + SKULLXOFF, currentMenu->y - 5 + itemOn * LINEHEIGHT,
         M_GetMenuPatch(skullName[whichSkull])) ;
 
     isFromWipe ? Z_QuickMapWipe() : Z_QuickMapPhysics();

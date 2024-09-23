@@ -29,9 +29,12 @@
 #include "st_lib.h"
 #include "st_stuff.h"
 #include "hu_lib.h"
+#include "m_menu.h"
 
 
 
+
+#define NUM_QUITMESSAGES   8
  
 //
 // Globally visible constants.
@@ -619,3 +622,129 @@ extern uint8_t mapnamest[32];
 
 #endif
 
+
+
+
+extern int16_t		finalestage;
+
+extern int16_t		finalecount;
+
+extern int16_t 	e1text;
+extern int16_t	e2text;
+extern int16_t	e3text;
+#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+extern int8_t*	e4text = E4TEXT;
+#endif
+
+extern int16_t	c1text;
+extern int16_t	c2text;
+extern int16_t	c3text;
+extern int16_t	c4text;
+extern int16_t	c5text;
+extern int16_t	c6text;
+
+#if (EXE_VERSION >= EXE_VERSION_FINAL)
+extern int16_t	p1text;
+extern int16_t	p2text;
+extern int16_t	p3text;
+extern int16_t	p4text;
+extern int16_t	p5text;
+extern int16_t	p6text;
+
+extern int16_t	t1text;
+extern int16_t	t2text;
+extern int16_t	t3text;
+extern int16_t	t4text;
+extern int16_t	t5text;
+extern int16_t	t6text;
+#endif
+
+extern int16_t	finaletext;
+extern int8_t *	finaleflat;
+extern int8_t	finale_laststage;
+
+extern uint8_t  messageToPrint;
+extern int8_t   menu_messageString[105];
+extern int16_t  messageLastMenuActive;
+extern boolean  messageNeedsInput;
+extern void     (__near *messageRoutine)(int16_t response);
+extern int8_t   gammamsg[5];
+extern int16_t  endmsg[NUM_QUITMESSAGES];
+extern int16_t  endmsg2[NUM_QUITMESSAGES];
+extern int16_t  saveStringEnter;
+extern int16_t  saveSlot;       // which slot to save in
+extern int16_t  saveCharIndex;  // which char we're editing
+extern int8_t   saveOldString[SAVESTRINGSIZE];
+extern int16_t  itemOn;                 // menu item skull is on
+extern int16_t  skullAnimCounter;       // skull animation counter
+extern int16_t  whichSkull;             // which skull to draw
+extern int16_t  skullName[2];
+extern menu_t   __near* currentMenu;      
+
+extern int16_t     menu_mousewait;
+extern int16_t     menu_mousey;
+extern int16_t     menu_lasty;
+extern int16_t     menu_mousex;
+extern int16_t     menu_lastx;
+extern int16_t        menu_drawer_x;
+extern int16_t        menu_drawer_y;
+
+
+
+
+
+extern menuitem_t MainMenu[6];
+extern menu_t  MainDef;
+
+
+
+#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+extern menuitem_t EpisodeMenu[4];
+#else
+extern menuitem_t EpisodeMenu[3];
+#endif
+
+extern menu_t  EpiDef;
+//
+// NEW GAME
+//
+
+extern menuitem_t NewGameMenu[5];
+extern menu_t  NewDef;
+
+
+extern menuitem_t OptionsMenu[8];
+extern menu_t  OptionsDef;
+
+//
+// Read This! MENU 1 & 2
+//
+
+extern menuitem_t ReadMenu1[1];
+extern menu_t  ReadDef1;
+
+
+extern menuitem_t ReadMenu2[1];
+extern menu_t  ReadDef2;
+
+//
+// SOUND VOLUME MENU
+//
+
+extern menuitem_t SoundMenu[4];
+extern menu_t  SoundDef;
+extern menuitem_t LoadMenu[6];
+extern menu_t  LoadDef;
+extern menuitem_t SaveMenu[6];
+extern menu_t  SaveDef;
+extern int8_t     menu_epi;
+
+
+extern int8_t    detailNames[2];
+extern int8_t    msgNames[2];
+
+extern int8_t     quitsounds[8];
+
+extern int8_t     quitsounds2[8];
+
+extern uint16_t  wipeduration;

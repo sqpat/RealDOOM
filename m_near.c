@@ -31,7 +31,9 @@
 
 #include "m_memory.h"
 #include "m_near.h"
+#include "doomdef.h"
 #include "d_englsh.h"
+#include "sounds.h"
 #include <dos.h>
 
 #define title_string_offset HUSTR_E1M1
@@ -1231,3 +1233,406 @@ uint8_t mapnamest[] =	// TNT WAD map names.
 };
 #endif
 
+
+// Stage of animation:
+//  0 = text, 1 = art screen, 2 = character cast
+int16_t		finalestage;
+
+int16_t		finalecount;
+
+
+
+int16_t	e1text = E1TEXT;
+int16_t	e2text = E2TEXT;
+int16_t	e3text = E3TEXT;
+#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+int8_t*	e4text = E4TEXT;
+#endif
+
+int16_t	c1text = C1TEXT;
+int16_t	c2text = C2TEXT;
+int16_t	c3text = C3TEXT;
+int16_t	c4text = C4TEXT;
+int16_t	c5text = C5TEXT;
+int16_t	c6text = C6TEXT;
+
+#if (EXE_VERSION >= EXE_VERSION_FINAL)
+int16_t	p1text = P1TEXT;
+int16_t	p2text = P2TEXT;
+int16_t	p3text = P3TEXT;
+int16_t	p4text = P4TEXT;
+int16_t	p5text = P5TEXT;
+int16_t	p6text = P6TEXT;
+
+int16_t	t1text = T1TEXT;
+int16_t	t2text = T2TEXT;
+int16_t	t3text = T3TEXT;
+int16_t	t4text = T4TEXT;
+int16_t	t5text = T5TEXT;
+int16_t	t6text = T6TEXT;
+#endif
+
+int16_t	finaletext;
+int8_t *	finaleflat;
+int8_t	finale_laststage;
+
+
+
+// 1 = message to be printed
+uint8_t                     messageToPrint;
+// ...and here is the message string!
+int8_t                   menu_messageString[105];
+
+// message x & y
+int16_t                     messageLastMenuActive;
+
+// timed message = no input from user
+boolean                 messageNeedsInput;
+
+void    (__near *messageRoutine)(int16_t response);
+
+
+int8_t gammamsg[5] ={
+    GAMMALVL0,
+    GAMMALVL1,
+    GAMMALVL2,
+    GAMMALVL3,
+    GAMMALVL4
+};
+
+int16_t endmsg[NUM_QUITMESSAGES] ={
+    // DOOM1
+    QUITMSG,
+    QUITMSGD11,
+    QUITMSGD12,
+    QUITMSGD13,
+    QUITMSGD14,
+    QUITMSGD15,
+    QUITMSGD16,
+    QUITMSGD17
+};
+
+int16_t endmsg2[NUM_QUITMESSAGES] ={
+    // QuitDOOM II messages
+    QUITMSG,
+    QUITMSGD21,
+    QUITMSGD22,
+    QUITMSGD23,
+    QUITMSGD24,
+    QUITMSGD25,
+    QUITMSGD26,
+    QUITMSGD27
+
+};
+
+// we are going to be entering a savegame string
+int16_t                     saveStringEnter;
+int16_t                     saveSlot;       // which slot to save in
+int16_t                     saveCharIndex;  // which char we're editing
+// old save description before edit
+int8_t                    saveOldString[SAVESTRINGSIZE];
+
+
+
+//int8_t                    savegamestrings[10*SAVESTRINGSIZE];
+
+
+int16_t           itemOn;                 // menu item skull is on
+
+// 
+int16_t           skullAnimCounter;       // skull animation counter
+int16_t           whichSkull;             // which skull to draw
+
+// graphic name of skulls
+int16_t    skullName[2] = {5, 6};
+
+// current menudef
+menu_t __near* currentMenu;      
+
+int16_t     menu_mousewait = 0;
+int16_t     menu_mousey = 0;
+int16_t     menu_lasty = 0;
+int16_t     menu_mousex = 0;
+int16_t     menu_lastx = 0;
+int16_t        menu_drawer_x;
+int16_t        menu_drawer_y;
+
+
+
+void __near M_ChooseSkill(int16_t choice);
+void __near M_NewGame(int16_t choice);
+void __near M_Options(int16_t choice);
+void __near M_LoadGame(int16_t choice);
+void __near M_SaveGame(int16_t choice);
+void __near M_QuitDOOM(int16_t choice);
+void __near M_Episode(int16_t choice);
+void __near M_EndGame(int16_t choice);
+void __near M_ChangeMessages(int16_t choice);
+void __near M_ChangeDetail(int16_t choice);
+void __near M_SizeDisplay(int16_t choice);
+void __near M_Sound(int16_t choice);
+void __near M_ChangeSensitivity(int16_t choice);
+void __near M_ReadThis(int16_t choice);
+void __near M_ReadThis2(int16_t choice);
+void __near M_FinishReadThis(int16_t choice);
+void __near M_LoadSelect(int16_t choice);
+void __near M_SaveSelect(int16_t choice);
+void __near M_SfxVol(int16_t choice);
+void __near M_MusicVol(int16_t choice);
+
+
+
+#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
+void __near M_ReadThis(int16_t choice);
+#else
+void __near M_ReadThis2(int16_t choice);
+#endif
+
+void __near M_DrawMainMenu(void);
+void __near M_DrawEpisode(void);
+void __near M_DrawMainMenu(void);
+void __near M_DrawNewGame(void);
+void __near M_DrawOptions(void);
+void __near M_DrawLoad(void);
+void __near M_DrawSave(void);
+void __near M_DrawSound(void);
+void __near M_DrawReadThis1(void);
+void __near M_DrawReadThis2(void);
+
+
+
+
+menuitem_t MainMenu[]={
+    {1,4,M_NewGame,'n'},
+    {1,2,M_Options,'o'},
+    {1,30,M_LoadGame,'l'},
+    {1,29,M_SaveGame,'s'},
+    // Another hickup with Special edition.
+#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
+    {1,1,M_ReadThis,'r'},
+#else
+    {1,1,M_ReadThis2,'r'},
+#endif
+    {1,3,M_QuitDOOM,'q'}
+};
+
+menu_t  MainDef ={
+    main_end,
+    NULL,
+    MainMenu,
+    M_DrawMainMenu,
+    97,64,
+    0
+};
+
+
+#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+    #define ep_end 4
+#else 
+    #define ep_end 3
+
+#endif
+#define newg_end 5
+#define hurtme 2
+#define opt_end 8
+#define ep1 0
+#define read1_end 1
+#define read2_end 1
+#define sound_end 4
+
+
+menuitem_t EpisodeMenu[]={
+    {1,17, M_Episode,'k'},
+    {1,18, M_Episode,'t'},
+    {1,19, M_Episode,'i'},
+#if (EXE_VERSION >= EXE_VERSION_ULTIMATE)
+    {1,46, M_Episode,'t'}
+#endif
+};
+
+menu_t  EpiDef ={
+    ep_end,             // # of menu items
+    &MainDef,           // previous menu
+    EpisodeMenu,        // menuitem_t ->
+    M_DrawEpisode,      // drawing routine ->
+    48,63,              // x,y
+    ep1                 // lastOn
+};
+
+
+
+menuitem_t NewGameMenu[]={
+    {1,21,       M_ChooseSkill, 'i'},
+    {1,22,       M_ChooseSkill, 'h'},
+    {1,20,        M_ChooseSkill, 'h'},
+    {1,25,       M_ChooseSkill, 'u'},
+    {1,26,       M_ChooseSkill, 'n'}
+};
+
+menu_t  NewDef ={
+    newg_end,           // # of menu items
+    &EpiDef,            // previous menu
+    NewGameMenu,        // menuitem_t ->
+    M_DrawNewGame,      // drawing routine ->
+    48,63,              // x,y
+    hurtme              // lastOn
+};
+
+
+
+
+menuitem_t OptionsMenu[]={
+    {1,11,      M_EndGame,'e'},
+    {1,13,       M_ChangeMessages,'m'},
+    {1,35,      M_ChangeDetail,'g'},
+    {2,37,      M_SizeDisplay,'s'},
+    {-1,-1,0},
+    {2,32,       M_ChangeSensitivity,'m'},
+    {-1,-1,0},
+    {1,27,        M_Sound,'s'}
+};
+
+menu_t  OptionsDef ={
+    opt_end,
+    &MainDef,
+    OptionsMenu,
+    M_DrawOptions,
+    60,37,
+    0
+};
+
+//
+// Read This! MENU 1 & 2
+//
+
+
+menuitem_t ReadMenu1[] ={
+    {1,-1,M_ReadThis2,0}
+};
+
+menu_t  ReadDef1 ={
+    read1_end,
+    &MainDef,
+    ReadMenu1,
+    M_DrawReadThis1,
+    280,185,
+    0
+};
+
+
+menuitem_t ReadMenu2[]={
+    {1,-1,M_FinishReadThis,0}
+};
+
+menu_t  ReadDef2 ={
+    read2_end,
+#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
+    &ReadDef1,
+#else
+    NULL,
+#endif
+    ReadMenu2,
+#if (EXE_VERSION < EXE_VERSION_FINAL)
+    M_DrawReadThis2,
+#else
+    M_DrawReadThisRetail,
+#endif
+    330,175,
+    0
+};
+
+//
+// SOUND VOLUME MENU
+//
+
+menuitem_t SoundMenu[]={
+    {2,40,M_SfxVol,'s'},
+    {-1,-1,0},
+    {2,41,M_MusicVol,'m'},
+    {-1,-1,0}
+};
+
+menu_t  SoundDef ={
+    sound_end,
+    &OptionsDef,
+    SoundMenu,
+    M_DrawSound,
+    80,64,
+    0
+};
+
+//
+// LOAD GAME MENU
+//
+#define load_end 6
+
+menuitem_t LoadMenu[]={
+    {1,-1, M_LoadSelect,'1'},
+    {1,-1, M_LoadSelect,'2'},
+    {1,-1, M_LoadSelect,'3'},
+    {1,-1, M_LoadSelect,'4'},
+    {1,-1, M_LoadSelect,'5'},
+    {1,-1, M_LoadSelect,'6'}
+};
+
+menu_t  LoadDef ={
+    load_end,
+    &MainDef,
+    LoadMenu,
+    M_DrawLoad,
+    80,54,
+    0
+};
+
+//
+// SAVE GAME MENU
+//
+menuitem_t SaveMenu[]={
+    {1,-1, M_SaveSelect,'1'},
+    {1,-1, M_SaveSelect,'2'},
+    {1,-1, M_SaveSelect,'3'},
+    {1,-1, M_SaveSelect,'4'},
+    {1,-1, M_SaveSelect,'5'},
+    {1,-1, M_SaveSelect,'6'}
+};
+
+menu_t  SaveDef ={
+    load_end,
+    &MainDef,
+    SaveMenu,
+    M_DrawSave,
+    80,54,
+    0
+};
+
+int8_t     menu_epi;
+int8_t    detailNames[2]       = {33, 34};
+int8_t    msgNames[2]          = {15, 14};
+
+
+
+//
+// M_QuitDOOM
+//
+int8_t     quitsounds[8] ={
+    sfx_pldeth,
+    sfx_dmpain,
+    sfx_popain,
+    sfx_slop,
+    sfx_telept,
+    sfx_posit1,
+    sfx_posit3,
+    sfx_sgtatk
+};
+
+int8_t     quitsounds2[8] ={
+    sfx_vilact,
+    sfx_getpow,
+    sfx_boscub,
+    sfx_slop,
+    sfx_skeswg,
+    sfx_kntdth,
+    sfx_bspact,
+    sfx_sgtatk
+};
+uint16_t  wipeduration = 0;

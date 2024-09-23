@@ -35,10 +35,6 @@
 
 // Not done in french?
 
-// QuitDOOM messages
-#define NUM_QUITMESSAGES   8
-
-extern int16_t endmsg2[NUM_QUITMESSAGES];
 
 
 #endif
