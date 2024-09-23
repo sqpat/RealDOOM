@@ -106,15 +106,14 @@ file p_setup.obj
 file p_sight.obj
 
 
-#NEWSEGMENT
-#file info.obj
 
 
+# here we move _DATA before CONST and CONST2.
+ORDER      clname CODE 
+           clname FAR_DATA #segaddr=0x3C00 
+           clname BEGDATA segment _NULL segment _AFTERNULL
+           clname DATA  segment _DATA
+           clname BSS
+           clname STACK
+           clname START 
 
-# # begin overlay area
-#begin
-#	init code
-#section file d_init.obj, st_init.obj, r_init.obj, w_init.obj, i_init.obj, z_umb.obj, z_init.obj, p_init.obj
-#	ingame
-#section file am_map.obj, wi_stuff.obj, i_quit.obj, f_wipe.obj
-#end
