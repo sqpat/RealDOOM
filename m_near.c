@@ -627,3 +627,21 @@ fixed_t_union         sprtopscreen;
 
 void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  ((void    (__far *)(uint16_t, byte __far *))  (MK_FP(drawfuzzcol_area_segment, 0)));
 
+
+
+int16_t                 currentlumpindex = 0;
+//
+// R_GenerateLookup
+//
+//todo pull down below?
+uint16_t maskedcount = 0;
+// global post offset for masked texture posts
+uint16_t currentpostoffset = 0;
+uint16_t currentpostdataoffset = 0;
+uint16_t currentpixeloffset = 0;
+// global colof offset for masked texture colofs
+segment_t EMS_PAGE;
+
+
+spriteframe_t __far* p_init_sprtemp;
+int16_t             p_init_maxframe;

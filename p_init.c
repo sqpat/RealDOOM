@@ -36,6 +36,7 @@
 
 #include "doomstat.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 extern uint16_t		switchlist[MAXSWITCHES * 2];
 extern int16_t		numswitches;
@@ -288,8 +289,6 @@ void __near P_InitPicAnims(void)
 
 }
 
-spriteframe_t __far* sprtemp;
-int16_t             maxframe;
 
 //
 // R_InstallSpriteLump
@@ -310,49 +309,49 @@ __near R_InstallSpriteLump
 			"Bad frame characters in lump %i", lump);
 #endif
 
-	if ((int16_t)frame > maxframe)
-		maxframe = frame;
+	if ((int16_t)frame > p_init_maxframe)
+		p_init_maxframe = frame;
 
 	if (rotation == 0)
 	{
 		// the lump should be used for all rotations
 #ifdef CHECK_FOR_ERRORS
-		if (sprtemp[frame].rotate == false)
+		if (p_init_sprtemp[frame].rotate == false)
 			I_Error("R_InitSprites: Sprite %s frame %c has "
 				"multip rot=0 lump", spritename, 'A' + frame);
 
-		if (sprtemp[frame].rotate == true)
+		if (p_init_sprtemp[frame].rotate == true)
 			I_Error("R_InitSprites: Sprite %s frame %c has rotations "
 				"and a rot=0 lump", spritename, 'A' + frame);
 #endif
 
-		sprtemp[frame].rotate = false;
+		p_init_sprtemp[frame].rotate = false;
 		for (r = 0; r < 8; r++)
 		{
-			sprtemp[frame].lump[r] = lump - firstspritelump;
-			sprtemp[frame].flip[r] = (byte)flipped;
+			p_init_sprtemp[frame].lump[r] = lump - firstspritelump;
+			p_init_sprtemp[frame].flip[r] = (byte)flipped;
 		}
 		return;
 	}
 
 	// the lump is only used for one rotation
 #ifdef CHECK_FOR_ERRORS
-	if (sprtemp[frame].rotate == false)
+	if (p_init_sprtemp[frame].rotate == false)
 		I_Error("R_InitSprites: Sprite %s frame %c has rotations "
 			"and a rot=0 lump", spritename, 'A' + frame);
 #endif            
-	sprtemp[frame].rotate = true;
+	p_init_sprtemp[frame].rotate = true;
 
 	// make 0 based
 	rotation--;
 #ifdef CHECK_FOR_ERRORS
-	if (sprtemp[frame].lump[rotation] != -1)
+	if (p_init_sprtemp[frame].lump[rotation] != -1)
 		I_Error("R_InitSprites: Sprite %s : %c : %c "
 			"has two lumps mapped to it",
 			spritename, 'A' + frame, '1' + rotation);
 #endif            
-	sprtemp[frame].lump[rotation] = lump - firstspritelump;
-	sprtemp[frame].flip[rotation] = (byte)flipped;
+	p_init_sprtemp[frame].lump[rotation] = lump - firstspritelump;
+	p_init_sprtemp[frame].flip[rotation] = (byte)flipped;
 }
 
  
@@ -362,7 +361,6 @@ __near R_InstallSpriteLump
 
 extern int16_t             numsprites;
 
-extern int16_t             maxframe;
 
 //
 // R_InitSpriteDefs
@@ -425,7 +423,7 @@ void __near R_InitSpriteDefs()
 
 
  
-	sprtemp = (spriteframe_t __far *) &sprtempbytes;
+	p_init_sprtemp = (spriteframe_t __far *) &sprtempbytes;
 	numsprites = NUMSPRITES;
 
 	if (!numsprites)
@@ -449,9 +447,9 @@ void __near R_InitSpriteDefs()
 #ifdef CHECK_FOR_ERRORS
 		spritename = namelist[i];
 #endif
-		FAR_memset(sprtemp, -1, sizeof(sprtemp));
+		FAR_memset(p_init_sprtemp, -1, sizeof(p_init_sprtemp));
 
-		maxframe = -1;
+		p_init_maxframe = -1;
 		intname = *(int32_t __far *)namelist[i];
 
 		// scan the lumps,
@@ -482,7 +480,7 @@ void __near R_InitSpriteDefs()
 		}
 
 		// check the frames that were found for completeness
-		if (maxframe == -1)
+		if (p_init_maxframe == -1)
 		{
 			sprites[i].numframes = 0;
 			continue;
@@ -490,11 +488,11 @@ void __near R_InitSpriteDefs()
 
 
 
-		maxframe++;
+		p_init_maxframe++;
 
-		for (frame = 0; frame < maxframe; frame++)
+		for (frame = 0; frame < p_init_maxframe; frame++)
 		{
-			switch ((int16_t)sprtemp[frame].rotate)
+			switch ((int16_t)p_init_sprtemp[frame].rotate)
 			{
 			case -1:
 				// no rotations were found for that frame at all
@@ -511,7 +509,7 @@ void __near R_InitSpriteDefs()
 			case 1:
 				// must have all 8 frames
 				for (rotation = 0; rotation < 8; rotation++)
-					if (sprtemp[frame].lump[rotation] == -1) {
+					if (p_init_sprtemp[frame].lump[rotation] == -1) {
 #ifdef CHECK_FOR_ERRORS
 						I_Error("R_InitSprites: Sprite %s frame %c "
 							"is missing rotations",
@@ -523,13 +521,13 @@ void __near R_InitSpriteDefs()
 		}
 
 		// allocate space for the frames present and copy sprtemp to it
-		sprites[i].numframes = maxframe; // this  isnever used outside of here and r_setup...
+		sprites[i].numframes = p_init_maxframe; // this  isnever used outside of here and r_setup...
 		sprites[i].spriteframesOffset = currentspritememoryoffset;
-		currentspritememoryoffset += (maxframe * sizeof(spriteframe_t));
+		currentspritememoryoffset += (p_init_maxframe * sizeof(spriteframe_t));
 
 
 		spriteframes = (spriteframe_t __far*)&(spritedefs_bytes[sprites[i].spriteframesOffset]);
-		FAR_memcpy(spriteframes, sprtemp, maxframe * sizeof(spriteframe_t));
+		FAR_memcpy(spriteframes, p_init_sprtemp, p_init_maxframe * sizeof(spriteframe_t));
 
 	}
 	//I_Error("\n%u %x", currentspritememoryoffset, currentspritememoryoffset)

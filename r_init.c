@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include "m_near.h"
 #include "w_wad.h"
 
 
@@ -187,20 +188,6 @@ typedef struct
 } maptexture_t;
 
 
-
-static int16_t                 currentlumpindex = 0;
-//
-// R_GenerateLookup
-//
-//todo pull down below?
-
-uint16_t maskedcount = 0;
-
-// global post offset for masked texture posts
-static uint16_t currentpostoffset = 0;
-static uint16_t currentpostdataoffset = 0;
-// global colof offset for masked texture colofs
-static uint16_t currentpixeloffset = 0;
 
 // complicated memory situation... creating render data at 0x5000-0x6000... lump info will be in 0x4000 range...
 // use scratch at 0x7000 which is usually level data. level data is not used during init, only during setup,

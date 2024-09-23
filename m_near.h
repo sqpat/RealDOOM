@@ -22,6 +22,7 @@
 #include "dutils.h"
 
 #include "am_map.h"
+#include "m_memory.h"
 
 
 
@@ -323,3 +324,16 @@ extern int16_t __far*       mceilingclip;
 extern fixed_t_union        spryscale;
 extern fixed_t_union        sprtopscreen;
 extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);
+
+
+
+extern int16_t currentlumpindex;
+extern uint16_t maskedcount;
+extern uint16_t currentpostoffset;
+extern uint16_t currentpostdataoffset;
+extern uint16_t currentpixeloffset;
+
+extern segment_t EMS_PAGE;
+
+extern spriteframe_t __far* p_init_sprtemp;
+extern int16_t p_init_maxframe;

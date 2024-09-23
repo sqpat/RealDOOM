@@ -38,6 +38,9 @@
 
 #include <stdlib.h>
 #include "m_memory.h"
+#include "m_near.h"
+
+
 
 
 // extern byte __far* pageFrameArea;
@@ -45,7 +48,6 @@
 extern union REGS regs;
 extern struct SREGS segregs;
 
-uint16_t EMS_PAGE;
 // EMS STUFF
 
 void near doerror(int16_t errnum, int16_t errorreg)
