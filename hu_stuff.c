@@ -35,26 +35,10 @@
 // Data.
 #include "dstrings.h"
 #include "sounds.h"
+#include "m_near.h"
 
 
- 
 
-hu_textline_t	w_title;
-
-boolean		message_on;
-boolean			message_dontfuckwithme;
-boolean		message_nottobefuckedwith;
-
-hu_stext_t	w_message;
-uint8_t		message_counter;
-
-extern uint8_t		showMessages;
-extern boolean		automapactive;
-
-extern uint8_t screenblocks;
-extern boolean inhelpscreens;
-
-int8_t hudneedsupdate = 0;
 
 //todo: on automap toggles and such, set needsupdate back to 4
 
@@ -159,17 +143,8 @@ void __near HU_Ticker(void) {
 boolean __near HU_Responder(event_t __far *ev) {
 
 	boolean eatkey = false;
-	static boolean shiftdown = false;
-	static boolean altdown = false;
 
-	if (ev->data1 == KEY_RSHIFT)
-	{
-		shiftdown = ev->type == ev_keydown;
-		return false;
-	}
-	else if (ev->data1 == KEY_RALT || ev->data1 == KEY_LALT)
-	{
-		altdown = ev->type == ev_keydown;
+	if (ev->data1 == KEY_RSHIFT || ev->data1 == KEY_RALT || ev->data1 == KEY_LALT) {
 		return false;
 	}
 

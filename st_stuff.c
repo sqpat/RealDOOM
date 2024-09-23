@@ -54,200 +54,10 @@
 #include "st_stuff.h"
 #include <dos.h>
 #include "m_memory.h"
-
-
-            
-// ST_Start() has just been called
-boolean          st_firsttime;
-boolean          updatedthisframe;
-
-// used to execute ST_Init() only once
-
-// lump number for PLAYPAL
-//int16_t              lu_palette;
-//byte __far*  palettebytes;
-
-// used for timing
-
-
-// whether in automap or first-person
-st_stateenum_t   st_gamestate;
-
-// whether left-side main status bar is active
-boolean          st_statusbaron;
-
-// main bar left
-//uint16_t         sbar;
-
-// 0-9, tall numbers
-uint16_t         tallnum[10] = { 65216u, 64972u, 64636u, 64300u, 63984u, 63636u, 63296u, 63020u, 62672u, 62336u };
-
-
-// 0-9, short, yellow (,different!) numbers
-uint16_t         shortnum[10] = { 62268u, 62204u, 62128u, 62056u, 61996u, 61924u, 61852u, 61780u, 61704u, 61632u};
-
-
-// 3 key-cards, 3 skulls
-uint16_t         keys[NUMCARDS] = { 61200u, 61096u, 60992u, 60872u, 60752u, 60632u };
-
-
-// face status patches
-uint16_t         faces[ST_NUMFACES] = { 43216u,
-        42408u, 41600u, 40720u, 39836u, 38992u,
-        38176u, 37352u, 36544u, 35736u, 34936u,
-        34048u, 33164u, 32320u, 31504u, 30680u,
-        29856u, 29028u, 28204u, 27308u, 26412u,
-        25568u, 24752u, 23928u, 23088u, 22252u,
-        21420u, 20512u, 19568u, 18724u, 17908u,
-        17084u, 16240u, 15404u, 14560u, 13652u,
-        12668u, 11824u, 11008u, 10184u, 9376u,
-        8540u
-
-};
-
-// weapon ownership patches
-uint16_t arms[6][2] = { {58908u, 0}, {58836u, 0}, {58776u, 0}, {58704u, 0}, {58632u, 0}, {58560u, 0} };
-
-
-// ready-weapon widget
-st_number_t      w_ready;
-
-
-// health widget
-st_percent_t     w_health;
-
-// arms background
-st_multicon_t     w_armsbg;
-//st_binicon_t     w_armsbg;
-
-
-// weapon ownership widgets
-st_multicon_t    w_arms[6];
-
-// face status widget
-st_multicon_t    w_faces; 
-
-// keycard widgets
-st_multicon_t    w_keyboxes[3];
-
-// armor widget
-st_percent_t     w_armor;
-
-// ammo widgets
-st_number_t      w_ammo[4];
-
-// max ammo widgets
-st_number_t      w_maxammo[4]; 
+#include "m_near.h"
 
 
 
-
-// used to use appopriately pained face
-int16_t      st_oldhealth = -1;
-
-// used for evil grin
-boolean  oldweaponsowned[NUMWEAPONS]; 
-
- // count until face changes
-int16_t      st_facecount = 0;
-
-// current face index, used by w_faces
-int16_t      st_faceindex = 0;
-
-// holds key-type for each key box on bar
-int16_t      keyboxes[3];
-
-// a random number per tick
-uint8_t      st_randomnumber;
-
-
-
-// Massive bunches of cheat shit
-//  to keep it from being easy to figure them out.
-// Yeah, right...
-uint8_t   cheat_mus_seq[] = {
-    'i', 'd', 'm', 'u', 's', 1, 0, 0, 0xff
-};
-
-uint8_t   cheat_choppers_seq[] = {
-    'i', 'd', 'c', 'h', 'o', 'p', 'p', 'e', 'r', 's', 0xff // idchoppers
-};
-
-uint8_t   cheat_god_seq[] = {
-    'i', 'd', 'd', 'q', 'd', 0xff // iddqd
-};
-
-uint8_t   cheat_ammo_seq[] = {
-    'i', 'd', 'k', 'f', 'a', 0xff // idkfa
-};
-
-uint8_t   cheat_ammonokey_seq[] = {
-    'i', 'd', 'f', 'a', 0xff // idfa
-};
-
-
-// Smashing Pumpkins Into Samml Piles Of Putried Debris. 
-uint8_t   cheat_noclip_seq[] = {
-    'i', 'd', 's', 'p', 'i', // idspispopd
-    's', 'p', 'o', 'p', 'd', 0xff
-};
-
-//
-uint8_t   cheat_commercial_noclip_seq[] = {
-    'i', 'd', 'c', 'l', 'i', 'p', 0xff // idclip
-}; 
-
-
-
-uint8_t   cheat_powerup_seq[7][10] = {
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'v', 0xff}, // beholdv
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 's', 0xff}, // beholds
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'i', 0xff}, // beholdi
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'r', 0xff}, // beholdr
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'a', 0xff}, // beholda
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'l', 0xff}, // beholdl
-    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 0xff}     // behold
-};
-
-
-uint8_t   cheat_clev_seq[] = {
-    'i', 'd', 'c', 'l', 'e', 'v', 1, 0, 0, 0xff // idclev
-};
-
-
-// my position cheat
-uint8_t   cheat_mypos_seq[] = {
-    'i', 'd', 'm', 'y', 'p', 'o', 's', 0xff // idmypos   
-}; 
-
-
-// Now what?
-cheatseq_t      cheat_mus = { cheat_mus_seq, 0 };
-cheatseq_t      cheat_god = { cheat_god_seq, 0 };
-cheatseq_t      cheat_ammo = { cheat_ammo_seq, 0 };
-cheatseq_t      cheat_ammonokey = { cheat_ammonokey_seq, 0 };
-cheatseq_t      cheat_noclip = { cheat_noclip_seq, 0 };
-cheatseq_t      cheat_commercial_noclip = { cheat_commercial_noclip_seq, 0 };
-
-cheatseq_t      cheat_powerup[7] = {
-    { cheat_powerup_seq[0], 0 },
-    { cheat_powerup_seq[1], 0 },
-    { cheat_powerup_seq[2], 0 },
-    { cheat_powerup_seq[3], 0 },
-    { cheat_powerup_seq[4], 0 },
-    { cheat_powerup_seq[5], 0 },
-    { cheat_powerup_seq[6], 0 }
-};
-
-cheatseq_t      cheat_choppers = { cheat_choppers_seq, 0 };
-cheatseq_t      cheat_clev = { cheat_clev_seq, 0 };
-cheatseq_t      cheat_mypos = { cheat_mypos_seq, 0 };
-
-
-// 
-extern int8_t*    mapnames[];
-
-boolean do_st_refresh;
 
 //
 // STATUS BAR CODE
@@ -388,17 +198,16 @@ boolean __near ST_Responder (event_t __far* ev) {
           player.message = STSTR_CHOPPERS;
       } else if (cht_CheckCheat(&cheat_mypos, ev->data1)) {
           // 'mypos' for player position
-          static int8_t     buf[ST_MSGWIDTH];
 
 //todo: this      player pos  
         /*
-        sprintf(buf, "ang=0x%lx;x,y=(0x%lx,0x%lx)",
+        sprintf(st_stuff_buf, "ang=0x%lx;x,y=(0x%lx,0x%lx)",
                 playerMobj_pos->angle,
                 playerMobj_pos->x,
                 playerMobj_pos->y);
                 */
-        //memcpy(player.messagestring, buf, 40);
-        player.messagestring = buf;
+        //memcpy(player.messagestring, st_stuff_buf, 40);
+        player.messagestring = st_stuff_buf;
       }
     }
     
@@ -441,16 +250,14 @@ boolean __near ST_Responder (event_t __far* ev) {
 
 int16_t __near ST_calcPainOffset(void) {
     int16_t         health;
-    static int16_t  lastcalc;
-    static int16_t  oldhealth = -1;
     
     health = player.health > 100 ? 100 : player.health;
 
-    if (health != oldhealth) {
-        lastcalc = ST_FACESTRIDE * (((100 - health) * ST_NUMPAINFACES) / 101);
-        oldhealth = health;
+    if (health != st_calc_oldhealth) {
+        st_calc_lastcalc = ST_FACESTRIDE * (((100 - health) * ST_NUMPAINFACES) / 101);
+        st_calc_oldhealth = health;
     }
-    return lastcalc;
+    return st_calc_lastcalc;
 }
 
 
@@ -464,21 +271,19 @@ void __near ST_updateFaceWidget(void) {
     int8_t         i;
     angle_t     badguyangle;
     angle_t     diffang;
-    static int8_t  lastattackdown = -1;
-    static int8_t  priority = 0;
     boolean     doevilgrin;
     mobj_pos_t __far* plyrattacker_pos;
 
-    if (priority < 10) {
+    if (st_face_priority < 10) {
         // dead
         if (!player.health) {
-            priority = 9;
+            st_face_priority = 9;
             st_faceindex = ST_DEADFACE;
             st_facecount = 1;
         }
     }
 
-    if (priority < 9) {
+    if (st_face_priority < 9) {
         if (player.bonuscount) {
             // picking up bonus
             doevilgrin = false;
@@ -491,7 +296,7 @@ void __near ST_updateFaceWidget(void) {
             }
             if (doevilgrin)  {
                 // evil grin if just picked up weapon
-                priority = 8;
+                st_face_priority = 8;
                 st_facecount = ST_EVILGRINCOUNT;
                 st_faceindex = ST_calcPainOffset() + ST_EVILGRINOFFSET;
             }
@@ -499,12 +304,12 @@ void __near ST_updateFaceWidget(void) {
 
     }
   
-    if (priority < 8) {
+    if (st_face_priority < 8) {
         if (player.damagecount
             && player.attackerRef
             && player.attackerRef != playerMobjRef) {
             // being attacked
-            priority = 7;
+            st_face_priority = 7;
             
             if (player.health - st_oldhealth > ST_MUCHPAIN) {
                 st_facecount = ST_TURNCOUNT;
@@ -547,15 +352,15 @@ void __near ST_updateFaceWidget(void) {
         }
     }
   
-    if (priority < 7) {
+    if (st_face_priority < 7) {
         // getting hurt because of your own damn stupidity
         if (player.damagecount) {
             if (player.health - st_oldhealth > ST_MUCHPAIN) {
-                priority = 7;
+                st_face_priority = 7;
                 st_facecount = ST_TURNCOUNT;
                 st_faceindex = ST_calcPainOffset() + ST_OUCHOFFSET;
             } else {
-                priority = 6;
+                st_face_priority = 6;
                 st_facecount = ST_TURNCOUNT;
                 st_faceindex = ST_calcPainOffset() + ST_RAMPAGEOFFSET;
             }
@@ -564,27 +369,27 @@ void __near ST_updateFaceWidget(void) {
 
     }
   
-    if (priority < 6) {
+    if (st_face_priority < 6) {
         // rapid firing
         if (player.attackdown) {
-            if (lastattackdown == -1) {
-                lastattackdown = ST_RAMPAGEDELAY;
-            } else if (!--lastattackdown) {
-                priority = 5;
+            if (st_face_lastattackdown == -1) {
+                st_face_lastattackdown = ST_RAMPAGEDELAY;
+            } else if (!--st_face_lastattackdown) {
+                st_face_priority = 5;
                 st_faceindex = ST_calcPainOffset() + ST_RAMPAGEOFFSET;
                 st_facecount = 1;
-                lastattackdown = 1;
+                st_face_lastattackdown = 1;
             }
         } else {
-            lastattackdown = -1;
+            st_face_lastattackdown = -1;
         }
     }
   
-    if (priority < 5) {
+    if (st_face_priority < 5) {
         // invulnerability
         if ((player.cheats & CF_GODMODE)
             || player.powers[pw_invulnerability]) {
-            priority = 4;
+            st_face_priority = 4;
 
             st_faceindex = ST_GODFACE;
             st_facecount = 1;
@@ -597,7 +402,7 @@ void __near ST_updateFaceWidget(void) {
     if (!st_facecount) {
         st_faceindex = ST_calcPainOffset() + (st_randomnumber % 3);
         st_facecount = ST_STRAIGHTFACECOUNT;
-        priority = 0;
+        st_face_priority = 0;
     }
 
     st_facecount--;
@@ -631,7 +436,6 @@ void __near ST_Ticker (void) {
 
 }
 
-int8_t st_palette = 0;
 
 void __near ST_doPaletteStuff(void){
 

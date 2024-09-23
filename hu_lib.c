@@ -28,13 +28,12 @@
 #include "i_system.h"
 #include <dos.h>
 #include "m_memory.h"
+#include "m_near.h"
 
 
 // boolean : whether the screen is always erased
 #define noterased viewwindowx
 
-extern boolean	automapactive;	// in AM_map.c
-extern uint16_t		hu_font[HU_FONTSIZE];
 
 
 void __near HUlib_addStringToTextLine(hu_textline_t  __near*textline, int8_t* __far str){	
@@ -91,8 +90,7 @@ void __near HUlib_eraseTextLine(hu_textline_t __near* textline) {
     uint16_t			lineheight = 8; // hacked to reduce page swaps so it might not work with custom wad?
     uint16_t			y;
     uint16_t			yoffset;
-    static boolean	lastautomapactive = true;
-
+    
     // Only erases when NOT in automap and the screen is reduced,
     // and the text must either need updating or refreshing
     // (because of a recent change back from the automap)
@@ -109,14 +107,11 @@ void __near HUlib_eraseTextLine(hu_textline_t __near* textline) {
 		}
     }
 
-    lastautomapactive = automapactive;
 	if (textline->needsupdate) {
 		textline->needsupdate--;
 	}
 
 }
-extern hu_stext_t	w_message;
-extern int8_t hudneedsupdate;
 
 void __near HUlib_addMessageToSText (int8_t* msg ) {
 	hu_stext_t __near* 	stext = &w_message;

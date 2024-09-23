@@ -779,7 +779,7 @@ skytexture     9163:0000
 #define sbar  44024u
 #define sbar_patch   ((byte __far *) 0x7000ABF8)
 
-#define faceback  57152u
+//#define faceback  57152u
 #define faceback_patch  ((byte __far *) 0x7000DF40)
 
 #define armsbg_patch ((byte __far *)0x7000E668u)

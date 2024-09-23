@@ -36,6 +36,7 @@
 
 #include "p_local.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 
 #ifdef __DEMO_ONLY_BINARY

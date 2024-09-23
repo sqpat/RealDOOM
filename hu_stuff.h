@@ -22,14 +22,7 @@
 #include "r_defs.h"
 
 
-//
-// Globally visible constants.
-//
-#define HU_FONTSTART	'!'	// the first font characters
-#define HU_FONTEND	'_'	// the last font characters
 
-// Calculate # of glyphs in font.
-#define HU_FONTSIZE	(HU_FONTEND - HU_FONTSTART + 1)	
 
 #define HU_BROADCAST	5
 
@@ -54,8 +47,6 @@ void __near HU_Ticker(void);
 void __near HU_Drawer(void);
 void __near HU_Erase(void);
  
-
-extern uint16_t hu_font[HU_FONTSIZE];
 
 
 #endif

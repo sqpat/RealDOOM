@@ -26,6 +26,32 @@
 #include "m_misc.h"
 #include "d_event.h"
 #include "d_ticcmd.h"
+#include "st_lib.h"
+#include "st_stuff.h"
+#include "hu_lib.h"
+
+
+
+ 
+//
+// Globally visible constants.
+//
+#define HU_FONTSTART	'!'	// the first font characters
+#define HU_FONTEND	'_'	// the last font characters
+
+// Calculate # of glyphs in font.
+#define HU_FONTSIZE	(HU_FONTEND - HU_FONTSTART + 1)	
+
+#define ST_NUMPAINFACES         5
+#define ST_NUMSTRAIGHTFACES     3
+#define ST_NUMTURNFACES         2
+#define ST_NUMSPECIALFACES              3
+#define ST_NUMEXTRAFACES                2
+
+#define ST_FACESTRIDE \
+          (ST_NUMSTRAIGHTFACES+ST_NUMTURNFACES+ST_NUMSPECIALFACES)
+#define ST_NUMFACES \
+          (ST_FACESTRIDE*ST_NUMPAINFACES+ST_NUMEXTRAFACES)
 
 
 
@@ -507,3 +533,89 @@ extern int8_t*	defaultfile;
 
 extern int8_t*   defdemoname; 
 extern boolean         secretexit; 
+
+extern boolean          st_firsttime;
+extern boolean          updatedthisframe;
+extern st_stateenum_t   st_gamestate;
+extern boolean          st_statusbaron;
+extern uint16_t         tallnum[10];
+extern uint16_t         shortnum[10];
+
+extern uint16_t         keys[NUMCARDS];
+extern uint16_t         faces[ST_NUMFACES];
+extern uint16_t arms[6][2];
+extern st_number_t      w_ready;
+extern st_percent_t     w_health;
+extern st_multicon_t     w_armsbg;
+extern st_multicon_t    w_arms[6];
+extern st_multicon_t    w_faces; 
+extern st_multicon_t    w_keyboxes[3];
+extern st_percent_t     w_armor;
+extern st_number_t      w_ammo[4];
+extern st_number_t      w_maxammo[4]; 
+extern int16_t      st_oldhealth;
+extern boolean  oldweaponsowned[NUMWEAPONS]; 
+extern int16_t      st_facecount;
+extern int16_t      st_faceindex;
+extern int16_t      keyboxes[3];
+extern uint8_t      st_randomnumber;
+extern uint8_t   cheat_mus_seq[9];
+
+extern uint8_t   cheat_choppers_seq[11];
+
+extern uint8_t   cheat_god_seq[6];
+extern uint8_t   cheat_ammo_seq[6];
+
+extern uint8_t   cheat_ammonokey_seq[5];
+extern uint8_t   cheat_noclip_seq[11];
+extern uint8_t   cheat_commercial_noclip_seq[7];
+extern uint8_t   cheat_powerup_seq[7][10];
+extern uint8_t   cheat_clev_seq[10];
+// my position cheat
+extern uint8_t   cheat_mypos_seq[8];
+
+// Now what?
+extern cheatseq_t      cheat_mus;
+extern cheatseq_t      cheat_god;
+extern cheatseq_t      cheat_ammo;
+extern cheatseq_t      cheat_ammonokey;
+extern cheatseq_t      cheat_noclip;
+extern cheatseq_t      cheat_commercial_noclip;
+extern cheatseq_t      cheat_powerup[7];
+extern cheatseq_t      cheat_choppers;
+extern cheatseq_t      cheat_clev;
+extern cheatseq_t      cheat_mypos;
+extern boolean do_st_refresh;
+
+extern int8_t st_palette;
+
+extern int16_t  st_calc_lastcalc;
+extern int16_t  st_calc_oldhealth;
+extern int8_t  st_face_lastattackdown;
+extern int8_t  st_face_priority;
+extern int8_t     st_stuff_buf[ST_MSGWIDTH];
+
+
+
+extern hu_textline_t	w_title;
+extern boolean		message_on;
+extern boolean			message_dontfuckwithme;
+extern boolean		message_nottobefuckedwith;
+extern hu_stext_t	w_message;
+extern uint8_t		message_counter;
+extern int8_t hudneedsupdate;
+
+
+
+// offsets within segment stored
+extern uint16_t hu_font[HU_FONTSIZE];
+extern uint8_t	mapnames[45];
+
+extern uint8_t	mapnames2[32];
+
+#if (EXE_VERSION >= EXE_VERSION_FINAL)
+extern uint8_t	mapnamesp[32];
+extern uint8_t mapnamest[32];
+
+#endif
+

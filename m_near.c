@@ -31,8 +31,10 @@
 
 #include "m_memory.h"
 #include "m_near.h"
+#include "d_englsh.h"
 #include <dos.h>
 
+#define title_string_offset HUSTR_E1M1
 
 // DEFINE ALL LOCALS HERE. EXTERN IN m_near.h
 
@@ -827,3 +829,405 @@ skill_t d_skill;
 int8_t     d_episode;
 int8_t     d_map;
 boolean         secretexit; 
+
+
+
+            
+// ST_Start() has just been called
+boolean          st_firsttime;
+boolean          updatedthisframe;
+
+// used to execute ST_Init() only once
+
+// lump number for PLAYPAL
+//int16_t              lu_palette;
+//byte __far*  palettebytes;
+
+// used for timing
+
+
+// whether in automap or first-person
+st_stateenum_t   st_gamestate;
+
+// whether left-side main status bar is active
+boolean          st_statusbaron;
+
+// main bar left
+//uint16_t         sbar;
+
+// 0-9, tall numbers
+uint16_t         tallnum[10] = { 65216u, 64972u, 64636u, 64300u, 63984u, 63636u, 63296u, 63020u, 62672u, 62336u };
+
+
+// 0-9, short, yellow (,different!) numbers
+uint16_t         shortnum[10] = { 62268u, 62204u, 62128u, 62056u, 61996u, 61924u, 61852u, 61780u, 61704u, 61632u};
+
+
+// 3 key-cards, 3 skulls
+uint16_t         keys[NUMCARDS] = { 61200u, 61096u, 60992u, 60872u, 60752u, 60632u };
+
+
+// face status patches
+uint16_t         faces[ST_NUMFACES] = { 43216u,
+        42408u, 41600u, 40720u, 39836u, 38992u,
+        38176u, 37352u, 36544u, 35736u, 34936u,
+        34048u, 33164u, 32320u, 31504u, 30680u,
+        29856u, 29028u, 28204u, 27308u, 26412u,
+        25568u, 24752u, 23928u, 23088u, 22252u,
+        21420u, 20512u, 19568u, 18724u, 17908u,
+        17084u, 16240u, 15404u, 14560u, 13652u,
+        12668u, 11824u, 11008u, 10184u, 9376u,
+        8540u
+
+};
+
+// weapon ownership patches
+uint16_t arms[6][2] = { {58908u, 0}, {58836u, 0}, {58776u, 0}, {58704u, 0}, {58632u, 0}, {58560u, 0} };
+
+
+// ready-weapon widget
+st_number_t      w_ready;
+
+
+// health widget
+st_percent_t     w_health;
+
+// arms background
+st_multicon_t     w_armsbg;
+//st_binicon_t     w_armsbg;
+
+
+// weapon ownership widgets
+st_multicon_t    w_arms[6];
+
+// face status widget
+st_multicon_t    w_faces; 
+
+// keycard widgets
+st_multicon_t    w_keyboxes[3];
+
+// armor widget
+st_percent_t     w_armor;
+
+// ammo widgets
+st_number_t      w_ammo[4];
+
+// max ammo widgets
+st_number_t      w_maxammo[4]; 
+
+
+
+
+// used to use appopriately pained face
+int16_t      st_oldhealth = -1;
+
+// used for evil grin
+boolean  oldweaponsowned[NUMWEAPONS]; 
+
+ // count until face changes
+int16_t      st_facecount = 0;
+
+// current face index, used by w_faces
+int16_t      st_faceindex = 0;
+
+// holds key-type for each key box on bar
+int16_t      keyboxes[3];
+
+// a random number per tick
+uint8_t      st_randomnumber;
+
+
+
+// Massive bunches of cheat shit
+//  to keep it from being easy to figure them out.
+// Yeah, right...
+uint8_t   cheat_mus_seq[] = {
+    'i', 'd', 'm', 'u', 's', 1, 0, 0, 0xff
+};
+
+uint8_t   cheat_choppers_seq[] = {
+    'i', 'd', 'c', 'h', 'o', 'p', 'p', 'e', 'r', 's', 0xff // idchoppers
+};
+
+uint8_t   cheat_god_seq[] = {
+    'i', 'd', 'd', 'q', 'd', 0xff // iddqd
+};
+
+uint8_t   cheat_ammo_seq[] = {
+    'i', 'd', 'k', 'f', 'a', 0xff // idkfa
+};
+
+uint8_t   cheat_ammonokey_seq[] = {
+    'i', 'd', 'f', 'a', 0xff // idfa
+};
+
+
+// Smashing Pumpkins Into Samml Piles Of Putried Debris. 
+uint8_t   cheat_noclip_seq[] = {
+    'i', 'd', 's', 'p', 'i', // idspispopd
+    's', 'p', 'o', 'p', 'd', 0xff
+};
+
+//
+uint8_t   cheat_commercial_noclip_seq[] = {
+    'i', 'd', 'c', 'l', 'i', 'p', 0xff // idclip
+}; 
+
+
+
+uint8_t   cheat_powerup_seq[7][10] = {
+    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'v', 0xff}, // beholdv
+    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 's', 0xff}, // beholds
+    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'i', 0xff}, // beholdi
+    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'r', 0xff}, // beholdr
+    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'a', 0xff}, // beholda
+    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 'l', 0xff}, // beholdl
+    {'i', 'd', 'b', 'e', 'h', 'o', 'l', 'd', 0xff}     // behold
+};
+
+
+uint8_t   cheat_clev_seq[] = {
+    'i', 'd', 'c', 'l', 'e', 'v', 1, 0, 0, 0xff // idclev
+};
+
+
+// my position cheat
+uint8_t   cheat_mypos_seq[] = {
+    'i', 'd', 'm', 'y', 'p', 'o', 's', 0xff // idmypos   
+}; 
+
+
+// Now what?
+cheatseq_t      cheat_mus = { cheat_mus_seq, 0 };
+cheatseq_t      cheat_god = { cheat_god_seq, 0 };
+cheatseq_t      cheat_ammo = { cheat_ammo_seq, 0 };
+cheatseq_t      cheat_ammonokey = { cheat_ammonokey_seq, 0 };
+cheatseq_t      cheat_noclip = { cheat_noclip_seq, 0 };
+cheatseq_t      cheat_commercial_noclip = { cheat_commercial_noclip_seq, 0 };
+
+cheatseq_t      cheat_powerup[7] = {
+    { cheat_powerup_seq[0], 0 },
+    { cheat_powerup_seq[1], 0 },
+    { cheat_powerup_seq[2], 0 },
+    { cheat_powerup_seq[3], 0 },
+    { cheat_powerup_seq[4], 0 },
+    { cheat_powerup_seq[5], 0 },
+    { cheat_powerup_seq[6], 0 }
+};
+
+cheatseq_t      cheat_choppers = { cheat_choppers_seq, 0 };
+cheatseq_t      cheat_clev = { cheat_clev_seq, 0 };
+cheatseq_t      cheat_mypos = { cheat_mypos_seq, 0 };
+boolean do_st_refresh;
+
+int8_t st_palette = 0;
+
+int16_t  st_calc_lastcalc;
+int16_t  st_calc_oldhealth = -1;
+int8_t  st_face_lastattackdown = -1;
+int8_t  st_face_priority = 0;
+int8_t     st_stuff_buf[ST_MSGWIDTH];
+
+
+
+hu_textline_t	w_title;
+
+boolean		message_on;
+boolean			message_dontfuckwithme;
+boolean		message_nottobefuckedwith;
+
+hu_stext_t	w_message;
+uint8_t		message_counter;
+int8_t hudneedsupdate = 0;
+
+
+
+// offsets within segment stored
+uint16_t hu_font[HU_FONTSIZE]  ={ 8468,
+	8368, 8252, 8124, 7980, 7848,
+	7788, 7668, 7548, 7452, 7376,
+	7316, 7236, 7180, 7080, 6948,
+	6864, 6724, 6592, 6476, 6352,
+	6220, 6100, 5960, 5828, 5744,
+	5672, 5592, 5512, 5432, 5304,
+	5148, 5016, 4876, 4736, 4604,
+	4472, 4344, 4212, 4076, 4004,
+	3884, 3744, 3624, 3476, 3340,
+	3216, 3088, 2952, 2812, 2692,
+	2572, 2440, 2332, 2184, 2024,
+	1900, 1772, 1680, 1580, 1488,
+	1392, 1288
+};
+
+
+uint8_t	mapnames[] =	// DOOM shareware/registered/retail (Ultimate) names.
+{
+
+	HUSTR_E1M1 - title_string_offset,
+	HUSTR_E1M2 - title_string_offset,
+	HUSTR_E1M3 - title_string_offset,
+	HUSTR_E1M4 - title_string_offset,
+	HUSTR_E1M5 - title_string_offset,
+	HUSTR_E1M6 - title_string_offset,
+	HUSTR_E1M7 - title_string_offset,
+	HUSTR_E1M8 - title_string_offset,
+	HUSTR_E1M9 - title_string_offset,
+
+	HUSTR_E2M1 - title_string_offset,
+	HUSTR_E2M2 - title_string_offset,
+	HUSTR_E2M3 - title_string_offset,
+	HUSTR_E2M4 - title_string_offset,
+	HUSTR_E2M5 - title_string_offset,
+	HUSTR_E2M6 - title_string_offset,
+	HUSTR_E2M7 - title_string_offset,
+	HUSTR_E2M8 - title_string_offset,
+	HUSTR_E2M9 - title_string_offset,
+
+	HUSTR_E3M1 - title_string_offset,
+	HUSTR_E3M2 - title_string_offset,
+	HUSTR_E3M3 - title_string_offset,
+	HUSTR_E3M4 - title_string_offset,
+	HUSTR_E3M5 - title_string_offset,
+	HUSTR_E3M6 - title_string_offset,
+	HUSTR_E3M7 - title_string_offset,
+	HUSTR_E3M8 - title_string_offset,
+	HUSTR_E3M9 - title_string_offset,
+
+	HUSTR_E4M1 - title_string_offset,
+	HUSTR_E4M2 - title_string_offset,
+	HUSTR_E4M3 - title_string_offset,
+	HUSTR_E4M4 - title_string_offset,
+	HUSTR_E4M5 - title_string_offset,
+	HUSTR_E4M6 - title_string_offset,
+	HUSTR_E4M7 - title_string_offset,
+	HUSTR_E4M8 - title_string_offset,
+	HUSTR_E4M9 - title_string_offset,
+
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset,
+	NEWLEVELMSG - title_string_offset
+};
+
+uint8_t	mapnames2[] =	// DOOM 2 map names.
+{
+	HUSTR_1 - title_string_offset,
+	HUSTR_2 - title_string_offset,
+	HUSTR_3 - title_string_offset,
+	HUSTR_4 - title_string_offset,
+	HUSTR_5 - title_string_offset,
+	HUSTR_6 - title_string_offset,
+	HUSTR_7 - title_string_offset,
+	HUSTR_8 - title_string_offset,
+	HUSTR_9 - title_string_offset,
+	HUSTR_10 - title_string_offset,
+	HUSTR_11 - title_string_offset,
+
+	HUSTR_12 - title_string_offset,
+	HUSTR_13 - title_string_offset,
+	HUSTR_14 - title_string_offset,
+	HUSTR_15 - title_string_offset,
+	HUSTR_16 - title_string_offset,
+	HUSTR_17 - title_string_offset,
+	HUSTR_18 - title_string_offset,
+	HUSTR_19 - title_string_offset,
+	HUSTR_20 - title_string_offset,
+
+	HUSTR_21 - title_string_offset,
+	HUSTR_22 - title_string_offset,
+	HUSTR_23 - title_string_offset,
+	HUSTR_24 - title_string_offset,
+	HUSTR_25 - title_string_offset,
+	HUSTR_26 - title_string_offset,
+	HUSTR_27 - title_string_offset,
+	HUSTR_28 - title_string_offset,
+	HUSTR_29 - title_string_offset,
+	HUSTR_30 - title_string_offset,
+	HUSTR_31 - title_string_offset,
+	HUSTR_32 - title_string_offset
+};
+
+#if (EXE_VERSION >= EXE_VERSION_FINAL)
+uint8_t	mapnamesp[] =	// Plutonia WAD map names.
+{
+	PHUSTR_1 - title_string_offset,
+	PHUSTR_2 - title_string_offset,
+	PHUSTR_3 - title_string_offset,
+	PHUSTR_4 - title_string_offset,
+	PHUSTR_5 - title_string_offset,
+	PHUSTR_6 - title_string_offset,
+	PHUSTR_7 - title_string_offset,
+	PHUSTR_8 - title_string_offset,
+	PHUSTR_9 - title_string_offset,
+	PHUSTR_10 - title_string_offset,
+	PHUSTR_11 - title_string_offset,
+
+	PHUSTR_12 - title_string_offset,
+	PHUSTR_13 - title_string_offset,
+	PHUSTR_14 - title_string_offset,
+	PHUSTR_15 - title_string_offset,
+	PHUSTR_16 - title_string_offset,
+	PHUSTR_17 - title_string_offset,
+	PHUSTR_18 - title_string_offset,
+	PHUSTR_19 - title_string_offset,
+	PHUSTR_20 - title_string_offset,
+
+	PHUSTR_21 - title_string_offset,
+	PHUSTR_22 - title_string_offset,
+	PHUSTR_23 - title_string_offset,
+	PHUSTR_24 - title_string_offset,
+	PHUSTR_25 - title_string_offset,
+	PHUSTR_26 - title_string_offset,
+	PHUSTR_27 - title_string_offset,
+	PHUSTR_28 - title_string_offset,
+	PHUSTR_29 - title_string_offset,
+	PHUSTR_30 - title_string_offset,
+	PHUSTR_31 - title_string_offset,
+	PHUSTR_32 - title_string_offset
+};
+
+
+uint8_t mapnamest[] =	// TNT WAD map names.
+{
+	THUSTR_1 - title_string_offset,
+	THUSTR_2 - title_string_offset,
+	THUSTR_3 - title_string_offset,
+	THUSTR_4 - title_string_offset,
+	THUSTR_5 - title_string_offset,
+	THUSTR_6 - title_string_offset,
+	THUSTR_7 - title_string_offset,
+	THUSTR_8 - title_string_offset,
+	THUSTR_9 - title_string_offset,
+	THUSTR_10 - title_string_offset,
+	THUSTR_11 - title_string_offset,
+
+	THUSTR_12 - title_string_offset,
+	THUSTR_13 - title_string_offset,
+	THUSTR_14 - title_string_offset,
+	THUSTR_15 - title_string_offset,
+	THUSTR_16 - title_string_offset,
+	THUSTR_17 - title_string_offset,
+	THUSTR_18 - title_string_offset,
+	THUSTR_19 - title_string_offset,
+	THUSTR_20 - title_string_offset,
+
+	THUSTR_21 - title_string_offset,
+	THUSTR_22 - title_string_offset,
+	THUSTR_23 - title_string_offset,
+	THUSTR_24 - title_string_offset,
+	THUSTR_25 - title_string_offset,
+	THUSTR_26 - title_string_offset,
+	THUSTR_27 - title_string_offset,
+	THUSTR_28 - title_string_offset,
+	THUSTR_29 - title_string_offset,
+	THUSTR_30 - title_string_offset,
+	THUSTR_31 - title_string_offset,
+	THUSTR_32 - title_string_offset
+};
+#endif
+
