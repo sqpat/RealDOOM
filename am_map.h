@@ -18,23 +18,8 @@
 
 #ifndef __AMMAP_H__
 #define __AMMAP_H__
+#include "doomtype.h"
 
-// Used by ST StatusBar stuff.
-
-//616D0000
-// 1627389952 61000000
- // 6D0000
-
-//#define AM_MSGHEADER (('a'<<24)+('m'<<16))
-#define AM_MSGHEADER 0x616D0000
-//#define AM_MSGENTERED (AM_MSGHEADER | ('e'<<8))
-#define AM_MSGENTERED 0x616D6500
-//#define AM_MSGEXITED (AM_MSGHEADER | ('x'<<8))
-#define AM_MSGEXITED 0x616D7800
-
-
-// Called by main loop.
-boolean __far AM_Responder (event_t __far* ev);
 
 // Called by main loop.
 void __far AM_Ticker (void);
@@ -46,6 +31,30 @@ void __far AM_Drawer (void);
 // Called to force the automap to quit
 // if the level is completed while it is up.
 void __far AM_Stop (void);
+
+#define AM_NUMMARKPOINTS 10
+
+typedef struct
+{
+	int16_t x, y;
+} fpoint_t;
+
+typedef struct
+{
+    fpoint_t a, b;
+} fline_t;
+
+typedef struct
+{
+    int16_t		x,y;
+} mpoint_t;
+
+typedef struct
+{
+    mpoint_t a, b;
+} mline_t;
+
+
 
 
 

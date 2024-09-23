@@ -19,7 +19,9 @@
 // this will make it easier to build collections of function binaries, 
 // export them to file and load them at runtime into EMS memory locations
 
+#include "dutils.h"
 
+#include "am_map.h"
 
 
 
@@ -256,6 +258,51 @@ extern int8_t               active_visplanes[5];
 extern byte                 cachedbyteheight;
 extern uint8_t              cachedcol;
 extern int16_t              setval;
+
+
+extern int8_t 	am_cheating;
+extern int8_t 	am_grid;
+extern mpoint_t m_paninc; 
+extern int16_t 	mtof_zoommul; 
+extern int16_t 	ftom_zoommul; 
+extern int16_t 	screen_botleft_x, screen_botleft_y;
+extern int16_t 	screen_topright_x, screen_topright_y;
+extern int16_t	screen_viewport_width;
+extern int16_t	screen_viewport_height;
+extern int16_t am_min_level_x;
+extern int16_t	am_min_level_y;
+extern int16_t am_max_level_x;
+extern int16_t	am_max_level_y;
+extern uint16_t 	am_min_scale_mtof;
+extern fixed_t_union 	am_max_scale_mtof;
+extern int16_t old_screen_viewport_width, old_screen_viewport_height;
+extern int16_t old_screen_botleft_x, old_screen_botleft_y;
+extern mpoint_t screen_oldloc;
+extern fixed_t_union am_scale_mtof;
+extern fixed_t_union am_scale_ftom;
+extern mpoint_t markpoints[AM_NUMMARKPOINTS];
+extern int8_t markpointnum;
+extern int8_t followplayer;
+extern uint8_t cheat_amap_seq[];
+extern cheatseq_t cheat_amap;
+extern boolean am_stopped;
+extern boolean am_bigstate;
+extern int8_t am_buffer[20];
+extern boolean automapactive;
+extern fline_t am_fl;
+extern mline_t am_ml;
+extern mline_t am_l;
+extern int8_t am_lastlevel; 
+extern int8_t am_lastepisode;
+extern mline_t am_lc;
+
+
+extern mline_t player_arrow[7];
+extern mline_t cheat_player_arrow[16]; 
+extern mline_t triangle_guy[3];
+extern mline_t thintriangle_guy[3];
+
+
 extern uint8_t              jump_mult_table_3[8];
 extern int16_t              lightmult48lookup[16];
 extern int16_t              lightshift7lookup[16];

@@ -424,6 +424,132 @@ byte cachedbyteheight;
 uint8_t cachedcol;
 int16_t setval = 0;
 
+
+int8_t 	am_cheating = 0;
+int8_t 	am_grid = 0;
+
+
+
+// size of window on screen
+
+
+mpoint_t 	m_paninc; // how far the window pans each tic (map coords)
+int16_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
+int16_t 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
+
+int16_t 	screen_botleft_x, screen_botleft_y;   // LL x,y where the window is on the map (map coords)
+int16_t 	screen_topright_x, screen_topright_y; // UR x,y where the window is on the map (map coords)
+
+//
+// width/height of window on map (map coords)
+//
+int16_t	screen_viewport_width;
+int16_t	screen_viewport_height;
+
+// based on level size
+int16_t am_min_level_x;
+int16_t	am_min_level_y;
+int16_t am_max_level_x;
+int16_t	am_max_level_y;
+
+
+// based on player size
+//this is never a 32 bit level in any commercial levels..
+uint16_t 	am_min_scale_mtof; // used to tell when to stop zooming out
+fixed_t_union 	am_max_scale_mtof; // used to tell when to stop zooming in
+
+// old stuff for recovery later
+int16_t old_screen_viewport_width, old_screen_viewport_height;
+int16_t old_screen_botleft_x, old_screen_botleft_y;
+
+// old location used by the Follower routine
+mpoint_t screen_oldloc;
+
+// used by MTOF to scale from map-to-frame-buffer coords
+
+fixed_t_union am_scale_mtof;
+
+// used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
+fixed_t_union am_scale_ftom;
+
+mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
+int8_t markpointnum = 0; // next point to be assigned
+
+int8_t followplayer = 1; // specifies whether to follow the player around
+
+uint8_t cheat_amap_seq[] = {'i', 'd', 'd', 't', 0xff};
+cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
+boolean am_stopped = true;
+boolean am_bigstate=0;
+int8_t  am_buffer[20];
+boolean    	automapactive = false;
+fline_t am_fl;
+mline_t am_ml;
+mline_t am_l;
+int8_t am_lastlevel = -1;
+int8_t am_lastepisode = -1;
+mline_t	am_lc;
+
+
+//#define LINE_PLAYERRADIUS 16<<4
+
+//
+// The vector graphics for the automap.
+//  A line drawing of the player pointing right,
+//   starting from the middle.
+//
+//#define R ((8*LINE_PLAYERRADIUS)/7)
+#define R 292
+mline_t player_arrow[] = {
+    { { -R+R/8, 0 }, { R, 0 } }, // -----
+    { { R, 0 }, { R-R/2, R/4 } },  // ----->
+    { { R, 0 }, { R-R/2, -R/4 } },
+    { { -R+R/8, 0 }, { -R-R/8, R/4 } }, // >---->
+    { { -R+R/8, 0 }, { -R-R/8, -R/4 } },
+    { { -R+3*R/8, 0 }, { -R+R/8, R/4 } }, // >>--->
+    { { -R+3*R/8, 0 }, { -R+R/8, -R/4 } }
+};
+#undef R
+
+//#define R ((8*LINE_PLAYERRADIUS)/7)
+#define R 292
+mline_t cheat_player_arrow[] = {
+    { { -R+R/8, 0 }, { R, 0 } }, // -----
+    { { R, 0 }, { R-R/2, R/6 } },  // ----->
+    { { R, 0 }, { R-R/2, -R/6 } },
+    { { -R+R/8, 0 }, { -R-R/8, R/6 } }, // >----->
+    { { -R+R/8, 0 }, { -R-R/8, -R/6 } },
+    { { -R+3*R/8, 0 }, { -R+R/8, R/6 } }, // >>----->
+    { { -R+3*R/8, 0 }, { -R+R/8, -R/6 } },
+    { { -R/2, 0 }, { -R/2, -R/6 } }, // >>-d--->
+    { { -R/2, -R/6 }, { -R/2+R/6, -R/6 } },
+    { { -R/2+R/6, -R/6 }, { -R/2+R/6, R/4 } },
+    { { -R/6, 0 }, { -R/6, -R/6 } }, // >>-dd-->
+    { { -R/6, -R/6 }, { 0, -R/6 } },
+    { { 0, -R/6 }, { 0, R/4 } },
+    { { R/6, R/4 }, { R/6, -R/7 } }, // >>-ddt->
+    { { R/6, -R/7 }, { R/6+R/32, -R/7-R/32 } },
+    { { R/6+R/32, -R/7-R/32 }, { R/6+R/10, -R/7 } }
+};
+#undef R
+
+#define R (1 << 4)
+mline_t triangle_guy[] = {
+    { { -.867*R, -.5*R }, { .867*R, -.5*R } },
+    { { .867*R, -.5*R } , { 0, R } },
+    { { 0, R }, { -.867*R, -.5*R } }
+};
+#undef R
+
+#define R (1 << 4)
+mline_t thintriangle_guy[] = {
+    { { -.5*R, -.7*R }, { R, 0 } },
+    { { R, 0 }, { -.5*R, .7*R } },
+    { { -.5*R, .7*R }, { -.5*R, -.7*R } }
+};
+#undef R
+
+
 //uint8_t jump_mult_table_3[32] = {
 uint8_t jump_mult_table_3[8] = {
 	//93, 90, 87, 84, 81, 78, 75, 72, 69, 66, 63, 60, 57, 54, 51, 48,

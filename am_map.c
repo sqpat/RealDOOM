@@ -37,6 +37,7 @@
 #include "dstrings.h"
 
 #include "am_map.h"
+#include "m_near.h"
 #include "m_memory.h"
 
 
@@ -93,7 +94,6 @@
 #define AM_MARKKEY	'm'
 #define AM_CLEARMARKKEY	'c'
 
-#define AM_NUMMARKPOINTS 10
 
 // scale on entry
 //66846.72
@@ -122,36 +122,12 @@
 
 #define FTOM16(x) FixedMul1632(x,am_scale_ftom.w)
 
+#define NUMCHEATPLYRLINES (sizeof(cheat_player_arrow)/sizeof(mline_t))
+#define NUMPLYRLINES (sizeof(player_arrow)/sizeof(mline_t))
+
  
 // the following is crap
 #define LINE_NEVERSEE ML_DONTDRAW
-
-typedef struct
-{
-	int16_t x, y;
-} fpoint_t;
-
-typedef struct
-{
-    fpoint_t a, b;
-} fline_t;
-
-typedef struct
-{
-    int16_t		x,y;
-} mpoint_t;
-
-typedef struct
-{
-    mpoint_t a, b;
-} mline_t;
-
-
-boolean    	automapactive = false;
-fline_t am_fl;
-mline_t am_ml;
-mline_t am_l;
-int8_t am_lastlevel = -1, am_lastepisode = -1;
 
 
 #ifdef __DEMO_ONLY_BINARY
@@ -172,65 +148,6 @@ void __far AM_Stop(void) {
 
 
  
-//#define LINE_PLAYERRADIUS 16<<4
-
-//
-// The vector graphics for the automap.
-//  A line drawing of the player pointing right,
-//   starting from the middle.
-//
-//#define R ((8*LINE_PLAYERRADIUS)/7)
-#define R 292
-mline_t player_arrow[] = {
-    { { -R+R/8, 0 }, { R, 0 } }, // -----
-    { { R, 0 }, { R-R/2, R/4 } },  // ----->
-    { { R, 0 }, { R-R/2, -R/4 } },
-    { { -R+R/8, 0 }, { -R-R/8, R/4 } }, // >---->
-    { { -R+R/8, 0 }, { -R-R/8, -R/4 } },
-    { { -R+3*R/8, 0 }, { -R+R/8, R/4 } }, // >>--->
-    { { -R+3*R/8, 0 }, { -R+R/8, -R/4 } }
-};
-#undef R
-#define NUMPLYRLINES (sizeof(player_arrow)/sizeof(mline_t))
-
-//#define R ((8*LINE_PLAYERRADIUS)/7)
-#define R 292
-mline_t cheat_player_arrow[] = {
-    { { -R+R/8, 0 }, { R, 0 } }, // -----
-    { { R, 0 }, { R-R/2, R/6 } },  // ----->
-    { { R, 0 }, { R-R/2, -R/6 } },
-    { { -R+R/8, 0 }, { -R-R/8, R/6 } }, // >----->
-    { { -R+R/8, 0 }, { -R-R/8, -R/6 } },
-    { { -R+3*R/8, 0 }, { -R+R/8, R/6 } }, // >>----->
-    { { -R+3*R/8, 0 }, { -R+R/8, -R/6 } },
-    { { -R/2, 0 }, { -R/2, -R/6 } }, // >>-d--->
-    { { -R/2, -R/6 }, { -R/2+R/6, -R/6 } },
-    { { -R/2+R/6, -R/6 }, { -R/2+R/6, R/4 } },
-    { { -R/6, 0 }, { -R/6, -R/6 } }, // >>-dd-->
-    { { -R/6, -R/6 }, { 0, -R/6 } },
-    { { 0, -R/6 }, { 0, R/4 } },
-    { { R/6, R/4 }, { R/6, -R/7 } }, // >>-ddt->
-    { { R/6, -R/7 }, { R/6+R/32, -R/7-R/32 } },
-    { { R/6+R/32, -R/7-R/32 }, { R/6+R/10, -R/7 } }
-};
-#undef R
-#define NUMCHEATPLYRLINES (sizeof(cheat_player_arrow)/sizeof(mline_t))
-
-#define R (1 << 4)
-mline_t triangle_guy[] = {
-    { { -.867*R, -.5*R }, { .867*R, -.5*R } },
-    { { .867*R, -.5*R } , { 0, R } },
-    { { 0, R }, { -.867*R, -.5*R } }
-};
-#undef R
-
-#define R (1 << 4)
-mline_t thintriangle_guy[] = {
-    { { -.5*R, -.7*R }, { R, 0 } },
-    { { R, 0 }, { -.5*R, .7*R } },
-    { { -.5*R, .7*R }, { -.5*R, -.7*R } }
-};
-#undef R
 #define NUMTHINTRIANGLEGUYLINES (sizeof(thintriangle_guy)/sizeof(mline_t))
 
 #define automap_screenwidth SCREENWIDTH
@@ -239,64 +156,6 @@ mline_t thintriangle_guy[] = {
 
 extern boolean viewactive;
 extern int8_t hudneedsupdate;
-
-int8_t 	cheating = 0;
-int8_t 	grid = 0;
-
-
-
-// size of window on screen
-
-
-mpoint_t m_paninc; // how far the window pans each tic (map coords)
-int16_t 	mtof_zoommul; // how far the window zooms in each tic (map coords)
-int16_t 	ftom_zoommul; // how far the window zooms in each tic (fb coords)
-
-int16_t 	screen_botleft_x, screen_botleft_y;   // LL x,y where the window is on the map (map coords)
-int16_t 	screen_topright_x, screen_topright_y; // UR x,y where the window is on the map (map coords)
-
-//
-// width/height of window on map (map coords)
-//
-int16_t	screen_viewport_width;
-int16_t	screen_viewport_height;
-
-// based on level size
-int16_t 	min_level_x;
-int16_t	min_level_y;
-int16_t 	max_level_x;
-int16_t	max_level_y;
-
-
-// based on player size
-//this is never a 32 bit level in any commercial levels..
-uint16_t 	am_min_scale_mtof; // used to tell when to stop zooming out
-fixed_t_union 	am_max_scale_mtof; // used to tell when to stop zooming in
-
-// old stuff for recovery later
-int16_t old_screen_viewport_width, old_screen_viewport_height;
-int16_t old_screen_botleft_x, old_screen_botleft_y;
-
-// old location used by the Follower routine
-mpoint_t screen_oldloc;
-
-// used by MTOF to scale from map-to-frame-buffer coords
-
-fixed_t_union am_scale_mtof;
-
-// used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
-fixed_t_union am_scale_ftom;
-
-mpoint_t markpoints[AM_NUMMARKPOINTS]; // where the points are
-int8_t markpointnum = 0; // next point to be assigned
-
-int8_t followplayer = 1; // specifies whether to follow the player around
-
-uint8_t cheat_amap_seq[] = {'i', 'd', 'd', 't', 0xff};
-cheatseq_t cheat_amap = { cheat_amap_seq, 0 };
-boolean am_stopped = true;
-boolean am_bigstate=0;
-int8_t  am_buffer[20];
 
 
 fixed_16_t __near MTOF16(fixed_16_t x) {
@@ -381,31 +240,31 @@ void __near AM_findMinMaxBoundaries(void)
     fixed_t a;
     fixed_t b;
 	int16_t temp;
-	int16_t max_w; // max_level_x-min_level_x,
-	int16_t max_h; // max_level_y-min_level_y
-	min_level_x = min_level_y =  MAXSHORT;
-    max_level_x = max_level_y = -MAXSHORT;
+	int16_t max_w; // am_max_level_x-am_min_level_x,
+	int16_t max_h; // am_max_level_y-am_min_level_y
+	am_min_level_x = am_min_level_y =  MAXSHORT;
+    am_max_level_x = am_max_level_y = -MAXSHORT;
 
     for (i=0;i<numvertexes;i++) {
 
 		temp = vertexes[i].x;
 
-		if ((temp) < min_level_x)
-			min_level_x = temp;
-		else if ((temp) > max_level_x)
-			max_level_x = temp;
+		if ((temp) < am_min_level_x)
+			am_min_level_x = temp;
+		else if ((temp) > am_max_level_x)
+			am_max_level_x = temp;
     
 		temp = vertexes[i].y;
 
-		if (temp < min_level_y)
-			min_level_y = temp;
-		else if (temp > max_level_y)
-			max_level_y = temp;
+		if (temp < am_min_level_y)
+			am_min_level_y = temp;
+		else if (temp > am_max_level_y)
+			am_max_level_y = temp;
 
     }
   
-    max_w = max_level_x - min_level_x;
-    max_h = max_level_y - min_level_y;
+    max_w = am_max_level_x - am_min_level_x;
+    max_h = am_max_level_y - am_min_level_y;
 	
 	//todo this in theory can be better. but whoe cares, runs once
 	a = FixedDiv(automap_screenwidth, max_w);
@@ -432,15 +291,15 @@ void __near AM_changeWindowLoc(void) {
     screen_botleft_x += m_paninc.x;
     screen_botleft_y += m_paninc.y;
 
-    if (screen_botleft_x + (screen_viewport_width >>1) > max_level_x)
-		screen_botleft_x = max_level_x - (screen_viewport_width >>1);
-    else if (screen_botleft_x + (screen_viewport_width >>1) < min_level_x)
-		screen_botleft_x = min_level_x - (screen_viewport_width >>1);
+    if (screen_botleft_x + (screen_viewport_width >>1) > am_max_level_x)
+		screen_botleft_x = am_max_level_x - (screen_viewport_width >>1);
+    else if (screen_botleft_x + (screen_viewport_width >>1) < am_min_level_x)
+		screen_botleft_x = am_min_level_x - (screen_viewport_width >>1);
   
-    if (screen_botleft_y + (screen_viewport_height >>1) > max_level_y)
-		screen_botleft_y = max_level_y - (screen_viewport_height >>1);
-    else if (screen_botleft_y + (screen_viewport_height >>1) < min_level_y)
-		screen_botleft_y = min_level_y - (screen_viewport_height >>1);
+    if (screen_botleft_y + (screen_viewport_height >>1) > am_max_level_y)
+		screen_botleft_y = am_max_level_y - (screen_viewport_height >>1);
+    else if (screen_botleft_y + (screen_viewport_height >>1) < am_min_level_y)
+		screen_botleft_y = am_min_level_y - (screen_viewport_height >>1);
 
     screen_topright_x = screen_botleft_x + screen_viewport_width;
     screen_topright_y = screen_botleft_y + screen_viewport_height;
@@ -647,8 +506,8 @@ boolean __far AM_Responder ( event_t __far* ev ) {
 			player.message = followplayer ? AMSTR_FOLLOWON : AMSTR_FOLLOWOFF;
 			break;
 		  case AM_GRIDKEY:
-			grid = !grid;
-			player.message = grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
+			am_grid = !am_grid;
+			player.message = am_grid ? AMSTR_GRIDON : AMSTR_GRIDOFF;
 			break;
 		  case AM_MARKKEY:
 			getStringByIndex(AMSTR_MARKEDSPOT, text);
@@ -671,7 +530,7 @@ boolean __far AM_Responder ( event_t __far* ev ) {
 		}
 		if ( cht_CheckCheat(&cheat_amap, ev->data1)) {
 			rc = false;
-			cheating = (cheating+1) % 3;
+			am_cheating = (am_cheating+1) % 3;
 		}
 	} else if (ev->type == ev_keyup) {
 		rc = false;
@@ -1042,8 +901,8 @@ void __near AM_drawWalls() {
 		am_l.b.x = vertexes[linev2Offset].x;
 		am_l.b.y = vertexes[linev2Offset].y;
 
-		if (cheating || mappedflag) {
-			if ((lineflags & LINE_NEVERSEE) && !cheating) {
+		if (am_cheating || mappedflag) {
+			if ((lineflags & LINE_NEVERSEE) && !am_cheating) {
 				continue;
 			} if (linebacksecnum == SECNUM_NULL) {
 				AM_drawMline(&am_l, WALLCOLORS);
@@ -1053,7 +912,7 @@ void __near AM_drawWalls() {
 				if (linespecial == 39) { // teleporters
 					AM_drawMline(&am_l, WALLCOLORS+WALLRANGE/2);
 				} else if (lineflags & ML_SECRET){ // secret door
-					if (cheating) { 
+					if (am_cheating) { 
 						AM_drawMline(&am_l, SECRETWALLCOLORS); 
 					} else {
 						AM_drawMline(&am_l, WALLCOLORS);
@@ -1063,7 +922,7 @@ void __near AM_drawWalls() {
 				}
 				else if (ceilingheightnonequal) {
 					AM_drawMline(&am_l, CDWALLCOLORS); // ceiling level change
-				} else if (cheating) {
+				} else if (am_cheating) {
 					AM_drawMline(&am_l, TSWALLCOLORS);
 				}
 			}
@@ -1091,55 +950,54 @@ void __near AM_rotate ( int16_t __near*	x, int16_t __near* y, fineangle_t a ) {
 	*x = tmpx.h.intbits;
 
 }
-mline_t	lc;
 
 void __near AM_drawLineCharacter ( mline_t __near*	lineguy,int16_t		lineguylines,int16_t	scale,fineangle_t	angle,uint8_t		color,int16_t	x,int16_t	y ){
     uint16_t		i;
 
     for (i=0;i<lineguylines;i++) {
-		lc.a.x = lineguy[i].a.x;
-		lc.a.y = lineguy[i].a.y;
+		am_lc.a.x = lineguy[i].a.x;
+		am_lc.a.y = lineguy[i].a.y;
 
 		if (scale) {
 			// scale is only ever 16 or 0
-			lc.a.x <<= 4;
-			lc.a.y <<= 4;
+			am_lc.a.x <<= 4;
+			am_lc.a.y <<= 4;
 		}
 
 		if (angle)
-			AM_rotate(&lc.a.x, &lc.a.y, angle);
+			AM_rotate(&(am_lc.a.x), &am_lc.a.y, angle);
 
-		lc.a.x >>= 4;
-		lc.a.y >>= 4;
+		am_lc.a.x >>= 4;
+		am_lc.a.y >>= 4;
 
-		lc.a.x += x;
-		lc.a.y += y;
+		am_lc.a.x += x;
+		am_lc.a.y += y;
 
-		lc.b.x = lineguy[i].b.x;
-		lc.b.y = lineguy[i].b.y;
+		am_lc.b.x = lineguy[i].b.x;
+		am_lc.b.y = lineguy[i].b.y;
 
 		if (scale) {
 			// scale is only ever 16 or 0
-			lc.b.x <<= 4;
-			lc.b.y <<= 4;
+			am_lc.b.x <<= 4;
+			am_lc.b.y <<= 4;
 		}
 
 		if (angle)
-			AM_rotate(&lc.b.x, &lc.b.y, angle);
+			AM_rotate(&am_lc.b.x, &am_lc.b.y, angle);
 	
-		lc.b.x >>= 4;
-		lc.b.y >>= 4;
+		am_lc.b.x >>= 4;
+		am_lc.b.y >>= 4;
 
-		lc.b.x += x;
-		lc.b.y += y;
+		am_lc.b.x += x;
+		am_lc.b.y += y;
 
-		AM_drawMline(&lc, color);
+		AM_drawMline(&am_lc, color);
     }
 }
 
 void __near AM_drawPlayers(void) {
 	
-	if (cheating)
+	if (am_cheating)
 		AM_drawLineCharacter(cheat_player_arrow, NUMCHEATPLYRLINES, 0, playerMobj_pos->angle.hu.intbits>>SHORTTOFINESHIFT, WHITE, playerMobj_pos->x.h.intbits, playerMobj_pos->y.h.intbits);
 	else
 		AM_drawLineCharacter(player_arrow, NUMPLYRLINES, 0, playerMobj_pos->angle.hu.intbits >> SHORTTOFINESHIFT, WHITE, playerMobj_pos->x.h.intbits, playerMobj_pos->y.h.intbits);
@@ -1213,11 +1071,11 @@ void __far AM_Drawer (void) {
 	// Clear automap frame buffer.
 	FAR_memset(screen0, BACKGROUND, automap_screenwidth*automap_screenheight);
 
-	if (grid)
+	if (am_grid)
 		AM_drawGrid();
 	AM_drawWalls();
 	AM_drawPlayers();
-	if (cheating==2)
+	if (am_cheating==2)
 		AM_drawThings();
 	AM_drawCrosshair();
 

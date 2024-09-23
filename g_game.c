@@ -78,6 +78,10 @@ void   __near G_DoPlayDemo (void);
 void   __near G_DoCompleted (void); 
 void   __near G_DoSaveGame (void); 
 
+// Called by main loop.
+boolean __far AM_Responder (event_t __far* ev);
+
+
 //default_t	defaults[NUM_DEFAULTS];
  
 gameaction_t    gameaction; 
