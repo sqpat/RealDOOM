@@ -74,8 +74,7 @@ void V_DrawFullscreenPatch ( int8_t __near* texname, int8_t screen) ;
                     __parm [ax] [dh] [dl] [cx bx] ;
 #pragma aux (drawpatchparams)  V_DrawPatch;
 */
-void __far V_DrawPatch ( int16_t x, uint8_t y, int8_t scrn, patch_t __far* patch);
-//void __far V_DrawPatch ( int16_t x, int16_t y, int8_t scrn, patch_t __far* patch);
+void __far V_DrawPatch ( int16_t x, int16_t y, int8_t scrn, patch_t __far* patch);
 
 void V_DrawPatchDirect( int16_t x,int16_t y, patch_t __far* patch );
 void __far V_MarkRect( int16_t x, int16_t y, int16_t width, int16_t height );

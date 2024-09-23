@@ -361,7 +361,6 @@ mov   di, 0F030h
 add   di, ax
 mov   cl, byte ptr ds:[bx + 1]  ; get col length
 xor   ch, ch
-;    ch is 0
 mov   si, cx
 and   si, 0007h
 mov   al, byte ptr ss:[_jump_mult_table_3 + si]

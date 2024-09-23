@@ -96,7 +96,6 @@ void  V_CopyRect ( uint16_t srcx, uint16_t srcy, uint16_t width, uint16_t height
     } 
 } 
  
-extern boolean skipdirectdraws;
 //
 // V_DrawPatch
 // Masks a column based masked pic to the screen. 
@@ -217,11 +216,13 @@ V_DrawPatchDirect
 	    } 
 	    column = (column_t __far *)(  (byte  __far*)column + column->length + 4 );
 	} 
-	if ( ((++x)&3) == 0 ) 
+	if ( ((++x)&3) == 0 ) {
 	    desttop++;	// go to next byte, not next plane 
+	}
     }
 } 
- */
+*/
+ 
 
  
 // Specially handles titlepic and other ~68k textures that exceed the 64k 4x page frames limit.
