@@ -46,6 +46,7 @@ ASMOPTS = /d_USED000=0
 #CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99
 
 GLOBOBJS = &
+ m_near.obj &
  i_init.obj &
  i_quit.obj &
  i_main.obj &
@@ -111,7 +112,6 @@ GLOBOBJS = &
  d_math.obj &
  dmx.obj &
  math.obj &
- m_near.obj &
  d_algo.obj &
  r_math.obj &
  r_column.obj &

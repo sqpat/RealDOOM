@@ -16,6 +16,7 @@ name doom16
 #file p_sight.obj
 #NEWSEGMENT
 
+file m_near.obj
 file d_init.obj
 file st_init.obj
 file r_init.obj
@@ -45,7 +46,6 @@ file d_algo.obj
 file dmx.obj
 file dutils.obj
 file wi_stuff.obj
-file m_near.obj
 file math.obj
 
 
@@ -107,15 +107,11 @@ file p_setup.obj
 file p_sight.obj
 
 
-#NEWSEGMENT
-#file info.obj
-
-
-
-# # begin overlay area
-#begin
-#	init code
-#section file d_init.obj, st_init.obj, r_init.obj, w_init.obj, i_init.obj, z_umb.obj, z_init.obj, p_init.obj
-#	ingame
-#section file am_map.obj, wi_stuff.obj, i_quit.obj, f_wipe.obj
-#end
+# here we move _DATA before CONST and CONST2.
+ORDER      clname CODE 
+           clname FAR_DATA #segaddr=0x3C00 
+           clname BEGDATA segment _NULL segment _AFTERNULL
+           clname DATA  segment _DATA
+           clname BSS
+           clname STACK
+           clname START 

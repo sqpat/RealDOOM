@@ -42,6 +42,7 @@ CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAT_BUILD=1 -d__CHIPSET_BUIL
 ASMOPTS = /d_USED000=0
 
 GLOBOBJS = &
+ m_near.obj &
  i_init.obj &
  i_quit.obj &
  i_main.obj &
@@ -108,7 +109,6 @@ GLOBOBJS = &
  d_math.obj &
  dmx.obj &
  math.obj &
- m_near.obj &
  d_algo.obj &
  r_math.obj &
  r_column.obj &
