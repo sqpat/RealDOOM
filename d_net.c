@@ -22,6 +22,7 @@
 #include "g_game.h"
 #include "doomdef.h"
 #include "doomstat.h"
+#include "m_near.h"
 
 //
 // NETWORKING
@@ -35,7 +36,7 @@
 #define PL_DRONE 0x80 // bit flag in doomdata->player
 
 
-ticcount_t maketic;
+
 //int16_t skiptics;
 
 void __near D_ProcessEvents(void);
@@ -47,7 +48,6 @@ void __near D_DoAdvanceDemo(void);
 // Builds ticcmds for console player,
 // sends out a packet
 //
-ticcount_t gametime;
 
 void NetUpdate(void) {
 	uint32_t nowtime;
@@ -78,7 +78,6 @@ void NetUpdate(void) {
 
 }
 
-extern byte advancedemo;
 
 void __near TryRunTics(void) {
 	// dont need 32 bit precision to find a diff.

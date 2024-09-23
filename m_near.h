@@ -23,6 +23,9 @@
 
 #include "am_map.h"
 #include "m_memory.h"
+#include "m_misc.h"
+#include "d_event.h"
+#include "d_ticcmd.h"
 
 
 
@@ -260,50 +263,49 @@ extern byte                 cachedbyteheight;
 extern uint8_t              cachedcol;
 extern int16_t              setval;
 
-
-extern int8_t 	am_cheating;
-extern int8_t 	am_grid;
-extern mpoint_t m_paninc; 
-extern int16_t 	mtof_zoommul; 
-extern int16_t 	ftom_zoommul; 
-extern int16_t 	screen_botleft_x, screen_botleft_y;
-extern int16_t 	screen_topright_x, screen_topright_y;
-extern int16_t	screen_viewport_width;
-extern int16_t	screen_viewport_height;
-extern int16_t am_min_level_x;
-extern int16_t	am_min_level_y;
-extern int16_t am_max_level_x;
-extern int16_t	am_max_level_y;
-extern uint16_t 	am_min_scale_mtof;
-extern fixed_t_union 	am_max_scale_mtof;
-extern int16_t old_screen_viewport_width, old_screen_viewport_height;
-extern int16_t old_screen_botleft_x, old_screen_botleft_y;
-extern mpoint_t screen_oldloc;
-extern fixed_t_union am_scale_mtof;
-extern fixed_t_union am_scale_ftom;
-extern mpoint_t markpoints[AM_NUMMARKPOINTS];
-extern int8_t markpointnum;
-extern int8_t followplayer;
-extern uint8_t cheat_amap_seq[];
-extern cheatseq_t cheat_amap;
-extern boolean am_stopped;
-extern boolean am_bigstate;
-extern int8_t am_buffer[20];
-extern boolean automapactive;
-extern fline_t am_fl;
-extern mline_t am_ml;
-extern mline_t am_l;
-extern int8_t am_lastlevel; 
-extern int8_t am_lastepisode;
-extern mline_t am_lc;
-
-
-extern mline_t player_arrow[7];
-extern mline_t cheat_player_arrow[16]; 
-extern mline_t triangle_guy[3];
-extern mline_t thintriangle_guy[3];
-
-
+extern int8_t               am_cheating;
+extern int8_t 	            am_grid;
+extern mpoint_t             m_paninc; 
+extern int16_t 	            mtof_zoommul; 
+extern int16_t 	            ftom_zoommul; 
+extern int16_t 	            screen_botleft_x;
+extern int16_t              screen_botleft_y;
+extern int16_t 	            screen_topright_x;
+extern int16_t              screen_topright_y;
+extern int16_t	            screen_viewport_width;
+extern int16_t	            screen_viewport_height;
+extern int16_t              am_min_level_x;
+extern int16_t	            am_min_level_y;
+extern int16_t              am_max_level_x;
+extern int16_t	            am_max_level_y;
+extern uint16_t 	        am_min_scale_mtof;
+extern fixed_t_union 	    am_max_scale_mtof;
+extern int16_t              old_screen_viewport_width;
+extern int16_t              old_screen_viewport_height;
+extern int16_t              old_screen_botleft_x;
+extern int16_t              old_screen_botleft_y;
+extern mpoint_t             screen_oldloc;
+extern fixed_t_union        am_scale_mtof;
+extern fixed_t_union        am_scale_ftom;
+extern mpoint_t             markpoints[AM_NUMMARKPOINTS];
+extern int8_t               markpointnum;
+extern int8_t               followplayer;
+extern uint8_t              cheat_amap_seq[];
+extern cheatseq_t           cheat_amap;
+extern boolean              am_stopped;
+extern boolean              am_bigstate;
+extern int8_t               am_buffer[20];
+extern boolean              automapactive;
+extern fline_t              am_fl;
+extern mline_t              am_ml;
+extern mline_t              am_l;
+extern int8_t               am_lastlevel; 
+extern int8_t               am_lastepisode;
+extern mline_t              am_lc;
+extern mline_t              player_arrow[7];
+extern mline_t              cheat_player_arrow[16]; 
+extern mline_t              triangle_guy[3];
+extern mline_t              thintriangle_guy[3];
 extern uint8_t              jump_mult_table_3[8];
 extern int16_t              lightmult48lookup[16];
 extern int16_t              lightshift7lookup[16];
@@ -314,7 +316,6 @@ extern uint16_t             FLAT_CACHE_PAGE[4];
 extern uint8_t              quality_port_lookup[12]; 
 extern uint16_t             vga_read_port_lookup[12];
 extern uint16_t             visplane_offset[25];
-
 
 extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);
 extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
@@ -327,13 +328,182 @@ extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __f
 
 
 
-extern int16_t currentlumpindex;
-extern uint16_t maskedcount;
-extern uint16_t currentpostoffset;
-extern uint16_t currentpostdataoffset;
-extern uint16_t currentpixeloffset;
+extern int16_t              currentlumpindex;
+extern uint16_t             maskedcount;
+extern uint16_t             currentpostoffset;
+extern uint16_t             currentpostdataoffset;
+extern uint16_t             currentpixeloffset;
 
-extern segment_t EMS_PAGE;
+extern segment_t            EMS_PAGE;
 
 extern spriteframe_t __far* p_init_sprtemp;
-extern int16_t p_init_maxframe;
+extern int16_t              p_init_maxframe;
+
+#define SC_UPARROW              0x48
+#define SC_DOWNARROW            0x50
+#define SC_LEFTARROW            0x4b
+#define SC_RIGHTARROW           0x4d
+#define SC_RCTRL                0x1d
+#define SC_RALT                 0x38
+#define SC_RSHIFT               0x36
+#define SC_SPACE                0x39
+#define SC_COMMA                0x33
+#define SC_PERIOD               0x34
+#define SC_PAGEUP               0x49
+#define SC_INSERT               0x52
+#define SC_HOME                 0x47
+#define SC_PAGEDOWN             0x51
+#define SC_DELETE               0x53
+#define SC_END                  0x4f
+#define SC_ENTER                0x1c
+
+#define SC_KEY_A                0x1e
+#define SC_KEY_B                0x30
+#define SC_KEY_C                0x2e
+#define SC_KEY_D                0x20
+#define SC_KEY_E                0x12
+#define SC_KEY_F                0x21
+#define SC_KEY_G                0x22
+#define SC_KEY_H                0x23
+#define SC_KEY_I                0x17
+#define SC_KEY_J                0x24
+#define SC_KEY_K                0x25
+#define SC_KEY_L                0x26
+#define SC_KEY_M                0x32
+#define SC_KEY_N                0x31
+#define SC_KEY_O                0x18
+#define SC_KEY_P                0x19
+#define SC_KEY_Q                0x10
+#define SC_KEY_R                0x13
+#define SC_KEY_S                0x1f
+#define SC_KEY_T                0x14
+#define SC_KEY_U                0x16
+#define SC_KEY_V                0x2f
+#define SC_KEY_W                0x11
+#define SC_KEY_X                0x2d
+#define SC_KEY_Y                0x15
+#define SC_KEY_Z                0x2c
+#define SC_BACKSPACE            0x0e
+
+
+
+
+extern boolean grmode;
+extern boolean mousepresent;
+extern volatile uint32_t ticcount;
+// REGS stuff used for int calls
+extern union REGS regs;
+extern struct SREGS segregs;
+
+extern boolean novideo; // if true, stay in text mode for debugging
+#define KBDQUESIZE 32
+extern byte keyboardque[KBDQUESIZE];
+extern uint8_t kbdtail;
+extern uint8_t kbdhead;
+extern union REGS in;
+extern union REGS out;
+extern void (__interrupt __far_func *oldkeyboardisr) (void);
+extern byte __far *currentscreen;
+extern byte __far *destview;
+extern fixed_t_union destscreen;
+
+extern int16_t olddb[2][4];
+extern boolean             viewactivestate;
+extern boolean             menuactivestate;
+extern boolean             inhelpscreensstate;
+extern boolean             fullscreen;
+extern gamestate_t         oldgamestate;
+extern uint8_t                 borderdrawcount;
+extern ticcount_t maketic;
+extern ticcount_t gametime;
+
+extern uint8_t			numChannels;	
+extern uint8_t	usegamma;
+
+#define BACKUPTICS		16
+#define NUMKEYS         256 
+
+
+//default_t	defaults[NUM_DEFAULTS];
+ 
+extern gameaction_t    gameaction; 
+extern gamestate_t     gamestate; 
+extern skill_t         gameskill; 
+extern boolean         respawnmonsters;
+extern int8_t             gameepisode; 
+extern int8_t             gamemap;
+extern boolean         paused; 
+extern boolean         sendpause;              // send a pause event next tic 
+extern boolean         sendsave;               // send a save event next tic 
+extern boolean         usergame;               // ok to save / end game 
+extern boolean         timingdemo;             // if true, exit with report on completion 
+extern boolean         noblit;                 // for comparative timing purposes 
+extern ticcount_t             starttime;              // for comparative timing purposes       
+extern boolean         viewactive; 
+extern player_t        player;
+extern ticcount_t          gametic;
+extern int16_t             totalkills; 
+extern int16_t             totalitems;
+extern int16_t             totalsecret;    // for intermission 
+extern int8_t            demoname[32];
+extern boolean         demorecording; 
+extern boolean         demoplayback; 
+extern boolean         netdemo; 
+extern uint16_t           demo_p;				// buffer
+extern boolean         singledemo;             // quit after playing a demo from cmdline 
+extern boolean         precache;        // if true, load all graphics at start 
+extern wbstartstruct_t wminfo;                 // parms for world map / intermission 
+ 
+  
+ 
+// 
+// controls (have defaults) 
+// 
+extern uint8_t             key_right;
+extern uint8_t             key_left;
+extern uint8_t             key_up;
+extern uint8_t             key_down;
+extern uint8_t             key_strafeleft;
+extern uint8_t             key_straferight;
+extern uint8_t             key_fire;
+extern uint8_t             key_use;
+extern uint8_t             key_strafe;
+extern uint8_t             key_speed;
+extern uint8_t             mousebfire;
+extern uint8_t             mousebstrafe;
+extern uint8_t             mousebforward;
+extern int8_t         forwardmove[2];
+extern int8_t         sidemove[2];
+extern int16_t         angleturn[3];
+extern boolean				gamekeydown[NUMKEYS];
+extern int8_t             turnheld;
+extern boolean         mousearray[4]; 
+extern boolean*        mousebuttons;
+extern int16_t             mousex;
+extern int16_t             mousey;
+extern int32_t             dclicktime;
+extern int32_t             dclickstate;
+extern int32_t             dclicks;
+extern int32_t             dclicktime2;
+extern int32_t             dclickstate2;
+extern int32_t             dclicks2;
+extern int8_t             savegameslot;
+extern int8_t            savedescription[32];
+extern ticcmd_t localcmds[BACKUPTICS];
+
+extern skill_t d_skill; 
+extern int8_t     d_episode;
+extern int8_t     d_map;
+
+
+extern int16_t		myargc;
+extern int8_t**		myargv;
+extern int16_t	rndindex;
+extern int16_t	prndindex;
+extern uint8_t		usemouse;
+extern default_t	defaults[28];
+extern int8_t*	defaultfile;
+
+
+extern int8_t*   defdemoname; 
+extern boolean         secretexit; 

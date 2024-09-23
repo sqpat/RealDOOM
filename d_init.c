@@ -1058,7 +1058,7 @@ R_PointToAngle(y, x);
 	{
 		int16_t     scale = 200;
 		extern int8_t forwardmove[2];
-		extern int16_t sidemove[2];
+		extern int8_t sidemove[2];
 
 		if (p < myargc - 1)
 			scale = atoi(myargv[p + 1]);

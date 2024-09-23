@@ -56,6 +56,7 @@
 #include "r_data.h"
 
 #include "m_memory.h"
+#include "m_near.h"
 
 #include <dos.h>
 
@@ -81,106 +82,14 @@ void   __near G_DoSaveGame (void);
 // Called by main loop.
 boolean __far AM_Responder (event_t __far* ev);
 
-
-//default_t	defaults[NUM_DEFAULTS];
- 
-gameaction_t    gameaction; 
-gamestate_t     gamestate; 
-skill_t         gameskill; 
-boolean         respawnmonsters;
-int8_t             gameepisode; 
-int8_t             gamemap;
- 
-boolean         paused; 
-boolean         sendpause;              // send a pause event next tic 
-boolean         sendsave;               // send a save event next tic 
-boolean         usergame;               // ok to save / end game 
- 
-boolean         timingdemo;             // if true, exit with report on completion 
-//boolean         nodrawers;              // for comparative timing purposes 
-boolean         noblit;                 // for comparative timing purposes 
-ticcount_t             starttime;              // for comparative timing purposes       
- 
-boolean         viewactive; 
- 
-player_t        player;
- 
-ticcount_t          gametic;
-int16_t             totalkills, totalitems, totalsecret;    // for intermission 
- 
-int8_t            demoname[32];
-boolean         demorecording; 
-boolean         demoplayback; 
-boolean         netdemo; 
-
-uint16_t           demo_p;				// buffer
-//byte __far*           demoend; 
-boolean         singledemo;             // quit after playing a demo from cmdline 
- 
-boolean         precache = true;        // if true, load all graphics at start 
- 
-wbstartstruct_t wminfo;                 // parms for world map / intermission 
- 
-  
- 
-// 
-// controls (have defaults) 
-// 
-uint8_t             key_right;
-uint8_t             key_left;
-
-uint8_t             key_up;
-uint8_t             key_down;
-uint8_t             key_strafeleft;
-uint8_t             key_straferight;
-uint8_t             key_fire;
-uint8_t             key_use;
-uint8_t             key_strafe;
-uint8_t             key_speed;
- 
-uint8_t             mousebfire;
-uint8_t             mousebstrafe;
-uint8_t             mousebforward;
- 
- 
  
 #define MAXPLMOVE               (forwardmove[1]) 
  
 #define TURBOTHRESHOLD  0x32
 
-int8_t         forwardmove[2] = {0x19, 0x32}; 
-int8_t         sidemove[2] = {0x18, 0x28};
-int16_t         angleturn[3] = {640, 1280, 320};        // + slow turn 
 
 #define SLOWTURNTICS    6 
  
-#define NUMKEYS         256 
-
-boolean				gamekeydown[NUMKEYS];
-int8_t             turnheld;                               // for accelerative turning 
- 
-boolean         mousearray[4]; 
-// note: i think the -1 array thing  might be causing 16 bit binary to act up - not 100% sure - sq
-boolean*        mousebuttons = &mousearray[1];          // allow [-1]
-
-// mouse values are used once 
-int16_t             mousex;
-int16_t             mousey;
-
-int32_t             dclicktime;
-int32_t             dclickstate;
-int32_t             dclicks;
-int32_t             dclicktime2;
-int32_t             dclickstate2;
-int32_t             dclicks2;
-
- 
-int8_t             savegameslot;
-int8_t            savedescription[32];
- 
- 
-
-ticcmd_t localcmds[BACKUPTICS];
 
 
 //
@@ -666,9 +575,7 @@ void __far G_PlayerReborn () {
 //
 // G_DoCompleted 
 //
-boolean         secretexit; 
-extern int8_t*    pagename; 
- 
+  
 void __far G_ExitLevel (void) 
 { 
     secretexit = false; 
@@ -926,9 +833,6 @@ void __near G_DoSaveGame (void)
 // Can be called by the startup code or the menu task,
 // consoleplayer, displayplayer, playeringame[] should be set. 
 //
-skill_t d_skill; 
-int8_t     d_episode;
-int8_t     d_map;
  
 void
 __near G_DeferedInitNew
@@ -1015,7 +919,6 @@ void __near G_WriteDemoTiccmd (ticcmd_t __near* cmd)
 // G_PlayDemo 
 //
 
-int8_t*   defdemoname; 
  
 void __far G_DeferedPlayDemo (int8_t* name) 
 { 
@@ -1094,7 +997,6 @@ extern int16_t compositecacheevictcount;
 
 #endif
 
-extern int16_t advancedemo;
 
 boolean __far G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;

@@ -580,7 +580,6 @@ void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h);
 //
 // I_UpdateNoBlit
 //
-int16_t olddb[2][4];
 void __far I_UpdateNoBlit(void) {
 	int16_t realdr[4];
 	int16_t x, y, w, h;
@@ -641,14 +640,12 @@ void __far I_UpdateNoBlit(void) {
 
 void __far I_FinishUpdate(void);
 extern boolean novideo;
+
+
+
+
 void __near D_Display (void)
 {
-    static  boolean             viewactivestate = false;
-    static  boolean             menuactivestate = false;
-    static  boolean             inhelpscreensstate = false;
-    static  boolean             fullscreen = false;
-    static  gamestate_t         oldgamestate = -1;
-    static  uint8_t                 borderdrawcount;
 	int16_t                         y;
     boolean                     wipe;
     boolean                     redrawsbar;

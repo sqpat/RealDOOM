@@ -645,3 +645,185 @@ segment_t EMS_PAGE;
 
 spriteframe_t __far* p_init_sprtemp;
 int16_t             p_init_maxframe;
+
+
+
+
+boolean grmode = 0;
+boolean mousepresent;
+volatile uint32_t ticcount;
+// REGS stuff used for int calls
+union REGS regs;
+struct SREGS segregs;
+
+boolean novideo; // if true, stay in text mode for debugging
+#define KBDQUESIZE 32
+byte keyboardque[KBDQUESIZE];
+uint8_t kbdtail, kbdhead;
+union REGS in, out;
+
+
+
+void (__interrupt __far_func *oldkeyboardisr) (void) = NULL;
+byte __far *currentscreen;
+byte __far *destview;
+fixed_t_union destscreen;
+
+int16_t olddb[2][4];
+boolean             viewactivestate = false;
+boolean             menuactivestate = false;
+boolean             inhelpscreensstate = false;
+boolean             fullscreen = false;
+gamestate_t         oldgamestate = -1;
+uint8_t                 borderdrawcount;
+ticcount_t maketic;
+ticcount_t gametime;
+
+uint8_t			numChannels;	
+uint8_t	usegamma;
+
+
+//default_t	defaults[NUM_DEFAULTS];
+ 
+gameaction_t    gameaction; 
+gamestate_t     gamestate; 
+skill_t         gameskill; 
+boolean         respawnmonsters;
+int8_t             gameepisode; 
+int8_t             gamemap;
+ 
+boolean         paused; 
+boolean         sendpause;              // send a pause event next tic 
+boolean         sendsave;               // send a save event next tic 
+boolean         usergame;               // ok to save / end game 
+ 
+boolean         timingdemo;             // if true, exit with report on completion 
+//boolean         nodrawers;              // for comparative timing purposes 
+boolean         noblit;                 // for comparative timing purposes 
+ticcount_t             starttime;              // for comparative timing purposes       
+ 
+boolean         viewactive; 
+ 
+player_t        player;
+ 
+ticcount_t          gametic;
+int16_t             totalkills, totalitems, totalsecret;    // for intermission 
+ 
+int8_t            demoname[32];
+boolean         demorecording; 
+boolean         demoplayback; 
+boolean         netdemo; 
+
+uint16_t           demo_p;				// buffer
+//byte __far*           demoend; 
+boolean         singledemo;             // quit after playing a demo from cmdline 
+ 
+boolean         precache = true;        // if true, load all graphics at start 
+ 
+wbstartstruct_t wminfo;                 // parms for world map / intermission 
+ 
+  
+ 
+// 
+// controls (have defaults) 
+// 
+uint8_t             key_right;
+uint8_t             key_left;
+
+uint8_t             key_up;
+uint8_t             key_down;
+uint8_t             key_strafeleft;
+uint8_t             key_straferight;
+uint8_t             key_fire;
+uint8_t             key_use;
+uint8_t             key_strafe;
+uint8_t             key_speed;
+ 
+uint8_t             mousebfire;
+uint8_t             mousebstrafe;
+uint8_t             mousebforward;
+ 
+ int8_t         forwardmove[2] = {0x19, 0x32}; 
+int8_t         sidemove[2] = {0x18, 0x28};
+int16_t         angleturn[3] = {640, 1280, 320};        // + slow turn 
+
+
+boolean				gamekeydown[NUMKEYS];
+int8_t             turnheld;                               // for accelerative turning 
+ 
+boolean         mousearray[4]; 
+// note: i think the -1 array thing  might be causing 16 bit binary to act up - not 100% sure - sq
+boolean*        mousebuttons = &mousearray[1];          // allow [-1]
+
+// mouse values are used once 
+int16_t             mousex;
+int16_t             mousey;
+
+int32_t             dclicktime;
+int32_t             dclickstate;
+int32_t             dclicks;
+int32_t             dclicktime2;
+int32_t             dclickstate2;
+int32_t             dclicks2;
+
+ 
+int8_t             savegameslot;
+int8_t            savedescription[32];
+ticcmd_t localcmds[BACKUPTICS];
+
+
+
+
+int16_t		myargc;
+int8_t**		myargv;
+int16_t	rndindex = 0;
+int16_t	prndindex = 0;
+uint8_t		usemouse;
+
+ 
+default_t	defaults[28] ={
+    {"mouse_sensitivity",&mouseSensitivity, 5},
+    {"sfx_volume",&sfxVolume, 8},
+    {"music_volume",&musicVolume, 8},
+    {"show_messages",&showMessages, 1},
+    
+    {"key_right",&key_right, SC_RIGHTARROW, 1},
+    {"key_left",&key_left, SC_LEFTARROW, 1},
+    {"key_up",&key_up, SC_UPARROW, 1},
+    {"key_down",&key_down, SC_DOWNARROW, 1},
+    {"key_strafeleft",&key_strafeleft, SC_COMMA, 1},
+    {"key_straferight",&key_straferight, SC_PERIOD, 1},
+
+    {"key_fire",&key_fire, SC_RCTRL, 1},
+    {"key_use",&key_use, SC_SPACE, 1},
+    {"key_strafe",&key_strafe, SC_RALT, 1},
+    {"key_speed",&key_speed, SC_RSHIFT, 1},
+
+    {"use_mouse",&usemouse, 0},
+    {"mouseb_fire",&mousebfire,0},
+    {"mouseb_strafe",&mousebstrafe,1},
+    {"mouseb_forward",&mousebforward,2},
+
+    {"screenblocks",&screenblocks, 9},
+    {"detaillevel",&detailLevel, 0},
+
+    {"snd_channels",&numChannels, 3},
+    {"snd_musicdevice",&snd_DesiredMusicDevice, 0},
+    {"snd_sfxdevice",&snd_DesiredSfxDevice, 0},
+    {"snd_sbport",&snd_SBport8bit, 0x22}, // must be shifted one...
+    {"snd_sbirq",&snd_SBirq, 5},
+    {"snd_sbdma",&snd_SBdma, 1},
+    {"snd_mport",&snd_Mport8bit, 0x33},  // must be shifted one..
+
+    {"usegamma",&usegamma, 0}
+	 
+
+};
+
+int8_t*	defaultfile;
+
+int8_t*   defdemoname; 
+skill_t d_skill; 
+int8_t     d_episode;
+int8_t     d_map;
+boolean         secretexit; 

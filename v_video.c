@@ -61,7 +61,6 @@ int16_t				dirtybox[4];
 #define GC_COLORDONTCARE 7
 #define GC_BITMASK              8
 
-uint8_t	usegamma;
 extern boolean skipdirectdraws;
 //
 // V_MarkRect 

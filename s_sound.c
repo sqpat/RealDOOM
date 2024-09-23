@@ -111,7 +111,6 @@ extern int8_t musicVolume;
 // following is set
 //  by the defaults code in M_misc:
 // number of channels available
-int8_t			numChannels;	
 
 //static ticcount_t		nextcleanup;
 

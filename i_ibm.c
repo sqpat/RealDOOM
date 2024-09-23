@@ -38,6 +38,7 @@
 #include "st_stuff.h"
 
 #include "m_memory.h"
+#include "m_near.h"
 
 #define SC_INDEX                0x3C4
 #define SC_RESET                0
@@ -125,7 +126,6 @@ extern uint8_t usemouse;
 #define PEL_DATA                0x3c9
 #define PEL_MASK                0x3c6
 
-boolean grmode = 0;
 
 
 #define VBLCOUNTER 34000 // hardware tics to a frame
@@ -148,19 +148,9 @@ boolean grmode = 0;
 #define MOUSEB2 2
 #define MOUSEB3 4
 
-boolean mousepresent;
-
-volatile uint32_t ticcount;
-
-// REGS stuff used for int calls
-union REGS regs;
-struct SREGS segregs;
-
-boolean novideo; // if true, stay in text mode for debugging
-
 #define KBDQUESIZE 32
-byte keyboardque[KBDQUESIZE];
-uint8_t kbdtail, kbdhead;
+
+
 
 #define KEY_LSHIFT      0xfe
 
@@ -175,7 +165,6 @@ uint8_t kbdtail, kbdhead;
 #define SC_LSHIFT       0x2a
 
 
-union REGS in, out;
 
 //
 // User input
@@ -246,9 +235,6 @@ void __near I_SetPalette(int8_t paletteNumber) {
 // Graphics mode
 //
 
-byte __far *currentscreen;
-byte __far *destview;
-fixed_t_union destscreen;
 
 //
 // I_UpdateBox
@@ -459,8 +445,6 @@ void I_TimerISR(void)
 //
 // Keyboard
 //
-
-void (__interrupt __far_func *oldkeyboardisr) (void) = NULL;
 
 
 //
