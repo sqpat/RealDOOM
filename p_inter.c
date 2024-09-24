@@ -35,6 +35,7 @@
 
 #include "p_inter.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 
 #define BONUSADD	6
@@ -575,9 +576,6 @@ void __near P_TouchSpecialThing ( mobj_t __far*	special, mobj_t __far*	toucher, 
     player.bonuscount += BONUSADD;
 	S_StartSound (NULL, sound);
 }
-
-extern mobj_t __far* setStateReturn;
-extern mobj_pos_t __far* setStateReturn_pos;
 
 
 //

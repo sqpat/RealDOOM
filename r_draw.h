@@ -21,16 +21,7 @@
 #define __R_DRAW__
 
 
-extern segment_t dc_colormap_segment;
-extern uint8_t dc_colormap_index;
-extern int16_t dc_yl;
-extern int16_t dc_yh;
-extern fixed_t dc_iscale;
-extern fixed_t_union dc_texturemid;
 
-
-// first pixel in a column
-extern segment_t		dc_source_segment;
 
 #define COLORMAP_SHADOW 0xFF
 // The span blitting interface.
@@ -45,27 +36,7 @@ void 	__far R_DrawFuzzColumn (int16_t count, byte __far * dest);
 
 void __far R_VideoErase (uint16_t	ofs, int16_t		count );
 
-extern int16_t		ds_y;
-extern int16_t		ds_x1;
-extern int16_t		ds_x2;
 
-extern uint16_t ds_colormap_segment;
-extern uint8_t ds_colormap_index;
-
-extern fixed_t		ds_xfrac;
-extern fixed_t		ds_yfrac;
-extern fixed_t		ds_xstep;
-extern fixed_t		ds_ystep;
-extern int16_t      sp_bp_safe_space[2];
-extern int16_t      ss_variable_space[18];
-extern int8_t  	    spanfunc_main_loop_count;
-extern uint8_t 	    spanfunc_inner_loop_count[4];
-extern uint8_t      spanfunc_outp[4];
-extern int16_t    	spanfunc_prt[4];
-extern uint16_t    	spanfunc_destview_offset[4];
-
-// start of a 64*64 tile image
- extern segment_t ds_source_segment;
 
 // Span blitting for rows, floor/ceiling.
 // No Sepctre effect needed.

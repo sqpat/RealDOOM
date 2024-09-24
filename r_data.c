@@ -43,15 +43,6 @@
 
  
 
-#ifdef DETAILED_BENCH_STATS
-extern int16_t benchtexturetype;
-extern int16_t spritecacheevictcount;
-extern int16_t flatcacheevictcount;
-extern int16_t patchcacheevictcount;
-extern int16_t compositecacheevictcount ;
-
-#endif
- 
 
 
 
@@ -242,7 +233,6 @@ int8_t checkchecksum(int16_t l){
 
 
 
-extern int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
 
 // in this case numpages is 1-4, not 0-3
 // todo: consider moving a lot of these small data structures into DS/near memory
@@ -713,7 +703,6 @@ void __near R_GetNextSpriteBlock(int16_t lump) {
 //  and each column is cached.
 //
 
-extern int8_t current5000State;
 
 #define realpatch7000  ((patch_t __far *)  MK_FP(SCRATCH_PAGE_SEGMENT_7000, 0))
 

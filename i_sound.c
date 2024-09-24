@@ -41,7 +41,7 @@
 void I_StartupTimer(void)
 {
 
-	extern void I_TimerISR(void);
+	void I_TimerISR(void);
 
 	DEBUG_PRINT("I_StartupTimer()\n");
 	// installs master timer.  Must be done before StartupTimer()!
@@ -121,7 +121,6 @@ void I_StopSong(int16_t handle)
     // Fucking kluge pause
     {
         ticcount_t s;
-        extern volatile ticcount_t ticcount;
         for (s = ticcount; ticcount - s < 10; );
     }
 	*/

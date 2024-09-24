@@ -35,25 +35,13 @@
 #include "v_video.h"
 #include "w_wad.h"
 #include "z_zone.h"
-
-extern boolean novideo; 
-extern boolean grmode;
-
-
-extern byte __far *destview; 
-extern fixed_t_union destscreen;
-extern void ( __interrupt __far_func *oldkeyboardisr) (void);
-
-extern boolean mousepresent;
-extern boolean usemouse;
-
-extern void __interrupt I_KeyboardISR(void);
-extern int16_t __far I_ResetMouse(void);
-extern void __far I_StartupSound(void);
+#include "m_near.h"
+void __interrupt I_KeyboardISR(void);
+int16_t __far I_ResetMouse(void);
+void __far I_StartupSound(void);
 
 
 #define KBDQUESIZE 32
-extern byte keyboardque[KBDQUESIZE];
 #define KEYBOARDINT 9
 
 
@@ -104,9 +92,6 @@ extern byte keyboardque[KBDQUESIZE];
 #define CRTC_LINECOMPARE        24
 
 
-extern union REGS regs;
-extern struct SREGS segregs;
-
 
 
 
@@ -142,7 +127,7 @@ void __near I_StartupMouse(void) {
 }
 
 
-
+void __interrupt I_KeyboardISR(void);
 
 
 //

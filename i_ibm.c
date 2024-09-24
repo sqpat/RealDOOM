@@ -67,7 +67,6 @@
  
 
 
-extern uint8_t usemouse;
 
 
 
@@ -275,9 +274,6 @@ void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h) {
         }
     }
 } 
-#ifdef FPS_DISPLAY
-extern int32_t fps_rendered_frames_since_last_measure;
-#endif
 //
 // I_FinishUpdate
 //

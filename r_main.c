@@ -560,7 +560,6 @@ void R_SetupFrame () {
 //
 //void filelog2(int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, int16_t f);
 //int8_t tempbuf[5];
-//extern int8_t lastvisplane;
 
 #ifdef FPS_DISPLAY
 int8_t fps_buf[14];

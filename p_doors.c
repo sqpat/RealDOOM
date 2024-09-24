@@ -31,6 +31,7 @@
 #include "sounds.h"
 #include "i_system.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 //
 // VERTICAL DOORS

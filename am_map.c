@@ -154,8 +154,6 @@ void __far AM_Stop(void) {
 #define	automap_screenheight (SCREENHEIGHT - 32)
 
 
-extern boolean viewactive;
-extern int8_t hudneedsupdate;
 
 
 fixed_16_t __near MTOF16(fixed_16_t x) {
@@ -306,7 +304,6 @@ void __near AM_changeWindowLoc(void) {
 }
 
 
-extern boolean st_firsttime;
 //
 //
 //
@@ -1052,9 +1049,6 @@ void __near AM_drawCrosshair() {
     screen0[(automap_screenwidth*(automap_screenheight+1))/2] = XHAIRCOLORS; // single point for now
 
 }
-//extern int16_t setval;
-
-//extern void G_ExitLevel();
 void __far AM_Drawer (void) {
 
 	// sq - DEBUG: enable for easy/quick level change while debugging, i.e. to put pressure on memory

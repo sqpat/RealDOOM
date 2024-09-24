@@ -369,10 +369,6 @@ typedef struct
 
 
 
-// PC direct to screen pointers
-extern byte __far*	destview;
-extern fixed_t_union	destscreen;
-
 
 
 

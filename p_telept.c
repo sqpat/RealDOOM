@@ -33,8 +33,8 @@
 // State.
 #include "r_state.h"
 #include "m_memory.h"
+#include "m_near.h"
 
-extern mobj_t __far* setStateReturn;
 
 //
 // TELEPORTATION

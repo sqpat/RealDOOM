@@ -355,10 +355,6 @@ boolean __near P_CheckMissileRange (mobj_t __far* actor){
 //fixed_t	xspeed[8] = {FRACUNIT,47000,0,-47000,-FRACUNIT,-47000,0,47000};
 //fixed_t yspeed[8] = {0,47000,FRACUNIT,47000,0,-47000,-FRACUNIT,-47000};
 
-#define MAXSPECIALCROSS	8
-
-extern	int16_t	spechit[MAXSPECIALCROSS];
-extern	int16_t	numspechit;
 
 boolean __near P_Move (mobj_t __far* actor, mobj_pos_t __far*	actor_pos){
     fixed_t_union	tryx;

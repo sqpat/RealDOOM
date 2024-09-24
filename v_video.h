@@ -39,26 +39,10 @@
 
  
 
-//extern	byte*		screen4;
-
-extern  int16_t	dirtybox[4];
 #define NUM_MENU_ITEMS  45
 #define MAXLINEANIMS    64
 
-extern	uint8_t	usegamma;
-
-/*
-
-
-  8000:0000 screen0
-  8000:FA00 gammatable
-  8000:FF00 menuoffsets
-  8000:FF5A linespeciallist
-  8000:FFDA [empty]
-
-
-
-*/
+ 
 
 
 // Allocates buffer screens, call before R_Init.

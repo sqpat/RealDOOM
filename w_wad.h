@@ -59,7 +59,6 @@ typedef struct
 
 
 //#define lumpinfo4000 ((lumpinfo_t __far*) 0x44000000)
-extern	uint16_t		numlumps;
 
 
 int16_t	W_CheckNumForName (int8_t* name);

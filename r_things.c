@@ -712,8 +712,6 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
 
 }
 
-extern int16_t r_cachedplayerMobjsecnum;
-extern state_t r_cachedstatecopy[2];
 //
 // R_DrawPlayerSprites
 //

@@ -22,16 +22,12 @@
 //#include "m_misc.h"
 #include "i_system.h"
 #include <dos.h>
+#include "m_near.h"
 
 
-extern void __near D_DoomMain();
-
-extern int16_t		myargc;
-extern int8_t**		myargv;
+void __near D_DoomMain();
 /*
 // REGS stuff used for int calls
-extern union REGS regs;
-extern struct SREGS segregs;
 
 #define USED_DS 0x3A80
 // size of dgroup, about?

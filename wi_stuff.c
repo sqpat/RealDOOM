@@ -799,7 +799,6 @@ void __near WI_loadData(void) {
 
      
 
-extern boolean secretexit;
 //
 // G_WorldDone 
 //

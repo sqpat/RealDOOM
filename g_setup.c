@@ -56,32 +56,12 @@
 #include "r_data.h"
 
 #include "m_memory.h"
-
-
+#include "m_near.h"
 #include "g_game.h"
+
 #define NUMKEYS         256 
-extern uint16_t   __far  R_TextureNumForName(int8_t* name);
-//
-// G_DoLoadLevel 
-//
-extern  gamestate_t     wipegamestate;
-extern uint16_t		skytexture;
-extern ticcount_t             starttime;              // for comparative timing purposes       
-extern boolean			gamekeydown[NUMKEYS];
+uint16_t   __far  R_TextureNumForName(int8_t* name);
 
-
-// mouse values are used once 
-extern int8_t             mousex;
-extern int8_t             mousey;
-
-extern boolean         sendpause;              // send a pause event next tic 
-extern boolean         sendsave;               // send a save event next tic 
-
-extern boolean*        mousebuttons;
-extern boolean         mousearray[4];
-
-   
-extern int16_t             numtextures;
 
 
 // R_CheckTextureNumForName

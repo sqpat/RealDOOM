@@ -712,7 +712,6 @@ This area used during intermission task
 #define tallpercent  61304u
 #define tallpercent_patch  ((byte __far *) 0x7000EF78)
 
-//extern byte __far* palettebytes;
 #define palettebytes_size  10752
 #define palettebytes ((byte __far*) 0x90000000)
 // 10752 bytes / 16 = 672 or 2A0 for offset

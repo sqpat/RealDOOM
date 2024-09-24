@@ -615,9 +615,6 @@ void __far Z_QuickMapByTaskNum(int8_t tasknum) {
 	}
 }
 
-extern int8_t visplanedirty;
-extern int8_t skytextureloaded;
-
 // virtual to physical page mapping. 
 // 0 means unmapped. 1 means 8400, 2 means 8800, 3 means 8C00;
 

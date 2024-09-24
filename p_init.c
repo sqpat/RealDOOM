@@ -38,25 +38,9 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-extern uint16_t		switchlist[MAXSWITCHES * 2];
-extern int16_t		numswitches;
-extern button_t        buttonlist[MAXBUTTONS];
 
- 
-//todo move this data into functions so it's pulled into overlay space and paged out to free memory
-
-
-
-//extern byte __far* texturedefs_bytes; 
-extern int16_t             numtextures;
- 
-
-// R_CheckTextureNumForName
-// Check whether texture is available.
-// Filter out NoTexture indicator.
-//
-extern uint16_t  __far   R_TextureNumForName(int8_t* name);
-extern uint16_t  __far   R_CheckTextureNumForName(int8_t *name);
+uint16_t  __far   R_TextureNumForName(int8_t* name);
+uint16_t  __far   R_CheckTextureNumForName(int8_t *name);
   
 
 
@@ -174,7 +158,7 @@ typedef struct
 
 
 
-extern uint8_t __far R_FlatNumForName(int8_t* name);
+uint8_t __far R_FlatNumForName(int8_t* name);
 
 
 
@@ -339,10 +323,6 @@ __near R_InstallSpriteLump
 
  
 
-
- extern spritedef_t __far* sprites;
-
-extern int16_t             numsprites;
 
 
 //

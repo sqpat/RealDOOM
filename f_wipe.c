@@ -172,7 +172,6 @@ int16_t __near wipe_doMelt2 ( int16_t	ticks ) {
 
 #define GC_INDEX                0x3CE
 #define GC_READMAP              4
-extern byte __far *currentscreen;
 
 //
 // I_ReadScreen
@@ -221,11 +220,7 @@ void __far I_FinishUpdate(void);
 
 
 
-#ifdef FPS_DISPLAY
-extern int32_t fps_rendered_frames_since_last_measure;
-#endif
 
-extern int8_t hudneedsupdate;
 
 void __far wipe_WipeLoop(){
 	ticcount_t                         nowtime, wipestart;

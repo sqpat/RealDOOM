@@ -29,6 +29,7 @@
 #include "sounds.h"
 #include "i_system.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 
 //
@@ -38,15 +39,7 @@
 //
 // Move a plane (floor or ceiling) and check for crushing
 //
-result_e
-__near T_MovePlane
-( sector_t __far*	sector,
-  short_height_t	speed,
-  short_height_t	dest,
-  boolean	crush,
-  int16_t		floorOrCeiling,
-  int16_t		direction )
-{
+result_e __near T_MovePlane ( sector_t __far*	sector, short_height_t	speed, short_height_t	dest, boolean	crush, int16_t		floorOrCeiling, int16_t		direction ) {
     boolean	somethingcrushed; // plane will possibly move less
     short_height_t	lastpos;
 #ifdef		PRECALCULATE_OPENINGS

@@ -920,7 +920,6 @@ void __near P_RemoveMobj (mobj_t __far* mobj)
 //
 // P_SpawnPuff
 //
-extern int16_t attackrange16;
 
 void __near P_SpawnPuff ( fixed_t	x, fixed_t	y, fixed_t	z ){
 	mobj_t __far*	th;

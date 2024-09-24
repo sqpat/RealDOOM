@@ -53,6 +53,7 @@
 #include "sounds.h"
 #include <dos.h>
 #include "m_memory.h"
+#include "m_near.h"
 
 
 //

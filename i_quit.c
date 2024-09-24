@@ -18,10 +18,8 @@
 #include "w_wad.h"
 #include "z_zone.h"
 #include "dmx.h"
+#include "m_near.h"
 
-
-extern union REGS regs;
-extern struct SREGS segregs;
 
 //
 // I_ShutdownSound
@@ -31,7 +29,6 @@ void __near I_ShutdownSound(void)
 {
 	/*
 	ticcount_t s;
-	extern volatile ticcount_t ticcount;
 	S_PauseSound();
 	s = ticcount + 30;
 	while (s != ticcount);
@@ -50,13 +47,8 @@ void __near I_ShutdownGraphics(void) {
 	}
 }
 
-extern void( __interrupt __far_func *OldInt8)(void);
-extern void  (__interrupt __far_func *oldkeyboardisr) (void);
 #define KEYBOARDINT 9
 
-extern task HeadTask;
-extern int8_t TS_Installed;
-extern volatile int32_t TS_InInterrupt;
 #define TRUE (1 == 1)
 #define FALSE (!TRUE)
 
@@ -70,8 +62,6 @@ void __interrupt __far_func TS_ServiceScheduleIntEnabled(void);
 
 
 
-extern boolean mousepresent;
-extern boolean usemouse;
 int16_t __far I_ResetMouse(void);
 
 
@@ -143,7 +133,6 @@ void __near I_ShutdownMouse(void) {
 
 
 
-extern uint16_t UMBbase;
  
 
 
@@ -176,8 +165,6 @@ void __near Z_ShutdownEMS() {
 }
 
 
-extern FILE* wadfilefp;
-extern FILE* wadfilefp2;
 //
 // I_Shutdown
 // return to default system state
@@ -201,8 +188,6 @@ void __near I_Shutdown(void) {
 	//Z_ShutdownUMB();
 }
 
-extern default_t	defaults[28];
-extern int8_t* defaultfile;
 
 
 //

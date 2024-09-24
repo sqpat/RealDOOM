@@ -139,40 +139,6 @@ M_ReadFile
 // DEFAULTS
 //
 
-extern uint8_t	key_right;
-extern uint8_t	key_left;
-extern uint8_t	key_up;
-extern uint8_t	key_down;
-
-extern uint8_t	key_strafeleft;
-extern uint8_t	key_straferight;
-
-extern uint8_t	key_fire;
-extern uint8_t	key_use;
-extern uint8_t	key_strafe;
-extern uint8_t	key_speed;
-
-extern uint8_t	mousebfire;
-extern uint8_t	mousebstrafe;
-extern uint8_t	mousebforward;
-
-extern uint8_t	mouseSensitivity;
-extern uint8_t	showMessages;
-
-extern uint8_t	detailLevel;
-
-extern uint8_t	screenblocks;
-
-
-// machine-independent sound params
-
-extern uint8_t sfxVolume;
-extern uint8_t musicVolume;
-extern uint8_t snd_SBport8bit, snd_SBirq, snd_SBdma;
-extern uint8_t snd_Mport8bit;
-
-
- 
 
 
 

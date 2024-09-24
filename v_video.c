@@ -60,7 +60,6 @@
 #define GC_COLORDONTCARE 7
 #define GC_BITMASK              8
 
-extern boolean skipdirectdraws;
 //
 // V_MarkRect 
 // 

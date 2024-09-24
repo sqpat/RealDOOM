@@ -35,18 +35,6 @@
 #define NULL_THINKERREF 0
 
  
-#ifdef DETAILED_BENCH_STATS
-extern int32_t taskswitchcount;
-extern int32_t texturepageswitchcount;
-extern int32_t flatpageswitchcount;
-extern int32_t scratchpageswitchcount;
-extern int32_t patchpageswitchcount;
-extern int32_t compositepageswitchcount;
-extern int32_t spritepageswitchcount;
-extern int32_t lumpinfo9000switchcount;
-extern int32_t lumpinfo5000switchcount;
-
-#endif
 
 
 
@@ -65,11 +53,6 @@ extern int32_t lumpinfo5000switchcount;
 #define FLAT_CACHE_OVERHEAD_SIZE numflats
 #define CACHE_OVERHEAD_SIZE (TEXTURE_CACHE_OVERHEAD_SIZE + SPRITE_CACHE_OVERHEAD_SIZE + PATCH_CACHE_OVERHEAD_SIZE + FLAT_CACHE_OVERHEAD_SIZE)
 
-// 27099 - should go to c802
- extern uint16_t STATIC_CONVENTIONAL_BLOCK_SIZE;
-extern uint16_t remainingconventional;
-
-extern uint16_t EMS_PAGE;
 
 
 #define PAGE_9000_OFFSET + 0
@@ -261,7 +244,6 @@ void __far Z_QuickMapUnmapAll();
 
     #define PAGE_SWAP_ARG_MULT 2
 
-    extern int16_t emshandle;
 
     
 #endif
@@ -436,7 +418,6 @@ void __far Z_QuickMapUnmapAll();
 #define pageswapargs_rend_other9000_offset              (pageswapargs_rend_offset + 24*PAGE_SWAP_ARG_MULT)
 
 
-extern uint16_t pageswapargs[total_pages];
 //#define pageswapargs_textcache ((int16_t*)&pageswapargs_rend[40])
 
 // EMS 4.0 stuff

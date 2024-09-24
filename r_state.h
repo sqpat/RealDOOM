@@ -115,96 +115,12 @@ MAX_SEGS_RENDER_SIZE		28150
 
 
 
-// needed for pre rendering (fracs)
-//extern int16_t		*spritewidths;
-//extern int16_t		 __far*spriteoffsets;
-//extern int16_t		 __far*spritetopoffsets;
-
 
 #define MAXOPENINGS	SCREENWIDTH*64
 #define MAXVISSPRITES  	128
 
 
 
-
-
-
-extern int16_t		viewwidth;
-extern int16_t		scaledviewwidth;
-extern int16_t		viewheight;
-
-extern int16_t		firstflat;
-
-
-
-
-
-
-
-
-
-// Sprite....
-
-
-extern int16_t		firstspritelump;
-extern int16_t		numspritelumps;
-
-extern int16_t             firstflat;
-extern int16_t             numflats;
-
-extern int16_t             firstpatch;
-extern int16_t             numpatches;
-extern int16_t             numtextures;
-
-
-//
-// Lookup tables for map data.
-//
-extern int16_t		numsprites;
-extern spritedef_t __far*	sprites;
-
-extern int16_t		numvertexes;
-extern vertex_t __far*	vertexes;
-
-extern int16_t		numsegs;
-
-
-extern int16_t		numsectors;
-extern sector_t __far* sectors;
-
-
-
-
-
-extern int16_t		numsubsectors;
-extern int16_t		numnodes;
-extern int16_t		numlines;
-extern int16_t		numsides;
-
-
-#ifdef PRECALCULATE_OPENINGS
-extern lineopening_t __far*	lineopenings;
-#endif
-
-//
-// POV data.
-//
-extern fixed_t_union		viewx;
-extern fixed_t_union		viewy;
-extern fixed_t_union		viewz;
-extern short_height_t		viewz_shortheight;
-extern angle_t		viewangle;
-extern fineangle_t		viewangle_shiftright3;
-
-
-
-extern fixed_t		rw_distance;
-extern fineangle_t	rw_normalangle;
-
-
-
-// angle to line origin
- extern angle_t			rw_angle1;
 
 
 // 646
@@ -220,9 +136,7 @@ extern fineangle_t	rw_normalangle;
   
 
 
-
-extern int16_t	floorplaneindex;
-extern int16_t	ceilingplaneindex;
+ 
 
 
 #endif

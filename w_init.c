@@ -30,11 +30,9 @@
 #include "w_wad.h"
 #include "r_defs.h"
 #include <dos.h>
+#include "m_near.h"
 
 
-extern FILE*					wadfilefp;
-extern FILE*					wadfilefp2;
-extern uint16_t                     numlumps;
  
 
 

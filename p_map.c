@@ -1622,7 +1622,6 @@ void __near P_RadiusAttack (mobj_t __far* spot, mobj_pos_t __far* spot_pos, mobj
 //  to undo the changes.
 //
 
-extern mobj_t __far* setStateReturn;
 
 //
 // PIT_ChangeSector

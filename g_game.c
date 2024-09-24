@@ -131,7 +131,7 @@ uint8_t __far R_FlatNumForName(int8_t* name)
 	return (uint8_t)(i - firstflat);
 }
 
-extern uint16_t     R_CheckTextureNumForName(int8_t *name);
+uint16_t     R_CheckTextureNumForName(int8_t *name);
 
 //
 // R_TextureNumForName
@@ -378,12 +378,6 @@ void __near G_DoWorldDone(void) {
 	viewactive = true;
 
 }
-
-
-extern boolean         netdemo;
-extern skill_t d_skill;
-extern int8_t     d_episode;
-extern int8_t     d_map;
 
 
 void __near G_DoNewGame(void) {
@@ -687,7 +681,6 @@ void __near G_DoCompleted (void)  {
 // G_InitFromSavegame
 // Can be called by the startup code or the menu task. 
 //
-extern boolean setsizeneeded;
 
 //int8_t    savename[256];
 
@@ -984,18 +977,6 @@ void __near G_DoPlayDemo (void)
 = Returns true if a new demo loop action will take place 
 =================== 
 */ 
-
- #ifdef DETAILED_BENCH_STATS
-
-extern uint16_t physicstics, rendertics, othertics, rendersetuptics, renderplayerviewtics, renderpostplayerviewtics;
-extern uint16_t renderplayersetuptics, renderplayerbsptics, renderplayerplanetics, renderplayermaskedtics, cachedrenderplayertics;
-extern int16_t spritecacheevictcount;
-extern int16_t flatcacheevictcount;
-extern int16_t patchcacheevictcount;
-extern int16_t compositecacheevictcount;
-
-#endif
-
 
 boolean __far G_CheckDemoStatus (void)  { 
 	ticcount_t             endtime;

@@ -389,8 +389,6 @@ int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t
 }
 
 
-extern void (__far* R_DrawColumnPrepCall)(uint16_t);
-
 #define SC_INDEX			0x3C4
 
 void __far R_DrawSkyColumn(int16_t dc_yh, int16_t dc_yl);

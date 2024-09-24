@@ -202,8 +202,6 @@ typedef struct
 #define playerMobj_pos	((&mobjposlist[playerMobjRef]))
 #define playerMobj		((mobj_t __far *) (((byte __far*)thinkerlist) + (playerMobjRef*sizeof(thinker_t) + 2 * sizeof(THINKERREF))))
 
-//extern intercept_t	*intercepts;// [MAXINTERCEPTS];
-extern intercept_t __far*	intercept_p;
 
 typedef boolean __near (*traverser_t ) (intercept_t __far*in);
 
@@ -214,7 +212,6 @@ void 	__near P_MakeDivline (int16_t linedx, int16_t linedy, int16_t linenum, div
 int8_t 	__near P_BoxOnLineSide (slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y);
 
 
-extern lineopening_t lineopening;
 
 #ifdef	PRECALCULATE_OPENINGS
 void P_LoadLineOpening(int16_t linenumer);
@@ -231,7 +228,6 @@ boolean __near P_BlockThingsIterator (int16_t x, int16_t y, boolean __near ( *  
 #define PT_ADDTHINGS	2
 #define PT_EARLYOUT		4
 
-extern divline_t	trace;
 
 void
 __near P_PathTraverse
@@ -252,12 +248,6 @@ void __near P_SetThingPosition (mobj_t __far* thing, mobj_pos_t __far* mobj_pos,
 
 // If "floatok" true, move would be ok
 // if within "tmfloorz - tmceilingz".
-extern boolean		floatok;
-extern short_height_t		tmfloorz;
-extern short_height_t		tmceilingz;
-
-
-extern	int16_t		ceilinglinenum;
 
 boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union x, fixed_t_union y, int16_t oldsecnum);
 boolean __near P_TryMove (mobj_t __far* thing, mobj_pos_t __far* thing_pos, fixed_t_union x, fixed_t_union y);
@@ -271,9 +261,6 @@ boolean __far P_CheckSight (mobj_t __far* t1,mobj_t __far* t2,mobj_pos_t __far* 
 void 	__near P_UseLines ();
 boolean __near P_ChangeSector (sector_t __far* sector, boolean crunch);
 
-extern mobj_t __far*	linetarget;	// who got hit (or NULL)
-extern mobj_pos_t __far*	linetarget_pos;	// who got hit (or NULL)
-
 
 
 fixed_t __near P_AimLineAttack(mobj_t __far*	t1,fineangle_t	angle,int16_t	distance);
@@ -281,24 +268,6 @@ void __near P_LineAttack(mobj_t __far*	t1,fineangle_t	angle,int16_t	distance,fix
 void __near P_RadiusAttack (mobj_t __far*	spot,mobj_pos_t __far* spot_pos,mobj_t __far*	source, int16_t		damage );
 
 
-
-//
-// P_SETUP
-//
-//extern byte   __far*	rejectmatrix;	// for fast sight rejection
-extern int16_t		bmapwidth;
-extern int16_t		bmapheight;	// in mapblocks
-extern int16_t		bmaporgx;
-extern int16_t		bmaporgy;	// origin of block map
-
-extern  int16_t	numlinespecials;
-
-
-//
-// P_INTER
-//
-extern int16_t		maxammo[NUMAMMO];
-extern int8_t		clipammo[NUMAMMO];
 
 void __near P_TouchSpecialThing (mobj_t __far*	special,mobj_t __far*	toucher,mobj_pos_t  __far*special_pos,mobj_pos_t  __far*toucher_pos);
 void __near P_DamageMobj(mobj_t __far*	target,mobj_t __far*	inflictor,mobj_t __far*	source,int16_t		damage );

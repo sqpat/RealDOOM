@@ -40,6 +40,7 @@
 #include "doomstat.h"
 #include <dos.h>
 #include "m_memory.h"
+#include "m_near.h"
 
 
 
@@ -428,7 +429,6 @@ void __far G_PlayerReborn();
  
 
 
-extern mobj_t __far* setStateReturn;
 
 
 
@@ -856,7 +856,6 @@ void __near P_GroupLines(void) {
 
 }
 
-extern int16_t currentThinkerListHead;
 
 //
 // P_InitThinkers
@@ -879,39 +878,7 @@ void  __near P_InitThinkers (void) {
 
 
  
-extern int16_t spriteLRU[4];
-extern int16_t activespritepages[4];
- 
 
-
-extern int16_t activetexturepages[4]; // always gets reset to defaults at start of frame
-extern int16_t textureLRU[4];
-extern uint8_t activenumpages[4]; // always gets reset to defaults at start of frame
-extern int16_t currentflatpage[4];
-extern uint8_t activespritenumpages[4];
-
-
-extern int8_t spritecache_head;
-extern int8_t spritecache_tail;
-
-extern int8_t flatcache_head;
-extern int8_t flatcache_tail;
-
-extern int8_t allocatedflatsperpage[NUM_FLAT_CACHE_PAGES];
-
-extern int8_t patchcache_head;
-extern int8_t patchcache_tail;
-
-extern int8_t texturecache_head;
-extern int8_t texturecache_tail;
-
-extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES];
-extern uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
-extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
-extern int8_t skytextureloaded;
-
-extern int32_t fps_rendered_frames_since_last_measure;
-extern ticcount_t fps_last_measure_start_tic;
 
 
 #define STATIC_CONVENTIONAL_BLOCK_SIZE DESIRED_UMB_SIZE << 4

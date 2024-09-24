@@ -21,20 +21,11 @@
 #define __R_THINGS__
 
 
-extern vissprite_t __far*	vissprite_p;
-extern vissprite_t	vsprsortedhead;
 
 // Constant arrays used for psprite clipping
 //  and initializing clipping.
 
-// vars for R_DrawMaskedColumn
-extern int16_t __far*		mfloorclip;
-extern int16_t __far*		mceilingclip;
-extern fixed_t_union		spryscale;
-extern fixed_t_union		sprtopscreen;
 
-extern uint16_t		pspritescale;
-extern fixed_t		pspriteiscale;
 
 void __near R_DrawSingleMaskedColumn (segment_t pixeldata_segment, byte length);
 void __near R_DrawMaskedColumn (segment_t pixeldata_segment, column_t __far* postdata);

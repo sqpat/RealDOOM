@@ -142,7 +142,6 @@ P_PointOnLineSide16
 // Returns side 0 or 1, -1 if box crosses the line.
 //
 
-extern fixed_t_union		tmbbox[4];
 
 int8_t __near P_BoxOnLineSide (  slopetype_t	lineslopetype, int16_t linedx, int16_t linedy, int16_t v1x, int16_t v1y ) {
 

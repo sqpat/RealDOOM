@@ -25,9 +25,6 @@
 //
 // MISC
 //
-extern  int16_t myargc;
-extern  int8_t** myargv;
-extern int16_t prndindex;
 
 
 
@@ -69,6 +66,5 @@ typedef struct{
 } default_t;
 
 
-extern default_t defaults[NUM_DEFAULTS];
 
 #endif

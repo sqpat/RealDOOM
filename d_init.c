@@ -243,7 +243,6 @@ void __near D_RedrawTitle(int8_t __near *title) {
 //
 // M_LoadDefaults
 //
-extern int8_t*	defaultfile;
 
 
  
@@ -397,7 +396,6 @@ void __near M_LoadDefaults(void) {
 }
 
 
-extern uint16_t	hu_font[HU_FONTSIZE];
 
 void __near makethreecharint(int16_t j, char __far *str ){
 	int16_t val = j / 10;
@@ -527,9 +525,6 @@ void DUMP_MEMORY_TO_FILE() {
 int16_t main ( int16_t		argc, int8_t**	argv ) ;
  //void fakefunc();
 
-extern int8_t demoname[32];
-extern boolean timingdemo;
-extern int8_t* defdemoname;
 
 //
 // G_RecordDemo 
@@ -1057,8 +1052,6 @@ R_PointToAngle(y, x);
 	if ((p = M_CheckParm("-turbo")))
 	{
 		int16_t     scale = 200;
-		extern int8_t forwardmove[2];
-		extern int8_t sidemove[2];
 
 		if (p < myargc - 1)
 			scale = atoi(myargv[p + 1]);

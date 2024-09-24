@@ -35,15 +35,6 @@
 
 
 
-extern union REGS regs;
-
-
-//
-// Z_InitUMB
-//
-
-
-
 
 
 // based a bit off wolf3d and catacomb source code

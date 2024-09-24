@@ -187,7 +187,6 @@ void __near R_ClearClipSegs (void) {
     newend = solidsegs+2;
 }
 
-extern angle_t __far* tantoangle;
 
 //
 // R_AddLine
@@ -504,10 +503,6 @@ boolean __near R_CheckBBox(int16_t __far *bspcoord) {
 	return true;
 }
 
-extern int8_t ceilphyspage;
-extern int8_t floorphyspage;
-extern byte __far * ceiltop;
-extern byte __far * floortop;
 //
 // R_Subsector
 // Determine floor/ceiling planes.

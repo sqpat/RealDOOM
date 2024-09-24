@@ -256,40 +256,7 @@ typedef enum
 #define ST_MAPTITLEY            0
 #define ST_MAPHEIGHT            1
 
-
-
-// whether in automap or first-person
-extern st_stateenum_t   st_gamestate;
-
-// whether left-side main status bar is active
-extern boolean          st_statusbaron;
-
-
-// 0-9, tall numbers
-extern uint16_t         tallnum[10];
-
-
-// 0-9, short, yellow (,different!) numbers
-extern uint16_t         shortnum[10];
-
-// 3 key-cards, 3 skulls
-extern uint16_t         keys[NUMCARDS];
-
-// face status patches
-extern uint16_t         faces[ST_NUMFACES];
-
-// face background
-extern uint16_t         faceback;
-
-
-
-// main bar right
-//extern uint16_t         armsbg[1];
-
-// weapon ownership patches
-extern uint16_t	arms[6][2];
-
-
+ 
 
 
 #endif

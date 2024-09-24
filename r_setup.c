@@ -53,8 +53,6 @@
 // status bar height at bottom of screen
 #define SBARHEIGHT		32
 
-extern boolean setsizeneeded;
-extern uint8_t		setblocks;
  
 
 // finetangent(FINEANGLES / 4 + FIELDOFVIEW / 2)
@@ -197,8 +195,6 @@ void __near R_InitTextureMapping(void) {
 
 }
 
-extern int8_t hudneedsupdate;
-extern int16_t setdetail;
 //
 // R_ExecuteSetViewSize
 //

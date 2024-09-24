@@ -43,10 +43,7 @@
 
 
 
-// extern byte __far* pageFrameArea;
 
-extern union REGS regs;
-extern struct SREGS segregs;
 
 // EMS STUFF
 
@@ -157,8 +154,6 @@ void __near Z_GetEMSPageMap()
 }
 
 #else
-extern int16_t emshandle;
-extern int16_t pagenum9000;
 byte __far *__near Z_InitEMS() {
 
 	// 4 mb

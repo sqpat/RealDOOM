@@ -26,8 +26,6 @@
 //
 // End-level timer (-TIMER option)
 //
-extern	boolean levelTimer;
-extern	ticcount_t	levelTimeCount;
 
 
 //      Define values for map objects
@@ -178,7 +176,6 @@ typedef struct
  // 1 second, in ticks. 
 #define BUTTONTIME      35             
 
-extern button_t	buttonlist[MAXBUTTONS]; 
 
 void __near P_ChangeSwitchTexture (int16_t linenum, int16_t lineside0, uint8_t linespecial, int16_t linefrontsecnum, int16_t useAgain);
 
@@ -230,7 +227,6 @@ typedef struct
 #define MAXPLATS		30
 
 
-extern THINKERREF	activeplats[MAXPLATS];
 
 void __near T_PlatRaise(plat_t __far* plat, THINKERREF platRef);
 
@@ -346,7 +342,6 @@ typedef struct
 #define CEILWAIT		150
 #define MAXCEILINGS		30
 
-extern THINKERREF	activeceilings[MAXCEILINGS];
 
 int16_t __near EV_DoCeiling (uint8_t linetag, ceiling_e	type );
 

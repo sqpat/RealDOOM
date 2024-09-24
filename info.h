@@ -1332,21 +1332,21 @@ typedef struct
 
 /*
  
-extern int32_t getMobjMass(uint8_t id);
-extern int16_t getPainChance(uint8_t id);
-extern int16_t getRaiseState(uint8_t id);
-extern int16_t getMeleeState(uint8_t id);
-extern int16_t getXDeathState(uint8_t id);
-extern sfxenum_t getActiveSound(uint8_t id);
-extern sfxenum_t getPainSound(uint8_t id);
-extern sfxenum_t getAttackSound(uint8_t id);
-extern uint8_t getDamage(uint8_t id);
-extern statenum_t getSeeState(uint8_t id);
-extern statenum_t getMissileState(uint8_t id);
-extern statenum_t getDeathState(uint8_t id);
-extern statenum_t getPainState(uint8_t id);
-extern int16_t getSpawnHealth(uint8_t id);
-//extern int16_t fakefunc(uint8_t id);
+int32_t getMobjMass(uint8_t id);
+int16_t getPainChance(uint8_t id);
+int16_t getRaiseState(uint8_t id);
+int16_t getMeleeState(uint8_t id);
+int16_t getXDeathState(uint8_t id);
+sfxenum_t getActiveSound(uint8_t id);
+sfxenum_t getPainSound(uint8_t id);
+sfxenum_t getAttackSound(uint8_t id);
+uint8_t getDamage(uint8_t id);
+statenum_t getSeeState(uint8_t id);
+statenum_t getMissileState(uint8_t id);
+statenum_t getDeathState(uint8_t id);
+statenum_t getPainState(uint8_t id);
+int16_t getSpawnHealth(uint8_t id);
+//int16_t fakefunc(uint8_t id);
 */
 
 #endif

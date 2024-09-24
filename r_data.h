@@ -25,7 +25,6 @@
 
 // Retrieve column data for span blitting.
 
-extern uint16_t		skytexture;
 
 #define CACHETYPE_SPRITE	0
 #define CACHETYPE_FLAT		1

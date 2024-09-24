@@ -42,13 +42,8 @@
 
 
 
+uint8_t R_FlatNumForName(int8_t* name);
 
-extern uint8_t			skyflatnum;
-
- 
-
-
-extern uint8_t R_FlatNumForName(int8_t* name);
 
 
 #define DISTMAP		2
@@ -793,8 +788,6 @@ void __near R_InitData(void) {
 }
 
 
-extern uint8_t                     detailLevel;
-extern uint8_t                     screenblocks;
 
 void __near R_Init(void)
 {

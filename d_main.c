@@ -546,9 +546,7 @@ void __far makesavegamename(char __far *name, int8_t i){
 
 }
 
-extern patch_t __far* M_GetMenuPatch(int16_t i);
-extern  boolean setsizeneeded;
-extern  uint8_t             showMessages;
+patch_t __far* M_GetMenuPatch(int16_t i);
 
 
 void __near R_ExecuteSetViewSize (void);
@@ -567,14 +565,11 @@ void __far D_StartTitle(void)
     advancedemo = true;
 }
 
-extern mobj_t __far * SAVEDUNIT;
-extern mobj_pos_t __far * SAVEDUNIT_POS;
 //
 // D_Display
 //  draw current display, possibly wiping it from the previous
 //
 
-extern byte __far *currentscreen;
 void __near I_UpdateBox(int16_t x, int16_t y, int16_t w, int16_t h);
 
 //
@@ -639,7 +634,6 @@ void __far I_UpdateNoBlit(void) {
 }
 
 void __far I_FinishUpdate(void);
-extern boolean novideo;
 
 
 
@@ -816,7 +810,6 @@ void __near D_Display (void)
 #endif
 }
  
-extern uint16_t demo_p;				// buffer
 
 void __near G_BeginRecording (void)  { 
 	byte __far* demo_addr = (byte __far*)MK_FP(DEMO_SEGMENT, demo_p);
@@ -847,7 +840,6 @@ void __near G_BeginRecording (void)  {
 //
 //  D_DoomLoop
 //
-extern  boolean         demorecording;
 // Called by D_DoomMain,
 // determines the hardware configuration
 // and sets up the video mode
@@ -1061,9 +1053,8 @@ void __near D_PageDrawer (void)
 
 
 
-extern void D_InitStrings();
+void D_InitStrings();
 
-extern angle_t __far* tantoangle;
 
 // clears dead initialization code.
 void __near Z_ClearDeadCode() {

@@ -66,16 +66,7 @@
 #define NA			0
 #define S_NUMCHANNELS		2
 
-
-// Current music/sfx card - index useless
-//  w/o a reference LUT in a sound module.
-extern uint8_t snd_MusicDevice;
-extern uint8_t snd_SfxDevice;
-// Config file? Same disclaimer as above.
-extern uint8_t snd_DesiredMusicDevice;
-extern uint8_t snd_DesiredSfxDevice;
-
-
+ 
 
 typedef struct
 {

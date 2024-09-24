@@ -97,56 +97,6 @@ typedef struct
 
  
 
- 
-
-// ready-weapon widget
-extern st_number_t      w_ready;
-
-
-// health widget
-extern st_percent_t     w_health;
-
-// arms background
-extern st_multicon_t     w_armsbg;
-
-
-// weapon ownership widgets
-extern st_multicon_t    w_arms[6];
-
-// face status widget
-extern st_multicon_t    w_faces;
-
-// keycard widgets
-extern st_multicon_t    w_keyboxes[3];
-
-// armor widget
-extern st_percent_t     w_armor;
-
-// ammo widgets
-extern st_number_t      w_ammo[4];
-
-// max ammo widgets
-extern st_number_t      w_maxammo[4];
-
-
-
-
-// used to use appopriately pained face
-extern int16_t      st_oldhealth;
-
-// used for evil grin
-extern boolean  oldweaponsowned[NUMWEAPONS];
-
-// count until face changes
-extern int16_t      st_facecount;
-
-// current face index, used by w_faces
-extern int16_t      st_faceindex;
-
-// holds key-type for each key box on bar
-extern int16_t      keyboxes[3];
-
-// a random number per tick
-extern uint8_t      st_randomnumber;
+  
 
 #endif

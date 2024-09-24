@@ -35,7 +35,6 @@ void __near I_Init (void);
 // to get the ammount of memory to malloc
 // for the zone management.
 
-extern volatile uint32_t ticcount;
 
 
  

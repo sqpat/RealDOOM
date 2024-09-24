@@ -23,23 +23,7 @@
 #include "d_player.h"
 #include "r_data.h"
 
-
-//
-// POV related.
-//
-extern int16_t		viewwidth;
-extern int16_t		viewheight;
-extern int16_t		viewwindowx;
-extern int16_t		viewwindowy;
-extern int16_t      viewwindowoffset;
-
-
-extern int16_t		centerx;
-extern int16_t		centery;
-
-extern fixed_t_union		centeryfrac_shiftright4;
-
-extern int16_t		validcount;
+ 
 
 //
 // Lighting LUT.
@@ -57,12 +41,7 @@ extern int16_t		validcount;
 #define MAXLIGHTZ	       128
 #define LIGHTZSHIFT		20
 
-
-
-extern uint8_t		extralight;
-extern uint8_t	fixedcolormap;
-
-extern byte __far*			texturecache;
+ 
 
 // Number of diminishing brightness levels.
 // There a 0-31, i.e. 32 LUT in the COLORMAP lump.
@@ -72,7 +51,6 @@ extern byte __far*			texturecache;
 // Blocky/low detail mode.
 //B remove this?
 //  0 = high, 1 = low
-extern	int16_t_union		detailshift;	
 
 
 //
