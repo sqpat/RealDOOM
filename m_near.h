@@ -33,6 +33,8 @@
 #include "m_menu.h"
 #include "wi_stuff.h"
 #include "p_spec.h"
+#include "p_local.h"
+#include "z_zone.h"
 
 
 #if (EXE_VERSION < EXE_VERSION_ULTIMATE)
@@ -834,3 +836,227 @@ extern int16_t currentThinkerListHead;
 extern mobj_t __far* setStateReturn;
 extern mobj_pos_t __far* setStateReturn_pos;
 extern angle_t __far* tantoangle;
+extern uint16_t oldentertics;
+extern boolean brainspit_easy;
+
+   
+
+
+#define    DI_EAST 0
+#define    DI_NORTHEAST 1
+#define    DI_NORTH 2
+#define    DI_NORTHWEST 3
+#define    DI_WEST 4
+#define    DI_SOUTHWEST 5
+#define    DI_SOUTH 6
+#define    DI_SOUTHEAST 7
+#define    DI_NODIR 8
+#define    NUMDIRS 9
+ 
+typedef int8_t dirtype_t;
+extern dirtype_t opposite[9];
+extern dirtype_t diags[4];
+extern uint16_t movedirangles[8];
+extern THINKERREF		braintargets[32];
+extern int16_t		numbraintargets;
+extern int16_t		braintargeton;
+
+extern THINKERREF		corpsehitRef;
+extern mobj_t __far*		vileobj;
+extern fixed_t_union		viletryx;
+extern fixed_t_union		viletryy;
+
+
+
+extern fixed_t_union		tmbbox[4];
+extern mobj_t __far*		tmthing;
+extern mobj_pos_t __far*		tmthing_pos;
+extern int16_t		tmflags1;
+extern fixed_t_union		tmx;
+extern fixed_t_union		tmy;
+
+
+// If "floatok" true, move would be ok
+// if within "tmfloorz - tmceilingz".
+extern boolean		floatok;
+
+extern short_height_t		tmfloorz;
+extern short_height_t		tmceilingz;
+extern short_height_t		tmdropoffz;
+
+// keep track of the line that lowers the ceiling,
+// so missiles don't explode against sky hack walls
+extern int16_t		ceilinglinenum;
+
+// keep track of special lines as they are hit,
+// but don't process them until the move is proven valid
+#define MAXSPECIALCROSS		8
+
+extern int16_t		spechit[MAXSPECIALCROSS];
+extern int16_t		numspechit;
+
+extern int16_t lastcalculatedsector;
+extern mobj_t __far*		bombsource;
+extern mobj_t __far*		bombspot;
+extern mobj_pos_t __far*		bombspot_pos;
+extern int16_t		bombdamage;
+extern fixed_t_union		bestslidefrac;
+extern int16_t		bestslidelinenum;
+extern fixed_t_union		tmxmove;
+extern fixed_t_union		tmymove;
+//
+extern mobj_t __far*		linetarget;	// who got hit (or NULL)
+extern mobj_pos_t __far*		linetarget_pos;	// who got hit (or NULL)
+extern mobj_t __far*		shootthing;
+
+// Height if not aiming up or down
+// ???: use slope for monsters?
+extern fixed_t_union		shootz;	
+
+extern int16_t		la_damage;
+extern int16_t		attackrange16;
+
+extern fixed_t		aimslope;
+extern fixed_t		sightzstart;		// eye z of looker
+extern fixed_t		topslope;
+extern fixed_t		bottomslope;		// slopes to top and bottom of target
+
+extern divline_t	strace;			// from t1 to t2
+extern fixed_t_union		cachedt2x;
+extern fixed_t_union		cachedt2y;
+extern boolean		crushchange;
+extern boolean		nofit;
+extern intercept_t __far*	intercept_p;
+
+extern divline_t 	trace;
+extern boolean 	earlyout;
+extern lineopening_t lineopening;
+extern divline_t		dl;
+
+typedef struct
+{
+    boolean	istexture;
+	uint16_t		picnum;
+	uint16_t		basepic;
+    uint8_t		numpics;
+    
+} p_spec_anim_t;
+
+
+
+
+#define MAXANIMS                32
+
+
+extern p_spec_anim_t	anims[MAXANIMS];
+extern p_spec_anim_t __near*		lastanim;
+extern boolean		levelTimer;
+extern ticcount_t		levelTimeCount;
+extern int16_t		numlinespecials;
+
+
+
+
+extern int16_t		curseg;
+extern seg_render_t __far* curseg_render;
+extern sector_t __far*	frontsector;
+extern sector_t __far*	backsector;
+
+extern drawseg_t __far*	ds_p;
+
+
+
+//
+// ClipWallSegment
+// Clips the given range of columns
+// and includes it in the new clip list.
+//
+typedef	struct
+{
+    int16_t	first;
+	int16_t last;
+    
+} cliprange_t;
+
+
+#define MAXSEGS		64
+
+// newend is one past the last valid seg
+extern cliprange_t __near*	newend;
+extern cliprange_t	solidsegs[MAXSEGS];
+extern uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES];
+extern uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
+extern uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
+extern uint16_t                     numlumps;
+extern FILE* wadfilefp;
+extern FILE* wadfilefp2;
+  
+extern int16_t				dirtybox[4]; 
+extern segment_t screen_segments[5];
+
+
+
+extern int16_t             numvertexes;
+extern int16_t             numsegs;
+extern int16_t             numsectors;
+extern int16_t             numsubsectors;
+extern int16_t             numnodes;
+extern int16_t             numlines;
+extern int16_t             numsides;
+#ifdef PRECALCULATE_OPENINGS
+extern lineopening_t __far*	lineopenings;
+#endif
+extern int16_t             bmapwidth;
+extern int16_t             bmapheight;     // size in mapblocks
+extern int16_t         bmaporgx;
+extern int16_t         bmaporgy;
+
+
+
+
+#if defined(__CHIPSET_BUILD)
+
+// these are prepared for calls to outsw with autoincrementing ems register on
+extern uint16_t pageswapargs[total_pages];
+
+#else
+
+extern int16_t emshandle;
+extern int16_t pagenum9000;
+
+extern uint16_t pageswapargs[total_pages];
+
+#endif
+
+  
+
+
+
+extern int8_t current5000State;
+extern int8_t last5000State;
+extern int8_t current9000State;
+extern int8_t last9000State;
+
+
+#ifdef DETAILED_BENCH_STATS
+extern int32_t taskswitchcount;
+extern int32_t texturepageswitchcount;
+extern int32_t patchpageswitchcount;
+extern int32_t compositepageswitchcount;
+extern int32_t spritepageswitchcount;
+extern int16_t benchtexturetype;
+extern int32_t flatpageswitchcount;
+extern int32_t scratchpageswitchcount;
+extern int32_t lumpinfo5000switchcount;
+extern int32_t lumpinfo9000switchcount;
+extern int16_t spritecacheevictcount;
+extern int16_t flatcacheevictcount;
+extern int16_t patchcacheevictcount;
+extern int16_t compositecacheevictcount;
+extern int32_t visplaneswitchcount;
+
+#endif
+
+extern int16_t currenttask;
+extern int16_t oldtask;
+extern int8_t ems_backfill_page_order[24];

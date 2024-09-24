@@ -26,19 +26,10 @@
 #include "r_state.h"
 #include "m_misc.h"
 #include "m_memory.h"
-
-//
-// P_CheckSight
-//
-fixed_t		sightzstart;		// eye z of looker
-fixed_t		topslope;
-fixed_t		bottomslope;		// slopes to top and bottom of target
-
-divline_t	strace;			// from t1 to t2
-fixed_t_union		cachedt2x;
-fixed_t_union		cachedt2y;
+#include "m_near.h"
 
 boolean __near P_CrossBSPNode (uint16_t bspnum);
+
 
 //
 // P_CheckSight
@@ -314,7 +305,7 @@ fixed_t __near P_InterceptVector2 (divline_t __near* v2, divline_t __near*	v1 ) 
     return frac;
 }
 
-//static int32_t  bspcounter = 0;
+// int32_t  bspcounter = 0;
 
 //
 // P_CrossSubsector

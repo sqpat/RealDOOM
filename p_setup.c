@@ -44,41 +44,6 @@
 
 
 
-//
-// MAP related Lookup tables.
-// Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
-//
-int16_t             numvertexes;
-int16_t             numsegs;
-int16_t             numsectors;
-int16_t             numsubsectors;
-int16_t             numnodes;
-int16_t             numlines;
-int16_t             numsides;
-
-
-#ifdef PRECALCULATE_OPENINGS
-lineopening_t __far*	lineopenings;
-#endif
-
-// BLOCKMAP
-// Created from axis aligned bounding box
-// of the map, a rectangular array of
-// blocks of size ...
-// Used to speed up collision detection
-// by spatial subdivision in 2D.
-//
-// Blockmap size.
-int16_t             bmapwidth;
-int16_t             bmapheight;     // size in mapblocks
-
-								// offsets in blockmap are from here
-
-// origin of block map
-int16_t         bmaporgx;
-int16_t         bmaporgy;
-
- 
  
  
 uint16_t   __far  R_TextureNumForName(int8_t* name);

@@ -21,25 +21,6 @@
 #define __R_BSP__
 
  
-extern uint16_t		curseg;
-extern seg_render_t __far* curseg_render;
-extern side_t __far*		sidedef;
-
-extern sector_t __far*	frontsector;
-extern sector_t __far*	backsector;
-
-extern int16_t		rw_x;
-extern int16_t		rw_stopx;
-
-extern boolean		segtextured;
-
-// false if the back side is the same plane
-extern boolean		markfloor;		
-extern boolean		markceiling;
-
-extern boolean		skymap;
-
-extern drawseg_t __far*	ds_p;
 
 
 //typedef void (*drawfunc_t) (int16_t start, int16_t stop);

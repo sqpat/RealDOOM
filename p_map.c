@@ -34,34 +34,7 @@
 // Data.
 #include "sounds.h"
 #include "m_memory.h"
-
-
-fixed_t_union		tmbbox[4];
-mobj_t __far*		tmthing;
-mobj_pos_t __far*		tmthing_pos;
-int16_t		tmflags1;
-fixed_t_union		tmx;
-fixed_t_union		tmy;
-
-
-// If "floatok" true, move would be ok
-// if within "tmfloorz - tmceilingz".
-boolean		floatok;
-
-short_height_t		tmfloorz;
-short_height_t		tmceilingz;
-short_height_t		tmdropoffz;
-
-// keep track of the line that lowers the ceiling,
-// so missiles don't explode against sky hack walls
-int16_t		ceilinglinenum;
-
-// keep track of special lines as they are hit,
-// but don't process them until the move is proven valid
-#define MAXSPECIALCROSS		8
-
-int16_t		spechit[MAXSPECIALCROSS];
-int16_t		numspechit;
+#include "m_near.h"
 
 
 
@@ -570,7 +543,6 @@ boolean __near PIT_CheckThing (THINKERREF thingRef, mobj_t __far*	thing, mobj_po
 //  numspeciallines
 //
 
-int16_t lastcalculatedsector;
 boolean __near P_CheckPosition (mobj_t __far* thing, fixed_t_union	x, fixed_t_union	y, int16_t oldsecnum )
 {
     int16_t			xl;
@@ -841,20 +813,6 @@ boolean __near P_ThingHeightClip (mobj_t __far* thing, mobj_pos_t __far* thing_p
 
 
 
-//
-// SLIDE MOVE
-// Allows the player to slide along any angled walls.
-//
-fixed_t_union		bestslidefrac;
-//fixed_t_union		secondslidefrac;
-
-int16_t		bestslidelinenum;
-//int16_t		secondslidelinenum;
-
-fixed_t_union		tmxmove;
-fixed_t_union		tmymove;
-
-
 
 //
 // P_HitSlideLine
@@ -1102,25 +1060,6 @@ void __near P_SlideMove ()
 }
 
 
-//
-// P_LineAttack
-//
-mobj_t __far*		linetarget;	// who got hit (or NULL)
-mobj_pos_t __far*		linetarget_pos;	// who got hit (or NULL)
-mobj_t __far*		shootthing;
-
-// Height if not aiming up or down
-// ???: use slope for monsters?
-fixed_t_union		shootz;	
-
-int16_t		la_damage;
-int16_t		attackrange16;
-
-fixed_t		aimslope;
-
-// slopes to top and bottom of target
-extern fixed_t	topslope;
-extern fixed_t	bottomslope;	
 
 
 //
@@ -1586,13 +1525,7 @@ void __near P_UseLines ()  {
 }
 
 
-//
-// RADIUS ATTACK
-//
-mobj_t __far*		bombsource;
-mobj_t __far*		bombspot;
-mobj_pos_t __far*		bombspot_pos;
-int16_t		bombdamage;
+
 
 
 //
@@ -1688,8 +1621,6 @@ void __near P_RadiusAttack (mobj_t __far* spot, mobj_pos_t __far* spot_pos, mobj
 //  the way it was and call P_ChangeSector again
 //  to undo the changes.
 //
-boolean		crushchange;
-boolean		nofit;
 
 extern mobj_t __far* setStateReturn;
 

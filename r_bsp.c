@@ -36,37 +36,7 @@
 
 //#include "r_local.h"
 
-
-int16_t		curseg;
-seg_render_t __far* curseg_render;
-sector_t __far*	frontsector;
-sector_t __far*	backsector;
-
-drawseg_t __far*	ds_p;
-
-extern int8_t visplanedirty;
-
 void __near R_StoreWallRange ( int16_t start, int16_t stop );
-
-//
-// ClipWallSegment
-// Clips the given range of columns
-// and includes it in the new clip list.
-//
-typedef	struct
-{
-    int16_t	first;
-	int16_t last;
-    
-} cliprange_t;
-
-
-#define MAXSEGS		64
-
-// newend is one past the last valid seg
-cliprange_t __near*	newend;
-cliprange_t	solidsegs[MAXSEGS];
-
 
 
 

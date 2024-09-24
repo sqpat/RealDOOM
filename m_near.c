@@ -1847,3 +1847,539 @@ int16_t currentThinkerListHead;
 mobj_t __far* setStateReturn;
 mobj_pos_t __far* setStateReturn_pos;
 angle_t __far* tantoangle;
+uint16_t oldentertics;
+
+boolean brainspit_easy = 0;
+   
+
+//
+// P_NewChaseDir related LUT.
+//
+dirtype_t opposite[] =
+{
+  DI_WEST, DI_SOUTHWEST, DI_SOUTH, DI_SOUTHEAST,
+  DI_EAST, DI_NORTHEAST, DI_NORTH, DI_NORTHWEST, DI_NODIR
+};
+
+dirtype_t diags[] =
+{
+    DI_NORTHWEST, DI_NORTHEAST, DI_SOUTHWEST, DI_SOUTHEAST
+};
+
+uint16_t movedirangles[8] = {
+	0x0000,
+	0x2000,
+	0x4000,
+	0x6000,
+	0x8000,
+	0xA000,
+	0xC000,
+	0xE000
+};
+
+
+THINKERREF		braintargets[32];
+int16_t		numbraintargets;
+int16_t		braintargeton;
+
+THINKERREF		corpsehitRef;
+mobj_t __far*		vileobj;
+fixed_t_union		viletryx;
+fixed_t_union		viletryy;
+
+
+fixed_t_union		tmbbox[4];
+mobj_t __far*		tmthing;
+mobj_pos_t __far*		tmthing_pos;
+int16_t		tmflags1;
+fixed_t_union		tmx;
+fixed_t_union		tmy;
+
+
+// If "floatok" true, move would be ok
+// if within "tmfloorz - tmceilingz".
+boolean		floatok;
+
+short_height_t		tmfloorz;
+short_height_t		tmceilingz;
+short_height_t		tmdropoffz;
+
+// keep track of the line that lowers the ceiling,
+// so missiles don't explode against sky hack walls
+int16_t		ceilinglinenum;
+
+// keep track of special lines as they are hit,
+// but don't process them until the move is proven valid
+
+int16_t		spechit[MAXSPECIALCROSS];
+int16_t		numspechit;
+
+int16_t lastcalculatedsector;
+//
+// RADIUS ATTACK
+//
+mobj_t __far*		bombsource;
+mobj_t __far*		bombspot;
+mobj_pos_t __far*		bombspot_pos;
+int16_t		bombdamage;
+
+
+
+//
+// SLIDE MOVE
+// Allows the player to slide along any angled walls.
+//
+fixed_t_union		bestslidefrac;
+//fixed_t_union		secondslidefrac;
+
+int16_t		bestslidelinenum;
+//int16_t		secondslidelinenum;
+
+fixed_t_union		tmxmove;
+fixed_t_union		tmymove;
+
+//
+// P_LineAttack
+//
+mobj_t __far*		linetarget;	// who got hit (or NULL)
+mobj_pos_t __far*		linetarget_pos;	// who got hit (or NULL)
+mobj_t __far*		shootthing;
+
+// Height if not aiming up or down
+// ???: use slope for monsters?
+fixed_t_union		shootz;	
+
+int16_t		la_damage;
+int16_t		attackrange16;
+
+fixed_t		aimslope;
+
+//
+// P_CheckSight
+//
+fixed_t		sightzstart;		// eye z of looker
+fixed_t		topslope;
+fixed_t		bottomslope;		// slopes to top and bottom of target
+
+divline_t	strace;			// from t1 to t2
+fixed_t_union		cachedt2x;
+fixed_t_union		cachedt2y;
+
+boolean		crushchange;
+boolean		nofit;
+ intercept_t __far*	intercept_p;
+
+divline_t 	trace;
+boolean 	earlyout;
+lineopening_t lineopening;
+divline_t		dl;
+
+
+
+//
+//      source animation definition
+//
+
+
+p_spec_anim_t	anims[MAXANIMS];
+p_spec_anim_t __near*		lastanim;
+boolean		levelTimer;
+ticcount_t		levelTimeCount;
+int16_t		numlinespecials;
+
+
+
+int16_t		curseg;
+seg_render_t __far* curseg_render;
+sector_t __far*	frontsector;
+sector_t __far*	backsector;
+
+drawseg_t __far*	ds_p;
+
+
+// newend is one past the last valid seg
+cliprange_t __near*	newend;
+cliprange_t	solidsegs[MAXSEGS];
+uint8_t usedcompositetexturepagemem[NUM_TEXTURE_PAGES];
+uint8_t usedpatchpagemem[NUM_PATCH_CACHE_PAGES];
+uint8_t usedspritepagemem[NUM_SPRITE_CACHE_PAGES];
+uint16_t                     numlumps;
+FILE* wadfilefp;
+FILE* wadfilefp2;
+  
+int16_t				dirtybox[4]; 
+segment_t screen_segments[5] = {0x8000,0x8000,0x7000,0x6000,0x9C00};
+
+
+//
+// MAP related Lookup tables.
+// Store VERTEXES, LINEDEFS, SIDEDEFS, etc.
+//
+int16_t             numvertexes;
+int16_t             numsegs;
+int16_t             numsectors;
+int16_t             numsubsectors;
+int16_t             numnodes;
+int16_t             numlines;
+int16_t             numsides;
+
+
+#ifdef PRECALCULATE_OPENINGS
+lineopening_t __far*	lineopenings;
+#endif
+
+// BLOCKMAP
+// Created from axis aligned bounding box
+// of the map, a rectangular array of
+// blocks of size ...
+// Used to speed up collision detection
+// by spatial subdivision in 2D.
+//
+// Blockmap size.
+int16_t             bmapwidth;
+int16_t             bmapheight;     // size in mapblocks
+
+								// offsets in blockmap are from here
+
+// origin of block map
+int16_t         bmaporgx;
+int16_t         bmaporgy;
+
+
+
+
+
+#if defined(__CHIPSET_BUILD)
+
+// these are prepared for calls to outsw with autoincrementing ems register on
+
+uint16_t pageswapargs[total_pages] = {
+
+	_NPR(PAGE_4000_OFFSET),	 _NPR(PAGE_4400_OFFSET),	 _NPR(PAGE_4800_OFFSET),	 _NPR(PAGE_4C00_OFFSET),	
+	_NPR(PAGE_5000_OFFSET),  _NPR(PAGE_5400_OFFSET),	 _NPR(PAGE_5800_OFFSET),	 _NPR(PAGE_5C00_OFFSET),	 
+	_NPR(PAGE_6000_OFFSET),  _NPR(PAGE_6400_OFFSET),	 _EPR(13),	                 _NPR(PAGE_6C00_OFFSET),	
+	_NPR(PAGE_7000_OFFSET),	 _NPR(PAGE_7400_OFFSET),	 _NPR(PAGE_7800_OFFSET),	 _NPR(PAGE_7C00_OFFSET),	
+	_NPR(PAGE_8000_OFFSET),	 _NPR(PAGE_8400_OFFSET),	 _NPR(PAGE_8800_OFFSET),	 _NPR(PAGE_8C00_OFFSET),	
+	_EPR(15), 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE)    , 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), 
+
+	// render
+	_EPR(0),				 _EPR(1),					 _EPR(2),					 _EPR(3),						
+	_NPR(PAGE_5000_OFFSET),  _NPR(PAGE_5400_OFFSET),	 _NPR(PAGE_5800_OFFSET),	 _EPR(14),						  // same as physics as its unused for physics..
+	_EPR(11), 				 _EPR(12),					 _EPR(13),					 _NPR(PAGE_6C00_OFFSET),		  // shared 6400 6800 with physics
+	_EPR(7),				 _EPR(8),					 _EPR(9),					 _EPR(10),						
+	_EPR(4),				 _EPR(5),					 _EPR(6),					 _EPR(EMS_VISPLANE_EXTRA_PAGE),
+	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 0),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 1),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 2),	 _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 3),	  // texture cache area
+	_EPR(0),				 _EPR(1),					 _EPR(2),					 _EPR(3),						
+
+	
+	// status/hud
+	_NPR(PAGE_9C00_OFFSET), 		  //SCREEN4_LOGICAL_PAGE
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 3), 
+	_NPR(PAGE_6000_OFFSET), 		  // STRINGS_LOGICAL_PAGE
+	// demo
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 3), 
+
+ 
+// we use 0x5000 as a  'scratch' page frame for certain things
+// scratch 5000
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), 
+
+// but sometimes we need that in the 0x8000 segment..
+// scratch 8000
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), 
+		// and sometimes we need that in the 0x7000 segment..
+	// scratch 7000
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), 
+
+	// puts sky_texture in the right place, adjacent to flat cache for planes
+	//  RenderPlane
+	_NPR(PAGE_9000_OFFSET), 	
+	_NPR(PAGE_9400_OFFSET), 	
+	_NPR(PAGE_9800_OFFSET), 	
+	
+	_EPR(PALETTE_LOGICAL_PAGE),       // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused during planes
+														
+	//PHYSICS_RENDER_6800_PAGE,           // remap colormaps to be before drawspan code
+														
+
+
+	// flat cache
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 3), 
+
+	// sprite cache
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 3), 
+
+	// flat cache undo   NOTE: we just call it with seven params to set everything up for sprites
+	_EPR(RENDER_7800_PAGE), 
+	_EPR(RENDER_7C00_PAGE), 
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE), 
+	//masked
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE+1), 
+	_EPR(PHYSICS_RENDER_6800_PAGE),  // put colormaps where vissprites used to be?
+
+
+	// palette
+	_NPR(PAGE_8000_OFFSET), 
+	_NPR(PAGE_8400_OFFSET), 
+	_NPR(PAGE_8800_OFFSET), 
+	_NPR(PAGE_8C00_OFFSET),  // SCREEN0_LOGICAL_PAGE
+	_EPR(PALETTE_LOGICAL_PAGE), 
+
+ 
+// menu 
+	_NPR(PAGE_6000_OFFSET) 				  	  ,  // STRINGS_LOGICAL_PAGE
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 4), 
+	_NPR(PAGE_6800_OFFSET)  				  , 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 5), 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 3), 
+
+// intermission 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 6), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 7), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 0), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 2), 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 3), 
+// wipe/intermission, shared pages
+	_NPR(PAGE_8000_OFFSET),  // SCREEN0_LOGICAL_PAGE
+	_NPR(PAGE_8400_OFFSET), 
+	_NPR(PAGE_8800_OFFSET), 
+	_NPR(PAGE_8C00_OFFSET), 
+	_EPR(SCREEN1_LOGICAL_PAGE + 0), 
+	_EPR(SCREEN1_LOGICAL_PAGE + 1), 
+	_EPR(SCREEN1_LOGICAL_PAGE + 2), 
+	_EPR(SCREEN1_LOGICAL_PAGE + 3), 
+
+	_EPR(SCREEN3_LOGICAL_PAGE + 0), 
+	_EPR(SCREEN3_LOGICAL_PAGE + 1),  // shared with visplanes
+	_EPR(SCREEN3_LOGICAL_PAGE + 2),  // shared with visplanes
+	_EPR(SCREEN3_LOGICAL_PAGE + 3),  // shared with visplanes
+	_EPR(SCREEN2_LOGICAL_PAGE + 0), 
+	_EPR(SCREEN2_LOGICAL_PAGE + 1), 
+	_EPR(SCREEN2_LOGICAL_PAGE + 2), 
+	_EPR(SCREEN2_LOGICAL_PAGE + 3), 
+
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE	), 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), 
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), 
+
+	_EPR(EMS_VISPLANE_EXTRA_PAGE)
+
+};
+#else
+
+int16_t emshandle;
+int16_t pagenum9000;
+
+uint16_t pageswapargs[total_pages] = {
+	_NPR(PAGE_4000_OFFSET),	PAGE_4000_OFFSET, _NPR(PAGE_4400_OFFSET),	PAGE_4400_OFFSET, _NPR(PAGE_4800_OFFSET),	PAGE_4800_OFFSET, _NPR(PAGE_4C00_OFFSET),	PAGE_4C00_OFFSET,
+	_NPR(PAGE_5000_OFFSET), PAGE_5000_OFFSET, _NPR(PAGE_5400_OFFSET),	PAGE_5400_OFFSET, _NPR(PAGE_5800_OFFSET),	PAGE_5800_OFFSET, _NPR(PAGE_5C00_OFFSET),	PAGE_5C00_OFFSET, 
+	_NPR(PAGE_6000_OFFSET), PAGE_6000_OFFSET, _NPR(PAGE_6400_OFFSET),	PAGE_6400_OFFSET, _EPR(13),	                PAGE_6800_OFFSET, _NPR(PAGE_6C00_OFFSET),	PAGE_6C00_OFFSET,
+	_NPR(PAGE_7000_OFFSET),	PAGE_7000_OFFSET, _NPR(PAGE_7400_OFFSET),	PAGE_7400_OFFSET, _NPR(PAGE_7800_OFFSET),	PAGE_7800_OFFSET, _NPR(PAGE_7C00_OFFSET),	PAGE_7C00_OFFSET,
+	_NPR(PAGE_8000_OFFSET),	PAGE_8000_OFFSET, _NPR(PAGE_8400_OFFSET),	PAGE_8400_OFFSET, _NPR(PAGE_8800_OFFSET),	PAGE_8800_OFFSET, _NPR(PAGE_8C00_OFFSET),	PAGE_8C00_OFFSET,
+	_EPR(15), PAGE_9000_OFFSET,
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE)    , PAGE_9400_OFFSET,
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), PAGE_9800_OFFSET,
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), PAGE_9C00_OFFSET,
+
+ 
+
+	// render
+	_EPR(0),				PAGE_4000_OFFSET, _EPR(1),					PAGE_4400_OFFSET, _EPR(2),					PAGE_4800_OFFSET, _EPR(3),						PAGE_4C00_OFFSET,
+	_NPR(PAGE_5000_OFFSET), PAGE_5000_OFFSET, _NPR(PAGE_5400_OFFSET),	PAGE_5400_OFFSET, _NPR(PAGE_5800_OFFSET),	PAGE_5800_OFFSET, _EPR(14),						PAGE_5C00_OFFSET,  // same as physics as its unused for physics..
+	_EPR(11), 				PAGE_6000_OFFSET, _EPR(12),					PAGE_6400_OFFSET, _EPR(13),					PAGE_6800_OFFSET, _NPR(PAGE_6C00_OFFSET),		PAGE_6C00_OFFSET,  // shared 6400 6800 with physics
+	_EPR(7),				PAGE_7000_OFFSET, _EPR(8),					PAGE_7400_OFFSET, _EPR(9),					PAGE_7800_OFFSET, _EPR(10),						PAGE_7C00_OFFSET,
+	_EPR(4),				PAGE_8000_OFFSET, _EPR(5),					PAGE_8400_OFFSET, _EPR(6),					PAGE_8800_OFFSET, _EPR(EMS_VISPLANE_EXTRA_PAGE),PAGE_8C00_OFFSET,
+	_EPR(FIRST_TEXTURE_LOGICAL_PAGE + 0),	PAGE_9000_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 1),	PAGE_9400_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 2),	PAGE_9800_OFFSET, _EPR(FIRST_TEXTURE_LOGICAL_PAGE + 3),	PAGE_9C00_OFFSET,  // texture cache area
+
+	_EPR(0),				PAGE_9000_OFFSET, _EPR(1),					PAGE_9400_OFFSET, _EPR(2),					PAGE_9800_OFFSET, _EPR(3),						PAGE_9C00_OFFSET,
+
+	
+	// status/hud
+	_NPR(PAGE_9C00_OFFSET), 		 PAGE_9C00_OFFSET, //SCREEN4_LOGICAL_PAGE
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 0), PAGE_7000_OFFSET,
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 1), PAGE_7400_OFFSET,
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
+	_EPR(FIRST_STATUS_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
+	_NPR(PAGE_6000_OFFSET), 		 PAGE_6000_OFFSET, // STRINGS_LOGICAL_PAGE
+	// demo
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 0), PAGE_5000_OFFSET,
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 1), PAGE_5400_OFFSET,
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 2), PAGE_5800_OFFSET,
+	_EPR(FIRST_DEMO_LOGICAL_PAGE + 3), PAGE_5C00_OFFSET,
+
+ 
+// we use 0x5000 as a  'scratch' page frame for certain things
+// scratch 5000
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 0), PAGE_5000_OFFSET,
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 1), PAGE_5400_OFFSET,
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 2), PAGE_5800_OFFSET,
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), PAGE_5C00_OFFSET,
+
+// but sometimes we need that in the 0x8000 segment..
+// scratch 8000
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 0), PAGE_8000_OFFSET,
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 1), PAGE_8400_OFFSET,
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 2), PAGE_8800_OFFSET,
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), PAGE_8C00_OFFSET,
+		// and sometimes we need that in the 0x7000 segment..
+	// scratch 7000
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 0), PAGE_7000_OFFSET,
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 1), PAGE_7400_OFFSET,
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
+	_EPR(FIRST_SCRATCH_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
+
+	// puts sky_texture in the right place, adjacent to flat cache for planes
+	//  RenderPlane
+	_NPR(PAGE_9000_OFFSET), 	PAGE_9000_OFFSET,
+	_NPR(PAGE_9400_OFFSET), 	PAGE_9400_OFFSET,
+	_NPR(PAGE_9800_OFFSET), 	PAGE_9800_OFFSET,
+	
+	_EPR(PALETTE_LOGICAL_PAGE), PAGE_6C00_OFFSET,      // SPAN CODE SHOVED IN HERE. used to be mobjposlist but thats unused during planes
+														
+	//PHYSICS_RENDER_6800_PAGE,     PAGE_6800_OFFSET,      // remap colormaps to be before drawspan code
+
+	// flat cache
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 0), PAGE_7000_OFFSET,
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 1), PAGE_7400_OFFSET,
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
+	_EPR(FIRST_FLAT_CACHE_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
+
+	// flat cache undo   NOTE: we just call it with seven params to set everything up for sprites
+	// sprite cache
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 0), PAGE_6800_OFFSET,
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 1), PAGE_6C00_OFFSET,
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 2), PAGE_7000_OFFSET,
+	_EPR(FIRST_SPRITE_CACHE_LOGICAL_PAGE + 3), PAGE_7400_OFFSET,
+
+	_EPR(RENDER_7800_PAGE), PAGE_7800_OFFSET,
+	_EPR(RENDER_7C00_PAGE), PAGE_7C00_OFFSET,
+	//masked
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE), PAGE_8400_OFFSET,
+	_EPR(FIRST_EXTRA_MASKED_DATA_PAGE+1), PAGE_8800_OFFSET,
+	_EPR(PHYSICS_RENDER_6800_PAGE), PAGE_8C00_OFFSET, // put colormaps where vissprites used to be?
+
+
+	// palette
+	_NPR(PAGE_8000_OFFSET), PAGE_8000_OFFSET,
+	_NPR(PAGE_8400_OFFSET), PAGE_8400_OFFSET,
+	_NPR(PAGE_8800_OFFSET), PAGE_8800_OFFSET,
+	_NPR(PAGE_8C00_OFFSET), PAGE_8C00_OFFSET, // SCREEN0_LOGICAL_PAGE
+	_EPR(PALETTE_LOGICAL_PAGE), PAGE_9000_OFFSET,
+
+ 
+// menu 
+	_NPR(PAGE_6000_OFFSET) 				  	  , PAGE_6000_OFFSET, // STRINGS_LOGICAL_PAGE
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 4), PAGE_6400_OFFSET,
+	_NPR(PAGE_6800_OFFSET)  				  , PAGE_6800_OFFSET,
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 5), PAGE_6C00_OFFSET,
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 0), PAGE_7000_OFFSET,
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 1), PAGE_7400_OFFSET,
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
+	_EPR(FIRST_MENU_GRAPHICS_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
+
+// intermission 
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 4), PAGE_6000_OFFSET,
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 5), PAGE_6400_OFFSET,
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 6), PAGE_6800_OFFSET,
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 7), PAGE_6C00_OFFSET,
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 0), PAGE_7000_OFFSET,
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 1), PAGE_7400_OFFSET,
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
+	_EPR(FIRST_INTERMISSION_GRAPHICS_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
+// wipe/intermission, shared pages
+	_NPR(PAGE_8000_OFFSET), PAGE_8000_OFFSET, // SCREEN0_LOGICAL_PAGE
+	_NPR(PAGE_8400_OFFSET), PAGE_8400_OFFSET,
+	_NPR(PAGE_8800_OFFSET), PAGE_8800_OFFSET,
+	_NPR(PAGE_8C00_OFFSET), PAGE_8C00_OFFSET,
+	// wipe start
+	_EPR(SCREEN1_LOGICAL_PAGE + 0), PAGE_9000_OFFSET,
+	_EPR(SCREEN1_LOGICAL_PAGE + 1), PAGE_9400_OFFSET,
+	_EPR(SCREEN1_LOGICAL_PAGE + 2), PAGE_9800_OFFSET,
+	_EPR(SCREEN1_LOGICAL_PAGE + 3), PAGE_9C00_OFFSET,
+
+	_EPR(SCREEN3_LOGICAL_PAGE + 0), PAGE_6000_OFFSET,
+	_EPR(SCREEN3_LOGICAL_PAGE + 1), PAGE_6400_OFFSET, // shared with visplanes
+	_EPR(SCREEN3_LOGICAL_PAGE + 2), PAGE_6800_OFFSET, // shared with visplanes
+	_EPR(SCREEN3_LOGICAL_PAGE + 3), PAGE_6C00_OFFSET, // shared with visplanes
+	_EPR(SCREEN2_LOGICAL_PAGE + 0), PAGE_7000_OFFSET,
+	_EPR(SCREEN2_LOGICAL_PAGE + 1), PAGE_7400_OFFSET,
+	_EPR(SCREEN2_LOGICAL_PAGE + 2), PAGE_7800_OFFSET,
+	_EPR(SCREEN2_LOGICAL_PAGE + 3), PAGE_7C00_OFFSET,
+	//FIRST_WIPE_LOGICAL_PAGE, PAGE_9000_OFFSET,
+	
+
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE	), PAGE_5400_OFFSET,
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 1), PAGE_5800_OFFSET,
+	_EPR(FIRST_LUMPINFO_LOGICAL_PAGE + 2), PAGE_5C00_OFFSET,
+
+	_EPR(EMS_VISPLANE_EXTRA_PAGE), 		   PAGE_8400_OFFSET,
+
+
+
+};
+
+#endif
+
+  
+
+
+
+int8_t current5000State = PAGE_5000_UNMAPPED;
+int8_t last5000State = PAGE_5000_UNMAPPED;
+int8_t current9000State = PAGE_9000_UNMAPPED;
+int8_t last9000State = PAGE_9000_UNMAPPED;
+
+
+#ifdef DETAILED_BENCH_STATS
+int32_t taskswitchcount = 0;
+int32_t texturepageswitchcount = 0;
+int32_t patchpageswitchcount = 0;
+int32_t compositepageswitchcount = 0;
+int32_t spritepageswitchcount = 0;
+int16_t benchtexturetype = 0;
+int32_t flatpageswitchcount = 0;
+int32_t scratchpageswitchcount = 0;
+int32_t lumpinfo5000switchcount = 0;
+int32_t lumpinfo9000switchcount = 0;
+int16_t spritecacheevictcount = 0;
+int16_t flatcacheevictcount = 0;
+int16_t patchcacheevictcount = 0;
+int16_t compositecacheevictcount = 0;
+int32_t visplaneswitchcount = 0;
+
+#endif
+
+int16_t currenttask = -1;
+int16_t oldtask = -1;
+
+int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17 };

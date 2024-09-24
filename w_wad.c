@@ -29,7 +29,7 @@
 #include "r_defs.h"
 #include "r_state.h"
 #include "m_memory.h"
-
+#include "m_near.h"
 
 
 
@@ -42,20 +42,14 @@
 
 
 
-uint16_t                     numlumps;
 
-  
-
-// rather than storing a billion duplicate file handles, we'll store a couple
-FILE* wadfilefp;
-FILE* wadfilefp2;
 
 
 
 
 #define FREAD_BUFFER_SIZE 512
 
-void  _far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+void  locallib_far_fread(void __far* dest, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count
 	uint16_t totalsize = elementsize * elementcount;
 	uint16_t totalreadsize = 0;
@@ -102,7 +96,7 @@ void  _far_read(int16_t filehandle, void __far* dest, uint16_t totalsize) {
 }
 */
 // unused outside of debug stuff
-filelength_t  _far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
+filelength_t  locallib_far_fwrite(void __far* src, uint16_t elementsize, uint16_t elementcount, FILE * fp) {
 	// cheating with size/element count
 	uint16_t totalsize = elementsize * elementcount;
 	filelength_t totalreadsize = 0;

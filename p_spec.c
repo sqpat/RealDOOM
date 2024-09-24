@@ -44,32 +44,13 @@
 // Data.
 #include "sounds.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 
 //
 // Animating textures and planes
 // There is another anim_t used in wi_stuff, unrelated.
 //
-typedef struct
-{
-    boolean	istexture;
-	uint16_t		picnum;
-	uint16_t		basepic;
-    uint8_t		numpics;
-    
-} anim_t;
-
-//
-//      source animation definition
-//
-
-
-#define MAXANIMS                32
-
-
-anim_t	anims[MAXANIMS];
-anim_t __near*		lastanim;
-
 
 //
 //      Animating line specials
@@ -882,12 +863,11 @@ void __near P_PlayerInSpecialSector () {
 // P_UpdateSpecials
 // Animate planes, scroll walls, etc.
 //
-boolean		levelTimer;
-ticcount_t		levelTimeCount;
+
 
 void __near P_UpdateSpecials(void)
 {
-	anim_t __near*	anim;
+	p_spec_anim_t __near*	anim;
 	uint16_t		pic;
 	int16_t		i;
 	int16_t sidenum;
@@ -1076,7 +1056,6 @@ int16_t __near EV_DoDonut(uint8_t linetag) {
 
 
  
-int16_t		numlinespecials;
 //int16_t		linespeciallist[MAXLINEANIMS];
 
 

@@ -40,15 +40,6 @@
 //                       SCREEN WIPE PACKAGE
 //
 
-// when zero, stop the wipe
-//static boolean	go = 0;
-
-// screen 2
-//static byte __far*	wipe_scr_start;
-// screen 3
-//static byte __far*	wipe_scr_end;
-// screen 0, in 0x8000 region
-//static byte __far*	wipe_scr;
 
 
 void __near wipe_shittyColMajorXform ( int16_t __far*	array ) {

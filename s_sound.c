@@ -34,6 +34,7 @@
 
 #include "doomstat.h"
 #include "dmx.h"
+#include "m_near.h"
 //#include "dpmiapi.h"
 
 #define S_MAX_VOLUME		127
@@ -91,28 +92,24 @@ typedef struct
 
 
 // the set of channels available
-//static THINKERREF1	channelsRef;
+//THINKERREF	channelsRef;
 
 // These are not used, but should be (menu).
 // Maximum volume of a sound effect.
 // Internal default is max out of 0-15.
-static int8_t snd_SfxVolume;
 
-
-extern int8_t sfxVolume;
-extern int8_t musicVolume;
 
 // whether songs are mus_paused
-//static boolean		mus_paused;	
+//boolean		mus_paused;	
 
 // music currently being played
-//static musicinfo_t*	mus_playing=0;
+//musicinfo_t*	mus_playing=0;
 
 // following is set
 //  by the defaults code in M_misc:
 // number of channels available
 
-//static ticcount_t		nextcleanup;
+//ticcount_t		nextcleanup;
 
 //
 // Internals.

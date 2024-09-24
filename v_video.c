@@ -32,11 +32,10 @@
 #include <conio.h>
 #include <dos.h>
 #include "m_memory.h"
-
+#include "m_near.h"
 
 
  
-int16_t				dirtybox[4]; 
 
 
 
@@ -101,7 +100,6 @@ void  V_CopyRect ( uint16_t srcoffset, uint16_t destoffset, uint16_t width, uint
 // Masks a column based masked pic to the screen. 
 //
 
-segment_t screen_segments[5] = {0x8000,0x8000,0x7000,0x6000,0x9C00};
 
 /*
 void V_DrawPatch ( int16_t x, uint8_t y,int8_t scrn,patch_t __far* patch ) { 

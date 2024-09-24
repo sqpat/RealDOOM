@@ -161,24 +161,7 @@ void __near P_InitSwitchList(void)
 	}
 
 }
-
-//
-// Animating textures and planes
-// There is another anim_t used in wi_stuff, unrelated.
-//
-typedef struct
-{
-	boolean	istexture;
-	uint16_t		picnum;
-	uint16_t		basepic;
-	uint8_t		numpics;
-
-} anim_t;
-#define MAXANIMS                32
-
-extern anim_t		anims[MAXANIMS];
-extern anim_t __near*		lastanim;
-
+ 
 typedef struct
 {
 	boolean	istexture;	// if false, it is a flat

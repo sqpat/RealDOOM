@@ -34,6 +34,7 @@
 #include "r_state.h"
 #include "p_setup.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 //
 // P_AproxDistance
@@ -327,7 +328,6 @@ fixed_t __near P_InterceptVector ( divline_t __near*	v1 ) {
 // through a two sided line.
 // OPTIMIZE: keep this precalculated
 //
-lineopening_t lineopening;
 
 #ifdef	PRECALCULATE_OPENINGS
 
@@ -722,10 +722,6 @@ boolean __near(*   func )(THINKERREF, mobj_t __far*, mobj_pos_t __far*) ){
 //
 // INTERCEPT ROUTINES
 //
- intercept_t __far*	intercept_p;
-
-divline_t 	trace;
-boolean 	earlyout;
 
 //
 // PIT_AddLineIntercepts.
@@ -737,7 +733,6 @@ boolean 	earlyout;
 // are on opposite sides of the trace.
 // Returns true if earlyout and a solid line hit.
 //
-divline_t		dl;
 boolean __near  PIT_AddLineIntercepts (line_physics_t __far* ld_physics, int16_t linenum) {
      int16_t			s1;
     int16_t			s2;
