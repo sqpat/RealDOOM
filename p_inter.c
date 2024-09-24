@@ -44,8 +44,6 @@
 
 // a weapon is found with two clip loads,
 // a big item has five clip loads
-int16_t	maxammo[NUMAMMO] = {200, 50, 300, 50};
-int8_t	clipammo[NUMAMMO] = {10, 4, 20, 1};
 
 
 //

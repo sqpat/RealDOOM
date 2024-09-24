@@ -53,22 +53,7 @@
 #include "sounds.h"
 #include "st_stuff.h"
 #include "m_memory.h"
-
-boolean  st_stopped = true;
-uint16_t armsbgarray[1] = { armsbg };
-// ST_Start() has just been called
-extern boolean          st_firsttime;
-extern int8_t st_palette;
-
-// used to execute ST_Init() only once
-
-// lump number for PLAYPAL
-//int16_t              lu_palette;
- 
-// used for timing
-
- 
-
+#include "m_near.h"
 
 
 

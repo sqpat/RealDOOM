@@ -25,9 +25,8 @@
 #include "m_misc.h"
 #include "p_setup.h"
 #include "m_memory.h"
+#include "m_near.h"
 
-fixed_t_union	leveltime;
-int16_t currentThinkerListHead;
 //
 // THINKERS
 // All thinkers should be allocated by Z_Malloc

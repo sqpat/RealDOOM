@@ -23,8 +23,7 @@
 // State.
 #include "doomstat.h"
 #include "r_state.h"
-
-byte*           save_p;
+#include "m_near.h"
 
 
 // Pads save_p to a 4-byte boundary
@@ -330,6 +329,8 @@ void P_UnArchiveThinkers (void)
 //
 // P_ArchiveSpecials
 //
+
+/*
 enum
 {
     tc_ceiling,
@@ -342,7 +343,7 @@ enum
     tc_endspecials
 
 } specials_e;	
-
+*/
 
 
 //

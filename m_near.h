@@ -29,10 +29,18 @@
 #include "st_lib.h"
 #include "st_stuff.h"
 #include "hu_lib.h"
+#include "dmx.h"
 #include "m_menu.h"
+#include "wi_stuff.h"
+#include "p_spec.h"
 
 
-
+#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
+#define NUMEPISODES	3
+#else
+#define NUMEPISODES	4
+#endif
+#define NUMMAPS		9
 
 #define NUM_QUITMESSAGES   8
  
@@ -748,3 +756,81 @@ extern int8_t     quitsounds[8];
 extern int8_t     quitsounds2[8];
 
 extern uint16_t  wipeduration;
+
+
+extern task HeadTask;
+extern void( __interrupt __far_func *OldInt8)(void);
+extern volatile int32_t TaskServiceRate;;
+extern volatile int32_t TaskServiceCount;
+
+extern volatile int32_t TS_TimesInInterrupt;
+extern int8_t TS_Installed;
+extern volatile int32_t TS_InInterrupt;
+
+extern int8_t NUMANIMS[NUMEPISODES];
+extern wianim_t __far*wianims[NUMEPISODES];
+extern int16_t		acceleratestage;
+extern stateenum_t	state;
+extern wbstartstruct_t __near*	wbs;
+extern wbplayerstruct_t plrs;  // wbs->plyr[]
+extern uint16_t 		cnt;
+extern uint16_t 		bcnt;
+extern int16_t		cnt_kills;
+extern int16_t		cnt_items;
+extern int16_t		cnt_secret;
+extern int16_t		cnt_time;
+extern int16_t		cnt_par;
+extern int16_t		cnt_pause;
+extern boolean unloaded;
+extern uint8_t		yahRef[2];
+extern uint8_t		splatRef;
+extern uint8_t		numRef[10];
+extern boolean		snl_pointeron;
+extern int16_t	sp_state;
+
+
+#define castorderoffset CC_ZOMBIE
+//
+// Final DOOM 2 animation
+// Casting by id Software.
+//   in order of appearance
+//
+typedef struct
+{
+	uint8_t		nameindex;
+    mobjtype_t	type;
+} castinfo_t;
+
+#define MAX_CASTNUM 17
+extern castinfo_t	castorder[MAX_CASTNUM];
+
+extern int8_t		castnum;
+extern int8_t		casttics;
+extern state_t __far*	caststate;
+extern boolean		castdeath;
+extern int8_t		castframes;
+extern int8_t		castonmelee;
+extern boolean		castattacking;
+
+extern boolean  st_stopped;
+extern uint16_t armsbgarray[1];
+extern byte*           save_p;
+
+
+extern THINKERREF	activeceilings[MAXCEILINGS];
+extern THINKERREF	activeplats[MAXPLATS];
+extern weaponinfo_t	weaponinfo[NUMWEAPONS];
+extern fixed_t		bulletslope;
+extern uint16_t		switchlist[MAXSWITCHES * 2];
+extern int16_t		numswitches;
+extern button_t        buttonlist[MAXBUTTONS];
+extern int16_t	maxammo[NUMAMMO];
+extern int8_t	clipammo[NUMAMMO];
+extern boolean		onground;
+
+
+extern fixed_t_union	leveltime;
+extern int16_t currentThinkerListHead;
+extern mobj_t __far* setStateReturn;
+extern mobj_pos_t __far* setStateReturn_pos;
+extern angle_t __far* tantoangle;

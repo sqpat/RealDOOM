@@ -32,10 +32,8 @@
 #include "doomstat.h"
 #include "r_state.h"
 #include "m_memory.h"
+#include "m_near.h"
 
-uint16_t		switchlist[MAXSWITCHES * 2];
-int16_t		numswitches;
-button_t        buttonlist[MAXBUTTONS];
 
 //
 // Start a button counting down till it turns off.

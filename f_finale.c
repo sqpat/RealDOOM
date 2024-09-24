@@ -426,52 +426,10 @@ void __near F_TextWrite (void) {
 	
 }
 
-//
-// Final DOOM 2 animation
-// Casting by id Software.
-//   in order of appearance
-//
-typedef struct
-{
-	int16_t		nameindex;
-    mobjtype_t	type;
-} castinfo_t;
-
-castinfo_t	castorder[] = {
-    {CC_ZOMBIE, MT_POSSESSED},
-    {CC_SHOTGUN, MT_SHOTGUY},
-    {CC_HEAVY, MT_CHAINGUY},
-    {CC_IMP, MT_TROOP},
-    {CC_DEMON, MT_SERGEANT},
-    {CC_LOST, MT_SKULL},
-    {CC_CACO, MT_HEAD},
-    {CC_HELL, MT_KNIGHT},
-    {CC_BARON, MT_BRUISER},
-    {CC_ARACH, MT_BABY},
-    {CC_PAIN, MT_PAIN},
-    {CC_REVEN, MT_UNDEAD},
-    {CC_MANCU, MT_FATSO},
-    {CC_ARCH, MT_VILE},
-    {CC_SPIDER, MT_SPIDER},
-    {CC_CYBER, MT_CYBORG},
-    {CC_HERO, MT_PLAYER},
-
-    {-1,0}
-};
-
-int8_t		castnum;
-int8_t		casttics;
-state_t __far*	caststate;
-boolean		castdeath;
-int8_t		castframes;
-int8_t		castonmelee;
-boolean		castattacking;
-
 
 //
 // F_StartCast
 //
-extern	gamestate_t     wipegamestate;
 
 void __near F_StartCast (void)
 {
@@ -511,7 +469,7 @@ void __near F_CastTicker (void)
 		// switch from deathstate to next monster
 		castnum++;
 		castdeath = false;
-		if (castorder[castnum].nameindex == -1)
+		if (castnum == MAX_CASTNUM)
 			castnum = 0;
 	
 		S_StartSound (NULL, getSeeState(castorder[castnum].type));
@@ -691,7 +649,7 @@ void __near F_CastDrawer (void) {
 
     // erase the entire screen to a background
     V_DrawFullscreenPatch("BOSSBACK", 0);
-	getStringByIndex(castorder[castnum].nameindex, text);
+	getStringByIndex(castorder[castnum].nameindex+castorderoffset, text);
     F_CastPrint (text);
 
 	// need render 7000 for spriteframes. (but this overwrites status page)

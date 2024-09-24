@@ -27,6 +27,7 @@
 #include "doomstat.h"
 #include "i_system.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 
 
@@ -41,7 +42,6 @@
 // 16 pixels of bob
 #define MAXBOB	0x100000	
 
-boolean		onground;
 
 
 //

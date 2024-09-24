@@ -29,13 +29,13 @@
 // Data.
 #include "sounds.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 //
 // CEILINGS
 //
 
 
-THINKERREF	activeceilings[MAXCEILINGS];
 
 
 //

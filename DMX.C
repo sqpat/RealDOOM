@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "m_near.h"
 #include "doomdef.h"
 
 
@@ -18,14 +19,7 @@
    Global variables
 ---------------------------------------------------------------------*/
 
-task HeadTask;
-void( __interrupt __far_func *OldInt8)(void);
-volatile int32_t TaskServiceRate = 0x10000L;
-volatile int32_t TaskServiceCount = 0;
 
-volatile int32_t TS_TimesInInterrupt;
-int8_t TS_Installed = FALSE;
-volatile int32_t TS_InInterrupt = FALSE;
 
 /*---------------------------------------------------------------------
    Function prototypes

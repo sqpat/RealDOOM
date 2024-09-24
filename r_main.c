@@ -143,7 +143,6 @@ int16_t __near R_PointOnSegSide ( fixed_t_union	x, fixed_t_union	y, int16_t segi
 //  tantoangle[] table.
 
 //
-angle_t __far* tantoangle;
 
 uint32_t __near R_PointToAngle16 (int16_t	x,int16_t	y) {
 

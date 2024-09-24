@@ -42,6 +42,7 @@
 
 #include "wi_stuff.h"
 #include "m_memory.h"
+#include "m_near.h"
 
 //
 // Data needed to add patches to full screen intermission pics.
@@ -56,12 +57,7 @@
 // This is supposedly ignored for commercial
 //  release (aka DOOM II), which had 34 maps
 //  in one episode. So there.
-#if (EXE_VERSION < EXE_VERSION_ULTIMATE)
-#define NUMEPISODES	3
-#else
-#define NUMEPISODES	4
-#endif
-#define NUMMAPS		9
+
 
 
 // in tics
@@ -131,19 +127,7 @@ void WI_Ticker(void) {
 // 16 bytes each, around 200-300 total.
  
 
-static int8_t NUMANIMS[NUMEPISODES] =
-{
-    10,
-    9,
-    6
-};
 
-wianim_t __far*wianims[NUMEPISODES] =
-{
-    epsd0animinfo,
-    epsd1animinfo,
-    epsd2animinfo
-};
 
 #define NEXT_OFFSET 		MAX_LEVEL_COMPLETE_GRAPHIC_SIZE
 #define NUM_WI_ITEMS 		28
@@ -182,52 +166,6 @@ patch_t __far* __near WI_GetAnimPatch(int16_t i) {
 #define SHOWNEXTLOCDELAY	4
 //#define SHOWLASTLOCDELAY	SHOWNEXTLOCDELAY
 
-
-// used to accelerate or skip a stage
-static int16_t		acceleratestage;
-
-
- // specifies current state
-static stateenum_t	state;
-
-// contains information passed into intermission
-static wbstartstruct_t __near*	wbs;
-
-static wbplayerstruct_t plrs;  // wbs->plyr[]
-
-// used for general timing
-static uint16_t 		cnt;
-
-// used for timing of background animation
-static uint16_t 		bcnt;
-
-// signals to refresh everything for one frame
-
-static int16_t		cnt_kills;
-static int16_t		cnt_items;
-static int16_t		cnt_secret;
-static int16_t		cnt_time;
-static int16_t		cnt_par;
-static int16_t		cnt_pause;
-
-
-boolean unloaded = false;
-
-//
-//	GRAPHICS
-//
-
-
-// You Are Here graphic
-static uint8_t		yahRef[2];
-
-// splat
-static uint8_t		splatRef;
-
-
-// 0-9 graphic
-static uint8_t		numRef[10];
-  
 
 //
 // CODE
@@ -543,7 +481,6 @@ void __near WI_initNoState(void) {
 }
 
 
-static boolean		snl_pointeron = false;
 
 
 void __near WI_initShowNextLoc(void) {
@@ -613,7 +550,6 @@ void __near WI_drawNoState(void) {
 }
  
 
-static int16_t	sp_state;
 
 void __near WI_initStats(void) {
     state = StatCount;

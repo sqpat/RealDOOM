@@ -33,6 +33,7 @@
 #include "p_setup.h"
 
 #include "m_memory.h"
+#include "m_near.h"
 
 
 void __far G_PlayerReborn ();
@@ -93,8 +94,7 @@ void G_ExitLevel();
 #ifdef DEBUGLOG_TO_FILE
 mobj_t __far* SAVEDUNIT;
 #endif
-mobj_t __far* setStateReturn;
-mobj_pos_t __far* setStateReturn_pos;
+
 //
 // P_SetMobjState
 // Returns true if the mobj is still present.
