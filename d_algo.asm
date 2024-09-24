@@ -56,7 +56,7 @@ mov   al, 1
 decrement_tick_loop:
 dec   word ptr [bp - 4h]
 cmp   word ptr [bp - 4h], -1
-jne   label0
+jne   skip_exit
 
 cbw  ; returning a bool, make sure ah is zero
 
@@ -72,7 +72,7 @@ pop   cx
 pop   bx
 retf
 
-label0:
+skip_exit:
 mov   word ptr [bp - 2], 0
 
 xor   ah, ah
@@ -93,13 +93,13 @@ xor   bh, bh
 add   bx, bx	; bx = 2 * i
 cmp   word ptr es:[bx], 0
 
-jge   label3
+jge   skip_inc
 
 xor   al, al
 inc   word ptr es:[bx]
 jmp   continue_main_loop
 
-label3:
+skip_inc:
 cmp   word ptr es:[bx], SCREENHEIGHT
 jb    do_next_iteration
 
@@ -111,8 +111,6 @@ add   word ptr [bp - 2], SCREENHEIGHT
 cmp   ah, (SCREENWIDTH / 2)
 JAE   reached_last_pixel
 
-mov   dx, YCOLUMNSSEGMENT
-mov   es, dx
 
 jmp   next_horizontal_pixel
 reached_last_pixel:
@@ -160,10 +158,8 @@ mov   di, word ptr es:[bx]	; di = y[i]
 add   si, di
 add   si, si	; si is setup. si = 2*[y[i] + muli]
 
-mov   dx, MUL160LOOKUP_SEGMENT
-mov   es, dx
 add   di, di	; di = 2 * y[i]
-mov   di, word ptr es:[di]  ; mul160lookup[2*y[i]]
+mov   di, word ptr es:[di + (16 * (MUL160LOOKUP_SEGMENT - YCOLUMNSSEGMENT))]  ; mul160lookup[2*y[i]]
 
 add   di, di	
 add   di, bx    ; di is setup
@@ -182,13 +178,50 @@ mov   dx, SCREEN0_SEGMENT
 mov   es, dx
 mov   dx, SCREEN3_SEGMENT
 mov   ds, dx
+mov   dx, (SCREENWIDTH - 2)
+mov   ch, cl
+shr   ch, 1
+shr   ch, 1
+shr   ch, 1
+je    done_outer_loop
+push  ax     ;gross. anywhere else we can store eight bits..?
+mov   ah, cl
+and   ah, 7
+mov   cl, ch
+mov   ch, 0
 
-
+; todo unroll?
 first_copy:
-
 movsw
-add    di, (SCREENWIDTH - 2)
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
 loop   first_copy
+mov   cl, ah
+pop   ax
+test  cl, cl
+je    skip_first_copy
+
+done_outer_loop:
+;  ch is 0 anyway...
+
+
+first_copy_2:
+movsw
+add    di, dx
+loop   first_copy_2
 
 skip_first_copy:
 
@@ -235,14 +268,56 @@ mov   dx, SCREEN2_SEGMENT
 mov   ds, dx
 mov   dx, SCREEN0_SEGMENT
 mov   es, dx
+mov   dx, (SCREENWIDTH - 2)
 
+mov   ch, cl
+shr   ch, 1
+shr   ch, 1
+shr   ch, 1
+je    done_outer_loop_2
+push  ax     ;gross. anywhere else we can store eight bits..?
+mov   ah, cl
+and   ah, 7
+mov   cl, ch
+mov   ch, 0
+
+; todo unroll?
 second_copy:
 movsw
-add    di, (SCREENWIDTH - 2)
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
+movsw
+add    di, dx
 loop   second_copy
+mov   cl, ah
+pop   ax
+test  cl, cl
+je    skip_second_copy
 
+done_outer_loop_2:
+;  ch is 0 anyway...
+
+
+second_copy_2:
+movsw
+add    di, dx
+loop   second_copy_2
 skip_second_copy:
 xor   al, al
+
+mov   dx, YCOLUMNSSEGMENT
+mov   es, dx
 
 jmp continue_main_loop
 
