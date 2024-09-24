@@ -207,7 +207,7 @@ void __near I_SetPalette(int8_t paletteNumber) {
 
 	byte __far* palette = palettebytes + paletteNumber * 768u;
 	//byte __far* palette = MK_FP(0x9000,  FastMul1616(paletteNumber, 768));
-	int16_t savedtask = currenttask;
+	int8_t savedtask = currenttask;
 	
     if(novideo) {
         return;

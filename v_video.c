@@ -240,7 +240,7 @@ void V_DrawFullscreenPatch ( int8_t __near* pagename, int8_t screen) {
 	int32_t    offset = 0;
 	int16_t    pageoffset = 0;
 	byte __far*       extradata = (byte __far *)patch;
-	int16_t oldtask = currenttask;
+	int8_t oldtask = currenttask;
 	int16_t lump = W_GetNumForName(pagename);
 	Z_QuickMapScratch_5000();
 

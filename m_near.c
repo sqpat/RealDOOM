@@ -66,7 +66,6 @@ gamestate_t     wipegamestate = GS_DEMOSCREEN;
 
 
 
-int8_t*           wadfiles[MAXWADFILES];
 
 
 boolean         nomonsters;     // checkparm of -nomonsters
@@ -169,7 +168,6 @@ fixed_t_union	dc_texturemid;
 segment_t			dc_source_segment;
 
 
-byte __far*		viewimage;
 int16_t		viewwidth;
 int16_t		scaledviewwidth;
 int16_t		viewheight;
@@ -222,7 +220,6 @@ fixed_t			planeheight;
 fixed_t			basexscale;
 fixed_t			baseyscale;
 
-int8_t currentemsvisplanepage = 0; 
 segment_t visplanelookupsegments[3] = {0x8400, 0x8800, 0x8C00};
 int8_t ceilphyspage = 0;
 int8_t floorphyspage = 0;
@@ -426,7 +423,7 @@ int8_t active_visplanes[5] = {1, 2, 3, 0, 0};
 
 byte cachedbyteheight;
 uint8_t cachedcol;
-int16_t setval = 0;
+//int16_t setval = 0;
 
 
 int8_t 	am_cheating = 0;
@@ -536,7 +533,7 @@ mline_t cheat_player_arrow[] = {
     { { R/6+R/32, -R/7-R/32 }, { R/6+R/10, -R/7 } }
 };
 #undef R
-
+/*
 #define R (1 << 4)
 mline_t triangle_guy[] = {
     { { -.867*R, -.5*R }, { .867*R, -.5*R } },
@@ -544,6 +541,7 @@ mline_t triangle_guy[] = {
     { { 0, R }, { -.867*R, -.5*R } }
 };
 #undef R
+*/
 
 #define R (1 << 4)
 mline_t thintriangle_guy[] = {
@@ -552,7 +550,6 @@ mline_t thintriangle_guy[] = {
     { { -.5*R, .7*R }, { -.5*R, -.7*R } }
 };
 #undef R
-
 
 //uint8_t jump_mult_table_3[32] = {
 uint8_t jump_mult_table_3[8] = {
@@ -2379,7 +2376,6 @@ int32_t visplaneswitchcount = 0;
 
 #endif
 
-int16_t currenttask = -1;
-int16_t oldtask = -1;
+int8_t currenttask = -1;
 
 int8_t ems_backfill_page_order[24] = { 0, 1, 2, 3, -4, -3, -2, -1, -8, -7, -6, -5, -12, -11, -10, -9, -16, -15, -14, -13, -20, -19, -18, -17 };

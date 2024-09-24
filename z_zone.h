@@ -510,7 +510,6 @@ void __far Z_QuickMapRenderPlanes();
 //void DUMP_4000_TO_FILE();
 //void DUMP_MEMORY_TO_FILE();
 
-extern int16_t currenttask;
 
 #endif
 

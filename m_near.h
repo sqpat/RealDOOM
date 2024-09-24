@@ -91,7 +91,6 @@ extern gamestate_t          wipegamestate;
 
 #define MAXWADFILES             3
 
-extern int8_t*              wadfiles[MAXWADFILES];
 
 
 extern boolean              nomonsters;     // checkparm of -nomonsters
@@ -159,7 +158,6 @@ extern int16_t		    	dc_yh;
 extern fixed_t			    dc_iscale; 
 extern fixed_t_union	    dc_texturemid;
 extern segment_t		    dc_source_segment;
-extern byte __far*		    viewimage;
 extern int16_t		        viewwidth;
 extern int16_t		        scaledviewwidth;
 extern int16_t		        viewheight;
@@ -188,7 +186,6 @@ extern uint8_t __far*	    planezlight;
 extern fixed_t			    planeheight;
 extern fixed_t			    basexscale;
 extern fixed_t			    baseyscale;
-extern int8_t               currentemsvisplanepage; 
 extern segment_t            visplanelookupsegments[3];
 extern int8_t               ceilphyspage;
 extern int8_t               floorphyspage;
@@ -300,7 +297,7 @@ extern uint8_t              cachedcollength2;
 extern int8_t               active_visplanes[5];
 extern byte                 cachedbyteheight;
 extern uint8_t              cachedcol;
-extern int16_t              setval;
+//extern int16_t              setval;
 
 extern int8_t               am_cheating;
 extern int8_t 	            am_grid;
@@ -343,7 +340,9 @@ extern int8_t               am_lastepisode;
 extern mline_t              am_lc;
 extern mline_t              player_arrow[7];
 extern mline_t              cheat_player_arrow[16]; 
+/*
 extern mline_t              triangle_guy[3];
+*/
 extern mline_t              thintriangle_guy[3];
 extern uint8_t              jump_mult_table_3[8];
 extern int16_t              lightmult48lookup[16];
@@ -1057,6 +1056,5 @@ extern int32_t visplaneswitchcount;
 
 #endif
 
-extern int16_t currenttask;
-extern int16_t oldtask;
+extern int8_t currenttask;
 extern int8_t ems_backfill_page_order[24];
