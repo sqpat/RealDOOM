@@ -261,7 +261,6 @@ byte __far *__near Z_InitEMS() {
 
 void __near Z_GetEMSPageMap() {
 	int16_t pagedata[256]; // i dont think it can get this big...
-	int16_t __far* pointervalue = pagedata;
 	int16_t errorreg, i, numentries;
  
 
@@ -272,12 +271,14 @@ void __near Z_GetEMSPageMap() {
 	if (errorreg != 0) {
 		doerror(84, errorreg);// Call 5801 failed with value %i!\n
 	}
-	DEBUG_PRINT("\n Found: %i mappable EMS pages (28+ required)", numentries);
+
+	// how weird. the call sometimes fails  if we dont do this?
+	memset(pagedata, 0, 256);
 
 	regs.w.ax = 0x5800;  // physical page
-	segregs.es = FP_SEG(pointervalue);
+	segregs.es = segregs.ds;
 	
-	regs.w.di = FP_OFF(pointervalue);
+	regs.w.di = pagedata;
 	intx86(EMS_INT, &regs, &regs);
 	errorreg = regs.h.ah;
 	//pagedata = MK_FP(sregs.es, regs.w.di);
@@ -375,9 +376,9 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
 boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
  
 void __near Z_LoadBinaries() {
-	FILE* fp;
+	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
 	// currently in physics region!
-	fp = fopen("DOOMDATA.BIN", "rb"); 
+	
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
 
 	// load R_DrawColumn into high memory near colormaps...

@@ -38,7 +38,7 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp 
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s
 #CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -wx 
 ASMOPTS = /d_USED000=0
  
