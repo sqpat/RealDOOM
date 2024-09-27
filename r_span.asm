@@ -22,20 +22,6 @@
 .DATA
 
 
-
-FINESINE_SEGMENT               = 31e4h
-FINECOSINE_SEGMENT             = 33e4h
- 
-
-
-CACHEDHEIGHT_SEGMENT           = 9000h
-Y_SLOPE_SEGMENT                = 9032h
-CACHEDDISTANCE_SEGMENT         = 9064h
-CACHEDXSTEP_SEGMENT            = 9096h
-CACHEDYSTEP_SEGMENT            = 90C8h
-SPANSTART_SEGMENT              = 90FAh
-DISTSCALE_SEGMENT              = 9113h
-
 SPANFUNC_FUNCTION_AREA_SEGMENT = 6EAAh
 SPANFUNC_PREP_OFFSET           = 06FEh
 
@@ -45,7 +31,6 @@ SPANFUNC_JUMP_LOOKUP_SEGMENT   = 6EA0h
 SPANFUNC_JUMP_OFFSET           = 1DCh
 
 
-BASE_COLORMAP_POINTER          = 6800h
 MAXLIGHTZ                      = 0080h
 MAXLIGHTZ_UNSHIFTED            = 0800h
 
@@ -966,7 +951,7 @@ sbb   dx, 0
 
 mov   word ptr [DS_YFRAC], ax
 mov   word ptr [DS_YFRAC+2], dx
-mov   word ptr [_ds_colormap_segment], BASE_COLORMAP_POINTER
+mov   word ptr [_ds_colormap_segment], COLORMAPS_SEGMENT
 
 
 ; 	if (fixedcolormap) {
@@ -1044,8 +1029,8 @@ generate_distance_steps:
 
 mov   word ptr es:[si], ax
 mov   word ptr es:[si + 2], dx   ; cachedheight into dx
-mov   bx, word ptr es:[si + (( Y_SLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
-mov   cx, word ptr es:[si + 2 + (( Y_SLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   bx, word ptr es:[si + (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
+mov   cx, word ptr es:[si + 2 + (( YSLOPE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 
 
 ; not worth continuing to LEA because fixedmul destroys ES and then we have to store and restore from SI which is too much extra time

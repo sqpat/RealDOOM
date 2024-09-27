@@ -18,14 +18,7 @@
 
 
 
-IF _USED000 EQ 1 
-VERTEXES_SEGMENT               = 0D15Ch
-ELSE
-VERTEXES_SEGMENT               = 0E15Ch
-ENDIF
 
-FINESINE_SEGMENT               = 31e4h
-SEGS_RENDER_SEGMENT            = 04000h
 
 EXTRN _tantoangle:DWORD
 EXTRN _viewx:DWORD

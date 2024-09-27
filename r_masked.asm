@@ -34,18 +34,10 @@ EXTRN  _fuzzpos:BYTE
 
 
 
-
-DRAWCOL_PREP_SEGMENT            = 06A42h
-;DRAWCOL_PREP_SEGMENT_HIGH      = DRAWCOL_PREP_SEGMENT  - 06800h + 08C00h
-DRAWCOL_PREP_SEGMENT_HIGH       = 08E42h
-DRAWCOL_PREP_OFFSET             = 09D0h
-
-FUZZ_OFFSET_SEGMENT             = 04B31h
 COLORMAPS_HIGH_SEG_DIFF_SEGMENT = 08C60h
-FUZZCOL_FUNC_SEGMENT            = 08B0Ah
 
 ; 5472 or 0x1560
-COLORMAPS_HIGH_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_HIGH_SEG_DIFF_SEGMENT - FUZZCOL_FUNC_SEGMENT)
+COLORMAPS_HIGH_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_HIGH_SEG_DIFF_SEGMENT - DRAWFUZZCOL_AREA_SEGMENT)
 
 
 
@@ -406,7 +398,7 @@ mov  cl, byte ptr [_fuzzpos]	; note this is always the byte offset - no shift co
 xor  ch, ch
 mov  si, cx
 mov  cx, ax
-mov  ax, FUZZ_OFFSET_SEGMENT
+mov  ax, FUZZOFFSET_SEGMENT
 mov  ds, ax
 mov  di, bx
 ; constant space

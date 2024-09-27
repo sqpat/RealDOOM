@@ -238,7 +238,8 @@ segs                 EDD9:0000
 #define texturecache_nodes ((cache_node_t __far*) (((int32_t)patchcache_nodes) + size_patchcache_nodes))
 
 #define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
-#define finecosine_segment            ((segment_t) ((int32_t)finecosine >> 16))
+// gross... should we change how this works
+#define finecosine_segment            ((segment_t) (finesine_segment + 0x200))
 #define finetangentinner_segment      ((segment_t) ((int32_t)finetangentinner >> 16))
 #define states_segment                ((segment_t) ((int32_t)states >> 16))
 #define events_segment                ((segment_t) ((int32_t)events >> 16))
@@ -559,7 +560,7 @@ blockmaplump_plus4  76E4:0008
 
 
 // 8C60
-#define colormaps_high_seg_diff  ((uint16_t)0x8C00 - 0x6800)
+#define colormaps_high_seg_diff  ((segment_t)0x8C00 - 0x6800)
 
 // used in sprite render, this has been remapped to 8400 page
 #define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x68000000 + 0x8C000000))
@@ -1179,15 +1180,28 @@ spritewidths        7000:7592
 // offset of a drawseg so we can subtract drawseg from drawsegs for a certain potential loop condition...
 
 
-
 #define flatindex               ((uint8_t __far*)            MAKE_FULL_SEGMENT(viewangletox            , size_viewangletox))
 
 #define texturecompositesizes   ((uint16_t __far*)           MAKE_FULL_SEGMENT(flatindex               , size_flatindex))
 #define compositetexturepage    ((uint8_t __far*)            MAKE_FULL_SEGMENT(texturecompositesizes   , size_texturecompositesizes))
 #define compositetextureoffset  ((uint8_t __far*)            (((int32_t)compositetexturepage)          + size_compositetexturepage))
 
-#define visplanepiclights_segment       ((segment_t) ((int32_t)visplanepiclights >> 16))
 
+
+#define segs_render_segment               ((segment_t) ((int32_t)segs_render >> 16))
+#define seg_normalangles_segment          ((segment_t) ((int32_t)seg_normalangles >> 16))
+#define sides_render_segment              ((segment_t) ((int32_t)sides_render >> 16))
+#define vissprites_segment                ((segment_t) ((int32_t)vissprites >> 16))
+#define player_vissprites_segment         ((segment_t) ((int32_t)player_vissprites >> 16))
+#define texturepatchlump_offset_segment   ((segment_t) ((int32_t)texturepatchlump_offset >> 16))
+#define visplaneheaders_segment           ((segment_t) ((int32_t)visplaneheaders >> 16))
+#define visplanepiclights_segment         ((segment_t) ((int32_t)visplanepiclights >> 16))
+#define fuzzoffset_segment                ((segment_t) ((int32_t)fuzzoffset >> 16))
+#define scalelightfixed_segment           ((segment_t) ((int32_t)scalelightfixed >> 16))
+#define scalelight_segment                ((segment_t) ((int32_t)scalelight >> 16))
+#define patch_sizes_segment               ((segment_t) ((int32_t)patch_sizes >> 16))
+#define viewangletox_segment              ((segment_t) ((int32_t)viewangletox >> 16))
+#define flatindex_segment                 ((segment_t) ((int32_t)flatindex >> 16))
 
 
 // need to undo prior drawseg_t shenanigans

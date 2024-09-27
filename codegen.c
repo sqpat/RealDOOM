@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 73
+#define CONSTANTS_COUNT 88
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
     "SECTORS_SEGMENT",
@@ -20,7 +20,7 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
 
     "FINESINE_SEGMENT",
-    "FINECOSINESEGMENT",
+    "FINECOSINE_SEGMENT",
     "FINETANGENTINNER_SEGMENT",
     "STATES_SEGMENT",
     "EVENTS_SEGMENT",
@@ -92,7 +92,25 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "XTOVIEWANGLE_SEGMENT",
     "SPRITEOFFSETS_SEGMENT",
     "PATCHPAGE_SEGMENT",
-    "PATCHOFFSET_SEGMENT"
+    "PATCHOFFSET_SEGMENT",
+
+
+    "SEGS_RENDER_SEGMENT",
+    "SEG_NORMALANGLES_SEGMENT",
+    "SIDES_RENDER_SEGMENT",
+    "VISSPRITES_SEGMENT",
+    "PLAYER_VISSPRITES_SEGMENT",
+    "TEXTUREPATCHLUMP_OFFSET_SEGMENT",
+    "VISPLANEHEADERS_SEGMENT",
+    "VISPLANEPICLIGHTS_SEGMENT",
+    "FUZZOFFSET_SEGMENT",
+    "SCALELIGHTFIXED_SEGMENT",
+    "SCALELIGHT_SEGMENT",
+    "PATCH_SIZES_SEGMENT",
+    "VIEWANGLETOX_SEGMENT",
+    "FLATINDEX_SEGMENT",
+
+    "SKYTEXTURE_TEXTURE_SEGMENT"
 
 
 
@@ -184,10 +202,26 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     xtoviewangle_segment,
     spriteoffsets_segment,
     patchpage_segment,
-    patchoffset_segment
+    patchoffset_segment,
 
 
 
+    segs_render_segment,
+    seg_normalangles_segment,
+    sides_render_segment,
+    vissprites_segment,
+    player_vissprites_segment,
+    texturepatchlump_offset_segment,
+    visplaneheaders_segment,
+    visplanepiclights_segment,
+    fuzzoffset_segment,
+    scalelightfixed_segment,
+    scalelight_segment,
+    patch_sizes_segment,
+    viewangletox_segment,
+    flatindex_segment,
+
+    skytexture_texture_segment
     
 };
 

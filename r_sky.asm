@@ -21,7 +21,6 @@
 ;=================================
 .DATA
 
-SKYTEXTURE_TEXTURE_SEGMENT = 09400h
 
 
 EXTRN _viewangle_shiftright3:WORD
