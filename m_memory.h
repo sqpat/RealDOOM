@@ -80,9 +80,24 @@
 #define seg_sides         ((uint8_t __far*)         MAKE_FULL_SEGMENT(seg_linedefs     , size_seg_linedefs))
 
 
-#define seg_linedefs_segment  ((segment_t) ((int32_t)seg_linedefs >> 16))
-#define seg_sides_segment     ((segment_t) ((int32_t)seg_sides >> 16))
+
+
+#define sectors_segment           ((segment_t) ((int32_t)sectors >> 16))
+#define vertexes_segment          ((segment_t) ((int32_t)vertexes >> 16))
+#define sides_segment             ((segment_t) ((int32_t)sides >> 16))
+#define lines_segment             ((segment_t) ((int32_t)lines >> 16))
+#define lineflagslist_segment     ((segment_t) ((int32_t)lineflagslist >> 16))
+#define seenlines_segment         ((segment_t) ((int32_t)seenlines >> 16))
+#define subsectors_segment        ((segment_t) ((int32_t)subsectors >> 16))
+#define subsector_lines_segment   ((segment_t) ((int32_t)subsector_lines >> 16))
+#define nodes_segment             ((segment_t) ((int32_t)nodes >> 16))
+#define node_children_segment     ((segment_t) ((int32_t)node_children >> 16))
+#define seg_linedefs_segment      ((segment_t) ((int32_t)seg_linedefs >> 16))
+#define seg_sides_segment         ((segment_t) ((int32_t)seg_sides >> 16))
 #define seg_sides_offset_in_seglines ((uint16_t)(((seg_sides_segment - seg_linedefs_segment) << 4)))
+
+
+
 
 //0xE000
 /*

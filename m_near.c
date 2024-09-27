@@ -1354,7 +1354,7 @@ int16_t     menu_lastx = 0;
 int16_t        menu_drawer_x;
 int16_t        menu_drawer_y;
 
-
+#ifndef CODEGEN_SKIP_MENU
 
 void __near M_ChooseSkill(int16_t choice);
 void __near M_NewGame(int16_t choice);
@@ -1601,6 +1601,8 @@ menu_t  SaveDef ={
     80,54,
     0
 };
+#endif
+
 
 int8_t     menu_epi;
 int8_t    detailNames[2]       = {33, 34};

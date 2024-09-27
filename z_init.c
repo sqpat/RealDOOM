@@ -278,7 +278,7 @@ void __near Z_GetEMSPageMap() {
 	regs.w.ax = 0x5800;  // physical page
 	segregs.es = segregs.ds;
 	
-	regs.w.di = pagedata;
+	regs.w.di = (int16_t)pagedata;
 	intx86(EMS_INT, &regs, &regs);
 	errorreg = regs.h.ah;
 	//pagedata = MK_FP(sregs.es, regs.w.di);
