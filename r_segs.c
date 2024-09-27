@@ -147,7 +147,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 			
 	if (fixedcolormap) {
 		// todo if this is 0 maybe skip the if?
-		dc_colormap_segment = colormapssegment_high;
+		dc_colormap_segment = colormaps_segment_high;
 		dc_colormap_index = fixedcolormap;
 	}
 
@@ -208,7 +208,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 							index = spryscale.w >> LIGHTSCALESHIFT;
 						}
 
-						dc_colormap_segment = colormapssegment_high;
+						dc_colormap_segment = colormaps_segment_high;
 						dc_colormap_index = walllights[index];
 
 						// todo does it have to be reset after this?
@@ -275,7 +275,7 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 					index = spryscale.w >> LIGHTSCALESHIFT;
 				}
 
-				dc_colormap_segment = colormapssegment_high;
+				dc_colormap_segment = colormaps_segment_high;
 				dc_colormap_index = walllights[index];
 
 				// todo does it have to be reset after this?
@@ -490,7 +490,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 				}
 
 
-				dc_colormap_segment = colormapssegment;
+				dc_colormap_segment = colormaps_segment;
 				dc_colormap_index = walllights[index];
 				dc_x = rw_x;
 				//dc_iscale = 0xffffffffu / rw_scale.w;
@@ -688,7 +688,7 @@ void __near R_RenderOneSeg ()
 		}
 
 
-		dc_colormap_segment = colormapssegment;
+		dc_colormap_segment = colormaps_segment;
 		dc_colormap_index = walllights[index];
 		dc_x = rw_x;
 		//dc_iscale = 0xffffffffu / rw_scale.w;

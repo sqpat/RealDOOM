@@ -13,7 +13,9 @@
 ; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ; GNU General Public License for more details.
 ;
-SKIPPRIMITIVES	=  0			; set to 1 to skip unwound drawing
+
+INCLUDE constant.inc
+
 
 
 SCREEN  =       0a0000h
@@ -32,8 +34,6 @@ OP_RET		=	0c3h
 OP_MOVAL	= 	08ah
 OP_MOVDEST	= 	088h
 
-DC_YL_LOOKUP_SEGMENT           = 6A29h
-XTOVIEWANGLE_SEGMENT           = 833bh
 
 
 	.DATA

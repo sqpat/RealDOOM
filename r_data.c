@@ -1538,7 +1538,7 @@ void R_LoadPatchColumnsColormap0(uint16_t lump, segment_t texlocation_segment, b
 			uint8_t length = column->length;
 			byte __far * sourcetexaddr = SCRATCH_ADDRESS_5000 + (((int32_t)column) + 3);
 			byte __far * destaddr = MK_FP(texlocation_segment,  destoffset);
-			byte __far * colormapzero = MK_FP(colormapssegment,  0);
+			byte __far * colormapzero = MK_FP(colormaps_segment,  0);
 			//FAR_memcpy(MK_FP(texlocation_segment,  destoffset), sourcetexaddr, length);
 			uint8_t i;
 			for (i = 0; i < length; i++){

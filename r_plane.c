@@ -113,7 +113,7 @@ void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
     ds_yfrac = -viewy.w - R_FixedMulLocalWrapper(finesine[angle], length );
 
 	if (fixedcolormap) {
-		ds_colormap_segment = colormapssegment;
+		ds_colormap_segment = colormaps_segment;
 		ds_colormap_index = fixedcolormap;
 
 	}
@@ -124,7 +124,7 @@ void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
 			index = MAXLIGHTZ - 1;
 		}
 
-		ds_colormap_segment = colormapssegment;
+		ds_colormap_segment = colormaps_segment;
 		ds_colormap_index = planezlight[index];
 
 	}

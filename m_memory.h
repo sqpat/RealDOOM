@@ -221,6 +221,40 @@ segs                 EDD9:0000
 #define FINE_COSINE_ARGUMENT 0x33E4
 
 
+
+#define finesine           ((int32_t __far*)      MAKE_FULL_SEGMENT(baselowermemoryaddress, 0))  // 10240
+#define finecosine         ((int32_t __far*)      (baselowermemoryaddress + 0x2000))  // 10240
+#define finetangentinner   ((int32_t __far*)      MAKE_FULL_SEGMENT(finesine, size_finesine))
+#define states             ((state_t __far*)      MAKE_FULL_SEGMENT(finetangentinner, size_finetangent))
+#define events             ((event_t __far*)      MAKE_FULL_SEGMENT(states, size_states))
+#define flattranslation    ((uint8_t __far*)      MAKE_FULL_SEGMENT(events, size_events))
+#define texturetranslation ((uint16_t __far*)     MAKE_FULL_SEGMENT(flattranslation, size_flattranslation))
+#define textureheights     ((uint8_t __far*)      MAKE_FULL_SEGMENT(texturetranslation, size_texturetranslation))
+#define scantokey          ((byte __far*)         MAKE_FULL_SEGMENT(textureheights , size_textureheights)) 
+#define rndtable           ((uint8_t __far*)      MAKE_FULL_SEGMENT(scantokey, size_scantokey))
+#define spritecache_nodes  ((cache_node_t __far*) MAKE_FULL_SEGMENT(rndtable , size_rndtable))
+#define flatcache_nodes    ((cache_node_t __far*) (((int32_t)spritecache_nodes)+ size_spritecache_nodes))
+#define patchcache_nodes   ((cache_node_t __far*) (((int32_t)flatcache_nodes)  + size_flatcache_nodes))
+#define texturecache_nodes ((cache_node_t __far*) (((int32_t)patchcache_nodes) + size_patchcache_nodes))
+
+#define finesine_segment              ((segment_t) ((int32_t)finesine >> 16))
+#define finecosine_segment            ((segment_t) ((int32_t)finecosine >> 16))
+#define finetangentinner_segment      ((segment_t) ((int32_t)finetangentinner >> 16))
+#define states_segment                ((segment_t) ((int32_t)states >> 16))
+#define events_segment                ((segment_t) ((int32_t)events >> 16))
+#define flattranslation_segment       ((segment_t) ((int32_t)flattranslation >> 16))
+#define texturetranslation_segment    ((segment_t) ((int32_t)texturetranslation >> 16))
+#define textureheights_segment        ((segment_t) ((int32_t)textureheights >> 16))
+#define scantokey_segment             ((segment_t) ((int32_t)scantokey >> 16))
+#define rndtable_segment              ((segment_t) ((int32_t)rndtable >> 16))
+#define spritecache_nodes_segment     ((segment_t) ((int32_t)spritecache_nodes >> 16))
+#define flatcache_nodes_segment       ((segment_t) ((int32_t)flatcache_nodes >> 16))
+#define patchcache_nodes_segment      ((segment_t) ((int32_t)patchcache_nodes >> 16))
+#define texturecache_nodes_segment    ((segment_t) ((int32_t)texturecache_nodes >> 16))
+
+ 
+
+
 //MAKE_FULL_SEGMENT(spritecache_nodes , (((int32_t)texturecache_nodes) & 0xFFFF)+ size_texturecache_nodes))
 
 
@@ -256,8 +290,14 @@ segs                 EDD9:0000
 
 #define size_segs_physics     (MAX_SEGS_PHYSICS_SIZE)
 #define size_diskgraphicbytes (392)
+
 #define segs_physics          ((seg_physics_t __far*)    (0x90000000))
 #define diskgraphicbytes      ((byte __far*) (MAKE_FULL_SEGMENT(segs_physics, size_segs_physics)))
+
+
+#define segs_physics_segment              ((segment_t) ((int32_t)segs_physics >> 16))
+#define diskgraphicbytes_segment          ((segment_t) ((int32_t)diskgraphicbytes >> 16))
+
 
 // 0x92D90000
 #define PSightFuncLoadAddr      ((byte __far*) (MAKE_FULL_SEGMENT(diskgraphicbytes, size_diskgraphicbytes)))
@@ -386,7 +426,23 @@ segs                 EDD9:0000
 #define doomednum          ((int16_t __far*)              MAKE_FULL_SEGMENT(ammnumpatchbytes, (size_ammnumpatchbytes+size_ammnumpatchoffsets )))
 #define linespeciallist    ((int16_t __far*)              MAKE_FULL_SEGMENT(doomednum, size_doomednum ))
   
+
+#define thinkerlist_segment           ((segment_t) ((int32_t)thinkerlist >> 16))
+#define mobjinfo_segment              ((segment_t) ((int32_t)mobjinfo >> 16))
+#define linebuffer_segment            ((segment_t) ((int32_t)linebuffer >> 16))
+#define sectors_physics_segment       ((segment_t) ((int32_t)sectors_physics >> 16))
+#define sectors_soundorgs_segment     ((segment_t) ((int32_t)sectors_soundorgs >> 16))
+#define sector_soundtraversed_segment ((segment_t) ((int32_t)sector_soundtraversed >> 16))
+
+#define intercepts_segment            ((segment_t) ((int32_t)intercepts >> 16))
+#define ammnumpatchbytes_segment      ((segment_t) ((int32_t)ammnumpatchbytes >> 16))
+#define ammnumpatchoffsets_segment    ((segment_t) ((int32_t)ammnumpatchoffsets >> 16))
+#define doomednum_segment             ((segment_t) ((int32_t)doomednum >> 16))
+#define linespeciallist_segment       ((segment_t) ((int32_t)linespeciallist >> 16))
+  
  
+
+
 
 
 
@@ -422,7 +478,11 @@ segs                 EDD9:0000
 
 
 
-#define gammatable_segment  ((segment_t) ((int32_t)gammatable >> 16))
+
+#define screen0_segment           ((segment_t) ((int32_t)screen0 >> 16))
+#define gammatable_segment        ((segment_t) ((int32_t)gammatable >> 16))
+#define menuoffsets_segment       ((segment_t) ((int32_t)menuoffsets >> 16))
+
 
 /*
 
@@ -449,6 +509,10 @@ this area used in many tasks including physics but not including render
 #define lines_physics       ((line_physics_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
 #define blockmaplump        ((int16_t __far*)         MAKE_FULL_SEGMENT(lines_physics, size_lines_physics))
 #define blockmaplump_plus4  ((int16_t __far*)        (((int32_t)blockmaplump) + 0x08))
+
+#define lines_physics_segment       ((segment_t) ((int32_t)lines_physics >> 16))
+#define blockmaplump_segment        ((segment_t) ((int32_t)blockmaplump >> 16))
+
 
 /*
 lines_physics       7000:0000
@@ -486,6 +550,22 @@ blockmaplump_plus4  76E4:0008
 #define colfunc_function_area ((byte  __far*)             MAKE_FULL_SEGMENT(dc_yl_lookup          , size_dc_yl_lookup))
 #define mobjposlist           ((mobj_pos_t __far*)        MAKE_FULL_SEGMENT(colfunc_function_area , size_colfunc_function_area))
 
+//6D8A
+#define colormaps_segment               ((segment_t) ((int32_t)colormaps >> 16))
+#define colfunc_jump_lookup_segment     ((segment_t) ((int32_t)colfunc_jump_lookup >> 16))
+#define dc_yl_lookup_segment            ((segment_t) ((int32_t)dc_yl_lookup >> 16))
+#define colfunc_function_area_segment   ((segment_t) ((int32_t)colfunc_function_area >> 16))
+#define mobjposlist_segment             ((segment_t) ((int32_t)mobjposlist >> 16))
+
+
+// 8C60
+#define colormaps_high_seg_diff  ((uint16_t)0x8C00 - 0x6800)
+
+// used in sprite render, this has been remapped to 8400 page
+#define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x68000000 + 0x8C000000))
+// 852D
+#define colormaps_segment_high  ((segment_t)             (colormaps_segment           - 0x6800 + 0x8C00))
+
 
 #define R_DrawColumnAddr          ((void    (__far *)(void))  (colfunc_function_area))
 //#define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
@@ -499,17 +579,9 @@ blockmaplump_plus4  76E4:0008
 #define dc_yl_lookup_high        ((uint16_t  __far*) (((int32_t)dc_yl_lookup)       - 0x68000000 + 0x8C000000))
 
 
-//6D8A
-#define colormapssegment      ((segment_t) ((int32_t)colormaps >> 16))
-// 8C60
-#define colormaps_high_seg_diff  ((uint16_t)0x8C00 - 0x6800)
 
-// used in sprite render, this has been remapped to 8400 page
-// 852D
-#define colormapssegment_high  ((segment_t)             (colormapssegment           - 0x6800 + 0x8C00))
-#define colormaps_high         ((lighttable_t  __far*) (((int32_t)colormaps)       - 0x68000000 + 0x8C000000))
 
-#define colormaps_colfunc_seg_difference (colfunc_segment - colormapssegment)
+#define colormaps_colfunc_seg_difference (colfunc_segment - colormaps_segment)
 #define colormaps_colfunc_off_difference (colormaps_colfunc_seg_difference << 4)
 //6f59
 
@@ -531,17 +603,17 @@ blockmaplump_plus4  76E4:0008
 // todo fix?
 #define size_drawfuzzcol_area       1000u
 
-#define maskedpostdata             ((byte __far*)          (0x84000000 ))
-
-
+#define maskedpostdata             ((byte __far*)              (0x84000000 ))
 #define spritepostdatasizes        ((uint16_t __far*)          (0x88000000 ))
 #define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,  size_spritepostdatasizes))
 #define maskedpostdataofs          ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritetotaldatasizes, size_spritetotaldatasizes))
 #define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,    size_maskedpostdataofs))
 #define drawfuzzcol_area           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpixeldataofs,   size_maskedpixeldataofs))
  
-#define maskedpostdataofs_segment  ((segment_t) ((int32_t)maskedpostdataofs >> 16))
 #define maskedpostdata_segment     ((segment_t) ((int32_t)maskedpostdata >> 16))
+#define spritepostdatasizes_segment  ((segment_t) ((int32_t)spritepostdatasizes >> 16))
+#define spritetotaldatasizes_segment ((segment_t) ((int32_t)spritetotaldatasizes >> 16))
+#define maskedpostdataofs_segment  ((segment_t) ((int32_t)maskedpostdataofs >> 16))
 #define maskedpixeldataofs_segment ((segment_t) ((int32_t)maskedpixeldataofs >> 16))
 #define drawfuzzcol_area_segment   ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
 
@@ -579,7 +651,7 @@ maskedpostdata          8400:0000
 #define R_DrawSpanAddr                    ((void    (__far *)(void))        (spanfunc_function_area))
 #define spanfunc_segment                  ((segment_t) ((int32_t)spanfunc_function_area >> 16))
 
-#define colormaps_spanfunc_seg_difference (spanfunc_segment - colormapssegment)
+#define colormaps_spanfunc_seg_difference (spanfunc_segment - colormaps_segment)
 #define colormaps_spanfunc_off_difference (colormaps_spanfunc_seg_difference << 4)
 
 /*
@@ -754,6 +826,16 @@ This area used during intermission task
 #define cachedystep           ((fixed_t __far*)        MAKE_FULL_SEGMENT(cachedxstep, size_cachedxstep))
 #define spanstart             ((int16_t __far*)        MAKE_FULL_SEGMENT(cachedystep, size_cachedystep))
 #define distscale             ((fixed_t __far*)        MAKE_FULL_SEGMENT(spanstart, size_spanstart))
+
+
+#define cachedheight_segment          ((segment_t) ((int32_t)cachedheight >> 16))
+#define yslope_segment                ((segment_t) ((int32_t)yslope >> 16))
+#define cacheddistance_segment        ((segment_t) ((int32_t)cacheddistance >> 16))
+#define cachedxstep_segment           ((segment_t) ((int32_t)cachedxstep >> 16))
+#define cachedystep_segment           ((segment_t) ((int32_t)cachedystep >> 16))
+#define spanstart_segment             ((segment_t) ((int32_t)spanstart >> 16))
+#define distscale_segment             ((segment_t) ((int32_t)distscale >> 16))
+
 // end plane only
 
 //FREE AREA
@@ -865,7 +947,6 @@ screenheightarray_offset 7800:A500  or 8000:2500
 [done]                   7800:AA00  or 8000:2A00
 */
 // LEAVE ALL THESE in 0x7800 SEGMENT 
-#define openings_segment 0x7800
 
 #define size_openings      sizeof(int16_t) * MAXOPENINGS
 #define size_negonearray          size_openings             + sizeof(int16_t) * (SCREENWIDTH)
@@ -878,6 +959,12 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define screenheightarray    ((int16_t __far*)          (0x78000000 + size_negonearray))
 #define floorclip            ((int16_t __far*)          (0x78000000 + size_screenheightarray))
 #define ceilingclip          ((int16_t __far*)          (0x78000000 + size_floorclip))
+
+#define openings_segment             ((segment_t) ((int32_t)openings >> 16))
+#define negonearray_segment          ((segment_t) ((int32_t)negonearray >> 16))
+#define screenheightarray_segment    ((segment_t) ((int32_t)screenheightarray >> 16))
+#define floorclip_segment            ((segment_t) ((int32_t)floorclip >> 16))
+#define ceilingclip_segment          ((segment_t) ((int32_t)ceilingclip >> 16))
 
 #define negonearray_offset        size_openings
 #define screenheightarray_offset  size_negonearray
@@ -902,6 +989,14 @@ screenheightarray_offset 7800:A500  or 8000:2500
 #define spriteoffsets           ((uint8_t __far*)         MAKE_FULL_SEGMENT(xtoviewangle , size_xtoviewangle))
 #define patchpage               ((uint8_t __far*)         MAKE_FULL_SEGMENT(spriteoffsets, size_spriteoffsets)) 
 #define patchoffset             ((uint8_t __far*)         (((int32_t)patchpage) + size_patchpage))
+
+#define texturewidthmasks_segment       ((segment_t) ((int32_t)texturewidthmasks >> 16))
+#define zlight_segment                  ((segment_t) ((int32_t)zlight >> 16))
+#define xtoviewangle_segment            ((segment_t) ((int32_t)xtoviewangle >> 16))
+#define spriteoffsets_segment           ((segment_t) ((int32_t)spriteoffsets >> 16))
+#define patchpage_segment               ((segment_t) ((int32_t)patchpage >> 16))
+#define patchoffset_segment             ((segment_t) ((int32_t)patchoffset >> 16))
+
 
 //#define patchoffset             ((uint8_t __far*)         MAKE_FULL_SEGMENT(patchpage, size_patchpage))
 

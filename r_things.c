@@ -147,7 +147,7 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
 
     }
     // if we dont update above we dont need to rest it
-    //dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
+    //dc_colormap = MK_FP(colormaps_segment_high, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
 
@@ -202,7 +202,7 @@ void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column)
 
     }
     // if we dont update above we dont need to rest it
-    //dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
+    //dc_colormap = MK_FP(colormaps_segment_high, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
 }
@@ -251,7 +251,7 @@ void __near R_DrawSingleMaskedColumn2 (segment_t pixeldatasegment, byte length) 
 
     
     // if we dont update above we dont need to rest it
-    //dc_colormap = MK_FP(colormapssegment_high, old_dc_colormap);
+    //dc_colormap = MK_FP(colormaps_segment_high, old_dc_colormap);
         
     dc_texturemid = basetexturemid;
 }
@@ -271,7 +271,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
     patch_t __far * patch;
 
 
-    dc_colormap_segment = colormapssegment_high;
+    dc_colormap_segment = colormaps_segment_high;
     dc_colormap_index = vis->colormap;
     
     dc_iscale = labs(vis->xiscale)>>detailshift.b.bytelow;

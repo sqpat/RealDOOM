@@ -992,7 +992,7 @@ jb    index_set
 mov   al, MAXLIGHTZ - 1
 index_set:
 
-;		ds_colormap_segment = colormapssegment;
+;		ds_colormap_segment = colormaps_segment;
 ;		ds_colormap_index = planezlight[index];
 
 les    bx, dword ptr [_planezlight]
