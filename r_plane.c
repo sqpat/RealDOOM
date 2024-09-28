@@ -91,7 +91,7 @@ void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 ) {
     fixed_t	distance;
     fixed_t	length;
 	uint8_t	index;
-	void (__far* R_DrawSpanPrepCall)(void)  =   ((void    (__far *)(void))  (MK_FP(spanfunc_segment, R_DrawSpanPrepOffset)));
+	void (__far* R_DrawSpanPrepCall)(void)  =   ((void    (__far *)(void))  (MK_FP(spanfunc_function_area_segment, R_DrawSpanPrepOffset)));
 
     if (planeheight != cachedheight[y]) {
 		cachedheight[y] = planeheight;

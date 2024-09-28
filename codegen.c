@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 88
+#define CONSTANTS_COUNT 90
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
     "SECTORS_SEGMENT",
@@ -110,7 +110,11 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "VIEWANGLETOX_SEGMENT",
     "FLATINDEX_SEGMENT",
 
-    "SKYTEXTURE_TEXTURE_SEGMENT"
+    "SKYTEXTURE_TEXTURE_SEGMENT",
+
+    "SPANFUNC_JUMP_LOOKUP_SEGMENT",
+    "SPANFUNC_FUNCTION_AREA_SEGMENT"
+
 
 
 
@@ -221,7 +225,11 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     viewangletox_segment,
     flatindex_segment,
 
-    skytexture_texture_segment
+    skytexture_texture_segment,
+
+    spanfunc_jump_lookup_segment,
+    spanfunc_function_area_segment
+
     
 };
 

@@ -22,13 +22,6 @@
 .DATA
 
 
-SPANFUNC_FUNCTION_AREA_SEGMENT = 6EAAh
-SPANFUNC_PREP_OFFSET           = 06FEh
-
-; jump table is 0 offset at this segment
-SPANFUNC_JUMP_LOOKUP_SEGMENT   = 6EA0h
-; offset of the jmp instruction's immediate from the above segment
-SPANFUNC_JUMP_OFFSET           = 1DCh
 
 
 MAXLIGHTZ                      = 0080h
@@ -45,12 +38,6 @@ EXTRN _viewangle_shiftright3:WORD
 EXTRN _centeryfrac_shiftright4:WORD
 EXTRN _planeheight:WORD
 
-
-
-
-
-;EXTRN	_ds_xstep:DWORD
-;EXTRN	_ds_ystep:DWORD
 
 EXTRN   _sp_bp_safe_space:WORD
 EXTRN   _ss_variable_space:WORD
@@ -179,9 +166,7 @@ xchg  ax, SI
 
 lods  WORD PTR ES:[SI]	
 
-; todo: move offset to es:[offset]
-MOV   DI, SPANFUNC_JUMP_OFFSET
-stos  WORD PTR es:[di]       ;
+mov  WORD PTR es:[((SPANFUNC_JUMP_OFFSET+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], ax;
 
 ; 		dest = destview + ds_y * 80 + dsp_x1;
 sal   bx, 1
@@ -357,6 +342,7 @@ xor   ah, ah
 
  
 jmp_addr_2:
+SPANFUNC_JUMP_OFFSET:
 jmp span_i_loop_done         ; relative jump to be modified before function is called
 
 
@@ -990,7 +976,8 @@ mov   byte ptr [_ds_colormap_index], al
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
 db 09Ah
-dw SPANFUNC_PREP_OFFSET
+dw (R_DrawSpanPrep_ - R_DrawSpan_)
+;dw SPANFUNC_PREP_OFFSET
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
 
@@ -1008,7 +995,8 @@ mov   byte ptr [_ds_colormap_index], al
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
 db 09Ah
-dw SPANFUNC_PREP_OFFSET
+dw (R_DrawSpanPrep_ - R_DrawSpan_)
+;dw SPANFUNC_PREP_OFFSET
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
 

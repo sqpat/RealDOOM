@@ -650,10 +650,15 @@ maskedpostdata          8400:0000
 #define spanfunc_jump_lookup_9000         ((byte  __far*)                   (((uint32_t)spanfunc_jump_lookup)   - 0x6C000000 + 0x90000000))
 #define spanfunc_function_area_9000       ((uint16_t  __far*)               (((uint32_t)spanfunc_function_area) - 0x6C000000 + 0x90000000))
 #define R_DrawSpanAddr                    ((void    (__far *)(void))        (spanfunc_function_area))
-#define spanfunc_segment                  ((segment_t) ((int32_t)spanfunc_function_area >> 16))
 
-#define colormaps_spanfunc_seg_difference (spanfunc_segment - colormaps_segment)
+#define spanfunc_jump_lookup_segment      ((segment_t) ((int32_t)spanfunc_jump_lookup >> 16))
+#define spanfunc_function_area_segment    ((segment_t) ((int32_t)spanfunc_function_area >> 16))
+
+
+#define colormaps_spanfunc_seg_difference (spanfunc_function_area_segment - colormaps_segment)
 #define colormaps_spanfunc_off_difference (colormaps_spanfunc_seg_difference << 4)
+
+
 
 /*
 [palettebytes]         6C00:0000
