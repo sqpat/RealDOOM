@@ -1,0 +1,60 @@
+
+# NEWDOOM.EXE and DOOM.EXE makefile
+
+# --------------------------------------------------------------------------
+#
+#      4r  use 80486 timings and register argument passing
+#       c  compile only
+#      d1  include line number debugging information
+#      d2  include full sybolic debugging information
+#      ei  force enums to be of type int
+#       j  change char default from unsigned to signed
+#      oa  relax aliasing checking
+#      od  do not optimize
+#  oe[=#]  expand functions inline, # = quads (default 20)
+#      oi  use the inline library functions
+#      om  generate inline 80x87 code for math functions
+#      ot  optimize for time
+#      ox  maximum optimization
+#       s  remove stack overflow checks
+#     zp1  align structures on bytes
+#      zq  use quiet mode
+#  /i=dir  add include directories
+#
+#      mh huge memory model
+#      ml large memory model
+#     fpi inline 80x87 instructions with emulation
+#      -o optimization: a : relax aliasing constraints
+#	   zq operate quietly
+#	  zp1 pack structure members with alignment 1
+#     zt# set far data threshold (i.e., larger objects go in far memory)
+# --------------------------------------------------------------------------
+
+
+# time optimized seems a LOT faster... ?
+# size optimized saves around 10k
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp  -dCODEGEN_SKIP_MENU
+#CCOPTS = -zp1 -oaxet -oi -zq -j -mm -s -zdp  -d__USED000=1 -dCODEGEN_SKIP_MENU
+ 
+GLOBOBJS = &
+ m_near.obj &
+ codegen.obj
+
+
+codegen.exe : $(GLOBOBJS)
+ wlink @codegen.lnk
+ wstrip codegen.exe
+# 4gwbind 4gwpro.exe striptic.exe heretic.exe -V
+# prsucc
+
+.c.obj :
+ wcc $(CCOPTS) $[*
+
+.asm.obj :
+ tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
+
+clean : .SYMBOLIC
+ del m_near.obj
+ del codegen.obj
+ del *.err
+ 

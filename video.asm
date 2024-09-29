@@ -15,10 +15,10 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
-	.8086
-
-
 INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
+
+
 
 
 .DATA
@@ -243,8 +243,7 @@ jumpexit:
 pop   dx
 mov   ax, ss
 mov   ds, ax
-mov   sp, bp
-pop   bp
+LEAVE_MACRO
 pop   di
 pop   si
 pop   cx
@@ -445,8 +444,7 @@ jmp   draw_next_column_direct
 jumpexitdirect:
 mov   ax, ss
 mov   ds, ax
-mov   sp, bp
-pop   bp
+LEAVE_MACRO
 pop   di
 pop   si
 retf  

@@ -15,6 +15,8 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
+INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
 
 
 
@@ -776,8 +778,7 @@ return_false:
 xor   ax, ax
 mov   di, ss ;  restore ds
 mov   ds, di
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 
@@ -791,8 +792,7 @@ return_true:
 mov   ax, 1
 mov   di, ss ;  restore ds
 mov   ds, di
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 
@@ -825,8 +825,7 @@ xor   ax, ax
 mov   di, ss ;  restore ds
 mov   ds, di
 
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 ret_ldx_less_than_lx:
@@ -843,8 +842,7 @@ xor   ax, ax
 mov   di, ss ;  restore ds
 mov   ds, di
 
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 ldy_nonzero:
@@ -910,8 +908,7 @@ mov   ax, 1
 mov   di, ss ;  restore ds
 mov   ds, di
 
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 do_sign_bit_return:
@@ -926,8 +923,7 @@ and   ah, 080h
 mov   di, ss ;  restore ds
 mov   ds, di
 
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 

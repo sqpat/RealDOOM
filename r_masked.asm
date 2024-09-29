@@ -16,7 +16,8 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
-	INCLUDE defs.inc
+INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
 
 .DATA
 
@@ -230,8 +231,7 @@ exit_function:
 
 mov   ax, word ptr [bp - 6]             ; restore dc_texture_mid
 mov   word ptr [_dc_texturemid+2], ax
-mov   sp, bp
-pop   bp
+LEAVE_MACRO
 pop   di
 pop   si
 pop   dx

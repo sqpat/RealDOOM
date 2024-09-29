@@ -14,11 +14,11 @@
 ;
 ; DESCRIPTION:
 ;
-    .8086
+INCLUDE defs.inc
+
+INSTRUCTION_SET_MACRO
 	.MODEL  medium
 
-	
-INCLUDE defs.inc
 
 GLOBAL FixedMul_:PROC
 
@@ -1329,9 +1329,8 @@ mov   ax, bx
 
 mov   cx, ss      ; restore ds
 mov   ds, cx      
-mov   sp, bp
+LEAVE_MACRO
 sti
-pop   bp
 pop   si
 ret  
 
@@ -1396,9 +1395,8 @@ mov   ax, bx
 mov   dx, es   ;retrieve q1
 mov   cx, ss
 mov   ds, cx
-mov   sp, bp
+LEAVE_MACRO
 sti
-pop   bp
 pop   si
 ret  
 
@@ -1416,9 +1414,8 @@ div   di
 mov   dx, es
 mov   cx, ss
 mov   ds, cx
-mov   sp, bp
+LEAVE_MACRO
 sti
-pop   bp
 pop   si
 ret 
 
@@ -1504,8 +1501,7 @@ test  si, si
 
 jl do_negative
 
-mov   sp, bp
-pop   bp
+LEAVE_MACRO
 
 pop   di
 pop   si
@@ -1517,8 +1513,7 @@ neg   ax
 adc   dx, 0
 neg   dx
 
-mov   sp, bp
-pop   bp
+LEAVE_MACRO
 
 pop   di
 pop   si
@@ -1582,9 +1577,7 @@ exit_and_return_early:
 
 ; restore ds...
 
-mov   sp, bp
-
-pop   bp
+LEAVE_MACRO
 pop   di
 pop   si
 ret
@@ -2767,9 +2760,7 @@ mov   ax, bx
 
 mov   cx, ss      ; restore ds
 mov   ds, cx      
-mov   sp, bp
-
-pop   bp
+LEAVE_MACRO
 pop   di
 pop   si
 ret  
@@ -2835,9 +2826,7 @@ mov   ax, bx
 mov   dx, es   ;retrieve q1
 mov   cx, ss
 mov   ds, cx
-mov   sp, bp
-
-pop   bp
+LEAVE_MACRO
 pop   di
 pop   si
 ret  
@@ -2855,9 +2844,7 @@ div   di
 mov   dx, es
 mov   cx, ss
 mov   ds, cx
-mov   sp, bp
-
-pop   bp
+LEAVE_MACRO
 pop   di
 pop   si
 ret 
@@ -2941,8 +2928,7 @@ xor   bx, bx
 call div48_32_wholeAB_
 
 
-mov   sp, bp
-pop   bp
+LEAVE_MACRO
 pop   bx
 pop   cx
 

@@ -19,6 +19,8 @@
 
 EXTRN FixedMul1632_:PROC 
 INCLUDE CONSTANT.INC
+INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
 
 .DATA
 .CODE
@@ -123,8 +125,7 @@ return_false:
 mov   ax, ds
 mov   di, ss ;  restore ds
 mov   ds, di
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 
@@ -140,8 +141,7 @@ return_true:
 mov   ax, es
 mov   di, ss ;  restore ds
 mov   ds, di
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 
@@ -173,8 +173,7 @@ mov   ax, ds
 mov   di, ss ;  restore ds
 mov   ds, di
 
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret    
 ret_node_dx_less_than_0:
@@ -190,8 +189,7 @@ mov   ax, ds
 mov   di, ss ;  restore ds
 mov   ds, di
 
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 
@@ -263,8 +261,7 @@ mov   ax, es
 mov   di, ss ;  restore ds
 mov   ds, di
 
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 do_sign_bit_return:
@@ -281,8 +278,7 @@ mov   ax, ds
 mov   di, ss ;  restore ds
 mov   ds, di
 
-mov   sp, bp
-pop   bp 
+LEAVE_MACRO
 pop   di
 ret   
 

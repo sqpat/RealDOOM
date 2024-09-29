@@ -16,7 +16,8 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
-	INCLUDE defs.incs
+INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
 
 ;=================================
 .DATA
@@ -949,12 +950,14 @@ cmp   byte ptr [_fixedcolormap], 0
 jne   use_fixed_colormap
 ; 		index = distance >> LIGHTZSHIFT;
 mov   ax, word ptr [bp - 06h]
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+sar   ax, 4
+ELSE
 sar   ax, 1
 sar   ax, 1
 sar   ax, 1
 sar   ax, 1
-
-
+ENDIF
 ;		if (index >= MAXLIGHTZ) {
 ;			index = MAXLIGHTZ - 1;
 ;		}
@@ -984,8 +987,8 @@ dw (R_DrawSpanPrep_ - R_DrawSpan_)
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
 
-mov sp, bp
-pop bp 
+LEAVE_MACRO
+
 pop   di
 pop   si
 pop   cx
@@ -1003,8 +1006,7 @@ dw (R_DrawSpanPrep_ - R_DrawSpan_)
 dw SPANFUNC_FUNCTION_AREA_SEGMENT
 
 
-mov sp, bp
-pop bp 
+LEAVE_MACRO
 pop   di
 pop   si
 pop   cx

@@ -16,7 +16,8 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
-	INCLUDE defs.inc
+INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
 
 ;=================================
 .DATA
@@ -274,8 +275,7 @@ cmp   byte ptr [bp - 2], dl
 jge   exitfunc
 jmp   start_drawing_next_vga_plane
 exitfunc:
-mov   sp, bp
-pop   bp
+LEAVE_MACRO
 pop   di
 pop   si
 ret

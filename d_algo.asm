@@ -15,7 +15,8 @@
 ; DESCRIPTION:
 ;
 	.MODEL  medium
-	INCLUDE defs.inc
+INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
 
 
 .DATA
@@ -58,8 +59,7 @@ cbw  ; returning a bool, make sure ah is zero
 mov cx, ss
 mov ds, cx
 
-mov   sp, bp
-pop   bp
+LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
