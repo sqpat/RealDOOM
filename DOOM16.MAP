@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/09/29 22:21:46
+Created on:       24/09/29 22:50:13
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -81,8 +81,8 @@ r_bsp_TEXT             CODE           AUTO           1859:0000       000007ce
 r_data_TEXT            CODE           AUTO           1859:07d0       0000169e
 R_MATH_TEXT            CODE           AUTO           1859:1e6e       00000401
 R_COLUMN_TEXT          CODE           AUTO           1859:2270       00000bac
-R_SPAN_TEXT            CODE           AUTO           1859:2e1c       000009e1
-R_SKY_TEXT             CODE           AUTO           1859:37fe       0000024c
+R_SPAN_TEXT            CODE           AUTO           1859:2e1c       000009dc
+R_SKY_TEXT             CODE           AUTO           1859:37f8       0000024c
 r_draw_TEXT            CODE           AUTO           1859:3a50       00000367
 r_main_TEXT            CODE           AUTO           1859:3dc0       0000020b
 r_plane_TEXT           CODE           AUTO           1859:3fd0       0000077c
@@ -1414,8 +1414,8 @@ Module: r_span.obj(r_span.ASM)
 1859:3666      R_MapPlane_
 1859:35d7*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
-1859:37fe*     R_DrawSkyColumn_
-1859:39d1      R_DrawSkyPlane_
+1859:37f8*     R_DrawSkyColumn_
+1859:39cb      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1859:3a50      R_FillBackScreen_
 1859:3cd4      R_VideoErase_

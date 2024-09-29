@@ -973,9 +973,7 @@ index_set:
 ;		ds_colormap_index = planezlight[index];
 
 les    bx, dword ptr [_planezlight]
-xor   ah, ah
-add   bx, ax
-mov   al, byte ptr es:[bx]
+xlat  byte ptr es:[bx]
 colormap_ready:
 mov   byte ptr [_ds_colormap_index], al
 

@@ -500,7 +500,7 @@ void __near R_DrawPlanes (void) {
 		if (light >= LIGHTLEVELS){
 			light = LIGHTLEVELS-1;
 		}
-		planezlight = &zlight[lightshift7lookup[light]];
+		planezlight = MK_FP(zlight_segment, lightshift7lookup[light]);
 
 		
 		usedflatindex = flatindex[flattranslation[piclight.bytes.picnum]];
