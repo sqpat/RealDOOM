@@ -18,21 +18,14 @@ INCLUDE constant.inc
 
 
 
-SCREEN  =       0a0000h
 SCREENWIDTH     =   320
 SCREENHEIGHT	=	200
-PLANEWIDTH		=	80
-PLANESIZE		=	80*200
 
 PEL_WRITE_ADR	=	03c8h
 PEL_DATA		=	03c9h
 
 SC_INDEX		=	03C4h
 SC_MAPMASK		=	2
-
-OP_RET		=	0c3h
-OP_MOVAL	= 	08ah
-OP_MOVDEST	= 	088h
 
 
 
@@ -46,19 +39,12 @@ EXTRN	_dc_source_segment:WORD
 EXTRN	_dc_iscale:DWORD
 EXTRN	_dc_texturemid:DWORD
 
-;EXTRN	_ylookup:DWORD
-;EXTRN	_columnofs:DWORD
-
 
 EXTRN	_ds_y:WORD
 EXTRN	_ds_x1:WORD
 EXTRN	_ds_x2:WORD
 
 
-;EXTRN	_ds_xfrac:DWORD
-;EXTRN	_ds_yfrac:DWORD
-;EXTRN	_ds_xstep:DWORD
-;EXTRN	_ds_ystep:DWORD
 EXTRN   _ds_source_segment:WORD
 
 EXTRN   _ds_colormap_index:BYTE
@@ -69,12 +55,3 @@ EXTRN   _detailshiftitercount:BYTE
 EXTRN   _detailshift2minus:BYTE
 EXTRN   _quality_port_lookup:BYTE
 EXTRN   _detailshiftandval:WORD
-
-
-PUSHR	MACRO
-	pushad
-ENDM
-
-POPR	MACRO
-	popad
-ENDM
