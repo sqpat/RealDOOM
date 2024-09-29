@@ -334,7 +334,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
                     
 
                 }
-                
+                // todo double check...  is xiscalestep_shift ever nonzero?
                 for ( ; dc_x<=vis->x2 ; 
                     dc_x+=detailshiftitercount, 
                     frac.w += xiscalestep_shift) {
@@ -489,11 +489,11 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
         return;
     // store information in a vissprite
 
-	if (vissprite_p == &vissprites[MAXVISSPRITES]) {
+	if (vissprite_p == MAXVISSPRITES) {
 		vis = &overflowsprite;
 	}
 	vissprite_p++;
-	vis = vissprite_p - 1;
+	vis = &vissprites[vissprite_p - 1];
 
     vis->scale = xscale.w<<detailshift.b.bytelow;
     vis->gx = thingx;
@@ -548,7 +548,7 @@ void __near R_ProjectSprite (mobj_pos_t __far* thing){
         if (index >= MAXLIGHTSCALE) 
             index = MAXLIGHTSCALE-1;
 
-        vis->colormap = spritelights[index];
+        vis->colormap = *((int8_t __far*)MK_FP(scalelightfixed_segment, spritelights+index));
     }
 
 	
@@ -582,11 +582,11 @@ void __near R_AddSprites (sector_t __far* sec)
     lightnum = (sec->lightlevel >> LIGHTSEGSHIFT)+extralight;
 
 	if (lightnum < 0) {
-		spritelights = &scalelight[0];
+		spritelights = 0;
 	} else if (lightnum >= LIGHTLEVELS) {
-		spritelights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
+		spritelights = lightmult48lookup[LIGHTLEVELS - 1];
 	} else {
-		spritelights = &scalelight[lightmult48lookup[lightnum]];
+		spritelights = lightmult48lookup[lightnum];
 	}
 
 
@@ -707,7 +707,7 @@ void __near R_DrawPSprite (pspdef_t __near* psp, state_t statecopy, vissprite_t 
         vis->colormap = 0;
     } else {
         // local light
-        vis->colormap = spritelights[MAXLIGHTSCALE-1];
+        vis->colormap = *((int8_t __far*)MK_FP(scalelightfixed_segment, spritelights+MAXLIGHTSCALE-1));
     }
 
 }
@@ -742,11 +742,11 @@ void __near R_PrepareMaskedPSprites(void) {
 	//    if (lightnum < 0)          
 	// not sure if this hack is necessary.. since its unsigned we loop around if its below 0 
 	if (lightnum > 240) {
-		spritelights = &scalelight[0];
+		spritelights = 0;
 	} else if (lightnum >= LIGHTLEVELS) {
-		spritelights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
+		spritelights = lightmult48lookup[LIGHTLEVELS - 1];
 	} else {
-		spritelights = &scalelight[lightmult48lookup[lightnum]];
+		spritelights = lightmult48lookup[lightnum];
 	}
 
 	// add all active psprites
@@ -780,7 +780,7 @@ void __near R_SortVisSprites (void)
 
 	memset(&unsorted, 0, sizeof(vissprite_t));
 
-    count = vissprite_p - vissprites;
+    count = vissprite_p;
         
 
     if (!count)
@@ -791,7 +791,7 @@ void __near R_SortVisSprites (void)
     }
 
     unsorted.next = 0;
-    (vissprite_p-1)->next = VISSPRITE_UNSORTED_INDEX;
+    (vissprites[vissprite_p-1]).next = VISSPRITE_UNSORTED_INDEX;
     
     // pull the vissprites out by scale
     vsprsortedheadfirst = vsprsortedheadprev = VISSPRITE_SORTED_HEAD_INDEX;
@@ -969,7 +969,7 @@ void __near R_DrawMasked (void) {
     
 	R_SortVisSprites ();
 
-    if (vissprite_p > vissprites) {
+    if (vissprite_p > 0) {
         // draw all vissprites back to front
         for (spr = vsprsortedheadfirst ;
              spr != VISSPRITE_SORTED_HEAD_INDEX ;

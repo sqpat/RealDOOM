@@ -95,12 +95,14 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 		lightnum++;
 	}
 	if (lightnum < 0){
-		walllights = &scalelight[0];
+		walllights = 0;
 	} else if (lightnum >= LIGHTLEVELS) {
-		walllights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
+		walllights = lightmult48lookup[LIGHTLEVELS - 1];
 	} else {
-		walllights = &scalelight[lightmult48lookup[lightnum]];
+		walllights = lightmult48lookup[lightnum];
 	}
+	walllights+=scalelight_offset_in_fixed_scalelight;
+
     maskedtexturecol = &openings[ds->maskedtexturecol];
 
     rw_scalestep.w = ds->scalestep;
@@ -209,7 +211,8 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 						}
 
 						dc_colormap_segment = colormaps_segment_high;
-						dc_colormap_index = walllights[index];
+				        dc_colormap_index = *((int8_t __far*)MK_FP(scalelightfixed_segment, walllights+index));
+
 
 						// todo does it have to be reset after this?
 					}
@@ -491,7 +494,7 @@ void __near R_RenderSegLoop (fixed_t rw_scalestep)
 
 
 				dc_colormap_segment = colormaps_segment;
-				dc_colormap_index = walllights[index];
+				dc_colormap_index = *((int8_t __far*)MK_FP(scalelightfixed_segment, walllights+index));
 				dc_x = rw_x;
 				//dc_iscale = 0xffffffffu / rw_scale.w;
 				dc_iscale = FastDiv3232(0xffffffffu, rw_scale.w);
@@ -689,7 +692,8 @@ void __near R_RenderOneSeg ()
 
 
 		dc_colormap_segment = colormaps_segment;
-		dc_colormap_index = walllights[index];
+		dc_colormap_index = *((int8_t __far*)MK_FP(scalelightfixed_segment, walllights+index));
+
 		dc_x = rw_x;
 		//dc_iscale = 0xffffffffu / rw_scale.w;
 		dc_iscale = FastDiv3232(0xffffffffu, rw_scale.w);
@@ -1136,12 +1140,13 @@ void __near R_StoreWallRange ( int16_t start, int16_t stop ) {
 			}
 
 			if (lightnum < 0) {
-				walllights = &scalelight[0];
+				walllights = 0;
 			} else if (lightnum >= LIGHTLEVELS) {
-				walllights = &scalelight[lightmult48lookup[LIGHTLEVELS - 1]];
+				walllights = lightmult48lookup[LIGHTLEVELS - 1];
 			} else {
-				walllights = &scalelight[lightmult48lookup[lightnum]];
+				walllights = lightmult48lookup[lightnum];
 			}
+			walllights+=scalelight_offset_in_fixed_scalelight;
 		}
     }
     

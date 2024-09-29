@@ -1068,6 +1068,7 @@ patchoffset                 83BB:01DC
 //30462
 #define nodes_render          ((node_render_t __far*)  MAKE_FULL_SEGMENT(0x70000000, 0))
 #define spritedefs_bytes      ((byte __far*)           MAKE_FULL_SEGMENT(nodes_render, size_nodes_render))
+#define sprites               ((spritedef_t __far*)    spritedefs_bytes)
 #define spritewidths          ((uint8_t __far*)        MAKE_FULL_SEGMENT(spritedefs_bytes, size_spritedefs))
 
 
@@ -1221,6 +1222,8 @@ spritewidths        7000:7592
 #define viewangletox_segment              ((segment_t) ((int32_t)viewangletox >> 16))
 #define flatindex_segment                 ((segment_t) ((int32_t)flatindex >> 16))
 
+
+#define scalelight_offset_in_fixed_scalelight (16 * (scalelight_segment - scalelightfixed_segment))
 
 // need to undo prior drawseg_t shenanigans
 //0x4FBEE

@@ -387,15 +387,15 @@ void __near R_InitSpriteDefs()
 
  
 	p_init_sprtemp = (spriteframe_t __far *) &sprtempbytes;
-	numsprites = NUMSPRITES;
+	//numsprites = NUMSPRITES;
+	//todo did this change with different versions of the game
 
-	if (!numsprites)
-		return;
+	//if (!numsprites)
+	//	return;
 
 	
-	sprites = (spritedef_t __far*)spritedefs_bytes;
-	currentspritememoryoffset = sprites[0].spriteframesOffset = numsprites * sizeof(spritedef_t);
-	//sprites[0].spriteframesOffset = numsprites * sizeof(*sprites);
+	currentspritememoryoffset = sprites[0].spriteframesOffset = NUMSPRITES * sizeof(spritedef_t);
+
 	//totalsize = numsprites * sizeof(spritedef_t);
 
 	start = firstspritelump - 1;
@@ -405,7 +405,7 @@ void __near R_InitSpriteDefs()
 	// scan all the lump names for each of the names,
 	//  noting the highest frame letter.
 	// Just compare 4 characters as ints
-	for (i = 0; i < numsprites; i++)
+	for (i = 0; i < NUMSPRITES; i++)
 	{
 #ifdef CHECK_FOR_ERRORS
 		spritename = namelist[i];

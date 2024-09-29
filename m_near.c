@@ -323,7 +323,7 @@ fixed_t		topstep;
 
 fixed_t		bottomfrac;
 fixed_t		bottomstep;
-uint8_t __far*	walllights;
+int16_t     walllights;
 
 uint16_t __far*		maskedtexturecol;
 
@@ -341,7 +341,7 @@ byte __far * floortop;
 uint16_t         pspritescale;
 fixed_t         pspriteiscale;
 
-uint8_t __far*  spritelights;
+int16_t   spritelights;
 
 // constant arrays
 //  used for psprite clipping and initializing clipping
@@ -355,12 +355,10 @@ uint8_t __far*  spritelights;
 
 // variables used to look up
 //  and range check thing_t sprites patches
-spritedef_t __far*	sprites;
-int16_t             numsprites;
 
-vissprite_t __far*    vissprite_p;
+int16_t    vissprite_p;
 
-uint8_t     vsprsortedheadfirst;
+uint8_t   vsprsortedheadfirst;
 segment_t lastvisspritesegment = 0xFFFF;
 int16_t   lastvisspritepatch = -1;
 

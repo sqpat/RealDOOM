@@ -538,7 +538,7 @@ void R_SetupFrame () {
     if (player.fixedcolormap) {
 		fixedcolormap =  player.fixedcolormap;
 		
-		walllights = scalelightfixed;
+		walllights = 0;//scalelightfixed;
 
 		for (i=0 ; i<MAXLIGHTSCALE ; i++){
 			scalelightfixed[i] = fixedcolormap;
@@ -613,7 +613,7 @@ void __far R_RenderPlayerView ()
     R_ClearPlanes ();
 
 	// R_ClearSprites
-	vissprite_p = vissprites;
+	vissprite_p = 0;
 
     // check for new console commands.
 	NetUpdate ();
