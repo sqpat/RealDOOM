@@ -26,6 +26,8 @@
 
 MAXLIGHTZ                      = 0080h
 MAXLIGHTZ_UNSHIFTED            = 0800h
+DRAWSPAN_BX_OFFSET             = 0FC0h
+DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_FUNCTION_AREA_SEGMENT - 06800h)) + DRAWSPAN_BX_OFFSET
 
 EXTRN _basexscale:WORD
 EXTRN _planezlight:WORD
@@ -337,11 +339,10 @@ mov   cx, bx  ; yfrac16
 
 
 
-mov   bx, 0FC0h
+mov   bx, DRAWSPAN_BX_OFFSET
 xor   ah, ah
 
  
-jmp_addr_2:
 SPANFUNC_JUMP_OFFSET:
 jmp span_i_loop_done         ; relative jump to be modified before function is called
 
@@ -536,7 +537,8 @@ PUBLIC  R_DrawSpanPrep_
 
 
 mov   si, OFFSET _ss_variable_space ; lets use this variable space
-mov   word ptr [si], 07a60h
+; DRAWSPAN_CALL_OFFSET is 7A60
+mov   word ptr [si], DRAWSPAN_CALL_OFFSET
 mov   word ptr [si+2], dx				; setup dynamic call
 
 db 0FFh  ; lcall[si]
@@ -569,7 +571,8 @@ db 01Ch  ;
  mov   bh, bl
  xor   bl, bl
  add   dx, ax
- mov   ax, 07a60h
+
+ mov   ax, DRAWSPAN_CALL_OFFSET
  sub   ax, bx
 
 mov   si, OFFSET _ss_variable_space ; lets use this variable space

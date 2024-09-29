@@ -2,7 +2,7 @@
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 90
+#define CONSTANTS_COUNT 96
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
     "SECTORS_SEGMENT",
@@ -54,6 +54,13 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
 
 
     "SCREEN0_SEGMENT",
+    "SCREEN1_SEGMENT",
+    "SCREEN2_SEGMENT",
+    "SCREEN3_SEGMENT",
+    "SCREEN4_SEGMENT",
+    "FWIPE_YCOLUMNS_SEGMENT",
+    "FWIPE_MUL160LOOKUP_SEGMENT",
+
     "GAMMATABLE_SEGMENT",
     "MENUOFFSETS_SEGMENT",
 
@@ -167,6 +174,12 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     linespeciallist_segment,
 
     screen0_segment,
+    screen1_segment,
+    screen2_segment,
+    screen3_segment,
+    screen4_segment,
+    fwipe_ycolumns_segment,
+    fwipe_mul160lookup_segment,
     gammatable_segment,
     menuoffsets_segment,
 

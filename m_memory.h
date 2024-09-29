@@ -568,6 +568,7 @@ blockmaplump_plus4  76E4:0008
 #define colormaps_segment_high  ((segment_t)             (colormaps_segment           - 0x6800 + 0x8C00))
 
 
+
 #define R_DrawColumnAddr          ((void    (__far *)(void))  (colfunc_function_area))
 //#define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
 
@@ -747,6 +748,18 @@ savegamestrings    5FB3:0000
 #define screen2 ((byte __far*) 0x70000000)
 #define screen3 ((byte __far*) 0x60000000)
 #define screen4 ((byte __far*) 0x9C000000)
+
+
+#define screen0_segment           ((segment_t) ((int32_t)screen0 >> 16))
+#define screen1_segment           ((segment_t) ((int32_t)screen1 >> 16))
+#define screen2_segment           ((segment_t) ((int32_t)screen2 >> 16))
+#define screen3_segment           ((segment_t) ((int32_t)screen3 >> 16))
+#define screen4_segment           ((segment_t) ((int32_t)screen4 >> 16))
+
+#define fwipe_ycolumns_segment         (segment_t)0x7FA0
+#define fwipe_mul160lookup_segment     (segment_t)0x7FE0
+
+
 
 // screen1 is used during wi_stuff/intermission code, we can stick this anim data there
 #define size_screen1          (64000u)

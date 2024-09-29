@@ -71,8 +71,8 @@ void __near wipe_shittyColMajorXform ( int16_t __far*	array ) {
 
 int16_t __near wipe_initMelt (){
 	int16_t i, r;
-	int16_t __far* y = (int16_t __far*)0x7FA00000; // 7000:FA00
-	uint16_t __far* mul160lookup = (uint16_t __far*)0x7FE00000; // 7000:FE00
+	int16_t __far* y = (int16_t __far*)MK_FP(fwipe_ycolumns_segment, 0);
+	uint16_t __far* mul160lookup = (uint16_t __far*)MK_FP(fwipe_mul160lookup_segment, 0);
 
     // copy start screen to main screen
     FAR_memcpy(screen0, screen2, 64000u);
@@ -105,10 +105,6 @@ int16_t __near wipe_initMelt (){
 
     return 0;
 }
-
-#define screen3_segment ((segment_t)(((int32_t) screen3) >> 16))
-#define screen2_segment ((segment_t)(((int32_t) screen2) >> 16))
-#define screen0_segment ((segment_t)(((int32_t) screen0) >> 16))
 
 int16_t __far wipe_doMelt ( int16_t	ticks );
 

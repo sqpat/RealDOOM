@@ -20,12 +20,7 @@
 
 .DATA
 
-YCOLUMNSSEGMENT      =   07FA0h
-MUL160LOOKUP_SEGMENT =   07FE0h
-SCREEN2_SEGMENT      =   07000h
-SCREEN3_SEGMENT      =   06000h
-SCREEN0_SEGMENT      =   08000h
-SCREEN0_SEGMENT      =   08000h
+
 
 .CODE
 
@@ -77,7 +72,7 @@ mov   word ptr [bp - 2], 0
 
 xor   ah, ah
 
-mov   dx, YCOLUMNSSEGMENT
+mov   dx, FWIPE_YCOLUMNS_SEGMENT
 mov   es, dx
 
 next_horizontal_pixel:
@@ -159,7 +154,7 @@ add   si, di
 add   si, si	; si is setup. si = 2*[y[i] + muli]
 
 add   di, di	; di = 2 * y[i]
-mov   di, word ptr es:[di + (16 * (MUL160LOOKUP_SEGMENT - YCOLUMNSSEGMENT))]  ; mul160lookup[2*y[i]]
+mov   di, word ptr es:[di + (16 * (FWIPE_MUL160LOOKUP_SEGMENT - FWIPE_YCOLUMNS_SEGMENT))]  ; mul160lookup[2*y[i]]
 
 add   di, di	
 add   di, bx    ; di is setup
@@ -228,7 +223,7 @@ skip_first_copy:
 ;				y[i] += dy;
 
 
-mov   dx, YCOLUMNSSEGMENT
+mov   dx, FWIPE_YCOLUMNS_SEGMENT
 mov   ds, dx
 
 
@@ -244,7 +239,7 @@ xor   dh, dh
 add   word ptr ds:[bx], cx		; add to dy in  y[i]
 mov   di, word ptr ds:[bx]
 mov   cx, di
-mov   dx, MUL160LOOKUP_SEGMENT
+mov   dx, FWIPE_MUL160LOOKUP_SEGMENT
 mov   es, dx
 add   di, di
 mov   di, word ptr es:[di]
@@ -316,7 +311,7 @@ loop   second_copy_2
 skip_second_copy:
 xor   al, al
 
-mov   dx, YCOLUMNSSEGMENT
+mov   dx, FWIPE_YCOLUMNS_SEGMENT
 mov   es, dx
 
 jmp continue_main_loop
