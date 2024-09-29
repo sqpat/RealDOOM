@@ -40,7 +40,7 @@
 # size optimized saves around 10k
 CCOPTS = -zp1 -oaxet -oi -zq -j -mm -1 -s -zdp 
 #CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -wx 
-ASMOPTS = /d_USED000=0
+ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=1
  
 #doom8088 build opts for comparison
 #CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99
