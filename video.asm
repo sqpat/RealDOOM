@@ -82,14 +82,27 @@ xor   dh, dh
 
 ; si = y * screenwidth
 
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_286
+
+imul   si, dx , SCREENWIDTH
+add    si, ax
+
+ELSE
+
 mov    si, dx
 mov    di, ax
 mov    ax, SCREENWIDTH
 mul    dx
 mov    dx, si
 mov    si, ax
-
 add   si, di
+
+
+ENDIF
+
+
 sub   si, word ptr ds:[bx + 4]
 
 
@@ -149,11 +162,23 @@ mov   ax, word ptr ds:[si]
 
 mov   cl, ah
 xor   ah, ah      ; al contains topdelta
+
+
+IF COMPILE_INSTRUCTIONSET GE COMPILE_286
+
+imul   di, ax, SCREENWIDTH
+mov    dx, SCREENWIDTH - 1 
+
+ELSEIF
+
 mov   di, SCREENWIDTH
 mul   di
 mov   dx, di
 mov   di, ax
 dec   dx
+
+ENDIF
+
 
 
 SELFMODIFY_offset_add_di:
@@ -252,9 +277,18 @@ domarkrect:
 mov   cx, word ptr ds:[bx + 2]
 mov   bx, word ptr ds:[bx]
 push ds
+IF COMPILE_INSTRUCTIONSET GE COMPILE_286
+
+mov  di, ss
+mov  ds, di
+
+ELSE
+
 mov  ax, ss
 mov  ds, ax
 mov  ax, di
+
+ENDIF
 push es
 call  V_MarkRect_
 pop  es
