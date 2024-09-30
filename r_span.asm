@@ -323,7 +323,7 @@ mov   word ptr [_sp_bp_safe_space + 2], ax	; y_adder
 
 
 
-mov   es, word ptr [_destview + 2]	; retrieve destview segment
+mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 
 ; stack shenanigans. swap adders and sp/bp
 ; todo - this has got to be able to be improved somehow?
@@ -437,7 +437,7 @@ PUBLIC  R_DrawSpanPrep_
  mov   bx, word ptr [_ds_y]
  mov   es, ax
  add   bx, bx
- mov   ax, word ptr [_destview]			; get FP_OFF(destview)
+ mov   ax, word ptr ds:[_destview]			; get FP_OFF(destview)
  mov   dx, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
  ;mov   bh, 2
  add   dx, ax							; dx is baseoffset

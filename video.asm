@@ -23,8 +23,10 @@ INSTRUCTION_SET_MACRO
 
 .DATA
 
+_destscreen = (_NULL_OFFSET + 0008h)
+
 EXTRN	_skipdirectdraws:BYTE
-EXTRN   _destscreen:DWORD
+
 EXTRN   _screen_segments:WORD
 EXTRN   _jump_mult_table_3:BYTE
 
@@ -331,14 +333,14 @@ mul   dx
 mov   word ptr cs:[SELFMODIFY_retrievepatchoffset+1], bx
 ; load destscreen into es:bx to calc desttop
 mov   di, bx
-les   bx, dword ptr [_destscreen]
+les   bx, dword ptr ds:[_destscreen]
 mov   ds, cx
 
    
 add   bx, ax
 mov   ax, si
 
-;	desttop = (byte __far*)(destscreen.w + y * (SCREENWIDTH / 4) + (x>>2));
+;	desttop = (byte __far*)(destscreen->w + y * (SCREENWIDTH / 4) + (x>>2));
 ;   es:bx is desttop
 
 sar   ax, 1

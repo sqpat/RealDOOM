@@ -23,6 +23,20 @@ IF COMPILE_INSTRUCTIONSET LE COMPILE_286
 GLOBAL FixedMul_:PROC
 ENDIF
 
+SEGMENT _FIXEDDATA  USE16 PARA PUBLIC 'DATA'
+dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0, 0, 0, 0
+dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0, 0, 0, 0
+
+ENDS _FIXEDDATA
+
+GROUP DGROUP _FIXEDDATA
+
 .CODE
 
 IF COMPILE_INSTRUCTIONSET LE COMPILE_286

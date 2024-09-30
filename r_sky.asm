@@ -101,7 +101,7 @@ PUBLIC  R_DrawSkyColumn_
     ; dx contains dc source segment for the function
 
     add di, ax
-    les ax, dword ptr [_destview]
+    les ax, dword ptr ds:[_destview]
     add di, ax
 
 

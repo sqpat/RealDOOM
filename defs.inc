@@ -28,6 +28,9 @@ SC_INDEX		=	03C4h
 SC_MAPMASK		=	2
 
 
+_NULL_OFFSET = 0030h
+_destview    = _NULL_OFFSET + 00004h
+
 EXTRN	_dc_x:WORD
 EXTRN	_dc_yl:WORD
 EXTRN	_dc_yh:WORD
@@ -46,7 +49,6 @@ EXTRN   _ds_source_segment:WORD
 
 EXTRN   _ds_colormap_index:BYTE
 EXTRN   _ds_colormap_segment:WORD
-EXTRN	_destview:DWORD
 EXTRN   _detailshift:BYTE
 EXTRN   _detailshiftitercount:BYTE
 EXTRN   _detailshift2minus:BYTE

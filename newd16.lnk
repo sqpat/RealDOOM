@@ -111,8 +111,8 @@ file p_sight.obj
 # here we move _DATA before CONST and CONST2.
 ORDER      clname CODE 
            clname FAR_DATA #segaddr=0x3C00 
-           clname BEGDATA segment _NULL segment _AFTERNULL
-           clname DATA  segment _DATA
+           clname BEGDATA segment _NULL segment _AFTERNULL 
+           clname DATA  segment _FIXEDDATA segment _DATA
            clname BSS
            clname STACK
            clname START 

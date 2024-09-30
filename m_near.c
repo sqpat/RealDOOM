@@ -41,6 +41,12 @@
 // DEFINE ALL LOCALS HERE. EXTERN IN m_near.h
 
 
+byte __far *currentscreen;
+//byte __far *destview;
+//fixed_t_union destscreen;
+int16_t olddb[2][4];
+
+
 const int8_t snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S', 'S', 'S' };
 
 //int16_t dmxCodes[NUM_SCARDS]; // the dmx code for a given card
@@ -664,11 +670,6 @@ union REGS in, out;
 
 
 void (__interrupt __far_func *oldkeyboardisr) (void) = NULL;
-byte __far *currentscreen;
-byte __far *destview;
-fixed_t_union destscreen;
-
-int16_t olddb[2][4];
 boolean             viewactivestate = false;
 boolean             menuactivestate = false;
 boolean             inhelpscreensstate = false;

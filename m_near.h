@@ -67,6 +67,21 @@
           (ST_FACESTRIDE*ST_NUMPAINFACES+ST_NUMEXTRAFACES)
 
 
+#define _NULL_OFFSET 0x30
+
+//#define currentscreen    (byte __far * __near)      (_NULL_OFFSET + 0x0000)
+#define destview           (*(byte __far * __near *)      (_NULL_OFFSET + 0x0004))
+#define destscreen         (*((fixed_t_union __near*)    (_NULL_OFFSET + 0x0008)))
+//#define currentscreen    (int16_t *)         (_NULL_OFFSET + 0x000C)
+
+extern byte __far *currentscreen;
+
+//extern byte __far *destview;
+//extern fixed_t_union destscreen;
+
+
+extern int16_t olddb[2][4];
+
 
 extern const int8_t         snd_prefixen[];
 extern int16_t              snd_SBport;
@@ -439,11 +454,6 @@ extern uint8_t kbdhead;
 extern union REGS in;
 extern union REGS out;
 extern void (__interrupt __far_func *oldkeyboardisr) (void);
-extern byte __far *currentscreen;
-extern byte __far *destview;
-extern fixed_t_union destscreen;
-
-extern int16_t olddb[2][4];
 extern boolean             viewactivestate;
 extern boolean             menuactivestate;
 extern boolean             inhelpscreensstate;

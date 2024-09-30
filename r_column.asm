@@ -127,7 +127,7 @@ PUBLIC  R_DrawColumn_
    ;  prep our loop variables
 
 
-   mov     es, word ptr [_destview + 2]    ; ready the viewscreen segment
+   mov     es, word ptr ds:[_destview + 2]    ; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
 
    mov     ds, word ptr [_dc_source_segment]     ; this will be ds..
@@ -234,7 +234,7 @@ sub   si, bx                                 ;
 add   bx, bx                                 ; double dc_yl to get a word offset
 add   bx, COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF;
 add   di, word ptr es:[bx]                  ; set up destview 
-add   di, word ptr [_destview + 0] 		    ; add destview offset
+add   di, word ptr ds:[_destview + 0] 		    ; add destview offset
 
 
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
