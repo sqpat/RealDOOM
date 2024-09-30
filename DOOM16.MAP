@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/09/30 11:19:23
+Created on:       24/09/30 12:22:49
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -52,7 +52,7 @@ D_ALGO_TEXT            CODE           AUTO           0246:59e0       00000154
 dmx_TEXT               CODE           AUTO           0246:5b40       000001f0
 dutils_TEXT            CODE           AUTO           0246:5d30       0000008b
 wi_stuff_TEXT          CODE           AUTO           0246:5dc0       00000efa
-MATH_TEXT              CODE           AUTO           0246:6cba       000007e3
+MATH_TEXT              CODE           AUTO           0246:6cc0       000007db
 f_finale_TEXT          CODE           AUTO           0246:74a0       00000bf7
 g_setup_TEXT           CODE           AUTO           0246:80a0       000002a0
 r_setup_TEXT           CODE           AUTO           0246:8340       0000040a
@@ -1061,29 +1061,30 @@ Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
 0246:6b1a+     WI_Init_
 0246:6c98      WI_Start_
 Module: math.obj(math.ASM)
-0246:709a      FastDiv32u16u_
-0246:6dc2      FixedMulTrigNoShift_
-0246:6eab      FastMul16u32u_
-0246:700b      FixedDiv_
-0246:6e14*     FixedMulTrig16_
-0246:6ec0      div48_32_
-0246:7150*     FastDiv3232_RPTA_
-0246:736f*     div48_32_whole_
-0246:6e2e      FastMulTrig16_
-0246:6e57      FixedMulTrigSpeed_
-0246:6e9c*     FixedMul16u32u_
-0246:70b8      FastDiv3216u_
-0246:723c      FastDiv3232_
-0246:72fa      FixedDivWholeA_
-0246:6dbe      FixedMulTrig_
-0246:6d7e      FixedMul1632_
-0246:6d3d      FixedMul2432_
-0246:6cf3      FixedMul2424_
-0246:6cba      FixedMul_
-0246:711f      FastDiv3232_shift_3_8_
-0246:6e73      FixedMulBig1632_
-0246:6e87      FixedMul16u32_
-0246:6e5b      FixedMulTrigSpeedNoShift_
+0246:7067      FastDiv32u16u_
+0246:6d8f      FixedMulTrigNoShift_
+0246:6e78      FastMul16u32u_
+0246:6fd8      FixedDiv_
+0246:6de1*     FixedMulTrig16_
+0246:6e8d      div48_32_
+0246:711d*     FastDiv3232_RPTA_
+0246:733c*     div48_32_whole_
+0246:6dfb      FastMulTrig16_
+0246:6e24      FixedMulTrigSpeed_
+0246:6e69*     FixedMul16u32u_
+0246:7085      FastDiv3216u_
+0246:7209      FastDiv3232_
+0246:72c7      FixedDivWholeA_
+0246:6d8b      FixedMulTrig_
+0246:6d4b      FixedMul1632_
+0246:6d0a      FixedMul2432_
+0246:6cc0      FixedMul2424_
+0246:70ec      FastDiv3232_shift_3_8_
+0246:6e40      FixedMulBig1632_
+0246:6e54      FixedMul16u32_
+0246:6e28      FixedMulTrigSpeedNoShift_
+Module: math386.obj(math386.ASM)
+0246:7470      FixedMul_
 Module: f_finale.obj(C:\REALDOOM\f_finale.c)
 0246:74a0+     V_DrawPatchFlipped_
 0246:7586      F_StartFinale_
