@@ -295,7 +295,9 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 		lumpsize = 33 * 256; // hack to override lumpsize of colormaps
 	}
 
-    I_BeginRead ();
+	#ifdef ENABLE_DISK_FLASH
+    	I_BeginRead ();
+	#endif
 
  
 	startoffset = l->position + start;
@@ -312,7 +314,9 @@ void W_ReadLump (int16_t lump, byte __far* dest, int32_t start, int32_t size ) {
 		Z_UnmapLumpInfo();
 	}
 
-    I_EndRead ();
+	#ifdef ENABLE_DISK_FLASH
+    	I_EndRead ();
+	#endif
 }
 
 
