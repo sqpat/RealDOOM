@@ -17,13 +17,12 @@
 INCLUDE defs.inc
 
 .386
-;.MODEL  medium 
-;SEGMENT DATA  USE16 PARA PUBLIC
-;DATA ENDS
 
 GLOBAL FixedMul_:PROC
 
 SEGMENT MATH_TEXT  USE16 PARA PUBLIC 'CODE'
+
+ASSUME cs:MATH_TEXT
 
 
 PROC FixedMul_ FAR
@@ -35,21 +34,18 @@ PUBLIC FixedMul_
 ; need to get this out of DX:AX  CX:BX and into
 ; EAX and EBX (or something)
 ; todo improve
-  sal  ecx, 16
-  and  ebx, 0000FFFFh
-  or   ebx, ecx
+  sal  ebx, 16
+  shrd ebx, ecx, 16
 
-  sal  edx, 16
-  and  eax, 0000FFFFh
-  or   eax, edx
-  
+  sal  eax, 16
+  shrd eax, edx, 16
+
   ; actual mult and shrd..
   imul ebx
-  shrd eax, edx, 16
-  
   ; put results in the expected spots
-  mov  edx, eax
-  shr  edx, 16
+  ; edx low 16 bits already contains bits 32-48 of result
+  ; need to move eax's high 16 bits low.
+  shr  eax, 16
 
 ret
 
