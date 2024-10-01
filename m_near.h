@@ -69,18 +69,17 @@
 
 #define _NULL_OFFSET 0x30
 
-//#define currentscreen    (byte __far * __near)      (_NULL_OFFSET + 0x0000)
+#define currentscreen      (*(byte __far * __near *)      (_NULL_OFFSET + 0x0000))
 #define destview           (*(byte __far * __near *)      (_NULL_OFFSET + 0x0004))
-#define destscreen         (*((fixed_t_union __near*)    (_NULL_OFFSET + 0x0008)))
-//#define currentscreen    (int16_t *)         (_NULL_OFFSET + 0x000C)
+#define destscreen         (*((fixed_t_union __near *)    (_NULL_OFFSET + 0x0008)))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x000C)))
+#define olddb              ((int16_t __near *)        (_NULL_OFFSET + 0x0010))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0020)))
 
-extern byte __far *currentscreen;
-
+//extern byte __far *currentscreen;
 //extern byte __far *destview;
 //extern fixed_t_union destscreen;
-
-
-extern int16_t olddb[2][4];
+//extern int16_t olddb[2][4];
 
 
 extern const int8_t         snd_prefixen[];

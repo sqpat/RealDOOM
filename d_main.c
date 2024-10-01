@@ -583,40 +583,50 @@ void __far I_UpdateNoBlit(void) {
 
     // Update dirtybox size
     realdr[BOXTOP] = dirtybox[BOXTOP];
-    if (realdr[BOXTOP] < olddb[0][BOXTOP]) {
-        realdr[BOXTOP] = olddb[0][BOXTOP];
+
+    if (realdr[BOXTOP] < olddb[0+BOXTOP]) {
+        realdr[BOXTOP] = olddb[0+BOXTOP];
     }
-    if (realdr[BOXTOP] < olddb[1][BOXTOP]) {
-        realdr[BOXTOP] = olddb[1][BOXTOP];
+    if (realdr[BOXTOP] < olddb[4+BOXTOP]) {
+        realdr[BOXTOP] = olddb[4+BOXTOP];
     }
 
     realdr[BOXRIGHT] = dirtybox[BOXRIGHT];
-    if (realdr[BOXRIGHT] < olddb[0][BOXRIGHT]) {
-        realdr[BOXRIGHT] = olddb[0][BOXRIGHT];
+    if (realdr[BOXRIGHT] < olddb[0+BOXRIGHT]) {
+        realdr[BOXRIGHT] = olddb[0+BOXRIGHT];
     }
-    if (realdr[BOXRIGHT] < olddb[1][BOXRIGHT]) {
-        realdr[BOXRIGHT] = olddb[1][BOXRIGHT];
+    if (realdr[BOXRIGHT] < olddb[4+BOXRIGHT]) {
+        realdr[BOXRIGHT] = olddb[4+BOXRIGHT];
     }
 
     realdr[BOXBOTTOM] = dirtybox[BOXBOTTOM];
-    if (realdr[BOXBOTTOM] > olddb[0][BOXBOTTOM]) {
-        realdr[BOXBOTTOM] = olddb[0][BOXBOTTOM];
+    if (realdr[BOXBOTTOM] > olddb[0+BOXBOTTOM]) {
+        realdr[BOXBOTTOM] = olddb[0+BOXBOTTOM];
     }
-    if (realdr[BOXBOTTOM] > olddb[1][BOXBOTTOM]) {
-        realdr[BOXBOTTOM] = olddb[1][BOXBOTTOM];
+    if (realdr[BOXBOTTOM] > olddb[4+BOXBOTTOM]) {
+        realdr[BOXBOTTOM] = olddb[4+BOXBOTTOM];
     }
 
     realdr[BOXLEFT] = dirtybox[BOXLEFT];
-    if (realdr[BOXLEFT] > olddb[0][BOXLEFT]) {
-        realdr[BOXLEFT] = olddb[0][BOXLEFT];
+    if (realdr[BOXLEFT] > olddb[0+BOXLEFT]) {
+        realdr[BOXLEFT] = olddb[0+BOXLEFT];
     }
-    if (realdr[BOXLEFT] > olddb[1][BOXLEFT]) {
-        realdr[BOXLEFT] = olddb[1][BOXLEFT];
+    if (realdr[BOXLEFT] > olddb[4+BOXLEFT]) {
+        realdr[BOXLEFT] = olddb[4+BOXLEFT];
     }
 
     // Leave current box for next update
-    memcpy(olddb[0], olddb[1], 8);
-    memcpy(olddb[1], dirtybox, 8);
+    olddb[0] = olddb[4];
+    olddb[1] = olddb[5];
+    olddb[2] = olddb[6];
+    olddb[3] = olddb[7];
+    olddb[4] = dirtybox[0];
+    olddb[5] = dirtybox[1];
+    olddb[6] = dirtybox[2];
+    olddb[7] = dirtybox[3];
+//	memcpy(olddb, olddb+4, 8);
+//    memcpy(olddb+4, dirtybox, 8);
+
 
     // Update screen
     if (realdr[BOXBOTTOM] <= realdr[BOXTOP])

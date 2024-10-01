@@ -41,10 +41,6 @@
 // DEFINE ALL LOCALS HERE. EXTERN IN m_near.h
 
 
-byte __far *currentscreen;
-//byte __far *destview;
-//fixed_t_union destscreen;
-int16_t olddb[2][4];
 
 
 const int8_t snd_prefixen[] = { 'P', 'P', 'A', 'S', 'S', 'S', 'M', 'M', 'M', 'S', 'S', 'S' };
@@ -86,15 +82,11 @@ boolean         singletics = false; // debug flag to cancel adaptiveness
 
 
 skill_t         startskill;
-int8_t             startepisode;
-int8_t             startmap;
+int8_t          startepisode;
+int8_t          startmap;
 boolean         autostart;
-
-
 boolean         advancedemo;
-
 boolean         modifiedgame;
-
 boolean         shareware;
 boolean         registered;
 boolean         commercial;
