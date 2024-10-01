@@ -85,21 +85,24 @@ _sprtopscreen =	 				_NULL_OFFSET + 000A8h
 
 _sp_bp_safe_space = 			_NULL_OFFSET + 000ACh
 _ss_variable_space = 			_NULL_OFFSET + 000B0h
-_mfloorclip = 					_NULL_OFFSET + 000D4h
-_mceilingclip = 				_NULL_OFFSET + 000D8h
-_spanfunc_prt = 				_NULL_OFFSET + 000E0h
-_spanfunc_destview_offset = 	_NULL_OFFSET + 000E8h
-_spanfunc_inner_loop_count =	_NULL_OFFSET + 000F0h
-_spanfunc_outp = 				_NULL_OFFSET + 000F4h
-_spanfunc_main_loop_count = 	_NULL_OFFSET + 000F8h
-_skipdirectdraws = 				_NULL_OFFSET + 000F9h
+_mfloorclip = 					_NULL_OFFSET + 000C4h
+_mceilingclip = 				_NULL_OFFSET + 000C8h
+_spanfunc_prt = 				_NULL_OFFSET + 000D0h
+_spanfunc_destview_offset = 	_NULL_OFFSET + 000D8h
+_spanfunc_inner_loop_count =	_NULL_OFFSET + 000E0h
+_spanfunc_outp = 				_NULL_OFFSET + 000E4h
+_spanfunc_main_loop_count = 	_NULL_OFFSET + 000E8h
+_skipdirectdraws = 				_NULL_OFFSET + 000E9h
+_screen_segments = 				_NULL_OFFSET + 00100h
+
+_jump_mult_table_3 = 			_NULL_OFFSET + 00110h
+
+
 
 
 
 
 EXTRN  _R_DrawColumnPrepCallHigh:WORD
-EXTRN   _screen_segments:WORD
-EXTRN   _jump_mult_table_3:BYTE
 
 EXTRN	_pageswapargs:WORD
 

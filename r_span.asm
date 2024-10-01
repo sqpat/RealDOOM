@@ -37,10 +37,10 @@ EXTRN FixedMul_:PROC
 
 
 
-DS_XFRAC    = _ss_variable_space+ 014h
-DS_YFRAC    = _ss_variable_space+ 018h
-DS_XSTEP    = _ss_variable_space+ 01Ch
-DS_YSTEP    = _ss_variable_space+ 020h
+DS_XFRAC    = _ss_variable_space+ 004h
+DS_YFRAC    = _ss_variable_space+ 008h
+DS_XSTEP    = _ss_variable_space+ 00Ch
+DS_YSTEP    = _ss_variable_space+ 010h
 
 
 
@@ -59,21 +59,17 @@ PUBLIC  R_DrawSpan_
 ; _ss_variable_space
 ;
 ; 00h i (outer loop counter)
-; 02h count (inner iterator)
-; 04h x_frac.w high bits   [ load 05 to get mid 16 bits for "free"]
-; 06h x_frac.w low bits
-; 08h x32step  high bits
-; 0Ah x32step  low bits
-; 0Ch y_frac.w high bits
-; 0Eh y_frac.w low bits
-; 10h y32step high 16 bits
-; 12h y32step low  16 bits
+; 04h ds_xfrac
+; 08h ds_yfrac
+; 0Ch ds_xstep
+; 10h ds_ystep
 
 
 cli 									; disable interrupts
 
 ; fixed_t x32step = (ds_xstep << 6);
 
+ 
 mov   ax, word ptr ds:[DS_XSTEP]          ; dx:ax is ds_xstep
 mov   dx, word ptr ds:[DS_XSTEP + 2]      
 
@@ -93,8 +89,6 @@ and al, 0C0h  ; keep two high bits
 
 
 
-mov   word ptr ds:[_ss_variable_space + 08h], ax			;  move x32step low  bits into _ss_variable_space + 08h
-mov   word ptr ds:[_ss_variable_space + 0Ah], dx			;  move x32step high bits into _ss_variable_space + 0Ah
 
 ;	fixed_t y32step = (ds_ystep << 6);
 
@@ -115,8 +109,6 @@ mov ah, al
 mov al, bh   ; spillover back into al
 and al, 0C0h  ; keep two high bits
 
-mov   word ptr ds:[_ss_variable_space + 12h], ax			;  move y32step low  bits into _ss_variable_space + 12h
-mov   word ptr ds:[_ss_variable_space + 10h], dx			;  move y32step high bits into _ss_variable_space + 10h
 
 ; main loop start (i = 0, 1, 2, 3)
 
@@ -205,13 +197,14 @@ mov   dx, word ptr ds:[DS_XSTEP + 2]
 mov   bx, word ptr ds:[DS_XFRAC]	; load _ds_xfrac
 mov   cx, es					; retrieve prt sign bits
 add   bx, ax					; ds_xfrac + ds_xstep * prt low bits
-mov   word ptr ds:[_ss_variable_space + 04h], bx		; store low 16 bits of x_frac.w
-mov   bx, si
 mov   ax, word ptr ds:[DS_XFRAC + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
 adc   ax, dx
+mov   ah, al
+mov   al, bh
+mov   bx, si
 
 mov   dx, word ptr ds:[DS_YSTEP + 2]
-mov   word ptr ds:[_ss_variable_space + 06h], ax  ; store high 16 bits of x_frac.w
+mov   es, ax  ; store high 16 bits of x_frac.w
 mov   ax, word ptr ds:[DS_YSTEP]
 
 
@@ -243,19 +236,16 @@ mov   ax, word ptr ds:[DS_YSTEP]
 ; add 32 bits of ds_yfrac
 mov   bx, word ptr ds:[DS_YFRAC]	; load ds_yfrac
 add   bx, ax					; create y_frac low bits...
-mov   word ptr ds:[_ss_variable_space + 0Eh], bx	; store y_frac low bits
 mov   si, word ptr ds:[DS_YFRAC + 2]
 adc   si, dx
 
 ;	xfrac16.hu = xfrac.wu >> 8;
 
-mov   word ptr ds:[_ss_variable_space + 0Ch], si	;  store high bits of yfrac in _ss_variable_space + 0Ch  
 mov   ax, si					;  copy to ax so we can byte manip
 
 ;	yfrac16.hu = yfrac.wu >> 10;
 
 mov bl, bh
-mov ax, word ptr ds:[_ss_variable_space + 0Ch]  ; move high 16 bits of yfrac into ax
 mov bh, al   ; shift 8
 
 sar ah, 1    ; shift two more
@@ -267,7 +257,7 @@ rcr bx, 1    ; yfrac16 in bx
 
 ; shift 8, yadder in dh?
 
-mov dx, word ptr ds:[_ss_variable_space + 05h]   ;  load high 16 bits of x_frac.w
+mov dx, es   ;  load mid 16 bits of x_frac.w
 
 
 ;	xadder = ds_xstep >> 6; 
@@ -381,14 +371,13 @@ xchg  ds:[_sp_bp_safe_space+2], bp			  ;   store BP and load y_adder
 
 do_span_loop:
 
-xor   cx, cx
-mov   cl, byte ptr ds:[_ss_variable_space]
+mov   cx, word ptr ds:[_ss_variable_space]
 inc   cl						; increment i
 
 ; loop if i < loopcount. note we can overwrite this with self modifying coe
 cmp   cl, byte ptr ds:[_spanfunc_main_loop_count]	
 jge   span_i_loop_done
-mov   byte ptr ds:[_ss_variable_space], cl		; ch was 0 or above. store result
+mov   word ptr ds:[_ss_variable_space], cx		; cx was 0 or above. store result
 
 jmp   span_i_loop_repeat
 span_i_loop_done:

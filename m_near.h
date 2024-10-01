@@ -128,23 +128,27 @@
 #define sprtopscreen                (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A8)))
 //sp_bp_safe_space[2]
 #define sp_bp_safe_space            ((int16_t __near *)             (_NULL_OFFSET + 0x00AC))
-//ss_variable_space[18]
+//ss_variable_space[10]
 #define ss_variable_space           ((int16_t __near *)             (_NULL_OFFSET + 0x00B0))
-#define mfloorclip                  (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00D4))
-#define mceilingclip                (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00D8))
+#define mfloorclip                  (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C4))
+#define mceilingclip                (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C8))
 //spanfunc_prt[4]
-#define spanfunc_prt                ((int16_t __near *)             (_NULL_OFFSET + 0x00E0))
+#define spanfunc_prt                ((int16_t __near *)             (_NULL_OFFSET + 0x00D0))
 //spanfunc_destview_offset[4]
-#define spanfunc_destview_offset    ((uint16_t __near *)            (_NULL_OFFSET + 0x00E8))
+#define spanfunc_destview_offset    ((uint16_t __near *)            (_NULL_OFFSET + 0x00D8))
 //spanfunc_inner_loop_count[4]
-#define spanfunc_inner_loop_count   ((int8_t __near *)              (_NULL_OFFSET + 0x00F0))
+#define spanfunc_inner_loop_count   ((int8_t __near *)              (_NULL_OFFSET + 0x00E0))
 //spanfunc_outp[4]
-#define spanfunc_outp               ((uint8_t __near *)             (_NULL_OFFSET + 0x00F4))
-#define spanfunc_main_loop_count    (*(uint8_t __near *)            (_NULL_OFFSET + 0x00F8))
-#define skipdirectdraws             (*(uint8_t __near *)            (_NULL_OFFSET + 0x00F9))
+#define spanfunc_outp               ((uint8_t __near *)             (_NULL_OFFSET + 0x00E4))
+#define spanfunc_main_loop_count    (*(uint8_t __near *)            (_NULL_OFFSET + 0x00E8))
+#define skipdirectdraws             (*(uint8_t __near *)            (_NULL_OFFSET + 0x00E9))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x00EA)))
+#define screen_segments             ((segment_t __near *)           (_NULL_OFFSET + 0x0100))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x010A)))
+#define jump_mult_table_3           ((uint8_t __near *)             (_NULL_OFFSET + 0x0110))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0118)))
 
 
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x00FA)))
 
 
 
@@ -382,7 +386,6 @@ extern mline_t              cheat_player_arrow[16];
 extern mline_t              triangle_guy[3];
 */
 extern mline_t              thintriangle_guy[3];
-extern uint8_t              jump_mult_table_3[8];
 extern int16_t              lightmult48lookup[16];
 extern int16_t              lightshift7lookup[16];
 extern segment_t            pagesegments[4];
@@ -1018,7 +1021,6 @@ extern FILE* wadfilefp;
 extern FILE* wadfilefp2;
   
 extern int16_t				dirtybox[4]; 
-extern segment_t screen_segments[5];
 
 
 

@@ -467,12 +467,7 @@ mline_t thintriangle_guy[] = {
 };
 #undef R
 
-//uint8_t jump_mult_table_3[32] = {
-uint8_t jump_mult_table_3[8] = {
-	//93, 90, 87, 84, 81, 78, 75, 72, 69, 66, 63, 60, 57, 54, 51, 48,
-	//45, 42, 39, 36, 33, 30, 27, 24, 
-	21, 18, 15, 12, 9,  6,  3,  0
-}; 
+
 int16_t lightmult48lookup[16] = { 0,  48,  96, 144,
 								192, 240, 288, 336,
 								384, 432, 480, 528,
@@ -1914,7 +1909,6 @@ FILE* wadfilefp;
 FILE* wadfilefp2;
   
 int16_t				dirtybox[4]; 
-segment_t screen_segments[5] = {0x8000,0x8000,0x7000,0x6000,0x9C00};
 
 
 //
