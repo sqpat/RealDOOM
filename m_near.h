@@ -126,26 +126,23 @@
 
 #define spryscale                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A4)))
 #define sprtopscreen                (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A8)))
-//sp_bp_safe_space[2]
-#define sp_bp_safe_space            ((int16_t __near *)             (_NULL_OFFSET + 0x00AC))
 //ss_variable_space[10]
-#define ss_variable_space           ((int16_t __near *)             (_NULL_OFFSET + 0x00B0))
-#define mfloorclip                  (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C4))
-#define mceilingclip                (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C8))
+#define ss_variable_space           ((int16_t __near *)             (_NULL_OFFSET + 0x00AC))
+#define mfloorclip                  (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C0))
+#define mceilingclip                (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00C4))
 //spanfunc_prt[4]
-#define spanfunc_prt                ((int16_t __near *)             (_NULL_OFFSET + 0x00D0))
+#define spanfunc_prt                ((int16_t __near *)             (_NULL_OFFSET + 0x00CC))
 //spanfunc_destview_offset[4]
-#define spanfunc_destview_offset    ((uint16_t __near *)            (_NULL_OFFSET + 0x00D8))
+#define spanfunc_destview_offset    ((uint16_t __near *)            (_NULL_OFFSET + 0x00D4))
 //spanfunc_inner_loop_count[4]
-#define spanfunc_inner_loop_count   ((int8_t __near *)              (_NULL_OFFSET + 0x00E0))
+#define spanfunc_inner_loop_count   ((int8_t __near *)              (_NULL_OFFSET + 0x00DC))
 //spanfunc_outp[4]
-#define spanfunc_outp               ((uint8_t __near *)             (_NULL_OFFSET + 0x00E4))
-#define spanfunc_main_loop_count    (*(uint8_t __near *)            (_NULL_OFFSET + 0x00E8))
-#define skipdirectdraws             (*(uint8_t __near *)            (_NULL_OFFSET + 0x00E9))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x00EA)))
-#define screen_segments             ((segment_t __near *)           (_NULL_OFFSET + 0x0100))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x010A)))
-#define jump_mult_table_3           ((uint8_t __near *)             (_NULL_OFFSET + 0x0110))
+#define spanfunc_outp               ((uint8_t __near *)             (_NULL_OFFSET + 0x00E0))
+#define spanfunc_main_loop_count    (*(uint8_t __near *)            (_NULL_OFFSET + 0x00E4))
+#define skipdirectdraws             (*(uint8_t __near *)            (_NULL_OFFSET + 0x00E5))
+#define jump_mult_table_3           ((uint8_t __near *)             (_NULL_OFFSET + 0x00E6))
+#define screen_segments             ((segment_t __near *)           (_NULL_OFFSET + 0x00EE))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x00F8)))
 //#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0118)))
 
 

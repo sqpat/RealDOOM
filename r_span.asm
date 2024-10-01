@@ -64,81 +64,57 @@ PUBLIC  R_DrawSpan_
 ; 0Ch ds_xstep
 ; 10h ds_ystep
 
+jmp start_function
 
+no_pixels:
+jmp   do_span_loop
+
+start_function:
 cli 									; disable interrupts
 
 ; fixed_t x32step = (ds_xstep << 6);
 
- 
-mov   ax, word ptr ds:[DS_XSTEP]          ; dx:ax is ds_xstep
-mov   dx, word ptr ds:[DS_XSTEP + 2]      
+; todo move this logic out into prep function? 
+mov   DX, SPANFUNC_JUMP_LOOKUP_SEGMENT
+MOV   ES, DX
 
-; dx:ax	shift 6 left by shifting right 2 and moving bytes
-
-ror dx, 1
-rcr ax, 1
-rcr bh, 1   ; spillover into bh
-ror dx, 1
-rcr ax, 1
-rcr bh, 1
-mov dh, dl
-mov dl, ah
-mov ah, al
-mov al, bh   ; spillover back into al
-and al, 0C0h  ; keep two high bits
+mov   al, byte ptr ds:[_spanfunc_main_loop_count]             
+;; todo is this smaller with DI/stosb stuff?
+mov   byte ptr es:[((SELFMODIFY_compare_span_counter+2) -R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], al     ; set loop end constraint
+mov   byte ptr es:[((SELFMODIFY_set_span_counter+1)     -R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )], 0      ; set loop increment value
 
 
 
-
-;	fixed_t y32step = (ds_ystep << 6);
-
-mov   ax, word ptr ds:[DS_YSTEP]			; same process as above
-mov   dx, word ptr ds:[DS_YSTEP + 2]
-
-; dx:ax	shift 6 left by shifting right 2 and moving bytes
-
-ror dx, 1
-rcr ax, 1
-rcr bh, 1   ; spillover into bh
-ror dx, 1
-rcr ax, 1
-rcr bh, 1
-mov dh, dl
-mov dl, ah
-mov ah, al
-mov al, bh   ; spillover back into al
-and al, 0C0h  ; keep two high bits
 
 
 ; main loop start (i = 0, 1, 2, 3)
 
-xor   cx, cx						; zero out cx as loopcount
-mov   word ptr ds:[_ss_variable_space], 0			;  move 0  into i (outer loop counter)
+xor   bx, bx						; zero out cx as loopcount
+
 span_i_loop_repeat:
 
-mov   bx, cx
 xor   ah, ah
+
+mov   al, byte ptr ds:[_spanfunc_inner_loop_count + bx]
+; es is already pre-set..
+inc   byte ptr es:[((SELFMODIFY_set_span_counter+1)-R_DrawSpan_ + ((SPANFUNC_FUNCTION_AREA_SEGMENT - SPANFUNC_JUMP_LOOKUP_SEGMENT) * 16)  )]					; increment loop counter
+
+
+test  al, al
+
+; is count < 0? if so skip this loop iter
+
+jl   no_pixels			; todo this so it doesnt loop in both cases
+
+;       modify the jump for this iteration (self-modifying code)
+sal   AL, 1					; convert index to  a word lookup index
+xchg  ax, SI
+
+; outp to plane only if there was a pixel to draw
 mov   al, byte ptr ds:[_spanfunc_outp + bx]
 mov   dx, 3c5h						; outp 1 << i
 out   dx, al
 
-mov   al, byte ptr ds:[_spanfunc_inner_loop_count + bx]
-
-
-
-test  al, al					
-
-; is count < 0? if so skip this loop iter
-
-jge   at_least_one_pixel			; todo this so it doesnt loop in both cases
-jmp   do_span_loop
-at_least_one_pixel:
-
-;       modify the jump for this iteration (self-modifying code)
-mov   DX, SPANFUNC_JUMP_LOOKUP_SEGMENT
-MOV   ES, DX
-sal   AL, 1					; convert index to  a word lookup index
-xchg  ax, SI
 
 lods  WORD PTR ES:[SI]	
 
@@ -193,19 +169,19 @@ mov   dx, word ptr ds:[DS_XSTEP + 2]
 ;	DX:AX contains ds_xstep * prt
 
 
-
-mov   bx, word ptr ds:[DS_XFRAC]	; load _ds_xfrac
+mov   bx, ax
+add   bx, word ptr ds:[DS_XFRAC]	; load _ds_xfrac
 mov   cx, es					; retrieve prt sign bits
-add   bx, ax					; ds_xfrac + ds_xstep * prt low bits
-mov   ax, word ptr ds:[DS_XFRAC + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
-adc   ax, dx
-mov   ah, al
-mov   al, bh
+
+adc   dx, word ptr ds:[DS_XFRAC + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
+
+mov   dh, dl
+mov   dl, bh
+mov   es, dx  ; store high 16 bits of x_frac.w
 mov   bx, si
 
-mov   dx, word ptr ds:[DS_YSTEP + 2]
-mov   es, ax  ; store high 16 bits of x_frac.w
 mov   ax, word ptr ds:[DS_YSTEP]
+mov   dx, word ptr ds:[DS_YSTEP + 2]
 
 
 ;		yfrac.w = basey = ds_yfrac + ds_ystep * prt;
@@ -234,23 +210,21 @@ mov   ax, word ptr ds:[DS_YSTEP]
 ; dx:ax contains ds_ystep * prt
 
 ; add 32 bits of ds_yfrac
-mov   bx, word ptr ds:[DS_YFRAC]	; load ds_yfrac
-add   bx, ax					; create y_frac low bits...
-mov   si, word ptr ds:[DS_YFRAC + 2]
-adc   si, dx
+mov   bx, ax
+add   bx, word ptr ds:[DS_YFRAC]	; load ds_yfrac
+adc   dx, word ptr ds:[DS_YFRAC + 2]
 
 ;	xfrac16.hu = xfrac.wu >> 8;
 
-mov   ax, si					;  copy to ax so we can byte manip
 
 ;	yfrac16.hu = yfrac.wu >> 10;
 
 mov bl, bh
-mov bh, al   ; shift 8
+mov bh, dl   ; shift 8
 
-sar ah, 1    ; shift two more
+sar dh, 1    ; shift two more
 rcr bx, 1
-sar ah, 1
+sar dh, 1
 rcr bx, 1    ; yfrac16 in bx
 
 
@@ -262,8 +236,8 @@ mov dx, es   ;  load mid 16 bits of x_frac.w
 
 ;	xadder = ds_xstep >> 6; 
 
-mov   cx, word ptr ds:[DS_XSTEP + 2]
 mov   ax, word ptr ds:[DS_XSTEP]
+mov   cx, word ptr ds:[DS_XSTEP + 2]
 
 
 ; quick shift 6
@@ -281,7 +255,7 @@ mov cl, byte ptr ds:[_detailshift]
 shr ax, cl			; shift x_step by pixel shift
  
 
-mov   word ptr ds:[_sp_bp_safe_space], ax	; store x_adder
+mov   word ptr ds:[_ss_variable_space], ax	; store x_adder
 
 ;	yadder = ds_ystep >> 8; // lopping off bottom 16 , but multing by 4.
 
@@ -290,7 +264,7 @@ mov   ax, word ptr ds:[DS_YSTEP + 1]
 
 
 shr   ax, cl			; shift y_step by pixel shift
-mov   word ptr ds:[_sp_bp_safe_space + 2], ax	; y_adder
+mov   word ptr ds:[_ss_variable_space + 2], ax	; y_adder
 
 
 
@@ -299,8 +273,8 @@ mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 ; stack shenanigans. swap adders and sp/bp
 ; todo - this has got to be able to be improved somehow?
 
-xchg  ds:[_sp_bp_safe_space], sp             ;  store SP and load x_adder
-xchg  ds:[_sp_bp_safe_space+2], bp			  ;   store BP and load y_adder
+xchg  ds:[_ss_variable_space], sp             ;  store SP and load x_adder
+xchg  ds:[_ss_variable_space+2], bp			  ;   store BP and load y_adder
 
 mov   ds, word ptr ds:[_ds_source_segment] 		; ds:si is ds_source
 mov   cx, bx  ; yfrac16
@@ -366,18 +340,21 @@ stos  BYTE PTR es:[di]       ;
 ; restore stack
 mov   ax, ss					;   SS is DS in this watcom memory model so we use that to restore DS
 mov   ds, ax
-xchg  ds:[_sp_bp_safe_space], sp             ;  store SP and load x_adder
-xchg  ds:[_sp_bp_safe_space+2], bp			  ;   store BP and load y_adder
+xchg  ds:[_ss_variable_space], sp             ;  store SP and load x_adder
+xchg  ds:[_ss_variable_space+2], bp			  ;   store BP and load y_adder
 
 do_span_loop:
 
-mov   cx, word ptr ds:[_ss_variable_space]
-inc   cl						; increment i
+SELFMODIFY_set_span_counter:
+mov   bx, 0
 
 ; loop if i < loopcount. note we can overwrite this with self modifying coe
-cmp   cl, byte ptr ds:[_spanfunc_main_loop_count]	
-jge   span_i_loop_done
-mov   word ptr ds:[_ss_variable_space], cx		; cx was 0 or above. store result
+SELFMODIFY_compare_span_counter:
+cmp   bl, 4
+jge    span_i_loop_done
+
+mov   DX, SPANFUNC_JUMP_LOOKUP_SEGMENT
+MOV   ES, DX
 
 jmp   span_i_loop_repeat
 span_i_loop_done:
@@ -417,8 +394,9 @@ PUBLIC  R_DrawSpanPrep_
  mov   bh, byte ptr ds:[_detailshift2minus]		; get shiftamount in bh
  xor   bl, bl							; zero out bl. use it as loop counter/ i
  
- cmp   byte ptr ds:[_spanfunc_main_loop_count], 0		; if shiftamount is equal to zero
- jle   spanfunc_arg_setup_complete
+ ; i don't remember what this was for but its an impossible case
+ ;cmp   byte ptr ds:[_spanfunc_main_loop_count], 0		; if shiftamount is equal to zero
+ ;je   spanfunc_arg_setup_complete
  mov   word ptr ds:[_ss_variable_space], dx			; store base view offset
  
  spanfunc_arg_setup_loop_start:
