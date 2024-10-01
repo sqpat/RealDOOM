@@ -63,13 +63,13 @@ PUBLIC  R_DrawColumn_
 	
 
 
-    mov   bx, word ptr [_dc_iscale + 0]   
-    mov   ch, byte ptr [_dc_iscale + 2]      ; 2nd byte of high word not used up ahead...
+    mov   bx, word ptr ds:[_dc_iscale + 0]   
+    mov   ch, byte ptr ds:[_dc_iscale + 2]      ; 2nd byte of high word not used up ahead...
     mov   cl, bh                             ; construct dc_iscale + 1 word
     mov   bp, cx                             ; cache for later to avoid going to memory
 
     
-    sub   ax, word ptr [_centery]
+    sub   ax, word ptr ds:[_centery]
     mov   es, ax              ; save low(M1)
 
 ;  DX:AX * CX:BX
@@ -100,8 +100,8 @@ PUBLIC  R_DrawColumn_
     mov   dh, dl
     mov   dl, ah                          ; mid 16 bits of the 32 bit dx:ax into dx
     
-    add   dx, word ptr [_dc_texturemid+1]   ; first add dx_texture mid
-    add   al, byte ptr [_dc_texturemid+3]
+    add   dx, word ptr ds:[_dc_texturemid+1]   ; first add dx_texture mid
+    add   al, byte ptr ds:[_dc_texturemid+3]
     mov   ch, al        ; ch gets the low 8 bits
 
     
@@ -120,7 +120,7 @@ PUBLIC  R_DrawColumn_
    mov     es, word ptr ds:[_destview + 2]    ; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
 
-   mov     ds, word ptr [_dc_source_segment]     ; this will be ds..
+   mov     ds, word ptr ds:[_dc_source_segment]     ; this will be ds..
    mov     si,  4Fh
    mov     ah,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
 
@@ -202,7 +202,7 @@ push  di
 add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
-mov   di, word ptr [_dc_x]
+mov   di, word ptr ds:[_dc_x]
 mov   cl, byte ptr ds:[_detailshift2minus] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
 shr   di, cl
 
@@ -217,8 +217,8 @@ shr   di, cl
 
 
 
-mov   si, word ptr [_dc_yh]                  ; grab dc_yh
-mov   bx, word ptr [_dc_yl]
+mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
+mov   bx, word ptr ds:[_dc_yl]
 mov   cx, bx
 sub   si, bx                                 ;
 add   bx, bx                                 ; double dc_yl to get a word offset
@@ -232,7 +232,7 @@ mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
-mov   dx, word ptr [_dc_colormap_segment]    
+mov   dx, word ptr ds:[_dc_colormap_segment]    
 mov   si, OFFSET _ss_variable_space ; lets use this variable space
 test  al, al
 jne    skipcolormapzero

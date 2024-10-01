@@ -529,14 +529,14 @@ void R_SetupFrame () {
 
     extralight = player.extralight;
 
-    viewz = player.viewz;
+    viewz = player.viewzvalue;
 	viewz_shortheight = viewz.w >> (16 - SHORTFLOORBITS);
 
     //viewsin = finesine[viewangle_shiftright3];
     //viewcos = finecosine[viewangle_shiftright3];
 	
-    if (player.fixedcolormap) {
-		fixedcolormap =  player.fixedcolormap;
+    if (player.fixedcolormapvalue) {
+		fixedcolormap =  player.fixedcolormapvalue;
 		
 		walllights = 0;//scalelightfixed;
 

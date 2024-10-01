@@ -175,7 +175,7 @@ void __near P_SpawnPlayer(mapthing_t __far* mthing)
 	player.damagecount = 0;
 	player.bonuscount = 0;
 	player.extralight = 0;
-	player.fixedcolormap = 0;
+	player.fixedcolormapvalue = 0;
 	player.viewheight.w = VIEWHEIGHT;
 
 	// setup gun psprite

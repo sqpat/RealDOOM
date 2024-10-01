@@ -391,7 +391,7 @@ int16_t __near R_CheckPlane ( int16_t index, int16_t start, int16_t stop, int8_t
 
 #define SC_INDEX			0x3C4
 
-void __far R_DrawSkyColumn(int16_t dc_yh, int16_t dc_yl);
+void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 
 /**/
 #pragma aux abcdcall parm caller \

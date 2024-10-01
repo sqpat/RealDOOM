@@ -808,8 +808,8 @@ mov   bx, CACHEDHEIGHT_SEGMENT			; base segment
 mov   es, bx
 xor   ah, ah
 xchg  si, ax
-mov   ax, word ptr [_planeheight]
-mov   dx, word ptr [_planeheight + 2]
+mov   ax, word ptr ds:[_planeheight]
+mov   dx, word ptr ds:[_planeheight + 2]
 shl   si, 1
 shl   si, 1
 ; CACHEDHEIGHT LOOKUP
@@ -875,7 +875,7 @@ xchg  di, ax			; store low word of length (product result)in di
 mov   si, dx			; store high word of length  (product result) in si
 mov   ax, XTOVIEWANGLE_SEGMENT
 mov   es, ax
-mov   ax, word ptr [_viewangle_shiftright3]
+mov   ax, word ptr ds:[_viewangle_shiftright3]
 add   ax, word ptr es:[bx]		; ax is unmodded fine angle..
 and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
 mov   word ptr [bp - 0Ah], ax	; store fineangle
@@ -890,8 +890,8 @@ call R_FixedMulTrigLocal_
 
 ;    ds_yfrac = -viewy.w - R_FixedMulLocal(finesine[angle], length );
 
-add   ax, word ptr [_viewx]
-adc   dx, word ptr [_viewx+2]
+add   ax, word ptr ds:[_viewx]
+adc   dx, word ptr ds:[_viewx+2]
 mov   word ptr [DS_XFRAC], ax
 mov   word ptr [DS_XFRAC+2], dx
 
@@ -908,8 +908,8 @@ call R_FixedMulTrigLocal_
 ; let's instead add then take the negative of the whole
 
 ; CX:BX as viewy
-mov   bx, word ptr [_viewy]
-mov   cx, word ptr [_viewy+2]
+mov   bx, word ptr ds:[_viewy]
+mov   cx, word ptr ds:[_viewy+2]
 add   ax, bx
 adc   dx, cx
 ; take negative of the whole
@@ -927,7 +927,7 @@ mov   word ptr ds:[_ds_colormap_segment], COLORMAPS_SEGMENT
 
 ; 	if (fixedcolormap) {
 
-cmp   byte ptr [_fixedcolormap], 0
+cmp   byte ptr ds:[_fixedcolormap], 0
 jne   use_fixed_colormap
 ; 		index = distance >> LIGHTZSHIFT;
 mov   ax, word ptr [bp - 06h]
@@ -953,7 +953,7 @@ index_set:
 ;		ds_colormap_segment = colormaps_segment;
 ;		ds_colormap_index = planezlight[index];
 
-les    bx, dword ptr [_planezlight]
+les    bx, dword ptr ds:[_planezlight]
 xlat  byte ptr es:[bx]
 colormap_ready:
 mov   byte ptr ds:[_ds_colormap_index], al
@@ -974,7 +974,7 @@ pop   cx
 retf  
 
 use_fixed_colormap:
-mov   al, byte ptr [_fixedcolormap]
+mov   al, byte ptr ds:[_fixedcolormap]
 mov   byte ptr ds:[_ds_colormap_index], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
@@ -1014,8 +1014,8 @@ call R_FixedMulLocal_
 ; result is distance
 mov   bx, CACHEDDISTANCE_SEGMENT
 mov   es, bx
-mov   bx, word ptr [_basexscale]
-mov   cx, word ptr [_basexscale+2]
+mov   bx, word ptr ds:[_basexscale]
+mov   cx, word ptr ds:[_basexscale+2]
 mov   word ptr es:[si], ax			; store distance
 mov   word ptr es:[si + 2], dx		; store distance
 mov   di, dx						; store distance high word in di
@@ -1033,8 +1033,8 @@ mov   word ptr es:[si + 2], dx
 mov   word ptr [DS_XSTEP], ax
 mov   word ptr [DS_XSTEP+2], dx
 mov   dx, di
-mov   bx, word ptr [_baseyscale]
-mov   cx, word ptr [_baseyscale+2]
+mov   bx, word ptr ds:[_baseyscale]
+mov   cx, word ptr ds:[_baseyscale+2]
 mov   ax, word ptr [bp - 04h]	; retrieve distance low word
 
 ;		ds_ystep = cachedystep[y] = (R_FixedMulLocal (distance,baseyscale));

@@ -84,22 +84,41 @@
 #define ds_x2                   (*((int16_t __near*)            (_NULL_OFFSET + 0x002A)))
 #define ds_colormap_segment     (*((segment_t __near*)          (_NULL_OFFSET + 0x002C)))
 #define ds_colormap_index       (*((uint8_t __near*)            (_NULL_OFFSET + 0x002E)))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x002F)))
+#define fixedcolormap           (*((uint8_t __near*)            (_NULL_OFFSET + 0x002F)))
 #define quality_port_lookup     ((uint8_t __near *)             (_NULL_OFFSET + 0x0030))
 #define ds_source_segment       (*((segment_t __near*)          (_NULL_OFFSET + 0x003C)))
+#define dc_source_segment       (*((segment_t __near*)          (_NULL_OFFSET + 0x003E)))
+#define dc_colormap_segment     (*((segment_t __near*)          (_NULL_OFFSET + 0x0040)))
+#define dc_colormap_index       (*((uint8_t __near*)            (_NULL_OFFSET + 0x0042)))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0043)))
+#define dc_yl                   (*((int16_t __near*)            (_NULL_OFFSET + 0x0044)))
+#define dc_yh                   (*((int16_t __near*)            (_NULL_OFFSET + 0x0046)))
+#define dc_iscale               (*((fixed_t __near *)           (_NULL_OFFSET + 0x0048)))
+#define dc_texturemid           (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x004C)))
+#define dc_x                    (*((int16_t __near*)            (_NULL_OFFSET + 0x0050)))
+#define viewangle_shiftright3   (*((fineangle_t __near*)        (_NULL_OFFSET + 0x0052)))
+#define planezlight             (*(uint8_t __far * __near *)    (_NULL_OFFSET + 0x0054))
+#define planeheight             (*((fixed_t __near *)           (_NULL_OFFSET + 0x0058)))
+#define basexscale              (*((fixed_t __near *)           (_NULL_OFFSET + 0x005C)))
+#define baseyscale              (*((fixed_t __near *)           (_NULL_OFFSET + 0x0060)))
+#define viewx                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0064)))
+#define viewy                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0068)))
+#define viewz                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x006C)))
+#define centerx                 (*((int16_t __near *)           (_NULL_OFFSET + 0x0070)))
+#define centery                 (*((int16_t __near *)           (_NULL_OFFSET + 0x0072)))
+#define centeryfrac_shiftright4 (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0074)))
+#define viewangle               (*((angle_t __near *)           (_NULL_OFFSET + 0x0078)))
+#define viewz_shortheight       (*((short_height_t __near *)    (_NULL_OFFSET + 0x007C)))
+#define viewangle_shiftright1   (*((uint16_t __near *)          (_NULL_OFFSET + 0x007E)))
+
+
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0052)))
+
+
+
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0052)))
 //#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x003E)))
 
-
-//fixed_t                 ds_xfrac;
-//fixed_t                 ds_yfrac;
-//fixed_t                 ds_xstep;
-//fixed_t                 ds_ystep;
-
-
-
-
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x003E)))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x003E)))
 
 
 
@@ -185,14 +204,7 @@ extern uint8_t              screenSize;
 extern int8_t               quickSaveSlot;
 extern boolean              inhelpscreens;
 extern boolean              menuactive;
-extern segment_t 		    dc_colormap_segment;  
-extern uint8_t 		        dc_colormap_index; 
-extern int16_t			    dc_x; 
-extern int16_t			    dc_yl; 
-extern int16_t		    	dc_yh; 
-extern fixed_t			    dc_iscale; 
-extern fixed_t_union	    dc_texturemid;
-extern segment_t		    dc_source_segment;
+
 extern int16_t		        viewwidth;
 extern int16_t		        scaledviewwidth;
 extern int16_t		        viewheight;
@@ -211,10 +223,6 @@ extern int16_t				lastvisplane;
 extern int16_t				floorplaneindex;
 extern int16_t				ceilingplaneindex;
 extern uint16_t 		    lastopening;
-extern uint8_t __far*	    planezlight;
-extern fixed_t			    planeheight;
-extern fixed_t			    basexscale;
-extern fixed_t			    baseyscale;
 extern segment_t            visplanelookupsegments[3];
 extern int8_t               ceilphyspage;
 extern int8_t               floorphyspage;
@@ -225,17 +233,7 @@ extern int8_t               skytextureloaded;
 extern int16_t              r_cachedplayerMobjsecnum;
 extern state_t              r_cachedstatecopy[2];
 extern int16_t			    validcount;
-extern uint8_t		        fixedcolormap;
-extern int16_t			    centerx;
-extern int16_t			    centery;
-extern fixed_t_union		centeryfrac_shiftright4;
-extern fixed_t_union		viewx;
-extern fixed_t_union		viewy;
-extern fixed_t_union		viewz;
-extern short_height_t		viewz_shortheight;
-extern angle_t			    viewangle;
-extern fineangle_t			viewangle_shiftright3;
-extern uint16_t             viewangle_shiftright1;
+
 extern int16_t 			    setdetail;
 extern uint16_t			    clipangle;
 extern uint16_t			    fieldofview;

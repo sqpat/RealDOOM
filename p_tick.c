@@ -227,7 +227,7 @@ void __far P_Ticker (void)
 {
     // run the tic
 	// pause if in menu and at least one tic has been run
-	if (paused || (menuactive && !demoplayback && player.viewz.w != 1)) {
+	if (paused || (menuactive && !demoplayback && player.viewzvalue.w != 1)) {
 		return;
     }
 	P_PlayerThink();

@@ -80,7 +80,7 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill) {
 
 	// Initial height of PointOfView
 	// will be set by player think.
-	player.viewz.w = 1;
+	player.viewzvalue.w = 1;
 	
 	S_Start();
 	Z_FreeConventionalAllocations();

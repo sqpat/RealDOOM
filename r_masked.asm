@@ -66,7 +66,7 @@ mov   si, bx        ; si now holds column address.
 mov   es, cx
 push  ax            ; bp - 4
 
-mov   cx, word ptr [_dc_texturemid+2]
+mov   cx, word ptr ds:[_dc_texturemid+2]
 push  cx            ; bp - 6
 xor   di, di        ; di used as currentoffset.
 
@@ -105,7 +105,7 @@ adc   dx, word ptr [_sprtopscreen+2]
 
 neg  ax
 adc  dx, 0
-mov  [_dc_yl], dx
+mov  ds:[_dc_yl], dx
 neg  ax
 sbb  dx, 0
 
@@ -153,7 +153,7 @@ sbb dx, 0FFFFh
 ;            dc_yh = mfloorclip[dc_x]-1;
 
 
-mov   bx, word ptr [_dc_x]
+mov   bx, word ptr ds:[_dc_x]
 sal   bx, 1
 les   ax, dword ptr [_mfloorclip]
 add   bx, ax
@@ -164,7 +164,7 @@ jl    skip_floor_clip_set
 mov   dx, cx
 dec   dx
 skip_floor_clip_set:
-mov   word ptr [_dc_yh], dx
+mov   word ptr ds:[_dc_yh], dx
 
 
 ;        if (dc_yl <= mceilingclip[dc_x])
@@ -174,16 +174,16 @@ sub   bx, ax
 les   ax, dword ptr [_mceilingclip]   
 add   bx, ax
 
-mov   ax, word ptr [_dc_yl]
+mov   ax, word ptr ds:[_dc_yl]
 mov   cx, word ptr es:[bx]
 cmp   ax, cx
 jg    skip_ceil_clip_set
 mov   ax, cx
 inc   ax
-mov   word ptr [_dc_yl], ax
+mov   word ptr ds:[_dc_yl], ax
 skip_ceil_clip_set:
 
-cmp   ax, word ptr [_dc_yh]
+cmp   ax, word ptr ds:[_dc_yh]
 jg    increment_column_and_continue_loop
 mov   bx, di
 
@@ -194,11 +194,11 @@ shr   bx, 1
 mov   dx, word ptr [bp - 6]
 les   ax, dword ptr [bp - 4]
 add   ax, bx
-mov   word ptr [_dc_source_segment], ax
+mov   word ptr ds:[_dc_source_segment], ax
 mov   al, byte ptr es:[si]
 xor   ah, ah
 sub   dx, ax
-mov   word ptr [_dc_texturemid+2], dx
+mov   word ptr ds:[_dc_texturemid+2], dx
 mov   ax, 02400h
 
 
@@ -223,7 +223,7 @@ jmp   draw_next_column_patch ; todo inverse and skip jump
 exit_function:
 
 mov   ax, word ptr [bp - 6]             ; restore dc_texture_mid
-mov   word ptr [_dc_texturemid+2], ax
+mov   word ptr ds:[_dc_texturemid+2], ax
 LEAVE_MACRO
 pop   di
 pop   si
@@ -248,7 +248,7 @@ push  si
 push  di
 push  bp
 
-mov   word ptr [_dc_source_segment], ax	; set this early. 
+mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
 
 mov   cl, dl
 xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
@@ -290,7 +290,7 @@ adc dx, si
 
 neg  di
 adc  si, 0
-;mov  word ptr [_dc_yl], si
+;mov  word ptr ds:[_dc_yl], si
 
 ; dc_yl written back
 
@@ -301,7 +301,7 @@ adc  si, 0
 
 neg ax
 sbb dx, 0FFFFh
-mov  word ptr [_dc_yh], dx
+mov  word ptr ds:[_dc_yh], dx
 ; dx is dc_yh
 ; si is dc_yl
 
@@ -316,7 +316,7 @@ skip_inc_dc_yl:
 
 
 
-mov   bx, word ptr [_dc_x]
+mov   bx, word ptr ds:[_dc_x]
 sal   bx, 1
 les   ax, dword ptr [_mfloorclip]
 add   bx, ax
@@ -350,8 +350,8 @@ cmp   si, dx
 jnle   exit_function_single
 
 
-mov   word ptr [_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
-mov   word ptr [_dc_yl], si ;  dc_x could also be trivially recovered from bx
+mov   word ptr ds:[_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
+mov   word ptr ds:[_dc_yl], si ;  dc_x could also be trivially recovered from bx
 
 mov   ax, 02400h
 

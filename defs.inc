@@ -41,37 +41,42 @@ _ds_x1 = 					_NULL_OFFSET + 00028h
 _ds_x2 = 					_NULL_OFFSET + 0002Ah
 _ds_colormap_segment = 		_NULL_OFFSET + 0002Ch
 _ds_colormap_index = 		_NULL_OFFSET + 0002Eh
+_fixedcolormap = 			_NULL_OFFSET + 0002Fh
 
 
 _quality_port_lookup = 		_NULL_OFFSET + 00030h
 
 _ds_source_segment = 		_NULL_OFFSET + 0003Ch
 
-EXTRN _viewangle_shiftright3:WORD
+_dc_source_segment = 		_NULL_OFFSET + 0003Eh
+_dc_colormap_segment = 		_NULL_OFFSET + 00040h
+_dc_colormap_index = 		_NULL_OFFSET + 00042h
+_dc_yl = 					_NULL_OFFSET + 00044h
+_dc_yh = 					_NULL_OFFSET + 00046h
+_dc_iscale = 				_NULL_OFFSET + 00048h
+_dc_texturemid = 			_NULL_OFFSET + 0004Ch
+_dc_x = 					_NULL_OFFSET + 00050h
+_viewangle_shiftright3 = 	_NULL_OFFSET + 00052h
 
-EXTRN	_dc_x:WORD
-EXTRN	_dc_yl:WORD
-EXTRN	_dc_yh:WORD
-EXTRN	_dc_colormap_segment:WORD
-EXTRN	_dc_source_segment:WORD
-EXTRN	_dc_iscale:DWORD
-EXTRN	_dc_texturemid:DWORD
+_planezlight = 				_NULL_OFFSET + 00054h
+_planeheight = 				_NULL_OFFSET + 00058h
+_basexscale = 				_NULL_OFFSET + 0005Ch
+_baseyscale = 				_NULL_OFFSET + 00060h
+_viewx = 					_NULL_OFFSET + 00064h
+_viewy = 					_NULL_OFFSET + 00068h
+
+_viewz = 					_NULL_OFFSET + 0006Ch
+_centerx = 					_NULL_OFFSET + 00070h
+_centery = 					_NULL_OFFSET + 00072h
+_centeryfrac_shiftright4 = 	_NULL_OFFSET + 00074h
+_viewangle =                _NULL_OFFSET + 00078h
+_viewz_shortheight = 		_NULL_OFFSET + 0007Ch
+_viewangle_shiftright1 = 	_NULL_OFFSET + 0007Eh
 
 
-EXTRN _basexscale:WORD
-EXTRN _planezlight:WORD
-EXTRN _fixedcolormap:BYTE
-EXTRN _viewx:WORD
-EXTRN _viewy:WORD
-EXTRN _baseyscale:WORD
-EXTRN _basexscale:WORD
-EXTRN _viewangle_shiftright3:WORD
-EXTRN _centeryfrac_shiftright4:WORD
-EXTRN _planeheight:WORD
 
 
-EXTRN   _sp_bp_safe_space:WORD
-EXTRN   _ss_variable_space:WORD
+
 
 EXTRN _spanfunc_main_loop_count:BYTE
 EXTRN _spanfunc_inner_loop_count:BYTE
@@ -81,8 +86,6 @@ EXTRN _spanfunc_destview_offset:WORD
 
 
 
-EXTRN _viewangle_shiftright3:WORD
-EXTRN _centerx:WORD
 EXTRN _rw_distance:WORD
 EXTRN _rw_normalangle:WORD
 
@@ -95,11 +98,6 @@ EXTRN  _fuzzpos:BYTE
 EXTRN  _R_DrawColumnPrepCallHigh:WORD
 
 
-EXTRN	_centery:WORD
-
-
-EXTRN	_dc_colormap_index:BYTE
-EXTRN	_dc_colormap_segment:WORD
 
 EXTRN   _sp_bp_safe_space:WORD
 EXTRN   _ss_variable_space:WORD

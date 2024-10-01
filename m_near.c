@@ -151,20 +151,6 @@ boolean                 menuactive;
 
 
 
-// draw stuff
-
-segment_t 		dc_colormap_segment;  // dc_colormap segment. the colormap will be byte 0 at this segment.
-uint8_t 		dc_colormap_index;  // dc_colormap offset. this generally is an index
-int16_t			dc_x; 
-int16_t			dc_yl; 
-int16_t			dc_yh; 
-fixed_t			dc_iscale; 
-fixed_t_union	dc_texturemid;
-
-
-// first pixel in a column (possibly virtual) 
-segment_t			dc_source_segment;
-
 
 int16_t		viewwidth;
 int16_t		scaledviewwidth;
@@ -199,11 +185,6 @@ int16_t				ceilingplaneindex;
 uint16_t 		lastopening;
 
 
-uint8_t __far*	planezlight;
-fixed_t			planeheight;
-
-fixed_t			basexscale;
-fixed_t			baseyscale;
 
 segment_t visplanelookupsegments[3] = {0x8400, 0x8800, 0x8C00};
 int8_t ceilphyspage = 0;
@@ -225,22 +206,6 @@ state_t r_cachedstatecopy[2];
 // increment every time a check is made
 int16_t			validcount = 1;
 
-
-uint8_t		fixedcolormap;
-
-int16_t			centerx;
-int16_t			centery;
-
-fixed_t_union			centeryfrac_shiftright4;
-
-
-fixed_t_union			viewx;
-fixed_t_union			viewy;
-fixed_t_union			viewz;
-short_height_t			viewz_shortheight;
-angle_t			viewangle;
-fineangle_t			viewangle_shiftright3;
-uint16_t			viewangle_shiftright1;
 
 int16_t 			setdetail;
 //

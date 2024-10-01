@@ -132,11 +132,11 @@ PUBLIC R_PointToAngle_
 
 
 
-sub   ax, word ptr [_viewx]
-sbb   dx, word ptr [_viewx+2]
+sub   ax, word ptr ds:[_viewx]
+sbb   dx, word ptr ds:[_viewx+2]
 
-sub   bx, word ptr [_viewy]
-sbb   cx, word ptr [_viewy+2]
+sub   bx, word ptr ds:[_viewy]
+sbb   cx, word ptr ds:[_viewy+2]
 
 ; 	if ((!x.w) && (!y.w))
 ;		return 0;
@@ -394,7 +394,7 @@ push  di
 
 add   ah, 8      
 mov   dx, ax      ; copy input
-sub   dx, word ptr [_viewangle_shiftright3]  ; 
+sub   dx, word ptr ds:[_viewangle_shiftright3]  ; 
 sub   ax, word ptr [_rw_normalangle]
 
 and   dh, 01Fh
@@ -434,7 +434,7 @@ xchg ax, si
 ;  ax has finesine_segment
 ;  di:si is den
 
-mov   cx, word ptr [_centerx]
+mov   cx, word ptr ds:[_centerx]
 
 
 AND  DX, CX    ; DX*CX
@@ -587,11 +587,11 @@ mov   cx, ax
 xor   ax, ax
 ; DX:AX = y
 ; CX:BX = x
-sub   bx, word ptr [_viewx]
-sbb   cx, word ptr [_viewx+2]
+sub   bx, word ptr ds:[_viewx]
+sbb   cx, word ptr ds:[_viewx+2]
 
-sub   ax, word ptr [_viewy]
-sbb   dx, word ptr [_viewy+2]
+sub   ax, word ptr ds:[_viewy]
+sbb   dx, word ptr ds:[_viewy+2]
 
 
 or    cx, cx

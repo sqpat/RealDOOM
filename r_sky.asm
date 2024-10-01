@@ -78,7 +78,7 @@ PUBLIC  R_DrawSkyColumn_
     ;  				segment_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
     mov   cx, XTOVIEWANGLE_SEGMENT
     mov   es, cx
-    mov   dx, word ptr [_viewangle_shiftright3]
+    mov   dx, word ptr ds:[_viewangle_shiftright3]
     mov   di, bx    ; grab dc_x
     sal   di, 1
     add   dx, word ptr es:[di]

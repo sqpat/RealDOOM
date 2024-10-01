@@ -110,7 +110,7 @@ int16_t __near EV_Teleport (uint8_t linetag, int16_t		side,mobj_t __far*	thing,m
 				thing_pos->z = temp;  //fixme: not needed?
 		#endif
 				if (thing->type == MT_PLAYER) {
-					player.viewz.w = thing_pos->z.w + player.viewheight.w;
+					player.viewzvalue.w = thing_pos->z.w + player.viewheight.w;
 				}
 				// spawn teleport fog at source and destination
 				fogRef = P_SpawnMobj (oldx.w, oldy.w, oldz.w, MT_TFOG, oldsecnum);

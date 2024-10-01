@@ -74,7 +74,7 @@ typedef struct player_s
     // Determine POV,
     //  including viewpoint bobbing during movement.
     // Focal origin above r.z
-    fixed_t_union		viewz;
+    fixed_t_union		viewzvalue;
     // Base height above floor for viewz.
 	fixed_t_union		viewheight;
     // Bob/squat speed.
@@ -136,7 +136,7 @@ typedef struct player_s
 
     // Current PLAYPAL, ???
     //  can be set to REDCOLORMAP for pain, etc.
-    uint8_t			fixedcolormap;
+    uint8_t			fixedcolormapvalue;
 
     // Player skin colorshift,
     //  0-3 for which color to draw player.

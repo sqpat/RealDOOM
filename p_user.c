@@ -92,13 +92,13 @@ void P_CalcHeight ()
     if (player.bob.w>MAXBOB)
 		player.bob.w = MAXBOB;
     if ((player.cheats & CF_NOMOMENTUM) || !onground) {
-		player.viewz = playerMobj_pos->z;
-		player.viewz.h.intbits += VIEWHEIGHT_HIGHBITS;
+		player.viewzvalue = playerMobj_pos->z;
+		player.viewzvalue.h.intbits += VIEWHEIGHT_HIGHBITS;
 
-		if (player.viewz.w > temp.w)
-			player.viewz = temp;
+		if (player.viewzvalue.w > temp.w)
+			player.viewzvalue = temp;
 
-		player.viewz.w = playerMobj_pos->z.w + player.viewheight.w;
+		player.viewzvalue.w = playerMobj_pos->z.w + player.viewheight.w;
 		return;
     }
 		
@@ -128,11 +128,11 @@ void P_CalcHeight ()
 				player.deltaviewheight.w = 1;
 		}
     }
-	player.viewz.w = playerMobj_pos->z.w + player.viewheight.w + bob;
+	player.viewzvalue.w = playerMobj_pos->z.w + player.viewheight.w + bob;
 
 
-    if (player.viewz.w > temp.w)
-		player.viewz = temp;
+    if (player.viewzvalue.w > temp.w)
+		player.viewzvalue = temp;
 }
 
 
@@ -352,15 +352,15 @@ void __near P_PlayerThink (void)
     if (player.bonuscount)
 		player.bonuscount--;
 
-    player.fixedcolormap = 0;
+    player.fixedcolormapvalue = 0;
     // Handling colormaps.
     if (player.powers[pw_invulnerability]) {
 		if (player.powers[pw_invulnerability] > 4*32 || (player.powers[pw_invulnerability]&8) )
-			player.fixedcolormap = INVERSECOLORMAP;
+			player.fixedcolormapvalue = INVERSECOLORMAP;
     } else if (player.powers[pw_infrared])	 {
 		if (player.powers[pw_infrared] > 4*32 || (player.powers[pw_infrared]&8) ) {
 			// almost full bright
-			player.fixedcolormap = 1;
+			player.fixedcolormapvalue = 1;
 		}
 	} 
 		
