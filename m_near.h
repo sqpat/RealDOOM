@@ -69,65 +69,82 @@
 
 #define _NULL_OFFSET 0x30
 
-#define currentscreen           (*(byte __far * __near *)       (_NULL_OFFSET + 0x0000))
-#define destview                (*(byte __far * __near *)       (_NULL_OFFSET + 0x0004))
-#define destscreen              (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0008)))
-#define tantoangle              (*((angle_t __far * __near*)    (_NULL_OFFSET + 0x000C)))
-#define olddb                   ((int16_t __near *)             (_NULL_OFFSET + 0x0010))
+#define currentscreen               (*(byte __far * __near *)       (_NULL_OFFSET + 0x0000))
+#define destview                    (*(byte __far * __near *)       (_NULL_OFFSET + 0x0004))
+#define destscreen                  (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0008)))
+#define tantoangle                  (*((angle_t __far * __near*)    (_NULL_OFFSET + 0x000C)))
+#define olddb                       ((int16_t __near *)             (_NULL_OFFSET + 0x0010))
 // 0 = high, 1 = low, = 2 potato
-#define detailshift             (*((int16_t_union __near*)      (_NULL_OFFSET + 0x0020)))
-#define detailshiftitercount    (*((uint8_t __near*)            (_NULL_OFFSET + 0x0022)))
-#define detailshift2minus       (*((uint8_t __near*)            (_NULL_OFFSET + 0x0023)))
-#define detailshiftandval       (*((uint16_t __near*)           (_NULL_OFFSET + 0x0024)))
-#define ds_y                    (*((int16_t __near*)            (_NULL_OFFSET + 0x0026)))
-#define ds_x1                   (*((int16_t __near*)            (_NULL_OFFSET + 0x0028)))
-#define ds_x2                   (*((int16_t __near*)            (_NULL_OFFSET + 0x002A)))
-#define ds_colormap_segment     (*((segment_t __near*)          (_NULL_OFFSET + 0x002C)))
-#define ds_colormap_index       (*((uint8_t __near*)            (_NULL_OFFSET + 0x002E)))
-#define fixedcolormap           (*((uint8_t __near*)            (_NULL_OFFSET + 0x002F)))
-#define quality_port_lookup     ((uint8_t __near *)             (_NULL_OFFSET + 0x0030))
-#define ds_source_segment       (*((segment_t __near*)          (_NULL_OFFSET + 0x003C)))
-#define dc_source_segment       (*((segment_t __near*)          (_NULL_OFFSET + 0x003E)))
-#define dc_colormap_segment     (*((segment_t __near*)          (_NULL_OFFSET + 0x0040)))
-#define dc_colormap_index       (*((uint8_t __near*)            (_NULL_OFFSET + 0x0042)))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0043)))
-#define dc_yl                   (*((int16_t __near*)            (_NULL_OFFSET + 0x0044)))
-#define dc_yh                   (*((int16_t __near*)            (_NULL_OFFSET + 0x0046)))
-#define dc_iscale               (*((fixed_t __near *)           (_NULL_OFFSET + 0x0048)))
-#define dc_texturemid           (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x004C)))
-#define dc_x                    (*((int16_t __near*)            (_NULL_OFFSET + 0x0050)))
-#define viewangle_shiftright3   (*((fineangle_t __near*)        (_NULL_OFFSET + 0x0052)))
-#define planezlight             (*(uint8_t __far * __near *)    (_NULL_OFFSET + 0x0054))
-#define planeheight             (*((fixed_t __near *)           (_NULL_OFFSET + 0x0058)))
-#define basexscale              (*((fixed_t __near *)           (_NULL_OFFSET + 0x005C)))
-#define baseyscale              (*((fixed_t __near *)           (_NULL_OFFSET + 0x0060)))
-#define viewx                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0064)))
-#define viewy                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0068)))
-#define viewz                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x006C)))
-#define centerx                 (*((int16_t __near *)           (_NULL_OFFSET + 0x0070)))
-#define centery                 (*((int16_t __near *)           (_NULL_OFFSET + 0x0072)))
-#define centeryfrac_shiftright4 (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0074)))
-#define viewangle               (*((angle_t __near *)           (_NULL_OFFSET + 0x0078)))
-#define viewz_shortheight       (*((short_height_t __near *)    (_NULL_OFFSET + 0x007C)))
-#define viewangle_shiftright1   (*((uint16_t __near *)          (_NULL_OFFSET + 0x007E)))
+#define detailshift                 (*((int16_t_union __near*)      (_NULL_OFFSET + 0x0020)))
+#define detailshiftitercount        (*((uint8_t __near*)            (_NULL_OFFSET + 0x0022)))
+#define detailshift2minus           (*((uint8_t __near*)            (_NULL_OFFSET + 0x0023)))
+#define detailshiftandval           (*((uint16_t __near*)           (_NULL_OFFSET + 0x0024)))
+#define ds_y                        (*((int16_t __near*)            (_NULL_OFFSET + 0x0026)))
+#define ds_x1                       (*((int16_t __near*)            (_NULL_OFFSET + 0x0028)))
+#define ds_x2                       (*((int16_t __near*)            (_NULL_OFFSET + 0x002A)))
+#define ds_colormap_segment         (*((segment_t __near*)          (_NULL_OFFSET + 0x002C)))
+#define ds_colormap_index           (*((uint8_t __near*)            (_NULL_OFFSET + 0x002E)))
+#define fixedcolormap               (*((uint8_t __near*)            (_NULL_OFFSET + 0x002F)))
+#define quality_port_lookup         ((uint8_t __near *)             (_NULL_OFFSET + 0x0030))
+#define ds_source_segment           (*((segment_t __near*)          (_NULL_OFFSET + 0x003C)))
+#define dc_source_segment           (*((segment_t __near*)          (_NULL_OFFSET + 0x003E)))
+#define dc_colormap_segment         (*((segment_t __near*)          (_NULL_OFFSET + 0x0040)))
+#define dc_colormap_index           (*((uint8_t __near*)            (_NULL_OFFSET + 0x0042)))
+#define fuzzpos                     (*((int8_t __near*)             (_NULL_OFFSET + 0x0043)))
+#define dc_yl                       (*((int16_t __near*)            (_NULL_OFFSET + 0x0044)))
+#define dc_yh                       (*((int16_t __near*)            (_NULL_OFFSET + 0x0046)))
+#define dc_iscale                   (*((fixed_t __near *)           (_NULL_OFFSET + 0x0048)))
+#define dc_texturemid               (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x004C)))
+#define dc_x                        (*((int16_t __near*)            (_NULL_OFFSET + 0x0050)))
+#define viewangle_shiftright3       (*((fineangle_t __near*)        (_NULL_OFFSET + 0x0052)))
+#define planezlight                 (*(uint8_t __far * __near *)    (_NULL_OFFSET + 0x0054))
+#define planeheight                 (*((fixed_t __near *)           (_NULL_OFFSET + 0x0058)))
+#define basexscale                  (*((fixed_t __near *)           (_NULL_OFFSET + 0x005C)))
+#define baseyscale                  (*((fixed_t __near *)           (_NULL_OFFSET + 0x0060)))
+#define viewx                       (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0064)))
+#define viewy                       (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0068)))
+#define viewz                       (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x006C)))
+#define centerx                     (*((int16_t __near *)           (_NULL_OFFSET + 0x0070)))
+#define centery                     (*((int16_t __near *)           (_NULL_OFFSET + 0x0072)))
+#define centeryfrac_shiftright4     (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0074)))
+#define viewangle                   (*((angle_t __near *)           (_NULL_OFFSET + 0x0078)))
+#define viewz_shortheight           (*((short_height_t __near *)    (_NULL_OFFSET + 0x007C)))
+#define viewangle_shiftright1       (*((uint16_t __near *)          (_NULL_OFFSET + 0x007E)))
 
-#define rw_x                    (*((int16_t __near *)           (_NULL_OFFSET + 0x0080)))
-#define rw_stopx                (*((int16_t __near *)           (_NULL_OFFSET + 0x0082)))
-#define rw_centerangle          (*((fineangle_t __near *)       (_NULL_OFFSET + 0x0084)))
-#define rw_normalangle          (*((fineangle_t __near *)       (_NULL_OFFSET + 0x0086)))
+#define rw_x                        (*((int16_t __near *)           (_NULL_OFFSET + 0x0080)))
+#define rw_stopx                    (*((int16_t __near *)           (_NULL_OFFSET + 0x0082)))
+#define rw_centerangle              (*((fineangle_t __near *)       (_NULL_OFFSET + 0x0084)))
+#define rw_normalangle              (*((fineangle_t __near *)       (_NULL_OFFSET + 0x0086)))
 
-#define rw_offset               (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0088)))
-#define rw_distance             (*((fixed_t __near *)           (_NULL_OFFSET + 0x008C)))
-#define rw_scale                (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0090)))
-#define rw_midtexturemid        (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0094)))
-#define rw_toptexturemid        (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0098)))
-#define rw_bottomtexturemid     (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x009C)))
-#define rw_angle1               (*((angle_t __near *)           (_NULL_OFFSET + 0x00A0)))
+#define rw_offset                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0088)))
+#define rw_distance                 (*((fixed_t __near *)           (_NULL_OFFSET + 0x008C)))
+#define rw_scale                    (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0090)))
+#define rw_midtexturemid            (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0094)))
+#define rw_toptexturemid            (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0098)))
+#define rw_bottomtexturemid         (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x009C)))
+#define rw_angle1                   (*((angle_t __near *)           (_NULL_OFFSET + 0x00A0)))
 
-#define spryscale               (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A4)))
-#define sprtopscreen            (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A8)))
+#define spryscale                   (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A4)))
+#define sprtopscreen                (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A8)))
+//sp_bp_safe_space[2]
+#define sp_bp_safe_space            ((int16_t __near *)             (_NULL_OFFSET + 0x00AC))
+//ss_variable_space[18]
+#define ss_variable_space           ((int16_t __near *)             (_NULL_OFFSET + 0x00B0))
+#define mfloorclip                  (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00D4))
+#define mceilingclip                (*(int16_t __far * __near *)    (_NULL_OFFSET + 0x00D8))
+//spanfunc_prt[4]
+#define spanfunc_prt                ((int16_t __near *)             (_NULL_OFFSET + 0x00E0))
+//spanfunc_destview_offset[4]
+#define spanfunc_destview_offset    ((uint16_t __near *)            (_NULL_OFFSET + 0x00E8))
+//spanfunc_inner_loop_count[4]
+#define spanfunc_inner_loop_count   ((int8_t __near *)              (_NULL_OFFSET + 0x00F0))
+//spanfunc_outp[4]
+#define spanfunc_outp               ((uint8_t __near *)             (_NULL_OFFSET + 0x00F4))
+#define spanfunc_main_loop_count    (*(uint8_t __near *)            (_NULL_OFFSET + 0x00F8))
+#define skipdirectdraws             (*(uint8_t __near *)            (_NULL_OFFSET + 0x00F9))
 
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x00AC)))
+
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x00FA)))
 
 
 
@@ -157,7 +174,6 @@ extern uint8_t              snd_SBport8bit;
 extern uint8_t              snd_Mport8bit;
 
 
-extern boolean              skipdirectdraws;
 // wipegamestate can be set to -1 to force a wipe on the next draw
 extern gamestate_t          wipegamestate;
 
@@ -230,14 +246,6 @@ extern int16_t		        viewheight;
 extern int16_t		        viewwindowx;
 extern int16_t		        viewwindowy; 
 extern int16_t		        viewwindowoffset;
-extern int16_t		        sp_bp_safe_space[2];
-extern int16_t		        ss_variable_space[18];
-extern int8_t  	            spanfunc_main_loop_count;
-extern uint8_t 	            spanfunc_inner_loop_count[4];
-extern uint8_t              spanfunc_outp[4];
-extern int16_t    	        spanfunc_prt[4];
-extern uint16_t             spanfunc_destview_offset[4];
-extern int8_t	            fuzzpos; 
 extern int16_t				lastvisplane;
 extern int16_t				floorplaneindex;
 extern int16_t				ceilingplaneindex;
@@ -386,8 +394,6 @@ extern uint16_t             visplane_offset[25];
 
 extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);
 extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
-extern int16_t __far*       mfloorclip;
-extern int16_t __far*       mceilingclip;
 
 extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);
 

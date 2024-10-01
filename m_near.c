@@ -62,7 +62,6 @@ uint8_t snd_SBport8bit;
 uint8_t snd_Mport8bit;
 
 
-boolean skipdirectdraws;
 // wipegamestate can be set to -1 to force a wipe on the next draw
 gamestate_t     wipegamestate = GS_DEMOSCREEN;
 
@@ -160,20 +159,8 @@ int16_t		viewwindowy;
 int16_t		viewwindowoffset;
 
 // store sp/bp when doing cli/sti shenanigans
-int16_t		sp_bp_safe_space[2];
 
-// used to index things via SS when bp and sp are in use (since ss == ds)
-// actually we use this as a general variable work space in self-contained asm calls so that we don't have to
-// declare so many one-off variables. 
-int16_t		ss_variable_space[18];
 
-int8_t  	spanfunc_main_loop_count;
-uint8_t 	spanfunc_inner_loop_count[4];
-uint8_t     spanfunc_outp[4];
-int16_t    	spanfunc_prt[4];
-uint16_t    spanfunc_destview_offset[4];
-
-int8_t	fuzzpos = 0; 
 
 
 
@@ -550,8 +537,6 @@ uint16_t vga_read_port_lookup[12] = {
 
 void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
-int16_t __far*          mfloorclip;
-int16_t __far*          mceilingclip;
 
 
 void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  ((void    (__far *)(uint16_t, byte __far *))  (MK_FP(drawfuzzcol_area_segment, 0)));

@@ -63,7 +63,7 @@ xor   bh, bh
 mov   es, word ptr ds:[bx + _screen_segments]
 
 
-cmp   byte ptr [_skipdirectdraws], 0
+cmp   byte ptr ds:[_skipdirectdraws], 0
 je    doing_draws
 jumptoexit:
 jmp   jumpexit

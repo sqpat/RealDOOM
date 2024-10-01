@@ -155,7 +155,7 @@ sbb dx, 0FFFFh
 
 mov   bx, word ptr ds:[_dc_x]
 sal   bx, 1
-les   ax, dword ptr [_mfloorclip]
+les   ax, dword ptr ds:[_mfloorclip]
 add   bx, ax
 
 mov   cx, word ptr es:[bx]
@@ -171,7 +171,7 @@ mov   word ptr ds:[_dc_yh], dx
 ;            dc_yl = mceilingclip[dc_x]+1;
 
 sub   bx, ax
-les   ax, dword ptr [_mceilingclip]   
+les   ax, dword ptr ds:[_mceilingclip]   
 add   bx, ax
 
 mov   ax, word ptr ds:[_dc_yl]
@@ -318,7 +318,7 @@ skip_inc_dc_yl:
 
 mov   bx, word ptr ds:[_dc_x]
 sal   bx, 1
-les   ax, dword ptr [_mfloorclip]
+les   ax, dword ptr ds:[_mfloorclip]
 add   bx, ax
 mov   cx, word ptr es:[bx]
 
@@ -336,7 +336,7 @@ skip_floor_clip_set_single:
 
 sub   bx, ax
 
-les   ax, dword ptr [_mceilingclip]   
+les   ax, dword ptr ds:[_mceilingclip]   
 add   bx, ax
 
 mov   cx, word ptr es:[bx]
@@ -387,7 +387,7 @@ push dx
 push si
 push di
 mov  es, cx
-mov  cl, byte ptr [_fuzzpos]	; note this is always the byte offset - no shift conversion necessary
+mov  cl, byte ptr ds:[_fuzzpos]	; note this is always the byte offset - no shift conversion necessary
 xor  ch, ch
 mov  si, cx
 mov  cx, ax
@@ -474,7 +474,7 @@ mov  ds, di
 ; write back fuzzpos
 mov  ax, si
 
-mov  byte ptr [_fuzzpos], al
+mov  byte ptr ds:[_fuzzpos], al
 
 pop  di
 pop  si
