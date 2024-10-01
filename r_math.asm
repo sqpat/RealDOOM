@@ -395,7 +395,7 @@ push  di
 add   ah, 8      
 mov   dx, ax      ; copy input
 sub   dx, word ptr ds:[_viewangle_shiftright3]  ; 
-sub   ax, word ptr [_rw_normalangle]
+sub   ax, word ptr ds:[_rw_normalangle]
 
 and   dh, 01Fh
 and   ah, 01Fh
@@ -407,8 +407,8 @@ mov   di, ax
 
 mov   ax, FINESINE_SEGMENT
 mov   si, ax
-mov   bx, word ptr [_rw_distance]
-mov   cx, word ptr [_rw_distance+2]
+mov   bx, word ptr ds:[_rw_distance]
+mov   cx, word ptr ds:[_rw_distance+2]
 
 ; todo is rw_distance = 0 a common case...?
 

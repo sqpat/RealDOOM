@@ -42,12 +42,8 @@ _ds_x2 = 					_NULL_OFFSET + 0002Ah
 _ds_colormap_segment = 		_NULL_OFFSET + 0002Ch
 _ds_colormap_index = 		_NULL_OFFSET + 0002Eh
 _fixedcolormap = 			_NULL_OFFSET + 0002Fh
-
-
 _quality_port_lookup = 		_NULL_OFFSET + 00030h
-
 _ds_source_segment = 		_NULL_OFFSET + 0003Ch
-
 _dc_source_segment = 		_NULL_OFFSET + 0003Eh
 _dc_colormap_segment = 		_NULL_OFFSET + 00040h
 _dc_colormap_index = 		_NULL_OFFSET + 00042h
@@ -73,10 +69,29 @@ _viewangle =                _NULL_OFFSET + 00078h
 _viewz_shortheight = 		_NULL_OFFSET + 0007Ch
 _viewangle_shiftright1 = 	_NULL_OFFSET + 0007Eh
 
+_rw_x = 					_NULL_OFFSET + 00080h
+_rw_stopx = 				_NULL_OFFSET + 00082h
+_rw_centerangle = 			_NULL_OFFSET + 00084h
+_rw_normalangle =	        _NULL_OFFSET + 00086h
+_rw_offset = 				_NULL_OFFSET + 00088h
+_rw_distance = 				_NULL_OFFSET + 0008Ch
+_rw_scale = 				_NULL_OFFSET + 00090h
+_rw_midtexturemid = 		_NULL_OFFSET + 00094h
+_rw_toptexturemid = 		_NULL_OFFSET + 00098h
+_rw_bottomtexturemid = 		_NULL_OFFSET + 0009Ch
+_spryscale = 				_NULL_OFFSET + 000A4h
+_sprtopscreen = 			_NULL_OFFSET + 000A8h
 
 
 
+EXTRN   _mfloorclip:WORD
+EXTRN   _mceilingclip:WORD
+EXTRN  _fuzzpos:BYTE
+EXTRN  _R_DrawColumnPrepCallHigh:WORD
 
+
+EXTRN   _sp_bp_safe_space:WORD
+EXTRN   _ss_variable_space:WORD
 
 EXTRN _spanfunc_main_loop_count:BYTE
 EXTRN _spanfunc_inner_loop_count:BYTE
@@ -86,21 +101,11 @@ EXTRN _spanfunc_destview_offset:WORD
 
 
 
-EXTRN _rw_distance:WORD
-EXTRN _rw_normalangle:WORD
-
-
-EXTRN   _spryscale:DWORD
-EXTRN   _sprtopscreen:WORD
-EXTRN   _mfloorclip:WORD
-EXTRN   _mceilingclip:WORD
-EXTRN  _fuzzpos:BYTE
-EXTRN  _R_DrawColumnPrepCallHigh:WORD
 
 
 
-EXTRN   _sp_bp_safe_space:WORD
-EXTRN   _ss_variable_space:WORD
+
+
 
 EXTRN	_skipdirectdraws:BYTE
 

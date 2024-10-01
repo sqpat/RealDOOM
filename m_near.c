@@ -239,23 +239,9 @@ uint16_t		bottomtexture;
 uint16_t		midtexture;
 
 
-fineangle_t	rw_normalangle;
-// angle to line origin
-//fineangle_t		rw_angle1_fine;  // every attempt to do this has led to rendering bugs
-angle_t			rw_angle1;
-
 //
 // regular wall
 //
-int16_t		rw_x;
-int16_t		rw_stopx;
-fineangle_t		rw_centerangle;
-fixed_t_union		rw_offset;
-fixed_t		rw_distance;
-fixed_t_union		rw_scale;
-fixed_t_union		rw_midtexturemid;
-fixed_t_union		rw_toptexturemid;
-fixed_t_union		rw_bottomtexturemid;
 
 
 fixed_t		pixhigh;
@@ -567,8 +553,6 @@ void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))
 int16_t __far*          mfloorclip;
 int16_t __far*          mceilingclip;
 
-fixed_t_union         spryscale;
-fixed_t_union         sprtopscreen;
 
 void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  ((void    (__far *)(uint16_t, byte __far *))  (MK_FP(drawfuzzcol_area_segment, 0)));
 

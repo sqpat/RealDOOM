@@ -77,8 +77,8 @@ draw_next_column_patch:
 
 ;        topscreen.w = sprtopscreen + FastMul16u32u(column->topdelta, spryscale.w);
 
-mov   bx, word ptr [_spryscale]
-mov   ax, word ptr [_spryscale+2]
+mov   bx, word ptr ds:[_spryscale]
+mov   ax, word ptr ds:[_spryscale+2]
 
 mov   cl, byte ptr es:[si]
 xor   ch, ch
@@ -93,8 +93,8 @@ ADD  DX, CX    ; add
 ; DX:AX = fastmult result. 
 
 
-add   ax, word ptr [_sprtopscreen]
-adc   dx, word ptr [_sprtopscreen+2]
+add   ax, word ptr ds:[_sprtopscreen]
+adc   dx, word ptr ds:[_sprtopscreen+2]
 
 ; topscreen = DX:AX.
 
@@ -257,10 +257,10 @@ xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
 
 ;    topscreen.w = sprtopscreen;
 
-mov   di, word ptr [_sprtopscreen]
-mov   si, word ptr [_sprtopscreen+2]
-mov   bx, word ptr [_spryscale]
-mov   ax, word ptr [_spryscale+2]
+mov   di, word ptr ds:[_sprtopscreen]
+mov   si, word ptr ds:[_sprtopscreen+2]
+mov   bx, word ptr ds:[_spryscale]
+mov   ax, word ptr ds:[_spryscale+2]
 
 ;   topscreen = si:di 
 

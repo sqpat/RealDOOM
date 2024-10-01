@@ -111,8 +111,27 @@
 #define viewz_shortheight       (*((short_height_t __near *)    (_NULL_OFFSET + 0x007C)))
 #define viewangle_shiftright1   (*((uint16_t __near *)          (_NULL_OFFSET + 0x007E)))
 
+#define rw_x                    (*((int16_t __near *)           (_NULL_OFFSET + 0x0080)))
+#define rw_stopx                (*((int16_t __near *)           (_NULL_OFFSET + 0x0082)))
+#define rw_centerangle          (*((fineangle_t __near *)       (_NULL_OFFSET + 0x0084)))
+#define rw_normalangle          (*((fineangle_t __near *)       (_NULL_OFFSET + 0x0086)))
 
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0052)))
+#define rw_offset               (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0088)))
+#define rw_distance             (*((fixed_t __near *)           (_NULL_OFFSET + 0x008C)))
+#define rw_scale                (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0090)))
+#define rw_midtexturemid        (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0094)))
+#define rw_toptexturemid        (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0098)))
+#define rw_bottomtexturemid     (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x009C)))
+#define rw_angle1               (*((angle_t __near *)           (_NULL_OFFSET + 0x00A0)))
+
+#define spryscale               (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A4)))
+#define sprtopscreen            (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x00A8)))
+
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x00AC)))
+
+
+
+
 
 
 
@@ -249,17 +268,7 @@ extern boolean		        maskedtexture;
 extern uint16_t		        toptexture;
 extern uint16_t		        bottomtexture;
 extern uint16_t		        midtexture;
-extern fineangle_t	        rw_normalangle;
-extern angle_t			    rw_angle1;
-extern int16_t		        rw_x;
-extern int16_t		        rw_stopx;
-extern fineangle_t		    rw_centerangle;
-extern fixed_t_union		rw_offset;
-extern fixed_t		        rw_distance;
-extern fixed_t_union		rw_scale;
-extern fixed_t_union		rw_midtexturemid;
-extern fixed_t_union		rw_toptexturemid;
-extern fixed_t_union		rw_bottomtexturemid;
+
 extern fixed_t_union		worldtop;
 extern fixed_t_union		worldbottom;
 extern fixed_t_union		worldhigh;
@@ -380,8 +389,6 @@ extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
 extern int16_t __far*       mfloorclip;
 extern int16_t __far*       mceilingclip;
 
-extern fixed_t_union        spryscale;
-extern fixed_t_union        sprtopscreen;
 extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);
 
 
