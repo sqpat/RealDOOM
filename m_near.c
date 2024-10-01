@@ -190,20 +190,7 @@ uint16_t    spanfunc_destview_offset[4];
 int8_t	fuzzpos = 0; 
 
 
-int16_t                     ds_y;
-int16_t                     ds_x1;
-int16_t                     ds_x2;
 
-uint16_t				ds_colormap_segment;
-uint8_t					ds_colormap_index;
-
-//fixed_t                 ds_xfrac;
-//fixed_t                 ds_yfrac;
-//fixed_t                 ds_xstep;
-//fixed_t                 ds_ystep;
-
-// start of a 64*64 tile image 
-segment_t ds_source_segment;
 
 
 int16_t				lastvisplane;
@@ -255,11 +242,6 @@ angle_t			viewangle;
 fineangle_t			viewangle_shiftright3;
 uint16_t			viewangle_shiftright1;
 
-// 0 = high, 1 = low, = 2 potato
-int16_t_union		detailshift;	
-uint8_t				detailshiftitercount;
-uint8_t				detailshift2minus;
-uint16_t			detailshiftandval;
 int16_t 			setdetail;
 //
 // precalculated math tables
@@ -570,7 +552,7 @@ uint16_t MULT_256[4] = {0x0000u, 0x0100u, 0x0200u, 0x0300u};
 
 uint16_t FLAT_CACHE_PAGE[4] = { 0x7000, 0x7400, 0x7800, 0x7C00 };
 
- 
+/* 
 uint8_t quality_port_lookup[12] = {
 
 // lookup for what to write in the planar port of vga during draw column etc.
@@ -587,6 +569,7 @@ uint8_t quality_port_lookup[12] = {
 
 
 };
+*/
 
 uint16_t visplane_offset[25] = {
 	0,
@@ -1836,7 +1819,6 @@ int16_t currentThinkerListHead;
 // cached 'last used' mobjs for functions that operate on a mobj and where the mobj is often used right after. 
 mobj_t __far* setStateReturn;
 mobj_pos_t __far* setStateReturn_pos;
-angle_t __far* tantoangle;
 uint16_t oldentertics;
 
 boolean brainspit_easy = 0;

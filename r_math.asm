@@ -22,17 +22,8 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN _tantoangle:DWORD
-EXTRN _viewx:DWORD
-EXTRN _viewy:DWORD
-EXTRN _viewangle_shiftright3:WORD
-EXTRN _centerx:WORD
-EXTRN _rw_distance:WORD
-EXTRN _rw_normalangle:WORD
-
 EXTRN FastDiv3232_shift_3_8_:PROC
 EXTRN FixedMulTrig_:PROC
-;EXTRN FixedMulTrig16_:PROC
 EXTRN div48_32_:PROC
 EXTRN FixedDiv_:PROC
 EXTRN FixedMul1632_:PROC
@@ -58,7 +49,7 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_6_out_of_bounds
 
-les   bx, dword ptr [_tantoangle]
+les   bx, dword ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
 add   bx, ax
@@ -112,7 +103,7 @@ call FastDiv3232_shift_3_8_
 
 cmp   ax, 0800h
 jae   octant_7_out_of_bounds
-les   bx, dword ptr [_tantoangle]
+les   bx, dword ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
 add   bx, ax
@@ -210,7 +201,7 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_0_out_of_bounds
 
-les   bx, dword ptr [_tantoangle]
+les   bx, dword ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
 add   bx, ax
@@ -235,7 +226,7 @@ octant_1_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_1_out_of_bounds
-les   bx, dword ptr [_tantoangle]
+les   bx, dword ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
 add   bx, ax
@@ -283,7 +274,7 @@ xchg ax, bx
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_3_out_of_bounds
-les   bx, dword ptr [_tantoangle]
+les   bx, dword ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
 add   bx, ax
@@ -308,7 +299,7 @@ octant_2_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_2_out_of_bounds
-les   bx, dword ptr [_tantoangle]
+les   bx, dword ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
 add   bx, ax
@@ -346,7 +337,7 @@ call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_4_out_of_bounds
 
-les   bx, dword ptr [_tantoangle]
+les   bx, dword ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
 add   bx, ax
@@ -371,7 +362,7 @@ octant_5_do_divide:
 call FastDiv3232_shift_3_8_
 cmp   ax, 0800h
 jae   octant_5_out_of_bounds
-les   bx, dword ptr [_tantoangle]
+les   bx, dword ptr ds:[_tantoangle]
 shl   ax, 1
 shl   ax, 1
 add   bx, ax
@@ -457,7 +448,7 @@ ADD  DX, BX
 ; di:si had den
 ; dx:ax has num
 
-mov   cl, byte ptr [_detailshift]
+mov   cl, byte ptr ds:[_detailshift]
 xor   ch, ch
 
 ; cl is 0 to 2
@@ -659,7 +650,7 @@ mov   dx, di ; move di to dx early to free up di for les + di + bx combo
 
 
 mov   bx, ax
-les   di, dword ptr [_tantoangle] 
+les   di, dword ptr ds:[_tantoangle] 
 mov   bx, word ptr es:[di + bx + 2] ; get just intbits..
 
 ;    dist = FixedDiv (dx, finesine[angle] );	

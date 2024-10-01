@@ -20,16 +20,6 @@
 
 .DATA
 
-EXTRN	_centery:WORD
-
-
-EXTRN	_dc_colormap_index:BYTE
-EXTRN	_dc_colormap_segment:WORD
-
-
-
-EXTRN   _sp_bp_safe_space:WORD
-EXTRN   _ss_variable_space:WORD
 
 
 
@@ -213,7 +203,7 @@ add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dep
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
 mov   di, word ptr [_dc_x]
-mov   cl, byte ptr [_detailshift2minus] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
+mov   cl, byte ptr ds:[_detailshift2minus] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
 shr   di, cl
 
 
@@ -240,7 +230,7 @@ add   di, word ptr ds:[_destview + 0] 		    ; add destview offset
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
-mov   al, byte ptr [_dc_colormap_index]      ; lookup colormap index
+mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 mov   dx, word ptr [_dc_colormap_segment]    
 mov   si, OFFSET _ss_variable_space ; lets use this variable space

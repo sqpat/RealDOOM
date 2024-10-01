@@ -30,26 +30,7 @@ MAXLIGHTZ_UNSHIFTED            = 0800h
 DRAWSPAN_BX_OFFSET             = 0FC0h
 DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_FUNCTION_AREA_SEGMENT - 06800h)) + DRAWSPAN_BX_OFFSET
 
-EXTRN _basexscale:WORD
-EXTRN _planezlight:WORD
-EXTRN _fixedcolormap:BYTE
-EXTRN _viewx:WORD
-EXTRN _viewy:WORD
-EXTRN _baseyscale:WORD
-EXTRN _basexscale:WORD
-EXTRN _viewangle_shiftright3:WORD
-EXTRN _centeryfrac_shiftright4:WORD
-EXTRN _planeheight:WORD
 
-
-EXTRN   _sp_bp_safe_space:WORD
-EXTRN   _ss_variable_space:WORD
-
-EXTRN _spanfunc_main_loop_count:BYTE
-EXTRN _spanfunc_inner_loop_count:BYTE
-EXTRN _spanfunc_outp:BYTE
-EXTRN _spanfunc_prt:WORD
-EXTRN _spanfunc_destview_offset:WORD
 
 
 EXTRN FixedMul_:PROC
@@ -306,7 +287,7 @@ mov   ah, cl
 
 ; do loop setup here?
 
-mov cl, byte ptr [_detailshift]
+mov cl, byte ptr ds:[_detailshift]
 shr ax, cl			; shift x_step by pixel shift
  
 
@@ -331,7 +312,7 @@ mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 xchg  ds:[_sp_bp_safe_space], sp             ;  store SP and load x_adder
 xchg  ds:[_sp_bp_safe_space+2], bp			  ;   store BP and load y_adder
 
-mov   ds, word ptr [_ds_source_segment] 		; ds:si is ds_source
+mov   ds, word ptr ds:[_ds_source_segment] 		; ds:si is ds_source
 mov   cx, bx  ; yfrac16
 
 ; we have a safe memory space declared in near variable space to put sp/bp values
@@ -434,17 +415,17 @@ PUBLIC  R_DrawSpanPrep_
  ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
 
  mov   ax, DC_YL_LOOKUP_SEGMENT			; calculating base view offset 
- mov   bx, word ptr [_ds_y]
+ mov   bx, word ptr ds:[_ds_y]
  mov   es, ax
  add   bx, bx
  mov   ax, word ptr ds:[_destview]			; get FP_OFF(destview)
  mov   dx, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
  ;mov   bh, 2
  add   dx, ax							; dx is baseoffset
- mov   es, word ptr [_ds_x1]			; es holds ds_x1
+ mov   es, word ptr ds:[_ds_x1]			; es holds ds_x1
 	
 ; int8_t   shiftamount = (2-detailshift);
- mov   bh, byte ptr [_detailshift2minus]		; get shiftamount in bh
+ mov   bh, byte ptr ds:[_detailshift2minus]		; get shiftamount in bh
  xor   bl, bl							; zero out bl. use it as loop counter/ i
  
  cmp   byte ptr [_spanfunc_main_loop_count], 0		; if shiftamount is equal to zero
@@ -463,7 +444,7 @@ PUBLIC  R_DrawSpanPrep_
 
 ; 		int16_t dsp_x2 = (ds_x2 - i) >> shiftamount;
 
- mov   cx, word ptr [_ds_x2]			; cx holds ds_x2
+ mov   cx, word ptr ds:[_ds_x2]			; cx holds ds_x2
  sub   cx, ax							; subtract i
  mov   si, ax							; put i in si
  mov   di, cx							; store ds_x2 - i on di
@@ -521,8 +502,8 @@ PUBLIC  R_DrawSpanPrep_
 
  ; calculate desired cs:ip for far jump
 
- mov   dx, word ptr [_ds_colormap_segment]
- mov   al, byte ptr [_ds_colormap_index]
+ mov   dx, word ptr ds:[_ds_colormap_segment]
+ mov   al, byte ptr ds:[_ds_colormap_index]
  sub   dx, 0FCh
  test  al, al									; check _ds_colormap_index
  jne    ds_colormap_nonzero
@@ -816,9 +797,9 @@ sub   sp, 0Ah
 
 xor   ah, ah
 ; set these values for drawspan while they are still in registers
-mov   word ptr [_ds_y], ax
-mov   word ptr [_ds_x1], dx
-mov   word ptr [_ds_x2], bx
+mov   word ptr ds:[_ds_y], ax
+mov   word ptr ds:[_ds_x1], dx
+mov   word ptr ds:[_ds_x2], bx
 
 mov   byte ptr [bp - 2], al
 mov   word ptr [bp - 8], dx
@@ -941,7 +922,7 @@ sbb   dx, 0
 
 mov   word ptr [DS_YFRAC], ax
 mov   word ptr [DS_YFRAC+2], dx
-mov   word ptr [_ds_colormap_segment], COLORMAPS_SEGMENT
+mov   word ptr ds:[_ds_colormap_segment], COLORMAPS_SEGMENT
 
 
 ; 	if (fixedcolormap) {
@@ -975,7 +956,7 @@ index_set:
 les    bx, dword ptr [_planezlight]
 xlat  byte ptr es:[bx]
 colormap_ready:
-mov   byte ptr [_ds_colormap_index], al
+mov   byte ptr ds:[_ds_colormap_index], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 
@@ -994,7 +975,7 @@ retf
 
 use_fixed_colormap:
 mov   al, byte ptr [_fixedcolormap]
-mov   byte ptr [_ds_colormap_index], al
+mov   byte ptr ds:[_ds_colormap_index], al
 
 ; lcall SPANFUNC_FUNCTION_AREA_SEGMENT:SPANFUNC_PREP_OFFSET
 

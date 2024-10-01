@@ -69,17 +69,38 @@
 
 #define _NULL_OFFSET 0x30
 
-#define currentscreen      (*(byte __far * __near *)      (_NULL_OFFSET + 0x0000))
-#define destview           (*(byte __far * __near *)      (_NULL_OFFSET + 0x0004))
-#define destscreen         (*((fixed_t_union __near *)    (_NULL_OFFSET + 0x0008)))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x000C)))
-#define olddb              ((int16_t __near *)        (_NULL_OFFSET + 0x0010))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0020)))
+#define currentscreen           (*(byte __far * __near *)       (_NULL_OFFSET + 0x0000))
+#define destview                (*(byte __far * __near *)       (_NULL_OFFSET + 0x0004))
+#define destscreen              (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x0008)))
+#define tantoangle              (*((angle_t __far * __near*)    (_NULL_OFFSET + 0x000C)))
+#define olddb                   ((int16_t __near *)             (_NULL_OFFSET + 0x0010))
+// 0 = high, 1 = low, = 2 potato
+#define detailshift             (*((int16_t_union __near*)      (_NULL_OFFSET + 0x0020)))
+#define detailshiftitercount    (*((uint8_t __near*)            (_NULL_OFFSET + 0x0022)))
+#define detailshift2minus       (*((uint8_t __near*)            (_NULL_OFFSET + 0x0023)))
+#define detailshiftandval       (*((uint16_t __near*)           (_NULL_OFFSET + 0x0024)))
+#define ds_y                    (*((int16_t __near*)            (_NULL_OFFSET + 0x0026)))
+#define ds_x1                   (*((int16_t __near*)            (_NULL_OFFSET + 0x0028)))
+#define ds_x2                   (*((int16_t __near*)            (_NULL_OFFSET + 0x002A)))
+#define ds_colormap_segment     (*((segment_t __near*)          (_NULL_OFFSET + 0x002C)))
+#define ds_colormap_index       (*((uint8_t __near*)            (_NULL_OFFSET + 0x002E)))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x002F)))
+#define quality_port_lookup     ((uint8_t __near *)             (_NULL_OFFSET + 0x0030))
+#define ds_source_segment       (*((segment_t __near*)          (_NULL_OFFSET + 0x003C)))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x003E)))
 
-//extern byte __far *currentscreen;
-//extern byte __far *destview;
-//extern fixed_t_union destscreen;
-//extern int16_t olddb[2][4];
+
+//fixed_t                 ds_xfrac;
+//fixed_t                 ds_yfrac;
+//fixed_t                 ds_xstep;
+//fixed_t                 ds_ystep;
+
+
+
+
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x003E)))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x003E)))
+
 
 
 extern const int8_t         snd_prefixen[];
@@ -186,12 +207,6 @@ extern uint8_t              spanfunc_outp[4];
 extern int16_t    	        spanfunc_prt[4];
 extern uint16_t             spanfunc_destview_offset[4];
 extern int8_t	            fuzzpos; 
-extern int16_t              ds_y;
-extern int16_t              ds_x1;
-extern int16_t              ds_x2;
-extern segment_t		    ds_colormap_segment;
-extern uint8_t		        ds_colormap_index;
-extern segment_t            ds_source_segment;
 extern int16_t				lastvisplane;
 extern int16_t				floorplaneindex;
 extern int16_t				ceilingplaneindex;
@@ -221,10 +236,6 @@ extern short_height_t		viewz_shortheight;
 extern angle_t			    viewangle;
 extern fineangle_t			viewangle_shiftright3;
 extern uint16_t             viewangle_shiftright1;
-extern int16_t_union		detailshift;	
-extern uint8_t				detailshiftitercount;
-extern uint8_t				detailshift2minus;
-extern uint16_t             detailshiftandval;
 extern int16_t 			    setdetail;
 extern uint16_t			    clipangle;
 extern uint16_t			    fieldofview;
@@ -363,7 +374,6 @@ extern segment_t            pagesegments[4];
 extern uint16_t             MULT_4096[4];
 extern uint16_t             MULT_256[4];
 extern uint16_t             FLAT_CACHE_PAGE[4];
-extern uint8_t              quality_port_lookup[12]; 
 extern uint16_t             vga_read_port_lookup[12];
 extern uint16_t             visplane_offset[25];
 
@@ -841,7 +851,6 @@ extern fixed_t_union	leveltime;
 extern int16_t currentThinkerListHead;
 extern mobj_t __far* setStateReturn;
 extern mobj_pos_t __far* setStateReturn_pos;
-extern angle_t __far* tantoangle;
 extern uint16_t oldentertics;
 extern boolean brainspit_easy;
 

@@ -25,10 +25,7 @@ INSTRUCTION_SET_MACRO
 
 _destscreen = (_NULL_OFFSET + 0008h)
 
-EXTRN	_skipdirectdraws:BYTE
 
-EXTRN   _screen_segments:WORD
-EXTRN   _jump_mult_table_3:BYTE
 
 .CODE
 EXTRN	V_MarkRect_:PROC

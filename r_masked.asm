@@ -23,14 +23,7 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN   _spryscale:DWORD
-EXTRN   _sprtopscreen:WORD
-EXTRN   _mfloorclip:WORD
-EXTRN   _mceilingclip:WORD
 
-EXTRN  _R_DrawColumnPrepCallHigh:WORD
-
-EXTRN  _fuzzpos:BYTE
 
 
 

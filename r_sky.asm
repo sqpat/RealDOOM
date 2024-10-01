@@ -24,10 +24,6 @@ INSTRUCTION_SET_MACRO
 
 
 
-EXTRN _viewangle_shiftright3:WORD
-EXTRN _dc_source_segment:WORD
-EXTRN _ds_x1:WORD
-EXTRN _dc_x:WORD
 
 
 .CODE
@@ -90,7 +86,7 @@ PUBLIC  R_DrawSkyColumn_
     ; 	dc_source_segment = skytexture_texture_segment + texture_x;
 
     
-    mov cl, byte ptr [_detailshift2minus]
+    mov cl, byte ptr ds:[_detailshift2minus]
     inc cl  ; plus 1 to account for sal di 1 above..
     shr di, cl  ; preshift dc_x by detailshift. Plus one for the earlier word offset shift.
 
@@ -183,7 +179,7 @@ push  ax                        ; bp-A minxbase4
 push  dx                        ; bp-c maxx
 
 ; todo investigate speedup on 286 of removing this stack var and using the ds one...
-mov   al, byte ptr [_detailshiftitercount]
+mov   al, byte ptr ds:[_detailshiftitercount]
 cbw
 
 
@@ -207,10 +203,10 @@ add   dx, word ptr [bp - 0Eh]
 start_drawing_vga_plane:
 ; out the appropriate plane value
 
-mov   bl, byte ptr [_detailshift+1]       ; grab pre-shifted by 2 detailshift 
+mov   bl, byte ptr ds:[_detailshift+1]       ; grab pre-shifted by 2 detailshift 
 add   bl, al                              ; al is the current plane, dc_x & 3
 xor   bh, bh
-mov al, byte ptr [_quality_port_lookup + bx]
+mov   al, byte ptr ds:[_quality_port_lookup + bx]
 
 
 mov   bx, dx   ; copy this value to bx now
