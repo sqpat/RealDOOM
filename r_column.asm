@@ -119,8 +119,8 @@ PUBLIC  R_DrawColumn_
    mov     es, word ptr ds:[_destview + 2]    ; ready the viewscreen segment
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
 
-   mov     ds, word ptr ds:[_dc_source_segment]     ; this will be ds..
-   mov     si,  4Fh
+   lds     si, dword ptr ds:[_dc_source_segment-2]  ; sets ds, and si to 004Fh (hardcoded)
+   ;mov     si,  4Fh
    mov     ah,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
 
 COLFUNC_JUMP_OFFSET:
@@ -221,8 +221,7 @@ mov   bx, word ptr ds:[_dc_yl]
 mov   cx, bx
 sub   si, bx                                 ;
 add   bx, bx                                 ; double dc_yl to get a word offset
-add   bx, COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF;
-add   di, word ptr es:[bx]                  ; set up destview 
+add   di, word ptr es:[bx+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
 add   di, word ptr ds:[_destview + 0] 		    ; add destview offset
 
 
@@ -258,6 +257,7 @@ cbw           ; al is like 0-20 so this will zero out ah...
 xchg   ah, al ; move it high with 0 al.
 sub   bx, ax
  
+ ; todo investigate shift 4 lookup table
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 shr   ax, 4
 ELSE

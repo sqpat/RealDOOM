@@ -274,8 +274,9 @@ mov   es, word ptr ds:[_destview + 2]	; retrieve destview segment
 xchg  ds:[_ss_variable_space], sp             ;  store SP and load x_adder
 xchg  ds:[_ss_variable_space+2], bp			  ;   store BP and load y_adder
 
-mov   ds, word ptr ds:[_ds_source_segment] 		; ds:si is ds_source
 mov   cx, bx  ; yfrac16
+lds   bx, dword ptr ds:[_ds_source_segment-2] 		; ds:si is ds_source. BX is pulled in by lds as a constant 
+;mov   bx, DRAWSPAN_BX_OFFSET
 
 ; we have a safe memory space declared in near variable space to put sp/bp values
 ; they meanwhile hold x_adder/y_adder and we juggle the two
@@ -283,7 +284,6 @@ mov   cx, bx  ; yfrac16
 
 
 
-mov   bx, DRAWSPAN_BX_OFFSET
 xor   ah, ah
 
  
@@ -361,7 +361,7 @@ span_i_loop_done:
 sti								; reenable interrupts
 
 retf  
-cld   
+
 
 ENDP
 
@@ -392,9 +392,6 @@ PUBLIC  R_DrawSpanPrep_
  mov   bh, byte ptr ds:[_detailshift2minus]		; get shiftamount in bh
  xor   bl, bl							; zero out bl. use it as loop counter/ i
  
- ; i don't remember what this was for but its an impossible case
- ;cmp   byte ptr ds:[_spanfunc_main_loop_count], 0		; if shiftamount is equal to zero
- ;je   spanfunc_arg_setup_complete
  mov   word ptr ds:[_ss_variable_space], dx			; store base view offset
  
  spanfunc_arg_setup_loop_start:
@@ -409,10 +406,10 @@ PUBLIC  R_DrawSpanPrep_
 
 ; 		int16_t dsp_x2 = (ds_x2 - i) >> shiftamount;
 
- mov   cx, word ptr ds:[_ds_x2]			; cx holds ds_x2
- sub   cx, ax							; subtract i
+ mov   di, word ptr ds:[_ds_x2]			; cx holds ds_x2
+ sub   di, ax							; subtract i
  mov   si, ax							; put i in si
- mov   di, cx							; store ds_x2 - i on di
+ 
  mov   ax, dx							; copy dsp_x1 to ax
  mov   cl, bh							; move shiftamount to cl
  shl   ax, cl							; shift dsp_x1 left
@@ -422,8 +419,8 @@ PUBLIC  R_DrawSpanPrep_
 
 ;		if ((dsp_x1 << shiftamount) + i < ds_x1)
 
- add   si, ax							; si = (dsp_x1 << shiftamount) + i
- cmp   si, di			; if si <  (dsp_x1 << shiftamount) + i
+ add   ax, si							; ax = (dsp_x1 << shiftamount) + i
+ cmp   ax, di			; if si <  (dsp_x1 << shiftamount) + i
 
  jge   dont_increment_ds_x1     ; signed so carry flag adc 0 doesnt work?
 ;		ds_x1 ++
@@ -737,11 +734,8 @@ ENDP
 ;
 ; R_MapPlane_
 ; void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 )
-; bp - 02h   y
-; bp - 04h   distance low
-; bp - 06h   distance high
-; bp - 08h   x2
-; bp - 0Ah   fineangle
+; bp - 02h   distance low
+; bp - 04h   distance high
 
 ;cachedheight   9000:0000
 ;yslope         9032:0000
@@ -760,7 +754,7 @@ push  si
 push  di
 push  bp
 mov   bp, sp
-sub   sp, 0Ah
+sub   sp, 04h
 
 xor   ah, ah
 ; set these values for drawspan while they are still in registers
@@ -768,8 +762,6 @@ mov   word ptr ds:[_ds_y], ax
 mov   word ptr ds:[_ds_x1], dx
 mov   word ptr ds:[_ds_x2], bx
 
-mov   byte ptr [bp - 2], al
-mov   word ptr [bp - 8], dx
 
 mov   bx, CACHEDHEIGHT_SEGMENT			; base segment
 mov   es, bx
@@ -796,7 +788,7 @@ jne   go_generate_values	; comparing high word
 mov   ax, word ptr es:[si + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   dx, word ptr es:[si + 2 + (( CACHEDDISTANCE_SEGMENT - CACHEDHEIGHT_SEGMENT) * 16)]
 mov   di, dx					; store distance high word
-mov   word ptr [bp - 04h], ax	; store distance low word
+mov   word ptr [bp - 02h], ax	; store distance low word
 
 ; CACHEDXSTEP lookup
 
@@ -818,14 +810,14 @@ distance_steps_ready:
 ; dx:ax is y_step
 ;     length = R_FixedMulLocal (distance,distscale[x1]);
 
-mov   si, word ptr [bp - 8]		; grab x2 (function input)
+mov   si, word ptr ds:[_ds_x1]		; grab x2 (function input)
 mov   ax, DISTSCALE_SEGMENT
 shl   si, 1
 shl   si, 1						; dword lookup
 mov   es, ax
 mov   dx, di  				    ; distance high word
-mov   word ptr [bp - 06h], dx   ; store distance high word in case needed for colormap
-mov   ax, word ptr [bp - 04h]   ; distance low word
+mov   word ptr [bp - 04h], dx   ; store distance high word in case needed for colormap
+mov   ax, word ptr [bp - 02h]   ; distance low word
 mov   bx, word ptr es:[si]		; distscale low word
 mov   cx, word ptr es:[si + 2]	; distscale high word
 
@@ -845,10 +837,11 @@ mov   es, ax
 mov   ax, word ptr ds:[_viewangle_shiftright3]
 add   ax, word ptr es:[bx]		; ax is unmodded fine angle..
 and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
-mov   word ptr [bp - 0Ah], ax	; store fineangle
-mov   dx, ax			; fineangle in DX
+push  ax            ; store fineangle
 
-mov   ax, FINECOSINE_SEGMENT
+mov   dx, FINECOSINE_SEGMENT
+xchg  dx, ax			; fineangle in DX
+
 mov   bx, di			; length low word to DX
 mov   cx, si			; length low word to DX
 
@@ -863,7 +856,7 @@ mov   word ptr ds:[DS_XFRAC], ax
 mov   word ptr ds:[DS_XFRAC+2], dx
 
 mov   ax, FINESINE_SEGMENT
-mov   dx, word ptr [bp - 0Ah]
+pop   dx              ; get fineangle
 mov   cx, si					; prep length
 mov   bx, di					; prep length
 
@@ -874,11 +867,9 @@ call R_FixedMulTrigLocal_
 
 ; let's instead add then take the negative of the whole
 
-; CX:BX as viewy
-mov   bx, word ptr ds:[_viewy]
-mov   cx, word ptr ds:[_viewy+2]
-add   ax, bx
-adc   dx, cx
+; add viewy
+add   ax, word ptr ds:[_viewy]
+adc   dx, word ptr ds:[_viewy+2]
 ; take negative of the whole
 ; apparently this is how you neg a dword. 
 neg   dx
@@ -897,7 +888,7 @@ mov   word ptr ds:[_ds_colormap_segment], COLORMAPS_SEGMENT
 cmp   byte ptr ds:[_fixedcolormap], 0
 jne   use_fixed_colormap
 ; 		index = distance >> LIGHTZSHIFT;
-mov   ax, word ptr [bp - 06h]
+mov   ax, word ptr [bp - 04h]
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
 sar   ax, 4
 ELSE
@@ -986,7 +977,7 @@ mov   cx, word ptr ds:[_basexscale+2]
 mov   word ptr es:[si], ax			; store distance
 mov   word ptr es:[si + 2], dx		; store distance
 mov   di, dx						; store distance high word in di
-mov   word ptr [bp - 04h], ax		; distance low word
+mov   word ptr [bp - 02h], ax		; distance low word
 
 ; 		ds_xstep = cachedxstep[y] = (R_FixedMulLocal (distance,basexscale));
 
@@ -1002,7 +993,7 @@ mov   word ptr ds:[DS_XSTEP+2], dx
 mov   dx, di
 mov   bx, word ptr ds:[_baseyscale]
 mov   cx, word ptr ds:[_baseyscale+2]
-mov   ax, word ptr [bp - 04h]	; retrieve distance low word
+mov   ax, word ptr [bp - 02h]	; retrieve distance low word
 
 ;		ds_ystep = cachedystep[y] = (R_FixedMulLocal (distance,baseyscale));
 
@@ -1016,7 +1007,8 @@ mov   word ptr es:[si + 2], dx
 mov   word ptr ds:[DS_YSTEP], ax
 mov   word ptr ds:[DS_YSTEP+2], dx
 jmp   distance_steps_ready
-cld   
+
+   
 
 ENDP
 

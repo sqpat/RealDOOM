@@ -28,7 +28,10 @@ db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 ; _quality_port_lookup 0x30
-db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15,  0,  0,  0,  0
+db 1,  2,  4,  8,  3, 12,  3, 12, 15, 15, 15, 15
+; _ds_source_segment  0x3E (and _ds_source_segment -2 = 0x3C)
+dw                                       DRAWSPAN_BX_OFFSET, 0000h
+
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
@@ -47,9 +50,12 @@ dw                                                         8000h
 ;  spanfunc_farcall_addr_2   0x00FC
 dw 8000h,  7000h,  6000h,  9C00h,    DRAWSPAN_CALL_OFFSET,     00,     00,    00
 ; 0x100:
-;  spanfunc_farcall_addr_1   0x0100
-;  spanfunc_farcall_addr_2   0x0104
-dw DRAWCOL_OFFSET, 00, 00,    00
+;  colfunc_farcall_addr_1   0x0100
+;  colfunc_farcall_addr_2   0x0104
+; _dc_source_segment  0x10A
+dw DRAWCOL_OFFSET, 00, 00,    00,  004Fh, 00h
+
+
 
 
 ENDS _FIXEDDATA
@@ -611,16 +617,17 @@ push  si
 
 
 mov si, dx
-mov es, ax  ; put segment in ES
-mov ax, es:[si]
-mov dx, es:[si+2]
+mov ds, ax  ; put segment in ES
+lodsw
+xchg ax, dx
+lodsw
 
 
-mov   es, ax    ; store ax in es
-mov   DS, DX    ; store sign bits in DS
-AND   DX, BX	; S0*BX
-NEG   DX
-mov   SI, DX	; SI stores hi word return
+mov   es, dx    ; store ax in es
+mov   DS, AX    ; store sign bits in DS
+AND   AX, BX	; S0*BX
+NEG   AX
+mov   SI, AX	; SI stores hi word return
 
 mov   DX, DS    ; restore sign bits from DS
 

@@ -43,8 +43,7 @@ _ds_colormap_segment = 		_NULL_OFFSET + 0002Ch
 _ds_colormap_index = 		_NULL_OFFSET + 0002Eh
 _fixedcolormap = 			_NULL_OFFSET + 0002Fh
 _quality_port_lookup = 		_NULL_OFFSET + 00030h
-_ds_source_segment = 		_NULL_OFFSET + 0003Ch
-_dc_source_segment = 		_NULL_OFFSET + 0003Eh
+_ds_source_segment = 		_NULL_OFFSET + 0003Eh
 _dc_colormap_segment = 		_NULL_OFFSET + 00040h
 _dc_colormap_index = 		_NULL_OFFSET + 00042h
 _fuzzpos =					_NULL_OFFSET + 00043h
@@ -98,6 +97,8 @@ _spanfunc_farcall_addr_1 =      _NULL_OFFSET + 000F8h
 _spanfunc_farcall_addr_2 =    	_NULL_OFFSET + 000FCh
 _colfunc_farcall_addr_1   =    	_NULL_OFFSET + 00100h
 _colfunc_farcall_addr_2   =    	_NULL_OFFSET + 00104h
+_dc_source_segment =	 		_NULL_OFFSET + 0010Ah
+
 
 
 

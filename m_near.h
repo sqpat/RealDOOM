@@ -86,8 +86,7 @@
 #define ds_colormap_index           (*((uint8_t __near*)            (_NULL_OFFSET + 0x002E)))
 #define fixedcolormap               (*((uint8_t __near*)            (_NULL_OFFSET + 0x002F)))
 #define quality_port_lookup         ((uint8_t __near *)             (_NULL_OFFSET + 0x0030))
-#define ds_source_segment           (*((segment_t __near*)          (_NULL_OFFSET + 0x003C)))
-#define dc_source_segment           (*((segment_t __near*)          (_NULL_OFFSET + 0x003E)))
+#define ds_source_segment           (*((segment_t __near*)          (_NULL_OFFSET + 0x003E)))
 #define dc_colormap_segment         (*((segment_t __near*)          (_NULL_OFFSET + 0x0040)))
 #define dc_colormap_index           (*((uint8_t __near*)            (_NULL_OFFSET + 0x0042)))
 #define fuzzpos                     (*((int8_t __near*)             (_NULL_OFFSET + 0x0043)))
@@ -146,6 +145,8 @@
 #define spanfunc_farcall_addr_2     (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00FC)))
 #define colfunc_farcall_addr_1      (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x0100)))
 #define colfunc_farcall_addr_2      (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x0104)))
+#define dc_source_segment           (*((segment_t __near*)          (_NULL_OFFSET + 0x010A)))
+
 //#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0108)))
 
 
