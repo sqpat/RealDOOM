@@ -368,7 +368,7 @@ found:
 
 
 void __far R_DrawColumn (void);
-void __far R_DrawSpan (void);
+void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 
 void PSetupEndFunc();
@@ -376,6 +376,8 @@ void __far P_SetupLevel (int8_t episode, int8_t map, skill_t skill);
 boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __far* t1_pos, mobj_pos_t __far* t2_pos );
  
 void __near Z_LoadBinaries() {
+	FILE* fp2;
+	int32_t codesize;
 	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
 	// currently in physics region!
 	
@@ -384,7 +386,7 @@ void __near Z_LoadBinaries() {
 	// load R_DrawColumn into high memory near colormaps...
 	FAR_memcpy(colfunc_function_area,
 	(byte __far *)R_DrawColumn, 
-	(byte __far *)R_DrawSpan - (byte __far *)R_DrawColumn);
+	(byte __far *)R_DrawSkyColumn - (byte __far *)R_DrawColumn);
 
 
 
@@ -449,11 +451,18 @@ void __near Z_LoadBinaries() {
 	
 	FAR_fread(spanfunc_jump_lookup_9000, 2, 80, fp);
 
+/*
 	FAR_memcpy((byte __far *)spanfunc_function_area_9000, 
 	(byte __far *)R_DrawSpan,
 	 FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan));
-	
+*/
 
+	fp2 = fopen("DOOMCODE.BIN", "rb"); 
+	fseek(fp2, 0, SEEK_END);
+	codesize = ftell(fp2);
+	fseek(fp2, 0, SEEK_SET);
+	FAR_fread(spanfunc_function_area_9000, codesize, 1, fp2);
+	fclose(fp2);
 
 
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);

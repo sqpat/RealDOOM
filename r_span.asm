@@ -177,7 +177,7 @@ adc   dx, word ptr ds:[DS_XFRAC + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
 
 mov   dh, dl
 mov   dl, bh
-mov   es, dx  ; store high 16 bits of x_frac.w
+mov   es, dx  ; store mid 16 bits of x_frac.w
 mov   bx, si
 
 mov   ax, word ptr ds:[DS_YSTEP]

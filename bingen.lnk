@@ -1,4 +1,4 @@
-# newdoom.EXE Linker directive file
+# bingen.EXE Linker directive file
 
 option quiet
 option map
@@ -9,12 +9,8 @@ debug all
 libpath %WATCOM%\lib286
 libpath %WATCOM%\lib286\dos
 format dos
-name doom16
+name bingen
 
-#file p_setup.obj
-#NEWSEGMENT
-#file p_sight.obj
-#NEWSEGMENT
 
 file m_near.obj
 file d_init.obj
@@ -27,11 +23,11 @@ file z_init.obj
 file p_init.obj
 
 NEWSEGMENT
-file i_main.obj
+file d_main.obj
 file i_quit.obj
 file i_ibm.obj
 file i_sound.obj
-file d_main.obj
+file bingen.obj
 file d_net.obj
 file g_game.obj
 file m_misc.obj
@@ -85,7 +81,7 @@ file r_bsp.obj
 file r_data.obj
 file r_math.obj
 file r_column.obj
-#file r_span.obj
+file r_span.obj
 file r_sky.obj
 file r_draw.obj
 file r_main.obj
@@ -97,21 +93,9 @@ file w_wad.obj
 file video.obj
 file v_video.obj
 file z_zone.obj
-file z_scat.obj
-#file info.obj
 file d_math.obj
 
 
 NEWSEGMENT
 file p_setup.obj
 file p_sight.obj
-
-
-# here we move _DATA before CONST and CONST2.
-ORDER      clname CODE 
-           clname FAR_DATA #segaddr=0x3C00 
-           clname BEGDATA segment _NULL segment _AFTERNULL
-           clname DATA  segment _DATA
-           clname BSS
-           clname STACK
-           clname START 

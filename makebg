@@ -1,5 +1,4 @@
 
-# NEWDOOM.EXE and DOOM.EXE makefile
 
 # --------------------------------------------------------------------------
 #
@@ -38,19 +37,23 @@
 
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
-CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -d__SCAMP_BUILD=1 -d__CHIPSET_BUILD=1
+CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s
+#CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -wx 
 ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=2
+ 
+#doom8088 build opts for comparison
+#CCOPTS = -oaxes -oh -ol+ -zp1 -0 -j -zq -s -ml -wx -za99
 
 GLOBOBJS = &
  m_near.obj &
  i_init.obj &
  i_quit.obj &
- i_main.obj &
+ d_main.obj &
  i_ibm.obj &
  i_sound.obj &
  f_finale.obj &
  d_init.obj &
- d_main.obj &
+ bingen.obj &
  d_net.obj &
  g_setup.obj &
  g_game.obj &
@@ -93,7 +96,6 @@ GLOBOBJS = &
  z_init.obj &
  z_umb.obj &
  z_zone.obj &
- z_scamp.obj &
  st_init.obj &
  st_setup.obj &
  st_stuff.obj &
@@ -114,13 +116,12 @@ GLOBOBJS = &
  r_column.obj &
  r_masked.obj &
  r_sky.obj &
- &
- video.obj
-
-doom16.exe : $(GLOBOBJS) i_ibm.obj
- wlink @newdsc.lnk
- copy doom16.exe doom.exe
- wstrip doom.exe
+ r_span.obj &
+ video.obj 
+ 
+bingen.exe : $(GLOBOBJS) 
+ wlink @bingen.lnk 
+ wstrip bingen.exe
 
 .c.obj :
  wcc $(CCOPTS) $[*
@@ -131,4 +132,4 @@ doom16.exe : $(GLOBOBJS) i_ibm.obj
 clean : .SYMBOLIC
  del *.obj
  del *.err
- del newdoom.exe
+ del bingen.exe

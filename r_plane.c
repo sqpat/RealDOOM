@@ -67,7 +67,7 @@
 //
 
 
-void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
+//void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 
 
 //
@@ -608,13 +608,12 @@ void __near R_DrawPlanes (void) {
 			b2 = pl->bottom[x];
 
 			//todo make a single pixel  inlined mapplane for when its just one pix? rare but would save a lot of jank
-
 			while (t1 < t2 && t1 <= b1) {
-				R_MapPlane(t1, spanstart[t1], x - 1);
+				R_MapPlaneCall(t1, spanstart[t1], x - 1);
 				t1++;
 			}
 			while (b1 > b2 && b1 >= t1) {
-				R_MapPlane(b1, spanstart[b1], x - 1);
+				R_MapPlaneCall(b1, spanstart[b1], x - 1);
 				b1--;
 			}
 

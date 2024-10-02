@@ -529,12 +529,14 @@ uint16_t vga_read_port_lookup[12] = {
 };
 
 
+#define R_MapPlaneOffset 0x7EF
 
 void (__far* R_DrawColumnPrepCallHigh)(uint16_t)  =  ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment_high, R_DrawColumnPrepOffset)));
 void (__far* R_DrawColumnPrepCall)(uint16_t)  =   ((void    (__far *)(uint16_t))  (MK_FP(colfunc_segment, R_DrawColumnPrepOffset)));
 
 
 void (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *)  =  ((void    (__far *)(uint16_t, byte __far *))  (MK_FP(drawfuzzcol_area_segment, 0)));
+void (__far* R_MapPlaneCall)(byte, int16_t, int16_t)  =   		   ((void    (__far *)(byte, int16_t, int16_t))  (MK_FP(spanfunc_function_area_segment, R_MapPlaneOffset)));
 
 
 

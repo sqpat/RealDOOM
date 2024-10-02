@@ -114,7 +114,6 @@ GLOBOBJS = &
  r_column.obj &
  r_masked.obj &
  r_sky.obj &
-r_span.obj &
  video.obj
 
 doom16.exe : $(GLOBOBJS) i_ibm.obj

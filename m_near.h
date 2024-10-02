@@ -396,6 +396,7 @@ extern void                 (__far* R_DrawColumnPrepCallHigh)(uint16_t);
 extern void                 (__far* R_DrawColumnPrepCall)(uint16_t);
 
 extern void                 (__far* R_DrawFuzzColumnCallHigh)(uint16_t, byte __far *);
+extern void                 (__far* R_MapPlaneCall)(byte, int16_t, int16_t);
 
 
 
