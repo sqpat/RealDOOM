@@ -15,9 +15,9 @@
 ;
 ; DESCRIPTION:
 ;
-	.MODEL  medium
-	INCLUDE defs.inc
-
+.MODEL  medium
+INCLUDE defs.inc
+INSTRUCTION_SET_MACRO
 .DATA
 
 
@@ -28,7 +28,6 @@ EXTRN FixedMul_:PROC
 COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF   = ((DC_YL_LOOKUP_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - COLFUNC_JUMP_LOOKUP_SEGMENT) * 16)
 
-DRAWCOL_OFFSET                 = (COLFUNC_FUNCTION_AREA_SEGMENT - 06800h) * 16
 
 
 DC_YL_LOOKUP_SPACE             = _ss_variable_space+4
@@ -233,15 +232,14 @@ mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNC
 mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
 ; what follows is compution of desired CS segment and offset to function to allow for colormaps to be CS:BX and match DS:BX column
 mov   dx, word ptr ds:[_dc_colormap_segment]    
-mov   si, OFFSET _ss_variable_space ; lets use this variable space
 test  al, al
 jne    skipcolormapzero
 
-mov   word ptr [si], DRAWCOL_OFFSET				; setup dynamic call
-mov   word ptr [si+2], dx
+mov   word ptr ds:[_colfunc_farcall_addr_1+2], dx
 
-db 0FFh  ; lcall[si]
-db 01Ch  ;
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _colfunc_farcall_addr_1
 
 
 pop   di 
@@ -259,17 +257,24 @@ mov   bx, DRAWCOL_OFFSET
 cbw           ; al is like 0-20 so this will zero out ah...
 xchg   ah, al ; move it high with 0 al.
 sub   bx, ax
+ 
+IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+shr   ax, 4
+ELSE
 shr   ax, 1
 shr   ax, 1
 shr   ax, 1
 shr   ax, 1
-add   dx, ax
+ENDIF
+ 
+ add  ax, dx
 
-mov   word ptr [si], bx				; setup dynamic call
-mov   word ptr [si+2], dx
+mov   word ptr ds:[_colfunc_farcall_addr_2], bx				; setup dynamic call
+mov   word ptr ds:[_colfunc_farcall_addr_2+2], ax
 
-db 0FFh  ; lcall[si]
-db 01Ch  ;
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _colfunc_farcall_addr_2
 
 pop   di ; unused but drawcol clobbers it.
 pop   si

@@ -47,6 +47,9 @@ dw                                                         8000h
 ;  spanfunc_farcall_addr_2   0x00FC
 dw 8000h,  7000h,  6000h,  9C00h,    DRAWSPAN_CALL_OFFSET,     00,     00,    00
 ; 0x100:
+;  spanfunc_farcall_addr_1   0x0100
+;  spanfunc_farcall_addr_2   0x0104
+dw DRAWCOL_OFFSET, 00, 00,    00
 
 
 ENDS _FIXEDDATA

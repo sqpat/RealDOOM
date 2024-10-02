@@ -144,7 +144,9 @@
 #define screen_segments             ((segment_t __near *)           (_NULL_OFFSET + 0x00EE))
 #define spanfunc_farcall_addr_1     (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00F8)))
 #define spanfunc_farcall_addr_2     (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00FC)))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0100)))
+#define colfunc_farcall_addr_1      (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x0100)))
+#define colfunc_farcall_addr_2      (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x0104)))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0108)))
 
 
 
