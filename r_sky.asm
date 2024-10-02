@@ -76,18 +76,15 @@ PUBLIC  R_DrawSkyColumn_
 
     ; draw this sky column. let's generate the sky column segment.
     ;  				segment_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
-    mov   cx, XTOVIEWANGLE_SEGMENT
-    mov   es, cx
+    mov   dx, XTOVIEWANGLE_SEGMENT
+    mov   es, dx
     mov   dx, word ptr ds:[_viewangle_shiftright3]
     mov   di, bx    ; grab dc_x
-    sal   di, 1
-    add   dx, word ptr es:[di]
+    add   dx, word ptr es:[bx+di]
 
     ; 	dc_source_segment = skytexture_texture_segment + texture_x;
 
-    
-    mov cl, byte ptr ds:[_detailshift2minus]
-    inc cl  ; plus 1 to account for sal di 1 above..
+    ; cl is unchanged throughout looped calls to this func, already contains detailshift2minus
     shr di, cl  ; preshift dc_x by detailshift. Plus one for the earlier word offset shift.
 
     ; move operations beyond the shr to keep prefetch busy...
@@ -104,7 +101,7 @@ PUBLIC  R_DrawSkyColumn_
 
    ;  prep our loop variables
 
-   mov     ds, dx                          ; cx contained dc_source_segment
+   mov     ds, dx                          ; dx contained dc_source_segment
    mov     ax, 004Fh
    cwd     ; zero out dx 
    ; should be able to easily do a lookup into here with available registers (ax, dx, bx)
@@ -156,49 +153,50 @@ ENDP
 PROC  R_DrawSkyPlane_ NEAR
 PUBLIC  R_DrawSkyPlane_
 
-; bp - 2 xoffset
-; bp - 4 initial bx (pl )
-; bp - 6 initial cx  (pl)
-; bp - 8 minx 
-; bp - A minxbase4   (minx & 0xFFFC)
-; bp - C maxx
-; bp - E 4 >> detailshift
+; bp - 2 initial bx (pl )
+; bp - 4 initial cx  (pl)
+; bp - 6 minx 
+; bp - 8 minxbase4   (minx & 0xFFFC)
+; bp - A maxx
+; bp - C 4 >> detailshift
 
 push  si
 push  di
 push  bp
 mov   bp, sp
 
-push  0                         ; bp-2 initial xoffset value
-push  bx                        ; bp-4
-push  cx                        ; bp-6
-push  ax                        ; bp-8 minx  
+push  bx                        ; bp-2
+push  cx                        ; bp-4
+push  ax                        ; bp-6 minx  
 mov   bx, ax
 and   al,  0FCh                 ; 
-push  ax                        ; bp-A minxbase4
-push  dx                        ; bp-c maxx
+push  ax                        ; bp-8 minxbase4
+push  dx                        ; bp-A maxx
 
 ; todo investigate speedup on 286 of removing this stack var and using the ds one...
 mov   al, byte ptr ds:[_detailshiftitercount]
 cbw
 
 
-push  ax                        ; bp-E
+push  ax                        ; bp-C
 
+mov cl, byte ptr ds:[_detailshift2minus]
+mov ch, 0
 
 start_drawing_next_vga_plane:
 
 ; prep some detailshift stuff
-mov   ax, word ptr [bp - 2]         ; zero out ah
+mov   al, ch
+cbw    ; zero out ah
 
 
-mov   dx, word ptr [bp - 0Ah]
+mov   dx, word ptr [bp - 08h]
 add   dx, ax
 
-cmp   dx, word ptr [bp - 08h]               ; if below minx then increment by detail step
+cmp   dx, word ptr [bp - 06h]               ; if below minx then increment by detail step
 jge   start_drawing_vga_plane
 
-add   dx, word ptr [bp - 0Eh]
+add   dx, word ptr [bp - 0Ch]
 
 start_drawing_vga_plane:
 ; out the appropriate plane value
@@ -213,15 +211,15 @@ mov   bx, dx   ; copy this value to bx now
 mov   dx, 03C5h
 out   dx, al
 
-mov   dl, byte ptr [bp - 0Eh]    
+mov   dl, byte ptr [bp - 0Ch]    
 
-cmp   bx, word ptr [bp - 0Ch]  ; compare to maxx
+cmp   bx, word ptr [bp - 0Ah]  ; compare to maxx
 jg    increment_vga_plane
 
 cwd   ; zero out dx, specifically dh. it will remain 0 for the whole vga plane iteration, simplifying some things
 
 mov   ax, bx
-mov   si, word ptr [bp - 04h]
+mov   si, word ptr [bp - 02h]
 add   ax, bx
 add   si, bx
 
@@ -233,7 +231,7 @@ draw_next_column:
 ;			dc_yh = pl->bottom[x];				
 ; note we dont actually store dc_yh dc_yl, they stay in ax/dx
 
-mov   es, word ptr [bp - 06h]
+mov   es, word ptr [bp - 04h]
 mov   al, byte ptr es:[si + 0144h]  ; dc_yl
 mov   dl, byte ptr es:[si + 2]      ; dc_yh
 
@@ -258,16 +256,16 @@ pop si  ; retrieve si
 ; note: the above functions zeroes out DH
 
 skip_column_draw:
-mov   dl, byte ptr [bp - 0Eh]     ; dh is 0
+mov   dl, byte ptr [bp - 0Ch]     ; dh is 0
 add   bx, dx     ; increment x/dc_x by step
 add   si, dx     ; increment pl->top/bot lookup
-cmp   bx, word ptr [bp - 0Ch]
+cmp   bx, word ptr [bp - 0Ah]
 jle   draw_next_column
 
 increment_vga_plane:
 
-inc   word ptr [bp - 2]
-cmp   byte ptr [bp - 2], dl
+inc   ch
+cmp   ch, dl
 jge   exitfunc
 jmp   start_drawing_next_vga_plane
 exitfunc:

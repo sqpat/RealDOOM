@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/02 21:33:59
+Created on:       24/10/03 05:56:56
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -81,7 +81,7 @@ r_bsp_TEXT             CODE           AUTO           185e:0000       000007fe
 r_data_TEXT            CODE           AUTO           185e:0800       0000169e
 R_MATH_TEXT            CODE           AUTO           185e:1e9e       00000401
 R_COLUMN_TEXT          CODE           AUTO           185e:22a0       00000ba2
-R_SKY_TEXT             CODE           AUTO           185e:2e42       0000024b
+R_SKY_TEXT             CODE           AUTO           185e:2e42       00000245
 r_draw_TEXT            CODE           AUTO           185e:3090       00000377
 r_main_TEXT            CODE           AUTO           185e:3410       00000238
 r_plane_TEXT           CODE           AUTO           185e:3650       00000784
@@ -1345,7 +1345,7 @@ Module: r_column.obj(r_column.ASM)
 185e:2dd7*     R_DrawColumnPrep_
 Module: r_sky.obj(r_sky.ASM)
 185e:2e42      R_DrawSkyColumn_
-185e:3015      R_DrawSkyPlane_
+185e:300d      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 185e:3090      R_FillBackScreen_
 185e:3314      R_VideoErase_
@@ -1732,4 +1732,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00027480 (160896.)
 Entry point address: 2008:218e
-Link time: 00:00.74
+Link time: 00:00.19

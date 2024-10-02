@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/02 21:24:15
+Created on:       24/10/03 05:56:54
 Executable Image: bingen.exe
 creating a DOS executable
 
@@ -52,7 +52,7 @@ D_ALGO_TEXT            CODE           AUTO           0248:5a5c       00000154
 dmx_TEXT               CODE           AUTO           0248:5bb0       000001f0
 dutils_TEXT            CODE           AUTO           0248:5da0       0000008b
 wi_stuff_TEXT          CODE           AUTO           0248:5e30       00000efa
-MATH_TEXT              CODE           AUTO           0248:6d2a       000007e3
+MATH_TEXT              CODE           AUTO           0248:6d2a       000007df
 f_finale_TEXT          CODE           AUTO           0248:7510       00000bf7
 g_setup_TEXT           CODE           AUTO           0248:8110       000002a0
 r_setup_TEXT           CODE           AUTO           0248:83b0       00000434
@@ -82,7 +82,7 @@ r_data_TEXT            CODE           AUTO           1865:0800       0000169e
 R_MATH_TEXT            CODE           AUTO           1865:1e9e       00000401
 R_COLUMN_TEXT          CODE           AUTO           1865:22a0       00000ba2
 R_SPAN_TEXT            CODE           AUTO           1865:2e42       0000095e
-R_SKY_TEXT             CODE           AUTO           1865:37a0       0000024b
+R_SKY_TEXT             CODE           AUTO           1865:37a0       00000245
 r_draw_TEXT            CODE           AUTO           1865:39f0       00000377
 r_main_TEXT            CODE           AUTO           1865:3d70       00000238
 r_plane_TEXT           CODE           AUTO           1865:3fb0       00000784
@@ -998,29 +998,29 @@ Module: wi_stuff.obj(C:\REALDOOM\wi_stuff.c)
 0248:6b8a+     WI_Init_
 0248:6d08      WI_Start_
 Module: math.obj(math.ASM)
-0248:710a      FastDiv32u16u_
+0248:7106      FastDiv32u16u_
 0248:6e32      FixedMulTrigNoShift_
-0248:6f1b      FastMul16u32u_
-0248:707b      FixedDiv_
-0248:6e84*     FixedMulTrig16_
-0248:6f30      div48_32_
-0248:71c0*     FastDiv3232_RPTA_
-0248:73df*     div48_32_whole_
-0248:6e9e      FastMulTrig16_
-0248:6ec7      FixedMulTrigSpeed_
-0248:6f0c*     FixedMul16u32u_
-0248:7128      FastDiv3216u_
-0248:72ac      FastDiv3232_
-0248:736a      FixedDivWholeA_
+0248:6f17      FastMul16u32u_
+0248:7077      FixedDiv_
+0248:6e80*     FixedMulTrig16_
+0248:6f2c      div48_32_
+0248:71bc*     FastDiv3232_RPTA_
+0248:73db*     div48_32_whole_
+0248:6e9a      FastMulTrig16_
+0248:6ec3      FixedMulTrigSpeed_
+0248:6f08*     FixedMul16u32u_
+0248:7124      FastDiv3216u_
+0248:72a8      FastDiv3232_
+0248:7366      FixedDivWholeA_
 0248:6e2e      FixedMulTrig_
 0248:6dee      FixedMul1632_
 0248:6dad      FixedMul2432_
 0248:6d63      FixedMul2424_
 0248:6d2a      FixedMul_
-0248:718f      FastDiv3232_shift_3_8_
-0248:6ee3      FixedMulBig1632_
-0248:6ef7      FixedMul16u32_
-0248:6ecb      FixedMulTrigSpeedNoShift_
+0248:718b      FastDiv3232_shift_3_8_
+0248:6edf      FixedMulBig1632_
+0248:6ef3      FixedMul16u32_
+0248:6ec7      FixedMulTrigSpeedNoShift_
 Module: f_finale.obj(C:\REALDOOM\f_finale.c)
 0248:7510+     V_DrawPatchFlipped_
 0248:75f6      F_StartFinale_
@@ -1352,7 +1352,7 @@ Module: r_span.obj(r_span.ASM)
 1865:358e*     R_FixedMulTrigLocal_
 Module: r_sky.obj(r_sky.ASM)
 1865:37a0      R_DrawSkyColumn_
-1865:3973      R_DrawSkyPlane_
+1865:396b      R_DrawSkyPlane_
 Module: r_draw.obj(C:\REALDOOM\r_draw.c)
 1865:39f0      R_FillBackScreen_
 1865:3c74      R_VideoErase_

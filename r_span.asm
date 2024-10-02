@@ -384,7 +384,7 @@ PUBLIC  R_DrawSpanPrep_
  add   bx, bx
  mov   ax, word ptr ds:[_destview]			; get FP_OFF(destview)
  mov   dx, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
- ;mov   bh, 2
+
  add   dx, ax							; dx is baseoffset
  mov   es, word ptr ds:[_ds_x1]			; es holds ds_x1
 	
