@@ -94,7 +94,14 @@ _spanfunc_main_loop_count = 	_NULL_OFFSET + 000E4h
 _skipdirectdraws = 				_NULL_OFFSET + 000E5h
 _jump_mult_table_3 = 			_NULL_OFFSET + 000E6h
 _screen_segments = 				_NULL_OFFSET + 000EEh
+_spanfunc_farcall_addr_1 =      _NULL_OFFSET + 000F8h
+_spanfunc_farcall_addr_2 =    	_NULL_OFFSET + 000FCh
 
+
+
+
+DRAWSPAN_BX_OFFSET             = 0FC0h
+DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_FUNCTION_AREA_SEGMENT - 06800h)) + DRAWSPAN_BX_OFFSET
 
 
 EXTRN	_pageswapargs:WORD

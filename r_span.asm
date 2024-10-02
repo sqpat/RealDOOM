@@ -27,8 +27,6 @@ INSTRUCTION_SET_MACRO
 
 MAXLIGHTZ                      = 0080h
 MAXLIGHTZ_UNSHIFTED            = 0800h
-DRAWSPAN_BX_OFFSET             = 0FC0h
-DRAWSPAN_CALL_OFFSET           = (16 * (SPANFUNC_FUNCTION_AREA_SEGMENT - 06800h)) + DRAWSPAN_BX_OFFSET
 
 
 
@@ -469,10 +467,10 @@ PUBLIC  R_DrawSpanPrep_
 
  ; calculate desired cs:ip for far jump
 
- mov   dx, word ptr ds:[_ds_colormap_segment]
- mov   al, byte ptr ds:[_ds_colormap_index]
- sub   dx, 0FCh
- test  al, al									; check _ds_colormap_index
+ mov   ax, word ptr ds:[_ds_colormap_segment]
+ mov   dl, byte ptr ds:[_ds_colormap_index]
+ sub   ax, 0FCh
+ test  dl, dl									; check _ds_colormap_index
  jne    ds_colormap_nonzero
 
 
@@ -485,15 +483,13 @@ PUBLIC  R_DrawSpanPrep_
 
 
 
-mov   si, OFFSET _ss_variable_space ; lets use this variable space
-; DRAWSPAN_CALL_OFFSET is 7A60
-mov   word ptr [si], DRAWSPAN_CALL_OFFSET
-mov   word ptr [si+2], dx				; setup dynamic call
+mov   word ptr ds:[_spanfunc_farcall_addr_1+2], ax				; setup dynamic call segment. offset is static.
 
-db 0FFh  ; lcall[si]
-db 01Ch  ;
- 
- 
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _spanfunc_farcall_addr_1
+
+
  retf  
  ds_colormap_nonzero:									; if ds_colormap_index is 0
  
@@ -511,25 +507,29 @@ db 01Ch  ;
 ;		dynamic_callfunc  =       ((void    (__far *)(void))  (MK_FP(cs_base, callfunc_offset)));
 
  
- xor   ah, ah
- mov   bx, ax
- shl   ax, 1
- shl   ax, 1
- shl   ax, 1
- shl   ax, 1
- mov   bh, bl
- xor   bl, bl
- add   dx, ax
+ mov   dh, dl
+ xor   dl, dl
+ mov   bx, DRAWSPAN_CALL_OFFSET
+ sub   bx, dx
+ IF COMPILE_INSTRUCTIONSET GE COMPILE_186
+ shr   dx, 4
+ ELSE
+ shr   dx, 1
+ shr   dx, 1
+ shr   dx, 1
+ shr   dx, 1
+ ENDIF
+ add   ax, dx
 
- mov   ax, DRAWSPAN_CALL_OFFSET
- sub   ax, bx
+ 
+mov   word ptr ds:[_spanfunc_farcall_addr_2+0], bx				; setup dynamic call offset
+mov   word ptr ds:[_spanfunc_farcall_addr_2+2], ax				; setup dynamic call segment
 
-mov   si, OFFSET _ss_variable_space ; lets use this variable space
-mov   word ptr [si], ax
-mov   word ptr [si+2], dx				; setup dynamic call
+db 0FFh  ; lcall[addr]
+db 01Eh  ;
+dw _spanfunc_farcall_addr_2
 
-db 0FFh  ; lcall[si]
-db 01Ch  ;
+
  retf  
 
 ENDP

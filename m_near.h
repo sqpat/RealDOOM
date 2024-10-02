@@ -142,8 +142,9 @@
 #define skipdirectdraws             (*(uint8_t __near *)            (_NULL_OFFSET + 0x00E5))
 #define jump_mult_table_3           ((uint8_t __near *)             (_NULL_OFFSET + 0x00E6))
 #define screen_segments             ((segment_t __near *)           (_NULL_OFFSET + 0x00EE))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x00F8)))
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0118)))
+#define spanfunc_farcall_addr_1     (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00F8)))
+#define spanfunc_farcall_addr_2     (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00FC)))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0100)))
 
 
 

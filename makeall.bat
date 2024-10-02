@@ -15,8 +15,10 @@ GOTO PRINT_EXIT
 
 :MAKE_8086
     wmake -f make16 clean
+    wmake -f makebg
+    bingen.exe
     wmake -f makecg clean
-    wmake -f makecg
+    wmake -f makecg 
     codegen.exe
     wmake -f makecg clean
     wmake -f make16
@@ -24,8 +26,10 @@ GOTO END
 
 :MAKE_186
     wmake -f make186 clean
+    wmake -f makebg
+    bingen.exe
     wmake -f makecg clean
-    wmake -f makecg
+    wmake -f makecg 
     codegen.exe
     wmake -f makecg clean
     wmake -f make186
@@ -33,8 +37,10 @@ GOTO END
 
 :MAKE_286
     wmake -f make286 clean
+    wmake -f makebg
+    bingen.exe
     wmake -f makecg clean
-    wmake -f makecg
+    wmake -f makecg 
     codegen.exe
     wmake -f makecg clean
     wmake -f make286
@@ -43,8 +49,10 @@ GOTO END
 
 :MAKE_SCAT
     wmake -f makescat clean
+    wmake -f makebg
+    bingen.exe
     wmake -f makecg clean
-    wmake -f makecg
+    wmake -f makecg 
     codegen.exe
     wmake -f makecg clean
     wmake -f makescat
@@ -54,8 +62,10 @@ GOTO END
 
 :MAKE_SCAMP
     wmake -f makesc clean
+    wmake -f makebg
+    bingen.exe
     wmake -f makecg clean
-    wmake -f makecg
+    wmake -f makecg 
     codegen.exe
     wmake -f makecg clean
     wmake -f makesc
@@ -65,8 +75,10 @@ GOTO END
 
 :MAKE_HT18
     wmake -f makeht clean
+    wmake -f makebg
+    bingen.exe
     wmake -f makecg clean
-    wmake -f makecg
+    wmake -f makecg 
     codegen.exe
     wmake -f makecg clean
     wmake -f makeht
