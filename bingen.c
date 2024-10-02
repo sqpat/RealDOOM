@@ -22,13 +22,22 @@
 #include "m_memory.h"
 #include "m_near.h"
 
+void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
+
+
 int16_t main ( int16_t argc,int8_t** argv )  { 
     
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
 	FAR_fwrite((byte __far *)R_DrawSpan, FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan), 1, fp);
     fclose(fp);
-    printf("Generated doomcode.bin file");
+    printf("Generated doomcode.bin file\n");
+
+    fp = fopen("m_offsets.h", "wb");
+	fprintf(fp, "#define R_DrawColumnPrepOffset 0x%X\n", FP_OFF(R_DrawColumnPrep) - FP_OFF(R_DrawColumn));
+	fprintf(fp, "#define R_MapPlaneOffset       0x%X\n", FP_OFF(R_MapPlane) - FP_OFF(R_DrawSpan));
+
+    printf("Generated m_offset.h file");
 
     return 0;
 } 

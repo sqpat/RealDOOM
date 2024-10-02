@@ -568,10 +568,6 @@ blockmaplump_plus4  76E4:0008
 #define colormaps_segment_high  ((segment_t)             (colormaps_segment           - 0x6800 + 0x8C00))
 
 
-
-#define R_DrawColumnAddr          ((void    (__far *)(void))  (colfunc_function_area))
-//#define R_DrawColumnAddr_high ((void    (__far *)(void))  (((int32_t)colfunc_function_area)       - 0x6C000000 + 0x8C000000))
-
 //6F2E
 #define colfunc_segment        ((segment_t) ((int32_t)colfunc_function_area >> 16))
 #define colfunc_segment_high   ((segment_t) (colfunc_segment           - 0x6800 + 0x8C00))
@@ -587,9 +583,6 @@ blockmaplump_plus4  76E4:0008
 #define colormaps_colfunc_off_difference (colormaps_colfunc_seg_difference << 4)
 //6f59
 
-
-#define R_DrawColumnPrepOffset    0x0B3A
-#define R_DrawSpanPrepOffset      0x070D
 
 
 

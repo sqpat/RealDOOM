@@ -202,9 +202,11 @@ mov   word ptr ds:[_dc_texturemid+2], dx
 mov   ax, 02400h
 
 
-db 0FFh
-db 01Eh
-dw _R_DrawColumnPrepCallHigh
+db 09Ah
+db R_DRAWCOLUMNPREPCALLOFFSET AND 0FFh
+db (R_DRAWCOLUMNPREPCALLOFFSET SHR 8 )
+db COLFUNC_HIGH_SEGMENT AND 0FFh
+db (COLFUNC_HIGH_SEGMENT SHR 8 )
 
 increment_column_and_continue_loop:
 mov   es, word ptr [bp - 2]
@@ -356,9 +358,11 @@ mov   word ptr ds:[_dc_yl], si ;  dc_x could also be trivially recovered from bx
 mov   ax, 02400h
 
 
-db 0FFh
-db 01Eh
-dw _R_DrawColumnPrepCallHigh
+db 09Ah
+db R_DRAWCOLUMNPREPCALLOFFSET AND 0FFh
+db (R_DRAWCOLUMNPREPCALLOFFSET SHR 8 )
+db COLFUNC_HIGH_SEGMENT AND 0FFh
+db (COLFUNC_HIGH_SEGMENT SHR 8 )
 
 
 exit_function_single:

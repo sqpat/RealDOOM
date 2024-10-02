@@ -1,8 +1,8 @@
-
+#include "m_offset.h"
 #include "m_memory.h"
 #include "m_near.h"
 
-#define CONSTANTS_COUNT 96
+#define CONSTANTS_COUNT 98
 
 char* CONSTANTS[CONSTANTS_COUNT] = {
     "SECTORS_SEGMENT",
@@ -120,7 +120,9 @@ char* CONSTANTS[CONSTANTS_COUNT] = {
     "SKYTEXTURE_TEXTURE_SEGMENT",
 
     "SPANFUNC_JUMP_LOOKUP_SEGMENT",
-    "SPANFUNC_FUNCTION_AREA_SEGMENT"
+    "SPANFUNC_FUNCTION_AREA_SEGMENT",
+    "COLFUNC_HIGH_SEGMENT",
+    "R_DRAWCOLUMNPREPCALLOFFSET"
 
 
 
@@ -241,7 +243,9 @@ segment_t SEGMENTS[CONSTANTS_COUNT] = {
     skytexture_texture_segment,
 
     spanfunc_jump_lookup_segment,
-    spanfunc_function_area_segment
+    spanfunc_function_area_segment,
+    colfunc_segment_high,
+    R_DrawColumnPrepOffset
 
     
 };
@@ -258,8 +262,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
         varname = CONSTANTS[i];
         segment = SEGMENTS[i];
         fprintf(fp, "%s = 0%Xh\n", varname, segment);
-
     }
+
+
+
+
+
 
     fclose(fp);
 

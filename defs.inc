@@ -97,11 +97,6 @@ _screen_segments = 				_NULL_OFFSET + 000EEh
 
 
 
-
-
-
-EXTRN  _R_DrawColumnPrepCallHigh:WORD
-
 EXTRN	_pageswapargs:WORD
 
 COMPILE_386  = 3

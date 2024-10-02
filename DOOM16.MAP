@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/02 07:51:10
+Created on:       24/10/02 15:19:44
 Executable Image: doom16.exe
 creating a DOS executable
 
@@ -86,7 +86,7 @@ r_draw_TEXT            CODE           AUTO           185e:30a0       00000377
 r_main_TEXT            CODE           AUTO           185e:3420       00000238
 r_plane_TEXT           CODE           AUTO           185e:3660       00000784
 r_segs_TEXT            CODE           AUTO           185e:3df0       00001c55
-R_MASKED_TEXT          CODE           AUTO           185e:5a46       0000029f
+R_MASKED_TEXT          CODE           AUTO           185e:5a46       000002a1
 r_things_TEXT          CODE           AUTO           185e:5cf0       000011ce
 w_wad_TEXT             CODE           AUTO           185e:6ec0       0000032e
 VIDEO_TEXT             CODE           AUTO           185e:71ee       000001f8
@@ -545,7 +545,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 2407:02a8      _FLAT_CACHE_PAGE
 2407:02b0      _visplane_offset
 2407:02e2      _vga_read_port_lookup
-2407:02fc      _R_DrawColumnPrepCallHigh
+2407:02fc*     _R_DrawColumnPrepCallHigh
 2407:0300      _R_DrawColumnPrepCall
 2407:0304      _R_DrawFuzzColumnCallHigh
 2407:0308      _R_MapPlaneCall
@@ -1369,8 +1369,8 @@ Module: r_segs.obj(C:\REALDOOM\r_segs.c)
 185e:4a54+     R_RenderOneSeg_
 185e:4ec2      R_StoreWallRange_
 Module: r_masked.obj(r_masked.ASM)
-185e:5bae      R_DrawFuzzColumn_
-185e:5b39      R_DrawSingleMaskedColumn_
+185e:5bb0      R_DrawFuzzColumn_
+185e:5b3a      R_DrawSingleMaskedColumn_
 185e:5a46      R_DrawMaskedColumn_
 Module: r_things.obj(C:\REALDOOM\r_things.c)
 185e:5cf0      R_DrawMaskedSpriteShadow_
@@ -1732,4 +1732,4 @@ C:\WATCOM2\lib286\dos\clibm.lib
 Stack size:  1000 (4096.)
 Memory size:  00027480 (160896.)
 Entry point address: 2009:218e
-Link time: 00:00.74
+Link time: 00:00.75
