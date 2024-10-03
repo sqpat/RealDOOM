@@ -76,9 +76,7 @@ PUBLIC  R_DrawSkyColumn_
 
     ; draw this sky column. let's generate the sky column segment.
     ;  				segment_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
-    mov   dx, XTOVIEWANGLE_SEGMENT
-    mov   es, dx
-    mov   dx, word ptr ds:[_viewangle_shiftright3]
+    les   dx, dword ptr ds:[_viewangle_shiftright3]
     mov   di, bx    ; grab dc_x
     add   dx, word ptr es:[bx+di]
 

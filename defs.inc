@@ -52,7 +52,6 @@ _dc_yh = 					_NULL_OFFSET + 00046h
 _dc_iscale = 				_NULL_OFFSET + 00048h
 _dc_texturemid = 			_NULL_OFFSET + 0004Ch
 _dc_x = 					_NULL_OFFSET + 00050h
-_viewangle_shiftright3 = 	_NULL_OFFSET + 00052h
 
 _planezlight = 				_NULL_OFFSET + 00054h
 _planeheight = 				_NULL_OFFSET + 00058h
@@ -94,9 +93,9 @@ _skipdirectdraws = 				_NULL_OFFSET + 000E5h
 _jump_mult_table_3 = 			_NULL_OFFSET + 000E6h
 _screen_segments = 				_NULL_OFFSET + 000EEh
 _spanfunc_farcall_addr_1 =      _NULL_OFFSET + 000F8h
-_spanfunc_farcall_addr_2 =    	_NULL_OFFSET + 000FCh
+_func_farcall_scratch_addr =	_NULL_OFFSET + 000FCh
 _colfunc_farcall_addr_1   =    	_NULL_OFFSET + 00100h
-_colfunc_farcall_addr_2   =    	_NULL_OFFSET + 00104h
+_viewangle_shiftright3 = 		_NULL_OFFSET + 00104h
 _dc_source_segment =	 		_NULL_OFFSET + 0010Ah
 
 

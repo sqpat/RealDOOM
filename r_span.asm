@@ -519,12 +519,12 @@ dw _spanfunc_farcall_addr_1
  add   ax, dx
 
  
-mov   word ptr ds:[_spanfunc_farcall_addr_2+0], bx				; setup dynamic call offset
-mov   word ptr ds:[_spanfunc_farcall_addr_2+2], ax				; setup dynamic call segment
+mov   word ptr ds:[_func_farcall_scratch_addr+0], bx				; setup dynamic call offset
+mov   word ptr ds:[_func_farcall_scratch_addr+2], ax				; setup dynamic call segment
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _spanfunc_farcall_addr_2
+dw _func_farcall_scratch_addr
 
 
  retf  
@@ -829,12 +829,12 @@ call R_FixedMulLocal_
 ; ds_xfrac = viewx.w + R_FixedMulLocal(finecosine[angle], length );
 
 mov   bx, si
+; todo bx + si below, reorder
 shr   bx, 1		
 xchg  di, ax			; store low word of length (product result)in di
 mov   si, dx			; store high word of length  (product result) in si
-mov   ax, XTOVIEWANGLE_SEGMENT
-mov   es, ax
-mov   ax, word ptr ds:[_viewangle_shiftright3]
+
+les   ax, dword ptr ds:[_viewangle_shiftright3]
 add   ax, word ptr es:[bx]		; ax is unmodded fine angle..
 and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
 push  ax            ; store fineangle

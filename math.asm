@@ -47,16 +47,16 @@ db 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 db 0,  0,  0,  0,  0,  0, 21, 18, 15, 12,  9,  6,  3,  0
 dw                                                         8000h
 ;  spanfunc_farcall_addr_1   0x00F8
-;  spanfunc_farcall_addr_2   0x00FC
+;  func_farcall_scratch_addr   0x00FC
 dw 8000h,  7000h,  6000h,  9C00h,    DRAWSPAN_CALL_OFFSET,     00,     00,    00
 ; 0x100:
 ;  colfunc_farcall_addr_1   0x0100
-;  colfunc_farcall_addr_2   0x0104
+; _viewangle_shiftright3 0x104
 ; _dc_source_segment  0x10A
-dw DRAWCOL_OFFSET, 00, 00,    00,  004Fh, 00h
+dw DRAWCOL_OFFSET, 00, 00h, XTOVIEWANGLE_SEGMENT,  004Fh, 00h
 
 
-
+    
 
 ENDS _FIXEDDATA
 

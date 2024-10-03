@@ -95,7 +95,7 @@
 #define dc_iscale                   (*((fixed_t __near *)           (_NULL_OFFSET + 0x0048)))
 #define dc_texturemid               (*((fixed_t_union __near *)     (_NULL_OFFSET + 0x004C)))
 #define dc_x                        (*((int16_t __near*)            (_NULL_OFFSET + 0x0050)))
-#define viewangle_shiftright3       (*((fineangle_t __near*)        (_NULL_OFFSET + 0x0052)))
+//#define ???
 #define planezlight                 (*(uint8_t __far * __near *)    (_NULL_OFFSET + 0x0054))
 #define planeheight                 (*((fixed_t __near *)           (_NULL_OFFSET + 0x0058)))
 #define basexscale                  (*((fixed_t __near *)           (_NULL_OFFSET + 0x005C)))
@@ -142,12 +142,14 @@
 #define jump_mult_table_3           ((uint8_t __near *)             (_NULL_OFFSET + 0x00E6))
 #define screen_segments             ((segment_t __near *)           (_NULL_OFFSET + 0x00EE))
 #define spanfunc_farcall_addr_1     (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00F8)))
-#define spanfunc_farcall_addr_2     (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00FC)))
+#define func_farcall_scratch_addr   (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x00FC)))
 #define colfunc_farcall_addr_1      (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x0100)))
-#define colfunc_farcall_addr_2      (*((fixed_t_union __near*)      (_NULL_OFFSET + 0x0104)))
+// 104 is constant
+#define viewangle_shiftright3       (*((fineangle_t __near*)        (_NULL_OFFSET + 0x0104)))
+// 108 is constant
 #define dc_source_segment           (*((segment_t __near*)          (_NULL_OFFSET + 0x010A)))
 
-//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0108)))
+//#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0110)))
 
 
 

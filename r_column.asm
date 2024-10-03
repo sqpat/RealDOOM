@@ -269,12 +269,12 @@ ENDIF
  
  add  ax, dx
 
-mov   word ptr ds:[_colfunc_farcall_addr_2], bx				; setup dynamic call
-mov   word ptr ds:[_colfunc_farcall_addr_2+2], ax
+mov   word ptr ds:[_func_farcall_scratch_addr], bx				; setup dynamic call
+mov   word ptr ds:[_func_farcall_scratch_addr+2], ax
 
 db 0FFh  ; lcall[addr]
 db 01Eh  ;
-dw _colfunc_farcall_addr_2
+dw _func_farcall_scratch_addr
 
 pop   di ; unused but drawcol clobbers it.
 pop   si
