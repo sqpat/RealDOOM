@@ -69,15 +69,15 @@ PUBLIC  R_DrawSkyColumn_
     
     mov   ax, DC_YL_LOOKUP_SEGMENT             ; get segment for mul 80
     mov   es, ax                                 ; 
-    sal   si, 1                                 ; dc_yl mul 80 word lookup pointer
-    mov   ax, word ptr es:[si]                  ; quick mul 80
-    sar   si, 1                                 ; si back to dc_yl
+    mov   di, bx    ; grab dc_x
+    mov   bx, si    ; for double lookup..
+    mov   ax, word ptr es:[si+bx]                  ; quick mul 80
 
 
     ; draw this sky column. let's generate the sky column segment.
     ;  				segment_t texture_x  = ((viewangle_shiftright3 + xtoviewangle[x])) & 0x7F8;
     les   dx, dword ptr ds:[_viewangle_shiftright3]
-    mov   di, bx    ; grab dc_x
+    mov   bx, di    ; for double lookup
     add   dx, word ptr es:[bx+di]
 
     ; 	dc_source_segment = skytexture_texture_segment + texture_x;
@@ -187,29 +187,26 @@ start_drawing_next_vga_plane:
 mov   al, ch
 cbw    ; zero out ah
 
+mov   bx, ax
+add   ax, word ptr [bp - 08h]
 
-mov   dx, word ptr [bp - 08h]
-add   dx, ax
 
-cmp   dx, word ptr [bp - 06h]               ; if below minx then increment by detail step
+cmp   ax, word ptr [bp - 06h]               ; if below minx then increment by detail step
 jge   start_drawing_vga_plane
 
-add   dx, word ptr [bp - 0Ch]
+add   ax, word ptr [bp - 0Ch]
 
 start_drawing_vga_plane:
 ; out the appropriate plane value
 
-mov   bl, byte ptr ds:[_detailshift+1]       ; grab pre-shifted by 2 detailshift 
-add   bl, al                              ; al is the current plane, dc_x & 3
-xor   bh, bh
-mov   al, byte ptr ds:[_quality_port_lookup + bx]
+add   bl, byte ptr ds:[_detailshift+1]       ; grab pre-shifted by 2 detailshift 
+mov   bl, byte ptr ds:[_quality_port_lookup + bx]
 
 
-mov   bx, dx   ; copy this value to bx now
+xchg   bx, ax   ; swap these values
 mov   dx, 03C5h
 out   dx, al
 
-mov   dl, byte ptr [bp - 0Ch]    
 
 cmp   bx, word ptr [bp - 0Ah]  ; compare to maxx
 jg    increment_vga_plane
@@ -263,6 +260,7 @@ jle   draw_next_column
 increment_vga_plane:
 
 inc   ch
+mov   dl, byte ptr [bp - 0Ch]   ; might happen twice in a row... more rare than not   
 cmp   ch, dl
 jge   exitfunc
 jmp   start_drawing_next_vga_plane

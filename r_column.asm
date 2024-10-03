@@ -30,9 +30,6 @@ COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF = ((COLFUNC_FUNCTION_AREA_SEGMENT - C
 
 
 
-DC_YL_LOOKUP_SPACE             = _ss_variable_space+4
-
-
 
 
 
@@ -50,12 +47,12 @@ PUBLIC  R_DrawColumn_
 ; no need to push anything. outer function just returns and pops
 
     ; di contains shifted dc_x relative to details
-    ; cx contains dc_yl
+    ; bx contains dc_yl
 
     cli 									; disable interrupts
     push bp
 
-    mov   ax, cx  ; todo improve
+    mov   ax, bx  ; todo improve
     
 	; shift already done earlier
     
@@ -120,7 +117,7 @@ PUBLIC  R_DrawColumn_
    xor     bx, bx       ; common bx offset of zero in the xlats ahead
 
    lds     si, dword ptr ds:[_dc_source_segment-2]  ; sets ds, and si to 004Fh (hardcoded)
-   ;mov     si,  4Fh
+
    mov     ah,  7Fh   ; for ANDing to AX to mod al by 128 and preserve AH
 
 COLFUNC_JUMP_OFFSET:
@@ -197,13 +194,13 @@ push  si
 push  di
 
 
-
+; cant optimize as this is ADD not ov
 add   ax, COLFUNC_JUMP_LOOKUP_SEGMENT        ; compute segment now, clear AX dependency
 mov   es, ax                                 ; store this segment for now, with offset pre-added
 
-mov   di, word ptr ds:[_dc_x]
+mov   ax, word ptr ds:[_dc_x]
 mov   cl, byte ptr ds:[_detailshift2minus] ; todo make this word ptr to get bh 0 for free below, or contain the preshifted by 2 in bh to avoid double sal
-shr   di, cl
+shr   ax, cl
 
 
 
@@ -216,16 +213,16 @@ shr   di, cl
 
 
 
-mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
 mov   bx, word ptr ds:[_dc_yl]
-mov   cx, bx
+mov   si, bx
+add   ax, word ptr es:[bx+si+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
+add   ax, word ptr ds:[_destview + 0] 		    ; add destview offset
+mov   si, word ptr ds:[_dc_yh]                  ; grab dc_yh
 sub   si, bx                                 ;
-add   bx, bx                                 ; double dc_yl to get a word offset
-add   di, word ptr es:[bx+COLFUNC_JUMP_AND_DC_YL_OFFSET_DIFF]                  ; set up destview 
-add   di, word ptr ds:[_destview + 0] 		    ; add destview offset
 
 
 add   si, si                                 ; double diff (dc_yh - dc_yl) to get a word offset
+xchg  di, ax
 mov   ax, word ptr es:[si]                   ; get the jump value
 mov   word ptr es:[((COLFUNC_JUMP_OFFSET+1)-R_DrawColumn_)+COLFUNC_JUMP_AND_FUNCTION_AREA_OFFSET_DIFF], ax  ; overwrite the jump relative call for however many iterations in unrolled loop we need
 mov   al, byte ptr ds:[_dc_colormap_index]      ; lookup colormap index
@@ -251,11 +248,11 @@ retf
 
 ; if colormap is not zero we must do some segment math
 skipcolormapzero:
-mov   bx, DRAWCOL_OFFSET
+mov   cx, DRAWCOL_OFFSET
 
 cbw           ; al is like 0-20 so this will zero out ah...
 xchg   ah, al ; move it high with 0 al.
-sub   bx, ax
+sub   cx, ax
  
  ; todo investigate shift 4 lookup table
 IF COMPILE_INSTRUCTIONSET GE COMPILE_186
@@ -269,7 +266,7 @@ ENDIF
  
  add  ax, dx
 
-mov   word ptr ds:[_func_farcall_scratch_addr], bx				; setup dynamic call
+mov   word ptr ds:[_func_farcall_scratch_addr], cx				; setup dynamic call
 mov   word ptr ds:[_func_farcall_scratch_addr+2], ax
 
 db 0FFh  ; lcall[addr]

@@ -73,8 +73,8 @@ cli 									; disable interrupts
 ; fixed_t x32step = (ds_xstep << 6);
 
 ; todo move this logic out into prep function? 
-mov   DX, SPANFUNC_JUMP_LOOKUP_SEGMENT
-MOV   ES, DX
+mov   ax, SPANFUNC_JUMP_LOOKUP_SEGMENT
+MOV   ES, ax
 
 mov   al, byte ptr ds:[_spanfunc_main_loop_count]             
 ;; todo is this smaller with DI/stosb stuff?
@@ -167,14 +167,13 @@ mov   dx, word ptr ds:[DS_XSTEP + 2]
 ;	DX:AX contains ds_xstep * prt
 
 
-mov   bx, ax
-add   bx, word ptr ds:[DS_XFRAC]	; load _ds_xfrac
+add   ax, word ptr ds:[DS_XFRAC]	; load _ds_xfrac
 mov   cx, es					; retrieve prt sign bits
 
 adc   dx, word ptr ds:[DS_XFRAC + 2]  ; ; ds_xfrac + ds_xstep * prt high bits
 
 mov   dh, dl
-mov   dl, bh
+mov   dl, ah
 mov   es, dx  ; store mid 16 bits of x_frac.w
 mov   bx, si
 
@@ -351,8 +350,8 @@ SELFMODIFY_compare_span_counter:
 cmp   bl, 4
 jge    span_i_loop_done
 
-mov   DX, SPANFUNC_JUMP_LOOKUP_SEGMENT
-MOV   ES, DX
+mov   ax, SPANFUNC_JUMP_LOOKUP_SEGMENT
+MOV   ES, ax
 
 jmp   span_i_loop_repeat
 span_i_loop_done:
@@ -378,9 +377,7 @@ PUBLIC  R_DrawSpanPrep_
  
  ;  	uint16_t baseoffset = FP_OFF(destview) + dc_yl_lookup[ds_y];
 
- mov   ax, DC_YL_LOOKUP_SEGMENT			; calculating base view offset 
- mov   bx, word ptr ds:[_ds_y]
- mov   es, ax
+ les   bx, dword ptr ds:[_ds_y]
  add   bx, bx
  mov   ax, word ptr ds:[_destview]			; get FP_OFF(destview)
  mov   dx, word ptr es:[bx]				; get dc_yl_lookup[ds_y]
@@ -394,6 +391,8 @@ PUBLIC  R_DrawSpanPrep_
  
  mov   word ptr ds:[_ss_variable_space], dx			; store base view offset
  
+; todo the following  feels like extraneous register juggling, reexamine
+
  spanfunc_arg_setup_loop_start:
  mov   al, bl							; al holds loop counter
  mov   dx, es							; get ds_x1
@@ -406,12 +405,13 @@ PUBLIC  R_DrawSpanPrep_
 
 ; 		int16_t dsp_x2 = (ds_x2 - i) >> shiftamount;
 
+
  mov   di, word ptr ds:[_ds_x2]			; cx holds ds_x2
  sub   di, ax							; subtract i
  mov   si, ax							; put i in si
  
  mov   ax, dx							; copy dsp_x1 to ax
- mov   cl, bh							; move shiftamount to cl
+ 
  shl   ax, cl							; shift dsp_x1 left
  sar   di, cl							; shift ds_x2 right. di = dsp_x2
  mov   cx, di							; store dsp_x2 in cx
@@ -763,10 +763,10 @@ mov   word ptr ds:[_ds_x1], dx
 mov   word ptr ds:[_ds_x2], bx
 
 
-mov   bx, CACHEDHEIGHT_SEGMENT			; base segment
-mov   es, bx
 xor   ah, ah
 xchg  si, ax
+mov   ax, CACHEDHEIGHT_SEGMENT			; base segment
+mov   es, ax
 mov   ax, word ptr ds:[_planeheight]
 mov   dx, word ptr ds:[_planeheight + 2]
 shl   si, 1
@@ -839,8 +839,8 @@ add   ax, word ptr es:[bx]		; ax is unmodded fine angle..
 and   ah, 01Fh			; MOD_FINE_ANGLE mod high bits
 push  ax            ; store fineangle
 
-mov   dx, FINECOSINE_SEGMENT
 xchg  dx, ax			; fineangle in DX
+mov   ax, FINECOSINE_SEGMENT
 
 mov   bx, di			; length low word to DX
 mov   cx, si			; length low word to DX

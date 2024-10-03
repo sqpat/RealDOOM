@@ -53,7 +53,8 @@ dw 8000h,  7000h,  6000h,  9C00h,    DRAWSPAN_CALL_OFFSET,     00,     00,    00
 ;  colfunc_farcall_addr_1   0x0100
 ; _viewangle_shiftright3 0x104
 ; _dc_source_segment  0x10A
-dw DRAWCOL_OFFSET, 00, 00h, XTOVIEWANGLE_SEGMENT,  004Fh, 00h
+dw DRAWCOL_OFFSET, 00, 00h, XTOVIEWANGLE_SEGMENT,  004Fh, 00h, 00h, DC_YL_LOOKUP_SEGMENT
+
 
 
     

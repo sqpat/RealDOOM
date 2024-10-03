@@ -36,7 +36,6 @@ _detailshiftitercount = 	_NULL_OFFSET + 00022h
 _detailshift2minus = 		_NULL_OFFSET + 00023h
 _detailshiftandval = 		_NULL_OFFSET + 00024h
 
-_ds_y = 					_NULL_OFFSET + 00026h
 _ds_x1 = 					_NULL_OFFSET + 00028h
 _ds_x2 = 					_NULL_OFFSET + 0002Ah
 _ds_colormap_segment = 		_NULL_OFFSET + 0002Ch
@@ -97,6 +96,7 @@ _func_farcall_scratch_addr =	_NULL_OFFSET + 000FCh
 _colfunc_farcall_addr_1   =    	_NULL_OFFSET + 00100h
 _viewangle_shiftright3 = 		_NULL_OFFSET + 00104h
 _dc_source_segment =	 		_NULL_OFFSET + 0010Ah
+_ds_y = 				    	_NULL_OFFSET + 0010Ch
 
 
 

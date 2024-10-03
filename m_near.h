@@ -79,7 +79,7 @@
 #define detailshiftitercount        (*((uint8_t __near*)            (_NULL_OFFSET + 0x0022)))
 #define detailshift2minus           (*((uint8_t __near*)            (_NULL_OFFSET + 0x0023)))
 #define detailshiftandval           (*((uint16_t __near*)           (_NULL_OFFSET + 0x0024)))
-#define ds_y                        (*((int16_t __near*)            (_NULL_OFFSET + 0x0026)))
+//#define ???
 #define ds_x1                       (*((int16_t __near*)            (_NULL_OFFSET + 0x0028)))
 #define ds_x2                       (*((int16_t __near*)            (_NULL_OFFSET + 0x002A)))
 #define ds_colormap_segment         (*((segment_t __near*)          (_NULL_OFFSET + 0x002C)))
@@ -148,6 +148,8 @@
 #define viewangle_shiftright3       (*((fineangle_t __near*)        (_NULL_OFFSET + 0x0104)))
 // 108 is constant
 #define dc_source_segment           (*((segment_t __near*)          (_NULL_OFFSET + 0x010A)))
+#define ds_y                        (*((int16_t __near*)            (_NULL_OFFSET + 0x010C)))
+// 10E is constant
 
 //#define ????         (*((fixed_t_union __near*)     (_NULL_OFFSET + 0x0110)))
 
