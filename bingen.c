@@ -23,18 +23,32 @@
 #include "m_near.h"
 
 void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
+void __far R_DrawColumn (void);
+void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
+void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 
 
 int16_t main ( int16_t argc,int8_t** argv )  { 
     
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
-	uint16_t codesize = FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan);
+	uint16_t codesize;
+    
+    codesize = FP_OFF(R_DrawSkyColumn) - FP_OFF(R_DrawColumn);
+    // write filesize..
+    fwrite(&codesize, 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)R_DrawColumn, codesize, 1, fp);
+
+    
+    codesize = FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan);
     
     // write filesize..
     fwrite(&codesize, 2, 1, fp);
     // write data
     FAR_fwrite((byte __far *)R_DrawSpan, codesize, 1, fp);
+
+
     fclose(fp);
     printf("Generated doomcode.bin file\n");
 

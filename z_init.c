@@ -384,9 +384,14 @@ void __near Z_LoadBinaries() {
 	FAR_fread(InfoFuncLoadAddr, 1, SIZE_D_INFO, fp);
 
 	// load R_DrawColumn into high memory near colormaps...
-	FAR_memcpy(colfunc_function_area,
-	(byte __far *)R_DrawColumn, 
-	(byte __far *)R_DrawSkyColumn - (byte __far *)R_DrawColumn);
+	//FAR_memcpy(colfunc_function_area,
+	//(byte __far *)R_DrawColumn, 
+	//(byte __far *)R_DrawSkyColumn - (byte __far *)R_DrawColumn);
+
+
+	fp2 = fopen("DOOMCODE.BIN", "rb"); 
+	fread(&codesize, 2, 1, fp2);
+	FAR_fread(colfunc_function_area, codesize, 1, fp2);
 
 
 
@@ -457,7 +462,6 @@ void __near Z_LoadBinaries() {
 	 FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan));
 */
 
-	fp2 = fopen("DOOMCODE.BIN", "rb"); 
 	fread(&codesize, 2, 1, fp2);
 	FAR_fread(spanfunc_function_area_9000, codesize, 1, fp2);
 	fclose(fp2);
