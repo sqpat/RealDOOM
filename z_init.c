@@ -377,7 +377,7 @@ boolean __far P_CheckSight (  mobj_t __far* t1, mobj_t __far* t2, mobj_pos_t __f
  
 void __near Z_LoadBinaries() {
 	FILE* fp2;
-	int32_t codesize;
+	int16_t codesize;
 	FILE* fp = fopen("DOOMDATA.BIN", "rb"); 
 	// currently in physics region!
 	
@@ -458,9 +458,7 @@ void __near Z_LoadBinaries() {
 */
 
 	fp2 = fopen("DOOMCODE.BIN", "rb"); 
-	fseek(fp2, 0, SEEK_END);
-	codesize = ftell(fp2);
-	fseek(fp2, 0, SEEK_SET);
+	fread(&codesize, 2, 1, fp2);
 	FAR_fread(spanfunc_function_area_9000, codesize, 1, fp2);
 	fclose(fp2);
 

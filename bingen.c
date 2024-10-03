@@ -29,7 +29,12 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
-	FAR_fwrite((byte __far *)R_DrawSpan, FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan), 1, fp);
+	uint16_t codesize = FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan);
+    
+    // write filesize..
+    fwrite(&codesize, 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)R_DrawSpan, codesize, 1, fp);
     fclose(fp);
     printf("Generated doomcode.bin file\n");
 
