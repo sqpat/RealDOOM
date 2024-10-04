@@ -91,7 +91,6 @@ file r_draw.obj
 file r_main.obj
 file r_plane.obj
 file r_segs.obj
-file r_masked.obj
 file r_things.obj
 file w_wad.obj
 file video.obj

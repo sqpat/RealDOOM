@@ -237,9 +237,9 @@ void __near R_RenderMaskedSegRange (drawseg_t __far* ds, int16_t x1, int16_t x2)
 							uint16_t 		 postoffset = postoffsets[cachedcol];
 							column_t __far * postsdata = (column_t __far *)(MK_FP(maskedpostdata_segment, postoffset)) ;
 
-							R_DrawMaskedColumn (pixelsegment, postsdata);
+							R_DrawMaskedColumnCallHigh (pixelsegment, postsdata);
 						} else {
-							R_DrawSingleMaskedColumn(pixelsegment, cachedbyteheight);
+							R_DrawSingleMaskedColumnCallHigh(pixelsegment, cachedbyteheight);
 						}
 
 					}			

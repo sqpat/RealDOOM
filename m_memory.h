@@ -599,26 +599,33 @@ blockmaplump_plus4  76E4:0008
 #define size_drawfuzzcol_area       1000u
 
 #define maskedpostdata             ((byte __far*)              (0x84000000 ))
+
+
+#define drawmaskedfuncarea_sprite    ((byte __far*)           MAKE_FULL_SEGMENT(maskedpostdata, size_maskedpostdata))
+// drawmaskedfuncarea_sprite_segment = 86fd..
+#define drawmaskedfuncarea_sprite_segment   ((segment_t) ((int32_t)drawmaskedfuncarea_sprite >> 16))
+
+
 #define spritepostdatasizes        ((uint16_t __far*)          (0x88000000 ))
 #define spritetotaldatasizes       ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritepostdatasizes,  size_spritepostdatasizes))
 #define maskedpostdataofs          ((uint16_t __far*)          MAKE_FULL_SEGMENT(spritetotaldatasizes, size_spritetotaldatasizes))
 #define maskedpixeldataofs         ((byte __far*)              MAKE_FULL_SEGMENT(maskedpostdataofs,    size_maskedpostdataofs))
 #define drawfuzzcol_area           ((byte __far*)              MAKE_FULL_SEGMENT(maskedpixeldataofs,   size_maskedpixeldataofs))
  
-#define maskedpostdata_segment     ((segment_t) ((int32_t)maskedpostdata >> 16))
+#define maskedpostdata_segment       ((segment_t) ((int32_t)maskedpostdata >> 16))
 #define spritepostdatasizes_segment  ((segment_t) ((int32_t)spritepostdatasizes >> 16))
 #define spritetotaldatasizes_segment ((segment_t) ((int32_t)spritetotaldatasizes >> 16))
-#define maskedpostdataofs_segment  ((segment_t) ((int32_t)maskedpostdataofs >> 16))
-#define maskedpixeldataofs_segment ((segment_t) ((int32_t)maskedpixeldataofs >> 16))
-#define drawfuzzcol_area_segment   ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
+#define maskedpostdataofs_segment    ((segment_t) ((int32_t)maskedpostdataofs >> 16))
+#define maskedpixeldataofs_segment   ((segment_t) ((int32_t)maskedpixeldataofs >> 16))
+#define drawfuzzcol_area_segment     ((segment_t) ((int32_t)drawfuzzcol_area >> 16))
 
 
  /*
 
 TODO this may grow with final doom suppot...?
 
-maskedpostdata          8400:0000
- [empty]                86FD:0000
+maskedpostdata              8400:0000
+drawmaskedfuncarea_sprite?  86FD:0000
 
 4144 free
 
@@ -957,6 +964,8 @@ openings                 7800:0000
 negonearray_offset       7800:a000  or 8000:2000
 screenheightarray_offset 7800:A500  or 8000:2500
 [done]                   7800:AA00  or 8000:2A00
+
+//aa00
 */
 // LEAVE ALL THESE in 0x7800 SEGMENT 
 
@@ -986,6 +995,7 @@ screenheightarray_offset 7800:A500  or 8000:2500
 
 #define FUZZTABLE                         50 
 
+//todo programmattically do this
 #define size_leftover_openings_arrays     0x2A00
 
 #define size_texturewidthmasks  MAX_TEXTURES * sizeof(uint8_t)
@@ -1076,6 +1086,7 @@ nodes_render        7000:0000
 spritedefs_bytes    7000:36A0
 spritewidths        7000:7592
 [empty]             7000:7AF7
+
 
 1289 bytes free
 */

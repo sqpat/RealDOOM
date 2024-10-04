@@ -152,8 +152,6 @@ void __near R_DrawMaskedSpriteShadow (segment_t pixelsegment, column_t __far* co
     dc_texturemid = basetexturemid;
 
 }
-void __near R_DrawMaskedColumn (segment_t pixelsegment, column_t __far* column);
-
 /*
 void __near R_DrawMaskedColumn2 (segment_t pixelsegment, column_t __far* column) {
 	
@@ -340,7 +338,7 @@ void __near R_DrawVisSprite ( vissprite_t __far* vis ) {
                     frac.w += xiscalestep_shift) {
                     uint16_t __far * columndata = (uint16_t __far *)(&(patch->columnofs[frac.h.intbits]));
                     column_t __far * postdata   = (column_t __far *)(((byte __far *) patch) + columndata[1]);
-                    R_DrawMaskedColumn(patch_segment + (columndata[0] >> 4), postdata);
+                    R_DrawMaskedColumnCallSpriteHigh(patch_segment + (columndata[0] >> 4), postdata);
                 }
             }
         

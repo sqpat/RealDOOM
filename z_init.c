@@ -464,7 +464,7 @@ void __near Z_LoadBinaries() {
 
 	fread(&codesize, 2, 1, fp2);
 	FAR_fread(spanfunc_function_area_9000, codesize, 1, fp2);
-	fclose(fp2);
+
 
 
 	//I_Error("\n%i %i %i %i", epsd1animinfo[2].period, epsd1animinfo[2].loc.x, anims[1][2].period, anims[1][2].loc.x);
@@ -477,9 +477,16 @@ void __near Z_LoadBinaries() {
 
 	Z_QuickMapMaskedExtraData();
 		// load R_DrawFuzzColumn into high memory near colormaps_high...
-	FAR_memcpy(drawfuzzcol_area,
-	(byte __far *)R_DrawFuzzColumn, 
-	(byte __far *)R_DrawMaskedSpriteShadow - (byte __far *)R_DrawFuzzColumn);
+
+	fread(&codesize, 2, 1, fp2);
+	FAR_fread(drawfuzzcol_area, codesize, 1, fp2);
+	
+
+	fread(&codesize, 2, 1, fp2);
+	FAR_fread(drawmaskedfuncarea_sprite, codesize, 1, fp2);
+	fclose(fp2);
+
+	
 
 
 

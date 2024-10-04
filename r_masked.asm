@@ -41,6 +41,265 @@ COLORMAPS_HIGH_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_HIGH_SEG_DIFF_SEGMENT - DRAW
 .CODE
 
 
+
+
+;
+; R_DrawFuzzColumn
+;
+	
+PROC  R_DrawFuzzColumn_ 
+PUBLIC  R_DrawFuzzColumn_ 
+
+; todo:
+; could write sp somehwere and use it as 64h for si comps. 
+
+push dx
+push si
+push di
+mov  es, cx
+mov  cl, byte ptr ds:[_fuzzpos]	; note this is always the byte offset - no shift conversion necessary
+xor  ch, ch
+mov  si, cx
+mov  cx, ax
+mov  ax, FUZZOFFSET_SEGMENT
+mov  ds, ax
+mov  di, bx
+; constant space
+mov  dx, 04Fh
+mov  ch, 010h
+
+
+cli
+push bp
+mov  bp, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
+
+
+
+
+
+cmp  cl, ch
+jg   draw_16_fuzzpixels
+jmp  done_drawing_16_fuzzpixels
+draw_16_fuzzpixels:
+
+
+
+DRAW_SINGLE_FUZZPIXEL MACRO 
+
+
+
+lodsw     						; load fuzz offset...
+mov  bx, ax	       				; move offset to bx.
+mov  al, byte ptr es:[bx + di]  ; read screen
+mov  bx, bp						; set colormaps 6 CS-based offset
+xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
+stosb							; write to screen
+add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
+
+
+ENDM
+
+REPT 16
+    DRAW_SINGLE_FUZZPIXEL
+endm
+
+
+cmp  si, 064h
+jl   fuzzpos_ok
+; subtract 50 from fuzzpos
+sub  si, 064h
+fuzzpos_ok:
+sub  cl, ch
+cmp  cl, ch
+jle  done_drawing_16_fuzzpixels
+jmp  draw_16_fuzzpixels
+done_drawing_16_fuzzpixels:
+test cl, cl
+je   finished_drawing_fuzzpixels
+xor ch, ch;
+draw_one_fuzzpixel:
+
+lodsw     						; load fuzz offset...
+mov  bx, ax	       				; move offset to bx.
+mov  al, byte ptr es:[bx + di]  ; read screen
+mov  bx, bp						; set colormaps 6 CS-based offset
+xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
+stosb							; write to screen
+add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
+
+cmp  si, 064h
+je   zero_out_fuzzpos
+finish_one_fuzzpixel_iteration:
+loop  draw_one_fuzzpixel
+; write back fuzzpos
+finished_drawing_fuzzpixels:
+
+pop bp
+sti
+
+; restore ds
+mov  di, ss
+mov  ds, di
+
+; write back fuzzpos
+mov  ax, si
+
+mov  byte ptr ds:[_fuzzpos], al
+
+pop  di
+pop  si
+pop  dx
+retf 
+
+zero_out_fuzzpos:
+xor  si, si
+loop  draw_one_fuzzpixel
+jmp finished_drawing_fuzzpixels
+
+ENDP
+
+
+
+;
+; R_DrawSingleMaskedColumn
+;
+	
+PROC  R_DrawSingleMaskedColumn_ 
+PUBLIC  R_DrawSingleMaskedColumn_ 
+
+push  bx
+push  cx
+push  si
+push  di
+push  bp
+
+mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
+
+mov   cl, dl
+xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
+
+
+
+;    topscreen.w = sprtopscreen;
+
+mov   di, word ptr ds:[_sprtopscreen]
+mov   si, word ptr ds:[_sprtopscreen+2]
+mov   bx, word ptr ds:[_spryscale]
+mov   ax, word ptr ds:[_spryscale+2]
+
+;   topscreen = si:di 
+
+; fastmul1632, ax/cx preswapped
+
+; FastMul16u32u(length, spryscale.w)
+
+MUL  CX        ; AX * CX
+XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
+MUL  BX        ; AX * BX
+ADD  DX, CX    ; add 
+
+;    bottomscreen.w = topscreen.w + FastMul16u32u(length, spryscale.w);
+
+
+add ax, di
+adc dx, si
+
+; dx:ax = bottomscreen
+; si:di = topscreen (still)
+
+;    dc_yh = bottomscreen.h.intbits;
+;    if (!bottomscreen.h.fracbits)
+;        dc_yh--;
+
+
+
+neg  di
+adc  si, 0
+;mov  word ptr ds:[_dc_yl], si
+
+; dc_yl written back
+
+
+;		dc_yh = bottomscreen.h.intbits;
+;		if (!bottomscreen.h.fracbits)
+;			dc_yh--;
+
+neg ax
+sbb dx, 0FFFFh
+mov  word ptr ds:[_dc_yh], dx
+; dx is dc_yh
+; si is dc_yl
+
+
+
+
+
+skip_inc_dc_yl:
+
+;        if (dc_yh >= mfloorclip[dc_x])
+;            dc_yh = mfloorclip[dc_x]-1;
+
+
+
+mov   bx, word ptr ds:[_dc_x]
+sal   bx, 1
+les   ax, dword ptr ds:[_mfloorclip]
+add   bx, ax
+mov   cx, word ptr es:[bx]
+
+cmp   dx, cx
+jl    skip_floor_clip_set_single	; todo consider making this jump out and back? whats the better default branch
+mov   dx, cx
+dec   dx
+skip_floor_clip_set_single:
+
+
+
+;        if (dc_yl <= mceilingclip[dc_x])
+;            dc_yl = mceilingclip[dc_x]+1;
+
+
+sub   bx, ax
+
+les   ax, dword ptr ds:[_mceilingclip]   
+add   bx, ax
+
+mov   cx, word ptr es:[bx]
+cmp   si, cx
+jg    skip_ceil_clip_set_single   ; todo consider making this jump out and back? whats the better default branch
+mov   si, cx
+inc   si
+skip_ceil_clip_set_single:
+
+cmp   si, dx			
+jnle   exit_function_single
+
+
+mov   word ptr ds:[_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
+mov   word ptr ds:[_dc_yl], si ;  dc_x could also be trivially recovered from bx
+
+mov   ax, 02400h
+
+
+db 09Ah
+db R_DRAWCOLUMNPREPCALLOFFSET AND 0FFh
+db (R_DRAWCOLUMNPREPCALLOFFSET SHR 8 )
+db COLFUNC_HIGH_SEGMENT AND 0FFh
+db (COLFUNC_HIGH_SEGMENT SHR 8 )
+
+
+exit_function_single:
+
+pop   bp
+pop   di
+pop   si
+pop   cx
+pop   bx
+retf   
+
+ENDP
+
+
 ; ax pixelsegment
 ; cx:bx column
 
@@ -49,7 +308,7 @@ COLORMAPS_HIGH_SEG_OFFSET_IN_CS = 16 * (COLORMAPS_6_HIGH_SEG_DIFF_SEGMENT - DRAW
 ; R_DrawMaskedColumn
 ;
 	
-PROC  R_DrawMaskedColumn_ NEAR
+PROC  R_DrawMaskedColumn_ 
 PUBLIC  R_DrawMaskedColumn_ 
 
 ;  bp - 02 cx/column segment
@@ -230,267 +489,13 @@ LEAVE_MACRO
 pop   di
 pop   si
 pop   dx
-ret
+retf
 
 
 ENDP
 
 
 
-;
-; R_DrawSingleMaskedColumn
-;
-	
-PROC  R_DrawSingleMaskedColumn_ NEAR
-PUBLIC  R_DrawSingleMaskedColumn_ 
-
-push  bx
-push  cx
-push  si
-push  di
-push  bp
-
-mov   word ptr ds:[_dc_source_segment], ax	; set this early. 
-
-mov   cl, dl
-xor   ch, ch		; count used once for mul and not again. todo is dh already zero?
-
-
-
-;    topscreen.w = sprtopscreen;
-
-mov   di, word ptr ds:[_sprtopscreen]
-mov   si, word ptr ds:[_sprtopscreen+2]
-mov   bx, word ptr ds:[_spryscale]
-mov   ax, word ptr ds:[_spryscale+2]
-
-;   topscreen = si:di 
-
-; fastmul1632, ax/cx preswapped
-
-; FastMul16u32u(length, spryscale.w)
-
-MUL  CX        ; AX * CX
-XCHG CX, AX    ; store low product to be high result. Retrieve orig AX
-MUL  BX        ; AX * BX
-ADD  DX, CX    ; add 
-
-;    bottomscreen.w = topscreen.w + FastMul16u32u(length, spryscale.w);
-
-
-add ax, di
-adc dx, si
-
-; dx:ax = bottomscreen
-; si:di = topscreen (still)
-
-;    dc_yh = bottomscreen.h.intbits;
-;    if (!bottomscreen.h.fracbits)
-;        dc_yh--;
-
-
-
-neg  di
-adc  si, 0
-;mov  word ptr ds:[_dc_yl], si
-
-; dc_yl written back
-
-
-;		dc_yh = bottomscreen.h.intbits;
-;		if (!bottomscreen.h.fracbits)
-;			dc_yh--;
-
-neg ax
-sbb dx, 0FFFFh
-mov  word ptr ds:[_dc_yh], dx
-; dx is dc_yh
-; si is dc_yl
-
-
-
-
-
-skip_inc_dc_yl:
-
-;        if (dc_yh >= mfloorclip[dc_x])
-;            dc_yh = mfloorclip[dc_x]-1;
-
-
-
-mov   bx, word ptr ds:[_dc_x]
-sal   bx, 1
-les   ax, dword ptr ds:[_mfloorclip]
-add   bx, ax
-mov   cx, word ptr es:[bx]
-
-cmp   dx, cx
-jl    skip_floor_clip_set_single	; todo consider making this jump out and back? whats the better default branch
-mov   dx, cx
-dec   dx
-skip_floor_clip_set_single:
-
-
-
-;        if (dc_yl <= mceilingclip[dc_x])
-;            dc_yl = mceilingclip[dc_x]+1;
-
-
-sub   bx, ax
-
-les   ax, dword ptr ds:[_mceilingclip]   
-add   bx, ax
-
-mov   cx, word ptr es:[bx]
-cmp   si, cx
-jg    skip_ceil_clip_set_single   ; todo consider making this jump out and back? whats the better default branch
-mov   si, cx
-inc   si
-skip_ceil_clip_set_single:
-
-cmp   si, dx			
-jnle   exit_function_single
-
-
-mov   word ptr ds:[_dc_yh], dx ; todo eventually just pass this in as an arg instead of write it
-mov   word ptr ds:[_dc_yl], si ;  dc_x could also be trivially recovered from bx
-
-mov   ax, 02400h
-
-
-db 09Ah
-db R_DRAWCOLUMNPREPCALLOFFSET AND 0FFh
-db (R_DRAWCOLUMNPREPCALLOFFSET SHR 8 )
-db COLFUNC_HIGH_SEGMENT AND 0FFh
-db (COLFUNC_HIGH_SEGMENT SHR 8 )
-
-
-exit_function_single:
-
-pop   bp
-pop   di
-pop   si
-pop   cx
-pop   bx
-ret   
-
-ENDP
-
-
-;
-; R_DrawFuzzColumn
-;
-	
-PROC  R_DrawFuzzColumn_ 
-PUBLIC  R_DrawFuzzColumn_ 
-
-; todo:
-; could write sp somehwere and use it as 64h for si comps. 
-
-push dx
-push si
-push di
-mov  es, cx
-mov  cl, byte ptr ds:[_fuzzpos]	; note this is always the byte offset - no shift conversion necessary
-xor  ch, ch
-mov  si, cx
-mov  cx, ax
-mov  ax, FUZZOFFSET_SEGMENT
-mov  ds, ax
-mov  di, bx
-; constant space
-mov  dx, 04Fh
-mov  ch, 010h
-
-
-cli
-push bp
-mov  bp, COLORMAPS_HIGH_SEG_OFFSET_IN_CS
-
-
-
-
-
-cmp  cl, ch
-jg   draw_16_fuzzpixels
-jmp  done_drawing_16_fuzzpixels
-draw_16_fuzzpixels:
-
-
-
-DRAW_SINGLE_FUZZPIXEL MACRO 
-
-
-
-lodsw     						; load fuzz offset...
-mov  bx, ax	       				; move offset to bx.
-mov  al, byte ptr es:[bx + di]  ; read screen
-mov  bx, bp						; set colormaps 6 CS-based offset
-xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
-stosb							; write to screen
-add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
-
-
-ENDM
-
-REPT 16
-    DRAW_SINGLE_FUZZPIXEL
-endm
-
-
-cmp  si, 064h
-jl   fuzzpos_ok
-; subtract 50 from fuzzpos
-sub  si, 064h
-fuzzpos_ok:
-sub  cl, ch
-cmp  cl, ch
-jle  done_drawing_16_fuzzpixels
-jmp  draw_16_fuzzpixels
-done_drawing_16_fuzzpixels:
-test cl, cl
-je   finished_drawing_fuzzpixels
-xor ch, ch;
-draw_one_fuzzpixel:
-
-lodsw     						; load fuzz offset...
-mov  bx, ax	       				; move offset to bx.
-mov  al, byte ptr es:[bx + di]  ; read screen
-mov  bx, bp						; set colormaps 6 CS-based offset
-xlat byte ptr cs:[bx]		    ; lookup colormaps + al byte
-stosb							; write to screen
-add  di, dx						; dx contains constant (0x4F) to add to di to get next screen dest.
-
-cmp  si, 064h
-je   zero_out_fuzzpos
-finish_one_fuzzpixel_iteration:
-loop  draw_one_fuzzpixel
-; write back fuzzpos
-finished_drawing_fuzzpixels:
-
-pop bp
-sti
-
-; restore ds
-mov  di, ss
-mov  ds, di
-
-; write back fuzzpos
-mov  ax, si
-
-mov  byte ptr ds:[_fuzzpos], al
-
-pop  di
-pop  si
-pop  dx
-retf 
-
-zero_out_fuzzpos:
-xor  si, si
-loop  draw_one_fuzzpixel
-jmp finished_drawing_fuzzpixels
-
-ENDP
 
 
 

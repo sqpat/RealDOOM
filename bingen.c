@@ -49,14 +49,35 @@ int16_t main ( int16_t argc,int8_t** argv )  {
     FAR_fwrite((byte __far *)R_DrawSpan, codesize, 1, fp);
 
 
+    codesize = FP_OFF(R_DrawMaskedSpriteShadow) - FP_OFF(R_DrawFuzzColumn);
+    
+    // write filesize..
+    fwrite(&codesize, 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)R_DrawFuzzColumn, codesize, 1, fp);
+
+    // This func gets loaded in two spots...
+    codesize = FP_OFF(R_DrawMaskedSpriteShadow) - FP_OFF(R_DrawMaskedColumn);
+    // write filesize..
+    fwrite(&codesize, 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)R_DrawMaskedColumn, codesize, 1, fp);
+
     fclose(fp);
     printf("Generated doomcode.bin file\n");
 
     fp = fopen("m_offsets.h", "wb");
-	fprintf(fp, "#define R_DrawColumnPrepOffset 0x%X\n", FP_OFF(R_DrawColumnPrep) - FP_OFF(R_DrawColumn));
-	fprintf(fp, "#define R_MapPlaneOffset       0x%X\n", FP_OFF(R_MapPlane) - FP_OFF(R_DrawSpan));
+	fprintf(fp, "#define R_DrawColumnPrepOffset         0x%X\n", FP_OFF(R_DrawColumnPrep) - FP_OFF(R_DrawColumn));
+	fprintf(fp, "#define R_MapPlaneOffset               0x%X\n", FP_OFF(R_MapPlane) - FP_OFF(R_DrawSpan));
+	fprintf(fp, "#define R_DrawFuzzColumnOffset         0x%X\n", FP_OFF(R_DrawFuzzColumn)         - FP_OFF(R_DrawFuzzColumn));
+	fprintf(fp, "#define R_DrawSingleMaskedColumnOffset 0x%X\n", FP_OFF(R_DrawSingleMaskedColumn) - FP_OFF(R_DrawFuzzColumn));
+	fprintf(fp, "#define R_DrawMaskedColumnOffset       0x%X\n", FP_OFF(R_DrawMaskedColumn)       - FP_OFF(R_DrawFuzzColumn));
+	fprintf(fp, "#define R_DrawMaskedColumnSpriteOffset 0x%X\n", FP_OFF(R_DrawMaskedColumn)       - FP_OFF(R_DrawMaskedColumn));
+
+
 
     printf("Generated m_offset.h file");
 
+ 
     return 0;
 } 

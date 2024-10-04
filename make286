@@ -114,7 +114,6 @@ GLOBOBJS = &
  math.obj &
  d_algo.obj &
  r_math.obj &
- r_masked.obj &
  r_sky.obj &
  video.obj 
  
