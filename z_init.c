@@ -368,7 +368,6 @@ found:
 
 
 void __far R_DrawColumn (void);
-void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
 
 void PSetupEndFunc();
@@ -484,10 +483,13 @@ void __near Z_LoadBinaries() {
 
 	fread(&codesize, 2, 1, fp2);
 	FAR_fread(drawmaskedfuncarea_sprite, codesize, 1, fp2);
+
+	Z_QuickMapRenderPlanes();
+
+	fread(&codesize, 2, 1, fp2);
+	FAR_fread(drawskyplane_area, codesize, 1, fp2);
+
 	fclose(fp2);
-
-	
-
 
 
 	Z_QuickMapPhysics();

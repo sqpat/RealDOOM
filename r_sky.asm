@@ -33,7 +33,7 @@ INSTRUCTION_SET_MACRO
 ;
 
 	
-PROC  R_DrawSkyColumn_
+PROC  R_DrawSkyColumn_ NEAR
 PUBLIC  R_DrawSkyColumn_
     ; ax contains dc_yh...
     ; dx contails dc_yl...  
@@ -60,7 +60,7 @@ PUBLIC  R_DrawSkyColumn_
     mov   dx, ax    ; dh zero maintained 
     add   ax, dx   
     add   ax, dx   ; ax is tripled..
-    mov   word ptr [OFFSET jump_location + 1], ax   ; modify the jump
+    mov   word ptr cs:[((OFFSET jump_location + 1) - R_DrawSkyColumn_)], ax   ; modify the jump
 
     ; dest = destview + dc_yl*80 + (dc_x>>2); 
 
@@ -148,7 +148,7 @@ ENDP
 ; dx
 ; cx:bx is pl? seems cx/bx can be destroyed freely here
 
-PROC  R_DrawSkyPlane_ NEAR
+PROC  R_DrawSkyPlane_ FAR
 PUBLIC  R_DrawSkyPlane_
 
 ; bp - 2 initial bx (pl )
@@ -167,7 +167,7 @@ push  bx                        ; bp-2
 push  cx                        ; bp-4
 push  ax                        ; bp-6 minx  
 mov   bx, ax
-and   al,  0FCh                 ; 
+and   al, 0FCh                  ; 
 push  ax                        ; bp-8 minxbase4
 push  dx                        ; bp-A maxx
 
@@ -244,6 +244,13 @@ push si     ; we need scratch space here. push this now instead of in r_drawskyc
   ; dx = dc_yl,
   ; bx = dc_x (don't modify)
 call  R_DrawSkyColumn_
+; call 9163:0000
+
+;db 09Ah
+;dw 0000h
+;dw 09163h
+
+
 
 pop si  ; retrieve si
 
@@ -268,7 +275,8 @@ exitfunc:
 LEAVE_MACRO
 pop   di
 pop   si
-ret
+
+retf
 
 ENDP
 

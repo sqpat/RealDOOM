@@ -451,8 +451,6 @@ void __near R_DrawPlanes (void) {
 	int8_t			j;
 	int8_t			physindex = 0;
 
-	
-
 	int16_t effectivepagenumber = 0;
 	uint8_t usedflatindex;
 	boolean flatunloaded = false;
@@ -489,7 +487,7 @@ void __near R_DrawPlanes (void) {
 		// sky flat
 		piclight.pic_and_light = visplanepiclights[i].pic_and_light;
 		if (piclight.bytes.picnum == skyflatnum) {
-			R_DrawSkyPlane(plheader->minx, plheader->maxx, pl);
+			R_DrawSkyPlaneCallHigh(plheader->minx, plheader->maxx, pl);
 			continue;
 		}
 
@@ -594,6 +592,7 @@ void __near R_DrawPlanes (void) {
 		planeheight = labs(plheader->height - viewz.w);
 				// quicker shift 7.. (? test)
 	
+		//pl = (visplane_t __far *) MK_FP(visplanesegment, visplaneoffset); 
 	 
 		pl->top[plheader->maxx+1] = 0xff;
 		pl->top[plheader->minx-1] = 0xff;

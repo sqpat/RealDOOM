@@ -540,6 +540,12 @@ void (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte)  =  	      ((voi
 
 void (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *) = ((void    (__far *)(segment_t, column_t __far *))     (MK_FP(drawmaskedfuncarea_sprite_segment, R_DrawMaskedColumnSpriteOffset)));
 
+//#pragma aux abcdcall parm caller \
+//                    modify [ax bx cx dx es];
+// not sure if this works
+//#pragma aux (abcdcall)  R_DrawSkyPlaneCallHigh;
+void (__far* R_DrawSkyPlaneCallHigh)(int16_t, int16_t, visplane_t __far*) 	= ((void    (__far *)(int16_t, int16_t, visplane_t __far*))     (MK_FP(drawskyplane_area_segment, R_DrawSkyPlaneOffset)));
+
 
 int16_t                 currentlumpindex = 0;
 //

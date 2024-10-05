@@ -857,6 +857,11 @@ This area used during intermission task
 
 // end plane only
 
+//todo
+#define drawskyplane_area             ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
+#define drawskyplane_area_segment     ((segment_t) ((int32_t)drawskyplane_area >> 16))
+
+
 //FREE AREA
 // 9163:0000
 //#define skytexture_post_bytes ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
@@ -864,8 +869,15 @@ This area used during intermission task
 
 // 32768 bytes
 //  9400:0000
+
+
+
+// 35080 for the wad but 32k pixel data actually. 
+// todo theres that one with the weird double column. confirm on that...
+#define size_skytexture   32768
 #define skytexture_texture_bytes ((byte __far*) MAKE_FULL_SEGMENT(0x94000000, 0))
 #define skytexture_texture_segment ((segment_t) ((int32_t)skytexture_texture_bytes >> 16))
+
 
 
 /*
@@ -876,14 +888,15 @@ cachedxstep    9096:0000
 cachedystep    90C8:0000
 spanstart      90FA:0000
 distscale      9113:0000
+drawskyplane_area  9163:0000
 
-
-
-skytexture     9163:0000
-[empty]        99F4:0000
-
-// 8384 bytes free. could be fast unrolled draw sky code, 
+//FREEBYTES
+// 8000+ bytes free? could be fast unrolled draw sky code, 
 // and fast unrolled drawspan no tex code.
+
+
+skytexture         9400:0000
+
 
 */
 

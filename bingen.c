@@ -26,53 +26,75 @@ void __far R_MapPlane ( byte y, int16_t x1, int16_t x2 );
 void __far R_DrawColumn (void);
 void __far R_DrawSkyColumn(int16_t arg_dc_yh, int16_t arg_dc_yl);
 void __far R_DrawFuzzColumn(int16_t count, byte __far * dest);
-
+void __far R_DrawSkyPlane(int16_t minx, int16_t maxx, visplane_t __far*		pl);
 
 int16_t main ( int16_t argc,int8_t** argv )  { 
     
     // Export .inc file with segment values, etc from the c coe
     FILE*  fp = fopen("doomcode.bin", "wb");
-	uint16_t codesize;
+	uint16_t codesize1;
+	uint16_t codesize2;
+	uint16_t codesize3;
+	uint16_t codesize4;
+	uint16_t codesize5;
     
-    codesize = FP_OFF(R_DrawSkyColumn) - FP_OFF(R_DrawColumn);
+    codesize1 = FP_OFF(R_DrawSkyColumn) - FP_OFF(R_DrawColumn);
     // write filesize..
-    fwrite(&codesize, 2, 1, fp);
+    fwrite(&codesize1, 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_DrawColumn, codesize, 1, fp);
+    FAR_fwrite((byte __far *)R_DrawColumn, codesize1, 1, fp);
 
     
-    codesize = FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan);
+    codesize2 = FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSpan);
     
     // write filesize..
-    fwrite(&codesize, 2, 1, fp);
+    fwrite(&codesize2, 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_DrawSpan, codesize, 1, fp);
+    FAR_fwrite((byte __far *)R_DrawSpan, codesize2, 1, fp);
 
 
-    codesize = FP_OFF(R_DrawMaskedSpriteShadow) - FP_OFF(R_DrawFuzzColumn);
+    codesize3 = FP_OFF(R_DrawMaskedSpriteShadow) - FP_OFF(R_DrawFuzzColumn);
     
     // write filesize..
-    fwrite(&codesize, 2, 1, fp);
+    fwrite(&codesize3, 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_DrawFuzzColumn, codesize, 1, fp);
+    FAR_fwrite((byte __far *)R_DrawFuzzColumn, codesize3, 1, fp);
 
     // This func gets loaded in two spots...
-    codesize = FP_OFF(R_DrawMaskedSpriteShadow) - FP_OFF(R_DrawMaskedColumn);
+    codesize4 = FP_OFF(R_DrawMaskedSpriteShadow) - FP_OFF(R_DrawMaskedColumn);
     // write filesize..
-    fwrite(&codesize, 2, 1, fp);
+    fwrite(&codesize4, 2, 1, fp);
     // write data
-    FAR_fwrite((byte __far *)R_DrawMaskedColumn, codesize, 1, fp);
+    FAR_fwrite((byte __far *)R_DrawMaskedColumn, codesize4, 1, fp);
+
+
+    codesize5 = FP_OFF(R_FillBackScreen) - FP_OFF(R_DrawSkyColumn);
+    // write filesize..
+    fwrite(&codesize5, 2, 1, fp);
+    // write data
+    FAR_fwrite((byte __far *)R_DrawSkyColumn, codesize5, 1, fp);
+
 
     fclose(fp);
     printf("Generated doomcode.bin file\n");
 
     fp = fopen("m_offsets.h", "wb");
-	fprintf(fp, "#define R_DrawColumnPrepOffset         0x%X\n", FP_OFF(R_DrawColumnPrep) - FP_OFF(R_DrawColumn));
-	fprintf(fp, "#define R_MapPlaneOffset               0x%X\n", FP_OFF(R_MapPlane) - FP_OFF(R_DrawSpan));
+	fprintf(fp, "#define R_DrawColumnPrepOffset         0x%X\n", FP_OFF(R_DrawColumnPrep)         - FP_OFF(R_DrawColumn));
+	fprintf(fp, "#define R_MapPlaneOffset               0x%X\n", FP_OFF(R_MapPlane)               - FP_OFF(R_DrawSpan));
 	fprintf(fp, "#define R_DrawFuzzColumnOffset         0x%X\n", FP_OFF(R_DrawFuzzColumn)         - FP_OFF(R_DrawFuzzColumn));
 	fprintf(fp, "#define R_DrawSingleMaskedColumnOffset 0x%X\n", FP_OFF(R_DrawSingleMaskedColumn) - FP_OFF(R_DrawFuzzColumn));
 	fprintf(fp, "#define R_DrawMaskedColumnOffset       0x%X\n", FP_OFF(R_DrawMaskedColumn)       - FP_OFF(R_DrawFuzzColumn));
 	fprintf(fp, "#define R_DrawMaskedColumnSpriteOffset 0x%X\n", FP_OFF(R_DrawMaskedColumn)       - FP_OFF(R_DrawMaskedColumn));
+	fprintf(fp, "#define R_DrawSkyColumnOffset          0x%X\n", FP_OFF(R_DrawSkyColumn)          - FP_OFF(R_DrawSkyColumn));
+	fprintf(fp, "#define R_DrawSkyPlaneOffset           0x%X\n", FP_OFF(R_DrawSkyPlane)           - FP_OFF(R_DrawSkyColumn));
+
+	fprintf(fp, "\n");
+
+	fprintf(fp, "#define R_DrawColumnCodeSize           0x%X\n", codesize1);
+    fprintf(fp, "#define R_DrawSpanCodeSize             0x%X\n", codesize2);
+	fprintf(fp, "#define R_DrawFuzzColumnCodeSize       0x%X\n", codesize3);
+	fprintf(fp, "#define R_DrawMaskedColumnCodeSize     0x%X\n", codesize4);
+	fprintf(fp, "#define R_DrawSkyColumnCodeSize        0x%X\n", codesize5);
 
 
 

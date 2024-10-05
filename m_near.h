@@ -410,6 +410,7 @@ extern void                 (__far* R_DrawMaskedColumnCallHigh)(segment_t, colum
 extern void                 (__far* R_DrawSingleMaskedColumnCallHigh)(segment_t, byte);
 
 extern void                 (__far* R_DrawMaskedColumnCallSpriteHigh)(segment_t, column_t __far *);
+extern void                 (__far* R_DrawSkyPlaneCallHigh)(int16_t, int16_t,visplane_t __far *);
 
 
 extern int16_t              currentlumpindex;
