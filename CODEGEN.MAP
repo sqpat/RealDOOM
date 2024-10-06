@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Sep  3 2024 02:05:05 (32-bit)
 Copyright (c) 2002-2024 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       24/10/06 03:17:09
+Created on:       24/10/07 04:46:33
 Executable Image: codegen.exe
 creating a DOS executable
 
@@ -593,7 +593,7 @@ Module: m_near.obj(C:\REALDOOM\m_near.c)
 02cb:238c+     _snd_Mport8bit
 02cb:238d+     _snd_SBirq
 02cb:238e+     _snd_SBdma
-Module: codegen.obj(C:\REALDOOM\codegen.c)
+Module: codegen.obj(C:\REALDOOM\build\tools\codegen\codegen.c)
 0000:0000      main_
 02cb:12f0+     _CONSTANTS
 02cb:13b4+     _SEGMENTS

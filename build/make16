@@ -114,7 +114,7 @@ GLOBOBJS = &
 
 
 doom16.exe : $(GLOBOBJS) i_ibm.obj
- wlink @newd16.lnk
+ wlink @build/newd16.lnk
  copy doom16.exe doom.exe
  wstrip doom.exe
 # 4gwbind 4gwpro.exe striptic.exe heretic.exe -V

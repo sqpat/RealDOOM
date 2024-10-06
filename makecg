@@ -42,13 +42,15 @@ GLOBOBJS = &
 
 
 codegen.exe : $(GLOBOBJS)
- wlink @codegen.lnk
+ wlink @build\codegen.lnk
  wstrip codegen.exe
 # 4gwbind 4gwpro.exe striptic.exe heretic.exe -V
 # prsucc
 
 .c.obj :
  wcc $(CCOPTS) $[*
+
+.c : build\tools\codegen\
 
 .asm.obj :
  tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*

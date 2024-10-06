@@ -38,7 +38,6 @@
 # time optimized seems a LOT faster... ?
 # size optimized saves around 10k
 CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s
-#CCOPTS = -zp1 -oaxet -oi -zq -j -mm -2 -s -zdp -wx 
 ASMOPTS = /d_USED000=0 /dCOMPILE_INSTRUCTIONSET=2
  
 #doom8088 build opts for comparison
@@ -120,11 +119,14 @@ GLOBOBJS = &
  video.obj 
  
 bingen.exe : $(GLOBOBJS) 
- wlink @bingen.lnk 
+ wlink @build/bingen.lnk 
  wstrip bingen.exe
 
+
 .c.obj :
- wcc $(CCOPTS) $[*
+ wcc $(CCOPTS) $[* 
+
+.c : build\tools\bingen\
 
 .asm.obj :
  tasm /mx /m2 /w2 /q /zi $(ASMOPTS) $[*
