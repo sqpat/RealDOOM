@@ -18,6 +18,7 @@
 
 #include "r_data.h"
 #include "r_defs.h"
+#include "m_offset.h"
 
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
@@ -537,7 +538,7 @@ blockmaplump_plus4  76E4:0008
 #define size_mobjposlist           (MAX_THINKERS * sizeof(mobj_pos_t))
 #define size_colfunc_jump_lookup   (sizeof(uint16_t) * SCREENHEIGHT)
 #define size_dc_yl_lookup          (sizeof(uint16_t) * SCREENHEIGHT)
-#define size_colfunc_function_area 3360
+#define size_colfunc_function_area R_DrawColumnCodeSize
 
 // currently using:  2962
 // can stick lookup tables (800 bytes) in
@@ -591,18 +592,19 @@ blockmaplump_plus4  76E4:0008
 
 // EXTRA SPRITE/RENDER_MASKED DATA
 
-#define size_maskedpostdata            12238u
+#define size_maskedpostdata             12238u
+#define size_drawfuzzcol_area           R_DrawFuzzColumnCodeSize
+#define size_drawmaskedfuncarea_sprite  R_DrawMaskedColumnCodeSize
 
 #define size_spritepostdatasizes    (MAX_SPRITE_LUMPS * sizeof(uint16_t))
 #define size_spritetotaldatasizes   (MAX_SPRITE_LUMPS * sizeof(uint16_t))
-#define size_maskedpixeldataofs        3456u
 #define size_maskedpostdataofs    size_maskedpixeldataofs
+#define size_maskedpixeldataofs        3456u
+
 
 // todo fix?
-#define size_drawfuzzcol_area       1000u
 
 #define maskedpostdata             ((byte __far*)              (0x84000000 ))
-
 
 #define drawmaskedfuncarea_sprite    ((byte __far*)           MAKE_FULL_SEGMENT(maskedpostdata, size_maskedpostdata))
 // drawmaskedfuncarea_sprite_segment = 86fd..
@@ -646,6 +648,7 @@ drawmaskedfuncarea_sprite?  86FD:0000
 //#define spanfunc_function_offset  0x1000
 //#define size_spanfunc_jump_lookup 400
 #define size_spanfunc_jump_lookup         (80 * sizeof(uint16_t)) 
+#define size_spanfunc_funcation_area      R_DrawSpanCodeSize
 
 // spanfunc offset
 #define spanfunc_jump_lookup              ((uint16_t  __far*)               MAKE_FULL_SEGMENT(0x6C000000              , palettebytes_size))
@@ -861,6 +864,8 @@ This area used during intermission task
 // end plane only
 
 //todo
+#define size_drawskyplane_area        R_DrawSkyColumnCodeSize
+
 #define drawskyplane_area             ((byte __far*) MAKE_FULL_SEGMENT(distscale, size_distscale))
 #define drawskyplane_area_segment     ((segment_t) ((int32_t)drawskyplane_area >> 16))
 
